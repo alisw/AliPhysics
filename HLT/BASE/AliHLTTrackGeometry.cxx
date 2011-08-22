@@ -195,14 +195,12 @@ void AliHLTTrackGeometry::Draw(Option_t *option)
   }
 }
 
-int AliHLTTrackGeometry::SetAssociatedSpacePoint(UInt_t planeId, UInt_t spacepointId, int status, float fdU, float fdV)
+int AliHLTTrackGeometry::SetAssociatedSpacePoint(UInt_t planeId, UInt_t spacepointId, int /*status*/, float dU, float dV)
 {
   /// set the spacepoint associated with a track point
   vector<AliHLTTrackPoint>::iterator element = find(fTrackPoints.begin(), fTrackPoints.end(), planeId);
   if (element==fTrackPoints.end()) return -ENOENT;
-  element->SetAssociatedSpacePoint(spacepointId, status);
-  element->SetResidual(0, fdU);
-  element->SetResidual(1, fdV);
+  element->AddAssociatedSpacePoint(spacepointId, dU, dV);
   return 0;
 }
 
@@ -213,7 +211,20 @@ int AliHLTTrackGeometry::GetAssociatedSpacePoint(UInt_t planeId, UInt_t& spacepo
   vector<AliHLTTrackPoint>::const_iterator element = find(fTrackPoints.begin(), fTrackPoints.end(), planeId);
   if (element==fTrackPoints.end()) return -ENOENT;
   if (!element->HaveAssociatedSpacePoint()) return -ENODATA;
-  return element->GetAssociatedSpacePoint(spacepointId);
+  spacepointId=(element->GetSpacepoints())[0].fId;
+  return 0;
+}
+
+int AliHLTTrackGeometry::RegisterTrackPoints(AliHLTTrackGrid* /*pGrid*/) const
+{
+  /// default implementation, nothing to do
+  return -ENOSYS;
+}
+
+int AliHLTTrackGeometry::FillTrackPoints(AliHLTTrackGrid* /*pGrid*/) const
+{
+  /// default implementation, nothing to do
+  return -ENOSYS;
 }
 
 const AliHLTTrackGeometry::AliHLTTrackPoint* AliHLTTrackGeometry::GetTrackPoint(AliHLTUInt32_t id) const
@@ -332,7 +343,10 @@ int AliHLTTrackGeometry::FillResidual(int coordinate, TH2* histo) const
   for (vector<AliHLTTrackPoint>::const_iterator trackpoint=trackPoints.begin();
        trackpoint!=trackPoints.end(); trackpoint++) {
     if (!trackpoint->HaveAssociatedSpacePoint()) continue;
-    histo->Fill(GetPlaneR(trackpoint->GetId()), trackpoint->GetResidual(coordinate));
+    for (vector<AliHLTTrackSpacepoint>::const_iterator sp=(trackpoint->GetSpacepoints()).begin();
+	 sp!=(trackpoint->GetSpacepoints()).end(); sp++) {
+      histo->Fill(GetPlaneR(trackpoint->GetId()), sp->GetResidual(coordinate));
+    }
   }
   return 0;
 }

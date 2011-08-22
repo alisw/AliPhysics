@@ -18,6 +18,7 @@
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
 #include "AliHLTExternalTrackParam.h"
+#include "AliHLTIndexGrid.h"
 
 class AliHLTGlobalBarrelTrack;
 class AliHLTSpacePointContainer;
@@ -54,6 +55,8 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
 
   /// destructor
   ~AliHLTTrackGeometry();
+
+  typedef AliHLTIndexGrid<int, AliHLTUInt32_t> AliHLTTrackGrid;
 
   /// set the track id
   void SetTrackId(int trackId) {fTrackId=trackId;}
@@ -124,17 +127,38 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
     AliHLTTrackPlaneYZ();
   };
 
+  struct AliHLTTrackSpacepoint {
+    AliHLTTrackSpacepoint(AliHLTUInt32_t id, float dU=-1000., float dV=-1000.)
+      : fId(id), fdU(dU), fdV(dV) {}
+
+    int SetResidual(int coordinate, float value) {
+      if (coordinate==0) fdU=value;
+      else if (coordinate==1) fdV=value;
+      return 0;
+    }
+
+    float GetResidual(int coordinate) const {
+      if (coordinate==0) return fdU;
+      else if (coordinate==1) return fdV;
+      return 1000.;
+    }
+
+    AliHLTUInt32_t fId; // space point id
+    float fdU;          // residual of the spacepoint
+    float fdV;          // residual of the spacepoint
+  };
+
   class AliHLTTrackPoint {
   public:
     // constructor
     AliHLTTrackPoint(AliHLTUInt32_t id, float u, float v)
-      : fId(id), fU(u), fV(v), fSpacePoint(0), fdU(0.), fdV(0.), fSpacePointStatus(-1) {}
+      : fId(id), fU(u), fV(v), fSpacePoints() {}
     // copy constructor
     AliHLTTrackPoint(const AliHLTTrackPoint& src)
-      : fId(src.fId), fU(src.fU), fV(src.fV), fSpacePoint(src.fSpacePoint), fdU(src.fdU), fdV(src.fdV), fSpacePointStatus(src.fSpacePointStatus) {}
+      : fId(src.fId), fU(src.fU), fV(src.fV), fSpacePoints(src.fSpacePoints) {}
     // assignment operator
     AliHLTTrackPoint& operator=(const AliHLTTrackPoint& src) {
-      if (this!=&src) {fId=src.fId; fU=src.fU; fV=src.fV; fSpacePoint=src.fSpacePoint; fdU=src.fdU; fdV=src.fdV; fSpacePointStatus=src.fSpacePointStatus;}
+      if (this!=&src) {fId=src.fId; fU=src.fU; fV=src.fV; fSpacePoints=src.fSpacePoints;}
       return *this;
     }
     ~AliHLTTrackPoint() {}
@@ -155,28 +179,24 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
 
     /// check associate space point
     bool HaveAssociatedSpacePoint() const {
-      return fSpacePointStatus>=0;
+      return fSpacePoints.size()>0;
     }
 
     /// associate a space point
-    int SetAssociatedSpacePoint(AliHLTUInt32_t spacepointId, int status) {
-      fSpacePoint=spacepointId; fSpacePointStatus=status; return 0;
-    }
-
-    int GetAssociatedSpacePoint(AliHLTUInt32_t& spacepointId) const {
-      spacepointId=fSpacePoint; return fSpacePointStatus<0?-ENOENT:fSpacePointStatus;
-    }
-
-    int SetResidual(int coordinate, float value) {
-      if (coordinate==0) fdU=value;
-      else if (coordinate==1) fdV=value;
+    int AddAssociatedSpacePoint(AliHLTUInt32_t spacepointId, float dU=-1000., float dV=-1000.) {
+      fSpacePoints.push_back(AliHLTTrackSpacepoint(spacepointId, dU, dV));
       return 0;
     }
 
-    float GetResidual(int coordinate) const {
-      if (coordinate==0) return fdU;
-      else if (coordinate==1) return fdV;
-      return 0.;
+    const vector<AliHLTTrackSpacepoint>& GetSpacepoints() const {return fSpacePoints;}
+    vector<AliHLTTrackSpacepoint>& GetSpacepoints() {return fSpacePoints;}
+
+    int SetResidual(AliHLTUInt32_t id, int coordinate, float value) {
+      for (unsigned i=0; i<fSpacePoints.size(); i++) {
+	if (fSpacePoints[i].fId!=id) continue;
+	return fSpacePoints[i].SetResidual(coordinate, value);
+      }
+      return -ENOENT;
     }
 
   private:
@@ -186,10 +206,7 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
     AliHLTUInt32_t fId; // unique id
     float fU;           // u coordinate
     float fV;           // v coordinate
-    AliHLTUInt32_t fSpacePoint; // associated space point id
-    float fdU;          //  of the spacepoint
-    float fdV;          // residual of the spacepoint
-    int fSpacePointStatus; // space point status
+    vector<AliHLTTrackSpacepoint> fSpacePoints;
   };
 
   // interface to plane description
@@ -219,6 +236,12 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
 
   /// find the track point which can be associated to a spacepoint with coordinates and id
   virtual int FindMatchingTrackPoint(AliHLTUInt32_t spacepointId, float spacepoint[3], AliHLTUInt32_t& planeId) = 0;
+
+  /// register track points in the index grid
+  virtual int RegisterTrackPoints(AliHLTTrackGrid* pGrid) const;
+
+  /// fill track points to index grid
+  virtual int FillTrackPoints(AliHLTTrackGrid* pGrid) const;
 
   /// get track point of id
   const AliHLTTrackPoint* GetTrackPoint(AliHLTUInt32_t id) const;
