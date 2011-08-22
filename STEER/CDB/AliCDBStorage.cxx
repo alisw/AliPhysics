@@ -38,7 +38,7 @@ fURI(),
 fType(),
 fBaseFolder(),
 fNretry(0),
-fRetrySeconds(0)
+fInitRetrySeconds(0)
 {
 // constructor
 

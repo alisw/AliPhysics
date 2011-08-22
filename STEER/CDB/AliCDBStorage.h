@@ -100,7 +100,7 @@ public:
 
 	virtual Int_t GetLatestVersion(const char* path, Int_t run)=0;
 	virtual Int_t GetLatestSubVersion(const char* path, Int_t run, Int_t version=-1)=0;
-	virtual void SetRetry(Int_t nretry, Int_t totsec) = 0;
+	virtual void SetRetry(Int_t nretry, Int_t initsec) = 0;
 
 protected:
 
@@ -126,7 +126,7 @@ protected:
 	TString fType;    //! Local, Grid: base folder name - Dump: file name
 	TString fBaseFolder;    //! Local, Grid: base folder name - Dump: file name
 	Short_t    fNretry;              // Number of retries in opening the file
-        Short_t    fRetrySeconds;        // Seconds for first retry
+        Short_t    fInitRetrySeconds;        // Seconds for first retry
 
 private:
 	AliCDBStorage(const AliCDBStorage & source);

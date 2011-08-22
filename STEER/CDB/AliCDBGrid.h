@@ -26,7 +26,7 @@ public:
 	virtual Int_t  GetLatestVersion(const char* path, Int_t run);
 	virtual Int_t  GetLatestSubVersion(const char* path, Int_t run, Int_t version);
 	virtual Bool_t IdToFilename(const AliCDBId& id, TString& filename) const;
-	virtual void SetRetry(Int_t nretry, Int_t totsec);
+	virtual void SetRetry(Int_t nretry, Int_t initsec);
 
 protected:
 

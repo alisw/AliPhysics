@@ -130,6 +130,9 @@ fCleanupInterval(cleanupInterval)
 
 	// return to the initial directory
 	gGrid->Cd(initDir.Data(),0);
+
+	fNretry = 3;  // default
+	fInitRetrySeconds = 5;   // default
 }
 
 //_____________________________________________________________________________
@@ -221,13 +224,14 @@ Bool_t AliCDBGrid::IdToFilename(const AliCDBId& id, TString& filename) const {
 }
 
 //_____________________________________________________________________________
-void AliCDBGrid::SetRetry(Int_t nretry, Int_t totsec) {
+void AliCDBGrid::SetRetry(Int_t nretry, Int_t initsec) {
 
 	// Function to set the exponential retry for putting entries in the OCDB
 
-	const Double_t klog2 = TMath::Log(2.);
+	AliWarning("WARNING!!! You are changing the exponential retry times and delay: this function should be used by experts!"); 
 	fNretry = nretry;
-	fRetrySeconds = TMath::Max(TMath::Exp(TMath::Log(totsec)-nretry*klog2),1.);
+	fInitRetrySeconds = initsec;
+	AliDebug(2,Form("fNretry = %d, fInitRetrySeconds = %d", fNretry, fInitRetrySeconds));
 } 
 
 
@@ -730,24 +734,30 @@ Bool_t AliCDBGrid::PutEntry(AliCDBEntry* entry) {
 	// specify SE to filename
 	if (fSE != "default") fullFilename += Form("?se=%s",fSE.Data());
 
-	Int_t nsleep =1;
+	Int_t nsleep = fInitRetrySeconds;
 	// open file
 	TFile *file=0;
-	AliDebug(2, Form("fNretry = %d, fRetrySeconds = %d",fNretry,fRetrySeconds));
+	AliDebug(2, Form("fNretry = %d, fInitRetrySeconds = %d",fNretry,fInitRetrySeconds));
 	for(Int_t i=0; i<=fNretry; ++i) {
 		AliDebug(2, Form("Putting the file in the OCDB: Retry n. %d",i));
 		file = TFile::Open(fullFilename,"CREATE");
 		if(!file || !file->IsWritable()){
 			AliError(Form("Can't open file <%s>!", filename.Data()));
 			if(file && !file->IsWritable()) file->Close(); delete file; file=0;
-			if(i==fNretry) return kFALSE;
-			else sleep(fRetrySeconds*nsleep);
+			if(i==fNretry) {
+				AliError(Form("After %d retries, failing putting the object in the OCDB - returning...",i));
+				return kFALSE;
+			}
+			else {
+				AliDebug(2,Form("Retry %d failed, sleeping for %d seconds",i,nsleep));
+				sleep(nsleep);
+			}
 		} 
 		else {
 			AliDebug(2, " Successful!");
 			break;
 		}
-		nsleep*=2;
+		nsleep*=fInitRetrySeconds;
 	}
 
 	file->cd();
