@@ -949,7 +949,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t netabins = GetHistoEtaBins(); Float_t etamax = GetHistoEtaMax(); Float_t etamin = GetHistoEtaMin();	
   Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax = GetHistoShowerShapeMax();  Float_t ssmin = GetHistoShowerShapeMin();
 
-  fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", 100,0, 20, 20,0,20); 
+  fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, 20,0,20); 
   fhNCellsE->SetXTitle("E (GeV)");
   fhNCellsE->SetYTitle("# of cells in cluster");
   outputContainer->Add(fhNCellsE);  
