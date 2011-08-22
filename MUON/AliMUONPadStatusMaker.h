@@ -114,17 +114,17 @@ public:
   Int_t HVStatus(Int_t detElemId, Int_t manuId) const;
   
   Int_t OccupancyStatus(Int_t detElemId, Int_t manuId) const;
-  
+
+  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, 
+                           Int_t&  gainStatus, Int_t& otherStatus);
+  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, 
+                           Int_t gainStatus, Int_t otherStatus);  
 private:
   /// Not implemented
   AliMUONPadStatusMaker(const AliMUONPadStatusMaker&);
   /// Not implemented
   AliMUONPadStatusMaker& operator=(const AliMUONPadStatusMaker&);
 
-  static void DecodeStatus(Int_t status, Int_t& pedStatus, Int_t& hvStatus, 
-                           Int_t&  gainStatus, Int_t& otherStatus);
-  static Int_t BuildStatus(Int_t pedStatus, Int_t hvStatus, 
-                           Int_t gainStatus, Int_t otherStatus);
   
   AliMUONVCalibParam* ComputeStatus(Int_t detElemId, Int_t manuId) const;
 

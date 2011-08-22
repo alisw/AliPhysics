@@ -19,6 +19,7 @@
 #include "AliMUONPainterHelper.h"
 
 #include "AliCodeTimer.h"
+#include "AliDAQ.h"
 #include "AliLog.h"
 #include "AliMUONContour.h"
 #include "AliMUONContourHandler.h"
@@ -37,6 +38,7 @@
 #include "AliMpDDLStore.h"
 #include "AliMpDEIterator.h"
 #include "AliMpDEManager.h"
+#include "AliMpDetElement.h"
 #include "AliMpExMap.h"
 #include "AliMpMotifMap.h"
 #include "AliMpMotifPosition.h"
@@ -463,10 +465,20 @@ AliMUONPainterHelper::DEPathName(Int_t detElemId) const
   
   Int_t chamberId = AliMpDEManager::GetChamberId(detElemId);
   
-  return Form("%s/%s/%s",
+  Int_t ddl(-1);
+  
+  AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+  
+  if ( de ) 
+  {
+    ddl = AliDAQ::DdlIDOffset("MUONTRK") + de->GetDdlId();
+  }
+  
+  return Form("%s/%s/%s(DDL%4d)",
               StationName(chamberId/2).Data(),
               ChamberName(chamberId).Data(),
-              DEName(detElemId).Data());
+              DEName(detElemId).Data(),
+              ddl);
 }
 
 //_____________________________________________________________________________
