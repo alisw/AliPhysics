@@ -34,7 +34,8 @@ ClassImp(AliRDHFCutsDstoKKpi)
 
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const char* name) : 
-AliRDHFCuts(name)
+AliRDHFCuts(name),
+fPidOption(0)
 {
   //
   // Default Constructor
@@ -112,7 +113,8 @@ AliRDHFCuts(name)
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsDstoKKpi::AliRDHFCutsDstoKKpi(const AliRDHFCutsDstoKKpi &source) :
-  AliRDHFCuts(source)
+  AliRDHFCuts(source),
+  fPidOption(source.fPidOption)
 {
   //
   // Copy constructor
@@ -321,6 +323,15 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
     AliWarning("AliAODPidHF not created!");
     return retCode;
   }
+
+  Double_t origCompatTOF=fPidHF->GetPCompatTOF();
+  Double_t origThreshTPC=fPidHF->GetPtThresholdTPC();
+  if(fPidOption==kStrong){
+    fPidHF->SetPCompatTOF(999999.);
+    fPidHF->SetPtThresholdTPC(999999.);
+  }
+
+
   Int_t nKaons=0;
   Int_t nNotKaons=0;
   Int_t sign= rd->GetCharge(); 
@@ -330,21 +341,45 @@ Int_t AliRDHFCutsDstoKKpi::IsSelectedPID(AliAODRecoDecayHF *rd) {
     Int_t isKaon=fPidHF->MakeRawPid(track,AliPID::kKaon);
     Int_t isProton=fPidHF->MakeRawPid(track,AliPID::kProton);
     
-    if(isProton>0 &&  isKaon<0  && isPion<0) return 0;
+    if(isProton>0 &&  isKaon<0  && isPion<0){
+      fPidHF->SetPCompatTOF(origCompatTOF);
+      fPidHF->SetPtThresholdTPC(origThreshTPC);
+      return 0;
+    }
     if(sign!=track->Charge()){// must be kaon
-      if(isKaon<0) return 0;
+      if(isKaon<0){
+	fPidHF->SetPCompatTOF(origCompatTOF);
+	fPidHF->SetPtThresholdTPC(origThreshTPC);
+	return 0;
+      }
+      if(fPidOption==kStrong && isKaon<=0){
+	fPidHF->SetPCompatTOF(origCompatTOF);
+	fPidHF->SetPtThresholdTPC(origThreshTPC);
+	return 0;
+      }
     }
     if(isKaon>0 && isPion<0) nKaons++;
     if(isKaon<0) nNotKaons++;
     if(iDaught==0){
       if(isKaon<0) okKKpi=kFALSE;
-      if(isPion<0) okpiKK=kFALSE;
+      if(isPion<0) okpiKK=kFALSE;      
+      if(fPidOption==kStrong){
+	if(isKaon<=0) okKKpi=kFALSE;
+	if(isPion<=0) okpiKK=kFALSE;
+      }
     }
     else if(iDaught==2){
       if(isKaon<0) okpiKK=kFALSE;
       if(isPion<0) okKKpi=kFALSE;
+       if(fPidOption==kStrong){
+	if(isKaon<=0) okpiKK=kFALSE;
+	if(isPion<=0) okKKpi=kFALSE;
+      }
     }
   }
+
+  fPidHF->SetPCompatTOF(origCompatTOF);
+  fPidHF->SetPtThresholdTPC(origThreshTPC);
   
   if(nKaons>2)return 0;
   if(nNotKaons>1) return 0;
@@ -372,9 +407,9 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     cout<<"AliAODRecoDecayHF3Prong null"<<endl;
     return 0;
   }
- 
+  
   if(fKeepSignalMC) if(IsSignalMC(d,aod,431)) return 3;
-
+ 
   Double_t ptD=d->Pt();
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
