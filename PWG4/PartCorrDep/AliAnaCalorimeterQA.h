@@ -156,9 +156,9 @@ public:
   TH2F *   fhIMCellCut;                       //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F *   fhAsym;                            //! cluster pairs invariant mass	
   
-  TH3F *   fhNCellsPerCluster;                //! N cells per cluster vs cluster energy vs eta of cluster	
-  TH3F *   fhNCellsPerClusterMIP;             //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
-  TH3F *   fhNCellsPerClusterMIPCharged;      //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
+  TH2F *   fhNCellsPerCluster;                //! N cells per cluster vs cluster energy vs eta of cluster	
+  TH2F *   fhNCellsPerClusterMIP;             //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
+  TH2F *   fhNCellsPerClusterMIPCharged;      //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
   
   TH1F *   fhNClusters;                       //! Number of clusters
 
@@ -168,6 +168,10 @@ public:
 	
   TH2F *   fhBadClusterMaxCellTimeEnergy;     //! Time Max cell of bad cluster
   TH2F *   fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
+  TH2F *   fhBadClusterLambda0;               //! Lambda0 of bad cluster
+  TH2F *   fhBadClusterLambda1;               //! Lambda1 of bad cluster
+  TH2F *   fhBadClusterL0L1;                  //! Lambda0 of bad cluster  
+  TH2F *   fhBadClusterDispersion;            //! Dispersion of bad cluster
   TH2F *   fhClusterMaxCellTimeEnergy;        //! Time of Max cell
   TH2F *   fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
   
