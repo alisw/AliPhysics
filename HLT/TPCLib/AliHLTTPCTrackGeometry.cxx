@@ -308,8 +308,10 @@ int AliHLTTPCTrackGeometry::FillRawResidual(int coordinate, TH2* histo, AliHLTSp
   const vector<AliHLTTrackPoint>& trackPoints=TrackPoints();
   for (vector<AliHLTTrackPoint>::const_iterator trackpoint=trackPoints.begin();
        trackpoint!=trackPoints.end(); trackpoint++) {
-    AliHLTUInt32_t spacepointId=~(AliHLTUInt32_t)0;
-    if (trackpoint->GetAssociatedSpacePoint(spacepointId)<0) continue;
+    if (!trackpoint->HaveAssociatedSpacePoint()) continue;
+    for (vector<AliHLTTrackSpacepoint>::const_iterator sp=(trackpoint->GetSpacepoints()).begin();
+	 sp!=(trackpoint->GetSpacepoints()).end(); sp++) {
+    AliHLTUInt32_t spacepointId=sp->fId;
     vector<AliHLTTrackPoint>::const_iterator rawpoint=find(fRawTrackPoints.begin(), fRawTrackPoints.end(), trackpoint->GetId());
     if (rawpoint==fRawTrackPoints.end()) {
       HLTError("can not find track raw coordinates of track point 0x%08x", trackpoint->GetId());
@@ -327,6 +329,7 @@ int AliHLTTPCTrackGeometry::FillRawResidual(int coordinate, TH2* histo, AliHLTSp
       value=rawpoint->GetV()-points->GetZ(spacepointId);
       //histo->Fill(GetPlaneR(trackpoint->GetId()), value);
       histo->Fill(rawpoint->GetV(), value);
+    }
     }
   }
   return 0;
