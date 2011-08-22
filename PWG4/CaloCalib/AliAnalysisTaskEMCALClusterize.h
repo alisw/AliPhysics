@@ -74,6 +74,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnTrackMatching()                        { fDoTrackMatching    = kTRUE  ; }
   void           SwitchOffTrackMatching()                       { fDoTrackMatching    = kFALSE ; } 
 
+  void           SwitchOnCellEnergySelection()                  { fSelectCell         = kTRUE  ; }
+  void           SwitchOffCellEnergySelection()                 { fSelectCell         = kFALSE ; } 
+
   
  private:
     
@@ -122,8 +125,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Int_t                  fMaxEvent;         // Set a maximum event
   
   Bool_t                 fDoTrackMatching;  // On/Off the matching recalulation to speed up analysis in PbPb
+  Bool_t                 fSelectCell;       // Reject cells from cluster if energy is too low and recalculate position/energy and other
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 8);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 9);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
