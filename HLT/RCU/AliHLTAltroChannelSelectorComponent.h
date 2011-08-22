@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTALTROCHANNELSELECTORCOMPONENT_H
 #define ALIHLTALTROCHANNELSELECTORCOMPONENT_H
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTAltroChannelSelectorComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  A filter/selective readout component for Altro data.
-*/
+/// @file   AliHLTAltroChannelSelectorComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  A filter/selective readout component for Altro data.
+///
 
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt   
 
@@ -90,19 +90,6 @@ class AliHLTAltroChannelSelectorComponent : public AliHLTProcessor {
   AliHLTAltroChannelSelectorComponent(const AliHLTAltroChannelSelectorComponent&);
   /** assignment operator prohibited */
   AliHLTAltroChannelSelectorComponent& operator=(const AliHLTAltroChannelSelectorComponent&);
-
-  /**
-   * Copy a data block at the end of a buffer.
-   * The source buffer is inserted at given position relative to the buffer
-   * end.
-   * @param pTgt       target buffer
-   * @param capacity   capacity (size) of the buffer
-   * @param position   porition relative to the END of the buffer
-   * @param pSrc       source buffer to be copied
-   * @param size       size of the source buffer
-   * @return copied size, neg error code if failed
-   */
-  int CopyBlockToEnd(AliHLTUInt8_t* pTgt, unsigned capacity, unsigned position, void* pSrc, unsigned size);
 
   /** skip corrupted channels */
   bool fSkipCorrupted; //!transient

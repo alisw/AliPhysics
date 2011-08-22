@@ -17,7 +17,7 @@
 //**************************************************************************
 
 /// @file   AliHLTAltroChannelSelectorComponent.cxx
-/// @author Matthias Richter
+/// @author Matthias Richter edited by Jason Glyndwr Ulery
 /// @date   
 /// @brief  A filter/selective readout component for Altro data.
 ///
@@ -170,7 +170,11 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 {
   // see header file for class documentation
   int iResult=0;
-  const int cdhSize=32;
+  AliHLTUInt32_t iCapacity=size;
+  size=0;
+
+  const int cdhSize=32;//8 32-bit words so 32 bytes
+  const int rcuSize=36;//9 32-bit words
 
   if (!IsDataEvent()) {
     size=0;
@@ -210,9 +214,6 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     }
     }
 
-    static AliHLTErrorGuard required("AliHLTAltroChannelSelectorComponent", "DoEvent", "component commission required after major changes");
-    (++required).Throw(1);
-
     pRawReader->Reset();
     int ddlid=AliHLTDAQ::DdlIDFromHLTBlockData(pDesc->fDataType.fOrigin, pDesc->fSpecification);
     if (ddlid<0) {
@@ -240,18 +241,9 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       continue;
     }
 
-    unsigned int rcuTrailerLength=0;
-    if (iResult>=0 &&
-	((rcuTrailerLength=altroRawStream->GetRCUTrailerSize())==0 ||
-	 rcuTrailerLength>pDesc->fSize-cdhSize)) {
-      if (rcuTrailerLength>0) {
-	HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
-      } else {
-	HLTWarning("corrupted data block: RCU trailer of zero length");	
-      }
-      iResult=-EFAULT;
-    }
-
+    unsigned int rcuTrailerLength=rcuSize;
+    if(rcuTrailerLength>pDesc->fSize-cdhSize) HLTWarning("corrupted data block: RCU trailer length exceeds buffer size");
+  
     if (iResult<0) {
       // TODO: here the trigger has to come into play. It is up to
       // policy if a corrupted data block should be kept (original
@@ -267,25 +259,15 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     int iTotal=0;
     int iCorrupted=0;
     AliHLTUInt32_t iOutputSize=0;
-    AliHLTUInt32_t iNofAltro40=0;
-    AliHLTUInt32_t iCapacity=size;
 
-    // first add the RCU trailer
-    AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
-    pSrc+=pDesc->fSize-rcuTrailerLength;
-    if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pSrc, rcuTrailerLength))>=0) {
-      assert(iResult==(int)rcuTrailerLength);
-      iOutputSize+=rcuTrailerLength;
-    } else {
-      HLTError("failed to write RCU trailer of length %d for block %d, too little space in output buffer?", rcuTrailerLength, blockno);
-      iResult=-ENOSPC;
-      break;
-    }
+    //First add the common data header (CDH)
+    memcpy(outputPtr+size,pDesc->fPtr,cdhSize);
+    iOutputSize+=cdhSize;
 
     while (altroRawStream->NextChannel() && iResult>=0) {
       iTotal++;
-
       int hwAddress=altroRawStream->GetHWAddress();
+  
       if (fSignalThreshold!=0) {
 	// treshold by adc counts
 	unsigned int sumSignals=0;
@@ -345,7 +327,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 
       // no of 10 bit words is without the fill words to fill complete 40 bit words
       // in addition, align to complete 40 bit words (the '+3')
-      // also, the 5 bytes of the Altro trailer must be added to get the full size
+      // also, the 4 bytes of the Altro trailer must be added to get the full size
       int channelSize=((altroRawStream->GetChannelPayloadSize()+2)/3)*4;
       if (channelSize==0) {
 	if (fTalkative) HLTWarning("skipping zero length channel (hw address %d)", hwAddress);
@@ -355,12 +337,15 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
       channelSize+=4;
       HLTDebug("ALTRO block hwAddress 0x%08x (%d) selected (active), size %d", hwAddress, hwAddress, channelSize);
 
-      if (false) {
-	if (channelSize == iResult) {
+      if (iCapacity>=(channelSize+iOutputSize)) {
+	const UChar_t *ChannelData=altroRawStream->GetChannelPayload();
+	iResult=channelSize;
+	memcpy(outputPtr+size+iOutputSize,ChannelData,channelSize);
+	if (channelSize == iResult){
 	  if (channelSize%4 == 0) {
 	    iOutputSize+=channelSize;
 	  } else {
-	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 40 bit word (channel hw address %d)", hwAddress);
+	    if (fTalkative) HLTWarning("corrupted ALTRO channel: incomplete 32 bit word (channel hw address %d)", hwAddress);
 	    iCorrupted++;
 	    continue;
 	  }
@@ -375,36 +360,35 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	iCorrupted++;
 	iResult=0;
 	continue;
-      }
+      }  
       iSelected++;
     }
+    
     if (iResult>=0) {
-      // write the common data header
-      if ((iResult=CopyBlockToEnd(outputPtr, iCapacity, iOutputSize, pDesc->fPtr, cdhSize))>=0) {
-	assert(iResult==cdhSize);
-	iOutputSize+=cdhSize;
+      //Write the RCU Trailer
+      AliHLTUInt8_t* pSrc=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
+      pSrc+=pDesc->fSize-rcuTrailerLength;
+      memcpy(outputPtr+size+iOutputSize,pSrc,rcuTrailerLength);
+      iOutputSize+=rcuTrailerLength;
 
-	// set new length of the data block
-	AliHLTUInt32_t* pCdhSize=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+iCapacity-iOutputSize);
-	*pCdhSize=iOutputSize;
+      //Set new payload length of the new data bloock 
+      AliHLTUInt32_t* pSize=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+size+iOutputSize-rcuTrailerLength);
+      (*pSize)&=~0x3FFFFFF;
+      (*pSize)|=(iOutputSize-rcuTrailerLength-cdhSize+3)/4;//# of 32 bit words in payload
+      
+      //Write DDL length     
+      AliHLTUInt32_t* pCdhSize=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+size);
+      *pCdhSize=iOutputSize;
 
-	// set number of Altro words
-	AliHLTUInt32_t* pNofAltro40=reinterpret_cast<AliHLTUInt32_t*>(outputPtr+iCapacity-rcuTrailerLength);
-	*pNofAltro40=iNofAltro40;
-
-	// insert block descriptor
-	AliHLTComponentBlockData bd;
-	FillBlockData(bd);
-	bd.fOffset=iCapacity-iOutputSize;
-	bd.fSize=iOutputSize;
-	bd.fDataType=pDesc->fDataType;
-	bd.fSpecification=pDesc->fSpecification;
-	outputBlocks.push_back(bd);
-	iCapacity-=iOutputSize;
-      } else {
-	HLTError("failed to write CDH of length %d for block %d", cdhSize, blockno);
-	break;
-      }
+      // insert block descriptor
+      AliHLTComponentBlockData bd;
+      FillBlockData(bd);
+      bd.fOffset=size;
+      bd.fSize=iOutputSize;
+      bd.fDataType=pDesc->fDataType;
+      bd.fSpecification=pDesc->fSpecification;
+      outputBlocks.push_back(bd);
+      size+=iOutputSize;
     }
     if (fTalkative) HLTImportant("data block %d (0x%08x): selected %d out of %d ALTRO channel(s), %d corrupted channels skipped", blockno, pDesc->fSpecification, iSelected, iTotal, iCorrupted);
   }
@@ -412,33 +396,5 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
   if (iResult<0) {
     outputBlocks.clear();
   }
-
-  // all data blocks need to be moved to the beginning of the
-  // buffer because PubSub is not able to handle data blocks entirely
-  // at the end of the buffer. The problem is that the component always
-  // indicates to use the full size of the buffer
-  if (outputBlocks.size()>0) {
-    int offset=outputBlocks.back().fOffset;
-    size-=offset;
-    memmove(outputPtr, outputPtr+offset, size);
-    for (AliHLTComponentBlockDataList::iterator block=outputBlocks.begin();
-	 block!=outputBlocks.end();
-	 block++) {
-      block->fOffset-=offset;
-    }
-  }
-
-  return iResult;
-}
-
-int AliHLTAltroChannelSelectorComponent::CopyBlockToEnd(AliHLTUInt8_t* pTgt, unsigned capacity, unsigned position, void* pSrc, unsigned size)
-{
-  int iResult=0;
-  if (pTgt==NULL || pSrc==NULL) return -EINVAL;
-  if (capacity-position<size) return -ENOSPC;
-  
-  memcpy(pTgt+(capacity-position-size), pSrc, size);
-  iResult=size;
-  
   return iResult;
 }
