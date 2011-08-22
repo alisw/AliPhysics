@@ -643,17 +643,17 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   }
   
   // Check for A triggers
-  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL")   ||   // Early pp
-      trigStr.Contains("CINT1-AC_NOPF-ALLNOTRD") ||   // Late pp
-      trigStr.Contains("CINT1-AC_NOPF-FASTNOTRD")||   // Late pp
+  if (trigStr.Contains("CINT1A-ABCE-NOPF-ALL")    ||   // Early pp
+      trigStr.Contains("CINT1-AC-NOPF-ALLNOTRD")  ||   // Late pp
+      trigStr.Contains("CINT1-AC-NOPF-FASTNOTRD") ||   // Late pp
       (trigStr.Contains("CSMBA-ABCE-NOPF-ALL") && 
-       !(triggers & AliAODForwardMult::kB))      ||   // pp
-      trigStr.Contains("CMBACS2-A-NOPF-ALL")     ||   // PbPb
-      // trigStr.Contains("C0SMH-A-NOPF-ALL")    ||   // PbPb - high mult
-      trigStr.Contains("CMBS2A-A-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBS2C-A-NOPF-ALL")      ||   // PbPb
-      trigStr.Contains("CMBAC-A-NOPF-ALL")       ||   // PbPb
-      // trigStr.Contains("C0SMH-A-NOPF-ALL")    ||   // PbPb - high mult
+       !(triggers & AliAODForwardMult::kB))       ||   // pp
+      trigStr.Contains("CMBACS2-A-NOPF-ALL")      ||   // PbPb
+      // trigStr.Contains("C0SMH-A-NOPF-ALL")     ||   // PbPb - high mult
+      trigStr.Contains("CMBS2A-A-NOPF-ALL")       ||   // PbPb
+      trigStr.Contains("CMBS2C-A-NOPF-ALL")       ||   // PbPb
+      trigStr.Contains("CMBAC-A-NOPF-ALL")        ||   // PbPb
+      // trigStr.Contains("C0SMH-A-NOPF-ALL")     ||   // PbPb - high mult
       trigStr.Contains("CMBACS2-A-NOPF-ALLNOTRD")     // PbPb
       // trigStr.Contains("C0SMH-A-NOPF-ALLNOTRD")    // PbPb - high mult
       ) {
