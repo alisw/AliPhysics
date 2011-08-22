@@ -131,6 +131,7 @@ set ( CLASS_HDRS
     AliHLTTPCHWCFDataReverterComponent.h
     AliHLTTPCTrackMCMarkerComponent.h
     AliHLTTPCdEdxComponent.h
+    AliHLTTPCdEdxMonitoringComponent.h
     HWCFemulator/AliHLTTPCHWCFExtractorUnit.h
     HWCFemulator/AliHLTTPCHWCFProcessorUnit.h
     HWCFemulator/AliHLTTPCHWCFMergerUnit.h
