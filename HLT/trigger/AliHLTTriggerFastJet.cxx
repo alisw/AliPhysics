@@ -271,6 +271,8 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
 template <class T>
 Bool_t AliHLTTriggerFastJet::TriggerOnJet(T Jet) {
 
+  AliHLTScalars scalars;  
+  
   for ( unsigned int ij = 0; ij<Jet.size(); ij++ ) {
     if ( Jet[ij] > fEThreshold ) {
       TString description;
