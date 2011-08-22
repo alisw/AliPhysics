@@ -317,6 +317,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
       
       for (UShort_t s=0; s<ns; s++) { 
 	for (UShort_t t=0; t<nt; t++) {
+	  
 	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t  eta  = fmd.Eta(d,r,s,t);
@@ -613,10 +614,14 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
   if (fDebug > 10) {
     AliInfo(Form("FMD%d%c, eta=%7.4f, %8.5f -> %8.5f", d, r, eta, mult, ret));
   }
+  //HHD, CS test
+  //if(mult < fit->GetDelta()) {std::cout<<ret<<"   "<<1<<std::endl; ret = 1;} 
+  
+  //if(mult > 8) {std::cout<<ret<<"   "<<1<<std::endl; ret = 1;}
   
   fWeightedSum->Fill(ret);
   fSumOfWeights->Fill(ret);
-
+  
   return ret;
 }
 
@@ -1010,7 +1015,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
 
   fELossVsPoisson = new TH2D("elossVsPoisson", 
 			     "N_{ch} from energy loss vs from Poission",
-			     150, 0, 30, 150, 0, 30);
+			     500, 0, 100, 500, 0, 100);
   fELossVsPoisson->SetDirectory(0);
   fELossVsPoisson->SetXTitle("N_{ch} from #DeltaE");
   fELossVsPoisson->SetYTitle("N_{ch} from Poisson");
