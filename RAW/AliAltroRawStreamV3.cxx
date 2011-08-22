@@ -43,6 +43,7 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fHWAddress(-1),
   fRawReader(rawReader),
   fData(NULL),
+  fChannelStartPos(-1),
   fPosition(-1),
   fCount(-1),
   fStartTimeBin(-1),
@@ -88,6 +89,7 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fHWAddress(stream.fHWAddress),
   fRawReader(stream.fRawReader),
   fData(stream.fData),
+  fChannelStartPos(stream.fChannelStartPos),
   fPosition(stream.fPosition),
   fCount(stream.fCount),
   fStartTimeBin(stream.fStartTimeBin),
@@ -131,6 +133,7 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
   fHWAddress         = stream.fHWAddress;
   fRawReader         = stream.fRawReader;
   fData              = stream.fData;
+  fChannelStartPos   = stream.fChannelStartPos;
   fPosition          = stream.fPosition;
   fCount             = stream.fCount;
   fStartTimeBin      = stream.fStartTimeBin;
@@ -171,6 +174,7 @@ void AliAltroRawStreamV3::Reset()
 // Reset of the raw-reader as well
 
   fDDLNumber = fRCUId = fHWAddress = -1;
+  fChannelStartPos = -1;
   fPosition = fCount = -1;
   fBunchLength = fStartTimeBin = -1;
   fBadChannel = kFALSE;
@@ -206,6 +210,7 @@ Bool_t AliAltroRawStreamV3::NextDDL()
 
   fDDLNumber = fRawReader->GetDDLID();
   fChannelPayloadSize = -1;
+  fChannelStartPos = -1;
 
   UChar_t rcuVer = fRawReader->GetBlockAttributes();
 
@@ -256,6 +261,8 @@ Bool_t AliAltroRawStreamV3::NextChannel()
     return status;
   }
 
+  Int_t channelStartPos=fPosition;
+  fChannelStartPos = -1;
   fCount = -1;
   fBadChannel = kFALSE;
   fBunchDataIndex = 0;
@@ -300,6 +307,7 @@ Bool_t AliAltroRawStreamV3::NextChannel()
     fBunchData[isample++] = word & 0x3FF;
   }  
 
+  fChannelStartPos=channelStartPos;
   return kTRUE;
 }
 
@@ -370,6 +378,16 @@ Bool_t AliAltroRawStreamV3::NextBunch()
   fBunchDataIndex += fBunchLength;
 
   return kTRUE;
+}
+
+//_____________________________________________________________________________
+const UChar_t *AliAltroRawStreamV3::GetChannelPayload() const
+{
+  //returns raw channel data, length 4+(fChannelPayloadSize+2)/3*4
+  if (fChannelStartPos<0 || fChannelPayloadSize<0) return NULL;
+  Int_t channelSize=1+(fChannelPayloadSize+2)/3; // nof 32bit words
+  if (fPosition<fChannelStartPos+channelSize) return NULL;
+  return fData+(fChannelStartPos<<2);
 }
 
 //_____________________________________________________________________________

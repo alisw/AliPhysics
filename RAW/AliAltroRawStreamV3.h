@@ -49,6 +49,7 @@ class AliAltroRawStreamV3: public TObject {
     Bool_t IsChannelBad()      const { return fBadChannel; }   // Is the channel data bad or not
 
     Int_t GetChannelPayloadSize() const { return fChannelPayloadSize; }
+    const UChar_t *GetChannelPayload() const;//returns raw channel data, length 4+(fChannelPayloadSize+2)/3*4
     UChar_t *GetRCUPayloadInSOD() const;
     Int_t GetRCUPayloadSizeInSOD() const;
 
@@ -127,6 +128,7 @@ class AliAltroRawStreamV3: public TObject {
 
     UChar_t*         fData;         // raw data
 
+    Int_t            fChannelStartPos; // start index of the current channel
     Int_t            fPosition;     // current position (32-bit words) in fData
     Int_t            fCount;        // 
     Int_t            fStartTimeBin; //
