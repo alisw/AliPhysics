@@ -206,7 +206,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fBunchIndex = clusterStart;  
   AliHLTInt32_t bunchTime = fkBunch->fTime - clusterStart;
 
-  for( ; fBunchIndex < clusterEnd; fBunchIndex++, bunchTime-- ){
+  for( ; fBunchIndex < clusterEnd && bunchTime>=0; fBunchIndex++, bunchTime-- ){
     AliHLTUInt64_t q = fkBunch->fData[fBunchIndex]*fkBunch->fGain;
     if (fOutput.fQmax < q) fOutput.fQmax = q;
     fOutput.fQ += q;
