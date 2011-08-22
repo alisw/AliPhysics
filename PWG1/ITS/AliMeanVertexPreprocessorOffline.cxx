@@ -68,52 +68,97 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		return; 
 	}
 
-	TList *list = (TList*)file->Get("MeanVertex");				 
-    if (!list) {
-		AliError(Form("cannot find the list of histograms"));
-		return;
+    if (!dbString){
+		AliError(Form("no OCDB path found, return"));
+	    return;
 	}
-				 
-	// check on the histos			 
-				 
-	TH1F *histTRKvtxX = (TH1F*)list->FindObject("hTRKVertexX");
-	TH1F *histTRKvtxY = (TH1F*)list->FindObject("hTRKVertexY");
-	TH1F *histTRKvtxZ = (TH1F*)list->FindObject("hTRKVertexZ");
-
-	TH1F *histSPDvtxX = (TH1F*)list->FindObject("hSPDVertexX");
-	TH1F *histSPDvtxY = (TH1F*)list->FindObject("hSPDVertexY");
-	TH1F *histSPDvtxZ = (TH1F*)list->FindObject("hSPDVertexZ");
+    
+	
+	TList *list = (TList*)file->Get("MeanVertex");				
+	
+	TH1F *histTRKvtxX = 0x0;
+	TH1F *histTRKvtxY = 0x0;
+	TH1F *histTRKvtxZ = 0x0;
+	
+	TH1F *histSPDvtxX = 0x0;
+	TH1F *histSPDvtxY = 0x0;
+	TH1F *histSPDvtxZ = 0x0;
+	
 	
 	Bool_t useTRKvtx = kTRUE;
 	Bool_t useITSSAvtx = kFALSE;
 	Bool_t useSPDvtx = kFALSE;
 	
-	if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
+	
+    if (!list) {
 		
-		useTRKvtx = kFALSE;
-		useITSSAvtx = kTRUE;
+		histTRKvtxX = (TH1F*)file->Get("hTRKVertexX");
+		histTRKvtxY = (TH1F*)file->Get("hTRKVertexY");
+		histTRKvtxZ = (TH1F*)file->Get("hTRKVertexZ");
 		
-		histTRKvtxX = (TH1F*)list->FindObject("hITSSAVertexX");
-		histTRKvtxY = (TH1F*)list->FindObject("hITSSAVertexY");
-		histTRKvtxZ = (TH1F*)list->FindObject("hITSSAVertexZ");
+		histSPDvtxX = (TH1F*)file->Get("hSPDVertexX");
+		histSPDvtxY = (TH1F*)file->Get("hSPDVertexY");
+		histSPDvtxZ = (TH1F*)file->Get("hSPDVertexZ");
 		
-		
-	    if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
-		
-			useITSSAvtx=kFALSE;
-			useSPDvtx=kTRUE;
+		if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
 			
-			if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ){
-				AliError(Form("cannot find any histograms available"));
-				return;
-		    }	
-		}			 			 
-	}		
+			useTRKvtx = kFALSE;
+			useITSSAvtx = kTRUE;
+			
+			histTRKvtxX = (TH1F*)file->FindObject("hITSSAVertexX");
+			histTRKvtxY = (TH1F*)file->FindObject("hITSSAVertexY");
+			histTRKvtxZ = (TH1F*)file->FindObject("hITSSAVertexZ");
+		
+			if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
+				
+				useITSSAvtx=kFALSE;
+				useSPDvtx=kTRUE;
+				
+				if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ){
+					AliError(Form("cannot find any histograms available from file"));
+					return;
+				}	
+			}
+		}
+	}	
+	
+	else{
+		
+		histTRKvtxX = (TH1F*)list->FindObject("hTRKVertexX");
+		histTRKvtxY = (TH1F*)list->FindObject("hTRKVertexY");
+		histTRKvtxZ = (TH1F*)list->FindObject("hTRKVertexZ");
+		
+		histSPDvtxX = (TH1F*)list->FindObject("hSPDVertexX");
+		histSPDvtxY = (TH1F*)list->FindObject("hSPDVertexY");
+		histSPDvtxZ = (TH1F*)list->FindObject("hSPDVertexZ");
+	
+		if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
+			
+			useTRKvtx = kFALSE;
+			useITSSAvtx = kTRUE;
+			
+			histTRKvtxX = (TH1F*)list->FindObject("hITSSAVertexX");
+			histTRKvtxY = (TH1F*)list->FindObject("hITSSAVertexY");
+			histTRKvtxZ = (TH1F*)list->FindObject("hITSSAVertexZ");
+			
+			if (!histTRKvtxX || !histTRKvtxY || !histTRKvtxZ){
+				
+				useITSSAvtx=kFALSE;
+				useSPDvtx=kTRUE;
+				
+				if (!histSPDvtxX || !histSPDvtxY || !histSPDvtxZ){
+					AliError(Form("cannot find any histograms available from list"));
+					return;
+				}	
+			}			 			 
+			
+		}
+	}
 	
 			
 	if (useTRKvtx){
 	  
-	        Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries(); 					 
+		Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries(); 					 
 		Float_t nEntriesY = histTRKvtxY->GetEffectiveEntries(); 			 
 		Float_t nEntriesZ = histTRKvtxZ->GetEffectiveEntries(); 			 
 	
@@ -124,7 +169,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	}
 	if (useITSSAvtx){
 	  
-	        Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries(); 					 
+		Float_t nEntriesX = histTRKvtxX->GetEffectiveEntries(); 					 
 		Float_t nEntriesY = histTRKvtxY->GetEffectiveEntries(); 			 
 		Float_t nEntriesZ = histTRKvtxZ->GetEffectiveEntries(); 			 
 	
@@ -234,7 +279,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
-		if (TMath::Abs(zMeanVtx) > 7.) {
+		if (TMath::Abs(zMeanVtx) > 8.) {
 			zMeanVtx = 0.;
 			zSigmaVtx = 5.;
 		}	
@@ -288,21 +333,39 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	
 	
 	if (useTRKvtx){
-	  
-	  histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
-	  histTRKdefMultY = (TH1F*)list->FindObject("hTRKVertexYdefMult");
-	  histTRKVertexXZ = (TH2F*)list->FindObject("hTRKVertexXZ");
-	  histTRKVertexYZ = (TH2F*)list->FindObject("hTRKVertexYZ");
-	
+	  if (list){
+		  histTRKdefMultX = (TH1F*)list->FindObject("hTRKVertexXdefMult");
+		  histTRKdefMultY = (TH1F*)list->FindObject("hTRKVertexYdefMult");
+		  histTRKVertexXZ = (TH2F*)list->FindObject("hTRKVertexXZ");
+		  histTRKVertexYZ = (TH2F*)list->FindObject("hTRKVertexYZ");
+	  }
+		
+	  else {
+		  histTRKdefMultX = (TH1F*)file->Get("hTRKVertexXdefMult");
+		  histTRKdefMultY = (TH1F*)file->Get("hTRKVertexYdefMult");
+		  histTRKVertexXZ = (TH2F*)file->Get("hTRKVertexXZ");
+		  histTRKVertexYZ = (TH2F*)file->Get("hTRKVertexYZ");
+	  }
+		
 	}	
 	
 	if (useITSSAvtx){
+	  if (list){
+		  histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
+		  histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
+		  histTRKVertexXZ = (TH2F*)list->FindObject("hITSSAVertexXZ");
+		  histTRKVertexYZ = (TH2F*)list->FindObject("hITSSAVertexYZ");
+	  }
 	  
-	  histTRKdefMultX = (TH1F*)list->FindObject("hITSSAVertexXdefMult");
-	  histTRKdefMultY = (TH1F*)list->FindObject("hITSSAVertexYdefMult");
-	  histTRKVertexXZ = (TH2F*)list->FindObject("hITSSAVertexXZ");
-	  histTRKVertexYZ = (TH2F*)list->FindObject("hITSSAVertexYZ");
-	}
+	  else {
+		  histTRKdefMultX = (TH1F*)file->Get("hITSSAVertexXdefMult");
+		  histTRKdefMultY = (TH1F*)file->Get("hITSSAVertexYdefMult");
+		  histTRKVertexXZ = (TH2F*)file->Get("hITSSAVertexXZ");
+		  histTRKVertexYZ = (TH2F*)file->Get("hITSSAVertexYZ");
+	  }
+		
+		
+	  }
 		
 	
 	if ((!histTRKdefMultX) || (!histTRKdefMultY)){
@@ -382,21 +445,23 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
   position[1] = yMeanVtx;
   position[2] = zMeanVtx;
  
-  covMatrix[0] = xSigmaVtx;
+  covMatrix[0] = xSigmaVtx*xSigmaVtx;
   covMatrix[1] = 0.; //xy
-  covMatrix[2] = ySigmaVtx;
+  covMatrix[2] = ySigmaVtx*ySigmaVtx;
   covMatrix[3] = covarXZ;
   covMatrix[4] = covarYZ;
-  covMatrix[5] = zSigmaVtx;
+  covMatrix[5] = zSigmaVtx*zSigmaVtx;
  
 	
-	Printf ("%f, %f, %f, %f", xSigmaVtx, ySigmaVtx, covarXZ, covarYZ);
+	//Printf ("%f, %f, %f, %f", xSigmaVtx, ySigmaVtx, covarXZ, covarYZ);
  
   AliESDVertex  *vertex =  new AliESDVertex(position, covMatrix, chi2, nContr, "vertex");
  
-  AliCDBManager *cdb = AliCDBManager::Instance();  
+  AliCDBManager *cdb = AliCDBManager::Instance();  	
   AliCDBStorage *sto = cdb->GetStorage(dbString); 
-  if (!sto) {
+ 
+	
+	if (!sto) {
 	AliError(Form("cannot get storage %s", dbString));
 	return;
   }
@@ -408,8 +473,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
   metaData.SetResponsible("Davide Caffarri");
   metaData.SetComment("Mean Vertex object used in reconstruction");
       
-  if (!cdb->Put(vertex, id, &metaData)) {
-	AliError(Form("error while putting object in storage %s", dbString));
+  if (!sto->Put(vertex, id, &metaData)) {
+	AliError(Form("Error while putting object in storage %s", dbString));
    }
  
   delete vertex;
