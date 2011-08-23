@@ -183,6 +183,7 @@ foreach(detector ${ONLINEDETECTORS} )
 	
 	# DAALIROOTRELEASE
 	  string(REGEX REPLACE ".*URL: .*/(.+)/${DASRC}.*$" "\\1" DAALIROOTRELEASE ${_daversion})
+          string (REPLACE "-" "." DAALIROOTRELEASE "${DAALIROOTRELEASE}")
 	
 	  set(DAARCNAME "${DATARGETNAME}")
 	  string(REPLACE "-" "" DAARCNAME "${DAARCNAME}")
