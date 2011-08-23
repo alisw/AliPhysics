@@ -43,6 +43,7 @@ ClassImp(AliPerformanceObject)
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject():
   TNamed("AliPerformanceObject","AliPerformanceObject"),
+  fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(-1),
   fHptGenerator(kFALSE),
@@ -50,7 +51,8 @@ AliPerformanceObject::AliPerformanceObject():
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(kFALSE),
   fUseKinkDaughters(kTRUE),
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fUseTOFBunchCrossing(kTRUE)
 {
   // constructor
 }
@@ -58,6 +60,7 @@ AliPerformanceObject::AliPerformanceObject():
 //_____________________________________________________________________________
 AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, Int_t run, Bool_t highMult):
   TNamed(name,title),
+  fMergeTHnSparseObj(kFALSE),
   fAnalysisMode(-1),
   fRunNumber(run),
   fHptGenerator(kFALSE),
@@ -65,7 +68,8 @@ AliPerformanceObject::AliPerformanceObject(const char* name, const char* title, 
   fUseTrackVertex(kFALSE),
   fHighMultiplicity(highMult),
   fUseKinkDaughters(kTRUE),
-  fUseCentralityBin(0)
+  fUseCentralityBin(0),
+  fUseTOFBunchCrossing(kTRUE)
 {
   // constructor
 }

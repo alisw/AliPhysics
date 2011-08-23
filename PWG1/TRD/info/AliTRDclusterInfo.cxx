@@ -45,10 +45,11 @@ AliTRDclusterInfo::AliTRDclusterInfo()
   fCov[2] = 1.;
   fCovCl[0] = 1.; fCovCl[1] = 0.;
   fCovCl[2] = 1.;
+  memset(fSignal, 0, 7*sizeof(Short_t));
 }
 
 //_________________________________________________
-void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
+void AliTRDclusterInfo::SetCluster(AliTRDcluster *c)
 {
 // Load rec cluster data
   if(!c) return;
@@ -65,6 +66,7 @@ void AliTRDclusterInfo::SetCluster(const AliTRDcluster *c)
   fCovCl[0] = c->GetSigmaY2();
   fCovCl[1] = 0.;
   fCovCl[2] = c->GetSigmaZ2();
+  memcpy(fSignal, c->GetSignals(), 7*sizeof(Short_t));
 }
 
 //_________________________________________________

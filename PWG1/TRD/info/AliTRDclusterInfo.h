@@ -33,13 +33,14 @@ public:
   void      GetCenterPad(Int_t &c, Int_t &r) const {c=fCol; r=fRow;}
   Float_t   GetResolution() const {return fdy;}
   Float_t   GetDriftLength() const {return fXd;}
+  Short_t*  GetSignals() {return fSignal;}
   Float_t   GetYDisplacement() const {return fYd;}
   Float_t   GetTilt() const { return fTilt;}
 
   void      Print(Option_t *opt="") const;
 
   void      SetAnisochronity(Float_t d) {fD = d;}
-  void      SetCluster(const AliTRDcluster *c);
+  void      SetCluster(AliTRDcluster *c);
   void      SetMC(Int_t pdg, Int_t label){
       fPdg  = pdg;
       fLbl  = label;}
@@ -73,6 +74,7 @@ private:
   Float_t  fdy;    // difference in y after tilt correction
   Float_t  fD;     // distance to the anode wire
   Float_t  fTilt;  // pad tilt;
+  Short_t  fSignal[7]; //cluster signals
 
   ClassDef(AliTRDclusterInfo, 3) // extracted cluster2MC information
 };

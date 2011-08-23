@@ -72,6 +72,7 @@
 #pragma link C++ class AliSPDUtils+;
 #pragma link C++ class AliAnalysisTaskdEdxSSDQA+;
 #pragma link C++ class AliMeanVertexCalibTask+;
+#pragma link C++ class AliMeanVertexPreprocessorOffline+;
 
 #pragma link C++ class AliRelAlignerKalmanArray+;
 #pragma link C++ class AliAnalysisTaskITSTPCalignment+;
@@ -94,14 +95,15 @@
 #pragma link C++ class  AliTRDeventInfo+;
 #pragma link C++ class  AliTRDpidInfo+;
 #pragma link C++ class  AliTRDpidInfo::AliTRDpidData+;
-#pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDinfoGen+;
 #pragma link C++ class  AliTRDrecoTask+;
+#pragma link C++ class  AliTRDcheckESD+;
 #pragma link C++ class  AliTRDcheckDET+;
+#pragma link C++ class  AliTRDcheckPID+;
+#pragma link C++ class  AliTRDcheckTRK+;
 #pragma link C++ class  AliTRDresolution+;
 #pragma link C++ class  AliTRDefficiency+;
 #pragma link C++ class  AliTRDefficiencyMC+;
-#pragma link C++ class  AliTRDcheckPID+;
 #pragma link C++ class  AliTRDv0Monitor+;
 #pragma link C++ class  AliTRDonlineTrackletFilter;
 #pragma link C++ class  AliTRDonlineTrackletQA;

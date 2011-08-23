@@ -65,6 +65,7 @@ using namespace std;
 ClassImp(AliPerformanceDEdx)
 
 Bool_t AliPerformanceDEdx::fgMergeTHnSparse = kFALSE;
+Bool_t AliPerformanceDEdx::fgUseMergeTHnSparse = kFALSE;
 
 //_____________________________________________________________________________
 AliPerformanceDEdx::AliPerformanceDEdx():
@@ -179,6 +180,10 @@ void AliPerformanceDEdx::Init()
 
    // init folder
    fAnalysisFolder = CreateFolder("folderDEdx","Analysis de/dx Folder");
+   
+   // save merge status in object
+   fMergeTHnSparseObj = fgMergeTHnSparse;
+
 }
 
 //_____________________________________________________________________________
@@ -203,7 +208,10 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
     const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
     Double_t x[3]; esdTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK = kFALSE;
+    if(fabs(b[2])>0.000001)
+      isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    //    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -282,6 +290,8 @@ Long64_t AliPerformanceDEdx::Merge(TCollection* const list)
 
   if (list->IsEmpty())
   return 1;
+  
+  Bool_t merge = ((fgUseMergeTHnSparse && fgMergeTHnSparse) || (!fgUseMergeTHnSparse && fMergeTHnSparseObj));
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -294,7 +304,7 @@ Long64_t AliPerformanceDEdx::Merge(TCollection* const list)
   {
     AliPerformanceDEdx* entry = dynamic_cast<AliPerformanceDEdx*>(obj);
     if (entry == 0) continue; 
-    if (fgMergeTHnSparse) {
+    if (merge) {
         if ((fDeDxHisto) && (entry->fDeDxHisto)) { fDeDxHisto->Add(entry->fDeDxHisto); }        
     }
     // the analysisfolder is only merged if present
@@ -304,7 +314,7 @@ Long64_t AliPerformanceDEdx::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!fgMergeTHnSparse) { fDeDxHisto->Reset(); }
+  if (!merge) { fDeDxHisto->Reset(); }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;  
 

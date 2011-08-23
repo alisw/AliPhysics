@@ -29,9 +29,12 @@
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
+#include "AliExternalTrackParam.h"
 
 #include "info/AliTRDeventInfo.h"
 #include "AliTRDrecoTask.h"
+#include "AliTRDtrackV1.h"
+#include "AliTRDpidUtil.h"
 
 ClassImp(AliTRDrecoTask)
 
@@ -47,6 +50,10 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
+  ,fSpecies(-6)
+  ,fPt(-1.)
+  ,fPhi(0.)
+  ,fEta(0.)
   ,fPlotFuncList(NULL)
   ,fRunTerminate(kFALSE)
 {
@@ -64,6 +71,10 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
+  ,fSpecies(-6)
+  ,fPt(-1.)
+  ,fPhi(0.)
+  ,fEta(0.)
   ,fPlotFuncList(NULL)
   ,fRunTerminate(kFALSE)
 {
@@ -147,6 +158,19 @@ void AliTRDrecoTask::UserExec(Option_t *)
     fkTrack = trackInfo->GetTrack();
     fkMC    = trackInfo->GetMCinfo();
     fkESD   = trackInfo->GetESDinfo();
+    // cache properties of the track at TRD entrance
+    // check input track status
+    AliExternalTrackParam *tin(NULL);
+    fPt=-1; fEta=0.; fPhi=0.; fSpecies=-6;
+    if(!fkTrack || !(tin = fkTrack->GetTrackIn())) AliDebug(2, "Track did not entered TRD fiducial volume.");
+    else {
+      fPt   = tin->Pt();
+      fEta  = tin->Eta();
+      Double_t xyz[3];
+      if(!tin->GetXYZ(xyz)) AliDebug(2, "Failed getting global track postion");
+      else fPhi  = TMath::ATan2(xyz[1], xyz[0]);
+      fSpecies= fkTrack->Charge()*(AliTRDpidUtil::Mass2Pid(fkTrack->GetMass())+1);
+    }
 
     TMethodCall *plot = NULL;
     plotIter.Reset();

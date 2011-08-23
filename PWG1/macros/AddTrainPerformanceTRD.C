@@ -69,6 +69,7 @@
 #include "PWG1/TRD/macros/AddTRDefficiency.C"
 #include "PWG1/TRD/macros/AddTRDresolution.C"
 #include "PWG1/TRD/macros/AddTRDcheckPID.C"
+#include "PWG1/TRD/macros/AddTRDcheckTRK.C"
 #include "PWG1/TRD/macros/AddTRDv0Monitor.C"
 #endif
 
@@ -131,6 +132,12 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwg1Helper::kEventInfo];
       ce[2]=ci[AliTRDpwg1Helper::kV0List];
       AddTRDcheckPID(mgr, bitmap, ce, &ce[3]);
+      break;
+    case AliTRDpwg1Helper::kCheckTRK:
+      // map slots
+      ce[0]=ci[AliTRDpwg1Helper::kTracksBarrel];
+      ce[1]=ci[AliTRDpwg1Helper::kEventInfo];
+      AddTRDcheckTRK(mgr, 0, ce);
       break;
     case AliTRDpwg1Helper::kV0Monitor:
       // slots already mapped by checkPID

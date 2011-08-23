@@ -134,8 +134,6 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
   
   AliESDEvent* esdE = (AliESDEvent*) InputEvent();
 
-  if (esdE->GetEventNumberInFile()%10 != 0) return;
-
   const AliMultiplicity *alimult = esdE->GetMultiplicity();
   Int_t ntrklets=0;
   if(alimult) ntrklets = alimult->GetNumberOfTracklets();

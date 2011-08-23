@@ -72,6 +72,7 @@ using namespace std;
 ClassImp(AliPerformanceTPC)
 
 Bool_t AliPerformanceTPC::fgMergeTHnSparse = kFALSE;
+Bool_t AliPerformanceTPC::fgUseMergeTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
@@ -267,6 +268,10 @@ void AliPerformanceTPC::Init()
   fAnalysisFolder = CreateFolder("folderTPC","Analysis Resolution Folder");
 
   //delete []binsCOverPt;
+  
+   // save merge status in object
+  fMergeTHnSparseObj = fgMergeTHnSparse;
+  
 }
 
 
@@ -279,13 +284,20 @@ void AliPerformanceTPC::ProcessTPC(AliStack* const stack, AliESDtrack *const esd
   if(!esdEvent) return;
   if(!esdTrack) return;
 
+  if(IsUseTOFBunchCrossing())
+    if(esdTrack->GetTOFBunchCrossing(esdEvent->GetMagneticField())!=0)
+      return;
+
   if( IsUseTrackVertex() ) 
   { 
     // Relate TPC inner params to prim. vertex
     const AliESDVertex *vtxESD = esdEvent->GetPrimaryVertexTracks();
     Double_t x[3]; esdTrack->GetXYZ(x);
     Double_t b[3]; AliTracker::GetBxByBz(x,b);
-    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    //    Bool_t isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
+    Bool_t isOK=kFALSE;
+    if(fabs(b[2])>0.000001)
+     isOK = esdTrack->RelateToVertexTPCBxByBz(vtxESD, b, kVeryBig);
     if(!isOK) return;
 
     /*
@@ -767,6 +779,8 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
 
   if (list->IsEmpty())
   return 1;
+  
+  Bool_t merge = ((fgUseMergeTHnSparse && fgMergeTHnSparse) || (!fgUseMergeTHnSparse && fMergeTHnSparseObj));
 
   TIterator* iter = list->MakeIterator();
   TObject* obj = 0;
@@ -779,7 +793,7 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
   {
     AliPerformanceTPC* entry = dynamic_cast<AliPerformanceTPC*>(obj);
     if (entry == 0) continue; 
-    if (fgMergeTHnSparse) {
+    if (merge) {
         if ((fTPCClustHisto) && (entry->fTPCClustHisto)) { fTPCClustHisto->Add(entry->fTPCClustHisto); }
         if ((fTPCEventHisto) && (entry->fTPCEventHisto)) { fTPCEventHisto->Add(entry->fTPCEventHisto); }
         if ((fTPCTrackHisto) && (entry->fTPCTrackHisto)) { fTPCTrackHisto->Add(entry->fTPCTrackHisto); }
@@ -791,7 +805,7 @@ Long64_t AliPerformanceTPC::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!fgMergeTHnSparse) { fTPCTrackHisto->Reset(); fTPCClustHisto->Reset(); fTPCEventHisto->Reset(); }
+  if (!merge) { fTPCTrackHisto->Reset(); fTPCClustHisto->Reset(); fTPCEventHisto->Reset(); }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;
