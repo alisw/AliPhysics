@@ -248,7 +248,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         Int_t iPartLastMom = part->GetMother(1);
 
         TParticlePDG *pdg = part->GetPDG(0);
-        TParticlePDG *pdgMom = 0;
+        //TParticlePDG *pdgMom = 0;
         TParticlePDG *pdgMomLast = 0;
 
         if (!pdg)
@@ -260,7 +260,7 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
         if (iPartMom>0)
         {
             partMom = stack->Particle(iPartMom);
-            pdgMom = partMom->GetPDG(0);
+            //pdgMom = partMom->GetPDG(0);
         }
 
         if (iPartLastMom>0)
