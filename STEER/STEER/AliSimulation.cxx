@@ -1547,7 +1547,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
       }
     }
 
-    fprintf(pipe, "GDC DetectorPattern %u\n", detectorPattern);
+    fprintf(pipe, "GDC DetectorPattern %u Timestamp %ld\n", detectorPattern, runLoader->GetHeader()->GetTimeStamp());
     Float_t ldc = 0;
     Int_t prevLDC = -1;
 
@@ -1607,7 +1607,7 @@ Bool_t AliSimulation::ConvertRawFilesToDate(const char* dateFileName,
       AliInfo(Form("List of detectors to be read out: %s",detClust.Data()));
     }
 
-    fprintf(pipe2, "GDC DetectorPattern %u\n", detectorPattern);
+    fprintf(pipe2, "GDC DetectorPattern %u Timestamp %ld\n", detectorPattern, runLoader->GetHeader()->GetTimeStamp());
     Float_t ldc = 0;
     Int_t prevLDC = -1;
 

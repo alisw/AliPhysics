@@ -60,6 +60,8 @@ struct gdcEventDescriptorStruct {
   struct gdcEventDescriptorStruct *next;
   struct eventHeaderStruct header;
   int loaded;
+  unsigned long32 detPattern;
+  eventTimestampType timestamp; 
 } *currGdc;
 struct ldcEventDescriptorStruct {
   struct equipmentEventDescriptorStruct *head;
@@ -68,6 +70,8 @@ struct ldcEventDescriptorStruct {
   eventLdcIdType id;
   struct eventHeaderStruct header;
   int loaded;
+  unsigned long32 detPattern;
+  eventTimestampType timestamp; 
 } *currLdc;
 struct equipmentEventDescriptorStruct {
   struct equipmentEventDescriptorStruct *next;
@@ -84,7 +88,8 @@ struct payloadDescriptorStruct {
 } *payloadsHead, *payloadsTail;
 int lineNmb;
 eventGdcIdType currGdcId;
-unsigned long32 currDetPattern; 
+unsigned long32 currDetPattern;
+eventTimestampType currTimestamp; 
 eventLdcIdType currLdcId;
 equipmentIdType currEquipmentId;
 int currRunNb;
@@ -299,6 +304,8 @@ void createNewEvent() {
       eventsTail = p;
     }
     p->id = currLdcId;
+    p->detPattern = currDetPattern;
+    p->timestamp = currTimestamp;
   } else if ( workingAs == gdc ) {
     struct gdcEventDescriptorStruct *p;
 
@@ -323,6 +330,8 @@ void createNewEvent() {
       q->next = p;
       eventsTail = p;
     }
+    p->detPattern = currDetPattern;
+    p->timestamp = currTimestamp;
   }
 } /* End of createNewEvent */
 
@@ -339,6 +348,8 @@ void createNewLdcEvent() {
     exit( 1 );
   }
   p->id = currLdcId;
+  p->detPattern = currDetPattern;
+  p->timestamp = currTimestamp;
   p->head = p->tail = NULL;
   p->next = NULL;
   gdcDesc = (struct gdcEventDescriptorStruct *)eventsTail;
@@ -801,6 +812,27 @@ void parseGdc( char * const line ) {
       DBG_VERBOSE printf( "%d)     GDC - DetectorPattern:%u\n",
 			  lineNmb,
 			  currDetPattern );
+    } else if ( strcasecmp( "Timestamp", keyword ) == 0 ) {
+      char *timestamp;
+
+      if ( (timestamp = strtok_r( p, " \t", &p )) == NULL ) {
+	fprintf( stderr,
+		 "%s: line:%d GDC declaration, Timestamp needed",
+		 myName,
+		 lineNmb );
+	exit( 1 );
+      }
+      if ( sscanf( timestamp, "%u", &currTimestamp ) != 1 ) {
+	fprintf( stderr,
+		 "%s: line:%d GDC declaration, numeric Timestamp needed (%s)",
+		 myName,
+		 lineNmb,
+		 timestamp );
+	exit( 1 );
+      }
+      DBG_VERBOSE printf( "%d)     GDC - Timestamp:%u\n",
+			  lineNmb,
+			  currTimestamp );
     } else {
       fprintf( stderr,
 	       "%s: line:%d GDC declaration, unknown keyword \"%s\"\n",
@@ -858,6 +890,7 @@ void parseRules() {
   currLdcId = HOST_ID_MIN;
   currGdcId = HOST_ID_MIN;
   currDetPattern = 0;
+  currTimestamp = 0;
 
   for ( lineNmb = 1; !feof( stdin ); lineNmb++ ) {
     getLine( line, sizeof(line) );
@@ -967,18 +1000,6 @@ void parseRules() {
        || (eventsHead != NULL && eventsTail != NULL) );
 } /* End of parseRules */
 
-void loadTimestamp( struct eventHeaderStruct * const ev ) {
-  time_t t;
-
-  if ( time( &t ) == (time_t)-1 ) {
-    fprintf( stderr,
-	     "%s: failed to get system time errno:%d (%s)\n",
-	     myName, errno, strerror( errno ) );
-    exit( 1 );
-  }
-  ev->eventTimestamp = (eventTimestampType)t;
-} /* End of loadTimestamp */
-
 void initEvent( struct eventHeaderStruct * const ev ) {
   memset( ev, 0, sizeof( *ev ) );
 
@@ -994,7 +1015,6 @@ void initEvent( struct eventHeaderStruct * const ev ) {
     SET_SYSTEM_ATTRIBUTE( ev->eventTypeAttribute, ATTR_ORBIT_BC );
   ev->eventLdcId = VOID_ID;
   ev->eventGdcId = VOID_ID;
-  loadTimestamp( ev );
 } /* End of initEvent */
 
 int Swap(int x)
@@ -1089,20 +1109,16 @@ void createSorAndEor( const int sor ) {
   ev->eventLdcId = currLdc->id;
 
   if ( workingAs == ldc ) {
-    loadTimestamp( ev );
     outputEvent( ev, ev->eventSize );
   }
   if ( workingAs == gdc ) {
     struct ldcDescriptorStruct *ldc;
-
-    loadTimestamp( ev );
 
     sev.eventSize = sizeof( sev ) + numOfLdcs * ev->eventSize;
     sev.eventType = sor ? START_OF_RUN : END_OF_RUN ;
     COPY_EVENT_ID( ev->eventId, sev.eventId );
     COPY_SYSTEM_ATTRIBUTES( ev->eventTypeAttribute, sev.eventTypeAttribute );
     SET_SYSTEM_ATTRIBUTE( sev.eventTypeAttribute, ATTR_SUPER_EVENT );
-    loadTimestamp( &sev );
     outputEvent( &sev, sizeof( sev ) );
 
     ev->eventGdcId = currGdcId;
@@ -1117,13 +1133,10 @@ void createSorAndEor( const int sor ) {
   ev->eventType = sor ? START_OF_RUN_FILES : END_OF_RUN_FILES;
   CLEAR_SYSTEM_ATTRIBUTE( ev->eventTypeAttribute, ATTR_P_START );
   if ( workingAs == ldc ) {
-    loadTimestamp( ev );
     outputEvent( ev, ev->eventSize );
   }
   if ( workingAs == gdc ) {
     struct ldcDescriptorStruct *ldc;
-
-    loadTimestamp( ev );
 
     sev.eventSize = ev->eventSize;
     sev.eventType = sor ? START_OF_RUN_FILES : END_OF_RUN_FILES;
@@ -1139,11 +1152,8 @@ void createSorAndEor( const int sor ) {
     COPY_SYSTEM_ATTRIBUTES( ev->eventTypeAttribute, sev.eventTypeAttribute );
     SET_SYSTEM_ATTRIBUTE( sev.eventTypeAttribute, ATTR_SUPER_EVENT );
 
-    loadTimestamp( &sev );
-
     ev->eventGdcId = currGdcId;
     for ( ldc = ldcsHead; ldc != NULL; ldc = ldc->next ) {
-      loadTimestamp( &sev );
       outputEvent( &sev, sizeof( sev ) );
       ev->eventLdcId = ldc->id;
       outputEvent( ev, ev->eventSize );
@@ -1155,20 +1165,16 @@ void createSorAndEor( const int sor ) {
   ev->eventType = sor ? START_OF_RUN : END_OF_RUN;
   SET_SYSTEM_ATTRIBUTE( ev->eventTypeAttribute, ATTR_P_END );
   if ( workingAs == ldc ) {
-    loadTimestamp( ev );
     outputEvent( ev, ev->eventSize );
   }
   if ( workingAs == gdc ) {
     struct ldcDescriptorStruct *ldc;
-
-    loadTimestamp( ev );
 
     sev.eventSize = sizeof( sev ) + numOfLdcs * ev->eventSize;
     sev.eventType = sor ? START_OF_RUN : END_OF_RUN;
     COPY_EVENT_ID( ev->eventId, sev.eventId );
     COPY_SYSTEM_ATTRIBUTES( ev->eventTypeAttribute, sev.eventTypeAttribute );
     SET_SYSTEM_ATTRIBUTE( sev.eventTypeAttribute, ATTR_SUPER_EVENT );
-    loadTimestamp( &sev );
 
     outputEvent( &sev, sizeof( sev ) );
 
@@ -1217,10 +1223,8 @@ void createEvent( void ) {
 
     for( ldc = currGdc->head; ldc != NULL; ldc = ldc->next ) {
       COPY_EVENT_ID( currEventId, ldc->header.eventId );
-      loadTimestamp( &ldc->header );
     }
     COPY_EVENT_ID( currEventId, currGdc->header.eventId );
-    loadTimestamp( &currGdc->header );
 
     for( ldc = currGdc->head; ldc != NULL; ldc = ldc->next ) {
       struct equipmentEventDescriptorStruct *eq;
@@ -1251,7 +1255,6 @@ void createEvent( void ) {
     struct equipmentEventDescriptorStruct *eq;
 
     COPY_EVENT_ID( currEventId, currLdc->header.eventId );
-    loadTimestamp( &currLdc->header );
 
     for ( eq = currLdc->head; eq != NULL; eq = eq->next ) {
       if ( !bufferData ) {
@@ -1631,7 +1634,8 @@ void initEvents() {
       gdc->header.eventType = PHYSICS_EVENT;
       SET_SYSTEM_ATTRIBUTE( gdc->header.eventTypeAttribute, ATTR_SUPER_EVENT );
       gdc->header.eventGdcId = currGdcId;
-      COPY_DETECTOR_PATTERN(&currDetPattern, gdc->header.eventDetectorPattern);
+      COPY_DETECTOR_PATTERN(&gdc->detPattern, gdc->header.eventDetectorPattern);
+      gdc->header.eventTimestamp = gdc->timestamp;
       for ( ldc = gdc->head; ldc != NULL; ldc = ldc->next ) {
 	struct equipmentEventDescriptorStruct *eq;
 
@@ -1639,7 +1643,8 @@ void initEvents() {
 	ldc->header.eventSize = ldc->header.eventHeadSize;
 	ldc->header.eventType = PHYSICS_EVENT;
 	ldc->header.eventGdcId = currGdcId;
-	COPY_DETECTOR_PATTERN(&currDetPattern, ldc->header.eventDetectorPattern);
+	COPY_DETECTOR_PATTERN(&ldc->detPattern, ldc->header.eventDetectorPattern);
+	ldc->header.eventTimestamp = ldc->timestamp;
 	ldc->header.eventLdcId = ldc->id;
 	for ( eq = ldc->head; eq != NULL; eq = eq->next ) {
 	  initEquipment( &eq->header );
