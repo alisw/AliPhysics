@@ -150,7 +150,7 @@ TMacro *AliAnalysisTaskCfg::OpenMacro(const char *name)
    }   
    TString expname;
    if (strlen(name)) expname = gSystem->ExpandPathName(name);
-   else              expname = gSystem->ExpandPathName(fMacroName);
+   else              expname = gSystem->ExpandPathName(fMacroName.Data());
    if (expname.IsNull()) {
       Error("OpenMacro", "Macro name not provided and not previously set");
       return 0;
@@ -364,7 +364,7 @@ void AliAnalysisTaskCfg::Print(Option_t * option) const
    if (full) {
       if (fMacro) fMacro->Print();
       else {
-         TMacro macro(gSystem->ExpandPathName(fMacroName));
+         TMacro macro(gSystem->ExpandPathName(fMacroName.Data()));
          macro.Print();
       }   
    }   

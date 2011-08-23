@@ -476,7 +476,7 @@ Bool_t AliAnalysisAlien::CheckDependencies()
             // Remove at idep and move all objects below up one slot
             // down to index i included.
             fModules->RemoveAt(idep);
-            for (k=idep-1; k>=i; k++) fModules->AddAt(fModules->RemoveAt(k),k+1);
+            for (k=idep-1; k>=i; k--) fModules->AddAt(fModules->RemoveAt(k),k+1);
             fModules->AddAt(dep, i++);
          }
          //Redo from istart if dependencies were inserted
@@ -486,6 +486,22 @@ Bool_t AliAnalysisAlien::CheckDependencies()
    return kTRUE;
 }      
 
+//______________________________________________________________________________
+AliAnalysisManager *AliAnalysisAlien::CreateAnalysisManager(const char *name, const char *filename)
+{
+// Create the analysis manager and optionally execute the macro in filename.
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (mgr) return mgr;
+   mgr = new AliAnalysisManager(name);
+   mgr->SetGridHandler((AliAnalysisGrid*)this);
+   if (strlen(filename)) {
+      TString line = gSystem->ExpandPathName(filename);
+      line.Prepend(".x ");
+      gROOT->ProcessLine(line.Data());
+   }
+   return mgr;
+}      
+      
 //______________________________________________________________________________
 Int_t AliAnalysisAlien::GetNmodules() const
 {
@@ -557,6 +573,11 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *modname)
 Bool_t AliAnalysisAlien::LoadModules()
 {
 // Load all modules by executing the AddTask macros. Checks first the dependencies.
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      Error("LoadModules", "No analysis manager created yet. Use CreateAnalysisManager first.");
+      return kFALSE;
+   }   
    if (!CheckDependencies()) return kFALSE;
    TIter next(fModules);
    AliAnalysisTaskCfg *mod;
@@ -576,7 +597,9 @@ Bool_t AliAnalysisAlien::LoadModules()
          if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
          fAdditionalLibs += lib;
       }
-   }      
+   }
+   if (!mgr->InitAnalysis()) return kFALSE;
+   mgr->PrintStatus();
    return kTRUE;
 }      
 

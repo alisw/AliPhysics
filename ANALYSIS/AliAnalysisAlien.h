@@ -100,6 +100,7 @@ public:
 //Utilities
    void                AddModule(AliAnalysisTaskCfg *module);
    void                AddModules(TObjArray *list);
+   AliAnalysisManager *CreateAnalysisManager(const char *name, const char *filename="");
    Int_t               GetNmodules() const;
    AliAnalysisTaskCfg *GetModule(const char *name);
    Bool_t              LoadModules();
