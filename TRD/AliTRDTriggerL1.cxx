@@ -36,15 +36,31 @@
 #include "AliTRDTriggerL1.h"
 #include "AliTRDgtuSim.h"
 #include "AliTRDtrackGTU.h"
+#include "AliTRDcalibDB.h"
+#include "AliTRDCalDCSGTU.h"
 
-AliTRDTriggerL1::AliTRDTriggerL1()
+AliTRDTriggerL1::AliTRDTriggerL1() :
+  AliTriggerDetector(),
+  fPtThresholdA(3.),
+  fPtThresholdB(5.),
+  fPidThresholdA(0),
+  fPidThresholdB(185),
+  fNoThreshold(1),
+  fNoThresholdA(3),
+  fNoThresholdB(200),
+  fNoThresholdJetA(3),
+  fNoThresholdJetB(200),
+  fNoThresholdElA(1),
+  fNoThresholdElB(1)
 {
+  // ctor
+
   SetName("TRD");
 }
 
 AliTRDTriggerL1::~AliTRDTriggerL1()
 {
-
+  // dtor
 }
 
 void AliTRDTriggerL1::CreateInputs()
@@ -54,8 +70,9 @@ void AliTRDTriggerL1::CreateInputs()
   if (fInputs.GetEntriesFast() > 0)
     return;
 
-  fInputs.AddLast(new AliTriggerInput("1HSH", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HCO", "TRD", 1));
   fInputs.AddLast(new AliTriggerInput("1HJT", "TRD", 1));
+  fInputs.AddLast(new AliTriggerInput("1HSE", "TRD", 1));
 }
 
 void AliTRDTriggerL1::Trigger()
@@ -81,59 +98,67 @@ void AliTRDTriggerL1::Trigger()
   TBranch *branch = trackTree->GetBranch("TRDtrackGTU");
   AliDebug(1,Form("TRD trigger: found %lld tracks", trackTree->GetEntriesFast()));
 
-  // trigger thresholds should go elsewhere
-  Float_t ptThreshold1 = 2;
-  Float_t ptThreshold2 = 9.9;
-  Int_t trackThreshold1 = 6;
-  Int_t trackThreshold2 = 2;
-
   // trigger algorithms to come, e.g.
-  Bool_t triggeredHighPt = kFALSE;
-  Bool_t triggeredJet = kFALSE;
+  Bool_t triggered1HCO    = kFALSE;
+  Bool_t triggered1HJT    = kFALSE;
+  Bool_t triggered1HSE    = kFALSE;
 
   if (branch) {
     AliTRDtrackGTU *trk = 0x0;
     branch->SetAddress(&trk);
 
-    // high pt trigger
+    Int_t nTracks[90]      = { 0 }; // number of tracks
+    Int_t nTracksA[90]     = { 0 }; // number of tracks above pt threshold A
+    Int_t nTracksB[90]     = { 0 }; // number of tracks above pt threshold B
+    Int_t nTracksElA[90]   = { 0 }; // number of tracks above pt threshold A and PID threshold A
+    Int_t nTracksElB[90]   = { 0 }; // number of tracks above pt threshold B and PID threshold B
+
     for (Int_t iTrack = 0; iTrack < trackTree->GetEntriesFast(); iTrack++) {
       trackTree->GetEntry(iTrack);
-      if (TMath::Abs(trk->GetPt()) > 3.0) {
-        AliDebug(1, Form("Found track in sector %2i, stack %i with pt = %3.1f, triggered",
-                         trk->GetSector(), trk->GetStack(), trk->GetPt()));
-        triggeredHighPt = kTRUE;
+
+      nTracks[5*trk->GetSector() + trk->GetStack()]++;
+
+      if (TMath::Abs(trk->GetPt()) > fPtThresholdA) {
+        nTracksA[5*trk->GetSector() + trk->GetStack()]++;
+	if (trk->GetPID() > fPidThresholdA)
+	  nTracksElA[5*trk->GetSector() + trk->GetStack()]++;
+      }
+
+      if (TMath::Abs(trk->GetPt()) > fPtThresholdB) {
+        nTracksB[5*trk->GetSector() + trk->GetStack()]++;
+	if (trk->GetPID() > fPidThresholdB)
+	  nTracksElB[5*trk->GetSector() + trk->GetStack()]++;
       }
     }
 
-    // jet trigger
-    Int_t nTracks1[90]; // tracks above lower pt threshold
-    Int_t nTracks2[90]; // tracks above higher pt threshold
-    memset(nTracks1,0,sizeof(Int_t)*90);
-    memset(nTracks2,0,sizeof(Int_t)*90);
-    for (Int_t iTrack = 0; iTrack < trackTree->GetEntriesFast(); iTrack++) {
-      trackTree->GetEntry(iTrack);
-      if (TMath::Abs(trk->GetPt()) > ptThreshold1)
-        nTracks1[5*trk->GetSector() + trk->GetStack()]++;
-      if (TMath::Abs(trk->GetPt()) > ptThreshold2)
-        nTracks2[5*trk->GetSector() + trk->GetStack()]++;
-    }
     for (Int_t iStack = 0; iStack < 90; iStack++) {
-      if ((nTracks1[iStack] >= trackThreshold1) || (nTracks2[iStack] >= trackThreshold2))
-        triggeredJet = kTRUE;
+      if ((nTracksA[iStack] >= fNoThresholdJetA) || (nTracksB[iStack] >= fNoThresholdJetB))
+        triggered1HJT = kTRUE;
+
+      if ((nTracksElA[iStack] >= fNoThresholdElA))
+        triggered1HCO = kTRUE;
+
+      if ((nTracksElB[iStack] >= fNoThresholdElB))
+        triggered1HSE = kTRUE;
     }
   }
   else {
     AliWarning("GTU Branch not found");
   }
 
-  if (triggeredHighPt) {
-    AliInfo("Fired high-pt trigger");
-    SetInput("1HSH");
+  if (triggered1HCO) {
+    AliDebug(1, "Fired cosmic trigger");
+    SetInput("1HCO");
   }
 
-  if (triggeredJet) {
-    AliInfo("Fired jet trigger");
+  if (triggered1HJT) {
+    AliDebug(1, "Fired jet trigger");
     SetInput("1HJT");
+  }
+
+  if (triggered1HSE) {
+    AliDebug(1, "Fired single electron trigger");
+    SetInput("1HSE");
   }
 
   // cleaning up

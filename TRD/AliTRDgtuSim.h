@@ -33,10 +33,7 @@ class AliTRDgtuSim : public TObject {
   Bool_t RunGTU(AliLoader *loader, AliESDEvent *esd = 0x0);
   Bool_t RunGTUFromTrackletFile(TString filename, Int_t event, Int_t noev = 1);
 
-  TTree* GetTreeOfTracks() { return fTrackTree; }
-  Bool_t WriteTracksToTree(TList *listOfTracks, Int_t event = 0);
   Bool_t WriteTracksToDataFile(TList *listOfTracks, Int_t event);
-  Bool_t WriteTreesToFile() const;
   Bool_t WriteTracksToESD(const TList *const listOfTracks, AliESDEvent *esd);
   Bool_t WriteTracksToLoader(const TList *const listOfTracks);
 
@@ -45,8 +42,6 @@ class AliTRDgtuSim : public TObject {
   AliTRDfeeParam *fFeeParam;    //!
   AliTRDgtuTMU 	*fTMU; 		// pointer to TMU simulation class
   TClonesArray 	*fTrackletArray;	// array of tracklets
-  TTree 	*fTrackTree; 	// tree to hold the tracks of one event, used for writing in WriteTracksToFile()
-  TTree         *fTrackletTree; // tree to hold the gtu tracklets
 
   void AppendBits(ULong64_t &word, Int_t nBits, Int_t val) const { word = (word << nBits) | (val & ~(~0 << nBits)); }
 
@@ -54,7 +49,7 @@ class AliTRDgtuSim : public TObject {
   AliTRDgtuSim& operator=(const AliTRDgtuSim &rhs); // not implemented
   AliTRDgtuSim(const AliTRDgtuSim &rhs); // not implemented
 
-  ClassDef(AliTRDgtuSim, 1);
+  ClassDef(AliTRDgtuSim, 0);
 };
 
 #endif

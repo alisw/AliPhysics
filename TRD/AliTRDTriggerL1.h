@@ -25,8 +25,19 @@ class AliTRDTriggerL1 : public AliTriggerDetector {
   virtual void Trigger();
 
  private:
+  Float_t fPtThresholdA;	// pt threshold A
+  Float_t fPtThresholdB;	// pt threshold B
+  Int_t   fPidThresholdA;	// PID threshold A
+  Int_t   fPidThresholdB;	// PID threshold B
+  Int_t   fNoThreshold;		// number threshold for all tracks
+  Int_t   fNoThresholdA;        // number threshold for tracks above pt A
+  Int_t   fNoThresholdB;        // number threshold for tracks above pt B
+  Int_t   fNoThresholdJetA;     // number threshold for tracks above pt A (jets)
+  Int_t   fNoThresholdJetB;     // number threshold for tracks above pt B (jets)
+  Int_t   fNoThresholdElA;      // number threshold for tracks above pt A and PID A (electron)
+  Int_t   fNoThresholdElB;      // number threshold for tracks above pt B and PID B (electron)
 
-  ClassDef(AliTRDTriggerL1, 1);
+  ClassDef(AliTRDTriggerL1, 2);
 
 };
 

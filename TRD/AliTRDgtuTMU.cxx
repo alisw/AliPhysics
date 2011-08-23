@@ -1013,29 +1013,6 @@ Bool_t AliTRDgtuTMU::CalculateTrackParams(AliTRDtrackGTU *track)
   return kTRUE;
 }
 
-Bool_t AliTRDgtuTMU::WriteTrackletsToTree(TTree *trklTree)
-{
-  if (!trklTree) {
-    AliError("No tree given");
-    return kFALSE;
-  }
-  AliTRDtrackletGTU *trkl = 0x0;
-  TBranch *branch = trklTree->GetBranch("gtutracklets");
-  if (!branch) {
-      branch = trklTree->Branch("gtutracklets", "AliTRDtrackletGTU", &trkl, 32000, 99);
-  }
-
-  AliDebug(5,Form("---------- Writing tracklets to tree (not yet) ----------"));
-  for (Int_t layer = 0; layer < fGtuParam->GetNLayers(); layer++) {
-    TIter next(fTrackletsPostInput[layer]);
-    while ((trkl = (AliTRDtrackletGTU*) next())) {
-	AliDebug(10,Form("InputUnit : GetIndex(): %3i, GetZbin(): %2i, GetY() : %5i, GetdY() : %3i, GetYPrime() : %5i, GetYProj() : %5i, GetAlpha() : %3i, Zidx(2..0): %i  %i  %i", trkl->GetIndex(), trkl->GetZbin(), trkl->GetYbin(), trkl->GetdY(), trkl->GetYPrime(), trkl->GetYProj(), trkl->GetAlpha(), trkl->GetSubChannel(2), trkl->GetSubChannel(1), trkl->GetSubChannel(0) ));
-	branch->SetAddress(&trkl);
-	trklTree->Fill();
-    }
-  }
-  return kTRUE;
-}
 
 Bool_t AliTRDgtuTMU::Uniquifier(TList *inlist, TList *outlist)
 {

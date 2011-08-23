@@ -31,7 +31,6 @@ class AliTRDgtuTMU : public TObject {
   Bool_t SetStack(Int_t stack);
 
   Bool_t AddTracklet(AliTRDtrackletGTU *tracklet, Int_t link);
-  Bool_t WriteTrackletsToTree(TTree *trklTree);
 
   Bool_t RunTMU(TList *ListOfTracks = 0x0, AliESDEvent *esd = 0x0);
   Bool_t Reset();
