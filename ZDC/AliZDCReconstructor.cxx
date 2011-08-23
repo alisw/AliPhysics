@@ -131,8 +131,8 @@ void AliZDCReconstructor::Init()
   fMeanPhase = phaseLHC->GetMeanPhaseB1();
     
   if(fIsCalibrationMB==kFALSE)  
-    printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
-    	beamType.Data(), fBeamEnergy, fBeamEnergy);
+    AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
+    	beamType.Data(), fBeamEnergy, fBeamEnergy));
   
   // if EMD calibration run NO ENERGY CALIBRATION should be performed
   // pp-like reconstruction must be performed (E cailb. coeff. = 1)
@@ -173,8 +173,8 @@ void AliZDCReconstructor::Init(TString beamType, Float_t beamEnergy)
   
   fESDZDC = new AliESDZDC();
   
-  printf("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
-    	beamType.Data(), fBeamEnergy, fBeamEnergy);
+  AliInfo(Form("\n\n ***** ZDC reconstruction initialized for %s @ %1.0f + %1.0f GeV *****\n\n",
+    	beamType.Data(), fBeamEnergy, fBeamEnergy));
   
 }
 
