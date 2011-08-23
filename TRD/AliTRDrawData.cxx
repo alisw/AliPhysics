@@ -598,6 +598,10 @@ AliTRDdigitsManager *AliTRDrawData::Raw2Digits(AliRawReader *rawReader)
 	}
     }
 
+  for (Int_t iSector = 0; iSector < fGeo->Nsector(); iSector++) {
+    fTrgFlags[iSector] = input.GetTriggerFlags(iSector);
+  }
+
   trklTreeLoader->WriteData("OVERWRITE");
   trklLoader->UnloadAll();
 

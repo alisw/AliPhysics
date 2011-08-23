@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
+#include "AliTRDgeometry.h"
 
 class TTree;
 class TClonesArray;
@@ -21,7 +22,6 @@ class AliRunLoader;
 class AliRawReader;
 
 class AliTRDdigitsManager;
-class AliTRDgeometry;
 class AliTRDfeeParam;
 class AliTRDarrayADC;
 class AliTRDdigitsParam;
@@ -45,6 +45,8 @@ class AliTRDrawData : public TObject {
   virtual TClonesArray    *TracksArray();
   void                    SetTrackletsOwner(TClonesArray *trkl = 0x0) { fTracklets = trkl; } // set to own the given array
   void                    SetTracksOwner(TClonesArray *trk = 0x0) { fTracks = trk; } // set to own the given array
+
+  UInt_t  GetTriggerFlags(const Int_t sector) const { return fTrgFlags[sector]; }
 
  protected:
 
@@ -75,6 +77,7 @@ class AliTRDrawData : public TObject {
   Int_t   fSMindexPos;                // Position of SM index word
   Int_t   fStackindexPos;             // Position of SM index word
   UInt_t  fEventCounter;              // Event counter(starting from 1)
+  UInt_t  fTrgFlags[AliTRDgeometry::kNsector]; // trigger flags
   AliTRDmcmSim      *fMcmSim;         //! MCM simulation for raw data output
   AliTRDdigitsParam *fDigitsParam;    // Digits parameter
 

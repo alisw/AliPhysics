@@ -543,6 +543,9 @@ Bool_t AliTRDclusterizer::ReadTracks()
   }
 
   AliLoader* loader = runLoader->GetLoader("TRDLoader");
+  if (!loader) {
+    return kFALSE;
+  }
 
   AliDataLoader *trackLoader = loader->GetDataLoader("gtutracks");
   if (!trackLoader) {

@@ -13,6 +13,8 @@
 
 #include <TNamed.h>
 
+#include "AliTRDrawStream.h"
+
 class TFile;
 class TTree;
 class TClonesArray;
@@ -31,7 +33,6 @@ class AliTRDtransform;
 class AliTRDCalROC;
 class AliTRDReconstructor;
 class AliTRDCalSingleChamberStatus;
-class AliTRDrawStream;
 class AliTRDrecoParam;
 class AliTRDCalOnlineGainTableROC;
 
@@ -112,6 +113,8 @@ class AliTRDclusterizer : public TNamed
   void             SetTrackletsOwner(Bool_t own=kTRUE) {SetBit(kTrOwner, own); if(!own) {fTracklets = 0x0; } }
   void             SetTracksOwner(Bool_t own=kTRUE) {SetBit(kTracksOwner, own); if(!own) {fTracks = 0x0; } }
   void             SetSkipTransform(Bool_t b=kTRUE) {SetBit(kSkipTrafo, b); }
+
+  Int_t    GetTriggerFlags(const Int_t sector) const { return fRawStream->GetTriggerFlags(sector); }
 
 protected:
 
