@@ -197,6 +197,7 @@ if(Subversion_FOUND)
   endif(EXISTS ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h)
   configure_file(${PROJECT_SOURCE_DIR}/cmake/ARVersion.h.tmp ${CMAKE_INCLUDE_EXPORT_DIRECTORY}/ARVersion.h @ONLY)
 endif(Subversion_FOUND)
+string (REPLACE "-" "." ALIROOT_SVN_BRANCH_SPEC "${ALIROOT_SVN_BRANCH}")
 
 #--------------------------------------------------------------------------------#
 # Build Modules                                                                  #
@@ -372,7 +373,7 @@ COMMAND @echo '\# make alimdc-rpm' >> ${ALIMDCSPECFILE}
 COMMAND @echo "" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Summary: AliMDC static libraries" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Name: alimdc" >> ${ALIMDCSPECFILE}
-COMMAND @echo "Version:  ${ALIROOT_SVN_BRANCH}" >> ${ALIMDCSPECFILE}
+COMMAND @echo "Version:  ${ALIROOT_SVN_BRANCH_SPEC}" >> ${ALIMDCSPECFILE}
 COMMAND @echo "Release: ${ALIROOT_SVN_REVISION}" >> ${ALIMDCSPECFILE}
 COMMAND @echo '\# Copyright: CERN Alice Off-line' >> ${ALIMDCSPECFILE}
 COMMAND @echo "License: CERN Alice Off-line" >> ${ALIMDCSPECFILE}
