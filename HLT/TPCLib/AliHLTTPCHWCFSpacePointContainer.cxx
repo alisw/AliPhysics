@@ -916,8 +916,8 @@ void AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointProperties::Print(
   }
   std::stringstream str;
   const AliHLTTPCHWCFData* decoder=Decoder();
-  out.setf(ios::fixed,ios::floatfield);
-  out << " " << setfill(' ') << setw(3) << decoder->GetPadRow(fIndex) 
+  str.setf(ios::fixed,ios::floatfield);
+  str << " " << setfill(' ') << setw(3) << decoder->GetPadRow(fIndex) 
       << " " << setw(8) << setprecision(3) << decoder->GetPad(fIndex)
       << " " << setw(8) << setprecision(3) << decoder->GetTime(fIndex)
       << " " << setw(8) << setprecision(1) << decoder->GetSigmaY2(fIndex) 
