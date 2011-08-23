@@ -375,7 +375,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const TObjArray *trkArrayOrig
   // clean up
   delete [] fIdSel; fIdSel=NULL;
   fTrkArraySel.Delete();
-  if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; }
+  if(fTrksToSkip) { delete [] fTrksToSkip; fTrksToSkip=NULL; fNTrksToSkip=0;}
   //
   
   return fCurrentVertex;
