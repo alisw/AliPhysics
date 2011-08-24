@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110816a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "110818a";
   //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
@@ -56,7 +56,7 @@
   if (kPluginMode.Contains("merge")){
     // currently merging this one...
     //       cDate = "110717a";
-    bRun = 802; Int_t bExtra = 0; cDate = "110719a";
+    bRun = 802; Int_t bExtra = 0; cDate = "110812a";
   }
   kUseDebug = kFALSE;
   // this is for testing just one run...

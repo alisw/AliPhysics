@@ -123,6 +123,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices():
   fp1RPYA(0x0),
   fp1RPXC(0x0),
   fp1RPYC(0x0),
+  fp1CalibRPXA(0x0),
+  fp1CalibRPYA(0x0),
+  fp1CalibRPXC(0x0),
+  fp1CalibRPYC(0x0),
   fh2RPAC(0x0),
   fh2RPAT(0x0),
   fh2RPCT(0x0),
@@ -186,6 +190,10 @@ AliAnalysisTaskJetServices::AliAnalysisTaskJetServices(const char* name):
   fp1RPYA(0x0),
   fp1RPXC(0x0),
   fp1RPYC(0x0),
+  fp1CalibRPXA(0x0),
+  fp1CalibRPYA(0x0),
+  fp1CalibRPXC(0x0),
+  fp1CalibRPYC(0x0),
   fh2RPAC(0x0),
   fh2RPAT(0x0),
   fh2RPCT(0x0),
@@ -752,8 +760,46 @@ AliAnalysisTaskJetServices::~AliAnalysisTaskJetServices(){
   }
   delete fRandomizer;
   if(fgAODHeader)delete fgAODHeader;
+  if(fgAODVZERO)delete fgAODVZERO;
+  delete fp1CalibRPXA;
+  delete fp1CalibRPYA;
+  delete fp1CalibRPXC;
+  delete fp1CalibRPYC;
+
 }
 
+
+void AliAnalysisTaskJetServices::SetV0Centroids(TProfile *xa,TProfile *ya,TProfile *xc, TProfile *yc){
+
+  if(xa){
+    if(fp1CalibRPXA)delete fp1CalibRPXA;
+    fp1CalibRPXA =  (TProfile*)xa->Clone(Form("%sCalib",xa->GetName()));
+  }
+  else{
+    Printf("%s:%d centroid histogram is 0x0",(char*)__FILE__,__LINE__);
+  }
+  if(ya){
+    if(fp1CalibRPYA)delete fp1CalibRPYA;
+    fp1CalibRPYA =  (TProfile*)ya->Clone(Form("%sCalib",ya->GetName()));
+  }
+  else{
+    Printf("%s:%d centroid histogram is 0x0",(char*)__FILE__,__LINE__);
+  }
+  if(xc){
+    if(fp1CalibRPXC)delete fp1CalibRPXC;
+    fp1CalibRPXC =  (TProfile*)xc->Clone(Form("%sCalib",xc->GetName()));
+  }
+  else{
+    Printf("%s:%d centroid histogram is 0x0",(char*)__FILE__,__LINE__);
+  }
+  if(ya){
+    if(fp1CalibRPYC)delete fp1CalibRPYC;
+    fp1CalibRPYC =  (TProfile*)yc->Clone(Form("%sCalib",yc->GetName()));
+  }
+  else{
+    Printf("%s:%d centroid histogram is 0x0",(char*)__FILE__,__LINE__);
+  }
+}
 
 Bool_t AliAnalysisTaskJetServices::IsEventSelected(const AliAODEvent* aod) const {
   if(!aod)return kFALSE;
@@ -1017,6 +1063,48 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
   Double_t numYZNC = 0,numXZNC = 0,sumZNC = 0;
   Double_t meanXC = 0,meanYC = 0;
 
+
+
+  static Int_t iOldRun = -1;
+  static Int_t iFoundBin = -1;
+  if(aod->GetRunNumber()!=iOldRun){
+    // search only or the bin in case of new runs
+    iFoundBin = -1;
+    Int_t ib = fp1CalibRPYA->FindBin(aod->GetRunNumber());
+    Float_t err = fp1CalibRPYA->GetBinError(ib);
+    if(err>0){// value can be zero...
+      iFoundBin = ib;
+    }
+    else{
+      Int_t ibLo = ib-1;
+      Int_t ibUp = ib+1;
+      while(iFoundBin<0&&(ibLo>0||ibUp<=fp1CalibRPYA->GetNbinsX())){
+	err = fp1CalibRPYA->GetBinError(ibLo);
+	if(err>0){
+	  iFoundBin = ibLo;
+	}
+	else{
+	  err = fp1CalibRPYA->GetBinError(ibUp);
+	  if(err>0)iFoundBin = ibUp;
+	}
+	ibUp++;
+	ibLo--;
+      }
+    }
+    iOldRun = aod->GetRunNumber();
+  }
+
+  Printf("%s:%d iFoundBin %d",(char*)__FILE__,__LINE__,iFoundBin);
+
+  if(iFoundBin>0){
+    meanXA = fp1CalibRPXA->GetBinContent(iFoundBin);
+    meanYA = fp1CalibRPYA->GetBinContent(iFoundBin);
+    meanXC = fp1CalibRPXC->GetBinContent(iFoundBin);
+    meanYC = fp1CalibRPYC->GetBinContent(iFoundBin);
+  }
+
+  Printf("%s:%d iFoundBin %1.3E %1.3E %1.3E %1.3E",(char*)__FILE__,__LINE__,meanXA,meanYA,meanXC,meanYC);
+
   for (int i=0; i<64; i++) {  
     Double_t mult = aodVZERO->GetMultiplicity(i);
     Double_t phi = v0phi[i];
@@ -1051,10 +1139,10 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
   if(fPsiVZEROC>TMath::Pi()){fPsiVZEROC-=TMath::Pi();}
   if(fPsiVZEROC<0){fPsiVZEROC+=TMath::Pi();}
   
-  fh2XYA->Fill(XA,YA);
+  fh2XYA->Fill(XA-meanXA,YA-meanYA); // control
   fp1RPXA->Fill(aod->GetRunNumber(),XA);
   fp1RPYA->Fill(aod->GetRunNumber(),YA);
-  fh2XYC->Fill(XC,YC);
+  fh2XYC->Fill(XC-meanXC,YC-meanYC); // control
   fp1RPXC->Fill(aod->GetRunNumber(),XC);
   fp1RPYC->Fill(aod->GetRunNumber(),YC);
   return kTRUE;
