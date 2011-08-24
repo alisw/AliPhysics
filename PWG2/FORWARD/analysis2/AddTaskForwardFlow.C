@@ -15,76 +15,76 @@
 /** 
  * Add Flow task to train 
  * 
- * @param type         Type of analysis (v<n> n="1","2","3",or "4")
- * @param etabins      How may eta bins to make 
- * @param addFlow      If true, add flow to MC particles
- * @param addFType     Which type of flow to add to MC particles
- * @param addFOrder    Order of flow to add to MC particles
+ * @param type 
+ * @param etabins 
+ * @param mc 
+ * @param addFlow 
+ * @param addFType 
+ * @param addFOrder 
  *
  * @ingroup pwg2_forward_flow
  */
 void AddTaskForwardFlow(TString type = "", 
-                        Int_t etabins = 40,
+                        Int_t etabins = 48,
+                        Bool_t mc = kFALSE,
                         TString addFlow = "",
                         Int_t addFType = 0,
                         Int_t addFOrder = 0)
 {
-  // --- Load libraries ----------------------------------------------
-  gROOT->LoadClass("AliAODForwardMult", "libPWG2forward2");
-
-  // --- Get analysis manager ----------------------------------------
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Error("AddFMDFlowTask", "No analysis manager to connect to.");
     return NULL;
   }   
 
-  // --- Check that we're processing AODs ----------------------------
-  AliAODInputHandler* aodInput = 
-    dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()
-				       ->GetInputEventHandler());
+  AliAODInputHandler* aodInput = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
    
-  if (!aodInput) {
+  Bool_t aod = kFALSE;
+  if (aodInput) aod = kTRUE;
+  if (!aod) {
     Error("AddTaskForwardFlow", "No analysis manager to connect to.");
     return NULL;
   }
 
-  // --- Check which harmonics to calculate --------------------------
+  // --- Check which harmonics to calculate --- //
+
   Bool_t v1 = kTRUE;
   Bool_t v2 = kTRUE;
   Bool_t v3 = kTRUE;
   Bool_t v4 = kTRUE;
+  Bool_t v5 = kTRUE;
+  Bool_t v6 = kTRUE;
 
   if (type.Length() > 0) {
     if (!type.Contains("1")) v1 = kFALSE;
     if (!type.Contains("2")) v2 = kFALSE;
     if (!type.Contains("3")) v3 = kFALSE;
     if (!type.Contains("4")) v4 = kFALSE;
+    if (!type.Contains("5")) v5 = kFALSE;
+    if (!type.Contains("6")) v6 = kFALSE;
   }
 
-  // --- Create output containers and find input from fmd task -------
+  // --- Create output containers and find input from fmd task --- //
 
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   outputFile += ":FlowResults";
 
-  AliAnalysisDataContainer* qcout = 
-    mgr->CreateContainer("QCumulants", TList::Class(), 
-			 AliAnalysisManager::kOutputContainer, outputFile);
+  AliAnalysisDataContainer* qcout = mgr->CreateContainer("QCumulants", TList::Class(), AliAnalysisManager::kOutputContainer, outputFile);
 
-  // --- For the selected flow tasks the input and output is set -----
+  // --- For the selected flow tasks the input and output is set --- //
+  
   AliForwardFlowTaskQC* qc = new AliForwardFlowTaskQC("QCumulants");
 
-  qc->SetDoHarmonics(v1, v2, v3, v4);
+  qc->SetDoHarmonics(v1, v2, v3, v4, v5, v6);
   qc->SetUseNEtaBins(etabins);
+  qc->SetMCinput(mc);
   qc->AddFlow(addFlow);
   qc->AddFlowType(addFType);
   qc->AddFlowOrder(addFOrder);
+  qc->SetRefEtaBins(4);
   
   mgr->ConnectInput(qc, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(qc, 1, qcout);
 
   return;
 }
-//
-// EOF
-//

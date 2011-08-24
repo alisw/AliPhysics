@@ -100,8 +100,9 @@ public:
    * @param v4  Do @f$ v_{4}@f$ 
    */
   void SetDoHarmonics(Bool_t v1 = kTRUE, Bool_t v2 = kTRUE, 
-		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE) { 
-    fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; }
+		      Bool_t v3 = kTRUE, Bool_t v4 = kTRUE,
+		      Bool_t v5 = kTRUE, Bool_t v6 = kTRUE) { 
+    fv[1] = v1; fv[2] = v2; fv[3] = v3; fv[4] = v4; fv[5] = v5; fv[6] = v6;}
   /*
    * Set string to add flow to MC truth particles
    *
@@ -120,6 +121,19 @@ public:
    * @param order Flow order 
    */
   void AddFlowOrder(Int_t order = 2) { fAddOrder = order; }
+  /*
+   *
+   * Set MC input flag
+   *
+   * @param mc MC input
+   */
+  void SetMCinput(Bool_t mc = kTRUE) { fMC = mc; }
+  /*
+   * Set number of eta bins to be used in reference flow
+   *
+   * @param bins Ref Eta Bins
+   */
+  void SetRefEtaBins(Int_t bins) { fEtaRef = bins; } 
 protected:
   /** 
    * Copy constructor 
@@ -145,46 +159,19 @@ protected:
    * @param type     Determines which histograms should be used
    *                 - "FMD" = FMD data histograms
    *                 - "SPD" = SPD data histograms
-   *                 - "TrRef" = track reference histograms
+   *                 - "TR" = track reference histograms
    *                 - "MC" = MC truth histograms
    * @param harmonic Which harmonic to calculate
    */
   void CumulantsMethod(TString type, Int_t harmonic);
-  /**
-   * Caclulate the variance of x squared - used to finalize
-   * calculations in Terminate()
-   *
-   * @param wxx2      Weight of @f$ x^2@f$
-   * @param x         @f$ x@f$
-   * @param wx        Weight of @f$ x@f$
-   * @param wxx       Weight of @f$ x^2@f$
-   * @param sqrtwx2   @f$ \sqrt{wx^2}@f$ 
-   * 
-   * @return Variance squared 
-   */
-  Double_t VarSQ(Double_t wxx2, Double_t x, Double_t wx, 
-		 Double_t wxx, Double_t sqrtwx2) const ;
-  /**
-   * Caclulate the covariance between x and y - used to finalize
-   * calculations in Terminate()
-   *
-   * @param wxwyxy @f$ w_x w_y x y@f$
-   * @param wxwy   @f$ w_x w_y@f$
-   * @param XY     @f$ xy@f$ 
-   * @param wx     @f$ w_x@f$
-   * @param wy     @f$ w_y@f$
-   * 
-   * @return 
-   */
-  Double_t CovXY(Double_t wxwyxy, Double_t wxwy, Double_t XY, 
-		 Double_t wx, Double_t wy) const;
 
   TList*         fOutputList;   //  Output list
   AliForwardFlowUtil* fFlowUtil;//  AliForwardFlowUtil
   AliAODEvent*   fAOD;          //  AOD event
   Bool_t         fMC;           //  Is MC flags
   Int_t          fEtaBins;      //  Number of eta bins in histograms
-  Bool_t         fv[5];         //  Calculate v_{n} flag
+  Int_t          fEtaRef;       //  Number of eta bins for reference flow
+  Bool_t         fv[7];         //  Calculate v_{n} flag
   TString        fAddFlow;	//  Add flow string
   Int_t          fAddType;	//  Add flow type #
   Int_t          fAddOrder;	//  Add flow order
