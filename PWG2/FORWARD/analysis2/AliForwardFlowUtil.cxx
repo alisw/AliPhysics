@@ -12,22 +12,35 @@
 #include "AliAODForwardMult.h"
 #include "AliAODEvent.h"
 #include "TProfile2D.h"
+#include "TGraph.h"
+#include "TF1.h"
 
 ClassImp(AliForwardFlowUtil)
 
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil() : 
   fList(0),
-  fCent(0),
-  fVertex(0) {} 
+  fCent(-1),
+  fVertex(1111),
+  fAliceCent4th(),
+  fAlicePt2nd4050(),
+  fAlicePt4th3040(),
+  fAlicePt4th4050(),
+  fImpactParToCent()
+   {} 
   //
   // Default Constructor
   //
 //_____________________________________________________________________
 AliForwardFlowUtil::AliForwardFlowUtil(TList* outputList) :
   fList(0),
-  fCent(0),
-  fVertex(0)
+  fCent(-1),
+  fVertex(1111),
+  fAliceCent4th(),
+  fAlicePt2nd4050(),
+  fAlicePt4th3040(),
+  fAlicePt4th4050(),
+  fImpactParToCent()
 { 
   // 
   // Constructor
@@ -36,9 +49,45 @@ AliForwardFlowUtil::AliForwardFlowUtil(TList* outputList) :
   // TList: list containing histograms for flow analysis
   //
   fList = outputList;
+
+  Double_t xCumulant4thTPCrefMultTPConlyAll[] = {2.5,7.5,15,25,35,45,55,65};
+  Double_t yCumulant4thTPCrefMultTPConlyAll[] = {0.017855,0.032440,0.055818,0.073137,0.083898,0.086690,0.082040,0.077777};
+  Int_t nPointsCumulant4thTPCrefMultTPConlyAll = sizeof(xCumulant4thTPCrefMultTPConlyAll)/sizeof(Double_t);
+  fAliceCent4th = new TGraph(nPointsCumulant4thTPCrefMultTPConlyAll,xCumulant4thTPCrefMultTPConlyAll,
+                                                        yCumulant4thTPCrefMultTPConlyAll);
+ 
+  Double_t xCumulant2nd4050ALICE[] = {0.000000,0.250000,0.350000,0.450000,0.550000,0.650000,0.750000,0.850000,0.950000,
+  1.100000,1.300000,1.500000,1.700000,1.900000,2.250000,2.750000,3.250000,3.750000,4.500000};
+  Double_t yCumulant2nd4050ALICE[] = {0.000000,0.043400,0.059911,0.073516,0.089756,0.105486,0.117391,0.128199,0.138013,
+  0.158271,0.177726,0.196383,0.208277,0.216648,0.242954,0.249961,0.240131,0.269006,0.207796};
+  Int_t nPointsCumulant2nd4050ALICE = sizeof(xCumulant2nd4050ALICE)/sizeof(Double_t);                                      
+  fAlicePt2nd4050 = new TGraph(nPointsCumulant2nd4050ALICE,xCumulant2nd4050ALICE,yCumulant2nd4050ALICE);
+
+  Double_t xCumulant4th3040ALICE[] = {0.00000,0.250000,0.350000,0.450000,0.550000,0.650000,0.750000,0.850000,0.950000,
+  1.100000,1.300000,1.500000,1.700000,1.900000,2.250000,2.750000,3.250000,3.750000,4.500000,
+  5.500000,7.000000,9.000000};
+  Double_t yCumulant4th3040ALICE[] = {0.000000,0.037071,0.048566,0.061083,0.070910,0.078831,0.091396,0.102026,0.109691,
+  0.124449,0.139819,0.155561,0.165701,0.173678,0.191149,0.202015,0.204540,0.212560,0.195885,
+  0.000000,0.000000,0.000000};
+  Int_t nPointsCumulant4th3040ALICE = sizeof(xCumulant4th3040ALICE)/sizeof(Double_t);                                      
+  fAlicePt4th3040 = new TGraph(nPointsCumulant4th3040ALICE,xCumulant4th3040ALICE,yCumulant4th3040ALICE);
+
+  Double_t xCumulant4th4050ALICE[] = {0.000000,0.250000,0.350000,0.450000,0.550000,0.650000,0.750000,0.850000,0.950000,
+  1.100000,1.300000,1.500000,1.700000,1.900000,2.250000,2.750000,3.250000,3.750000,4.500000};
+  Double_t yCumulant4th4050ALICE[] = {0.000000,0.038646,0.049824,0.066662,0.075856,0.081583,0.099778,0.104674,0.118545,
+  0.131874,0.152959,0.155348,0.169751,0.179052,0.178532,0.198851,0.185737,0.239901,0.186098};
+  Int_t nPointsCumulant4th4050ALICE = sizeof(xCumulant4th4050ALICE)/sizeof(Double_t);   
+  fAlicePt4th4050 = new TGraph(nPointsCumulant4th4050ALICE, xCumulant4th4050ALICE, yCumulant4th4050ALICE);
+
+  Double_t impactParam[] = {0.,1.75,4.225,5.965,7.765,9.215,10.46,11.565,12.575,13.515,16.679};
+  Double_t centrality[] = {0.,2.5,7.5,15,25,35,45,55,65,75,90};
+
+  Int_t nPoints = sizeof(impactParam)/sizeof(Double_t);
+  fImpactParToCent = new TGraph(nPoints, impactParam, centrality);
+
 }
 //_____________________________________________________________________
-Bool_t AliForwardFlowUtil::AODCheck(const AliAODForwardMult* aodfm) const
+Bool_t AliForwardFlowUtil::AODCheck(const AliAODForwardMult* aodfm) 
 {
   // 
   // Function to check that and AOD event meets the cuts
@@ -46,8 +95,17 @@ Bool_t AliForwardFlowUtil::AODCheck(const AliAODForwardMult* aodfm) const
   // Parameters: 
   //  AliAODForwardMult: forward mult object with trigger and vertex info
   //
-  return aodfm->CheckEvent(AliAODForwardMult::kInel, -5, 5, 0, 100);
-//  return aodfm->CheckEvent(AliAODForwardMult::kInel, -5, 5, 0, 0);
+  fCent = -1;
+  fVertex = 1111;
+
+  if (!aodfm->IsTriggerBits(AliAODForwardMult::kOffline)) return kFALSE;
+  fCent = (Double_t)aodfm->GetCentrality();
+  if (0. >= fCent || fCent >= 100.) return kFALSE;
+  TH1D* vertex = (TH1D*)fList->FindObject("VertexAll");
+  fVertex = aodfm->GetIpZ();
+  vertex->Fill(fVertex);
+  if (TMath::Abs(fVertex) >= 5.) return kFALSE;
+  return kTRUE;
 }
 //_____________________________________________________________________
 Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent)
@@ -56,13 +114,14 @@ Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent)
   // Loop over AliAODFowardMult object and fill histograms provided
   // by flow task.
   //
+
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("Forward"));
   if (!aodfmult) return kFALSE;
   if (!AODCheck(aodfmult)) return kFALSE;
 
   TH2D hdNdetadphi = aodfmult->GetHistogram();
   TH2D* vertex = (TH2D*)fList->FindObject("CoverageVsVertex");
-  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEFMD");
+  TH2D* dNdphi = (TH2D*)fList->FindObject("hdNdphiSEFMD");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEFMD");
   dNdphi->Reset();
   dNdetadphi->Reset();
@@ -71,9 +130,9 @@ Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent)
   Double_t eta = 0;
   Double_t phi = 0;
   Double_t weight = 0;
-  fVertex = aodfmult->GetIpZ();
   for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    if (TMath::Abs(eta) < 1.75) continue;
     for (Int_t phiBin = 0; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
@@ -82,15 +141,14 @@ Bool_t AliForwardFlowUtil::LoopAODFMD(const AliAODEvent* aodevent)
         continue;
       }
       dNdetadphi->Fill(eta, phi, weight);
-      if (eta < 4.) dNdphi->Fill(phi, weight);
+      dNdphi->Fill(eta, phi, weight);
+      dNdphi->Fill(-1.*eta, phi, weight);
       mult += weight;
     }
   }
-  dNdphi->SetBinContent(0, mult);
-  fCent = -1;
-  if (aodfmult->HasCentrality()) fCent = (Double_t)aodfmult->GetCentrality();
-
 //  fCent = GetCentFromMC(aodevent);
+//  fCent = 0.5;
+ 
   return kTRUE;
 }
 //_____________________________________________________________________
@@ -106,13 +164,17 @@ Bool_t AliForwardFlowUtil::LoopAODSPD(const AliAODEvent* aodevent) const
   TH2D hdNdetadphi = aodcmult->GetHistogram();
   TH2D* vertex = (TH2D*)fList->FindObject("CoverageVsVertex");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSESPD");
+  TH2D* dNdphi = (TH2D*)fList->FindObject("hdNdphiSESPD");
+  dNdphi->Reset();
   dNdetadphi->Reset();
 
   Double_t eta = 0;
   Double_t phi = 0;
   Double_t weight = 0;
+  Double_t mult = 0;
   for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    if (TMath::Abs(eta) > 1.75) continue;
     for (Int_t phiBin = 0; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
@@ -121,8 +183,13 @@ Bool_t AliForwardFlowUtil::LoopAODSPD(const AliAODEvent* aodevent) const
         continue;
       }
       dNdetadphi->Fill(eta, phi, weight);
+      if (TMath::Abs(eta) < 0.5) continue;
+      dNdphi->Fill(eta, phi, weight);
+//      dNdphi->Fill(-1.*eta, phi, weight);
+      mult += weight;
     }
   }
+
   return kTRUE;
 }
 //_____________________________________________________________________
@@ -135,10 +202,9 @@ Bool_t AliForwardFlowUtil::LoopAODFMDtrrefHits(const AliAODEvent* aodevent) cons
 
   AliAODForwardMult* aodfmult = static_cast<AliAODForwardMult*>(aodevent->FindListObject("ForwardMC"));
   if (!aodfmult) return kFALSE;
- // if (!AODCheck(aodfmult)) return kFALSE;
 
   TH2D hdNdetadphi = aodfmult->GetHistogram();
-  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEFMDTR");
+  TH2D* dNdphi = (TH2D*)fList->FindObject("hdNdphiSEFMDTR");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEFMDTR");
   dNdphi->Reset();
   dNdetadphi->Reset();
@@ -149,15 +215,16 @@ Bool_t AliForwardFlowUtil::LoopAODFMDtrrefHits(const AliAODEvent* aodevent) cons
   Double_t weight = 0;
   for(Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    if (TMath::Abs(eta) < 1.75) continue;
     for(Int_t phiBin = 1; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
       dNdetadphi->Fill(eta, phi, weight);
-      if (eta < 4.) dNdphi->Fill(phi, weight);
+      dNdphi->Fill(eta, phi, weight);
+      dNdphi->Fill(-1.*eta, phi, weight);
       mult += weight;
     }
   }
-  dNdphi->SetBinContent(0, mult);
 
   return kTRUE;
 }
@@ -172,20 +239,28 @@ Bool_t AliForwardFlowUtil::LoopAODSPDtrrefHits(const AliAODEvent* aodevent) cons
   if (!aodcmult) return kFALSE;
 
   TH2D hdNdetadphi = aodcmult->GetHistogram();
+  TH2D* dNdphi = (TH2D*)fList->FindObject("hdNdphiSESPDTR");
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSESPDTR");
+  dNdphi->Reset();
   dNdetadphi->Reset();
 
   Double_t eta = 0;
   Double_t phi = 0;
   Double_t weight = 0;
+  Double_t mult = 0;
   for (Int_t etaBin = 1; etaBin<=hdNdetadphi.GetNbinsX(); etaBin++) {
     eta = hdNdetadphi.GetXaxis()->GetBinCenter(etaBin);
+    if (TMath::Abs(eta) > 1.75) continue;
     for (Int_t phiBin = 1; phiBin<=hdNdetadphi.GetNbinsY(); phiBin++) {
       phi = hdNdetadphi.GetYaxis()->GetBinCenter(phiBin);
       weight = hdNdetadphi.GetBinContent(etaBin, phiBin);
       dNdetadphi->Fill(eta, phi, weight);
+      dNdphi->Fill(eta, phi, weight);
+      dNdphi->Fill(-1.*eta, phi, weight);
+      mult += weight;
     }
   }
+
   return kTRUE;
 }
 //_____________________________________________________________________
@@ -201,7 +276,7 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
   //retreive MC particles from event
   TClonesArray* mcArray = (TClonesArray*)aodevent->FindListObject(AliAODMCParticle::StdBranchName());
   if(!mcArray){
-    AliWarning("No MC array found in AOD. Try making it again.");
+//    AliWarning("No MC array found in AOD. Try making it again.");
     return kFALSE;
   }
 
@@ -215,7 +290,7 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
   }
 
   TH2D* dNdetadphi = (TH2D*)fList->FindObject("hdNdetadphiSEMC");
-  TH1D* dNdphi = (TH1D*)fList->FindObject("hdNdphiSEMC");
+  TH2D* dNdphi = (TH2D*)fList->FindObject("hdNdphiSEMC");
   TProfile2D* mcTruth = (TProfile2D*)fList->FindObject("pMCTruth");
   dNdphi->Reset();
   dNdetadphi->Reset();
@@ -226,7 +301,7 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
   Double_t mult = 0;
   Double_t weight = 0;
   for (Int_t it = 0; it < ntracks; it++) {
-    weight = 0;
+    weight = 1;
     AliAODMCParticle* particle = (AliAODMCParticle*)mcArray->At(it);
     if (!particle) {
       AliError(Form("Could not receive track %d", it));
@@ -234,109 +309,78 @@ Bool_t AliForwardFlowUtil::LoopAODmc(const AliAODEvent* aodevent,
     }
     if (!particle->IsPhysicalPrimary()) continue;
     if (particle->Charge() == 0) continue;
+    Double_t pT = particle->Pt();
+//    if (pT <= 0.2 || pT >= 5.) continue;
     Double_t eta = particle->Eta();
     Double_t phi = particle->Phi();
-    if (eta > -6 && eta < 6) {
+    if (TMath::Abs(eta) < 6.) {
       // Add flow if it is in the argument
       if (addFlow.Length() > 1) {
         if (addFlow.Contains("pt"))
-          weight += AddptFlow(particle->Pt(), type);
+          weight *= AddptFlow(pT, type);
+//          weight *= AddptFlow(pT, 1);
         if (addFlow.Contains("pid"))
-          weight += AddpidFlow(particle->PdgCode(), type);
+          weight *= AddpidFlow(particle->PdgCode(), 1);
         if (addFlow.Contains("eta"))
-          weight += AddetaFlow(eta, type);
-        if (addFlow.Contains("flat"))
-          weight = 0.1*type;
-        weight *= 2.*TMath::Cos((Double_t)order*(phi-rp)); 
+          weight *= AddetaFlow(eta, type);
+//          weight *= AddetaFlow(eta, 2);
+        if (addFlow.Contains("cent")) 
+          weight *= fAliceCent4th->Eval(fCent)/fAliceCent4th->Eval(45);
+        
+        weight *= 20*2.*TMath::Cos((Double_t)order*(phi-rp)); 
+        weight += 1;
       }
-      weight += 1;
-      
-      dNdphi->Fill(phi, weight);
+      dNdphi->Fill(eta, phi, weight);
+      dNdphi->Fill(-1.*eta, phi, weight);
       dNdetadphi->Fill(eta, phi, weight);
-      mcTruth->Fill(eta, fCent, TMath::Cos(2.*(phi-rp)));
+      mcTruth->Fill(eta, fCent, weight*TMath::Cos(2.*(phi-rp)));
       mult += weight;
     }
   }
 
-  dNdphi->SetBinContent(0, mult);
-
   return kTRUE;
 }
 //_____________________________________________________________________
-Double_t AliForwardFlowUtil::AddptFlow(Double_t Pt = 0, Int_t type = 0) const 
+Double_t AliForwardFlowUtil::AddptFlow(Double_t pt = 0, Int_t type = 0) const 
 {
   //
   // Add pt dependent flow factor
   //
   Double_t weight = 0;
 
-  if (type == 1) weight = 0.125*Pt;
-      
-  if (type == 2) {
-    weight = 0.2*(Pt/2.0);
-    if (Pt > 2.0) weight = 0.2;
-  }
-
-  if (type == 3) {
-      weight = 0.05*(Pt/2.0);
-      if (Pt < 2.0) weight = 0.05;
+  switch(type) 
+  {
+    case 1: weight = fAlicePt2nd4050->Eval(pt)*0.5+fAlicePt4th4050->Eval(pt)*0.5;
+            break;
+    case 2: weight = fAlicePt2nd4050->Eval(pt);
+            break;
+    case 3: weight = fAlicePt4th3040->Eval(pt);
+            break;
+    case 4: weight = fAlicePt4th4050->Eval(pt);
+            break;
   } 
-
-  if (type == 4) {
-      weight = 0.2*(Pt/1.0);
-      if (Pt > 1.0) weight = 0.2;
-  }
-
-  if (type == 5) { 
-      weight = 0.05*(Pt/1.0);
-      if (Pt < 1.0) weight = 0.05;
-  }                                                      
-
-  if (type == 6) {
-      weight = 0.2*(Pt/3.0);
-      if (Pt > 3.0) weight = 0.2;
-  }
-
+  
   return weight;
 }
 //_____________________________________________________________________
-Double_t AliForwardFlowUtil::AddpidFlow(Int_t ID = 0, Int_t type = 0) const 
+Double_t AliForwardFlowUtil::AddpidFlow(Int_t id = 0, Int_t type = 0) const 
 {
   //
   // Add pid dependent flow factor 
   //
   Double_t weight = 0;
 
-  if (type == 1) {
-    weight = 0.07;
-    if (TMath::Abs(ID) ==  211) // pion flow
-      weight = 0.1;
-    if (TMath::Abs(ID) ==  2212) // proton flow
-      weight = 0.05;
-  }
-
-  if (type == 2) {
-    weight = 0.06;
-    if (TMath::Abs(ID) ==  211) // pion flow
-      weight = 0.1;
-    if (TMath::Abs(ID) ==  2212) // proton flow
-      weight = 0.08;
-  }
-
-  if (type == 3) {
-    weight = 0.05;
-    if (TMath::Abs(ID) ==  211) // pion flow
-      weight = 0.1;
-    if (TMath::Abs(ID) ==  2212) // proton flow
-      weight = 0.07;
-  }
-
-  if (type == 4) {
-    weight = 0.07;
-    if (TMath::Abs(ID) ==  211) // pion flow
-      weight = 0.1;
-    if (TMath::Abs(ID) ==  2212) // proton flow
-      weight = 0.085;
+  switch(type)
+  {
+    case 1: if (TMath::Abs(id) ==  211) // pion flow
+              weight = 1.;
+            else if (TMath::Abs(id) ==  2212) // proton flow
+              weight = 1.3;
+            else 
+              weight = 0.7;
+            break;
+    case 2: weight = 1.207;
+            break;
   }
 
   return weight;
@@ -348,20 +392,20 @@ Double_t AliForwardFlowUtil::AddetaFlow(Double_t eta = 0, Int_t type = 0) const
   // Add eta dependent flow factor 
   //
   Double_t weight = 0;
-  
-  if (type == 1) weight = 0.03 + 0.07 * (1 - TMath::Abs(eta) / 6.);
 
-  if (type == 2) weight = 0.07 * (1 - TMath::Abs(eta) / 6.);
-  
-  if (type == 3) weight = 0.07 * (1 - TMath::Abs(eta) / 8.);
-  
-  if (type == 4) weight = 0.07 * (1 - TMath::Abs(eta) / 10.);
-  
-  if (type == 5) weight = 0.07 * (1 - TMath::Abs(eta) / 12.); 
+  TF1 gaus = TF1("gaus", "gaus", -6, 6);
 
-  if (type == 6) weight = 0.07 * (1 - TMath::Abs(eta) / 14.); 
+  switch(type)
+  {
+     case 1: gaus.SetParameters(0.1, 0., 9);
+             break;
+     case 2: gaus.SetParameters(0.1, 0., 3);
+             break;
+     case 3: gaus.SetParameters(0.1, 0., 15);
+             break;
+  }
 
-  if (type == 7) weight = 0.07 * (1 - TMath::Abs(eta) / 16.); 
+  weight = gaus.Eval(eta);
 
   return weight;
 }
@@ -377,27 +421,8 @@ Double_t AliForwardFlowUtil::GetCentFromMC(const AliAODEvent* aodevent) const
   AliAODMCHeader* header = (AliAODMCHeader*)aodevent->FindListObject(AliAODMCHeader::StdBranchName());
   if (!header) return cent;
   b = header->GetImpactParameter();
-  
-  if ( 0.00 <= b && b <  3.50)
-    cent = 2.5;
-  if ( 3.50 <= b && b <  4.95)
-    cent = 7.5;
-  if ( 4.95 <= b && b <  6.98)
-    cent = 15.;
-  if ( 6.98 <= b && b <  8.55)
-    cent = 25.;
-  if ( 8.55 <= b && b <  9.88)
-    cent = 35.;
-  if ( 9.88 <= b && b < 11.04)
-    cent = 45.;
-  if (11.04 <= b && b < 12.09)
-    cent = 55.;
-  if (12.09 <= b && b < 13.06)
-    cent = 65.;
-  if (13.06 <= b && b < 13.97)
-    cent = 75.;
-  if (13.97 <= b && b < 19.61)
-    cent = 90.; 
+
+  cent = fImpactParToCent->Eval(b);
 
   return cent;
 }
