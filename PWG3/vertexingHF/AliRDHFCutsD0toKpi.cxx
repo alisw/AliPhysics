@@ -43,7 +43,8 @@ AliRDHFCuts(name),
 fUseSpecialCuts(kTRUE),
 fLowPt(kTRUE),
 fDefaultPID(kFALSE),
-fUseKF(kFALSE)
+fUseKF(kFALSE),
+fPtLowPID(2.)
 {
   //
   // Default Constructor
@@ -95,7 +96,8 @@ AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const AliRDHFCutsD0toKpi &source) :
   fUseSpecialCuts(source.fUseSpecialCuts),
   fLowPt(source.fLowPt),
   fDefaultPID(source.fDefaultPID),
-  fUseKF(source.fUseKF)
+  fUseKF(source.fUseKF),
+  fPtLowPID(source.fPtLowPID)
 {
   //
   // Copy constructor
@@ -114,6 +116,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fUseSpecialCuts=source.fUseSpecialCuts;
   fLowPt=source.fLowPt;
   fDefaultPID=source.fDefaultPID;
+  fPtLowPID=source.fPtLowPID;
 
   return *this;
 }
@@ -727,7 +730,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
       else isD0D0barPID[1]=0;// not a D0bar if pi+ or if K+ excluded
     }
 
-    if(fLowPt && d->Pt()<2.){
+    if(fLowPt && d->Pt()<fPtLowPID){
      Double_t sigmaTPC[3]={3.,2.,0.};
      fPidHF->SetSigmaForTPC(sigmaTPC);
     // identify kaon
@@ -776,10 +779,10 @@ Int_t AliRDHFCutsD0toKpi::IsSelectedPID(AliAODRecoDecayHF* d)
     return 0;
   }
 
-  if(fLowPt && d->Pt()<2.){
-    if(fLowPt) fPidHF->SetSigmaForTPC(sigma_tmp);
+  if(fLowPt && d->Pt()<fPtLowPID){    
     if(combinedPID[0][0]<=0&&combinedPID[1][0]<=0){
       fWhyRejection=32;// reject cases where the Kaon is not identified
+      fPidHF->SetSigmaForTPC(sigma_tmp);
       return 0;
     }
   }
