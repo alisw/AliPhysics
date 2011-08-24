@@ -151,8 +151,8 @@ int AliHLTTRDMonitorComponent::DoInit( int /*argc*/, const char** /*argv*/ )
   //}
 
   // implement the component initialization
+  // Matthias 2011-08-24: this has to go into ScanConfigurationArgument
   do {
-    if (iResult<0) break;
 
     fRawReaderMem = new AliRawReaderMemory; 
     if (!fRawReaderMem) {
@@ -600,13 +600,11 @@ int AliHLTTRDMonitorComponent::DoEvent(const AliHLTComponentEventData& /*evtData
 		       (kAliHLTDataTypeTObject | kAliHLTDataOriginTRD), 
     		       pBlock->fSpecification);
 
-    if (iResult != 0)                                                                                                                                                
-      break;  
+    if (iResult < 0)                                  
+      break;
 		       
     // clear the rawreader
     fRawReaderMem->ClearBuffers();    
-    if (iResult != 0)
-      break;
   }
 
   return iResult;

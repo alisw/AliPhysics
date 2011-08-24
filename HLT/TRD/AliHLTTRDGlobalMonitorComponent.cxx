@@ -102,7 +102,7 @@ AliHLTComponent* AliHLTTRDGlobalMonitorComponent::Spawn()
   return new AliHLTTRDGlobalMonitorComponent;
 }
 
-int AliHLTTRDGlobalMonitorComponent::DoInit( int argc, const char** argv )
+int AliHLTTRDGlobalMonitorComponent::DoInit( int /*argc*/, const char** /*argv*/ )
 {
   fHistArray = new TObjArray(25);
   if(!fHistArray)
@@ -389,7 +389,7 @@ int AliHLTTRDGlobalMonitorComponent::DoEvent( const AliHLTComponentEventData& /*
   return iResult;
 }
 
-int AliHLTTRDGlobalMonitorComponent::Configure(const char* arguments)
+int AliHLTTRDGlobalMonitorComponent::Configure(const char* /*arguments*/)
 {
   // see header file for class documentation
   int iResult=0;
@@ -397,7 +397,7 @@ int AliHLTTRDGlobalMonitorComponent::Configure(const char* arguments)
   return iResult;
 }
 
-int AliHLTTRDGlobalMonitorComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/)
+int AliHLTTRDGlobalMonitorComponent::Reconfigure(const char* /*cdbEntry*/, const char* /*chainId*/)
 {
   // see header file for class documentation
   int iResult=0;
