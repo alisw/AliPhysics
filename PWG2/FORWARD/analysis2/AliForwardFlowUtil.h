@@ -18,6 +18,7 @@
 class AliAODForwardMult;
 class AliAODEvent;
 class TList;
+class TGraph;
 
 /**
  * 
@@ -47,7 +48,7 @@ public:
    * 
    * @return true on success 
    */
-  Bool_t AODCheck(const AliAODForwardMult* aodfm) const;
+  Bool_t AODCheck(const AliAODForwardMult* aodfm);
   /**
    * Loop over AliAODForwardMult object and fill flow histograms
    * 
@@ -103,6 +104,9 @@ public:
    * Get z vertex coordinate from newest processed event
    */
   Float_t GetVertex() const { return fVertex; }
+ /**
+   * Parametrize ALICE data points
+   */
    
 protected:
   /*
@@ -113,7 +117,13 @@ protected:
   AliForwardFlowUtil(const AliForwardFlowUtil& o) : TNamed(),
 						    fList(o.fList),
 						    fCent(o.fCent),
-						    fVertex(o.fVertex) {}
+						    fVertex(o.fVertex),
+                                                    fAliceCent4th(o.fAliceCent4th),
+                                                    fAlicePt2nd4050(o.fAlicePt2nd4050),
+                                                    fAlicePt4th3040(o.fAlicePt4th3040),
+                                                    fAlicePt4th4050(o.fAlicePt4th4050),
+                                                    fImpactParToCent(o.fImpactParToCent)
+                                                    {}
   /** 
    * Assignment operator 
    * 
@@ -150,7 +160,12 @@ protected:
 
   TList* 	fList;   // List of flow histograms
   Double_t	fCent;   // centrality
-  Float_t         fVertex; // z vertex coordinate
+  Float_t       fVertex; // z vertex coordinate
+  TGraph*       fAliceCent4th;
+  TGraph*       fAlicePt2nd4050;
+  TGraph*       fAlicePt4th3040;
+  TGraph*       fAlicePt4th4050;
+  TGraph*       fImpactParToCent;
 
   ClassDef(AliForwardFlowUtil, 1); 
 };
