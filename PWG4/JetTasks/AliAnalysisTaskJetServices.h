@@ -82,6 +82,9 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     virtual void SetMinTrackPt(Float_t f){fMinTrackPt = f;}
     virtual void SetTrackEtaWindow(Float_t f){fTrackRecEtaWindow = f;}
     virtual void SetRPMethod(Int_t i){fRPMethod = i;}
+    virtual void SetV0Centroids(TProfile *xa,TProfile *ya,
+			       TProfile *xc,TProfile *yc);
+
 
     Bool_t   CalculateReactionPlaneAngleVZERO(AliAODEvent *aod);
     Int_t   GetListOfTracks(TList *list);
@@ -159,6 +162,10 @@ class AliAnalysisTaskJetServices : public AliAnalysisTaskSE
     TProfile*     fp1RPYA;              //! mean YA vs run
     TProfile*     fp1RPXC;              //! mean XA vs run
     TProfile*     fp1RPYC;              //! mean YA vs run
+    TProfile*     fp1CalibRPXA;              // calib mean XA vs run
+    TProfile*     fp1CalibRPYA;              // calib YA vs run
+    TProfile*     fp1CalibRPXC;              // calib XA vs run
+    TProfile*     fp1CalibRPYC;              // calib YA vs run
     TH2F*         fh2RPAC;              //! RP A vs C 
     TH2F*         fh2RPAT;              //! RP A vs tracks 
     TH2F*         fh2RPCT;              //! RP C vs tracks 

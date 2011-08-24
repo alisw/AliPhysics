@@ -1,4 +1,4 @@
-AliAnalysisTaskJetServices *AddTaskJetServices()
+AliAnalysisTaskJetServices *AddTaskJetServices(TString v0CalibFile = "")
 {
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -22,6 +22,18 @@ AliAnalysisTaskJetServices *AddTaskJetServices()
    
    AliAnalysisTaskJetServices* pwg4serv = new  AliAnalysisTaskJetServices("JetServices");
       
+   if(v0CalibFile.Length()){
+     TFile *fV0 = TFile::Open(v0CalibFile.Data());
+     if(fV0){
+       TDirectory *dir = (TDirectory*)fV0->Get("PWG4_services");
+       TList *list = (TList*)dir->Get("pwg4serv");
+       TProfile *xa = (TProfile*)list->FindObject("fp1RPXA");
+       TProfile *ya = (TProfile*)list->FindObject("fp1RPYA");
+       TProfile *xc = (TProfile*)list->FindObject("fp1RPXC");
+       TProfile *yc = (TProfile*)list->FindObject("fp1RPYC");
+       pwg4serv->SetV0Centroids(xa,ya,xc,yc);
+     }
+   }
 
    if(type == "AOD"){
      pwg4serv->SetAODInput(kTRUE);
