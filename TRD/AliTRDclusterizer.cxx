@@ -808,7 +808,7 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
 
   fDet  = AliTRDgeometry::GetDetector(fLayer,istack,isector);
   if (fDet != det) {
-    AliError("Strange Detector number Missmatch!");
+    AliError(Form("Detector number missmatch! Request[%03d] RAW[%03d]", det, fDet));
     return kFALSE;
   }
 
@@ -824,6 +824,14 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   fColMax    = fDigits->GetNcol();
   fTimeTotal = fDigitsManager->GetDigitsParam()->GetNTimeBins(det);
 
+  // Check consistency between Geometry and raw data
+  AliTRDpadPlane *pp(fTransform->GetPadPlane());
+  Int_t ncols(pp->GetNcols()), nrows(pp->GetNrows());
+  if(ncols != fColMax) AliError(Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fColMax));
+  if(nrows != fDigits->GetNrow()) AliError(Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fDigits->GetNrow()));
+  if(ncols != fIndexes->GetNcol()) AliError(Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fIndexes->GetNcol()));
+  if(nrows != fIndexes->GetNrow()) AliError(Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fIndexes->GetNrow()));
+
   // Check consistency between OCDB and raw data
   Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
   if(fReconstructor->IsHLT()){
@@ -835,15 +843,15 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
     if(nTimeOCDB == -1){
       AliWarning("Undefined number of timebins in OCDB, using value from raw data.");
       if(!fTimeTotal>0){
-	AliError("Number of timebins in raw data is negative, skipping chamber!");
-	return kFALSE;
+        AliError(Form("Number of timebins in raw data is negative, skipping chamber[%3d]!", fDet));
+        return kFALSE;
       }
     }else if(nTimeOCDB == -2){
       AliError("Mixed number of timebins in OCDB, no reconstruction of TRD data!"); 
       return kFALSE;
     }else if(fTimeTotal != nTimeOCDB){
-      AliError(Form("Number of timebins in raw data does not match OCDB value (RAW[%d] OCDB[%d]), skipping chamber!"
-		    ,fTimeTotal,nTimeOCDB));
+      AliError(Form("Number of timebins in raw data does not match OCDB value (RAW[%d] OCDB[%d]), skipping chamber[%3d]!"
+        ,fTimeTotal,nTimeOCDB, fDet));
       return kFALSE;
     }
   }

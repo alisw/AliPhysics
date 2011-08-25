@@ -86,6 +86,9 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, Bool_t hlt)
     if(!fTB[itb]) continue;
     fTB[itb].SetRange(z0, zl);
     fTB[itb].SetNRows(nrows);
+    fTB[itb].SetPlane(layer);
+    fTB[itb].SetStack(stack);
+    fTB[itb].SetSector(AliTRDgeometry::GetSector(fDetector));
     fTB[itb].BuildIndices();
     index[jtb++] = itb;
   }	

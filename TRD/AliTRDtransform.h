@@ -35,6 +35,7 @@ class AliTRDtransform : public TObject {
   AliTRDtransform &operator=(const AliTRDtransform &t);
   
   virtual void     Copy(TObject &t) const;
+  AliTRDpadPlane*  GetPadPlane() const {return fPadPlane;}
   virtual Bool_t   Transform(AliTRDcluster *c);
   virtual void     Recalibrate(AliTRDcluster *c, Bool_t setDet = kTRUE);
 

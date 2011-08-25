@@ -288,13 +288,16 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
   memset(fPositions, 0, sizeof(UChar_t)*kMaxRows);
   AliTRDcluster **cliter = &helpCL[0]; // Declare iterator running over the whole array
   const AliTRDrecoParam* const recoParam = fkReconstructor->GetRecoParam(); //the dynamic cast in GetRecoParam is slow, so caching the pointer to it
+  Int_t tb(-1);
   for(Int_t i = 0; i < fN; i++){
     // boundary check
     AliTRDcluster *cl = *(cliter++);
     UChar_t rowIndex = cl->GetPadRow();
+    if(tb<0) tb=cl->GetLocalTimeBin();
     // Insert Leaf
-    Int_t pos = FindYPosition(cl->GetY(), rowIndex, i);
-    if(pos == -1){		// zbin is empty;
+    Int_t pos = FindYPosition(cl->GetY(), rowIndex, nClStack);
+    if(pos == -2) continue;   // zbin error;
+    else if(pos == -1) {    // zbin is empty;
       Int_t upper = (rowIndex == fNRows - 1) ? nClStack : fPositions[rowIndex + 1];
       memmove(fClusters + upper + 1, fClusters + upper, (sizeof(AliTRDcluster *))*(nClStack-upper));
       memmove(fIndex + upper + 1, fIndex + upper, (sizeof(UInt_t))*(nClStack-upper));
@@ -333,7 +336,16 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
 
 // 	AliInfo("Positions");
 // 	for(int ir=0; ir<fNRows; ir++) printf("pos[%d] %d\n", ir, fPositions[ir]);
-
+  if(nClStack < fN){
+    AliWarning(Form("Found %d out of %d clusters outside in ChamberTimeBin[%02d_%d_%d|%2d]", fN-nClStack, fN, fSector, fStack, fPlane, tb));
+    fN =  nClStack;
+    if(!fN){ // Nothing left in this time bin. Reset indexes
+      memset(&fPositions[0], 0, sizeof(UChar_t) * kMaxRows);
+      memset(&fClusters[0], 0, sizeof(AliTRDcluster*) * kMaxClustersLayer);
+      memset(&fIndex[0], 0, sizeof(UInt_t) * kMaxClustersLayer);
+      return;
+    }
+  }
   fX /= fN;
 }
 
@@ -380,6 +392,10 @@ Int_t AliTRDchamberTimeBin::FindYPosition(Double_t y, UChar_t z, Int_t nClusters
 // Index of the nearest left cluster in the StackLayer indexing (-1 if no clusters are found)
 //
 
+  if(z>=fNRows){ // check pad row of cluster
+    AliDebug(1, Form("Row[%2d] outside range [0 %2d] in %02d_%d_%d.", z, fNRows, fSector, fStack, fPlane));
+    return -2;
+  }
   Int_t start = fPositions[z]; 		// starting Position of the bin
   Int_t upper = (Int_t)((z != fNRows - 1) ? fPositions[z+1] : nClusters); // ending Position of the bin 
   Int_t end = upper - 1; // ending Position of the bin 
@@ -412,7 +428,7 @@ Int_t AliTRDchamberTimeBin::FindNearestYCluster(Double_t y, UChar_t z) const
 //
 
   Int_t position = FindYPosition(y, z, fN);
-  if(position == -1) return position; // bin empty
+  if(position == -2 || position == -1) return position; // bin empty
   // FindYPosition always returns the left Neighbor. We don't know if the left or the right Neighbor is nearest
   // to the Reference y-position, so test both
   Int_t upper = (Int_t)((z < fNRows-1) ? fPositions[z+1] : fN); // ending Position of the bin
