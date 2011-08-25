@@ -562,9 +562,7 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
 
-     // unset recalculated primary vertex when not needed any more
-    CleanOwnPrimaryVtx(d,aod,origownvtx);
-    
+   
     if(okDsKKpi){
       Double_t cosPiKPhiRFKKpi=d->CosPiKPhiRFrameKKpi();
       Double_t kincutPiKPhiKKpi=TMath::Abs(cosPiKPhiRFKKpi*cosPiKPhiRFKKpi*cosPiKPhiRFKKpi);
@@ -595,7 +593,9 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
       return 0;
     }
     
-    
+     // unset recalculated primary vertex when not needed any more
+    CleanOwnPrimaryVtx(d,aod,origownvtx);
+      
     
 
     if(!okDsKKpi){
