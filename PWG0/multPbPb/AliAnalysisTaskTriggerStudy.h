@@ -25,9 +25,10 @@ class AliAnalysisTaskTriggerStudy : public AliAnalysisTaskSE {
   //  enum {kVDC0MBS1,kVDC0MBS2,kVDC0VBA,kVDC0VBC,kVDC0OM2,kNVDEntries};
   //  enum {kVDC0MBS1,kVDC0MBS2,kVDC0VBA,kVDC0VBC,kNVDEntries};
   //  enum {kVDV0AND,kVDV0OR,kVDNTRACKS,kNVDEntries};// Venn diagram for Federico, 7 teV
-  enum {kVDV0ANDOnline,kVDV0ANDOffline,kVDPhysSel, kVDRecCandle,kNVDEntries};// Venn diagram for Federico, 7 teV
     
 public:
+
+  enum {kVDV0ANDOnline,kVDV0ANDOffline,kVDPhysSel, kVDRecCandle, kVDGenCandle, kNVDEntries};// Venn diagram for Federico, 7 teV
 
   AliAnalysisTaskTriggerStudy();
   AliAnalysisTaskTriggerStudy(const char * name);

@@ -1,5 +1,5 @@
 enum { kMyRunModeLocal = 0, kMyRunModeCAF, kMyRunModeGRID};
-
+//#define TENDER
 TChain * GetAnalysisChain(const char * incollection);
 
 void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Int_t ntrackletsKine = 100, Bool_t rejectBGV0Trigger = kFALSE, const char* option = "", Int_t workers = -1)
@@ -8,10 +8,11 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
   //
   // 0 local 
   // 1 proof
-
+#ifdef TENDER
+  TGrid::Connect("alien://");
+#endif
   if (nev < 0)
     nev = 1234567890;
-
   InitAndLoadLibs(runMode,workers,debug);
 
   // Create the analysis manager
@@ -41,9 +42,25 @@ void runTriggerStudy(Char_t* data, Long64_t nev = -1, Long64_t offset = 0, Bool_
     mgr->SetGridHandler(alienHandler);  
   }
 
+  // Add tender
+#ifdef TENDER
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/TenderSupplies/AddTaskTender.C");
+  AliAnalysisTask* tender=0x0;
+  if(!isMC)
+    {
+      tender = AddTaskTender(kTRUE);
+      // tender->SetDebugLevel(10);
+    }
+  else
+    {
+      tender = AddTaskTender(kFALSE);
+      // tender->SetDebugLevel(10);
+    }
+#endif
+  
   // Add physics selection
   gROOT->ProcessLine(".L $ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-  physicsSelectionTask = AddTaskPhysicsSelection(isMC,0);//FIXME
+  physicsSelectionTask = AddTaskPhysicsSelection(isMC,1,!isMC);//FIXME
   physicsSelectionTask->GetPhysicsSelection()->SetSkipZDCTime(1);// Skip ZDC - applyied later
 
 
@@ -113,6 +130,7 @@ void MoveOutput(const char * data, const char * suffix = ""){
   TString fileName = "trigger_study.root";
   gSystem->mkdir(path, kTRUE);
   gSystem->Rename(fileName, path + "/" + fileName);
+  gSystem->Rename("event_stat.root", path + "/" + "event_stat.root");
   Printf(">>>>> Moved files to %s", path.Data());
 }  
 
@@ -156,25 +174,54 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     cout << "Init in CAF mode" << endl;
     
     gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-    TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "");
+    // cout << workers>0 ? Form("workers=%d",workers) : "workers=1x" << endl;
+    // exit(1);
+    TProof * p = TProof::Open("alice-caf.cern.ch", workers>0 ? Form("workers=%d",workers) : "workers=1x");
     p->Exec("TObject *o = gEnv->GetTable()->FindObject(\"Proof.UseMergers\"); gEnv->GetTable()->Remove(o);", kTRUE);
     //TProof::Open("skaf.saske.sk", workers>0 ? Form("workers=%d",workers) : "");
     
-    // Enable the needed package
-    gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-    gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-    gProof->UploadPackage("$ALICE_ROOT/ESD");
-    gProof->EnablePackage("$ALICE_ROOT/ESD");
-    gProof->UploadPackage("$ALICE_ROOT/AOD");
-    gProof->EnablePackage("$ALICE_ROOT/AOD");
-    gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-    gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-    gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-    gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
-    gProof->UploadPackage("$ALICE_ROOT/PWG0base");
-    gProof->EnablePackage("$ALICE_ROOT/PWG0base");
+    // Enable the needed package (par fileS)
+    // gProof->UploadPackage("$ALICE_ROOT/obj/STEERBase");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/STEERBase");
+    // gProof->UploadPackage("$ALICE_ROOT/obj/ESD");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/ESD");
+    // gProof->UploadPackage("$ALICE_ROOT/obj/AOD");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/AOD");
+    // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSIS");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSIS");
+    // gProof->UploadPackage("$ALICE_ROOT/obj/OADB");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/OADB");
+    // gProof->UploadPackage("$ALICE_ROOT/obj/ANALYSISalice");
+    // gProof->EnablePackage("$ALICE_ROOT/obj/ANALYSISalice");
+    // gProof->UploadPackage("$ALICE_ROOT/PWG0base");
+    // gProof->EnablePackage("$ALICE_ROOT/PWG0base");
     gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
     gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/include "));
+    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/TOF "));
+
+    // Use a precompiled tag
+    TString alirootMode="";    // STEERBase,ESD,AOD,ANALYSIS,ANALYSISalice (default aliroot mode)
+    //alirootMode="ALIROOT";     // $ALICE_ROOT/macros/loadlibs.C
+    //  alirootMode="REC";     // $ALICE_ROOT/macros/loadlibsrec.C
+    //  alirootMode="SIM";     // $ALICE_ROOT/macros/loadlibssim.C
+    //  alirootMode="TRAIN";   // $ALICE_ROOT/macros/loadlibstrain.C (not working yet)
+    //  alirootMode="CUSTOM";  // nothing is loaded, but aliroot variables are set (not working yet)
+ 
+    TString extraLibs;
+    extraLibs= ""; // not needed in default aliroot mode
+    extraLibs+="CDB:RAWDatabase:STEER:TENDER:TRDbase:STAT:TRDrec:VZERObase:VZEROsim:VZEROrec:RAWDatarec:TPCbase:TPCrec:TPCcalib:TENDERSupplies:RAWDatabase:RAWDatarec:RAWDatasim:TOFbase:TOFrec";
+    TList *list = new TList();
+    // sets $ALIROOT_MODE on each worker to let proof to know to run in special mode
+    list->Add(new TNamed("ALIROOT_MODE", alirootMode.Data()));
+    // sets $ALIROOT_EXTRA_LIBS on each worker to let proof to know to load extra libs
+    list->Add(new TNamed("ALIROOT_EXTRA_LIBS", extraLibs.Data()));
+#ifdef TENDER
+    list->Add(new TNamed("ALIROOT_ENABLE_ALIEN", "1"));
+#endif
+    // connect to proof
+    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-22-AN", list);
+    //    gProof->Exec("TGrid::Connect(\"alien://\");");
   }
   else
   {
@@ -191,6 +238,7 @@ void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug
     gSystem->Load("libESD");
     gSystem->Load("libAOD");
     gSystem->Load("libANALYSIS");
+    gSystem->Load("libOADB");
     gSystem->Load("libANALYSISalice");
     gSystem->Load("libPWG0base");
     

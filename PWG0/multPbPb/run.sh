@@ -49,7 +49,7 @@ Available options:
                                ./output/ is added automatically in front of the folder names
   -s                           Run the trigger study task (by default it runs the multiplicity analysis)
  Proof settings
-  -w nworkers                  Set the number of worker nodes
+  -w nworkers                  Set the number of worker nodes (0 == 1 worker per node)
   -n <nev>                     Number of events to be analized 
  Misc
   -d <dataset>                 Dataset or data collection (according to run mode) [default=$dataset]
