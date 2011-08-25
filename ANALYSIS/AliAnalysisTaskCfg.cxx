@@ -180,6 +180,7 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
 // done. Checks if the requested libraries are loaded, else loads them. Executes 
 // with stored fMacroArgs unless new arguments are provided. The flag IsLoaded
 // is set once the macro was successfully executed.
+   if (IsLoaded()) return kTRUE;
    if (!fMacro && !OpenMacro()) {
       Error("ExecuteMacro", "Cannot execute this macro");
       return -1;
@@ -192,7 +193,7 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
    TString args = newargs;
    if (args.IsNull()) args = fMacroArgs;
    Long64_t retval = fMacro->Exec(args);
-   if (retval >=0) SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
+   if (retval >=0) TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
    return retval;
 }
 

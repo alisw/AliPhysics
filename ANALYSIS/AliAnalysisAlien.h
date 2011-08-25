@@ -104,9 +104,10 @@ public:
    Int_t               GetNmodules() const;
    AliAnalysisTaskCfg *GetModule(const char *name);
    Bool_t              LoadModules();
-   Bool_t              GenerateTest(const char *modname="");
+   Bool_t              GenerateTest(const char *name, const char *modname="");
    Bool_t              CheckFileCopy(const char *alienpath);
    virtual Bool_t      CreateDataset(const char *pattern);
+   Bool_t              CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output="data.txt", const char *anchorfile="");
    virtual Bool_t      CreateJDL();
    virtual void        EnablePackage(const char *package);
    static Bool_t       DirectoryExists(const char *lfn);

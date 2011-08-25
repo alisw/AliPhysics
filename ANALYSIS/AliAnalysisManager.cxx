@@ -1165,6 +1165,11 @@ void AliAnalysisManager::ProfileTask(const char *name, const char */*option*/) c
 void AliAnalysisManager::AddTask(AliAnalysisTask *task)
 {
 // Adds a user task to the global list of tasks.
+   if (fInitOK) {
+      Error("AddTask", "Cannot add task %s since InitAnalysis was already called", task->GetName());
+      return;
+   }   
+      
    if (fTasks->FindObject(task)) {
       Warning("AddTask", "Task %s: the same object already added to the analysis manager. Not adding.", task->GetName());
       return;
@@ -1274,7 +1279,7 @@ Bool_t AliAnalysisManager::InitAnalysis()
 // Initialization of analysis chain of tasks. Should be called after all tasks
 // and data containers are properly connected
    // Reset flag and remove valid_outputs file if exists
-   fInitOK = kFALSE;
+   if (fInitOK) return kTRUE;
    if (!gSystem->AccessPathName("outputs_valid"))
       gSystem->Unlink("outputs_valid");
    // Check for top tasks (depending only on input data containers)

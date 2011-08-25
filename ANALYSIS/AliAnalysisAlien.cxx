@@ -560,12 +560,42 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::GenerateTest(const char *modname)
+Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
 {
 // Generate test macros for a single module or for the full train.
    if (strlen(modname)) {
-      return kTRUE;
-   }
+      if (!CheckDependencies()) return kFALSE;
+      AliAnalysisTaskCfg *mod = GetModule(modname);
+      if (!mod) {
+         Error("GenerateTest", "cannot generate test for inexistent module %s", modname);
+         return kFALSE;
+      }
+      if (!LoadModule(mod)) return kFALSE;
+   } else if (!LoadModules()) return kFALSE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr->InitAnalysis()) return kFALSE;
+   mgr->PrintStatus();
+   SetLocalTest(kTRUE);
+   Int_t productionMode = fProductionMode;
+   SetProductionMode();
+   TString macro = fAnalysisMacro;
+   TString executable = fExecutable;
+   TString validation = fValidationScript;
+   TString execCommand = fExecutableCommand;
+   SetAnalysisMacro(Form("%s.C", name));
+   SetExecutable(Form("%s.sh", name));
+   SetExecutableCommand("aliroot -b -q ");
+   SetValidationScript(Form("%s_validation.sh", name));
+   WriteAnalysisFile();   
+   WriteAnalysisMacro();
+   WriteExecutable();
+   WriteValidationScript();   
+   SetLocalTest(kFALSE);
+   SetProductionMode(productionMode);
+   fAnalysisMacro = macro;
+   fExecutable = executable;
+   fExecutableCommand = execCommand;
+   fValidationScript = validation;
    return kTRUE;   
 }
 
@@ -573,22 +603,28 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *modname)
 Bool_t AliAnalysisAlien::LoadModules()
 {
 // Load all modules by executing the AddTask macros. Checks first the dependencies.
+   Int_t nmodules = GetNmodules();
+   if (!nmodules) {
+      Warning("LoadModules", "No module to be loaded");
+      return kTRUE;
+   }   
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
       Error("LoadModules", "No analysis manager created yet. Use CreateAnalysisManager first.");
       return kFALSE;
    }   
    if (!CheckDependencies()) return kFALSE;
-   TIter next(fModules);
+   nmodules = GetNmodules();
    AliAnalysisTaskCfg *mod;
-   while ((mod=(AliAnalysisTaskCfg*)next())) {
+   for (Int_t imod=0; imod<nmodules; imod++) {
+      mod = (AliAnalysisTaskCfg*)fModules->At(imod);
       if (!LoadModule(mod)) return kFALSE;
    }
    // All modules are loaded. Adjust the library list.
-   next.Reset();
    fAdditionalLibs = "";
    TString lib;
-   while ((mod=(AliAnalysisTaskCfg*)next())) {
+   for (Int_t imod=0; imod<nmodules; imod++) {
+      mod = (AliAnalysisTaskCfg*)fModules->At(imod);
       Int_t nlibs = mod->GetNlibs();
       for (Int_t i=0; i<nlibs; i++) {
          lib = mod->GetLibrary(i);
@@ -598,8 +634,6 @@ Bool_t AliAnalysisAlien::LoadModules()
          fAdditionalLibs += lib;
       }
    }
-   if (!mgr->InitAnalysis()) return kFALSE;
-   mgr->PrintStatus();
    return kTRUE;
 }      
 
@@ -934,6 +968,53 @@ Bool_t AliAnalysisAlien::CheckInputData()
       }   
    }
    return kTRUE;      
+}   
+
+//______________________________________________________________________________
+Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output, const char *anchorfile)
+{
+// Copy data from the given grid directory according a pattern and make a local
+// dataset.
+   if (!Connect()) {
+      Error("CopyLocalDataset", "Cannot copy local dataset with no grid connection");
+      return kFALSE;
+   }
+   if (!DirectoryExists(griddir)) {
+      Error("CopyLocalDataset", "Data directory %s not existing.", griddir);
+      return kFALSE;
+   }
+   TString command = Form("find -z -l %d %s %s", nfiles, griddir, pattern);
+   printf("Running command: %s\n", command.Data());
+   TGridResult *res = gGrid->Command(command);
+   Int_t nfound = res->GetEntries();
+   if (!nfound) {
+      Error("CopyLocalDataset", "No file found in <%s> having pattern <%s>", griddir, pattern);
+      return kFALSE;
+   }
+   printf("... found %d files. Copying locally ...\n", nfound);
+   // Copy files locally
+   ofstream out;
+   out.open(output, ios::out);
+   TMap *map;
+   TString turl, dirname, filename, temp;
+   TString cdir = gSystem->WorkingDirectory();
+   gSystem->MakeDirectory("data");
+   gSystem->ChangeDirectory("data");
+   for (Int_t i=0; i<nfound; i++) {
+      map = (TMap*)res->At(i);
+      turl = map->GetValue("turl")->GetName();
+      filename = gSystem->BaseName(turl.Data());
+      dirname = gSystem->DirName(turl.Data());
+      dirname = gSystem->BaseName(dirname.Data());
+      gSystem->MakeDirectory(dirname);
+      if (TFile::Cp(turl, Form("file:./%s/%s", dirname.Data(), filename.Data()))) {
+         if (strlen(anchorfile)) filename = Form("%s#%s", filename.Data(), anchorfile);
+         out << cdir << "/data/" << Form("%s/%s", dirname.Data(), filename.Data()) << endl;
+      }
+   }
+   gSystem->ChangeDirectory(cdir);
+   delete res;
+   return kTRUE;
 }   
 
 //______________________________________________________________________________
@@ -1469,8 +1550,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
       analysisFile.ReplaceAll(".sh", ".root");
       fGridJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),analysisFile.Data()));
       fMergingJDL->AddToInputSandbox(Form("LF:%s/%s", workdir.Data(),analysisFile.Data()));
-      if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C"))
-         fGridJDL->AddToInputSandbox(Form("LF:%s/ConfigureCuts.C", workdir.Data()));
       if (fAdditionalLibs.Length()) {
          arr = fAdditionalLibs.Tokenize(" ");
          TIter next(arr);
@@ -3091,7 +3170,7 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
       Error("StartAnalysis", "No data to process. Please fix %s in your plugin configuration.", serror.Data());
       return kFALSE;
    }   
-   WriteAnalysisFile();   
+   WriteAnalysisFile();
    WriteAnalysisMacro();
    WriteExecutable();
    WriteValidationScript();
@@ -3671,15 +3750,25 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "   gEnv->SetValue(\"XNet.MaxRedirectCount\",2);" << endl;
          out << "   gEnv->SetValue(\"XNet.ReconnectTimeout\",50);" << endl;
          out << "   gEnv->SetValue(\"XNet.FirstConnectMaxCnt\",1);" << endl << endl;
+      } 
+      if (!IsLocalTest()) {  
+         out << "// connect to AliEn and make the chain" << endl;
+         out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       }   
-      out << "// connect to AliEn and make the chain" << endl;
-      out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "// read the analysis manager from file" << endl;
       TString analysisFile = fExecutable;
       analysisFile.ReplaceAll(".sh", ".root");
       out << "   AliAnalysisManager *mgr = AliAnalysisAlien::LoadAnalysisManager(\"" 
           << analysisFile << "\");" << endl;
       out << "   if (!mgr) return;" << endl;
+      if (IsLocalTest()) {
+         out << "   AliAnalysisAlien *plugin = new AliAnalysisAlien();" << endl;
+         out << "   plugin->SetRunMode(\"test\");" << endl;
+         out << "   plugin->SetFileForTestMode(\"data.txt\");" << endl;
+         out << "   mgr->SetGridHandler(plugin);" << endl;
+         out << "   mgr->SetDebugLevel(10);" << endl;
+         out << "   mgr->SetNSysInfo(100);" << endl;
+      }
       out << "   mgr->PrintStatus();" << endl;
       if (AliAnalysisManager::GetAnalysisManager()) {
          if (AliAnalysisManager::GetAnalysisManager()->GetDebugLevel()>3) {
@@ -3691,57 +3780,16 @@ void AliAnalysisAlien::WriteAnalysisMacro()
                out << "   AliLog::SetGlobalLogLevel(AliLog::kError);" << endl;
          }
       }   
-      if (IsUsingTags()) {
-         out << "   TChain *chain = CreateChainFromTags(\"wn.xml\", anatype);" << endl << endl;
-      } else {
+      if (!IsLocalTest()) {
          out << "   TChain *chain = CreateChain(\"wn.xml\", anatype);" << endl << endl;   
+         out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
+      } else {
+         out << "   mgr->StartAnalysis(\"localfile\");" << endl;
       }   
-      out << "   mgr->StartAnalysis(\"localfile\", chain);" << endl;
       out << "   timer.Stop();" << endl;
       out << "   timer.Print();" << endl;
       out << "}" << endl << endl;
-      if (IsUsingTags()) {
-         out << "TChain* CreateChainFromTags(const char *xmlfile, const char *type=\"ESD\")" << endl;
-         out << "{" << endl;
-         out << "// Create a chain using tags from the xml file." << endl;
-         out << "   TAlienCollection* coll = TAlienCollection::Open(xmlfile);" << endl;
-         out << "   if (!coll) {" << endl;
-         out << "      ::Error(\"CreateChainFromTags\", \"Cannot create an AliEn collection from %s\", xmlfile);" << endl;
-         out << "      return NULL;" << endl;
-         out << "   }" << endl;
-         out << "   TGridResult* tagResult = coll->GetGridResult(\"\",kFALSE,kFALSE);" << endl;
-         out << "   AliTagAnalysis *tagAna = new AliTagAnalysis(type);" << endl;
-         out << "   tagAna->ChainGridTags(tagResult);" << endl << endl;
-         out << "   AliRunTagCuts      *runCuts = new AliRunTagCuts();" << endl;
-         out << "   AliLHCTagCuts      *lhcCuts = new AliLHCTagCuts();" << endl;
-         out << "   AliDetectorTagCuts *detCuts = new AliDetectorTagCuts();" << endl;
-         out << "   AliEventTagCuts    *evCuts  = new AliEventTagCuts();" << endl;
-         out << "   // Check if the cuts configuration file was provided" << endl;
-         out << "   if (!gSystem->AccessPathName(\"ConfigureCuts.C\")) {" << endl;
-         out << "      gROOT->LoadMacro(\"ConfigureCuts.C\");" << endl;
-         out << "      ConfigureCuts(runCuts, lhcCuts, detCuts, evCuts);" << endl;
-         out << "   }" << endl;
-         if (fFriendChainName=="") {
-            out << "   TChain *chain = tagAna->QueryTags(runCuts, lhcCuts, detCuts, evCuts);" << endl;
-         } else {
-            out << "   TString tmpColl=\"tmpCollection.xml\";" << endl;
-            out << "   tagAna->CreateXMLCollection(tmpColl.Data(),runCuts, lhcCuts, detCuts, evCuts);" << endl;
-            out << "   TChain *chain = CreateChain(tmpColl.Data(),type);" << endl;
-         }
-         out << "   if (!chain || !chain->GetNtrees()) return NULL;" << endl;
-         out << "   chain->ls();" << endl;
-         out << "   return chain;" << endl;
-         out << "}" << endl << endl;
-         if (gSystem->AccessPathName("ConfigureCuts.C")) {
-            TString msg = "\n#####   You may want to provide a macro ConfigureCuts.C with a method:\n";
-            msg += "   void ConfigureCuts(AliRunTagCuts *runCuts,\n";
-            msg += "                      AliLHCTagCuts *lhcCuts,\n";
-            msg += "                      AliDetectorTagCuts *detCuts,\n";
-            msg += "                      AliEventTagCuts *evCuts)";
-            Info("WriteAnalysisMacro", "%s", msg.Data());
-         }
-      } 
-      if (!IsUsingTags() || fFriendChainName!="") {
+      if (!IsLocalTest()) {
          out <<"//________________________________________________________________________________" << endl;
          out << "TChain* CreateChain(const char *xmlfile, const char *type=\"ESD\")" << endl;
          out << "{" << endl;
@@ -3846,13 +3894,6 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       TString workdir = gGrid->GetHomeDirectory();
       workdir += fGridWorkingDir;
       if (FileExists(fAnalysisMacro)) gGrid->Rm(fAnalysisMacro);
-      if (IsUsingTags() && !gSystem->AccessPathName("ConfigureCuts.C")) {
-         if (FileExists("ConfigureCuts.C")) gGrid->Rm("ConfigureCuts.C");
-         Info("WriteAnalysisMacro", "\n#####   Copying cuts configuration macro: <ConfigureCuts.C> to your alien workspace");
-         if (!copyLocal2Alien("WriteAnalysisMacro","ConfigureCuts.C", 
-             Form("%s/ConfigureCuts.C", workdir.Data()))) Fatal("","Terminating");
-//         TFile::Cp("file:ConfigureCuts.C", Form("alien://%s/ConfigureCuts.C", workdir.Data()));
-      }   
       Info("WriteAnalysisMacro", "\n#####   Copying analysis macro: <%s> to your alien workspace", fAnalysisMacro.Data());
 //      TFile::Cp(Form("file:%s",fAnalysisMacro.Data()), Form("alien://%s/%s", workdir.Data(), fAnalysisMacro.Data()));
       if (!copyLocal2Alien("WriteAnalysisMacro",fAnalysisMacro.Data(), 

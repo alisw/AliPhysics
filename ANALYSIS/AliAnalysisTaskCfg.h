@@ -79,7 +79,7 @@ public:
   // Extra utilities  
   Bool_t                    CheckLoadLibraries() const;
   static const char        *DecodeValue(TString &line);
-  Bool_t                    IsLoaded() const {return TestBit(kLoaded);}
+  Bool_t                    IsLoaded() const {return TObject::TestBit(AliAnalysisTaskCfg::kLoaded);}
   void                      Print(Option_t *option="") const;
   void                      SaveAs(const char *filename, Option_t *option = "") const;
   static TObjArray         *ExtractModulesFrom(const char *filename);
