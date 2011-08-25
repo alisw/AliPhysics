@@ -40,8 +40,19 @@ class AliEventPlaneResolution : public TObject{
     if(hSubEvCorr) return TMath::Sqrt(hSubEvCorr->GetMean());
     else return 1.;
   }
+  static Double_t GetSubEvResolLowLim(const TH1F* hSubEvCorr){
+    if(hSubEvCorr) return TMath::Sqrt(hSubEvCorr->GetMean()-hSubEvCorr->GetMeanError());
+    else return 1.;
+  }
+  static Double_t GetSubEvResolHighLim(const TH1F* hSubEvCorr){
+    if(hSubEvCorr) return TMath::Sqrt(hSubEvCorr->GetMean()+hSubEvCorr->GetMeanError());
+    else return 1.;
+  }
+
   static Double_t GetFullEvResol(Double_t resSub, Int_t k=1);
   static Double_t GetFullEvResol(const TH1F* hSubEvCorr, Int_t k=1);
+  static Double_t GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k=1);
+  static Double_t GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k=1);
 
  private:
 
