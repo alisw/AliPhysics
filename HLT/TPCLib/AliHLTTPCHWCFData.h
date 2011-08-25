@@ -122,7 +122,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Float_t        fSigmaZ2;
 
     Int_t    GetPadRow()  const;
-    Float_t  GetPad()     const {return fPad;}
+    Float_t  GetPad()     const {return fPad+0.5;}
     Float_t  GetTime()    const {return fTime;}
     Float_t  GetSigmaY2() const {return fSigmaY2;}
     Float_t  GetSigmaZ2() const {return fSigmaZ2;}
@@ -139,7 +139,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Float_t        fSigmaZ2;
 
     Int_t    GetPadRow()  const;
-    Float_t  GetPad()     const {return fPad;}
+    Float_t  GetPad()     const {return fPad+0.5;}
     Float_t  GetTime()    const {return fTime;}
     Float_t  GetSigmaY2() const {return fSigmaY2;}
     Float_t  GetSigmaZ2() const {return fSigmaZ2;}

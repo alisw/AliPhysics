@@ -376,8 +376,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
       } else {
       pCluster->SetRow(clusters[i].GetPadRow()-rowOffset);
       }
-      // using a 0.5 shift, pad coordinate with respect to middle of the pad
-      pCluster->SetPad(clusters[i].GetPad()+0.5);
+      pCluster->SetPad(clusters[i].GetPad());
       pCluster->SetTimeBin(clusters[i].GetTime());
       pCluster->SetSigmaY2(clusters[i].GetSigmaY2());
       pCluster->SetSigmaZ2(clusters[i].GetSigmaZ2());

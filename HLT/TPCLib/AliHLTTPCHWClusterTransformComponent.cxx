@@ -274,7 +274,7 @@ int AliHLTTPCHWClusterTransformComponent::DoEvent(const AliHLTComponentEventData
 	 c.SetQMax(cl.GetQMax());
 
 	 Float_t xyz[3];
-	 fTransform.Transform( minSlice, padrow, pad + 0.5, time, xyz );
+	 fTransform.Transform( minSlice, padrow, pad, time, xyz );
 	 c.SetX(xyz[0]);
 	 c.SetY(xyz[1]);
 	 c.SetZ(xyz[2]);
