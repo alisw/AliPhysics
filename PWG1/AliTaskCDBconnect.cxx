@@ -122,12 +122,9 @@ void AliTaskCDBconnect::CreateOutputObjects()
   // Try to get event number before the first event is read (this has precedence
   // over existing fRun)
   Int_t run = mgr->GetRunFromPath();
-  if (!run) {
-     AliWarning("AliTaskCDBconnect: Could not set run from path");
-     if (!fRun) {
-        AliError("AliTaskCDBconnect: Run not set - no CDB connection");
-        return;
-     }   
+  if (!run && !fRun) {
+     AliError("AliTaskCDBconnect: Run not set - no CDB connection");
+     return;
   }
   // Create CDB manager
   AliCDBManager *cdb = AliCDBManager::Instance();
@@ -135,9 +132,7 @@ void AliTaskCDBconnect::CreateOutputObjects()
   if (cdb->GetLock()) return;
   // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
   //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  if (cdb->IsDefaultStorageSet()) {
-     AliError("AliTaskCDBconnect: CDB default storage already set!");
-  } else {
+  if (!cdb->IsDefaultStorageSet()) {
      cdb->SetDefaultStorage("raw://");
   }   
   if (run && (run != fRun)) {
@@ -147,10 +142,12 @@ void AliTaskCDBconnect::CreateOutputObjects()
      fRunChanged = kFALSE;
   }
   // Set run
-  printf("AliCDBconnect: #### Setting run to: %d\n", fRun);
-  cdb->SetRun(fRun);
-  // Initialize GRP manager only once
-  if (fRun) InitGRP();
+  if (fRunChanged || !fGRPManager) {
+     printf("AliCDBconnect: #### Setting run to: %d\n", fRun);
+     cdb->SetRun(fRun);
+     // Initialize GRP manager only once
+     if (fRun) InitGRP();
+  }   
 }
 
 //______________________________________________________________________________
@@ -171,10 +168,8 @@ void AliTaskCDBconnect::Exec(Option_t* /*option*/)
   if (fRun != fESD->GetRunNumber()) {
     fRunChanged = kTRUE;
     fRun = fESD->GetRunNumber();
-    Warning("Exec", "Run number changed in ESDEvent to %d", fRun);
-    AliCDBManager::Instance()->SetRun(fRun);
+    CreateOutputObjects();
   }
-//  PostData(0, fESD);
 }
 
 //______________________________________________________________________________
