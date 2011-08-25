@@ -11,7 +11,6 @@ check_PROGRAMS	= testAliHLTBlockDataCollection \
 		  testAliHLTDataBuffer \
 		  testAliHLTReadoutList \
 		  testAliHLTScalars \
-		  testAliHLTEventDDLBackwardCompatibility \
 		  dtOperators \
 		  testDefaultDataTypes
 
