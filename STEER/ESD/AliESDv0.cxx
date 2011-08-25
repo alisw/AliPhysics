@@ -163,6 +163,10 @@ AliESDv0::AliESDv0(const AliExternalTrackParam &t1, Int_t i1,
      new (&fParamN) AliExternalTrackParam(t2);
      fParamP.~AliExternalTrackParam();
      new (&fParamP) AliExternalTrackParam(t1);
+
+     Int_t index=fNidx;
+     fNidx=fPidx;
+     fPidx=fNidx;
   }
 
   for (Int_t i=0; i<6; i++) {
