@@ -18,8 +18,37 @@
 //  @ingroup alihlt_qa
 //  @author Kalliopi.Kanaki@ift.uib.no 
 
-void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt"){
-  
+
+#if !defined(__CINT__) || defined(__MAKECINT__)
+#include "TSystem.h"
+#include "TROOT.h"
+#include "TFile.h"
+#include "TString.h"
+#include "TList.h"
+#include "THnSparse.h"
+#include "TCanvas.h"
+#include "TText.h"
+#include "TPaveText.h"
+#include "TPaveStats.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TLegend.h"
+#include "TStyle.h"
+#include "TPad.h"
+#include <iostream>
+#include <cstdlib>
+#include <fstream>
+using std::endl;
+#endif
+
+void printStats(TH1D *h1, TH1D *h2);
+void defineYaxisMax(TH1D *h1, TH1D *h2);
+
+void overlayPlots(const char* option="HLT"/* or "OFF" */, Bool_t bAddRunName=kTRUE, Bool_t bDrawNormalized=kTRUE, string fi="files.txt"){
+
+
+  printf("test\n"); 
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
   gStyle->SetOptStat("emr");
@@ -27,45 +56,47 @@ void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt")
  
   char filenames[100];
   sprintf(filenames,"%s",fi.c_str());
-  ifstream in(filenames);
-  if(!in){
-    printf("File %s does not exist", fi.Data());
-    break;
+  ifstream infile;
+  infile.open(filenames);
+  if(!infile){
+    printf("File %s does not exist", fi.data());
+    return;
   }
   string c;
   TString f;
   int nr_textfile = 0;
 
-  in>>nr_textfile;
-  if(!in.good()) break;
+  infile>>nr_textfile;
+  if(!infile.good()) return;
   printf("Number of files: %d\n", nr_textfile);
 
   const int nr_files = nr_textfile;
   TString file[nr_files];
   string cutnames[nr_files];
+  string plotname="";
 
   nr_textfile=0;
   while(nr_textfile < nr_files){
-    in >> f >> c;
-    if(!in.good()) break;
+    infile >> f >> c;
+    if(!infile.good()) break;
     file[nr_textfile] = f;
     cutnames[nr_textfile] = c; 
     if(f.BeginsWith("//")) continue;
     printf("\nfile %d : %s\n", nr_textfile, f.Data());
     nr_textfile++;
   }
-  in.close();
+  infile.close();
   
   TCanvas *ca;
   TFile   *ff; 
   TPad    *pad; 
   TH1D    *g[nr_files];
   
-  TCanvas *d = new TCanvas("d",Form("%s cut studies",option),1200,800);
+  TCanvas *d = new TCanvas("d",Form("Compare %s distributions",option),1600,1000);
   d->Divide(4,2);
   //d->Divide(3,2);
   
-  TLegend *l = new TLegend(0.6,0.6,0.8,0.8);
+  TLegend *l = new TLegend(0.25,0.2,0.89,0.8);
   l->SetFillColor(10);
   l->SetLineColor(10);
   
@@ -102,8 +133,11 @@ void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt")
         d->cd(j);
 		
         if(i==0){
-	  g[i]->SetLineColor(kBlack); 
-	  g[i]->Draw();
+	  g[i]->SetLineColor(kBlack);
+	  if(bDrawNormalized) 
+	    g[i]->DrawNormalized();
+	  else
+	    g[i]->Draw();
 	  if(option=="OFF"){
 	     TPaveStats *st = (TPaveStats*)g[i]->FindObject("stats");
 	     st->SetTextColor(kBlack);
@@ -111,19 +145,43 @@ void overlayPlots(const char* option="HLT"/* or "OFF" */, string fi="files.txt")
 	  }
 	}
         else { 
-	  g[i]->SetLineColor(i+1); 
+	  if(i<4)
+	    g[i]->SetLineColor(i+1);
+	  else
+	    g[i]->SetLineColor(i+2);
 	  defineYaxisMax(g[0], g[i]);
-	  g[i]->Draw("sames");
-	}					 
-        if(i>0) printStats(g[i-1], g[i]);
-        
-        ff->Close();
+	  if(bDrawNormalized)  g[i]->DrawNormalized("sames");
+	  else g[i]->Draw("sames");
+
+	}
+	if(!bDrawNormalized)					 
+	  if(i>0) printStats(g[i-1], g[i]);
+	
+       ff->Close();
         sprintf( cut,"%s",cutnames[i].c_str() );
-	if(j==1) l->AddEntry(g[i],cut,"l");	    	
+	if(j==1) {
+	  l->AddEntry(g[i],cut,"l");	    	
+	  cutnames[i].resize(6);
+	  plotname+="_"+cutnames[i];
+	}
 	else continue;
     }
     if(j==1) l->Draw("same");
+    d->Update();
   }
+
+  d->Update(); 
+
+  sprintf(filenames,"%s",plotname.c_str());
+  if( bAddRunName){
+    d->SaveAs(Form("overlay_%s_for%s.root",option,plotname));
+    d->Print(Form("overlay_%s_for%s.png",option,plotname));
+  }
+  else{
+    d->SaveAs(Form("overlay_%s.root",option));
+    d->Print(Form("overlay_%s.png",option));
+  }
+
   return;
 }
 
