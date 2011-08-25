@@ -46,8 +46,8 @@ public:
 
     AliHLTDataDeflaterParameter(const char* name, int length, int reduced)
       : fName(name), fFullBitLength(length), fReducedBitLength(reduced)
-      , fMax((0x1<<length)-1), fMaxReduced((0x1<<reduced)-1)
-      , fMask((0x1<<length)-1), fMaskReduced((0x1<<reduced)-1) 
+      , fMax((((AliHLTUInt64_t)0x1)<<length)-1), fMaxReduced((((AliHLTUInt64_t)0x1)<<reduced)-1)
+      , fMask(fMask), fMaskReduced(fMaskReduced) 
       , fValueCount(0), fBitCount(0) {}
 
     AliHLTDataDeflaterParameter(const AliHLTDataDeflaterParameter& src)
