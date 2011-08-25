@@ -130,3 +130,19 @@ Double_t AliEventPlaneResolution::GetFullEvResol(const TH1F* hSubEvCorr, Int_t k
   Double_t resSub=GetSubEvResol(hSubEvCorr);
   return GetFullEvResol(resSub,k);
 }
+//______________________________________________________________________
+Double_t AliEventPlaneResolution::GetFullEvResolLowLim(const TH1F* hSubEvCorr, Int_t k){
+  // computes low limit event plane resolution starting from sub event correlation histogram
+  if(!hSubEvCorr) return 1.;
+  Double_t resSub=GetSubEvResolLowLim(hSubEvCorr);
+  printf("%f\n",resSub);
+  return GetFullEvResol(resSub,k);  
+}
+//______________________________________________________________________
+Double_t AliEventPlaneResolution::GetFullEvResolHighLim(const TH1F* hSubEvCorr, Int_t k){
+  // computes high limit event plane resolution starting from sub event correlation histogram
+  if(!hSubEvCorr) return 1.;
+  Double_t resSub=GetSubEvResolHighLim(hSubEvCorr);
+  printf("%f\n",resSub);
+  return GetFullEvResol(resSub,k);  
+}
