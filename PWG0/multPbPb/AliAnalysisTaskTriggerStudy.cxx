@@ -15,7 +15,7 @@
 #include "TH3D.h"
 #include "AliMCParticle.h"
 #include "AliGenEventHeader.h"
-#include "AliESDCentrality.h"
+#include "AliCentrality.h"
 
 #include <iostream>
 #include "AliTriggerAnalysis.h"
@@ -34,7 +34,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskTriggerStudy)
 
 //const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"C0SM1","C0SM2","C0VBA","C0VBC","C0OM2"};       
-const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND online","V0AND offline","Physics Selection", "Rec Candle"};//,"C0OM2"};       
+const char * AliAnalysisTaskTriggerStudy::kVDNames[] = {"V0AND online","V0AND offline","Physics Selection", "Rec Candle", "Gen Canlde"};//,"C0OM2"};       
 
 AliAnalysisTaskTriggerStudy::AliAnalysisTaskTriggerStudy()
 : AliAnalysisTaskSE("TaskTriggerStudy"),
@@ -127,16 +127,19 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
   Float_t innerLayerSPD = mult->GetNumberOfITSClusters(0);  
   Float_t totalClusSPD = outerLayerSPD+innerLayerSPD;
 
-  if ( !fIsMC &&(!(fESD->IsTriggerClassFired("CMBS2A-B-NOPF-ALL")|| fESD->IsTriggerClassFired("CMBS2C-B-NOPF-ALL") || fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL")) )) return;
+  //  if ( !fIsMC &&(!(fESD->IsTriggerClassFired("CMBS2A-B-NOPF-ALL")|| fESD->IsTriggerClassFired("CMBS2C-B-NOPF-ALL") || fESD->IsTriggerClassFired("CMBAC-B-NOPF-ALL")) )) return;
+  //  if ( !fIsMC &&(!(fESD->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")))) return;
+  if ( !fIsMC &&(!(fESD->IsTriggerClassFired("CINT1-B-NOPF-FASTNOTRD")))) return;
   GetHistoSPD1  ("All", "All events before any selection")->Fill(outerLayerSPD);
   GetHistoV0M   ("All", "All events before any selection")->Fill(multV0);
 
   // V0 triggers
   Bool_t c0v0A       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0A);
   Bool_t c0v0C       = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0C);
-  Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
-  Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
-
+  // Bool_t v0AHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kASide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+  // Bool_t v0CHW     = (fTriggerAnalysis->V0Trigger(fESD, AliTriggerAnalysis::kCSide, kTRUE) == AliTriggerAnalysis::kV0BB);// should replay hw trigger
+  Bool_t v0AHW = fTriggerAnalysis->EvaluateTrigger(fESD, AliTriggerAnalysis::kCTPV0A);
+  Bool_t v0CHW = fTriggerAnalysis->EvaluateTrigger(fESD, AliTriggerAnalysis::kCTPV0C);
   Bool_t v0ABG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0ABG);
   Bool_t v0CBG = fTriggerAnalysis->IsOfflineTriggerFired(fESD, AliTriggerAnalysis::kV0CBG);
   Bool_t v0BG  = v0ABG || v0CBG;
@@ -222,19 +225,20 @@ void AliAnalysisTaskTriggerStudy::UserExec(Option_t *)
 
 
 
+  // Physics selection
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+
   Bool_t vdArray[kNVDEntries];
-  vdArray[kVDV0ANDOnline]      = c0v0A && c0v0C;
-  vdArray[kVDV0ANDOffline]     = v0AHW && v0CHW;
-  vdArray[kVDRecCandle]        = atLeast1Track;
+  vdArray[kVDV0ANDOnline]      = v0AHW && v0CHW && !v0BG ;
+  vdArray[kVDV0ANDOffline]     = c0v0A && c0v0C && isSelected;
+  vdArray[kVDRecCandle]        = atLeast1TrackESD;
   vdArray[kVDPhysSel]          = isSelected;
-  //  vdArray[kVDNTRACKSESD]  = atLeast1TrackESD;
+  vdArray[kVDGenCandle]        = atLeast1Track;
 
   FillTriggerOverlaps("All", "All Events",vdArray);
   if(!isSD)   FillTriggerOverlaps("NSD", "NSD Events",vdArray);
 
 
-  // Physics selection
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   if(!isSelected) return;
 
 
