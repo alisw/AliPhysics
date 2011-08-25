@@ -411,8 +411,16 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
   //  cout << acceptedTracks << endl;
   
   hNTracks[AliAnalysisMultPbTrackHistoManager::kHistoRec]  ->Fill(acceptedTracks);
-  Float_t v0;
-  fHistoManager->GetHistoV0vsNtracks(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(acceptedTracks, fCentrSelector->GetCorrV0(fESD,v0));
+
+  // FIXME: this used to be filled with rescaled V0. I'm using raw V0 to test some newer production here.
+  AliESDVZERO* esdV0 = fESD->GetVZEROData();
+  Float_t multV0A=esdV0->GetMTotV0A();
+  Float_t multV0C=esdV0->GetMTotV0C();
+  Float_t multV0 = multV0A+multV0C;
+  fHistoManager->GetHistoV0vsNtracks(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(acceptedTracks, multV0);
+  // FIXME: the old version:
+  // Float_t v0;
+  // fHistoManager->GetHistoV0vsNtracks(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Fill(acceptedTracks, fCentrSelector->GetCorrV0(fESD,v0));
 
   // Fill <pt> analysis histos
   fHistoManager->GetHistoPtEvent(AliAnalysisMultPbTrackHistoManager::kHistoRec)->Scale(1,"width");// correct bin width
