@@ -82,23 +82,22 @@ private:
   Int_t          FindNearestYCluster(Double_t y, UChar_t z) const;
 
 private:
-  const AliTRDReconstructor *fkReconstructor; //!
-  Char_t        fPlane;               //! Plane number
-  Char_t        fStack;               //!  stack number in supermodule
-  Char_t        fSector;              //! Sector mumber
-  Char_t        fNRows;               //!  number of pad rows in the chamber
-  UChar_t       fPositions[kMaxRows]; //!  starting index of clusters in pad row 
-  Int_t         fN;                   //! number of clusters
-  AliTRDcluster *fClusters[kMaxClustersLayer];            //Array of pointers to clusters
-  UInt_t        fIndex[kMaxClustersLayer];                //!Array of cluster indexes
-  Double_t      fX;                   //!  radial position of tb
-  
-  // obsolete !!
-  Double_t      fZ0;                  //  starting position of the layer in Z direction
-  Double_t      fZLength;             //  length of the layer in Z direction
-  
-  ClassDef(AliTRDchamberTimeBin, 2)   //  tracking propagation layer for one time bin in chamber
+  const AliTRDReconstructor *fkReconstructor; //! Global TRD reconstructor
+  Char_t        fPlane;                       //! Plane number
+  Char_t        fStack;                       //! Stack number in supermodule
+  Char_t        fSector;                      //! Sector mumber
+  Char_t        fNRows;                       //! Number of pad rows in the chamber
+  UChar_t       fPositions[kMaxRows];         //! Starting index of clusters in pad row
+  Int_t         fN;                           //! Number of clusters
+  AliTRDcluster *fClusters[kMaxClustersLayer];//  Array of pointers to clusters
+  UInt_t        fIndex[kMaxClustersLayer];    //! Array of cluster indexes
+  Double_t      fX;                           //! Radial position of tb
 
+  // obsolete !!
+  Double_t      fZ0;                          //  Starting position of the layer in Z direction
+  Double_t      fZLength;                     //  Length of the layer in Z direction
+
+  ClassDef(AliTRDchamberTimeBin, 2)           //  Tracking propagation layer for one time bin in chamber
 };
 
 #endif	// ALITRDCHAMBERTIMEBIN_H

@@ -1139,87 +1139,72 @@ Int_t AliTRDrawStream::ReadLinkData()
     return count;
 
   Int_t det = fCurrSm * 30 + fCurrStack * 6 + fCurrLayer;
-
+  // Get the correct no of rows for detector TODO
+  Int_t nrows(16);//fCurrStack==2?12:16);
   if (det > -1 && det < 540) {
-
     // ----- check which kind of data -----
     if (fCurrMajor & 0x40) {
       if ((fCurrMajor & 0x7) == 0x7) {
-	AliDebug(1, "This is a config event");
-	UInt_t *startPos = fPayloadCurr;
-	while (fPayloadCurr - fPayloadStart < fPayloadSize &&
-	       *fPayloadCurr != fgkDataEndmarker)
-	  fPayloadCurr++;
-	count += fPayloadCurr - startPos;
+        AliDebug(1, "This is a config event");
+        UInt_t *startPos = fPayloadCurr;
+        while (fPayloadCurr - fPayloadStart < fPayloadSize &&
+              *fPayloadCurr != fgkDataEndmarker) fPayloadCurr++;
+        count += fPayloadCurr - startPos;
 
-	// feeding TRAP config
-	AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
-	trapcfg->ReadPackedConfig(fCurrHC, startPos, fPayloadCurr - startPos);
+        // feeding TRAP config
+        AliTRDtrapConfig *trapcfg = AliTRDtrapConfig::Instance();
+        trapcfg->ReadPackedConfig(fCurrHC, startPos, fPayloadCurr - startPos);
+      } else {
+        Int_t tpmode = fCurrMajor & 0x7;
+        AliDebug(1, Form("Checking testpattern (mode %i) data", tpmode));
+        ReadTPData(tpmode);
       }
-      else {
-	Int_t tpmode = fCurrMajor & 0x7;
-	AliDebug(1, Form("Checking testpattern (mode %i) data", tpmode));
-	ReadTPData(tpmode);
-      }
-    }
-    else {
+    } else {
       // reading real data
       if (fDigitsManager) {
-	if ((fAdcArray = fDigitsManager->GetDigits(det))) {
-	  //fAdcArray->Expand();
-	  if (fAdcArray->GetNtime() != fCurrNtimebins)
-	    fAdcArray->Allocate(16, 144, fCurrNtimebins);
-	}
-	else {
-	  LinkError(kNoDigits);
-	}
+        if ((fAdcArray = fDigitsManager->GetDigits(det))) {
+          //fAdcArray->Expand();
+          if (fAdcArray->GetNtime() != fCurrNtimebins)
+            fAdcArray->Allocate(nrows, 144, fCurrNtimebins);
+        } else LinkError(kNoDigits);
 
-	if (!fDigitsParam) {
-	  fDigitsParam = fDigitsManager->GetDigitsParam();
-	}
-	if (fDigitsParam) {
-	  fDigitsParam->SetPretriggerPhase(det, fCurrPtrgPhase);
-	  fDigitsParam->SetNTimeBins(det, fCurrNtimebins);
-	  fDigitsParam->SetADCbaseline(det, 10);
-	}
+        if (!fDigitsParam) fDigitsParam = fDigitsManager->GetDigitsParam();
+        if (fDigitsParam) {
+          fDigitsParam->SetPretriggerPhase(det, fCurrPtrgPhase);
+          fDigitsParam->SetNTimeBins(det, fCurrNtimebins);
+          fDigitsParam->SetADCbaseline(det, 10);
+        }
 
-	if (fDigitsManager->UsesDictionaries()) {
-	  fDigitsManager->GetDictionary(det, 0)->Reset();
-	  fDigitsManager->GetDictionary(det, 1)->Reset();
-	  fDigitsManager->GetDictionary(det, 2)->Reset();
-	}
+        if (fDigitsManager->UsesDictionaries()) {
+          fDigitsManager->GetDictionary(det, 0)->Reset();
+          fDigitsManager->GetDictionary(det, 1)->Reset();
+          fDigitsManager->GetDictionary(det, 2)->Reset();
+        }
 
-	if ((fSignalIndex = fDigitsManager->GetIndexes(det))) {
-	  fSignalIndex->SetSM(fCurrSm);
-	  fSignalIndex->SetStack(fCurrStack);
-	  fSignalIndex->SetLayer(fCurrLayer);
-	  fSignalIndex->SetDetNumber(det);
-	  if (!fSignalIndex->IsAllocated())
-	    fSignalIndex->Allocate(16, 144, fCurrNtimebins);
-	}
+        if ((fSignalIndex = fDigitsManager->GetIndexes(det))) {
+          fSignalIndex->SetSM(fCurrSm);
+          fSignalIndex->SetStack(fCurrStack);
+          fSignalIndex->SetLayer(fCurrLayer);
+          fSignalIndex->SetDetNumber(det);
+          if (!fSignalIndex->IsAllocated()) fSignalIndex->Allocate(nrows, 144, fCurrNtimebins);
+        }
 
-	if (fCurrMajor & 0x20) {
-	  AliDebug(1, "This is a zs event");
-	  count += ReadZSData();
-	}
-	else {
-	  AliDebug(1, "This is a nozs event");
-	  count += ReadNonZSData();
-	}
-      }
-      else {
-	// just read until data endmarkers
-	while (fPayloadCurr - fPayloadStart < fPayloadSize &&
-	       *fPayloadCurr != fgkDataEndmarker)
-	  fPayloadCurr++;
+        if (fCurrMajor & 0x20) {
+          AliDebug(1, "This is a zs event");
+          count += ReadZSData();
+        } else {
+          AliDebug(1, "This is a nozs event");
+          count += ReadNonZSData();
+        }
+      } else { // just read until data endmarkers
+        while (fPayloadCurr - fPayloadStart < fPayloadSize &&
+              *fPayloadCurr != fgkDataEndmarker) fPayloadCurr++;
       }
     }
-  }
-  else {
+  } else {
     LinkError(kInvalidDetector, "%i", det);
     while (fPayloadCurr - fPayloadStart < fPayloadSize &&
-	   *fPayloadCurr != fgkDataEndmarker)
-      fPayloadCurr++;
+          *fPayloadCurr != fgkDataEndmarker) fPayloadCurr++;
   }
 
   if (fCurrSm > -1 && fCurrSm < 18) {
