@@ -235,8 +235,8 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
     {
 
         TParticle *part = stack->Particle(iPart);
-        TParticle *partMom = 0;
-        TParticle *partMomLast = 0;
+//         TParticle *partMom = 0;
+//         TParticle *partMomLast = 0;
 
         if (!part)
         {
@@ -244,12 +244,12 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             continue;
         }
 
-        Int_t iPartMom = part->GetMother(0);
-        Int_t iPartLastMom = part->GetMother(1);
+//         Int_t iPartMom = part->GetMother(0);
+//         Int_t iPartLastMom = part->GetMother(1);
 
         TParticlePDG *pdg = part->GetPDG(0);
         //TParticlePDG *pdgMom = 0;
-        TParticlePDG *pdgMomLast = 0;
+//         TParticlePDG *pdgMomLast = 0;
 
         if (!pdg)
         {
@@ -257,17 +257,17 @@ Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
             continue;
         }
 
-        if (iPartMom>0)
-        {
-            partMom = stack->Particle(iPartMom);
-            //pdgMom = partMom->GetPDG(0);
-        }
+//         if (iPartMom>0)
+//         {
+//             partMom = stack->Particle(iPartMom);
+//             //pdgMom = partMom->GetPDG(0);
+//         }
 
-        if (iPartLastMom>0)
-        {
-            partMomLast = stack->Particle(iPartLastMom);
-            pdgMomLast = partMomLast->GetPDG(0);
-        }
+//         if (iPartLastMom>0)
+//         {
+//             partMomLast = stack->Particle(iPartLastMom);
+//             pdgMomLast = partMomLast->GetPDG(0);
+//         }
 
 
         Double_t particleMassPart = 0; //The mass part in the Et calculation for this particle
