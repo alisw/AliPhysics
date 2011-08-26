@@ -325,11 +325,9 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo,const TLorentzVec
   else {//PHOS
     
     // Do not use bayesian, cut based on shower ellipse
-    IsPHOSPhoton(lambda0,lambda1);
+    return IsPHOSPhoton(lambda0,lambda1);
   
   }
-
-
     
 }
 
