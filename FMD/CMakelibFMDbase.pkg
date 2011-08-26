@@ -55,11 +55,32 @@ set ( DHDR  FMDbaseLinkDef.h)
 
 set ( EINCLUDE   RAW STEER/STEER STEER/CDB STEER/ESD STEER/STEERBase)
 
+set ( EXPORT 
+	AliFMDBaseDigit.h
+	AliFMDDigit.h
+	AliFMDCalibFwd.h
+	AliFMDParameters.h
+	AliFMDGeometry.h
+	AliFMDRing.h
+	AliFMDDetector.h 
+	AliFMDBoolMap.h 
+	AliFMDUShortMap.h )
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+	
+  set ( PACKSOFLAGS  ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} -lSTEER -lCDB -lESD -lSTEERBase -lRAWDatabase -L${ROOTLIBDIR} -lGeom)
+
+endif( ALICE_TARGET STREQUAL "win32gcc")
+
 # --------------------------------------------------------------------
 # Extra stuff 
 # 
 # Install OCDB data 
-install (DIRECTORY ../OCDB/FMD DESTINATION OCDB)
+install (
+  DIRECTORY ../OCDB/FMD 
+  DESTINATION OCDB
+  PATTERN ".svn" EXCLUDE)
+
 
 install (DIRECTORY scripts 
 	 DESTINATION FMD
