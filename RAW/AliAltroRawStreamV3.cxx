@@ -64,7 +64,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(AliRawReader* rawReader) :
   fAltroCFG1(0),
   fAltroCFG2(0),
   fOldStream(NULL),
-  fCheckAltroPayload(kTRUE)
+  fCheckAltroPayload(kTRUE),
+  fFormatVersion(0)
 {
   // Constructor
   // Create an object to read Altro raw digits in
@@ -110,7 +111,8 @@ AliAltroRawStreamV3::AliAltroRawStreamV3(const AliAltroRawStreamV3& stream) :
   fAltroCFG1(stream.fAltroCFG1),
   fAltroCFG2(stream.fAltroCFG2),
   fOldStream(NULL),
-  fCheckAltroPayload(stream.fCheckAltroPayload)
+  fCheckAltroPayload(stream.fCheckAltroPayload),
+  fFormatVersion(0)
 {
   // Copy constructor
   // Copy the bunch data array
@@ -153,6 +155,7 @@ AliAltroRawStreamV3& AliAltroRawStreamV3::operator = (const AliAltroRawStreamV3&
   fActiveFECsB       = stream.fActiveFECsB;
   fAltroCFG1         = stream.fAltroCFG1;
   fAltroCFG2         = stream.fAltroCFG2;
+  fFormatVersion     = stream.fFormatVersion;
 
   for(Int_t i = 0; i < kMaxNTimeBins; i++) fBunchData[i] = stream.fBunchData[i];
 
@@ -199,7 +202,7 @@ Bool_t AliAltroRawStreamV3::NextDDL()
 // Read the next DDL payload (CDH + RCU trailer)
 // Updates the information which is coming from these
 // two sources
-
+  fFormatVersion = 0;
   fPosition = 0;
   // Get next DDL payload
   // return wtih false in case no more data payloads
@@ -212,14 +215,14 @@ Bool_t AliAltroRawStreamV3::NextDDL()
   fChannelPayloadSize = -1;
   fChannelStartPos = -1;
 
-  UChar_t rcuVer = fRawReader->GetBlockAttributes();
+  fFormatVersion = fRawReader->GetBlockAttributes();
 
-  if (rcuVer < 2) {
+  if (fFormatVersion < 2) {
     // old altro format data
     if (!fOldStream) {
       fOldStream = new AliAltroRawStream(fRawReader);
       AliInfo(Form("RCU firmware verion %d detected. Using AliAltroRawStream to decode the data.",
-		   rcuVer));
+		   fFormatVersion));
     }
     Bool_t status = fOldStream->NextDDL(fData);
     if (status) {
@@ -241,7 +244,7 @@ Bool_t AliAltroRawStreamV3::NextDDL()
     return status;
   }
 
-  return ReadRCUTrailer(rcuVer);
+  return ReadRCUTrailer(fFormatVersion);
 }
 
 //_____________________________________________________________________________
@@ -609,25 +612,31 @@ void AliAltroRawStreamV3::PrintRCUTrailer() const
 {
   // Prints the contents of
   // the RCU trailer data
-  printf("RCU trailer:\n===========\n");
-  printf("FECERRA: 0x%x\nFECERRB: 0x%x\n",fFECERRA,fFECERRB);
-  printf("ERRREG2: 0x%x\n",fERRREG2);
+  printf("RCU trailer (Format version %d):\n"
+	 "==================================================\n",  GetFormatVersion());
+  printf("FECERRA:                                   0x%x\n", fFECERRA);
+  printf("FECERRB:                                   0x%x\n", fFECERRB);
+  printf("ERRREG2:                                   0x%x\n", fERRREG2);
   printf("#channels skipped due to address mismatch: %d\n",GetNChAddrMismatch());
   printf("#channels skipped due to bad block length: %d\n",GetNChLengthMismatch());
-  printf("Active FECs (branch A): 0x%x\nActive FECs (branch B): 0x%x\n",fActiveFECsA,fActiveFECsB);
-  printf("Baseline corr: 0x%x\n",GetBaselineCorr());
-  printf("Number of presamples: %d\nNumber of postsamples: %d\n",GetNPresamples(),GetNPostsamples());
-  printf("Second baseline corr: %d\n",GetSecondBaselineCorr());
-  printf("GlitchFilter: %d\n",GetGlitchFilter());
-  printf("Number of non-ZS postsamples: %d\nNumber of non-ZS presamples: %d\n",GetNNonZSPostsamples(),GetNNonZSPresamples());
-  printf("Number of ALTRO buffers: %d\n",GetNAltroBuffers());
-  printf("Number of pretrigger samples: %d\n",GetNPretriggerSamples());
-  printf("Number of samples per channel: %d\n",GetNSamplesPerCh());
-  printf("Sparse readout: %d\n",GetSparseRO());
-  printf("Sampling time: %e s\n",GetTSample());
-  printf("L1 Phase: %e s\n",GetL1Phase());
-  printf("AltroCFG1: 0x%x\nAltroCFG2: 0x%x\n",GetAltroCFG1(),GetAltroCFG2());
-  printf("===========\n");
+  printf("Active FECs (branch A):                    0x%x\n", fActiveFECsA);
+  printf("Active FECs (branch B):                    0x%x\n", fActiveFECsB);
+  printf("Baseline corr:                             0x%x\n",GetBaselineCorr());
+  printf("Number of presamples:                      %d\n", GetNPresamples());
+  printf("Number of postsamples:                     %d\n",GetNPostsamples());
+  printf("Second baseline corr:                      %d\n",GetSecondBaselineCorr());
+  printf("GlitchFilter:                              %d\n",GetGlitchFilter());
+  printf("Number of non-ZS postsamples:              %d\n",GetNNonZSPostsamples());
+  printf("Number of non-ZS presamples:               %d\n",GetNNonZSPresamples());
+  printf("Number of ALTRO buffers:                   %d\n",GetNAltroBuffers());
+  printf("Number of pretrigger samples:              %d\n",GetNPretriggerSamples());
+  printf("Number of samples per channel:             %d\n",GetNSamplesPerCh());
+  printf("Sparse readout:                            %d\n",GetSparseRO());
+  printf("Sampling time:                             %e s\n",GetTSample());
+  printf("L1 Phase:                                  %e s\n",GetL1Phase());
+  printf("AltroCFG1:                                 0x%x\n",GetAltroCFG1());
+  printf("AltroCFG2:                                 0x%x\n",GetAltroCFG2());
+  printf("==================================================\n");
 }
 
 //_____________________________________________________________________________

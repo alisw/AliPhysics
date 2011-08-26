@@ -28,7 +28,17 @@ ClassImp(AliAltroBufferV3)
 //_____________________________________________________________________________
 AliAltroBufferV3::AliAltroBufferV3(const char* fileName, AliAltroMapping *mapping):
 AliAltroBuffer(fileName,mapping),
-  fN(0)
+  fN(0),
+  fFECERRA(0),	
+  fFECERRB(0),	
+  fERRREG2(0),	
+  fERRREG3(0),	
+  fActiveFECsA(0xffff),
+  fActiveFECsB(0xffff),
+  fALTROCFG1(0),	
+  fALTROCFG2(0),	
+  fTSample(0),	
+  fL1Phase(0)
 {
   // Constructor
   memset(fArray, 0, kMaxWords*sizeof(UShort_t));
@@ -43,7 +53,17 @@ AliAltroBufferV3::~AliAltroBufferV3()
 //_____________________________________________________________________________
 AliAltroBufferV3::AliAltroBufferV3(const AliAltroBufferV3& source):
   AliAltroBuffer(source),
-  fN(source.fN)
+  fN(source.fN),
+  fFECERRA(source.fFECERRA),	
+  fFECERRB(source.fFECERRB),	
+  fERRREG2(source.fERRREG2),	
+  fERRREG3(source.fERRREG3),	
+  fActiveFECsA(source.fActiveFECsA),
+  fActiveFECsB(source.fActiveFECsB),
+  fALTROCFG1(source.fALTROCFG1),	
+  fALTROCFG2(source.fALTROCFG2),	
+  fTSample(source.fTSample),	
+  fL1Phase(source.fL1Phase)
 {
 // Copy Constructor
 
@@ -54,6 +74,18 @@ AliAltroBufferV3::AliAltroBufferV3(const AliAltroBufferV3& source):
 AliAltroBufferV3& AliAltroBufferV3::operator = (const AliAltroBufferV3& /*source*/)
 {
 //Assigment operator
+#if 0
+  fFECERRA	= source.fFECERRA;	
+  fFECERRB	= source.fFECERRB;	
+  fERRREG2	= source.fERRREG2;	
+  fERRREG3	= source.fERRREG3;	
+  fActiveFECsA	= source.fActiveFECsA;
+  fActiveFECsB	= source.fActiveFECsB;
+  fALTROCFG1	= source.fALTROCFG1;	
+  fALTROCFG2	= source.fALTROCFG2;	
+  fTSample	= source.fTSample;	
+  fL1Phase      = source.fL1Phase;
+#endif
 
   Fatal("operator =", "assignment operator not implemented");
   return *this;
@@ -89,6 +121,16 @@ void AliAltroBufferV3::WriteTrailer(Int_t wordsNumber, Short_t hwAddress)
   fFile->WriteBuffer((char *)(&temp),sizeof(UInt_t));
 
   ReverseAndWrite();
+}
+
+//_____________________________________________________________________________
+UInt_t AliAltroBufferV3::SetField(UInt_t& input, UShort_t start, UInt_t mask, UInt_t val) const
+{
+  UInt_t out = (mask << start);
+  UInt_t fld = (val << start) & out;
+  input &= ~out;
+  input |= fld;
+  return input;
 }
 
 //_____________________________________________________________________________
@@ -147,29 +189,34 @@ UChar_t AliAltroBufferV3::WriteRCUTrailer(Int_t rcuId)
   buffer  = (0x1U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
-  
-  buffer  = (0x2U << 26);
+
+  buffer =  (fERRREG2 & 0x3FFFFFF);
+  buffer |= (0x2U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  buffer  = (0x3U << 26);
+  buffer =  (fERRREG3 & 0x3FFFFFF);
+  buffer |= (0x3U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
-  buffer  = 0x3FFFFFF;
+  buffer  = (fActiveFECsA & 0x3FFFFFF);
   buffer |= (0x4U << 26);
   buffer |= (0x1U << 31);
-  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
-  buffer  = 0x3FFFFFF;
+  fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t)); 
+
+  buffer  = (fActiveFECsB & 0x3FFFFFF);
   buffer |= (0x5U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
 
-  buffer  = (0x6U << 26);
+  buffer  = (fALTROCFG1 & 0x3FFFFFF);
+  buffer |= (0x6U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   
-  buffer  = (0x7U << 26);
+  buffer  = (fALTROCFG2 & 0x3FFFFFF);
+  buffer |= (0x7U << 26);
   buffer |= (0x1U << 31);
   fFile->WriteBuffer((char *)(&buffer),sizeof(UInt_t));
   

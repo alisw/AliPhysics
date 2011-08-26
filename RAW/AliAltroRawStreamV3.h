@@ -90,6 +90,8 @@ class AliAltroRawStreamV3: public TObject {
     Double_t GetTSample() const;
     Double_t GetL1Phase() const;
     void     PrintRCUTrailer() const;
+    Bool_t   IsOldStream() const { return fOldStream != 0; }
+    UChar_t  GetFormatVersion() const { return fFormatVersion; }
  
     void  SetShortDataHeader(Bool_t flag) { fIsShortDataHeader = flag; } // Specify whenever to assume or not a short CDH format
 
@@ -159,6 +161,7 @@ class AliAltroRawStreamV3: public TObject {
     AliAltroRawStream* fOldStream;  // streamer for old altro format
 
     Bool_t           fCheckAltroPayload; // check altro payload correctness or not?
+    UChar_t          fFormatVersion;
 
     ClassDef(AliAltroRawStreamV3, 0)  // base class for reading Altro raw digits
 };
