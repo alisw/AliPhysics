@@ -140,7 +140,7 @@ class AliHLTTrackGeometry : public TObject, public AliHLTLogging
     float GetResidual(int coordinate) const {
       if (coordinate==0) return fdU;
       else if (coordinate==1) return fdV;
-      return 1000.;
+      return -1000.;
     }
 
     AliHLTUInt32_t fId; // space point id
