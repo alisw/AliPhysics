@@ -25,7 +25,7 @@ AddInclude(const char* what)
   gSystem->AddIncludePath(what);
 }
 Bool_t
-Compile(const char* script, Option_t* option="g")
+Compile(const char* script=0, Option_t* option="g")
 {
   if (!script || script[0] == '\0') { 
     std::cerr << "No script to compile!" << std::endl;
@@ -42,9 +42,9 @@ Compile(const char* script, Option_t* option="g")
   AddInclude("-I${ALICE_ROOT}/include");
   AddInclude("-I${ALICE_ROOT}/FMD");
   AddInclude("-I${ALICE_ROOT}/geant3/TGeant3");
-  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk");
-  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk/FMD");
-  AddInclude("-I${ALICE_ROOT}/../aliroot.trunk/RAW");
+  AddInclude("-I${ALICE_ROOT}/../trunk");
+  AddInclude("-I${ALICE_ROOT}/../trunk/FMD");
+  AddInclude("-I${ALICE_ROOT}/../trunk/RAW");
   Long_t ret = gROOT->ProcessLine(Form(".L %s+%s", script, option));
   return ret == 0;
 }
