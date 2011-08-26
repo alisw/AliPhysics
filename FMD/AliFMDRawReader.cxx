@@ -288,8 +288,11 @@ AliFMDRawReader::NewChannel(const AliAltroRawStreamV3& input,  UShort_t det,
   fMinStrip = pars->GetMinStrip(det, ring, sec, strbase);
   fMaxStrip = pars->GetMaxStrip(det, ring, sec, strbase);
   fPreSamp  = pars->GetPreSamples(det, ring, sec, strbase);
-  if (fSampleRate[ddl] == 0) 
+  if (fSampleRate[ddl] == 0) {
+    AliDebug(3,Form("Get sample rate for RCU @ DDL %d from OCDB", ddl));
     fSampleRate[ddl] = pars->GetSampleRate(det, ring, sec, strbase);
+  }
+  AliDebug(3,Form("RCU @ DDL %d sample rate: %d", ddl,fSampleRate[ddl]));
 
   return hwaddr;
 }

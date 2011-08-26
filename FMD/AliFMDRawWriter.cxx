@@ -176,6 +176,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 
   AliFMDParameters* pars = AliFMDParameters::Instance();
   UShort_t threshold    = 0;
+  UShort_t factor       = 0;
   UInt_t   prevddl      = 0xFFFF;
   UInt_t   prevaddr     = 0xFFF;
   // UShort_t prevStrip    = 0;
@@ -217,10 +218,11 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     threshold  = pars->GetZeroSuppression(det, ring, sector, strip);
     sampleRate = pars->GetSampleRate(det, ring, sector, strip);
     preSamples = pars->GetPreSamples(det, ring, sector, strip);
+    factor     = pars->GetPedestalFactor();
 
     if (det != oldDet) {
       AliFMDDebug(5, ("Got new detector: %d (was %d)", det, oldDet));
-      oldDet = det;
+      oldDet = det;      
     }
     AliFMDDebug(15, ("Sample rate is %d", sampleRate));
     
@@ -259,8 +261,8 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
 	  // When the first argument is false, we write the real
 	  // header. 
 	  AliFMDDebug(15, ("Closing output"));
-	  /* nBits += */ altro->Flush();
-	  /* nBits += */ altro->WriteDataHeader(kFALSE, kFALSE);
+	  WriteRCUTrailer(altro, prevddl, threshold > 0, factor, sampleRate); 
+    
 	  delete altro;
 	  altro = 0;
 	}
@@ -306,14 +308,46 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     ZeroSuppress(data.fArray, nWords, peds.fArray, noise.fArray, threshold);
     if (nWords > 0) 
       /* nBits += */ altro->WriteChannel(prevaddr,nWords,data.fArray,threshold);
-    /* nBits += */ altro->Flush();
-    /* nBits += */ altro->WriteDataHeader(kFALSE, kFALSE);
+    WriteRCUTrailer(altro, prevddl, threshold > 0, factor, sampleRate); 
     delete altro;
   }
   AliFMDDebug(5, ("Wrote a total of %d words in %ld bytes for %d counts", 
 		  nWords, nBits / 8, nCounts));
   return nBits;
 }
+//____________________________________________________________________
+void
+AliFMDRawWriter::WriteRCUTrailer(AliAltroBufferV3* altro,
+				 UInt_t ddl,
+				 Bool_t zs,
+				 UShort_t factor,
+				 UShort_t rate) const
+{
+  // Flush and write the data header
+  altro->Flush();
+  altro->WriteDataHeader(kFALSE, kFALSE);
+    
+  // Set parameters in RCU trailer. 
+  // Zero-suppression flag
+  altro->SetZeroSupp(zs); // bool
+  // WARNING: We store the noise factor in the 2nd baseline
+  // filters excluded post samples, since we'll never use that
+  // mode. 
+  altro->SetNPostsamples(factor); // 
+  // WARNING: We store the sample rate in the number of pre-trigger
+  // samples, since we'll never use that mode.
+  altro->SetNPretriggerSamples(rate); // fSampleRate[ddl]
+  // Active front-end cars 
+  altro->SetActiveFECsA((ddl == 0 ? 0x1 : 0x3));
+  altro->SetActiveFECsB((ddl == 0 ? 0x1 : 0x3));
+
+  // Calculate number of samples 
+  altro->SetNSamplesPerCh(rate * 128);
+  AliDebug(5,Form("Writing RCU trailer @ DDL %d w/zs=%d, factor=%d, rate=%d",
+		  ddl, zs > 0, factor, rate));
+  altro->WriteRCUTrailer(ddl);
+}
+
 //____________________________________________________________________
 void
 AliFMDRawWriter::ZeroSuppress(Int_t*& data, Int_t nWords, 

@@ -26,6 +26,7 @@
 //____________________________________________________________________
 class AliFMD;
 class AliAltroBuffer;
+class AliAltroBufferV3;
 class TArrayI;
 class TArrayF;
 class TClonesArray;
@@ -75,6 +76,11 @@ protected:
       fThreshold(o.fThreshold)
   {}
   AliFMDRawWriter& operator=(const AliFMDRawWriter&) { return *this; }
+  void WriteRCUTrailer(AliAltroBufferV3* altro,
+		       UInt_t ddl,
+		       Bool_t zs,
+		       UShort_t factor,
+		       UShort_t rate) const;
   AliFMD*       fFMD;              //! Pointer to detector description 
   UShort_t      fSampleRate;       // The sample rate (0 -> inferred from data)
   UShort_t      fChannelsPerAltro; // Number of pre-amp. channels/adc channel 
