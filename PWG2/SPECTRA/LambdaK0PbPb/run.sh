@@ -20,7 +20,7 @@ task=no
 fit=no
 usePID=kTRUE
 binMin=0
-binMax=6
+binMax=10
 ihist=0
 give_help() {
 
@@ -89,7 +89,8 @@ while getopts "r:hd:mg:p:n:w:t:l:f:b:x:ic:s:" opt; do
       fit=yes
       ;;
     b)
-      fitBin=`printf %2.2d $OPTARG`
+      #fitBin=`printf %2.2d $OPTARG`
+      fitBin=$OPTARG
       ;;
     i)
       usePID=kFALSE
@@ -169,7 +170,8 @@ if [ "$task" = "yes" ]
     fi
 elif [ "$fit" = "yes" ]
 then    
-    root FitSpectrum.C\(\"./output/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",${ihist},$partID\)
+#    root FitSpectrum.C\(\"./output/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",${ihist},$partID\)
+    root FitSpectrum.C\(\"./output10binsNew/$fitFolder/lambdak0_${fitBin}.root\",\"clambdak0Histo_${fitBin}\",\"$suffix\",${ihist},$partID\)
 else
     give_help
 fi

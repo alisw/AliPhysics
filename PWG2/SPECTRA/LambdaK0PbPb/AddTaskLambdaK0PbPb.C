@@ -21,16 +21,18 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
 
   // Configure analysis
   //===========================================================================
-    Int_t nbMinTPCclusters = 80;
-    Int_t lCollidingSystems = 1; 
-    TString fAnalysisType = "ESD";
-    TString lAnalysisPidMode  = "withoutPID";
-    TString lAnalysisCut      = "no";    
+  // Int_t nbMinTPCclusters = 80;
+  // Int_t lCollidingSystems = 1; 
+  // TString fAnalysisType = "ESD";
+    //    TString lAnalysisPidMode  = "withPID";
+    // TString lAnalysisCut      = "no";    
     //Int_t iMCAnalysis = 0;
      
     AliESDtrackCuts * myTracksCuts = new AliESDtrackCuts();
      myTracksCuts->SetRequireTPCRefit(kTRUE);
-     myTracksCuts->SetMinNClustersTPC(nbMinTPCclusters);
+     // myTracksCuts->SetMinNClustersTPC(nbMinTPCclusters);
+     myTracksCuts->SetMinNCrossedRowsTPC(70);
+     myTracksCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
  
      nbin = binMax - binMin + 1;
 
@@ -42,11 +44,11 @@ AliAnalysisTaskPerformanceStrange ** AddTaskLambdaK0PbPb(const char * outfilenam
     task[itask] = new AliAnalysisTaskPerformanceStrange("TaskLambdaK0");
     cout << "Booking " << ibin << "  "<< itask << " " << task[itask] <<endl;
  
-    task[itask]->SetCollidingSystems(lCollidingSystems);
-    task[itask]->SetAnalysisType(fAnalysisType);
-    task[itask]->SetAnalysisMC(iMCAnalysis);
-    task[itask]->SetAnalysisCut(lAnalysisCut);
-    task[itask]->SetUsePID(lAnalysisPidMode);
+    //task[itask]->SetCollidingSystems(lCollidingSystems);
+    //task[itask]->SetAnalysisType(fAnalysisType);
+    //task[itask]->SetAnalysisMC(iMCAnalysis);
+    //task[itask]->SetAnalysisCut(lAnalysisCut);
+    //  task[itask]->SetUsePID(lAnalysisPidMode);
     task[itask]->SetTrackCuts(myTracksCuts);
    
     mgr->AddTask(task[itask]);
