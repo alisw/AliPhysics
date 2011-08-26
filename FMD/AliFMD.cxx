@@ -1024,9 +1024,10 @@ AliFMD::Raw2SDigits(AliRawReader* reader)
   // Bool_t ret = fmdReader.ReadAdcs(sdigits, kTRUE, kTRUE);
   // sdigits->ls();
   UShort_t ns = sdigits->GetEntriesFast();
-  for (UShort_t i = 0; i < ns; i++) 
-    sdigits->At(i)->Print("pl");
-  
+  if (AliLog::GetDebugLevel("FMD", 0) > 5) {
+    for (UShort_t i = 0; i < ns; i++) 
+      sdigits->At(i)->Print("pl");
+  } 
   AliFMDDebug(1, ("Got a total of %d SDigits", ns));
 
   fLoader->TreeS()->Fill();
