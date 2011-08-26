@@ -39,6 +39,13 @@ set ( SRCS
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")
 set ( DHDR  FMDrecLinkDef.h)
 set ( EINCLUDE  RAW STEER/STEER STEER/ESD STEER/STEERBase)
+set ( EXPORT AliFMDRawReader.h )
+
+if( ALICE_TARGET STREQUAL "win32gcc")
+  set ( PACKSOFLAGS  
+    ${SOFLAGS} -L${ALICE_ROOT}/lib/tgt_${ALICE_TARGET} 
+    -lFMDbase -lSTEER -lESD -lSTEERBase -lRAWDatarec)
+endif( ALICE_TARGET STREQUAL "win32gcc")
 #
 # EOF
 #
