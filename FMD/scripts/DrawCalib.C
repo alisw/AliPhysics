@@ -1,5 +1,6 @@
 #ifndef __CINT__
 #include <AliCDBManager.h>
+#include <AliCDBStorage.h>
 #include <AliFMDCalibDrawer.h>
 #include <TSystem.h>
 #include <TGFrame.h>
@@ -105,7 +106,14 @@ public:
       fRange(&fSelection, "Range"), 
       fThreshold(&fSelection, "Threshold"),
       fDraw(&fMain, "Draw"),
-      fLayout(kLHintsExpandX, 2, 2, 2, 2)
+      fLayout(kLHintsExpandX, 2, 2, 2, 2),
+      fCPedestal(0),
+      fCNoise(0),
+      fCGain(0),
+      fCDead(0),
+      fCRate(0),
+      fCRange(0),
+      fCThreshold(0)
   {
     fSetup.AddFrame(&fLRun,  &fLayout);
     fSetup.AddFrame(&fRun,   &fLayout);
@@ -141,6 +149,9 @@ public:
     fDraw.Connect("Clicked()", "Menu", this, "Handle()");
     fInit.Connect("Clicked()", "Menu", this, "Init()");
 
+    AliCDBManager* cdb = AliCDBManager::Instance();
+    if (cdb->GetDefaultStorage())
+      fOCDB.SetText(cdb->GetDefaultStorage()->GetURI().Data());
     fCD.Init(runNo);
   }
   TCanvas* MakeCanvas(const char* name, const char* title)
@@ -170,10 +181,10 @@ public:
   }
   void Handle()
   {
-    static Short_t oD;
-    static Char_t  oR;
-    static Short_t oS;
-    static Short_t oT;
+    // static Short_t oD;
+    // static Char_t  oR;
+    // static Short_t oS;
+    // static Short_t oT;
     Short_t d = fDet.GetIntNumber();
     Char_t  r = fRing.GetText()[0];
     Short_t s = fSec.GetIntNumber();
@@ -236,9 +247,11 @@ DrawCalib()
 #endif
 
   AliCDBManager* cdb = AliCDBManager::Instance();
-  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  cdb->SetSpecificStorage("FMD/Calib/Pedestal", "local:///mnt/hitachi/ocdb/2011");
-  cdb->SetSpecificStorage("FMD/Calib/PulseGain", "local:///mnt/hitachi/ocdb/2011");
+  // cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  // cdb->SetSpecificStorage("FMD/Calib/Pedestal", "local:///mnt/hitachi/ocdb/2011");
+  // cdb->SetSpecificStorage("FMD/Calib/PulseGain",
+  // "local:///mnt/hitachi/ocdb/2011");
+  cdb->SetDefaultStorage("local:///mnt/hitachi/ocdb/2011");
 
   Menu* m = new Menu(145167);
   // cd->DrawPedestals(d,r,s,t);
