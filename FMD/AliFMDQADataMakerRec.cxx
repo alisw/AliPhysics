@@ -139,6 +139,7 @@ TH1* AliFMDQADataMakerRec::MakeADCHist(UShort_t d, Char_t r, Short_t b)
   hist->SetLineColor(color);
   hist->SetMarkerColor(color);
   hist->GetXaxis()->SetNdivisions(408,false);
+  hist->SetDirectory(0);
   // hist->SetStats(0);
 
   return hist;
@@ -165,6 +166,7 @@ TH1* AliFMDQADataMakerRec::MakeELossHist(UShort_t d, Char_t r, Short_t b)
   hist->SetFillColor(color);
   hist->SetLineColor(color);
   hist->SetMarkerColor(color);
+  hist->SetDirectory(0);
   // hist->SetStats(0);
 
   return hist;
@@ -221,6 +223,7 @@ void AliFMDQADataMakerRec::InitRaws()
   hErrors->GetXaxis()->SetBinLabel(3, "FMD3");
   hErrors->SetYTitle("# errors");
   hErrors->SetZTitle("Events [log]");
+  hErrors->SetDirectory(0);
   Add2RawsList(hErrors, 1, !expert, image, !saveCorr);
   //AliInfo(Form("Adding %30s to raw list @ %2d", hErrors->GetName(), 1));
 
