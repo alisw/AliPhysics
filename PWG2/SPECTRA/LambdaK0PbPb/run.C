@@ -27,7 +27,7 @@ TList * listToLoad = new TList(); // Additional classes to be loaded, see InitAn
 TChain * GetAnalysisChain(const char * incollection);
 void InitAndLoadLibs(Int_t runMode=kMyRunModeLocal, Int_t workers=0,Bool_t debug=0) ;
 
-void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 0, Bool_t isMC = 0, Bool_t usePID = kTRUE, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full", Int_t binMin=0, Int_t binMax = 10)
+void run(const char * data, const char * passOrPath, Long64_t nev = -1, Long64_t offset = 0, Bool_t debug = kFALSE, Int_t runMode = 2, Bool_t isMC = 0, Bool_t usePID = kTRUE, const char* option = "",TString customSuffix = "", Int_t workers = -1, const char * gridMode="full", Int_t binMin=0, Int_t binMax = 10)
 {
   // runMode:
   //
@@ -232,7 +232,8 @@ void InitAndLoadLibs(Int_t runMode, Int_t workers,Bool_t debug) {
       //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-20-AN");
       //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-21-AN");
       //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-28-AN");
-      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-31-AN");
+      //gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-31-AN");
+      gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-33-AN");
 
       // Enable the needed package
       // FIXME: what if I don't want to use par files?
