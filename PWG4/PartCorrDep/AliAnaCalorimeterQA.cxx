@@ -74,12 +74,17 @@ fhIM(0 ),                  fhIMCellCut(0),             fhAsym(0),
 fhNCellsPerCluster(0),     fhNCellsPerClusterMIP(0),   fhNCellsPerClusterMIPCharged(0), 
 fhNClusters(0),    
 
-//Timing, bad cells
-fhClusterTimeEnergy(0),           fhCellTimeSpreadRespectToCellMax(0), fhCellIdCellLargeTimeSpread(0), 
-fhBadClusterMaxCellTimeEnergy(0), fhBadClusterMaxCellCloseCellRatio(0), 
-fhBadClusterLambda0(0),           fhBadClusterLambda1(0), 
-fhBadClusterL0L1(0),              fhBadClusterDispersion(0), 
-fhClusterMaxCellTimeEnergy(0),    fhClusterMaxCellCloseCellRatio(0), 
+//Timing
+fhClusterTimeEnergy(0),               fhCellTimeSpreadRespectToCellMax(0),  
+fhCellIdCellLargeTimeSpread(0),       fhClusterPairDiffTimeE(0),
+
+fhClusterMaxCellCloseCellRatio(0),    fhClusterMaxCellDiff(0),
+//
+//bad cells
+fhBadClusterEnergy(0),                fhBadClusterTimeEnergy(0),            fhBadClusterPairDiffTimeE(0),
+fhBadClusterMaxCellCloseCellRatio(0), fhBadClusterMaxCellDiff(0),
+fhBadClusterLambda0(0),               fhBadClusterLambda1(0), 
+fhBadClusterL0L1(0),                  fhBadClusterDispersion(0), 
 
 //Position
 fhRNCells(0),              fhXNCells(0),               fhYNCells(0),            fhZNCells(0),
@@ -182,18 +187,21 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
   Int_t ndRbins     = GetHistodRBins();           Float_t dRmax     = GetHistodRMax();           Float_t dRmin     = GetHistodRMin();
   Int_t ntimebins   = GetHistoTimeBins();         Float_t timemax   = GetHistoTimeMax();         Float_t timemin   = GetHistoTimeMin();       
-  Int_t nbins       = GetHistoNClusterCellBins(); Int_t nmax        = GetHistoNClusterCellMax(); Int_t nmin        = GetHistoNClusterCellMin(); 
+  Int_t nbins       = GetHistoNClusterCellBins(); Int_t   nmax      = GetHistoNClusterCellMax(); Int_t   nmin      = GetHistoNClusterCellMin(); 
   Int_t nratiobins  = GetHistoRatioBins();        Float_t ratiomax  = GetHistoRatioMax();        Float_t ratiomin  = GetHistoRatioMin();
   Int_t nvdistbins  = GetHistoVertexDistBins();   Float_t vdistmax  = GetHistoVertexDistMax();   Float_t vdistmin  = GetHistoVertexDistMin();
   Int_t rbins       = GetHistoRBins();            Float_t rmax      = GetHistoRMax();            Float_t rmin      = GetHistoRMin(); 
   Int_t xbins       = GetHistoXBins();            Float_t xmax      = GetHistoXMax();            Float_t xmin      = GetHistoXMin(); 
   Int_t ybins       = GetHistoYBins();            Float_t ymax      = GetHistoYMax();            Float_t ymin      = GetHistoYMin(); 
   Int_t zbins       = GetHistoZBins();            Float_t zmax      = GetHistoZMax();            Float_t zmin      = GetHistoZMin(); 
-  Int_t nv0sbins    = GetHistoV0SignalBins();     Int_t nv0smax     = GetHistoV0SignalMax();     Int_t nv0smin     = GetHistoV0SignalMin(); 
-  Int_t nv0mbins    = GetHistoV0MultiplicityBins();Int_t nv0mmax    = GetHistoV0MultiplicityMax();Int_t nv0mmin    = GetHistoV0MultiplicityMin(); 
-  Int_t ntrmbins    = GetHistoTrackMultiplicityBins();Int_t ntrmmax = GetHistoTrackMultiplicityMax();Int_t ntrmmin = GetHistoTrackMultiplicityMin(); 
   Int_t ssbins      = GetHistoShowerShapeBins();  Float_t ssmax     = GetHistoShowerShapeMax();  Float_t ssmin     = GetHistoShowerShapeMin();
+  Int_t tdbins      = GetHistoDiffTimeBins() ;    Float_t tdmax     = GetHistoDiffTimeMax();     Float_t tdmin     = GetHistoDiffTimeMin();
 
+  Int_t nv0sbins    = GetHistoV0SignalBins();          Int_t nv0smax = GetHistoV0SignalMax();          Int_t nv0smin = GetHistoV0SignalMin(); 
+  Int_t nv0mbins    = GetHistoV0MultiplicityBins();    Int_t nv0mmax = GetHistoV0MultiplicityMax();    Int_t nv0mmin = GetHistoV0MultiplicityMin(); 
+  Int_t ntrmbins    = GetHistoTrackMultiplicityBins(); Int_t ntrmmax = GetHistoTrackMultiplicityMax(); Int_t ntrmmin = GetHistoTrackMultiplicityMin(); 
+  
+  
   //EMCAL
   Int_t colmax = 48;
   Int_t rowmax = 24;
@@ -243,13 +251,22 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterMaxCellCloseCellRatio->SetYTitle("ratio");
   outputContainer->Add(fhClusterMaxCellCloseCellRatio);
   
-  fhClusterMaxCellTimeEnergy  = new TH2F ("hClusterMaxCellTimeEnergy","energy vs TOF of maximum constributing cell, reconstructed clusters",
-                                          nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
-  fhClusterMaxCellTimeEnergy->SetXTitle("E_{cluster} (GeV) ");
-  fhClusterMaxCellTimeEnergy->SetYTitle("TOF (ns)");
-  outputContainer->Add(fhClusterMaxCellTimeEnergy);  
+  fhClusterMaxCellDiff  = new TH2F ("hClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy",
+                                       nptbins,ptmin,ptmax, 500,0,1.); 
+  fhClusterMaxCellDiff->SetXTitle("E_{cluster} (GeV) ");
+  fhClusterMaxCellDiff->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster} (GeV)");
+  outputContainer->Add(fhClusterMaxCellDiff);  
+    
+  fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E, only good clusters",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+  fhClusterPairDiffTimeE->SetXTitle("E_{cluster} (GeV)");
+  fhClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
+  outputContainer->Add(fhClusterPairDiffTimeE);  
   
   if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster()){
+    
+    fhBadClusterEnergy  = new TH1F ("hBadClusterEnergy","Bad cluster energy", nptbins,ptmin,ptmax); 
+    fhBadClusterEnergy->SetXTitle("E_{cluster} (GeV) ");
+    outputContainer->Add(fhBadClusterEnergy);
     
     fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCell","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
                                                    nptbins,ptmin,ptmax, 100,0,1.); 
@@ -257,12 +274,23 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterMaxCellCloseCellRatio->SetYTitle("ratio");
     outputContainer->Add(fhBadClusterMaxCellCloseCellRatio);
         
-    fhBadClusterMaxCellTimeEnergy  = new TH2F ("hBadClusterMaxCellTimeEnergy","energy vs TOF of maximum constributing cell, reconstructed clusters",
+    fhBadClusterMaxCellDiff  = new TH2F ("hBadClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy for bad clusters",
+                                                   nptbins,ptmin,ptmax, 500,0,1.); 
+    fhBadClusterMaxCellDiff->SetXTitle("E_{cluster} (GeV) ");
+    fhBadClusterMaxCellDiff->SetYTitle("(E_{cluster} - E_{cell max}) / E_{cluster} (GeV)");
+    outputContainer->Add(fhBadClusterMaxCellDiff);
+    
+    fhBadClusterTimeEnergy  = new TH2F ("hBadClusterTimeEnergy","energy vs TOF of reconstructed bad clusters",
                                                nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
-    fhBadClusterMaxCellTimeEnergy->SetXTitle("E_{cluster} (GeV) ");
-    fhBadClusterMaxCellTimeEnergy->SetYTitle("TOF (ns)");
-    outputContainer->Add(fhBadClusterMaxCellTimeEnergy);    
+    fhBadClusterTimeEnergy->SetXTitle("E_{cluster} (GeV) ");
+    fhBadClusterTimeEnergy->SetYTitle("TOF (ns)");
+    outputContainer->Add(fhBadClusterTimeEnergy);    
 
+    fhBadClusterPairDiffTimeE = new TH2F("hBadClusterPairDiffTimeE","cluster pair time difference (bad - good) vs E from bad cluster",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+    fhBadClusterPairDiffTimeE->SetXTitle("E_{bad cluster} (GeV)");
+    fhBadClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
+    outputContainer->Add(fhBadClusterPairDiffTimeE);    
+    
     fhBadClusterLambda0  = new TH2F ("hBadClusterLambda0","bad clusters, shower shape, #lambda^{2}_{0} vs E ",
                                                nptbins,ptmin,ptmax, ssbins,ssmin,ssmax); 
     fhBadClusterLambda0->SetXTitle("E_{cluster} (GeV) ");
@@ -366,7 +394,6 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhNCellsPerCluster  = new TH2F ("hNCellsPerCluster","# cells per cluster vs energy vs #eta",nptbins,ptmin,ptmax, nbins,nmin,nmax); 
   fhNCellsPerCluster->SetXTitle("E (GeV)");
   fhNCellsPerCluster->SetYTitle("n cells");
-  fhNCellsPerCluster->SetZTitle("#eta");
   outputContainer->Add(fhNCellsPerCluster);
     
   fhNCellsPerClusterMIP  = new TH2F ("hNCellsPerClusterMIP","# cells per cluster vs energy vs #eta, smaller bin for MIP search", 
@@ -1427,11 +1454,6 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       if(IsFiducialCutOn()) in =  GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
       if(!in) continue;
       
-      //Get module of cluster
-      nCaloClustersAccepted++;
-      nModule = GetModuleNumber(clus);
-      if(nModule >=0 && nModule < fNModules) nClustersInModule[nModule]++;
-      
       //MC labels
       nLabel = clus->GetNLabels();
       labels = clus->GetLabels();
@@ -1543,7 +1565,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         if(cell->GetCellAmplitude(absId) > emax) {
           imax = ipos;
           emax = cell->GetCellAmplitude(absId);
-          tmax = cell->GetCellTime(absId);
+          tmax = cell->GetCellTime(absId)*1e9;
         } 
         
       }// cluster cell loop
@@ -1552,14 +1574,51 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       Bool_t badCluster = kFALSE;
       if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster()){
         //Bad clusters histograms
-        Float_t minNCells = 1+mom.E()/4;//-x*x*0.0033
-        if(nCaloCellsPerCluster < minNCells) {
+        Float_t minNCells = 1+mom.E()/6;
+        //if(nCaloCellsPerCluster > 8) minNCells = 0;
+        if(clus->GetM02() < 0.01 || nCaloCellsPerCluster < minNCells) {
+          //if(clus->GetM02() > 0 || TMath::Abs(clus->GetM20()) > 0 || clus->GetDispersion() > 0)
+          
+          Int_t sm =0; Int_t ietaa=-1; Int_t iphii = 0; Int_t rcu = 0;
+          sm = GetModuleNumberCellIndexes(absId,fCalorimeter, ietaa, iphii, rcu);
+//          if(clus->GetNCells() > 3){
+//            printf("Bad  : E %f, ncells %d, nclusters %d, dist to bad %f, l0 %f, l1 %f, d %f, cell max t %f, cluster TOF %f, sm %d, icol %d, irow %d, rcu %d\n", 
+//                   clus->E(), clus->GetNCells(),nCaloClusters, clus->GetDistanceToBadChannel(), 
+//                   clus->GetM02(), clus->GetM20(), clus->GetDispersion(),tmax, tof,sm,ietaa,iphii,rcu);
+//          }
+          
           badCluster = kTRUE;
-          if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
-            fhBadClusterMaxCellTimeEnergy->Fill(mom.E(),tmax);
-          else 
-            fhBadClusterMaxCellTimeEnergy->Fill(mom.E(),tof);
+          
+          fhBadClusterEnergy     ->Fill(clus->E());
+          fhBadClusterMaxCellDiff->Fill(clus->E(),(clus->E()-emax)/clus->E());
+          fhBadClusterTimeEnergy ->Fill(clus->E(),tof);
           //printf("bad tof : %2.3f\n",tof);
+          //if(clus->E() - emax < 0)printf("What?\n");
+
+          //Clusters in event time difference
+          
+            for(Int_t iclus2 = 0; iclus2 < nCaloClusters; iclus2++ ){
+              
+              AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(iclus2);
+              
+              if(clus->GetID()==clus2->GetID()) continue;
+              
+              if(clus->GetM02() > 0.01) {
+                fhBadClusterPairDiffTimeE  ->Fill(clus->E(), tof-clus2->GetTOF()*1.e9);
+//               if(clus->GetNCells()>3) printf("\t i %d, E %f, nCells %d, dist to bad %f, good tof %f, bad tof %f, diff %f \n",
+//                       iclus2, clus2->E(), clus2->GetNCells(), clus->GetDistanceToBadChannel(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9);
+              }
+//              else{  
+//                Int_t absId2 = clus2->GetCellsAbsId()[0];
+//                Int_t sm2 =0; Int_t ietaa2=-1; Int_t iphii2 = 0; Int_t rcu2 = 0;
+//                sm2 = GetModuleNumberCellIndexes(absId2,fCalorimeter, ietaa2, iphii2, rcu2);
+//                 if(clus->GetNCells()>3) printf("i %d, E %f, nCells %d, bad tof %f, bad tof %f, diff %f, sm %d, icol %d, irow %d, rcu %d\n",
+//                       iclus2, clus2->E(), clus2->GetNCells(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9,sm2,ietaa2,iphii2,rcu2);
+//                
+//              }
+              
+            }
+          
           
           for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
             //	printf("Index %d\n",ipos);
@@ -1584,10 +1643,30 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       }
       
       if(!badCluster){
-        if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) 
-          fhClusterMaxCellTimeEnergy->Fill(mom.E(),tmax);
-        else 
-          fhClusterMaxCellTimeEnergy->Fill(mom.E(),tof);
+        
+        //        if(TMath::Abs(clus->GetM20()) < 0.0001 && clus->GetNCells() > 3){
+        //          Int_t sm =0; Int_t ietaa=-1; Int_t iphii = 0; Int_t rcu = 0;
+        //          sm = GetModuleNumberCellIndexes(absId,fCalorimeter, ietaa, iphii, rcu);
+        //          printf("Good : E %f, mcells %d, l0 %f, l1 %f, d %f, cell max t %f, cluster TOF %f, sm %d, icol %d, irow %d \n", 
+        //                 clus->E(), clus->GetNCells(),clus->GetM02(), clus->GetM20(), clus->GetDispersion(),tmax, tof,sm,ietaa,iphii);
+        //
+        //        }
+        
+        fhClusterMaxCellDiff->Fill(clus->E(),(clus->E()-emax)/clus->E());
+        fhClusterTimeEnergy ->Fill(mom.E(),tof);
+        
+        //Clusters in event time difference
+        for(Int_t iclus2 = 0; iclus2 < nCaloClusters; iclus2++ ){
+          
+          AliVCluster* clus2 =  (AliVCluster*) caloClusters->At(iclus2);
+          
+          if(clus->GetID()==clus2->GetID()) continue;
+          
+          if(clus->GetM02() > 0.01) {
+            fhClusterPairDiffTimeE  ->Fill(clus->E(), tof-clus2->GetTOF()*1.e9);
+          }
+        }        
+        
         for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
           //	printf("Index %d\n",ipos);
           if(ipos!=imax){
@@ -1597,76 +1676,85 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             fhClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
           }
         }
+        
+        // check time of cells respect to max energy cell
+        if(nCaloCellsPerCluster > 1 &&  GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+          for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+            if(imax == ipos) continue;
+            absId  = indexList[ipos]; 
+            Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
+            fhCellTimeSpreadRespectToCellMax->Fill(diff);
+            if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
+          }// fill cell-cluster histogram loop
+        }//check time of cells respect to max energy cell
+        
+        
+        //Get module of cluster
+        nCaloClustersAccepted++;
+        nModule = GetModuleNumber(clus);
+        if(nModule >=0 && nModule < fNModules) nClustersInModule[nModule]++;
+        
+        //-----------------------------------------------------------
+        //Fill histograms related to single cluster or track matching
+        //-----------------------------------------------------------
+        ClusterHistograms(mom, pos, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
+        
+        
+        //-----------------------------------------------------------
+        //Invariant mass
+        //-----------------------------------------------------------
+        if(fFillAllPi0Histo){
+          if(GetDebug()>1) printf("Invariant mass \n");
+          
+          //do not do for bad vertex
+          // Float_t fZvtxCut = 40. ;	
+          if(v[2]<-GetZvertexCut() || v[2]> GetZvertexCut()) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
+          
+          Int_t nModule2 = -1;
+          Int_t nCaloCellsPerCluster2=0;
+          if (nCaloClusters > 1 ) {
+            for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
+              AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
+              
+              //Get cluster kinematics
+              clus2->GetMomentum(mom2,v);
+              //Check only certain regions
+              Bool_t in2 = kTRUE;
+              if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
+              if(!in2) continue;	
+              //Get module of cluster
+              nModule2 = GetModuleNumber(clus2);
+              //Cells per cluster
+              nCaloCellsPerCluster2 = clus2->GetNCells();
+            }
+            //Fill invariant mass histograms
+            //All modules
+            
+            //printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
+            fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
+            //Single module
+            if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+              fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+            
+            //Select only clusters with at least 2 cells
+            if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
+              //All modules
+              fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
+              //Single modules
+              if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+                fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+            }
+            
+            //Asymetry histograms
+            fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
+            
+          }// 2nd cluster loop
+        }//Fill Pi0
+        
       }//good cluster
       
-      // check time of cells respect to max energy cell
-      if(nCaloCellsPerCluster > 1 &&  GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
-        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-          if(imax == ipos) continue;
-          absId  = indexList[ipos]; 
-          Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
-          fhCellTimeSpreadRespectToCellMax->Fill(diff);
-          if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
-        }// fill cell-cluster histogram loop
-      }//check time of cells respect to max energy cell
-      
-      //-----------------------------------------------------------
-      //Fill histograms related to single cluster or track matching
-      //-----------------------------------------------------------
-      ClusterHistograms(mom, tof, pos, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
-      
-      
-      //-----------------------------------------------------------
-      //Invariant mass
-      //-----------------------------------------------------------
-      if(fFillAllPi0Histo){
-        if(GetDebug()>1) printf("Invariant mass \n");
-        
-        //do not do for bad vertex
-        // Float_t fZvtxCut = 40. ;	
-        if(v[2]<-GetZvertexCut() || v[2]> GetZvertexCut()) continue ; //Event can not be used (vertex, centrality,... cuts not fulfilled)
-        
-        Int_t nModule2 = -1;
-        Int_t nCaloCellsPerCluster2=0;
-        if (nCaloClusters > 1 ) {
-          for(Int_t jclus = iclus + 1 ; jclus < nCaloClusters ; jclus++) {
-            AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(jclus);
-            
-            //Get cluster kinematics
-            clus2->GetMomentum(mom2,v);
-            //Check only certain regions
-            Bool_t in2 = kTRUE;
-            if(IsFiducialCutOn()) in2 =  GetFiducialCut()->IsInFiducialCut(mom2,fCalorimeter) ;
-            if(!in2) continue;	
-            //Get module of cluster
-            nModule2 = GetModuleNumber(clus2);
-            //Cells per cluster
-            nCaloCellsPerCluster2 = clus2->GetNCells();
-          }
-          //Fill invariant mass histograms
-          //All modules
-          
-          //printf("QA : Fill inv mass histo: pt1 %f, pt2 %f, pt12 %f, mass %f, calo %s \n",mom.Pt(),mom2.Pt(),(mom+mom2).Pt(),(mom+mom2).M(), fCalorimeter.Data());
-          fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          //Single module
-          if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-            fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          
-          //Select only clusters with at least 2 cells
-          if(nCaloCellsPerCluster > 1 && nCaloCellsPerCluster2 > 1) {
-            //All modules
-            fhIMCellCut  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-            //Single modules
-            if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
-              fhIMCellCutMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
-          }
-          
-          //Asymetry histograms
-          fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
-          
-        }// 2nd cluster loop
-      }//cluster loop
-    }//Fill Pi0
+    }//cluster loop
+
     //Number of clusters histograms
     if(nCaloClustersAccepted > 0) fhNClusters->Fill(nCaloClustersAccepted);
     //  Number of clusters per module
@@ -1873,7 +1961,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 
 
 //_____________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Double_t tof, 
+void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, 
                                             Float_t *pos, const Int_t nCaloCellsPerCluster,const Int_t nModule,
                                             const Int_t nTracksMatched,  const AliVTrack * track,  
                                             const Int_t * labels, const Int_t nLabels){
@@ -1926,7 +2014,6 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, const Doub
     fhRE     ->Fill(rxyz,e);
     fhRNCells->Fill(rxyz  ,nCaloCellsPerCluster);
   }
-  fhClusterTimeEnergy->Fill(e,tof);
   
   if(nModule >=0 && nModule < fNModules) fhNCellsPerClusterMod[nModule]->Fill(e, nCaloCellsPerCluster);
   

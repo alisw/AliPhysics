@@ -53,7 +53,7 @@ public:
   
   // Main methods
   
-  void         ClusterHistograms(const TLorentzVector mom, const Double_t tof, Float_t *pos, 
+  void         ClusterHistograms(const TLorentzVector mom, Float_t *pos, 
                                  const Int_t nCaloCellsPerCluster, const Int_t nModule,
                                  const Int_t nTracksMatched, const AliVTrack* track, 
                                  const Int_t * labels, const Int_t nLabels);
@@ -165,16 +165,21 @@ public:
   TH2F *   fhClusterTimeEnergy;               //! Cluster Time vs Energy 
   TH1F *   fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F *   fhCellIdCellLargeTimeSpread;       //! Cells with large time respect to max (diff > 100 ns)
-	
-  TH2F *   fhBadClusterMaxCellTimeEnergy;     //! Time Max cell of bad cluster
+  TH2F *   fhClusterPairDiffTimeE;            //! Pair of clusters time difference vs E
+
+  TH2F *   fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
+  TH2F *   fhClusterMaxCellDiff;              //! Difference between cluster energy and energy of cell with more energy
+  
+  TH1F *   fhBadClusterEnergy;                //! energy of bad cluster
+  TH2F *   fhBadClusterTimeEnergy;            //! Time Max cell of bad cluster
+  TH2F *   fhBadClusterPairDiffTimeE;         //! Pair of clusters time difference vs E, bad cluster
   TH2F *   fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
+  TH2F *   fhBadClusterMaxCellDiff;           //! Difference between cluster energy and energy of cell with more energy
   TH2F *   fhBadClusterLambda0;               //! Lambda0 of bad cluster
   TH2F *   fhBadClusterLambda1;               //! Lambda1 of bad cluster
   TH2F *   fhBadClusterL0L1;                  //! Lambda0 of bad cluster  
   TH2F *   fhBadClusterDispersion;            //! Dispersion of bad cluster
-  TH2F *   fhClusterMaxCellTimeEnergy;        //! Time of Max cell
-  TH2F *   fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
-  
+
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F *   fhXNCells ;                        //! X (cm) cluster distribution vs N cells in cluster
   TH2F *   fhYNCells ;                        //! Y (cm) cluster distribution vs N cells in cluster
@@ -357,7 +362,7 @@ public:
   TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,15)
+  ClassDef(AliAnaCalorimeterQA,16)
 } ;
 
 
