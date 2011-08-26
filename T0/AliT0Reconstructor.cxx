@@ -199,8 +199,12 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       AliDebug(5,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 		       ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
 
-      Double_t ampMip =((TGraph*)fAmpLED.At(ipmt))->Eval(sl);
-      Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
+      Double_t ampMip = 0;
+      TGraph* ampGraph = (TGraph*)fAmpLED.At(ipmt);
+      if (ampGraph) ampMip = ampGraph->Eval(sl);
+      Double_t qtMip = 0;
+      TGraph* qtGraph = (TGraph*)fQTC.At(ipmt);
+      if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
       AliDebug(5,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
       
       frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
@@ -413,8 +417,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   // time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl), timeCFD[ipmt] ) ;
 	   AliDebug(5,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
 			    ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
-	   Double_t ampMip =( (TGraph*)fAmpLED.At(ipmt))->Eval(sl);
-	   Double_t qtMip = ((TGraph*)fQTC.At(ipmt))->Eval(adc[ipmt]);
+	   Double_t ampMip = 0;
+	   TGraph * ampGraph =  (TGraph*)fAmpLED.At(ipmt);
+	   if (ampGraph) ampMip = ampGraph->Eval(sl);
+	   Double_t qtMip = 0;
+	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
+	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
 	   //bad peak removing
 	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
