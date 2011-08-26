@@ -20,7 +20,7 @@
 //      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
 //      If it is necessary to change the parameters use the constructor 
 //      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
-//   - SetPIDBits: Simple PID, depending on the thresholds fDispCut fTOFCut and even the
+//   - SetPIDBits: Simple PID, depending on the thresholds fLOCut fTOFCut and even the
 //     result of the PID bayesian a different PID bit is set. 
 //
 //  All these methods can be called in the analysis you are interested.
@@ -74,11 +74,13 @@ public:
 
   void      InitParameters();
 
+  Bool_t    IsPHOSPhoton(const Double_t l0, const Double_t l1) ;
+  
   Int_t     GetIdentifiedParticleType(const TString calo, const Double_t * pid,     const Float_t energy) ;
   
   Int_t     GetIdentifiedParticleType(const TString calo, const TLorentzVector mom, const AliVCluster * cluster) ;
   
-  TString	  GetPIDParametersList();
+  TString   GetPIDParametersList();
   
   void      SetPIDBits(const TString calo,  const AliVCluster * cluster, AliAODPWG4Particle *aodph, const AliCalorimeterUtils* cu);
   
@@ -127,20 +129,24 @@ public:
   void SetPHOSChargeWeight   (Float_t  w)      { fPHOSChargeWeight    = w ; }
   void SetPHOSNeutralWeight  (Float_t  w)      { fPHOSNeutralWeight   = w ; }
   
-  void UsePHOSPIDWeightFormula   (Bool_t ok )  { fPHOSWeightFormula       = ok; } 
-  void SetPHOSPhotonWeightFormulaExpression(TString ph) { fPHOSPhotonWeightFormulaExpression = ph; } 
-  void SetPHOSPi0WeightFormulaExpression   (TString pi) { fPHOSPi0WeightFormulaExpression    = pi; }
+  void UsePHOSPIDWeightFormula   (Bool_t ok )           { fPHOSWeightFormula                 = ok ; } 
+  void SetPHOSPhotonWeightFormulaExpression(TString ph) { fPHOSPhotonWeightFormulaExpression = ph ; } 
+  void SetPHOSPi0WeightFormulaExpression   (TString pi) { fPHOSPi0WeightFormulaExpression    = pi ; }
   
   //PID bits setters and getters
   
-  void    SetDispersionCut(Float_t dcut )      { fDispCut = dcut ; }
-  Float_t GetDispersionCut()             const { return fDispCut ; }   
+  void    SetLambda0CutMax(Float_t lcut )      { fL0CutMax = lcut ; }
+  Float_t GetLambda0CutMax()             const { return fL0CutMax ; }   
   
-  void    SetTOFCut(Float_t tcut )             { fTOFCut = tcut  ; }
-  Float_t GetTOFCut()                    const { return fTOFCut  ; }   
+  void    SetLambda0CutMin(Float_t lcut )      { fL0CutMin = lcut ; }
+  Float_t GetLambda0CutMin()             const { return fL0CutMin ; }   
+    
   
-  void    SetDebug(Int_t deb)                  { fDebug=deb      ; }
-  Int_t   GetDebug()                     const { return fDebug   ; }	
+  void    SetTOFCut(Float_t tcut )             { fTOFCut = tcut   ; }
+  Float_t GetTOFCut()                    const { return fTOFCut   ; }   
+  
+  void    SetDebug(Int_t deb)                  { fDebug=deb       ; }
+  Int_t   GetDebug()                     const { return fDebug    ; }	
 
   //Bayesian recalculation (EMCAL)
   void    SwitchOnBayesianRecalculation()      { fRecalculateBayesian = kTRUE ; }
@@ -182,39 +188,39 @@ private:
   Float_t   fPHOSChargeWeight;    // Bayesian PID weight for charged hadrons in PHOS 
   Float_t   fPHOSNeutralWeight;   // Bayesian PID weight for neutral hadrons in PHOS 
   
-  Bool_t    fPHOSWeightFormula ;       // Use parametrized weight threshold, function of energy
-  TFormula *fPHOSPhotonWeightFormula ; // Formula for photon weight
-  TFormula *fPHOSPi0WeightFormula ;    // Formula for pi0 weight
+  Bool_t    fPHOSWeightFormula ;                // Use parametrized weight threshold, function of energy
+  TFormula *fPHOSPhotonWeightFormula ;          // Formula for photon weight
+  TFormula *fPHOSPi0WeightFormula ;             // Formula for pi0 weight
   TString   fPHOSPhotonWeightFormulaExpression; // Photon weight formula in string
   TString   fPHOSPi0WeightFormulaExpression;    // Pi0 weight formula in string
 
-  Float_t   fDispCut;    //Cut on shower shape lambda0, used in PID evaluation
-  Float_t   fTOFCut;     //Cut on TOF, used in PID evaluation
+  Float_t   fL0CutMax;                          // Max Cut on shower shape lambda0, used in PID evaluation, used only for EMCAL now
+  Float_t   fL0CutMin;                          // Min Cut on shower shape lambda0, used in PID evaluation, used only for EMCAL now
+  Float_t   fTOFCut;                            // Cut on TOF, used in PID evaluation
   
-  Int_t	    fDebug;      //Debug level
+  Int_t	    fDebug;                             // Debug level
 	
   //Bayesian
   Bool_t    fRecalculateBayesian;     // Recalculate PID bayesian or use simple PID?
   Int_t     fParticleFlux;            // Particle flux for setting PID parameters
-  AliEMCALPIDUtils * fEMCALPIDUtils; // Pointer to EMCALPID to redo the PID Bayesian calculation
+  AliEMCALPIDUtils * fEMCALPIDUtils;  // Pointer to EMCALPID to redo the PID Bayesian calculation
 	
   // Track matching control histograms
-  Int_t     fHistoNEBins ;    // Number of bins in cluster E axis
-  Float_t   fHistoEMax ;      // Maximum value of cluster E histogram range
-  Float_t   fHistoEMin ;      // Minimum value of cluster E histogram range
-  Int_t     fHistoNDEtaBins ; // Number of bins in dEta (cluster-track) axis
-  Float_t   fHistoDEtaMax ;   // Maximum value of dEta (cluster-track) histogram range
-  Float_t   fHistoDEtaMin ;   // Minimum value of dEta (cluster-track) histogram range		
-  Int_t     fHistoNDPhiBins ; // Number of bins in dPhi axis
-  Float_t   fHistoDPhiMax ;   // Maximum value of dPhi (cluster-track) histogram range
-  Float_t   fHistoDPhiMin ;   // Minimum value of dPhi (cluster-track) histogram range
+  Int_t     fHistoNEBins ;            // Number of bins in cluster E axis
+  Float_t   fHistoEMax ;              // Maximum value of cluster E histogram range
+  Float_t   fHistoEMin ;              // Minimum value of cluster E histogram range
+  Int_t     fHistoNDEtaBins ;         // Number of bins in dEta (cluster-track) axis
+  Float_t   fHistoDEtaMax ;           // Maximum value of dEta (cluster-track) histogram range
+  Float_t   fHistoDEtaMin ;           // Minimum value of dEta (cluster-track) histogram range		
+  Int_t     fHistoNDPhiBins ;         // Number of bins in dPhi axis
+  Float_t   fHistoDPhiMax ;           // Maximum value of dPhi (cluster-track) histogram range
+  Float_t   fHistoDPhiMin ;           // Minimum value of dPhi (cluster-track) histogram range
   
-  TH2F    * fhTrackMatchedDEta     ; //! Eta distance between track and cluster vs cluster E
-  TH2F    * fhTrackMatchedDPhi     ; //! Phi distance between track and cluster vs cluster E
-  TH2F    * fhTrackMatchedDEtaDPhi ; //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F    * fhTrackMatchedDEta     ;  //! Eta distance between track and cluster vs cluster E
+  TH2F    * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
+  TH2F    * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
-  
-  ClassDef(AliCaloPID,7)
+  ClassDef(AliCaloPID,8)
 } ;
 
 
