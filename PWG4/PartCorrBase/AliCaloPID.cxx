@@ -30,7 +30,7 @@
 //      where flux is AliCaloPID::kLow or AliCaloPID::kHigh
 //      If it is necessary to change the parameters use the constructor 
 //      AliCaloPID(AliEMCALPIDUtils *utils) and set the parameters before.
-//   - SetPIDBits: Simple PID, depending on the thresholds fDispCut fTOFCut and even the
+//   - SetPIDBits: Simple PID, depending on the thresholds fL0Cut fTOFCut and even the
 //     result of the PID bayesian a different PID bit is set. 
 //
 //  All these methods can be called in the analysis you are interested.
@@ -62,7 +62,7 @@ fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
-fDispCut(0.),             fTOFCut(0.), 
+fL0CutMax(100.),          fL0CutMin(0),                fTOFCut(0.), 
 fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils(),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
@@ -85,7 +85,7 @@ fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
-fDispCut(0.),             fTOFCut(0.), 
+fL0CutMax(100.),          fL0CutMin(0),                fTOFCut(0.), 
 fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(flux),     fEMCALPIDUtils(),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
@@ -93,10 +93,11 @@ fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
 fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
 fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
 {
-	//Ctor
+  //Ctor
 	
-	//Initialize parameters
-	InitParameters();
+  //Initialize parameters
+  InitParameters();
+
 }
 
 //________________________________________________
@@ -108,7 +109,7 @@ fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
-fDispCut(0.),             fTOFCut(0.), 
+fL0CutMax(100.),         fL0CutMin(0),                 fTOFCut(0.), 
 fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils((AliEMCALPIDUtils*) emcalpid),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
@@ -116,10 +117,10 @@ fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
 fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
 fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
 {
-	//Ctor
+  //Ctor
 	
-	//Initialize parameters
-	InitParameters();
+  //Initialize parameters
+  InitParameters();
 }
 
 //_________________________________
@@ -129,8 +130,8 @@ AliCaloPID::~AliCaloPID() {
   delete fPHOSPhotonWeightFormula ;
   delete fPHOSPi0WeightFormula ;
   delete fEMCALPIDUtils ;
-}
 
+}
 
 //________________________________________________________________________
 TList *  AliCaloPID::GetCreateOutputObjects()
@@ -195,9 +196,10 @@ void AliCaloPID::InitParameters()
   fPHOSPhotonWeightFormulaExpression = "0.98*(x<40)+ 0.68*(x>=100)+(x>=40 && x<100)*(0.98+x*(6e-3)-x*x*(2e-04)+x*x*x*(1.1e-06))";
   fPHOSPi0WeightFormulaExpression    = "0.98*(x<65)+ 0.915*(x>=100)+(x>=65 && x-x*(1.95e-3)-x*x*(4.31e-05)+x*x*x*(3.61e-07))"   ;
   
-  fDispCut = 0.3;
-  fTOFCut  = 5.e-9;
-  fDebug   =-1;
+  fL0CutMax = 0.3;
+  fL0CutMin = 0.01;
+  fTOFCut   = 5.e-9;
+  fDebug    =-1;
 	
   if(fRecalculateBayesian){
 	if(fParticleFlux == kLow){
@@ -289,6 +291,7 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo,const TLorentzVec
   //Recalculated PID with all parameters
   
   Float_t lambda0 = cluster->GetM02();
+  Float_t lambda1 = cluster->GetM20();
   Float_t energy  = mom.E();	
   
   if(fDebug > 0) printf("AliCaloPID::GetIdentifiedParticleType: Calorimeter %s, E %3.2f, l0 %3.2f, l1 %3.2f, disp %3.2f, tof %1.11f, distCPV %3.2f, distToBC %1.1f, NMax %d\n",
@@ -313,11 +316,20 @@ Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo,const TLorentzVec
       return GetIdentifiedParticleType(calo, pid, energy);
 		  
     }
-  }
+    
+    // If no use of bayesian, simplest PID  
+    if(lambda0 < fL0CutMax && lambda0 > fL0CutMin) return kPhoton ;
+    else return  kPi0 ; // Wild guess, it can be hadron but not photon
   
-  // If no use of bayesian, simplest PID  
-  if(lambda0 < fDispCut) return kPhoton ;
-  else return  kPi0 ; // Wild guess, it can be hadron but not photon
+  }//EMCAL
+  else {//PHOS
+    
+    // Do not use bayesian, cut based on shower ellipse
+    IsPHOSPhoton(lambda0,lambda1);
+  
+  }
+
+
     
 }
 
@@ -330,7 +342,7 @@ TString  AliCaloPID::GetPIDParametersList()  {
   char onePar[buffersize] ;
   snprintf(onePar,buffersize,"--- AliCaloPID ---\n") ;
   parList+=onePar ;	
-  snprintf(onePar,buffersize,"fDispCut =%2.2f (Cut on dispersion, used in PID evaluation) \n",fDispCut) ;
+  snprintf(onePar,buffersize,"fL0CutMin =%2.2f, fL0CutMax =%2.2f  (Cut on Shower Shape, used in PID evaluation) \n",fL0CutMin, fL0CutMax) ;
   parList+=onePar ;
   snprintf(onePar,buffersize,"fTOFCut  =%e (Cut on TOF, used in PID evaluation) \n",fTOFCut) ;
   parList+=onePar ;
@@ -390,7 +402,7 @@ void AliCaloPID::Print(const Option_t * opt) const
   }
   
   printf("TOF cut        = %e\n",fTOFCut);
-  printf("Dispersion cut = %2.2f\n",fDispCut);
+  printf("Lambda0 cut min = %2.2f; max = %2.2f\n",fL0CutMin, fL0CutMax);
   printf("Debug level    = %d\n",fDebug);
   printf("Recalculate Bayesian?    = %d\n",fRecalculateBayesian);
  if(fRecalculateBayesian) printf("Particle Flux?    = %d\n",fParticleFlux);
@@ -407,23 +419,14 @@ void AliCaloPID::SetPIDBits(const TString calo, const AliVCluster * cluster, Ali
   Double_t l1  = cluster->GetM20() ;
   Double_t l0  = cluster->GetM02() ; 
   Bool_t isDispOK = kTRUE ;
-  if(cluster->IsPHOS()){
+  if(cluster->IsPHOS()){ 
     
-    if(l1>= 0   && l0>= 0   && l1 < 0.1 && l0 < 0.1) isDispOK=kFALSE ;
-    if(l1>= 0   && l0 > 0.5 && l1 < 0.1 && l0 < 1.5) isDispOK=kTRUE  ;
-    if(l1>= 0   && l0 > 2.0 && l1 < 0.1 && l0 < 2.7) isDispOK=kFALSE ;
-    if(l1>= 0   && l0 > 2.7 && l1 < 0.1 && l0 < 4.0) isDispOK=kFALSE ;
-    if(l1 > 0.1 && l1 < 0.7 && l0 > 0.7 && l0 < 2.1) isDispOK=kTRUE  ;
-    if(l1 > 0.1 && l1 < 0.3 && l0 > 3.0 && l0 < 5.0) isDispOK=kFALSE ;
-    if(l1 > 0.3 && l1 < 0.7 && l0 > 2.5 && l0 < 4.0) isDispOK=kFALSE ;
-    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.0 && l0 < 1.6) isDispOK=kTRUE  ;
-    if(l1 > 0.7 && l1 < 1.3 && l0 > 1.6 && l0 < 3.5) isDispOK=kTRUE  ;
-    if(l1 > 1.3 && l1 < 3.5 && l0 > 1.3 && l0 < 3.5) isDispOK=kTRUE  ;    
+   isDispOK =  IsPHOSPhoton(l0,l1);
     
   }
   else{//EMCAL
     
-    if(l0 > fDispCut || l0 < 0.) isDispOK = kFALSE;
+    if(l0 > fL0CutMin && l0 < fL0CutMax) isDispOK = kTRUE;
     
   }
   
@@ -514,4 +517,21 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
   
 }
 
+//__________________________________________________________________________
+Bool_t IsPHOSPhoton(const Double_t l0, const Double_t l1) {
+  // Check the shape of the PHOS cluster
+  // Return true if photon like, from Dmitri P.
+  // TO DO, move parameters to data members
+  
+  Double_t l0Mean  = 1.22 ;
+  Double_t l1Mean  = 2.0  ;
+  Double_t l0Sigma = 0.42 ;
+  Double_t l1Sigma = 0.71 ;
+  Double_t c       =-0.59 ;
+  
+  Double_t R2=(l1-l1Mean)*(l0-l0Mean)/l0Sigma/l0Sigma+(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma-c*(l0-l0Mean)*(l1-l1Mean)/l0Sigma/l1Sigma ;
+  
+  return (R2<9.) ;
+  
+}
 
