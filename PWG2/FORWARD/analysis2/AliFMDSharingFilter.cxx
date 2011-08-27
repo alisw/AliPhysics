@@ -94,6 +94,9 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   // Parameters:
   //    title Title of object  - not significant 
   //
+  fRingHistos.SetName(GetName());
+  fRingHistos.SetOwner();
+  
   fRingHistos.Add(new RingHistos(1, 'I'));
   fRingHistos.Add(new RingHistos(2, 'I'));
   fRingHistos.Add(new RingHistos(2, 'O'));
@@ -1271,8 +1274,10 @@ AliFMDSharingFilter::RingHistos::Output(TList* dir)
   d->Add(fNeighborsAfter);
   d->Add(fHits);
   d->Add(fSum);
-
-  dir->Add(d);
+  
+  // Removed to avoid doubly adding the list which destroys 
+  // the merging
+  //dir->Add(d);
 }
 
 //____________________________________________________________________
