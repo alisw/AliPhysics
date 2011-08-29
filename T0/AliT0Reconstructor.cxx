@@ -287,12 +287,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Float_t meanOrA = fTime0vertex[0] + 587;
   Float_t meanOrC = fTime0vertex[0] + 678;
   Float_t meanTVDC = fTime0vertex[0] + 2564;
- 
+  Int_t timeDelayCFD[24]; 
+  
 
   Int_t badpmt[24];
   //Bad channel
   for (Int_t i=0; i<24; i++) {
     badpmt[i] = GetRecoParam() -> GetBadChannels(i);
+    timeDelayCFD[i] =  Int_t (fParam->GetTimeDelayCFD(i));
   }
   Int_t low[500], high[500];
   Float_t timefull=-9999;;
@@ -489,7 +491,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       
       Bool_t tr[5];
       Int_t trchan[5]= {50,51,52,55,56};
-      for (Int_t i=0; i<5; i++) tr[i]=false; 
+      for (Int_t i=0; i<5; i++) tr[i] = false; 
       for (Int_t itr=0; itr<5; itr++) {
  	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
@@ -503,6 +505,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
+	  tvdc = ora = orc = -9999;
 	  if(allData[50][iHit]>0) 
 	    tvdc = (Float_t(allData[50][iHit]) - meanTVDC) * channelWidth* 0.001; 
 	  if(allData[51][iHit]>0)
@@ -517,9 +520,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  for (Int_t i0=0; i0<12; i0++) {
 	    timefull = -9999; 
 	    if(allData[i0+1][iHit]>1) 
-	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
+	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
 	    frecpoints->SetTimeFull(i0, iHit,timefull) ;
-	    //   printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+1][iHit], fTime0vertex[i0], timefull);
+	    //	    if(allData[i0+1][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+1][iHit], fTime0vertex[i0], timefull);
 	    
 	  }
 	  
@@ -528,7 +531,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    if(allData[i0+45][iHit]>1) {
 	      timefull = (Float_t(allData[i0+45][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
 	    }
-	    //	      printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
+	    //  if(allData[i0+45][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
 	    frecpoints->SetTimeFull(i0, iHit, timefull) ;
 	  }
 	}
@@ -640,7 +643,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
 
   for (Int_t iHit =0; iHit<5; iHit++ ) {
-       AliDebug(1,Form("FillESD ::: iHit %i tvdc %f orA %f orC %f\n", iHit,
+       AliDebug(10,Form("FillESD ::: iHit %i tvdc %f orA %f orC %f\n", iHit,
 	   frecpoints->GetTVDC(iHit),
 	   frecpoints->GetOrA(iHit),
 		       frecpoints->GetOrC(iHit) ));
@@ -669,7 +672,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     
     AliESDfriend *fr = (AliESDfriend*)pESD->FindListObject("AliESDfriend");
     if (fr) {
-      AliDebug(1, Form("Writing TZERO friend data to ESD tree"));
+      AliDebug(10, Form("Writing TZERO friend data to ESD tree"));
 
       //     if (ncont>2) {
 	tcorr = fESDTZEROfriend->GetT0timeCorr();
