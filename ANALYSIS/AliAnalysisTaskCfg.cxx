@@ -14,12 +14,15 @@
  **************************************************************************/
 
 #include "AliAnalysisTaskCfg.h"
+#include "AliAnalysisManager.h"
 
 #include "Riostream.h"
 #include "TError.h"
 #include "TMacro.h"
 #include "TSystem.h"
 #include "TObjArray.h"
+#include "TObjString.h"
+#include "TList.h"
 
 // Author: Andrei Gheata, 12/08/2011
 
@@ -78,7 +81,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg()
                     fDeps(),
                     fDataTypes(),
                     fMacro(0),
-                    fConfigDeps(0)
+                    fConfigDeps(0),
+                    fRAddTask(0)
 {
 // I/O constructor.
 }
@@ -92,7 +96,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const char *name)
                     fDeps(),
                     fDataTypes(),
                     fMacro(0),
-                    fConfigDeps(0)
+                    fConfigDeps(0),
+                    fRAddTask(0)
 {
 // Constructor. All configuration objects need to be named since they are looked
 // for by name.
@@ -107,7 +112,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const AliAnalysisTaskCfg &other)
                     fDeps(other.fDeps),
                     fDataTypes(other.fDataTypes),
                     fMacro(0),
-                    fConfigDeps(0)
+                    fConfigDeps(0),
+                    fRAddTask(0)
 {
 // Copy constructor.
    if (other.fMacro) fMacro = new TMacro(*other.fMacro);
@@ -135,6 +141,7 @@ AliAnalysisTaskCfg& AliAnalysisTaskCfg::operator=(const AliAnalysisTaskCfg &othe
    fDataTypes = other.fDataTypes;
    if (other.fMacro) fMacro = new TMacro(*other.fMacro);
    if (other.fConfigDeps) fConfigDeps = new TMacro(*other.fConfigDeps);
+   fRAddTask  = other.fRAddTask;
    return *this;
 }
    
@@ -190,10 +197,31 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
       return -1;
    }
    
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      Error("ExecuteMacro", "Analysis manager not defined yet");
+      return -1;
+   }
+   Int_t ntasks0 = mgr->GetTasks()->GetEntriesFast();
    TString args = newargs;
    if (args.IsNull()) args = fMacroArgs;
    Long64_t retval = fMacro->Exec(args);
-   if (retval >=0) TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
+   if (retval >=0) {
+      TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
+      fRAddTask = reinterpret_cast<TObject*>(retval);
+      if (fConfigDeps) {
+         TString classname = fRAddTask->ClassName();
+         classname += Form("* __R_ADDTASK__ = (%s*)0x%lx;", classname.Data(),(ULong_t)retval);
+         classname.Prepend("  ");
+         TObjString *line = fConfigDeps->GetLineWith("__R_ADDTASK__");
+         if (line) {
+            TList *lines = fConfigDeps->GetListOfLines();
+            lines->AddBefore(line, new TObjString(classname));
+         }
+      }   
+   }
+   Int_t ntasks = mgr->GetTasks()->GetEntriesFast();
+   Info("ExecuteMacro", "Macro %s added %d tasks to the manager", fMacro->GetName(), ntasks-ntasks0);
    return retval;
 }
 
@@ -493,6 +521,8 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
       } else if (cfg && line.BeginsWith("#Module.EndConfig")) {
          // Marker for the end of the config macro. EndConfig block is mandatory
          if (cfg && addConfig) {
+            addConfig->GetListOfLines()->AddFirst(new TObjString(Form("%s() {",gSystem->BaseName(addConfig->GetName()))));
+            addConfig->GetListOfLines()->AddLast(new TObjString("}"));
             cfg->SetConfigMacro(addConfig);
             addConfig = 0;
          } else {
@@ -506,8 +536,8 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
    }
    // Add last found object to the list
    if (cfg) {
-      if (addMacro) cfg->SetMacro(addMacro);
-      if (addConfig) cfg->SetConfigMacro(addConfig);
+      if (addMacro) ::Error("ExtractModulesFrom", "#Module.EndMacro block not found");         
+      if (addConfig) ::Error("ExtractModulesFrom", "#Module.EndConfig block not found");
       if (!array) array = new TObjArray();
       array->Add(cfg);
    }

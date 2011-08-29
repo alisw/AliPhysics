@@ -32,6 +32,7 @@ protected:
   TMacro                   *fMacro;         // Embedded AddTask macro
   TMacro                   *fConfigDeps;    // Macro used to configure the dependecies
                                             // (utility tasks or input handlers). The data type is passed as argument.
+  TObject                  *fRAddTask;      // Object returned by AddTask method
 public:  
   AliAnalysisTaskCfg();
   AliAnalysisTaskCfg(const char *name);
@@ -79,6 +80,7 @@ public:
   // Extra utilities  
   Bool_t                    CheckLoadLibraries() const;
   static const char        *DecodeValue(TString &line);
+  TObject                  *GetRAddTask() const {return fRAddTask;}
   Bool_t                    IsLoaded() const {return TObject::TestBit(AliAnalysisTaskCfg::kLoaded);}
   void                      Print(Option_t *option="") const;
   void                      SaveAs(const char *filename, Option_t *option = "") const;
