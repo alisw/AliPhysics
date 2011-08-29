@@ -17,6 +17,8 @@ class AliRsnCutKaonForPhi2010PP : public AliRsnCut {
 public:
 
    AliRsnCutKaonForPhi2010PP(const char *name = "");
+   AliRsnCutKaonForPhi2010PP(const AliRsnCutKaonForPhi2010PP &copy);
+   AliRsnCutKaonForPhi2010PP& operator=(const AliRsnCutKaonForPhi2010PP &copy);
    virtual ~AliRsnCutKaonForPhi2010PP() { }
    
    void           SetTPCNSigmaLow (Double_t v) {fNSigmaTPCLow  = v;}
@@ -25,8 +27,10 @@ public:
    void           SetTOFNSigma(Double_t v)     {fNSigmaTOF     = v;}
    
    virtual Bool_t IsSelected(TObject *obj);
+   void           InitMyPID(Bool_t isMC, Bool_t isESD);
    
    AliRsnCutTrackQuality *CutQuality() {return &fCutQuality;}
+   AliPIDResponse        *MyPID()      {return fMyPID;}
 
 private:
 
@@ -37,6 +41,7 @@ private:
    Double_t              fLimitTPC;       // TPC: momentum limit 
    Double_t              fNSigmaTOF;      // TOF: nsigma cut (unique)
 
+   AliPIDResponse       *fMyPID;          // PID response object to be configured manyally
    AliRsnCutTrackQuality fCutQuality;     // track quality cut
 
    ClassDef(AliRsnCutKaonForPhi2010PP,1)
