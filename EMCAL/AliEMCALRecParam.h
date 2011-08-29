@@ -28,7 +28,10 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   {
     kClusterizerv1  = 0,
     kClusterizerNxN = 1,
-    kClusterizerv2  = 2  
+    kClusterizer3x3 = 1, // consider to remove kClusterizerNxN
+    kClusterizerv2  = 2,
+    kClusterizer5x5 = 3,
+    kClusterizerFW  = 4
   };
   
   AliEMCALRecParam() ;
