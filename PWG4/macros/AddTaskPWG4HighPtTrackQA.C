@@ -117,20 +117,20 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWG4(10001001);
+    trackCuts = CreateTrackCutsPWG4(10001004);
   }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWG4(10011001);
+    trackCuts = CreateTrackCutsPWG4(10011004);
   }
   if(trackType==7 && cuts==0) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10041001);
-    trackCutsITSLoose = CreateTrackCutsPWG4(1001);
+    trackCuts = CreateTrackCutsPWG4(10041004);
+    trackCutsITSLoose = CreateTrackCutsPWG4(1004);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10011001);
+    trackCuts = CreateTrackCutsPWG4(10011004);
   }
 
   if(trackType==1 && cuts==0) {
