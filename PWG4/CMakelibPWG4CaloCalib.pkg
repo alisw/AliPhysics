@@ -33,6 +33,8 @@ set ( SRCS
  CaloCalib/AliAnalysisTaskEMCALClusterize.cxx 
  CaloCalib/AliAnalysisTaskEMCALClusterizeFast.cxx
  CaloCalib/AliAnalysisTaskEMCALPi0PbPb.cxx
+ CaloCalib/AliAnalysisTaskEMCALFastOR2Trigger.cxx
+ CaloCalib/AliEMCALFastORPatch.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
