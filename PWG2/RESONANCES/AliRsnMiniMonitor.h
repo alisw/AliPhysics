@@ -19,9 +19,11 @@ class AliRsnMiniMonitor : public TNamed {
 public:
 
    enum EType {
-      kdEdxTPCvsP,    // TPC signal vs. momentum
-      ktimeTOFvsP,    // TOF time vs. momentum
-      kTypes          // total number of cuts
+      kdEdxTPCvsP,        // TPC signal vs. momentum
+      ktimeTOFvsPKaon,    // TOF time vs. momentum
+      ktimeTOFvsPPion,    // TOF time vs. momentum
+      ktimeTOFvsPProton,  // TOF time vs. momentum
+      kTypes              // total number of cuts
    };
 
    AliRsnMiniMonitor();
@@ -54,9 +56,11 @@ protected:
 inline const char* AliRsnMiniMonitor::Label(EType type)
 {
    switch (type) {
-      case kdEdxTPCvsP: return "TPCsignal";
-      case ktimeTOFvsP: return "TOFsignal";
-      default         : return "X";
+      case kdEdxTPCvsP      : return "TPCsignal";
+      case ktimeTOFvsPPion  : return "TOFsignalPi";
+      case ktimeTOFvsPKaon  : return "TOFsignalK";
+      case ktimeTOFvsPProton: return "TOFsignalP";
+      default               : return "X";
    }
 }
 

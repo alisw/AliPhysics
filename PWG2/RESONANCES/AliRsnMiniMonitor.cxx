@@ -136,10 +136,16 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
          sname += "_TPCsignal";
          histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 1000.0);
          break;
-      case ktimeTOFvsP:
-         sname += "_TOFsignal";
+      case ktimeTOFvsPPion:
+         sname += "_TOFsignalPi";
+         histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 200000.0);
+      case ktimeTOFvsPKaon:
+         sname += "_TOFsignalK";
          histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 200000.0);
          break;
+      case ktimeTOFvsPProton:
+         sname += "_TOFsignalP";
+         histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 200000.0);
       default:
          AliError("Wrong enum type");
          return kFALSE;
@@ -190,7 +196,18 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          valueY = vtrack->GetTPCsignal();
          ((TH2F*)obj)->Fill(valueX, valueY);
          return kTRUE;
-      case ktimeTOFvsP:
+      case ktimeTOFvsPPion:
+         if (!vtrack) {
+            AliWarning("Required vtrack for this value");
+            return kFALSE;
+         }
+         valueX = vtrack->P();
+         //valueY = vtrack->GetTOFsignal();
+         valueY = 1E20;
+         if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kPion);
+         ((TH2F*)obj)->Fill(valueX, valueY);
+         return kTRUE;
+      case ktimeTOFvsPKaon:
          if (!vtrack) {
             AliWarning("Required vtrack for this value");
             return kFALSE;
@@ -199,6 +216,17 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          //valueY = vtrack->GetTOFsignal();
          valueY = 1E20;
          if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kKaon);
+         ((TH2F*)obj)->Fill(valueX, valueY);
+         return kTRUE;
+      case ktimeTOFvsPProton:
+         if (!vtrack) {
+            AliWarning("Required vtrack for this value");
+            return kFALSE;
+         }
+         valueX = vtrack->P();
+         //valueY = vtrack->GetTOFsignal();
+         valueY = 1E20;
+         if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kProton);
          ((TH2F*)obj)->Fill(valueX, valueY);
          return kTRUE;
       default:
