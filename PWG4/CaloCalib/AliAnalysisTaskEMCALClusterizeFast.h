@@ -51,6 +51,15 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
   void                   SetRecalibrateCellsOnly(Bool_t b)           { fRecalibOnly         = b     ; }
   void                   SetSubBackground(Bool_t b)                  { fSubBackground       = b     ; }
+  void                   SetCreatePattern(Bool_t yes)                { fCreatePattern       = yes   ; if (yes) fOverwrite = kTRUE;}
+  void                   SetOverwrite(Bool_t yes)                    { fOverwrite           = yes   ; if (fCreatePattern) fOverwrite = kTRUE;}
+  void                   SetNewClusterArrayName(TString name)        { fNewClusterArrayName = name  ; }
+  void                   SetnPhi(Int_t n)                            { fNPhi                = n     ; }
+  void                   SetnEta(Int_t n)                            { fNEta                = n     ; }	
+  void                   SetshiftPhi(Int_t n)                        { fshiftPhi            = n     ; }
+  void                   SetshiftEta(Int_t n)                        { fshiftEta            = n     ; }
+  void                   SetTRUshift(Bool_t yes)                     { fTRUshift            = yes   ; }
+  void                   SetStoreAdditionalInformation(Bool_t yes)   { fStoreAdditionalInformation = yes; }
 
  protected:
   virtual void           Clusterize();
@@ -59,29 +68,39 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           RecPoints2Clusters(TClonesArray *clus);
   virtual void           UpdateCells();
   virtual void           UpdateClusters();
+  virtual void           StoreAdditionalInformation();
 
-  Int_t                  fRun;              //!run number
-  TClonesArray          *fDigitsArr;        //!digits array
-  TObjArray             *fClusterArr;       //!recpoints array
-  AliEMCALRecParam      *fRecParam;         // reconstruction parameters container
-  AliEMCALClusterizer   *fClusterizer;      //!clusterizer
-  AliEMCALAfterBurnerUF *fUnfolder;         //!unfolding procedure
-  Bool_t                 fJustUnfold;       // just unfold, do not recluster
-  TString                fGeomName;         // name of geometry to use.
-  Bool_t                 fGeomMatrixSet;    // set geometry matrices only once, for the first event.         
-  Bool_t                 fLoadGeomMatrices; // matrices from configuration, not geometry.root nor ESDs/AODs
-  TGeoHMatrix           *fGeomMatrix[12];   // geometry matrices with alignments
-  TString                fOCDBpath;         // path with OCDB location
-  AliEMCALCalibData     *fCalibData;        // EMCAL calib data
-  AliCaloCalibPedestal  *fPedestalData;     // EMCAL pedestal
-  TClonesArray          *fOutputAODBranch;  //!AOD Branch with output clusters  
-  TString                fOutputAODBrName;  // output AOD branch name (none by default)
-  AliEMCALRecoUtils     *fRecoUtils;        // access to factorized reconstruction algorithms
-  Bool_t                 fLoadCalib;        // access calib object from OCDB (def=off)
-  Bool_t                 fLoadPed;          // access ped object from OCDB (def=off)
-  Bool_t                 fAttachClusters;   // attach clusters to input event (AOD or ESD)
-  Bool_t                 fRecalibOnly;      // only recalibrate cells if true (def=off)
-  Bool_t                 fSubBackground;    // subtract background if true (def=off)
+  Int_t                  fRun;                            //!run number
+  TClonesArray          *fDigitsArr;                      //!digits array
+  TObjArray             *fClusterArr;                     //!recpoints array
+  AliEMCALRecParam      *fRecParam;                       // reconstruction parameters container
+  AliEMCALClusterizer   *fClusterizer;                    //!clusterizer
+  AliEMCALAfterBurnerUF *fUnfolder;                       //!unfolding procedure
+  Bool_t                 fJustUnfold;                     // just unfold, do not recluster
+  TString                fGeomName;                       // name of geometry to use.
+  Bool_t                 fGeomMatrixSet;                  // set geometry matrices only once, for the first event.         
+  Bool_t                 fLoadGeomMatrices;               // matrices from configuration, not geometry.root nor ESDs/AODs
+  TGeoHMatrix           *fGeomMatrix[12];                 // geometry matrices with alignments
+  TString                fOCDBpath;                       // path with OCDB location
+  AliEMCALCalibData     *fCalibData;                      // EMCAL calib data
+  AliCaloCalibPedestal  *fPedestalData;                   // EMCAL pedestal
+  TClonesArray          *fOutputAODBranch;                //!AOD Branch with output clusters  
+  TString                fOutputAODBrName;                // output AOD branch name (none by default)
+  AliEMCALRecoUtils     *fRecoUtils;                      // access to factorized reconstruction algorithms
+  Bool_t                 fLoadCalib;                      // access calib object from OCDB (def=off)
+  Bool_t                 fLoadPed;                        // access ped object from OCDB (def=off)
+  Bool_t                 fAttachClusters;                 // attach clusters to input event (AOD or ESD)
+  Bool_t                 fRecalibOnly;                    // only recalibrate cells if true (def=off)
+  Bool_t                 fSubBackground;                  // subtract background if true (def=off)
+  Bool_t                 fCreatePattern;                  // removes all cells and creates a cell pattern before running the clusterizer (for debug purposes)
+  Bool_t                 fOverwrite;                      // Overwrite existing clusters
+  TString                fNewClusterArrayName;            // If not overwriting, name of the new cluster array
+  Int_t                  fNPhi;                           // nPhi (for FixedWindowsClusterizer)
+  Int_t                  fNEta;                           // nEta (for FixedWinoswsClusterizer)
+  Int_t                  fshiftPhi;                       // shiftPhi (for FixedWindowsClusterizer)
+  Int_t                  fshiftEta;                       // shiftEta (for FixedWindowsClusterizer)
+  Bool_t                 fTRUshift;                       // Shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
+  Bool_t                 fStoreAdditionalInformation;     // Store additional information (for FixedWindowsClusterizer)
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
