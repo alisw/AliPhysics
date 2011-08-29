@@ -19,6 +19,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisVertexingHF.h"
+#include "AliHFAfterBurner.h"
 
 class TH1F;
 class TH2D;
@@ -48,6 +49,8 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetV0EventPlaneOrder(Int_t n){fV0EPorder=n;}
   void SetMinCentrality(Int_t mincentr){fMinCentr=mincentr;}
   void SetMaxCentrality(Int_t maxcentr){fMaxCentr=maxcentr;}
+  void SetUseAfterBurner(Bool_t ab){fUseAfterBurner=ab;}
+  void SetAfterBurner(AliHFAfterBurner *ab){fAfterBurner=ab;}
 
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
@@ -57,6 +60,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Float_t GetPhi0Pi(Float_t phi);
   Float_t GetLowerCentLimit()const {return fCentLowLimit;}
   Float_t GetUpperCentLimit()const {return fCentUpLimit;}
+  AliHFAfterBurner *GetAfterBurner()const {return fAfterBurner;}
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void LocalInit();// {Init();}
@@ -91,7 +95,9 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Float_t fCentUpLimit;         //upper centrality limit
   Int_t fNMassBins;             //number of bins in the mass histograms
   Bool_t fReadMC;               //flag for access to MC
+  Bool_t fUseAfterBurner;      //enable afterburning
   Int_t fDecChannel;            //decay channel identifier
+  AliHFAfterBurner *fAfterBurner;//Afterburner options
   Bool_t fUseV0EP;              //flag to select EP method
   Int_t  fV0EPorder;            //harmonic for VZERO event plane
   Int_t fMinCentr;              //minimum centrality

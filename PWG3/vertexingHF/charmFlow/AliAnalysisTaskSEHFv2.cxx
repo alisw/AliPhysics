@@ -56,7 +56,6 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF4Prong.h"
 #include "AliAODRecoCascadeHF.h"
-#include "AliAODHFUtil.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -94,7 +93,9 @@ AliAnalysisTaskSE(),
   fCentUpLimit(100),
   fNMassBins(200),
   fReadMC(kFALSE),
+  fUseAfterBurner(kFALSE),
   fDecChannel(0),
+  fAfterBurner(0),
   fUseV0EP(kFALSE),
   fV0EPorder(2),
   fMinCentr(10),
@@ -119,6 +120,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fCentUpLimit(100),
   fNMassBins(200),
   fReadMC(kFALSE),
+  fUseAfterBurner(kFALSE),
   fDecChannel(decaychannel),
   fUseV0EP(kFALSE),
   fV0EPorder(2),
@@ -147,6 +149,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
     pdg=4122;
     break;
   }
+  fAfterBurner = new AliHFAfterBurner(fDecChannel);
   for(Int_t i=0;i<6;i++)fHistvzero[i]=(TH2D*)histPar[i]->Clone();
   for(Int_t i=0;i<6;i++)if(!fHistvzero[i])printf("No VZERO histograms!\n");
   if(pdg==413) SetMassLimits((Float_t)0.135,(Float_t)0.165);
@@ -208,7 +211,10 @@ AliAnalysisTaskSEHFv2::~AliAnalysisTaskSEHFv2()
       fHistvzero[i]=0x0;
     }
   } 
-  
+  if(fAfterBurner){
+    delete fAfterBurner;
+    fAfterBurner=0;  
+  }
 }
 
 //_________________________________________________________________
@@ -273,7 +279,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
  
   if(fDebug > 1) printf("AnalysisTaskSEHFv2::UserCreateOutputObjects() \n");
 
-  fhEventsInfo=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",7,-0.5,6.5);
+  fhEventsInfo=new TH1F(GetOutputSlot(1)->GetContainer()->GetName(), "Number of AODs scanned",8,-0.5,7.5);
   fhEventsInfo->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fhEventsInfo->GetXaxis()->SetBinLabel(2,"nEvSelected");
   fhEventsInfo->GetXaxis()->SetBinLabel(3,"nCandidatesSelected");
@@ -281,6 +287,7 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
   fhEventsInfo->GetXaxis()->SetBinLabel(5,"Pile-up Rej");
   fhEventsInfo->GetXaxis()->SetBinLabel(6,"N. of 0SMH");
   fhEventsInfo->GetXaxis()->SetBinLabel(7,Form("Ev Sel in Centr %.0f-%.0f%s",fRDCuts->GetMinCentrality(),fRDCuts->GetMaxCentrality(),"%"));
+  fhEventsInfo->GetXaxis()->SetBinLabel(8,"mismatch lab");
   fhEventsInfo->GetXaxis()->SetNdivisions(1,kFALSE);
 
 
@@ -507,29 +514,37 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     }
   }
   TString centrbinname=Form("centr%d_%d",icentr-5,icentr);
-
-  if(fUseV0EP){
-    rpangleevent=GetEventPlaneFromV0(aod);
+  if(fReadMC){
+    fUseV0EP=kTRUE;
+    TRandom3 *g = new TRandom3(0);
+    rpangleevent=g->Rndm()*TMath::Pi();
+    delete g;g=0x0;
     eventplane=rpangleevent;
+    if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)rpangleevent);
   }else{
-    // event plane and resolution 
-    //--------------------------------------------------------------------------
-    // extracting Q vectors and calculating v2 + resolution
-    pl = aod->GetHeader()->GetEventplaneP();
-    if(!pl){
-      AliError("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
-      return;
+    if(fUseV0EP){
+      rpangleevent=GetEventPlaneFromV0(aod);
+      eventplane=rpangleevent;
+    }else{
+      // event plane and resolution 
+      //--------------------------------------------------------------------------
+      // extracting Q vectors and calculating v2 + resolution
+      pl = aod->GetHeader()->GetEventplaneP();
+      if(!pl){
+	AliError("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
+	return;
+      }
+      q = pl->GetQVector();
+      rpangleevent = pl->GetEventplane("Q"); // reaction plane angle without autocorrelations removal
+      Double_t deltaPsi = pl->GetQsubRes();
+      if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
+	if(deltaPsi>0.) deltaPsi-=TMath::Pi();
+	else deltaPsi +=TMath::Pi();
+      } // difference of subevents reaction plane angle cannot be bigger than phi/2
+      Double_t planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
+      //--------------------------------------------------------------------------
+      ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso);
     }
-    q = pl->GetQVector();
-    rpangleevent = pl->GetEventplane("Q"); // reaction plane angle without autocorrelations removal
-    Double_t deltaPsi = pl->GetQsubRes();
-    if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
-      if(deltaPsi>0.) deltaPsi-=TMath::Pi();
-      else deltaPsi +=TMath::Pi();
-    } // difference of subevents reaction plane angle cannot be bigger than phi/2
-    Double_t planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
-    //--------------------------------------------------------------------------
-    ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso);
   }
   ((TH1F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleevent);
 
@@ -566,6 +581,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       Float_t phi=d->Phi();
       ((TH1F*)fOutput->FindObject(Form("hPhi_pt%d%s",ptbin,centrbinname.Data())))->Fill(phi);
       
+      if(fReadMC&&fUseAfterBurner)phi=fAfterBurner->GetNewAngle(d,arrayMC);
       Float_t deltaphi=GetPhi0Pi(phi-eventplane);
 
       //fill the histograms with the appropriate method
@@ -639,7 +655,12 @@ void AliAnalysisTaskSEHFv2::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 
   if(fReadMC){
     Int_t lab=-1;
-    lab = d->MatchToMC(411,arrayMC,3,pdgdaughters);
+    if(fUseAfterBurner){
+      Bool_t isSignal=fAfterBurner->GetIsSignal();
+      if(isSignal)lab=10;
+    }else {
+      lab = d->MatchToMC(411,arrayMC,3,pdgdaughters);
+    }
     if(lab>=0){ //signal
       ((TH1F*)fOutput->FindObject(Form("hSgn_pt%dphi%dcentr%d_%d",ptbin,phibin,icentr-5,icentr)))->Fill(masses[0]);
       ((TH2F*)fOutput->FindObject(Form("hMc2phiS_pt%dcentr%d_%d",ptbin,icentr-5,icentr)))->Fill(TMath::Cos(2*deltaphi),masses[0]);
@@ -926,7 +947,7 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneFromV0(AliAODEvent *aodEvent){
     if(inte>0)flowTrack->SetWeight(flowTrack->Weight()/inte);
   }
   if(fDebug>15)printf("EPfromV0 flow tracks weights done\n");
-  
+
   AliFlowVector qvec=flowEvent.GetQ(fV0EPorder);
   Double_t angleEP=(1./(Double_t)fV0EPorder)*qvec.Phi();
   if(fDebug>15)printf("EPfromV0 phi %f\n",angleEP);
