@@ -113,11 +113,10 @@ void AliMUONQAMappingCheck::AddClusterLocation(Int_t detElemId,
       p = new AliMUONCalibParamND(4,AliMpConstants::ManuNofChannels(),detElemId,manuId,0.0);
       fStore->Add(p);
     }
-    if ( !monoCathode) 
-    {
-      p->SetValueAsDouble(manuChannel,0,p->ValueAsDouble(manuChannel,0)+1.0);
-    }
-    else 
+
+    p->SetValueAsDouble(manuChannel,0,p->ValueAsDouble(manuChannel,0)+1.0);
+    
+    if ( monoCathode )
     {
       p->SetValueAsDouble(manuChannel,1,p->ValueAsDouble(manuChannel,1)+1.0); 
       if (!legitimateMonoCathode)
