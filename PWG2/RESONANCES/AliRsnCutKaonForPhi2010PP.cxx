@@ -9,6 +9,9 @@
 
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
+
 #include "AliRsnCutKaonForPhi2010PP.h"
 
 ClassImp(AliRsnCutKaonForPhi2010PP)
@@ -20,6 +23,7 @@ AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const char *name) :
    fNSigmaTPCHigh(3.0),
    fLimitTPC(0.350),
    fNSigmaTOF(3.0),
+   fMyPID(0x0),
    fCutQuality(Form("%sQuality", name))
 {
 //
@@ -42,6 +46,53 @@ AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const char *name) :
    fCutQuality.SetTPCmaxChi2(4.0);
    fCutQuality.SetRejectKinkDaughters();
    fCutQuality.SetAODTestFilterBit(5);
+}
+
+//__________________________________________________________________________________________________
+AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const AliRsnCutKaonForPhi2010PP &copy) :
+   AliRsnCut(copy),
+   fNSigmaTPCLow(copy.fNSigmaTPCLow),
+   fNSigmaTPCHigh(copy.fNSigmaTPCHigh),
+   fLimitTPC(copy.fLimitTPC),
+   fNSigmaTOF(copy.fNSigmaTOF),
+   fMyPID(copy.fMyPID),
+   fCutQuality(copy.fCutQuality)
+{
+//
+// Copy constructor
+//
+}
+
+//__________________________________________________________________________________________________
+AliRsnCutKaonForPhi2010PP& AliRsnCutKaonForPhi2010PP::operator=(const AliRsnCutKaonForPhi2010PP &copy)
+{
+//
+// Assignment operator
+//
+
+   AliRsnCut::operator=(copy);
+   
+   fNSigmaTPCLow = copy.fNSigmaTPCLow;
+   fNSigmaTPCHigh = copy.fNSigmaTPCHigh;
+   fLimitTPC = copy.fLimitTPC;
+   fNSigmaTOF = copy.fNSigmaTOF;
+   fMyPID = copy.fMyPID;
+   fCutQuality = copy.fCutQuality;
+   
+   return *this;
+}
+
+//__________________________________________________________________________________________________
+void AliRsnCutKaonForPhi2010PP::InitMyPID(Bool_t isMC, Bool_t isESD)
+{
+//
+// Initialize manual PID object
+//
+
+   if (isESD) 
+      fMyPID = new AliESDpid(isMC);
+   else
+      fMyPID = new AliAODpidUtil(isMC);
 }
 
 //__________________________________________________________________________________________________
@@ -78,11 +129,15 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
    
    // PID TPC :
    // depends on momentum
+   // and if local PID object is initialized, it is used instead of that got from manager
    if (track->GetTPCmomentum() < fLimitTPC) 
       SetRangeD(0.0, fNSigmaTPCLow);
    else
       SetRangeD(0.0, fNSigmaTPCHigh);
-   fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
+   if (fMyPID) 
+      fCutValueD = TMath::Abs(fMyPID->NumberOfSigmasTPC(track, AliPID::kKaon));
+   else
+      fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
    if (!OkRangeD()) return kFALSE;
    
    // if TOF is not matched, end here
