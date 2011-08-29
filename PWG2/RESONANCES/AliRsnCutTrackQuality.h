@@ -50,6 +50,8 @@ public:
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
    
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
+   
+   void      SetDefaults2010();
 
    virtual Bool_t IsSelected(TObject *obj);
    virtual void   Print(const Option_t *option = "") const;
@@ -100,6 +102,29 @@ inline const char * AliRsnCutTrackQuality::Binary(UInt_t number)
         strncat(b, ((number & z) == z) ? "1" : "0", 1);
 
     return b;
+}
+
+//__________________________________________________________________________________________________
+inline void AliRsnCutTrackQuality::SetDefaults2010()
+{
+//
+// Default settings for cuts used in 2010
+//
+
+   AddStatusFlag(AliESDtrack::kTPCin   , kTRUE);
+   AddStatusFlag(AliESDtrack::kTPCrefit, kTRUE);
+   AddStatusFlag(AliESDtrack::kITSrefit, kTRUE);
+   SetPtRange(0.15, 1E+20);
+   SetEtaRange(-0.8, 0.8);
+   SetDCARPtFormula("0.0182+0.0350/pt^1.01");
+   SetDCAZmax(2.0);
+   SetSPDminNClusters(1);
+   SetITSminNClusters(0);
+   SetITSmaxChi2(1E+20);
+   SetTPCminNClusters(70);
+   SetTPCmaxChi2(4.0);
+   SetRejectKinkDaughters();
+   SetAODTestFilterBit(5);
 }
 
 #endif
