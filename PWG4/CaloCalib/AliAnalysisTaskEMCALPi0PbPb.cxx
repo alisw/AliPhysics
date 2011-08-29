@@ -570,7 +570,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     UInt_t mask2 = fEsdEv->GetESDRun()->GetDetectorsInReco();
     Bool_t desc1 = (mask1 >> 18) & 0x1;
     Bool_t desc2 = (mask2 >> 18) & 0x1;
-    if (desc1==0 || desc2==0) { //AliDAQ::OfflineModuleName(180=="EMCAL"
+    if (desc1==0 || desc2==0) { //AliDAQ::OfflineModuleName(18)=="EMCAL"
       AliError(Form("EMCAL not in DAQ/RECO: %u (%u)/%u (%u)", 
 		    mask1, fEsdEv->GetESDRun()->GetDetectorsInReco(),
 		    mask2, fEsdEv->GetESDRun()->GetDetectorsInDAQ()));
@@ -979,7 +979,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
   Int_t nclus  = clusters->GetEntries();
   Int_t ntrks  = fSelTracks->GetEntries();
   Bool_t btracks[6][ntrks];
-  memset(btracks,0,sizeof(btracks));
+  memset(btracks,0,sizeof(btracks));//todo
 
   std::map<Short_t,Short_t> map;
   for (Short_t pos=0;pos<ncells;++pos) {
