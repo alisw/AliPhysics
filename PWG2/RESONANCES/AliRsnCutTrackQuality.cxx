@@ -251,7 +251,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
 
    // if a test bit is used, check it and skip the following
    if (fAODTestFilterBit >= 0) {
-      UInt_t bit = (UInt_t)fAODTestFilterBit;
+      UInt_t bit = 1 << fAODTestFilterBit;
       AliDebugClass(2, Form("Required a test filter bit for AOD check: %u (result: %s)", bit, (track->TestFilterBit(bit) ? "accept" : "reject")));
       if (!track->TestFilterBit(bit)) 
          return kFALSE;
@@ -261,7 +261,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
          return kTRUE;
       }
    }
-
+   
    // try to retrieve the reference AOD event
    AliAODEvent *aodEvent = 0x0;
    if (fEvent) aodEvent = fEvent->GetRefAOD();
