@@ -47,6 +47,8 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fTimeMin(-1.),// small value, accept all
   fTimeMax(1.),// high value, accept all//clustering
   fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
+  fNRowDiff(1),
+  fNColDiff(1),
   fMthCutEta(0.025), 
   fMthCutPhi(0.05),
   fStep(50),
@@ -248,6 +250,8 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
   fTimeMin(rp.fTimeMin),
   fTimeMax(rp.fTimeMax),//clustering
   fClusterizerFlag(rp.fClusterizerFlag),
+  fNRowDiff(rp.fNRowDiff),
+  fNColDiff(rp.fNColDiff),
   fMthCutEta(rp.fMthCutEta), 
   fMthCutPhi(rp.fMthCutPhi),
   fStep(rp.fStep),
@@ -308,6 +312,8 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     fTimeMax   = rp.fTimeMax;
     fTimeMin   = rp.fTimeMin;//clustering
     fClusterizerFlag   = rp.fClusterizerFlag;
+    fNRowDiff  = rp.fNRowDiff;
+    fNColDiff  = rp.fNColDiff;
     fMthCutEta         = rp.fMthCutEta;
     fMthCutPhi         = rp.fMthCutPhi;
     fStep              = rp.fStep;

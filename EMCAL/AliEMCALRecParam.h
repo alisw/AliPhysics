@@ -28,10 +28,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   {
     kClusterizerv1  = 0,
     kClusterizerNxN = 1,
-    kClusterizer3x3 = 1, // consider to remove kClusterizerNxN
     kClusterizerv2  = 2,
-    kClusterizer5x5 = 3,
-    kClusterizerFW  = 4
+    kClusterizerFW  = 3
   };
   
   AliEMCALRecParam() ;
@@ -48,7 +46,9 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t GetTimeMin            () const     {return fTimeMin             ;}
   Float_t GetTimeMax            () const     {return fTimeMax             ;}
   Bool_t  GetUnfold             () const     {return fUnfold              ;}
-	
+  Int_t   GetNRowDiff           () const     {return fNRowDiff            ;}
+  Int_t   GetNColDiff           () const     {return fNColDiff            ;}
+
   void SetClusteringThreshold(Float_t thrsh)     {fClusteringThreshold = thrsh;}
   void SetW0                 (Float_t w0)        {fW0        = w0         ;}
   void SetMinECut            (Float_t ecut)      {fMinECut   = ecut       ;}
@@ -56,8 +56,9 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetTimeCut            (Float_t t)         {fTimeCut   = t          ;}
   void SetTimeMin            (Float_t t)         {fTimeMin   = t          ;}
   void SetTimeMax            (Float_t t)         {fTimeMax   = t          ;}
-  void SetUnfold             (Bool_t unfold)     {fUnfold = unfold ;}
-  
+  void SetUnfold             (Bool_t unfold)     {fUnfold    = unfold     ;}
+  void SetNxM(Int_t rdiff, Int_t cdiff)          {fNRowDiff=rdiff; fNColDiff = cdiff; }
+
   //PID (Guenole)
   Double_t GetGamma(Int_t i, Int_t j) const       {return fGamma[i][j];} 
   Double_t GetGammaEnergyProb(Int_t i) const      {return fGammaEnergyProb[i];} 
@@ -125,8 +126,7 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   void SetPar5(Int_t i, Double_t param )       {fPar5[i]=param;}
   void SetPar6(Int_t i, Double_t param )       {fPar6[i]=param;}
 
-
-  virtual void Print(Option_t * option="") const ;
+  virtual void Print(Option_t * option="") const;
   
   static AliEMCALRecParam* GetDefaultParameters();
   static AliEMCALRecParam* GetLowFluxParam();
@@ -150,6 +150,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
   Float_t fTimeMin ;             // Minimum time of digits
   Float_t fTimeMax ;             // Maximum time of digits
   Short_t fClusterizerFlag ;     // Choice of the clusterizer; Default selection (v1) is zero
+  Int_t   fNRowDiff;             // NxN: How many neighbors to consider along row (phi)
+  Int_t   fNColDiff;             // NxN: How many neighbors to consider along col (eta)
 
   //PID (Guenole)
   Double_t fGamma[6][6];         // Parameter to Compute PID for photons     
@@ -188,9 +190,8 @@ class AliEMCALRecParam : public AliDetectorRecoParam
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCUX
   
-  ClassDef(AliEMCALRecParam,15)     // Reconstruction parameters
-    
-    } ;
+  ClassDef(AliEMCALRecParam,16)     // Reconstruction parameters
+};
 
 #endif //  ALIEMCALRECPARAM_H
 
