@@ -17,13 +17,13 @@
 //
 
 #include "AliPIDResponse.h"
-#include "AliAnalysisManager.h"
-#include "AliInputEventHandler.h"
-#include "AliMultiInputEventHandler.h"
+#include "AliESDpid.h"
+#include "AliAODpidUtil.h"
 
 #include "AliRsnCutPIDNSigma.h"
 
 ClassImp(AliRsnCutPIDNSigma)
+ClassImp(AliRsnCutPIDNSigma::AliRsnPIDRange)
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() : 
@@ -31,9 +31,10 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() :
    fSpecies(AliPID::kUnknown),
    fDetector(kDetectors),
    fRejectUnmatched(kFALSE),
-   fMomMin(0.0),
-   fMomMax(1E20),
-   fNSigma(1E20)
+   fTrackNSigma(0.0),
+   fTrackMom(0.0),
+   fMyPID(0x0),
+   fRanges("AliRsnCutPIDNSigma::AliRsnPIDRange", 0)
 {
 //
 // Main constructor.
@@ -42,14 +43,15 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() :
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
-(const char *name, AliPID::EParticleType species, EDetector det, Double_t nsigma) :
+(const char *name, AliPID::EParticleType species, EDetector det) :
    AliRsnCut(name, AliRsnTarget::kDaughter),
    fSpecies(species),
    fDetector(det),
    fRejectUnmatched(kFALSE),
-   fMomMin(0.0),
-   fMomMax(1E20),
-   fNSigma(nsigma)
+   fTrackNSigma(0.0),
+   fTrackMom(0.0),
+   fMyPID(0x0),
+   fRanges("AliRsnCutPIDNSigma::AliRsnPIDRange", 0)
 {
 //
 // Main constructor.
@@ -63,9 +65,10 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
    fSpecies(copy.fSpecies),
    fDetector(copy.fDetector),
    fRejectUnmatched(copy.fRejectUnmatched),
-   fMomMin(copy.fMomMin),
-   fMomMax(copy.fMomMax),
-   fNSigma(copy.fNSigma)
+   fTrackNSigma(0.0),
+   fTrackMom(0.0),
+   fMyPID(copy.fMyPID),
+   fRanges(copy.fRanges)
 {
 //
 // Copy constructor.
@@ -84,11 +87,23 @@ AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy
    fSpecies = copy.fSpecies;
    fDetector = copy.fDetector;
    fRejectUnmatched = copy.fRejectUnmatched;
-   fMomMin = copy.fMomMin;
-   fMomMax = copy.fMomMax;
-   fNSigma = copy.fNSigma;
+   fMyPID = copy.fMyPID;
+   fRanges = copy.fRanges;
 
    return (*this);
+}
+
+//__________________________________________________________________________________________________
+void AliRsnCutPIDNSigma::InitMyPID(Bool_t isMC, Bool_t isESD)
+{
+//
+// Initialize manual PID object
+//
+
+   if (isESD) 
+      fMyPID = new AliESDpid(isMC);
+   else
+      fMyPID = new AliAODpidUtil(isMC);
 }
 
 //_________________________________________________________________________________________________
@@ -96,70 +111,82 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
 {
 //
 // Cut checker.
+// As usual, there are 'kFALSE' exit points whenever one of the conditions is not passed,
+// and at the end, it returns kTRUE since it bypassed all possible exit points.
 //
 
    // coherence check
    if (!TargetOK(object)) return kFALSE;
    
    // check initialization of PID object
-   AliPIDResponse *pid = fEvent->GetPIDResponse();
+   // if manual PID is used, use that, otherwise get from source event
+   AliPIDResponse *pid = 0x0;
+   if (fMyPID) 
+      pid = fMyPID; 
+   else 
+      pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
       return kFALSE;
    }
 
-   // get reference momentum, for range cut
-   Double_t momentum = -1.0;
+   // convert input object into AliVTrack
+   // if this fails, the cut cannot be checked
    AliVTrack *vtrack = fDaughter->Ref2Vtrack();
    if (!vtrack) {
       AliDebugClass(2, "Referenced daughter is not a track");
       return kFALSE;
    }
-   if (fDetector == kTPC)
-      momentum = vtrack->GetTPCmomentum();
-   else
-      momentum = vtrack->P();
-      
-   // check momentum range
-   if (momentum < fMomMin || momentum > fMomMax) {
-      AliDebugClass(2, Form("Track momentum = %.5f, outside allowed range [%.2f - %.2f]", momentum, fMomMin, fMomMax));
-      return kFALSE;
+   
+   // check matching, if required
+   // a) if detector is not matched and matching is required, reject the track
+   // b) if detector is not matched and matching is not required, accept blindly the track
+   //    since missing the matching causes one not to be able to rely that detector
+   if (!MatchDetector(vtrack)) {
+      AliDebugClass(2, Form("Detector not matched. fRejectUnmatched = %s --> track is %s", (fRejectUnmatched ? "true" : "false"), (fRejectUnmatched ? "rejected" : "accepted")));
+      return (!fRejectUnmatched);
    }
    
-   // check PID
-   Bool_t matched;
-   Double_t nsigma;
+   // get reference momentum
+   fTrackMom = (fDetector == kTPC) ? vtrack->GetTPCmomentum() : vtrack->P();
+   
+   // get number of sigmas
    switch (fDetector) {
       case kITS:
-         matched = IsITS(vtrack);
-         nsigma  = pid->NumberOfSigmasITS(vtrack, fSpecies);
+         fTrackNSigma = TMath::Abs(pid->NumberOfSigmasITS(vtrack, fSpecies));
          break;
       case kTPC:
-         matched = IsTPC(vtrack);
-         nsigma  = pid->NumberOfSigmasTPC(vtrack, fSpecies);
+         fTrackNSigma = TMath::Abs(pid->NumberOfSigmasTPC(vtrack, fSpecies));
          break;
       case kTOF:
-         matched = IsTOF(vtrack);
-         nsigma  = pid->NumberOfSigmasTOF(vtrack, fSpecies);
+         fTrackNSigma = TMath::Abs(pid->NumberOfSigmasTOF(vtrack, fSpecies));
          break;
       default:
          AliError("Bad detector chosen. Rejecting track");
          return kFALSE;
    }
    
-   // determine cut result
-   if (fRejectUnmatched && (matched == kFALSE)) {
-      AliDebugClass(2, "Required to reject unmatched traks, and this track is not matched in the detector");
+   // loop on all ranges, and use the one which contains this momentum
+   // if none is found, the cut is not passed
+   Bool_t accept = kFALSE;
+   Int_t  i, goodRange = -1, nRanges = fRanges.GetEntriesFast();
+   for (i = 0; i < nRanges; i++) {
+      AliRsnPIDRange *range = (AliRsnPIDRange*)fRanges[i];
+      if (!range) continue;
+      if (!range->IsInRange(fTrackMom)) continue;
+      else {
+         goodRange = i;
+         accept = range->CutPass(fTrackNSigma);
+         AliDebugClass(2, Form("[%s] NSigma = %.3f, max = %.3f, track %s", GetName(), fTrackNSigma, range->NSigmaCut(), (accept ? "accepted" : "rejected")));
+         break;
+      }
+   }
+   if (goodRange < 0) {
+      AliDebugClass(2, Form("[%s] No good range found. Rejecting track", GetName()));
       return kFALSE;
    } else {
-      AliDebugClass(2, Form("Nsigma = %.5f, maximum allowed = %.2f", nsigma, fNSigma));
-      if (TMath::Abs(nsigma) <= fNSigma) {
-         AliDebugClass(2, "Track accepted");
-         return kTRUE;
-      } else {
-         AliDebugClass(2, "Track rejected");
-         return kFALSE;
-      }
+      AliDebugClass(2, Form("[%s] Mom = %.3f, good range found (#%d), track was %s", GetName(), fTrackMom, goodRange, (accept ? "accepted" : "rejected")));
+      return accept;
    }
 }
 
