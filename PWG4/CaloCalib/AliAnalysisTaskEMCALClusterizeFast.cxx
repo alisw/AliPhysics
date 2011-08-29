@@ -78,9 +78,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
     fNEta(4),
-    fshiftPhi(2),
-    fshiftEta(2),
-    fTRUshift(0),
+    fShiftPhi(2),
+    fShiftEta(2),
+    fTRUShift(0),
     fStoreAdditionalInformation(0)
 { 
   // Constructor
@@ -115,9 +115,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
     fNEta(4),
-    fshiftPhi(2),
-    fshiftEta(2),
-    fTRUshift(0),
+    fShiftPhi(2),
+    fShiftEta(2),
+    fTRUShift(0),
     fStoreAdditionalInformation(0)
 { 
   // Constructor
@@ -596,23 +596,20 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   delete fClusterizer;
   if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1(geometry);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) 
-    fClusterizer = new AliEMCALClusterizerNxN(geometry);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
-    fClusterizer = new AliEMCALClusterizerv2(geometry);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizer5x5) {
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(geometry);
-   clusterizer->SetNRowDiff(2);
-   clusterizer->SetNColDiff(2);
-   fClusterizer = clusterizer;
-  } 
+   clusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
+   clusterizer->SetNColDiff(fRecParam->GetNColDiff());
+    fClusterizer = clusterizer;
+  } else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
+    fClusterizer = new AliEMCALClusterizerv2(geometry);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW){
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(geometry);
     clusterizer->SetnPhi(fNPhi);
     clusterizer->SetnEta(fNEta);
-    clusterizer->SetshiftPhi(fshiftPhi);
-    clusterizer->SetshiftEta(fshiftEta);
-    clusterizer->SetTRUshift(fTRUshift);
+    clusterizer->SetshiftPhi(fShiftPhi);
+    clusterizer->SetshiftEta(fShiftEta);
+    clusterizer->SetTRUshift(fTRUShift);
     fClusterizer = clusterizer;
   }
   else{
