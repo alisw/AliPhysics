@@ -28,7 +28,7 @@
 /// Cvetan Cheshkov 1/04/2008
 ///////////////////////////////////////////////////////////////////////////////
 #include <TSystem.h>
-
+#include <cstdlib>
 #include "AliRawReaderDateOnline.h"
 #include "AliLog.h"
 #ifdef ALI_DATE

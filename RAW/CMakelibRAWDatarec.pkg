@@ -58,4 +58,4 @@ if (DATE_ROOT)
 
 endif (DATE_ROOT)
 
-set ( EXPORT AliRawReader.h AliAltroRawStream.h AliFilter.h AliRawReaderRoot.h)
+set ( EXPORT AliRawReader.h AliAltroRawStream.h AliFilter.h AliRawReaderRoot.h AliRawReaderDate.h)
