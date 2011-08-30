@@ -28,6 +28,7 @@
 
 #include <TError.h>
 #include <TSysEvtHandler.h>
+#include <cstdlib>
 #ifdef ALI_DATE
 #include <TROOT.h>
 #include <TSystem.h>

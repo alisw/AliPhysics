@@ -49,7 +49,10 @@ if(DATE_ROOT)
     set ( EINCLUDE ${EINCLUDE}  ${DIMDIR}/dim)
     set ( ELIBS ${ELIBS}  dim)
     set ( ELIBSDIR ${ELIBSDIR}  ${DIMDIR}/${ODIR})
-  
+    if(ELIBSDIR STREQUAL "${DIMDIR}/")
+      set (ELIBSDIR ${DIMDIR}/linux)
+    endif(ELIBSDIR STREQUAL "${DIMDIR}/")
+ 
   endif(DIMDIR)
 
 endif(DATE_ROOT)
