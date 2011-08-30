@@ -363,7 +363,9 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad();
 
   // histograms
+  Bool_t th1 =   TH1::GetDefaultSumw2();
   TH1::SetDefaultSumw2(kTRUE);
+  Bool_t th2 =   TH2::GetDefaultSumw2();
   TH2::SetDefaultSumw2(kTRUE);
   fHCuts = new TH1F("hEventCuts","",5,0.5,5.5);
   fHCuts->GetXaxis()->SetBinLabel(1,"All");
@@ -549,6 +551,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
     }
   }
 
+  TH1::SetDefaultSumw2(th1);
+  TH2::SetDefaultSumw2(th2);
   PostData(1, fOutput); 
 }
 
@@ -978,8 +982,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
   Int_t ncells = cells->GetNumberOfCells();
   Int_t nclus  = clusters->GetEntries();
   Int_t ntrks  = fSelTracks->GetEntries();
-  Bool_t btracks[6][ntrks];
-  memset(btracks,0,sizeof(btracks));//todo
+  Int_t btracks[6][ntrks];
+  memset(btracks,0,sizeof(Int_t)*6*ntrks);
 
   std::map<Short_t,Short_t> map;
   for (Short_t pos=0;pos<ncells;++pos) {
