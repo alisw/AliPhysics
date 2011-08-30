@@ -90,6 +90,16 @@ public:
   virtual void    InitClusterUnfolding()                    {
     fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);          }
 
+  //NxN (only used in NxN clusterizer)
+  
+  virtual void    SetNRowDiff(Int_t )    { ; }
+  virtual void    SetNColDiff(Int_t )    { ; }
+  virtual void    SetEnergyGrad(Bool_t ) { ; }
+
+  virtual Int_t   GetNRowDiff()   const { return -1 ; }
+  virtual Int_t   GetNColDiff()   const { return -1 ; } 
+  virtual Bool_t  GetEnergyGrad() const { return -1 ; }
+
   // add for clusterizing task
 
   virtual void              SetDigitsArr(TClonesArray *arr) { fDigitsArr = arr;                }
