@@ -199,6 +199,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   void SetRequireStrictTOFTPCagreement(Bool_t b=kTRUE) {fRequireStrictTOFTPCagreement=b;}
   Bool_t GetRequireStrictTOFTPCagreement() const {return fRequireStrictTOFTPCagreement;}
   void SetRejectElectronsWithTPCpid(Bool_t b=kTRUE) {fCutRejectElectronsWithTPCpid=b;}
+  void SetLinearizeVZEROresponse( Bool_t b=kTRUE ) {fLinearizeVZEROresponse=b;}
 
   //these should maybe be protected
   Bool_t PassesCuts(AliVParticle* track);
@@ -277,6 +278,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t fCutDCAToVertexZ;       //dca z cut
   Bool_t fCutMinimalTPCdedx;    //cut on minimal dedx in TPC to reject noise tracks
   Double_t fMinimalTPCdedx;       //value for minimal TPC dedx
+  Bool_t fLinearizeVZEROresponse; //linearize VZERO response using AliESDUtil
   
   Bool_t  fCutPmdDet;   //cut on PMD detector plane 
   Int_t   fPmdDet;      // value of PMD detector plane
@@ -315,8 +317,8 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Float_t fC[fgkPIDptBin][5],fBinLimitPID[fgkPIDptBin]; // pt bin limit and priors
   Float_t fProbBayes; // bayesian probability
   Float_t fCurrCentr; // current centrality used for set the priors
- // end part added by F. Noferini
-
+  // end part added by F. Noferini
+ 
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
   ClassDef(AliFlowTrackCuts,11)
