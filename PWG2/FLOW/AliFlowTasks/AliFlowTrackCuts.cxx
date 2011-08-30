@@ -57,6 +57,7 @@
 #include "AliESDpid.h"
 #include "AliESDPmdTrack.h"
 #include "AliVVZERO.h"
+#include "AliESDUtils.h" //TODO
 
 ClassImp(AliFlowTrackCuts)
 
@@ -100,6 +101,7 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fLinearizeVZEROresponse(kFALSE),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -179,6 +181,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCutDCAToVertexZ(kFALSE),
   fCutMinimalTPCdedx(kFALSE),
   fMinimalTPCdedx(0.),
+  fLinearizeVZEROresponse(kFALSE),
   fCutPmdDet(kFALSE),
   fPmdDet(0),
   fCutPmdAdc(kFALSE),
@@ -265,6 +268,7 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fCutDCAToVertexZ(that.fCutDCAToVertexZ),
   fCutMinimalTPCdedx(that.fCutMinimalTPCdedx),
   fMinimalTPCdedx(that.fMinimalTPCdedx),
+  fLinearizeVZEROresponse(that.fLinearizeVZEROresponse),
   fCutPmdDet(that.fCutPmdDet),
   fPmdDet(that.fPmdDet),
   fCutPmdAdc(that.fCutPmdAdc),
@@ -357,6 +361,7 @@ AliFlowTrackCuts& AliFlowTrackCuts::operator=(const AliFlowTrackCuts& that)
   fCutDCAToVertexZ=that.fCutDCAToVertexZ;
   fCutMinimalTPCdedx=that.fCutMinimalTPCdedx;
   fMinimalTPCdedx=that.fMinimalTPCdedx;
+  fLinearizeVZEROresponse=that.fLinearizeVZEROresponse;
   fCutPmdDet=that.fCutPmdDet;
   fPmdDet=that.fPmdDet;
   fCutPmdAdc=that.fCutPmdAdc;
@@ -3680,7 +3685,19 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
     fTrackEta = -3.45+0.5*(id/8);
   else
     fTrackEta = +4.8-0.6*((id/8)-4);
-  fTrackWeight = vzero->GetMultiplicity(id);
+  
+  if (fLinearizeVZEROresponse)
+  {
+    //this is only needed in pass1 of LHC10h
+    Float_t multV0[fgkNumberOfV0tracks];
+    Float_t dummy=0.0;
+    AliESDUtils::GetCorrV0((AliESDEvent*)fEvent,dummy,multV0);
+    fTrackWeight = multV0[id];
+  }
+  else
+  {
+    fTrackWeight = vzero->GetMultiplicity(id);
+  }
 
   Bool_t pass=kTRUE;
   if (fCutEta) {if (  fTrackEta < fEtaMin || fTrackEta >= fEtaMax ) pass = kFALSE;}
