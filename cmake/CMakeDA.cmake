@@ -73,7 +73,11 @@ list(APPEND mod "-I${ALICE_ROOT}/include" "-I${ALICE_ROOT}/STEER" "-I${ALICE_ROO
 # ----------Common stuff-------------------
 
 file(GLOB_RECURSE _dafiles $ENV{ALICE_ROOT}/*da.cxx)
-set(DAINSTALL "$ENV{ALICE_INSTALL}/DA")
+set (DAINSTALL "$ENV{ALICE_INSTALL}/DA")
+if(DAINSTALL STREQUAL "/DA") 
+  set(DAINSTALL "$ENV{ALICE_ROOT}/DA")
+endif(DAINSTALL STREQUAL "/DA")
+
 
 file(MAKE_DIRECTORY ${DAINSTALL})
 
