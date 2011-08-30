@@ -102,7 +102,7 @@ fTRDIn(0)
      Int_t no=t.fCalibContainer->GetEntriesFast();
      for (i=0; i<no; i++) {
        TObject *o=t.fCalibContainer->At(i);
-       fCalibContainer->AddLast(o->Clone());
+       if (o) fCalibContainer->AddLast(o->Clone());
      }  
   }
 
