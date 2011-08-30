@@ -551,6 +551,7 @@ Int_t AliITSQASPDDataMakerRec::MakeRaws(AliRawReader* rawReader)
   UInt_t nErrorsDDL[20];
   for (Int_t ieq=0; ieq<20; ieq++) {
     nErrorsDDL[ieq] = 0;
+    if (!fAdvLogger) continue;
     for (UInt_t ierr=0; ierr<fAdvLogger->GetNrErrorCodes(); ierr++) {
       fAliITSQADataMakerRec->FillRawsData(ieq+(kAmoreFoOffset+1)+shift,ierr,fAdvLogger->GetNrErrors(ierr,ieq));
       if(ierr>0) {
