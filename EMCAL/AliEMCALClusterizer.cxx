@@ -384,8 +384,6 @@ void AliEMCALClusterizer::InitParameters(const AliEMCALRecParam* recParam)
   SetNRowDiff(recParam->GetNRowDiff());
   SetNColDiff(recParam->GetNColDiff());
   
-  fTimeMax                = recParam->GetTimeMax();
-
   AliDebug(1,Form("Reconstruction parameters: fECAClusteringThreshold=%.3f GeV, fECAW=%.3f, fMinECut=%.3f GeV, "
                   "fToUnfold=%d, fECALocMaxCut=%.3f GeV, fTimeCut=%e s,fTimeMin=%e s,fTimeMax=%e s",
                   fECAClusteringThreshold,fECAW0,fMinECut,fToUnfold,fECALocMaxCut,fTimeCut, fTimeMin, fTimeMax));
