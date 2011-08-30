@@ -26,40 +26,40 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           UserCreateOutputObjects();
   virtual void           UserExec(Option_t *option);
 
-  Bool_t                 GetAttachClusters()                  const  { return fAttachClusters       ; }
-  Bool_t                 GetRecalibrateOnly()                 const  { return fRecalibOnly          ; }
-  Bool_t                 GetSubBackground()                   const  { return fSubBackground        ; }
-  const TObjArray       *GetClusters()                        const  { return fClusterArr           ; }
-  const TClonesArray    *GetDigits()                          const  { return fDigitsArr            ; }
-  const TString         &GeometryName()                       const  { return fGeomName             ; }  
-  AliEMCALRecParam      *GetRecParam()                        const  { return fRecParam             ; }
-  AliEMCALRecoUtils     *GetRecoUtils()                       const  { return fRecoUtils            ; }
-  AliEMCALCalibData     *GetCalibData()                       const  { return fCalibData            ; }
-  AliCaloCalibPedestal  *GetPedData()                         const  { return fPedestalData         ; }
-  TGeoHMatrix           *GetGeometryMatrix(Int_t i)           const  { return fGeomMatrix[i]        ; }
-  void                   JustUnfold(Bool_t yesno)                    { fJustUnfold          = yesno ; }
-  void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices    = b     ; }
-  void                   SetAODBranchName(const char *name)          { fOutputAODBrName     = name  ; }
-  void                   SetAttachClusters(Bool_t b)                 { fAttachClusters      = b     ; }
-  void                   SetCalibData(AliEMCALCalibData *d)          { fCalibData           = d     ; }
-  void                   SetEMCALRecoUtils(AliEMCALRecoUtils *ru)    { fRecoUtils           = ru    ; }
-  void                   SetGeometryMatrix(TGeoHMatrix* m, Int_t i)  { fGeomMatrix[i]       = m     ; }
-  void                   SetGeometryName(const char *name)           { fGeomName            = name  ; }
-  void                   SetLoadCalib(Bool_t b)                      { fLoadCalib           = b     ; }
-  void                   SetLoadPed(Bool_t b)                        { fLoadPed             = b     ; }
-  void                   SetOCDBPath(const char *path)               { fOCDBpath            = path  ; }
-  void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData        = d     ; }
-  void                   SetRecalibrateCellsOnly(Bool_t b)           { fRecalibOnly         = b     ; }
-  void                   SetSubBackground(Bool_t b)                  { fSubBackground       = b     ; }
-  void                   SetCreatePattern(Bool_t yes)                { fCreatePattern       = yes   ; if (yes) fOverwrite = kTRUE; }
-  void                   SetOverwrite(Bool_t yes)                    { fOverwrite           = yes   ; if (yes) fOverwrite = kTRUE; }
-  void                   SetNewClusterArrayName(TString name)        { fNewClusterArrayName = name  ; }
-  void                   SetnPhi(Int_t n)                            { fNPhi                = n     ; }
-  void                   SetnEta(Int_t n)                            { fNEta                = n     ; }	
-  void                   SetShiftPhi(Int_t n)                        { fShiftPhi            = n     ; }
-  void                   SetShiftEta(Int_t n)                        { fShiftEta            = n     ; }
-  void                   SetTRUShift(Bool_t yes)                     { fTRUShift            = yes   ; }
-  void                   SetStoreAdditionalInformation(Bool_t yes)   { fStoreAdditionalInformation = yes; }
+  Bool_t                 GetAttachClusters()                  const  { return fAttachClusters               ; }
+  Bool_t                 GetRecalibrateOnly()                 const  { return fRecalibOnly                  ; }
+  Bool_t                 GetSubBackground()                   const  { return fSubBackground                ; }
+  const TObjArray       *GetClusters()                        const  { return fClusterArr                   ; }
+  const TClonesArray    *GetDigits()                          const  { return fDigitsArr                    ; }
+  const TString         &GeometryName()                       const  { return fGeomName                     ; }  
+  AliEMCALRecParam      *GetRecParam()                        const  { return fRecParam                     ; }
+  AliEMCALRecoUtils     *GetRecoUtils()                       const  { return fRecoUtils                    ; }
+  AliEMCALCalibData     *GetCalibData()                       const  { return fCalibData                    ; }
+  AliCaloCalibPedestal  *GetPedData()                         const  { return fPedestalData                 ; }
+  TGeoHMatrix           *GetGeometryMatrix(Int_t i)           const  { return fGeomMatrix[i]                ; }
+  void                   JustUnfold(Bool_t yesno)                    { fJustUnfold                  = yesno ; }
+  void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices            = b     ; }
+  void                   SetAODBranchName(const char *name)          { fOutputAODBrName             = name  ; }
+  void                   SetAttachClusters(Bool_t b)                 { fAttachClusters              = b     ; }
+  void                   SetCalibData(AliEMCALCalibData *d)          { fCalibData                   = d     ; }
+  void                   SetEMCALRecoUtils(AliEMCALRecoUtils *ru)    { fRecoUtils                   = ru    ; }
+  void                   SetGeometryMatrix(TGeoHMatrix* m, Int_t i)  { fGeomMatrix[i]               = m     ; }
+  void                   SetGeometryName(const char *name)           { fGeomName                    = name  ; }
+  void                   SetLoadCalib(Bool_t b)                      { fLoadCalib                   = b     ; }
+  void                   SetLoadPed(Bool_t b)                        { fLoadPed                     = b     ; }
+  void                   SetOCDBPath(const char *path)               { fOCDBpath                    = path  ; }
+  void                   SetPedestalData(AliCaloCalibPedestal *d)    { fPedestalData                = d     ; }
+  void                   SetRecalibrateCellsOnly(Bool_t b)           { fRecalibOnly                 = b     ; }
+  void                   SetSubBackground(Bool_t b)                  { fSubBackground               = b     ; }
+  void                   SetCreatePattern(Bool_t yes)                { fCreatePattern               = yes   ; if (yes) fOverwrite = kTRUE; }
+  void                   SetOverwrite(Bool_t yes)                    { fOverwrite                   = yes   ; if (yes) fOverwrite = kTRUE; }
+  void                   SetNewClusterArrayName(TString name)        { fNewClusterArrayName         = name  ; }
+  void                   SetnPhi(Int_t n)                            { fNPhi                        = n     ; }
+  void                   SetnEta(Int_t n)                            { fNEta                        = n     ; }
+  void                   SetShiftPhi(Int_t n)                        { fShiftPhi                    = n     ; }
+  void                   SetShiftEta(Int_t n)                        { fShiftEta                    = n     ; }
+  void                   SetTRUShift(Bool_t yes)                     { fTRUShift                    = yes   ; }
+  void                   SetStoreAdditionalInformation(Bool_t yes)   { fStoreAdditionalInformation  = yes   ; }
 
  protected:
   virtual void           Clusterize();

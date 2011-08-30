@@ -605,10 +605,10 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
     fClusterizer = new AliEMCALClusterizerv2(geometry);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW){
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(geometry);
-    clusterizer->SetnPhi(fNPhi);
-    clusterizer->SetnEta(fNEta);
-    clusterizer->SetshiftPhi(fShiftPhi);
-    clusterizer->SetshiftEta(fShiftEta);
+    clusterizer->SetNphi(fNPhi);
+    clusterizer->SetNeta(fNEta);
+    clusterizer->SetShiftPhi(fShiftPhi);
+    clusterizer->SetShiftEta(fShiftEta);
     clusterizer->SetTRUshift(fTRUShift);
     fClusterizer = clusterizer;
   }
