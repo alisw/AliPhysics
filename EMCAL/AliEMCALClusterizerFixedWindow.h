@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id: AliEMCALClusterizerFixedWindows.h   */
+/* $Id: AliEMCALClusterizerFixedWindow.h   */
 
 //_________________________________________________________________________
 // This class derives from AliEMCALClustrerizer
@@ -16,88 +16,45 @@ class AliEMCALDigit;
 class AliEMCALFixedWindowClusterInfo;
 
 class AliEMCALClusterizerFixedWindow : public AliEMCALClusterizer {
-	
 public:
-	
 	AliEMCALClusterizerFixedWindow() ;         
 	AliEMCALClusterizerFixedWindow(AliEMCALGeometry* geometry);
 	AliEMCALClusterizerFixedWindow(AliEMCALGeometry* geometry, AliEMCALCalibData * calib, AliCaloCalibPedestal * pedestal);
-	
 	virtual ~AliEMCALClusterizerFixedWindow();
 	
-	virtual void   Digits2Clusters(Option_t *option);                // Does the job
+public:
+	virtual void            Digits2Clusters(Option_t *option);
+	virtual const char     *Version() const { return "clu-FixedWindow"; }  
 	
-	virtual const char * Version() const { return "clu-FixedWindow" ; }  
-	
-	void SetnPhi (Int_t n) 
-  {
-    if (clusters_array)
-      AliWarning("Clusterizer already initialized. Unable to change the parameters.");
-    else
-      nPhi = n;
-  }
+  AliEMCALFixedWindowClusterInfo*   GetClustersInfo()                                   const { return fClustersInfo;     }
+  Int_t                             GetNphi ()                                          const { return fNphi;             }
+	Int_t                             GetNeta ()                                          const { return fNeta;             }
+  Int_t                             GetShiftPhi ()                                      const { return fShiftPhi;         }
+  Int_t                             GetShiftEta ()                                      const { return fShiftEta;         }
+  Bool_t                            GetTRUshift()                                       const { return fTRUshift;         }
+  void                              SetClustersInfo(AliEMCALFixedWindowClusterInfo *ClusInfo) { fClustersInfo = ClusInfo; }
+	void                              SetNphi (Int_t n);
+	void                              SetNeta (Int_t n);
+  void                              SetShiftPhi (Int_t s);
+  void                              SetShiftEta (Int_t s);
+  void                              SetTRUshift(Bool_t b);
   
-	void SetnEta (Int_t n) 
-  {
-    if (clusters_array)
-      AliWarning("Clusterizer already initialized. Unable to change the parameters.");
-    else
-      nEta = n;
-  }
-	
-	Int_t GetnPhi () {return nPhi;}
-	Int_t GetnEta () {return nEta;}
-  
-  void SetshiftPhi (Int_t s) 
-  {
-    if (clusters_array)
-      AliWarning("Clusterizer already initialized. Unable to change the parameters.");
-    else
-      shiftPhi = s;
-  }
-  
-  void SetshiftEta (Int_t s) 
-  {
-    if (clusters_array)
-      AliWarning("Clusterizer already initialized. Unable to change the parameters.");
-    else
-      shiftEta = s;
-  }
-  
-  Int_t GetshiftPhi () {return shiftPhi;}
-  Int_t GetshiftEta () {return shiftEta;}
-  
-  void SetTRUshift(Bool_t b) 
-  {
-    if (clusters_array)
-      AliWarning("Clusterizer already initialized. Unable to change the parameters.");
-    else
-      fTRUshift = b;
-  }
-  
-  Bool_t GetTRUshift() {return fTRUshift;}
-  
-  AliEMCALFixedWindowClusterInfo* GetClustersInfo() {return fClustersInfo;}
-  void SetClustersInfo(AliEMCALFixedWindowClusterInfo *ClusInfo) {fClustersInfo = ClusInfo;}
-
 protected:
-	
-	virtual void   MakeClusters();            
+	virtual void MakeClusters(); 
+  
+	Int_t                               fNphi;                // Fixed window number of cells in phi direction
+	Int_t                               fNeta;                // Fixed window number of cells in eta direction
+  Int_t                               fShiftPhi;            // Shifting number of cells in phi direction
+  Int_t                               fShiftEta;            // Shifting number of cells in eta direction
+  Bool_t                              fTRUshift;            // Allows shifting inside a TRU (true) of through the whole calorimeter (false)
+  AliEMCALFixedWindowClusterInfo     *fClustersInfo;        //!Point to an object where additional information are stored
+  AliEMCALDigit                    ***fClustersArray;       //!Temporary array that contains clusters
 	
 private:
-	AliEMCALClusterizerFixedWindow(const AliEMCALClusterizerFixedWindow &); //copy ctor
-	AliEMCALClusterizerFixedWindow & operator = (const AliEMCALClusterizerFixedWindow &);
+	AliEMCALClusterizerFixedWindow(const AliEMCALClusterizerFixedWindow &);                 // not implemented
+	AliEMCALClusterizerFixedWindow & operator = (const AliEMCALClusterizerFixedWindow &);   // not implemented
 	
-  // nPhi x nEta clusterizer
-	// Those parameter could be changed to get other types of fixed windows.
-	Int_t                               nPhi;
-	Int_t                               nEta; 
-  Int_t                               shiftPhi;
-  Int_t                               shiftEta;
-  Bool_t                              fTRUshift;
-  AliEMCALFixedWindowClusterInfo    *fClustersInfo;
-  AliEMCALDigit                    ***clusters_array;
-	
+
 	ClassDef(AliEMCALClusterizerFixedWindow,4)   // Clusterizer implementation version 1
 };
 
