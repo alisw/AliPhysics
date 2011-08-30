@@ -791,13 +791,10 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     fClusterizer = new AliEMCALClusterizerv1 (fGeom, fCalibData, fPedestalData);
   else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(fGeom, fCalibData, fPedestalData);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) 
+  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN){ 
     fClusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
-  else if(fRecParam->GetClusterizerFlag() > AliEMCALRecParam::kClusterizerv2) { //FIX this other way.
-    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(fGeom, fCalibData, fPedestalData);
-    clusterizer->SetNRowDiff(2);
-    clusterizer->SetNColDiff(2);
-    fClusterizer = clusterizer;
+    fClusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
+    fClusterizer->SetNColDiff(fRecParam->GetNColDiff());
   } else{
     AliFatal(Form("Clusterizer < %d > not available", fRecParam->GetClusterizerFlag()));
   }
@@ -825,6 +822,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
     }//end of loop over parameters
     
     fClusterizer->InitClusterUnfolding();
+
   }// to unfold
 }
 
