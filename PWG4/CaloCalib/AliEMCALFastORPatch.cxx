@@ -15,56 +15,60 @@
 
 /* $Id$ */
 
-#include "AliEMCALFastORPatch.h"
-
+// --- Root ---
 #include <TObject.h>
-#include <TObjArray.h>
+#include <TArrayI.h>
+#include <TArrayF.h>
 
+// --- AliRoot ---
 #include "AliESDCaloTrigger.h"
+
+#include "AliEMCALFastORPatch.h"
 
 ClassImp(AliEMCALFastORPatch)
 
+//________________________________________________________________________
 AliEMCALFastORPatch::AliEMCALFastORPatch()
-:TObject(),
-fFastORamplitudes(0),
-fFastORcolumns(0),
-fFastORrows(0),
-fSize(0),
-fAbsId(-1)
-{
-  // Dummy constructor
-}
-
-AliEMCALFastORPatch::AliEMCALFastORPatch(Int_t aid, Int_t size)
-:TObject(),
-fFastORamplitudes(new Float_t[size]),
-fFastORcolumns(new Int_t[size]),
-fFastORrows(new Int_t[size]),
-fSize(4),
-fAbsId(aid)
+  : TObject(),
+    fAbsId(-1),
+    fFastORamplitudes(new TArrayF(0)),
+    fFastORcolumns(new TArrayI(0)),
+    fFastORrows(new TArrayI(0))
 {
   // Constructor
-  for (Int_t i = 0; i < fSize; i++)
-  {
-    fFastORamplitudes[i] = -1;
-    fFastORrows[i] = -1;
-    fFastORcolumns[i] = -1;
-  }
 }
 
+//________________________________________________________________________
+AliEMCALFastORPatch::AliEMCALFastORPatch(Int_t aid, Int_t size)
+  : TObject(),
+    fAbsId(aid),
+    fFastORamplitudes(new TArrayF(size)),
+    fFastORcolumns(new TArrayI(size)),
+    fFastORrows(new TArrayI(size))
+{
+  // Constructor
+
+  fFastORamplitudes->Reset(-1);
+  fFastORrows->Reset(-1);
+  fFastORcolumns->Reset(-1);
+}
+
+//________________________________________________________________________
 AliEMCALFastORPatch::~AliEMCALFastORPatch()
 {
   // Destructor
-  delete[] fFastORamplitudes;
-  delete[] fFastORcolumns;
-  delete[] fFastORrows;
+  delete fFastORamplitudes;
+  delete fFastORcolumns;
+  delete fFastORrows;
 }
 
-Float_t AliEMCALFastORPatch::GetTotalAmplitude()
+//________________________________________________________________________
+Float_t AliEMCALFastORPatch::GetTotalAmplitude() const
 {
+  // Return total amplitude of the patch
+  
   Float_t total = 0;
-  for (Int_t i = 0; i < GetNumberOfFastOR(); i++)
-  {
+  for (Int_t i = 0; i < GetNumberOfFastOR(); i++){
     Float_t amp = GetFastORamplitude(i);
     if (amp > 0)
       total += amp;
@@ -72,31 +76,46 @@ Float_t AliEMCALFastORPatch::GetTotalAmplitude()
   return total;
 }
 
-Float_t AliEMCALFastORPatch::GetFastORamplitude(Int_t i)
+//________________________________________________________________________
+Float_t AliEMCALFastORPatch::GetFastORamplitude(Int_t i) const
 {
-  if (i < 0 || i > fSize) return -1;
-  return fFastORamplitudes[i];
+  // Return amplitude of FastOR at position i
+  
+  if (i < 0 || i > GetNumberOfFastOR()) return -1;
+  return fFastORamplitudes->At(i);
 }
 
-Int_t AliEMCALFastORPatch::GetFastORrow(Int_t i)
+//________________________________________________________________________
+Int_t AliEMCALFastORPatch::GetFastORrow(Int_t i) const
 {
-  if (i < 0 || i > fSize) return -1;
-  return fFastORrows[i];
+  // Return row number of FastOR at position i
+  
+  if (i < 0 || i > GetNumberOfFastOR()) return -1;
+  return fFastORrows->At(i);
 }
 
-Int_t AliEMCALFastORPatch::GetFastORcolumn(Int_t i)
+//________________________________________________________________________
+Int_t AliEMCALFastORPatch::GetFastORcolumn(Int_t i) const
 {
-  if (i < 0 || i > fSize) return -1;
-  return fFastORcolumns[i];
+  // Return column number of FastOR at position i
+  
+  if (i < 0 || i > GetNumberOfFastOR()) return -1;
+  return fFastORcolumns->At(i);
 }
 
-Int_t AliEMCALFastORPatch::GetNumberOfFastOR()
+//________________________________________________________________________
+Int_t AliEMCALFastORPatch::GetNumberOfFastOR() const
 {
-  return fSize;
+  // Return total number of FastORs
+  
+  return fFastORamplitudes->GetSize();
 }
 
+//________________________________________________________________________
 Bool_t AliEMCALFastORPatch::AddFastORat(AliESDCaloTrigger* f, Int_t i)
 {
+  // Add a FastOR to the patch and return true if done
+  
   Float_t amp = 0;
   Int_t gCol = 0, gRow = 0;
   f->GetAmplitude(amp);
@@ -105,65 +124,49 @@ Bool_t AliEMCALFastORPatch::AddFastORat(AliESDCaloTrigger* f, Int_t i)
   return AddFastORat(amp, gCol, gRow, i);
 }
 
+//________________________________________________________________________
 Bool_t AliEMCALFastORPatch::AddFastORat(Float_t amp, Int_t gCol, Int_t gRow, Int_t i)
 {
+  // Add a FastOR to the patch and return true if done
+  
   if (i < 0) return kFALSE;
   
-  if (i > fSize) Expand(i + 1);
+  if (i > GetNumberOfFastOR()) Expand(i + 1);
   
-  fFastORamplitudes[i] = amp;
-  fFastORrows[i] = gRow;
-  fFastORcolumns[i] = gCol;
+  fFastORamplitudes->AddAt(amp, i);
+  fFastORrows->AddAt(gRow, i);
+  fFastORcolumns->AddAt(gCol, i);
   
   return kTRUE;
 }
 
+//________________________________________________________________________
 void AliEMCALFastORPatch::RemoveFastORat(Int_t i)
 {
-  fFastORamplitudes[i] = -1;
-  fFastORrows[i] = -1;
-  fFastORcolumns[i] = -1;
+  // Remove a FastOR from the patch
+  
+  fFastORamplitudes->AddAt(-1, i);
+  fFastORrows->AddAt(-1, i);
+  fFastORcolumns->AddAt(-1, i);
 }
 
-Int_t AliEMCALFastORPatch::GetAbsId()
-{
-  return fAbsId;
-}
-
-void AliEMCALFastORPatch::SetAbsId(Int_t aid)
-{
-  fAbsId = aid;
-}
-
+//________________________________________________________________________
 void AliEMCALFastORPatch::Expand(Int_t size)
-{
-  Float_t *newFastORamplitudes = new Float_t[size];
-  Int_t *newFastORcolumns = new Int_t[size];
-  Int_t *newFastORrows = new Int_t[size];
+{  
+  // Expand the arrays
   
-  for (Int_t i = 0; i < fSize; i++)
-  {
-    newFastORamplitudes[i] = fFastORamplitudes[i];
-    newFastORcolumns[i] = fFastORcolumns[i];
-    newFastORrows[i] = fFastORrows[i];
-  }
-  
-  delete[] fFastORamplitudes;
-  delete[] fFastORcolumns;
-  delete[] fFastORrows;
-  
-  fFastORamplitudes = newFastORamplitudes;
-  fFastORcolumns = newFastORcolumns;
-  fFastORrows = newFastORrows;
-  
-  fSize = size;
+  fFastORamplitudes->Set(size);
+  fFastORcolumns->Set(size);
+  fFastORrows->Set(size);
 }
 
-Bool_t AliEMCALFastORPatch::Contains(Int_t row, Int_t col)
+//________________________________________________________________________
+Bool_t AliEMCALFastORPatch::Contains(Int_t row, Int_t col) const
 {
-  for (Int_t i = 0; i < fSize; i++)
-  {
-    if (col == fFastORcolumns[i] && row == fFastORrows[i])
+  // Check if a col, row FastOR is present in the arrays
+  
+  for (Int_t i = 0; i < GetNumberOfFastOR(); i++){
+    if (col == fFastORcolumns->At(i) && row == fFastORrows->At(i))
       return kTRUE;
   }
   return kFALSE;
