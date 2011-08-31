@@ -133,6 +133,7 @@ set ( CLASS_HDRS
     AliHLTTPCdEdxComponent.h
     AliHLTTPCdEdxMonitoringComponent.h
     HWCFemulator/AliHLTTPCHWCFExtractorUnit.h
+    HWCFemulator/AliHLTTPCHWCFPeakFinderUnit.h
     HWCFemulator/AliHLTTPCHWCFProcessorUnit.h
     HWCFemulator/AliHLTTPCHWCFMergerUnit.h
     HWCFemulator/AliHLTTPCHWCFDivisionUnit.h
