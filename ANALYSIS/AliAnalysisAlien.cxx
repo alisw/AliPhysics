@@ -556,6 +556,16 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
             mod->GetConfigMacro()->GetTitle(), mod->GetName());
       return kFALSE;
    }
+   // Adjust extra libraries
+   Int_t nlibs = mod->GetNlibs();
+   TString lib;
+   for (Int_t i=0; i<nlibs; i++) {
+      lib = mod->GetLibrary(i);
+      if (fAdditionalLibs.Contains(lib)) continue;
+      lib = Form("lib%s.so", lib.Data());
+      if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
+      fAdditionalLibs += lib;
+   }
    return kTRUE;
 }
 
@@ -563,6 +573,7 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
 Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
 {
 // Generate test macros for a single module or for the full train.
+   fAdditionalLibs = "";
    if (strlen(modname)) {
       if (!CheckDependencies()) return kFALSE;
       AliAnalysisTaskCfg *mod = GetModule(modname);
@@ -603,6 +614,7 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
 Bool_t AliAnalysisAlien::LoadModules()
 {
 // Load all modules by executing the AddTask macros. Checks first the dependencies.
+   fAdditionalLibs = "";
    Int_t nmodules = GetNmodules();
    if (!nmodules) {
       Warning("LoadModules", "No module to be loaded");
@@ -619,20 +631,6 @@ Bool_t AliAnalysisAlien::LoadModules()
    for (Int_t imod=0; imod<nmodules; imod++) {
       mod = (AliAnalysisTaskCfg*)fModules->At(imod);
       if (!LoadModule(mod)) return kFALSE;
-   }
-   // All modules are loaded. Adjust the library list.
-   fAdditionalLibs = "";
-   TString lib;
-   for (Int_t imod=0; imod<nmodules; imod++) {
-      mod = (AliAnalysisTaskCfg*)fModules->At(imod);
-      Int_t nlibs = mod->GetNlibs();
-      for (Int_t i=0; i<nlibs; i++) {
-         lib = mod->GetLibrary(i);
-         if (fAdditionalLibs.Contains(lib)) continue;
-         lib = Form("lib%s.so", lib.Data());
-         if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
-         fAdditionalLibs += lib;
-      }
    }
    return kTRUE;
 }      

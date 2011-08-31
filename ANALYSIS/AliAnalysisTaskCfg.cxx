@@ -206,10 +206,14 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
    TString args = newargs;
    if (args.IsNull()) args = fMacroArgs;
    Long64_t retval = fMacro->Exec(args);
-   if (retval >=0) {
+   Int_t ntasks = mgr->GetTasks()->GetEntriesFast();
+   Long64_t ptrTask = 1;
+   if (ntasks>ntasks0)
+      ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
+   if (retval >= ptrTask) {
       TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
       fRAddTask = reinterpret_cast<TObject*>(retval);
-      if (fConfigDeps) {
+      if (fConfigDeps && dynamic_cast<TObject*>(fRAddTask)) {
          TString classname = fRAddTask->ClassName();
          classname += Form("* __R_ADDTASK__ = (%s*)0x%lx;", classname.Data(),(ULong_t)retval);
          classname.Prepend("  ");
@@ -220,7 +224,6 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
          }
       }   
    }
-   Int_t ntasks = mgr->GetTasks()->GetEntriesFast();
    Info("ExecuteMacro", "Macro %s added %d tasks to the manager", fMacro->GetName(), ntasks-ntasks0);
    return retval;
 }
