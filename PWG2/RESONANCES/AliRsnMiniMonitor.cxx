@@ -59,6 +59,7 @@ AliRsnMiniMonitor::AliRsnMiniMonitor() :
    TNamed(), 
    fType(kTypes), 
    fCutID(-1), 
+   fCharge(0),
    fListID(-1), 
    fList(0x0)
 {
@@ -72,6 +73,7 @@ AliRsnMiniMonitor::AliRsnMiniMonitor(const char *name, EType type, Int_t cutID) 
    TNamed(name, ""), 
    fType(type), 
    fCutID(cutID), 
+   fCharge(0),
    fListID(-1), 
    fList(0x0)
 {
@@ -85,6 +87,7 @@ AliRsnMiniMonitor::AliRsnMiniMonitor(const AliRsnMiniMonitor& copy) :
    TNamed(copy), 
    fType(copy.fType), 
    fCutID(copy.fCutID), 
+   fCharge(copy.fCharge),
    fListID(copy.fListID), 
    fList(copy.fList)
 {
@@ -103,6 +106,7 @@ AliRsnMiniMonitor& AliRsnMiniMonitor::operator=(const AliRsnMiniMonitor& copy)
    TNamed::operator=(copy); 
    fType = copy.fType; 
    fCutID = copy.fCutID; 
+   fCharge = copy.fCharge;
    fListID = copy.fListID; 
    fList = copy.fList; 
    
@@ -132,6 +136,11 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
    TH1 *histogram = 0x0;
 
    switch (fType) {
+      case kTrackPt:
+         sname += "_TrackPt_cut";
+         sname += fCutID;
+         histogram = new TH1F(sname.Data(), "", 100, 0.0, 10.0);
+         break;
       case kdEdxTPCvsP: 
          sname += "_TPCsignal";
          histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 1000.0);
@@ -187,6 +196,17 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
    AliPIDResponse *pid = event->GetPIDResponse();
 
    switch (fType) {
+      case kTrackPt: 
+         if (!vtrack) {
+            AliWarning("Required vtrack for this value");
+            return kFALSE;
+         }
+         if (fCharge == '+' && vtrack->Charge() <= 0) return kFALSE;
+         if (fCharge == '-' && vtrack->Charge() >= 0) return kFALSE;
+         if (fCharge == '0' && vtrack->Charge() != 0) return kFALSE;
+         valueX = vtrack->Pt();
+         ((TH1F*)obj)->Fill(valueX);
+         return kTRUE;
       case kdEdxTPCvsP: 
          if (!vtrack) {
             AliWarning("Required vtrack for this value");

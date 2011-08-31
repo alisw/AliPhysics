@@ -213,7 +213,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 //
 
    // reset counter
-   fEvNum = 0;
+   fEvNum = -1;
    
    // message
    AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
@@ -270,9 +270,9 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
 // The real histogram filling is done at the end, in "FinishTaskOutput".
 //
 
-   // event counter
+   // increment event counter
    fEvNum++;
-   
+
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
@@ -295,8 +295,15 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
          FillTrueMotherAOD(fMiniEvent);
    }
    
-   // store event
-   fEvBuffer->Fill();
+   // if the event is not empty, store it
+   if (fMiniEvent->IsEmpty()) {
+      AliDebugClass(2, Form("Rejecting empty event #%d", fEvNum));
+   } else {
+      Int_t id = fEvBuffer->GetEntries();
+      AliDebugClass(2, Form("Adding event #%d with ID = %d", fEvNum, id));
+      fMiniEvent->ID() = id;
+      fEvBuffer->Fill();
+   }
    
    // post data for computed stuff
    PostData(1, fOutput);
@@ -337,24 +344,24 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          // execute computation in the appropriate way
          switch (compType) {
             case AliRsnMiniOutput::kEventOnly:
-               AliDebugClass(1, Form("Event %d, def '%s': event-value histogram filling", ievt, def->GetName()));
+               //AliDebugClass(1, Form("Event %d, def '%s': event-value histogram filling", ievt, def->GetName()));
                ifill = 1;
                def->FillEvent(fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTruePair:
-               AliDebugClass(1, Form("Event %d, def '%s': true-pair histogram filling", ievt, def->GetName()));
+               //AliDebugClass(1, Form("Event %d, def '%s': true-pair histogram filling", ievt, def->GetName()));
                ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPair:
-               AliDebugClass(1, Form("Event %d, def '%s': pair-value histogram filling", ievt, def->GetName()));
+               //AliDebugClass(1, Form("Event %d, def '%s': pair-value histogram filling", ievt, def->GetName()));
                ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPairRotated1:
-               AliDebugClass(1, Form("Event %d, def '%s': rotated (1) background histogram filling", ievt, def->GetName()));
+               //AliDebugClass(1, Form("Event %d, def '%s': rotated (1) background histogram filling", ievt, def->GetName()));
                ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             case AliRsnMiniOutput::kTrackPairRotated2:
-               AliDebugClass(1, Form("Event %d, def '%s': rotated (2) background histogram filling", ievt, def->GetName()));
+               //AliDebugClass(1, Form("Event %d, def '%s': rotated (2) background histogram filling", ievt, def->GetName()));
                ifill = def->FillPair(fMiniEvent, fMiniEvent, &fValues);
                break;
             default:
@@ -375,14 +382,16 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    }
    
    // initialize mixing counter
-   TString *matched = new TString[nEvents];
+   Int_t    nmatched[nEvents];
+   TString *smatched = new TString[nEvents];
    for (ievt = 0; ievt < nEvents; ievt++) {
-      matched[ievt] = "|";
+      smatched[ievt] = "|";
+      nmatched[ievt] = 0;
    }
    
    // search for good matchings
    for (ievt = 0; ievt < nEvents; ievt++) {
-      ifill = 0;
+      if (nmatched[ievt] >= fNMix) continue;
       fEvBuffer->GetEntry(ievt);
       AliRsnMiniEvent evMain(*fMiniEvent);
       for (iloop = 1; iloop < nEvents; iloop++) {
@@ -394,13 +403,16 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          // skip if events are not matched
          if (!EventsMatch(&evMain, fMiniEvent)) continue;
          // check that the array of good matches for mixed does not already contain main event
-         if (matched[imix].Contains(Form("|%d|", ievt))) continue;
+         if (smatched[imix].Contains(Form("|%d|", ievt))) continue;
+         // check that the found good events has not enough matches already
+         if (nmatched[imix] >= fNMix) continue;
          // add new mixing candidate
-         matched[ievt].Append(Form("%d|", imix));
-         ifill++;
-         if (ifill >= fNMix) break;
+         smatched[ievt].Append(Form("%d|", imix));
+         nmatched[ievt]++;
+         nmatched[imix]++;
+         if (nmatched[ievt] >= fNMix) break;
       }
-      AliDebugClass(1, Form("Matches for event %5d = %s", ievt, matched[ievt].Data()));
+      AliDebugClass(1, Form("Matches for event %5d = %d [%s] (missing are declared above)", evMain.ID(), nmatched[ievt], smatched[ievt].Data()));
    }
    
    // perform mixing
@@ -410,7 +422,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       ifill = 0;
       fEvBuffer->GetEntry(ievt);
       AliRsnMiniEvent evMain(*fMiniEvent);
-      list = matched[ievt].Tokenize("|");
+      list = smatched[ievt].Tokenize("|");
       TObjArrayIter next(list);
       while ( (os = (TObjString*)next()) ) {
          imix = os->GetString().Atoi();
@@ -420,13 +432,16 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
             if (!def) continue;
             if (!def->IsTrackPairMix()) continue;
             ifill += def->FillPair(&evMain, fMiniEvent, &fValues, kTRUE);
-            if (!def->IsSymmetric()) ifill += def->FillPair(fMiniEvent, &evMain, &fValues, kFALSE);
+            if (!def->IsSymmetric()) {
+               AliDebugClass(2, "Reflecting non symmetric pair");
+               ifill += def->FillPair(fMiniEvent, &evMain, &fValues, kFALSE);
+            }
          }
       }
       delete list;
    }
    
-   delete [] matched;
+   delete [] smatched;
       
    /*
    OLD   
@@ -606,7 +621,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
    }
    
    // if the above exit point is not taken, the event is accepted
-   AliDebugClass(2, Form("Stats for event %d: %s", fEvNum, msg.Data()));
+   AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
       fHEventStat->Fill(3.1);
       return output;
@@ -626,7 +641,6 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    // assign event-related values
    if (fMiniEvent) delete fMiniEvent;
    fMiniEvent = new AliRsnMiniEvent;
-   fMiniEvent->ID()    = fEvNum;
    fMiniEvent->Vz()    = fInputEvent->GetPrimaryVertex()->GetZ();
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
@@ -846,11 +860,24 @@ Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEv
 
    if (!event1 || !event2) return kFALSE;
    Int_t ivz1, ivz2, imult1, imult2, iangle1, iangle2;
+   Double_t dv, dm, da;
    
    if (fContinuousMix) {
-      if (TMath::Abs(event1->Vz()    - event2->Vz()   ) > fMaxDiffVz   ) return kFALSE;
-      if (TMath::Abs(event1->Mult()  - event2->Mult() ) > fMaxDiffMult ) return kFALSE;
-      if (TMath::Abs(event1->Angle() - event2->Angle()) > fMaxDiffAngle) return kFALSE;
+      dv = TMath::Abs(event1->Vz()    - event2->Vz()   );
+      dm = TMath::Abs(event1->Mult()  - event2->Mult() );
+      da = TMath::Abs(event1->Angle() - event2->Angle());
+      if (dv > fMaxDiffVz) {
+         //AliDebugClass(2, Form("Events #%4d and #%4d don't match due to a too large diff in Vz = %f", event1->ID(), event2->ID(), dv));
+         return kFALSE;
+      }
+      if (dm > fMaxDiffMult ) {
+         //AliDebugClass(2, Form("Events #%4d and #%4d don't match due to a too large diff in Mult = %f", event1->ID(), event2->ID(), dm));
+         return kFALSE;
+      }
+      if (da > fMaxDiffAngle) {
+         //AliDebugClass(2, Form("Events #%4d and #%4d don't match due to a too large diff in Angle = %f", event1->ID(), event2->ID(), da));
+         return kFALSE;
+      }
       return kTRUE;
    } else {
       ivz1 = (Int_t)(event1->Vz() / fMaxDiffVz);
