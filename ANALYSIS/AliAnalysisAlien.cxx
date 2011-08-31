@@ -3548,7 +3548,6 @@ void AliAnalysisAlien::WriteAnalysisFile()
       workdir += fGridWorkingDir;
       Info("WriteAnalysisFile", "\n#####   Copying file <%s> containing your initialized analysis manager to your alien workspace", analysisFile.Data());
       if (FileExists(analysisFile)) gGrid->Rm(analysisFile);
-      TFile::Cp(Form("file:%s",analysisFile.Data()), Form("alien://%s/%s", workdir.Data(),analysisFile.Data()));
       if (!copyLocal2Alien("WriteAnalysisFile",analysisFile.Data(), 
           Form("%s/%s", workdir.Data(),analysisFile.Data()))) Fatal("","Terminating");
    }   
