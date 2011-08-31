@@ -185,7 +185,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
   Int_t sector=0;
   char  type[100];
   char  side[100];
-  UInt_t num=0;
+  Int_t num=0;
   Int_t echa=0;
   //Double_t x=0;
   //Double_t y=0;
@@ -329,7 +329,7 @@ TClonesArray * AliTPCSensorTemp::ReadTree(TTree *tree,
       temp->SetZ(-240);
       }
 
-    if ( num < (sizeof(kTSz)/sizeof(kTSz[0]))) {
+    if ( num < (Int_t)(sizeof(kTSz)/sizeof(kTSz[0]))) {
       if(temp->GetType()==5 && temp->GetSide()==0) {
          temp->SetZ(kTSz[num]);
       }
