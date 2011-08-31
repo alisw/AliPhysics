@@ -706,7 +706,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3) evSelbyCentrality=kFALSE; //rejected by centrality
     if(fCuts->GetWhyRejection()==4) evSelByVertex=kFALSE; //rejected by vertex
     if(fCuts->GetWhyRejection()==5) fNEntries->Fill(5);//tmp
-    if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count("evnonsel:zvtx/Run:%d",runNumber);
+    if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
   }
 
   if(evSelected || (!evSelected && !evSelbyCentrality && evSelByVertex && !evselByPileup)){ //events selected or not selected because of vtx or pileup
