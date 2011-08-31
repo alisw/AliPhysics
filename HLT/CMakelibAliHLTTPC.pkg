@@ -133,7 +133,6 @@ set ( CLASS_HDRS
     AliHLTTPCdEdxComponent.h
     AliHLTTPCdEdxMonitoringComponent.h
     HWCFemulator/AliHLTTPCHWCFExtractorUnit.h
-    HWCFemulator/AliHLTTPCHWCFPeakFinderUnit.h
     HWCFemulator/AliHLTTPCHWCFProcessorUnit.h
     HWCFemulator/AliHLTTPCHWCFMergerUnit.h
     HWCFemulator/AliHLTTPCHWCFDivisionUnit.h
@@ -146,7 +145,7 @@ set ( CLASS_HDRS
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
 list(APPEND MODULE_SRCS AliHLTTPCLog.cxx)
 
-set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h AliHLTTPCClusterMCData.h HWCFemulator/AliHLTTPCHWCFDataTypes.h)
+set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h AliHLTTPCClusterMCData.h HWCFemulator/AliHLTTPCHWCFDataTypes.h     HWCFemulator/AliHLTTPCHWCFPeakFinderUnit.h)
 
 set ( MODULE_DHDR )
 
