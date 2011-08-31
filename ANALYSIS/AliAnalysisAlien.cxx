@@ -2422,7 +2422,7 @@ Bool_t AliAnalysisAlien::CheckMergedFiles(const char *filename, const char *alie
    }   
    // Copy the file in the output directory
    printf("===> Copying collection %s in the output directory %s\n", Form("Stage_%d.xml",stage), aliendir);
-   TFile::Cp(Form("Stage_%d.xml",stage), Form("alien://%s/Stage_%d.xml",aliendir,stage));
+//   TFile::Cp(Form("Stage_%d.xml",stage), Form("alien://%s/Stage_%d.xml",aliendir,stage));
    if (!copyLocal2Alien("CheckMergedFiles", Form("Stage_%d.xml",stage), 
         Form("%s/Stage_%d.xml",aliendir,stage))) Fatal("","Terminating");
    // Check if this is the last stage to be done.
