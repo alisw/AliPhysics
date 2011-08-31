@@ -41,7 +41,6 @@ AliHLTTPCHWCFEmulator::AliHLTTPCHWCFEmulator()
   fDebug(0),
   fkMapping(0),
   fChannelExtractor(),
-  fPeakFinderUnit(),
   fChannelProcessor(),
   fChannelMerger(),
   fDivisionUnit()
@@ -59,7 +58,6 @@ AliHLTTPCHWCFEmulator::AliHLTTPCHWCFEmulator(const AliHLTTPCHWCFEmulator&)
   fDebug(0),
   fkMapping(0),
   fChannelExtractor(),
-  fPeakFinderUnit(),
   fChannelProcessor(),
   fChannelMerger(),
   fDivisionUnit()
@@ -78,21 +76,16 @@ void AliHLTTPCHWCFEmulator::Init( const AliHLTUInt32_t *mapping, AliHLTUInt32_t 
   // Initialisation
   fkMapping = mapping;
   
-  fPeakFinderUnit.SetChargeFluctuation( (config2>>4) & 0xF );
-
-  fChannelProcessor.SetSingleSeqLimit( (config1) & 0xFF );
-  fChannelProcessor.SetDeconvolutionTime( (config1>>24) & 0x1 );
-  fChannelProcessor.SetUseTimeBinWindow( (config2>>4) & 0x1 );
-
- 
   fChannelMerger.SetByPassMerger( (config1>>27) & 0x1 );
-  fChannelMerger.SetDeconvolution( (config1>>25) & 0x1 );
-  fChannelMerger.SetMatchDistance( (config2) & 0xF );
-
-  fDivisionUnit.SetClusterLowerLimit( (config1>>8) & 0xFFFF );
   fDivisionUnit.SetSinglePadSuppression( (config1>>26) & 0x1 );
+  fChannelMerger.SetDeconvolution( (config1>>25) & 0x1 );
+  fChannelProcessor.SetDeconvolution( (config1>>24) & 0x1 );
+  fDivisionUnit.SetClusterLowerLimit( (config1>>8) & 0xFFFF );
+  fChannelProcessor.SetSingleSeqLimit( (config1) & 0xFF );
+  fChannelMerger.SetMatchDistance( (config2) & 0xF );
+  fChannelProcessor.SetTimeBinWindow( (config2>>4) & 0xFF );
+  fChannelProcessor.SetChargeFluctuation( (config2>>12) & 0xF );
 
-  fPeakFinderUnit.SetDebugLevel(fDebug);
   fChannelProcessor.SetDebugLevel(fDebug);
   fChannelMerger.SetDebugLevel(fDebug);
   fDivisionUnit.SetDebugLevel(fDebug);
@@ -119,9 +112,8 @@ int AliHLTTPCHWCFEmulator::FindClusters( const AliHLTUInt32_t *rawEvent,
   // Initialise 
 
   int ret = 0;
-  
+
   fChannelExtractor.Init( fkMapping, mcLabels, 3*rawEventSize32 );
-  fPeakFinderUnit.Init();
   fChannelProcessor.Init();
   fChannelMerger.Init();
   fDivisionUnit.Init();
@@ -130,8 +122,7 @@ int AliHLTTPCHWCFEmulator::FindClusters( const AliHLTUInt32_t *rawEvent,
   
   for( AliHLTUInt32_t  iWord=0; iWord<=rawEventSize32; iWord++ ){
 
-    const AliHLTTPCHWCFBunch *bunch1=0;
-    const AliHLTTPCHWCFBunch *bunch2=0;
+    const AliHLTTPCHWCFBunch *bunch=0;
     const AliHLTTPCHWCFClusterFragment *fragment=0;
     const AliHLTTPCHWCFClusterFragment *candidate=0;
     const AliHLTTPCHWCFCluster *cluster = 0;
@@ -139,40 +130,37 @@ int AliHLTTPCHWCFEmulator::FindClusters( const AliHLTUInt32_t *rawEvent,
     if( iWord<rawEventSize32 ) fChannelExtractor.InputStream(ReadBigEndian(rawEvent[iWord]));
     else fChannelExtractor.InputEndOfData();
 
-    while( (bunch1 = fChannelExtractor.OutputStream()) ){ 
-      fPeakFinderUnit.InputStream(bunch1);
-      while( (bunch2 = fPeakFinderUnit.OutputStream() )){	
-	fChannelProcessor.InputStream(bunch2);
-	while( (fragment = fChannelProcessor.OutputStream() )){	
-	  fChannelMerger.InputStream( fragment );
-	  while( (candidate = fChannelMerger.OutputStream()) ){	    	  
-	    fDivisionUnit.InputStream(candidate);
-	    while( (cluster = fDivisionUnit.OutputStream()) ){	    
-	      if( cluster->fFlag==1 ){
-		if( outputSize32+AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize > maxOutputSize32 ){ // No space in the output buffer
-		  ret = -2;
-		  break;
-		}	      
-		AliHLTUInt32_t *co = &output[outputSize32];
-		int i=0;
-		co[i++] = WriteBigEndian(cluster->fRowQ);
-		co[i++] = WriteBigEndian(cluster->fQ);
-		co[i++] = cluster->fP;
-		co[i++] = cluster->fT;
-		co[i++] = cluster->fP2;
-		co[i++] = cluster->fT2;
-		outputSize32+=AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
-		if( mcLabels && outputMC && outputMC->fCount < maxNMCLabels){
-		  outputMC->fLabels[outputMC->fCount++] = cluster->fMC;
-		}
+    while( (bunch = fChannelExtractor.OutputStream()) ){ 
+      fChannelProcessor.InputStream(bunch);
+      while( (fragment = fChannelProcessor.OutputStream() )){	
+	fChannelMerger.InputStream( fragment );
+	while( (candidate = fChannelMerger.OutputStream()) ){	    	  
+	  fDivisionUnit.InputStream(candidate);
+	  while( (cluster = fDivisionUnit.OutputStream()) ){	    
+	    if( cluster->fFlag==1 ){
+	      if( outputSize32+AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize > maxOutputSize32 ){ // No space in the output buffer
+		ret = -2;
+		break;
+	      }	      
+	      AliHLTUInt32_t *co = &output[outputSize32];
+	      int i=0;
+	      co[i++] = WriteBigEndian(cluster->fRowQ);
+	      co[i++] = WriteBigEndian(cluster->fQ);
+	      co[i++] = cluster->fP;
+	      co[i++] = cluster->fT;
+	      co[i++] = cluster->fP2;
+	      co[i++] = cluster->fT2;
+	      outputSize32+=AliHLTTPCHWCFData::fgkAliHLTTPCHWClusterSize;
+	      if( mcLabels && outputMC && outputMC->fCount < maxNMCLabels){
+		outputMC->fLabels[outputMC->fCount++] = cluster->fMC;
 	      }
-	      else if( cluster->fFlag==2 ){
-		if( outputSize32+1 > maxOutputSize32 ){ // No space in the output buffer
-		  ret = -2;
-		  break;
-		}
-		output[outputSize32++] = cluster->fRowQ;
+	    }
+	    else if( cluster->fFlag==2 ){
+	      if( outputSize32+1 > maxOutputSize32 ){ // No space in the output buffer
+		ret = -2;
+		break;
 	      }
+	      output[outputSize32++] = cluster->fRowQ;
 	    }
 	  }
 	}
@@ -210,7 +198,7 @@ void AliHLTTPCHWCFEmulator::CreateConfiguration
  bool doDeconvTime, bool doDeconvPad, bool doFlowControl, 
  bool doSinglePadSuppression, bool bypassMerger, 
  AliHLTUInt32_t clusterLowerLimit, AliHLTUInt32_t singleSeqLimit, 
- AliHLTUInt32_t mergerDistance, bool useTimeBinWindow, AliHLTUInt32_t chargeFluctuation,
+ AliHLTUInt32_t mergerDistance, AliHLTUInt32_t timeBinWindow, AliHLTUInt32_t chargeFluctuation,
  AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 
  )
 {
@@ -228,6 +216,6 @@ void AliHLTTPCHWCFEmulator::CreateConfiguration
   configWord1 |= ( (AliHLTUInt32_t)singleSeqLimit & 0xFF );
 
   configWord2 |= ( (AliHLTUInt32_t)mergerDistance & 0xF );
-  configWord2 |= ( (AliHLTUInt32_t)chargeFluctuation  & 0xF )<<4;
-  configWord2 |= ( (AliHLTUInt32_t)useTimeBinWindow  & 0x1 )<<8;
+  configWord2 |= ( (AliHLTUInt32_t)timeBinWindow  & 0xFF )<<4;
+  configWord2 |= ( (AliHLTUInt32_t)chargeFluctuation  & 0xF )<<12;
 }

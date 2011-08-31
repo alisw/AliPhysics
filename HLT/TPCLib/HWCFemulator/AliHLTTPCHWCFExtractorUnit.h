@@ -59,7 +59,6 @@ class AliHLTTPCHWCFExtractorUnit
 
   AliHLTInt32_t fChannelNumWordsLeft; // n 10-bit words left in the channel
   AliHLTInt32_t fBunchNumWordsLeft;// n 10-bit words left in the bunch
-  AliHLTInt32_t fBunchCurrentTime; // timebin of the curent signal
 
   const AliHLTTPCClusterMCLabel *fkMCLabels; // pointer to mc labels
   AliHLTUInt32_t fNMCLabels;                 // N mc labels

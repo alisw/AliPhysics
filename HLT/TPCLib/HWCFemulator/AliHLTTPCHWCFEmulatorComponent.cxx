@@ -62,7 +62,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
   fMergerDistance(3),
-  fUseTimeBinWindow(1),
+  fTimeBinWindow(5),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -89,7 +89,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
   fMergerDistance(3),
-  fUseTimeBinWindow(1),
+  fTimeBinWindow(5),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -215,7 +215,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fClusterLowerLimit = 0;
   fSingleSeqLimit = 0;
   fMergerDistance = 3;
-  fUseTimeBinWindow = 1;
+  fTimeBinWindow = 5;
   fChargeFluctuation = 0;
   fDebug = 0;
   fBenchmark.Reset();
@@ -314,10 +314,10 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       continue;
     }
  
-    if ( argument.CompareTo( "-use-timebin-window" ) == 0 ) {
+    if ( argument.CompareTo( "-timebin-window" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
-      fUseTimeBinWindow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "Using TimeBin window is set to: %d", fUseTimeBinWindow );
+      fTimeBinWindow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "TimeBin window is set to: %d", fTimeBinWindow );
       continue;
     }
    
@@ -444,7 +444,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
   AliHLTUInt32_t configWord1=0, configWord2=0; 
   AliHLTTPCHWCFEmulator::CreateConfiguration
-    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fUseTimeBinWindow, fChargeFluctuation, configWord1, configWord2 );
+    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fTimeBinWindow, fChargeFluctuation, configWord1, configWord2 );
 
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {

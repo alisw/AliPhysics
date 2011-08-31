@@ -26,7 +26,6 @@
 //  @note 
 
 #include "AliHLTTPCHWCFExtractorUnit.h"
-#include <iostream>
 
 AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit()
   :
@@ -38,7 +37,6 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit()
   fPendingOutput(0),
   fChannelNumWordsLeft(0),
   fBunchNumWordsLeft(0),  
-  fBunchCurrentTime(-2),
   fkMCLabels(0),
   fNMCLabels(0),
   fCurrentMCLabel(0)
@@ -63,7 +61,6 @@ AliHLTTPCHWCFExtractorUnit::AliHLTTPCHWCFExtractorUnit(const AliHLTTPCHWCFExtrac
   fPendingOutput(0),
   fChannelNumWordsLeft(0),
   fBunchNumWordsLeft(0),  
-  fBunchCurrentTime(-2),
   fkMCLabels(0),
   fNMCLabels(0),
   fCurrentMCLabel(0)
@@ -86,12 +83,12 @@ int AliHLTTPCHWCFExtractorUnit::Init( const AliHLTUInt32_t *mapping, const AliHL
   fInputStatus = kEmpty;
   fkMapping = mapping;
   fBunch->fFlag = 0; // wait for the next channel
-  fBunch->fData.clear();  
+  fBunch->fData.clear();
+  fBunch->fMC.clear();
   fPendingOutput = 0;  
   fkMCLabels = mcLabels;
   fNMCLabels = nMCLables;
   fCurrentMCLabel = 0;
-  fBunchCurrentTime = -2;
   if( !fkMapping ) return  -1;
   return 0;
 }
@@ -141,7 +138,8 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
       fBunch = newBunch;
       fPendingOutput = 1;
     }
-    fBunch->fData.clear();    
+    fBunch->fData.clear();
+    fBunch->fMC.clear();
     fBunch->fFlag = 3; // end of data
     fStatus = kStop;    
     return oldBunch;   
@@ -156,11 +154,10 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
       fBunch = newBunch;
       fPendingOutput = 1;
     }
-    fBunch->fData.clear();    
+    fBunch->fData.clear();
+    fBunch->fMC.clear();
     fBunch->fFlag = 2; // rcu
-    AliHLTTPCHWCFDigit d;
-    d.fQ = fInput;	
-    fBunch->fData.push_back(d);
+    fBunch->fData.push_back(fInput);
     fStatus = ( flag == 0x2 ) ?kReadingRCU :kFinishing;
     return oldBunch;   
   }
@@ -187,11 +184,12 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
       if( !( (configWord>>15) & 0x1 ) ) fBunch->fFlag = 0;// channel not active
       fBunch->fGain = (configWord>>16 ) & 0x1FFF;
     }
-    fBunch->fData.clear(); 
+    fBunch->fData.clear();
+    fBunch->fMC.clear();
+    fBunch->fTime = 0xFFFFFFFF;
     fChannelNumWordsLeft= (fInput >> 16) & 0x3FF; // payload size in 10-bit words
     fBunchNumWordsLeft = 0;
-    fBunchCurrentTime = -2;
-
+   
     if( (fInput >> 29) & 0x1 ) fBunch->fFlag = 0; // there were readout errors
 
     //cout<<"Extractor: Header of new channel F "<<fBunch->fFlag
@@ -219,26 +217,20 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFExtractorUnit::OutputStream()
 	  fBunch->fBranch = oldBunch->fBranch;
 	  fBunch->fBorder = oldBunch->fBorder;
 	  fBunch->fGain = oldBunch->fGain;
-	  fBunch->fData.clear();	  
+	  fBunch->fData.clear();
+	  fBunch->fMC.clear();	  
+	  fBunch->fTime = 0xFFFFFFFF;
 	  fBunchNumWordsLeft = word10;
-	  fBunchCurrentTime = -2;
 	}
-      } else { // continue the bunch
-	if( fBunchCurrentTime <-1 ){ // time has not been read so far
-	  fBunchCurrentTime = word10;
+      } else { // continue the brunch
+	if( fBunch->fTime > AliHLTTPCHWCFDefinitions::kMaxNTimeBins ){ // time has not been read so far
+	  fBunch->fTime = word10;
 	  //cout<<"Extractor: Bunch time: "<<fBunch->fTime<<endl;
 	} else { // read the signal
-	  AliHLTTPCHWCFDigit d;
-	  d.fQ = word10;
-	  d.fPeak = 0;
-	  if( fkMCLabels && fCurrentMCLabel<fNMCLabels ){
-	    d.fMC = fkMCLabels[fCurrentMCLabel];
+	  fBunch->fData.push_back(word10);
+	  if( fkMCLabels && fCurrentMCLabel<=fNMCLabels ){
+	    fBunch->fMC.push_back( fkMCLabels[fCurrentMCLabel] );
 	    fCurrentMCLabel++;
-	  }
-	  if( fBunchCurrentTime >= 0 ){
-	    d.fTime = (AliHLTUInt32_t) fBunchCurrentTime;
-	    fBunch->fData.push_back(d);
-	    fBunchCurrentTime--;
 	  }
 	  //cout<<"Extractor: Bunch signal["<<fBunch->fNSignals<<"]: "<<word10<<endl;
 	}
