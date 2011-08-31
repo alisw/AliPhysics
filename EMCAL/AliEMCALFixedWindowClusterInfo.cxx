@@ -191,7 +191,7 @@ void AliEMCALFixedWindowClusterInfo::Expand(Int_t size)
 }
 
 //___________________________________________________________________________________________________________
-void AliEMCALFixedWindowClusterInfo::Clear(Option_t* option)
+void AliEMCALFixedWindowClusterInfo::Clear(Option_t* /*option*/)
 {
   // Clear the arrays
   
