@@ -148,7 +148,7 @@ class AliHLTTPCHWCFEmulatorComponent : public AliHLTProcessor
   AliHLTUInt32_t fClusterLowerLimit; // cut clusters at this charge value
   AliHLTUInt32_t fSingleSeqLimit;    // cut sequences at this charge value
   AliHLTUInt32_t fMergerDistance; // max. distance in mean time between two pads to be merged
-  AliHLTUInt32_t fTimeBinWindow; // timebin window
+  bool           fUseTimeBinWindow; // use timebin window
   AliHLTUInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
   Int_t fDebug; // debug level
   AliHLTTPCHWCFSupport fCFSupport;     // !transient

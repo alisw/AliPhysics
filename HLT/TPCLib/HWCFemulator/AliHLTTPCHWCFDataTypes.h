@@ -26,11 +26,24 @@ struct AliHLTTPCHWCFDefinitions
 
 typedef struct AliHLTTPCHWCFDefinitions AliHLTTPCHWCFDefinitions;
 
+struct AliHLTTPCHWCFDigit
+{
+  //* constructor **/
+  AliHLTTPCHWCFDigit(): fQ(0), fTime(0), fPeak(0), fMC()
+  {}
+
+  AliHLTUInt32_t fQ;    // charge
+  AliHLTUInt32_t fTime; // timebin
+  AliHLTUInt32_t fPeak;  // peak flag: 0:flat, 1:peak, 2: local minimum
+  AliHLTTPCClusterMCLabel fMC; // mc label
+};
+typedef struct AliHLTTPCHWCFDigit AliHLTTPCHWCFDigit;
+
 struct AliHLTTPCHWCFBunch
 {
   //* constructor **/
   AliHLTTPCHWCFBunch(): fFlag(0), fRow(0), fPad(0), fBranch(0), fBorder(0),
-       fTime(0),fGain(0), fData(), fMC()
+			fGain(0), fData()
   {}
 
   AliHLTUInt32_t fFlag; // 0 - Off, 1 - data, 2 - RCU trailer, 3 - end of data
@@ -38,11 +51,9 @@ struct AliHLTTPCHWCFBunch
   AliHLTUInt32_t fPad;  // pad number
   bool fBranch;         // 0  - pad belongs to branch A, 1 - pad belongs to branch B
   bool fBorder;         // is the pad at the border of its branch
-  AliHLTUInt32_t fTime; // time of the first signal
   AliHLTUInt64_t fGain; // gain correction factor 
                         //   (fixed point integer with kFixedPoint bits after the point)
-  std::vector<AliHLTUInt32_t> fData;      // signals
-  std::vector<AliHLTTPCClusterMCLabel> fMC; // mc labels
+  std::vector<AliHLTTPCHWCFDigit> fData;      // signals
 };
 typedef struct AliHLTTPCHWCFBunch AliHLTTPCHWCFBunch;
 

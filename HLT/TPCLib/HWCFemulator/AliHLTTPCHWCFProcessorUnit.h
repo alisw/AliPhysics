@@ -33,7 +33,7 @@ class AliHLTTPCHWCFProcessorUnit
   void SetDebugLevel( int val ){ fDebug = val; }
 
   /** do cluster deconvolution in time direction */
-  void SetDeconvolution( bool val ){ fDeconvolute = val; }
+  void SetDeconvolutionTime( bool val ){ fDeconvolute = val; }
 
   /** lower charge limit for isolated signals
    */
@@ -41,18 +41,11 @@ class AliHLTTPCHWCFProcessorUnit
     fSingleSeqLimit = val << AliHLTTPCHWCFDefinitions::kFixedPoint; 
   }
 
-  /** max. size of the cluster in time bins
+  /** limit size of the cluster in time bins to 5
    */
-  void SetTimeBinWindow( AliHLTUInt32_t val ){ 
-    fHalfTimeBinWindow = val/2;
+  void SetUseTimeBinWindow( bool val ){ 
+    fUseTimeBinWindow = val;
   }
-
-  /** set allowed charge fluctuation for peak finding
-   */
-  void SetChargeFluctuation( AliHLTUInt32_t val ){ 
-    fChargeFluctuation = val;
-  }
-
 
   /** initialise */
   int Init();
@@ -76,8 +69,7 @@ class AliHLTTPCHWCFProcessorUnit
   AliHLTUInt32_t fBunchIndex; // index in bunch
   bool fDeconvolute;    // do deconvolution in time direction
   AliHLTUInt64_t fSingleSeqLimit; // lower charge limit for isolated signals
-  AliHLTInt32_t fHalfTimeBinWindow; // 1/2 of max. size of the cluster in time bins 
-  AliHLTInt32_t fChargeFluctuation; // allowed charge fluctuation for peak finding 
+  bool fUseTimeBinWindow; // set max. size of the cluster to 5 time bins 
   int fDebug; // debug level
 };
 

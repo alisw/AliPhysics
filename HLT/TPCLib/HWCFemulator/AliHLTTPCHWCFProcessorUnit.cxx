@@ -37,8 +37,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fHalfTimeBinWindow(2),
-  fChargeFluctuation(0),
+  fUseTimeBinWindow(1),
   fDebug(0)
 {
   //constructor 
@@ -58,8 +57,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fHalfTimeBinWindow(2),
-  fChargeFluctuation(0),
+  fUseTimeBinWindow(1),
   fDebug(0)
 {
   // dummy
@@ -77,6 +75,7 @@ int AliHLTTPCHWCFProcessorUnit::Init()
   // initialise  
 
   fkBunch = 0;
+  fBunchIndex = 0;
   return 0;
 }
 
@@ -85,15 +84,14 @@ int AliHLTTPCHWCFProcessorUnit::InputStream( const AliHLTTPCHWCFBunch *bunch )
   // input stream of data 
   
   if( bunch && fDebug ){
-    printf("\nHWCF Processor: input bunch F %1d R %3d P %3d T %3d NS %2ld:\n",
-	   bunch->fFlag, bunch->fRow, bunch->fPad, bunch->fTime, bunch->fData.size());
+    printf("\nHWCF Processor: input bunch F %1d R %3d P %3d  NS %2ld:\n",
+	   bunch->fFlag, bunch->fRow, bunch->fPad, bunch->fData.size());
     for( unsigned int i=0; i<bunch->fData.size(); i++ ){
-      printf("   %2d ", bunch->fData[i]);
-      if( i < bunch->fMC.size() ){
-	printf("(");
-	for( int j=0; j<3; j++ ) printf(" {%d,%2.0f}",bunch->fMC[i].fClusterID[j].fMCID, bunch->fMC[i].fClusterID[j].fWeight );
-	printf(" )\n");
-      }
+      AliHLTTPCHWCFDigit d =  bunch->fData[i];
+      printf("   q %2d t %3d ", d.fQ, d.fTime);      
+       printf("(");
+      for( int j=0; j<3; j++ ) printf(" {%d,%2.0f}",d.fMC.fClusterID[j].fMCID, d.fMC.fClusterID[j].fWeight );
+      printf(" )\n");    
     }
   }
 
@@ -106,6 +104,9 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
 { 
   // output stream of data 
 
+  //const AliHLTUInt32_t kTimeBinWindow = 5;
+  const AliHLTUInt32_t kHalfTimeBinWindow = 2;
+ 
   if( !fkBunch ) return 0;
   
   fOutput.fFlag = fkBunch->fFlag;
@@ -119,111 +120,85 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFProcessorUnit::OutputStream()
   fOutput.fT2 = 0;
   fOutput.fP = 0;
   fOutput.fP2 = 0;
-  fOutput.fTMean =  fkBunch->fTime;  
+  fOutput.fTMean = 0;
   fOutput.fMC.clear();
   
   if( fkBunch->fFlag==2 && fkBunch->fData.size()==1 ){ // rcu trailer word, forward it 
-    fOutput.fRow = fkBunch->fData[0];
-  }	
+    fOutput.fRow = fkBunch->fData[0].fQ;
+  }
   
   if( fkBunch->fFlag >1 ){
-    fkBunch = 0;
-    fBunchIndex = 0;
+    fkBunch = 0;    
     return &fOutput;
   }
 
   if( fkBunch->fFlag < 1 ) return 0;
+  
+  while( fBunchIndex<fkBunch->fData.size() ){
 
-  if( fBunchIndex >= fkBunch->fData.size() || fkBunch->fTime < fBunchIndex ) return 0;  
+    AliHLTUInt32_t iStart = fBunchIndex;
+    AliHLTUInt32_t iPeak = fBunchIndex;
+    AliHLTUInt32_t qPeak = 0;
 
-  AliHLTUInt32_t qMax = 0;  
-  AliHLTInt32_t iQMax = fBunchIndex;
-  AliHLTInt32_t clusterEnd = fBunchIndex+1;
-
-  {
-    AliHLTUInt32_t i=fBunchIndex;
-
-    // find a maximum
+    // find next/best peak
     
-    for( ; i<fkBunch->fData.size(); i++ ){
-      AliHLTUInt32_t q = fkBunch->fData[i];
-      if( q>qMax ){
-	qMax = q;
-	iQMax = i;
-      } else {
-	if( fDeconvolute && q + fChargeFluctuation < qMax ) break;	
-      }
-    }
-  
-    // find last minimum and the end of the cluster
-  
-    AliHLTUInt32_t iQMin = i;
-    if( i<fkBunch->fData.size() ){
-      AliHLTUInt32_t qMin = fkBunch->fData[i];  
-
-      for(; i<fkBunch->fData.size(); i++ ){
-	AliHLTUInt32_t q = fkBunch->fData[i];
-	if( q <= qMin ){
-	  qMin = q;
-	  iQMin = i;
-	} else {
-	  if( q > qMin + fChargeFluctuation ){
-	    break;
-	  }
+    for( ; fBunchIndex<fkBunch->fData.size(); fBunchIndex++ ){
+      const AliHLTTPCHWCFDigit &d = fkBunch->fData[fBunchIndex];            
+      if( d.fPeak != 1 ) continue;
+      if( fDeconvolute ){
+	iPeak = fBunchIndex;
+	fBunchIndex++;
+	break;
+      } else {	
+	if( d.fQ>qPeak ){
+	  qPeak = d.fQ;
+	  iPeak = fBunchIndex;
 	}
       }
     }
-    
-    clusterEnd = iQMin+1;
-    if( i>= fkBunch->fData.size() ) clusterEnd = fkBunch->fData.size();
-    
-    // find the center of the peak
-    AliHLTUInt32_t iMaxFirst = iQMax, iMaxLast = iQMax;
-    
-    for( i=fBunchIndex; i<iQMax; i++ ){
-      AliHLTUInt32_t q = fkBunch->fData[i];
-      if( q + fChargeFluctuation >= qMax ){
-	iMaxFirst = i;
-	break;
-      }
-    }
-    
-    for( i=clusterEnd-1; i>iQMax; i-- ){
-      AliHLTUInt32_t q = fkBunch->fData[i];
-      if( q + fChargeFluctuation >= qMax ){
-	iMaxLast = i;     
-	break;
-      }
-    }
-    
-    iQMax = ( iMaxFirst + iMaxLast )/ 2;
-  }
   
-  AliHLTUInt32_t clusterStart = fBunchIndex;
-  if( (int)clusterStart < iQMax - fHalfTimeBinWindow ) clusterStart = iQMax - fHalfTimeBinWindow ;
-  if( clusterEnd > iQMax + fHalfTimeBinWindow +1 ) clusterEnd = iQMax + fHalfTimeBinWindow +1;  
+    // find next minimum
 
-  fBunchIndex = clusterStart;  
-  AliHLTInt32_t bunchTime = fkBunch->fTime - clusterStart;
-
-  for( ; fBunchIndex < clusterEnd && bunchTime>=0; fBunchIndex++, bunchTime-- ){
-    AliHLTUInt64_t q = fkBunch->fData[fBunchIndex]*fkBunch->fGain;
-    if (fOutput.fQmax < q) fOutput.fQmax = q;
-    fOutput.fQ += q;
-    fOutput.fT += q*bunchTime;
-    fOutput.fT2+= q*bunchTime*bunchTime;
-    fOutput.fP += q*fkBunch->fPad;
-    fOutput.fP2+= q*fkBunch->fPad*fkBunch->fPad;
-    if( fBunchIndex<fkBunch->fMC.size() ){
-      fOutput.fMC.push_back(fkBunch->fMC[fBunchIndex]);
+    for( ; fBunchIndex<fkBunch->fData.size(); fBunchIndex++ ){
+      if( fDeconvolute ){
+	if( fkBunch->fData[fBunchIndex].fPeak != 0 ){
+	  fBunchIndex++;
+	  break;
+	}
+      }
     }
-  }  
 
-  fOutput.fTMean = (AliHLTUInt64_t)( fkBunch->fTime - iQMax );
+    AliHLTUInt32_t iEnd = fBunchIndex;
+    
+    if( fUseTimeBinWindow ){
+      if( iPeak > iStart + kHalfTimeBinWindow ) iStart = iPeak - kHalfTimeBinWindow;
+      if( iEnd  > iPeak + kHalfTimeBinWindow ) iEnd = iPeak + kHalfTimeBinWindow;
+    }
 
-  AliHLTInt32_t length = clusterEnd - clusterStart;
+    fOutput.fQmax = 0;
+    fOutput.fQ = 0;
+    fOutput.fT = 0;
+    fOutput.fT2 = 0;
+    fOutput.fP = 0;
+    fOutput.fP2 = 0;
+    fOutput.fTMean = fkBunch->fData[iPeak].fTime;
+    fOutput.fMC.clear();
 
-  if( length<=1 && fOutput.fQ < fSingleSeqLimit ) return 0;  
-
-  return &fOutput;
+    for( AliHLTUInt32_t i=iStart; i<iEnd; i++ ){
+      const AliHLTTPCHWCFDigit &d = fkBunch->fData[i];
+      AliHLTUInt64_t q = d.fQ*fkBunch->fGain;
+      if (fOutput.fQmax < q) fOutput.fQmax = q;
+      fOutput.fQ += q;
+      fOutput.fT += q*d.fTime;
+      fOutput.fT2+= q*d.fTime*d.fTime;
+      fOutput.fP += q*fkBunch->fPad;
+      fOutput.fP2+= q*fkBunch->fPad*fkBunch->fPad;
+      fOutput.fMC.push_back(d.fMC);
+    }
+    
+    if( fkBunch->fData.size()==1 && fOutput.fQ < fSingleSeqLimit ) continue;  
+  
+    return &fOutput;
+  }
+  return 0;
 }

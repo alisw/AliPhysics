@@ -120,7 +120,7 @@ const AliHLTTPCHWCFCluster *AliHLTTPCHWCFDivisionUnit::OutputStream()
  
   // MC part
 
-  AliHLTTPCClusterMCWeight emptyWeight = {-1,0};
+  AliHLTTPCClusterMCWeight emptyWeight;
 
   fOutput.fMC.fClusterID[0] = emptyWeight;
   fOutput.fMC.fClusterID[1] = emptyWeight;
