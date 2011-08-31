@@ -19,6 +19,7 @@ class AliRsnMiniMonitor : public TNamed {
 public:
 
    enum EType {
+      kTrackPt,           // pt spectrum of single tracks with a given cut ID and charge
       kdEdxTPCvsP,        // TPC signal vs. momentum
       ktimeTOFvsPKaon,    // TOF time vs. momentum
       ktimeTOFvsPPion,    // TOF time vs. momentum
@@ -34,10 +35,12 @@ public:
 
    EType              GetType()   {return fType;}
    Int_t              GetCutID()  {return fCutID;}
+   Char_t             GetCharge() {return fCharge;}
    Int_t              GetListID() {return fListID;}
    
    void               SetType(EType type)  {fType = type;}
    void               SetCutID(Int_t id)   {fCutID = id;}
+   void               SetCharge(Char_t ch) {fCharge = ch;}
 
    static const char* Label(EType type); 
    Bool_t             Init(const char *name, TList *list);
@@ -47,6 +50,7 @@ protected:
 
    EType      fType;     //  monitor type
    Int_t      fCutID;    //  ID for cut to be used
+   Char_t     fCharge;   //  charge to be used
    Int_t      fListID;   //  histogram ID in the list
    TList     *fList;     //! global output list
                                        
