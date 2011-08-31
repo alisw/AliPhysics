@@ -484,12 +484,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          }
          // check pair against cuts
          if (fPairCuts) {
-            if (!fPairCuts->IsSelected(&fPair)) {
-               AliDebugClass(2, Form("Pair rapidity = %f --> too large", fPair.Y(0)));
-               continue;
-            } else {
-               AliDebugClass(2, Form("Pair rapidity = %f --> ok", fPair.Y(0)));
-            }
+            if (!fPairCuts->IsSelected(&fPair)) continue;
          }
          // get computed values & fill histogram
          nadded++;

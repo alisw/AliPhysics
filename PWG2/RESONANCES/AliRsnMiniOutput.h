@@ -59,7 +59,9 @@ public:
    Bool_t          IsDefined()          const {return (IsEventOnly() || IsTrackPair() || IsTrackPairMix() || IsTruePair() || IsMother());}
    Bool_t          IsLikeSign()         const {return (fCharge[0] == fCharge[1]);}
    Bool_t          IsSameCut()          const {return (fCutID[0] == fCutID[1]);}
-   Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameCut());}
+   Bool_t          IsSameDaughter()     const {return (fDaughter[0] == fDaughter[1]);}
+   //Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameCut());}
+   Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameDaughter());}
                                         
    EOutputType     GetOutputType()      const {return fOutputType;}
    EComputation    GetComputation()     const {return fComputation;}
