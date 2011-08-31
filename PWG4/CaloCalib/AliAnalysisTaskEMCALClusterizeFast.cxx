@@ -231,6 +231,8 @@ void AliAnalysisTaskEMCALClusterizeFast::StoreAdditionalInformation()
   if(!clusInfo)
   {
     AliEMCALClusterizerFixedWindow *clusterizer = dynamic_cast<AliEMCALClusterizerFixedWindow*> (fClusterizer);
+    if (!clusterizer)
+      return;
     clusInfo = clusterizer->GetClustersInfo();
     if (!clusInfo)
       return;
