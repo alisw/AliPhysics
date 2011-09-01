@@ -35,10 +35,10 @@ void FitSpectrum(const char* filename, const char * listName = "clambdak0Histo_0
           case 6:
 		histName = "h2CosPointAngleK0vsMassK0";
 		break;
-          default;
-          cout << "histogram " << histName << endl;
+          default:
+                cout << "FitSpectrum - unrecognised histogram, default is standard pt" << endl;
+                histName = "h2PtVsMassK0";
           }
-    cout << "Particle "<< iparticle << " to be implemented" << endl;  
     break;
   case 1:
     switch (ihist){
@@ -63,17 +63,38 @@ void FitSpectrum(const char* filename, const char * listName = "clambdak0Histo_0
           case 6:
 		histName = "h2CosPointAngleLvsMassL";
 		break;
-          default;
-          cout << "histogram " << histName << endl;
+          default:
+                cout << "FitSpectrum - unrecognised histogram, default is standard pt" << endl;
+                histName = "h2PtVsMassLambda";   
           }
-    cout << "Particle "<< iparticle << " to be implemented" << endl; 
-    break; 
+    break;
+    case 2:
+      histName = "h2PtVsMassAntiLambda";
+      break;
+    case 3:
+      // This is special case because we have to find two histograms and add them.
+      // It is dealt with separately below but we still set histname because it is appended
+      // to file names for control plots
+      histName = "h2PtVsMassLLbarSummed";
+      break;
+    default:
+      cout << "Particle "<< iparticle << " yet to be implemented" << endl;
+      return;
   }
+  cout << "FitSpectrum - histogram " << histName << " used" << endl;
 
+  
   TFile *file = new TFile(filename);
   TList *list = file->Get(listName); 
+  TH2F* h2;
+  if (iparticle == 3) { // Special case of combined Lambda + anti-Lambda
+    TH2F* hLam = (TH2F*)list->FindObject("h2PtVsMassLambda");
+    h2= (TH2F*)list->FindObject("h2PtVsMassAntiLambda");
+    h2->Add(hLam);
+  } else {
+    h2 = (TH2F*) list->FindObject(histName);
+  }
 
-  TH2F * h2 = (TH2F*) list->FindObject(histName);
   h2->Draw();
   
   ///// iNorm is used by MultYields2QA to normalize the distributions

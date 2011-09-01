@@ -57,12 +57,14 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
   
 
 
-  TString title[1]={"MinimumBias"};
+  TString title[1]={"MinimumBias"}; // Not used?
   //Make 2D projections from the 3D histogram
   //Minbias (i.e. everything)
   
-  TObjArray *controllerArray = new TObjArray(40,1); // 2nd arg means can count from 1!
-
+  // 1st argument is initial size but array will expand as necessary
+  // 2nd arg means can count from 1!
+  TObjArray *controllerArray = new TObjArray(10,1); 
+  
   //Here probably need switch-case, depending on mult bin and particle
   // LoPt, HiPt, polynomial order, rebinning factor
 
@@ -70,7 +72,7 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
 
 
 
-  if(particleMode == 1 || particleMode == 3){ // Lambda or Lambda+Anti-Lambda
+  if(particleMode == 1 || particleMode == 3 || particleMode == 2){ // Lambda or Lambda+Anti-Lambda
     if(ihist ==0){
       //           controllerArray->AddLast(new AliMassFitControl(0.2,0.3, 2,2, 1.095,1.17)); //1
       //	     controllerArray->AddLast(new AliMassFitControl(0.3,0.4, 2,2, 1.095,1.17)); //2
@@ -94,18 +96,18 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
       controllerArray->AddLast(new AliMassFitControl(2.2,2.4, 2,2, 1.095,1.17)); //13
       controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 2,2, 1.095,1.17)); //14
       controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 2,2, 1.095,1.17)); //15
-      controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 2,2, 1.095,1.17)); //16
+      controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 2,2, 1.095,1.16)); //16
       controllerArray->AddLast(new AliMassFitControl(3.0,3.2, 2,2, 1.095,1.17)); //17
       controllerArray->AddLast(new AliMassFitControl(3.2,3.4, 2,2, 1.095,1.16)); //18
-      controllerArray->AddLast(new AliMassFitControl(3.4,3.6, 2,2, 1.095,1.16)); //19
+      controllerArray->AddLast(new AliMassFitControl(3.4,3.6, 2,2, 1.095,1.17)); //19
       controllerArray->AddLast(new AliMassFitControl(3.6,3.8, 2,2, 1.095,1.17)); //20
-      controllerArray->AddLast(new AliMassFitControl(3.8,4.0, 1,2, 1.095,1.17)); //21
+      controllerArray->AddLast(new AliMassFitControl(3.8,4.0, 1,2, 1.090,1.16)); //21
       controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 1,2, 1.095,1.17)); //22
       controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 1,2, 1.083,1.17)); //23
       controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 1,2, 1.083,1.17)); //24  bin05
       controllerArray->AddLast(new AliMassFitControl(5.5,6.5, 1,2, 1.083,1.17)); //25
-      //controllerArray->AddLast(new AliMassFitControl(6.5,8.0, 1,2, 1.095,1.17)); //33
-      //  controllerArray->AddLast(new AliMassFitControl(8.0,12.0, 1,2, 1.096,1.17));//34
+      controllerArray->AddLast(new AliMassFitControl(6.5,8.0, 0,2, 1.095,1.17)); //33
+      //controllerArray->AddLast(new AliMassFitControl(8.0,12.0, 1,2, 1.096,1.17));//34
       
 
     }
@@ -157,10 +159,10 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
     }
   }
   /// ANTI LAMBDA ---->
-  else if (particleMode == 2){ // Anti-Lambdas
-    controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 0,4, 1.095,1.17));
-    controllerArray->AddLast(new AliMassFitControl(5.5,6.0, 0,6, 1.085,1.17));
-  } // end if anti-Lambda
+//  else if (particleMode == 2){ // Anti-Lambdas
+//    controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 0,4, 1.095,1.17));
+//    controllerArray->AddLast(new AliMassFitControl(5.5,6.0, 0,6, 1.085,1.17));
+//  } // end if anti-Lambda
   else if (particleMode == 0){ // K0s case
     if(ihist == 0){
       //     controllerArray->AddLast(new AliMassFitControl(0.2,0.3, 2,2, 0.45,0.56)); //1
@@ -174,7 +176,7 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
       controllerArray->AddLast(new AliMassFitControl(1.0,1.1, 2,2, 0.443,0.55)); //9
       controllerArray->AddLast(new AliMassFitControl(1.1,1.2, 2,2, 0.443,0.56)); //10
       controllerArray->AddLast(new AliMassFitControl(1.2,1.3, 2,2, 0.44,0.55)); //11 
-      controllerArray->AddLast(new AliMassFitControl(1.3,1.4, 2,2, 0.44,0.55)); //12
+      controllerArray->AddLast(new AliMassFitControl(1.3,1.4, 2,2, 0.44,0.56)); //12
       controllerArray->AddLast(new AliMassFitControl(1.4,1.5, 2,2, 0.44,0.56)); //13
       controllerArray->AddLast(new AliMassFitControl(1.5,1.6, 2,2, 0.44,0.55)); //14
       controllerArray->AddLast(new AliMassFitControl(1.6,1.7, 2,2, 0.44,0.55)); //15
@@ -183,8 +185,8 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
       controllerArray->AddLast(new AliMassFitControl(1.9,2.0, 2,2, 0.44,0.55)); //18
       controllerArray->AddLast(new AliMassFitControl(2.0,2.2, 2,2, 0.44,0.55)); //19
       controllerArray->AddLast(new AliMassFitControl(2.2,2.4, 2,2, 0.44,0.55)); //20
-      controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 2,2, 0.44,0.55)); //21
-      controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 2,2, 0.44,0.54)); //22
+      controllerArray->AddLast(new AliMassFitControl(2.4,2.6, 1,2, 0.44,0.54)); //21
+      controllerArray->AddLast(new AliMassFitControl(2.6,2.8, 1,2, 0.44,0.54)); //22
       controllerArray->AddLast(new AliMassFitControl(2.8,3.0, 2,2, 0.44,0.54)); //23
       controllerArray->AddLast(new AliMassFitControl(3.0,3.2, 2,2, 0.443,0.54)); //24
       controllerArray->AddLast(new AliMassFitControl(3.2,3.4, 2,2, 0.443,0.54)); //25
@@ -193,10 +195,10 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
       controllerArray->AddLast(new AliMassFitControl(3.8,4.0, 2,2, 0.44,0.56)); //28
       controllerArray->AddLast(new AliMassFitControl(4.0,4.5, 2,2, 0.44,0.56)); //29
       controllerArray->AddLast(new AliMassFitControl(4.5,5.0, 1,2, 0.44,0.56)); //30
-      controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 1,2, 0.44,0.54)); //31
-      controllerArray->AddLast(new AliMassFitControl(5.5,6.5, 2,2, 0.44,0.54)); //32
+      controllerArray->AddLast(new AliMassFitControl(5.0,5.5, 1,2, 0.44,0.55)); //31
+      controllerArray->AddLast(new AliMassFitControl(5.5,6.5, 1,2, 0.44,0.56)); //32
               controllerArray->AddLast(new AliMassFitControl(6.5,8.0, 1,2, 0.43,0.56)); //33
-        controllerArray->AddLast(new AliMassFitControl(8.0,12.0, 1,2, 0.44,0.55));//34
+        controllerArray->AddLast(new AliMassFitControl(8.0,12.0, 0,4, 0.42,0.57));//34
       
     }
     if(ihist == 1){
@@ -349,7 +351,7 @@ void MultYields2QA(TH2F *hParMass, Int_t particleMode, Int_t ihist,Int_t Nev = 1
   if(ihist == 1)hYield->SetXTitle("DCA / [cm]");
   if(ihist == 2)hYield->SetXTitle("DCA / [cm]");
   if(ihist == 3)hYield->SetXTitle("Radius / [cm]");
-  if(ihist == 4)hYield->SetXTitle("Decay Lenght / [cm]");
+  if(ihist == 4)hYield->SetXTitle("Decay Length / [cm]");
   if(ihist == 5)hYield->SetXTitle("V0 Daughters / [cm]");
   if(ihist == 6)hYield->SetXTitle("Cos of pointing angle");
   hYield->SetYTitle("1/Nev.dN/dp_{t}");

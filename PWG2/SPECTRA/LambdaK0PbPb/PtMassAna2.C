@@ -11,6 +11,8 @@ Float_t quad(Double_t *x, Double_t *par){
 
 TH1F* PtMassAna2(TH2F *PtMass, Int_t mode,Int_t ihist, const Int_t NControl, TObjArray *ControlArray,Char_t* fulllabel){
 
+  gROOT->SetStyle("Plain");
+  gStyle->SetOptFit(1111);
   //TString *tLabel = new TString(fulllabel); //not reqd
 
   //Arguments TH2F *PtMass - 2D histogram of some variable versus mass
@@ -123,7 +125,8 @@ TH1F* PtMassAna2(TH2F *PtMass, Int_t mode,Int_t ihist, const Int_t NControl, TOb
   c1->SetWindowSize(1024,768);
   Int_t NDraw = NControl;
   if(NDraw==16){c1->Divide(4,4);}
-  elseif(NDraw<=36 && NDraw>25){ c1->Divide(6,6);}
+  elseif(NDraw<=36 && NDraw>30){ c1->Divide(6,6);}
+  elseif(NDraw<=30 && NDraw>25) { c1->Divide(6,5);}
   elseif(NDraw<=25 && NDraw>20){ c1->Divide(5,5);}
   elseif(NDraw<=20 && NDraw>16){  c1->Divide(5,4);}
   elseif(NDraw<=15 && NDraw>12){ c1->Divide(5,3);}
@@ -385,27 +388,27 @@ qback->DrawCopy("SAME");
   cDiag->cd(1);
   Float_t bookmass;
   if(part=="LAM"){
-    hMeans->SetMinimum(1.11);
-    hMeans->SetMaximum(1.13);
     bookmass=1.11563;
+    hMeans->SetMinimum(bookmass-0.01);
+    hMeans->SetMaximum(bookmass+0.01);
   } else if (part=="K0"){
-    hMeans->SetMaximum(0.51);
-    hMeans->SetMinimum(0.475);
     bookmass=0.4976;
+    hMeans->SetMinimum(bookmass-0.01);
+    hMeans->SetMaximum(bookmass+0.01);
   } else if (part=="XI") {
     hMeans->SetMaximum(1.34);
     hMeans->SetMinimum(1.30);
     bookmass=1.32171;
   }
+  Float_t maxPt = hMeans->GetBinLowEdge(hMeans->GetNbinsX()+1);
   TLine PDGmass;
   PDGmass.SetLineStyle(2);
   hMeans->Draw();
-  PDGmass.DrawLine(0,bookmass,5,bookmass);
+  PDGmass.DrawLine(0,bookmass,maxPt,bookmass);
 
   cDiag->cd(2);
   if (part=="K0"){
-    //hSigmas->SetMaximum(0.012);
-    hSigmas->SetMaximum(0.112);
+    hSigmas->SetMaximum(0.06);
   }else{
     hSigmas->SetMaximum(0.006);}
   hSigmas->SetMinimum(0.0);
@@ -427,7 +430,7 @@ qback->DrawCopy("SAME");
 
   cDiag->cd(6);
   hChi2PerDOF2->SetMinimum(0);
-  hChi2PerDOF2->SetMaximum(60);
+  hChi2PerDOF2->SetMaximum(6);
   hChi2PerDOF2->Draw();
 
   Char_t fileNameBase[80];
