@@ -58,7 +58,7 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
 
 
   fMatchDistance = 40*40;
-  fMatchDistanceEMCal = 0.1; // EMCal EtaxPhi cut 
+  fMatchDistanceEMCal = 0.1; // EMCal deltaR(EtaxPhi) cut. It must be refined inside AliESD analysis. 
 
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
