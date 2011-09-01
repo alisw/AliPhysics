@@ -34,7 +34,6 @@
 #include "AliEMCALCalibData.h"
 #include "AliESDCaloCluster.h"
 #include "AliEMCALUnfolding.h"
-#include "AliEMCALFixedWindowClusterInfo.h"
 
 #include "AliEMCALClusterizerFixedWindow.h"
 
@@ -48,7 +47,6 @@ AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow()
     fShiftPhi(2), 
     fShiftEta(2),
     fTRUshift(0),
-    fClustersInfo(new AliEMCALFixedWindowClusterInfo("clustersInfo")),
     fClustersArray(0)
 {
 	// Constructor
@@ -62,7 +60,6 @@ AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry*
     fShiftPhi(2), 
     fShiftEta(2),
     fTRUshift(0),
-    fClustersInfo(new AliEMCALFixedWindowClusterInfo("clustersInfo")),
     fClustersArray(0)
 {
   // Constructor
@@ -76,7 +73,6 @@ AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry*
     fShiftPhi(2), 
     fShiftEta(2),
     fTRUshift(0),
-    fClustersInfo(new AliEMCALFixedWindowClusterInfo("clustersInfo")),
     fClustersArray(0)
 {
   // Constructor
@@ -87,7 +83,6 @@ AliEMCALClusterizerFixedWindow::~AliEMCALClusterizerFixedWindow()
 {
 	// Destructor
   
-  delete fClustersInfo;
   delete fClustersArray;
 }
 
@@ -182,14 +177,17 @@ void AliEMCALClusterizerFixedWindow::Digits2Clusters(Option_t * option)
 				rp->EvalDistanceToBadChannels(fCaloPed);
 		}
 	}
+  
+  fRecPoints->Sort();
 	
-	for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) {
-		AliEMCALRecPoint *rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-		if (rp) {
-			rp->SetIndexInList(index);
-		}
-		else AliFatal("RecPoint NULL!!");
-	}
+  // Constantin To Do
+	//for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) {
+	//	AliEMCALRecPoint *rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+	//	if (rp) {
+	//		rp->SetIndexInList(index);
+	//	}
+	//	else AliFatal("RecPoint NULL!!");
+	//}
 	
 	if (fTreeR)
 		fTreeR->Fill();
@@ -216,9 +214,6 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
 	
 	fNumberOfECAClusters = 0;
 	fRecPoints->Delete();
-  
-  if (fClustersInfo->GetLastElementPosition() > 0)
-    fClustersInfo->Clear();
 	
 	Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0, iphi=0, ieta=0;
 	
@@ -348,8 +343,6 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
           for (Int_t i = 0; i < nDigitsCluster; i++){
             fClustersArray[iCluster][i] = NULL;
           }
-          
-          fClustersInfo->Add(iCluster, -1, iClusEta, iClusPhi);
         }
         
         if (fClustersArray[iCluster][iDigit] != NULL){
@@ -374,13 +367,9 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
 		AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint*> (fRecPoints->At(iRecPoint));
 		
 		if (recPoint) {
-      if (fClustersInfo->ContainsIndex(iRecPoint))
-        AliFatal(Form("ERROR: index present already, %d", iRecPoint));
-      
-      fClustersInfo->SetIndexFromId(iCluster, iRecPoint);
-      
 			iRecPoint++;       
 			recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
+      recPoint->SetIndexInList(iCluster);
 
 			for (Int_t iDigit = 0; iDigit < nDigitsCluster; iDigit++){
 				if (fClustersArray[iCluster][iDigit] == NULL) continue;

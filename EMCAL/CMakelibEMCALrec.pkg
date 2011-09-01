@@ -28,7 +28,6 @@
 
 set ( SRCS  
     AliEMCALReconstructor.cxx 
-    AliEMCALFixedWindowClusterInfo.cxx
     AliEMCALClusterizer.cxx 
     AliEMCALClusterizerv1.cxx 
     AliEMCALClusterizerv2.cxx 

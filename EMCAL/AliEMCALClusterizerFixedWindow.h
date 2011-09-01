@@ -13,7 +13,6 @@
 
 class AliEMCALRecPoint; 
 class AliEMCALDigit;
-class AliEMCALFixedWindowClusterInfo;
 
 class AliEMCALClusterizerFixedWindow : public AliEMCALClusterizer {
 public:
@@ -25,14 +24,12 @@ public:
 public:
 	virtual void            Digits2Clusters(Option_t *option);
 	virtual const char     *Version() const { return "clu-FixedWindow"; }  
-	
-  AliEMCALFixedWindowClusterInfo*   GetClustersInfo()                                   const { return fClustersInfo;     }
+
   Int_t                             GetNphi ()                                          const { return fNphi;             }
 	Int_t                             GetNeta ()                                          const { return fNeta;             }
   Int_t                             GetShiftPhi ()                                      const { return fShiftPhi;         }
   Int_t                             GetShiftEta ()                                      const { return fShiftEta;         }
   Bool_t                            GetTRUshift()                                       const { return fTRUshift;         }
-  void                              SetClustersInfo(AliEMCALFixedWindowClusterInfo *ClusInfo) { fClustersInfo = ClusInfo; }
 	void                              SetNphi (Int_t n);
 	void                              SetNeta (Int_t n);
   void                              SetShiftPhi (Int_t s);
@@ -47,7 +44,6 @@ protected:
   Int_t                               fShiftPhi;            // Shifting number of cells in phi direction
   Int_t                               fShiftEta;            // Shifting number of cells in eta direction
   Bool_t                              fTRUshift;            // Allows shifting inside a TRU (true) of through the whole calorimeter (false)
-  AliEMCALFixedWindowClusterInfo     *fClustersInfo;        //!Point to an object where additional information are stored
   AliEMCALDigit                    ***fClustersArray;       //!Temporary array that contains clusters
 	
 private:
