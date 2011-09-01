@@ -155,6 +155,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
       case ktimeTOFvsPProton:
          sname += "_TOFsignalP";
          histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 200000.0);
+         break;
       default:
          AliError("Wrong enum type");
          return kFALSE;

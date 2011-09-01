@@ -3,6 +3,7 @@
 #include <TChain.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TH3.h>
 #include <TDatabasePDG.h>
 #include <TParticlePDG.h>
 #include <TParticle.h>
@@ -46,6 +47,7 @@ AliAnalysisTaskResonanceQA::AliAnalysisTaskResonanceQA(const char *name) :
    fVz(10.0),
    fOutputList(0),
    fSelectedEvts(0),
+   fEventVz(0),
    fdEdxTPC(0),
    fdEdxITS(0),
    fTOFpid(0),
@@ -74,7 +76,21 @@ AliAnalysisTaskResonanceQA::AliAnalysisTaskResonanceQA(const char *name) :
    // setup to NULL all remaining histos
    Int_t i;
    for (i = 0; i < kResonances; i++) fRsnYPt[0][i] = fRsnYPt[1][i] = 0;
-   for (i = 0; i < kResonances; i++) fRsnYPtCINT1B[0][i] = fRsnYPtCINT1B[1][i] = 0;
+}
+
+//________________________________________________________________________
+const char* AliAnalysisTaskResonanceQA::EvtName(EEvtType type) const
+{
+//
+// Return a short string with name of resonance
+//
+
+   switch(type) {
+      case kBadNoVertex   : return "NoVertex";
+      case kBadVertexOutZ : return "FarVertex";
+      case kGoodEvent     : return "Good";
+      default             : return "Unknown";
+   }
 }
 
 //________________________________________________________________________
@@ -161,7 +177,8 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
    fOutputList->SetOwner();
 
    // output histograms for PID signal
-   fSelectedEvts = new TH1I("fSelectedEvts", "fSelectedEvts;fSelectedEvts", 3, 0, 3);
+   fSelectedEvts = new TH1I("fSelectedEvts", "fSelectedEvts;fSelectedEvts", 4, 0, 4);
+   fEventVz = new TH1F("fEventVz", "Vz distribution", 800, -40.0, 40.0);
    fdEdxTPC = new TH2F("fdEdxTPC", "dEdxTPC, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", vESDQPBin, vESDQPMin, vESDQPMax, vESDdEdxBin, vESDdEdxMin, vESDdEdxMax);
    fdEdxITS = new TH2F("fdEdxITS", "dEdxITS, After all cuts;chargexmomentum p (GeV/c); TPC signal (a.u.)", vESDQPBin, vESDQPMin, vESDQPMax, vESDdEdxBin, vESDdEdxMin, vESDdEdxMax);
    fTOFpid = new TH2F("fTOFpid", "TOF PID;p (GeV/c);#beta;", vESDQPBin, vESDQPMin, vESDQPMax, 300, 0.1, 1.2);
@@ -176,15 +193,14 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
    // output histograms for resonances
    fProducedParticles = new TH1I("ProducedParticles", "ProducedParticles;Produced Particles", kResonances, 0, kResonances);
    for (i = 0; i < kResonances; i++) {
-      fRsnYPt[0][i] = new TH2F(Form("%s_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
-      fRsnYPt[1][i] = new TH2F(Form("%s_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
-      fRsnYPtCINT1B[0][i] = new TH2F(Form("%s_CINT1B_all", RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
-      fRsnYPtCINT1B[1][i] = new TH2F(Form("%s_CINT1B_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax);
+      fRsnYPt[0][i] = new TH3F(Form("%s_all" , RsnName(i)), Form("%s -- ALL;p_{t} (GeV/c);Rapidity"    , RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax, kEvtTypes, 0.0, (double)kEvtTypes);
+      fRsnYPt[1][i] = new TH3F(Form("%s_prim", RsnName(i)), Form("%s -- PRIMARY;p_{t} (GeV/c);Rapidity", RsnName(i)), vPtBin, vPtMin, vPtMax, vYBin, vYMin, vYMax, kEvtTypes, 0.0, (double)kEvtTypes);
       fProducedParticles->GetXaxis()->SetBinLabel(i + 1, RsnSymbol(i));
    }
    
    // add histogram to list
    fOutputList->Add(fSelectedEvts);
+   fOutputList->Add(fEventVz);
    fOutputList->Add(fdEdxTPC);
    fOutputList->Add(fdEdxITS);
    fOutputList->Add(fTOFpid);
@@ -197,8 +213,6 @@ void AliAnalysisTaskResonanceQA::UserCreateOutputObjects()
    for (i = 0; i < kResonances; i++) {
       fOutputList->Add(fRsnYPt[0][i]);
       fOutputList->Add(fRsnYPt[1][i]);
-      fOutputList->Add(fRsnYPtCINT1B[0][i]);
-      fOutputList->Add(fRsnYPtCINT1B[1][i]);
    }
    
    PostData(1, fOutputList);
@@ -225,30 +239,64 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
    fESD = dynamic_cast<AliESDEvent*>(InputEvent());
    
    // check if event is accepted w.r. to all additional selection criteria
-   Bool_t eventAccepted = kFALSE;
+   Bool_t hasVertex = kFALSE, goodVertex = kFALSE;
+   Double_t vz = 1E20, vzsign = 1E20;
    if (fESD) {
       // check primary vertex:
       // we accept only tracks/SPD with at least 1 contributor
-      Double_t vz = 1E20;
       const AliESDVertex *v0 = fESD->GetPrimaryVertexTracks();
       if (v0) {
-         if (v0->GetNContributors() > 0)
-            vz = TMath::Abs(v0->GetZv());
-         else {
+         if (v0->GetNContributors() > 0) {
+            vzsign = v0->GetZv();
+            vz = TMath::Abs(vzsign);
+            hasVertex = kTRUE;
+         } else {
             v0 = fESD->GetPrimaryVertexSPD();
             if (v0) {
-               if (v0->GetNContributors() > 0) vz = TMath::Abs(v0->GetZv());
+               if (v0->GetNContributors() > 0) {
+                  vzsign = v0->GetZv();
+                  vz = TMath::Abs(vzsign);
+                  hasVertex = kTRUE;
+               }
             }
          }
       }
-      eventAccepted = (vz <= fVz);
+      if (hasVertex) {
+         goodVertex = (vz <= fVz);
+         fSelectedEvts->Fill(2.1);
+         fEventVz->Fill(vzsign);
+      }
+   }
+   
+   // determine event quality
+   Bool_t eventAccepted = kFALSE;
+   Int_t evtQuality = kEvtTypes;
+   if (hasVertex) {
+      if (goodVertex) {
+         evtQuality = kGoodEvent;
+         eventAccepted = kTRUE;
+      } else {
+         evtQuality = kBadVertexOutZ;
+      }
+   } else {
+      evtQuality = kBadNoVertex;
+   }
+   
+   // Message
+   static Int_t evNum = -1;
+   evNum++;
+   switch (evtQuality) {
+      case kBadNoVertex  : AliInfo(Form("Rejecting event #%5d because it has not a good vertex", evNum)); break;
+      case kBadVertexOutZ: AliInfo(Form("Rejecting event #%5d because it is out of range: vz = %5.3f vs. %5.3f", evNum, vz, fVz)); break;
+      case kGoodEvent    : AliDebugClass(1, Form("Accepting event #%5d", evNum)); break;
+      default            : AliError("This should never appear!!!");
    }
    
    // if event is OK, loop on tracks to fill QA
    if (fESD && eventAccepted) {
       // if we arrive here, the event was processed successfully
       // then we fill last bin in first histogram
-      fSelectedEvts->Fill(2.1);
+      fSelectedEvts->Fill(3.1);
       
       // settings for TOF time zero
       if (fESD->GetTOFHeader()) 
@@ -378,12 +426,10 @@ void AliAnalysisTaskResonanceQA::UserExec(Option_t *)
                   dist = TMath::Sqrt(dx*dx + dy*dy + dz*dz);
                   AliDebugClass(1, Form("PDG = %d -- mother ID = %d, pdg = %d -- dist. from MC vertex = %f -- prod. time = %f", pdg, mother, motherPDG, dist, vprod.T())); 
                   // global counter is always filled
-                  fRsnYPtCINT1B[0][irsn]->Fill(part->Pt(), part->Y());
-                  if (eventAccepted) fRsnYPt[0][irsn]->Fill(part->Pt(), part->Y());
+                  fRsnYPt[0][irsn]->Fill(part->Pt(), part->Y(), ((double)(evtQuality) + 0.2));
                   // counter for primaries is filled only if mother is less than 0 (primary)
                   if (dist < fPrimaryThr) {
-                     fRsnYPtCINT1B[1][irsn]->Fill(part->Pt(), part->Y());
-                     if (eventAccepted) fRsnYPt[1][irsn]->Fill(part->Pt(), part->Y());
+                     fRsnYPt[1][irsn]->Fill(part->Pt(), part->Y(), ((double)(evtQuality) + 0.2));
                   }
                   // fill the global histogram
                   fProducedParticles->Fill(irsn + 1);
