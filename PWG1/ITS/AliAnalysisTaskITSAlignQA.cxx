@@ -474,9 +474,9 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       double xDriftTrue  = 3.5085e4 - (xMeas + xRes);   // "true" drift distance
       //
       fHProfSDDResidXvsXD[index][modSide[ip]]->Fill(xDriftTrue, xRes);
-      fHProfSDDResidXvsZ[index][modSide[ip]]->Fill(zLocSDD[ip], xRes);
+      fHProfSDDResidXvsZ[index][modSide[ip]]->Fill(zLocSDD[ip]*1e4, xRes);
       fHProfSDDDrTimevsXD[index][modSide[ip]]->Fill(xDriftTrue, drTime[ip]);
-      fHProfSDDDrTimevsZ[index][modSide[ip]]->Fill(zLocSDD[ip], drTime[ip]);      
+      fHProfSDDDrTimevsZ[index][modSide[ip]]->Fill(zLocSDD[ip]*1e4, drTime[ip]);      
     }
   }
 }
