@@ -59,7 +59,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetShiftPhi(Int_t n)                        { fShiftPhi                    = n     ; }
   void                   SetShiftEta(Int_t n)                        { fShiftEta                    = n     ; }
   void                   SetTRUShift(Bool_t yes)                     { fTRUShift                    = yes   ; }
-  void                   SetStoreAdditionalInformation(Bool_t yes)   { fStoreAdditionalInformation  = yes   ; }
+  void                   SetClusterizeFastORs(Bool_t yes)            { fClusterizeFastORs           = yes   ; if (yes) fOverwrite = kFALSE; }
 
  protected:
   virtual void           Clusterize();
@@ -68,7 +68,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   virtual void           RecPoints2Clusters(TClonesArray *clus);
   virtual void           UpdateCells();
   virtual void           UpdateClusters();
-  virtual void           StoreAdditionalInformation();
 
   Int_t                  fRun;                            //!run number
   TClonesArray          *fDigitsArr;                      //!digits array
@@ -100,7 +99,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  fShiftPhi;                       // ShiftPhi (for FixedWindowsClusterizer)
   Int_t                  fShiftEta;                       // ShiftEta (for FixedWindowsClusterizer)
   Bool_t                 fTRUShift;                       // Shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
-  Bool_t                 fStoreAdditionalInformation;     // Store additional information (for FixedWindowsClusterizer)
+  Bool_t                 fClusterizeFastORs;              // If true, clusterize FastORs instead of cells
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
