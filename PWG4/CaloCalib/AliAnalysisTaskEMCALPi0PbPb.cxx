@@ -1626,8 +1626,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcMcInfo()
       continue;
 
     // primary particle
-    if(mcP->GetMother()>=0 && mcP->GetMother()<nTracks)
-	continue;
     Double_t dR = TMath::Sqrt((mcP->Xv()-evtVtx->GetX())*(mcP->Xv()-evtVtx->GetX()) + 
                               (mcP->Yv()-evtVtx->GetY())*(mcP->Yv()-evtVtx->GetY()));
     if(dR > 1.0)
