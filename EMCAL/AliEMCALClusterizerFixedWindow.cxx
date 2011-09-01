@@ -40,16 +40,16 @@
 ClassImp(AliEMCALClusterizerFixedWindow)
 
 //__________________________________________________________________________________________
-AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow()
-  : AliEMCALClusterizer(), 
-    fNphi(4), 
-    fNeta(4), 
-    fShiftPhi(2), 
-    fShiftEta(2),
-    fTRUshift(0),
-    fClustersArray(0)
+  AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow()
+    : AliEMCALClusterizer(), 
+      fNphi(4), 
+      fNeta(4), 
+      fShiftPhi(2), 
+      fShiftEta(2),
+      fTRUshift(0),
+      fClustersArray(0)
 {
-	// Constructor
+  // Constructor
 }
 
 //__________________________________________________________________________________________
@@ -81,7 +81,7 @@ AliEMCALClusterizerFixedWindow::AliEMCALClusterizerFixedWindow(AliEMCALGeometry*
 //__________________________________________________________________________________________
 AliEMCALClusterizerFixedWindow::~AliEMCALClusterizerFixedWindow()
 {
-	// Destructor
+  // Destructor
   
   delete fClustersArray;
 }
@@ -145,81 +145,80 @@ void AliEMCALClusterizerFixedWindow::SetTRUshift(Bool_t b)
 //__________________________________________________________________________________________
 void AliEMCALClusterizerFixedWindow::Digits2Clusters(Option_t * option)
 {
-	// Steering method to perform clusterization for the current event 
+  // Steering method to perform clusterization for the current event 
 	
-	if (strstr(option,"tim"))
-		gBenchmark->Start("EMCALClusterizer"); 
+  if (strstr(option,"tim"))
+    gBenchmark->Start("EMCALClusterizer"); 
 	
-	if (strstr(option,"print"))
-		Print(""); 
+  if (strstr(option,"print"))
+    Print(""); 
 	
-	//Get calibration parameters from file or digitizer default values.
-	GetCalibrationParameters();
+  //Get calibration parameters from file or digitizer default values.
+  GetCalibrationParameters();
 	
-	//Get dead channel map from file or digitizer default values.
-	GetCaloCalibPedestal();
+  //Get dead channel map from file or digitizer default values.
+  GetCaloCalibPedestal();
 	
-	MakeClusters();  //only the real clusters
+  MakeClusters();  //only the real clusters
 	
-	if (fToUnfold) {
-		fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
-		fClusterUnfolding->MakeUnfolding();
-	}
+  if (fToUnfold) {
+    fClusterUnfolding->SetInput(fNumberOfECAClusters,fRecPoints,fDigitsArr);
+    fClusterUnfolding->MakeUnfolding();
+  }
 	
-	//Evaluate position, dispersion and other RecPoint properties for EC section 
-	for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) { 
-		AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-		if (rp) {
-			rp->EvalAll(fECAW0,fDigitsArr,fJustClusters);
-			AliDebug(5, Form("MAX INDEX %d ", rp->GetMaximalEnergyIndex()));
-			//For each rec.point set the distance to the nearest bad crystal
-			if (fCaloPed)
-				rp->EvalDistanceToBadChannels(fCaloPed);
-		}
-	}
+  //Evaluate position, dispersion and other RecPoint properties for EC section 
+  for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) { 
+    AliEMCALRecPoint * rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if (rp) {
+      rp->EvalAll(fECAW0,fDigitsArr,fJustClusters);
+      AliDebug(5, Form("MAX INDEX %d ", rp->GetMaximalEnergyIndex()));
+      //For each rec.point set the distance to the nearest bad crystal
+      if (fCaloPed)
+        rp->EvalDistanceToBadChannels(fCaloPed);
+    }
+  }
   
   fRecPoints->Sort();
 	
-  // Constantin To Do
-	//for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) {
-	//	AliEMCALRecPoint *rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
-	//	if (rp) {
-	//		rp->SetIndexInList(index);
-	//	}
-	//	else AliFatal("RecPoint NULL!!");
-	//}
+  for (Int_t index = 0; index < fRecPoints->GetEntries(); index++) {
+    AliEMCALRecPoint *rp = dynamic_cast<AliEMCALRecPoint *>(fRecPoints->At(index));
+    if (rp) {
+      rp->SetIndexInList(index);
+    }
+    else AliFatal("RecPoint NULL!!");
+  }
 	
-	if (fTreeR)
-		fTreeR->Fill();
+  if (fTreeR)
+    fTreeR->Fill();
 	
-	if (strstr(option,"deb") || strstr(option,"all"))  
-		PrintRecPoints(option);
+  if (strstr(option,"deb") || strstr(option,"all"))  
+    PrintRecPoints(option);
 	
-	AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
+  AliDebug(1,Form("EMCAL Clusterizer found %d Rec Points",fRecPoints->GetEntriesFast()));
 	
-	if (strstr(option,"tim")) {
-		gBenchmark->Stop("EMCALClusterizer");
-		printf("Exec took %f seconds for Clusterizing", 
-			   gBenchmark->GetCpuTime("EMCALClusterizer"));
-	}    
+  if (strstr(option,"tim")) {
+    gBenchmark->Stop("EMCALClusterizer");
+    printf("Exec took %f seconds for Clusterizing", 
+           gBenchmark->GetCpuTime("EMCALClusterizer"));
+  }    
 }
 
 //__________________________________________________________________________________________
 void AliEMCALClusterizerFixedWindow::MakeClusters()
 {
-	// Make clusters
+  // Make clusters
 	
-	if (fGeom == 0) 
-		AliFatal("Did not get geometry from EMCALLoader");
+  if (fGeom == 0) 
+    AliFatal("Did not get geometry from EMCALLoader");
 	
-	fNumberOfECAClusters = 0;
-	fRecPoints->Delete();
+  fNumberOfECAClusters = 0;
+  fRecPoints->Delete();
 	
-	Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0, iphi=0, ieta=0;
+  Int_t nSupMod=0, nModule=0, nIphi=0, nIeta=0, iphi=0, ieta=0;
 	
-	// Defining geometry and clusterization parameter
-	Int_t nEtaDigitsSupMod = fGeom->GetNEta() * fGeom->GetNETAdiv(); // always 48?;
-	Int_t nPhiDigitsSupMod = fGeom->GetNPhi() * fGeom->GetNPHIdiv(); // always 24?;
+  // Defining geometry and clusterization parameter
+  Int_t nEtaDigitsSupMod = fGeom->GetNEta() * fGeom->GetNETAdiv(); // always 48?;
+  Int_t nPhiDigitsSupMod = fGeom->GetNPhi() * fGeom->GetNPHIdiv(); // always 24?;
   
   Int_t nTRUPhi = 1;
   Int_t nTRUEta = 1;
@@ -236,34 +235,34 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
 
   // Check if clusterizer parameter are compatible with calorimeter geometry
   if (nEtaDigits < fNeta){
-		AliFatal(Form("Error: fNeta = %d is greater than nEtaDigits = %d.",fNeta,nEtaDigits));
-		return;
-	}
-	if (nPhiDigits < fNphi){
-		AliFatal(Form("Error: fNphi = %d is greater than nPhiDigits = %d.",fNphi,nPhiDigits));
-		return;
-	}
-	if (nEtaDigits % fShiftEta != 0){
-		AliFatal(Form("Error: fShiftEta = %d is such that clusters cannot slide the whole calorimeter (nEtaDigits = %d).",fShiftEta,nEtaDigits));
-		return;
-	}
-	if (nPhiDigits % fShiftPhi != 0){
-		AliFatal(Form("Error: fShiftPhi = %d is such that clusters cannot slide the whole calorimeter (nPhiDigits = %d).",fShiftPhi,nPhiDigits));
-		return;
-	}
-	if (fNeta % fShiftEta != 0){
-		AliFatal(Form("Error: fShiftEta = %d is not divisor of fNeta = %d.",fShiftEta,fNeta));
-		return;
-	}
-	if (fNphi % fShiftPhi != 0){
-		AliFatal(Form("Error: fShiftPhi = %d is not divisor of fNphi = %d).",fShiftPhi,fNphi));
-		return;
-	}
+    AliFatal(Form("Error: fNeta = %d is greater than nEtaDigits = %d.",fNeta,nEtaDigits));
+    return;
+  }
+  if (nPhiDigits < fNphi){
+    AliFatal(Form("Error: fNphi = %d is greater than nPhiDigits = %d.",fNphi,nPhiDigits));
+    return;
+  }
+  if (nEtaDigits % fShiftEta != 0){
+    AliFatal(Form("Error: fShiftEta = %d is such that clusters cannot slide the whole calorimeter (nEtaDigits = %d).",fShiftEta,nEtaDigits));
+    return;
+  }
+  if (nPhiDigits % fShiftPhi != 0){
+    AliFatal(Form("Error: fShiftPhi = %d is such that clusters cannot slide the whole calorimeter (nPhiDigits = %d).",fShiftPhi,nPhiDigits));
+    return;
+  }
+  if (fNeta % fShiftEta != 0){
+    AliFatal(Form("Error: fShiftEta = %d is not divisor of fNeta = %d.",fShiftEta,fNeta));
+    return;
+  }
+  if (fNphi % fShiftPhi != 0){
+    AliFatal(Form("Error: fShiftPhi = %d is not divisor of fNphi = %d).",fShiftPhi,fNphi));
+    return;
+  }
   
   Int_t maxiShiftPhi = fNphi / fShiftPhi;
   Int_t maxiShiftEta = fNeta / fShiftEta;
 	
-	Int_t nDigitsCluster = fNphi * fNeta;
+  Int_t nDigitsCluster = fNphi * fNeta;
   
   Int_t nClusEtaNoShift = nEtaDigits / fNeta;
   Int_t nClusPhiNoShift = nPhiDigits / fNphi;
@@ -356,38 +355,38 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
       
     } // loop on eta shift
     
-	} // loop on phi shift
+  } // loop on phi shift
 	
   Int_t iRecPoint = 0;
-	for (Int_t iCluster = 0; iCluster < nTotalClus; iCluster++){
+  for (Int_t iCluster = 0; iCluster < nTotalClus; iCluster++){
     
-		if (fClustersArray[iCluster] == NULL) continue;
+    if (fClustersArray[iCluster] == NULL) continue;
 		
-		(*fRecPoints)[iRecPoint] = new AliEMCALRecPoint("");
-		AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint*> (fRecPoints->At(iRecPoint));
+    (*fRecPoints)[iRecPoint] = new AliEMCALRecPoint("");
+    AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint*> (fRecPoints->At(iRecPoint));
 		
-		if (recPoint) {
-			iRecPoint++;       
-			recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
-      recPoint->SetIndexInList(iCluster);
+    if (recPoint) {
+      iRecPoint++;       
+      recPoint->SetClusterType(AliVCluster::kEMCALClusterv1);
+      recPoint->SetUniqueID(iCluster);
 
-			for (Int_t iDigit = 0; iDigit < nDigitsCluster; iDigit++){
-				if (fClustersArray[iCluster][iDigit] == NULL) continue;
-				digit = fClustersArray[iCluster][iDigit];
+      for (Int_t iDigit = 0; iDigit < nDigitsCluster; iDigit++){
+        if (fClustersArray[iCluster][iDigit] == NULL) continue;
+        digit = fClustersArray[iCluster][iDigit];
         Float_t dEnergyCalibrated = digit->GetAmplitude();
         Float_t time              = digit->GetTime();
         Calibrate(dEnergyCalibrated,time,digit->GetId());
-				digit->SetCalibAmp(dEnergyCalibrated);
-				recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
+        digit->SetCalibAmp(dEnergyCalibrated);
+        recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
         fClustersArray[iCluster][iDigit] = NULL;
-			}
-		}
+      }
+    }
     
     delete[] fClustersArray[iCluster];
     fClustersArray[iCluster] = NULL;
-	}
+  }
   
-	AliDebug(1, Form("MakeClusters: Number of digits %d  -> (e %f)\n", fDigitsArr->GetEntries(),fMinECut));
+  AliDebug(1, Form("MakeClusters: Number of digits %d  -> (e %f)\n", fDigitsArr->GetEntries(),fMinECut));
 	
-	AliDebug(1, Form("total no of clusters %d from %d digits", fNumberOfECAClusters, fDigitsArr->GetEntriesFast())); 
+  AliDebug(1, Form("total no of clusters %d from %d digits", fNumberOfECAClusters, fDigitsArr->GetEntriesFast())); 
 }
