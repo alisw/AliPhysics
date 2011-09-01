@@ -239,12 +239,9 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   
   fDigitsArr->Clear("C");
   
-  if (fCreatePattern){
-    
+  if (fCreatePattern) {
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-
     Int_t maxd = fGeom->GetNCells() / 4;
-    
     for (Int_t idigit = 0; idigit < maxd; idigit++){
       if (idigit % 24 == 12) idigit += 12;
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
@@ -254,14 +251,12 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       digit->SetIndexInList(idigit);
       digit->SetType(AliEMCALDigit::kHG);
       digit->SetAmplitude(0.1);
-      
     }
-    
-  }
-  else if (fClusterizeFastORs){
+
+  } else if (fClusterizeFastORs) {
     
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-    
+  
     AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
     if (!esd){
       AliError("Cannot get the ESD event");
@@ -318,10 +313,8 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
         idigit++;
       }
     }
-  }
-	else{
-		
-    // Fill digits from cells.
+
+  } else { // Fill digits from cells.
     
     AliVCaloCells *cells = InputEvent()->GetEMCALCells();
     Double_t avgE = 0; // for background subtraction
@@ -362,7 +355,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
         }
       }
     }
-	}
+  }
 }
 
 //________________________________________________________________________________________
@@ -412,7 +405,6 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);            //not yet implemented
     c->SetChi2(-1);                      //not yet implemented
-    recpoint->EvalAll(1, fDigitsArr, kTRUE);
     c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
     Float_t elipAxis[2];
@@ -431,7 +423,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
       cesd->SetCellsAbsId(absIds);
       cesd->SetCellsAmplitudeFraction(ratios);
-      cesd->SetID(recpoint->GetIndexInList());
+      cesd->SetID(recpoint->GetUniqueID());
     } else {
       AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
       caod->SetCellsAbsId(absIds);
@@ -453,14 +445,14 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     for(Int_t i=0; i < Nclus; ++i) {
       AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->At(i));
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-      if(trackIndex >= 0) {
+      if (trackIndex >= 0) {
         Float_t dR, dZ;
         fRecoUtils->GetMatchedResiduals(i,dR, dZ);
         c->AddTrackMatched(0x0); //esdevent->GetTrack(trackIndex));
         c->SetTrackDistance(dR,dZ); // not implemented
         c->SetEmcCpvDistance(dR);
         c->SetChi2(dZ);
-        if(DebugLevel() > 1) 
+        if (DebugLevel() > 1) 
           AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
       }
     }
@@ -469,7 +461,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     for(Int_t i=0; i < Nclus; ++i) {
       AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-      if(trackIndex >= 0) {
+      if (trackIndex >= 0) {
         Float_t dR, dZ;
         fRecoUtils->GetMatchedResiduals(i,dR, dZ);
         c->SetTrackDistance(dR,dZ);
@@ -477,7 +469,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
         c->SetChi2(dZ);           //to be consistent with AODs
         TArrayI tm(1,&trackIndex);
         c->AddTracksMatched(tm);
-        if(DebugLevel() > 1) 
+        if (DebugLevel() > 1) 
           AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
       }
     }
@@ -517,14 +509,14 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
   if (!fAttachClusters)
     return;
   
-  TClonesArray *clus;
+  TClonesArray *clus = 0;
   
   if (fOverwrite)
   {
     clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
     if (!clus)
       clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClusters"));
-    if(!clus)
+    if (!clus)
       return;
     
     Int_t nents = clus->GetEntries();
@@ -535,25 +527,18 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
       if (c->IsEMCAL())
         delete clus->RemoveAt(i);
     }
-  }
-  else
-  {
+  } else {
     clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fNewClusterArrayName));
-    if(!clus)
-    {
+    if (!clus) {
       clus = new TClonesArray("AliESDCaloCluster");
       clus->SetName(fNewClusterArrayName);
       InputEvent()->AddObject(clus);
-    }
-    else 
-    {
-      
+    } else {
       Int_t nents = clus->GetEntries();
       for (Int_t i=0;i<nents;++i) {
         AliVCluster *c = static_cast<AliVCluster*>(clus->At(i));
         if (!c)
           continue;
-        
         delete clus->RemoveAt(i);
       }
       clus->Compress();
@@ -594,8 +579,8 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   if (!fGeomMatrixSet) {
     if (fLoadGeomMatrices) {
       for(Int_t mod=0; mod < geometry->GetNumberOfSuperModules(); ++mod) {
-        if(fGeomMatrix[mod]){
-          if(DebugLevel() > 2) 
+        if (fGeomMatrix[mod]){
+          if (DebugLevel() > 2) 
             fGeomMatrix[mod]->Print();
           geometry->SetMisalMatrix(fGeomMatrix[mod],mod);  
         }
@@ -613,7 +598,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
           }
         }
         if (gm) {
-          if(DebugLevel() > 2) 
+          if (DebugLevel() > 2) 
             gm->Print();
           geometry->SetMisalMatrix(gm,mod);
         }
@@ -632,14 +617,14 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   delete fClusterizer;
   if     (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv1)
     fClusterizer = new AliEMCALClusterizerv1(geometry);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerNxN) {
    AliEMCALClusterizerNxN *clusterizer = new AliEMCALClusterizerNxN(geometry);
    clusterizer->SetNRowDiff(fRecParam->GetNRowDiff());
    clusterizer->SetNColDiff(fRecParam->GetNColDiff());
     fClusterizer = clusterizer;
-  } else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
+  } else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerv2) 
     fClusterizer = new AliEMCALClusterizerv2(geometry);
-  else if(fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW){
+  else if (fRecParam->GetClusterizerFlag() == AliEMCALRecParam::kClusterizerFW){
     AliEMCALClusterizerFixedWindow *clusterizer = new AliEMCALClusterizerFixedWindow(geometry);
     clusterizer->SetNphi(fNPhi);
     clusterizer->SetNeta(fNEta);
@@ -678,7 +663,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   } else {
     fClusterizer->SetInputCalibrated(kTRUE);   
   }
-  if(fRecParam->GetClusterizerFlag() != AliEMCALRecParam::kClusterizerFW)
+  if (!fClusterizeFastORs)
     fClusterizer->SetCaloCalibPedestal(fPedestalData);
   fClusterizer->SetJustClusters(kTRUE);
   fClusterizer->SetDigitsArr(fDigitsArr);
