@@ -35,7 +35,6 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
 #include "AliEMCALClusterizerFixedWindow.h"
-#include "AliEMCALFixedWindowClusterInfo.h"
 #include "AliEMCALDigit.h"
 #include "AliEMCALGeometry.h"
 #include "AliEMCALRecParam.h"
@@ -81,7 +80,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fStoreAdditionalInformation(0)
+    fClusterizeFastORs(0)
 { 
   // Constructor
 }
@@ -118,7 +117,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fStoreAdditionalInformation(0)
+    fClusterizeFastORs(0)
 { 
   // Constructor
 
@@ -209,36 +208,9 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   Clusterize();
   UpdateCells();
   UpdateClusters();
-  
-  if (fStoreAdditionalInformation)
-    StoreAdditionalInformation();
 
   if (fOutputAODBranch)
     RecPoints2Clusters(fOutputAODBranch);
-}
-
-//________________________________________________________________________
-void AliAnalysisTaskEMCALClusterizeFast::StoreAdditionalInformation()
-{
-  if (fClusterizer->ClassName() != TString("AliEMCALClusterizerFixedWindow"))
-    return;
-  
-  TString addInfoName(fNewClusterArrayName);
-  addInfoName.Append("_AbsIds");
-  
-  AliEMCALFixedWindowClusterInfo *clusInfo = dynamic_cast<AliEMCALFixedWindowClusterInfo*>(InputEvent()->FindListObject(addInfoName));
-  
-  if(!clusInfo)
-  {
-    AliEMCALClusterizerFixedWindow *clusterizer = dynamic_cast<AliEMCALClusterizerFixedWindow*> (fClusterizer);
-    if (!clusterizer)
-      return;
-    clusInfo = clusterizer->GetClustersInfo();
-    if (!clusInfo)
-      return;
-    clusInfo->SetName(addInfoName);
-    InputEvent()->AddObject(clusInfo);
-  }
 }
 
 //________________________________________________________________________
@@ -263,16 +235,17 @@ void AliAnalysisTaskEMCALClusterizeFast::Clusterize()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
 {
-  if (fCreatePattern)
-  {
+  // Fill digits array
+  
+  fDigitsArr->Clear("C");
+  
+  if (fCreatePattern){
     
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
-    
-    fDigitsArr->Clear("C");
+
     Int_t maxd = fGeom->GetNCells() / 4;
     
-    for (Int_t idigit = 0; idigit < maxd; idigit++)
-    {
+    for (Int_t idigit = 0; idigit < maxd; idigit++){
       if (idigit % 24 == 12) idigit += 12;
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
       digit->SetId(idigit * 4);
@@ -285,12 +258,71 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     }
     
   }
-  else
-	{
+  else if (fClusterizeFastORs){
+    
+    AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
+    
+    AliESDEvent* esd = dynamic_cast<AliESDEvent*>(InputEvent());
+    if (!esd){
+      AliError("Cannot get the ESD event");
+      return;
+    } 
+    
+    AliESDCaloTrigger *triggers = esd->GetCaloTrigger("EMCAL");
+    
+    if (!triggers || !(triggers->GetEntries() > 0))
+      return;
+  
+    Int_t idigit = 0;
+    triggers->Reset();
+    
+    while ((triggers->Next())){
+      Float_t triggerAmplitude = 0;
+      triggers->GetAmplitude(triggerAmplitude);
+      if (triggerAmplitude <= 0)
+        continue;
+      
+      Int_t triggerTime = 0;
+      Int_t ntimes = 0;
+      triggers->GetNL0Times(ntimes);
+      if (ntimes > 0){
+        Int_t trgtimes[25];
+        triggers->GetL0Times(trgtimes);
+        triggerTime = trgtimes[0];
+      }
+      
+      Int_t triggerCol = 0, triggerRow = 0;
+      triggers->GetPosition(triggerCol, triggerRow);
+      
+      Int_t find = -1;
+      fGeom->GetAbsFastORIndexFromPositionInEMCAL(triggerCol, triggerRow, find);
+      
+      if (find<0)
+        continue;
+      
+      Int_t cidx[4] = {-1};
+      Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
+      
+      if (!ret)
+        continue;
+      
+      for (Int_t idxpos = 0; idxpos < 4; idxpos++){
+        Int_t triggerNumber = cidx[idxpos];
+        AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
+        digit->SetId(triggerNumber);
+        digit->SetTime(triggerTime);
+        digit->SetTimeR(triggerTime);
+        digit->SetIndexInList(idigit);
+        digit->SetType(AliEMCALDigit::kHG);
+        digit->SetAmplitude(triggerAmplitude);
+        idigit++;
+      }
+    }
+  }
+	else{
 		
     // Fill digits from cells.
     
-    fDigitsArr->Clear("C");
     AliVCaloCells *cells = InputEvent()->GetEMCALCells();
     Double_t avgE = 0; // for background subtraction
     Int_t ncells = cells->GetNumberOfCells();
@@ -380,6 +412,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);            //not yet implemented
     c->SetChi2(-1);                      //not yet implemented
+    recpoint->EvalAll(1, fDigitsArr, kTRUE);
     c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
     Float_t elipAxis[2];
@@ -398,6 +431,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
       cesd->SetCellsAbsId(absIds);
       cesd->SetCellsAmplitudeFraction(ratios);
+      cesd->SetID(recpoint->GetIndexInList());
     } else {
       AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
       caod->SetCellsAbsId(absIds);
@@ -644,7 +678,8 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   } else {
     fClusterizer->SetInputCalibrated(kTRUE);   
   }
-  fClusterizer->SetCaloCalibPedestal(fPedestalData);
+  if(fRecParam->GetClusterizerFlag() != AliEMCALRecParam::kClusterizerFW)
+    fClusterizer->SetCaloCalibPedestal(fPedestalData);
   fClusterizer->SetJustClusters(kTRUE);
   fClusterizer->SetDigitsArr(fDigitsArr);
   fClusterizer->SetOutput(0);
