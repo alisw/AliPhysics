@@ -64,7 +64,8 @@ AliFMDSharingFilter::AliFMDSharingFilter()
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
     fHCuts(),
-    fUseSimpleMerging(false)
+    fUseSimpleMerging(false),
+    fThreeStripSharing(true)
 {
   // 
   // Default Constructor - do not use 
@@ -86,7 +87,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
     fZeroSharedHitsBelowThreshold(false),
     fLCuts(),
     fHCuts(),
-    fUseSimpleMerging(false)
+    fUseSimpleMerging(false),
+    fThreeStripSharing(true)
 {
   // 
   // Constructor 
@@ -123,7 +125,8 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
     fZeroSharedHitsBelowThreshold(o.fZeroSharedHitsBelowThreshold),
     fLCuts(o.fLCuts),
     fHCuts(o.fHCuts),
-    fUseSimpleMerging(o.fUseSimpleMerging)
+    fUseSimpleMerging(o.fUseSimpleMerging),
+    fThreeStripSharing(o.fThreeStripSharing)
 {
   // 
   // Copy constructor 
@@ -172,6 +175,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   fLCuts                        = o.fLCuts;
   fHCuts                        = o.fHCuts;
   fUseSimpleMerging             = o.fUseSimpleMerging;
+  fThreeStripSharing            = o.fThreeStripSharing;
   
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -348,7 +352,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	      nDistanceBefore = -1;
 	    }
 	    
-	    if(eTotal > 0) {
+	    if(fThreeStripSharing && eTotal > 0) {
 	      if(multNext > GetLowCut(d, r, eta) && 
 		 (multNext < GetHighCut(d, r, eta ,false) || twoLow)) {
 		eTotal = eTotal + multNext;
@@ -376,11 +380,13 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		   multNext < GetHighCut(d, r, eta ,false) )
 		  twoLow = kTRUE;
 		  
-		if(mult>multNext && multNextNext < GetLowCut(d, r, eta)) {
-		  etot = mult + multNext;
-		  used=kTRUE;
-		  histos->fDouble->Fill(etot);
-		}
+		if(!fThreeStripSharing || 
+		   (mult>multNext && multNextNext < GetLowCut(d, r, eta)))
+		  {
+		    etot = mult + multNext;
+		    used=kTRUE;
+		    histos->fDouble->Fill(etot);
+		  }
 		else {
 		  etot   = 0;
 		  eTotal = mult + multNext;
