@@ -25,6 +25,8 @@
 
 #include "AliCounterCollection.h"
 
+#include <limits.h>
+
 #include <AliLog.h>
 
 #include <TString.h>
@@ -45,7 +47,8 @@ TNamed(name,name),
 fRubrics(new THashList(10)),
 fRubricsSize(new TArrayI(10)),
 fCounters(0x0),
-fWeightedCounters(kFALSE)
+fWeightedCounters(kFALSE),
+fLongCounters(kFALSE)
 {
   /// Constructor
   fRubrics->SetOwner();
@@ -68,6 +71,7 @@ void AliCounterCollection::Clear(Option_t*)
   fRubricsSize->Reset();
   delete fCounters; fCounters = 0x0;
   fWeightedCounters = kFALSE;
+  fLongCounters = kFALSE;
 }
 
 //-----------------------------------------------------------------------
@@ -516,8 +520,23 @@ void AliCounterCollection::CountAsDouble(TString externalKey, Double_t value)
     return;
   }
   
-  // increment the corresponding counter
-  fCounters->AddBinContent(bins, value);
+  if (fWeightedCounters || fLongCounters) {
+    
+    // increment the corresponding counter
+    fCounters->AddBinContent(bins, value);
+    
+  } else {
+    
+    // switch to long counters if needed before incrementing
+    Long64_t linBin = fCounters->GetBin(bins, kTRUE);
+    Double_t currentValue = fCounters->GetBinContent(linBin);
+    if (currentValue+value > INT_MAX) {
+      ConvertToTHnSparseL(fCounters);
+      fLongCounters = kTRUE;
+      fCounters->AddBinContent(bins, value);
+    } else fCounters->AddBinContent(linBin, value);
+    
+  }
   
   // clean memory
   delete[] bins;
@@ -559,6 +578,7 @@ void AliCounterCollection::Print(const Option_t* opt) const
     
     // print value
     if (fWeightedCounters) printf("\n%s   %g", counter.Data(), value);
+    else if (fLongCounters) printf("\n%s   %ld", counter.Data(), (Long_t)value);
     else printf("\n%s   %d", counter.Data(), (Int_t)value);
   }
   printf("\n\n");
@@ -595,10 +615,14 @@ TString AliCounterCollection::GetKeyWords(TString rubric) const
 }
 
 //-----------------------------------------------------------------------
-Double_t AliCounterCollection::GetSum(TString selections)
+Double_t AliCounterCollection::GetSum(TString selections, Bool_t* longCounters)
 {
   /// Get the overall statistics for the given selection (result is integrated over not specified rubrics):
   /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
+  /// - The flag "longCounters" tells whether the histogram contains value(s) larger than INT_MAX.
+  
+  // set the flag "longCounters" according to the content of current counters
+  if (longCounters) *longCounters = fLongCounters;
   
   if (!fCounters) {
     AliError("counters are not initialized");
@@ -628,6 +652,9 @@ Double_t AliCounterCollection::GetSum(TString selections)
     // compute integral
     sum += selectionFactor * value;
   }
+  
+  // check if the sum exceed INT_MAX (only in case of integer counters)
+  if (longCounters && !fWeightedCounters && sum > INT_MAX) *longCounters = kTRUE;
   
   // clean memory
   for (Int_t iDim=0; iDim<nDims; iDim++) delete[] select[iDim];
@@ -699,6 +726,7 @@ void AliCounterCollection::PrintValue(TString selections)
   
   // print value
   if (fWeightedCounters) printf("\n%g\n\n", fCounters->GetBinContent(selectedBins));
+  else if (fLongCounters) printf("\n%ld\n\n", (Long_t) fCounters->GetBinContent(selectedBins));
   else printf("\n%d\n\n", (Int_t) fCounters->GetBinContent(selectedBins));
   
   // clean memory
@@ -736,7 +764,8 @@ void AliCounterCollection::Print(TString rubrics, TString selections, Bool_t rem
   CleanListOfStrings(rubricsToPrint);
   
   // project counters in the rubrics to print according to the selections
-  TObject* hist = Projection(*rubricsToPrint, selections);
+  Bool_t longCounters = kFALSE;
+  TObject* hist = Projection(*rubricsToPrint, selections, longCounters);
   if (!hist) {
     delete rubricsToPrint;
     return;
@@ -745,11 +774,11 @@ void AliCounterCollection::Print(TString rubrics, TString selections, Bool_t rem
   // print counters
   Int_t nRubricsToPrint = rubricsToPrint->GetEntriesFast();
   if (nRubricsToPrint == 1 && (static_cast<TH1D*>(hist))->GetEntries() > 0)
-    PrintList(static_cast<TH1D*>(hist), removeEmpty);
+    PrintList(static_cast<TH1D*>(hist), removeEmpty, longCounters);
   else if (nRubricsToPrint == 2 && (static_cast<TH2D*>(hist))->GetEntries() > 0)
-    PrintArray(static_cast<TH2D*>(hist), removeEmpty);
+    PrintArray(static_cast<TH2D*>(hist), removeEmpty, longCounters);
   else if (nRubricsToPrint > 2 && (static_cast<THnSparse*>(hist))->GetEntries() > 0)
-    PrintListOfArrays(static_cast<THnSparse*>(hist), removeEmpty);
+    PrintListOfArrays(static_cast<THnSparse*>(hist), removeEmpty, longCounters);
   else
     printf("\nselected counters are empty\n\n");
   
@@ -763,21 +792,24 @@ void AliCounterCollection::PrintSum(TString selections)
 {
   /// Print the overall statistics for the given selection (result is integrated over not specified rubrics):
   /// - format of "selections" is rubric:[any-]keyWord,keyWord,../rubric:[any-]keyWord,.. (order does not matter).
-  Double_t sum = GetSum(selections);
+  Bool_t longCounters = kFALSE;
+  Double_t sum = GetSum(selections, &longCounters);
   if (fWeightedCounters) printf("\n%g\n\n", sum);
+  else if (longCounters) printf("\n%ld\n\n", (Long_t)sum);
   else printf("\n%d\n\n", (Int_t)sum);
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintList(const TH1D* hist, Bool_t removeEmpty) const
+void AliCounterCollection::PrintList(const TH1D* hist, Bool_t removeEmpty, Bool_t longCounters) const
 {
   /// Print the content of 1D histogram as a list.
   
   // set the format to print labels
   THashList* labels = hist->GetXaxis()->GetLabels();
   TString format = "";
-  if (fWeightedCounters) format = Form("\n%%%ds %%9g",GetMaxLabelSize(labels));
-  else format = Form("\n%%%ds %%9d",GetMaxLabelSize(labels));
+  if (fWeightedCounters) format = Form("\n%%%ds %%10g",GetMaxLabelSize(labels));
+  else if (longCounters) format = Form("\n%%%ds %%16ld",GetMaxLabelSize(labels));
+  else format = Form("\n%%%ds %%10d",GetMaxLabelSize(labels));
   
   // print value for each label
   TObjString* label = 0x0;
@@ -787,13 +819,14 @@ void AliCounterCollection::PrintList(const TH1D* hist, Bool_t removeEmpty) const
     Double_t value = hist->GetBinContent(bin);
     if (removeEmpty && value == 0.) continue;
     if (fWeightedCounters) printf(format.Data(), label->String().Data(), value);
+    else if (longCounters) printf(format.Data(), label->String().Data(), (Long_t) value);
     else printf(format.Data(), label->String().Data(), (Int_t) value);
   }
   printf("\n\n");
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty) const
+void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty, Bool_t longCounters) const
 {
   /// Print the content of 2D histogram as an array.
   
@@ -801,12 +834,21 @@ void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty) cons
   THashList* labelsX = hist->GetXaxis()->GetLabels();
   TString formatX(Form("\n%%%ds ",GetMaxLabelSize(labelsX)));
   
-  // set the format to print labels in Y direction and values
+  // set the format to print labels in Y direction
   THashList* labelsY = hist->GetYaxis()->GetLabels();
-  Int_t maxLabelSizeY = TMath::Max(9, GetMaxLabelSize(labelsY));
-  TString formatYs(Form("%%%ds ",maxLabelSizeY));
-  TString formatYd(Form("%%%dd ",maxLabelSizeY));
-  TString formatYg(Form("%%%dg ",maxLabelSizeY));
+  Int_t maxLabelSizeY = GetMaxLabelSize(labelsY);
+  TString formatYv = "";
+  if (fWeightedCounters) {
+    maxLabelSizeY = TMath::Max(10, maxLabelSizeY);
+    formatYv = Form("%%%dg ",maxLabelSizeY);
+  } else if (longCounters) {
+    maxLabelSizeY = TMath::Max(16, maxLabelSizeY);
+    formatYv = Form("%%%dld ",maxLabelSizeY);
+  } else {
+    maxLabelSizeY = TMath::Max(10, maxLabelSizeY);
+    formatYv = Form("%%%dd ",maxLabelSizeY);
+  }
+  TString formatYs = Form("%%%ds ",maxLabelSizeY);
   
   // if required, set the list of labels for which all counters are not empty
   Bool_t *useLabelX = 0x0, *useLabelY = 0x0;
@@ -869,8 +911,9 @@ void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty) cons
     while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
       Int_t binY = (Int_t) labelY->GetUniqueID();
       if (removeEmpty && !useLabelY[binY]) continue;
-      if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(binX, binY));
-      else printf(formatYd.Data(), (Int_t) hist->GetBinContent(binX, binY));
+      if (fWeightedCounters) printf(formatYv.Data(), hist->GetBinContent(binX, binY));
+      else if (longCounters) printf(formatYv.Data(), (Long_t) hist->GetBinContent(binX, binY));
+      else printf(formatYv.Data(), (Int_t) hist->GetBinContent(binX, binY));
     }
   }
   printf("\n\n");
@@ -883,7 +926,7 @@ void AliCounterCollection::PrintArray(const TH2D* hist, Bool_t removeEmpty) cons
 }
 
 //-----------------------------------------------------------------------
-void AliCounterCollection::PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty) const
+void AliCounterCollection::PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty, Bool_t longCounters) const
 {
   /// Print the content of nD histogram as a list of arrays.
   
@@ -891,12 +934,21 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist, Bool_t remov
   THashList* labelsX = hist->GetAxis(0)->GetLabels();
   TString formatX(Form("\n%%%ds ",GetMaxLabelSize(labelsX)));
   
-  // set the format to print labels in Y direction and values
+  // set the format to print labels in Y direction
   THashList* labelsY = hist->GetAxis(1)->GetLabels();
-  Int_t maxLabelSizeY = TMath::Max(9, GetMaxLabelSize(labelsY));
+  Int_t maxLabelSizeY = GetMaxLabelSize(labelsY);
+  TString formatYv = "";
+  if (fWeightedCounters) {
+    maxLabelSizeY = TMath::Max(10, maxLabelSizeY);
+    formatYv = Form("%%%dg ",maxLabelSizeY);
+  } else if (longCounters) {
+    maxLabelSizeY = TMath::Max(16, maxLabelSizeY);
+    formatYv = Form("%%%dld ",maxLabelSizeY);
+  } else {
+    maxLabelSizeY = TMath::Max(10, maxLabelSizeY);
+    formatYv = Form("%%%dd ",maxLabelSizeY);
+  }
   TString formatYs(Form("%%%ds ",maxLabelSizeY));
-  TString formatYd(Form("%%%dd ",maxLabelSizeY));
-  TString formatYg(Form("%%%dg ",maxLabelSizeY));
   
   // create a list containing each combination of labels refering the arrays to be printout
   TList listOfCombis;
@@ -1037,8 +1089,9 @@ void AliCounterCollection::PrintListOfArrays(const THnSparse* hist, Bool_t remov
       while ((labelY = static_cast<TObjString*>(nextLabelY()))) {
 	bins[1] = (Int_t) labelY->GetUniqueID();
 	if (removeEmpty && !useLabelY[bins[1]]) continue;
-	if (fWeightedCounters) printf(formatYg.Data(), hist->GetBinContent(bins));
-	else printf(formatYd.Data(), (Int_t) hist->GetBinContent(bins));
+	if (fWeightedCounters) printf(formatYv.Data(), hist->GetBinContent(bins));
+	else if (longCounters) printf(formatYv.Data(), (Long_t) hist->GetBinContent(bins));
+	else printf(formatYv.Data(), (Int_t) hist->GetBinContent(bins));
       }
     }
     printf("\n\n");
@@ -1086,7 +1139,8 @@ TH1D* AliCounterCollection::Get(TString rubric, TString selections)
   rubricsToPrint.AddLast(new TObjString(rubric.Data()));
   
   // project counters in the rubrics to print according to the selections
-  TH1D* hist = static_cast<TH1D*>(Projection(rubricsToPrint, selections));
+  Bool_t longCounters = kFALSE;
+  TH1D* hist = static_cast<TH1D*>(Projection(rubricsToPrint, selections, longCounters));
   
   // make it ready to display
   if (hist) {
@@ -1133,7 +1187,8 @@ TH2D* AliCounterCollection::Get(TString rubric1, TString rubric2, TString select
   rubricsToPrint.AddLast(new TObjString(rubric1.Data()));
   
   // project counters in the rubrics to print according to the selections
-  TH2D* hist = static_cast<TH2D*>(Projection(rubricsToPrint, selections));
+  Bool_t longCounters = kFALSE;
+  TH2D* hist = static_cast<TH2D*>(Projection(rubricsToPrint, selections, longCounters));
   
   // draw counters
   if (hist) {
@@ -1186,11 +1241,15 @@ TH2D* AliCounterCollection::Draw(TString rubric1, TString rubric2, TString selec
 }
 
 //-----------------------------------------------------------------------
-TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& selections)
+TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& selections, Bool_t& longCounters)
 {
   /// Return desired "data" for the given "selection" stored in a new histogram or 0x0 in case of failure.
   /// The type of the histogram (TH1D, TH2D or THnSparse) depend on the number of data.
+  /// The flag "longCounters" tells whether the histogram contains value(s) larger than INT_MAX.
   /// It is the responsability of the user to delete the returned histogram.
+  
+  // set the flag "longCounters" according to the content of current counters
+  longCounters = fLongCounters;
   
   // decode the selections
   Short_t** select = DecodeSelection(selections, data);
@@ -1248,6 +1307,7 @@ TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& 
   if (nTargetDims == 1) hist = new TH1D(name.Data(), title.Data(), nNewBins[0], 0., 1.);
   else if (nTargetDims == 2) hist = new TH2D(name.Data(), title.Data(), nNewBins[0], 0., 1., nNewBins[1], 0., 1.);
   else if (fWeightedCounters) hist = new THnSparseT<TArrayF>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
+  else if (fLongCounters) hist = new THnSparseT<TArrayL>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
   else hist = new THnSparseT<TArrayI>(name.Data(), title.Data(), nTargetDims, nNewBins.GetArray(), 0x0, 0x0);
   
   // Set new axis labels
@@ -1305,9 +1365,32 @@ TObject* AliCounterCollection::Projection(const TObjArray& data, const TString& 
     
     // fill projection histo
     if (nTargetDims < 3) {
+      
       Int_t linBin = (nTargetDims == 1) ? newCoord[0] : static_cast<TH1*>(hist)->GetBin(newCoord[0], newCoord[1]);
       static_cast<TH1*>(hist)->AddBinContent(linBin, selectionFactor*value);
-    } else static_cast<THnSparse*>(hist)->AddBinContent(newCoord, selectionFactor*value);
+      
+      // check if the new value exceed INT_MAX (only in case of integer counters)
+      if (!fWeightedCounters && !longCounters && static_cast<TH1*>(hist)->GetBinContent(linBin) > INT_MAX)
+	longCounters = kTRUE;
+      
+    } else if (fWeightedCounters || longCounters) {
+      
+      static_cast<THnSparse*>(hist)->AddBinContent(newCoord, selectionFactor*value);
+      
+    } else {
+      
+      // switch to long counters if needed before filling
+      Long64_t linBin = static_cast<THnSparse*>(hist)->GetBin(newCoord, kTRUE);
+      Double_t currentValue = static_cast<THnSparse*>(hist)->GetBinContent(linBin);
+      if (currentValue+selectionFactor*value > INT_MAX) {
+	THnSparse* h = static_cast<THnSparse*>(hist);
+	ConvertToTHnSparseL(h);
+	hist = h;
+	longCounters = kTRUE;
+	static_cast<THnSparse*>(hist)->AddBinContent(newCoord, selectionFactor*value);
+      } else static_cast<THnSparse*>(hist)->AddBinContent(linBin, selectionFactor*value);
+      
+    }
     
     nEntries++;
   }
@@ -1421,6 +1504,12 @@ void AliCounterCollection::Add(const AliCounterCollection* counter)
   Int_t* otherDims = CheckConsistency(counter);
   if (!otherDims) return;
   
+  // switch to long counters if the given counter collection is of that type
+  if (counter->fLongCounters && !fLongCounters) {
+    ConvertToTHnSparseL(fCounters);
+    fLongCounters = kTRUE;
+  }
+  
   Int_t nRubrics = fCounters->GetNdimensions();
   Int_t* thisBins = new Int_t[nRubrics];
   Int_t* otherBins = new Int_t[nRubrics];
@@ -1444,8 +1533,24 @@ void AliCounterCollection::Add(const AliCounterCollection* counter)
     }
     if (!ok) continue;
     
-    // increment the corresponding local counter
-    fCounters->AddBinContent(thisBins, value);
+    if (fWeightedCounters || fLongCounters) {
+      
+      // increment the corresponding local counter
+      fCounters->AddBinContent(thisBins, value);
+      
+    } else {
+      
+      // switch to long counters if needed before incrementing
+      Long64_t linBin = fCounters->GetBin(thisBins, kTRUE);
+      Double_t currentValue = fCounters->GetBinContent(linBin);
+      if (currentValue+value > INT_MAX) {
+	ConvertToTHnSparseL(fCounters);
+	fLongCounters = kTRUE;
+	fCounters->AddBinContent(thisBins, value);
+      } else fCounters->AddBinContent(linBin, value);
+      
+    }
+    
   }
   
   // clean memory
@@ -1569,6 +1674,8 @@ void AliCounterCollection::Sort(const Bool_t* rubricsToSort, Bool_t asInt)
   Int_t nRubrics = fRubrics->GetSize();
   if (fWeightedCounters)
     fCounters = new THnSparseT<TArrayF>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
+  else if (fLongCounters)
+    fCounters = new THnSparseT<TArrayL>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
   else 
     fCounters = new THnSparseT<TArrayI>("hCounters", "hCounters", nRubrics, fRubricsSize->GetArray(), 0x0, 0x0);
   Int_t** newBins = new Int_t*[nRubrics];
@@ -1660,5 +1767,51 @@ THashList* AliCounterCollection::SortAsInt(const THashList* labels)
   }
   
   return sortedLabels;
+}
+
+//-----------------------------------------------------------------------
+void AliCounterCollection::ConvertToTHnSparseL(THnSparse* &h)
+{
+  /// Convert the given THnSparse to a THnSparseL (able to handle numbers >= 2^31)
+  
+  // create the new THnSparse
+  Int_t nDims = h->GetNdimensions();
+  Int_t* nBins = new Int_t[nDims];
+  for (Int_t i=0; i<nDims; i++) nBins[i] = h->GetAxis(i)->GetNbins();
+  THnSparse* hNew = new THnSparseT<TArrayL>("new", "new", nDims, nBins, 0x0, 0x0);
+  delete[] nBins;
+  
+  // transfer the axes
+  for (Int_t i=0; i<nDims; i++) {
+    TAxis* oldAxis = h->GetAxis(i);
+    TAxis* newAxis = hNew->GetAxis(i);
+    
+    // transfer the name
+    newAxis->SetName(oldAxis->GetName());
+    
+    // transfer labels
+    TObjString* label = 0x0;
+    TIter nextLabel(oldAxis->GetLabels());
+    while ((label = static_cast<TObjString*>(nextLabel())))
+      newAxis->SetBinLabel(label->GetUniqueID(), label->String().Data());
+  }
+  
+  // fill the new THnSparse
+  Int_t* coor = new Int_t[nDims];
+  for (Long64_t i = 0; i < h->GetNbins(); i++) {
+    Double_t value = h->GetBinContent(i, coor);
+    hNew->AddBinContent(coor, value);
+  }
+  delete[] coor;
+  
+  // transfer the number of entries
+  hNew->SetEntries(h->GetEntries());
+  
+  // remove old THnSparse and transfer its name and title to the new one
+  TString name(h->GetName());
+  TString title(h->GetTitle());
+  delete h;
+  h = hNew;
+  h->SetNameTitle(name.Data(), title.Data());
 }
 
