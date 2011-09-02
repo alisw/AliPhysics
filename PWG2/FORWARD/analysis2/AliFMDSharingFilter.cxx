@@ -322,7 +322,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	  if(t<nstr-2) multNextNext = SignalInStrip(input,d,r,s,t+2);
 	  if(multNext ==  AliESDFMD::kInvalidMult) multNext = 0;
 	  if(multNextNext ==  AliESDFMD::kInvalidMult) multNextNext = 0;
-	  
+	  if(!fThreeStripSharing) multNextNext = 0;
 	  // Get the pseudo-rapidity 
 	  Double_t eta = input.Eta(d,r,s,t);
 	  Double_t phi = input.Phi(d,r,s,t) * TMath::Pi() / 180.;
@@ -352,8 +352,8 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 	      nDistanceBefore = -1;
 	    }
 	    
-	    if(fThreeStripSharing && eTotal > 0) {
-	      if(multNext > GetLowCut(d, r, eta) && 
+	    if(eTotal > 0) {
+	      if(fThreeStripSharing && multNext > GetLowCut(d, r, eta) && 
 		 (multNext < GetHighCut(d, r, eta ,false) || twoLow)) {
 		eTotal = eTotal + multNext;
 		used = kTRUE;
@@ -380,8 +380,7 @@ AliFMDSharingFilter::Filter(const AliESDFMD& input,
 		   multNext < GetHighCut(d, r, eta ,false) )
 		  twoLow = kTRUE;
 		  
-		if(!fThreeStripSharing || 
-		   (mult>multNext && multNextNext < GetLowCut(d, r, eta)))
+		if(mult>multNext && multNextNext < GetLowCut(d, r, eta))
 		  {
 		    etot = mult + multNext;
 		    used=kTRUE;
