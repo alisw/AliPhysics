@@ -136,6 +136,14 @@ public:
    */
   void SetUseSimpleSharing(Bool_t use) { fUseSimpleMerging = use; }
   /** 
+   * In case of a simpler merging algorithm allow 3 strips to be 
+   * merged
+   * 
+   * @param use allow three strips
+   * 
+   */
+  void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }
+  /** 
    * Set the number of landau width to subtract from the most probably
    * value to get the high cut for the merging algorithm.
    * 
@@ -397,9 +405,10 @@ protected:
   AliFMDFloatMap* fOper;   // Operation done per strip 
   Int_t    fDebug;         // Debug level 
   Bool_t   fZeroSharedHitsBelowThreshold; //Whether to zero shared strip below cut
-  AliFMDMultCuts fLCuts;
-  AliFMDMultCuts fHCuts;
-  Bool_t   fUseSimpleMerging;
+  AliFMDMultCuts fLCuts;    //Cuts object for low cuts
+  AliFMDMultCuts fHCuts;    //Cuts object for high cuts
+  Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
+  Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
   ClassDef(AliFMDSharingFilter,3); //
 };
 
