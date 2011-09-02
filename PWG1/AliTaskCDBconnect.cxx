@@ -132,7 +132,7 @@ void AliTaskCDBconnect::CreateOutputObjects()
   if (cdb->GetLock()) return;
   // SetDefault storage. Specific storages must be set by TaskCDBconnectSupply::Init()
   //  cdb->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-  if (!cdb->IsDefaultStorageSet()) {
+  if (!cdb->GetRaw()) {
      cdb->SetDefaultStorage("raw://");
   }   
   if (run && (run != fRun)) {
