@@ -65,6 +65,7 @@ class AliTRDCalibraFit : public TObject {
   // Functions fit for PH       
   Bool_t   AnalysePH(const TProfile2D *ph);
   Bool_t   AnalysePH(AliTRDCalibraVector *calvect);
+  Double_t AnalysePHAllTogether(const TProfile2D *ph);
   
   // Functions fit for PRF
   Bool_t   AnalysePRF(const TProfile2D *prf);
