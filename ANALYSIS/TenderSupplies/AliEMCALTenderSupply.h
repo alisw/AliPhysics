@@ -7,14 +7,12 @@
 ////////////////////////////////////////////////////////////////////////
 //                                                                    //
 //  EMCAL tender, apply corrections to EMCAl clusters                 //
-//  and do track matching                                             //
-//  Author : Deepa Thomas (Utrecht University)                        //                      
+//  and do track matching.                                            //
+//  Author: Deepa Thomas (Utrecht University)                         //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
-//Jens Wiechula
-//make data members which are initialised locally non streamable. 
 
-#include <AliTenderSupply.h>
+#include "AliTenderSupply.h"
 
 class TTree;
 class TClonesArray;
@@ -39,147 +37,138 @@ public:
 
   enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5};
 
-  virtual void   Init();
-  virtual void   ProcessEvent();
+  virtual void Init();
+  virtual void ProcessEvent();
   
-  void SetEMCALGeometryName(TString name)   { fEMCALGeoName = name  ;}
-  TString EMCALGeometryName()       const   { return fEMCALGeoName  ;}
+  void     SetEMCALGeometryName(TString name)             { fEMCALGeoName = name             ;}
+  TString  EMCALGeometryName()                      const { return fEMCALGeoName             ;}
 
-  void  SetDebugLevel(Int_t level)          { fDebugLevel=level     ;}
+  void     SetDebugLevel(Int_t level)                     { fDebugLevel=level                ;}
 
-  void  SetBasePath(const Char_t *basePath) { fBasePath = basePath  ;}                 // mfasel: add function to set a path where to find the root files
+  void     SetBasePath(const Char_t *basePath)            { fBasePath = basePath             ;}
  
-  void  SetConfigFileName(TString name)     { fConfigName = name    ;}
+  void     SetConfigFileName(TString name)                { fConfigName = name               ;}
 
-  void  SetNonLinearityFunction(Int_t fun)  { fNonLinearFunc = fun  ;}
-  Int_t GetNonLinearityFunction() const     { return fNonLinearFunc ;}
+  void     SetNonLinearityFunction(Int_t fun)             { fNonLinearFunc = fun             ;}
+  Int_t    GetNonLinearityFunction() const                { return fNonLinearFunc            ;}
   
-  void  SetNonLinearityThreshold(Int_t threshold) { fNonLinearThreshold = threshold ;} //only for Alexei's non linearity correction
-  Int_t GetNonLinearityThreshold() const          { return fNonLinearThreshold      ;}
+  void     SetNonLinearityThreshold(Int_t threshold)      { fNonLinearThreshold = threshold  ;} //only for Alexei's non linearity correction
+  Int_t    GetNonLinearityThreshold()               const { return fNonLinearThreshold       ;}
 
-  void  SwitchOnReCalibrateCluster()        { fReCalibCluster = kTRUE  ;}
-  void  SwitchOffReCalibrateCluster()       { fReCalibCluster = kFALSE ;}
+  void     SwitchOnReCalibrateCluster()                   { fReCalibCluster = kTRUE          ;}
+  void     SwitchOffReCalibrateCluster()                  { fReCalibCluster = kFALSE         ;}
 
-  void  SwitchOnReCalibrateCell()           { fReCalibCell = kTRUE     ;}
-  void  SwitchOffReCalibrateCell()          { fReCalibCell = kFALSE    ;}
+  void     SwitchOnReCalibrateCell()                      { fReCalibCell = kTRUE             ;}
+  void     SwitchOffReCalibrateCell()                     { fReCalibCell = kFALSE            ;}
 
-  void  SwitchOnRecalculateClusPos()        { fRecalClusPos = kTRUE    ;}
-  void  SwitchOffRecalculateClusPos()       { fRecalClusPos = kFALSE   ;}
+  void     SwitchOnRecalculateClusPos()                   { fRecalClusPos = kTRUE            ;}
+  void     SwitchOffRecalculateClusPos()                  { fRecalClusPos = kFALSE           ;}
 
-  void  SwitchOnCellFiducialRegion()        { fFiducial = kTRUE        ;}
-  void  SwitchOffCellFiducialRegion()       { fFiducial = kFALSE       ;}
+  void     SwitchOnCellFiducialRegion()                   { fFiducial = kTRUE                ;}
+  void     SwitchOffCellFiducialRegion()                  { fFiducial = kFALSE               ;}
 
-  void  SetNumberOfcellsFromEMCALBorder(Int_t n) { fNCellsFromEMCALBorder = n    ;}
-  Int_t GetNumberOfcellsFromEMCALBorder() const  { return fNCellsFromEMCALBorder ;}
+  void     SetNumberOfcellsFromEMCALBorder(Int_t n)       { fNCellsFromEMCALBorder = n       ;}
+  Int_t    GetNumberOfcellsFromEMCALBorder()        const { return fNCellsFromEMCALBorder    ;}
 
-  void  SwitchOnRecalDistBadChannel()       { fRecalDistToBadChannels = kTRUE  ;}
-  void  SwitchOffRecalDistBadChannel()      { fRecalDistToBadChannels = kFALSE ;}
+  void     SwitchOnRecalDistBadChannel()                  { fRecalDistToBadChannels = kTRUE  ;}
+  void     SwitchOffRecalDistBadChannel()                 { fRecalDistToBadChannels = kFALSE ;}
 
-  Float_t  GetRCut()       const   { return fRcut   ;}
-  void     SetRCut(Float_t Rcut)   { fRcut = Rcut   ;}
+  Float_t  GetRCut()                                const { return fRcut                     ;}
+  void     SetRCut(Float_t rcut)                          { fRcut = rcut                     ;}
 
-  Double_t GetMass()       const   { return fMass   ;}
-  void     SetMass(Double_t mass)  { fMass=mass     ;}
+  Double_t GetMass()                                const { return fMass                     ;}
+  void     SetMass(Double_t mass)                         { fMass = mass                     ;}
 
-  Double_t GetStep()       const   { return fStep   ;}
-  void     SetStep(Double_t step)  { fStep=step     ;}
+  Double_t GetStep()                                const { return fStep                     ;}
+  void     SetStep(Double_t step)                         { fStep = step                     ;}
 
-  Double_t GetEtaCut()	   const   { return fEtacut ;}
-  void	   SetEtaCut(Double_t eta) { fEtacut=eta    ;}
+  Double_t GetEtaCut()	                            const { return fEtacut                   ;}
+  void	   SetEtaCut(Double_t eta)                        { fEtacut = eta                    ;}
 
-  Double_t GetPhiCut() 	   const   { return fPhicut ;}
-  void	   SetPhiCut(Double_t phi) { fPhicut=phi    ;}
+  Double_t GetPhiCut() 	                            const { return fPhicut                   ;}
+  void	   SetPhiCut(Double_t phi)                        { fPhicut = phi                    ;}
 
-  void SwitchOnReclustering() 	   { fReClusterize = kTRUE  ;}
-  void SwitchOffReclustering() 	   { fReClusterize = kFALSE ;}
+  void     SwitchOnReclustering() 	                  { fReClusterize = kTRUE            ;}
+  void     SwitchOffReclustering() 	                  { fReClusterize = kFALSE           ;}
 
-  void SwitchOnCutEtaPhiSum()      { fCutEtaPhiSum=kTRUE;      fCutEtaPhiSeparate=kFALSE ;}
-  void SwitchOnCutEtaPhiSeparate() { fCutEtaPhiSeparate=kTRUE; fCutEtaPhiSum=kFALSE      ;}
+  void     SwitchOnCutEtaPhiSum()                         { fCutEtaPhiSum=kTRUE;      fCutEtaPhiSeparate=kFALSE ;}
+  void     SwitchOnCutEtaPhiSeparate()                    { fCutEtaPhiSeparate=kTRUE; fCutEtaPhiSum=kFALSE      ;}
   
-  void SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE    ; }
-  void SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; }
-  void SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; }
+  void     SwitchOnLoadOwnGeometryMatrices()              { fLoadGeomMatrices = kTRUE        ;}
+  void     SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE       ;}
+  void     SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m           ;}
  
-  AliEMCALRecParam   *GetRecParam()   const  { return fRecParam       ; }
+  AliEMCALRecParam   *GetRecParam()                 const { return fRecParam                 ;}
   
-  AliEMCALRecoUtils  *GetRecoUtils()  const  { return fEMCALRecoUtils ; }
+  AliEMCALRecoUtils  *GetRecoUtils()                const { return fEMCALRecoUtils           ;}
 
-  void     SetOCDBPath(const char *path)     { fOCDBpath = path       ; }
+  void     SetOCDBPath(const char *path)                  { fOCDBpath = path                 ;}
  
 private:
 
-  Bool_t  InitBadChannels();
-  Bool_t  InitRecalib();
-  Bool_t  InitMisalignMatrix();
-    
-  void SetClusterMatchedToTrack (AliESDEvent *event);
-  void SetTracksMatchedToCluster(AliESDEvent *event);
+  Bool_t   InitBadChannels();
 
-  void RecalibrateCells();	//Recalibrate cells 
+  Bool_t   InitClusterization();
 
-  void InitClusterization();
-  void FillDigitsArray();
-  void Clusterize();
-  void UpdateClusters();
-  void RecPoints2Clusters(TClonesArray *clus);
+  Bool_t   InitMisalignMatrix();
 
-  AliEMCALGeometry   *fEMCALGeo;               //! EMCAL geometry
-  TString             fEMCALGeoName;           // Name of geometry to use.
-  
-  AliEMCALRecoUtils  *fEMCALRecoUtils;         //! Pointer to EMCAL utilities for clusterization
-  TString             fConfigName;             // Name of analysis configuration file
-  
-  Int_t               fDebugLevel;             // debug level
+  Bool_t   InitRecalib();
 
-  Int_t               fNonLinearFunc;          // Non linearity function 
-  Int_t               fNonLinearThreshold;     // Non linearity threshold value for kBeamTesh non linearity function   
+  void     Clusterize();
 
-  Bool_t              fReCalibCluster; 	       // switch for Recalibrate clusters
-  Bool_t              fReCalibCell; 	       // switch for Recalibrate cell
+  void     FillDigitsArray();
 
-  TGeoHMatrix        *fEMCALMatrix[10];        //! Geometry matrices with misalignments
-  Bool_t              fRecalClusPos; 	       // switch for applying missalignment
+  void     GetPass();
 
-  Bool_t              fFiducial; 	       // switch for checking cells in the fiducial region
-  Int_t               fNCellsFromEMCALBorder;  // number os cells from EMCAL border	
-  Bool_t              fRecalDistToBadChannels; // switch for recalculation cluster position from bad channel	  
+  void     RecPoints2Clusters(TClonesArray *clus);
 
-  TTree              *fInputTree;              //! input data tree
-  TFile              *fInputFile;              //! input data file 
-  TString             fFilepass;               // input data pass number
+  void     RecalibrateCells();
 
-  Double_t            fMass;                   // mass for track matching
-  Double_t            fStep;                   // step size during track matching
-  Bool_t 	      fCutEtaPhiSum;	       // swicth to apply residual cut together
-  Bool_t 	      fCutEtaPhiSeparate;      // swicth to apply residual cut separately
-  Float_t             fRcut;                   // residual cut for track matching  
-  Float_t             fEtacut;                 // Eta cut for track matching  
-  Float_t             fPhicut;                 // Phi cut for track matching  
-  
-  TString 	      fBasePath;               // mfasel: Base Folder path to get root files 
+  void     SetClusterMatchedToTrack (AliESDEvent *event);
 
-  Bool_t 	         fReClusterize;        // switch for reclustering
-  AliEMCALClusterizer   *fClusterizer;         //!clusterizer 
-  
-  Bool_t                 fGeomMatrixSet;       // set geometry matrices only once, for the first event.         
-  TGeoHMatrix           *fGeomMatrix[10];      //! geometry matrices with alignments
+  void     SetTracksMatchedToCluster(AliESDEvent *event);
 
-  Bool_t                 fLoadGeomMatrices;    // Matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  void     UpdateClusters();
 
-  AliEMCALRecParam      *fRecParam;            //! reconstruction parameters container
-  TString                fOCDBpath;            // Path with OCDB location
-
-  AliEMCALAfterBurnerUF *fUnfolder;            //! Unfolding procedure
-
-  TClonesArray          *fDigitsArr;           //-> Digits array
-  TObjArray             *fClusterArr;          //-> Recpoints array
+  AliEMCALGeometry      *fEMCALGeo;               //! EMCAL geometry
+  TString                fEMCALGeoName;           //  name of geometry to use.
+  AliEMCALRecoUtils     *fEMCALRecoUtils;         //  pointer to EMCAL utilities for clusterization
+  TString                fConfigName;             //  name of analysis configuration file
+  Int_t                  fDebugLevel;             //  debug level
+  Int_t                  fNonLinearFunc;          //  non linearity function 
+  Int_t                  fNonLinearThreshold;     //  non linearity threshold value for kBeamTesh non linearity function   
+  Bool_t                 fReCalibCluster;         //  switch for Recalibrate clusters
+  Bool_t                 fReCalibCell;            //  switch for Recalibrate cell
+  TGeoHMatrix           *fEMCALMatrix[10];        //  geometry matrices with misalignments
+  Bool_t                 fRecalClusPos;           //  switch for applying missalignment
+  Bool_t                 fFiducial;               //  switch for checking cells in the fiducial region
+  Int_t                  fNCellsFromEMCALBorder;  //  number os cells from EMCAL border	
+  Bool_t                 fRecalDistToBadChannels; //  switch for recalculation cluster position from bad channel	  
+  TTree                 *fInputTree;              //! input data tree
+  TFile                 *fInputFile;              //! input data file 
+  TString                fFilepass;               //! input data pass number
+  Double_t               fMass;                   //  mass for track matching
+  Double_t               fStep;                   //  step size during track matching
+  Bool_t 	         fCutEtaPhiSum;           //  swicth to apply residual cut together
+  Bool_t 	         fCutEtaPhiSeparate;      //  swicth to apply residual cut separately
+  Float_t                fRcut;                   //  residual cut for track matching  
+  Float_t                fEtacut;                 //  eta cut for track matching  
+  Float_t                fPhicut;                 //  phi cut for track matching  
+  TString                fBasePath;               //  base folder path to get root files 
+  Bool_t 	         fReClusterize;           //  switch for reclustering
+  AliEMCALClusterizer   *fClusterizer;            //! clusterizer 
+  Bool_t                 fGeomMatrixSet;          //  set geometry matrices only once, for the first event.         
+  Bool_t                 fLoadGeomMatrices;       //  matrices set from configuration, not get from geometry.root or from ESDs/AODs
+  AliEMCALRecParam      *fRecParam;               //  reconstruction parameters container
+  TString                fOCDBpath;               //  path with OCDB location
+  AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
+  TClonesArray          *fDigitsArr;              //! digits array
+  TObjArray             *fClusterArr;             //! recpoints array
 
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 4); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 5); // EMCAL tender task
 };
-
-
 #endif
 
