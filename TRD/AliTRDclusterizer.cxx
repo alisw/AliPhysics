@@ -827,10 +827,10 @@ Bool_t AliTRDclusterizer::MakeClusters(Int_t det)
   // Check consistency between Geometry and raw data
   AliTRDpadPlane *pp(fTransform->GetPadPlane());
   Int_t ncols(pp->GetNcols()), nrows(pp->GetNrows());
-  if(ncols != fColMax) AliError(Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fColMax));
-  if(nrows != fDigits->GetNrow()) AliError(Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fDigits->GetNrow()));
-  if(ncols != fIndexes->GetNcol()) AliError(Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fIndexes->GetNcol()));
-  if(nrows != fIndexes->GetNrow()) AliError(Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fIndexes->GetNrow()));
+  if(ncols != fColMax) AliDebug(1, Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fColMax));
+  if(nrows != fDigits->GetNrow()) AliDebug(1, Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fDigits->GetNrow()));
+  if(ncols != fIndexes->GetNcol()) AliDebug(1, Form("N cols missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, ncols, fIndexes->GetNcol()));
+  if(nrows != fIndexes->GetNrow()) AliDebug(1, Form("N rows missmatch in Digits for Det[%3d] :: Geom[%3d] RAW[%3d]", fDet, nrows, fIndexes->GetNrow()));
 
   // Check consistency between OCDB and raw data
   Int_t nTimeOCDB = calibration->GetNumberOfTimeBinsDCS();
