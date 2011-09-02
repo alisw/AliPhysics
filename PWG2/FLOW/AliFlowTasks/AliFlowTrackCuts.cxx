@@ -510,6 +510,8 @@ Bool_t AliFlowTrackCuts::PassesCuts(const AliMultiplicity* tracklet, Int_t id)
 {
   //check cuts on a tracklets
 
+  if (id<0) return kFALSE;
+
   //clean up from last iteration, and init label
   fTrack = NULL;
   fMCparticle=NULL;
@@ -3673,6 +3675,8 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(const AliESDPmdTrack* track )
 Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
 {
   //check V0 cuts
+
+  if (id<0) return kFALSE;
 
   //clean up from last iter
   fTrack = NULL;
