@@ -152,12 +152,12 @@ void AliPerformanceDEdx::Init()
    //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
    //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
    //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
-   Int_t binsQA[8]    = {300, 144, 50,  50, 50, 50, 80, nPBins};
-   Double_t xminQA[8] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin};
-   Double_t xmaxQA[8] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax};
+   Int_t binsQA[9]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 160};
+   Double_t xminQA[9] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0.};
+   Double_t xmaxQA[9] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160.};
 
    //fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:alpha:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
-   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
+   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN",9,binsQA,xminQA,xmaxQA);
    fDeDxHisto->SetBinEdges(7,binsP);
 
    fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
@@ -168,6 +168,7 @@ void AliPerformanceDEdx::Init()
    fDeDxHisto->GetAxis(5)->SetTitle("tan#lambda");
    fDeDxHisto->GetAxis(6)->SetTitle("ncls");
    fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
+   fDeDxHisto->GetAxis(8)->SetTitle("number of cls used for dEdx");
    //fDeDxHisto->Sumw2();
 
    // Init cuts
@@ -245,6 +246,8 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
 
   Float_t dedx = esdTrack->GetTPCsignal();
   Int_t ncls = esdTrack->GetTPCNcls();
+  Int_t TPCSignalN = esdTrack->GetTPCsignalN();
+
 
   Double_t pt = innerParam->Pt();
   Double_t lam = TMath::ATan2(innerParam->Pz(),innerParam->Pt());
@@ -258,7 +261,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Double_t tgl = innerParam->GetTgl();
 
   //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
-  Double_t vDeDxHisto[8] = {dedx,phi,y,z,snp,tgl,ncls,p};
+  Double_t vDeDxHisto[9] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN};
   fDeDxHisto->Fill(vDeDxHisto); 
 
   if(!stack) return;
@@ -426,7 +429,7 @@ void AliPerformanceDEdx::Analyse()
   char name[256];
   char title[256];
 
-  for(Int_t i=1; i<8; i++) { 
+  for(Int_t i=1; i<9; i++) { 
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
   }
 
@@ -438,6 +441,7 @@ void AliPerformanceDEdx::Analyse()
   fDeDxHisto->GetAxis(5)->SetRangeUser(-0.9,0.89);
   fDeDxHisto->GetAxis(6)->SetRangeUser(60.,160.);
   fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.499);
+  fDeDxHisto->GetAxis(8)->SetRangeUser(60.,160.);
   
   
   selString = "mipsres";
@@ -447,7 +451,7 @@ void AliPerformanceDEdx::Analyse()
   TObjArray *arr[7] = {0};
   TF1 *f1[7] = {0};
   
-  for(Int_t i=0; i<7; i++) 
+  for(Int_t i=0; i<8; i++) 
   { 
     arr[i] = new TObjArray;
     f1[i] = new TF1("gaus","gaus");
@@ -491,7 +495,8 @@ void AliPerformanceDEdx::Analyse()
     fDeDxHisto->GetAxis(5)->SetRangeUser(-1,1);
     fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
     fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
-    
+    fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
+
     selString = "mips";
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
     
@@ -513,7 +518,8 @@ void AliPerformanceDEdx::Analyse()
     fDeDxHisto->GetAxis(5)->SetRangeUser(-3,3);
     fDeDxHisto->GetAxis(6)->SetRangeUser(0,160);
     fDeDxHisto->GetAxis(7)->SetRangeUser(1e-2,10);    
-  
+    fDeDxHisto->GetAxis(8)->SetRangeUser(0,160);
+
     printf("exportToFolder\n");
     // export objects to analysis folder
     fAnalysisFolder = ExportToFolder(aFolderObj);

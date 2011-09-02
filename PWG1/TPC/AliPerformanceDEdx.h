@@ -99,7 +99,7 @@ private:
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,3);
+  ClassDef(AliPerformanceDEdx,4);
 };
 
 #endif
