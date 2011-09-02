@@ -49,7 +49,7 @@ public:
   //////////
   // General
   //
-  Bool_t  IsInitialized(void) const { return AliEMCALEMCGeometry::fgInit ; }
+  static Bool_t  IsInitialized(void)            {return AliEMCALEMCGeometry::fgInit; }
   static const Char_t* GetDefaultGeometryName() {return AliEMCALEMCGeometry::fgkDefaultGeometryName;}
   
   /////////////
