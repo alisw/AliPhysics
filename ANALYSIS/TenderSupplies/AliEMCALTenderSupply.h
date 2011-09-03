@@ -82,14 +82,14 @@ public:
   Double_t GetStep()                                const { return fStep                     ;}
   void     SetStep(Double_t step)                         { fStep = step                     ;}
 
-  Double_t GetEtaCut()	                            const { return fEtacut                   ;}
+  Double_t GetEtaCut()                              const { return fEtacut                   ;}
   void	   SetEtaCut(Double_t eta)                        { fEtacut = eta                    ;}
 
   Double_t GetPhiCut() 	                            const { return fPhicut                   ;}
   void	   SetPhiCut(Double_t phi)                        { fPhicut = phi                    ;}
 
-  void     SwitchOnReclustering() 	                  { fReClusterize = kTRUE            ;}
-  void     SwitchOffReclustering() 	                  { fReClusterize = kFALSE           ;}
+  void     SwitchOnReclustering()                         { fReClusterize = kTRUE            ;}
+  void     SwitchOffReclustering()                        { fReClusterize = kFALSE           ;}
 
   void     SwitchOnCutEtaPhiSum()                         { fCutEtaPhiSum=kTRUE;      fCutEtaPhiSeparate=kFALSE ;}
   void     SwitchOnCutEtaPhiSeparate()                    { fCutEtaPhiSeparate=kTRUE; fCutEtaPhiSum=kFALSE      ;}
@@ -149,13 +149,13 @@ private:
   TString                fFilepass;               //! input data pass number
   Double_t               fMass;                   //  mass for track matching
   Double_t               fStep;                   //  step size during track matching
-  Bool_t 	         fCutEtaPhiSum;           //  swicth to apply residual cut together
-  Bool_t 	         fCutEtaPhiSeparate;      //  swicth to apply residual cut separately
+  Bool_t                 fCutEtaPhiSum;           //  swicth to apply residual cut together
+  Bool_t                 fCutEtaPhiSeparate;      //  swicth to apply residual cut separately
   Float_t                fRcut;                   //  residual cut for track matching  
   Float_t                fEtacut;                 //  eta cut for track matching  
   Float_t                fPhicut;                 //  phi cut for track matching  
   TString                fBasePath;               //  base folder path to get root files 
-  Bool_t 	         fReClusterize;           //  switch for reclustering
+  Bool_t                 fReClusterize;           //  switch for reclustering
   AliEMCALClusterizer   *fClusterizer;            //! clusterizer 
   Bool_t                 fGeomMatrixSet;          //  set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices;       //  matrices set from configuration, not get from geometry.root or from ESDs/AODs
