@@ -32,7 +32,9 @@ using namespace std;
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTCaloClusterDataStruct.h"
 #include "AliHLTCaloClusterReader.h"
-
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
+#include "TGeoManager.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 AliHLTGlobalTrackMatcherComponent gAliHLTGlobalTrackMatcherComponent;
@@ -132,6 +134,20 @@ int AliHLTGlobalTrackMatcherComponent::DoInit( int argc, const char** argv )
     fTrackArray = new TObjArray();
     fTrackArray->SetOwner(kFALSE);
   }
+  
+  //*** GeoManager ***
+   AliCDBPath path("GRP","Geometry","Data");
+   AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path);
+   if (pEntry) {
+      if(!gGeoManager) {
+      gGeoManager = (TGeoManager*)pEntry->GetObject();
+      }
+   }
+   else {
+      HLTError("can not fetch object \"%s\" from CDB",path.GetPath().Data());
+   }
+   // ****
+  
 
   return iResult; 
 }
