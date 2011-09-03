@@ -448,8 +448,8 @@ void AliPerformanceDEdx::Analyse()
   AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
   //
-  TObjArray *arr[7] = {0};
-  TF1 *f1[7] = {0};
+  TObjArray *arr[8] = {0};
+  TF1 *f1[8] = {0};
   
   for(Int_t i=0; i<8; i++) 
   { 
