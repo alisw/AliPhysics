@@ -107,11 +107,11 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
     AliExternalTrackParam * track = static_cast<AliExternalTrackParam*>(trackArray->At(it));
 
     if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
-      continue;//marcel test
+
       MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
 
     } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
-//        MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
+
        MatchTrackToEMCalClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
     } 
 
