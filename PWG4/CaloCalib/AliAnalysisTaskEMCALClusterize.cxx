@@ -75,7 +75,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters")
   , fFillAODFile(kTRUE), fFillAODHeader(0),    fFillAODCaloCells(0)
   , fRun(-1),            fRecoUtils(0),        fConfigName("")
-  , fCellLabels(),       fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
+  , fCellLabels(),       fCellSecondLabels(),  fCellTime()
+  , fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
   , fSelectCell(kFALSE)
 {
   //ctor
@@ -83,13 +84,16 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
   for(Int_t j = 0; j < 24*48*11; j++)  {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
+    fCellTime[j]         =  0.;        
   }  
+  
   fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
   fClusterArr      = new TObjArray(100);
   fCaloClusterArr  = new TObjArray(1000);
   fRecParam        = new AliEMCALRecParam;
   fBranchNames     = "ESD:AliESDHeader.,EMCALCells.";
   fRecoUtils       = new AliEMCALRecoUtils();
+  
 }
 
 //________________________________________________________________________
@@ -110,6 +114,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
   for(Int_t j = 0; j < 24*48*11; j++)  {
     fCellLabels[j]       = -1;
     fCellSecondLabels[j] = -1;
+    fCellTime[j]         =  0.;        
   }
   fDigitsArr       = new TClonesArray("AliEMCALDigit",200);
   fClusterArr      = new TObjArray(100);
@@ -472,6 +477,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
                 fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){
               fCellLabels[cellNumber]      =-1; //reset the entry in the array for next event
               fCellSecondLabels[cellNumber]=-1; //reset the entry in the array for next event
+              fCellTime[cellNumber]        = 0.;        
               continue;
             }
             
@@ -543,8 +549,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
         UShort_t * index    = clus->GetCellsAbsId() ;
         for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
-          fCellLabels[index[icell]]      =label;
-          fCellSecondLabels[index[icell]]=label2;
+          fCellLabels[index[icell]]       = label;
+          fCellSecondLabels[index[icell]] = label2;
+          fCellTime[icell]                = clus->GetTOF();        
+
           //printf("1) absID %d, label[0] %d label[1] %d\n",index[icell], fCellLabels[index[icell]],fCellSecondLabels[index[icell]]);
         }
         nClustersOrg++;
@@ -579,6 +587,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
          fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)){
         fCellLabels[id]      =-1; //reset the entry in the array for next event
         fCellSecondLabels[id]=-1; //reset the entry in the array for next event
+        fCellTime[id]        = 0.;        
         //printf("Remove channel %d\n",id);
         continue;
       }
@@ -588,6 +597,9 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         //printf("CalibFactor %f times %f for id %d\n",fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),amp,id);
         amp *=fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
       }
+      
+      // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
+      if (time*1e9 < 1.) time = fCellTime[id];
       
       //Create the digit, put a fake primary deposited energy to trick the clusterizer when checking the most likely primary
       new((*fDigitsArr)[idigit]) AliEMCALDigit( fCellLabels[id], fCellLabels[id],id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1); 
