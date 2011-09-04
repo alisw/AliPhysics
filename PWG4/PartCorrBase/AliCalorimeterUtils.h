@@ -47,6 +47,8 @@ class AliCalorimeterUtils : public TObject {
 	
   //virtual void Init();
 	
+  Int_t         GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & fraction) const ;
+  
   //Calorimeters Geometry Methods
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
   TString       EMCALGeometryName()                  const { return fEMCALGeoName         ; }  

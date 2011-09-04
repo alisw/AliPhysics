@@ -260,7 +260,62 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 //____________________________________________________________________________________________________________________________________________________
 void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus){
   // Correct cluster energy non linearity
+  
   clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
+
+}
+
+//____________________________________________________________________________________________________________________________________________________
+Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & clusterFraction) const {
+  
+  //For a given CaloCluster gets the absId of the cell 
+  //with maximum energy deposit.
+  
+  if( !clu || !cells ){
+    AliInfo("Cluster or cells pointer is null!");
+    return -1;
+  }
+  
+  Double_t eMax        =-1.;
+  Double_t eTot        = 0.;
+  Double_t eCell       =-1.;
+  Float_t  fraction    = 1.;
+  Float_t  recalFactor = 1.;
+  Int_t    cellAbsId   =-1 , absId =-1 ;
+  Int_t    iSupMod     =-1 , ieta  =-1 , iphi = -1, iRCU = -1;
+  
+  TString           calo = "EMCAL";
+  if(clu->IsPHOS()) calo = "PHOS";
+  
+  for (Int_t iDig=0; iDig< clu->GetNCells(); iDig++) {
+    
+    cellAbsId = clu->GetCellAbsId(iDig);
+    
+    fraction  = clu->GetCellAmplitudeFraction(iDig);
+    if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
+    
+    GetModuleNumberCellIndexes(cellAbsId, calo, ieta, iphi, iRCU);
+    
+    if(IsRecalibrationOn()) {
+      if(calo=="EMCAL") recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
+      else              recalFactor = GetPHOSChannelRecalibrationFactor(iSupMod,ieta,iphi);
+    }
+    
+    eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
+    
+    if(eCell > eMax)  { 
+      eMax  = eCell; 
+      absId = cellAbsId;
+    }
+    
+    eTot+=eCell;
+    
+  }// cell loop
+  
+  clusterFraction = (eTot-eMax)/eTot; //Do not use cluster energy in case it was corrected for non linearity.
+  
+  return absId;
+  
 }
 
 //____________________________________________________________________________________________________________________________________________________
