@@ -1641,7 +1641,7 @@ void AliEMCALRecoUtils::InitTrackCuts()
     {
     case kTPCOnlyCut:
       {
-	AliInfo(Form("Track cuts for matching: GetStandardTPCOnlyTrackCuts()\n"));
+	AliInfo(Form("Track cuts for matching: GetStandardTPCOnlyTrackCuts()"));
 	//TPC
 	SetMinNClustersTPC(70);
 	SetMaxChi2PerClusterTPC(4);
@@ -1659,7 +1659,7 @@ void AliEMCALRecoUtils::InitTrackCuts()
     
     case kGlobalCut:
       {
-	AliInfo(Form("Track cuts for matching: GetStandardITSTPCTrackCuts2010(kTURE)\n"));
+	AliInfo(Form("Track cuts for matching: GetStandardITSTPCTrackCuts2010(kTURE)"));
 	//TPC
 	SetMinNClustersTPC(70);
 	SetMaxChi2PerClusterTPC(4);
