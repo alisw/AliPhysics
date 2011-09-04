@@ -491,7 +491,7 @@ void AliHLTReconstructor::ProcessHLTOUT(AliHLTOUT* pHLTOUT, AliESDEvent* esd, bo
     AliError("error processing HLTOUT");
   }
 
-  if (bVerbose) {
+  if (bVerbose && esd) {
     AliInfo("HLT ESD content:");
     esd->Print();
   }
