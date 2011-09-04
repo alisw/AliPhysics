@@ -67,6 +67,7 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     virtual Bool_t        IsStandardAOD() const;
     virtual TList*        GetQAHistos()   const {return fHistosQA;}
     virtual Bool_t        IsEventInBinZero() { return kFALSE;}
+    virtual UInt_t        GetCollisionCandidates() const { return fOfflineTriggerMask;}
  protected:
     void ConnectMultiHandler();
     void DisconnectMultiHandler();
