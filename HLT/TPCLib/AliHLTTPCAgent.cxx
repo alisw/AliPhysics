@@ -366,8 +366,12 @@ int AliHLTTPCAgent::GetHandlerDescription(AliHLTComponentDataType dt,
       return 1;
   }
 
-  // {'CLUSTRAW':'TPC '} 
-  if (dt==AliHLTTPCDefinitions::fgkRawClustersDataType) {
+  // {'CLUSTRAW':'TPC '}
+  // {'REMCLSCM':'TPC '}
+  // {'CLSTRKCM':'TPC '}
+  if (dt==AliHLTTPCDefinitions::fgkRawClustersDataType ||
+      dt==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
+      dt==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {
       desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
       return 1;
   }
