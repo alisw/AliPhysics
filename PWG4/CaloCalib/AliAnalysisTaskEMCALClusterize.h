@@ -121,13 +121,14 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   
   Int_t                  fCellLabels[12672];       // Array with MC label to be passed to digit. 
   Int_t                  fCellSecondLabels[12672]; // Array with Second MC label to be passed to digit. 
-  
+  Double_t               fCellTime[12672];         // Array with cluster time to be passed to digit in case of AODs 
+
   Int_t                  fMaxEvent;         // Set a maximum event
   
   Bool_t                 fDoTrackMatching;  // On/Off the matching recalulation to speed up analysis in PbPb
   Bool_t                 fSelectCell;       // Reject cells from cluster if energy is too low and recalculate position/energy and other
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 9);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 10);
 };
 
 #endif //ALIANALYSISTASKEMCALCLUSTERIZE_H
