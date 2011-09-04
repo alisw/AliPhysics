@@ -179,7 +179,9 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 	bHaveLabels=true;
       }
 
-      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
+      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType(), spec)>=0) {
+	iResult=ReadRemainingClustersCompressed(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
+      } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
 	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
       } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
 	ALIHLTERRORGUARD(1, "HLTOUT data contains tarnsformed TPC clusters instead of raw TPC clusters, can not create clusters for reconstruction");
@@ -401,6 +403,48 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT
   return iResult;
 }
 
+int AliHLTTPCClusterAccessHLTOUT::ReadRemainingClustersCompressed(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels)
+{
+  // read cluster data from AliHLTTPCClusterData
+  int iResult=0;
+  if (!pHLTOUT || !pClusters) return -EINVAL;
+  do {
+    const AliHLTUInt8_t* pBuffer=NULL;
+    AliHLTUInt32_t size=0;
+    if ((iResult=pHLTOUT->GetDataBuffer(pBuffer, size))<0) {
+      continue;
+    }
+    if (pBuffer==NULL || size<4) {
+      AliError("invalid cluster data block");
+      continue;
+    }
+    AliHLTComponentDataType dt=kAliHLTVoidDataType;
+    AliHLTUInt32_t specification=kAliHLTVoidDataSpec;
+    if (pHLTOUT->GetDataBlockDescription(dt, specification)<0) {
+      AliError("failed to retrieve data block description, skipping mc cluster data block ...");
+      continue;
+    }
+    const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pBuffer);
+    Int_t nCount = (Int_t) clusterData->fCount;
+
+    // this is encoded data of different formats
+    switch (clusterData->fVersion) {
+    case 1: 
+      iResult=ReadAliHLTTPCRawClusterDataDeflateSimple(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
+						       size-sizeof(AliHLTTPCRawClusterData), nCount, specification,
+						       pClusters, tpcClusterLabels);
+      break;
+    default:
+      AliError(Form("invalid cluster format version %d", clusterData->fVersion));
+      iResult=-EPROTO;
+    }
+
+    if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) from block %s 0x%08x", nCount, AliHLTComponent::DataType2Text(dt).c_str(), specification));
+  } while (pHLTOUT->SelectNextDataBlock()>=0 && iResult>=0);
+
+  return iResult;
+}
+
 int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterDataDeflateSimple(const AliHLTUInt8_t* pData, int dataSize,
 									   int nofClusters, AliHLTUInt32_t specification,
 									   TClonesArray* pClusters,
@@ -486,7 +530,7 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterDataDeflateSimple(const
 	    pCluster->SetLabel(mcWeights[k].fMCID, k);
 	  }
 	} else {
-	  AliError(Form("can not find mc label of cluster with id %0x08x", clusterID));
+	  AliError(Form("can not find mc label of cluster with id 0x%08x", clusterID));
 	}
       }
       outClusterCnt++;

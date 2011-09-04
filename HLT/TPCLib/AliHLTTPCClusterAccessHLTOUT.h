@@ -101,6 +101,10 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   /// process the cluster data block {CLUSTRAW:TPC } from HLTOUT
   int ReadAliHLTTPCRawClusterData(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
 
+  /// process the clusters of type {REMCLSCM:TPC } from HLTOUT
+  int ReadRemainingClustersCompressed(AliHLTOUT* pHLTOUT, TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);
+
+  /// process clusters encoded by AliHLTDataDeflaterSimple
   int ReadAliHLTTPCRawClusterDataDeflateSimple(const AliHLTUInt8_t* pData, int dataSize,
 					       int nofClusters, AliHLTUInt32_t specification,
 					       TClonesArray* pClusters, const AliHLTTPCClusterMCDataList *tpcClusterLabels);

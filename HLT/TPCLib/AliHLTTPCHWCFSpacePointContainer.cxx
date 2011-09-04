@@ -849,13 +849,14 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   bd.fOffset        = size+offset;
   if (!pDeflater) {
     bd.fSize        = sizeof(AliHLTTPCRawClusterData)+blockout->fCount*sizeof(AliHLTTPCRawCluster);
+    bd.fDataType    = AliHLTTPCDefinitions::fgkRawClustersDataType;
   } else {
     pDeflater->Pad8Bits();
     bd.fSize        = sizeof(AliHLTTPCRawClusterData)+pDeflater->GetBitDataOutputSizeBytes();
     pDeflater->CloseBitDataOutput();
+    bd.fDataType    = AliHLTTPCDefinitions::RemainingClustersCompressedDataType();
   }
   bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
-  bd.fDataType      = AliHLTTPCDefinitions::fgkRawClustersDataType;
   outputBlocks.push_back(bd);
       
   size += bd.fSize;
