@@ -547,27 +547,27 @@ int AliHLTTRDMonitorComponent::DoEvent(const AliHLTComponentEventData& /*evtData
 
     for (int iTracklet = 0; iTracklet < fTrackletArray->GetEntriesFast(); iTracklet++) {
       AliTRDtrackletWord *trackletWord = (AliTRDtrackletWord*) ((*fTrackletArray)[iTracklet]);
-      AliESDTrdTracklet *tracklet = new AliESDTrdTracklet(trackletWord->GetTrackletWord(), trackletWord->GetHCId());
+      AliESDTrdTracklet tracklet(trackletWord->GetTrackletWord(), trackletWord->GetHCId());
       /*
       printf("TRDMSG: TRD tracklet found: 0x%08x  - y=%+5d  dy=%+3d  pid=%3d\n",
-	     tracklet->GetTrackletWord(),
-	     tracklet->GetBinY(),
-	     tracklet->GetBinDy(),
-	     tracklet->GetPID());
+	     tracklet.GetTrackletWord(),
+	     tracklet.GetBinY(),
+	     tracklet.GetBinDy(),
+	     tracklet.GetPID());
       */
       // fill some basic histograms right here
-      fHistTrackletY->Fill(tracklet->GetBinY());
-      fHistTrackletDy->Fill(tracklet->GetBinDy());
-      fHistTrackletZ->Fill(tracklet->GetBinZ());
-      fHistTrackletPID->Fill(tracklet->GetPID());
-      fHistTrackletYDy->Fill(tracklet->GetBinY(), tracklet->GetBinDy());
-      fHistTrackletHC->Fill(tracklet->GetHCId()/60, tracklet->GetHCId()%60);
+      fHistTrackletY->Fill(tracklet.GetBinY());
+      fHistTrackletDy->Fill(tracklet.GetBinDy());
+      fHistTrackletZ->Fill(tracklet.GetBinZ());
+      fHistTrackletPID->Fill(tracklet.GetPID());
+      fHistTrackletYDy->Fill(tracklet.GetBinY(), tracklet.GetBinDy());
+      fHistTrackletHC->Fill(tracklet.GetHCId()/60, tracklet.GetHCId()%60);
 
-      if (TMath::Abs(tracklet->GetBinY()) >= 3682) 
-        fHistTrackletBadY->Fill(tracklet->GetHCId()/60, (tracklet->GetHCId()%60)/12);
+      if (TMath::Abs(tracklet.GetBinY()) >= 3682) 
+        fHistTrackletBadY->Fill(tracklet.GetHCId()/60, (tracklet.GetHCId()%60)/12);
 
-      if (tracklet->GetPID() < 40)
-        fHistTrackletBadPID->Fill(tracklet->GetHCId()/60, (tracklet->GetHCId()%60)/12);
+      if (tracklet.GetPID() < 40)
+        fHistTrackletBadPID->Fill(tracklet.GetHCId()/60, (tracklet.GetHCId()%60)/12);
 
     }
 
