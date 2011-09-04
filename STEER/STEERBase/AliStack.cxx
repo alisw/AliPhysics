@@ -1085,7 +1085,7 @@ Bool_t AliStack::IsSecondaryFromWeakDecay(Int_t index) {
 
   Int_t mfl = 0;
   Int_t indexMoth = particle->GetFirstMother();
-  if(indexMoth < 0) AliError("No first mother?");
+  if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
   TParticle* moth = Particle(indexMoth);
   Float_t codemoth = TMath::Abs(moth->GetPdgCode());
   // mass of the flavour
@@ -1102,6 +1102,9 @@ Bool_t AliStack::IsSecondaryFromMaterial(Int_t index) {
 
   if(IsPhysicalPrimary(index)) return kFALSE;
   if(IsSecondaryFromWeakDecay(index)) return kFALSE;
+  TParticle* particle = Particle(index);
+  Int_t indexMoth = particle->GetFirstMother();
+  if(indexMoth < 0) return kFALSE; // if index mother < 0 and not a physical primary, is a non-stable product or one of the beams
   return kTRUE;
 
 }
