@@ -14,7 +14,10 @@
 
 #include "AliHLTProcessor.h"
 #include "TString.h"
+#include "AliHLTTrackGeometry.h"
+#include "AliHLTSpacePointContainer.h"
 
+class AliHLTGlobalBarrelTrack;
 class AliHLTComponentBenchmark;
 class AliHLTSpacePointContainer;
 class AliHLTDataDeflater;
@@ -105,6 +108,11 @@ protected:
   /// inherited from AliHLTComponent: argument scan
   int ScanConfigurationArgument(int argc, const char** argv);
 
+  int ForwardMCLabels(const AliHLTComponentBlockData& pDesc,
+  		      AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pIndex,
+  		      AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
+  		      vector<AliHLTComponentBlockData>& outputBlocks) const;
+
 private:
   AliHLTTPCDataCompressionComponent(const AliHLTTPCDataCompressionComponent&);
   AliHLTTPCDataCompressionComponent& operator=(const AliHLTTPCDataCompressionComponent&);
@@ -116,10 +124,19 @@ private:
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
 
+  float fMaxDeltaPad; //! maximum deviation in pad
+  float fMaxDeltaTime; //! maximum deviation in time
+
   /// input raw cluster handler
   AliHLTSpacePointContainer* fRawInputClusters; //! input raw cluster handler
   /// input cluster handler
   AliHLTSpacePointContainer* fInputClusters; //! input cluster handler
+
+  /// index grid for tracks store track id for padrow crossings
+  AliHLTTrackGeometry::AliHLTTrackGrid* fTrackGrid; //! index grid for tracks
+
+  /// index grid for clusters
+  AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* fSpacePointGrid; //! index grid for clusters
 
   /// deflater
   AliHLTDataDeflater* fpDataDeflater; //! deflater for raw clusters
