@@ -8,12 +8,5 @@
 #pragma link C++ class AliAnalysisTaskPHOSPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0CalibSelection+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterize+;
-#pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
-#pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
-#pragma link C++ class AliStaHeader+;
-#pragma link C++ class AliStaCluster+;
-#pragma link C++ class AliStaVertex+;
-#pragma link C++ class AliStaTrigger+;
-#pragma link C++ class AliStaPart+;
 
 #endif
