@@ -636,16 +636,10 @@ int AliHLTTPCHWCFSpacePointContainer::WriteUnsorted(AliHLTUInt8_t* outputPtr,
 	    break;
 	  }
 
-	  // FIXME: the HW ClusterFinder returns only the sum
-	  // sum(q_i*pad_i*pad_i)/sum(q_i)
-	  // where the mean needs to be subtracted, not yet in the decoder
-	  // but should be implemented there
 	  float pad =cl->second.Decoder()->GetPad(index);
 	  float time =cl->second.Decoder()->GetTime(index);
 	  float sigmaY2=cl->second.Decoder()->GetSigmaY2(index);
 	  float sigmaZ2=cl->second.Decoder()->GetSigmaZ2(index);
-	  sigmaY2-=pad*pad;
-	  sigmaZ2-=time*time;
 
 	  if (!pDeflater) {
 	    AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
@@ -793,16 +787,10 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	break;
       }
 
-      // FIXME: the HW ClusterFinder returns only the sum
-      // sum(q_i*pad_i*pad_i)/sum(q_i)
-      // where the mean needs to be subtracted, not yet in the decoder
-      // but should be implemented there
       float pad =input.GetPad();
       float time =input.GetTime();
       float sigmaY2=input.GetSigmaY2();
       float sigmaZ2=input.GetSigmaZ2();
-      sigmaY2-=pad*pad;
-      sigmaZ2-=time*time;
 
       if (!pDeflater) {
 	AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];

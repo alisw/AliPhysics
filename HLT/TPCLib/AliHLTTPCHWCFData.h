@@ -124,8 +124,8 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Int_t    GetPadRow()  const;
     Float_t  GetPad()     const {return fPad+0.5;}
     Float_t  GetTime()    const {return fTime;}
-    Float_t  GetSigmaY2() const {return fSigmaY2;}
-    Float_t  GetSigmaZ2() const {return fSigmaZ2;}
+    Float_t  GetSigmaY2() const {return (fSigmaY2>0.?(fSigmaY2 - fPad*fPad):0.);}
+    Float_t  GetSigmaZ2() const {return (fSigmaZ2>0.?(fSigmaZ2 - fTime*fTime):0.);}
     Int_t    GetCharge()  const;
     Int_t    GetQMax()    const {return -1;}
   };
@@ -141,8 +141,8 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
     Int_t    GetPadRow()  const;
     Float_t  GetPad()     const {return fPad+0.5;}
     Float_t  GetTime()    const {return fTime;}
-    Float_t  GetSigmaY2() const {return fSigmaY2;}
-    Float_t  GetSigmaZ2() const {return fSigmaZ2;}
+    Float_t  GetSigmaY2() const {return (fSigmaY2>0.?(fSigmaY2 - fPad*fPad):0.);}
+    Float_t  GetSigmaZ2() const {return (fSigmaZ2>0.?(fSigmaZ2 - fTime*fTime):0.);}
     Int_t    GetCharge()  const;
     Int_t    GetQMax()    const;
   };
