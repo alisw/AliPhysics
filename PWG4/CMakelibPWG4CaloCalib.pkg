@@ -1,4 +1,4 @@
-# -*- mode: CMake -*-
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4CaloCalib                                                 #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
@@ -31,8 +31,6 @@ set ( SRCS
  CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx 
  CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  CaloCalib/AliAnalysisTaskEMCALClusterize.cxx 
- CaloCalib/AliAnalysisTaskEMCALClusterizeFast.cxx
- CaloCalib/AliAnalysisTaskEMCALPi0PbPb.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

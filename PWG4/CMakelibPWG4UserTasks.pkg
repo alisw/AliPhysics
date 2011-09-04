@@ -1,4 +1,4 @@
-# -*- mode: CMake -*-
+# -*- mode: Makefile -*-
 #--------------------------------------------------------------------------------#
 # Package File for PWG4UserTask                                                  #
 # Author : Yuri Kharlov					                         #
@@ -31,6 +31,8 @@ set ( SRCS
  UserTasks/PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
  UserTasks/CaloCellQA/AliCaloCellsQA.cxx
  UserTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
+ UserTasks/EmcalTasks/AliAnalysisTaskEMCALClusterizeFast.cxx
+ UserTasks/EmcalTasks/AliAnalysisTaskEMCALPi0PbPb.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -39,4 +41,4 @@ set ( DHDR  PWG4UserTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA EMCAL PHOS STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  PWG4/UserTasks/PHOS_pp_pi0 PWG4/UserTasks/CaloCellQA PWG4/UserTasks/EmcalTasks EMCAL PHOS STEER/ESD STEER/STEERBase)
