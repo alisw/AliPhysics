@@ -126,15 +126,23 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Float_t      GetConvDPhiMinCut()              const { return fConvDPhiMinCut     ; }
   Float_t      GetConvDPhiMaxCut()              const { return fConvDPhiMaxCut     ; }
   
-  // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcTypes    { mcPhoton = 0,        mcPrompt = 1,        mcFragmentation = 2, 
-                    mcISR = 3,           mcPi0Decay = 4,      mcOtherDecay = 5,  
-                    mcOther = 6,         mcPi0 = 7,           mcConversion = 8,    
-                    mcElectron = 9,      mcAntiNeutron = 10,  mcAntiProton = 11,   
-                    mcString = 12};  
+  void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
+    if(n > 14) fNOriginHistograms = 14; }
+  void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
+    if(n > 7)  fNPrimaryHistograms = 7; }
 
+  // For histograms in arrays, index in the array, corresponding to a particle
+  enum mcTypes    { mcPhoton = 0,        mcPi0Decay = 1,       mcOtherDecay = 2,  
+                    mcPi0 = 3,           mcEta = 4,            mcElectron = 5,       
+                    mcConversion = 6,    mcOther = 7,          mcAntiNeutron = 8,    
+                    mcAntiProton = 9,    mcPrompt = 10,        mcFragmentation = 11, 
+                    mcISR = 12,          mcString = 13                               };  
+
+  enum mcPTypes   { mcPPhoton = 0,       mcPPi0Decay = 1,       mcPOtherDecay = 2,  mcPOther = 3,
+                    mcPPrompt = 4,       mcPFragmentation = 5,  mcPISR = 6           };  
+  
   enum mcssTypes  { mcssPhoton = 0,      mcssOther = 1,       mcssPi0 = 2,         
-                    mcssEta = 3,         mcssConversion = 4,  mcssElectron = 5 };  
+                    mcssEta = 3,         mcssConversion = 4,  mcssElectron = 5       };  
   
   private:
  
@@ -147,6 +155,8 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
   Bool_t   fFillSSHistograms ;           // Fill shower shape histograms
+  Int_t    fNOriginHistograms;           // Fill only NOriginHistograms of the 14 defined types
+  Int_t    fNPrimaryHistograms;          // Fill only NPrimaryHistograms of the 7 defined types
 
   //Conversion pairs selection cuts
   Bool_t   fCheckConversion;             // Combine pairs of clusters with mass close to 0
@@ -160,6 +170,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
 
   //Histograms 
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
+  TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
   
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
@@ -191,6 +202,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhConvDistEnCutAsy;              //! Approx distance to vertex vs energy, dEta < 0.05, m < 10 MeV, A < 0.1
 
   //Shower shape
+  
   TH2F * fhDispE;                         //! cluster dispersion vs E
   TH2F * fhLam0E;                         //! cluster lambda0 vs  E
   TH2F * fhLam1E;                         //! cluster lambda1 vs  E  
@@ -243,88 +255,97 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   
   
   //Fill MC dependent histograms
-  TH1F * fhDeltaE  ;                      //! MC-Reco E distribution      
-  TH1F * fhDeltaPt ;                      //! MC-Reco pT distribution
-  TH1F * fhRatioE  ;                      //! Reco/MC E distribution      
-  TH1F * fhRatioPt ;                      //! Reco/MC pT distribution
-  TH2F * fh2E  ;                          //! E distribution, Reco vs MC
-  TH2F * fh2Pt ;                          //! pT distribution, Reco vs MC
+  TH1F * fhDeltaE  ;                          //! MC-Reco E distribution      
+  TH1F * fhDeltaPt ;                          //! MC-Reco pT distribution
+  TH1F * fhRatioE  ;                          //! Reco/MC E distribution      
+  TH1F * fhRatioPt ;                          //! Reco/MC pT distribution
+  TH2F * fh2E  ;                              //! E distribution, Reco vs MC
+  TH2F * fh2Pt ;                              //! pT distribution, Reco vs MC
   
   //Origin of this cluster is ...
-  TH1F * fhMCE[13];                     //! Number of identified photon vs cluster energy coming from MC particle
-  TH1F * fhPtMC[13];                    //! Number of identified photon vs cluster pT     coming from MC particle
-  TH2F * fhPhiMC[13];                   //! Phi of identified photon coming from MC particle
-  TH2F * fhEtaMC[13];                   //! eta of identified photon coming from MC particle
+  TH1F * fhMCE[14];                           //! Number of identified photon vs cluster energy coming from MC particle
+  TH1F * fhPtMC[14];                          //! Number of identified photon vs cluster pT     coming from MC particle
+  TH2F * fhPhiMC[14];                         //! Phi of identified photon coming from MC particle
+  TH2F * fhEtaMC[14];                         //! eta of identified photon coming from MC particle
 
-  TH1F * fhEPrimMC[7];                  //! Number of generated photon vs energy
-  TH1F * fhPtPrimMC[7];                 //! Number of generated photon vs pT   
-  TH2F * fhPhiPrimMC[7];                //! Phi of generted photon
-  TH2F * fhYPrimMC[7];                  //! Rapidity of generated photon 
+  TH1F * fhEPrimMC[7];                        //! Number of generated photon vs energy
+  TH1F * fhPtPrimMC[7];                       //! Number of generated photon vs pT   
+  TH2F * fhPhiPrimMC[7];                      //! Phi of generted photon
+  TH2F * fhYPrimMC[7];                        //! Rapidity of generated photon 
   
-  TH1F * fhEPrimMCAcc[7];               //! Number of generated photon vs energy, in calorimeter acceptance
-  TH1F * fhPtPrimMCAcc[7];              //! Number of generated photon vs pT, in calorimeter acceptance   
-  TH2F * fhPhiPrimMCAcc[7];             //! Phi of generted photon, in calorimeter acceptance
-  TH2F * fhYPrimMCAcc[7];               //! Rapidity of generated photon, in calorimeter acceptance   
+  TH1F * fhEPrimMCAcc[7];                     //! Number of generated photon vs energy, in calorimeter acceptance
+  TH1F * fhPtPrimMCAcc[7];                    //! Number of generated photon vs pT, in calorimeter acceptance   
+  TH2F * fhPhiPrimMCAcc[7];                   //! Phi of generted photon, in calorimeter acceptance
+  TH2F * fhYPrimMCAcc[7];                     //! Rapidity of generated photon, in calorimeter acceptance   
   
   //Conversion pairs analysis histograms
-  TH1F * fhPtConversionTagged;            //! Number of identified gamma from Conversion , tagged as conversion 
-  TH1F * fhPtAntiNeutronTagged;           //! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
-  TH1F * fhPtAntiProtonTagged;            //! Number of identified gamma from AntiProtons gamma, tagged as conversion 
-  TH1F * fhPtUnknownTagged;               //! Number of identified gamma from unknown, tagged as conversion 
+  TH1F * fhPtConversionTagged;                //! Number of identified gamma from Conversion , tagged as conversion 
+  TH1F * fhPtAntiNeutronTagged;               //! Number of identified gamma from AntiNeutrons gamma, tagged as conversion 
+  TH1F * fhPtAntiProtonTagged;                //! Number of identified gamma from AntiProtons gamma, tagged as conversion 
+  TH1F * fhPtUnknownTagged;                   //! Number of identified gamma from unknown, tagged as conversion 
   
-  TH2F * fhEtaPhiConversion  ;            //! Pseudorapidity vs Phi for transerse momentum > 0.5, for MC converted
-  TH2F * fhEtaPhi05Conversion  ;          //! Pseudorapidity vs Phi for transerse momentum < 0.5, for MC converted
+  TH2F * fhEtaPhiConversion  ;                //! Pseudorapidity vs Phi for transerse momentum > 0.5, for MC converted
+  TH2F * fhEtaPhi05Conversion  ;              //! Pseudorapidity vs Phi for transerse momentum < 0.5, for MC converted
   
-  TH2F * fhConvDeltaEtaMCConversion;      //! Small mass cluster pairs, correlation in eta, origin of both clusters is conversion
-  TH2F * fhConvDeltaPhiMCConversion;      //! Small mass cluster pairs, correlation in phi, origin of both clusters is conversion
-  TH2F * fhConvDeltaEtaPhiMCConversion;   //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
-  TH2F * fhConvAsymMCConversion;          //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
-  TH2F * fhConvPtMCConversion;            //! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
-  TH2F * fhConvDispersionMCConversion;    //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
-  TH2F * fhConvM02MCConversion;           //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
+  TH2F * fhConvDeltaEtaMCConversion;          //! Small mass cluster pairs, correlation in eta, origin of both clusters is conversion
+  TH2F * fhConvDeltaPhiMCConversion;          //! Small mass cluster pairs, correlation in phi, origin of both clusters is conversion
+  TH2F * fhConvDeltaEtaPhiMCConversion;       //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is conversion
+  TH2F * fhConvAsymMCConversion;              //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is conversion
+  TH2F * fhConvPtMCConversion;                //! Small mass cluster pairs, pt of pair, origin of both clusters is conversion
+  TH2F * fhConvDispersionMCConversion;        //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2
+  TH2F * fhConvM02MCConversion;               //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2 
 
-  TH2F * fhConvDeltaEtaMCAntiNeutron;     //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
-  TH2F * fhConvDeltaPhiMCAntiNeutron;     //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti neutron
-  TH2F * fhConvDeltaEtaPhiMCAntiNeutron;  //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
-  TH2F * fhConvAsymMCAntiNeutron;         //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti neutron
-  TH2F * fhConvPtMCAntiNeutron;           //! Small mass cluster pairs, pt of pair, origin of both clusters is anti neutron
-  TH2F * fhConvDispersionMCAntiNeutron;   //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
-  TH2F * fhConvM02MCAntiNeutron;          //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaEtaMCAntiNeutron;         //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaPhiMCAntiNeutron;         //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti neutron
+  TH2F * fhConvDeltaEtaPhiMCAntiNeutron;      //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti neutron
+  TH2F * fhConvAsymMCAntiNeutron;             //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti neutron
+  TH2F * fhConvPtMCAntiNeutron;               //! Small mass cluster pairs, pt of pair, origin of both clusters is anti neutron
+  TH2F * fhConvDispersionMCAntiNeutron;       //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti neutron
+  TH2F * fhConvM02MCAntiNeutron;              //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti neutron
 
-  TH2F * fhConvDeltaEtaMCAntiProton;      //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti proton
-  TH2F * fhConvDeltaPhiMCAntiProton;      //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti proton
-  TH2F * fhConvDeltaEtaPhiMCAntiProton;   //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti proton
-  TH2F * fhConvAsymMCAntiProton;          //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti proton
-  TH2F * fhConvPtMCAntiProton;            //! Small mass cluster pairs, pt of pairs, origin of both clusters is anti proton
-  TH2F * fhConvDispersionMCAntiProton;    //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
-  TH2F * fhConvM02MCAntiProton;           //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti proton
+  TH2F * fhConvDeltaEtaMCAntiProton;          //! Small mass cluster pairs, correlation in eta, origin of both clusters is anti proton
+  TH2F * fhConvDeltaPhiMCAntiProton;          //! Small mass cluster pairs, correlation in phi, origin of both clusters is anti proton
+  TH2F * fhConvDeltaEtaPhiMCAntiProton;       //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is anti proton
+  TH2F * fhConvAsymMCAntiProton;              //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is anti proton
+  TH2F * fhConvPtMCAntiProton;                //! Small mass cluster pairs, pt of pairs, origin of both clusters is anti proton
+  TH2F * fhConvDispersionMCAntiProton;        //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is anti proton
+  TH2F * fhConvM02MCAntiProton;               //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is anti proton
 
-  TH2F * fhConvDeltaEtaMCString;          //! Small mass cluster pairs, correlation in eta, origin of both clusters is string
-  TH2F * fhConvDeltaPhiMCString;          //! Small mass cluster pairs, correlation in phi, origin of both clusters is string
-  TH2F * fhConvDeltaEtaPhiMCString;       //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is string
-  TH2F * fhConvAsymMCString;              //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is string
-  TH2F * fhConvPtMCString;                //! Small mass cluster pairs, pt of pairs, origin of both clusters is string
-  TH2F * fhConvDispersionMCString;        //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
-  TH2F * fhConvM02MCString;               //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
-  TH2F * fhConvDistMCConversion;          //! Calculated conversion distance vs real distance to vertex       
-  TH2F * fhConvDistMCConversionCuts;      //! Calculated conversion distance vs real distance to vertex        
+  TH2F * fhConvDeltaEtaMCString;              //! Small mass cluster pairs, correlation in eta, origin of both clusters is string
+  TH2F * fhConvDeltaPhiMCString;              //! Small mass cluster pairs, correlation in phi, origin of both clusters is string
+  TH2F * fhConvDeltaEtaPhiMCString;           //! Small mass cluster pairs, correlation in eta-phi, origin of both clusters is string
+  TH2F * fhConvAsymMCString;                  //! Small mass cluster pairs, correlation in energy asymmetry, origin of both clusters is string
+  TH2F * fhConvPtMCString;                    //! Small mass cluster pairs, pt of pairs, origin of both clusters is string
+  TH2F * fhConvDispersionMCString;            //! Small mass cluster pairs, dispersion of cluster 1 vs cluster 2, origin of both clusters is string
+  TH2F * fhConvM02MCString;                   //! Small mass cluster pairs, m02 of cluster 1 vs cluster 2, origin of both clusters is string
+  TH2F * fhConvDistMCConversion;              //! Calculated conversion distance vs real distance to vertex       
+  TH2F * fhConvDistMCConversionCuts;          //! Calculated conversion distance vs real distance to vertex        
 
   // Shower Shape MC
 
-  TH2F * fhMCELambda0[6] ;                //! E vs Lambda0     from MC particle
-  TH2F * fhMCEdLambda0[6];                //! E vs dLambda0    from MC particle
-  TH2F * fhMCELambda1[6] ;                //! E vs Lambda1     from MC particle
-  TH2F * fhMCEdLambda1[6];                //! E vs dLambda1    from MC particle
-  TH2F * fhMCEDispersion[6] ;             //! E vs Dispersion  from MC particle
-  TH2F * fhMCEdDispersion[6];             //! E vs dDispersion from MC particle
+  TH2F * fhMCELambda0[6] ;                    //! E vs Lambda0     from MC particle
+  TH2F * fhMCEdLambda0[6];                    //! E vs dLambda0    from MC particle
+  TH2F * fhMCELambda1[6] ;                    //! E vs Lambda1     from MC particle
+  TH2F * fhMCEdLambda1[6];                    //! E vs dLambda1    from MC particle
+  TH2F * fhMCEDispersion[6] ;                 //! E vs Dispersion  from MC particle
+  TH2F * fhMCEdDispersion[6];                 //! E vs dDispersion from MC particle
   
-  TH2F * fhMCPhotonELambda0NoOverlap ;    //! E vs Lambda0     from MC photons, no overlap
-  TH2F * fhMCPhotonELambda0TwoOverlap ;   //! E vs Lambda0     from MC photons, 2 particles overlap
-  TH2F * fhMCPhotonELambda0NOverlap ;     //! E vs Lambda0     from MC photons, N particles overlap
-  TH2F * fhMCPhotonEdLambda0NoOverlap ;   //! E vs dLambda0    from MC photons, no overlap
-  TH2F * fhMCPhotonEdLambda0TwoOverlap ;  //! E vs dLambda0    from MC photons, 2 particles overlap
-  TH2F * fhMCPhotonEdLambda0NOverlap ;    //! E vs dLambda0    from MC photons, N particles overlap
+  TH2F * fhMCPhotonELambda0NoOverlap ;        //! E vs Lambda0     from MC photons, no overlap
+  TH2F * fhMCPhotonELambda0TwoOverlap ;       //! E vs Lambda0     from MC photons, 2 particles overlap
+  TH2F * fhMCPhotonELambda0NOverlap ;         //! E vs Lambda0     from MC photons, N particles overlap
+  TH2F * fhMCPhotonEdLambda0NoOverlap ;       //! E vs dLambda0    from MC photons, no overlap
+  TH2F * fhMCPhotonEdLambda0TwoOverlap ;      //! E vs dLambda0    from MC photons, 2 particles overlap
+  TH2F * fhMCPhotonEdLambda0NOverlap ;        //! E vs dLambda0    from MC photons, N particles overlap
   
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE0[6];  //! Lambda0 vs fraction of energy of max cell for E < 2 GeV
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE2[6];  //! Lambda0 vs fraction of energy of max cell for 2< E < 6 GeV
+  TH2F * fhMCLambda0vsClusterMaxCellDiffE6[6];  //! Lambda0 vs fraction of energy of max cell for E > 6 GeV
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE0[6];   //! NCells  vs fraction of energy of max cell for E < 2
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE2[6];   //! NCells  vs fraction of energy of max cell for 2 < E < 6 GeV
+  TH2F * fhMCNCellsvsClusterMaxCellDiffE6[6];   //! NCells  vs fraction of energy of max cell for E > 6
+  TH2F * fhMCNCellsE[6];                        //! NCells per cluster vs energy
+  TH2F * fhMCMaxCellDiffClusterE[6];            //! Fraction of energy carried by cell with maximum energy
+
   //Embedding
   TH2F * fhEmbeddedSignalFractionEnergy ;     //! Fraction of photon energy of embedded signal vs cluster energy
   
@@ -346,7 +367,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0FullBkg ;          //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   TH2F * fhEmbedPi0EdLambda0FullBkg ;         //! dLambda0 vs E for embedded photons with less than 10% of the cluster energy  
   
-   ClassDef(AliAnaPhoton,15)
+   ClassDef(AliAnaPhoton,16)
 
 } ;
  
