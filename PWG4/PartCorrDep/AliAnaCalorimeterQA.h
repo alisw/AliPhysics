@@ -139,26 +139,19 @@ public:
   TH1F *   fhPhiCharged;                      //! phi distribution, Reco, matched with track 
   TH1F *   fhEtaCharged;                      //! eta distribution, Reco, matched with track 
   TH3F *   fhEtaPhiECharged;                  //! eta vs phi vs E, Reco, matched with track 
-  TH1F *   fhDeltaE  ;                        //! MC-Reco E distribution	
-  TH1F *   fhDeltaPt ;                        //! MC-Reco pT distribution
-  TH1F *   fhDeltaPhi;                        //! MC-Reco phi distribution
-  TH1F *   fhDeltaEta;                        //! MC-Reco eta distribution
-  TH1F *   fhRatioE  ;                        //! Reco/MC E distribution	
-  TH1F *   fhRatioPt ;                        //! Reco/MC pT distribution
-  TH1F *   fhRatioPhi;                        //! Reco/MC phi distribution
-  TH1F *   fhRatioEta;                        //! Reco/MC eta distribution
-  TH2F *   fh2E  ;                            //! E distribution, Reco vs MC
-  TH2F *   fh2Pt ;                            //! pT distribution, Reco vs MC
-  TH2F *   fh2Phi;                            //! phi distribution, Reco vs MC
-  TH2F *   fh2Eta;                            //! eta distribution, Reco vs MC
     
   TH2F *   fhIM;                              //! cluster pairs invariant mass
   TH2F *   fhIMCellCut;                       //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F *   fhAsym;                            //! cluster pairs invariant mass	
   
   TH2F *   fhNCellsPerCluster;                //! N cells per cluster vs cluster energy vs eta of cluster	
+  TH2F *   fhNCellsPerClusterNoCut;           //! N cells per cluster vs cluster energy vs eta of cluster	
   TH2F *   fhNCellsPerClusterMIP;             //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
   TH2F *   fhNCellsPerClusterMIPCharged;      //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
+  
+  TH2F *   fhNCellsvsClusterMaxCellDiffE0;      //! N cells per cluster vs cluster energy minus max cell, E < 2 GeV	
+  TH2F *   fhNCellsvsClusterMaxCellDiffE2;      //! N cells per cluster vs cluster energy minus max cell, 2< E < 6	GeV
+  TH2F *   fhNCellsvsClusterMaxCellDiffE6;      //! N cells per cluster vs cluster energy minus max cell, E > 6 GeV	
   
   TH1F *   fhNClusters;                       //! Number of clusters
 
@@ -168,18 +161,20 @@ public:
   TH2F *   fhClusterPairDiffTimeE;            //! Pair of clusters time difference vs E
 
   TH2F *   fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
-  TH2F *   fhClusterMaxCellDiff;              //! Difference between cluster energy and energy of cell with more energy
+  TH2F *   fhClusterMaxCellDiff;              //! Difference between cluster energy and energy of cell with more energy, good clusters only
+  TH2F *   fhClusterMaxCellDiffNoCut;         //! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
+  //TH2F *   fhClusterMaxCellDiffDivLambda0;    //! 
+  
+  TH2F *   fhLambda0vsClusterMaxCellDiffE0;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E < 2, no cut on bad clusters
+  TH2F *   fhLambda0vsClusterMaxCellDiffE2;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E > 2, E < 6, no cut on bad clusters
+  TH2F *   fhLambda0vsClusterMaxCellDiffE6;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E > 6, no cut on bad clusters
   
   TH1F *   fhBadClusterEnergy;                //! energy of bad cluster
   TH2F *   fhBadClusterTimeEnergy;            //! Time Max cell of bad cluster
   TH2F *   fhBadClusterPairDiffTimeE;         //! Pair of clusters time difference vs E, bad cluster
   TH2F *   fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
   TH2F *   fhBadClusterMaxCellDiff;           //! Difference between cluster energy and energy of cell with more energy
-  TH2F *   fhBadClusterLambda0;               //! Lambda0 of bad cluster
-  TH2F *   fhBadClusterLambda1;               //! Lambda1 of bad cluster
-  TH2F *   fhBadClusterL0L1;                  //! Lambda0 of bad cluster  
-  TH2F *   fhBadClusterDispersion;            //! Dispersion of bad cluster
-
+  
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F *   fhXNCells ;                        //! X (cm) cluster distribution vs N cells in cluster
   TH2F *   fhYNCells ;                        //! Y (cm) cluster distribution vs N cells in cluster
@@ -246,6 +241,7 @@ public:
   TH1F **  fhEMod  ;                          //! E distribution for different module, Reco
   TH1F **  fhNClustersMod ;                   //! Number of clusters for different module, Reco
   TH2F **  fhNCellsPerClusterMod ;            //! N cells per clusters different module, Reco
+  TH2F **  fhNCellsPerClusterModNoCut ;       //! N cells per clusters different module, Reco, No cut
   TH1F **  fhNCellsMod ;                      //! Number of towers/crystals with signal different module, Reco
   TH2F **  fhGridCellsMod ;                   //! Cells ordered in column/row for different module, Reco
   TH2F **  fhGridCellsEMod ;                  //! Cells ordered in column/row for different module, weighted with energy, Reco
@@ -259,6 +255,23 @@ public:
   TH2F **  fhIMCellCutMod;                      //! cluster pairs invariant mass, n cells > 1 per cluster, different module
 	
   //MC  
+  
+  //MC and reco
+  
+  TH1F *   fhDeltaE  ;                        //! MC-Reco E distribution	
+  TH1F *   fhDeltaPt ;                        //! MC-Reco pT distribution
+  TH1F *   fhDeltaPhi;                        //! MC-Reco phi distribution
+  TH1F *   fhDeltaEta;                        //! MC-Reco eta distribution
+  TH1F *   fhRatioE  ;                        //! Reco/MC E distribution	
+  TH1F *   fhRatioPt ;                        //! Reco/MC pT distribution
+  TH1F *   fhRatioPhi;                        //! Reco/MC phi distribution
+  TH1F *   fhRatioEta;                        //! Reco/MC eta distribution
+  TH2F *   fh2E  ;                            //! E distribution, Reco vs MC
+  TH2F *   fh2Pt ;                            //! pT distribution, Reco vs MC
+  TH2F *   fh2Phi;                            //! phi distribution, Reco vs MC
+  TH2F *   fh2Eta;                            //! eta distribution, Reco vs MC
+    
+  //Pure MC
   TH1F *   fhGenGamPt  ;                      //! pt of primary gamma
   TH1F *   fhGenGamEta ;                      //! eta of primart gamma
   TH1F *   fhGenGamPhi ;                      //! phi of primary gamma	
