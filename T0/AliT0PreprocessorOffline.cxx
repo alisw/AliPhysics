@@ -75,29 +75,13 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
   Float_t zero_timecdb[24]={0};
   Float_t *timecdb = zero_timecdb;
   Float_t *cfdvalue = zero_timecdb;
-  Int_t badpmt=0;
+  Int_t badpmt=-1;
   //Processing data from DAQ Physics run
   AliInfo("Processing Time Offset between channels");
   if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
   else
     ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
  
-  AliCDBEntry *entryCalib = AliCDBManager::Instance()->Get("T0/Calib/TimeDelay");
-  if(!entryCalib) {
-    AliWarning(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));
-  }
-  else
-    {
-      AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entryCalib->GetObject();
-       timecdb = clb->GetTimeEq();
-       cfdvalue = clb->GetCFDvalue();
-    }
-  //AliCDBEntry *entryCalibreco = AliCDBManager::Instance()->Get("T0/Calib/RecoParam");
-  //  if(entryCalibreco) {
-  //  AliT0RecoParam *rpr = (AliT0RecoParam*) entryCalibreco->GetObject();
-    //    badpmt = rpr->GetRefPoint();
-  badpmt = -1;
-  // }
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
   Bool_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
   AliCDBMetaData metaData;
@@ -127,15 +111,6 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
   if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
   else
     ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
-  AliCDBEntry *entryCalib = AliCDBManager::Instance()->Get("T0/Calib/TimeAdjust");
-  if(!entryCalib) {
-    AliWarning(Form("Cannot find any AliCDBEntry for [Calib, TimeAdjust]!"));
-  }
-  else
-    {
-      AliT0CalibSeasonTimeShift *clb = (AliT0CalibSeasonTimeShift*)entryCalib->GetObject();
-      timecdb = clb->GetT0Means();
-    }
   
   AliT0CalibSeasonTimeShift *offline = new AliT0CalibSeasonTimeShift();
   Bool_t writeok = offline->SetT0Par(filePhysName.Data(), timecdb);

@@ -34,6 +34,9 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
   for( int ip=0; ip < 24; ip++){
     fTimeDiff[ip] = 0;
     fCFD[ip]      = 0;
+    fCDBdelays[ip]= 0;
+    fCDBcfds[ip]= 0;
+    fCDBT0s[ip]= 0;
   }
 
   // Define input and output slots here
@@ -47,13 +50,17 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-  fRunNumber(0)
+    fRunNumber(0)
 {
   // Constructor
  
   for( int ip=0; ip < 24; ip++){
     fTimeDiff[ip] = 0;
     fCFD[ip]      = 0;
+    fCDBdelays[ip]= 0;
+    fCDBcfds[ip]= 0;
+    fCDBT0s[ip]= 0;
+
   }
  
   // Define input and output slots here
@@ -107,15 +114,15 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
 {
   // Create histograms
   for (Int_t i=0; i<24; i++) {
-    fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",300, -300, 300);
-    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, 2000, 3000);//6000, 7000);
-    // fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",500, -1000, 1000);//6000, 7000);
+    fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",150, -300, 300);
+    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, 2000, 3000);//6000, 7000);
+    //    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, -1000, 1000);//6000, 7000);
   }
 
-  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-2000,2000);   //or A plus or C 
-  fResolution      = new TH1F("fResolution","fResolution",400,-2000,2000);// or A minus or C spectrum
-  fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",400,-2000,2000);// or A spectrum
-  fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",400,-2000,2000);// or C spectrum
+  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-2500,2500);   //or A plus or C 
+  fResolution      = new TH1F("fResolution","fResolution",400,-2500,2500);// or A minus or C spectrum
+  fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-2500,2500);// or A spectrum
+  fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-2500,2500);// or C spectrum
 
   
   fTzeroObject     = new TObjArray(0);
@@ -152,29 +159,38 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
   fRunNumber =  fESD->GetRunNumber() ; 
 
   const Double32_t* time = fESD->GetT0time();
+  const Double32_t* amp = fESD->GetT0amplitude();
+  Double32_t diff;
   for (Int_t i=0; i<12; i++) {
-    if( time[i] != 0 ){
-      fCFD[i]->Fill( time[i]);
-      if(  time[0] != 0 ) 
-	fTimeDiff[i]->Fill( time[i]-time[0]);
+    if( time[i] !=0  && amp[i]>0.1 ){
+      fCFD[i]->Fill( time[i] );
+      //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
+      
+      if(  time[0] != 0 ) {
+	diff =  time[i]-time[0] + fCDBdelays[i];
+	fTimeDiff[i]->Fill( diff);
+      }
     }
   }
   for (Int_t i=12; i<24; i++) {
-    if( time[i] != 0) {
+    if( time[i] != 0 && amp[i]>0.1) {
       fCFD[i]->Fill( time[i]);
-      if( time[12] != 0 ) 
-	fTimeDiff[i]->Fill( time[i]-time[12]);
+      //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
+       if( time[12] != 0 ) {
+	diff =  time[i]-time[12] + fCDBdelays[i];
+	fTimeDiff[i]->Fill( diff);
+      }
     }
   }
   const Double32_t* mean = fESD->GetT0TOF();
-  Double32_t meanTOF = mean[0] ;
-  Double32_t orA = mean[1] ;
-  Double32_t orC = mean[2];
+  Double32_t meanTOF = mean[0] +  fCDBT0s[0];
+  Double32_t orA = mean[1]  +  fCDBT0s[1];
+  Double32_t orC = mean[2] +  fCDBT0s[2];
  
-  if(orA<99999) fTzeroORA->Fill(orA);
-  if(orC<99999) fTzeroORC->Fill(orC);
-  if(orA<99999 && orC<99999) fResolution->Fill((orA-orC)/2.);
-  if(orA<99999 && orC<99999) fTzeroORAplusORC->Fill(meanTOF); 
+  if(orA<9999) fTzeroORA->Fill(orA);
+  if(orC<9999) fTzeroORC->Fill(orC);
+  if(orA<9999 && orC<9999) fResolution->Fill((orA-orC)/2.);
+  if(orA<9999 && orC<9999) fTzeroORAplusORC->Fill(meanTOF); 
 
   //  printf("%f   %f  %f\n",orA,orC,meanTOF);
   PostData(1, fTzeroObject);

@@ -20,8 +20,17 @@ class AliT0CalibOffsetChannelsTask : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   TObjArray* GetOffsetHistos() {return fTzeroObject;}
-  
- private:
+
+  Float_t  GetCFDvalue(Int_t channel)  const {return fCDBcfds[channel];}
+  Float_t* GetCFDvalue()          const {return (float*)fCDBcfds;}
+  Float_t  GetTimeEq(Int_t channel)        const {return fCDBdelays[channel];}
+  Float_t* GetTimeEq()          const {return (float*)fCDBdelays;}
+  void SetCFDvalue(Int_t channel, Float_t val) {fCDBcfds[channel]=val;}
+  void SetTimeEq(Int_t channel, Float_t val) {fCDBdelays[channel]=val;}
+  Float_t *GetT0Means() { return fCDBT0s;}
+  void SetT0Means(Int_t ihist, Float_t mean ) {fCDBT0s[ihist]=mean;};
+
+private:
   AliESDEvent *fESD;          //! ESD object
   TObjArray   *fTzeroObject;  // array with CFDi-CFD1 and  CFDi
   TH1F        *fTimeDiff[24]; //! CFDi-CFD1 vs Npmt   
@@ -31,12 +40,16 @@ class AliT0CalibOffsetChannelsTask : public AliAnalysisTaskSE {
   TH1F        *fResolution;   //! or A minus or C spectrum    
   TH1F        *fTzeroORAplusORC; //! ORA+ORC /2 
   int         fRunNumber;
+  Float_t fCDBdelays[24];  //time delays from OCDB
+  Float_t fCDBcfds[24];    // mean CFD from OCDB
+  Float_t fCDBT0s[4];      //position T0AC, T0A, T0A, resolution
+
   
  
   AliT0CalibOffsetChannelsTask(const AliT0CalibOffsetChannelsTask&); // not implemented
   AliT0CalibOffsetChannelsTask& operator=(const AliT0CalibOffsetChannelsTask&); // not implemented
   
-  ClassDef(AliT0CalibOffsetChannelsTask, 1); // example of analysis
+  ClassDef(AliT0CalibOffsetChannelsTask, 2); // example of analysis
 };
 
 #endif

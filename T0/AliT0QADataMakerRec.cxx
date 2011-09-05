@@ -281,10 +281,10 @@ void AliT0QADataMakerRec::InitRaws()
   fhQTC->SetOption("COLZ");
   Add2RawsList( fhQTC,212, expert, image, !saveCorr);
   
-  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event",13, 0 ,13);
+  TH1F* fhNumPMTA= new TH1F("hNumPMTA","number of PMT hitted per event A side",13, 0 ,13);
   Add2RawsList(fhNumPMTA ,213, expert, image, !saveCorr);
   
-  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event",13, 0 ,13);
+  TH1F* fhNumPMTC= new TH1F("hNumPMTC","number of PMT hitted per event C side",13, 0 ,13);
   Add2RawsList(fhNumPMTC ,214, expert, image, !saveCorr);
   
   TH1F* fhHitsOrA= new TH1F("fhHitsOrA","T0_OR A hit multiplicitie",20, 0 ,20);
@@ -322,7 +322,15 @@ void AliT0QADataMakerRec::InitRaws()
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
    TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ps ", 200, -2000, 2000);
    Add2RawsList( fhMean,223, !expert, image, !saveCorr);
-   //
+   //vertex 1st 
+   TH1F* fhVertex1st = new TH1F("fhVertex1st", " (T0A-T0C)/2, ps 1st particle", 200, -2000, 2000);
+   Add2RawsList( fhVertex1st ,225, !expert, image, !saveCorr);
+   TH1F* fhVertexBest = new TH1F("fhVertexBest", " (T0A-T0C)/2, ps , best particle", 200, -2000, 2000);
+   Add2RawsList( fhVertexBest ,226, !expert, image, !saveCorr);
+   TH1F* fhMean1st = new TH1F("fhMean1st", " (T0A + T0C)/2, ps , 1st particle", 200, -2000, 2000);
+   Add2RawsList( fhMean1st ,227, expert, image, !saveCorr);
+
+   // 
    TH2F* fhBCID = new TH2F("fhBCID", "header BCID vs TRM BC ID ", 500, 0, 5000, 500, 0, 5000);
    fhBCID->SetOption("COLZ");
    fhBCID->GetXaxis()->SetTitle("TRM BC ID");
@@ -515,8 +523,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     }
       
     FillRawsData(ik+176,nhitsPMT);
-    FillRawsData(213,numPmtC);
-    FillRawsData(214,numPmtA);
+    FillRawsData(213,numPmtA);
+    FillRawsData(214,numPmtC);
   }   
   
   Int_t trChannel[6] = {49,50,51,52,55,56};  
@@ -605,15 +613,22 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     TH2 *h221 = (TH2*)GetRawsData(221,itrID);
     TH2 *h222 = (TH2*)GetRawsData(222,itrID);
     TH1 *h223 = (TH1*)GetRawsData(223,itrID);
-    if( nEvent>1000 && (h220 || h221 || h222 || h223) ) {
+    TH1 *h225 = (TH1*)GetRawsData(225,itrID);
+    TH1 *h226 = (TH1*)GetRawsData(226,itrID);
+    TH1 *h227 = (TH1*)GetRawsData(227,itrID);
+    if( nEvent>1000 && (h220 || h221 || h222 || h223 || h225 || h226|| h227) ) 
+      {
       Int_t besttimeA=9999999;
       Int_t besttimeC=9999999;
+      Int_t time1stA=9999999;
+      Int_t time1stC=9999999;
       for (Int_t ipmt=0; ipmt<12; ipmt++){
 	if(allData[ipmt+1][0] > 1 ) {
 	  //	      time[ipmt] = allData[ipmt+1][0] - Int_t(GetRawsData(1)->GetMean());
 	  time[ipmt] = allData[ipmt+1][0] - fMeans[ipmt];
 	  if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeC))
 	    besttimeC=time[ipmt]; //timeC
+	  if(time[ipmt] < time1stC)  time1stC=time[ipmt]; //timeC
 	}
       }
       for ( Int_t ipmt=12; ipmt<24; ipmt++){
@@ -621,15 +636,23 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	  time[ipmt] = allData[ipmt+45][0] - fMeans[ipmt] ;
 	  if(TMath::Abs(time[ipmt]) < TMath::Abs(besttimeA) )
 	    besttimeA=time[ipmt]; //timeA
+	  if(time[ipmt] < time1stA)  time1stA=time[ipmt]; //timeC
 	}
       }
       if(besttimeA<99999 &&besttimeC< 99999) {
 	Float_t t0 =  24.4 * (Float_t( besttimeA+besttimeC)/2. );
-	Float_t ver = 24.4 * Float_t( besttimeA-besttimeC)/2.;
+	Float_t ver = 24.4 * Float_t( besttimeC-besttimeA)/2.;
 	if (h220) h220->Fill(0.001*ver, 0.001*(t0));
 	if(allData[50][0] > 0)  if (h221) h221->Fill(0.001*ver, 0.001*(t0));
 	if(allData[50][0] <= 0) if (h222) h222->Fill(0.001*ver, 0.001*(t0));
 	if (h223) h223->Fill(t0);
+	if (h226) h226->Fill(ver);
+      }	  
+      if(time1stA<99999 &&time1stC< 99999) {
+	Float_t t01st =  24.4 * (Float_t( time1stA + time1stC)/2. );
+	Float_t ver1st = 24.4 * Float_t( time1stC - time1stA)/2.;
+	if (h225) h225->Fill(ver1st);
+	if (h227) h227->Fill(t01st);
       }	  
     } //event >100
       //   } //type 7

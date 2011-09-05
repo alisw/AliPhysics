@@ -240,7 +240,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    }
 	    if(cfddiff) {
 	      nent = Int_t(cfddiff->GetEntries());
-	      if(nent>100 )  { //!!!!!
+	      if(nent>500 )  { //!!!!!
 		if(cfddiff->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfddiff, meandiff, sigmadiff);
 		if(cfddiff->GetRMS()<=1.5) 
@@ -268,7 +268,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    }
 	    if(cfdtime) {
 	      nent = Int_t(cfdtime->GetEntries());
-	      if(nent>100 )  { //!!!!!
+	      if(nent>500 )  { //!!!!!
 		if(cfdtime->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 		if(cfdtime->GetRMS()<=1.5) 
@@ -288,7 +288,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      }
 	  }
 	  
-	  SetTimeEq(i,timecdb[i] + meandiff);
+	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0, meancfdtime );
 	  if (cfddiff) cfddiff->Reset();
