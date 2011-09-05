@@ -157,7 +157,79 @@ AliAnalysisEtMonteCarlo::AliAnalysisEtMonteCarlo():AliAnalysisEt()
 
 // dtor
 AliAnalysisEtMonteCarlo::~AliAnalysisEtMonteCarlo()
-{
+{//Destructor
+	delete fHistDecayVertexNonRemovedCharged; // Decay vertex for non-removed charged particles
+	delete fHistDecayVertexRemovedCharged; // Decay vertex for non-removed charged particles
+	delete fHistDecayVertexNonRemovedNeutral; // Decay vertex for non-removed charged particles
+	delete fHistDecayVertexRemovedNeutral; // Decay vertex for non-removed charged particles
+	
+	delete fHistRemovedOrNot; // If charged/neutral particles were removed or not
+	
+	delete fHistEtNonRemovedProtons; // enter comment here
+	delete fHistEtNonRemovedAntiProtons; // enter comment here
+	delete fHistEtNonRemovedPiPlus; // enter comment here
+	delete fHistEtNonRemovedPiMinus; // enter comment here
+	delete fHistEtNonRemovedKaonPlus; // enter comment here
+	delete fHistEtNonRemovedKaonMinus; // enter comment here
+	delete fHistEtNonRemovedK0s; // enter comment here
+	delete fHistEtNonRemovedLambdas; // enter comment here
+	delete fHistEtNonRemovedElectrons; // enter comment here
+	delete fHistEtNonRemovedPositrons; // enter comment here
+	delete fHistEtNonRemovedMuPlus; // enter comment here
+	delete fHistEtNonRemovedMuMinus; // enter comment here
+	delete fHistEtNonRemovedNeutrons; // enter comment here
+	delete fHistEtNonRemovedAntiNeutrons; // enter comment here
+	delete fHistEtNonRemovedGammas; // enter comment here
+	delete fHistEtNonRemovedGammasFromPi0; // enter comment here
+	
+	delete fHistEtRemovedGammas; // enter comment here
+	delete fHistEtRemovedNeutrons; // enter comment here
+	delete fHistEtRemovedAntiNeutrons; // enter comment here
+	
+	
+	delete fHistMultNonRemovedProtons; // enter comment here 
+	delete fHistMultNonRemovedAntiProtons; // enter comment here 
+	delete fHistMultNonRemovedPiPlus; // enter comment here 
+	delete fHistMultNonRemovedPiMinus; // enter comment here 
+	delete fHistMultNonRemovedKaonPlus; // enter comment here 
+	delete fHistMultNonRemovedKaonMinus; // enter comment here 
+	delete fHistMultNonRemovedK0s; // enter comment here 
+	delete fHistMultNonRemovedLambdas; // enter comment here 
+	delete fHistMultNonRemovedElectrons; // enter comment here 
+	delete fHistMultNonRemovedPositrons; // enter comment here 
+	delete fHistMultNonRemovedMuPlus; // enter comment here
+	delete fHistMultNonRemovedMuMinus; // enter comment here
+	delete fHistMultNonRemovedNeutrons; // enter comment here
+	delete fHistMultNonRemovedAntiNeutrons; // enter comment here
+	delete fHistMultNonRemovedGammas; // enter comment here
+	
+	delete fHistMultRemovedGammas; // enter comment here
+	delete fHistMultRemovedNeutrons; // enter comment here
+	delete fHistMultRemovedAntiNeutrons; // enter comment here
+	
+	delete fHistTrackMultvsNonRemovedCharged; // enter comment here
+	delete fHistTrackMultvsNonRemovedNeutral; // enter comment here
+	delete fHistTrackMultvsRemovedGamma; // enter comment here
+	
+	delete fHistClusterMultvsNonRemovedCharged; // enter comment here
+	delete fHistClusterMultvsNonRemovedNeutral; // enter comment here
+	delete fHistClusterMultvsRemovedGamma; // enter comment here
+	
+	delete fHistMultvsNonRemovedChargedE; // enter comment here
+	delete fHistMultvsNonRemovedNeutralE; // enter comment here
+	delete fHistMultvsRemovedGammaE; // enter comment here
+	delete fHistDxDzNonRemovedCharged; // enter comment here
+	delete fHistDxDzRemovedCharged; // enter comment here
+	delete fHistDxDzNonRemovedNeutral; // enter comment here
+	delete fHistDxDzRemovedNeutral; // enter comment here
+	
+	delete fHistPiPlusMult; // enter comment here
+	delete fHistPiMinusMult; // enter comment here
+	delete fHistPiZeroMult; // enter comment here
+
+	delete fHistPiPlusMultAcc; // enter comment here
+	delete fHistPiMinusMultAcc; // enter comment here
+	delete fHistPiZeroMultAcc; // enter comment here
 }
 
 Int_t AliAnalysisEtMonteCarlo::AnalyseEvent(AliVEvent* ev)
