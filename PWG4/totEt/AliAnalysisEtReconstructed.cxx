@@ -54,8 +54,16 @@ AliAnalysisEtReconstructed::AliAnalysisEtReconstructed() :
 }
 
 AliAnalysisEtReconstructed::~AliAnalysisEtReconstructed()
-{
+{//destructor
     delete fCorrections;
+    delete fHistChargedPionEnergyDeposit; /** Energy deposited in calorimeter by charged pions */    
+    delete fHistProtonEnergyDeposit; /** Energy deposited in calorimeter by protons */    
+    delete fHistAntiProtonEnergyDeposit; /** Energy deposited in calorimeter by anti-protons */    
+    delete fHistChargedKaonEnergyDeposit; /** Energy deposited in calorimeter by charged kaons */    
+    delete fHistMuonEnergyDeposit; /** Energy deposited in calorimeter by muons */
+
+    delete fHistRemovedEnergy; // removed energy
+
 }
 
 Int_t AliAnalysisEtReconstructed::AnalyseEvent(AliVEvent* ev)
