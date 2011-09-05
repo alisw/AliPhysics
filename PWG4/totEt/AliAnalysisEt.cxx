@@ -20,6 +20,7 @@
 #include "AliVEvent.h"
 #include "Rtypes.h"
 #include "TString.h"
+#include "AliCentrality.h"
 	       //#include "THnSparse.h"
 
 using namespace std;
@@ -175,6 +176,16 @@ AliAnalysisEt::~AliAnalysisEt()
   delete fHistElectronEtAcc; /** Et of identified electrons in calorimeter acceptance */
   delete fHistTMDeltaR; /* Track matching plots; Rec only for now */
   delete fHistTMDxDz; /* Track matching plots; Rec only for now */
+  //arrays for axes were not dynamically created so don't need to be deleted
+  delete fTree;
+  delete fTreeDeposit;
+  //delete fCentrality;//this code does not actually own AliCentrality so we don't have to worry about deleting it...  we just borrow it...
+  delete fSparseHistTracks;
+  delete fSparseHistClusters;
+  delete fSparseHistEt;
+  delete [] fSparseTracks;
+  delete [] fSparseClusters;
+  delete [] fSparseEt;
 }
 
 void AliAnalysisEt::FillOutputList(TList *list)
