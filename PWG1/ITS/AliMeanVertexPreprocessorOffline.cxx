@@ -164,7 +164,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	
 		if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
 			AliError(Form("TRK vertex histograms have too few entries for fitting"));
-			return;
+			useTRKvtx=kFALSE;
+			useSPDvtx = kTRUE;	
 		}
 	}
 	if (useITSSAvtx){
@@ -175,17 +176,18 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	
 		if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
 			AliError(Form("ITSSA vertex histograms have too few entries for fitting"));
-			return;
+			useITSSAvtx=kFALSE;
+			useSPDvtx=kTRUE;
 		}
 	}
-	if (useSPDvtx){
+	if ((useSPDvtx) && (histSPDvtxX)){
 	  
 	        Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries(); 					 
 	        Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries(); 			 
 	        Float_t nEntriesZ = histSPDvtxZ->GetEffectiveEntries(); 
 
 		if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
-		         AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
+			  AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
 			 return;		 
 		}
 	}				
@@ -368,13 +370,13 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	  }
 		
 	
-	if ((!histTRKdefMultX) || (!histTRKdefMultY)){
+	if ((!histTRKdefMultX) || (!histTRKdefMultY) || (histTRKdefMultX->GetEntries() < 40.) || (histTRKdefMultY->GetEntries() < 40.)){
 	  AliWarning(Form("histos for lumi reg calculation not found, default value setted"));
 	  xSigmaMult=0.0120;
 	  ySigmaMult=0.0120;
 	} else {
 	
-	  histTRKdefMultX -> Fit("gaus", "M", "", -1., 1.);
+	  histTRKdefMultX -> Fit("gaus", "M", "", -0.4, 0.4);
 	  sigmaFitX = histTRKdefMultX -> GetFunction("gaus");
 	  xSigmaMult = sigmaFitX->GetParameter(2);
 	  
@@ -392,7 +394,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	  }
 	  
 	  
-	  histTRKdefMultY -> Fit("gaus", "M");
+	  histTRKdefMultY -> Fit("gaus", "M", "", -0.2, 0.6);
 	  sigmaFitY = histTRKdefMultY -> GetFunction("gaus");
 	  ySigmaMult = sigmaFitY->GetParameter(2);
 	  
