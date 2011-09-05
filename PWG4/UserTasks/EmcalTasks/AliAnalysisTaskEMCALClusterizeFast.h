@@ -37,6 +37,15 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   AliEMCALCalibData     *GetCalibData()                       const  { return fCalibData                    ; }
   AliCaloCalibPedestal  *GetPedData()                         const  { return fPedestalData                 ; }
   TGeoHMatrix           *GetGeometryMatrix(Int_t i)           const  { return fGeomMatrix[i]                ; }
+  Bool_t                 GetCreatePattern()                   const  { return fCreatePattern                ; }
+  Bool_t                 GetOverwrite()                       const  { return fOverwrite                    ; }
+  const TString         &GetNewClusterArrayName()             const  { return fNewClusterArrayName          ; }
+  Int_t                  GetnPhi()                            const  { return fNPhi                         ; }
+  Int_t                  GetnEta()                            const  { return fNEta                         ; }
+  Int_t                  GetShiftPhi()                        const  { return fShiftPhi                     ; }
+  Int_t                  GetShiftEta()                        const  { return fShiftEta                     ; }
+  Bool_t                 GetTRUShift()                        const  { return fTRUShift                     ; }
+  Bool_t                 GetClusterizeFastORs()               const  { return fClusterizeFastORs            ; }
   void                   JustUnfold(Bool_t yesno)                    { fJustUnfold                  = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)           { fLoadGeomMatrices            = b     ; }
   void                   SetAODBranchName(const char *name)          { fOutputAODBrName             = name  ; }
