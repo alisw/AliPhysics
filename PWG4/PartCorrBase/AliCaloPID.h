@@ -145,6 +145,9 @@ public:
   void    SetTOFCut(Float_t tcut )             { fTOFCut = tcut   ; }
   Float_t GetTOFCut()                    const { return fTOFCut   ; }   
   
+  void    SetRCutPHOS(Float_t rcut )           { fRcutPHOS = rcut ; }
+  Float_t GetRCutPHOS()                  const { return fRcutPHOS ; }   
+  
   void    SetDebug(Int_t deb)                  { fDebug=deb       ; }
   Int_t   GetDebug()                     const { return fDebug    ; }	
 
@@ -197,7 +200,8 @@ private:
   Float_t   fL0CutMax;                          // Max Cut on shower shape lambda0, used in PID evaluation, used only for EMCAL now
   Float_t   fL0CutMin;                          // Min Cut on shower shape lambda0, used in PID evaluation, used only for EMCAL now
   Float_t   fTOFCut;                            // Cut on TOF, used in PID evaluation
-  
+  Float_t   fRcutPHOS;                          // Track-Cluster distance cut for track matching in PHOS  
+
   Int_t	    fDebug;                             // Debug level
 	
   //Bayesian
@@ -205,6 +209,7 @@ private:
   Int_t     fParticleFlux;            // Particle flux for setting PID parameters
   AliEMCALPIDUtils * fEMCALPIDUtils;  // Pointer to EMCALPID to redo the PID Bayesian calculation
 	
+
   // Track matching control histograms
   Int_t     fHistoNEBins ;            // Number of bins in cluster E axis
   Float_t   fHistoEMax ;              // Maximum value of cluster E histogram range
@@ -220,7 +225,7 @@ private:
   TH2F    * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
   TH2F    * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
-  ClassDef(AliCaloPID,8)
+  ClassDef(AliCaloPID,9)
 } ;
 
 

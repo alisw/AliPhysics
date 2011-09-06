@@ -63,7 +63,7 @@ fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.),
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
 fL0CutMax(100.),          fL0CutMin(0),                fTOFCut(0.), 
-fDebug(-1), 
+fRcutPHOS(0),             fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils(),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
 fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
@@ -86,7 +86,7 @@ fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.),
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
 fL0CutMax(100.),          fL0CutMin(0),                fTOFCut(0.), 
-fDebug(-1), 
+fRcutPHOS(0),             fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(flux),     fEMCALPIDUtils(),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
 fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
@@ -109,8 +109,8 @@ fPHOSPhotonWeight(0.),    fPHOSPi0Weight(0.),
 fPHOSElectronWeight(0.),  fPHOSChargeWeight(0.) ,      fPHOSNeutralWeight(0.), 
 fPHOSWeightFormula(0),    fPHOSPhotonWeightFormula(0), fPHOSPi0WeightFormula(0),
 fPHOSPhotonWeightFormulaExpression(""), fPHOSPi0WeightFormulaExpression(""),
-fL0CutMax(100.),         fL0CutMin(0),                 fTOFCut(0.), 
-fDebug(-1), 
+fL0CutMax(100.),          fL0CutMin(0),                fTOFCut(0.), 
+fRcutPHOS(0),             fDebug(-1), 
 fRecalculateBayesian(kFALSE), fParticleFlux(kLow),     fEMCALPIDUtils((AliEMCALPIDUtils*) emcalpid),
 fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
 fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
@@ -199,6 +199,8 @@ void AliCaloPID::InitParameters()
   fL0CutMax = 0.3;
   fL0CutMin = 0.01;
   fTOFCut   = 5.e-9;
+  fRcutPHOS = 10.;
+  
   fDebug    =-1;
 	
   if(fRecalculateBayesian){
@@ -457,19 +459,20 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
   //Check if there is any track attached to this cluster
   
   Int_t nMatches = cluster->GetNTracksMatched();
-//  if(nMatches>0){
-//    printf("N matches %d, first match (ESD) %d or (AOD) %d\n",nMatches,cluster->GetTrackMatchedIndex(), cluster->GetTrackMatched(0));
-//    if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0)) ->GetID() ) ;
-//  }
-//  else {
-//    printf("Not Matched");
-//  }
-
+  
+  //  if(nMatches>0){
+  //    printf("N matches %d, first match (ESD) %d or (AOD) %d\n",nMatches,cluster->GetTrackMatchedIndex(), cluster->GetTrackMatched(0));
+  //    if     (cluster->GetTrackMatched(0))        printf("\t matched track id %d\n",((AliVTrack*)cluster->GetTrackMatched(0)) ->GetID() ) ;
+  //  }
+  //  else {
+  //    printf("Not Matched");
+  //  }
+  
   //If EMCAL track matching needs to be recalculated
   if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
     Float_t dR = 999., dZ = 999.;
     cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
-
+    
     if(dR < 999) {     
       
       if(fhTrackMatchedDEta){
@@ -497,7 +500,14 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
         Int_t iESDtrack = cluster->GetTrackMatchedIndex();
         //printf("Track Matched index %d\n",iESDtrack);
         if(iESDtrack==-1) return kFALSE ;// Default value of array, there is no match
-        else              return kTRUE;
+        else  {
+          if(cluster->IsPHOS()) {
+            Double_t r = TMath::Sqrt(cluster->GetTrackDx()*cluster->GetTrackDx()+cluster->GetTrackDz()*cluster->GetTrackDz());
+            if( r < fRcutPHOS) return kTRUE ;// Default value of array, there is no match
+            else               return kFALSE;
+          }//PHOS
+          else return kTRUE; // EMCAL and not default
+        }
       }//Just one, check
       else return kTRUE ;//More than one, there is a match.
     }// > 0
