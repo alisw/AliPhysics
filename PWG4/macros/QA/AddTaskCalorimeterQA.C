@@ -2,7 +2,7 @@
 // Wagon contacts: EMCAL Gustavo.Conesa.Balbastre@cern.ch
 //                 PHOS  Yuri.Kharlov@cern.ch
 //
-AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t year = 2011, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE,TString outputFile = "", Bool_t oldAOD=kFALSE)
+AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t year = 2011, Bool_t kPrintSettings = kFALSE,Bool_t kSimulation = kFALSE,TString outputFile = "", const char *suffix="default")
 {
   // Creates a PartCorr task for calorimeters performance studies, configures it and adds it to the analysis manager.
   
@@ -70,7 +70,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   //if(!kSimulation) reader->SetFiredTriggerClassName("CINT1B-ABCE-NOPF-ALL");
   reader->SetDeltaAODFileName(""); //Do not create deltaAOD file, this analysis do not create branches.
   reader->SwitchOffWriteDeltaAOD()  ;
-  if(oldAOD)         reader->SwitchOnOldAODs();
   if(kPrintSettings) reader->Print("");
   
   // *** Calorimeters Utils	***
@@ -80,65 +79,32 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   cu->SetNumberOfCellsFromPHOSBorder(2);
   if(year==2010){
     cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
-    cu->SwitchOnBadChannelsRemoval(); // just a trick
+    //cu->SwitchOnBadChannelsRemoval(); // just a trick
   }
   else {
     cu->SetEMCALGeometryName("EMCAL_COMPLETEV1"); 
-    // Remove EMCAL hottest channels for LHC11 periods 	
+    // Remove EMCAL hottest channels for LHC11 periods 	 
     cu->SwitchOnBadChannelsRemoval();
-
-    // SM0
-    cu->SetEMCALChannelStatus(0,12,16);  cu->SetEMCALChannelStatus(0,12,17); cu->SetEMCALChannelStatus(0,12,18); 
-    cu->SetEMCALChannelStatus(0,12,19);  cu->SetEMCALChannelStatus(0,12,20); cu->SetEMCALChannelStatus(0,12,21);
-    cu->SetEMCALChannelStatus(0,12,22);  cu->SetEMCALChannelStatus(0,12,23); 
-
-    cu->SetEMCALChannelStatus(0,13,16);  cu->SetEMCALChannelStatus(0,13,17); cu->SetEMCALChannelStatus(0,13,18); 
-    cu->SetEMCALChannelStatus(0,13,19);  cu->SetEMCALChannelStatus(0,13,20); cu->SetEMCALChannelStatus(0,13,21);
-    cu->SetEMCALChannelStatus(0,13,22);  cu->SetEMCALChannelStatus(0,13,23); 
+    Int_t badAbsID[]={74, 103, 152, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 368, 369, 370, 371, 372, 373, 374,375, 376, 377, 378, 379, 380, 381, 382, 383, 917, 1275, 1288, 1519, 1595, 1860, 1967, 2022, 2026, 2047, 2117, 2298, 2540, 2776, 3135, 3764, 6095, 6111, 6592, 6800, 6801, 6802, 6803, 6804, 6805, 6806, 6807, 6808, 6809, 6810, 6811, 6812, 6813, 6814, 6815, 7371, 7425, 7430, 7457, 7491, 7709, 8352, 8353, 8356, 8357, 8808, 8810, 8812, 8814, 9056, 9769, 9815, 9837};
     
-    cu->SetEMCALChannelStatus(0,14,16);  cu->SetEMCALChannelStatus(0,14,17); cu->SetEMCALChannelStatus(0,14,18); 
-    cu->SetEMCALChannelStatus(0,14,19);  cu->SetEMCALChannelStatus(0,14,20); cu->SetEMCALChannelStatus(0,14,21);
-    cu->SetEMCALChannelStatus(0,14,22);  cu->SetEMCALChannelStatus(0,14,23); 
-    
-    cu->SetEMCALChannelStatus(0,15,16);  cu->SetEMCALChannelStatus(0,15,17); cu->SetEMCALChannelStatus(0,15,18); 
-    cu->SetEMCALChannelStatus(0,15,19);  cu->SetEMCALChannelStatus(0,15,20); cu->SetEMCALChannelStatus(0,15,21);
-    cu->SetEMCALChannelStatus(0,15,22);  cu->SetEMCALChannelStatus(0,15,23); 
-    
-    // SM1
-    cu->SetEMCALChannelStatus(1,4,13);   cu->SetEMCALChannelStatus(1,14,15); cu->SetEMCALChannelStatus(1,29,18); 
-    cu->SetEMCALChannelStatus(1,36,15);  cu->SetEMCALChannelStatus(1,40,2);  cu->SetEMCALChannelStatus(1,47,21);  
-  
-    // SM5 	
-    cu->SetEMCALChannelStatus(5,12,23);  cu->SetEMCALChannelStatus(5,14,7);   cu->SetEMCALChannelStatus(5,35,8); 
- 
-    cu->SetEMCALChannelStatus(5,42,16);  cu->SetEMCALChannelStatus(5,42,17);  cu->SetEMCALChannelStatus(5,42,18); 
-    cu->SetEMCALChannelStatus(5,42,19);  cu->SetEMCALChannelStatus(5,42,20);  cu->SetEMCALChannelStatus(5,42,21); 
-    cu->SetEMCALChannelStatus(5,42,22);  cu->SetEMCALChannelStatus(5,42,23);  
-
-    cu->SetEMCALChannelStatus(5,43,16);  cu->SetEMCALChannelStatus(5,43,17);  cu->SetEMCALChannelStatus(5,43,18); 
-    cu->SetEMCALChannelStatus(5,43,19);  cu->SetEMCALChannelStatus(5,43,20);  cu->SetEMCALChannelStatus(5,43,21); 
-    cu->SetEMCALChannelStatus(5,43,22);  cu->SetEMCALChannelStatus(5,43,23);   
-    
-    //SM6
-    cu->SetEMCALChannelStatus(6,24,1);   cu->SetEMCALChannelStatus(6,32,14); 
-
-    //SM7
-    cu->SetEMCALChannelStatus(7,12,0);   cu->SetEMCALChannelStatus(7,12,2); 
-    cu->SetEMCALChannelStatus(7,13,0);   cu->SetEMCALChannelStatus(7,13,2); 
-    cu->SetEMCALChannelStatus(7,31,12);  cu->SetEMCALChannelStatus(7,31,13); 
-    cu->SetEMCALChannelStatus(7,31,14);  cu->SetEMCALChannelStatus(7,31,15); 
-
-    //SM8
-    cu->SetEMCALChannelStatus(8,24,11);   
-    
+    Int_t iCol = -1, iRow = -1, iSM =-1, iMod = -1,iIphi =-1,iIeta = -1;
+    AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
+    for(Int_t i=0;i < 89; i++){
+      geom->GetCellIndex(badAbsID[i],iSM,iMod,iIphi,iIeta); 
+      // Gives SuperModule and Tower numbers
+      geom->GetCellPhiEtaIndexInSModule(iSM,iMod,
+                                        iIphi, iIeta,iRow,iCol);
+      //printf("bad ID %d, col %d, row %d, sm %d\n",badAbsID[i],iCol,iRow,iSM);
+      cu->SetEMCALChannelStatus(iSM , iCol, iRow,1);
+    }
     
   }
-	
+  
   cu->SetDebug(-1);
   if(kPrintSettings) cu->Print("");	
-	
+  
   // ##### Analysis algorithm settings ####
- 	
+  
   AliAnaCalorimeterQA *emcalQA = new AliAnaCalorimeterQA();
   //emcalQA->SetDebug(10); //10 for lots of messages
   emcalQA->SetCalorimeter("EMCAL");
@@ -149,6 +115,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   emcalQA->SwitchOffFiducialCut();
   emcalQA->SwitchOffPlotsMaking();
   emcalQA->SwitchOnCorrelation();
+  emcalQA->SwitchOffFillAllTH3Histogram();
+  //emcalQA->SwitchOffFillAllPositionHistogram2();
 //  if(!kUseKinematics)emcalQA->SetTimeCut(400,850);//Open for the moment
   //Set Histrograms bins and ranges
   emcalQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
@@ -198,6 +166,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   phosQA->SwitchOffFiducialCut();
   //phosQA->GetMCAnalysisUtils()->SetDebug(10);
   phosQA->SwitchOffPlotsMaking();
+  phosQA->SwitchOffFillAllTH3Histogram();
+  phosQA->SwitchOffFillAllPositionHistogram2();
   //Set Histrograms bins and ranges
   phosQA->SetHistoPtRangeAndNBins(0, 50, 200) ;
   phosQA->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
@@ -245,10 +215,9 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   
   // Create task
   //===========================================================================
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation ("CalorimeterPerformance");
+  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("CalorimeterPerformance_%s",suffix));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
-  task->SelectCollisionCandidates();
   task->SetAnalysisMaker(maker);	
   task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
   mgr->AddTask(task);
@@ -257,17 +226,19 @@ AliAnalysisTaskParticleCorrelation *AddTaskCalorimeterQA(TString data, Int_t yea
   //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer("Calo.Performance",TList::Class(),
   //							   AliAnalysisManager::kOutputContainer, "Calo.Performance.root");
 	
-  
+  TString cname;
   if(outputFile.Length()==0)outputFile = AliAnalysisManager::GetCommonFileName(); 
   
   
-  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer("CaloQA", TList::Class(), 
+  cname = Form("CaloQA_%s", suffix);
+  AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(cname, TList::Class(), 
                                                              AliAnalysisManager::kOutputContainer, 
-                                                             Form("%s:CaloQA",outputFile.Data()));
+                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
   
-  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer("CaloQACuts", TList::Class(), 
+  cname = Form("CaloQACuts_%s", suffix);
+  AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(cname, TList::Class(), 
                                                              AliAnalysisManager::kParamContainer, 
-                                                             Form("%s:CaloQACuts",outputFile.Data()));
+                                                             Form("%s:%s",outputFile.Data(),cname.Data()));
 	//Form("%s:PartCorrCuts",outputfile.Data()));	
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
