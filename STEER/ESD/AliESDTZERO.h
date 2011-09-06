@@ -58,29 +58,44 @@ public:
   void SetMultA(Float_t mult) {fMultA = mult;}
   Float_t GetMultC()       const {return fMultC;}
   Float_t GetMultA()       const {return fMultA;}
-  
+
+  void SetBackgroundFlag(Bool_t back = false) {fBackground = back;}
+  void SetPileupFlag(Bool_t back = false) {fPileup  = back;}
+  void SetSatelliteFlag(Bool_t sat = false) { fSattelite = sat;}
+ 
+  Bool_t GetBackgroundFlag() {return fBackground;}
+  Bool_t GetPileupFlag() {return fPileup;}
+  Bool_t GetSatellite() {return fSattelite;}
+
+  void SetPileupTime (Int_t hit, Float_t time) { fPileupTime[hit] = time;}
+  Float_t GetPileupTime(Int_t hit) {return fPileupTime[hit];}
+
+
   void    Reset();
   void    Print(const Option_t *opt=0) const;
+
 
 private:
 
   Float_t      fT0clock;     // backward compatibility
-  Double32_t   fT0TOF[3];     // interaction time in ns ( A&C, A, C)
-  Double32_t   fT0zVertex;       // vertex z position estimated by the T0
+  Double32_t   fT0TOF[3];     // interaction time in ps ( A&C, A, C)
+  Double32_t   fT0zVertex;       // vertex z position estimated by the T0, cm
   Double32_t   fT0timeStart;     // interaction time estimated by the T0
   Int_t        fT0trig;            // T0 trigger signals
   Double32_t   fT0time[24];      // best TOF on each T0 PMT
   Double32_t   fT0amplitude[24]; // number of particles(MIPs) on each T0 PMT
-  Float_t fTimeFull[24][5];    // array's TDC no-correction ;centred  around 0
-  Float_t fOrA[5];  //hardware OrA centred around 0
-  Float_t fOrC[5];  //hardware OrC centred around 0
-  Float_t fTVDC[5]; //hardware TVDC centred around 0
+  Float_t fTimeFull[24][5];    // array's TDC no-correction ;centred  around 0, ns
+  Float_t fOrA[5];  //hardware OrA centred around 0, ns
+  Float_t fOrC[5];  //hardware OrC centred around 0, ns
+  Float_t fTVDC[5]; //hardware TVDC centred around 0, ns
   Bool_t fPileup;   // pile-up flag
   Bool_t fSattelite; //sattelite flag
   Float_t fMultC; // multiplicity on the C side
   Float_t fMultA; // multiplicity on the A side
- 
-  ClassDef(AliESDTZERO,5)
+  Bool_t fBackground; //sattelite flag
+  Float_t fPileupTime[6];
+
+  ClassDef(AliESDTZERO,6)
 };
 
 

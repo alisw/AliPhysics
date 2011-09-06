@@ -505,6 +505,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
       
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
+	  timefull = -9999; 
 	  tvdc = ora = orc = -9999;
 	  if(allData[50][iHit]>0) 
 	    tvdc = (Float_t(allData[50][iHit]) - meanTVDC) * channelWidth* 0.001; 
@@ -529,7 +530,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  for (Int_t i0=12; i0<24; i0++) {
 	    timefull = -9999; 
 	    if(allData[i0+45][iHit]>1) {
-	      timefull = (Float_t(allData[i0+45][iHit])-fTime0vertex[i0])* channelWidth* 0.001;
+	      timefull = (Float_t(allData[i0+45][iHit]) - fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
 	    }
 	    //  if(allData[i0+45][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
 	    frecpoints->SetTimeFull(i0, iHit, timefull) ;
@@ -666,8 +667,16 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",shift, zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
 
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  // background flags
+  Bool_t background = BackgroundFlag();
+  fESDTZERO->SetBackgroundFlag(background);
+  Bool_t pileup =  PileupFlag();
+  fESDTZERO->SetPileupFlag(pileup);
+  Bool_t sat  = SatelliteFlag();
+  fESDTZERO->SetSatelliteFlag(sat);
   
-
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if (pESD) {
     
     AliESDfriend *fr = (AliESDfriend*)pESD->FindListObject("AliESDfriend");
@@ -695,7 +704,63 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
 } // vertex in 3 sigma
 
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ //____________________________________________________________
+  
+Bool_t AliT0Reconstructor::PileupFlag() const
+{
+  //
+  Bool_t pileup = false;
+  Float_t orA[5], orC[5],tvdc[5];
+  for (Int_t ih=0; ih<5; ih++) 
+    {
+      tvdc[ih] =  fESDTZERO->GetTVDC(ih);
+      
+     if(  tvdc[0] !=0 &&  tvdc[0]>-10 && tvdc[0]< 10 )
+       if(ih>0 && tvdc[ih]>20 ) 	pileup = true; 
+     if(tvdc[0] >20 || tvdc[0] <-20) pileup =true;
+     
+    }
 
+
+  return pileup;
+
+}
+
+ //____________________________________________________________
+  
+Bool_t AliT0Reconstructor::BackgroundFlag() const
+{
+  Bool_t background = false;
+
+  Float_t orA = fESDTZERO->GetOrA(0);
+  Float_t orC = fESDTZERO->GetOrC(0);
+  Float_t tvdc =  fESDTZERO->GetTVDC(0);
+
+  if ( (orA > -5 && orA <5) && (orC > -5 && orC <5) && (tvdc < -5 || tvdc > 5)) {
+    background = true;
+    //   printf(" orA %f orC %f tvdc %f\n", orA, orC, tvdc);
+  } 
+  return background;
+
+
+}
+
+
+ //____________________________________________________________
+  
+Bool_t  AliT0Reconstructor::SatelliteFlag() const
+{
+
+  Bool_t satellite = false;
+  for (Int_t i0=0; i0<24; i0++) {
+    Float_t timefull =  fESDTZERO -> GetTimeFull(i0,0);
+    if( timefull < -1.5 && timefull > -5) satellite=true;
+  }
+	
+  return satellite;
+
+}
 
 
 

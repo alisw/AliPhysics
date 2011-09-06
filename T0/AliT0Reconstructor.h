@@ -32,7 +32,12 @@ class AliT0Reconstructor: public AliReconstructor {
   virtual Bool_t   HasDigitConversion() const {return kFALSE;}
   static const AliT0RecoParam* GetRecoParam()
     { return dynamic_cast<const AliT0RecoParam*>(AliReconstructor::GetRecoParam(11)); } // getting RecoParam obj
-   
+
+  //!!!!!!!!!!!!!!!!!!!!!!!!!!
+  Bool_t  PileupFlag() const;
+  Bool_t  BackgroundFlag() const;
+  Bool_t  SatelliteFlag() const;
+  //!!!!!!!!!!!!!!!!!!!!!!!
  
  protected:
   Float_t             fdZonA;             // Zideal - Zreal side A 
