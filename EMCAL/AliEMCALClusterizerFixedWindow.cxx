@@ -376,6 +376,12 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
         Float_t dEnergyCalibrated = digit->GetAmplitude();
         Float_t time              = digit->GetTime();
         Calibrate(dEnergyCalibrated,time,digit->GetId());
+        if (dEnergyCalibrated < fMinECut) {
+          continue;
+        }
+        if (!fGeom->CheckAbsCellId(digit->GetId())) {
+          continue;
+        }
         digit->SetCalibAmp(dEnergyCalibrated);
         recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
         fClustersArray[iCluster][iDigit] = NULL;
