@@ -13,6 +13,10 @@
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
 
 // EmcalTasks
+#pragma link C++ class AliEmcalPhysicsSelection+;
+#pragma link C++ class AliEmcalPhysicsSelectionTask+;
+#pragma link C++ class AliEmcalEsdTpcTrackTask+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliStaHeader+;
