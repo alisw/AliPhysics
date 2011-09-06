@@ -38,6 +38,8 @@
 #include <AliTRDPIDResponse.h>
 #include <AliTOFPIDResponse.h>
 
+#include <AliESDEvent.h>
+
 #include "AliAnalysisTaskPIDqa.h"
 
 
@@ -300,51 +302,76 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
   //
 
   AliVEvent *event=InputEvent();
-  
+
+
   Int_t ntracks=event->GetNumberOfTracks();
+  Int_t tracksAtTof = 0;
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
-    
+
     //
     //basic track cuts
     //
     ULong_t status=track->GetStatus();
-    // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit +
     // TOF out + TOFpid +
     // kTIME
+    // (we don't use kTOFmismatch because it depends on TPC....)
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
         !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
         !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
         !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
-    
+
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
     if (track->GetTPCNclsF()>0) {
       ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
     }
-    
+
     if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
-    
-    
+
+    tracksAtTof++;
+
     Double_t mom=track->P();
-    
+
     for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
-      //TOF nSigma
       TH2 *h=(TH2*)fListQAtof->At(ispecie);
       if (!h) continue;
       Double_t nSigma=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
       h->Fill(mom,nSigma);
     }
-    
-    TH2 *h=(TH2*)fListQAtof->At(AliPID::kSPECIES);
+
+    TH2 *h=(TH2*)fListQAtof->FindObject("hSigP_TOF");
     if (h) {
       Double_t sig=track->GetTOFsignal();
       h->Fill(mom,sig);
     }
-    
+
+    Double_t mask = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeMask(mom) + 0.5;
+    ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill(mask);
+
+    Double_t res = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeRes(mom);
+    ((TH1F*)fListQAtof->FindObject("hStartTimeRes_TOF"))->Fill(res);
+
+    AliESDEvent *esd = dynamic_cast<AliESDEvent *>(event);
+    if (esd) {
+      Double_t startTime = esd->GetT0TOF(0);
+      if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeAC_T0"))->Fill(startTime);
+      else {
+        startTime = esd->GetT0TOF(1);
+        if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeA_T0"))->Fill(startTime);
+        startTime = esd->GetT0TOF(2);
+        if (startTime < 90000) ((TH1F*)fListQAtof->FindObject("hStartTimeC_T0"))->Fill(startTime);
+      }
+    }
   }
+  if (tracksAtTof > 0) {
+    ((TH1F* )fListQAtof->FindObject("hnTracksAt_TOF"))->Fill(tracksAtTof);
+    Int_t mask = fPIDResponse->GetTOFResponse().GetStartTimeMask(5.);
+    if (mask & 0x1) ((TH1F*)fListQAtof->FindObject("hT0MakerEff"))->Fill(tracksAtTof);
+  }
+
 }
 
 //______________________________________________________________________________
@@ -593,23 +620,43 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   //
   
   TVectorD *vX=MakeLogBinning(200,.1,30);
-  
+
   for (Int_t ispecie=0; ispecie<AliPID::kSPECIES; ++ispecie){
     TH2F *hNsigmaP = new TH2F(Form("hNsigmaP_TOF_%s",AliPID::ParticleName(ispecie)),
                               Form("TOF n#sigma %s vs. p;p [GeV]; n#sigma",AliPID::ParticleName(ispecie)),
                               vX->GetNrows()-1,vX->GetMatrixArray(),
                               200,-10,10);
     fListQAtof->Add(hNsigmaP);
+    // to be added: t-texp without StartTime subtraction
   }
-  
-  
+
+
   TH2F *hSig = new TH2F("hSigP_TOF",
                         "TOF signal vs. p;p [GeV]; TOF signal [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         300,0,300);
+
+  delete vX;
+  
   fListQAtof->Add(hSig);
 
-  delete vX;  
+  TH1F *hStartTimeMask_TOF = new TH1F("hStartTimeMask_TOF","StartTime mask",8,0,8);
+  fListQAtof->Add(hStartTimeMask_TOF);
+  TH1F *hStartTimeRes_TOF = new TH1F("hStartTimeRes_TOF","StartTime resolution [ps]",100,0,500);
+  fListQAtof->Add(hStartTimeRes_TOF);
+
+  TH1F *hnTracksAt_TOF = new TH1F("hnTracksAt_TOF","Matched tracks at TOF",20,0,20);
+  fListQAtof->Add(hnTracksAt_TOF);
+  TH1F *hT0MakerEff = new TH1F("hT0MakerEff","Events with T0-TOF vs nTracks",20,0,20);
+  fListQAtof->Add(hT0MakerEff);
+
+  // this in principle should stay on a T0 PID QA, but are just the data prepared for TOF use
+  TH1F *hStartTimeA_T0 = new TH1F("hStartTimeA_T0","StartTime from T0A [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeA_T0);
+  TH1F *hStartTimeC_T0 = new TH1F("hStartTimeC_T0","StartTime from T0C [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeC_T0);
+  TH1F *hStartTimeAC_T0 = new TH1F("hStartTimeAC_T0","StartTime from T0AC [ps]",1000,-1000,1000);;
+  fListQAtof->Add(hStartTimeAC_T0);
 }
 
 //______________________________________________________________________________
