@@ -56,7 +56,9 @@
 #include "AliBackgroundSelection.h"
 #include "AliESDUtils.h"
 #include "AliOADBContainer.h"
-
+#include "AliAODMCHeader.h"
+#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliEventplane.h"
 
 ClassImp(AliEPSelectionTask)
@@ -73,6 +75,9 @@ AliAnalysisTaskSE(),
   fUserphidist(kFALSE),
   fUsercuts(kFALSE),
   fRunNumber(-15),
+  fAODfilterbit(1),
+  fEtaGap(0.),
+  fSplitMethod(0),
   fESDtrackCuts(0),
   fEPContainer(0),
   fPhiDist(0),
@@ -109,6 +114,9 @@ AliEPSelectionTask::AliEPSelectionTask(const char *name):
   fUserphidist(kFALSE),
   fUsercuts(kFALSE),
   fRunNumber(-15),
+  fAODfilterbit(1),
+  fEtaGap(0.),
+  fSplitMethod(0),
   fESDtrackCuts(0),
   fEPContainer(0),
   fPhiDist(0),
@@ -189,8 +197,15 @@ void AliEPSelectionTask::UserCreateOutputObjects()
   
     if(!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
 
-    TString oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+    
+    TString oadbfilename; 
 
+    if (fAnalysisInput.CompareTo("AOD")==0){
+      oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.aod.root", AliAnalysisManager::GetOADBPath()));
+    } else if (fAnalysisInput.CompareTo("ESD")==0){
+      oadbfilename = (Form("%s/COMMON/EVENTPLANE/data/epphidist.root", AliAnalysisManager::GetOADBPath()));
+    }
+ 
     TFile foadb(oadbfilename); 
     if(!foadb.IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
 
@@ -199,6 +214,7 @@ void AliEPSelectionTask::UserCreateOutputObjects()
     if (!fEPContainer) AliFatal("Cannot fetch OADB container for EP selection");
     foadb.Close();
     }
+
 }
 
 //________________________________________________________________________
@@ -209,7 +225,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
   
 //   fRunNumber = -15;
  
-  AliEventplane* esdEP = 0;
+  AliEventplane *esdEP;
   TVector2 qq1;
   TVector2 qq2;
   Double_t fRP = 0.; // the monte carlo reaction plane angle
@@ -237,6 +253,10 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       if (fSaveTrackContribution) {
 	esdEP->GetQContributionXArray()->Set(esd->GetNumberOfTracks());
 	esdEP->GetQContributionYArray()->Set(esd->GetNumberOfTracks());
+        esdEP->GetQContributionXArraysub1()->Set(esd->GetNumberOfTracks());
+	esdEP->GetQContributionYArraysub1()->Set(esd->GetNumberOfTracks());
+        esdEP->GetQContributionXArraysub2()->Set(esd->GetNumberOfTracks());
+	esdEP->GetQContributionYArraysub2()->Set(esd->GetNumberOfTracks());
       }
       
       TObjArray* tracklist = new TObjArray;
@@ -247,7 +267,7 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
       if (nt>4){
 	fQVector = new TVector2(GetQ(esdEP,tracklist));
 	fEventplaneQ = fQVector->Phi()/2; 
-	GetQsub(qq1, qq2, tracklist);
+	GetQsub(qq1, qq2, tracklist, esdEP);
 	fQsub1 = new TVector2(qq1);
 	fQsub2 = new TVector2(qq2);
 	fQsubRes = (fQsub1->Phi()/2 - fQsub2->Phi()/2);
@@ -287,12 +307,83 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     }
   }
   
-  else if (fAnalysisInput.CompareTo("AOD")==0){
-    //AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
-    // to be implemented
-    printf("  AOD analysis not yet implemented!!!\n\n");
-    return;
+    else if (fAnalysisInput.CompareTo("AOD")==0){
+    AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
+
+    if (!(fRunNumber == aod->GetRunNumber())) {
+      fRunNumber = aod->GetRunNumber();
+      SetPhiDist();      
+    }
+  
+    if (fUseMCRP) {
+      AliAODMCHeader *headerH = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      if (headerH) fRP = headerH->GetReactionPlaneAngle();
+    }
+  
+    if (aod){
+      esdEP = aod->GetHeader()->GetEventplaneP();
+      if(esdEP) {esdEP->Reset();} // reset eventplane if not NULL  	 
+     
+    Int_t maxID = 0;
+    TObjArray* tracklist = GetAODTracksAndMaxID(aod,maxID);
+	
+    if (fSaveTrackContribution) {
+      esdEP->GetQContributionXArray()->Set(maxID+1);
+      esdEP->GetQContributionYArray()->Set(maxID+1);
+      esdEP->GetQContributionXArraysub1()->Set(maxID+1);
+      esdEP->GetQContributionYArraysub1()->Set(maxID+1);
+      esdEP->GetQContributionXArraysub2()->Set(maxID+1);
+      esdEP->GetQContributionYArraysub2()->Set(maxID+1);
+    }
+	
+    const int NT = tracklist->GetEntries();
+      
+  if (NT>4){
+    fQVector = new TVector2(GetQ(esdEP,tracklist));
+    fEventplaneQ = fQVector->Phi()/2.; 
+    GetQsub(qq1, qq2, tracklist, esdEP);
+    fQsub1 = new TVector2(qq1);
+    fQsub2 = new TVector2(qq2);
+    fQsubRes = (fQsub1->Phi()/2. - fQsub2->Phi()/2.);
+	
+    esdEP->SetQVector(fQVector);
+    esdEP->SetEventplaneQ(fEventplaneQ);
+    esdEP->SetQsub(fQsub1,fQsub2);
+    esdEP->SetQsubRes(fQsubRes);
+	
+    fHOutEventplaneQ->Fill(fEventplaneQ);
+    fHOutsub1sub2->Fill(fQsub1->Phi()/2.,fQsub2->Phi()/2.);
+    fHOutNTEPRes->Fill(NT,fQsubRes);
+
+	if (fUseMCRP) fHOutDiff->Fill(fEventplaneQ, fRP);
+	
+	for (int iter = 0; iter<NT;iter++){
+	  AliAODTrack* track = dynamic_cast<AliAODTrack*> (tracklist->At(iter));
+	  if (track) {
+	    float delta = track->Phi()-fEventplaneQ;
+	    while (delta < 0) delta += TMath::Pi();
+	    while (delta > TMath::Pi()) delta -= TMath::Pi();
+	    fHOutPTPsi->Fill(track->Pt(),delta);
+	    fHOutPhi->Fill(track->Phi());
+	    fHOutPhiCorr->Fill(track->Phi(),GetPhiWeight(track));
+	  }
+	}
+	
+	AliAODTrack* trmax = aod->GetTrack(0);
+	for (int iter = 1; iter<NT;iter++){
+	  AliAODTrack* track = dynamic_cast<AliAODTrack*> (tracklist->At(iter));
+	  if (track && (track->Pt() > trmax->Pt())) trmax = track;
+	}
+	fHOutleadPTPsi->Fill(trmax->Phi(),fEventplaneQ);      
+      }     
+      delete tracklist;
+      tracklist = 0;
+    }	
+	
+    
   }  
+
+  
   else {
     printf(" Analysis Input not known!\n\n ");
     return;
@@ -312,22 +403,25 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
 // Get the Q vector
   TVector2 mQ;
   float mQx=0, mQy=0;
-  AliESDtrack* track;
+  AliVTrack* track;
   Double_t weight;
+  Int_t idtemp = -1;
   
   int nt = tracklist->GetEntries();
 
   for (int i=0; i<nt; i++){
     weight = 1;
-    track = dynamic_cast<AliESDtrack*> (tracklist->At(i));
+    track = dynamic_cast<AliVTrack*> (tracklist->At(i));
     if (track) {
       weight = GetWeight(track);
-      if (fSaveTrackContribution){
-	EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi()),track->GetID());
-	EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi()),track->GetID());
-      }
-      mQx += (weight*cos(2*track->Phi()));
-      mQy += (weight*sin(2*track->Phi()));
+    if (fSaveTrackContribution){
+      idtemp = track->GetID(); 
+      if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
+      EP->GetQContributionXArray()->AddAt(weight*cos(2*track->Phi()),idtemp);
+      EP->GetQContributionYArray()->AddAt(weight*sin(2*track->Phi()),idtemp);
+     }
+     mQx += (weight*cos(2*track->Phi()));
+     mQy += (weight*sin(2*track->Phi()));
     }
   }
   mQ.Set(mQx,mQy);
@@ -335,50 +429,103 @@ TVector2 AliEPSelectionTask::GetQ(AliEventplane* EP, TObjArray* tracklist)
 }
   
   //________________________________________________________________________
-void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklist)
+void AliEPSelectionTask::GetQsub(TVector2 &Q1, TVector2 &Q2, TObjArray* tracklist,AliEventplane* EP)
 {
 // Get Qsub
   TVector2 mQ[2];
   float mQx1=0, mQy1=0, mQx2=0, mQy2=0;
   Double_t weight;
 
-  AliESDtrack* track;
+  AliVTrack* track;
   TRandom2 rn = 0;
   
   int nt = tracklist->GetEntries();
   int trackcounter1=0, trackcounter2=0;
-  
-  for (Int_t i = 0; i < nt; i++) {
-    weight = 1;
-    track = dynamic_cast<AliESDtrack*> (tracklist->At(i));
-    if (!track) continue;
-    weight = GetWeight(track);
+  int idtemp = 0;
+
+  if (fSplitMethod == AliEPSelectionTask::kRandom){
     
-    // This loop splits the track set into 2 random subsets
-    if( trackcounter1 < int(nt/2.) && trackcounter2 < int(nt/2.)){
-      float random = rn.Rndm();
-      if(random < .5){
-        mQx1 += (weight*cos(2*track->Phi()));
-        mQy1 += (weight*sin(2*track->Phi()));
-        trackcounter1++;
+    for (Int_t i = 0; i < nt; i++) {
+      weight = 1;
+      track = dynamic_cast<AliVTrack*> (tracklist->At(i));
+      if (!track) continue;
+      weight = GetWeight(track);
+      idtemp = track->GetID(); 
+      if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
+    
+      // This loop splits the track set into 2 random subsets
+      if( trackcounter1 < int(nt/2.) && trackcounter2 < int(nt/2.)){
+        float random = rn.Rndm();
+        if(random < .5){
+          mQx1 += (weight*cos(2*track->Phi()));
+          mQy1 += (weight*sin(2*track->Phi()));
+          if (fSaveTrackContribution){
+            EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
+            EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          }
+          trackcounter1++;
+        }
+        else {
+          mQx2 += (weight*cos(2*track->Phi()));
+          mQy2 += (weight*sin(2*track->Phi()));
+          if (fSaveTrackContribution){
+            EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
+            EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+          }
+          trackcounter2++;
+        }
       }
-      else {
+      else if( trackcounter1 >= int(nt/2.)){
         mQx2 += (weight*cos(2*track->Phi()));
         mQy2 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
         trackcounter2++;
       }
+      else {
+        mQx1 += (weight*cos(2*track->Phi()));
+        mQy1 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
+        trackcounter1++;
+      }
     }
-    else if( trackcounter1 >= int(nt/2.)){
-      mQx2 += (weight*cos(2*track->Phi()));
-      mQy2 += (weight*sin(2*track->Phi()));
-      trackcounter2++;
+  } else if (fSplitMethod == AliEPSelectionTask::kEta) {
+     
+    for (Int_t i = 0; i < nt; i++) {
+      weight = 1;
+      track = dynamic_cast<AliVTrack*> (tracklist->At(i));
+      if (!track) continue;
+      weight = GetWeight(track);
+      Double_t eta = track->Eta();
+      idtemp = track->GetID(); 
+      if ((fAnalysisInput.CompareTo("AOD")==0) && (fAODfilterbit == 128)) idtemp = idtemp*(-1) - 1;
+
+      if (eta > fEtaGap/2.) {  
+        mQx1 += (weight*cos(2*track->Phi()));
+        mQy1 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub1()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub1()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
+      } else if (eta < -1.*fEtaGap/2.) {
+        mQx2 += (weight*cos(2*track->Phi()));
+        mQy2 += (weight*sin(2*track->Phi()));
+        if (fSaveTrackContribution){
+          EP->GetQContributionXArraysub2()->AddAt(weight*cos(2*track->Phi()),idtemp);
+          EP->GetQContributionYArraysub2()->AddAt(weight*sin(2*track->Phi()),idtemp);
+        }
+      }
     }
-    else {
-      mQx1 += (weight*cos(2*track->Phi()));
-      mQy1 += (weight*sin(2*track->Phi()));
-      trackcounter1++;
-    }
+  } else {
+    printf("plane resolution determination method not available!\n\n ");
+    return;
   }
+     
   mQ[0].Set(mQx1,mQy1);
   mQ[1].Set(mQx2,mQy2);
   Q1 = mQ[0];
@@ -392,29 +539,59 @@ void AliEPSelectionTask::SetPersonalESDtrackCuts(AliESDtrackCuts* trackcuts){
     delete fESDtrackCuts;
     fESDtrackCuts = 0;
   }
-    
+  if (fAnalysisInput.CompareTo("AOD")==0){
+    AliInfo("ESD track cuts not possible for AOD analysis; please use SetPersonalAODtrackCuts(); using TPC only track cuts");  
+    fUsercuts = kFALSE;
+    SetTrackType("TPC");
+    return;
+  } 
   fUsercuts = kTRUE;
   fESDtrackCuts = trackcuts;
 }
 
+//________________________________________________________________________
+void AliEPSelectionTask::SetPersonalAODtrackCuts(UInt_t filterbit, Float_t etalow, Float_t etaup, Float_t ptlow, Float_t ptup){
+  
+  if(fESDtrackCuts){ 
+    delete fESDtrackCuts;
+    fESDtrackCuts = 0;
+  }
+  if (fAnalysisInput.CompareTo("ESD")==0){
+    AliInfo("AOD track cuts not possible for ESD analysis; please use SetPersonalESDtrackCuts(); using TPC only track cuts");  
+    fUsercuts = kFALSE;
+    SetTrackType("TPC");
+    return;
+  }
+  fUsercuts = kTRUE;
+  fESDtrackCuts = new AliESDtrackCuts();
+  fESDtrackCuts->SetPtRange(ptlow,ptup);
+  fESDtrackCuts->SetEtaRange(etalow,etaup);
+  fAODfilterbit = filterbit;
+}
+
 //_____________________________________________________________________________
+
 void AliEPSelectionTask::SetTrackType(TString tracktype){
-// Set the track type
   fTrackType = tracktype;
   if (!fUsercuts) {
-  if (fTrackType.CompareTo("GLOBAL")==0) fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
-  if (fTrackType.CompareTo("TPC")==0)    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  fESDtrackCuts->SetPtRange(0.15,20);
+  if (fTrackType.CompareTo("GLOBAL")==0){ 
+    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    fAODfilterbit = 32;
+  }	
+  if (fTrackType.CompareTo("TPC")==0){  
+    fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    fAODfilterbit = 128;
+  }
+  fESDtrackCuts->SetPtRange(0.15,20.);
   fESDtrackCuts->SetEtaRange(-0.8,0.8);
   }
 }
 
 //________________________________________________________________________
-Double_t AliEPSelectionTask::GetWeight(AliESDtrack* track)
+Double_t AliEPSelectionTask::GetWeight(TObject* track1)
 {
-// Get weight for track
   Double_t ptweight=1;
-
+  AliVTrack* track = dynamic_cast<AliVTrack*>(track1);
   if (fUsePtWeight) {      
     if (track->Pt()<2) ptweight=track->Pt();
     else ptweight=2;
@@ -423,23 +600,23 @@ Double_t AliEPSelectionTask::GetWeight(AliESDtrack* track)
 }
 
 //________________________________________________________________________
-Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
+Double_t AliEPSelectionTask::GetPhiWeight(TObject* track1)
 {
-// Get phi weight for track
   Double_t phiweight=1;
+  AliVTrack* track = dynamic_cast<AliVTrack*>(track1);
   
   if (fUsePhiWeight && fPhiDist && track) {
     Double_t nParticles = fPhiDist->Integral();
     Double_t nPhibins = fPhiDist->GetNbinsX();
   
-    Double_t phi = track->Phi();
+    Double_t Phi = track->Phi();
     
-    while (phi<0) phi += TMath::TwoPi();
-    while (phi>TMath::TwoPi()) phi -= TMath::TwoPi();
+    while (Phi<0) Phi += TMath::TwoPi();
+    while (Phi>TMath::TwoPi()) Phi -= TMath::TwoPi();
       
-    Double_t phiDistValue = fPhiDist->GetBinContent(1+TMath::FloorNint((track->Phi())*nPhibins/TMath::TwoPi()));
+    Double_t PhiDistValue = fPhiDist->GetBinContent(1+TMath::FloorNint((track->Phi())*nPhibins/TMath::TwoPi()));
     
-    if (phiDistValue > 0) phiweight = nParticles/nPhibins/phiDistValue;
+    if (PhiDistValue > 0) phiweight = nParticles/nPhibins/PhiDistValue;
   }
   return phiweight;
 }
@@ -447,7 +624,6 @@ Double_t AliEPSelectionTask::GetPhiWeight(AliESDtrack* track)
 //__________________________________________________________________________
 void AliEPSelectionTask::SetPhiDist() 
 {
-// Set the phi distribution
   if(!fUserphidist) { // if it's already set and custom class is required, we use the one provided by the user
 
     fPhiDist = (TH1F*) fEPContainer->GetObject(fRunNumber, "Default");
@@ -485,7 +661,7 @@ void AliEPSelectionTask::SetPhiDist()
 //__________________________________________________________________________
 void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char* listname)
 {
-    // Set a personal phi distribution
+  
   fUserphidist = kTRUE;
   
   TFile f(infilename);
@@ -495,3 +671,37 @@ void AliEPSelectionTask::SetPersonalPhiDistribution(const char* infilename, char
 
   f.Close();
 } 
+
+
+//_________________________________________________________________________
+TObjArray* AliEPSelectionTask::GetAODTracksAndMaxID(AliAODEvent* aod, Int_t& maxid)
+{
+  TObjArray *acctracks = new TObjArray();
+  
+  AliAODTrack *tr = 0;
+  Int_t maxid1 = 0;
+  Int_t maxidtemp = -1;
+  Float_t ptlow = 0;
+  Float_t ptup = 0;
+  Float_t etalow = 0;
+  Float_t etaup = 0;
+  fESDtrackCuts->GetPtRange(ptlow,ptup);
+  fESDtrackCuts->GetEtaRange(etalow,etaup);
+  
+  for (Int_t i = 0; i < aod->GetNumberOfTracks() ; i++){
+     tr = aod->GetTrack(i);
+     maxidtemp = tr->GetID(); 
+     if(maxidtemp < 0 && fAODfilterbit != 128) continue;
+     if(maxidtemp > -1 && fAODfilterbit == 128) continue;
+     if (fAODfilterbit == 128) maxidtemp = maxidtemp*(-1) - 1;
+     if (maxidtemp > maxid1) maxid1 = maxidtemp;
+     if(tr->TestFilterBit(fAODfilterbit) && tr->Pt() < ptup && tr->Pt() > ptlow && tr->Eta() < etaup && tr->Eta() > etalow){
+     acctracks->Add(tr);
+     }
+  }
+  
+  maxid = maxid1;
+  
+  return acctracks;
+  
+}

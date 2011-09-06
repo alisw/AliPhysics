@@ -13,13 +13,13 @@ AliEPSelectionTask *AddTaskEventplane()
     return NULL;
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  if (inputDataType != "ESD") {
-    ::Error("AddTaskEventplane", "This task works only on ESD analysis");
-    return NULL;
-  }
+ 
   
   AliEPSelectionTask *eventplaneTask = new AliEPSelectionTask("EventplaneSelection");
   eventplaneTask->SelectCollisionCandidates(AliVEvent::kMB);
+  if (inputDataType == "AOD"){
+    eventplaneTask->SetInput("AOD");
+  }
   eventplaneTask->SetTrackType("TPC");
   eventplaneTask->SetUsePtWeight();
   eventplaneTask->SetUsePhiWeight();

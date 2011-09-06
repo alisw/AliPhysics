@@ -31,6 +31,10 @@ AliEventplane::AliEventplane() : TNamed("Eventplane", "Eventplane"),
   fQVector(0),
   fQContributionX(0),
   fQContributionY(0),
+  fQContributionXsub1(0),
+  fQContributionYsub1(0),
+  fQContributionXsub2(0),
+  fQContributionYsub2(0),
   fEventplaneQ(-1),
   fQsub1(0),
   fQsub2(0),
@@ -39,6 +43,10 @@ AliEventplane::AliEventplane() : TNamed("Eventplane", "Eventplane"),
   /// constructor
   fQContributionX = new TArrayF(0);
   fQContributionY = new TArrayF(0);
+  fQContributionXsub1 = new TArrayF(0);
+  fQContributionYsub1 = new TArrayF(0);
+  fQContributionXsub2 = new TArrayF(0);
+  fQContributionYsub2 = new TArrayF(0);
 }
 
 AliEventplane::AliEventplane(const AliEventplane& ep) : 
@@ -46,6 +54,10 @@ AliEventplane::AliEventplane(const AliEventplane& ep) :
   fQVector(0),
   fQContributionX(0),
   fQContributionY(0),
+  fQContributionXsub1(0),
+  fQContributionYsub1(0),
+  fQContributionXsub2(0),
+  fQContributionYsub2(0),
   fEventplaneQ(0),
   fQsub1(0),
   fQsub2(0),
@@ -72,6 +84,14 @@ void AliEventplane::CopyEP(AliEventplane& ep) const
       target.fQContributionX = fQContributionX;
   if (fQContributionY)
       target.fQContributionY = fQContributionY;
+  if (fQContributionXsub1)
+      target.fQContributionXsub1 = fQContributionXsub1;
+  if (fQContributionYsub1)
+      target.fQContributionYsub1 = fQContributionYsub1;
+  if (fQContributionXsub2)
+      target.fQContributionXsub2 = fQContributionXsub2;
+  if (fQContributionYsub2)
+      target.fQContributionYsub2 = fQContributionYsub2;
   if (fEventplaneQ)
       target.fEventplaneQ = fEventplaneQ;
   if (fQVector)
@@ -94,6 +114,22 @@ AliEventplane::~AliEventplane()
   if (fQContributionY){
       delete fQContributionY;
       fQContributionY = 0;
+  }
+  if (fQContributionXsub1){
+      delete fQContributionXsub1;
+      fQContributionXsub1 = 0;
+  }
+  if (fQContributionYsub1){
+      delete fQContributionYsub1;
+      fQContributionYsub1 = 0;
+  }
+  if (fQContributionXsub2){
+      delete fQContributionXsub2;
+      fQContributionXsub2 = 0;
+  }
+  if (fQContributionYsub2){
+      delete fQContributionYsub2;
+      fQContributionYsub2 = 0;
   }
   if (fQVector){
       delete fQVector;
@@ -153,11 +189,35 @@ Double_t AliEventplane::GetQContributionY(AliVTrack* track)
   return fQContributionY->GetAt(track->GetID());
 }
 
+Double_t AliEventplane::GetQContributionXsub1(AliVTrack* track)
+{ 
+  return fQContributionXsub1->GetAt(track->GetID());
+}
+
+Double_t AliEventplane::GetQContributionYsub1(AliVTrack* track)
+{ 
+  return fQContributionYsub1->GetAt(track->GetID());
+}
+
+Double_t AliEventplane::GetQContributionXsub2(AliVTrack* track)
+{ 
+  return fQContributionXsub2->GetAt(track->GetID());
+}
+
+Double_t AliEventplane::GetQContributionYsub2(AliVTrack* track)
+{ 
+  return fQContributionYsub2->GetAt(track->GetID());
+}
+
 void AliEventplane::Reset()
 { 
   delete fQVector; fQVector=0;
   fQContributionX->Reset();
   fQContributionY->Reset();
+  fQContributionXsub1->Reset();
+  fQContributionYsub1->Reset();
+  fQContributionXsub2->Reset();
+  fQContributionYsub2->Reset();
   fEventplaneQ = -1;
   delete fQsub1; fQsub1=0;
   delete fQsub2; fQsub2=0;
