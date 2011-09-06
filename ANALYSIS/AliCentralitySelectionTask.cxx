@@ -640,7 +640,6 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   // ***** Scaling for MC
   if (fIsMCInput) {
     fUseScaling=kFALSE;
-    fUseCleaning=kFALSE;
     Float_t tempScalefactorV0M = MyGetScaleFactorMC(fCurrentRun);
     v0Corr  = Short_t((multV0A+multV0C)  * tempScalefactorV0M);
   }
@@ -675,16 +674,18 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       // ***** vertex
       if (TMath::Abs(zvtx)>fZVCut || zvtxNcont<1) fQuality += 1;   
 
-      // ***** outliers
-      // **** V0 vs SPD
-      if (IsOutlierV0MSPD(spdCorr, v0Corr, int(fCentV0M))) fQuality  += 2;
-      // ***** V0 vs TPC
-      if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
-      // ***** V0 vs ZDC
-       if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
-	   (zdcEnergyCal==kFALSE) && !(fIsMCInput)) fQuality  += 8;
-       if (IsOutlierV0MZDCECal((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
-	   ((zdcEnergyCal==kTRUE) || (fIsMCInput))) fQuality  += 8;
+      // ***** outliers, skip in case of MC input
+      if (!fIsMCInput) {
+	// **** V0 vs SPD
+	if (IsOutlierV0MSPD(spdCorr, v0Corr, int(fCentV0M))) fQuality  += 2;
+	// ***** V0 vs TPC
+	if (IsOutlierV0MTPC(nTracks, v0Corr, int(fCentV0M))) fQuality  += 4;
+	// ***** V0 vs ZDC
+	if (IsOutlierV0MZDC((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
+	    (zdcEnergyCal==kFALSE) && !(fIsMCInput)) fQuality  += 8;
+	if (IsOutlierV0MZDCECal((zncEnergy+znaEnergy+zpcEnergy+zpaEnergy), v0Corr) &&
+	    ((zdcEnergyCal==kTRUE) || (fIsMCInput))) fQuality  += 8;
+      }
   } else {
       fQuality = 0;
   }
