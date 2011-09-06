@@ -67,7 +67,9 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
 
   // bins for saved parameters
   enum {kDummyBin,
-	kEvTot,       // events read
+	kEvTot0,      // events read
+	kEvTot,       // events read after vertex quality selection
+	kEvTotPlp,    // events with pile-up
 	kEvProcData,  // events with data mult.object (ESD or reco)
 	kEvProcInj,   // events Injected
 	kEvProcRot,   // events Rotated
@@ -85,11 +87,14 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
 	//
 	kPhiRot,      // rotation phi
 	kInjScl,      // injection scaling
-	kEtaCut,      // eta cut
+	kEtaMin,      // eta cut
+	kEtaMax,      // eta cut
 	kZVMin,       // min ZVertex to process
 	kZVMax,       // max ZVertex to process
 	kTrcMin,      // min mult to process
 	kTrcMax,      // max mult to process
+	//
+	kMCV0Scale,   // scaling value for V0 in MC	
 	//
 	kOneUnit=49,  // just 1 to track mergings
 	kNWorkers=50, // n workers
@@ -103,6 +108,7 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   virtual void  UserCreateOutputObjects();
   virtual void  UserExec(Option_t *option);
   virtual void  Terminate(Option_t *);
+  void          RegisterStat();
 
   void       SetUseMC(Bool_t mc = kFALSE)              {fUseMC = mc;}
   void       SetCheckReconstructables(Bool_t c=kFALSE) {fCheckReconstructables = c;}
@@ -122,8 +128,11 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   void       SetPhiRot(float w=0)               {fPhiRot = w;}
   void       SetInjScale(Float_t s=1.)          {fInjScale = s>0? s:1.;}
   void       SetRemoveOverlaps(Bool_t w=kFALSE) {fRemoveOverlaps = w;}
+  void       SetScaleMCV0(Float_t s=1.0)        {fMCV0Scale = s;}  
   //
-  void       SetEtaCut(Float_t eta)             {fEtaCut = eta;}
+  void       SetEtaCut(Float_t etaCut)          {fEtaMax = TMath::Abs(etaCut); fEtaMin= -fEtaMax;}
+  void       SetEtaMin(Float_t etaMin)          {fEtaMin = etaMin;}
+  void       SetEtaMax(Float_t etaMax)          {fEtaMax = etaMax;}
   void       SetZVertexMin(Float_t z)           {fZVertexMin = z;}
   void       SetZVertexMax(Float_t z)           {fZVertexMax = z;}
   void       SetMultCutMin(Int_t n=0)           {fMultCutMin = n;}
@@ -139,6 +148,7 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   void       SetDoRotation(Bool_t v=kTRUE)      {fDoRotation = v;}
   void       SetDoMixing(Bool_t v=kTRUE)        {fDoMixing = v;}
   //
+  void       SetDontMerge(Bool_t v=kTRUE)       {fDontMerge = v;}
   /*
   void       SetTrigger(AliTriggerAnalysis::Trigger trigger)  { fTrigger = trigger; }
   void       SetMCCentralityBin(MCCentralityBin mccentrbin)   { fMCCentralityBin = mccentrbin;}
@@ -183,11 +193,13 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   //
   // Settings for the reconstruction
   // tracklet reco settings
-  Float_t      fEtaCut;                    // histos filled only for this eta range
+  Float_t      fEtaMin;                    // histos filled only for this eta range
+  Float_t      fEtaMax;                    // histos filled only for this eta range
   Float_t      fZVertexMin;                // min Z vtx to process
   Float_t      fZVertexMax;                // max Z vtx to process
   Int_t        fMultCutMin;                // min mult in ESD to process?
   Int_t        fMultCutMax;                // max mult in ESD to process?
+  Float_t      fMCV0Scale;                 // scaling factor for V0 in MC
   //
   Bool_t       fScaleDTBySin2T;            // request dTheta scaling by 1/sin^2(theta)
   Bool_t       fCutOnDThetaX;              // if true, apart from NStdDev cut apply also the cut on dThetaX
@@ -215,6 +227,7 @@ class AliTrackletTaskUni : public AliAnalysisTaskSE {
   Float_t      fCentrUpLim;                // to select centrality bin on data
   TString      fCentrEst;                  // to select centrality estimator
   */
+  Bool_t fDontMerge;                       // no merging requested
   static const char*  fgkPDGNames[];                //!pdg names
   static const Int_t  fgkPDGCodes[];                //!pdg codes
   //
