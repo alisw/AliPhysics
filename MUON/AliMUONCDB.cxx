@@ -299,6 +299,7 @@ AliMUONRecoParam* AliMUONCDB::LoadRecoParam()
     if (!(recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject()))) {
       
       TObjArray* recoParamArray = static_cast<TObjArray*>(entry->GetObject());
+//      recoParamArray->SetOwner(kTRUE); // FIXME: this should be done, but is causing a problem at the end of the reco... investigate why...
       
       for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); i++) {
 	recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));

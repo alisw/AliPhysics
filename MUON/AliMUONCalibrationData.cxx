@@ -696,6 +696,10 @@ AliMUONCalibrationData::CreateObject(Int_t runNumber, const char* path, Int_t* s
       entry->SetOwner(kFALSE);
       delete entry;      
     }
+//    else
+//    {
+//      entry->SetOwner(kTRUE); //FIXME : this should be done but is causing problems with RecoParams at the end of the reco : investigate why...
+//    }
     return object;
   }
 	else
