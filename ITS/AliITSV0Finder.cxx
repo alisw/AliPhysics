@@ -1039,6 +1039,7 @@ void AliITSV0Finder::FindV02(AliESDEvent *event,
   delete[] itsmap;
   delete[] helixes;
   delete   pvertex;
+  delete   dummy;
 }
 //------------------------------------------------------------------------
 void AliITSV0Finder::RefitV02(const AliESDEvent *event,

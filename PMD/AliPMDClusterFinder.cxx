@@ -269,9 +269,9 @@ void AliPMDClusterFinder::Digits2RecPoints(TTree *digitsTree,
 
 
       // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
-
-      Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
-      
+      AliPMDRecoParam * par = fRecoParam->GetPPParam();
+      Int_t cluspar = par->GetClusteringParam();
+      delete par;
 
       // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
       
@@ -597,7 +597,9 @@ void AliPMDClusterFinder::Digits2RecPoints(AliRawReader *rawReader,
 	  Int_t imod = idet*24 + ismn;
 
 	  // Int_t cluspar = fRecoParam->GetPbPbParam()->GetClusteringParam();
-	   Int_t cluspar = fRecoParam->GetPPParam()->GetClusteringParam();
+	  AliPMDRecoParam * par = fRecoParam->GetPPParam();
+	   Int_t cluspar = par->GetClusteringParam();
+	   delete par;
 	  // Int_t cluspar = fRecoParam->GetCosmicParam()->GetClusteringParam();
 
 	  //_______________________________________________________// 

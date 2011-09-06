@@ -691,6 +691,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     pESD->SetTZEROData(fESDTZERO);
   }
 
+  if(frecpoints) delete frecpoints;
 
 } // vertex in 3 sigma
 

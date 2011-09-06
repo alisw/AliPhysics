@@ -258,8 +258,8 @@ void AliTPCclustererMI::SetOutput(TTree * tree)
   //
   if (!tree) return;
   fOutput= tree;
-  AliTPCClustersRow clrow, *pclrow=&clrow;  
-  pclrow = new AliTPCClustersRow("AliTPCclusterMI");
+  AliTPCClustersRow clrow("AliTPCclusterMI");
+  AliTPCClustersRow *pclrow=&clrow;  
   fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
 }
 

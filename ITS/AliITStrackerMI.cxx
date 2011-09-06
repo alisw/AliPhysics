@@ -714,38 +714,34 @@ Int_t AliITStrackerMI::PropagateBack(AliESDEvent *event) {
 
      // Start time integral and add distance from current position to vertex 
      if (esd->GetStatus()&AliESDtrack::kITSout) continue;
-     AliITStrackMI *t = new AliITStrackMI(*esd);
+     AliITStrackMI t(*esd);
      Double_t xyzTrk[3],xyzVtx[3]={GetX(),GetY(),GetZ()};
-     t->GetXYZ(xyzTrk); 
+     t.GetXYZ(xyzTrk); 
      Double_t dst2 = 0.;
      for (Int_t icoord=0; icoord<3; icoord++) {Double_t di = xyzTrk[icoord] - xyzVtx[icoord];dst2 += di*di; } 
-     t->StartTimeIntegral();
-     t->AddTimeStep(TMath::Sqrt(dst2));
+     t.StartTimeIntegral();
+     t.AddTimeStep(TMath::Sqrt(dst2));
      //
      // transfer the time integral to ESD track
      esd->SetStatus(AliESDtrack::kTIME);
-     Double_t times[10];t->GetIntegratedTimes(times); esd->SetIntegratedTimes(times);
-     esd->SetIntegratedLength(t->GetIntegratedLength());
+     Double_t times[10];t.GetIntegratedTimes(times); esd->SetIntegratedTimes(times);
+     esd->SetIntegratedLength(t.GetIntegratedLength());
      //
-     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue; 
+     if ((esd->GetStatus()&AliESDtrack::kITSin)==0) continue;
 
-     t->SetExpQ(TMath::Max(0.8*t->GetESDtrack()->GetTPCsignal(),30.));
-     ResetTrackToFollow(*t);
+     t.SetExpQ(TMath::Max(0.8*t.GetESDtrack()->GetTPCsignal(),30.));
+     ResetTrackToFollow(t);
      //
      fTrackToFollow.ResetCovariance(10.); fTrackToFollow.ResetClusters();
-     if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,t)) {
-       if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) {
-	 delete t;
-	 continue;
-       }
-       fTrackToFollow.SetLabel(t->GetLabel());
+     if (RefitAt(AliITSRecoParam::GetrInsideITSscreen(),&fTrackToFollow,&t)) {
+       if (!CorrectForTPCtoITSDeadZoneMaterial(&fTrackToFollow)) continue;
+       fTrackToFollow.SetLabel(t.GetLabel());
        //fTrackToFollow.CookdEdx();
        CookLabel(&fTrackToFollow,0.); //For comparison only
        fTrackToFollow.UpdateESDtrack(AliESDtrack::kITSout);
        //UseClusters(&fTrackToFollow);
        ntrk++;
      }
-     delete t;
   }
 
   AliInfo(Form("Number of back propagated ITS tracks: %d out of %d ESD tracks",ntrk,nentr));

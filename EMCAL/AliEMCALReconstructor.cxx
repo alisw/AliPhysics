@@ -308,7 +308,7 @@ void AliEMCALReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     fgRawUtils->SetNoiseThreshold(GetRecParam()->GetNoiseThreshold());
     fgRawUtils->SetNPedSamples(GetRecParam()->GetNPedSamples());
     fgRawUtils->SetRemoveBadChannels(GetRecParam()->GetRemoveBadChannels());
-    fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
+    if (!fgRawUtils->GetFittingAlgorithm()) fgRawUtils->SetFittingAlgorithm(GetRecParam()->GetFittingAlgorithm());
     fgRawUtils->SetFALTROUsage(GetRecParam()->UseFALTRO());
     
     //fgRawUtils->SetTimeMin(GetRecParam()->GetTimeMin());

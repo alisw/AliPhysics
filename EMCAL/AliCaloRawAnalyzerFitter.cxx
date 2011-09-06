@@ -52,7 +52,7 @@ AliCaloRawAnalyzerFitter::AliCaloRawAnalyzerFitter(const char *name, const char 
 
 AliCaloRawAnalyzerFitter::~AliCaloRawAnalyzerFitter()
 {
-
+  delete fTf1;
 }
 
 

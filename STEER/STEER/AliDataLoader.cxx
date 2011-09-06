@@ -437,6 +437,7 @@ void AliDataLoader::CloseFile()
   
   if (fFile) {
     fFile->Close("R");
+    delete fFile;
     fFile = 0x0;
   }
   fDirectory = 0x0;

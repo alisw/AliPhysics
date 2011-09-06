@@ -107,6 +107,8 @@ AliEMCALRawUtils::AliEMCALRawUtils( Algo::fitAlgorithm fitAlgo) : fNoiseThreshol
 AliEMCALRawUtils::~AliEMCALRawUtils() 
 {
   //dtor
+  delete fRawAnalyzer;
+  delete fTriggerRawDigitMaker;
 }
 
 
@@ -371,6 +373,7 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
 
 void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
 {
+  delete fRawAnalyzer; // delete doesn't do anything if the pointer is 0x0
   fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( fitAlgo );
   fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done, for the new methods
   fRawAnalyzer->SetOverflowCut ( OVERFLOWCUT );

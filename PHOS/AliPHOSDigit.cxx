@@ -207,6 +207,7 @@ Int_t AliPHOSDigit::GetPrimary(Int_t index) const
 void AliPHOSDigit::SetALTROSamplesHG(Int_t nSamplesHG, Int_t *samplesHG)
 {
   fNSamplesHG = nSamplesHG;
+  if (fSamplesHG) delete [] fSamplesHG;
   fSamplesHG = new UShort_t[fNSamplesHG];
   UShort_t i;
   for (i=0; i<fNSamplesHG; i++) {
@@ -217,6 +218,7 @@ void AliPHOSDigit::SetALTROSamplesHG(Int_t nSamplesHG, Int_t *samplesHG)
 void AliPHOSDigit::SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG)
 {
   fNSamplesLG = nSamplesLG;
+  if (fSamplesLG) delete [] fSamplesLG;
   fSamplesLG = new UShort_t[fNSamplesLG];
   UShort_t i;
   for (i=0; i<fNSamplesLG; i++) {

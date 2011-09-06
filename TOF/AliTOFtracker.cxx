@@ -438,7 +438,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
   //The matching loop
   for (Int_t iseed=0; iseed<fNseedsTOF; iseed++) {
 
-    fTOFtrackPoints->Clear();
+    fTOFtrackPoints->Delete();
 
     for (Int_t ii=0; ii<kNclusterMax; ii++)
       global[ii] = 0x0;
