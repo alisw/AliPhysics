@@ -80,7 +80,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0)
+    fClusterizeFastORs(0),
+    fMinFastORtime(0),
+    fMaxFastORtime(20)
 { 
   // Constructor
 }
@@ -117,7 +119,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0)
+    fClusterizeFastORs(0),
+    fMinFastORtime(0),
+    fMaxFastORtime(20)
 { 
   // Constructor
 
@@ -239,7 +243,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
   
   fDigitsArr->Clear("C");
   
-  if (fCreatePattern) {
+  if (fCreatePattern) {  // Fill digits from a pattern
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
     Int_t maxd = fGeom->GetNCells() / 4;
     for (Int_t idigit = 0; idigit < maxd; idigit++){
@@ -253,7 +257,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       digit->SetAmplitude(0.1);
     }
 
-  } else if (fClusterizeFastORs) {
+  } else if (fClusterizeFastORs) { // Fill digits from FastORs
     
     AliEMCALGeometry *fGeom = AliEMCALGeometry::GetInstance(fGeomName);
   
@@ -271,7 +275,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
     Int_t idigit = 0;
     triggers->Reset();
     
-    while ((triggers->Next())){
+    while ((triggers->Next())) {
       Float_t triggerAmplitude = 0;
       triggers->GetAmplitude(triggerAmplitude);
       if (triggerAmplitude <= 0)
@@ -280,11 +284,14 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       Int_t triggerTime = 0;
       Int_t ntimes = 0;
       triggers->GetNL0Times(ntimes);
-      if (ntimes > 0){
+      if (ntimes > 0) {
         Int_t trgtimes[25];
         triggers->GetL0Times(trgtimes);
         triggerTime = trgtimes[0];
       }
+      
+      if (triggerTime < fMinFastORtime || triggerTime > fMaxFastORtime)
+        continue;
       
       Int_t triggerCol = 0, triggerRow = 0;
       triggers->GetPosition(triggerCol, triggerRow);
@@ -301,7 +308,7 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
       if (!ret)
         continue;
       
-      for (Int_t idxpos = 0; idxpos < 4; idxpos++){
+      for (Int_t idxpos = 0; idxpos < 4; idxpos++) {
         Int_t triggerNumber = cidx[idxpos];
         AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
         digit->SetId(triggerNumber);
