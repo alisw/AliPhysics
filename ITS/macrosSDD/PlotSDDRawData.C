@@ -13,7 +13,12 @@
 // Macro to display the SDD Raw Data for 1 DDL
 // Origin: F. Prino,   prino@to.infn.it
 
-void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t lastEv=20){
+void PlotSDDRawData(Char_t datafil[100], 
+		    Int_t nDDL, 
+		    Int_t firstEv=18, 
+		    Int_t lastEv=20){
+
+  // Main function
 
   const Int_t nHybrids=24;
   Bool_t writtenoutput=kFALSE;
@@ -26,8 +31,8 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
   Bool_t isSingleMod=kFALSE;
   Int_t npx=4;
   Int_t npy=6;
-  Int_t xsiz=900;
-  Int_t ysiz=900;
+  Int_t xsiz=700;
+  Int_t ysiz=700;
   Int_t nHybrToPlot=24;
   Int_t iMod=-1;
   Int_t nCarlos;
@@ -37,7 +42,7 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
     dmap->SetJun09Map();
     dmap->FindInDDLMap(iMod,nDDL,nCarlos);
     histo[nCarlos*2]->SetTitle(Form("Module %d Side 0",iMod));
-    histo[nCarlos*2+1]->SetTitle(Form("Module %d Side 0",iMod));
+    histo[nCarlos*2+1]->SetTitle(Form("Module %d Side 1",iMod));
     isSingleMod=kTRUE;
     npx=2;
     npy=1;
@@ -96,15 +101,20 @@ void PlotSDDRawData(Char_t datafil[100], Int_t nDDL, Int_t firstEv=18, Int_t las
       }
     }
     c0->Update();
-    if(histo[nCarlos*2]->GetMaximum()>1) getchar();
+    //    if(histo[nCarlos*2]->GetMaximum()>1) getchar();
   }while(rd->NextEvent()&&iev<=lastEv);
 
 }
 
-void PlotSDDRawData(Int_t nrun, Int_t n2, Int_t year=2009, Char_t* dir="LHC09b_SDD",
+void PlotSDDRawData(Int_t nrun, 
+		    Int_t n2, 
+		    Int_t year=2011, 
+		    Char_t* dir="LHC11d_SDD",
 		    Int_t nDDL=0, 
 		    Int_t firstEv=18, 
 		    Int_t lastEv=20){
+
+  // Get file directly from alien
 
   TGrid::Connect("alien:",0,0,"t");
   Char_t filnam[200];
@@ -113,3 +123,16 @@ void PlotSDDRawData(Int_t nrun, Int_t n2, Int_t year=2009, Char_t* dir="LHC09b_S
   PlotSDDRawData(filnam,nDDL,firstEv,lastEv);
 }
 
+void PlotSDDRawData(Char_t datafil[100], 
+		    Int_t nLay, 
+		    Int_t nLad, 
+		    Int_t nDet,
+		    Int_t firstEv, 
+		    Int_t lastEv){
+
+  // plot raw data for single module starting from 
+  // Layer, Ladder and detector numbers (counted from 1)
+  Int_t modIndex=AliITSgeomTGeo::GetModuleIndex(nLay,nLad,nDet);
+  PlotSDDRawData(datafil,modIndex,firstEv,lastEv);
+
+}

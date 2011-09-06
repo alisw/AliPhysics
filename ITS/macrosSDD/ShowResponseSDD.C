@@ -29,6 +29,7 @@ void ShowResponseSDD(TString filename="$ALICE_ROOT/OCDB/ITS/Calib/RespSDD/Run0_9
   }
   TFile* fr=TFile::Open(filename.Data());
   AliCDBEntry* e=(AliCDBEntry*)fr->Get("AliCDBEntry");
+  e->PrintMetaData();
   AliITSresponseSDD* r=(AliITSresponseSDD*)e->GetObject();
   TH1F* hTimeZero=new TH1F("hTimeZero","",260,239.5,499.5);
   TH1F* hVdriftCorrLeft=new TH1F("hVdriftCorrLeft","",260,239.5,499.5);
