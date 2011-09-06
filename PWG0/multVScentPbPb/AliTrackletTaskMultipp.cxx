@@ -1258,20 +1258,27 @@ Bool_t AliTrackletTaskMulti::HaveCommonParent(const float* clLabs0,const float* 
   int npars[2]={0,0};
   const float *labs[2] = {clLabs0,clLabs1};
   int ntr = fStack->GetNtrack();
+  //  printf("\nHaveCommonParent \n");
   for (int il=0;il<2;il++) {
+    
     for (int ilb=0;ilb<3;ilb++) {
       int lbl = (int)labs[il][ilb];
-      if (lbl<0 || lbl>=ntr) continue;
+      if (lbl<2 || lbl>=ntr) continue;
       //
       while (npars[il]<kMaxPar-1) {
-	pars[il][ npars[il]++ ] = lbl;
 	TParticle* part = fStack->Particle(lbl);
 	if (!part) break;
+	int code = TMath::Abs(part->GetPdgCode());
+	int q = (int)TMath::Abs(part->GetPDG()->Charge());
+	if (code==21 || code<10 || q==1 || q==2 || q==4 ) break;
+	//printf("%d/%d/%d: %4d (%d)%s|",il,ilb,npars[il],lbl,part->GetStatusCode(),part->GetName());
+	pars[il][ npars[il]++ ] = lbl;
 	lbl = part->GetFirstMother();
 	if (lbl<1 || lbl>=ntr) break;
       }
+      //      printf("\n");
     }
-  }
+  } 
   // compare array of parents
   for (int i0=npars[0];i0--;) for (int i1=npars[1];i1--;) if (pars[0][i0]==pars[1][i1]) return kTRUE;
   return kFALSE;
