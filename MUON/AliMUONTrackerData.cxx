@@ -910,6 +910,11 @@ AliMUONTrackerData::AssertStores()
     // get number of bus patches and number of detection element
     // to initialize fBusPatchValues and fDEValues below
     
+    if (!AliMpDDLStore::Instance(false))
+    {
+      AliMpCDB::LoadAll();
+    }
+    
     TIter next(AliMpDDLStore::Instance()->CreateBusPatchIterator());
     while ( next() ) ++numberOfBusPatches;
     AliMpDEIterator deIt;
