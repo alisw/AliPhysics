@@ -30,33 +30,26 @@
 
 
 // Common variables: to be configured by the user
-TString filname="AnalysisResults_ptbins.root";
-TString filcutsname="AnalysisResults_ptbins.root";
+TString filname="AnalysisResultsgoodruns.root";
+TString listname="coutputv2D0Std";//"coutputv2D0RAACuts"; //"coutputv2D0Std";
+TString filcutsname="AnalysisResultsgoodruns.root";
 Int_t minCent=30;
 Int_t maxCent=50;
 Int_t mesonPDG=421;
+
 const Int_t nFinalPtBins=3;
 Double_t ptlims[nFinalPtBins+1]={2.,5.,8.,12.};
 Double_t sigmaRangeForSig=2.5;
 Double_t sigmaRangeForBkg=4.5;
-Int_t rebinHistoSideBands=2;
-Int_t rebinHistov2Mass[nFinalPtBins]={2,2,4};
+Int_t rebinHistoSideBands[nFinalPtBins]={2,2,2};
+Bool_t useConstantvsBkgVsMass=kFALSE;
+Int_t rebinHistov2Mass[nFinalPtBins]={2,2,5};
 Int_t factor4refl=0;
 Int_t minPtBin[nFinalPtBins]={-1,-1,-1};
 Int_t maxPtBin[nFinalPtBins]={-1,-1,-1};
 
-// systematic erros for 2-4, 4-5 and 5-12
-// Double_t systErrMeth1[nFinalPtBins]={
-//   (0.294-0.26)/2.,
-//   (0.222-0.163)/2.,
-//   (0.138-0.085)/2.
-// };
-//Double_t systErrMeth2[nFinalPtBins]={
-//  (0.264-0.226)/2.,
-//  (0.224-0.171)/2.,
-//  (0.106-0.007)/2.
-//};
-// systematic erros for 2-5, 5-8 and 8-12
+// systematic errors for 2-5, 5-8 and 8-12 (no run-by-run weights)
+/*
 Double_t systErrMeth1[nFinalPtBins]={
   (0.308-0.169)/2.,
   (0.14-0.1)/2.,
@@ -67,7 +60,34 @@ Double_t systErrMeth2[nFinalPtBins]={
   (0.129-0.020)/2.,
   (0.101+0.06)/2.
 };
+*/
 
+// systematic errors for 2-5, 5-8 and 8-12 (93 runs with run-by-run weights)
+Double_t systErrMeth1[nFinalPtBins]={
+  (0.23-0.10)/2.,
+  (0.152-0.078)/2.,
+  (0.161-0.097)/2.
+};
+Double_t systErrMeth2[nFinalPtBins]={
+  (0.164-0.097)/2.,
+  (0.110-0.012)/2.,
+  (0.131-0.036)/2.
+};
+
+
+// systematic errors for 2-5, 5-8 and 8-12 (93 runs with run-by-run weights, RAA cuts)
+/*
+Double_t systErrMeth1[nFinalPtBins]={
+  (0.265-0.122)/2.,
+  (0.165-0.117)/2.,
+  (0.238-0.169)/2.
+};
+Double_t systErrMeth2[nFinalPtBins]={
+  (0.174-0.135)/2.,
+  (0.18-0.11)/2.,
+  (0.311-0.28)/2.
+};
+*/
 
 // output of mass fitter
 Int_t hMinBin;
@@ -83,8 +103,9 @@ Bool_t DefinePtBins(TDirectoryFile* df);
 Double_t v2vsMass(Double_t *x, Double_t *par);
 Double_t GetEPResolution(TList* lst, Double_t &rcflow, Double_t &rcfhigh);
 Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad);
-TH1F* DoSideBands(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, TCanvas* c1, Int_t optBkg=0);
-TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c2, Int_t optErrors=0, Bool_t useConst=kFALSE);
+TH1F* DoSideBands(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c1, Int_t optBkg=0);
+TF1* DoFitv2vsMass(Int_t iFinalPtBin, TH2F* hMassDphi, TH1F* hMass, Int_t rebin, TCanvas* c2, Int_t optErrors=0, Bool_t useConst=kTRUE);
+
 
 void Extractv2from2Dhistos(){
 
@@ -97,8 +118,11 @@ void Extractv2from2Dhistos(){
 
   TFile* fil=new TFile(filname.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get("coutputv2D0Std");
-  
+  TList* lst=(TList*)df->Get(listname.Data());
+  if(!lst){
+    printf("ERROR: list %s not found in file\n",listname.Data());
+    return;
+  }
   Double_t rcfmin,rcfmax;
   Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
   Double_t resolSyst=(rcfmax-rcfmin)/2./resolFull;
@@ -132,7 +156,7 @@ void Extractv2from2Dhistos(){
     Bool_t out=FitMassSpectrum(hMass,(TPad*)gPad);
     if(!out) continue;
 
-    TH1F* hCos2PhiSig=DoSideBands(iFinalPtBin,hMassDphi[iFinalPtBin],hMass,c1[iFinalPtBin]);
+    TH1F* hCos2PhiSig=DoSideBands(iFinalPtBin,hMassDphi[iFinalPtBin],hMass,rebinHistoSideBands[iFinalPtBin],c1[iFinalPtBin]);
     Double_t v2obsM1=hCos2PhiSig->GetMean();
     Double_t errv2obsM1=hCos2PhiSig->GetMeanError();  
     printf("v2obs = %f +- %f\n",v2obsM1,errv2obsM1);
@@ -141,8 +165,8 @@ void Extractv2from2Dhistos(){
     printf("v2 = %f +- %f\n",v2M1[iFinalPtBin],errv2M1[iFinalPtBin]);
     
     printf("\n--------- Method 2: S/S+B ----------\n");
-    c2[iFinalPtBin]=new TCanvas(Form("cMeth2Bin%d",iFinalPtBin),Form("cMeth2Bin%d",iFinalPtBin));
-    TF1* fv2=DoFitv2vsMass(iFinalPtBin,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],c2[iFinalPtBin]);
+    c2[iFinalPtBin]=new TCanvas(Form("cMeth2Bin%d",iFinalPtBin),Form("Meth2Bin%d",iFinalPtBin));
+    TF1* fv2=DoFitv2vsMass(iFinalPtBin,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],c2[iFinalPtBin],0,useConstantvsBkgVsMass);
 
     Double_t v2obsM2=fv2->GetParameter(3);
     Double_t errv2obsM2=fv2->GetParError(3);
@@ -150,6 +174,8 @@ void Extractv2from2Dhistos(){
     v2M2[iFinalPtBin]=v2obsM2/resolFull;
     errv2M2[iFinalPtBin]=errv2obsM2/resolFull;
     printf("v2 = %f +- %f\n",v2M2[iFinalPtBin],errv2M2[iFinalPtBin]);
+    c1[iFinalPtBin]->SaveAs(Form("cMeth1Bin%d.root",iFinalPtBin));
+    c2[iFinalPtBin]->SaveAs(Form("cMeth2Bin%d.root",iFinalPtBin));
   }
 
   printf("\n--------- Summary ------------\n");
@@ -282,6 +308,7 @@ Bool_t FitMassSpectrum(TH1F* hMass, TPad* pad){
 TH1F* DoSideBands(Int_t iFinalPtBin,
 		  TH2F* hMassDphi, 
 		  TH1F* hMass, 
+		  Int_t rebin,
 		  TCanvas* c1,
 		  Int_t optBkg){
 
@@ -330,9 +357,9 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
   TH1F* hCos2PhiBkgHi=(TH1F*)hMassDphi->ProjectionX(Form("hCos2PhiBkgHiBin%d",iFinalPtBin),minBinBkgHi,maxBinBkgHi);
   TH1F* hCos2PhiSigReg=(TH1F*)hMassDphi->ProjectionX(Form("hCos2PhiBkgSigBin%d",iFinalPtBin),minBinSig,maxBinSig);
   
-  hCos2PhiBkgLo->Rebin(rebinHistoSideBands);
-  hCos2PhiBkgHi->Rebin(rebinHistoSideBands);
-  hCos2PhiSigReg->Rebin(rebinHistoSideBands);
+  hCos2PhiBkgLo->Rebin(rebin);
+  hCos2PhiBkgHi->Rebin(rebin);
+  hCos2PhiSigReg->Rebin(rebin);
   hCos2PhiSigReg->SetLineWidth(2);
   hCos2PhiBkgLo->SetLineWidth(2);
   hCos2PhiBkgHi->SetLineWidth(2);
@@ -653,7 +680,11 @@ void SystForSideBands(){
 
   TFile* fil=new TFile(filname.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get("coutputv2D0Std");
+  TList* lst=(TList*)df->Get(listname.Data());
+  if(!lst){
+    printf("ERROR: list %s not found in file\n",listname.Data());
+    return;
+  }
 
   Double_t rcfmin,rcfmax;
   Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
@@ -672,17 +703,19 @@ void SystForSideBands(){
   TGraphErrors** gSystWhichSide=new TGraphErrors*[nFinalPtBins];
 
   Double_t min1[nFinalPtBins],max1[nFinalPtBins];
+  Double_t min123[nFinalPtBins],max123[nFinalPtBins];
   Double_t min2[nFinalPtBins],max2[nFinalPtBins];
   Double_t min3[nFinalPtBins],max3[nFinalPtBins];
   Double_t min4[nFinalPtBins],max4[nFinalPtBins];
 
   Double_t sigmaRangeForSigOrig=sigmaRangeForSig;
   Double_t sigmaRangeForBkgOrig=sigmaRangeForBkg;
-  Int_t rebinHistoSideBandsOrig=rebinHistoSideBands;
 
 
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
     printf("**************** BIN %d ******************\n",iFinalPtBin);
+
+    Int_t rebinHistoSideBandsOrig=rebinHistoSideBands[iFinalPtBin];
 
     gSystSigRange[iFinalPtBin]=new TGraphErrors(0);
     gSystSigRange[iFinalPtBin]->SetTitle(Form("v2 vs. nSigma Signal Region Ptbin %d",iFinalPtBin));
@@ -694,12 +727,14 @@ void SystForSideBands(){
 
     min1[iFinalPtBin]=99999.;
     max1[iFinalPtBin]=-99999.;
+    min123[iFinalPtBin]=99999.;
+    max123[iFinalPtBin]=-99999.;
     for(Int_t iStep=0; iStep<nSteps; iStep++){
       Int_t index=iFinalPtBin*nSteps+iStep;
       sigmaRangeForSig=1.5+0.1*iStep;
       sigmaRangeForBkg=sigmaRangeForBkgOrig;
-      rebinHistoSideBands=rebinHistoSideBandsOrig;
-      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,0x0);
+      rebinHistoSideBands[iFinalPtBin]=rebinHistoSideBandsOrig;
+      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,rebinHistoSideBands[iFinalPtBin],0x0);
       Double_t v2obsM1=hCos2PhiSig->GetMean();
       Double_t errv2obsM1=hCos2PhiSig->GetMeanError();  
       delete hCos2PhiSig;
@@ -709,6 +744,10 @@ void SystForSideBands(){
       gSystSigRange[iFinalPtBin]->SetPointError(iStep,0.,errv2M1);
       if(v2M1>max1[iFinalPtBin]) max1[iFinalPtBin]=v2M1;
       if(v2M1<min1[iFinalPtBin]) min1[iFinalPtBin]=v2M1;
+      if(sigmaRangeForSig>=2. && sigmaRangeForSig<=3){
+	if(v2M1>max123[iFinalPtBin]) max123[iFinalPtBin]=v2M1;
+	if(v2M1<min123[iFinalPtBin]) min123[iFinalPtBin]=v2M1;
+      }
     }
  
     min2[iFinalPtBin]=99999.;
@@ -719,8 +758,8 @@ void SystForSideBands(){
       Int_t index=nSteps*nFinalPtBins+iFinalPtBin*nSteps+iStep;
       sigmaRangeForSig=sigmaRangeForSigOrig;
       sigmaRangeForBkg=4.+0.1*iStep;
-      rebinHistoSideBands=rebinHistoSideBandsOrig;
-      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,0x0);
+      rebinHistoSideBands[iFinalPtBin]=rebinHistoSideBandsOrig;
+      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,rebinHistoSideBands[iFinalPtBin],0x0);
       Double_t v2obsM1=hCos2PhiSig->GetMean();
       Double_t errv2obsM1=hCos2PhiSig->GetMeanError();  
       delete hCos2PhiSig;
@@ -741,15 +780,15 @@ void SystForSideBands(){
       Int_t index=2*nSteps*nFinalPtBins+iFinalPtBin*nSteps+iStep;
       sigmaRangeForSig=sigmaRangeForSigOrig;
       sigmaRangeForBkg=sigmaRangeForBkgOrig;
-      rebinHistoSideBands=iStep+1;
-      if((hMassDphi[iFinalPtBin]->GetNbinsY())%rebinHistoSideBands!=0) continue;
-      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,0x0);
+      rebinHistoSideBands[iFinalPtBin]=iStep+1;
+      if((hMassDphi[iFinalPtBin]->GetNbinsY())%rebinHistoSideBands[iFinalPtBin]!=0) continue;
+      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,rebinHistoSideBands[iFinalPtBin],0x0);
       Double_t v2obsM1=hCos2PhiSig->GetMean();
       Double_t errv2obsM1=hCos2PhiSig->GetMeanError();  
       delete hCos2PhiSig;
       Double_t v2M1=v2obsM1/resolFull;
       Double_t errv2M1=errv2obsM1/resolFull;
-      gSystRebin[iFinalPtBin]->SetPoint(nPts,(Double_t)rebinHistoSideBands,v2M1);
+      gSystRebin[iFinalPtBin]->SetPoint(nPts,(Double_t)rebinHistoSideBands[iFinalPtBin],v2M1);
       gSystRebin[iFinalPtBin]->SetPointError(nPts,0.,errv2M1);
       if(v2M1>max3[iFinalPtBin]) max3[iFinalPtBin]=v2M1;
       if(v2M1<min3[iFinalPtBin]) min3[iFinalPtBin]=v2M1;
@@ -765,8 +804,8 @@ void SystForSideBands(){
       Int_t index=3*nSteps*nFinalPtBins+2+iStep;
       sigmaRangeForSig=sigmaRangeForSigOrig;
       sigmaRangeForBkg=sigmaRangeForBkgOrig;
-      rebinHistoSideBands=rebinHistoSideBandsOrig;
-      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,0x0,iStep);
+      rebinHistoSideBands[iFinalPtBin]=rebinHistoSideBandsOrig;
+      TH1F* hCos2PhiSig=DoSideBands(index,hMassDphi[iFinalPtBin],hMass,rebinHistoSideBands[iFinalPtBin],0x0,iStep);
       Double_t v2obsM1=hCos2PhiSig->GetMean();
       Double_t errv2obsM1=hCos2PhiSig->GetMeanError();  
       delete hCos2PhiSig;
@@ -778,14 +817,19 @@ void SystForSideBands(){
       if(v2M1<min4[iFinalPtBin]) min4[iFinalPtBin]=v2M1;
       ++nPts;
     }
+    rebinHistoSideBands[iFinalPtBin]=rebinHistoSideBandsOrig;
   }
 
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
     printf("------ Pt Bin %d ------\n",iFinalPtBin);
     printf("Range of values for sig variation = %f %f\n",min1[iFinalPtBin],max1[iFinalPtBin]);
+    printf("           (limited to 2-3 sigma) = %f %f\n",min123[iFinalPtBin],max123[iFinalPtBin]);
     printf("Range of values for bkg variation = %f %f\n",min2[iFinalPtBin],max2[iFinalPtBin]);
     printf("Range of values for rebin = %f %f\n",min3[iFinalPtBin],max3[iFinalPtBin]);
     printf("Range of values for whichside = %f %f\n",min4[iFinalPtBin],max4[iFinalPtBin]);
+    Float_t minenv=TMath::Min(min123[iFinalPtBin],TMath::Min(min2[iFinalPtBin],min4[iFinalPtBin]));
+    Float_t maxenv=TMath::Max(max123[iFinalPtBin],TMath::Max(max2[iFinalPtBin],max4[iFinalPtBin]));
+    printf(" ---> Envelope                = %f %f\n",minenv,maxenv);
   }
 
   TCanvas* cs1=new TCanvas("cs1");
@@ -839,7 +883,11 @@ void SystForFitv2Mass(){
 
   TFile* fil=new TFile(filname.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
-  TList* lst=(TList*)df->Get("coutputv2D0Std");
+  TList* lst=(TList*)df->Get(listname.Data());
+  if(!lst){
+    printf("ERROR: list %s not found in file\n",listname.Data());
+    return;
+  }
 
   Double_t rcfmin,rcfmax;
   Double_t resolFull=GetEPResolution(lst,rcfmin,rcfmax);
@@ -879,7 +927,7 @@ void SystForFitv2Mass(){
       Int_t index=iStep;
       rebinHistov2Mass[iFinalPtBin]=iStep+1;
       if((hMassDphi[iFinalPtBin]->GetNbinsY())%rebinHistov2Mass[iFinalPtBin]!=0) continue;
-      TF1* fv2=DoFitv2vsMass(index,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],0x0);
+      TF1* fv2=DoFitv2vsMass(index,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],0x0,0,useConstantvsBkgVsMass);
       Double_t v2obsM2=fv2->GetParameter(3);
       Double_t errv2obsM2=fv2->GetParError(3);
       delete fv2;
@@ -900,7 +948,7 @@ void SystForFitv2Mass(){
     nPts=0;
     for(Int_t iStep=-1; iStep<=1; iStep++){
       Int_t index=nSteps*2+iStep;
-      TF1* fv2=DoFitv2vsMass(index,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],0x0,iStep);
+      TF1* fv2=DoFitv2vsMass(index,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],0x0,iStep,useConstantvsBkgVsMass);
       Double_t v2obsM2=fv2->GetParameter(3);
       Double_t errv2obsM2=fv2->GetParError(3);
       delete fv2;
@@ -941,6 +989,9 @@ void SystForFitv2Mass(){
     printf("Range of values for rebin = %f %f\n",min1[iFinalPtBin],max1[iFinalPtBin]);
     printf("Range of values for par err = %f %f\n",min2[iFinalPtBin],max2[iFinalPtBin]);
     printf("Range of values for lin const = %f %f\n",min3[iFinalPtBin],max3[iFinalPtBin]);
+    Float_t minenv=TMath::Min(min2[iFinalPtBin],min3[iFinalPtBin]);
+    Float_t maxenv=TMath::Max(max2[iFinalPtBin],max3[iFinalPtBin]);
+    printf(" ---> Envelope                = %f %f\n",minenv,maxenv);
   }
 
   TCanvas* cs1=new TCanvas("cs1");
