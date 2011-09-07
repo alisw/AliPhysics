@@ -526,7 +526,7 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
 }
 
 //__________________________________________________________________________
-Bool_t IsPHOSPhoton(const Double_t l0, const Double_t l1) {
+Bool_t AliCaloPID::IsPHOSPhoton(const Double_t l0, const Double_t l1) {
   // Check the shape of the PHOS cluster
   // Return true if photon like, from Dmitri P.
   // TO DO, move parameters to data members
