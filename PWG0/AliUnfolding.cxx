@@ -484,12 +484,12 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   {
     results[i] = minuit->GetParameter(i);
     Double_t value = results[i] * results[i];
-    // error is : (relError) * (value) = (minuit->GetParError(i) / minuit->GetParameter(i)) * (minuit->GetParameter(i) * minuit->GetParameter(i))
+   // error is : 2 * (relError on results[i]) * (value) = 2 * (minuit->GetParError(i) / minuit->GetParameter(i)) * (minuit->GetParameter(i) * minuit->GetParameter(i))
     Double_t error = 0;
     if (TMath::IsNaN(minuit->GetParError(i)))
       Printf("WARNING: Parameter %d error is nan", i);
     else 
-      error = minuit->GetParError(i) * results[i];
+      error = 2 * minuit->GetParError(i) * results[i];
     
     if (efficiency)
     {	
