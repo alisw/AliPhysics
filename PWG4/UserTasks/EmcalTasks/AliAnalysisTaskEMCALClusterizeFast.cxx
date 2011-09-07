@@ -80,9 +80,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0),
-    fMinFastORtime(0),
-    fMaxFastORtime(20)
+    fClusterizeFastORs(0)
 { 
   // Constructor
 }
@@ -119,9 +117,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0),
-    fMinFastORtime(0),
-    fMaxFastORtime(20)
+    fClusterizeFastORs(0)
 { 
   // Constructor
 
@@ -290,9 +286,6 @@ void AliAnalysisTaskEMCALClusterizeFast::FillDigitsArray()
         triggerTime = trgtimes[0];
       }
       
-      if (triggerTime < fMinFastORtime || triggerTime > fMaxFastORtime)
-        continue;
-      
       Int_t triggerCol = 0, triggerRow = 0;
       triggers->GetPosition(triggerCol, triggerRow);
       
@@ -377,6 +370,8 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
   
+  AliDebug(1, Form("total no of clusters %d", fClusterArr->GetEntriesFast())); 
+  
   Int_t Ncls = fClusterArr->GetEntriesFast();
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
@@ -404,6 +399,8 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     Float_t g[3];
     gpos.GetXYZ(g);
     
+    AliDebug(1, Form("energy %f", recpoint->GetEnergy()));
+    
     AliVCluster *c = static_cast<AliVCluster*>(clus->New(nout++));
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
@@ -416,16 +413,17 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
     Float_t elipAxis[2];
     recpoint->GetElipsAxis(elipAxis);
-    c->SetM02(elipAxis[0]*elipAxis[0]) ;
-    c->SetM20(elipAxis[1]*elipAxis[1]) ;
-    if (fRecoUtils && fRecoUtils->IsBadChannelsRemovalSwitchedOn()) {
-      fRecoUtils->RecalculateClusterDistanceToBadChannel(geom, cells, c);
-    } else {
-      if (fPedestalData) 
-        recpoint->EvalDistanceToBadChannels(fPedestalData);
+    c->SetM02(elipAxis[0]*elipAxis[0]);
+    c->SetM20(elipAxis[1]*elipAxis[1]);
+    if (fPedestalData) {
       c->SetDistanceToBadChannel(recpoint->GetDistanceToBadTower()); 
+    } 
+    else {
+      if (fRecoUtils && fRecoUtils->IsBadChannelsRemovalSwitchedOn()) {
+        fRecoUtils->RecalculateClusterDistanceToBadChannel(geom, cells, c);
+      } 
     }
-
+  
     if (esdobjects) {
       AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
       cesd->SetCellsAbsId(absIds);
@@ -455,7 +453,7 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
       if (trackIndex >= 0) {
         Float_t dR, dZ;
         fRecoUtils->GetMatchedResiduals(i,dR, dZ);
-        c->AddTrackMatched(0x0); //esdevent->GetTrack(trackIndex));
+        c->AddTrackMatched(0x0);   //esdevent->GetTrack(trackIndex));
         c->SetTrackDistance(dR,dZ); // not implemented
         c->SetEmcCpvDistance(dR);
         c->SetChi2(dZ);
@@ -670,8 +668,7 @@ void AliAnalysisTaskEMCALClusterizeFast::Init()
   } else {
     fClusterizer->SetInputCalibrated(kTRUE);   
   }
-  if (!fClusterizeFastORs)
-    fClusterizer->SetCaloCalibPedestal(fPedestalData);
+  fClusterizer->SetCaloCalibPedestal(fPedestalData);
   fClusterizer->SetJustClusters(kTRUE);
   fClusterizer->SetDigitsArr(fDigitsArr);
   fClusterizer->SetOutput(0);

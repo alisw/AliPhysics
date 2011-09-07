@@ -46,7 +46,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  GetShiftEta()                                const   { return fShiftEta                     ; }
   Bool_t                 GetTRUShift()                                const   { return fTRUShift                     ; }
   Bool_t                 GetClusterizeFastORs()                       const   { return fClusterizeFastORs            ; }
-  void                   GetFastORtimeCut(Int_t &lower, Int_t &upper) const   { lower = fMinFastORtime               ; upper = fMaxFastORtime     ; }
   void                   JustUnfold(Bool_t yesno)                             { fJustUnfold                  = yesno ; }
   void                   LoadOwnGeometryMatrices(Bool_t b)                    { fLoadGeomMatrices            = b     ; }
   void                   SetAODBranchName(const char *name)                   { fOutputAODBrName             = name  ; }
@@ -70,7 +69,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetShiftEta(Int_t n)                                 { fShiftEta                    = n     ; }
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
   void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; if (yes) fOverwrite = kFALSE; }
-  void                   SetFastORtimeCut(Int_t lower, Int_t upper)           { fMinFastORtime               = lower ; fMaxFastORtime = upper      ; }
 
  protected:
   virtual void           Clusterize();
@@ -111,8 +109,6 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   Int_t                  fShiftEta;                       // ShiftEta (for FixedWindowsClusterizer)
   Bool_t                 fTRUShift;                       // Shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
   Bool_t                 fClusterizeFastORs;              // If true, clusterize FastORs instead of cells
-  Int_t                  fMinFastORtime;                  // Lower FastOR time cut
-  Int_t                  fMaxFastORtime;                  // Upper FastOR time cut
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
