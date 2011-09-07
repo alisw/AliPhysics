@@ -15,12 +15,12 @@
 #include <TObject.h>
 #include "TString.h"
 
-#define NUMBER_OF_ANALYSES	7
+#define ANALYSIS_TYPES	7
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TGraphErrors;
 class TObjArray;
-class TH1F;
+class TH1D;
 
 class AliBalance : public TObject {
  public:
@@ -40,7 +40,8 @@ class AliBalance : public TObject {
   
   void SetNumberOfBins(Int_t ibin, Int_t ibins);
   void SetAnalysisLevel(const char* analysisLevel) {fAnalysisLevel = analysisLevel;}
-  void SetInterval(Int_t ibin, Double_t p2Start, Double_t p2Stop);
+  void SetInterval(Double_t p1Start, Double_t p1Stop,
+		   Int_t ibin, Double_t p2Start, Double_t p2Stop);
 
   Int_t GetNumberOfBins(Int_t ibin) {return fNumberOfBins[ibin];}
   Double_t GetP2Start(Int_t ibin){return fP2Start[ibin];}
@@ -48,16 +49,26 @@ class AliBalance : public TObject {
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
   Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
  
-  Double_t GetNp() const { return 1.0*fNp; }
-  Double_t GetNn() const { return 1.0*fNn; }
-  Double_t GetNnn(Int_t a, Int_t p2) const { return 1.0*fNnn[a][p2]; }
-  Double_t GetNpp(Int_t a, Int_t p2) const { return 1.0*fNpp[a][p2]; }
-  Double_t GetNpn(Int_t a, Int_t p2) const { return 1.0*fNpn[a][p2]; }
+  Double_t GetNp(Int_t analysisType) const { return 1.0*fNp[analysisType]; }
+  Double_t GetNn(Int_t analysisType) const { return 1.0*fNn[analysisType]; }
+  Double_t GetNnn(Int_t analysisType, Int_t p2) const { 
+    return 1.0*fNnn[analysisType][p2]; }
+  Double_t GetNpp(Int_t analysisType, Int_t p2) const { 
+    return 1.0*fNpp[analysisType][p2]; }
+  Double_t GetNpn(Int_t analysisType, Int_t p2) const { 
+    return 1.0*fNpn[analysisType][p2]; }
 
   void CalculateBalance(TObjArray *gTrackArray);
   
   Double_t GetBalance(Int_t a, Int_t p2);
   Double_t GetError(Int_t a, Int_t p2);
+
+  TH1D *GetHistNp(Int_t iAnalysisType) { return fHistP[iAnalysisType];}
+  TH1D *GetHistNn(Int_t iAnalysisType) { return fHistN[iAnalysisType];}
+  TH1D *GetHistNpn(Int_t iAnalysisType) { return fHistPN[iAnalysisType];}
+  TH1D *GetHistNnp(Int_t iAnalysisType) { return fHistNP[iAnalysisType];}
+  TH1D *GetHistNpp(Int_t iAnalysisType) { return fHistPP[iAnalysisType];}
+  TH1D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
 
   void PrintAnalysisSettings();
 
@@ -65,19 +76,28 @@ class AliBalance : public TObject {
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
  
-  Int_t fNumberOfBins[NUMBER_OF_ANALYSES]; //number of bins of the analyzed interval
-  Double_t fP2Start[NUMBER_OF_ANALYSES];
-  Double_t fP2Stop[NUMBER_OF_ANALYSES];
-  Double_t fP2Step[NUMBER_OF_ANALYSES]; 
+  Int_t fNumberOfBins[ANALYSIS_TYPES]; //number of bins of the analyzed interval
+  Double_t fP1Start[ANALYSIS_TYPES];
+  Double_t fP1Stop[ANALYSIS_TYPES];
+  Double_t fP2Start[ANALYSIS_TYPES];
+  Double_t fP2Stop[ANALYSIS_TYPES];
+  Double_t fP2Step[ANALYSIS_TYPES]; 
  	
-  Double_t fNnn[NUMBER_OF_ANALYSES][MAXIMUM_NUMBER_OF_STEPS]; //N(--)
-  Double_t fNpp[NUMBER_OF_ANALYSES][MAXIMUM_NUMBER_OF_STEPS]; //N(++)
-  Double_t fNpn[NUMBER_OF_ANALYSES][MAXIMUM_NUMBER_OF_STEPS]; //N(+-)
-  Double_t fNn, fNp; //number of pos./neg. inside the analyzed interval
+  Double_t fNnn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(--)
+  Double_t fNpp[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(++)
+  Double_t fNpn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(+-)
+  Double_t fNn[ANALYSIS_TYPES], fNp[ANALYSIS_TYPES]; //number of pos./neg. inside the analyzed interval
   
-  Double_t fB[NUMBER_OF_ANALYSES][MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
-  Double_t ferror[NUMBER_OF_ANALYSES][MAXIMUM_NUMBER_OF_STEPS]; //error of the BF
+  Double_t fB[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
+  Double_t ferror[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //error of the BF
   
+  TH1D *fHistP[ANALYSIS_TYPES]; //N+
+  TH1D *fHistN[ANALYSIS_TYPES]; //N-
+  TH1D *fHistPN[ANALYSIS_TYPES]; //N+-
+  TH1D *fHistNP[ANALYSIS_TYPES]; //N-+
+  TH1D *fHistPP[ANALYSIS_TYPES]; //N++
+  TH1D *fHistNN[ANALYSIS_TYPES]; //N--
+
   AliBalance & operator=(const AliBalance & ) {return *this;}
 
   ClassDef(AliBalance, 3)
