@@ -122,11 +122,11 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
 
   fListQAitsSA=new TList;
   fListQAitsSA->SetOwner();
-  fListQAitsSA->SetName("ITS");
+  fListQAitsSA->SetName("ITS_SA");
 
   fListQAitsPureSA=new TList;
   fListQAitsPureSA->SetOwner();
-  fListQAitsPureSA->SetName("ITS");
+  fListQAitsPureSA->SetName("ITS_PureSA");
 
   fListQAtpc=new TList;
   fListQAtpc->SetOwner();
@@ -291,7 +291,44 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
   //
   // Fill PID qa histograms for the TRD
   //
+  AliVEvent *event=InputEvent();
+  Int_t ntracks = event->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack <  ntracks; itrack++){
+    AliVTrack *track = (AliVTrack *)event->GetTrack(itrack);
 
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    // TPC refit + ITS refit + TPC pid + TRD out
+    if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
+        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) ||
+        !( (status & AliVTrack::kTRDout  ) == AliVTrack::kTRDout  )) continue;
+    
+    Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+    if (track->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
+    }
+    
+    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
+
+    Double_t likelihoods[AliPID::kSPECIES];
+    if(fPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, likelihoods) != AliPIDResponse::kDetPidOk) continue;
+    Int_t ntracklets = 0;
+    Double_t momentum = -1.;
+    for(Int_t itl = 0; itl < 6; itl++)
+      if(track->GetTRDmomentum(itl) > 0.){
+        ntracklets++;
+        if(momentum < 0) momentum = track->GetTRDmomentum(itl);
+    } 
+    for(Int_t ispecie = 0; ispecie < AliPID::kSPECIES; ispecie++){
+      TH2F *hLike = (TH2F *)fListQAtrd->At(ntracklets*AliPID::kSPECIES+ispecie);
+      if (hLike) hLike->Fill(momentum,likelihoods[ispecie]);
+    }
+  }
 }
 
 //______________________________________________________________________________
@@ -609,7 +646,17 @@ void AliAnalysisTaskPIDqa::SetupTRDqa()
   //
   // Create the TRD qa objects
   //
-  
+  TVectorD *vX=MakeLogBinning(200,.1,30);
+  for(Int_t itl = 0; itl < 6; ++itl){
+    for(Int_t ispecie = 0; ispecie < AliPID::kSPECIES; ispecie++){
+      TH2F *hLikeP = new TH2F(Form("hLikeP_TRD_%dtls_%s", itl, AliPID::ParticleName(ispecie)),
+                              Form("TRD Likelihood to be %s %s for tracks having %d %s; p (GeV/c); TRD %s Likelihood", ispecie == 0 ? "an" : "a", AliPID::ParticleName(ispecie), itl+1, itl == 0 ? "tracklet" : "tracklets", AliPID::ParticleName(ispecie)),
+                              vX->GetNrows()-1, vX->GetMatrixArray(),
+                              100, 0., 1.);
+      fListQAtrd->Add(hLikeP);
+    }
+  }
+  delete vX;
 }
 
 //______________________________________________________________________________
@@ -640,23 +687,23 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   
   fListQAtof->Add(hSig);
 
-  TH1F *hStartTimeMask_TOF = new TH1F("hStartTimeMask_TOF","StartTime mask",8,0,8);
-  fListQAtof->Add(hStartTimeMask_TOF);
-  TH1F *hStartTimeRes_TOF = new TH1F("hStartTimeRes_TOF","StartTime resolution [ps]",100,0,500);
-  fListQAtof->Add(hStartTimeRes_TOF);
+  TH1F *hStartTimeMaskTOF = new TH1F("hStartTimeMask_TOF","StartTime mask",8,0,8);
+  fListQAtof->Add(hStartTimeMaskTOF);
+  TH1F *hStartTimeResTOF = new TH1F("hStartTimeRes_TOF","StartTime resolution [ps]",100,0,500);
+  fListQAtof->Add(hStartTimeResTOF);
 
-  TH1F *hnTracksAt_TOF = new TH1F("hnTracksAt_TOF","Matched tracks at TOF",20,0,20);
-  fListQAtof->Add(hnTracksAt_TOF);
+  TH1F *hnTracksAtTOF = new TH1F("hnTracksAt_TOF","Matched tracks at TOF",20,0,20);
+  fListQAtof->Add(hnTracksAtTOF);
   TH1F *hT0MakerEff = new TH1F("hT0MakerEff","Events with T0-TOF vs nTracks",20,0,20);
   fListQAtof->Add(hT0MakerEff);
 
   // this in principle should stay on a T0 PID QA, but are just the data prepared for TOF use
-  TH1F *hStartTimeA_T0 = new TH1F("hStartTimeA_T0","StartTime from T0A [ps]",1000,-1000,1000);
-  fListQAtof->Add(hStartTimeA_T0);
-  TH1F *hStartTimeC_T0 = new TH1F("hStartTimeC_T0","StartTime from T0C [ps]",1000,-1000,1000);
-  fListQAtof->Add(hStartTimeC_T0);
-  TH1F *hStartTimeAC_T0 = new TH1F("hStartTimeAC_T0","StartTime from T0AC [ps]",1000,-1000,1000);;
-  fListQAtof->Add(hStartTimeAC_T0);
+  TH1F *hStartTimeAT0 = new TH1F("hStartTimeA_T0","StartTime from T0A [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeAT0);
+  TH1F *hStartTimeCT0 = new TH1F("hStartTimeC_T0","StartTime from T0C [ps]",1000,-1000,1000);
+  fListQAtof->Add(hStartTimeCT0);
+  TH1F *hStartTimeACT0 = new TH1F("hStartTimeAC_T0","StartTime from T0AC [ps]",1000,-1000,1000);;
+  fListQAtof->Add(hStartTimeACT0);
 }
 
 //______________________________________________________________________________

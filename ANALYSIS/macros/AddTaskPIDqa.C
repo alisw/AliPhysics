@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTaskPIDqa(){
+AliAnalysisTask *AddTaskPIDqa(const char *useroutputfile=""){
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -14,7 +14,8 @@ AliAnalysisTask *AddTaskPIDqa(){
   //              data containers
   //================================================
 
-  TString outputfile = Form("%s:PIDqa", AliAnalysisManager::GetCommonFileName());
+  TString outputfile=useroutputfile;
+  if (outputfile.IsNull()) outputfile = Form("%s:PIDqa", AliAnalysisManager::GetCommonFileName());
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("PIDqa", TList::Class(),
                          AliAnalysisManager::kOutputContainer,outputfile);
