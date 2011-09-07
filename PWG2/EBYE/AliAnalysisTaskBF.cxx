@@ -64,7 +64,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fDCAxyCut(2.4),
   fDCAzCut(3.2){
   // Constructor
-  for(Int_t i = 0; i < NUMBER_OF_ANALYSES; i++){
+  for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
     for (Int_t j = 0; j < 3; j++){
       fHistBF[i][j] = NULL;
       fHistShuffledBF[i][j] = NULL;
@@ -89,14 +89,14 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   if(!fBalance) {
     fBalance = new AliBalance();
     fBalance->SetAnalysisLevel("ESD");
-    fBalance->SetNumberOfBins(-1,9);
-    fBalance->SetInterval(-1,0.,0.9);
+    fBalance->SetNumberOfBins(-1,16);
+    fBalance->SetInterval(-0.8,0.8,-1,0.,1.6);
   }
   if(!fShuffledBalance) {
     fShuffledBalance = new AliBalance();
     fShuffledBalance->SetAnalysisLevel("ESD");
-    fShuffledBalance->SetNumberOfBins(-1,9);
-    fShuffledBalance->SetInterval(-1,0.,0.9);
+    fShuffledBalance->SetNumberOfBins(-1,16);
+    fShuffledBalance->SetInterval(-0.8,0.8,-1,0.,1.6);
   }
 
   //QA list
@@ -152,7 +152,7 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
 
   //balance function histograms
   TString hname;
-  for(Int_t i = 0; i < NUMBER_OF_ANALYSES; i++){
+  for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
     for (Int_t j = 0; j < 3; j++){
       hname = "BF";
       hname+=i;
@@ -471,7 +471,7 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
     return;
   }
   
-  for(Int_t a = 0; a < NUMBER_OF_ANALYSES; a++){
+  for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
     for(Int_t iBin = 1; iBin <= fBalance->GetNumberOfBins(a); iBin++){
 
       //Printf("%d %d  ->   %f",a,iBin,fShuffledBalance->GetNpn(a,iBin-1));
@@ -487,9 +487,9 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
       
       
     }
+    fHistN->SetBinContent(1,fBalance->GetNn(a));
+    fHistN->SetBinContent(2,fBalance->GetNp(a));  
   }
-  fHistN->SetBinContent(1,fBalance->GetNn());
-  fHistN->SetBinContent(2,fBalance->GetNp());  
 
 }
 

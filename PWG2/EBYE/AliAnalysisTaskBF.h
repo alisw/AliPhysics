@@ -79,8 +79,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH1F *fHistPhi;
   TH2F *fHistV0M;
 
-  TH1F *fHistBF[NUMBER_OF_ANALYSES][3];
-  TH1F *fHistShuffledBF[NUMBER_OF_ANALYSES][3];
+  TH1F *fHistBF[ANALYSIS_TYPES][3];
+  TH1F *fHistShuffledBF[ANALYSIS_TYPES][3];
   TH1F *fHistN;
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
