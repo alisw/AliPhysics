@@ -104,8 +104,8 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
       }
       TGraph *grInverse = new TGraph(np,y1,x1);
       fAmpLED.AddAtAndExpand(grInverse,i);
-      if (x1) delete x1;
-      if (y1) delete y1;
+      if (x1) delete [] x1;
+      if (y1) delete [] y1;
     }
   }
   for (Int_t i=0; i<24; i++){
@@ -122,8 +122,8 @@ AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager)
       }
       TGraph *grInverseQTC = new TGraph(npq,y1q,x1q);
       fAmpQTC.AddAtAndExpand(grInverseQTC,i);
-      if (x1q)  delete x1q;
-      if (y1q)  delete y1q;
+      if (x1q)  delete [] x1q;
+      if (y1q)  delete [] y1q;
 
     }
   }
