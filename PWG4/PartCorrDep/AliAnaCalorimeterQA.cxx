@@ -1533,18 +1533,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       UShort_t * indexList = clus->GetCellsAbsId() ;
       // check time of cells respect to max energy cell
       //Get maximum energy cell
-      Float_t emax  = -1;
-      Double_t tmax = -1;
-      Int_t imax    = -1;
       Int_t absId   = -1 ;
       //printf("nCaloCellsPerCluster %d\n",nCaloCellsPerCluster);
-      //Loop on cluster cells
-      for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-        //	printf("Index %d\n",ipos);
-        absId  = indexList[ipos]; 
-        
-        //Get position of cell compare to cluster
-        if(fFillAllPosHisto){
+      if(fFillAllPosHisto){
+        //Loop on cluster cells
+        for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
+          //	printf("Index %d\n",ipos);
+          absId  = indexList[ipos]; 
+          
+          //Get position of cell compare to cluster
+          
           if(fCalorimeter=="EMCAL" && GetCaloUtils()->IsEMCALGeoMatrixSet()){
             
             Double_t cellpos[] = {0, 0, 0};
@@ -1606,36 +1604,35 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             //	       		printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
             //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
           }//PHOS and its matrices are available
-        }//Fill all position histograms
-        
-        //Find maximum energy cluster
-        if(cell->GetCellAmplitude(absId) > emax) {
-          imax = ipos;
-          emax = cell->GetCellAmplitude(absId);
-          tmax = cell->GetCellTime(absId)*1e9;
-        } 
-        
-      }// cluster cell loop
-      
+          
+          
+        }// cluster cell loop
+      }//Fill all position histograms
+
+      // Get the fraction of the cluster energy that carries the cell with highest energy
+      Float_t maxCellFraction = 0.;
+      Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cell, clus,maxCellFraction);
+      Double_t tmax  = cell->GetCellTime(absIdMax)*1e9;
+
       if     (clus->E() < 2.){
-        fhLambda0vsClusterMaxCellDiffE0->Fill(clus->GetM02(),      (clus->E()-emax)/clus->E());
-        fhNCellsvsClusterMaxCellDiffE0 ->Fill(nCaloCellsPerCluster,(clus->E()-emax)/clus->E());
+        fhLambda0vsClusterMaxCellDiffE0->Fill(clus->GetM02(),      maxCellFraction);
+        fhNCellsvsClusterMaxCellDiffE0 ->Fill(nCaloCellsPerCluster,maxCellFraction);
       }
       else if(clus->E() < 6.){
-        fhLambda0vsClusterMaxCellDiffE2->Fill(clus->GetM02(),      (clus->E()-emax)/clus->E());
-        fhNCellsvsClusterMaxCellDiffE2 ->Fill(nCaloCellsPerCluster,(clus->E()-emax)/clus->E());
+        fhLambda0vsClusterMaxCellDiffE2->Fill(clus->GetM02(),      maxCellFraction);
+        fhNCellsvsClusterMaxCellDiffE2 ->Fill(nCaloCellsPerCluster,maxCellFraction);
       }
       else{
-        fhLambda0vsClusterMaxCellDiffE6->Fill(clus->GetM02(),      (clus->E()-emax)/clus->E());  
-        fhNCellsvsClusterMaxCellDiffE6 ->Fill(nCaloCellsPerCluster,(clus->E()-emax)/clus->E());
+        fhLambda0vsClusterMaxCellDiffE6->Fill(clus->GetM02(),      maxCellFraction);  
+        fhNCellsvsClusterMaxCellDiffE6 ->Fill(nCaloCellsPerCluster,maxCellFraction);
       }
       
       fhNCellsPerClusterNoCut  ->Fill(clus->E(), nCaloCellsPerCluster);
       nModule = GetModuleNumber(clus);
       if(nModule >=0 && nModule < fNModules) fhNCellsPerClusterModNoCut[nModule]->Fill(clus->E(), nCaloCellsPerCluster);
 
-      fhClusterMaxCellDiffNoCut->Fill(clus->E(),(clus->E()-emax)/clus->E());
-      //fhClusterMaxCellDiffDivLambda0->Fill(clus->E(),(clus->E()-emax)/clus->E() / clus->GetNCells());
+      fhClusterMaxCellDiffNoCut->Fill(clus->E(),maxCellFraction);
+      //fhClusterMaxCellDiffDivLambda0->Fill(clus->E(),maxCellFraction / clus->GetNCells());
 
       //Check bad clusters if rejection was not on
       Bool_t badCluster = kFALSE;
@@ -1658,7 +1655,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           badCluster = kTRUE;
           
           fhBadClusterEnergy     ->Fill(clus->E());
-          fhBadClusterMaxCellDiff->Fill(clus->E(),(clus->E()-emax)/clus->E());
+          fhBadClusterMaxCellDiff->Fill(clus->E(),maxCellFraction);
           fhBadClusterTimeEnergy ->Fill(clus->E(),tof);
           //printf("bad tof : %2.3f\n",tof);
           //if(clus->E() - emax < 0)printf("What?\n");
@@ -1689,10 +1686,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           
           
           for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-            //	printf("Index %d\n",ipos);
-            if(ipos!=imax){
-              absId  = indexList[ipos]; 
-              Float_t frac = cell->GetCellAmplitude(absId)/emax;
+            //	printf("Index %d\n",ipos);  
+            absId  = indexList[ipos]; 
+            if(absId!=absIdMax){
+              Float_t frac = cell->GetCellAmplitude(absId)/cell->GetCellAmplitude(absIdMax);
               //printf("bad frac : %2.3f, e %2.2f, ncells %d, min %2.1f\n",frac,mom.E(),nCaloCellsPerCluster,minNCells);
               fhBadClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
             }
@@ -1710,7 +1707,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         //
         //        }
         
-        fhClusterMaxCellDiff->Fill(clus->E(),(clus->E()-emax)/clus->E());
+        fhClusterMaxCellDiff->Fill(clus->E(),maxCellFraction);
         fhClusterTimeEnergy ->Fill(mom.E(),tof);
         
         //Clusters in event time difference
@@ -1726,10 +1723,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         }        
         
         for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-          //	printf("Index %d\n",ipos);
-          if(ipos!=imax){
-            absId  = indexList[ipos]; 
-            Float_t frac = cell->GetCellAmplitude(absId)/emax;
+          //	printf("Index %d\n",ipos);            
+          absId  = indexList[ipos]; 
+          if(absId!=absIdMax){
+            Float_t frac = cell->GetCellAmplitude(absId)/cell->GetCellAmplitude(absIdMax);
             //printf("good frac : %2.3f\n",frac);
             fhClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
           }
@@ -1738,8 +1735,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         // check time of cells respect to max energy cell
         if(nCaloCellsPerCluster > 1 &&  GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
           for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-            if(imax == ipos) continue;
-            absId  = indexList[ipos]; 
+            absId  = indexList[ipos];             
+            if(absId == absIdMax) continue;
             Float_t diff = (tmax-cell->GetCellTime(absId))*1e9;
             fhCellTimeSpreadRespectToCellMax->Fill(diff);
             if(TMath::Abs(TMath::Abs(diff) > 100)) fhCellIdCellLargeTimeSpread->Fill(absId);
