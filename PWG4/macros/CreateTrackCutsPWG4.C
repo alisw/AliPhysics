@@ -145,6 +145,34 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     tag = "Global tracks jet analysis with ITSrefit and NclsIter1=70, noSPD requirement";
 
   }
+  if(stdCutMode == 1005) {
+
+    bStdCutsDefined = kTRUE;
+
+    // TPC  
+    trackCuts->SetMinNClustersTPC(70);
+    trackCuts->SetMaxChi2PerClusterTPC(4);
+    trackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+    trackCuts->SetAcceptKinkDaughters(kFALSE);
+    trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    // ITS
+    trackCuts->SetRequireITSRefit(kTRUE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    //reject fakes
+    trackCuts->SetMaxChi2PerClusterITS(36);
+
+    trackCuts->SetRequireSigmaToVertex(kFALSE);
+
+    trackCuts->SetEtaRange(-0.9,0.9);
+    trackCuts->SetPtRange(0.15, 1E+15.);
+ 
+    tag = "Global tracks jet analysis with ITSrefit and NclsIter1=70, noSPD requirement, no upper pt cut";
+
+  }
 
 
 

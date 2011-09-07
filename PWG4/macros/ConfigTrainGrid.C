@@ -56,7 +56,7 @@
   if (kPluginMode.Contains("merge")){
     // currently merging this one...
     //       cDate = "110717a";
-    bRun = 802; Int_t bExtra = 0; cDate = "110812a";
+    //    bRun = 802; Int_t bExtra = 0; cDate = "110812a";
   }
   kUseDebug = kFALSE;
   // this is for testing just one run...

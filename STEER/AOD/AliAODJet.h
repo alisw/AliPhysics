@@ -100,7 +100,8 @@ class AliAODJet : public AliVParticle {
     // first only one bit for EMCAL and TRD, leave space for more
     // trigger types and/or other detectors
     enum {kEMCALTriggered = 1<<0,
-	  kTRDTriggered = 4<<0};
+	  kTRDTriggered =   1<<2,
+	  kHighTrackPtTriggered = 1<<7};
 
 
  private:
