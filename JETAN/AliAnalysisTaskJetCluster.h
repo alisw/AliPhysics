@@ -74,8 +74,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual const char* GetJetOutputBranch(){return fNonStdBranch.Data();}
     virtual void SetJetOutputFile(const char *c){fNonStdFile = c;}
     virtual const char* GetJetOutputFile(){return fNonStdFile.Data();}
+    virtual void SetMaxTrackPtInJet(Float_t x){fMaxTrackPtInJet = x;}
     virtual void SetJetOutputMinPt(Float_t x){fJetOutputMinPt = x;}
     virtual void SetBackgroundCalc(Bool_t b){fUseBackgroundCalc = b;} 
+
+
 
     // for Fast Jet
     fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
@@ -135,6 +138,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Float_t       fRecEtaWindow;          // eta window used for corraltion plots between rec and gen 
     Float_t       fTrackPtCut;            // minimum track pt to be accepted
     Float_t       fJetOutputMinPt;        // minimum p_t for jets to be written out
+    Float_t       fMaxTrackPtInJet;       // maximum track pt within a jet for flagging...
     Float_t       fJetTriggerPtCut;       // minimum jwt pT for AOD to be written
     Float_t       fVtxZCut;               // zvtx cut
     Float_t       fVtxR2Cut;              // R vtx cut (squared) 
@@ -235,7 +239,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 18) 
+    ClassDef(AliAnalysisTaskJetCluster, 19) 
 };
  
 #endif

@@ -105,7 +105,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
    // ITS cuts for new jet analysis 
    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C");
-   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWG4(10001004);
+   AliESDtrackCuts* esdTrackCutsHG0 = CreateTrackCutsPWG4(10001005);
 
    // throw out tracks with too low number of clusters in
    // the first pass (be consistent with TPC only tracks)
@@ -117,11 +117,11 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
 
 
    // the complement to the one with SPD requirement
-   AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWG4(10011004);
+   AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWG4(10011005);
 
    // the tracks that must not be taken pass this cut and
    // non HGC1 and HG
-   AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWG4(10021004);
+   AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWG4(10021005);
 
    
 
@@ -132,7 +132,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsH2->SetMaxChi2PerClusterITS(36.);
    esdTrackCutsH2->SetPtRange(0.15,1E10);
 
-   AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041004);
+   AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041005);
 
    // TPC only tracks
    AliESDtrackCuts* esdTrackCutsTPCCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
