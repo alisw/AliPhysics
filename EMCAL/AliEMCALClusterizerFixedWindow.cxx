@@ -271,7 +271,7 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
   
   Int_t nTotalClus = nClusters * maxiShiftEta * maxiShiftPhi;
   
-  if (!fClustersArray){
+  if (!fClustersArray) {
     fClustersArray = new AliEMCALDigit**[nTotalClus];
     for (Int_t i = 0; i < nTotalClus; i++)
     {
@@ -279,22 +279,44 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
     }
   }
   
-  AliEMCALDigit *digit = 0;
+  // Set up TObjArray with pointers to digits to work on calibrated digits 
+  TObjArray *digitsC = new TObjArray();
+  AliEMCALDigit *digit;
+  Float_t dEnergyCalibrated = 0.0, ehs = 0.0, time = 0.0;
+  TIter nextdigit(fDigitsArr);
+  while ((digit = dynamic_cast<AliEMCALDigit*>(nextdigit()))) { // calibrate and clean up digits
+    dEnergyCalibrated =  digit->GetAmplitude();
+    time              =  digit->GetTime();
+    Calibrate(dEnergyCalibrated, time, digit->GetId());
+    digit->SetCalibAmp(dEnergyCalibrated);
+    digit->SetTime(time);
+    if (dEnergyCalibrated < fMinECut) {
+      continue;
+    }
+    else if (!fGeom->CheckAbsCellId(digit->GetId())) {
+      continue;
+    }
+    else {
+      ehs += dEnergyCalibrated;
+      digitsC->AddLast(digit);
+    }
+  } 
   
+  AliDebug(1,Form("MakeClusters: Number of digits %d  -> (e %f), ehs %f\n",
+                  fDigitsArr->GetEntries(),fMinECut,ehs));
+   
   for (Int_t ishiftPhi = 0; ishiftPhi < maxiShiftPhi; ishiftPhi++){
     Int_t nClusPhi = (nPhiDigits - fShiftPhi * ishiftPhi) / fNphi;
     
-    for (Int_t ishiftEta = 0; ishiftEta < maxiShiftEta; ishiftEta++){
+    for (Int_t ishiftEta = 0; ishiftEta < maxiShiftEta; ishiftEta++) {
       
       Int_t nClusEta = (nEtaDigits - fShiftEta * ishiftEta) / fNeta; 
       
       Int_t iTotalClus = nClusters * (ishiftPhi * maxiShiftEta + ishiftEta);
       
-      TIter nextdigit(fDigitsArr);
-      
-      nextdigit.Reset();
-      
-      while ((digit = static_cast<AliEMCALDigit*>(nextdigit()))){
+      TIter nextdigitC(digitsC);
+      while ((digit = dynamic_cast<AliEMCALDigit*>(nextdigitC()))) { // scan over the list of digitsC
+        
         fGeom->GetCellIndex (digit->GetId(), nSupMod, nModule, nIphi, nIeta);
         fGeom->GetCellPhiEtaIndexInSModule (nSupMod, nModule, nIphi, nIeta, iphi, ieta);
         
@@ -373,17 +395,7 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
       for (Int_t iDigit = 0; iDigit < nDigitsCluster; iDigit++){
         if (fClustersArray[iCluster][iDigit] == NULL) continue;
         digit = fClustersArray[iCluster][iDigit];
-        Float_t dEnergyCalibrated = digit->GetAmplitude();
-        Float_t time              = digit->GetTime();
-        Calibrate(dEnergyCalibrated,time,digit->GetId());
-        if (dEnergyCalibrated < fMinECut) {
-          continue;
-        }
-        if (!fGeom->CheckAbsCellId(digit->GetId())) {
-          continue;
-        }
-        digit->SetCalibAmp(dEnergyCalibrated);
-        recPoint->AddDigit(*digit, dEnergyCalibrated, kFALSE); //Time or TimeR?
+        recPoint->AddDigit(*digit, digit->GetCalibAmp(), kFALSE); //Time or TimeR?
         fClustersArray[iCluster][iDigit] = NULL;
       }
     }
