@@ -93,6 +93,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
   fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
+  fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fFilterMask(0),
   fEventSelectionMask(0),
   fAnalysisType(0),
@@ -133,6 +134,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2():
     fh1NJets[ij] = 0;
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
+    fh1PtJetsInRej[ij] = 0;
     fh1PtTracksIn[ij] = 0;
     fh1PtTracksInLow[ij] = 0;
     fh2NJetsPt[ij]  = 0;
@@ -183,6 +185,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
   fDoMatching(kFALSE),
   fNMatchJets(5),
   fNRPBins(3),
+  fJetTriggerExcludeMask(AliAODJet::kHighTrackPtTriggered),
   fFilterMask(0),
   fEventSelectionMask(0),
   fAnalysisType(0),
@@ -223,6 +226,7 @@ AliAnalysisTaskJetSpectrum2::AliAnalysisTaskJetSpectrum2(const char* name):
     fh1NJets[ij] = 0;
     fh1SumPtTrack[ij] = 0;
     fh1PtJetsIn[ij] = 0;
+    fh1PtJetsInRej[ij] = 0;
     fh1PtTracksIn[ij] = 0;
     fh1PtTracksInLow[ij] = 0;
     fh2NJetsPt[ij]  = 0;
@@ -444,6 +448,9 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     fh1PtJetsIn[ij]  = new TH1F(Form("fh1PtJets%sIn",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtJetsIn[ij]);
+
+    fh1PtJetsInRej[ij]  = new TH1F(Form("fh1PtJets%sInRej",cAdd.Data()),Form("%s jets p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
+    fHistList->Add(fh1PtJetsInRej[ij]);
     
     fh1PtTracksIn[ij] = new TH1F(Form("fh1PtTracks%sIn",cAdd.Data()),Form("%s track p_T;p_{T} (GeV/c)",cAdd.Data()),nBinPt,binLimitsPt);
     fHistList->Add(fh1PtTracksIn[ij]);
@@ -887,6 +894,10 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   for(int ij = 0;ij < nJets;ij++){
     AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
     Float_t ptJet = jet->Pt();
+    if(jet->Trigger()&fJetTriggerExcludeMask){
+      fh1PtJetsInRej[iType]->Fill(ptJet);
+      continue;
+    }
     fh1PtJetsIn[iType]->Fill(ptJet);
     if(ptJet>ptOld){
       Printf("%s:%d Jets Type %d Not Sorted !! %d:%.3E %d:%.3E",(char*)__FILE__,__LINE__,iType,ij,ptJet,ij-1,ptOld);

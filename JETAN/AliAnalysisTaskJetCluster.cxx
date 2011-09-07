@@ -106,6 +106,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
+  fMaxTrackPtInJet(100.),
   fJetTriggerPtCut(0),
   fVtxZCut(8),
   fVtxR2Cut(1),
@@ -218,6 +219,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fRecEtaWindow(0.5),
   fTrackPtCut(0.),							
   fJetOutputMinPt(0.150),
+  fMaxTrackPtInJet(100.),
   fJetTriggerPtCut(0),
   fVtxZCut(8),
   fVtxR2Cut(1),
@@ -934,6 +936,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	fh1PtJetConstRec->Fill(part->Pt());
 	if(aodOutJet){
 	  aodOutJet->AddTrack(fRef->At(constituents[ic].user_index()));
+	  if(part->Pt()>fMaxTrackPtInJet)aodOutJet->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	}
 	if(j==0)fh1PtJetConstLeadingRec->Fill(part->Pt());
       }
@@ -1020,6 +1023,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	 for(int ir = 0;ir < fNRandomCones;ir++){
 	   AliAODJet *jC = (AliAODJet*)fTCARandomConesOut->At(ir);  
 	   if(jC&&jC->DeltaR(vp)<fRparam){
+	     if(vp->Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	     jC->SetBgEnergy(jC->ChargedBgEnergy()+vp->Pt(),0);
 	   }
 	 }  
@@ -1042,6 +1046,7 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 	   for(int ir = 0;ir < fTCARandomConesOutRan->GetEntriesFast();ir++){
 	     AliAODJet *jC = (AliAODJet*)fTCARandomConesOutRan->At(ir);  
 	     if(jC&&jC->DeltaR(&vTmpRanR)<fRparam){
+	       if(vTmpRanR.Pt()>fMaxTrackPtInJet)jC->SetTrigger(AliAODJet::kHighTrackPtTriggered);
 	       jC->SetBgEnergy(jC->ChargedBgEnergy()+vTmpRanR.Pt(),0);
 	     }
 	   }  
