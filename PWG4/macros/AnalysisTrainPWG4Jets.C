@@ -928,7 +928,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        if(kDeltaAODJetName.Length()>0&&kFilterAOD)taskjetServ->SetFilterAODCollisions(kTRUE);
        //       else if(iAODanalysis)taskjetServ->SetFilterAODCollisions(kTRUE);
        //       taskjetServ->SetDebugLevel(3);
-       taskjetServ->SetZVertexCut(8.);
+       taskjetServ->SetZVertexCut(10.);
      }
      if(iAODanalysis){
        //  
