@@ -180,7 +180,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 			useSPDvtx=kTRUE;
 		}
 	}
-	if ((useSPDvtx) && (histSPDvtxX)){
+	if (useSPDvtx){
 	  
 	        Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries(); 					 
 	        Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries(); 			 
