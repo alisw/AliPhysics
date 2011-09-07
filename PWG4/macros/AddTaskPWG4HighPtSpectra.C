@@ -15,21 +15,23 @@ void AddTaskPWG4HighPtSpectraAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
 
   AliPWG4HighPtSpectra *taskSpectra00cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
   AliPWG4HighPtSpectra *taskSpectra01cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-  AliPWG4HighPtSpectra *taskSpectra02cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+  //  AliPWG4HighPtSpectra *taskSpectra02cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
   //  AliPWG4HighPtSpectra *taskSpectra10cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
   //  AliPWG4HighPtSpectra *taskSpectra20cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
   AliPWG4HighPtSpectra *taskSpectra70cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
   AliPWG4HighPtSpectra *taskSpectra71cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
+  AliPWG4HighPtSpectra *taskSpectra72cent10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
 
   if(isPbPb) {
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtSpectra *taskSpectra00 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,0);
       AliPWG4HighPtSpectra *taskSpectra01 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,1);
-      AliPWG4HighPtSpectra *taskSpectra02 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
+      //      AliPWG4HighPtSpectra *taskSpectra02 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,0,2);
       //      AliPWG4HighPtSpectra *taskSpectra10 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,1,0);
       //      AliPWG4HighPtSpectra *taskSpectra20 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,2,0);
       AliPWG4HighPtSpectra *taskSpectra70 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,0);
       AliPWG4HighPtSpectra *taskSpectra71 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,1);
+      AliPWG4HighPtSpectra *taskSpectra72 = AddTaskPWG4HighPtSpectra(prodType,isPbPb,cent,7,2);
     }
   }
 
@@ -161,20 +163,29 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWG4(10001004);
+    trackCuts = CreateTrackCutsPWG4(10001005);
   }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWG4(10011004);
+    trackCuts = CreateTrackCutsPWG4(10011005);
   }
   if(trackType==7 && cuts==0) {
-    // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10041004);
-    trackCutsReject = CreateTrackCutsPWG4(1004);
+    // no requirements on SPD and ITSrefit failed
+    trackCuts = CreateTrackCutsPWG4(10041005);   //no ITSrefit requirement
+    trackCutsReject = CreateTrackCutsPWG4(1005); //ITSrefit requirement
+    trackCutsReject->SetEtaRange(-0.9,0.9);
+    trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
-    // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10011004);
+    //Cuts global tracks with ITSrefit requirement but without SPD
+    trackCuts = CreateTrackCutsPWG4(10011005);
+  }
+  if(trackType==7 && cuts==2) {
+    // no requirements on SPD and ITSrefit failed
+    trackCuts = CreateTrackCutsPWG4(10041005);       //no ITSrefit requirement filter 256
+    trackCutsReject = CreateTrackCutsPWG4(10001005); //ITSrefit requirement filter 16
+    trackCutsReject->SetEtaRange(-0.9,0.9);
+    trackCutsReject->SetPtRange(0.15, 1e10);
   }
 
   if(trackType==1 && cuts==0) {
