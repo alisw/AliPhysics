@@ -287,6 +287,8 @@ public:
     return (const AliESDVertex *)(fTrkPileupVertices?fTrkPileupVertices->UncheckedAt(i):0x0);
   }
   Char_t  AddPileupVertexTracks(const AliESDVertex *vtx);
+  TClonesArray* GetPileupVerticesTracks() const {return (TClonesArray*)fTrkPileupVertices;}
+  TClonesArray* GetPileupVerticesSPD()    const {return (TClonesArray*)fSPDPileupVertices;}
 
   virtual Bool_t  IsPileupFromSPD(Int_t minContributors=3, 
 				  Double_t minZdist=0.8, 

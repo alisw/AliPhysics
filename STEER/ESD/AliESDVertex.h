@@ -29,6 +29,7 @@
 #include <TMath.h>
 
 #include "AliVertex.h"
+class AliVTrack;
 
 class AliESDVertex : public AliVertex {
  
@@ -55,6 +56,7 @@ class AliESDVertex : public AliVertex {
   void     GetCovarianceMatrix(Double_t covmatrix[6]) const 
                     {GetCovMatrix(covmatrix);}
   void     GetSNR(Double_t snr[3]) const;
+  void     SetCovarianceMatrix(const Double_t *cov);
 
   Double_t GetXRes() const {return TMath::Sqrt(fCovXX);}
   Double_t GetYRes() const {return TMath::Sqrt(fCovYY);}
@@ -62,8 +64,10 @@ class AliESDVertex : public AliVertex {
   Double_t GetXSNR() const { return fSNR[0]; }
   Double_t GetYSNR() const { return fSNR[1]; }
   Double_t GetZSNR() const { return fSNR[2]; }
+  void     SetSNR(double snr, int i) {if (i<3 && i>=0) fSNR[i] = snr;}
 
   Double_t GetChi2() const { return fChi2; }
+  void     SetChi2(Double_t chi) { fChi2 = chi; }
   Double_t GetChi2toNDF() const 
     { return fChi2/(2.*(Double_t)fNContributors-3.); }
   Double_t GetChi2perNDF() const { return GetChi2toNDF();}
@@ -76,6 +80,10 @@ class AliESDVertex : public AliVertex {
 
   void     SetID(Char_t id) {fID=id;}
   Char_t   GetID() const {return fID;}
+  //
+  void     SetBC(Int_t bc)               {fBCID = bc;}
+  Int_t    GetBC()              const    {return fBCID;}
+  Double_t GetWDist(const AliESDVertex* v) const;
 
  protected:
 
@@ -84,12 +92,12 @@ class AliESDVertex : public AliVertex {
   Double32_t fChi2;  // chi2 of vertex fit
 
   Char_t fID;       // ID of this vertex within an ESD event
-
+  Char_t fBCID;     // BC ID assigned to vertex
  private:
 
   void SetToZero();
 
-  ClassDef(AliESDVertex,7)  // Class for Primary Vertex
+  ClassDef(AliESDVertex,8)  // Class for Primary Vertex
 };
 
 #endif

@@ -26,9 +26,11 @@
 //---- Root headers --------
 #include <TMath.h>
 #include <TROOT.h>
+#include <TMatrixDSym.h>
 //---- AliRoot headers -----
 #include "AliESDVertex.h"
-
+#include "AliVTrack.h"
+#include "AliLog.h"
 
 ClassImp(AliESDVertex)
 
@@ -42,7 +44,8 @@ AliESDVertex::AliESDVertex() :
   fCovYZ(0),
   fCovZZ(5.3*5.3),
   fChi2(0),
-  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
+  fID(-1),   // ID=-1 means the vertex with the biggest number of contributors 
+  fBCID(AliVTrack::kTOFBCNA)
 {
   //
   // Default Constructor, set everything to 0
@@ -61,7 +64,8 @@ AliESDVertex::AliESDVertex(Double_t positionZ,Double_t sigmaZ,
   fCovYZ(0),
   fCovZZ(sigmaZ*sigmaZ),
   fChi2(0),
-  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
+  fID(-1),   // ID=-1 means the vertex with the biggest number of contributors 
+  fBCID(AliVTrack::kTOFBCNA)
 {
   //
   // Constructor for vertex Z from pixels
@@ -87,7 +91,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t covmatrix[6],
   fCovYZ(covmatrix[4]),
   fCovZZ(covmatrix[5]),
   fChi2(chi2),
-  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
+  fID(-1),   // ID=-1 means the vertex with the biggest number of contributors 
+  fBCID(AliVTrack::kTOFBCNA)
 {
   //
   // Constructor for vertex in 3D from tracks
@@ -108,7 +113,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
   fChi2(0),
-  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
+  fID(-1),   // ID=-1 means the vertex with the biggest number of contributors 
+  fBCID(AliVTrack::kTOFBCNA)
 {
   //
   // Constructor for smearing of true position
@@ -129,7 +135,8 @@ AliESDVertex::AliESDVertex(Double_t position[3],Double_t sigma[3],
   fCovYZ(0),
   fCovZZ(sigma[2]*sigma[2]),
   fChi2(0),
-  fID(-1)   // ID=-1 means the vertex with the biggest number of contributors 
+  fID(-1),   // ID=-1 means the vertex with the biggest number of contributors 
+  fBCID(AliVTrack::kTOFBCNA)
 {
   //
   // Constructor for Pb-Pb
@@ -153,7 +160,8 @@ AliESDVertex::AliESDVertex(const AliESDVertex &source):
   fCovYZ(source.fCovYZ),
   fCovZZ(source.fCovZZ),
   fChi2(source.fChi2),
-  fID(source.fID)
+  fID(source.fID),
+  fBCID(source.fBCID)
 {
   //
   // Copy constructor
@@ -178,6 +186,7 @@ AliESDVertex &AliESDVertex::operator=(const AliESDVertex &source){
     fCovZZ = source.fCovZZ;
     fChi2 = source.fChi2;
     fID = source.fID;
+    fBCID = source.fBCID;
   }
   return *this;
 }
@@ -230,6 +239,21 @@ void AliESDVertex::GetCovMatrix(Double_t covmatrix[6]) const {
 }
 
 //--------------------------------------------------------------------------
+void AliESDVertex::SetCovarianceMatrix(const Double_t *covmatrix) {
+  //
+  // Return covariance matrix of the vertex
+  //
+  fCovXX = covmatrix[0];
+  fCovXY = covmatrix[1];
+  fCovYY = covmatrix[2];
+  fCovXZ = covmatrix[3];
+  fCovYZ = covmatrix[4];
+  fCovZZ = covmatrix[5];
+
+  return;
+}
+
+//--------------------------------------------------------------------------
 void AliESDVertex::GetSNR(Double_t snr[3]) const {
   //
   // Return S/N ratios
@@ -251,11 +275,27 @@ void AliESDVertex::Print(Option_t* /*option*/) const {
   printf(" %12.10f  %12.10f  %12.10f\n %12.10f  %12.10f  %12.10f\n %12.10f  %12.10f  %12.10f\n",fCovXX,fCovXY,fCovXZ,fCovXY,fCovYY,fCovYZ,fCovXZ,fCovYZ,fCovZZ);
   printf(" S/N = (%f, %f, %f)\n",fSNR[0],fSNR[1],fSNR[2]);
   printf(" chi2 = %f\n",fChi2);
-  printf(" # tracks (or tracklets) = %d\n",fNContributors);
+  printf(" # tracks (or tracklets) = %d BCID=%d\n",fNContributors,int(fBCID));
 
   return;
 }
 
 
-
-
+//____________________________________________________________
+Double_t AliESDVertex::GetWDist(const AliESDVertex* v) const
+{
+  // calculate sqrt of weighted distance to other vertex
+  static TMatrixDSym vVb(3);
+  double dist = -1;
+  double dx = fPosition[0]-v->fPosition[0], dy = fPosition[1]-v->fPosition[1], dz = fPosition[2]-v->fPosition[2];
+  vVb(0,0) = fCovXX + v->fCovXX;
+  vVb(1,1) = fCovYY + v->fCovYY;
+  vVb(2,2) = fCovZZ + v->fCovZZ;;
+  vVb(1,0) = vVb(0,1) = fCovXY + v->fCovXY;
+  vVb(0,2) = vVb(1,2) = vVb(2,0) = vVb(2,1) = 0.;
+  vVb.InvertFast();
+  if (!vVb.IsValid()) {AliError("Singular Matrix"); return dist;}
+  dist = vVb(0,0)*dx*dx + vVb(1,1)*dy*dy + vVb(2,2)*dz*dz
+    +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
+  return dist>0 ? TMath::Sqrt(dist) : -1; 
+}

@@ -30,11 +30,20 @@
 
 class AliExternalTrackParam;
 class AliVEvent;
+class AliESDEvent;
 class AliStrLine;
 
 class AliVertexerTracks : public TObject {
   
  public:
+  enum {kTOFBCShift=200, 
+	kStrLinVertexFinderMinDist1=1,
+	kStrLinVertexFinderMinDist0=2,
+	kHelixVertexFinder=3,
+	kVertexFinder1=4,
+	kVertexFinder0=5,
+	kMultiVertexer=6};
+  enum {kBitUsed = BIT(16),kBitAccounted = BIT(17)};
   AliVertexerTracks(); 
   AliVertexerTracks(Double_t fieldkG); 
   virtual ~AliVertexerTracks();
@@ -108,6 +117,7 @@ class AliVertexerTracks : public TObject {
       fNominalCov[1]=0.; fNominalCov[3]=0.; fNominalCov[4]=0.; return; }
   void  SetVtxStart(AliESDVertex *vtx);
   void  SetSelectOnTOFBunchCrossing(Bool_t select=kFALSE,Bool_t keepAlsoUnflagged=kTRUE) {fSelectOnTOFBunchCrossing=select; fKeepAlsoUnflaggedTOFBunchCrossing=keepAlsoUnflagged; return;}
+  //
   static Double_t GetStrLinMinDist(const Double_t *p0,const Double_t *p1,const Double_t *x0);
   static Double_t GetDeterminant3X3(Double_t matr[][3]);
   static void GetStrLinDerivMatrix(const Double_t *p0,const Double_t *p1,Double_t (*m)[3],Double_t *d);
@@ -120,7 +130,24 @@ class AliVertexerTracks : public TObject {
     return fFieldkG; } 
   void SetNSigmaForUi00(Double_t n=1.5) { fnSigmaForUi00=n; return; }
   Double_t GetNSigmaForUi00() const { return fnSigmaForUi00; }
-
+  //
+  void SetMVTukey2(double t=6)             {fMVTukey2     = t;}
+  void SetMVSig2Ini(double t=1e3)          {fMVSig2Ini    = t;}
+  void SetMVMaxSigma2(double t=3.)         {fMVMaxSigma2  = t;}
+  void SetMVMinSig2Red(double t=0.005)     {fMVMinSig2Red = t;}
+  void SetMVMinDst(double t=10e-4)         {fMVMinDst     = t;}
+  void SetMVScanStep(double t=2.)          {fMVScanStep   = t;}
+  void SetMVFinalWBinary(Bool_t v=kTRUE)   {fMVFinalWBinary = v;}
+  void SetMVMaxWghNtr(double w=10.)        {fMVMaxWghNtr  = w;}
+  //
+  void   FindVerticesMV();
+  Bool_t FindNextVertexMV();
+  //
+  AliESDVertex* GetCurrentVertex() const {return (AliESDVertex*)fCurrentVertex;}
+  TObjArray*    GetVerticesArray() const {return (TObjArray*)fMVVertices;}   // RS to be removed
+  void          AnalyzePileUp(AliESDEvent* esdEv);
+  void          SetBCSpacing(Int_t ns=50) {fBCSpacing = ns;}
+  //
  protected:
   void     HelixVertexFinder();
   void     OneTrackVertFinder();
@@ -132,7 +159,7 @@ class AliVertexerTracks : public TObject {
 		        TMatrixD &ri,TMatrixD &wWi,
 			Bool_t uUi3by3=kFALSE) const;     
   void     VertexFinder(Int_t optUseWeights=0);
-  void     VertexFitter();
+  void     VertexFitter(Bool_t vfit=kTRUE, Bool_t chiCalc=kTRUE,Int_t useWeights=0);
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
   void     TooFewTracks();
 
@@ -167,7 +194,7 @@ class AliVertexerTracks : public TObject {
   Double_t  fFiducialZ;       // length of fiducial cylinder for tracks
   Double_t  fnSigmaForUi00;   // n. sigmas from finder in TrackToPoint
   Int_t     fAlgo;            // option for vertex finding algorythm
-  Int_t     fAlgoIter0;       // this is for iteration 0
+  Int_t     fAlgoIter0;       // this is for iteration 0  
   // fAlgo=1 (default) finds minimum-distance point among all selected tracks
   //         approximated as straight lines 
   //         and uses errors on track parameters as weights
@@ -180,9 +207,24 @@ class AliVertexerTracks : public TObject {
   //         and uses errors on track parameters as weights
   // fAlgo=5 finds the average point among DCA points of all pairs of tracks
   //         approximated as straight lines 
+  //
   Bool_t    fSelectOnTOFBunchCrossing;  // tracks from bunch crossing 0 
   Bool_t    fKeepAlsoUnflaggedTOFBunchCrossing; // also tracks w/o bunch crossing number (-1)
-
+  // parameters for multivertexer
+  Double_t fMVWSum;                    // sum of weights for multivertexer
+  Double_t fMVWE2;                     // sum of weighted chi2's for  multivertexer
+  Double_t fMVTukey2;                  // Tukey constant for multivertexer
+  Double_t fMVSigma2;                  // chi2 current scaling param for multivertexer
+  Double_t fMVSig2Ini;                 // initial value for fMVSigma2
+  Double_t fMVMaxSigma2;               // max acceptable value for final fMVSigma2
+  Double_t fMVMinSig2Red;              // min reduction of fMVSigma2 to exit the loop
+  Double_t fMVMinDst;                  // min distance between vertices at two iterations to exit
+  Double_t fMVScanStep;                // step of vertices scan
+  Double_t fMVMaxWghNtr;               // min W-distance*Ncontr_min for close vertices
+  Bool_t   fMVFinalWBinary;            // for the final fit use binary weights
+  Int_t    fBCSpacing;                 // BC Spacing in ns (will define the rounding of BCid)
+  TObjArray* fMVVertices;              // array of found vertices
+  //
  private:
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);

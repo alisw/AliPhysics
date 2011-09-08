@@ -31,7 +31,7 @@ AliGRPRecoParam::AliGRPRecoParam() : AliDetectorRecoParam(),
 fMostProbablePt(0.350),
 fVertexerTracksConstraintITS(kTRUE),
 fVertexerTracksConstraintTPC(kTRUE),
-fVertexerTracksNCuts(12),
+fVertexerTracksNCuts(21),
 fVertexerTracksITSdcacut(0.1),
 fVertexerTracksITSdcacutIter0(0.1),
 fVertexerTracksITSmaxd0z0(0.5),
@@ -44,6 +44,17 @@ fVertexerTracksITSfidR(3.),
 fVertexerTracksITSfidZ(30.),
 fVertexerTracksITSalgo(1.),
 fVertexerTracksITSalgoIter0(4.),
+//
+fVertexerTracksITSMVTukey2(7.),
+fVertexerTracksITSMVSig2Ini(1e3),
+fVertexerTracksITSMVMaxSigma2(5.0),
+fVertexerTracksITSMVMinSig2Red(0.05),
+fVertexerTracksITSMVMinDst(10e-4),
+fVertexerTracksITSMVScanStep(2.),
+fVertexerTracksITSMVMaxWghNtr(10),
+fVertexerTracksITSMVFinalWBinary(1),
+fVertexerTracksITSMVBCSpacing(50),
+//
 fVertexerTracksTPCdcacut(0.1),
 fVertexerTracksTPCdcacutIter0(1.0),
 fVertexerTracksTPCmaxd0z0(5.),
@@ -56,6 +67,17 @@ fVertexerTracksTPCfidR(3.),
 fVertexerTracksTPCfidZ(30.),
 fVertexerTracksTPCalgo(1.),
 fVertexerTracksTPCalgoIter0(4.),
+//
+fVertexerTracksTPCMVTukey2(7.),
+fVertexerTracksTPCMVSig2Ini(1e3),
+fVertexerTracksTPCMVMaxSigma2(5.0),
+fVertexerTracksTPCMVMinSig2Red(0.05),
+fVertexerTracksTPCMVMinDst(10e-4),
+fVertexerTracksTPCMVScanStep(2.),
+fVertexerTracksTPCMVMaxWghNtr(10),
+fVertexerTracksTPCMVFinalWBinary(1),
+fVertexerTracksTPCMVBCSpacing(50),
+//
 fVertexerV0NCuts(7),
 fVertexerV0Chi2max(33.),
 fVertexerV0DNmin(0.05),
@@ -107,6 +129,17 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerTracksITSfidZ(par.fVertexerTracksITSfidZ),
   fVertexerTracksITSalgo(par.fVertexerTracksITSalgo),
   fVertexerTracksITSalgoIter0(par.fVertexerTracksITSalgoIter0),
+  //
+  fVertexerTracksITSMVTukey2(par.fVertexerTracksITSMVTukey2),
+  fVertexerTracksITSMVSig2Ini(par.fVertexerTracksITSMVSig2Ini),
+  fVertexerTracksITSMVMaxSigma2(par.fVertexerTracksITSMVMaxSigma2),
+  fVertexerTracksITSMVMinSig2Red(par.fVertexerTracksITSMVMinSig2Red),
+  fVertexerTracksITSMVMinDst(par.fVertexerTracksITSMVMinDst),
+  fVertexerTracksITSMVScanStep(par.fVertexerTracksITSMVScanStep),
+  fVertexerTracksITSMVMaxWghNtr(par.fVertexerTracksITSMVMaxWghNtr),
+  fVertexerTracksITSMVFinalWBinary(par.fVertexerTracksITSMVFinalWBinary),
+  fVertexerTracksITSMVBCSpacing(par.fVertexerTracksITSMVBCSpacing),
+  //
   fVertexerTracksTPCdcacut(par.fVertexerTracksTPCdcacut),
   fVertexerTracksTPCdcacutIter0(par.fVertexerTracksTPCdcacutIter0),
   fVertexerTracksTPCmaxd0z0(par.fVertexerTracksTPCmaxd0z0),
@@ -119,6 +152,17 @@ AliGRPRecoParam::AliGRPRecoParam(const AliGRPRecoParam& par) :
   fVertexerTracksTPCfidZ(par.fVertexerTracksTPCfidZ),
   fVertexerTracksTPCalgo(par.fVertexerTracksTPCalgo),
   fVertexerTracksTPCalgoIter0(par.fVertexerTracksTPCalgoIter0),
+  //
+  fVertexerTracksTPCMVTukey2(par.fVertexerTracksTPCMVTukey2),
+  fVertexerTracksTPCMVSig2Ini(par.fVertexerTracksTPCMVSig2Ini),
+  fVertexerTracksTPCMVMaxSigma2(par.fVertexerTracksTPCMVMaxSigma2),
+  fVertexerTracksTPCMVMinSig2Red(par.fVertexerTracksTPCMVMinSig2Red),
+  fVertexerTracksTPCMVMinDst(par.fVertexerTracksTPCMVMinDst),
+  fVertexerTracksTPCMVScanStep(par.fVertexerTracksTPCMVScanStep),
+  fVertexerTracksTPCMVMaxWghNtr(par.fVertexerTracksTPCMVMaxWghNtr),
+  fVertexerTracksTPCMVFinalWBinary(par.fVertexerTracksTPCMVFinalWBinary),
+  fVertexerTracksTPCMVBCSpacing(par.fVertexerTracksTPCMVBCSpacing),
+  //
   fVertexerV0NCuts(par.fVertexerV0NCuts),
   fVertexerV0Chi2max(par.fVertexerV0Chi2max),
   fVertexerV0DNmin(par.fVertexerV0DNmin),
@@ -192,7 +236,6 @@ AliGRPRecoParam *AliGRPRecoParam::GetLowFluxParam()
   // make default reconstruction  parameters for low  flux env.
   //
   AliGRPRecoParam *param = new AliGRPRecoParam();
-
   return param;
 }
 //_____________________________________________________________________________
@@ -227,6 +270,16 @@ void AliGRPRecoParam::GetVertexerTracksCuts(Int_t mode,Double_t *cuts) const {
     cuts[9] = fVertexerTracksTPCfidZ;
     cuts[10]= fVertexerTracksTPCalgo;
     cuts[11]= fVertexerTracksTPCalgoIter0;
+    //
+    cuts[12]= fVertexerTracksTPCMVTukey2;
+    cuts[13]= fVertexerTracksTPCMVSig2Ini;
+    cuts[14]= fVertexerTracksTPCMVMaxSigma2;
+    cuts[15]= fVertexerTracksTPCMVMinSig2Red;
+    cuts[16]= fVertexerTracksTPCMVMinDst;
+    cuts[17]= fVertexerTracksTPCMVScanStep;
+    cuts[18]= fVertexerTracksTPCMVMaxWghNtr;
+    cuts[19]= fVertexerTracksTPCMVFinalWBinary;
+    cuts[20]= fVertexerTracksTPCMVBCSpacing;
   } else {
     cuts[0] = fVertexerTracksITSdcacut;
     cuts[1] = fVertexerTracksITSdcacutIter0;
@@ -240,12 +293,22 @@ void AliGRPRecoParam::GetVertexerTracksCuts(Int_t mode,Double_t *cuts) const {
     cuts[9] = fVertexerTracksITSfidZ;
     cuts[10]= fVertexerTracksITSalgo;
     cuts[11]= fVertexerTracksITSalgoIter0;
+    //
+    cuts[12]= fVertexerTracksITSMVTukey2;
+    cuts[13]= fVertexerTracksITSMVSig2Ini;
+    cuts[14]= fVertexerTracksITSMVMaxSigma2;
+    cuts[15]= fVertexerTracksITSMVMinSig2Red;
+    cuts[16]= fVertexerTracksITSMVMinDst;
+    cuts[17]= fVertexerTracksITSMVScanStep;
+    cuts[18]= fVertexerTracksITSMVMaxWghNtr;
+    cuts[19]= fVertexerTracksITSMVFinalWBinary;
+    cuts[20]= fVertexerTracksITSMVBCSpacing;
   }
 
   return;
 }
 //_____________________________________________________________________________
-void AliGRPRecoParam::SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[12]) {
+void AliGRPRecoParam::SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[21]) {
   //
   // set cuts for ITS (0) or TPC (1) mode
   //
@@ -267,6 +330,16 @@ void AliGRPRecoParam::SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts
     fVertexerTracksTPCfidZ = cuts[9];
     fVertexerTracksTPCalgo = cuts[10];
     fVertexerTracksTPCalgoIter0 = cuts[11];
+    //
+    fVertexerTracksTPCMVTukey2       = cuts[12];
+    fVertexerTracksTPCMVSig2Ini      = cuts[13];
+    fVertexerTracksTPCMVMaxSigma2    = cuts[14];
+    fVertexerTracksTPCMVMinSig2Red   = cuts[15];
+    fVertexerTracksTPCMVMinDst       = cuts[16];
+    fVertexerTracksTPCMVScanStep     = cuts[17];
+    fVertexerTracksTPCMVMaxWghNtr    = cuts[18];
+    fVertexerTracksTPCMVFinalWBinary = cuts[19];
+    fVertexerTracksTPCMVBCSpacing    = cuts[20];
   } else {
     fVertexerTracksITSdcacut = cuts[0];
     fVertexerTracksITSdcacutIter0 = cuts[1];
@@ -280,6 +353,16 @@ void AliGRPRecoParam::SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts
     fVertexerTracksITSfidZ = cuts[9];
     fVertexerTracksITSalgo = cuts[10];
     fVertexerTracksITSalgoIter0 = cuts[11];
+    //
+    fVertexerTracksITSMVTukey2       = cuts[12];
+    fVertexerTracksITSMVSig2Ini      = cuts[13];
+    fVertexerTracksITSMVMaxSigma2    = cuts[14];
+    fVertexerTracksITSMVMinSig2Red   = cuts[15];
+    fVertexerTracksITSMVMinDst       = cuts[16];
+    fVertexerTracksITSMVScanStep     = cuts[17];
+    fVertexerTracksITSMVMaxWghNtr    = cuts[18];
+    fVertexerTracksITSMVFinalWBinary = cuts[19];
+    fVertexerTracksITSMVBCSpacing    = cuts[20];
   }
 
   return;

@@ -68,9 +68,11 @@ class AliVertex : public AliVVertex {
     for(Int_t i=0;i<fNIndices;i++) printf("AliVertex uses track %d\n",fIndices[i]); return; }
 
   virtual void     GetCovarianceMatrix(Double_t covmatrix[6]) const;
+  virtual void     SetCovarianceMatrix(const Double_t *) {}
   
   virtual Double_t GetChi2perNDF() const {return -999.;}
   virtual Double_t GetChi2() const {return -999.;}
+  virtual void     SetChi2(Double_t ) {}
   virtual Int_t    GetNDF() const {return -999;}
 
  protected:

@@ -677,7 +677,7 @@ Int_t AliAODTrack::GetTOFBunchCrossing(Double_t b) const
   // Returns the number of bunch crossings after trigger (assuming 25ns spacing)
   const double kSpacing = 25e3; // min interbanch spacing
   const double kShift = 0;
-  Int_t bcid = -1; // defualt one
+  Int_t bcid = kTOFBCNA; // defualt one
   if (!IsOn(kTOFout) || !IsOn(kESDpid)) return bcid; // no info
   //
   double tdif = GetTOFsignal();
