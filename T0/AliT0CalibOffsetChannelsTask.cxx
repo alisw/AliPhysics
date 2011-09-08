@@ -36,7 +36,7 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
     fCFD[ip]      = 0;
     fCDBdelays[ip]= 0;
     fCDBcfds[ip]= 0;
-    fCDBT0s[ip]= 0;
+    if (ip<5 ) fCDBT0s[ip]= 0;
   }
 
   // Define input and output slots here
@@ -59,7 +59,7 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name)
     fCFD[ip]      = 0;
     fCDBdelays[ip]= 0;
     fCDBcfds[ip]= 0;
-    fCDBT0s[ip]= 0;
+    if (ip<5 ) fCDBT0s[ip]= 0;
 
   }
  
