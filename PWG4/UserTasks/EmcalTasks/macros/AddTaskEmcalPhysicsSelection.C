@@ -1,6 +1,7 @@
 // $Id$
 
-void AddEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t computeBG=kTRUE)
+AliEmcalPhysicsSelectionTask* 
+AddTaskEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t computeBG=kTRUE)
 {
   // Add EMCAL physics selection task.
 
@@ -34,4 +35,5 @@ void AddEmcalPhysicsSelelection(Bool_t exFOnly, Bool_t rejectBG=kTRUE, Bool_t co
                          oname);
   mgr->ConnectOutput(pseltask,1,co1);
   cout << " *** AliEmcalPhysicsTask configured *** " << endl;
+  return task;
 }   

@@ -14,7 +14,7 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t f
     ::Warning("AddTaskClusterizerFW", "Task was Never tested on MC data");
   
   TString name("ClusterizerFW");
-  TString nameout("Clusters")
+  TString nameout("Clusters");
   Int_t n, s;
   Float_t minE, minT, maxT;
   
@@ -67,6 +67,8 @@ AliAnalysisTaskEMCALClusterizeFast* AddTaskClusterizerFW(Bool_t clusL0, Bool_t f
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
+
+  cout << " *** " << name << " configured *** " << endl;
     
   return task;
 }
