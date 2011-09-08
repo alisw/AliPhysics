@@ -60,15 +60,15 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetPedestalData(AliCaloCalibPedestal *d)             { fPedestalData                = d     ; }
   void                   SetRecalibrateCellsOnly(Bool_t b)                    { fRecalibOnly                 = b     ; }
   void                   SetSubBackground(Bool_t b)                           { fSubBackground               = b     ; }
-  void                   SetCreatePattern(Bool_t yes)                         { fCreatePattern               = yes   ; if (yes) fOverwrite = kTRUE; }
-  void                   SetOverwrite(Bool_t yes)                             { fOverwrite                   = yes   ; if (yes) fOverwrite = kTRUE; }
+  void                   SetCreatePattern(Bool_t yes)                         { fCreatePattern               = yes   ; }
+  void                   SetOverwrite(Bool_t yes)                             { fOverwrite                   = yes   ; }
   void                   SetNewClusterArrayName(TString name)                 { fNewClusterArrayName         = name  ; }
   void                   SetnPhi(Int_t n)                                     { fNPhi                        = n     ; }
   void                   SetnEta(Int_t n)                                     { fNEta                        = n     ; }
   void                   SetShiftPhi(Int_t n)                                 { fShiftPhi                    = n     ; }
   void                   SetShiftEta(Int_t n)                                 { fShiftEta                    = n     ; }
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
-  void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; if (yes) fOverwrite = kFALSE; }
+  void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; }
 
  protected:
   virtual void           Clusterize();
