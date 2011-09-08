@@ -196,7 +196,7 @@ AliPWG4HighPtTrackQA* AddTaskPWG4HighPtTrackQA(char *prodType = "LHC10e14",Bool_
   AliPWG4HighPtTrackQA *taskPWG4TrackQA = new AliPWG4HighPtTrackQA(Form("AliPWG4HighPtTrackQACent%dTrack%dCuts%d",centClass,trackType,cuts));
   taskPWG4TrackQA->SetTrackType(trackType);
   taskPWG4TrackQA->SetCuts(trackCuts);
-  taskPWG4TrackQA->SetCutsITSLoose(trackCutsITSLoose);
+  taskPWG4TrackQA->SetCutsITSLoose(trackCutsReject);
   taskPWG4TrackQA->SetCutsTPConly(trackCutsTPConly);
   
   taskPWG4TrackQA->SetPtMax(100.);
