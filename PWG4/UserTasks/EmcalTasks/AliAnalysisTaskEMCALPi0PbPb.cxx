@@ -253,7 +253,7 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
     delete fOutput; fOutput = 0;
   }
   delete fPtRanges; fPtRanges = 0;
-  delete fGeom; fGeom = 0;
+  fGeom = 0; // do not delete geometry when using instance
   delete fReco; fReco = 0;
   delete fTrClassNamesArr;
   delete fSelTracks;
@@ -1198,7 +1198,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
 {
-  // Calculate track properties.
+  // Calculate track properties for primary tracks.
 
   fSelPrimTracks->Clear();
 

@@ -136,8 +136,8 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TObjArray             *fTrClassNamesArr;        //!array of trig class names  
   AliESDEvent           *fEsdEv;                  //!pointer to input esd event
   AliAODEvent           *fAodEv;                  //!pointer to input aod event
-  const TObjArray             *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
-  const TClonesArray          *fDigits;                 //!pointer to digits     (AliAnalysisTaskEMCALClusterizeFast)
+  const TObjArray       *fRecPoints;              //!pointer to rec points (AliAnalysisTaskEMCALClusterizeFast)
+  const TClonesArray    *fDigits;                 //!pointer to digits     (AliAnalysisTaskEMCALClusterizeFast)
   TObjArray             *fEsdClusters;            //!pointer to esd clusters
   AliESDCaloCells       *fEsdCells;               //!pointer to esd cells
   TObjArray             *fAodClusters;            //!pointer to aod clusters
