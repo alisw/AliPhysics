@@ -357,7 +357,7 @@ void AliCDBManager::SetDefaultStorage(const char* dbString) {
 	}
 	
 	if (fStorageMap->Contains("default")) {
-		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+		delete fStorageMap->Remove(((TPair*)fStorageMap->FindObject("default"))->Key());
 	}
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
@@ -377,7 +377,7 @@ void AliCDBManager::SetDefaultStorage(const AliCDBParam* param) {
 	}
 
 	if (fStorageMap->Contains("default")) {
-		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+	        delete fStorageMap->Remove(((TPair*)fStorageMap->FindObject("default"))->Key());
 	}
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
@@ -409,7 +409,7 @@ void AliCDBManager::SetDefaultStorage(AliCDBStorage* storage) {
 	}
 
 	if (fStorageMap->Contains("default")) {
-		delete fStorageMap->Remove(fStorageMap->GetValue("default"));
+	        delete fStorageMap->Remove(((TPair*)fStorageMap->FindObject("default"))->Key());
 	}
 	fStorageMap->Add(new TObjString("default"), new TObjString(fDefaultStorage->GetURI()));
 }
