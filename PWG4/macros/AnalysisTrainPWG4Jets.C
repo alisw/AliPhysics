@@ -912,7 +912,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    if(iPWG4JetServices){
      gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskJetServices.C");
      AliAnalysisTaskJetServices *taskjetServ = 0;
-     taskjetServ = AddTaskJetServices("/Users/kleinb/Downloads/PWG4_JetTasksOutput_110818a.root");
+     taskjetServ = AddTaskJetServices("/Users/kleinb/Dropbox/SharedJets/Christian/Files/PWG4_JetTasksOutput_110818a.root");
      if (!taskjetServ) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskJetServices cannot run for this train conditions - EXCLUDED");
      if(kGridRunRange[0]>0)taskjetServ->SetRunRange(kGridRunRange[0],kGridRunRange[1]);
      else taskjetServ->SetRunRange(110000,160000);
