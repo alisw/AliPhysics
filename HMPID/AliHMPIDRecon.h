@@ -38,6 +38,7 @@ public :
   void     Propagate    (const TVector3  dir,      TVector3 &pos,Double_t z                 )const;//propagate photon alogn the line  
   void     Refract      (      TVector3 &dir,                    Double_t n1,    Double_t n2)const;//refract photon on the boundary
   TVector2 TracePhot    (Double_t ckovTh,Double_t ckovPh                                    )const;//trace photon created by track to PC 
+  void     AddObjectToFriends(TClonesArray *pCluLst, Int_t photonIndex, AliESDtrack *pTrk   );     // Add AliHMPIDCluster object to ESD friends
   TVector2 TraceForward (TVector3 dirCkov                                                   )const;//tracing forward a photon from (x,y) to PC
   void     Lors2Trs     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//LORS to TRS 
   void     Trs2Lors     (TVector3 dirCkov,Double_t &thetaCer,Double_t &phiCer               )const;//TRS to LORS

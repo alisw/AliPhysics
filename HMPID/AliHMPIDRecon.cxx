@@ -367,7 +367,6 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, AliESDtrack *
 // Photon Flag:  Flag = 0 initial set; 
 //               Flag = 1 good candidate (charge compatible with photon); 
 //               Flag = 2 photon used for the ring;
-  Int_t *PhotIndex = new Int_t[fPhotCnt];
   
   Int_t steps = (Int_t)((ckov )/ fDTheta); //how many times we need to have fDTheta to fill the distance between 0  and thetaCkovHough
 
@@ -380,28 +379,26 @@ Int_t AliHMPIDRecon::FlagPhot(Double_t ckov,TClonesArray *pCluLst, AliESDtrack *
   Int_t iInsideCnt = 0; //count photons which Theta ckov inside the window
   for(Int_t i=0;i<fPhotCnt;i++){//photon candidates loop
     fPhotFlag[i] = 0;
-    if(fPhotCkov[i] >= tmin && fPhotCkov[i] <= tmax)	{ 
-      fPhotFlag[i]=2;	  
-      PhotIndex[iInsideCnt]=fPhotClusIndex[i];
+    if(fPhotCkov[i] >= tmin && fPhotCkov[i] <= tmax) { 
+      fPhotFlag[i]=2;
+      AddObjectToFriends(pCluLst,i,pTrk);
       iInsideCnt++;
     }
   }
       
-  for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
-    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster
-    for(Int_t j=0; j<iInsideCnt; j++){
-      if(iClu==PhotIndex[j]) {
-      AliHMPIDCluster *pClus = new AliHMPIDCluster(*pClu);  
-      pTrk->AddCalibObject(pClus); 
-     } 
-    }
-  } 
-                                                                                      
-  delete [] PhotIndex;
-  
   return iInsideCnt;
   
 }//FlagPhot()
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+void  AliHMPIDRecon::AddObjectToFriends(TClonesArray *pCluLst, Int_t photonIndex, AliESDtrack *pTrk)
+{
+// Add AliHMPIDcluster object to ESD friends
+    
+  AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(fPhotClusIndex[photonIndex]);	  
+  AliHMPIDCluster *pClus = new AliHMPIDCluster(*pClu);
+  pClus->SetChi2(fPhotCkov[photonIndex]);  
+  pTrk->AddCalibObject(pClus);   
+}    
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 TVector2 AliHMPIDRecon::TracePhot(Double_t ckovThe,Double_t ckovPhi)const
 {
