@@ -69,11 +69,11 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fRecoUtils(0),
     fLoadCalib(0),
     fLoadPed(0),
-    fAttachClusters(0),
+    fAttachClusters(1),
     fRecalibOnly(0),
     fSubBackground(0),
     fCreatePattern(0),
-    fOverwrite(1),
+    fOverwrite(0),
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
     fNEta(4),
@@ -106,11 +106,11 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fRecoUtils(0),
     fLoadCalib(0),
     fLoadPed(0),
-    fAttachClusters(0),
+    fAttachClusters(1),
     fRecalibOnly(0),
     fSubBackground(0),
     fCreatePattern(0),
-    fOverwrite(1),
+    fOverwrite(0),
     fNewClusterArrayName("newCaloClusters"),
     fNPhi(4),
     fNEta(4),
@@ -516,8 +516,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
   
   TClonesArray *clus = 0;
   
-  if (fOverwrite)
-  {
+  if (fOverwrite) {
     clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));
     if (!clus)
       clus = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("CaloClusters"));
