@@ -1067,7 +1067,8 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
 
   static Int_t iOldRun = -1;
   static Int_t iFoundBin = -1;
-  if(aod->GetRunNumber()!=iOldRun){
+
+  if(aod->GetRunNumber()!=iOldRun&&(fp1CalibRPYA)){
     // search only or the bin in case of new runs
     iFoundBin = -1;
     Int_t ib = fp1CalibRPYA->FindBin(aod->GetRunNumber());
@@ -1094,7 +1095,7 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
     iOldRun = aod->GetRunNumber();
   }
 
-  Printf("%s:%d iFoundBin %d",(char*)__FILE__,__LINE__,iFoundBin);
+  if(fDebug)Printf("%s:%d iFoundBin %d",(char*)__FILE__,__LINE__,iFoundBin);
 
   if(iFoundBin>0){
     meanXA = fp1CalibRPXA->GetBinContent(iFoundBin);
@@ -1103,7 +1104,7 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
     meanYC = fp1CalibRPYC->GetBinContent(iFoundBin);
   }
 
-  Printf("%s:%d iFoundBin %1.3E %1.3E %1.3E %1.3E",(char*)__FILE__,__LINE__,meanXA,meanYA,meanXC,meanYC);
+  if(fDebug)Printf("%s:%d iFoundBin %1.3E %1.3E %1.3E %1.3E",(char*)__FILE__,__LINE__,meanXA,meanYA,meanXC,meanYC);
 
   for (int i=0; i<64; i++) {  
     Double_t mult = aodVZERO->GetMultiplicity(i);
