@@ -117,7 +117,7 @@ ClassImp(AliT0Reconstructor)
  
   for (Int_t i=0; i<24; i++) {
     if( fTime0vertex[i] < 500 || fTime0vertex[i] > 50000) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
- 
+    //   printf(" calulated mean %i %f \n",fTime0vertex[i]);
   }
   //here real Z position
   fdZonC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
@@ -496,7 +496,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
  	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
-	    if( allData[trr][iHit] > 0)  tr[itr]=true;
+	    if( allData[trr][iHit] > 0 && allData[trr][iHit] < 4000)  tr[itr]=true;
 
 	    AliDebug(1,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
@@ -673,6 +673,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   fESDTZERO->SetBackgroundFlag(background);
   Bool_t pileup =  PileupFlag();
   fESDTZERO->SetPileupFlag(pileup);
+  for (Int_t i=0; i<5; i++) {
+    fESDTZERO->SetPileupTime(i, frecpoints->GetTVDC(i) ) ;
+    //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints->GetTVDC(i));
+  }
   Bool_t sat  = SatelliteFlag();
   fESDTZERO->SetSatelliteFlag(sat);
   
@@ -711,15 +715,15 @@ Bool_t AliT0Reconstructor::PileupFlag() const
 {
   //
   Bool_t pileup = false;
-  Float_t orA[5], orC[5],tvdc[5];
+  Float_t tvdc[5];
   for (Int_t ih=0; ih<5; ih++) 
     {
       tvdc[ih] =  fESDTZERO->GetTVDC(ih);
       
-     if(  tvdc[0] !=0 &&  tvdc[0]>-10 && tvdc[0]< 10 )
+     if(  tvdc[0] !=0 &&  tvdc[0]> -10 && tvdc[0]< 10 )
        if(ih>0 && tvdc[ih]>20 ) 	pileup = true; 
-     if(tvdc[0] >20 || tvdc[0] <-20) pileup =true;
-     
+     if( tvdc[0] >20 || (tvdc[0] < -20  &&  tvdc[0] > -9000) ) pileup =true;
+     //    if (pileup) printf(" !!!!! pile up %i  tvdc %f \n",ih,  tvdc[ih]); 
     }
 
 
@@ -761,7 +765,3 @@ Bool_t  AliT0Reconstructor::SatelliteFlag() const
   return satellite;
 
 }
-
-
-
-
