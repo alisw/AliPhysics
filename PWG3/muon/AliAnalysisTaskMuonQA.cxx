@@ -155,6 +155,8 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
     fTriggerClass->Add(new TObjString(Form("CMUU7-%s-",side_pp[i].Data())), new TObjString(Form("CMUU7%s",side_pp[i].Data())));
     fTriggerClass->Add(new TObjString(Form("CMUS7-%s-",side_pp[i].Data())), new TObjString(Form("CMUS7%s",side_pp[i].Data())));
   }
+  fTriggerClass->Add(new TObjString("CINT7-I-"), new TObjString("CINT7I"));
+
   // Pb-Pb trigger classes
   TString side[4] = {"B", "A", "C", "E"};
   for (Int_t i = 0; i < 4; i++) {
@@ -176,6 +178,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   fSelectTriggerClass->AddLast(new TObjString("CMUS1-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUON);
   fSelectTriggerClass->AddLast(new TObjString("CMUS5-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kCMUS5);
   fSelectTriggerClass->AddLast(new TObjString("CINT7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kINT7);
+  fSelectTriggerClass->AddLast(new TObjString("CINT7-I-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kINT7);
   fSelectTriggerClass->AddLast(new TObjString("CMUSH7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUSH7);
   fSelectTriggerClass->AddLast(new TObjString("CMUS7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUS7);
   fSelectTriggerClass->AddLast(new TObjString("CMUU7-B-")); fSelectTriggerClass->Last()->SetUniqueID(AliVEvent::kMUU7);
@@ -407,10 +410,10 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       
       Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
       Double_t trackPt = esdTrack->Pt();
-      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. ) lowPt = kTRUE;
-      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. ) highPt = kTRUE;
+			Double_t eta = esdTrack->Eta();
+      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 9. && eta > -4. && eta < -2.5) lowPt = kTRUE;
+      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 9. && eta > -4. && eta < -2.5) highPt = kTRUE;
       
-      Double_t eta = esdTrack->Eta();
       if (thetaTrackAbsEnd < 2. || thetaTrackAbsEnd > 9. || eta < -4. || eta > -2.5) accKey += "out";
       else accKey += "in";
       
