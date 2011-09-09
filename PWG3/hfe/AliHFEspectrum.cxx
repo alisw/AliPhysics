@@ -450,12 +450,12 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     ratiocorrected->SetStats(0);
     ratiocorrected->Draw();
 
-    TH1D unfoldingspectrac[fNCentralityBinAtTheEnd];
-    TGraphErrors unfoldingspectracn[fNCentralityBinAtTheEnd];
-    TH1D correctedspectrac[fNCentralityBinAtTheEnd];
-    TGraphErrors correctedspectracn[fNCentralityBinAtTheEnd];
+    TH1D *unfoldingspectrac = new TH1D[fNCentralityBinAtTheEnd];
+    TGraphErrors *unfoldingspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
+    TH1D *correctedspectrac = new TH1D[fNCentralityBinAtTheEnd];
+    TGraphErrors *correctedspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
 
-    
+
 
     if(fBeamType==1) {
 
@@ -627,10 +627,12 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       out->Close(); delete out;
     }
 
+    delete [] unfoldingspectrac;
+    delete [] unfoldingspectracn;
+    delete [] correctedspectrac;
+    delete [] correctedspectracn;
+
   }
-
-
-  
 
   return kTRUE;
 }
