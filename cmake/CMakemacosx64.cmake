@@ -69,7 +69,16 @@ set ( CLIBFOPT  ${CLIBDEFS})
 
 set ( CXXWARN  "-Wall -Wno-long-long -W -Weffc++ -Wshadow -Woverloaded-virtual -ansi")
 
-set ( CXXSTF  "-pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+if ( CMAKE_CXX_COMPILER MATCHES "clang") 
+     
+     set ( CXXSTF  "-pipe -fsigned-char -fno-common -fmessage-length=0 -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+
+else( CMAKE_CXX_COMPILER MATCHES "clang")
+
+     set ( CXXSTF  "-pipe -fbounds-check -fsigned-char -fno-common -fmessage-length=0 -fno-default-inline -fno-inline -I/usr/X11R6/include -I${FINK_ROOT}/include")
+
+endif( CMAKE_CXX_COMPILER MATCHES "clang")
+
 
 set ( CXXFLAGS  "${CXXOPT} ${CXXSTF}")
 
