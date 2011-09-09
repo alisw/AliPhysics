@@ -104,6 +104,7 @@ AliGenerator* genConfig(char option[6]="param")
     gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
+    gener->Init();
   }
   if (!strcmp(option,"paramJpsi")) {
     AliGenParam *gener = new AliGenParam(1, AliGenMUONlib::kJpsi);
@@ -116,6 +117,7 @@ AliGenerator* genConfig(char option[6]="param")
     gener->SetOrigin(0,0,0);
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
+    gener->Init();
   }
   if (!strcmp(option,"hijing")) { //Hijing generator from ConfigPPR in macros
     AliGenHijing *gener = new AliGenHijing(-1);
@@ -140,6 +142,7 @@ AliGenerator* genConfig(char option[6]="param")
     gener->SetSelectAll(0);
     // impact parameter range
     gener->SetImpactParameterRange(0., 5.); // 0. - 5. fm corresponds to ~10% most central
+    gener->Init();
   }
   if (!strcmp(option,"muoncocktail")) { // Muon cocktail for PbPb
     AliGenMUONCocktail * gener = new AliGenMUONCocktail();
@@ -153,10 +156,8 @@ AliGenerator* genConfig(char option[6]="param")
     gener->SetVertexSmear(kPerTrack);  
     gener->SetOrigin(0,0,0);        // Vertex position
     gener->SetSigma(0,0,0.0);       // Sigma in (X,Y,Z) (cm) on IP position
+    gener->Init();
   }  
-
-  gener->SetDecayer(decayer);
-  gener->Init();
   return gener;
   
   cout << "Running genGunConfig.C finished ... " << endl;

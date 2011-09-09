@@ -19,14 +19,17 @@
 /// \file g3Config.C
 /// \brief Configuration macro for MUON spectrometer Geant3 simulation
 
-void Config()
+void Config(const char* directory="", 
+            const char* option="param", 
+           const char* digitstore="AliMUONDigitStoreV2S",
+           bool forEmbedding=kFALSE)
 {
   cout << "Running g3Config.C ... " << endl;
 
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/MUON/commonConfig.C");
-  commonConfig(kFALSE);
+  commonConfig(directory, digitstore, forEmbedding);
 
   // Load Geant3 + Geant3 VMC libraries
   //
@@ -42,7 +45,7 @@ void Config()
   // (it has to be created after MC, as it may use decayer via VMC)
   //
   gROOT->LoadMacro("$ALICE_ROOT/MUON/genTestConfig.C");
-  genConfig();
+  genConfig(option);
 
   // From external file
   //

@@ -36,8 +36,9 @@ static TString comment;
 // Functions
 void  LoadPythia();
 
-void commonConfig(Bool_t setRootGeometry = kFALSE,
-                  const char* digitstore="AliMUONDigitStoreV2S")
+void commonConfig(const char* directory="", 
+                  const char* digitstore="AliMUONDigitStoreV2S",
+                  bool forEmbedding=kFALSE)
 {
   cout << "Running commonConfig.C ... " << endl;
 
@@ -51,15 +52,12 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   // ALICE steering object (AliRunLoader)
   //=======================================================================
 
-  // Set Root geometry file
-  if ( setRootGeometry ) {
-    AliSimulation::Instance()->SetGeometryFile("$ALICE_ROOT/MUON/geometry/geometry.root");
-  }
-
+  Text_t filename[100];
+  sprintf(filename,"%sgalice.root",directory);
   AliRunLoader* rl 
-    = AliRunLoader::Open("galice.root",
-			  AliConfig::GetDefaultEventFolderName(),
-			  "recreate");
+    = AliRunLoader::Open(filename,
+			 AliConfig::GetDefaultEventFolderName(),
+			 "recreate");
   if ( ! rl ) {
     gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
     return;
@@ -67,35 +65,31 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(100);
   gAlice->SetRunLoader(rl);
+  cout << "Run loader created ... " << endl;
   
-  //======================================================================
-  // Trigger configuration
-  //=======================================================================
-
-  gAlice->SetTriggerDescriptor(pprTrigConfName[strig]);
-  cout << "Trigger configuration is set to  " << pprTrigConfName[strig] << endl;
-
   // ============================= 
   // Magnetic field
   // ============================= 
 
-  // Field (L3 0.5 T)
+  //============================================================= 
   // Field (L3 0.5 T)
   TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1, AliMagF::k5kG));
+  cout << "Field created ... " << endl;
  
   //============================================================= 
+  //============================================================= 
   //=================== Alice BODY parameters =============================
-  AliBODY *BODY = new AliBODY("BODY","Alice envelop");
+  new AliBODY("BODY","Alice envelop");
   //=================== ABSO parameters ============================
-  AliABSO *ABSO = new AliABSOv3("ABSO", "Muon Absorber");
+  new AliABSOv3("ABSO", "Muon Absorber");
   //=================== DIPO parameters ============================
-  AliDIPO *DIPO = new AliDIPOv3("DIPO", "Dipole version 2");
+  new AliDIPOv3("DIPO", "Dipole version 2");
   //================== HALL parameters ============================
-  AliHALL *HALL = new AliHALLv3("HALL", "Alice Hall");
+  new AliHALLv3("HALL", "Alice Hall");
   //=================== PIPE parameters ============================
-  AliPIPE *PIPE = new AliPIPEv3("PIPE", "Beam Pipe");
+  new AliPIPEv3("PIPE", "Beam Pipe");
   //=================== SHIL parameters ============================
-  AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 2");
+  new AliSHILv3("SHIL", "Shielding Version 2");
 
   //=================== MUON Subsystem ===========================
   AliMUON *MUON = new AliMUONv1("MUON", "default");
@@ -109,13 +103,24 @@ void commonConfig(Bool_t setRootGeometry = kFALSE,
   // activate trigger chamber efficiency by cells (0=default, 1=trigger efficiency according to AliMUONTriggerEfficiencyCells
   //  MUON->SetTriggerEffCells(0);
 
+  // Activate the following line when running with Fluka
+  // MUON->SetIsMaxStep(kFALSE);
+
   // Use SetDigitStoreClassName() to change the digitStore implementation used by (s)digitizer
   MUON->SetDigitStoreClassName(digitstore);
   
   cout << "MUON DigitStore is " << MUON->DigitStoreClassName().Data() << endl;
-  
-  // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
-  //MUON->SetDigitizerWithNoise(kFALSE);
+
+  if ( forEmbedding ) 
+  {
+    // Noise-only digits in tracker/trigger (0=no noise, 1=default (noise in tracker), 2=noise in tracker and trigger):
+    cout << "****** DISABLING NOISE GENERATION AS WE DO EMBEDDING ******" << endl;
+    MUON->SetDigitizerWithNoise(0);
+		MUON->SetConvertTrigger(true);
+    
+    new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+    
+  }
 
   // Use non-high performance raw data decoder 
   //MUON->SetFastTrackerDecoder(kFALSE);  

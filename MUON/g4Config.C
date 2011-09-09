@@ -21,14 +21,17 @@
 ///
 /// \author I. Hrivnacova, IPN Orsay
  	
-void Config()
+void Config(const char* directory="", 
+            const char* option="param", 
+            const char* digitstore="AliMUONDigitStoreV2S",
+            bool forEmbedding=kFALSE)
 {
   cout << "Running g4Config.C ... " << endl;
 
   // AliRoot setup
   //
   gROOT->LoadMacro("$ALICE_ROOT/MUON/commonConfig.C");
-  commonConfig(kTRUE);
+  commonConfig(directory, digitstore, forEmbedding);
 
   // Load Geant4 + Geant4 VMC libraries
   //
@@ -100,7 +103,7 @@ void Config()
   // (it has to be created after MC, as it may use decayer via VMC)
   //
   gROOT->LoadMacro("$ALICE_ROOT/MUON/genTestConfig.C");
-  genConfig();
+  genConfig(option);
 
   // From external file
   //
