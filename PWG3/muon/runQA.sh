@@ -15,7 +15,10 @@ execMergeAll=1
 execTerminate=1
 execTrigQA=1
 execTrackQA=1
-while getopts "matek" option
+isPrivateProd=0
+optList="mateko:pi:"
+inputTriggerList=""
+while getopts $optList option
 do
   case $option in
     m ) execMerge=0;;
@@ -23,6 +26,9 @@ do
     t ) execTerminate=0;;
     e ) execTrigQA=0;;
     k ) execTrackQA=0;;
+    o ) outTaskName=$OPTARG;;
+    p ) isPrivateProd=1;;
+    i ) inputTriggerList=$OPTARG;;
     * ) echo "Unimplemented option chosen."
     EXIT=1
     ;;
@@ -33,12 +39,15 @@ shift $(($OPTIND - 1))
 
 # needs 3 arguments
 if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
-    echo "Usage: `basename $0` (-matek) <runList.txt> <QAx> <alien:///alice/data/20XX>/LHCXXy>"
+    echo "Usage: `basename $0` (-$optList) <runList.txt> <QAx> <alien:///alice/data/20XX/LHCXXy>"
     echo "       -m skip merging (default: run)"
     echo "       -a skip final merging (default: run)"
     echo "       -t skip terminate (default: run)"
     echo "       -e skip run trigger efficiency QA (defult: run)"
     echo "       -k skip run muon QA (defult: run)"
+    echo "       -o task output name (default: QAresults.root)"
+    echo "       -p is private production. Use directory structure of the plugin"
+    echo "       -i input trigger list (default: no list)"
     exit 4
 fi
 
@@ -134,14 +143,30 @@ function runTrackQA() {
     lhcPeriod=`echo ${alienBaseDir%"/"} | awk -F "/" ' { print $NF } '`
     aliroot -b <<EOF &> logTrackQA.txt
 ${loadLibs}
-.x $qaMacroDir/PlotMuonQA.C+("${terminateDir}",0x0,$physSel,"$lhcPeriod","${outTaskName}");
+.x $qaMacroDir/PlotMuonQApp.C+("${terminateDir}",0x0,"${inputTriggerList}",${physSel},"${lhcPeriod}","${outTaskName}");
 .q
 EOF
     cd $baseOutDir
 }
 
+# Use absolute path for file inputTriggerList
+if [ "${inputTriggerList}" != "" ]; then
+  inputTriggerDir=`dirname ${inputTriggerList}`
+  if [ "${inputTriggerDir}"="." ]; then
+    inputTriggerList="`pwd`/${inputTriggerList}"
+  fi
+fi
+
+qaProdName="$2"
+if [ $isPrivateProd -eq 1 ]; then
+    tmpName=${qaProdName//"private"/""}
+    if [ "$tmpName" == "$qaProdName" ]; then
+	qaProdName="${qaProdName}_private"
+    fi
+fi
+
 if [ $execMerge -eq 1 ]; then
-    mergePerRun $1 $2 $3
+    mergePerRun $1 $qaProdName $3
 fi
 mergeOut=`grep -A 1 "Output written" ${mergeLog} | grep -v written`
 mergeOutAll=${mergeOut//".txt"/"_merged.txt"}
@@ -163,7 +188,8 @@ fi
 if [ $execTrigQA -eq 1 ]; then
     minRun=`echo ${mergeOut} | cut -d "_" -f 2`
     maxRun=`echo ${mergeOut} | cut -d "_" -f 3 | cut -d "." -f 1`
-    outName="trigEffQA_${minRun}_${maxRun}_$2.root"
+    trigOutSuffix=`echo ${qaProdName} | awk -F "/" '{ print $NF }'`
+    outName="trigEffQA_${minRun}_${maxRun}_${trigOutSuffix}.root"
     runTrigQA "${mergeOut}" "${outName}"
 fi
 
