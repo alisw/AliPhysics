@@ -172,4 +172,6 @@ ostream& operator<<(ostream &out, const AliHLTSpacePointContainer& c);
 
 ostream& operator<<(ostream &out, const AliHLTSpacePointContainer::AliHLTSpacePointProperties& p);
 
+bool operator==(const AliHLTSpacePointContainer::AliHLTSpacePointProperties& a,
+		const AliHLTSpacePointContainer::AliHLTSpacePointProperties& b);
 #endif

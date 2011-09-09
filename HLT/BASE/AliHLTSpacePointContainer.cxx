@@ -446,3 +446,8 @@ ostream& operator<<(ostream &out, const AliHLTSpacePointContainer::AliHLTSpacePo
   cout << p.fId;
   return out;
 }
+
+bool operator==(const AliHLTSpacePointContainer::AliHLTSpacePointProperties& a,
+		const AliHLTSpacePointContainer::AliHLTSpacePointProperties& b) {
+  return a.fId==b.fId;
+}

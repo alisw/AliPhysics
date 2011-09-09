@@ -14,7 +14,6 @@
 
 #include "AliHLTDataTypes.h"
 #include <iostream>
-#include <sstream>
 #include <iomanip>
 #include <memory>
 
@@ -84,26 +83,42 @@ class AliHLTIndexGrid {
     if (z<0) return 0;
     return (int)(z/fStepZ);
   }
+  int Index(int xindex, int yindex, int zindex) {
+    return xindex*fDimY*fDimZ + yindex*fDimZ + zindex;
+  }
   T GetLowerBoundX(int cell) const {
     if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
     int index=cell/(fDimY*fDimZ);
     return index*fStepX;
+  }
+  T GetCenterX(int cell) const {
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    return GetLowerBoundX(cell)+fStepX/2;
   }
   T GetLowerBoundY(int cell) const {
     if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
     int index=cell%(fDimY*fDimZ); index/=fDimZ;
     return index*fStepY;
   }
+  T GetCenterY(int cell) const {
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    return GetLowerBoundY(cell)+fStepY/2;
+  }
   T GetLowerBoundZ(int cell) const {
     if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
     int index=cell%(fDimY*fDimZ); index%=fDimZ;
     return index*fStepZ;
   }
+  T GetCenterZ(int cell) const {
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    return GetLowerBoundZ(cell)+fStepZ/2;
+  }
   int GetCellIndex(T x, T y, T z) const {
     return GetXIndex(x)*fDimY*fDimZ + (y<0?0:GetYIndex(y))*fDimZ + (z<0?0:GetZIndex(z));
   }
-  int GetNumberOfSpacePoints(int index, int endIndex) const {
+  int GetNumberOfSpacePoints(int index=0, int endIndex=-1) const {
     if (!fCells) return 0;
+    if (endIndex<0) endIndex=fCellDimension;
     int count=0;
     for (int cell=index; cell<endIndex && cell<fCellDimension && count<fCount; cell++) if (fCells[cell].fCount>0) count+=fCells[cell].fCount;
     return count;
@@ -144,34 +159,34 @@ class AliHLTIndexGrid {
   void Print(const char* /*option*/="") {
   // print info
   bool bPrintEmpty=false;
-  std::stringstream str;
-  str << "AliHLTIndexGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
-  str << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
-  str << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
-  str << "   z: " << fDimZ << " [0," << fMaxZ << "]" << endl;
-  str << "   " << GetNumberOfSpacePoints(0, fCellDimension) << " point(s)" << endl;
+  ios::fmtflags coutflags=cout.flags(); // backup cout status flags
+  cout << "AliHLTIndexGrid: " << (fCells?fCellDimension:0) << " cells" << endl;
+  cout << "   x: " << fDimX << " [0," << fMaxX << "]" << endl;
+  cout << "   y: " << fDimY << " [0," << fMaxY << "]" << endl;
+  cout << "   z: " << fDimZ << " [0," << fMaxZ << "]" << endl;
+  cout << "   " << GetNumberOfSpacePoints(0, fCellDimension) << " point(s)" << endl;
   if (fCells) {
     for (int i=0; i<fCellDimension; i++) {
       if (!bPrintEmpty && fCells[i].fCount<=0) continue;
-      str << "     " << setfill(' ') << setw(7) << setprecision(0) << i << " (" 
+      cout << "     " << setfill(' ') << setw(7) << fixed << setprecision(0) << i << " (" 
 	  << " " << setw(3) << GetLowerBoundX(i)
 	  << " " << setw(3) << GetLowerBoundY(i)
 	  << " " << setw(4) << GetLowerBoundZ(i)
 	  << "): ";
-      str << setw(3) << fCells[i].fCount << " entries, " << setw(3) << fCells[i].fFilled << " filled";
-      str << "  start index " << setw(5) << fCells[i].fStartIndex;
-      str << endl;
+      cout << setw(3) << fCells[i].fCount << " entries, " << setw(3) << fCells[i].fFilled << " filled";
+      cout << "  start index " << setw(5) << fCells[i].fStartIndex;
+      cout << endl;
       if (fCells[i].fCount>0) {
-	str << "          ";
+	cout << "          ";
 	for (iterator id=begin(GetLowerBoundX(i), GetLowerBoundY(i), GetLowerBoundZ(i));
 	     id!=end(); id++) {
-	  str << " 0x" << hex << setw(8) << setfill('0') << id.Data();
+	  cout << " 0x" << hex << setw(8) << setfill('0') << id.Data();
 	}
-	str  << dec << endl;
+	cout  << endl;
       }
     }
   }
-  cout << str;
+  cout.flags(coutflags); // restore the original flags
 }
 
 
@@ -227,7 +242,7 @@ class AliHLTIndexGrid {
     if (cell<0 || !fCells || cell>=fCellDimension) return fIterator;
     // get the index of the cell
     startIndex=fCells[cell].fStartIndex;
-    if (startIndex<0 || !fData || startIndex>=fDataDimension) return fIterator;
+    if (!fData || startIndex>=fDataDimension) return fIterator;
 
     // get the range end position
     int endCell=cell+1;
@@ -240,6 +255,12 @@ class AliHLTIndexGrid {
       endCell=fCellDimension;
     }
 
+    // find the first cell with content in the range 
+    for (; startIndex<0 && cell<endCell;) {
+      startIndex=fCells[++cell].fStartIndex;
+    }
+    if (startIndex<0) return fIterator;
+
     new (&fIterator) iterator(fData+startIndex);
     fIteratorEnd=fIterator;
     fIteratorEnd+=GetNumberOfSpacePoints(cell, endCell);
@@ -249,6 +270,26 @@ class AliHLTIndexGrid {
   // get loop end marker
   iterator& end() {
     return fIteratorEnd;
+  }
+
+  iterator& find(ValueType v) {
+    for (iterator i=begin(); i!=end(); i++) {
+      if (i.Data()==v) {
+	fIterator=i;
+	return fIterator;
+      }
+    }
+    return end();
+  }
+
+  // find cell of entry
+  int FindCell(ValueType v) const {
+    if (!fCells) return -1;
+    for (int cell=0; cell<fCellDimension; cell++)
+      for (int count=0; count<fCells[cell].fCount; count++)
+	if (fData[fCells[cell].fStartIndex+count]==v)
+	  return cell;
+    return -1;
   }
 
   struct AliHLTIndexGridCell {
