@@ -741,7 +741,7 @@ inline int
 AliFmThreeVector<T>::Bad(double world) const
 {
   for (int i=0;i<3;i++) {
-	  if (!finite((&mX1)[i])      ) return 10+i; 		
+          if (!isfinite((&mX1)[i])      ) return 10+i; 		
 	  if ( fabs  ((&mX1)[i])>world) return 20+i; 		
   }		
   return 0;		
