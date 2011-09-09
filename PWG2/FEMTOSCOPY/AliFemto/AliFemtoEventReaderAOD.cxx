@@ -304,9 +304,19 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
       }
   }
 
-
   int realnofTracks=0;   // number of track which we use in a analysis
   int tracksPrim=0;     
+
+  int labels[20000];	
+  for (int il=0; il<20000; il++) labels[il] = -1;
+
+  // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
+  for (int i=0;i<nofTracks;i++) {
+    const AliAODTrack *aodtrack=fEvent->GetTrack(i);
+    if (!aodtrack->TestFilterBit(fFilterBit)) {
+      labels[aodtrack->GetID()] = i;
+    }
+  }
 
   int tNormMult = 0;
   for (int i=0;i<nofTracks;i++)
@@ -441,13 +451,17 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	if (aodtrack->IsPrimaryCandidate()) tracksPrim++;
 	
- 	if (!aodtrack->TestFilterBit(fFilterBit)) {
+	if (!aodtrack->TestFilterBit(fFilterBit)) {
 	  delete trackCopy;
- 	  continue;
+	  continue;
 	}
 
 	CopyAODtoFemtoTrack(aodtrack, trackCopy, 0);
-	
+
+	// copying PID information from the correspondent track
+	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
+	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy, 0);
+		
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
 	  //	  Int_t pLabel = aodtrack->GetLabel();
@@ -570,7 +584,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
   //  AliCentrality *cent = fEvent->GetCentrality();
   if (cent) tEvent->SetNormalizedMult(lrint(10*cent->GetCentralityPercentile("V0M")));
-//  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
+  //  if (cent) tEvent->SetNormalizedMult((int) cent->GetCentralityPercentile("V0M"));
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
@@ -598,82 +612,6 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
 
   tFemtoTrack->SetCharge(tAodTrack->Charge());
   
-  //in aliroot we have AliPID 
-  //0-electron 1-muon 2-pion 3-kaon 4-proton 5-photon 6-pi0 7-neutron 8-kaon0 9-eleCon   
-  //we use only 5 first
-
-  // AOD pid has 10 components
-  double aodpid[10];
-  tAodTrack->GetPID(aodpid);
-  tFemtoTrack->SetPidProbElectron(aodpid[0]);
-  tFemtoTrack->SetPidProbMuon(aodpid[1]);
-  tFemtoTrack->SetPidProbPion(aodpid[2]);
-  tFemtoTrack->SetPidProbKaon(aodpid[3]);
-  tFemtoTrack->SetPidProbProton(aodpid[4]);
-		
-  //PID////////////////////////////
-      double tTOF = 0.0;
-
-      if (tAodTrack->GetStatus()&0x8000) {  //AliESDtrack::kTOFpid=0x8000
-	tTOF = tAodTrack->GetTOFsignal();
-	tAodTrack->GetIntegratedTimes(aodpid);
-      }
-
-      tFemtoTrack->SetTofExpectedTimes(tTOF-aodpid[2], tTOF-aodpid[3], tTOF-aodpid[4]);
-
-//////  TPC ////////////////////////////////////////////
-
-      float nsigmaTPCK=-1000.;                                                  
-      float nsigmaTPCPi=-1000.;                                                 
-      float nsigmaTPCP=-1000.;                                                  
-          
-         // cout<<"in reader fESDpid"<<fESDpid<<endl;
-
-      if (tAodTrack->IsOn(0x0080)){ //AliESDtrack::kTPCpid=0x0080
-        nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kKaon);
-        nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kPion);
-        nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kProton);
-    //    cout<<" K "<<nsigmaTPCK<<" pi "<<nsigmaTPCPi<<" P "<<nsigmaTPCP<<endl;
-      }
-       tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
-       tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
-       tFemtoTrack->SetNSigmaTPCP(nsigmaTPCP);
-
-      ///////TOF//////////////////////
-
-      float vp=-1000.;
-      float nsigmaTOFPi=-1000.;
-      float nsigmaTOFK=-1000.;
-      float nsigmaTOFP=-1000.;
-
-      if ((tAodTrack->GetStatus()&0x8000) && //AliESDtrack::kTOFpid=0x8000
-	  (tAodTrack->GetStatus()&0x2000) && //AliESDtrack::kTOFout=0x2000
-	  (tAodTrack->GetStatus()&0x80000000) && //AliESDtrack::kTIME=0x80000000
-	  !(tAodTrack->GetStatus()&0x100000)) //AliESDtrack::kTOFmismatch=0x100000
-	{
-	  if(tAodTrack->IsOn(0x8000)) //AliESDtrack::kTOFpid=0x8000
-	    {
-	      //	      double tZero = fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
-
-	      //nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion,tZero);
-	      //nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon,tZero);
-	      //nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kProton,tZero);
-	      nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);
-	      nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon);
-	      nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kProton);
-
-	      Double_t len=200;// esdtrack->GetIntegratedLength(); !!!!!
-	      Double_t tof=tAodTrack->GetTOFsignal();
-	      if(tof > 0.) vp=len/tof/0.03;
-	    }
-	}
-       tFemtoTrack->SetVTOF(vp);
-       tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
-       tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
-       tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
-      
-      //////////////////////////////////////
-				
   double pxyz[3];
   tAodTrack->PxPyPz(pxyz);//reading noconstrained momentum
   AliFemtoThreeVector v(pxyz[0],pxyz[1],pxyz[2]);
@@ -694,17 +632,15 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack,
   float covmat[6];
   tAodTrack->GetCovMatrix(covmat);  
 
-//   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
-//     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
-//   else
-//     tFemtoTrack->SetImpactD(0.0);
-//   tFemtoTrack->SetImpactD(tAodTrack->DCA());
+  //   if (TMath::Abs(tAodTrack->Xv()) > 0.00000000001)
+  //     tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv(), tAodTrack->Yv())*(tAodTrack->Xv()/TMath::Abs(tAodTrack->Xv())));
+  //   else
+  //     tFemtoTrack->SetImpactD(0.0);
+  //   tFemtoTrack->SetImpactD(tAodTrack->DCA());
     
-//   tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
+  //   tFemtoTrack->SetImpactZ(tAodTrack->ZAtDCA());
   tFemtoTrack->SetImpactD(TMath::Hypot(tAodTrack->Xv() - fV1[0], tAodTrack->Yv() - fV1[1]));
   tFemtoTrack->SetImpactZ(tAodTrack->Zv() - fV1[2]);
-
-  //  cout << fV1[0] << " " << tAodTrack->XAtDCA() << " " << tAodTrack->Xv() << endl;
 
   tFemtoTrack->SetCdd(covmat[0]);
   tFemtoTrack->SetCdz(covmat[1]);
@@ -790,10 +726,97 @@ AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
   return 0;
 }
 
+void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, 
+						 AliFemtoTrack *tFemtoTrack, 
+						 AliPWG2AODTrack *tPWG2AODTrack)
+{
+  double aodpid[10];
+  tAodTrack->GetPID(aodpid);
+  tFemtoTrack->SetPidProbElectron(aodpid[0]);
+  tFemtoTrack->SetPidProbMuon(aodpid[1]);
+  tFemtoTrack->SetPidProbPion(aodpid[2]);
+  tFemtoTrack->SetPidProbKaon(aodpid[3]);
+  tFemtoTrack->SetPidProbProton(aodpid[4]);
+
+  aodpid[0] = -100000.0;
+  aodpid[1] = -100000.0;
+  aodpid[2] = -100000.0;
+  aodpid[3] = -100000.0;
+  aodpid[4] = -100000.0;
+		
+  double tTOF = 0.0;
+
+  if (tAodTrack->GetStatus() & AliESDtrack::kTOFpid) {  //AliESDtrack::kTOFpid=0x8000
+    tTOF = tAodTrack->GetTOFsignal();
+    tAodTrack->GetIntegratedTimes(aodpid);
+  }
+
+  tFemtoTrack->SetTofExpectedTimes(tTOF-aodpid[2], tTOF-aodpid[3], tTOF-aodpid[4]);
+ 
+  //////  TPC ////////////////////////////////////////////
+
+  float nsigmaTPCK=-1000.;                                                  
+  float nsigmaTPCPi=-1000.;                                                 
+  float nsigmaTPCP=-1000.;                                                  
+          
+  //   cout<<"in reader fESDpid"<<fESDpid<<endl;
+
+  if (tAodTrack->IsOn(AliESDtrack::kTPCpid)){ //AliESDtrack::kTPCpid=0x0080
+    nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kKaon);
+    nsigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kPion);
+    nsigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(tAodTrack,AliPID::kProton);
+  }
+
+  tFemtoTrack->SetNSigmaTPCPi(nsigmaTPCPi);
+  tFemtoTrack->SetNSigmaTPCK(nsigmaTPCK);
+  tFemtoTrack->SetNSigmaTPCP(nsigmaTPCP);
+
+  tFemtoTrack->SetTPCchi2(tAodTrack->Chi2perNDF());       
+  tFemtoTrack->SetTPCncls(tAodTrack->GetTPCNcls());       
+  tFemtoTrack->SetTPCnclsF(tAodTrack->GetTPCNcls());      
+  
+  tFemtoTrack->SetTPCsignalN(1); 
+  tFemtoTrack->SetTPCsignalS(1); 
+  tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
+ 
+  ///////TOF//////////////////////
+
+    float vp=-1000.;
+    float nsigmaTOFPi=-1000.;
+    float nsigmaTOFK=-1000.;
+    float nsigmaTOFP=-1000.;
+
+    if ((tAodTrack->GetStatus() & AliESDtrack::kTOFpid) && //AliESDtrack::kTOFpid=0x8000
+	(tAodTrack->GetStatus() & AliESDtrack::kTOFout) && //AliESDtrack::kTOFout=0x2000
+	(tAodTrack->GetStatus() & AliESDtrack::kTIME) && //AliESDtrack::kTIME=0x80000000
+	!(tAodTrack->GetStatus() & AliESDtrack::kTOFmismatch)) //AliESDtrack::kTOFmismatch=0x100000
+      {
+	if(tAodTrack->IsOn(AliESDtrack::kTOFpid)) //AliESDtrack::kTOFpid=0x8000
+	  {
+
+	    nsigmaTOFPi = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kPion);
+	    nsigmaTOFK = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kKaon);
+	    nsigmaTOFP = fAODpidUtil->NumberOfSigmasTOF(tAodTrack,AliPID::kProton);
+
+	    Double_t len=200;// esdtrack->GetIntegratedLength(); !!!!!
+	    Double_t tof=tAodTrack->GetTOFsignal();
+	    if(tof > 0.) vp=len/tof/0.03;
+	  }
+      }
+    tFemtoTrack->SetVTOF(vp);
+    tFemtoTrack->SetNSigmaTOFPi(nsigmaTOFPi);
+    tFemtoTrack->SetNSigmaTOFK(nsigmaTOFK);
+    tFemtoTrack->SetNSigmaTOFP(nsigmaTOFP);
+
+    
+    //////////////////////////////////////
+
+}
+
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min; fCentRange[1] = max;
-  fUsePreCent = 1;
+  fUsePreCent = 1; 
 }
 
 
