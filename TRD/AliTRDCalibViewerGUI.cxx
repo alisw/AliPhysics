@@ -182,11 +182,10 @@ AliTRDCalibViewerGUI::~AliTRDCalibViewerGUI() {
 }
 
 //________________________________________________________________________________________________
-Bool_t AliTRDCalibViewerGUI::CreateDetailsTree(Int_t run, const Char_t* outFile, const Char_t* ocdbStorage) {
+Bool_t AliTRDCalibViewerGUI::CreateDetailsTree(Int_t run, const Char_t* outFile, const Char_t* /*ocdbStorage*/) {
   //
   // Get pad level info from OCDB for a given run and dump it into a tree
   // 
-  ocdbStorage = ocdbStorage;   // to avoid warnings
   if(!AliCDBManager::Instance()->GetDefaultStorage()){
     std::cout << "AliTRDCalibViewerGUI::CreateDetailsTree(): Default Storage not set. Cannot create Calibration Tree!" << std::endl;
     return kFALSE;

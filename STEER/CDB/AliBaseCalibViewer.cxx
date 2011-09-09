@@ -152,20 +152,18 @@ AliBaseCalibViewer::~AliBaseCalibViewer()
 }
 
 //_____________________________________________________________________________
-void AliBaseCalibViewer::Delete(Option_t* option) {
+void AliBaseCalibViewer::Delete(Option_t* /*option*/) {
    //
    // Should be called from AliBaseCalibViewerGUI class only.
    // If you use Delete() do not call the destructor.
    // All objects (except those contained in fListOfObjectsToBeDeleted) will be deleted, the file will be closed.
    //
    
-   option = option;  // to avoid warnings on compiling   
    if (fTree && fTreeMustBeDeleted) {
       fTree->SetCacheSize(0);
       fTree->Delete();
    }
-   if (fFile)
-      delete fFile;
+   delete fFile;
    delete fListOfObjectsToBeDeleted;
 }
 
@@ -450,21 +448,14 @@ TH1F* AliBaseCalibViewer::SigmaCut(Int_t n, Float_t *array, Float_t mean, Float_
 }
 
 //_____________________________________________________________________________
-TH1F* AliBaseCalibViewer::SigmaCut(Int_t n, Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, Double_t *xbins, Double_t sigmaMax){
+TH1F* AliBaseCalibViewer::SigmaCut(Int_t /*n*/, Double_t */*array*/, Double_t /*mean*/, Double_t /*sigma*/, 
+				   Int_t /*nbins*/, Double_t */*xbins*/, Double_t /*sigmaMax*/){
    // 
    // SigmaCut for variable binsize
    // NOT YET IMPLEMENTED !!!
    // 
    printf("SigmaCut with variable binsize, Not yet implemented\n");
-   // avoid compiler warnings:
-   n=n;
-   mean=mean;
-   sigma=sigma;
-   nbins=nbins;
-   sigmaMax=sigmaMax;
-   array=array;
-   xbins=xbins;
-   
+
    return 0;
 }
 
@@ -683,8 +674,8 @@ Int_t AliBaseCalibViewer::SigmaCut(const Char_t* drawCommand, const Char_t* sect
 
 //_____________________________________________________________________________
 Int_t AliBaseCalibViewer::Integrate(const Char_t* drawCommand, const Char_t* sector, const Char_t* cuts, 
-				    Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, 
-				    const Char_t *sigmas, Float_t sigmaStep) const {
+				    Float_t /*sigmaMax*/, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, 
+				    const Char_t *sigmas, Float_t /*sigmaStep*/) const {
    //
    // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
    // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
@@ -698,9 +689,6 @@ Int_t AliBaseCalibViewer::Integrate(const Char_t* drawCommand, const Char_t* sec
    */
    
    Double_t ltmFraction = 0.8;
-   // avoid compiler warnings:
-   sigmaMax = sigmaMax;
-   sigmaStep = sigmaStep;
    
    TString drawStr(drawCommand);
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
