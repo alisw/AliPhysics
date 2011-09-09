@@ -86,7 +86,7 @@ set ( CXXFLAGSNO  "${CXXNOOPT} ${CXXSTF}")
 
 set ( CFLAGS  "${COPT} -Wall -W -fno-common -pipe -I${FINK_ROOT}/include")
 
-set ( FFLAGS "${FFLAGS} -DFORTRAN_GFORTRAN")
+set ( FFLAGS "${FFLAGS} -m64 -DFORTRAN_GFORTRAN")
 
 set ( CINTFLAGS )
 
