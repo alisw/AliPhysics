@@ -107,7 +107,7 @@ Bool_t AliTRDtrackingChamber::Build(AliTRDgeometry *const geo, Bool_t hlt)
   // AliTRDCommonParam::Instance()->GetDiffCoeff(fDiffL, fDiffT, fVD);  
 
   // ESTIMATE POSITION OF PAD PLANE FOR THIS CHAMBER
-  fTB[Int_t(t0)].SetT0();
+  //fTB[Int_t(t0)].SetT0();
   Double_t x0 = fTB[index[0]].GetX();
   Double_t x1 = fTB[index[1]].GetX();
   Double_t dx = (x0 - x1)/(index[1] - index[0]); 
