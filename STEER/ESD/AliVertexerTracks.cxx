@@ -989,36 +989,38 @@ AliESDVertex* AliVertexerTracks::RemoveConstraintFromVertex(AliESDVertex *inVtx,
   return outVtx;
 }
 //---------------------------------------------------------------------------
-void AliVertexerTracks::SetCuts(Double_t *cuts) 
+void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts) 
 {
 //
 //  Cut values
 //
-  SetDCAcut(cuts[0]);
-  SetDCAcutIter0(cuts[1]);
-  SetMaxd0z0(cuts[2]);
-  if(fMode==0 && cuts[3]<0) SetITSrefitNotRequired();
-  SetMinClusters((Int_t)(TMath::Abs(cuts[3])));
-  SetMinTracks((Int_t)(cuts[4]));
-  SetNSigmad0(cuts[5]);
-  SetMinDetFitter(cuts[6]);
-  SetMaxTgl(cuts[7]);
-  SetFiducialRZ(cuts[8],cuts[9]);
-  fAlgo=(Int_t)(cuts[10]);
-  fAlgoIter0=(Int_t)(cuts[11]);
+  if (ncuts>0) SetDCAcut(cuts[0]);
+  if (ncuts>1) SetDCAcutIter0(cuts[1]);
+  if (ncuts>2) SetMaxd0z0(cuts[2]);
+  if (ncuts>3) if(fMode==0 && cuts[3]<0) SetITSrefitNotRequired();
+  if (ncuts>4) SetMinClusters((Int_t)(TMath::Abs(cuts[3])));
+  if (ncuts>5) SetMinTracks((Int_t)(cuts[4]));
+  if (ncuts>6) SetNSigmad0(cuts[5]);
+  if (ncuts>7) SetMinDetFitter(cuts[6]);
+  if (ncuts>8) SetMaxTgl(cuts[7]);
+  if (ncuts>9) SetFiducialRZ(cuts[8],cuts[9]);
+  if (ncuts>10) fAlgo=(Int_t)(cuts[10]);
+  if (ncuts>11) fAlgoIter0=(Int_t)(cuts[11]);
   //
-  if (cuts[12]>1.)   SetMVTukey2(cuts[12]);
-  if (cuts[13]>1.)   SetMVSig2Ini(cuts[13]);
-  if (cuts[14]>0.1)  SetMVMaxSigma2(cuts[14]);
-  if (cuts[15]>1e-5) SetMVMinSig2Red(cuts[15]);
-  if (cuts[16]>1e-5) SetMVMinDst(cuts[16]);
-  if (cuts[17]>0.5)  SetMVScanStep(cuts[17]);
-  SetMVMaxWghNtr(cuts[18]);
-  SetMVFinalWBinary(cuts[19]>0);
-  if (cuts[20]>20.)  SetBCSpacing(int(cuts[20]));
+  if (ncuts>12) if (cuts[12]>1.)   SetMVTukey2(cuts[12]);
+  if (ncuts>13) if (cuts[13]>1.)   SetMVSig2Ini(cuts[13]);
+  if (ncuts>14) if (cuts[14]>0.1)  SetMVMaxSigma2(cuts[14]);
+  if (ncuts>15) if (cuts[15]>1e-5) SetMVMinSig2Red(cuts[15]);
+  if (ncuts>16) if (cuts[16]>1e-5) SetMVMinDst(cuts[16]);
+  if (ncuts>17) if (cuts[17]>0.5)  SetMVScanStep(cuts[17]);
+  if (ncuts>18) SetMVMaxWghNtr(cuts[18]);
+  if (ncuts>19) SetMVFinalWBinary(cuts[19]>0);
+  if (ncuts>20) if (cuts[20]>20.)  SetBCSpacing(int(cuts[20]));
   //
-  if (fAlgo==kMultiVertexer) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
-  else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
+  if (ncuts>21) {
+    if (fAlgo==kMultiVertexer) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
+    else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
+  }
   return;
 }
 //---------------------------------------------------------------------------

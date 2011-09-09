@@ -88,7 +88,7 @@ class AliVertexerTracks : public TObject {
 		   Double_t fidZ=30.,
 		   Int_t finderAlgo=1,
 		   Int_t finderAlgoIter0=4); 
-  void  SetCuts(Double_t *cuts);
+  void  SetCuts(Double_t *cuts, int ncuts);
   void  SetConstraintOff() { fConstraint=kFALSE; SetVtxStart(); SetVtxStartSigma(); return; }
   void  SetConstraintOn() { fConstraint=kTRUE; return; }
   void  SetDCAcut(Double_t maxdca) { fDCAcut=maxdca; return; }

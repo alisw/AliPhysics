@@ -145,8 +145,8 @@ int AliHLTGlobalOfflineVertexerComponent::DoInit( int argc, const char** argv )
       if (grpRecoParam) {
 	Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
 	Double_t *cutsVertexer = new Double_t[nCutsVertexer];
-	grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
-	fVertexer->SetCuts(cutsVertexer);
+	grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer,nCutsVertexer);
+	fVertexer->SetCuts(cutsVertexer,nCutsVertexer);
 	delete [] cutsVertexer; cutsVertexer = NULL;
       }
       // to run on HLT events we do not require ITS refit

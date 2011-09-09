@@ -2017,8 +2017,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        if (grpRecoParam) {
 	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
 	 Double_t *cutsVertexer = new Double_t[nCutsVertexer];
-	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer);
-	 ftVertexer->SetCuts(cutsVertexer);
+	 grpRecoParam->GetVertexerTracksCutsITS(cutsVertexer,nCutsVertexer);
+	 ftVertexer->SetCuts(cutsVertexer,nCutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
 	 if(grpRecoParam->GetVertexerTracksConstraintITS()) { 
 	   if(fDiamondProfile && fDiamondProfile->GetXRes()<kRadius){
@@ -2057,8 +2057,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        if (grpRecoParam) {
 	 Int_t nCutsVertexer = grpRecoParam->GetVertexerTracksNCuts();
 	 Double_t *cutsVertexer = new Double_t[nCutsVertexer];
-	 grpRecoParam->GetVertexerTracksCutsTPC(cutsVertexer);
-	 ftVertexer->SetCuts(cutsVertexer);
+	 grpRecoParam->GetVertexerTracksCutsTPC(cutsVertexer,nCutsVertexer);
+	 ftVertexer->SetCuts(cutsVertexer,nCutsVertexer);
 	 delete [] cutsVertexer; cutsVertexer = NULL; 
 	 if(fDiamondProfileTPC && grpRecoParam->GetVertexerTracksConstraintTPC()) { 
 	   if(fDiamondProfileTPC->GetXRes()<kRadius) ftVertexer->SetVtxStart(fDiamondProfileTPC); // apply constraint only if sigmax is smaller than the beam pipe radius 

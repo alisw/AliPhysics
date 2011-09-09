@@ -42,11 +42,11 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
   Int_t GetVertexerV0NCuts() const { return fVertexerV0NCuts; }
   Int_t GetVertexerCascadeNCuts() const { return fVertexerCascadeNCuts; }
-  void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts) const;
-  void  GetVertexerTracksCutsITS(Double_t *cuts) const
-    { GetVertexerTracksCuts(0,cuts); return; }
-  void  GetVertexerTracksCutsTPC(Double_t *cuts) const
-    { GetVertexerTracksCuts(1,cuts); return; }
+  void  GetVertexerTracksCuts(Int_t mode,Double_t *cuts,Int_t n) const;
+  void  GetVertexerTracksCutsITS(Double_t *cuts,Int_t n) const
+  { GetVertexerTracksCuts(0,cuts,n); return; }
+  void  GetVertexerTracksCutsTPC(Double_t *cuts,Int_t n) const
+  { GetVertexerTracksCuts(1,cuts,n); return; }
   void  GetVertexerV0Cuts(Double_t *cuts) const;
   void  GetVertexerCascadeCuts(Double_t *cuts) const;
 
