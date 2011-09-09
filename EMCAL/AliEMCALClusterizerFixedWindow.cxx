@@ -403,8 +403,8 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
     delete[] fClustersArray[iCluster];
     fClustersArray[iCluster] = NULL;
   }
-  
+
+  delete digitsC;
   AliDebug(1, Form("MakeClusters: Number of digits %d  -> (e %f)\n", fDigitsArr->GetEntries(),fMinECut));
-	
   AliDebug(1, Form("total no of clusters %d from %d digits", fNumberOfECAClusters, fDigitsArr->GetEntriesFast())); 
 }
