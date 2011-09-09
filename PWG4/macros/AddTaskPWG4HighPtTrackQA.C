@@ -10,7 +10,7 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
   // AliPWG4HighPtTrackQA *taskTrackQA11cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
   //  AliPWG4HighPtTrackQA *taskTrackQA20cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
   //  AliPWG4HighPtTrackQA *taskTrackQA21cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
-  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
+  //  AliPWG4HighPtTrackQA *taskTrackQA40cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
   //  AliPWG4HighPtTrackQA *taskTrackQA41cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
   //  AliPWG4HighPtTrackQA *taskTrackQA50cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
   //  AliPWG4HighPtTrackQA *taskTrackQA60cent10 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);
@@ -27,7 +27,7 @@ void AddTaskPWG4HighPtTrackQAAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, 
       // AliPWG4HighPtTrackQA *taskTrackQA11 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,1,1);
       //      AliPWG4HighPtTrackQA *taskTrackQA20 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,0);
       //      AliPWG4HighPtTrackQA *taskTrackQA21 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,2,1);
-      AliPWG4HighPtTrackQA *taskTrackQA40 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
+      //      AliPWG4HighPtTrackQA *taskTrackQA40 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,0);
       //      AliPWG4HighPtTrackQA *taskTrackQA41 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,4,1);
       //      AliPWG4HighPtTrackQA *taskTrackQA50 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,5,0);
       //      AliPWG4HighPtTrackQA *taskTrackQA60 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,6,0);

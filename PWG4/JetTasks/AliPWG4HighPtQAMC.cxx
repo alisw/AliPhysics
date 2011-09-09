@@ -106,8 +106,8 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fPtBinEdges[0][1] = 1.;
   fPtBinEdges[1][0] = 20.;
   fPtBinEdges[1][1] = 2.;
-  fPtBinEdges[2][0] = 50.;
-  fPtBinEdges[2][1] = 5.;
+  fPtBinEdges[2][0] = 100.;
+  fPtBinEdges[2][1] = 10.;
 
 }
 //________________________________________________________________________
@@ -166,8 +166,8 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fPtBinEdges[0][1] = 1.;
   fPtBinEdges[1][0] = 20.;
   fPtBinEdges[1][1] = 2.;
-  fPtBinEdges[2][0] = 50.;
-  fPtBinEdges[2][1] = 5.;
+  fPtBinEdges[2][0] = 100.;
+  fPtBinEdges[2][1] = 10.;
 
   // Input slot #0 works with a TChain ESD
   DefineInput(0, TChain::Class());
@@ -711,11 +711,8 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       if (itsMap & (1 << i))
 	nPointITS ++;
     }
-    nSigmaToVertex = fTrackCuts->GetSigmaToVertex(track);// Calculates the number of sigma to the vertex for a track.
-    chi2C = track->GetConstrainedChi2();
-    relUncertainty1Pt = TMath::Sqrt(track->GetSigma1Pt2())*pt;
     
-    fPtAll->Fill(pt);
+    //    fPtAll->Fill(pt);
     fPtAllMC->Fill(ptMC);
 
     if (fTrackCuts->AcceptTrack(track)) {
@@ -732,6 +729,10 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
 
       pt  = track->Pt();
       phi = track->Phi();
+
+      nSigmaToVertex = fTrackCuts->GetSigmaToVertex(track);// Calculates the number of sigma to the vertex for a track.
+      chi2C = track->GetConstrainedChi2();
+      relUncertainty1Pt = TMath::Sqrt(track->GetSigma1Pt2())*pt;
 
       fPtSel->Fill(pt);
       if(track->GetLabel()<0) {
