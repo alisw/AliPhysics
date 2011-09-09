@@ -308,7 +308,8 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
   }
   
     else if (fAnalysisInput.CompareTo("AOD")==0){
-    AliAODEvent *aod =  dynamic_cast<AliAODEvent*> (InputEvent());
+    AliVEvent* event = InputEvent();
+    AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
 
     if (!(fRunNumber == aod->GetRunNumber())) {
       fRunNumber = aod->GetRunNumber();
@@ -322,10 +323,10 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
   
     if (aod){
       esdEP = aod->GetHeader()->GetEventplaneP();
-      if(esdEP) {esdEP->Reset();} // reset eventplane if not NULL  	 
+      esdEP->Reset(); 
      
-    Int_t maxID = 0;
-    TObjArray* tracklist = GetAODTracksAndMaxID(aod,maxID);
+      Int_t maxID = 0;
+      TObjArray* tracklist = GetAODTracksAndMaxID(aod,maxID);
 	
     if (fSaveTrackContribution) {
       esdEP->GetQContributionXArray()->Set(maxID+1);
@@ -592,7 +593,7 @@ Double_t AliEPSelectionTask::GetWeight(TObject* track1)
 {
   Double_t ptweight=1;
   AliVTrack* track = dynamic_cast<AliVTrack*>(track1);
-  if (fUsePtWeight) {      
+  if (fUsePtWeight && track) {      
     if (track->Pt()<2) ptweight=track->Pt();
     else ptweight=2;
   }
