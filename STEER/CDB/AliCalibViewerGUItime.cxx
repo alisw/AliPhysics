@@ -586,12 +586,11 @@ void AliCalibViewerGUItime::CheckDrawGraph()
 }
 
 //______________________________________________________________________________
-void AliCalibViewerGUItime::Reload(Int_t first)
+void AliCalibViewerGUItime::Reload(Int_t /*first*/)
 {
   //
   // reload the gui contents, this is needed after the input tree has changed
   //
-  first = first;
   if ( !fTree ) {
     return;
   }

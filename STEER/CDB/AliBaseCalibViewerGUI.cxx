@@ -162,7 +162,7 @@ AliBaseCalibViewerGUI::AliBaseCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t
 }
 
 //________________________________________________________________________________________
-void AliBaseCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
+void AliBaseCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
    // 
    // draw the GUI
    // 
@@ -171,7 +171,6 @@ void AliBaseCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
    // ======================================================================
    
    SetCleanup(kDeepCleanup);
-   p = p; // to avoid compiler warnings
 
    // *****************************************************************************
    // ************************* content of this MainFrame *************************
