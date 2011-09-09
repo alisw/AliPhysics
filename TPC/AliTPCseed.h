@@ -139,7 +139,7 @@ class AliTPCseed : public AliTPCtrack {
 
   Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
 
-  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Int_t returnVal=0, Int_t rowThres = 2);
+  Float_t  CookdEdxAnalytical(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Int_t returnVal=0, Int_t rowThres = 2, Int_t mode=0);
 
  static   void GetError(AliTPCclusterMI* cluster, AliExternalTrackParam * param, 
 			 Double_t& erry, Double_t &errz);

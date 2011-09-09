@@ -1104,7 +1104,7 @@ Float_t  AliTPCseed::CookdEdxNorm(Double_t low, Double_t up, Int_t type, Int_t i
   return mean;
 }
 
-Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal, Int_t rowThres){
+Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, Int_t i1, Int_t i2, Int_t returnVal, Int_t rowThres, Int_t mode){
  
   //
   // calculates dedx using the cluster
@@ -1114,10 +1114,15 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   // i1-i2  -  the pad-row range used for calculation
   //           
   // posNorm   - usage of pos normalization 
-  // returnVal - 0 return mean
-  //           - 1 return RMS
-  //           - 2 return number of clusters
-  //
+  // returnVal - 0  return mean
+  //           - 1  return RMS
+  //           - 2  return number of clusters
+  //           - 3  ratio
+  //           - 4  mean upper half
+  //           - 5  mean  - lower half
+  //           - 6  third moment
+  // mode      - 0 - linear
+  //           - 1 - logatithmic
   // rowThres  - number of rows before and after given pad row to check for clusters below threshold
   //           
   // normalization parametrization taken from AliTPCClusterParam
@@ -1277,7 +1282,7 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
     ncl++;
   }
 
-  if (type>3) return ncl; 
+  if (type==2) return ncl; 
   TMath::Sort(ncl,amp, indexes, kFALSE);
   //
   if (ncl<10) return 0;
@@ -1294,23 +1299,66 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   Float_t suma=0;
   Float_t suma2=0;  
+  Float_t suma3=0;  
+  Float_t sumaS=0;  
   Float_t sumn=0;
+  // upper,and lower part statistic
+  Float_t sumL=0, sumL2=0, sumLN=0;
+  Float_t sumD=0, sumD2=0, sumDN=0;
+
   Int_t icl0=TMath::Nint((ncl + nclBelowThr)*low);
   Int_t icl1=TMath::Nint((ncl + nclBelowThr)*up);
-  for (Int_t icl=icl0; icl<icl1;icl++){
-    suma+=ampWithBelow[icl];
-    suma2+=ampWithBelow[icl]*ampWithBelow[icl];
-    sumn++;
-  }
-  delete [] ampWithBelow;
-  Float_t mean =suma/sumn;
-  Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  Int_t iclm=TMath::Nint((ncl + nclBelowThr)*(low +(up+low)*0.5));
   //
-  mean /= corrTimeGain;
-  rms /= corrTimeGain;
+  for (Int_t icl=icl0; icl<icl1;icl++){
+    if (ampWithBelow[icl]<0.1) continue;
+    Double_t amp=ampWithBelow[icl]/corrTimeGain;
+    if (mode==1) amp= TMath::Log(amp);
+    if (icl<icl1){
+      suma+=amp;
+      suma2+=amp*amp;
+      suma3+=amp*amp*amp;
+      sumaS+=TMath::Power(TMath::Abs(amp),1./3.);
+      sumn++;
+    }
+    if (icl>iclm){
+      sumL+=amp;
+      sumL2+=amp*amp;
+      sumLN++;
+      }
+    if (icl<=iclm){
+      sumD+=amp;
+      sumD2+=amp*amp;
+      sumDN++;
+    }
+  }
+  Float_t mean =suma/sumn;
+  Float_t meanL = sumL/sumLN;  
+  Float_t meanD =(sumD/sumDN);           // lower half mean
+  Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+  Float_t mean2=suma2/sumn;
+  Float_t mean3=suma3/sumn;
+  Float_t meanS=sumaS/sumn;
+  if (mean2>0) mean2=TMath::Power(TMath::Abs(mean2),1./2.);
+  if (mean3>0) mean3=TMath::Power(TMath::Abs(mean3),1./3.);
+  if (meanS>0) meanS=TMath::Power(TMath::Abs(meanS),3.);
+  //
+  if (mode==1) mean=TMath::Exp(mean);
+  if (mode==1) meanL=TMath::Exp(meanL);  // upper truncation
+  if (mode==1) meanD=TMath::Exp(meanD);  // lower truncation
+  //
+  delete [] ampWithBelow;
+  
+
   //
   if (returnVal==1) return rms;
   if (returnVal==2) return ncl;
+  if (returnVal==3) return Double_t(nclBelowThr)/Double_t(nclBelowThr+ncl);
+  if (returnVal==4) return meanL;
+  if (returnVal==5) return meanD;
+  if (returnVal==6) return mean2;
+  if (returnVal==7) return mean3;
+  if (returnVal==8) return meanS;
   return mean;
 }
 
