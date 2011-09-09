@@ -31,8 +31,8 @@
 AliHLTTPCHWCFMergerUnit::AliHLTTPCHWCFMergerUnit()
   :
   fDebug(0),
-  fMatchDistance(3),
-  fMatchTimeFollow(1),
+  fMatchDistance(0),
+  fMatchTimeFollow(0),
   fDeconvolute(0),
   fByPassMerger(0),
   fInput()
@@ -50,8 +50,8 @@ AliHLTTPCHWCFMergerUnit::~AliHLTTPCHWCFMergerUnit()
 AliHLTTPCHWCFMergerUnit::AliHLTTPCHWCFMergerUnit(const AliHLTTPCHWCFMergerUnit&)
   :
   fDebug(0),
-  fMatchDistance(3),
-  fMatchTimeFollow(1),
+  fMatchDistance(0),
+  fMatchTimeFollow(0),
   fDeconvolute(0),
   fByPassMerger(0),
   fInput()

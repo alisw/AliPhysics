@@ -37,7 +37,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit()
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fUseTimeBinWindow(1),
+  fUseTimeBinWindow(0),
   fDebug(0)
 {
   //constructor 
@@ -57,7 +57,7 @@ AliHLTTPCHWCFProcessorUnit::AliHLTTPCHWCFProcessorUnit(const AliHLTTPCHWCFProces
   fBunchIndex(0),
   fDeconvolute(0),
   fSingleSeqLimit(0),
-  fUseTimeBinWindow(1),
+  fUseTimeBinWindow(0),
   fDebug(0)
 {
   // dummy

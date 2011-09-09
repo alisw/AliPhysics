@@ -53,17 +53,17 @@ using namespace std;
 AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   :
   AliHLTProcessor(),
-  fDoDeconvTime(1),
-  fDoDeconvPad(1),
-  fDoMC(1),
+  fDoDeconvTime(0),
+  fDoDeconvPad(0),
+  fDoMC(0),
   fDoFlowControl(0),
-  fDoSinglePadSuppression(1),
+  fDoSinglePadSuppression(0),
   fBypassMerger(0),
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
-  fMergerDistance(3),
-  fUseTimeBinWindow(1),
-  fUseTimeFollow(1),
+  fMergerDistance(0),
+  fUseTimeBinWindow(0),
+  fUseTimeFollow(0),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -81,17 +81,17 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
 AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHWCFEmulatorComponent&)
   :
   AliHLTProcessor(),
-  fDoDeconvTime(1),
-  fDoDeconvPad(1),
-  fDoMC(1),
+  fDoDeconvTime(0),
+  fDoDeconvPad(0),
+  fDoMC(0),
   fDoFlowControl(0),
-  fDoSinglePadSuppression(1),
+  fDoSinglePadSuppression(0),
   fBypassMerger(0),
   fClusterLowerLimit(0),
   fSingleSeqLimit(0),
-  fMergerDistance(3),
-  fUseTimeBinWindow(1),
-  fUseTimeFollow(1),
+  fMergerDistance(0),
+  fUseTimeBinWindow(0),
+  fUseTimeFollow(0),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -208,15 +208,15 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   // Set default configuration for the FPGA ClusterFinder Emulator component
   // Some parameters can be later overwritten from the OCDB
 
-  fDoDeconvTime = 0;
-  fDoDeconvPad = 0;
-  fDoMC = 1;
+  fDoDeconvTime = 1;
+  fDoDeconvPad = 1;
+  fDoMC = 0;
   fDoFlowControl = 0;
-  fDoSinglePadSuppression = 1;
+  fDoSinglePadSuppression = 0;
   fBypassMerger = 0;
-  fClusterLowerLimit = 0;
+  fClusterLowerLimit = 10;
   fSingleSeqLimit = 0;
-  fMergerDistance = 3;
+  fMergerDistance = 4;
   fUseTimeBinWindow = 1;
   fUseTimeFollow = 1;
   fChargeFluctuation = 0;
