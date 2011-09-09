@@ -218,7 +218,7 @@ AliFMDRawWriter::WriteDigits(TClonesArray* digits)
     threshold  = pars->GetZeroSuppression(det, ring, sector, strip);
     sampleRate = pars->GetSampleRate(det, ring, sector, strip);
     preSamples = pars->GetPreSamples(det, ring, sector, strip);
-    factor     = pars->GetPedestalFactor();
+    factor     = UShort_t(pars->GetPedestalFactor());
 
     if (det != oldDet) {
       AliFMDDebug(5, ("Got new detector: %d (was %d)", det, oldDet));
