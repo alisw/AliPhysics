@@ -214,7 +214,7 @@ AliTPCCalibViewerGUI::AliTPCCalibViewerGUI(const TGWindow *p, UInt_t w, UInt_t h
 }
 
 
-void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
+void AliTPCCalibViewerGUI::DrawGUI(const TGWindow */*p*/, UInt_t w, UInt_t h) {
    // 
    // draw the GUI
    // 
@@ -223,7 +223,6 @@ void AliTPCCalibViewerGUI::DrawGUI(const TGWindow *p, UInt_t w, UInt_t h) {
    // ======================================================================
    
    SetCleanup(kDeepCleanup);
-   p = p; // to avoid compiler warnings
 
    // *****************************************************************************
    // ************************* content of this MainFrame *************************

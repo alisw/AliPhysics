@@ -194,20 +194,18 @@ AliTPCCalibViewer::~AliTPCCalibViewer()
 }
 
 //_____________________________________________________________________________
-void AliTPCCalibViewer::Delete(Option_t* option) {
+void AliTPCCalibViewer::Delete(Option_t* /*option*/) {
    //
    // Should be called from AliTPCCalibViewerGUI class only.
    // If you use Delete() do not call the destructor.
    // All objects (except those contained in fListOfObjectsToBeDeleted) will be deleted, the file will be closed.
    //
    
-   option = option;  // to avoid warnings on compiling   
    if (fTree && fTreeMustBeDeleted) {
       fTree->SetCacheSize(0);
       fTree->Delete();
    }
-   if (fFile)
-      delete fFile;
+   delete fFile;
    delete fListOfObjectsToBeDeleted;
 }
 
@@ -793,7 +791,7 @@ Int_t AliTPCCalibViewer::SigmaCut(const char* drawCommand, const char* sector, c
 }
 
 
-Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t pm, const char *sigmas, Float_t sigmaStep) const {
+Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector, const char* cuts, Float_t /*sigmaMax*/, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, Bool_t /*pm*/, const char *sigmas, Float_t /*sigmaStep*/) const {
    //
    // Creates a histogram, where you can see, how much of the data are inside sigma-intervals 
    // around the mean/median/LTM
@@ -804,10 +802,6 @@ Int_t AliTPCCalibViewer::SigmaCutNew(const char* drawCommand, const char* sector
    //
   
    // Double_t ltmFraction = 0.8;  //unused
-   // avoid compiler warnings:
-   sigmaMax = sigmaMax;
-   pm = pm;
-   sigmaStep = sigmaStep;
    
    TString drawStr(drawCommand);
    drawStr += " >> tempHist";
@@ -995,7 +989,7 @@ Int_t AliTPCCalibViewer::IntegrateOld(const char* drawCommand, const char* secto
 }
 
 
-Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t sigmaMax, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t sigmaStep) const {
+Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, const char* cuts, Float_t /*sigmaMax*/, Bool_t plotMean, Bool_t plotMedian, Bool_t plotLTM, const char *sigmas, Float_t /*sigmaStep*/) const {
    //
    // Creates an integrated histogram Begin_Latex S(t, #mu, #sigma) End_Latex, out of the input distribution distribution Begin_Latex f(x, #mu, #sigma) End_Latex, given in "histogram"   
    // "mean" and "sigma" are Begin_Latex #mu End_Latex and  Begin_Latex #sigma End_Latex of the distribution in "histogram", to be specified by the user
@@ -1009,9 +1003,6 @@ Int_t AliTPCCalibViewer::Integrate(const char* drawCommand, const char* sector, 
    */
    
    Double_t ltmFraction = 0.8;
-   // avoid compiler warnings:
-   sigmaMax = sigmaMax;
-   sigmaStep = sigmaStep;
    
    TString drawStr(drawCommand);
    Bool_t dangerousToDraw = drawStr.Contains(":") || drawStr.Contains(">>");
@@ -1382,20 +1373,12 @@ TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Float_t *array, Float_t mean, F
 }
 
 
-TH1F* AliTPCCalibViewer::SigmaCut(Int_t n, const Double_t *array, Double_t mean, Double_t sigma, Int_t nbins, const Double_t *xbins, Double_t sigmaMax){
+TH1F* AliTPCCalibViewer::SigmaCut(Int_t /*n*/, const Double_t */*array*/, Double_t /*mean*/, Double_t /*sigma*/, Int_t /*nbins*/, const Double_t */*xbins*/, Double_t /*sigmaMax*/){
    // 
    // SigmaCut for variable binsize
    // NOT YET IMPLEMENTED !!!
    // 
    printf("SigmaCut with variable binsize, Not yet implemented\n");
-   // avoid compiler warnings:
-   n=n;
-   mean=mean;
-   sigma=sigma;
-   nbins=nbins;
-   sigmaMax=sigmaMax;
-   array=array;
-   xbins=xbins;
    
    return 0;
 }   
