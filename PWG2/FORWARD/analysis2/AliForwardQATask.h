@@ -172,14 +172,15 @@ protected:
 				 const TAxis*& pv,
 				 Bool_t mc=false);
   /**
-   * Get the ESD event. IF this is the first event, initialise
+   * Get the ESD event. IF this is the first event, initialise.  If
+   * initialisation failes, return a null pointer. 
    */
   virtual AliESDEvent* GetESDEvent();
   /** 
    * Initialise the sub objects and stuff.  Called on first event 
-   * 
+   * @return false on error. 
    */
-  virtual void   InitializeSubs();
+  virtual Bool_t  InitializeSubs();
 
   Bool_t fEnableLowFlux;// Whether to use low-flux specific code
   Bool_t fFirstEvent;   // Whether the event is the first seen 

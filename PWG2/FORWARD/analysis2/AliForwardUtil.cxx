@@ -799,11 +799,11 @@ AliForwardUtil::Histos::Clear(Option_t* option)
   // Parameters:
   //    option Not used 
   //
-  fFMD1i->Reset(option);
-  fFMD2i->Reset(option);
-  fFMD2o->Reset(option);
-  fFMD3i->Reset(option);
-  fFMD3o->Reset(option);
+  if (fFMD1i) fFMD1i->Reset(option);
+  if (fFMD2i) fFMD2i->Reset(option);
+  if (fFMD2o) fFMD2o->Reset(option);
+  if (fFMD3i) fFMD3i->Reset(option);
+  if (fFMD3o) fFMD3o->Reset(option);
 }
 
 //____________________________________________________________________
