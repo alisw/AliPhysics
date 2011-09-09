@@ -1,48 +1,48 @@
 /*
 ***************************************************************************
- *
- * $Id$ 
- *
- * 
- ***************************************************************************
- *
- * 
- *              
- *
- ***************************************************************************
- *
- * $Log$
- * Revision 1.3  2007/05/22 09:01:42  akisiel
- * Add the possibiloity to save cut settings in the ROOT file
- *
- * Revision 1.2  2007/05/21 10:38:25  akisiel
- * More coding rule conformance
- *
- * Revision 1.1  2007/05/16 10:25:06  akisiel
- * Making the directory structure of AliFemtoUser flat. All files go into one common directory
- *
- * Revision 1.4  2007/05/03 09:46:10  akisiel
- * Fixing Effective C++ warnings
- *
- * Revision 1.3  2007/04/27 07:25:59  akisiel
- * Make revisions needed for compilation from the main AliRoot tree
- *
- * Revision 1.1.1.1  2007/04/25 15:38:41  panos
- * Importing the HBT code dir
- *
- * Revision 1.4  2007-04-03 16:00:08  mchojnacki
- * Changes to iprove memory managing
- *
- * Revision 1.3  2007/03/13 15:30:03  mchojnacki
- * adding reader for simulated data
- *
- * Revision 1.2  2007/03/08 14:58:03  mchojnacki
- * adding some alice stuff
- *
- * Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
- * First version on CVS
- *
- **************************************************************************/
+*
+* $Id$ 
+*
+* 
+***************************************************************************
+*
+* 
+*              
+*
+***************************************************************************
+*
+* $Log$
+* Revision 1.3  2007/05/22 09:01:42  akisiel
+* Add the possibiloity to save cut settings in the ROOT file
+*
+* Revision 1.2  2007/05/21 10:38:25  akisiel
+* More coding rule conformance
+*
+* Revision 1.1  2007/05/16 10:25:06  akisiel
+* Making the directory structure of AliFemtoUser flat. All files go into one common directory
+*
+* Revision 1.4  2007/05/03 09:46:10  akisiel
+* Fixing Effective C++ warnings
+*
+* Revision 1.3  2007/04/27 07:25:59  akisiel
+* Make revisions needed for compilation from the main AliRoot tree
+*
+* Revision 1.1.1.1  2007/04/25 15:38:41  panos
+* Importing the HBT code dir
+*
+* Revision 1.4  2007-04-03 16:00:08  mchojnacki
+* Changes to iprove memory managing
+*
+* Revision 1.3  2007/03/13 15:30:03  mchojnacki
+* adding reader for simulated data
+*
+* Revision 1.2  2007/03/08 14:58:03  mchojnacki
+* adding some alice stuff
+*
+* Revision 1.1.1.1  2007/03/07 10:14:49  mchojnacki
+* First version on CVS
+*
+**************************************************************************/
 
 #include "AliFemtoESDTrackCut.h"
 #include <cstdio>
@@ -83,7 +83,7 @@ ClassImp(AliFemtoESDTrackCut)
 // 3       -4.608098e-02   8.336400e-03
 
 
-AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
+  AliFemtoESDTrackCut::AliFemtoESDTrackCut() :
     fCharge(0),
     fLabel(0),
     fStatus(0),
@@ -278,13 +278,13 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
       //cout<<fPt[0]<<" < Pt ="<<Pt<<" <"<<fPt[1]<<endl;
       return false;
     }
-//   cout << "Track has pids: " 
-//        << track->PidProbElectron() << " " 
-//        << track->PidProbMuon() << " " 
-//        << track->PidProbPion() << " " 
-//        << track->PidProbKaon() << " " 
-//        << track->PidProbProton() << " " 
-//        << track->PidProbElectron()+track->PidProbMuon()+track->PidProbPion()+track->PidProbKaon()+track->PidProbProton() << endl;
+  //   cout << "Track has pids: " 
+  //        << track->PidProbElectron() << " " 
+  //        << track->PidProbMuon() << " " 
+  //        << track->PidProbPion() << " " 
+  //        << track->PidProbKaon() << " " 
+  //        << track->PidProbProton() << " " 
+  //        << track->PidProbElectron()+track->PidProbMuon()+track->PidProbPion()+track->PidProbKaon()+track->PidProbProton() << endl;
 
     
   if ((track->PidProbElectron()<fPidProbElectron[0])||(track->PidProbElectron()>fPidProbElectron[1]))
@@ -332,133 +332,131 @@ bool AliFemtoESDTrackCut::Pass(const AliFemtoTrack* track)
     tMost[4] = track->PidProbProton()*PidFractionProton(track->P().Mag());
     float ipidmax = 0.0;
 
-    
-
 
     //****N Sigma Method****
-    if(fPIDMethod==0){
-    // Looking for pions
-    if (fMostProbable == 2) {
-      if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
-	imost = 2;
+	if(fPIDMethod==0){
+	  // Looking for pions
+	  if (fMostProbable == 2) {
+	    if (IsPionNSigma(track->P().Mag(), track->NSigmaTPCPi(), track->NSigmaTOFPi()))
+	      imost = 2;
 
-    }
-    else if (fMostProbable == 3) {
-      if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
-	imost = 3;
-      }
+	  }
+	  else if (fMostProbable == 3) { 
+	    if (IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())){
+	      imost = 3;
+	    }
   
-    }
-    else if (fMostProbable == 4) {
-      if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()))
-	imost = 4;
-    }
+	  }
+	  else if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting
+	    if (IsProtonNSigma(track->P().Mag(), track->NSigmaTPCP(), track->NSigmaTOFP()) && IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal()))
+	      imost = 4;
+	  }
 
-    }
+	}
 
     //****Contour Method****
-    if(fPIDMethod==1){
-    for (int ip=0; ip<5; ip++)
-      if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
+	if(fPIDMethod==1){
+	  for (int ip=0; ip<5; ip++)
+	    if (tMost[ip] > ipidmax) { ipidmax = tMost[ip]; imost = ip; };
 
-   // Looking for pions
-    if (fMostProbable == 2) {
-      if (imost == 2) {
-	// Using the TPC to reject non-pions
-	if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal())))
-	  imost = 0;
-	if (0) {
-	// Using the TOF to reject non-pions
-	if (track->P().Mag() < 0.6) {
-	  if (tTOFPidIn)
-	    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
-	      imost = 0;
-	}
-	else {
-	  if (tTOFPidIn) {
-	    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
-	      imost = 0;
+	  // Looking for pions
+	  if (fMostProbable == 2) {
+	    if (imost == 2) {
+	      // Using the TPC to reject non-pions
+	      if (!(IsPionTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		imost = 0;
+	      if (0) {
+		// Using the TOF to reject non-pions
+		if (track->P().Mag() < 0.6) {
+		  if (tTOFPidIn)
+		    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+		      imost = 0;
+		}
+		else {
+		  if (tTOFPidIn) {
+		    if (!IsPionTOFTime(track->P().Mag(), track->TOFpionTime()))
+		      imost = 0;
+		  }
+		  else {
+		    imost = 0;
+		  }
+		}
+	      }
+	    }
 	  }
-	  else {
-	    imost = 0;
-	  }
-	}
-	}
-      }
-    }
 
-    // Looking for kaons
-    else if (fMostProbable == 3) {
-//       if (imost == 3) {
-	// Using the TPC to reject non-kaons
-      if (track->P().Mag() < 0.6) {
-	if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-	  imost = 0;
-	else imost = 3;
-	if (1) {
-	  // Using the TOF to reject non-kaons
-	  if (tTOFPidIn)
-	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-	      imost = 0;
-	}
-      }
-      else {
-	if (1) {
-	  if (tTOFPidIn) {
-	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-	      imost = 0;
-	    else
-	      imost = 3;
+	  // Looking for kaons
+	  else if (fMostProbable == 3) {
+	    //       if (imost == 3) {
+	    // Using the TPC to reject non-kaons
+	    if (track->P().Mag() < 0.6) {
+	      if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		imost = 0;
+	      else imost = 3;
+	      if (1) {
+		// Using the TOF to reject non-kaons
+		if (tTOFPidIn)
+		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+		    imost = 0;
+	      }
+	    }
+	    else {
+	      if (1) {
+		if (tTOFPidIn) {
+		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+		    imost = 0;
+		  else
+		    imost = 3;
+		}
+		else {
+		  if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		    imost = 0;
+		  else 
+		    imost = 3;
+		}
+	      }
+	    }
+	    //       }
 	  }
-	  else {
-	    if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-	      imost = 0;
-	    else 
-	      imost = 3;
-	  }
-	}
-      }
-      //       }
-    }
     
-    // Looking for protons
-    else if (fMostProbable == 4) {
-//       if (imost == 3) {
-	// Using the TPC to reject non-kaons
-      if (track->P().Mag() < 0.8) {
-	if (!(IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-	  imost = 0;
-	else imost = 4;
-	if (0) {
-	  // Using the TOF to reject non-kaons
-	  if (tTOFPidIn)
-	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-	      imost = 0;
-	}
-      }
-      else {
-	if (0) {
-	  if (tTOFPidIn) {
-	    if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
-	      imost = 0;
-	    else
-	      imost = 3;
+	  // Looking for protons
+	  else if (fMostProbable == 4) {
+	    //       if (imost == 3) {
+	    // Using the TPC to reject non-kaons
+	    if (track->P().Mag() < 0.8) {
+	      if (!(IsProtonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		imost = 0;
+	      else imost = 4;
+	      if (0) {
+		// Using the TOF to reject non-kaons
+		if (tTOFPidIn)
+		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+		    imost = 0;
+	      }
+	    }
+	    else {
+	      if (0) {
+		if (tTOFPidIn) {
+		  if (!IsKaonTOFTime(track->P().Mag(), track->TOFkaonTime()))
+		    imost = 0;
+		  else
+		    imost = 3;
+		}
+		else {
+		  if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
+		    imost = 0;
+		  else 
+		    imost = 3;
+		}
+	      }
+	    }
+	    //       }
 	  }
-	  else {
-	    if (!(IsKaonTPCdEdx(track->P().Mag(), track->TPCsignal())))
-	      imost = 0;
-	    else 
-	      imost = 3;
-	  }
 	}
-      }
-      //       }
-    }
-    }
     if (imost != fMostProbable) return false;
   }
   
-//fan
+  //fan
   //cout<<"****** Go Through the cut ******"<<endl;
   // cout<<fLabel<<" Label="<<track->Label()<<endl;
   // cout<<fCharge<<" Charge="<<track->Charge()<<endl;
@@ -570,7 +568,7 @@ void AliFemtoESDTrackCut::SetRemoveITSFake(const bool& flag)
   fRemoveITSFake = flag;
 }
 			    
-			    // electron
+// electron
 // 0.13 - 1.8
 // 0       7.594129e-02    8.256141e-03
 // 1       -5.535827e-01   8.170825e-02
@@ -695,8 +693,8 @@ void AliFemtoESDTrackCut::SetMomRangeITSpidIs(const float& minp, const float& ma
 
 bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 {
-//   double a1 = -95.4545, b1 = 86.5455;
-//   double a2 = 0.0,      b2 = 56.0;
+  //   double a1 = -95.4545, b1 = 86.5455;
+  //   double a2 = 0.0,      b2 = 56.0;
   double a1 = -343.75,  b1 = 168.125;
   double a2 = 0.0,      b2 = 65.0;
 
@@ -710,82 +708,71 @@ bool AliFemtoESDTrackCut::IsPionTPCdEdx(float mom, float dEdx)
 
 bool AliFemtoESDTrackCut::IsKaonTPCdEdx(float mom, float dEdx)
 {
-   // double a1 = -159.1, b1 = 145.9;
-   // double a2 = 0.0,    b2 = 60.0;
-   // double a3 = -138.235, b3 = 166.44;
-   // double a4 = -2015.79, b4 = 973.789;
 
-   // if (mom < 0.24) {
-   //   if (dEdx > a1*mom+b1) return true;
-   // }    
-   // else if (mom < 0.43) {
-   //   if ((dEdx > a1*mom+b1) && (dEdx < a4*mom+b4)) return true;
-   // }
-   // else if (mom < 0.54) {
-   //   if ((dEdx > a1*mom+b1) && (dEdx < a3*mom+b3)) return true;
-   // }
-   // else if (mom < 0.77) {
-   //   if ((dEdx > a2*mom+b2) && (dEdx < a3*mom+b3)) return true;
-   // }
+//   double a1 = -547.0; double b1 =  297.0;
+//   double a2 = -125.0; double b2 =  145.0;
+//   double a3 = -420.0; double b3 =  357.0;
+//   double a4 = -110.0; double b4 =  171.0;
+//   double b5 =   72.0;
+
+//   if (mom<0.2) return false;
+
+//   if (mom<0.36) {
+//     if (dEdx < a1*mom+b1) return false;
+//     if (dEdx > a3*mom+b3) return false;
+//   }
+//   else if (mom<0.6) {
+//     if (dEdx < a2*mom+b2) return false;
+//     if (dEdx > a3*mom+b3) return false;
+//   }
+//   else if (mom<0.9) {
+//     if (dEdx > a4*mom+b4) return false;
+//     if (dEdx <        b5) return false;
+//   }
+//   else 
+//     return false;
+//   //   else {
+//   //     if (dEdx > b5) return false;
+//   //   }
    
-   // return false;
+//   return true;
 
-   double a1 = -547.0; double b1 =  297.0;
-   double a2 = -125.0; double b2 =  145.0;
-   double a3 = -420.0; double b3 =  357.0;
-   double a4 = -110.0; double b4 =  171.0;
-                       double b5 =   72.0;
+  double a1 = -268.896; double b1 =  198.669;
+  double a2 = -49.0012;  double b2 =  88.7214;
 
-   if (mom<0.2) return false;
+  if (mom<0.2) return false;
 
-   if (mom<0.36) {
-     if (dEdx < a1*mom+b1) return false;
-     if (dEdx > a3*mom+b3) return false;
-   }
-   else if (mom<0.6) {
-     if (dEdx < a2*mom+b2) return false;
-     if (dEdx > a3*mom+b3) return false;
-   }
-   else if (mom<0.9) {
-     if (dEdx > a4*mom+b4) return false;
-     if (dEdx <        b5) return false;
-   }
-   else 
-     return false;
- //   else {
- //     if (dEdx > b5) return false;
- //   }
-   
-   return true;
+  if (mom>0.3 && mom<0.5) {
+    if (dEdx < a1*mom+b1) return false;
+  }
+  else  if (mom<1.2) {
+    if (dEdx < a2*mom+b2) return false;
+  }
+
+  return true;
+
 }
 
 bool AliFemtoESDTrackCut::IsProtonTPCdEdx(float mom, float dEdx)
 {
-  double a1 = -3000.0; double b1 =  1280.0;
-  double a2 = -312.5;  double b2 =  312.5;
-  double a3 = -160.0;  double b3 =  221.0;
-//   double a4 = -110.0;  double b4 =  171.0;
-//                         double b5 =   72.0;
+  double a1 = -1800.0; double b1 =  940.0;
+  double a2 = -500.0;  double b2 =  420.0;
+  double a3 = -216.7;  double b3 =  250.0;
 
-   if (mom<0.2) return false;
+  if (mom<0.2) return false;
 
-   if (mom<0.36) {
-     if (dEdx < a1*mom+b1) return false;
-   }
-   else if (mom<0.6) {
-     if (dEdx < a2*mom+b2) return false;
-   }
-   else if (mom<0.9) {
-     if (dEdx < a3*mom+b3) return false;
-   }
-   else 
-     return false;
- //   else {
- //     if (dEdx > b5) return false;
- //   }
+  if (mom>0.3 && mom<0.4) {
+    if (dEdx < a1*mom+b1) return false;
+  }
+  else  if (mom<0.6) {
+    if (dEdx < a2*mom+b2) return false;
+  }
+  else  if (mom<0.9) {
+    if (dEdx < a3*mom+b3) return false;
+  }
+
+  return true;
    
-   return true;
-  
 }
 
 bool AliFemtoESDTrackCut::IsPionTOFTime(float mom, float ttof)
@@ -862,8 +849,8 @@ bool AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma(float mom, float nsigmaK)
 bool AliFemtoESDTrackCut::IsKaonTOFNSigma(float mom, float nsigmaK)
 {
   cout<<" AliFemtoESDTrackCut::IsKaonTPCdEdxNSigma "<<mom<<" "<<nsigmaK<<endl;
-//fan
-//  if(mom<1.5 && TMath::Abs(nsigmaK)<3.0)return true;
+  //fan
+  //  if(mom<1.5 && TMath::Abs(nsigmaK)<3.0)return true;
   if(mom>=1.5 && TMath::Abs(nsigmaK)<2.0)return true; 
   return false;
 }
@@ -875,19 +862,19 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
   //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
 
 
-  if(TMath::Abs(nsigmaTOFK)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCK)<5.0)return true;
-  if(TMath::Abs(nsigmaTOFK)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCK)<5.0)return true;
+  if(TMath::Abs(nsigmaTOFK)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
+  if(TMath::Abs(nsigmaTOFK)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCK)<3.0)return true;
 
-//no TOF signal
+  //no TOF signal
  
 
   if(nsigmaTOFK<=-1000.){
-   //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma P= "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
-   //cout <<"/////////////// AliFemtoESDTrackCut::IsKaonNSigma  NO TOF SIGNAL ////////////" <<endl;
-     if(mom<0.4 && TMath::Abs(nsigmaTPCK)<1.0)return true;
-     if(mom>=0.4 && mom<0.5 && TMath::Abs(nsigmaTPCK)<2.0)return true;
-     if(mom>=0.5 && mom<0.6 && TMath::Abs(nsigmaTPCK)<2.0)return true;
-    }
+    //cout<<"//////// AliFemtoESDTrackCut::IsKaonNSigma P= "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+    //cout <<"/////////////// AliFemtoESDTrackCut::IsKaonNSigma  NO TOF SIGNAL ////////////" <<endl;
+    if(mom<0.4 && TMath::Abs(nsigmaTPCK)<1.0)return true;
+    if(mom>=0.4 && mom<0.5 && TMath::Abs(nsigmaTPCK)<2.0)return true;
+    if(mom>=0.5 && mom<0.6 && TMath::Abs(nsigmaTPCK)<2.0)return true;
+  }
 
   return false;
 }
@@ -896,41 +883,41 @@ bool AliFemtoESDTrackCut::IsKaonNSigma(float mom, float nsigmaTPCK, float nsigma
 
 bool AliFemtoESDTrackCut::IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
- // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
- //TOF signal
+  // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
+  //TOF signal
   if(TMath::Abs(nsigmaTOFPi)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
   if(TMath::Abs(nsigmaTOFPi)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
 
 
-//no TOF signal
+  //no TOF signal
   if(nsigmaTOFPi<-999.){
-     if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
-     if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCPi)<3.0)return true;
-     if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
-    }
+    if(mom<0.35 && TMath::Abs(nsigmaTPCPi)<5.0)return true;
+    if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCPi)<3.0)return true;
+    if(mom>=0.5 && TMath::Abs(nsigmaTPCPi)<2.0)return true;
+  }
   return false;
 }
 
 
 bool AliFemtoESDTrackCut::IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
- // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
- //TOF signal
-  if(TMath::Abs(nsigmaTOFP)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCP)<5.0)return true;
-  if(TMath::Abs(nsigmaTOFP)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCP)<5.0)return true;
+  // cout<<" AliFemtoESDTrackCut::IsKaonNSigma "<<mom<<" tpc "<<nsigmaTPCK<<" tof "<<nsigmaTOFK<<endl;
 
+  //TOF signal
+  if(TMath::Abs(nsigmaTOFP)<3.0 && mom<1.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
+  if(TMath::Abs(nsigmaTOFP)<2.0 && mom>1.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
 
-//no TOF signal
+  //no TOF signal
   if(nsigmaTOFP<-999.){
-     if(mom<0.35 && TMath::Abs(nsigmaTPCP)<5.0)return true;
-     if(mom>=0.35 && mom<0.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
-     if(mom>=0.5 && mom<1.0 && TMath::Abs(nsigmaTPCP)<2.0)return true; //? 1.0 ?
-    }
+    if(mom<0.5 && TMath::Abs(nsigmaTPCP)<3.0)return true;
+    if(mom>=0.5 && mom<0.8 && TMath::Abs(nsigmaTPCP)<2.0)return true;
+  }
+
   return false;
 }
 
 
 void AliFemtoESDTrackCut::SetPIDMethod(ReadPIDMethodType newMethod)
 {
-   fPIDMethod = newMethod;
+  fPIDMethod = newMethod;
 }
