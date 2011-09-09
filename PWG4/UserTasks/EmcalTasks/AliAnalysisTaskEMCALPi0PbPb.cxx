@@ -41,6 +41,7 @@
 #include "AliMultiplicity.h"
 #include "AliStack.h"
 #include "AliTrackerBase.h"
+#include "AliTriggerAnalysis.h"
 
 ClassImp(AliAnalysisTaskEMCALPi0PbPb)
 
@@ -240,7 +241,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
   // Constructor.
 
   DefineOutput(1, TList::Class());
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks  EMCALTrigger."
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks,EMCALTrigger. "
                "AOD:header,vertices,emcalCells,tracks";
 }
 
@@ -1685,6 +1686,10 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     if (mult) 
       fHeader->fCl1 = mult->GetNumberOfITSClusters(1);
     fHeader->fTr = AliESDtrackCuts::GetReferenceMultiplicity(fEsdEv,1);
+    AliTriggerAnalysis trAn; /// Trigger Analysis
+    Bool_t v0B = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0C);
+    Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
+    fHeader->fV0And = v0A && v0B;
   }
   AliCentrality *cent = InputEvent()->GetCentrality();
   fHeader->fV0Cent    = cent->GetCentralityPercentileUnchecked("V0M");
@@ -1726,6 +1731,9 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
   }
 
   fHeader->fNCells   = 0;
+  fHeader->fNCells0  = 0;
+  fHeader->fNCells01 = 0;
+  fHeader->fNCells03 = 0;
   fHeader->fNCells1  = 0;
   fHeader->fNCells2  = 0;
   fHeader->fNCells5  = 0;
@@ -1739,6 +1747,12 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     Int_t ncells = cells->GetNumberOfCells();
     for(Int_t j=0; j<ncells; ++j) {
       Double_t cellen = cells->GetAmplitude(j);
+      if (cellen>0.045)
+        ++fHeader->fNCells0;
+      if (cellen>0.1)
+        ++fHeader->fNCells01;
+      if (cellen>0.3)
+        ++fHeader->fNCells03;
       if (cellen>1)
         ++fHeader->fNCells1;
       if (cellen>2)
