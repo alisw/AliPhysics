@@ -1312,23 +1312,23 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   //
   for (Int_t icl=icl0; icl<icl1;icl++){
     if (ampWithBelow[icl]<0.1) continue;
-    Double_t amp=ampWithBelow[icl]/corrTimeGain;
-    if (mode==1) amp= TMath::Log(amp);
+    Double_t camp=ampWithBelow[icl]/corrTimeGain;
+    if (mode==1) camp= TMath::Log(camp);
     if (icl<icl1){
-      suma+=amp;
-      suma2+=amp*amp;
-      suma3+=amp*amp*amp;
-      sumaS+=TMath::Power(TMath::Abs(amp),1./3.);
+      suma+=camp;
+      suma2+=camp*camp;
+      suma3+=camp*camp*camp;
+      sumaS+=TMath::Power(TMath::Abs(camp),1./3.);
       sumn++;
     }
     if (icl>iclm){
-      sumL+=amp;
-      sumL2+=amp*amp;
+      sumL+=camp;
+      sumL2+=camp*camp;
       sumLN++;
       }
     if (icl<=iclm){
-      sumD+=amp;
-      sumD2+=amp*amp;
+      sumD+=camp;
+      sumD2+=camp*camp;
       sumDN++;
     }
   }
