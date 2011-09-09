@@ -1324,9 +1324,9 @@ void AliHLTTPCTransform::Raw2Local(Float_t *xyz,Int_t sector,Int_t row,Float_t p
   Int_t npads= fgNPads[slicerow];
 
   if(fgSectorLow[sector])
-    xyz[1]=(pad-0.5*(npads-1))*fgPadPitchWidthLow;
+    xyz[1]=(pad-0.5*(npads))*fgPadPitchWidthLow;
   else
-    xyz[1]=(pad-0.5*(npads-1))*fgPadPitchWidthUp;
+    xyz[1]=(pad-0.5*(npads))*fgPadPitchWidthUp;
 
   //Z-Value (remember PULSA Delay)
   if(slice < 18)
@@ -1505,10 +1505,11 @@ void AliHLTTPCTransform::LocHLT2Raw(Float_t *xyz,Int_t slice,Int_t slicerow)
 
   xyz[0]=slicerow;
 
+  int sign=slice<18?1:-1;
   if(slicerow<fgNRowLow)
-    xyz[1]=xyz[1]/fgPadPitchWidthLow+0.5*(fgNPads[slicerow]-1);
+    xyz[1]=sign*xyz[1]/fgPadPitchWidthLow+0.5*(fgNPads[slicerow]);
   else
-    xyz[1]=xyz[1]/fgPadPitchWidthUp+0.5*(fgNPads[slicerow]-1);
+    xyz[1]=sign*xyz[1]/fgPadPitchWidthUp+0.5*(fgNPads[slicerow]);
 
   if(slice < 18)
     xyz[2]=(GetZLength()-xyz[2]+GetZOffset())/GetZWidth();
