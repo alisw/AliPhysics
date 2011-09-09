@@ -94,7 +94,7 @@ int AliHLTTPCHWCFMergerUnit::InputStream( const AliHLTTPCHWCFClusterFragment *fr
     fInput.fSlope = 0;
     fInput.fLastQ = fInput.fQ;
     if( fDebug ){
-      std::cout<<"Merger: input F: "<<fragment->fFlag<<" R: "<<fragment->fRow
+      std::cout<<"Merger: input Br: "<<fragment->fBranch<<" F: "<<fragment->fFlag<<" R: "<<fragment->fRow
 	       <<" Q: "<<(fragment->fQ>>AliHLTTPCHWCFDefinitions::kFixedPoint)
 	       <<" P: "<<fragment->fPad<<" Tmean: "<<fragment->fTMean;	        
       if( fragment->fFlag==1 && fragment->fQ > 0 ){
@@ -201,28 +201,32 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
   }
 
   // merge 
-    
-  while( fSearchStart[ib]<fSearchEnd[ib]  && fSearchRange[ib][fSearchStart[ib]].fTMean+fMatchDistance>fInput.fTMean ){
+  
+  AliHLTTPCHWCFClusterFragment *ret = 0;
+  
+  if( fSearchStart[ib]<fSearchEnd[ib]  && fSearchRange[ib][fSearchStart[ib]].fTMean+fMatchDistance>fInput.fTMean ){
     AliHLTTPCHWCFClusterFragment &s = fSearchRange[ib][fSearchStart[ib]++];
     if( fDeconvolute && s.fSlope && s.fLastQ<fInput.fLastQ ){
       //cout<<"push from search range at "<<fSearchStart[ib]-1<<" of "<<fSearchEnd[ib]<<endl;
-      return &s;
+      ret = &s;
+    } else {
+      // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
+      if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
+      if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
+      fInput.fQ += s.fQ;
+      fInput.fT += s.fT;
+      fInput.fT2 += s.fT2;
+      fInput.fP += s.fP;
+      fInput.fP2 += s.fP2;
+      fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
+      if( !fMatchTimeFollow ) fInput.fTMean = s.fTMean;    
+      ret = 0;
     }
-    // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
-    if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
-    if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
-    fInput.fQ += s.fQ;
-    fInput.fT += s.fT;
-    fInput.fT2 += s.fT2;
-    fInput.fP += s.fP;
-    fInput.fP2 += s.fP2;
-    fInput.fMC.insert(fInput.fMC.end(), s.fMC.begin(), s.fMC.end());
-    if( !fMatchTimeFollow ) fInput.fTMean = s.fTMean;
   }
   
   // insert 
   
   fInsertRange[ib][fInsertEnd[ib]++] = fInput;
   fInput.fFlag = 0;
-  return 0;
+  return ret;
 }

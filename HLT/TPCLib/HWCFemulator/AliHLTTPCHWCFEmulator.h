@@ -66,13 +66,13 @@ class AliHLTTPCHWCFEmulator
     ( bool doDeconvTime, bool doDeconvPad, bool doFlowControl,  
       bool doSinglePadSuppression, bool bypassMerger, 
       AliHLTUInt32_t clusterLowerLimit,AliHLTUInt32_t singleSeqLimit, 
-      AliHLTUInt32_t mergerDistance, bool useTimeBinWindow, AliHLTUInt32_t chargeFluctuation,
+      AliHLTUInt32_t mergerDistance, bool useTimeBinWindow, AliHLTUInt32_t chargeFluctuation, bool useTimeFollow,
       AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2  );
  
   /** create default configuration word 
    **/
   static void CreateDefaultConfiguration( AliHLTUInt32_t &configWord1, AliHLTUInt32_t &configWord2 ){
-    CreateConfiguration(0,0,0,1,0,0,0, 3, 1, 0, configWord1, configWord2 );
+    CreateConfiguration(0,0,0,1,0,0,0, 3, 1, 0, 1, configWord1, configWord2 );
   }
   
  private: 

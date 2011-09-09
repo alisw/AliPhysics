@@ -75,9 +75,9 @@ int AliHLTTPCHWCFPeakFinderUnit::Init()
 int AliHLTTPCHWCFPeakFinderUnit::InputStream( const AliHLTTPCHWCFBunch *bunch )
 {
   // input stream of data 
-  
+
   if( bunch && fDebug ){
-    printf("\nHWCF Processor: input bunch F %1d R %3d P %3d  NS %2ld:\n",
+    printf("\nHWCF Peak Finder: input bunch F %1d R %3d P %3d  NS %2ld:\n",
 	   bunch->fFlag, bunch->fRow, bunch->fPad, bunch->fData.size());
     for( unsigned int i=0; i<bunch->fData.size(); i++ ){
       const AliHLTTPCHWCFDigit &d = bunch->fData[i];
@@ -117,12 +117,13 @@ const AliHLTTPCHWCFBunch *AliHLTTPCHWCFPeakFinderUnit::OutputStream()
   AliHLTUInt32_t n = fOutput.fData.size();
   
   for( AliHLTUInt32_t i=0; i<n; i++ ){
-    AliHLTUInt32_t q = fOutput.fData[i].fQ;
-    if( !slope && q + fChargeFluctuation < qLast   ){ // peak
-      slope = 1;
-      if( i>0 ) fOutput.fData[i-1].fPeak = 1;
-    }
-    if( slope && q > qLast + fChargeFluctuation ){ // minimum
+    AliHLTUInt32_t q = fOutput.fData[i].fQ;    
+    if( !slope ){
+      if(q + fChargeFluctuation < qLast   ){ // peak
+	slope = 1;
+	if( i>0 ) fOutput.fData[i-1].fPeak = 1;
+      }
+    }else if( q > qLast + fChargeFluctuation ){ // minimum
       slope = 0;
       if( i>0 ) fOutput.fData[i-1].fPeak = 2;
     }

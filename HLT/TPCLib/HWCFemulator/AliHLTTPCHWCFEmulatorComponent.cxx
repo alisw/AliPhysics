@@ -63,6 +63,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent()
   fSingleSeqLimit(0),
   fMergerDistance(3),
   fUseTimeBinWindow(1),
+  fUseTimeFollow(1),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -90,6 +91,7 @@ AliHLTTPCHWCFEmulatorComponent::AliHLTTPCHWCFEmulatorComponent(const AliHLTTPCHW
   fSingleSeqLimit(0),
   fMergerDistance(3),
   fUseTimeBinWindow(1),
+  fUseTimeFollow(1),
   fChargeFluctuation(0),
   fDebug(0),
   fCFSupport(),
@@ -216,6 +218,7 @@ void AliHLTTPCHWCFEmulatorComponent::SetDefaultConfiguration()
   fSingleSeqLimit = 0;
   fMergerDistance = 3;
   fUseTimeBinWindow = 1;
+  fUseTimeFollow = 1;
   fChargeFluctuation = 0;
   fDebug = 0;
   fBenchmark.Reset();
@@ -230,7 +233,7 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
 
   int iResult = 0;
   if ( !arguments ) return iResult;
-
+  cout<<"["<<arguments<<"]"<<endl;
   TString allArgs = arguments;
   TString argument;
   int bMissingParam = 0;
@@ -327,7 +330,14 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
       HLTInfo( "Charge fluctuation is set to: %d", fChargeFluctuation );
       continue;
     }
-
+    
+    if ( argument.CompareTo( "-use-time-follow" ) == 0 ) {
+      if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
+      fUseTimeFollow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      HLTInfo( "Use of time follow algorithm is set to: %d", fUseTimeFollow );
+      continue;
+    }
+   
     if ( argument.CompareTo( "-debug-level" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDebug  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
@@ -444,7 +454,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 
   AliHLTUInt32_t configWord1=0, configWord2=0; 
   AliHLTTPCHWCFEmulator::CreateConfiguration
-    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fUseTimeBinWindow, fChargeFluctuation, configWord1, configWord2 );
+    ( fDoDeconvTime, fDoDeconvPad, fDoFlowControl, fDoSinglePadSuppression, fBypassMerger, fClusterLowerLimit, fSingleSeqLimit, fMergerDistance, fUseTimeBinWindow, fChargeFluctuation, fUseTimeFollow, configWord1, configWord2 );
 
   for ( unsigned long ndx = 0; ndx < evtData.fBlockCnt; ndx++ )
     {

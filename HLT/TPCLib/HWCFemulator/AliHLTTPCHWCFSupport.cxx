@@ -260,6 +260,7 @@ AliHLTUInt32_t *AliHLTTPCHWCFSupport::ReadMapping( int slice, int patch, const c
 	
       AliHLTUInt32_t branch = (hwAdd >> 11) & 0x1;	
       rowBranchPadHw[nRead] = (row<<25) | (branch<<24) | (pad<<16) | hwAdd;
+
       nRead++;
       err = 0;
     }
