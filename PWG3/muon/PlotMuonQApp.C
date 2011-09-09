@@ -122,7 +122,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     // only the ones in the runList
     ifstream inFile(runList);
     if (!inFile.is_open()) {
-      Error("PlotMUONQApp","unable to open file %s", runList);
+      Error("PlotMuonQApp","unable to open file %s", runList);
       return;
     }
     
@@ -131,7 +131,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       currRun.ReadLine(inFile, kTRUE);
       if (currRun.IsNull()) continue;
       if (!currRun.IsDigit()) {
-	Error("PlotMUONQApp","invalid run number: %s", currRun.Data());
+	Error("PlotMuonQApp","invalid run number: %s", currRun.Data());
 	return;
       }
       runs.AddLast(new TObjString(Form("%09d", currRun.Atoi())));
@@ -158,23 +158,25 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   TString selectAllTriggers = "", selectAllTriggersAC = "", selectAllTriggersE = "";
   triggers.SetOwner();
 
-  if (triggerList) {
+  TString sTrigList = triggerList;
+  if ( ! sTrigList.IsNull() ) {
+    
     // only the ones in the triggerList
     ifstream inFile(triggerList);
     if (!inFile.is_open()) {
-      Error("PlotMUONQApp","unable to open file %s", triggerList);
+      Error("PlotMuonQApp","unable to open file %s", triggerList);
       return;
     }
     
-    TString currRun;
+    TString currTrig;
     while (!inFile.eof()) {
-      currRun.ReadLine(inFile, kTRUE);
-      if (currRun.IsNull()) continue;
-      if (!currRun.IsAlnum()) {
-	Error("PlotMUONQApp","invalid trigger name: %s", currRun.Data());
-	return;
+      currTrig.ReadLine(inFile, kTRUE);
+      if (currTrig.IsNull()) continue;
+      if (!currTrig.IsAlnum()) {
+        Error("PlotMuonQApp","invalid trigger name: %s", currTrig.Data());
+        return;
       }
-      triggers.AddLast(new TObjString(Form("%s", currRun.Data())));
+      triggers.AddLast(new TObjString(currTrig));
     }
     inFile.close();
   } else {
@@ -257,7 +259,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   TH1* hPosMatchedB[10], *hNegMatchedB[10], *hAllMatchedB[10];
   TH1 *hACWithPS[10]={}; 
   TH1 *hACNoPS[10]={};
-  TH1 *hEWithPS[10]={};
+  //TH1 *hEWithPS[10]={};
   TH1 *hENoPS[10]={};
   
   if(triggers.GetEntriesFast()>=10){
@@ -907,7 +909,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       command = Form("find %s/ %s/%s", alienBaseDir.Data(), run.Data(), QAFileName);
       res = gGrid->Command(command);
       if (!res) {
-	Error("PlotMUONQApp","no result for the command: %s",command.Data());
+	Error("PlotMuonQApp","no result for the command: %s",command.Data());
 	return;
       }
     }
@@ -959,14 +961,14 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       if(iLoop>iLoopMax) break;
       
       if (!objs || !objs->GetString().Length()) {
-	Error("PlotMUONQApp","turl/obj not found for the run %s... SKIPPING", run.Data());
+	Error("PlotMuonQApp","turl/obj not found for the run %s... SKIPPING", run.Data());
 	continue;
       }
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {
-	Error("PlotMUONQApp","failed to open file: %s", objs->GetName());
+	Error("PlotMuonQApp","failed to open file: %s", objs->GetName());
 	continue;//return;
       }
       runFile->Cd("MUON_QA");
@@ -977,7 +979,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       TObjArray* expert = static_cast<TObjArray*>(runFile->FindObjectAny("expert"));
       
       if (!general1 || !general2 || !expert){
-	Error("PlotMUONQApp","All objects not here !!! ===> Skipping...for %s",objs->GetName());		
+	Error("PlotMuonQApp","All objects not here !!! ===> Skipping...for %s",objs->GetName());		
 	continue;
       }
       
@@ -991,7 +993,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       
       // skip empty runs... not anymore ! cs !
       if (!hNClustersPerCh) {
-	Warning("PlotMUONQApp","File: %s has empty histograms !", objs->GetName());
+	Warning("PlotMuonQApp","File: %s has empty histograms !", objs->GetName());
 	hNClustersPerTrackVsRun_Mean->SetBinContent(ibin, 0.);
 	hNClustersPerTrackVsRun_Mean->SetBinError(ibin, 1.);
 	hNClustersPerTrackVsRun_Sigma->SetBinContent(ibin, 0.);

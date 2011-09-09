@@ -26,6 +26,7 @@
 #endif
 
 const Int_t kNch = 4;
+const Double_t kZero = 1.e-7; // Avoid problems when comparing to 0.
 void SetMyStyle();
 Int_t GetRunNumber(TString);
 //Double_t GetBinomial(Double_t*, Double_t* eff2 = 0x0, Double_t* effBoth = 0x0);
@@ -272,7 +273,7 @@ Int_t GetRunNumber(TString filePath)
 //   }
 //   if ( eff2 ) {
 //     for ( Int_t ich=0; ich<4; ich++ ) {
-//       auxEff[ich] = ( eff1[ich] > 0. ) ? effBoth[ich]/eff1[ich] : 0.;
+//       auxEff[ich] = ( eff1[ich] > kZero ) ? effBoth[ich]/eff1[ich] : 0.;
 //     }
 //     auxBinomial = GetBinomial(auxEff);
 //     eff44 *= auxBinomial;
@@ -292,7 +293,7 @@ Int_t GetRunNumber(TString filePath)
 //           auxEff[jch] = ( eff1[jch] < 1. ) ? ( eff2[jch] - effBoth[jch] ) / ( 1. - eff1[jch]) : 0.;
 //         }
 //         else {
-//           auxEff[jch] = ( eff1[ich] > 0. ) ? effBoth[ich]/eff1[ich] : 0.;
+//           auxEff[jch] = ( eff1[ich] > kZero ) ? effBoth[ich]/eff1[ich] : 0.;
 //         }
 //         auxBinomial = GetBinomial(auxEff);
 //         eff34 *= auxBinomial;
@@ -358,7 +359,7 @@ Double_t* GetProdErr(Double_t* effErr, Int_t exclude, Int_t nFactors)
   for ( Int_t iprod=0; iprod<nFactors; iprod++ ) {
     if ( iprod == exclude ) continue;
     prod *= effErr[iprod];
-    relErr = ( effErr[iprod] > 0. ) ? effErr[iprod+nFactors]/effErr[iprod] : 0.;
+    relErr = ( effErr[iprod] > kZero ) ? effErr[iprod+nFactors]/effErr[iprod] : 0.;
     relProdErrSquare += relErr*relErr;
     //printf("%f +- %f  ", effErr[iprod], effErr[iprod+nFactors]); // REMEMBER TO CUT
   }
@@ -386,9 +387,9 @@ Double_t* GetConditionalEffErr(Double_t* effErr1, Double_t* effErr2, Double_t* e
       }
     }
     else {
-      effErr[ich] = ( effErr1[ich] > 0. ) ? effErrBoth[ich]/effErr1[ich] : 0.;
-      Double_t relErr1 = ( effErr1[ich] > 0. ) ? effErr1[ich+kNch]/effErr1[ich] : 0.;
-      Double_t relErrBoth = ( effErrBoth[ich] > 0. ) ? effErrBoth[ich+kNch]/effErrBoth[ich] : 0.;
+      effErr[ich] = ( effErr1[ich] > kZero ) ? effErrBoth[ich]/effErr1[ich] : 0.;
+      Double_t relErr1 = ( effErr1[ich] > kZero ) ? effErr1[ich+kNch]/effErr1[ich] : 0.;
+      Double_t relErrBoth = ( effErrBoth[ich] > kZero ) ? effErrBoth[ich+kNch]/effErrBoth[ich] : 0.;
       effErr[ich+kNch] = effErr[ich] * TMath::Sqrt(relErr1*relErr1 + relErrBoth*relErrBoth);
     }
     //printf("%f  %f  %f -> %f\n", effErr1[ich], effErr2[ich], effErrBoth[ich], effErr[ich]); // REMEMBER TO CUT
