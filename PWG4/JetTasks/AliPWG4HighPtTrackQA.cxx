@@ -73,7 +73,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(20),
+  fNVariables(21),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -95,6 +95,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
   fPtNClustersTPCIter1(0x0),
+  fPtNClustersTPCShared(0x0),
+  fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
@@ -126,7 +128,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fSystTrackCuts(0x0),
   fHistList(0)
 {
-  SetNVariables(20);
+  SetNVariables(21);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -152,7 +154,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtMax(100.),
   fIsPbPb(0),
   fCentClass(10),
-  fNVariables(20),
+  fNVariables(21),
   fVariables(0x0),
   fAvgTrials(1),
   fNEventAll(0),
@@ -174,6 +176,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtDCAZ(0x0),
   fPtNClustersTPC(0x0),
   fPtNClustersTPCIter1(0x0),
+  fPtNClustersTPCShared(0x0),
+  fPtNClustersTPCSharedFrac(0x0),
   fPtNPointITS(0x0),
   fPtChi2C(0x0),
   fPtNSigmaToVertex(0x0),
@@ -210,7 +214,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   //
   AliDebug(2,Form("AliPWG4HighPtTrackQA Calling Constructor"));
 
-  SetNVariables(20);
+  SetNVariables(21);
 
   fPtBinEdges[0][0] = 10.;
   fPtBinEdges[0][1] = 1.;
@@ -496,6 +500,12 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fPtNClustersTPCIter1 = new TH2F("fPtNClustersTPCIter1","fPtNClustersTPCIter1",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNClustersTPCIter1);
+
+  fPtNClustersTPCShared = new TH2F("fPtNClustersTPCShared","fPtNClustersTPCShared",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtNClustersTPCShared);
+
+  fPtNClustersTPCSharedFrac = new TH2F("fPtNClustersTPCSharedFrac","fPtNClustersTPCSharedFrac",fgkNPtBins,binsPt,fgkNSigma1Pt2Bins,binsSigma1Pt2);
+  fHistList->Add(fPtNClustersTPCSharedFrac);
  
   fPtNPointITS = new TH2F("fPtNPointITS","fPtNPointITS",fgkNPtBins,binsPt,fgkNNPointITSBins,binsNPointITS);
   fHistList->Add(fPtNPointITS);
@@ -881,6 +891,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     17: Sigma1Pt2
     18: NClustersTPCIter1
     19: Chi2TPCIter1
+    20: nClustersTPCShared
   */
 
   for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
@@ -1048,6 +1059,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     fVariables->SetAt(track->GetTPCNclsIter1(),18);
     fVariables->SetAt(track->GetTPCchi2Iter1(),19);
+
+    fVariables->SetAt(track->GetTPCnclsS(),20);
     
     FillHistograms();
   
@@ -1114,6 +1127,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisAOD() {
 
     fVariables->SetAt(0.,18);
     fVariables->SetAt(0.,19);
+
+    TBits sharedClusterMap = aodtrack->GetTPCSharedMap();
+    fVariables->SetAt(sharedClusterMap.CountBits(),20);
     
     fPtAll->Fill(fVariables->At(0));
 
@@ -1136,6 +1152,10 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
 
   
   fPtNClustersTPCIter1->Fill(fVariables->At(0),fVariables->At(18));
+  fPtNClustersTPCShared->Fill(fVariables->At(0),fVariables->At(20));
+  if(fVariables->At(5)>0.)
+    fPtNClustersTPCSharedFrac->Fill(fVariables->At(0),fVariables->At(20)/fVariables->At(5));
+
   if(fVariables->At(18)>0.)
     fPtChi2PerClusterTPCIter1->Fill(fVariables->At(0),fVariables->At(19)/fVariables->At(18));
   
@@ -1169,6 +1189,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
   fPtNCrossedRowsNClusF->Fill(fVariables->At(0),fVariables->At(12));
   fPtNCrRNCrRNClusF->Fill(fVariables->At(0),fVariables->At(11),fVariables->At(12));
+
 }
 
 //________________________________________________________________________

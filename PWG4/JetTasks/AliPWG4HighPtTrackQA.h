@@ -160,6 +160,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtDCAZ;                               //! Pt vs DCAZ
   TH2F *fPtNClustersTPC;                       //! Pt vs nClustersTPC
   TH2F *fPtNClustersTPCIter1;                  //! Pt vs nClustersTPCIter1
+  TH2F *fPtNClustersTPCShared;                 //! Pt vs nClustersTPCShared
+  TH2F *fPtNClustersTPCSharedFrac;             //! Pt vs nClustersTPCSharedFrac
   TH2F *fPtNPointITS;                          //! Pt vs nPointITS
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex

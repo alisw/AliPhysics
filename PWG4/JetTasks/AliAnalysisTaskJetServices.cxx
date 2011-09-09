@@ -1097,7 +1097,7 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
 
   if(fDebug)Printf("%s:%d iFoundBin %d",(char*)__FILE__,__LINE__,iFoundBin);
 
-  if(iFoundBin>0){
+  if(iFoundBin>0&&(fp1CalibRPYA)){
     meanXA = fp1CalibRPXA->GetBinContent(iFoundBin);
     meanYA = fp1CalibRPYA->GetBinContent(iFoundBin);
     meanXC = fp1CalibRPXC->GetBinContent(iFoundBin);
