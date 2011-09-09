@@ -232,26 +232,29 @@ AliForwardQATask::GetESDEvent()
   if (fFirstEvent && esd->GetESDRun()) {
     GetEventInspector().ReadRunDetails(esd);
 
-    AliInfo(Form("Initializing with parameters from the ESD:\n"
-                 "         AliESDEvent::GetBeamEnergy()   ->%f\n"
-                 "         AliESDEvent::GetBeamType()     ->%s\n"
-                 "         AliESDEvent::GetCurrentL3()    ->%f\n"
-                 "         AliESDEvent::GetMagneticField()->%f\n"
-                 "         AliESDEvent::GetRunNumber()    ->%d\n",
-                 esd->GetBeamEnergy(),
-                 esd->GetBeamType(),
-                 esd->GetCurrentL3(),
-                 esd->GetMagneticField(),
-                 esd->GetRunNumber()));
+    AliInfoF("Initializing with parameters from the ESD:\n"
+	     "         AliESDEvent::GetBeamEnergy()   ->%f\n"
+	     "         AliESDEvent::GetBeamType()     ->%s\n"
+	     "         AliESDEvent::GetCurrentL3()    ->%f\n"
+	     "         AliESDEvent::GetMagneticField()->%f\n"
+	     "         AliESDEvent::GetRunNumber()    ->%d\n",
+	     esd->GetBeamEnergy(),
+	     esd->GetBeamType(),
+	     esd->GetCurrentL3(),
+	     esd->GetMagneticField(),
+	     esd->GetRunNumber());
 
     fFirstEvent = false;
 
-    InitializeSubs();
+    if (!InitializeSubs()) {
+      AliWarning("Initialisation of sub algorithms failed!");
+      return 0;
+    }
   }
   return esd;
 }
 //____________________________________________________________________
-void
+Bool_t
 AliForwardQATask::InitializeSubs()
 {
   // 
@@ -261,7 +264,7 @@ AliForwardQATask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv)) return;
+  if (!ReadCorrections(pe,pv)) return false;
 
   fHistos.Init(*pe);
 
@@ -271,6 +274,8 @@ AliForwardQATask::InitializeSubs()
   fDensityCalculator.Init(*pe);
 
   this->Print();
+
+  return true;
 }
 
 //____________________________________________________________________
@@ -306,6 +311,10 @@ AliForwardQATask::UserExec(Option_t*)
   // cnt++;
   // Get the input data 
   AliESDEvent* esd = GetESDEvent();
+  if (!esd) { 
+    AliWarning("Got no ESD event");
+    return;
+  }
 
   // Clear stuff 
   fHistos.Clear();
