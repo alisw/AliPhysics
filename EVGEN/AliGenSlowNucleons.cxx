@@ -47,7 +47,7 @@ AliGenSlowNucleons::AliGenSlowNucleons()
      fATarget (0.),
      fZTarget (0.),
      fCharge(0),
-     fProtonDirection(0.),
+     fProtonDirection(1.),
      fTemperatureG(0.), 
      fBetaSourceG(0.),
      fTemperatureB(0.),
@@ -77,7 +77,7 @@ AliGenSlowNucleons::AliGenSlowNucleons(Int_t npart)
      fATarget (208.),
      fZTarget (82.),
      fCharge(1),
-     fProtonDirection(0.),
+     fProtonDirection(1.),
      fTemperatureG(0.04), 
      fBetaSourceG(0.05),
      fTemperatureB(0.004),
@@ -312,7 +312,7 @@ void AliGenSlowNucleons::Lorentz(Double_t m, Double_t beta, Float_t* q)
 {
 /* Lorentz transform in the direction of q[2] */
  
-    Double_t gamma  = 1/sqrt((1.-beta)*(1.+beta)); 
+    Double_t gamma  = 1./sqrt((1.-beta)*(1.+beta)); 
     Double_t energy = sqrt(m*m + q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
     q[2] = gamma * (q[2] + beta*energy);
 }
