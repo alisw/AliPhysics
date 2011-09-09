@@ -1917,8 +1917,8 @@ Bool_t AliVertexerTracks::FindNextVertexMV()
     if (nadded!=nindices) printf("Mismatch : NInd: %d Nadd: %d\n",nindices,nadded);
     fCurrentVertex->SetIndices(nindices,indices);
     // set vertex title
-    TString title="VertexerTracksNoConstraintMV";
-    if(fConstraint) title="VertexerTracksWithConstraintMV";
+    TString title="VertexerTracksMVNoConstraint";
+    if(fConstraint) title="VertexerTracksMVWithConstraint";
     fCurrentVertex->SetTitle(title.Data());    
     fMVVertices->AddLast(fCurrentVertex);
     AliDebug(3,Form("Added new vertex #%d NCont:%d XYZ: %f %f %f",nindices,nv,fCurrentVertex->GetX(),fCurrentVertex->GetY(),fCurrentVertex->GetZ()));
