@@ -233,7 +233,7 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
 
   int iResult = 0;
   if ( !arguments ) return iResult;
-  cout<<"["<<arguments<<"]"<<endl;
+  //cout<<"["<<arguments<<"]"<<endl;
   TString allArgs = arguments;
   TString argument;
   int bMissingParam = 0;
