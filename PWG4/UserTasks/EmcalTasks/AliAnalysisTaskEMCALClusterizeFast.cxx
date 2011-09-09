@@ -121,7 +121,7 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
 { 
   // Constructor
 
-  fBranchNames     = "ESD:AliESDHeader.,AliESDRun.,EMCALCells. AOD:header,emcalCells";
+  fBranchNames     = "ESD:AliESDHeader.,AliESDRun.,EMCALCells.,EMCALTrigger. AOD:header,emcalCells";
   for(Int_t i = 0; i < 12; ++i) 
     fGeomMatrix[i] = 0;
 }
@@ -538,14 +538,7 @@ void AliAnalysisTaskEMCALClusterizeFast::UpdateClusters()
       clus->SetName(fNewClusterArrayName);
       InputEvent()->AddObject(clus);
     } else {
-      Int_t nents = clus->GetEntries();
-      for (Int_t i=0;i<nents;++i) {
-        AliVCluster *c = static_cast<AliVCluster*>(clus->At(i));
-        if (!c)
-          continue;
-        delete clus->RemoveAt(i);
-      }
-      clus->Compress();
+      clus->Delete();
     }
   }
   

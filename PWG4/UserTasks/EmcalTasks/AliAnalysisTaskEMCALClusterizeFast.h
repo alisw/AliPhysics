@@ -62,7 +62,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetSubBackground(Bool_t b)                           { fSubBackground               = b     ; }
   void                   SetCreatePattern(Bool_t yes)                         { fCreatePattern               = yes   ; }
   void                   SetOverwrite(Bool_t yes)                             { fOverwrite                   = yes   ; }
-  void                   SetNewClusterArrayName(TString name)                 { fNewClusterArrayName         = name  ; }
+  void                   SetNewClusterArrayName(const char *name)             { fNewClusterArrayName         = name  ; }
   void                   SetnPhi(Int_t n)                                     { fNPhi                        = n     ; }
   void                   SetnEta(Int_t n)                                     { fNEta                        = n     ; }
   void                   SetShiftPhi(Int_t n)                                 { fShiftPhi                    = n     ; }
