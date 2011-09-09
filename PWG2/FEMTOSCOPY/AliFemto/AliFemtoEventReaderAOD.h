@@ -48,6 +48,9 @@ class AliFemtoEventReaderAOD : public AliFemtoEventReader
   virtual void CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack, 
 				   AliFemtoTrack *tFemtoTrack, 
 				   AliPWG2AODTrack *tPWG2AODTrack);
+  virtual void CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, 
+				   AliFemtoTrack *tFemtoTrack, 
+				   AliPWG2AODTrack *tPWG2AODTrack);
 
   int            fNumberofEvent;    // number of Events in AOD file
   int            fCurEvent;         // number of current event
