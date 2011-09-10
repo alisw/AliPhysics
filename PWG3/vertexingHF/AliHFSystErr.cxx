@@ -715,6 +715,8 @@ void AliHFSystErr::InitDstartoD0pi2010ppLowEn() {
   fCutsEff->SetBinContent(8,0.12);
   fCutsEff->SetBinContent(9,0.2);
   fCutsEff->SetBinContent(10,0.2);
+  fCutsEff->SetBinContent(11,0.2);
+  fCutsEff->SetBinContent(12,0.2);
 
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
