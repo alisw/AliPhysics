@@ -76,7 +76,7 @@ class AliFlowBayesianPID : public AliPIDResponse {
 
   // getter
   AliESDpid* GetESDpid(){return fPIDesd;};
-  TH2D *GetHistoPriors(Int_t specie){if(specie >=0 && specie < 5) return hPriors[specie]; else return NULL;};
+  TH2D *GetHistoPriors(Int_t specie){if(specie >=0 && specie < fNspecies) return hPriors[specie]; else return NULL;};
   TSpline3 *GetMismatch();  
   TF1 *GetTOFprob(){return fTOFResponse;};
   TF1 *GetTPCprob(){return fTPCResponse;};
