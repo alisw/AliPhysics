@@ -265,8 +265,15 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
       else if(iS==6) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kTriton);
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
 
-      if(centr < 10) resolutionTPC *= 1.07;
+      if(centr < 0) resolutionTPC *= 0.78;
+      if(centr < 10) resolutionTPC *= 1.055;
       else if(centr < 20) resolutionTPC *= 1.03;
+      else if(centr < 30) resolutionTPC *= 1.0;
+      else if(centr < 40) resolutionTPC *= 0.95;
+      else if(centr < 50) resolutionTPC *= 0.93;
+      else if(centr < 60) resolutionTPC *= 0.91;
+      else if(centr < 70) resolutionTPC *= 0.88;
+      else resolutionTPC *= 0.83;
 
       fWeights[0][iS] = fTPCResponse->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
     }
@@ -419,74 +426,74 @@ void AliFlowBayesianPID::SetPriors(){
   // 0-10%
   {
     i=0;
-    fC[i][0][0] = 0.005;
-    fC[i][0][1] = 0.005;
+    fC[i][0][0] = 0.025;
+    fC[i][0][1] = 0.025;
     fC[i][0][2] = 1.0000;
     fC[i][0][3] = 0.010;
     fC[i][0][4] = 0.010;
     
-    fC[i][1][0] = 0.005;
-    fC[i][1][1] = 0.005;
+    fC[i][1][0] = 0.02;
+    fC[i][1][1] = 0.02;
     fC[i][1][2] = 1.0000;
     fC[i][1][3] = 0.0168;
     fC[i][1][4] = 0.01;
     
-    fC[i][2][0] = 0.005;
-    fC[i][2][1] = 0.005;
+    fC[i][2][0] = 0.015;
+    fC[i][2][1] = 0.015;
     fC[i][2][2] = 1.0000;
     fC[i][2][3] = 0.0272;
     fC[i][2][4] = 0.01;
     
-    fC[i][3][0] = 0.005;
-    fC[i][3][1] = 0.005;
+    fC[i][3][0] = 0.014;
+    fC[i][3][1] = 0.014;
     fC[i][3][2] = 1.0000;
     fC[i][3][3] = 0.0562;
     fC[i][3][4] = 0.0258;
     
-    fC[i][4][0] = 0.005;
-    fC[i][4][1] = 0.005;
+    fC[i][4][0] = 0.013;
+    fC[i][4][1] = 0.013;
     fC[i][4][2] = 1.0000;
     fC[i][4][3] = 0.0861;
     fC[i][4][4] = 0.0496;
     
-    fC[i][5][0] = 0.005;
-    fC[i][5][1] = 0.005;
+    fC[i][5][0] = 0.012;
+    fC[i][5][1] = 0.012;
     fC[i][5][2] = 1.0000;
     fC[i][5][3] = 0.1168;
     fC[i][5][4] = 0.0740;
     
-    fC[i][6][0] = 0.005;
-    fC[i][6][1] = 0.005;
+    fC[i][6][0] = 0.011;
+    fC[i][6][1] = 0.011;
     fC[i][6][2] = 1.0000;
     fC[i][6][3] = 0.1476;
     fC[i][6][4] = 0.0998;
     
-    fC[i][7][0] = 0.005;
-    fC[i][7][1] = 0.005;
+    fC[i][7][0] = 0.01;
+    fC[i][7][1] = 0.01;
     fC[i][7][2] = 1.0000;
     fC[i][7][3] = 0.1810;
     fC[i][7][4] = 0.1296;
     
-    fC[i][8][0] = 0.005;
-    fC[i][8][1] = 0.005;
+    fC[i][8][0] = 0.009;
+    fC[i][8][1] = 0.009;
     fC[i][8][2] = 1.0000;
     fC[i][8][3] = 0.2240;
     fC[i][8][4] = 0.1827;
     
-    fC[i][9][0] = 0.005;
-    fC[i][9][1] = 0.005;
+    fC[i][9][0] = 0.008;
+    fC[i][9][1] = 0.008;
     fC[i][9][2] = 1.0000;
     fC[i][9][3] = 0.2812;
     fC[i][9][4] = 0.2699;
     
-    fC[i][10][0] = 0.005;
-    fC[i][10][1] = 0.005;
+    fC[i][10][0] = 0.007;
+    fC[i][10][1] = 0.007;
     fC[i][10][2] = 1.0000;
     fC[i][10][3] = 0.3328;
     fC[i][10][4] = 0.3714;
     
-    fC[i][11][0] = 0.005;
-    fC[i][11][1] = 0.005;
+    fC[i][11][0] = 0.006;
+    fC[i][11][1] = 0.006;
     fC[i][11][2] = 1.0000;
     fC[i][11][3] = 0.3780;
     fC[i][11][4] = 0.4810;
@@ -1416,6 +1423,14 @@ void AliFlowBayesianPID::SetPriors(){
     fC[i][17][4] = 0.3011;
   }
    
+  // lepton priors
+  for(Int_t k1=1;k1<9;k1++){
+    for(Int_t k2=0;k2<18;k2++){
+      fC[k1][k2][0] = fC[0][k2][0]*(1 - 0.04*k1);
+      fC[k1][k2][1] = fC[0][k2][1]*(1 - 0.04*k1);
+    }
+  }
+
   for(Int_t k1=1;k1 <=hPriors[0]->GetNbinsX();k1++){ // loop on centrality bins
     for(Int_t k2=1;k2 <=hPriors[0]->GetNbinsY();k2++){ // loop on pt
       Float_t y = 0.125 + (k2-1)*0.25;
@@ -1431,18 +1446,22 @@ void AliFlowBayesianPID::SetPriors(){
 
       if(icentr < 0 || icentr > 8) icentr = 8;
 
+      Float_t weight = 0;
+      if(y > 3) weight=sqrt((y-3)/7);
+      if(weight > 1) weight = 1;
+
       for(Int_t j=0;j<5;j++){ // loop over species
 	if(j==4 && y > 3){
-	  Float_t weight = sqrt((y-3)/7);
-	  if(weight > 1) weight = 1;
-	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]*(1-weight) + 0.3*weight);    
+	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]*(1-weight) + 0.2*weight);    
 	}
 	else
 	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]);    
       } // end loop over species
-      hPriors[5]->SetBinContent(k1,k2,0.001);
-      hPriors[6]->SetBinContent(k1,k2,0.0001);
-      hPriors[7]->SetBinContent(k1,k2,0.00001);      
+
+      Float_t deutFact =  20*(icentr*icentr*0.1+1);
+      hPriors[5]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact);
+      hPriors[6]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact);
+      hPriors[7]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact/deutFact);      
     } // end loop on pt
   } // end loop on centrality bins
   
