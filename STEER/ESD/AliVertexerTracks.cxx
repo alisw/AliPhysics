@@ -1938,7 +1938,7 @@ void AliVertexerTracks::FindVerticesMV()
   double step = fMVScanStep>1 ?  fMVScanStep : 1.;
   double zmx = 3*TMath::Sqrt(fNominalCov[5]);
   double zmn = -zmx;
-  int nz = (zmx-zmn)/step; if (nz<1) nz=1;
+  int nz = (int)(zmx-zmn)/step; if (nz<1) nz=1;
   double dz = (zmx-zmn)/nz;
   int izStart=0;
   AliDebug(2,Form("%d seeds between %f and %f",nz,zmn+dz/2,zmx+dz/2));
