@@ -37,7 +37,7 @@
 #include <TH2F.h>
 #include <TArrayI.h>
 #include <TArrayF.h>
-#include "TObjArray.h"
+#include <TObjArray.h>
 
 // STEER includes
 #include "AliVCluster.h"
@@ -64,19 +64,22 @@ ClassImp(AliEMCALRecoUtils)
   
 //______________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils():
-  fNonLinearityFunction (kNoCorrection), fParticleType(kPhoton),
-  fPosAlgo(kUnchanged),fW0(4.), fNonLinearThreshold(30),
-  fRecalibration(kFALSE), fEMCALRecalibrationFactors(),
-  fRemoveBadChannels(kFALSE), fRecalDistToBadChannels(kFALSE), fEMCALBadChannelMap(),
-  fNCellsFromEMCALBorder(0), fNoEMCALBorderAtEta0(kTRUE),
-  fAODFilterMask(32),
-  fMatchedTrackIndex(0x0), fMatchedClusterIndex(0x0), 
-  fResidualEta(0x0), fResidualPhi(0x0), fCutEtaPhiSum(kTRUE), fCutEtaPhiSeparate(kFALSE), fCutR(0.1), fCutEta(0.02), fCutPhi(0.04), fMass(0.139), fStep(50),
-  fRejectExoticCluster(kFALSE),
-  fTrackCutsType(kTPCOnlyCut), fCutMinTrackPt(0), fCutMinNClusterTPC(-1), fCutMinNClusterITS(-1), fCutMaxChi2PerClusterTPC(1e10), fCutMaxChi2PerClusterITS(1e10),
-  fCutRequireTPCRefit(kFALSE), fCutRequireITSRefit(kFALSE), fCutAcceptKinkDaughters(kFALSE),
-  fCutMaxDCAToVertexXY(1e10), fCutMaxDCAToVertexZ(1e10),fCutDCAToVertex2D(kFALSE),fPIDUtils(),
-  fUseTimeCorrectionFactors(kFALSE),  fTimeCorrectionFactorsSet(kFALSE)
+  fParticleType(kPhoton),                 fPosAlgo(kUnchanged),                   fW0(4.), 
+  fNonLinearityFunction(kNoCorrection),   fNonLinearThreshold(30),
+  fSmearClusterEnergy(kFALSE),            fRandom(),
+  fRecalibration(kFALSE),                 fEMCALRecalibrationFactors(),
+  fUseTimeCorrectionFactors(kFALSE),      fTimeCorrectionFactorsSet(kFALSE),
+  fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
+  fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
+  fRejectExoticCluster(kFALSE),           fPIDUtils(),                            fAODFilterMask(32),
+  fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
+  fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kTRUE),                   fCutEtaPhiSeparate(kFALSE), 
+  fCutR(0.1),                             fCutEta(0.02),                          fCutPhi(0.04), 
+  fMass(0.139),                           fStep(50),
+  fTrackCutsType(kTPCOnlyCut),            fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
+  fCutMinNClusterITS(-1),                 fCutMaxChi2PerClusterTPC(1e10),         fCutMaxChi2PerClusterITS(1e10),
+  fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
+  fCutMaxDCAToVertexXY(1e10),             fCutMaxDCAToVertexZ(1e10),              fCutDCAToVertex2D(kFALSE)
 {
 //
   // Constructor.
@@ -107,47 +110,55 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   //fNonLinearityParams[1] = -0.02024/0.1349766/1.038;
   //fNonLinearityParams[2] = 1.046;
 
+  //Cluster energy smearing
+  fSmearClusterEnergy   = kFALSE;
+  fSmearClusterParam[0] = 0.07; // * sqrt E term
+  fSmearClusterParam[1] = 0.00; // * E term
+  fSmearClusterParam[2] = 0.00; // constant
+  
   //Track matching
   fMatchedTrackIndex     = new TArrayI();
   fMatchedClusterIndex   = new TArrayI();
   fResidualPhi           = new TArrayF();
   fResidualEta           = new TArrayF();
-  
-  InitTrackCuts();
   fPIDUtils              = new AliEMCALPIDUtils();
+
+  InitTrackCuts();
 }
 
 //______________________________________________________________________
 AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco) 
-: TNamed(reco), fNonLinearityFunction(reco.fNonLinearityFunction), 
-  fParticleType(reco.fParticleType), fPosAlgo(reco.fPosAlgo), fW0(reco.fW0), fNonLinearThreshold(reco.fNonLinearThreshold),
-  fRecalibration(reco.fRecalibration),fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
-  fRemoveBadChannels(reco.fRemoveBadChannels),fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
+: TNamed(reco), 
+  fParticleType(reco.fParticleType),                         fPosAlgo(reco.fPosAlgo),     fW0(reco.fW0),
+  fNonLinearityFunction(reco.fNonLinearityFunction),         fNonLinearThreshold(reco.fNonLinearThreshold),
+  fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
+  fRecalibration(reco.fRecalibration),                       fEMCALRecalibrationFactors(reco.fEMCALRecalibrationFactors),
+  fUseTimeCorrectionFactors(reco.fUseTimeCorrectionFactors), fTimeCorrectionFactorsSet(reco.fTimeCorrectionFactorsSet),
+  fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
-  fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
+  fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
+  fRejectExoticCluster(reco.fRejectExoticCluster),           fPIDUtils(reco.fPIDUtils), 
   fAODFilterMask(reco.fAODFilterMask),
-  fMatchedTrackIndex(reco.fMatchedTrackIndex?new TArrayI(*reco.fMatchedTrackIndex):0x0),
+  fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
-  fResidualEta(reco.fResidualEta?new TArrayF(*reco.fResidualEta):0x0),
-  fResidualPhi(reco.fResidualPhi?new TArrayF(*reco.fResidualPhi):0x0),
-  fCutEtaPhiSum(reco.fCutEtaPhiSum), fCutEtaPhiSeparate(reco.fCutEtaPhiSeparate), fCutR(reco.fCutR), fCutEta(reco.fCutEta), fCutPhi(reco.fCutPhi),
-  fMass(reco.fMass), fStep(reco.fStep),
-  fRejectExoticCluster(reco.fRejectExoticCluster),
-  fTrackCutsType(reco.fTrackCutsType), fCutMinTrackPt(reco.fCutMinTrackPt), fCutMinNClusterTPC(reco.fCutMinNClusterTPC), fCutMinNClusterITS(reco.fCutMinNClusterITS), 
-  fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC), fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
-  fCutRequireTPCRefit(reco.fCutRequireTPCRefit), fCutRequireITSRefit(reco.fCutRequireITSRefit),
-  fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),
-  fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY), fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),fCutDCAToVertex2D(reco.fCutDCAToVertex2D),
-  fPIDUtils(reco.fPIDUtils), 
-  fUseTimeCorrectionFactors(reco.fUseTimeCorrectionFactors),  fTimeCorrectionFactorsSet(reco.fTimeCorrectionFactorsSet)
+  fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
+  fResidualPhi(        reco.fResidualPhi?        new TArrayF(*reco.fResidualPhi):0x0),
+  fCutEtaPhiSum(reco.fCutEtaPhiSum),                         fCutEtaPhiSeparate(reco.fCutEtaPhiSeparate), 
+  fCutR(reco.fCutR),        fCutEta(reco.fCutEta),           fCutPhi(reco.fCutPhi),
+  fMass(reco.fMass),        fStep(reco.fStep),
+  fTrackCutsType(reco.fTrackCutsType),                       fCutMinTrackPt(reco.fCutMinTrackPt), 
+  fCutMinNClusterTPC(reco.fCutMinNClusterTPC),               fCutMinNClusterITS(reco.fCutMinNClusterITS), 
+  fCutMaxChi2PerClusterTPC(reco.fCutMaxChi2PerClusterTPC),   fCutMaxChi2PerClusterITS(reco.fCutMaxChi2PerClusterITS),
+  fCutRequireTPCRefit(reco.fCutRequireTPCRefit),             fCutRequireITSRefit(reco.fCutRequireITSRefit),
+  fCutAcceptKinkDaughters(reco.fCutAcceptKinkDaughters),     fCutMaxDCAToVertexXY(reco.fCutMaxDCAToVertexXY),    
+  fCutMaxDCAToVertexZ(reco.fCutMaxDCAToVertexZ),             fCutDCAToVertex2D(reco.fCutDCAToVertex2D)
 {
   //Copy ctor
   
-  for(Int_t i = 0; i < 15 ; i++) {
-      fMisalRotShift[i] = reco.fMisalRotShift[i]; 
-      fMisalTransShift[i] = reco.fMisalTransShift[i]; 
-  } 
-  for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
+  for(Int_t i = 0; i < 15 ; i++) { fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; 
+                                   fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; } 
+  for(Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for(Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }
 
 }
 
@@ -160,24 +171,35 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   if(this == &reco)return *this;
   ((TNamed *)this)->operator=(reco);
 
-  fNonLinearityFunction      = reco.fNonLinearityFunction;
+  for(Int_t i = 0; i < 15 ; i++) { fMisalTransShift[i]    = reco.fMisalTransShift[i]    ; 
+                                   fMisalRotShift[i]      = reco.fMisalRotShift[i]      ; }
+  for(Int_t i = 0; i < 7  ; i++) { fNonLinearityParams[i] = reco.fNonLinearityParams[i] ; }
+  for(Int_t i = 0; i < 3  ; i++) { fSmearClusterParam[i]  = reco.fSmearClusterParam[i]  ; }   
+  
   fParticleType              = reco.fParticleType;
   fPosAlgo                   = reco.fPosAlgo; 
   fW0                        = reco.fW0;
+  
+  fNonLinearityFunction      = reco.fNonLinearityFunction;
   fNonLinearThreshold        = reco.fNonLinearThreshold;
+  fSmearClusterEnergy        = reco.fSmearClusterEnergy;
+
   fRecalibration             = reco.fRecalibration;
   fEMCALRecalibrationFactors = reco.fEMCALRecalibrationFactors;
+  fUseTimeCorrectionFactors  = reco.fUseTimeCorrectionFactors;
+  fTimeCorrectionFactorsSet  = reco.fTimeCorrectionFactorsSet;
+  
   fRemoveBadChannels         = reco.fRemoveBadChannels;
   fRecalDistToBadChannels    = reco.fRecalDistToBadChannels;
   fEMCALBadChannelMap        = reco.fEMCALBadChannelMap;
+  
   fNCellsFromEMCALBorder     = reco.fNCellsFromEMCALBorder;
   fNoEMCALBorderAtEta0       = reco.fNoEMCALBorderAtEta0;
+  fRejectExoticCluster       = reco.fRejectExoticCluster;           
 
+  fPIDUtils                  = reco.fPIDUtils;
 
-  for(Int_t i = 0; i < 15 ; i++) {fMisalTransShift[i] = reco.fMisalTransShift[i]; fMisalRotShift[i] = reco.fMisalRotShift[i];}
-  for(Int_t i = 0; i < 7  ; i++) fNonLinearityParams[i] = reco.fNonLinearityParams[i]; 
-
-  fAODFilterMask              = reco.fAODFilterMask;
+  fAODFilterMask             = reco.fAODFilterMask;
   
   fCutEtaPhiSum              = reco.fCutEtaPhiSum;
   fCutEtaPhiSeparate         = reco.fCutEtaPhiSeparate;
@@ -200,12 +222,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fCutMaxDCAToVertexXY       = reco.fCutMaxDCAToVertexXY;
   fCutMaxDCAToVertexZ        = reco.fCutMaxDCAToVertexZ;
   fCutDCAToVertex2D          = reco.fCutDCAToVertex2D;
-
-  fPIDUtils                  = reco.fPIDUtils;
-  
-  fUseTimeCorrectionFactors  = reco.fUseTimeCorrectionFactors;
-  fTimeCorrectionFactorsSet  = reco.fTimeCorrectionFactorsSet;
-
   
   if(reco.fResidualEta){
     // assign or copy construct
@@ -399,6 +415,29 @@ Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
 }
 
 //__________________________________________________
+Float_t AliEMCALRecoUtils::SmearClusterEnergy(AliVCluster* cluster) {
+
+  //In case of MC analysis, smear energy to match resolution/calibration in real data
+  
+  if(!cluster){
+    AliInfo("Cluster pointer null!");
+    return 0;
+  }
+  
+  Float_t energy    = cluster->E() ;
+  Float_t rdmEnergy = energy ;
+  if(fSmearClusterEnergy){
+    rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0] * TMath::Sqrt(energy) +
+                                    fSmearClusterParam[1] * energy +
+                                    fSmearClusterParam[2] );
+    AliDebug(2, Form("Energy: original %f, smeared %f\n", energy, rdmEnergy));
+  }
+  
+  return rdmEnergy ;
+
+}
+
+//__________________________________________________
 Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
 // Correct cluster energy from non linearity functions
   
@@ -406,7 +445,6 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
     AliInfo("Cluster pointer null!");
     return 0;
   }
-  
   
   Float_t energy = cluster->E();
   
