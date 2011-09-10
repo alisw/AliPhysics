@@ -15,9 +15,8 @@
 //////////////////////////////////////////////////////////////////////////////
 
 // --- ROOT system ---
-#include "TObject.h" 
-#include "TString.h"
-#include "TRandom3.h"
+#include <TObject.h> 
+#include <TString.h>
 class TObjArray ; 
 class TTree ;
 
@@ -266,12 +265,6 @@ public:
   AliCalorimeterUtils * GetCaloUtils()               const { return fCaloUtils                   ; }
   void             SetCaloUtils(AliCalorimeterUtils * caloutils)  { fCaloUtils = caloutils       ; }  
   
-  //Use only for MC
-  void             SwitchOnClusterEnergySmearing()         { fSmearClusterEnergy = kTRUE         ; }
-  void             SwitchOffClusterEnergySmearing()        { fSmearClusterEnergy = kFALSE        ; }
-  Bool_t           IsClusterEnergySmeared()          const { return fSmearClusterEnergy          ; }   
-  void             SetSmearingParameters(Int_t i, Float_t param) { if(i < 3)fSmearClusterParam[i] = param  ; }
-    
   virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
   
   //------------------------------------------------
@@ -361,9 +354,6 @@ public:
   Bool_t           fFillEMCALCells; // use data from EMCAL
   Bool_t           fFillPHOSCells;  // use data from PHOS
   Bool_t           fSelectEmbeddedClusters;   // Use only simulated clusters that come from embedding.
-  Bool_t           fSmearClusterEnergy;       // Smear cluster energy, to be done only for simulated data to match real data
-  Float_t          fSmearClusterParam[3];     // Smearing parameters
-  TRandom3         fRandom;                   // Random generator
   
   ULong_t          fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ; // Track selection bit, for AODs (any difference with track status?)
@@ -406,7 +396,7 @@ public:
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
-  ClassDef(AliCaloTrackReader,31)
+  ClassDef(AliCaloTrackReader,32)
 } ;
 
 

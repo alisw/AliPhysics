@@ -26,8 +26,7 @@
 
 
 // --- ROOT system ---
-#include "TFile.h"
-#include "TRandom3.h"
+#include <TFile.h>
 
 //---- ANALYSIS system ----
 #include "AliMCEvent.h"
@@ -62,7 +61,6 @@ ClassImp(AliCaloTrackReader)
     fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
     fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
     fFillEMCALCells(0),fFillPHOSCells(0),  fSelectEmbeddedClusters(kFALSE),
-    fSmearClusterEnergy(kFALSE), fRandom(),
     fTrackStatus(0), fTrackFilterMask(0), fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
     fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
     fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
@@ -295,13 +293,7 @@ void AliCaloTrackReader::InitParameters()
   
   //Centrality
   fCentralityBin[0]=fCentralityBin[1]=-1;
-  
-  //Cluster smearing
-  fSmearClusterEnergy   = kFALSE;
-  fSmearClusterParam[0] = 0.07; // * sqrt E term
-  fSmearClusterParam[1] = 0.02; // * E term
-  fSmearClusterParam[2] = 0.00; // constant
-  
+    
 }
 
 //________________________________________________________________
@@ -755,13 +747,9 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     }          
     
     //In case of MC analysis, to match resolution/calibration in real data
-    if(fSmearClusterEnergy){
-      Float_t energy    = clus->E();
-      Float_t rdmEnergy = fRandom.Gaus(energy,fSmearClusterParam[0]*TMath::Sqrt(energy)+
-                                       fSmearClusterParam[1]*energy+fSmearClusterParam[2]);
-      clus->SetE(rdmEnergy);
-      if(fDebug > 2) printf("\t Energy %f, smeared %f\n", energy, clus->E());
-    }
+    Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
+    // printf("\t Energy %f, smeared %f\n", clus->E(),rdmEnergy);
+    clus->SetE(rdmEnergy);
     
     if (fMixedEvent) 
       clus->SetID(iclus) ; 
