@@ -28,7 +28,6 @@
 
 set ( SRCS 
  CaloCalib/AliAnalysisTaskCaloFilter.cxx 
- CaloCalib/AliAnalysisTaskPHOSPi0CalibSelection.cxx 
  CaloCalib/AliAnalysisTaskEMCALPi0CalibSelection.cxx 
  CaloCalib/AliAnalysisTaskEMCALClusterize.cxx 
 )
