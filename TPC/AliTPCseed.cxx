@@ -1332,9 +1332,18 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
       sumDN++;
     }
   }
+  //
+  Float_t mean = 0;
+  Float_t meanL = 0;  
+  Float_t meanD = 0;           // lower half mean
+  if (sumn > 1e-30)   mean =suma/sumn;
+  if (sumLN > 1e-30)  meanL =sumL/sumLN;
+  if (sumDN > 1e-30)  meanD =(sumD/sumDN);
+  /*
   Float_t mean =suma/sumn;
   Float_t meanL = sumL/sumLN;  
   Float_t meanD =(sumD/sumDN);           // lower half mean
+  */
   Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
   Float_t mean2=suma2/sumn;
   Float_t mean3=suma3/sumn;
