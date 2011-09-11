@@ -372,8 +372,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	
 	if ((!histTRKdefMultX) || (!histTRKdefMultY) || (histTRKdefMultX->GetEntries() < 40.) || (histTRKdefMultY->GetEntries() < 40.)){
 	  AliWarning(Form("histos for lumi reg calculation not found, default value setted"));
-	  xSigmaMult=0.0120;
-	  ySigmaMult=0.0120;
+	  xSigmaVtx=0.0120;
+	  ySigmaVtx=0.0120;
 	} else {
 	
 	  histTRKdefMultX -> Fit("gaus", "M", "", -0.4, 0.4);
