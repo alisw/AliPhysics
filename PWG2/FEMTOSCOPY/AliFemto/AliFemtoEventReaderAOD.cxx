@@ -460,7 +460,7 @@ void AliFemtoEventReaderAOD::CopyAODtoFemtoEvent(AliFemtoEvent *tEvent)
 
 	// copying PID information from the correspondent track
 	const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
-	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy, 0);
+	CopyPIDtoFemtoTrack(aodtrackpid, trackCopy);
 		
 	if (mcP) {
 	  // Fill the hidden information with the simulated data
@@ -727,8 +727,7 @@ AliAODMCParticle* AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
 }
 
 void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, 
-						 AliFemtoTrack *tFemtoTrack, 
-						 AliPWG2AODTrack *tPWG2AODTrack)
+						 AliFemtoTrack *tFemtoTrack)
 {
   double aodpid[10];
   tAodTrack->GetPID(aodpid);
