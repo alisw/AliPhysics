@@ -102,21 +102,14 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhELambda0 ;              //! E vs lambda0 of pi0 pairs 
   TH2F         * fhELambda1 ;              //! E vs lambda1 of pi0 pairs 
   
-  TH2F         * fhEdDispersion ;          //! E vs disp/ncells of pi0 pairs
-  TH2F         * fhEdLambda0 ;             //! E vs lambda0/ncells of pi0 pairs 
-  TH2F         * fhEdLambda1 ;             //! E vs lambda1/ncells of pi0 pairs 
-
   TH2F         * fhClusterPairDiffTimeE;   //! Pair of clusters time difference vs E
   TH2F         * fhClusterPairDiffTimeAsy; //! Pair of clusters time difference vs Asymmetry
   
   //MC histograms
   
   TH2F         * fhEMCLambda0[5] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCdLambda0[5];         //! E vs lambda0 of pi0 pairs but really from MC particle
   TH2F         * fhEMCLambda1[5] ;         //! E vs lambda1 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCdLambda1[5];         //! E vs lambda1 of pi0 pairs but really from MC particle
   TH2F         * fhEMCDispersion[5] ;      //! E vs dispersion of pi0 pairs but really from MC particle
-  TH2F         * fhEMCdDispersion[5];      //! E vs dispersion of pi0 pairs but really from MC particle
   
   TH1F         * fhPtMCNoPi0;              //! Number of identified pi0, not coming from pi0
   TH2F         * fhPhiMCNoPi0;             //! Phi of identified pi0, not coming from pi0
@@ -125,8 +118,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhPhiMCPi0;               //! Phi of identified pi0, coming from pi0
   TH2F         * fhEtaMCPi0;               //! eta of identified pi0, coming from pi0
   
-  
-  ClassDef(AliAnaPi0EbE,6)
+  ClassDef(AliAnaPi0EbE,7)
 } ;
 
 

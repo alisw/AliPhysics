@@ -78,25 +78,16 @@ AliAnaPhoton::AliAnaPhoton() :
 
     //Shower shape histograms
     fhDispE(0),                   fhLam0E(0),                   fhLam1E(0), 
-    fhdDispE(0),                  fhdLam0E(0),                  fhdLam1E(0), 
     fhDispETRD(0),                fhLam0ETRD(0),                fhLam1ETRD(0),
-    fhdDispETRD(0),               fhdLam0ETRD(0),               fhdLam1ETRD(0),
 
     fhNCellsLam0LowE(0),          fhNCellsLam1LowE(0),          fhNCellsDispLowE(0),  
     fhNCellsLam0HighE(0),         fhNCellsLam1HighE(0),         fhNCellsDispHighE(0),
-    fhNCellsdLam0LowE(0),         fhNCellsdLam1LowE(0),         fhNCellsdDispLowE(0),  
-    fhNCellsdLam0HighE(0),        fhNCellsdLam1HighE(0),        fhNCellsdDispHighE(0),
 
     fhEtaLam0LowE(0),             fhPhiLam0LowE(0), 
     fhEtaLam0HighE(0),            fhPhiLam0HighE(0), 
     fhLam0DispLowE(0),            fhLam0DispHighE(0), 
     fhLam1Lam0LowE(0),            fhLam1Lam0HighE(0), 
     fhDispLam1LowE(0),            fhDispLam1HighE(0),
-    fhEtadLam0LowE(0),            fhPhidLam0LowE(0), 
-    fhEtadLam0HighE(0),           fhPhidLam0HighE(0), 
-    fhdLam0dDispLowE(0),          fhdLam0dDispHighE(0), 
-    fhdLam1dLam0LowE(0),          fhdLam1dLam0HighE(0), 
-    fhdDispdLam1LowE(0),          fhdDispdLam1HighE(0),
 
     //MC histograms
     fhDeltaE(0),                  fhDeltaPt(0),
@@ -125,18 +116,13 @@ AliAnaPhoton::AliAnaPhoton() :
 
     // Photon SS MC histograms
     fhMCPhotonELambda0NoOverlap(0),    fhMCPhotonELambda0TwoOverlap(0),  fhMCPhotonELambda0NOverlap(0),
-    fhMCPhotonEdLambda0NoOverlap(0),   fhMCPhotonEdLambda0TwoOverlap(0), fhMCPhotonEdLambda0NOverlap(0),
 
     //Embedding
-    fhEmbeddedSignalFractionEnergy(0),
-    fhEmbedPhotonELambda0FullSignal(0),    fhEmbedPhotonEdLambda0FullSignal(0),
-    fhEmbedPhotonELambda0MostlySignal(0),  fhEmbedPhotonEdLambda0MostlySignal(0),
-    fhEmbedPhotonELambda0MostlyBkg(0),     fhEmbedPhotonEdLambda0MostlyBkg(0),
-    fhEmbedPhotonELambda0FullBkg(0),       fhEmbedPhotonEdLambda0FullBkg(0),
-    fhEmbedPi0ELambda0FullSignal(0),       fhEmbedPi0EdLambda0FullSignal(0),
-    fhEmbedPi0ELambda0MostlySignal(0),     fhEmbedPi0EdLambda0MostlySignal(0),
-    fhEmbedPi0ELambda0MostlyBkg(0),        fhEmbedPi0EdLambda0MostlyBkg(0),
-    fhEmbedPi0ELambda0FullBkg(0),          fhEmbedPi0EdLambda0FullBkg(0)
+    fhEmbeddedSignalFractionEnergy(0),     
+    fhEmbedPhotonELambda0FullSignal(0), fhEmbedPhotonELambda0MostlySignal(0),  
+    fhEmbedPhotonELambda0MostlyBkg(0),  fhEmbedPhotonELambda0FullBkg(0),       
+    fhEmbedPi0ELambda0FullSignal(0),    fhEmbedPi0ELambda0MostlySignal(0),    
+    fhEmbedPi0ELambda0MostlyBkg(0),     fhEmbedPi0ELambda0FullBkg(0)         
 {
   //default ctor
   
@@ -163,9 +149,6 @@ AliAnaPhoton::AliAnaPhoton() :
     fhMCELambda0    [i]                  = 0;
     fhMCELambda1    [i]                  = 0;
     fhMCEDispersion [i]                  = 0;
-    fhMCEdLambda0   [i]                  = 0;
-    fhMCEdLambda1   [i]                  = 0;
-    fhMCEdDispersion[i]                  = 0;
     fhMCNCellsE     [i]                  = 0; 
     fhMCMaxCellDiffClusterE[i]           = 0; 
     fhMCLambda0vsClusterMaxCellDiffE0[i] = 0;
@@ -668,7 +651,6 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   
   Float_t energy  = cluster->E();
   Int_t   ncells  = cluster->GetNCells();
-  Int_t   ncells2 = ncells*ncells;
   Float_t lambda0 = cluster->GetM02();
   Float_t lambda1 = cluster->GetM20();
   Float_t disp    = cluster->GetDispersion()*cluster->GetDispersion();
@@ -688,26 +670,17 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
   fhLam0E ->Fill(energy,lambda0);
   fhLam1E ->Fill(energy,lambda1);
   fhDispE ->Fill(energy,disp);
-  fhdLam0E->Fill(energy,lambda0/ncells2);
-  fhdLam1E->Fill(energy,lambda1/ncells2);
-  fhdDispE->Fill(energy,disp/ncells2);
   
   if(fCalorimeter == "EMCAL" && GetModuleNumber(cluster) > 5){
     fhLam0ETRD->Fill(energy,lambda0);
     fhLam1ETRD->Fill(energy,lambda1);
     fhDispETRD->Fill(energy,disp);
-    fhdLam0ETRD->Fill(energy,lambda0/ncells2);
-    fhdLam1ETRD->Fill(energy,lambda1/ncells2);
-    fhdDispETRD->Fill(energy,disp/ncells2);
   }
   
   if(energy < 2){
     fhNCellsLam0LowE ->Fill(ncells,lambda0);
     fhNCellsLam1LowE ->Fill(ncells,lambda1);
     fhNCellsDispLowE ->Fill(ncells,disp);
-    fhNCellsdLam0LowE->Fill(ncells,lambda0/ncells2);
-    fhNCellsdLam1LowE->Fill(ncells,lambda1/ncells2);
-    fhNCellsdDispLowE->Fill(ncells,disp/ncells2);
     
     fhLam1Lam0LowE  ->Fill(lambda1,lambda0);
     fhLam0DispLowE  ->Fill(lambda0,disp);
@@ -715,31 +688,17 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     fhEtaLam0LowE   ->Fill(eta,lambda0);
     fhPhiLam0LowE   ->Fill(phi,lambda0);  
     
-    fhdLam1dLam0LowE->Fill(lambda1/ncells2,lambda0/ncells2);
-    fhdLam0dDispLowE->Fill(lambda0/ncells2,disp/ncells2);
-    fhdDispdLam1LowE->Fill(disp/ncells2,lambda1/ncells2);
-    fhEtadLam0LowE  ->Fill(eta,lambda0/ncells2);
-    fhPhidLam0LowE  ->Fill(phi,lambda0/ncells2);  
   }
   else {
     fhNCellsLam0HighE ->Fill(ncells,lambda0);
     fhNCellsLam1HighE ->Fill(ncells,lambda1);
     fhNCellsDispHighE ->Fill(ncells,disp);
-    fhNCellsdLam0HighE->Fill(ncells,lambda0/ncells2);
-    fhNCellsdLam1HighE->Fill(ncells,lambda1/ncells2);
-    fhNCellsdDispHighE->Fill(ncells,disp/ncells2);
-    
+
     fhLam1Lam0HighE  ->Fill(lambda1,lambda0);
     fhLam0DispHighE  ->Fill(lambda0,disp);
     fhDispLam1HighE  ->Fill(disp,lambda1);
     fhEtaLam0HighE   ->Fill(eta, lambda0);
     fhPhiLam0HighE   ->Fill(phi, lambda0);
-    
-    fhdLam1dLam0HighE->Fill(lambda1/ncells2,lambda0/ncells2);
-    fhdLam0dDispHighE->Fill(lambda0/ncells2,disp/ncells2);
-    fhdDispdLam1HighE->Fill(disp/ncells2,lambda1/ncells2);
-    fhEtadLam0HighE  ->Fill(eta, lambda0/ncells2);
-    fhPhidLam0HighE  ->Fill(phi, lambda0/ncells2);
   }
   
   if(IsDataMC()){
@@ -781,11 +740,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)){
       fhMCELambda0[mcssPhoton]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssPhoton]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssPhoton]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssPhoton]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssPhoton] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssPhoton]->Fill(energy, disp/ncells2);   
       fhMCNCellsE[mcssPhoton]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssPhoton]->Fill(energy,maxCellFraction);
       
@@ -817,15 +773,12 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
         
         if(noverlaps == 1){
           fhMCPhotonELambda0NoOverlap  ->Fill(energy, lambda0);
-          fhMCPhotonEdLambda0NoOverlap ->Fill(energy, lambda0/ncells2);
         }
         else if(noverlaps == 2){        
           fhMCPhotonELambda0TwoOverlap ->Fill(energy, lambda0);
-          fhMCPhotonEdLambda0TwoOverlap->Fill(energy, lambda0/ncells2);
         }
         else if(noverlaps > 2){          
           fhMCPhotonELambda0NOverlap   ->Fill(energy, lambda0);
-          fhMCPhotonEdLambda0NOverlap  ->Fill(energy, lambda0/ncells2);
         }
         else {
           printf("AliAnaPhoton::FillShowerShapeHistogram() - n overlaps = %d!!", noverlaps);
@@ -838,33 +791,26 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
         if     (fraction > 0.9) 
         {
           fhEmbedPhotonELambda0FullSignal   ->Fill(energy, lambda0);
-          fhEmbedPhotonEdLambda0FullSignal  ->Fill(energy, lambda0/ncells2);
         }
         else if(fraction > 0.5)
         {
           fhEmbedPhotonELambda0MostlySignal ->Fill(energy, lambda0);
-          fhEmbedPhotonEdLambda0MostlySignal->Fill(energy, lambda0/ncells2);
         }
         else if(fraction > 0.1)
         { 
           fhEmbedPhotonELambda0MostlyBkg    ->Fill(energy, lambda0);
-          fhEmbedPhotonEdLambda0MostlyBkg   ->Fill(energy, lambda0/ncells2);
         }
         else
         {
           fhEmbedPhotonELambda0FullBkg      ->Fill(energy, lambda0);
-          fhEmbedPhotonEdLambda0FullBkg     ->Fill(energy, lambda0/ncells2);
         }
       } // embedded
       
     }//photon   no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)){
       fhMCELambda0[mcssElectron]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssElectron]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssElectron]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssElectron]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssElectron] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssElectron]->Fill(energy, disp/ncells2);
       fhMCNCellsE[mcssElectron]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssElectron]->Fill(energy,maxCellFraction);
 
@@ -884,11 +830,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) && 
               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) ){
       fhMCELambda0[mcssConversion]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssConversion]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssConversion]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssConversion]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssConversion] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssConversion]->Fill(energy, disp/ncells2); 
       fhMCNCellsE[mcssConversion]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssConversion]->Fill(energy,maxCellFraction);
 
@@ -908,11 +851,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  ){
       fhMCELambda0[mcssPi0]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssPi0]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssPi0]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssPi0]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssPi0] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssPi0]->Fill(energy, disp/ncells2);      
       fhMCNCellsE[mcssPi0]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssPi0]->Fill(energy,maxCellFraction);
 
@@ -935,33 +875,26 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
         if     (fraction > 0.9) 
         {
           fhEmbedPi0ELambda0FullSignal   ->Fill(energy, lambda0);
-          fhEmbedPi0EdLambda0FullSignal  ->Fill(energy, lambda0/ncells2);
         }
         else if(fraction > 0.5)
         {
           fhEmbedPi0ELambda0MostlySignal ->Fill(energy, lambda0);
-          fhEmbedPi0EdLambda0MostlySignal->Fill(energy, lambda0/ncells2);
         }
         else if(fraction > 0.1)
         { 
           fhEmbedPi0ELambda0MostlyBkg    ->Fill(energy, lambda0);
-          fhEmbedPi0EdLambda0MostlyBkg   ->Fill(energy, lambda0/ncells2);
         }
         else
         {
           fhEmbedPi0ELambda0FullBkg      ->Fill(energy, lambda0);
-          fhEmbedPi0EdLambda0FullBkg     ->Fill(energy, lambda0/ncells2);
         }
       } // embedded      
       
     }//pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  ){
       fhMCELambda0[mcssEta]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssEta]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssEta]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssEta]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssEta] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssEta]->Fill(energy, disp/ncells2); 
       fhMCNCellsE[mcssEta]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssEta]->Fill(energy,maxCellFraction);
 
@@ -981,11 +914,8 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
     }//eta    
     else {
       fhMCELambda0[mcssOther]    ->Fill(energy, lambda0);
-      fhMCEdLambda0[mcssOther]   ->Fill(energy, lambda0/ncells2);
       fhMCELambda1[mcssOther]    ->Fill(energy, lambda1);
-      fhMCEdLambda1[mcssOther]   ->Fill(energy, lambda1/ncells2);
       fhMCEDispersion[mcssOther] ->Fill(energy, disp);
-      fhMCEdDispersion[mcssOther]->Fill(energy, disp/ncells2);  
       fhMCNCellsE[mcssOther]     ->Fill(energy, ncells);
       fhMCMaxCellDiffClusterE[mcssOther]->Fill(energy,maxCellFraction);
 
@@ -1249,22 +1179,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhDispE->SetXTitle("E (GeV) ");
     outputContainer->Add(fhDispE);
     
-    fhdLam0E  = new TH2F ("hdLam0E","#lambda_{0}^{2}/N_{cells}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-    fhdLam0E->SetYTitle("d#lambda_{0}^{2}");
-    fhdLam0E->SetXTitle("E (GeV)");
-    outputContainer->Add(fhdLam0E);  
-    
-    fhdLam1E  = new TH2F ("hdLam1E","#lambda_{1}^{2}/N_{cells}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-    fhdLam1E->SetYTitle("d#lambda_{1}^{2}");
-    fhdLam1E->SetXTitle("E (GeV)");
-    outputContainer->Add(fhdLam1E);  
-    
-    fhdDispE  = new TH2F ("hdDispE"," dispersion^{2}/N_{cells}^{2} vs E", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-    fhdDispE->SetYTitle("dD^{2}");
-    fhdDispE->SetXTitle("E (GeV) ");
-    outputContainer->Add(fhdDispE);
-    
-    
     if(fCalorimeter == "EMCAL"){
       fhLam0ETRD  = new TH2F ("hLam0ETRD","#lambda_{0}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhLam0ETRD->SetYTitle("#lambda_{0}^{2}");
@@ -1280,22 +1194,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       fhDispETRD->SetYTitle("Dispersion^{2}");
       fhDispETRD->SetXTitle("E (GeV) ");
       outputContainer->Add(fhDispETRD);   
-      
-      fhdLam0ETRD  = new TH2F ("hdLam0ETRD","#lambda_{0}^{2}/N_{cells}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-      fhdLam0ETRD->SetYTitle("d#lambda_{0}^{2}");
-      fhdLam0ETRD->SetXTitle("E (GeV)");
-      outputContainer->Add(fhdLam0ETRD);  
-      
-      fhdLam1ETRD  = new TH2F ("hdLam1ETRD","#lambda_{1}^{2}/N_{cells}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-      fhdLam1ETRD->SetYTitle("d#lambda_{1}^{2}");
-      fhdLam1ETRD->SetXTitle("E (GeV)");
-      outputContainer->Add(fhdLam1ETRD);  
-      
-      fhdDispETRD  = new TH2F ("hdDispETRD"," dispersion^{2}/N_{cells}^{2} vs E, EMCAL SM covered by TRD", nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-      fhdDispETRD->SetYTitle("dD^{2}");
-      fhdDispETRD->SetXTitle("E (GeV) ");
-      outputContainer->Add(fhdDispETRD);
-      
     } 
     
     fhNCellsLam0LowE  = new TH2F ("hNCellsLam0LowE","N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
@@ -1327,38 +1225,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhNCellsDispHighE->SetXTitle("N_{cells}");
     fhNCellsDispHighE->SetYTitle("D^{2}");
     outputContainer->Add(fhNCellsDispHighE);  
-    
-    
-    fhNCellsdLam0LowE  = new TH2F ("hNCellsdLam0LowE","N_{cells} in cluster vs #lambda_{0}^{2}/N_{cells}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdLam0LowE->SetXTitle("N_{cells}");
-    fhNCellsdLam0LowE->SetYTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhNCellsdLam0LowE);  
-    
-    fhNCellsdLam0HighE  = new TH2F ("hNCellsdLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}/N_{cells}^{2}, E > 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdLam0HighE->SetXTitle("N_{cells}");
-    fhNCellsdLam0HighE->SetYTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhNCellsdLam0HighE);  
-    
-    fhNCellsdLam1LowE  = new TH2F ("hNCellsdLam1LowE","N_{cells} in cluster vs #lambda_{1}^{2}/N_{cells}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdLam1LowE->SetXTitle("N_{cells}");
-    fhNCellsdLam1LowE->SetYTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhNCellsdLam1LowE);  
-    
-    fhNCellsdLam1HighE  = new TH2F ("hNCellsdLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}/N_{cells}^{2}, E > 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdLam1HighE->SetXTitle("N_{cells}");
-    fhNCellsdLam1HighE->SetYTitle("#lambda_{0}^{2}");
-    outputContainer->Add(fhNCellsdLam1HighE);  
-    
-    fhNCellsdDispLowE  = new TH2F ("hNCellsdDispLowE","N_{cells} in cluster vs dispersion^{2}/N_{cells}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdDispLowE->SetXTitle("N_{cells}");
-    fhNCellsdDispLowE->SetYTitle("D^{2}");
-    outputContainer->Add(fhNCellsdDispLowE);  
-    
-    fhNCellsdDispHighE  = new TH2F ("hNCellsdDispHighE","N_{cells} in cluster vs dispersion^{2}/N_{cells}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax/50); 
-    fhNCellsdDispHighE->SetXTitle("N_{cells}");
-    fhNCellsdDispHighE->SetYTitle("D^{2}");
-    outputContainer->Add(fhNCellsdDispHighE);      
-    
     
     fhEtaLam0LowE  = new TH2F ("hEtaLam0LowE","#eta vs #lambda_{0}^{2}, E < 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax); 
     fhEtaLam0LowE->SetYTitle("#lambda_{0}^{2}");
@@ -1409,59 +1275,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhDispLam1HighE->SetXTitle("D^{2}");
     fhDispLam1HighE->SetYTitle("#lambda_{1}^{2}");
     outputContainer->Add(fhDispLam1HighE);  
-    
-    
-    
-    fhEtadLam0LowE  = new TH2F ("hEtadLam0LowE","#eta vs #lambda_{0}^{2}/N_{cells}^{2}, E < 2 GeV", netabins,etamin,etamax, ssbins,ssmin,ssmax/50); 
-    fhEtadLam0LowE->SetYTitle("d#lambda_{0}^{2}");
-    fhEtadLam0LowE->SetXTitle("#eta");
-    outputContainer->Add(fhEtadLam0LowE);  
-    
-    fhPhidLam0LowE  = new TH2F ("hPhidLam0LowE","#phi vs #lambda_{0}^{2}/N_{cells}^{2}, E < 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax/50); 
-    fhPhidLam0LowE->SetYTitle("d#lambda_{0}^{2}");
-    fhPhidLam0LowE->SetXTitle("#phi");
-    outputContainer->Add(fhPhidLam0LowE);  
-    
-    fhEtadLam0HighE  = new TH2F ("hEtadLam0HighE","#eta vs #lambda_{0}^{2}/N_{cells}^{2}", netabins,etamin,etamax, ssbins,ssmin,ssmax/50); 
-    fhEtadLam0HighE->SetYTitle("d#lambda_{0}^{2}");
-    fhEtadLam0HighE->SetXTitle("#eta");
-    outputContainer->Add(fhEtadLam0HighE);  
-    
-    fhPhidLam0HighE  = new TH2F ("hPhidLam0HighE","#phi vs #lambda_{0}^{2}/N_{cells}^{2}, E > 2 GeV", nphibins,phimin,phimax, ssbins,ssmin,ssmax/50); 
-    fhPhidLam0HighE->SetYTitle("d#lambda_{0}^{2}");
-    fhPhidLam0HighE->SetXTitle("#phi");
-    outputContainer->Add(fhPhidLam0HighE);  
-    
-    fhdLam1dLam0LowE  = new TH2F ("hdLam1dLam0LowE","#lambda_{0}^{2}/N_{cells}^{2} vs #lambda_{1}^{2}/N_{cells}^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdLam1dLam0LowE->SetYTitle("d#lambda_{0}^{2}");
-    fhdLam1dLam0LowE->SetXTitle("d#lambda_{1}^{2}");
-    outputContainer->Add(fhdLam1dLam0LowE);  
-    
-    fhdLam1dLam0HighE  = new TH2F ("hdLam1dLam0HighE","#lambda_{0}^{2}/N_{cells}^{2}vs #lambda_{1}^{2}/N_{cells}^{2} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdLam1dLam0HighE->SetYTitle("d#lambda_{0}^{2}");
-    fhdLam1dLam0HighE->SetXTitle("d#lambda_{1}^{2}");
-    outputContainer->Add(fhdLam1dLam0HighE);  
-    
-    fhdLam0dDispLowE  = new TH2F ("hdLam0dDispLowE","#lambda_{0}^{2}/N_{cells}^{2} vs dispersion^{2}/N_{cells}^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdLam0dDispLowE->SetXTitle("d#lambda_{0}^{2}");
-    fhdLam0dDispLowE->SetYTitle("dD^{2}");
-    outputContainer->Add(fhdLam0dDispLowE);  
-    
-    fhdLam0dDispHighE  = new TH2F ("hdLam0dDispHighE","#lambda_{0}^{2}/N_{cells}^{2} vs dispersion^{2}/N_{cells}^{2} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdLam0dDispHighE->SetXTitle("d#lambda_{0}^{2}");
-    fhdLam0dDispHighE->SetYTitle("dD^{2}");
-    outputContainer->Add(fhdLam0dDispHighE);  
-    
-    fhdDispdLam1LowE  = new TH2F ("hdDispddLam1LowE","Dispersion^{2}/N_{cells}^{2} vs #lambda_{1}^{2}/N_{cells}^{2} in cluster of E < 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdDispdLam1LowE->SetXTitle("dD^{2}");
-    fhdDispdLam1LowE->SetYTitle("d#lambda_{1}^{2}");
-    outputContainer->Add(fhdDispdLam1LowE);  
-    
-    fhdDispdLam1HighE  = new TH2F ("hdDispdLam1HighE","Dispersion^{2}/N_{cells}^{2} vs #lambda_{1^{2}}/N_{cells}^{2} in cluster of E > 2 GeV",  ssbins,ssmin,ssmax/50, ssbins,ssmin,ssmax/50); 
-    fhdDispdLam1HighE->SetXTitle("dD^{2}");
-    fhdDispdLam1HighE->SetYTitle("d#lambda_{1}^{2}");
-    outputContainer->Add(fhdDispdLam1HighE);  
-        
     
   } // Shower shape
   
@@ -1811,41 +1624,20 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCELambda0[i]->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCELambda0[i]) ; 
         
-        fhMCEdLambda0[i]  = new TH2F(Form("hEdLambda0_MC%s",pnamess[i].Data()),
-                                     Form("cluster from %s : E vs #lambda_{0}^{2}/N_{cells}^{2}",ptypess[i].Data()),
-                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCEdLambda0[i]->SetYTitle("d#lambda_{0}^{2}");
-        fhMCEdLambda0[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCEdLambda0[i]) ; 
-        
         fhMCELambda1[i]  = new TH2F(Form("hELambda1_MC%s",pnamess[i].Data()),
                                     Form("cluster from %s : E vs #lambda_{1}^{2}",ptypess[i].Data()),
                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhMCELambda1[i]->SetYTitle("#lambda_{1}^{2}");
         fhMCELambda1[i]->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCELambda1[i]) ; 
-        
-        fhMCEdLambda1[i]  = new TH2F(Form("hEdLambda1_MC%s",pnamess[i].Data()),
-                                     Form("cluster from %s : E vs d#lambda_{1}^{2}/N_{cells}^{2}",ptypess[i].Data()),
-                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCEdLambda1[i]->SetYTitle("d#lambda_{1}^{2}");
-        fhMCEdLambda1[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCEdLambda1[i]) ; 
-        
+              
         fhMCEDispersion[i]  = new TH2F(Form("hEDispersion_MC%s",pnamess[i].Data()),
                                        Form("cluster from %s : E vs dispersion^{2}",ptypess[i].Data()),
                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhMCEDispersion[i]->SetYTitle("D^{2}");
         fhMCEDispersion[i]->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCEDispersion[i]) ; 
-        
-        fhMCEdDispersion[i]  = new TH2F(Form("hEdDispersion_MC%s",pnamess[i].Data()),
-                                        Form("cluster from %s : E vs dispersion^{2}/N_{cells}^{2}",ptypess[i].Data()),
-                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCEdDispersion[i]->SetYTitle("dD^{2}");
-        fhMCEdDispersion[i]->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCEdDispersion[i]) ;   
-        
+                
         fhMCNCellsE[i]  = new TH2F (Form("hNCellsE_MC%s",pnamess[i].Data()),
                                Form("# of cells in cluster from %s vs E of clusters",ptypess[i].Data()), 
                                     nptbins,ptmin,ptmax, nbins,nmin,nmax); 
@@ -1913,26 +1705,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPhotonELambda0NoOverlap->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCPhotonELambda0NoOverlap) ; 
         
-        fhMCPhotonEdLambda0NoOverlap  = new TH2F("hEdLambda0_MCPhoton_NoOverlap",
-                                                 "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
-                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCPhotonEdLambda0NoOverlap->SetYTitle("d#lambda_{0}^{2}");
-        fhMCPhotonEdLambda0NoOverlap->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCPhotonEdLambda0NoOverlap) ; 
-        
         fhMCPhotonELambda0TwoOverlap  = new TH2F("hELambda0_MCPhoton_TwoOverlap",
                                                  "cluster from Photon : E vs #lambda_{0}^{2}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhMCPhotonELambda0TwoOverlap->SetYTitle("#lambda_{0}^{2}");
         fhMCPhotonELambda0TwoOverlap->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCPhotonELambda0TwoOverlap) ; 
-        
-        fhMCPhotonEdLambda0TwoOverlap  = new TH2F("hEdLambda0_MCPhoton_TwoOverlap",
-                                                  "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
-                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCPhotonEdLambda0TwoOverlap->SetYTitle("d#lambda_{0}^{2}");
-        fhMCPhotonEdLambda0TwoOverlap->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCPhotonEdLambda0TwoOverlap) ; 
         
         fhMCPhotonELambda0NOverlap  = new TH2F("hELambda0_MCPhoton_NOverlap",
                                                "cluster from Photon : E vs #lambda_{0}^{2}",
@@ -1941,12 +1719,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhMCPhotonELambda0NOverlap->SetXTitle("E (GeV)");
         outputContainer->Add(fhMCPhotonELambda0NOverlap) ; 
         
-        fhMCPhotonEdLambda0NOverlap  = new TH2F("hEdLambda0_MCPhoton_NOverlap",
-                                                "cluster from Photon : E vs #lambda_{0}^{2}/N_{cells}^{2}",
-                                                nptbins,ptmin,ptmax,ssbins,ssmin,ssmax/50); 
-        fhMCPhotonEdLambda0NOverlap->SetYTitle("d#lambda_{0}^{2}");
-        fhMCPhotonEdLambda0NOverlap->SetXTitle("E (GeV)");
-        outputContainer->Add(fhMCPhotonEdLambda0NOverlap) ; 
       } //No embedding     
       
       //Fill histograms to check shape of embedded clusters
@@ -1966,15 +1738,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPhotonELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
         fhEmbedPhotonELambda0FullSignal->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullSignal) ; 
-        
-        fhEmbedPhotonEdLambda0FullSignal  = new TH2F("hEdLambda0_EmbedPhoton_FullSignal",
-                                          "cluster from Photon with more than 90% energy in cluster: E vs d#lambda_{0}^{2}",
-                                          nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPhotonEdLambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonEdLambda0FullSignal->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPhotonEdLambda0FullSignal) ; 
-        
-        
+                
         fhEmbedPhotonELambda0MostlySignal  = new TH2F("hELambda0_EmbedPhoton_MostlySignal",
                                           "cluster from Photon embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -1982,29 +1746,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPhotonELambda0MostlySignal->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlySignal) ; 
         
-        fhEmbedPhotonEdLambda0MostlySignal  = new TH2F("hEdLambda0_EmbedPhoton_MostlySignal",
-                                           "cluster from Photon with 50% to 90% energy in cluster: E vs d#lambda_{0}^{2}",
-                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPhotonEdLambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonEdLambda0MostlySignal->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPhotonEdLambda0MostlySignal) ; 
-        
-        
         fhEmbedPhotonELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPhoton_MostlyBkg",
                                           "cluster from Photon embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhEmbedPhotonELambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
         fhEmbedPhotonELambda0MostlyBkg->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0MostlyBkg) ; 
-        
-        fhEmbedPhotonEdLambda0MostlyBkg  = new TH2F("hEdLambda0_EmbedPhoton_MostlyBkg",
-                                           "cluster from Photon with 10% to 50% energy in cluster: E vs d#lambda_{0}^{2}",
-                                           nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPhotonEdLambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonEdLambda0MostlyBkg->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPhotonEdLambda0MostlyBkg) ; 
-        
-        
+                
         fhEmbedPhotonELambda0FullBkg  = new TH2F("hELambda0_EmbedPhoton_FullBkg",
                                                    "cluster from Photonm embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -2012,43 +1760,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPhotonELambda0FullBkg->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPhotonELambda0FullBkg) ; 
         
-        fhEmbedPhotonEdLambda0FullBkg  = new TH2F("hEdLambda0_EmbedPhoton_FullBkg",
-                                                    "cluster from Photon with 0% to 10% energy in cluster: E vs d#lambda_{0}^{2}",
-                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPhotonEdLambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPhotonEdLambda0FullBkg->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPhotonEdLambda0FullBkg) ;    
-        
-        
         fhEmbedPi0ELambda0FullSignal  = new TH2F("hELambda0_EmbedPi0_FullSignal",
                                                     "cluster from Pi0 embedded with more than 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhEmbedPi0ELambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
         fhEmbedPi0ELambda0FullSignal->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullSignal) ; 
-        
-        fhEmbedPi0EdLambda0FullSignal  = new TH2F("hEdLambda0_EmbedPi0_FullSignal",
-                                                     "cluster from Pi0 with more than 90% energy in cluster: E vs d#lambda_{0}^{2}",
-                                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPi0EdLambda0FullSignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0EdLambda0FullSignal->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPi0EdLambda0FullSignal) ; 
-        
-        
+                
         fhEmbedPi0ELambda0MostlySignal  = new TH2F("hELambda0_EmbedPi0_MostlySignal",
                                                       "cluster from Pi0 embedded with 50% to 90% energy in cluster : E vs #lambda_{0}^{2}",
                                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhEmbedPi0ELambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
         fhEmbedPi0ELambda0MostlySignal->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlySignal) ; 
-        
-        fhEmbedPi0EdLambda0MostlySignal  = new TH2F("hEdLambda0_EmbedPi0_MostlySignal",
-                                                       "cluster from Pi0 with 50% to 90% energy in cluster: E vs d#lambda_{0}^{2}",
-                                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPi0EdLambda0MostlySignal->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0EdLambda0MostlySignal->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPi0EdLambda0MostlySignal) ; 
-        
         
         fhEmbedPi0ELambda0MostlyBkg  = new TH2F("hELambda0_EmbedPi0_MostlyBkg",
                                                    "cluster from Pi0 embedded with 10% to 50% energy in cluster : E vs #lambda_{0}^{2}",
@@ -2057,28 +1781,13 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
         fhEmbedPi0ELambda0MostlyBkg->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0MostlyBkg) ; 
         
-        fhEmbedPi0EdLambda0MostlyBkg  = new TH2F("hEdLambda0_EmbedPi0_MostlyBkg",
-                                                    "cluster from Pi0 with 10% to 50% energy in cluster: E vs d#lambda_{0}^{2}",
-                                                    nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPi0EdLambda0MostlyBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0EdLambda0MostlyBkg->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPi0EdLambda0MostlyBkg) ; 
-        
-        
         fhEmbedPi0ELambda0FullBkg  = new TH2F("hELambda0_EmbedPi0_FullBkg",
                                                  "cluster from Pi0 embedded with 0% to 10% energy in cluster : E vs #lambda_{0}^{2}",
                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
         fhEmbedPi0ELambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
         fhEmbedPi0ELambda0FullBkg->SetXTitle("E (GeV)");
         outputContainer->Add(fhEmbedPi0ELambda0FullBkg) ; 
-        
-        fhEmbedPi0EdLambda0FullBkg  = new TH2F("hEdLambda0_EmbedPi0_FullBkg",
-                                                  "cluster from Pi0 with 0% to 10% energy in cluster: E vs d#lambda_{0}^{2}",
-                                                  nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhEmbedPi0EdLambda0FullBkg->SetYTitle("#lambda_{0}^{2}");
-        fhEmbedPi0EdLambda0FullBkg->SetXTitle("E (GeV)");
-        outputContainer->Add(fhEmbedPi0EdLambda0FullBkg) ;
-        
+  
       }// embedded histograms
       
       
