@@ -1186,7 +1186,7 @@ AliESDVertex AliVertexerTracks::TrackletVertexFinder(AliStrLine **lines, const I
     AliStrLine *line1 = lines[i]; 
     Double_t p0[3],cd[3],sigmasq[3];
     Double_t wmat[9];
-    if(!line1) printf("ERROR %d %d\n",i,knacc);
+    if(!line1) printf("ERROR %d %d\n",i,knacc); continue;
     line1->GetP0(p0);
     line1->GetCd(cd);
     line1->GetSigma2P0(sigmasq);
