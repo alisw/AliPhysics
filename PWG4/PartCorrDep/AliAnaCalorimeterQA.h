@@ -46,11 +46,7 @@ public:
   void         MakeAnalysisFillHistograms() ;
   
   void         Print(const Option_t * opt) const;
-  
-  void         ReadHistograms(TList * outputList); //Fill histograms with histograms in ouput list, needed in Terminate.
-
-  void         Terminate(TList * outputList);
-  
+    
   // Main methods
   
   void         ClusterHistograms(const TLorentzVector mom, Float_t *pos, 
@@ -156,11 +152,13 @@ public:
   TH1F *   fhNClusters;                       //! Number of clusters
 
   TH2F *   fhClusterTimeEnergy;               //! Cluster Time vs Energy 
-  TH1F *   fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
+  TH2F *   fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH1F *   fhCellIdCellLargeTimeSpread;       //! Cells with large time respect to max (diff > 100 ns)
   TH2F *   fhClusterPairDiffTimeE;            //! Pair of clusters time difference vs E
 
   TH2F *   fhClusterMaxCellCloseCellRatio;    //! Ratio between max cell energy and cell energy of the same cluster 
+  TH2F *   fhClusterMaxCellCloseCellDiff;     //! Difference between max cell energy and cell energy of the same cluster 
+
   TH2F *   fhClusterMaxCellDiff;              //! Difference between cluster energy and energy of cell with more energy, good clusters only
   TH2F *   fhClusterMaxCellDiffNoCut;         //! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
   //TH2F *   fhClusterMaxCellDiffDivLambda0;    //! 
