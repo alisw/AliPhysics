@@ -206,30 +206,17 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhDispE;                         //! cluster dispersion vs E
   TH2F * fhLam0E;                         //! cluster lambda0 vs  E
   TH2F * fhLam1E;                         //! cluster lambda1 vs  E  
-  TH2F * fhdDispE;                        //! cluster dispersion/Ncells vs E
-  TH2F * fhdLam0E;                        //! cluster lambda0/Ncells vs  E
-  TH2F * fhdLam1E;                        //! cluster lambda1/Ncells vs  E
-  
+
   TH2F * fhDispETRD;                      //! cluster dispersion vs E, SM covered by TRD
   TH2F * fhLam0ETRD;                      //! cluster lambda0 vs  E, SM covered by TRD
   TH2F * fhLam1ETRD;                      //! cluster lambda1 vs  E, SM covered by TRD 
-  TH2F * fhdDispETRD;                     //! cluster dispersion/Ncells vs E, SM covered by TRD
-  TH2F * fhdLam0ETRD;                     //! cluster lambda0/Ncells vs  E, SM covered by TRD
-  TH2F * fhdLam1ETRD;                     //! cluster lambda1/Ncells vs  E, SM covered by TRD    
-  
+
   TH2F * fhNCellsLam0LowE;                //! number of cells in cluster vs lambda0
   TH2F * fhNCellsLam1LowE;                //! number of cells in cluster vs lambda1
   TH2F * fhNCellsDispLowE;                //! number of cells in cluster vs dispersion
   TH2F * fhNCellsLam0HighE;               //! number of cells in cluster vs lambda0, E>2
   TH2F * fhNCellsLam1HighE;               //! number of cells in cluster vs lambda1, E>2
   TH2F * fhNCellsDispHighE;               //! number of cells in cluster vs dispersion, E>2
-  
-  TH2F * fhNCellsdLam0LowE;               //! number of cells in cluster vs lambda0/ncells
-  TH2F * fhNCellsdLam1LowE;               //! number of cells in cluster vs lambda1/ncells
-  TH2F * fhNCellsdDispLowE;               //! number of cells in cluster vs dispersion/ncells
-  TH2F * fhNCellsdLam0HighE;              //! number of cells in cluster vs lambda0/ncells, E>2
-  TH2F * fhNCellsdLam1HighE;              //! number of cells in cluster vs lambda1/ncells, E>2
-  TH2F * fhNCellsdDispHighE;              //! number of cells in cluster vs dispersion/ncells, E>2  
   
   TH2F * fhEtaLam0LowE;                   //! cluster eta vs lambda0, E<2
   TH2F * fhPhiLam0LowE;                   //! cluster phi vs lambda0, E<2
@@ -241,19 +228,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhLam1Lam0HighE;                 //! cluster lambda1 vs lambda0, E>2
   TH2F * fhDispLam1LowE;                  //! cluster disp vs lambda1, E<2
   TH2F * fhDispLam1HighE;                 //! cluster disp vs lambda1, E>2
-  
-  TH2F * fhEtadLam0LowE;                  //! cluster eta vs lambda0/ncells, E<2
-  TH2F * fhPhidLam0LowE;                  //! cluster phi vs lambda0/ncells, E<2
-  TH2F * fhEtadLam0HighE;                 //! cluster eta vs lambda0/ncells, E>2
-  TH2F * fhPhidLam0HighE;                 //! cluster phi vs lambda0/ncells, E>2
-  TH2F * fhdLam0dDispLowE;                //! cluster lambda0/ncells vs dispersion/ncells, E<2
-  TH2F * fhdLam0dDispHighE;               //! cluster lambda0/ncells vs dispersion/ncells, E>2
-  TH2F * fhdLam1dLam0LowE;                //! cluster lambda1/ncells vs lambda0/ncells, E<2
-  TH2F * fhdLam1dLam0HighE;               //! cluster lambda1/ncells vs lambda0/ncells, E>2
-  TH2F * fhdDispdLam1LowE;                //! cluster disp/ncells vs lambda1/ncells, E<2
-  TH2F * fhdDispdLam1HighE;               //! cluster disp/ncells vs lambda1/ncells, E>2
-  
-  
+    
   //Fill MC dependent histograms
   TH1F * fhDeltaE  ;                          //! MC-Reco E distribution      
   TH1F * fhDeltaPt ;                          //! MC-Reco pT distribution
@@ -324,18 +299,12 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   // Shower Shape MC
 
   TH2F * fhMCELambda0[6] ;                    //! E vs Lambda0     from MC particle
-  TH2F * fhMCEdLambda0[6];                    //! E vs dLambda0    from MC particle
   TH2F * fhMCELambda1[6] ;                    //! E vs Lambda1     from MC particle
-  TH2F * fhMCEdLambda1[6];                    //! E vs dLambda1    from MC particle
   TH2F * fhMCEDispersion[6] ;                 //! E vs Dispersion  from MC particle
-  TH2F * fhMCEdDispersion[6];                 //! E vs dDispersion from MC particle
   
   TH2F * fhMCPhotonELambda0NoOverlap ;        //! E vs Lambda0     from MC photons, no overlap
   TH2F * fhMCPhotonELambda0TwoOverlap ;       //! E vs Lambda0     from MC photons, 2 particles overlap
   TH2F * fhMCPhotonELambda0NOverlap ;         //! E vs Lambda0     from MC photons, N particles overlap
-  TH2F * fhMCPhotonEdLambda0NoOverlap ;       //! E vs dLambda0    from MC photons, no overlap
-  TH2F * fhMCPhotonEdLambda0TwoOverlap ;      //! E vs dLambda0    from MC photons, 2 particles overlap
-  TH2F * fhMCPhotonEdLambda0NOverlap ;        //! E vs dLambda0    from MC photons, N particles overlap
   
   TH2F * fhMCLambda0vsClusterMaxCellDiffE0[6];  //! Lambda0 vs fraction of energy of max cell for E < 2 GeV
   TH2F * fhMCLambda0vsClusterMaxCellDiffE2[6];  //! Lambda0 vs fraction of energy of max cell for 2< E < 6 GeV
@@ -350,24 +319,16 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbeddedSignalFractionEnergy ;     //! Fraction of photon energy of embedded signal vs cluster energy
   
   TH2F * fhEmbedPhotonELambda0FullSignal ;    //!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPhotonEdLambda0FullSignal ;   //! dLambda0 vs E for embedded photons with more than 90% of the cluster energy
   TH2F * fhEmbedPhotonELambda0MostlySignal ;  //!  Lambda0 vs E for embedded photons with 90%<fraction<50% 
-  TH2F * fhEmbedPhotonEdLambda0MostlySignal ; //! dLambda0 vs E for embedded photons with 90%<fraction<50% 
   TH2F * fhEmbedPhotonELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
-  TH2F * fhEmbedPhotonEdLambda0MostlyBkg ;    //! dLambda0 vs E for embedded photons with 50%<fraction<10% 
   TH2F * fhEmbedPhotonELambda0FullBkg ;       //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  TH2F * fhEmbedPhotonEdLambda0FullBkg ;      //! dLambda0 vs E for embedded photons with less than 10% of the cluster energy
   
   TH2F * fhEmbedPi0ELambda0FullSignal ;       //!  Lambda0 vs E for embedded photons with more than 90% of the cluster energy
-  TH2F * fhEmbedPi0EdLambda0FullSignal ;      //! dLambda0 vs E for embedded photons with more than 90% of the cluster energy
   TH2F * fhEmbedPi0ELambda0MostlySignal ;     //!  Lambda0 vs E for embedded photons with 90%<fraction<50% 
-  TH2F * fhEmbedPi0EdLambda0MostlySignal ;    //! dLambda0 vs E for embedded photons with 90%<fraction<50% 
   TH2F * fhEmbedPi0ELambda0MostlyBkg ;        //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
-  TH2F * fhEmbedPi0EdLambda0MostlyBkg ;       //! dLambda0 vs E for embedded photons with 50%<fraction<10% 
   TH2F * fhEmbedPi0ELambda0FullBkg ;          //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
-  TH2F * fhEmbedPi0EdLambda0FullBkg ;         //! dLambda0 vs E for embedded photons with less than 10% of the cluster energy  
   
-   ClassDef(AliAnaPhoton,16)
+   ClassDef(AliAnaPhoton,17)
 
 } ;
  
