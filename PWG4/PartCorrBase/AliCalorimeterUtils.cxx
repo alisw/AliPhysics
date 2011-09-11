@@ -294,7 +294,7 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* 
     fraction  = clu->GetCellAmplitudeFraction(iDig);
     if(fraction < 1e-4) fraction = 1.; // in case unfolding is off
     
-    GetModuleNumberCellIndexes(cellAbsId, calo, ieta, iphi, iRCU);
+    iSupMod = GetModuleNumberCellIndexes(cellAbsId, calo, ieta, iphi, iRCU);
     
     if(IsRecalibrationOn()) {
       if(calo=="EMCAL") recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
