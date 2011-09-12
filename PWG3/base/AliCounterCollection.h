@@ -44,7 +44,7 @@ public:
   void Count(TString externalKey, Double_t value);
   
   // Get the overall statistics for the given selection (result is integrated over not specified rubrics)
-  Double_t GetSum(TString selections = "");
+  Double_t GetSum(TString selections = "", Bool_t* longCounters = 0x0);
   // Get counters of the rubric "rubric1" for the given "selection"
   TH1D* Get(TString rubric1, TString selections);
   // Get counters of the "rubric1" vs "rubric2" for the given "selection"
@@ -110,25 +110,28 @@ private:
   void CountAsDouble(TString externalKey, Double_t value);
   
   // Print the content of 1D histogram as a list
-  void PrintList(const TH1D* hist, Bool_t removeEmpty = kFALSE) const;
+  void PrintList(const TH1D* hist, Bool_t removeEmpty, Bool_t longCounters) const;
   // Print the content of 2D histogram as an array
-  void PrintArray(const TH2D* hist, Bool_t removeEmpty = kFALSE) const;
+  void PrintArray(const TH2D* hist, Bool_t removeEmpty, Bool_t longCounters) const;
   // Print the content of nD histogram as a list of arrays
-  void PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty = kFALSE) const;
+  void PrintListOfArrays(const THnSparse* hist, Bool_t removeEmpty, Bool_t longCounters) const;
   
   // Return the number of characters of the longest label
   Int_t GetMaxLabelSize(THashList* labels) const;
   
   // Return desired "data" for the given "selection" stored in a new histogram or 0x0
-  TObject* Projection(const TObjArray& data, const TString& selections);
+  TObject* Projection(const TObjArray& data, const TString& selections, Bool_t& longCounters);
   
   // Consistency check of the two counter collections
   Int_t* CheckConsistency(const AliCounterCollection* c);
   
   // Sort labels (alphabetically or as integer) in each rubric flagged in "rubricsToSort"
   void Sort(const Bool_t* rubricsToSort, Bool_t asInt);
-  /// Return a list (not owner) of labels sorted assuming they are integers
+  // Return a list (not owner) of labels sorted assuming they are integers
   THashList* SortAsInt(const THashList* labels);
+  
+  // Convert the given THnSparse to a THnSparseL (able to handle numbers >= 2^31)
+  void ConvertToTHnSparseL(THnSparse* &h);
   
 private:
   
@@ -136,8 +139,9 @@ private:
   TArrayI*   fRubricsSize;    ///< maximum number of key words in the corresponding rubric
   THnSparse* fCounters;       ///< histogram of nRubrics dimensions used as n-dimensional counter
   Bool_t fWeightedCounters;   ///< use THnSparseF instead of THnSparseI
+  Bool_t fLongCounters;       ///< use THnSparseL instead of THnSparseI
   
-  ClassDef(AliCounterCollection, 2); // collection of mergeable counters
+  ClassDef(AliCounterCollection, 3); // collection of mergeable counters
 };
 
 #endif
