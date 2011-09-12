@@ -548,17 +548,15 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   // factor of 2! :-(
   Bool_t offline  = ih->IsEventSelected() ;
   Bool_t fastonly = (ih->IsEventSelected() & AliVEvent::kFastOnly);
-  //If we have the MC input handler,  this must be MC
   TString trigStr = esd->GetFiredTriggerClasses();
   
-  AliMCEventHandler* mch =  static_cast<AliMCEventHandler*>(am->GetMCtruthEventHandler());
-  Bool_t isMC = false;
-  if(mch) isMC = true;
+  //If we have the MC input handler,  this must be MC
+  Bool_t isMC = am->GetMCtruthEventHandler() != 0;
+
   // For the 2.76 TeV p+p run, the FMD ran in the slow partition 
   // so it received no triggers from the fast partition. Therefore
   // the fast triggers are removed here but not for MC where all 
   // triggers are fast.
-  
   if(TMath::Abs(fEnergy - 2750.) < 20 && 
      fCollisionSystem == AliForwardUtil::kPP &&
      !isMC)
