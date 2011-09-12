@@ -87,30 +87,30 @@ class AliHLTIndexGrid {
     return xindex*fDimY*fDimZ + yindex*fDimZ + zindex;
   }
   T GetLowerBoundX(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     int index=cell/(fDimY*fDimZ);
     return index*fStepX;
   }
   T GetCenterX(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     return GetLowerBoundX(cell)+fStepX/2;
   }
   T GetLowerBoundY(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     int index=cell%(fDimY*fDimZ); index/=fDimZ;
     return index*fStepY;
   }
   T GetCenterY(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     return GetLowerBoundY(cell)+fStepY/2;
   }
   T GetLowerBoundZ(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     int index=cell%(fDimY*fDimZ); index%=fDimZ;
     return index*fStepZ;
   }
   T GetCenterZ(int cell) const {
-    if (fDimX==0 || fDimY==0 ||fDimZ==0) return 0.;
+    if (fDimX==0 || fDimY==0 ||fDimZ==0) return (T)0;
     return GetLowerBoundZ(cell)+fStepZ/2;
   }
   int GetCellIndex(T x, T y, T z) const {
@@ -247,8 +247,8 @@ class AliHLTIndexGrid {
     // get the range end position
     int endCell=cell+1;
     if (x<0) endCell=fCellDimension;
-    else if (y<0) endCell=GetCellIndex(x+fStepX, -1., -1.); // all entries for fixed x
-    else if (z<0) endCell=GetCellIndex(x, y+fStepY, -1.); // all entries for fixed x and y
+    else if (y<0) endCell=GetCellIndex(x+fStepX, (T)-1, (T)-1); // all entries for fixed x
+    else if (z<0) endCell=GetCellIndex(x, y+fStepY, (T)-1); // all entries for fixed x and y
     if (endCell<=cell) {
       // cell index returned is never outside the array
       // so this is a special case where we get to the bounds of the array
