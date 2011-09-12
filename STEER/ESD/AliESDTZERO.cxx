@@ -44,13 +44,14 @@ AliESDTZERO::AliESDTZERO() :
   for(int i = 0;i<24;i++) {
     fT0time[i] = fT0amplitude[i] = 0;
     for(Int_t iHit=0; iHit<5; iHit++) {
-      fTimeFull[i][iHit] = 0;   
-      fOrA[iHit] = 0; 
-      fOrC[iHit] = 0;  
-      fTVDC[iHit] = 0; 
+      fTimeFull[i][iHit] = -9999;   
+      if (i==0) fOrA[iHit] = -9999; 
+      if (i==0)fOrC[iHit] = -9999;  
+      if (i==0) fTVDC[iHit] = -9999; 
     }
   }
-  for(int i = 0;i<3;i++) fT0TOF[i]=0;
+  for(Int_t iHit=0; iHit<6; iHit++) fPileupTime[iHit]= -9999;
+  for(int i = 0;i<3;i++) fT0TOF[i] = -9999;
 }
 //______________________________________________________________________________
 AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
@@ -67,15 +68,15 @@ AliESDTZERO::AliESDTZERO(const AliESDTZERO &tzero ) :
 {
   // copy constuctor
   for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
-
+  for(int iHit=0; iHit<6; iHit++)  fPileupTime[iHit] = tzero.fPileupTime[iHit]; 
   for(int i = 0;i<24;i++){
     fT0time[i] = tzero.fT0time[i]; 
     fT0amplitude[i] = tzero.fT0amplitude[i];
     for(Int_t iHit=0; iHit<5; iHit++) {
       fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
-      fOrA[iHit] = tzero.fOrA[iHit]; 
-      fOrC[iHit] = tzero.fOrC[iHit];  
-      fTVDC[iHit] = tzero.fTVDC[iHit]; 
+     if (i==0)  fOrA[iHit] = tzero.fOrA[iHit]; 
+     if (i==0)  fOrC[iHit] = tzero.fOrC[iHit];  
+     if (i==0)  fTVDC[iHit] = tzero.fTVDC[iHit]; 
     }
   }
 }
@@ -94,15 +95,16 @@ AliESDTZERO& AliESDTZERO::operator=(const AliESDTZERO& tzero){
     fMultA = tzero.fMultA;
     fT0trig = tzero.fT0trig;
     for(int i = 0;i<3;i++) fT0TOF[i] = tzero.fT0TOF[i];
+    for(int iHit=0; iHit<6; iHit++)  fPileupTime[iHit] = tzero.fPileupTime[iHit]; 
     for(int i = 0;i<24;i++){
       fT0time[i] = tzero.fT0time[i]; 
       fT0amplitude[i] = tzero.fT0amplitude[i];
       for(Int_t iHit=0; iHit<5; iHit++) {
 	fTimeFull[i][iHit] = tzero.fTimeFull[i][iHit];   
-	fOrA[iHit] = tzero.fOrA[iHit]; 
-	fOrC[iHit] = tzero.fOrC[iHit];  
-	fTVDC[iHit] = tzero.fTVDC[iHit]; 
-      }
+	if (i==0) 	fOrA[iHit] = tzero.fOrA[iHit]; 
+	if (i==0) 	fOrC[iHit] = tzero.fOrC[iHit];  
+	if (i==0) 	fTVDC[iHit] = tzero.fTVDC[iHit]; 
+    }
    }
   } 
   return *this;
@@ -127,15 +129,15 @@ void AliESDTZERO::Reset()
 {
   // reset contents
   fT0clock=0;
-  fT0zVertex = 0;  
+  fT0zVertex = -9999;  
   fT0timeStart = 0;
   for(int i = 0;i<24;i++) {
     fT0time[i] = fT0amplitude[i] =  0;
-    for(Int_t iHit=0; iHit<5; iHit++)  fTimeFull[i][iHit] = -10000;
+    for(Int_t iHit=0; iHit<5; iHit++)  fTimeFull[i][iHit] = -9999;
   }
-  for(Int_t iHit=0; iHit<5; iHit++) fOrA[iHit] = fOrC[iHit] = fTVDC[iHit] = -10000; 
-
-  for(int i = 0;i<3;i++) fT0TOF[i] = 0;
+  for(Int_t iHit=0; iHit<5; iHit++) fOrA[iHit] = fOrC[iHit] = fTVDC[iHit] = -9999; 
+  for(Int_t iHit=0; iHit<6; iHit++) fPileupTime[iHit]= -9999;
+  for(int i = 0;i<3;i++) fT0TOF[i] = -9999;
 }
 
 //______________________________________________________________________________
