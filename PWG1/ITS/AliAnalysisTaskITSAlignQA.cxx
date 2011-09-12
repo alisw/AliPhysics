@@ -469,7 +469,7 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
       //
       double cf = modSide[ip] ? 1.e4:-1.e4;
-      double xMeas = cf*xLocSDD[0];            // measured coordinate in microns
+      double xMeas = cf*xLocSDD[ip];            // measured coordinate in microns
       double xRes  = cf*resLoc[0];             // X residual in microns
       double xDriftTrue  = 3.5085e4 - (xMeas + xRes);   // "true" drift distance
       //
