@@ -127,11 +127,11 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t /*rho*/)
   /* get material budget from tracker */
   AliTracker::MeanMaterialBudget(start, end, mparam);
   Double_t xTimesRho = mparam[4]*mparam[0];
+  if (oldX < xk) { // CZ
+    xTimesRho = -xTimesRho; // it should be negative in case of outward
+                            // propagation (--> energy decreases)
+  } // CZ
   Double_t xOverX0   = mparam[1];
-
-  if (oldX < xk) {
-	  xTimesRho = -xTimesRho;  // should be negative in case of outward propagation (--> energy decreases)
-  }
 
   /* correct for mean material */
   if (!AliExternalTrackParam::CorrectForMeanMaterial(xOverX0,xTimesRho,GetMass())) return kFALSE;
@@ -159,6 +159,73 @@ Bool_t AliTOFtrack::PropagateTo(Double_t xk,Double_t /*x0*/,Double_t /*rho*/)
 
 //_____________________________________________________________________________
 Bool_t AliTOFtrack::PropagateToInnerTOF()
+{
+  // Propagates a track of particle with mass=pm to a reference plane 
+  // defined by x=xk through media of density=rho and radiationLength=x0
+
+  //const Double_t kAlphac  = TMath::Pi()/9.0; // 20 degree
+  const Double_t kAlphac  = AliTOFGeometry::GetAlpha(); // 20 degree
+  const Double_t kTalphac = TMath::Tan(kAlphac*0.5);
+
+  //const Double_t kStepSize = 0.1; // [cm] Step size
+  const Double_t kStepSize = 0.5; // [cm] Step size
+
+  Double_t x = GetX();
+  //Double_t bz = GetBz();
+
+  //Double_t xyz0[3];
+  //Double_t xyz1[3];
+  //Double_t y;
+  //Double_t z;
+
+  Int_t nsteps = (Int_t)((AliTOFGeometry::Rmin()-x)/kStepSize);
+  for (Int_t istep=0; istep<nsteps; istep++){
+
+    // Critical alpha  - cross sector indication
+
+    Double_t dir = (GetX() > AliTOFGeometry::Rmin()) ? -1.0 : 1.0;
+
+    x = GetX()+dir*kStepSize;
+    if ( x<GetX() && GetX()<AliTOFGeometry::Rmin()) {
+      AliDebug(1,Form("Track doesn't reach rho=%f",AliTOFGeometry::Rmin()));
+      return kFALSE;
+    }
+
+    //GetXYZ(xyz0);
+    //bz = GetBz();
+    //GetXYZAt(x,bz,xyz1);
+    //AliExternalTrackParam::GetYAt(x,bz,y);
+    //AliExternalTrackParam::GetZAt(x,bz,z);
+ 
+    PropagateTo(x,0.,0.); /* passing 0.,0. as arguments since now
+			      this method queries TGeo for material budget
+			   */
+    
+    if (GetY() >  GetX()*kTalphac)
+      Rotate(kAlphac);
+    else if (GetY() < -GetX()*kTalphac)
+      Rotate(-kAlphac);
+
+  }
+
+  //Bool_t check = PropagateTo(AliTOFGeometry::RinTOF());
+  Bool_t check = PropagateTo(AliTOFGeometry::RinTOF(),0.,0.); /* passing 0.,0. as arguments since now
+								 this method queries TGeo for material budget
+							      */
+
+  if (!check) return kFALSE;
+
+  if (GetY() >  GetX()*kTalphac)
+    Rotate(kAlphac);
+  else if (GetY() < -GetX()*kTalphac)
+    Rotate(-kAlphac);
+
+  return kTRUE;
+  
+}     
+
+//_____________________________________________________________________________
+Bool_t AliTOFtrack::PropagateToInnerTOFold()
 {
   // Propagates a track of particle with mass=pm to a reference plane 
   // defined by x=xk through media of density=rho and radiationLength=x0
@@ -225,7 +292,14 @@ Bool_t AliTOFtrack::PropagateTo(const AliCluster3D *c) {
 			     (GetZ()-oldZ)*(GetZ()-oldZ));
     if (GetX()<oldX) d=-d;
     AddTimeStep(d);
+
   }
+
+  if (GetY() >  GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha()))
+    Rotate(AliTOFGeometry::GetAlpha());
+  else if (GetY() < -GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha()))
+    Rotate(-AliTOFGeometry::GetAlpha());
+
   return kTRUE;
 }
 //_________________________________________________________________________

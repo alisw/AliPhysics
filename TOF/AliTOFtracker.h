@@ -42,24 +42,25 @@ class AliTOFtrackPoint : public TObject {
 
   AliTOFtrackPoint() :
     fIndex(0),fDistance(0),fDistanceZ(0),
-    fDistanceY(0),fPropRadius(0),fLength(0) { };
+    fDistanceY(0),fDistanceX(0),fPropRadius(0),fLength(0) { };
   AliTOFtrackPoint(Int_t index,Float_t dist,Float_t distZ,
-		   Float_t distY,Float_t radius,Float_t length) :
+		   Float_t distY,Float_t distX,Float_t radius,Float_t length) :
     TObject(),
     fIndex(index),fDistance(dist),fDistanceZ(distZ),
-    fDistanceY(distY),fPropRadius(radius),fLength(length) { };
+    fDistanceY(distY),fDistanceX(distX),fPropRadius(radius),fLength(length) { };
   AliTOFtrackPoint(const AliTOFtrackPoint & source) :
     TObject(source),
     fIndex(source.fIndex),
     fDistance(source.fDistance),
     fDistanceZ(source.fDistanceZ),
     fDistanceY(source.fDistanceY),
+    fDistanceX(source.fDistanceX),
     fPropRadius(source.fPropRadius),
     fLength(source.fLength) { };
   AliTOFtrackPoint & operator=(const AliTOFtrackPoint & source)
     { if (this == &source) return *this;
       TObject::operator=(source);
-      fDistance=source.fDistance;fDistanceZ=source.fDistanceZ;fDistanceY=source.fDistanceY;
+      fDistance=source.fDistance;fDistanceZ=source.fDistanceZ;fDistanceY=source.fDistanceY;fDistanceX=source.fDistanceX;
       fPropRadius=source.fPropRadius;fLength=source.fLength;
       return *this; };
 
@@ -67,6 +68,7 @@ class AliTOFtrackPoint : public TObject {
   Float_t Distance()  const {return fDistance;} // distance
   Float_t DistanceZ() const {return fDistanceZ;} // distance, Z component
   Float_t DistanceY() const {return fDistanceY;} // distance, Y  component
+  Float_t DistanceX() const {return fDistanceX;} // distance, X  component
   Float_t PropRadius() const {return fPropRadius;} // propagation radius at TOF
   Float_t Length() const {return fLength;} // reconstructed track length at TOF
 
@@ -76,10 +78,11 @@ class AliTOFtrackPoint : public TObject {
   Float_t fDistance; // track-cluster distance
   Float_t fDistanceZ; //  Z component of track-cluster distance
   Float_t fDistanceY; //  Y component of track-cluster distance
+  Float_t fDistanceX; //  X component of track-cluster distance
   Float_t fPropRadius; // track propagation radius
   Float_t fLength; // receonstructed track length
 
-  //ClassDef(AliTOFtrackPoint, 1) // TOF matchable cluster
+  //ClassDef(AliTOFtrackPoint, 2) // TOF matchable cluster
 
 }; 
 

@@ -305,6 +305,7 @@ void AliTOFtrackerV1::CollectESD() {
    //prepare the set of ESD tracks to be matched to clusters in TOF
 
   Int_t seedsTOF1=0;
+  Int_t seedsTOF3=0;
   Int_t seedsTOF2=0;
  
   TClonesArray &aTOFTrack = *fTracks;
@@ -316,26 +317,57 @@ void AliTOFtrackerV1::CollectESD() {
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Float_t x = (Float_t)track->GetX(); //New
 
-    // TRD 'good' tracks, already propagated at 371 cm
-    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) && 
-	 ( x >= AliTOFGeometry::Rmin() ) ) {
-      if ( track->PropagateToInnerTOF() ) {
+    // TRD 'good' tracks
+    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) )  {
 
-	AliDebug(1,Form(" TRD propagated track till rho = %fcm."
-			" And then the track has been propagated till rho = %fcm.",
-			x, (Float_t)track->GetX()));
+      AliDebug(1,Form(" Before propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
 
-	track->SetSeedIndex(i);
-	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
-	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
-	fNseedsTOF++;
-	seedsTOF1++;
+      // TRD 'good' tracks, already propagated at 371 cm
+      if ( x >= AliTOFGeometry::Rmin() ) {
+
+	if ( track->PropagateToInnerTOF() ) {
+
+	  AliDebug(1,Form(" TRD propagated track till rho = %fcm."
+			  " And then the track has been propagated till rho = %fcm.",
+			  x, (Float_t)track->GetX()));
+
+	  track->SetSeedIndex(i);
+	  t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	  new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	  fNseedsTOF++;
+	  seedsTOF1++;
+
+	  AliDebug(1,Form(" After propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+	}
+	delete track;
+
       }
-      delete track;
+      else { // TRD 'good' tracks, propagated rho<371cm
+
+	if  ( track->PropagateToInnerTOF() ) {
+
+	  AliDebug(1,Form(" TRD propagated track till rho = %fcm."
+			  " And then the track has been propagated till rho = %fcm.",
+			  x, (Float_t)track->GetX()));
+
+	  track->SetSeedIndex(i);
+	  t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	  new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	  fNseedsTOF++;
+	  seedsTOF3++;
+
+	  AliDebug(1,Form(" After propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+	}
+	delete track;
+
+      }
+
     }
 
-    // Propagate the rest of TPCbp
-    else {
+    else { // Propagate the rest of TPCbp
+
+      AliDebug(1,Form(" Before propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+
       if ( track->PropagateToInnerTOF() ) {
 
 	AliDebug(1,Form(" TRD propagated track till rho = %fcm."
@@ -352,7 +384,7 @@ void AliTOFtrackerV1::CollectESD() {
     }
   }
 
-  AliInfo(Form("Number of TOF seeds = %d (Type 1 = %d, Type 2 = %d)",fNseedsTOF,seedsTOF1,seedsTOF2));
+  AliInfo(Form("Number of TOF seeds = %d (kTRDout371 = %d, kTRDoutLess371 = %d, !kTRDout = %d)",fNseedsTOF,seedsTOF1,seedsTOF3,seedsTOF2));
 
   // Sort according uncertainties on track position 
   fTracks->Sort();
@@ -449,11 +481,15 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     //start propagation: go to the average TOF pad middle plane at ~379.5 cm
 
-    Float_t  xTOF = sensRadius;
+    // First of all, propagate the track...
+    Float_t xTOF = sensRadius;
+    if(!trackTOFin->PropagateTo(xTOF)) {
+      break;
+    }
+
+    // ...and then, if necessary, rotate the track
     Double_t ymax = xTOF*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
-    Bool_t skip = kFALSE;
-    Double_t ysect = trackTOFin->GetYat(xTOF,skip);
-    if (skip) break;
+    Double_t ysect = trackTOFin->GetY();
     if (ysect > ymax) {
       if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
 	break;
@@ -462,9 +498,6 @@ void AliTOFtrackerV1::MatchTracks( ){
       if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
 	break;
       }
-    }
-    if(!trackTOFin->PropagateTo(xTOF)) {
-      break;
     }
 
 
@@ -517,6 +550,19 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     //Propagate the track to the best matched cluster
     trackTOFin->PropagateTo(bestCluster);
+
+    // If necessary, rotate the track
+    Double_t yATxMax = trackTOFin->GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+    Double_t yATx = trackTOFin->GetY();
+    if (yATx > yATxMax) {
+      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
+	break;
+      }
+    } else if (yATx <-yATxMax) {
+      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
+	break;
+      }
+    }
 
     // Fill the track residual histograms.
     FillResiduals(trackTOFin,bestCluster,kFALSE);
@@ -826,16 +872,17 @@ void AliTOFtrackerV1::SaveCheckHists() {
   //write histos for Digits/Reco QA and Calibration
 
   TDirectory *dir = gDirectory;
-  TFile *logFile = 0;
+  //TFile *logFile = 0;
   TFile *logFileTOF = 0;
 
   TSeqCollection *list = gROOT->GetListOfFiles();
   int n = list->GetEntries();
+  /*
   for(int i=0; i<n; i++) {
     logFile = (TFile*)list->At(i);
     if (strstr(logFile->GetName(), "AliESDs.root")) break;
   }
-
+  */
   Bool_t isThere=kFALSE;
   for(int i=0; i<n; i++) {
     logFileTOF = (TFile*)list->At(i);
@@ -849,7 +896,8 @@ void AliTOFtrackerV1::SaveCheckHists() {
 	  AliError(Form("File TOFQA.root not found!! not wring histograms...."));
 	  return;
   }
-  logFile->cd();
+  //logFile->cd();
+  logFileTOF->cd();
   fHDigClusMap->Write(fHDigClusMap->GetName(), TObject::kOverwrite);
   fHDigNClus->Write(fHDigNClus->GetName(), TObject::kOverwrite);
   fHDigClusTime->Write(fHDigClusTime->GetName(), TObject::kOverwrite);
@@ -861,7 +909,8 @@ void AliTOFtrackerV1::SaveCheckHists() {
   fHRecSigZVsP->Write(fHRecSigZVsP->GetName(), TObject::kOverwrite);
   fHRecSigYVsPWin->Write(fHRecSigYVsPWin->GetName(), TObject::kOverwrite);
   fHRecSigZVsPWin->Write(fHRecSigZVsPWin->GetName(), TObject::kOverwrite);
-  logFile->Flush();  
+  //logFile->Flush();  
+  logFileTOF->Flush();  
 
   dir->cd();
 

@@ -90,15 +90,15 @@ AliTOFtracker::AliTOFtracker():
   fExpTimePi(-1.),
   fExpTimeKa(-1.),
   fExpTimePr(-1.)
- { 
+{
   //AliTOFtracker main Ctor
-   
-   for (Int_t ii=0; ii<kMaxCluster; ii++) fClusters[ii]=0x0;
 
-   // Gettimg the geometry 
-   fGeom= new AliTOFGeometry();
+  for (Int_t ii=0; ii<kMaxCluster; ii++) fClusters[ii]=0x0;
 
-   InitCheckHists();
+  // Getting the geometry
+  fGeom = new AliTOFGeometry();
+
+  InitCheckHists();
 
 }
 //_____________________________________________________________________________
@@ -332,6 +332,7 @@ void AliTOFtracker::CollectESD() {
    //prepare the set of ESD tracks to be matched to clusters in TOF
 
   Int_t seedsTOF1=0;
+  Int_t seedsTOF3=0;
   Int_t seedsTOF2=0;
  
   TClonesArray &aTOFTrack = *fTracks;
@@ -343,26 +344,57 @@ void AliTOFtracker::CollectESD() {
     AliTOFtrack *track = new AliTOFtrack(*t); // New
     Float_t x = (Float_t)track->GetX(); //New
 
-    // TRD 'good' tracks, already propagated at 371 cm
-    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) &&
-	 ( x >= AliTOFGeometry::Rmin() ) ) {
-      if  ( track->PropagateToInnerTOF() ) {
+    // TRD 'good' tracks
+    if ( ( (t->GetStatus()&AliESDtrack::kTRDout)!=0 ) ) {
 
-	AliDebug(1,Form(" TRD propagated track till rho = %fcm."
-			" And then the track has been propagated till rho = %fcm.",
-			x, (Float_t)track->GetX()));
+      AliDebug(1,Form(" Before propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
 
-	track->SetSeedIndex(i);
-	t->UpdateTrackParams(track,AliESDtrack::kTOFin);
-	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
-	fNseedsTOF++;
-	seedsTOF1++;
+      // TRD 'good' tracks, already propagated at 371 cm
+      if( x >= AliTOFGeometry::Rmin() ) {
+
+	if  ( track->PropagateToInnerTOF() ) {
+
+	  AliDebug(1,Form(" TRD propagated track till rho = %fcm."
+			  " And then the track has been propagated till rho = %fcm.",
+			  x, (Float_t)track->GetX()));
+
+	  track->SetSeedIndex(i);
+	  t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	  new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	  fNseedsTOF++;
+	  seedsTOF1++;
+
+	  AliDebug(1,Form(" After propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+	}
+	delete track;
+
       }
-      delete track;
+      else { // TRD 'good' tracks, propagated rho<371cm
+
+	if  ( track->PropagateToInnerTOF() ) {
+
+	  AliDebug(1,Form(" TRD propagated track till rho = %fcm."
+			  " And then the track has been propagated till rho = %fcm.",
+			  x, (Float_t)track->GetX()));
+
+	  track->SetSeedIndex(i);
+	  t->UpdateTrackParams(track,AliESDtrack::kTOFin);
+	  new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
+	  fNseedsTOF++;
+	  seedsTOF3++;
+
+	  AliDebug(1,Form(" After propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+	}
+	delete track;
+
+      }
+      //delete track;
     }
 
-    // Propagate the rest of TPCbp  
-    else {
+    else { // Propagate the rest of TPCbp
+
+      AliDebug(1,Form(" Before propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
+
       if ( track->PropagateToInnerTOF() ) { 
 
 	AliDebug(1,Form(" TPC propagated track till rho = %fcm."
@@ -374,25 +406,27 @@ void AliTOFtracker::CollectESD() {
  	new(aTOFTrack[fNseedsTOF]) AliTOFtrack(*track);
 	fNseedsTOF++;
 	seedsTOF2++;
+
+	AliDebug(1,Form(" After propagation till inner TOF radius, ESDtrackLength=%f, TOFtrackLength=%f",t->GetIntegratedLength(),track->GetIntegratedLength()));
       }
       delete track;
     }
   }
 
-  AliInfo(Form("Number of TOF seeds = %d (Type 1 = %d, Type 2 = %d)",fNseedsTOF,seedsTOF1,seedsTOF2));
+  AliInfo(Form("Number of TOF seeds = %d (kTRDout371 = %d, kTRDoutLess371 = %d, !kTRDout = %d)",fNseedsTOF,seedsTOF1,seedsTOF3,seedsTOF2));
 
   // Sort according uncertainties on track position 
   fTracks->Sort();
 
 }
+
 //_________________________________________________________________________
 void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
-
   // Parameters used/regulating the reconstruction
 
-  static Float_t corrLen=0.75;
-  static Float_t detDepth=15.3;
+  //static Float_t corrLen=0.;//0.75;
+  static Float_t detDepth=18.;
   static Float_t padDepth=0.5;
 
   const Float_t kSpeedOfLight= 2.99792458e-2; // speed of light [cm/ps]
@@ -403,10 +437,15 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   Float_t sensRadius = fkRecoParam->GetSensRadius();
   Float_t stepSize   = fkRecoParam->GetStepSize();
-  Float_t scaleFact   = fkRecoParam->GetWindowScaleFact();
+  Float_t scaleFact  = fkRecoParam->GetWindowScaleFact();
   Float_t dyMax=fkRecoParam->GetWindowSizeMaxY(); 
   Float_t dzMax=fkRecoParam->GetWindowSizeMaxZ();
   Float_t dCut=fkRecoParam->GetDistanceCut();
+  if (dCut==3. && fNseedsTOF<=10) {
+    dCut=10.;
+    AliInfo(Form("Matching window=%f, since low multiplicity event (fNseedsTOF=%d)",
+		 dCut, fNseedsTOF));
+  }
   Double_t maxChi2=fkRecoParam->GetMaxChi2TRD();
   Bool_t timeWalkCorr    = fkRecoParam->GetTimeWalkCorr();
   if(!mLastStep){
@@ -425,6 +464,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
   // Get the number of propagation steps
   Int_t nSteps=(Int_t)(detDepth/stepSize);
+  AliDebug(1,Form(" Number of steps to be done %d",nSteps));
 
   //PH Arrays (moved outside of the loop)
   Float_t * trackPos[4];
@@ -519,17 +559,26 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     AliDebug(1,Form(" Number of matchable TOF clusters for the track number %d: %d",iseed,nc));
 
+    if (nc == 0 ) {
+      fnunmatch++;
+      delete trackTOFin;
+      continue;
+    }
+
     //start fine propagation 
 
     Int_t nStepsDone = 0;
     for( Int_t istep=0; istep<nSteps; istep++){ 
 
-      Float_t xs=AliTOFGeometry::RinTOF()+istep*0.1;
-      Double_t ymax=xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+      // First of all, propagate the track...
+      Float_t xs = AliTOFGeometry::RinTOF()+istep*stepSize;
+      if(!trackTOFin->PropagateTo(xs)) {
+	break;
+      }
 
-      Bool_t skip=kFALSE;
-      Double_t ysect=trackTOFin->GetYat(xs,skip);
-      if (skip) break;
+      //  ...and then, if necessary, rotate the track
+      Double_t ymax = xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+      Double_t ysect = trackTOFin->GetY();
       if (ysect > ymax) {
 	if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
 	  break;
@@ -540,22 +589,24 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 	}
       }
 
-      if(!trackTOFin->PropagateTo(xs)) {
-	break;
-      }
-
       nStepsDone++;
+      AliDebug(2,Form(" current step %d (%d) - nStepsDone=%d",istep,nSteps,nStepsDone));
 
       // store the running point (Globalrf) - fine propagation     
 
       Double_t r[3];
       trackTOFin->GetXYZ(r);
-      trackPos[0][istep]= (Float_t) r[0];
-      trackPos[1][istep]= (Float_t) r[1];
-      trackPos[2][istep]= (Float_t) r[2];   
-      trackPos[3][istep]= trackTOFin->GetIntegratedLength();
+      trackPos[0][nStepsDone-1]= (Float_t) r[0];
+      trackPos[1][nStepsDone-1]= (Float_t) r[1];
+      trackPos[2][nStepsDone-1]= (Float_t) r[2];   
+      trackPos[3][nStepsDone-1]= trackTOFin->GetIntegratedLength();
     }
 
+
+#if 0
+    /*****************/
+    /**** OLD CODE ***/
+    /*****************/
 
     Int_t nfound = 0;
     Bool_t accept = kFALSE;
@@ -587,8 +638,8 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
 	  fTOFtrackPoints->AddLast(new AliTOFtrackPoint(clind[i],
 							TMath::Sqrt(dist3d[0]*dist3d[0] + dist3d[1]*dist3d[1] + dist3d[2]*dist3d[2]),
-							dist3d[2], dist3d[0],
-							AliTOFGeometry::RinTOF()+istep*0.1,trackPos[3][istep]));
+							dist3d[2],dist3d[0],dist3d[1],
+							AliTOFGeometry::RinTOF()+istep*stepSize,trackPos[3][istep]));
 
 	  AliDebug(2,Form(" dist3dLoc[0] = %f, dist3dLoc[1] = %f, dist3dLoc[2] = %f ",dist3d[0],dist3d[1],dist3d[2]));
 	  nfound++;
@@ -599,8 +650,110 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       if(accept &&!mLastStep)break;
     } //end for on the steps     
 
-    AliDebug(1,Form(" Number of track points for the track number %d: %d",iseed,nfound));
+    /*****************/
+    /**** OLD CODE ***/
+    /*****************/
+#endif
 
+    AliDebug(1,Form(" Number of steps done for the track number %d: %d",iseed,nStepsDone));
+
+    if ( nStepsDone == 0 ) {
+      fnunmatch++;
+      delete trackTOFin;
+      continue;
+    }
+
+    /*****************/
+    /**** NEW CODE ***/
+    /*****************/
+
+    Int_t nfound = 0;
+    Bool_t accept = kFALSE;
+    Bool_t isInside = kFALSE;
+    for (Int_t istep=0; istep<nStepsDone; istep++) {
+
+      Bool_t gotInsideCluster = kFALSE;
+      Int_t trackInsideCluster = -1;
+
+      Float_t ctrackPos[3];     
+      ctrackPos[0] = trackPos[0][istep];
+      ctrackPos[1] = trackPos[1][istep];
+      ctrackPos[2] = trackPos[2][istep];
+
+      //now see whether the track matches any of the TOF clusters            
+
+      Float_t dist3d[3]={0.,0.,0.};
+      accept = kFALSE;
+      for (Int_t i=0; i<nc; i++) {
+
+        // ***** NEW *****
+        /* check whether track was inside another cluster
+         * and in case inhibit this cluster.
+         * this will allow to only go on and add track points for
+         * that cluster where the track got inside first */
+        if (gotInsideCluster && trackInsideCluster != i) {
+	  AliDebug(2,Form(" A - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
+          continue;
+	}
+	AliDebug(2,Form(" B - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
+
+        /* check whether track is inside this cluster */
+	for (Int_t hh=0; hh<3; hh++) dist3d[hh]=0.;
+	isInside = fGeom->IsInsideThePad((TGeoHMatrix*)(&global[i]),ctrackPos,dist3d);
+
+        // ***** NEW *****
+        /* if track is inside this cluster set flags which will then
+         * inhibit to add track points for the other clusters */
+        if (isInside) {
+          gotInsideCluster = kTRUE;
+          trackInsideCluster = i;
+        }
+
+        if ( mLastStep ) {
+          Float_t yLoc = dist3d[1];
+          Float_t rLoc = TMath::Sqrt(dist3d[0]*dist3d[0]+dist3d[2]*dist3d[2]);
+          accept = (TMath::Abs(yLoc)<padDepth*0.5 && rLoc<dCut);
+          AliDebug(2," I am in the case mLastStep==kTRUE ");
+        }
+
+	//***** NEW *****
+	/* add point everytime that:
+	 * - the track is inside the cluster
+	 * - the track got inside the cluster, even when it eventually exited the cluster
+	 * - the tracks is within dCut from the cluster
+	 */
+        if (accept || isInside || gotInsideCluster) {
+
+          fTOFtrackPoints->AddLast(new AliTOFtrackPoint(clind[i],
+                                                        TMath::Sqrt(dist3d[0]*dist3d[0] + dist3d[1]*dist3d[1] + dist3d[2]*dist3d[2]),
+                                                        dist3d[2],dist3d[0],dist3d[1],
+                                                        AliTOFGeometry::RinTOF()+istep*stepSize,trackPos[3][istep]));
+
+          AliDebug(2,Form(" dist3dLoc[0] = %f, dist3dLoc[1] = %f, dist3dLoc[2] = %f ",dist3d[0],dist3d[1],dist3d[2]));
+          nfound++;
+
+	  AliDebug(2,Form(" C - istep=%d ~ %d %d ~ nfound=%d",istep,trackInsideCluster,i,nfound));
+        
+          // ***** NEW *****
+          /* do not break loop in any case
+           * if the track got inside a cluster all other clusters
+           * are inhibited */
+          //      if(accept &&!mLastStep)break;
+          
+        }//end if accept
+        
+      } //end for on the clusters
+      
+      // ***** NEW *****
+      /* do not break loop in any case
+      * if the track got inside a cluster all other clusters
+      * are inhibited but we want to go on adding track points */
+      //      if(accept &&!mLastStep)break;
+      
+    } //end for on the steps     
+
+
+    AliDebug(1,Form(" Number of track points for the track number %d: %d",iseed,nfound));
 
     if (nfound == 0 ) {
       fnunmatch++;
@@ -608,8 +761,6 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       continue;
     }
     
-    fnmatch++;
-
     // now choose the cluster to be matched with the track.
 
     Int_t idclus=-1;
@@ -618,31 +769,54 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     Float_t  mindist=1000.;
     Float_t  mindistZ=0.;
     Float_t  mindistY=0.;
-    for (Int_t iclus= 0; iclus<nfound;iclus++){
+    Float_t  mindistX=stepSize;
+    for (Int_t iclus= 0; iclus<nfound;iclus++) {
       AliTOFtrackPoint *matchableTOFcluster = (AliTOFtrackPoint*)fTOFtrackPoints->At(iclus);
-      if (matchableTOFcluster->Distance()<mindist) {
+      //if ( matchableTOFcluster->Distance()<mindist ) {
+      if ( TMath::Abs(matchableTOFcluster->DistanceX())<TMath::Abs(mindistX) &&
+	   TMath::Abs(matchableTOFcluster->DistanceX())<=stepSize ) {
 	mindist = matchableTOFcluster->Distance();
-	mindistZ = matchableTOFcluster->DistanceZ();  // Z distance in the
-						      // RF of the hit pad
-						      // closest to the
-						      // reconstructed
-						      // track
+	mindistZ = matchableTOFcluster->DistanceZ(); // Z distance in the
+						     // RF of the hit pad
+						     // closest to the
+						     // reconstructed
+						     // track
 	mindistY = matchableTOFcluster->DistanceY(); // Y distance in the
 						     // RF of the hit pad
 						     // closest to the
 						     // reconstructed
 						     // track
-      	xpos = matchableTOFcluster->PropRadius();
+	mindistX = matchableTOFcluster->DistanceX(); // X distance in the
+						     // RF of the hit pad
+						     // closest to the
+						     // reconstructed
+						     // track
+	xpos = matchableTOFcluster->PropRadius();
         idclus = matchableTOFcluster->Index();
-        recL = matchableTOFcluster->Length() + corrLen*0.5;
+        recL = matchableTOFcluster->Length();// + corrLen*0.5;
+
+	AliDebug(1,Form(" %d(%d) --- %f (%f, %f, %f), step=%f -- idclus=%d --- seed=%d, trackId=%d, trackLab=%d", iclus,nfound,
+			mindist,mindistX,mindistY,mindistZ,stepSize,idclus,iseed,track->GetSeedIndex(),track->GetLabel()));
+
       }
     } // loop on found TOF track points
 
+    if (TMath::Abs(mindistX)>stepSize && idclus!=-1) {
+      AliInfo(Form("--------Not matched --- but idclus=%d, trackId=%d, trackLab=%d",
+		   idclus,track->GetSeedIndex(),track->GetLabel()));
+      idclus=-1;
+    }
+
     if (idclus==-1) {
       AliDebug(1,Form("Reconstructed track %d doesn't match any TOF cluster", iseed));
+      fnunmatch++;
       delete trackTOFin;
       continue;
     }
+
+    AliDebug(1,"--------Matched");
+
+    fnmatch++;
 
     AliTOFcluster *c=fClusters[idclus];
 
@@ -656,7 +830,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     c->Use(); 
 
     // Track length correction for matching Step 2 
-
+    /*
     if (mLastStep) {
       Float_t rc = TMath::Sqrt(c->GetR()*c->GetR() + c->GetZ()*c->GetZ());
       Float_t rt = TMath::Sqrt(trackPos[0][70]*trackPos[0][70]
@@ -665,7 +839,7 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
       Float_t dlt=rc-rt;
       recL=trackPos[3][70]+dlt;
     }
-
+    */
     if (
 	(c->GetLabel(0)==TMath::Abs(trackTOFin->GetLabel()))
 	||
@@ -740,6 +914,15 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
     trackTOFout->PropagateTo(xpos);
+
+    // If necessary, rotate the track
+    Double_t yATxposMax=xpos*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
+    Double_t yATxpos=trackTOFout->GetY();
+    if (yATxpos > yATxposMax) {
+      trackTOFout->Rotate(AliTOFGeometry::GetAlpha());
+    } else if (yATxpos < -yATxposMax) {
+      trackTOFout->Rotate(-AliTOFGeometry::GetAlpha());
+    }
 
     // Fill the track residual histograms.
     FillResiduals(trackTOFout,c,kFALSE);
