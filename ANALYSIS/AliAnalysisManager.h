@@ -61,7 +61,8 @@ enum EAliAnalysisFlags {
    kSaveCanvases     = BIT(17),
    kExternalLoop     = BIT(18),
    kSkipTerminate    = BIT(19),
-   kUseProgressBar   = BIT(20)
+   kUseProgressBar   = BIT(20),
+   kTrueNotify       = BIT(21)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -72,7 +73,7 @@ enum EAliAnalysisFlags {
    
    // Event loop control
    virtual Int_t       GetEntry(Long64_t entry, Int_t getall = 0);
-   virtual Bool_t      Init(TTree *tree);   
+   virtual Bool_t      Init(TTree *tree);
    virtual Bool_t      Notify();
    virtual Bool_t      ProcessCut(Long64_t entry) {return Process(entry);}
    virtual Bool_t      Process(Long64_t entry);

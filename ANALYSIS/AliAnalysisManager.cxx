@@ -41,6 +41,7 @@
 #include <TCanvas.h>
 #include <TStopwatch.h>
 
+#include "AliLog.h"
 #include "AliAnalysisSelector.h"
 #include "AliAnalysisGrid.h"
 #include "AliAnalysisTask.h"
@@ -432,6 +433,7 @@ Bool_t AliAnalysisManager::Notify()
    // to the generated code, but the routine can be extended by the
    // user if needed. The return value is currently not used.
    if (!fTree) return kFALSE;
+   if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) return kFALSE;
 
    fTable.Clear("nodelete"); // clearing the hash table may not be needed -> C.L.
    if (fMode == kProofAnalysis) fIsRemote = kTRUE;
@@ -444,8 +446,10 @@ Bool_t AliAnalysisManager::Notify()
    
    if (fDebug > 1) printf("->AliAnalysisManager::Notify() file: %s\n", curfile->GetName());
    Int_t run = AliAnalysisManager::GetRunFromAlienPath(curfile->GetName());
-   if (run) SetRunFromPath(run);
-   if (fDebug > 1) printf("   ### run found from path: %d\n", run); 
+   if (run && (run != fRunFromPath)) {
+      fRunFromPath = run;
+      if (fDebug > 1) printf("   ### run found from path: %d\n", run);
+   }
    TIter next(fTasks);
    AliAnalysisTask *task;
 	
@@ -471,7 +475,7 @@ Bool_t AliAnalysisManager::Notify()
 }    
 
 //______________________________________________________________________________
-Bool_t AliAnalysisManager::Process(Long64_t entry)
+Bool_t AliAnalysisManager::Process(Long64_t)
 {
   // The Process() function is called for each entry in the tree (or possibly
   // keyed object in the case of PROOF) to be processed. The entry argument
@@ -490,18 +494,8 @@ Bool_t AliAnalysisManager::Process(Long64_t entry)
   //  The entry is always the local entry number in the current tree.
   //  Assuming that fChain is the pointer to the TChain being processed,
   //  use fChain->GetTree()->GetEntry(entry).
-   if (fDebug > 1) printf("->AliAnalysisManager::Process(%lld)\n", entry);
 
-   if (fInputEventHandler)   fInputEventHandler  ->BeginEvent(entry);
-   if (fOutputEventHandler)  fOutputEventHandler ->BeginEvent(entry);
-   if (fMCtruthEventHandler) fMCtruthEventHandler->BeginEvent(entry);
-   
-   GetEntry(entry);
-
-   if (fInputEventHandler)   fInputEventHandler  ->GetEntry();
-
-   ExecAnalysis();
-   if (fDebug > 1) printf("<-AliAnalysisManager::Process()\n");
+   // This method is obsolete. ExecAnalysis is called instead.
    return kTRUE;
 }
 
@@ -1531,7 +1525,10 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
       return -1;
    }
    if (!CheckTasks()) Fatal("StartAnalysis", "Not all needed libraries were loaded");
-   if (fDebug > 1) printf("StartAnalysis %s\n",GetName());
+   if (fDebug > 1) {
+      printf("StartAnalysis %s\n",GetName());
+      AliLog::SetGlobalLogLevel(AliLog::kInfo);
+   }   
    fMaxEntries = nentries;
    fIsRemote = kFALSE;
    TString anaType = type;
@@ -1973,6 +1970,12 @@ void AliAnalysisManager::ExecAnalysis(Option_t *option)
    static Long64_t nentries = 0;
    static TTree *lastTree = 0;
    static TStopwatch *timer = new TStopwatch();
+   // Only the first call to Process will trigger a true Notify. Other Notify
+   // coming before is ignored.
+   if (!TObject::TestBit(AliAnalysisManager::kTrueNotify)) {
+      TObject::SetBit(AliAnalysisManager::kTrueNotify);
+      Notify();
+   }   
    if (fDebug > 0) printf("MGR: Processing event #%d\n", fNcalls);
    else {
       if (fTree && (fTree != lastTree)) {
