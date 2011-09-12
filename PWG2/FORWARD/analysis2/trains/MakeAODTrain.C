@@ -119,6 +119,9 @@ protected:
     // --- Check if this is MC ---------------------------------------
     Bool_t mc = mgr->GetMCtruthEventHandler() != 0;
     
+    // --- Task to copy header information ---------------------------
+    gROOT->Macro("AddTaskCopyHeader.C");
+
     // --- Add the task ----------------------------------------------
     gROOT->Macro(Form("AddTaskForwardMult.C(%d,%d,%d,%d)", 
 		      mc, fSys, fSNN, fField));
