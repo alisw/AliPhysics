@@ -432,7 +432,7 @@ TGraph* AliDCSSensorArray::MakeGraph(TObjArray* valueSet, Bool_t keepStart){
     previousTime=val->GetTimeStamp();
     lastTime=TTimeStamp((time_t)val->GetTimeStamp(),0);
     x[out] = (val->GetTimeStamp()-time0)/kSecInHour; // give times in fractions of hours 
-    y[out] = val->GetFloat();
+    y[out] = value;
     out++;    
   }
   if (!keepStart) fStartTime=firstTime;
