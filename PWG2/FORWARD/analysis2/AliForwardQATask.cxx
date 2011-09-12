@@ -168,7 +168,7 @@ AliForwardQATask::CheckCorrections(UInt_t what) const
   //   AliFMDSharingFilter 
   //   AliFMDDensityCalculator 
   if (what & AliForwardCorrectionManager::kELossFits && !fcm.GetELossFit()) { 
-    AliFatal(Form("No energy loss fits"));
+    AliWarning("No energy loss fits");
     return false;
   }
   return true;
@@ -196,7 +196,9 @@ AliForwardQATask::ReadCorrections(const TAxis*& pe,
 		GetEventInspector().GetField(),
 		mc,
 		what)) return false;
-  if (!CheckCorrections(what)) return false;
+  if (!CheckCorrections(what)) {
+    return false;
+  }
 
   // Sett our persistency pointer 
   // fCorrManager = &fcm;
@@ -244,12 +246,14 @@ AliForwardQATask::GetESDEvent()
 	     esd->GetMagneticField(),
 	     esd->GetRunNumber());
 
-    fFirstEvent = false;
 
     if (!InitializeSubs()) {
       AliWarning("Initialisation of sub algorithms failed!");
       return 0;
     }
+    AliInfoF("Clearing first event flag from %s to false", 
+	     fFirstEvent ? "true" : "false");
+    fFirstEvent = false;
   }
   return esd;
 }
@@ -264,7 +268,10 @@ AliForwardQATask::InitializeSubs()
   const TAxis* pe = 0;
   const TAxis* pv = 0;
 
-  if (!ReadCorrections(pe,pv)) return false;
+  if (!ReadCorrections(pe,pv)) { 
+    AliWarning("Failed to read corrections");
+    return false;
+  }
 
   fHistos.Init(*pe);
 
@@ -313,6 +320,13 @@ AliForwardQATask::UserExec(Option_t*)
   AliESDEvent* esd = GetESDEvent();
   if (!esd) { 
     AliWarning("Got no ESD event");
+    return;
+  }
+  if (fFirstEvent) { 
+    // If the first event flag wasn't cleared in the above call to
+    // GetESDEvent, we should not do anything, since nothing has been
+    // initialised yet, so we opt out here (with a warning) 
+    AliWarning("Nothing has been initialized yet, opt'ing out");
     return;
   }
 
