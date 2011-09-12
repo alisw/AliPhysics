@@ -119,22 +119,18 @@ void MakeAOD(const char* esddir,
   // get offline+(A,C,E) events too
   // ps->SetSkipTriggerClassSelection(true);
   
-
-#if 0
   // Centrality 
-  if (!proof) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/Compile.C");
-    Compile("$ALICE_ROOT/PWG2/FORWARD/analysis2/AddTaskCopyHeader.C","");
-    AddTaskCopyHeader();
-  }
-#endif
   if(centrality) {
     gROOT->LoadMacro("AddTaskCentrality.C");
     AliCentralitySelectionTask* centTask = AddTaskCentrality();
     centTask->SetPass(1);
-    if(mc)
-      centTask->SetMCInput();
+    if(mc)centTask->SetMCInput();
   }
+
+  // Copy header information 
+  gROOT->LoadMacro("AddTaskCopyHeader.C");
+  AddTaskCopyHeader();
+
   // FMD 
   gROOT->LoadMacro("AddTaskForwardMult.C");
   AddTaskForwardMult(mc);
