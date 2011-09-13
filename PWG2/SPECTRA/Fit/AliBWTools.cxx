@@ -24,6 +24,8 @@ using namespace std;
 
 ClassImp(AliBWTools)
 
+TF1 * AliBWTools::fdNdptForETCalc = 0;
+
 AliBWTools::AliBWTools() {
   // ctor
 }
@@ -383,7 +385,7 @@ void AliBWTools::GetMeanDataAndExtrapolation(const TH1 * hData, TF1 * fExtrapola
   // Computes the mean of the combined data and extrapolation in a
   // given range, use data where they are available and the function
   // where data are not available
-  // ERROR is from DATA ONLY returned in this version! 
+  // ERROR from DATA ONLY is returned in this version! 
   //
   Printf("AliBWTools::GetMeanDataAndExtrapolation: WARNING from data only");
   Float_t minData    = GetLowestNotEmptyBinEdge (hData);
@@ -912,9 +914,42 @@ TGraphErrors * AliBWTools::DivideGraphByFunc(const TGraphErrors * g, const TF1 *
     Double_t x = g->GetX()[ipoint];
     Double_t ratio  = invert ? f->Eval(x)/g->GetY()[ipoint] :g->GetY()[ipoint]/f->Eval(x);
     gRatio->SetPoint     (ipoint, x, ratio);
-    gRatio->SetPointError(ipoint, 0, g->GetEY()[ipoint]/f->Eval(x));
+    if(f->Eval(x) && strcmp(g->ClassName(),"TGraphAsymmErrors")) gRatio->SetPointError(ipoint, 0, g->GetEY()[ipoint]/f->Eval(x));
     //    cout << x << " " << g->GetY()[ipoint] << " " << f->Eval(x) << endl;
     
+  }
+  gRatio->SetMarkerStyle(20);
+  //gRatio->Print();
+  return gRatio;
+
+}
+
+TGraphErrors * AliBWTools::Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2){ 
+
+  // Divides g1/g2, looks for point with very close centers
+  Int_t ipoint=0;
+  TGraphErrors * gRatio = new TGraphErrors();
+  Int_t npoint1 = g1->GetN();
+  Int_t npoint2 = g2->GetN();
+  for(Int_t ipoint1 = 0; ipoint1 < npoint1; ipoint1++){
+    Double_t x1 = g1->GetX()[ipoint1];
+    for(Int_t ipoint2 = 0; ipoint2 < npoint2; ipoint2++){
+      Double_t x2 = g2->GetX()[ipoint2];
+      if((TMath::Abs(x1-x2)/(x1+x2)*2)<0.01) {
+	Double_t ratio   = g2->GetY()[ipoint2]  ? g1->GetY()[ipoint1]/g2->GetY()[ipoint2] : 0;
+	Double_t eratio  = g2->GetY()[ipoint2]  ? 
+	  TMath::Sqrt(g1->GetEY()[ipoint1]*g1->GetEY()[ipoint1]/g1->GetY()[ipoint1]/g1->GetY()[ipoint1] + 
+		      g2->GetEY()[ipoint2]/g2->GetY()[ipoint2]/g2->GetY()[ipoint2] ) * ratio
+	  : 0;
+	gRatio->SetPoint     (ipoint, x1, ratio);
+	gRatio->SetPointError(ipoint, 0, eratio);
+	ipoint++;
+	cout << ipoint << " [" << x1 << "] " <<  g1->GetY()[ipoint1] << "/" << g2->GetY()[ipoint2] << " = " << ratio <<"+-"<<eratio<< endl;
+	
+    //    cout << x << " " << g->GetY()[ipoint] << " " << f->Eval(x) << endl;
+      }
+    
+    }
   }
   gRatio->SetMarkerStyle(20);
   //gRatio->Print();
@@ -1166,13 +1201,13 @@ void AliBWTools::GetHistoCombinedErrors(TH1 * hdest, const TH1 * h1) {
   // have the same binning
 
   Int_t nbin = hdest->GetNbinsX();
-  for(Int_t ibin = 0; ibin < nbin; ibin++){
+  for(Int_t ibin = 1; ibin <= nbin; ibin++){
     Double_t e1 = hdest->GetBinError(ibin);
     Double_t e2 = h1->GetBinError(ibin);
     hdest->SetBinError(ibin, TMath::Sqrt(e1*e1+e2*e2));
   }
   
-
+  
 }
 
 TH1F * AliBWTools::DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2) {
@@ -1270,4 +1305,41 @@ Double_t AliBWTools::DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, I
    
    if (doError) error = TMath::Sqrt(igerr2);
    return integral;
+}
+
+Double_t AliBWTools::dMtdptFunction(Double_t *x, Double_t *p) {
+
+  // Computes the dmt/dptdeta function using the dN/dpt function
+  // This is a protected function used internally by GetdMtdy to integrate dN/dpt function using mt as a weight
+  // The mass of the particle is given as p[0]
+  Double_t pt   = x[0];
+  Double_t mass = p[0]; 
+  Double_t mt = TMath::Sqrt(pt*pt + mass*mass);
+  Double_t jacobian = pt/mt;
+  if(!fdNdptForETCalc){
+    Printf("AliBWTools::dMtdptFunction: ERROR: fdNdptForETCalc not defined");
+    return 0;
+  }
+  Double_t dNdpt = fdNdptForETCalc->Eval(pt);
+  return dNdpt*mt*jacobian; // FIXME: do I have to normalize somehow?
+  
+}
+
+Double_t AliBWTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) {
+  // Computes dMtdEta integrating dN/dptdy with the proper weights and jacobian.
+  Printf("WARNING ALIBWTOOLS::GetdMtdEta: ONLY USING FUNCTION FOR THE TIME BEING");
+
+  // Assign the fiunction used internally by dMtdptFunction
+  fdNdptForETCalc = fExtrapolation;
+  // Create the function to be integrated
+  TF1 * funcdMtdPt = new TF1 ("funcdMtdPt", dMtdptFunction, 0.0, 20, 1);
+  funcdMtdPt->SetParameter(0,mass);
+  // Integrate it
+  Double_t dMtdEta = funcdMtdPt->Integral(0,100);
+  // Clean up
+  fdNdptForETCalc=0;
+  delete funcdMtdPt;
+  //return 
+  return dMtdEta;
+
 }
