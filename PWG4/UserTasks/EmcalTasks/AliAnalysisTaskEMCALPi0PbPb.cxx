@@ -12,6 +12,7 @@
 #include <TLorentzVector.h>
 #include <TNtuple.h>
 #include <TProfile.h>
+#include <TRegexp.h>
 #include <TString.h>
 #include <TVector2.h>
 #include "AliAODEvent.h"
@@ -666,7 +667,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   }
   for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
     const char *name = fTrClassNamesArr->At(i)->GetName();
-    if (trgclasses.Contains(name))
+    TRegexp regexp(name);
+    if (trgclasses.Contains(regexp))
       fHTclsBeforeCuts->Fill(1+i);
   }
 
@@ -718,7 +720,8 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   for (Int_t i = 0; i<fTrClassNamesArr->GetEntries(); ++i) {
     const char *name = fTrClassNamesArr->At(i)->GetName();
-    if (trgclasses.Contains(name))
+    TRegexp regexp(name);
+    if (trgclasses.Contains(regexp))
       fHTclsAfterCuts->Fill(1+i);
   }
 
