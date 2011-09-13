@@ -33,7 +33,6 @@
 #include "TH3F.h"
 #include "TH2F.h"
 #include "TLegend.h"
-#include "TStyle.h"
 #include <TObjString.h>
 
 //---- AliRoot system ----
@@ -56,7 +55,7 @@ ClassImp(AliAnaCalorimeterQA)
 
 //____________________________________________________________________________
 AliAnaCalorimeterQA::AliAnaCalorimeterQA() : 
-AliAnaPartCorrBaseClass(), fCalorimeter(""),           fStyleMacro(""), 
+AliAnaPartCorrBaseClass(), fCalorimeter(""),         
 fFillAllPosHisto(kFALSE),  fFillAllPosHisto2(kTRUE), 
 fFillAllTH12(kFALSE),      fFillAllTH3(kTRUE), 
 fFillAllTMHisto(kTRUE),    fFillAllPi0Histo(kTRUE),
@@ -1365,7 +1364,6 @@ void AliAnaCalorimeterQA::InitParameters()
   AddToHistogramsName("AnaCaloQA_");
   
   fCalorimeter     = "EMCAL"; //or PHOS
-  fStyleMacro      = "" ;
   fNModules        = 12; // set maximum to maximum number of EMCAL modules
   fNRCU            = 2;  // set maximum number of RCU in EMCAL per SM
   fTimeCutMin      = -1;
@@ -1386,7 +1384,6 @@ void AliAnaCalorimeterQA::Print(const Option_t * opt) const
   AliAnaPartCorrBaseClass::Print(" ");
   
   printf("Select Calorimeter %s \n",fCalorimeter.Data());
-  printf("Plots style macro  %s \n",fStyleMacro.Data()); 
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("EMCAL Min Amplitude   : %2.1f GeV/c\n", fEMCALCellAmpMin) ;
   printf("PHOS Min Amplitude    : %2.1f GeV/c\n", fPHOSCellAmpMin) ;

@@ -69,10 +69,7 @@ public:
     
   TString      GetCalorimeter()          const  { return fCalorimeter        ; }
   void         SetCalorimeter(TString calo)     { fCalorimeter = calo        ; }
-  
-  TString      GetStyleMacro()           const  { return fStyleMacro         ; }
-  void         SetStyleMacro(TString macro)     { fStyleMacro = macro        ; }
-  
+    
   void         SetNumberOfModules(Int_t nmod)   { fNModules   = nmod         ; }
   
   Double_t     GetTimeCutMin()           const  { return fTimeCutMin         ; }
@@ -109,7 +106,6 @@ public:
  private:
   
   TString  fCalorimeter ;                     // Calorimeter selection
-  TString  fStyleMacro  ;                     // Location of macro for plots style
   Bool_t   fFillAllPosHisto;                  // Fill all the position related histograms 
   Bool_t   fFillAllPosHisto2;                 // Fill all the position related histograms 2
   Bool_t   fFillAllTH12 ;                     // Fill simple histograms which information is already in TH3 histograms
@@ -145,9 +141,9 @@ public:
   TH2F *   fhNCellsPerClusterMIP;             //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search.
   TH2F *   fhNCellsPerClusterMIPCharged;      //! N cells per cluster vs cluster energy vs eta of cluster, finer fixed pT bin for MIP search, cluster matched with track.	
   
-  TH2F *   fhNCellsvsClusterMaxCellDiffE0;      //! N cells per cluster vs cluster energy minus max cell, E < 2 GeV	
-  TH2F *   fhNCellsvsClusterMaxCellDiffE2;      //! N cells per cluster vs cluster energy minus max cell, 2< E < 6	GeV
-  TH2F *   fhNCellsvsClusterMaxCellDiffE6;      //! N cells per cluster vs cluster energy minus max cell, E > 6 GeV	
+  TH2F *   fhNCellsvsClusterMaxCellDiffE0;    //! N cells per cluster vs cluster energy minus max cell, E < 2 GeV	
+  TH2F *   fhNCellsvsClusterMaxCellDiffE2;    //! N cells per cluster vs cluster energy minus max cell, 2< E < 6	GeV
+  TH2F *   fhNCellsvsClusterMaxCellDiffE6;    //! N cells per cluster vs cluster energy minus max cell, E > 6 GeV	
   
   TH1F *   fhNClusters;                       //! Number of clusters
 
