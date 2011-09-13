@@ -1411,11 +1411,8 @@ Bool_t  AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkP
   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
 
-  Float_t clsPhi = (Float_t)clsPosVec.Phi();
-  if(clsPhi<0) clsPhi+=2*TMath::Pi();
-  Float_t trkPhi = (Float_t)trkPosVec.Phi();
-  if(trkPhi<0) trkPhi+=2*TMath::Pi();
-  tmpPhi = clsPhi-trkPhi;  // track cluster matching
+  // track cluster matching
+  tmpPhi = clsPosVec.DeltaPhi(trkPosVec); // tmpPhi is between -pi and pi
   tmpEta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
 
   return kTRUE;
