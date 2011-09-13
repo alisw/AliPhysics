@@ -1034,6 +1034,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fIdMax    = id;
     cl->fEmax     = emax;
     cl->fTmax    =  cells->GetCellTime(id);
+    cl->fE2max   =  GetSecondMaxCell(clus);
     if (clus->GetDistanceToBadChannel()<10000)
       cl->fDbc    = clus->GetDistanceToBadChannel();
     if (!TMath::IsNaN(clus->GetDispersion()))
@@ -1046,6 +1047,11 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     GetSigma(clus,maxAxis,minAxis);
     clus->SetTOF(maxAxis);     // store sigma in TOF
     cl->fSig      = maxAxis;
+    Double_t sEtaEta = 0;
+    Double_t sPhiPhi = 0;
+    GetSigmaEtaEta(clus, sEtaEta, sPhiPhi);
+    cl->fSigEtaEta = sEtaEta;
+    cl->fSigPhiPhi = sPhiPhi;
     Double_t clusterEcc = 0;
     if (maxAxis > 0)
       clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
@@ -1054,8 +1060,20 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fTrIso    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
     cl->fTrIso1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 1);
     cl->fTrIso2   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
+    cl->fTrIsoD1    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1);
+    cl->fTrIso1D1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1, 1);
+    cl->fTrIso2D1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1, 2);
+    cl->fTrIsoD3    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist+0.1);
+    cl->fTrIso1D3   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist+0.1, 1);
+    cl->fTrIso2D3   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist+0.1, 2);
+    cl->fTrIsoStrip = GetTrackIsoStrip(clusterVec.Eta(), clusterVec.Phi());
     cl->fCeCore   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
     cl->fCeIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
+    cl->fCeIso1   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.10);
+    cl->fCeIso3  = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.30);
+    cl->fCeIso4x4 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 4, 4);
+    cl->fCeIso5x5 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 5, 5);
+    cl->fCeIso3x22 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 3, 22);
 
     if (fAmpInTrigger) { // fill trigger info if present
       Double_t trigpen = 0;
@@ -1101,11 +1119,13 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       }
 
       Float_t tmpR=-1, tmpZ=-1;
+      Double_t dedx = 0;
       if (!fDoTrMatGeom) {
         AliExternalTrackParam *tParam = 0;
         if (fEsdEv) {
           AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
           tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
+	  dedx = esdTrack->GetTPCsignal();
         } else 
           tParam = new AliExternalTrackParam(track);
 
@@ -1141,6 +1161,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         cl->fTrDz   = tmpZ;
         cl->fTrDr   = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
         cl->fTrEp   = clus->E()/track->P();
+	cl->fTrDedx = dedx;
         cl->fIsTrackM = 1;
       }
     }
@@ -1978,6 +1999,35 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsolation(Double_t cEta, Double_t c
   }
   return cellIsolation;
 }
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsoNxM(Double_t cEta, Double_t cPhi, Int_t N, Int_t M) const
+{
+  // Compute isolation based on cell content, in a NxM rectangle.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells; 
+  if (!cells)
+    return 0;
+
+  Double_t cellIsolation = 0;
+  Int_t ncells = cells->GetNumberOfCells();
+  for (Int_t i = 0; i<ncells; ++i) {
+    Int_t absID    = TMath::Abs(cells->GetCellNumber(i));
+    Float_t eta=-1, phi=-1;
+    fGeom->EtaPhiFromIndex(absID,eta,phi);
+    Double_t phidiff = TVector2::Phi_mpi_pi(phi-cPhi);
+    Double_t etadiff = (eta-cEta)*(eta-cEta)+phidiff*phidiff;
+    if(TMath::Abs(etadiff)/0.014>N)
+      continue;
+    if(TMath::Abs(phidiff)/0.014>M)
+      continue;
+    Double_t cellE = cells->GetAmplitude(i);
+    cellIsolation += cellE;
+  }
+  return cellIsolation;
+}
+
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellEnergy(const AliVCluster *cluster) const
@@ -2080,6 +2130,63 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(const AliVCluster *c, Double_t& sigma
   sigmaMin = TMath::Abs(Sxx + Syy - TMath::Sqrt(TMath::Abs((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy)))/2.0;
   sigmaMin = TMath::Sqrt(TMath::Abs(sigmaMin)); 
 }
+//________________________________________________________________________
+void AliAnalysisTaskEMCALPi0PbPb::GetSigmaEtaEta(const AliVCluster *c, Double_t& sEtaEta, Double_t &sPhiPhi) const
+{
+  // Calculate the (E) weighted variance along the pseudorapidity.
+  
+  sEtaEta = 0;
+  sPhiPhi = 0;
+
+  Double_t Ec  = c->E(); // cluster energy
+  if(Ec<=0)
+    return;
+
+  const Int_t ncells = c->GetNCells();
+
+  Double_t EtaC    = 0;  // cluster first moment along eta
+  Double_t PhiC    = 0;  // cluster first moment along phi
+  Double_t Setaeta = 0;  // cluster second central moment along eta
+  Double_t Sphiphi = 0;  // cluster second central moment along phi
+  Double_t w[ncells];    // weight max(0,4.5*log(E_i/Ec))
+  Double_t sumw = 0;
+  Int_t id[ncells];
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+
+  if (!cells)
+    return;
+
+  if (ncells==1)
+    return;
+
+  for(Int_t j=0; j<ncells; ++j) {
+    id[j] = TMath::Abs(c->GetCellAbsId(j));
+    Double_t cellen = cells->GetCellAmplitude(id[j]);
+    w[j] = TMath::Max(0., 4.5+TMath::Log(cellen/Ec));
+    TVector3 pos;
+    fGeom->GetGlobal(id[j],pos);
+    EtaC += w[j]*pos.Eta();
+    PhiC += w[j]*pos.Phi();
+    sumw += w[j];
+  }
+  EtaC /= sumw;
+  PhiC /= sumw;
+  
+  for(Int_t j=0; j<ncells; ++j) {
+    TVector3 pos;
+    fGeom->GetGlobal(id[j],pos);
+    Setaeta =  w[j]*(pos.Eta() - EtaC)*(pos.Eta() - EtaC);
+    Sphiphi =  w[j]*(pos.Phi() - PhiC)*(pos.Phi() - PhiC);
+  }
+  Setaeta /= sumw;
+  sEtaEta = TMath::Sqrt(Setaeta);
+  Sphiphi /= sumw;
+  sPhiPhi = TMath::Sqrt(Sphiphi);
+}
+
 
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(const AliVCluster *c, Double_t emin) const
@@ -2127,6 +2234,30 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsolation(Double_t cEta, Double_t 
   } 
   return trkIsolation;
 }
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsoStrip(Double_t cEta, Double_t cPhi, Double_t dEta, Double_t dPhi, Double_t pt) const
+{
+  // Compute isolation based on tracks.
+  
+  Double_t trkIsolation = 0;
+  Int_t ntrks = fSelPrimTracks->GetEntries();
+  for(Int_t j = 0; j<ntrks; ++j) {
+    AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
+    if (!track)
+      continue;
+    if (track->Pt()<pt)
+      continue;
+    Float_t eta = track->Eta();
+    Float_t phi = track->Phi();
+    Double_t phidiff = TVector2::Phi_mpi_pi(phi-cPhi);
+    Double_t etadiff = (eta-cEta);
+    if(TMath::Abs(etadiff)>dEta || TMath::Abs(phidiff)>dPhi)
+      continue;
+    trkIsolation += track->Pt();
+  } 
+  return trkIsolation;
+}
+
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
@@ -2322,4 +2453,32 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
       continue;
     ProcessDaughters(dmc,i,arr);
   }
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetSecondMaxCell(AliVCluster *clus)
+{
+  // Get second maximum cell.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return -1;
+ 
+  Double_t secondEmax=0, firstEmax=0;
+  Double_t cellen;
+  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
+    Int_t absId = clus->GetCellAbsId(iCell);
+    cellen = cells->GetCellAmplitude(absId);
+    if(cellen > firstEmax)
+      firstEmax = cellen;
+  }
+  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
+    Int_t absId = clus->GetCellAbsId(iCell);
+    cellen = cells->GetCellAmplitude(absId);
+    if(cellen < firstEmax && cellen > secondEmax)
+      secondEmax = cellen;
+  }
+  return secondEmax;
 }
