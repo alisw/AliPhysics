@@ -164,8 +164,14 @@ public:
   TH2F *   fhBadClusterTimeEnergy;            //! Time Max cell of bad cluster
   TH2F *   fhBadClusterPairDiffTimeE;         //! Pair of clusters time difference vs E, bad cluster
   TH2F *   fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
+  TH2F *   fhBadClusterMaxCellCloseCellDiff ; //! Difference between max cell energy and cell energy of the same cluster for bad clusters 
   TH2F *   fhBadClusterMaxCellDiff;           //! Difference between cluster energy and energy of cell with more energy
-  
+  TH2F *   fhBadClusterL0;                    //! Lambda0 for bad clusters
+  TH2F *   fhBadClusterL1;                    //! Lambda1 for bad clusters
+  TH2F *   fhBadClusterD;                     //! Dispersion for bad clusters
+
+  TH2F *   fhBadCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
+
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F *   fhXNCells ;                        //! X (cm) cluster distribution vs N cells in cluster
   TH2F *   fhYNCells ;                        //! Y (cm) cluster distribution vs N cells in cluster
