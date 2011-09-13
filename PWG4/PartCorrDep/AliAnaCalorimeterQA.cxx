@@ -67,7 +67,7 @@ fhECharged(0),             fhPtCharged(0),             fhPhiCharged(0),         
 
 //Invariant mass
 fhIM(0 ),                  fhIMCellCut(0),             fhAsym(0), 
-fhNCellsPerCluster(0),     fhNCellsPerClusterNoCut(0), fhNCellsPerClusterMIP(0),   fhNCellsPerClusterMIPCharged(0), 
+fhNCellsPerCluster(0),     fhNCellsPerClusterNoCut(0), fhNCellsPerClusterMIP(0),fhNCellsPerClusterMIPCharged(0), 
 fhNCellsvsClusterMaxCellDiffE0(0),    fhNCellsvsClusterMaxCellDiffE2(0),        fhNCellsvsClusterMaxCellDiffE6(0),
 fhNClusters(0),    
 
@@ -77,13 +77,14 @@ fhCellIdCellLargeTimeSpread(0),       fhClusterPairDiffTimeE(0),
 
 fhClusterMaxCellCloseCellRatio(0),    fhClusterMaxCellCloseCellDiff(0), 
 fhClusterMaxCellDiff(0),              fhClusterMaxCellDiffNoCut(0), 
-//fhClusterMaxCellDiffDivLambda0(0),
 fhLambda0vsClusterMaxCellDiffE0(0),   fhLambda0vsClusterMaxCellDiffE2(0),       fhLambda0vsClusterMaxCellDiffE6(0),
 
-//
 //bad cells
-fhBadClusterEnergy(0),                fhBadClusterTimeEnergy(0),            fhBadClusterPairDiffTimeE(0),
-fhBadClusterMaxCellCloseCellRatio(0), fhBadClusterMaxCellDiff(0),
+fhBadClusterEnergy(0),                fhBadClusterTimeEnergy(0),                fhBadClusterPairDiffTimeE(0),
+fhBadClusterMaxCellCloseCellRatio(0), fhBadClusterMaxCellCloseCellDiff(0),      fhBadClusterMaxCellDiff(0),
+fhBadClusterL0(0),                    fhBadClusterL1(0),                        fhBadClusterD(0),
+
+fhBadCellTimeSpreadRespectToCellMax(0),  
 
 //Position
 fhRNCells(0),              fhXNCells(0),               fhYNCells(0),            fhZNCells(0),
@@ -102,7 +103,7 @@ fhCaloV0SCorrNClusters(0), fhCaloV0SCorrEClusters(0),  fhCaloV0SCorrNCells(0),  
 fhCaloV0MCorrNClusters(0), fhCaloV0MCorrEClusters(0),  fhCaloV0MCorrNCells(0),  fhCaloV0MCorrECells(0),
 fhCaloTrackMCorrNClusters(0), fhCaloTrackMCorrEClusters(0), fhCaloTrackMCorrNCells(0), fhCaloTrackMCorrECells(0),
 //Super-Module dependent histgrams
-fhEMod(0),                 fhNClustersMod(0),          fhNCellsPerClusterMod(0),  fhNCellsPerClusterModNoCut(0), fhNCellsMod(0),  
+fhEMod(0),                 fhNClustersMod(0),          fhNCellsPerClusterMod(0),fhNCellsPerClusterModNoCut(0), fhNCellsMod(0),  
 fhGridCellsMod(0),         fhGridCellsEMod(0),         fhGridCellsTimeMod(0), 
 fhAmplitudeMod(0),         fhAmplitudeModFraction(0),  fhTimeAmpPerRCU(0), 
 //fhT0TimeAmpPerRCU(0),      fhTimeCorrRCU(0),
@@ -264,9 +265,9 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   outputContainer->Add(fhClusterMaxCellCloseCellRatio);
   
   fhClusterMaxCellCloseCellDiff  = new TH2F ("hClusterMaxCellCloseCellDiff","energy vs ratio of max cell / neighbour cell, reconstructed clusters",
-                                              nptbins,ptmin,ptmax, 200,0,10.); 
+                                              nptbins,ptmin,ptmax, 500,0,100.); 
   fhClusterMaxCellCloseCellDiff->SetXTitle("E_{cluster} (GeV) ");
-  fhClusterMaxCellCloseCellDiff->SetYTitle("E_{cell max}-E_{cell i}");
+  fhClusterMaxCellCloseCellDiff->SetYTitle("E_{cell max}-E_{cell i} (GeV)");
   outputContainer->Add(fhClusterMaxCellCloseCellDiff);
   
   fhClusterMaxCellDiff  = new TH2F ("hClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
@@ -280,13 +281,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterMaxCellDiffNoCut->SetXTitle("E_{cluster} (GeV) ");
   fhClusterMaxCellDiffNoCut->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
   outputContainer->Add(fhClusterMaxCellDiffNoCut);  
-  
-//  fhClusterMaxCellDiffDivLambda0  = new TH2F ("hClusterMaxCellDiffDivLambda0;","",
-//                                         nptbins,ptmin,ptmax, 500,0,5.); 
-//  fhClusterMaxCellDiffDivLambda0->SetXTitle("E_{cluster} (GeV) ");
-//  fhClusterMaxCellDiffDivLambda0->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster} / #lambda_{0}");
-//  outputContainer->Add(fhClusterMaxCellDiffDivLambda0);    
-  
+    
   fhLambda0vsClusterMaxCellDiffE0  = new TH2F ("hLambda0vsClusterMaxCellDiffE0","shower shape, #lambda^{2}_{0} vs fraction of energy carried by max cell, E < 2 GeV ",
                                                ssbins,ssmin,ssmax,500,0,1.); 
   fhLambda0vsClusterMaxCellDiffE0->SetYTitle("(E_{cluster} - E_{cell max})/ E_{cluster}");
@@ -330,12 +325,18 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterEnergy->SetXTitle("E_{cluster} (GeV) ");
     outputContainer->Add(fhBadClusterEnergy);
     
-    fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCell","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
+    fhBadClusterMaxCellCloseCellRatio  = new TH2F ("hBadClusterMaxCellCloseCellRatio","energy vs ratio of max cell / neighbour cell constributing cell, reconstructed bad clusters",
                                                    nptbins,ptmin,ptmax, 100,0,1.); 
     fhBadClusterMaxCellCloseCellRatio->SetXTitle("E_{cluster} (GeV) ");
     fhBadClusterMaxCellCloseCellRatio->SetYTitle("ratio");
     outputContainer->Add(fhBadClusterMaxCellCloseCellRatio);
         
+    fhBadClusterMaxCellCloseCellDiff  = new TH2F ("hBadClusterMaxCellCloseCellDiff","energy vs ratio of max cell - neighbour cell constributing cell, reconstructed bad clusters",
+                                                   nptbins,ptmin,ptmax, 500,0,100); 
+    fhBadClusterMaxCellCloseCellDiff->SetXTitle("E_{cluster} (GeV) ");
+    fhBadClusterMaxCellCloseCellDiff->SetYTitle("E_{cell max} - E_{cell i} (GeV)");
+    outputContainer->Add(fhBadClusterMaxCellCloseCellDiff);    
+    
     fhBadClusterMaxCellDiff  = new TH2F ("hBadClusterMaxCellDiff","energy vs difference of cluster energy - max cell energy / cluster energy for bad clusters",
                                                    nptbins,ptmin,ptmax, 500,0,1.); 
     fhBadClusterMaxCellDiff->SetXTitle("E_{cluster} (GeV) ");
@@ -352,7 +353,32 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterPairDiffTimeE->SetXTitle("E_{bad cluster} (GeV)");
     fhBadClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhBadClusterPairDiffTimeE);    
-      
+    
+    fhBadClusterL0  = new TH2F ("hBadClusterL0","shower shape, #lambda^{2}_{0} vs E for bad cluster ",
+                                                 nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhBadClusterL0->SetXTitle("E_{cluster}");
+    fhBadClusterL0->SetYTitle("#lambda^{2}_{0}");
+    outputContainer->Add(fhBadClusterL0); 
+    
+    fhBadClusterL1  = new TH2F ("hBadClusterL1","shower shape, #lambda^{2}_{1} vs E for bad cluster ",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhBadClusterL1->SetXTitle("E_{cluster}");
+    fhBadClusterL1->SetYTitle("#lambda^{2}_{1}");
+    outputContainer->Add(fhBadClusterL1); 
+    
+    fhBadClusterD  = new TH2F ("hBadClusterD","shower shape, Dispersion^{2} vs E for bad cluster ",
+                                     nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhBadClusterD->SetXTitle("E_{cluster}");
+    fhBadClusterD->SetYTitle("Dispersion^{2}");
+    outputContainer->Add(fhBadClusterD);     
+    
+    if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+      fhBadCellTimeSpreadRespectToCellMax = new TH2F ("hBadCellTimeSpreadRespectToCellMax","t_{cell max}-t_{cell i} per cluster", nptbins,ptmin,ptmax, 250,-500,500); 
+      fhBadCellTimeSpreadRespectToCellMax->SetXTitle("E (GeV)");
+      fhBadCellTimeSpreadRespectToCellMax->SetYTitle("#Delta t_{cell max - i} (ns)");
+      outputContainer->Add(fhBadCellTimeSpreadRespectToCellMax);
+    }    
+    
   }
   
   //Track Matching
@@ -1629,9 +1655,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       Bool_t badCluster = kFALSE;
       if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster()){
         //Bad clusters histograms
-        //Float_t minNCells = TMath::Max(1,TMath::Nint(1 + TMath::Log(clus->E() - 5 )*1.5 ));
-        //if(nCaloCellsPerCluster <= minNCells) {
-        if(clus->GetM02() < 0.05) {
+        Float_t minNCells = TMath::Max(1,TMath::FloorNint(1 + TMath::Log(clus->E() - 7 )*1.7 ));
+        if(nCaloCellsPerCluster <= minNCells) {
+        //if(clus->GetM02() < 0.05) {
 
           //if(clus->GetM02() > 0 || TMath::Abs(clus->GetM20()) > 0 || clus->GetDispersion() > 0)
           
@@ -1648,8 +1674,9 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           fhBadClusterEnergy     ->Fill(clus->E());
           fhBadClusterMaxCellDiff->Fill(clus->E(),maxCellFraction);
           fhBadClusterTimeEnergy ->Fill(clus->E(),tof);
-          //printf("bad tof : %2.3f\n",tof);
-          //if(clus->E() - emax < 0)printf("What?\n");
+          fhBadClusterL0         ->Fill(clus->E(),clus->GetM02());
+          fhBadClusterL1         ->Fill(clus->E(),clus->GetM20());
+          fhBadClusterD          ->Fill(clus->E(),clus->GetDispersion());
 
           //Clusters in event time difference
           
@@ -1677,12 +1704,18 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           
           
           for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
-            //	printf("Index %d\n",ipos);  
             absId  = indexList[ipos]; 
             if(absId!=absIdMax){
               Float_t frac = cell->GetCellAmplitude(absId)/cell->GetCellAmplitude(absIdMax);
               //printf("bad frac : %2.3f, e %2.2f, ncells %d, min %2.1f\n",frac,mom.E(),nCaloCellsPerCluster,minNCells);
               fhBadClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
+              
+              fhBadClusterMaxCellCloseCellDiff ->Fill(mom.E(),cell->GetCellAmplitude(absIdMax)-cell->GetCellAmplitude(absId));
+              
+              if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+                Float_t diff = (tmax-cell->GetCellTime(absId)*1e9);
+                fhBadCellTimeSpreadRespectToCellMax->Fill(mom.E(), diff);
+              }              
             }
           }
         }//Bad cluster

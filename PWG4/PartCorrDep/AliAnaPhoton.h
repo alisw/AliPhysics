@@ -229,19 +229,19 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhDispLam1LowE;                  //! cluster disp vs lambda1, E<2
   TH2F * fhDispLam1HighE;                 //! cluster disp vs lambda1, E>2
     
-  //Fill MC dependent histograms
-  TH1F * fhDeltaE  ;                          //! MC-Reco E distribution      
-  TH1F * fhDeltaPt ;                          //! MC-Reco pT distribution
-  TH1F * fhRatioE  ;                          //! Reco/MC E distribution      
-  TH1F * fhRatioPt ;                          //! Reco/MC pT distribution
-  TH2F * fh2E  ;                              //! E distribution, Reco vs MC
-  TH2F * fh2Pt ;                              //! pT distribution, Reco vs MC
+  //Fill MC dependent histograms, Origin of this cluster is ...
+
+  TH1F * fhMCDeltaE[14]  ;                    //! MC-Reco E distribution coming from MC particle     
+  TH1F * fhMCDeltaPt[14] ;                    //! MC-Reco pT distribution coming from MC particle
+  TH1F * fhMCRatioE[14]  ;                    //! Reco/MC E distribution coming from MC particle     
+  TH1F * fhMCRatioPt[14] ;                    //! Reco/MC pT distribution coming from MC particle
+  TH2F * fhMC2E[14]  ;                        //! E distribution, Reco vs MC coming from MC particle
+  TH2F * fhMC2Pt[14] ;                        //! pT distribution, Reco vs MC coming from MC particle
   
-  //Origin of this cluster is ...
   TH1F * fhMCE[14];                           //! Number of identified photon vs cluster energy coming from MC particle
-  TH1F * fhPtMC[14];                          //! Number of identified photon vs cluster pT     coming from MC particle
-  TH2F * fhPhiMC[14];                         //! Phi of identified photon coming from MC particle
-  TH2F * fhEtaMC[14];                         //! eta of identified photon coming from MC particle
+  TH1F * fhMCPt[14];                          //! Number of identified photon vs cluster pT     coming from MC particle
+  TH2F * fhMCPhi[14];                         //! Phi of identified photon coming from MC particle
+  TH2F * fhMCEta[14];                         //! eta of identified photon coming from MC particle
 
   TH1F * fhEPrimMC[7];                        //! Number of generated photon vs energy
   TH1F * fhPtPrimMC[7];                       //! Number of generated photon vs pT   
