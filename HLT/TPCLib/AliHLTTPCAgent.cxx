@@ -78,6 +78,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
 #include "AliHLTTPCDataCompressionComponent.h"
+#include "AliHLTTPCDataCompressionMonitorComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -118,6 +119,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     int iMinPart=0;
     int iMaxPart=5;
     TString mergerInput;
+    TString sinkRawData;
     TString sinkClusterInput;
     TString sinkHWClusterInput;
     TString dEdXInput;
@@ -141,6 +143,9 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 	  arg.Form("-slice %d -partition %d", slice, part);
 	  handler->CreateConfiguration(publisher.Data(), "TPCDigitPublisher", NULL , arg.Data());
 	}
+
+	if (sinkRawData.Length()>0) sinkRawData+=" ";
+	sinkRawData+=publisher;
 
 	// cluster finder components
 	cf.Form("TPC-CF_%02d_%d", slice, part);
@@ -213,6 +218,11 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-raw-clusters", "BlockFilter"   , sinkClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
     handler->CreateConfiguration("TPC-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTERS' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
     handler->CreateConfiguration("TPC-raw-hwclusters", "BlockFilter"   , sinkHWClusterInput.Data(), "-datatype 'CLUSTRAW' 'TPC ' -datatype 'CLMCINFO' 'TPC '");
+
+    // raw data
+    handler->CreateConfiguration("TPC-raw-data", "BlockFilter"   , sinkRawData.Data(), "");
+
+    handler->CreateConfiguration("TPC-hwcfdata", "BlockFilter"   , compressorInput.Data(), "-datatype 'HWCLUST1' 'TPC '");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
@@ -334,6 +344,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
   pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
+  pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
   return 0;
 }
 
