@@ -106,7 +106,7 @@ public:
    */
   virtual Bool_t Calculate(const AliESDFMD& fmd, 
 			   AliForwardUtil::Histos& hists, 
-			   UShort_t vtxBin, Bool_t lowFlux);
+			   UShort_t vtxBin, Bool_t lowFlux, Double_t cent=-1);
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -126,6 +126,12 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
+    /** 
+   * Set to use the running average in Poisson 
+   * 
+   * @param use use or not
+   */
+  void SetUseRunningAverage(Bool_t use) { fUseRunningAverage = use; }
   /** 
    * Maximum particle weight to use 
    * 
@@ -440,6 +446,7 @@ protected:
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
   AliFMDMultCuts fCuts; // Cuts
+  Bool_t   fUseRunningAverage; //Use running average for Poisson
 
   ClassDef(AliFMDDensityCalculator,6); // Calculate Nch density 
 };

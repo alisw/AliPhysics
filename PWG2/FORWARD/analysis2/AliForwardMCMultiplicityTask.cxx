@@ -310,7 +310,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   UInt_t   triggers  = 0;
   UShort_t ivz       = 0;
   Double_t vz        = 0;
-  Double_t cent      = 0;
+  Double_t cent      = -1;
   UShort_t nClusters = 0;
   UInt_t   found     = fEventInspector.Process(esd, triggers, lowFlux, 
 					       ivz, vz, cent, nClusters);
@@ -385,7 +385,7 @@ AliForwardMCMultiplicityTask::UserExec(Option_t*)
   fSharingFilter.CompareResults(fESDFMD, fMCESDFMD);
 
   // Calculate the inclusive charged particle density 
-  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux)) { 
+  if (!fDensityCalculator.Calculate(fESDFMD, fHistos, ivz, lowFlux, cent)) { 
     AliWarning("Density calculator failed!");
     return;
   }

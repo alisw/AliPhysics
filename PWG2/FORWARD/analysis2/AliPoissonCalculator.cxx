@@ -39,15 +39,18 @@
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator()
   : TNamed(),
-    fEtaLumping(5), 
-    fPhiLumping(5), 
+    fEtaLumping(32), 
+    fPhiLumping(4), 
     fTotal(0), 
     fEmpty(0), 
     fBasic(0),
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0)
+    fCorr(0),
+    fTotalList(),
+    fEmptyList(),
+    fRunningAverage(false)
 {
   //
   // CTOR
@@ -55,21 +58,28 @@ AliPoissonCalculator::AliPoissonCalculator()
 }
 
 //____________________________________________________________________
-AliPoissonCalculator::AliPoissonCalculator(const char*)
+AliPoissonCalculator::AliPoissonCalculator(const char*/*, UShort_t d, Char_t r*/)
   : TNamed("poissonCalculator", "Calculate N_ch using Poisson stat"),
-    fEtaLumping(5), 
-    fPhiLumping(5), 
+    fEtaLumping(32), 
+    fPhiLumping(4), 
     fTotal(0), 
     fEmpty(0), 
     fBasic(0),
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0)
+    fCorr(0),
+    fTotalList(),
+    fEmptyList(),
+    fRunningAverage(false)
 {
   //
   // CTOR
-  // 
+  //
+  fEmptyList.SetOwner();
+  fTotalList.SetOwner();
+  
+
 }
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
@@ -82,7 +92,10 @@ AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0)
+    fCorr(0),
+    fTotalList(),
+    fEmptyList(),
+    fRunningAverage(o.fRunningAverage)
 {
   Init();
   Reset(o.fBasic);
@@ -113,21 +126,56 @@ AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
   TNamed::operator=(o);
   fEtaLumping = o.fEtaLumping;
   fPhiLumping = o.fPhiLumping;
+  fRunningAverage = o.fRunningAverage;
   CleanUp();
-  Init(-1,-1);
+  Init();
   Reset(o.fBasic);
   return *this;
 }
 
 //____________________________________________________________________
 void
-AliPoissonCalculator::Init(Int_t etaLumping, Int_t phiLumping)
+AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLumping)
 {
   // 
   // Initialize 
   // 
   if (etaLumping > 0) SetEtaLumping(etaLumping);
   if (phiLumping > 0) SetPhiLumping(phiLumping);
+  if(d > 0) {
+
+    Int_t    nEtaF   = (r == 'I' ? 512 : 256);
+    Int_t    nEta    = nEtaF / fEtaLumping;
+    Double_t etaMin  = -0.5;
+    Double_t etaMax  = nEtaF-0.5 ;
+    Int_t    nPhiF   = (r == 'I' ? 20 : 40);
+    Int_t    nPhi    = nPhiF / fPhiLumping;
+    Double_t phiMin  = -0.5;
+    Double_t phiMax  = nPhiF - 0.5;
+    
+    fBasic = new TH2D("basic", "Basic number of hits",
+		      nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
+    fBasic->SetDirectory(0);
+    fBasic->SetXTitle("#eta");
+    fBasic->SetYTitle("#varphi [radians]");
+    fBasic->Sumw2();
+    
+    for(Int_t v = 1 ; v < 11; v++)  { //CHC bins
+      for(Int_t centbin = 0 ; centbin < 13; centbin++) {
+	
+	TH2D* hTotal = new TH2D(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin),"Total number of bins/region",
+			      nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+	TH2D* hEmpty = new TH2D(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin), "Empty number of bins/region",
+				nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+	hEmpty->Sumw2();
+	hTotal->Sumw2();
+	fEmptyList.Add(hEmpty);
+	fTotalList.Add(hTotal);
+	
+      }
+    }
+  }
+  //Create diagnostics if void
   if (fEmptyVsTotal) return;
   
   Int_t n = fEtaLumping * fPhiLumping + 1;
@@ -166,8 +214,25 @@ AliPoissonCalculator::Init(Int_t etaLumping, Int_t phiLumping)
   fCorr->SetZTitle("Events");
   fCorr->SetOption("colz");
   fCorr->SetDirectory(0);
+  
+  
 }
-
+//____________________________________________________________________
+void AliPoissonCalculator::SetObject(UShort_t d, Char_t r, UShort_t v, Double_t cent) {
+  
+  Int_t centbin = 0;
+  if(cent > 0) {
+    if(cent > 0 && cent <5) centbin = 1;
+    if(cent > 5 && cent <10) centbin = 2;
+    else if (cent>10) centbin = (Int_t)(cent/10.) + 2;
+  }
+  
+  fTotal = static_cast<TH2D*>(fTotalList.FindObject(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin)));
+  fEmpty = static_cast<TH2D*>(fEmptyList.FindObject(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin)));
+  
+  return;
+  
+}
 //____________________________________________________________________
 void
 AliPoissonCalculator::Output(TList* d)
@@ -188,13 +253,15 @@ AliPoissonCalculator::Reset(const TH2D* base)
   // Reset histogram 
   // 
   if (!base) return;
-  if (fBasic && fTotal && fEmpty) {
+  if (fBasic /* && fTotal && fEmpty*/) {
     fBasic->Reset();
-    fTotal->Reset();
-    fEmpty->Reset();
+    if(!fRunningAverage) {
+      fTotal->Reset();
+      fEmpty->Reset();
+    }
     return;
   }
-  
+  /*  
   Int_t    nEtaF   = base->GetNbinsX();
   Int_t    nEta    = nEtaF / fEtaLumping;
   Double_t etaMin  = base->GetXaxis()->GetXmin();
@@ -203,31 +270,37 @@ AliPoissonCalculator::Reset(const TH2D* base)
   Int_t    nPhi    = nPhiF / fPhiLumping;
   Double_t phiMin  = base->GetYaxis()->GetXmin();
   Double_t phiMax  = base->GetYaxis()->GetXmax();
+  
 
-  fTotal = new TH2D("total", "Total number of bins/region",
-		    nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-  fEmpty = new TH2D("empty", "Empty number of bins/region",
-		    nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+  
+  
+  
+  //fTotal = new TH2D("total", "Total number of bins/region",
+  //		    nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+  //fEmpty = new TH2D("empty", "Empty number of bins/region",
+  //nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
   fBasic = new TH2D("basic", "Basic number of hits",
 		    nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
-  
-  fTotal->SetDirectory(0);
-  fEmpty->SetDirectory(0);
+    
+  //fTotal->SetDirectory(0);
+  //fEmpty->SetDirectory(0);
   fBasic->SetDirectory(0);
-  fTotal->SetXTitle("#eta");
-  fEmpty->SetXTitle("#eta");
+  //fTotal->SetXTitle("#eta");
+  //fEmpty->SetXTitle("#eta");
   fBasic->SetXTitle("#eta");
-  fTotal->SetYTitle("#varphi [radians]");
-  fEmpty->SetYTitle("#varphi [radians]");
+  //fTotal->SetYTitle("#varphi [radians]");
+  //fEmpty->SetYTitle("#varphi [radians]");
   fBasic->SetYTitle("#varphi [radians]");
-  fTotal->Sumw2();
-  fEmpty->Sumw2();
+  //fTotal->Sumw2();
+  //fEmpty->Sumw2();
   fBasic->Sumw2();
+  */
+
 }
 
 //____________________________________________________________________
 void
-AliPoissonCalculator::Fill(Double_t eta, Double_t phi, Bool_t hit, 
+AliPoissonCalculator::Fill(UShort_t strip, UShort_t sec, Bool_t hit, 
 			   Double_t weight)
 {
   // 
@@ -239,9 +312,10 @@ AliPoissonCalculator::Fill(Double_t eta, Double_t phi, Bool_t hit,
   //    hit     True if hit 
   //    weight  Weight if this 
   //
-  fTotal->Fill(eta, phi);
-  if (hit) fBasic->Fill(eta, phi, weight);
-  else     fEmpty->Fill(eta, phi);
+  
+  fTotal->Fill(strip, sec);
+  if (hit) fBasic->Fill(strip, sec, weight);
+  else     fEmpty->Fill(strip, sec);
 }
 
 //____________________________________________________________________
@@ -271,6 +345,9 @@ AliPoissonCalculator::Result()
   // Return:
   //    The result histogram (fBase overwritten)
   //
+  
+  // Double_t total = fEtaLumping * fPhiLumping;
+  
   for (Int_t ieta = 1; ieta <= fBasic->GetNbinsX(); ieta++) { 
     for (Int_t iphi = 1; iphi <= fBasic->GetNbinsY(); iphi++) { 
       Double_t eta      = fBasic->GetXaxis()->GetBinCenter(ieta);
@@ -280,10 +357,10 @@ AliPoissonCalculator::Result()
       Double_t empty    = fEmpty->GetBinContent(jeta, jphi);
       Double_t total    = fTotal->GetBinContent(jeta, jphi);
       Double_t hits     = fBasic->GetBinContent(ieta,iphi);
-
       // Mean in region of interest 
       Double_t poissonM = CalculateMean(empty, total);
       Double_t poissonC = CalculateCorrection(empty, total);
+      
       Double_t poissonV = hits * poissonM * poissonC;
       Double_t poissonE = TMath::Sqrt(poissonV);
       if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
@@ -300,7 +377,8 @@ AliPoissonCalculator::Result()
       Double_t corr     = CalculateCorrection(empty, total);
       fEmptyVsTotal->Fill(total, empty);
       fMean->Fill(mean);
-      fOcc->Fill(100 * (1 - TMath::PoissonI(0,mean)));
+      fOcc->Fill(100 * (1 - empty/total));
+      //Old fOcc->Fill(100 * (1 - TMath::PoissonI(0,mean)));
       fCorr->Fill(mean, corr);
     }
   }
