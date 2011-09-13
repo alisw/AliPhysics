@@ -1,10 +1,11 @@
 #ifndef ALIPOISSONCALCULATOR_H
 #define ALIPOISSONCALCULATOR_H
 #include <TNamed.h>
+#include <TList.h>
 class TH2D;
 class TH1D;
 class TBrowser;
-class TList;
+//class TList;
 
 /** 
  * A class to calculate the multiplicity in @f$(\eta,\varphi)@f$ bins
@@ -44,7 +45,7 @@ public:
    * Constructor 
    * 
    */
-  AliPoissonCalculator(const char*);
+  AliPoissonCalculator(const char*/*, UShort_t d, Char_t r*/);
   /** 
    * Copy constructor
    * 
@@ -71,6 +72,12 @@ public:
    */  
   void SetEtaLumping(UShort_t n) { fEtaLumping = n; } //*MENU*
   /** 
+   * Set the actual object
+   * 
+   * @param v vtxbin
+   */  
+  void SetObject(UShort_t d, Char_t r, UShort_t v, Double_t cent); //*MENU*
+  /** 
    * Set the number of phi bins to group into a region
    * 
    * @param n Number of phi bins per region
@@ -82,7 +89,7 @@ public:
    * @param etaLumping If larger than 0, set the eta lumping to this
    * @param phiLumping If larger than 0, set the phi lumping to this
    */
-  void Init(Int_t etaLumping=-1, Int_t phiLumping=-1);
+  void Init(UShort_t d=-1, Char_t r='I',Int_t etaLumping=-1, Int_t phiLumping=-1);
   /** 
    * Output stuff to the passed list
    * 
@@ -103,7 +110,13 @@ public:
    * @param hit     True if hit 
    * @param weight  Weight if this 
    */
-  void Fill(Double_t eta, Double_t phi, Bool_t hit, Double_t weight=1);
+  void Fill(UShort_t strip, UShort_t sec, Bool_t hit, Double_t weight=1);
+  /** 
+   * Take the average occupancy over many events or not
+   * 
+   * @param use use or not
+   */
+  void SetUseAverageOverEvents(Bool_t use)  {fRunningAverage = use;}
   /** 
    * Calculate result and store in @a output
    * 
@@ -191,6 +204,9 @@ protected:
   TH1D*    fMean;         // Mean calculated by poisson method 
   TH1D*    fOcc;          // Histogram of occupancies 
   TH2D*    fCorr;         // Correction as a function of mean 
+  TList    fTotalList;    // List of total hists
+  TList    fEmptyList;    // List of empty hists
+  Bool_t   fRunningAverage; // Whether to take average per event or not
   ClassDef(AliPoissonCalculator,1) // Calculate N_ch using Poisson
 };
 

@@ -42,10 +42,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fFMD3oMax(0),
     fMaxWeights(0),
     fLowCuts(0),
-    fEtaLumping(5), 
-    fPhiLumping(5),    
+    fEtaLumping(32), 
+    fPhiLumping(4),    
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fUseRunningAverage(false)
 {
   // 
   // Constructor 
@@ -72,10 +73,11 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fFMD3oMax(0),
     fMaxWeights(0),
     fLowCuts(0),
-    fEtaLumping(5), 
-    fPhiLumping(5),
+    fEtaLumping(32), 
+    fPhiLumping(4),
     fDebug(0),
-    fCuts()
+    fCuts(),
+    fUseRunningAverage(false)
 {
   // 
   // Constructor 
@@ -140,7 +142,8 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fEtaLumping(o.fEtaLumping), 
     fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug),
-    fCuts(o.fCuts)
+    fCuts(o.fCuts),
+    fUseRunningAverage(o.fUseRunningAverage)
 {
   // 
   // Copy constructor 
@@ -193,6 +196,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fEtaLumping         = o.fEtaLumping;
   fPhiLumping         = o.fPhiLumping;
   fCuts               = o.fCuts;
+  fUseRunningAverage  = o.fUseRunningAverage;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -285,7 +289,8 @@ Bool_t
 AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
 				   UShort_t                vtxbin, 
-				   Bool_t                  lowFlux)
+				   Bool_t                  lowFlux,
+				   Double_t                 cent)
 {
   // 
   // Do the calculations 
@@ -298,7 +303,9 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
   // 
   // Return:
   //    true on successs 
-  //
+
+  
+  
   for (UShort_t d=1; d<=3; d++) { 
     UShort_t nr = (d == 1 ? 1 : 2);
     for (UShort_t q=0; q<nr; q++) { 
@@ -312,6 +319,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	fRingHistos.ls();
 	return false;
       }
+      rh->fPoisson.SetObject(d,r,vtxbin,cent);
       rh->fPoisson.Reset(h);
       // rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
@@ -325,7 +333,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
 	    // rh->fEmptyStrips->Fill(eta,phi);
-	    rh->fPoisson.Fill(eta, phi, false);
+	    rh->fPoisson.Fill(t , s, false);
 	    rh->fEvsM->Fill(mult,0);
 	    continue;
 	  }
@@ -352,76 +360,50 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 
 	  Bool_t hit = (n > 0.9 && c > 0);
 	  if (hit) rh->fELossUsed->Fill(mult);
-	  rh->fPoisson.Fill(eta,phi,hit,1./c);
-	    // if (n > 0.9 && c > 0) rh->fELossUsed->Fill(mult);
-	    // if (n > 0.9 && c > 0) rh->fBasicHits->Fill(eta,phi, 1./c);
-	    // else                  rh->fEmptyStrips->Fill(eta,phi);
-	    
+	  rh->fPoisson.Fill(t,s,hit,1./c);
 	  h->Fill(eta,phi,n);
 	  if (!fUsePoisson) rh->fDensity->Fill(eta,phi,n);
 	} // for t
       } // for s 
-
-
-      // --- Loop over poisson histograms ----------------------------
+      
+      TH2D* hclone = static_cast<TH2D*>(h->Clone("hclone"));
+      if (!fUsePoisson) hclone->Reset();
+      if ( fUsePoisson) h->Reset();
+      
       TH2D* poisson = rh->fPoisson.Result();
-      for (Int_t ieta = 1; ieta <= h->GetNbinsX(); ieta++) { 
-	for (Int_t iphi = 1; iphi <= h->GetNbinsY(); iphi++) { 
-	  Double_t poissonV = poisson->GetBinContent(ieta, iphi);
-	  Double_t poissonE = poisson->GetBinError(ieta, iphi);
-	  Double_t eLossV   = h->GetBinContent(ieta, iphi);
-	  Double_t eta      = h->GetXaxis()->GetBinCenter(ieta);
-	  Double_t phi      = h->GetYaxis()->GetBinCenter(iphi);
-
-	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
-	  if (!fUsePoisson) continue;
-
-	  h->SetBinContent(ieta,iphi,poissonV);
-	  h->SetBinError(ieta,iphi,poissonE);
+      for (Int_t t=0; t <= poisson->GetNbinsX(); t++) { 
+	for (Int_t s=0; s<= poisson->GetNbinsY(); s++) { 
+	  
+	  Double_t poissonV = poisson->GetBinContent(t+1,s+1);
+	  Double_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
+	  Double_t  eta  = fmd.Eta(d,r,s,t);
+	  if (fUsePoisson)
+	    h->Fill(eta,phi,poissonV);
+	  else
+	    hclone->Fill(eta,phi,poissonV);
 	  rh->fDensity->Fill(eta, phi, poissonV);
-#if 0
-	  Double_t eta      = h->GetXaxis()->GetBinCenter(ieta);
-	  Double_t phi      = h->GetYaxis()->GetBinCenter(iphi);
-	  Int_t    jeta     = rh->fEmptyStrips->GetXaxis()->FindBin(eta);
-	  Int_t    jphi     = rh->fEmptyStrips->GetYaxis()->FindBin(phi);
-	  Double_t empty    = rh->fEmptyStrips->GetBinContent(jeta, jphi);
-	  Double_t total    = rh->fTotalStrips->GetBinContent(jeta, jphi);
-	  Double_t hits     = rh->fBasicHits->GetBinContent(ieta,iphi);
-
-	  // Mean in region of interest 
-	  Double_t poissonM = (total <= 0 || empty <= 0 ? 0 : 
-			       -TMath::Log(empty / total));
-	  //Full occupancy should give high correction not zero
-	  if(empty < 0.001 && total > 0 ) poissonM = -TMath::Log( 1. / total);
-	  
-	  // Note, that given filled=total-empty, and 
-	  //
-	  //     m = -log(empty/total)
-	  //       = -log(1 - filled/total)
-	  // 
-	  //     v = m / (1 - exp(-m))
-	  //       = -total/filled * (log(total-filled)-log(total))
-	  //       = -total / (total-empty) * log(empty/total)
-	  //       = total (log(total)-log(empty)) / (total-empty)
-	  //  
-	  Double_t poissonV = hits;
-	  if(poissonM > 0)
-	    // Correct for counting statistics and weight by counts 
-	    poissonV *= poissonM / (1 - TMath::Exp(-1*poissonM));
-	  Double_t poissonE = TMath::Sqrt(hits);
-	  if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
-	  
-	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
-	  rh->fEmptyVsTotal->Fill(total, empty);
-	  if (fUsePoisson) {
-	    h->SetBinContent(ieta,iphi,poissonV);
-	    h->SetBinError(ieta,iphi,poissonE);
-	    rh->fDensity->Fill(eta, phi, poissonV);
-	  }
-#endif
 	}
       }
-	
+      
+      for (Int_t ieta=1; ieta <= h->GetNbinsX(); ieta++) { 
+	for (Int_t iphi=1; iphi<= h->GetNbinsY(); iphi++) { 
+	  
+	  Double_t poissonV =  0; //h->GetBinContent(,s+1);
+	  Double_t eLossV =  0;
+	  if(fUsePoisson) { 
+	    poissonV = h->GetBinContent(ieta,iphi);
+	    eLossV  = hclone->GetBinContent(ieta,iphi);
+	  }
+	  else { 
+	    poissonV = hclone->GetBinContent(ieta,iphi);
+	    eLossV  = h->GetBinContent(ieta,iphi);
+	  }
+	  
+	  rh->fELossVsPoisson->Fill(eLossV, poissonV);
+	}
+      }
+      delete hclone;
+      
     } // for q
   } // for d
   
@@ -849,9 +831,9 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->fPoisson.SetEtaLumping(fEtaLumping);
-    o->fPoisson.SetPhiLumping(fPhiLumping);
-    o->fPoisson.Init();
+    // o->fPoisson.SetEtaLumping(fEtaLumping);
+    o->fPoisson.SetUseAverageOverEvents(fUseRunningAverage);
+    o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
     o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
     o->fPoisson.GetMean()->SetFillColor(o->Color());
     // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
@@ -1186,7 +1168,7 @@ AliFMDDensityCalculator::RingHistos::ResetPoissonHistos(const TH2D* h,
 void
 AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
 {
-  fPoisson.Init();
+  fPoisson.Init(fDet,fRing,-1,-1);
 }
 
 //____________________________________________________________________
