@@ -77,9 +77,6 @@ public:
   void         SetTimeCut(Double_t min, Double_t max) {
                           fTimeCutMin = min ; fTimeCutMax = max              ; }
   
-  Int_t        GetNewRebinForRePlotting(TH1D*histo, const Float_t newXmin, 
-                                        const Float_t newXmax, const Int_t newNbins) const;
-
   // Histogram Switchs
   
   void SwitchOnFillAllPositionHistogram()       { fFillAllPosHisto  = kTRUE  ; }

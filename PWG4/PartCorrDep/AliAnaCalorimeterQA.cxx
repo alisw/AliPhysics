@@ -1329,20 +1329,6 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   return outputContainer;
 }
 
-//_______________________________________________________________________________________________________________________________________
-Int_t AliAnaCalorimeterQA::GetNewRebinForRePlotting(TH1D* histo, const Float_t newXmin, const Float_t newXmax,const Int_t newXnbins) const
-{
-  //Calculate the rebinning for the new requested bin size, only used when replotting executing the Terminte
- 
-  Float_t oldbinsize =  histo->GetBinWidth(0);
-  Float_t newbinsize = TMath::Abs(newXmax-newXmin) / newXnbins;
-
-  //printf("bin size, old %f, new %f\n",oldbinsize,newbinsize);
-  if(newbinsize > oldbinsize) return (Int_t) (newbinsize/oldbinsize);
-  else  return 1;
-
-}
-
 //__________________________________________________
 void AliAnaCalorimeterQA::Init()
 { 
