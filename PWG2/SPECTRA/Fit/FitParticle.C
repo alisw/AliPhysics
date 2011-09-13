@@ -20,13 +20,14 @@ using namespace std;
 
 enum {kFitExpPt, kFitLevi};
 
-void FitParticle(const char * file, const char * histo, const char * partName,  Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt) {
+void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt) {
 
   // Generic Macro to fit any particle using the PWG2/SPECTRA/Fit macros
   //
   // You have to provide:
   // - file: file name 
   // - histo: histogram name name (assumend to be in the main folder of the file)
+  // - listname: if different from 0, histo is looked in this tlist
   // - partName: it is used to get the mass of the particle from
   //   TDatabasePDG. If you are not sure, just use a part of the name: a
   //   list of names matching it is printed on screen
@@ -86,8 +87,15 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
     func = fm->GetPTExp(0.2, 20);
   }
 
-  TFile * f = new TFile(file);
-  TH1 * h = (TH1*) gDirectory->Get(histo); // 
+  TFile * f = new TFile(file);  
+  TH1 * h = 0;
+  if(listname){
+    TList * l = (TList*) gDirectory->Get(listname);
+    h = (TH1*) l->FindObject(histo);
+  }
+  else{
+    h = (TH1*) gDirectory->Get(histo); // 
+  }
   h->Sumw2();
   if (scaleHisto > 0) h->Scale(scaleHisto, "width");
 //   TH1 * h = AliBWTools::GetdNdPtFromOneOverPt((TH1*) gDirectory->Get(histo)); // FIXME
@@ -112,8 +120,10 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   AliLatexTable table(9,"c|ccccccc");
   table.InsertCustomRow("Part & Integral & T Slope & n & $\\Chi^2$/NDF & Min X & Frac Above & \\langle p_{t} \\rangle  & \\langle p_{t}^{2} \\rangle");
   // populate table
-  Float_t yield  = func->Integral(0,100);
-  Float_t yieldE = func->IntegralError(0,100);
+  // Float_t yield  = func->Integral(0,100);
+  // Float_t yieldE = func->IntegralError(0,100);
+  Double_t yield=0,yieldE=0;
+  AliBWTools::GetYield(h,func,yield,yieldE);  
 //   Float_t yield  = func->Integral(0.45,1.05);
 //   Float_t yieldE = func->IntegralError(0.45,1.05);
   Double_t tslope   = func->GetParameter(2);
@@ -125,13 +135,14 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   table.SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
   table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF()));
   Float_t lowestPoint = TMath::Max(AliBWTools::GetLowestNotEmptyBinEdge(h),min);
+  //Float_t yieldAbove = 0;
   Float_t yieldAbove  = func->Integral(lowestPoint,100);
-  table.SetNextCol(lowestPoint,-2);
-  table.SetNextCol(yieldAbove/yield,-2);
+  table.SetNextCol(lowestPoint,-3);
+  table.SetNextCol(yieldAbove/yield,-3);
   Float_t mean, meane;
   Float_t mean2, mean2e;
-  AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-  AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+  // AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  // AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
   table.SetNextCol(mean,  meane ,-4);
   table.SetNextCol(mean2, mean2e,-4);
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);
