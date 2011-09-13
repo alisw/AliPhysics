@@ -42,7 +42,9 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fAxes("AliRsnMiniAxis", 0),
    fComputed(0),
    fPair(),
-   fList(0x0)
+   fList(0x0),
+   fSel1(0),
+   fSel2(0)
 {
 //
 // Constructor
@@ -65,7 +67,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fAxes("AliRsnMiniAxis", 0),
    fComputed(0),
    fPair(),
-   fList(0x0)
+   fList(0x0),
+   fSel1(0),
+   fSel2(0)
 {
 //
 // Constructor
@@ -88,7 +92,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fAxes("AliRsnMiniAxis", 0),
    fComputed(0),
    fPair(),
-   fList(0x0)
+   fList(0x0),
+   fSel1(0),
+   fSel2(0)
 {
 //
 // Constructor, with a more user friendly implementation, where
@@ -157,7 +163,9 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fAxes(copy.fAxes),
    fComputed(copy.fComputed),
    fPair(),
-   fList(copy.fList)
+   fList(copy.fList),
+   fSel1(0),
+   fSel2(0)
 {
 //
 // Copy constructor
@@ -194,6 +202,9 @@ AliRsnMiniOutput& AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
       fDaughter[i] = copy.fDaughter[i];
       fCharge[i] = copy.fCharge[i];
    }
+   
+   fSel1.Set(0);
+   fSel2.Set(0);
    
    return (*this);
 }
@@ -424,16 +435,14 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
    
-   TArrayI selected1 = event1->CountParticles(fCharge[0], fCutID[0]);
-   TArrayI selected2 = event2->CountParticles(fCharge[1], fCutID[1]);
    TString selList1  = "";
    TString selList2  = "";
-   Int_t   n1 = selected1.GetSize();
-   Int_t   n2 = selected2.GetSize();
-   for (i1 = 0; i1 < n1; i1++) selList1.Append(Form("%d ", selected1[i1]));
-   for (i2 = 0; i2 < n2; i2++) selList2.Append(Form("%d ", selected2[i2]));
-   AliDebugClass(1, Form("Particle #1: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks (%s)", (event1 == event2 ? "def" : "mix"), event1->ID(), fCharge[0], fCutID[0], n1, selList1.Data()));
-   AliDebugClass(1, Form("Particle #2: [%s] -- event ID = %6d -- required charge = %c -- required cut ID = %d --> found %4d tracks (%s)", (event1 == event2 ? "def" : "mix"), event2->ID(), fCharge[1], fCutID[1], n2, selList2.Data()));
+   Int_t   n1 = event1->CountParticles(fSel1, fCharge[0], fCutID[0]);
+   Int_t   n2 = event2->CountParticles(fSel2, fCharge[1], fCutID[1]);
+   for (i1 = 0; i1 < n1; i1++) selList1.Append(Form("%d ", fSel1[i1]));
+   for (i2 = 0; i2 < n2; i2++) selList2.Append(Form("%d ", fSel2[i2]));
+   AliDebugClass(1, Form("[%10s] Part #1: [%s] -- evID %6d -- charge = %c -- cut ID = %d --> %4d tracks (%s)", GetName(), (event1 == event2 ? "def" : "mix"), event1->ID(), fCharge[0], fCutID[0], n1, selList1.Data()));
+   AliDebugClass(1, Form("[%10s] Part #2: [%s] -- evID %6d -- charge = %c -- cut ID = %d --> %4d tracks (%s)", GetName(), (event1 == event2 ? "def" : "mix"), event2->ID(), fCharge[1], fCutID[1], n2, selList2.Data()));
    if (!n1 || !n2) {
       AliDebugClass(1, "No pairs to mix");
       return 0;
@@ -441,7 +450,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    
    // external loop
    for (i1 = 0; i1 < n1; i1++) {
-      p1 = event1->GetParticle(selected1[i1]);
+      p1 = event1->GetParticle(fSel1[i1]);
       //p1 = event1->GetParticle(i1);
       //if (p1->Charge() != fCharge[0]) continue;
       //if (!p1->HasCutBit(fCutID[0])) continue;
@@ -454,7 +463,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       AliDebugClass(2, Form("Start point = %d", start));
       // internal loop
       for (i2 = start; i2 < n2; i2++) {
-         p2 = event2->GetParticle(selected2[i2]);
+         p2 = event2->GetParticle(fSel2[i2]);
          //p2 = event2->GetParticle(i2);
          //if (p2->Charge() != fCharge[1]) continue;
          //if (!p2->HasCutBit(fCutID[1])) continue;

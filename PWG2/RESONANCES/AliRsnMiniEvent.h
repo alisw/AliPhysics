@@ -26,7 +26,7 @@ public:
    TClonesArray&       Particles() {return fParticles;}
    Bool_t              IsEmpty()   {return fParticles.IsEmpty();}
    
-   TArrayI             CountParticles(Char_t charge = 0, Int_t cutID = -1);
+   Int_t               CountParticles(TArrayI &found, Char_t charge = 0, Int_t cutID = -1);
    AliRsnMiniParticle* GetParticle(Int_t i);
    AliRsnMiniParticle* LeadingParticle();
    void                AddParticle(AliRsnMiniParticle copy);
