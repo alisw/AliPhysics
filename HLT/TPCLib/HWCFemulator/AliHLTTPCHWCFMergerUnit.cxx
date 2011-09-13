@@ -211,6 +211,7 @@ const AliHLTTPCHWCFClusterFragment *AliHLTTPCHWCFMergerUnit::OutputStream()
       ret = &s;
     } else {
       // cout<<"merge search range at "<<fSearchStart-1<<" of "<<fSearchEnd<<endl;
+      fInput.fSlope = s.fSlope;
       if( !fInput.fSlope && s.fLastQ > fInput.fQ ) fInput.fSlope = 1;
       if (fInput.fQmax < s.fQmax) fInput.fQmax = s.fQmax;
       fInput.fQ += s.fQ;
