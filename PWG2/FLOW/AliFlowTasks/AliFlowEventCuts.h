@@ -61,6 +61,8 @@ class AliFlowEventCuts : public TNamed {
   Int_t GetRefMultMax() const {return fRefMultMax;}
   Int_t GetRefMultMin() const {return fRefMultMin;}
   void SetRefMultMethod(refMultMethod m) {fRefMultMethod=m;}
+  void SetRefMultMethod(AliESDtrackCuts::MultEstTrackType m) { fRefMultMethodAliESDtrackCuts=m; 
+                                                               fUseAliESDtrackCutsRefMult=kTRUE; }
   refMultMethod GetRefMultMethod() const {return fRefMultMethod;}
   void SetRefMultCuts( AliFlowTrackCuts* cuts ) {fRefMultCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
   void SetMeanPtCuts( AliFlowTrackCuts* cuts ) {fMeanPtCuts=static_cast<AliFlowTrackCuts*>(cuts->Clone());}
@@ -91,6 +93,8 @@ class AliFlowEventCuts : public TNamed {
   Int_t fNumberOfTracksMin;  //limits
   Bool_t fCutRefMult; //cut on refmult
   refMultMethod fRefMultMethod; //how do we calculate refmult?
+  Bool_t fUseAliESDtrackCutsRefMult; //use AliESDtrackCuts for refmult calculation
+  AliESDtrackCuts::MultEstTrackType fRefMultMethodAliESDtrackCuts;
   Int_t fRefMultMax; //max refmult
   Int_t fRefMultMin; //min refmult
   AliFlowTrackCuts* fRefMultCuts; //cuts
@@ -122,7 +126,7 @@ class AliFlowEventCuts : public TNamed {
   Bool_t fCutZDCtiming;   //cut on ZDC timing
   AliTriggerAnalysis fTrigAna; //trigger analysis object
 
-  ClassDef(AliFlowEventCuts,3)
+  ClassDef(AliFlowEventCuts,4)
 };
 
 #endif

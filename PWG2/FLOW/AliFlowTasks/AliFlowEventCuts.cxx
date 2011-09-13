@@ -50,6 +50,8 @@ AliFlowEventCuts::AliFlowEventCuts():
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
   fRefMultMethod(kTPConly),
+  fUseAliESDtrackCutsRefMult(kFALSE),
+  fRefMultMethodAliESDtrackCuts(AliESDtrackCuts::kTrackletsITSTPC),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
@@ -93,6 +95,8 @@ AliFlowEventCuts::AliFlowEventCuts(const char* name, const char* title):
   fNumberOfTracksMin(INT_MIN),
   fCutRefMult(kFALSE),
   fRefMultMethod(kTPConly),
+  fUseAliESDtrackCutsRefMult(kFALSE),
+  fRefMultMethodAliESDtrackCuts(AliESDtrackCuts::kTrackletsITSTPC),
   fRefMultMax(INT_MAX),
   fRefMultMin(INT_MIN),
   fRefMultCuts(NULL),
@@ -136,6 +140,8 @@ AliFlowEventCuts::AliFlowEventCuts(const AliFlowEventCuts& that):
   fNumberOfTracksMin(that.fNumberOfTracksMin),
   fCutRefMult(that.fCutRefMult),
   fRefMultMethod(that.fRefMultMethod),
+  fUseAliESDtrackCutsRefMult(that.fUseAliESDtrackCutsRefMult),
+  fRefMultMethodAliESDtrackCuts(that.fRefMultMethodAliESDtrackCuts),
   fRefMultMax(that.fRefMultMax),
   fRefMultMin(that.fRefMultMin),
   fRefMultCuts(NULL),
@@ -215,6 +221,8 @@ AliFlowEventCuts& AliFlowEventCuts::operator=(const AliFlowEventCuts& that)
   fNumberOfTracksMin=that.fNumberOfTracksMin;
   fCutRefMult=that.fCutRefMult;
   fRefMultMethod=that.fRefMultMethod;
+  fUseAliESDtrackCutsRefMult=that.fUseAliESDtrackCutsRefMult;
+  fRefMultMethodAliESDtrackCuts=that.fRefMultMethodAliESDtrackCuts;
   fRefMultMax=that.fRefMultMax;
   fRefMultMin=that.fRefMultMin;
   if (that.fRefMultCuts) *fRefMultCuts=*(that.fRefMultCuts);
@@ -420,6 +428,12 @@ Int_t AliFlowEventCuts::RefMult(AliVEvent* event)
   //calculate the reference multiplicity, if all fails return 0
   AliESDVZERO* vzero = NULL;
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*>(event);
+
+  if (fUseAliESDtrackCutsRefMult && esdevent)
+  {
+    //use the standard ALICE reference multiplicity with the default eta range
+    return AliESDtrackCuts::GetReferenceMultiplicity(esdevent, fRefMultMethodAliESDtrackCuts);
+  }
 
   if (fRefMultMethod==kTPConly && !fRefMultCuts)
   {
