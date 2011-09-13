@@ -79,6 +79,11 @@ public:
   static TH1F * DivideHistosDifferentBins(const TH1F* h1, const TH1F* h2);
   static Double_t DoIntegral(TH1* h, Int_t binx1, Int_t binx2, Int_t biny1, Int_t biny2, Int_t binz1, Int_t binz2, Double_t & error ,
 		      Option_t *option, Bool_t doError) ;
+  static TGraphErrors * Divide2Graphs(const TGraphErrors * g1, const TGraphErrors * g2);
+
+  static Double_t dMtdptFunction(Double_t *x, Double_t *p) ;
+  static Double_t GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) ;
+
 
 
 private:
@@ -86,6 +91,8 @@ private:
   AliBWTools(const AliBWTools&);            // not implemented
   AliBWTools& operator=(const AliBWTools&); // not implemented
   static void GetMoment(TString name, TString var, TF1 * func, Float_t &mean, Float_t &error, Float_t min, Float_t max, Int_t normPar = -1) ;
+
+  static TF1 * fdNdptForETCalc;
 
   ClassDef(AliBWTools,1);
 
