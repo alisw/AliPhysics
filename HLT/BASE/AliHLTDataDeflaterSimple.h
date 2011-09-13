@@ -16,6 +16,9 @@
 #include <vector>
 #include <string>
 
+class TObjArray;
+class TH1;
+
 /**
  * @class AliHLTDataDeflaterSimple
  * Simple deflater implementation storing frequent values below a
@@ -105,10 +108,10 @@ public:
   };
 
   /// add a parameter definition to the configuration, return reference id
-  int AddParameterDefinition(const char* name, int bitLength, int reducedBitLength) {
-    fParameterDefinitions.push_back(AliHLTDataDeflaterParameter(name, bitLength, reducedBitLength));
-    return fParameterDefinitions.size()-1;
-  }
+  int AddParameterDefinition(const char* name, int bitLength, int reducedBitLength);
+
+  /// add a histogram for deflater statistic of the corresponding parameter
+  int AddHistogram(TH1* h);
 
   /// inherited from AliHLTDataDeflater: write bit pattern according to configuration
   virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value );
@@ -122,12 +125,22 @@ public:
   /// print info
   virtual void Print(ostream& out, Option_t *option="") const;
 
+  /// safe statistics histograms to file
+  virtual void SaveAs(const char *filename="",Option_t *option="") const;
+
   /// DataDeflaterSimple has deflater version 1
   virtual int GetDeflaterVersion() const {return 1;}
 
  protected:
  private:
+  /// copy constructor prohibited
+  AliHLTDataDeflaterSimple(const AliHLTDataDeflaterSimple&);
+  /// assignment operator prohibited
+  AliHLTDataDeflaterSimple& operator=(const AliHLTDataDeflaterSimple&);
+
   vector<AliHLTDataDeflaterParameter> fParameterDefinitions; //!
+
+  TObjArray* fHistograms; //! list of histograms for parameters
 
   ClassDef(AliHLTDataDeflaterSimple, 0)
 };
