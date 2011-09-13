@@ -106,11 +106,8 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
    if (!TargetOK(obj)) return kFALSE;
    
    // check track
-   AliVTrack *track = fDaughter->Ref2Vtrack();
-   if (!track) {
-      if (!fDaughter->GetRef()) AliWarning("NULL ref");
-      return kFALSE;
-   }
+   AliVTrack *track = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   if (!track) return kFALSE;
    
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
@@ -130,7 +127,8 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
    // PID TPC :
    // depends on momentum
    // and if local PID object is initialized, it is used instead of that got from manager
-   if (track->GetTPCmomentum() < fLimitTPC) 
+   Double_t mom = (Double_t)TMath::Abs(track->GetTPCmomentum());
+   if (mom < fLimitTPC) 
       SetRangeD(0.0, fNSigmaTPCLow);
    else
       SetRangeD(0.0, fNSigmaTPCHigh);

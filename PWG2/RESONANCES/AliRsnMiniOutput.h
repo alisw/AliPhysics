@@ -115,6 +115,8 @@ private:
    TArrayD          fComputed;         //! temporary container for all computed values
    AliRsnMiniPair   fPair;             //! minipair for computations
    TList           *fList;             //! pointer to the TList containing the output
+   TArrayI          fSel1;             //! list of selected particles for definition 1
+   TArrayI          fSel2;             //! list of selected particles for definition 2
    
    ClassDef(AliRsnMiniOutput,1)  // AliRsnMiniOutput class
 };
