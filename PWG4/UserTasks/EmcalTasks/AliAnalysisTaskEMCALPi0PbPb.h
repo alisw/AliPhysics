@@ -84,12 +84,15 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         FillVertex(AliStaVertex *v, const AliESDVertex *esdv);
   void         FillVertex(AliStaVertex *v, const AliAODVertex *aodv);
   Double_t     GetCellIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2)                        const;
+  Double_t     GetCellIsoNxM(Double_t cEta, Double_t cPhi, Int_t N, Int_t M)                              const;
   Double_t     GetCellEnergy(const AliVCluster *c)    const;
   Double_t     GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
   Double_t     GetMaxCellEnergy(const AliVCluster *c, Short_t &id)                                        const;
   Int_t        GetNCells(const AliVCluster *c, Double_t emin=0.)                                          const;
   void         GetSigma(const AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
+  void         GetSigmaEtaEta(const AliVCluster *c, Double_t &sigmaEtaEta, Double_t &sigmaPhiPhi)         const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
+  Double_t     GetTrackIsoStrip(Double_t cEta, Double_t cPhi, Double_t dEta=0.015, Double_t dPhi=0.3, Double_t pt=0.)       const;
   Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
   Bool_t       IsShared(const AliVCluster *c)                                                             const;
   void         PrintDaughters(const AliVParticle *p, const TObjArray *arr, Int_t level=0)                 const;
@@ -97,6 +100,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         PrintTrackRefs(AliMCParticle *p)                                                           const;
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
+  Double_t     GetSecondMaxCell(AliVCluster *clus);
 
     // input members
   TString                fCentVar;                // variable for centrality determination
@@ -300,9 +304,11 @@ class AliStaCluster : public TObject
 {
  public:
     AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0), fTmax(0), 
-                      fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fIsTrackM(0), fTrDz(0), fTrDr(-1), 
-                      fTrEp(0), fTrIso(0), fTrIso1(0), fTrIso2(0), fCeIso(0), fCeCore(0), fIsTrigM(0), fTrigE(-1), 
-                      fTrigMaskE(-1), fIsShared(0), fMcLabel(-1), fEmbE(0) {;}
+                      fE2max(0),fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fSigEtaEta(0), fSigPhiPhi(0),
+                      fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
+                      fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),fTrIsoStrip(0),
+                      fCeIso(0), fCeIso1(0), fCeIso3(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
+                      fIsTrigM(0), fTrigE(-1), fTrigMaskE(-1), fIsShared(0), fMcLabel(-1), fEmbE(0) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -315,21 +321,37 @@ class AliStaCluster : public TObject
   UShort_t      fIdMax;            //         id maximum cell
   Double32_t    fEmax;             //[0,0,16] energy of maximum cell
   Double32_t    fTmax;             //[0,0,16] time of maximum cell
+  Double32_t    fE2max;            //[0,0,16] energy of second maximum cell
   Double32_t    fDbc;              //[0,0,16] distance to nearest bad channel
   Double32_t    fDisp;             //[0,0,16] cluster dispersion, for shape analysis
   Double32_t    fM20;              //[0,0,16] 2-nd moment along the main eigen axis
   Double32_t    fM02;              //[0,0,16] 2-nd moment along the second eigen axis
   Double32_t    fEcc;              //[0,0,16] eccentricity
   Double32_t    fSig;              //[0,0,16] sigma
+  Double32_t    fSigEtaEta;        //[0,0,16] sigma eta-eta
+  Double32_t    fSigPhiPhi;        //[0,0,16] sigma phi-phi
   Bool_t        fIsTrackM;         //         if true then track values are set
   Double32_t    fTrDz;             //[0,0,16] dZ to nearest track
   Double32_t    fTrDr;             //[0,0,16] dR to nearest track (in x,y)
   Double32_t    fTrEp;             //[0,0,16] E/P to nearest track 
+  Double32_t    fTrDedx;           //[0,0,16] dE/dx (TPC signal) to nearest track 
   Double32_t    fTrIso;            //[0,0,16] track isolation
   Double32_t    fTrIso1;           //[0,0,16] track isolation (pt>1GeV/c)
   Double32_t    fTrIso2;           //[0,0,16] track isolation (pt>2GeV/c)
-  Double32_t    fCeIso;            //[0,0,16] cell isolation
-  Double32_t    fCeCore;           //[0,0,16] cell content in R=0.025
+  Double32_t    fTrIsoD1;          //[0,0,16] track isolation, iso dist 0.25
+  Double32_t    fTrIso1D1;         //[0,0,16] track isolation (pt>1GeV/c), iso dist 0.1
+  Double32_t    fTrIso2D1;         //[0,0,16] track isolation (pt>2GeV/c), iso dist 0.1
+  Double32_t    fTrIsoD3;          //[0,0,16] track isolation, iso dist 0.3
+  Double32_t    fTrIso1D3;         //[0,0,16] track isolation (pt>1GeV/c), iso dist 0.3
+  Double32_t    fTrIso2D3;         //[0,0,16] track isolation (pt>2GeV/c), iso dist 0.3
+  Double32_t    fTrIsoStrip;       //[0,0,16] track isolation strip, dEtaXdPhi=0.015x0.3
+  Double32_t    fCeIso;            //[0,0,16] cell isolation in R=0.20
+  Double32_t    fCeIso1;           //[0,0,16] cell isolation in R=0.10
+  Double32_t    fCeIso3;          //[0,0,16] cell isolation in  R=0.30
+  Double32_t    fCeIso4x4;         //[0,0,16] cell isolation in  4x4 cells
+  Double32_t    fCeIso5x5;         //[0,0,16] cell isolation in  5x5 cells
+  Double32_t    fCeCore;           //[0,0,16] cell content in R=0.05 
+  Double32_t    fCeIso3x22;        //[0,0,16] cell isolation in rectangular strip of dEtaXdPhi=0.042x0.308
   Bool_t        fIsTrigM;          //         if true then trigger values are set
   Double32_t    fTrigE;            //[0,0,16] trigger tower energy
   Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
@@ -360,7 +382,7 @@ class AliStaPart : public TObject
 {
  public:
   AliStaPart() : TObject(), fPt(0), fEta(0), fPhi(0), fVR(0), fVEta(0), fVPhi(0), fPid(0), fMo(-1), fDet(-2), 
-                 fLab(-1), fNs(0) { memset(fDs,-1,sizeof(Short_t)*9); }
+                 fLab(-1), fNs(0) { memset(fDs,-1,sizeof(Short_t)*99); }
 
   Int_t         OnEmcal() const { return (fDet==8);  }
   Int_t         IsSim()   const { return (fDet!=-2); }
@@ -378,7 +400,7 @@ class AliStaPart : public TObject
     // the following must be filled before first usage
   Short_t       fLab;              //!        label (index in array)
   Short_t       fNs;               //!        number of daughters
-  Short_t       fDs[9];            //!        daughters
+  Short_t       fDs[99];           //!        daughters
 
   ClassDef(AliStaPart,1) // Particle class
 };
