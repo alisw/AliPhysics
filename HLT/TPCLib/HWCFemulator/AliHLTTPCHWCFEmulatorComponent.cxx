@@ -249,7 +249,8 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
     if ( argument.CompareTo( "-deconvolute-time" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDoDeconvTime  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "Time deconvolution is set to: %d", fDoDeconvTime );
+      fUseTimeBinWindow = fDoDeconvTime;
+      HLTInfo( "Time deconvolution and using of TimeBin window are set to: %d", fDoDeconvTime );
       continue;
     }
 
@@ -263,8 +264,9 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
     if ( argument.CompareTo( "-deconvolute" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fDoDeconvTime  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
+      fUseTimeBinWindow = fDoDeconvTime;
       fDoDeconvPad  = fDoDeconvTime;
-      HLTInfo( "Time and pad deconvolution is set to: %d", fDoDeconvPad );
+      HLTInfo( "Time and pad deconvolution and using of TimeBin window are set to: %d", fDoDeconvPad );
       continue;
     }
  
@@ -320,7 +322,8 @@ int AliHLTTPCHWCFEmulatorComponent::ReadConfigurationString(  const char* argume
     if ( argument.CompareTo( "-use-timebin-window" ) == 0 ) {
       if ( ( bMissingParam = ( ++i >= pTokens->GetEntries() ) ) ) break;
       fUseTimeBinWindow  = ( ( TObjString* )pTokens->At( i ) )->GetString().Atoi();
-      HLTInfo( "Using TimeBin window is set to: %d", fUseTimeBinWindow );
+      fDoDeconvTime = fUseTimeBinWindow;
+      HLTInfo( "Using TimeBin window and Time deconvolution are set to: %d", fUseTimeBinWindow );
       continue;
     }
    
