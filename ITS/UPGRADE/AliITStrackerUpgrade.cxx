@@ -620,16 +620,18 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
 		  else if (phiclrad>=TMath::TwoPi()) phiclrad-=TMath::TwoPi();
 
 		  Double_t alpha = fSegmentation->GetAlpha(fSegmentation->GetModule(phiclrad));
-
+   
+                  Int_t clIndice[fNLayers]; 
+		  for (Int_t k=0; k<fNLayers; k++) clIndice[k]=-1;
 
 		  AliITStrackU trac(alpha,radius,yclu1,zclu1,phi2,tgl2,cv,1,fNLayers);
-                 
-		  for(Int_t iLay=fgMaxNLayer-1; iLay>=0; iLay--){
+		  for(Int_t iLay=fNLayers-1; iLay>=0; iLay--){          
 		    Int_t iInLay=indices[iLay];
 		    AliITSRecPointU* cl=(AliITSRecPointU*)listlayer[iLay][iInLay];
 		    if(cl!=0){
 		      trac.AddClusterV2(iLay,(clind[iLay][iInLay] & 0x0fffffff)>>0);
 		      trac.AddClusterMark(iLay,clmark[iLay][iInLay]);
+		      clIndice[iLay] = clind[iLay][iInLay];
 		    }
 		  }
 
@@ -640,13 +642,12 @@ AliITStrackV2* AliITStrackerUpgrade::FitTrack(AliITStrackU* tr,Double_t *primary
               
 		  // Propagate inside the innermost layer with a cluster 
 		  if(ot.Propagate(ot.GetX()-0.1*ot.GetX())) {
-		    if(RefitAtBase(AliITSRecoParam::GetrInsideITSscreen(),&ot,inx)){ //fit from layer 1 to layer 6
+		   if(RefitAtBase(AliITSRecoParam::GetrInsideITSscreen(),&ot,clIndice)){ //fit from layer 1 to layer N	
 		      AliITStrackU otrack2(ot,kFALSE);
 		      otrack2.ResetCovariance(10.); 
 		      otrack2.ResetClusters();
-		  
 		      //fit from last layer to layer 1
-		      if(RefitAtBase(/*AliITSRecoParam::GetrInsideSPD1()*/fSegmentation->GetRadius(0)-0.1,&otrack2,inx)) {//check clind
+		      if(RefitAtBase(fSegmentation->GetRadius(0)-0.1,&otrack2,clIndice)) {
 			new(arrSA[nFoundTracks]) AliITStrackU(otrack2);
 			++nFoundTracks;
 		      }
@@ -1301,8 +1302,9 @@ Int_t AliITStrackerUpgrade::CorrectForLayerMaterial(AliITStrackU *t,
     mode=0;
   }
   Float_t  dir = (direction.Contains("inward") ? 1. : -1.);
-  Double_t r = fSegmentation->GetRadius(layerindex);
-  Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
+  //Double_t r = fSegmentation->GetRadius(layerindex);
+  //Double_t deltar=(layerindex<2 ? 0.10*r : 0.05*r);
+  Double_t deltar=0.05;
   Double_t rToGo=TMath::Sqrt(t->GetX()*t->GetX()+t->GetY()*t->GetY())-deltar*dir;
   Double_t xToGo;
   if (!t->GetLocalXat(rToGo,xToGo)) {
