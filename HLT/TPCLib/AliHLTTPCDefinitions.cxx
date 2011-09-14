@@ -140,18 +140,27 @@ const AliHLTComponentDataType AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCIn
 
 const AliHLTTPCDefinitions::AliClusterParameter AliHLTTPCDefinitions::fgkClusterParameterDefinitions[]= {
   {AliHLTTPCDefinitions::kPadRow,  "padrow",   6,  1,   1}, // difference of rows, mostly 0 or 1
-  {AliHLTTPCDefinitions::kPad,     "pad",     14, 12,  60}, // 100um for 6mm pads
-  {AliHLTTPCDefinitions::kTime,    "time",    15, 13,  25}, // 100um for 2.5 mm timebin pitch
+  {AliHLTTPCDefinitions::kPad,     "pad",     14, 12,  60}, // <100um for 6mm pads
+  {AliHLTTPCDefinitions::kTime,    "time",    15, 13,  25}, // <100um for 2.5 mm timebin pitch
   {AliHLTTPCDefinitions::kSigmaY2, "sigmaY2",  8,  5,  25},
   {AliHLTTPCDefinitions::kSigmaZ2, "sigmaZ2",  8,  5,  10},
   {AliHLTTPCDefinitions::kCharge,  "charge",  16,  9,   1},
-  {AliHLTTPCDefinitions::kQMax,    "qmax",    10,  6,   1}
+  {AliHLTTPCDefinitions::kQMax,    "qmax",    10,  6,   1},
+  {AliHLTTPCDefinitions::kResidualPad, "respad",         9,  4, 60}, // <100um for 6mm pads, sign stored in separate bit
+  {AliHLTTPCDefinitions::kResidualTime,"restime",        8,  4, 25}, // <100um for 2.5 mm timebin pitch, separate bit for sign
+  {AliHLTTPCDefinitions::kPadrowFlag,  "clustonpadrow",  1,  1,  1}, // 0 no cluster, 1 cluster on that row
+  {AliHLTTPCDefinitions::kClusterCount,"clustercount",   6,  3,  1}  // number of clusters on that row
 };
 
 unsigned AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions()
 {
   return sizeof(fgkClusterParameterDefinitions)/sizeof(AliClusterParameter);
 }
+
+// NOTE! those values are related to the number of bits in
+// fgkClusterParameterDefinitions
+const unsigned AliHLTTPCDefinitions::fgkMaxClusterDeltaPad=8;
+const unsigned AliHLTTPCDefinitions::fgkMaxClusterDeltaTime=10;
 
 AliHLTTPCDefinitions::AliHLTTPCDefinitions()
 {

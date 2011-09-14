@@ -159,6 +159,10 @@ public:
     kSigmaZ2,
     kCharge,
     kQMax,
+    kResidualPad,
+    kResidualTime,
+    kPadrowFlag,
+    kClusterCount,
     kLast = kQMax
   };
 
@@ -173,6 +177,10 @@ public:
 
   static const AliClusterParameter fgkClusterParameterDefinitions[];
   static unsigned GetNumberOfClusterParameterDefinitions();
+  static const unsigned fgkMaxClusterDeltaPad;
+  static unsigned GetMaxClusterDeltaPad() {return fgkMaxClusterDeltaPad;}
+  static const unsigned fgkMaxClusterDeltaTime;
+  static unsigned GetMaxClusterDeltaTime() {return fgkMaxClusterDeltaTime;}
 
 private:
 

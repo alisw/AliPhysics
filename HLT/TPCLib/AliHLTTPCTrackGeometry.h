@@ -15,6 +15,7 @@
 #include "AliHLTTrackGeometry.h"
 
 class AliHLTGlobalBarrelTrack;
+class AliHLTDataDeflater;
 
 /**
  * @class AliHLTTPCTrackGeometry
@@ -67,6 +68,29 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   /// fill track points to index grid
   virtual int FillTrackPoints(AliHLTTrackGrid* pGrid) const;
 
+  virtual int Write(const AliHLTGlobalBarrelTrack& track,
+	    AliHLTSpacePointContainer* pSpacePoints,
+	    AliHLTDataDeflater* pDeflater,
+	    AliHLTUInt8_t* outputPtr,
+	    AliHLTUInt32_t size,
+	    const char* option="") const;
+
+  virtual int WriteAssociatedClusters(AliHLTSpacePointContainer* pSpacePoints,
+				      AliHLTDataDeflater* pDeflater,
+				      const char* option="") const;
+
+  struct AliHLTTPCTrackBlock {
+    AliHLTUInt16_t   fSize; //! size in byte of the complete track block
+    AliHLTUInt8_t    fSlice; //! slice number -> rotation angle of local coordinates
+    AliHLTUInt8_t    fReserved; //! reserved field to fill 32bit
+    AliHLTFloat32_t  fX; //! first X
+    AliHLTFloat32_t  fY; //! first Y
+    AliHLTFloat32_t  fZ; //! first Z
+    AliHLTFloat32_t  fSinPsi; // local sine of the track momentum azimuthal angle
+    AliHLTFloat32_t  fTgl;    // tangent of the track momentum dip angle
+    AliHLTFloat32_t  fq1Pt;   // 1/pt (1/(GeV/c))
+  };
+
   /// create a collection of all points
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints() const {return ConvertToSpacePoints(false);}
   virtual AliHLTSpacePointContainer* ConvertToSpacePoints(bool bAssociated) const;
@@ -77,6 +101,8 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   AliHLTTrackPoint* GetRawTrackPoint(AliHLTUInt32_t id);
 
   int FillRawResidual(int coordinate, TH2* histo, AliHLTSpacePointContainer* points) const;
+
+  const vector<AliHLTTrackGeometry::AliHLTTrackPoint>& GetRawPoints() const {return fRawTrackPoints;}
 
  private:
   /// calculate the track points, expects the global magnetic field to be initialized

@@ -27,9 +27,11 @@
 #include "AliHLTTPCSpacePointData.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCSpacePointContainer.h"
+#include "AliHLTTPCHWCFSpacePointContainer.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
+#include "AliHLTDataDeflater.h"
 #include "TMath.h"
 #include "TH2F.h"
 #include <memory>
@@ -148,7 +150,7 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     float planealpha=track.GetAlpha()-offsetAlpha;
     if (planealpha<0) planealpha+=TMath::TwoPi();
     int slice=int(9*planealpha/TMath::Pi());
-    //if (z<0) slice+=18;
+    if (z<0) slice+=18;
     int partition=AliHLTTPCTransform::GetPatch(padrow);
     int row=padrow-AliHLTTPCTransform::GetFirstRow(partition);
     UInt_t id=AliHLTTPCSpacePointData::GetID(slice, partition, row);
@@ -158,13 +160,6 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0))>=0) {
       Float_t rpt[3]={0.,y,z}; // row pad time
       AliHLTTPCTransform::LocHLT2Raw(rpt, slice, padrow);
-      // FIXME: there is a mismatch in the definition of the pad coordinate
-      // should be with respect to middle of pad, that's why the offset of
-      // 0.5 has been applied when calling the AliHLTTPCClusterTransformation
-      // and for conversion to AliTPCclusterMI in AliHLTTPCClusterAccessHLTOUT
-      // AliHLTTPCTransform::LocHLT2Raw seems to define this shift in the
-      // opposite direction
-      rpt[1]+=1.;
       fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
     }
   }
@@ -383,3 +378,197 @@ int AliHLTTPCTrackGeometry::FillRawResidual(int coordinate, TH2* histo, AliHLTSp
   }
   return 0;
 }
+
+int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
+				  AliHLTSpacePointContainer* pSpacePoints,
+				  AliHLTDataDeflater* pDeflater,
+				  AliHLTUInt8_t* outputPtr,
+				  AliHLTUInt32_t size,
+				  const char* option) const
+{
+  // write track block to buffer
+  if (size<=sizeof(AliHLTTPCTrackBlock)) return -ENOSPC;
+  AliHLTTPCTrackBlock* pTrackBlock=reinterpret_cast<AliHLTTPCTrackBlock*>(outputPtr);
+  pTrackBlock->fSize=sizeof(AliHLTTPCTrackBlock); // size of cluster block added later
+  pTrackBlock->fSlice=AliHLTUInt8_t(9*track.GetAlpha()/TMath::Pi());
+  pTrackBlock->fReserved=0;
+  pTrackBlock->fX      = track.GetX();
+  pTrackBlock->fY      = track.GetY();
+  pTrackBlock->fZ      = track.GetZ();
+  pTrackBlock->fSinPsi = track.GetSnp();
+  pTrackBlock->fTgl    = track.GetTgl();
+  pTrackBlock->fq1Pt   = track.GetSigned1Pt();
+
+  pDeflater->Clear();
+  pDeflater->InitBitDataOutput(reinterpret_cast<AliHLTUInt8_t*>(outputPtr+sizeof(AliHLTTPCTrackBlock)), size-sizeof(AliHLTTPCTrackBlock));
+  int result=WriteAssociatedClusters(pSpacePoints, pDeflater, option);
+  if (result<0) return result;
+  pTrackBlock->fSize+=result;
+  return pTrackBlock->fSize;
+}
+
+int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* pSpacePoints,
+						    AliHLTDataDeflater* pDeflater,
+						    const char* /*option*/) const
+{
+  // write associated clusters to buffer via deflater
+  if (!pDeflater || !pSpacePoints) return -EINVAL;
+  AliHLTTPCHWCFSpacePointContainer* pTPCRawSpacePoints=dynamic_cast<AliHLTTPCHWCFSpacePointContainer*>(pSpacePoints);
+  if (!pTPCRawSpacePoints) return -EINVAL;
+  bool bReverse=true;
+  bool bWriteSuccess=true;
+  int writtenClusters=0;
+  // filling of track points starts from first point on track outwards, and
+  // then from that point inwards. That's why the lower padrows might be in
+  // reverse order at the end of the track point array. If the last element
+  // is bigger than the first element, only trackpoints in ascending order
+  // are in the array
+  vector<AliHLTTrackPoint>::const_iterator clrow=fRawTrackPoints.end();
+  if (clrow!=fRawTrackPoints.begin()) {
+    clrow--;
+    AliHLTUInt32_t partition=AliHLTTPCSpacePointData::GetPatch(clrow->GetId());
+    AliHLTUInt32_t partitionrow=AliHLTTPCSpacePointData::GetNumber(clrow->GetId());
+    partitionrow+=AliHLTTPCTransform::GetFirstRow(partition);
+    AliHLTUInt32_t firstpartition=AliHLTTPCSpacePointData::GetPatch(fRawTrackPoints.begin()->GetId());
+    AliHLTUInt32_t firstpartitionrow=AliHLTTPCSpacePointData::GetNumber(fRawTrackPoints.begin()->GetId());
+    firstpartitionrow+=AliHLTTPCTransform::GetFirstRow(firstpartition);
+    if (partitionrow>=firstpartitionrow) {
+      bReverse=false;
+      clrow=fRawTrackPoints.begin();
+    }
+  }
+  unsigned long dataPosition=pDeflater->GetCurrentByteOutputPosition();
+  for (unsigned row=0; row<159 && bWriteSuccess; row++) {
+    if (clrow!=fRawTrackPoints.end()) {
+      AliHLTUInt32_t thisPartition=AliHLTTPCSpacePointData::GetPatch(clrow->GetId());
+      AliHLTUInt32_t thisTrackRow=AliHLTTPCSpacePointData::GetNumber(clrow->GetId());
+      thisTrackRow+=AliHLTTPCTransform::GetFirstRow(thisPartition);
+      if (thisTrackRow==row) {
+	// write clusters
+	const vector<AliHLTTrackSpacepoint>&  clusters=clrow->GetSpacepoints();
+	AliHLTUInt32_t haveClusters=clusters.size()>0;
+	// 1 bit for clusters on that padrow
+	bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(haveClusters);
+	if (haveClusters) {
+	  bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kClusterCount, clusters.size());
+	  for (vector<AliHLTTrackSpacepoint>::const_iterator clid=clusters.begin();
+	       clid!=clusters.end() && bWriteSuccess; clid++) {
+	    if (!pSpacePoints->Check(clid->fId)) {
+	      HLTError("can not find spacepoint 0x%08x", clid->fId);
+	      continue;
+	    }
+
+	    float deltapad =clid->fdU;
+	    float deltatime =clid->fdV;
+	    float sigmaY2=pSpacePoints->GetYWidth(clid->fId);
+	    float sigmaZ2=pSpacePoints->GetZWidth(clid->fId);
+	    AliHLTUInt64_t charge=(AliHLTUInt64_t)pSpacePoints->GetCharge(clid->fId);
+	    AliHLTUInt64_t qmax=(AliHLTUInt64_t)pTPCRawSpacePoints->GetQMax(clid->fId);
+
+	    AliHLTUInt64_t deltapad64=0;
+	    AliHLTUInt32_t signDeltaPad=0;
+	    if (!isnan(deltapad)) {
+	      if (deltapad<0.) {deltapad*=-1; signDeltaPad=1;}
+	      deltapad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
+	      deltapad64=(AliHLTUInt64_t)round(deltapad);
+	    }
+	    AliHLTUInt64_t deltatime64=0;
+	    AliHLTUInt32_t signDeltaTime=0;
+	    if (!isnan(deltatime)) {
+	      if (deltatime<0.) {deltatime*=-1; signDeltaTime=1;}
+	      deltatime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
+	      deltatime64=(AliHLTUInt64_t)round(deltatime);
+	    }
+	    AliHLTUInt64_t sigmaY264=0;
+	    if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
+	    AliHLTUInt64_t sigmaZ264=0;
+	    if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaPad);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualPad    , deltapad64);  
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaTime);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualTime   , deltatime64);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaY2        , sigmaY264);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaZ2        , sigmaZ264);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge         , charge);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kQMax           , qmax);
+	    if (bWriteSuccess) writtenClusters++;
+	  }
+	}
+
+	// set to next trackpoint
+	if (bReverse) {
+	  if (clrow!=fRawTrackPoints.begin()) {
+	    AliHLTUInt32_t nextPartition=AliHLTTPCSpacePointData::GetPatch((clrow-1)->GetId());
+	    AliHLTUInt32_t nextTrackRow=AliHLTTPCSpacePointData::GetNumber((clrow-1)->GetId());
+	    nextTrackRow+=AliHLTTPCTransform::GetFirstRow(nextPartition);
+	    if (thisTrackRow+1==nextTrackRow) {
+	      clrow--;
+	    } else {
+	      // switch direction start from beginning
+	      clrow=fRawTrackPoints.begin();
+	      bReverse=false;
+	    }
+	  } else {
+	    // all trackpoints processed
+	    clrow=fRawTrackPoints.end();
+	  }
+	} else {
+	  clrow++;
+	}
+	continue;
+      } else {
+	// sequence not ordered, search
+	// this has been fixed and the search is no longer necessary
+	// for (clrow=fRawTrackPoints.begin(); clrow!=fRawTrackPoints.end(); clrow++) {
+	//   if ((AliHLTTPCSpacePointData::GetNumber(clrow->GetId())+AliHLTTPCTransform::GetFirstRow(AliHLTTPCSpacePointData::GetPatch(clrow->GetId())))==row) break;
+	// }
+	// if (clrow==fRawTrackPoints.end()) {
+	//   clrow=fRawTrackPoints.begin();
+	//   HLTWarning("no trackpoint on row %d, current point %d", row, thisTrackRow);
+	// }
+      }
+    }
+    // no cluster on that padrow
+    AliHLTUInt32_t haveClusters=0;
+    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(haveClusters);
+  }
+
+  if (!bWriteSuccess) return -ENOSPC;
+
+  int allClusters=0;
+  for (clrow=fRawTrackPoints.begin(); clrow!=fRawTrackPoints.end(); clrow++) {
+    allClusters+=clrow->GetSpacepoints().size();
+  }
+  if (allClusters!=writtenClusters) {
+    HLTError("track %d mismatch in written clusters: %d but expected %d", GetTrackId(), writtenClusters, allClusters);
+  }
+
+  pDeflater->Pad8Bits();
+  return pDeflater->GetCurrentByteOutputPosition()-dataPosition;
+}
+
+// int AliHLTTPCTrackGeometry::Read(AliHLTUInt8_t* buffer,
+// 				 AliHLTUInt32_t size,
+// 				 const char* /*option*/) const
+// {
+//   // read track block from buffer
+//   if (!buffer) return -EINVAL;
+//   if (size<sizeof(AliHLTTPCTrackBlock)) {
+//     HLTError("buffer does not contain valid data of track model clusters");
+//     return -ENODATA;
+//   }
+//   AliHLTTPCTrackBlock* pTrackBlock=reinterpret_cast<AliHLTTPCTrackBlock*>(buffer);
+//   if (pTrackBlock->fSize>size) {
+//     HLTError("inconsistent track data block of size %d exceeds available buffer of size %d", pTrackBlock->fSize, size);
+//     return -ENODATA;
+//   }
+//   pTrackBlock->fSlice=AliHLTUInt8_t(9*track.GetAlpha()/TMath::Pi());
+//   pTrackBlock->fReserved=0;
+//   pTrackBlock->fX      = track.GetX();
+//   pTrackBlock->fY      = track.GetY();
+//   pTrackBlock->fZ      = track.GetZ();
+//   pTrackBlock->fSinPsi = track.GetSnp();
+//   pTrackBlock->fTgl    = track.GetTgl();
+//   pTrackBlock->fq1Pt   = track.GetSigned1Pt();
+
+// }
