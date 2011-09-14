@@ -86,6 +86,12 @@ fhBadClusterL0(0),                    fhBadClusterL1(0),                        
 
 fhBadCellTimeSpreadRespectToCellMax(0),  
 
+//Cluster size
+fhDeltaIEtaDeltaIPhiE0(0), fhDeltaIEtaDeltaIPhiE2(0), fhDeltaIEtaDeltaIPhiE6(0), 
+fhDeltaIR(0),              fhDeltaIA(0),
+fhDeltaIRL0(0),            fhDeltaIRL1(0),             fhDeltaIRD(0),           fhDeltaIRNCells(0),
+fhDeltaIAL0(0),            fhDeltaIAL1(0),             fhDeltaIAD(0),           fhDeltaIANCells(0),
+fhDeltaIADistToBad(0),     fhDeltaIA1MaxEtaPhi(0),
 //Position
 fhRNCells(0),              fhXNCells(0),               fhYNCells(0),            fhZNCells(0),
 fhRE(0),                   fhXE(0),                    fhYE(0),                 fhZE(0),    
@@ -369,7 +375,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     fhBadClusterD  = new TH2F ("hBadClusterD","shower shape, Dispersion^{2} vs E for bad cluster ",
                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhBadClusterD->SetXTitle("E_{cluster}");
-    fhBadClusterD->SetYTitle("Dispersion^{2}");
+    fhBadClusterD->SetYTitle("Dispersion");
     outputContainer->Add(fhBadClusterD);     
     
     if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
@@ -380,6 +386,100 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     }    
     
   }
+  
+  // Cluster size in terms of cells
+  
+  fhDeltaIEtaDeltaIPhiE0  = new TH2F ("hDeltaIEtaDeltaIPhiE0"," Cluster size in columns vs rows for E < 2 GeV, n cells > 3",
+                         50,0,50,50,0,50); 
+  fhDeltaIEtaDeltaIPhiE0->SetXTitle("#Delta Column");
+  fhDeltaIEtaDeltaIPhiE0->SetYTitle("#Delta Row");
+  outputContainer->Add(fhDeltaIEtaDeltaIPhiE0); 
+  
+  fhDeltaIEtaDeltaIPhiE2  = new TH2F ("hDeltaIEtaDeltaIPhiE2"," Cluster size in columns vs rows for 2 <E < 6 GeV, n cells > 3",
+                                      50,0,50,50,0,50); 
+  fhDeltaIEtaDeltaIPhiE2->SetXTitle("#Delta Column");
+  fhDeltaIEtaDeltaIPhiE2->SetYTitle("#Delta Row");
+  outputContainer->Add(fhDeltaIEtaDeltaIPhiE2); 
+  
+  fhDeltaIEtaDeltaIPhiE6  = new TH2F ("hDeltaIEtaDeltaIPhiE6"," Cluster size in columns vs rows for E > 6 GeV, n cells > 3",
+                                      50,0,50,50,0,50); 
+  fhDeltaIEtaDeltaIPhiE6->SetXTitle("#Delta Column");
+  fhDeltaIEtaDeltaIPhiE6->SetYTitle("#Delta Row");
+  outputContainer->Add(fhDeltaIEtaDeltaIPhiE6); 
+  
+  
+  fhDeltaIR  = new TH2F ("hDeltaIR"," Cluster *radius* in cell units vs E",
+                              nptbins,ptmin,ptmax,50,0,50); 
+  fhDeltaIR->SetXTitle("E_{cluster}");
+  fhDeltaIR->SetYTitle("#Delta R_{cell in cluster}");
+  outputContainer->Add(fhDeltaIR); 
+  
+  fhDeltaIA  = new TH2F ("hDeltaIA"," Cluster *asymmetry* in cell units vs E",
+                         nptbins,ptmin,ptmax,21,-1.05,1.05); 
+  fhDeltaIA->SetXTitle("E_{cluster}");
+  fhDeltaIA->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIA); 
+  
+  fhDeltaIRL0  = new TH2F ("hDeltaIRL0"," Cluster *radius* in cell units vs #lambda^{2}_{0}",
+                         ssbins,ssmin,ssmax,50,0,50); 
+  fhDeltaIRL0->SetXTitle("#lambda^{2}_{0}");
+  fhDeltaIRL0->SetYTitle("#Delta R_{cell in cluster}");
+  outputContainer->Add(fhDeltaIRL0); 
+  
+  fhDeltaIAL0  = new TH2F ("hDeltaIAL0"," Cluster *asymmetry* in cell units vs #lambda^{2}_{0}",
+                         ssbins,ssmin,ssmax,21,-1.05,1.05); 
+  fhDeltaIAL0->SetXTitle("#lambda^{2}_{0}");
+  fhDeltaIAL0->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIAL0); 
+  
+  
+  fhDeltaIRL1  = new TH2F ("hDeltaIRL1"," Cluster *radius* in cell units vs #lambda^{2}_{1}",
+                           ssbins,ssmin,ssmax,50,0,50); 
+  fhDeltaIRL1->SetXTitle("#lambda^{2}_{1}");
+  fhDeltaIRL1->SetYTitle("#Delta R_{cell in cluster}");
+  outputContainer->Add(fhDeltaIRL1); 
+  
+  fhDeltaIAL1  = new TH2F ("hDeltaIAL1"," Cluster *asymmetry* in cell units vs #lambda^{2}_{1}",
+                           ssbins,ssmin,ssmax,21,-1.05,1.05); 
+  fhDeltaIAL1->SetXTitle("#lambda^{2}_{1}");
+  fhDeltaIAL1->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIAL1); 
+  
+  fhDeltaIRD  = new TH2F ("hDeltaIRD"," Cluster *radius* in cell units vs dispersion",
+                           ssbins,ssmin,ssmax,50,0,50); 
+  fhDeltaIRD->SetXTitle("Dispersion");
+  fhDeltaIRD->SetYTitle("#Delta R_{cell in cluster}");
+  outputContainer->Add(fhDeltaIRD); 
+  
+  fhDeltaIAD  = new TH2F ("hDeltaIAD"," Cluster *asymmetry* in cell units vs dispersion",
+                          ssbins,ssmin,ssmax,21,-1.05,1.05); 
+  fhDeltaIAD->SetXTitle("Dispersion");
+  fhDeltaIAD->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIAD); 
+  
+  fhDeltaIRNCells  = new TH2F ("hDeltaIRNCells"," Cluster *radius* in cell units vs N cells in cluster",
+                               nbins/5,nmin,nmax/5,50,0,50); 
+  fhDeltaIRNCells->SetXTitle("N_{cell in cluster}");
+  fhDeltaIRNCells->SetYTitle("#Delta R_{cell in cluster}");
+  outputContainer->Add(fhDeltaIRNCells); 
+  
+  fhDeltaIANCells  = new TH2F ("hDeltaIANCells"," Cluster *asymmetry* in cell units vs N cells in cluster",
+                               nbins/5,nmin,nmax/5,21,-1.05,1.05); 
+  fhDeltaIANCells->SetXTitle("N_{cell in cluster}");
+  fhDeltaIANCells->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIANCells); 
+  
+  fhDeltaIADistToBad  = new TH2F ("hDeltaIADistToBad"," Cluster *asymmetry* in cell units vs E",
+                                  48,0,48,21,-1.05,1.05); 
+  fhDeltaIADistToBad->SetXTitle("Distance to bad channel");
+  fhDeltaIADistToBad->SetYTitle("A_{cell in cluster}");
+  outputContainer->Add(fhDeltaIADistToBad); 
+
+  fhDeltaIA1MaxEtaPhi  = new TH2F ("hDeltaIA1MaxEtaPhi"," Cluster *asymmetry* in cell |A| > 0.9, maximum cell location",
+                                   48*2+2, -1.5, 48*2+0.5, 24*10/2+2, -1.5, 24*10/2+0.5); 
+  fhDeltaIA1MaxEtaPhi->SetXTitle("Max cell column");
+  fhDeltaIA1MaxEtaPhi->SetYTitle("Max cell row");
+  outputContainer->Add(fhDeltaIA1MaxEtaPhi); 
   
   //Track Matching
   if(fFillAllTMHisto){
@@ -1621,14 +1721,16 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             //	       		printf("z cluster %f, z cell %f, cluster-cell %f\n",pos[2], cellpos[2],pos[2]-cellpos[2]);
             //     				printf("r cluster %f, r cell %f, cluster-cell %f\n",r,      rcell,     r-rcell);
           }//PHOS and its matrices are available
-          
-          
         }// cluster cell loop
       }//Fill all position histograms
 
       // Get the fraction of the cluster energy that carries the cell with highest energy
       Float_t maxCellFraction = 0.;
       Int_t absIdMax = GetCaloUtils()->GetMaxEnergyCell(cell, clus,maxCellFraction);
+      Int_t smMax =0; Int_t ietaaMax=-1; Int_t iphiiMax = 0; Int_t rcuMax = 0;
+      smMax = GetModuleNumberCellIndexes(absIdMax,fCalorimeter, ietaaMax, iphiiMax, rcuMax);
+      Int_t dIeta = 0;
+      Int_t dIphi = 0;
       Double_t tmax  = cell->GetCellTime(absIdMax)*1e9;
 
       if     (clus->E() < 2.){
@@ -1655,53 +1757,48 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       Bool_t badCluster = kFALSE;
       if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster()){
         //Bad clusters histograms
-        Float_t minNCells = TMath::Max(1,TMath::FloorNint(1 + TMath::Log(clus->E() - 7 )*1.7 ));
+        Float_t minNCells = 1;
+        if(clus->E() > 7) minNCells = TMath::Max(1,TMath::FloorNint(1 + TMath::Log(clus->E() - 7 )*1.7 ));
         if(nCaloCellsPerCluster <= minNCells) {
-        //if(clus->GetM02() < 0.05) {
-
-          //if(clus->GetM02() > 0 || TMath::Abs(clus->GetM20()) > 0 || clus->GetDispersion() > 0)
-          
-          Int_t sm =0; Int_t ietaa=-1; Int_t iphii = 0; Int_t rcu = 0;
-          sm = GetModuleNumberCellIndexes(absId,fCalorimeter, ietaa, iphii, rcu);
-//          if(clus->GetNCells() > 3){
-//            printf("Bad  : E %f, ncells %d, nclusters %d, dist to bad %f, l0 %f, l1 %f, d %f, cell max t %f, cluster TOF %f, sm %d, icol %d, irow %d, rcu %d\n", 
-//                   clus->E(), clus->GetNCells(),nCaloClusters, clus->GetDistanceToBadChannel(), 
-//                   clus->GetM02(), clus->GetM20(), clus->GetDispersion(),tmax, tof,sm,ietaa,iphii,rcu);
-//          }
+          //if(clus->GetM02() < 0.05) {
           
           badCluster = kTRUE;
           
           fhBadClusterEnergy     ->Fill(clus->E());
           fhBadClusterMaxCellDiff->Fill(clus->E(),maxCellFraction);
           fhBadClusterTimeEnergy ->Fill(clus->E(),tof);
-          fhBadClusterL0         ->Fill(clus->E(),clus->GetM02());
-          fhBadClusterL1         ->Fill(clus->E(),clus->GetM20());
-          fhBadClusterD          ->Fill(clus->E(),clus->GetDispersion());
-
+          
+          if(clus->GetM02() > 0 || TMath::Abs(clus->GetM20()) > 0 || clus->GetDispersion() > 0){
+            
+            fhBadClusterL0         ->Fill(clus->E(),clus->GetM02());
+            fhBadClusterL1         ->Fill(clus->E(),clus->GetM20());
+            fhBadClusterD          ->Fill(clus->E(),clus->GetDispersion());
+            
+          }
+          
           //Clusters in event time difference
           
-            for(Int_t iclus2 = 0; iclus2 < nCaloClusters; iclus2++ ){
-              
-              AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(iclus2);
-              
-              if(clus->GetID()==clus2->GetID()) continue;
-              
-              if(clus->GetM02() > 0.01) {
-                fhBadClusterPairDiffTimeE  ->Fill(clus->E(), tof-clus2->GetTOF()*1.e9);
-//               if(clus->GetNCells()>3) printf("\t i %d, E %f, nCells %d, dist to bad %f, good tof %f, bad tof %f, diff %f \n",
-//                       iclus2, clus2->E(), clus2->GetNCells(), clus->GetDistanceToBadChannel(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9);
-              }
-//              else{  
-//                Int_t absId2 = clus2->GetCellsAbsId()[0];
-//                Int_t sm2 =0; Int_t ietaa2=-1; Int_t iphii2 = 0; Int_t rcu2 = 0;
-//                sm2 = GetModuleNumberCellIndexes(absId2,fCalorimeter, ietaa2, iphii2, rcu2);
-//                 if(clus->GetNCells()>3) printf("i %d, E %f, nCells %d, bad tof %f, bad tof %f, diff %f, sm %d, icol %d, irow %d, rcu %d\n",
-//                       iclus2, clus2->E(), clus2->GetNCells(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9,sm2,ietaa2,iphii2,rcu2);
-//                
-//              }
-              
+          for(Int_t iclus2 = 0; iclus2 < nCaloClusters; iclus2++ ){
+            
+            AliVCluster* clus2 =  (AliVCluster*)caloClusters->At(iclus2);
+            
+            if(clus->GetID()==clus2->GetID()) continue;
+            
+            if(clus->GetM02() > 0.01) {
+              fhBadClusterPairDiffTimeE  ->Fill(clus->E(), tof-clus2->GetTOF()*1.e9);
+              //               if(clus->GetNCells()>3) printf("\t i %d, E %f, nCells %d, dist to bad %f, good tof %f, bad tof %f, diff %f \n",
+              //                       iclus2, clus2->E(), clus2->GetNCells(), clus->GetDistanceToBadChannel(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9);
             }
-          
+            //              else{  
+            //                Int_t absId2 = clus2->GetCellsAbsId()[0];
+            //                Int_t sm2 =0; Int_t ietaa2=-1; Int_t iphii2 = 0; Int_t rcu2 = 0;
+            //                sm2 = GetModuleNumberCellIndexes(absId2,fCalorimeter, ietaa2, iphii2, rcu2);
+            //                 if(clus->GetNCells()>3) printf("i %d, E %f, nCells %d, bad tof %f, bad tof %f, diff %f, sm %d, icol %d, irow %d, rcu %d\n",
+            //                       iclus2, clus2->E(), clus2->GetNCells(), tof,clus2->GetTOF()*1.e9,tof-clus2->GetTOF()*1.e9,sm2,ietaa2,iphii2,rcu2);
+            //                
+            //              }
+            
+          }
           
           for (Int_t ipos = 0; ipos < nCaloCellsPerCluster; ipos++) {
             absId  = indexList[ipos]; 
@@ -1755,6 +1852,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
             absId  = indexList[ipos];             
             if(absId == absIdMax) continue;
             
+            
             Float_t frac = cell->GetCellAmplitude(absId)/cell->GetCellAmplitude(absIdMax);            
             fhClusterMaxCellCloseCellRatio->Fill(mom.E(),frac);
             fhClusterMaxCellCloseCellDiff ->Fill(mom.E(),cell->GetCellAmplitude(absIdMax)-cell->GetCellAmplitude(absId));
@@ -1765,7 +1863,67 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
               if(TMath::Abs(TMath::Abs(diff) > 100) && mom.E() > 1 ) fhCellIdCellLargeTimeSpread->Fill(absId);
             }
             
+            Int_t sm =0; Int_t ietaa=-1; Int_t iphii = 0; Int_t rcu = 0;
+            sm = GetModuleNumberCellIndexes(absId,fCalorimeter, ietaa, iphii, rcu);
+            if(dIphi < TMath::Abs(iphii-iphiiMax)) dIphi = TMath::Abs(iphii-iphiiMax);
+            if(smMax==sm){
+              if(dIeta < TMath::Abs(ietaa-ietaaMax)) dIeta = TMath::Abs(ietaa-ietaaMax);
+            }
+            else {
+              Int_t ietaaShift    = ietaa;
+              Int_t ietaaMaxShift = ietaaMax;
+              if (ietaa > ietaaMax)  ietaaMaxShift+=48;
+              else                   ietaaShift   +=48;
+               if(dIeta < TMath::Abs(ietaaShift-ietaaMaxShift)) dIeta = TMath::Abs(ietaaShift-ietaaMaxShift);
+            }
+            
+            //if(TMath::Abs(clus->GetM20()) < 0.0001 && clus->GetNCells() > 3){
+            //  printf("Good : E %f, mcells %d, l0 %f, l1 %f, d %f, cell max t %f, cluster TOF %f, sm %d, icol %d, irow %d; Max icol %d, irow %d \n", 
+            //            clus->E(), clus->GetNCells(),clus->GetM02(), clus->GetM20(), clus->GetDispersion(),tmax, tof,sm,ietaa,iphii, ietaaMax, iphiiMax);
+            //}
+            
+            
           }// fill cell-cluster histogram loop
+          
+          if(nCaloCellsPerCluster > 3){
+            
+            Float_t dIR    = TMath::Sqrt(dIeta*dIeta+dIphi*dIphi);
+            Float_t dIA    = 1.*(dIphi-dIeta)/(dIeta+dIphi);
+            //printf("dIeta %d, dIphi %d, dR %f, A %f\n",dIeta,dIphi, dIR,dIA);
+            
+            if     (mom.E() < 2 ) fhDeltaIEtaDeltaIPhiE0->Fill(dIeta,dIphi);
+            else if(mom.E() < 6 ) fhDeltaIEtaDeltaIPhiE2->Fill(dIeta,dIphi);
+            else                  fhDeltaIEtaDeltaIPhiE6->Fill(dIeta,dIphi);
+            
+            fhDeltaIR->Fill(mom.E(),dIR);
+            fhDeltaIA->Fill(mom.E(),dIA);
+            
+            if(mom.E() > 0.5){
+              fhDeltaIRL0->Fill(clus->GetM02(),dIR);
+              fhDeltaIRL1->Fill(clus->GetM20(),dIR);
+              fhDeltaIRD ->Fill(clus->GetDispersion(),dIR);
+
+              fhDeltaIAL0->Fill(clus->GetM02(),dIA);
+              fhDeltaIAL1->Fill(clus->GetM20(),dIA);
+              fhDeltaIAD ->Fill(clus->GetDispersion(),dIA);
+              
+              fhDeltaIRNCells->Fill(nCaloCellsPerCluster,dIR);
+              fhDeltaIANCells->Fill(nCaloCellsPerCluster,dIA);
+              
+              fhDeltaIADistToBad->Fill(clus->GetDistanceToBadChannel(),dIA);
+              if(TMath::Abs(dIA) > 0.9){
+                Int_t col = ietaaMax;
+                if(smMax%2) col = ietaaMax+48;
+
+                Int_t row = iphiiMax+TMath::FloorNint(smMax/2.)*24;
+
+                fhDeltaIA1MaxEtaPhi->Fill(col+2,row+2);
+              }
+
+            }
+            
+          }
+
         }//check time and energy of cells respect to max energy cell if cluster of more than 1 cell
         
         
