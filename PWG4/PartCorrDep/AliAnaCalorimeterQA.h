@@ -172,6 +172,24 @@ public:
 
   TH2F *   fhBadCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
 
+  // Cluster cell size
+  TH2F *   fhDeltaIEtaDeltaIPhiE0;            // Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV; 
+  TH2F *   fhDeltaIEtaDeltaIPhiE2;            // Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV; 
+  TH2F *   fhDeltaIEtaDeltaIPhiE6;            // Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV; 
+  TH2F *   fhDeltaIR;                         // Cluster "radius" in cell units vs E
+  TH2F *   fhDeltaIA;                         // Cluster "asymmetry" in cell terms vs E
+  TH2F *   fhDeltaIRL0;                       // Cluster "radius"    in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIRL1;                       // Cluster "radius"    in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIRD ;                       // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIRNCells ;                  // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIAL0;                       // Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIAL1;                       // Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIAD ;                       // Cluster "asymmetry" in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIANCells ;                  // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIADistToBad ;               // Cluster "asymmetry" in cell units vs Distance to bad channel for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIA1MaxEtaPhi ;               // Asymmetric cluster in cell units vs max cell eta, phi for E > 0.5 GeV, n cells in cluster > 3
+
+  //Cluster/cell Position
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F *   fhXNCells ;                        //! X (cm) cluster distribution vs N cells in cluster
   TH2F *   fhYNCells ;                        //! Y (cm) cluster distribution vs N cells in cluster
@@ -372,7 +390,7 @@ public:
   TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,16)
+  ClassDef(AliAnaCalorimeterQA,17)
 } ;
 
 
