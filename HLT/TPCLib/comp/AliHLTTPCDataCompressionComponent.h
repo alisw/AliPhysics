@@ -113,6 +113,29 @@ protected:
   		      AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
   		      vector<AliHLTComponentBlockData>& outputBlocks) const;
 
+  int ProcessTrackClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
+			   AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
+			   AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
+			   AliHLTSpacePointContainer* pClusters,
+			   int slice, int partition) const;
+
+  int ProcessRemainingClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
+			       AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
+			       AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
+			       AliHLTSpacePointContainer* pClusters,
+			       int slice, int partition) const;
+
+  int FindCellClusters(int trackId, int padrow, float pad, float time,
+		       AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
+		       AliHLTSpacePointContainer* pClusters,
+		       AliHLTTrackGeometry::AliHLTTrackPoint* pTrackPoint) const;
+
+  int WriteTrackClusters(const vector<AliHLTGlobalBarrelTrack>& tracks,
+			 AliHLTSpacePointContainer* pSpacePoints,
+			 AliHLTDataDeflater* pDeflater,
+			 AliHLTUInt8_t* outputPtr,
+			 AliHLTUInt32_t capacity) const;
+
 private:
   AliHLTTPCDataCompressionComponent(const AliHLTTPCDataCompressionComponent&);
   AliHLTTPCDataCompressionComponent& operator=(const AliHLTTPCDataCompressionComponent&);
@@ -143,10 +166,18 @@ private:
 
   /// compression factor histogram
   TH1F* fHistoCompFactor; //! histogram of compression factor
+  TH1F* fHistoResidualPad; //! histogram for pad residual
+  TH1F* fHistoResidualTime; //! histogram for time residual
+  TH1F* fHistoClustersOnTracks; //! clusters on tracks for track model compression
+  TH1F* fHistoClusterRatio; //! fraction of clusters assigned to the track model compression
+  TH1F* fHistoTrackClusterRatio; //! fraction of track clusters assigned to the track model compression
   TString fHistogramFile; //! file to save histogram
 
   /// benchmark
   AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
+
+  /// verbosity
+  int fVerbosity; // verbosity for debug printout
 
   ClassDef(AliHLTTPCDataCompressionComponent, 0)
 };

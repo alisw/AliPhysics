@@ -37,6 +37,11 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
   /// destructor
   ~AliHLTTPCHWCFSpacePointContainer();
 
+  enum {
+    kModeSingle = 0x1,
+    kModeCreateMap = 0x2
+  };
+
   virtual bool Check(AliHLTUInt32_t clusterID) const;
   virtual int GetClusterIDs(vector<AliHLTUInt32_t>& tgt) const;
   virtual const vector<AliHLTUInt32_t>* GetClusterIDs(AliHLTUInt32_t mask);
@@ -47,6 +52,7 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
   virtual float GetZ(AliHLTUInt32_t clusterID) const;
   virtual float GetZWidth(AliHLTUInt32_t clusterID) const;
   virtual float GetCharge(AliHLTUInt32_t clusterID) const;
+  virtual float GetQMax(AliHLTUInt32_t clusterID) const;
   virtual float GetPhi(AliHLTUInt32_t clusterID) const;
 
   /// add input block to the collection
@@ -88,11 +94,6 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 		    AliHLTDataDeflater* pDeflater,
 		    const char* option="") const;
   virtual int Write(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
-		    vector<AliHLTComponentBlockData>& outputBlocks,
-		    AliHLTDataDeflater* pDeflater,
-		    const char* option="") const;
-
-  int WriteUnsorted(AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
 		    vector<AliHLTComponentBlockData>& outputBlocks,
 		    AliHLTDataDeflater* pDeflater,
 		    const char* option="") const;
