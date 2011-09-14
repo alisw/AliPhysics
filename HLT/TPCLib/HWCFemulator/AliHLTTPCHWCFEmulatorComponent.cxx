@@ -498,7 +498,8 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       std::auto_ptr<AliHLTTPCClusterMCLabel> allocOutMC(new AliHLTTPCClusterMCLabel[nOutputMC+1]);
       
       if( !outBlock.get() || !allocOutMC.get() ){
-	return -ENOMEM;
+	iResult=-ENOMEM;
+	break;
       }
 
       memset(outBlock.get(), 0, outBlockSize*sizeof(AliHLTUInt8_t));
@@ -577,6 +578,7 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
       } else {
 	HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+outSize);
 	iResult=-ENOSPC;
+	break;
       }
 
       if( fDoMC && outMC && outMC->fCount>0 ){
@@ -596,12 +598,14 @@ int AliHLTTPCHWCFEmulatorComponent::DoEvent( const AliHLTComponentEventData& evt
 	} else {	
 	  HLTWarning( "Output buffer (%db) is too small, required %db", maxSize, size+s);
 	  iResult=-ENOSPC;	    
+	  break;
 	}
       }
     }
   
   fBenchmark.Stop(0);  
   HLTInfo(fBenchmark.GetStatistics());
+  fCFSupport.ReleaseEventMemory();
   return iResult;
 }
 

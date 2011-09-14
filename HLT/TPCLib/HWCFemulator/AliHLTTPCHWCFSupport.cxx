@@ -65,8 +65,7 @@ AliHLTTPCHWCFSupport::~AliHLTTPCHWCFSupport()
   // see header file for class documentation
   for( int i=0; i<fgkNSlices; i++ )
     for( int j=0; j<fgkNPatches; j++ ) delete[] fMapping[i][j];
-  delete[] fEventMemory;
-  delete[] fEventMCMemory;
+  ReleaseEventMemory(); 
 }
 
 AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport(const AliHLTTPCHWCFSupport&)
@@ -81,6 +80,16 @@ AliHLTTPCHWCFSupport::AliHLTTPCHWCFSupport(const AliHLTTPCHWCFSupport&)
 AliHLTTPCHWCFSupport& AliHLTTPCHWCFSupport::operator=(const AliHLTTPCHWCFSupport&){
   // dummy
   return *this;
+}
+
+
+void AliHLTTPCHWCFSupport::ReleaseEventMemory()
+{
+  // clean up 
+  if( fEventMemory ) delete[] fEventMemory;
+  if( fEventMCMemory )delete[] fEventMCMemory;
+  fEventMemory = 0;
+  fEventMCMemory = 0;
 }
 
 
@@ -311,8 +320,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
   // MC labels are provided if possible  
   //
 
-  delete[] fEventMemory;
-  delete[] fEventMCMemory;
+  ReleaseEventMemory();
   
   rawEvent = 0;
   rawEventSize32 = 0;
@@ -408,6 +416,7 @@ int AliHLTTPCHWCFSupport::CreateRawEvent
       if( !fEventMCMemory ){
 	HLTWarning("Not enougth memory: can not allocate %d bytes",totalNMC*sizeof(AliHLTTPCClusterMCLabel));
 	delete[] fEventMemory;
+	fEventMemory = 0;
 	return 0;
       }
 

@@ -46,6 +46,9 @@ class AliHLTTPCHWCFSupport : public AliHLTLogging
   /** method to check raw data */
   int CheckRawData( const AliHLTUInt32_t *buffer, unsigned long bufferSize32, int patch, int slice );
 
+  /** clean up */
+  void ReleaseEventMemory();
+
  
  private:
 
