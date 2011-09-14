@@ -78,6 +78,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fEmbedMode(0),
     fGeom(0),
     fReco(0),
+    fTrigName("EmcalClusters_L0FEE"),
     fDoPSel(kTRUE),
     fIsGeoMatsSet(0),
     fNEvs(0),
@@ -94,8 +95,6 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fPtRanges(0),
     fSelTracks(0),
     fSelPrimTracks(0),
-    fNAmpInTrigger(0),
-    fAmpInTrigger(0),
     fNtuple(0),
     fHeader(0),
     fPrimVert(0),
@@ -176,6 +175,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fEmbedMode(0),
     fGeom(0),
     fReco(0),
+    fTrigName("EmcalClusters_L0FEE"),
     fDoPSel(kTRUE),
     fIsGeoMatsSet(0),
     fNEvs(0),
@@ -192,8 +192,6 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fPtRanges(0),
     fSelTracks(0),
     fSelPrimTracks(0),
-    fNAmpInTrigger(0),
-    fAmpInTrigger(0),
     fNtuple(0),
     fHeader(0),
     fPrimVert(0),
@@ -260,7 +258,6 @@ AliAnalysisTaskEMCALPi0PbPb::~AliAnalysisTaskEMCALPi0PbPb()
   delete fTrClassNamesArr;
   delete fSelTracks;
   delete fSelPrimTracks;
-  delete [] fAmpInTrigger;
   delete [] fHColuRow;
   delete [] fHColuRowE;
   delete [] fHCellMult;
@@ -304,6 +301,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   cout << " fEmbedMode:     " << fEmbedMode << endl;
   cout << " fGeom:          " << fGeom << endl;
   cout << " fReco:          " << fReco << endl;
+  cout << " fTrigName:      " << fTrigName << endl;
   cout << " fDoPSel:        " << fDoPSel << endl;
 
   if (!fGeom)
@@ -734,6 +732,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
   fAodCells    = 0; // will be set if AOD input used
 
   // deal with special output from AliAnalysisTaskEMCALClusterizeFast first
+  Bool_t overwrite    = 0;
   Bool_t clusattached = 0;
   Bool_t recalibrated = 0;
   if (1 && !fClusName.IsNull()) {
@@ -741,9 +740,10 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
     TObjArray *ts = am->GetTasks();
     cltask = dynamic_cast<AliAnalysisTaskEMCALClusterizeFast*>(ts->FindObject(fClusName));
     if (cltask && cltask->GetClusters()) {
-      fRecPoints = cltask->GetClusters();
-      fDigits = cltask->GetDigits();
+      fRecPoints   = cltask->GetClusters();
+      fDigits      = cltask->GetDigits();
       clusattached = cltask->GetAttachClusters();
+      overwrite    = cltask->GetOverwrite();
       if (cltask->GetCalibData()!=0)
         recalibrated = kTRUE;
     }
@@ -761,10 +761,12 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
 
   if (fEsdEv) { // ESD input mode
     if (1 && (!fRecPoints||clusattached)) {
-      if (!clusattached)
+      if (!clusattached && !overwrite)
         am->LoadBranch("CaloClusters");
       TList *l = fEsdEv->GetList();
-      if (l) {
+      if (clusattached) {
+        fEsdClusters = dynamic_cast<TClonesArray*>(l->FindObject(fClusName));
+      } else if (overwrite) {
         fEsdClusters = dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
       }
     }
@@ -860,104 +862,34 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcCaloTriggers()
 
   fTriggers->Clear();
 
-  AliVCaloCells *cells = fEsdCells;
-  if (!cells)
-    cells = fAodCells;
-  if (!cells)
+  if (fTrigName.Length()<=0)
     return;
 
-  Int_t ncells = cells->GetNumberOfCells();
-  if (ncells<=0)
+  TClonesArray *arr = dynamic_cast<TClonesArray*>(fEsdEv->FindListObject(fTrigName));
+  if (!arr) {
+    AliError(Form("Could not get array with name %s", fTrigName.Data()));
     return;
-
-  if (ncells>fNAmpInTrigger) {
-    delete [] fAmpInTrigger;
-    fAmpInTrigger = new Float_t[ncells];
-    fNAmpInTrigger = ncells;
-  }
-  for (Int_t i=0;i<ncells;++i)
-    fAmpInTrigger[i] = 0;
-
-  std::map<Short_t,Short_t> map;
-  for (Short_t pos=0;pos<ncells;++pos) {
-    Short_t id = cells->GetCellNumber(pos);
-    map[id]=pos;
   }
 
-  AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
-  am->LoadBranch("EMCALTrigger.");
-
-  AliESDCaloTrigger *triggers = fEsdEv->GetCaloTrigger("EMCAL");
-  if (!triggers)
-    return;
-  if (triggers->GetEntries()<=0)
-    return;
-
-  triggers->Reset();
-  Int_t ntrigs=0;
-  while (triggers->Next()) {
-    Int_t gCol=0, gRow=0, ntimes=0;
-    triggers->GetPosition(gCol,gRow);
-    triggers->GetNL0Times(ntimes);
-    if (ntimes<1)
+  Int_t nNumberOfCaloClusters = arr->GetEntries();
+  for(Int_t j = 0, ntrigs = 0; j < nNumberOfCaloClusters; ++j) {
+    AliVCluster *cl = dynamic_cast<AliVCluster*>(arr->At(j));
+    if (!cl)
       continue;
-    Float_t amp=0;
-    triggers->GetAmplitude(amp);
-    Int_t find = -1;
-    fGeom->GetAbsFastORIndexFromPositionInEMCAL(gCol,gRow,find);
-    if (find<0)
+    if (!cl->IsEMCAL())
       continue;
-    Int_t cidx[4] = {-1};
-    Bool_t ret = fGeom->GetCellIndexFromFastORIndex(find, cidx);
-    if (!ret)
+    if (cl->E()<1)
       continue;
-    Int_t trgtimes[25];
-    triggers->GetL0Times(trgtimes);
-    Int_t mintime = trgtimes[0];
-    Int_t maxtime = trgtimes[0];
-    Bool_t trigInTimeWindow = 0;
-    for (Int_t i=0;i<ntimes;++i) {
-      if (trgtimes[i]<mintime)
-        mintime = trgtimes[i]; 
-      if (maxtime<trgtimes[i])
-        maxtime = trgtimes[i]; 
-      if ((fMinL0Time<=trgtimes[i]) && (fMaxL0Time>=trgtimes[i]))
-        trigInTimeWindow = 1;
-    }
-
-    Double_t tenergy = 0;
-    Double_t tphi=0;
-    Double_t teta=0;
-    for (Int_t i=0;i<3;++i) {
-      Short_t pos = -1;
-      std::map<Short_t,Short_t>::iterator it = map.find(cidx[i]);
-      if (it!=map.end())
-        pos = it->second;
-      if (pos<0)
-        continue;
-      if (trigInTimeWindow)
-        fAmpInTrigger[pos] = amp;
-      Float_t eta=-1, phi=-1;
-      fGeom->EtaPhiFromIndex(cidx[i],eta,phi);
-      Double_t en= cells->GetAmplitude(pos);
-      tenergy+=en;
-      teta+=eta*en;
-      tphi+=phi*en;
-    }
-
-    if (tenergy<=0)
-      continue;
-
-    teta/=tenergy;
-    tphi/=tenergy;
-
     AliStaTrigger *trignew = static_cast<AliStaTrigger*>(fTriggers->New(ntrigs++));
-    trignew->fE       = tenergy;
-    trignew->fEta     = teta;
-    trignew->fPhi     = tphi;
-    trignew->fAmp     = amp;
-    trignew->fMinTime = mintime;
-    trignew->fMaxTime = maxtime;
+    Float_t pos[3] = {0,0,0};
+    cl->GetPosition(pos);  
+    TVector3 vpos(pos); 
+    trignew->fE       = cl->E();
+    trignew->fEta     = vpos.Eta();
+    trignew->fPhi     = vpos.Phi();
+    Short_t  id    = -1;
+    GetMaxCellEnergy(cl, id);
+    trignew->fIdMax    = id;
   }
 }
 
@@ -1035,9 +967,10 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     Short_t id    = -1;
     Double_t emax = GetMaxCellEnergy(clus, id);
     cl->fIdMax    = id;
+    cl->fSM       = fGeom->GetSuperModuleNumber(id);
     cl->fEmax     = emax;
-    cl->fTmax    =  cells->GetCellTime(id);
-    cl->fE2max   =  GetSecondMaxCell(clus);
+    cl->fE2max    = GetSecondMaxCell(clus);
+    cl->fTmax     = cells->GetCellTime(id);
     if (clus->GetDistanceToBadChannel()<10000)
       cl->fDbc    = clus->GetDistanceToBadChannel();
     if (!TMath::IsNaN(clus->GetDispersion()))
@@ -1046,23 +979,23 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       cl->fM20    = clus->GetM20();
     if (!TMath::IsNaN(clus->GetM02()))
       cl->fM02    = clus->GetM02();
-    Double_t maxAxis = 0, minAxis = 0;
+    Double_t maxAxis = -1, minAxis = -1;
     GetSigma(clus,maxAxis,minAxis);
-    clus->SetTOF(maxAxis);     // store sigma in TOF
+    clus->SetTOF(maxAxis);     // store sigma in TOF for later plotting
     cl->fSig      = maxAxis;
-    Double_t sEtaEta = 0;
-    Double_t sPhiPhi = 0;
+    Double_t sEtaEta = -1;
+    Double_t sPhiPhi = -1;
     GetSigmaEtaEta(clus, sEtaEta, sPhiPhi);
     cl->fSigEtaEta = sEtaEta;
     cl->fSigPhiPhi = sPhiPhi;
-    Double_t clusterEcc = 0;
+    Double_t clusterEcc = -1;
     if (maxAxis > 0)
       clusterEcc = TMath::Sqrt(1.0 - minAxis*minAxis/(maxAxis*maxAxis));
-    clus->SetChi2(clusterEcc); // store ecc in chi2
-    cl->fEcc      = clusterEcc;
-    cl->fTrIso    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
-    cl->fTrIso1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 1);
-    cl->fTrIso2   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
+    clus->SetChi2(clusterEcc); // store ecc in chi2 for later plotting
+    cl->fEcc        = clusterEcc;
+    cl->fTrIso      = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist);
+    cl->fTrIso1     = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 1);
+    cl->fTrIso2     = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist, 2);
     cl->fTrIsoD1    = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1);
     cl->fTrIso1D1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1, 1);
     cl->fTrIso2D1   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist-0.1, 2);
@@ -1070,40 +1003,31 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fTrIso1D3   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist+0.1, 1);
     cl->fTrIso2D3   = GetTrackIsolation(clusterVec.Eta(),clusterVec.Phi(),fIsoDist+0.1, 2);
     cl->fTrIsoStrip = GetTrackIsoStrip(clusterVec.Eta(), clusterVec.Phi());
-    cl->fCeCore   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
-    cl->fCeIso    = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
-    cl->fCeIso1   = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.10);
-    cl->fCeIso3  = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.30);
-    cl->fCeIso4x4 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 4, 4);
-    cl->fCeIso5x5 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 5, 5);
-    cl->fCeIso3x22 = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 3, 22);
-
-    if (fAmpInTrigger) { // fill trigger info if present
-      Double_t trigpen = 0;
-      Double_t trignen = 0;
-      for(Int_t j=0; j<cl->fN; ++j) {
-        Short_t cid = TMath::Abs(clus->GetCellAbsId(j));
-        Short_t pos = -1;
-        std::map<Short_t,Short_t>::iterator it = map.find(cid);
-        if (it!=map.end())
-          pos = it->second;
-        if (pos<0)
+    cl->fCeCore     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.05);
+    cl->fCeIso      = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),fIsoDist);
+    cl->fCeIso1     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.10);
+    cl->fCeIso3     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.30);
+    cl->fCeIso4x4   = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 4, 4);
+    cl->fCeIso5x5   = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 5, 5);
+    cl->fCeIso3x22  = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 3, 22);
+    cl->fIsShared   = IsShared(clus);
+    cl->fTrigId     = -1;
+    cl->fTrigE      = 0;
+    if (fTriggers) {
+      Int_t ntrig = fTriggers->GetEntries();
+      for (Int_t j = 0; j<ntrig; ++j) {
+        AliStaTrigger *sta = static_cast<AliStaTrigger*>(fTriggers->At(j));
+        if (!sta)
           continue;
-        if (fAmpInTrigger[pos]>0)
-          trigpen += cells->GetAmplitude(pos);
-        else if (fAmpInTrigger[pos]<0)
-          trignen += cells->GetAmplitude(pos);
-      }
-      if (trigpen>0) {
-        cl->fIsTrigM = 1;
-        cl->fTrigE   = trigpen;      
-      }
-      if (trignen>0) {
-        cl->fIsTrigM   = 1;
-        cl->fTrigMaskE = trignen;      
+        Short_t idmax = sta->fIdMax;
+        Bool_t inc = IsIdPartOfCluster(clus, idmax);
+        if (inc) {
+          cl->fTrigId     = j;
+          cl->fTrigE      = sta->fE;
+          break;
+        }
       }
     }
-    cl->fIsShared = IsShared(clus);
 
     // track matching
     Double_t mind2 = 1e10;
@@ -1715,6 +1639,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
     fHeader->fV0And = v0A && v0B;
   }
+  fHeader->fIsHT = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+
   AliCentrality *cent = InputEvent()->GetCentrality();
   fHeader->fV0Cent    = cent->GetCentralityPercentileUnchecked("V0M");
   fHeader->fCl1Cent   = cent->GetCentralityPercentileUnchecked("CL1");
@@ -1737,7 +1663,8 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
   TString trgclasses(fHeader->fFiredTriggers);
   for (Int_t j = 0; j<fTrClassNamesArr->GetEntries(); ++j) {
     const char *name = fTrClassNamesArr->At(j)->GetName();
-    if (trgclasses.Contains(name))
+    TRegexp regexp(name);
+    if (trgclasses.Contains(regexp))
       val += TMath::Power(2,j);
   }
   fHeader->fTcls = (UInt_t)val;
@@ -1817,6 +1744,30 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     }
     fHeader->fNClus = nclus;
   }
+
+  fHeader->fMaxTrE     = 0;
+  if (fTriggers) {
+    Int_t ntrig = fTriggers->GetEntries();
+    for (Int_t j = 0; j<ntrig; ++j) {
+      AliStaTrigger *sta = static_cast<AliStaTrigger*>(fTriggers->At(j));
+      if (!sta)
+        continue;
+      if (sta->fE>fHeader->fMaxTrE)
+        fHeader->fMaxTrE = sta->fE;
+    }
+  }
+
+  // count cells above 100 MeV on super modules
+  fHeader->fNcSM0 = GetNCells(0, 0.100);
+  fHeader->fNcSM1 = GetNCells(1, 0.100);
+  fHeader->fNcSM2 = GetNCells(2, 0.100);
+  fHeader->fNcSM3 = GetNCells(3, 0.100);
+  fHeader->fNcSM4 = GetNCells(4, 0.100);
+  fHeader->fNcSM5 = GetNCells(5, 0.100);
+  fHeader->fNcSM6 = GetNCells(6, 0.100);
+  fHeader->fNcSM7 = GetNCells(7, 0.100);
+  fHeader->fNcSM8 = GetNCells(8, 0.100);
+  fHeader->fNcSM9 = GetNCells(9, 0.100);
 
   if (fAodEv) { 
     am->LoadBranch("vertices");
@@ -1998,10 +1949,13 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsolation(Double_t cEta, Double_t c
     if(dist>rad2)
       continue;
     Double_t cellE = cells->GetAmplitude(i);
-    cellIsolation += cellE;
+    Double_t theta = 2*TMath::ATan(TMath::Exp(-eta));
+    Double_t cellEt = cellE*sin(theta);
+    cellIsolation += cellEt;
   }
   return cellIsolation;
 }
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsoNxM(Double_t cEta, Double_t cPhi, Int_t N, Int_t M) const
 {
@@ -2026,11 +1980,12 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellIsoNxM(Double_t cEta, Double_t cPhi
     if(TMath::Abs(phidiff)/0.014>M)
       continue;
     Double_t cellE = cells->GetAmplitude(i);
-    cellIsolation += cellE;
+    Double_t theta = 2*TMath::ATan(TMath::Exp(-eta));
+    Double_t cellEt = cellE*sin(theta);
+    cellIsolation += cellEt;
   }
   return cellIsolation;
 }
-
 
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPi0PbPb::GetCellEnergy(const AliVCluster *cluster) const
@@ -2133,6 +2088,7 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigma(const AliVCluster *c, Double_t& sigma
   sigmaMin = TMath::Abs(Sxx + Syy - TMath::Sqrt(TMath::Abs((Sxx-Syy)*(Sxx-Syy)+4.0*Sxy*Sxy)))/2.0;
   sigmaMin = TMath::Sqrt(TMath::Abs(sigmaMin)); 
 }
+
 //________________________________________________________________________
 void AliAnalysisTaskEMCALPi0PbPb::GetSigmaEtaEta(const AliVCluster *c, Double_t& sEtaEta, Double_t &sPhiPhi) const
 {
@@ -2190,7 +2146,6 @@ void AliAnalysisTaskEMCALPi0PbPb::GetSigmaEtaEta(const AliVCluster *c, Double_t&
   sPhiPhi = TMath::Sqrt(Sphiphi);
 }
 
-
 //________________________________________________________________________
 Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(const AliVCluster *c, Double_t emin) const
 {
@@ -2209,6 +2164,32 @@ Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(const AliVCluster *c, Double_t emin
     Double_t cellen = cells->GetCellAmplitude(id);
     if (cellen>=emin)
       ++n;
+  }
+  return n;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskEMCALPi0PbPb::GetNCells(Int_t sm, Double_t emin) const
+{
+  // Calculate number of cells per SM above emin.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return 0;
+
+  Int_t n = 0;
+  Int_t ncells = cells->GetNumberOfCells();
+  for(Int_t j=0; j<ncells; ++j) {
+    Int_t id = TMath::Abs(cells->GetCellNumber(j));
+    Double_t cellen = cells->GetCellAmplitude(id);
+    if (cellen<emin)
+      continue;
+    Int_t fsm = fGeom->GetSuperModuleNumber(id);
+    if (fsm != sm)
+      continue;
+    ++n;
   }
   return n;
 }
@@ -2237,6 +2218,7 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsolation(Double_t cEta, Double_t 
   } 
   return trkIsolation;
 }
+
 //________________________________________________________________________
 Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsoStrip(Double_t cEta, Double_t cPhi, Double_t dEta, Double_t dPhi, Double_t pt) const
 {
@@ -2261,7 +2243,6 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetTrackIsoStrip(Double_t cEta, Double_t c
   return trkIsolation;
 }
 
-
 //________________________________________________________________________
 Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
 {
@@ -2283,6 +2264,26 @@ Bool_t AliAnalysisTaskEMCALPi0PbPb::IsShared(const AliVCluster *c) const
       continue;
     }
     if (got!=n)
+      return 1;
+  }
+  return 0;
+}
+
+//________________________________________________________________________
+Bool_t AliAnalysisTaskEMCALPi0PbPb::IsIdPartOfCluster(const AliVCluster *c, Short_t id) const
+{
+  // Returns if id is part of cluster.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return 0;
+
+  Int_t ncells = c->GetNCells();
+  for(Int_t j=0; j<ncells; ++j) {
+    Int_t cid = TMath::Abs(c->GetCellAbsId(j));
+    if (cid == id)
       return 1;
   }
   return 0;
