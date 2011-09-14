@@ -89,12 +89,14 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t     GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
   Double_t     GetMaxCellEnergy(const AliVCluster *c, Short_t &id)                                        const;
   Int_t        GetNCells(const AliVCluster *c, Double_t emin=0.)                                          const;
+  Int_t        GetNCells(Int_t sm, Double_t emin=0.)                                                      const;
   void         GetSigma(const AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
   void         GetSigmaEtaEta(const AliVCluster *c, Double_t &sigmaEtaEta, Double_t &sigmaPhiPhi)         const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
   Double_t     GetTrackIsoStrip(Double_t cEta, Double_t cPhi, Double_t dEta=0.015, Double_t dPhi=0.3, Double_t pt=0.)       const;
   Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
   Bool_t       IsShared(const AliVCluster *c)                                                             const;
+  Bool_t       IsIdPartOfCluster(const AliVCluster *c, Short_t id)                                        const;
   void         PrintDaughters(const AliVParticle *p, const TObjArray *arr, Int_t level=0)                 const;
   void         PrintDaughters(const AliMCParticle *p, const AliMCEvent *arr, Int_t level=0)               const;
   void         PrintTrackRefs(AliMCParticle *p)                                                           const;
@@ -132,6 +134,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Bool_t                 fEmbedMode;              // embedding mode
   AliEMCALGeometry      *fGeom;                   // geometry utils
   AliEMCALRecoUtils     *fReco;                   // reco utils
+  TString                fTrigName;               // trigger name
   Bool_t                 fDoPSel;                 // if false then accept all events
     // derived members (ie with ! after //)
   Bool_t                 fIsGeoMatsSet;           //!indicate that geo matrices are set 
@@ -149,8 +152,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TAxis                 *fPtRanges;               //!pointer to pt ranges
   TObjArray             *fSelTracks;              //!pointer to selected tracks
   TObjArray             *fSelPrimTracks;          //!pointer to selected primary tracks
-  Int_t                  fNAmpInTrigger;          //!number of cells to keep trigger statistic
-  Float_t               *fAmpInTrigger;           //!amplitude for calo cells which are part of trigger
     // ntuple
   TTree                 *fNtuple;                 //!pointer to ntuple
   AliStaHeader          *fHeader;                 //!pointer to header
@@ -210,7 +211,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 11) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 12) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
@@ -221,18 +222,19 @@ class AliStaHeader
  public:
   AliStaHeader() : fRun(0), fOrbit(0), fPeriod(0), fBx(0), fL0(0), fL1(0), fL2(0),
                    fTrClassMask(0), fTrCluster(0), fOffTriggers(0), fFiredTriggers(),
-                   fTcls(0), fV0And(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), fTr(0),
-                   fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), fNSelPrimTr1(0),
+                   fTcls(0), fV0And(0), fIsHT(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), 
+                   fTr(0), fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), fNSelPrimTr1(0),
                    fNSelPrimTr2(0), fNCells(0), fNCells0(0), fNCells01(0), fNCells03(0), 
                    fNCells1(0), fNCells2(0), fNCells5(0), fNClus(0), fNClus1(0), fNClus2(0), fNClus5(0), 
-                   fMaxCellE(0), fMaxClusE(0) {;}
+                   fMaxCellE(0), fMaxClusE(0), fMaxTrE(0), fNcSM0(0), fNcSM1(0), fNcSM2(0), fNcSM3(0), 
+                   fNcSM4(0), fNcSM5(0), fNcSM6(0),fNcSM7(0),fNcSM8(0),fNcSM9(0) {;}
+  virtual ~AliStaHeader() {;}
 
   ULong64_t     GetEventId() const {
                   return (((ULong64_t)fPeriod << 36) |
                           ((ULong64_t)fOrbit  << 12) |
                           (ULong64_t)fBx); 
                 }
-  virtual ~AliStaHeader() {;}
 
  public:
   Int_t         fRun;            //         run number
@@ -247,7 +249,8 @@ class AliStaHeader
   UInt_t        fOffTriggers;    //         fired offline triggers for this event
   TString       fFiredTriggers;  //         string with fired triggers
   UInt_t        fTcls;           //         custom trigger definition
-  Bool_t        fV0And;          //         V0AND (from AliTriggerAnalysis)
+  Bool_t        fV0And;          //         if V0AND (from AliTriggerAnalysis)
+  Bool_t        fIsHT;           //         if EMCAL L0 (from AliTriggerAnalysis)
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
   Double32_t    fV0;             //[0,0,16] v0 result used for cent 
   Double32_t    fCl1Cent;        //[0,0,16] cl1 cent
@@ -274,8 +277,19 @@ class AliStaHeader
   UShort_t      fNClus5;         //         # clus > 5 GeV
   Double32_t    fMaxCellE;       //[0,0,16] maximum cell energy
   Double32_t    fMaxClusE;       //[0,0,16] maximum clus energy
+  Double32_t    fMaxTrE;         //[0,0,16] maximum trigger energy
+  UShort_t      fNcSM0;          //         # cells > 0.1  GeV in SM 0
+  UShort_t      fNcSM1;          //         # cells > 0.1  GeV in SM 1
+  UShort_t      fNcSM2;          //         # cells > 0.1  GeV in SM 2
+  UShort_t      fNcSM3;          //         # cells > 0.1  GeV in SM 3
+  UShort_t      fNcSM4;          //         # cells > 0.1  GeV in SM 4
+  UShort_t      fNcSM5;          //         # cells > 0.1  GeV in SM 5
+  UShort_t      fNcSM6;          //         # cells > 0.1  GeV in SM 6
+  UShort_t      fNcSM7;          //         # cells > 0.1  GeV in SM 7
+  UShort_t      fNcSM8;          //         # cells > 0.1  GeV in SM 8
+  UShort_t      fNcSM9;          //         # cells > 0.1  GeV in SM 9
 
-  ClassDef(AliStaHeader,4) // Header class
+  ClassDef(AliStaHeader,5) // Header class
 };
 
 class AliStaVertex
@@ -303,12 +317,13 @@ class AliStaVertex
 class AliStaCluster : public TObject
 {
  public:
-    AliStaCluster() : TObject(), fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(0), fEmax(0), fTmax(0), 
-                      fE2max(0),fDbc(-1), fDisp(-1), fM20(0), fM02(0), fEcc(0), fSig(0), fSigEtaEta(0), fSigPhiPhi(0),
+    AliStaCluster() : TObject(), 
+                      fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), 
+                      fTmax(0), fDbc(-1), fDisp(-1), fM20(-1), fM02(-1), fEcc(-1), fSig(-1), fSigEtaEta(-1), fSigPhiPhi(-1),
                       fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
                       fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),fTrIsoStrip(0),
                       fCeIso(0), fCeIso1(0), fCeIso3(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
-                      fIsTrigM(0), fTrigE(-1), fTrigMaskE(-1), fIsShared(0), fMcLabel(-1), fEmbE(0) {;}
+                      fIsShared(0), fTrigId(-1), fTrigE(0), fMcLabel(-1), fEmbE(0) {;}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -318,10 +333,11 @@ class AliStaCluster : public TObject
   UChar_t       fN;                //         number of cells
   UChar_t       fN1;               //         number of cells > 100 MeV
   UChar_t       fN3;               //         number of cells > 300 MeV
-  UShort_t      fIdMax;            //         id maximum cell
+  Short_t       fIdMax;            //         id maximum cell
+  Char_t        fSM;               //         super module number (from maximum cell)
   Double32_t    fEmax;             //[0,0,16] energy of maximum cell
-  Double32_t    fTmax;             //[0,0,16] time of maximum cell
   Double32_t    fE2max;            //[0,0,16] energy of second maximum cell
+  Double32_t    fTmax;             //[0,0,16] time of maximum cell
   Double32_t    fDbc;              //[0,0,16] distance to nearest bad channel
   Double32_t    fDisp;             //[0,0,16] cluster dispersion, for shape analysis
   Double32_t    fM20;              //[0,0,16] 2-nd moment along the main eigen axis
@@ -347,35 +363,32 @@ class AliStaCluster : public TObject
   Double32_t    fTrIsoStrip;       //[0,0,16] track isolation strip, dEtaXdPhi=0.015x0.3
   Double32_t    fCeIso;            //[0,0,16] cell isolation in R=0.20
   Double32_t    fCeIso1;           //[0,0,16] cell isolation in R=0.10
-  Double32_t    fCeIso3;          //[0,0,16] cell isolation in  R=0.30
-  Double32_t    fCeIso4x4;         //[0,0,16] cell isolation in  4x4 cells
-  Double32_t    fCeIso5x5;         //[0,0,16] cell isolation in  5x5 cells
+  Double32_t    fCeIso3;           //[0,0,16] cell isolation in R=0.30
+  Double32_t    fCeIso4x4;         //[0,0,16] cell isolation in 4x4 cells
+  Double32_t    fCeIso5x5;         //[0,0,16] cell isolation in 5x5 cells
   Double32_t    fCeCore;           //[0,0,16] cell content in R=0.05 
   Double32_t    fCeIso3x22;        //[0,0,16] cell isolation in rectangular strip of dEtaXdPhi=0.042x0.308
-  Bool_t        fIsTrigM;          //         if true then trigger values are set
-  Double32_t    fTrigE;            //[0,0,16] trigger tower energy
-  Double32_t    fTrigMaskE;        //[0,0,16] masked trigger tower energy
   Bool_t        fIsShared;         //         =true then extends across more than one super module
+  Short_t       fTrigId;           //         index of matched trigger tower
+  Double32_t    fTrigE;            //[0,0,16] energy (FEE) of matched trigger tower
   Short_t       fMcLabel;          //         index of closest MC particle
   Double32_t    fEmbE;             //[0,0,16] sum of energy of embedded (MC) cells in cluster
 
-  ClassDef(AliStaCluster,6) // Cluster class
+  ClassDef(AliStaCluster,7) // Cluster class
 };
 
 class AliStaTrigger : public TObject
 {
  public:
-  AliStaTrigger() : TObject(), fE(0), fEta(0), fPhi(0), fAmp(0), fMinTime(0), fMaxTime(0) {}
+  AliStaTrigger() : TObject(), fE(0), fEta(0), fPhi(0), fIdMax(-1) {}
 
  public:
   Double32_t    fE;                //[0,0,16] energy
   Double32_t    fEta;              //[0,0,16] eta
   Double32_t    fPhi;              //[0,0,16] phi
-  Double32_t    fAmp;              //[0,0,16] amplitude
-  Short_t       fMinTime;          //        minimum L0 "time"
-  Short_t       fMaxTime;          //        maximum L0 "time"
+  Short_t       fIdMax;            //         id maximum cell
 
-  ClassDef(AliStaTrigger,1) // Trigger class
+  ClassDef(AliStaTrigger,2) // Trigger class
 };
 
 class AliStaPart : public TObject
