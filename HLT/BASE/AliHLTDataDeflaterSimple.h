@@ -131,6 +131,8 @@ public:
   /// DataDeflaterSimple has deflater version 1
   virtual int GetDeflaterVersion() const {return 1;}
 
+  static float CalcEntropy(TH1* histo, const char* option="", int mode=0);
+
  protected:
  private:
   /// copy constructor prohibited
