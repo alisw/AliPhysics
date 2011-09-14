@@ -165,7 +165,7 @@ void Extractv2from2Dhistos(){
     printf("v2 = %f +- %f\n",v2M1[iFinalPtBin],errv2M1[iFinalPtBin]);
     
     printf("\n--------- Method 2: S/S+B ----------\n");
-    c2[iFinalPtBin]=new TCanvas(Form("cMeth2Bin%d",iFinalPtBin),Form("Meth2Bin%d",iFinalPtBin));
+    c2[iFinalPtBin]=new TCanvas(Form("cMeth2PtBin%d",iFinalPtBin),Form("Meth2PtBin%d",iFinalPtBin));
     TF1* fv2=DoFitv2vsMass(iFinalPtBin,hMassDphi[iFinalPtBin],hMass,rebinHistov2Mass[iFinalPtBin],c2[iFinalPtBin],0,useConstantvsBkgVsMass);
 
     Double_t v2obsM2=fv2->GetParameter(3);
@@ -174,8 +174,8 @@ void Extractv2from2Dhistos(){
     v2M2[iFinalPtBin]=v2obsM2/resolFull;
     errv2M2[iFinalPtBin]=errv2obsM2/resolFull;
     printf("v2 = %f +- %f\n",v2M2[iFinalPtBin],errv2M2[iFinalPtBin]);
-    c1[iFinalPtBin]->SaveAs(Form("cMeth1Bin%d.root",iFinalPtBin));
-    c2[iFinalPtBin]->SaveAs(Form("cMeth2Bin%d.root",iFinalPtBin));
+    c1[iFinalPtBin]->SaveAs(Form("cMeth1PtBin%d.root",iFinalPtBin));
+    c2[iFinalPtBin]->SaveAs(Form("cMeth2PtBin%d.root",iFinalPtBin));
   }
 
   printf("\n--------- Summary ------------\n");
@@ -198,7 +198,6 @@ void Extractv2from2Dhistos(){
    for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
      Double_t systRes1=resolSyst*v2M1[iFinalPtBin];
      Double_t systRes2=resolSyst*v2M2[iFinalPtBin];
-     printf("%f\n",systRes1);
      Double_t syste1=TMath::Sqrt(systErrMeth1[iFinalPtBin]*systErrMeth1[iFinalPtBin]+systRes1*systRes1);
      Double_t syste2=TMath::Sqrt(systErrMeth2[iFinalPtBin]*systErrMeth2[iFinalPtBin]+systRes2*systRes2);
      hSystErr1->SetBinError(iFinalPtBin+1,syste1);
@@ -356,7 +355,15 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
   TH1F* hCos2PhiBkgLo=(TH1F*)hMassDphi->ProjectionX(Form("hCos2PhiBkgLoBin%d",iFinalPtBin),minBinBkgLow,maxBinBkgLow);
   TH1F* hCos2PhiBkgHi=(TH1F*)hMassDphi->ProjectionX(Form("hCos2PhiBkgHiBin%d",iFinalPtBin),minBinBkgHi,maxBinBkgHi);
   TH1F* hCos2PhiSigReg=(TH1F*)hMassDphi->ProjectionX(Form("hCos2PhiBkgSigBin%d",iFinalPtBin),minBinSig,maxBinSig);
-  
+
+  printf("Before Rebin11: BkgLo = %f+-%f BkgHi=%f+-%f  SigReg=%f+-%f\n",hCos2PhiBkgLo->GetBinContent(11),hCos2PhiBkgLo->GetBinError(11),
+	 hCos2PhiBkgHi->GetBinContent(11),hCos2PhiBkgHi->GetBinError(11),
+	 hCos2PhiSigReg->GetBinContent(11),hCos2PhiSigReg->GetBinError(11));
+  printf("Before Rebin12: BkgLo = %f+-%f BkgHi=%f+-%f  SigReg=%f+-%f\n",hCos2PhiBkgLo->GetBinContent(12),hCos2PhiBkgLo->GetBinError(12),
+	 hCos2PhiBkgHi->GetBinContent(12),hCos2PhiBkgHi->GetBinError(12),
+	 hCos2PhiSigReg->GetBinContent(12),hCos2PhiSigReg->GetBinError(12));
+  Double_t binc=hCos2PhiBkgLo->GetBinCenter(11);
+
   hCos2PhiBkgLo->Rebin(rebin);
   hCos2PhiBkgHi->Rebin(rebin);
   hCos2PhiSigReg->Rebin(rebin);
@@ -365,15 +372,32 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
   hCos2PhiBkgHi->SetLineWidth(2);
   hCos2PhiBkgLo->SetLineColor(kRed+1);
   hCos2PhiBkgHi->SetLineColor(kBlue+1);
-  
+
+  Int_t theBinR=hCos2PhiBkgLo->FindBin(binc);
+  printf("After Rebin %d: BkgLo = %f+-%f BkgHi=%f+-%f  SigReg=%f+-%f\n",theBinR,
+	 hCos2PhiBkgLo->GetBinContent(theBinR),hCos2PhiBkgLo->GetBinError(theBinR),
+	 hCos2PhiBkgHi->GetBinContent(theBinR),hCos2PhiBkgHi->GetBinError(theBinR),
+	 hCos2PhiSigReg->GetBinContent(theBinR),hCos2PhiSigReg->GetBinError(theBinR));
+
+  printf("Background Scaling: Lo->Sig= %f Hi->Sig=%f\n",bkgSig/bkgLow,bkgSig/bkgHi);
+   
+  hCos2PhiBkgLo->Sumw2();
+  hCos2PhiBkgHi->Sumw2();
   TH1F* hCos2PhiBkgLoScal=(TH1F*)hCos2PhiBkgLo->Clone(Form("hCos2PhiBkgLoScalBin%d",iFinalPtBin));
   hCos2PhiBkgLoScal->Scale(bkgSig/bkgLow);
   TH1F* hCos2PhiBkgHiScal=(TH1F*)hCos2PhiBkgHi->Clone(Form("hCos2PhiBkgHiScalBin%d",iFinalPtBin));
   hCos2PhiBkgHiScal->Scale(bkgSig/bkgHi);
   hCos2PhiBkgLoScal->SetLineWidth(2);
   hCos2PhiBkgHiScal->SetLineWidth(2);
+  hCos2PhiBkgLoScal->SetLineStyle(7);
+  hCos2PhiBkgHiScal->SetLineStyle(2);
   hCos2PhiBkgLoScal->SetLineColor(kRed+1);
   hCos2PhiBkgHiScal->SetLineColor(kBlue+1);
+  printf("After Scaling %d: BkgLo = %f+-%f BkgHi=%f+-%f \n",theBinR,
+	 hCos2PhiBkgLoScal->GetBinContent(theBinR),hCos2PhiBkgLoScal->GetBinError(theBinR),
+	 hCos2PhiBkgHiScal->GetBinContent(theBinR),hCos2PhiBkgHiScal->GetBinError(theBinR));
+
+
   TH1F* hCos2PhiBkgAver=0x0;
   if(optBkg==0){
     hCos2PhiBkgAver=(TH1F*)hCos2PhiBkgLoScal->Clone(Form("hCos2PhiBkgAverBin%d",iFinalPtBin));
@@ -384,19 +408,31 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
   }else{
     hCos2PhiBkgAver=(TH1F*)hCos2PhiBkgHiScal->Clone(Form("hCos2PhiBkgAverBin%d",iFinalPtBin));
   }
+  printf("After Average %d: BkgLo = %f+-%f BkgHi=%f+-%f BkgAve=%f+-%f \n",theBinR,
+	 hCos2PhiBkgLoScal->GetBinContent(theBinR),hCos2PhiBkgLoScal->GetBinError(theBinR),
+	 hCos2PhiBkgHiScal->GetBinContent(theBinR),hCos2PhiBkgHiScal->GetBinError(theBinR),
+	 hCos2PhiBkgAver->GetBinContent(theBinR),hCos2PhiBkgAver->GetBinError(theBinR)
+	 );
+
   hCos2PhiBkgAver->SetLineWidth(2);
   hCos2PhiBkgAver->SetLineColor(kGreen+1);
+  hCos2PhiBkgAver->SetFillColor(kGreen+1);
   TH1F* hCos2PhiSig=(TH1F*)hCos2PhiSigReg->Clone(Form("hCos2PhiSigBin%d",iFinalPtBin));
   hCos2PhiSig->Add(hCos2PhiBkgAver,-1.);   
+  printf("After Subtraction %d: All = %f+-%f BkgAve=%f+-%f Sig=%f+-%f \n",theBinR,
+	 hCos2PhiSigReg->GetBinContent(theBinR),hCos2PhiSigReg->GetBinError(theBinR),
+	 hCos2PhiBkgAver->GetBinContent(theBinR),hCos2PhiBkgAver->GetBinError(theBinR),
+	 hCos2PhiSig->GetBinContent(theBinR),hCos2PhiSig->GetBinError(theBinR)	 
+	 );
   
   TLegend* leg0=new TLegend(0.3,0.6,0.75,0.89);
   TPaveText* t0= new TPaveText(0.15,0.70,0.45,0.89,"NDC");
   if(c1){
     c1->cd(3);
     hCos2PhiSigReg->Draw();
+    hCos2PhiBkgAver->Draw("same");
     hCos2PhiBkgLoScal->Draw("same");
     hCos2PhiBkgHiScal->Draw("same");
-    hCos2PhiBkgAver->Draw("same");
     leg0->SetFillColor(0);
     TLegendEntry* ent=leg0->AddEntry(hCos2PhiSigReg,"Signal region","L");
     ent->SetTextColor(hCos2PhiSigReg->GetLineColor());
@@ -404,7 +440,7 @@ TH1F* DoSideBands(Int_t iFinalPtBin,
     ent->SetTextColor(hCos2PhiBkgLoScal->GetLineColor());
     ent=leg0->AddEntry(hCos2PhiBkgHiScal,"Right side band","L");
     ent->SetTextColor(hCos2PhiBkgHiScal->GetLineColor());
-    ent=leg0->AddEntry(hCos2PhiBkgAver,"Average of side bands","L");
+    ent=leg0->AddEntry(hCos2PhiBkgAver,"Average of side bands","F");
     ent->SetTextColor(hCos2PhiBkgAver->GetLineColor());
     leg0->Draw();
     c1->cd(4);
