@@ -18,7 +18,7 @@
 using namespace std;
 #endif
 
-enum {kFitExpPt, kFitLevi};
+enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave};
 
 void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt) {
 
@@ -38,6 +38,7 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   //   ignored. If the histo is scaled, the bin width is also
   //   divided).
   // - fitFunc: id of the function, levi is the default
+  //   valide options: kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave
   // - varType: the variable used in the pt spectrum (see AliBWFunc.h)
 
   // load stuff
@@ -80,12 +81,23 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   TF1* func = 0;
   Int_t normPar = -1;
   if (fitFunc == kFitLevi)   {
-    func = fm->GetLevi (mass, 0.2, 20,100);
+    func = fm->GetLevi (mass, 0.4, 20,3);
+    func->SetParLimits(1,1,100);
     normPar = 0;
   }
   if (fitFunc == kFitExpPt)  {
     func = fm->GetPTExp(0.2, 20);
   }
+  if (fitFunc == fFitExpMt)  {
+    func = fm->GetMTExp(mass,0.2, 20);
+  }
+  if (fitFunc == kFitBoltzmann)  {
+    func = fm->GetBoltzmann(mass, 0.2, 20);
+  }
+  if (fitFunc == kFitBlastWave)  {
+    func = fm->GetBGBW(mass,0.6,0.3, 20);
+  }
+
 
   TFile * f = new TFile(file);  
   TH1 * h = 0;
@@ -102,18 +114,23 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
 //   cout << "WARNING SCALING2PI" << endl;
 //   h->Scale(2*TMath::Pi());//Fixme
 
-//   h->Fit(func); // FIXME
-//   gMinuit->Command("SET STRATEGY 2"); // FIXME
+   h->Fit(func); // FIXME
+   gMinuit->Command("SET STRATEGY 2"); // FIXME
 
   if (!AliBWTools::Fit(h,func,min,max)) {
     cout << "Fitting error!" << endl;
-    return;    
+    //    return;    
   }
+  cout << "Drawing" << endl;
 
   TCanvas * c = new TCanvas();
+  cout << "1" << endl;
   c->SetLogy();
+  cout << "2" << endl;
   h->Draw();
+  cout << "3" << endl;
   func->Draw("same");
+  cout << "4" << endl;
 
 
   // Print results nicely
@@ -123,7 +140,9 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   // Float_t yield  = func->Integral(0,100);
   // Float_t yieldE = func->IntegralError(0,100);
   Double_t yield=0,yieldE=0;
+  cout << "Y" << endl;
   AliBWTools::GetYield(h,func,yield,yieldE);  
+  cout << "YE" << endl;
 //   Float_t yield  = func->Integral(0.45,1.05);
 //   Float_t yieldE = func->IntegralError(0.45,1.05);
   Double_t tslope   = func->GetParameter(2);
@@ -134,15 +153,19 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   table.SetNextCol(tslope,tslopeE,-4);
   table.SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
   table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF()));
+  cout << "5" << endl;
   Float_t lowestPoint = TMath::Max(AliBWTools::GetLowestNotEmptyBinEdge(h),min);
+  cout << "6" << endl;
   //Float_t yieldAbove = 0;
   Float_t yieldAbove  = func->Integral(lowestPoint,100);
   table.SetNextCol(lowestPoint,-3);
   table.SetNextCol(yieldAbove/yield,-3);
-  Float_t mean, meane;
-  Float_t mean2, mean2e;
-  // AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-  // AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+  Float_t mean=0, meane=0;
+  Float_t mean2=0, mean2e=0;
+  cout << "6" << endl;
+  AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+  cout << "8" << endl;
   table.SetNextCol(mean,  meane ,-4);
   table.SetNextCol(mean2, mean2e,-4);
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);

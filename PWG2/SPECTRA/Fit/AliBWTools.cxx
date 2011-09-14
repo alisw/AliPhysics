@@ -1327,7 +1327,10 @@ Double_t AliBWTools::dMtdptFunction(Double_t *x, Double_t *p) {
 
 Double_t AliBWTools::GetdMtdEta(TH1 *hData, TF1 * fExtrapolation, Double_t mass) {
   // Computes dMtdEta integrating dN/dptdy with the proper weights and jacobian.
-  Printf("WARNING ALIBWTOOLS::GetdMtdEta: ONLY USING FUNCTION FOR THE TIME BEING");
+  Printf("WARNING ALIBWTOOLS::GetdMtdEta: ONLY USING FUNCTION FOR THE TIME BEING, hData");
+  if(!hData) {
+    Printf("hData not set");
+  }
 
   // Assign the fiunction used internally by dMtdptFunction
   fdNdptForETCalc = fExtrapolation;
