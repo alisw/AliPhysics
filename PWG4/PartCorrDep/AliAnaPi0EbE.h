@@ -76,7 +76,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                              ; }
 
   //For histograms
-  enum mcTypes   {mcPhoton = 0, mcConversion = 1, mcPi0 = 2, mcElectron = 3, mcOther = 4};
+  enum mcTypes   {mcPhoton = 0, mcConversion = 1, mcPi0 = 2,  mcEta = 3, mcElectron = 4, mcHadron = 5};
 
  private:
   
@@ -107,9 +107,9 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   
   //MC histograms
   
-  TH2F         * fhEMCLambda0[5] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCLambda1[5] ;         //! E vs lambda1 of pi0 pairs but really from MC particle
-  TH2F         * fhEMCDispersion[5] ;      //! E vs dispersion of pi0 pairs but really from MC particle
+  TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
+  TH2F         * fhEMCLambda1[6] ;         //! E vs lambda1 of pi0 pairs but really from MC particle
+  TH2F         * fhEMCDispersion[6] ;      //! E vs dispersion of pi0 pairs but really from MC particle
   
   TH1F         * fhPtMCNoPi0;              //! Number of identified pi0, not coming from pi0
   TH2F         * fhPhiMCNoPi0;             //! Phi of identified pi0, not coming from pi0
