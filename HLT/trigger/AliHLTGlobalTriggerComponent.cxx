@@ -1884,7 +1884,11 @@ int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTr
     float ratio=0;
     if (totalEvents>0) ratio=100*(float)count/totalEvents;
     if (i != 0) msg += "\n";
-    msg += Form("Item %d: total events: %d - counted events: %llu (%.1f%%)", i, totalEvents, count, ratio);
+    //NOTE: the %%%% printed for the percent is necessary since HLTLog will interpret the string
+    // as a printf format like string. So after Form() this becomes %% which just prints the
+    // percentage sign. If just single %% is used then we get stack corruption and a crash because
+    // the string is interpreted a formating token.
+    msg += Form("Item %d: total events: %d - counted events: %llu (%.1f%%%%)", i, totalEvents, count, ratio);
   }
   HLTLog(level, msg.Data());
   return 0;
