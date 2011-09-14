@@ -65,7 +65,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
 {
   //default ctor
   
-  for(Int_t i = 0; i < 5; i++){
+  for(Int_t i = 0; i < 6; i++){
     fhEMCLambda0[i]     = 0;
     fhEMCLambda1[i]     = 0;
     fhEMCDispersion[i]  = 0;
@@ -223,9 +223,9 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhEtaMCNoPi0) ;
       
       if(fAnaType == kIMCalo){
-        TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","e^{#pm}", "hadron"}; 
-        TString pname[] ={"Photon","Conversion",     "Pi0",    "Electron","Hadron"};
-        for(Int_t i = 0; i < 5; i++){ 
+        TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
+        TString pname[] ={"Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron"};
+        for(Int_t i = 0; i < 6; i++){ 
           
           fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
                                       Form("Selected pair, cluster from %s : E vs #lambda_{0}^{2}",ptype[i].Data()),
@@ -516,61 +516,69 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           
           if(IsDataMC()) {
             //Photon1
-            if( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) && 
-               !GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
-              fhEMCLambda0[0]    ->Fill(e1, l01);
-              fhEMCLambda1[0]    ->Fill(e1, l11);
-              fhEMCDispersion[0] ->Fill(e1, disp1);
+            if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0)  ){
+              fhEMCLambda0[mcPi0]    ->Fill(e1, l01);
+              fhEMCLambda1[mcPi0]    ->Fill(e1, l11);
+              fhEMCDispersion[mcPi0] ->Fill(e1, disp1);
+            }//pi0
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCEta)  ){
+              fhEMCLambda0[mcEta]    ->Fill(e1, l01);
+              fhEMCLambda1[mcEta]    ->Fill(e1, l11);
+              fhEMCDispersion[mcEta] ->Fill(e1, disp1);
+            }//eta          
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) &&
+                       GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
+              fhEMCLambda0[mcConversion]    ->Fill(e1, l01);
+              fhEMCLambda1[mcConversion]    ->Fill(e1, l11);
+              fhEMCDispersion[mcConversion] ->Fill(e1, disp1);
+            }//conversion photon
+            else if( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) ){
+              fhEMCLambda0[mcPhoton]    ->Fill(e1, l01);
+              fhEMCLambda1[mcPhoton]    ->Fill(e1, l11);
+              fhEMCDispersion[mcPhoton] ->Fill(e1, disp1);
             }//photon   no conversion
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCElectron)){
-              fhEMCLambda0[3]    ->Fill(e1, l01);
-              fhEMCLambda1[3]    ->Fill(e1, l11);
-              fhEMCDispersion[3] ->Fill(e1, disp1);
+              fhEMCLambda0[mcElectron]    ->Fill(e1, l01);
+              fhEMCLambda1[mcElectron]    ->Fill(e1, l11);
+              fhEMCDispersion[mcElectron] ->Fill(e1, disp1);
             }//electron
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) && 
-                       GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
-              fhEMCLambda0[1]    ->Fill(e1, l01);
-              fhEMCLambda1[1]    ->Fill(e1, l11);
-              fhEMCDispersion[1] ->Fill(e1, disp1);
-            }//conversion photon
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0)  ){
-              fhEMCLambda0[2]    ->Fill(e1, l01);
-              fhEMCLambda1[2]    ->Fill(e1, l11);
-              fhEMCDispersion[2] ->Fill(e1, disp1);
-            }//pi0
             else {
-              fhEMCLambda0[4]    ->Fill(e1, l01);
-              fhEMCLambda1[4]    ->Fill(e1, l11);
-              fhEMCDispersion[4] ->Fill(e1, disp1);
+              fhEMCLambda0[mcHadron]    ->Fill(e1, l01);
+              fhEMCLambda1[mcHadron]    ->Fill(e1, l11);
+              fhEMCDispersion[mcHadron] ->Fill(e1, disp1);
             }//other particles 
             
             //Photon 2
-            if( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) && 
-               !GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
-              fhEMCLambda0[0]    ->Fill(e2, l02);
-              fhEMCLambda1[0]    ->Fill(e2, l12);
-              fhEMCDispersion[0] ->Fill(e2, disp2);
+            if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0)  ){
+                 fhEMCLambda0[mcPi0]    ->Fill(e2, l02);
+                 fhEMCLambda1[mcPi0]    ->Fill(e2, l12);
+                 fhEMCDispersion[mcPi0] ->Fill(e2, disp2);
+            }//pi0
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEta)  ){
+              fhEMCLambda0[mcEta]    ->Fill(e2, l02);
+              fhEMCLambda1[mcEta]    ->Fill(e2, l12);
+              fhEMCDispersion[mcEta] ->Fill(e2, disp2);
+            }//eta            
+            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && 
+                       GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) ){
+                 fhEMCLambda0[mcConversion]    ->Fill(e2, l02);
+                 fhEMCLambda1[mcConversion]    ->Fill(e2, l12);
+                 fhEMCDispersion[mcConversion] ->Fill(e2, disp2);
+            }//conversion photon
+            else if( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) ){              
+                fhEMCLambda0[mcPhoton]    ->Fill(e2, l02);
+                fhEMCLambda1[mcPhoton]    ->Fill(e2, l12);
+                fhEMCDispersion[mcPhoton] ->Fill(e2, disp2);
             }//photon   no conversion
             else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCElectron)){
-              fhEMCLambda0[3]    ->Fill(e2, l02);
-              fhEMCLambda1[3]    ->Fill(e2, l12);
-              fhEMCDispersion[3] ->Fill(e2, disp2);
+              fhEMCLambda0[mcElectron]    ->Fill(e2, l02);
+              fhEMCLambda1[mcElectron]    ->Fill(e2, l12);
+              fhEMCDispersion[mcElectron] ->Fill(e2, disp2);
             }//electron
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && 
-                       GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) ){
-              fhEMCLambda0[1]    ->Fill(e2, l02);
-              fhEMCLambda1[1]    ->Fill(e2, l12);
-              fhEMCDispersion[1] ->Fill(e2, disp2);
-            }//conversion photon
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0)  ){
-              fhEMCLambda0[2]    ->Fill(e2, l02);
-              fhEMCLambda1[2]    ->Fill(e2, l12);
-              fhEMCDispersion[2] ->Fill(e2, disp2);
-            }//pi0
             else {
-              fhEMCLambda0[4]    ->Fill(e2, l02);
-              fhEMCLambda1[4]    ->Fill(e2, l12);
-              fhEMCDispersion[4] ->Fill(e2, disp2);
+              fhEMCLambda0[mcHadron]    ->Fill(e2, l02);
+              fhEMCLambda1[mcHadron]    ->Fill(e2, l12);
+              fhEMCDispersion[mcHadron] ->Fill(e2, disp2);
             }//other particles 
           }//is datamc
         }//MC histograms
