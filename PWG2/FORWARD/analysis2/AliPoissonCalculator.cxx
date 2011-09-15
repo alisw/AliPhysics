@@ -199,7 +199,7 @@ AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLump
   fMean->SetDirectory(0);
 
   fOcc = new TH1D("occupancy", "Occupancy = #int_{1}^{#infty}dN P(N)",
-		  100, 0, 100);
+		  1000, 0, 100);
   fOcc->SetXTitle("#int_{1}^{#infty}dN P(N) [%]");
   fOcc->SetYTitle("Events");
   fOcc->SetFillColor(kBlue+1);
