@@ -307,54 +307,56 @@ void AliEPSelectionTask::UserExec(Option_t */*option*/)
     }
   }
   
-  else if (fAnalysisInput.CompareTo("AOD")==0){
+    else if (fAnalysisInput.CompareTo("AOD")==0){
     AliVEvent* event = InputEvent();
     AliAODEvent* aod = dynamic_cast<AliAODEvent*>(event);
 
     if (aod){
       if (!(fRunNumber == aod->GetRunNumber())) {
-	fRunNumber = aod->GetRunNumber();
-	SetPhiDist();      
+        fRunNumber = aod->GetRunNumber();
+        SetPhiDist();      
       }
+    }
+
+    if (fUseMCRP) {
+      AliAODMCHeader *headerH = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+      if (headerH) fRP = headerH->GetReactionPlaneAngle();
+    }
   
-      if (fUseMCRP) {
-	AliAODMCHeader *headerH = dynamic_cast<AliAODMCHeader*>(aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
-	if (headerH) fRP = headerH->GetReactionPlaneAngle();
-      }
-  
+    if (aod){
       esdEP = aod->GetHeader()->GetEventplaneP();
       esdEP->Reset(); 
      
       Int_t maxID = 0;
       TObjArray* tracklist = GetAODTracksAndMaxID(aod,maxID);
 	
-      if (fSaveTrackContribution) {
-	esdEP->GetQContributionXArray()->Set(maxID+1);
-	esdEP->GetQContributionYArray()->Set(maxID+1);
-	esdEP->GetQContributionXArraysub1()->Set(maxID+1);
-	esdEP->GetQContributionYArraysub1()->Set(maxID+1);
-	esdEP->GetQContributionXArraysub2()->Set(maxID+1);
-	esdEP->GetQContributionYArraysub2()->Set(maxID+1);
-      }
+    if (fSaveTrackContribution) {
+      esdEP->GetQContributionXArray()->Set(maxID+1);
+      esdEP->GetQContributionYArray()->Set(maxID+1);
+      esdEP->GetQContributionXArraysub1()->Set(maxID+1);
+      esdEP->GetQContributionYArraysub1()->Set(maxID+1);
+      esdEP->GetQContributionXArraysub2()->Set(maxID+1);
+      esdEP->GetQContributionYArraysub2()->Set(maxID+1);
+    }
 	
-      const int NT = tracklist->GetEntries();
+    const int NT = tracklist->GetEntries();
       
-      if (NT>4){
-	fQVector = new TVector2(GetQ(esdEP,tracklist));
-	fEventplaneQ = fQVector->Phi()/2.; 
-	GetQsub(qq1, qq2, tracklist, esdEP);
-	fQsub1 = new TVector2(qq1);
-	fQsub2 = new TVector2(qq2);
-	fQsubRes = (fQsub1->Phi()/2. - fQsub2->Phi()/2.);
+  if (NT>4){
+    fQVector = new TVector2(GetQ(esdEP,tracklist));
+    fEventplaneQ = fQVector->Phi()/2.; 
+    GetQsub(qq1, qq2, tracklist, esdEP);
+    fQsub1 = new TVector2(qq1);
+    fQsub2 = new TVector2(qq2);
+    fQsubRes = (fQsub1->Phi()/2. - fQsub2->Phi()/2.);
 	
-	esdEP->SetQVector(fQVector);
-	esdEP->SetEventplaneQ(fEventplaneQ);
-	esdEP->SetQsub(fQsub1,fQsub2);
-	esdEP->SetQsubRes(fQsubRes);
+    esdEP->SetQVector(fQVector);
+    esdEP->SetEventplaneQ(fEventplaneQ);
+    esdEP->SetQsub(fQsub1,fQsub2);
+    esdEP->SetQsubRes(fQsubRes);
 	
-	fHOutEventplaneQ->Fill(fEventplaneQ);
-	fHOutsub1sub2->Fill(fQsub1->Phi()/2.,fQsub2->Phi()/2.);
-	fHOutNTEPRes->Fill(NT,fQsubRes);
+    fHOutEventplaneQ->Fill(fEventplaneQ);
+    fHOutsub1sub2->Fill(fQsub1->Phi()/2.,fQsub2->Phi()/2.);
+    fHOutNTEPRes->Fill(NT,fQsubRes);
 
 	if (fUseMCRP) fHOutDiff->Fill(fEventplaneQ, fRP);
 	
