@@ -156,6 +156,7 @@ install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
 		FORWARD/analysis2/MakedNdeta.C
                 FORWARD/analysis2/MakeELossFits.C
 		FORWARD/analysis2/MakeEvaluateTriggers.C
+                FORWARD/analysis2/MakeForwardQA.C
 		FORWARD/analysis2/MakeMCCorr.C		
                 FORWARD/analysis2/OtherData.C
            DESTINATION PWG2/FORWARD/analysis2 )
