@@ -12,7 +12,7 @@ AliTaskCDBconnect* AddTaskCDBconnect(Int_t run=0)
     }   
     
     AliTaskCDBconnect *task= new AliTaskCDBconnect("CDBconnect");
-    if (run) task->SetRun(run);
+    if (run) task->SetRunNumber(run);
     mgr->AddTask(task);
     AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();    
     mgr->ConnectInput(task,  0, cinput1);
