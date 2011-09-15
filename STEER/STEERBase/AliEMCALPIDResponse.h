@@ -24,7 +24,7 @@ public :
     AliEMCALPIDResponse( const AliEMCALPIDResponse& other);                //copy ructor
     AliEMCALPIDResponse &operator=( const AliEMCALPIDResponse& other);     //assignment operator
 
-    virtual ~AliEMCALPIDResponse() {;} //dtor
+    virtual ~AliEMCALPIDResponse();     //dtor
   
 
     // Getters

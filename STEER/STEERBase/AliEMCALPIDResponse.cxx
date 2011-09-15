@@ -82,7 +82,7 @@ AliEMCALPIDResponse::AliEMCALPIDResponse():
   SetPtBoundary();
   SetParametrizations();
 }
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliEMCALPIDResponse::AliEMCALPIDResponse(const AliEMCALPIDResponse &other):
   TObject(other),
   fNorm(other.fNorm)
@@ -106,8 +106,7 @@ AliEMCALPIDResponse::AliEMCALPIDResponse(const AliEMCALPIDResponse &other):
     SetPtBoundary();
     SetParametrizations();
 }
-
-
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse& other)
 {
   //
@@ -138,7 +137,12 @@ AliEMCALPIDResponse & AliEMCALPIDResponse::operator=( const AliEMCALPIDResponse&
 
   return *this;
 }
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliEMCALPIDResponse::~AliEMCALPIDResponse() {
 
+  delete fNorm;
+
+}
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void AliEMCALPIDResponse::SetPtBoundary(){
   //
