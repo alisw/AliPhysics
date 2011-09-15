@@ -604,9 +604,17 @@ Double_t DetectorK::HitDensity ( Double_t radius )
 double DetectorK::OneEventHitDensity( Double_t multiplicity, Double_t radius ) const
 {
   // This is for one event at the vertex.  No smearing.
+
   double den   = multiplicity / (2.*TMath::Pi()*radius*radius) ; // 2 eta ?
+  double tg = TMath::Tan(2*TMath::ATan(TMath::Exp(-fAvgRapidity)));
+  den = den/TMath::Sqrt(1 + 1/(tg*tg));
+
+  // double den   = multiplicity / (2.*TMath::Pi()*radius*radius) ; // 2 eta ?
   // note: surface of sphere is  '4*pi*r^2'
   //       surface of cylinder is '2*pi*r* h' 
+
+  
+
   return den ;
 } 
 
