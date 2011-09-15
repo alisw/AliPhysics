@@ -382,39 +382,47 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
   //  2010 pp sample
   //
 
- // Normalization
-  fNorm = new TH1F("fNorm","fNorm",20,0,20);
-  for(Int_t i=1;i<=20;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+
+// Normalization
+  fNorm = new TH1F("fNorm","fNorm",24,0,24);
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.07); // 10% error on sigmaV0and
 
   // Branching ratio 
-  fBR = new TH1F("fBR","fBR",20,0,20);
-  for(Int_t i=1;i<=20;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
+  fBR = new TH1F("fBR","fBR",24,0,24);
+  for(Int_t i=1;i<=24;i++) fBR->SetBinContent(i,0.04); // 4% PDG2010
 
   // Tracking efficiency
-  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
 
 
   // Raw yield extraction
-  fRawYield = new TH1F("fRawYield","fRawYield",20,0,20);
-  fRawYield->SetBinContent(1,1);
-  fRawYield->SetBinContent(2,1);
-  fRawYield->SetBinContent(3,0.20);
-  for(Int_t i=4;i<=20;i++) fRawYield->SetBinContent(i,0.055);  //5 to 10%
-
+  fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
+  fRawYield->SetBinContent(1,0.25);
+  fRawYield->SetBinContent(2,0.25);
+  fRawYield->SetBinContent(3,0.25);
+  fRawYield->SetBinContent(4,0.25);
+  fRawYield->SetBinContent(5,0.09);
+  fRawYield->SetBinContent(6,0.09);
+  for(Int_t i=7;i<=12;i++) fRawYield->SetBinContent(i,0.05);  //5 to 10%
+  for(Int_t i=12;i<=24;i++) fRawYield->SetBinContent(i,0.10);  // 15%
+  
   // Cuts efficiency (from cuts variation)
-  fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fCutsEff->SetBinContent(i,0.10); // 10%
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fCutsEff->SetBinContent(i,0.10); // 10%
 
   // PID efficiency (from PID/noPID)
-  fPIDEff = new TH1F("fPIDEff","fPIDEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fPIDEff->SetBinContent(i,0.05); // 5%
-  fPIDEff->SetBinContent(3,0.13); // 13%
- 
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
+  for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.05); // 5%
+  fPIDEff->SetBinContent(1,0.15); // 15%
+  fPIDEff->SetBinContent(2,0.15); // 15%
+  fPIDEff->SetBinContent(3,0.15); // 15%
+  fPIDEff->SetBinContent(4,0.15); // 15%
+  for(Int_t i=12;i<=16;i++) fPIDEff->SetBinContent(i,0.10); // 5%
 
-  // MC dN/dpt  (copied from D0 : will update later)
-  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",20,0,20);
-  for(Int_t i=1;i<=20;i++) fMCPtShape->SetBinContent(i,0);
+  // MC dN/dpt  
+  fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
+  for(Int_t i=1;i<=24;i++) fMCPtShape->SetBinContent(i,0);
   fMCPtShape->SetBinContent(1,0.03);
   fMCPtShape->SetBinContent(2,0.03);
 
@@ -429,6 +437,7 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
   */
   return;
 }
+ 
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
   // 
