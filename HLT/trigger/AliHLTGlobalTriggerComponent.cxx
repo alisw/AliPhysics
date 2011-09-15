@@ -1878,15 +1878,12 @@ int AliHLTGlobalTriggerComponent::PrintStatistics(const AliHLTGlobalTrigger* pTr
   int totalEvents=fTotalEventCounter+offset;
   const TArrayL64& counters = pTrigger->GetCounters();
   if (pTrigger->CallFailed()) return -EPROTO;
-  TString msg;
   for (int i = 0; i < counters.GetSize(); i++) {
     ULong64_t count = counters[i];
     float ratio=0;
     if (totalEvents>0) ratio=100*(float)count/totalEvents;
-    if (i != 0) msg += "\n";
-    msg += Form("Item %d: total events: %d - counted events: %llu (%.1f%%)", i, totalEvents, count, ratio);
+    HLTLog(level, "Item %d: total events: %d - counted events: %llu (%.1f%%)", i, totalEvents, count, ratio);
   }
-  HLTLog(level, msg.Data());
   return 0;
 }
 
