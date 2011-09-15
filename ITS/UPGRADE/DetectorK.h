@@ -16,6 +16,10 @@ http://rnc.lbl.gov/~jhthomas
 
 Changes by S. Rossegger
 
+July 2011  - Adding the possibility of "fake calculation" and "efficiency calculation" 
+             with a number of "at least correct clusters on the track"
+             Done using the complete combinatorics table with 3^nLayer track outcomes.
+
 April 2011 - Now uses the Kalman method (aliroot implementation) instead of the Billoir
              technique ... (changes by Ruben Shahoyan)
 
@@ -41,15 +45,20 @@ Dec. 2010 - Translation into C++ class format
 
 ***********************************************************/
 
-class AliExternalTrackParam;
+class AliExternalTrackParam; 
+#include <TMatrixD.h>
 
 class DetectorK : public TNamed {
+
  public:
+  
   DetectorK();
   DetectorK(char *name,char *title);
   virtual ~DetectorK();
 
-  void AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRes=999999, Float_t zRes=999999, Float_t eff=1.);
+  enum {kNptBins = 100}; // less then 400 !!
+ 
+  void AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRes=999999, Float_t zRes=999999, Float_t eff=0.99);
 
   void KillLayer(char *name);
   void SetRadius(char *name, Float_t radius);
@@ -66,7 +75,7 @@ class DetectorK : public TNamed {
   void PrintLayout(); 
   void PlotLayout(Int_t plotDead = kTRUE);
   
-  void MakeAliceAllNew(Bool_t flagTPC =1);
+  void MakeAliceAllNew(Bool_t flagTPC =1,Bool_t flagMon=1);
   void MakeAliceCurrent(Int_t AlignResiduals = 0, Bool_t flagTPC =1);
   void AddTPC(Float_t phiResMean, Float_t zResMean, Int_t skip=1);
   void RemoveTPC();
@@ -85,8 +94,17 @@ class DetectorK : public TNamed {
   Float_t GetAvgRapidity() const { return fAvgRapidity; }
   void SetConfidenceLevel(Float_t confLevel) {fConfLevel = confLevel; }
   Float_t GetConfidenceLevel() const { return fConfLevel; }
+  void SetAtLeastCorr(Int_t atLeastCorr ) {fAtLeastCorr = atLeastCorr; }
+  Int_t GetAtLeastCorr() const { return fAtLeastCorr; }
+  void SetAtLeastFake(Int_t atLeastFake ) {fAtLeastFake = atLeastFake; }
+  Int_t GetAtLeastFake() const { return fAtLeastFake; }
 
-   Float_t GetNumberOfActiveLayers() const {return fNumberOfActiveLayers; }
+  void SetdNdEtaCent(Int_t dNdEtaCent ) {fdNdEtaCent = dNdEtaCent; }
+  Float_t GetdNdEtaCent() const { return fdNdEtaCent; }
+
+  
+  Float_t GetNumberOfActiveLayers() const {return fNumberOfActiveLayers; }
+  Float_t GetNumberOfActiveITSLayers() const {return fNumberOfActiveITSLayers; }
 
   void SolveViaBilloir(Int_t flagD0=1,Int_t print=1, Bool_t allPt=1, Double_t meanPt =0.750);
   void SolveDOFminusOneAverage();
@@ -96,6 +114,7 @@ class DetectorK : public TNamed {
   Double_t ProbGoodHit              ( Double_t radius, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
   Double_t ProbGoodChiSqHit         ( Double_t radius, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
   Double_t ProbGoodChiSqPlusConfHit ( Double_t radius, Double_t leff, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
+  Double_t ProbNullChiSqPlusConfHit ( Double_t radius, Double_t leff, Double_t searchRadiusRPhi, Double_t searchRadiusZ )   ; 
  
   // Howard W. hit distribution and convolution integral
   Double_t Dist              ( Double_t Z, Double_t radius ) ;  
@@ -112,7 +131,9 @@ class DetectorK : public TNamed {
   TGraph* GetGraphImpactParam(Int_t mode, Int_t axis, Int_t color, Int_t linewidth=1);
 
   TGraph* GetGraphRecoEfficiency(Int_t particle, Int_t color, Int_t linewidth=1); 
-  
+  TGraph* GetGraphRecoFakes(Int_t particle,Int_t color, Int_t linewidth);
+  TGraph* GetGraphRecoPurity(Int_t particle,Int_t color, Int_t linewidth);
+
   TGraph* GetGraph(Int_t number, Int_t color, Int_t linewidth=1);
 
   void MakeStandardPlots(Bool_t add =0, Int_t color=1, Int_t linewidth=1,Bool_t onlyPionEff=0);
@@ -120,10 +141,13 @@ class DetectorK : public TNamed {
   // method to extend AliExternalTrackParam functionality
   Bool_t GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, Double_t bz, Int_t dir=0) const;
 
+  Double_t* PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay);
+
  protected:
  
   Int_t fNumberOfLayers;        // total number of layers in the model
   Int_t fNumberOfActiveLayers;  // number of active layers in the model
+  Int_t fNumberOfActiveITSLayers;  // number of active ITS layers in the model
   TList fLayers;                // List of layer pointers
   Float_t fBField;              // Magnetic Field in Tesla
   Float_t fLhcUPCscale;         // UltraPeripheralElectrons: scale from RHIC to LHC
@@ -133,16 +157,21 @@ class DetectorK : public TNamed {
   Float_t fParticleMass;        // Particle used for tracking. Standard: mass of pion
   Double_t fMaxRadiusSlowDet;   // Maximum radius for slow detectors.  Fast detectors 
                                 // and only fast detectors reside outside this radius.
+  Int_t fAtLeastCorr;     // min. number of correct hits for the track to be "good"
+  Int_t fAtLeastFake;     // min. number of fake hits for the track to be "fake"
+
+  Int_t fdNdEtaCent;       // Multiplicity
 
   enum {kMaxNumberOfDetectors = 200};
  
-  Double_t fTransMomenta[400];                          // array of transverse momenta
-  Double_t fMomentumRes[400];                           // array of momentum resolution
-  Double_t fResolutionRPhi[400];                        // array of rphi resolution
-  Double_t fResolutionZ[400];                           // array of z resolution
-  Double_t fDetPointRes[kMaxNumberOfDetectors][400];    // array of rphi resolution per layer
-  Double_t fDetPointZRes[kMaxNumberOfDetectors][400];   // array of z resolution per layer
-  Double_t fEfficiency[3][400];                         // efficiency for different particles
+  Double_t fTransMomenta[kNptBins];                          // array of transverse momenta
+  Double_t fMomentumRes[kNptBins];                           // array of momentum resolution
+  Double_t fResolutionRPhi[kNptBins];                        // array of rphi resolution
+  Double_t fResolutionZ[kNptBins];                           // array of z resolution
+  Double_t fDetPointRes[kMaxNumberOfDetectors][kNptBins];    // array of rphi resolution per layer
+  Double_t fDetPointZRes[kMaxNumberOfDetectors][kNptBins];   // array of z resolution per layer
+  Double_t fEfficiency[3][kNptBins];                         // efficiency for different particles
+  Double_t fFake[3][kNptBins];                               // fake prob for different particles
 
   ClassDef(DetectorK,1);
 };

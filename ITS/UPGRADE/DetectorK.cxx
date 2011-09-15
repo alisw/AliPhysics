@@ -28,8 +28,8 @@ Changes by S. Rossegger -> see header file
 
 #define Luminosity    1.e27       // Luminosity of the beam (LHC HI == 1.e27, RHIC II == 8.e27 )
 #define SigmaD        6.0         // Size of the interaction diamond (cm) (LHC = 6.0 cm)
-#define dNdEtaMinB    950//660//950           // Multiplicity per unit Eta  (AuAu MinBias = 170, Central = 700)
-#define dNdEtaCent    2300 //1600//2300        // Multiplicity per unit Eta  (LHC at 5.5 TeV not known)
+#define dNdEtaMinB    1//950//660//950           // Multiplicity per unit Eta  (AuAu MinBias = 170, Central = 700)
+// #define dNdEtaCent    2300//15000 //1600//2300        // Multiplicity per unit Eta  (LHC at 5.5 TeV not known)
 
 #define CrossSectionMinB         8    // minB Cross section for event under study (PbPb MinBias ~ 8 Barns)
 #define AcceptanceOfTpcAndSi     1 //1//0.60 //0.35  // Assumed geometric acceptance (efficiency) of the TPC and Si detectors
@@ -42,6 +42,7 @@ Changes by S. Rossegger -> see header file
 #define KaonMass                 0.498  // Mass of the Kaon
 #define D0Mass                   1.865  // Mass of the D0
 
+//TMatrixD *probKomb; // table for efficiency kombinatorics
 
 
 class CylLayerK : public TNamed {
@@ -92,13 +93,17 @@ DetectorK::DetectorK()
   : TNamed("test_detector","detector"),
     fNumberOfLayers(0),
     fNumberOfActiveLayers(0),
+    fNumberOfActiveITSLayers(0),
     fBField(0.5),
     fLhcUPCscale(1.0),    
     fIntegrationTime(0.02), // in ms
     fConfLevel(0.0027),      // 0.27 % -> 3 sigma confidence
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),    // Standard: pion mass 
-    fMaxRadiusSlowDet(10.)
+    fMaxRadiusSlowDet(10.),
+    fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
+    fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
+    fdNdEtaCent(2300)
 {
   //
   // default constructor
@@ -111,13 +116,17 @@ DetectorK::DetectorK(char *name, char *title)
   : TNamed(name,title),
     fNumberOfLayers(0),
     fNumberOfActiveLayers(0),
+    fNumberOfActiveITSLayers(0),
     fBField(0.5),
     fLhcUPCscale(1.0),
     fIntegrationTime(0.02),  // in ms
     fConfLevel(0.0027),      // 0.27 % -> 3 sigma confidence
     fAvgRapidity(0.45),      // Avg rapidity, MCS calc is a function of crossing angle
     fParticleMass(0.140),     // Standard: pion mass
-    fMaxRadiusSlowDet(10.)
+    fMaxRadiusSlowDet(10.),
+    fAtLeastCorr(-1),     // if -1, then correct hit on all ITS layers
+    fAtLeastFake(1),       // if at least x fakes, track is considered fake ...
+    fdNdEtaCent(2300)
 {
   //
   // default constructor, that set the name and title
@@ -168,7 +177,11 @@ void DetectorK::AddLayer(char *name, Float_t radius, Float_t radL, Float_t phiRe
       
     }
     fNumberOfLayers += 1;
-    if (!(newLayer->isDead)) fNumberOfActiveLayers += 1;
+    if (!(newLayer->isDead)) {
+      fNumberOfActiveLayers += 1;
+      TString lname(newLayer->GetName());
+      if (!lname.Contains("tpc")) fNumberOfActiveITSLayers += 1;
+    }
 
 
   } else {
@@ -192,6 +205,8 @@ void DetectorK::KillLayer(char *name) {
      if (!(tmp->isDead)) {
        tmp->isDead = kTRUE;
        fNumberOfActiveLayers -= 1; 
+       TString lname(tmp->GetName());
+       if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
      }     
   }
 }
@@ -273,13 +288,20 @@ void DetectorK::SetResolution(char *name, Float_t phiRes, Float_t zRes) {
     
     tmp->phiRes = phiRes;
     tmp->zRes = zRes;
-    
+    TString lname(tmp->GetName());
+
     if (zRes==RIDICULOUS && phiRes==RIDICULOUS) {
       tmp->isDead = kTRUE;
-      if (!wasDead) fNumberOfActiveLayers -= 1;
+      if (!wasDead) {
+	fNumberOfActiveLayers -= 1;
+	if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
+      }
     } else {
       tmp->isDead = kFALSE;
-      if (wasDead) fNumberOfActiveLayers += 1;
+      if (wasDead) {
+	fNumberOfActiveLayers += 1;
+	if (!lname.Contains("tpc")) fNumberOfActiveITSLayers += 1;
+      }
     }
 
 
@@ -344,7 +366,12 @@ void DetectorK::RemoveLayer(char *name) {
     Bool_t wasDead = tmp->isDead;
     fLayers.Remove(tmp);
     fNumberOfLayers -= 1;
-    if (!wasDead) fNumberOfActiveLayers -= 1;
+    if (!wasDead) {
+      fNumberOfActiveLayers -= 1;
+      TString lname(tmp->GetName());
+      if (!lname.Contains("tpc")) fNumberOfActiveITSLayers -= 1;
+      
+    }
   }
 }
 
@@ -526,13 +553,22 @@ Double_t DetectorK::ProbGoodChiSqPlusConfHit ( Double_t radius, Double_t leff, D
   // Plus, in addition, taking a "confidence level" and the "layer efficiency" into account 
   // Following is correct for 2 DOF
 
-  Double_t gamma = -2 *TMath::Log(fConfLevel); // quantile at cut of confidence level
+  Double_t c = -2 *TMath::Log(fConfLevel); // quantile at cut of confidence level
   Double_t alpha = (1 + 2 * TMath::Pi() * HitDensity(radius) * searchRadiusRPhi * searchRadiusZ)/2; 
-  Double_t goodHit = leff/(2*alpha) * (1 - TMath::Exp(-alpha*gamma));
-
+  Double_t goodHit = leff/(2*alpha) * (1 - TMath::Exp(-alpha*c));
   return ( goodHit ) ;  
 }
 
+Double_t DetectorK::ProbNullChiSqPlusConfHit ( Double_t radius, Double_t leff, Double_t searchRadiusRPhi, Double_t searchRadiusZ ) 
+{
+  // Based on work by Ruben Shahoyen 
+  // This is the probability to not have any match to the track (see also :ProbGoodChiSqPlusConfHit:)
+
+  Double_t c = -2 *TMath::Log(fConfLevel); // quantile at cut of confidence level
+  Double_t alpha = (1 + 2 * TMath::Pi() * HitDensity(radius) * searchRadiusRPhi * searchRadiusZ)/2; 
+  Double_t nullHit = (1-leff+fConfLevel*leff)*TMath::Exp(-c*(alpha-1./2));
+  return ( nullHit ) ;  
+}
 
 Double_t DetectorK::HitDensity ( Double_t radius ) 
 {
@@ -548,13 +584,13 @@ Double_t DetectorK::HitDensity ( Double_t radius )
 
   if ( radius > fMaxRadiusSlowDet ) 
     {
-      arealDensity  = OneEventHitDensity(dNdEtaCent,radius)  ; // Fast detectors see central collision density (only)
+      arealDensity  = OneEventHitDensity(fdNdEtaCent,radius)  ; // Fast detectors see central collision density (only)
       arealDensity += OtherBackground*OneEventHitDensity(dNdEtaMinB,radius)  ;  // Increase density due to background 
     }
 
   if (radius < fMaxRadiusSlowDet )
     { // Note that IntegratedHitDensity will always be minB one event, or more, even if integration time => zero.
-      arealDensity  = OneEventHitDensity(dNdEtaCent,radius) 
+      arealDensity  = OneEventHitDensity(fdNdEtaCent,radius) 
 	            + IntegratedHitDensity(dNdEtaMinB,radius) 
 	            + UpcHitDensity(radius) ;
       arealDensity += OtherBackground*IntegratedHitDensity(dNdEtaMinB,radius) ;  
@@ -660,12 +696,12 @@ Double_t DetectorK::D0IntegratedEfficiency( Double_t pt, Double_t corrEfficiency
     Int_t pionindex = (int)((ptPi-0.1)*100.0 - 65.0*TMath::Abs(fBField)) ; 
     Int_t kaonindex = (int)((ptK -0.1)*100.0 - 65.0*TMath::Abs(fBField)) ; 
       
-    if ( pionindex >= 400 ) pionindex = 399 ;
+    if ( pionindex >= kNptBins ) pionindex = 399 ;
     if ( pionindex >= 0 )   effp = corrEfficiency[0][pionindex] ;
     if ( pionindex <  0 )   effp = (corrEfficiency[0][1]-corrEfficiency[0][0])*pionindex + corrEfficiency[0][0] ; // Extrapolate if reqd
     if ( effp < 0 )         effp = 0 ;
 
-    if ( kaonindex >= 400 ) kaonindex = 399 ;
+    if ( kaonindex >= kNptBins ) kaonindex = 399 ;
     if ( kaonindex >= 0 )   effk = corrEfficiency[1][kaonindex] ;
     if ( kaonindex <  0 )   effk = (corrEfficiency[1][1]-corrEfficiency[1][0])*kaonindex + corrEfficiency[1][0] ; // Extrapolate if reqd
     if ( effk < 0 )         effk = 0 ;
@@ -689,9 +725,9 @@ void DetectorK::SolveDOFminusOneAverage() {
   // Note: Obviously, does not work for the Telescope equation 
   //
   
-  Double_t fMomentumResM[400], fResolutionRPhiM[400], fResolutionZM[400]; 
-  Double_t efficiencyM[3][400];
-  for (Int_t i=0; i<400; i++) {
+  Double_t fMomentumResM[kNptBins], fResolutionRPhiM[kNptBins], fResolutionZM[kNptBins]; 
+  Double_t efficiencyM[3][kNptBins];
+  for (Int_t i=0; i<kNptBins; i++) {
     fMomentumResM[i] = 0;   // Momentum resolution
     fResolutionRPhiM[i] = 0;   // Resolution in R
     fResolutionZM[i] = 0; // Resolution in Z
@@ -717,7 +753,7 @@ void DetectorK::SolveDOFminusOneAverage() {
       SolveViaBilloir(1,0); 
 
       // produce sum for the mean calculation
-      for (Int_t i=0; i<400; i++) {
+      for (Int_t i=0; i<kNptBins; i++) {
 	fMomentumResM[i] += fMomentumRes[i];   // Momentum resolution
 	fResolutionRPhiM[i] += fResolutionRPhi[i];   // Resolution in R
 	fResolutionZM[i] += fResolutionZ[i]; // Resolution in Z
@@ -732,7 +768,7 @@ void DetectorK::SolveDOFminusOneAverage() {
   }
   
   // save means in "std. Arrays"
-  for (Int_t i=0; i<400; i++) {
+  for (Int_t i=0; i<kNptBins; i++) {
     fMomentumRes[i] = fMomentumResM[i]/nITSLayers;   // Momentum resolution
     fResolutionRPhi[i] = fResolutionRPhiM[i]/nITSLayers;   // Resolution in R
     fResolutionZ[i] = fResolutionZM[i]/nITSLayers; // Resolution in Z
@@ -754,7 +790,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   probTr.SetUseLogTermMS(kTRUE);
 
 
-  Int_t nPt = 400;
+  Int_t nPt = kNptBins;
   // Clean up ......
   for (Int_t i=0; i<kMaxNumberOfDetectors; i++) {
     for (Int_t j=0; j<nPt; j++) {
@@ -785,6 +821,24 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   Int_t mStart =0; 
   if (!flagD0) mStart = 2; // pion and kaon is skipped -> fast mode
 
+ 
+  
+
+  // Prepare Probability Kombinations
+  Int_t nLayer = fNumberOfActiveITSLayers;
+  Int_t base = 3; // null, fake, correct
+
+  Int_t komb = TMath::Power(base,nLayer);
+
+  TMatrixD probLay(base,fNumberOfActiveITSLayers);
+  TMatrixD probKomb(komb,nLayer);
+  for (Int_t num=0; num<komb; num++) {
+    for (Int_t l=nLayer-1; l>=0; l--) {
+      Int_t pow = ((Int_t)TMath::Power(base,l+1));
+      probKomb(num,nLayer-1-l)=(num%pow)/((Int_t)TMath::Power(base,l));
+    }
+  }
+
   for ( Int_t massloop = mStart ; massloop < 3 ; massloop++ )  { 
     
     // PseudoRapidity OK, used as an angle
@@ -800,10 +854,9 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       //if (bigRad<61) bigRad=61; // -> min pt around 100 MeV for Bz=0.5T (don't overdo it ... ;-) )
       fTransMomenta[i] =  ( 0.3*bigRad*TMath::Abs(fBField)*1e-2 ) - 0.08 + TMath::Power(10,2.3*i/nPt) / 10.0 ; 
       if (!allPt) { // just 3 points around meanPt
-	fTransMomenta[i] = meanPt-0.1+i*0.1;
+	fTransMomenta[i] = meanPt-0.01+(Double_t)(i)*0.01;
       }
-   
-
+  
       // New from here ................
 
       // Assume track started at (0,0,0) and shoots out on the X axis, and B field is on the Z axis
@@ -823,7 +876,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       trPars[kZ] = 0;                         //            Z = 0 
       trPars[kSnp] = 0;                       //            track along X axis at the vertex
       trPars[kTgl] = TMath::Tan(lambda);      //            dip
-      trPars[kPtI] = charge/pt;               //            q/pt
+      trPars[kPtI] = charge/pt;               //            q/pt      
       //
       // put tiny errors to propagate to the outer radius
       trCov[kY2] = trCov[kZ2] = trCov[kSnp2] = trCov[kTgl2] = trCov[kPtI2] = 1e-9;
@@ -841,7 +894,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
       trCov[kY2]   = trCov[kZ2]   = kLargeErr2Coord; 
       trCov[kSnp2] = trCov[kTgl2] = kLargeErr2Dir;
       trCov[kPtI2] = kLargeErr2PtI*trPars[kPtI]*trPars[kPtI];
-      //
+       //
       //      printf("%d - pt %lf r%lf | %lf %lf\n",massloop,fTransMomenta[i],(last->radius)/100,momentum, d);
 
       // Set Detector-Efficiency Storage area to unity
@@ -931,13 +984,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
   
       if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {
 	printf("Number of active layers: %d\n",fNumberOfActiveLayers) ;
+	if (fAtLeastCorr != -1) printf("Number of combinatorics for probabilities: %d\n",komb);
 	printf("Mass of tracked particle: %f (at pt=%5.0lf MeV)\n",fParticleMass,fTransMomenta[i]*1000);
 	printf("Name   Radius Thickness PointResOn PointResOnZ  DetRes  DetResZ  Density Efficiency\n") ;
 	//	printOnce =0;
       }
       
       // print out and efficiency calculation
-      // for (Int_t j=fLayers.GetEntries(); j--;) {  // Layer loop
+      Int_t iLayActive=0;
       for (Int_t j=(fLayers.GetEntries()-1); j>=0; j--) {  // Layer loop
 	
 	layer = (CylLayerK*)fLayers.At(j);
@@ -952,10 +1006,12 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	
 
 	if ( (!isDead && radLength >0) )  { 
+
 	    Double_t rphiError  =  TMath::Sqrt( fDetPointRes[j][i] * fDetPointRes [j][i] + 
 						phiRes * phiRes ) * 100.  ; // work in cm
 	    Double_t zError     =  TMath::Sqrt( fDetPointZRes[j][i] * fDetPointZRes[j][i] +
 						zRes * zRes ) * 100.  ; // work in cm
+	    
 	    
 	    Double_t layerEfficiency = 0;
 	    if ( EfficiencySearchFlag == 0 )
@@ -964,8 +1020,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	      layerEfficiency =  ProbGoodChiSqHit( radius*100, rphiError , zError  ) ;
 	    else if ( EfficiencySearchFlag == 2 )
 	      layerEfficiency =  ProbGoodChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ;
-
+	      
 	    TString name(layer->GetName());
+	    if (!name.Contains("tpc")) {
+	      probLay(2,iLayActive)= layerEfficiency ; // Pcorr
+	      probLay(0,iLayActive)= ProbNullChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ; // Pnull
+	      probLay(1,iLayActive)= 1 - probLay(2,iLayActive) - probLay(0,iLayActive);                 // Pfake
+	      iLayActive++;    
+	    }
 	    if (name.Contains("tpc") && (!name.Contains("tpc_0")) ) continue;
 
 	    if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {
@@ -982,9 +1044,18 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 		printf("        -  \n");
 	    }
 
-	    if (!name.Contains("tpc")) fEfficiency[massloop][i] *= layerEfficiency;
-
+	    if (!name.Contains("tpc"))   fEfficiency[massloop][i] *= layerEfficiency;
+	    
+	    
 	}
+	
+	if (fAtLeastCorr != -1) {
+	  // Calculate probabilities from Kombinatorics tree ...
+	  Double_t *probs = PrepareEffFakeKombinations(&probKomb, &probLay);
+	  fEfficiency[massloop][i] = probs[0]; // efficiency
+	  fFake[massloop][i] = probs[1];       // fake
+	}
+
 	/*
 	// vertex print
 	if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1 && radius==0) {
@@ -1014,7 +1085,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	// use a weighted estimate Cw = (Cf^-1 + Cb^-1)^-1,  pw = Cw (pf Cf^-1 + pb Cb^-1).
 	// Surely, for the most extreme point, where one error matrices is infinite, this does not change anything.
 
-	Bool_t doLikeAliRoot = kFALSE; // don't do the "combined info" but do like in Aliroot
+	Bool_t doLikeAliRoot = 0; // don't do the "combined info" but do like in Aliroot
 
 	if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {	  
 	  printf("- Numbers of active layer is low (%d):\n    -> \"outward\" fitting done as well to get reliable eff.estimates\n",
@@ -1024,7 +1095,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	// RESET Covariance Matrix ( to 10 x the estimate -> as it is done in AliExternalTrackParam)
 	//	mIstar.UnitMatrix(); // start with unity
 	if (doLikeAliRoot) {
-	  probTr.ResetCovariance(10.);
+	  probTr.ResetCovariance(10);
 	} else {
 	  // cannot do complete reset, set to very large errors
 	  trCov[kY2] = trCov[kZ2] = kLargeErr2Coord; 
@@ -1033,7 +1104,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	  //	  cout<<pt<<": "<<kLargeErr2Coord<<" "<<kLargeErr2Dir<<" "<<kLargeErr2PtI*trPars[kPtI]*trPars[kPtI]<<endl;
 	}
 	// Clean up and storing of "forward estimates"
-	Double_t detPointResForw[kMaxNumberOfDetectors][400], detPointZResForw[kMaxNumberOfDetectors][400] ; 
+	Double_t detPointResForw[kMaxNumberOfDetectors][kNptBins], detPointZResForw[kMaxNumberOfDetectors][kNptBins] ; 
 	for (Int_t k=0; k<kMaxNumberOfDetectors; k++) {
 	  for (Int_t l=0; l<nPt; l++) {
 	    detPointResForw[k][l]  = fDetPointRes[k][l];
@@ -1134,6 +1205,7 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	fEfficiency[massloop][i] = 1.0 ;
      
 	// print out and efficiency calculation
+	iLayActive=0;
 	for (Int_t j=(fLayers.GetEntries()-1); j>=0; j--) {  // Layer loop
 	  
 	  layer = (CylLayerK*)fLayers.At(j);
@@ -1160,8 +1232,14 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 	      layerEfficiency =  ProbGoodChiSqHit( radius*100, rphiError , zError  ) ;
 	    else if ( EfficiencySearchFlag == 2 )
 	      layerEfficiency =  ProbGoodChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ;
-
+	      
 	    TString name(layer->GetName());
+	    if (!name.Contains("tpc")) {
+	      probLay(2,iLayActive)= layerEfficiency ; // Pcorr
+	      probLay(0,iLayActive)= ProbNullChiSqPlusConfHit( radius*100,leff, rphiError , zError  ) ; // Pnull
+	      probLay(1,iLayActive)= 1 - probLay(2,iLayActive) - probLay(0,iLayActive);                 // Pfake
+	      iLayActive++;    
+	    }
 	    if (name.Contains("tpc") && (!name.Contains("tpc_0")) ) continue;
 
 	    if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {
@@ -1180,6 +1258,12 @@ void DetectorK::SolveViaBilloir(Int_t flagD0,Int_t print, Bool_t allPt, Double_t
 
 	    if (!name.Contains("tpc")) fEfficiency[massloop][i] *= layerEfficiency;
 	    
+	  }
+	  if (fAtLeastCorr != -1) {
+	    // Calculate probabilities from Kombinatorics tree ...
+	    Double_t *probs = PrepareEffFakeKombinations(&probKomb, &probLay);
+	    fEfficiency[massloop][i] = probs[0]; // efficiency
+	    fFake[massloop][i] = probs[1];       // fake
 	  }
 	}
 	if (print == 1 && fTransMomenta[i] >= meanPt && massloop == 2 && printOnce == 1) {
@@ -1201,7 +1285,7 @@ TGraph * DetectorK::GetGraphMomentumResolution(Int_t color, Int_t linewidth) {
   // returns the momentum resolution 
   //
   
-  TGraph *graph = new TGraph(400, fTransMomenta, fMomentumRes);
+  TGraph *graph = new TGraph(kNptBins, fTransMomenta, fMomentumRes);
   graph->SetTitle("Momentum Resolution .vs. Pt" ) ;
   //  graph->GetXaxis()->SetRangeUser(0.,5.0) ;
   graph->GetXaxis()->SetTitle("Transverse Momentum (GeV/c)") ;
@@ -1231,11 +1315,11 @@ TGraph * DetectorK::GetGraphPointingResolution(Int_t axis, Int_t color, Int_t li
   TGraph * graph =  0;
 
   if (axis==0) {
-    graph = new TGraph ( 400, fTransMomenta, fResolutionRPhi ) ;
+    graph = new TGraph ( kNptBins, fTransMomenta, fResolutionRPhi ) ;
     graph->SetTitle("R-#phi Pointing Resolution .vs. Pt" ) ;
     graph->GetYaxis()->SetTitle("R-#phi Pointing Resolution (#mum)") ;
   } else {
-    graph =  new TGraph ( 400, fTransMomenta, fResolutionZ ) ;
+    graph =  new TGraph ( kNptBins, fTransMomenta, fResolutionZ ) ;
     graph->SetTitle("Z Pointing Resolution .vs. Pt" ) ;
     graph->GetYaxis()->SetTitle("Z Pointing Resolution (#mum)") ;
   }
@@ -1264,7 +1348,7 @@ TGraph * DetectorK::GetGraphPointingResolutionTeleEqu(Int_t axis,Int_t color, In
   // axis =1 ... in z
   //
   
-  Double_t resolution[400];
+  Double_t resolution[kNptBins];
 
   Double_t layerResolution[2];
   Double_t layerRadius[2];
@@ -1292,7 +1376,7 @@ TGraph * DetectorK::GetGraphPointingResolutionTeleEqu(Int_t axis,Int_t color, In
   Double_t pt, momentum, thickness,aMCS ;
   Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
 
-  for ( Int_t i = 0 ; i < 400 ; i++ ) { 
+  for ( Int_t i = 0 ; i < kNptBins ; i++ ) { 
     // Reference data as if first two layers were acting all alone 
     pt  =  fTransMomenta[i]  ;
     momentum = pt / TMath::Cos(lambda)   ;  // Total momentum
@@ -1307,7 +1391,7 @@ TGraph * DetectorK::GetGraphPointingResolutionTeleEqu(Int_t axis,Int_t color, In
 
 
 
-  TGraph* graph = new TGraph ( 400, fTransMomenta, resolution ) ;
+  TGraph* graph = new TGraph ( kNptBins, fTransMomenta, resolution ) ;
    
   if (axis==0) {
     graph->SetTitle("RPhi Pointing Resolution .vs. Pt" ) ;
@@ -1342,8 +1426,8 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
   //
   Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
   
-  Double_t particleEfficiency[400]; // with chosen particle mass
-  Double_t kaonEfficiency[400], pionEfficiency[400], d0efficiency[400]; 
+  Double_t particleEfficiency[kNptBins]; // with chosen particle mass
+  Double_t kaonEfficiency[kNptBins], pionEfficiency[kNptBins], d0efficiency[kNptBins]; 
   Double_t partEfficiency[2][400];
   
   if (particle != 0) {
@@ -1351,7 +1435,7 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
     Double_t doNotDecayFactor;
     for ( Int_t massloop = 0 ; massloop < 2 ; massloop++) { //0-pion, 1-kaon
       
-      for ( Int_t j = 0 ; j < 400 ; j++ ) { 
+      for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
 	// JT Test Let the kaon decay.  If it decays inside the TPC ... then it is gone; for all decays < 130 cm.
 	Double_t momentum = fTransMomenta[j] / TMath::Cos(lambda)           ;  // Total momentum at average rapidity
 	if ( massloop == 1 ) { // KAON
@@ -1367,17 +1451,17 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
     }
     
     // resulting estimate of the D0 efficiency
-    for ( Int_t j = 0 ; j < 400 ; j++ ) {
+    for ( Int_t j = 0 ; j < kNptBins ; j++ ) {
       d0efficiency[j] = D0IntegratedEfficiency(fTransMomenta[j],partEfficiency);
     }
   } else { 
-    for ( Int_t j = 0 ; j < 400 ; j++ ) { 
+    for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
       particleEfficiency[j] = fEfficiency[2][j]* AcceptanceOfTpcAndSi;
       // NOTE: Decay factor (see kaon) should be included to be realiable
     }
   }
 
-  for ( Int_t j = 0 ; j < 400 ; j++ ) { 
+  for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
     pionEfficiency[j]     *= 100;
     kaonEfficiency[j]     *= 100;
     d0efficiency[j]       *= 100;
@@ -1386,16 +1470,16 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
  
   TGraph * graph =  0;
   if (particle==0) {
-    graph = new TGraph ( 400, fTransMomenta, particleEfficiency ) ; // choosen mass
+    graph = new TGraph ( kNptBins, fTransMomenta, particleEfficiency ) ; // choosen mass
     graph->SetLineWidth(1);
   }  else if (particle==1) {
-    graph = new TGraph ( 400, fTransMomenta, pionEfficiency ) ;
+    graph = new TGraph ( kNptBins, fTransMomenta, pionEfficiency ) ;
     graph->SetLineWidth(1);
   }  else if (particle ==2) {
-    graph = new TGraph ( 400, fTransMomenta, kaonEfficiency ) ;
+    graph = new TGraph ( kNptBins, fTransMomenta, kaonEfficiency ) ;
     graph->SetLineWidth(1);
   }  else if (particle ==3) {
-    graph = new TGraph ( 400, fTransMomenta, d0efficiency ) ;
+    graph = new TGraph ( kNptBins, fTransMomenta, d0efficiency ) ;
     graph->SetLineStyle(kDashed);
   } else 
     return 0;
@@ -1405,6 +1489,138 @@ TGraph * DetectorK::GetGraphRecoEfficiency(Int_t particle,Int_t color, Int_t lin
   graph->GetXaxis()->SetNoExponent(1) ;
   graph->GetXaxis()->SetMoreLogLabels(1) ;
   graph->GetYaxis()->SetTitle("Efficiency (%)") ;
+  graph->GetYaxis()->CenterTitle();
+	  
+  graph->SetMinimum(0.01) ; 
+  graph->SetMaximum(100)  ; 
+
+  graph->SetLineColor(color);
+  graph->SetMarkerColor(color);
+  graph->SetLineWidth(linewidth);
+
+  return graph;
+}
+
+TGraph * DetectorK::GetGraphRecoFakes(Int_t particle,Int_t color, Int_t linewidth) {
+  //
+  // particle = 0 ... choosen particle (setted particleMass)
+  // particle = 1 ... Pion
+  // particle = 2 ... Kaon
+  //
+
+  Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
+  
+  Double_t particleFake[kNptBins]; // with chosen particle mass
+  Double_t kaonFake[kNptBins], pionFake[kNptBins];
+  Double_t partFake[2][kNptBins];
+  
+  if (particle != 0) {
+    // resulting Pion and Kaon efficiency scaled with overall efficiency
+    Double_t doNotDecayFactor;
+    for ( Int_t massloop = 0 ; massloop < 2 ; massloop++) { //0-pion, 1-kaon
+      
+      for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
+	// JT Test Let the kaon decay.  If it decays inside the TPC ... then it is gone; for all decays < 130 cm.
+	Double_t momentum = fTransMomenta[j] / TMath::Cos(lambda)           ;  // Total momentum at average rapidity
+	if ( massloop == 1 ) { // KAON
+	  doNotDecayFactor  = TMath::Exp(-130/(371*momentum/KaonMass)) ;  // Decay length for kaon is 371 cm.
+	  kaonFake[j] = fFake[1][j] /( doNotDecayFactor) ;
+	} else { // PION
+	  pionFake[j] = fFake[0][j] ;	
+	}
+	partFake[0][j] = pionFake[j];
+	partFake[1][j] = kaonFake[j];
+      }      
+    }
+    
+  } else { 
+    for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
+      particleFake[j] = fFake[2][j];
+      // NOTE: Decay factor (see kaon) should be included to be realiable
+    }
+  }
+
+  for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
+    pionFake[j]     *= 100;
+    kaonFake[j]     *= 100;
+    particleFake[j] *= 100;
+  }
+ 
+  TGraph * graph =  0;
+  if (particle==0) {
+    graph = new TGraph ( kNptBins, fTransMomenta, particleFake ) ; // choosen mass
+    graph->SetLineWidth(1);
+  }  else if (particle==1) {
+    graph = new TGraph ( kNptBins, fTransMomenta, pionFake ) ;
+    graph->SetLineWidth(1);
+  }  else if (particle ==2) {
+    graph = new TGraph ( kNptBins, fTransMomenta, kaonFake ) ;
+    graph->SetLineWidth(1);
+  } 
+  
+  graph->GetXaxis()->SetTitle("Transverse Momentum (GeV/c)") ;
+  graph->GetXaxis()->CenterTitle();
+  graph->GetXaxis()->SetNoExponent(1) ;
+  graph->GetXaxis()->SetMoreLogLabels(1) ;
+  graph->GetYaxis()->SetTitle("Fake (%)") ;
+  graph->GetYaxis()->CenterTitle();
+	  
+  graph->SetMinimum(0.01) ; 
+  graph->SetMaximum(100)  ; 
+
+  graph->SetLineColor(color);
+  graph->SetMarkerColor(color);
+  graph->SetLineWidth(linewidth);
+
+  return graph;
+}
+TGraph * DetectorK::GetGraphRecoPurity(Int_t particle,Int_t color, Int_t linewidth) {
+  //
+  // particle = 0 ... choosen particle (setted particleMass)
+  // particle = 1 ... Pion
+  // particle = 2 ... Kaon
+  //
+
+  //  Double_t lambda = TMath::Pi()/2.0 - 2.0*TMath::ATan(TMath::Exp(-1*fAvgRapidity)); 
+  
+  Double_t particleFake[kNptBins]; // with chosen particle mass
+  Double_t kaonFake[kNptBins], pionFake[kNptBins];
+  //  Double_t partFake[2][kNptBins];
+  
+  if (particle != 0) {
+    cout <<" not implemented"<<endl;
+      
+  } else { 
+    for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
+      particleFake[j] = fFake[2][j];
+      // NOTE: Decay factor (see kaon) should be included to be realiable
+    }
+  }
+
+  // Get Purity
+  for ( Int_t j = 0 ; j < kNptBins ; j++ ) { 
+    pionFake[j]     = (1-pionFake[j])*100;
+    kaonFake[j]     = (1-kaonFake[j])*100;
+    particleFake[j] = (1-particleFake[j])*100;
+  }
+ 
+  TGraph * graph =  0;
+  if (particle==0) {
+    graph = new TGraph ( kNptBins, fTransMomenta, particleFake ) ; // choosen mass
+    graph->SetLineWidth(1);
+  }  else if (particle==1) {
+    graph = new TGraph ( kNptBins, fTransMomenta, pionFake ) ;
+    graph->SetLineWidth(1);
+  }  else if (particle ==2) {
+    graph = new TGraph ( kNptBins, fTransMomenta, kaonFake ) ;
+    graph->SetLineWidth(1);
+  } 
+  
+  graph->GetXaxis()->SetTitle("Transverse Momentum (GeV/c)") ;
+  graph->GetXaxis()->CenterTitle();
+  graph->GetXaxis()->SetNoExponent(1) ;
+  graph->GetXaxis()->SetMoreLogLabels(1) ;
+  graph->GetYaxis()->SetTitle("Purity (%)") ;
   graph->GetYaxis()->CenterTitle();
 	  
   graph->SetMinimum(0.01) ; 
@@ -1492,6 +1708,12 @@ TGraph* DetectorK::GetGraph(Int_t number, Int_t color, Int_t linewidth) {
     return GetGraphRecoEfficiency(2, color, linewidth);  // eff. kaon
   case 13: 
     return GetGraphRecoEfficiency(3, color, linewidth);  // eff. D0
+  case 15:
+    return GetGraphRecoFakes(0, color, linewidth);  // Fake tracked particle
+  case 16:
+    return GetGraphRecoFakes(1, color, linewidth);  // Fake pion
+  case 17:
+    return GetGraphRecoFakes(2, color, linewidth);  // Fake kaon
   default:
     printf(" Error: chosen graph number not valid\n");
   }
@@ -1499,7 +1721,7 @@ TGraph* DetectorK::GetGraph(Int_t number, Int_t color, Int_t linewidth) {
 
 }
 
-void DetectorK::MakeAliceAllNew(Bool_t flagTPC) {
+void DetectorK::MakeAliceAllNew(Bool_t flagTPC,Bool_t flagMon) {
   
   // All New configuration with X0 = 0.3 and resolution = 4 microns
   
@@ -1507,9 +1729,15 @@ void DetectorK::MakeAliceAllNew(Bool_t flagTPC) {
   AddLayer((char*)"vertex",     0,     0); // dummy vertex for matrix calculation
 
   // new ideal Pixel properties?
-  Double_t x0     = 0.0030;
-  Double_t resRPhi = 0.0004;
-  Double_t resZ   = 0.0004;
+  Double_t x0     = 0.0050;
+  Double_t resRPhi = 0.0006;
+  Double_t resZ   = 0.0006;
+ 
+  if (flagMon) {
+    x0     = 0.0030;
+    resRPhi = 0.0004;
+    resZ   = 0.0004;
+  }
   
   AddLayer((char*)"ddd1",  2.2 ,  x0, resRPhi, resZ); 
   AddLayer((char*)"ddd2",  3.8 ,  x0, resRPhi, resZ); 
@@ -1790,4 +2018,68 @@ Bool_t DetectorK::GetXatLabR(AliExternalTrackParam* tr,Double_t r,Double_t &x, D
   }
   //
   return kTRUE;
+}
+
+
+
+Double_t* DetectorK::PrepareEffFakeKombinations(TMatrixD *probKomb, TMatrixD *probLay) {
+
+  if (!probLay) {  
+    printf("Error: Layer tracking efficiencies not set \n");
+    return 0;
+  }
+
+  TMatrixD &tProbKomb = *probKomb;
+  TMatrixD &tProbLay = *probLay;
+
+
+  //  Int_t base = tProbLay.GetNcols(); // 3? null, fake, correct
+  Int_t nLayer = tProbKomb.GetNcols(); // nlayer? - number of ITS layers
+  Int_t komb = tProbKomb.GetNrows(); // 3^nlayer? - number of kombinations
+
+  // Fill probabilities 
+
+  Double_t probEff =0;
+  Double_t probFake =0;
+  for (Int_t num=0; num<komb; num++) {
+    Int_t flCorr=0, flFake=0, flNull=0; 
+     for (Int_t l=0; l<nLayer; l++)  {
+      if (tProbKomb(num,l)==0) 
+	flNull++;
+      else if (tProbKomb(num,l)==1)
+	flFake++;
+      else if (tProbKomb(num,l)==2)
+	flCorr++;
+      else 
+	printf("Error: unexpected values in combinatorics table\n");
+    }
+
+    Int_t fkAtLeastCorr = fAtLeastCorr;
+    if (fAtLeastCorr == -1) fkAtLeastCorr = nLayer; // all hits are "correct"
+    
+    if (flCorr>=fkAtLeastCorr && flFake==0) { // at least correct but zero fake
+      Double_t probEffLayer = 1;
+      for (Int_t l=0; l<nLayer; l++) {
+	probEffLayer *=  tProbLay(tProbKomb(num,l),l);
+	//	cout<<a(num,l)<<" ";
+      }
+      //      cout<<endl;
+      probEff+=probEffLayer;
+    }
+ 
+    if (flFake>=fAtLeastFake) {
+      Double_t probFakeLayer = 1;
+      for (Int_t l=0; l<nLayer; l++) {
+	probFakeLayer *=  tProbLay(tProbKomb(num,l),l);
+	//	cout<<a(num,l)<<" ";
+      }
+      //      cout<<endl;
+      probFake+=probFakeLayer;
+    }
+
+  }
+  Double_t *probs = new Double_t(2);
+  probs[0] = probEff; probs[1] = probFake;
+  return probs;
+
 }

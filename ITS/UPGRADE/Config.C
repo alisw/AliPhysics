@@ -46,6 +46,12 @@
 #include <TVirtualMagField.h>
 #endif
 
+
+Int_t generatorFlag = 2;
+Int_t ITSflag = 3;
+
+
+
 /* $Id$ */
 enum PprTrigConf_t
 {
@@ -57,6 +63,7 @@ const char * pprTrigConfName[] = {
 };
 
 Float_t EtaToTheta(Float_t arg);
+AliGenerator *Hijing();
 
 static PprTrigConf_t strig = kDefaultPPTrig;// default PP trigger configuration
 
@@ -76,6 +83,9 @@ void Config()
   gSystem->Load("libpythia6");
   gSystem->Load("libAliPythia6");
   gSystem->Load("libgeant321");
+  gSystem->Load("libhijing");	
+  gSystem->Load("libTHijing");
+ 
 #endif
 
   new     TGeant3TGeo("C++ Interface to Geant3");
@@ -151,25 +161,109 @@ void Config()
 
   // The cocktail itself
 
-  AliGenCocktail *gener = new AliGenCocktail();
-  gener->SetPhiRange(0, 360);
-  // Set pseudorapidity range from -8 to 8.
-  Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
-  Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
-  gener->SetThetaRange(thmin,thmax);
-  gener->SetOrigin(0., 0., 0);  //vertex position
-  gener->SetSigma(0., 0., 0);   //Sigma in (X,Y,Z) (cm) on IP position
-
-  AliGenBox *gbox2 = new AliGenBox(1);
-  gbox2->SetPtRange(0.99,1.0001);  //
-  gbox2->SetPhiRange(0,360.);
-  gbox2->SetThetaRange(40.,140.);
-  gbox2->SetPart(kPiMinus);
-  gener->AddGenerator(gbox2,"GENBOX PIONS for ITS",1);
-
+  if (generatorFlag==0) {
     
+    AliGenCocktail *gener = new AliGenCocktail();
+    gener->SetPhiRange(0, 360);
+    // Set pseudorapidity range from -8 to 8.
+    Float_t thmin = EtaToTheta(8);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-8);  // theta max. <---> eta min 
+    gener->SetThetaRange(thmin,thmax);
+    gener->SetOrigin(0., 0., 0);  //vertex position
+    gener->SetSigma(0., 0., 0);   //Sigma in (X,Y,Z) (cm) on IP position
     
-  gener->Init();
+  /* 
+     AliGenBox *gbox2 = new AliGenBox(2300*1.8);
+     gbox2->SetPtRange(0.1,2.0);  //
+     gbox2->SetPhiRange(0,360);
+     gbox2->SetThetaRange(44.,135.); // +/- 0.9 eta
+     //gbox2->SetPhiRange(250,250.5);
+     //  gbox2->SetThetaRange(50.,50.1);
+     gbox2->SetPart(kPiMinus);
+     gener->AddGenerator(gbox2,"GENBOX PIONS for ITS",1);
+  */
+
+
+  
+    AliGenHIJINGpara *gbox2=new AliGenHIJINGpara(2300*1.8); // 2300 dNdy in 2*0.9eta
+    gbox2->SetPtRange(0.06,9999999); 
+    gbox2->SetPhiRange(0,360.);
+    gbox2->SetThetaRange(44.,135.); // +/- 0.9 eta
+    gener->AddGenerator(gbox2,"GenHIJINGpara PIONS for ITS",1);
+    
+    gener->Init();
+
+
+  } else if (generatorFlag==1) {
+
+
+    AliGenHijing *generHijing = new AliGenHijing(-1);
+    // centre of mass energy 
+    generHijing->SetEnergyCMS(5500.);
+    generHijing->SetImpactParameterRange(0,1);	
+    // reference frame
+    generHijing->SetReferenceFrame("CMS");
+    // projectile
+    generHijing->SetProjectile("A", 208, 82);
+    generHijing->SetTarget    ("A", 208, 82);
+    // tell hijing to keep the full parent child chain
+    generHijing->KeepFullEvent();
+    // enable jet quenching
+    generHijing->SetJetQuenching(1);
+    // enable shadowing
+    generHijing->SetShadowing(1);
+    // neutral pion and heavy particle decays switched off
+    //  generHijing->SetDecaysOff(3); // 3 requested by Ana Marin
+    // Don't track spectators
+    generHijing->SetSpectators(0);
+    // kinematic selection
+    generHijing->SetSelectAll(0);
+ 
+    AliGenerator*  gener = generHijing;
+    gener->SetSigma(0, 0, 0);      // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetVertexSmear(kPerEvent);
+    gener->Init();
+
+
+  } else if (generatorFlag==2) {
+
+
+    // Francesco ...
+    int     nParticles = 14022;
+    AliGenHIJINGpara *gener = new AliGenHIJINGpara(nParticles);
+    gener->SetMomentumRange(0.1, 10.);
+    gener->SetPhiRange(0., 360.);
+    Float_t thmin = EtaToTheta(2.5);   // theta min. <---> eta max
+    Float_t thmax = EtaToTheta(-2.5);  // theta max. <---> eta min
+    gener->SetThetaRange(thmin,thmax);
+    gener->SetOrigin(0, 0, 0);  //vertex position
+    gener->SetSigma(0, 0, 0);   //Sigma in (X,Y,Z) (cm) on IP position
+    gener->Init();
+
+
+  } else if (generatorFlag==3) {
+
+    // Annalisa ...
+    AliGenHijing *generHijing = new AliGenHijing(-1);
+    generHijing->SetEnergyCMS(5500.);
+    generHijing->SetImpactParameterRange(0,5);
+    generHijing->SetReferenceFrame("CMS");
+    generHijing->SetProjectile("A", 208, 82);
+    generHijing->SetTarget    ("A", 208, 82);
+    generHijing->KeepFullEvent();
+    generHijing->SetJetQuenching(1);
+    generHijing->SetShadowing(1);
+    generHijing->SetSpectators(0);
+    generHijing->SetSelectAll(0);
+    generHijing->SetPtHardMin(4.5);
+
+    AliGenerator*  gener = generHijing;
+    gener->SetSigma(0, 0, 0);      // Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetVertexSmear(kPerEvent);
+    gener->Init();
+
+
+  }
 
 
   // 
@@ -189,14 +283,15 @@ void Config()
   Int_t   iFRAME =  0;
   Int_t   iHALL  =  0;
   Int_t   iITS   =  1;
+  Int_t  isUpgrade = ITSflag;
   Int_t   iMAG   =  0;
   Int_t   iMUON  =  0;
   Int_t   iPHOS  =  0;
-  Int_t   iPIPE  =  1;
+  Int_t   iPIPE  =  0;
   Int_t   iPMD   =  0;
-  Int_t   iHMPID  =  0;
+  Int_t   iHMPID =  0;
   Int_t   iSHIL  =  0;
-  Int_t   iT0 =  0;
+  Int_t   iT0    =  0;
   Int_t   iTOF   =  0;
   Int_t   iTPC   =  0;
   Int_t   iTRD   =  0;
@@ -264,14 +359,302 @@ void Config()
   if (iITS)
     {
       //=================== ITS parameters ============================
-      Bool_t isUpgrade = kTRUE;
-      AliITS *ITS = 0x0;
-      if(isUpgrade) ITS  = new AliITSupgrade("ITS","ITS Upgrade");
-      else ITS = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
-    
+
+  
+      if (isUpgrade==1) { // current ITS geometry ...
+
+
+	AliITSupgrade *ITSu  = new AliITSupgrade("ITS","ITS upgrade",kTRUE);
+	  
+
+      } else if(isUpgrade==2) { // "New SPDs" Configuration 
+
+	// BeamPipe
+	Bool_t bp=kTRUE;
+	Double_t widthBP = 0.08;
+	Double_t radiusBP = 2.0-widthBP;
+	Double_t halflengthBP = 200.;
+
+
+	// BeamPipe
+	Int_t  nlayers =7;
+	TArrayD xsize(nlayers); 	TArrayD zsize(nlayers);
+	TArrayD width(nlayers); 	TArrayD radii(nlayers);
+       
+	TArrayD widthCu(nlayers); 	TArrayD radiiCu(nlayers);
+	TArrayS copper(nlayers);
+	TArrayD halfLengths(nlayers);
+
+
+	for(Int_t i=0; i<nlayers; i++){
+
+	  Double_t xsz[7]={14*1e-04, 14*1e-04, 14*1e-04, 121.2e-04,121.4*1e-04,69.3*1e-04,69.3*1e-04};
+	  Double_t zsz[7]={14*1e-04, 14*1e-04, 14*1e-04,  97*1e-04,97*1e-04,2875*1e-04,2875*1e-04};
+
+	  Double_t halfL[7]={21./2, 25./2., 32./2., 22.2,29.7,43.1,48.9};
+
+
+	  Double_t r[7]={2.2,3.8,6.8,14.9,23.8,39.1,43.6};
+	  radii.AddAt(r[i],i);
+
+	  Double_t thick[7]={50.*1e-04,50.*1e-04,50.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04,150.*1e-04};
+	  width.AddAt(thick[i],i);
+
+	  // Copper radius & thickness
+	  radiiCu.AddAt(r[i]+thick[i],i);
+	  if (i<3) 
+	    widthCu.AddAt(0.0036,i);
+	  else
+	    widthCu.AddAt(0.0150,i);//micron
+	  
+	  // no idea ????????
+	  Int_t c[7]={1,1,1,1,1,1,1};
+	  copper.AddAt(c[i],i);
+
+
+	  // Silicon pixel sizes and length in Z
+
+	  Int_t npixHalf[7];
+	  npixHalf[i]=(Int_t)(halfL[i]/zsz[i]); 
+	  Double_t HalfL[7];
+	  HalfL[i]=npixHalf[i]*zsz[i];
+	
+	  Int_t npixR[7];
+	  npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
+	  Double_t xszInt[7];
+	  xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
+	  xsize.AddAt(xszInt[i],i);
+	  zsize.AddAt(zsz[i],i);
+
+	  halfLengths.AddAt(HalfL[i],i);
+
+
+	}
+	AliITSupgrade *ITSu  = 
+	  new AliITSupgrade("ITS","ITS upgrade",
+			    width,radii,halfLengths,
+			    radiiCu,widthCu,copper,
+			    bp,radiusBP, widthBP, halflengthBP );
+     
+
+	ITSu->SetFullSegmentation(xsize,zsize);
+
+      } else if (isUpgrade==3) { // "All New" Configuration 
+
+	// BeamPipe
+	Bool_t bp=kTRUE;
+	Double_t widthBP = 0.08;
+	Double_t radiusBP = 2.0-widthBP;
+	Double_t halflengthBP = 200.;
+
+
+	// BeamPipe
+	Int_t  nlayers =7;
+	TArrayD xsize(nlayers); 	TArrayD zsize(nlayers);
+	TArrayD width(nlayers); 	TArrayD radii(nlayers);
+       
+	TArrayD widthCu(nlayers); 	TArrayD radiiCu(nlayers);
+	TArrayS copper(nlayers);
+	TArrayD halfLengths(nlayers);
+
+
+	for(Int_t i=0; i<nlayers; i++){
+
+	  Double_t xsz[7]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+	  Double_t zsz[7]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+
+	  Double_t halfL[7]={21./2, 25./2., 32./2., 45./2, 67./2, 107./2, 114./2};
+
+
+	  Double_t r[7]={2.2,3.8,6.8,12.4,23.5,39.6,43.0};
+	  radii.AddAt(r[i],i);
+
+	  Double_t thick[7]={50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04};
+	  width.AddAt(thick[i],i);
+
+	  // Copper radius & thickness
+	  radiiCu.AddAt(r[i]+thick[i],i);
+	  widthCu.AddAt(0.0036,i);
+	  
+	  // no idea ????????
+	  Int_t c[7]={1,1,1,1,1,1,1};
+	  copper.AddAt(c[i],i);
+
+
+	  // Silicon pixel sizes and length in Z
+
+	  Int_t npixHalf[7];
+	  npixHalf[i]=(Int_t)(halfL[i]/zsz[i]); 
+	  Double_t HalfL[7];
+	  HalfL[i]=npixHalf[i]*zsz[i];
+	
+	  Int_t npixR[7];
+	  npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
+	  Double_t xszInt[7];
+	  xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
+	  xsize.AddAt(xszInt[i],i);
+	  zsize.AddAt(zsz[i],i);
+
+	  halfLengths.AddAt(HalfL[i],i);
+
+
+	}
+	AliITSupgrade *ITSu  = 
+	  new AliITSupgrade("ITS","ITS upgrade",
+			    width,radii,halfLengths,
+			    radiiCu,widthCu,copper,
+			    bp,radiusBP, widthBP, halflengthBP );
+     
+
+	ITSu->SetFullSegmentation(xsize,zsize);
+
+      } else if (isUpgrade==4) { // "All New" Configuration with 8 layers
+
+	// BeamPipe
+	Bool_t bp=kTRUE;
+	Double_t widthBP = 0.08;
+	Double_t radiusBP = 2.0-widthBP;
+	Double_t halflengthBP = 200.;
+
+
+	// BeamPipe
+	Int_t  nlayers =8;
+	TArrayD xsize(nlayers); 	TArrayD zsize(nlayers);
+	TArrayD width(nlayers); 	TArrayD radii(nlayers);
+       
+	TArrayD widthCu(nlayers); 	TArrayD radiiCu(nlayers);
+	TArrayS copper(nlayers);
+	TArrayD halfLengths(nlayers);
+
+
+	for(Int_t i=0; i<nlayers; i++){
+
+	  Double_t xsz[8]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+	  Double_t zsz[8]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+
+	  Double_t halfL[8]={21./2, 25./2., 32./2., 45./2, 67./2, 114./2, 114./2, 114./2};
+
+
+	  Double_t r[8]={2.2,3.8,6.8,12.4,23.5, 42.6,43.0,43.4};
+	  radii.AddAt(r[i],i);
+
+	  Double_t thick[8]={50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04};
+	  width.AddAt(thick[i],i);
+
+	  // Copper radius & thickness
+	  radiiCu.AddAt(r[i]+thick[i],i);
+	  widthCu.AddAt(0.0036,i);
+	  
+	  // no idea ????????
+	  Int_t c[8]={1,1,1,1,1,1,1};
+	  copper.AddAt(c[i],i);
+
+
+	  // Silicon pixel sizes and length in Z
+
+	  Int_t npixHalf[8];
+	  npixHalf[i]=(Int_t)(halfL[i]/zsz[i]); 
+	  Double_t HalfL[8];
+	  HalfL[i]=npixHalf[i]*zsz[i];
+	
+	  Int_t npixR[8];
+	  npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
+	  Double_t xszInt[8];
+	  xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
+	  xsize.AddAt(xszInt[i],i);
+	  zsize.AddAt(zsz[i],i);
+
+	  halfLengths.AddAt(HalfL[i],i);
+
+
+	}
+	AliITSupgrade *ITSu  = 
+	  new AliITSupgrade("ITS","ITS upgrade",
+			    width,radii,halfLengths,
+			    radiiCu,widthCu,copper,
+			    bp,radiusBP, widthBP, halflengthBP );
+     
+
+	ITSu->SetFullSegmentation(xsize,zsize);
+
+      } else if (isUpgrade==5) { // "All New" Configuration with 8 layers
+
+	// BeamPipe
+	Bool_t bp=kTRUE;
+	Double_t widthBP = 0.08;
+	Double_t radiusBP = 2.0-widthBP;
+	Double_t halflengthBP = 200.;
+
+
+	// BeamPipe
+	Int_t  nlayers =9;
+	TArrayD xsize(nlayers); 	TArrayD zsize(nlayers);
+	TArrayD width(nlayers); 	TArrayD radii(nlayers);
+       
+	TArrayD widthCu(nlayers); 	TArrayD radiiCu(nlayers);
+	TArrayS copper(nlayers);
+	TArrayD halfLengths(nlayers);
+
+
+	for(Int_t i=0; i<nlayers; i++){
+
+	  Double_t xsz[9]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+	  Double_t zsz[9]={14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04, 14*1e-04};
+
+	  Double_t halfL[9]={21./2, 25./2., 32./2., 45./2, 67./2, 107./2, 107./2, 114./2, 114./2};
+
+
+	  Double_t r[9]={2.2,3.8,6.8,12.4,23.5, 39.6,40.0,43.0,43.4};
+	  radii.AddAt(r[i],i);
+
+	  Double_t thick[9]={50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04,50.*1e-04};
+	  width.AddAt(thick[i],i);
+
+	  // Copper radius & thickness
+	  radiiCu.AddAt(r[i]+thick[i],i);
+	  widthCu.AddAt(0.0036,i);
+	  
+	  // no idea ????????
+	  Int_t c[9]={1,1,1,1,1,1,1};
+	  copper.AddAt(c[i],i);
+
+
+	  // Silicon pixel sizes and length in Z
+
+	  Int_t npixHalf[9];
+	  npixHalf[i]=(Int_t)(halfL[i]/zsz[i]); 
+	  Double_t HalfL[9];
+	  HalfL[i]=npixHalf[i]*zsz[i];
+	
+	  Int_t npixR[9];
+	  npixR[i] = (Int_t)(2*TMath::Pi()*r[i]/xsz[i]);
+	  Double_t xszInt[9];
+	  xszInt[i]= 2*TMath::Pi()*r[i]/npixR[i];
+	  xsize.AddAt(xszInt[i],i);
+	  zsize.AddAt(zsz[i],i);
+
+	  halfLengths.AddAt(HalfL[i],i);
+
+
+	}
+	AliITSupgrade *ITSu  = 
+	  new AliITSupgrade("ITS","ITS upgrade",
+			    width,radii,halfLengths,
+			    radiiCu,widthCu,copper,
+			    bp,radiusBP, widthBP, halflengthBP );
+     
+
+	ITSu->SetFullSegmentation(xsize,zsize);
+
+
+      } else {
+
+      } else {
+	AliITS *ITS =  new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+      }
     }
-
-
+  
+  
   if (iTPC)
     {
       //============================ TPC parameters ===================
@@ -376,3 +759,10 @@ void Config()
 Float_t EtaToTheta(Float_t arg){
   return (180./TMath::Pi())*2.*atan(exp(-arg));
 }
+
+
+AliGenerator* Hijing()
+{
+     return gener;
+}
+
