@@ -543,10 +543,10 @@ void AliTOFSDigitizer::Exec(Option_t *verboseOption) {
 
 		  if(timediff>=0.2) nlargeTofDiff++; // greater than 200ps
 		  
-		  digit[0] = (Int_t) ((tofAfterSimul[indexOfPad]*1.e+03)/AliTOFGeometry::TdcBinWidth()); // TDC bin number (each bin -> 24.4 ps)
+		  digit[0] = TMath::Nint((tofAfterSimul[indexOfPad]*1.e+03)/AliTOFGeometry::TdcBinWidth()); // TDC bin number (each bin -> 24.4 ps)
 		  
 		  Float_t landauFactor = gRandom->Landau(fAdcMean, fAdcRms); 
-		  digit[1] = (Int_t) (qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
+		  digit[1] = TMath::Nint(qInduced[indexOfPad] * landauFactor); // ADC bins (each bin -> 0.25 (or 0.03) pC)
 
 		  // recalculate the volume only for neighbouring pads
 		  if(indexOfPad){
