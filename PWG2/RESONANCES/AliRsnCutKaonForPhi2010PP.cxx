@@ -127,7 +127,8 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
    // PID TPC :
    // depends on momentum
    // and if local PID object is initialized, it is used instead of that got from manager
-   Double_t mom = (Double_t)TMath::Abs(track->GetTPCmomentum());
+   Double_t mom = track->GetTPCmomentum();
+   mom = TMath::Abs(mom);
    if (mom < fLimitTPC) 
       SetRangeD(0.0, fNSigmaTPCLow);
    else
