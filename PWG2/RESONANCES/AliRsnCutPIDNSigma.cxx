@@ -22,8 +22,8 @@
 
 #include "AliRsnCutPIDNSigma.h"
 
-ClassImp(AliRsnCutPIDNSigma)
 ClassImp(AliRsnCutPIDNSigma::AliRsnPIDRange)
+ClassImp(AliRsnCutPIDNSigma)
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() : 
