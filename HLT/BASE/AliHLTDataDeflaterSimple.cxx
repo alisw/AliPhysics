@@ -114,7 +114,6 @@ void AliHLTDataDeflaterSimple::Clear(Option_t * option)
 {
   // internal cleanup
   TH2F* hParameterCompression=NULL;
-  TH2F* hParameterByteSaving=NULL;
   if (fHistograms) {
     int bins=fParameterDefinitions.size();
     TObject* o=NULL;
@@ -125,15 +124,6 @@ void AliHLTDataDeflaterSimple::Clear(Option_t * option)
       hParameterCompression=new TH2F("ParameterCompression", "ParameterCompression", bins, 0, bins, 100, 0., 1.1);
       if (hParameterCompression) fHistograms->Add(hParameterCompression);
     }
-    /*
-    o=fHistograms->FindObject("ParameterByteSaving");
-    if (o) {
-      hParameterByteSaving=dynamic_cast<TH2F*>(o);
-    } else {
-      hParameterByteSaving=new TH2F("ParameterByteSaving", "ParameterByteSaving", bins, 0, bins, 10, 0., 1.1);
-      if (hParameterByteSaving) fHistograms->Add(hParameterByteSaving);
-    }
-    */
   }
   unsigned i=0;
   for (vector<AliHLTDataDeflaterParameter>::iterator m=fParameterDefinitions.begin();
@@ -145,9 +135,6 @@ void AliHLTDataDeflaterSimple::Clear(Option_t * option)
     ratio/=bitLength*valueCount;
     if (hParameterCompression)
       hParameterCompression->Fill(i, ratio);
-    ratio=(1-ratio)*valueCount*bitLength/8;
-    if (hParameterByteSaving)
-      hParameterByteSaving->Fill(i, ratio);
 
     m->ResetBitCount();
   }
