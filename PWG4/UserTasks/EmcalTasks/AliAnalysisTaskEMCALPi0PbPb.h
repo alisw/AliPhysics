@@ -89,7 +89,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t     GetCellEnergy(const AliVCluster *c)    const;
   Double_t     GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
   Double_t     GetMaxCellEnergy(const AliVCluster *c, Short_t &id)                                        const;
-  Double_t     GetSecondMaxCell(AliVCluster *clus)                                                        const;
+  Double_t     GetSecondMaxCellEnergy(AliVCluster *clus, Short_t &id)                                     const;
   Int_t        GetNCells(const AliVCluster *c, Double_t emin=0.)                                          const;
   Int_t        GetNCells(Int_t sm, Double_t emin=0.)                                                      const;
   void         GetSigma(const AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
@@ -329,8 +329,9 @@ class AliStaCluster : public TObject
                       fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), 
                       fTmax(0), fDbc(-1), fDisp(-1), fM20(-1), fM02(-1), fEcc(-1), fSig(-1), fSigEtaEta(-1), fSigPhiPhi(-1),
                       fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
-                      fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),fTrIsoStrip(0),
-                      fCeIso(0), fCeIso1(0), fCeIso3(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
+                      fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),
+                      fTrIsoD4(0), fTrIso1D4(0), fTrIso2D4(0), fTrIsoStrip(0), fCeIso(0), fCeIso1(0), 
+                      fCeIso3(0), fCeIso4(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
                       fIsShared(0), fTrigId(-1), fTrigE(0), fMcLabel(-1), fEmbE(0) {;}
 
  public:
@@ -368,10 +369,14 @@ class AliStaCluster : public TObject
   Double32_t    fTrIsoD3;          //[0,0,16] track isolation, iso dist 0.3
   Double32_t    fTrIso1D3;         //[0,0,16] track isolation (pt>1GeV/c), iso dist 0.3
   Double32_t    fTrIso2D3;         //[0,0,16] track isolation (pt>2GeV/c), iso dist 0.3
+  Double32_t    fTrIsoD4;          //[0,0,16] track isolation, iso dist 0.4
+  Double32_t    fTrIso1D4;         //[0,0,16] track isolation (pt>1GeV/c), iso dist 0.4
+  Double32_t    fTrIso2D4;         //[0,0,16] track isolation (pt>2GeV/c), iso dist 0.4
   Double32_t    fTrIsoStrip;       //[0,0,16] track isolation strip, dEtaXdPhi=0.015x0.3
   Double32_t    fCeIso;            //[0,0,16] cell isolation in R=0.20
   Double32_t    fCeIso1;           //[0,0,16] cell isolation in R=0.10
   Double32_t    fCeIso3;           //[0,0,16] cell isolation in R=0.30
+  Double32_t    fCeIso4;           //[0,0,16] cell isolation in R=0.30
   Double32_t    fCeIso4x4;         //[0,0,16] cell isolation in 4x4 cells
   Double32_t    fCeIso5x5;         //[0,0,16] cell isolation in 5x5 cells
   Double32_t    fCeCore;           //[0,0,16] cell content in R=0.05 
@@ -382,7 +387,7 @@ class AliStaCluster : public TObject
   Short_t       fMcLabel;          //         index of closest MC particle
   Double32_t    fEmbE;             //[0,0,16] sum of energy of embedded (MC) cells in cluster
 
-  ClassDef(AliStaCluster,7) // Cluster class
+  ClassDef(AliStaCluster,8) // Cluster class
 };
 
 class AliStaTrigger : public TObject
