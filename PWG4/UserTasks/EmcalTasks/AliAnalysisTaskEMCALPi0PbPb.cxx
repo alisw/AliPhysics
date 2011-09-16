@@ -78,7 +78,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fEmbedMode(0),
     fGeom(0),
     fReco(0),
-    fTrigName("EmcalClusters_L0FEE"),
+    fTrigName(),
     fDoPSel(kTRUE),
     fIsGeoMatsSet(0),
     fNEvs(0),
@@ -175,7 +175,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fEmbedMode(0),
     fGeom(0),
     fReco(0),
-    fTrigName("EmcalClusters_L0FEE"),
+    fTrigName(),
     fDoPSel(kTRUE),
     fIsGeoMatsSet(0),
     fNEvs(0),
@@ -240,7 +240,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
   // Constructor.
 
   DefineOutput(1, TList::Class());
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks,EMCALTrigger. "
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,PrimaryVertex.,SPDVertex.,TPCVertex.,EMCALCells.,Tracks,EMCALTrigger.,SPDPileupVertices,TrkPileupVertices "
                "AOD:header,vertices,emcalCells,tracks";
 }
 
@@ -1637,9 +1637,17 @@ void AliAnalysisTaskEMCALPi0PbPb::FillNtuple()
     AliTriggerAnalysis trAn; /// Trigger Analysis
     Bool_t v0B = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0C);
     Bool_t v0A = trAn.IsOfflineTriggerFired(fEsdEv, AliTriggerAnalysis::kV0A);
-    fHeader->fV0And = v0A && v0B;
+    fHeader->fV0And        = v0A && v0B;
+    fHeader->fIsHT         = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
+    am->LoadBranch("SPDPileupVertices");
+    am->LoadBranch("TrkPileupVertices");
+    fHeader->fIsPileup     = fEsdEv->IsPileupFromSPD(3,0.8);
+    fHeader->fIsPileup2    = fEsdEv->IsPileupFromSPD(3,0.4);
+    fHeader->fIsPileup4    = fEsdEv->IsPileupFromSPD(3,0.2);
+    fHeader->fIsPileup8    = fEsdEv->IsPileupFromSPD(3,0.1);
+    fHeader->fNSpdVertices = fEsdEv->GetNumberOfPileupVerticesSPD();
+    fHeader->fNTpcVertices = fEsdEv->GetNumberOfPileupVerticesTracks();
   }
-  fHeader->fIsHT = (fHeader->fOffTriggers & AliVEvent::kEMC1) || (fHeader->fOffTriggers & AliVEvent::kEMC7);
 
   AliCentrality *cent = InputEvent()->GetCentrality();
   fHeader->fV0Cent    = cent->GetCentralityPercentileUnchecked("V0M");
@@ -2033,6 +2041,34 @@ Double_t AliAnalysisTaskEMCALPi0PbPb::GetMaxCellEnergy(const AliVCluster *cluste
     }
   }
   return maxe;
+}
+
+//________________________________________________________________________
+Double_t AliAnalysisTaskEMCALPi0PbPb::GetSecondMaxCell(AliVCluster *clus) const
+{
+  // Get second maximum cell.
+
+  AliVCaloCells *cells = fEsdCells;
+  if (!cells)
+    cells = fAodCells;
+  if (!cells)
+    return -1;
+ 
+  Double_t secondEmax=0, firstEmax=0;
+  Double_t cellen;
+  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
+    Int_t absId = clus->GetCellAbsId(iCell);
+    cellen = cells->GetCellAmplitude(absId);
+    if(cellen > firstEmax)
+      firstEmax = cellen;
+  }
+  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
+    Int_t absId = clus->GetCellAbsId(iCell);
+    cellen = cells->GetCellAmplitude(absId);
+    if(cellen < firstEmax && cellen > secondEmax)
+      secondEmax = cellen;
+  }
+  return secondEmax;
 }
 
 //________________________________________________________________________
@@ -2457,32 +2493,4 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
       continue;
     ProcessDaughters(dmc,i,arr);
   }
-}
-
-//________________________________________________________________________
-Double_t AliAnalysisTaskEMCALPi0PbPb::GetSecondMaxCell(AliVCluster *clus)
-{
-  // Get second maximum cell.
-
-  AliVCaloCells *cells = fEsdCells;
-  if (!cells)
-    cells = fAodCells;
-  if (!cells)
-    return -1;
- 
-  Double_t secondEmax=0, firstEmax=0;
-  Double_t cellen;
-  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
-    Int_t absId = clus->GetCellAbsId(iCell);
-    cellen = cells->GetCellAmplitude(absId);
-    if(cellen > firstEmax)
-      firstEmax = cellen;
-  }
-  for(Int_t iCell=0;iCell<clus->GetNCells();iCell++){
-    Int_t absId = clus->GetCellAbsId(iCell);
-    cellen = cells->GetCellAmplitude(absId);
-    if(cellen < firstEmax && cellen > secondEmax)
-      secondEmax = cellen;
-  }
-  return secondEmax;
 }
