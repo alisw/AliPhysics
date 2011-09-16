@@ -88,6 +88,8 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	Bool_t useTRKvtx = kTRUE;
 	Bool_t useITSSAvtx = kFALSE;
 	Bool_t useSPDvtx = kFALSE;
+	Bool_t spdAvailable = kTRUE;
+	Bool_t writeMeanVertexSPD = kFALSE;
 	
 	
     if (!list) {
@@ -180,21 +182,24 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 			useSPDvtx=kTRUE;
 		}
 	}
-	if (useSPDvtx){
-	  
-	        Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries(); 					 
-	        Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries(); 			 
-	        Float_t nEntriesZ = histSPDvtxZ->GetEffectiveEntries(); 
+		
+	Float_t nEntriesX = histSPDvtxX->GetEffectiveEntries(); 					 
+	Float_t nEntriesY = histSPDvtxY->GetEffectiveEntries(); 			 
+	Float_t nEntriesZ = histSPDvtxZ->GetEffectiveEntries(); 
 
-		if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
-			  AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
-			 return;		 
+	if (nEntriesX < 50. || nEntriesY<50. || nEntriesZ<50.) {
+		spdAvailable = kFALSE;
+		if ((useTRKvtx==kFALSE) && (useITSSAvtx==kFALSE)){
+			AliError(Form("Also SPD vertex histograms have too few entries for fitting, return"));
+			return;		 
 		}
-	}				
+	}
+					
 	
 	
 	Double_t xMeanVtx=0., yMeanVtx=0., zMeanVtx=0.;
 	Double_t xSigmaVtx=0., ySigmaVtx=0., zSigmaVtx=0.;
+	
 	
 	TF1 *fitVtxX, *fitVtxY, *fitVtxZ;
 	
@@ -204,6 +209,7 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		xMeanVtx = fitVtxX -> GetParameter(1);
 		if (TMath::Abs(xMeanVtx) > 2.) {
 			xMeanVtx = 0.;
+			writeMeanVertexSPD=kTRUE;
 		}	
 
 		histTRKvtxY ->Fit("gaus", "M");
@@ -211,14 +217,17 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		yMeanVtx = fitVtxY -> GetParameter(1);
 		if (TMath::Abs(yMeanVtx) > 2.) {
 			yMeanVtx = 0.;
+			writeMeanVertexSPD=kTRUE;
 		}	
 		
 		histTRKvtxZ ->Fit("gaus", "M");
 		fitVtxZ = histTRKvtxZ -> GetFunction("gaus");
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
-		if (TMath::Abs(zMeanVtx) > 8.) {
+		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
 			zMeanVtx = 0.;
+			zMeanVtx = 5.;
+			writeMeanVertexSPD=kTRUE;
 		}	
 	
 	}
@@ -261,13 +270,14 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 	}
 	
 
-	if (useSPDvtx){
+	if ((useSPDvtx) && (spdAvailable)){
 		
 		histSPDvtxX ->Fit("gaus", "M");
 		fitVtxX = histSPDvtxX -> GetFunction("gaus");
 		xMeanVtx = fitVtxX -> GetParameter(1);
 		if (TMath::Abs(xMeanVtx) > 2.) {
 			xMeanVtx = 0.;
+			writeMeanVertexSPD=kTRUE;
 		}
 		
 		histSPDvtxY ->Fit("gaus", "M");
@@ -275,22 +285,29 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		yMeanVtx = fitVtxY -> GetParameter(1);
 		if (TMath::Abs(yMeanVtx) > 2.) {
 			yMeanVtx = 0.;
+			writeMeanVertexSPD=kTRUE;
 		}	
 		
 		histSPDvtxZ ->Fit("gaus", "M");
 		fitVtxZ = histSPDvtxZ -> GetFunction("gaus");
 		zMeanVtx = fitVtxZ -> GetParameter(1);
 		zSigmaVtx = fitVtxZ -> GetParameter(2);
-		if (TMath::Abs(zMeanVtx) > 8.) {
+		if ((TMath::Abs(zMeanVtx) > 20.) || (zSigmaVtx>12.)) {
 			zMeanVtx = 0.;
 			zSigmaVtx = 5.;
+			writeMeanVertexSPD = kTRUE;
 		}	
 				
 	}
-	
+	else if (!spdAvailable) {
+		AliError("Difference betwwen trkVtx and online one, SPD histos not enough entry, writing Mean Vertex SPD");
+		writeMeanVertexSPD = kTRUE;	
+	}
 	
 	
 	//check with online position
+	
+	 Double_t posOnline[3], sigmaOnline[3];
 	
 	if (useTRKvtx || useITSSAvtx){
 		AliCDBManager *manCheck = AliCDBManager::Instance();
@@ -301,7 +318,6 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		if(entr) {
 		  AliESDVertex *vtxOnline = (AliESDVertex*)entr->GetObject();
 		
-		  Double_t posOnline[3], sigmaOnline[3];
 		  posOnline[0] = vtxOnline->GetX();
 		  posOnline[1] = vtxOnline->GetY();
 		  posOnline[2] = vtxOnline->GetZ();
@@ -318,6 +334,41 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		  }
 		}
 	}
+	
+	
+	
+	if (writeMeanVertexSPD){
+		
+		AliWarning(Form("Writing Mean Vertex SPD, Mean Vertex not available"));
+				   
+		Double_t sigma[3]={0.0150, 0.0150, 5.};
+			 
+		AliESDVertex  *vertex =  new AliESDVertex(posOnline, sigma, "vertex");
+		
+		AliCDBManager *cdb = AliCDBManager::Instance();  	
+		AliCDBStorage *sto = cdb->GetStorage(dbString); 
+		
+		
+		if (!sto) {
+			AliError(Form("cannot get storage %s", dbString));
+			return;
+		}
+		
+		AliCDBId id("GRP/Calib/MeanVertex", runNb, runNb);
+		
+		AliCDBMetaData metaData;
+		metaData.SetBeamPeriod(0); //check!!!!
+		metaData.SetResponsible("Davide Caffarri");
+		metaData.SetComment("Mean Vertex object used in reconstruction");
+		
+		if (!sto->Put(vertex, id, &metaData)) {
+			AliError(Form("Error while putting object in storage %s", dbString));
+		}
+		
+		delete vertex;
+		return;	
+	}
+	
 	
 	Float_t meanMult = 40.;
 	Float_t p2 = 1.4;
