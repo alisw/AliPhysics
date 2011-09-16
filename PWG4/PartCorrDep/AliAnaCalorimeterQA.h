@@ -56,6 +56,9 @@ public:
  
   void         Correlate();
 
+  void         FillCellPositionHistograms(const Int_t nCaloCellsPerCluster, const UShort_t * indexList, 
+                                          const Float_t pos[3], const Float_t clEnergy);
+  
   void         MCHistograms(const TLorentzVector mom, const Int_t pdg);
   
   // Setters and Getters
@@ -130,7 +133,6 @@ public:
   TH3F *   fhEtaPhiECharged;                  //! eta vs phi vs E, Reco, matched with track 
     
   TH2F *   fhIM;                              //! cluster pairs invariant mass
-  TH2F *   fhIMCellCut;                       //! cluster pairs invariant mass, n cells > 1 per cluster
   TH2F *   fhAsym;                            //! cluster pairs invariant mass	
   
   TH2F *   fhNCellsPerCluster;                //! N cells per cluster vs cluster energy vs eta of cluster	
@@ -146,6 +148,8 @@ public:
 
   TH2F *   fhClusterTimeEnergy;               //! Cluster Time vs Energy 
   TH2F *   fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
+  TH2F *   fhClusterMaxCellDiffAverageTime;   //! Difference between cluster average time and time of cell with more energy
+  TH2F *   fhClusterMaxCellDiffWeightTime;    //! Difference between cluster weighted average time and time of cell with more energy
   TH1F *   fhCellIdCellLargeTimeSpread;       //! Cells with large time respect to max (diff > 100 ns)
   TH2F *   fhClusterPairDiffTimeE;            //! Pair of clusters time difference vs E
 
@@ -154,7 +158,6 @@ public:
 
   TH2F *   fhClusterMaxCellDiff;              //! Difference between cluster energy and energy of cell with more energy, good clusters only
   TH2F *   fhClusterMaxCellDiffNoCut;         //! Difference between cluster energy and energy of cell with more energy, no bad cluster rejection
-  //TH2F *   fhClusterMaxCellDiffDivLambda0;    //! 
   
   TH2F *   fhLambda0vsClusterMaxCellDiffE0;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E < 2, no cut on bad clusters
   TH2F *   fhLambda0vsClusterMaxCellDiffE2;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E > 2, E < 6, no cut on bad clusters
@@ -166,28 +169,23 @@ public:
   TH2F *   fhBadClusterMaxCellCloseCellRatio; //! Ratio between max cell energy and cell energy of the same cluster for bad clusters 
   TH2F *   fhBadClusterMaxCellCloseCellDiff ; //! Difference between max cell energy and cell energy of the same cluster for bad clusters 
   TH2F *   fhBadClusterMaxCellDiff;           //! Difference between cluster energy and energy of cell with more energy
+  TH2F *   fhBadClusterMaxCellDiffAverageTime;//! Difference between cluster average time and time of cell with more energy
+  TH2F *   fhBadClusterMaxCellDiffWeightTime; //! Difference between cluster weighted average time and time of cell with more energy
+  TH2F *   fhBadCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
+
   TH2F *   fhBadClusterL0;                    //! Lambda0 for bad clusters
   TH2F *   fhBadClusterL1;                    //! Lambda1 for bad clusters
   TH2F *   fhBadClusterD;                     //! Dispersion for bad clusters
 
-  TH2F *   fhBadCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
-
   // Cluster cell size
-  TH2F *   fhDeltaIEtaDeltaIPhiE0;            // Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV; 
-  TH2F *   fhDeltaIEtaDeltaIPhiE2;            // Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV; 
-  TH2F *   fhDeltaIEtaDeltaIPhiE6;            // Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV; 
-  TH2F *   fhDeltaIR;                         // Cluster "radius" in cell units vs E
-  TH2F *   fhDeltaIA;                         // Cluster "asymmetry" in cell terms vs E
-  TH2F *   fhDeltaIRL0;                       // Cluster "radius"    in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIRL1;                       // Cluster "radius"    in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIRD ;                       // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIRNCells ;                  // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIAL0;                       // Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIAL1;                       // Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIAD ;                       // Cluster "asymmetry" in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIANCells ;                  // Cluster "radius"    in cell units vs Dispersion for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIADistToBad ;               // Cluster "asymmetry" in cell units vs Distance to bad channel for E > 0.5 GeV, n cells in cluster > 3
-  TH2F *   fhDeltaIA1MaxEtaPhi ;               // Asymmetric cluster in cell units vs max cell eta, phi for E > 0.5 GeV, n cells in cluster > 3
+  TH2F *   fhDeltaIEtaDeltaIPhiE0[2];         // Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching; 
+  TH2F *   fhDeltaIEtaDeltaIPhiE2[2];         // Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching; 
+  TH2F *   fhDeltaIEtaDeltaIPhiE6[2];         // Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching; 
+  TH2F *   fhDeltaIA[2];                      // Cluster "asymmetry" in cell terms vs E, with and without matching
+  TH2F *   fhDeltaIAL0[2];                    // Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
+  TH2F *   fhDeltaIAL1[2];                    // Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
+  TH2F *   fhDeltaIANCells[2] ;               // Cluster "asymmetry" in cell units vs number of cells in cluster for E > 0.5, with and without matching
+  TH2F *   fhDeltaIAMC[4];                    // Cluster "asymmetry" in cell terms vs E, from MC photon, electron, conversion or hadron
 
   //Cluster/cell Position
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
@@ -267,7 +265,6 @@ public:
   //TH2F **  fhT0TimeAmpPerRCU;                 //! T0 - EMCAL Time vs Amplitude measured in towers/crystals different RCU
   //TH2F **  fhTimeCorrRCU;                     //! Correlate time entries in the different RCU, E > 0.3
   TH2F **  fhIMMod;                             //! cluster pairs invariant mass, different module,
-  TH2F **  fhIMCellCutMod;                      //! cluster pairs invariant mass, n cells > 1 per cluster, different module
 	
   //MC  
   
@@ -390,7 +387,7 @@ public:
   TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  ClassDef(AliAnaCalorimeterQA,17)
+  ClassDef(AliAnaCalorimeterQA,18)
 } ;
 
 
