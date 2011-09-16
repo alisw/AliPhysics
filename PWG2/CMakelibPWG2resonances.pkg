@@ -52,6 +52,7 @@ set ( SRCS RESONANCES/AliRsnDaughter.cxx
            RESONANCES/AliRsnCutPion2010PP.cxx
            RESONANCES/AliRsnCutProton2010PP.cxx
            RESONANCES/AliRsnCutDaughterKStar2010PP.cxx 
+           RESONANCES/AliRsnCutDaughterLStar2010.cxx 
            RESONANCES/AliRsnCutV0.cxx 
            RESONANCES/AliRsnCutSet.cxx
            RESONANCES/AliRsnExpression.cxx
