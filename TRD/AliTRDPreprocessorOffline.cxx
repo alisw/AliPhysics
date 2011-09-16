@@ -453,6 +453,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   }
   else {
     fNotEnoughStatisticsForTheGain = kTRUE;
+    Int_t minStatsGain = fMinStatsGain*30;
+    calibra->SetMinEntries(minStatsGain); // Because we do it for all, we increase this
     Double_t gainoverallnotnormalized =  calibra->AnalyseCHAllTogether(fCH2d);
     if(fCalDetGainUsed && (gainoverallnotnormalized > 0.0)) {
       AliTRDCalDet *calDetGain = new AliTRDCalDet(*fCalDetGainUsed);
@@ -590,6 +592,8 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   }
   else {
     fNotEnoughStatisticsForTheVdriftLinear = kTRUE;
+    Int_t minNumberOfEntriesForAll = fMinStatsVdriftLinear*30;
+    calibra->SetMinEntries(minNumberOfEntriesForAll); // Because we do it for all, we increase this
     Double_t vdriftoverall =  calibra->AnalyseLinearFittersAllTogether(fAliTRDCalibraVdriftLinearFit);
     if(fCalDetVdriftUsed && (vdriftoverall > 0.0)) {
       AliTRDCalDet *calDetVdrift = new AliTRDCalDet(*fCalDetVdriftUsed);
