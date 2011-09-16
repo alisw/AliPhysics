@@ -44,7 +44,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetCentralityRange(Double_t from, Double_t to) { fCentFrom=from; fCentTo=to; }
   void         SetClusName(const char *n)                     { fClusName      = n;         }
   void         SetDoAfterburner(Bool_t b)                     { fDoAfterburner = b;         }
+  void         SetDoPhysicsSelection(Bool_t b)                { fDoPSel        = b;         }
   void         SetDoTrackMatWithGeom(Bool_t b)                { fDoTrMatGeom   = b;         }
+  void         SetEmbedMode(Bool_t b)                         { fEmbedMode     = b;         }
   void         SetFillNtuple(Bool_t b)                        { fDoNtuple      = b;         }
   void         SetGeoName(const char *n)                      { fGeoName       = n;         }
   void         SetGeoUtils(AliEMCALGeometry *geo)             { fGeom          = geo;       }
@@ -52,7 +54,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetL0TimeRange(Int_t l, Int_t h)               { fMinL0Time=l; fMaxL0Time=h; }
   void         SetMarkCells(const char *n)                    { fMarkCells     = n;         }
   void         SetMcMode(Bool_t b)                            { fMcMode        = b;         }
-  void         SetEmbedMode(Bool_t b)                         { fEmbedMode     = b;         }
   void         SetMinClusEnergy(Double_t e)                   { fMinE          = e;         }
   void         SetMinEcc(Double_t ecc)                        { fMinEcc        = ecc;       }
   void         SetMinErat(Double_t erat)                      { fMinErat       = erat;      }
@@ -63,9 +64,9 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetTrClassNames(const char *n)                 { fTrClassNames  = n;         }
   void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts        = c;         }
   void         SetTrainMode(Bool_t b)                         { fTrainMode     = b;         }
+  void         SetTrigName(const char *n)                     { fTrigName      = n;         }
   void         SetUseQualFlag(Bool_t b)                       { fUseQualFlag   = b;         }
   void         SetVertexRange(Double_t z1, Double_t z2)       { fVtxZMin=z1; fVtxZMax=z2;   }
-  void         SetDoPhysicsSelection(Bool_t b)                { fDoPSel        = b;         }
 
  protected:
   virtual void CalcCaloTriggers();
@@ -88,6 +89,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   Double_t     GetCellEnergy(const AliVCluster *c)    const;
   Double_t     GetMaxCellEnergy(const AliVCluster *c) const { Short_t id=-1; return GetMaxCellEnergy(c,id); }
   Double_t     GetMaxCellEnergy(const AliVCluster *c, Short_t &id)                                        const;
+  Double_t     GetSecondMaxCell(AliVCluster *clus)                                                        const;
   Int_t        GetNCells(const AliVCluster *c, Double_t emin=0.)                                          const;
   Int_t        GetNCells(Int_t sm, Double_t emin=0.)                                                      const;
   void         GetSigma(const AliVCluster *c, Double_t &sigmaMax, Double_t &sigmaMin)                     const;
@@ -102,7 +104,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         PrintTrackRefs(AliMCParticle *p)                                                           const;
   void         ProcessDaughters(AliVParticle *p, Int_t index, const TObjArray *arr);
   void         ProcessDaughters(AliMCParticle *p, Int_t index, const AliMCEvent *arr);
-  Double_t     GetSecondMaxCell(AliVCluster *clus);
 
     // input members
   TString                fCentVar;                // variable for centrality determination
@@ -222,7 +223,8 @@ class AliStaHeader
  public:
   AliStaHeader() : fRun(0), fOrbit(0), fPeriod(0), fBx(0), fL0(0), fL1(0), fL2(0),
                    fTrClassMask(0), fTrCluster(0), fOffTriggers(0), fFiredTriggers(),
-                   fTcls(0), fV0And(0), fIsHT(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), 
+                   fTcls(0), fV0And(0), fIsHT(0), fIsPileup(0), fIsPileup2(0), fIsPileup4(0), fIsPileup8(0), 
+                   fNSpdVertices(0), fNTpcVertices(0), fV0Cent(0), fV0(0), fCl1Cent(0), fCl1(0), fTrCent(0), 
                    fTr(0), fCqual(-1), fPsi(0), fPsiRes(0), fNSelTr(0), fNSelPrimTr(0), fNSelPrimTr1(0),
                    fNSelPrimTr2(0), fNCells(0), fNCells0(0), fNCells01(0), fNCells03(0), 
                    fNCells1(0), fNCells2(0), fNCells5(0), fNClus(0), fNClus1(0), fNClus2(0), fNClus5(0), 
@@ -251,6 +253,12 @@ class AliStaHeader
   UInt_t        fTcls;           //         custom trigger definition
   Bool_t        fV0And;          //         if V0AND (from AliTriggerAnalysis)
   Bool_t        fIsHT;           //         if EMCAL L0 (from AliTriggerAnalysis)
+  Bool_t        fIsPileup;       //         indicate pileup from IsPileupFromSPD with 0.8 minzdist
+  Bool_t        fIsPileup2;      //         indicate pileup from IsPileupFromSPD with 0.4 minzdist
+  Bool_t        fIsPileup4;      //         indicate pileup from IsPileupFromSPD with 0.2 minzdist
+  Bool_t        fIsPileup8;      //         indicate pileup from IsPileupFromSPD with 0.1 minzdist
+  UShort_t      fNSpdVertices;   //         number of pileup vertices (spd)
+  UShort_t      fNTpcVertices;   //         number of pileup vertices (tpc)
   Double32_t    fV0Cent;         //[0,0,16] v0 cent
   Double32_t    fV0;             //[0,0,16] v0 result used for cent 
   Double32_t    fCl1Cent;        //[0,0,16] cl1 cent
@@ -289,7 +297,7 @@ class AliStaHeader
   UShort_t      fNcSM8;          //         # cells > 0.1  GeV in SM 8
   UShort_t      fNcSM9;          //         # cells > 0.1  GeV in SM 9
 
-  ClassDef(AliStaHeader,5) // Header class
+  ClassDef(AliStaHeader,6) // Header class
 };
 
 class AliStaVertex
