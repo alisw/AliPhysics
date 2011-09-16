@@ -98,7 +98,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
 
   am->LoadBranch("Tracks");
   Int_t ntr = fEsdEv->GetNumberOfTracks();
-  for (Int_t i=0; i<ntr; ++i) {
+  for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
     AliESDtrack *etrack = fEsdEv->GetTrack(i);
     if (!etrack)
       continue;
