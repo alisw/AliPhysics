@@ -130,6 +130,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
       continue;
     }
 
-    fTracks->Add(ntrack);
+    new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
+    delete ntrack;
   }
 }
