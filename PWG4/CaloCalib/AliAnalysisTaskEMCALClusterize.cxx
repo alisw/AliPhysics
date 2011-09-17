@@ -68,16 +68,21 @@ ClassImp(AliAnalysisTaskEMCALClusterize)
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name) 
   : AliAnalysisTaskSE(name)
-  , fGeom(0), fGeomName("EMCAL_COMPLETEV1"),   fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
-  , fCalibData(0),       fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)
-  , fDigitsArr(0),       fClusterArr(0),       fCaloClusterArr(0)
-  , fRecParam(0),        fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE) 
-  , fOutputAODBranch(0), fOutputAODBranchName("newEMCALClusters")
-  , fFillAODFile(kTRUE), fFillAODHeader(0),    fFillAODCaloCells(0)
-  , fRun(-1),            fRecoUtils(0),        fConfigName("")
-  , fCellLabels(),       fCellSecondLabels(),  fCellTime()
+  , fGeom(0),               fGeomName("EMCAL_COMPLETEV1") 
+  , fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
+  , fCalibData(0),          fPedestalData(0)
+  , fOCDBpath("raw://"),    fAccessOCDB(kFALSE)
+  , fDigitsArr(0),          fClusterArr(0),             fCaloClusterArr(0)
+  , fRecParam(0),           fClusterizer(0)
+  , fUnfolder(0),           fJustUnfold(kFALSE) 
+  , fOutputAODBranch(0),    fOutputAODBranchName("newEMCALClusters")
+  , fFillAODFile(kTRUE),    fFillAODHeader(0)
+  , fFillAODCaloCells(0),   fRun(-1)
+  , fRecoUtils(0),          fConfigName("")
+  , fCellLabels(),          fCellSecondLabels(),        fCellTime()
   , fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
-  , fSelectCell(kFALSE), fSelectCellMinE(0.005), fSelectCellMinFrac(0.001)
+  , fSelectCell(kFALSE),    fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
+  , fRemoveLEDEvents(kFALSE)
 {
   //ctor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -99,15 +104,22 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskEMCALClusterize")
-  , fGeom(0), fGeomName("EMCAL_COMPLETEV1"),    fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
-  , fCalibData(0),        fPedestalData(0),     fOCDBpath("raw://"),    fAccessOCDB(kFALSE)  
-  , fDigitsArr(0),        fClusterArr(0),       fCaloClusterArr(0)
-  , fRecParam(0),         fClusterizer(0),      fUnfolder(0),           fJustUnfold(kFALSE)
-  , fOutputAODBranch(0),  fOutputAODBranchName("newEMCALClusters")
-  , fFillAODFile(kFALSE), fFillAODHeader(0),    fFillAODCaloCells(0)
-  , fRun(-1),             fRecoUtils(0),        fConfigName("") 
-  , fCellLabels(),        fCellSecondLabels(),  fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
-  , fSelectCell(kFALSE),  fSelectCellMinE(0.005), fSelectCellMinFrac(0.001)
+, fGeom(0),               fGeomName("EMCAL_COMPLETEV1") 
+, fGeomMatrixSet(kFALSE), fLoadGeomMatrices(kFALSE)
+, fCalibData(0),          fPedestalData(0)
+, fOCDBpath("raw://"),    fAccessOCDB(kFALSE)
+, fDigitsArr(0),          fClusterArr(0),             fCaloClusterArr(0)
+, fRecParam(0),           fClusterizer(0)
+, fUnfolder(0),           fJustUnfold(kFALSE) 
+, fOutputAODBranch(0),    fOutputAODBranchName("newEMCALClusters")
+, fFillAODFile(kTRUE),    fFillAODHeader(0)
+, fFillAODCaloCells(0),   fRun(-1)
+, fRecoUtils(0),          fConfigName("")
+, fCellLabels(),          fCellSecondLabels(),        fCellTime()
+, fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
+, fSelectCell(kFALSE),    fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
+, fRemoveLEDEvents(kFALSE)
+
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -340,6 +352,26 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
+  
+  // Reject event if large clusters with large energy
+  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
+  // If clusterzer NxN or V2 it does not help
+  if(fRemoveLEDEvents){
+    for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
+    {
+      AliVCluster *clus = InputEvent()->GetCaloCluster(i);
+      if(clus->IsEMCAL()){    
+        
+        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 300) {
+          Int_t absID = clus->GetCellsAbsId()[0];
+          Int_t sm = fGeom->GetSuperModuleNumber(absID);
+          printf("AliAnalysisTaskEMCALClusterize - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
+          
+          return;
+        }
+      }
+    }
+  }// Remove LED events
   
   //Magic line to write events to AOD file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);

@@ -132,7 +132,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fOutputContainer->Add(fhYGoodVertex);
   
   
-  fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 17, 0, 17) ;
+  fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 20, 0, 20) ;
   fhNEvents->SetXTitle("Selection");
   fhNEvents->SetYTitle("# events");
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");
@@ -152,6 +152,10 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(15,"15 = 9  & 11");
   fhNEvents->GetXaxis()->SetBinLabel(16,"16 = 10 & 11");
   fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 6  & 10");
+  fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 1  & |Z|<50");  
+  fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL");
+  fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 2");
+  fhNEvents->GetXaxis()->SetBinLabel(20,"20 = 18 & |Z|<50");
 
   fOutputContainer->Add(fhNEvents);
 
@@ -305,6 +309,23 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   }
 
   //printf("AliAnalysisTaskCounter::UserExec() : z vertex %d, good vertex %d, v0and %d, pile up %d, track mult %d\n ", bSelectVZ, bGoodV, bV0AND, bPileup, trackMult);
+  
+  // Events that could be rejected in EMCAL
+  for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
+  {
+    AliVCluster *clus = InputEvent()->GetCaloCluster(i);
+    if(clus->IsEMCAL()){    
+      
+      if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 300)  {
+        //printf("Counter: Reject event with cluster: E %f, ncells %d\n",clus->E(),clus->GetNCells());
+                         fhNEvents->Fill(17.5); 
+        if(bSelectVZ)    fhNEvents->Fill(18.5);
+        if(TMath::Abs(v[2]) < 50.)  fhNEvents->Fill(19.5); 
+        break;
+      }
+        
+    }
+  }
   
   PostData(1,fOutputContainer);
 

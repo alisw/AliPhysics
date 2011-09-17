@@ -1727,7 +1727,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         }        
         
         averTime     /= nCaloCellsPerCluster;
-        weightedTime /= weight;
+       if(weight > 0 ) weightedTime /= weight;
+       else {         
+         printf("AliAnaCalorimeterQA:: Null weight! Investigate: E %f GeV, ncells %d, time max cell %f ns, average time %f ns, absIdMax %d, SM %d\n",
+                   rawEnergy,nCaloCellsPerCluster, tmax, averTime,absIdMax,GetModuleNumber(clus));
+       }
         //printf(" emax %f, clE %f, clEraw %f; tmax %f, averTime %f, weightTime %f\n",emax, clus->E(), rawEnergy, tmax,averTime,weightedTime);
 
       } // only possible in ESDs
