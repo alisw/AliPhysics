@@ -79,6 +79,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffCellEnergySelection()                 { fSelectCell        = kFALSE  ; } 
   void           SetCellCuts(Float_t e, Float_t frac)           { fSelectCellMinE    = e       ; 
                                                                   fSelectCellMinFrac = frac    ; }
+  void           SwitchOnLEDEventsRemoval()                     { fRemoveLEDEvents   = kTRUE   ; }
+  void           SwitchOffLEDEventsRemoval()                    { fRemoveLEDEvents   = kFALSE  ; } 
+  
   
  private:
     
@@ -131,8 +134,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fSelectCell;          // Reject cells from cluster if energy is too low and recalculate position/energy and other
   Float_t                fSelectCellMinE;      // Min energy cell threshold, after unfolding
   Float_t                fSelectCellMinFrac;   // Min fraction of cell energy after unfolding cut
+  Bool_t                 fRemoveLEDEvents;     // Remove LED events, use only for LHC11a and if input is V1 or V1+unfolding
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 11);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 12);
 
 };
 
