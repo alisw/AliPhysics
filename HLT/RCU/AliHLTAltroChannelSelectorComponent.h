@@ -20,13 +20,18 @@
 /**
  * @class AliHLTAltroChannelSelectorComponent
  * A selector component for ALTRO Raw data. The component subscribes
- * to the RAW data {***:DDL_RAW } and gets in addition a list of channels
- * to select. The list must be of identical specification as the RAW data
- * and can be of data type:
- * - {***:HWADDR16}: 16 bit hardware addresses
+ * to the RAW data {***:DDL_RAW }, and produces the same raw data block
+ * with only the selected ALTRO channels.                               <br>
+ * Three different modes are supported:
+ * - -signal-threshold                                                  <br>
+ *   the average of all signals in the channel is calculated and it is
+ *   selected when the maximum signal exceeds average+threshold
+ * - -rms-threshold                                                     <br>
+ *   the implemented logic needs to be checked, never been used
+ * - list of channels to select. 
+ *   The list must be of identical specification as the RAW data and of
+ *   data type {***:HWADDR16}: 16 bit hardware addresses
  *
- * In Oct 2008 the component has been extended in order to select channels
- * by calculating average/sigma and applying thresholds.
  *
  * The AliAltroRawStreamV3 is used as input decoder to read and scan the
  * Altro Raw data.

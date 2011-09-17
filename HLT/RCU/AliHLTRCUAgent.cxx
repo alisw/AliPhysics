@@ -16,14 +16,15 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTRCUAgent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTRCU library
-*/
+/// @file   AliHLTRCUAgent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  Agent of the libAliHLTRCU library
+///
 
 #include <cassert>
 #include "AliHLTRCUAgent.h"
+#include "AliHLTDAQ.h"
 
 // header files of library components
 #include "AliHLTAltroChannelSelectorComponent.h"
@@ -36,8 +37,7 @@ AliHLTRCUAgent gAliHLTRCUAgent;
 ClassImp(AliHLTRCUAgent)
 
 AliHLTRCUAgent::AliHLTRCUAgent()
-  :
-  AliHLTModuleAgent("RCU")
+  : AliHLTModuleAgent("RCU")
 {
   // see header file for class documentation
   // or
@@ -51,11 +51,46 @@ AliHLTRCUAgent::~AliHLTRCUAgent()
   // see header file for class documentation
 }
 
-int AliHLTRCUAgent::CreateConfigurations(AliHLTConfigurationHandler* /*handler*/,
-					  AliRawReader* /*rawReader*/,
-					  AliRunLoader* /*runloader*/) const
+int AliHLTRCUAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
+					 AliRawReader* rawReader,
+					 AliRunLoader* runloader) const
 {
-  // see header file for class documentation
+  // add configurations for the RCU library
+  if (handler) {
+    if (rawReader) {
+      // AliSimulation: use the AliRawReaderPublisher if the raw reader is available
+      // Alireconstruction: indicated by runloader==NULL, run always on raw data
+      int iMinSlice=0; 
+      int iMaxSlice=35;
+      int iMinPart=0;
+      int iMaxPart=5;
+      TString sinkChannelSelectors;
+      for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
+	for (int part=iMinPart; part<=iMaxPart; part++) {
+	  TString arg, publisher, selector;
+
+	  // publisher component
+	  int ddlno=AliHLTDAQ::DdlIDOffset(3);
+	  if (part>1) ddlno+=72+4*slice+(part-2);
+	  else ddlno+=2*slice+part;
+	  
+	  publisher.Form("RCU-DP_%02d_%d", slice, part);
+	  arg.Form("-minid %d -datatype 'DDL_RAW ' 'TPC '  -dataspec %s -silent", ddlno, AliHLTDAQ::HLTSpecificationFromDdlID(ddlno).c_str());
+	  handler->CreateConfiguration(publisher.Data(), "AliRawReaderPublisher", NULL , arg.Data());
+
+	  // selector component
+	  selector.Form("RCU-chselector_%02d_%d", slice, part);
+	  arg="-signal-threshold 1";
+	  handler->CreateConfiguration(selector.Data(), "AltroChannelSelector", publisher.Data(), arg.Data());
+
+
+	  if (sinkChannelSelectors.Length()>0) sinkChannelSelectors+=" ";
+	  sinkChannelSelectors+=selector;
+	}
+      }
+      handler->CreateConfiguration("RCU-channelselect", "BlockFilter", sinkChannelSelectors.Data(), "");
+    }
+  }
   return 0;
 }
 

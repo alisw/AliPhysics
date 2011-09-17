@@ -40,7 +40,7 @@ AliHLTAltroChannelSelectorComponent::AliHLTAltroChannelSelectorComponent()
   fSkipCorrupted(true),
   fTalkative(false),
   fStartTimeBin(0),
-  fEndTimeBin(0),
+  fEndTimeBin(1024),
   fSignalThreshold(0),
   fRMSThreshold(0)
 {
