@@ -57,6 +57,11 @@
 #pragma link C++ class AliHLTComponentBenchmark+;
 #pragma link C++ class AliHLTDataDeflater+;
 #pragma link C++ class AliHLTDataDeflaterSimple+;
+#pragma link C++ class AliHLTDataDeflaterHuffman+;
+#pragma link C++ class AliHLTHuffmanNode+;
+#pragma link C++ class AliHLTHuffmanTreeNode+;
+#pragma link C++ class AliHLTHuffmanLeaveNode+;
+#pragma link C++ class AliHLTHuffman+;
 #pragma link C++ class AliHLTDataInflater+;
 
 #include "RVersion.h"

@@ -93,6 +93,8 @@ set ( CLASS_HDRS
     AliHLTComponentBenchmark.h
     AliHLTDataDeflater.h
     AliHLTDataDeflaterSimple.h
+    AliHLTDataDeflaterHuffman.h
+    AliHLTHuffman.h
     AliHLTDataInflater.h
     )
 
