@@ -29,9 +29,15 @@
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTComponentBenchmark.h"
 #include "AliHLTDataDeflaterSimple.h"
+#include "AliHLTDataDeflaterHuffman.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterMCData.h"
 #include "AliRawDataHeader.h"
+#include "AliCDBManager.h"
+#include "AliCDBPath.h"
+#include "AliCDBId.h"
+#include "AliCDBMetaData.h"
+#include "AliCDBEntry.h"
 #include "TH1F.h"
 #include "TFile.h"
 #include <memory>
@@ -56,6 +62,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fHistoClusterRatio(NULL)
   , fHistoTrackClusterRatio(NULL)
   , fHistogramFile()
+  , fTrainingTableOutput()
   , fpBenchmark(NULL)
   , fVerbosity(0)
 {
@@ -387,7 +394,11 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   if (GetBenchmarkInstance()) {
     GetBenchmarkInstance()->Stop(0);
-    HLTBenchmark("%s - compression factor %.2f", GetBenchmarkInstance()->GetStatistics(), compressionFactor);
+    if (fDeflaterMode!=3) {
+      HLTBenchmark("%s - compression factor %.2f", GetBenchmarkInstance()->GetStatistics(), compressionFactor);
+    } else {
+      HLTBenchmark("%s", GetBenchmarkInstance()->GetStatistics());
+    }
   }
 
   if (fInputClusters) {
@@ -727,6 +738,41 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
 int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
 {
   /// init the data deflater
+  int iResult=0;
+  if (mode==2 || mode==3) {
+    // huffman deflater
+    std::auto_ptr<AliHLTDataDeflaterHuffman> deflater(new AliHLTDataDeflaterHuffman(mode==3));
+    if (!deflater.get()) return -ENOMEM;
+
+    if (!deflater->IsTrainingMode()) {
+      TString cdbPath("HLT/ConfigTPC/");
+      cdbPath += GetComponentID();
+      cdbPath += "HuffmanTables";
+      TObject* pConf=LoadAndExtractOCDBObject(cdbPath);
+      if (!pConf) return -ENOENT;
+      if (dynamic_cast<TList*>(pConf)==NULL) {
+	HLTError("huffman table configuration object of inconsistent type");
+	return -EINVAL;
+      }
+      iResult=deflater->InitDecoders(dynamic_cast<TList*>(pConf));
+      if (iResult<0) return iResult;
+    }
+    
+    unsigned nofParameters=AliHLTTPCDefinitions::GetNumberOfClusterParameterDefinitions();
+    unsigned p=0;
+    for (; p<nofParameters; p++) {
+      const AliHLTTPCDefinitions::AliClusterParameter& parameter=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[p];
+      if (deflater->AddParameterDefinition(parameter.fName,
+					   parameter.fBitLength)!=(int)parameter.fId) {
+	// for performance reason the parameter id is simply used as index in the array of
+	// definitions, the position must match the id
+	HLTFatal("mismatch between parameter id and position in array for parameter %s, rearrange definitions!", parameter.fName);
+	return -EFAULT;
+      }
+    }
+    fpDataDeflater=deflater.release();
+    return 0;
+  }
   if (mode==1) {
     std::auto_ptr<AliHLTDataDeflaterSimple> deflater(new AliHLTDataDeflaterSimple);
     if (!deflater.get()) return -ENOMEM;
@@ -746,10 +792,6 @@ int AliHLTTPCDataCompressionComponent::InitDeflater(int mode)
     }
     fpDataDeflater=deflater.release();
     return 0;
-  } else if (mode==2) {
-    // huffman deflater
-    HLTError("huffman deflater to be implemented");
-    return -ENOSYS; // change to 0 if implemented
   }
   HLTError("invalid deflater mode %d, allowed 1=simple 2=huffman", mode);
   return -EINVAL;
@@ -788,7 +830,39 @@ int AliHLTTPCDataCompressionComponent::DoDeinit()
   if (fHistoTrackClusterRatio) delete fHistoTrackClusterRatio;
   fHistoTrackClusterRatio=NULL;
 
-  if (fpDataDeflater) delete fpDataDeflater; fpDataDeflater=NULL;
+  if (fpDataDeflater) {
+    if (fDeflaterMode==3) {
+      if (fTrainingTableOutput.IsNull()) {
+	fTrainingTableOutput=GetComponentID();
+	fTrainingTableOutput+="-huffman.root";
+      }
+      // TODO: currently, the code tables are also calculated in FindObject
+      // check if a different function is more appropriate
+      TObject* pConf=fpDataDeflater->FindObject("DeflaterConfiguration");
+      if (pConf) {
+	TString cdbEntryPath("HLT/ConfigTPC/");
+	cdbEntryPath += GetComponentID();
+	cdbEntryPath += "HuffmanTables";
+	AliCDBPath cdbPath(cdbEntryPath);
+	AliCDBId cdbId(cdbPath, AliCDBManager::Instance()->GetRun(), AliCDBRunRange::Infinity(), 0, 0);
+	AliCDBMetaData* cdbMetaData=new AliCDBMetaData;
+	cdbMetaData->SetResponsible("ALICE HLT Matthias.Richter@cern.ch");
+	cdbMetaData->SetComment("Huffman encoder configuration");
+	AliCDBEntry* entry=new AliCDBEntry(pConf, cdbId, cdbMetaData, kTRUE);
+
+	entry->SaveAs(fTrainingTableOutput);
+	// this is a small memory leak
+	// seg fault in ROOT object handling if the two objects are deleted
+	// investigate later
+	//delete entry;
+	//delete cdbMetaData;
+      }
+    }
+    delete fpDataDeflater;
+  }
+  fpDataDeflater=NULL;
+
+
   if (fTrackGrid) delete fTrackGrid; fTrackGrid=NULL;
   if (fSpacePointGrid) delete fSpacePointGrid; fSpacePointGrid=NULL;
 
@@ -835,6 +909,12 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
     if (argument.CompareTo("-histogram-file")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       fHistogramFile=argv[i++];
+      return 2;
+    }
+    // -save-histogram-table
+    if (argument.CompareTo("-save-huffman-table")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      fTrainingTableOutput=argv[i++];
       return 2;
     }
   } while (0); // using do-while only to have break available

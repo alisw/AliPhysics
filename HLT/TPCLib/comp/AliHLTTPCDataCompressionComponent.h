@@ -172,6 +172,7 @@ private:
   TH1F* fHistoClusterRatio; //! fraction of clusters assigned to the track model compression
   TH1F* fHistoTrackClusterRatio; //! fraction of track clusters assigned to the track model compression
   TString fHistogramFile; //! file to save histogram
+  TString fTrainingTableOutput; //! output file for huffman tables in training mode
 
   /// benchmark
   AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
