@@ -53,7 +53,7 @@ AliHLTRCUAgent::~AliHLTRCUAgent()
 
 int AliHLTRCUAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 					 AliRawReader* rawReader,
-					 AliRunLoader* runloader) const
+					 AliRunLoader* /*runloader*/) const
 {
   // add configurations for the RCU library
   if (handler) {
