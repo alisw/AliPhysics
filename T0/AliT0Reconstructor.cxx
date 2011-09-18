@@ -181,8 +181,9 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Int_t pmtBestA=99999;
   Int_t pmtBestC=99999;
   
-  AliT0RecPoint* frecpoints= new AliT0RecPoint ();
-  clustersTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints);
+  AliT0RecPoint frecpoints;
+  AliT0RecPoint * pfrecpoints = &frecpoints;
+  clustersTree->Branch( "T0", "AliT0RecPoint" ,&pfrecpoints);
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
@@ -207,9 +208,9 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
       AliDebug(5,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
       
-      frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-      frecpoints->SetAmpLED(ipmt, Float_t( ampMip)); 
-      frecpoints->SetAmp(ipmt, Float_t(qtMip));
+      frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
+      frecpoints.SetAmpLED(ipmt, Float_t( ampMip)); 
+      frecpoints.SetAmp(ipmt, Float_t(qtMip));
       adcmip[ipmt]=qtMip;
       
     }
@@ -237,11 +238,11 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     }
   }
   if(besttimeA < 999999) {
-    frecpoints->SetTimeBestA(Int_t(besttimeA *channelWidth - fdZonA/c));
+    frecpoints.SetTimeBestA(Int_t(besttimeA *channelWidth - fdZonA/c));
     tr[1]=true;
   }
   if( besttimeC < 999999 ) {
-    frecpoints->SetTimeBestC(Int_t(besttimeC *channelWidth - fdZonA/c));
+    frecpoints.SetTimeBestC(Int_t(besttimeC *channelWidth - fdZonA/c));
     tr[2]=true;
   }
   AliDebug(5,Form(" besttimeA %f ch,  besttimeC %f ch",besttimeA, besttimeC));
@@ -253,15 +254,15 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
   }
-  frecpoints->SetVertex(vertex);
-  frecpoints->SetMeanTime(meanTime);
-  frecpoints->SetT0clock(timeclock);
-  frecpoints->SetT0Trig(tr);
+  frecpoints.SetVertex(vertex);
+  frecpoints.SetMeanTime(meanTime);
+  frecpoints.SetT0clock(timeclock);
+  frecpoints.SetT0Trig(tr);
 
   AliDebug(5,Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
 
   //online mean
-  frecpoints->SetOnlineMean(Int_t(onlineMean));
+  frecpoints.SetOnlineMean(Int_t(onlineMean));
   AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm online mean %i timeclock %f ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
   
   
@@ -326,9 +327,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t pmtBestC=99999;
   Float_t channelWidth = fParam->GetChannelWidth() ;  
 	
-  AliT0RecPoint* frecpoints= new AliT0RecPoint ();
+  AliT0RecPoint frecpoints;
+  AliT0RecPoint * pfrecpoints = &frecpoints;
   
-  recTree->Branch( "T0", "AliT0RecPoint" ,&frecpoints);
+  recTree->Branch( "T0", "AliT0RecPoint" ,&pfrecpoints);
    
   AliDebug(10," before read data ");
   AliT0RawReader myrawreader(rawReader);
@@ -427,11 +429,11 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
 	   //bad peak removing
-	     frecpoints->SetTime(ipmt, Float_t(time[ipmt]) );
-	     // frecpoints->SetTime(ipmt,Double32_t(timeCFD[ipmt]));
-	     frecpoints->SetAmp(ipmt, Double32_t( qtMip)); 
+	     frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
+	     // frecpoints.SetTime(ipmt,Double32_t(timeCFD[ipmt]));
+	     frecpoints.SetAmp(ipmt, Double32_t( qtMip)); 
 	     adcmip[ipmt]=qtMip;
-	     frecpoints->SetAmpLED(ipmt, Double32_t(ampMip));	     
+	     frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));	     
 	     noncalibtime[ipmt]= Double32_t (timeCFD[ipmt]);
 	 }
 	 else {
@@ -464,12 +466,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	     }
 	 }
        if(besttimeA < 999999) 
-	 frecpoints->SetTimeBestA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
-       //	 frecpoints->SetTimeBestA((besttimeA * channelWidth- fTimeMeanShift[1])); 
+	 frecpoints.SetTimeBestA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
+       //	 frecpoints.SetTimeBestA((besttimeA * channelWidth- fTimeMeanShift[1])); 
 
        if( besttimeC < 999999 ) 
-	 frecpoints->SetTimeBestC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
-       // frecpoints->SetTimeBestC((besttimeC * channelWidth - fTimeMeanShift[2]));
+	 frecpoints.SetTimeBestC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
+       // frecpoints.SetTimeBestC((besttimeC * channelWidth - fTimeMeanShift[2]));
        AliDebug(5,Form(" pmtA %i besttimeA %f shift A %f ps, pmtC %i besttimeC %f shiftC %f ps",
 		       pmtBestA,besttimeA, fTimeMeanShift[1],
 		       pmtBestC,  besttimeC,fTimeMeanShift[2]));
@@ -483,10 +485,10 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	}
       }  //if phys event       
       AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %i \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
-      frecpoints->SetT0clock(timeclock);
-      frecpoints->SetVertex(vertex);
-      frecpoints->SetMeanTime(meanTime);
-      frecpoints->SetOnlineMean(Int_t(onlineMean));
+      frecpoints.SetT0clock(timeclock);
+      frecpoints.SetVertex(vertex);
+      frecpoints.SetMeanTime(meanTime);
+      frecpoints.SetOnlineMean(Int_t(onlineMean));
 	// Set triggers
       
       Bool_t tr[5];
@@ -501,7 +503,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    AliDebug(1,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
       }
-      frecpoints->SetT0Trig(tr);
+      frecpoints.SetT0Trig(tr);
       
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
@@ -515,14 +517,14 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  if(allData[52][iHit]>0) 
 	    orc = (Float_t(allData[52][iHit]) - meanOrC) * channelWidth* 0.001;
 	  
-	  frecpoints->SetOrC( iHit, orc);
-	  frecpoints->SetOrA( iHit, ora);
-	  frecpoints->SetTVDC( iHit, tvdc);
+	  frecpoints.SetOrC( iHit, orc);
+	  frecpoints.SetOrA( iHit, ora);
+	  frecpoints.SetTVDC( iHit, tvdc);
 	  for (Int_t i0=0; i0<12; i0++) {
 	    timefull = -9999; 
 	    if(allData[i0+1][iHit]>1) 
 	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
-	    frecpoints->SetTimeFull(i0, iHit,timefull) ;
+	    frecpoints.SetTimeFull(i0, iHit,timefull) ;
 	    //	    if(allData[i0+1][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+1][iHit], fTime0vertex[i0], timefull);
 	    
 	  }
@@ -533,21 +535,20 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      timefull = (Float_t(allData[i0+45][iHit]) - fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
 	    }
 	    //  if(allData[i0+45][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
-	    frecpoints->SetTimeFull(i0, iHit, timefull) ;
+	    frecpoints.SetTimeFull(i0, iHit, timefull) ;
 	  }
 	}
       
       
       //Set MPD
       if(allData[53][0]>0 && allData[54][0]) 
-	frecpoints->SetMultA(allData[53][0]-allData[54][0]);
+	frecpoints.SetMultA(allData[53][0]-allData[54][0]);
       if(allData[105][0]>0 && allData[106][0]) 
-	frecpoints->SetMultC(allData[105][0]-allData[106][0]);
+	frecpoints.SetMultC(allData[105][0]-allData[106][0]);
       
       
     } // if (else )raw data
   recTree->Fill();
-  if(frecpoints) delete frecpoints;
 }
   
   
@@ -589,16 +590,13 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   }
   TTree *treeR = clustersTree;
   
-  AliT0RecPoint* frecpoints= new AliT0RecPoint ();
-  if (!frecpoints) {
-    AliError("Reconstruct Fill ESD >> no recpoints found");
-    return;
-  }
+  AliT0RecPoint frecpoints;
+  AliT0RecPoint * pfrecpoints = &frecpoints;
   
   AliDebug(1,Form("Start FillESD T0"));
   TBranch *brRec = treeR->GetBranch("T0");
   if (brRec) {
-    brRec->SetAddress(&frecpoints);
+    brRec->SetAddress(&pfrecpoints);
   }else{
     AliError(Form("EXEC Branch T0 rec not found"));
     return;
@@ -612,31 +610,31 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
 
   Double32_t timeClock[3];
-  Double32_t zPosition = frecpoints -> GetVertex();
-  Double32_t timeStart = frecpoints -> GetMeanTime();
-  timeClock[0] = frecpoints -> GetT0clock() ;
-  timeClock[1] = frecpoints -> GetBestTimeA() + shift;
-  timeClock[2] = frecpoints -> GetBestTimeC() - shift;
+  Double32_t zPosition = frecpoints.GetVertex();
+  Double32_t timeStart = frecpoints.GetMeanTime();
+  timeClock[0] = frecpoints.GetT0clock() ;
+  timeClock[1] = frecpoints.GetBestTimeA() + shift;
+  timeClock[2] = frecpoints.GetBestTimeC() - shift;
 
   for ( Int_t i=0; i<24; i++) {
-    time[i] =  frecpoints -> GetTime(i); // ps to ns
+    time[i] =  frecpoints.GetTime(i); // ps to ns
     //    if ( time[i] >1) {
     if ( time[i] != 0) {
-      ampQTC[i] = frecpoints -> GetAmp(i);
-      amp[i] = frecpoints -> AmpLED(i);
+      ampQTC[i] = frecpoints.GetAmp(i);
+      amp[i] = frecpoints.AmpLED(i);
       AliDebug(1,Form("T0: %i  time %f  ampQTC %f ampLED %f \n", i, time[i], ampQTC[i], amp[i]));
    }
   }
-  Int_t trig= frecpoints ->GetT0Trig();
-  frecpoints->PrintTriggerSignals( trig);
+  Int_t trig= frecpoints.GetT0Trig();
+  frecpoints.PrintTriggerSignals( trig);
   printf(" FillESD trigger %i \n",trig);
   fESDTZERO->SetT0Trig(trig);
   //pESD->SetT0Trig(trig);
   //  pESD->SetT0zVertex(zPosition); //vertex Z position 
   fESDTZERO->SetT0zVertex(zPosition); //vertex Z position 
 
-  Double32_t multA=frecpoints ->GetMultA();
-  Double32_t multC=frecpoints ->GetMultC();
+  Double32_t multA=frecpoints.GetMultA();
+  Double32_t multC=frecpoints.GetMultC();
   //  pESD->SetT0(multC);        // multiplicity Cside 
   //  pESD->SetT0clock(multA);        // multiplicity Aside 
   fESDTZERO->SetMultA(multA); // for backward compatubility
@@ -645,17 +643,17 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
   for (Int_t iHit =0; iHit<5; iHit++ ) {
        AliDebug(10,Form("FillESD ::: iHit %i tvdc %f orA %f orC %f\n", iHit,
-	   frecpoints->GetTVDC(iHit),
-	   frecpoints->GetOrA(iHit),
-		       frecpoints->GetOrC(iHit) ));
-    fESDTZERO->SetTVDC(iHit,frecpoints->GetTVDC(iHit));
-    fESDTZERO->SetOrA(iHit,frecpoints->GetOrA(iHit));
-    fESDTZERO->SetOrC(iHit,frecpoints->GetOrC(iHit));
+	   frecpoints.GetTVDC(iHit),
+	   frecpoints.GetOrA(iHit),
+		       frecpoints.GetOrC(iHit) ));
+    fESDTZERO->SetTVDC(iHit,frecpoints.GetTVDC(iHit));
+    fESDTZERO->SetOrA(iHit,frecpoints.GetOrA(iHit));
+    fESDTZERO->SetOrC(iHit,frecpoints.GetOrC(iHit));
     
     for (Int_t i0=0; i0<24; i0++) {
-      //  if(frecpoints->GetTimeFull(i0,iHit)>0){
-      //      	printf("FillESD ::: iHit %i cfd %i time %f \n", iHit, i0, frecpoints->GetTimeFull(i0,iHit));
-	fESDTZERO->SetTimeFull(i0, iHit,frecpoints->GetTimeFull(i0,iHit));
+      //  if(frecpoints.GetTimeFull(i0,iHit)>0){
+      //      	printf("FillESD ::: iHit %i cfd %i time %f \n", iHit, i0, frecpoints.GetTimeFull(i0,iHit));
+	fESDTZERO->SetTimeFull(i0, iHit,frecpoints.GetTimeFull(i0,iHit));
 	// }
 	
     }	     	     
@@ -674,8 +672,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Bool_t pileup =  PileupFlag();
   fESDTZERO->SetPileupFlag(pileup);
   for (Int_t i=0; i<5; i++) {
-    fESDTZERO->SetPileupTime(i, frecpoints->GetTVDC(i) ) ;
-    //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints->GetTVDC(i));
+    fESDTZERO->SetPileupTime(i, frecpoints.GetTVDC(i) ) ;
+    //   printf("!!!!!! FillESD :: pileup %i %f %f \n", i,fESDTZERO->GetPileupTime(i), frecpoints.GetTVDC(i));
   }
   Bool_t sat  = SatelliteFlag();
   fESDTZERO->SetSatelliteFlag(sat);
@@ -703,8 +701,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 
     pESD->SetTZEROData(fESDTZERO);
   }
-
-  if(frecpoints) delete frecpoints;
 
 } // vertex in 3 sigma
 
