@@ -15,6 +15,7 @@
 #include "AliHLTLogging.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTStdIncludes.h"
+#include <bitset>
 
 /**
  * @class AliHLTDataDeflater
@@ -85,6 +86,13 @@ public:
    */
   bool OutputBits( AliHLTUInt64_t const & value, UInt_t const & bitCount );
 
+  /** function to output bits from a bitset
+   * @param value     AliHLTUInt64_t const &
+   * @param bitCount  UInt_t const &
+   * @return zero upon success
+   */
+  bool OutputBits( std::bitset<64> const & value, UInt_t const & bitCount );
+
   /* function pad 8 bits */
   void Pad8Bits();
 
@@ -103,6 +111,12 @@ public:
 
   /// print info
   virtual void Print(ostream& out, Option_t *option="") const;
+
+  /// find object
+  virtual TObject *FindObject(const char */*name*/) const {return NULL;}
+
+  /// save data according to option
+  virtual void SaveAs(const char */*filename*/="",Option_t */*option*/="") const {}
 
   /// write bit pattern of a parameter to the current byte and position
   virtual bool OutputParameterBits( int parameterId, AliHLTUInt64_t const & value );

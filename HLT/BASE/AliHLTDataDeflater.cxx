@@ -173,6 +173,39 @@ bool AliHLTDataDeflater::OutputBits( AliHLTUInt64_t const & value, UInt_t const 
   return true;
 }
 
+bool AliHLTDataDeflater::OutputBits( std::bitset<64> const & value, UInt_t const & bitCount )
+{
+  // write bit pattern to the current byte and position
+  if ( bitCount>64 ) {
+    HLTFatal( "Internal error: Attempt to write more than 64 bits (%u)", (unsigned)bitCount );
+    return false;
+  }
+  static const std::bitset<64> mask8bit(255ul);
+  UInt_t bitsToWrite=bitCount;
+  UInt_t curBitCount;
+  while ( bitsToWrite>0 ) {
+    if ( fBitDataCurrentOutput>=fBitDataCurrentOutputEnd )
+      return false;
+    if ( bitsToWrite >= fBitDataCurrentPosInWord+1 )
+      curBitCount = fBitDataCurrentPosInWord+1;
+    else
+      curBitCount = bitsToWrite;
+    std::bitset<64> valwrite=(value >> (bitsToWrite-curBitCount)) & mask8bit;
+    fBitDataCurrentWord |= ( valwrite.to_ulong() & ((1<<curBitCount)-1) ) << (fBitDataCurrentPosInWord+1-curBitCount);
+    if ( fBitDataCurrentPosInWord < curBitCount )
+      {
+	*fBitDataCurrentOutput = fBitDataCurrentWord;
+	fBitDataCurrentPosInWord = 7;
+	fBitDataCurrentOutput++;
+	fBitDataCurrentWord = 0;
+      }
+    else
+      fBitDataCurrentPosInWord -= curBitCount;
+    bitsToWrite -= curBitCount;
+  }
+  return true;
+}
+
 void AliHLTDataDeflater::Pad8Bits()
 {
   // finish the current word
