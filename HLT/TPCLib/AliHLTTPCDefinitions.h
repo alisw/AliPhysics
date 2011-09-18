@@ -161,7 +161,6 @@ public:
     kQMax,
     kResidualPad,
     kResidualTime,
-    kPadrowFlag,
     kClusterCount,
     kLast = kQMax
   };

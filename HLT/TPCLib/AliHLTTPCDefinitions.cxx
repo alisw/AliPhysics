@@ -148,7 +148,6 @@ const AliHLTTPCDefinitions::AliClusterParameter AliHLTTPCDefinitions::fgkCluster
   {AliHLTTPCDefinitions::kQMax,    "qmax",    10,  6,   1},
   {AliHLTTPCDefinitions::kResidualPad, "respad",         9,  4, 60}, // <100um for 6mm pads, sign stored in separate bit
   {AliHLTTPCDefinitions::kResidualTime,"restime",        8,  4, 25}, // <100um for 2.5 mm timebin pitch, separate bit for sign
-  {AliHLTTPCDefinitions::kPadrowFlag,  "clustonpadrow",  1,  1,  1}, // 0 no cluster, 1 cluster on that row
   {AliHLTTPCDefinitions::kClusterCount,"clustercount",   6,  3,  1}  // number of clusters on that row
 };
 
