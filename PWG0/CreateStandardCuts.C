@@ -24,7 +24,7 @@ AliESDtrackCuts* CreateTrackCuts(AliPWG0Helper::AnalysisMode analysisMode,  Bool
     esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   }
 
-  if (analysisMode & AliPWG0Helper::kTPCITS);
+  if (analysisMode & AliPWG0Helper::kTPCITS)
   {
     esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(kTRUE);
     esdTrackCuts->SetPtRange(ptMin);  // adding pt cut
