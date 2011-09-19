@@ -334,6 +334,9 @@ class AliStaCluster : public TObject
                       fCeIso3(0), fCeIso4(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
                       fIsShared(0), fTrigId(-1), fTrigE(0), fMcLabel(-1), fEmbE(0) {;}
 
+  void                GetMom(TLorentzVector& p, Double_t *vertex=0);
+  void                GetMom(TLorentzVector& p, AliStaVertex *vertex);
+
  public:
   Double32_t    fE;                //[0,0,16] energy
   Double32_t    fR;                //[0,0,16] radius (cylinder)

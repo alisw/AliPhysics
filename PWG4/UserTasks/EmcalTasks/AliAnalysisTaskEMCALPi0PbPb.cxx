@@ -1495,7 +1495,6 @@ void AliAnalysisTaskEMCALPi0PbPb::FillClusHists()
     fHClustEnergySigma->Fill(clus->E()*maxAxis,clus->E());
     fHClustSigmaSigma->Fill(max(clus->GetM02(),clus->GetM20()),clus->E()*maxAxis);
     fHClustNCellEnergyRatio->Fill(clus->GetNCells(),GetMaxCellEnergy(clus)/clus->E());
-    //====
     fHClustEnergyNCell->Fill(clus->E(),clus->GetNCells());  
   }
 }
@@ -2497,4 +2496,34 @@ void AliAnalysisTaskEMCALPi0PbPb::ProcessDaughters(AliMCParticle *p, Int_t index
       continue;
     ProcessDaughters(dmc,i,arr);
   }
+}
+
+//__________________________________________________________________________________________________
+void AliStaCluster::GetMom(TLorentzVector& p, Double_t *vertex) 
+{
+  // Calculate momentum.
+
+  TVector3 pos;
+  pos.SetPtEtaPhi(fR,fEta,fPhi);
+
+  if(vertex){ //calculate direction relative to  vertex
+    pos -= vertex;
+  }
+  
+  Double_t r = pos.Mag();
+  p.SetPxPyPzE(fE*pos.x()/r, fE*pos.y()/r, fE*pos.z()/r, fE);
+}
+
+//__________________________________________________________________________________________________
+void AliStaCluster::GetMom(TLorentzVector& p, AliStaVertex *vertex) 
+{
+  // Calculate momentum.
+
+  Double_t v[3] = {0,0,0};
+  if (vertex) {
+    v[0] = vertex->fVx;
+    v[1] = vertex->fVy;
+    v[2] = vertex->fVz;
+  }
+  GetMom(p, v);
 }
