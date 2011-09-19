@@ -171,7 +171,7 @@ void AliHFSystErr::InitD0toKpi2010pp() {
   // PID efficiency (from PID/noPID)
   fPIDEff = new TH1F("fPIDEff","fPIDEff",24,0,24);
   for(Int_t i=1;i<=24;i++) fPIDEff->SetBinContent(i,0.03); // 3%
-  fPIDEff->SetBinContent(2,0.10); // 10%
+  fPIDEff->SetBinContent(2,0.05); // 5%
 
   // MC dN/dpt
   fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",24,0,24);
