@@ -639,7 +639,7 @@ Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
     return -1.;
   }
 
-  Int_t ns=fDetPid->GetTRDnSlices();
+  Int_t ns=fDetPid->GetTRDnSlices()/kTRDnPlanes;
   if ((slice<-1) || (slice>=ns)) {
     return -1.;
   }
@@ -650,6 +650,27 @@ Double_t  AliAODTrack::GetTRDslice(Int_t plane, Int_t slice) const {
   Double_t q=0.; Double32_t *s = &trdSlices[plane*ns];
   for (Int_t i=0; i<ns; i++, s++) if((*s)>0.) q+=(*s);
   return q/ns;
+}
+
+//______________________________________________________________________________
+UChar_t AliAODTrack::GetTRDntrackletsPID() const{
+  //
+  // return number of tracklets calculated from the slices
+  //
+  if(!fDetPid) return -1;
+
+  Int_t ntracklets = 0,                                           // Number of tracklets / track
+        nSlicesTracklet = fDetPid->GetTRDnSlices()/kTRDnPlanes,   // Number of slices per tracklet
+        nSlicesNonZero = 0;                                       // Number of slices containing a dE/dx measurement
+  for(Int_t ily = 0; ily < kTRDnPlanes; ily++){
+    // a tracklet is found if it has at least one slice containing a dE/dx measurement
+    nSlicesNonZero = 0;
+    for(Int_t islice = 0; islice < nSlicesTracklet; islice++){
+      if(fDetPid->GetTRDsignal()[nSlicesTracklet * ily + islice] > 0.01) nSlicesNonZero++;
+    }
+    if(nSlicesNonZero) ntracklets++;
+  }
+  return ntracklets;
 }
 
 //______________________________________________________________________________

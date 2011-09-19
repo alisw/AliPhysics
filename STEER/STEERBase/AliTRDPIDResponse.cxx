@@ -233,7 +233,8 @@ Bool_t AliTRDPIDResponse::CookdEdx(Int_t nSlice, const Double_t * const in, Doub
     break;
   case kLQ1D: // 1D LQ 
     out[0]= 0.;
-    for(Int_t islice = 0; islice < nSlice; islice++) out[0] += in[islice] * fGainNormalisationFactor;
+    for(Int_t islice = 0; islice < nSlice; islice++) 
+      if(in[islice] > 0) out[0] += in[islice] * fGainNormalisationFactor;   // Protect against negative values for slices having no dE/dx information
     if(out[0] < 1e-6) return kFALSE;
     break;
   default:
@@ -293,6 +294,7 @@ const TVectorD* AliTRDPIDResponse::GetParams(Int_t ntracklets, Double_t level) c
       currentLower = (*effLevel)[0];
     }
   }  
+  AliDebug(2, Form("Taking params for %d tracklets and %f electron Efficiency\n", ntracklets, currentLower));
 
   return parameters;
 }

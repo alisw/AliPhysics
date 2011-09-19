@@ -262,6 +262,7 @@ class AliAODTrack : public AliVTrack {
   void      GetIntegratedTimes(Double_t *times) const {if (fDetPid) fDetPid->GetIntegratedTimes(times); }
   Double_t  GetTRDslice(Int_t plane, Int_t slice) const;
   Double_t  GetTRDmomentum(Int_t plane, Double_t */*sp*/=0x0) const;
+  UChar_t   GetTRDntrackletsPID() const;
   void      GetHMPIDpid(Double_t *p) const { if (fDetPid) fDetPid->GetHMPIDprobs(p); }
 
   

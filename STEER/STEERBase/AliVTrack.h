@@ -55,6 +55,7 @@ public:
   virtual UShort_t GetTPCNcls() const { return 0;}
   virtual UShort_t GetTPCNclsF() const { return 0;}
   virtual Double_t GetTRDslice(Int_t /*plane*/, Int_t /*slice*/) const { return -1.; }
+  virtual UChar_t  GetTRDntrackletsPID() const { return 0;}
   
   virtual Int_t GetEMCALcluster()     const {return -1;}
   virtual void SetEMCALcluster(Int_t)       {;}
