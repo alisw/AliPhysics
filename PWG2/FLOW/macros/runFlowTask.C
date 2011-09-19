@@ -4,8 +4,8 @@ enum anaModes {mLocal,mLocalPAR,mPROOF,mGrid,mGridPAR};
 //mPROOF: Analyze CAF files with PROOF
 //mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
 //       (Remark: When using this mode set also Bool_t bUseParFiles = kFALSE; in CreateAlienHandler.C)
-//mGridPAR: Analyze files on Grid via AliEn plug-in and using par files for FLOW package
-//          (Remark: when using this mode set also Bool_t bUseParFiles = kTRUE; in CreateAlienHandler.C)
+//mGrid + par files: Analyze files on Grid via AliEn plug-in and using par files for FLOW package.
+//                   Simply set Int_t mode = mGrid and Bool_t useFlowParFiles = kTRUE as arguments.
  
 // CENTRALITY DEFINITION
 Bool_t kUseCentrality = kFALSE;
@@ -15,7 +15,7 @@ const Int_t numberOfCentralityBins = 9;
 Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 //Int_t centralityArray[numberOfCentralityBins+1] = {41,80,146,245,384,576,835,1203,1471,10000}; // in terms of TPC only reference multiplicity
 
-TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
+TString commonOutputFileName = "AnalysisResults"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
 
 //void runFlowTask(Int_t mode=mLocal, Int_t nRuns = 10, 
@@ -23,9 +23,13 @@ TString commonOutputFileName = "outputCentrality"; // e.g.: result for centralit
 
 //void runFlowTask(Int_t mode = mGridPAR, Int_t nRuns = 50000000, 
 //		 Bool_t DATA = kTRUE, const Char_t* dataDir="/alice/data/LHC10h_000137161_p1_plusplusplus", Int_t offset=0) 
-void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000, 
-		 Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
+//void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000, 
+//		 Bool_t DATA = kTRUE, const Char_t* dataDir="./data/", Int_t offset=0) 
 //void runFlowTask(Int_t mode = mGridPAR, Bool_t DATA = kTRUE)
+void runFlowTask(Int_t mode = mGrid,
+                 Bool_t useFlowParFiles = kFALSE,
+                 Bool_t DATA = kTRUE,
+                 Bool_t useTender = kFALSE)
 {
   // Time:
   TStopwatch timer;
@@ -33,19 +37,19 @@ void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000,
   // Cross-check user settings before starting:
   //  CrossCheckUserSettings(DATA);
   // Load needed libraries:
-  LoadLibraries(mode);
+  LoadLibraries(mode,useFlowParFiles);
   // Create and configure the AliEn plug-in:
   if(mode == mGrid || mode == mGridPAR) 
     {    
       gROOT->LoadMacro("CreateAlienHandler.C");
-      AliAnalysisGrid *alienHandler = CreateAlienHandler();  
+      AliAnalysisGrid *alienHandler = CreateAlienHandler(useFlowParFiles);  
       if(!alienHandler) return;
     }
   // Chains: 
   if(mode == mLocal || mode == mLocalPAR) {
     TChain *chain = new TChain("esdTree");
-    chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/Set1/AliESDs.root");
-    //TChain* chain = CreateESDChain(dataDir, nRuns, offset);
+    //chain->Add("/home/pchrist/ALICE/HeavyIons/Data/137161/Set1/AliESDs.root");
+    TChain* chain = CreateESDChain(dataDir, nRuns, offset);
     //TChain* chain = CreateAODChain(dataDir, nRuns, offset);
   }
   
@@ -89,7 +93,7 @@ void runFlowTask(Int_t mode = mLocal, Int_t nRuns = 50000000,
   }
   AddTaskFlow(kLowCentralityBin,
 	      kHighCentralityBin,
-	      commonOutputFileName );
+	      commonOutputFileName);
 
   // Enable debug printouts:
   mgr->SetDebugLevel(2);
@@ -123,13 +127,13 @@ void CrossCheckUserSettings(Bool_t bData)
 */
 //===============================================================================================
 
-void LoadLibraries(const anaModes mode) 
+void LoadLibraries(const anaModes mode, Bool_t useFlowParFiles )
 {
   //--------------------------------------
   // Load the needed libraries most of them already loaded by aliroot
   //--------------------------------------
 
-  gSystem->Load("libCore");  
+  gSystem->Load("libCore");
   gSystem->Load("libTree");
   gSystem->Load("libGeom");
   gSystem->Load("libVMC");
@@ -138,8 +142,8 @@ void LoadLibraries(const anaModes mode)
   gSystem->Load("libXMLParser");
   gSystem->Load("libProof");
   gSystem->Load("libMinuit");
-  
-  if (mode==mLocal || mode==mGrid || mode == mGridPAR || mode == mLocalPAR )
+
+  if (mode==mLocal || mode==mGrid)
   {
     gSystem->Load("libSTEERBase");
     gSystem->Load("libCDB");
@@ -149,85 +153,64 @@ void LoadLibraries(const anaModes mode)
     gSystem->Load("libAOD");
     gSystem->Load("libSTEER");
     gSystem->Load("libANALYSIS");
-    gSystem->Load("libANALYSISalice");   
-    gSystem->Load("libTOFbase"); 
-    gSystem->Load("libTOFrec"); 
+    gSystem->Load("libANALYSISalice");
+    gSystem->Load("libTPCbase");
+    gSystem->Load("libTOFbase");
+    gSystem->Load("libTOFrec");
+    gSystem->Load("libTRDbase");
+    gSystem->Load("libVZERObase");
+    gSystem->Load("libVZEROrec");
+    gSystem->Load("libT0base");
+    gSystem->Load("libT0rec");
     gSystem->Load("libTENDER");
+    gSystem->Load("libTENDERSupplies");
 
-    if (mode == mLocal || mode == mGrid)
+    if (useFlowParFiles)
     {
-      gSystem->Load("libTENDERSupplies");
-      gSystem->Load("libPWG2flowCommon"); 
-      gSystem->Load("libPWG2flowTasks"); 
-    }
-    if (mode == mLocalPAR || mode == mGridPAR )
-    {
-      AliAnalysisAlien::SetupPar("TENDERSupplies");
       AliAnalysisAlien::SetupPar("PWG2flowCommon");
       AliAnalysisAlien::SetupPar("PWG2flowTasks");
     }
+    else
+    {
+      gSystem->Load("libPWG2flowCommon");
+      gSystem->Load("libPWG2flowTasks");
+    }
   }
-  
-  //---------------------------------------------------------
-  // <<<<<<<<<< PROOF mode >>>>>>>>>>>>
-  //---------------------------------------------------------
-  else if (mode==mPROOF) {
-    //  set to debug root versus if needed
-    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a_dbg");
-    //TProof::Mgr("alicecaf")->SetROOTVersion("v5-24-00a");
-    //TProof::Reset("proof://snelling@alicecaf.cern.ch");     
+  else if (mode==mPROOF)
+  {
+    TList* list = new TList();
+    list->Add(new TNamed("ALIROOT_MODE", "ALIROOT"));
+    if (useFlowParFiles)
+      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:TENDER:TENDERSupplies"));
+    else
+      list->Add(new TNamed("ALIROOT_EXTRA_LIBS", "ANALYSIS:ANALYSISalice:TENDER:TENDERSupplies:PWG2flowCommon:PWG2flowTasks"));
+
+    //list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","PWG2/FLOW/AliFlowCommon:PWG2/FLOW/AliFlowTasks"));
+
     // Connect to proof
     printf("*** Connect to PROOF ***\n");
     gEnv->SetValue("XSec.GSI.DelegProxy","2");
-    TProof::Open("mkrzewic@alice-caf.cern.ch");
-    //TProof::Open("mkrzewic@skaf.saske.sk");
-     // list the data available
-    //gProof->ShowDataSets("/*/*"); 
-    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
-    //gProof->ShowDataSets("/alice/data/"); //for REAL Data 
- 
-    // Clear the Packages
-    /*    
-    gProof->ClearPackage("STEERBase.par");
-    gProof->ClearPackage("ESD.par");
-    gProof->ClearPackage("AOD.par");
-    */
-    //gProof->ClearPackage("ANALYSIS.par");
-    //gProof->ClearPackage("ANALYSISalice.par");
-    //gProof->ClearPackage("CORRFW.par");
-    
-    gProof->ClearPackage("PWG2flowCommon");
-    gProof->ClearPackage("PWG2flowTasks");
-    
-    // Upload the Packages
-    //gProof->UploadPackage("STEERBase.par");
-    //gProof->UploadPackage("ESD.par");    
-    //gProof->UploadPackage("AOD.par");
-       
-    //gProof->UploadPackage("ANALYSIS.par"); 
-    //gProof->UploadPackage("ANALYSISalice.par");
-    gProof->UploadPackage("CORRFW.par");
-    gProof->UploadPackage("PWG2flowCommon.par");
-    gProof->UploadPackage("PWG2flowTasks.par");
-    gProof->UploadPackage("ALIRECO.par");
+    //TProof* proof = TProof::Open("alice-caf.cern.ch");
+    TProof* proof = TProof::Open("skaf.saske.sk");
 
-    // Enable the Packages 
-    // The global package
-    TList* list = new TList();
-    list->Add(new TNamed("ALIROOT_EXTRA_INCLUDES","RAW:OCDB:STEER:TOF"));
-    gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-07-AN",list);
-    gProof->EnablePackage("ALIRECO");
-    //gProof->EnablePackage("ANALYSIS");
-    //gProof->EnablePackage("ANALYSISalice");
-    //gProof->EnablePackage("CORRFW");
-    gProof->EnablePackage("PWG2flowCommon");
-    gProof->EnablePackage("PWG2flowTasks");
+    // list the data available
+    //gProof->ShowDataSets("/*/*");
+    //gProof->ShowDataSets("/alice/sim/"); //for MC Data
+    //gProof->ShowDataSets("/alice/data/"); //for REAL Data
+
+    proof->ClearPackages();
+    proof->EnablePackage("VO_ALICE@AliRoot::v4-21-14-AN",list);
+
+    if (useFlowParFiles)
+    {
+      gProof->UploadPackage("PWG2flowCommon.par");
+      gProof->UploadPackage("PWG2flowTasks.par");
+    }
 
     // Show enables Packages
     gProof->ShowEnabledPackages();
-  }  
-  
-} // end of void LoadLibraries(const anaModes mode) 
+  }
+} // end of void LoadLibraries(const anaModes mode)
 
 // Helper macros for creating chains
 // from: CreateESDChain.C,v 1.10 jgrosseo Exp

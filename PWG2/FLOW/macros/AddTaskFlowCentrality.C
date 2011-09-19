@@ -86,14 +86,18 @@ void AddTaskFlowCentrality( Float_t centrMin=0.,
   AliFlowEventCuts* cutsEvent = new AliFlowEventCuts("event cuts");
   cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
   cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-  cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
   //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
   cutsEvent->SetNContributorsRange(2);
   cutsEvent->SetPrimaryVertexZrange(-7.,7.);
-  cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
-  cutsEvent->SetCutZDCtiming();
+  //cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
+  //cutsEvent->SetCutZDCtiming();
   //cutsEvent->SetCutTPCmultiplicityOutliers();
   //cutsEvent->SetUseCentralityUnchecked();
+
+  // Reference multiplicity:
+  cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); // Tracklets + Global tracks (default)
+  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSSA); // Tracklets + ITS SA tracks 
+  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTracklets); // Tracklets
   
   // RP TRACK CUTS:
   AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("GlobalRP");
