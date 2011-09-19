@@ -318,12 +318,12 @@ void AliEMCALTenderSupply::ProcessEvent()
                                              erun->GetBeamType());
     TGeoGlobalMagField::Instance()->SetField(field);
   }
+  
   fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
-  Int_t nTracks = event->GetNumberOfTracks();
-  if (nTracks>0) {
-    SetClusterMatchedToTrack(event);
-    SetTracksMatchedToCluster(event);
-  }
+ 
+  SetClusterMatchedToTrack(event);
+  SetTracksMatchedToCluster(event);
+  
 }
 
 //_____________________________________________________
