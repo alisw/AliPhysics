@@ -668,7 +668,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
   }
   //
   AliTPCROC *roc = AliTPCROC::Instance();
-  TDatabasePDG *pdg = TDatabasePDG::Instance();
+  const TDatabasePDG *pdg = TDatabasePDG::Instance();
 
   Int_t nclITS   = track->GetNcls(0);
   Int_t ncl   = track->GetTPCncls();
@@ -1153,7 +1153,7 @@ void AliTPCcalibGainMult::ProcessV0s(AliESDEvent * event){
   if (esdFriend->TestSkipBit()) return;
   //
   // 
-  TDatabasePDG *pdg = TDatabasePDG::Instance();  
+  const TDatabasePDG *pdg = TDatabasePDG::Instance();  
   const Double_t kChi2Cut=5;
   const Double_t kMinR=2;
   const Int_t    kMinNcl=110;
