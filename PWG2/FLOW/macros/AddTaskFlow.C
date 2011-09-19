@@ -43,7 +43,7 @@ void AddTaskFlow(Float_t centrMin=-1,
   Bool_t  UsePhysicsSelection = kTRUE;
 
   // charge of poi
-  const Int_t    chargePOI = 1; 
+  const Int_t  chargePOI = 1; 
 
   // QA
   Bool_t runQAtask=kFALSE;
@@ -58,11 +58,11 @@ void AddTaskFlow(Float_t centrMin=-1,
   Bool_t QC       = kTRUE;  // cumulants using Q vectors
   Bool_t FQD      = kTRUE;  // fit of the distribution of the Q vector (only integrated v)
   Bool_t LYZ1SUM  = kTRUE;  // Lee Yang Zeroes using sum generating function (integrated v)
-  Bool_t LYZ1PROD = kFALSE;  // Lee Yang Zeroes using product generating function (integrated v)
+  Bool_t LYZ1PROD = kTRUE;  // Lee Yang Zeroes using product generating function (integrated v)
   Bool_t LYZ2SUM  = kFALSE; // Lee Yang Zeroes using sum generating function (second pass differential v)
   Bool_t LYZ2PROD = kFALSE; // Lee Yang Zeroes using product generating function (second pass differential v)
   Bool_t LYZEP    = kFALSE; // Lee Yang Zeroes Event plane using sum generating function (gives eventplane + weight)
-  Bool_t MH       = kTRUE;  // azimuthal correlators in mixed harmonics  
+  Bool_t MH       = kFALSE;  // azimuthal correlators in mixed harmonics  
   Bool_t NL       = kFALSE;  // nested loops (for instance distribution of phi1-phi2 for all distinct pairs)
 
   Bool_t METHODS[] = {SP,LYZ1SUM,LYZ1PROD,LYZ2SUM,LYZ2PROD,LYZEP,GFC,QC,FQD,MCEP,MH,NL};
@@ -74,8 +74,8 @@ void AddTaskFlow(Float_t centrMin=-1,
 
   //---------Data selection----------
   //kMC, kGlobal, kTPCstandalone, kSPDtracklet, kPMD
-  AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kGlobal;
-  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kGlobal;
+  AliFlowTrackCuts::trackParameterType rptype = AliFlowTrackCuts::kTPCstandalone;
+  AliFlowTrackCuts::trackParameterType poitype = AliFlowTrackCuts::kTPCstandalone;
 
   //---------Parameter mixing--------
   //kPure - no mixing, kTrackWithMCkine, kTrackWithMCPID, kTrackWithMCpt
@@ -105,16 +105,20 @@ void AddTaskFlow(Float_t centrMin=-1,
   if((centrMin > 0)||(centrMax > 0)) {
     cutsEvent->SetCentralityPercentileRange(centrMin,centrMax);
     cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kV0);
-    cutsEvent->SetRefMultMethod(AliFlowEventCuts::kV0);
     //cutsEvent->SetCentralityPercentileMethod(AliFlowEventCuts::kSPD1tracklets);
-    cutsEvent->SetNContributorsRange(2);
-    cutsEvent->SetPrimaryVertexZrange(-10.,10.);
-    cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
-    cutsEvent->SetCutZDCtiming();
   }
+  cutsEvent->SetNContributorsRange(2);
+  cutsEvent->SetPrimaryVertexZrange(-10.,10.);
+  //cutsEvent->SetCutSPDvertexerAnomaly(); //"Francesco's cut"
+  //cutsEvent->SetCutZDCtiming();
+
+  // Reference multiplicity:
+  cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSTPC); // Tracklets + Global tracks (default)
+  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTrackletsITSSA); // Tracklets + ITS SA tracks 
+  //cutsEvent->SetRefMultMethod(AliESDtrackCuts::kTracklets); // Tracklets
   
   // RP TRACK CUTS:
-  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("rp cuts");
+  AliFlowTrackCuts* cutsRP = new AliFlowTrackCuts("kTPCstandaloneRP");
   cutsRP->SetParamType(rptype);
   cutsRP->SetParamMix(rpmix);
   cutsRP->SetPtRange(0.2,5.);
@@ -122,67 +126,52 @@ void AddTaskFlow(Float_t centrMin=-1,
   //cutsRP->SetRequireCharge(kTRUE);
   //cutsRP->SetCharge(chargeRP);
   //cutsRP->SetPID(PdgRP);
-  if(rptype != AliFlowTrackCuts::kMC) {
-    cutsRP->SetMinNClustersTPC(70);
-    cutsRP->SetMinChi2PerClusterTPC(0.1);
-    cutsRP->SetMaxChi2PerClusterTPC(4.0);
-    cutsRP->SetMinNClustersITS(2);
-    cutsRP->SetRequireITSRefit(kTRUE);
-    cutsRP->SetRequireTPCRefit(kTRUE);
-    //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
-    cutsRP->SetMaxDCAToVertexXY(0.3);
-    cutsRP->SetMaxDCAToVertexZ(0.3);
-    //cutsRP->SetDCAToVertex2D(kTRUE);
-    //cutsRP->SetMaxNsigmaToVertex(1.e+10);
-    //cutsRP->SetRequireSigmaToVertex(kFALSE);
-    cutsRP->SetAcceptKinkDaughters(kFALSE);
-  }
-  if(rptype == AliFlowTrackCuts::kPMD) {
-    cutsRP->SetEtaRange(2.3,3.9);
-    cutsRP->SetPmdDetPlane(0);
-    cutsRP->SetPmdAdc(270);
-    cutsRP->SetPmdNcell(1);
-  }
-
+  cutsRP->SetMinNClustersTPC(70);
+  cutsRP->SetMinChi2PerClusterTPC(0.1);
+  cutsRP->SetMaxChi2PerClusterTPC(4.0);
+  //cutsRP->SetMinNClustersITS(2);
+  //cutsRP->SetRequireITSRefit(kTRUE);
+  //cutsRP->SetRequireTPCRefit(kTRUE);
+  //cutsRP->SetMaxChi2PerClusterITS(1.e+09);
+  cutsRP->SetMaxDCAToVertexXY(3.);
+  cutsRP->SetMaxDCAToVertexZ(3.);
+  //cutsRP->SetDCAToVertex2D(kTRUE);
+  //cutsRP->SetMaxNsigmaToVertex(1.e+10);
+  //cutsRP->SetRequireSigmaToVertex(kFALSE);
+  cutsRP->SetAcceptKinkDaughters(kFALSE);
+  //cutsRP->SetMinimalTPCdedx(10.);
 
   // POI TRACK CUTS:
-  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("poi cuts");
+  AliFlowTrackCuts* cutsPOI = new AliFlowTrackCuts("kTPCstandalonePOI");
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(0.0,10.);
   cutsPOI->SetEtaRange(-1.2,1.2);
-  if(chargePOI != 0)
-    cutsPOI->SetCharge(chargePOI);
   //cutsPOI->SetRequireCharge(kTRUE);
+  //cutsPOI->SetCharge(chargeRP);
   //cutsPOI->SetPID(PdgRP);
-  if(rptype != AliFlowTrackCuts::kMC) {
-    cutsPOI->SetMinNClustersTPC(80);
-    cutsPOI->SetMinChi2PerClusterTPC(0.1);
-    cutsPOI->SetMaxChi2PerClusterTPC(4.0);
-    cutsPOI->SetRequireITSRefit(kTRUE);
-    cutsPOI->SetRequireTPCRefit(kTRUE);
-    cutsPOI->SetMinNClustersITS(2);
-    //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
-    cutsPOI->SetMaxDCAToVertexXY(0.3);
-    cutsPOI->SetMaxDCAToVertexZ(0.3);
-    //cutsPOI->SetDCAToVertex2D(kTRUE);
-    //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
-    //cutsPOI->SetRequireSigmaToVertex(kFALSE);
-    cutsPOI->SetAcceptKinkDaughters(kFALSE);
-    //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFpid);
-    //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
-    //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCTOFpid);
-    //cutsPOI->SetTPCTOFpidCrossOverPt(0.4);
-    //francesco's TPC Bethe Bloch for data:
-    //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
-    //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
-  }
-  if(poitype == AliFlowTrackCuts::kPMD) {
-    cutsPOI->SetEtaRange(2.3,3.9);
-    cutsPOI->SetPmdDetPlane(0);
-    cutsPOI->SetPmdAdc(270);
-    cutsPOI->SetPmdNcell(1);
-  }
+  cutsPOI->SetMinNClustersTPC(80);
+  cutsPOI->SetMinChi2PerClusterTPC(0.1);
+  cutsPOI->SetMaxChi2PerClusterTPC(4.0);
+  //cutsPOI->SetRequireITSRefit(kTRUE);
+  //cutsPOI->SetRequireTPCRefit(kTRUE);
+  //cutsPOI->SetMinNClustersITS(2);
+  //cutsPOI->SetMaxChi2PerClusterITS(1.e+09);
+  cutsPOI->SetMaxDCAToVertexXY(3.);
+  cutsPOI->SetMaxDCAToVertexZ(3.);
+  //cutsPOI->SetDCAToVertex2D(kTRUE);
+  //cutsPOI->SetMaxNsigmaToVertex(1.e+10);
+  //cutsPOI->SetRequireSigmaToVertex(kFALSE);
+  cutsPOI->SetAcceptKinkDaughters(kFALSE);
+  //cutsPOI->SetMinimalTPCdedx(10.);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFpid);
+  //cutsPOI->SetPID(AliPID::kPion, AliFlowTrackCuts::kTPCpid);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTPCdedx);
+  //cutsPOI->SetPID(AliPID::kProton, AliFlowTrackCuts::kTOFbeta);
+  //cutsPOI->SetAllowTOFmismatch(kFALSE);
+  //iexample: francesco's tunig TPC Bethe Bloch for data:
+  //cutsPOI->GetESDpid().GetTPCResponse().SetBetheBlochParameters(4.36414e-02,1.75977e+01,1.14385e-08,2.27907e+00,3.36699e+00);
+  //cutsPOI->GetESDpid().GetTPCResponse().SetMip(49);
 
 
   Bool_t useWeights  = WEIGHTS[0] || WEIGHTS[1] || WEIGHTS[2];
@@ -403,8 +392,10 @@ void AddTaskFlow(Float_t centrMin=-1,
     taskQC->SetUseEtaWeights(WEIGHTS[2]); 
     taskQC->SetnBinsMult(10000);
     taskQC->SetMinMult(0.);
-    taskQC->SetMaxMult(10000.);
-    taskQC->SetApplyCorrectionForNUA(kTRUE);
+    taskQC->SetMaxMult(10000.);    
+    taskQC->SetCalculateCumulantsVsM(kTRUE);
+    taskQC->SetCalculateDiffFlow(kFALSE);
+    taskQC->SetApplyCorrectionForNUA(kFALSE);
     mgr->AddTask(taskQC);
   }
   if (FQD){
