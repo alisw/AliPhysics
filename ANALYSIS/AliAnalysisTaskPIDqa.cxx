@@ -334,11 +334,8 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTOFqa()
 {
-  //
-  // Fill PID qa histograms for the TOF
-  //
-
   AliVEvent *event=InputEvent();
+
 
 
   Int_t ntracks=event->GetNumberOfTracks();
@@ -388,6 +385,19 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     Double_t mask = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeMask(mom) + 0.5;
     ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill(mask);
 
+    if (mom >= 1.0 && mom <= 2.0 ) {
+      Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)kKaon);
+      if (mask == 0) {
+	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-Fill"))->Fill(nsigma);
+      } else if (mask == 1) {
+	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-TOF"))->Fill(nsigma);
+      } else if ( (mask == 2) || (mask == 4) || (mask == 6) ) {
+	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-T0"))->Fill(nsigma);
+      } else {
+	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-Best"))->Fill(nsigma);
+      }
+    }
+
     Double_t res = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeRes(mom);
     ((TH1F*)fListQAtof->FindObject("hStartTimeRes_TOF"))->Fill(res);
 
@@ -410,6 +420,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
   }
 
 }
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillEMCALqa()
@@ -674,8 +685,17 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
                               vX->GetNrows()-1,vX->GetMatrixArray(),
                               200,-10,10);
     fListQAtof->Add(hNsigmaP);
-    // to be added: t-texp without StartTime subtraction
   }
+
+  // for Kaons PID we differentiate on Time Zero
+  T1HF *hnSigT0Fill = new TH1F("hNsigma_TOF_Kaon_T0-Fill","TOF n#sigma (Kaon) T0-FILL [1-2. GeV/c]",200,-10,10);
+  fListQAtof->Add(hnSigT0Fill);
+  T1HF *hnSigT0T0 = new TH1F("hNsigma_TOF_Kaon_T0-T0","TOF n#sigma (Kaon) T0-T0 [1-2. GeV/c]",200,-10,10);
+  fListQAtof->Add(hnSigT0T0);
+  T1HF *hnSigT0TOF = new TH1F("hNsigma_TOF_Kaon_T0-TOF","TOF n#sigma (Kaon) T0-TOF [1.-2. GeV/c]",200,-10,10);
+  fListQAtof->Add(hnSigT0TOF);
+  T1HF *hnSigT0Best = new TH1F("hNsigma_TOF_Kaon_T0-Best","TOF n#sigma (Kaon) T0-Best [1-2. GeV/c]",200,-10,10);
+  fListQAtof->Add(hnSigT0Best);
 
 
   TH2F *hSig = new TH2F("hSigP_TOF",
