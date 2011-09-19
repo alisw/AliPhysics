@@ -384,7 +384,7 @@ Bool_t IsTrackable(TClonesArray *trackRef){
     if(!trR) continue;
     if(trR->DetectorId()!=0)continue;
     Double_t rPart = TMath::Sqrt(trR->X()*trR->X()+trR->Y()*trR->Y());
-    for(Int_t iLay=0;iLay<8;iLay++){
+    for(Int_t iLay=0;iLay<radii.GetSize();iLay++){
       if(TMath::Abs(rPart-radii.At(iLay))<0.01) isInLayer.AddAt(1,iLay);
     }
   }
