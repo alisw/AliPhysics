@@ -2,6 +2,12 @@ AliGenerator*  CreateGenerator();
 
 void fastGen(Int_t nev = 1, char* filename = "galice.root")
 {
+//  Load libraries
+  gSystem->Load("liblhapdf.so");
+  gSystem->Load("libpythia6.so");
+  gSystem->Load("libEGPythia6.so");
+  gSystem->Load("libAliPythia6.so");
+
 //  Runloader
     
     AliRunLoader* rl = AliRunLoader::Open("galice.root","FASTRUN","recreate");
@@ -82,7 +88,7 @@ AliGenerator*  CreateGenerator()
 //   vertex position and smearing 
     gener->SetVertexSmear(kPerEvent);
 //   structure function
-    gener->SetStrucFunc(kGRVHO);
+    gener->SetStrucFunc(kCTEQ6);
 //   charm, beauty, charm_unforced, beauty_unforced, jpsi, jpsi_chi, mb
     gener->SetProcess(kPyJets);
 //   Centre of mass energy 
