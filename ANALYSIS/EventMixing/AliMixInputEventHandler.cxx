@@ -128,6 +128,8 @@ Bool_t AliMixInputEventHandler::Notify(const char *path)
    // Notify(const char*path) is called for all mix input handlers
    //
    AliDebug(AliLog::kDebug + 5, Form("<- %s", path));
+   
+   Bool_t firstRun=(fMixIntupHandlerInfoTmp->GetChain()->GetEntries()<=0);
    // adds current file
    fMixIntupHandlerInfoTmp->AddTreeToChain(path);
    Int_t lastIndex = fMixIntupHandlerInfoTmp->GetChain()->GetListOfFiles()->GetEntries();
@@ -136,7 +138,7 @@ Bool_t AliMixInputEventHandler::Notify(const char *path)
    for (Int_t i = 0; i < fInputHandlers.GetEntries(); i++) {
       AliDebug(AliLog::kDebug + 5, Form("fInputHandlers[%d]", i));
       mixIHI = new AliMixInputHandlerInfo(fMixIntupHandlerInfoTmp->GetName(), fMixIntupHandlerInfoTmp->GetTitle());
-      mixIHI->PrepareEntry(che, -1, (AliInputEventHandler*)InputEventHandler(i), fAnalysisType);
+      if (firstRun) mixIHI->PrepareEntry(che, -1, (AliInputEventHandler*)InputEventHandler(i), fAnalysisType);
       AliDebug(AliLog::kDebug + 5, Form("chain[%d]->GetEntries() = %lld", i, mixIHI->GetChain()->GetEntries()));
       fMixTrees.Add(mixIHI);
    }

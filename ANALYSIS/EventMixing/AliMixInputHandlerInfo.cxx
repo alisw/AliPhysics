@@ -131,6 +131,7 @@ void AliMixInputHandlerInfo::PrepareEntry(TChainElement *te, Long64_t entry, Ali
          fChain = new TChain(te->GetName());
          fChain->AddFile(te->GetTitle());
          fChain->GetEntry(0);
+	 eh->Init(opt);
          eh->Init(fChain->GetTree(), opt);
       }
       fNeedNotify = kTRUE;
@@ -148,6 +149,7 @@ void AliMixInputHandlerInfo::PrepareEntry(TChainElement *te, Long64_t entry, Ali
          fChain = new TChain(te->GetName());
          fChain->AddFile(te->GetTitle());
          fChain->GetEntry(0);
+	 eh->Init(opt);
          eh->Init(fChain->GetTree(), opt);
          eh->Notify(te->GetTitle());
          fChain->GetEntry(entry);
