@@ -386,7 +386,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill(mask);
 
     if (mom >= 1.0 && mom <= 2.0 ) {
-      Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)kKaon);
+      Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kKaon);
       if (mask == 0) {
 	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-Fill"))->Fill(nsigma);
       } else if (mask == 1) {
@@ -688,13 +688,13 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   }
 
   // for Kaons PID we differentiate on Time Zero
-  T1HF *hnSigT0Fill = new TH1F("hNsigma_TOF_Kaon_T0-Fill","TOF n#sigma (Kaon) T0-FILL [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0Fill = new TH1F("hNsigma_TOF_Kaon_T0-Fill","TOF n#sigma (Kaon) T0-FILL [1-2. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0Fill);
-  T1HF *hnSigT0T0 = new TH1F("hNsigma_TOF_Kaon_T0-T0","TOF n#sigma (Kaon) T0-T0 [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0T0 = new TH1F("hNsigma_TOF_Kaon_T0-T0","TOF n#sigma (Kaon) T0-T0 [1-2. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0T0);
-  T1HF *hnSigT0TOF = new TH1F("hNsigma_TOF_Kaon_T0-TOF","TOF n#sigma (Kaon) T0-TOF [1.-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0TOF = new TH1F("hNsigma_TOF_Kaon_T0-TOF","TOF n#sigma (Kaon) T0-TOF [1.-2. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0TOF);
-  T1HF *hnSigT0Best = new TH1F("hNsigma_TOF_Kaon_T0-Best","TOF n#sigma (Kaon) T0-Best [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0Best = new TH1F("hNsigma_TOF_Kaon_T0-Best","TOF n#sigma (Kaon) T0-Best [1-2. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0Best);
 
 
