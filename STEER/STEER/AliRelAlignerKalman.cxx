@@ -608,7 +608,7 @@ Bool_t AliRelAlignerKalman::PredictMeasurement( TVectorD& pred, const TVectorD& 
   }
   else
   {
-      AliExternalTrackParam track(fPTrackParam1); //make a copy track
+      AliExternalTrackParam track(*fPTrackParam1); //make a copy track
       if (!MisalignTrack( &track, state )) return kFALSE; //predict what the measured track would be by applying misalignment
 
       const Double_t* oldparam = fPTrackParam1->GetParameter();
