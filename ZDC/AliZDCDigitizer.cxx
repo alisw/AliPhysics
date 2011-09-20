@@ -317,10 +317,10 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
       specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
       specNTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
       specPTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-      printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
+      /*printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
       " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
       " \t    TARG.:  #spectator n %d, #spectator p %d\n", 
-      impPar, specNProj, specPProj, specNTarg, specPTarg);
+      impPar, specNProj, specPProj, specNTarg, specPTarg);*/
     }
     
   }
@@ -332,13 +332,13 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
     Int_t freeSpecNTarg, freeSpecPTarg;
     Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
     SpectatorSignal(1, freeSpecNProj, pm);
-    printf("\t AliZDCDigitizer -> Adding signal for %d PROJ free spectator n",freeSpecNProj);
+//    printf("\t AliZDCDigitizer -> Adding signal for %d PROJ free spectator n",freeSpecNProj);
     SpectatorSignal(2, freeSpecPProj, pm);
-    printf(" and %d free spectator p\n",freeSpecPProj);
+//    printf(" and %d free spectator p\n",freeSpecPProj);
     SpectatorSignal(3, freeSpecNTarg, pm);
-    printf("\t AliZDCDigitizer -> Adding signal for %d TARG free spectator n",freeSpecNTarg);
+//    printf("\t AliZDCDigitizer -> Adding signal for %d TARG free spectator n",freeSpecNTarg);
     SpectatorSignal(4, freeSpecPTarg, pm);
-    printf(" and %d free spectator p\n\n",freeSpecPTarg);
+//    printf(" and %d free spectator p\n\n",freeSpecPTarg);
   }
 
 
