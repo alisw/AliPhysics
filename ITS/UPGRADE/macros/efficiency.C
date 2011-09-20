@@ -23,6 +23,7 @@
 #include "AliITSsegmentationUpgrade.h"
 #endif
 
+Int_t minNpoints=3;
 Bool_t IsTrackable(TClonesArray *trackRef);
 TArrayF radii;
 
@@ -170,6 +171,7 @@ void efficiency(char *title="",Bool_t isPrimary=kTRUE){
       AliESDtrack* track = esd->GetTrack(iTrack);
       if(track->Pt()<ptlimit) continue;      
       if(isPrimary && !stack->IsPhysicalPrimary(TMath::Abs(track->GetLabel()))) continue;
+      if(track->GetNcls(0)<minNpoints) continue; // selection compatible with IsSelected
       ntrack++;
       hPtRec->Fill(track->Pt());
       hEtaRec->Fill(track->Eta());
@@ -393,7 +395,7 @@ Bool_t IsTrackable(TClonesArray *trackRef){
     if(isInLayer.At(iLayer)) nTrackRef++;
   }
 
-  if(nTrackRef>2) isOk=kTRUE;
+  if(nTrackRef>=minNpoints) isOk=kTRUE;
   return isOk; 
 }
 
