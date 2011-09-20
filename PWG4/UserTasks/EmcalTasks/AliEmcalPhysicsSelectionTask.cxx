@@ -48,7 +48,8 @@ AliEmcalPhysicsSelectionTask::AliEmcalPhysicsSelectionTask(const char* opt) :
   }
   // Define input and output slots here
   DefineOutput(1, TList::Class());
-  fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDFMD.,AliESDVZERO.,AliESDZDC.,SPDVertex.,PrimaryVertex.";
+  fBranchNames = "ESD:AliESDRun.,AliESDHeader.,AliMultiplicity.,AliESDVZERO.,"
+                 "AliESDZDC.,SPDVertex.,PrimaryVertex.,TPCVertex.,Tracks,SPDPileupVertices";
   
   AliLog::SetClassDebugLevel("AliEmcalPhysicsSelectionTask", AliLog::kWarning);
 }
