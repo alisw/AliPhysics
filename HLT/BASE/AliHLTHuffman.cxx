@@ -243,6 +243,7 @@ const std::bitset<64>& AliHLTHuffman::Encode(const AliHLTUInt64_t v, AliHLTUInt6
 Bool_t AliHLTHuffman::Decode(std::bitset<64> bits, AliHLTUInt64_t& value) const {
 	// TODO: check decoding logic, righ now it is just as written
 	AliHLTHuffmanNode* currNode = fHuffTopNode;
+	if (!currNode) return kFALSE;
 	if (currNode->GetValue() >= 0) {
 		// handle case with just one node - also quite unlikely
 		value = currNode->GetValue();
