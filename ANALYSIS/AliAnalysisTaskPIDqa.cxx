@@ -388,13 +388,13 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     if (mom >= 1.0 && mom <= 2.0 ) {
       Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kKaon);
       if (mask == 0) {
-	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-Fill"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-Fill"))->Fill(nsigma);
       } else if (mask == 1) {
-	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-TOF"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-TOF"))->Fill(nsigma);
       } else if ( (mask == 2) || (mask == 4) || (mask == 6) ) {
-	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-T0"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-T0"))->Fill(nsigma);
       } else {
-	((TH1F*)fListQAtof->FindObject("hnSigma_TOF_Kaon_T0-Best"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-Best"))->Fill(nsigma);
       }
     }
 
@@ -696,7 +696,6 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   fListQAtof->Add(hnSigT0TOF);
   TH1F *hnSigT0Best = new TH1F("hNsigma_TOF_Kaon_T0-Best","TOF n#sigma (Kaon) T0-Best [1-2. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0Best);
-
 
   TH2F *hSig = new TH2F("hSigP_TOF",
                         "TOF signal vs. p;p [GeV]; TOF signal [arb. units]",
