@@ -125,7 +125,7 @@ public:
   /// print info
   virtual void Print(ostream& out, Option_t *option="") const;
 
-  /// safe statistics histograms to file
+  /// save data according to option
   virtual void SaveAs(const char *filename="",Option_t *option="") const;
 
   /// DataDeflaterSimple has deflater version 1
