@@ -766,7 +766,7 @@ void AliAnalysisTaskEMCALPi0PbPb::UserExec(Option_t *)
       TList *l = fEsdEv->GetList();
       if (clusattached) {
         fEsdClusters = dynamic_cast<TClonesArray*>(l->FindObject(fClusName));
-      } else if (overwrite) {
+      } else {
         fEsdClusters = dynamic_cast<TClonesArray*>(l->FindObject("CaloClusters"));
       }
     }
