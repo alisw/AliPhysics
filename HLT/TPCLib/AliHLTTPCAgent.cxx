@@ -118,6 +118,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     int iMaxSlice=35;
     int iMinPart=0;
     int iMaxPart=5;
+    TString arg;
     TString mergerInput;
     TString sinkRawData;
     TString sinkClusterInput;
@@ -127,7 +128,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     for (int slice=iMinSlice; slice<=iMaxSlice; slice++) {
       TString trackerInput;
       for (int part=iMinPart; part<=iMaxPart; part++) {
-	TString arg, publisher, cf;
+	TString publisher, cf;
 
 	// digit publisher components
 	publisher.Form("TPC-DP_%02d_%d", slice, part);
@@ -201,6 +202,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
     handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 1");
+    handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
@@ -223,6 +225,18 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-raw-data", "BlockFilter"   , sinkRawData.Data(), "");
 
     handler->CreateConfiguration("TPC-hwcfdata", "BlockFilter"   , compressorInput.Data(), "-datatype 'HWCLUST1' 'TPC '");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //
+    // dumps on the ALTRO digit level
+    //
+    // selected channel dump
+    arg.Form("-datafile selected-channel.dump -specfmt=_0x%%08x -subdir -blcknofmt= -idfmt=");
+    handler->CreateConfiguration("TPC-selected-altro-digits", "TPCDigitDump", "RCU-channelselect", arg.Data());
+
+    // raw channel dump
+    arg.Form("-datafile channel.dump -specfmt=_0x%%08x -subdir -blcknofmt= -idfmt=");
+    handler->CreateConfiguration("TPC-raw-altro-digits", "TPCDigitDump", "TPC-raw-data", arg.Data());
 
     /////////////////////////////////////////////////////////////////////////////////////
     //
