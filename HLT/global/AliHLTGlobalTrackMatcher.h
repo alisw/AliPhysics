@@ -33,7 +33,7 @@ public:
 
   //Main function, loops over tracks and calls appropriate functions to establish matches
   template <class T>
-  Int_t Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*>  &emcalClustersVector,  Double_t bz ); 
+  Int_t Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*>  &emcalClustersVector,  Double_t bz, Int_t Method ); 
 
 private:
   
@@ -45,7 +45,7 @@ private:
   Int_t MatchTrackToClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz); 
 
   template <class T>
-  Int_t MatchTrackToEMCalClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz); // EMCal Track-Matching from recoUtils::ExtrapolateTracktoCluster
+  Int_t MatchTrackToEMCalClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz, Int_t Method); // EMCal Track-Matching from recoUtils::ExtrapolateTracktoCluster
 
   //Add track Id to cluster's list of matching tracks
   Int_t AddTrackToCluster(Int_t tId, Int_t* clustersArray, Bool_t bestMatch, Int_t nMatches);
@@ -66,6 +66,9 @@ private:
   const Double_t fPhosRadius;          // Radial position of PHOS 
   const Double_t fEmcalRadius;         // Radial position of EMCAL
 
+  Float_t fStep; // Step for EMCal Extrapolation Calculation
+  Float_t fMass; // Mass for EMCal Extrapolation hipothesis
+
   AliHLTGlobalTrackMatcher(const AliHLTGlobalTrackMatcher & );
   AliHLTGlobalTrackMatcher & operator = (const AliHLTGlobalTrackMatcher &);
 
@@ -74,7 +77,8 @@ private:
 
 
 template <class T>
-Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*> &emcalClustersVector,  Double_t bz ) {
+Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phosClustersVector, vector<T*> &emcalClustersVector,  Double_t bz, Int_t Method ) {
+  //Method for extrapolation EMcal
   //See above for documentation
 
   Int_t nTracks = trackArray->GetEntriesFast();
@@ -106,15 +110,16 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
   for (int it = 0; it < nTracks; it++ ) {
     AliExternalTrackParam * track = static_cast<AliExternalTrackParam*>(trackArray->At(it));
 
-    if ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
-
+    if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
+        if(Method!=1&&Method!=2){
+	  HLTError("\n Method %d is not valid",Method);
+	  return 0; // No method defined
+	  }
+	MatchTrackToEMCalClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz,Method); //With Method
+	
+    } else if  ( IsTrackCloseToDetector(track, bz, fPhosMaxX, kFALSE, fPhosMaxZ, fPhosRadius ) ) {
       MatchTrackToClusters( track, phosClustersVector, nPhosClusters, bestMatchPhos, bz);
-
-    } else if ( IsTrackCloseToDetector(track, bz, fEmcalMaxX, kTRUE, fEmcalMaxZ, fEmcalRadius ) ) {
-
-       MatchTrackToEMCalClusters( track, emcalClustersVector, nEmcalClusters, bestMatchEmcal, bz);
     } 
-
   }   
     
   return 0;
@@ -122,58 +127,47 @@ Int_t AliHLTGlobalTrackMatcher::Match( TObjArray * trackArray, vector<T*>  &phos
 
 //MARCEL 
 template <class T>
-Int_t AliHLTGlobalTrackMatcher::MatchTrackToEMCalClusters( AliExternalTrackParam * track,  vector<T*> &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t  /*bz */) {
-  
+Int_t AliHLTGlobalTrackMatcher::MatchTrackToEMCalClusters( AliExternalTrackParam * track,  vector<T*> &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz, Int_t Method ) {
+
   //See header file for documentation
   Int_t iResult = 0;
- 
   Float_t clusterPosition[3];
-  //Double_t trackPosition[3];
   
   for(int ic = 0; ic < nClusters; ic++) {
     
-     T * cluster = clustersVector.at(ic);
-
-/* Comment:July 2011
-   The lines below correspond to the method for Track-matching from RecoUtils:ExtrapolatetoCluster()
-   In principle, the method ExtrapolateToCluster should be called directly from RecoUtils. The problems is that this method requires AliVCluster
-   which would have to be created inside the GlobalMatcher, since the information that this class obtains from the Cluster comes from the
-   data struct. In order to avoid the whole creation of a AliVCluster object, the code from RecoUtils
+    T * cluster = clustersVector.at(ic);
+ 
+    if(cluster->E()<1.)continue;  
+/* The lines below correspond to the method for Track-matching from RecoUtils:ExtrapolatetoCluster
+   In principle, the method ExtrapolateToCluster should be called directly from RecoUtils. The problems is that This method requires AliVCluster
+   which would have to be created inside the GlobalMatcher, since the information this class obtains from the Cluster comes from the
+   data struct with the cluster information. In order to avoid the whole creation of a AliVCluster object, the code from RecoUtils
    was brought here in the same way it is written there.
 */ 
-    if(cluster->E()<1.)continue;  
-    if(track->Pt()<1.)continue;
-
-    // This is a rough cut in acceptance, since it is pointless to try matching with tracks far from the EMCal
-    if(track->Eta()<-.9)continue;
-    if(track->Eta()>.9)continue;
-    if(track->Phi()>4.)continue; 
-    if(track->Phi()<.9)continue;
-    
     cluster->GetPosition(clusterPosition);
-    TVector3 VClsPos(clusterPosition[0], clusterPosition[1], clusterPosition[2]); //MARCEL  
+    TVector3 vec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
+    if(clusterPosition[1]<0.)	continue;  
+    if(TMath::Abs(track->Eta()-vec.Eta())>0.3)	continue; 
+    
     AliExternalTrackParam *trkParam = new AliExternalTrackParam(*track);//Retrieve the starting point every time before the extrapolation
     Double_t trkPos[3];
-    TVector3 vec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
     Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
     vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
     trkParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
-    Float_t fMass=0.139;
-    Float_t fStep=100.;
-    if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kFALSE, 0.8, -1)) return kFALSE; 
+    if(1==Method&&!trkParam->GetXYZAt(vec.X(), bz, trkPos))		continue; // Simpler extrapolation  
+    if(2==Method){
+      if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kFALSE, 0.8, -1))	continue;  
+      trkParam->GetXYZ(trkPos); //Get the extrapolated global position
+      }
 
-    trkParam->GetXYZ(trkPos); //Get the extrapolated global position
     TVector3 clsPosVec(clusterPosition[0],clusterPosition[1],clusterPosition[2]);
     TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-    Float_t clsPhi = (Float_t)clsPosVec.Phi();
-    if(clsPhi<0) clsPhi+=2*TMath::Pi();
-    Float_t trkPhi = (Float_t)trkPosVec.Phi();
-    if(trkPhi<0) trkPhi+=2*TMath::Pi();
-    Double_t tmpPhi = clsPhi-trkPhi;  // track cluster matching
-    Double_t tmpEta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
-    Double_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);//MARCEL
-    Double_t match = tmpR;
 
+    // track cluster matching
+    Double_t tmpPhi = clsPosVec.DeltaPhi(trkPosVec); // tmpPhi is between -pi and pi
+    Double_t tmpEta = clsPosVec.Eta()-trkPosVec.Eta();  // track cluster matching
+    Double_t match=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);//MARCEL
+ 
     if( match > fMatchDistanceEMCal )continue;
     
     if (match < bestMatch[ic]) {
@@ -190,8 +184,6 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToEMCalClusters( AliExternalTrackParam
   
   return iResult;
 }
-//end of MARCEL TEST
-
 
 template <class T>
 Int_t AliHLTGlobalTrackMatcher::MatchTrackToClusters( AliExternalTrackParam * track, vector<T*>  &clustersVector, Int_t nClusters, Float_t * bestMatch, Double_t bz) {

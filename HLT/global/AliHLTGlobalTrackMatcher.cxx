@@ -39,7 +39,9 @@ AliHLTGlobalTrackMatcher::AliHLTGlobalTrackMatcher() :
   fMatchDistance(0),
   fMatchDistanceEMCal(0),
   fPhosRadius(460),
-  fEmcalRadius(448)
+  fEmcalRadius(448),
+  fStep(100.),
+  fMass(0.139)
 {
   //Default constructor
   DoInit();
@@ -58,7 +60,7 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
 
 
   fMatchDistance = 40*40;
-  fMatchDistanceEMCal = 0.1; // EMCal deltaR(EtaxPhi) cut. It must be refined inside AliESD analysis. 
+  fMatchDistanceEMCal = 0.1; // EMCal EtaxPhi cut 
 
   fPhosMaxX = 355 + TMath::Sqrt(fMatchDistance) + 30;
   fPhosMaxZ = 64.+ TMath::Sqrt(fMatchDistance) + 30;
@@ -66,6 +68,8 @@ void AliHLTGlobalTrackMatcher::DoInit( ) {
   fEmcalMaxZ = 350 + TMath::Sqrt(fMatchDistance) + 30;
   fEmcalMaxX = 3000;
 
+  fStep=100.;// Step for EMCAL extrapolation
+  fMass=0.139;// Mass for EMCAL extrapolation hipothesis
 
 }
 
@@ -105,36 +109,28 @@ Int_t AliHLTGlobalTrackMatcher::AddTrackToCluster(Int_t tId, Int_t* matchArray, 
 
 };
 
-
 Bool_t AliHLTGlobalTrackMatcher::IsTrackCloseToDetector(AliExternalTrackParam * track, Double_t bz, Double_t fMaxX, Bool_t ySign, Double_t fMaxZ, Double_t dRadius) {
   //See header file for documentation
   
-  //Get track instersection with cylinder defined by detector radius
-  Double_t trackPosition[3] = {0, 0, 0};
-  if (! (track->GetXYZAt(dRadius, bz, trackPosition)) ) {
-    return kFALSE;
-  }
-
-  //HLTInfo("Track coordinate at R = PHOS radius %f %f %f", trackPosition[0],trackPosition[1],trackPosition[2]);
-
-
   //Positive y for EMCAL, negative for PHOS
   if(ySign) {
-    if (trackPosition[1] < 0 ) 
-      return kFALSE;
+    //EMCAL
+    if	(track->Pt()<1.)	return kFALSE;
+    if	(track->Eta()>.8||track->Eta()<-.8)	return kFALSE;
+    if	(track->Phi()>4.||track->Phi()<1.)	return kFALSE;   
   } else {
+    //PHOS
+      //Get track instersection with cylinder defined by detector radius
+    Double_t trackPosition[3] = {0, 0, 0};
+    if (! (track->GetXYZAt(dRadius, bz, trackPosition)) ) {
+      return kFALSE;
+    }
     if (trackPosition[1] > 0 ) 
       return kFALSE;
+    if ( (TMath::Abs(trackPosition[2]) > fMaxZ) ) 
+      return kFALSE;
+    if (TMath::Abs(trackPosition[0]) > fMaxX )
+      return kFALSE;
   }
-  
-  
-  if ( (TMath::Abs(trackPosition[2]) > fMaxZ) ) 
-    return kFALSE;
-  
-  if (TMath::Abs(trackPosition[0]) > fMaxX )
-    return kFALSE;
-
-  // HLTInfo("kTRUE");
-  
   return kTRUE;  
 }

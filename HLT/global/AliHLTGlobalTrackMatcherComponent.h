@@ -11,7 +11,7 @@
 
 #ifndef ALIHLTGLOBALTRACKMATCHERCOMPONENT_H
 #define ALIHLTGLOBALTRACKMATCHERCOMPONENT_H
-
+#include "AliHLTComponentBenchmark.h"
 
 class AliHLTProcessor;
 class AliHLTGlobalTrackMatcher;
@@ -43,6 +43,9 @@ public:
   /** interface function, see AliHLTComponent for description */
   AliHLTComponent* Spawn();
 
+    ///Inherited from AliHLTComponent: Get list of OCDB objects
+  void GetOCDBObjectDescription( TMap* const targetMap); //Methods
+  
 protected:
 
   // Protected functions to implement AliHLTComponent's interface.
@@ -54,11 +57,26 @@ protected:
   /** interface function, see AliHLTComponent for description */
   int DoDeinit();
   /** interface function, see AliHLTComponent for description */
+  
+  //FOR METHOD extrapolation:
+    /// inherited from AliHLTComponent: handle re-configuration event
+  int Reconfigure(const char* cdbEntry, const char* chainId);
+
+  /// inherited from AliHLTComponent, scan one argument and
+  /// its parameters
+  int ScanConfigurationArgument(int argc, const char** argv);
+  //FOR METHOD
+  
+    /// the default configuration entry for this component
+  const char* fOCDBEntry; // Method for TrackMatcher
+  
   int DoEvent( const AliHLTComponentEventData& /*evtData*/, AliHLTComponentTriggerData& trigData );
 
   //int Reconfigure(const char* cdbEntry, const char* chainId);
 
   using AliHLTProcessor::DoEvent;
+  
+  Int_t fMethod; //TString for method choice for extrapolation
   
 private:
   /** copy constructor prohibited */
@@ -82,7 +100,7 @@ private:
   AliHLTCaloClusterReader * fClusterReader;   //Instance of helper class to read calorimeter structs
 
   TObjArray * fTrackArray;
-  
+
   ClassDef(AliHLTGlobalTrackMatcherComponent, 0);
 
 };

@@ -35,6 +35,9 @@ using namespace std;
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "TGeoManager.h"
+#include "TRefArray.h"
+#include "TString.h"
+#include "TMap.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 AliHLTGlobalTrackMatcherComponent gAliHLTGlobalTrackMatcherComponent;
@@ -42,6 +45,8 @@ AliHLTGlobalTrackMatcherComponent gAliHLTGlobalTrackMatcherComponent;
 ClassImp(AliHLTGlobalTrackMatcherComponent);
 
 AliHLTGlobalTrackMatcherComponent::AliHLTGlobalTrackMatcherComponent() :
+  fOCDBEntry("HLT/ConfigHLT/GlobalTrackMatcher"), //TODO
+  fMethod(1), //Method 1(PbPb) 2(pp)
   fTrackMatcher(NULL),
   fNEvents(0),
   fBz(-9999999),
@@ -108,10 +113,20 @@ AliHLTComponent* AliHLTGlobalTrackMatcherComponent::Spawn()
 
 int AliHLTGlobalTrackMatcherComponent::DoInit( int argc, const char** argv ) 
 {
- 
+  Int_t iResult=ConfigureFromCDBTObjString(fOCDBEntry); //MARCEL
+    // configure from the command line parameters if specified
+  if (iResult>=0 && argc>0) {
+    iResult=ConfigureFromArgumentString(argc, argv);
+    HLTImportant("Extrapolation Method from argument string:  %d", fMethod);   
+  } else if ( iResult >=0 ) {
+    HLTImportant("Extrapolation Method from OCDB database entry:  %d", fMethod);   
+  } 
+  
+  
   //BALLE TODO, use command line values to initialise matching vaules
  // init
-  Int_t iResult = argc;
+//   Int_t iResult = argc;
+//   iResult = argc;
   
   if(argc > 0){
     HLTWarning("Ignoring all configuration args, starting with: argv %s", argv[0]);
@@ -134,7 +149,7 @@ int AliHLTGlobalTrackMatcherComponent::DoInit( int argc, const char** argv )
     fTrackArray = new TObjArray();
     fTrackArray->SetOwner(kFALSE);
   }
-  
+
   //*** GeoManager ***
    AliCDBPath path("GRP","Geometry","Data");
    AliCDBEntry *pEntry = AliCDBManager::Instance()->Get(path);
@@ -147,7 +162,7 @@ int AliHLTGlobalTrackMatcherComponent::DoInit( int argc, const char** argv )
       HLTError("can not fetch object \"%s\" from CDB",path.GetPath().Data());
    }
    // ****
-  
+
 
   return iResult; 
 }
@@ -179,13 +194,16 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
   
   if ( GetFirstInputBlock( kAliHLTDataTypeSOR ) || GetFirstInputBlock( kAliHLTDataTypeEOR ) )
     return 0;
-
+  
+  if(!IsDataEvent()){//marcel test
+    return 0;//marcel test
+  }//marcel test
 
   fNEvents++;
 
   //Loop over TPC blocks
   //BALLE TODO check that the tracks in the TObjArray are fine over several blocks
-
+  
    fTrackArray->Clear();
    vector<AliHLTGlobalBarrelTrack> tracks;
    
@@ -204,7 +222,7 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
      //PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
 
    }
-
+    
    AliHLTCaloClusterDataStruct * caloClusterStruct;
    //Get the PHOS Clusters
    vector<AliHLTCaloClusterDataStruct*> phosClustersVector;
@@ -222,13 +240,13 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
        }
      }
    }
-   
 
-   //Get the EMCAL Clusters
+    //Get the EMCAL Clusters
    vector<AliHLTCaloClusterDataStruct*> emcalClustersVector;
    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginEMCAL); pBlock!=NULL; pBlock=GetNextInputBlock()) {
      AliHLTCaloClusterHeaderStruct *caloClusterHeader = reinterpret_cast<AliHLTCaloClusterHeaderStruct*>(pBlock->fPtr);
      fClusterReader->SetMemory(caloClusterHeader);
+//           HLTInfo("\n EMCAL: estou aqui");//marcel
      if ( (caloClusterHeader->fNClusters) < 0) {
        HLTWarning("Event has negative number of clusters: %d! Very bad for vector resizing", (Int_t) (caloClusterHeader->fNClusters));
        continue;
@@ -239,17 +257,36 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
        }
      }
    }
-   
-   iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, emcalClustersVector, fBz);
+
+      iResult = fTrackMatcher->Match(fTrackArray, phosClustersVector, emcalClustersVector, fBz,fMethod); //With Method String
+
 
    //Push the blocks on
    for (const AliHLTComponentBlockData* pBlock=GetFirstInputBlock(kAliHLTDataTypeCaloCluster | kAliHLTDataOriginAny); pBlock!=NULL; pBlock=GetNextInputBlock()) {
      PushBack(pBlock->fPtr, pBlock->fSize, pBlock->fDataType, pBlock->fSpecification);
-   }
-
-   fTrackArray->Clear();
+    }
    
+   fTrackArray->Clear();
+
    return iResult;
+}
+
+int AliHLTGlobalTrackMatcherComponent::ScanConfigurationArgument(int argc, const char** argv) {
+  // see header file for class documentation
+  if (argc<=0) return 0;
+  int i=0;
+  TString argument=argv[i];
+
+  // -maxpt
+  if (argument.CompareTo("-method")==0) {
+    if (++i>=argc) return -EPROTO;
+    argument=argv[i];
+    fMethod=argument.Atof(); // 
+    return 2;
+  }    
+
+// unknown argument
+  return -EINVAL;
 }
 
 // int AliHLTGlobalTrackMatcherComponent::Configure(const char* arguments)
@@ -263,3 +300,22 @@ int AliHLTGlobalTrackMatcherComponent::DoEvent(const AliHLTComponentEventData& /
 //   Int_t iResult = 1;
 //   return iResult;
 // }
+
+int AliHLTGlobalTrackMatcherComponent::Reconfigure(const char* cdbEntry, const char* /*chainId*/) {
+  // configure from the specified antry or the default one
+  const char* entry=cdbEntry;
+  if (!entry || entry[0]==0) entry=fOCDBEntry;
+
+  return ConfigureFromCDBTObjString(entry);
+}
+
+void AliHLTGlobalTrackMatcherComponent::GetOCDBObjectDescription( TMap* const targetMap) {
+  
+  // Get a list of OCDB object description.
+  if (!targetMap) return;
+  targetMap->Add(new TObjString(fOCDBEntry),
+		 new TObjString(Form("Track-Matcher Method OCDB object") ) 
+		 );
+}
+
+
