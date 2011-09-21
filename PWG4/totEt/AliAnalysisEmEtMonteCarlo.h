@@ -57,755 +57,755 @@ protected:
 protected:
 
 	Double_t fResCut; // b(fm), for Hijing; 0 otherwise
-	Double_t fPrimtotET, fPrimAcctotET, fPrimRectotET, fPrimRectotETDep;//Marcelo please add comment
+	Double_t fPrimtotET, fPrimAcctotET, fPrimRectotET, fPrimRectotETDep;//Primary particles ET
 
-	Double_t fElectrontotET, fElectronAcctotET, fElectronRectotET;//Marcelo please add comment
-	Double_t fConvElectrontotET, fConvElectronAcctotET, fConvElectronRectotET, fScatElectrontotET, fScatElectronAcctotET, fScatElectronRectotET;//Marcelo please add comment
-	Double_t fTotElectrontotET, fTotElectronAcctotET, fTotElectronRectotET;//Marcelo please add comment
+	Double_t fElectrontotET, fElectronAcctotET, fElectronRectotET;//Electron ET
+	Double_t fConvElectrontotET, fConvElectronAcctotET, fConvElectronRectotET, fScatElectrontotET, fScatElectronAcctotET, fScatElectronRectotET;//Secondary electrons ET
+	Double_t fTotElectrontotET, fTotElectronAcctotET, fTotElectronRectotET;//Total Electrons ET
 
-	Double_t fGammatotET, fGammaAcctotET, fGammaRectotET;//Marcelo please add comment
-	Double_t fAnnihGammatotET, fAnnihGammaAcctotET, fAnnihGammaRectotET, fScatGammatotET, fScatGammaAcctotET, fScatGammaRectotET;//Marcelo please add comment
-	Double_t fTotGammatotET, fTotGammaAcctotET, fTotGammaRectotET;//Marcelo please add comment
-	Double_t fConvGammatotET, fNonConvGammatotET, fConvGammaAcctotET, fNonConvGammaAcctotET, fNPPPi0GammatotET, fNPPPi0GammaRectotET;//Marcelo please add comment
+	Double_t fGammatotET, fGammaAcctotET, fGammaRectotET;//Gamma event ET
+	Double_t fAnnihGammatotET, fAnnihGammaAcctotET, fAnnihGammaRectotET, fScatGammatotET, fScatGammaAcctotET, fScatGammaRectotET;//Secondary gamma ET
+	Double_t fTotGammatotET, fTotGammaAcctotET, fTotGammaRectotET;//Total gamma ET
+	Double_t fConvGammatotET, fNonConvGammatotET, fConvGammaAcctotET, fNonConvGammaAcctotET, fNPPPi0GammatotET, fNPPPi0GammaRectotET;//Conversion and pi0 gamma ET
 
-	Double_t fTotEMtotET, fTotEMAcctotET, fTotEMRectotET;//Marcelo please add comment
+	Double_t fTotEMtotET, fTotEMAcctotET, fTotEMRectotET;//Total EM ET
 
-	Double_t fNPPElectrontotET, fNPPElectronRectotET, fNPPGammatotET, fNPPGammaRectotET;//Marcelo please add comment
-	Double_t fTotNPPEMtotET, fTotNPPEMRectotET;//Marcelo please add comment
+	Double_t fNPPElectrontotET, fNPPElectronRectotET, fNPPGammatotET, fNPPGammaRectotET;//Non-physical primary electron ET
+	Double_t fTotNPPEMtotET, fTotNPPEMRectotET;//Total Non-physical primary electron ET
 
-	Double_t fMuontotET, fPiontotET, fKaontotET, fProtontotET;//Marcelo please add comment
-	Double_t fMuonAcctotET, fPionAcctotET, fKaonAcctotET, fProtonAcctotET;//Marcelo please add comment
-	Double_t fMuonRectotET, fMuonRectotETDep, fPionRectotET, fPionRectotETDep, fKaonRectotET, fKaonRectotETDep, fProtonRectotET, fProtonRectotETDep;//Marcelo please add comment
-	Double_t fMuonMatchtotET, fMuonMatchtotETDep, fPionMatchtotET, fPionMatchtotETDep, fKaonMatchtotET, fKaonMatchtotETDep, fProtonMatchtotET, fProtonMatchtotETDep;//Marcelo please add comment
-	Double_t fTotChargedtotET, fTotChargedAcctotET, fTotChargedRectotET, fTotChargedRectotETDep, fTotChargedMatchtotET, fTotChargedMatchtotETDep;//Marcelo please add comment
+	Double_t fMuontotET, fPiontotET, fKaontotET, fProtontotET;//Charged particles ET
+	Double_t fMuonAcctotET, fPionAcctotET, fKaonAcctotET, fProtonAcctotET;//Charged particles acceptance ET
+	Double_t fMuonRectotET, fMuonRectotETDep, fPionRectotET, fPionRectotETDep, fKaonRectotET, fKaonRectotETDep, fProtonRectotET, fProtonRectotETDep;//Charged particles reconstructed ET
+	Double_t fMuonMatchtotET, fMuonMatchtotETDep, fPionMatchtotET, fPionMatchtotETDep, fKaonMatchtotET, fKaonMatchtotETDep, fProtonMatchtotET, fProtonMatchtotETDep;//Charged particles track matched ET
+	Double_t fTotChargedtotET, fTotChargedAcctotET, fTotChargedRectotET, fTotChargedRectotETDep, fTotChargedMatchtotET, fTotChargedMatchtotETDep;//Total charged particles ET
 
-	Double_t fNeutrontotET, fNeutronAcctotET, fNeutronRectotET, fNeutronRectotETDep;//Marcelo please add comment
-	Double_t fK0totET, fK0RectotET, fK0RectotETDep, fLambdatotET, fLambdaRectotET, fLambdaRectotETDep;//Marcelo please add comment
-	Double_t fTotNeutraltotET, fTotNeutralRectotET, fTotNeutralRectotETDep;//Marcelo please add comment
+	Double_t fNeutrontotET, fNeutronAcctotET, fNeutronRectotET, fNeutronRectotETDep;//Neutrons ET
+	Double_t fK0totET, fK0RectotET, fK0RectotETDep, fLambdatotET, fLambdaRectotET, fLambdaRectotETDep;//K0 and Lambda ET
+	Double_t fTotNeutraltotET, fTotNeutralRectotET, fTotNeutralRectotETDep;//Neutral particles ET
 
-	Double_t fTotaltotET, fTotalAcctotET, fTotalRectotET, fTotalRectotETDep;//Marcelo please add comment
+	Double_t fTotaltotET, fTotalAcctotET, fTotalRectotET, fTotalRectotETDep;//Total ET
 	
-	AliEMCALGeometry *fGeoUt;//Marcelo please add comment
+	AliEMCALGeometry *fGeoUt;//EMCal geometry object
 
 	// *******************
 	// primaries ET
 	// *******************
-	TH2F *fHistPrimEtaEET;//Marcelo please add comment 
-	TH2F *fHistPrimEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPrimEtaET;//Marcelo please add comment
-	TH1F *fHistPrimtotET;//Marcelo please add comment
+	TH2F *fHistPrimEtaEET;//total ET - Eta vs E 
+	TH2F *fHistPrimEtaPtET;//total ET - Eta vs pt 
+	TH2F *fHistPrimEtaET;//total ET - Eta
+	TH1F *fHistPrimtotET;//total ET distribution
 	
-	TH2F *fHistPrimAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistPrimAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPrimAccEtaET;//Marcelo please add comment 
-	TH1F *fHistPrimAcctotET;//Marcelo please add comment
+	TH2F *fHistPrimAccEtaEET;//acceptance ET - Eta vs E 
+	TH2F *fHistPrimAccEtaPtET;//acceptance ET - Eta vs pt 
+	TH2F *fHistPrimAccEtaET;//acceptance ET - Eta
+	TH1F *fHistPrimAcctotET;//acceptance ET distribution
 	
-	TH2F *fHistPrimRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistPrimRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPrimRecEtaET;//Marcelo please add comment 
-	TH1F *fHistPrimRectotET;//Marcelo please add comment
+	TH2F *fHistPrimRecEtaEET;//reconstructed ET - Eta vs E 
+	TH2F *fHistPrimRecEtaPtET;//reconstructed ET - Eta vs pt 
+	TH2F *fHistPrimRecEtaET;//reconstructed ET - Eta
+	TH1F *fHistPrimRectotET;//reconstructed ET distribution
 
-	TH2F *fHistPrimRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistPrimRecEtaPtETDep;//Marcelo please add comment 
-	TH2F *fHistPrimRecEtaETDep;//Marcelo please add comment 
-	TH1F *fHistPrimRectotETDep;//Marcelo please add comment
+	TH2F *fHistPrimRecEtaEDepETDep;//deposited ET - Eta vs E deposited
+	TH2F *fHistPrimRecEtaPtETDep;//deposited ET - Eta vs pt 
+	TH2F *fHistPrimRecEtaETDep;//deposited ET - Eta 
+	TH1F *fHistPrimRectotETDep;//deposited ET distribution
 	
 	// *******************
 	// electron ET
 	// *******************
-	TH2F *fHistElectronEtaEET;//Marcelo please add comment 
-	TH2F *fHistElectronEtaPtET;//Marcelo please add comment 
-	TH2F *fHistElectronEtaET;//Marcelo please add comment 
-	TH2F *fHistElectronEtaE;//Marcelo please add comment 
-	TH2F *fHistElectronEtaPt;//Marcelo please add comment 
-	TH1F *fHistElectrontotET;//Marcelo please add comment 
+	TH2F *fHistElectronEtaEET;// ET - Eta vs E 
+	TH2F *fHistElectronEtaPtET;//ET - Eta vs pt
+	TH2F *fHistElectronEtaET;// ET - Eta 
+	TH2F *fHistElectronEtaE;// multiplicity - Eta vs E
+	TH2F *fHistElectronEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistElectrontotET;// total ET distribution 
 
-	TH2F *fHistConvElectronEtaEET;//Marcelo please add comment  
-	TH2F *fHistConvElectronEtaPtET;//Marcelo please add comment  
-	TH2F *fHistConvElectronEtaET;//Marcelo please add comment  
-	TH2F *fHistConvElectronEtaE;//Marcelo please add comment  
-	TH2F *fHistConvElectronEtaPt;//Marcelo please add comment  
-	TH1F *fHistConvElectrontotET;//Marcelo please add comment  
+	TH2F *fHistConvElectronEtaEET;//ET - Eta vs E   
+	TH2F *fHistConvElectronEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistConvElectronEtaET;//  ET - Eta
+	TH2F *fHistConvElectronEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistConvElectronEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistConvElectrontotET;// total ET distribution 
 
-	TH2F *fHistScatElectronEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatElectronEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatElectronEtaET;//Marcelo please add comment  
-	TH2F *fHistScatElectronEtaE;//Marcelo please add comment  
-	TH2F *fHistScatElectronEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatElectrontotET;//Marcelo please add comment  
+	TH2F *fHistScatElectronEtaEET;//ET - Eta vs E  
+	TH2F *fHistScatElectronEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistScatElectronEtaET;//  ET - Eta
+	TH2F *fHistScatElectronEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatElectronEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatElectrontotET;//  total ET distribution
 	
 	// *******************
 	// total electron ET
 	// *******************
-	TH1F *fHistTotElectrontotET;//Marcelo please add comment
+	TH1F *fHistTotElectrontotET;//total ET distribution
 	
 	// *******************
 	// gamma ET
 	// *******************
-	TH2F *fHistGammaEtaEET;//Marcelo please add comment  
-	TH2F *fHistGammaEtaPtET;//Marcelo please add comment  
-	TH2F *fHistGammaEtaET;//Marcelo please add comment  
-	TH2F *fHistGammaEtaE;//Marcelo please add comment  
-	TH2F *fHistGammaEtaPt;//Marcelo please add comment  
-	TH1F *fHistGammatotET;//Marcelo please add comment  
+	TH2F *fHistGammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistGammaEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistGammaEtaET;//  ET - Eta
+	TH2F *fHistGammaEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistGammaEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistGammatotET;//  total ET distribution
 	
-	TH2F *fHistAnnihGammaEtaEET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaEtaPtET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaEtaET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaEtaE;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaEtaPt;//Marcelo please add comment  
-	TH1F *fHistAnnihGammatotET;//Marcelo please add comment  
+	TH2F *fHistAnnihGammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistAnnihGammaEtaPtET;//ET - Eta vs pt
+	TH2F *fHistAnnihGammaEtaET;//  ET - Eta
+	TH2F *fHistAnnihGammaEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistAnnihGammaEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistAnnihGammatotET;//  total ET distribution
 
-	TH2F *fHistScatGammaEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatGammaEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatGammaEtaET;//Marcelo please add comment  
-	TH2F *fHistScatGammaEtaE;//Marcelo please add comment  
-	TH2F *fHistScatGammaEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatGammatotET;//Marcelo please add comment  
+	TH2F *fHistScatGammaEtaEET;//ET - Eta vs E   
+	TH2F *fHistScatGammaEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistScatGammaEtaET;//  ET - Eta
+	TH2F *fHistScatGammaEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatGammaEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatGammatotET;//  total ET distribution
 
-	TH2F *fHistConvGammaEtaEET;//Marcelo please add comment  
-	TH2F *fHistConvGammaEtaPtET;//Marcelo please add comment  
-	TH2F *fHistConvGammaEtaET;//Marcelo please add comment  
-	TH2F *fHistConvGammaEtaE;//Marcelo please add comment  
-	TH2F *fHistConvGammaEtaPt;//Marcelo please add comment  
-	TH1F *fHistConvGammatotET;//Marcelo please add comment  
+	TH2F *fHistConvGammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistConvGammaEtaPtET;//ET - Eta vs pt
+	TH2F *fHistConvGammaEtaET;//  ET - Eta
+	TH2F *fHistConvGammaEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistConvGammaEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistConvGammatotET;//  total ET distribution
 	
-	TH2F *fHistNonConvGammaEtaEET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaEtaPtET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaEtaET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaEtaE;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaEtaPt;//Marcelo please add comment  
-	TH1F *fHistNonConvGammatotET;//Marcelo please add comment  
+	TH2F *fHistNonConvGammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistNonConvGammaEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNonConvGammaEtaET;//  ET - Eta
+	TH2F *fHistNonConvGammaEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistNonConvGammaEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistNonConvGammatotET;//  total ET distribution
 	
 	// *******************
 	// total gamma ET
 	// *******************
-	TH1F *fHistTotGammatotET;//Marcelo please add comment
+	TH1F *fHistTotGammatotET;//total ET distribution
 
 	// *******************
 	// total electromagnetic ET
 	// *******************
-	TH1F *fHistTotEMtotET;//Marcelo please add comment
+	TH1F *fHistTotEMtotET;//total ET distribution
 
 	// non-primary electromagnetic ET
-	TH2F *fHistNPPElectronEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPElectronEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPElectrontotET;//Marcelo please add comment 
+	TH2F *fHistNPPElectronEtaEET;//ET - Eta vs E 
+	TH2F *fHistNPPElectronEtaPtET;//ET - Eta vs pt
+	TH2F *fHistNPPElectronEtaET;// ET - Eta
+	TH2F *fHistNPPElectronEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPElectronEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPElectrontotET;// total ET distribution
 
-	TH2F *fHistNPPGammaEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPGammaEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPGammatotET;//Marcelo please add comment 
+	TH2F *fHistNPPGammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPGammaEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPGammaEtaET;// ET - Eta
+	TH2F *fHistNPPGammaEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPGammaEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPGammatotET;// total ET distribution
 
-	TH1F *fHistTotNPPEMtotET;//Marcelo please add comment
+	TH1F *fHistTotNPPEMtotET;//total ET distribution
 
-	TH2F *fHistNPPPi0GammaEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPPi0GammatotET;//Marcelo please add comment 
+	TH2F *fHistNPPPi0GammaEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPPi0GammaEtaPtET;//ET - Eta vs pt
+	TH2F *fHistNPPPi0GammaEtaET;// ET - Eta
+	TH2F *fHistNPPPi0GammaEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPPi0GammaEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPPi0GammatotET;// total ET distribution
 		
 	// *******************
 	// electron ET inside EMCal acceptance
 	// *******************
-	TH2F *fHistElectronAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistElectronAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistElectronAccEtaET;//Marcelo please add comment 
-	TH2F *fHistElectronAccEtaE;//Marcelo please add comment 
-	TH2F *fHistElectronAccEtaPt;//Marcelo please add comment 
-	TH1F *fHistElectronAcctotET;//Marcelo please add comment 
+	TH2F *fHistElectronAccEtaEET;//ET - Eta vs E  
+	TH2F *fHistElectronAccEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistElectronAccEtaET;// ET - Eta
+	TH2F *fHistElectronAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistElectronAccEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistElectronAcctotET;// total ET distribution
 	
-	TH2F *fHistConvElectronAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistConvElectronAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistConvElectronAccEtaET;//Marcelo please add comment  
-	TH2F *fHistConvElectronAccEtaE;//Marcelo please add comment  
-	TH2F *fHistConvElectronAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistConvElectronAcctotET;//Marcelo please add comment  
+	TH2F *fHistConvElectronAccEtaEET;//ET - Eta vs E   
+	TH2F *fHistConvElectronAccEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistConvElectronAccEtaET;//  ET - Eta
+	TH2F *fHistConvElectronAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistConvElectronAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistConvElectronAcctotET;//  total ET distribution
 	
-	TH2F *fHistScatElectronAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatElectronAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatElectronAccEtaET;//Marcelo please add comment  
-	TH2F *fHistScatElectronAccEtaE;//Marcelo please add comment  
-	TH2F *fHistScatElectronAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatElectronAcctotET;//Marcelo please add comment  
+	TH2F *fHistScatElectronAccEtaEET;//ET - Eta vs E   
+	TH2F *fHistScatElectronAccEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistScatElectronAccEtaET;//  ET - Eta
+	TH2F *fHistScatElectronAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatElectronAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatElectronAcctotET;//  total ET distribution
 	
 	// *******************
 	// total electron ET inside EMCal acceptance
 	// *******************
-	TH1F *fHistTotElectronAcctotET;//Marcelo please add comment
+	TH1F *fHistTotElectronAcctotET;//total ET distribution
 
 	// *******************
 	// gamma ET inside EMCal acceptance
 	// *******************
-	TH2F *fHistGammaAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistGammaAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistGammaAccEtaET;//Marcelo please add comment  
-	TH2F *fHistGammaAccEtaE;//Marcelo please add comment  
-	TH2F *fHistGammaAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistGammaAcctotET;//Marcelo please add comment  
+	TH2F *fHistGammaAccEtaEET;//ET - Eta vs E   
+	TH2F *fHistGammaAccEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistGammaAccEtaET;//  ET - Eta
+	TH2F *fHistGammaAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistGammaAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistGammaAcctotET;//  total ET distribution
 	
-	TH2F *fHistAnnihGammaAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaAccEtaET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaAccEtaE;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistAnnihGammaAcctotET;//Marcelo please add comment  
+	TH2F *fHistAnnihGammaAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistAnnihGammaAccEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistAnnihGammaAccEtaET;//  ET - Eta
+	TH2F *fHistAnnihGammaAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistAnnihGammaAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistAnnihGammaAcctotET;//  total ET distribution
 	
-	TH2F *fHistScatGammaAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatGammaAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatGammaAccEtaET;//Marcelo please add comment  
-	TH2F *fHistScatGammaAccEtaE;//Marcelo please add comment  
-	TH2F *fHistScatGammaAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatGammaAcctotET;//Marcelo please add comment  
+	TH2F *fHistScatGammaAccEtaEET;//ET - Eta vs E  
+	TH2F *fHistScatGammaAccEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistScatGammaAccEtaET;//  ET - Eta
+	TH2F *fHistScatGammaAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatGammaAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatGammaAcctotET;//  total ET distribution
 	
-	TH2F *fHistConvGammaAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistConvGammaAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistConvGammaAccEtaET;//Marcelo please add comment  
-	TH2F *fHistConvGammaAccEtaE;//Marcelo please add comment  
-	TH2F *fHistConvGammaAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistConvGammaAcctotET;//Marcelo please add comment  
+	TH2F *fHistConvGammaAccEtaEET;//ET - Eta vs E   
+	TH2F *fHistConvGammaAccEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistConvGammaAccEtaET;//  ET - Eta
+	TH2F *fHistConvGammaAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistConvGammaAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistConvGammaAcctotET;//  total ET distribution
 	
-	TH2F *fHistNonConvGammaAccEtaEET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaAccEtaPtET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaAccEtaET;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaAccEtaE;//Marcelo please add comment  
-	TH2F *fHistNonConvGammaAccEtaPt;//Marcelo please add comment  
-	TH1F *fHistNonConvGammaAcctotET;//Marcelo please add comment  
+	TH2F *fHistNonConvGammaAccEtaEET;//ET - Eta vs E   
+	TH2F *fHistNonConvGammaAccEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNonConvGammaAccEtaET;//  ET - Eta
+	TH2F *fHistNonConvGammaAccEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistNonConvGammaAccEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistNonConvGammaAcctotET;//  total ET distribution
 	
 	// *******************
 	// total gamma ET inside EMCal acceptance
 	// *******************
-	TH1F *fHistTotGammaAcctotET;//Marcelo please add comment
+	TH1F *fHistTotGammaAcctotET;//total ET distribution
 
 	// *******************
 	// total electromagnetic ET inside EMCal acceptance
 	// *******************
-	TH1F *fHistTotEMAcctotET;//Marcelo please add comment
+	TH1F *fHistTotEMAcctotET;//total ET distribution
 
 	// non-primary electromagnetic ET
-	TH2F *fHistNPPElectronAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronAccEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPElectronAccEtaPt;//Marcelo please add comment 
+	TH2F *fHistNPPElectronAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistNPPElectronAccEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPElectronAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPElectronAccEtaPt;// multiplicity - Eta vs pt
 	
-	TH2F *fHistNPPGammaAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaAccEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPGammaAccEtaPt;//Marcelo please add comment 	
+	TH2F *fHistNPPGammaAccEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPGammaAccEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPGammaAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPGammaAccEtaPt;// 	multiplicity - Eta vs pt
 	
 	// *******************
 	// electron ET reconstructed in EMCal
 	// *******************
-	TH2F *fHistElectronRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistElectronRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistElectronRecEtaET;//Marcelo please add comment 
-	TH2F *fHistElectronRecEtaE;//Marcelo please add comment 
-	TH2F *fHistElectronRecEtaPt;//Marcelo please add comment 
-	TH1F *fHistElectronRectotET;//Marcelo please add comment 
+	TH2F *fHistElectronRecEtaEET;//ET - Eta vs E  
+	TH2F *fHistElectronRecEtaPtET;//ET - Eta vs pt
+	TH2F *fHistElectronRecEtaET;// ET - Eta
+	TH2F *fHistElectronRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistElectronRecEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistElectronRectotET;// total ET distribution
 	
-	TH2F *fHistConvElectronRecEtaEET;//Marcelo please add comment  
-	TH2F *fHistConvElectronRecEtaPtET;//Marcelo please add comment  
-	TH2F *fHistConvElectronRecEtaET;//Marcelo please add comment  
-	TH2F *fHistConvElectronRecEtaE;//Marcelo please add comment  
-	TH2F *fHistConvElectronRecEtaPt;//Marcelo please add comment  
-	TH1F *fHistConvElectronRectotET;//Marcelo please add comment  
+	TH2F *fHistConvElectronRecEtaEET;//ET - Eta vs E   
+	TH2F *fHistConvElectronRecEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistConvElectronRecEtaET;//  ET - Eta
+	TH2F *fHistConvElectronRecEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistConvElectronRecEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistConvElectronRectotET;//  total ET distribution
 	
-	TH2F *fHistScatElectronRecEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatElectronRecEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatElectronRecEtaET;//Marcelo please add comment  
-	TH2F *fHistScatElectronRecEtaE;//Marcelo please add comment  
-	TH2F *fHistScatElectronRecEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatElectronRectotET;//Marcelo please add comment  
+	TH2F *fHistScatElectronRecEtaEET;//ET - Eta vs E   
+	TH2F *fHistScatElectronRecEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistScatElectronRecEtaET;//  ET - Eta
+	TH2F *fHistScatElectronRecEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatElectronRecEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatElectronRectotET;//  total ET distribution
 	
 	// *******************
 	// total Electron ET reconstructed in EMCal
 	// *******************
-	TH1F *fHistTotElectronRectotET;//Marcelo please add comment
+	TH1F *fHistTotElectronRectotET;//total ET distribution
 
 	// *******************
 	// gamma ET reconstructed in EMCal
 	// *******************
-	TH2F *fHistGammaRecEtaEET;//Marcelo please add comment  
-	TH2F *fHistGammaRecEtaPtET;//Marcelo please add comment  
-	TH2F *fHistGammaRecEtaET;//Marcelo please add comment  
-	TH2F *fHistGammaRecEtaE;//Marcelo please add comment  
-	TH2F *fHistGammaRecEtaPt;//Marcelo please add comment  
-	TH1F *fHistGammaRectotET;//Marcelo please add comment  
+	TH2F *fHistGammaRecEtaEET;//ET - Eta vs E   
+	TH2F *fHistGammaRecEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistGammaRecEtaET;//  ET - Eta
+	TH2F *fHistGammaRecEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistGammaRecEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistGammaRectotET;//  total ET distribution
 	
-	TH2F *fHistAnnihGammaRecEtaEET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaRecEtaPtET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaRecEtaET;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaRecEtaE;//Marcelo please add comment  
-	TH2F *fHistAnnihGammaRecEtaPt;//Marcelo please add comment  
-	TH1F *fHistAnnihGammaRectotET;//Marcelo please add comment  
+	TH2F *fHistAnnihGammaRecEtaEET;//ET - Eta vs E   
+	TH2F *fHistAnnihGammaRecEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistAnnihGammaRecEtaET;//  ET - Eta
+	TH2F *fHistAnnihGammaRecEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistAnnihGammaRecEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistAnnihGammaRectotET;//  total ET distribution
 	
-	TH2F *fHistScatGammaRecEtaEET;//Marcelo please add comment  
-	TH2F *fHistScatGammaRecEtaPtET;//Marcelo please add comment  
-	TH2F *fHistScatGammaRecEtaET;//Marcelo please add comment  
-	TH2F *fHistScatGammaRecEtaE;//Marcelo please add comment  
-	TH2F *fHistScatGammaRecEtaPt;//Marcelo please add comment  
-	TH1F *fHistScatGammaRectotET;//Marcelo please add comment  
+	TH2F *fHistScatGammaRecEtaEET;//ET - Eta vs E   
+	TH2F *fHistScatGammaRecEtaPtET;//ET - Eta vs pt  
+	TH2F *fHistScatGammaRecEtaET;//  ET - Eta
+	TH2F *fHistScatGammaRecEtaE;//  multiplicity - Eta vs E
+	TH2F *fHistScatGammaRecEtaPt;//  multiplicity - Eta vs pt
+	TH1F *fHistScatGammaRectotET;//  total ET distribution
 
 	// *******************
 	// total gamma ET reconstructed in EMCal
 	// *******************
-	TH1F *fHistTotGammaRectotET;//Marcelo please add comment
+	TH1F *fHistTotGammaRectotET;//total ET distribution
 
 	// *******************
 	// total EM ET reconstructed in EMCal
 	// *******************
-	TH1F *fHistTotEMRectotET;//Marcelo please add comment
+	TH1F *fHistTotEMRectotET;//total ET distribution
 
 	// non-primary electromagnetic ET
-	TH2F *fHistNPPElectronRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronRecEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPElectronRecEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPElectronRecEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPElectronRectotET;//Marcelo please add comment 
+	TH2F *fHistNPPElectronRecEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPElectronRecEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPElectronRecEtaET;// ET - Eta
+	TH2F *fHistNPPElectronRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPElectronRecEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPElectronRectotET;// total ET distribution
 	
-	TH2F *fHistNPPGammaRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaRecEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPGammaRecEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPGammaRecEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPGammaRectotET;//Marcelo please add comment 
+	TH2F *fHistNPPGammaRecEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPGammaRecEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPGammaRecEtaET;// ET - Eta
+	TH2F *fHistNPPGammaRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPGammaRecEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPGammaRectotET;// total ET distribution
 	
-	TH1F *fHistTotNPPEMRectotET;//Marcelo please add comment
+	TH1F *fHistTotNPPEMRectotET;//total ET distribution
 
-	TH2F *fHistNPPPi0GammaRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaRecEtaET;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaRecEtaE;//Marcelo please add comment 
-	TH2F *fHistNPPPi0GammaRecEtaPt;//Marcelo please add comment 
-	TH1F *fHistNPPPi0GammaRectotET;//Marcelo please add comment 
+	TH2F *fHistNPPPi0GammaRecEtaEET;//ET - Eta vs E  
+	TH2F *fHistNPPPi0GammaRecEtaPtET;//ET - Eta vs pt 
+	TH2F *fHistNPPPi0GammaRecEtaET;// ET - Eta
+	TH2F *fHistNPPPi0GammaRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNPPPi0GammaRecEtaPt;// multiplicity - Eta vs pt
+	TH1F *fHistNPPPi0GammaRectotET;// total ET distribution
 	
 	// *******************
 	// muon ET (+ and -)
 	// *******************
-	TH2F *fHistMuonEtaEET;//Marcelo please add comment 
-	TH2F *fHistMuonAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistMuonRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaEET;//Marcelo please add comment 
+	TH2F *fHistMuonEtaEET;//ET - Eta vs E  
+	TH2F *fHistMuonAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistMuonRecEtaEET;//ET - Eta vs E 
+	TH2F *fHistMuonMatchEtaEET;//ET - Eta vs E 
 
-	TH2F *fHistMuonEtaPtET;//Marcelo please add comment 
-	TH2F *fHistMuonAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistMuonRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaPtET;//Marcelo please add comment 
+	TH2F *fHistMuonEtaPtET;// ET - Eta vs pt
+	TH2F *fHistMuonAccEtaPtET;// ET - Eta vs pt
+	TH2F *fHistMuonRecEtaPtET;// ET - Eta vs pt
+	TH2F *fHistMuonMatchEtaPtET;// ET - Eta vs pt
 
-	TH2F *fHistMuonEtaET;//Marcelo please add comment 
-	TH2F *fHistMuonAccEtaET;//Marcelo please add comment 
-	TH2F *fHistMuonRecEtaET;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaET;//Marcelo please add comment 
+	TH2F *fHistMuonEtaET;// ET - Eta
+	TH2F *fHistMuonAccEtaET;// ET - Eta
+	TH2F *fHistMuonRecEtaET;// ET - Eta
+	TH2F *fHistMuonMatchEtaET;// ET - Eta
 	
-	TH2F *fHistMuonEtaE;//Marcelo please add comment 
-	TH2F *fHistMuonAccEtaE;//Marcelo please add comment 
-	TH2F *fHistMuonRecEtaE;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaE;//Marcelo please add comment 
+	TH2F *fHistMuonEtaE;// multiplicity - Eta vs E
+	TH2F *fHistMuonAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistMuonRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistMuonMatchEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistMuonEtaPt;//Marcelo please add comment 
-	TH2F *fHistMuonAccEtaPt;//Marcelo please add comment 
-	TH2F *fHistMuonRecEtaPt;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaPt;//Marcelo please add comment 
+	TH2F *fHistMuonEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistMuonAccEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistMuonRecEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistMuonMatchEtaPt;// multiplicity - Eta vs pt
 	
-	TH1F *fHistMuontotET;//Marcelo please add comment 
-	TH1F *fHistMuonAcctotET;//Marcelo please add comment 
-	TH1F *fHistMuonRectotET;//Marcelo please add comment 
-	TH1F *fHistMuonMatchtotET;//Marcelo please add comment 
+	TH1F *fHistMuontotET;// total ET distribution
+	TH1F *fHistMuonAcctotET;// total ET distribution
+	TH1F *fHistMuonRectotET;// total ET distribution
+	TH1F *fHistMuonMatchtotET;// total ET distribution
 	
-	TH1F *fHistMuonRectotETDep;//Marcelo please add comment 
-	TH1F *fHistMuonMatchtotETDep;//Marcelo please add comment 
+	TH1F *fHistMuonRectotETDep;//total deposited ET distribution
+	TH1F *fHistMuonMatchtotETDep;// total deposited ET distribution
 	
-	TH2F *fHistMuonRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaEDepETDep;//Marcelo please add comment 
+	TH2F *fHistMuonRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistMuonMatchEtaEDepETDep;// ET deposited - Eta vs E deposited
 
-	TH2F *fHistMuonRecEtaPtETDep;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistMuonRecEtaPtETDep;// ET deposited - Eta vs pt
+	TH2F *fHistMuonMatchEtaPtETDep;// ET deposited - Eta vs pt
 	
-	TH2F *fHistMuonRecEtaETDep;//Marcelo please add comment 
-	TH2F *fHistMuonMatchEtaETDep;//Marcelo please add comment 
+	TH2F *fHistMuonRecEtaETDep;// ET deposited - Eta
+	TH2F *fHistMuonMatchEtaETDep;// ET deposited - Eta
 
-	TH2F *fHistMuonRecResEET;//Marcelo please add comment 
-	TH2F *fHistMuonRecResPtET;//Marcelo please add comment 
-	TH2F *fHistMuonRecResE;//Marcelo please add comment 
-	TH2F *fHistMuonRecResPt;//Marcelo please add comment 
-	TH2F *fHistMuonRecResEDepETDep;//Marcelo please add comment 
-	TH2F *fHistMuonRecResPtETDep;//Marcelo please add comment 
+	TH2F *fHistMuonRecResEET;// ET - track matching residual vs E
+	TH2F *fHistMuonRecResPtET;// ET - track matching residual vs pt
+	TH2F *fHistMuonRecResE;// multiplicity - track matching residual vs E
+	TH2F *fHistMuonRecResPt;// multiplicity - track matching residual vs pt 
+	TH2F *fHistMuonRecResEDepETDep;// ET deposited - track matching residual vs E deposited
+	TH2F *fHistMuonRecResPtETDep;// ET deposited - track matching residual vs pt
 	
 	// *******************
 	// pion ET (+ and -)
 	// *******************
-	TH2F *fHistPionEtaEET;//Marcelo please add comment 
-	TH2F *fHistPionAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistPionRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaEET;//Marcelo please add comment 
+	TH2F *fHistPionEtaEET;//ET - Eta vs E  
+	TH2F *fHistPionAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistPionRecEtaEET;//ET - Eta vs E 
+	TH2F *fHistPionMatchEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistPionEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPionAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPionRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaPtET;//Marcelo please add comment 
+	TH2F *fHistPionEtaPtET;// ET - Eta vs pt
+	TH2F *fHistPionAccEtaPtET;// ET - Eta vs pt
+	TH2F *fHistPionRecEtaPtET;// ET - Eta vs pt
+	TH2F *fHistPionMatchEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistPionEtaET;//Marcelo please add comment 
-	TH2F *fHistPionAccEtaET;//Marcelo please add comment 
-	TH2F *fHistPionRecEtaET;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaET;//Marcelo please add comment 
+	TH2F *fHistPionEtaET;// ET - Eta
+	TH2F *fHistPionAccEtaET;// ET - Eta
+	TH2F *fHistPionRecEtaET;// ET - Eta
+	TH2F *fHistPionMatchEtaET;// ET - Eta
 	
-	TH2F *fHistPionEtaE;//Marcelo please add comment 
-	TH2F *fHistPionAccEtaE;//Marcelo please add comment 
-	TH2F *fHistPionRecEtaE;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaE;//Marcelo please add comment 
+	TH2F *fHistPionEtaE;// multiplicity - Eta vs E
+	TH2F *fHistPionAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistPionRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistPionMatchEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistPionEtaPt;//Marcelo please add comment 
-	TH2F *fHistPionAccEtaPt;//Marcelo please add comment 
-	TH2F *fHistPionRecEtaPt;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaPt;//Marcelo please add comment 
+	TH2F *fHistPionEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistPionAccEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistPionRecEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistPionMatchEtaPt;// multiplicity - Eta vs pt
 	
-	TH1F *fHistPiontotET;//Marcelo please add comment 
-	TH1F *fHistPionAcctotET;//Marcelo please add comment 
-	TH1F *fHistPionRectotET;//Marcelo please add comment 
-	TH1F *fHistPionMatchtotET;//Marcelo please add comment 
+	TH1F *fHistPiontotET;// total ET distribution
+	TH1F *fHistPionAcctotET;// total ET distribution
+	TH1F *fHistPionRectotET;// total ET distribution
+	TH1F *fHistPionMatchtotET;// total ET distribution
 	
-	TH1F *fHistPionRectotETDep;//Marcelo please add comment 
-	TH1F *fHistPionMatchtotETDep;//Marcelo please add comment 
+	TH1F *fHistPionRectotETDep;// total deposited ET distribution
+	TH1F *fHistPionMatchtotETDep;// total deposited ET distribution
 	
-	TH2F *fHistPionRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaEDepETDep;//Marcelo please add comment 
+	TH2F *fHistPionRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistPionMatchEtaEDepETDep;// ET deposited - Eta vs E deposited
 
-	TH2F *fHistPionRecEtaPtETDep;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistPionRecEtaPtETDep;// ET deposited - Eta vs pt
+	TH2F *fHistPionMatchEtaPtETDep;// ET deposited - Eta vs pt
 	
-	TH2F *fHistPionRecEtaETDep;//Marcelo please add comment 
-	TH2F *fHistPionMatchEtaETDep;//Marcelo please add comment 
+	TH2F *fHistPionRecEtaETDep;// ET deposited - Eta
+	TH2F *fHistPionMatchEtaETDep;// ET deposited - Eta
 	
-	TH2F *fHistPionRecResEET;//Marcelo please add comment 
-	TH2F *fHistPionRecResPtET;//Marcelo please add comment 
-	TH2F *fHistPionRecResE;//Marcelo please add comment 
-	TH2F *fHistPionRecResPt;//Marcelo please add comment 
-	TH2F *fHistPionRecResEDepETDep;//Marcelo please add comment 
-	TH2F *fHistPionRecResPtETDep;//Marcelo please add comment 
+	TH2F *fHistPionRecResEET;// ET - track matching residual vs E
+	TH2F *fHistPionRecResPtET;// ET - track matching residual vs pt
+	TH2F *fHistPionRecResE;// multiplicity - track matching residual vs E
+	TH2F *fHistPionRecResPt;// multiplicity - track matching residual vs pt
+	TH2F *fHistPionRecResEDepETDep;// ET deposited - track matching residual vs E deposited
+	TH2F *fHistPionRecResPtETDep;// ET deposited - track matching residual vs pt
 	
 	// *******************
 	// charged kaon (+ and -) ET
 	// *******************
-	TH2F *fHistKaonEtaEET;//Marcelo please add comment 
-	TH2F *fHistKaonAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistKaonRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaEET;//Marcelo please add comment 
+	TH2F *fHistKaonEtaEET;//ET - Eta vs E 
+	TH2F *fHistKaonAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistKaonRecEtaEET;//ET - Eta vs E 
+	TH2F *fHistKaonMatchEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistKaonEtaPtET;//Marcelo please add comment 
-	TH2F *fHistKaonAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistKaonRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaPtET;//Marcelo please add comment 
+	TH2F *fHistKaonEtaPtET;// ET - Eta vs pt
+	TH2F *fHistKaonAccEtaPtET;// ET - Eta vs pt
+	TH2F *fHistKaonRecEtaPtET;// ET - Eta vs pt
+	TH2F *fHistKaonMatchEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistKaonEtaET;//Marcelo please add comment 
-	TH2F *fHistKaonAccEtaET;//Marcelo please add comment 
-	TH2F *fHistKaonRecEtaET;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaET;//Marcelo please add comment 
+	TH2F *fHistKaonEtaET;// ET - Eta
+	TH2F *fHistKaonAccEtaET;// ET - Eta
+	TH2F *fHistKaonRecEtaET;// ET - Eta
+	TH2F *fHistKaonMatchEtaET;// ET - Eta
 	
-	TH2F *fHistKaonEtaE;//Marcelo please add comment 
-	TH2F *fHistKaonAccEtaE;//Marcelo please add comment 
-	TH2F *fHistKaonRecEtaE;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaE;//Marcelo please add comment 
+	TH2F *fHistKaonEtaE;// multiplicity - Eta vs E
+	TH2F *fHistKaonAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistKaonRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistKaonMatchEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistKaonEtaPt;//Marcelo please add comment 
-	TH2F *fHistKaonAccEtaPt;//Marcelo please add comment 
-	TH2F *fHistKaonRecEtaPt;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaPt;//Marcelo please add comment 
+	TH2F *fHistKaonEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistKaonAccEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistKaonRecEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistKaonMatchEtaPt;// multiplicity - Eta vs pt
 
-	TH1F *fHistKaontotET;//Marcelo please add comment 
-	TH1F *fHistKaonAcctotET;//Marcelo please add comment 
-	TH1F *fHistKaonRectotET;//Marcelo please add comment 
-	TH1F *fHistKaonMatchtotET;//Marcelo please add comment 
+	TH1F *fHistKaontotET;// total ET distribution
+	TH1F *fHistKaonAcctotET;// total ET distribution
+	TH1F *fHistKaonRectotET;// total ET distribution
+	TH1F *fHistKaonMatchtotET;// total ET distribution
 	
-	TH1F *fHistKaonRectotETDep;//Marcelo please add comment 
-	TH1F *fHistKaonMatchtotETDep;//Marcelo please add comment 
+	TH1F *fHistKaonRectotETDep;// total deposited ET distribution
+	TH1F *fHistKaonMatchtotETDep;// total deposited ET distribution
 	
-	TH2F *fHistKaonRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaEDepETDep;//Marcelo please add comment 
+	TH2F *fHistKaonRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistKaonMatchEtaEDepETDep;// ET deposited - Eta vs E deposited
 
-	TH2F *fHistKaonRecEtaPtETDep;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistKaonRecEtaPtETDep;// ET deposited - Eta vs pt
+	TH2F *fHistKaonMatchEtaPtETDep;// ET deposited - Eta vs pt
 	
-	TH2F *fHistKaonRecEtaETDep;//Marcelo please add comment 
-	TH2F *fHistKaonMatchEtaETDep;//Marcelo please add comment 
+	TH2F *fHistKaonRecEtaETDep;// ET deposited - Eta
+	TH2F *fHistKaonMatchEtaETDep;// ET deposited - Eta
 	
-	TH2F *fHistKaonRecResEET;//Marcelo please add comment 
-	TH2F *fHistKaonRecResPtET;//Marcelo please add comment 
-	TH2F *fHistKaonRecResE;//Marcelo please add comment 
-	TH2F *fHistKaonRecResPt;//Marcelo please add comment 
-	TH2F *fHistKaonRecResEDepETDep;//Marcelo please add comment 
-	TH2F *fHistKaonRecResPtETDep;//Marcelo please add comment 	
+	TH2F *fHistKaonRecResEET;// ET - track matching residual vs E
+	TH2F *fHistKaonRecResPtET;// ET - track matching residual vs pt
+	TH2F *fHistKaonRecResE;// multiplicity - track matching residual vs E
+	TH2F *fHistKaonRecResPt;// multiplicity - track matching residual vs pt
+	TH2F *fHistKaonRecResEDepETDep;// ET deposited - track matching residual vs E deposited
+	TH2F *fHistKaonRecResPtETDep;// ET deposited - track matching residual vs pt
 	
 	// *******************
 	// proton (anti) ET
 	// *******************
-	TH2F *fHistProtonEtaEET;//Marcelo please add comment 
-	TH2F *fHistProtonAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistProtonRecEtaEET;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaEET;//Marcelo please add comment 
+	TH2F *fHistProtonEtaEET;//ET - Eta vs E 
+	TH2F *fHistProtonAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistProtonRecEtaEET;//ET - Eta vs E 
+	TH2F *fHistProtonMatchEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistProtonEtaPtET;//Marcelo please add comment 
-	TH2F *fHistProtonAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistProtonRecEtaPtET;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaPtET;//Marcelo please add comment 
+	TH2F *fHistProtonEtaPtET;// ET - Eta vs pt
+	TH2F *fHistProtonAccEtaPtET;// ET - Eta vs pt
+	TH2F *fHistProtonRecEtaPtET;// ET - Eta vs pt
+	TH2F *fHistProtonMatchEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistProtonEtaET;//Marcelo please add comment 
-	TH2F *fHistProtonAccEtaET;//Marcelo please add comment 
-	TH2F *fHistProtonRecEtaET;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaET;//Marcelo please add comment 
+	TH2F *fHistProtonEtaET;// ET - Eta
+	TH2F *fHistProtonAccEtaET;// ET - Eta
+	TH2F *fHistProtonRecEtaET;// ET - Eta
+	TH2F *fHistProtonMatchEtaET;// ET - Eta
 	
-	TH2F *fHistProtonEtaE;//Marcelo please add comment 
-	TH2F *fHistProtonAccEtaE;//Marcelo please add comment 
-	TH2F *fHistProtonRecEtaE;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaE;//Marcelo please add comment 
+	TH2F *fHistProtonEtaE;// multiplicity - Eta vs E
+	TH2F *fHistProtonAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistProtonRecEtaE;// multiplicity - Eta vs E
+	TH2F *fHistProtonMatchEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistProtonEtaPt;//Marcelo please add comment 
-	TH2F *fHistProtonAccEtaPt;//Marcelo please add comment 
-	TH2F *fHistProtonRecEtaPt;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaPt;//Marcelo please add comment 
+	TH2F *fHistProtonEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistProtonAccEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistProtonRecEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistProtonMatchEtaPt;// multiplicity - Eta vs pt
 
-	TH1F *fHistProtontotET;//Marcelo please add comment 
-	TH1F *fHistProtonAcctotET;//Marcelo please add comment 
-	TH1F *fHistProtonRectotET;//Marcelo please add comment 
-	TH1F *fHistProtonMatchtotET;//Marcelo please add comment 
+	TH1F *fHistProtontotET;// total ET distribution
+	TH1F *fHistProtonAcctotET;// total ET distribution
+	TH1F *fHistProtonRectotET;// total ET distribution
+	TH1F *fHistProtonMatchtotET;// total ET distribution
 	
-	TH1F *fHistProtonRectotETDep;//Marcelo please add comment 
-	TH1F *fHistProtonMatchtotETDep;//Marcelo please add comment 
+	TH1F *fHistProtonRectotETDep;// total deposited ET distribution
+	TH1F *fHistProtonMatchtotETDep;// total deposited ET distribution
 	
-	TH2F *fHistProtonRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaEDepETDep;//Marcelo please add comment 
+	TH2F *fHistProtonRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistProtonMatchEtaEDepETDep;// ET deposited - Eta vs E deposited
 	
-	TH2F *fHistProtonRecEtaPtETDep;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistProtonRecEtaPtETDep;// ET deposited - Eta vs pt
+	TH2F *fHistProtonMatchEtaPtETDep;// ET deposited - Eta vs pt
 	
-	TH2F *fHistProtonRecEtaETDep;//Marcelo please add comment 
-	TH2F *fHistProtonMatchEtaETDep;//Marcelo please add comment 
+	TH2F *fHistProtonRecEtaETDep;// ET deposited - Eta
+	TH2F *fHistProtonMatchEtaETDep;// ET deposited - Eta
 
-	TH2F *fHistProtonRecResEET;//Marcelo please add comment 
-	TH2F *fHistProtonRecResPtET;//Marcelo please add comment 
-	TH2F *fHistProtonRecResE;//Marcelo please add comment 
-	TH2F *fHistProtonRecResPt;//Marcelo please add comment 
-	TH2F *fHistProtonRecResEDepETDep;//Marcelo please add comment 
-	TH2F *fHistProtonRecResPtETDep;//Marcelo please add comment 
+	TH2F *fHistProtonRecResEET;// ET - track matching residual vs E
+	TH2F *fHistProtonRecResPtET;// ET - track matching residual vs pt
+	TH2F *fHistProtonRecResE;// multiplicity - track matching residual vs E
+	TH2F *fHistProtonRecResPt;// multiplicity - track matching residual vs pt
+	TH2F *fHistProtonRecResEDepETDep;// ET deposited - track matching residual vs E deposited
+	TH2F *fHistProtonRecResPtETDep;// ET deposited - track matching residual vs pt
 	
 	// *******************
 	// total charged ET
 	// *******************
-	TH1F *fHistTotChargedtotET;//Marcelo please add comment
-	TH1F *fHistTotChargedAcctotET;//Marcelo please add comment
-	TH1F *fHistTotChargedRectotET;//Marcelo please add comment
-	TH1F *fHistTotChargedRectotETDep;//Marcelo please add comment
-	TH1F *fHistTotChargedMatchtotET;//Marcelo please add comment
-	TH1F *fHistTotChargedMatchtotETDep;//Marcelo please add comment
+	TH1F *fHistTotChargedtotET;//total ET distribution
+	TH1F *fHistTotChargedAcctotET;//total ET distribution
+	TH1F *fHistTotChargedRectotET;//total ET distribution
+	TH1F *fHistTotChargedRectotETDep;//total deposited ET distribution
+	TH1F *fHistTotChargedMatchtotET;//total ET distribution
+	TH1F *fHistTotChargedMatchtotETDep;//total deposited ET distribution
 	
 	// *******************
 	// neutron (anti) ET
 	// *******************
-	TH2F *fHistNeutronEtaEET;//Marcelo please add comment 
-	TH2F *fHistNeutronAccEtaEET;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaEET;//Marcelo please add comment 
+	TH2F *fHistNeutronEtaEET;//ET - Eta vs E 
+	TH2F *fHistNeutronAccEtaEET;//ET - Eta vs E 
+	TH2F *fHistNeutronRecEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistNeutronEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNeutronAccEtaPtET;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaPtET;//Marcelo please add comment 
+	TH2F *fHistNeutronEtaPtET;// ET - Eta vs pt
+	TH2F *fHistNeutronAccEtaPtET;// ET - Eta vs pt
+	TH2F *fHistNeutronRecEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistNeutronEtaET;//Marcelo please add comment 
-	TH2F *fHistNeutronAccEtaET;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaET;//Marcelo please add comment 
+	TH2F *fHistNeutronEtaET;// ET - Eta
+	TH2F *fHistNeutronAccEtaET;// ET - Eta
+	TH2F *fHistNeutronRecEtaET;// ET - Eta
 	
-	TH2F *fHistNeutronEtaE;//Marcelo please add comment 
-	TH2F *fHistNeutronAccEtaE;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaE;//Marcelo please add comment 
+	TH2F *fHistNeutronEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNeutronAccEtaE;// multiplicity - Eta vs E
+	TH2F *fHistNeutronRecEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistNeutronEtaPt;//Marcelo please add comment 
-	TH2F *fHistNeutronAccEtaPt;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaPt;//Marcelo please add comment 
+	TH2F *fHistNeutronEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistNeutronAccEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistNeutronRecEtaPt;// multiplicity - Eta vs pt
 	
-	TH1F *fHistNeutrontotET;//Marcelo please add comment 
-	TH1F *fHistNeutronAcctotET;//Marcelo please add comment 
-	TH1F *fHistNeutronRectotET;//Marcelo please add comment 
-	TH1F *fHistNeutronRectotETDep;//Marcelo please add comment 
+	TH1F *fHistNeutrontotET;// total ET distribution
+	TH1F *fHistNeutronAcctotET;// total ET distribution
+	TH1F *fHistNeutronRectotET;// total ET distribution
+	TH1F *fHistNeutronRectotETDep;// total deposited ET distribution
 	
-	TH2F *fHistNeutronRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistNeutronRecEtaETDep;//Marcelo please add comment 
+	TH2F *fHistNeutronRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistNeutronRecEtaETDep;// ET deposited - Eta
 	
-	TH2F *fHistNeutronRecEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistNeutronRecEtaPtETDep;// ET deposited - Eta vs pt
 		
 	// *******************
 	// neutral kaon ET
 	// *******************
-	TH2F *fHistK0EtaEET;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaEET;//Marcelo please add comment 
+	TH2F *fHistK0EtaEET;//ET - Eta vs E 
+	TH2F *fHistK0RecEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistK0EtaPtET;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaPtET;//Marcelo please add comment 
+	TH2F *fHistK0EtaPtET;// ET - Eta vs pt
+	TH2F *fHistK0RecEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistK0EtaET;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaET;//Marcelo please add comment 
+	TH2F *fHistK0EtaET;// ET - Eta
+	TH2F *fHistK0RecEtaET;// ET - Eta
 	
-	TH2F *fHistK0EtaE;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaE;//Marcelo please add comment 
+	TH2F *fHistK0EtaE;// multiplicity - Eta vs E
+	TH2F *fHistK0RecEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistK0EtaPt;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaPt;//Marcelo please add comment 
+	TH2F *fHistK0EtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistK0RecEtaPt;// multiplicity - Eta vs pt
 
-	TH1F *fHistK0totET;//Marcelo please add comment 
-	TH1F *fHistK0RectotET;//Marcelo please add comment 
+	TH1F *fHistK0totET;// total ET distribution
+	TH1F *fHistK0RectotET;// total ET distribution
 	
-	TH1F *fHistK0RectotETDep;//Marcelo please add comment 
+	TH1F *fHistK0RectotETDep;// total deposited ET distribution
 	
-	TH2F *fHistK0RecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistK0RecEtaETDep;//Marcelo please add comment 
+	TH2F *fHistK0RecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistK0RecEtaETDep;// ET deposited - Eta
 	
-	TH2F *fHistK0RecEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistK0RecEtaPtETDep;// ET deposited - Eta vs pt
 		
 	// *******************
 	// Lambda(anti) ET
 	// *******************
-	TH2F *fHistLambdaEtaEET;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaEET;//Marcelo please add comment 
+	TH2F *fHistLambdaEtaEET;//ET - Eta vs E 
+	TH2F *fHistLambdaRecEtaEET;//ET - Eta vs E 
 	
-	TH2F *fHistLambdaEtaPtET;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaPtET;//Marcelo please add comment 
+	TH2F *fHistLambdaEtaPtET;// ET - Eta vs pt
+	TH2F *fHistLambdaRecEtaPtET;// ET - Eta vs pt
 	
-	TH2F *fHistLambdaEtaET;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaET;//Marcelo please add comment 
+	TH2F *fHistLambdaEtaET;// ET - Eta
+	TH2F *fHistLambdaRecEtaET;// ET - Eta
 	
-	TH2F *fHistLambdaEtaE;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaE;//Marcelo please add comment 
+	TH2F *fHistLambdaEtaE;// multiplicity - Eta vs E
+	TH2F *fHistLambdaRecEtaE;// multiplicity - Eta vs E
 	
-	TH2F *fHistLambdaEtaPt;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaPt;//Marcelo please add comment 
+	TH2F *fHistLambdaEtaPt;// multiplicity - Eta vs pt
+	TH2F *fHistLambdaRecEtaPt;// multiplicity - Eta vs pt
 	
-	TH1F *fHistLambdatotET;//Marcelo please add comment 
-	TH1F *fHistLambdaRectotET;//Marcelo please add comment 
+	TH1F *fHistLambdatotET;// total ET distribution
+	TH1F *fHistLambdaRectotET;// total ET distribution
 	
-	TH1F *fHistLambdaRectotETDep;//Marcelo please add comment 
+	TH1F *fHistLambdaRectotETDep;// total deposited ET distribution
 	
-	TH2F *fHistLambdaRecEtaEDepETDep;//Marcelo please add comment 
-	TH2F *fHistLambdaRecEtaETDep;//Marcelo please add comment 
+	TH2F *fHistLambdaRecEtaEDepETDep;// ET deposited - Eta vs E deposited
+	TH2F *fHistLambdaRecEtaETDep;// ET deposited - Eta
 	
-	TH2F *fHistLambdaRecEtaPtETDep;//Marcelo please add comment 
+	TH2F *fHistLambdaRecEtaPtETDep;// ET deposited - Eta vs pt
 
 	// *******************
 	// total neutral ET
 	// *******************
-	TH1F *fHistTotNeutraltotET;//Marcelo please add comment
-	TH1F *fHistTotNeutralRectotET;//Marcelo please add comment
-	TH1F *fHistTotNeutralRectotETDep;//Marcelo please add comment
+	TH1F *fHistTotNeutraltotET;//total ET distribution
+	TH1F *fHistTotNeutralRectotET;//total ET distribution
+	TH1F *fHistTotNeutralRectotETDep;//total deposited ET distribution
 	
 	// *******************
 	// total ET
 	// *******************
-	TH1F *fHistTotaltotET;//Marcelo please add comment
-	TH1F *fHistTotalAcctotET;//Marcelo please add comment
-	TH1F *fHistTotalRectotET;//Marcelo please add comment
-	TH1F *fHistTotalRectotETDep;//Marcelo please add comment
+	TH1F *fHistTotaltotET;//total ET distribution
+	TH1F *fHistTotalAcctotET;//total ET distribution
+	TH1F *fHistTotalRectotET;//total ET distribution
+	TH1F *fHistTotalRectotETDep;//total deposited ET distribution
 	
 	// *******************
 	// some checks
 	// *******************
 
 	// check produced electrons
-	TH1F *fHistElectronFirstMother;//Marcelo please add comment 
-	TH2F *fHistElectronFirstMotherXY;//Marcelo please add comment 
-	TH1F *fHistElectronNDaughters;//Marcelo please add comment 
-	TH1F *fHistElectronDaughters;//Marcelo please add comment 
-	TH2F *fHistElectronDaughtersXY;//Marcelo please add comment 
+	TH1F *fHistElectronFirstMother;// first mother ID
+	TH2F *fHistElectronFirstMotherXY;// first mother XY position 
+	TH1F *fHistElectronNDaughters;// number of daughters 
+	TH1F *fHistElectronDaughters;// daughters ID
+	TH2F *fHistElectronDaughtersXY;// daughters XY position
 
-	TH1F *fHistElectronFirstMotherAcc;//Marcelo please add comment  
-	TH2F *fHistElectronFirstMotherXYAcc;//Marcelo please add comment  
-	TH1F *fHistElectronNDaughtersAcc;//Marcelo please add comment 
-	TH1F *fHistElectronDaughtersAcc;//Marcelo please add comment 
-	TH2F *fHistElectronDaughtersXYAcc;//Marcelo please add comment 
+	TH1F *fHistElectronFirstMotherAcc;// first mother ID
+	TH2F *fHistElectronFirstMotherXYAcc;// first mother XY position 
+	TH1F *fHistElectronNDaughtersAcc;// number of daughters
+	TH1F *fHistElectronDaughtersAcc;// daughters ID
+	TH2F *fHistElectronDaughtersXYAcc;// daughters XY position
 
-	TH1F *fHistElectronFirstMotherRec;//Marcelo please add comment  
-	TH2F *fHistElectronFirstMotherXYRec;//Marcelo please add comment  
-	TH1F *fHistElectronNDaughtersRec;//Marcelo please add comment 
-	TH1F *fHistElectronDaughtersRec;//Marcelo please add comment 
-	TH2F *fHistElectronDaughtersXYRec;//Marcelo please add comment 
+	TH1F *fHistElectronFirstMotherRec;// first mother ID 
+	TH2F *fHistElectronFirstMotherXYRec;//  first mother XY position
+	TH1F *fHistElectronNDaughtersRec;// number of daughters
+	TH1F *fHistElectronDaughtersRec;// daughters ID
+	TH2F *fHistElectronDaughtersXYRec;// daughters XY position
 
-	TH1F *fHistNPPElectronFirstMother;//Marcelo please add comment 
-	TH2F *fHistNPPElectronFirstMotherXY;//Marcelo please add comment 
-	TH1F *fHistNPPElectronNDaughters;//Marcelo please add comment 
-	TH1F *fHistNPPElectronDaughters;//Marcelo please add comment 
-	TH2F *fHistNPPElectronDaughtersXY;//Marcelo please add comment 
+	TH1F *fHistNPPElectronFirstMother;//  first mother ID 
+	TH2F *fHistNPPElectronFirstMotherXY;// first mother XY position
+	TH1F *fHistNPPElectronNDaughters;// number of daughters
+	TH1F *fHistNPPElectronDaughters;// daughters ID
+	TH2F *fHistNPPElectronDaughtersXY;// daughters XY position
 	
-	TH1F *fHistNPPElectronFirstMotherAcc;//Marcelo please add comment  
-	TH2F *fHistNPPElectronFirstMotherXYAcc;//Marcelo please add comment  
-	TH1F *fHistNPPElectronNDaughtersAcc;//Marcelo please add comment 
-	TH1F *fHistNPPElectronDaughtersAcc;//Marcelo please add comment 
-	TH2F *fHistNPPElectronDaughtersXYAcc;//Marcelo please add comment 
+	TH1F *fHistNPPElectronFirstMotherAcc;//  first mother ID 
+	TH2F *fHistNPPElectronFirstMotherXYAcc;//  first mother XY position
+	TH1F *fHistNPPElectronNDaughtersAcc;// number of daughters
+	TH1F *fHistNPPElectronDaughtersAcc;// daughters ID
+	TH2F *fHistNPPElectronDaughtersXYAcc;// daughters XY position
 	
-	TH1F *fHistNPPElectronFirstMotherRec;//Marcelo please add comment  
-	TH2F *fHistNPPElectronFirstMotherXYRec;//Marcelo please add comment  
-	TH1F *fHistNPPElectronNDaughtersRec;//Marcelo please add comment 
-	TH1F *fHistNPPElectronDaughtersRec;//Marcelo please add comment 
-	TH2F *fHistNPPElectronDaughtersXYRec;//Marcelo please add comment 
+	TH1F *fHistNPPElectronFirstMotherRec;// first mother ID  
+	TH2F *fHistNPPElectronFirstMotherXYRec;//  first mother XY position
+	TH1F *fHistNPPElectronNDaughtersRec;// number of daughters
+	TH1F *fHistNPPElectronDaughtersRec;// daughters ID
+	TH2F *fHistNPPElectronDaughtersXYRec;// daughters XY position
 	
 	// check produced gammas
-	TH1F *fHistGammaFirstMother;//Marcelo please add comment 
-	TH2F *fHistGammaFirstMotherXY;//Marcelo please add comment 
-	TH1F *fHistGammaNDaughters;//Marcelo please add comment 
-	TH1F *fHistGammaDaughters;//Marcelo please add comment 
-	TH2F *fHistGammaDaughtersXY;//Marcelo please add comment 
-	TH2F *fHistConvGammaDaughtersXY;//Marcelo please add comment 
-	TH2F *fHistNonConvGammaDaughtersXY;//Marcelo please add comment 
+	TH1F *fHistGammaFirstMother;// first mother ID 
+	TH2F *fHistGammaFirstMotherXY;// first mother XY position
+	TH1F *fHistGammaNDaughters;// number of daughters
+	TH1F *fHistGammaDaughters;// daughters ID
+	TH2F *fHistGammaDaughtersXY;// daughters XY position
+	TH2F *fHistConvGammaDaughtersXY;// daughters XY position
+	TH2F *fHistNonConvGammaDaughtersXY;// daughters XY position
 	
-	TH1F *fHistGammaFirstMotherAcc;//Marcelo please add comment  
-	TH2F *fHistGammaFirstMotherXYAcc;//Marcelo please add comment  
-	TH1F *fHistGammaNDaughtersAcc;//Marcelo please add comment 
-	TH1F *fHistGammaDaughtersAcc;//Marcelo please add comment 
-	TH2F *fHistGammaDaughtersXYAcc;//Marcelo please add comment 
-	TH2F *fHistConvGammaDaughtersXYAcc;//Marcelo please add comment 
-	TH2F *fHistNonConvGammaDaughtersXYAcc;//Marcelo please add comment 
+	TH1F *fHistGammaFirstMotherAcc;// first mother ID  
+	TH2F *fHistGammaFirstMotherXYAcc;//  first mother XY position
+	TH1F *fHistGammaNDaughtersAcc;// number of daughters
+	TH1F *fHistGammaDaughtersAcc;// daughters ID
+	TH2F *fHistGammaDaughtersXYAcc;// daughters XY position
+	TH2F *fHistConvGammaDaughtersXYAcc;// daughters XY position
+	TH2F *fHistNonConvGammaDaughtersXYAcc;// daughters XY position
 	
-	TH1F *fHistGammaFirstMotherRec;//Marcelo please add comment  
-	TH2F *fHistGammaFirstMotherXYRec;//Marcelo please add comment  
-	TH1F *fHistGammaNDaughtersRec;//Marcelo please add comment 
-	TH1F *fHistGammaDaughtersRec;//Marcelo please add comment 
-	TH2F *fHistGammaDaughtersXYRec;//Marcelo please add comment 
-	TH2F *fHistConvGammaDaughtersXYRec;//Marcelo please add comment 
-	TH2F *fHistNonConvGammaDaughtersXYRec;//Marcelo please add comment 
+	TH1F *fHistGammaFirstMotherRec;// first mother ID  
+	TH2F *fHistGammaFirstMotherXYRec;//  first mother XY position
+	TH1F *fHistGammaNDaughtersRec;// number of daughters
+	TH1F *fHistGammaDaughtersRec;// daughters ID
+	TH2F *fHistGammaDaughtersXYRec;// daughters XY position
+	TH2F *fHistConvGammaDaughtersXYRec;// daughters XY position
+	TH2F *fHistNonConvGammaDaughtersXYRec;// daughters XY position
 	
-	TH1F *fHistNPPGammaFirstMother;//Marcelo please add comment 
-	TH2F *fHistNPPGammaFirstMotherXY;//Marcelo please add comment 
-	TH1F *fHistNPPGammaNDaughters;//Marcelo please add comment 
-	TH1F *fHistNPPGammaDaughters;//Marcelo please add comment 
-	TH2F *fHistNPPGammaDaughtersXY;//Marcelo please add comment 
+	TH1F *fHistNPPGammaFirstMother;// first mother ID 
+	TH2F *fHistNPPGammaFirstMotherXY;// first mother XY position
+	TH1F *fHistNPPGammaNDaughters;// number of daughters
+	TH1F *fHistNPPGammaDaughters;// daughters ID
+	TH2F *fHistNPPGammaDaughtersXY;// daughters XY position
 	
-	TH1F *fHistNPPGammaFirstMotherAcc;//Marcelo please add comment  
-	TH2F *fHistNPPGammaFirstMotherXYAcc;//Marcelo please add comment  
-	TH1F *fHistNPPGammaNDaughtersAcc;//Marcelo please add comment 
-	TH1F *fHistNPPGammaDaughtersAcc;//Marcelo please add comment 
-	TH2F *fHistNPPGammaDaughtersXYAcc;//Marcelo please add comment 
+	TH1F *fHistNPPGammaFirstMotherAcc;// first mother ID  
+	TH2F *fHistNPPGammaFirstMotherXYAcc;//  first mother XY position
+	TH1F *fHistNPPGammaNDaughtersAcc;// number of daughters
+	TH1F *fHistNPPGammaDaughtersAcc;// daughters ID
+	TH2F *fHistNPPGammaDaughtersXYAcc;// daughters XY position
 	
-	TH1F *fHistNPPGammaFirstMotherRec;//Marcelo please add comment  
-	TH2F *fHistNPPGammaFirstMotherXYRec;//Marcelo please add comment  
-	TH1F *fHistNPPGammaNDaughtersRec;//Marcelo please add comment 
-	TH1F *fHistNPPGammaDaughtersRec;//Marcelo please add comment 
-	TH2F *fHistNPPGammaDaughtersXYRec;//Marcelo please add comment 
+	TH1F *fHistNPPGammaFirstMotherRec;// first mother ID  
+	TH2F *fHistNPPGammaFirstMotherXYRec;//  first mother XY position
+	TH1F *fHistNPPGammaNDaughtersRec;// number of daughters
+	TH1F *fHistNPPGammaDaughtersRec;// daughters ID
+	TH2F *fHistNPPGammaDaughtersXYRec;// daughters XY position
 
 	//check projections
-	TH2F *fHistAllERecEMC;//Marcelo please add comment	
-	TH2F *fHistAllPtRecPtMC;//Marcelo please add comment
-	TH2F *fHistElectronERecEMC;//Marcelo please add comment	
-	TH2F *fHistGammaERecEMC;//Marcelo please add comment
+	TH2F *fHistAllERecEMC;// E reconstructed vs E MC	
+	TH2F *fHistAllPtRecPtMC;// pt reconstructed vs pt MC
+	TH2F *fHistElectronERecEMC;// E reconstructed vs E MC	
+	TH2F *fHistGammaERecEMC;// E reconstructed vs E MC
 	
-	TH2F *fHistChargedRes;//Marcelo please add comment
-	TH2F *fHistChargedRes2;//Marcelo please add comment
-	TH2F *fHistChargedRes3;//Marcelo please add comment
-	TH2F *fHistNeutralRes;//Marcelo please add comment
-	TH2F *fHistElectronRes;//Marcelo please add comment
-	TH2F *fHistGammaRes;//Marcelo please add comment
+	TH2F *fHistChargedRes;// charged particle track matching residual
+	TH2F *fHistChargedRes2;// charged particle track matching residual
+	TH2F *fHistChargedRes3;// charged particle track matching residual
+	TH2F *fHistNeutralRes;// neutral particle track matching residual
+	TH2F *fHistElectronRes;// electron track matching residual
+	TH2F *fHistGammaRes;// gamma track matching residual
 	
-	TH2F *fHistIsInAcc;//Marcelo please add comment
+	TH2F *fHistIsInAcc;// EMCal acceptance check
 	
  private:
 
