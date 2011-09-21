@@ -667,7 +667,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
     kp5=(*fBBParam)[4];
   }
   //
-  AliTPCROC *roc = AliTPCROC::Instance();
+  static const AliTPCROC *roc = AliTPCROC::Instance();
   static const TDatabasePDG *pdg = TDatabasePDG::Instance();
 
   Int_t nclITS   = track->GetNcls(0);
