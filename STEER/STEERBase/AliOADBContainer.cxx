@@ -282,6 +282,8 @@ Int_t AliOADBContainer::InitFromFile(const char* fname, const char* key)
     fEntries = cont->GetNumberOfEntries();
     fLowerLimits.Set(fEntries);
     fUpperLimits.Set(fEntries);
+    if(fEntries > fArray->GetSize()) fArray->Expand(fEntries);
+
     for (Int_t i = 0; i < fEntries; i++) {
 	fLowerLimits[i] = cont->LowerLimit(i); 
 	fUpperLimits[i] = cont->UpperLimit(i);
