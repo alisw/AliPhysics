@@ -26,6 +26,7 @@
 #include "AliStack.h"
 #include "AliGenEvtGen.h"
 #include "AliRun.h"
+#include "AliLog.h"
 #include <TParticle.h>
 
 ClassImp(AliGenEvtGen)
