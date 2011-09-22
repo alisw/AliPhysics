@@ -281,7 +281,7 @@ int AliHLTGlobalTrackMatcherComponent::ScanConfigurationArgument(int argc, const
   if (argument.CompareTo("-method")==0) {
     if (++i>=argc) return -EPROTO;
     argument=argv[i];
-    fMethod=argument.Atof(); // 
+    fMethod=argument.Atoi(); // 
     return 2;
   }    
 

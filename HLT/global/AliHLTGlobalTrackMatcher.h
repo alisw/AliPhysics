@@ -150,7 +150,7 @@ Int_t AliHLTGlobalTrackMatcher::MatchTrackToEMCalClusters( AliExternalTrackParam
     if(TMath::Abs(track->Eta()-vec.Eta())>0.3)	continue; 
     
     AliExternalTrackParam *trkParam = new AliExternalTrackParam(*track);//Retrieve the starting point every time before the extrapolation
-    Double_t trkPos[3];
+    Double_t trkPos[3] = {0, 0, 0};
     Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
     vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
     trkParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
