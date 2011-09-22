@@ -48,6 +48,8 @@ public:
   virtual void MakeRecPoints(TTree* recpo); 
   virtual void MakeESDs(AliESDEvent* esd) ;
   
+  void ResetDetectorRaws(TObjArray* list);
+  
 private:
   /// Not implemented
   AliMUONTriggerQADataMakerRec(const AliMUONTriggerQADataMakerRec& qadm);   

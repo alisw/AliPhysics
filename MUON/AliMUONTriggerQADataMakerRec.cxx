@@ -1531,3 +1531,13 @@ AliMUONCalibrationData* AliMUONTriggerQADataMakerRec::CalibrationData()
   if ( ! fCalibrationData ) fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
   return fCalibrationData;
 }
+
+//____________________________________________________________________________ 
+void AliMUONTriggerQADataMakerRec::ResetDetectorRaws(TObjArray*/* list*/)
+{
+  /// Reset the calibration data
+  delete fTriggerProcessor;
+  fTriggerProcessor = 0x0;
+  delete fCalibrationData;
+  fCalibrationData = 0x0;
+}
