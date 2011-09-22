@@ -96,7 +96,6 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         GetSigmaEtaEta(const AliVCluster *c, Double_t &sigmaEtaEta, Double_t &sigmaPhiPhi)         const;
   Double_t     GetTrackIsolation(Double_t cEta, Double_t cPhi, Double_t radius=0.2, Double_t pt=0.)       const;
   Double_t     GetTrackIsoStrip(Double_t cEta, Double_t cPhi, Double_t dEta=0.015, Double_t dPhi=0.3, Double_t pt=0.)       const;
-  Double_t     GetTrigEnergy(const AliVCluster *c)                                                        const;
   Bool_t       IsShared(const AliVCluster *c)                                                             const;
   Bool_t       IsIdPartOfCluster(const AliVCluster *c, Short_t id)                                        const;
   void         PrintDaughters(const AliVParticle *p, const TObjArray *arr, Int_t level=0)                 const;

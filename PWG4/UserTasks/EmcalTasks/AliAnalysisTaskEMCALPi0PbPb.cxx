@@ -937,6 +937,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     }
   }
 
+  Double_t vertex[3] = {0,0,0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+
   for(Int_t i=0, ncl=0; i<nclus; ++i) {
     AliVCluster *clus = static_cast<AliVCluster*>(clusters->At(i));
 
@@ -947,11 +950,9 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     if (clus->E()<fMinE)
       continue;
 
-    Float_t clsPos[3] = {0};
+    Float_t clsPos[3] = {0,0,0};
     clus->GetPosition(clsPos);
     TVector3 clsVec(clsPos);
-    Double_t vertex[3] = {0};
-    InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
     TLorentzVector clusterVec;
     clus->GetMomentum(clusterVec,vertex);
     Double_t clsEta = clusterVec.Eta();
