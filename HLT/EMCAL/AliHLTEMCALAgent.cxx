@@ -107,7 +107,7 @@ int AliHLTEMCALAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
         TString sinkClusterInput;
         TString emInput;
         
-        for (int module = moduleStart; module < moduleEnd; module++) 
+        for (int module = moduleStart; module <= moduleEnd; module++) 
         {
             TString clInput;
             
