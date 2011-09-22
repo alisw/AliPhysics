@@ -58,15 +58,15 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 
   if (analysisType=="ESD"){
     bf  = GetBalanceFunctionObject("ESD");
-    bfs = GetBalanceFunctionObject("ESD");
+    bfs = GetBalanceFunctionObject("ESD",kTRUE);
   }
   else if (analysisType=="AOD"){
     bf  = GetBalanceFunctionObject("AOD");
-    bfs = GetBalanceFunctionObject("AOD");
+    bfs = GetBalanceFunctionObject("AOD",kTRUE);
   }
   else{
     bf  = GetBalanceFunctionObject("MC");
-    bfs = GetBalanceFunctionObject("MC");
+    bfs = GetBalanceFunctionObject("MC",kTRUE);
   }
 
   // Create the task, add it to manager and configure it.
@@ -78,20 +78,21 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     AliESDtrackCuts *trackCuts = GetTrackCutsObject();
     taskBF->SetAnalysisCutObject(trackCuts);
     taskBF->SetCentralityEstimator(centralityEstimator);
+
+    // offline trigger selection (AliVEvent.h)
+    // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
+    // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
+    taskBF->SelectCollisionCandidates(AliVEvent::kMB);
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
+    taskBF->SetAODtrackCutBit(128);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
   }
 
     // vertex cut (x,y,z)
     taskBF->SetVertexDiamond(.3,.3,vertexZ);
-
-    // offline trigger selection (AliVEvent.h)
-    // taskBF->UseOfflineTrigger(); // NOT usable 
-    // with this only selected events are analyzed
-    taskBF->SelectCollisionCandidates(AliVEvent::kMB);
 
     //bf->PrintAnalysisSettings();
     mgr->AddTask(taskBF);
@@ -101,13 +102,13 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   //==============================================================================
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis";
-  AliAnalysisDataContainer *coutBalance = mgr->CreateContainer(Form("bfOutput_%s",centralityName.Data()), AliBalance::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  AliAnalysisDataContainer *coutBFS= mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
-  //mgr->ConnectOutput(taskBF, 1, coutBalance);
-  mgr->ConnectOutput(taskBF, 3, coutQA);
-  mgr->ConnectOutput(taskBF, 4, coutBF);
+  mgr->ConnectOutput(taskBF, 1, coutQA);
+  mgr->ConnectOutput(taskBF, 2, coutBF);
+  mgr->ConnectOutput(taskBF, 3, coutBFS);
 
   return taskBF;
 }

@@ -36,6 +36,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fShuffledBalance(0),
   fList(0),
   fListBF(0),
+  fListBFS(0),
   fHistEventStats(0),
   fHistTrackStats(0),
   fHistVx(0),
@@ -48,7 +49,6 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistEta(0),
   fHistPhi(0),
   fHistV0M(0),
-  fHistN(0),
   fESDtrackCuts(0),
   fCentralityEstimator("VOM"),
   fCentralityPercentileMin(0.), 
@@ -57,6 +57,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fVxMax(0.3),
   fVyMax(0.3),
   fVzMax(10.),
+  nAODtrackCutBit(128),
   fPtMin(0.3),
   fPtMax(1.5),
   fEtaMin(-0.8),
@@ -64,23 +65,39 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fDCAxyCut(2.4),
   fDCAzCut(3.2){
   // Constructor
-  for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
-    for (Int_t j = 0; j < 3; j++){
-      fHistBF[i][j] = NULL;
-      fHistShuffledBF[i][j] = NULL;
-    }
-  }
 
   // Define input and output slots here
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
-  DefineOutput(1, AliBalance::Class());
-  DefineOutput(2, AliBalance::Class());
+  DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
   DefineOutput(3, TList::Class());
-  DefineOutput(4, TList::Class());
 }
 
+//________________________________________________________________________
+AliAnalysisTaskBF::~AliAnalysisTaskBF() {
+
+  // delete fBalance; 
+  // delete fShuffledBalance; 
+  // delete fList;
+  // delete fListBF; 
+  // delete fListBFS;
+
+  // delete fHistEventStats; 
+  // delete fHistTrackStats; 
+  // delete fHistVx; 
+  // delete fHistVy; 
+  // delete fHistVz; 
+
+  // delete fHistClus;
+  // delete fHistDCA;
+  // delete fHistChi2;
+  // delete fHistPt;
+  // delete fHistEta;
+  // delete fHistPhi;
+  // delete fHistV0M;
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskBF::UserCreateOutputObjects() {
@@ -89,14 +106,14 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   if(!fBalance) {
     fBalance = new AliBalance();
     fBalance->SetAnalysisLevel("ESD");
-    fBalance->SetNumberOfBins(-1,16);
-    fBalance->SetInterval(-0.8,0.8,-1,0.,1.6);
+    //fBalance->SetNumberOfBins(-1,16);
+    fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
   }
   if(!fShuffledBalance) {
     fShuffledBalance = new AliBalance();
     fShuffledBalance->SetAnalysisLevel("ESD");
-    fShuffledBalance->SetNumberOfBins(-1,16);
-    fShuffledBalance->SetInterval(-0.8,0.8,-1,0.,1.6);
+    //fShuffledBalance->SetNumberOfBins(-1,16);
+    fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
   }
 
   //QA list
@@ -108,6 +125,10 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fListBF = new TList();
   fListBF->SetName("listBF");
   fListBF->SetOwner();
+
+  fListBFS = new TList();
+  fListBFS->SetName("listBFShuffled");
+  fListBFS->SetOwner();
 
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
@@ -147,32 +168,39 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fList->Add(fHistV0M);
 
 
+  // Balance function histograms
+
+  // Initialize histograms if not done yet
+  if(!fBalance->GetHistNp(0) || !fShuffledBalance->GetHistNp(0)){
+    AliWarning("Histograms not yet initialized! --> Will be done now");
+    AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
+    fBalance->InitHistograms();
+    fShuffledBalance->InitHistograms();
+  }
+
+  for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
+    fListBF->Add(fBalance->GetHistNp(a));
+    fListBF->Add(fBalance->GetHistNn(a));
+    fListBF->Add(fBalance->GetHistNpn(a));
+    fListBF->Add(fBalance->GetHistNnn(a));
+    fListBF->Add(fBalance->GetHistNpp(a));
+    fListBF->Add(fBalance->GetHistNnp(a));
+
+    fListBFS->Add(fShuffledBalance->GetHistNp(a));
+    fListBFS->Add(fShuffledBalance->GetHistNn(a));
+    fListBFS->Add(fShuffledBalance->GetHistNpn(a));
+    fListBFS->Add(fShuffledBalance->GetHistNnn(a));
+    fListBFS->Add(fShuffledBalance->GetHistNpp(a));
+    fListBFS->Add(fShuffledBalance->GetHistNnp(a));
+  }  
+
+
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
-
-  //balance function histograms
-  TString hname;
-  for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
-    for (Int_t j = 0; j < 3; j++){
-      hname = "BF";
-      hname+=i;
-      hname+=j;
-      fHistBF[i][j] = new TH1F(hname,hname,fBalance->GetNumberOfBins(i),fBalance->GetP2Start(i),fBalance->GetP2Stop(i));
-      fListBF->Add(fHistBF[i][j]);
-      hname = "ShuffledBF";
-      hname+=i;
-      hname+=j;
-      fHistShuffledBF[i][j] = new TH1F(hname,hname,fShuffledBalance->GetNumberOfBins(i),fShuffledBalance->GetP2Start(i),fShuffledBalance->GetP2Stop(i));
-      fListBF->Add(fHistShuffledBF[i][j]);
-    }
-  }
-  fHistN = new TH1F("fN","fN",2,0,1);
-  fListBF->Add(fHistN);
-
   // Post output data.
-  //PostData(1, fBalance);
-  PostData(3, fList);
-  PostData(4, fListBF);
+  PostData(1, fList);
+  PostData(2, fListBF);
+  PostData(3, fListBFS);
   
 }
 
@@ -196,6 +224,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       return;
     }
 
+    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
     fHistEventStats->Fill(1); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
@@ -288,6 +317,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       return;
     }
 
+    // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
     fHistEventStats->Fill(1); //all events
     Bool_t isSelected = kTRUE;
     if(fUseOfflineTrigger)
@@ -318,7 +348,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      if(TMath::Abs(vertex->GetX()) < fVxMax) {
 		if(TMath::Abs(vertex->GetY()) < fVyMax) {
 		  if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		    fHistEventStats->Fill(4); //analayzed events
+		    fHistEventStats->Fill(4); //analyzed events
 		    fHistVx->Fill(vertex->GetX());
 		    fHistVy->Fill(vertex->GetY());
 		    fHistVz->Fill(vertex->GetZ());
@@ -336,7 +366,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
 		      // take only TPC only tracks 
 		      fHistTrackStats->Fill(aodTrack->GetFilterMap());
-		      if(!aodTrack->TestFilterBit(128)) continue;
+		      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
 
 		      Float_t pt  = aodTrack->Pt();
 		      Float_t eta = aodTrack->Eta();
@@ -455,13 +485,13 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   
   delete array;
   
+
 }      
 
 //________________________________________________________________________
 void  AliAnalysisTaskBF::FinishTaskOutput(){
   //Printf("END BF");
 
-  //fBalance = dynamic_cast<AliBalance*> (GetOutputData(1));
   if (!fBalance) {
     Printf("ERROR: fBalance not available");
     return;
@@ -470,26 +500,7 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
     Printf("ERROR: fShuffledBalance not available");
     return;
   }
-  
-  for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
-    for(Int_t iBin = 1; iBin <= fBalance->GetNumberOfBins(a); iBin++){
 
-      //Printf("%d %d  ->   %f",a,iBin,fShuffledBalance->GetNpn(a,iBin-1));
-      //Printf("%d %d  ->   %f",a,iBin,fBalance->GetNpn(a,iBin-1));
-
-      fHistBF[a][0]->SetBinContent(iBin,fBalance->GetNnn(a,iBin-1));
-      fHistBF[a][1]->SetBinContent(iBin,fBalance->GetNpn(a,iBin-1));
-      fHistBF[a][2]->SetBinContent(iBin,fBalance->GetNpp(a,iBin-1));	
-      
-      fHistShuffledBF[a][0]->SetBinContent(iBin,fShuffledBalance->GetNnn(a,iBin-1));
-      fHistShuffledBF[a][1]->SetBinContent(iBin,fShuffledBalance->GetNpn(a,iBin-1));
-      fHistShuffledBF[a][2]->SetBinContent(iBin,fShuffledBalance->GetNpp(a,iBin-1));
-      
-      
-    }
-    fHistN->SetBinContent(1,fBalance->GetNn(a));
-    fHistN->SetBinContent(2,fBalance->GetNp(a));  
-  }
 
 }
 
@@ -499,5 +510,5 @@ void AliAnalysisTaskBF::Terminate(Option_t *) {
   // Called once at the end of the query
 
   // not implemented ...
-  
+
 }

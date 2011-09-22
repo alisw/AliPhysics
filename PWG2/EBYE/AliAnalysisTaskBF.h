@@ -18,7 +18,7 @@ class AliESDtrackCuts;
 class AliAnalysisTaskBF : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskBF(const char *name = "AliAnalysisTaskBF");
-  virtual ~AliAnalysisTaskBF() {}
+  virtual ~AliAnalysisTaskBF(); 
   
   
   virtual void   UserCreateOutputObjects();
@@ -36,6 +36,9 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fVxMax = vx;
     fVyMax = vy;
     fVzMax = vz;
+  }
+  void SetAODtrackCutBit(Int_t bit){
+    nAODtrackCutBit = bit;
   }
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
     fPtMin  = ptmin;
@@ -64,6 +67,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   AliBalance *fShuffledBalance; //BF object (shuffled)
   TList *fList; //fList object
   TList *fListBF; //fList object
+  TList *fListBFS; //fList object
 
   TH1F *fHistEventStats; //event stats
   TH1F *fHistTrackStats; //Track filter bit stats
@@ -79,10 +83,6 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH1F *fHistPhi;
   TH2F *fHistV0M;
 
-  TH1F *fHistBF[ANALYSIS_TYPES][3];
-  TH1F *fHistShuffledBF[ANALYSIS_TYPES][3];
-  TH1F *fHistN;
-
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
@@ -94,6 +94,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Double_t fVxMax;//vxmax
   Double_t fVyMax;//vymax
   Double_t fVzMax;//vzmax
+
+  Int_t nAODtrackCutBit;//track cut bit from track selection (only used for AODs)
 
   Double_t fPtMin;//only used for AODs
   Double_t fPtMax;//only used for AODs
