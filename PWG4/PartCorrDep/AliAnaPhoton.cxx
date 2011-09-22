@@ -403,8 +403,8 @@ void AliAnaPhoton::FillAcceptanceHistograms(){
               fhYPrimMCAcc[mcPPi0Decay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) && fhEPrimMC[mcPOtherDecay])
+          else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) && fhEPrimMC[mcPOtherDecay])
           {
             fhYPrimMC[mcPOtherDecay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
@@ -605,8 +605,8 @@ void AliAnaPhoton::FillAcceptanceHistograms(){
               fhYPrimMCAcc[mcPPi0Decay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) && fhEPrimMC[mcPOtherDecay])
+          else if((GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhEPrimMC[mcPOtherDecay])
           {
             fhYPrimMC[mcPOtherDecay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
@@ -2509,8 +2509,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) && fhMCE[mcOtherDecay])
+        else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[mcOtherDecay])
         {
           fhMCE  [mcOtherDecay] ->Fill(ecluster);
           fhMCPt [mcOtherDecay] ->Fill(ptcluster);
