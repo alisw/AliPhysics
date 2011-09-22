@@ -27,11 +27,12 @@ class AliEmcalPhysicsSelectionTask : public AliPhysicsSelectionTask {
   Int_t          fNCalled;       //!how often was the PS called
   Int_t          fNAccepted;     //!how often was the event accepted
   TH1           *fHAcc;          //!acceptance histo
+  TH1           *fHEvtTypes;     //!event types histo
 
  private:
   AliEmcalPhysicsSelectionTask(const AliEmcalPhysicsSelectionTask&);
   AliEmcalPhysicsSelectionTask& operator=(const AliEmcalPhysicsSelectionTask&);
 
-  ClassDef(AliEmcalPhysicsSelectionTask, 1); // Emcal physics selection task
+  ClassDef(AliEmcalPhysicsSelectionTask, 2); // Emcal physics selection task
 };
 #endif
