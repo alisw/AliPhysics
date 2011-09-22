@@ -49,7 +49,7 @@ public:
   enum     PositionAlgorithms{kUnchanged=-1,kPosTowerIndex=0, kPosTowerGlobal=1};
   enum     ParticleType{kPhoton=0, kElectron=1,kHadron =2, kUnknown=-1};
   enum     { kNCuts = 11 }; //track matching
-  enum     TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1};
+  enum     TrackCutsType{kTPCOnlyCut=0, kGlobalCut=1, kLooseCut=2};
 
   //-----------------------------------------------------
   //Position recalculation
