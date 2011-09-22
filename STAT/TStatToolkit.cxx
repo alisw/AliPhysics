@@ -1140,19 +1140,24 @@ void   TStatToolkit::Constrain1D(const TString &input, const TString filter, TVe
   // param,covar - parameters and covariance matrix of the fit
   // mean,sigma  - new measurement uning which the fit is updated
   //
+  
   TObjArray *array0= input.Tokenize("++");
   TObjArray *array1= filter.Tokenize("++");
   TMatrixD paramM(param.GetNrows(),1);
   for (Int_t i=0; i<=array0->GetEntries(); i++){paramM(i,0)=param(i);}
   
-  for (Int_t i=0; i<array0->GetEntries(); i++){
-    Bool_t isOK=kTRUE;
-    TString str(array0->At(i)->GetName());
-    for (Int_t j=0; j<array1->GetEntries(); j++){
-      if (str.Contains(array1->At(j)->GetName())==0) isOK=kFALSE;      
-    }
-    if (isOK) {
-      TStatToolkit::Update1D(mean, sigma, i+1, paramM, covar);//
+  if (filter.Length()==0){
+    TStatToolkit::Update1D(mean, sigma, 0, paramM, covar);//
+  }else{  
+    for (Int_t i=0; i<array0->GetEntries(); i++){
+      Bool_t isOK=kTRUE;
+      TString str(array0->At(i)->GetName());
+      for (Int_t j=0; j<array1->GetEntries(); j++){
+	if (str.Contains(array1->At(j)->GetName())==0) isOK=kFALSE;      
+      }
+      if (isOK) {
+	TStatToolkit::Update1D(mean, sigma, i+1, paramM, covar);//
+      }
     }
   }
   for (Int_t i=0; i<=array0->GetEntries(); i++){
@@ -1160,17 +1165,18 @@ void   TStatToolkit::Constrain1D(const TString &input, const TString filter, TVe
   }
 }
 
-TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar){
+TString  TStatToolkit::MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar, Bool_t verbose){
   //
   //
   //
   TObjArray *array0= input.Tokenize("++");
-  TString result="(0.0";
+  TString result=Form("(%f",param[0]);
+  printf("%f\t%f\t\n", param[0], TMath::Sqrt(covar(0,0))); 
   for (Int_t i=0; i<array0->GetEntries(); i++){
     TString str(array0->At(i)->GetName());
     result+="+"+str;
     result+=Form("*(%f)",param[i+1]);
-    printf("%f\t%f\t%s\n", param[i+1], TMath::Sqrt(covar(i+1,i+1)),str.Data());    
+    if (verbose) printf("%f\t%f\t%s\n", param[i+1], TMath::Sqrt(covar(i+1,i+1)),str.Data());    
   }
   result+="-0.)";
   return result;

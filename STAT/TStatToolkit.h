@@ -60,7 +60,7 @@ class TStatToolkit : public TObject
  static TString FilterFit(const TString &input, const TString filter, TVectorD &vec, TMatrixD &covar);
  static void Update1D(Double_t delta, Double_t sigma, Int_t s1, TMatrixD &param, TMatrixD &covar);
   static void   Constrain1D(const TString &input, const TString filter, TVectorD &param, TMatrixD & covar, Double_t mean, Double_t sigma);
-  static TString  MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar);
+  static TString  MakeFitString(const TString &input, const TVectorD &param, const TMatrixD & covar, Bool_t verbose=kFALSE);
 
   //
   // TestFunctions:
