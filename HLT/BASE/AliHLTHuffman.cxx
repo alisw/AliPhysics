@@ -273,7 +273,7 @@ Bool_t AliHLTHuffman::Decode(std::bitset<64> bits, AliHLTUInt64_t& value) const 
 }
 
 Bool_t AliHLTHuffman::AddTrainingValue(const AliHLTUInt64_t value,
-		const float_t weight) {
+		const Float_t weight) {
 	if (value > fMaxValue) {
 		/* TODO: ERROR message */
 		return kFALSE;
