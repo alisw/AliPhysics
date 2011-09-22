@@ -1,0 +1,24 @@
+These are tasks to perform PHOS embedding. Steps are following:
+1. Steering macro Embeding.C reads list of data ESDs to embed and calculates number of events
+2. Performs simulation of the same number of events, using enclosed Config.C 
+   (single pi0 per event with flat or Hagedorn spectrum)
+   then simulated signals are reconstructed clusters and converted to AOD
+3. Then class AliPHOSEmbedding is called
+   - read data ESDs, extract PHOS calocells, convert them to PHOSDigits
+   - run default reconstruction to avoid possible problems with different 
+     OCDBs used now and in official reconstruction. Apply final calibration if necessary
+   - merge digits with (re-calibrated if necessary) signal digits
+   - reconstruct digits with embedding signal (with final calibration if necessary)
+4. As a result of all these procedures AOD is produced with
+   - MC information about embedded pi0s
+   - standard CaloClosters, CaloCells with final calibration
+   - Embedded CaloClusters, embedded CaloCells with final calibration
+5. Run analysis with
+   - AliAnalysisTaskPi0Efficiency: Signal (nominator in efficiency calculation) is any cluster with 
+     contribution from simulated pi0s. Only for cross-check, this appoach is not quite correct at high accupancy.
+   - AliAnalysisTaskPi0DiffEfficiency: correct approach, Signal (nominator in efficiency calculation) is
+     difference between Real inv. mass distribution after and before embedding.
+
+Note that to perform MC simulation one needs either access to official OCDB (Why do I need TPC drift velocity to simulate PHOS????)
+or local copy of OCDB. Also histograms with new/old calibrations should be provided if necessary.
+
