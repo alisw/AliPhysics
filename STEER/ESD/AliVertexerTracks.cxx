@@ -1017,10 +1017,9 @@ void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts)
   if (ncuts>19) SetMVFinalWBinary(cuts[19]>0);
   if (ncuts>20) if (cuts[20]>20.)  SetBCSpacing(int(cuts[20]));
   //
-  if (ncuts>21) {
-    if (fAlgo==kMultiVertexer) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
-    else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
-  }
+  if (fAlgo==kMultiVertexer) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
+  else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
+  //
   return;
 }
 //---------------------------------------------------------------------------
