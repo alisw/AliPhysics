@@ -64,6 +64,7 @@ private:
   Bool_t AcceptCluster(AliTPCclusterMI*c);
   Double_t  ProcesSignal(Float_t * signal, Int_t nchannels, Int_t id[3], Double_t &rms, Double_t &pedestalCalib);
   void ProcessSectorData();
+  Int_t ReadHLTClusters();
   
   Float_t * fBins;       //!digits array
   Int_t   * fSigBins; //!digits array containg only timebins above threshold
@@ -96,6 +97,7 @@ private:
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   Bool_t  fBDumpSignal; // dump signal flag
   Bool_t  fBClonesArray; // output clusters stored in TClonesArray 
+  Bool_t  fBUseHLTClusters; // use HLT clusters instead of offline clusters
 
   // Non-persistent arrays
 

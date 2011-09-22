@@ -21,6 +21,8 @@
 //  1. The Input data for reconstruction - Options
 //      1.a Simulated data  - TTree - invoked Digits2Clusters()
 //      1.b Raw data        - Digits2Clusters(AliRawReader* rawReader); 
+//      1.c HLT clusters    - Digits2Clusters and Digits2Clusters(AliRawReader* rawReader)
+//                            invoke ReadHLTClusters()
 //
 //  2. The Output data
 //      2.a TTree with clusters - if  SetOutput(TTree * tree) invoked
@@ -48,6 +50,8 @@
 #include <TRandom.h>
 #include <TTree.h>
 #include <TTreeStream.h>
+#include "TSystem.h"
+#include "TClass.h"
 
 #include "AliDigits.h"
 #include "AliLoader.h"
@@ -108,6 +112,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
+  fBUseHLTClusters(kFALSE),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -188,6 +193,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
+  fBUseHLTClusters(kFALSE),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -710,6 +716,20 @@ void AliTPCclustererMI::Digits2Clusters()
     fRecoParam->Dump();
   }
 
+  //-----------------------------------------------------------------
+  // Use HLT clusters
+  //-----------------------------------------------------------------
+  if (fBUseHLTClusters) {
+    AliInfo("Using HLT clusters for TPC off-line reconstruction");
+    fZWidth = fParam->GetZWidth();
+    ReadHLTClusters();
+
+    return;
+  }
+
+  //-----------------------------------------------------------------
+  // Run TPC off-line clusterer
+  //-----------------------------------------------------------------
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   AliSimDigits digarr, *dummy=&digarr;
@@ -939,6 +959,20 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   }
   fRowDig = NULL;
 
+  //-----------------------------------------------------------------
+  // Use HLT clusters
+  //-----------------------------------------------------------------
+  if (fBUseHLTClusters) {
+    AliInfo("Using HLT clusters for TPC off-line reconstruction");
+    fZWidth = fParam->GetZWidth();
+    ReadHLTClusters();
+
+    return;
+  }
+   
+  //-----------------------------------------------------------------
+  // Run TPC off-line clusterer
+  //-----------------------------------------------------------------
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetPadGainFactor();
   AliTPCAltroMapping** mapping =AliTPCcalibDB::Instance()->GetMapping();
   //
@@ -1528,7 +1562,102 @@ Double_t AliTPCclustererMI::ProcesSignal(Float_t *signal, Int_t nchannels, Int_t
   return median;
 }
 
+Int_t AliTPCclustererMI::ReadHLTClusters()
+{
+  //
+  // read HLT clusters instead of off line custers, 
+  // used in Digits2Clusters
+  //
 
+  TObject* pClusterAccess=NULL;
+  TClass* pCl=NULL;
+  ROOT::NewFunc_t pNewFunc=NULL;
+  do {
+    pCl=TClass::GetClass("AliHLTTPCClusterAccessHLTOUT");
+  } while (!pCl && gSystem->Load("libAliHLTTPC.so")==0);
+  if (!pCl || (pNewFunc=pCl->GetNew())==NULL) {
+    AliError("can not load class description of AliHLTTPCClusterAccessHLTOUT, aborting ...");
+    return -1;
+  }
+  
+  void* p=(*pNewFunc)(NULL);
+  if (!p) {
+    AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
+    return -2;
+  }
+  pClusterAccess=reinterpret_cast<TObject*>(p);
+  if (!pClusterAccess) {
+    AliError("instance not of type TObject");
+    return -3 ;
+  }
 
+  const Int_t kNIS = fParam->GetNInnerSector();
+  const Int_t kNOS = fParam->GetNOuterSector();
+  const Int_t kNS = kNIS + kNOS;
+  fNclusters  = 0;
+  
+  for(fSector = 0; fSector < kNS; fSector++) {
 
+    TString param("sector="); param+=fSector;
+    pClusterAccess->Clear();
+    pClusterAccess->Execute("read", param);
+    if (pClusterAccess->FindObject("clusterarray")==NULL) {
+      AliError("HLT clusters requested, but not cluster array not present");
+      return -4;
+    }
 
+    TClonesArray* clusterArray=dynamic_cast<TClonesArray*>(pClusterAccess->FindObject("clusterarray"));
+    if (!clusterArray) {
+      AliError("HLT cluster array is not of class type TClonesArray");
+      return -5;
+    }
+
+    AliDebug(4,Form("Reading %d clusters from HLT for sector %d", clusterArray->GetEntriesFast(), fSector));
+
+    Int_t nClusterSector=0;
+    Int_t nRows=fParam->GetNRow(fSector);
+
+    for (fRow = 0; fRow < nRows; fRow++) {
+      fRowCl->SetID(fParam->GetIndex(fSector, fRow));
+      if (fOutput) fOutput->GetBranch("Segment")->SetAddress(&fRowCl);
+      fNcluster=0; // reset clusters per row
+      
+      fRx = fParam->GetPadRowRadii(fSector, fRow);
+      fPadLength = fParam->GetPadPitchLength(fSector, fRow);
+      fPadWidth  = fParam->GetPadPitchWidth();
+      fMaxPad = fParam->GetNPads(fSector,fRow);
+      fMaxBin = fMaxTime*(fMaxPad+6);  // add 3 virtual pads  before and 3 after
+      
+      fBins = fAllBins[fRow];
+      fSigBins = fAllSigBins[fRow];
+      fNSigBins = fAllNSigBins[fRow];
+      
+      for (Int_t i=0; i<clusterArray->GetEntriesFast(); i++) {
+	if (!clusterArray->At(i)) 
+	  continue;
+	
+	AliTPCclusterMI* cluster=dynamic_cast<AliTPCclusterMI*>(clusterArray->At(i));
+	if (!cluster) continue;
+	if (cluster->GetRow()!=fRow) continue;
+	nClusterSector++;
+	AddCluster(*cluster, NULL, 0);
+      }
+      
+      FillRow();
+      fRowCl->GetArray()->Clear("c");
+      
+    } // for (fRow = 0; fRow < nRows; fRow++) {
+    if (nClusterSector!=clusterArray->GetEntriesFast()) {
+      AliError(Form("Failed to read %d out of %d HLT clusters", 
+		    clusterArray->GetEntriesFast()-nClusterSector, 
+		    clusterArray->GetEntriesFast()));
+    }
+    fNclusters+=nClusterSector;
+  } // for(fSector = 0; fSector < kNS; fSector++) {
+
+  delete pClusterAccess;
+
+  Info("Digits2Clusters", "Number of converted HLT clusters : %d", fNclusters);
+  
+  return 0;
+}
