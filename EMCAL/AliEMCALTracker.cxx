@@ -293,7 +293,7 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
 
       //Loose geometric cut
       Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
-      if(TMath::Abs(esdTrack->Eta())>1 || phi <= 60 || phi >= 200 ) continue;
+      if(TMath::Abs(esdTrack->Eta())>0.8 || phi <= 20 || phi >= 240 ) continue;
 
       fTracks->AddLast(esdTrack);
     }
@@ -413,21 +413,15 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
       //Rotate to proper local coordinate
       vec.RotateZ(-alpha); 
-      trkParamTmp.Rotate(alpha); 
       //extrapolation is done here
-      if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), fStep, kFALSE, 0.8, -1)) continue; 
+      if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), fStep, kTRUE, 0.8, -1)) continue; 
 
       //Calculate the residuals
       trkParamTmp.GetXYZ(trkPos);        
       TVector3 clsPosVec(cluster->X(),cluster->Y(),cluster->Z());
       TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-      
-      Double_t clsPhi = clsPosVec.Phi();
-      if(clsPhi<0) clsPhi+=2*TMath::Pi();
-      Double_t trkPhi = trkPosVec.Phi();
-      if(trkPhi<0) trkPhi+=2*TMath::Pi();
 
-      Double_t tmpPhi = clsPhi-trkPhi;
+      Double_t tmpPhi = clsPosVec.DeltaPhi(trkPosVec);
       Double_t tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
   
       if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))

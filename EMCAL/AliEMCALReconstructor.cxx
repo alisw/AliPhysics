@@ -1,4 +1,5 @@
 /**************************************************************************
+#/eliza17/alice/esdfiles/data/2011/LHC11a/000146805/ESDs/pass2_without_SDD/11000146805038.550/root_archive.zip#AliESDs.root
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
@@ -716,9 +717,8 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
   //Rotate to proper local coordinate
   vec.RotateZ(-alpha); 
-  trkParamTmp.Rotate(alpha); 
   //extrapolation is done here
-  if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), GetRecParam()->GetExtrapolateStep(), kFALSE, 0.8, -1)) 
+  if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), GetRecParam()->GetExtrapolateStep(), kTRUE, 0.8, -1)) 
     return kFALSE; 
 
   //Calculate the residuals
@@ -726,13 +726,8 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
    
   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
   TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-      
-  Double_t clsPhi = clsPosVec.Phi();
-  if(clsPhi<0) clsPhi+=2*TMath::Pi();
-  Double_t trkPhi = trkPosVec.Phi();
-  if(trkPhi<0) trkPhi+=2*TMath::Pi();
 
-  dPhi = clsPhi-trkPhi;
+  dPhi = clsPosVec.DeltaPhi(trkPosVec);
   dEta = clsPosVec.Eta()-trkPosVec.Eta();
 
   return kTRUE;
