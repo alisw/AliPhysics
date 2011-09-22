@@ -22,6 +22,8 @@ class TGraphErrors;
 class TObjArray;
 class TH1D;
 
+const TString gBFAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
+
 class AliBalance : public TObject {
  public:
   enum EAnalysisType {
@@ -38,16 +40,29 @@ class AliBalance : public TObject {
   AliBalance(const AliBalance& balance);
   ~AliBalance();
   
-  void SetNumberOfBins(Int_t ibin, Int_t ibins);
-  void SetAnalysisLevel(const char* analysisLevel) {fAnalysisLevel = analysisLevel;}
-  void SetInterval(Double_t p1Start, Double_t p1Stop,
-		   Int_t ibin, Double_t p2Start, Double_t p2Stop);
+  //void SetNumberOfBins(Int_t ibin, Int_t ibins);
+  void SetAnalysisLevel(const char* analysisLevel) {
+    fAnalysisLevel = analysisLevel;}
+  void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
+  void SetInterval(Int_t iAnalysisType, Double_t p1Start, Double_t p1Stop,
+		   Int_t ibins, Double_t p2Start, Double_t p2Stop);
+  void SetNp(Int_t analysisType, Double_t NpSet)   { fNp[analysisType] = NpSet; }
+  void SetNn(Int_t analysisType, Double_t NnSet)   { fNn[analysisType] = NnSet; }
+  void SetNpp(Int_t analysisType, Int_t ibin, Double_t NppSet) { if(ibin > -1 && ibin < MAXIMUM_NUMBER_OF_STEPS) fNpp[analysisType][ibin] = NppSet; }
+  void SetNpn(Int_t analysisType, Int_t ibin, Double_t NpnSet) { if(ibin > -1 && ibin < MAXIMUM_NUMBER_OF_STEPS) fNpn[analysisType][ibin] = NpnSet; }
+  void SetNnp(Int_t analysisType, Int_t ibin, Double_t NnpSet) { if(ibin > -1 && ibin < MAXIMUM_NUMBER_OF_STEPS) fNnp[analysisType][ibin] = NnpSet; }
+  void SetNnn(Int_t analysisType, Int_t ibin, Double_t NnnSet) { if(ibin > -1 && ibin < MAXIMUM_NUMBER_OF_STEPS) fNnn[analysisType][ibin] = NnnSet; }
 
-  Int_t GetNumberOfBins(Int_t ibin) {return fNumberOfBins[ibin];}
-  Double_t GetP2Start(Int_t ibin){return fP2Start[ibin];}
-  Double_t GetP2Stop(Int_t ibin){return fP2Stop[ibin];}    
+  void InitHistograms(void);
+
   const char* GetAnalysisLevel() {return fAnalysisLevel.Data();}
   Int_t GetNumberOfAnalyzedEvent() {return fAnalyzedEvents;}
+
+  Int_t GetNumberOfBins(Int_t ibin) {return fNumberOfBins[ibin];}
+  Double_t GetP1Start(Int_t ibin){return fP1Start[ibin];}
+  Double_t GetP1Stop(Int_t ibin){return fP1Stop[ibin];}   
+  Double_t GetP2Start(Int_t ibin){return fP2Start[ibin];}
+  Double_t GetP2Stop(Int_t ibin){return fP2Stop[ibin];}    
  
   Double_t GetNp(Int_t analysisType) const { return 1.0*fNp[analysisType]; }
   Double_t GetNn(Int_t analysisType) const { return 1.0*fNn[analysisType]; }
@@ -56,7 +71,9 @@ class AliBalance : public TObject {
   Double_t GetNpp(Int_t analysisType, Int_t p2) const { 
     return 1.0*fNpp[analysisType][p2]; }
   Double_t GetNpn(Int_t analysisType, Int_t p2) const { 
-    return 1.0*fNpn[analysisType][p2]; }
+    return 1.0*fNpn[analysisType][p2]; }  
+  Double_t GetNnp(Int_t analysisType, Int_t p2) const { 
+    return 1.0*fNnp[analysisType][p2]; }
 
   void CalculateBalance(TObjArray *gTrackArray);
   
@@ -71,11 +88,31 @@ class AliBalance : public TObject {
   TH1D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
 
   void PrintAnalysisSettings();
+  TGraphErrors *drawBalance(Int_t fAnalysisType);
+  void SetGraphTitle(TGraphErrors *gr, Int_t fAnalysisType);
+
+  void SetHistNp(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistP[iAnalysisType] = gHist;}
+  void SetHistNn(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistN[iAnalysisType] = gHist;}
+  void SetHistNpn(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistPN[iAnalysisType] = gHist;}
+  void SetHistNnp(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistNP[iAnalysisType] = gHist;}
+  void SetHistNpp(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistPP[iAnalysisType] = gHist;}
+  void SetHistNnn(Int_t iAnalysisType, TH1D *gHist) { 
+    fHistNN[iAnalysisType] = gHist;}
+
+  TH1D *GetBalanceFunctionHistogram(Int_t iAnalysisType);
+  void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
+
+  Bool_t bShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
- 
+
   Int_t fNumberOfBins[ANALYSIS_TYPES]; //number of bins of the analyzed interval
   Double_t fP1Start[ANALYSIS_TYPES];
   Double_t fP1Stop[ANALYSIS_TYPES];
@@ -86,6 +123,7 @@ class AliBalance : public TObject {
   Double_t fNnn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(--)
   Double_t fNpp[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(++)
   Double_t fNpn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(+-)
+  Double_t fNnp[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(-+)
   Double_t fNn[ANALYSIS_TYPES], fNp[ANALYSIS_TYPES]; //number of pos./neg. inside the analyzed interval
   
   Double_t fB[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
