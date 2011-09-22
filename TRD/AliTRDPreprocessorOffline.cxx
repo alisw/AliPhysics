@@ -813,7 +813,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    if(!calDetVdrift) return;
 
    // Calculate mean
-   if(!fNotEnoughStatisticsForTheGain) {
+   if(!fNotEnoughStatisticsForTheVdriftLinear) {
      for(Int_t det = 0; det < 540; det++) {
        
        Float_t vdriftinit = fCalDetVdriftUsed->GetValue(det);
