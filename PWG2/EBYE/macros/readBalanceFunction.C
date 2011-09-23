@@ -51,8 +51,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 
   AliBalance *bf[10][7];
   AliBalance *bfs[10][7];
-  TGraphErrors *gbf[10][7];
-  TGraphErrors *gbfs[10][7];
+  TH1F *gbf[10][7];
+  TH1F *gbfs[10][7];
 
   TH1D *fHistP[7]; //N+
   TH1D *fHistN[7]; //N-
@@ -157,21 +157,15 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s",gBFAnalysisType[a].Data()));
 	fHistNN[a] = (TH1D*)list->FindObject(Form("fHistNN%s",gBFAnalysisType[a].Data()));
 
-	// set the binning (p1 doesn't play a role --> 0)
-	bf[iCanvas][a]->SetNumberOfBins(a,fHistNN[a]->GetNbinsX());
-	bf[iCanvas][a]->SetInterval(0,0,a,fHistNN[a]->GetBinCenter(1) - fHistNN[a]->GetBinWidth(1)/2,fHistNN[a]->GetBinCenter(fHistNN[a]->GetNbinsX()) + fHistNN[a]->GetBinWidth(1)/2);
+	// set histograms in AliBalance object
+	bf[iCanvas][a]->SetHistNp(a, fHistP[a]);
+	bf[iCanvas][a]->SetHistNn(a, fHistN[a]);
+	bf[iCanvas][a]->SetHistNpp(a, fHistPP[a]);
+	bf[iCanvas][a]->SetHistNpn(a, fHistPN[a]);
+	bf[iCanvas][a]->SetHistNnp(a, fHistNP[a]);
+	bf[iCanvas][a]->SetHistNnn(a, fHistNN[a]);
 
-	// set the members for each bin in histogram
-	for(Int_t ibin = 1; ibin <= fHistNN[a]->GetNbinsX(); ibin++){
-	  bf[iCanvas][a]->SetNpp(a,ibin-1,fHistPP[a]->GetBinContent(ibin));
-	  bf[iCanvas][a]->SetNpn(a,ibin-1,fHistPN[a]->GetBinContent(ibin));
-	  bf[iCanvas][a]->SetNnp(a,ibin-1,fHistNP[a]->GetBinContent(ibin));
-	  bf[iCanvas][a]->SetNnn(a,ibin-1,fHistNN[a]->GetBinContent(ibin));
-	}
-	bf[iCanvas][a]->SetNp(a,fHistP[a]->GetEntries());
-	bf[iCanvas][a]->SetNn(a,fHistN[a]->GetEntries());
-
-	gbf[iCanvas][a] = bf[iCanvas][a]->drawBalance(a);
+	gbf[iCanvas][a] = bf[iCanvas][a]->GetBalanceFunctionHistogram(a);
 	gbf[iCanvas][a]->SetName(Form("%s_BF_%s",listName.Data(),gBFAnalysisType[a].Data()));
 
 	cBF[iCanvas]->cd(a+1);
@@ -212,21 +206,15 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s_shuffle",gBFAnalysisType[a].Data()));
 	fHistNN[a] = (TH1D*)list->FindObject(Form("fHistNN%s_shuffle",gBFAnalysisType[a].Data()));
 
-	// set the binning (p1 doesn't play a role --> 0)
-	bfs[iCanvas][a]->SetNumberOfBins(a,fHistNN[a]->GetNbinsX());
-	bfs[iCanvas][a]->SetInterval(0,0,a,fHistNN[a]->GetBinCenter(1) - fHistNN[a]->GetBinWidth(1)/2,fHistNN[a]->GetBinCenter(fHistNN[a]->GetNbinsX()) + fHistNN[a]->GetBinWidth(1)/2);
+	// set histograms in AliBalance object
+	bfs[iCanvas][a]->SetHistNp(a, fHistP[a]);
+	bfs[iCanvas][a]->SetHistNn(a, fHistN[a]);
+	bfs[iCanvas][a]->SetHistNpp(a, fHistPP[a]);
+	bfs[iCanvas][a]->SetHistNpn(a, fHistPN[a]);
+	bfs[iCanvas][a]->SetHistNnp(a, fHistNP[a]);
+	bfs[iCanvas][a]->SetHistNnn(a, fHistNN[a]);
 
-	// set the members for each bin in histogram
-	for(Int_t ibin = 1; ibin <= fHistNN[a]->GetNbinsX(); ibin++){
-	  bfs[iCanvas][a]->SetNpp(a,ibin-1,fHistPP[a]->GetBinContent(ibin));
-	  bfs[iCanvas][a]->SetNpn(a,ibin-1,fHistPN[a]->GetBinContent(ibin));
-	  bfs[iCanvas][a]->SetNnp(a,ibin-1,fHistNP[a]->GetBinContent(ibin));
-	  bfs[iCanvas][a]->SetNnn(a,ibin-1,fHistNN[a]->GetBinContent(ibin));
-	}
-	bfs[iCanvas][a]->SetNp(a,fHistP[a]->GetEntries());
-	bfs[iCanvas][a]->SetNn(a,fHistN[a]->GetEntries());
-
-	gbfs[iCanvas][a] = bf[iCanvas][a]->drawBalance(a);
+	gbfs[iCanvas][a] = bf[iCanvas][a]->GetBalanceFunctionHistogram(a);
 	gbfs[iCanvas][a]->SetName(Form("%s_BF_%s",listName.Data(),gBFAnalysisType[a].Data()));
 
 	cBFS[iCanvas]->cd(a+1);
@@ -258,6 +246,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
   }
 }
 
+//___________________________________________________________//
+// NOT USED any more
 //___________________________________________________________//
 void mergeOutput(const char* outputDir) {
   //Function to merge the output of the sub-jobs
