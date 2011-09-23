@@ -45,40 +45,44 @@ ClassImp(AliAnaPartCorrBaseClass)
   
 //_______________________________________________
   AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
-    TObject(), fDataMC(0), fDebug(0), fCheckFidCut(0),
-    fCheckCaloPID(0), fRecalculateCaloPID(0), 
-    fMinPt(0),fMaxPt(0), fPairTimeCut(200), 
-    fMultiBin(0),fNZvertBin(0),fNrpBin(0), fNCentrBin(0),
-    fNmaxMixEv(0),fMaxMulti(0),fMinMulti(0),
-    fUseSelectEvent(kFALSE), fMakePlots(kFALSE),
-    fReader(0x0), fInputAODBranch(0x0), fInputAODName(""),
-    fOutputAODBranch(0x0), fNewAOD(kFALSE),
-    fOutputAODName(""), fOutputAODClassName(""),
-    fAODObjArrayName(""), fAddToHistogramsName(""),
-    fCaloPID(0x0), fFidCut(0x0), fIC(0x0),fMCUtils(0x0), fNMS(0x0),
-    fCaloUtils(0x0),
-    fHistoPtBins(0),   fHistoPtMax(0.),   fHistoPtMin(0.),
-    fHistoPhiBins(0),  fHistoPhiMax(0.),  fHistoPhiMin(0.),
-    fHistoEtaBins(0),  fHistoEtaMax(0.),  fHistoEtaMin(0.),
-    fHistoMassBins(0), fHistoMassMax(0.), fHistoMassMin(0.),
-    fHistoAsymBins(0), fHistoAsymMax(0.), fHistoAsymMin(0.),
-    fHistoV0SBins(0),  fHistoV0SMax(0),   fHistoV0SMin(0),
-    fHistoV0MBins(0),  fHistoV0MMax(0),   fHistoV0MMin(0),
-    fHistoTrMBins(0),  fHistoTrMMax(0),   fHistoTrMMin(0),
-    fHistoFinePtBins(1000),    fHistoFinePtMax(5.),        fHistoFinePtMin(0.),
-    fHistoPOverEBins(100),     fHistoPOverEMax(100.),      fHistoPOverEMin(0.),
-    fHistodEdxBins(100),       fHistodEdxMax(100.),        fHistodEdxMin(0.),
-    fHistodRBins(100),         fHistodRMax(100.),          fHistodRMin(0.),
-    fHistoTimeBins(100),       fHistoTimeMax(100.),        fHistoTimeMin(0.),
-    fHistoNBins(100),          fHistoNMax(100),            fHistoNMin(0),
-    fHistoRatioBins(100),      fHistoRatioMax(100.),       fHistoRatioMin(0.),
-    fHistoVertexDistBins(100), fHistoVertexDistMax(100.),  fHistoVertexDistMin(0.),
-    fHistoRBins(100),          fHistoRMax(1000),           fHistoRMin(-1000),
-    fHistoXBins(100),          fHistoXMax(1000),           fHistoXMin(-1000),
-    fHistoYBins(100),          fHistoYMax(1000),           fHistoYMin(-1000),
-    fHistoZBins(100),          fHistoZMax(1000),           fHistoZMin(-1000),
-    fHistoSSBins(0),           fHistoSSMax(0),             fHistoSSMin(0),
-    fHistoDiffTimeBins(0),     fHistoDiffTimeMax(0),       fHistoDiffTimeMin(0)
+    TObject(), 
+    fDataMC(0),                   fDebug(0),                   fCheckFidCut(0),
+    fCheckCaloPID(0),             fRecalculateCaloPID(0), 
+    fMinPt(0),                    fMaxPt(0),                   fPairTimeCut(200), 
+    fMultiBin(0),                 fNZvertBin(0),
+    fNrpBin(0),                   fNCentrBin(0),
+    fNmaxMixEv(0),                fMaxMulti(0),                fMinMulti(0),
+    fUseSelectEvent(kFALSE),      fMakePlots(kFALSE),
+    fReader(0x0),                 fInputAODBranch(0x0),        fInputAODName(""),
+    fOutputAODBranch(0x0),        fNewAOD(kFALSE),
+    fOutputAODName(""),           fOutputAODClassName(""),
+    fAODObjArrayName(""),         fAddToHistogramsName(""),
+    fCaloPID(0x0),                fFidCut(0x0),                fIC(0x0),
+    fMCUtils(0x0),                fNMS(0x0),                   fCaloUtils(0x0),
+    fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),
+    fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),
+    fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),
+    fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),
+    fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),
+    fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
+    fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),
+    fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),
+    fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),
+    fHistoPOverEBins(100),        fHistoPOverEMax(100.),       fHistoPOverEMin(0.),
+    fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),
+    fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),
+    fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),
+    fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0),
+    fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
+    fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
+    fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
+    fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
+    fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
+    fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),
+    fHistoYBins(100),             fHistoYMax(1000),            fHistoYMin(-1000),
+    fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
+    fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
+    fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0)
 {
   //Default Ctor
     
@@ -430,19 +434,21 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fHistoTrMMax   = 2000 ;
   fHistoTrMMin   = 0 ;
   
-  fHistoPOverEBins     = 100 ;  fHistoPOverEMax     = 10.  ;  fHistoPOverEMin     = 0. ;
-  fHistodEdxBins       = 200 ;  fHistodEdxMax       = 400. ;  fHistodEdxMin       = 0. ;  
-  fHistodRBins         = 300 ;  fHistodRMax         = 3.15 ;  fHistodRMin         = 0. ;
-  fHistoTimeBins       = 1000;  fHistoTimeMax       = 1.e3 ;  fHistoTimeMin       = 0. ;//ns
-  fHistoNBins          = 300 ;  fHistoNMax          = 300  ;  fHistoNMin          = 0  ;
-  fHistoRatioBins      = 200 ;  fHistoRatioMax      = 2    ;  fHistoRatioMin      = 0. ;
-  fHistoVertexDistBins = 100 ;  fHistoVertexDistMax = 500. ;  fHistoVertexDistMin = 0. ;
-  fHistoRBins          = 100 ;  fHistoRMax          = 500  ;  fHistoRMin          = -500  ;//cm
-  fHistoXBins          = 100 ;  fHistoXMax          = 500  ;  fHistoXMin          = -500  ;//cm
-  fHistoYBins          = 100 ;  fHistoYMax          = 500  ;  fHistoYMin          = -500  ;//cm
-  fHistoZBins          = 100 ;  fHistoZMax          = 600  ;  fHistoZMin          = -500  ;//cm
-  fHistoSSBins         = 500 ;  fHistoSSMax         = 5    ;  fHistoSSMin         = 0  ;  
-  fHistoDiffTimeBins   = 800;   fHistoDiffTimeMax   = 400  ;  fHistoDiffTimeMin   = -400; // ns
+  fHistoPOverEBins       = 100 ;  fHistoPOverEMax       = 10.  ;  fHistoPOverEMin       = 0. ;
+  fHistodEdxBins         = 200 ;  fHistodEdxMax         = 400. ;  fHistodEdxMin         = 0. ;  
+  fHistodRBins           = 300 ;  fHistodRMax           = 3.15 ;  fHistodRMin           = 0. ;
+  fHistoTimeBins         = 1000;  fHistoTimeMax         = 1.e3 ;  fHistoTimeMin         = 0. ;//ns
+  fHistoNClusCellBins    = 200 ;  fHistoNClusCellMax    = 200  ;  fHistoNClusCellMin    = 0  ;
+  fHistoNCellsBins       = 300 ;  fHistoNCellsMax       = 300  ;  fHistoNCellsMin       = 0  ;
+  fHistoNClustersBins    = 50  ;  fHistoNClustersMax    = 50   ;  fHistoNClustersMin    = 0  ;
+  fHistoRatioBins        = 200 ;  fHistoRatioMax        = 2    ;  fHistoRatioMin        = 0. ;
+  fHistoVertexDistBins   = 100 ;  fHistoVertexDistMax   = 500. ;  fHistoVertexDistMin   = 0. ;
+  fHistoRBins            = 100 ;  fHistoRMax            = 500  ;  fHistoRMin            = -500  ;//cm
+  fHistoXBins            = 100 ;  fHistoXMax            = 500  ;  fHistoXMin            = -500  ;//cm
+  fHistoYBins            = 100 ;  fHistoYMax            = 500  ;  fHistoYMin            = -500  ;//cm
+  fHistoZBins            = 100 ;  fHistoZMax            = 600  ;  fHistoZMin            = -500  ;//cm
+  fHistoSSBins           = 500 ;  fHistoSSMax           = 5    ;  fHistoSSMin           = 0  ;  
+  fHistoDiffTimeBins     = 800 ;  fHistoDiffTimeMax     = 400  ;  fHistoDiffTimeMin     = -400; // ns
 
 }
 
@@ -482,7 +488,9 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Histograms: %3.1f < Y    < %3.1f, Nbin = %d\n", fHistoYMin,      fHistoYMax,      fHistoYBins);
   printf("Histograms: %3.1f < Z    < %3.1f, Nbin = %d\n", fHistoZMin,      fHistoZMax,      fHistoZBins);
   printf("Histograms: %g < Time < %g, Nbin = %d\n"      , fHistoTimeMin,   fHistoTimeMax,   fHistoTimeBins);
-  printf("Histograms: %d < N    < %d, Nbin = %d\n"      , fHistoNMin,      fHistoNMax,      fHistoNBins);
+  printf("Histograms: %d < N cells per cluster    < %d, Nbin = %d\n", fHistoNClusCellMin,   fHistoNClusCellMax,   fHistoNClusCellBins);
+  printf("Histograms: %d < N cells   < %d, Nbin = %d\n"             , fHistoNCellsMin,      fHistoNCellsMax,      fHistoNCellsBins);
+  printf("Histograms: %d < N clusters   < %d, Nbin = %d\n"          , fHistoNClustersMin,   fHistoNClustersMax,   fHistoNClustersBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n", fHistoRatioMin,  fHistoRatioMax,  fHistoRatioBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f, Nbin = %d\n", fHistoVertexDistMin, fHistoVertexDistMax, fHistoVertexDistBins);
     
