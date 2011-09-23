@@ -16,6 +16,8 @@ class TNamed;
 class TTree;
 class TCollection;
 class AliESDEvent;
+class TBrowser;
+class TList;
 #include <AliRelAlignerKalman.h>
 
 class AliRelAlignerKalmanArray:public TNamed
@@ -47,6 +49,7 @@ public:
   AliRelAlignerKalmanArray* MakeSmoothArray() const;
   void SetOutRejSigmaOnMerge(Double_t s) {fOutRejSigmaOnMerge=s;}
   void SetOutRejSigmaOnSmooth(Double_t s) {fOutRejSigmaOnSmooth=s;}
+  void Browse(TBrowser *b);
 
 private:
   void ClearContents();
@@ -59,8 +62,9 @@ private:
   Double_t fOutRejSigmaOnSmooth;          //how much outlier rejection on Smooth
   AliRelAlignerKalman fAlignerTemplate;  //template
   AliRelAlignerKalman** fPArray;         //[fSize] an array of aligners
+  TList* fListOfGraphs;                  //!hold the graphs
   
-  ClassDef(AliRelAlignerKalmanArray,4);   //AliRelAlignerKalman class
+  ClassDef(AliRelAlignerKalmanArray,5);   //AliRelAlignerKalman class
 };
 
 
