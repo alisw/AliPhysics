@@ -21,15 +21,19 @@
 class AliESDEvent;
 class AliMCEvent;
 class AliESDpid;
+class AliCFContainer;
+class AliAnalysisCuts;
 class TH1;
 class TH2;
 class TH1F;
+class TH1D;
 class TH2F;
 class TH3F;
 class TH3;
 class TObjArray;
 class TGraph;
 class TGraphErrors;
+
 class AliTRDcheckESD : public AliAnalysisTaskSE {
 public:
   enum ETRDcheckESDstatus {
@@ -90,6 +94,21 @@ public:
    ,kNhistos = kTRDEtaPhiAvQtot+36      // number of histograms
    ,kNrefs   = 4  // number of reference plots
   };
+  enum ETrdCfVariables {
+    kEventVtxZ=0,
+    kEventMult,
+    kEventBC,
+    kTrackTOFdeltaBC,
+    kTrackCharge,
+    kTrackPhi,
+    kTrackEta,
+    kTrackPt,
+    kTrackP,
+    kTrackTrdTracklets,
+    kTrackTrdClusters,
+    kTrackQtot,
+    kNTrdCfVariables=kTrackQtot+6
+  };
   enum ETRDcheckESDbits {
     kTPCout = 1 // track left TPC
    ,kTRDin      // track reach TRD fiducial volume
@@ -106,15 +125,19 @@ public:
   Int_t         GetNRefFigures() const  { return fNRefFigures; } 
   void          UserExec(Option_t *);
 
+  void          SetRefTrackFilter(AliAnalysisCuts* const filter) {fReferenceTrackFilter = filter;}
+  
   Bool_t        HasMC() const { return TESTBIT(fStatus, kMC);}
   Bool_t        IsCollision() const {return TESTBIT(fStatus, kCollision);}
   void          SetCollision(Bool_t set=kTRUE) {set ? SETBIT(fStatus, kCollision) : CLRBIT(fStatus, kCollision);}
   TObjArray*    Histos();
+  AliCFContainer* GetCFContainer() {return fCfContainer;}
   Bool_t        Load(const Char_t *fn="AnalysisResults.root", const Char_t *dir="TRD_Performance", const Char_t *name=NULL);
   void          SetMC(Bool_t mc = kTRUE) { mc ? SETBIT(fStatus, kMC) : CLRBIT(fStatus, kMC);}
   Bool_t        PutTrendValue(const Char_t *name, Double_t val);
   void          Terminate(Option_t *);
   void          MakeSummary();
+  void          MakeSummaryFromCF();
 
 private:
   static const Float_t fgkxTPC; // end radial position of TPC
@@ -125,15 +148,23 @@ private:
   void PlotPidSummary(Int_t centralityClass=1);     // 1 <= centralityClass <= 5; 0-all centrality classes together
   void PlotCentSummary();  // centrality dependent plots
 
+  void PlotTrackingSummaryFromCF(Int_t centralityClass=1);     // 1 <= centralityClass <= 5; 0-all centrality classes together
+  void PlotPidSummaryFromCF(Int_t centralityClass=1);     // 1 <= centralityClass <= 5; 0-all centrality classes together
+  void PlotCentSummaryFromCF();                            // centrality dependent plots
+    
   AliTRDcheckESD(const AliTRDcheckESD&);
   AliTRDcheckESD& operator=(const AliTRDcheckESD&);
   Int_t         Pdg2Idx(Int_t pdg) const;
   void          Process(TH1 **h, TGraphErrors *g);
   void          Process2D(TH2 * const h, TGraphErrors **g);
   void          PrintStatus(ULong_t s);
-  TH2F*         Proj3D(TH3F* hist, TH2F* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
-  TH1F*         Proj2D(TH2F* hist);
-  TH1F*         EfficiencyTRD(TH3F* tpc3D, TH3F* trd3D, Bool_t useAcceptance=kTRUE);
+  TH2F*         Proj3D(TH3* hist, TH2* accMap, Int_t binLow, Int_t binHigh, Float_t &entries);
+  TH1D*         Proj2D(TH2* hist);
+  TH1F*         EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance=kTRUE);
+  void          DrawTRDGrid();
+  void          SetStyle(TH1* hist, Int_t lineStyle, Int_t lineColor, Double_t lineWidth, 
+                         Int_t markerStyle, Int_t markerColor, Double_t markerSize);
+  void          CheckActiveSM(TH1D* phiProj, Bool_t activeSM[18]);
   
   Int_t            fStatus;            // bit mask for controlling the task
   Int_t            fNRefFigures;       // number of current ref plots
@@ -143,6 +174,10 @@ private:
   TObjArray        *fHistos;           //! QA histos
   TObjArray        *fResults;          // QA graphs
   static FILE      *fgFile;            //! trend file streamer
+  
+  AliCFContainer*  fCfContainer;       // CF container for computing efficiencies
+  AliAnalysisCuts* fReferenceTrackFilter;     // reference track filter
+  
   // Vertex selection
   static const Float_t fgkEvVertexZ;// cm
   static const Int_t   fgkEvVertexN;// cm
@@ -155,6 +190,6 @@ private:
   
   static const Float_t fgkQs;      // scale for the total charge
 
-  ClassDef(AliTRDcheckESD, 6)          // user oriented TRD analysis based on ESD-MC data
+  ClassDef(AliTRDcheckESD, 7)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif
