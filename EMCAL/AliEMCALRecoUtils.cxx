@@ -1699,6 +1699,8 @@ void AliEMCALRecoUtils::InitTrackCuts()
 	AliInfo(Form("Track cuts for matching: Loose cut w/o DCA cut"));
 	SetMinNClustersTPC(50);
 	SetAcceptKinkDaughters(kFALSE);
+
+	break;
       }
     }
 }
