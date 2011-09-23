@@ -1,7 +1,7 @@
 AliAnalysisTaskITSTPCalignment *AddTaskITSTPCalignment()
 {
   //add the ITS TPC alignemtn task to the manager
-  //Mikolaj Krzewicki, mikolaj@nikhef.nl
+  //Mikolaj Krzewicki, mikolaj.krzewicki@cern.ch
 
   //______________________________________________________________________________
   // Get the pointer to the existing analysis manager via the static access method.
@@ -30,19 +30,19 @@ AliAnalysisTaskITSTPCalignment *AddTaskITSTPCalignment()
   // Create the task, add it to manager and configure it.
   AliAnalysisTaskITSTPCalignment *task = new AliAnalysisTaskITSTPCalignment("taskITSTPCalignment");
   TTimeStamp t0(2009,11,1,0,0,0);
-  TTimeStamp tend(2010,12,31,0,0,0);
+  TTimeStamp tend(2012,12,31,0,0,0);
   Int_t slotwidth = 3600;
   task->SetupAlignerArray(t0.GetSec(),tend.GetSec(),slotwidth);
   task->SetFillDebugTree(kFALSE);
   task->SetDoQA(kTRUE);
   task->SetMinPt(0.4);
   task->SetMinNclsITS(4);
-  task->SetMinNclsTPC(80);
+  task->SetMinNclsTPC(70);
   task->SetRejectOutliers(kTRUE); //internal KF outlier rejection (kalman update-based)
   task->SetRejectOutliersSigma2Median(kTRUE); //input data outlier removal
   task->SetOutRejSigma(1.); //max distance the kf state is allowed to jump
-  task->SetOutRejSigmaOnMerge(50.); //outlier rejection when merging vertically
-  task->SetOutRejSigma2Median(5.); //max distance from median for input data
+  task->SetOutRejSigmaOnMerge(10.); //outlier rejection when merging vertically
+  task->SetOutRejSigma2Median(2.); //max distance from median for input data
   task->SetUseITSoutGlobalTrack(kFALSE);
   task->SetUseITSoutITSSAtrack(kTRUE);
   
