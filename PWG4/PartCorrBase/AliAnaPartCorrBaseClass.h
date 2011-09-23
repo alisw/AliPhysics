@@ -330,9 +330,17 @@ public:
   Float_t GetHistodEdxMin()              const { return fHistodEdxMin        ; }
   Float_t GetHistodEdxMax()              const { return fHistodEdxMax        ; }	
   
-  Int_t   GetHistoNClusterCellBins()     const { return fHistoNBins          ; }
-  Int_t   GetHistoNClusterCellMin()      const { return fHistoNMin           ; }
-  Int_t   GetHistoNClusterCellMax()      const { return fHistoNMax           ; }	
+  Int_t   GetHistoNClusterCellBins()     const { return fHistoNClusCellBins  ; }
+  Int_t   GetHistoNClusterCellMin()      const { return fHistoNClusCellMin   ; }
+  Int_t   GetHistoNClusterCellMax()      const { return fHistoNClusCellMax   ; }	
+  
+  Int_t   GetHistoNClustersBins()        const { return fHistoNClustersBins  ; }
+  Int_t   GetHistoNClustersMin()         const { return fHistoNClustersMin   ; }
+  Int_t   GetHistoNClustersMax()         const { return fHistoNClustersMax   ; }	
+  
+  Int_t   GetHistoNCellsBins()           const { return fHistoNCellsBins     ; }
+  Int_t   GetHistoNCellsMin()            const { return fHistoNCellsMin      ; }
+  Int_t   GetHistoNCellsMax()            const { return fHistoNCellsMax      ; }	
   
   Int_t   GetHistoPOverEBins()           const { return fHistoPOverEBins     ; }
   Float_t GetHistoPOverEMin()            const { return fHistoPOverEMin      ; }
@@ -395,7 +403,13 @@ public:
     fHistoTimeBins       = n ; fHistoTimeMax       = max ; fHistoTimeMin       = min ; }	
   
   virtual void SetHistoNClusterCellRangeAndNBins(Int_t   min, Int_t   max, Int_t n) {
-    fHistoNBins          = n ; fHistoNMax          = max ; fHistoNMin          = min ; }
+    fHistoNClusCellBins  = n ; fHistoNClusCellMax  = max ; fHistoNClusCellMin  = min ; }
+  
+  virtual void SetHistoNClustersRangeAndNBins   (Int_t   min, Int_t   max, Int_t n) {
+    fHistoNClustersBins  = n ; fHistoNClustersMax  = max ; fHistoNClustersMin  = min ; }
+  
+  virtual void SetHistoNCellsRangeAndNBins      (Int_t   min, Int_t   max, Int_t n) {
+    fHistoNCellsBins     = n ; fHistoNCellsMax     = max ; fHistoNCellsMin     = min ; }
   
   virtual void SetHistoRatioRangeAndNBins       (Float_t min, Float_t max, Int_t n) {
     fHistoRatioBins      = n ; fHistoRatioMax      = max ; fHistoRatioMin      = min ; }
@@ -505,9 +519,15 @@ private:
   Int_t    fHistoTimeBins;                    // cell time histogram number of bins
   Float_t  fHistoTimeMax;                     // cell time maximum value
   Float_t  fHistoTimeMin;                     // cell time minimum value
-  Int_t    fHistoNBins;                       // number of clusters/cells histogram number of bins
-  Int_t    fHistoNMax;                        // number maximum value
-  Int_t    fHistoNMin;                        // number minimum value
+  Int_t    fHistoNClusCellBins;               // number of cells per cluster histogram number of bins
+  Int_t    fHistoNClusCellMax;                // number of cells per cluster maximum value
+  Int_t    fHistoNClusCellMin;                // number of cells per cluster minimum value
+  Int_t    fHistoNCellsBins;                  // number of cells histogram number of bins
+  Int_t    fHistoNCellsMax;                   // number of cells maximum value
+  Int_t    fHistoNCellsMin;                   // number of cells minimum value
+  Int_t    fHistoNClustersBins;               // number of clusters histogram number of bins
+  Int_t    fHistoNClustersMax;                // number of clusters maximum value
+  Int_t    fHistoNClustersMin;                // number of clusters minimum value  
   Int_t    fHistoRatioBins;                   // ratio histogram number of bins
   Float_t  fHistoRatioMax;                    // ratio maximum value
   Float_t  fHistoRatioMin;                    // ratio minimum value
@@ -533,7 +553,7 @@ private:
   Float_t  fHistoDiffTimeMax;                 // Difference cluster pair time parameter position maximum value
   Float_t  fHistoDiffTimeMin;                 // Difference cluster pair time parameter position minimum value  
   
-  ClassDef(AliAnaPartCorrBaseClass,18)
+  ClassDef(AliAnaPartCorrBaseClass,19)
 } ;
 
 

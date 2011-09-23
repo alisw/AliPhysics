@@ -113,8 +113,10 @@ public:
   Bool_t   fFillAllTMHisto ;                  // Fill track matching histograms
   Bool_t   fFillAllPi0Histo ;                 // Fill track matching histograms
   Bool_t   fCorrelate   ;                     // Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
-  Int_t    fNModules    ;                     // Number of EMCAL/PHOS modules, set as many histogras as modules 
-  Int_t    fNRCU        ;                     // Number of EMCAL/PHOS RCU, set as many histogras as RCU 
+  Int_t    fNModules    ;                     // Number of EMCAL/PHOS modules
+  Int_t    fNRCU        ;                     // Number of EMCAL/PHOS RCU 
+  Int_t    fNMaxCols    ;                     // Number of EMCAL/PHOS rows 
+  Int_t    fNMaxRows    ;                     // Number of EMCAL/PHOS columns
   Double_t fTimeCutMin  ;                     // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                     // Remove clusters/cells with time larger than this value, in ns
   Float_t  fEMCALCellAmpMin;                  // amplitude Threshold on emcal cells
@@ -150,6 +152,10 @@ public:
   TH2F *   fhCellTimeSpreadRespectToCellMax;  //! Difference of the time of cell with maximum dep energy and the rest of cells
   TH2F *   fhClusterMaxCellDiffAverageTime;   //! Difference between cluster average time and time of cell with more energy
   TH2F *   fhClusterMaxCellDiffWeightTime;    //! Difference between cluster weighted average time and time of cell with more energy
+  TH2F *   fhClusterDiffWeightAverTime;       //! Difference between cluster weighted average time and average time divided by weighted time
+  TH2F *   fhClusterMaxCellDiffAverageNoMaxTime;//! Difference between cluster average time without max cell and time of cell with more energy
+  TH2F *   fhClusterMaxCellDiffWeightNoMaxTime; //! Difference between cluster weighted average time without max cell and time of cell with more energy
+  TH2F *   fhClusterNoMaxCellWeight;          //! energy weight of cells in cluster except maximum cell
   TH1F *   fhCellIdCellLargeTimeSpread;       //! Cells with large time respect to max (diff > 100 ns)
   TH2F *   fhClusterPairDiffTimeE;            //! Pair of clusters time difference vs E
 
@@ -171,6 +177,10 @@ public:
   TH2F *   fhBadClusterMaxCellDiff;           //! Difference between cluster energy and energy of cell with more energy
   TH2F *   fhBadClusterMaxCellDiffAverageTime;//! Difference between cluster average time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellDiffWeightTime; //! Difference between cluster weighted average time and time of cell with more energy
+  TH2F *   fhBadClusterDiffWeightAverTime;    //! Difference between cluster weighted average time and average time without max cell
+  TH2F *   fhBadClusterMaxCellDiffAverageNoMaxTime;//! Difference between cluster average time without max cell and time of cell with more energy
+  TH2F *   fhBadClusterMaxCellDiffWeightNoMaxTime; //! Difference between cluster weighted average time without max cell and time of cell with more energy
+  TH2F *   fhBadClusterNoMaxCellWeight;       //! energy weight of cells in cluster except maximum cell
   TH2F *   fhBadCellTimeSpreadRespectToCellMax; //! Difference of the time of cell with maximum dep energy and the rest of cells for bad clusters
 
   TH2F *   fhBadClusterL0;                    //! Lambda0 for bad clusters
@@ -224,9 +234,6 @@ public:
   TH1F *   fhTime;                            //! Time measured in towers/crystals
   TH2F *   fhTimeId;                          //! Time vs Absolute cell Id
   TH2F *   fhTimeAmp;                         //! Time vs Amplitude 
-  //  TH1F * fhT0Time;                          //! T0 - EMCAL Time measured in towers/crystals
-  //  TH2F * fhT0TimeId;                        //! T0 - EMCAL Time vs Absolute cell Id
-  //  TH2F * fhT0TimeAmp;                       //! T0 - EMCAL Time vs Amplitude 
   
   //Calorimeters Correlation
   TH2F *   fhCaloCorrNClusters;               //! EMCAL vs PHOS, number of clusters	
@@ -251,143 +258,62 @@ public:
   TH2F *   fhCaloTrackMCorrECells;            //! Calo vs V0 Track Multipliticy,  total measured cell energy
   
   //Module histograms
-  TH1F **  fhEMod  ;                          //! E distribution for different module, Reco
-  TH1F **  fhNClustersMod ;                   //! Number of clusters for different module, Reco
+  TH2F *   fhEMod  ;                          //! E distribution for different module, Reco
+  TH2F *   fhNClustersMod ;                   //! Number of clusters for different module, Reco
   TH2F **  fhNCellsPerClusterMod ;            //! N cells per clusters different module, Reco
   TH2F **  fhNCellsPerClusterModNoCut ;       //! N cells per clusters different module, Reco, No cut
-  TH1F **  fhNCellsMod ;                      //! Number of towers/crystals with signal different module, Reco
-  TH2F **  fhGridCellsMod ;                   //! Cells ordered in column/row for different module, Reco
-  TH2F **  fhGridCellsEMod ;                  //! Cells ordered in column/row for different module, weighted with energy, Reco
-  TH2F **  fhGridCellsTimeMod ;               //! Cells ordered in column/row for different module, weighted with time, Reco
-  TH1F **  fhAmplitudeMod ;                   //! Amplitude measured in towers/crystals different module, Reco
-  TH1F **  fhAmplitudeModFraction;            //! Amplitude measured in towers/crystals different fractions of module, Reco
+  TH2F *   fhNCellsMod ;                      //! Number of towers/crystals with signal different module, Reco
+  TH2F *   fhGridCellsMod ;                   //! Cells ordered in column/row for different module, Reco
+  TH2F *   fhGridCellsEMod ;                  //! Cells ordered in column/row for different module, weighted with energy, Reco
+  TH2F *   fhGridCellsTimeMod ;               //! Cells ordered in column/row for different module, weighted with time, Reco
   TH2F **  fhTimeAmpPerRCU;                   //! Time vs Amplitude measured in towers/crystals different RCU
-  //TH2F **  fhT0TimeAmpPerRCU;                 //! T0 - EMCAL Time vs Amplitude measured in towers/crystals different RCU
-  //TH2F **  fhTimeCorrRCU;                     //! Correlate time entries in the different RCU, E > 0.3
-  TH2F **  fhIMMod;                             //! cluster pairs invariant mass, different module,
+  TH2F **  fhIMMod;                           //! cluster pairs invariant mass, different module,
 	
-  //MC  
-  
-  //MC and reco
-  
-  TH1F *   fhDeltaE  ;                        //! MC-Reco E distribution	
-  TH1F *   fhDeltaPt ;                        //! MC-Reco pT distribution
-  TH1F *   fhDeltaPhi;                        //! MC-Reco phi distribution
-  TH1F *   fhDeltaEta;                        //! MC-Reco eta distribution
-  TH1F *   fhRatioE  ;                        //! Reco/MC E distribution	
-  TH1F *   fhRatioPt ;                        //! Reco/MC pT distribution
-  TH1F *   fhRatioPhi;                        //! Reco/MC phi distribution
-  TH1F *   fhRatioEta;                        //! Reco/MC eta distribution
-  TH2F *   fh2E  ;                            //! E distribution, Reco vs MC
-  TH2F *   fh2Pt ;                            //! pT distribution, Reco vs MC
-  TH2F *   fh2Phi;                            //! phi distribution, Reco vs MC
-  TH2F *   fh2Eta;                            //! eta distribution, Reco vs MC
-    
   //Pure MC
-  TH1F *   fhGenGamPt  ;                      //! pt of primary gamma
-  TH1F *   fhGenGamEta ;                      //! eta of primart gamma
-  TH1F *   fhGenGamPhi ;                      //! phi of primary gamma	
-  TH1F *   fhGenPi0Pt  ;                      //! pt of primary pi0
-  TH1F *   fhGenPi0Eta ;                      //! eta of primart pi0
-  TH1F *   fhGenPi0Phi ;                      //! phi of primary pi0	
-  TH1F *   fhGenEtaPt  ;                      //! pt of primary eta
-  TH1F *   fhGenEtaEta ;                      //! eta of primart eta
-  TH1F *   fhGenEtaPhi ;                      //! phi of primary eta
-  TH1F *   fhGenOmegaPt  ;                    //! pt of primary omega
-  TH1F *   fhGenOmegaEta ;                    //! eta of primart omega
-  TH1F *   fhGenOmegaPhi ;                    //! phi of primary omega
-  TH1F *   fhGenElePt  ;                      //! pt of primary electron
-  TH1F *   fhGenEleEta ;                      //! eta of primart electron
-  TH1F *   fhGenElePhi ;                      //! phi of primary electron
-	
+
+  enum mcTypes {mcPhoton = 0, mcPi0 = 1, mcEta = 2, mcElectron = 3, mcNeHadron = 4, mcChHadron = 5 };
+  
+  TH2F *   fhRecoMCE[6][2]  ;                 //! E   generated particle vs reconstructed E
+  TH2F *   fhRecoMCPhi[6][2];                 //! phi generated particle vs reconstructed phi
+  TH2F *   fhRecoMCEta[6][2];                 //! eta generated particle vs reconstructed Eta
+  TH2F *   fhRecoMCDeltaE[6][2]  ;            //! Gen-Reco E    generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaPhi[6][2];            //! Gen-Reco phi  generated particle vs reconstructed E
+  TH2F *   fhRecoMCDeltaEta[6][2];            //! Gen-Reco eta  generated particle vs reconstructed E
+  
+  TH1F *   fhGenMCE[4]     ;                  //! pt of primary particle
+  TH2F *   fhGenMCEtaPhi[4] ;                 //! eta vs phi of primary particle
+  TH1F *   fhGenMCAccE[4]     ;               //! pt of primary particle, in acceptance
+  TH2F *   fhGenMCAccEtaPhi[4] ;              //! eta vs phi of primary particle, in acceptance
+  
   TH2F *   fhEMVxyz    ;                      //! Electromagnetic particle production vertex
   TH2F *   fhEMR       ;                      //! Electromagnetic distance to vertex vs rec energy  
   TH2F *   fhHaVxyz    ;                      //! Hadron production vertex
   TH2F *   fhHaR       ;                      //! Hadron distance to vertex vs rec energy  
-  
-  TH2F *   fhGamE  ;                          //! E distribution of generated photons, Reco
-  TH2F *   fhGamPt ;                          //! pT distribution of generated photons, Reco
-  TH2F *   fhGamPhi;                          //! phi distribution of generated photon, Reco 
-  TH2F *   fhGamEta;                          //! eta distribution of generated photons, Reco 
-  TH1F *   fhGamDeltaE  ;                     //! MC-Reco E distribution of generated photons	
-  TH1F *   fhGamDeltaPt ;                     //! MC-Reco pT distribution of generated photons
-  TH1F *   fhGamDeltaPhi;                     //! MC-Reco phi distribution of generated photons
-  TH1F *   fhGamDeltaEta;                     //! MC-Reco eta distribution of generated photons
-  TH1F *   fhGamRatioE  ;                     //! Reco/MC E distribution of generated photons	
-  TH1F *   fhGamRatioPt ;                     //! Reco/MC pT distribution of generated photons
-  TH1F *   fhGamRatioPhi;                     //! Reco/MC phi distribution of generated photons
-  TH1F *   fhGamRatioEta;                     //! Reco/MC eta distribution of generated photons
-  TH2F *   fhEleE  ;                          //! E distribution of generated electrons, Reco
-  TH2F *   fhElePt ;                          //! pT distribution of generated electrons, Reco
-  TH2F *   fhElePhi;                          //! phi distribution of generated electron, Reco 
-  TH2F *   fhEleEta;                          //! eta distribution of generated electrons, Reco 		
-  TH2F *   fhPi0E  ;                          //! E distribution of generated pi0, Reco, gamma decay overlapped
-  TH2F *   fhPi0Pt ;                          //! pT distribution of generated pi0, Reco, gamma decay overlapped
-  TH2F *   fhPi0Phi;                          //! phi distribution of generated pi0, Reco, gamma decay overlapped
-  TH2F *   fhPi0Eta;                          //! eta distribution of generated pi0, Reco, gamma decay overlapped
-  TH2F *   fhNeHadE  ;                        //! E distribution of generated neutral hadron, Reco
-  TH2F *   fhNeHadPt ;                        //! pT distribution of generated neutral hadron, Reco
-  TH2F *   fhNeHadPhi;                        //! phi distribution of generated neutral hadron, Reco 
-  TH2F *   fhNeHadEta;                        //! eta distribution of generated neutral hadron, Reco 	
-  TH2F *   fhChHadE  ;                        //! E distribution of generated charged hadron, Reco
-  TH2F *   fhChHadPt ;                        //! pT distribution of generated charged hadron, Reco
-  TH2F *   fhChHadPhi;                        //! phi distribution of generated charged hadron, Reco 
-  TH2F *   fhChHadEta;                        //! eta distribution of generated charged hadron, Reco 
-  
-  TH2F *   fhGamECharged  ;                   //! E distribution of generated photons, Reco, track matched cluster
-  TH2F *   fhGamPtCharged ;                   //! pT distribution of generated photons, Reco, track matched cluster
-  TH2F *   fhGamPhiCharged;                   //! phi distribution of generated photon, Reco, track matched cluster 
-  TH2F *   fhGamEtaCharged;                   //! eta distribution of generated photons, Reco, track matched cluster 
-  TH2F *   fhEleECharged  ;                   //! E distribution of generated electrons, Reco, track matched cluster
-  TH2F *   fhElePtCharged ;                   //! pT distribution of generated electrons, Reco, track matched cluster
-  TH2F *   fhElePhiCharged;                   //! phi distribution of generated electron, Reco, track matched cluster 
-  TH2F *   fhEleEtaCharged;                   //! eta distribution of generated electrons, Reco, track matched cluster 		
-  TH2F *   fhPi0ECharged  ;                   //! E distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
-  TH2F *   fhPi0PtCharged ;                   //! pT distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
-  TH2F *   fhPi0PhiCharged;                   //! phi distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
-  TH2F *   fhPi0EtaCharged;                   //! eta distribution of generated pi0, Reco, gamma decay overlapped, track matched cluster
-  TH2F *   fhNeHadECharged  ;                 //! E distribution of generated neutral hadron, Reco, track matched cluster
-  TH2F *   fhNeHadPtCharged ;                 //! pT distribution of generated neutral hadron, Reco, track matched cluster
-  TH2F *   fhNeHadPhiCharged;                 //! phi distribution of generated neutral hadron, Reco , track matched cluster
-  TH2F *   fhNeHadEtaCharged;                 //! eta distribution of generated neutral hadron, Reco, track matched cluster 	
-  TH2F *   fhChHadECharged  ;                 //! E distribution of generated charged hadron, Reco, track matched cluster
-  TH2F *   fhChHadPtCharged ;                 //! pT distribution of generated charged hadron, Reco, track matched cluster
-  TH2F *   fhChHadPhiCharged;                 //! phi distribution of generated charged hadron, Reco, track matched cluster 
-  TH2F *   fhChHadEtaCharged;                 //! eta distribution of generated charged hadron, Reco, track matched cluster 	
-	
-  TH1F *   fhGenGamAccE   ;                   //! E of primary gamma
-  TH1F *   fhGenGamAccPt  ;                   //! pt of primary gamma
-  TH1F *   fhGenGamAccEta ;                   //! eta of primart gamma
-  TH1F *   fhGenGamAccPhi ;                   //! phi of primary gamma	
-  TH1F *   fhGenPi0AccE   ;                   //! E of primary pi0
-  TH1F *   fhGenPi0AccPt  ;                   //! pt of primary pi0
-  TH1F *   fhGenPi0AccEta ;                   //! eta of primart pi0
-  TH1F *   fhGenPi0AccPhi ;                   //! phi of primary pi0		
 	
   //Histograms for MC track-matching
-  TH2F *   fh1pOverE;                         //! p/E for track-cluster matches
-  TH1F *   fh1dR;                             //! distance between projected track and cluster
-  TH2F *   fh2EledEdx;                        //! dE/dx vs. momentum for electron candidates
-  TH2F *   fh2MatchdEdx;                      //! dE/dx vs. momentum for all matches
+//  TH2F *   fh1pOverE;                         //! p/E for track-cluster matches
+//  TH1F *   fh1dR;                             //! distance between projected track and cluster
+//  TH2F *   fh2EledEdx;                        //! dE/dx vs. momentum for electron candidates
+//  TH2F *   fh2MatchdEdx;                      //! dE/dx vs. momentum for all matches
+//	
+//  TH2F *   fhMCEle1pOverE;                    //! p/E for track-cluster matches, MC electrons
+//  TH1F *   fhMCEle1dR;                        //! distance between projected track and cluster, MC electrons
+//  TH2F *   fhMCEle2MatchdEdx;                 //! dE/dx vs. momentum for all matches, MC electrons	
+//	
+//  TH2F *   fhMCChHad1pOverE;                  //! p/E for track-cluster matches, MC charged hadrons
+//  TH1F *   fhMCChHad1dR;                      //! distance between projected track and cluster, MC charged hadrons
+//  TH2F *   fhMCChHad2MatchdEdx;               //! dE/dx vs. momentum for all matches, MC charged
+//	
+//  TH2F *   fhMCNeutral1pOverE;                //! p/E for track-cluster matches, MC neutral
+//  TH1F *   fhMCNeutral1dR;                    //! distance between projected track and cluster, MC neutral
+//  TH2F *   fhMCNeutral2MatchdEdx;             //! dE/dx vs. momentum for all matches, MC neutral	
+//	
+//  TH2F *   fh1pOverER02;                      //! p/E for track-cluster matches, dR > 0.2	
+//  TH2F *   fhMCEle1pOverER02;                 //! p/E for track-cluster matches, dR > 0.2, MC electrons
+//  TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
+//  TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  TH2F *   fhMCEle1pOverE;                    //! p/E for track-cluster matches, MC electrons
-  TH1F *   fhMCEle1dR;                        //! distance between projected track and cluster, MC electrons
-  TH2F *   fhMCEle2MatchdEdx;                 //! dE/dx vs. momentum for all matches, MC electrons	
-	
-  TH2F *   fhMCChHad1pOverE;                  //! p/E for track-cluster matches, MC charged hadrons
-  TH1F *   fhMCChHad1dR;                      //! distance between projected track and cluster, MC charged hadrons
-  TH2F *   fhMCChHad2MatchdEdx;               //! dE/dx vs. momentum for all matches, MC charged
-	
-  TH2F *   fhMCNeutral1pOverE;                //! p/E for track-cluster matches, MC neutral
-  TH1F *   fhMCNeutral1dR;                    //! distance between projected track and cluster, MC neutral
-  TH2F *   fhMCNeutral2MatchdEdx;             //! dE/dx vs. momentum for all matches, MC neutral	
-	
-  TH2F *   fh1pOverER02;                      //! p/E for track-cluster matches, dR > 0.2	
-  TH2F *   fhMCEle1pOverER02;                 //! p/E for track-cluster matches, dR > 0.2, MC electrons
-  TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
-  TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
-	
-  ClassDef(AliAnaCalorimeterQA,18)
+  ClassDef(AliAnaCalorimeterQA,19)
 } ;
 
 
