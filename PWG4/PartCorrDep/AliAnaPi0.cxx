@@ -87,7 +87,8 @@ fhPrimEtaPhi(0x0),           fhPrimEtaAccPhi(0x0),         fhPrimPi0PtOrigin(0x0
 fhMCOrgMass(),               fhMCOrgAsym(),                fhMCOrgDeltaEta(),            fhMCOrgDeltaPhi(),
 fhMCPi0MassPtRec(),          fhMCPi0MassPtTrue(),          fhMCPi0PtTruePtRec(),         
 fhMCEtaMassPtRec(),          fhMCEtaMassPtTrue(),          fhMCEtaPtTruePtRec(),
-fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0)
+fhMCPi0PtOrigin(0x0),        fhMCEtaPtOrigin(0x0),
+fhReMCFromConversion(0),     fhReMCFromNotConversion(0),   fhReMCFromMixConversion(0)
 {
 //Default Ctor
  InitParameters();
@@ -625,6 +626,25 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   
   //Histograms filled only if MC data is requested 	
   if(IsDataMC()){
+    
+    fhReMCFromConversion = new TH2F("hReMCFromConversion","Invariant mass of 2 clusters originated in conversions",
+                         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReMCFromConversion->SetXTitle("p_{T} (GeV/c)");
+    fhReMCFromConversion->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReMCFromConversion) ;
+    
+    fhReMCFromNotConversion = new TH2F("hReMCNotFromConversion","Invariant mass of 2 clusters not originated in conversions",
+                                    nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReMCFromNotConversion->SetXTitle("p_{T} (GeV/c)");
+    fhReMCFromNotConversion->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReMCFromNotConversion) ;
+    
+    fhReMCFromMixConversion = new TH2F("hReMCFromMixConversion","Invariant mass of 2 clusters one from conversion and the other not",
+                                    nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReMCFromMixConversion->SetXTitle("p_{T} (GeV/c)");
+    fhReMCFromMixConversion->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReMCFromMixConversion) ;
+    
     //Pi0
     fhPrimPi0Pt     = new TH1F("hPrimPi0Pt","Primary pi0 pt, Y<1",nptbins,ptmin,ptmax) ;
     fhPrimPi0AccPt  = new TH1F("hPrimPi0AccPt","Primary pi0 pt with both photons in acceptance",nptbins,ptmin,ptmax) ;
@@ -1920,7 +1940,25 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         // MC data
         //---------
         //Do some MC checks on the origin of the pair, is there any common ancestor and if there is one, who?
-        if(IsDataMC()) FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi);    
+        if(IsDataMC()) {
+          
+          if(GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) && 
+             GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
+          {
+            fhReMCFromConversion->Fill(pt,m);
+          }
+          else if(!GetMCAnalysisUtils()->CheckTagBit(p1->GetTag(),AliMCAnalysisUtils::kMCConversion) && 
+                  !GetMCAnalysisUtils()->CheckTagBit(p2->GetTag(),AliMCAnalysisUtils::kMCConversion))
+          {
+            fhReMCFromNotConversion->Fill(pt,m);
+          }
+          else
+          {
+            fhReMCFromMixConversion->Fill(pt,m);
+          }
+                  
+          FillMCVersusRecDataHistograms(p1->GetLabel(), p2->GetLabel(),p1->Pt(), p2->Pt(),ncell1, ncell2, m, pt, a,deta, dphi); 
+        }
         
         //-----------------------
         //Multi cuts analysis 

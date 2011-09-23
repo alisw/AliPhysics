@@ -228,7 +228,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   //Multiple cuts: Assymmetry, pt, n cells, PID
   TH2F **  fhRePtNCellAsymCuts ;       //![fNPtCuts*fNAsymCuts*fNCellNCuts*] REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
   TH2F **  fhMiPtNCellAsymCuts ;       //![fNPtCuts*fNAsymCuts*fNCellNCuts] Mixed two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry
-  TH2F ** fhRePtNCellAsymCutsSM[12] ;  //![fNPtCuts*fNAsymCuts*fNCellNCutsfNModules] REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry for each module
+  TH2F **  fhRePtNCellAsymCutsSM[12] ; //![fNPtCuts*fNAsymCuts*fNCellNCutsfNModules] REAL two-photon invariant mass distribution for different pt cut, n cell cuts and assymetry for each module
  
   TH2F **  fhRePIDBits ;               //![fNPIDBits]  REAL two-photon invariant mass distribution for different PID bits
   TH3F **  fhRePtMult ;                //![fNAsymCuts] REAL two-photon invariant mass distribution for different track multiplicity and assymetry cuts
@@ -294,7 +294,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2F *   fhMCPi0PtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
   TH2F *   fhMCEtaPtOrigin ;           //! Mass of reoconstructed pi0 pairs  in calorimeter vs mother
 
-  ClassDef(AliAnaPi0,20)
+  TH2F *   fhReMCFromConversion ;      //! Invariant mass of 2 clusters originated in conversions
+  TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
+  TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
+
+
+  
+  ClassDef(AliAnaPi0,21)
 } ;
 
 
