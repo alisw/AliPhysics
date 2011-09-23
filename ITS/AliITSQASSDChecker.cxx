@@ -24,6 +24,9 @@
 // --- ROOT system ---
 #include "TH1.h"
 #include "TString.h"
+#include "TCanvas.h"
+#include "TStyle.h"
+#include "TPad.h"
 //#include "Riostream.h"
 
 // --- AliRoot header files ---
@@ -175,6 +178,78 @@ void AliITSQASSDChecker::CheckRaws(TH1* histo) {
 }
 
 
+//__________________________________________________________________
+Bool_t  AliITSQASSDChecker::MakeSSDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) {
+  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used  //
+  gStyle->SetPalette(1,0);
+  Bool_t rval=kFALSE;
+  fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
+
+  if(task == AliQAv1::kRAWS) 
+    rval = MakeSSDRawsImage(list, task,mode);
+  else rval=kFALSE;
+  
+  return rval;
+}
+
+//_______________________________________________________________________
+Bool_t AliITSQASSDChecker::MakeSSDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode ) {
+  // MakeSSDRawsImage: raw data QA plots
+  for (Int_t esIndex = 0 ; esIndex < AliRecoParam::kNSpecies ; esIndex++) {
+    //printf("-------------------------> %i \n", esIndex);
+    if (! AliQAv1::Instance(AliQAv1::GetDetIndex(GetName()))->IsEventSpecieSet(AliRecoParam::ConvertIndex(esIndex)) || list[esIndex]->GetEntries() == 0) continue;
+    else {
+      const Char_t * title = Form("QA_%s_%s_%s", GetName(), AliQAv1::GetTaskName(task).Data(), AliRecoParam::GetEventSpecieName(esIndex)) ; 
+      if ( !fImage[esIndex] ) fImage[esIndex] = new TCanvas(title, title,1280,980) ;
+	
+      fImage[esIndex]->Clear() ; 
+      fImage[esIndex]->SetTitle(title) ; 
+      fImage[esIndex]->cd();
+ 
+      //TPaveText someText(0.015, 0.015, 0.98, 0.98);
+      //someText.AddText(title);
+      //someText.Draw(); 
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+      fImage[esIndex]->Clear() ; 
+      Int_t nx =2; //TMath::Nint(TMath::Sqrt(nImages));
+      Int_t ny =2; // nx  ; 
+	
+      fImage[esIndex]->Divide(nx, ny) ; 
+      TIter nexthist(list[esIndex]) ; 
+      TH1* hist = NULL ;
+      Int_t npad = 1 ; 
+      fImage[esIndex]->cd(npad); 
+      fImage[esIndex]->cd(npad)->SetBorderMode(0) ;
+      while ( (hist=static_cast<TH1*>(nexthist())) ) {
+	//gPad=fImage[esIndex]->cd(npad)->GetPad(npad);
+	TString cln(hist->ClassName()) ; 
+	if ( ! cln.Contains("TH") ) continue ;
+	
+	if(hist->TestBit(AliQAv1::GetImageBit())) {
+	  //Printf("Histo name: %s - Class: %s",hist->GetName(),hist->ClassName());
+	  hist->GetXaxis()->SetTitleSize(0.02);
+	  hist->GetYaxis()->SetTitleSize(0.02);
+	  hist->GetXaxis()->SetLabelSize(0.02);
+	  hist->GetYaxis()->SetLabelSize(0.02);
+	  if(cln.Contains("TH2")) {
+	    gPad->SetRightMargin(0.15);
+	    gPad->SetLeftMargin(0.05);
+	    hist->SetStats(0);
+	    hist->SetOption("colz") ;
+	    //hist->GetListOfFunctions()->FindObject("palette")->SetLabelSize(0.025);
+	    //gPad->Update();
+	  }
+	  hist->DrawCopy() ; 
+	  fImage[esIndex]->cd(++npad) ; 
+	  fImage[esIndex]->cd(npad)->SetBorderMode(0) ; 
+	}
+      }
+      fImage[esIndex]->Print(Form("%s%s%d.%s", AliQAv1::GetImageFileName(), AliQAv1::GetModeName(mode), AliQAChecker::Instance()->GetRunNumber(), AliQAv1::GetImageFileFormat()), "ps") ; 
+    }
+  }
+  
+  return kTRUE;
+}
 
 //__________________________________________________________________
 Double_t AliITSQASSDChecker::Check(AliQAv1::ALITASK_t /*index*/, const TObjArray * list, const AliDetectorRecoParam * /*recoParam*/) { 

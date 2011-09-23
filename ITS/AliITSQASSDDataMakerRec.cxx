@@ -272,7 +272,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	Double_t gSizePerDDL = ((TH1*)harr[offs+5+i])->GetMean();
 	//cout<<"DDL: "<<i+512<<" - Size: "<<gSizePerDDL<<" - Mean: "<<gSizePerDDL<<endl;
 	//cout<<"Entries: "<<((TH1*)harr[offs+5+i])->GetEntries()<<endl;
-	((TH1*)harr[offs+4+i])->SetBinContent(i+1,gSizePerDDL);
+	((TH1*)harr[offs+4])->SetBinContent(i+1,gSizePerDDL);
 	//cout<<"After filling DDL: "<<i+512<<" - Size: "<< ((TH1F*)harr[offs+4+i])->GetBinContent(i+1)<<endl;
       }
       //
@@ -280,7 +280,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       for(Int_t i = 0; i < fgkNumOfLDCs; i++) {
 	if ( !(harr[offs+23+i]&&harr[offs+22+i])) continue;
 	Double_t gSizePerLDC = ((TH1*)harr[offs+23+i])->GetMean();
-	((TH1*)harr[offs+22+i])->SetBinContent(i+1,gSizePerLDC);
+	((TH1*)harr[offs+22])->SetBinContent(i+1,gSizePerLDC);
 	//cout<<"LDC: "<<i+170<<" - Size: "<<gSizePerLDC<<" - Mean: "<<" - Size: "<<((TH1*)harr[offs+23+i])->GetMean()<<endl;
       }
       //
@@ -428,7 +428,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 				    "SSD Data Size;(SSD data size) [KB];Events",
 				    1000,0,500);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSize, 
-					   offsRw+fSSDRawsOffset, !expert, !image, !saveCorr);
+					   offsRw+fSSDRawsOffset, !expert, image, !saveCorr);
   fSSDRawsOffset += 1;
   TH1F *fHistSSDDataSizePercentage = new TH1F("fHistSSDDataSizePercentage",
 					      "SSD Data Size Percentage;SSD data size [%];Events",
@@ -472,7 +472,7 @@ Int_t AliITSQASSDDataMakerRec::InitRaws() {
 					  8,169.5,177.5);
   fHistSSDDataSizePerLDC->SetStats(kFALSE);
   rv = fAliITSQADataMakerRec->Add2RawsList(fHistSSDDataSizePerLDC, 
-					   offsRw+fSSDRawsOffset, expert, image, !saveCorr);  fSSDRawsOffset += 1;
+					   offsRw+fSSDRawsOffset, expert, !image, !saveCorr);  fSSDRawsOffset += 1;
   TH1F *fHistSSDDataSizeLDC[fgkNumOfLDCs];
   for(Int_t i = 1; i < fgkNumOfLDCs+1; i++) {
     gName = "fHistSSDDataSizeLDC"; 
