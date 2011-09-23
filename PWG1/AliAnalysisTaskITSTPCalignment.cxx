@@ -116,9 +116,9 @@ Bool_t AliAnalysisTaskITSTPCalignment::UserNotify()
 void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
 {
   // Create output objects
-  // Called once
+
   fArrayITSglobal = new AliRelAlignerKalmanArray();
-  fArrayITSglobal->SetName("outputArrayITSglobal");
+  fArrayITSglobal->SetName("array ITS global");
   fArrayITSglobal->SetupArray(fT0,fTend,fSlotWidth);
   fArrayITSglobal->SetOutRejSigmaOnMerge(fOutRejSigmaOnMerge);
   //set up the template
@@ -128,7 +128,7 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   templ->SetRejectOutliersSigma2Median(fRejectOutliersSigma2Median);
   templ->SetOutRejSigma2Median(fOutRejSigma2Median);
   fArrayITSsa = new AliRelAlignerKalmanArray();
-  fArrayITSsa->SetName("outputArrayITSsa");
+  fArrayITSsa->SetName("array ITS SA");
   fArrayITSsa->SetupArray(fT0,fTend,fSlotWidth);
   fArrayITSsa->SetOutRejSigmaOnMerge(fOutRejSigmaOnMerge);
   //set up the template
@@ -139,6 +139,8 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   templ->SetOutRejSigma2Median(fOutRejSigma2Median);
 
   fList = new TList();
+  fList->SetName("QA");
+  fList->SetOwner(kTRUE);
 
   TH2F* pZYAResidualsHistBpos = new TH2F("fZYAResidualsHistBpos","z-r\\phi residuals side A (z>0), Bpos", 100, -4., 4., 100, -1.5, 1.5 );
   pZYAResidualsHistBpos->SetXTitle("\\deltaz [cm]");
@@ -189,6 +191,8 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   pLowPtZCResidualsHistBpos->SetXTitle("Pt");
   pLowPtZCResidualsHistBpos->SetYTitle("\\deltaz [cm]");
   TList* listBpos = new TList();
+  listBpos->SetName("B+");
+  listBpos->SetOwner(kTRUE);
   fList->Add(listBpos); //0
   listBpos->Add(pZYAResidualsHistBpos);
   listBpos->Add(pZYCResidualsHistBpos);
@@ -256,6 +260,8 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   pLowPtZCResidualsHistBneg->SetXTitle("Pt");
   pLowPtZCResidualsHistBneg->SetYTitle("\\deltaz [cm]");
   TList* listBneg = new TList();
+  listBneg->SetName("B-");
+  listBneg->SetOwner(kTRUE);
   fList->Add(listBneg); //1
   listBneg->Add(pZYAResidualsHistBneg);
   listBneg->Add(pZYCResidualsHistBneg);
@@ -323,6 +329,8 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   pLowPtZCResidualsHistBnil->SetXTitle("Pt");
   pLowPtZCResidualsHistBnil->SetYTitle("\\deltaz [cm]");
   TList* listBnil = new TList();
+  listBnil->SetName("B0");
+  listBnil->SetOwner(kTRUE);
   fList->Add(listBnil); //2
   listBnil->Add(pZYAResidualsHistBnil);
   listBnil->Add(pZYCResidualsHistBnil);
@@ -340,18 +348,19 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
   listBnil->Add(pLowPtYCResidualsHistBnil);
   listBnil->Add(pLowPtZAResidualsHistBnil);
   listBnil->Add(pLowPtZCResidualsHistBnil);
+
   TH1F* pNmatchingEff=new TH1F("pNmatchingEff","matching efficiency",50,0.,1.);
   fList->Add(pNmatchingEff); //3
 
-  TH1I* pChecks = new TH1I("pChecks","various checks",10,0,10);
+  TH1I* pChecks = new TH1I("some counters","some counters",10,0,10);
   pChecks->GetXaxis()->SetBinLabel(1+kNoESD,"no ESD");
   pChecks->GetXaxis()->SetBinLabel(1+kNoESDfriend,"no ESDfriend");
   pChecks->GetXaxis()->SetBinLabel(1+kNoFriendTrack,"no friendtrack");
-  pChecks->GetXaxis()->SetBinLabel(1+kNoITSoutParams,"no params");
-  pChecks->GetXaxis()->SetBinLabel(1+kESDfriend,"ESD friends");
+  pChecks->GetXaxis()->SetBinLabel(1+kNoITSoutParams,"no ITS out params");
+  pChecks->GetXaxis()->SetBinLabel(1+kESDfriend,"ESD friend");
   pChecks->GetXaxis()->SetBinLabel(1+kFriendsSkipBit,"friends+skipbit");
   pChecks->GetXaxis()->SetBinLabel(1+kFriendTrack,"friendtrack");
-  pChecks->GetXaxis()->SetBinLabel(1+kITSoutParams,"params");
+  pChecks->GetXaxis()->SetBinLabel(1+kITSoutParams,"ITS out params");
   fList->Add(pChecks); //4
 
   fAligner = new AliRelAlignerKalman();
@@ -363,6 +372,12 @@ void AliAnalysisTaskITSTPCalignment::UserCreateOutputObjects()
 
   fDebugTree = new TTree("debugTree","tree with debug info");
   fDebugTree->Branch("aligner","AliRelAlignerKalman",&fAligner);
+  
+  // Post output data.
+  PostData(0, fDebugTree);
+  PostData(1, fList);
+  PostData(2, fArrayITSglobal);
+  PostData(3, fArrayITSsa);
 }
 
 //________________________________________________________________________
@@ -393,16 +408,16 @@ void AliAnalysisTaskITSTPCalignment::UserExec(Option_t *)
     pChecks->Fill(kESDfriend);
   }
 
-  if (eventFriend->TestSkipBit()) pChecks->Fill(kFriendsSkipBit);
+  //event->SetESDfriend(eventFriend);
+  
+  if (eventFriend->TestSkipBit()) 
+  {
+    pChecks->Fill(kFriendsSkipBit);
+    return;
+  }
 
   //Update the parmeters
   AnalyzeESDevent(event);
-
-  // Post output data.
-  PostData(0, fDebugTree);
-  PostData(1, fList);
-  PostData(2, fArrayITSglobal);
-  PostData(3, fArrayITSsa);
 }
 
 //________________________________________________________________________
@@ -427,7 +442,7 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
     TObjArray arrayParamTPC(ntracks);
 
     Int_t n = FindMatchingTracks(arrayParamITS, arrayParamTPC, event);
-    AliInfo(Form("n matched: %i\n",n));
+    AliInfo(Form("matched tracklet pairs: %i\n",n));
 
     TH1F* nMatchingEff=static_cast<TH1F*>(fList->At(3));
     Float_t ratio = (float)n/(float)ntracks;
@@ -454,7 +469,7 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
         fAligner->SetTimeStamp(event->GetTimeStamp());
       }
 
-      //alignment check
+      //alignment
       if (alignerSA) alignerSA->AddTrackParams(paramsITS, paramsTPC);
     }
     arrayParamITS.Delete();
@@ -466,6 +481,8 @@ void AliAnalysisTaskITSTPCalignment::AnalyzeESDevent(AliESDEvent* event)
 void AliAnalysisTaskITSTPCalignment::Terminate(Option_t *)
 {
   // Called once at the end of the query
+  fArrayITSsa->Print("a");
+  fAligner->Print();
 }
 
 //________________________________________________________________________
