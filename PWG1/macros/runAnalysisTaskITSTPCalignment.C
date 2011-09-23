@@ -13,51 +13,67 @@ void runAnalysisTaskITSTPCalignment()
   //runLocal("find /data/alice3/mikolaj/TPCfullmisalignmentB0 -name AliESDs.root","tree");
   //runLocal("find /data/alice3/mikolaj/TPCfullmisalignmentB5/ -name AliESDs.root -path \"*187824*\" ","tree");
   //runLocal("find /data/alice3/mikolaj/TPCfullmisalignmentB5/ -name AliESDs.root","tree");
-  //runLocal("find /data/alice3/mikolaj/run104892test -name AliESDs.root","tree");
-  runAlienPlugin("terminate");
+  runLocal("fileList");
+  //runAlienPlugin("terminate");
 
   timer.Stop();
   timer.Print();
 }
 
 //______________________________________________________________________________
-void runLocal(TString findCommand = "", TString options="")
+void runLocal(TString inputFile = "fileList", TString options="")
 {
 
   TString outputFilename = "outputITSTPCalignment.root";
 
-  //setupPar("STEERBase");
-  //setupPar("ESD");
-  //setupPar("AOD");
-  //setupPar("ANALYSIS");
-  //setupPar("ANALYSISalice");
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libProof");
+  gSystem->Load("libMinuit");
   gSystem->Load("libSTEERBase");
+  gSystem->Load("libCDB");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
+  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");    // The plugin is here
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libSTAT");
+  gSystem->Load("libTPCbase");
+  gSystem->Load("libTPCrec");
+  gSystem->Load("libITSbase");
+  gSystem->Load("libITSrec");
+  gSystem->Load("libTRDbase");
+  gSystem->Load("libTRDrec");
+  gSystem->Load("libVZERObase");
+  gSystem->Load("libVZEROrec");
+  gSystem->Load("libHMPIDbase");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libPWG1");
 
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
-  gROOT->LoadMacro("AliRelAlignerKalman.cxx++");
-  gROOT->LoadMacro("AliRelAlignerKalmanArray.cxx++g");
-  gROOT->LoadMacro("AliAnalysisTaskITSTPCalignment.cxx++g");
+  //gROOT->LoadMacro("AliRelAlignerKalman.cxx++");
+  //gROOT->LoadMacro("AliRelAlignerKalmanArray.cxx++g");
+  //gROOT->LoadMacro("AliAnalysisTaskITSTPCalignment.cxx++g");
   gROOT->LoadMacro("AddTaskITSTPCalignment.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
 
-  //add input files from list saved in a file
-  findCommand += ">ESDfiles.txt";
-  gSystem->Exec(findCommand);
-  TChain* chain = CreateESDChain("ESDfiles.txt",100000);
+  gROOT->LoadMacro("$ALICE_ROOT/PWG0/CreateESDChain.C");
+  TChain* chain = CreateESDChain(inputFile,100000);
 
   // analysis manager
   AliAnalysisManager *mgr = new AliAnalysisManager("ITSTPCalignmentAnalysisManager");
 
   // input handlers
-  AliVEventHandler* esdH = new AliESDInputHandler();
+  AliESDInputHandler* esdH = new AliESDInputHandler();
+  esdH->SetReadFriends(kTRUE);
+  esdH->SetInactiveBranches("Calo FMD");
   mgr->SetInputEventHandler(esdH);
   
   //AliMCEventHandler* MCH = new AliMCEventHandler();
@@ -112,6 +128,7 @@ void runProof(const char* dataset, TString options="" )
 
   // input handlers
   AliVEventHandler* esdH = new AliESDInputHandler();
+  ((AliESDInputHandler*)esdH)->SetReadFriends(kTRUE);
   mgr->SetInputEventHandler(esdH);
 
   //add the task
@@ -132,15 +149,37 @@ void runAlienPlugin(const char* pluginmode="full")
   TString outputFilename = "outputITSTPCalignment.root";
 
   // Load common libraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libPhysics.so");
+  gSystem->Load("libCore");
+  gSystem->Load("libTree");
+  gSystem->Load("libGeom");
+  gSystem->Load("libVMC");
+  gSystem->Load("libXMLIO");
+  gSystem->Load("libPhysics");
+  gSystem->Load("libXMLParser");
+  gSystem->Load("libProof");
+  gSystem->Load("libMinuit");
   gSystem->Load("libSTEERBase");
+  gSystem->Load("libCDB");
+  gSystem->Load("libRAWDatabase");
+  gSystem->Load("libRAWDatarec");
   gSystem->Load("libESD");
   gSystem->Load("libAOD");
+  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSIS");
-  gSystem->Load("libANALYSISalice");    // The plugin is here
+  gSystem->Load("libANALYSISalice");
+  gSystem->Load("libSTAT");
+  gSystem->Load("libTPCbase");
+  gSystem->Load("libTPCrec");
+  gSystem->Load("libITSbase");
+  gSystem->Load("libITSrec");
+  gSystem->Load("libTRDbase");
+  gSystem->Load("libTRDrec");
+  gSystem->Load("libVZERObase");
+  gSystem->Load("libVZEROrec");
+  gSystem->Load("libHMPIDbase");
+  gSystem->Load("libTENDER");
+  gSystem->Load("libTENDERSupplies");
+  gSystem->Load("libPWG1");
 
   // Use AliRoot includes to compile our task
   gSystem->AddIncludePath("-I$ALICE_ROOT/include");
@@ -232,12 +271,9 @@ void runAlienPlugin(const char* pluginmode="full")
   //input handler
   AliESDInputHandler* esdH = new AliESDInputHandler();
   esdH->SetInactiveBranches("Calo FMD");
-  //esdH->SetReadFriends(kTRUE);
+  esdH->SetReadFriends(kTRUE);
   mgr->SetInputEventHandler(esdH);
 
-  gROOT->LoadMacro("AliRelAlignerKalman.cxx++g");
-  gROOT->LoadMacro("AliRelAlignerKalmanArray.cxx++g");
-  gROOT->LoadMacro("AliAnalysisTaskITSTPCalignment.cxx++g");
   gROOT->LoadMacro("AddTaskITSTPCalignment.C");
 
   //add the task
