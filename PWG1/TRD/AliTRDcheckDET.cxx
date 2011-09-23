@@ -1606,12 +1606,40 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
 	output->cd(2);
 	hProjCentT->SetTitle("2D Pulse Height vs. Time");
 	hProjCentT->GetYaxis()->SetTitleOffset(1.8);
+  hProjCentT->GetYaxis()->SetRangeUser(0., 600.);
 	hProjCentT->SetStats(kFALSE);
 	hProjCentT->Draw("colz");
 
+  // Fit each slice of the pulse height spectrum with a Landau function
+  TGraphErrors *landaufit = new TGraphErrors;
+  landaufit->SetTitle();
+  landaufit->SetMarkerColor(kWhite);
+  landaufit->SetLineColor(kWhite);
+  landaufit->SetMarkerStyle(25);
+  TH1 *projection;
+  Int_t ntime = 0;
+  for(Int_t it = 1; it <= hProjCentT->GetXaxis()->GetLast(); it++){
+    projection = hProjCentT->ProjectionY("proj", it, it);
+    if(!projection->GetEntries()){
+      delete projection;
+      continue;  
+    }
+    TF1 fitfun("fitfun", "landau", 0, 1000);
+    fitfun.SetParLimits(0, 1e-1, 1e9); fitfun.SetParameter(0, 1000);
+    fitfun.SetParLimits(1, 10, 200); fitfun.SetParameter(1, 50);
+    fitfun.SetParLimits(2, 1e-1, 200); fitfun.SetParameter(2, 10);
+    projection->Fit(&fitfun, "QN", "", 0, 1000); 
+    landaufit->SetPoint(ntime, hProjCentT->GetXaxis()->GetBinCenter(it), fitfun.GetParameter(1));
+    landaufit->SetPointError(ntime, hProjCentT->GetXaxis()->GetBinWidth(it)/2., fitfun.GetParError(1));
+    ntime++;
+    delete projection;
+  }
+  landaufit->Draw("lpesame");
+
 	// Fill 1D PHS as function of time resp. radius (same binning of the 2 histograms)
 	//TH1 *hPhsX = new TH1F("hPhsX", "Average PH vs X", hProjCentT->GetXaxis()->GetNbins(), hProjCentT->GetXaxis()->GetXbins()->GetArray()),
-	TH1	*hPhsT = new TH1F("hPhsT", "Average Ph vs Time", hProjCentT->GetXaxis()->GetNbins(), hProjCentT->GetXaxis()->GetXbins()->GetArray()),
+  Int_t nbinsT = hProjCentT->GetXaxis()->GetNbins();
+	TH1	*hPhsT = new TH1F("hPhsT", "Average Ph vs Time; Time (100 ns); Average Pulse Height (a.u.)", nbinsT, -0.5, nbinsT - 0.5),
 		*htmp = NULL;
 	/*for(Int_t irad = 1; irad <= hProjCentX->GetXaxis()->GetNbins(); irad++){
 		htmp = hProjCentX->ProjectionY("tmp", irad, irad);
