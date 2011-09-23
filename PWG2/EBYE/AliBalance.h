@@ -88,8 +88,7 @@ class AliBalance : public TObject {
   TH1D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
 
   void PrintAnalysisSettings();
-  TGraphErrors *drawBalance(Int_t fAnalysisType);
-  void SetGraphTitle(TGraphErrors *gr, Int_t fAnalysisType);
+  TGraphErrors *DrawBalance(Int_t fAnalysisType);
 
   void SetHistNp(Int_t iAnalysisType, TH1D *gHist) { 
     fHistP[iAnalysisType] = gHist;}
