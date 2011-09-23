@@ -33,6 +33,8 @@
 #include <AliESDEvent.h>
 #include <AliRelAlignerKalman.h>
 #include "AliRelAlignerKalmanArray.h"
+#include "TList.h"
+#include "TBrowser.h"
 
 ClassImp(AliRelAlignerKalmanArray)
 
@@ -45,7 +47,8 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray():
     fOutRejSigmaOnMerge(10.),
     fOutRejSigmaOnSmooth(1.),
     fAlignerTemplate(),
-    fPArray(NULL)
+    fPArray(NULL),
+    fListOfGraphs(NULL)
 {
   //ctor
 }
@@ -59,7 +62,8 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray(Int_t t0, Int_t tend, Int_t s
     fOutRejSigmaOnMerge(10.),
     fOutRejSigmaOnSmooth(1.),
     fAlignerTemplate(),
-    fPArray(NULL)
+    fPArray(NULL),
+    fListOfGraphs(new TList)
 {
   //ctor
   if (slotwidth==0) fSize = 1;
@@ -67,6 +71,8 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray(Int_t t0, Int_t tend, Int_t s
   fPArray = new AliRelAlignerKalman* [fSize];
   if (fPArray) for (Int_t i=0;i<fSize;i++){fPArray[i]=NULL;}//fill with zeros
   else fSize=0;
+  fListOfGraphs->SetName("graphs");
+  fListOfGraphs->SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -78,7 +84,8 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray( const AliRelAlignerKalmanArr
     fOutRejSigmaOnMerge(in.fOutRejSigmaOnMerge),
     fOutRejSigmaOnSmooth(in.fOutRejSigmaOnSmooth),
     fAlignerTemplate(in.fAlignerTemplate),
-    fPArray(NULL)
+    fPArray(NULL),
+    fListOfGraphs(new TList)
 {
   //copy ctor
   fPArray = new AliRelAlignerKalman* [fSize];
@@ -88,6 +95,8 @@ AliRelAlignerKalmanArray::AliRelAlignerKalmanArray( const AliRelAlignerKalmanArr
     if (in.fPArray[i]) fPArray[i]=new AliRelAlignerKalman(*(in.fPArray[i]));
     else fPArray[i]=NULL;
   }
+  fListOfGraphs->SetName("graphs");
+  fListOfGraphs->SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________
@@ -96,6 +105,7 @@ AliRelAlignerKalmanArray::~AliRelAlignerKalmanArray()
   //dtor
   ClearContents();
   delete [] fPArray;
+  delete fListOfGraphs;
 }
 
 //______________________________________________________________________________
@@ -153,6 +163,7 @@ Long64_t AliRelAlignerKalmanArray::Merge( TCollection* list )
         if (!a1 && a2) fPArray[i] = new AliRelAlignerKalman(*a2);
     }
   }
+  fListOfGraphs->Delete();
   return 0;
 }
 
@@ -316,10 +327,11 @@ TGraphErrors* AliRelAlignerKalmanArray::MakeGraph(Int_t iparam) const
     return NULL;
   }
 
-  TVectorD vx(GetEntries());
-  TVectorD vy(GetEntries());
-  TVectorD vex(GetEntries());
-  TVectorD vey(GetEntries());
+  Int_t n=GetEntries();
+  TVectorD vx(n);
+  TVectorD vy(n);
+  TVectorD vex(n);
+  TVectorD vey(n);
   Int_t entry=0;
   for (Int_t i=0; i<fSize; i++)
   {
@@ -374,6 +386,7 @@ TGraphErrors* AliRelAlignerKalmanArray::MakeGraph(Int_t iparam) const
     graphtitley="dv/dy [cm/\\micros/m]";
     break;
   }
+  graph->SetName(graphtitle);
   graph->SetTitle(graphtitle);
   TAxis* xas = graph->GetXaxis();
   TAxis* yas = graph->GetYaxis();
@@ -427,5 +440,24 @@ void AliRelAlignerKalmanArray::PropagateToTime(AliRelAlignerKalman* al, UInt_t t
   //to be added to the covariance matrix of kalman filter
   corr(6,6) = dt*1e-8;  //vdrift
   (*cov) += corr;
+}
+
+//______________________________________________________________________________
+void AliRelAlignerKalmanArray::Browse(TBrowser* b )
+{
+   if (!b) return;
+   if (!fListOfGraphs) 
+   {
+     fListOfGraphs=new TList();
+     fListOfGraphs->SetName("graphs");
+     fListOfGraphs->SetOwner(kTRUE);
+   }
+   for (Int_t i=0;i<9;i++)
+   {
+     TGraphErrors* gr = dynamic_cast<TGraphErrors*>(fListOfGraphs->At(i));
+     if (gr) continue;
+     fListOfGraphs->AddAt(MakeGraph(i),i);
+   }
+   b->Add(fListOfGraphs);
 }
 
