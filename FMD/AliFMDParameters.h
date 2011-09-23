@@ -239,11 +239,11 @@ public:
   /** 
    * @param s Zero suppression threshold in ADC counts 
    */
-  void SetZeroSuppression(UShort_t s=0)       { fFixedZeroSuppression = s; }
+  void SetZeroSuppression(UShort_t s=1)       { fFixedZeroSuppression = s; }
   /** 
    * @param r How many times we oversample each strip. 
    */
-  void SetSampleRate(UShort_t r=1)            { fFixedSampleRate = r ;}//(r>2?2:r);}
+  void SetSampleRate(UShort_t r=2)            { fFixedSampleRate = r ;}//(r>2?2:r);}
   /** 
    * @param r How many times we oversample each strip. 
    */
@@ -251,7 +251,7 @@ public:
   /** 
    * @param p Pedestal value in ADC counts 
    */
-  void SetPedestal(Float_t p=10)              { fFixedPedestal = p; }
+  void SetPedestal(Float_t p=100)              { fFixedPedestal = p; }
   /** 
    * @param p Pedestal map 
    */
@@ -259,7 +259,7 @@ public:
   /** 
    * @param w Pedestal width in ADC counts 
    */
-  void SetPedestalWidth(Float_t w=1)          { fFixedPedestalWidth = w; }
+  void SetPedestalWidth(Float_t w=2)          { fFixedPedestalWidth = w; }
   /** 
    * @param t Threshold used for 1 MIP acceptance. 
    */
@@ -288,6 +288,10 @@ public:
    * @param g Gain map 
    */
   void SetGain(AliFMDCalibGain* g) { fPulseGain = g; }
+  /** 
+   * @param g Gain map 
+   */
+  void SetGain(Float_t g=2) { fFixedPulseGain = g; }
   /** @} */
 
   /** @{ */

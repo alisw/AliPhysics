@@ -67,8 +67,21 @@ public:
 				     Char_t   ring, 
 				     UShort_t sector, 
 				     UShort_t strip) const;
- protected:
+  /** 
+   * Get the raw data pointer. 
+   * 
+   * @return Pointer to the data 
+   */
+  UShort_t* Data() const { return fData; }
+  /** 
+   * The total number of entries in the data array 
+   * 
+   * @return Total number of entries in the data array 
+   */
+  Int_t     Total() const { return fTotal; }
+  void*     Ptr() const { return reinterpret_cast<void*>(fData); }
   Int_t     MaxIndex()            const { return fTotal; }
+ protected:
   UShort_t  AtAsUShort(Int_t idx) const { return fData[idx]; }
   UShort_t& AtAsUShort(Int_t idx)       { return fData[idx]; }
   Int_t     AtAsInt(Int_t idx)    const { return fData[idx]; }

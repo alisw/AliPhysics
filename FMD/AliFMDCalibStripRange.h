@@ -80,6 +80,7 @@ public:
    */
   void ReadFromFile(std::istream &);
   
+  const AliFMDUShortMap& Ranges() const { return fRanges; }
 protected:
   // TArrayI fRates; // Sample rates 
   AliFMDUShortMap fRanges; // Min max 

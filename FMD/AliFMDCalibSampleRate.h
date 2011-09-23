@@ -87,6 +87,8 @@ public:
    * @param inFile input file stream
    */
   void ReadFromFile(std::istream & inFile);
+
+  const AliFMDUShortMap& Rates() const { return fRates; }
 protected:
   // TArrayI fRates; // Sample rates 
   AliFMDUShortMap fRates; // Sample rates

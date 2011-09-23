@@ -76,6 +76,7 @@ public:
 					      Char_t   ring, 
 					      UShort_t sector, 
 					      UShort_t strip) const;
+  void*     Ptr() const { return reinterpret_cast<void*>(fData); }
 protected:
   Int_t     MaxIndex()            const { return fTotal; }
   Int_t     AtAsInt(Int_t idx)    const { return fData[idx].fN; }

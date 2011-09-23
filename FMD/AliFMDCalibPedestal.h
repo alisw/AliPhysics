@@ -104,6 +104,9 @@ public:
    * @return A pointer to possibly newly allocated dead map. 
    */
   AliFMDBoolMap* MakeDeadMap(Float_t maxW, AliFMDBoolMap* dead=0) const;
+
+  const AliFMDFloatMap& Values() const { return fValue; }
+  const AliFMDFloatMap& Widths() const { return fWidth; }
 private:
   AliFMDFloatMap fValue; /** Pedestal */
   AliFMDFloatMap fWidth; /** Pedestal width */

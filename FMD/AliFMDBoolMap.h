@@ -76,6 +76,7 @@ public:
 				   UShort_t str) const;
   Bool_t* Data() const { return fData; }
   Int_t   Total() const { return fTotal; }
+  void*   Ptr() const { return reinterpret_cast<void*>(fData); }
 protected:
   Int_t     MaxIndex()            const { return fTotal; }
   Bool_t    AtAsBool(Int_t idx)   const { return fData[idx]; }

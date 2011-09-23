@@ -89,17 +89,17 @@ AliFMDParameters::AliFMDParameters()
     fAltroChannelSize(0),
     fChannelsPerAltro(0),
     fPedestalFactor(0),
-    fZSPre(0),
-    fZSPost(0),
-    fZSPedSubtract(kFALSE),
-    fFixedPedestal(0),
-    fFixedPedestalWidth(0),
-    fFixedZeroSuppression(0),
-    fFixedSampleRate(0),
+    fZSPre(1),
+    fZSPost(1),
+    fZSPedSubtract(kTRUE),
+    fFixedPedestal(100),
+    fFixedPedestalWidth(2),
+    fFixedZeroSuppression(1),
+    fFixedSampleRate(2),
     fFixedThreshold(0),
     fFixedMinStrip(0),
-    fFixedMaxStrip(0),
-    fFixedPulseGain(0), 
+    fFixedMaxStrip(127),
+    fFixedPulseGain(2), 
     fEdepMip(0),
     fHasCompleteHeader(kTRUE),
     fZeroSuppression(0), 
@@ -123,6 +123,7 @@ AliFMDParameters::AliFMDParameters()
   SetPedestalFactor();
   SetThreshold();
   SetStripRange();
+  SetGain();
   fAltroMap = new AliFMDAltroMapping;
 }
 
@@ -657,6 +658,12 @@ AliFMDParameters::GetEntry(const char* path, AliFMDPreprocessor* pp,
 			       __LINE__);
     return 0;
   }
+  if (entry && AliLog::GetDebugLevel("FMD", "") > 0) { 
+    AliInfoF("Got entry %p for %s", entry, path);
+    entry->PrintId();
+    entry->PrintMetaData();			
+    entry->Print();
+  }
   return entry;
 }
 
@@ -677,6 +684,8 @@ AliFMDParameters::InitPulseGain(AliFMDPreprocessor* pp)
   AliFMDDebug(5, ("Got gain from CDB"));
   fPulseGain = dynamic_cast<AliFMDCalibGain*>(gain->GetObject());
   if (!fPulseGain) AliFatal("Invalid pulser gain object from CDB");
+  if (!fPulseGain->Values().Ptr()) 
+    AliFatal("Empty pulser gain object from CDB");
 }
 //__________________________________________________________________
 void
@@ -694,6 +703,7 @@ AliFMDParameters::InitPedestal(AliFMDPreprocessor* pp)
   AliFMDDebug(5, ("Got pedestal from CDB"));
   fPedestal = dynamic_cast<AliFMDCalibPedestal*>(pedestal->GetObject());
   if (!fPedestal) AliFatal("Invalid pedestal object from CDB");
+  if (!fPedestal->Values().Ptr()) AliFatal("Empty pedestal object from CDB");
 }
 
 //__________________________________________________________________
@@ -712,6 +722,7 @@ AliFMDParameters::InitDeadMap(AliFMDPreprocessor* pp)
   AliFMDDebug(5, ("Got dead map from CDB"));
   fDeadMap = dynamic_cast<AliFMDCalibDeadMap*>(deadMap->GetObject());
   if (!fDeadMap) AliFatal("Invalid dead map object from CDB");
+  if (!fDeadMap->Ptr()) AliFatal("Empty dead map object from CDB");
 }
 
 //__________________________________________________________________
@@ -730,6 +741,12 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
   fZeroSuppression = 
     dynamic_cast<AliFMDCalibZeroSuppression*>(zeroSup->GetObject());
   if (!fZeroSuppression)AliFatal("Invalid zero suppression object from CDB");
+  if (!fZeroSuppression->Ptr()) {
+    AliWarningF("Empty zero suppression object from CDB, assuming %d",
+		fFixedZeroSuppression);
+    delete fZeroSuppression;
+    fZeroSuppression = 0;
+  }
 }
 
 //__________________________________________________________________
@@ -746,7 +763,9 @@ AliFMDParameters::InitSampleRate(AliFMDPreprocessor* pp)
   if (!sampRat) return;
   AliFMDDebug(5, ("Got zero suppression from CDB"));
   fSampleRate = dynamic_cast<AliFMDCalibSampleRate*>(sampRat->GetObject());
-  if (!fSampleRate) AliFatal("Invalid zero suppression object from CDB");
+  if (!fSampleRate) AliFatal("Invalid sample rate object from CDB");
+  if (!fSampleRate->Rates().Ptr()) 
+    AliFatal("empty sample rate object from CDB");
 }
 
 //__________________________________________________________________
@@ -789,6 +808,8 @@ AliFMDParameters::InitStripRange(AliFMDPreprocessor* pp)
   AliFMDDebug(5, ("Got strip range from CDB"));
   fStripRange = dynamic_cast<AliFMDCalibStripRange*>(range->GetObject());
   if (!fStripRange) AliFatal("Invalid strip range object from CDB");
+  if (!fStripRange->Ranges().Ptr()) 
+    AliFatal("Empty strip range object from CDB");
 }
 
 
@@ -886,6 +907,11 @@ AliFMDParameters::GetZeroSuppression(UShort_t detector, Char_t ring,
   //    zero suppression threshold (in ADC counts) 
   //
   if (!fZeroSuppression) return fFixedZeroSuppression;
+
+  // In case of empty zero suppression objects. 
+  if (!fZeroSuppression->Ptr() || 
+      fZeroSuppression->MaxIndex() <= 0) return fFixedZeroSuppression;
+
   // Need to map strip to ALTRO chip. 
   AliFMDDebug(50, ("zero sup. for FMD%d%c[%2d,%3d]=%d",
 		    detector, ring, sector, strip,
