@@ -708,6 +708,7 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
     TPaveText* text = new TPaveText(0,0,0.99,0.99,"NDC");
     text->AddText("FATAL : 0 event seen ? That's NOT normal...");
     text->SetFillColor(2); // red = FATAL
+    hrostatus->GetListOfFunctions()->Delete();
     hrostatus->GetListOfFunctions()->Add(text);
     return;
   }
