@@ -50,6 +50,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     virtual void   AddJetBranch(const char* c){fJBArray->Add(new TObjString(c));}
     virtual void   SetSubtractionMethod(Int_t i){fSubtraction = i;}
     virtual Int_t  GetSubtractionMethod(){return fSubtraction;}
+    virtual void   SetKeepJets(Bool_t b = kTRUE){fKeepJets = b;}
     virtual void   SetBackgroundBranch(char* c){fBackgroundBranch = c;}  
     virtual void   SetNonStdOutputFile(char* c){fNonStdFile = c;}  
     virtual void   SetToReplace(char* c){fReplaceString1 = c;}  
@@ -83,6 +84,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
     TString         fReplaceString1;     // To construct the new output name  
     TString         fReplaceString2;     // To construct the new output name   
     Int_t           fSubtraction;       // Parameter for subtraction mode 
+    Bool_t          fKeepJets;          // keeps the jets with negative p_t rescaled to 0.1 GeV
     TList *fInJetArrayList; //! transient list to make ease the handling of input jets
     TList *fOutJetArrayList; //! transient list to make ease the reset of output jets
 
@@ -98,7 +100,7 @@ class AliAnalysisTaskJetBackgroundSubtract : public AliAnalysisTaskSE
  
     TList *fHistList; //! the histograms output list
    
-    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 5) 
+    ClassDef(AliAnalysisTaskJetBackgroundSubtract, 6) 
 };
  
 #endif

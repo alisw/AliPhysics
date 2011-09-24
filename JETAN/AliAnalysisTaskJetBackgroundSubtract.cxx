@@ -60,6 +60,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract():
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
   fSubtraction(k4Area),
+  fKeepJets(kFALSE),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
@@ -87,6 +88,7 @@ AliAnalysisTaskJetBackgroundSubtract::AliAnalysisTaskJetBackgroundSubtract(const
   fReplaceString1("B0"),
   fReplaceString2("B%d"),
   fSubtraction(k4Area),
+  fKeepJets(kFALSE),
   fInJetArrayList(0x0),
   fOutJetArrayList(0x0),
   fh2CentvsRho(0x0),
@@ -464,7 +466,12 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	}
 	if(ptSub<0){
 	  // optionally rescale it and keep??
-	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(fKeepJets){
+	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  }
+	  else{
+	    bAdd = false;
+	  }
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -472,6 +479,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
 	tmpNewJet.SetBgEnergy(background,0);
+	tmpNewJet.SetPtSubtracted(ptSub,0);
       }// kAREA
       else if(fSubtraction==kRhoRecalc){
  	Double_t background = rho * jet->EffectiveAreaCharged();
@@ -479,8 +487,13 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
         if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
-	  // optionally rescale it and keep??
-	  bAdd = false;// RescaleJetMomentum(&tmpNewJet,0.1);
+	  // optionally rescale it and keep
+	  if(fKeepJets){
+	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  }
+	  else{
+	    bAdd = false;
+	  }
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -488,14 +501,19 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
 	tmpNewJet.SetBgEnergy(background,0);
+	tmpNewJet.SetPtSubtracted(ptSub,0);
       }//kRhoRecalc
        else if(fSubtraction==kRhoRC){
 	Double_t background = rho * jet->EffectiveAreaCharged();
 	ptSub = jet->Pt() - background;	
 	if(fDebug>2){	Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
 	if(ptSub<0){
-	  // optionally rescale it and keep??
-	  bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	  if(fKeepJets){
+	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
+	  }
+	  else{
+	    bAdd = false;
+	  }
 	}
 	else{
 	  bAdd = RescaleJetMomentum(&tmpNewJet,ptSub);
@@ -503,29 +521,29 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	// add background estimates to the new jet object
 	// allows to recover old p_T and rho...
 	tmpNewJet.SetBgEnergy(background,0);
-
+	tmpNewJet.SetPtSubtracted(ptSub,0);
        }//kRhoRC
 
        else if(fSubtraction==k4Area&&jet->VectorAreaCharged()){
 	 backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
 	 ptSub = jet->Pt()-backgroundv.Pt();
 	 if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
-       	   // optionally rescale it and keep??
-	   bAdd = false; // RescaleJetMomentum(&tmpNewJet,0.1);
+	   if(fKeepJets){
+	     bAdd =  RescaleJetMomentum(&tmpNewJet,0.1);
+	   }
+	   else{
+	     bAdd = false;
+	   }
 	 }
 	 else{
 	   bAdd = RescaleJet4vector(&tmpNewJet,backgroundv);
 	 }
 	 // add background estimates to the new jet object
 	 // allows to recover old p_T and rho...
-	 tmpNewJet.SetBgEnergy(backgroundv.P(),0);
+	 tmpNewJet.SetBgEnergy(backgroundv.Pt(),0);
+	 tmpNewJet.SetPtSubtracted(ptSub,0);
 	 
        }//kArea4vector  
-
-
-
-
-
 
       if(bAdd){
         AliAODJet *newJet = new ((*jarrayOut)[nOut++]) AliAODJet(tmpNewJet);

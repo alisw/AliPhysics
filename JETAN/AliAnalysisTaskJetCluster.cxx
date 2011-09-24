@@ -95,6 +95,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster():
   fEventSelection(kFALSE),     
   fFilterMask(0),
   fFilterType(0),
+  fJetTypes(kJet),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),  
   fNSkipLeadingRan(0),
@@ -208,6 +209,7 @@ AliAnalysisTaskJetCluster::AliAnalysisTaskJetCluster(const char* name):
   fEventSelection(kFALSE),							
   fFilterMask(0),
   fFilterType(0),
+  fJetTypes(kJet),
   fTrackTypeRec(kTrackUndef),
   fTrackTypeGen(kTrackUndef),
   fNSkipLeadingRan(0),
@@ -346,16 +348,18 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       //  -> cleared in the UserExec....
       // here we can also have the case that the brnaches are written to a separate file
       
-      fTCAJetsOut = new TClonesArray("AliAODJet", 0);
-      fTCAJetsOut->SetName(fNonStdBranch.Data());
-      AddAODBranch("TClonesArray",&fTCAJetsOut,fNonStdFile.Data());
-      
+      if(fJetTypes&kJet){
+	fTCAJetsOut = new TClonesArray("AliAODJet", 0);
+	fTCAJetsOut->SetName(fNonStdBranch.Data());
+	AddAODBranch("TClonesArray",&fTCAJetsOut,fNonStdFile.Data());
+      }
    
-      
-      fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
-      fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
-      AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
-      
+      if(fJetTypes&kJetRan){
+	fTCAJetsOutRan = new TClonesArray("AliAODJet", 0);
+	fTCAJetsOutRan->SetName(Form("%s_%s",fNonStdBranch.Data(),"random"));
+	AddAODBranch("TClonesArray",&fTCAJetsOutRan,fNonStdFile.Data());
+      }
+
       if(fUseBackgroundCalc){
 	if(!AODEvent()->FindListObject(Form("%s_%s",AliAODJetEventBackground::StdBranchName(),fNonStdBranch.Data()))){
 	  fAODJetBackgroundOut = new AliAODJetEventBackground();
@@ -367,17 +371,21 @@ void AliAnalysisTaskJetCluster::UserCreateOutputObjects()
       TString cName = Form("%sRandomConeSkip%02d",fNonStdBranch.Data(),fNSkipLeadingCone);
   
       if(fNRandomCones>0){
-	if(!AODEvent()->FindListObject(cName.Data())){
-	  fTCARandomConesOut = new TClonesArray("AliAODJet", 0);
-	  fTCARandomConesOut->SetName(cName.Data());
-	  AddAODBranch("TClonesArray",&fTCARandomConesOut,fNonStdFile.Data());
+	if(fJetTypes&kRC){
+	  if(!AODEvent()->FindListObject(cName.Data())){
+	    fTCARandomConesOut = new TClonesArray("AliAODJet", 0);
+	    fTCARandomConesOut->SetName(cName.Data());
+	    AddAODBranch("TClonesArray",&fTCARandomConesOut,fNonStdFile.Data());
+	  }
 	}
 	// create the branch with the random for the random cones on the random event
-	cName = Form("%sRandomCone_random",fNonStdBranch.Data());
-	if(!AODEvent()->FindListObject(cName.Data())){
-	  fTCARandomConesOutRan = new TClonesArray("AliAODJet", 0);
-	  fTCARandomConesOutRan->SetName(cName.Data());
-	  AddAODBranch("TClonesArray",&fTCARandomConesOutRan,fNonStdFile.Data());
+	if(fJetTypes&kRCRan){
+	  cName = Form("%sRandomCone_random",fNonStdBranch.Data());
+	  if(!AODEvent()->FindListObject(cName.Data())){
+	    fTCARandomConesOutRan = new TClonesArray("AliAODJet", 0);
+	    fTCARandomConesOutRan->SetName(cName.Data());
+	    AddAODBranch("TClonesArray",&fTCARandomConesOutRan,fNonStdFile.Data());
+	  }
 	}
       }
     
@@ -809,13 +817,15 @@ void AliAnalysisTaskJetCluster::UserExec(Option_t */*option*/)
 
  
   // now create the object that holds info about ghosts                        
+  /*
   if(!fUseBackgroundCalc&& fNonStdBranch.Length()==0){
     // reduce CPU time...
     fGhostArea = 0.5; 
     fActiveAreaRepeats = 0; 
   }
-   
- fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
+  */
+
+  fastjet::GhostedAreaSpec ghostSpec(fGhostEtamax, fActiveAreaRepeats, fGhostArea);
   fastjet::AreaType areaType =   fastjet::active_area;
   fastjet::AreaDefinition areaDef = fastjet::AreaDefinition(areaType,ghostSpec);
   fastjet::JetDefinition jetDef(fAlgorithm, fRparam, fRecombScheme, fStrategy);

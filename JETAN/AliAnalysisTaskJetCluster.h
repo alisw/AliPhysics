@@ -62,6 +62,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     virtual void SetCentralityCut(Float_t xLo,Float_t xUp){fCentCutLo = xLo; fCentCutUp = xUp;}
     virtual void SetFilterMask(UInt_t i,Int_t iType = 0){fFilterMask = i;
       fFilterType = iType;}
+    virtual void SetJetTypes(UInt_t i){fJetTypes = i;}
     virtual void SetJetTriggerPtCut(Float_t x){fJetTriggerPtCut = x;}    
     virtual void SetVtxCuts(Float_t z,Float_t r = 1){fVtxZCut = z; fVtxR2Cut = r *r;}    
     virtual void SetBackgroundBranch(const char* c){fBackgroundBranch = c;}
@@ -109,6 +110,11 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     enum {kMaxCorrelation =  3};
     enum {kMaxRadius =       5};
     enum {kMaxCent =         4};
+    enum {kJet = 1<<0,
+	  kJetRan = 1<<1,	  
+	  kRC = 1<<2,
+	  kRCRan = 1<<3
+    };
     
 
  private:
@@ -127,6 +133,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     Bool_t        fEventSelection;        // use the event selection of this task, otherwise analyse all
     UInt_t        fFilterMask;            // filter bit for slecected tracks
     UInt_t        fFilterType;            // filter type 0 = all, 1 = ITSTPC, 2 = TPC
+    UInt_t        fJetTypes;              // 1<<0 regular jets, 1<<1 << randomized event 1<<2 random cones 1<<3 random cones randomiuzed evetn
     Int_t         fTrackTypeRec;          // type of tracks used for FF 
     Int_t         fTrackTypeGen;          // type of tracks used for FF 
     Int_t         fNSkipLeadingRan;       // number of leading tracks to be skipped in the randomized event
@@ -239,7 +246,7 @@ class AliAnalysisTaskJetCluster : public AliAnalysisTaskSE
     TList *fHistList; //!leading tracks to be skipped in the randomized event Output list
    
 
-    ClassDef(AliAnalysisTaskJetCluster, 19) 
+    ClassDef(AliAnalysisTaskJetCluster, 20) 
 };
  
 #endif
