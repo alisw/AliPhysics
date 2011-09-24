@@ -51,7 +51,7 @@ public:
   
   void         ClusterHistograms(const TLorentzVector mom, Float_t *pos, 
                                  const Int_t nCaloCellsPerCluster, const Int_t nModule,
-                                 const Int_t nTracksMatched, const AliVTrack* track, 
+                                 const Bool_t matched, const AliVTrack* track, 
                                  const Int_t * labels, const Int_t nLabels);
  
   void         Correlate();

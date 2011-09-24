@@ -489,7 +489,7 @@ Bool_t AliCaloPID::IsTrackMatched(const AliVCluster* cluster, const AliCalorimet
   
   if(fhTrackMatchedDEta){
     fhTrackMatchedDEta->Fill(cluster->GetTrackDz(),cluster->E());
-    fhTrackMatchedDEta->Fill(cluster->GetTrackDx(),cluster->E());
+    fhTrackMatchedDPhi->Fill(cluster->GetTrackDx(),cluster->E());
     if(cluster->E() > 0.5)fhTrackMatchedDEtaDPhi->Fill(cluster->GetTrackDz(),cluster->GetTrackDx());
   }
   
