@@ -1231,14 +1231,13 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   TLorentzVector mom  ;
   TLorentzVector mom2 ;
   TObjArray * caloClusters = NULL;
-  Int_t nLabel = 0;
-  Int_t *labels=0x0;
-  Int_t nCaloClusters = 0;
-  Int_t nCaloClustersAccepted = 0;
-  Int_t nCaloCellsPerCluster = 0;
-  Int_t nTracksMatched = 0;
-  Int_t trackIndex = 0;
-  Int_t nModule = -1;
+  Int_t  nLabel = 0  ;
+  Int_t *labels = 0x0;
+  Int_t  nCaloClusters         = 0;
+  Int_t  nCaloClustersAccepted = 0;
+  Int_t  nCaloCellsPerCluster  = 0;
+  Bool_t matched    = kFALSE;
+  Int_t  nModule    = -1;
   
   //Get vertex for photon momentum calculation and event selection
   Double_t v[3] = {0,0,0}; //vertex ;
@@ -1309,10 +1308,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     Int_t *nClustersInModule = new Int_t[fNModules];
     for(Int_t imod = 0; imod < fNModules; imod++ ) nClustersInModule[imod] = 0;
     
+    
     if(GetDebug() > 0)
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - In %s there are %d clusters \n", fCalorimeter.Data(), nCaloClusters);
     
-    AliVTrack * track = 0x0;
+    //AliVTrack * track = 0x0;
     Float_t pos[3] ;
     Double_t tof = 0;
     //Loop over CaloClusters
@@ -1345,22 +1345,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       //Cells per cluster
       nCaloCellsPerCluster = clus->GetNCells();
       //if(mom.E() > 10 && nCaloCellsPerCluster == 1 ) printf("%s:************** E = %f ********** ncells = %d\n",fCalorimeter.Data(), mom.E(),nCaloCellsPerCluster);
-      
-      //matched cluster with tracks
-      nTracksMatched = clus->GetNTracksMatched();
-      if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
-        trackIndex     = clus->GetTrackMatchedIndex();
-        if(trackIndex >= 0){
-          track = (AliVTrack*)GetReader()->GetInputEvent()->GetTrack(trackIndex);
-        }
-        else{
-          if(nTracksMatched == 1) nTracksMatched = 0;
-          track = 0;
-        }
-      }//kESD
-      else{//AODs
-        if(nTracksMatched > 0) track = (AliVTrack*)clus->GetTrackMatched(0);
-      }
+ 
+      // Cluster mathed with track?
+      matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils());
+
       
       //======================
       //Cells in cluster
@@ -1579,14 +1567,11 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 
           if(nCaloCellsPerCluster > 3){
             
-            Int_t matched = 0;
-            if( nTracksMatched > 0 ) matched = 1;
-            Float_t dIA    = 1.*(dIphi-dIeta)/(dIeta+dIphi);
-            
             if     (mom.E() < 2 ) fhDeltaIEtaDeltaIPhiE0[matched]->Fill(dIeta,dIphi);
             else if(mom.E() < 6 ) fhDeltaIEtaDeltaIPhiE2[matched]->Fill(dIeta,dIphi);
             else                  fhDeltaIEtaDeltaIPhiE6[matched]->Fill(dIeta,dIphi);
             
+            Float_t dIA    = 1.*(dIphi-dIeta)/(dIeta+dIphi);
             fhDeltaIA[matched]->Fill(mom.E(),dIA);
             
             if(mom.E() > 0.5){
@@ -1633,7 +1618,8 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
         //-----------------------------------------------------------
         //Fill histograms related to single cluster or track matching
         //-----------------------------------------------------------
-        ClusterHistograms(mom, pos, nCaloCellsPerCluster, nModule, nTracksMatched, track, labels, nLabel);	
+        
+        ClusterHistograms(mom, pos, nCaloCellsPerCluster, nModule, matched,0x0/*track*/, labels, nLabel);	
         
         
         //-----------------------------------------------------------
@@ -1859,7 +1845,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
 //_____________________________________________________________________________________________
 void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom, 
                                             Float_t *pos, const Int_t nCaloCellsPerCluster,const Int_t nModule,
-                                            const Int_t nTracksMatched,  const AliVTrack * /*track*/,  
+                                            const Bool_t matched,  const AliVTrack * /*track*/,  
                                             const Int_t * labels, const Int_t nLabels){
   //Fill CaloCluster related histograms
 	
@@ -2099,56 +2085,56 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom,
     
     //Overlapped pi0 (or eta, there will be very few)
     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)){
-      fhRecoMCE  [mcPi0][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPi0][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPi0][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcPi0][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcPi0][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcPi0][(nTracksMatched>0)]->Fill(e,etaMC-eta);
+      fhRecoMCE  [mcPi0][matched]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPi0][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPi0][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcPi0][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcPi0][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcPi0][(matched)]->Fill(e,etaMC-eta);
     }//Overlapped pizero decay
     else     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-      fhRecoMCE  [mcEta][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcEta][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcEta][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcEta][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcEta][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcEta][(nTracksMatched>0)]->Fill(e,etaMC-eta);
+      fhRecoMCE  [mcEta][(matched)]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcEta][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcEta][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcEta][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcEta][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcEta][(matched)]->Fill(e,etaMC-eta);
     }//Overlapped eta decay
     else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)){
-      fhRecoMCE  [mcPhoton][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPhoton][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPhoton][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcPhoton][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcPhoton][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcPhoton][(nTracksMatched>0)]->Fill(e,etaMC-eta);      
+      fhRecoMCE  [mcPhoton][(matched)]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPhoton][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPhoton][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcPhoton][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcPhoton][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcPhoton][(matched)]->Fill(e,etaMC-eta);      
      }//photon
     else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron)){
-      fhRecoMCE  [mcElectron][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcElectron][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcElectron][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcElectron][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcElectron][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcElectron][(nTracksMatched>0)]->Fill(e,etaMC-eta);
+      fhRecoMCE  [mcElectron][(matched)]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcElectron][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcElectron][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcElectron][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcElectron][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcElectron][(matched)]->Fill(e,etaMC-eta);
       fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
       fhEMR      ->Fill(e,rVMC);
     }
     else if(charge == 0){
-      fhRecoMCE  [mcNeHadron][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcNeHadron][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcNeHadron][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcNeHadron][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcNeHadron][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcNeHadron][(nTracksMatched>0)]->Fill(e,etaMC-eta);      
+      fhRecoMCE  [mcNeHadron][(matched)]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcNeHadron][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcNeHadron][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcNeHadron][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcNeHadron][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcNeHadron][(matched)]->Fill(e,etaMC-eta);      
       fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
       fhHaR        ->Fill(e,rVMC);
     }
     else if(charge!=0){
-      fhRecoMCE  [mcChHadron][(nTracksMatched>0)]     ->Fill(e,eMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcChHadron][(nTracksMatched>0)]->Fill(eta,etaMC);	
-      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcChHadron][(nTracksMatched>0)]->Fill(phi,phiMC);
-      fhRecoMCDeltaE  [mcChHadron][(nTracksMatched>0)]->Fill(e,eMC-e);
-      fhRecoMCDeltaPhi[mcChHadron][(nTracksMatched>0)]->Fill(e,phiMC-phi);
-      fhRecoMCDeltaEta[mcChHadron][(nTracksMatched>0)]->Fill(e,etaMC-eta);     
+      fhRecoMCE  [mcChHadron][(matched)]     ->Fill(e,eMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcChHadron][(matched)]->Fill(eta,etaMC);	
+      if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcChHadron][(matched)]->Fill(phi,phiMC);
+      fhRecoMCDeltaE  [mcChHadron][(matched)]->Fill(e,eMC-e);
+      fhRecoMCDeltaPhi[mcChHadron][(matched)]->Fill(e,phiMC-phi);
+      fhRecoMCDeltaEta[mcChHadron][(matched)]->Fill(e,etaMC-eta);     
       fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
       fhHaR        ->Fill(e,rVMC);
     }
@@ -2157,7 +2143,7 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom,
   //Match tracks and clusters
   //To be Modified in case of AODs
   
-  if( nTracksMatched > 0 &&  fFillAllTMHisto){
+  if( matched &&  fFillAllTMHisto){
     if(fFillAllTH12 && fFillAllTMHisto){
       fhECharged      ->Fill(e);	
       fhPtCharged     ->Fill(pt);
