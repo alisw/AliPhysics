@@ -46,10 +46,15 @@ class AliAODJet : public AliVParticle {
     virtual Bool_t   IsTriggeredEMCAL(){return (fTrigger&kEMCALTriggered)==kEMCALTriggered;}
     virtual Bool_t   IsTriggeredTRD(){return (fTrigger&kTRDTriggered)==kTRDTriggered;}
     virtual UChar_t  Trigger(){return fTrigger;}
-
+    
     virtual void     AddTrack(TObject *tr);
     
     TObject* GetTrack(Int_t i) {return fRefTracks->At(i);}
+    virtual void     SetPtSubtracted(Double_t ptCh, Double_t ptN){
+      fPtSubtracted[0] = ptCh;
+      fPtSubtracted[1] = ptN;
+    }
+    virtual Double_t GetPtSubtracted(Int_t i){return (i<2?fPtSubtracted[i]:0);}
     virtual void     SetBgEnergy(Double_t bgEnCh, Double_t bgEnNe)
 	{fBackgEnergy[0] = bgEnCh; fBackgEnergy[1] = bgEnNe;}
     virtual void     SetEffArea(Double_t effACh, Double_t effANe, Double_t effAErrCh = 0, Double_t effAErrNe = 0)
@@ -109,12 +114,13 @@ class AliAODJet : public AliVParticle {
     Double32_t      fEffectiveArea[2];       // Effective jet area used for background subtraction
     Double32_t      fEffectiveAreaError[2];  //[0,1,10] relative error of jet areas, 10 bit precision
     Double32_t      fNeutralFraction;        //[0,1,12] Neutral fraction between 0 and 1 12 bit precision;
+    Double32_t      fPtSubtracted[2];        //[0,0,12] pT after subtraction can be negative four momentum close to 0 in this case, 12 bit precision
     UChar_t         fTrigger;                // Bit mask to flag jets triggered by a certain detector  
     TLorentzVector* fMomentum;               // Jet 4-momentum vector
     TLorentzVector* fVectorAreaCharged;      // jet area four momentum 
     TRefArray*      fRefTracks;              // array of references to the tracks belonging to the jet
 
-    ClassDef(AliAODJet,9);
+    ClassDef(AliAODJet,10);
 
 };
 

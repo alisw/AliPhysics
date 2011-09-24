@@ -41,6 +41,7 @@ AliAODJet::AliAODJet() :
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;   
     fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;
+    fPtSubtracted[0] =   fPtSubtracted[1] = 0;
 }
 
 AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
@@ -57,6 +58,7 @@ AliAODJet::AliAODJet(Double_t px, Double_t py, Double_t pz, Double_t e):
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;
     fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;   
+    fPtSubtracted[0] =   fPtSubtracted[1] = 0;
     fMomentum = new TLorentzVector(px, py, pz, e);
 }
 
@@ -74,6 +76,7 @@ AliAODJet::AliAODJet(TLorentzVector & p):
     fEffectiveArea[0] = 0.;   
     fEffectiveArea[1] = 0.;
     fEffectiveAreaError[0] = fEffectiveAreaError[1] = 0;    
+    fPtSubtracted[0] =   fPtSubtracted[1] = 0;
     fMomentum = new TLorentzVector(p);
 }
 
@@ -103,6 +106,8 @@ AliAODJet::AliAODJet(const AliAODJet& jet) :
     fEffectiveArea[1] = jet.fEffectiveArea[1];
     fEffectiveAreaError[0] = jet.fEffectiveAreaError[0];
     fEffectiveAreaError[1] = jet.fEffectiveAreaError[1];
+    fPtSubtracted[0] =   jet.fPtSubtracted[0];
+    fPtSubtracted[1] =   jet.fPtSubtracted[1];
     if(jet.fMomentum)fMomentum  = new TLorentzVector(*jet.fMomentum);
     if(jet.fVectorAreaCharged)fVectorAreaCharged = new TLorentzVector(*jet.fVectorAreaCharged);
     fRefTracks = new TRefArray(*jet.fRefTracks);
@@ -120,6 +125,8 @@ AliAODJet& AliAODJet::operator=(const AliAODJet& jet)
     fEffectiveArea[1] = jet.fEffectiveArea[1];
     fEffectiveAreaError[0] = jet.fEffectiveAreaError[0];
     fEffectiveAreaError[1] = jet.fEffectiveAreaError[1];
+    fPtSubtracted[0] =   jet.fPtSubtracted[0];
+    fPtSubtracted[1] =   jet.fPtSubtracted[1];
     fNeutralFraction = jet.fNeutralFraction;
     fTrigger = jet.fTrigger;
     
