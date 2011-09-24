@@ -658,6 +658,13 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   Double_t ca=TMath::Cos(alpha-fAlpha), sa=TMath::Sin(alpha-fAlpha);
   Double_t sf=fP2, cf=TMath::Sqrt((1.- fP2)*(1.+fP2)); // Improve precision
 
+  // RS: check if rotation does no invalidate track model (cos(local_phi)>=0, i.e. particle
+  // direction in local frame is along the X axis
+  if ((cf*ca+sf*sa)<0) {
+    AliWarning(Form("Rotation failed: local cos(phi) would become %.2f",cf*ca+sf*sa));
+    return kFALSE;
+  }
+  //
   Double_t tmp=sf*ca - cf*sa;
   if (TMath::Abs(tmp) >= kAlmost1) {
      if (TMath::Abs(tmp) > 1.+ Double_t(FLT_EPSILON))  
