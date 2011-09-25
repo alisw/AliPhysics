@@ -357,6 +357,88 @@ AliFMDMap::ForEach(ForOne& algo) const
   return ret;
 }
 
+//__________________________________________________________
+void
+AliFMDMap::Print(Option_t* option) const
+{
+  // Print contents of map
+  if (!option || option[0] == '\0') TObject::Print();
+  Printer p(option);
+  ForEach(p);
+  printf("\n");
+}
+
+//===================================================================
+AliFMDMap::Printer::Printer(const char* format)
+  : fFormat(format), fOldD(0), fOldR('-'), fOldS(1024) 
+{}
+
+//___________________________________________________________________
+AliFMDMap::Printer::Printer(const Printer& p) 
+  : AliFMDMap::ForOne(p),
+    fFormat(p.fFormat), 
+    fOldD(p.fOldD), 
+    fOldR(p.fOldR), 
+    fOldS(p.fOldS) 
+{}
+//___________________________________________________________________
+void
+AliFMDMap::Printer::PrintHeadings(UShort_t d, Char_t r, UShort_t s, UShort_t t) 
+{
+  if (d != fOldD) { 
+    fOldD = d;
+    fOldR = '-';
+    if (d != 0) printf("\n");
+    printf("FMD%d", fOldD);
+  }
+  if (r != fOldR) {
+    fOldR = r;
+    fOldS = 1024;
+    printf("\n %s ring", (r == 'I' ? "Inner" : "Outer"));
+  }
+  if (s != fOldS) { 
+    fOldS = s;
+    printf("\n  Sector %2d", fOldS);
+  }
+  if (t % 4 == 0) printf("\n   %3d-%3d ", t, t+3);
+}
+//___________________________________________________________________
+Bool_t
+AliFMDMap::Printer::operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			       Float_t m)
+{
+  PrintHeadings(d, r, s, t);
+  printf(fFormat, m);
+  return kTRUE;
+}
+//___________________________________________________________________
+Bool_t
+AliFMDMap::Printer::operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			       Int_t m)
+{
+  PrintHeadings(d, r, s, t);
+  printf(fFormat, m);
+  return kTRUE;
+}
+//___________________________________________________________________
+Bool_t
+AliFMDMap::Printer::operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			       UShort_t m)
+{
+  PrintHeadings(d, r, s, t);
+  printf(fFormat, m);
+  return kTRUE;
+}
+//___________________________________________________________________
+Bool_t
+AliFMDMap::Printer::operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
+			       Bool_t m)
+{
+  PrintHeadings(d, r, s, t);
+  printf(fFormat, int(m));
+  return kTRUE;
+}
+
 #if 0
 //___________________________________________________________________
 void AliFMDMap::Streamer(TBuffer &R__b)

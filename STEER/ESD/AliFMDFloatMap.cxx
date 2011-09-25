@@ -28,63 +28,6 @@
 // Created Mon Nov  8 12:51:51 2004 by Christian Holm Christensen
 // 
 #include "AliFMDFloatMap.h"	//ALIFMDFLOATMAP_H
-namespace {
-  class Printer : public AliFMDMap::ForOne
-  {
-  public:
-    Printer(const char* format) 
-      : fFormat(format), fOldD(0), fOldR('-'), fOldS(1024) {}
-    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
-		      Float_t m)
-    {
-      if (d != fOldD) { 
-	fOldD = d;
-	fOldR = '-';
-	if (d != 0) printf("\n");
-	printf("FMD%d", fOldD);
-      }
-      if (r != fOldR) {
-	fOldR = r;
-	fOldS = 1024;
-	printf("\n %s ring", (r == 'I' ? "Inner" : "Outer"));
-      }
-      if (s != fOldS) { 
-	fOldS = s;
-	printf("\n  Sector %2d", fOldS);
-      }
-      if (t % 4 == 0) printf("\n   %3d-%3d ", t, t+3);
-      printf(fFormat, m);
-      // if (t % 4 == 3) printf("\n");
-
-      return kTRUE;
-    }
-    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Int_t)
-    {
-      return kTRUE;
-    }
-    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, UShort_t)
-    {
-      return kTRUE;
-    }
-    Bool_t operator()(UShort_t, Char_t, UShort_t, UShort_t, Bool_t)
-    {
-      return kTRUE;
-    }
-  private:
-    Printer(const Printer& p) 
-      : AliFMDMap::ForOne(p),
-	fFormat(p.fFormat), 
-	fOldD(p.fOldD), 
-	fOldR(p.fOldR), 
-	fOldS(p.fOldS) 
-    {}
-    Printer& operator=(const Printer&) { return *this; }
-    const char* fFormat;
-    UShort_t    fOldD;
-    Char_t      fOldR;
-    UShort_t    fOldS;
-  };
-}
 //__________________________________________________________
 ClassImp(AliFMDFloatMap)
 #if 0
@@ -185,16 +128,6 @@ AliFMDFloatMap::Reset(const Float_t& val)
   for (Int_t i = 0; i < fTotal; i++) fData[i] = val;
 }
 
-//__________________________________________________________
-void
-AliFMDFloatMap::Print(Option_t* option) const
-{
-  // Print contents of map
-  if (!option || option[0] == '\0') TObject::Print();
-  Printer p(option);
-  ForEach(p);
-  printf("\n");
-}
 //__________________________________________________________
 Float_t&
 AliFMDFloatMap::operator()(UShort_t det, 

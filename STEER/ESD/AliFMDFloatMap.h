@@ -39,7 +39,8 @@ public:
 				    UShort_t sec,
 				    UShort_t str) const;
   Float_t* Data() const { return fData; }
-  void Print(Option_t* option="%8.4f") const;
+  void Print(Option_t* option="%8.4f") const { AliFMDMap::Print(option); }
+  void* Ptr() const { return reinterpret_cast<void*>(fData); }
 protected:
   Int_t    MaxIndex() const { return fTotal; }
   Float_t  AtAsFloat(Int_t i) const { return fData[i]; } 

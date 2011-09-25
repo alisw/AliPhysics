@@ -123,6 +123,78 @@ public:
     virtual Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, 
 			      Bool_t v);
   };
+  /**
+   * Class to print content of map 
+   * 
+   */
+  class Printer : public ForOne
+  {
+  public:
+    /** 
+     * Constructor 
+     * 
+     * @param format Output format (argument to printf)
+     */
+    Printer(const char* format);
+    /** 
+     * Destructor 
+     */
+    virtual ~Printer() {}
+    /** 
+     * Print a floating point entry
+     * 
+     * @return true
+     */
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, Float_t m);
+    /** 
+     * Print a integer entry
+     * 
+     * @return true
+     */
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, Int_t m);
+    /** 
+     * Print a integer entry
+     * 
+     * @return true
+     */
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, UShort_t m);
+    /** 
+     * Print a boolean entry
+     * 
+     * @return true
+     */
+    Bool_t operator()(UShort_t d, Char_t r, UShort_t s, UShort_t t, Bool_t m);
+  private:
+    /** 
+     * Copy constructor
+     * 
+     * @param p Object to copy from 
+     */
+    Printer(const Printer& p);
+    /** 
+     * Assignment operator
+     * 
+     * @return Reference to this 
+     */
+    Printer& operator=(const Printer&) { return *this; }
+    /** 
+     * Print headings 
+     * 
+     * @param d Current detector
+     * @param r Current ring 
+     * @param s Current sector
+     * @param t Current strip
+     */
+    virtual void PrintHeadings(UShort_t d, Char_t r, UShort_t s, UShort_t t);
+    /** Printf like format */
+    const char* fFormat;
+    /** Last detector */
+    UShort_t    fOldD;
+    /** Last ring */
+    Char_t      fOldR;
+    /** Last sector */
+    UShort_t    fOldS;
+  };
 
   /** 
    * Constructor 
@@ -245,6 +317,12 @@ public:
    * @return maximum index, plus 1
    */
   virtual Int_t MaxIndex() const = 0;
+  /** 
+   * Print content of the map 
+   * 
+   * @param option If not null or empty string, print map 
+   */
+  virtual void Print(Option_t* option="") const;
   /** 
    * Virtal function to get the value at index @a idx as a floating
    * point number.  
@@ -381,7 +459,12 @@ public:
    * @return @c true if the map is boolean valued 
    */
   virtual Bool_t IsBool() const { return kFALSE; }
-
+  /** 
+   * Get raw data pointer. 
+   * 
+   * @return Raw data pointer 
+   */
+  virtual void* Ptr() const = 0;
   enum {
     /** In case of version 2 of this class, this bit should be set. */
     kNeedUShort = 14
