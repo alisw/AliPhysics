@@ -67,6 +67,6 @@ class AliEventplane : public TNamed
    TVector2* fQsub2;		 // Q-Vector of subevent 2
    Double_t fQsubRes;		 // Difference of EP angles of subevents
  
-  ClassDef(AliEventplane, 1)
+  ClassDef(AliEventplane, 2)
 };
 #endif //ALIEVENTPLANE_H
