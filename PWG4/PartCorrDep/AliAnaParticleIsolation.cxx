@@ -143,8 +143,14 @@ Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4P
     if(iaod == jaod) continue ;
     AliAODPWG4ParticleCorrelation * part2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(jaod));
     mom2 = *(part2->Momentum());
+    
     //Select good pair (good phi, pt cuts, aperture and invariant mass)
-    if(GetNeutralMesonSelection()->SelectPair(mom1, mom2)){
+    
+    TString detector="";
+    if(part1->GetDetector()=="EMCAL" || part2->GetDetector()=="EMCAL" )
+      detector = "EMCAL";
+    
+    if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,detector)){
       if(GetDebug() > 1)printf("AliAnaParticleIsolation::CheckInvMass() - Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
       return kTRUE ;
     }

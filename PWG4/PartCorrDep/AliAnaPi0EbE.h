@@ -76,7 +76,8 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                              ; }
 
   //For histograms
-  enum mcTypes   {mcPhoton = 0, mcConversion = 1, mcPi0 = 2,  mcEta = 3, mcElectron = 4, mcHadron = 5};
+  enum mcTypes   { mcPhoton = 0, mcConversion = 1, mcPi0    = 2,  
+                   mcEta    = 3, mcElectron   = 4, mcHadron = 5 };
 
  private:
   
@@ -101,7 +102,11 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhEDispersion ;           //! E vs disp of pi0 pairs
   TH2F         * fhELambda0 ;              //! E vs lambda0 of pi0 pairs 
   TH2F         * fhELambda1 ;              //! E vs lambda1 of pi0 pairs 
-  
+  TH2F         * fhELambda0NoTRD ;         //! E vs lambda0 of pi0 pairs, not behind TRD 
+  TH2F         * fhELambda0FracMaxCellCut ;//! E vs lambda0 of pi0 pairs, fraction of cluster energy in max cell cut 
+  TH2F         * fhEFracMaxCell ;          //! E vs frac max cell of cluster  
+  TH2F         * fhEFracMaxCellNoTRD ;     //! E vs frac max cell of cluster, not behind TRD  
+
   TH2F         * fhClusterPairDiffTimeE;   //! Pair of clusters time difference vs E
   TH2F         * fhClusterPairDiffTimeAsy; //! Pair of clusters time difference vs Asymmetry
   
@@ -110,6 +115,9 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
   TH2F         * fhEMCLambda1[6] ;         //! E vs lambda1 of pi0 pairs but really from MC particle
   TH2F         * fhEMCDispersion[6] ;      //! E vs dispersion of pi0 pairs but really from MC particle
+  TH2F         * fhEMCLambda0NoTRD[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle, not behind TRD
+  TH2F         * fhEMCLambda0FracMaxCellCut[6] ;//! E vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
+  TH2F         * fhEMCFracMaxCell[6] ;     //! E vs fraction of max cell 
   
   TH1F         * fhPtMCNoPi0;              //! Number of identified pi0, not coming from pi0
   TH2F         * fhPhiMCNoPi0;             //! Phi of identified pi0, not coming from pi0
