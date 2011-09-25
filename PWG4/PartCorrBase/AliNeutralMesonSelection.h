@@ -59,8 +59,8 @@ class AliNeutralMesonSelection : public TObject {
   Double_t GetAngleMaxParam(Int_t i)              const { return fAngleMaxParam.At(i)    ; }
   void     SetAngleMaxParam(Int_t i, Double_t par)      { fAngleMaxParam.AddAt(par,i)    ; }
   
-  Float_t  GetShiftMinAngleCut()                  const { return fShiftMinAngle          ; }
-  void     SetShiftMinAngleCut(Float_t shift)           { fShiftMinAngle = shift         ; }
+  void     SetShiftMinAngleCut(Float_t a, Float_t b)    { fShiftMinAngle[0] = a          ; 
+                                                          fShiftMinAngle[1] = b          ; }
   
   void     SwitchOnAngleSelection()                     { fUseAngleCut = kTRUE           ; }
   void     SwitchOffAngleSelection()                    { fUseAngleCut = kFALSE          ; }
@@ -128,7 +128,7 @@ class AliNeutralMesonSelection : public TObject {
   
   TArrayD  fAngleMaxParam ;               // Max opening angle selection parameters
   Bool_t   fUseAngleCut   ;               // Select pairs depending on their opening angle
-  Float_t  fShiftMinAngle ;               // Correction shift for min angle from true kinematic limit, resolution effects
+  Float_t  fShiftMinAngle[2] ;            // Correction shift for min angle from true kinematic limit, resolution effects
   
   Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
 

@@ -36,7 +36,7 @@ ClassImp(AliNeutralMesonSelection)
     TObject(),             fAsymmetryCut(1),                fUseAsymmetryCut(0),
     fM(0),                 fInvMassMaxCut(0.),              fInvMassMinCut(0.),           fInvMassMaxCutParam(),
     fAngleMaxParam(),      fUseAngleCut(0),                 
-    fShiftMinAngle(0),     fKeepNeutralMesonHistos(0), 
+    fShiftMinAngle(),      fKeepNeutralMesonHistos(0), 
     fhAnglePairNoCut(0),   fhAnglePairOpeningAngleCut(0),   fhAnglePairAsymmetryCut(0),   fhAnglePairAllCut(0), 
     fhInvMassPairNoCut(0), fhInvMassPairOpeningAngleCut(0), fhInvMassPairAsymmetryCut(0), fhInvMassPairAllCut(0),
     fhAsymmetryNoCut(0),   fhAsymmetryOpeningAngleCut(0),   fhAsymmetryAllCut(0),
@@ -172,8 +172,6 @@ void AliNeutralMesonSelection::InitParameters()
   fAngleMaxParam.Reset(0.);
 
   SetParticle("Pi0");
-
-  fShiftMinAngle   = 0.03;
   
   //Histogrammes settings
   fHistoNEBins     = 200 ;
@@ -199,7 +197,7 @@ Bool_t AliNeutralMesonSelection::IsAngleInWindow(const Float_t angle,const Float
   Double_t arg = (e*e-2*fM*fM)/(e*e);
   Double_t min = 100. ;
   if(arg>0.)
-    min = TMath::ACos(arg)-fShiftMinAngle;
+    min = TMath::ACos(arg)+fShiftMinAngle[0]+fShiftMinAngle[1]*e;
   
   if((angle<max)&&(angle>=min)) return kTRUE  ;
   else                          return kFALSE ;
@@ -290,10 +288,13 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName){
     fInvMassMaxCutParam[1] =-7.e-5 ;
     fInvMassMaxCutParam[2] = 8.e-5 ;    
          
-    fAngleMaxParam.AddAt( 0.40, 0) ;
-    fAngleMaxParam.AddAt(-0.25, 1) ;
-    fAngleMaxParam.AddAt( 0.025,2) ; //for pi0 shift, for eta maybe 0.09 
-    fAngleMaxParam.AddAt(-2.e-4,3) ;
+    fShiftMinAngle[0]   =-0.03  ;
+    fShiftMinAngle[1]   = 0.0025;
+    
+    fAngleMaxParam.AddAt( 0.8,  0) ;
+    fAngleMaxParam.AddAt(-1,    1) ;
+    fAngleMaxParam.AddAt( 0.09, 2) ; //for pi0 shift, for eta maybe 0.09 
+    fAngleMaxParam.AddAt(-2.e-3,3) ;
     
     fHistoNIMBins    = 150 ;
     fHistoIMMax      = 0.3 ;
@@ -307,12 +308,15 @@ void  AliNeutralMesonSelection::SetParticle(TString particleName){
     
     fInvMassMaxCutParam[0] = 0.0 ;
     fInvMassMaxCutParam[1] = 0.0 ;
-    fInvMassMaxCutParam[2] = 0.0 ;    
+    fInvMassMaxCutParam[2] = 0.0 ;
     
-    fAngleMaxParam.AddAt( 0.40, 0) ; // Same as pi0
-    fAngleMaxParam.AddAt(-0.25, 1) ; // Same as pi0
-    fAngleMaxParam.AddAt( 0.1,2) ;   // Shifted with respect to pi0
-    fAngleMaxParam.AddAt(-2.e-4,3) ; // Same as pi0
+    fShiftMinAngle[0]   =-0.03   ;
+    fShiftMinAngle[0]   = 0.00  ;
+    
+    fAngleMaxParam.AddAt( 0.80,  0) ; // Same as pi0
+    fAngleMaxParam.AddAt(-0.25,  1) ; // Same as pi0
+    fAngleMaxParam.AddAt( 0.12,  2) ;   // Shifted with respect to pi0
+    fAngleMaxParam.AddAt(-5.e-4, 3) ; // Same as pi0
   
     fHistoNIMBins    = 200  ; // GeV
     fHistoIMMax      = 0.75 ; // GeV
@@ -347,7 +351,7 @@ void AliNeutralMesonSelection::Print(const Option_t * opt) const
     printf("p1 :     %f\n", fAngleMaxParam.At(1));
     printf("p2 :     %f\n", fAngleMaxParam.At(2));
     printf("p3 :     %f\n", fAngleMaxParam.At(3));
-    printf("Min angle shift : %1.2f\n", fShiftMinAngle);
+    printf("Min angle shift : p0 = %1.3f, p1 = %1.3f,\n", fShiftMinAngle[0],fShiftMinAngle[1]);
   }
   
   printf("Keep Neutral Meson Histos = %d\n",fKeepNeutralMesonHistos);
