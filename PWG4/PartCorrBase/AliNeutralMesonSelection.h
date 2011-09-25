@@ -42,7 +42,9 @@ class AliNeutralMesonSelection : public TObject {
   Bool_t   AreNeutralMesonSelectionHistosKept()   const { return fKeepNeutralMesonHistos ; }
   void     KeepNeutralMesonSelectionHistos(Bool_t keep) { fKeepNeutralMesonHistos = keep ; }
   
-  Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej)  ;
+  Bool_t   SelectPair(TLorentzVector particlei,  TLorentzVector particlej, TString calo)  ;
+  
+  void     SetParticle(TString particleName) ;  // Do some default settings for "Pi0" or "Eta"
   
   // Asymmetry selection
     
@@ -73,10 +75,14 @@ class AliNeutralMesonSelection : public TObject {
   void     SetInvMassCutRange(Double_t invmassmin, Double_t invmassmax)
             { fInvMassMaxCut =invmassmax;  fInvMassMinCut =invmassmin                    ; }	
   
+  void     SetInvMassCutMaxParameters(Float_t a, Float_t b, Float_t c)
+            { fInvMassMaxCutParam[0] = a ; 
+              fInvMassMaxCutParam[1] = b ; 
+              fInvMassMaxCutParam[2] = c ; }	
+
   Double_t GetMass()                              const { return fM                      ; }
   void     SetMass(Double_t m)                          { fM = m                         ; }
-  
-	
+      
   //Histogrammes setters and getters
   
   virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
@@ -88,17 +94,7 @@ class AliNeutralMesonSelection : public TObject {
   Int_t   GetHistoNEBins()     const { return fHistoNEBins    ; }
   Float_t GetHistoEMin()       const { return fHistoEMin      ; }
   Float_t GetHistoEMax()       const { return fHistoEMax      ; }
-  
-  virtual void SetHistoPtRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNPtBins = n ;
-    fHistoPtMax = max ;
-    fHistoPtMin = min ;
-  }
-  
-  Int_t   GetHistoNPtBins()    const { return fHistoNPtBins    ; }
-  Float_t GetHistoPtMin()      const { return fHistoPtMin      ; }
-  Float_t GetHistoPtMax()      const { return fHistoPtMax      ; }
-  
+    
   virtual void SetHistoAngleRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNAngleBins = n ;
     fHistoAngleMax = max ;
@@ -128,13 +124,14 @@ class AliNeutralMesonSelection : public TObject {
   Double_t fM ;                           // Mass of the neutral meson
   Double_t fInvMassMaxCut ;               // Invariant Mass cut maximum
   Double_t fInvMassMinCut ;               // Invariant Masscut minimun
+  Double_t fInvMassMaxCutParam[3];        // Variable invariant mass max cut, for pi0 in EMCAL
   
   TArrayD  fAngleMaxParam ;               // Max opening angle selection parameters
   Bool_t   fUseAngleCut   ;               // Select pairs depending on their opening angle
   Float_t  fShiftMinAngle ;               // Correction shift for min angle from true kinematic limit, resolution effects
   
   Bool_t   fKeepNeutralMesonHistos ;      // Keep neutral meson selection histograms
-  
+
   //Histograms
   TH2F *   fhAnglePairNoCut ;             //! Aperture angle of decay photons, no cuts
   TH2F *   fhAnglePairOpeningAngleCut ;   //! Aperture angle of decay photons, cut on opening angle
@@ -155,10 +152,6 @@ class AliNeutralMesonSelection : public TObject {
   Float_t  fHistoEMax ;                   // Maximum value of pi0 E histogram range
   Float_t  fHistoEMin ;                   // Minimum value of pi0 E histogram range
   
-  Int_t    fHistoNPtBins ;                // Number of bins in Pt trigger axis
-  Float_t  fHistoPtMax ;                  // Maximum value of Pt trigger histogram range
-  Float_t  fHistoPtMin ;                  // Minimum value of Pt trigger histogram range	
-	
   Int_t    fHistoNAngleBins ;             // Number of bins in angle axis
   Float_t  fHistoAngleMax ;               // Maximum value of angle histogram range
   Float_t  fHistoAngleMin ;               // Minimum value of angle histogram range
@@ -167,7 +160,7 @@ class AliNeutralMesonSelection : public TObject {
   Float_t  fHistoIMMax ;                  // Maximum value of Invariant Mass histogram range
   Float_t  fHistoIMMin ;                  // Minimum value of Invariant Mass histogram range
   
-  ClassDef(AliNeutralMesonSelection,5)
+  ClassDef(AliNeutralMesonSelection,6)
     
 } ;
 

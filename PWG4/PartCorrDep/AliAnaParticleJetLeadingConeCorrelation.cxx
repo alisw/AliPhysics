@@ -1032,7 +1032,7 @@ void  AliAnaParticleJetLeadingConeCorrelation::GetLeadingPi0(AliAODPWG4ParticleC
             if(pt > ptl  && rat > fLeadingRatioMinCut  && rat < fLeadingRatioMaxCut  && 
                deltaphi > fDeltaPhiMinCut && deltaphi < fDeltaPhiMaxCut ){
               //Select good pair (aperture and invariant mass)
-              if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj)){
+              if(GetNeutralMesonSelection()->SelectPair(gammai, gammaj,"EMCAL")){
                 phil = phi ;
                 ptl  = pt ;
                 pLeading=(gammai+gammaj);  	
