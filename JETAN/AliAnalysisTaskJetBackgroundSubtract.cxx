@@ -464,7 +464,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub);
 	}
-	if(ptSub<0){
+	if(ptSub<=0){
 	  // optionally rescale it and keep??
 	  if(fKeepJets){
 	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
@@ -486,7 +486,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	ptSub = jet->Pt() - background;	
         if(fDebug>2){
 	  Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
-	if(ptSub<0){
+	if(ptSub<=0){
 	  // optionally rescale it and keep
 	  if(fKeepJets){
 	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
@@ -507,7 +507,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
 	Double_t background = rho * jet->EffectiveAreaCharged();
 	ptSub = jet->Pt() - background;	
 	if(fDebug>2){	Printf("%s:%d Jet %d %3.3f %3.3f %3.3f %3.3f",(char*)__FILE__,__LINE__,i,jet->Pt(),ptSub,background,rho);}
-	if(ptSub<0){
+	if(ptSub<=0){
 	  if(fKeepJets){
 	     bAdd = RescaleJetMomentum(&tmpNewJet,0.1);
 	  }
@@ -527,7 +527,7 @@ void AliAnalysisTaskJetBackgroundSubtract::UserExec(Option_t */*option*/)
        else if(fSubtraction==k4Area&&jet->VectorAreaCharged()){
 	 backgroundv.SetPxPyPzE(rho*(jet->VectorAreaCharged())->Px(),rho*(jet->VectorAreaCharged())->Py(),rho*(jet->VectorAreaCharged())->Pz(),rho*(jet->VectorAreaCharged())->E());
 	 ptSub = jet->Pt()-backgroundv.Pt();
-	 if((backgroundv.E()>jet->E())&&(backgroundv.Pt()>jet->Pt())){
+	 if((backgroundv.E()>=jet->E())||(backgroundv.Pt()>=jet->Pt())){
 	   if(fKeepJets){
 	     bAdd =  RescaleJetMomentum(&tmpNewJet,0.1);
 	   }
