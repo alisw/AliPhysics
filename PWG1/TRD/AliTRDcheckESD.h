@@ -162,8 +162,8 @@ private:
   TH1D*         Proj2D(TH2* hist);
   TH1F*         EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance=kTRUE);
   void          DrawTRDGrid();
-  void          SetStyle(TH1* hist, Int_t lineStyle, Int_t lineColor, Double_t lineWidth, 
-                         Int_t markerStyle, Int_t markerColor, Double_t markerSize);
+  void          SetStyle(TH1* hist, Int_t lineStyle, Int_t lineColor, Int_t lineWidth,
+                         Int_t markerStyle, Int_t markerColor, Int_t markerSize);
   void          CheckActiveSM(TH1D* phiProj, Bool_t activeSM[18]);
   
   Int_t            fStatus;            // bit mask for controlling the task
