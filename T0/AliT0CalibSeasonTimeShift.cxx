@@ -115,6 +115,7 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
+    ok = false;
   }
   else
     {
@@ -139,12 +140,12 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 	}
 	if(cfd) {
 	    GetMeanAndSigma(cfd, mean, sigma);
-	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<500 ){
+	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<200 ){
 	      //ok = false;
 	      fMeanPar[i] = cdbtime[i];
-	      fSigmaPar[i] = 0;
+	      fSigmaPar[i] = -1;
 	    }
-	    if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>500)
+	    if ( sigma > 0 && sigma < 500 && cfd->GetEntries()>200)
 	      { 
 		fMeanPar[i] =   mean;
 		fSigmaPar[i] = sigma;
@@ -171,7 +172,7 @@ void AliT0CalibSeasonTimeShift::GetMeanAndSigma(TH1F* hist,  Float_t &mean, Floa
   sigmaEstimate = hist->GetRMS();
   TF1* fit= new TF1("fit","gaus", meanEstimate - window*sigmaEstimate, meanEstimate + window*sigmaEstimate);
   fit->SetParameters(hist->GetBinContent(maxBin), meanEstimate, sigmaEstimate);
-  hist->Fit("fit","R"," ");
+  hist->Fit("fit","RQ","Q");
 
   mean  = (Float_t) fit->GetParameter(1);
   sigma = (Float_t) fit->GetParameter(2);
