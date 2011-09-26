@@ -234,13 +234,13 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		
 	      }
 	    if(!cfddiff ) {
-	      AliWarning(Form("no  histograms collected by pass0 for diff channel %i", i));
-	      SetTimeEq(i,timecdb[i]);
-	      SetTimeEqRms(i,0);
+	      AliWarning(Form("no  histograms collected by pass0 for diff channel %i", i));      
+	      meandiff = timecdb[i];
+	      sigmadiff = 0; 
 	    }
 	    if(cfddiff) {
 	      nent = Int_t(cfddiff->GetEntries());
-	      if(nent>500 )  { //!!!!!
+	      if(nent>100 )  { //!!!!!
 		if(cfddiff->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfddiff, meandiff, sigmadiff);
 		if(cfddiff->GetRMS()<=1.5) 
@@ -255,26 +255,28 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      else 
 		{
 		  AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
-		  SetTimeEq(i,timecdb[i]);
-		  SetTimeEqRms(i,0);
+		//  ok=false;
+		  meandiff = timecdb[i];
+		  sigmadiff = 0; 
 		  
 		}
 	    }	    
 	    
 	    if(!cfdtime ) {
 	      AliWarning(Form("no  histograms collected by pass0 for time channel %i", i));
-	      SetTimeEq(i, cfdvalue[i]);
-	      SetTimeEqRms(i, 0);
+	      meancfdtime = cfdvalue[i];
+	      ok = false;
 	    }
 	    if(cfdtime) {
 	      nent = Int_t(cfdtime->GetEntries());
-	      if(nent>500 )  { //!!!!!
+	      if(nent>100 )  { //!!!!!
 		if(cfdtime->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 		if(cfdtime->GetRMS()<=1.5) 
 		  {
 		    meancfdtime = cfdtime->GetMean();
 		    sigmacfdtime=cfdtime->GetRMS();
+		    if(cfdtime->GetRMS() == 0 || cfdtime->GetMean() ==0 ) ok = false;
 		}
 		Int_t   maxBin = cfdtime->GetMaximumBin(); 
 		Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
@@ -283,14 +285,14 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	    else 
 	      {
 		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
-		SetTimeEq(i, cfdvalue[i]);
-		SetTimeEqRms(i, 0);
+         	ok = false;
 	      }
 	  }
 	  
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0, meancfdtime );
+//	  printf(" pmt %i diff %f sigma %f meancfdtime %f cdbtime %f \n",i, meandiff, sigmadiff, meancfdtime, fCFDvalue[i][0]);
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt
