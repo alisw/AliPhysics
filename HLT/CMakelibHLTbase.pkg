@@ -96,6 +96,8 @@ set ( CLASS_HDRS
     AliHLTDataDeflaterHuffman.h
     AliHLTHuffman.h
     AliHLTDataInflater.h
+    AliHLTDataInflaterSimple.h
+    AliHLTDataInflaterHuffman.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")

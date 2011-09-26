@@ -128,6 +128,7 @@ bool AliHLTDataDeflaterHuffman::OutputParameterBits( int memberId, AliHLTUInt64_
 
   AliHLTUInt64_t length = 0;
   const std::bitset<64>& v=fHuffmanCoders[memberId]->Encode((value>fHuffmanCoders[memberId]->GetMaxValue())?fHuffmanCoders[memberId]->GetMaxValue():value, length);
+  //cout << fHuffmanCoders[memberId]->GetName() << " value " << value << ": code lenght " << length << " " << v << endl;
   if (length>0) {
     return OutputBits(v, length);
   }
@@ -218,6 +219,10 @@ TObject *AliHLTDataDeflaterHuffman::FindObject(const char *name) const
     for (unsigned i=0; i<fHuffmanCoders.size(); i++) {
       if (!fHuffmanCoders[i]->GenerateHuffmanTree()) {
 	HLTError("generation of huffman tree for parameter '%s' failed", fHuffmanCoders[i]->GetName());
+	return NULL;
+      }
+      if (!fHuffmanCoders[i]->CheckConsistency()) {
+	HLTError("consistency check of huffman tree for parameter '%s' failed", fHuffmanCoders[i]->GetName());
       }
     }
     

@@ -63,8 +63,10 @@ public:
 		return fWeight;
 	}
 
-	/// assign huffman code to this node and its children
-	void AssignCode();
+        /// assign huffman code to this node and its children
+        /// bReverse = true the bit corresponding to the parent is shifted and
+        /// decoding needs to start from the MSB of the code
+	void AssignCode(bool bReverse=false);
 	/// set binary huffman code and length of node
 	virtual void SetBinaryCode(AliHLTUInt64_t length, std::bitset<64> code) = 0;
 	/// set pointer to left child
@@ -234,7 +236,7 @@ public:
 	const std::bitset<64>& Encode(const AliHLTUInt64_t v, AliHLTUInt64_t& codeLength) const;
 
 	/// Return value for bit pattern
-	Bool_t Decode(std::bitset<64> /*bits*/, AliHLTUInt64_t& /*value*/) const;
+        Bool_t Decode(std::bitset<64> /*bits*/, AliHLTUInt64_t& /*value*/, AliHLTUInt32_t& length, AliHLTUInt32_t& codeLength) const;
 	/// Add a new training value (with optional weight) to the training sample
 	Bool_t AddTrainingValue(const AliHLTUInt64_t value,
 			const Float_t weight = 1.);
@@ -245,13 +247,16 @@ public:
 	/// Overload assignment operator
 	AliHLTHuffman& operator =(const AliHLTHuffman& other);
 
+        bool CheckConsistency() const;
+
 private:
 	UInt_t fMaxBits;    // bit lenght
 	UInt_t fMaxValue;   // maximum value
 	std::vector<AliHLTHuffmanLeaveNode> fNodes; // array of nodes
 	AliHLTHuffmanNode* fHuffTopNode;       // top node
+	bool fReverseCode; // indicate the type of the binary code
 
-ClassDef(AliHLTHuffman, 1)
+ClassDef(AliHLTHuffman, 2)
 };
 
 #endif

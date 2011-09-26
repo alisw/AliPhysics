@@ -161,6 +161,12 @@ public:
    */
   bool InputBytes( AliHLTUInt8_t* data, UInt_t const & byteCount );
 
+  /**
+   * Read the next value.
+   * Data read function for inflaters for different formats
+   */
+  virtual bool NextValue(AliHLTUInt64_t& /*value*/, AliHLTUInt32_t& /*length*/) {return false;}
+
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * /*option*/ ="");
 
