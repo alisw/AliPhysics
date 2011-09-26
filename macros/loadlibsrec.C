@@ -27,6 +27,8 @@ Int_t loadlibsrec ()
   if ( gSystem->Load("libRAWDatabase") < 0 ) return ret; ret--;
   if ( gSystem->Load("libRAWDatarec") < 0 ) return ret; ret--;
   if ( gSystem->Load("libAOD") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libANALYSIS") < 0 ) return ret; ret--;
+  
   if ( gSystem->Load("libSTEER") < 0 ) return ret; ret--;
   if ( gSystem->Load("libRAWDatasim") < 0 ) return ret; ret--;
 

@@ -133,6 +133,8 @@
 #include <TRandom.h>
 
 #include "AliAlignObj.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisDataContainer.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
@@ -176,6 +178,7 @@
 #include "AliRawReaderDate.h"
 #include "AliRawReaderFile.h"
 #include "AliRawReaderRoot.h"
+#include "AliRecoInputHandler.h"
 #include "AliReconstruction.h"
 #include "AliReconstructor.h"
 #include "AliRun.h"
@@ -299,7 +302,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fSspecie(0),
   fNhighPt(0),
   fShighPt(0),
-  fUpgradeModule("") 
+  fUpgradeModule(""),
+  fAnalysisMacro(),
+  fAnalysis(0),
+  fRecoHandler(0) 
 {
 // create reconstruction object with default parameters
   gGeoManager = NULL;
@@ -414,7 +420,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fSspecie(0),
   fNhighPt(0),
   fShighPt(0),
-  fUpgradeModule("")
+  fUpgradeModule(""),
+  fAnalysisMacro(rec.fAnalysisMacro),
+  fAnalysis(0),
+  fRecoHandler(0)
 {
 // copy constructor
 
@@ -578,6 +587,9 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fNhighPt = 0;
   fShighPt = 0;
   fUpgradeModule="";
+  fAnalysisMacro = rec.fAnalysisMacro;
+  fAnalysis = 0;
+  fRecoHandler = 0;
 
   return *this;
 }
@@ -1538,6 +1550,10 @@ void AliReconstruction::Begin(TTree *)
     AliMagF *magFieldMap = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     magFieldMap->SetName("MagneticFieldMap");
     gProof->AddInputData(magFieldMap,kTRUE);
+    if (fAnalysis) {
+      fAnalysis->SetName("Analysis");
+      gProof->AddInputData(fAnalysis,kTRUE);
+    }  
   }
 
 }
@@ -1579,6 +1595,11 @@ void AliReconstruction::SlaveBegin(TTree*)
       TGeoGlobalMagField::Instance()->SetField(newMap);
       TGeoGlobalMagField::Instance()->Lock();
     }
+    if (!fAnalysis) {
+       // Attempt to get the analysis manager from the input list
+       fAnalysis = (AliAnalysisManager*)fInput->FindObject("Analysis");
+       if (fAnalysis) AliInfo("==== Analysis manager retrieved from input list ====");
+    }   
     if (TNamed *outputFileName = (TNamed*)fInput->FindObject("PROOF_OUTPUTFILE"))
       fProofOutputFileName = outputFileName->GetTitle();
     if (TNamed *outputLocation = (TNamed*)fInput->FindObject("PROOF_OUTPUTFILE_LOCATION"))
@@ -1602,7 +1623,22 @@ void AliReconstruction::SlaveBegin(TTree*)
     }
     AliSysInfo::AddStamp("ReadInputInSlaveBegin");
   }
-
+  // Check if analysis was requested in the reconstruction event loop
+  if (!fAnalysis) {
+    // Attempt to connect in-memory singleton
+    fAnalysis = AliAnalysisManager::GetAnalysisManager();
+    if (fAnalysis) AliInfo(Form("==== Analysis manager <%s> found in memory ====", fAnalysis->GetName()));
+    // Check if an analysis macro was specified
+    if (!fAnalysis && !fAnalysisMacro.IsNull()) {
+      // Run specified analysis macro
+      gROOT->ProcessLine(Form(".x %s",fAnalysisMacro.Data()));
+      fAnalysis = AliAnalysisManager::GetAnalysisManager();
+      if (!fAnalysis) AliError(Form("No analysis manager produced by analysis macro %s", fAnalysisMacro.Data()));
+      else AliInfo(Form("==== Analysis manager <%s> produced by analysis macro <%s> ====", 
+                        fAnalysis->GetName(), fAnalysisMacro.Data()));
+    }
+  }
+  
   // get the run loader
   if (!InitRunLoader()) {
     Abort("InitRunLoader", TSelector::kAbortProcess);
@@ -1704,7 +1740,28 @@ void AliReconstruction::SlaveBegin(TTree*)
 
   if (strcmp(gProgName,"alieve") == 0)
     fRunAliEVE = InitAliEVE();
-
+  // If we have an analysis manager, connect the AliRecoInputHandler here  
+  if (fAnalysis) {
+    if (!dynamic_cast<AliRecoInputHandler*>(fAnalysis->GetInputEventHandler())) {
+       AliError("Analysis manager used in reconstruction should use AliRecoInputHandler - \
+                 \n  ->Replacing with AliRecoInputHandler instance.");
+       delete fAnalysis->GetInputEventHandler();
+    }
+    // Set the event and other data pointers
+    fRecoHandler = new AliRecoInputHandler();
+    fRecoHandler->Init(ftree, "LOCAL");
+    fRecoHandler->SetEvent(fesd);
+    fRecoHandler->SetESDfriend(fesdf);
+    fRecoHandler->SetHLTEvent(fhltesd);
+    fRecoHandler->SetHLTTree(fhlttree);
+    fAnalysis->SetInputEventHandler(fRecoHandler);
+    // Enter external loop mode
+    fAnalysis->SetExternalLoop(kTRUE);
+    // Initialize analysis
+    fAnalysis->StartAnalysis("local", (TTree*)0);
+    // Connect ESD tree with the input container
+    fAnalysis->GetCommonInputContainer()->SetData(ftree);
+  }  
   return;
 }
 
@@ -1720,7 +1777,7 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   currTree->SetBranchAddress("rawevent",&event);
   currTree->GetEntry(entry);
   fRawReader = new AliRawReaderRoot(event);
-  fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());  
+  fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());
   delete fRawReader;
   fRawReader = NULL;
   delete event;
@@ -2215,6 +2272,12 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   if (fRunQA || fRunGlobalQA) 
     AliQAManager::QAManager()->Increment() ; 
   
+  // Perform analysis of this event if requested
+  if (fAnalysis) {
+     fRecoHandler->BeginEvent(iEvent);
+     fAnalysis->ExecAnalysis();
+     fRecoHandler->FinishEvent();
+  }  
     return kTRUE;
 }
 
@@ -2225,6 +2288,12 @@ void AliReconstruction::SlaveTerminate()
   // Called after the exit
   // from the event loop
   AliCodeTimerAuto("",0);
+  // If analysis was done during reconstruction, we need to call SlaveTerminate for it
+  if (fAnalysis) {
+     fAnalysis->PackOutput(fOutput);
+     fAnalysis->SetSkipTerminate(kTRUE);
+     fAnalysis->Terminate();
+  }   
 
   if (fIsNewRunLoader) { // galice.root didn't exist
     fRunLoader->WriteHeader("OVERWRITE");
@@ -3361,7 +3430,8 @@ void AliReconstruction::CleanUp()
 
   if (AliQAManager::QAManager())
     AliQAManager::QAManager()->ShowQA() ; 
-  //  AliQAManager::Destroy() ; 
+  //  AliQAManager::Destroy() ;
+  delete fAnalysis; 
   
 }
 

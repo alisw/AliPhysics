@@ -40,6 +40,7 @@ set ( SRCS
     STEER/AliMC.cxx 
     STEER/AliSimulation.cxx 
     STEER/AliReconstruction.cxx 
+    STEER/AliRecoInputHandler.cxx 
     STEER/AliVertexGenFile.cxx 
     STEER/AliReconstructor.cxx 
     STEER/AliGeomManager.cxx 

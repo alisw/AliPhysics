@@ -31,7 +31,7 @@ set ( CSRCS fpu.c)
 
 set ( ELIBSDIR )
 
-set ( ELIBS  MUONevaluation 	MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM microcern HLTbase TRIGGERbase STEER STAT CDB AOD  STEERBase ESD RAWDatasim RAWDatarec RAWDatabase)
+set ( ELIBS  MUONevaluation 	MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM microcern HLTbase TRIGGERbase STEER STAT CDB AOD  STEERBase ESD ANALYSIS RAWDatasim RAWDatarec RAWDatabase)
 
 if(PYTHIA6)
   list(APPEND ELIBS EVGEN)

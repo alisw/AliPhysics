@@ -46,6 +46,8 @@ class AliGRPObject;
 class THashTable;
 class AliTriggerRunScalers;
 class AliCTPTimeParams;
+class AliAnalysisManager;
+class AliRecoInputHandler;
 
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
@@ -166,6 +168,15 @@ public:
   // Upgrade
  void SetUpgradeModule(const char* detectors)  {fUpgradeModule = detectors; MatchUpgradeDetector() ; }
  void MatchUpgradeDetector();
+
+  // Connection to analysis manager. 
+  // If a macro is set it should contain a function returning an analysis 
+  // manager object. The macro is ignored in case the analysis manager is 
+  // set via SetAnalysisManager
+  void        SetAnalysisMacro(const char *macropath) {fAnalysisMacro = macropath;}
+  const char *GetAnalysisMacro() const {return fAnalysisMacro.Data();}
+  void        SetAnalysisManager(AliAnalysisManager *mgr) {fAnalysis = mgr;}
+  AliAnalysisManager *GetAnalysisManager() const {return fAnalysis;}
 
 protected:
   virtual Bool_t ProcessEvent(void* event);
@@ -342,8 +353,11 @@ private:
   // Upgrade detector reconstruction
   TString fUpgradeModule;
   Bool_t  fUpgradeMask[kNDetectors];
-
-  ClassDef(AliReconstruction, 39)      // class for running the reconstruction
+  // Connect an analysis manager in the event loop
+  TString              fAnalysisMacro; // Full path to a macro creating an analysis manager train
+  AliAnalysisManager  *fAnalysis;      //! Analysis manager
+  AliRecoInputHandler *fRecoHandler;   //! Input handler adapted for reconstruction
+  ClassDef(AliReconstruction, 40)      // class for running the reconstruction
 };
 
 #endif

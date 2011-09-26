@@ -31,7 +31,7 @@ set ( EINCLUDE ${EINCLUDE}  TPC ITS RAW)
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${SYSLIBS})
 
-set ( ELIBS   MONITOR TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase)
+set ( ELIBS   MONITOR TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
 
 set (DATE_ROOT $ENV{DATE_ROOT})
 set(ODIR $ENV{ODIR})

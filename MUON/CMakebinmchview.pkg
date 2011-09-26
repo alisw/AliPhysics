@@ -29,5 +29,5 @@ set ( SRCS mchview.cxx)
 
 set ( EINCLUDE ${EINCLUDE} MUON/mapping)
 
-set ( ELIBS  MUONmapping RAWDatabase MUONshuttle MUONgraphics MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase)
+set ( ELIBS  MUONmapping RAWDatabase MUONshuttle MUONgraphics MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
 

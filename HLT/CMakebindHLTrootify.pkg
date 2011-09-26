@@ -32,7 +32,7 @@ set ( EINCLUDE  HLT/BASE HLT/MUON MUON)
 
 set ( PACKBLIBS  ${ROOTCLIBS} ${SYSLIBS})
 
-set ( ELIBS  AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase)
+set ( ELIBS  AliHLTMUON HLTbase MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
 
 include ("CMakehlt.conf")
 

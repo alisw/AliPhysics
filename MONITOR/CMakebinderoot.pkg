@@ -35,4 +35,4 @@ set ( SRCS ${SRCS}  root2date.cxx)
 
 set ( ELIBSDIR )
 
-set ( ELIBS MONITOR TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase )
+set ( ELIBS MONITOR TPCbase TPCsim TPCrec HLTbase ITSbase ITSsim ITSrec MUONmapping MUONevaluation MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw RAWDatasim MUONtrigger MUONcore STEER CDB AOD RAWDatarec ESD RAWDatabase STEERBase ANALYSIS)
