@@ -2616,7 +2616,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
          // Loop 'find' results and get next LFN
          if (countZero == nmaxmerge) {
             // First file in chunk - create file merger and add previous chunk if any.
-            fm = new TFileMerger(kFALSE);
+            fm = new TFileMerger(kTRUE);
             fm->SetFastMethod(kTRUE);
             if (previousChunk.Length()) fm->AddFile(previousChunk.Data());
             outputChunk = outputFile;
@@ -2656,7 +2656,7 @@ Bool_t AliAnalysisAlien::MergeOutput(const char *output, const char *basedir, In
    }
    // Merging stage different than 0.
    // Move to the begining of the requested chunk.
-   fm = new TFileMerger(kFALSE);
+   fm = new TFileMerger(kTRUE);
    fm->SetFastMethod(kTRUE);
    while ((nextfile=next())) fm->AddFile(nextfile->GetName());
    delete listoffiles;
