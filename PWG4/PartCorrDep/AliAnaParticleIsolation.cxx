@@ -650,15 +650,16 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     //find the leading particles with highest momentum
     if ((aodinput->Pt())>ptLeading) {
       ptLeading = aodinput->Pt() ;
-		  idLeading = iaod ;
+      idLeading = iaod ;
     }
-    
+    aodinput->SetLeadingParticle(kFALSE);
   }//finish searching for leading trigger particle
   
   // Check isolation of leading particle
   if(idLeading < 0) return;
-	
+  
   AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(idLeading));
+  aodinput->SetLeadingParticle(kTRUE);
   
   //Check invariant mass, if pi0, tag decay.
   if(fMakeInvMass) decay = CheckInvMass(idLeading,aodinput);
@@ -667,7 +668,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
   GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
   aodinput->SetIsolated(isolated);
-  aodinput->SetLeadingParticle(kTRUE);
   aodinput->SetTagged(decay);
   
   if(GetDebug() > 1) {
