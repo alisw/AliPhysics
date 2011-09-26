@@ -204,7 +204,8 @@ ClassImp(AliGRPPreprocessor)
 		   "(DCS FXS Error for LHC Data)",
 		   "(LHC Data Error)",
 		   "(LHC Clock Phase Error (from LHC Data))",
-		   "(LTU Configuration Error)"
+		   "(LTU Configuration Error)",
+		   "(DQM Failure)"
   };
 
 //_______________________________________________________________
@@ -660,6 +661,20 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("SPD Mean Vertex not processed since runType != PHYSICS");
 	}
 
+	//=================//
+	// DQM FXS         //
+	//=================//
+
+	Log("*************** Processing DQM FXS");
+
+	UInt_t iDqmFxs = ProcessDqmFxs();
+	if( iDqmFxs == 1 ) {
+		Log(Form("DQM FXS, successful!"));
+	} else {
+		Log(Form("DQM FXS failed!!!"));
+		error |= 4096;
+	}
+
 	// storing AliGRPObject in OCDB
 
 	AliCDBMetaData md;
@@ -674,7 +689,7 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 		Log("GRP Preprocessor Success");
 		return 0;
 	} else {
-		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s%s",
+		Log( Form("GRP Preprocessor FAILS!!! %s%s%s%s%s%s%s%s%s%s%s%s%s",
 			  kppError[(error&1)?1:0],
 			  kppError[(error&2)?2:0],
 			  kppError[(error&4)?3:0],
@@ -686,7 +701,8 @@ UInt_t AliGRPPreprocessor::Process(TMap* valueMap)
 			  kppError[(error&256)?9:0],
 			  kppError[(error&512)?10:0],
 			  kppError[(error&1024)?11:0],
-			  kppError[(error&2048)?12:0]
+			  kppError[(error&2048)?12:0],
+			  kppError[(error&4096)?12:0]
 			  ));
 		return error;
 	}
@@ -1303,6 +1319,52 @@ UInt_t AliGRPPreprocessor::ProcessSPDMeanVertex()
 
 	return storeResult;
 }
+//_______________________________________________________________
+
+UInt_t AliGRPPreprocessor::ProcessDqmFxs()
+{
+	//
+	// Processing DQM fxs information
+	//
+
+	TList* list = GetFileSources(kDQM, "TriggerClassesAndHistosToClone");
+	Bool_t storeResult = kTRUE;
+	if (list !=0x0 && list->GetEntries()!=0){
+		AliInfo("The following sources produced files with the id TriggerClassesAndHistosToClone for GRP");
+		list->Print();
+		for (Int_t jj=0;jj<list->GetEntries();jj++){
+			TObjString * str = dynamic_cast<TObjString*> (list->At(jj)); 
+			if (!str){
+				AliError(Form("Expecting a TObjString in the list for the %d-th source, but something else was found.",jj));
+				continue;
+			}
+			AliInfo(Form("found source %s", str->String().Data()));
+			TString fileNameRun = GetFile(kDQM, "TriggerClassesAndHistosToClone", str->GetName());
+			if (fileNameRun.Length()>0){
+				AliInfo(Form("Got the file %s", fileNameRun.Data()));
+				TFile dqmFile(fileNameRun.Data(),"READ");
+				if (dqmFile.IsOpen()) {
+					dqmFile.ls();
+				}
+				else {
+					AliError("Can't open file");
+					storeResult = kFALSE;
+				}
+			}
+			else{
+				AliWarning("No file found for current source for DQM TriggerClassesAndHistosToClone");
+			}
+		}
+	}
+	else {
+		AliWarning("No list found for DQM TriggerClassesAndHistosToClone");
+	}
+	
+	if (list) delete list;
+	
+	//	return storeResult;
+	return kTRUE;  // temporary!!
+}
 
 
 //_______________________________________________________________
@@ -1393,7 +1455,6 @@ Int_t AliGRPPreprocessor::ProcessDaqLB(AliGRPObject* grpObj)
 
 	return nparameter;
 }
-
 //_______________________________________________________________
 
 UInt_t AliGRPPreprocessor::ProcessDaqFxs()

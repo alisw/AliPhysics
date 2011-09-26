@@ -355,7 +355,7 @@ const char* AliTestShuttle::GetRefFilePrefix(const char* base, const char* detec
 //______________________________________________________________________________________________
 const char* AliTestShuttle::GetFile(Int_t system, const char* detector, const char* id, const char* source)
 {
-  // This function retrieves a file from the given system (kDAQ, kDCS, kHLT) with the given file id
+  // This function retrieves a file from the given system (kDAQ, kDCS, kHLT, kDQM) with the given file id
   // and from the given source in the system.
   // The function returnes the path to the local file.
   //

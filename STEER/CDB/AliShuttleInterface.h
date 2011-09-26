@@ -22,7 +22,7 @@ class AliCDBEntry;
 class AliShuttleInterface : public TObject
 {
   public:
-    enum System { kDAQ = 0, kDCS, kHLT };
+	enum System { kDAQ = 0, kDCS, kHLT, kDQM };
     enum { kNDetectors = 21 }; // number of subdetectors in ALICE
 
     virtual Bool_t Store(const AliCDBPath& path, TObject* object, AliCDBMetaData* metaData,
@@ -51,7 +51,7 @@ class AliShuttleInterface : public TObject
 
     virtual void RegisterPreprocessor(AliPreprocessor* preprocessor) = 0;
 
-    static const char* GetSystemName(UInt_t system) {return (system < 3) ? fkSystemNames[system] : 0;}
+    static const char* GetSystemName(UInt_t system) {return (system < 4) ? fkSystemNames[system] : 0;}
 
     static const char* GetOfflineDetName(const char* detName);
     static const char* GetDetName(UInt_t detPos);
@@ -71,7 +71,7 @@ class AliShuttleInterface : public TObject
 
   protected:
 
-    static const char* fkSystemNames[3];  		// names of the systems providing data to the shuttle
+    static const char* fkSystemNames[4];  		// names of the systems providing data to the shuttle
     static const char* fgkDetName[kNDetectors]; 	// names of detectors' preprocessors (3-letter code convention)
     static const char* fgkOfflineDetName[kNDetectors];  // names of detectors in OCDB (AliRoot naming convention)
 

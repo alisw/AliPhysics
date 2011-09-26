@@ -96,9 +96,9 @@ fOutputRedirected(kFALSE)
 	//
 
 	if (!fConfig->IsValid()) AliFatal("********** !!!!! Invalid configuration !!!!! **********");
-	for(int iSys=0;iSys<4;iSys++) {
+	for(int iSys=0;iSys<5;iSys++) {
 		fServer[iSys]=0;
-		if (iSys < 3)
+		if (iSys < 4)
 			fFXSlist[iSys].SetOwner(kTRUE);
 	}
 	fPreprocessorMap.SetOwner(kTRUE);
@@ -117,7 +117,7 @@ AliShuttle::~AliShuttle()
 	//
 
 	fPreprocessorMap.DeleteAll();
-	for(int iSys=0;iSys<4;iSys++)
+	for(int iSys=0;iSys<5;iSys++)
 		if(fServer[iSys]) {
 			fServer[iSys]->Close();
 			delete fServer[iSys];
@@ -489,7 +489,7 @@ Bool_t AliShuttle::CleanReferenceStorage(const char* detector)
 	
 	if (!dirList) return kTRUE;
 			
-	if (dirList->GetEntries() < 3) 
+	if (dirList->GetEntries() < 3) // to be changed to 4?
 	{
 		delete dirList;
 		return kTRUE;
@@ -1882,13 +1882,13 @@ void AliShuttle::CountOpenRuns()
 	SendAlive();
 	
 	// check connection, in case connect
-	if (!Connect(3)) 
+	if (!Connect(4)) 
 		return;
 
 	TString sqlQuery;
 	sqlQuery = Form("select count(*) from %s where shuttle_done=0", fConfig->GetShuttlelbTable());
 	
-	TSQLResult* aResult = fServer[3]->Query(sqlQuery);
+	TSQLResult* aResult = fServer[4]->Query(sqlQuery);
 	if (!aResult) {
 		AliError(Form("Can't execute query <%s>!", sqlQuery.Data()));
 		return;
@@ -1939,12 +1939,12 @@ Bool_t AliShuttle::QueryShuttleLogbook(const char* whereClause,
 	entries.SetOwner(1);
 
 	// check connection, in case connect
-	if (!Connect(3)) return kFALSE;
+	if (!Connect(4)) return kFALSE;
 
 	TString sqlQuery;
 	sqlQuery = Form("select * from %s %s order by run", fConfig->GetShuttlelbTable(), whereClause);
 
-	TSQLResult* aResult = fServer[3]->Query(sqlQuery);
+	TSQLResult* aResult = fServer[4]->Query(sqlQuery);
 	if (!aResult) {
 		AliError(Form("Can't execute query <%s>!", sqlQuery.Data()));
 		return kFALSE;
@@ -2000,13 +2000,13 @@ AliShuttleLogbookEntry* AliShuttle::QueryRunParameters(Int_t run)
 	//
 
 	// check connection, in case connect
-	if (!Connect(3))
+	if (!Connect(4))
 		return 0;
 
 	TString sqlQuery;
 	sqlQuery.Form("select * from %s where run=%d", fConfig->GetDAQlbTable(), run);
 
-	TSQLResult* aResult = fServer[3]->Query(sqlQuery);
+	TSQLResult* aResult = fServer[4]->Query(sqlQuery);
 	if (!aResult) {
 		Log("SHUTTLE", Form("Can't execute query <%s>!", sqlQuery.Data()));
 		return 0;
@@ -2194,7 +2194,7 @@ const char* AliShuttle::GetFile(Int_t system, const char* detector,
 	TString whereClause = Form("run=%d and detector=\"%s\" and fileId=\"%s\"",
 								GetCurrentRun(), detector, id);
 
-	if (system == kDAQ)
+	if (system == kDAQ || system == kDQM)
 	{
 		whereClause += Form(" and DAQsource=\"%s\"", source);
 	}
@@ -2433,7 +2433,7 @@ TList* AliShuttle::GetFileSources(Int_t system, const char* detector, const char
 	}
 
 	TString sourceName = "";
-	if (system == kDAQ)
+	if (system == kDAQ || system == kDQM)
 	{
 		sourceName = "DAQsource";
 	} else if (system == kHLT)
@@ -2592,7 +2592,7 @@ Bool_t AliShuttle::Connect(Int_t system)
 
 	TString dbHost, dbUser, dbPass, dbName;
 
-	if (system < 3) // FXS db servers
+	if (system < 4) // FXS db servers
 	{
 		dbHost = Form("mysql://%s:%d", fConfig->GetFXSdbHost(system), fConfig->GetFXSdbPort(system));
 		dbUser = fConfig->GetFXSdbUser(system);
@@ -2607,8 +2607,8 @@ Bool_t AliShuttle::Connect(Int_t system)
 	}
 
 	fServer[system] = TSQLServer::Connect(dbHost.Data(), dbUser.Data(), dbPass.Data());
-	if (!fServer[system] || !fServer[system]->IsConnected()) {
-		if(system < 3)
+		if (!fServer[system] || !fServer[system]->IsConnected()) {
+		if(system < 4)
 		{
 		AliError(Form("Can't establish connection to FXS database for %s",
 					AliShuttleInterface::GetSystemName(system)));
@@ -2631,8 +2631,11 @@ Bool_t AliShuttle::Connect(Int_t system)
 		case kHLT:
 			aResult = fServer[kHLT]->GetTables(dbName.Data());
 			break;
+		case kDQM:
+			aResult = fServer[kDQM]->GetTables(dbName.Data());
+			break;
 		default:
-			aResult = fServer[3]->GetTables(dbName.Data());
+			aResult = fServer[4]->GetTables(dbName.Data());
 			break;
 	}
 
@@ -2682,7 +2685,7 @@ Bool_t AliShuttle::UpdateTable()
 			const char* source = ((TObjString*) aFXSarray->At(1))->GetName();
 
 			TString whereClause;
-			if (system == kDAQ)
+			if (system == kDAQ || system == kDQM)
 			{
 				whereClause = Form("where run=%d and detector=\"%s\" and fileId=\"%s\" and DAQsource=\"%s\";",
 							GetCurrentRun(), fCurrentDetector.Data(), fileId, source);
@@ -2835,7 +2838,7 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 	//
 
 	// check connection, in case connect
-	if(!Connect(3)){
+	if(!Connect(4)){
 		Log("SHUTTLE", "UpdateShuttleLogbook - Couldn't connect to DAQ Logbook.");
 		return kFALSE;
 	}
@@ -2881,7 +2884,7 @@ Bool_t AliShuttle::UpdateShuttleLogbook(const char* detector, const char* status
 
 	// Query execution
 	TSQLResult* aResult;
-	aResult = dynamic_cast<TSQLResult*> (fServer[3]->Query(sqlQuery));
+	aResult = dynamic_cast<TSQLResult*> (fServer[4]->Query(sqlQuery));
 	if (!aResult) {
 		Log("SHUTTLE", Form("UpdateShuttleLogbook - Can't execute query <%s>", sqlQuery.Data()));
 		return kFALSE;
@@ -3477,12 +3480,12 @@ const char* AliShuttle::GetTriggerConfiguration()
 	// Receives the trigger configuration from the DAQ logbook for the current run
 	
 	// check connection, if needed reconnect
-	if (!Connect(3)) 
+	if (!Connect(4)) 
 		return 0;
 
 	TString sqlQuery;
 	sqlQuery.Form("SELECT configFile FROM logbook_trigger_config WHERE run = %d", GetCurrentRun());
-	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	TSQLResult* result = fServer[4]->Query(sqlQuery);
 	if (!result)
 	{
 		Log("SHUTTLE", Form("ERROR: Can't execute query <%s>!", sqlQuery.Data()));
@@ -3524,12 +3527,12 @@ const char* AliShuttle::GetCTPTimeParams()
 	// Receives the CTP time parameters from the DAQ logbook for the current run
 	
 	// check connection, if needed reconnect
-	if (!Connect(3)) 
+	if (!Connect(4)) 
 		return 0;
 
 	TString sqlQuery;
 	sqlQuery.Form("SELECT alignmentFile FROM logbook_trigger_config WHERE run = %d", GetCurrentRun());
-	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	TSQLResult* result = fServer[4]->Query(sqlQuery);
 	if (!result)
 	{
 		Log("SHUTTLE", Form("ERROR: Can't execute query <%s>!", sqlQuery.Data()));
@@ -3571,12 +3574,12 @@ const char* AliShuttle::GetTriggerDetectorMask()
 	// Receives the trigger detector mask from DAQ logbook
 	
 	// check connection, if needed reconnect
-	if (!Connect(3)) 
+	if (!Connect(4)) 
 		return 0;
 
 	TString sqlQuery;
 	sqlQuery.Form("SELECT BIN(BIT_OR(inputDetectorMask)) from logbook_trigger_clusters WHERE run = %d;", GetCurrentRun());
-	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	TSQLResult* result = fServer[4]->Query(sqlQuery);
 	if (!result)
 	{
 		Log("SHUTTLE", Form("ERROR: Can't execute query <%s>!", sqlQuery.Data()));
@@ -3760,13 +3763,13 @@ TString* AliShuttle::GetLTUConfig(const char* det)
 	// Getting ltuFineDelay1, ltuFineDelay2, ltuBCDelay for detector det from logbook_detectors table in logbook
 	//
 	
-	if (!Connect(3)) 
+	if (!Connect(4)) 
 		return 0;
 
 	TString sqlQuery;
 	sqlQuery.Form("select LTUFineDelay1, LTUFineDelay2, LTUBCDelayAdd from logbook_detectors WHERE run_number = %d and detector = \"%s\";", GetCurrentRun(),det);
 
-	TSQLResult* result = fServer[3]->Query(sqlQuery);
+	TSQLResult* result = fServer[4]->Query(sqlQuery);
 	if (!result){
 		Log("SHUTTLE","ERROR: No result found for the LTU configuration query");
 		return 0x0;

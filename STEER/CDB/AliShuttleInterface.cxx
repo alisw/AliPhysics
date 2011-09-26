@@ -28,7 +28,7 @@
 
 ClassImp(AliShuttleInterface)
 
-const char* AliShuttleInterface::fkSystemNames[3] = { "DAQ", "DCS", "HLT" };
+	const char* AliShuttleInterface::fkSystemNames[4] = { "DAQ", "DCS", "HLT", "DQM" };
 
 // names of the detectors preprocessors
 const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",

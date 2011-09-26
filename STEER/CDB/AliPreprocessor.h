@@ -26,7 +26,7 @@ class AliPreprocessor : public TNamed
 {
   public:
 
-    enum { kDAQ = 0, kDCS, kHLT };
+	enum { kDAQ = 0, kDCS, kHLT, kDQM };
 
     AliPreprocessor(const char* detector, AliShuttleInterface* shuttle);
     virtual ~AliPreprocessor();

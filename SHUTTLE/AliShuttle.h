@@ -154,9 +154,9 @@ private:
 	TString fCurrentDetector; // current detector
 	Bool_t fFirstProcessing;  // processing this detector the first time in this run
 
-	TSQLServer *fServer[4]; 	// pointer to the three FXS + Run & Shuttle logbook servers
-	Bool_t fFXSCalled[3];		// FXS call status
-	TList  fFXSlist[3];		// List of files retrieved from each FXS
+	TSQLServer *fServer[5]; 	// pointer to the four FXS + Run & Shuttle logbook servers
+	Bool_t fFXSCalled[4];		// FXS call status
+	TList  fFXSlist[4];		// List of files retrieved from each FXS
 	Int_t  fFXSError;		// Variable to keep track of any FXS errors; contains -1 for no error, kDAQ, kDCS, kHLT otherwise
 
 	AliCDBEntry* fStatusEntry; // last CDB entry containing a AliShuttleStatus retrieved

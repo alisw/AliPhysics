@@ -576,7 +576,7 @@ AliShuttleConfig::AliShuttleConfig(const char* host, Int_t port,
 	fDetectorList.SetOwner(0); //fDetectorList and fDetectorMap share the same object!
 	fProcessedDetectors.SetOwner();
 	
-	for (int i=0; i<5; i++)
+	for (int i=0; i<6; i++)
 	{
 		fAdmin[i] = new TObjArray(); 
 		fAdmin[i]->SetOwner();
@@ -860,10 +860,10 @@ const TObjArray* AliShuttleConfig::GetAdmins(Int_t sys) const
 {
 	//
 	// returns collection of TObjString which represents the list of mail addresses
-	// of the system's administrator(s) (DAQ, DCS, HLT, Global, Amanda)
+	// of the system's administrator(s) (DAQ, DCS, HLT, Global, Amanda, DQM)
 	//
 
-	if (sys < 0 || sys > 4) return 0;
+	if (sys < 0 || sys > 5) return 0;
 	return fAdmin[sys];
 }
 
@@ -1185,13 +1185,13 @@ UInt_t AliShuttleConfig::SetGlobalConfig(TList* list)
 //______________________________________________________________________________________________
 UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 {
-	// Set the online FXS configuration (DAQ + DCS + HLT)
+	// Set the online FXS configuration (DAQ + DCS + HLT + DQM)
 
 
 	TLDAPEntry* anEntry = 0;
 	TLDAPAttribute* anAttribute = 0;
 	
-	if (list->GetEntries() != 3) 
+	if (list->GetEntries() != 4) 
 	{
 		AliError(Form("Wrong number of online systems found: %d !", list->GetEntries()));
 		return 1;
@@ -1220,6 +1220,11 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 		{
 			iSys = kHLT;
 			count += 100;
+		}
+		else if (sysName == "DQM")
+		{
+			iSys = kDQM; 
+			count += 1000;
 		}
 		
 		anAttribute = anEntry->GetAttribute("dbHost");
@@ -1308,7 +1313,7 @@ UInt_t AliShuttleConfig::SetSysConfig(TList* list)
 	
 	}
 	
-	if(count != 111) {
+	if(count != 1111) {
 		AliError(Form("Wrong system configuration! (code = %d)", count));
 		return 6;
 	}
@@ -1321,7 +1326,7 @@ UInt_t AliShuttleConfig::SetPasswords(){
 	
 	AliInfo("Setting Passwords");
 
-	// Retrieving Passwords for DAQ lb, DAQ/DCS/HLT FXS
+	// Retrieving Passwords for DAQ lb, DAQ/DCS/HLT/DQM FXS
 
 	ifstream *inputfile = new ifstream(fPasswdFilePath.Data());
 	if (!*inputfile) {
@@ -1358,6 +1363,11 @@ UInt_t AliShuttleConfig::SetPasswords(){
 			nPwd++;
 			AliDebug(3,Form("HLT_DB: Password %s for %s found", password.Data(), system.Data()));
 		}
+		else if (system.Contains("DQM_DB")){
+			fFXSdbPass[3]=password;
+			nPwd++;
+			AliDebug(3,Form("DQM_DB: Password %s for %s found", password.Data(), system.Data()));
+		}
 		else {
 			nPwdFake++;
 			AliDebug(3,Form("%i fake line(s) found in file %s", nPwdFake, fPasswdFilePath.Data()));
@@ -1369,7 +1379,7 @@ UInt_t AliShuttleConfig::SetPasswords(){
 	inputfile->close();
 	delete inputfile;
 
-	if (nPwd!=4){
+	if (nPwd!=5){
 		AliError(Form("Wrong file for DAQ Logbook password found %s (some passwors missing), please Check!", fPasswdFilePath.Data()));
 		return 2;
 	}
@@ -1534,7 +1544,7 @@ void AliShuttleConfig::Print(Option_t* option) const
 	result += "------------------------------------------------------\n";
 	result += "FXS configuration\n\n";
 
-	for(int iSys=0;iSys<3;iSys++){
+	for(int iSys=0;iSys<4;iSys++){
 		result += Form("*** %s ***\n", AliShuttleInterface::GetSystemName(iSys));
 		result += Form("\tDB  host: %s:%d; \tUser: %s; \tName: %s; \tTable: %s\n",
 						fFXSdbHost[iSys].Data(), fFXSdbPort[iSys], fFXSdbUser[iSys].Data(),

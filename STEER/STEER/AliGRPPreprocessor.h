@@ -83,6 +83,7 @@ class AliGRPPreprocessor: public AliPreprocessor {
 
                Int_t   ProcessDaqLB(AliGRPObject* grpobj);
               UInt_t   ProcessDaqFxs();
+              UInt_t   ProcessDqmFxs();
               UInt_t   ProcessSPDMeanVertex();
               UInt_t   ProcessLHCData(AliGRPObject* grpobj);
               UInt_t   ProcessDcsFxs(TString partition="", TString detector="");

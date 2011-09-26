@@ -21,7 +21,7 @@
 class AliShuttleConfig: public TObject {
 public:
 	enum RunMode {kTest=0, kProd};
-        enum SystemCode { kDAQ = 0, kDCS, kHLT, kGlobal, kAmanda };
+        enum SystemCode { kDAQ = 0, kDCS, kHLT, kDQM, kGlobal, kAmanda};
 	
 	AliShuttleConfig(const char* host, Int_t port = LDAP_PORT,
 			const char* binddn = 0, const char* password = 0,
@@ -208,18 +208,18 @@ private:
 	TString fRunTypelbTable; 	// Table name of the Run typr logbook
 	TString fPasswdFilePath; 	// Path for the local file where the passwords are stored
 
-	TString fFXSHost[3]; 		// Host of the [DAQ, DCS, HLT] File eXchange Server
-	UInt_t  fFXSPort[3]; 		// Port of the [DAQ, DCS, HLT] File eXchange Server
-	TString fFXSUser[3]; 		// username of the [DAQ, DCS, HLT] File eXchange Server
-	TString fFXSPass[3]; 		// password of the [DAQ, DCS, HLT] File eXchange Server
-	TString fFXSBaseFolder[3]; 	// base folder of the [DAQ, DCS, HLT] File eXchange Server
+	TString fFXSHost[4]; 		// Host of the [DAQ, DCS, HLT, DQM] File eXchange Server
+	UInt_t  fFXSPort[4]; 		// Port of the [DAQ, DCS, HLT, DQM] File eXchange Server
+	TString fFXSUser[4]; 		// username of the [DAQ, DCS, HLT, DQM] File eXchange Server
+	TString fFXSPass[4]; 		// password of the [DAQ, DCS, HLT, DQM] File eXchange Server
+	TString fFXSBaseFolder[4]; 	// base folder of the [DAQ, DCS, HLT, DQM] File eXchange Server
 
-	TString fFXSdbHost[3];		// Host of the [DAQ, DCS, HLT] FXS database
-	UInt_t  fFXSdbPort[3];		// Port of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbUser[3];  	// username of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbPass[3]; 		// password of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbName[3]; 		// name of the [DAQ, DCS, HLT] FXS database
-	TString fFXSdbTable[3]; 	// Table name of the [DAQ, DCS, HLT] FXS database
+	TString fFXSdbHost[4];		// Host of the [DAQ, DCS, HLT, DQM] FXS database
+	UInt_t  fFXSdbPort[4];		// Port of the [DAQ, DCS, HLT, DQM] FXS database
+	TString fFXSdbUser[4];  	// username of the [DAQ, DCS, HLT, DQM] FXS database
+	TString fFXSdbPass[4]; 		// password of the [DAQ, DCS, HLT, DQM] FXS database
+	TString fFXSdbName[4]; 		// name of the [DAQ, DCS, HLT, DQM] FXS database
+	TString fFXSdbTable[4]; 	// Table name of the [DAQ, DCS, HLT, DQM] FXS database
 
 	TString	fTerminateFilePath;     // File for inter-process communcation to terminate the Shuttle
 
@@ -245,7 +245,7 @@ private:
 	TMap fDetectorMap; 		// Map of the detector-by-detector configuration
 	TObjArray fDetectorList; 	// List of detectors with valid configuration
 	
-	TObjArray *fAdmin[5]; 		// Array of system administrators' email addresses (DAQ, DCS, HLT, Global, Amanda)
+	TObjArray *fAdmin[6]; 		// Array of system administrators' email addresses (DAQ, DCS, HLT, DQM, Global, Amanda)
 
 	TString fShuttleInstanceHost; 	// Instance of the SHUTTLE
 	TObjArray fProcessedDetectors; 	// list of the detector to be processed by this machine
