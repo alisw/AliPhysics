@@ -132,7 +132,7 @@ void  AliPHOSDigitDecalibrate::SetDecalibration(Int_t mod, TH2F * dec){
   gROOT->cd() ;
   hDec[mod] = new TH2F(*dec) ;
   char key[55] ;
-  sprintf(key,"DecalibrationModule%d",mod) ;
+  snprintf(key,55,"DecalibrationModule%d",mod) ;
   hDec[mod]->SetName(key) ;
 
 
