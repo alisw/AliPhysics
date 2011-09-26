@@ -157,6 +157,21 @@ namespace {
   }
 }
 
+namespace {
+  void FindMinMax(TH1* h, Double_t& min, Double_t& max)
+  {
+    Double_t tmin = 1e9;
+    Double_t tmax = 0;
+    for (Int_t i = 1; i <= h->GetNbinsX(); i++) { 
+      Double_t c = h->GetBinContent(i);
+      if (c < 1e-8) continue;
+      tmin = TMath::Min(tmin, c);
+      tmax = TMath::Max(tmax, c);
+    }
+    min = tmin;
+    max = tmax;
+  }
+}
 //____________________________________________________________________________ 
 void 
 AliFMDQAChecker::MakeImage(TObjArray** list, 
@@ -195,18 +210,21 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
         nImages++; 
 	TString name(hist->GetName());
 	if (name.Contains("readouterrors", TString::kIgnoreCase)) continue;
-	Double_t hMax = hist->GetMaximum(); 
+
+	// Double_t hMax = hist->GetMaximum(); 
 	// hist->GetBinContent(hist->GetMaximumBin());
-	Double_t hMin = hist->GetMinimum();
+	// Double_t hMin = hist->GetMinimum();
 	// hist->GetBinContent(hist->GetMinimumBin());
+	Double_t hMax, hMin;
+	FindMinMax(hist, hMin, hMax);
 	max = TMath::Max(max, hMax);
 	min = TMath::Min(min, hMin);
       }
     }
     break ; 
   }
-  min = TMath::Max(0.1, min);
-  max = TMath::Max(1.0, max);
+  min = TMath::Max(1e-6, min);
+  max = TMath::Max(1.0,  max);
 
   // IF no images, go on. 
   if (nImages == 0) {
@@ -325,7 +343,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	Double_t m = proj->GetMean(); 
 	TLatex* l = new TLatex(kk, 30, Form("Mean: %f", m));
 	l->SetTextAngle(90);
-	l->SetTextColor(m > 10 ? kRed+1 : m > 1 ? kOrange+2 :kGreen+2);
+	l->SetTextColor(m > 10 ? kRed+1 : m > .7 ? kOrange+2 :kGreen+2);
 	l->Draw();
       }
       }
@@ -343,12 +361,11 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	if (logOpts & 0x1) insert->SetLogx();
 	if (logOpts & 0x2) insert->SetLogy();
 	if (logOpts & 0x4) insert->SetLogz();
-	hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), 
-				       hist->GetXaxis()->GetXmax()/8);
-	hist->DrawCopy(opt);
+	hist->GetXaxis()->SetRange(1, hist->GetNbinsX()/8);
+	TH1* copy = hist->DrawCopy(opt);
+	copy->GetXaxis()->SetNdivisions(408, false);
 	// Restore full range 
-	hist->GetXaxis()->SetRangeUser(hist->GetXaxis()->GetXmin(), 
-				       hist->GetXaxis()->GetXmax());
+	hist->GetXaxis()->SetRange(0, 0);
 	gStyle->SetOptTitle(1);
       }
       pad->cd();
@@ -357,7 +374,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       RestoreLog(hist->GetYaxis(), logOpts & 0x2);
       RestoreLog(hist->GetZaxis(), logOpts & 0x4);
     }
-  // Print to a post-script file 
+    // Print to a post-script file 
     fImage[specie]->Print(outName, "ps");
   }
 }

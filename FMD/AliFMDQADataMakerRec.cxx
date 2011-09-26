@@ -217,7 +217,7 @@ void AliFMDQADataMakerRec::InitRaws()
   const Bool_t saveCorr = kTRUE ; 
   const Bool_t image    = kTRUE ; 
   TH2I* hErrors = new TH2I("readoutErrors", "Read out errors", 3, .5, 3.5,
-			   160, 0, 160); 
+			   160, -.5, 159.5); 
   hErrors->GetXaxis()->SetBinLabel(1, "FMD1");
   hErrors->GetXaxis()->SetBinLabel(2, "FMD2");
   hErrors->GetXaxis()->SetBinLabel(3, "FMD3");

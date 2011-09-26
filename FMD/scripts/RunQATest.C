@@ -309,7 +309,7 @@ RunQATest(const char* src, Int_t runno=0)
 {
   gROOT->LoadMacro("$ALICE_ROOT/FMD/scripts/Compile.C");
   gSystem->AddIncludePath("-DBUILD=1");
-  Compile("$ALICE_ROOT.trunk/FMD/scripts/RunQATest.C", "+g");
+  Compile("$ALICE_ROOT/../trunk/FMD/scripts/RunQATest.C", "+g");
 
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runno);
