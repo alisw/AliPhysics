@@ -1630,14 +1630,14 @@ void AliTRDcheckESD::PlotCentSummaryFromCF() {
     line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
     line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
     
-    SetStyle(hEffPosAll,  1, kRed, 1.0, 24, kRed, 1.0);
-    SetStyle(hEffPosTrk4, 1, kRed, 1.0, 25, kRed, 1.0);
-    SetStyle(hEffPosTrk5, 1, kRed, 1.0, 26, kRed, 1.0);
-    SetStyle(hEffPosTrk6, 1, kRed, 1.0, 27, kRed, 1.0);
-    SetStyle(hEffNegAll,  1, kBlue, 1.0, 24, kBlue, 1.0);
-    SetStyle(hEffNegTrk4, 1, kBlue, 1.0, 25, kBlue, 1.0);
-    SetStyle(hEffNegTrk5, 1, kBlue, 1.0, 26, kBlue, 1.0);
-    SetStyle(hEffNegTrk6, 1, kBlue, 1.0, 27, kBlue, 1.0);
+    SetStyle(hEffPosAll,  1, kRed, 1, 24, kRed, 1);
+    SetStyle(hEffPosTrk4, 1, kRed, 1, 25, kRed, 1);
+    SetStyle(hEffPosTrk5, 1, kRed, 1, 26, kRed, 1);
+    SetStyle(hEffPosTrk6, 1, kRed, 1, 27, kRed, 1);
+    SetStyle(hEffNegAll,  1, kBlue, 1, 24, kBlue, 1);
+    SetStyle(hEffNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+    SetStyle(hEffNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+    SetStyle(hEffNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
         
     hEffPosAll->Draw("same");
     hEffNegAll->Draw("same");
@@ -1977,14 +1977,14 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
   
-  SetStyle(hTRDEffPtPosAll, 1, kRed, 1.0, 24, kRed, 1.0);
-  SetStyle(hTRDEffPtNegAll, 1, kBlue, 1.0, 24, kBlue, 1.0);
-  SetStyle(hTRDEffPtPosTrk4, 1, kRed, 1.0, 25, kRed, 1.0);
-  SetStyle(hTRDEffPtNegTrk4, 1, kBlue, 1.0, 25, kBlue, 1.0);
-  SetStyle(hTRDEffPtPosTrk5, 1, kRed, 1.0, 26, kRed, 1.0);
-  SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1.0, 26, kBlue, 1.0);
-  SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1.0, 27, kRed, 1.0);
-  SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1.0, 27, kBlue, 1.0);
+  SetStyle(hTRDEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
+  SetStyle(hTRDEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
+  SetStyle(hTRDEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
+  SetStyle(hTRDEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+  SetStyle(hTRDEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
+  SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+  SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
+  SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
   
   hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "positives (#geq 1 tracklet)", "p");
   hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "negatives (#geq 1 tracklet)", "p");
@@ -2019,14 +2019,14 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   h2Ftof->Draw();
   lat->DrawLatex(0.2, 1.32, "TRD-TOF matching efficiency");
   
-  SetStyle(hTOFEffPtPosAll, 1, kRed, 1.0, 24, kRed, 1.0);
-  SetStyle(hTOFEffPtPosTrk4, 1, kRed, 1.0, 25, kRed, 1.0);
-  SetStyle(hTOFEffPtPosTrk5, 1, kRed, 1.0, 26, kRed, 1.0);
-  SetStyle(hTOFEffPtPosTrk6, 1, kRed, 1.0, 27, kRed, 1.0);
-  SetStyle(hTOFEffPtNegAll, 1, kBlue, 1.0, 24, kBlue, 1.0);
-  SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1.0, 25, kBlue, 1.0);
-  SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1.0, 26, kBlue, 1.0);
-  SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1.0, 27, kBlue, 1.0);
+  SetStyle(hTOFEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
+  SetStyle(hTOFEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
+  SetStyle(hTOFEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
+  SetStyle(hTOFEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
+  SetStyle(hTOFEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
+  SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+  SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+  SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
   hTOFEffPtPosAll->Draw("same"); 
   hTOFEffPtPosTrk4->Draw("same"); 
   hTOFEffPtPosTrk5->Draw("same"); 
@@ -2156,8 +2156,8 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
     hTRDEffBC->GetYaxis()->SetTitleSize(0.07);
     hTRDEffBC->GetYaxis()->CenterTitle();
     hTRDEffBC->GetYaxis()->SetLabelSize(0.05);
-    SetStyle(hTRDEffBC, 1, kRed, 2.0, 24, kRed, 1.0); legBC->AddEntry(hTRDEffBC, "TPC-TRD", "p");
-    SetStyle(hTOFEffBC, 1, kBlue, 2.0, 24, kBlue, 1.0); legBC->AddEntry(hTOFEffBC, "TRD-TOF", "p");
+    SetStyle(hTRDEffBC, 1, kRed, 2, 24, kRed, 1); legBC->AddEntry(hTRDEffBC, "TPC-TRD", "p");
+    SetStyle(hTOFEffBC, 1, kBlue, 2, 24, kBlue, 1); legBC->AddEntry(hTOFEffBC, "TRD-TOF", "p");
     hTRDEffBC->Draw();
     hTOFEffBC->Draw("same");
     legBC->Draw();
@@ -2389,14 +2389,14 @@ void AliTRDcheckESD::PlotCentSummary() {
     line.SetLineStyle(1);
     line.SetLineWidth(1);
     line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
-    SetStyle(hFeffP, 1, kRed, 1.0, 24, kRed, 1.0);
-    SetStyle(hFeffP4, 1, kRed, 1.0, 25, kRed, 1.0);
-    SetStyle(hFeffP5, 1, kRed, 1.0, 26, kRed, 1.0);
-    SetStyle(hFeffP6, 1, kRed, 1.0, 27, kRed, 1.0);
-    SetStyle(hFeffN, 1, kBlue, 1.0, 24, kBlue, 1.0);
-    SetStyle(hFeffN4, 1, kBlue, 1.0, 25, kBlue, 1.0);
-    SetStyle(hFeffN5, 1, kBlue, 1.0, 26, kBlue, 1.0);
-    SetStyle(hFeffN6, 1, kBlue, 1.0, 27, kBlue, 1.0);
+    SetStyle(hFeffP, 1, kRed, 1, 24, kRed, 1);
+    SetStyle(hFeffP4, 1, kRed, 1, 25, kRed, 1);
+    SetStyle(hFeffP5, 1, kRed, 1, 26, kRed, 1);
+    SetStyle(hFeffP6, 1, kRed, 1, 27, kRed, 1);
+    SetStyle(hFeffN, 1, kBlue, 1, 24, kBlue, 1);
+    SetStyle(hFeffN4, 1, kBlue, 1, 25, kBlue, 1);
+    SetStyle(hFeffN5, 1, kBlue, 1, 26, kBlue, 1);
+    SetStyle(hFeffN6, 1, kBlue, 1, 27, kBlue, 1);
     hFeffP->Draw("same");
     hFeffN->Draw("same");
     hFeffP4->Draw("same");
@@ -2908,7 +2908,7 @@ void AliTRDcheckESD::DrawTRDGrid() {
   //
   TLine line;
   line.SetLineColor(2);
-  line.SetLineWidth(1.0);
+  line.SetLineWidth(1);
   line.SetLineStyle(2);
   for(Int_t i=0; i<=9; ++i) {
     line.DrawLine(-1.0, 2.0*TMath::Pi()/18.0*i, +1.0, 2.0*TMath::Pi()/18.0*i);
@@ -2924,8 +2924,8 @@ void AliTRDcheckESD::DrawTRDGrid() {
 
 //_________________________________________________________________
 void AliTRDcheckESD::SetStyle(TH1* hist, 
-			      Int_t lineStyle, Int_t lineColor, Double_t lineWidth, 
-			      Int_t markerStyle, Int_t markerColor, Double_t markerSize) {
+			      Int_t lineStyle, Int_t lineColor, Int_t lineWidth,
+			      Int_t markerStyle, Int_t markerColor, Int_t markerSize) {
   //
   // Set style settings for histograms
   //
