@@ -71,7 +71,7 @@ AliAnalysisTaskPi0DiffEfficiency::AliAnalysisTaskPi0DiffEfficiency(const char *n
   // Set bad channel map
   char key[55] ;
   for(Int_t i=0; i<6; i++){
-    sprintf(key,"PHOS_BadMap_mod%d",i) ;
+    snprintf(key,55,"PHOS_BadMap_mod%d",i) ;
     fPHOSBadMap[i]=new TH2I(key,"Bad Modules map",64,0.,64.,56,0.,56.) ;
   }
   // Initialize the PHOS geometry
@@ -371,7 +371,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
     if(clu->GetNCells()<3)
       continue ;
 
-    sprintf(key,"hCluM%d",mod) ;
+    snprintf(key,55,"hCluM%d",mod) ;
     FillHistogram(key,cellX,cellZ,1.);
 
     TLorentzVector pv1 ;
@@ -415,7 +415,7 @@ void AliAnalysisTaskPi0DiffEfficiency::UserExec(Option_t *)
     if(clu->GetNCells()<3)
       continue ;
 
-    sprintf(key,"hCluM%d",mod) ;
+    snprintf(key,55,"hCluM%d",mod) ;
     FillHistogram(key,cellX,cellZ,1.);
 
     TLorentzVector pv1 ;
@@ -735,17 +735,18 @@ void AliAnalysisTaskPi0DiffEfficiency::ProcessMC(){
   char hkey[55] ;
 
   AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
+  if(!event) return ;
   TClonesArray *mcArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
   for(Int_t i=0;i<mcArray->GetEntriesFast();i++){
      AliAODMCParticle* particle =  (AliAODMCParticle*) mcArray->At(i);
     if(particle->GetPdgCode() == 111)
-      sprintf(partName,"pi0") ;
+      snprintf(partName,10,"pi0") ;
     else
       if(particle->GetPdgCode() == 221)
-        sprintf(partName,"eta") ;
+        snprintf(partName,10,"eta") ;
       else
         if(particle->GetPdgCode() == 22)
-           sprintf(partName,"gamma") ;
+           snprintf(partName,10,"gamma") ;
 	else
            continue ;
 
@@ -756,20 +757,20 @@ void AliAnalysisTaskPi0DiffEfficiency::ProcessMC(){
 
     Double_t pt = particle->Pt() ;
     //Total number of pi0 with creation radius <1 cm
-    sprintf(hkey,"hMC_all_%s_cen%d",partName,fCenBin) ;
+    snprintf(hkey,55,"hMC_all_%s_cen%d",partName,fCenBin) ;
     FillHistogram(hkey,pt) ;
     if(TMath::Abs(particle->Y())<0.12){
-      sprintf(hkey,"hMC_unitEta_%s_cen%d",partName,fCenBin) ;
+      snprintf(hkey,55,"hMC_unitEta_%s_cen%d",partName,fCenBin) ;
       FillHistogram(hkey,pt) ;
     }
 
-    sprintf(hkey,"hMC_rap_%s_cen%d",partName,fCenBin) ;
+    snprintf(hkey,55,"hMC_rap_%s_cen%d",partName,fCenBin) ;
     FillHistogram(hkey,particle->Y()) ;
     
     Double_t phi=particle->Phi() ;
     while(phi<0.)phi+=TMath::TwoPi() ;
     while(phi>TMath::TwoPi())phi-=TMath::TwoPi() ;
-    sprintf(hkey,"hMC_phi_%s_cen%d",partName,fCenBin) ;
+    snprintf(hkey,55,"hMC_phi_%s_cen%d",partName,fCenBin) ;
     FillHistogram(hkey,phi) ;
    
 

@@ -164,12 +164,17 @@ void AliPHOSEmbedding::Init(){
     return ;
   
   AliESDEvent *event = dynamic_cast<AliESDEvent*>(InputEvent());
+  if(!event){
+    AliError("Can not obtain InputEvent!") ;
+    return ;
+  }
   Int_t runNum = event->GetRunNumber();
   AliCDBManager::Instance()->SetRun(runNum);
 
   fPHOSReconstructor = new AliPHOSReconstructor() ;
   AliCDBPath path("PHOS","Calib","RecoParam");
   AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+  
   TObjArray* recoParamArray = (TObjArray*)entry->GetObject();
   AliPHOSRecoParam* recoParam = (AliPHOSRecoParam*)recoParamArray->At(2); 
   fPHOSReconstructor->SetRecoParam(recoParam) ;
@@ -707,8 +712,10 @@ void AliPHOSEmbedding::MakeDigits(AliAODEvent * signal){
   Int_t isdigit=0 ;
   if(signal){
     AliAODCaloCells* cellsS = signal->GetPHOSCells();
-    Int_t cellLabels[cellsS->GetNumberOfCells()] ;
-    Int_t cellSecondLabels[cellsS->GetNumberOfCells()] ;
+//    Int_t cellLabels[cellsS->GetNumberOfCells()]={0} ;
+//    Int_t cellSecondLabels[cellsS->GetNumberOfCells()]={0} ;
+    Int_t cellLabels[1000]={0} ;       //1000 should be enough for simulated
+    Int_t cellSecondLabels[1000]={0} ; //low-statistics event.
     for(Int_t i=0;i<cellsS->GetNumberOfCells();i++){
       cellLabels[i]=-1 ;
       cellSecondLabels[i]=-1;
@@ -838,7 +845,7 @@ void AliPHOSEmbedding::SetOldCalibration(TH2F **calibH){
   char name[55] ;
   for(Int_t i=0;i<5;i++){
     fOldPHOSCalibration[i] = new TH2F(*((TH2F*)calibH[i])) ;
-    sprintf(name,"OldPHOSCalibrationMod%d",i) ;
+    snprintf(name,55,"OldPHOSCalibrationMod%d",i) ;
     fOldPHOSCalibration[i]->SetName(name) ;
   }
 }  
