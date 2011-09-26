@@ -1,22 +1,39 @@
 #if !defined(__CINT__) || defined(__MAKECINT__)
-  #include <TStopwatch.h>
-  #include <TStyle.h>
-  #include <TFile.h>
-  #include <TH1F.h>
-  #include <TH2F.h>
-  #include <TString.h>
-  #include <TCanvas.h>
-  #include "TSystem.h"
-  #include "TGrid.h"
-  #include "AliRawReader.h"
-  #include "AliCaloRawStreamV3.h"
-  #include "AliLog.h"
-  #include "iostream"
 using namespace std;
+#include "iostream"
+
+#include <TStopwatch.h>
+#include <TStyle.h>
+#include <TFile.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TString.h>
+#include <TCanvas.h>
+#include <TSystem.h>
+#include <TGrid.h>
+#include <TMath.h>
+
+#include "AliRawReader.h"
+#include "AliCaloRawStreamV3.h"
+#include "AliLog.h"
+#include "AliCentralTrigger.h"
+#include "AliTriggerConfiguration.h"
+#include "AliTriggerClass.h"
+#include "AliCDBManager.h"
 
 #endif
 
-void Pedestals(const TString rawFile=0)
+//-----------------------------------------------------------------------------
+static Bool_t              firstEvent = kTRUE;
+static Int_t               runNum;
+static UInt_t              period;
+static UInt_t              orbitID;
+static UInt_t              bcID;
+static AliRawReader       *reader;
+TString GetTriggerClass(ULong64_t);
+
+//-----------------------------------------------------------------------------
+void Pedestals(const TString rawFile=0, const char *selectTrigger="CPHI")
 {
   // Read raw data, decode it to samples,
   // calculate pedestals from presamples, 
@@ -31,11 +48,13 @@ void Pedestals(const TString rawFile=0)
   stopwatch.Start();
   
   if (rawFile.BeginsWith("alien://")) {
-    gSystem->Exec("source /tmp/gclient_env_$UID");
     TGrid::Connect("alien://");
   }
 
-  AliRawReader *reader = AliRawReader::Create(rawFile);
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+
+  reader = AliRawReader::Create(rawFile);
   reader->Reset();
 
   TStopwatch timer;
@@ -47,15 +66,14 @@ void Pedestals(const TString rawFile=0)
   TString baseTitlePed="Ped in cell (";
   const char* sgain[3]={"LG","HG", "TRU"};
 
-  const Int_t caloFlagMax=3,modMax=5,cellXMax=64,cellZMax=56;
-  TH1F *hPed[5][3][64][56];
-  for (Int_t mod=2; mod<=4; mod++) {
-    for (Int_t caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
-      for (Int_t mod=0; mod<modMax; mod++) {
-	for (Int_t cellX=0; cellX<cellXMax; cellX++) {
-	  for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
-	    hPed[mod][caloFlag][cellX][cellZ] = 0;
-	  }
+  const Int_t caloFlagMax=2,modMax=5,cellXMax=64,cellZMax=56;
+  Int_t module,caloFlag,cellX,cellZ;
+  TH1F *hPed[5][2][64][56];
+  for (module=0; module<modMax; module++) {
+    for (caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
+      for (cellX=0; cellX<cellXMax; cellX++) {
+	for (cellZ=0; cellZ<cellZMax; cellZ++) {
+	  hPed[module][caloFlag][cellX][cellZ] = 0;
 	}
       }
     }
@@ -144,23 +162,42 @@ void Pedestals(const TString rawFile=0)
   TH1I *hModule   = new TH1I("hModule" ,"Module number", 5,0.,5);
 
   Int_t iEvent=0;
-  Int_t runNum=0;
-  Int_t module,cellX,cellZ,caloFlag;
+  runNum=0;
 
   while (reader->NextEvent()) {
-    runNum = reader->GetRunNumber();
-    AliInfoGeneral("",Form("Reading event %d\n",iEvent++));
+    if (firstEvent) {
+      firstEvent = kFALSE;
+      runNum = reader->GetRunNumber();
+      man = AliCDBManager::Instance();
+      man ->SetRun(runNum);
+    }
+    ULong64_t triggerMask  = reader->GetClassMask();
+    TString trclasses = GetTriggerClass(triggerMask);
+    
+    period  = reader->GetPeriod();
+    orbitID = reader->GetOrbitID();
+    bcID    = reader->GetBCID();
+    iEvent++;
+    if (!trclasses.Contains(selectTrigger)) continue;
+    AliInfoGeneral("",Form("Reading event %d of type %d, time %d, trig.class \"%s\"",
+			   iEvent,reader->GetType(), reader->GetTimestamp(), trclasses.Data()));
     while (stream->NextDDL()) {
       while (stream->NextChannel()) {
-	module   = stream->GetModule();
-	cellX    = stream->GetCellX();
-	cellZ    = stream->GetCellZ();
-	caloFlag = stream->GetCaloFlag();
-// 	if (caloFlag!=0 && caloFlag!=1) continue;
+	module   =   stream->GetModule();   // [0-4]
+	cellX    =   stream->GetCellX();    // [0-63]
+	cellZ    =   stream->GetCellZ();    // [0-55]
+	caloFlag =   stream->GetCaloFlag(); // [0-3]
+ 	if (caloFlag!=0 && caloFlag!=1) continue;
+	if (module<0 || module>=modMax  || 
+	    cellX<0  || cellX>=cellXMax || 
+	    cellZ<0  || cellZ>=cellZMax) {
+	  AliInfoGeneral("",Form("Wrong cell ID (m,x,z)=(%d,%d,%d)",module,cellX,cellZ));
+	  break;
+	}
 
 	hHWaddr->Fill(stream->GetDDLNumber(),stream->GetHWAddress());
 	hModule->Fill(module);
-	if (!hPed[module][caloFlag][cellX][cellZ]) {
+	if (hPed[module][caloFlag][cellX][cellZ] == 0) {
 	  TString name  = baseNamePed;
 	  TString title = baseTitlePed;
 	  name +="_g"; name +=caloFlag;
@@ -169,8 +206,8 @@ void Pedestals(const TString rawFile=0)
 	  name +="_z"; name +=cellZ;
 
 	  title +=module; title +=",";
-	  title +=cellX; title +=",";
-	  title +=cellZ; title +="), ";
+	  title +=cellX ; title +=",";
+	  title +=cellZ ; title +="), ";
 	  title +=sgain[caloFlag];
 
 	  Int_t nx,xmin,xmax;
@@ -208,69 +245,69 @@ void Pedestals(const TString rawFile=0)
 
   // Fill 2-dim histograms for mean, rms and n pedestals
 
-  for (Int_t mod=2; mod<=4; mod++) {
-    for (Int_t caloFlag=0; caloFlag<2; caloFlag++) {
-      for (Int_t cellX=0; cellX<cellXMax; cellX++) {
-	for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
-	  if (hPed[mod][caloFlag][cellX][cellZ] != 0) {
+  for (module=0; module<modMax; module++) {
+    for (caloFlag=0; caloFlag<2; caloFlag++) {
+      for (cellX=0; cellX<cellXMax; cellX++) {
+	for (cellZ=0; cellZ<cellZMax; cellZ++) {
+	  if (hPed[module][caloFlag][cellX][cellZ] != 0) {
 	    if      (caloFlag == 0) {
-	      if (mod==2) {
-		hPedLoMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedLoRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedLoMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedLoRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedLoNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      if (module==2) {
+		hPedLoMean1m2->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m2 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedLoMeanm2 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedLoRMSm2  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedLoNumm2  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
-	      else if (mod==3) {
-		hPedLoMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedLoRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedLoMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedLoRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedLoNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      else if (module==3) {
+		hPedLoMean1m3->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m3 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedLoMeanm3 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedLoRMSm3  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedLoNumm3  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
-	      else if (mod==4) {
-		hPedLoMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedLoRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedLoMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedLoRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedLoNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      else if (module==4) {
+		hPedLoMean1m4->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedLoRMS1m4 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedLoMeanm4 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedLoRMSm4  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedLoNumm4  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
 	    }
 	    else if (caloFlag == 1) {
-	      if (mod==2) {
-		hPedHiMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedHiRMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedHiMeanm2 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedHiRMSm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedHiNumm2  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      if (module==2) {
+		hPedHiMean1m2->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m2 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm2 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedHiRMSm2  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedHiNumm2  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
-	      if (mod==3) {
-		hPedHiMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedHiRMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedHiMeanm3 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedHiRMSm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedHiNumm3  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      if (module==3) {
+		hPedHiMean1m3->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m3 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm3 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedHiRMSm3  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedHiNumm3  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
-	      if (mod==4) {
-		hPedHiMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedHiRMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
-		hPedHiMeanm4 ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetMean()    );
-		hPedHiRMSm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetRMS()     );
-		hPedHiNumm4  ->Fill( cellX, cellZ, hPed[mod][caloFlag][cellX][cellZ]->GetEntries() );
+	      if (module==4) {
+		hPedHiMean1m4->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedHiRMS1m4 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
+		hPedHiMeanm4 ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetMean()    );
+		hPedHiRMSm4  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetRMS()     );
+		hPedHiNumm4  ->Fill( cellX, cellZ, hPed[module][caloFlag][cellX][cellZ]->GetEntries() );
 	      }
 	    }
 	    else if (caloFlag == 2) {
-	      if (mod==2) {
-		hPedTRUMean1m2->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedTRURMS1m2 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      if (module==2) {
+		hPedTRUMean1m2->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m2 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
 	      }
-	      if (mod==3) {
-		hPedTRUMean1m3->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedTRURMS1m3 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      if (module==3) {
+		hPedTRUMean1m3->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m3 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
 	      }
-	      if (mod==4) {
-		hPedTRUMean1m4->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetMean());
-		hPedTRURMS1m4 ->Fill( hPed[mod][caloFlag][cellX][cellZ]->GetRMS() );
+	      if (module==4) {
+		hPedTRUMean1m4->Fill( hPed[module][caloFlag][cellX][cellZ]->GetMean());
+		hPedTRURMS1m4 ->Fill( hPed[module][caloFlag][cellX][cellZ]->GetRMS() );
 	      }
 	    }
 	  }
@@ -286,14 +323,12 @@ void Pedestals(const TString rawFile=0)
   fileName += ".root";
   TFile *file = new TFile(fileName,"RECREATE");
 
-  for (Int_t mod=2; mod<=3; mod++) {
-    for (Int_t caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
-      for (Int_t mod=0; mod<modMax; mod++) {
-	for (Int_t cellX=0; cellX<cellXMax; cellX++) {
-	  for (Int_t cellZ=0; cellZ<cellZMax; cellZ++) {
-	    if (hPed[mod][caloFlag][cellX][cellZ] != 0)
-	      hPed[mod][caloFlag][cellX][cellZ]->Write();
-	  }
+  for (module=0; module<modMax; module++) {
+    for (caloFlag=0; caloFlag<caloFlagMax; caloFlag++) {
+      for (cellX=0; cellX<cellXMax; cellX++) {
+	for (cellZ=0; cellZ<cellZMax; cellZ++) {
+	  if (hPed[module][caloFlag][cellX][cellZ] != 0)
+	    hPed[module][caloFlag][cellX][cellZ]->Write();
 	}
       }
     }
@@ -344,4 +379,35 @@ void Pedestals(const TString rawFile=0)
   
   file->Close();
   stopwatch.Print();
+}
+//-----------------------------------------------------------------------------
+
+TString GetTriggerClass(ULong64_t triggerMask)
+{
+  // Convert a trigger mask to a trigger class
+  
+  AliCentralTrigger aCTP;
+  TString configstr("");
+  TString trclasses;
+  if (!aCTP.LoadConfiguration(configstr)) { // Load CTP config from OCDB
+    AliInfoGeneral("","No trigger configuration found in OCDB! The trigger configuration information will not be used!");
+    return trclasses;
+  }
+  aCTP.SetClassMask(triggerMask);
+  AliTriggerConfiguration *config = aCTP.GetConfiguration();
+  const TObjArray& classesArray = config->GetClasses();
+  Int_t nclasses = classesArray.GetEntriesFast();
+  for( Int_t iclass=0; iclass < nclasses; iclass++ ) {
+    AliTriggerClass* trclass = (AliTriggerClass*)classesArray.At(iclass);
+    if (trclass && trclass->GetMask()>0) {
+      Int_t trindex = TMath::Nint(TMath::Log2(trclass->GetMask()));
+      reader->LoadTriggerClass(trclass->GetName(),trindex);
+      if (triggerMask & (1ull << trindex)) {
+	trclasses += " ";
+	trclasses += trclass->GetName();
+	trclasses += " ";
+      }
+    }
+  }
+  return trclasses;
 }
