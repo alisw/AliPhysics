@@ -4,15 +4,13 @@
  * $Id$ 
  */
 
-/********************************** 
- * create an event and perform    *
- * flow analysis 'on the fly'     * 
- *                                * 
- * authors: Raimond Snellings     *
- *           (snelling@nikhef.nl) * 
- *          Ante Bilandzic        * 
- *           (anteb@nikhef.nl)    *
- *********************************/ 
+/************************************ 
+ * Create an event and perform full *
+ * flow analysis 'on the fly'.      * 
+ *                                  * 
+ * author: Ante Bilandzic           * 
+ *         (abilandzic@gmail.com)   *
+ ************************************/ 
 
 #ifndef ALIFLOWEVENTSIMPLEMAKERONTHEFLY_H
 #define ALIFLOWEVENTSIMPLEMAKERONTHEFLY_H
@@ -20,244 +18,98 @@
 class TF1;
 class TRandom3;
 
-#include "AliFlowEventSimple.h"  //needed as include
+#include "AliFlowEventSimple.h" // needed as include
 #include "AliFlowTrackSimpleCuts.h"
     
-class AliFlowEventSimpleMakerOnTheFly {
-
+class AliFlowEventSimpleMakerOnTheFly{
  public:
-
-  AliFlowEventSimpleMakerOnTheFly(UInt_t);    // constructor
+  AliFlowEventSimpleMakerOnTheFly(UInt_t uiSeed = 0); // constructor
   virtual ~AliFlowEventSimpleMakerOnTheFly(); // destructor
-
-  virtual void Init(); 
-  
-  Int_t DetermineMultiplicity(); // determine multiplicity for current event
-  virtual void DetermineV1(); // determine flow harmonics v1 for current event (if v1 is not pt or eta dependent)
-  virtual void DetermineV2(); // determine flow harmonics v2 for current event (if v2 is not pt or eta dependent)
-  virtual void DetermineV3(); // determine flow harmonics v3 for current event (if v3 is not pt or eta dependent)
-  virtual void DetermineV4(); // determine flow harmonics v4 for current event (if v4 is not pt or eta dependent)
-  Int_t GlauberModel(); // determine multiplicity and flow harmonics for current event from Glauber moder
-  AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI);  // create an event on the fly
- 
-    
-  //                        *****************************
-  //                        **** SETTERS AND GETTERS ****
-  //                        *****************************
-  //................................................................................................
-  // setters and getters for global parameters:
-  void SetUseGlauberModel(Bool_t const ugm) {this->fUseGlauberModel = ugm;};
-  Bool_t GetUseGlauberModel() const {return this->fUseGlauberModel;};
-  
-  void SetMultDistrOfRPsIsGauss(Bool_t const mdorig) {this->fMultDistrOfRPsIsGauss = mdorig;};
-  Bool_t GetMultDistrOfRPsIsGauss() const {return this->fMultDistrOfRPsIsGauss;};
-  
-  void SetMultiplicityOfRP(Int_t multRP) {this->fMultiplicityOfRP = multRP;}
-  Int_t GetMultiplicityOfRP() const {return this->fMultiplicityOfRP;} 
-  
-  void SetMultiplicitySpreadOfRP(Double_t multSpreadRP) {this->fMultiplicitySpreadOfRP = multSpreadRP;}
-  Double_t GetMultiplicitySpreadOfRP() const {return this->fMultiplicitySpreadOfRP;} 
-  
-  void SetMinMultOfRP(Int_t minmr) {this->fMinMultOfRP = minmr;}
-  Int_t GetMinMultOfRP() const {return this->fMinMultOfRP;} 
-  
-  void SetMaxMultOfRP(Int_t maxmr) {this->fMaxMultOfRP = maxmr;}
-  Int_t GetMaxMultOfRP() const {return this->fMaxMultOfRP;} 
-  
-  void SetTemperatureOfRP(Double_t temperatureRP) {this->fTemperatureOfRP = temperatureRP;}
-  Double_t GetTemperatureOfRP() const {return this->fTemperatureOfRP;} 
-  
-  void SetPtDependentHarmonicV1(Bool_t const pdhV1) {this->fPtDependentHarmonicV1 = pdhV1;};
-  Bool_t GetPtDependentHarmonicV1() const {return this->fPtDependentHarmonicV1;};
-  
-  void SetEtaDependentHarmonicV1(Bool_t const edhV1) {this->fEtaDependentHarmonicV1 = edhV1;};
-  Bool_t GetEtaDependentHarmonicV1() const {return this->fEtaDependentHarmonicV1;};
-  
-  void SetPtDependentHarmonicV2(Bool_t const pdhV2) {this->fPtDependentHarmonicV2 = pdhV2;};
-  Bool_t GetPtDependentHarmonicV2() const {return this->fPtDependentHarmonicV2;};
-  
-  void SetEtaDependentHarmonicV2(Bool_t const edhV2) {this->fEtaDependentHarmonicV2 = edhV2;};
-  Bool_t GetEtaDependentHarmonicV2() const {return this->fEtaDependentHarmonicV2;};
-  
-  void SetPtDependentHarmonicV4(Bool_t const pdhV4) {this->fPtDependentHarmonicV4 = pdhV4;};
-  Bool_t GetPtDependentHarmonicV4() const {return this->fPtDependentHarmonicV4;};
-  
-  void SetEtaDependentHarmonicV4(Bool_t const edhV4) {this->fEtaDependentHarmonicV4 = edhV4;};
-  Bool_t GetEtaDependentHarmonicV4() const {return this->fEtaDependentHarmonicV4;};
-  
-  // constant harmonics:  
-  void SetV1RP(Double_t dV1RP) {this->fV1RP = dV1RP;}
-  Double_t GetV1RP() const {return this->fV1RP;} 
-  
-  void SetV1SpreadRP(Double_t dV1SpreadRP) {this->fV1SpreadRP = dV1SpreadRP;}
-  Double_t GetV1SpreadRP() const {return this->fV1SpreadRP;} 
-  
-  void SetConstantV2IsSampledFromGauss(Bool_t const cV2isfg) {this->fConstantV2IsSampledFromGauss = cV2isfg;};
-  Bool_t GetConstantV2IsSampledFromGauss() const {return this->fConstantV2IsSampledFromGauss;};
-  
-  void SetV2RP(Double_t dV2RP) {this->fV2RP = dV2RP;}
-  Double_t GetV2RP() const {return this->fV2RP;} 
-  
-  void SetV2SpreadRP(Double_t dV2SpreadRP) {this->fV2SpreadRP = dV2SpreadRP;}
-  Double_t GetV2SpreadRP() const {return this->fV2SpreadRP;} 
-  
-  void SetMinV2RP(Double_t dMinV2RP) {this->fMinV2RP = dMinV2RP;}
-  Double_t GetMinV2RP() const {return this->fMinV2RP;} 
-  
-  void SetMaxV2RP(Double_t dMaxV2RP) {this->fMaxV2RP = dMaxV2RP;}
-  Double_t GetMaxV2RP() const {return this->fMaxV2RP;} 
-  
-  void SetV3RP(Double_t dV3RP) {this->fV3RP = dV3RP;}
-  Double_t GetV3RP() const {return this->fV3RP;} 
-  
-  void SetV3SpreadRP(Double_t dV3SpreadRP) {this->fV3SpreadRP = dV3SpreadRP;}
-  Double_t GetV3SpreadRP() const {return this->fV3SpreadRP;} 
-  
-  void SetV4RP(Double_t dV4RP) {this->fV4RP = dV4RP;}
-  Double_t GetV4RP() const {return this->fV4RP;} 
-  
-  void SetV4SpreadRP(Double_t dV4SpreadRP) {this->fV4SpreadRP = dV4SpreadRP;}
-  Double_t GetV4SpreadRP() const {return this->fV4SpreadRP;} 
-  
-  void SetV1vsPtEtaMax(Double_t dV1vsPtEtaMax) {this->fV1vsPtEtaMax = dV1vsPtEtaMax;}
-  Double_t GetV1vsPtEtaMax() const {return this->fV1vsPtEtaMax;} 
-  
-  void SetV1PtCutOff(Double_t dV1PtCutOff) {this->fV1PtCutOff = dV1PtCutOff;}
-  Double_t GetV1PtCutOff() const {return this->fV1PtCutOff;} 
-  
-  void SetV2vsPtEtaMax(Double_t dV2vsPtEtaMax) {this->fV2vsPtEtaMax = dV2vsPtEtaMax;}
-  Double_t GetV2vsPtEtaMax() const {return this->fV2vsPtEtaMax;} 
-  
-  void SetV2PtCutOff(Double_t dV2PtCutOff) {this->fV2PtCutOff = dV2PtCutOff;}
-  Double_t GetV2PtCutOff() const {return this->fV2PtCutOff;} 
-  
-  void SetV2vsEtaSpread(Double_t dV2vsEtaSpread) {this->fV2vsEtaSpread = dV2vsEtaSpread;}
-  Double_t GetV2vsEtaSpread() const {return this->fV2vsEtaSpread;} 
-  
+  virtual void Init();   
+  Bool_t AcceptOrNot(AliFlowTrackSimple *pTrack);  
+  AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI); 
+  // Setters and getters:
+  void SetMinMult(Int_t iMinMult) {this->fMinMult = iMinMult;}
+  Int_t GetMinMult() const {return this->fMinMult;} 
+  void SetMaxMult(Int_t iMaxMult) {this->fMaxMult = iMaxMult;}
+  Int_t GetMaxMult() const {return this->fMaxMult;} 
+  void SetMass(Double_t dMass) {this->fMass = dMass;}
+  Double_t GetMass() const {return this->fMass;} 
+  void SetTemperature(Double_t dT) {this->fTemperature = dT;}
+  Double_t GetTemperature() const {return this->fTemperature;} 
+  void SetV1(Double_t dV1) {this->fV1 = dV1;}
+  Double_t GetV1() const {return this->fV1;} 
+  void SetV2(Double_t dV2) {this->fV2 = dV2;}
+  Double_t GetV2() const {return this->fV2;} 
+  void SetV3(Double_t dV3) {this->fV3 = dV3;}
+  Double_t GetV3() const {return this->fV3;} 
+  void SetV4(Double_t dV4) {this->fV4 = dV4;}
+  Double_t GetV4() const {return this->fV4;} 
+  void SetUniformFluctuationsV2(Bool_t b) {this->fUniformFluctuationsV2 = b;}
+  Bool_t GetUniformFluctuationsV2() const {return this->fUniformFluctuationsV2;} 
+  void SetMinV2(Double_t dMinV2) {this->fMinV2 = dMinV2;}
+  Double_t GetMinV2() const {return this->fMinV2;} 
+  void SetMaxV2(Double_t dMaxV2) {this->fMaxV2 = dMaxV2;}
+  Double_t GetMaxV2() const {return this->fMaxV2;} 
+  void SetPtDependentV2(Bool_t b) {this->fPtDependentV2 = b;}
+  Bool_t GetPtDependentV2() const {return this->fPtDependentV2;} 
+  void SetV2vsPtCutOff(Double_t dV2vsPtCutOff) {this->fV2vsPtCutOff = dV2vsPtCutOff;}
+  Double_t GetV2vsPtCutOff() const {return this->fV2vsPtCutOff;} 
+  void SetV2vsPtMax(Double_t dV2vsPtMax) {this->fV2vsPtMax = dV2vsPtMax;}
+  Double_t GetV2vsPtMax() const {return this->fV2vsPtMax;} 
+  void SetSubeventEtaRange(Double_t minA, Double_t maxA, Double_t minB, Double_t maxB) 
+  {this->fEtaMinA = minA;this->fEtaMaxA = maxA;this->fEtaMinB = minB;this->fEtaMaxB = maxB;};
+  void SetNTimes(Int_t nt) {this->fNTimes = nt;}
+  Int_t GetNTimes() const {return this->fNTimes;} 
+  void SetUniformAcceptance(Bool_t ua) {this->fUniformAcceptance = ua;}
+  Bool_t GetUniformAcceptance() const {return this->fUniformAcceptance;} 
   void SetFirstSectorPhiMin(Double_t dPhiMin1) {this->fPhiMin1 = dPhiMin1;}
   Double_t GetFirstSectorPhiMin() const {return this->fPhiMin1;} 
-  
   void SetFirstSectorPhiMax(Double_t dPhiMax1) {this->fPhiMax1 = dPhiMax1;}
-  Double_t GetFirstSectorPhiMax() const {return this->fPhiMax1;}
-  
+  Double_t GetFirstSectorPhiMax() const {return this->fPhiMax1;}  
   void SetFirstSectorProbability(Double_t dProbability1) {this->fProbability1 = dProbability1;}
-  Double_t GetFirstProbability() const {return this->fProbability1;}  
-  
+  Double_t GetFirstSectorProbability() const {return this->fProbability1;}    
   void SetSecondSectorPhiMin(Double_t dPhiMin2) {this->fPhiMin2 = dPhiMin2;}
   Double_t GetSecondSectorPhiMin() const {return this->fPhiMin2;} 
-  
   void SetSecondSectorPhiMax(Double_t dPhiMax2) {this->fPhiMax2 = dPhiMax2;}
   Double_t GetSecondSectorPhiMax() const {return this->fPhiMax2;}
-  
   void SetSecondSectorProbability(Double_t dProbability2) {this->fProbability2 = dProbability2;}
-  Double_t GetSecondProbability() const {return this->fProbability2;}  
-  //................................................................................................
-  
-  void SetNoOfLoops(Int_t noofl) {this->fNoOfLoops = noofl;}
-  Int_t GetNoOfLoops() const {return this->fNoOfLoops;} 
-  void SetPhiRange(Double_t phr) {this->fPhiRange = phr;}
-  Double_t GetPhiRange() const {return this->fPhiRange;}   
-  void SetPtRange(Double_t pr) {this->fPtRange = pr;}
-  Double_t GetPtRange() const {return this->fPtRange;}   
-  void SetEtaRange(Double_t er) {this->fEtaRange = er;}
-  Double_t GetEtaRange() const {return this->fEtaRange;} 
-  void SetNonflowSectorMin(Double_t nsMin) {this->fNonflowSectorMin = nsMin;}
-  Double_t GetNonflowSectorMin() const {return this->fNonflowSectorMin;} 
-  void SetNonflowSectorMax(Double_t nsMax) {this->fNonflowSectorMax = nsMax;}
-  Double_t GetNonflowSectorMax() const {return this->fNonflowSectorMax;} 
-  void SetSubeventEtaRange(Double_t minA,Double_t maxA,Double_t minB,Double_t maxB) 
-  {this->fEtaMinA = minA; this->fEtaMaxA = maxA;this->fEtaMinB = minB; this->fEtaMaxB = maxB;};
-  // jets:
-  void SetCreateJets(Bool_t const cj) {this->fCreateJets = cj;};
-  Bool_t GetCreateJets() const {return this->fCreateJets;};
-  void SetJetProbability(Double_t jp) {this->fJetProbability = jp;}
-  Double_t GetJetProbability() const {return this->fJetProbability;}  
-  void SetJetTracksFraction(Double_t jtf) {this->fJetTracksFraction = jtf;}
-  Double_t GetJetTracksFraction() const {return this->fJetTracksFraction;}    
-  void SetJetCone(Double_t jc) {this->fJetCone = jc;}
-  Double_t GetJetCone() const {return this->fJetCone;}   
-     
+  Double_t GetSecondSectorProbability() const {return this->fProbability2;}       
  private:
- 
-  AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis);            // copy constructor
+  AliFlowEventSimpleMakerOnTheFly(const AliFlowEventSimpleMakerOnTheFly& anAnalysis); // copy constructor
   AliFlowEventSimpleMakerOnTheFly& operator=(const AliFlowEventSimpleMakerOnTheFly& anAnalysis); // assignment operator
-  
-  //................................................................................................
-  // global parameters:
-  Bool_t    fUseGlauberModel;        // if kTRUE multiplicity and flow harmonics are determined e-b-e from Glauber model
-  Bool_t    fMultDistrOfRPsIsGauss;  // 1.) if kTRUE  = multiplicitiy of RPs is sampled e-b-e from Gaussian distribution with
-                                     //                 mean = fMultiplicityOfRP and spread = fMultiplicitySpreadOfRP
-                                     // 2.) if kFALSE = multiplicitiy of RPs is sampled e-b-e uniformly from 
-                                     //                 interval [fMinMultOfRP,fMaxMultOfRP]
-  Int_t     fMultiplicityOfRP;       // mean multiplicity of RPs (if sampled from Gaussian)
-  Double_t  fMultiplicitySpreadOfRP; // multiplicity spread of RPs (if sampled from Gaussian)
-  Int_t     fMinMultOfRP;            // minimal multiplicity of RPs (if sampled uniformly)
-  Int_t     fMaxMultOfRP;            // maximum multiplicity of RPs (if sampled uniformly)
-  Double_t  fTemperatureOfRP;        // "temperature" of RPs in GeV/c (increase this parameter to get more high pt RPs) 
-  Bool_t    fPtDependentHarmonicV1;  // harmonic V1 is a function of pt     
-  Bool_t    fEtaDependentHarmonicV1; // harmonic V1 is a function of eta     
-  Bool_t    fPtDependentHarmonicV2;  // harmonic V2 is a function of pt     
-  Bool_t    fEtaDependentHarmonicV2; // harmonic V2 is a function of eta     
-  Bool_t    fPtDependentHarmonicV4;  // harmonic V4 is a function of pt     
-  Bool_t    fEtaDependentHarmonicV4; // harmonic V4 is a function of eta     
-  
-  // constant harmonics: 
-  Double_t  fV1RP;                   // directed flow of RPs
-  Double_t  fV1SpreadRP;             // directed flow spread of RPs
-  
-  Bool_t    fConstantV2IsSampledFromGauss; // 1.) if kTRUE  = elliptic flow of RPs is sampled e-b-e from Gaussian distribution with
-                                           //                 mean = fV2RP and spread = fV2SpreadRP
-                                           // 2.) if kFALSE = elliptic flow of RPs is sampled e-b-e uniformly from 
-                                           //                 interval [fMinV2RP,fMaxV2RP]
-  Double_t  fV2RP;                   // mean elliptic flow of RPs (if sampled from Gaussian)
-  Double_t  fV2SpreadRP;             // elliptic flow spread of RPs (if sampled from Gaussian)
-  Double_t  fMinV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
-  Double_t  fMaxV2RP;                // minimal elliptic flow of RPs (if sampled uniformly)
+  Int_t fCount; // count number of events 
+  Int_t fMinMult; // uniformly sampled multiplicity is >= iMinMult
+  Int_t fMaxMult; // uniformly sampled multiplicity is < iMaxMult
+  TF1 *fPtSpectra; // transverse momentum distribution (pt is sampled from hardwired Boltzmann distribution)
+  Double_t fMass; // mass in pt distribution (hardwired is Boltzmann pt distribution)
+  Double_t fTemperature; // "temperature" in pt distribution (hardwired is Boltzmann pt distribution)   
+  TF1 *fPhiDistribution; // azimuthal distribution (phi is sampled from hardwired Fourier-like distribution)
+  Double_t fV1; // harmonic v1
+  Double_t fV2; // harmonic v2
+  Double_t fV3; // harmonic v3
+  Double_t fV4; // harmonic v4
+  Bool_t fUniformFluctuationsV2; // v2 is sampled uniformly for each event and for all particles from [fMinV2,fMaxV2] 
+  Double_t fMinV2; // if v2 is sampled uniformly for each event, this is lower boundary on its value  
+  Double_t fMaxV2; // if v2 is sampled uniformly for each event, this is upper boundary on its value
+  Bool_t fPtDependentV2; // v2 is pt-dependent
+  Double_t fV2vsPtCutOff; // if v2 is pt-dependent: for v2 < fV2vsPtCutOff v2 is growing linearly, otherwise v2 = fV2vsPtMax
+  Double_t fV2vsPtMax; // if v2 is pt-dependent: v2 = fV2vsPtMax for v2 >= fV2vsPtCutOff 
+  Double_t fEtaMinA; // minimum eta of subevent A
+  Double_t fEtaMaxA; // maximum eta of subevent A
+  Double_t fEtaMinB; // minimum eta of subevent B
+  Double_t fEtaMaxB; // maximum eta of subevent B 
+  Int_t fNTimes; // number of times to use the same particle in the analysis (simulating nonflow)
+  Bool_t fUniformAcceptance; // detector has uniform azimuthal acceptance or not
+  Double_t fPhiMin1; // first sector with non-uniform acceptance starts at azimuth fPhiMin1
+  Double_t fPhiMax1; // first sector with non-uniform acceptance ends at azimuth fPhiMax1
+  Double_t fProbability1; // particles emitted in fPhiMin1 < phi < fPhiMax1 are taken with probability fProbability1 
+  Double_t fPhiMin2; // second sector with non-uniform acceptance starts at azimuth fPhiMin2
+  Double_t fPhiMax2; // second sector with non-uniform acceptance ends at azimuth fPhiMax2
+  Double_t fProbability2; // particles emitted in fPhiMin2 < phi < fPhiMax2 are taken with probability fProbability2
+  Double_t fPi; // pi
 
-  Double_t  fV3RP;                   // harmonic V3 of RPs
-  Double_t  fV3SpreadRP;             // harmonic V3's spread of RPs  
-  Double_t  fV4RP;                   // harmonic V4 of RPs
-  Double_t  fV4SpreadRP;             // harmonic V4's spread of RPs
-  // (pt,eta) dependent harmonic V1:
-  Double_t  fV1vsPtEtaMax;           // max value of (pt,eta) dependent V1
-  Double_t  fV1PtCutOff;             // V1(pt) is linear up to pt = dV1PtCutOff and for pt > dV1PtCutOff it is constant, V1(pt) = dV1vsPtEtaMax
-  // (pt,eta) dependent harmonic V2:
-  Double_t  fV2vsPtEtaMax;           // max value of (pt,eta) dependent V2
-  Double_t  fV2PtCutOff;               // V2(pt) is linear up to pt = dV2PtCutOff and for pt > dV2PtCutOff it is constant, V2(pt) = dV2vsPtEtaMax
-  Double_t  fV2vsEtaSpread;          // V2(eta) is Gaussian centered at midrapidity (eta=0) with spread = dV2vsEtaSpread
-  // non-uniform acceptance:
-  Double_t  fPhiMin1;                // first non-uniform sector starts at azimuth fPhiMin1
-  Double_t  fPhiMax1;                // first non-uniform sector ends at azimuth fPhiMax1
-  Double_t  fProbability1;           // particles emitted in fPhiMin1 < phi < fPhiMax1 are taken with probability fProbability1 
-  Double_t  fPhiMin2;                // second non-uniform sector starts at azimuth fPhiMin2
-  Double_t  fPhiMax2;                // second non-uniform sector starts at azimuth fPhiMax2
-  Double_t  fProbability2;           // particles emitted in fPhiMin2 < phi < fPhiMax2 are taken with probability fProbability2
-  //................................................................................................
-  
-  //................................................................................................
-  // equations for distributions: 
-  TF1*      fPtSpectra;  // transverse momentum distribution
-  TF1*      fPhiDistribution; // azimuthal distribution
-  //................................................................................................
-  
-  TRandom3* fMyTRandom3;        // our TRandom3 generator
-  Int_t     fCount;             // count number of events 
-  Int_t     fNoOfLoops;         // number of times to use the same particle (nonflow)
-  Double_t  fPhiRange;          // splitted track phi range (+/- from original track's phi) for uniform sampling
-  Double_t  fPtRange;           // splitted track pt range (+/- from original track's pt) for uniform sampling
-  Double_t  fEtaRange;          // splitted track eta range (+/- from original track's eta) for uniform sampling
-  Double_t  fNonflowSectorMin;  // detector's sector in which tracks are splitted starts at angle fNonflowSectorMin
-  Double_t  fNonflowSectorMax;  // detector's sector in which tracks are splitted ends at angle fNonflowSectorMin
-  Double_t  fEtaMinA;           // minimum eta of subevent A eta range
-  Double_t  fEtaMaxA;           // maximum eta of subevent A eta range
-  Double_t  fEtaMinB;           // minimum eta of subevent B eta range
-  Double_t  fEtaMaxB;           // maximum eta of subevent B eta range  
-  Bool_t    fCreateJets;        // enable to study nonflow fluctuations via jet creation
-  Double_t  fJetProbability;    // probability than event will have a jet
-  Double_t  fJetTracksFraction; // percentage of total tracks in an event belonging to the jet
-  Double_t  fJetCone;           // angular size of jet cone (in degrees)                   
-
-  ClassDef(AliFlowEventSimpleMakerOnTheFly,0) // macro for rootcint
+  ClassDef(AliFlowEventSimpleMakerOnTheFly,1) // macro for rootcint
 };
  
 #endif
