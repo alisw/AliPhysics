@@ -885,16 +885,15 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
       continue;
     }
     
-    Int_t dEdx   = track->GetTPCsignal();
+    Float_t dEdx = track->GetTPCsignal();
     fhdEdxvsE->Fill(calo->E(), dEdx);
     fhdEdxvsP->Fill(track->P(),dEdx);
     
-    Float_t eOverp = calo->E()/track->P();
-    
     if( dEdx < fdEdxMax && dEdx > fdEdxMin) {
       
-      fhEOverPvsE->Fill(calo->E(),   eOverp);
-      fhEOverPvsP->Fill(track->P(),  eOverp);
+      Float_t eOverp = calo->E()/track->P();
+      fhEOverPvsE->Fill(calo->E(),  eOverp);
+      fhEOverPvsP->Fill(track->P(), eOverp);
       
       if( eOverp < fEOverPMax && eOverp > fEOverPMin) {
         
