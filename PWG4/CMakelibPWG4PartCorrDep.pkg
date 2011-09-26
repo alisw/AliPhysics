@@ -35,6 +35,7 @@ set ( SRCS
     PartCorrDep/AliAnaParticleJetFinderCorrelation.cxx 
     PartCorrDep/AliAnaParticleJetLeadingConeCorrelation.cxx 
     PartCorrDep/AliAnaPhoton.cxx 
+    PartCorrDep/AliAnaElectron.cxx
     PartCorrDep/AliAnaPi0.cxx 
     PartCorrDep/AliAnaPi0EbE.cxx 
     PartCorrDep/AliAnaChargedParticles.cxx 
