@@ -129,8 +129,6 @@ AliAnaPhoton::AliAnaPhoton() :
     fhMCEta    [i] = 0;
     fhMCDeltaE [i] = 0;                
     fhMCDeltaPt[i] = 0;
-    fhMCRatioE [i] = 0;            
-    fhMCRatioPt[i] = 0;
     fhMC2E     [i] = 0;              
     fhMC2Pt    [i] = 0;
     
@@ -1199,32 +1197,32 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhDispETRD);   
     } 
     
-    fhNCellsLam0LowE  = new TH2F ("hNCellsLam0LowE","N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsLam0LowE  = new TH2F ("hNCellsLam0LowE","N_{cells} in cluster vs #lambda_{0}^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsLam0LowE->SetXTitle("N_{cells}");
     fhNCellsLam0LowE->SetYTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhNCellsLam0LowE);  
     
-    fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}, E > 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsLam0HighE  = new TH2F ("hNCellsLam0HighE","N_{cells} in cluster vs #lambda_{0}^{2}, E > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsLam0HighE->SetXTitle("N_{cells}");
     fhNCellsLam0HighE->SetYTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhNCellsLam0HighE);  
     
-    fhNCellsLam1LowE  = new TH2F ("hNCellsLam1LowE","N_{cells} in cluster vs #lambda_{1}^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsLam1LowE  = new TH2F ("hNCellsLam1LowE","N_{cells} in cluster vs #lambda_{1}^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsLam1LowE->SetXTitle("N_{cells}");
     fhNCellsLam1LowE->SetYTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhNCellsLam1LowE);  
     
-    fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}, E > 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsLam1HighE  = new TH2F ("hNCellsLam1HighE","N_{cells} in cluster vs #lambda_{1}^{2}, E > 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsLam1HighE->SetXTitle("N_{cells}");
     fhNCellsLam1HighE->SetYTitle("#lambda_{0}^{2}");
     outputContainer->Add(fhNCellsLam1HighE);  
     
-    fhNCellsDispLowE  = new TH2F ("hNCellsDispLowE","N_{cells} in cluster vs dispersion^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsDispLowE  = new TH2F ("hNCellsDispLowE","N_{cells} in cluster vs dispersion^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsDispLowE->SetXTitle("N_{cells}");
     fhNCellsDispLowE->SetYTitle("D^{2}");
     outputContainer->Add(fhNCellsDispLowE);  
     
-    fhNCellsDispHighE  = new TH2F ("hNCellsDispHighE","N_{cells} in cluster vs dispersion^{2}, E < 2 GeV", 20,0, 20, ssbins,ssmin,ssmax); 
+    fhNCellsDispHighE  = new TH2F ("hNCellsDispHighE","N_{cells} in cluster vs dispersion^{2}, E < 2 GeV", nbins,nmin, nmax, ssbins,ssmin,ssmax); 
     fhNCellsDispHighE->SetXTitle("N_{cells}");
     fhNCellsDispHighE->SetYTitle("D^{2}");
     outputContainer->Add(fhNCellsDispHighE);  
@@ -1321,26 +1319,18 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       outputContainer->Add(fhMCPhi[i]) ;
       
       
-      fhMCDeltaE[i]  = new TH1F (Form("hDeltaE_MC%s",pname[i].Data()),
-                                 Form("MC - Reco E from %s",pname[i].Data()), 200,-50,50); 
+      fhMCDeltaE[i]  = new TH2F (Form("hDeltaE_MC%s",pname[i].Data()),
+                                 Form("MC - Reco E from %s",pname[i].Data()), 
+                                 nptbins,ptmin,ptmax, 200,-50,50); 
       fhMCDeltaE[i]->SetXTitle("#Delta E (GeV)");
       outputContainer->Add(fhMCDeltaE[i]);
       
-      fhMCDeltaPt[i]  = new TH1F (Form("hDeltaPt_MC%s",pname[i].Data()),
-                                  Form("MC - Reco p_{T} from %s",pname[i].Data()), 200,-50,50); 
+      fhMCDeltaPt[i]  = new TH2F (Form("hDeltaPt_MC%s",pname[i].Data()),
+                                  Form("MC - Reco p_{T} from %s",pname[i].Data()), 
+                                  nptbins,ptmin,ptmax, 200,-50,50); 
       fhMCDeltaPt[i]->SetXTitle("#Delta p_{T} (GeV/c)");
       outputContainer->Add(fhMCDeltaPt[i]);
-      
-      fhMCRatioE[i]  = new TH1F (Form("hRatioE_MC%s",pname[i].Data()),
-                                 Form("Reco/MC E from %s",pname[i].Data()), 200,0,2); 
-      fhMCRatioE[i]->SetXTitle("E_{reco}/E_{gen}");
-      outputContainer->Add(fhMCRatioE[i]);
-      
-      fhMCRatioPt[i]  = new TH1F (Form("hRatioPt_MC%s",pname[i].Data()),
-                                  Form("Reco/MC p_{T} from %s",pname[i].Data()), 200,0,2); 
-      fhMCRatioPt[i]->SetXTitle("p_{T, reco}/p_{T, gen}");
-      outputContainer->Add(fhMCRatioPt[i]);    
-      
+            
       fhMC2E[i]  = new TH2F (Form("h2E_MC%s",pname[i].Data()),
                              Form("E distribution, reconstructed vs generated from %s",pname[i].Data()), 
                              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
@@ -1810,7 +1800,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }//Histos with MC
     
   //Store calo PID histograms
-  if(fRejectTrackMatch){
+  if(fRejectTrackMatch && IsCaloPIDOn()){
     TList * caloPIDHistos = GetCaloPID()->GetCreateOutputObjects() ;
     for(Int_t i = 0; i < caloPIDHistos->GetEntries(); i++) {
       outputContainer->Add(caloPIDHistos->At(i)) ;
@@ -2422,10 +2412,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
         fhMC2E[mcPhoton]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcPhoton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcPhoton] ->Fill(eprim-ecluster);
-        fhMCDeltaPt[mcPhoton]->Fill(ptprim-ptcluster);     
-        if(eprim > 0)  fhMCRatioE[mcPhoton]  ->Fill(ecluster/eprim);
-        if(ptprim > 0) fhMCRatioPt[mcPhoton] ->Fill(ptcluster/ptprim); 		
+        fhMCDeltaE[mcPhoton] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcPhoton]->Fill(ptcluster,ptprim-ptcluster);     
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[mcConversion])
         {
@@ -2436,10 +2424,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcConversion]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcConversion]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcConversion] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcConversion]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcConversion]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcConversion] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcConversion] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcConversion]->Fill(ptcluster,ptprim-ptcluster);     
           
           if(fCheckConversion){
             if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
@@ -2456,10 +2442,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcPrompt]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcPrompt]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPrompt] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcPrompt]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcPrompt]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcPrompt] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcPrompt] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcPrompt]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)&& fhMCE[mcFragmentation])
@@ -2471,10 +2455,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcFragmentation]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcFragmentation]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcFragmentation] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcFragmentation]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcFragmentation]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcFragmentation] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcFragmentation] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcFragmentation]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)&& fhMCE[mcISR])
@@ -2486,10 +2468,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcISR]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcISR]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcISR] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcISR]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcISR]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcISR] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcISR] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcISR]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
@@ -2502,11 +2482,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcPi0Decay]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcPi0Decay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPi0Decay] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcPi0Decay]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcPi0Decay]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcPi0Decay] ->Fill(ptcluster/ptprim); 		
-          
+          fhMCDeltaE[mcPi0Decay] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcPi0Decay]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
@@ -2519,10 +2496,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcOtherDecay]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcOtherDecay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcOtherDecay] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcOtherDecay]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcOtherDecay]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcOtherDecay] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcOtherDecay] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcOtherDecay]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [mcPi0])
@@ -2534,10 +2509,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcPi0]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcPi0]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPi0] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcPi0]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcPi0]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcPi0] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcPi0] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcPi0]->Fill(ptcluster,ptprim-ptcluster);     
           
         } 
         else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[mcEta])
@@ -2549,10 +2522,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           
           fhMC2E[mcEta]     ->Fill(ecluster, eprim);
           fhMC2Pt[mcEta]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcEta] ->Fill(eprim-ecluster);
-          fhMCDeltaPt[mcEta]->Fill(ptprim-ptcluster);     
-          if(eprim > 0)  fhMCRatioE[mcEta]  ->Fill(ecluster/eprim);
-          if(ptprim > 0) fhMCRatioPt[mcEta] ->Fill(ptcluster/ptprim); 		
+          fhMCDeltaE[mcEta] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[mcEta]->Fill(ptcluster,ptprim-ptcluster);     
           
         }      
       }
@@ -2566,10 +2537,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
         fhMC2E[mcAntiNeutron]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcAntiNeutron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcAntiNeutron] ->Fill(eprim-ecluster);
-        fhMCDeltaPt[mcAntiNeutron]->Fill(ptprim-ptcluster);     
-        if(eprim > 0)  fhMCRatioE[mcAntiNeutron]  ->Fill(ecluster/eprim);
-        if(ptprim > 0) fhMCRatioPt[mcAntiNeutron] ->Fill(ptcluster/ptprim); 		
+        fhMCDeltaE[mcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcAntiNeutron]->Fill(ptcluster,ptprim-ptcluster);     
         
       }
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[mcAntiProton])
@@ -2582,10 +2551,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
         fhMC2E[mcAntiProton]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcAntiProton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcAntiProton] ->Fill(eprim-ecluster);
-        fhMCDeltaPt[mcAntiProton]->Fill(ptprim-ptcluster);     
-        if(eprim > 0)  fhMCRatioE[mcAntiProton]  ->Fill(ecluster/eprim);
-        if(ptprim > 0) fhMCRatioPt[mcAntiProton] ->Fill(ptcluster/ptprim); 		
+        fhMCDeltaE[mcAntiProton] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcAntiProton]->Fill(ecluster,ptprim-ptcluster);     
         
       } 
       else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[mcElectron])
@@ -2597,11 +2564,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
         fhMC2E[mcElectron]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcElectron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcElectron] ->Fill(eprim-ecluster);
-        fhMCDeltaPt[mcElectron]->Fill(ptprim-ptcluster);     
-        if(eprim > 0)  fhMCRatioE[mcElectron]  ->Fill(ecluster/eprim);
-        if(ptprim > 0) fhMCRatioPt[mcElectron] ->Fill(ptcluster/ptprim); 		
-        
+        fhMCDeltaE[mcElectron] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcElectron]->Fill(ecluster,ptprim-ptcluster);             
       }     
       else if( fhMCE[mcOther]){
         fhMCE  [mcOther] ->Fill(ecluster);
@@ -2612,10 +2576,8 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         
         fhMC2E[mcOther]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcOther]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcOther] ->Fill(eprim-ecluster);
-        fhMCDeltaPt[mcOther]->Fill(ptprim-ptcluster);     
-        if(eprim > 0)  fhMCRatioE[mcOther]  ->Fill(ecluster/eprim);
-        if(ptprim > 0) fhMCRatioPt[mcOther] ->Fill(ptcluster/ptprim); 		
+        fhMCDeltaE[mcOther] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[mcOther]->Fill(ecluster,ptprim-ptcluster);     
         
         
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",

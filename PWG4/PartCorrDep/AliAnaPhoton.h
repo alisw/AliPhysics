@@ -231,10 +231,8 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
     
   //Fill MC dependent histograms, Origin of this cluster is ...
 
-  TH1F * fhMCDeltaE[14]  ;                    //! MC-Reco E distribution coming from MC particle     
-  TH1F * fhMCDeltaPt[14] ;                    //! MC-Reco pT distribution coming from MC particle
-  TH1F * fhMCRatioE[14]  ;                    //! Reco/MC E distribution coming from MC particle     
-  TH1F * fhMCRatioPt[14] ;                    //! Reco/MC pT distribution coming from MC particle
+  TH2F * fhMCDeltaE[14]  ;                    //! MC-Reco E distribution coming from MC particle     
+  TH2F * fhMCDeltaPt[14] ;                    //! MC-Reco pT distribution coming from MC particle
   TH2F * fhMC2E[14]  ;                        //! E distribution, Reco vs MC coming from MC particle
   TH2F * fhMC2Pt[14] ;                        //! pT distribution, Reco vs MC coming from MC particle
   
