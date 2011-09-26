@@ -302,7 +302,8 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHType->GetXaxis()->SetBinLabel(2,"High-flux");
   fList->Add(fHType);
 
-
+#if 0 
+  // This histogram disabled as it causes problems in the merge 
   fHWords = new TH1I("words", "Trigger words seen", 1, 0, 0); 
   fHWords->SetFillColor(kBlue+1);
   fHWords->SetFillStyle(3001);
@@ -310,6 +311,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHWords->SetDirectory(0);
   fHWords->SetBit(TH1::kCanRebin);
   fList->Add(fHWords);
+#endif
 
   fHCent = new TH1F("cent", "Centrality", limits.GetSize()-1,limits.GetArray());
   fHCent->SetFillColor(kBlue+1);
@@ -618,7 +620,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   
   //TString trigStr = esd->GetFiredTriggerClasses();
   // AliWarning(Form("Fired trigger classes: %s", trigStr.Data()));
-  fHWords->Fill(trigStr.Data(), 1);
+  if (fHWords) fHWords->Fill(trigStr.Data(), 1);
 #if 0
   if (trigStr.Contains("MB1") || trigStr.Contains("MBBG3"))
     triggers |= AliAOODForwardMult::kB;
