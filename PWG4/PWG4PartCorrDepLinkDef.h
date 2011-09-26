@@ -7,6 +7,7 @@
 #pragma link C++ class AliAnalysisTaskPHOSExample+;
 #pragma link C++ class AliAnaExample+;
 #pragma link C++ class AliAnaPhoton+;
+#pragma link C++ class AliAnaElectron+;
 #pragma link C++ class AliAnaPi0+;
 #pragma link C++ class AliAnaPi0EbE+;
 #pragma link C++ class AliAnaChargedParticles+;
