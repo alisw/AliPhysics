@@ -55,8 +55,8 @@ private:
   TF1 *fNorm;                            // Gauss function for normalizing NON electron probabilities 
 
   static const Int_t fNptBins   = 6;     // number of momentum bins
-  static const Float_t fLowEoP  = 0.5;   // lower E/p threshold for NON electrons
-  static const Float_t fHighEoP = 1.5;   // upper E/p threshold for NON electrons
+  static const Float_t fLowEoP;   // lower E/p threshold for NON electrons
+  static const Float_t fHighEoP;   // upper E/p threshold for NON electrons
 
   Float_t fPtCutMin[fNptBins+1];                       // min values for pt bins
   Float_t fMeanEoP[2*AliPID::kSPECIES][fNptBins];      // mean value of E/p distribution (charge dependent)

@@ -53,6 +53,10 @@
 #include "AliLog.h"   
 
 ClassImp(AliEMCALPIDResponse)
+
+const Float_t AliEMCALPIDResponse::fLowEoP  = 0.5;   // lower E/p threshold for NON electrons
+const Float_t AliEMCALPIDResponse::fHighEoP = 1.5;   // upper E/p threshold for NON electrons
+
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliEMCALPIDResponse::AliEMCALPIDResponse():
   TObject(),
