@@ -288,10 +288,10 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 {
   //Destructor.
 	
-	if(fEMCALRecalibrationFactors) { 
-		fEMCALRecalibrationFactors->Clear();
-		delete  fEMCALRecalibrationFactors;
-	}	
+  if(fEMCALRecalibrationFactors) { 
+    fEMCALRecalibrationFactors->Clear();
+    delete  fEMCALRecalibrationFactors;
+  }	
   
   if(fEMCALTimeRecalibrationFactors) { 
 		fEMCALTimeRecalibrationFactors->Clear();
@@ -299,15 +299,17 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
 	}	
   
   if(fEMCALBadChannelMap) { 
-		fEMCALBadChannelMap->Clear();
-		delete  fEMCALBadChannelMap;
-	}
+    fEMCALBadChannelMap->Clear();
+    delete  fEMCALBadChannelMap;
+  }
  
   delete fMatchedTrackIndex   ; 
   delete fMatchedClusterIndex ; 
   delete fResidualEta         ; 
   delete fResidualPhi         ; 
+  delete fPIDUtils            ;
 
+  InitTrackCuts();
 }
 
 //_______________________________________________________________
