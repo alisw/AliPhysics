@@ -135,7 +135,8 @@ AliEMCALGeometry::AliEMCALGeometry():
   fParSM[0]   = 0.;
   fParSM[1]   = 0.;
   fParSM[2]   = 0.;
-  for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
+  for (Int_t i=0;i<AliEMCALGeoParams::fgkEMCALModules;i++)
+    fkSModuleMatrix[i]=0 ;
 
   for (Int_t i = 0; i < 48; i++)
 	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = -1;
@@ -162,7 +163,8 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
   fParSM[0]   = geo.fParSM[0];
   fParSM[1]   = geo.fParSM[1];
   fParSM[2]   = geo.fParSM[2];
-  for(Int_t i=0;i<12;i++)fkSModuleMatrix[i]=0 ;
+  for (Int_t i=0;i<AliEMCALGeoParams::fgkEMCALModules;i++)
+    fkSModuleMatrix[i]=0 ;
   
   for (Int_t i = 0; i < 48; i++)
 	for (Int_t j = 0; j < 64; j++) fFastOR2DMap[i][j] = geo.fFastOR2DMap[i][j];
@@ -235,8 +237,8 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
 
   CreateListOfTrd1Modules();
 
-  for(Int_t smod=0; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++)
-		fkSModuleMatrix[smod]=0 ;	
+  for(Int_t smod=0; smod < AliEMCALGeoParams::fgkEMCALModules; smod++)
+    fkSModuleMatrix[smod]=0 ;	
 	
   if (AliDebugLevel()>=2) {
     fEMCGeometry->Print();
@@ -260,6 +262,10 @@ AliEMCALGeometry & AliEMCALGeometry::operator = (const AliEMCALGeometry  & /*rva
 AliEMCALGeometry::~AliEMCALGeometry(void)
 {
   // dtor
+  if (this==fgGeom) {
+    AliError("Do not call delete on me");
+    return;
+  }
   if (fEMCGeometry){ 
     for(Int_t smod = 0 ; smod < fEMCGeometry->GetNumberOfSuperModules(); smod++){
       if(fkSModuleMatrix[smod])
