@@ -156,6 +156,10 @@ public:
   void             SwitchOnPHOSCells()                     { fFillPHOSCells = kTRUE        ; }
   void             SwitchOffPHOSCells()                    { fFillPHOSCells = kFALSE       ; }
 
+  Bool_t           AreClustersRecalculated()         const { return fRecalculateClusters   ; }
+  void             SwitchOnClusterRecalculation()          { fRecalculateClusters = kTRUE  ; }
+  void             SwitchOffClusterRecalculation()         { fRecalculateClusters = kFALSE ; }  
+  
   Bool_t           IsEmbeddedClusterSelectionOn()    const { return fSelectEmbeddedClusters   ; }
   void             SwitchOnEmbeddedClustersSelection()     { fSelectEmbeddedClusters = kTRUE  ; }
   void             SwitchOffEmbeddedClustersSelection()    { fSelectEmbeddedClusters = kFALSE ; }
@@ -353,7 +357,8 @@ public:
   Bool_t           fFillPHOS;       // use data from PHOS
   Bool_t           fFillEMCALCells; // use data from EMCAL
   Bool_t           fFillPHOSCells;  // use data from PHOS
-  Bool_t           fSelectEmbeddedClusters;   // Use only simulated clusters that come from embedding.
+  Bool_t           fRecalculateClusters;    // Correct clusters, recalculate them if recalibration parameters is given
+  Bool_t           fSelectEmbeddedClusters; // Use only simulated clusters that come from embedding.
   
   ULong_t          fTrackStatus        ; // Track selection bit, select tracks refitted in TPC, ITS ...
   ULong_t          fTrackFilterMask    ; // Track selection bit, for AODs (any difference with track status?)
@@ -396,7 +401,7 @@ public:
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
-  ClassDef(AliCaloTrackReader,32)
+  ClassDef(AliCaloTrackReader,33)
 } ;
 
 

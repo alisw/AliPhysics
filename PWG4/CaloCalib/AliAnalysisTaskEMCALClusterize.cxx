@@ -459,7 +459,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     }//Load matrices from Data 
     
     //Recover time dependent corrections, put then in recalibration histograms. Do it once
-    fRecoUtils->SetTimeDependentCorrections(InputEvent()->GetRunNumber());
+    fRecoUtils->SetRunDependentCorrections(InputEvent()->GetRunNumber());
     
   }//first event
   
@@ -583,6 +583,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
           fCellLabels[index[icell]]       = label;
           fCellSecondLabels[index[icell]] = label2;
+          //printf("Clusterizer in : TOF %g\n",clus->GetTOF()*1.e9);
+
           fCellTime[icell]                = clus->GetTOF();        
 
           //printf("1) absID %d, label[0] %d label[1] %d\n",index[icell], fCellLabels[index[icell]],fCellSecondLabels[index[icell]]);
@@ -593,13 +595,15 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     
     // Create digits 
     //.................
-    Int_t idigit =  0;
-    Int_t id     = -1;
-    Float_t amp  = -1; 
-    Float_t time = -1; 
+    Int_t    idigit =  0;
+    Int_t    id     = -1;
+    Float_t  amp    = -1; 
+    Double_t time   = -1; 
     
     TTree *digitsTree = new TTree("digitstree","digitstree");
     digitsTree->Branch("EMCAL","TClonesArray", &fDigitsArr, 32000);
+    
+    Int_t bc = InputEvent()->GetBunchCrossNumber();
     
     for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
     {
@@ -629,9 +633,16 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         //printf("CalibFactor %f times %f for id %d\n",fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi),amp,id);
         amp *=fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
       }
-      
+            
       // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
       if (time*1e9 < 1.) time = fCellTime[id];
+      
+      // Recalibrate time
+      fRecoUtils->RecalibrateCellTime(id,bc,time);
+      
+//      printf("Clusterizer: Id %d, Time org %e, Time new %e; Amp org %f, Amp new %f\n",
+//             id, cells->GetTime(icell),time, cells->GetAmplitude(icell),amp);
+
       
       //Create the digit, put a fake primary deposited energy to trick the clusterizer when checking the most likely primary
       new((*fDigitsArr)[idigit]) AliEMCALDigit( fCellLabels[id], fCellLabels[id],id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1); 
@@ -705,8 +716,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
     //if(Entry()==0) Info("UserExec","newCluster E %f\n", newCluster->E());
     
-    //Add matched track, if any, only with ESDs
-    if(esdevent && fDoTrackMatching){
+    //Add matched track
+    if(fDoTrackMatching){
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
       if(trackIndex >= 0){
         newCluster->AddTrackMatched(event->GetTrack(trackIndex));

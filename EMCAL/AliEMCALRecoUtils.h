@@ -129,10 +129,11 @@ public:
                                                            else     { AliInfo(Form("Index %d larger than 2, do nothing\n",i)) ; } }
   
   //-----------------------------------------------------
-  //Recalibration
+  // Energy Recalibration
   //-----------------------------------------------------
-
-  void RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells) ;
+  
+  void     RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells * cells, Int_t bc) ; // Energy and Time
+  void     RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=0) ; // Energy and time
 
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
@@ -140,27 +141,52 @@ public:
                                                            if(!fEMCALRecalibrationFactors)InitEMCALRecalibrationFactors() ; }
   void     InitEMCALRecalibrationFactors() ;
 
-  //Recalibrate channels with time dependent corrections
-  void     SwitchOffTimeDepCorrection()                  { fUseTimeCorrectionFactors = kFALSE ; }
-  void     SwitchOnTimeDepCorrection()                   { fUseTimeCorrectionFactors = kTRUE  ; 
-                                                           SwitchOnRecalibration()            ; }
-  void     SetTimeDependentCorrections(Int_t runnumber);
-    
-  Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
-                                                           if(fEMCALRecalibrationFactors) 
-                                                             return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
-                                                           else return 1 ; } 
-	
-  void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
-                                                           if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
-                                                           ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }  
-  
   TH2F *   GetEMCALChannelRecalibrationFactors(Int_t iSM)     const { return (TH2F*)fEMCALRecalibrationFactors->At(iSM) ; }	
   void     SetEMCALChannelRecalibrationFactors(TObjArray *map)      { fEMCALRecalibrationFactors = map                  ; }
   void     SetEMCALChannelRecalibrationFactors(Int_t iSM , TH2F* h) { fEMCALRecalibrationFactors->AddAt(h,iSM)          ; }
-
+  
+  Float_t  GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const { 
+    if(fEMCALRecalibrationFactors) 
+      return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+    else return 1 ; } 
+	
+  void     SetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow, Double_t c = 1) { 
+    if(!fEMCALRecalibrationFactors) InitEMCALRecalibrationFactors() ;
+    ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->SetBinContent(iCol,iRow,c) ; }
+  
+  //Recalibrate channels energy with run dependent corrections
+  void     SwitchOffRunDepCorrection()                   { fUseRunCorrectionFactors = kFALSE ; }
+  void     SwitchOnRunDepCorrection()                    { fUseRunCorrectionFactors = kTRUE  ; 
+                                                           SwitchOnRecalibration()           ; }
+  void     SetRunDependentCorrections(Int_t runnumber);
+      
   //-----------------------------------------------------
-  //Modules fiducial region, remove clusters in borders
+  // Time Recalibration
+  //-----------------------------------------------------
+  
+  void     RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & time);
+  
+  Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
+  void     SwitchOffTimeRecalibration()                  { fTimeRecalibration = kFALSE ; }
+  void     SwitchOnTimeRecalibration()                   { fTimeRecalibration = kTRUE  ; 
+    if(!fEMCALTimeRecalibrationFactors)InitEMCALTimeRecalibrationFactors() ; }
+  void     InitEMCALTimeRecalibrationFactors() ;
+  
+  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID) const { 
+    if(fEMCALTimeRecalibrationFactors) 
+      return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->GetBinContent(absID); 
+    else return 1 ; } 
+	
+  void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc,Int_t absID, Double_t c = 1) { 
+    if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
+    ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->SetBinContent(absID,c) ; }  
+  
+  TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)      const { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)      { fEMCALTimeRecalibrationFactors = map                 ; }
+  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
+  
+  //-----------------------------------------------------
+  // Modules fiducial region, remove clusters in borders
   //-----------------------------------------------------
 
   Bool_t   CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) ;
@@ -312,13 +338,18 @@ private:
   Float_t    fSmearClusterParam[3];      // Smearing parameters
   TRandom3   fRandom;                    // Random generator
     
-  // Recalibration 
+  // Energy Recalibration 
+  Bool_t     fCellsRecalibrated;         // Internal bool to check if cells (time/energy) where recalibrated and not recalibrate them when recalculating different things
   Bool_t     fRecalibration;             // Switch on or off the recalibration
   TObjArray* fEMCALRecalibrationFactors; // Array of histograms with map of recalibration factors, EMCAL
     
-  // Recalibrate with run dependent corrections
-  Bool_t     fUseTimeCorrectionFactors;  // Use Time Dependent Correction
-  Bool_t     fTimeCorrectionFactorsSet;  // Time Correction set at leat once
+  // Time Recalibration 
+  Bool_t     fTimeRecalibration;             // Switch on or off the time recalibration
+  TObjArray* fEMCALTimeRecalibrationFactors; // Array of histograms with map of time recalibration factors, EMCAL
+  
+  // Recalibrate with run dependent corrections, energy
+  Bool_t     fUseRunCorrectionFactors;   // Use Run Dependent Correction
+  Bool_t     fRunCorrectionFactorsSet;   // Run Correction set at leat once
     
   // Bad Channels
   Bool_t     fRemoveBadChannels;         // Check the channel status provided and remove clusters with bad channels
@@ -363,7 +394,7 @@ private:
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
   Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
   
-  ClassDef(AliEMCALRecoUtils, 13)
+  ClassDef(AliEMCALRecoUtils, 14)
   
 };
 
