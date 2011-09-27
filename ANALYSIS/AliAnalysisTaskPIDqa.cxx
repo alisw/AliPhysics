@@ -479,7 +479,7 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
 	}
       }
       else{
-	Printf("status status = AliVTrack::kEMCALmatch, BUT no matched cluster!");
+        AliInfo("status status = AliVTrack::kEMCALmatch, BUT no matched cluster!");
       }
     }
   }
