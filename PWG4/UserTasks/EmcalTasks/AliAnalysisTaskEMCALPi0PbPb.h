@@ -60,6 +60,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   void         SetMinNClustersPerTrack(Double_t m)            { fMinNClusPerTr = m;         }
   void         SetNminCells(Int_t n)                          { fNminCells     = n;         }
   void         SetPrimTrackCuts(AliESDtrackCuts *c)           { fPrimTrCuts    = c;         }
+  void         SetPrimTracksName(const char *n)               { fPrimTracksName = n;        }
   void         SetRecoUtils(AliEMCALRecoUtils *reco)          { fReco          = reco;      }
   void         SetTrClassNames(const char *n)                 { fTrClassNames  = n;         }
   void         SetTrackCuts(AliESDtrackCuts *c)               { fTrCuts        = c;         }
@@ -125,6 +126,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   TString                fTrClassNames;           // trigger class names
   AliESDtrackCuts       *fTrCuts;                 // track cuts
   AliESDtrackCuts       *fPrimTrCuts;             // track cuts
+  TString                fPrimTracksName;         // name of track collection (if "" use branch)
   Bool_t                 fDoTrMatGeom;            // track matching including geometry
   Bool_t                 fTrainMode;              // train mode with minimal number of resources
   TString                fMarkCells;              // list of mark cells to monitor
@@ -211,7 +213,7 @@ class AliAnalysisTaskEMCALPi0PbPb : public AliAnalysisTaskSE {
   AliAnalysisTaskEMCALPi0PbPb(const AliAnalysisTaskEMCALPi0PbPb&);            // not implemented
   AliAnalysisTaskEMCALPi0PbPb &operator=(const AliAnalysisTaskEMCALPi0PbPb&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 12) // Analysis task for neutral pions in Pb+Pb
+  ClassDef(AliAnalysisTaskEMCALPi0PbPb, 13) // Analysis task for neutral pions in Pb+Pb
 };
 #endif
 
