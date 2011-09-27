@@ -69,6 +69,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fTrClassNames(""),
     fTrCuts(0),
     fPrimTrCuts(0),
+    fPrimTracksName(""),
     fDoTrMatGeom(0),
     fTrainMode(0),
     fMarkCells(),
@@ -166,6 +167,7 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fTrClassNames(""),
     fTrCuts(0),
     fPrimTrCuts(0),
+    fPrimTracksName(""),
     fDoTrMatGeom(0),
     fTrainMode(0),
     fMarkCells(),
@@ -918,8 +920,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
   Int_t ncells = cells->GetNumberOfCells();
   Int_t nclus  = clusters->GetEntries();
   Int_t ntrks  = fSelTracks->GetEntries();
-  Int_t btracks[6][ntrks];
-  memset(btracks,0,sizeof(Int_t)*6*ntrks);
 
   std::map<Short_t,Short_t> map;
   for (Short_t pos=0;pos<ncells;++pos) {
@@ -1019,6 +1019,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fIsShared   = IsShared(clus);
     cl->fTrigId     = -1;
     cl->fTrigE      = 0;
+
     if (fTriggers) {
       Int_t ntrig = fTriggers->GetEntries();
       for (Int_t j = 0; j<ntrig; ++j) {
@@ -1046,56 +1047,27 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         continue;
 
       TVector3 vec(clsPos);
-      Int_t index =  (Int_t)(vec.Phi()*TMath::RadToDeg()/20);
-      if (btracks[index-4][j]) {
-        continue;
+
+      Float_t tmpEta=-1, tmpPhi=-1, tmpR2=1e10;
+      Double_t dedx = -1;
+      if (fEsdEv) {
+        AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
+        dedx = esdTrack->GetTPCsignal();
       }
-
-      Float_t tmpR=-1, tmpZ=-1;
-      Double_t dedx = 0;
-      if (!fDoTrMatGeom) {
-        AliExternalTrackParam *tParam = 0;
-        if (fEsdEv) {
-          AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
-          tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
-	  dedx = esdTrack->GetTPCsignal();
-        } 
-	else {  
-          tParam = new AliExternalTrackParam();
-	  tParam->CopyFromVTrack(track);
-	}
-
-        Double_t bfield[3] = {0};
-        track->GetBxByBz(bfield);
-        Double_t alpha = (index+0.5)*20*TMath::DegToRad();
-        vec.RotateZ(-alpha);   //Rotate the cluster to the local extrapolation coordinate system
-        tParam->Rotate(alpha); //Rotate the track to the same local extrapolation system
-        Bool_t ret = tParam->PropagateToBxByBz(vec.X(), bfield);
-        if (!ret) {
-          btracks[index-4][j]=1;
-          delete tParam;
-          continue;
-        }
-        Double_t trkPos[3] = {0};
-        tParam->GetXYZ(trkPos); //Get the extrapolated global position
-        tmpR = TMath::Sqrt( TMath::Power(clsPos[0]-trkPos[0],2) + 
-                            TMath::Power(clsPos[1]-trkPos[1],2) +
-                            TMath::Power(clsPos[2]-trkPos[2],2) );
-        tmpZ = clsPos[2]-trkPos[2];
-        delete tParam;
-      } else {
+      if (fDoTrMatGeom) {
         if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
           continue;
-        AliExternalTrackParam tParam; tParam.CopyFromVTrack(track);
-        if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
+        AliExternalTrackParam tParam; 
+        tParam.CopyFromVTrack(track);
+        if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpEta, tmpPhi))
           continue;
+        tmpR2 = tmpEta*tmpEta + tmpPhi*tmpPhi;
       }
-
-      Double_t d2 = tmpR;
+      Double_t d2 = tmpR2;
       if (mind2>d2) {
         mind2=d2;
-        cl->fTrDz   = tmpZ;
-        cl->fTrDr   = TMath::Sqrt(tmpR*tmpR-tmpZ*tmpZ);
+        cl->fTrDz   = tmpEta;
+        cl->fTrDr   = tmpPhi;
         cl->fTrEp   = clus->E()/track->P();
 	cl->fTrDedx = dedx;
         cl->fIsTrackM = 1;
@@ -1162,25 +1134,34 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
 
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   TClonesArray *tracks = 0;
+  Bool_t doConstrain = kFALSE;
+  TString trkname(fPrimTracksName);
   if (fEsdEv) {
-    am->LoadBranch("Tracks");
+    if (trkname.IsNull()) {
+      trkname = "Tracks";
+      am->LoadBranch("Tracks");
+      fSelPrimTracks->SetOwner(kTRUE);
+      doConstrain = kTRUE;
+    }
     TList *l = fEsdEv->GetList();
-    tracks = dynamic_cast<TClonesArray*>(l->FindObject("Tracks"));
+    tracks = dynamic_cast<TClonesArray*>(l->FindObject(trkname));
   } else {
+    trkname = "tracks";
     am->LoadBranch("tracks");
     TList *l = fAodEv->GetList();
     tracks = dynamic_cast<TClonesArray*>(l->FindObject("tracks"));
   }
 
-  if (!tracks)
+  if (!tracks) {
+    AliError(Form("Pointer to tracks %s == 0", trkname.Data() ));
     return;
+  }
 
   AliEMCALEMCGeometry *emc = fGeom->GetEMCGeometry();
   Double_t phimin = emc->GetArm1PhiMin()*TMath::DegToRad()-fIsoDist*1.25;
   Double_t phimax = emc->GetArm1PhiMax()*TMath::DegToRad()+fIsoDist*1.25;
 
   if (fEsdEv) {
-    fSelPrimTracks->SetOwner(kTRUE);
     am->LoadBranch("PrimaryVertex.");
     const AliESDVertex *vtx = fEsdEv->GetPrimaryVertexSPD();
     am->LoadBranch("SPDVertex.");
@@ -1193,7 +1174,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
         AliWarning(Form("Could not receive track %d\n", iTracks));
         continue;
       }
-      if (fTrCuts && !fTrCuts->IsSelected(track))
+      if (fPrimTrCuts && !fPrimTrCuts->IsSelected(track))
         continue;
       Double_t eta = track->Eta();
       if (eta<-1||eta>1)
@@ -1201,6 +1182,10 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
       if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
 
+      if (!doConstrain) {
+        fSelPrimTracks->Add(track);
+        continue;
+      }
       AliESDtrack copyt(*track);
       Double_t bfield[3];
       copyt.GetBxByBz(bfield);
@@ -1209,7 +1194,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
       if (!relate)
         continue;
       copyt.Set(tParam.GetX(),tParam.GetAlpha(),tParam.GetParameter(),tParam.GetCovariance());
-
       Double_t p[3]      = { 0. };
       copyt.GetPxPyPz(p);
       Double_t pos[3]    = { 0. };      
@@ -1311,7 +1295,8 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
 
       if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
-        AliExternalTrackParam tParam; tParam.CopyFromVTrack(track);
+        AliExternalTrackParam tParam; 
+        tParam.CopyFromVTrack(track);
         if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
           Double_t trkPos[3];
           tParam.GetXYZ(trkPos);
