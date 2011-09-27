@@ -94,7 +94,7 @@ fAdvLogger(qadm.fAdvLogger)
 //__________________________________________________________________
 AliITSQASPDDataMakerRec::~AliITSQASPDDataMakerRec(){
   // destructor
-//  delete fAdvLogger;
+  delete fAdvLogger;
 }
 //__________________________________________________________________
 
