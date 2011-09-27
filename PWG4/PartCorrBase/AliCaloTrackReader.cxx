@@ -51,25 +51,31 @@ ClassImp(AliCaloTrackReader)
   
 //____________________________________________________________________________
   AliCaloTrackReader::AliCaloTrackReader() : 
-    TObject(), fEventNumber(-1), //fCurrentFileName(""),
-    fDataType(0), fDebug(0), 
-    fFiducialCut(0x0), fCheckFidCut(kFALSE), fComparePtHardAndJetPt(kFALSE), fPtHardAndJetPtFactor(7),
-    fCTSPtMin(0), fEMCALPtMin(0),fPHOSPtMin(0), 
-    fCTSPtMax(1000), fEMCALPtMax(1000),fPHOSPtMax(1000), fAODBranchList(new TList ),
+    TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
+    fDataType(0),                fDebug(0), 
+    fFiducialCut(0x0),           fCheckFidCut(kFALSE), 
+    fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(7),
+    fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
+    fCTSPtMax(1000),             fEMCALPtMax(1000),               fPHOSPtMax(1000), 
+    fAODBranchList(new TList ),
     fCTSTracks(new TObjArray()), fEMCALClusters(new TObjArray()), fPHOSClusters(new TObjArray()),
-    fEMCALCells(0x0), fPHOSCells(0x0),
-    fInputEvent(0x0), fOutputEvent(0x0),fMC(0x0),
-    fFillCTS(0),fFillEMCAL(0),fFillPHOS(0),
-    fFillEMCALCells(0),fFillPHOSCells(0),  fSelectEmbeddedClusters(kFALSE),
-    fTrackStatus(0), fTrackFilterMask(0), fESDtrackCuts(0), fTrackMult(0), fTrackMultEtaCut(0.8),
-    fReadStack(kFALSE), fReadAODMCParticles(kFALSE), 
-    fDeltaAODFileName("deltaAODPartCorr.root"),fFiredTriggerClassName(""),
-    fAnaLED(kFALSE),fTaskName(""),fCaloUtils(0x0), 
-    fMixedEvent(NULL), fNMixedEvent(1), fVertex(NULL), 
-    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),fCaloFilterPatch(kFALSE),
-    fEMCALClustersListName(""),fZvtxCut(0.), 
-    fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE), fUseEventsWithPrimaryVertex(kFALSE),
-    fTriggerAnalysis (new AliTriggerAnalysis), fCentralityClass("V0M"),fCentralityOpt(10),
+    fEMCALCells(0x0),            fPHOSCells(0x0),
+    fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
+    fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
+    fFillEMCALCells(0),          fFillPHOSCells(0), 
+    fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
+    fTrackStatus(0),             fTrackFilterMask(0),             fESDtrackCuts(0), 
+    fTrackMult(0),               fTrackMultEtaCut(0.8),
+    fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
+    fDeltaAODFileName("deltaAODPartCorr.root"),
+    fFiredTriggerClassName(""),  fAnaLED(kFALSE),
+    fTaskName(""),               fCaloUtils(0x0), 
+    fMixedEvent(NULL),           fNMixedEvent(1),                 fVertex(NULL), 
+    fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
+    fEMCALClustersListName(""),  fZvtxCut(0.), 
+    fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
+    fTriggerAnalysis (new AliTriggerAnalysis), 
+    fCentralityClass("V0M"),     fCentralityOpt(10),
     fEventPlaneMethod("Q")
    
 {
@@ -322,7 +328,8 @@ void AliCaloTrackReader::Print(const Option_t * opt) const
   printf("Track filter mask (AODs) =  %d\n", (Int_t) fTrackFilterMask) ;
   printf("Track Mult Eta Cut =  %d\n", (Int_t) fTrackMultEtaCut) ;
   printf("Write delta AOD =     %d\n", fWriteOutputDeltaAOD) ;
-
+  printf("Recalculate Clusters = %d\n", fRecalculateClusters) ;
+  
   if(fComparePtHardAndJetPt)
 	  printf("Compare jet pt and pt hard to accept event, factor = %2.2f",fPtHardAndJetPtFactor);
 		
@@ -681,12 +688,12 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   
   //Reject clusters with bad channels, close to borders and exotic;
   if(!GetCaloUtils()->GetEMCALRecoUtils()->IsGoodCluster(clus,GetCaloUtils()->GetEMCALGeometry(),GetEMCALCells())) return;
-//  //Check if the cluster contains any bad channel and if close to calorimeter borders
-//  if(GetCaloUtils()->ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) 
-//    return;
-//  if(!GetCaloUtils()->CheckCellFiducialRegion(clus, (AliVCaloCells*)fInputEvent->GetEMCALCells(), fInputEvent, vindex)) 
-//    return;
-//  
+  //  //Check if the cluster contains any bad channel and if close to calorimeter borders
+  //  if(GetCaloUtils()->ClusterContainsBadChannel("EMCAL",clus->GetCellsAbsId(), clus->GetNCells())) 
+  //    return;
+  //  if(!GetCaloUtils()->CheckCellFiducialRegion(clus, (AliVCaloCells*)fInputEvent->GetEMCALCells(), fInputEvent, vindex)) 
+  //    return;
+  //  
   
   //Mask all cells in collumns facing ALICE thick material if requested
   if(GetCaloUtils()->GetNMaskCellColumns()){
@@ -721,35 +728,37 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     //clus->GetPosition(pos);
     //printf("Before Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
     
-    //Recalibrate the cluster energy 
-    if(GetCaloUtils()->IsRecalibrationOn()) {
-      Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
-      clus->SetE(energy);
-      //printf("Recalibrated Energy %f\n",clus->E());  
-      GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
-      GetCaloUtils()->RecalculateClusterPID(clus);
-    }
-    
-    //Recalculate distance to bad channels, if new list of bad channels provided
-    GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
-    
-    //Recalculate cluster position
-    if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
-      GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
-      //clus->GetPosition(pos);
-      //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
+    if(fRecalculateClusters){
+      //Recalibrate the cluster energy 
+      if(GetCaloUtils()->IsRecalibrationOn()) {
+        Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
+        clus->SetE(energy);
+        //printf("Recalibrated Energy %f\n",clus->E());  
+        GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
+        GetCaloUtils()->RecalculateClusterPID(clus);
+      }
+      
+      //Recalculate distance to bad channels, if new list of bad channels provided
+      GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
+      
+      //Recalculate cluster position
+      if(GetCaloUtils()->IsRecalculationOfClusterPositionOn()){
+        GetCaloUtils()->RecalculateClusterPosition(GetEMCALCells(),clus); 
+        //clus->GetPosition(pos);
+        //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
+      }
     }
     
     //Correct non linearity
     if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
       GetCaloUtils()->CorrectClusterEnergy(clus) ;
       //printf("Linearity Corrected Energy %f\n",clus->E());  
-    }          
-    
-    //In case of MC analysis, to match resolution/calibration in real data
-    Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
-    // printf("\t Energy %f, smeared %f\n", clus->E(),rdmEnergy);
-    clus->SetE(rdmEnergy);
+      
+      //In case of MC analysis, to match resolution/calibration in real data
+      Float_t rdmEnergy = GetCaloUtils()->GetEMCALRecoUtils()->SmearClusterEnergy(clus);
+      // printf("\t Energy %f, smeared %f\n", clus->E(),rdmEnergy);
+      clus->SetE(rdmEnergy);
+    }
     
     if (fMixedEvent) 
       clus->SetID(iclus) ; 
@@ -763,6 +772,12 @@ void AliCaloTrackReader::FillInputEMCAL() {
   //Return array with EMCAL clusters in aod format
   
   if(fDebug > 2 ) printf("AliCaloTrackReader::FillInputEMCAL()\n");
+  
+  // First recalibrate cells, time or energy
+  //  if(GetCaloUtils()->IsRecalibrationOn())
+  //    GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCells(GetCaloUtils()->GetEMCALGeometry(), 
+  //                                                          GetEMCALCells(), 
+  //                                                          fInputEvent->GetBunchCrossNumber());
   
   //Loop to select clusters in fiducial cut and fill container with aodClusters
   if(fEMCALClustersListName==""){
@@ -845,10 +860,14 @@ void AliCaloTrackReader::FillInputPHOS() {
             printf("AliCaloTrackReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                    momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
           
+          if(fRecalculateClusters){
+            
             //Recalibrate the cluster energy 
-          if(GetCaloUtils()->IsRecalibrationOn()) {
-            Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
-            clus->SetE(energy);
+            if(GetCaloUtils()->IsRecalibrationOn()) {
+              Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, (AliAODCaloCells*)GetPHOSCells());
+              clus->SetE(energy);
+            }
+            
           }
           
           if (fMixedEvent) {
