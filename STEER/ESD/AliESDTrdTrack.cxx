@@ -22,6 +22,8 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TMath.h"
+
 #include "AliESDTrdTrack.h"
 #include "AliESDTrdTracklet.h"
 
@@ -169,4 +171,14 @@ Int_t AliESDTrdTrack::GetPt() const
   }
   else
     return 0;
+}
+
+Int_t AliESDTrdTrack::Compare(const TObject* obj) const
+{
+  if (this == obj)
+    return 0;
+  else if (TMath::Abs(Pt()) < TMath::Abs(((AliESDTrdTrack*)(obj))->Pt()))
+    return 1;
+  else
+    return -1;
 }

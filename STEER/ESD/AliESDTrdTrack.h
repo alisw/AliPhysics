@@ -59,6 +59,9 @@ class AliESDTrdTrack : public TObject {
 
   void AddTrackletReference(AliESDTrdTracklet* trkl, Int_t layer) { fTrackletRefs[layer] = trkl; }
 
+  Bool_t IsSortable() const  { return kTRUE; }
+  Int_t Compare(const TObject* obj) const;
+
  protected:
 
   void AppendBits(ULong64_t &word, Int_t nBits, Int_t val) const { word = (word << nBits) | (val & ~(~0 << nBits)); }
