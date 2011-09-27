@@ -216,9 +216,9 @@ void AliAnalysisTaskSEImproveITS::UserExec(Option_t*) {
 
       // recalculate vertices
       AliVVertex *oldSecondaryVertex=decay->GetSecondaryVtx();
-      AliExternalTrackParam et1(static_cast<AliAODTrack*>(decay->GetDaughter(0)));
-      AliExternalTrackParam et2(static_cast<AliAODTrack*>(decay->GetDaughter(1)));
-      AliExternalTrackParam et3(static_cast<AliAODTrack*>(decay->GetDaughter(2)));
+      AliExternalTrackParam et1; et1.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(0)));
+      AliExternalTrackParam et2; et2.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(1)));
+      AliExternalTrackParam et3; et3.CopyFromVTrack(static_cast<AliAODTrack*>(decay->GetDaughter(2)));
       TObjArray ta123,ta12,ta23;
       ta123.Add(&et1);ta123.Add(&et2);ta123.Add(&et3);
       ta12. Add(&et1);ta12 .Add(&et2);
@@ -287,7 +287,7 @@ void AliAnalysisTaskSEImproveITS::SmearTrack(AliAODTrack *track,const TClonesArr
     return;
 
   // Get reconstructed track parameters
-  AliExternalTrackParam et(track);
+  AliExternalTrackParam et; et.CopyFromVTrack(track);
   Double_t *param=const_cast<Double_t*>(et.GetParameter());
 //TODO:  Double_t *covar=const_cast<Double_t*>(et.GetCovariance());
 
