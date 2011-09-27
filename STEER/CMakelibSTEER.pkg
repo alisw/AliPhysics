@@ -125,7 +125,7 @@ string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
 set ( DHDR  STEERLinkDef.h)
 
-set ( EINCLUDE  RAW HLT/sim TPC STEER/CDB STEER/ESD STEER/STEERBase)
+set ( EINCLUDE  RAW HLT/sim TPC STEER/CDB STEER/ESD STEER/STEERBase ANALYSIS)
 
 set ( EXPORT ${HDRS} STEER/AliConst.h STEER/AliCallf77.h STEER/AliRawDataHeaderSim.h )
 
