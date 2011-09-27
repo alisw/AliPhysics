@@ -314,16 +314,14 @@ void AliAODRecoDecayHF::RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent* 
   //
   // now recalculate the daughters impact parameters
   //
-  AliExternalTrackParam *etp = 0;
   Double_t dz[2],covdz[3];
   for(Int_t i=0; i<GetNDaughters(); i++) {
     AliAODTrack *t = (AliAODTrack*)GetDaughter(i);
-    etp = new AliExternalTrackParam(t);
-    if(etp->PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
+    AliExternalTrackParam etp; etp.CopyFromVTrack(t);
+    if(etp.PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
       fd0[i]    = dz[0];
       fd0err[i] = TMath::Sqrt(covdz[0]);
     }
-    delete etp; etp=NULL;
   }
 
   return;

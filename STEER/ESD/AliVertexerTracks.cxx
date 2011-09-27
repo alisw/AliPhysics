@@ -234,7 +234,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
       Int_t ncls0=0;
       for(Int_t l=0;l<6;l++) if(TESTBIT(track->GetITSClusterMap(),l)) ncls0++;
       if(ncls0 < fMinClusters) continue;
-      t = new AliExternalTrackParam(track);
+      t = new AliExternalTrackParam(); t->CopyFromVTrack(track);
     }
 
     // use TOF info about bunch crossing

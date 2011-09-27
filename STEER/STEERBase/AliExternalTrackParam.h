@@ -41,10 +41,10 @@ class AliExternalTrackParam: public AliVTrack {
   AliExternalTrackParam& operator=(const AliExternalTrackParam & trkPar);
   AliExternalTrackParam(Double_t x, Double_t alpha, 
 			const Double_t param[5], const Double_t covar[15]);
-  AliExternalTrackParam(const AliVTrack *vTrack);
   AliExternalTrackParam(Double_t xyz[3],Double_t pxpypz[3],
 			Double_t cv[21],Short_t sign);
   virtual ~AliExternalTrackParam(){}
+  void CopyFromVTrack(const AliVTrack *vTrack);
 
   template <typename T>
   void Set(T x, T alpha, const T param[5], const T covar[15]) {
@@ -233,6 +233,9 @@ class AliExternalTrackParam: public AliVTrack {
 
   static Bool_t  GetUseLogTermMS()                {return fgUseLogTermMS;} 
   static void    SetUseLogTermMS(Bool_t v=kTRUE)  {fgUseLogTermMS = v;} 
+
+ protected:
+  AliExternalTrackParam(const AliVTrack *vTrack);
 
 /*  protected: */
  private:

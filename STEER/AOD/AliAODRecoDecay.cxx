@@ -451,7 +451,7 @@ Bool_t AliAODRecoDecay::PropagateToDCA(const AliVVertex* vtx,Double_t b,Double_t
     retval = ntp.PropagateToDCA(vtx,b,maxd,dz,covar);
   } else {
     // convert to AliExternalTrackParam
-    AliExternalTrackParam etp(this);  
+    AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
     retval = etp.PropagateToDCA(vtx,b,maxd,dz,covar);
   }
   return retval;

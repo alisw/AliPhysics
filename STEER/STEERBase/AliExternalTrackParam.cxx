@@ -105,6 +105,40 @@ AliExternalTrackParam::AliExternalTrackParam(Double_t x, Double_t alpha,
 }
 
 //_____________________________________________________________________________
+void AliExternalTrackParam::CopyFromVTrack(const AliVTrack *vTrack)
+{
+  //
+  // Recreate TrackParams from VTrack
+  // This is not a copy contructor !
+  //
+  if (!vTrack) {
+    AliError("Source VTrack is NULL");
+    return;
+  }
+  if (this==vTrack) {
+    AliError("Copy of itself is requested");
+    return;
+  }
+  //
+  if (vTrack->InheritsFrom(AliExternalTrackParam::Class())) {
+    AliDebug(1,"Source itself is AliExternalTrackParam, using assignment operator");
+    *this = *(AliExternalTrackParam*)vTrack;
+    return;
+  }
+  //
+  AliVTrack::operator=( *vTrack );
+  //
+  Double_t xyz[3],pxpypz[3],cv[21];
+  vTrack->GetXYZ(xyz);
+  pxpypz[0]=vTrack->Px();
+  pxpypz[1]=vTrack->Py();
+  pxpypz[2]=vTrack->Pz();
+  vTrack->GetCovarianceXYZPxPyPz(cv);
+  Short_t sign = (Short_t)vTrack->Charge();
+  Set(xyz,pxpypz,cv,sign);
+}
+
+//_____________________________________________________________________________
 AliExternalTrackParam::AliExternalTrackParam(const AliVTrack *vTrack) :
   AliVTrack(),
   fX(0.),

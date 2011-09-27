@@ -541,7 +541,7 @@ Bool_t AliAODTrack::PropagateToDCA(const AliVVertex *vtx,
   // return kFALSE is something went wrong
 
   // convert to AliExternalTrackParam
-  AliExternalTrackParam etp(this);  
+  AliExternalTrackParam etp; etp.CopyFromVTrack(this);  
 
   Float_t xstart = etp.GetX();
   if(xstart>3.) {
