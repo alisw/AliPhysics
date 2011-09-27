@@ -443,9 +443,12 @@ WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
 
 add_custom_target(${DAEXE}
 COMMAND echo "***** Making executable ${DAEXE} *****"
+COMMAND g++ ${LDFLAGS} ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib${DALIB}.a ${EXTRAROOTLIB} ${ROOTSYS}/lib/libRoot.a ${ROOTSYS}/lib/libfreetype.a ${ROOTSYS}/lib/libpcre.a ${SYSLIBS} ${DAQDALIB} ${AMOREDALIBS} ${MONITORLIBS} -o ${DAEXE}
 WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 )
-target_link_libraries(${DAEXE} "-L" "lib${DALIB}.a" ${DAOBJ} ${EXTRAROOTLIB} "${ROOTALIBDIR}/libRoot.a" "${ROOTALIBDIR}/libfreetype.a" "${ROOTALIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
+
+
+#target_link_libraries(${DAEXE} "-L" "lib${DALIB}.a" ${DAOBJ} ${EXTRAROOTLIB} "${ROOTALIBDIR}/libRoot.a" "${ROOTALIBDIR}/libfreetype.a" "${ROOTALIBDIR}/libpcre.a" ${SYSLIBS} ${DAQDALIB} ${MONITORLIBS} ${AMOREDALIBS})
 
 add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${ROOTLIB})
 
