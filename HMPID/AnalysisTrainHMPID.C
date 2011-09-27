@@ -21,9 +21,11 @@ Bool_t      kUsePAR            = kFALSE;  // use par files for extra libs
 Bool_t      kUseCPAR           = kFALSE;  // use par files for common libs
 Bool_t      kFillAOD           = kFALSE;  // switch of AOD filling for on the fly analysis
 
+Int_t       iAODanalysis       = 0;      // Analysis on input AOD's
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iPhysicsSelection  = 1;      // Physics selection task
+Int_t       iCentrality        = 0;      // Physics selection task
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use muon filter
 TString     kCommonOutputFileName = "HmpidOutput.root";
@@ -36,15 +38,18 @@ TString     kCommonOutputFileName = "HmpidOutput.root";
 Bool_t      kSkipTerminate      = kFALSE; // Do not call Teminate
 Bool_t      kDebugLevel         = kTRUE; // activate debugging
 Int_t       kUseSysInfo         = 0; // activate debugging
-Bool_t      kUseMC              = kTRUE;  // use MC info
-Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
-Bool_t      kUseESDTags         = kTRUE; // use ESD tags for selection
+Long64_t    kNumberOfEvents     = 1234567890; // number of events to process from the chain
+Bool_t      kUseMC              = kFALSE;  // use MC info
+Bool_t      kIsMC               = kFALSE;  // is MC info, if false it overwrites Use(AOD)MC
+Bool_t      kUseESDTags         = kFALSE;  // use ESD tags for selection
 Bool_t      kUseTR              = kFALSE;  // use track references
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
 Int_t       iHMPID             = 1;      // Basic HMPID analysis task
+Int_t       iHMPIDperf         = 0;      // Basic HMPID performance task
 Int_t       iJETAN             = 0;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets
+Int_t       iHMPIDJets         = 0;      // Jet chemistry with HMPID
 Int_t       iJETANLib          = 0;
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
 
@@ -69,25 +74,26 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-21-05-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-28-00d";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-21-26-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption    = kFALSE;  // use xrootd flags to reduce timeouts
 Bool_t      kPluginOverwriteMode     = kTRUE;  // overwrite existing collections
 Int_t       kPluginOutputToRunNumber = 1;     // write the output to subdirs named after run number
-TString kPluginExecutableCommand = "root -b -q";
+TString kPluginExecutableCommand = "aliroot -b -q";
 
 // == grid plugin input and output variables
-TString     kGridDatadir      = "/alice/sim/LHC10d4a";
+TString     kGridDatadir      = "/alice/data/2010/LHC10e";
 TString     kGridLocalRunList = "";
-TString     kGridWorkDir      = "HmpidAnalysis/LHC10d4a";   // Alien working directory
+TString     kGridWorkDir      = "";   // Alien working directory
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
-Int_t       kGridRunRange[2]       = {120820, 120820}; // Set the run range
+Int_t       kGridRunRange[2]       = {128260,128260}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
-TString     kGridPassPattern       = "";
+TString     kGridPassPattern       = "/ESDs/pass2";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
 Int_t       kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
+Int_t       kGridMaxMergeStages     = 3;  // Number of stages in the merging procedure
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
 TString     kGridOutputStorages      = "disk=2"; // Make replicas on the storages
 // == grid process variables
@@ -132,10 +138,15 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    printf("===========    RUNNING ANALYSIS TRAIN %s IN %s MODE   ==========\n", kTrainName.Data(),smode.Data());
    printf("==================================================================\n");
    printf("=  Configuring analysis train for:                               =\n");
-   printf("=  ESD analysis                                                  =\n");
-   if (iPhysicsSelection)   printf("=  Physics selection                                                    =\n");
+   if (iAODanalysis) printf("=  AOD analysis                                                  =\n");
+   else              printf("=  ESD analysis                                                  =\n");
+   if (iPhysicsSelection)   printf("=  Physics selection                                             =\n");
+   if (iCentrality)  printf("=  Centrality                                                    =\n");
    if (iESDfilter)   printf("=  ESD filter                                                    =\n");
    if (iJETAN)       printf("=  Jet analysis                                                  =\n");
+   if (iHMPID)       printf("=  HMPID generic                                                 =\n");
+   if (iHMPIDperf)   printf("=  HMPID performance                                             =\n");
+   if (iHMPIDJets)   printf("=  HMPID Jet chemistry                                           =\n");
    printf("==================================================================\n");
    printf(":: use MC truth      %d\n", (UInt_t)kUseMC);
    printf(":: use KINE filter   %d\n", (UInt_t)kUseKinefilter);
@@ -158,7 +169,6 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
       return;
    }
 
-
     
    // Make the analysis manager and connect event handlers
    AliAnalysisManager *mgr  = new AliAnalysisManager("HMPIDTrain", "HMPID train");
@@ -175,14 +185,20 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    }   
 
    // Create input handler (input container created automatically)
+   if (iAODanalysis) {
+   // AOD input handler
+      AliAODInputHandler *aodH = new AliAODInputHandler();
+      mgr->SetInputEventHandler(aodH);
+   } else {
    // ESD input handler
-   AliESDInputHandler *esdHandler = new AliESDInputHandler();
-   if (kUseESDTags) esdHandler->SetReadTags();
-   esdHandler->SetReadFriends(kFALSE);
-   mgr->SetInputEventHandler(esdHandler);       
+      AliESDInputHandler *esdHandler = new AliESDInputHandler();
+      if (kUseESDTags) esdHandler->SetReadTags();
+      esdHandler->SetReadFriends(kTRUE);
+      mgr->SetInputEventHandler(esdHandler);
+   }
 
    // Monte Carlo handler
-   if (kUseMC) {
+   if (kUseMC && !iAODanalysis) {
       AliMCEventHandler* mcHandler = new AliMCEventHandler();
       mgr->SetMCtruthEventHandler(mcHandler);
       mcHandler->SetReadTR(kUseTR); 
@@ -221,12 +237,18 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    // Load the tasks configuration macros for all wagons. These files are supposed now to be
    // in the current workdir, but in AliEn they will be in the file catalog, 
    // mapped from AliRoot and pecified in the jdl input list.
-   if(iPhysicsSelection){
+   if(iPhysicsSelection && !iAODanalysis){
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE,kTRUE); // last flag also adds information on  
    }
+   
+   if(iCentrality && !iAODanalysis){
+     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+     taskCentrality->SetPass(2); // remember to set the pass you are processing!!!   
+   }     
 
-   if (iESDfilter) {
+   if (iESDfilter && !iAODanalysis) {
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
       AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter,kUseMuonfilter);
@@ -248,9 +270,21 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    if(iHMPID){
      gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskHMPID.C");
      AliHMPIDAnalysisTask *taskHmpid = AddTaskHMPID(kUseMC);
-     if (!taskHmpid) ::Warning("AnalysisTrainHMPID", "AliAnalysisTaskHMPID cannot run for this train conditions - EXCLUDED");
+     if (!taskHmpid) ::Warning("AnalysisTrainHMPID", "AliHMPIDAnalysisTask cannot run for this train conditions - EXCLUDED");
    }
-
+   
+   if(iHMPIDperf){
+     gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskHMPIDPerformance.C");
+     AliHMPIDPerformanceTask *taskHmpidPerformance = AddTaskHMPIDPerformance(kUseMC);
+     if (!taskHmpidPerformance) ::Warning("AnalysisTrainHMPID", "AliHMPIDPerformanceTask cannot run for this train conditions - EXCLUDED");
+   }
+      
+   if(iHMPIDJets){
+     gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskJetsHMPID.C");
+     AliAnalysisTaskJetsHMPID *taskHmpidJets = AddTaskJetsHMPID("clustersAOD_ANTIKT04_B0_Filter00256_Cut00150_Skip00","jeteventbackground_clustersAOD_KT04_B0_Filter00256_Cut00150_Skip00");
+     if (!taskHmpidJets) ::Warning("AnalysisTrainHMPID", "AliAnalysisTaskJetsHMPID cannot run for this train conditions - EXCLUDED");
+   }
+   
    if (kPluginUse) {
       AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode);
       AliAnalysisManager::GetAnalysisManager()->SetGridHandler(alienHandler);
@@ -321,7 +355,7 @@ void StartAnalysis(const char *mode, TChain *chain) {
             ::Error("AnalysisTrainHMPID.C::StartAnalysis", "Cannot create the chain");
             return;
          }
-         mgr->StartAnalysis(mode, chain,kNumberOfEvents);
+         mgr->StartAnalysis(mode, chain, kNumberOfEvents);
          return;
       case 1:
          if (!kProofDataSet.Length()) {
@@ -373,23 +407,46 @@ void CheckModuleFlags(const char *mode) {
    }
 
    if(!kIsMC){
-     // switch off anthin related to MC
-     kUseMC = 0;
-     kUseTR = kFALSE;
+      // switch off anything related to MC
+      kUseMC = kFALSE;
+      kUseTR = kFALSE;
    }
 
- // ESD analysis
-   if (!kUseMC){
-     kUseTR = kFALSE;
-     if(kUseKinefilter)::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "Kine Filter disabled in analysis without MC");
-     kUseKinefilter = kFALSE;
-   }
-   if (iJETAN){
-     iESDfilter=1;
-   }
-   if (!iESDfilter){
-     kUseKinefilter = kFALSE;
-     kUseMuonfilter = kFALSE;
+   if (iAODanalysis) {
+   // AOD analysis
+      if (kUseMC)
+         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "MC usage disabled in analysis on AOD's");
+      kUseMC = kFALSE;
+      kUseTR = kFALSE;
+      if (iESDfilter)
+         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "ESD filter disabled in analysis on AOD's");
+      iESDfilter   = 0;
+      if (iPhysicsSelection)
+         ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "Physics Selection disabled in analysis on AOD's");
+      iPhysicsSelection   = 0;
+      if (!iAODhandler) {
+         if (iJETAN) 
+            ::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "JETAN disabled in analysis on AOD's without AOD handler");
+         iJETAN = 0;
+      }
+      if(iHMPID)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "HMPID analysis disabled in analysis on AOD's");
+      iHMPID = 0;
+      if(iHMPIDperf)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "HMPID performance disabled in analysis on AOD's");
+      iHMPIDperf = 0;
+   } else {   
+   // ESD analysis
+      if (!kUseMC){
+         kUseTR = kFALSE;
+         if(kUseKinefilter)::Info("AnalysisTrainHMPID.C::CheckModuleFlags", "Kine Filter disabled in analysis without MC");
+         kUseKinefilter = kFALSE;
+      }
+      if (iJETAN){
+         iESDfilter=1;
+      }
+      if (!iESDfilter){
+         kUseKinefilter = kFALSE;
+         kUseMuonfilter = kFALSE;
+      }
    }
 
    iJETANLib = iJETAN && 1;
@@ -537,7 +594,15 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if(iHMPID){
      if (!LoadSource(Form("%s/HMPID/AliHMPIDAnalysisTask.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
+   
+   if(iHMPIDperf){
+     if (!LoadSource(Form("%s/HMPID/AliHMPIDPerformanceTask.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+   }   
 
+   if(iHMPIDJets){
+     if (!LoadSource(Form("%s/HMPID/AliAnalysisTaskJetsHMPID.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+   }
+   
    if (iJETANLib) {
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
    }
@@ -682,22 +747,41 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
    // Local chain
    switch (imode) {
       case 0:
-	     if (!kLocalXMLDataset.Length()) {
-	       // Local ESD
-	       chain = new TChain("esdTree");
-	       TString line;
-	       ifstream in;
-	       in.open(kLocalDataList.Data());
-	       while (in.good()) {
-	         in >> line;
-	         if (line.Length() == 0) continue;
-	         cout << " line = " << line << endl;
-	         chain->Add(line.Data());
-	       }       
-	     } else {
-	       // Interactive ESD
-           chain = CreateChainSingle(kLocalXMLDataset, "esdTree");
-	     }   
+         if (iAODanalysis) {
+            if (!kLocalXMLDataset.Length()) {
+               // Local AOD
+               chain = new TChain("aodTree");
+               TString line;
+               ifstream in;
+               in.open(kLocalDataList.Data());
+	           while (in.good()) {
+                  in >> line;
+                  if (line.Length() == 0) continue;
+               // cout << " line = " << line << endl;
+               chain->Add(line.Data());
+	           }
+            } else {
+               // Interactive AOD
+               chain = CreateChainSingle(kLocalXMLDataset, "aodTree");
+            }
+         } else {
+            if (!kLocalXMLDataset.Length()) {
+               // Local ESD
+               chain = new TChain("esdTree");
+               TString line;
+               ifstream in;
+               in.open(kLocalDataList.Data());
+               while (in.good()) {
+                  in >> line;
+                  if (line.Length() == 0) continue;
+                  cout << " line = " << line << endl;
+                  chain->Add(line.Data());
+               }
+            } else {
+              // Interactive ESD
+              chain = CreateChainSingle(kLocalXMLDataset, "esdTree");
+	        }
+         }
          break;
       case 1:
          break;
@@ -706,7 +790,8 @@ TChain *CreateChain(const char *mode, const char *plugin_mode)
             AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode);
             AliAnalysisManager::GetAnalysisManager()->SetGridHandler(alienHandler);
          } else {
-            TString treeName = "esdTree";
+            TString           treeName = "esdTree";
+            if (iAODanalysis) treeName = "aodTree";
             chain = CreateChainSingle("wn.xml", treeName);
          }
          break;      
@@ -802,8 +887,10 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Define production directory LFN
    plugin->SetGridDataDir(kGridDatadir.Data());
 // Set data search pattern
-   plugin->SetDataPattern(Form(" %s/*/*ESDs.root",kGridPassPattern.Data()));
+   if (iAODanalysis) plugin->SetDataPattern(" *AliAOD.root");
+   else plugin->SetDataPattern(Form(" %s/*/*ESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
+   plugin->SetRunPrefix("000"); // if real data
    plugin->SetRunRange(kGridRunRange[0], kGridRunRange[1]);
 
    if(kGridLocalRunList.Length()>0){
@@ -872,6 +959,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    plugin->SetUseSubmitPolicy(kFALSE);
    plugin->SetMergeExcludes(kGridMergeExclude);
    plugin->SetMaxMergeFiles(kGridMaxMergeFiles);
+   plugin->SetMaxMergeStages(kGridMaxMergeStages);
    plugin->SetNrunsPerMaster(kGridRunsPerMaster);
    plugin->SetMergeViaJDL(kPluginMergeViaJDL);
    // Use fastread option
