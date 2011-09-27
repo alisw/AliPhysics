@@ -451,8 +451,10 @@ Double_t AliHMPIDPreprocessor::ProcTrans(TMap* pMap)
     // evaluate 15 mm of thickness C6F14 Trans
     Double_t aTransRad;
     
+    Double_t aConvFactor = 1.0 - 0.3/1.8;         
+        
     if(aRefFreon*aRefArgon>0) {
-      aTransRad  = TMath::Power((aCellFreon/aRefFreon)/(aCellArgon/aRefArgon)*aCorrFactor,1.5);
+      aTransRad  = TMath::Power((aCellFreon/aRefFreon)/(aCellArgon/aRefArgon)*aCorrFactor,aConvFactor);
     } else {
       return DefaultEMean();
     }
