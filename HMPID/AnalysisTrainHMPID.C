@@ -24,7 +24,6 @@ Bool_t      kFillAOD           = kFALSE;  // switch of AOD filling for on the fl
 Int_t       iAODhandler        = 1;      // Analysis produces an AOD or dAOD's
 Int_t       iESDfilter         = 0;      // ESD to AOD filter (barrel + muon tracks)
 Int_t       iPhysicsSelection  = 1;      // Physics selection task
-Int_t       iCentrality        = 0;      // Physics selection task
 Bool_t      kUseKinefilter     = kFALSE; // use Kinematics filter
 Bool_t      kUseMuonfilter     = kFALSE; // use muon filter
 TString     kCommonOutputFileName = "HmpidOutput.root";
@@ -37,15 +36,14 @@ TString     kCommonOutputFileName = "HmpidOutput.root";
 Bool_t      kSkipTerminate      = kFALSE; // Do not call Teminate
 Bool_t      kDebugLevel         = kTRUE; // activate debugging
 Int_t       kUseSysInfo         = 0; // activate debugging
-Bool_t      kUseMC              = kFALSE;  // use MC info
-Bool_t      kIsMC               = kFALSE;  // is MC info, if false it overwrites Use(AOD)MC
+Bool_t      kUseMC              = kTRUE;  // use MC info
+Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseESDTags         = kTRUE; // use ESD tags for selection
 Bool_t      kUseTR              = kFALSE;  // use track references
 
 // ### Analysis modules to be included. Some may not be yet fully implemented.
 //==============================================================================
-Int_t       iHMPID             = 0;      // Basic HMPID analysis task
-Int_t       iHMPIDperf         = 1;      // Basic HMPID performance task
+Int_t       iHMPID             = 1;      // Basic HMPID analysis task
 Int_t       iJETAN             = 0;      // Jet analysis (PWG4) // 1 write standard 2 write non-standard jets
 Int_t       iJETANLib          = 0;
 Int_t       kHighPtFilterMask  = 16;     // change depending on the used AOD Filter
@@ -71,23 +69,23 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-28-00d";  // *CHANGE ME IF MORE RECENT IN GRID*
-TString     kPluginAliRootVersion    = "v4-21-25-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
+TString     kPluginRootVersion       = "v5-27-06b";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginAliRootVersion    = "v4-21-05-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption    = kFALSE;  // use xrootd flags to reduce timeouts
 Bool_t      kPluginOverwriteMode     = kTRUE;  // overwrite existing collections
 Int_t       kPluginOutputToRunNumber = 1;     // write the output to subdirs named after run number
-TString kPluginExecutableCommand = "aliroot -b -q";
+TString kPluginExecutableCommand = "root -b -q";
 
 // == grid plugin input and output variables
-TString     kGridDatadir      = "/alice/data/2010/LHC10e";
+TString     kGridDatadir      = "/alice/sim/LHC10d4a";
 TString     kGridLocalRunList = "";
 TString     kGridWorkDir      = "HmpidAnalysis/LHC10d4a";   // Alien working directory
 TString     kGridOutdir       = ""; // AliEn output directory. If blank will become output_<kTrainName>
 TString     kGridDataSet      = ""; // sub working directory not to confuse different run xmls 
-Int_t       kGridRunRange[2]       = {128260,128260}; // Set the run range
+Int_t       kGridRunRange[2]       = {120820, 120820}; // Set the run range
 TString     kGridRunPattern        = "%03d"; // important for leading zeroes!!
-TString     kGridPassPattern       = "/ESDs/pass2";
+TString     kGridPassPattern       = "";
 TString     kGridExtraFiles        = ""; // files that will be added to the input list in the JDL...
 Int_t       kGridMaxMergeFiles      = 12; // Number of files merged in a chunk grid run range
 TString     kGridMergeExclude       = "AliAOD.root"; // Files that should not be merged
@@ -180,7 +178,7 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    // ESD input handler
    AliESDInputHandler *esdHandler = new AliESDInputHandler();
    if (kUseESDTags) esdHandler->SetReadTags();
-   esdHandler->SetReadFriends(kTRUE);
+   esdHandler->SetReadFriends(kFALSE);
    mgr->SetInputEventHandler(esdHandler);       
 
    // Monte Carlo handler
@@ -227,12 +225,6 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,kTRUE,kTRUE); // last flag also adds information on  
    }
-   
-   if(iCentrality){
-     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-     taskCentrality->SetPass(2); // remember to set the pass you are processing!!!   
-   }     
 
    if (iESDfilter) {
       //  ESD filter task configuration.
@@ -256,15 +248,9 @@ void AnalysisTrainHMPID(const char *analysis_mode="local", const char *plugin_mo
    if(iHMPID){
      gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskHMPID.C");
      AliHMPIDAnalysisTask *taskHmpid = AddTaskHMPID(kUseMC);
-     if (!taskHmpid) ::Warning("AnalysisTrainHMPID", "AliHMPIDAnalysisTask cannot run for this train conditions - EXCLUDED");
+     if (!taskHmpid) ::Warning("AnalysisTrainHMPID", "AliAnalysisTaskHMPID cannot run for this train conditions - EXCLUDED");
    }
-   
-   if(iHMPIDperf){
-     gROOT->LoadMacro("$ALICE_ROOT/HMPID/AddTaskHMPIDPerformance.C");
-     AliHMPIDPerformanceTask *taskHmpidPerformance = AddTaskHMPIDPerformance(kUseMC);
-     if (!taskHmpidPerformance) ::Warning("AnalysisTrainHMPID", "AliHMPIDPerformanceTask cannot run for this train conditions - EXCLUDED");
-   }
-      
+
    if (kPluginUse) {
       AliAnalysisGrid *alienHandler = CreateAlienHandler(plugin_mode);
       AliAnalysisManager::GetAnalysisManager()->SetGridHandler(alienHandler);
@@ -551,10 +537,6 @@ Bool_t LoadAnalysisLibraries(const char *mode)
    if(iHMPID){
      if (!LoadSource(Form("%s/HMPID/AliHMPIDAnalysisTask.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
-   
-   if(iHMPIDperf){
-     if (!LoadSource(Form("%s/HMPID/AliHMPIDPerformanceTask.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
-   }   
 
    if (iJETANLib) {
      if (!LoadLibrary("JETAN", mode, kTRUE)) return kFALSE;
@@ -822,7 +804,6 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
 // Set data search pattern
    plugin->SetDataPattern(Form(" %s/*/*ESDs.root",kGridPassPattern.Data()));
 // ...then add run numbers to be considered
-   plugin->SetRunPrefix("000"); // if real data
    plugin->SetRunRange(kGridRunRange[0], kGridRunRange[1]);
 
    if(kGridLocalRunList.Length()>0){
