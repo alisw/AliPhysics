@@ -741,11 +741,11 @@ void AliEMCALRecoUtils::InitEMCALTimeRecalibrationFactors(){
 	for (int i = 0; i < 4; i++) 
     fEMCALTimeRecalibrationFactors->Add(new TH1F(Form("hAllTimeAvBC%d",i),
                                                  Form("hAllTimeAvBC%d",i),  
-                                                 11521,0.,11521)          );
+                                                 48*24*10,0.,48*24*10)          );
 	//Init the histograms with 1
 	for (Int_t bc = 0; bc < 4; bc++) {
-		
-      SetEMCALChannelTimeRecalibrationFactor(bc,0.);
+			for (Int_t i = 0; i < 48*24*10; i++) 
+        SetEMCALChannelTimeRecalibrationFactor(bc,i,0.);
   }
 
 	fEMCALTimeRecalibrationFactors->SetOwner(kTRUE);
