@@ -10,8 +10,7 @@ DA to write mapping for ADC modules and VME scaler
 
 Contact: Chiara.Oppedisano@to.infn.it
 Link: 
-Run Type: PHYSICS, CALIBRATION_BC, CALIBRATION_CENTRAL, 
-	  CALIBRATION_MB, CALIBRATION_SEMICENTRAL, CALIBRATION_COSMIC
+Run Type: PHYSICS
 DA Type: MON
 Number of events needed: 1 (SOD is read) 
 Input Files:  none
@@ -21,6 +20,8 @@ Trigger Types Used: different trigger types are used
 */
 
 #define MAPDATA_FILE  "ZDCChMapping.dat"
+#define TDCDATA_FILE  "ZDCTDCCalib.dat"
+#define TDCHISTO_FILE "ZDCTDCHisto.root"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +33,15 @@ Trigger Types Used: different trigger types are used
 #include <daqDA.h>
 
 //ROOT
+#include <TROOT.h>
+#include <TPluginManager.h>
+#include <TH1F.h>
+#include <TH2F.h>
+#include <TProfile.h>
+#include <TF1.h>
 #include <TFile.h>
+#include <TFitter.h>
+#include "TMinuitMinimizer.h"
 
 //AliRoot
 #include <AliRawReaderDate.h>
@@ -41,6 +50,17 @@ Trigger Types Used: different trigger types are used
 
 int main(int argc, char **argv) {
 
+  gROOT->GetPluginManager()->AddHandler("TVirtualStreamerInfo",
+					"*",
+					"TStreamerInfo",
+					"RIO",
+					"TStreamerInfo()"); 
+
+  TMinuitMinimizer m; 
+  gROOT->GetPluginManager()->AddHandler("ROOT::Math::Minimizer", "Minuit","TMinuitMinimizer",
+      "Minuit", "TMinuitMinimizer(const char *)");
+  TVirtualFitter::SetDefaultFitter("Minuit");
+
   const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
   monitorDeclareTable(const_cast<char**>(tableSOD));
   
@@ -48,7 +68,22 @@ int main(int argc, char **argv) {
   int const kNModules = 10;
   int const kNChannels = 24;
   int const kNScChannels = 32;
-
+  
+  int kScalerGeo=8;
+  int itdc=0, iprevtdc=-1, ihittdc=0
+  float tdcData[6], tdcL0;	
+ 
+  TH1F * hTDC[6];
+  char ntdchist[20];
+  for(Int_t itdc=0; itdc<6; itdc++){
+    if(itdc==0)      hTDC[itdc] = new TH1F("TDCZNC", "TDC ZNC", 200, 150., 350.);
+    else if(itdc==1) hTDC[itdc] = new TH1F("TDCZNA", "TDC ZNA", 200, 150., 350.);
+    else if(itdc==2) hTDC[itdc] = new TH1F("TDCZPC", "TDC ZPC", 200, 150., 350.);
+    else if(itdc==3) hTDC[itdc] = new TH1F("TDCZPA", "TDC ZPA", 200, 150., 350.);
+    else if(itdc==4) hTDC[itdc] = new TH1F("TDCZEM1","TDC ZEM1",200, 150., 350.);
+    else if(itdc==5) hTDC[itdc] = new TH1F("TDCZEM2","TDC ZEM2",200, 150., 350.);
+  }
+  
   /* log start of process */
   printf("\n ZDC MAPPING program started\n");  
 
@@ -84,7 +119,7 @@ int main(int argc, char **argv) {
 
     Int_t iev = 0;
     Bool_t sodRead = kFALSE;
-    while(!sodRead && iev<1000){
+    while(!sodRead){
  
       /* check shutdown condition */
       if (daqDA_checkShutdown()) {break;}
@@ -215,11 +250,22 @@ int main(int argc, char **argv) {
         fclose(mapFile4Shuttle);
       }// SOD event
       else{ 
-        if(sodRead){
-	  printf("\t SOR read -> exiting from DA\n");
-	  break;
+        printf("\t SOR read -> analyzing TDC info!\n");
+	if(rawData.GetADCModule()==kZDCTDCGeo && rawData.IsZDCTDCDatum()==kTRUE && ihittdc<1){
+           itdc = rawData.GetChannel(); 
+	   if(itdc>=8 && itdc<=13){
+             if(itdc==iprevtdc) ihittdc++;
+             else ihittdc=0;
+             iprevtdc=itdc;
+             tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
+	   }
+	   if(itdc==15) tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	}
-	else continue;
+	for(int it=0; it<6; it++){
+	   for(int ih=0; ih<4; ih++){
+	     hTDC[it]->Fill(tdcData[it]-tdcL0);
+	   }
+	}	
       }
       
       iev++; 
@@ -229,11 +275,66 @@ int main(int argc, char **argv) {
     }    
       
   }
+
+  /* Analysis of the histograms */
+  //
+  FILE *fileShuttle;
+  fileShuttle = fopen(TDCDATA_FILE,"w");
+  //
+  Float_t xUp=0., xLow=0., deltaX=0;
+  Int_t binMax=0, nBinsx=0;
+  Float_t mean[6], sigma[6];
+  TF1 *fitfun[6];
+  for(Int_t k=0; k<6; k++){
+    if(hTDC[k]->GetEntries()!=0){
+       binMax = hTDC[k]->GetMaximumBin();
+       printf("\n\t hTDC[%d]: binMax = %d", k, binMax);
+       if(binMax<=1){
+         printf("\n WARNING! Something wrong with det %d histo \n\n", k);
+         continue;
+       }
+       // 
+       xUp = (hTDC[k]->GetXaxis())->GetXmax();
+       xLow = (hTDC[k]->GetXaxis())->GetXmin();
+       deltaX = xUp-xLow;
+       nBinsx = (hTDC[k]->GetXaxis())->GetNbins();
+       //printf(" xMax = %f\n", xLow+binMax*deltaX/nBinsx);
+       hTDC[k]->Fit("gaus","Q","",xLow+binMax*deltaX/nBinsx*0.6,xLow+binMax*deltaX/nBinsx*1.24);
+       fitfun[k] = hTDC[k]->GetFunction("gaus");
+       mean[k] = (Float_t) (fitfun[k]->GetParameter(1));
+       sigma[k] = (Float_t) (fitfun[k]->GetParameter(2));
+       //printf("\t Mean value from fit = %1.2f\n", mean[k]);
+       //
+       fprintf(fileShuttle,"\t%f\t%f\n",mean[k], sigma[k]);
+     }
+  }
+  //						       
+  fclose(fileShuttle);
+  
+  TFile *histofile = new TFile(TDCHISTO_FILE,"RECREATE");
+  histofile->cd();
+  for(int k=0; k<6; k++) hTDC[6]->Write();						       
+  histofile->Close();
+  //
+  for(Int_t j=0; j<6; j++) delete hTDC[j];
   
   /* store the result files on FES */
+  // [1] File with mapping
   status = daqDA_FES_storeFile(MAPDATA_FILE, "MAPPING");
   if(status){
     printf("Failed to export file : %d\n",status);
+    return -1;
+  }
+  // [2] File with TDC data
+  status = daqDA_FES_storeFile(TDCDATA_FILE, "TDCDATA");
+  if(status){
+    printf("Failed to export pedestal data file to DAQ FES\n");
+    return -1;
+  }
+  // [3] File with TDC histos
+  status = daqDA_FES_storeFile(TDCHISTO_FILE, "TDCHISTOS");
+  if(status){
+    printf("Failed to export pedestal histos file to DAQ FES\n");
     return -1;
   }
 
