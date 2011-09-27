@@ -30,6 +30,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
   fTracks(0)
 {
   // Constructor
+  fBranchNames = "ESD:SPDVertex.,Tracks";
 }
 
 //________________________________________________________________________
