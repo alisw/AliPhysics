@@ -40,7 +40,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   AliDetectorRecoParam(),
   fClusteringThreshold(0.5),
   fW0(4.5),
-  fMinECut(0.45), 
+  fMinECut(0.045), 
   fUnfold(kFALSE), 
   fLocMaxCut(0.03), 
   fTimeCut(1.),// high value, accept all
