@@ -286,9 +286,9 @@ public:
 	
 protected:
 
-  void Init(void);     		           // initializes the parameters of EMCAL
+  void Init(void);     		     // initializes the parameters of EMCAL
   
-  AliEMCALEMCGeometry * fEMCGeometry;   // Geometry object for Electromagnetic calorimeter
+  AliEMCALEMCGeometry * fEMCGeometry;// Geometry object for Electromagnetic calorimeter
 
   TString  fGeoName;                 // geometry name
   Int_t    fKey110DEG;               // for calculation abs cell id; 19-oct-05 
@@ -312,24 +312,24 @@ protected:
   Float_t  fArm1PhiMin;              // Minimum angular position of EMCAL in Phi (degrees)
   Float_t  fArm1PhiMax;              // Maximum angular position of EMCAL in Phi (degrees)
   Float_t  fEtaMaxOfTRD1;            // Max eta in case of TRD1 geometry (see AliEMCALShishKebabTrd1Module)
-  TList   *fShishKebabTrd1Modules;   //! list of modules
+  TList   *fShishKebabTrd1Modules;   // list of modules
   Float_t  fParSM[3];                // SM sizes as in GEANT (TRD1)
   Float_t  fPhiModuleSize;           // Phi -> X 
   Float_t  fEtaModuleSize;           // Eta -> Y 
   Float_t  fPhiTileSize;             // Size of phi tile
   Float_t  fEtaTileSize;             // Size of eta tile
   Int_t    fNZ;                      // Number of Towers in the Z direction
-  Float_t  fIPDistance;		           // Radial Distance of the inner surface of the EMCAL
+  Float_t  fIPDistance;		     // Radial Distance of the inner surface of the EMCAL
   Float_t  fLongModuleSize;          // Size of long module
   // Geometry Parameters
-  Float_t  fShellThickness;	         // Total thickness in (x,y) direction
-  Float_t  fZLength;		             // Total length in z direction
-  Float_t  fSampling;		             // Sampling factor
+  Float_t  fShellThickness;	     // Total thickness in (x,y) direction
+  Float_t  fZLength;		     // Total length in z direction
+  Float_t  fSampling;		     // Sampling factor
 
-  Int_t    fFastOR2DMap[48][64];	   // FastOR 2D Map over full EMCal
+  Int_t    fFastOR2DMap[48][64];     // FastOR 2D Map over full EMCal
 	
   TGeoHMatrix* fkSModuleMatrix[AliEMCALGeoParams::fgkEMCALModules] ; //Orientations of EMCAL super modules
-  Bool_t   fUseExternalMatrices;     // Use the matrices set in fkSModuleMatrix and not those in the geoManager
+  Bool_t   fUseExternalMatrices;      // Use the matrices set in fkSModuleMatrix and not those in the geoManager
 	
 private:
   
