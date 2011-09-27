@@ -38,6 +38,7 @@
 #pragma link C++ class  AliESDfriendTrack+;
 #pragma link C++ class  AliESDMuonTrack+;
 #pragma link C++ class  AliESDPmdTrack+;
+#pragma link C++ class  AliESDTrdTrigger+;
 #pragma link C++ class  AliESDTrdTrack+;
 #pragma link C++ class  AliESDTrdTracklet+;
 #pragma link C++ class  AliESDHLTtrack+;

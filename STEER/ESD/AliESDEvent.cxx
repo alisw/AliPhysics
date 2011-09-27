@@ -49,6 +49,7 @@
 #include "AliESDVertex.h"
 #include "AliESDcascade.h"
 #include "AliESDPmdTrack.h"
+#include "AliESDTrdTrigger.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDTrdTracklet.h"
 #include "AliESDVertex.h"
@@ -93,6 +94,7 @@ ClassImp(AliESDEvent)
 							"Tracks",
 							"MuonTracks",
 							"PmdTracks",
+							"AliESDTrdTrigger",
 							"TrdTracks",
   						        "TrdTracklets",
 							"V0s",
@@ -122,6 +124,7 @@ AliESDEvent::AliESDEvent():
   fPHOSTrigger(0),
   fEMCALTrigger(0),
   fESDACORDE(0),
+  fTrdTrigger(0),
   fSPDPileupVertices(0),
   fTrkPileupVertices(0),
   fTracks(0),
@@ -161,6 +164,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fPHOSTrigger(new AliESDCaloTrigger(*esd.fPHOSTrigger)),
   fEMCALTrigger(new AliESDCaloTrigger(*esd.fEMCALTrigger)),
   fESDACORDE(new AliESDACORDE(*esd.fESDACORDE)),
+  fTrdTrigger(new AliESDTrdTrigger(*esd.fTrdTrigger)),
   fSPDPileupVertices(new TClonesArray(*esd.fSPDPileupVertices)),
   fTrkPileupVertices(new TClonesArray(*esd.fTrkPileupVertices)),
   fTracks(new TClonesArray(*esd.fTracks)),
@@ -196,6 +200,7 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fSPDMult);
   AddObject(fPHOSTrigger);
   AddObject(fEMCALTrigger);
+  AddObject(fTrdTrigger);
   AddObject(fSPDPileupVertices);
   AddObject(fTrkPileupVertices);
   AddObject(fTracks);
@@ -451,6 +456,10 @@ void AliESDEvent::ResetStdContent()
     fTOFHeader->~AliTOFHeader();
     new (fTOFHeader) AliTOFHeader();
     //fTOFHeader->SetName(fgkESDListName[kTOFHeader]);
+  }
+  if (fTrdTrigger) {
+    fTrdTrigger->~AliESDTrdTrigger();
+    new (fTrdTrigger) AliESDTrdTrigger();
   }
   if(fPHOSTrigger)fPHOSTrigger->DeAllocate(); 
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
@@ -942,6 +951,11 @@ void AliESDEvent::AddPmdTrack(const AliESDPmdTrack *t)
   new(fpmd[fPmdTracks->GetEntriesFast()]) AliESDPmdTrack(*t);
 }
 
+void AliESDEvent::SetTrdTrigger(const AliESDTrdTrigger *t)
+{
+  *fTrdTrigger = *t;
+}
+
 void AliESDEvent::AddTrdTrack(const AliESDTrdTrack *t) 
 {
   TClonesArray &ftrd = *fTrdTracks;
@@ -1156,6 +1170,7 @@ void AliESDEvent::GetStdContent()
   fTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTracks]);
   fMuonTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kMuonTracks]);
   fPmdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kPmdTracks]);
+  fTrdTrigger = (AliESDTrdTrigger*)fESDObjects->FindObject(fgkESDListName[kTrdTrigger]);
   fTrdTracks = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracks]);
   fTrdTracklets = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kTrdTracklets]);
   fV0s = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kV0s]);
@@ -1216,6 +1231,7 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliESDtrack",0));
   AddObject(new TClonesArray("AliESDMuonTrack",0));
   AddObject(new TClonesArray("AliESDPmdTrack",0));
+  AddObject(new AliESDTrdTrigger());
   AddObject(new TClonesArray("AliESDTrdTrack",0));
   AddObject(new TClonesArray("AliESDTrdTracklet",0));
   AddObject(new TClonesArray("AliESDv0",0));

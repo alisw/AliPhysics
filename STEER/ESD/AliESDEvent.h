@@ -53,6 +53,7 @@ class AliESDv0;
 class AliMultiplicity;
 class AliRawDataErrorLog;
 class AliESDRun;
+class AliESDTrdTrigger;
 class AliESDTrdTrack;
 class AliESDTrdTracklet;
 class AliESDMuonTrack;
@@ -89,6 +90,7 @@ public:
 		       kTracks,
 		       kMuonTracks,
 		       kPmdTracks,
+		       kTrdTrigger,
 		       kTrdTracks,
 		       kTrdTracklets,
 		       kV0s,
@@ -345,6 +347,12 @@ public:
   }
 
   
+  void SetTrdTrigger(const AliESDTrdTrigger *t);
+
+  AliESDTrdTrigger* GetTrdTrigger() const {
+    return (AliESDTrdTrigger*)(fTrdTrigger);
+  }
+
   void AddTrdTrack(const AliESDTrdTrack *t);
 
   AliESDTrdTracklet* GetTrdTracklet(Int_t idx) const {
@@ -464,6 +472,7 @@ protected:
   AliESDCaloTrigger* fPHOSTrigger;     //! PHOS Trigger information
   AliESDCaloTrigger* fEMCALTrigger;    //! PHOS Trigger information
   AliESDACORDE    *fESDACORDE;        //! ACORDE ESD object caontaining bit pattern
+  AliESDTrdTrigger *fTrdTrigger;      //! TRD trigger information
 
   TClonesArray *fSPDPileupVertices;//! Pileup primary vertices reconstructed by SPD 
   TClonesArray *fTrkPileupVertices;//! Pileup primary vertices reconstructed using the tracks 
@@ -495,7 +504,7 @@ protected:
                              //  and T0spread as written in OCDB
   AliCentrality *fCentrality; //! Centrality for AA collision
   AliEventplane *fEventplane; //! Event plane for AA collision
-  ClassDef(AliESDEvent,14)  //ESDEvent class 
+  ClassDef(AliESDEvent,15)  //ESDEvent class 
 };
 #endif 
 

@@ -12,6 +12,7 @@ set ( SRCS
     ESD/AliESDPmdTrack.cxx 
     ESD/AliESDTrdTrack.cxx 
     ESD/AliESDTrdTracklet.cxx 
+    ESD/AliESDTrdTrigger.cxx 
     ESD/AliESDHLTtrack.cxx 
     ESD/AliESDv0.cxx 
     ESD/AliESDcascade.cxx 
