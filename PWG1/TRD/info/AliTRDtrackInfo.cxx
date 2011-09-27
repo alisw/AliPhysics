@@ -306,8 +306,9 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   if(esd.fOP){
     if(fOP){
       fOP->~AliExternalTrackParam();
-      new(fOP) AliExternalTrackParam(esd.fOP);
-    } else fOP = new AliExternalTrackParam(esd.fOP);
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fOP) AliExternalTrackParam(*esd.fOP);
+    } else fOP = new AliExternalTrackParam(*esd.fOP);
   } else fOP = NULL;
 
   return *this;
