@@ -35,7 +35,7 @@ endif
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
-    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/ANALYSIS/Tender -I$(ALICE_ROOT)/TOF -I$(ALICE_ROOT)/TRD/Cal -I$(ALICE_ROOT)/VZERO -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/T0
+    ALICEINC += -I$(ALICE_ROOT)/include -I$(ALICE_ROOT)/ANALYSIS/Tender -I$(ALICE_ROOT)/TOF -I$(ALICE_ROOT)/TRD/Cal -I$(ALICE_ROOT)/VZERO -I$(ALICE_ROOT)/TPC -I$(ALICE_ROOT)/T0 -I$(ALICE_ROOT)/EMCAL
   endif
 endif
 
