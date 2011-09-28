@@ -17,6 +17,7 @@
 #include "AliTRDpidUtil.h"
 #include "AliTRDrecoParam.h"
 #include "AliTRDdigitsParam.h"
+#include "AliESDTrdTrigger.h"
 
 class TClonesArray;
 class TTreeSRedirector;
@@ -105,6 +106,7 @@ private:
   static TClonesArray *fgTracks;      //  list of GTU tracks for local reconstructor
   static Int_t         fgNTimeBins;   //  number of time bins as given by the clusterizer
   AliTRDclusterizer   *fClusterizer;  //! instance of TRD clusterizer
+  static AliESDTrdTrigger fgTriggerFlags; //  L1 trigger flags
 
   ClassDef(AliTRDReconstructor, 5)    //  Class for the TRD reconstruction
 

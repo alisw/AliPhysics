@@ -42,6 +42,7 @@
 #include "AliESDEvent.h"
 #include "AliESDTrdTrack.h"
 #include "AliESDTrdTracklet.h"
+#include "AliESDTrdTrigger.h"
 #include "AliTRDtrackletWord.h"
 
 #define SETFLG(n,f) ((n) |= f)
@@ -49,6 +50,7 @@
 
 ClassImp(AliTRDReconstructor)
 
+AliESDTrdTrigger AliTRDReconstructor::fgTriggerFlags;
 TClonesArray *AliTRDReconstructor::fgClusters = NULL;
 TClonesArray *AliTRDReconstructor::fgTracklets = NULL;
 TClonesArray *AliTRDReconstructor::fgTracks = NULL;
@@ -190,6 +192,10 @@ void AliTRDReconstructor::ConvertDigits(AliRawReader *rawReader
   // take over GTU tracks
   fgTracks = rawData.TracksArray();
   rawData.SetTracksOwner(0x0);
+
+  for (Int_t iSector = 0; iSector < 18; iSector++) {
+    fgTriggerFlags.SetFlags(iSector, rawData.GetTriggerFlags(iSector));
+  }
 }
 
 //_____________________________________________________________________________
@@ -226,6 +232,10 @@ void AliTRDReconstructor::Reconstruct(AliRawReader *rawReader
   // take over GTU tracks
   fgTracks = fClusterizer->TracksArray();
   fClusterizer->SetTracksOwner(kFALSE);
+
+  for (Int_t iSector = 0; iSector < 18; iSector++) {
+    fgTriggerFlags.SetFlags(iSector, fClusterizer->GetTriggerFlags(iSector));
+  }
 
   if(IsWritingClusters()) return;
 
@@ -309,7 +319,7 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
       if ((hc < 0) || (hc >= 1080)) {
 	AliError(Form("HC for tracklet: 0x%08x out of range: %i", trkl->GetTrackletWord(), trkl->GetHCId()));
 	continue;
-}
+      }
       AliDebug(5, Form("hc: %4i : 0x%08x z: %2i", hc, trkl->GetTrackletWord(), trkl->GetZbin()));
       if (hc != lastHC) {
 	AliDebug(2, Form("set tracklet index for HC %i to %i", hc, iTracklet));
@@ -408,6 +418,8 @@ void AliTRDReconstructor::FillESD(TTree* /*digitsTree*/
       esd->AddTrdTrack(trdTrack);
     }
   }
+
+  esd->SetTrdTrigger(&fgTriggerFlags);
 
   // clearing variables for next event
   fgTracklets = 0x0;

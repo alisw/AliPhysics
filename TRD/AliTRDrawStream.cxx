@@ -692,7 +692,7 @@ Int_t AliTRDrawStream::DecodeGTUtracks()
 
 	    Float_t pt = (((Int_t) (trackWord & 0xffff) ^ 0x8000) - 0x8000)/128.;
 	    if (TMath::Abs(pt) > 0.1) {
-	      trk->SetA((Int_t) (0.15*51625./100./pt / 160e-4 * 2));
+	      trk->SetA((Int_t) (-0.15*51625./100./pt / 160e-4 * 2));
 	    }
 	  }
         }
@@ -717,6 +717,8 @@ Int_t AliTRDrawStream::DecodeGTUtracks()
 	if ((idx == 0) &&
 	    ((fPayloadCurr[iWord] & 0xfffff0f0) == 0x13370000)) {
 	  fastWord = fPayloadCurr[iWord];
+	  if (fastWord & (1 << 13))
+	    fCurrTrgFlags[sector] |= 1 << (stack+11);
 	  AliDebug(1, Form("stack %i: fast trigger word: 0x%08x", stack, fastWord));
 	  continue;
 	}
@@ -1416,8 +1418,10 @@ Int_t AliTRDrawStream::ReadTPData(Int_t mode)
 
 	if (diff != 0) {
 	  MCMError(kTPmismatch,
-		   "Seen 0x%08x, expected 0x%08x, diff: 0x%08x (0x%02x) - word %2i (cpu %i, ch %i)",
-		   *fPayloadCurr, expword, diff, 0xff & (diff | diff >> 8 | diff >> 16 | diff >> 24),
+		   "Seen 0x%08x, expected 0x%08x, diff: 0x%08x (0x%02x, 0x%04x) - word %2i (cpu %i, ch %i)",
+		   *fPayloadCurr, expword, diff,
+		   0xff & (diff | diff >> 8 | diff >> 16 | diff >> 24),
+		   0xffff & (diff | diff >> 16),
 		   wordcount, cpu, channelcount);;
 	}
 	fPayloadCurr++;
