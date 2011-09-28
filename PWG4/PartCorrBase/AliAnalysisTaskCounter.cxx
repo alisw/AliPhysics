@@ -44,6 +44,7 @@
 #include "AliAODHeader.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDEvent.h"
+#include "AliAODEvent.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -54,14 +55,15 @@ ClassImp(AliAnalysisTaskCounter)
 //________________________________________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name) 
 : AliAnalysisTaskSE(name), 
-  fZVertexCut(10.),
+  fAcceptFastCluster(kTRUE),
+  fZVertexCut(10.), 
   fTrackMultEtaCut(0.8),
   fCaloFilterPatch(kFALSE),
   fOutputContainer(0x0), 
   fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
   fTriggerAnalysis (new AliTriggerAnalysis),
   fhNEvents(0),
-  fhXVertex(0),fhYVertex(0),fhZVertex(0),
+  fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
   fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0)
 {
   //ctor
@@ -71,6 +73,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter(const char *name)
 //________________________________________________________________________
 AliAnalysisTaskCounter::AliAnalysisTaskCounter() 
   : AliAnalysisTaskSE("DefaultAnalysis_AliAnalysisTaskCounter"),
+    fAcceptFastCluster(kTRUE),
     fZVertexCut(10.),
     fTrackMultEtaCut(0.8),
     fCaloFilterPatch(kFALSE),
@@ -78,7 +81,7 @@ AliAnalysisTaskCounter::AliAnalysisTaskCounter()
     fESDtrackCuts(AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()),
     fTriggerAnalysis (new AliTriggerAnalysis),
     fhNEvents(0),
-    fhXVertex(0),fhYVertex(0),fhZVertex(0),
+    fhXVertex(0),    fhYVertex(0),    fhZVertex(0),
     fhXGoodVertex(0),fhYGoodVertex(0),fhZGoodVertex(0)
 {
   // ctor
@@ -132,7 +135,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fOutputContainer->Add(fhYGoodVertex);
   
   
-  fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 20, 0, 20) ;
+  fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
   fhNEvents->SetXTitle("Selection");
   fhNEvents->SetYTitle("# events");
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");
@@ -153,9 +156,10 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhNEvents->GetXaxis()->SetBinLabel(16,"16 = 10 & 11");
   fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 6  & 10");
   fhNEvents->GetXaxis()->SetBinLabel(17,"17 = 1  & |Z|<50");  
-  fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL");
+  fhNEvents->GetXaxis()->SetBinLabel(18,"18 = Reject EMCAL 1");
   fhNEvents->GetXaxis()->SetBinLabel(19,"19 = 18 & 2");
-  fhNEvents->GetXaxis()->SetBinLabel(20,"20 = 18 & |Z|<50");
+  fhNEvents->GetXaxis()->SetBinLabel(20,"20 = Reject EMCAL 2");
+  fhNEvents->GetXaxis()->SetBinLabel(21,"20 = 20 & 2");
 
   fOutputContainer->Add(fhNEvents);
 
@@ -180,7 +184,18 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
     printf("AliAnalysisTaskCounter::UserExec() - ERROR: event not available \n");
     return;
   }
+  
   AliESDEvent * esdevent = dynamic_cast<AliESDEvent*> (event);
+  AliAODEvent * aodevent = dynamic_cast<AliAODEvent*> (event);
+  
+  TString triggerclasses = "";
+  if(esdevent) triggerclasses = esdevent->GetFiredTriggerClasses();
+  if(aodevent) triggerclasses = aodevent->GetFiredTriggerClasses();
+
+  if (triggerclasses.Contains("FAST") && !triggerclasses.Contains("ALL") && !fAcceptFastCluster) {
+    //printf("Do not count events from fast cluster, trigger name %s\n",triggerclasses.Data());
+    return;
+  }
 
   fhNEvents->Fill(1.5);  
     
@@ -311,20 +326,43 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //printf("AliAnalysisTaskCounter::UserExec() : z vertex %d, good vertex %d, v0and %d, pile up %d, track mult %d\n ", bSelectVZ, bGoodV, bV0AND, bPileup, trackMult);
   
   // Events that could be rejected in EMCAL
+  // LHC11a, SM4 and some SM3 events cut with this
+  Bool_t bEMCALRejected = kFALSE;
   for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
   {
     AliVCluster *clus = InputEvent()->GetCaloCluster(i);
     if(clus->IsEMCAL()){    
-      
-      if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 300)  {
+      if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200)  {
+        
         //printf("Counter: Reject event with cluster: E %f, ncells %d\n",clus->E(),clus->GetNCells());
+        
                          fhNEvents->Fill(17.5); 
         if(bSelectVZ)    fhNEvents->Fill(18.5);
-        if(TMath::Abs(v[2]) < 50.)  fhNEvents->Fill(19.5); 
+        bEMCALRejected = kTRUE;
         break;
       }
-        
     }
+  }
+  
+  //LHC11a, 3 last runs, cut with this
+  if(!bEMCALRejected){
+    // Count number of cells in SM3 with energy larger than 0.1, cut on this number
+    Int_t ncells = 0;
+    for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncells++;
+    }
+    
+    Int_t ncellcut = 21;
+    if(triggerclasses.Contains("EMC")) ncellcut = 35;
+    
+    if(ncells >= ncellcut ){
+      
+      //printf("Counter: reject event with ncells in SM3: ncells %d\n",ncells);
+
+                       fhNEvents->Fill(19.5); 
+      if(bSelectVZ)    fhNEvents->Fill(20.5);
+    }
+    
   }
   
   PostData(1,fOutputContainer);
