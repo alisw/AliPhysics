@@ -14,6 +14,7 @@
 #include <TNamed.h>
 
 #include "AliTRDrawStream.h"
+#include "AliTRDgeometry.h"
 
 class TFile;
 class TTree;
@@ -114,7 +115,7 @@ class AliTRDclusterizer : public TNamed
   void             SetTracksOwner(Bool_t own=kTRUE) {SetBit(kTracksOwner, own); if(!own) {fTracks = 0x0; } }
   void             SetSkipTransform(Bool_t b=kTRUE) {SetBit(kSkipTrafo, b); }
 
-  Int_t    GetTriggerFlags(const Int_t sector) const { return fRawStream->GetTriggerFlags(sector); }
+  UInt_t   GetTriggerFlags(const Int_t sector) const { return fTrgFlags[sector]; }
 
 protected:
 
@@ -181,6 +182,7 @@ protected:
   Int_t                fNoOfClusters;         // Number of Clusters already processed and still owned by the clusterizer
   Int_t                fBaseline;             // Baseline of the ADC values
   AliTRDrawStream     *fRawStream;            // Raw data streamer
+  UInt_t               fTrgFlags[AliTRDgeometry::kNsector]; // trigger flags
 
   ClassDef(AliTRDclusterizer,6)               //  TRD clusterfinder
 
