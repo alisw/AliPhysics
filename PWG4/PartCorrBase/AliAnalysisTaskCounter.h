@@ -33,23 +33,27 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);  
   virtual void FinishTaskOutput();  
   
-  void SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta  ; }  
-  void SetZVertexCut(Float_t vcut)             { fZVertexCut      = vcut ; }  
+  void SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }  
+  void SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }  
 
-  void SwitchOnCaloFilterPatch()               { fCaloFilterPatch = kTRUE  ; } 
-  void SwitchOffCaloFilterPatch()              { fCaloFilterPatch = kFALSE ; }  
-  Bool_t IsCaloFilterPatchOn()                 { return fCaloFilterPatch   ; }   
+  void SwitchOnCaloFilterPatch()               { fCaloFilterPatch   = kTRUE  ; } 
+  void SwitchOffCaloFilterPatch()              { fCaloFilterPatch   = kFALSE ; }  
+  Bool_t IsCaloFilterPatchOn()                 { return fCaloFilterPatch     ; }   
+  
+  void AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; } 
+  void RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }  
+  Bool_t IsFastClusterAccepted()               { return fAcceptFastCluster   ; }   
   
   Bool_t CheckForPrimaryVertex() ;
    
  private: 
-  
-  Float_t              fZVertexCut;      // Z vertex cut  
-  Float_t              fTrackMultEtaCut; // Track multiplicity eta cut  
-  Bool_t               fCaloFilterPatch; // CaloFilter patch  
-  TList*               fOutputContainer; //! Histogram container  
-  AliESDtrackCuts    * fESDtrackCuts;    // Track cut    
-  AliTriggerAnalysis * fTriggerAnalysis; // Trigger algorithm 
+  Bool_t               fAcceptFastCluster; // Accept events from fast cluster, exclude thiese events for LHC11a
+  Float_t              fZVertexCut;        // Z vertex cut  
+  Float_t              fTrackMultEtaCut;   // Track multiplicity eta cut  
+  Bool_t               fCaloFilterPatch;   // CaloFilter patch  
+  TList*               fOutputContainer;   //! Histogram container  
+  AliESDtrackCuts    * fESDtrackCuts;      // Track cut    
+  AliTriggerAnalysis * fTriggerAnalysis;   // Trigger algorithm 
   
   //Histograms
   TH1I *  fhNEvents;      //! Events that delivers the analysis frame after different assumptions  

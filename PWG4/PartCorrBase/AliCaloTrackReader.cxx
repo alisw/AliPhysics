@@ -72,7 +72,8 @@ ClassImp(AliCaloTrackReader)
     fTaskName(""),               fCaloUtils(0x0), 
     fMixedEvent(NULL),           fNMixedEvent(1),                 fVertex(NULL), 
     fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
-    fEMCALClustersListName(""),  fZvtxCut(0.), 
+    fEMCALClustersListName(""),  fZvtxCut(0.),                    
+    fAcceptFastCluster(kTRUE),   fRemoveLEDEvents(kFALSE), 
     fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
     fTriggerAnalysis (new AliTriggerAnalysis), 
     fCentralityClass("V0M"),     fCentralityOpt(10),
@@ -356,6 +357,49 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
   if(fInputEvent->GetHeader())
 	  eventType = ((AliVHeader*)fInputEvent->GetHeader())->GetEventType();
 
+  if (GetFiredTriggerClasses().Contains("FAST")  && !GetFiredTriggerClasses().Contains("ALL") && !fAcceptFastCluster) {
+     if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - Do not count events from fast cluster, trigger name %s\n",fFiredTriggerClassName.Data());
+    return kFALSE;
+  }
+  
+  //-------------------------------------------------------------------------------------
+  // Reject event if large clusters with large energy
+  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
+  // If clusterzer NxN or V2 it does not help
+  //-------------------------------------------------------------------------------------
+  if(fRemoveLEDEvents){
+    for (Int_t i = 0; i < fInputEvent->GetNumberOfCaloClusters(); i++)
+    {
+      AliVCluster *clus = fInputEvent->GetCaloCluster(i);
+      if(clus->IsEMCAL()){    
+        
+        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) {
+          Int_t absID = clus->GetCellsAbsId()[0];
+          Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+           if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
+          return kFALSE;
+        }
+      }
+    }
+    
+    // Count number of cells with energy larger than 0.1 in SM3, cut on this number
+    Int_t ncells = 0;
+    for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++){
+      Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
+      Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
+      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncells++;
+    }
+    
+    Int_t ncellcut = 21;
+    if(fFiredTriggerClassName.Contains("EMC")) ncellcut = 35;
+    
+    if(ncells >= ncellcut ) {
+       if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3: ncells %d\n",ncells);
+      return kFALSE;
+    }
+  }// Remove LED events
+  
+  // Reject pure LED events?
   if( fFiredTriggerClassName  !="" && !fAnaLED){
     if(eventType!=7)
       return kFALSE; //Only physics event, do not use for simulated events!!!
@@ -383,7 +427,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
 	  if(eventType!=7 && fDebug > 1 )printf("AliCaloTrackReader::FillInputEvent() - DO LED, Event Type <%d>, 8 Calibration \n",  eventType);
 	  if(eventType!=8)return kFALSE;
   }
-		
+  
   //In case of analysis of events with jets, skip those with jet pt > 5 pt hard	
   if(fComparePtHardAndJetPt && GetStack()) {
     if(!ComparePtHardAndJetPt()) return kFALSE ;

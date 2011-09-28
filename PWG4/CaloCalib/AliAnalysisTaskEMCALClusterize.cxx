@@ -353,26 +353,6 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
   
-  // Reject event if large clusters with large energy
-  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
-  // If clusterzer NxN or V2 it does not help
-  if(fRemoveLEDEvents){
-    for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
-    {
-      AliVCluster *clus = InputEvent()->GetCaloCluster(i);
-      if(clus->IsEMCAL()){    
-        
-        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 300) {
-          Int_t absID = clus->GetCellsAbsId()[0];
-          Int_t sm = fGeom->GetSuperModuleNumber(absID);
-          printf("AliAnalysisTaskEMCALClusterize - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
-          
-          return;
-        }
-      }
-    }
-  }// Remove LED events
-  
   //Magic line to write events to AOD file
   AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
   LoadBranches();
@@ -419,6 +399,48 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     Error("UserExec","Event not available");
     return;
   }
+  
+  //-------------------------------------------------------------------------------------
+  // Reject event if large clusters with large energy
+  // Use only for LHC11a data for the moment, and if input is clusterizer V1 or V1+unfolding
+  // If clusterzer NxN or V2 it does not help
+  //-------------------------------------------------------------------------------------
+  if(fRemoveLEDEvents){
+    for (Int_t i = 0; i < InputEvent()->GetNumberOfCaloClusters(); i++)
+    {
+      AliVCluster *clus = InputEvent()->GetCaloCluster(i);
+      if(clus->IsEMCAL()){    
+        
+        if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) {
+          Int_t absID = clus->GetCellsAbsId()[0];
+          Int_t sm = fGeom->GetSuperModuleNumber(absID);
+          printf("AliAnalysisTaskEMCALClusterize - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
+          
+          return;
+        }
+      }
+    }
+    
+    // Count number of cells with energy larger than 0.1 in SM3, cut on this number
+    Int_t ncells = 0;
+    for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncells++;
+    }
+    
+    TString triggerclasses = "";
+    if(esdevent) triggerclasses = esdevent             ->GetFiredTriggerClasses();
+    else         triggerclasses = ((AliAODEvent*)event)->GetFiredTriggerClasses();
+    
+    Int_t ncellcut = 21;
+    if(triggerclasses.Contains("EMC")) ncellcut = 35;
+    
+    if(ncells >= ncellcut ){
+      printf("AliAnalysisTaskEMCALClusterize - reject event with cluster  - reject event with ncells in SM3: ncells %d\n",ncells);
+
+      return;
+    }
+    
+  }// Remove LED events
   
   //-------------------------------------------------------------------------------------
   //Set the geometry matrix, for the first event, skip the rest
