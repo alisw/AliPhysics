@@ -54,6 +54,7 @@ AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointContainer(int mode)
   , fBlocks()
   , fSingleBlock()
   , fMode(mode)
+  , fWrittenClusterIds(NULL)
 {
   // see header file for class documentation
   // or
@@ -73,6 +74,7 @@ AliHLTTPCHWCFSpacePointContainer::AliHLTTPCHWCFSpacePointContainer(const AliHLTT
   , fBlocks()
   , fSingleBlock()
   , fMode(c.fMode)
+  , fWrittenClusterIds(NULL)
 {
   /// copy constructor
 }
@@ -84,6 +86,7 @@ AliHLTTPCHWCFSpacePointContainer& AliHLTTPCHWCFSpacePointContainer::operator=(co
   AliHLTSpacePointContainer::operator=(c);
   fClusters=c.fClusters;
   fMode=c.fMode;
+  fWrittenClusterIds=NULL;
 
   return *this;
 }
@@ -94,6 +97,7 @@ AliHLTTPCHWCFSpacePointContainer::~AliHLTTPCHWCFSpacePointContainer()
   Clear();
   if (fSingleBlock.GetDecoder()) delete fSingleBlock.GetDecoder();
   if (fSingleBlock.GetGrid()) delete fSingleBlock.GetGrid();
+  if (fWrittenClusterIds) delete fWrittenClusterIds;
 }
 
 int AliHLTTPCHWCFSpacePointContainer::AddInputBlock(const AliHLTComponentBlockData* pDesc)
@@ -638,11 +642,18 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 						  AliHLTComponentBlockDataList&
 						  outputBlocks,
 						  AliHLTDataDeflater* pDeflater,
-						  const char* /*option*/) const
+						  const char* option) const
 {
   /// write blocks to HLT component output
   if (!outputPtr || !pDecoder || !pGrid) return -EINVAL;
   if (pDecoder->GetNumberOfClusters()==0) return 0;
+  if (option) {
+    // this is only for sending mc labels in simulation and testing
+    // no impact to real running
+    if (!fWrittenClusterIds && strcmp(option, "write-cluster-ids")==0) {
+      const_cast<AliHLTTPCHWCFSpacePointContainer*>(this)->fWrittenClusterIds=new vector<AliHLTUInt32_t>;
+    }
+  }
   int iResult=0;
   AliHLTUInt32_t capacity=size;
   size=0;
@@ -650,6 +661,8 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   int slice=AliHLTTPCSpacePointData::GetSlice(mask);
   int part=AliHLTTPCSpacePointData::GetPatch(mask);
 
+  // Note: the offset parameter is only for the block descriptors, output pointer and size
+  // consider already the offset
   AliHLTTPCRawClusterData* blockout=reinterpret_cast<AliHLTTPCRawClusterData*>(outputPtr+size);
   blockout->fVersion=0;
   blockout->fCount=0;
@@ -679,6 +692,7 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
       const AliHLTTPCHWCFData::iterator& input=pDecoder->find(index);
       if (!(input!=pDecoder->end())) continue;
+      if (fWrittenClusterIds) fWrittenClusterIds->push_back(clusterID.Data().fId);
       int padrow=input.GetPadRow();
       if (padrow<0) {
 	// something wrong here, padrow is stored in the cluster header
@@ -748,8 +762,24 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   }
   bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
   outputBlocks.push_back(bd);
-      
+
   size += bd.fSize;
+
+  if (fWrittenClusterIds && fWrittenClusterIds->size()>0) {
+    AliHLTComponent::FillBlockData(bd);
+    bd.fOffset        = size+offset;
+    bd.fSize        = fWrittenClusterIds->size()*sizeof(vector<AliHLTUInt32_t>::value_type);
+    if (bd.fSize+size<=capacity) {
+      memcpy(outputPtr+size, &(*fWrittenClusterIds)[0], bd.fSize);
+      bd.fDataType    = AliHLTTPCDefinitions::RemainingClusterIdsDataType();
+      bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(slice, slice, part, part);
+      outputBlocks.push_back(bd);    
+      size += bd.fSize;
+    } else {
+      iResult=-ENOSPC;
+    }
+    fWrittenClusterIds->clear();
+  }
 
   if (iResult<0) return iResult;
   return size;

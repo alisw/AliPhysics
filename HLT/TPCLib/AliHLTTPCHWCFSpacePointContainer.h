@@ -17,6 +17,7 @@
 #include "AliHLTSpacePointContainer.h"
 #include "AliHLTTPCHWCFData.h"
 #include <map>
+#include <vector>
 using namespace std;
 
 /**
@@ -183,6 +184,9 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 
   /// mode
   int fMode; //!
+
+  /// vector of cluster ids for writing
+  vector<AliHLTUInt32_t>* fWrittenClusterIds; //!
 
   ClassDef(AliHLTTPCHWCFSpacePointContainer, 0)
 };
