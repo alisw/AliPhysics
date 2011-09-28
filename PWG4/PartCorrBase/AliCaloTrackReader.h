@@ -190,12 +190,20 @@ public:
   // Event/track selection methods
   //-------------------------------------
   
+  void             AcceptFastClusterEvents()               { fAcceptFastCluster     = kTRUE  ; } 
+  void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
+  Bool_t           IsFastClusterAccepted()                 { return fAcceptFastCluster       ; }   
+  
+  void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
+  void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; } 
+  Bool_t           IsLEDEventRemoved()                     { return fRemoveLEDEvents         ; }   
+
   void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
   virtual TString  GetFiredTriggerClasses()                { return ""                       ; } // look the ESD/AOD reader 
   
-  void             SwitchOnEventSelection()                { fDoEventSelection = kTRUE       ; }
-  void             SwitchOffEventSelection()               { fDoEventSelection = kFALSE      ; }
+  void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
+  void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
   Bool_t           IsEventSelectionDone()            const { return fDoEventSelection        ; } 
   
   void             SwitchOnV0ANDSelection()                { fDoV0ANDEventSelection = kTRUE  ; }
@@ -205,8 +213,6 @@ public:
   void             SwitchOnPrimaryVertexSelection()        { fUseEventsWithPrimaryVertex = kTRUE  ; }
   void             SwitchOffPrimaryVertexSelection()       { fUseEventsWithPrimaryVertex = kFALSE ; }
   Bool_t           IsPrimaryVertexSelectionDone()    const { return fUseEventsWithPrimaryVertex   ; } 
-  
-  
   
   // Track selection
   ULong_t          GetTrackStatus()                  const { return fTrackStatus       ; }
@@ -389,7 +395,11 @@ public:
 
   Bool_t           fCaloFilterPatch;             // CaloFilter patch
   TString          fEMCALClustersListName;       // Alternative list of clusters produced elsewhere and not from InputEvent
-  Float_t          fZvtxCut ;	                   // Cut on vertex position  
+  
+  // Event selection
+  Float_t          fZvtxCut ;	                   // Cut on vertex position
+  Bool_t           fAcceptFastCluster;           // Accept events from fast cluster, exclude these events for LHC11a
+  Bool_t           fRemoveLEDEvents;             // Remove events where LED was wrongly firing - EMCAL LHC11a
   Bool_t           fDoEventSelection;            // Select events depending on V0, pileup, vertex well reconstructed, at least 1 track ...
   Bool_t           fDoV0ANDEventSelection;       // Select events depending on V0, fDoEventSelection should be on
   Bool_t           fUseEventsWithPrimaryVertex ; // Select events with primary vertex
@@ -401,7 +411,7 @@ public:
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
-  ClassDef(AliCaloTrackReader,33)
+  ClassDef(AliCaloTrackReader,34)
 } ;
 
 
