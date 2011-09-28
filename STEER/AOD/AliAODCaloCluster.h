@@ -108,7 +108,11 @@ class AliAODCaloCluster : public AliAODCluster {
   
   void GetMomentum(TLorentzVector& p, Double_t * vertexPosition );
 
-  void AddTrackMatched(TObject *trk) { fTracksMatched.Add(trk); }
+  void AddTrackMatched(TObject *trk) { 
+    //Make sure we attach the object to correct process number
+    if(fTracksMatched.GetEntries()==0) { TRefArray ref(TProcessID::GetProcessWithUID(trk)) ; fTracksMatched = ref ; }
+    fTracksMatched.Add(trk) ; }
+  
   void RemoveTrackMatched(TObject *trk) { fTracksMatched.Remove(trk); }
   Bool_t HasTrackMatched(TObject *trk) const;
 
