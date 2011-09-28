@@ -1459,7 +1459,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
     
     //Cut on time of clusters
     if(tof < fTimeCutMin || tof > fTimeCutMax){ 
-      printf("Remove cluster with TOF %f\n",tof);
+      if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cluster with TOF %f\n",time);
       continue;
     }
     
@@ -1825,7 +1825,7 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       //Remove noisy channels, only possible in ESDs
       if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
         if(time < fTimeCutMin || time > fTimeCutMax){
-          printf("Remove cluster with TOF %f\n",time);
+          if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
         }
       }

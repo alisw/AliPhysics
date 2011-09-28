@@ -1610,8 +1610,8 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
   
   //Get shower shape information of clusters
   TObjArray *clusters = 0;
-  if     (fCalorimeter="EMCAL") clusters = GetEMCALClusters();
-  else if(fCalorimeter="PHOS" ) clusters = GetPHOSClusters() ;
+  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
+  else if(fCalorimeter=="PHOS" ) clusters = GetPHOSClusters() ;
   
   //---------------------------------
   //First loop on photons/clusters
