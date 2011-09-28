@@ -99,8 +99,16 @@ const AliHLTComponentDataType& AliHLTTPCDefinitions::ClusterTracksCompressedData
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLSTRKCM", kAliHLTDataOriginTPC);
   return dt;
 }
+const AliHLTComponentDataType& AliHLTTPCDefinitions::ClusterIdTracksDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("CLIDSTRK", kAliHLTDataOriginTPC);
+  return dt;
+}
 const AliHLTComponentDataType& AliHLTTPCDefinitions::RemainingClustersCompressedDataType() {
   static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("REMCLSCM", kAliHLTDataOriginTPC);
+  return dt;
+}
+const AliHLTComponentDataType& AliHLTTPCDefinitions::RemainingClusterIdsDataType() {
+  static AliHLTComponentDataType dt = AliHLTComponentDataTypeInitializer("REMCLIDS", kAliHLTDataOriginTPC);
   return dt;
 }
 

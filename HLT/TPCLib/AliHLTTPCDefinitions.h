@@ -123,12 +123,16 @@ public:
   /** remaining clusters model data type */
   static const AliHLTComponentDataType fgkRemainingClustersModelDataType;      // see above
   static const AliHLTComponentDataType& RemainingClustersModelDataType();
-  /** cluster tracks compressed data type */
+  /** track clusters compressed data type */
   static const AliHLTComponentDataType fgkClusterTracksCompressedDataType;     // see above
   static const AliHLTComponentDataType& ClusterTracksCompressedDataType();
+  /** track cluster ids data type */
+  static const AliHLTComponentDataType& ClusterIdTracksDataType();
   /** remaining clusters compressed data type */
   static const AliHLTComponentDataType fgkRemainingClustersCompressedDataType; // see above
   static const AliHLTComponentDataType& RemainingClustersCompressedDataType();
+  /** remaining clusters ids data type */
+  static const AliHLTComponentDataType& RemainingClusterIdsDataType();
 
   // Calibration data
   /** pedestal calibration data */
