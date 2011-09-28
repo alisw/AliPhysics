@@ -174,6 +174,10 @@ void AliPHOSEmbedding::Init(){
   fPHOSReconstructor = new AliPHOSReconstructor() ;
   AliCDBPath path("PHOS","Calib","RecoParam");
   AliCDBEntry *entry=AliCDBManager::Instance()->Get(path.GetPath());
+  if(!entry){
+    AliError(Form("Can not get OCDB entry %s",path.GetPath().Data())) ;
+    return ;
+  }
   
   TObjArray* recoParamArray = (TObjArray*)entry->GetObject();
   AliPHOSRecoParam* recoParam = (AliPHOSRecoParam*)recoParamArray->At(2); 
