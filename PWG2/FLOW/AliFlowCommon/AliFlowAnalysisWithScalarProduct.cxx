@@ -1297,7 +1297,16 @@ Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t b, Do
   Double_t duQproSpread = pHistProUQ->GetBinError(b);
   Double_t sumOfMq = pHistSumOfWeights[0]->GetBinContent(b);
   Double_t sumOfMqSquared = pHistSumOfWeights[1]->GetBinContent(b);
-  Double_t dQaQb = fHistProQaQbNorm->GetBinContent(1);
+  Double_t dQaQb = fHistProQaQbNorm->GetBinContent(1);  
+  //non-isotropic terms:  
+  Double_t dImQa = fHistProQaQbReImNorm->GetBinContent(1);
+  Double_t dReQa = fHistProQaQbReImNorm->GetBinContent(2);
+  Double_t dImQb = fHistProQaQbReImNorm->GetBinContent(3);
+  Double_t dReQb = fHistProQaQbReImNorm->GetBinContent(4);
+  if(fApplyCorrectionForNUA) 
+  {
+   dQaQb = dQaQb - dImQa*dImQb - dReQa*dReQb; 
+  }  
   Double_t dTerm1 = 0.;
   Double_t dTerm2 = 0.;
   if(sumOfMq) {
