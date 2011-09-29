@@ -1125,7 +1125,7 @@ Int_t AliTRDrawStream::ReadLinkData()
 
   if (fMarkers)
     new ((*fMarkers)[fMarkers->GetEntriesFast()])
-      AliTRDrawStreamError(-kHCactive, fCurrEquipmentId-kDDLOffset, fCurrStack, fCurrLink);
+      AliTRDrawStreamError(-kHCactive, fCurrEquipmentId-kDDLOffset, fCurrSlot, fCurrLink);
 
   if (fErrorFlags & kDiscardHC)
     return count;
