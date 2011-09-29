@@ -15,7 +15,7 @@
 #include "TF1.h"
 class TH2F;
 class TH1F;
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
 class TClonesArray;
 class TList;
 
@@ -71,8 +71,8 @@ public:
   TList * GetHistograms() const { return fHistograms;}
 
   //Is particle isolated
-  Bool_t IsIsolated( const AliAODConversionParticle * const particle, const TClonesArray * const tracks, Bool_t &leading);
-  Bool_t IsIsolated( AliAODConversionParticle * const particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading );
+  Bool_t IsIsolated( const AliAODConversionPhoton * const particle, const TClonesArray * const tracks, Bool_t &leading);
+  Bool_t IsIsolated( AliAODConversionPhoton * const particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading );
 
  private:
 

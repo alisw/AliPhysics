@@ -75,9 +75,11 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 	TClonesArray* FindGammaFromPi0Dalitz(const TClonesArray* candidates, const vector<Int_t>& pos, const vector<Int_t>& neg);
 	TClonesArray* FindGamma(const TClonesArray* candidates, const vector<Int_t>& pos, const vector<Int_t>& neg);
 	TClonesArray* FindDalitzPair(const TClonesArray* pos, const TClonesArray* neg);
-	TClonesArray* FindDalitzPair(const vector<Int_t>& pos, const vector<Int_t>& neg);
-	TClonesArray* FindPi0Dalitz(const TClonesArray* pos, const TClonesArray* neg, const TClonesArray* gamma);
-	TClonesArray* FindPi0Dalitz(const vector<Int_t>& pos, const vector<Int_t>& neg, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam);
+	TClonesArray* FindDalitzPair(const vector<Int_t>& pos, const vector<Int_t>& neg,Int_t motherOpc);
+        TClonesArray* FindJpsi(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx,Int_t motherOpc);
+	TClonesArray* FindParticleDalitz(const TClonesArray* pos, const TClonesArray* neg, const TClonesArray* gamma,Int_t opc);
+	TClonesArray* FindParticleDalitz(const vector<Int_t>& pos, const vector<Int_t>& neg, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam,Int_t motherOpc);
+        TClonesArray* FindParticleChic(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam,Int_t motherOpc);
 
 	void SetGammaPoolMaxSize(UInt_t maxSize=10) { fPoolMaxSize = maxSize; }
 	void UpdateGammaPool(const TClonesArray* gamma);
@@ -86,7 +88,7 @@ class AliAnalysisTaskGammaConvDalitz: public AliAnalysisTaskSE
 	TClonesArray* ElectronFromBGHandler() const;
 
 	Bool_t IsPi0DalitzDaughter( Int_t label ) const;
-	Bool_t IsDalitzPair( Int_t labelPos, Int_t labelNeg ) const;
+	Bool_t IsDalitzPair( Int_t labelPos, Int_t labelNeg, Int_t motherOpc ) const;
 	Bool_t IsFromGammaConversion( Int_t labelPos, Int_t labelNeg  ) const;
 	Bool_t IsFromGammaConversion( Double_t psiPair, Double_t deltaPhi ) const;
 	Bool_t HaveSameMother( Int_t label1, Int_t label2 ) const;
