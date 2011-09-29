@@ -138,7 +138,8 @@ class AliAODVertex : public AliVVertex {
   const char* AsString() const;
   
   static const char* GetTypeName(AODVtx_t type);
-  
+  void     SetBC(Int_t bc)               {fBCID = bc;}
+  Int_t    GetBC()              const    {return fBCID;}  
 private:
   void     MakeProngs() {if (fNprong > 0) {fProngs = new TRef[fNprong]; fIprong=0;}}
 	  
@@ -147,6 +148,7 @@ private:
   Double32_t      fPosition[3];   // vertex position
   Double32_t      fChi2perNDF;    // chi2/NDF of vertex fit
   Short_t         fID;            // vertex ID; corresponds to the array index of the appropriate ESD container
+  Char_t          fBCID;          // BC ID assigned to vertex
   Char_t          fType;          // vertex type
   Int_t           fNprong;        // number of prongs
   Int_t           fIprong;        //!index  of prong
@@ -156,7 +158,7 @@ private:
   TRefArray       fDaughters;     // references to the daughter particles
   TRef            *fProngs;       //[fNprong] alternative daughters for n-prong vertex
   
-  ClassDef(AliAODVertex, 7);
+  ClassDef(AliAODVertex, 8);
 };
 
 inline  Int_t AliAODVertex::GetNDaughters() const

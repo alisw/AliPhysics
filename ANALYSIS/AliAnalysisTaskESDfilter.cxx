@@ -1700,6 +1700,7 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
     pVSPD->SetName(vtxP->GetName());
     pVSPD->SetTitle(vtxP->GetTitle());
     pVSPD->SetNContributors(vtxP->GetNContributors()); 
+    pVSPD->SetBC(vtxP->GetBC());
   }
   
   // Add TRK pileup vertices
@@ -1713,6 +1714,7 @@ void AliAnalysisTaskESDfilter::ConvertPrimaryVertices(const AliESDEvent& esd)
     pVTRK->SetName(vtxP->GetName());
     pVTRK->SetTitle(vtxP->GetTitle());
     pVTRK->SetNContributors(vtxP->GetNContributors());
+    pVTRK->SetBC(vtxP->GetBC());
   }
 }
 
