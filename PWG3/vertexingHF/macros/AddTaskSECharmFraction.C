@@ -1,4 +1,4 @@
-AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2)
+AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.root",Int_t switchMC[5],Bool_t readmc=kFALSE,Bool_t usepid=kTRUE,Bool_t likesign=kFALSE,TString cutfile="D0toKpiCharmFractCuts.root",TString containerprefix="c",Int_t ppPbPb=0,Int_t analysLevel=2, Float_t minC=0., Float_t maxC=20.,Float_t minCloose=40., Float_t maxCloose=80.)
 {  
   //
   // Configuration macro for the task to analyze the fraction of prompt charm
@@ -57,11 +57,11 @@ AliAnalysisTaskSECharmFraction* AddTaskSECharmFraction(TString fileout="d0D0.roo
     AliRDHFCutsD0toKpi *cutLoose=new AliRDHFCutsD0toKpi("D0toKpiCutsLoose");
     if(ppPbPb==1){
       cutTight->SetStandardCutsPbPb2010();
-      cutTight->SetMinCentrality(0.);
-      cutTight->SetMaxCentrality(20.);
+      cutTight->SetMinCentrality(minC);
+      cutTight->SetMaxCentrality(maxC);
       cutLoose->SetStandardCutsPbPb2010();
-      cutLoose->SetMinCentrality(40.);
-      cutLoose->SetMaxCentrality(80.);
+      cutLoose->SetMinCentrality(minCloose);
+      cutLoose->SetMaxCentrality(maxCloose);
     }
     else {
       cutTight->SetStandardCutsPP2010();
