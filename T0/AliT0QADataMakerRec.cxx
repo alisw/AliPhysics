@@ -661,6 +661,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     IncEvCountCycleRaws();
     IncEvCountTotalRaws();
     //
+    delete start;
 }
   
 //____________________________________________________________________________
@@ -709,7 +710,8 @@ void AliT0QADataMakerRec::MakeDigits( TTree *digitsTree)
   delete digQT1;
   //
   IncEvCountCycleDigits();
-  IncEvCountTotalDigits();
+  IncEvCountTotalDigits(); 
+  delete fDigits;
   //  
 }
 
@@ -746,6 +748,7 @@ void AliT0QADataMakerRec::MakeRecPoints(TTree * clustersTree)
   IncEvCountCycleRecPoints();
   IncEvCountTotalRecPoints();
   //  
+  delete frecpoints;
 }
 
 //____________________________________________________________________________
