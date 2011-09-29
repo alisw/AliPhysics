@@ -103,17 +103,10 @@ void MUONStatusMap(AliMUONVStore*& vstatus,
   AliCDBManager::Instance()->SetDefaultStorage(cdbStorage);
   AliCDBManager::Instance()->SetRun(runNumber);
   
-//  AliCDBManager::Instance()->SetSpecificStorage("MUON/Calib/RecoParam","alien://folder=/alice/cern.ch/user/c/cgeuna/OCDB");
-  
   AliMUONCDB::LoadMapping();
   
   AliMUONRecoParam* recoParam = AliMUONCDB::LoadRecoParam();
   
-//  man->SetSpecificStorage("MUON/Calib/OccupancyMap","local://$ALICE_ROOT/OCDB");
-//  man->SetSpecificStorage("MUON/Calib/OccupancyMap","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
-//  man->SetSpecificStorage("MUON/Calib/RejectList","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
-//  man->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/cern.ch/user/l/laphecet/OCDB");
-
   AliMUONCalibrationData cd(runNumber);
   
   AliMUONPadStatusMaker statusMaker(cd);
@@ -122,8 +115,6 @@ void MUONStatusMap(AliMUONVStore*& vstatus,
   
   UInt_t mask = recoParam->PadGoodnessMask();
 
-  //  delete recoParam;
-  
   statusMaker.Report(mask);
   
   vstatus = static_cast<AliMUONVStore*>(statusMaker.StatusStore()->Clone());
@@ -292,6 +283,7 @@ void DrawPeriod(double run1, double run2, double ymin, double ymax, const char* 
 //______________________________________________________________________________
 void DrawEvolution(const char* file, bool normalized=true)
 {
+
   TFile* f = TFile::Open(file);
   
   if (!f) return;
@@ -340,9 +332,11 @@ void DrawEvolution(const char* file, bool normalized=true)
 
   DrawPeriod(148370,150702,0,ymax,"11b");
 
-  DrawPeriod(155384,155384,0,ymax,"11c");
+  DrawPeriod(151566,154583,0,ymax,"11c");
 
-  DrawPeriod(156477,159606,0,ymax,"11d");
+  DrawPeriod(158084,159606,0,ymax,"11d");
+
+  DrawPeriod(160677,162000,0,ymax,"11e");
 
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
@@ -368,6 +362,11 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   //
   // output can be then plotted using the DrawEvolution function
   //
+  // Note that the output of different runlists can then be merged simply using
+  // the hadd program, and so then the DrawEvolution can be used over
+  // a huge period, e.g. a full year, while this method is better restricted
+  // to a period or even less (depending on your success of accessing the OCDB)
+  //
   
   std::vector<int> runs;
 
@@ -384,7 +383,6 @@ void MUONStatusMapEvolution(const char* runlist, const char* outfile)
   if ( runs[0] <= 139699 ) year=2010;
   
   AliCDBManager::Instance()->SetDefaultStorage(Form("alien://folder=/alice/data/%d/OCDB?cacheFold=/local/cdb",year));
-//  AliCDBManager::Instance()->SetDefaultStorage("local:///local/cdb/alice/data/2010/OCDB");
   
   TList glist;
   
