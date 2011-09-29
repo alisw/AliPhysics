@@ -111,7 +111,7 @@ Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
     }
   }
   // extra rules for calibration tasks
-  if(TESTBIT(fSteerTask, kCheckTRK)) SETBIT(fSteerTask, kResolution);
+//  if(TESTBIT(fSteerTask, kCheckTRK)) SETBIT(fSteerTask, kResolution);
   if(TESTBIT(fSteerTask, kCalibration)) SETBIT(fSteerTask, kCheckDET);
   if(TESTBIT(fSteerTask, kMultiplicity)) SETBIT(fSteerTask, kEfficiency);
   if(TESTBIT(fSteerTask, kEfficiencyMC)) SETBIT(fSteerTask, kEfficiency);

@@ -40,8 +40,8 @@ public:
   };
 
   enum{
-    kNTRDQATASKS = 7,
-    kNTRDCALIBTASKS = 7,
+    kNTRDQATASKS = 8,
+    kNTRDCALIBTASKS = 6,
     kNTRDTASKS = kNTRDQATASKS + kNTRDCALIBTASKS
   };
 
