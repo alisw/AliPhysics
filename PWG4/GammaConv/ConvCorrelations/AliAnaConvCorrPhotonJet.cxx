@@ -87,7 +87,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
   for(Int_t i = 0; i < pions->GetEntriesFast(); i++) {
     AliAODConversionParticle * pion = dynamic_cast<AliAODConversionParticle*>(pions->At(i));
     if(pion) {
-      pion->GetGrandChildren(photons, trackIDs);
+      //pion->GetGrandChildren(photons, trackIDs);
       if(IsParticleInJet(jet, 4, trackIDs)){
 	fhPtFracPion->Fill(pion->Pt()/jet->Pt());
       }

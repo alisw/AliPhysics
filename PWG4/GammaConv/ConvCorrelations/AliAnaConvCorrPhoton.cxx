@@ -20,7 +20,7 @@
 #include "AliAnaConvCorrPhoton.h"
 #include "AliAODTrack.h"
 #include "TClonesArray.h"
-#include "AliAODConversionParticle.h"
+#include "AliAODConversionPhoton.h"
 
 #include <iostream>
 // Gamma - jet correlation analysis task
@@ -54,7 +54,7 @@ AliAnaConvCorrPhoton::~AliAnaConvCorrPhoton() {
 }
 
 ///__________________________________________________________________________
-void AliAnaConvCorrPhoton::CorrelateWithHadrons(const AliAODConversionParticle * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle) {
+void AliAnaConvCorrPhoton::CorrelateWithHadrons(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle) {
   //See header file for documentation
 
 

@@ -488,6 +488,11 @@ class AliV0Reader : public TObject {
   Double_t GetEtaCut() const{return fEtaCut;}
 
   /*
+   * Gets the Eta cut value.
+   */
+  Double_t GetEtaCutMin() const{return fEtaCutMin;}
+
+  /*
    * Gets the Rapidity Meson cut value.
    */
   Double_t GetRapidityMesonCut() const{return fRapidityMesonCut;}
@@ -520,8 +525,9 @@ class AliV0Reader : public TObject {
    * Gets the line cut values.
    */
   Double_t GetLineCutZRSlope() const{return fLineCutZRSlope;}
+  Double_t GetLineCutZRSlopeMin() const{return fLineCutZRSlopeMin;}
   Double_t GetLineCutZValue() const{return fLineCutZValue;}
-	
+  Double_t GetLineCutZValueMin() const{return fLineCutZValueMin;}	
   /*
    * Gets the Chi2 cut value for the conversions.
    */
@@ -568,6 +574,12 @@ class AliV0Reader : public TObject {
   void SetEtaCut(Double_t etaCut){fEtaCut=etaCut;}
 
   /*
+   * Sets the EtaCutMin value.
+   */
+  void SetEtaCutMin(Double_t etaCutMin){fEtaCutMin=etaCutMin;}
+
+
+  /*
    * Sets the Rapidity Meson Cut value.
    */
   void SetRapidityMesonCut(Double_t RapidityMesonCut){fRapidityMesonCut=RapidityMesonCut;}
@@ -605,6 +617,9 @@ class AliV0Reader : public TObject {
   void SetLineCutZRSlope(Double_t LineCutZRSlope){fLineCutZRSlope=LineCutZRSlope;}
   void SetLineCutZValue(Double_t LineCutZValue){fLineCutZValue=LineCutZValue;}
 	
+  void SetLineCutZRSlopeMin(Double_t LineCutZRSlopeMin){fLineCutZRSlopeMin=LineCutZRSlopeMin;}
+  void SetLineCutZValueMin(Double_t LineCutZValueMin){fLineCutZValueMin=LineCutZValueMin;}
+		
   /*
    * Sets the Chi2Cut value for conversions.
    */
@@ -815,14 +830,19 @@ class AliV0Reader : public TObject {
 
   void SetUseConstructGamma(Bool_t flag){fUseConstructGamma=flag;}
 
-  Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]);
-	
+  //   Bool_t GetHelixCenter(const AliExternalTrackParam *track, Double_t b,Int_t charge, Double_t center[2]);
+  Bool_t GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]); 
+
   Bool_t GetConvPosXY(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b, Double_t convpos[2]);
 	
   Double_t GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b);
 
-  Bool_t GetArmenterosQtAlfa(const AliKFParticle * posKFparticle, const AliKFParticle * negKFparticle, const AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+	void GetConversionPoint(const AliExternalTrackParam *pparam,const AliExternalTrackParam *nparam,Double_t convpos[3]);
 
+	Bool_t GetArmenterosQtAlfa(const AliKFParticle * posKFparticle, const AliKFParticle * negKFparticle, const AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+	Bool_t GetArmenterosQtAlfa(const TParticle * posKFparticle, const TParticle * negKFparticle, const AliKFParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+	Bool_t GetArmenterosQtAlfa(const TParticle * posKFparticle, const TParticle * negKFparticle, const TParticle * gamKFparticle,Double_t armenterosQtAlfa[2]);
+  
   void SetDoCF(Bool_t flag){fDoCF = flag;}
 
   Bool_t CheckV0FinderStatus(Int_t index);
@@ -929,6 +949,7 @@ class AliV0Reader : public TObject {
   Double_t fMaxR; //r cut
   Double_t fMinR; //r cut
   Double_t fEtaCut; //eta cut
+  Double_t fEtaCutMin; //eta cut
   Double_t fRapidityMesonCut; //rapidity for meson cut
   Double_t fPtCut; // pt cut
   Double_t fSinglePtCut; // pt cut for electron/positron
@@ -937,6 +958,8 @@ class AliV0Reader : public TObject {
   Double_t fMinClsTPCToF; // minimum clusters to findable clusters
   Double_t fLineCutZRSlope; //linecut
   Double_t fLineCutZValue; //linecut
+  Double_t fLineCutZRSlopeMin; //linecut
+  Double_t fLineCutZValueMin; //linecut
   Double_t fChi2CutConversion; //chi2cut
   Double_t fChi2CutMeson;  //chi2cut
   Double_t fAlphaCutMeson;  //alphacut
@@ -980,6 +1003,8 @@ class AliV0Reader : public TObject {
   Bool_t fUseConstructGamma; //flag that determines if we use ConstructGamma method from AliKF
 
   Bool_t fDoCF; //flag
+
+  Bool_t fUseEtaMinCut; //flag
 
   Bool_t fUseOnFlyV0Finder; //flag
 

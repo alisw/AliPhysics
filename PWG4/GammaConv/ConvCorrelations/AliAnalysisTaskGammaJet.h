@@ -16,7 +16,7 @@
 class TH1F;
 class AliESDEvent;
 class AliGammaConversionAODObject;
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
 class AliAODPWG4ParticleCorrelation;
 class AliAODPWG4Particle;
 class TObjArray;
@@ -56,7 +56,7 @@ public:
   void AddPionJetAna(TObject * ana) { fAnaPionJetArray->Add(ana);}
   void AddPionHadronAna(TObject * ana) { fAnaPionArray->Add(ana);}
 
-  void GetPionGrandChildren(const AliAODConversionParticle * const pion, const TClonesArray * photons, Int_t* trackLabels);
+  void GetPionGrandChildren(const AliAODConversionPhoton * const pion, const TClonesArray * photons, Int_t* trackLabels);
   void SetEtaLimits(Float_t eta) { fEtaLimit = eta; }
 
 
@@ -65,8 +65,8 @@ public:
   void NotifyRun();
   Bool_t UserNotify();
   Bool_t EventIsSynced(const TClonesArray * const tracks, const TClonesArray * const convGamma, const TClonesArray * const pions);
-  Bool_t BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks) const;
-  Bool_t BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
+  Bool_t BothTracksPresent(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks) const;
+  Bool_t BothGammaPresent(const AliAODConversionPhoton * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
   AliAODEvent * GetAODEvent();
 
   //Get Conversion gammas branch

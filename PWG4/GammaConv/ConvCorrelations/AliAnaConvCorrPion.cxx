@@ -22,7 +22,7 @@
 #include "AliAnaConvCorrPion.h"
 #include "AliAODTrack.h"
 #include "TClonesArray.h"
-#include "AliAODConversionParticle.h"
+#include "AliAODConversionPhoton.h"
 #include "THnSparse.h"
 #include "TH2F.h"
 
@@ -82,25 +82,16 @@ void AliAnaConvCorrPion::CreateHistograms() {
 }
 
 ///________________________________________________________________________________
-void AliAnaConvCorrPion::GetTrackLabels(const AliAODConversionParticle * pion, const TClonesArray * photons, Int_t* trackLabels) {
+void AliAnaConvCorrPion::GetTrackLabels(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels) {
   ///Get the track labels of the electrons reconstructed as gamma forming the pion
 
   for(Int_t i = 0; i< 2; i++) {
-    AliAODConversionParticle * gamma = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetTrackLabel(i)));
+    AliAODConversionPhoton * gamma = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetTrackLabel(i)));
 
     if(gamma) { 
       for(Int_t j = 0; j< 2; j++) {
 	cout << "index " << i + j + ((i>=j)?1:0) << " " << gamma->GetTrackLabel(j) << endl;
 	trackLabels[ i*2+ j] = gamma->GetTrackLabel(j);
-      }
-
-    } else {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(photons->At(pion->GetTrackLabel(i)));
-      if(aodO) {
-	trackLabels[i*2] = aodO->GetLabel1();
-	trackLabels[i*2 + 1] = aodO->GetLabel2();
-      } else {
-	cout << "AliAnaConvCorrPion::GetTrackLabels() :: Not good!!!"<<endl;
       }
     }
   }
@@ -108,7 +99,7 @@ void AliAnaConvCorrPion::GetTrackLabels(const AliAODConversionParticle * pion, c
  
 
 ///________________________________________________________________________________
-void AliAnaConvCorrPion::CorrelateWithHadrons(AliAODConversionParticle * pion, const TClonesArray * tracks,  const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn) {
+void AliAnaConvCorrPion::CorrelateWithHadrons(AliAODConversionPhoton * pion, const TClonesArray * tracks,  const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn) {
   //See header file for documentation
 
   fhPtVsInvMass->Fill(pion->Pt(), pion->M());
@@ -118,7 +109,7 @@ void AliAnaConvCorrPion::CorrelateWithHadrons(AliAODConversionParticle * pion, c
     for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
       AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(ij));
       if(track) {
-	if(pion->IsMySpawn(track->GetID(), nSpawn, spawn)) continue;
+	//if(pion->IsMySpawn(track->GetID(), nSpawn, spawn)) continue;
 	
 	//	if (track->Pt() < GetCorrelatedPt() ) continue;
 	Double_t x[4] = {pion->Pt(), track->Pt(), GetDPhi(pion->Phi() - track->Phi()), TMath::Abs(pion->M()) };

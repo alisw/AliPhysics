@@ -235,6 +235,9 @@ void AliAnalysisTaskGammaConvDalitz::UserExec(Option_t */*option*/)
 //
 // Execute analysis for current event
 //
+
+   
+        
     if( fDebug ) AliInfo("=> UserExec");
 
     if( fV0Reader == 0 )
@@ -764,7 +767,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 	
 	if(fDoMC)
 	{
-		TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+		TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 		((TH1*)fHistograms->GetValue("Table_Cuts"))->Fill(1.,(Double_t)pi0Dalitz->GetEntriesFast());
 		delete pi0Dalitz;
 	}
@@ -775,7 +778,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 		
 		if(fDoMC)
 		{
-			TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+			TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 			((TH1*)fHistograms->GetValue("Table_Cuts"))->Fill(2.,(Double_t)pi0Dalitz->GetEntriesFast());
 			delete pi0Dalitz;
 		}
@@ -787,7 +790,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 		
 		if(fDoMC)
 		{
-			TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+			TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 			((TH1*)fHistograms->GetValue("Table_Cuts"))->Fill(3.,(Double_t)pi0Dalitz->GetEntriesFast());
 			delete pi0Dalitz;
 		}
@@ -799,7 +802,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 		
 		if(fDoMC)
 		{
-			TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+			TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 			((TH1*)fHistograms->GetValue("Table_Cuts"))->Fill(4.,(Double_t)pi0Dalitz->GetEntriesFast());
 			delete pi0Dalitz;
 		}
@@ -811,7 +814,7 @@ void AliAnalysisTaskGammaConvDalitz::CreateListOfDalitzPairCandidates()
 		
 		if(fDoMC)
 		{
-			TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+			TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 			((TH1*)fHistograms->GetValue("Table_Cuts"))->Fill(5.,(Double_t)pi0Dalitz->GetEntriesFast());
 			delete pi0Dalitz;
 		}
@@ -825,8 +828,11 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 // Process gamma and electrons for pi0 Dalitz decay
 //
 	if( fDebug ) AliInfo("=> ProcessGammaElectronsForDalitzAnalysis");
+
 	
 	fHistograms->FillTable( "Table_Reconstruction", 0); // number of events
+
+      
 	
 	TClonesArray* ePosCandidates = IndexToAliKFParticle(fEposCandidateIndex, ::kPositron);
 	
@@ -854,7 +860,8 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		TLorentzVector* dalitz = (TLorentzVector*)dalitzPairCandidates->At(i);
 		
 		fHistograms->FillHistogram("ESD_DalitzPairCandidates_Pt", dalitz->Pt());
-		fHistograms->FillHistogram("ESD_DalitzPairCandidates_Mass", dalitz->M());
+		fHistograms->FillHistogram("ESD_DalitzPairCandidates_InvMass", dalitz->M());
+                fHistograms->FillHistogram("ESD_DalitzPairCandidates_InvMass_vs_Pt",dalitz->M(),dalitz->Pt());
 	}
 	
 	// gamma candidates
@@ -873,7 +880,7 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 	FillAngle(ePosCandidates, fGammaCandidates, "ESD_EposEneg_GammaCandidates_Angle");
 	FillAngle(eNegCandidates, fGammaCandidates, "ESD_EposEneg_GammaCandidates_Angle");
 	
-	TClonesArray* pi0Candidates = FindPi0Dalitz(ePosCandidates, eNegCandidates, fGammaCandidates);
+	TClonesArray* pi0Candidates = FindParticleDalitz(ePosCandidates, eNegCandidates, fGammaCandidates,0);
 	for(Int_t i=0; i < pi0Candidates->GetEntriesFast(); ++i)
 	{
 		TLorentzVector* pi0 = (TLorentzVector*)pi0Candidates->At(i);
@@ -883,27 +890,96 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		fHistograms->FillHistogram("ESD_Pi0_Eta", pi0->Eta());
 		fHistograms->FillHistogram("ESD_Pi0_Y", pi0->Rapidity());
 		fHistograms->FillHistogram("ESD_Pi0_Phi", pi0->Phi());
-		fHistograms->FillHistogram("ESD_Pi0_Pt_vs_Y", pi0->Rapidity(), pi0->Pt());
-		fHistograms->FillHistogram("ESD_Pi0_Mass", pi0->M());
-		fHistograms->FillHistogram("ESD_Pi0_Mass_vs_Pt", pi0->Pt(), pi0->M());
-		fHistograms->FillHistogram("ESD_Pi0_Mass_vs_Y",  pi0->Rapidity(),pi0->M());
-		fHistograms->FillHistogram("ESD_Pi0_Mass_vs_Eta", pi0->Eta(), pi0->M());
+		fHistograms->FillHistogram("ESD_Pi0_Pt_vs_Y",pi0->Pt(),pi0->Rapidity());
+		fHistograms->FillHistogram("ESD_Pi0_InvMass", pi0->M());
+		fHistograms->FillHistogram("ESD_Pi0_InvMass_vs_Pt", pi0->M(),pi0->Pt());
+		fHistograms->FillHistogram("ESD_Pi0_InvMass_vs_Y",pi0->M(),pi0->Rapidity());
+		fHistograms->FillHistogram("ESD_Pi0_InvMass_vs_Eta",pi0->M(),pi0->Eta());
 	}
+
+        for(Int_t iPos=0; iPos < ePosCandidates->GetEntriesFast(); ++iPos)
+        {
+                AliKFParticle* lPosKF = (AliKFParticle*)ePosCandidates->At(iPos);
+
+                for(Int_t iNeg=0; iNeg < eNegCandidates->GetEntriesFast(); ++iNeg)
+                {
+                    AliKFParticle* lNegKF = (AliKFParticle*)eNegCandidates->At(iNeg);
+                    AliKFParticle lPosNeg(*lPosKF,*lNegKF );
+                    
+                    for(Int_t iGam=0; iGam < fGammaCandidates->GetEntriesFast(); ++iGam)
+                    {
+                        AliKFParticle* lGamKF = (AliKFParticle*)fGammaCandidates->At(iGam);
+                        
+                        AliKFParticle lPosNegGam( *lPosKF, *lNegKF, *lGamKF );
+
+                        Double_t lDiffMass = lPosNegGam.GetMass() - lPosNeg.GetMass();
+
+                        fHistograms->FillHistogram("ESD_EposEnegGamma_InvMass_Diff",lDiffMass );
+                        fHistograms->FillHistogram("ESD_EposEnegGamma_InvMass_vs_Pt_Diff",lDiffMass,lPosNegGam.GetPt());
+                        fHistograms->FillHistogram("ESD_EposEnegGamma_InvMass",lPosNegGam.GetMass());
+                        fHistograms->FillHistogram("ESD_EposEnegGamma_InvMass_vs_Pt",lPosNegGam.GetMass(),lPosNegGam.GetPt());
+
+                    }
+               }
+        }
+
+
+
 	
 	delete dalitzPairCandidates;
 	delete pi0Candidates;
 	
 	if(fComputeBkg)
 	{
+
+                // 1) e+e- dalitz
+                for(Int_t i=0; i < ePosCandidates->GetEntriesFast(); ++i)
+                {
+                        AliKFParticle* epos1 = (AliKFParticle*) ePosCandidates->At(i);
+
+                    for(Int_t j=i+1; j < ePosCandidates->GetEntriesFast(); ++j)
+                    {
+                        AliKFParticle* epos2 = (AliKFParticle*) ePosCandidates->At(j);
+                        AliKFParticle ePosePos( *epos1,*epos2 );
+                        fHistograms->FillHistogram("ESD_BKG_LikeSign_InvMass",ePosePos.GetMass());
+                        fHistograms->FillHistogram("ESD_BKG_LikeSign_InvMass_vs_Pt",ePosePos.GetMass(),ePosePos.GetPt());
+                        
+
+                    }
+                
+        
+                }
+                for(Int_t i=0; i < eNegCandidates->GetEntriesFast(); ++i)
+                {
+                        AliKFParticle* eneg1 = (AliKFParticle*) eNegCandidates->At(i);
+
+                    for(Int_t j=i+1; j < eNegCandidates->GetEntriesFast(); ++j)
+                    {
+                        AliKFParticle* eneg2 = (AliKFParticle*) eNegCandidates->At(j);
+                        AliKFParticle eNegeNeg( *eneg1,*eneg2 );
+                        fHistograms->FillHistogram("ESD_BKG_LikeSign_InvMass",eNegeNeg.GetMass());
+                        fHistograms->FillHistogram("ESD_BKG_LikeSign_InvMass_vs_Pt",eNegeNeg.GetMass(),eNegeNeg.GetPt());
+                    }
+                
+        
+                }
+
 		// 1) e+e- with with gammas used in the signal
-		TClonesArray* pi0Bkg = FindPi0Dalitz(ePosCandidates, eNegCandidates, fGammaPool);
+		TClonesArray* pi0Bkg = FindParticleDalitz(ePosCandidates, eNegCandidates, fGammaPool,1);
 		
 		for(Int_t i=0; i < pi0Bkg->GetEntriesFast(); ++i)
 		{
 			TLorentzVector* pi0 = (TLorentzVector*)pi0Bkg->At(i);
-			fHistograms->FillHistogram("ESD_BKG_PrevGamma", pi0->M());
-			fHistograms->FillHistogram("ESD_BKG_PrevGamma_vs_Pt", pi0->Pt(), pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_PrevGamma_InvMass", pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_PrevGamma_InvMass_vs_Pt",pi0->M(),pi0->Pt());
 		}
+                ///////////////////////////////Temporal for Dalitz
+                
+
+
+
+
+
 		
 		if(ePosCandidates->GetEntriesFast() > 0 &&
 		   eNegCandidates->GetEntriesFast() > 0 &&
@@ -916,26 +992,26 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		
 		// 2) e+e- with gammas from a pool of events
 		TClonesArray* gammaBGHandler = GammasFromBGHandler();
-		pi0Bkg = FindPi0Dalitz(ePosCandidates, eNegCandidates, gammaBGHandler);
+		pi0Bkg = FindParticleDalitz(ePosCandidates, eNegCandidates, gammaBGHandler,2);
 		
 		for(Int_t i=0; i < pi0Bkg->GetEntriesFast(); ++i)
 		{
 			TLorentzVector* pi0 = (TLorentzVector*)pi0Bkg->At(i);
-			fHistograms->FillHistogram("ESD_BKG_BGHandler", pi0->M());
-			fHistograms->FillHistogram("ESD_BKG_BGHandler_vs_Pt", pi0->Pt(), pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_BGHandler_InvMass", pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_BGHandler_InvMass_vs_Pt",pi0->M(), pi0->Pt());
 		}
 		
 		delete pi0Bkg;
 		
 		// 3) e+ with e-, gamma from a pool of events
 		TClonesArray* elecBGHandler = ElectronFromBGHandler();
-		pi0Bkg = FindPi0Dalitz(ePosCandidates, elecBGHandler, gammaBGHandler);
+		pi0Bkg = FindParticleDalitz(ePosCandidates, elecBGHandler, gammaBGHandler,3);
 		
 		for(Int_t i=0; i < pi0Bkg->GetEntriesFast(); ++i)
 		{
 			TLorentzVector* pi0 = (TLorentzVector*)pi0Bkg->At(i);
-			fHistograms->FillHistogram("ESD_BKG_Electron", pi0->M());
-			fHistograms->FillHistogram("ESD_BKG_Electron_vs_Pt", pi0->Pt(), pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_Electron_InvMass", pi0->M());
+			fHistograms->FillHistogram("ESD_BKG_Electron_InvMass_vs_Pt",pi0->M(), pi0->Pt());
 		}
 		
 		if(eNegCandidates->GetEntriesFast() > 0)
@@ -958,8 +1034,8 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		for(Int_t i=0; i < ePosPi0Dalitz->GetEntriesFast(); ++i)
 		{
 			AliKFParticle* epos = (AliKFParticle*) ePosPi0Dalitz->At(i);
-			fHistograms->FillHistogram("MC_ESD_EposDalitz_Pt", epos->GetPt());
-			fHistograms->FillHistogram("MC_ESD_EposDalitz_Eta", epos->GetEta());
+			fHistograms->FillHistogram("MC_ESD_Pi0_EposDalitz_Pt", epos->GetPt());
+			fHistograms->FillHistogram("MC_ESD_Pi0_EposDalitz_Eta", epos->GetEta());
 			fHistograms->FillTable( "Table_Reconstruction", 3);
 		}
 		
@@ -967,28 +1043,81 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		for(Int_t i=0; i < eNegPi0Dalitz->GetEntriesFast(); ++i)
 		{
 			AliKFParticle* eneg = (AliKFParticle*) eNegPi0Dalitz->At(i);
-			fHistograms->FillHistogram("MC_ESD_EnegDalitz_Pt", eneg->GetPt());
-			fHistograms->FillHistogram("MC_ESD_EnegDalitz_Eta", eneg->GetEta());
+			fHistograms->FillHistogram("MC_ESD_Pi0_EnegDalitz_Pt", eneg->GetPt());
+			fHistograms->FillHistogram("MC_ESD_Pi0_EnegDalitz_Eta", eneg->GetEta());
 			fHistograms->FillTable( "Table_Reconstruction", 4);
 		}
 		
-		TClonesArray* dalitzPair = FindDalitzPair(fEposCandidateIndex, fEnegCandidateIndex);
-		for(Int_t i=0; i < dalitzPair->GetEntriesFast(); ++i)
+		TClonesArray* dalitzPairPi0 = FindDalitzPair(fEposCandidateIndex, fEnegCandidateIndex,1);
+		for(Int_t i=0; i < dalitzPairPi0->GetEntriesFast(); ++i)
 		{
-			TLorentzVector* dalitz = (TLorentzVector*) dalitzPair->At(i);
-			fHistograms->FillHistogram("MC_ESD_DalitzPair_Pt", dalitz->Pt());
-			fHistograms->FillHistogram("MC_ESD_DalitzPair_Mass", dalitz->M());
+			TLorentzVector* dalitz = (TLorentzVector*) dalitzPairPi0->At(i);
+			fHistograms->FillHistogram("MC_ESD_Pi0_DalitzPair_Pt", dalitz->Pt());
+			fHistograms->FillHistogram("MC_ESD_Pi0_DalitzPair_Mass", dalitz->M());
 			fHistograms->FillHistogram( "Table_Reconstruction", 5 );
 		}
+                
+                TClonesArray* dalitzPairEta = FindDalitzPair(fEposCandidateIndex, fEnegCandidateIndex,2);
+                for(Int_t i=0; i < dalitzPairEta->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* dalitz = (TLorentzVector*) dalitzPairEta->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Eta0_DalitzPair_Pt", dalitz->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_DalitzPair_InvMass", dalitz->M());
+                       
+                }
+
+                TClonesArray* lJpsiAll = FindJpsi(fEposCandidateIndex, fEnegCandidateIndex,-1);
+
+                for(Int_t i=0; i < lJpsiAll->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* jpsi = (TLorentzVector*) lJpsiAll->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Pt",jpsi->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_InvMass",jpsi->M());
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_InvMass_vs_Pt",jpsi->M(),jpsi->Pt());
+                       
+                }
+
+
+                TClonesArray* lJpsiChic0 = FindJpsi(fEposCandidateIndex, fEnegCandidateIndex,0);
+
+                for(Int_t i=0; i < lJpsiChic0->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* jpsi = (TLorentzVector*) lJpsiChic0->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic0_Pt",jpsi->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic0_InvMass",jpsi->M());
+                       
+                }
+                TClonesArray* lJpsiChic1 = FindJpsi(fEposCandidateIndex, fEnegCandidateIndex,1);
+
+                for(Int_t i=0; i < lJpsiChic1->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* jpsi = (TLorentzVector*) lJpsiChic1->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic1_Pt",jpsi->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic1_InvMass",jpsi->M());
+                       
+                }
+                TClonesArray* lJpsiChic2 = FindJpsi(fEposCandidateIndex, fEnegCandidateIndex,2);
+
+                for(Int_t i=0; i < lJpsiChic2->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* jpsi = (TLorentzVector*) lJpsiChic2->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic2_Pt",jpsi->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Jpsi_Chic2_InvMass",jpsi->M());
+                       
+                }
 		
 		// psi pair for dalitz pairs
 		//if(fUsePsiPairCut)
-		FillPsiPair(ePosPi0Dalitz,eNegPi0Dalitz,"MC_ESD_DalitzPair_PsiPair_vs_DPhi");
+		FillPsiPair(ePosPi0Dalitz,eNegPi0Dalitz,"MC_ESD_Pi0_DalitzPair_PsiPair_vs_DPhi");
 		
 		delete ePosPi0Dalitz;
 		delete eNegPi0Dalitz;
-		delete dalitzPair;
-		
+		delete dalitzPairPi0;
+                delete dalitzPairEta;
+                delete lJpsiAll;
+		delete lJpsiChic0;
+                delete lJpsiChic1;
+                delete lJpsiChic2;
 		// all gammas
 		TClonesArray* gamma = FindGamma(fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
 		for(Int_t i=0; i < gamma->GetEntriesFast(); ++i)
@@ -1012,7 +1141,7 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 		
 		delete gammaPi0Dalitz;
 		
-		TClonesArray* pi0Dalitz = FindPi0Dalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex);
+		TClonesArray* pi0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
 		
 		for(Int_t i=0; i < pi0Dalitz->GetEntriesFast(); ++i)
 		{
@@ -1023,14 +1152,67 @@ void AliAnalysisTaskGammaConvDalitz::ProcessGammaElectronsForDalitzAnalysis()
 			fHistograms->FillHistogram("MC_ESD_Pi0_Eta", pi0->Eta());
 			fHistograms->FillHistogram("MC_ESD_Pi0_Y", pi0->Rapidity());
 			fHistograms->FillHistogram("MC_ESD_Pi0_Phi", pi0->Phi());
-			fHistograms->FillHistogram("MC_ESD_Pi0_Pt_vs_Y", pi0->Rapidity(), pi0->Pt());
-			fHistograms->FillHistogram("MC_ESD_Pi0_Mass", pi0->M());
-			fHistograms->FillHistogram("MC_ESD_Pi0_Mass_vs_Pt", pi0->Pt(), pi0->M());
-			fHistograms->FillHistogram("MC_ESD_Pi0_Mass_vs_Y",  pi0->Rapidity(),pi0->M());
-			fHistograms->FillHistogram("MC_ESD_Pi0_Mass_vs_Eta", pi0->Eta(), pi0->M());
+			fHistograms->FillHistogram("MC_ESD_Pi0_Y_vs_Pt",pi0->Pt(), pi0->Rapidity());
+			fHistograms->FillHistogram("MC_ESD_Pi0_InvMass", pi0->M());
+			fHistograms->FillHistogram("MC_ESD_Pi0_InvMass_vs_Pt",pi0->M(),pi0->Pt());
+			fHistograms->FillHistogram("MC_ESD_Pi0_InvMass_vs_Y", pi0->M(), pi0->Rapidity());
+			fHistograms->FillHistogram("MC_ESD_Pi0_InvMass_vs_Eta", pi0->M(),pi0->Eta());
 			fHistograms->FillHistogram( "Table_Reconstruction", 7);
 		}
 		delete pi0Dalitz;
+
+                
+                TClonesArray* eta0Dalitz = FindParticleDalitz(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,2);
+
+                
+                for(Int_t i=0; i < eta0Dalitz->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* eta0 = (TLorentzVector*) eta0Dalitz->At(i);
+                        
+                        fHistograms->FillHistogram("MC_ESD_Eta0_P", eta0->P());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_Pt", eta0->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_Eta", eta0->Eta());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_Y", eta0->Rapidity());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_Phi", eta0->Phi());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_Pt_vs_Y", eta0->Pt(),eta0->Rapidity());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_InvMass", eta0->M());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_InvMass_vs_Pt", eta0->M(), eta0->Pt());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_InvMass_vs_Y", eta0->M(), eta0->Rapidity());
+                        fHistograms->FillHistogram("MC_ESD_Eta0_InvMass_vs_Eta",eta0->M(),eta0->Eta());
+                }
+                delete eta0Dalitz;
+
+                
+                TClonesArray* chic0Array = FindParticleChic(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,0);
+                
+                for(Int_t i=0; i < chic0Array->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* chic0 = (TLorentzVector*) chic0Array->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Chic0_InvMass", chic0->M());
+                        fHistograms->FillHistogram("MC_ESD_Chic0_InvMass_vs_Pt", chic0->M(),chic0->Pt());
+                }
+                delete chic0Array;
+
+                TClonesArray* chic1Array = FindParticleChic(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,1);
+                
+                for(Int_t i=0; i < chic1Array->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* chic1 = (TLorentzVector*) chic1Array->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Chic1_InvMass", chic1->M());
+                        fHistograms->FillHistogram("MC_ESD_Chic1_InvMass_vs_Pt", chic1->M(), chic1->Pt());
+                }
+                delete chic1Array;
+
+                TClonesArray* chic2Array = FindParticleChic(fEposCandidateIndex, fEnegCandidateIndex, fGammaCandidates, fGammaCandidatePosIndex, fGammaCandidateNegIndex,2);
+                
+                for(Int_t i=0; i < chic2Array->GetEntriesFast(); ++i)
+                {
+                        TLorentzVector* chic2 = (TLorentzVector*) chic2Array->At(i);
+                        fHistograms->FillHistogram("MC_ESD_Chic2_InvMass", chic2->M());
+                        fHistograms->FillHistogram("MC_ESD_Chic2_InvMass_vs_Pt", chic2->M(), chic2->Pt());
+                }
+                delete chic2Array;
+
 		
 		// psi pair for electrons from gamma conversions assuming they came from main vertex
 		// if(fUsePsiPairCut)
@@ -1480,7 +1662,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const TClonesArray*
 }
 
 //--------------------------------------------------------------------------
-TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* pos, const TClonesArray* neg, const TClonesArray* gamma)
+TClonesArray* AliAnalysisTaskGammaConvDalitz::FindParticleDalitz(const TClonesArray* pos, const TClonesArray* neg, const TClonesArray* gamma,Int_t opc)
 {
 //
 // Find pi0 Dalitz decay candidates
@@ -1501,14 +1683,36 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* 
 			
 			TLorentzVector negLV;
 			negLV.SetXYZM(negKF->Px(),negKF->Py(),negKF->Pz(),fkElectronMass);
+
+                        AliKFParticle posNegKF(*posKF,*negKF);
+
 			
 			for(Int_t iGam=0; iGam < gamma->GetEntriesFast(); ++iGam)
 			{
 				AliKFParticle* gamKF = (AliKFParticle*)gamma->At(iGam);
+                                AliKFParticle posNegGam( *posKF, *negKF, *gamKF );
+                                
+                                Double_t lDiffMass = posNegGam.GetMass() - posNegKF.GetMass(); 
+
+                                if( opc == 1 )
+                                {
+                                    fHistograms->FillHistogram("ESD_BKG_PrevGamma_InvMass_Diff",lDiffMass );
+                                    fHistograms->FillHistogram("ESD_BKG_PrevGamma_InvMass_vs_Pt_Diff",lDiffMass,posNegGam.GetPt());
+                                }
+                                else if ( opc == 2 )
+                                {
+                                    fHistograms->FillHistogram("ESD_BKG_BGHandler_InvMass_Diff",lDiffMass );
+                                    fHistograms->FillHistogram("ESD_BKG_BGHandler_InvMass_vs_Pt_Diff",lDiffMass,posNegGam.GetPt());
+                                }
+                                else if ( opc == 3 )
+                                {
+                                    fHistograms->FillHistogram("ESD_BKG_Electron_InvMass_Diff",lDiffMass );
+                                    fHistograms->FillHistogram("ESD_BKG_Electron_InvMass_vs_Pt_Diff",lDiffMass,posNegGam.GetPt());
+                                }
 				
 				if(fUseAliKF)
 				{
-					AliKFParticle posNegGam( *posKF, *negKF, *gamKF );
+					
 					TLorentzVector posNegGamLV;
 					posNegGamLV.SetXYZM(posNegGam.Px(),posNegGam.Py(),posNegGam.Pz(),posNegGam.GetMass());
 					new ((*pi0)[j++]) TLorentzVector(posNegGamLV);
@@ -1528,7 +1732,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const TClonesArray* 
 }
 
 //--------------------------------------------------------------------------
-TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx)
+TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx,Int_t motherOpc)
 {
 //
 // Find true Dalitz pairs from Dalitz pair candidats with MC
@@ -1552,7 +1756,7 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>
 			AliESDtrack* negTrack = fESDEvent->GetTrack(negIdx[iNeg]);
 			Int_t negLabel = TMath::Abs(negTrack->GetLabel());
 			
-			if(!IsDalitzPair(posLabel,negLabel)) continue;
+			if(!IsDalitzPair(posLabel,negLabel,motherOpc)) continue;
 			
 			if(fUseAliKF)
 			{
@@ -1579,8 +1783,105 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindDalitzPair(const vector<Int_t>
 	return dalitz;
 }
 
+TClonesArray* AliAnalysisTaskGammaConvDalitz::FindJpsi(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx,Int_t motherOpc)
+{
+//
+// Find true Jpsi's
+// If mother
+// -1: from the all sources
+// 0: from the Chic_0
+// 1: from the Chic_1
+// 2: from the Chic_2
+
+        TClonesArray* jPsi = new TClonesArray("TLorentzVector");
+        jPsi->SetOwner(kTRUE);
+        
+        for( UInt_t iPos=0, j=0; iPos < posIdx.size(); ++iPos )
+        {
+                AliESDtrack* posTrack = fESDEvent->GetTrack(posIdx[iPos]);
+                Double_t posMom[3]; posTrack->GetConstrainedPxPyPz(posMom);
+                Int_t posLabel = TMath::Abs(posTrack->GetLabel());
+
+                if( fStack->Particle(posLabel)->GetPdgCode() != ::kPositron ) continue;
+                
+                TLorentzVector posLV;
+                posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fkElectronMass);
+                
+                AliKFParticle posKF( *posTrack->GetConstrainedParam(), ::kPositron );
+                
+                for( UInt_t iNeg=0; iNeg < negIdx.size(); ++iNeg )
+                {
+                        AliESDtrack* negTrack = fESDEvent->GetTrack(negIdx[iNeg]);
+                        Int_t negLabel = TMath::Abs(negTrack->GetLabel());
+
+                        if( fStack->Particle(negLabel)->GetPdgCode() != ::kElectron ) continue;
+                        
+                        if( !HaveSameMother(posLabel,negLabel) ) continue;
+                        
+                        Int_t motherLabel = fStack->Particle(negLabel)->GetMother(0);
+                        TParticle *motherJpsi = fStack->Particle(motherLabel);
+
+                        if( motherJpsi->GetPdgCode() != 443 ){
+                            continue;
+                        }
+                        
+                         
+            
+                        if( motherOpc > -1 )
+                        {
+                             if( motherJpsi->GetMother(0) < 0 ) continue;
+                             
+                             TParticle *gmotherChic = fStack->Particle(motherJpsi->GetMother(0));
+                             Int_t pdgCode = gmotherChic->GetPdgCode();
+
+                             Bool_t lson = kTRUE;
+                             
+                             switch(motherOpc){
+
+                                    case 0:     if ( pdgCode != 10441 )
+                                                lson = kFALSE;
+                                                break;
+                                    case 1:     if ( pdgCode != 20443 )
+                                                lson = kFALSE;
+                                                break;
+                                    case 2:     if ( pdgCode != 445   )
+                                                lson = kFALSE;
+                                                break;
+                             }
+
+                            if( lson == kFALSE ) continue;
+                        }
+
+                        
+                        if(fUseAliKF)
+                        {
+                                AliKFParticle negKF( *negTrack->GetConstrainedParam(), ::kElectron );
+                                AliKFParticle posNeg( posKF, negKF);
+                                
+                                TLorentzVector posNegLV;
+                                posNegLV.SetXYZM(posNeg.Px(),posNeg.Py(),posNeg.Pz(),posNeg.GetMass());
+                                
+                                new ((*jPsi)[j++]) TLorentzVector(posNegLV);
+                        }
+                        else // TLorentzVector
+                        {
+                                Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
+                                
+                                TLorentzVector negLV;
+                                negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fkElectronMass);
+                                
+                                new ((*jPsi)[j++]) TLorentzVector(posLV + negLV);
+                        }
+                }
+        }
+        
+        return jPsi;
+}
+
+
+
 //--------------------------------------------------------------------------
-TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam)
+TClonesArray* AliAnalysisTaskGammaConvDalitz::FindParticleDalitz(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam,Int_t motherOpc)
 {
 //
 // Find true pi0 Dalitz decay from pi0 candidates with MC
@@ -1603,9 +1904,11 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 		{
 			AliESDtrack* negTrack = fESDEvent->GetTrack(negIdx[iNeg]);
 			Int_t negLabel = TMath::Abs(negTrack->GetLabel());
-			
-			if(!IsDalitzPair(posLabel,negLabel)) continue;
-			
+                        
+
+                        if( !HaveSameMother(posLabel,negLabel) ) continue; //Check if both particles have same mother
+  		        if(!IsDalitzPair(posLabel,negLabel,motherOpc)) continue; //check if mohter is eta0 or pi0
+		
 			Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
 			
 			TLorentzVector negLV;
@@ -1625,7 +1928,10 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 				Int_t labelGamma = TMath::Abs(fStack->Particle(labelv1)->GetMother(0));
 				
 				if( fStack->Particle(labelGamma)->GetPdgCode() != ::kGamma ) continue;
+
+
 				if( !HaveSameMother(labelGamma, posLabel) ) continue;
+
 				
 				if(fUseAliKF)
 				{
@@ -1646,6 +1952,118 @@ TClonesArray* AliAnalysisTaskGammaConvDalitz::FindPi0Dalitz(const vector<Int_t>&
 	}
 	
 	return pi0;
+}
+TClonesArray* AliAnalysisTaskGammaConvDalitz::FindParticleChic(const vector<Int_t>& posIdx, const vector<Int_t>& negIdx, const TClonesArray* gamma, const vector<Int_t>& posGam, const vector<Int_t>& negGam,Int_t motherOpc)
+{
+//
+// Find true pi0 Dalitz decay from pi0 candidates with MC
+//
+        TClonesArray* chic = new TClonesArray("TLorentzVector");
+        chic->SetOwner(kTRUE);
+        
+        for( UInt_t iPos=0, j=0; iPos < posIdx.size(); ++iPos )
+        {
+                AliESDtrack* posTrack = fESDEvent->GetTrack(posIdx[iPos]);
+                Double_t posMom[3]; posTrack->GetConstrainedPxPyPz(posMom);
+                Int_t posLabel = TMath::Abs(posTrack->GetLabel());
+
+                if( fStack->Particle(posLabel)->GetPdgCode() != ::kPositron ) continue;
+                
+                TLorentzVector posLV;
+                posLV.SetXYZM(posMom[0],posMom[1],posMom[2],fkElectronMass);
+                
+                AliKFParticle posKF( *posTrack->GetConstrainedParam(), ::kPositron );
+                
+                for( UInt_t iNeg=0; iNeg < negIdx.size(); ++iNeg )
+                {
+                        AliESDtrack* negTrack = fESDEvent->GetTrack(negIdx[iNeg]);
+                        Int_t negLabel = TMath::Abs(negTrack->GetLabel());
+
+
+                        if( fStack->Particle(negLabel)->GetPdgCode() != ::kElectron ) continue;
+                        
+
+                        if( !HaveSameMother(posLabel,negLabel) ) continue;
+
+                        Int_t jpsiLabel = fStack->Particle(negLabel)->GetMother(0);
+
+                        if( fStack->Particle(jpsiLabel)->GetPdgCode() != 443 ) continue;
+                        
+                        TParticle *jpsiParticle = fStack->Particle(jpsiLabel);
+
+                        if ( jpsiParticle->GetMother(0) < 0 ) continue; 
+                
+
+                        Int_t chicLabel = jpsiParticle->GetMother(0);
+
+                        Int_t pdgCode = fStack->Particle(chicLabel)->GetPdgCode();
+
+                  
+                        Bool_t lSon = kTRUE;
+                             
+                        switch(motherOpc){
+
+                                    case 0:     if ( pdgCode != 10441 )
+                                                lSon = kFALSE;
+                                                break;
+                                    case 1:     if ( pdgCode != 20443 )
+                                                lSon = kFALSE;
+                                                break;
+                                    case 2:     if ( pdgCode != 445   )
+                                                lSon = kFALSE;
+                                                break;
+                        }
+
+
+                       if( lSon == kFALSE ) continue;
+
+                        
+
+
+
+                        Double_t negMom[3]; negTrack->GetConstrainedPxPyPz(negMom);
+                        
+                        TLorentzVector negLV;
+                        negLV.SetXYZM(negMom[0],negMom[1],negMom[2],fkElectronMass);
+                        
+                        AliKFParticle negKF( *negTrack->GetConstrainedParam(), ::kElectron );
+                        
+                        for(Int_t iGam=0; iGam < gamma->GetEntriesFast(); ++iGam)
+                        {
+                                AliKFParticle* gamKF = (AliKFParticle*)gamma->At(iGam);
+                                
+                                Int_t labelv1 = TMath::Abs((fESDEvent->GetTrack(posGam[iGam]))->GetLabel());
+                                Int_t labelv2 = TMath::Abs((fESDEvent->GetTrack(negGam[iGam]))->GetLabel());
+                                
+                                if( !HaveSameMother(labelv1,labelv2) ) continue;
+                                
+                                Int_t labelGamma = TMath::Abs(fStack->Particle(labelv1)->GetMother(0));
+                                
+                                if( fStack->Particle(labelGamma)->GetPdgCode() != ::kGamma ) continue;
+
+
+                                if( !HaveSameMother(labelGamma, jpsiLabel) ) continue;
+
+                                
+                                if(fUseAliKF)
+                                {
+                                        AliKFParticle posNegGam( posKF, negKF, *gamKF );
+                                        TLorentzVector posNegGamLV;
+                                        posNegGamLV.SetXYZM(posNegGam.Px(),posNegGam.Py(),posNegGam.Pz(),posNegGam.GetMass());
+                                        new ((*chic)[j++]) TLorentzVector(posNegGamLV);
+                                }
+                                else // TLorentzVector
+                                {
+                                        TLorentzVector gamLV;
+                                        gamLV.SetXYZM(gamKF->Px(),gamKF->Py(),gamKF->Pz(),0);
+                                        
+                                        new ((*chic)[j++]) TLorentzVector(posLV + negLV + gamLV);
+                                }
+                        }
+                }
+        }
+        
+        return chic;
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1824,11 +2242,14 @@ Int_t AliAnalysisTaskGammaConvDalitz::GetNSigmaPid(const AliESDtrack* t, Int_t t
 }
 
 //-----------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskGammaConvDalitz::IsDalitzPair( Int_t posLabel, Int_t negLabel ) const
+Bool_t AliAnalysisTaskGammaConvDalitz::IsDalitzPair( Int_t posLabel, Int_t negLabel,Int_t motherOpc ) const
 {
 //
 // Returns true if the two particles is a Dalitz pair
 //
+//motherOpc 1:  for Pi0Dalitz
+//motherOpc 2:  for EtaDalitz 
+
 	if(!HaveSameMother(posLabel, negLabel)) return kFALSE;
 
 	TParticle* pos = fStack->Particle( posLabel );
@@ -1844,9 +2265,18 @@ Bool_t AliAnalysisTaskGammaConvDalitz::IsDalitzPair( Int_t posLabel, Int_t negLa
 	if( motherLabel < 0 ) return kFALSE;
 
 	TParticle* mother = fStack->Particle( motherLabel );
+        
+        if( mother->GetNDaughters() != 3)    return kFALSE;
 
-	if( mother->GetPdgCode() != ::kPi0 ) return kFALSE;
-	if( mother->GetNDaughters() != 3) return kFALSE;
+        if( motherOpc == 1 ){ //Pi0Dalitz 
+	       if( mother->GetPdgCode() != ::kPi0 ) return kFALSE;
+	}
+        else if(motherOpc == 2){
+               if( mother->GetPdgCode() != 221 ) return kFALSE; 
+        }
+           else {
+                return kFALSE;
+        }
 	// NOTE: one of them must be a photon
 
 	return kTRUE;
