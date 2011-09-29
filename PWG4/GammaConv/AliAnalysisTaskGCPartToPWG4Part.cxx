@@ -168,7 +168,7 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
     AliAODPWG4ParticleCorrelation * pion = NULL;
     AliAODConversionPhoton * convParticle = dynamic_cast<AliAODConversionPhoton*>(pions->At(iPhot));
     if (convParticle && BothGammaPresent(convParticle, convGamma, tracks)) {
-      pion = AddPionToAOD(convParticle, fAODPWG4Pi0, "ConvGamma", convGamma);
+      pion = AddPionToAOD(convParticle, fAODPWG4Pi0, "ConvGamma");
       
     } else {
       continue;
@@ -216,7 +216,7 @@ AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliAOD
 
 
 ///__________________________________________________________________________________
-AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector, TClonesArray * photons) {
+AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector) {
   new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(pion->Px(), pion->Py(), pion->Pz(), pion->E());
   AliAODPWG4ParticleCorrelation * pwg4Pion = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
   if(pwg4Pion) {
