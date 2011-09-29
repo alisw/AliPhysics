@@ -60,8 +60,6 @@ private:
   TLine* fhACOMinAMU;
   TLine* fhACOMaxAMU;
   TLine* fhACOMultiAMU;
-  // Trigger check (4 words from hits multiplicity)
-  TLine* fhACOTriggerCheck;
   //
   ClassDef(AliACORDEQADataMakerRec,1)  // description 
 

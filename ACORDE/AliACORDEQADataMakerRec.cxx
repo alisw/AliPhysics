@@ -25,6 +25,10 @@
 //
 //  Created: June 13th 2008
 //---
+// Last update: Sept. 29th. 2011 (by Mario RC: mrodrigu@mail.cern.ch) 
+//	--> ACOMultiSL0_DQM_Shifter filling histogram fixed
+//	--> Expert histogram updated: 2 histograms (Checks the hits for SL0 and AMU mode)
+//	--> To be include in the next update: threshold settings from AliACORDEQAThreshold class (not yet)
 // Last update: May 5th. 2011 (by Mario RC: mrodrigu@mail.cern.ch) -->Creates QA expert histograms 
 // and QA-shifter histograms also with threshold lines and visual alarm
 // Last Update: Aug. 27th 2008 --> Implementation to declare QA expert histogram
@@ -61,8 +65,7 @@ ClassImp(AliACORDEQADataMakerRec)
   fhACOMeanAMU(new TLine(0.,4.,60.,4.)),
   fhACOMinAMU(new TLine(0.,4.,60.,4.)),
   fhACOMaxAMU(new TLine(0.,4.,60.,4.)),
-  fhACOMultiAMU(new TLine(0.,4.,60.,4.)),
-  fhACOTriggerCheck(new TLine(0.,4.,60.,4.))
+  fhACOMultiAMU(new TLine(0.,4.,60.,4.))
 {
 
 }
@@ -76,8 +79,7 @@ AliACORDEQADataMakerRec::AliACORDEQADataMakerRec(const AliACORDEQADataMakerRec& 
   fhACOMeanAMU(qadm.fhACOMeanAMU),
   fhACOMinAMU(qadm.fhACOMinAMU),
   fhACOMaxAMU(qadm.fhACOMaxAMU),
-  fhACOMultiAMU(qadm.fhACOMultiAMU),
-  fhACOTriggerCheck(qadm.fhACOTriggerCheck)
+  fhACOMultiAMU(qadm.fhACOMultiAMU)
 {
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
@@ -94,7 +96,6 @@ AliACORDEQADataMakerRec::~AliACORDEQADataMakerRec()
   delete fhACOMinAMU;
   delete fhACOMaxAMU;
   delete fhACOMultiAMU;
-  delete fhACOTriggerCheck;
 }
 
 //__________________________________________________________________
@@ -113,6 +114,27 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
   ResetEventTrigClasses(); // reset triggers list to select all histos
   // Update for DQM GUI
   //
+
+  // Thresholds and alarms definitions
+  /*******************************************************************************************
+
+	We check the performance of the ACORDE's modules respect to the mean
+	value over the integral for hits for all the modules (in SL0 and AMU), then
+	for the threshold lines we don't use a fixed threshold value.
+
+	For the alarms, we need two fixed values (one for each configuration, SL0 and AMU):
+
+	   -) SL0_ThresholdAlarm: minimum number of ACORDE's modules woriking properly
+           -) AMU_ThresholdAlarm: minimum number of ACORDE's modules woriking properly
+
+	This should work for p-p*, HI* and cosmic** data taking.
+
+	* only as readout detector (if ACORDE is triggering, in some rare trigger cluster, 
+				    an improvement should be done)
+	** as readout and trigger detector.
+
+  *********************************************************************************************/
+
   for (Int_t specie = 0; specie < AliRecoParam::kNSpecies ; specie++) {
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ;
     // 
@@ -121,311 +143,239 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
     //
     for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS Loop over the trigger classes
       //
-      TObjArray * parr = GetRawsDataOfTrigClass(itc);
-      if (!parr) continue;
-      TObjArray &harr = *parr;
-      //
-      TH1* h0 = (TH1*)harr[0];
-      TH1* h1 = (TH1*)harr[1];
-      if (!h0 || !h1) continue;
-      double integral = 0;
-      if (itc==-1 && !(integral=h0->Integral())) { // default clone
-	printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
-	TPaveText *acoBoxFatal=new TPaveText(35,0.5,55,1,"b");
-	acoBoxFatal->SetFillColor(kRed);
-	acoBoxFatal->SetLineColor(kRed);
-	acoBoxFatal->SetLineWidth(2);
-	//acoBox2->SetTextSize(3);
-	//acoBox2->SetTextColor(kBlack);
-	acoBoxFatal->AddText("FLAG MESSAGE: ACO. Not Ok, Call the expert !!!");
-	acoBoxFatal->AddText("Blue line: mean of hits");
-	acoBoxFatal->AddText("Between GREEN lines: ACO. O.K.");
-	h0->GetListOfFunctions()->Add(acoBoxFatal);
+      	TObjArray * parr = GetRawsDataOfTrigClass(itc);
+      	if (!parr) continue;
+      	TObjArray &harr = *parr;
+      	TH1* h0 = (TH1*)harr[0];
+      	TH1* h1 = (TH1*)harr[1];
+      	if (!h0 || !h1) continue;
+      	TH1* h2 = (TH1*)harr[2];
+      	TH1* h3 = (TH1*)harr[3];
+      	if (!h2 || !h3) continue;
+
+      	Double_t integralSL0 = 0;
+      	Double_t integralAMU = 0;
+
+      	// maximimum and minimum for Pads
+
+      	Double_t maxPad = h0->GetMaximum();
 	
-	TPaveText *acoMultiBoxFatal = new TPaveText(20,0.5,40,1,"b");
-	acoMultiBoxFatal->SetFillColor(kRed);
-	acoMultiBoxFatal->SetLineColor(kRed);
-	acoMultiBoxFatal->SetLineWidth(2);
-	acoMultiBoxFatal->AddText("ACO. Not O.K., Call the experts");
-	h1->GetListOfFunctions()->Add(acoMultiBoxFatal);
-	continue;
-      }
-      Double_t mean = integral/60;
-      fhACOMean->SetY1(mean);
-      fhACOMean->SetY2(mean);
-      fhACOMin->SetY1(0.05*mean);
-      fhACOMin->SetY2(0.05*mean);
-      fhACOMax->SetY1(2.25*mean);
-      fhACOMax->SetY2(2.25*mean);
+      	if ((itc==-1 && !(integralAMU=h2->Integral()) || h2->GetMaximum()==0)||(itc==-1 && !(integralSL0=h0->Integral()) || h0->GetMaximum()==0)) { // default clone
+		printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
+		Float_t maxPadAMU = h3->GetMaximum();
+		TPaveText *acoBoxFatalAMU = new TPaveText(35,0,55,1,"b");
+		acoBoxFatalAMU->SetFillColor(kRed);
+		acoBoxFatalAMU->SetLineColor(kRed);
+		acoBoxFatalAMU->SetLineWidth(2);
+		acoBoxFatalAMU->AddText("ACO: Not O.K.");
+		acoBoxFatalAMU->AddText("Call the experts");
+
+		TPaveText *acoBoxFatalMultiAMU = new TPaveText(35,0,55,maxPadAMU,"b");
+		acoBoxFatalMultiAMU->SetFillColor(kRed);
+		acoBoxFatalMultiAMU->SetLineColor(kRed);
+		acoBoxFatalMultiAMU->SetLineWidth(2);
+		acoBoxFatalMultiAMU->AddText("ACO: Not O.K.");
+		acoBoxFatalMultiAMU->AddText("Call the experts");
+
+		h2->GetListOfFunctions()->Add(acoBoxFatalAMU);
+		h3->GetListOfFunctions()->Add(acoBoxFatalMultiAMU);
+
+		Float_t maxPadSL0 = h1->GetMaximum();
+
+        	printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
+        	TPaveText *acoBoxFatal = new TPaveText(35,0,55,1,"b");
+        	acoBoxFatal->SetFillColor(kRed);
+        	acoBoxFatal->SetLineColor(kRed);
+        	acoBoxFatal->SetLineWidth(2);
+        	acoBoxFatal->AddText("ACO: Not O.K.");
+		acoBoxFatal->AddText("Call the experts");
+
+        	TPaveText *acoBoxFatalMulti = new TPaveText(35,0,55,maxPadSL0,"b");
+        	acoBoxFatalMulti->SetFillColor(kRed);
+        	acoBoxFatalMulti->SetLineColor(kRed);
+        	acoBoxFatalMulti->SetLineWidth(2);
+        	acoBoxFatalMulti->AddText("ACO: Not O.K.");
+		acoBoxFatalMulti->AddText("Call the experts");
+
+        	h0->GetListOfFunctions()->Add(acoBoxFatal);
+        	h1->GetListOfFunctions()->Add(acoBoxFatalMulti);
+		continue;
+	}
       
-      // alarms
-      Double_t max = h0->GetMaximum();
-      if (max == 0) {
-	printf("Maximum of hits equal to ZERO, please check the status of ACORDE !!\n");
-	continue;
-      }
-      // Multiplicity histogram threshold
-      Double_t maxMulti = h1->GetMaximum();
-      if (maxMulti == 0) {
-	printf("Maximum of entries equal to ZERO, please check the status of ACORDE !!\n");
-	continue;
-      }
-      fhACOMulti->SetX1(1);
-      fhACOMulti->SetY1(1);
-      fhACOMulti->SetX2(1);
-      fhACOMulti->SetY2(maxMulti);
-      TPaveText *acoBox=new TPaveText(35,max-0.20*max,55,max,"b");
-      //acoBox->SetFillStyle(0);
-      TPaveText *acoBox1=new TPaveText(35,max-0.20*max,55,max,"b");
-      //acoBox1->SetFillStyle(0);
-      TPaveText *acoBox2=new TPaveText(35,max-0.20*max,55,max,"b");
-      //acoBox2->SetFillStyle(0);
-      Int_t flagACO_DQM = 0;
-      Bool_t isACOOk = kTRUE;
-      Bool_t isACOWarning = kFALSE;
-      for(Int_t iModule=0;iModule<60;iModule++)	{
-	if ((h0->GetBinContent(iModule))/max < 0.5) flagACO_DQM++;
-      }
-      if (flagACO_DQM < 15) {
-	acoBox->SetFillColor(kGreen);
-	acoBox->SetLineColor(kGreen);
-	acoBox->SetLineWidth(2);
-	//acoBox->SetTextSize(3);
-	//acoBox->SetTextColor(kBlack);
-	acoBox->AddText("FLAG MESSAGE: O.K. !!!");
-	acoBox->AddText("Blue line: mean of hits");
-	acoBox->AddText("Between GREEN lines: ACO. O.K.");
-	h0->GetListOfFunctions()->Add(acoBox);	
-	//
-      } 
-      else if (flagACO_DQM > 15 && flagACO_DQM<30) {
-	acoBox1->SetFillColor(kYellow);
-	acoBox1->SetLineColor(kYellow);
-	acoBox1->SetLineWidth(2);
-	//acoBox1->SetTextSize(3);
-	//acoBox1->SetTextColor(kBlack);
-	acoBox1->AddText("FLAG MESSAGE: Warning, some modules are not working properly !!!");
-	acoBox1->AddText("Blue line: mean of hits");
-	acoBox1->AddText("Between GREEN lines: ACO. O.K.");
-	h0->GetListOfFunctions()->Add(acoBox1);
-	isACOWarning=kTRUE;	
-      }
-      else if (flagACO_DQM > 30) {
-	acoBox2->SetFillColor(kRed);
-	acoBox2->SetLineColor(kRed);
-	acoBox2->SetLineWidth(2);
-	//acoBox2->SetTextSize(3);
-	//acoBox2->SetTextColor(kBlack);
-	acoBox2->AddText("FLAG MESSAGE: ACO. Not Ok, Call the expert !!!");
-	acoBox2->AddText("Blue line: mean of hits");
-	acoBox2->AddText("Between GREEN lines: ACO. O.K.");
-	h0->GetListOfFunctions()->Add(acoBox2);
-	isACOOk=kFALSE;	
-      }
-      //
-      
-      TPaveText *acoMultiBox = new TPaveText(20,maxMulti-0.20*maxMulti,40,maxMulti,"b");
-      if (h1->Integral()==0 || isACOOk==kFALSE) {
-	acoMultiBox->SetFillColor(kRed);
-	acoMultiBox->SetLineColor(kRed);
-	acoMultiBox->SetLineWidth(2);
-	acoMultiBox->AddText("ACO. Not O.K., Call the experts");
-	h1->GetListOfFunctions()->Add(acoMultiBox);
-      }
-      /*    if (GetRawsData(5)->GetBinContent(1) > 0 || isACOOk && GetRawsData(5)->Integral()!=0 && isACOOk==kTRUE){
-	    acoMultiBox->SetFillColor(kYellow);
-	    acoMultiBox->SetLineColor(kYellow);
-	    acoMultiBox->SetLineWidth(2);
-	    acoMultiBox->AddText("Warning: possible empy events only IF ACORDE is triggering, else: O.K.");
-	    GetRawsData(5)->GetListOfFunctions()->Add(acoMultiBox);
-	    }
-      */
-      if (isACOOk==kTRUE) {
-	acoMultiBox->SetFillColor(kGreen);
-	acoMultiBox->SetLineColor(kGreen);
-	acoMultiBox->SetLineWidth(2);
-	acoMultiBox->AddText("FLAG MESSAGE: ACO. O.K.");
-	//acoMultiBox->AddText("NOTE: if entries below the pink line and ACO is triggering, then call the expert (possible empty events)");
-	h1->GetListOfFunctions()->Add(acoMultiBox);
-      }
-      if (isACOWarning==kTRUE) {
-	acoMultiBox->SetFillColor(kYellow);
-	acoMultiBox->SetLineColor(kYellow);
-	acoMultiBox->SetLineWidth(2);
-	acoMultiBox->AddText("FLAG MESSAGE: ACO. O.K., warning, some modules are not working properly");
-	//acoMultiBox->AddText("NOTE: if entries below the pink line and ACO is triggering, then call the expert (possible empty events)");
-	h1->GetListOfFunctions()->Add(acoMultiBox);
-      }
-      
-      // for AMU ACORDE trigger option
-      TH1* h2 = (TH1*)harr[2];
-      TH1* h3 = (TH1*)harr[3];
-      if (!h2 || !h3) continue;
-      Double_t integral1 = h2->Integral();
-      if (integral1==0) {
-	printf("No entries in ACORDE Hits histograms for trigger class %d --> fatal error, please check !!!\n",itc);
-	TPaveText *acoBoxFatalAMU=new TPaveText(35,0.5,55,1,"b");
-	acoBoxFatalAMU->SetFillColor(kRed);
-	acoBoxFatalAMU->SetLineColor(kRed);
-	acoBoxFatalAMU->SetLineWidth(2);
-	//acoBox2->SetTextSize(3);
-	//acoBox2->SetTextColor(kBlack);
-	acoBoxFatalAMU->AddText("FLAG MESSAGE: ACO. Not Ok, Call the expert !!!");
-	acoBoxFatalAMU->AddText("Blue line: mean of hits");
-	acoBoxFatalAMU->AddText("Between GREEN lines: ACO. O.K.");
-	h2->GetListOfFunctions()->Add(acoBoxFatalAMU);
-	
-	TPaveText *acoMultiBoxFatalAMU = new TPaveText(20,0.5,40,1,"b");
-	acoMultiBoxFatalAMU->SetFillColor(kRed);
-	acoMultiBoxFatalAMU->SetLineColor(kRed);
-	acoMultiBoxFatalAMU->SetLineWidth(2);
-	acoMultiBoxFatalAMU->AddText("ACO. Not O.K., Call the experts");
-	h3->GetListOfFunctions()->Add(acoMultiBoxFatalAMU);
-	
-	continue;
-      }
-      Double_t mean1 = integral1/60;
-      fhACOMeanAMU->SetY1(mean1);
-      fhACOMeanAMU->SetY2(mean1);
-      fhACOMinAMU->SetY1(0.05*mean1);
-      fhACOMinAMU->SetY2(0.05*mean1);
-      fhACOMaxAMU->SetY1(2.25*mean1);
-      fhACOMaxAMU->SetY2(2.25*mean1);
-      
-      // alarms
-      Double_t max1 = h2->GetMaximum();
-      if (max1 == 0) {
-	printf("Maximum of hits equal to ZERO, please check the status of ACORDE !!\n");
-	continue;
-      }
-      // Multiplicity histogram threshold
-      Double_t maxMulti1 = h3->GetMaximum();
-      if (maxMulti1 == 0) {
-	printf("Maximum of entries equal to ZERO, please check the status of ACORDE !!\n");
-	continue;
-      }
-      fhACOMultiAMU->SetX1(1);
-      fhACOMultiAMU->SetY1(1);
-      fhACOMultiAMU->SetX2(1);
-      fhACOMultiAMU->SetY2(maxMulti1);
-      TPaveText *acoBoxAMU=new TPaveText(35,max1-0.20*max1,55,max1,"b");
-      //acoBox->SetFillStyle(0);
-      TPaveText *acoBox1AMU=new TPaveText(35,max1-0.20*max1,55,max1,"b");
-      //acoBox1->SetFillStyle(0);
-      TPaveText *acoBox2AMU=new TPaveText(35,max1-0.20*max1,55,max1,"b");
-      //acoBox2->SetFillStyle(0);
-      Int_t flagACO_DQMAMU = 0;
-      Bool_t isACOOkAMU = kTRUE;
-      Bool_t isACOWarningAMU = kFALSE;
-      for(Int_t iModule=0;iModule<60;iModule++) {
-	if ((h2->GetBinContent(iModule))/max1 < 0.5) flagACO_DQMAMU++;
-      }
-      if (flagACO_DQMAMU < 15) {
-	acoBoxAMU->SetFillColor(kGreen);
-	acoBoxAMU->SetLineColor(kGreen);
-	acoBoxAMU->SetLineWidth(2);
-	//acoBox->SetTextSize(3);
-	//acoBox->SetTextColor(kBlack);
-	acoBoxAMU->AddText("FLAG MESSAGE: O.K. !!!");
-	acoBoxAMU->AddText("Blue line: mean of hits");
-	acoBoxAMU->AddText("Between GREEN lines: ACO. O.K.");
-	h2->GetListOfFunctions()->Add(acoBoxAMU);	
-	//
-      }
-      else if (flagACO_DQMAMU > 15 && flagACO_DQMAMU<30) {
-	acoBox1AMU->SetFillColor(kYellow);
-	acoBox1AMU->SetLineColor(kYellow);
-	acoBox1AMU->SetLineWidth(2);
-	//acoBox1->SetTextSize(3);
-	//acoBox1->SetTextColor(kBlack);
-	acoBox1AMU->AddText("FLAG MESSAGE: Warning, some modules are not working properly !!!");
-	acoBox1AMU->AddText("Blue line: mean of hits");
-	acoBox1AMU->AddText("Between GREEN lines: ACO. O.K.");
-	h2->GetListOfFunctions()->Add(acoBox1AMU);
-	isACOWarningAMU=kTRUE;
-	//
-      } 
-      else if (flagACO_DQMAMU > 30) {
-	acoBox2AMU->SetFillColor(kRed);
-	acoBox2AMU->SetLineColor(kRed);
-	acoBox2AMU->SetLineWidth(2);
-	//acoBox2->SetTextSize(3);
-	//acoBox2->SetTextColor(kBlack);
-	acoBox2AMU->AddText("FLAG MESSAGE: ACO. Not Ok, Call the expert !!!");
-	acoBox2AMU->AddText("Blue line: mean of hits");
-	acoBox2AMU->AddText("Between GREEN lines: ACO. O.K.");
-	h2->GetListOfFunctions()->Add(acoBox2AMU);
-	isACOOkAMU=kFALSE;
-      }
-      //
-      TPaveText *acoMultiBoxAMU = new TPaveText(20,maxMulti1-0.20*maxMulti1,40,maxMulti1,"b");
-      if (h3->Integral()==0 || isACOOkAMU==kFALSE) {
-	acoMultiBoxAMU->SetFillColor(kRed);
-	acoMultiBoxAMU->SetLineColor(kRed);
-	acoMultiBoxAMU->SetLineWidth(2);
-	acoMultiBoxAMU->AddText("ACO. Not O.K., Call the experts");
-	h3->GetListOfFunctions()->Add(acoMultiBoxAMU);
-      }
-      /*              if (GetRawsData(5)->GetBinContent(1) > 0 || isACOOk && GetRawsData(5)->Integral()!=0 && isACOOk==kTRUE){
-		      acoMultiBox->SetFillColor(kYellow);
-		      acoMultiBox->SetLineColor(kYellow);
-		      acoMultiBox->SetLineWidth(2);
-		      acoMultiBox->AddText("Warning: possible empy events only IF ACORDE is triggering, else: O.K.");
-		      GetRawsData(5)->GetListOfFunctions()->Add(acoMultiBox);
-		      }
-      */
-      if (isACOOkAMU==kTRUE) {
-	acoMultiBoxAMU->SetFillColor(kGreen);
-	acoMultiBoxAMU->SetLineColor(kGreen);
-	acoMultiBoxAMU->SetLineWidth(2);
-	acoMultiBoxAMU->AddText("FLAG MESSAGE: ACO. O.K.");
-	//acoMultiBox->AddText("NOTE: if entries below the pink line and ACO is triggering, then call the expert (possible empty events)");
-	h3->GetListOfFunctions()->Add(acoMultiBoxAMU);
-      }
-      if (isACOWarningAMU==kTRUE) {
-	acoMultiBoxAMU->SetFillColor(kYellow);
-	acoMultiBoxAMU->SetLineColor(kYellow);
-	acoMultiBoxAMU->SetLineWidth(2);
-	acoMultiBoxAMU->AddText("FLAG MESSAGE: ACO. O.K., warning, some modules are not working properly");
-	//acoMultiBox->AddText("NOTE: if entries below the pink line and ACO is triggering, then call the expert (possible empty events)");
-	h3->GetListOfFunctions()->Add(acoMultiBoxAMU);
-      }
-      
-      // Checks if hits distribution from SL0 and AMU are equal
-      Float_t eff = 0.0;
-      Int_t effFlag = 0;
-      //
-      TH1* h4 = (TH1*)harr[4];
-      if (h4) {
-	for (Int_t iModule = 0; iModule < 60; iModule++) {
-	  if (h2->GetBinContent(iModule)==0) {
-	    eff = 0.0;
-	    continue;
-	  }
-	  else {
-	    eff = h0->GetBinContent(iModule)/h2->GetBinContent(iModule);
-	    h4->Fill(iModule,eff);
-	    if (eff!=1) effFlag++;
-	  }
+	// Check DQM
+
+	// setting the thresholds
+
+	Int_t SL0_ThresholdAlarm = 45; // default value until the creation of AliACORDEThreshold class
+	Int_t AMU_ThresholdAlarm = 45; // default value until the creation of AliACORDEThreshold class
+
+	// SL0 - histograms
+
+	Int_t indexActiveModuleSL0 = 0;
+        for(Int_t iModule=0;iModule<60;iModule++){	
+		if (h0->GetBinContent(iModule)>0) indexActiveModuleSL0++;
 	}
 	
-	if (effFlag == 0)	{
-	  TPaveText *checkTriggerBox = new TPaveText(20,0.6,40,0.8,"b");
-	  checkTriggerBox->SetFillColor(kGreen);
-	  checkTriggerBox->SetLineColor(kGreen);
-	  checkTriggerBox->SetLineWidth(2);
-	  checkTriggerBox->AddText("FLAG MESSAGE: ACO. trigger O.K.");
-	  h4->GetListOfFunctions()->Add(checkTriggerBox);
+	Float_t meanHitsSL0 = 0.;
+	if (indexActiveModuleSL0!=0) meanHitsSL0=h0->Integral()/indexActiveModuleSL0;
+
+	Int_t indexSL0 = 0;
+	
+	// set the threshold lines: minimum, maximum and mean
+
+	fhACOMean->SetX1(0);
+	fhACOMean->SetY1(meanHitsSL0);
+	fhACOMean->SetX2(59);
+	fhACOMean->SetY2(meanHitsSL0);
+	
+	fhACOMin->SetX1(0);
+	fhACOMin->SetX2(59);
+	fhACOMin->SetY1(meanHitsSL0-0.80*meanHitsSL0);
+	fhACOMin->SetY2(meanHitsSL0-0.80*meanHitsSL0);
+
+	fhACOMax->SetX1(0);
+	fhACOMax->SetX2(59);
+	fhACOMax->SetY1(meanHitsSL0+0.80*meanHitsSL0);
+	fhACOMax->SetY2(meanHitsSL0+0.80*meanHitsSL0);
+
+	fhACOMulti->SetX1(0);
+	fhACOMulti->SetY1(0);
+	fhACOMulti->SetX2(0);
+	Float_t maxMulti = 0;
+	if (h1->GetMaximum()>0) maxMulti = h1->GetMaximum();
+	fhACOMulti->SetY2(maxMulti);
+
+	TPaveText *acoBoxOkHitsSL0 = new TPaveText(35,meanHitsSL0+0.5*meanHitsSL0,55,maxPad,"b");
+	acoBoxOkHitsSL0->SetFillColor(kGreen);
+	acoBoxOkHitsSL0->SetLineColor(kGreen);
+	acoBoxOkHitsSL0->SetLineWidth(2);
+	acoBoxOkHitsSL0->AddText("ACO: O.K.");
+
+	TPaveText *acoBoxErrorHitsSL0 = new TPaveText(35,meanHitsSL0+0.5*meanHitsSL0,55,maxPad,"b");
+	acoBoxErrorHitsSL0->SetFillColor(kRed);
+	acoBoxErrorHitsSL0->SetLineColor(kRed);
+	acoBoxErrorHitsSL0->SetLineWidth(2);
+	acoBoxErrorHitsSL0->AddText("ACO: Not O.K.");
+
+	Float_t maxPadMulti = h1->GetMaximum();
+
+	TPaveText *acoBoxOkMultiSL0 = new TPaveText(35,maxPadMulti-0.3*maxPadMulti,55,maxPadMulti,"b");
+	acoBoxOkMultiSL0->SetFillColor(kGreen);
+	acoBoxOkMultiSL0->SetLineColor(kGreen);
+	acoBoxOkMultiSL0->SetLineWidth(2);
+	acoBoxOkMultiSL0->AddText("ACO: O.K.");
+
+	TPaveText *acoBoxErrorMultiSL0 = new TPaveText(35,maxPadMulti-0.3*maxPadMulti,55,maxPadMulti,"b");
+	acoBoxErrorMultiSL0->SetFillColor(kRed);
+	acoBoxErrorMultiSL0->SetLineColor(kRed);
+	acoBoxErrorMultiSL0->SetLineWidth(2);
+	acoBoxErrorMultiSL0->AddText("ACO: Not O.K.");
+        TH1* h4 = (TH1*)harr[4];
+
+	for (Int_t iModule = 0; iModule < 60; iModule++){
+		if (meanHitsSL0!=0){
+			if (TMath::Abs(h0->GetBinContent(iModule)/meanHitsSL0-1) < 1) indexSL0++;
+			if (h4){
+				h4->Fill(h0->GetBinContent(iModule)/meanHitsSL0-1);
+			}
+		}
 	}
-	else {
-	  TPaveText *checkTriggerBox1 = new TPaveText(20,0.6,40,0.8,"b");
-	  checkTriggerBox1->SetFillColor(kYellow);
-	  checkTriggerBox1->SetLineColor(kYellow);
-	  checkTriggerBox1->SetLineWidth(2);
-	  checkTriggerBox1->AddText("FLAG MESSAGE: Warning, please check the ACO trigger configuration");
-	  h4->GetListOfFunctions()->Add(checkTriggerBox1);
+
+	if (indexSL0>=SL0_ThresholdAlarm){
+		h0->GetListOfFunctions()->Add(acoBoxOkHitsSL0);
+		h1->GetListOfFunctions()->Add(acoBoxOkMultiSL0);
 	}
-      } // h4
+	else{
+		h0->GetListOfFunctions()->Add(acoBoxErrorHitsSL0);
+		h1->GetListOfFunctions()->Add(acoBoxErrorMultiSL0);
+	}
+
+
+	// AMU - histograms	
+
+	Int_t indexActiveModuleAMU = 0;
+        for(Int_t iModule=0;iModule<60;iModule++){
+		if (h2->GetBinContent(iModule)>0) indexActiveModuleAMU++;
+	}
+
+	Float_t meanHitsAMU = 0.;
+	if (indexActiveModuleAMU!=0) meanHitsAMU=h2->Integral()/indexActiveModuleAMU;
+
+	// setting the line's thresholds: min, max and mean of hits
+
+	fhACOMeanAMU->SetX1(0);
+	fhACOMeanAMU->SetY1(meanHitsAMU);
+	fhACOMeanAMU->SetX2(59);
+	fhACOMeanAMU->SetY2(meanHitsAMU);
+
+	fhACOMinAMU->SetX1(0);
+	fhACOMinAMU->SetX2(59);
+	fhACOMinAMU->SetY1(meanHitsAMU-0.80*meanHitsAMU);
+	fhACOMinAMU->SetY2(meanHitsAMU-0.80*meanHitsAMU);
+
+
+	fhACOMaxAMU->SetX1(0);
+	fhACOMaxAMU->SetX2(59);
+	fhACOMaxAMU->SetY1(meanHitsAMU+0.80*meanHitsAMU);
+	fhACOMaxAMU->SetY2(meanHitsAMU+0.80*meanHitsAMU);
+
+
+	fhACOMultiAMU->SetX1(0);
+	fhACOMultiAMU->SetY1(0);
+	fhACOMultiAMU->SetX2(0);
+	Float_t maxMultiAMU = 0;
+	if (h3->GetMaximum()>0) maxMultiAMU = h3->GetMaximum();
+	fhACOMultiAMU->SetY2(maxMultiAMU);
+	
+	// setting the alarms
+
+	TPaveText *acoBoxOkHitsAMU = new TPaveText(35,meanHitsAMU+0.5*meanHitsAMU,55,maxPad,"b");
+	acoBoxOkHitsAMU->SetFillColor(kGreen);
+	acoBoxOkHitsAMU->SetLineColor(kGreen);
+	acoBoxOkHitsAMU->SetLineWidth(2);
+	acoBoxOkHitsAMU->AddText("ACO: O.K.");
+
+	TPaveText *acoBoxErrorHitsAMU = new TPaveText(35,meanHitsAMU+0.5*meanHitsAMU,55,maxPad,"b");
+	acoBoxErrorHitsAMU->SetFillColor(kRed);
+	acoBoxErrorHitsAMU->SetLineColor(kRed);
+	acoBoxErrorHitsAMU->SetLineWidth(2);
+	acoBoxErrorHitsAMU->AddText("ACO: Not O.K.");
+
+	Float_t maxPadMultiAMU = h3->GetMaximum();
+
+	TPaveText *acoBoxOkMultiAMU = new TPaveText(35,maxPadMultiAMU-0.3*maxPadMultiAMU,55,maxPadMultiAMU,"b");
+	acoBoxOkMultiAMU->SetFillColor(kGreen);
+	acoBoxOkMultiAMU->SetLineColor(kGreen);
+	acoBoxOkMultiAMU->SetLineWidth(2);
+	acoBoxOkMultiAMU->AddText("ACO: O.K.");
+
+	TPaveText *acoBoxErrorMultiAMU = new TPaveText(35,maxPadMultiAMU-0.3*maxPadMultiAMU,55,maxPadMultiAMU,"b");
+	acoBoxErrorMultiAMU->SetFillColor(kRed);
+	acoBoxErrorMultiAMU->SetLineColor(kRed);
+	acoBoxErrorMultiAMU->SetLineWidth(2);
+	acoBoxErrorMultiAMU->AddText("ACO: Not O.K.");
+        TH1* h5 = (TH1*)harr[5];
+
+	Int_t indexAMU=0;
+
+	for (Int_t iModule = 0; iModule < 60; iModule++){
+		if (meanHitsAMU!=0){
+			if (TMath::Abs(h2->GetBinContent(iModule)/meanHitsAMU-1) < 1) indexAMU++;
+			if (h5){
+				h5->Fill(h2->GetBinContent(iModule)/meanHitsAMU-1);
+			}
+		}
+	}
+
+	if (indexAMU>=AMU_ThresholdAlarm) {
+		h2->GetListOfFunctions()->Add(acoBoxOkHitsAMU);
+		h3->GetListOfFunctions()->Add(acoBoxOkMultiAMU);
+	}
+	else{
+		h2->GetListOfFunctions()->Add(acoBoxErrorHitsAMU);
+		h3->GetListOfFunctions()->Add(acoBoxErrorMultiAMU);
+	}
+      
     } // end of trigger classes loop
   } // end specie loop
   // QA Checker standar (to be updated)
@@ -445,45 +395,35 @@ void AliACORDEQADataMakerRec::InitRaws()
 {
   // create Raw histograms in Raw subdir
 
-  const Bool_t expert   = kTRUE ; 
-  const Bool_t saveCorr = kTRUE ; 
-  const Bool_t image    = kTRUE ; 
-  /*
-  const char *acoModule[60]={"0_0","0_1","0_2","0_3","0_4","0_5","0_6","0_7","0_8","0_9",
-                        "1_0","1_1","1_2","1_3","1_4","1_5","1_6","1_7","1_8","1_9",
-                        "2_0","2_1","2_2","2_3","2_4","2_5","2_6","2_7","2_8","2_9",
-                        "3_0","3_1","3_2","3_3","3_4","3_5","3_6","3_7","3_8","3_9",
-                        "4_0","4_1","4_2","4_3","4_4","4_5","4_6","4_7","4_8","4_9",
-                        "5_0","5_1","5_2","5_3","5_4","5_5","5_6","5_7","5_8","5_9"};
-  */
-  // TH1F *fhACORDEBitPattern[4];
-         //TH1F *fhACORDEBitPatternDQM;
- //  fhACORDEBitPattern[0] = new TH1F("ACORDEBitPatternfromRAWSingle","Distribution of ACORDE fired modules from RAW-Single;Modules;Counts",60,-0.5,59.5);//AcordeSingleMuon BitPattern
- //  fhACORDEBitPattern[1] = new TH1F("ACORDEBitPatternfromRAWMulti","Distribution of ACORDE fired modules from RAW-Multi;Modules;Counts",60,-0.5,59.5);//AcordeMultiMuon BitPattern
- //  fhACORDEBitPattern[2] = new TH1F("ACORDEMultiplicityfromRAWSingle","Number of fired ACORDE modules;No. of fired ACORDE modules;No. of events in ACORDE",61,-1,60);//AcordeSingleMuon Multiplicity
- //  fhACORDEBitPattern[3] = new TH1F("ACORDEMultiplicityfromRAWMulti","Number of fired ACORDE modules; No. of fired ACORDE modules;No. of events in ACORDE",61,-1,60);//AcordeMultiMuon Multiplicity
-         TH1F * fhACORDEBitPatternDQM = new TH1F("ACOHitsSL0_DQM_Shifter","Distribution of ACORDE fired modules for DQM shifter; No. of module; Counts",60,-0.5,59.5);// Hits histogram for QA-shifter ACO-SL0 trigger mode
-         TH1F * fhACORDEMultiplicitySL0DQM = new TH1F("ACOMultiSL0_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
-         TH1F * fhACORDEBitPatternAMUDQM = new TH1F("ACOHitsAMU_DQM_Shifter","Distribution of ACORDE fired modules for DQM shifter; No. of module; Counts",60,-0.5,59.5);// Hits histogram for QA-shifter ACO-SL0 trigger mode
-         TH1F * fhACORDEMultiplicityAMUDQM = new TH1F("ACOMultiAMU_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
-         TH1F * fhACORDEBitPatternCheckDQM = new TH1F("ACOHitsTriggerCheck_DQMExpert","Check distribution for ACORDE trigger configuration; No. of module; Trigger hits difference",60,-0.5,59.5); // Check the trigger status of ACORDE (SL0 vs AMU)
+  	const Bool_t expert   = kTRUE ; 
+  	const Bool_t saveCorr = kTRUE ; 
+  	const Bool_t image    = kTRUE ; 
+	TH1F * fhACORDEBitPatternDQM = new TH1F("ACOHitsSL0_DQM_Shifter","Distribution of ACORDE fired modules for DQM shifter; No. of module; Counts",60,-0.5,59.5);// Hits histogram for QA-shifter ACO-SL0 trigger mode
+        TH1F * fhACORDEMultiplicitySL0DQM = new TH1F("ACOMultiSL0_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
+        TH1F * fhACORDEBitPatternAMUDQM = new TH1F("ACOHitsAMU_DQM_Shifter","Distribution of ACORDE fired modules for DQM shifter; No. of module; Counts",60,-0.5,59.5);// Hits histogram for QA-shifter ACO-SL0 trigger mode
+        TH1F * fhACORDEMultiplicityAMUDQM = new TH1F("ACOMultiAMU_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
+        TH1F * fhACORDEBitPatternCheckDQMSL0 = new TH1F("ACOHitsTriggerCheck_DQMExpertSL0","Check the activity of ACORDE's modules; |Hits per module/mean of Hits - 1|; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
+        TH1F * fhACORDEBitPatternCheckDQMAMU = new TH1F("ACOHitsTriggerCheck_DQMExpertAMU","Check the activity of ACORDE's modules; |Hits per module/mean of Hits - 1|; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
          // Expert histograms
- //      for(Int_t i=0;i<4;i++)
- //    Add2RawsList(fhACORDEBitPattern[i],i,expert, !image, !saveCorr);
          // Check the hits multiplicity from trigger configuration
-         Add2RawsList(fhACORDEBitPatternCheckDQM,4,expert,image,!saveCorr);
-         fhACORDEBitPatternCheckDQM->SetFillColor(kOrange);
-         // AMORE diplay settings for shifter on GUI
+         Add2RawsList(fhACORDEBitPatternCheckDQMSL0,4,expert,image,!saveCorr);
+         fhACORDEBitPatternCheckDQMSL0->SetFillColor(kOrange);
+	 Add2RawsList(fhACORDEBitPatternCheckDQMAMU,5,expert,image,!saveCorr);
+         fhACORDEBitPatternCheckDQMAMU->SetFillColor(kRed+2);
+
+	
+	// AMORE diplay settings for shifter on GUI
  
-         // For SL0 ACO trigger mode
+        // For SL0 ACO trigger mode
  
          Add2RawsList(fhACORDEBitPatternDQM,0,!expert,image,!saveCorr);
 	 ForbidCloning(fhACORDEBitPatternDQM);
          Add2RawsList(fhACORDEMultiplicitySL0DQM,1,!expert,image,!saveCorr);
  	 ForbidCloning(fhACORDEMultiplicitySL0DQM);
+
          // For Hits distribution on ACORDE
  
-         fhACORDEBitPatternDQM->SetFillColor(kCyan-7);
+         fhACORDEBitPatternDQM->SetFillColor(kMagenta+2);
          fhACOMean->SetLineColor(kBlue);
          fhACOMean->SetLineStyle(2);
          fhACOMean->SetLineWidth(4);
@@ -499,7 +439,7 @@ void AliACORDEQADataMakerRec::InitRaws()
  
          // For ACORDE Multiplicity distribution of fired modules
  
-         fhACORDEMultiplicitySL0DQM->SetFillColor(kBlue+1);
+         fhACORDEMultiplicitySL0DQM->SetFillColor(kMagenta);
          fhACOMulti->SetLineColor(kMagenta);
          fhACOMulti->SetLineStyle(2);
          fhACOMulti->SetLineWidth(4);
@@ -512,7 +452,7 @@ void AliACORDEQADataMakerRec::InitRaws()
  
          // For Hits distribution on ACORDE
  
-         fhACORDEBitPatternAMUDQM->SetFillColor(kCyan-7);
+         fhACORDEBitPatternAMUDQM->SetFillColor(kViolet+7);
          fhACOMeanAMU->SetLineColor(kBlue);
          fhACOMeanAMU->SetLineStyle(2);
          fhACOMeanAMU->SetLineWidth(4);
@@ -528,19 +468,12 @@ void AliACORDEQADataMakerRec::InitRaws()
  
          // For ACORDE Multiplicity distribution of fired modules
  
-         fhACORDEMultiplicityAMUDQM->SetFillColor(kBlue+1);
-         fhACOMultiAMU->SetLineColor(kMagenta);
+         fhACORDEMultiplicityAMUDQM->SetFillColor(kViolet+6);
+         fhACOMultiAMU->SetLineColor(kAzure-2);
          fhACOMultiAMU->SetLineStyle(2);
          fhACOMultiAMU->SetLineWidth(4);
          fhACORDEMultiplicityAMUDQM->GetListOfFunctions()->Add(fhACOMultiAMU);
  
-	 /*
-  for (Int_t iModule = 0; iModule<60; iModule++)
-  {
-    fhACORDEBitPattern[0]->GetXaxis()->SetBinLabel(iModule+1,acoModule[iModule]);
-    fhACORDEBitPattern[1]->GetXaxis()->SetBinLabel(iModule+1,acoModule[iModule]);
-  }
-	 */
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
