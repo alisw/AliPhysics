@@ -17,7 +17,6 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODCaloCluster.h"
-#include "AliGammaConversionAODObject.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODJet.h"
 
@@ -186,19 +185,6 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
 
 
 
-///__________________________________________________________________________________
-AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector) {
-  new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(aodO->Px(), aodO->Py(), aodO->Pz(), aodO->E());
-  AliAODPWG4ParticleCorrelation * photon = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
-  if(photon) {
-    photon->SetTagged(aodO->IsTagged());
-    photon->SetTrackLabel(aodO->GetLabel1(), aodO->GetLabel2());
-    photon->SetDetector(detector);
-    return photon;
-  } else {
-    return NULL;
-  }
-}
 
 ///__________________________________________________________________________________
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, TString detector) {
