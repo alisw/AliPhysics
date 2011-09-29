@@ -1762,7 +1762,10 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   //----------------------------------------------------------
   // CALOCELLS
   //----------------------------------------------------------
-    
+   
+  // Do not check cells if there are no clusters
+  if(caloClusters->GetEntriesFast() == 0) return;
+  
   Int_t ncells = cell->GetNumberOfCells();
   
   if(GetDebug() > 0) 
@@ -1912,10 +1915,14 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
   
   //Number of cells per module
   for(Int_t imod = 0; imod < fNModules; imod++ ) {
+    
     if(GetDebug() > 1) 
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - module %d calo %s cells %d\n", imod, fCalorimeter.Data(), nCellsInModule[imod]); 
+   
     fhNCellsMod->Fill(nCellsInModule[imod],imod) ;
+    
   }
+  
   delete [] nCellsInModule;
   
   if(GetDebug() > 0)
