@@ -347,15 +347,17 @@ void AliAnalysisTaskCounter::UserExec(Option_t *)
   //LHC11a, 3 last runs, cut with this
   if(!bEMCALRejected){
     // Count number of cells in SM3 with energy larger than 0.1, cut on this number
-    Int_t ncells = 0;
+    Int_t ncellsSM3 = 0;
+    Int_t ncellsSM4 = 0;
     for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
-      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncells++;
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;
     }
     
     Int_t ncellcut = 21;
     if(triggerclasses.Contains("EMC")) ncellcut = 35;
     
-    if(ncells >= ncellcut ){
+    if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 ){
       
       //printf("Counter: reject event with ncells in SM3: ncells %d\n",ncells);
 

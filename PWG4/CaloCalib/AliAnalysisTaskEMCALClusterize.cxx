@@ -422,9 +422,11 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     }
     
     // Count number of cells with energy larger than 0.1 in SM3, cut on this number
-    Int_t ncells = 0;
+    Int_t ncellsSM3 = 0;
+    Int_t ncellsSM4 = 0;
     for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
-      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncells++;
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;
     }
     
     TString triggerclasses = "";
@@ -434,9 +436,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     Int_t ncellcut = 21;
     if(triggerclasses.Contains("EMC")) ncellcut = 35;
     
-    if(ncells >= ncellcut ){
-      printf("AliAnalysisTaskEMCALClusterize - reject event with cluster  - reject event with ncells in SM3: ncells %d\n",ncells);
-
+    if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 ){
+      printf("AliAnalysisTaskEMCALClusterize - reject event with cluster  - reject event with ncells in SM3 %d and SM4 %d\n",ncellsSM3, ncellsSM4);
       return;
     }
     
