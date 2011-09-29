@@ -383,18 +383,20 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
     }
     
     // Count number of cells with energy larger than 0.1 in SM3, cut on this number
-    Int_t ncells = 0;
+    Int_t ncellsSM3 = 0;
+    Int_t ncellsSM4 = 0;
     for(Int_t icell = 0; icell < fInputEvent->GetEMCALCells()->GetNumberOfCells(); icell++){
       Int_t absID = fInputEvent->GetEMCALCells()->GetCellNumber(icell);
       Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncells++;
+      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==3) ncellsSM3++;
+      if(fInputEvent->GetEMCALCells()->GetAmplitude(icell) > 0.1 && sm==4) ncellsSM4++;
     }
     
     Int_t ncellcut = 21;
     if(fFiredTriggerClassName.Contains("EMC")) ncellcut = 35;
     
-    if(ncells >= ncellcut ) {
-       if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3: ncells %d\n",ncells);
+    if(ncellsSM3 >= ncellcut || ncellsSM4 >= 100) {
+       if(fDebug > 0) printf(" AliCaloTrackReader::FillInputEvent() - reject event with ncells in SM3 %d and SM4 %d\n",ncellsSM3, ncellsSM4);
       return kFALSE;
     }
   }// Remove LED events
