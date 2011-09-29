@@ -30,6 +30,7 @@ class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONTriggerElectronics;
 class TClonesArray;
+class AliMUONTriggerUtilities;
 
 #include "AliMUONRecoParam.h"
 
@@ -68,6 +69,7 @@ private:
   void CreateCalibrator() const;
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
+  void CreateTriggerUtilities() const;
   void CreateClusterServer() const;
   void FillTreeR(AliMUONVTriggerStore* triggerStore,
                  TTree& clustersTree) const;
@@ -89,8 +91,9 @@ private:
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
   mutable AliMUONTriggerElectronics* fTriggerProcessor; //!< Processor to recalculate trigger response
+  mutable AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
   
-  ClassDef(AliMUONReconstructor,9) // Implementation of AliReconstructor
+  ClassDef(AliMUONReconstructor,10) // Implementation of AliReconstructor
 };
 
 #endif

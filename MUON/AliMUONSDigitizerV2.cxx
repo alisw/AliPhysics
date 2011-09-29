@@ -27,7 +27,6 @@
 #include "AliMUONHit.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVHitStore.h"
-#include "AliMUONCalibrationData.h"
 #include "AliMUONResponseTrigger.h"
 #include "AliMUONConstants.h"
 
@@ -109,16 +108,6 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   loader->LoadHits("READ");
   
   AliMUON* muon = static_cast<AliMUON*>(gAlice->GetModule("MUON"));
-
-  AliMUONCalibrationData *calibrationData = 0x0;
-
-  if(muon->GetTriggerEffCells()){
-    Int_t runnumber = AliCDBManager::Instance()->GetRun();
-    calibrationData = new AliMUONCalibrationData(runnumber);
-    for (Int_t chamber = 10; chamber < 14; chamber++) {
-      ((AliMUONResponseTrigger *) (muon->Chamber(chamber).ResponseModel()))->InitTriggerEfficiency(calibrationData->TriggerEfficiency()); // Init trigger efficiency
-    }
-  }
   
   Int_t nofEvents(runLoader->GetNumberOfEvents());
   
@@ -269,5 +258,4 @@ AliMUONSDigitizerV2::Exec(Option_t*)
   
   delete sDigitStore;
 
-  if(calibrationData) delete calibrationData;
 }

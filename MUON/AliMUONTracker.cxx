@@ -54,6 +54,7 @@
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONTriggerUtilities.h"
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TTree.h>
@@ -68,7 +69,8 @@ AliMUONTracker::AliMUONTracker(const AliMUONRecoParam* recoParam,
                                AliMUONVClusterServer* clusterServer,
                                AliMUONVDigitStore& digitStore,
                                const AliMUONGeometryTransformer* transformer,
-                               const AliMUONTriggerCircuit* triggerCircuit)
+                               const AliMUONTriggerCircuit* triggerCircuit,
+                               const AliMUONTriggerUtilities* triggerUtilities)
 : AliTracker(),
 fkTransformer(transformer), // not owner
 fkTriggerCircuit(triggerCircuit), // not owner
@@ -85,7 +87,7 @@ fkRecoParam(recoParam)
 {
   /// constructor
   if (fkTransformer)
-    fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fkTransformer,fkDigitStore);
+    fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fkTransformer,fkDigitStore,triggerUtilities);
   
   if (!fClusterServer)
   {

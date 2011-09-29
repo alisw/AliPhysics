@@ -24,12 +24,7 @@ class AliMUONResponseTrigger : public AliMUONResponse
   virtual Int_t SetGenerCluster(){return 0;}
 
   virtual void DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t timeDif);
-  
-  virtual void InitTriggerEfficiency(AliMUONTriggerEfficiencyCells* triggerEfficiency);
-
- protected:
-  AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!< trigger efficiency map
-  
+    
  private:
   /// Not implemented
   AliMUONResponseTrigger(const AliMUONResponseTrigger& other);

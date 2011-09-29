@@ -16,6 +16,8 @@
 #include "AliDigitizer.h"
 #endif
 
+#include "TArrayI.h"
+
 class AliMUONCalibrationData;
 class AliMUONVDigit;
 class AliMUONLogger;
@@ -27,6 +29,8 @@ class AliLoader;
 class AliMUONVTriggerStore;
 class AliMUONTriggerElectronics;
 class AliMUONVCalibParam;
+class AliMUONTriggerChamberEfficiency;
+class AliMUONTriggerUtilities;
 
 class AliMUONDigitizerV3 : public AliDigitizer
 {
@@ -63,6 +67,7 @@ private:
   void ApplyResponse(const AliMUONVDigitStore& store, AliMUONVDigitStore& filteredStore);
 
   void ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t addNoise);
+  void ApplyResponseToTriggerDigit(AliMUONVDigit& digit);
 
   AliLoader* GetLoader(const TString& foldername);
   
@@ -80,6 +85,9 @@ private:
   static TF1* NoiseFunction();
   
   void CreateInputDigitStores();
+  
+  void BuildTriggerStatusMap();
+  Int_t GetArrayIndex(Int_t cathode, Int_t trigCh, Int_t localCircuit);
 
 private:
   Bool_t fIsInitialized; ///< are we initialized ?
@@ -94,6 +102,9 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   TObjArray* fInputDigitStores; //!< input digit stores (one per input file
+  AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!< trigger efficiency map
+  AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
+  TArrayI fEfficiencyResponse; //!< Local board efficiency response
   
   ClassDef(AliMUONDigitizerV3,10) // MUON Digitizer V3-9
 };

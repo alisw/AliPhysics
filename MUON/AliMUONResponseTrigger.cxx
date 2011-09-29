@@ -30,8 +30,6 @@
 #include "AliMUONGeometryTransformer.h"
 #include "AliMUONHit.h"
 #include "AliMUONConstants.h"
-#include "AliMUONTriggerEfficiencyCells.h"
-#include "AliMUONTriggerChamberEfficiency.h"
 
 #include "AliMpPad.h"
 #include "AliMpCathodType.h"
@@ -70,8 +68,7 @@ namespace
 
 //------------------------------------------------------------------   
 AliMUONResponseTrigger::AliMUONResponseTrigger()
-  : AliMUONResponse(),
-    fTriggerEfficiency(0x0)
+  : AliMUONResponse()
 {
 /// Default constructor
 }
@@ -105,8 +102,7 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits, Float
   {
     twentyNano=1;
   }
-
-  Bool_t isTrig[2]={kTRUE,kTRUE};
+  
   Int_t nboard=0;
 
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
@@ -131,16 +127,9 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits, Float
       continue;
     }
     
-    if(fTriggerEfficiency){
-      if(cath==0){
-        nboard = pad.GetLocalBoardId(0);
-        fTriggerEfficiency->IsTriggered(detElemId, nboard, 
-                                        isTrig[0], isTrig[1]);
-      }
-      if(!isTrig[cath]) continue;
-    }    
-    
-    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
+    if ( cath == AliMp::kCath0 ) nboard = pad.GetLocalBoardId(0);
+        
+    AliMUONDigit* d = new AliMUONDigit(detElemId,nboard,
                                        pad.GetLocalBoardChannel(0),cath);
     d->SetPadXY(ix,iy);
 
@@ -151,26 +140,4 @@ AliMUONResponseTrigger::DisIntegrate(const AliMUONHit& hit, TList& digits, Float
 
     digits.Add(d);   
   }
-  
-  if ( fTriggerEfficiency ) AliDebug(1,Form("MTReff: DetElemId %i  Board %3i  Fired %i %i", detElemId, nboard, isTrig[0], isTrig[1]));
-}
-
-
-//_____________________________________________________________________________
-void
-AliMUONResponseTrigger::InitTriggerEfficiency(AliMUONTriggerEfficiencyCells *triggerEfficiency)
-{
-/// Initialize trigger chamber efficiency (on demand)
-
-  if ( triggerEfficiency )
-  {
-    AliDebug(1, "Will apply trigger efficiency");
-  }
-  else
-  {
-    AliFatal("I was requested to apply trigger efficiency, but I could "
-	     "not get it !");
-  }
-  fTriggerEfficiency = new AliMUONTriggerChamberEfficiency(triggerEfficiency);
-  
 }

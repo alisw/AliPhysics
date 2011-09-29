@@ -150,8 +150,7 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
   {
     twentyNano=1;
   }
-
-  Bool_t isTrig[2]={kTRUE, kTRUE};
+  
   Int_t nboard = 0;
 
   for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
@@ -176,16 +175,9 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
       continue;
     }
     
-    if(fTriggerEfficiency){
-      if(cath==0){
-        nboard = pad.GetLocalBoardId(0);
-        fTriggerEfficiency->IsTriggered(detElemId, nboard, 
-                                        isTrig[0], isTrig[1]);
-      }
-      if(!isTrig[cath]) continue;
-    }
-    
-    AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetLocalBoardId(0),
+    if ( cath == AliMp::kCath0 ) nboard = pad.GetLocalBoardId(0);
+        
+    AliMUONDigit* d = new AliMUONDigit(detElemId,nboard,
                                        pad.GetLocalBoardChannel(0),
                                        cath);
     d->SetPadXY(ix,iy);
@@ -232,7 +224,17 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 		else qp = 0;
 		
 		if (qp == 1) { // this digit is fired    
-		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,padNeigh.GetLocalBoardId(0),
+        Int_t neighBoard = 0;
+        if ( cath == AliMp::kCath0 ) neighBoard = padNeigh.GetLocalBoardId(0);
+        else {
+          const AliMpVSegmentation* seg0 
+            = AliMpSegmentation::Instance()
+              ->GetMpSegmentation(detElemId,AliMp::GetCathodType(AliMp::kCath0));
+          AliMpPad padNeigh0 = seg0->PadByPosition(xlocalNeigh, y, kFALSE);
+          if ( ! padNeigh0.IsValid() ) continue; // This can happen only on the cut RPC, at boards 25, 30, 142 and 147
+          neighBoard = padNeigh0.GetLocalBoardId(0);
+        }
+		    AliMUONDigit* dNeigh = new AliMUONDigit(detElemId,neighBoard,
                                                 padNeigh.GetLocalBoardChannel(0),
                                                 cath);
 		    
@@ -244,7 +246,6 @@ void AliMUONResponseTriggerV1::DisIntegrate(const AliMUONHit& hit, TList& digits
 	} // built-up cluster
     } // loop on neighbors
   } // loop on cathode
-  if ( fTriggerEfficiency ) AliDebug(1,Form("MTReff: DetElemId %i  Board %3i  Fired %i %i", detElemId, nboard, isTrig[0], isTrig[1]));
 }
 
 //------------------------------------------------------------------  

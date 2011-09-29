@@ -101,6 +101,7 @@
 #include "AliMUONVClusterServer.h"
 #include "AliMUONVTrackStore.h"
 #include "AliMUONTriggerElectronics.h"
+#include "AliMUONTriggerUtilities.h"
 
 #include "AliMpArea.h"
 #include "AliMpCDB.h"
@@ -137,7 +138,8 @@ fClusterServer(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
 fClusterStore(0x0),
-fTriggerProcessor(0x0)  
+fTriggerProcessor(0x0),
+fTriggerUtilities(0x0)
 {
   /// normal ctor
 
@@ -184,6 +186,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTrackStore;
   delete fClusterStore;
   delete fTriggerProcessor;
+  delete fTriggerUtilities;
 
   delete AliMpSegmentation::Instance(false);
   delete AliMpDDLStore::Instance(false);
@@ -305,12 +308,27 @@ AliMUONReconstructor::CreateTriggerCircuit() const
 }
 
 //_____________________________________________________________________________
+void 
+AliMUONReconstructor::CreateTriggerUtilities() const
+{
+  /// Return (and create if necessary) the trigger utilities object
+  if ( fTriggerUtilities ) return;
+  
+  AliCodeTimerAuto("",0)
+  
+  if ( ! fCalibrationData ) CreateCalibrationData();
+  
+  fTriggerUtilities = new AliMUONTriggerUtilities(fCalibrationData);
+}
+
+//_____________________________________________________________________________
 AliTracker* 
 AliMUONReconstructor::CreateTracker() const
 {
   /// Create the MUONTracker object
   
   CreateTriggerCircuit();
+  CreateTriggerUtilities();
   CreateClusterServer();
 
   AliMUONTracker* tracker(0x0);
@@ -321,7 +339,8 @@ AliMUONReconstructor::CreateTracker() const
 				 0x0,
                                  *DigitStore(),
                                  fTransformer,
-                                 fTriggerCircuit);
+                                 fTriggerCircuit,
+                                 fTriggerUtilities);
   }
   else
   {
@@ -329,7 +348,8 @@ AliMUONReconstructor::CreateTracker() const
 				 fClusterServer,
                                  *DigitStore(),
                                  fTransformer,
-                                 fTriggerCircuit);
+                                 fTriggerCircuit,
+                                 fTriggerUtilities);
   }
   
   

@@ -26,6 +26,7 @@ class AliMUONVTrackReconstructor;
 class AliMUONVTrackStore;
 class AliMUONVTriggerStore;
 class AliMUONVTriggerTrackStore;
+class AliMUONTriggerUtilities;
 
 class AliMUONTracker : public AliTracker
 {
@@ -35,7 +36,8 @@ class AliMUONTracker : public AliTracker
                  AliMUONVClusterServer* clusterServer,
                  AliMUONVDigitStore& digitStore,
                  const AliMUONGeometryTransformer* transformer=0,
-                 const AliMUONTriggerCircuit* triggerCircuit=0);
+                 const AliMUONTriggerCircuit* triggerCircuit=0,
+                 const AliMUONTriggerUtilities* triggerUtilities=0);
   virtual ~AliMUONTracker();
   
   virtual Int_t Clusters2Tracks(AliESDEvent* esd);

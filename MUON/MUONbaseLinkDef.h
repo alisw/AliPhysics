@@ -53,6 +53,7 @@
 #pragma link C++ class AliMUONTrackerQAChecker+;
 #pragma link C++ class AliMUONTriggerQAChecker+;
 
+#pragma link C++ class AliMUONTriggerUtilities+;
 #endif
 
 

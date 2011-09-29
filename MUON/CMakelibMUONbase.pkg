@@ -58,6 +58,7 @@ set ( SRCS
     AliMUONPadStatusMaker.cxx 
     AliMUONDigitCalibrator.cxx 
     AliMUONPadStatusMapMaker.cxx 
+    AliMUONTriggerUtilities.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

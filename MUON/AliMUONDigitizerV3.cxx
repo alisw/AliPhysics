@@ -28,6 +28,8 @@
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
+#include "AliMUONTriggerChamberEfficiency.h"
+#include "AliMUONTriggerUtilities.h"
 
 #include "AliMpCDB.h"
 #include "AliMpSegmentation.h"
@@ -38,6 +40,7 @@
 #include "AliMpPad.h"
 #include "AliMpStationType.h"
 #include "AliMpVSegmentation.h"
+#include "AliMpDDLStore.h"
 
 #include "AliCDBManager.h"
 #include "AliCodeTimer.h"
@@ -106,7 +109,10 @@ fLogger(new AliMUONLogger(1000)),
 fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
 fOutputDigitStore(0x0),
-fInputDigitStores(0x0)
+fInputDigitStores(0x0),
+fTriggerEfficiency(0x0),
+fTriggerUtilities(0x0),
+fEfficiencyResponse(2*AliMUONConstants::NTriggerCh()*AliMUONConstants::NTriggerCircuit())
 {
   /// Ctor.
 
@@ -128,6 +134,7 @@ AliMUONDigitizerV3::~AliMUONDigitizerV3()
   delete fDigitStore;
   delete fOutputDigitStore;
   delete fInputDigitStores;
+  delete fTriggerUtilities;
   
   AliInfo("Summary of messages");
   fLogger->Print();
@@ -191,6 +198,56 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
   digit.SetADC(adc);
 }
 
+
+//_____________________________________________________________________________
+void 
+AliMUONDigitizerV3::ApplyResponseToTriggerDigit(AliMUONVDigit& digit)
+{
+  /// For trigger digits, starting from an ideal digit, we :
+  ///
+  /// - apply efficiency (on demand)
+  /// - apply trigger masks
+    
+  Int_t detElemId = digit.DetElemId();
+  Int_t localCircuit = digit.ManuId();
+  Int_t strip = digit.ManuChannel();
+  Int_t cathode = digit.Cathode();
+  Int_t trigCh = detElemId/100 - 11;
+  
+  Int_t arrayIndex = GetArrayIndex(cathode, trigCh, localCircuit);
+  
+  // Trigger chamber efficiency
+  if ( fTriggerEfficiency ) {
+    if ( fEfficiencyResponse[arrayIndex] < 0 ) {
+      Bool_t isTrig[2] = {kTRUE, kTRUE};
+      fTriggerEfficiency->IsTriggered(detElemId, localCircuit, isTrig[0], isTrig[1]);
+      Int_t arrayIndexBend = GetArrayIndex(0, trigCh, localCircuit);
+      Int_t arrayIndexNonBend = GetArrayIndex(1, trigCh, localCircuit);
+      fEfficiencyResponse[arrayIndexBend] = isTrig[0];
+      fEfficiencyResponse[arrayIndexNonBend] = isTrig[1];
+    }
+    AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  efficiency %i\n", trigCh, cathode, localCircuit, strip, fEfficiencyResponse[arrayIndex]));
+    if ( fEfficiencyResponse[arrayIndex] == 0 ) {
+      digit.SetCharge(0);
+      digit.SetADC(0);
+      //AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  NOT efficient\n", trigCh, cathode, localCircuit, strip));
+      return;
+    }
+  }
+  
+  // Masked channels
+  Bool_t isMasked = fTriggerUtilities->IsMasked(digit);
+  AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  mask %i\n", trigCh, cathode, localCircuit, strip, !isMasked));
+  if ( isMasked ) {
+    digit.SetCharge(0);
+    digit.SetADC(0);
+    //AliDebug(1,Form("ch %i  cath %i  board %i  strip %i  masked\n", trigCh, cathode, localCircuit, strip));
+    return;
+  }
+}
+
+
+
 //_____________________________________________________________________________
 void
 AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
@@ -206,6 +263,8 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
   TIter next(store.CreateIterator());
   AliMUONVDigit* digit;
   
+  if ( fTriggerEfficiency ) fEfficiencyResponse.Reset(-1);
+  
   while ( ( digit = static_cast<AliMUONVDigit*>(next()) ) )
   {
     AliMp::StationType stationType = AliMpDEManager::GetStationType(digit->DetElemId());
@@ -215,6 +274,9 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
       Bool_t addNoise = kAddNoise;
       if (digit->IsConverted()) addNoise = kFALSE; // No need to add extra noise to a converted real digit
       ApplyResponseToTrackerDigit(*digit,addNoise);
+    }
+    else {
+      ApplyResponseToTriggerDigit(*digit);
     }
 
     if ( digit->ADC() > 0  || digit->Charge() > 0 )
@@ -779,10 +841,29 @@ AliMUONDigitizerV3::Init()
   
   AliDebug(1, Form("Will %s generate noise-only digits for tracker",
                      (fGenerateNoisyDigits ? "":"NOT")));
+  
+  fTriggerUtilities = new AliMUONTriggerUtilities(fCalibrationData);
+  
+  if ( muon()->GetTriggerEffCells() ) {
+    // Apply trigger efficiency
+    AliDebug(1, "Will apply trigger efficiency");
+    fTriggerEfficiency = new AliMUONTriggerChamberEfficiency(fCalibrationData->TriggerEfficiency());
+  }
 
   fIsInitialized = kTRUE;
   return kTRUE;
 }
+
+
+//_____________________________________________________________________________
+Int_t AliMUONDigitizerV3::GetArrayIndex(Int_t cathode, Int_t trigCh, Int_t localCircuit)
+{
+  /// Get index of array with trigger status map or efficiency
+  return
+    AliMUONConstants::NTriggerCircuit() * AliMUONConstants::NTriggerCh() * cathode +
+    AliMUONConstants::NTriggerCircuit() * trigCh + localCircuit-1;
+}
+
 
 //_____________________________________________________________________________
 void 
