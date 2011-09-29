@@ -368,15 +368,17 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry, const char * /*cur
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
   if(fRemoveLEDEvents){
+    
+
+    //printf("Event %d\n",GetEventNumber());
     for (Int_t i = 0; i < fInputEvent->GetNumberOfCaloClusters(); i++)
     {
       AliVCluster *clus = fInputEvent->GetCaloCluster(i);
-      if(clus->IsEMCAL()){    
-        
+      if(clus->IsEMCAL()){               
         if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) {
           Int_t absID = clus->GetCellsAbsId()[0];
           Int_t sm = GetCaloUtils()->GetEMCALGeometry()->GetSuperModuleNumber(absID);
-           if(fDebug > 0)  printf("AliCaloTrackReader::FillInputEvent - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
+           if(fDebug > 0) printf("AliCaloTrackReader::FillInputEvent - reject event %d with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",GetEventNumber(),clus->E(),  clus->GetNCells(),absID, sm);
           return kFALSE;
         }
       }

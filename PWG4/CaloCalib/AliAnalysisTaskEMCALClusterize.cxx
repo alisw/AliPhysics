@@ -347,14 +347,16 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   Int_t eventN = Entry();
   if(aodIH) eventN = aodIH->GetReadEntry(); 
   
-  if (eventN > fMaxEvent) return;
+  if (eventN > fMaxEvent) {
+    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
+    return;
+  }
+  
   //printf("Clusterizer --- Event %d-- \n",eventN);
   
   //Remove the contents of output list set in the previous event 
   fOutputAODBranch->Clear("C");
   
-  //Magic line to write events to AOD file
-  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
   LoadBranches();
   
   //Init pointers, clusterizer, ocdb
@@ -397,6 +399,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   if (!event) {
     Error("UserExec","Event not available");
+    AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
     return;
   }
   
@@ -414,8 +417,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         if ((clus->E() > 500 && clus->GetNCells() > 200 ) || clus->GetNCells() > 200) {
           Int_t absID = clus->GetCellsAbsId()[0];
           Int_t sm = fGeom->GetSuperModuleNumber(absID);
-          printf("AliAnalysisTaskEMCALClusterize - reject event with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",clus->E(),  clus->GetNCells(),absID, sm);
-          
+          printf("AliAnalysisTaskEMCALClusterize - reject event %d with cluster : E %f, ncells %d, absId(0) %d, SM %d\n",(Int_t)Entry(), clus->E(),  clus->GetNCells(),absID, sm);
+          AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
           return;
         }
       }
@@ -426,7 +429,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     Int_t ncellsSM4 = 0;
     for(Int_t icell = 0; icell < event->GetEMCALCells()->GetNumberOfCells(); icell++){
       if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==3) ncellsSM3++;
-      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;
+      if(event->GetEMCALCells()->GetAmplitude(icell) > 0.1 && event->GetEMCALCells()->GetCellNumber(icell)/(24*48)==4) ncellsSM4++;      
     }
     
     TString triggerclasses = "";
@@ -437,11 +440,16 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     if(triggerclasses.Contains("EMC")) ncellcut = 35;
     
     if( ncellsSM3 >= ncellcut || ncellsSM4 >= 100 ){
-      printf("AliAnalysisTaskEMCALClusterize - reject event with cluster  - reject event with ncells in SM3 %d and SM4 %d\n",ncellsSM3, ncellsSM4);
+      printf("AliAnalysisTaskEMCALClusterize - reject event %d with cluster  - reject event with ncells in SM3 %d and SM4 %d\n",(Int_t)Entry(),ncellsSM3, ncellsSM4);
+      AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
       return;
     }
     
   }// Remove LED events
+  
+  //Magic line to write events to AOD filem put after event rejection
+  AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(fFillAODFile);
+
   
   //-------------------------------------------------------------------------------------
   //Set the geometry matrix, for the first event, skip the rest
@@ -470,6 +478,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
         AliESDEvent* esd = dynamic_cast<AliESDEvent*>(event) ;
         if(!esd) {
           Error("UserExec","This event does not contain ESDs?");
+          AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
           return;
         }
         for(Int_t mod=0; mod < (fGeom->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
@@ -594,6 +603,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       
       if(!clus) {
         printf("AliEMCALReclusterize::UserExec() - No Clusters\n");
+        AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
         return;
       }
       
@@ -704,6 +714,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     
     if(!fCaloClusterArr){ 
       printf("AliAnalisysTaskEMCALClusterize::UserExec() - No array with CaloClusters, input RecPoints entries %d\n",fClusterArr->GetEntriesFast());
+      AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kFALSE);
       return;    
     }
     
