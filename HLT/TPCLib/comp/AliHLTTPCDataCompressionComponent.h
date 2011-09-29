@@ -16,11 +16,13 @@
 #include "TString.h"
 #include "AliHLTTrackGeometry.h"
 #include "AliHLTSpacePointContainer.h"
+#include <vector>
 
 class AliHLTGlobalBarrelTrack;
 class AliHLTComponentBenchmark;
 class AliHLTSpacePointContainer;
 class AliHLTDataDeflater;
+class AliHLTTPCClusterTransformation;
 class TH1F;
 
 /**
@@ -142,10 +144,19 @@ private:
 
   int InitDeflater(int mode);
 
+  /// calculate correction factor and offset for a linear approximation of the
+  /// drift time transformation, separately for A and C side
+  int InitDriftTimeTransformation();
+  /// calculate correction factor and offset for a linear approximation of the
+  /// drift time transformation by just probing the range of timebins
+  int CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform, int slice, int padrow,
+				       float& m, float& n) const;
+
   AliHLTComponentBenchmark* GetBenchmarkInstance() const {return fpBenchmark;}
 
   int fMode; //! mode
   int fDeflaterMode; //! deflater mode
+  int fVerificationMode; //! mode for verification and unit tests
 
   float fMaxDeltaPad; //! maximum deviation in pad
   float fMaxDeltaTime; //! maximum deviation in time
@@ -176,6 +187,14 @@ private:
 
   /// benchmark
   AliHLTComponentBenchmark* fpBenchmark; //! benchmark instance
+
+  /// temporary array of ids of associated cluster ids
+  vector<AliHLTUInt32_t>* fpWrittenAssociatedClusterIds; //!
+
+  float fDriftTimeFactorA; //! drift time A side
+  float fDriftTimeOffsetA; //! drift time A side
+  float fDriftTimeFactorC; //! drift time C side
+  float fDriftTimeOffsetC; //! drift time C side
 
   /// verbosity
   int fVerbosity; // verbosity for debug printout

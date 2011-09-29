@@ -13,6 +13,7 @@
 ///
 
 #include "AliHLTTrackGeometry.h"
+#include <vector>
 
 class AliHLTGlobalBarrelTrack;
 class AliHLTDataDeflater;
@@ -73,11 +74,17 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
 	    AliHLTDataDeflater* pDeflater,
 	    AliHLTUInt8_t* outputPtr,
 	    AliHLTUInt32_t size,
+	    vector<AliHLTUInt32_t>* writtenClusterIds=NULL,
 	    const char* option="") const;
 
   virtual int WriteAssociatedClusters(AliHLTSpacePointContainer* pSpacePoints,
 				      AliHLTDataDeflater* pDeflater,
+				      vector<AliHLTUInt32_t>* writtenClusterIds=NULL,
 				      const char* option="") const;
+
+  int InitDriftTimeTransformation(float mA, float nA, float mC, float nC) {
+    fDriftTimeFactorA=mA; fDriftTimeOffsetA=nA; fDriftTimeFactorC=mC; fDriftTimeOffsetC=nC; return 0;
+  }
 
   struct AliHLTTPCTrackBlock {
     AliHLTUInt16_t   fSize; //! size in byte of the complete track block
@@ -109,6 +116,11 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
   int CalculateTrackPoints(AliHLTGlobalBarrelTrack& track, int firstpadrow, int step);
 
   vector<AliHLTTrackPoint> fRawTrackPoints; // list of points in raw coordinates
+
+  float fDriftTimeFactorA; //! drift time A side
+  float fDriftTimeOffsetA; //! drift time A side
+  float fDriftTimeFactorC; //! drift time C side
+  float fDriftTimeOffsetC; //! drift time C side
 
   ClassDef(AliHLTTPCTrackGeometry, 0)
 };

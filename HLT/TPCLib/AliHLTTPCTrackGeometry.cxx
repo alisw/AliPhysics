@@ -32,6 +32,7 @@
 #include "AliHLTComponent.h"
 #include "AliHLTGlobalBarrelTrack.h"
 #include "AliHLTDataDeflater.h"
+#include "AliHLTErrorGuard.h"
 #include "TMath.h"
 #include "TH2F.h"
 #include <memory>
@@ -42,6 +43,10 @@ ClassImp(AliHLTTPCTrackGeometry)
 AliHLTTPCTrackGeometry::AliHLTTPCTrackGeometry()
   : AliHLTTrackGeometry()
   , fRawTrackPoints()
+  , fDriftTimeFactorA(0.)
+  , fDriftTimeOffsetA(0.)
+  , fDriftTimeFactorC(0.)
+  , fDriftTimeOffsetC(0.)
 {
   /// standard constructor
 }
@@ -49,6 +54,10 @@ AliHLTTPCTrackGeometry::AliHLTTPCTrackGeometry()
 AliHLTTPCTrackGeometry::AliHLTTPCTrackGeometry(const AliHLTTPCTrackGeometry& src)
   : AliHLTTrackGeometry(src)
   , fRawTrackPoints(src.fRawTrackPoints)
+  , fDriftTimeFactorA(0.)
+  , fDriftTimeOffsetA(0.)
+  , fDriftTimeFactorC(0.)
+  , fDriftTimeOffsetC(0.)
 {
   /// copy constructor
 }
@@ -160,7 +169,18 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0))>=0) {
       Float_t rpt[3]={0.,y,z}; // row pad time
       AliHLTTPCTransform::LocHLT2Raw(rpt, slice, padrow);
-      fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
+      float m=fDriftTimeFactorA;
+      float n=fDriftTimeOffsetA;
+      if (slice>=18) {
+	m=fDriftTimeFactorC;
+	n=fDriftTimeOffsetC;
+      }
+      if (TMath::Abs(m)>0.) {
+      	rpt[2]=(z-n)/m;
+	fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
+      } else {
+	ALIHLTERRORGUARD(1, "drift time correction not initialized, can not add track points in raw coordinates");
+      }
     }
   }
   return 0;
@@ -384,6 +404,7 @@ int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
 				  AliHLTDataDeflater* pDeflater,
 				  AliHLTUInt8_t* outputPtr,
 				  AliHLTUInt32_t size,
+				  vector<AliHLTUInt32_t>* writtenClusterIds,
 				  const char* option) const
 {
   // write track block to buffer
@@ -401,7 +422,7 @@ int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
 
   pDeflater->Clear();
   pDeflater->InitBitDataOutput(reinterpret_cast<AliHLTUInt8_t*>(outputPtr+sizeof(AliHLTTPCTrackBlock)), size-sizeof(AliHLTTPCTrackBlock));
-  int result=WriteAssociatedClusters(pSpacePoints, pDeflater, option);
+  int result=WriteAssociatedClusters(pSpacePoints, pDeflater, writtenClusterIds, option);
   if (result<0) return result;
   pTrackBlock->fSize+=result;
   return pTrackBlock->fSize;
@@ -409,6 +430,7 @@ int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
 
 int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* pSpacePoints,
 						    AliHLTDataDeflater* pDeflater,
+						    vector<AliHLTUInt32_t>* writtenClusterIds,
 						    const char* /*option*/) const
 {
   // write associated clusters to buffer via deflater
@@ -456,6 +478,9 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	    if (!pSpacePoints->Check(clid->fId)) {
 	      HLTError("can not find spacepoint 0x%08x", clid->fId);
 	      continue;
+	    }
+	    if (writtenClusterIds) {
+	      writtenClusterIds->push_back(clid->fId);
 	    }
 
 	    float deltapad =clid->fdU;

@@ -32,6 +32,7 @@
 #include "AliHLTDataDeflaterHuffman.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterMCData.h"
+#include "AliHLTTPCClusterTransformation.h"
 #include "AliRawDataHeader.h"
 #include "AliCDBManager.h"
 #include "AliCDBPath.h"
@@ -48,6 +49,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   : AliHLTProcessor()
   , fMode(0)
   , fDeflaterMode(0)
+  , fVerificationMode(0)
   , fMaxDeltaPad(AliHLTTPCDefinitions::GetMaxClusterDeltaPad())
   , fMaxDeltaTime(AliHLTTPCDefinitions::GetMaxClusterDeltaTime())
   , fRawInputClusters(NULL)
@@ -64,6 +66,11 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
   , fHistogramFile()
   , fTrainingTableOutput()
   , fpBenchmark(NULL)
+  , fpWrittenAssociatedClusterIds(NULL)
+  , fDriftTimeFactorA(1.)
+  , fDriftTimeOffsetA(0.)
+  , fDriftTimeFactorC(1.)
+  , fDriftTimeOffsetC(0.)
   , fVerbosity(0)
 {
 }
@@ -71,6 +78,7 @@ AliHLTTPCDataCompressionComponent::AliHLTTPCDataCompressionComponent()
 AliHLTTPCDataCompressionComponent::~AliHLTTPCDataCompressionComponent()
 {
   /// destructor
+  if (fpWrittenAssociatedClusterIds) delete fpWrittenAssociatedClusterIds;
 }
 
 
@@ -100,7 +108,11 @@ int AliHLTTPCDataCompressionComponent::GetOutputDataTypes(AliHLTComponentDataTyp
 {
   /// inherited from AliHLTComponent: multiple output data types of the component.
   tgtList.clear();
-  tgtList.push_back(AliHLTTPCDefinitions::fgkRawClustersDataType);
+  tgtList.push_back(AliHLTTPCDefinitions::RawClustersDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::RemainingClusterIdsDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
+  tgtList.push_back(AliHLTTPCDefinitions::ClusterIdTracksDataType());
   return tgtList.size();
 }
 
@@ -108,7 +120,9 @@ void AliHLTTPCDataCompressionComponent::GetOutputDataSize( unsigned long& constB
 {
   /// inherited from AliHLTComponent: output data size estimator
   constBase=0;
-  inputMultiplier=1.3;
+  inputMultiplier=1.;  // there should not be more data than input
+  inputMultiplier+=.3; // slightly more data when using the old HWCF data with 20 Byte and raw clusters 22 Byte
+  if (fpWrittenAssociatedClusterIds) inputMultiplier+=.3; // space for optional cluster id array
 }
 
 AliHLTComponent* AliHLTTPCDataCompressionComponent::Spawn()
@@ -143,6 +157,9 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   // Process an event
   // Loop over all input blocks in the event
   bool bHaveMC=(GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC))!=NULL;
+  if ((bHaveMC || fVerificationMode>0) && fpWrittenAssociatedClusterIds==NULL) {
+    fpWrittenAssociatedClusterIds=new vector<AliHLTUInt32_t>;
+  }
 
   const AliHLTComponentBlockData* pDesc=NULL;
 
@@ -233,8 +250,9 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       }
     }
 
-    AliHLTTrackGeometry* trackpoints=new AliHLTTPCTrackGeometry;
+    AliHLTTPCTrackGeometry* trackpoints=new AliHLTTPCTrackGeometry;
     if (!trackpoints) continue;
+    trackpoints->InitDriftTimeTransformation(fDriftTimeFactorA, fDriftTimeOffsetA, fDriftTimeFactorC, fDriftTimeOffsetC);
     trackpoints->SetTrackId(trackID);
     trackpoints->CalculateTrackPoints(*track);
     trackpoints->RegisterTrackPoints(fTrackGrid);
@@ -322,8 +340,12 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     // FIXME: decoder index instead of data specification to be used
     // use an external access grid to reduce allocated memory
     // set to NULL after writing the clusters
+    const char* writeoptions="";
+    if (fpWrittenAssociatedClusterIds) {
+      writeoptions="write-cluster-ids";
+    }
     fRawInputClusters->SetSpacePointPropertyGrid(pDesc->fSpecification, fSpacePointGrid);
-    iResult=fRawInputClusters->Write(outputPtr+size, capacity-size, outputBlocks, fpDataDeflater);
+    iResult=fRawInputClusters->Write(outputPtr+size, capacity-size, outputBlocks, fpDataDeflater, writeoptions);
     fRawInputClusters->SetSpacePointPropertyGrid(pDesc->fSpecification, NULL);
     if (iResult>=0) {
       size+=iResult;
@@ -370,6 +392,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 
   // output of track model clusters
   if (iResult>=0) {
+    if (fpWrittenAssociatedClusterIds) fpWrittenAssociatedClusterIds->clear();
     iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size, capacity-size);
     if (iResult>=0) {
       AliHLTComponent_BlockData bd;
@@ -382,6 +405,19 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       size += bd.fSize;
       outputDataSize+=bd.fSize;
       HLTBenchmark("track data block of %d tracks: size %d", inputTrackArray.size(), bd.fSize);
+
+      if (fpWrittenAssociatedClusterIds && fpWrittenAssociatedClusterIds->size()>0) {
+	AliHLTComponent::FillBlockData(bd);
+	bd.fOffset        = size;
+	bd.fSize        = fpWrittenAssociatedClusterIds->size()*sizeof(vector<AliHLTUInt32_t>::value_type);
+	memcpy(outputPtr+bd.fOffset, &(*fpWrittenAssociatedClusterIds)[0], bd.fSize);
+	bd.fDataType    = AliHLTTPCDefinitions::ClusterIdTracksDataType();
+	bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
+	outputBlocks.push_back(bd);    
+	size += bd.fSize;
+	
+	fpWrittenAssociatedClusterIds->clear();
+      }
     }
   }
 
@@ -604,7 +640,7 @@ int AliHLTTPCDataCompressionComponent::WriteTrackClusters(const vector<AliHLTGlo
       return -EBADF;
     }
 
-    int result=pTrackPoints->Write(*track, pSpacePoints, pDeflater, outputPtr+size, capacity-size);
+    int result=pTrackPoints->Write(*track, pSpacePoints, pDeflater, outputPtr+size, capacity-size, fpWrittenAssociatedClusterIds);
     if (result<0) return result;
     size+=result;
 
@@ -732,6 +768,8 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     fHistoTrackClusterRatio=histoTrackClusterRatio.release();
   }
 
+  if (iResult>=0 && (iResult=InitDriftTimeTransformation())<0) return iResult;
+
   return iResult;
 }
 
@@ -831,6 +869,11 @@ int AliHLTTPCDataCompressionComponent::DoDeinit()
   fHistoTrackClusterRatio=NULL;
 
   if (fpDataDeflater) {
+    if (!fHistogramFile.IsNull()) {
+      TString filename=fHistogramFile;
+      filename.ReplaceAll(".root", "-deflater.root");
+      fpDataDeflater->SaveAs(filename);
+    }
     if (fDeflaterMode==3) {
       if (fTrainingTableOutput.IsNull()) {
 	fTrainingTableOutput=GetComponentID();
@@ -987,4 +1030,62 @@ int AliHLTTPCDataCompressionComponent::ForwardMCLabels(const AliHLTComponentBloc
   outputBlocks.push_back(bd);
 
   return bd.fSize;
+}
+
+int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()
+{
+  /// calculate correction factor and offset for a linear approximation of the
+  /// drift time transformation, separately for A and C side
+  int iResult=0;
+  AliHLTTPCClusterTransformation transform;
+  if ((iResult=transform.Init( GetBz(), GetTimeStamp()))<0) {
+    HLTError("failed to init AliHLTTPCClusterTransformation: %d", iResult);
+    return iResult;
+  }
+
+  if ((iResult=CalculateDriftTimeTransformation(transform, 0, 0, fDriftTimeFactorA, fDriftTimeOffsetA))<0) return iResult;
+  if (fVerbosity>0) HLTInfo("drift time transformation A side: m=%f n=%f", fDriftTimeFactorA, fDriftTimeOffsetA);
+  if ((iResult=CalculateDriftTimeTransformation(transform, 18, 0, fDriftTimeFactorC, fDriftTimeOffsetC))<0) return iResult;
+  if (fVerbosity>0) HLTInfo("drift time transformation C side: m=%f n=%f", fDriftTimeFactorC, fDriftTimeOffsetC);
+
+  return 0;
+}
+
+int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTPCClusterTransformation& transform,
+									int slice, int padrow,
+									float& m, float& n) const
+{
+  /// calculate correction factor and offset for a linear approximation of the
+  /// drift time transformation by just probing the range of timebins with
+  /// AliHLTTPCClusterTransformation
+  const int nofSteps=100;
+  vector<float> zvalues;
+
+  int nofTimebins=AliHLTTPCTransform::GetNTimeBins();
+  int stepWidth=nofTimebins/nofSteps;
+  int time=0;
+  int count=0;
+  float meanT=0.;
+  float meanZ=0.;
+  for (time=0; time<nofTimebins; time+=stepWidth, count++) {
+    Float_t xyz[3];
+    transform.Transform(slice, padrow, 0, time, xyz);
+    zvalues.push_back(xyz[2]);
+    meanT+=time;
+    meanZ+=xyz[2];
+  }
+  meanT/=count;
+  meanZ/=count;
+  float sumTZ=.0;
+  float sumT2=.0;
+  time=0;
+  for (vector<float>::const_iterator z=zvalues.begin();
+       z!=zvalues.end(); z++, time+=stepWidth) {
+    sumTZ+=(time-meanT)*((*z)-meanZ);
+    sumT2+=(time-meanT)*(time-meanT);
+  }
+  m=sumTZ/sumT2;
+  n=meanZ-m*meanT;
+
+  return 0;
 }
