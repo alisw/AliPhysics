@@ -62,6 +62,7 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fUseVertex(kFALSE),
   fUseVertexForZOnly(kFALSE),
   fMinVtxContributors(5),
+  fRemovePileupWithSPD(kTRUE),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPt(0.5),
@@ -120,9 +121,12 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-1.5,1.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",4,-1.5,2.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"All Events");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"After Vertex cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"After Pileup cut");
   fOutput->Add(fHistNEvents);
 
   fHistPtAccept = new TH1F("hPtAccept","Pt distrib of accepted tracks",50,0.,5.);
@@ -303,13 +307,21 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     return;
   }
   //
-  const AliESDVertex* vtx = 0;
+  const AliESDVertex* vtx=0,*vtxSPD=0;
+  fHistNEvents->Fill(0);
   if (fUseVertex) {  // check the vertex if it is requested as an extra point
     vtx = esd->GetPrimaryVertex();
-    if (!vtx || !AcceptVertex(vtx)) return;
+    vtxSPD = esd->GetPrimaryVertexSPD();
+    if (!AcceptVertex(vtx,vtxSPD)) return;
   }
+  fHistNEvents->Fill(1);
+  if (fRemovePileupWithSPD){
+    // skip events tagged by SPD as pileup
+    if(esd->IsPileupFromSPD()) return;
+  }
+  fHistNEvents->Fill(2);
+
   //
-  fHistNEvents->Fill(0);
   fFitter->SetBz(esd->GetMagneticField());
 
   const AliTrackPointArray *array = 0;
@@ -367,10 +379,12 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskITSAlignQA::AcceptVertex(const AliESDVertex * vtx) {
+Bool_t AliAnalysisTaskITSAlignQA::AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD) {
   // vertex selection cuts
-  if (!vtx) return kFALSE;
+  if (!vtx || vtx->GetStatus()<1) return kFALSE;
+  if (!vtxSPD || vtxSPD->GetStatus()<1) return kFALSE;
   if (vtx->GetNContributors()<fMinVtxContributors) return kFALSE;
+  if (TMath::Abs(vtx->GetZ()-vtxSPD->GetZ())>0.3) return kFALSE;
   return kTRUE;
 }
 
@@ -651,4 +665,5 @@ void AliAnalysisTaskITSAlignQA::PrepareVertexConstraint(const AliESDVertex* vtx,
   cmatF[5] = cmat[5]; // zz
   point.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
 }
+
 
