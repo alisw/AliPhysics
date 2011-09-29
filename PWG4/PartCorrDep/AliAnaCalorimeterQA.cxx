@@ -247,12 +247,14 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhEta);
   }
   
-  fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
-                         netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
-  fhEtaPhiE->SetXTitle("#eta ");
-  fhEtaPhiE->SetYTitle("#phi (rad)");
-  fhEtaPhiE->SetZTitle("E (GeV) ");
-  outputContainer->Add(fhEtaPhiE);
+  if(fFillAllTH3){
+    fhEtaPhiE  = new TH3F ("hEtaPhiE","#eta vs #phi vs energy, reconstructed clusters",
+                           netabins,etamin,etamax,nphibins,phimin,phimax,nptbins,ptmin,ptmax); 
+    fhEtaPhiE->SetXTitle("#eta ");
+    fhEtaPhiE->SetYTitle("#phi (rad)");
+    fhEtaPhiE->SetZTitle("E (GeV) ");
+    outputContainer->Add(fhEtaPhiE);
+  }
   
   fhClusterTimeEnergy  = new TH2F ("hClusterTimeEnergy","energy vs TOF, reconstructed clusters",
                                    nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
@@ -926,7 +928,7 @@ TList *  AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhNClustersMod->SetYTitle("Module");
   outputContainer->Add(fhNClustersMod);
   
-  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", fNMaxCols*fNMaxRows,0,fNMaxCols*fNMaxRows,fNModules,0,fNModules); 
+  fhNCellsMod  = new TH2F ("hNCells_Mod","# cells vs Module", ncebins,ncemin,ncemax,fNModules,0,fNModules); 
   fhNCellsMod->SetXTitle("n cells");
   fhNCellsMod->SetYTitle("Module");
   outputContainer->Add(fhNCellsMod);
@@ -1963,7 +1965,8 @@ void AliAnaCalorimeterQA::ClusterHistograms(const TLorentzVector mom,
     fhEta    ->Fill(eta);
   }
   
-  fhEtaPhiE->Fill(eta,phi,e);
+  if(fFillAllTH3)
+    fhEtaPhiE->Fill(eta,phi,e);
   
   //Cells per cluster
   fhNCellsPerCluster   ->Fill(e, nCaloCellsPerCluster);
