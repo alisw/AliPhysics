@@ -16,6 +16,7 @@
 #include "TString.h"
 
 class AliHLTTPCHWCFData;
+class AliHLTDataInflater;
 class TH1;
 class TH2;
 
@@ -101,6 +102,10 @@ protected:
 private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
+
+  int ReadRemainingClustersCompressed(const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
+  int ReadRemainingClustersCompressed(AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
+
 
   AliHLTTPCHWCFData* fpHWClusterDecoder; //! data decoder for HW clusters
 
