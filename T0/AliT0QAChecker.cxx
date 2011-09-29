@@ -133,7 +133,7 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
  
 
    //   Int_t nnn[4] = { 420, 458, 459, 460};
-   Int_t nnn[4] = { 170, 208, 209, 210};
+   Int_t nnn[4] = { 169, 207, 208, 209};
    for (Int_t ir=0; ir<4; ir++)
      {
 	 hdata = (TH1*) listrec->UncheckedAt(nnn[ir]);
