@@ -188,6 +188,8 @@ Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionPhoton * particle, const 
 
       if(track->Pt() < fMinPt) continue;
 
+			if(nSpawn && spawn) { ;}
+
       ///Ignore tracks that are grandchildren of pion
       // if ( particle->IsMySpawn(track->GetID(), nSpawn, spawn)) 
       // 	continue;
