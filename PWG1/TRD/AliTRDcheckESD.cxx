@@ -158,61 +158,68 @@ void AliTRDcheckESD::UserCreateOutputObjects()
   PostData(1, fHistos);
 }
 
-
-
-
 //____________________________________________________________________
-void AliTRDcheckESD::MakeSummaryFromCF(){
+void AliTRDcheckESD::MakeSummaryFromCF(Double_t* trendValues, Bool_t useIsolatedBC, Bool_t cutTOFbc){
   //
   // Draw summary plots for the ESDcheck task using the CF container
   //
 
-  
+  cout << "Make summary from CF" << endl;
   TCanvas *cOut=0x0;
+  if(gROOT->FindObject("trackingSummary")) delete gROOT->FindObject("trackingSummary");
   cOut = new TCanvas("trackingSummary", "Tracking summary for the ESD task", 1600, 1200);
   cOut->cd();
-  PlotTrackingSummaryFromCF(0);
-  //GetRefFigure(5);
+  PlotTrackingSummaryFromCF(0, trendValues, useIsolatedBC, cutTOFbc);
   cOut->SaveAs("trackingSummary.gif");
   
+  if(gROOT->FindObject("pidSummary")) delete gROOT->FindObject("pidSummary");
   cOut = new TCanvas("pidSummary", "PID summary for the ESD task", 1600, 1200);
   cOut->cd();
   //GetRefFigure(6);
-  PlotPidSummaryFromCF(0);
+  PlotPidSummaryFromCF(0, trendValues, useIsolatedBC, cutTOFbc);
   cOut->SaveAs("pidSummary.gif");
 
+  if(gROOT->FindObject("centSummary")) delete gROOT->FindObject("centSummary");
   cOut = new TCanvas("centSummary", "Centrality summary for the ESD task", 1600, 1200);
   cOut->cd();
   //GetRefFigure(7);
-  PlotCentSummaryFromCF();
+  PlotCentSummaryFromCF(trendValues, useIsolatedBC, cutTOFbc);
   cOut->SaveAs("centSummary.gif");
     
 }
 
 
 //____________________________________________________________________
-void AliTRDcheckESD::MakeSummary(){
+void AliTRDcheckESD::MakeSummary(Double_t* trendValues){
   //
   // Draw summary plots for the ESDcheck task
   //
-
+  // Old method to draw summary pictures from histograms. Use the MakeSummaryFromCF() when CF container is present
   
-  TCanvas *cOut=0x0;
-  cOut = new TCanvas("trackingSummary", "Tracking summary for the ESD task", 1600, 1200);
-  cOut->cd();
-  GetRefFigure(5);
-  cOut->SaveAs("trackingSummary.gif");
+  cout << "Make summary" << endl;
+  TCanvas *cTracking=0x0;
+  if(gROOT->FindObject("trackingSummary")) delete gROOT->FindObject("trackingSummary");
+  cTracking = new TCanvas("trackingSummary", "Tracking summary for the ESD task", 1600, 1200);
+  cTracking->cd();
+  //GetRefFigure(5);
+  if(PlotTrackingSummary(0, trendValues))
+    cTracking->SaveAs("trackingSummary.gif");
   
-  cOut = new TCanvas("pidSummary", "PID summary for the ESD task", 1600, 1200);
-  cOut->cd();
-  GetRefFigure(6);
-  cOut->SaveAs("pidSummary.gif");
+  TCanvas* cPid = 0x0;
+  if(gROOT->FindObject("pidSummary")) delete gROOT->FindObject("pidSummary");
+  cPid = new TCanvas("pidSummary", "PID summary for the ESD task", 1600, 1200);
+  cPid->cd();
+  //GetRefFigure(6);
+  if(PlotPidSummary(0, trendValues))
+    cPid->SaveAs("pidSummary.gif");
 
-  cOut = new TCanvas("centSummary", "Centrality summary for the ESD task", 1600, 1200);
-  cOut->cd();
-  GetRefFigure(7);
-  cOut->SaveAs("centSummary.gif");
-    
+  TCanvas* cCent=0x0;
+  if(gROOT->FindObject("centSummary")) delete gROOT->FindObject("centSummary");
+  cCent = new TCanvas("centSummary", "Centrality summary for the ESD task", 1600, 1200);
+  cCent->cd();
+  //GetRefFigure(7);
+  if(PlotCentSummary(trendValues))
+    cCent->SaveAs("centSummary.gif");
 }
 
 //____________________________________________________________________
@@ -430,6 +437,11 @@ void AliTRDcheckESD::UserExec(Option_t *){
     Double_t localSagitaPhi = (localCoordGood ? TMath::ATan2(localCoord[1], localCoord[0]) : 0.0);
 
     values[kTrackTOFdeltaBC] = esdTrack->GetTOFDeltaBC();
+    values[kTrackTOFBC]      = esdTrack->GetTOFBunchCrossing(fESD->GetMagneticField());
+    Float_t dcaXY=0.0; Float_t dcaZ=0.0;
+    esdTrack->GetImpactParameters(dcaXY, dcaZ);
+    values[kTrackDCAxy]  = dcaXY;
+    values[kTrackDCAz]   = dcaZ;
     values[kTrackCharge] = esdTrack->Charge();
     values[kTrackPhi]    = localSagitaPhi;
     values[kTrackEta]    = esdTrack->Eta();
@@ -992,6 +1004,9 @@ TObjArray* AliTRDcheckESD::Histos()
   nbinsCf[kEventMult]         =    5;
   nbinsCf[kEventBC]           = 3500;
   nbinsCf[kTrackTOFdeltaBC]   = 2001;
+  nbinsCf[kTrackTOFBC]        =  201;
+  nbinsCf[kTrackDCAxy]        =   26;
+  nbinsCf[kTrackDCAz]         =  101;
   nbinsCf[kTrackCharge]       =    2;
   nbinsCf[kTrackPhi]          =  150;
   nbinsCf[kTrackEta]          =  100;
@@ -1004,6 +1019,14 @@ TObjArray* AliTRDcheckESD::Histos()
   Double_t evMultLims[6]     = {0.0, 700., 1400., 2100., 2800., 3500.};
   Double_t evBCLims[2]       = {-0.5, +3499.5};
   Double_t trkTOFdeltaBClims[2] = {-1000.5, 1000.5};
+  Double_t trkTOFBClims[2]   = {-100.5, 100.5};
+  Double_t trkDCAxyLims[27]  = {-50.0, -40.0, -30.0, -25.0, -20.0, 
+                                -15.0, -10.0,  -8.0,  -6.0,  -4.0, 
+                                 -3.0,  -2.0,  -1.0,   0.0,  +1.0,
+                                 +2.0,  +3.0,  +4.0,  +6.0,  +8.0,
+                                +10.0, +15.0, +20.0, +25.0, +30.0,
+                                +40.0, +50.0};    
+  Double_t trkDCAzLims[2]    = {-50.5, +50.5};    
   Double_t trkChargeLims[2]  = {-1.5, +1.5};
   Double_t trkPhiLims[2]     = {-1.1*TMath::Pi(), +1.1*TMath::Pi()};
   Double_t trkEtaLims[2]     = {-1.0, +1.0};
@@ -1020,6 +1043,9 @@ TObjArray* AliTRDcheckESD::Histos()
   fCfContainer->SetBinLimits(kEventMult, evMultLims);
   fCfContainer->SetBinLimits(kEventBC, evBCLims[0], evBCLims[1]);
   fCfContainer->SetBinLimits(kTrackTOFdeltaBC, trkTOFdeltaBClims[0], trkTOFdeltaBClims[1]);
+  fCfContainer->SetBinLimits(kTrackTOFBC, trkTOFBClims[0], trkTOFBClims[1]);
+  fCfContainer->SetBinLimits(kTrackDCAxy, trkDCAxyLims);
+  fCfContainer->SetBinLimits(kTrackDCAz, trkDCAzLims[0], trkDCAzLims[1]);
   fCfContainer->SetBinLimits(kTrackCharge, trkChargeLims[0], trkChargeLims[1]);
   fCfContainer->SetBinLimits(kTrackPhi, trkPhiLims[0], trkPhiLims[1]);
   fCfContainer->SetBinLimits(kTrackEta, trkEtaLims[0], trkEtaLims[1]);
@@ -1032,6 +1058,9 @@ TObjArray* AliTRDcheckESD::Histos()
   fCfContainer->SetVarTitle(kEventMult, "multiplicity");
   fCfContainer->SetVarTitle(kEventBC, "BC");
   fCfContainer->SetVarTitle(kTrackTOFdeltaBC, "TOFdeltaBC");
+  fCfContainer->SetVarTitle(kTrackTOFBC, "TOFBC");
+  fCfContainer->SetVarTitle(kTrackDCAxy, "DCAxy");
+  fCfContainer->SetVarTitle(kTrackDCAz, "DCAz");
   fCfContainer->SetVarTitle(kTrackCharge, "charge");
   fCfContainer->SetVarTitle(kTrackPhi, "phi");
   fCfContainer->SetVarTitle(kTrackEta, "eta");
@@ -1298,6 +1327,8 @@ void AliTRDcheckESD::Terminate(Option_t *)
   fNRefFigures++;
   // 3x3 for centrality dependent pictures
   fNRefFigures++;
+  
+  //DoTrending();  
 }
 
 //____________________________________________________________________
@@ -1501,8 +1532,8 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
   Int_t nBinsZ = trd3D->GetZaxis()->GetNbins();
   // project everything on the eta-phi map to obtain an acceptance map
   Float_t nada = 0.;
-  TH2F *trdAcc = (useAcceptance ? (TH2F*)Proj3D(trd3D, 0x0, 1, nBinsZ, nada)->Clone("trdAcc") : 0x0);
-  TH1D *phiProj = (trdAcc ? trdAcc->ProjectionY("phiProj") : 0x0);
+  TH2F *trdAcc = (useAcceptance ? (TH2F*)Proj3D(trd3D, 0x0, 1, nBinsZ, nada)->Clone(Form("trdAcc%f", gRandom->Rndm())) : 0x0);
+  TH1D *phiProj = (trdAcc ? trdAcc->ProjectionY(Form("phiProj%f", gRandom->Rndm())) : 0x0);
   
   // prepare the acceptance map
   Bool_t activeSM[18] = {kFALSE};
@@ -1533,9 +1564,10 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
   }
   ptBinLimits[nBinsZ] = trd3D->GetZaxis()->GetBinUpEdge(nBinsZ);
   
-  TH1F *efficiency = new TH1F("eff", "TRD-TPC matching efficiency", nBinsZ, ptBinLimits);
+  TH1F *efficiency = new TH1F(Form("eff%d", Int_t(1000000.0*gRandom->Rndm())), "TRD-TPC matching efficiency", nBinsZ, ptBinLimits);
   
   // loop over Z bins
+  Bool_t effGood = kFALSE;
   for(Int_t i=1; i<=nBinsZ; i++) {
     Float_t tpcEntries = 0.0; Float_t trdEntries = 0.0;
     Proj3D(tpc3D, trdAcc, i, i, tpcEntries);
@@ -1545,22 +1577,25 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
     Float_t error = 0;
     if(tpcEntries>0 && trdEntries>0 && (tpcEntries-trdEntries)>=0.0) 
       error = TMath::Sqrt(trdEntries*(tpcEntries-trdEntries)/tpcEntries/tpcEntries/tpcEntries);
-    if(ratio>0.0) {
+    if(ratio>0.001) {
       efficiency->SetBinContent(i,ratio);
       efficiency->SetBinError(i,error);
+      effGood = kTRUE;
     }
   }     // end loop over Z bins
+  if(!effGood) return 0x0;
   
   return efficiency;
 }
 
-
 //__________________________________________________________________________________________________
-void AliTRDcheckESD::PlotCentSummaryFromCF() {
+void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
   //
   // Make the centrality summary figure from the CF container 
   // 
   if(!fCfContainer) return;
+  
+  trendValues = trendValues;
   
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
@@ -1571,17 +1606,45 @@ void AliTRDcheckESD::PlotCentSummaryFromCF() {
   TList* l=gPad->GetListOfPrimitives();
   TVirtualPad* pad=0x0;
   
+  fCfContainer->SetRangeUser(kTrackDCAxy, -0.999, +0.999);
+  fCfContainer->SetRangeUser(kTrackDCAz, -3.0, +3.0);
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, 0.0, 0.0);
+  
+  // find all the isolated bunch crossings with entries
+  Bool_t isIsolated[3500];
+  TH1D* tempTH1D = (TH1D*)fCfContainer->Project(0, kEventBC);
+  FindIsolatedBCs(tempTH1D, isIsolated); delete tempTH1D;
+  Int_t nIsolatedBC = 0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) 
+    if(isIsolated[ibc]) nIsolatedBC++;
+    
+  if(gROOT->FindObject("rangeEffPt")) delete gROOT->FindObject("rangeEffPt");
+  TH2F* rangeEffPt=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
+  rangeEffPt->SetStats(kFALSE);
+  SetStyle(rangeEffPt->GetXaxis(), "p_{T} [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEffPt->GetYaxis(), "efficiency", 0.07, 0.8, kTRUE, 0.05);
+  
   Int_t padsForEffs[5] = {0,3,6,1,4};
   for(Int_t iCent=1; iCent<6; ++iCent) {
     pad = ((TVirtualPad*)l->At(padsForEffs[iCent-1])); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02); pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+    rangeEffPt->Draw();
+    TLine line;
+    line.SetLineStyle(2);
+    line.SetLineWidth(2);
+    line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.7, rangeEffPt->GetXaxis()->GetXmax(), 0.7);
+    line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.9, rangeEffPt->GetXaxis()->GetXmax(), 0.9);
     
     fCfContainer->SetRangeUser(kEventMult, Double_t(iCent), Double_t(iCent), kTRUE);
     fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);        // positive charges
     fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    
     TH3D* h3PosTPC = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
-    if(h3PosTPC->GetEntries()<0.1) continue;
+    if(h3PosTPC->GetEntries()<10) {
+      delete h3PosTPC;
+      continue;
+    }
     TH3D* h3PosTRDall = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
     fCfContainer->SetRangeUser(kTrackTrdTracklets, 4.0, 4.0);        // >= 4 TRD tracklets
     TH3D* h3PosTRDtrk4 = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
@@ -1601,7 +1664,6 @@ void AliTRDcheckESD::PlotCentSummaryFromCF() {
     fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);        // 6 TRD tracklets
     TH3D* h3NegTRDtrk6 = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
     
-    
     TH1F* hEffPosAll = EfficiencyTRD(h3PosTPC, h3PosTRDall, kTRUE);
     TH1F* hEffPosTrk4 = EfficiencyTRD(h3PosTPC, h3PosTRDtrk4, kTRUE);
     TH1F* hEffPosTrk5 = EfficiencyTRD(h3PosTPC, h3PosTRDtrk5, kTRUE);
@@ -1611,64 +1673,161 @@ void AliTRDcheckESD::PlotCentSummaryFromCF() {
     TH1F* hEffNegTrk5 = EfficiencyTRD(h3NegTPC, h3NegTRDtrk5, kTRUE);
     TH1F* hEffNegTrk6 = EfficiencyTRD(h3NegTPC, h3NegTRDtrk6, kTRUE);
     
-    TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
-    h2F->SetStats(kFALSE);
-    h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("TRD-TPC efficiency");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
-    TLine line;
-    line.SetLineStyle(2);
-    line.SetLineWidth(2);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+    delete h3PosTPC; delete h3NegTPC;
+    delete h3PosTRDall; delete h3PosTRDtrk4; delete h3PosTRDtrk5; delete h3PosTRDtrk6;
+    delete h3NegTRDall; delete h3NegTRDtrk4; delete h3NegTRDtrk5; delete h3NegTRDtrk6;
     
-    SetStyle(hEffPosAll,  1, kRed, 1, 24, kRed, 1);
-    SetStyle(hEffPosTrk4, 1, kRed, 1, 25, kRed, 1);
-    SetStyle(hEffPosTrk5, 1, kRed, 1, 26, kRed, 1);
-    SetStyle(hEffPosTrk6, 1, kRed, 1, 27, kRed, 1);
-    SetStyle(hEffNegAll,  1, kBlue, 1, 24, kBlue, 1);
-    SetStyle(hEffNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
-    SetStyle(hEffNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
-    SetStyle(hEffNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
+    // get matching efficiencies for isolated bunches
+    TH3D* h3TPCrefPos_IsolatedBC=0x0; TH3D* h3TPCrefNeg_IsolatedBC=0x0;
+    TH3D* h3TRDrefPosAll_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk4_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk5_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk6_IsolatedBC=0x0;
+    TH3D* h3TRDrefNegAll_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk4_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk5_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk6_IsolatedBC=0x0;
+    for(Int_t ibc=0; ibc<3500; ++ibc) {
+      if(!isIsolated[ibc]) continue;
+      fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    
+      TH3D* tempTH3D;
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+      fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);    // positive charges
+      tempTH3D = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TPCrefPos_IsolatedBC) h3TPCrefPos_IsolatedBC = tempTH3D;
+      else {h3TPCrefPos_IsolatedBC->Add(tempTH3D); delete tempTH3D;};
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefPosAll_IsolatedBC) h3TRDrefPosAll_IsolatedBC = tempTH3D;
+      else {h3TRDrefPosAll_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 4.0, 4.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefPosTrk4_IsolatedBC) h3TRDrefPosTrk4_IsolatedBC = tempTH3D;
+      else {h3TRDrefPosTrk4_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 5.0, 5.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefPosTrk5_IsolatedBC) h3TRDrefPosTrk5_IsolatedBC = tempTH3D;
+      else {h3TRDrefPosTrk5_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefPosTrk6_IsolatedBC) h3TRDrefPosTrk6_IsolatedBC = tempTH3D;
+      else {h3TRDrefPosTrk6_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+          
+      fCfContainer->SetRangeUser(kTrackCharge, -1.0, -1.0);   // negative charges
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TPCrefNeg_IsolatedBC) h3TPCrefNeg_IsolatedBC = tempTH3D;
+      else {h3TPCrefNeg_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefNegAll_IsolatedBC) h3TRDrefNegAll_IsolatedBC = tempTH3D;
+      else {h3TRDrefNegAll_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 4.0, 4.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefNegTrk4_IsolatedBC) h3TRDrefNegTrk4_IsolatedBC = tempTH3D;
+      else {h3TRDrefNegTrk4_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 5.0, 5.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefNegTrk5_IsolatedBC) h3TRDrefNegTrk5_IsolatedBC = tempTH3D;
+      else {h3TRDrefNegTrk5_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+      fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);
+      tempTH3D = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+      if(!h3TRDrefNegTrk6_IsolatedBC) h3TRDrefNegTrk6_IsolatedBC = tempTH3D;
+      else {h3TRDrefNegTrk6_IsolatedBC->Add(tempTH3D); delete tempTH3D;}
+    }
+    fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
+    fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    
+    TH1F* hEffPosAll_IsolatedBC  = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosAll_IsolatedBC, kTRUE);
+    TH1F* hEffPosTrk4_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk4_IsolatedBC, kTRUE);
+    TH1F* hEffPosTrk5_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk5_IsolatedBC, kTRUE);
+    TH1F* hEffPosTrk6_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk6_IsolatedBC, kTRUE);
+    TH1F* hEffNegAll_IsolatedBC  = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegAll_IsolatedBC, kTRUE);
+    TH1F* hEffNegTrk4_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk4_IsolatedBC, kTRUE);
+    TH1F* hEffNegTrk5_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk5_IsolatedBC, kTRUE);
+    TH1F* hEffNegTrk6_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk6_IsolatedBC, kTRUE);
+    
+    if(h3TPCrefPos_IsolatedBC) delete h3TPCrefPos_IsolatedBC;
+    if(h3TPCrefNeg_IsolatedBC) delete h3TPCrefNeg_IsolatedBC;
+    if(h3TRDrefPosAll_IsolatedBC) delete h3TRDrefPosAll_IsolatedBC;
+    if(h3TRDrefPosTrk4_IsolatedBC) delete h3TRDrefPosTrk4_IsolatedBC;
+    if(h3TRDrefPosTrk5_IsolatedBC) delete h3TRDrefPosTrk5_IsolatedBC;
+    if(h3TRDrefPosTrk6_IsolatedBC) delete h3TRDrefPosTrk6_IsolatedBC;
+    if(h3TRDrefNegAll_IsolatedBC) delete h3TRDrefNegAll_IsolatedBC;
+    if(h3TRDrefNegTrk4_IsolatedBC) delete h3TRDrefNegTrk4_IsolatedBC;
+    if(h3TRDrefNegTrk5_IsolatedBC) delete h3TRDrefNegTrk5_IsolatedBC;
+    if(h3TRDrefNegTrk6_IsolatedBC) delete h3TRDrefNegTrk6_IsolatedBC;
+    
+    if(!useIsolatedBC) {
+      SetStyle(hEffPosAll,  1, kRed, 1, 24, kRed, 1);
+      SetStyle(hEffPosTrk4, 1, kRed, 1, 25, kRed, 1);
+      SetStyle(hEffPosTrk5, 1, kRed, 1, 26, kRed, 1);
+      SetStyle(hEffPosTrk6, 1, kRed, 1, 27, kRed, 1);
+      SetStyle(hEffNegAll,  1, kBlue, 1, 24, kBlue, 1);
+      SetStyle(hEffNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+      SetStyle(hEffNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+      SetStyle(hEffNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
+      hEffPosAll->Draw("same");
+      hEffNegAll->Draw("same");
+      hEffPosTrk4->Draw("same");
+      hEffNegTrk4->Draw("same");
+      hEffPosTrk5->Draw("same");
+      hEffNegTrk5->Draw("same");
+      hEffPosTrk6->Draw("same");
+      hEffNegTrk6->Draw("same");
+    }
+    else {
+      if(nIsolatedBC>0) { 
+        SetStyle(hEffPosAll_IsolatedBC,  1, kRed, 1, 24, kRed, 1);
+        SetStyle(hEffPosTrk4_IsolatedBC, 1, kRed, 1, 25, kRed, 1);
+        SetStyle(hEffPosTrk5_IsolatedBC, 1, kRed, 1, 26, kRed, 1);
+        SetStyle(hEffPosTrk6_IsolatedBC, 1, kRed, 1, 27, kRed, 1);
+        SetStyle(hEffNegAll_IsolatedBC,  1, kBlue, 1, 24, kBlue, 1);
+        SetStyle(hEffNegTrk4_IsolatedBC, 1, kBlue, 1, 25, kBlue, 1);
+        SetStyle(hEffNegTrk5_IsolatedBC, 1, kBlue, 1, 26, kBlue, 1);
+        SetStyle(hEffNegTrk6_IsolatedBC, 1, kBlue, 1, 27, kBlue, 1);
+        hEffPosAll_IsolatedBC->Draw("same");
+        hEffNegAll_IsolatedBC->Draw("same");
+        hEffPosTrk4_IsolatedBC->Draw("same");
+        hEffNegTrk4_IsolatedBC->Draw("same");
+        hEffPosTrk5_IsolatedBC->Draw("same");
+        hEffNegTrk5_IsolatedBC->Draw("same");
+        hEffPosTrk6_IsolatedBC->Draw("same");
+        hEffNegTrk6_IsolatedBC->Draw("same");
+      }
+    }    
         
-    hEffPosAll->Draw("same");
-    hEffNegAll->Draw("same");
-    hEffPosTrk4->Draw("same");
-    hEffNegTrk4->Draw("same");
-    hEffPosTrk5->Draw("same");
-    hEffNegTrk5->Draw("same");
-    hEffPosTrk6->Draw("same");
-    hEffNegTrk6->Draw("same");
-    
     TLegend* leg=new TLegend(0.18, 0.7, 0.77, 0.89);
     if(iCent==1) {
       leg->SetFillColor(0);
       leg->SetNColumns(2);
       leg->SetMargin(0.1);
       leg->SetBorderSize(0);
-      leg->AddEntry(hEffPosAll,  "positives (#geq 1 tracklet)", "p");
-      leg->AddEntry(hEffNegAll,  "negatives (#geq 1 tracklet)", "p");
-      leg->AddEntry(hEffPosTrk4, "positives (4 tracklets)", "p");
-      leg->AddEntry(hEffNegTrk4, "negatives (4 tracklets)", "p");
-      leg->AddEntry(hEffPosTrk5, "positives (5 tracklets)", "p");
-      leg->AddEntry(hEffNegTrk5, "negatives (5 tracklets)", "p");
-      leg->AddEntry(hEffPosTrk6, "positives (6 tracklets)", "p");     
-      leg->AddEntry(hEffNegTrk6, "negatives (6 tracklets)", "p");
+      if(useIsolatedBC) {
+        leg->SetHeader("Isolated bunch crossings");
+        if(nIsolatedBC) {
+          leg->AddEntry(hEffPosAll_IsolatedBC,  "pos. (#geq 1 tracklet)", "p");
+          leg->AddEntry(hEffNegAll_IsolatedBC,  "neg. (#geq 1 tracklet)", "p");
+          leg->AddEntry(hEffPosTrk4_IsolatedBC, "pos. (4 tracklets)", "p");
+          leg->AddEntry(hEffNegTrk4_IsolatedBC, "neg. (4 tracklets)", "p");
+          leg->AddEntry(hEffPosTrk5_IsolatedBC, "pos. (5 tracklets)", "p");
+          leg->AddEntry(hEffNegTrk5_IsolatedBC, "neg. (5 tracklets)", "p");
+          leg->AddEntry(hEffPosTrk6_IsolatedBC, "pos. (6 tracklets)", "p");     
+          leg->AddEntry(hEffNegTrk6_IsolatedBC, "neg. (6 tracklets)", "p");
+        }
+      }
+      else {
+        leg->SetHeader("All bunch crossings");
+        leg->AddEntry(hEffPosAll,  "pos. (#geq 1 tracklet)", "p");
+        leg->AddEntry(hEffNegAll,  "neg. (#geq 1 tracklet)", "p");
+        leg->AddEntry(hEffPosTrk4, "pos. (4 tracklets)", "p");
+        leg->AddEntry(hEffNegTrk4, "neg. (4 tracklets)", "p");
+        leg->AddEntry(hEffPosTrk5, "pos. (5 tracklets)", "p");
+        leg->AddEntry(hEffNegTrk5, "neg. (5 tracklets)", "p");
+        leg->AddEntry(hEffPosTrk6, "pos. (6 tracklets)", "p");     
+        leg->AddEntry(hEffNegTrk6, "neg. (6 tracklets)", "p");
+      }
       leg->Draw();
     }
     lat->DrawLatex(0.2, 1.32, Form("Centrality class %d", iCent));
   }   // end for loop over multiplicity classes
   
   // Reset the modified user ranges of the CF container
-  fCfContainer->SetRangeUser(kEventMult, 0, 5, kTRUE);
+  fCfContainer->SetRangeUser(kEventMult, 0, 6, kTRUE);
   fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);
   fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
    
@@ -1677,92 +1836,117 @@ void AliTRDcheckESD::PlotCentSummaryFromCF() {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-
-  TH1D* hNcls[6];
-  TLegend* legCls=new TLegend(0.2, 0.7, 0.5, 0.95);
+  if(gROOT->FindObject("rangeNcls")) delete gROOT->FindObject("rangeNcls");
+  TH2F* rangeNcls = new TH2F("rangeNcls", "", 10, 0.0, 199.9, 10, 0.0, 1.199);
+  SetStyle(rangeNcls->GetXaxis(), "# TRD clusters", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeNcls->GetYaxis(), "entries (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  rangeNcls->SetStats(kFALSE);
+  rangeNcls->Draw();
+    
+  TH1D* hNcls[6]={0x0};
+  TLegend* legCls=new TLegend(0.7, 0.75, 0.97, 0.97);
   legCls->SetBorderSize(0);
   legCls->SetFillColor(0);
   legCls->SetMargin(0.15);
   for(Int_t iCent=0; iCent<6; ++iCent) {
     if(iCent>0)
       fCfContainer->SetRangeUser(kEventMult, Double_t(iCent), Double_t(iCent), kTRUE);
-    hNcls[iCent] = (TH1D*)fCfContainer->Project(1, kTrackTrdClusters);
+    if(!useIsolatedBC) hNcls[iCent] = (TH1D*)fCfContainer->Project(1, kTrackTrdClusters);
+    else{
+      for(Int_t ibc=0; ibc<3500; ++ibc) {
+        if(!isIsolated[ibc]) continue;
+        fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+        tempTH1D = (TH1D*)fCfContainer->Project(1, kTrackTrdClusters);
+        if(!hNcls[iCent]) hNcls[iCent] = tempTH1D;
+        else {hNcls[iCent]->Add(tempTH1D); delete tempTH1D;}
+      }
+      fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
+    }
+    if(!hNcls[iCent]) continue;
     hNcls[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
     Double_t maximum = hNcls[iCent]->GetMaximum();
     if(maximum>1.0)
       hNcls[iCent]->Scale(1.0/maximum);
-    hNcls[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
     hNcls[iCent]->SetStats(kFALSE);
     hNcls[iCent]->SetTitle("");
-    hNcls[iCent]->GetXaxis()->SetTitle("TRD #clusters");
-    hNcls[iCent]->GetXaxis()->SetTitleOffset(0.8); 
-    hNcls[iCent]->GetXaxis()->SetTitleSize(0.07);
-    hNcls[iCent]->GetXaxis()->CenterTitle();
-    hNcls[iCent]->GetXaxis()->SetLabelSize(0.05);
-    hNcls[iCent]->GetYaxis()->SetTitle("entries (a.u.)");
-    hNcls[iCent]->GetYaxis()->SetTitleOffset(0.8); 
-    hNcls[iCent]->GetYaxis()->SetTitleSize(0.07);
-    hNcls[iCent]->GetYaxis()->SetLabelSize(0.05);
-    hNcls[iCent]->GetYaxis()->CenterTitle();
+    hNcls[iCent]->SetLineWidth(2);
     
     if(hNcls[iCent]->Integral()>0.01) {
-      hNcls[iCent]->Draw(iCent==0 ? "" : "same");
+      hNcls[iCent]->Draw("same");
       legCls->AddEntry(hNcls[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
     }
   }
+  if(useIsolatedBC) legCls->SetHeader("Isolated bunch crossings");
+  else legCls->SetHeader("All bunch crossings");
   legCls->Draw();
-  fCfContainer->SetRangeUser(kEventMult, 0.0, 5.0, kTRUE);
+  fCfContainer->SetRangeUser(kEventMult, 0.0, 6.0, kTRUE);
   
   // Qtot vs P
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-
-  TH1D* hQtot[6];
-  TLegend* leg2=new TLegend(0.6, 0.7, 0.9, 0.95);
+  if(gROOT->FindObject("rangeQtot")) delete gROOT->FindObject("rangeQtot");
+  TH2F* rangeQtot = new TH2F("rangeQtot", "", 10, 0.0, 9.999, 10, 0.0, 1.199);
+  SetStyle(rangeQtot->GetXaxis(), "Q_{tot} (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeQtot->GetYaxis(), "entries (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  rangeQtot->SetStats(kFALSE);
+  rangeQtot->Draw();
+  
+  TH1D* hQtot[6]={0x0};
+  TLegend* leg2=new TLegend(0.6, 0.7, 0.9, 0.97);
   leg2->SetFillColor(0);
   leg2->SetBorderSize(0);
   for(Int_t iCent=0; iCent<6; ++iCent) {
     if(iCent>0)
       fCfContainer->SetRangeUser(kEventMult, Double_t(iCent), Double_t(iCent), kTRUE);
-    for(Int_t il=0; il<6; ++il) {
-      if(il==0) hQtot[iCent] = (TH1D*)fCfContainer->Project(1, kTrackQtot+il);
-      else hQtot[iCent]->Add(fCfContainer->Project(1, kTrackQtot+il));
+    if(useIsolatedBC) {
+      for(Int_t ibc=0; ibc<3500; ++ibc) {
+        if(!isIsolated[ibc]) continue;
+        fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+        for(Int_t il=0; il<6; ++il) {
+          tempTH1D = (TH1D*)fCfContainer->Project(1, kTrackQtot+il);
+          if(!hQtot[iCent] && il==0) hQtot[iCent] = tempTH1D;
+          else {hQtot[iCent]->Add(tempTH1D); delete tempTH1D;}
+        }
+      }
+      fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
     }
+    else {
+      for(Int_t il=0; il<6; ++il) {
+        tempTH1D = (TH1D*)fCfContainer->Project(1, kTrackQtot+il);
+        if(il==0) hQtot[iCent] = tempTH1D;
+        else hQtot[iCent]->Add(tempTH1D);
+      }
+    } // end if(useIsolatedBC)
     
+    if(!hQtot[iCent]) continue;
     hQtot[iCent]->SetBinContent(1, 0);
     Double_t maximum = hQtot[iCent]->GetMaximum();
     if(maximum>1.0)
       hQtot[iCent]->Scale(1.0/maximum);
     hQtot[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
-    hQtot[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
-    hQtot[iCent]->GetXaxis()->SetRangeUser(0.0,9.999);
     hQtot[iCent]->SetStats(kFALSE);
     hQtot[iCent]->SetTitle("");
-    hQtot[iCent]->GetXaxis()->SetTitle("Q_{tot} (a.u.)");
-    hQtot[iCent]->GetXaxis()->SetTitleOffset(0.8); 
-    hQtot[iCent]->GetXaxis()->SetTitleSize(0.07);
-    hQtot[iCent]->GetXaxis()->CenterTitle();
-    hQtot[iCent]->GetXaxis()->SetLabelSize(0.05);
-    hQtot[iCent]->GetYaxis()->SetTitle("entries (a.u.)");
-    hQtot[iCent]->GetYaxis()->SetTitleOffset(0.8); 
-    hQtot[iCent]->GetYaxis()->SetTitleSize(0.07);
-    hQtot[iCent]->GetYaxis()->SetLabelSize(0.05);
-    hQtot[iCent]->GetYaxis()->CenterTitle();
+    hQtot[iCent]->SetLineWidth(2);
     if(hQtot[iCent]->Integral()>0.01) {
       hQtot[iCent]->Draw(iCent==0 ? "" : "same");
       leg2->AddEntry(hQtot[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
     }
   }
+  if(useIsolatedBC) leg2->SetHeader("Isolated bunch crossings");
+  else leg2->SetHeader("All bunch crossings");
   leg2->Draw();
   fCfContainer->SetRangeUser(kEventMult, 0.0, 5.0, kTRUE);
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, -1000.0, +1000.0);  // reset the cut on TOFbc
 }
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
+void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass, Double_t* trendValues, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
 
+  if(!fCfContainer) return;
+  
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.06);
   lat->SetTextColor(2);
@@ -1777,17 +1961,76 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+ 
+  fCfContainer->SetRangeUser(kTrackDCAxy, -0.999, +0.999);
+  fCfContainer->SetRangeUser(kTrackDCAz, -3.0, +3.0);
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, 0.0, 0.0);
+  
+  // find all the isolated bunch crossings with entries
+  Bool_t isIsolated[3500];
+  TH1D* tempTH1D = (TH1D*)fCfContainer->Project(0, kEventBC);
+  FindIsolatedBCs(tempTH1D, isIsolated); delete tempTH1D;
+  Int_t nIsolatedBC = 0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) 
+    if(isIsolated[ibc]) nIsolatedBC++;
   
   if(centralityClass>0) // select the multiplicity class
     fCfContainer->SetRangeUser(kEventMult, Double_t(centralityClass), Double_t(centralityClass), kTRUE);
-  fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);      // positive charges
-  TH2D* hTPCrefPos = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
-  TH2D* hTRDrefPos = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
-  TH2D* hTOFrefPos = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
-  fCfContainer->SetRangeUser(kTrackCharge, -1.0, -1.0);      // negative charges
-  TH2D* hTPCrefNeg = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
-  TH2D* hTRDrefNeg = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
-  TH2D* hTOFrefNeg = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
+  
+  TH2D* hTPCrefPos = 0x0; TH2D* hTRDrefPos = 0x0; TH2D* hTOFrefPos = 0x0;
+  TH2D* hTPCrefNeg = 0x0; TH2D* hTRDrefNeg = 0x0; TH2D* hTOFrefNeg = 0x0;
+  if(!useIsolatedBC) {
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);      // positive charges
+    hTPCrefPos = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
+    hTRDrefPos = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
+    hTOFrefPos = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
+    fCfContainer->SetRangeUser(kTrackCharge, -1.0, -1.0);      // negative charges
+    hTPCrefNeg = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
+    hTRDrefNeg = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
+    hTOFrefNeg = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
+    fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);      // reset charge cut
+  }
+  
+  TH2D* hTPCrefPos_IsolatedBC=0x0; TH2D* hTPCrefNeg_IsolatedBC=0x0;
+  TH2D* hTRDrefPos_IsolatedBC=0x0; TH2D* hTRDrefNeg_IsolatedBC=0x0;
+  TH2D* hTOFrefPos_IsolatedBC=0x0; TH2D* hTOFrefNeg_IsolatedBC=0x0;
+  if(useIsolatedBC) {
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    for(Int_t ibc=0; ibc<3500; ++ibc) {
+      if(!isIsolated[ibc]) continue;
+      fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+      fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);      // positive charges
+      TH2D* tempTH2D;
+      tempTH2D = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
+      if(!hTPCrefPos_IsolatedBC) hTPCrefPos_IsolatedBC = tempTH2D;
+      else {hTPCrefPos_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+      tempTH2D = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
+      if(!hTRDrefPos_IsolatedBC) hTRDrefPos_IsolatedBC = tempTH2D;
+      else {hTRDrefPos_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+      tempTH2D = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
+      if(!hTOFrefPos_IsolatedBC) hTOFrefPos_IsolatedBC = tempTH2D;
+      else {hTOFrefPos_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+      fCfContainer->SetRangeUser(kTrackCharge, -1.0, -1.0);      // negative charges
+      tempTH2D = (TH2D*)fCfContainer->Project(0, kTrackEta, kTrackPhi);
+      if(!hTPCrefNeg_IsolatedBC) hTPCrefNeg_IsolatedBC = tempTH2D;
+      else {hTPCrefNeg_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+      tempTH2D = (TH2D*)fCfContainer->Project(1, kTrackEta, kTrackPhi);
+      if(!hTRDrefNeg_IsolatedBC) hTRDrefNeg_IsolatedBC = tempTH2D;
+      else {hTRDrefNeg_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+      tempTH2D = (TH2D*)fCfContainer->Project(2, kTrackEta, kTrackPhi);
+      if(!hTOFrefNeg_IsolatedBC) hTOFrefNeg_IsolatedBC = tempTH2D;
+      else {hTOFrefNeg_IsolatedBC->Add(tempTH2D); delete tempTH2D;}
+    }
+    fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.);   // reset the BC range
+    fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);      // reset charge cut
+  }
+  
+  if(gROOT->FindObject("rangeEtaPhi")) delete gROOT->FindObject("rangeEtaPhi");
+  TH2F* rangeEtaPhi = new TH2F("rangeEtaPhi", "", 10, -0.99, +0.99, 10, -3.4, +3.4);
+  SetStyle(rangeEtaPhi->GetXaxis(), "#eta", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEtaPhi->GetYaxis(), "detector #varphi", 0.07, 0.8, kTRUE, 0.05);
+  rangeEtaPhi->SetStats(kFALSE);  
   
   //----------------------------------------------
   // eta-phi efficiency for positive TRD tracks
@@ -1795,23 +2038,26 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2D* hTRDeffPos = (TH2D*)hTRDrefPos->Clone("hTRDeffPos");
-  hTRDeffPos->Reset();
-  hTRDeffPos->SetStats(kFALSE);
-  hTRDeffPos->Divide(hTRDrefPos, hTPCrefPos);
-  hTRDeffPos->GetXaxis()->SetTitle("#eta");
-  hTRDeffPos->GetXaxis()->CenterTitle();
-  hTRDeffPos->GetXaxis()->SetTitleSize(0.07);
-  hTRDeffPos->GetXaxis()->SetTitleOffset(0.8);
-  hTRDeffPos->GetXaxis()->SetLabelSize(0.05);
-  hTRDeffPos->GetYaxis()->SetTitle("detector #varphi");
-  hTRDeffPos->GetYaxis()->CenterTitle();
-  hTRDeffPos->GetYaxis()->SetTitleSize(0.07);
-  hTRDeffPos->GetYaxis()->SetTitleOffset(0.8);
-  hTRDeffPos->GetYaxis()->SetLabelSize(0.05);
-  hTRDeffPos->SetMaximum(1.0);
-  hTRDeffPos->SetTitle("");
-  hTRDeffPos->Draw("colz");
+  rangeEtaPhi->Draw();
+  
+  if(useIsolatedBC) {
+    if(nIsolatedBC>0) {
+      TH2D* hTRDeffPos_IsolatedBC = (TH2D*)hTRDrefPos_IsolatedBC->Clone("hTRDeffPos_IsolatedBC");
+      hTRDeffPos_IsolatedBC->Reset();
+      hTRDeffPos_IsolatedBC->SetStats(kFALSE);
+      hTRDeffPos_IsolatedBC->Divide(hTRDrefPos_IsolatedBC, hTPCrefPos_IsolatedBC);  
+      hTRDeffPos_IsolatedBC->SetMaximum(1.0);
+      hTRDeffPos_IsolatedBC->Draw("samecolz");
+    }
+  }
+  else {
+    TH2D* hTRDeffPos = (TH2D*)hTRDrefPos->Clone("hTRDeffPos");
+    hTRDeffPos->Reset();
+    hTRDeffPos->SetStats(kFALSE);
+    hTRDeffPos->Divide(hTRDrefPos, hTPCrefPos);
+    hTRDeffPos->SetMaximum(1.0);
+    hTRDeffPos->Draw("samecolz");
+  }
   lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for positive tracks");
   DrawTRDGrid();
   
@@ -1821,25 +2067,28 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2D* hTRDeffNeg = (TH2D*)hTRDrefNeg->Clone("hTRDeffNeg");
-  hTRDeffNeg->Reset();
-  hTRDeffNeg->SetStats(kFALSE);
-  hTRDeffNeg->Divide(hTRDrefNeg, hTPCrefNeg);
-  hTRDeffNeg->GetXaxis()->SetTitle("#eta");
-  hTRDeffNeg->GetXaxis()->CenterTitle();
-  hTRDeffNeg->GetXaxis()->SetTitleSize(0.07);
-  hTRDeffNeg->GetXaxis()->SetTitleOffset(0.8);
-  hTRDeffNeg->GetXaxis()->SetLabelSize(0.05);
-  hTRDeffNeg->GetYaxis()->SetTitle("detector #varphi");
-  hTRDeffNeg->GetYaxis()->CenterTitle();
-  hTRDeffNeg->GetYaxis()->SetTitleSize(0.07);
-  hTRDeffNeg->GetYaxis()->SetTitleOffset(0.8);
-  hTRDeffNeg->GetYaxis()->SetLabelSize(0.05);
-  hTRDeffNeg->SetMaximum(1.0);
-  hTRDeffNeg->SetTitle("");
-  hTRDeffNeg->Draw("colz");
+  rangeEtaPhi->Draw();
+  
+  if(useIsolatedBC) {
+    if(nIsolatedBC>0) {
+      TH2D* hTRDeffNeg_IsolatedBC = (TH2D*)hTRDrefNeg_IsolatedBC->Clone("hTRDeffNeg_IsolatedBC");
+      hTRDeffNeg_IsolatedBC->Reset();
+      hTRDeffNeg_IsolatedBC->SetStats(kFALSE);
+      hTRDeffNeg_IsolatedBC->Divide(hTRDrefNeg_IsolatedBC, hTPCrefNeg_IsolatedBC);  
+      hTRDeffNeg_IsolatedBC->SetMaximum(1.0);
+      hTRDeffNeg_IsolatedBC->Draw("samecolz");
+    }
+  }
+  else {
+    TH2D* hTRDeffNeg = (TH2D*)hTRDrefNeg->Clone("hTRDeffNeg");
+    hTRDeffNeg->Reset();
+    hTRDeffNeg->SetStats(kFALSE);
+    hTRDeffNeg->Divide(hTRDrefNeg, hTPCrefNeg);
+    hTRDeffNeg->SetMaximum(1.0);
+    hTRDeffNeg->Draw("samecolz");
+  }
   lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for negative tracks");
-  DrawTRDGrid();
+  DrawTRDGrid();  
   
   //----------------------------------------------
   // eta-phi TRD-TOF matching efficiency for positive tracks
@@ -1847,23 +2096,26 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2D* hTOFeffPos = (TH2D*)hTRDrefPos->Clone("hTOFeffPos");
-  hTOFeffPos->Reset();
-  hTOFeffPos->SetStats(kFALSE);
-  hTOFeffPos->Divide(hTOFrefPos, hTRDrefPos);
-  hTOFeffPos->GetXaxis()->SetTitle("#eta");
-  hTOFeffPos->GetXaxis()->CenterTitle();
-  hTOFeffPos->GetXaxis()->SetTitleSize(0.07);
-  hTOFeffPos->GetXaxis()->SetTitleOffset(0.8);
-  hTOFeffPos->GetXaxis()->SetLabelSize(0.05);
-  hTOFeffPos->GetYaxis()->SetTitle("detector #varphi");
-  hTOFeffPos->GetYaxis()->CenterTitle();
-  hTOFeffPos->GetYaxis()->SetTitleSize(0.07);
-  hTOFeffPos->GetYaxis()->SetTitleOffset(0.8);
-  hTOFeffPos->GetYaxis()->SetLabelSize(0.05);
-  hTOFeffPos->SetMaximum(1.0);
-  hTOFeffPos->SetTitle("");
-  hTOFeffPos->Draw("colz");
+  rangeEtaPhi->Draw();
+  
+  if(useIsolatedBC) {
+    if(nIsolatedBC>0) {
+      TH2D* hTOFeffPos_IsolatedBC = (TH2D*)hTOFrefPos_IsolatedBC->Clone("hTOFeffPos_IsolatedBC");
+      hTOFeffPos_IsolatedBC->Reset();
+      hTOFeffPos_IsolatedBC->SetStats(kFALSE);
+      hTOFeffPos_IsolatedBC->Divide(hTOFrefPos_IsolatedBC, hTRDrefPos_IsolatedBC);  
+      hTOFeffPos_IsolatedBC->SetMaximum(1.0);
+      hTOFeffPos_IsolatedBC->Draw("samecolz");
+    }
+  }
+  else {
+    TH2D* hTOFeffPos = (TH2D*)hTOFrefPos->Clone("hTOFeffPos");
+    hTOFeffPos->Reset();
+    hTOFeffPos->SetStats(kFALSE);
+    hTOFeffPos->Divide(hTOFrefPos, hTRDrefPos);
+    hTOFeffPos->SetMaximum(1.0);
+    hTOFeffPos->Draw("samecolz");
+  }
   lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for positive tracks");
   DrawTRDGrid();
   
@@ -1873,26 +2125,35 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2D* hTOFeffNeg = (TH2D*)hTRDrefNeg->Clone("hTOFeffNeg");
-  hTOFeffNeg->Reset();
-  hTOFeffNeg->SetStats(kFALSE);
-  hTOFeffNeg->Divide(hTOFrefNeg, hTRDrefNeg);
-  hTOFeffNeg->GetXaxis()->SetTitle("#eta");
-  hTOFeffNeg->GetXaxis()->CenterTitle();
-  hTOFeffNeg->GetXaxis()->SetTitleSize(0.07);
-  hTOFeffNeg->GetXaxis()->SetTitleOffset(0.8);
-  hTOFeffNeg->GetXaxis()->SetLabelSize(0.05);
-  hTOFeffNeg->GetYaxis()->SetTitle("detector #varphi");
-  hTOFeffNeg->GetYaxis()->CenterTitle();
-  hTOFeffNeg->GetYaxis()->SetTitleSize(0.07);
-  hTOFeffNeg->GetYaxis()->SetTitleOffset(0.8);
-  hTOFeffNeg->GetYaxis()->SetLabelSize(0.05);
-  hTOFeffNeg->SetMaximum(1.0);
-  hTOFeffNeg->SetTitle("");
-  hTOFeffNeg->Draw("colz");
+  rangeEtaPhi->Draw();
+  
+  if(useIsolatedBC) {
+    if(nIsolatedBC) {
+      TH2D* hTOFeffNeg_IsolatedBC = (TH2D*)hTOFrefNeg_IsolatedBC->Clone("hTOFeffNeg_IsolatedBC");
+      hTOFeffNeg_IsolatedBC->Reset();
+      hTOFeffNeg_IsolatedBC->SetStats(kFALSE);
+      hTOFeffNeg_IsolatedBC->Divide(hTOFrefNeg_IsolatedBC, hTRDrefNeg_IsolatedBC);  
+      hTOFeffNeg_IsolatedBC->SetMaximum(1.0);
+      hTOFeffNeg_IsolatedBC->Draw("samecolz");
+    }
+  }
+  else {
+    TH2D* hTOFeffNeg = (TH2D*)hTOFrefNeg->Clone("hTOFeffNeg");
+    hTOFeffNeg->Reset();
+    hTOFeffNeg->SetStats(kFALSE);
+    hTOFeffNeg->Divide(hTOFrefNeg, hTRDrefNeg);
+    hTOFeffNeg->SetMaximum(1.0);
+    hTOFeffNeg->Draw("samecolz");
+  }
   lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for negative tracks");
   DrawTRDGrid();
   
+  if(hTRDrefPos) delete hTRDrefPos; if(hTPCrefPos) delete hTPCrefPos; if(hTOFrefPos) delete hTOFrefPos;
+  if(hTRDrefNeg) delete hTRDrefNeg; if(hTPCrefNeg) delete hTPCrefNeg; if(hTOFrefNeg) delete hTOFrefNeg;
+  if(hTRDrefPos_IsolatedBC) delete hTRDrefPos_IsolatedBC; if(hTPCrefPos_IsolatedBC) delete hTPCrefPos_IsolatedBC; if(hTOFrefPos_IsolatedBC) delete hTOFrefPos_IsolatedBC;
+  if(hTRDrefNeg_IsolatedBC) delete hTRDrefNeg_IsolatedBC; if(hTPCrefNeg_IsolatedBC) delete hTPCrefNeg_IsolatedBC; if(hTOFrefNeg_IsolatedBC) delete hTOFrefNeg_IsolatedBC;
+  
+  fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
   fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);    // positive charges
   TH3D* h3TPCrefPos = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
   TH3D* h3TRDrefPosAll = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
@@ -1921,7 +2182,6 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);
   TH3D* h3TRDrefNegTrk6 = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
   TH3D* h3TOFrefNegTrk6 = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
-  fCfContainer->SetRangeUser(kEventMult, 0.0, 6.0, kTRUE);
   fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);
   fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
   
@@ -1943,6 +2203,163 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   TH1F* hTOFEffPtPosTrk6 = EfficiencyTRD(h3TRDrefPosTrk6, h3TOFrefPosTrk6, kFALSE);
   TH1F* hTOFEffPtNegTrk6 = EfficiencyTRD(h3TRDrefNegTrk6, h3TOFrefNegTrk6, kFALSE);
   
+  delete h3TPCrefPos; delete h3TPCrefNeg;
+  delete h3TRDrefPosAll; delete h3TRDrefPosTrk4; delete h3TRDrefPosTrk5; delete h3TRDrefPosTrk6;
+  delete h3TRDrefNegAll; delete h3TRDrefNegTrk4; delete h3TRDrefNegTrk5; delete h3TRDrefNegTrk6;
+  delete h3TOFrefPosAll; delete h3TOFrefPosTrk4; delete h3TOFrefPosTrk5; delete h3TOFrefPosTrk6;
+  delete h3TOFrefNegAll; delete h3TOFrefNegTrk4; delete h3TOFrefNegTrk5; delete h3TOFrefNegTrk6;
+  
+  TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
+  if(trendValues && hTRDEffPtPosAll && hTRDEffPtPosAll->Integral()>0.1) {
+    hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[0] = funcConst->GetParameter(0);
+    trendValues[1] = funcConst->GetParError(0);
+  }
+  if(trendValues && hTRDEffPtNegAll && hTRDEffPtNegAll->Integral()>0.1) {
+    hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[2] = funcConst->GetParameter(0);
+    trendValues[3] = funcConst->GetParError(0);
+  }
+  if(trendValues && hTOFEffPtPosAll && hTOFEffPtPosAll->Integral()>0.1) {
+    hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[4] = funcConst->GetParameter(0);
+    trendValues[5] = funcConst->GetParError(0);
+  }
+  if(trendValues && hTOFEffPtNegAll && hTOFEffPtNegAll->Integral()>0.1) {
+    hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[6] = funcConst->GetParameter(0);
+    trendValues[7] = funcConst->GetParError(0);
+  }
+    
+  // get matching efficiencies for isolated bunches
+  TH3D* h3TPCrefPos_IsolatedBC=0x0; TH3D* h3TPCrefNeg_IsolatedBC=0x0;
+  TH3D* h3TRDrefPosAll_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk4_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk5_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk6_IsolatedBC=0x0;
+  TH3D* h3TRDrefNegAll_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk4_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk5_IsolatedBC=0x0; TH3D* h3TRDrefNegTrk6_IsolatedBC=0x0;
+  TH3D* h3TOFrefPosAll_IsolatedBC=0x0; TH3D* h3TOFrefPosTrk4_IsolatedBC=0x0; TH3D* h3TOFrefPosTrk5_IsolatedBC=0x0; TH3D* h3TOFrefPosTrk6_IsolatedBC=0x0;
+  TH3D* h3TOFrefNegAll_IsolatedBC=0x0; TH3D* h3TOFrefNegTrk4_IsolatedBC=0x0; TH3D* h3TOFrefNegTrk5_IsolatedBC=0x0; TH3D* h3TOFrefNegTrk6_IsolatedBC=0x0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) {
+    if(!isIsolated[ibc]) continue;
+    fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    
+    TH3D* temp;
+    fCfContainer->SetRangeUser(kTrackCharge, +1.0, +1.0);    // positive charges
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    temp = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TPCrefPos_IsolatedBC) h3TPCrefPos_IsolatedBC = temp;
+    else {h3TPCrefPos_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefPosAll_IsolatedBC) h3TRDrefPosAll_IsolatedBC = temp;
+    else {h3TRDrefPosAll_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefPosAll_IsolatedBC) h3TOFrefPosAll_IsolatedBC = temp;
+    else {h3TOFrefPosAll_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 4.0, 4.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefPosTrk4_IsolatedBC) h3TRDrefPosTrk4_IsolatedBC = temp;
+    else {h3TRDrefPosTrk4_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefPosTrk4_IsolatedBC) h3TOFrefPosTrk4_IsolatedBC = temp;
+    else {h3TOFrefPosTrk4_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 5.0, 5.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefPosTrk5_IsolatedBC) h3TRDrefPosTrk5_IsolatedBC = temp;
+    else {h3TRDrefPosTrk5_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefPosTrk5_IsolatedBC) h3TOFrefPosTrk5_IsolatedBC = temp;
+    else {h3TOFrefPosTrk5_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefPosTrk6_IsolatedBC) h3TRDrefPosTrk6_IsolatedBC = temp;
+    else {h3TRDrefPosTrk6_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefPosTrk6_IsolatedBC) h3TOFrefPosTrk6_IsolatedBC = temp;
+    else {h3TOFrefPosTrk6_IsolatedBC->Add(temp); delete temp;}  
+    
+    fCfContainer->SetRangeUser(kTrackCharge, -1.0, -1.0);   // negative charges
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    temp = (TH3D*)fCfContainer->Project(0, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TPCrefNeg_IsolatedBC) h3TPCrefNeg_IsolatedBC = temp;
+    else {h3TPCrefNeg_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefNegAll_IsolatedBC) h3TRDrefNegAll_IsolatedBC = temp;
+    else {h3TRDrefNegAll_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefNegAll_IsolatedBC) h3TOFrefNegAll_IsolatedBC = temp;
+    else {h3TOFrefNegAll_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 4.0, 4.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefNegTrk4_IsolatedBC) h3TRDrefNegTrk4_IsolatedBC = temp;
+    else {h3TRDrefNegTrk4_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefNegTrk4_IsolatedBC) h3TOFrefNegTrk4_IsolatedBC = temp;
+    else {h3TOFrefNegTrk4_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 5.0, 5.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefNegTrk5_IsolatedBC) h3TRDrefNegTrk5_IsolatedBC = temp;
+    else {h3TRDrefNegTrk5_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefNegTrk5_IsolatedBC) h3TOFrefNegTrk5_IsolatedBC = temp;
+    else {h3TOFrefNegTrk5_IsolatedBC->Add(temp); delete temp;}
+    fCfContainer->SetRangeUser(kTrackTrdTracklets, 6.0, 6.0);
+    temp = (TH3D*)fCfContainer->Project(1, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TRDrefNegTrk6_IsolatedBC) h3TRDrefNegTrk6_IsolatedBC = temp;
+    else {h3TRDrefNegTrk6_IsolatedBC->Add(temp); delete temp;}
+    temp = (TH3D*)fCfContainer->Project(2, kTrackEta, kTrackPhi, kTrackPt);
+    if(!h3TOFrefNegTrk6_IsolatedBC) h3TOFrefNegTrk6_IsolatedBC = temp;
+    else {h3TOFrefNegTrk6_IsolatedBC->Add(temp); delete temp;}
+  }
+  fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
+  fCfContainer->SetRangeUser(kTrackCharge, -1.0, +1.0);
+  fCfContainer->SetRangeUser(kTrackTrdTracklets, 0.0, 6.0);
+    
+  TH1F* hTRDEffPtPosAll_IsolatedBC  = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosAll_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtNegAll_IsolatedBC  = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegAll_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtPosTrk4_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk4_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtNegTrk4_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk4_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtPosTrk5_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk5_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtNegTrk5_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk5_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtPosTrk6_IsolatedBC = EfficiencyTRD(h3TPCrefPos_IsolatedBC, h3TRDrefPosTrk6_IsolatedBC, kTRUE);
+  TH1F* hTRDEffPtNegTrk6_IsolatedBC = EfficiencyTRD(h3TPCrefNeg_IsolatedBC, h3TRDrefNegTrk6_IsolatedBC, kTRUE);
+  
+  TH1F* hTOFEffPtPosAll_IsolatedBC  = EfficiencyTRD(h3TRDrefPosAll_IsolatedBC, h3TOFrefPosAll_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtNegAll_IsolatedBC  = EfficiencyTRD(h3TRDrefNegAll_IsolatedBC, h3TOFrefNegAll_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtPosTrk4_IsolatedBC = EfficiencyTRD(h3TRDrefPosTrk4_IsolatedBC, h3TOFrefPosTrk4_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtNegTrk4_IsolatedBC = EfficiencyTRD(h3TRDrefNegTrk4_IsolatedBC, h3TOFrefNegTrk4_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtPosTrk5_IsolatedBC = EfficiencyTRD(h3TRDrefPosTrk5_IsolatedBC, h3TOFrefPosTrk5_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtNegTrk5_IsolatedBC = EfficiencyTRD(h3TRDrefNegTrk5_IsolatedBC, h3TOFrefNegTrk5_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtPosTrk6_IsolatedBC = EfficiencyTRD(h3TRDrefPosTrk6_IsolatedBC, h3TOFrefPosTrk6_IsolatedBC, kFALSE);
+  TH1F* hTOFEffPtNegTrk6_IsolatedBC = EfficiencyTRD(h3TRDrefNegTrk6_IsolatedBC, h3TOFrefNegTrk6_IsolatedBC, kFALSE);
+  
+  if(h3TPCrefPos_IsolatedBC) delete h3TPCrefPos_IsolatedBC; if(h3TPCrefNeg_IsolatedBC) delete h3TPCrefNeg_IsolatedBC;
+  if(h3TRDrefPosAll_IsolatedBC) delete h3TRDrefPosAll_IsolatedBC; if(h3TRDrefPosTrk4_IsolatedBC) delete h3TRDrefPosTrk4_IsolatedBC; 
+  if(h3TRDrefPosTrk5_IsolatedBC) delete h3TRDrefPosTrk5_IsolatedBC; if(h3TRDrefPosTrk6_IsolatedBC) delete h3TRDrefPosTrk6_IsolatedBC;
+  if(h3TRDrefNegAll_IsolatedBC) delete h3TRDrefNegAll_IsolatedBC; if(h3TRDrefNegTrk4_IsolatedBC) delete h3TRDrefNegTrk4_IsolatedBC; 
+  if(h3TRDrefNegTrk5_IsolatedBC) delete h3TRDrefNegTrk5_IsolatedBC; if(h3TRDrefNegTrk6_IsolatedBC) delete h3TRDrefNegTrk6_IsolatedBC;
+  if(h3TOFrefPosAll_IsolatedBC) delete h3TOFrefPosAll_IsolatedBC; if(h3TOFrefPosTrk4_IsolatedBC) delete h3TOFrefPosTrk4_IsolatedBC; 
+  if(h3TOFrefPosTrk5_IsolatedBC) delete h3TOFrefPosTrk5_IsolatedBC; if(h3TOFrefPosTrk6_IsolatedBC) delete h3TOFrefPosTrk6_IsolatedBC;
+  if(h3TOFrefNegAll_IsolatedBC) delete h3TOFrefNegAll_IsolatedBC; if(h3TOFrefNegTrk4_IsolatedBC) delete h3TOFrefNegTrk4_IsolatedBC; 
+  if(h3TOFrefNegTrk5_IsolatedBC) delete h3TOFrefNegTrk5_IsolatedBC; if(h3TOFrefNegTrk6_IsolatedBC) delete h3TOFrefNegTrk6_IsolatedBC;
+  
+  if(trendValues &&  hTRDEffPtPosAll_IsolatedBC && hTRDEffPtPosAll_IsolatedBC->Integral()>0.1) {
+    hTRDEffPtPosAll_IsolatedBC->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[18] = funcConst->GetParameter(0);
+    trendValues[19] = funcConst->GetParError(0);
+  }
+  if(trendValues &&  hTRDEffPtNegAll_IsolatedBC && hTRDEffPtNegAll_IsolatedBC->Integral()>0.1) {
+    hTRDEffPtNegAll_IsolatedBC->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[20] = funcConst->GetParameter(0);
+    trendValues[21] = funcConst->GetParError(0);
+  }
+  if(trendValues &&  hTOFEffPtPosAll_IsolatedBC && hTOFEffPtPosAll_IsolatedBC->Integral()>0.1) {
+    hTOFEffPtPosAll_IsolatedBC->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[22] = funcConst->GetParameter(0);
+    trendValues[23] = funcConst->GetParError(0);
+  }
+  if(trendValues &&  hTOFEffPtNegAll_IsolatedBC && hTOFEffPtNegAll_IsolatedBC->Integral()>0.1) {
+    hTOFEffPtNegAll_IsolatedBC->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+    trendValues[24] = funcConst->GetParameter(0);
+    trendValues[25] = funcConst->GetParError(0);
+  }
   
   //---------------------------------------------------------
   // TPC-TRD matching efficiency vs pt
@@ -1951,51 +2368,67 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   
-  TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
-  h2F->SetStats(kFALSE);
-  h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  h2F->GetXaxis()->SetTitleOffset(0.8); 
-  h2F->GetXaxis()->SetTitleSize(0.07);
-  h2F->GetXaxis()->CenterTitle();
-  h2F->GetXaxis()->SetLabelSize(0.05);
-  h2F->GetYaxis()->SetTitle("efficiency");
-  h2F->GetYaxis()->SetTitleOffset(0.8); 
-  h2F->GetYaxis()->SetTitleSize(0.07);
-  h2F->GetYaxis()->SetLabelSize(0.05);
-  h2F->GetYaxis()->CenterTitle();
-  h2F->Draw();
-  lat->DrawLatex(0.2, 1.32, "TPC-TRD matching efficiency");
+  if(gROOT->FindObject("rangeEffPt2")) delete gROOT->FindObject("rangeEffPt2");
+  TH2F* rangeEffPt=new TH2F("rangeEffPt2", "",10,0.,10.,10,0.,1.4);
+  rangeEffPt->SetStats(kFALSE);
+  SetStyle(rangeEffPt->GetXaxis(), "p_{T} [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEffPt->GetYaxis(), "efficiency", 0.07, 0.8, kTRUE, 0.05);
+  rangeEffPt->Draw();
+  lat->DrawLatex(0.2, 1.42, "TPC-TRD matching efficiency");
   //++++++++++++++++++
   TLine line;
   line.SetLineStyle(2);
   line.SetLineWidth(2);
-  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
-  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+  line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.7, rangeEffPt->GetXaxis()->GetXmax(), 0.7);
+  line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.9, rangeEffPt->GetXaxis()->GetXmax(), 0.9);
   TLegend* leg=new TLegend(0.2, 0.7, 0.7, 0.89);
   leg->SetNColumns(2);
   leg->SetMargin(0.15);
   leg->SetBorderSize(0);
   leg->SetFillColor(0);
   
-  SetStyle(hTRDEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
-  SetStyle(hTRDEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
-  SetStyle(hTRDEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
-  SetStyle(hTRDEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
-  SetStyle(hTRDEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
-  SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
-  SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
-  SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
+  if(!useIsolatedBC) {
+    SetStyle(hTRDEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
+    SetStyle(hTRDEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
+    SetStyle(hTRDEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
+    SetStyle(hTRDEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+    SetStyle(hTRDEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
+    SetStyle(hTRDEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+    SetStyle(hTRDEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
+    SetStyle(hTRDEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
+    leg->SetHeader("All bunch crossings");
+    hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "pos. (#geq 1 tracklet)", "p");
+    hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "neg. (#geq 1 tracklet)", "p");
+    hTRDEffPtPosTrk4->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk4, "pos. (4 tracklets)", "p");
+    hTRDEffPtNegTrk4->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk4, "neg. (4 tracklets)", "p");
+    hTRDEffPtPosTrk5->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk5, "pos. (5 tracklets)", "p");
+    hTRDEffPtNegTrk5->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk5, "neg. (5 tracklets)", "p");
+    hTRDEffPtPosTrk6->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk6, "pos. (6 tracklets)", "p");
+    hTRDEffPtNegTrk6->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk6, "neg. (6 tracklets)", "p");
+  }
+  else {
+    if(nIsolatedBC>0) {
+      SetStyle(hTRDEffPtPosAll_IsolatedBC, 1, kRed, 1, 24, kRed, 1);
+      SetStyle(hTRDEffPtNegAll_IsolatedBC, 1, kBlue, 1, 24, kBlue, 1);
+      SetStyle(hTRDEffPtPosTrk4_IsolatedBC, 1, kRed, 1, 25, kRed, 1);
+      SetStyle(hTRDEffPtNegTrk4_IsolatedBC, 1, kBlue, 1, 25, kBlue, 1);
+      SetStyle(hTRDEffPtPosTrk5_IsolatedBC, 1, kRed, 1, 26, kRed, 1);
+      SetStyle(hTRDEffPtNegTrk5_IsolatedBC, 1, kBlue, 1, 26, kBlue, 1);
+      SetStyle(hTRDEffPtPosTrk6_IsolatedBC, 1, kRed, 1, 27, kRed, 1);
+      SetStyle(hTRDEffPtNegTrk6_IsolatedBC, 1, kBlue, 1, 27, kBlue, 1);
+      leg->SetHeader("Isolated bunch crossings");
+      hTRDEffPtPosAll_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtPosAll_IsolatedBC, "pos. (#geq 1 tracklet)", "p");
+      hTRDEffPtNegAll_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtNegAll_IsolatedBC, "neg. (#geq 1 tracklet)", "p");
+      hTRDEffPtPosTrk4_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk4_IsolatedBC, "pos. (4 tracklets)", "p");
+      hTRDEffPtNegTrk4_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk4_IsolatedBC, "neg. (4 tracklets)", "p");
+      hTRDEffPtPosTrk5_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk5_IsolatedBC, "pos. (5 tracklets)", "p");
+      hTRDEffPtNegTrk5_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk5_IsolatedBC, "neg. (5 tracklets)", "p");
+      hTRDEffPtPosTrk6_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk6_IsolatedBC, "pos. (6 tracklets)", "p");
+      hTRDEffPtNegTrk6_IsolatedBC->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk6_IsolatedBC, "neg. (6 tracklets)", "p");
+    }
+  }
   
-  hTRDEffPtPosAll->Draw("same"); leg->AddEntry(hTRDEffPtPosAll, "positives (#geq 1 tracklet)", "p");
-  hTRDEffPtNegAll->Draw("same"); leg->AddEntry(hTRDEffPtNegAll, "negatives (#geq 1 tracklet)", "p");
-  hTRDEffPtPosTrk4->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk4, "positives (4 tracklets)", "p");
-  hTRDEffPtNegTrk4->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk4, "negatives (4 tracklets)", "p");
-  hTRDEffPtPosTrk5->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk5, "positives (5 tracklets)", "p");
-  hTRDEffPtNegTrk5->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk5, "negatives (5 tracklets)", "p");
-  hTRDEffPtPosTrk6->Draw("same"); leg->AddEntry(hTRDEffPtPosTrk6, "positives (6 tracklets)", "p");
-  hTRDEffPtNegTrk6->Draw("same"); leg->AddEntry(hTRDEffPtNegTrk6, "negatives (6 tracklets)", "p");
   leg->Draw();
-  
   
   //---------------------------------------------------------
   // TRD-TOF matching efficiency vs pt
@@ -2004,39 +2437,48 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   
-  TH2F* h2Ftof=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
-  h2Ftof->SetStats(kFALSE);
-  h2Ftof->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  h2Ftof->GetXaxis()->SetTitleOffset(0.8); 
-  h2Ftof->GetXaxis()->SetTitleSize(0.07);
-  h2Ftof->GetXaxis()->CenterTitle();
-  h2Ftof->GetXaxis()->SetLabelSize(0.05);
-  h2Ftof->GetYaxis()->SetTitle("efficiency");
-  h2Ftof->GetYaxis()->SetTitleOffset(0.8); 
-  h2Ftof->GetYaxis()->SetTitleSize(0.07);
-  h2Ftof->GetYaxis()->SetLabelSize(0.05);
-  h2Ftof->GetYaxis()->CenterTitle();
-  h2Ftof->Draw();
-  lat->DrawLatex(0.2, 1.32, "TRD-TOF matching efficiency");
+  rangeEffPt->Draw();
+  lat->DrawLatex(0.2, 1.42, "TRD-TOF matching efficiency");
   
-  SetStyle(hTOFEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
-  SetStyle(hTOFEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
-  SetStyle(hTOFEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
-  SetStyle(hTOFEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
-  SetStyle(hTOFEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
-  SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
-  SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
-  SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
-  hTOFEffPtPosAll->Draw("same"); 
-  hTOFEffPtPosTrk4->Draw("same"); 
-  hTOFEffPtPosTrk5->Draw("same"); 
-  hTOFEffPtPosTrk6->Draw("same"); 
-  hTOFEffPtNegAll->Draw("same"); 
-  hTOFEffPtNegTrk4->Draw("same"); 
-  hTOFEffPtNegTrk5->Draw("same"); 
-  hTOFEffPtNegTrk6->Draw("same"); 
-  
-  
+  if(!useIsolatedBC) {
+    SetStyle(hTOFEffPtPosAll, 1, kRed, 1, 24, kRed, 1);
+    SetStyle(hTOFEffPtPosTrk4, 1, kRed, 1, 25, kRed, 1);
+    SetStyle(hTOFEffPtPosTrk5, 1, kRed, 1, 26, kRed, 1);
+    SetStyle(hTOFEffPtPosTrk6, 1, kRed, 1, 27, kRed, 1);
+    SetStyle(hTOFEffPtNegAll, 1, kBlue, 1, 24, kBlue, 1);
+    SetStyle(hTOFEffPtNegTrk4, 1, kBlue, 1, 25, kBlue, 1);
+    SetStyle(hTOFEffPtNegTrk5, 1, kBlue, 1, 26, kBlue, 1);
+    SetStyle(hTOFEffPtNegTrk6, 1, kBlue, 1, 27, kBlue, 1);
+    hTOFEffPtPosAll->Draw("same"); 
+    hTOFEffPtPosTrk4->Draw("same"); 
+    hTOFEffPtPosTrk5->Draw("same"); 
+    hTOFEffPtPosTrk6->Draw("same"); 
+    hTOFEffPtNegAll->Draw("same"); 
+    hTOFEffPtNegTrk4->Draw("same"); 
+    hTOFEffPtNegTrk5->Draw("same"); 
+    hTOFEffPtNegTrk6->Draw("same"); 
+  }
+  else {
+    if(nIsolatedBC>0) {
+      SetStyle(hTOFEffPtPosAll_IsolatedBC, 1, kRed, 1, 24, kRed, 1);
+      SetStyle(hTOFEffPtPosTrk4_IsolatedBC, 1, kRed, 1, 25, kRed, 1);
+      SetStyle(hTOFEffPtPosTrk5_IsolatedBC, 1, kRed, 1, 26, kRed, 1);
+      SetStyle(hTOFEffPtPosTrk6_IsolatedBC, 1, kRed, 1, 27, kRed, 1);
+      SetStyle(hTOFEffPtNegAll_IsolatedBC, 1, kBlue, 1, 24, kBlue, 1);
+      SetStyle(hTOFEffPtNegTrk4_IsolatedBC, 1, kBlue, 1, 25, kBlue, 1);
+      SetStyle(hTOFEffPtNegTrk5_IsolatedBC, 1, kBlue, 1, 26, kBlue, 1);
+      SetStyle(hTOFEffPtNegTrk6_IsolatedBC, 1, kBlue, 1, 27, kBlue, 1);
+      hTOFEffPtPosAll_IsolatedBC->Draw("same"); 
+      hTOFEffPtPosTrk4_IsolatedBC->Draw("same"); 
+      hTOFEffPtPosTrk5_IsolatedBC->Draw("same"); 
+      hTOFEffPtPosTrk6_IsolatedBC->Draw("same"); 
+      hTOFEffPtNegAll_IsolatedBC->Draw("same"); 
+      hTOFEffPtNegTrk4_IsolatedBC->Draw("same"); 
+      hTOFEffPtNegTrk5_IsolatedBC->Draw("same"); 
+      hTOFEffPtNegTrk6_IsolatedBC->Draw("same"); 
+    }
+  } 
+    
   //-----------------------------------------------------
   // <ntracklets> vs (phi,eta)
   pad = ((TVirtualPad*)l->At(2)); pad->cd();
@@ -2044,28 +2486,61 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   
+  rangeEtaPhi->Draw();
+  lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
+  
   TH3D* hNtracklets = (TH3D*)fCfContainer->Project(1, kTrackPhi, kTrackEta, kTrackTrdTracklets);
-  TProfile2D* hNtrackletsProf = hNtracklets->Project3DProfile();
+  TH3D* hNtracklets_IsolatedBC=0x0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) {
+    if(!isIsolated[ibc]) continue;
+    fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    TH3D* temp = (TH3D*)fCfContainer->Project(1, kTrackPhi, kTrackEta, kTrackTrdTracklets);
+    if(!hNtracklets_IsolatedBC) hNtracklets_IsolatedBC = temp;
+    else {hNtracklets_IsolatedBC->Add(temp); delete temp;}
+  }  
+  fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);   // reset the BC range
+  
+  TProfile2D* hNtrackletsProf=0x0;
+  if(useIsolatedBC) { 
+    if(nIsolatedBC>0)
+      hNtrackletsProf = hNtracklets_IsolatedBC->Project3DProfile();
+  }
+  else hNtrackletsProf = hNtracklets->Project3DProfile();
+  delete hNtracklets; if(hNtracklets_IsolatedBC) delete hNtracklets_IsolatedBC;
   if(hNtrackletsProf) {
     hNtrackletsProf->SetStats(kFALSE);
-    hNtrackletsProf->SetTitle("");
-    hNtrackletsProf->GetXaxis()->SetTitle("#eta");
-    hNtrackletsProf->GetXaxis()->SetTitleOffset(0.8); 
-    hNtrackletsProf->GetXaxis()->SetTitleSize(0.07);
-    hNtrackletsProf->GetXaxis()->CenterTitle();
-    hNtrackletsProf->GetXaxis()->SetLabelSize(0.05);
-    hNtrackletsProf->GetYaxis()->SetTitle("detector #varphi");
-    hNtrackletsProf->GetYaxis()->SetTitleOffset(0.8); 
-    hNtrackletsProf->GetYaxis()->SetTitleSize(0.07);
-    hNtrackletsProf->GetYaxis()->SetLabelSize(0.05);
-    hNtrackletsProf->GetYaxis()->CenterTitle();
     hNtrackletsProf->SetMinimum(0.);
     hNtrackletsProf->SetMaximum(6.);
-    hNtrackletsProf->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
+    hNtrackletsProf->Draw("samecolz");
     DrawTRDGrid();
   }
   
+  // calculate the trend value for tracklets/track
+  TH2D* hNtrackletsVsP = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackTrdTracklets);
+  if(trendValues &&  hNtrackletsVsP && hNtrackletsVsP->GetEntries()>0.1) {
+    TProfile* hNtrackletsVsPprof = hNtrackletsVsP->ProfileX("hNtrackletsVsPprof");
+    hNtrackletsVsPprof->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+    trendValues[8] = funcConst->GetParameter(0);
+    trendValues[9] = funcConst->GetParError(0);
+    delete hNtrackletsVsP;
+  }
+  TH2D* hNtrackletsVsP_IsolatedBC=0x0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) {
+    if(!isIsolated[ibc]) continue;
+    fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    TH2D* temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackTrdTracklets);
+    if(!hNtrackletsVsP_IsolatedBC) hNtrackletsVsP_IsolatedBC = temp;
+    else {hNtrackletsVsP_IsolatedBC->Add(temp); delete temp;}
+  }
+  fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);   // reset the BC range
+  if(trendValues &&  hNtrackletsVsP_IsolatedBC && hNtrackletsVsP_IsolatedBC->GetEntries()>0.1) {
+    TProfile* hNtrackletsVsPprof_IsolatedBC = hNtrackletsVsP_IsolatedBC->ProfileX("hNtrackletsVsPprof_IsolatedBC");
+    hNtrackletsVsPprof_IsolatedBC->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+    trendValues[26] = funcConst->GetParameter(0);
+    trendValues[27] = funcConst->GetParError(0);
+    delete hNtrackletsVsPprof_IsolatedBC;
+  }
+      
   //--------------------------------------------------------------
   // Nclusters per TRD track vs momentum
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
@@ -2074,26 +2549,47 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   pad->SetLogz();
   
+  if(gROOT->FindObject("rangeNclsP")) delete gROOT->FindObject("rangeNclsP");
+  TH2F* rangeNclsP = new TH2F("rangeNclsP", "", 10, 0.0, 11.99, 10, 0.0, 199.0);
+  SetStyle(rangeNclsP->GetXaxis(), "p [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeNclsP->GetYaxis(), "#clusters", 0.07, 0.8, kTRUE, 0.05);
+  rangeNclsP->SetStats(kFALSE);
+  rangeNclsP->Draw();
+  lat->DrawLatex(1.0, 205., "TRD Clusters / track");
+  
   TH2D* hNclsVsP = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackTrdClusters);
-  
-  if(hNclsVsP) {
-    hNclsVsP->SetStats(kFALSE);
-    hNclsVsP->SetTitle("");
-    hNclsVsP->GetYaxis()->SetRangeUser(0.0, 199.);
-    hNclsVsP->GetXaxis()->SetTitle("p [GeV/c]");
-    hNclsVsP->GetXaxis()->SetTitleOffset(0.8); 
-    hNclsVsP->GetXaxis()->SetTitleSize(0.07);
-    hNclsVsP->GetXaxis()->CenterTitle();
-    hNclsVsP->GetXaxis()->SetLabelSize(0.05);
-    hNclsVsP->GetYaxis()->SetTitle("clusters");
-    hNclsVsP->GetYaxis()->SetTitleOffset(0.8); 
-    hNclsVsP->GetYaxis()->SetTitleSize(0.07);
-    hNclsVsP->GetYaxis()->CenterTitle();
-    hNclsVsP->GetYaxis()->SetLabelSize(0.05);
-    hNclsVsP->Draw("colz");
-    lat->DrawLatex(1.0, 205., "TRD clusters / track");
+  TH2D* hNclsVsP_IsolatedBC=0x0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) {
+    if(!isIsolated[ibc]) continue;
+    fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    TH2D* temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackTrdClusters);
+    if(!hNclsVsP_IsolatedBC) hNclsVsP_IsolatedBC = temp;
+    else {hNclsVsP_IsolatedBC->Add(temp); delete temp;}
   }
+  fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);   // reset the BC range
   
+  if(useIsolatedBC && hNclsVsP_IsolatedBC) {
+    hNclsVsP_IsolatedBC->SetStats(kFALSE);
+    hNclsVsP_IsolatedBC->Draw("samecolz");
+  }
+  if(!useIsolatedBC && hNclsVsP) {
+    hNclsVsP->SetStats(kFALSE);
+    hNclsVsP->Draw("samecolz");
+  }
+    
+  if(trendValues && hNclsVsP && hNclsVsP->GetEntries()>10) {
+    TProfile* hNclsVsPprof = hNclsVsP->ProfileX("hNclsVsPprof");
+    hNclsVsPprof->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+    trendValues[10] = funcConst->GetParameter(0);
+    trendValues[11] = funcConst->GetParError(0);
+  }
+  if(trendValues && hNclsVsP_IsolatedBC && hNclsVsP_IsolatedBC->GetEntries()>10) {
+    TProfile* hNclsVsPprof_IsolatedBC = hNclsVsP_IsolatedBC->ProfileX("hNclsVsPprof_IsolateBC");
+    hNclsVsPprof_IsolatedBC->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+    trendValues[28] = funcConst->GetParameter(0);
+    trendValues[29] = funcConst->GetParError(0);
+  }
+    
   //--------------------------------------------------------------
   // TRD-TPC and TOF-TRD matching efficiency vs bunch crossing
   pad = ((TVirtualPad*)l->At(8)); pad->cd();
@@ -2137,6 +2633,15 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
     if(trdEntries>0.01 && tofEntries>0.01 && (trdEntries-tofEntries)>=0.01) 
     hTOFEffBC->SetBinError(bcBin, TMath::Sqrt(tofEntries*(trdEntries-tofEntries)/trdEntries/trdEntries/trdEntries));    
   }  // end loop over BC bins
+  delete hTPCPhiBC; delete hTRDPhiBC; delete hTOFPhiBC;
+  delete projectionBC;
+  
+  if(gROOT->FindObject("rangeBC")) delete gROOT->FindObject("rangeBC");
+  TH2F* rangeBC = new TH2F("rangeBC", "", 10, -0.5, 3499.5, 10, 0.0, 1.4);
+  rangeBC->SetStats(kFALSE);
+  SetStyle(rangeBC->GetXaxis(), "Bunch crossing", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeBC->GetYaxis(), "efficiency", 0.07, 0.8, kTRUE, 0.05);
+  rangeBC->Draw();
   
   TLegend* legBC=new TLegend(0.8, 0.7, 0.95, 0.89);
   legBC->SetBorderSize(0);
@@ -2144,34 +2649,27 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass) {
   legBC->SetFillColor(0);
   if(hTRDEffBC) {
     hTRDEffBC->SetStats(kFALSE);
-    hTRDEffBC->SetTitle("");
-    hTRDEffBC->GetYaxis()->SetRangeUser(0.0, 1.29);
-    hTRDEffBC->GetXaxis()->SetTitle("Bunch crossing");
-    hTRDEffBC->GetXaxis()->SetTitleOffset(0.8); 
-    hTRDEffBC->GetXaxis()->SetTitleSize(0.07);
-    hTRDEffBC->GetXaxis()->CenterTitle();
-    hTRDEffBC->GetXaxis()->SetLabelSize(0.05);
-    hTRDEffBC->GetYaxis()->SetTitle("efficiency");
-    hTRDEffBC->GetYaxis()->SetTitleOffset(0.8); 
-    hTRDEffBC->GetYaxis()->SetTitleSize(0.07);
-    hTRDEffBC->GetYaxis()->CenterTitle();
-    hTRDEffBC->GetYaxis()->SetLabelSize(0.05);
     SetStyle(hTRDEffBC, 1, kRed, 2, 24, kRed, 1); legBC->AddEntry(hTRDEffBC, "TPC-TRD", "p");
     SetStyle(hTOFEffBC, 1, kBlue, 2, 24, kBlue, 1); legBC->AddEntry(hTOFEffBC, "TRD-TOF", "p");
-    hTRDEffBC->Draw();
+    hTRDEffBC->Draw("same");
     hTOFEffBC->Draw("same");
     legBC->Draw();
-    lat->DrawLatex(200., 1.32, "Matching efficiency at 1<p_{T}<3 GeV/c");
+    lat->DrawLatex(200., 1.42, "Matching efficiency at 1<p_{T}<3 GeV/c");
   }
     
   // reset the user range on the event multiplicity
   fCfContainer->SetRangeUser(kEventMult, 0.0, 6.0, kTRUE);
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, -1000.0, +1000.0);  // reset the cut on TOFbc
+  
+  delete funcConst;
 }
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass) {
+void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass, Double_t* trendValues, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
 
+  if(!fCfContainer) return;
+  
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
   lat->SetTextColor(2);
@@ -2180,8 +2678,26 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass) {
   gPad->Divide(3,3,0.,0.);
   TList* l=gPad->GetListOfPrimitives();
   
+  fCfContainer->SetRangeUser(kTrackDCAxy, -0.999, +0.999);
+  fCfContainer->SetRangeUser(kTrackDCAz, -3.0, +3.0);
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, 0.0, 0.0);
+  
+  // find all the isolated bunch crossings with entries
+  Bool_t isIsolated[3500];
+  TH1D* tempTH1D = (TH1D*)fCfContainer->Project(0, kEventBC);
+  FindIsolatedBCs(tempTH1D, isIsolated); delete tempTH1D;
+  Int_t nIsolatedBC = 0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) 
+    if(isIsolated[ibc]) nIsolatedBC++;
+  
   if(centralityClass>0) // select the multiplicity class
     fCfContainer->SetRangeUser(kEventMult, Double_t(centralityClass), Double_t(centralityClass), kTRUE);
+  
+  if(gROOT->FindObject("rangeEtaPhi2")) delete gROOT->FindObject("rangeEtaPhi2");
+  TH2F* rangeEtaPhi = new TH2F("rangeEtaPhi2", "", 10, -0.99, +0.99, 10, -3.4, +3.4);
+  SetStyle(rangeEtaPhi->GetXaxis(), "#eta", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEtaPhi->GetYaxis(), "detector #varphi", 0.07, 0.8, kTRUE, 0.05);
+  rangeEtaPhi->SetStats(kFALSE);  
   
   // eta-phi distr. for <Qtot> in layer 0
   TVirtualPad* pad;
@@ -2191,25 +2707,29 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass) {
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+    rangeEtaPhi->Draw();
     
-    TH3D* hQtotEtaPhi = (TH3D*)fCfContainer->Project(1, kTrackPhi, kTrackEta, kTrackQtot+iLayer);
-    hProf2D = hQtotEtaPhi->Project3DProfile();
+    TH3D* hQtotEtaPhi=0x0;
+    if(useIsolatedBC) {
+      for(Int_t ibc=0; ibc<3500; ++ibc) {
+        if(!isIsolated[ibc]) continue;
+        fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+        TH3D* temp = (TH3D*)fCfContainer->Project(1, kTrackPhi, kTrackEta, kTrackQtot+iLayer);
+        if(!hQtotEtaPhi) hQtotEtaPhi = temp;
+        else {hQtotEtaPhi->Add(temp); delete temp;}
+      }
+      fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
+    }
+    else hQtotEtaPhi = (TH3D*)fCfContainer->Project(1, kTrackPhi, kTrackEta, kTrackQtot+iLayer);
+    hProf2D = (hQtotEtaPhi ? hQtotEtaPhi->Project3DProfile() : 0x0);
+    if(hQtotEtaPhi) delete hQtotEtaPhi;
     
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(4.);
-    hProf2D->Draw("colz");
+    if(hProf2D) {
+      hProf2D->SetStats(kFALSE);
+      hProf2D->SetMinimum(0.);
+      hProf2D->SetMaximum(4.);
+      hProf2D->Draw("samecolz");
+    }
     lat->DrawLatex(-0.9, 3.6, Form("TRD <Q_{tot}> Layer %d", iLayer));
     DrawTRDGrid();
   }
@@ -2219,126 +2739,136 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.03); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  
+  if(gROOT->FindObject("rangePHslice")) delete gROOT->FindObject("rangePHslice");
+  TH2F* rangePHslice=new TH2F("rangePHslice", "", 8, -0.5, 7.5, 10, 0.0, 2000.);
+  rangePHslice->SetStats(kFALSE);
+  SetStyle(rangePHslice->GetXaxis(), "slice", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangePHslice->GetYaxis(), "PH", 0.07, 0.8, kTRUE, 0.05);
+  rangePHslice->Draw();
+  
+  TF1* funcPol1 = new TF1("funcPol1", "[0]+[1]*x", 2.9, 6.4);
+  
   TH2F* h2F;
   TH1D* hF;
   if((h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice+centralityClass)))) {
     hF = Proj2D(h2F);
     h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw("colz");
+    h2F->Draw("samecolz");
+    if(trendValues) {
+      hF->Fit(funcPol1, "QME0", "goff", 2.9, 6.4);
+      trendValues[12] = funcPol1->GetParameter(0);  // PH plateau
+      trendValues[13] = funcPol1->GetParError(0);   // PH plateau
+      trendValues[14] = funcPol1->GetParameter(1);  // PH slope
+      trendValues[15] = funcPol1->GetParError(1);   // PH slope
+    }
     hF->SetLineWidth(2);
     hF->SetLineStyle(2);
     hF->Draw("same");
   }
-
+  delete funcPol1;
+  
   // Qtot vs P
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.03); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   pad->SetLogz();
-  TH2D* hQtotP = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackQtot);
-  for(Int_t il=1; il<6; ++il) hQtotP->Add(fCfContainer->Project(1, kTrackP, kTrackQtot+il));
   
-  if(hQtotP) {
+  if(gROOT->FindObject("rangeQtotP")) delete gROOT->FindObject("rangeQtotP");
+  TH2F* rangeQtotP = new TH2F("rangeQtotP", "", 10, 0.0, 11.99, 10, 0.0, 11.99);
+  SetStyle(rangeQtotP->GetXaxis(), "P [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeQtotP->GetYaxis(), "Q_{tot}", 0.07, 0.8, kTRUE, 0.05);
+  rangeQtotP->SetStats(kFALSE);
+  rangeQtotP->Draw();
+  
+  TH2D* hQtotP_IsolatedBC = 0x0;
+  for(Int_t ibc=0; ibc<3500; ++ibc) {
+    if(!isIsolated[ibc]) continue;
+    fCfContainer->SetRangeUser(kEventBC, Double_t(ibc), Double_t(ibc));
+    TH2D* temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackQtot);
+    if(!hQtotP_IsolatedBC) hQtotP_IsolatedBC = temp;
+    else {hQtotP_IsolatedBC->Add(temp); delete temp;}
+    for(Int_t il=1; il<6; ++il) {
+      temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackQtot+il);
+      hQtotP_IsolatedBC->Add(temp); delete temp;
+    }
+  }
+  fCfContainer->SetRangeUser(kEventBC, 0.0, 3500.0);
+  
+  TH2D* temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackQtot);
+  TH2D* hQtotP = temp;
+  for(Int_t il=1; il<6; ++il) {
+    temp = (TH2D*)fCfContainer->Project(1, kTrackP, kTrackQtot+il);
+    hQtotP->Add(temp); delete temp;
+  }
+  
+  if(hQtotP_IsolatedBC)
+    for(Int_t i=1; i<=hQtotP_IsolatedBC->GetXaxis()->GetNbins(); ++i) 
+      hQtotP_IsolatedBC->SetBinContent(i, 1, 0.0);  
+  TH1D* hQtotProj_IsolatedBC = (hQtotP_IsolatedBC ? Proj2D(hQtotP_IsolatedBC) : 0x0);
+  if(hQtotProj_IsolatedBC) SetStyle(hQtotProj_IsolatedBC, 2, kBlue, 2, 1, kBlue, 1);
+  if(trendValues && hQtotProj_IsolatedBC && hQtotProj_IsolatedBC->GetEntries()>2) {
+    trendValues[30] = hQtotProj_IsolatedBC->GetBinContent(hQtotProj_IsolatedBC->FindBin(1.0));   // Landau MPV at 1GeV/c
+    trendValues[31] = hQtotProj_IsolatedBC->GetBinError(hQtotProj_IsolatedBC->FindBin(1.0));     // Landau width at 1 GeV/c
+  }
+  if(hQtotP)
+    for(Int_t i=1; i<=hQtotP->GetXaxis()->GetNbins(); ++i) 
+      hQtotP->SetBinContent(i, 1, 0.0);  
+  TH1D* hQtotProj = (hQtotP ? Proj2D(hQtotP) : 0x0);
+  if(hQtotProj) SetStyle(hQtotProj, 2, kBlue, 2, 1, kBlue, 1);
+  if(trendValues && hQtotProj && hQtotProj->GetEntries()>2) {
+    trendValues[16] = hQtotProj->GetBinContent(hQtotProj->FindBin(1.0));   // Landau MPV at 1GeV/c
+    trendValues[17] = hQtotProj->GetBinError(hQtotProj->FindBin(1.0));     // Landau width at 1 GeV/c
+  }
+  if(useIsolatedBC && hQtotP_IsolatedBC) {
+    hQtotP_IsolatedBC->SetStats(kFALSE);
+    for(Int_t i=1; i<=hQtotP_IsolatedBC->GetXaxis()->GetNbins(); ++i) hQtotP_IsolatedBC->SetBinContent(i, 1, 0.0);  
+    hQtotP_IsolatedBC->Draw("samecolz");
+    hQtotProj_IsolatedBC->Draw("same");
+  }
+  if(!useIsolatedBC && hQtotP) {
     hQtotP->SetStats(kFALSE);
-    hQtotP->SetTitle("");
-    hQtotP->GetXaxis()->SetTitle("P [GeV/c]");
-    hQtotP->GetXaxis()->SetTitleOffset(0.8); 
-    hQtotP->GetXaxis()->SetTitleSize(0.07);
-    hQtotP->GetXaxis()->CenterTitle();
-    hQtotP->GetXaxis()->SetLabelSize(0.05);
-    hQtotP->GetYaxis()->SetRangeUser(0.0,100.0);
-    hQtotP->GetYaxis()->SetTitle("Q_{tot}");
-    hQtotP->GetYaxis()->SetTitleOffset(0.8); 
-    hQtotP->GetYaxis()->SetTitleSize(0.07);
-    hQtotP->GetYaxis()->SetLabelSize(0.05);
-    hQtotP->GetYaxis()->CenterTitle();
-    hQtotP->GetYaxis()->SetRangeUser(0.0,10.9);
-    for(Int_t i=1; i<=hQtotP->GetXaxis()->GetNbins(); ++i) hQtotP->SetBinContent(i, 1, 0.0);  
-    hQtotP->Draw("colz");
-    TH1D* hQtotProj = Proj2D(hQtotP);
-    SetStyle(hQtotProj, 2, kBlue, 2, 1, kBlue, 1);
+    hQtotP->Draw("samecolz");
     hQtotProj->Draw("same");
   }
 
-
   // reset the user range on the event multiplicity
   fCfContainer->SetRangeUser(kEventMult, 0.0, 6.0, kTRUE);
-  
-  // PH versus slice number for TPC pions and electrons
-  /*
-  pad = ((TVirtualPad*)l->At(8)); pad->cd();
-  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2F* h2FtrdP;
-  TH2F* h2FtrdN;
-  TH1F* hFeffP;
-  TH1F* hFeffN;
-  if((h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions+centralityClass-1))) && 
-     (h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons+centralityClass-1)))) {
-    hFeffP = Proj2D((TH2F*)h2FtrdP);
-    hFeffN = Proj2D((TH2F*)h2FtrdN);
-    h2F = new TH2F("PHvsSlice","",10,h2FtrdN->GetXaxis()->GetXmin(),h2FtrdN->GetXaxis()->GetXmax(),
-		   10,h2FtrdN->GetYaxis()->GetXmin(),h2FtrdN->GetYaxis()->GetXmax());
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
-    hFeffN->SetLineWidth(2);
-    hFeffN->SetLineColor(2);
-    hFeffP->SetLineWidth(2);
-    hFeffP->SetLineColor(4);
-    hFeffN->Draw("same");
-    hFeffP->Draw("same");
-    TLegend* leg=new TLegend(0.65, 0.8, 0.95, 0.95);
-    leg->SetFillColor(0);
-    leg->AddEntry(hFeffP, "TPC pions", "l");
-    leg->AddEntry(hFeffN, "TPC electrons", "l");
-    leg->Draw();
-    }
-  */
+  if(cutTOFbc) fCfContainer->SetRangeUser(kTrackTOFBC, -1000.0, +1000.0);  // reset the cut on TOFbc
 }
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotCentSummary() {
+Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* trendValues) {
 
+  Bool_t isGoodForSaving=kFALSE;
+  
+  trendValues = trendValues;
+  
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
   lat->SetTextColor(2);
 
-  gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001); gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
+  gPad->SetTopMargin(0.05); gPad->SetBottomMargin(0.001);
+  gPad->SetLeftMargin(0.001); gPad->SetRightMargin(0.001);
   gPad->Divide(3,3,0.,0.);
   TList* l=gPad->GetListOfPrimitives();
-  TVirtualPad* pad=0x0;  
+  
+  TPad* pad=0x0;  
 
+  if(gROOT->FindObject("rangeEffPt")) delete gROOT->FindObject("rangeEffPt");
+  TH2F* rangeEffPt=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.4);
+  rangeEffPt->SetStats(kFALSE);
+  SetStyle(rangeEffPt->GetXaxis(), "p_{T} [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEffPt->GetYaxis(), "efficiency", 0.07, 0.8, kTRUE, 0.05);
+  
   TH3F *h3(NULL), *h3p(NULL), *h3n(NULL);
   Int_t padsForEffs[5] = {0,3,6,1,4};
   for(Int_t iCent=1; iCent<6; ++iCent) {
     // TPC-TRD matching efficiencies
-    pad = ((TVirtualPad*)l->At(padsForEffs[iCent-1])); pad->cd();
-    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02); pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+    pad = ((TPad*)l->At(padsForEffs[iCent-1])); pad->cd();
+    pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02); pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
     
     if(!(h3p = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+iCent)))) continue;
@@ -2368,112 +2898,152 @@ void AliTRDcheckESD::PlotCentSummary() {
     if(!(h3 = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+iCent)))) continue;
     TH1F* hFeffN6 = EfficiencyTRD(h3n, h3, kTRUE);
   
-    TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
-    h2F->SetStats(kFALSE);
-    h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("TRD-TPC matching efficiency");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
+    rangeEffPt->Draw();
+    
     TLine line;
     line.SetLineStyle(2);
     line.SetLineWidth(2);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+    line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.7, rangeEffPt->GetXaxis()->GetXmax(), 0.7);
+    line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 0.9, rangeEffPt->GetXaxis()->GetXmax(), 0.9);
     line.SetLineStyle(1);
     line.SetLineWidth(1);
-    line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
-    SetStyle(hFeffP, 1, kRed, 1, 24, kRed, 1);
-    SetStyle(hFeffP4, 1, kRed, 1, 25, kRed, 1);
-    SetStyle(hFeffP5, 1, kRed, 1, 26, kRed, 1);
-    SetStyle(hFeffP6, 1, kRed, 1, 27, kRed, 1);
-    SetStyle(hFeffN, 1, kBlue, 1, 24, kBlue, 1);
-    SetStyle(hFeffN4, 1, kBlue, 1, 25, kBlue, 1);
-    SetStyle(hFeffN5, 1, kBlue, 1, 26, kBlue, 1);
-    SetStyle(hFeffN6, 1, kBlue, 1, 27, kBlue, 1);
-    hFeffP->Draw("same");
-    hFeffN->Draw("same");
-    hFeffP4->Draw("same");
-    hFeffN4->Draw("same");
-    hFeffP5->Draw("same");
-    hFeffN5->Draw("same");
-    hFeffP6->Draw("same");
-    hFeffN6->Draw("same");
+    line.DrawLine(rangeEffPt->GetXaxis()->GetXmin(), 1.0, rangeEffPt->GetXaxis()->GetXmax(), 1.0);
+    if(hFeffP) SetStyle(hFeffP, 1, kRed, 1, 24, kRed, 1);
+    if(hFeffP4) SetStyle(hFeffP4, 1, kRed, 1, 25, kRed, 1);
+    if(hFeffP5) SetStyle(hFeffP5, 1, kRed, 1, 26, kRed, 1);
+    if(hFeffP6) SetStyle(hFeffP6, 1, kRed, 1, 27, kRed, 1);
+    if(hFeffN) SetStyle(hFeffN, 1, kBlue, 1, 24, kBlue, 1);
+    if(hFeffN4) SetStyle(hFeffN4, 1, kBlue, 1, 25, kBlue, 1);
+    if(hFeffN5) SetStyle(hFeffN5, 1, kBlue, 1, 26, kBlue, 1);
+    if(hFeffN6) SetStyle(hFeffN6, 1, kBlue, 1, 27, kBlue, 1);
     
-    TLegend* leg=new TLegend(0.65, 0.18, 0.95, 0.5);
+    TLegend* leg=new TLegend(0.16, 0.7, 0.61, 0.89);
     leg->SetFillColor(0);
-    leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
-    leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
-    leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
-    leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
-    leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
-    leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
-    leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
-    leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+    leg->SetNColumns(2);
+    leg->SetTextSize(0.039);
+    leg->SetMargin(0.1);
+    if(hFeffP && hFeffP->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffP->Draw("same");
+      leg->AddEntry(hFeffP, "pos. (#geq 1 trcklt)", "p");
+    }
+    if(hFeffN && hFeffN->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffN->Draw("same");
+      leg->AddEntry(hFeffN, "neg. (#geq 1 trcklt)", "p");
+    }
+    if(hFeffP4 && hFeffP4->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffP4->Draw("same");
+      leg->AddEntry(hFeffP4, "pos. (4 trcklts)", "p");
+    }
+    if(hFeffN4 && hFeffN4->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffN4->Draw("same");
+      leg->AddEntry(hFeffN4, "neg. (4 trcklts)", "p");
+    }
+    if(hFeffP5 && hFeffP5->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffP5->Draw("same");
+      leg->AddEntry(hFeffP5, "pos. (5 trcklts)", "p");
+    }
+    if(hFeffN5 && hFeffN5->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffN5->Draw("same");
+      leg->AddEntry(hFeffN5, "neg. (5 trcklts)", "p");
+    }
+    if(hFeffP6 && hFeffP6->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffP6->Draw("same");
+      leg->AddEntry(hFeffP6, "pos. (6 trcklts)", "p");
+    }
+    if(hFeffN6 && hFeffN6->Integral()>0.001) {
+      isGoodForSaving = kTRUE;
+      hFeffN6->Draw("same");
+      leg->AddEntry(hFeffN6, "neg. (6 trklts)", "p");
+    }
     
-    leg->Draw();
-    lat->DrawLatex(0.25, 1.2, Form("Centrality class %d", iCent));
-  }
+    if(isGoodForSaving) {
+      if(iCent==1) leg->Draw();
+      lat->DrawLatex(5.6, 1.3, Form("Centrality class %d", iCent));
+      lat->DrawLatex(0.5, 1.42, "TPC-TRD matching efficiency");
+    }
+  }   // end loop over multiplicity intervals
 
-  // TPC-TRD matching efficiencies
-  pad = ((TVirtualPad*)l->At(2)); pad->cd();
+  // Number of clusters per TRD track
+  pad = ((TPad*)l->At(2)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-
+  if(gROOT->FindObject("rangeNcls")) delete gROOT->FindObject("rangeNcls");
+  TH2F* rangeNcls = new TH2F("rangeNcls", "", 10, 0.0, 199.9, 10, 0.0, 1.199);
+  SetStyle(rangeNcls->GetXaxis(), "# TRD clusters", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeNcls->GetYaxis(), "entries (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  rangeNcls->SetStats(kFALSE);
+  rangeNcls->Draw();
+  
   TH2F* h2F[6]; TH1D* proj[6];
   TLegend* leg=new TLegend(0.2, 0.7, 0.5, 0.95);
   leg->SetFillColor(0);
+  Bool_t isGood=kFALSE;
   for(Int_t iCent=0; iCent<6; ++iCent) {
     h2F[iCent] = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD+iCent));
-    proj[iCent] = h2F[iCent]->ProjectionY(Form("projCent%d",iCent));
-    proj[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
-    Double_t maximum = proj[iCent]->GetMaximum();
-    if(maximum>1.0)
-      proj[iCent]->Scale(1.0/maximum);
-    proj[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
-    proj[iCent]->SetStats(kFALSE);
-    proj[iCent]->Draw(iCent==0 ? "" : "same");
-    leg->AddEntry(proj[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+    proj[iCent] = (h2F[iCent] && h2F[iCent]->GetEntries()>10 ? h2F[iCent]->ProjectionY(Form("projCent%d",iCent)) : 0x0);
+    if(proj[iCent]) {
+      proj[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
+      Double_t maximum = proj[iCent]->GetMaximum();
+      if(maximum>1.0)
+        proj[iCent]->Scale(1.0/maximum);
+      proj[iCent]->SetStats(kFALSE);
+      proj[iCent]->Draw("same");
+      leg->AddEntry(proj[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+      isGood = kTRUE;
+    }
   }
-  leg->Draw();
-
+  if(isGood) leg->Draw();
+  isGoodForSaving = isGoodForSaving || isGood;
+  
   // Qtot vs P
-  pad = ((TVirtualPad*)l->At(5)); pad->cd();
+  pad = ((TPad*)l->At(5)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
   pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-
+  if(gROOT->FindObject("rangeQtot")) delete gROOT->FindObject("rangeQtot");
+  TH2F* rangeQtot = new TH2F("rangeQtot", "", 10, 0.0, 9.999, 10, 0.0, 1.199);
+  SetStyle(rangeQtot->GetXaxis(), "Q_{tot} (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeQtot->GetYaxis(), "entries (a.u.)", 0.07, 0.8, kTRUE, 0.05);
+  rangeQtot->SetStats(kFALSE);
+  rangeQtot->Draw();
+  
   TH1D* projQ[6];
   TLegend* leg2=new TLegend(0.6, 0.7, 0.9, 0.95);
   leg2->SetFillColor(0);
+  isGood = kFALSE;
   for(Int_t iCent=0; iCent<6; ++iCent) {  
     h2F[iCent] = dynamic_cast<TH2F*>(fHistos->At(kQtotP+iCent));
-    projQ[iCent] = h2F[iCent]->ProjectionY(Form("projQCent%d",iCent), h2F[iCent]->GetXaxis()->FindBin(1.01), h2F[iCent]->GetXaxis()->FindBin(1.5));
-    projQ[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
-    Double_t maximum = projQ[iCent]->GetMaximum();
-    if(maximum>1.0)
-      projQ[iCent]->Scale(1.0/maximum);
-    projQ[iCent]->GetYaxis()->SetRangeUser(0.0,1.199);
-    projQ[iCent]->GetXaxis()->SetRangeUser(0.0,9.999);
-    projQ[iCent]->SetStats(kFALSE);
-    projQ[iCent]->Draw(iCent==0 ? "" : "same");
-    leg2->AddEntry(projQ[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+    projQ[iCent] = (h2F[iCent] && h2F[iCent]->GetEntries()>10 ? h2F[iCent]->ProjectionY(Form("projQCent%d",iCent)) : 0x0);
+    if(projQ[iCent]) {
+      projQ[iCent]->SetLineColor(iCent<4 ? iCent+1 : iCent+2);
+      Double_t maximum = projQ[iCent]->GetMaximum();
+      if(maximum>1.0)
+        projQ[iCent]->Scale(1.0/maximum);
+      projQ[iCent]->SetStats(kFALSE);
+      projQ[iCent]->Draw("same");
+      leg2->AddEntry(projQ[iCent], (iCent==0 ? "all centralities" : Form("centrality class %d", iCent)), "l");
+      isGood = kTRUE;
+    }
   }
-  leg2->Draw();
-
+  if(isGood) leg2->Draw();
+  isGoodForSaving = isGoodForSaving || isGood;
+  return isGoodForSaving;
 }
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
+Bool_t AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass, Double_t* trendValues) {
 
+  Bool_t isGoodForSaving=kFALSE;
+  
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
   lat->SetTextColor(2);
@@ -2486,169 +3056,133 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH3F* h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass));
-  Float_t nada=0.0;
-  TH2F* h2FtpcP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-  h2FtpcP->SetStats(kFALSE);
-  h2FtpcP->GetXaxis()->SetTitle("#eta");
-  h2FtpcP->GetXaxis()->CenterTitle();
-  h2FtpcP->GetXaxis()->SetTitleSize(0.07);
-  h2FtpcP->GetXaxis()->SetTitleOffset(0.8);
-  h2FtpcP->GetXaxis()->SetLabelSize(0.05);
-  h2FtpcP->GetYaxis()->SetTitle("detector #varphi");
-  h2FtpcP->GetYaxis()->CenterTitle();
-  h2FtpcP->GetYaxis()->SetTitleSize(0.07);
-  h2FtpcP->GetYaxis()->SetTitleOffset(0.8);
-  h2FtpcP->GetYaxis()->SetLabelSize(0.05);
-  h2FtpcP->SetTitle("");
-  h2FtpcP->Draw("colz");
+  if(gROOT->FindObject("rangeEtaPhi")) delete gROOT->FindObject("rangeEtaPhi");
+  TH2F* rangeEtaPhi = new TH2F("rangeEtaPhi", "", 10, -0.99, +0.99, 10, -3.4, +3.4);
+  SetStyle(rangeEtaPhi->GetXaxis(), "#eta", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEtaPhi->GetYaxis(), "detector #varphi", 0.07, 0.8, kTRUE, 0.05);
+  rangeEtaPhi->SetStats(kFALSE);
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "TPC positive ref. tracks");
+  
+  TH3F* h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass));
+  TH2F* h2FtpcP = 0x0;
+  Float_t nada=0.0;
+  if(h3F && h3F->GetEntries()>10) {
+    h2FtpcP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+    h2FtpcP->SetStats(kFALSE);
+    h2FtpcP->Draw("samecolz"); isGoodForSaving = kTRUE;
+    isGoodForSaving = kTRUE;
+  }
   //-----------------
   // eta-phi distr. for negative TPC tracks
   pad = ((TVirtualPad*)l->At(1)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass));
-  TH2F* h2FtpcN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-  h2FtpcN->SetStats(kFALSE);
-  h2FtpcN->GetXaxis()->SetTitle("#eta");
-  h2FtpcN->GetXaxis()->CenterTitle();
-  h2FtpcN->GetXaxis()->SetTitleSize(0.07);
-  h2FtpcN->GetXaxis()->SetTitleOffset(0.8);
-  h2FtpcN->GetXaxis()->SetLabelSize(0.05);
-  h2FtpcN->GetYaxis()->SetTitle("detector #varphi");
-  h2FtpcN->GetYaxis()->CenterTitle();
-  h2FtpcN->GetYaxis()->SetTitleSize(0.07);
-  h2FtpcN->GetYaxis()->SetTitleOffset(0.8);
-  h2FtpcN->GetYaxis()->SetLabelSize(0.05);
-  h2FtpcN->SetTitle("");
-  h2FtpcN->Draw("colz");
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "TPC negative ref. tracks");
+  
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass));
+  TH2F* h2FtpcN = 0x0;
+  if(h3F && h3F->GetEntries()>10) {
+    h2FtpcN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+    h2FtpcN->SetStats(kFALSE);
+    h2FtpcN->Draw("samecolz"); 
+    isGoodForSaving = kTRUE;
+  }
   //----------------------------------------------
   // eta-phi distr. for positive TRD tracks
   pad = ((TVirtualPad*)l->At(3)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass));
-  TH2F* h2FtrdP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-  h2FtrdP->SetStats(kFALSE);
-  h2FtrdP->GetXaxis()->SetTitle("#eta");
-  h2FtrdP->GetXaxis()->CenterTitle();
-  h2FtrdP->GetXaxis()->SetTitleSize(0.07);
-  h2FtrdP->GetXaxis()->SetTitleOffset(0.8);
-  h2FtrdP->GetXaxis()->SetLabelSize(0.05);
-  h2FtrdP->GetYaxis()->SetTitle("detector #varphi");
-  h2FtrdP->GetYaxis()->CenterTitle();
-  h2FtrdP->GetYaxis()->SetTitleSize(0.07);
-  h2FtrdP->GetYaxis()->SetTitleOffset(0.8);
-  h2FtrdP->GetYaxis()->SetLabelSize(0.05);
-  h2FtrdP->SetMaximum(h2FtpcP->GetMaximum());
-  h2FtrdP->SetTitle("");
-  h2FtrdP->Draw("colz");
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "TRD positive ref. tracks");
+  
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass));
+  TH2F* h2FtrdP = 0x0;
+  if(h3F && h3F->GetEntries()>10) {
+    h2FtrdP = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+    h2FtrdP->SetStats(kFALSE);
+    h2FtrdP->SetMaximum((h2FtpcP ? h2FtpcP->GetMaximum() : h2FtrdP->GetMaximum()));
+    h2FtrdP->Draw("samecolz"); 
+    isGoodForSaving=kTRUE;
+  }
   //--------------------------------------------
   // eta-phi distr. for negative TRD tracks
   pad = ((TVirtualPad*)l->At(4)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass));
-  TH2F* h2FtrdN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
-  h2FtrdN->SetStats(kFALSE);
-  h2FtrdN->GetXaxis()->SetTitle("#eta");
-  h2FtrdN->GetXaxis()->CenterTitle();
-  h2FtrdN->GetXaxis()->SetTitleSize(0.07);
-  h2FtrdN->GetXaxis()->SetTitleOffset(0.8);
-  h2FtrdN->GetXaxis()->SetLabelSize(0.05);
-  h2FtrdN->GetYaxis()->SetTitle("detector #varphi");
-  h2FtrdN->GetYaxis()->CenterTitle();
-  h2FtrdN->GetYaxis()->SetTitleSize(0.07);
-  h2FtrdN->GetYaxis()->SetTitleOffset(0.8);
-  h2FtrdN->GetYaxis()->SetLabelSize(0.05);
-  h2FtrdN->SetMaximum(h2FtpcN->GetMaximum());
-  h2FtrdN->SetTitle("");
-  h2FtrdN->Draw("colz");
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "TRD negative ref. tracks");
+  
+  h3F = dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg+centralityClass));
+  TH2F* h2FtrdN = 0x0;
+  if(h3F && h3F->GetEntries()>10) {
+    h2FtrdN = (TH2F*)Proj3D((TH3F*)h3F, 0x0, 1, h3F->GetZaxis()->GetNbins(), nada)->Clone();
+    h2FtrdN->SetStats(kFALSE);
+    h2FtrdN->SetMaximum(h2FtpcN ? h2FtpcN->GetMaximum() : h2FtrdN->GetMaximum());
+    h2FtrdN->Draw("samecolz"); 
+    isGoodForSaving=kTRUE;
+  }
   //----------------------------------------------
   // eta-phi efficiency for positive TRD tracks
   pad = ((TVirtualPad*)l->At(6)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2F* h2Feff = (TH2F*)h2FtrdP->Clone();
-  h2Feff->Reset();
-  h2Feff->SetStats(kFALSE);
-  h2Feff->Divide(h2FtrdP, h2FtpcP);
-  h2Feff->GetXaxis()->SetTitle("#eta");
-  h2Feff->GetXaxis()->CenterTitle();
-  h2Feff->GetXaxis()->SetTitleSize(0.07);
-  h2Feff->GetXaxis()->SetTitleOffset(0.8);
-  h2Feff->GetXaxis()->SetLabelSize(0.05);
-  h2Feff->GetYaxis()->SetTitle("detector #varphi");
-  h2Feff->GetYaxis()->CenterTitle();
-  h2Feff->GetYaxis()->SetTitleSize(0.07);
-  h2Feff->GetYaxis()->SetTitleOffset(0.8);
-  h2Feff->GetYaxis()->SetLabelSize(0.05);
-  h2Feff->SetMaximum(1.0);
-  h2Feff->SetTitle("");
-  h2Feff->Draw("colz");
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "Efficiency positive tracks");
+  
+  TH2F* h2Feff = (h2FtrdP ? (TH2F*)h2FtrdP->Clone("h2FeffPos") : 0x0);
+  if(h2Feff) {
+    h2Feff->Reset();
+    h2Feff->SetStats(kFALSE);
+    h2Feff->Divide(h2FtrdP, h2FtpcP);
+    h2Feff->SetMaximum(1.0);
+    if(h2Feff->GetEntries()>1) { h2Feff->Draw("samecolz"); isGoodForSaving=kTRUE; }
+  }
   //-------------------------------------------------
   // eta-phi efficiency for negative TRD tracks
   pad = ((TVirtualPad*)l->At(7)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  h2Feff = (TH2F*)h2FtrdN->Clone();
-  h2Feff->Reset();
-  h2Feff->SetStats(kFALSE);
-  h2Feff->Divide(h2FtrdN, h2FtpcN);
-  h2Feff->GetXaxis()->SetTitle("#eta");
-  h2Feff->GetXaxis()->CenterTitle();
-  h2Feff->GetXaxis()->SetTitleSize(0.07);
-  h2Feff->GetXaxis()->SetTitleOffset(0.8);
-  h2Feff->GetXaxis()->SetLabelSize(0.05);
-  h2Feff->GetYaxis()->SetTitle("detector #varphi");
-  h2Feff->GetYaxis()->CenterTitle();
-  h2Feff->GetYaxis()->SetTitleSize(0.07);
-  h2Feff->GetYaxis()->SetTitleOffset(0.8);
-  h2Feff->GetYaxis()->SetLabelSize(0.05);
-  h2Feff->SetMaximum(1.0);
-  h2Feff->SetTitle("");
-  h2Feff->Draw("colz");
+  rangeEtaPhi->Draw();
   lat->DrawLatex(-0.9, 3.6, "Efficiency negative tracks");
+  
+  h2Feff = (h2FtrdN ? (TH2F*)h2FtrdN->Clone("h2FeffNeg") : 0x0);
+  if(h2Feff) {
+    h2Feff->Reset();
+    h2Feff->SetStats(kFALSE);
+    h2Feff->Divide(h2FtrdN, h2FtpcN);
+    h2Feff->SetMaximum(1.0);
+    if(h2Feff->GetEntries()>0.1) { h2Feff->Draw("samecolz"); isGoodForSaving=kTRUE; }
+  }
   //-----------------------------------------------------
   // <ntracklets> vs (phi,eta)
   pad = ((TVirtualPad*)l->At(2)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  rangeEtaPhi->Draw();
+  lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
+  
   TProfile2D* hProf2D;
   if((hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvNtrkl+centralityClass)))) {
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(6.);
-    hProf2D->Draw("colz");
-    lat->DrawLatex(-0.9, 3.6, "TRD <N_{tracklets}>");
+    if(hProf2D->GetEntries()>10) {
+      hProf2D->SetStats(kFALSE);
+      hProf2D->SetMinimum(0.);
+      hProf2D->SetMaximum(6.);
+      if(hProf2D->GetEntries()>1) { hProf2D->Draw("samecolz"); isGoodForSaving = kTRUE; }
+    }
   }
   //---------------------------------------------------------
   // TPC-TRD matching efficiency vs pt
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.02);
-  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   TH1F* hFeffP = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksPos+centralityClass)),
               dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksPos+centralityClass)), kTRUE);
@@ -2667,77 +3201,108 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   TH1F* hFeffN6 = EfficiencyTRD(dynamic_cast<TH3F*>(fHistos->At(kTPCRefTracksNeg+centralityClass)),
         dynamic_cast<TH3F*>(fHistos->At(kTRDRefTracksNeg6+centralityClass)), kTRUE);
   
-  TH2F* h2F=new TH2F("rangeEffPt", "",10,0.,10.,10,0.,1.3);
-  h2F->SetStats(kFALSE);
-  h2F->GetXaxis()->SetTitle("p_{T} [GeV/c]");
-  h2F->GetXaxis()->SetTitleOffset(0.8); 
-  h2F->GetXaxis()->SetTitleSize(0.07);
-  h2F->GetXaxis()->CenterTitle();
-  h2F->GetXaxis()->SetLabelSize(0.05);
-  h2F->GetYaxis()->SetTitle("TRD-TPC matching efficiency");
-  h2F->GetYaxis()->SetTitleOffset(0.8); 
-  h2F->GetYaxis()->SetTitleSize(0.07);
-  h2F->GetYaxis()->SetLabelSize(0.05);
-  h2F->GetYaxis()->CenterTitle();
-  h2F->Draw();
+  TF1* funcConst = new TF1("funcConst", "[0]", 1.0, 3.0);
+  
+  if(gROOT->FindObject("rangeEffPt2")) delete gROOT->FindObject("rangeEffPt2");
+  TH2F* rangeEffPt2=new TH2F("rangeEffPt2", "",10,0.,10.,10,0.,1.4);
+  rangeEffPt2->SetStats(kFALSE);
+  SetStyle(rangeEffPt2->GetXaxis(), "p_{T} [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEffPt2->GetYaxis(), "efficiency", 0.07, 0.8, kTRUE, 0.05);
+  rangeEffPt2->Draw();
+  lat->DrawLatex(0.5, 1.42, "TRD-TPC matching efficiency");
   //++++++++++++++++++
   TLine line;
   line.SetLineStyle(2);
   line.SetLineWidth(2);
-  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.7, h2F->GetXaxis()->GetXmax(), 0.7);
-  line.DrawLine(h2F->GetXaxis()->GetXmin(), 0.9, h2F->GetXaxis()->GetXmax(), 0.9);
+  line.DrawLine(rangeEffPt2->GetXaxis()->GetXmin(), 0.7, rangeEffPt2->GetXaxis()->GetXmax(), 0.7);
+  line.DrawLine(rangeEffPt2->GetXaxis()->GetXmin(), 0.9, rangeEffPt2->GetXaxis()->GetXmax(), 0.9);
   line.SetLineStyle(1);
   line.SetLineWidth(1);
-  line.DrawLine(h2F->GetXaxis()->GetXmin(), 1.0, h2F->GetXaxis()->GetXmax(), 1.0);
-  TLegend* leg=new TLegend(0.65, 0.18, 0.95, 0.5);
+  line.DrawLine(rangeEffPt2->GetXaxis()->GetXmin(), 1.0, rangeEffPt2->GetXaxis()->GetXmax(), 1.0);
+  TLegend* leg=new TLegend(0.2, 0.7, 0.6, 0.89);
+  leg->SetNColumns(2);
   leg->SetFillColor(0);
   if(hFeffP){
     hFeffP->SetMarkerStyle(24);
     hFeffP->SetMarkerColor(2);
     hFeffP->SetLineColor(2);
-    hFeffP->Draw("same"); leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
-  }
-  if(hFeffP4){
-    hFeffP4->SetMarkerStyle(25);
-    hFeffP4->SetMarkerColor(2);
-    hFeffP4->SetLineColor(2);
-    hFeffP4->Draw("same"); leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
-  }
-  if(hFeffP5){
-    hFeffP5->SetMarkerStyle(26);
-    hFeffP5->SetMarkerColor(2);
-    hFeffP5->SetLineColor(2);
-    hFeffP5->Draw("same"); leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
-  }
-  if(hFeffP6){
-    hFeffP6->SetMarkerStyle(27);
-    hFeffP6->SetMarkerColor(2);
-    hFeffP6->SetLineColor(2);
-    hFeffP6->Draw("same"); leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
+    if(trendValues && hFeffP->GetEntries()>1) {
+      hFeffP->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+      trendValues[0] = funcConst->GetParameter(0);
+      trendValues[1] = funcConst->GetParError(0);
+    }
+    if(hFeffP->Integral()>0.001) {
+      hFeffP->Draw("same"); 
+      leg->AddEntry(hFeffP, "positives (#geq 1 tracklet)", "p");
+    }
   }
   if(hFeffN){
     hFeffN->SetMarkerStyle(24);
     hFeffN->SetMarkerColor(4);
     hFeffN->SetLineColor(4);
-    hFeffN->Draw("same"); leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
+    if(trendValues && hFeffN->GetEntries()>1) {
+      hFeffN->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+      trendValues[2] = funcConst->GetParameter(0);
+      trendValues[3] = funcConst->GetParError(0);
+    }
+    if(hFeffN->Integral()>0.001) {
+      hFeffN->Draw("same"); 
+      leg->AddEntry(hFeffN, "negatives (#geq 1 tracklet)", "p");
+    }
+  }
+  if(hFeffP4){
+    hFeffP4->SetMarkerStyle(25);
+    hFeffP4->SetMarkerColor(2);
+    hFeffP4->SetLineColor(2);
+    if(hFeffP4->Integral()>0.001) {
+      hFeffP4->Draw("same"); 
+      leg->AddEntry(hFeffP4, "positives (4 tracklets)", "p");
+    }
   }
   if(hFeffN4){
     hFeffN4->SetMarkerStyle(25);
     hFeffN4->SetMarkerColor(4);
     hFeffN4->SetLineColor(4);
-    hFeffN4->Draw("same"); leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
+    if(hFeffN4->Integral()>0.001) {
+      hFeffN4->Draw("same"); 
+      leg->AddEntry(hFeffN4, "negatives (4 tracklets)", "p");
+    }
+  }
+  if(hFeffP5){
+    hFeffP5->SetMarkerStyle(26);
+    hFeffP5->SetMarkerColor(2);
+    hFeffP5->SetLineColor(2);
+    if(hFeffP5->Integral()>0.001) {
+      hFeffP5->Draw("same"); 
+      leg->AddEntry(hFeffP5, "positives (5 tracklets)", "p");
+    }
   }
   if(hFeffN5){
     hFeffN5->SetMarkerStyle(26);
     hFeffN5->SetMarkerColor(4);
     hFeffN5->SetLineColor(4);
-    hFeffN5->Draw("same"); leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
+    if(hFeffN5->Integral()>0.001) {
+      hFeffN5->Draw("same"); 
+      leg->AddEntry(hFeffN5, "negatives (5 tracklets)", "p");
+    }
+  }
+  if(hFeffP6){
+    hFeffP6->SetMarkerStyle(27);
+    hFeffP6->SetMarkerColor(2);
+    hFeffP6->SetLineColor(2);
+    if(hFeffP6->Integral()>0.001) {
+      hFeffP6->Draw("same"); 
+      leg->AddEntry(hFeffP6, "positives (6 tracklets)", "p");
+    }
   }
   if(hFeffN6){
     hFeffN6->SetMarkerStyle(27);
     hFeffN6->SetMarkerColor(4);
     hFeffN6->SetLineColor(4);
-    hFeffN6->Draw("same"); leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+    if(hFeffN6->Integral()>0.001) {
+      hFeffN6->Draw("same"); 
+      leg->AddEntry(hFeffN6, "negatives (6 tracklets)", "p");
+    }
   }
   leg->Draw();
   
@@ -2745,31 +3310,41 @@ void AliTRDcheckESD::PlotTrackingSummary(Int_t centralityClass) {
   // Nclusters per TRD track
   pad = ((TVirtualPad*)l->At(8)); pad->cd();
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.12);
-  pad->SetTopMargin(0.02); pad->SetBottomMargin(0.15);
+  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   pad->SetLogz();
-  if((h2F = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD+centralityClass)))) {
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetYaxis()->SetRangeUser(0.0, 199.);
-    h2F->GetXaxis()->SetTitle("p [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("#clusters per TRD track");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->Draw("colz");
+  if(gROOT->FindObject("rangeNclsP")) delete gROOT->FindObject("rangeNclsP");
+  TH2F* rangeNclsP = new TH2F("rangeNclsP", "", 10, 0.0, 11.99, 10, 0.0, 199.0);
+  SetStyle(rangeNclsP->GetXaxis(), "p [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeNclsP->GetYaxis(), "#clusters", 0.07, 0.8, kTRUE, 0.05);
+  rangeNclsP->SetStats(kFALSE);
+  rangeNclsP->Draw();
+  lat->DrawLatex(1.0, 205., "TRD Clusters / track");
+  
+  TH2F* hNclsVsP=0x0;
+  if((hNclsVsP = dynamic_cast<TH2F*>(fHistos->At(kNClsTrackTRD+centralityClass)))) {
+    hNclsVsP->SetStats(kFALSE);
+    if(hNclsVsP->GetEntries()>10) {
+      hNclsVsP->Draw("samecolz"); isGoodForSaving=kTRUE;
+      if(trendValues) {
+        TProfile* h2FProf = hNclsVsP->ProfileX("nclsVsPprof");
+        h2FProf->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
+        trendValues[4] = funcConst->GetParameter(0);
+        trendValues[5] = funcConst->GetParError(0);
+      }
+    }
   }
+  
+  delete funcConst;
+  return isGoodForSaving;
 }
 
 
 //_________________________________________________________________
-void AliTRDcheckESD::PlotPidSummary(Int_t centralityClass) {
+Bool_t AliTRDcheckESD::PlotPidSummary(Int_t centralityClass, Double_t* trendValues) {
 
+  Bool_t isGoodForSaving=kFALSE;
+  
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
   lat->SetTextColor(2);
@@ -2780,28 +3355,27 @@ void AliTRDcheckESD::PlotPidSummary(Int_t centralityClass) {
   // eta-phi distr. for <Qtot> in layer 0
   TVirtualPad* pad;
   TProfile2D* hProf2D;
+  if(gROOT->FindObject("rangeEtaPhi2")) delete gROOT->FindObject("rangeEtaPhi2");
+  TH2F* rangeEtaPhi = new TH2F("rangeEtaPhi2", "", 10, -0.99, +0.99, 10, -3.4, +3.4);
+  SetStyle(rangeEtaPhi->GetXaxis(), "#eta", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeEtaPhi->GetYaxis(), "detector #varphi", 0.07, 0.8, kTRUE, 0.05);
+  rangeEtaPhi->SetStats(kFALSE);
+  
   for(Int_t iLayer=0; iLayer<6; ++iLayer) {
     pad = ((TVirtualPad*)l->At((iLayer<3 ? iLayer*3 : (iLayer-3)*3+1))); pad->cd();
     pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
     pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
     pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+6*centralityClass+iLayer)))) break;
-    hProf2D->SetStats(kFALSE);
-    hProf2D->SetTitle("");
-    hProf2D->GetXaxis()->SetTitle("#eta");
-    hProf2D->GetXaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetXaxis()->SetTitleSize(0.07);
-    hProf2D->GetXaxis()->CenterTitle();
-    hProf2D->GetXaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->SetTitle("detector #varphi");
-    hProf2D->GetYaxis()->SetTitleOffset(0.8); 
-    hProf2D->GetYaxis()->SetTitleSize(0.07);
-    hProf2D->GetYaxis()->SetLabelSize(0.05);
-    hProf2D->GetYaxis()->CenterTitle();
-    hProf2D->SetMinimum(0.);
-    hProf2D->SetMaximum(10.);
-    hProf2D->Draw("colz");
+    rangeEtaPhi->Draw();
     lat->DrawLatex(-0.9, 3.6, Form("TRD <Q_{tot}> Layer %d", iLayer));
+    
+    if(!(hProf2D = dynamic_cast<TProfile2D*>(fHistos->At(kTRDEtaPhiAvQtot+6*centralityClass+iLayer)))) continue;
+    if(hProf2D && hProf2D->GetEntries()>10) {
+      hProf2D->SetStats(kFALSE);
+      hProf2D->SetMinimum(0.);
+      hProf2D->SetMaximum(4.);
+      if(hProf2D->GetEntries()>10) { hProf2D->Draw("samecolz"); isGoodForSaving=kTRUE; }
+    }
   }
     
   // PH versus slice number
@@ -2809,26 +3383,35 @@ void AliTRDcheckESD::PlotPidSummary(Int_t centralityClass) {
   pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
+  if(gROOT->FindObject("rangePHslice")) delete gROOT->FindObject("rangePHslice");
+  TH2F* rangePHslice = new TH2F("rangePHslice", "", 10, -0.5, 7.5, 10, 0.0, 2000.0);
+  SetStyle(rangePHslice->GetXaxis(), "slice", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangePHslice->GetYaxis(), "PH", 0.07, 0.8, kTRUE, 0.05);
+  rangePHslice->SetStats(kFALSE);
+  rangePHslice->Draw();
+  
+  TF1* funcPol1 = new TF1("funcPol1", "[0]+[1]*x", 2.9, 6.4);
+  
   TH2F* h2F;
   TH1D* hF;
   if((h2F = dynamic_cast<TH2F*>(fHistos->At(kPHSlice+centralityClass)))) {
-    hF = Proj2D(h2F);
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw("colz");
-    hF->SetLineWidth(2);
-    hF->Draw("same");
+    if(h2F && h2F->GetEntries()>10) {
+      hF = Proj2D(h2F);
+      h2F->SetStats(kFALSE);
+      h2F->Draw("samecolz");
+      isGoodForSaving=kTRUE;
+      if(trendValues) {
+        hF->Fit(funcPol1, "QME0", "goff", 2.9, 6.4);
+        trendValues[6] = funcPol1->GetParameter(0);
+        trendValues[7] = funcPol1->GetParError(0);
+        trendValues[8] = funcPol1->GetParameter(1);
+        trendValues[9] = funcPol1->GetParError(1);
+      }
+      hF->SetLineWidth(2);
+      hF->Draw("same");
+    }
   }
+  delete funcPol1;
 
   // Qtot vs P
   pad = ((TVirtualPad*)l->At(5)); pad->cd();
@@ -2836,69 +3419,29 @@ void AliTRDcheckESD::PlotPidSummary(Int_t centralityClass) {
   pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   pad->SetLogz();
+  if(gROOT->FindObject("rangeQtotP")) delete gROOT->FindObject("rangeQtotP");
+  TH2F* rangeQtotP = new TH2F("rangeQtotP", "", 10, 0.0, 11.99, 10, 0.0, 11.99);
+  SetStyle(rangeQtotP->GetXaxis(), "P [GeV/c]", 0.07, 0.8, kTRUE, 0.05);
+  SetStyle(rangeQtotP->GetYaxis(), "Q_{tot}", 0.07, 0.8, kTRUE, 0.05);
+  rangeQtotP->SetStats(kFALSE);
+  rangeQtotP->Draw();
+  
   if((h2F = dynamic_cast<TH2F*>(fHistos->At(kQtotP+centralityClass)))) {
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("P [GeV/c]");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetRangeUser(0.0,100.0);
-    h2F->GetYaxis()->SetTitle("Q_{tot}");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->GetYaxis()->SetRangeUser(0.0,20.0);
-    h2F->Draw("colz");
-  }
-
-  // PH versus slice number for TPC pions and electrons
-  /*
-  pad = ((TVirtualPad*)l->At(8)); pad->cd();
-  pad->SetLeftMargin(0.15); pad->SetRightMargin(0.1);
-  pad->SetTopMargin(0.1); pad->SetBottomMargin(0.15);
-  pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
-  TH2F* h2FtrdP;
-  TH2F* h2FtrdN;
-  TH1F* hFeffP;
-  TH1F* hFeffN;
-  if((h2FtrdP = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCpions+centralityClass-1))) && 
-     (h2FtrdN = dynamic_cast<TH2F*>(fHistos->At(kPHSliceTPCelectrons+centralityClass-1)))) {
-    hFeffP = Proj2D((TH2F*)h2FtrdP);
-    hFeffN = Proj2D((TH2F*)h2FtrdN);
-    h2F = new TH2F("PHvsSlice","",10,h2FtrdN->GetXaxis()->GetXmin(),h2FtrdN->GetXaxis()->GetXmax(),
-		   10,h2FtrdN->GetYaxis()->GetXmin(),h2FtrdN->GetYaxis()->GetXmax());
-    h2F->SetStats(kFALSE);
-    h2F->SetTitle("");
-    h2F->GetXaxis()->SetTitle("slice");
-    h2F->GetXaxis()->SetTitleOffset(0.8); 
-    h2F->GetXaxis()->SetTitleSize(0.07);
-    h2F->GetXaxis()->CenterTitle();
-    h2F->GetXaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->SetTitle("PH");
-    h2F->GetYaxis()->SetTitleOffset(0.8); 
-    h2F->GetYaxis()->SetTitleSize(0.07);
-    h2F->GetYaxis()->SetLabelSize(0.05);
-    h2F->GetYaxis()->CenterTitle();
-    h2F->Draw();
-    hFeffN->SetLineWidth(2);
-    hFeffN->SetLineColor(2);
-    hFeffP->SetLineWidth(2);
-    hFeffP->SetLineColor(4);
-    hFeffN->Draw("same");
-    hFeffP->Draw("same");
-    TLegend* leg=new TLegend(0.65, 0.8, 0.95, 0.95);
-    leg->SetFillColor(0);
-    leg->AddEntry(hFeffP, "TPC pions", "l");
-    leg->AddEntry(hFeffN, "TPC electrons", "l");
-    leg->Draw();
+    if(h2F && h2F->GetEntries()>10) {
+      h2F->SetStats(kFALSE);
+      h2F->Draw("samecolz");
+      isGoodForSaving=kTRUE;
+      hF = Proj2D(h2F);
+      hF->SetLineWidth(2);
+      hF->Draw("same");
+      if(trendValues) {
+        trendValues[10] = hF->GetBinContent(hF->FindBin(1.0));
+        trendValues[11] = hF->GetBinError(hF->FindBin(1.0));
+      }
     }
-  */
+  }
+  return isGoodForSaving;
 }
-
-
 
 //__________________________________________________________________________________________________
 void AliTRDcheckESD::DrawTRDGrid() {
@@ -2924,7 +3467,7 @@ void AliTRDcheckESD::DrawTRDGrid() {
 
 //_________________________________________________________________
 void AliTRDcheckESD::SetStyle(TH1* hist, 
-			      Int_t lineStyle, Int_t lineColor, Int_t lineWidth,
+			      Int_t lineStyle, Int_t lineColor, Int_t lineWidth, 
 			      Int_t markerStyle, Int_t markerColor, Int_t markerSize) {
   //
   // Set style settings for histograms
@@ -2935,4 +3478,51 @@ void AliTRDcheckESD::SetStyle(TH1* hist,
   hist->SetMarkerStyle(markerStyle);
   hist->SetMarkerColor(markerColor);
   hist->SetMarkerSize(markerSize);
+}
+
+//____________________________________________________________________
+void AliTRDcheckESD::SetStyle(TAxis* axis, const Char_t* title, Float_t titleSize, Float_t titleOffset, Bool_t centerTitle, 
+                              Float_t labelSize) {
+  //
+  // Set style settings for axes
+  //
+  axis->SetTitle(title);
+  axis->SetTitleSize(titleSize);
+  axis->SetTitleOffset(titleOffset); 
+  axis->CenterTitle(centerTitle);
+  axis->SetLabelSize(labelSize);
+}
+
+//____________________________________________________________________
+void AliTRDcheckESD::FindIsolatedBCs(TH1D* bcHist, Bool_t isIsolated[3500]) {
+  //
+  // Find the isolated bunch crossings
+  //
+  Int_t isolationSize = 10;      // number of free bunches in both directions
+  for(Int_t bcBin=1; bcBin<=bcHist->GetXaxis()->GetNbins(); ++bcBin) {
+    Int_t bc = TMath::Nint(bcHist->GetBinCenter(bcBin));
+    if(bc<-0.001 || bc>3499.01) {
+      isIsolated[bc] = kFALSE;
+      continue;
+    }
+    Double_t entries = bcHist->GetBinContent(bcBin);
+    if(entries<0.001) {
+      isIsolated[bc] = kFALSE;
+      continue;     // no entries
+    }
+    
+    // check isolation
+    isIsolated[bc] = kTRUE;
+    for(Int_t ibc = TMath::Max(1,bcBin-isolationSize); ibc <= TMath::Min(3499, bcBin+isolationSize); ++ibc) {
+      if(ibc==bcBin) continue;
+      if(bcHist->GetBinContent(ibc)>0.01) {
+        isIsolated[bc] = kFALSE;
+        break;
+      }
+    }
+  }   // end loop over BC bins
+  
+  cout << "Isolated bunches: " << endl;
+  for(Int_t ibc=0; ibc<3500; ++ibc) 
+    if(isIsolated[ibc]) cout << "BC #" << ibc << endl; 
 }
