@@ -109,6 +109,9 @@ void AliAnaConvCorrPion::CorrelateWithHadrons(AliAODConversionPhoton * pion, con
     for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
       AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(ij));
       if(track) {
+				
+				if(nSpawn && spawn) {;}
+
 	//if(pion->IsMySpawn(track->GetID(), nSpawn, spawn)) continue;
 	
 	//	if (track->Pt() < GetCorrelatedPt() ) continue;
