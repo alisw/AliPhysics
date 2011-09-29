@@ -1589,7 +1589,7 @@ Bool_t  AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkP
   TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
   Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
   vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kTRUE, 0.99, -1)) return kFALSE;
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), fMass, fStep,kTRUE, 0.8, -1)) return kFALSE;
   trkParam->GetXYZ(trkPos); //Get the extrapolated global position
 
   TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
@@ -1883,7 +1883,7 @@ void AliEMCALRecoUtils::InitTrackCuts()
       {
 	AliInfo(Form("Track cuts for matching: Loose cut w/o DCA cut"));
 	SetMinNClustersTPC(50);
-	SetAcceptKinkDaughters(kFALSE);
+	SetAcceptKinkDaughters(kTRUE);
 
 	break;
       }
