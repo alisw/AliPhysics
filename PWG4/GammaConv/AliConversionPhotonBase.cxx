@@ -99,7 +99,7 @@ Int_t AliConversionPhotonBase::GetMCParticleLabel(AliStack *fMCStack){
 
 TParticle *AliConversionPhotonBase::GetMCDaughter(AliStack *fMCStack,Int_t label){
     if(!fMCStack){printf("MC Stack not defined \n");return 0x0;}
-    if(label<0||label>1){printf(Form("Requested index out of bounds: %i \n",label));return 0x0;}
+    if(label<0||label>1){printf("Requested index out of bounds: %i \n",label);return 0x0;}
 
     if(fMCLabel[label]>-1){
 	TParticle *fMCDaughter=fMCStack->Particle(fMCLabel[label]);

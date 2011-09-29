@@ -30,7 +30,6 @@ set ( SRCS  GammaConv/AliV0Reader.cxx
     GammaConv/AliAnalysisTaskGammaConversion.cxx 
     GammaConv/AliAnalysisTaskCaloConv.cxx 
     GammaConv/AliGammaConversionHistograms.cxx 
-    GammaConv/AliGammaConversionAODObject.cxx 
     GammaConv/AliGammaConversionBGHandler.cxx 
     GammaConv/AliAnalysisTaskGammaConvDalitz.cxx 
     GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx 
