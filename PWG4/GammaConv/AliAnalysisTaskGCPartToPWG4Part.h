@@ -6,7 +6,6 @@
 
 class TH1F;
 class AliESDEvent;
-class AliGammaConversionAODObject;
 class AliAODConversionPhoton;
 class AliAODPWG4ParticleCorrelation;
 class AliAODPWG4Particle;
@@ -57,7 +56,6 @@ public:
   TClonesArray * GetAODBranch(const AliAODEvent * aodEvent, TString branchName) const;
 
   //Fill AOD tree with PWG4 particles
-  AliAODPWG4ParticleCorrelation * AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector);
   AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, TString detector);
   AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector);  
   //Process conv gamma

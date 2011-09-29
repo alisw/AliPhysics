@@ -34,7 +34,6 @@
 #include "AliAnalysisManager.h"
 #include "AliAODPWG4Particle.h"
 #include "AliAODPWG4ParticleCorrelation.h"
-#include "AliGammaConversionAODObject.h"
 #include "AliAODConversionPhoton.h"
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
