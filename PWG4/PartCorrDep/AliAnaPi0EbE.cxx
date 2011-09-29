@@ -411,8 +411,8 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     
     //Get shower shape information of clusters
     TObjArray *clusters = 0;
-    if     (!strcmp(fCalorimeter,"EMCAL")) clusters = GetEMCALClusters();
-    else if(!strcmp(fCalorimeter,"PHOS")) clusters = GetPHOSClusters() ;
+    if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
+    else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
     
     Bool_t bFound1        = kFALSE;
     Int_t  caloLabel1     = photon1->GetCaloLabel(0);
