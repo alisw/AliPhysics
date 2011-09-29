@@ -551,7 +551,7 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
     TransportToDS( GetDStoPoint( m ) );    
     fP[7] = -fSFromDecay;
     fC[28] = fC[29] = fC[30] = fC[31] = fC[32] = fC[33] = fC[34] = 0;
-    fC[35] = 1000.;
+    fC[35] = 0.1;
     
     Convert(1);
   }
