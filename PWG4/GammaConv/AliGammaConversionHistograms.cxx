@@ -26,6 +26,7 @@
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "AliLog.h"
 
 using namespace std;
@@ -54,7 +55,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
   fESDContainer(NULL),
   fMCContainer(NULL),
   fTableContainer(NULL),	
-  fOtherContainer(NULL)
+  fOtherContainer(NULL),
+  f3DContainer(NULL)
 {
   // see header file for documenation
   for(Int_t i=0;i<14;i++){
@@ -87,7 +89,8 @@ AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConvers
   fESDContainer(original.fESDContainer),
   fMCContainer(original.fMCContainer),
   fTableContainer(original.fTableContainer), 
-  fOtherContainer(original.fOtherContainer)
+  fOtherContainer(original.fOtherContainer),
+  f3DContainer(original.f3DContainer)
 {    
   //see header file for documentation
   for(Int_t i=0;i<14;i++){
@@ -143,6 +146,25 @@ void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString h
     cout << "Warning: Histogram ( "<<histogramName.Data()<<" ) already exists " << endl;
   }
 }
+
+void AliGammaConversionHistograms::AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, Int_t nZBins, Double_t firstZ, Double_t lastZ, TString xAxisTitle, TString yAxisTitle, TString zAxisTitle, Int_t logAxis ){
+  // see header file for documentation
+  if( fHistogramMap->Contains(histogramName.Data()) ==  kFALSE ){
+    TH3F *tmp = new TH3F(histogramName, histogramTitle,nXBins,firstX,lastX,nYBins,firstY,lastY,nZBins,firstZ,lastZ);
+    tmp->GetXaxis()->SetTitle(xAxisTitle);
+    tmp->GetYaxis()->SetTitle(yAxisTitle);
+    tmp->GetZaxis()->SetTitle(zAxisTitle);
+    TObjString *tobjstring = new TObjString(histogramName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+    if(logAxis >= 0){
+      BinLogAxis(histogramName.Data(), logAxis);
+    }
+  }
+  else{
+    cout << "Warning: Histogram ( "<<histogramName.Data()<<" ) already exists " << endl;
+  }
+}
+
 
 Bool_t AliGammaConversionHistograms::BinLogAxis(const char* name, Int_t dim){
 
@@ -235,6 +257,32 @@ void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle
     cout << "Warning: Table ( "<<tableName.Data()<<" ) already exists " << endl;
   }
 }
+
+void AliGammaConversionHistograms::AddTable(TString tableName,TString tableTitle,Int_t nXBins,const char * axesXLabel[],Int_t nYBins,const char * axesYLabel[], Int_t nZBins,const char * axesZLabel[]){
+  //see header file for documentation
+
+  if( fHistogramMap->Contains(tableName.Data()) ==  kFALSE ){
+    TH3F *tmp = new TH3F(tableName,tableTitle,nXBins,0,nXBins,nYBins,0,nYBins,nZBins,0,nZBins);
+    for(Int_t xbin=1; xbin<=nXBins; xbin++){
+      tmp->GetXaxis()->SetBinLabel(xbin,axesXLabel[xbin-1]);
+    }
+    for(Int_t ybin=1; ybin<=nYBins; ybin++){
+      tmp->GetYaxis()->SetBinLabel(ybin,axesYLabel[ybin-1]);
+    }
+    for(Int_t zbin=1; zbin<=nZBins; zbin++){
+      tmp->GetZaxis()->SetBinLabel(zbin,axesZLabel[zbin-1]);
+    }
+    
+    tmp->SetStats(0);
+    
+    TObjString *tobjstring = new TObjString(tableName.Data());
+    fHistogramMap->Add((TObject*)tobjstring,(TObject*)tmp);
+  }
+  else{
+    cout << "Warning: Table ( "<<tableName.Data()<<" ) already exists " << endl;
+  }
+}
+
 void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue) const {
   //see header file for documentation
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(tableName.Data());
@@ -249,6 +297,14 @@ void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue,D
     tmp->Fill(xValue,yValue);
   }
 }
+void AliGammaConversionHistograms::FillTable(TString tableName,Double_t xValue,Double_t yValue, Double_t zValue) const {
+  //see header file for documentation
+  TH3 *tmp = (TH3*)fHistogramMap->GetValue(tableName.Data());
+  if(tmp){
+    tmp->Fill(xValue,yValue,zValue);
+  }
+}
+
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue) const{
   //see header file for documentation
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
@@ -262,6 +318,14 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
   if(tmp){
     tmp->Fill(xValue, yValue);
+  }
+}
+
+void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue, Double_t yValue, Double_t zValue) const{
+  //see header file for documentation
+  TH3 *tmp = (TH3*)fHistogramMap->GetValue(histogramName.Data());
+  if(tmp){
+    tmp->Fill(xValue, yValue, zValue);
   }
 }
 
@@ -348,7 +412,15 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
 	   fTableContainer->SetName("Tables");
 	}
 	fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }			
+      }
+	else if(histogramString.Contains("3DPlots")){// means it should be put in the Table Folder
+		if(f3DContainer == NULL){
+			f3DContainer = new TList();
+			f3DContainer->SetOwner(kTRUE);
+			f3DContainer->SetName("3D histograms");
+		}
+		f3DContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+      }
       else{
 	if(fOtherContainer == NULL){
 	  fOtherContainer = new TList();
@@ -383,7 +455,10 @@ void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
     }
     if(fTableContainer !=  NULL){
        fOutputContainer->Add(fTableContainer);	
-    }		
+    }
+	if(f3DContainer !=  NULL){
+       fOutputContainer->Add(f3DContainer);	
+    }
     if(fOtherContainer != NULL){
       fOutputContainer->Add(fOtherContainer);
     }

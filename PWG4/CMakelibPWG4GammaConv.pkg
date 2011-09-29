@@ -28,13 +28,18 @@
 
 set ( SRCS  GammaConv/AliV0Reader.cxx 	
     GammaConv/AliAnalysisTaskGammaConversion.cxx 
+    GammaConv/AliAnalysisTaskCaloConv.cxx 
     GammaConv/AliGammaConversionHistograms.cxx 
     GammaConv/AliGammaConversionAODObject.cxx 
-    GammaConv/AliAODConversionParticle.cxx 
     GammaConv/AliGammaConversionBGHandler.cxx 
-    GammaConv/AliAnalysisTaskCaloConv.cxx 
     GammaConv/AliAnalysisTaskGammaConvDalitz.cxx 
     GammaConv/AliAnalysisTaskGCPartToPWG4Part.cxx 
+    GammaConv/AliConversionPhotonBase.cxx
+    GammaConv/AliAODConversionParticle.cxx 
+    GammaConv/AliAODConversionPhoton.cxx
+    GammaConv/AliAODConversionMother.cxx
+    GammaConv/AliKFConversionPhoton.cxx
+    GammaConv/AliKFConversionMother.cxx
     GammaConv/ConvCorrelations/AliAnalysisTaskGammaJet.cxx 
     GammaConv/ConvCorrelations/AliAnaConvIsolation.cxx 
     GammaConv/ConvCorrelations/AliAnaConvCorrBase.cxx 

@@ -11,7 +11,7 @@
 
 #include "AliAnaConvCorrBase.h"
 
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
 class TClonesArray;
 
 class AliAnaConvCorrPhoton : public AliAnaConvCorrBase {
@@ -23,7 +23,7 @@ public:
   virtual ~AliAnaConvCorrPhoton();
 
   ///Correlation photon with tracks
-  virtual void CorrelateWithHadrons(const AliAODConversionParticle * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle);
+  virtual void CorrelateWithHadrons(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle);
 
   //Process particles identified as pion / eta decay 
   void SkipDecayParticles() { fSkipDecayParticles = kTRUE; }

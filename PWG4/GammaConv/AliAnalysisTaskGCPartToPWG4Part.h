@@ -7,11 +7,12 @@
 class TH1F;
 class AliESDEvent;
 class AliGammaConversionAODObject;
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
 class AliAODPWG4ParticleCorrelation;
 class AliAODPWG4Particle;
 class TClonesArray;
 class TString;
+class AliMCAnalysisUtils;
 class AliAODMCHeader;
 
 #include "AliAnalysisTaskSE.h"
@@ -47,8 +48,8 @@ public:
   //Get the AOD event from whereever it might be accessible
   AliAODEvent * GetAODEvent();
 
-  Bool_t BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks) const;
-  Bool_t BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
+  Bool_t BothTracksPresent(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks) const;
+  Bool_t BothGammaPresent(const AliAODConversionPhoton * const pion, const TClonesArray * const photons, const TClonesArray * const tracks) const;
 
   //Get Conversion gammas branch
   TClonesArray * GetConversionGammas(const AliAODEvent * aodEvent) const;
@@ -57,8 +58,8 @@ public:
 
   //Fill AOD tree with PWG4 particles
   AliAODPWG4ParticleCorrelation * AddToAOD(AliGammaConversionAODObject * aodO, TClonesArray * branch, TString detector);
-  AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionParticle * aodO, TClonesArray * branch, TString detector);
-  AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionParticle * pion, TClonesArray * branch, TString detector, TClonesArray * photons);  
+  AliAODPWG4ParticleCorrelation * AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, TString detector);
+  AliAODPWG4ParticleCorrelation * AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector, TClonesArray * photons);  
   //Process conv gamma
   void ProcessConvGamma( const AliAODEvent * const aodEvent );
 

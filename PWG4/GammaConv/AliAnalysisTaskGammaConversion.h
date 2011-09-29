@@ -19,11 +19,14 @@
 #include "AliMultiplicity.h"
 //#include "AliCFManager.h"  // for CF
 //#include "AliCFContainer.h"   // for CF
+#include "AliAODConversionMother.h"
 
 
 class AliAODPWG4Particle;
-class AliGammaConversionAODObject;
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
+class AliAODConversionMother;
+class AliKFConversionPhoton;
+class AliKFConversionMother;
 class TNtuple;
 class AliGammaConversionHistograms;
 class AliESDv0;
@@ -67,7 +70,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void ProcessGammasForNeutralMesonAnalysis();
   void ProcessGammasForOmegaMesonAnalysis();
   //  void ProcessConvPHOSGammasForNeutralMesonAnalysis();
-  void RecalculateV0ForGamma();
+//  void RecalculateV0ForGamma();
   // for CF
   void SetCFManager(AliCFManager * const io) {fCFManager = io;};
   AliCFManager *GetCFManager() const {return fCFManager;}
@@ -78,9 +81,11 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   void SetAODBranchName(TString name)  {fAODBranchName = name ;}	
   void SetForceAOD(Bool_t forceAOD ) { fKFForceAOD = forceAOD; }
   void FillAODWithConversionGammas();
-  void AddToAODBranch(TClonesArray * branch, AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2);
-  void AddPionToAOD(AliKFParticle * kfParticle, Double_t mass, Int_t daughter1, Int_t daughter2);
+  void AddGammaToAOD(AliKFConversionPhoton * kfParticle);
+ // void AddPionToAOD(AliKFConversionMother * kfParticle);
+ // void AddOmegaToAOD(AliKFParticle * kfParticle, Int_t daughter1, Int_t daughter2);
   void TagDaughter(Int_t gammaIndex);
+
   // end AOD
 		
   static Bool_t IsGoodImpPar(const AliESDtrack *const track);
@@ -239,14 +244,6 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   TClonesArray * fPreviousEventTLVPosElectronTClone; //! transient
 		
   //  vector<AliKFParticle> fKFReconstructedGammas; // vector containing all reconstructed gammas
-  vector<Int_t> fElectronv1; // vector containing index of electron 1
-  vector<Int_t> fElectronv2; // vector containing index of electron 2
-		
-  vector<Int_t> fGammav1; // vector containing index of gamma 1
-  vector<Int_t> fGammav2; // vector containing index of gamma 2
-
-  vector<Int_t> fElectronRecalculatedv1; // vector containing index of electron 1
-  vector<Int_t> fElectronRecalculatedv2; // vector containing index of electron 2
 		
   //  AliESDpid * fESDpid; // esd pid
 
@@ -296,8 +293,8 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Bool_t fDoCF; //! transient
 		
   TClonesArray * fAODGamma; //TClonesArray for gammas to put in AOD
-  TClonesArray * fAODPi0; //TTClonesArray for Pi0s to put in AOD
-  TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
+  //TClonesArray * fAODPi0; //TTClonesArray for Pi0s to put in AOD
+  //TClonesArray * fAODOmega; //TTClonesArray for omegas to put in AOD
   TString fAODBranchName; // New AOD branch name
   Bool_t fKFCreateAOD; //Create the AOD tclones? (regardless if storing or not)
   
@@ -311,7 +308,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fNDegreesPMBackground; // number of degree window to rotate particles for rotation method
   Bool_t fDoRotation; //flag
   Bool_t fCheckBGProbability; //flag
-  vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
+//  vector<Int_t>fKFReconstructedGammasV0Index; // index of the reconstructed v0s
   Bool_t fRemovePileUp;                 // Remove Pile Up
   Bool_t fSelectV0AND;                 // Select V0AND
   AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
@@ -323,7 +320,7 @@ class AliAnalysisTaskGammaConversion : public AliAnalysisTaskSE
   Int_t fUseCentrality;
   Int_t fUseCentralityBin;
   TRandom3 fRandom;
-  ClassDef(AliAnalysisTaskGammaConversion, 19); // Analysis task for gamma conversions
+  ClassDef(AliAnalysisTaskGammaConversion, 20); // Analysis task for gamma conversions
 };
 
 #endif //ALIANALYSISTASKGAMMA_H

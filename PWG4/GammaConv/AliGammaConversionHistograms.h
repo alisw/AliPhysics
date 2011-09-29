@@ -17,6 +17,7 @@ class TMap;
 class TList;
 class TH1F;
 class TH2F;
+class TH3F;
 
 class AliGammaConversionHistograms{
 
@@ -50,6 +51,11 @@ class AliGammaConversionHistograms{
   void AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, TString xAxisTitle="", TString yAxisTitle="", Int_t logAxis =-1);
 
   /*
+   * Adds a TH3F histogram to the histogram map and create a key for it 
+   */  
+  void AddHistogram(TString histogramName, TString histogramTitle, Int_t nXBins, Double_t firstX, Double_t lastX, Int_t nYBins, Double_t firstY, Double_t lastY, Int_t nZBins, Double_t firstZ, Double_t lastZ, TString xAxisTitle="", TString yAxisTitle="", TString zAxisTitle="", Int_t logAxis =-1);
+
+  /*
    * Create a logx binning suitable for dEdx plots
    */
   Bool_t BinLogAxis(const char* name, Int_t dim);
@@ -68,6 +74,12 @@ class AliGammaConversionHistograms{
 
 
   /*
+  *  Adds a TH3F Table    
+  */  
+	
+  void AddTable(TString tableName,TString tableTitle,Int_t nXBins, const char * axesXLabel[],Int_t nYBins, const char* axesYLabel[],Int_t nZBins, const char* axesZLabel[]);
+
+  /*
    * Fills a TH1F histogram with the given name with the given value 
    */
   void FillHistogram(TString histogramName, Double_t xValue) const;
@@ -78,6 +90,11 @@ class AliGammaConversionHistograms{
   void FillHistogram(TString histogramName, Double_t xValue, Double_t yValue) const;
 
   /*
+   * Fills a TH3F histogram with the given name with the given value 
+   */
+  void FillHistogram(TString histogramName, Double_t xValue, Double_t yValue, Double_t zValue) const;
+
+  /*
    * Fills a TH1F table with the given name with the given value
    */			
   void FillTable(TString tableName, Double_t xValue) const;
@@ -86,6 +103,11 @@ class AliGammaConversionHistograms{
    *  Fills a TH2F table with the given name with the given value
    */	
   void FillTable(TString tableName, Double_t xValue, Double_t yValue) const;
+
+    /*  
+   *  Fills a TH3F table with the given name with the given value
+   */	
+  void FillTable(TString tableName, Double_t xValue, Double_t yValue, Double_t zValue) const;
 
   /*
    *Returns a pointer to the histogram associated with name.
@@ -120,7 +142,8 @@ class AliGammaConversionHistograms{
   TList * fMCContainer; // MC container
   TList * fTableContainer; // table container
   TList * fOtherContainer; // other container
-
+  TList * f3DContainer; // 3D container
+ 
   ClassDef(AliGammaConversionHistograms,3)
 };
 

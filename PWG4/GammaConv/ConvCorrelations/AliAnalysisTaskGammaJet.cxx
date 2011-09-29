@@ -1,4 +1,3 @@
-
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
@@ -42,8 +41,7 @@
 #include "AliAODEvent.h"
 #include "AliAODHandler.h"
 #include "AliAODCaloCluster.h"
-#include "AliGammaConversionAODObject.h"
-#include "AliAODConversionParticle.h"
+#include "AliAODConversionPhoton.h"
 #include "AliAODJet.h"
 
 #include "AliAODInputHandler.h"
@@ -325,7 +323,7 @@ Bool_t AliAnalysisTaskGammaJet::EventIsSynced(const TClonesArray * const tracks,
  //See header file for documentation
 
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
+    AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(convGamma->At(iPhot));
     if(photon) {
       AliAODTrack * track1 = NULL;
       AliAODTrack * track2 = NULL;
@@ -383,7 +381,7 @@ Bool_t AliAnalysisTaskGammaJet::EventIsSynced(const TClonesArray * const tracks,
 
 
 //______________________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaJet::BothTracksPresent(const AliAODConversionParticle * const photon, const TClonesArray * const tracks)  const {
+Bool_t AliAnalysisTaskGammaJet::BothTracksPresent(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks)  const {
 
   AliAODTrack * track1 = NULL;
   AliAODTrack * track2 = NULL;
@@ -406,10 +404,10 @@ Bool_t AliAnalysisTaskGammaJet::BothTracksPresent(const AliAODConversionParticle
 }
 
 //______________________________________________________________________________________________
-Bool_t AliAnalysisTaskGammaJet::BothGammaPresent(const AliAODConversionParticle * const pion, const TClonesArray * const photons, const TClonesArray * const tracks)  const {
+Bool_t AliAnalysisTaskGammaJet::BothGammaPresent(const AliAODConversionPhoton * const pion, const TClonesArray * const photons, const TClonesArray * const tracks)  const {
 
-  AliAODConversionParticle * photon1 = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetLabel1()));
-  AliAODConversionParticle * photon2 = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetLabel2()));
+  AliAODConversionPhoton * photon1 = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetLabel1()));
+  AliAODConversionPhoton * photon2 = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetLabel2()));
 
   if(photon1 && photon2) {
     if( BothTracksPresent(photon1, tracks) &&  BothTracksPresent(photon1, tracks)) {
@@ -431,23 +429,15 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
 
 
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
-    Bool_t delP = kFALSE;
-    AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(convGamma->At(iPhot));
+    AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(convGamma->At(iPhot));
     if(!photon) {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(convGamma->At(iPhot));
-      if (!aodO) {
-	AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
-	continue;
-      }
-      
-      photon = new AliAODConversionParticle(aodO);
-      delP = kTRUE;
-    } 
+      AliError(Form("ERROR: Could not receive ga %d\n", iPhot));
+      continue;
+    }
     
     Bool_t btp = BothTracksPresent(photon, tracks);
     fhTracksMissingPt[btp]->Fill(photon->Pt(), tracks->GetEntriesFast());
     if(!btp || photon->Pt() < fMinPt || TMath::Abs(photon->Eta()) > fEtaLimit) {
-      if(delP) delete photon;
       continue;
     }
     
@@ -480,7 +470,6 @@ void AliAnalysisTaskGammaJet::ProcessConvGamma( const TClonesArray * convGamma, 
 	cout << "No jets "<<endl;
       }
     } 
-    if (delP) delete photon;
   } // 
 }
 
@@ -490,21 +479,13 @@ void AliAnalysisTaskGammaJet::ProcessPions( const TClonesArray * const pions, co
 
 
   for (Int_t iPi = 0; iPi < pions->GetEntriesFast(); iPi++) {
-    Bool_t delP = kFALSE;
-    AliAODConversionParticle * pion = dynamic_cast<AliAODConversionParticle*>(pions->At(iPi));
+    AliAODConversionPhoton * pion = dynamic_cast<AliAODConversionPhoton*>(pions->At(iPi));
     if(!pion) {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(pions->At(iPi));
-      if (!aodO) {
-  	AliError(Form("ERROR: Could not receive ga %d\n", iPi));
-  	continue;
-      }
-      
-      pion = new AliAODConversionParticle(aodO);
-      delP = kTRUE;
-    } 
-
+      AliError(Form("ERROR: Could not receive ga %d\n", iPi));
+      continue;
+    }
+    
     if (!BothGammaPresent(pion, photons, tracks) || pion->Pt() < fMinPt || TMath::Abs(pion->Eta()) > fEtaLimit ) {
-      if(delP) delete pion;
       return;
     }
 
@@ -540,19 +521,18 @@ void AliAnalysisTaskGammaJet::ProcessPions( const TClonesArray * const pions, co
       
       
     } 
-    if (delP) delete pion;
   } // 
  
 
   
   // for (Int_t iPhot = 0; iPhot < photons->GetEntriesFast(); iPhot++) {
-  //   AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(photons->At(iPhot));
+  //   AliAODConversionPhoton * photon = dynamic_cast<AliAODConversionPhoton*>(photons->At(iPhot));
   //   if(photon) {
   //     for (Int_t iPhot2 = iPhot+1; iPhot2 < photons->GetEntriesFast(); iPhot2++) {
-  // 	AliAODConversionParticle * photon2 = dynamic_cast<AliAODConversionParticle*>(photons->At(iPhot2));
+  // 	AliAODConversionPhoton * photon2 = dynamic_cast<AliAODConversionPhoton*>(photons->At(iPhot2));
   // 	if(photon2) {
   // 	  Int_t trackLabels[4] = {photon->GetTrackLabel(0), photon->GetTrackLabel(1), photon2->GetTrackLabel(0), photon2->GetTrackLabel(1)};
-  // 	  AliAODConversionParticle * pion = new AliAODConversionParticle(photon, photon2);
+  // 	  AliAODConversionPhoton * pion = new AliAODConversionPhoton(photon, photon2);
   // 	  Bool_t leading = kTRUE;
   // 	  Bool_t isolated = fAnaIsolation->IsIsolated(pion, tracks, 4, trackLabels, leading);
   // 	  if(leading) {
@@ -573,19 +553,13 @@ Bool_t AliAnalysisTaskGammaJet::IsDecayPion(Int_t iPhot, const TClonesArray * co
   //See header file for documentation
 
   for(int ip = 0; ip < pions->GetEntriesFast(); ip++) {
-    AliAODConversionParticle * pion = dynamic_cast<AliAODConversionParticle*>(pions->At(ip));
+    AliAODConversionPhoton * pion = dynamic_cast<AliAODConversionPhoton*>(pions->At(ip));
     if(pion) {
       if(pion->GetLabel1() == iPhot || pion->GetLabel2() == iPhot) 
 	
 	return kTRUE;
     } else {
-      AliGammaConversionAODObject * aodPion = dynamic_cast<AliGammaConversionAODObject*>(pions->At(ip));
-      if(aodPion) {
-	if(aodPion->GetLabel1() == iPhot || aodPion->GetLabel2() == iPhot) 
-	  return kTRUE;
-      } else {
-	AliError("pion corrupted!");
-      }
+      AliError("pion corrupted!");
     }
   }
 
@@ -616,25 +590,19 @@ void AliAnalysisTaskGammaJet::NotifyRun() {
 }
 
 ///_______________________________________________________________________________
-void AliAnalysisTaskGammaJet::GetPionGrandChildren(const AliAODConversionParticle * pion, const TClonesArray * photons, Int_t* trackLabels) {
+void AliAnalysisTaskGammaJet::GetPionGrandChildren(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels) {
   ///Get the track labels of the electrons reconstructed as gamma forming the pion
-
+  
   for(Int_t i = 0; i< 2; i++) {
-    AliAODConversionParticle * gamma = dynamic_cast<AliAODConversionParticle*>(photons->At(pion->GetTrackLabel(i)));
-
+    AliAODConversionPhoton * gamma = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetLabel(i)));
+    
     if(gamma) { 
       for(Int_t j = 0; j< 2; j++) {
-	trackLabels[ i*2+ j] = gamma->GetTrackLabel(j);
+	trackLabels[ i*2+ j] = gamma->GetLabel(j);
       }
-
+      
     } else {
-      AliGammaConversionAODObject * aodO = dynamic_cast<AliGammaConversionAODObject*>(photons->At(pion->GetTrackLabel(i)));
-      if(aodO) {
-	trackLabels[i*2] = aodO->GetLabel1();
-	trackLabels[i*2 + 1] = aodO->GetLabel2();
-      } else {
-	cout << "AliAnaConvCorrPion::GetTrackLabels() :: Not good!!!"<<endl;
-      }
+      cout << "AliAnaConvCorrPion::GetTrackLabels() :: Not good!!!"<<endl;
     }
   }
 }

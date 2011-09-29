@@ -25,7 +25,7 @@
 #include "TClonesArray.h"
 #include "TH2F.h"
 #include "TList.h"
-#include "AliAODConversionParticle.h"
+#include "AliAODConversionPhoton.h"
 
 
 #include <iostream>
@@ -58,8 +58,8 @@ AliAnaConvIsolation::AliAnaConvIsolation () : TObject(),
     fhPtCandidates[i] = NULL;
     fhTrackMult[i] = NULL;
   }
-
-
+  
+  
 }
 
 //________________________________________________________________________
@@ -173,7 +173,7 @@ void AliAnaConvIsolation::CreateHistograms()
 
 
 //_________________________________________________________________________
-Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionParticle * particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading) {
+Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionPhoton * particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading) {
   //See header file for documentation
 
   leading = kTRUE;
@@ -189,14 +189,14 @@ Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionParticle * particle, cons
       if(track->Pt() < fMinPt) continue;
 
       ///Ignore tracks that are grandchildren of pion
-      if ( particle->IsMySpawn(track->GetID(), nSpawn, spawn)) 
-	continue;
+      // if ( particle->IsMySpawn(track->GetID(), nSpawn, spawn)) 
+      // 	continue;
       
       
       if ( IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), fConeSize) ) {
 	ptSum += track->Pt();
-	if(track->Pt() > ptMax) ptMax = track->Pt();
-   	if(track->Pt() > particle->Pt()) leading = kFALSE;
+        if(track->Pt() > ptMax) ptMax = track->Pt();
+	if(track->Pt() > particle->Pt()) leading = kFALSE;
       }
     } else {
       cout << "Bad track"<<endl;
@@ -214,7 +214,7 @@ Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionParticle * particle, cons
 
 
 //_________________________________________________________________________
-Bool_t AliAnaConvIsolation::IsIsolated(const AliAODConversionParticle * const particle, const TClonesArray * const tracks, Bool_t &leading ) {
+Bool_t AliAnaConvIsolation::IsIsolated(const AliAODConversionPhoton * const particle, const TClonesArray * const tracks, Bool_t &leading ) {
   //See header file for documentation
 
   leading = kTRUE;

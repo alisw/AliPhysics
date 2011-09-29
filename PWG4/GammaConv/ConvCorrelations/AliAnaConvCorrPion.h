@@ -13,7 +13,7 @@
 #include "AliAnaConvCorrBase.h"
 #include "THnSparse.h"
 
-class AliAODConversionParticle;
+class AliAODConversionPhoton;
 class TClonesArray;
 
 class AliAnaConvCorrPion : public AliAnaConvCorrBase {
@@ -25,14 +25,14 @@ public:
   virtual ~AliAnaConvCorrPion();
 
   //Correlate pions with charged tracks
-  virtual void CorrelateWithHadrons(AliAODConversionParticle * pion, const TClonesArray * tracks, const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn );
+  virtual void CorrelateWithHadrons(AliAODConversionPhoton * pion, const TClonesArray * tracks, const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn );
 
   void CreateHistograms();
   
  private:
 
   //Get array of track labels of the 4 decay electrons (2gamma * 2 electrons)
-  void GetTrackLabels(const AliAODConversionParticle * pion, const TClonesArray * photons, Int_t* trackLabels);
+  void GetTrackLabels(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels);
 
   THnSparseF * fhdPhiVsInvMassPi0; //!
   THnSparseF * fhdPhiVsInvMassEta; //!
