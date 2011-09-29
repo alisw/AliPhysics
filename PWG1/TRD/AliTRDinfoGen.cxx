@@ -257,7 +257,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(3, "Cosmic");
   ax->SetBinLabel(4, "Calib");
   fContainer->AddAt(h, kEvType);
-  h=new TH1I("hBC", "TOF Bunch Cross statistics;bc index;Entries", 21, -0.5, 20.5);
+  h=new TH1I("hBC", "TOF Bunch Cross statistics;BC index;Entries", 31, -10.5, 20.5);
   fContainer->AddAt(h, kBunchCross);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
