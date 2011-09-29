@@ -76,7 +76,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetMinVtxContributors(Int_t n=5)     { fMinVtxContributors = n; }
   void SetUseVertex(Bool_t v=kTRUE)         { fUseVertex = v; }
   void SetUseVertexForZOnly(Bool_t v=kTRUE) { fUseVertexForZOnly = v; } // Use the vertex for SDD Z residuals only
-
+  void SetRemovePileupWithSPD(Bool_t opt=kTRUE) { fRemovePileupWithSPD = opt; }
   
   void     SetOCDBInfo(UInt_t runNb, const char *location) {
     fRunNb=runNb; 
@@ -84,7 +84,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   }
 
   Bool_t   AcceptTrack(const AliESDtrack * track);
-  Bool_t   AcceptVertex(const AliESDVertex * vtx);
+  Bool_t   AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD);
   void     CreateSPDHistos();
   void     CreateSDDHistos();
   void     CreateSSDHistos();
@@ -146,6 +146,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fUseVertex;        // Use the vertex as an extra point
   Bool_t   fUseVertexForZOnly; // Use the vertex for SDD Z residuals only
   Int_t    fMinVtxContributors; // min N contributors to accept vertex if fUseVertex is on
+  Bool_t   fRemovePileupWithSPD; // Use/not use pileup rejection with SPD
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
   Int_t    fMinTPCpts;        // Minimum number of TPC points per track
   Float_t  fMinPt;            // Minimum pt to accept tracks
@@ -161,4 +162,5 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
 
 #endif
+
 
