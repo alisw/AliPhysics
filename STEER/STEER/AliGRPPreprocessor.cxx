@@ -1464,7 +1464,8 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	AliRawEventHeaderV3_9::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_9 - temporary fix 
 	AliRawEventHeaderV3_11::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_11 - temporary fix 
 	AliRawEventHeaderV3_12::Class()->IgnoreTObjectStreamer(); // to avoid trying reading TObject store in AliRawEventHeaderV3_12 - temporary fix 
-	TList* list = GetFileSources(kDAQ);  
+	Log("Processing DAQ FXS");
+	TList* list = GetFileSources(kDAQ);  	
 	if (!list) {
 		Log("No raw data tag list: connection problems with DAQ FXS logbook!");
 		return 1;
@@ -1515,15 +1516,32 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 			delete list2;
 		}
 	}
+
+	if (nFiles == 0){
+		Log("no raw data tags in this run: it could be that one or more files were found in the DAQ FXS, but they were ignored, since not interesting for the raw data tag: nothing to merge!");
+		if (iter) delete iter;
+		if (list) delete list;
+		if (fRawTagChain){
+			delete fRawTagChain; 
+			fRawTagChain=0;
+		}
+		return 0;
+	}
 	
 	TString fRawDataFileName = "GRP_Merged.tag.root";
 	Log(Form("Merging %d raw data tags into file: %s", nFiles, fRawDataFileName.Data()));
 	
-	if( fRawTagChain->Merge(fRawDataFileName) < 1 ) {
-		Log("Error merging raw data files!!!");
+	if (fRawTagChain->Merge(fRawDataFileName) < 1 ) {
+		Log(Form("Error merging %d raw data files!!!",nFiles));
+		if (iter) delete iter;
+		if (list) delete list;
+		if (fRawTagChain){
+			delete fRawTagChain; 
+			fRawTagChain=0;
+		}
 		return 3;
 	}
-	
+		
 	TString outputfile = Form("Run%d.Merged.RAW.tag.root", fRun);
 	Bool_t result = StoreRunMetadataFile(fRawDataFileName.Data(),outputfile.Data());
 	
