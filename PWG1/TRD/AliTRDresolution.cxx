@@ -957,13 +957,14 @@ void AliTRDresolution::MakeSummary()
     for(Int_t iview(0); iview<nClViews; iview++){
       cOut = new TCanvas(Form("TRDsummary%s_Cl%02d", GetName(), iview), "Cluster Resolution", 1024, 768);
       cOut->Divide(3,2, 2.e-3, 2.e-3);
+      Int_t nplot(0);
       for(Int_t iplot(0); iplot<6; iplot++){
         p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("%s%d_2D", vClName[iview], iplot)))) continue;
-        h2->Draw("colz");
+        h2->Draw("colz"); nplot++;
       }
-      cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-      //delete cOut;
+      if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+      else delete cOut;
     }
   }
 
@@ -974,13 +975,14 @@ void AliTRDresolution::MakeSummary()
     for(Int_t iview(0); iview<nTrkltViews; iview++){
       cOut = new TCanvas(Form("TRDsummary%s_Trklt%02d", GetName(), iview), "Tracklet Resolution", 1024, 768);
       cOut->Divide(3,2, 2.e-3, 2.e-3);
+      Int_t nplot(0);
       for(Int_t iplot(0); iplot<6; iplot++){
         p=cOut->cd(iplot+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("%s%d_2D", vTrkltName[iview], iplot)))) continue;
-        h2->Draw("colz");
+        h2->Draw("colz"); nplot++;
       }
-      cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-      //delete cOut;
+      if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+      else delete cOut;
     }
   }
   // trackIn systematic
@@ -988,13 +990,14 @@ void AliTRDresolution::MakeSummary()
   if((arr = (TObjArray*)fProj->At(kTrackIn))){
     cOut = new TCanvas(Form("TRDsummary%s_TrkIn", GetName()), "Track IN Resolution", 1024, 768);
     cOut->Divide(3,2, 2.e-3, 2.e-3);
+    Int_t nplot(0);
     for(Int_t iplot(0); iplot<6; iplot++){
       p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("%s_2D", hname[iplot])))) continue;
-        h2->Draw("colz");
+        h2->Draw("colz"); nplot++;
     }
-    cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-    //delete cOut;
+    if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+    else delete cOut;
   }
   gStyle->SetPalette(1);
 }
@@ -1144,6 +1147,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster()
 
   TH2 *h2(NULL);
   for(; ih--; ){
+    if(!hp[ih].fH) continue;
     Int_t mid(1), nstat(kNstat);
     if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
@@ -1250,6 +1254,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet()
 
   TH2 *h2(NULL);
   for(; ih--; ){
+    if(!hp[ih].fH) continue;
     Int_t mid(0), nstat(kNstat);
     if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
@@ -1343,6 +1348,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn()
 
   TH2 *h2(NULL);
   for(; ih--; ){
+    if(!hp[ih].fH) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours/*, mid*/))) continue;
     arr->AddAt(h2, ih);
   }
@@ -2070,7 +2076,7 @@ AliTRDresolution::AliTRDresolutionProjection::~AliTRDresolutionProjection()
 void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[])
 {
 // check and build (if neccessary) projection determined by axis "ix", "iy" and "iz"
-  if(!aa[ix] || !aa[ix] || !aa[iz]) return;
+  if(!aa[ix] || !aa[iy] || !aa[iz]) return;
   TAxis *ax(aa[ix]), *ay(aa[iy]), *az(aa[iz]);
   fH = new TH3I(n, Form("%s;%s;%s;%s", t, ax->GetTitle(), ay->GetTitle(), az->GetTitle()),
     ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
