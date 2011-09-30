@@ -2050,7 +2050,7 @@ void AliTRDresolution::GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm
 //________________________________________________________
 AliTRDresolution::AliTRDresolutionProjection::AliTRDresolutionProjection()
   :fH(NULL)
-  ,fNrebin(NULL)
+  ,fNrebin(0)
   ,fRebinX(NULL)
   ,fRebinY(NULL)
 {
@@ -2121,7 +2121,7 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   for(Int_t iy(0); iy<ny; iy++){
     for(Int_t ix(0); ix<nx; ix++){
       h = fH->ProjectionZ(Form("%s_z", h2->GetName()), ix*dxBin+1, (ix+1)*dxBin+1, iy*dyBin+1, (iy+1)*dyBin+1);
-      Int_t ne(h->Integral());
+      Int_t ne((Int_t)h->Integral());
       if(ne<nstat/2){
         h2->SetBinContent(ix+1, iy+1, -999);
         h2->SetBinError(ix+1, iy+1, 1.);
