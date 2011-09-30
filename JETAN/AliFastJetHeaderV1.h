@@ -28,6 +28,7 @@ class AliFastJetHeaderV1 : public AliJetHeader
   // Getters
   Double_t                     GetRparam()            const {return fRparam;}
   fastjet::JetAlgorithm        GetAlgorithm()         const {return fAlgorithm;}
+  fastjet::JetAlgorithm        GetBGAlgorithm()       const {return fBGAlgorithm;} 
   fastjet::Strategy            GetStrategy()          const {return fStrategy;}
   fastjet::RecombinationScheme GetRecombScheme()      const {return fRecombScheme;}
   Double_t                     GetGhostEtaMax()       const {return fGhostEtaMax;}
@@ -43,10 +44,12 @@ class AliFastJetHeaderV1 : public AliJetHeader
   Float_t                      GetMinCellEt()         const {return fMinCellEt;} 
   Bool_t                       GetBGMode()            const {return fBGMode;}
   Double_t                     GetRparamBkg()            const {return fRparamBkg;}
+  Bool_t                       Use4VectorArea()       const {return fUse4VectorArea;}  
 
   // Setters
   void SetRparam(Double_t f)                           {fRparam = f;}
   void SetAlgorithm(fastjet::JetAlgorithm f)           {fAlgorithm = f;}
+  void SetBGAlgorithm(fastjet::JetAlgorithm f)         {fBGAlgorithm = f;}
   void SetStrategy(fastjet::Strategy f)                {fStrategy = f;}
   void SetRecombScheme(fastjet::RecombinationScheme f) {fRecombScheme = f;}
   void SetGhostEtaMax(Double_t f)                      {fGhostEtaMax = f;}
@@ -57,7 +60,8 @@ class AliFastJetHeaderV1 : public AliJetHeader
   void SetPhiRange(Double_t fmin, Double_t fmax)       {fPhiMin = fmin; fPhiMax = fmax;}
   void SetPtMin(Double_t ptmin)                        {fPtMin = ptmin;}
   void SetBGMode(Bool_t bgmode)                        {fBGMode = bgmode;}
-  
+  void SetUse4VectorArea()                             {fUse4VectorArea = kTRUE;}
+ 
   void SetComment(TString com) {fComment=com;}
   void SetComment(const char* com) {AliJetHeader::SetComment(com);}
   
@@ -72,6 +76,7 @@ class AliFastJetHeaderV1 : public AliJetHeader
   Double_t fRparam;   // R param
   Double_t fRparamBkg;//R param for bkg calculation
   fastjet::JetAlgorithm fAlgorithm; //fastjet::kt_algorithm
+  fastjet::JetAlgorithm fBGAlgorithm; //fastjet::kt_algorithm
   fastjet::Strategy fStrategy;  //= fastjet::Best;
   fastjet::RecombinationScheme fRecombScheme; // = fastjet::BIpt_scheme;
   
@@ -91,8 +96,9 @@ class AliFastJetHeaderV1 : public AliJetHeader
   Double_t fRapMax, fRapMin; // rapidity range of background sub 
   Double_t fPhiMax, fPhiMin; // phi range of background sub
   Bool_t   fBGMode;          // Do we subtract BG or not?
-  
-  ClassDef(AliFastJetHeaderV1,2)
+  Bool_t   fUse4VectorArea;  // Toggle use of 4-vector area 
+
+  ClassDef(AliFastJetHeaderV1,3)
 };
  
 #endif
