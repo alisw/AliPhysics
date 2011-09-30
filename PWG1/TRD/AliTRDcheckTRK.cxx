@@ -130,7 +130,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t)
   AliExternalTrackParam *ref(NULL);
   if(!(ref = t.GetTrackIn())){
     printf("E - AliTRDcheckTRK::PropagateKalman :: Track did not entered TRD fiducial volume.\n");
-    return NULL;
+    return kFALSE;
   }
   if(ref->Pt()<1.e-3){printf("small refpt\n"); return kFALSE;}
 
