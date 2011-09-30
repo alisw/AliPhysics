@@ -251,6 +251,11 @@ Int_t AliQADataMaker::ClonePerTrigClassA(TObjArray * list, const char* hnm, cons
       histPatt.Prepend('^'); histPatt += "$";
       cloneMany = kTRUE;
     }
+    else if ( histPatt.Contains("*") ) {
+      histPatt.ReplaceAll("*",".*");
+      histPatt.Prepend('^'); histPatt += "$";
+      cloneMany = kTRUE;
+    }
   }
   //
   int nCloned = 0;
@@ -264,7 +269,7 @@ Int_t AliQADataMaker::ClonePerTrigClassA(TObjArray * list, const char* hnm, cons
 	if ( !hname.Contains(patPR) ) continue;
       }
       else {
-	if ( !hname.Contains(histPatt) ) continue;
+	if ( hname.CompareTo(histPatt) ) continue;
       }
     }
     //
