@@ -147,6 +147,7 @@ void AliZDCQADataMakerRec::InitRaws()
   TH1F * hZPCSpectrum = new TH1F("hZPCSpectrum","ZPC spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZNASpectrum = new TH1F("hZNASpectrum","ZNA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
   TH1F * hZPASpectrum = new TH1F("hZPASpectrum","ZPA spectrum;Amplitude [ADC counts];Counts",100,0.,1200.);
+  // Booking from ch. 8 for checked signals to avoid running QA on pedestals!
   TH1F * hZEM1Spectrum = new TH1F("hZEM1Spectrum","ZEM1 spectrum;Amplitude [ADC counts];Counts",100,8., 1208.);
   TH1F * hZEM2Spectrum = new TH1F("hZEM2Spectrum","ZEM2 spectrum;Amplitude [ADC counts];Counts",100,8., 1208.);
   Add2RawsList(hZNCSpectrum, 0, expert, !image);
@@ -173,9 +174,9 @@ void AliZDCQADataMakerRec::InitRaws()
   Add2RawsList(hRawSumQZPC, 12, expert, !image);
   Add2RawsList(hRawSumQZPA, 13, expert, !image);
   
-  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "Raw TDC ZEM1;TDC [ns]",160, -350., -310.);
+  TH1F * hRawTDCZEM1 = new TH1F("hRawTDCZEM1", "TDC ZEM1;TDC [ns]",160, -350., -310.);
   Add2RawsList(hRawTDCZEM1, 14, expert, !image);
-  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "Raw TDC ZPC;TDC [ns]",160, -350., -310.);
+  TH1F * hRawTDCZPC = new TH1F("hRawTDCZPC", "TDC ZPC;TDC [ns]",160, -350., -310.);
   Add2RawsList(hRawTDCZPC, 15, expert, !image);
   
   TProfile * hRawADCProfs = new TProfile("hRawADCProfs", "ADC profiles;ADC id;Mean ADC values",22,-0.5,21.5,10.,1210.,"");
@@ -190,13 +191,13 @@ void AliZDCQADataMakerRec::InitRaws()
 //  hRawTDCs->SetMaximum(-300); hRawTDCs->SetMinimum(-340);
   Add2RawsList(hRawTDCs, 19, !expert, image);
   
-  TH2F *hZNCrawCentr  = new TH2F("hZNCrawCentr", "Centroid in ZNC;X (cm);Y(cm)", 100, -5.,5.,100,-5.,5.);
-  Add2RawsList(hZNCrawCentr, 20, expert, !image);
-  TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "Centroid in ZNA;X (cm);Y(cm)", 100, -5.,5.,100,-5.,5.);
-  Add2RawsList(hZNArawCentr, 21, expert, !image);
+  TH2F *hZNCrawCentr  = new TH2F("hZNCrawCentr", "ZNC centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
+  Add2RawsList(hZNCrawCentr, 20, expert, image);
+  TH2F *hZNArawCentr  = new TH2F("hZNArawCentr", "ZNA centroid;X (cm);Y(cm)", 100,-3.5,3.5,100,-3.5,3.5);
+  Add2RawsList(hZNArawCentr, 21, expert, image);
   
-  TH2F *hTimeZDC = new TH2F("fTimeZDC", "ZDC;TDC timing A+C vs C-A; events", 20,-30,30,120,-100,-40);
-  Add2RawsList(hTimeZDC, 22, expert, !image);
+  TH2F *hTimeZDC = new TH2F("hTimeZDC", "ZDC timing;Z_{vertex}/c (ns);time (ns)", 60,-30.,30.,120,-60,-60);
+  Add2RawsList(hTimeZDC, 22, !expert, image);
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
 }
@@ -434,16 +435,17 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
     	 
     	 // Stuff for pedestal subtraction
     	 if(quad != 5){ // ZDCs (not reference PTMs)
-	  Float_t pedSubVal=-99.;
+	  Float_t rawVal=-99., pedSubVal=-99.;
     	  if(det == 1){    
     	    pedindex = quad;
     	    if(gain == 0){
-    	      pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	      rawVal = (Float_t) (stream.GetADCValue());
+    	      pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
     	      zncSignal  += pedSubVal; 
     	      isZNCFired = kTRUE;
     	      if(quad!=0){
 	        zncSumQ += pedSubVal;
-	        if(pedSubVal>0.&& zncpmC>50.){
+	        if(pedSubVal>0.&& zncpmC>7.){
 	          wZNC = TMath::Power(pedSubVal, alpha);
 	          numXZNC += x[quad-1]*wZNC;
 	          numYZNC += y[quad-1]*wZNC;
@@ -462,7 +464,8 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   	  else if(det == 2){ 
   	    pedindex = quad+5;
   	    if(gain == 0){
-  	      pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	      rawVal = (Float_t) (stream.GetADCValue());
+    	      pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
   	      zpcSignal += pedSubVal; 
   	      isZPCFired = kTRUE;
   	      if(quad!=0) zpcSumQ += pedSubVal;
@@ -479,14 +482,16 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   	    pedindex = quad+9;
   	    if(quad==1){     
   	      if(gain == 0){
-  		pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	        rawVal = (Float_t) (stream.GetADCValue());
+    	        pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
   		FillRawsData(4,pedSubVal);
 	        FillRawsData(16,pedindex, pedSubVal);
   	      }
   	    }
   	    else if(quad==2){ 
   	      if(gain == 0){
-  		pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	        rawVal = (Float_t) (stream.GetADCValue());
+    	        pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
   		FillRawsData(5,pedSubVal); 
 	        FillRawsData(16,pedindex, pedSubVal);
   	      }
@@ -495,12 +500,13 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
   	  else if(det == 4){	   
   	    pedindex = quad+12;
   	    if(gain == 0){
-  	      pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	      rawVal = (Float_t) (stream.GetADCValue());
+    	      pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
   	      znaSignal  += pedSubVal; 
   	      isZNAFired = kTRUE;
   	      if(quad!=0){
 	        znaSumQ += pedSubVal;
-	        if(pedSubVal>0.&& znapmC>50.) {
+	        if(pedSubVal>0.&& znapmC>7.) {
 	          wZNA = TMath::Power(pedSubVal, alpha);
 	          numXZNA += x[quad-1]*wZNA;
 	          numYZNA += y[quad-1]*wZNA;
@@ -514,15 +520,13 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	      indZNA++;
 	      
 	      FillRawsData(16,pedindex, pedSubVal);
-	      // RS: invalid
-	      //GetRawsData(22)->SetBinContent(pedindex+1, GetRawsData(20)->GetBinContent(pedindex+1));
-	      //GetRawsData(22)->SetBinError(pedindex+1, GetRawsData(20)->GetBinError(pedindex+1));
   	    }
   	  }
   	  else if(det == 5){
   	    pedindex = quad+17;
   	    if(gain == 0){
-  	      pedSubVal = (Float_t) (stream.GetADCValue()-meanPed[pedindex]); 
+	      rawVal = (Float_t) (stream.GetADCValue());
+    	      pedSubVal = (Float_t) (rawVal-meanPed[pedindex]); 
   	      zpaSignal  += pedSubVal; 
   	      isZPAFired = kTRUE;
   	      if(quad!=0) zpaSumQ += pedSubVal;
@@ -533,9 +537,6 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	      indZPA++;
 	      
 	      FillRawsData(16,pedindex, pedSubVal);
-	      // RS: invalid
-	      //GetRawsData(22)->SetBinContent(pedindex+1, GetRawsData(20)->GetBinContent(pedindex+1));
-	      //GetRawsData(22)->SetBinError(pedindex+1, GetRawsData(20)->GetBinError(pedindex+1));
   	    }
   	  }
                 	 
@@ -842,15 +843,16 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	TH1* h17 = GetRawsData(17, itc);
 	TH1* h18 = GetRawsData(18, itc);
 	TH1* h19 = GetRawsData(19, itc);
-	//	TH1* h20 = GetRawsData(20, itc);
-	//	TH1* h21 = GetRawsData(21, itc);
-	if (!h16 || !h17 || !h18 || !h19) {
-	 AliWarning("AliZDCQADataMaker Rec -> Not all histogram for DQM found!"); 
+	TH1* h20 = GetRawsData(20, itc);
+	TH1* h21 = GetRawsData(21, itc);
+	TH1* h22 = GetRawsData(22, itc);
+	if (!h16 || !h17 || !h18 || !h19){
+	 AliWarning("AliZDCQADataMakerRec -> RAW histos 16||17||18||19 not found!"); 
 	 AliWarning(Form("for specie %s and trigger class %s",
 			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
 	}
 	else{
-	  h16->Draw("");
+	  //h16->Draw("");
 	  for(Int_t ibin=1; ibin<=h16->GetNbinsX(); ibin++){
 	    h18->SetBinContent(ibin, h16->GetBinContent(ibin)); 
 	    h18->SetBinError(ibin, h16->GetBinError(ibin));
@@ -861,7 +863,22 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  }
 	  h18->SetLineColor(kBlue); h18->SetLineWidth(2);
 	  h19->SetLineColor(kAzure-3); h19->SetLineWidth(2);
+        }
+	if(!h20){
+	 AliWarning("AliZDCQADataMakerRec -> RAW histos 20||21 not found!"); 
+	 AliWarning(Form("for specie %s and trigger class %s",
+			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
 	}
+	else{
+	 h20->SetMarkerColor(kPink+7); 
+	 h21->SetMarkerColor(kBlue+2);
+	}
+	if(!h22) {
+	 AliWarning("AliZDCQADataMakerRec -> RAW histo 22 not found!"); 
+	 AliWarning(Form("for specie %s and trigger class %s",
+			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
+	}
+	else h22->SetMarkerColor(kAzure+7);
       }
     } // loop over t
   } //  loop over species

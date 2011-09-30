@@ -73,6 +73,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
       Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
       Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
       Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+      Int_t nentries = -99;
       
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
@@ -198,6 +199,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
+	    if(irawHisto==16) nentries = Int_t (hdata->GetEntries());
 	    if(irawHisto==18){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
@@ -215,13 +217,15 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	 test[specie] += res;
             	 count++;
 	      }
+	      if(nentries != -99) messages.Add(new TObjString(Form("#entries %d",nentries)));
+	      else messages.Add(new TObjString("#entries not known"));
+	      //
 	      Float_t rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
 	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
 	      else if(iDetPM==kFALSE){
-	        messages.Add(new TObjString("Problem with ADCs!"));
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL"));
-                messages.Add(new TObjString("OR A STANDALONE_PEDESTAL RUN"));
+	        messages.Add(new TObjString("Problem with some ADC!"));
+                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
 	      }
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
@@ -249,7 +253,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      else if(rv<1. && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
 	      else{
 	        messages.Add(new TObjString("Serious problem in ZDC timing"));
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
 	    }
@@ -379,7 +383,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
     // ====================================================================
     // 	Checks for A-A events
     // ====================================================================
-    else if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) {
+    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kHighMult) {
       if(list[specie]->GetEntries()==0){  
         AliWarning("\t The list to be checked is empty!");
         return ;
@@ -397,6 +401,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
       Float_t sumADCZNA=0., sumADCZNC=0., sumADCZPA=0., sumADCZPC=0.;
       Float_t adcCZNA=0., adcCZNC=0., adcCZPA=0., adcCZPC=0.;
       Float_t adcQZNA=0., adcQZNC=0., adcQZPA=0., adcQZPC=0.;
+      Int_t nentries=-99;
       
       while((hdata = dynamic_cast<TH1 *>(next()))){
         if(hdata){ 
@@ -561,6 +566,7 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	    
 	    Bool_t iDetPM = kTRUE;
 	    // --- Checks
+	    if(irawHisto==16) nentries = Int_t (hdata->GetEntries());
 	    if(irawHisto==18){ 
 	      Float_t resADC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
@@ -577,26 +583,31 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
             	 test[specie] += res;
             	 count++;
 	      }
+	      if(nentries != -99) messages.Add(new TObjString(Form("#entries %d",nentries)));
+	      else messages.Add(new TObjString("#entries not known"));
+	      //
 	      Float_t rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resADC/hdata->GetNbinsX();
-	      if(rv == 1.) messages.Add(new TObjString("ADCs are OK!")); 
+	      if(rv > 0.98) messages.Add(new TObjString("ADCs are OK!")); 
 	      else if(iDetPM==kFALSE){
 	        messages.Add(new TObjString("Problem with ADCs!"));
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
 	      }
 	      else if(iDetPM==kTRUE) messages.Add(new TObjString("Minor problem with ADCs"));
 	      SetupHisto(messages, *hdata, rv);
 	    }
 	    else if(irawHisto==19){
-	      Double_t refTDCs[6] = {-322.5,-319.1,-320.9,-319.2,-319.7,-319.2};
+	      // Reference values from RUN 137161
+	      Double_t refTDCs[6] = {-320.7,-319.0,-318.6,-319.9,-321.3,-320.8};
 	      Float_t resTDC=0.;
 	      for(int ibin=1; ibin<=hdata->GetNbinsX(); ibin++){
-		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
+		 if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<3.){
 		   res=1.;
 		 }
-		 else{
-		   res=0.5;
+		 else if(TMath::Abs((hdata->GetBinContent(ibin))-refTDCs[ibin-1])<4.){
+		   res=0.8;
             	 }
+		 else res=0.5;
 		 //
 		 resTDC += res;
 		 test[specie] += res;
@@ -605,10 +616,10 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
 	      Float_t rv=1.;
 	      if(hdata->GetNbinsX() != 0) rv = resTDC/hdata->GetNbinsX();
 	      if(rv == 1.) messages.Add(new TObjString("TDCs are OK!")); 
-	      else if(rv<1 && rv>0.9) messages.Add(new TObjString("Minor problem with TDCs"));
+	      else if(rv<1 && rv>0.75) messages.Add(new TObjString("Minor problem with TDCs"));
 	      else{
 	        messages.Add(new TObjString("Serious problem in ZDC timing"));
-                messages.Add(new TObjString("IF THIS IS NOT A TECHNICAL RUN"));
+                messages.Add(new TObjString("IF THIS IS A PHYSICS RUN"));
 	      }
 	      SetupHisto(messages, *hdata, rv);
 	    }
@@ -779,15 +790,15 @@ void AliZDCQAChecker::Check(Double_t *  test, AliQAv1::ALITASK_t index, TObjArra
     // ====================================================================
     // 	Checks for Calibration events
     // ====================================================================
-    else if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib) {
-      AliWarning(Form("\n\t No check implemented in ZDC QA for %s task\n",taskName)); 
+    if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib) {
+      AliWarning(Form("\n\t No check implemented in ZDC QA for %s task in CALIBRATION events\n",taskName)); 
       return ;
     } // Calibration
     // ====================================================================
     // 	Checks for cosmic events
     // ====================================================================
     else if (AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCosmic) {
-      AliWarning(Form("\n\t No check needed in ZDC QA for %s task\n",taskName)); 
+      AliWarning(Form("\n\t No check needed in ZDC QA for %s task in COSMIC events\n",taskName)); 
       return ; 
     } // Cosmic
     if(TMath::Abs(count)>1.e-10) test[specie] = test[specie]/count;
@@ -818,17 +829,17 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
     color = kGreen;
     defaultText = "Everything is fine!";
   }  
-  else if(code<1. && code>=0.9){  
+  else if(code<1. && code>=0.85){  
     color = kYellow;
     defaultText = "To be monitored in next runs";
   }
-  else if(code<0.9 && code>=0.6){
+  else if(code<0.85 && code>=0.6){
     color = kOrange;
     defaultText = "notify the expert DURING THE DAY!";
   }
   else if(code<0.6){
     color = kRed;
-    defaultText = "CALL THE EXPERT!!!!";
+    defaultText = "PLEASE CALL THE EXPERT!!!!";
   }
 
 
