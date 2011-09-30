@@ -32,6 +32,7 @@ set ( CLASS_HDRS
     AliHLTGlobalTrackMergerComponent.h
     AliHLTGlobalTrackMerger.h
     AliHLTGlobalAgent.h
+    AliHLTGlobalPreprocessor.h
     AliHLTGlobalDCSPublisherComponent.h
     AliHLTGlobalVertexerComponent.h
     AliHLTGlobalOfflineVertexerComponent.h
