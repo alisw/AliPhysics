@@ -47,6 +47,12 @@ class AliHLTTPCClusterTransformation{
   void SetCurrentTimeStamp( UInt_t TimeStamp );
   int  Transform( int Slice, int Row, float Pad, float Time, float XYZ[] );
 
+  int  ReverseAlignment( float XYZ[], int slice, int padrow);
+  void SetRotationMatrix(const Double_t *rot=NULL, bool bCalcAdjugate=false);
+  bool CalcAdjugateRotation(bool bCheck=false);
+
+  void Print(const char* option=NULL) const;
+
  protected:
 
   AliTPCTransform * fOfflineTransform;                             //! transient
@@ -54,6 +60,7 @@ class AliHLTTPCClusterTransformation{
   Int_t fLastSector; // last sector
   Double_t fAliT[3]; // alignment - translation
   Double_t fAliR[9]; // alignment - rotation
+  Double_t fAdjR[9]; // alignment - inverse rotation (adjugate)
 
  private:
 

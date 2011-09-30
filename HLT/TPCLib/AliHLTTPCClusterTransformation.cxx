@@ -31,7 +31,10 @@
 #include "AliTPCParam.h"
 #include "AliTPCRecoParam.h"
 #include "AliGeomManager.h"
-//#include "Riostream.h"
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
 
 ClassImp(AliHLTTPCClusterTransformation) //ROOT macro for the implementation of ROOT specific class methods
 
@@ -49,34 +52,8 @@ AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation()
   fAliT[0] = 0.;
   fAliT[1] = 0.;
   fAliT[2] = 0.;
-  for( int i=0; i<9; i++ ) fAliR[i] = 0;
-  fAliR[0] = 1.;
-  fAliR[4] = 1.;
-  fAliR[8] = 1.;
+  SetRotationMatrix();
 }
-
-AliHLTTPCClusterTransformation::AliHLTTPCClusterTransformation(const AliHLTTPCClusterTransformation&)
-:
-  fOfflineTransform(NULL),
-  fOfflineTPCParam( NULL ),
-  fLastSector(-1)
-{
-  // copy constructor prohibited
-  fAliT[0] = 0.;
-  fAliT[1] = 0.;
-  fAliT[2] = 0.;
-  for( int i=0; i<9; i++ ) fAliR[i] = 0;
-  fAliR[0] = 1.;
-  fAliR[4] = 1.;
-  fAliR[8] = 1.;
-}
-
-AliHLTTPCClusterTransformation& AliHLTTPCClusterTransformation::operator=(const AliHLTTPCClusterTransformation&)
-{
-  // assignment operator prohibited
-  return *this;
-}
-
 AliHLTTPCClusterTransformation::~AliHLTTPCClusterTransformation() 
 { 
   // see header file for class documentation
@@ -119,10 +96,7 @@ int  AliHLTTPCClusterTransformation::Init( double FieldBz, UInt_t TimeStamp )
   fAliT[0] = 0.;
   fAliT[1] = 0.;
   fAliT[2] = 0.;
-  for( int i=0; i<9; i++ ) fAliR[i] = 0;
-  fAliR[0] = 1.;
-  fAliR[4] = 1.;
-  fAliR[8] = 1.;
+  SetRotationMatrix();
 
   return 0;
 }
@@ -181,4 +155,121 @@ int  AliHLTTPCClusterTransformation::Transform( int Slice, int Row, float Pad, f
   XYZ[2] = fAliT[2] + x[0]*fAliR[6] + x[1]*fAliR[7] + x[2]*fAliR[8];
 
   return 0; 
+}
+
+int  AliHLTTPCClusterTransformation::ReverseAlignment( float XYZ[], int slice, int padrow)
+{
+  // reverse the alignment correction
+  Int_t sector=-99, thisrow=-99;
+  AliHLTTPCTransform::Slice2Sector( slice, padrow, sector, thisrow);
+  if( sector!= fLastSector ){
+    if( fOfflineTPCParam && sector<fOfflineTPCParam->GetNSector() ){
+      TGeoHMatrix  *alignment = fOfflineTPCParam->GetClusterMatrix( sector );
+      if ( alignment ){
+	const Double_t *tr = alignment->GetTranslation();
+	const Double_t *rot = alignment->GetRotationMatrix();
+	if(tr){
+	  for( int i=0; i<3; i++ ) fAliT[i] = tr[i];
+	}
+	SetRotationMatrix(rot, true);
+      }
+    } else {
+      fAliT[0] = 0.;
+      fAliT[1] = 0.;
+      fAliT[2] = 0.;
+      SetRotationMatrix(NULL, true);
+    }
+    fLastSector = sector;
+  }
+
+  // correct for alignment: translation
+  float xyz[3];
+  xyz[0] = XYZ[0] - fAliT[0];
+  xyz[1] = XYZ[1] - fAliT[1];
+  xyz[2] = XYZ[2] - fAliT[2];
+
+  // correct for alignment: rotation
+  XYZ[0]=xyz[0]*fAdjR[0] + xyz[1]*fAdjR[1] + xyz[2]*fAdjR[2];
+  XYZ[1]=xyz[0]*fAdjR[3] + xyz[1]*fAdjR[4] + xyz[2]*fAdjR[5];
+  XYZ[2]=xyz[0]*fAdjR[6] + xyz[1]*fAdjR[7] + xyz[2]*fAdjR[8];
+
+  return 0;
+}
+
+void AliHLTTPCClusterTransformation::SetRotationMatrix(const Double_t *rot, bool bCalcAdjugate)
+{
+  // set the rotation matrix and calculate the adjugate if requested
+  if (rot) {
+    for( int i=0; i<9; i++ ) fAliR[i] = rot[i];
+    if (bCalcAdjugate) {
+      CalcAdjugateRotation();
+    }
+    return;
+  }
+  for( int i=0; i<9; i++ ) {fAliR[i] = 0; fAdjR[i] = 0;}
+  fAliR[0] = 1.;
+  fAliR[4] = 1.;
+  fAliR[8] = 1.; 
+  fAdjR[0] = 1.;
+  fAdjR[4] = 1.;
+  fAdjR[8] = 1.; 
+}
+
+bool AliHLTTPCClusterTransformation::CalcAdjugateRotation(bool bCheck)
+{
+  // check rotation matrix and adjugate for consistency
+  fAdjR[0]= fAliR[4]*fAliR[8]-fAliR[5]*fAliR[7];
+  fAdjR[1]= fAliR[5]*fAliR[6]-fAliR[3]*fAliR[8];
+  fAdjR[2]= fAliR[3]*fAliR[7]-fAliR[4]*fAliR[6];
+
+  fAdjR[3]= fAliR[2]*fAliR[7]-fAliR[1]*fAliR[8];
+  fAdjR[4]= fAliR[0]*fAliR[8]-fAliR[2]*fAliR[6];
+  fAdjR[5]= fAliR[2]*fAliR[6]-fAliR[0]*fAliR[7];
+
+  fAdjR[6]= fAliR[1]*fAliR[5]-fAliR[2]*fAliR[4];
+  fAdjR[7]= fAliR[2]*fAliR[3]-fAliR[0]*fAliR[5];
+  fAdjR[8]= fAliR[0]*fAliR[4]-fAliR[1]*fAliR[3];
+
+  if (bCheck) {
+    for (int r=0; r<3; r++) {
+      for (int c=0; c<3; c++) {
+	float a=0.;
+	float expected=0.;
+	if (r==c) expected=1.;
+	for (int i=0; i<3; i++) {
+	  a+=fAliR[3*r+i]*fAdjR[c+(3*i)];
+	}
+	if (TMath::Abs(a-expected)>0.00001) {
+	  std::cout << "inconsistent adjugate at " << r << c << ": " << a << " " << expected << std::endl;
+	  return false;
+	}
+      }
+    }
+  }
+  return true;
+}
+
+void AliHLTTPCClusterTransformation::Print(const char* /*option*/) const
+{
+  // print info
+  ios::fmtflags coutflags=std::cout.flags(); // backup cout status flags
+  std::cout << "AliHLTTPCClusterTransformation for sector " << fLastSector << std::endl;
+
+  std::cout.setf(ios_base::showpos|ios_base::showpos|ios::right);
+  std::cout << "  translation: " << std::endl;
+  int r=0;
+  for (r=0; r<3; r++) {
+    std::cout << setw(7) << fixed << setprecision(2);
+    cout << "  " << fAliT[r] << std::endl;
+  }
+  std::cout << "  rotation and adjugated rotation: " << std::endl;
+  for (r=0; r<3; r++) {
+    int c=0;
+    std::cout << setw(7) << fixed << setprecision(2);
+    for (c=0; c<3; c++) std::cout << "  " << fAliR[3*r+c];
+    std::cout << "      ";
+    for (c=0; c<3; c++) std::cout << "  " << fAdjR[3*r+c];
+    std::cout << endl;
+  }
+  std::cout.flags(coutflags); // restore the original flags
 }
