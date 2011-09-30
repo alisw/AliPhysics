@@ -1125,27 +1125,40 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
     }// mult>0
   }// 64 sectors
 
-  Double_t   XC = numXZNC/sumZNC; 
-  Double_t   YC = numYZNC/sumZNC; 
   
-  Double_t   XA = numXZNA/sumZNA;
-  Double_t   YA = numYZNA/sumZNA;
-  
+  Double_t XC = 0;
+  Double_t YC = 0;
+  Double_t XA = 0;
+  Double_t YA = 0;
 
-  fPsiVZEROA = 0.5*TMath::ATan2(YA-meanYA, XA-meanXA);
-  if(fPsiVZEROA>TMath::Pi()){fPsiVZEROA-=TMath::Pi();}
-  if(fPsiVZEROA<0){fPsiVZEROA+=TMath::Pi();}
+  if(sumZNC!=0){
 
-  fPsiVZEROC = 0.5*TMath::ATan2(YC-meanYC, XA-meanXC);
-  if(fPsiVZEROC>TMath::Pi()){fPsiVZEROC-=TMath::Pi();}
-  if(fPsiVZEROC<0){fPsiVZEROC+=TMath::Pi();}
+    XC = numXZNC/sumZNC; 
+    YC = numYZNC/sumZNC; 
+    fPsiVZEROC = 0.5*TMath::ATan2(YC-meanYC, XA-meanXC);
+    if(fPsiVZEROC>TMath::Pi()){fPsiVZEROC-=TMath::Pi();}
+    if(fPsiVZEROC<0){fPsiVZEROC+=TMath::Pi();}
+
   
-  fh2XYA->Fill(XA-meanXA,YA-meanYA); // control
-  fp1RPXA->Fill(aod->GetRunNumber(),XA);
-  fp1RPYA->Fill(aod->GetRunNumber(),YA);
-  fh2XYC->Fill(XC-meanXC,YC-meanYC); // control
-  fp1RPXC->Fill(aod->GetRunNumber(),XC);
-  fp1RPYC->Fill(aod->GetRunNumber(),YC);
+    fh2XYC->Fill(XC-meanXC,YC-meanYC); // control
+    fp1RPXC->Fill(aod->GetRunNumber(),XC);
+    fp1RPYC->Fill(aod->GetRunNumber(),YC);
+    
+
+  }
+  
+  if(sumZNA!=0){
+    XA = numXZNA/sumZNA;
+    YA = numYZNA/sumZNA;
+    fPsiVZEROA = 0.5*TMath::ATan2(YA-meanYA, XA-meanXA);
+    if(fPsiVZEROA>TMath::Pi()){fPsiVZEROA-=TMath::Pi();}
+    if(fPsiVZEROA<0){fPsiVZEROA+=TMath::Pi();}
+
+    fh2XYA->Fill(XA-meanXA,YA-meanYA); // control
+    fp1RPXA->Fill(aod->GetRunNumber(),XA);
+    fp1RPYA->Fill(aod->GetRunNumber(),YA);
+
+  }
   return kTRUE;
 
 }
