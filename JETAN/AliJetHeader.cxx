@@ -18,7 +18,7 @@
 // Stores a comment which describes the jet analysis
 // Author: jgcn@mda.cinvestav.mx
 //---------------------------------------------------------------------
- 
+
 #include "AliJetHeader.h"
 ClassImp(AliJetHeader)
  
@@ -30,6 +30,8 @@ AliJetHeader::AliJetHeader():
   fComment("No comment"),
   fJetEtaMax(0.5),
   fJetEtaMin(-0.5),
+  fJetPhiMax(2*TMath::Pi()),
+  fJetPhiMin(0.),
   fDebug(0)
 {
   //
@@ -45,6 +47,8 @@ AliJetHeader::AliJetHeader(const char * name):
   fComment("No comment"),
   fJetEtaMax(0.5),
   fJetEtaMin(-0.5),
+  fJetPhiMax(2*TMath::Pi()),
+  fJetPhiMin(0.),
   fDebug(0)
 {
   //

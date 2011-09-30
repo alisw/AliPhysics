@@ -38,6 +38,7 @@ AliFastJetHeaderV1::AliFastJetHeaderV1():
     fRparam(0.4),
     fRparamBkg(0.4),  
     fAlgorithm(fastjet::kt_algorithm),
+    fBGAlgorithm(fastjet::kt_algorithm),
     fStrategy(fastjet::Best),
     fRecombScheme(fastjet::BIpt_scheme),
     fGhostEtaMax(2.0),
@@ -50,7 +51,8 @@ AliFastJetHeaderV1::AliFastJetHeaderV1():
     fRapMin(0.),
     fPhiMax(TMath::TwoPi()),
     fPhiMin(0),
-    fBGMode(0)
+    fBGMode(0),
+    fUse4VectorArea(kFALSE)
 {
   // Constructor
   
@@ -71,6 +73,7 @@ void AliFastJetHeaderV1::PrintParameters() const
   cout << "-- Jet Definition --- " << endl;
   cout << "R " << fRparam << endl;
   cout << "Jet Algorithm " << fAlgorithm << endl; 
+  cout << "Bkg Jet Algorithm " << fBGAlgorithm << endl;
   cout << "Strategy " << fStrategy << endl;  
   cout << "Recombination Scheme " << fRecombScheme << endl; 
   
