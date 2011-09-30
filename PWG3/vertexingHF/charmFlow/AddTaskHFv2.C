@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=0 /*0=tracks,1=V0*/)
+AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", AliAnalysisTaskSEHFv2::DecChannel decCh=AliAnalysisTaskSEHFv2::kD0toKpi,Bool_t readMC=kFALSE,TString name="",Int_t flagep=1 /*0=tracks,1=V0*/)
 {
   //
   // Test macro for the AliAnalysisTaskSE for  D 
@@ -71,22 +71,24 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
   Float_t pi=TMath::Pi();
   Float_t philimits[nphibinlimits]={0., pi/4.,pi/2., 3./4.*pi, pi};
 
-  //histogram for V0
-  TFile *fpar = TFile::Open("VZEROParHist.root");
-  TH2D *hh[6];
-  for(Int_t i=0;i<6;i++){
-    TString hhname;hhname.Form("parhist%d_%d",(i+2)*10,(i+3)*10);
-    hh[i]=(TH2D*)fpar->Get(hhname.Data());
-  }
-
   // Analysis task    
-  AliAnalysisTaskSEHFv2 *v2Task = new AliAnalysisTaskSEHFv2("HFv2Analysis",analysiscuts,decCh,nphibinlimits,philimits,hh);
+  AliAnalysisTaskSEHFv2 *v2Task = new AliAnalysisTaskSEHFv2("HFv2Analysis",analysiscuts,decCh,nphibinlimits,philimits);
   v2Task->SetReadMC(readMC);
 
+  v2Task->SetEtaGapFeatureForEventplaneFromTracks(kTRUE);
+  
   v2Task->SetDebugLevel(0);
   
-  v2Task->SetUseV0EP(flagep);
-
+  if(flagep){
+    //histogram for V0
+    TFile *fpar = TFile::Open("VZEROParHist.root");
+    TH2D *hh[6];
+    for(Int_t i=0;i<6;i++){
+      TString hhname;hhname.Form("parhist%d_%d",(i+2)*10,(i+3)*10);
+      hh[i]=(TH2D*)fpar->Get(hhname.Data());
+    } 
+    v2Task->SetVZEROParHist(hh);
+  }
   mgr->AddTask(v2Task);
 
   // Create containers for input/output
@@ -105,9 +107,6 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
 
   contname=Form("cutobj%s",suffix.Data());
   AliAnalysisDataContainer *cutobj = mgr->CreateContainer(contname.Data(),AliRDHFCuts::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  
-  contname=Form("coutputVZEROpar%s",suffix.Data());
-  AliAnalysisDataContainer *coutputpar = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
 
   mgr->ConnectInput(v2Task,0,mgr->GetCommonInputContainer());
   
@@ -117,7 +116,11 @@ AliAnalysisTaskSEHFv2 *AddTaskHFv2(TString filename="DplustoKpipiCuts.root", Ali
 
   mgr->ConnectOutput(v2Task,3,cutobj);
  
-  mgr->ConnectOutput(v2Task,4,coutputpar);
+  if(flagep){
+    contname=Form("coutputVZEROpar%s",suffix.Data());
+    AliAnalysisDataContainer *coutputpar = mgr->CreateContainer(contname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+    mgr->ConnectOutput(v2Task,4,coutputpar);
+  }
 
   return v2Task;
 }

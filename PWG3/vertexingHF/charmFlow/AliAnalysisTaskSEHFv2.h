@@ -21,6 +21,7 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliHFAfterBurner.h"
 
+
 class TH1F;
 class TH2D;
 class AliMultiDimVector;
@@ -35,7 +36,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi}; //more particles can be added
 
   AliAnalysisTaskSEHFv2();
-  AliAnalysisTaskSEHFv2(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel,Int_t nbinsphi, Float_t *phibinlimits,TH2D** histPar);
+  AliAnalysisTaskSEHFv2(const char *name, AliRDHFCuts *rdCuts, Int_t decaychannel,Int_t nbinsphi, Float_t *phibinlimits);
  
   virtual ~AliAnalysisTaskSEHFv2();
 
@@ -45,12 +46,14 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetNMassBins(Int_t nbins){fNMassBins=nbins;}
   void SetUpperCentLimit(Float_t lim){fCentUpLimit = lim;}
   void SetLowerCentLimit(Float_t lim){fCentLowLimit = lim;}
-  void SetUseV0EP(Bool_t flagV0EP){fUseV0EP=flagV0EP;}
+  //void SetUseV0EP(Bool_t flagV0EP){fUseV0EP=flagV0EP;}
   void SetV0EventPlaneOrder(Int_t n){fV0EPorder=n;}
   void SetMinCentrality(Int_t mincentr){fMinCentr=mincentr;}
   void SetMaxCentrality(Int_t maxcentr){fMaxCentr=maxcentr;}
   void SetUseAfterBurner(Bool_t ab){fUseAfterBurner=ab;}
   void SetAfterBurner(AliHFAfterBurner *ab){fAfterBurner=ab;}
+  void SetEtaGapFeatureForEventplaneFromTracks (Bool_t etaGap) {fEtaGap = etaGap;}
+  void SetVZEROParHist(TH2D** h);
 
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
@@ -77,7 +80,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses,Int_t isSel,Int_t icentr);
   void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses, Int_t isSel,Int_t icentr);
   void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses,Int_t isSel,Int_t icentr);
-  Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl);
+  Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl,TVector2* qsub1,TVector2* qsub2);
   Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
 
 
@@ -102,6 +105,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t  fV0EPorder;            //harmonic for VZERO event plane
   Int_t fMinCentr;              //minimum centrality
   Int_t fMaxCentr;              //maximum centrality
+  Bool_t fEtaGap;               // Eta gap feature for Eventplane from tracks; be careful that you do the correct settings in AddTaskEventPlane.C !!!!
 
   ClassDef(AliAnalysisTaskSEHFv2,1); // AliAnalysisTaskSE for the HF v2 analysis
 };
