@@ -105,7 +105,6 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
    fOutputs    = new TObjArray();
    fParamCont  = new TObjArray();
    SetEventLoop(kTRUE);
-   TObject::SetObjectStat(kFALSE);
 }
 
 //______________________________________________________________________________
@@ -154,7 +153,6 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
    fParamCont  = new TObjArray(*other.fParamCont);
    fgCommonFileName  = "AnalysisResults.root";
    fgAnalysisManager = this;
-   TObject::SetObjectStat(kFALSE);
 }
    
 //______________________________________________________________________________
@@ -217,7 +215,6 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fMCtruthEventHandler) delete fMCtruthEventHandler;
    if (fEventPool) delete fEventPool;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
-   TObject::SetObjectStat(kTRUE);
 }
 
 //______________________________________________________________________________

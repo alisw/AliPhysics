@@ -107,7 +107,6 @@ void AliAnalysisSelector::Begin(TTree *)
 void AliAnalysisSelector::SlaveBegin(TTree *tree)
 {
 // Called on each worker. We "unpack" analysis manager here and call InitAnalysis.
-   TObject::SetObjectStat(kFALSE);
    RestoreAnalysisManager();
    if (fAnalysis) {
       if (fAnalysis->GetDebugLevel()>1) {
