@@ -70,7 +70,7 @@
 #include "AliFlowTrack.h"
 #include "AliFlowVector.h"
 #include "AliFlowTrackCuts.h"
-#include "AliFlowEvent.h"
+#include "AliFlowEvent.h"  
 
 #include "AliAnalysisTaskSEHFv2.h"
 
@@ -92,20 +92,21 @@ AliAnalysisTaskSE(),
   fCentLowLimit(0),
   fCentUpLimit(100),
   fNMassBins(200),
-  fReadMC(kFALSE),
+  fReadMC(kFALSE),    
   fUseAfterBurner(kFALSE),
   fDecChannel(0),
   fAfterBurner(0),
   fUseV0EP(kFALSE),
   fV0EPorder(2),
   fMinCentr(10),
-  fMaxCentr(80)
+  fMaxCentr(80),
+  fEtaGap(kFALSE)
 {
   // Default constructor
 }
 
 //________________________________________________________________________
-AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCuts,Int_t decaychannel, Int_t nlimsphibin, Float_t *phibinlimits,TH2D **histPar):
+AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCuts,Int_t decaychannel, Int_t nlimsphibin, Float_t *phibinlimits):
   AliAnalysisTaskSE(name),
   fhEventsInfo(0),
   fOutput(0),
@@ -122,10 +123,12 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fReadMC(kFALSE),
   fUseAfterBurner(kFALSE),
   fDecChannel(decaychannel),
+  fAfterBurner(0),
   fUseV0EP(kFALSE),
   fV0EPorder(2),
   fMinCentr(10),
-  fMaxCentr(80)
+  fMaxCentr(80),
+  fEtaGap(kFALSE)
 {
 
   Int_t pdg=421;
@@ -150,8 +153,6 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
     break;
   }
   fAfterBurner = new AliHFAfterBurner(fDecChannel);
-  for(Int_t i=0;i<6;i++)fHistvzero[i]=(TH2D*)histPar[i]->Clone();
-  for(Int_t i=0;i<6;i++)if(!fHistvzero[i])printf("No VZERO histograms!\n");
   if(pdg==413) SetMassLimits((Float_t)0.135,(Float_t)0.165);
   else SetMassLimits((Float_t)0.2,pdg); //check range
   fNPtBins=fRDCuts->GetNPtBins();
@@ -179,7 +180,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
     break;
   }
   //DefineOutput(4,AliFlowEventSimple::Class());
-  DefineOutput(4,TList::Class());
+  //DefineOutput(4,TList::Class());
 }
 
 //________________________________________________________________________
@@ -216,7 +217,19 @@ AliAnalysisTaskSEHFv2::~AliAnalysisTaskSEHFv2()
     fAfterBurner=0;  
   }
 }
-
+//_________________________________________________________________
+void  AliAnalysisTaskSEHFv2::SetVZEROParHist(TH2D** histPar){
+  for(Int_t i=0;i<6;i++)fHistvzero[i]=(TH2D*)histPar[i]->Clone();
+  for(Int_t i=0;i<6;i++){
+    if(!fHistvzero[i]){
+      printf("No VZERO histograms!\n");
+      fUseV0EP=kFALSE;
+      return;
+    }
+  }
+  DefineOutput(4,TList::Class());
+  fUseV0EP=kTRUE;
+}
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFv2::SetMassLimits(Float_t range, Int_t pdg){
   Float_t mass=0;
@@ -366,8 +379,11 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
     TH2F* hMphi=new TH2F(Form("hMphi%s",centrname.Data()),Form("Mass vs #Delta#phi %s;#Delta#phi;M (GeV/c^{2})",centrname.Data()),96,0,TMath::Pi(),fNMassBins,fLowmasslimit,fUpmasslimit);
     fOutput->Add(hMphi);
 
-    TH1F* hEvPlane=new TH1F(Form("hEvPlane%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
-    fOutput->Add(hEvPlane);
+    TH1F* hEvPlaneneg=new TH1F(Form("hEvPlaneneg%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+    fOutput->Add(hEvPlaneneg);
+	
+	TH1F* hEvPlanepos=new TH1F(Form("hEvPlanepos%s",centrname.Data()),Form("Event plane angle %s;#phi Ev Plane;Entries",centrname.Data()),200,0.,TMath::Pi());
+    fOutput->Add(hEvPlanepos);
 
     //TH1F* hEvPlaneCheck=new TH1F(Form("hEvPlaneCheck%s",centrname.Data()),Form("Event plane angle - Event plane angle per candidate %s;(#phi(Ev Plane) - #phi(Ev Plane Candidate))/#phi(EvPlane);Entries",centrname.Data()),200,-0.2,0.2);
     //fOutput->Add(hEvPlaneCheck);
@@ -382,16 +398,17 @@ void AliAnalysisTaskSEHFv2::UserCreateOutputObjects()
   TH1F* hPhiBins=new TH1F("hPhiBins","Bins in #Delta#phi used in this analysis;#phi bin;n jobs",fNPhiBinLims-1,fPhiBins);
   fOutput->Add(hPhiBins);
   for(Int_t k=0;k<fNPhiBinLims-1;k++)hPhiBins->SetBinContent(k+1,1);
-  
   PostData(1,fhEventsInfo);
   PostData(2,fOutput);
-  fParHist = new TList();
-  fParHist->SetOwner();
-  fParHist->SetName("VZEROcorr");
-  for(Int_t i=0;i<6;i++){
-    fParHist->Add((TH2D*)fHistvzero[i]);
+  if(fUseV0EP){
+    fParHist = new TList();
+    fParHist->SetOwner();
+    fParHist->SetName("VZEROcorr");
+    for(Int_t i=0;i<6;i++){
+      fParHist->Add((TH2D*)fHistvzero[i]);
+    }
+    PostData(4,fParHist);
   }
-  PostData(4,fParHist);
   return;
 }
 
@@ -400,7 +417,6 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event:
   // heavy flavor candidates association to MC truth
-   
   AliAODEvent *aod = dynamic_cast<AliAODEvent*> (InputEvent());
   if(fDebug>2) printf("Analysing decay %d\n",fDecChannel);
   // Post the data already here
@@ -499,11 +515,16 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       fhEventsInfo->Fill(4);
     return;
   }
-
+ 
   AliEventplane *pl=0x0;
   TVector2* q=0x0;
   Double_t rpangleevent=0;
+  Double_t rpangleeventneg=0;
+  Double_t rpangleeventpos=0;
   Double_t eventplane=0;
+  TVector2 *qsub1=0x0;
+  TVector2 *qsub2=0x0;
+  
   //determine centrality bin
   Float_t centr=fRDCuts->GetCentrality(aod);
   Int_t icentr=0;
@@ -520,11 +541,13 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
     rpangleevent=g->Rndm()*TMath::Pi();
     delete g;g=0x0;
     eventplane=rpangleevent;
+	((TH1F*)fOutput->FindObject(Form("hEvPlanepos%s",centrbinname.Data())))->Fill(rpangleevent);
     if(fUseAfterBurner)fAfterBurner->SetEventPlane((Double_t)rpangleevent);
   }else{
     if(fUseV0EP){
       rpangleevent=GetEventPlaneFromV0(aod);
       eventplane=rpangleevent;
+	  ((TH1F*)fOutput->FindObject(Form("hEvPlanepos%s",centrbinname.Data())))->Fill(rpangleevent);
     }else{
       // event plane and resolution 
       //--------------------------------------------------------------------------
@@ -534,8 +557,20 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
 	AliError("AliAnalysisTaskSEHFv2::UserExec:no eventplane! v2 analysis without eventplane not possible!\n");
 	return;
       }
-      q = pl->GetQVector();
-      rpangleevent = pl->GetEventplane("Q"); // reaction plane angle without autocorrelations removal
+      if(fEtaGap){
+        qsub1 = pl->GetQsub1();
+   	qsub2 = pl->GetQsub2();
+	rpangleeventpos = qsub1->Phi()/2.;
+	rpangleeventneg = qsub2->Phi()/2.;
+	((TH1F*)fOutput->FindObject(Form("hEvPlanepos%s",centrbinname.Data())))->Fill(rpangleeventpos);
+	((TH1F*)fOutput->FindObject(Form("hEvPlaneneg%s",centrbinname.Data())))->Fill(rpangleeventneg);
+	}
+      else if(!fEtaGap){
+	q = pl->GetQVector();
+        rpangleevent = pl->GetEventplane("Q");
+	((TH1F*)fOutput->FindObject(Form("hEvPlanepos%s",centrbinname.Data())))->Fill(rpangleevent); // reaction plane angle without autocorrelations removal
+        } 
+       
       Double_t deltaPsi = pl->GetQsubRes();
       if(TMath::Abs(deltaPsi)>TMath::Pi()/2.){
 	if(deltaPsi>0.) deltaPsi-=TMath::Pi();
@@ -543,10 +578,10 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       } // difference of subevents reaction plane angle cannot be bigger than phi/2
       Double_t planereso = TMath::Cos(2.*deltaPsi); // reaction plane resolution
       //--------------------------------------------------------------------------
-      ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso);
+      ((TH1F*)fOutput->FindObject(Form("hEvPlaneReso%s",centrbinname.Data())))->Fill(planereso);    
     }
   }
-  ((TH1F*)fOutput->FindObject(Form("hEvPlane%s",centrbinname.Data())))->Fill(rpangleevent);
+  
 
   for (Int_t iCand = 0; iCand < nCand; iCand++) {
     
@@ -573,7 +608,7 @@ void AliAnalysisTaskSEHFv2::UserExec(Option_t */*option*/)
       }
 
       if(!fUseV0EP) {
-	eventplane = GetEventPlaneForCandidate(d,q,pl); // remove autocorrelations
+	eventplane = GetEventPlaneForCandidate(d,q,pl,qsub1,qsub2); // remove autocorrelations
 	((TH1F*)fOutput->FindObject(Form("hEvPlaneCand%s",centrbinname.Data())))->Fill(rpangleevent-eventplane);
 	//((TH1F*)fOutput->FindObject(Form("hEvPlaneCheck%s",centrbinname.Data())))->Fill((rpangleevent-eventplane)/100.*rpangleevent);
       }
@@ -829,13 +864,32 @@ Float_t AliAnalysisTaskSEHFv2::GetPhi0Pi(Float_t phi){
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl){
+Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl,TVector2* qsub1,TVector2* qsub2){
   // remove autocorrelations 
  
-  TArrayF* qx = pl->GetQContributionXArray();
-  TArrayF* qy = pl->GetQContributionYArray();
-  TVector2 qcopy = *q;
+  TArrayF* qx = 0x0;
+  TArrayF* qy = 0x0;
+  TVector2 qcopy; 
+  if(!fEtaGap){
+    qx = pl->GetQContributionXArray();
+    qy = pl->GetQContributionYArray();
+    qcopy = *q;
+    }
+  else {
+    if(d->Eta()>0.){
+      qx = pl->GetQContributionXArraysub1();
+      qy = pl->GetQContributionYArraysub1();
+      qcopy = *qsub1;
+    }
+    else{
+      qx = pl->GetQContributionXArraysub2();
+      qy = pl->GetQContributionYArraysub2();
+      qcopy = *qsub2;
+    }
+  }
   
+  
+ 
   if(fDecChannel==2){
     //D* -- Yifei, Alessandro,Robert
     AliAODRecoDecayHF2Prong* theD0particle = ((AliAODRecoCascadeHF*)d)->Get2Prong();
