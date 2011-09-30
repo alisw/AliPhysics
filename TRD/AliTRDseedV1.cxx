@@ -644,18 +644,29 @@ Float_t AliTRDseedV1::GetMomentum(Float_t *err) const
 
 
 //____________________________________________________________________
-Float_t AliTRDseedV1::GetOccupancyTB() const
+Int_t AliTRDseedV1::GetTBoccupancy() const
 {
-// Returns procentage of TB occupied by clusters
+// Returns no. of TB occupied by clusters
 
   Int_t n(0);
-  AliTRDcluster *c(NULL);
-  for(int ic=0; ic<AliTRDtrackerV1::GetNTimeBins(); ic++){
-    if(!(c = fClusters[ic]) && !(c = fClusters[ic+kNtb])) continue;
+  for(int ic(0); ic<kNtb; ic++){
+    if(!fClusters[ic] && !fClusters[ic+kNtb]) continue;
     n++;
   }
+  return n;
+}
 
-  return Float_t(n)/AliTRDtrackerV1::GetNTimeBins();
+//____________________________________________________________________
+Int_t AliTRDseedV1::GetTBcross() const
+{
+// Returns no. of TB occupied by 2 clusters for pad row cross tracklets
+
+  if(!IsRowCross()) return 0;
+  Int_t n(0);
+  for(int ic(0); ic<kNtb; ic++){
+    if(fClusters[ic] && fClusters[ic+kNtb]) n++;
+  }
+  return n;
 }
 
 //____________________________________________________________________

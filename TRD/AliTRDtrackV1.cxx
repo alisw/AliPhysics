@@ -239,6 +239,7 @@ AliTRDtrackV1 &AliTRDtrackV1::operator=(const AliTRDtrackV1 &t)
   //
 
   if (this != &t) {
+    AliKalmanTrack::operator=(t);
     ((AliTRDtrackV1 &) t).Copy(*this);
   }
 
@@ -524,7 +525,7 @@ Int_t AliTRDtrackV1::MakeBackupTrack()
   for(Int_t il(AliTRDgeometry::kNlayer); il--;){ 
     if(!fTracklet[il]) continue;
     n++; 
-    occupancy+=fTracklet[il]->GetOccupancyTB();
+    occupancy+=fTracklet[il]->GetTBoccupancy()/AliTRDseedV1::kNtb;
     ncls += fTracklet[il]->GetN();
   }
   if(!n) return -1;
@@ -604,7 +605,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t /*xx0*/, Double_t xrho)
   Double_t xyz1[3] = {GetX(), GetY(), GetZ()};
 //  printf("x0[%6.2f] -> x1[%6.2f] dx[%6.2f] rho[%f]\n", xyz0[0], xyz1[0], xyz0[0]-xk, xrho/TMath::Abs(xyz0[0]-xk));
   if(xyz0[0] < xk) {
-    //xrho = -xrho;
+    xrho = -xrho;
     if (IsStartedTimeIntegral()) {
       Double_t l2  = TMath::Sqrt((xyz1[0]-xyz0[0])*(xyz1[0]-xyz0[0]) 
                                + (xyz1[1]-xyz0[1])*(xyz1[1]-xyz0[1]) 
@@ -871,19 +872,20 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
   for (Int_t ip = 0; ip < kNplane; ip++) {
     if(fTrackletIndex[ip]<0 || !fTracklet[ip]) continue;
     if(!fTracklet[ip]->HasPID()) continue;
-    //printf("Setting slices for tracklet %d\n", ip);
     fTracklet[ip]->CookdEdx(AliTRDPIDResponse::kNslicesNN);
     const Float_t *dedx = fTracklet[ip]->GetdEdx();
     for (Int_t js = 0; js < AliTRDPIDResponse::kNslicesNN; js++, dedx++){
-      //printf("Slice %d, dEdx %f\n", js, *dedx);
       track->SetTRDslice(*dedx, ip, js+1);
     }
     p = fTracklet[ip]->GetMomentum(&sp); 
-    // 04.01.11 A.Bercuci
-    // store global dQdl per tracklet instead of momentum error
-    spd = sp;
+    // store global quality per tracklet instead of momentum error
+    // 26.09.11 A.Bercuci
+    // first implementation store no. of time bins filled in tracklet (5bits  see "y" bits) and
+    // no. of double clusters in case of pad row cross (4bits see "x" bits)
+    // bit map for tracklet quality xxxxyyyyy
+    Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0);
+    spd = Double_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5));
     track->SetTRDmomentum(p, ip, &spd);
-    //printf("Total Charge %f\n", fTracklet[ip]->GetdQdl());
     track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }
   // store PID probabilities
