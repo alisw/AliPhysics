@@ -1,6 +1,10 @@
-AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
+AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
+				     Float_t minC=0, Float_t maxC=100,
+				     Bool_t storeNtuple=kFALSE,
 				     Bool_t readMC=kFALSE,
-				     TString filename="DplustoKpipiCuts.root")
+				     TString finDirname="Loose",
+				     TString filename="DplustoKpipiCuts.root",
+				     TString finAnObjname="AnalysisCuts", TString finProdObjname="ProduCuts")
 {
   //                                                                                                                                    
   // Test macro for the AliAnalysisTaskSE for D+ candidates 
@@ -27,12 +31,30 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
 
   
   AliRDHFCutsDplustoKpipi* analysiscuts=new AliRDHFCutsDplustoKpipi();
-  if(stdcuts) analysiscuts->SetStandardCutsPP2010();
-  else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("AnalysisCuts");
+  if(stdcuts) {
+    if(system==0) analysiscuts->SetStandardCutsPP2010();
+    else if(system==1){
+      analysiscuts->SetStandardCutsPbPb2010();
+      analysiscuts->SetMinCentrality(minC);
+      analysiscuts->SetMaxCentrality(maxC);
+      //      analysiscuts->SetUseAOD049(kTRUE);
+      analysiscuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    }
+  }
+  else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
 
   AliRDHFCutsDplustoKpipi* prodcuts=new AliRDHFCutsDplustoKpipi();
-  if(stdcuts) prodcuts->SetStandardCutsPP2010();
-  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get("ProdCuts");
+  if(stdcuts)  {
+    if(system==0) prodcuts->SetStandardCutsPP2010();
+    else if(system==1) {
+      prodcuts->SetStandardCutsPbPb2010();
+      prodcuts->SetMinCentrality(minC);
+      prodcuts->SetMaxCentrality(maxC);
+      //      prodcuts->SetUseAOD049(kTRUE);
+      prodcuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    }
+  }
+  else prodcuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finProdObjname);
   
   //AliRDHFCutsDplustoKpipi *prodcuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("ProdCuts");
   //AliRDHFCutsDplustoKpipi *analysiscuts = (AliRDHFCutsDplustoKpipi*)fileCuts->Get("AnalysisCuts");
@@ -46,28 +68,49 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Bool_t storeNtuple=kFALSE,
   dplusTask->SetDebugLevel(0);
   dplusTask->SetMassLimits(0.2);
   dplusTask->SetUseBit(kTRUE);
+
+  if (system==0) dplusTask->SetDoImpactParameterHistos(kTRUE);
+
   mgr->AddTask(dplusTask);
   
   // Create containers for input/output 
-  
-  AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer("cinputDplus",TChain::Class(),
+
+  TString inname = "cinputDplus";
+  TString outname = "coutputDplus";
+  TString cutsname = "coutputDplusCuts";
+  TString normname = "coutputDplusNorm";
+  TString ntuplename = "coutputDplus2";
+  inname += finDirname.Data();
+  outname += finDirname.Data();
+  cutsname += finDirname.Data();
+  normname += finDirname.Data();
+  ntuplename += finDirname.Data();
+  TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
+  inname += centr;
+  outname += centr;
+  cutsname += centr;
+  normname += centr;
+  ntuplename += centr;
+
+
+  AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer(inname,TChain::Class(),
 							       AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG3_D2H_InvMassDplus";
   
-  AliAnalysisDataContainer *coutputDplusCuts = mgr->CreateContainer("coutputDplusCuts",TList::Class(),
+  AliAnalysisDataContainer *coutputDplusCuts = mgr->CreateContainer(cutsname,TList::Class(),
 								    AliAnalysisManager::kOutputContainer,
 								    outputfile.Data());
   
-  AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer("coutputDplus",TList::Class(),
+  AliAnalysisDataContainer *coutputDplus = mgr->CreateContainer(outname,TList::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-  AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer("coutputDplusNorm",AliNormalizationCounter::Class(),
+  AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
   
   if(storeNtuple){
-    AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer("coutputDplus2",TNtuple::Class(),
+    AliAnalysisDataContainer *coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
 								   AliAnalysisManager::kOutputContainer,
 								   "InvMassDplus_nt1.root");
     
