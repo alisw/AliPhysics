@@ -44,6 +44,9 @@
 #include "AliHLTPrimaryVertexFinderComponent.h"
 #include "AliHLTV0FinderComponent.h"
 
+// header file for preprocessor plugin
+#include "AliHLTGlobalPreprocessor.h"
+
 /** global instance for agent registration */
 AliHLTGlobalAgent gAliHLTGlobalAgent;
 
@@ -232,4 +235,10 @@ int AliHLTGlobalAgent::DeleteOutputHandler(AliHLTOUTHandler* pInstance)
   if (pInstance==NULL) return -EINVAL;
 
   return 0;
+}
+
+AliHLTModulePreprocessor* AliHLTGlobalAgent::GetPreprocessor()
+{
+  // create the preprocessor plugin
+  return new AliHLTGlobalPreprocessor;
 }

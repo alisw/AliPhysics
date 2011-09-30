@@ -79,6 +79,8 @@ class AliHLTGlobalAgent : public AliHLTModuleAgent {
 
   int DeleteOutputHandler(AliHLTOUTHandler* pInstance);
 
+  AliHLTModulePreprocessor* GetPreprocessor();
+
  protected:
 
  private:
