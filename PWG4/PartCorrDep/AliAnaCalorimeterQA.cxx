@@ -1810,18 +1810,21 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
       time    = cell->GetTime(iCell);
       id      = cell->GetCellNumber(iCell);
       
-      //Get Recalibration factor if set
+      //Get energy recalibration factor if set
       if (GetCaloUtils()->IsRecalibrationOn()) {
         if(fCalorimeter == "PHOS") {
           amp *= GetCaloUtils()->GetPHOSChannelRecalibrationFactor(nModule,icol,irow);
         }
         else		                   {
           amp *= GetCaloUtils()->GetEMCALChannelRecalibrationFactor(nModule,icol,irow);
-          GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(id,bc,time);
-//          printf("QA         : Id %d, Time org %e, Time new %e; Amp org %f, Amp new %f\n",
-//                          id, cell->GetTime(iCell),time, cell->GetAmplitude(iCell),amp);
         }
-        //if(fCalorimeter == "PHOS")printf("Recalibration factor (sm,row,col)=(%d,%d,%d) -  %f\n",nModule,icol,irow,recalF);
+      }
+      
+      // Time recalibration if set
+      if(fCalorimeter == "EMCAL" && GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
+        GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(id,bc,time);
+        //        printf("QA CEll        : Id %d, Time org %e, Time new %e; Amp org %f, Amp new %f\n",
+        //               id, cell->GetTime(iCell),time, cell->GetAmplitude(iCell),amp);
       }
       
       //Transform time to ns
@@ -1834,8 +1837,6 @@ void  AliAnaCalorimeterQA::MakeAnalysisFillHistograms()
           continue;
         }
       }
-      //if(amp > 3 && fCalorimeter=="EMCAL") printf("Amp = %f, time = %f, (mod, col, row)= (%d,%d,%d)\n",
-      //										   amp,time,nModule,icol,irow);
       
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
