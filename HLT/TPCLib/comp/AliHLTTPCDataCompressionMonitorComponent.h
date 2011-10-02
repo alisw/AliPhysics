@@ -17,6 +17,7 @@
 
 class AliHLTTPCHWCFData;
 class AliHLTDataInflater;
+class AliHLTTPCTrackGeometry;
 class TH1;
 class TH2;
 
@@ -106,6 +107,10 @@ private:
   int ReadRemainingClustersCompressed(const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
   int ReadRemainingClustersCompressed(AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
 
+  int ReadTrackModelClustersCompressed(const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
+  int ReadTrackClustersCompressed(AliHLTDataInflater* pInflater, AliHLTTPCTrackGeometry* pTrackPoints);
+
+  AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
   AliHLTTPCHWCFData* fpHWClusterDecoder; //! data decoder for HW clusters
 
