@@ -56,8 +56,8 @@ private:
   /// Not implemented
   AliMUONTriggerQADataMakerRec& operator=(const AliMUONTriggerQADataMakerRec& qadm);
 
-  void DisplayTriggerInfo();
-  void FillRatio4434Histos(Int_t evtInterval);
+  void DisplayTriggerInfo(Int_t itc);
+  void FillRatio4434Histos(Int_t evtInterval, Int_t itc, Bool_t isEndOfCycle);
   Bool_t FillTriggerDCSHistos();
   TObjArray* GetDCSValues(Int_t iMeas, Int_t detElemId,
 			  TMap* triggerDcsMap, AliMpDCSNamer& triggerDcsNamer);

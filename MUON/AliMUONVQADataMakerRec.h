@@ -97,6 +97,8 @@ protected:
   TH1*     GetRecPointsData(Int_t index, int trCl) const  {return fMaster ? fMaster->GetRecPointsData(index, trCl) : 0x0;}
   TH1*     GetRawsData(Int_t index, int trCl)      const  {return fMaster ? fMaster->GetRawsData(index,trCl)       : 0x0;}
   
+  TH1*     GetMatchingRawsHisto(Int_t index, Int_t trigId) const {return fMaster ? fMaster->GetMatchingRawsHisto(index, trigId) : 0x0;}
+  
   Int_t Add2DigitsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);  
   Int_t Add2ESDsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);                      
   Int_t Add2RecPointsList(TH1 * hist, const Int_t index, const Bool_t expert = kFALSE, const Bool_t image = kFALSE);                 

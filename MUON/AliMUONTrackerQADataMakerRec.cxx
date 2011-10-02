@@ -540,9 +540,18 @@ void AliMUONTrackerQADataMakerRec::EndOfDetectorCycleDigits(Int_t specie, TObjAr
       TH1* hddl = GetDigitsData(AliMUONQAIndices::kTrackerDDLOccupancy, itc);
       TH1* hddlevents = GetDigitsData(AliMUONQAIndices::kTrackerDDLNofEventsUsed, itc);
     
-      if (itc==-1 && (!hbp || !hnevents || !hddl || !hddlevents) ) { // RS: produce error only for trigger-blind class
-	AliError(Form("Missing some histograms : cannot work : hbp=%p hnevents=%p hddl=%p hddlevents=%p",hbp,hnevents,hddl,hddlevents));
-	continue; //return; // RS
+      if ( (!hbp || !hnevents || !hddl || !hddlevents) ) 
+      { 
+        if (itc==-1)
+        {
+          // report error only for trigger-blind class
+          AliError(Form("Missing some histograms : cannot work : hbp=%p hnevents=%p hddl=%p hddlevents=%p",hbp,hnevents,hddl,hddlevents));
+          continue; //return; // RS
+        }
+        else
+        {
+          continue;
+        }
       }
       //    
       ProjectTrackerData(TrackerCalData(specie), *hbp,*hnevents,*hddl,*hddlevents);    
@@ -1045,7 +1054,7 @@ void AliMUONTrackerQADataMakerRec::InitRaws()
     
   Add2RawsList(new TH1F("hTrackerIsThere","tracker is there",1,0,1),AliMUONQAIndices::kTrackerIsThere,kTRUE,kFALSE,kFALSE);
   //
-  ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
+  //ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line  DONE at parent level
 }
 
 //__________________________________________________________________
@@ -1069,7 +1078,7 @@ void AliMUONTrackerQADataMakerRec::InitDigits()
   /// Book histograms that are common to Raws and Digits
   BookHistograms(AliQAv1::kDIGITSR);
   //
-  ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line
+  //ClonePerTrigClass(AliQAv1::kDIGITS); // this should be the last line  DONE at parent level
 } 
 
 //____________________________________________________________________________ 
@@ -1173,7 +1182,7 @@ void AliMUONTrackerQADataMakerRec::InitRecPoints()
   
   MappingCheckRecPoints(AliRecoParam::AConvert(Master()->GetEventSpecie()),kTRUE);
   //
-  ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line
+  //ClonePerTrigClass(AliQAv1::kRECPOINTS); // this should be the last line  DONE at parent level
 }
 
 //____________________________________________________________________________ 
@@ -1408,7 +1417,7 @@ void AliMUONTrackerQADataMakerRec::InitESDs()
   TH1F* hESDSumLocalChi2PerDE = new TH1F("hESDSumLocalChi2PerDE", "sum of local chi2 (~0.5*(#chi^{2}_{X}+#chi^{2}_{Y})) per DE;DetElem ID;#Sigma(local #chi^{2})", nDE+1, -0.5, nDE+0.5);
   Add2ESDsList(hESDSumLocalChi2PerDE, AliMUONQAIndices::kESDSumLocalChi2PerDE, expert, !image);
   //
-  ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line
+  //ClonePerTrigClass(AliQAv1::kESDS); // this should be the last line  DONE at parent level
 }
 
 //____________________________________________________________________________
