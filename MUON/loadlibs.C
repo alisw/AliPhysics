@@ -40,8 +40,8 @@ void loadlibs ()
   gSystem->Load("libRAWDatabase");
   gSystem->Load("libRAWDatarec");
   gSystem->Load("libCDB");
-  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSIS");
+  gSystem->Load("libSTEER");
   gSystem->Load("libANALYSISalice");
   
   gSystem->Load("libMUONcore");
