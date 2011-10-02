@@ -45,6 +45,7 @@
 #include <AliVVertex.h>
 #include <AliEMCALGeometry.h>
 #include <AliPHOSGeometry.h>
+#include <AliLog.h>
 
 ClassImp(AliAnalysisTaskCaloCellsQA)
 
@@ -82,7 +83,7 @@ AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t n
   else if (det == kPHOS)
     fCellsQA = new AliCaloCellsQA(nmods, AliCaloCellsQA::kPHOS);
   else
-    Fatal("AliAnalysisTaskCaloCellsQA::InitCellsQA", "Wrong detector provided");
+    AliFatal("Wrong detector provided");
 
   if (outfile) fOutfile = outfile;
   else
@@ -112,24 +113,26 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
 {
   // Does the job for one event
 
+  // event
+  AliVEvent *event = InputEvent();
+  if (!event) {
+    AliWarning("Could not get event");
+    return;
+  }
+
+  fCellsQA->InitTransientFindCurrentRun(event->GetRunNumber());
+
   // check geometry
   if (fCellsQA->GetDetector() == AliCaloCellsQA::kEMCAL) {
     if (!AliEMCALGeometry::GetInstance()) {
-      Info("UserExec", "EMCAL geometry not initialized, initializing it for you");
+      AliInfo("EMCAL geometry not initialized, initializing it for you");
       AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
     }
   } else {
     if (!AliPHOSGeometry::GetInstance()) {
-      Info("UserExec", "PHOS geometry not initialized, initializing it for you");
+      AliInfo("PHOS geometry not initialized, initializing it for you");
       AliPHOSGeometry::GetInstance("IHEP");
     }
-  }
-
-  // event
-  AliVEvent *event = InputEvent();
-  if (!event) {
-    Warning("AliAnalysisTaskCaloCellsQA::UserExec", "Could not get event");
-    return;
   }
 
   // pileup;  FIXME: why AliVEvent does not allow a version without arguments?
@@ -144,14 +147,14 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
     cells = event->GetPHOSCells();
 
   if (!cells) {
-    Warning("AliAnalysisTaskCaloCellsQA::UserExec", "Could not get cells");
+    AliWarning("Could not get cells");
     return;
   }
 
   // primary vertex
   AliVVertex *vertex = (AliVVertex*) event->GetPrimaryVertex();
   if (!vertex) {
-    Warning("AliAnalysisTaskCaloCellsQA::UserExec", "Could not get primary vertex");
+    AliWarning("Could not get primary vertex");
     return;
   }
 
@@ -160,7 +163,7 @@ void AliAnalysisTaskCaloCellsQA::UserExec(Option_t *)
   for (Int_t i = 0; i < event->GetNumberOfCaloClusters(); i++) {
     AliVCluster *clus = event->GetCaloCluster(i);
     if (!clus) {
-      Warning("AliAnalysisTaskCaloCellsQA::UserExec", "Could not get cluster");
+      AliWarning("Could not get cluster");
       return;
     }
 
