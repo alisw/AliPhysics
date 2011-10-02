@@ -158,13 +158,17 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
     if (result<1) continue;
     float planealpha=track.GetAlpha()-offsetAlpha;
     if (planealpha<0) planealpha+=TMath::TwoPi();
+    if (planealpha>TMath::TwoPi()) planealpha-=TMath::TwoPi();
     int slice=int(9*planealpha/TMath::Pi());
     if (z<0) slice+=18;
+    if (slice>=36) {
+      HLTError("invalid slice %d calculated from alpha %f", slice, track.GetAlpha());
+    }
     int partition=AliHLTTPCTransform::GetPatch(padrow);
     int row=padrow-AliHLTTPCTransform::GetFirstRow(partition);
     UInt_t id=AliHLTTPCSpacePointData::GetID(slice, partition, row);
     if (TMath::Abs(planealpha-GetPlaneAlpha(id))>0.0001) {
-      HLTError("alpha missmatch for plane %08x (slice %d): alpha from id %f (%.0f), expected %f (%.0f)", id, slice, GetPlaneAlpha(id), 180*GetPlaneAlpha(id)/TMath::Pi(), planealpha, 180*planealpha/TMath::Pi());
+      HLTError("alpha missmatch for plane %08x (slice %d): alpha from id %f (%.0f deg), expected %f (%.0f deg)", id, slice, GetPlaneAlpha(id), 180*GetPlaneAlpha(id)/TMath::Pi(), planealpha, 180*planealpha/TMath::Pi());
     }
     if (AddTrackPoint(AliHLTTrackPoint(id, y, z), AliHLTTPCSpacePointData::GetID(slice, partition, 0))>=0) {
       Float_t rpt[3]={0.,y,z}; // row pad time
@@ -178,6 +182,12 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
       if (TMath::Abs(m)>0.) {
       	rpt[2]=(z-n)/m;
 	fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
+	// cout << "  row "    << setfill(' ') << setw(3) << fixed << right << padrow
+	//      << "  y "      << setfill(' ') << setw(5) << fixed << right << setprecision (2) << y
+	//      << "  z "      << setfill(' ') << setw(5) << fixed << right << setprecision (2) << z
+	//      << "  pad "    << setfill(' ') << setw(5) << fixed << right << setprecision (2) << rpt[1]
+	//      << "  time "   << setfill(' ') << setw(5) << fixed << right << setprecision (2) << rpt[2]
+	//      << endl;
       } else {
 	ALIHLTERRORGUARD(1, "drift time correction not initialized, can not add track points in raw coordinates");
       }
@@ -411,7 +421,13 @@ int AliHLTTPCTrackGeometry::Write(const AliHLTGlobalBarrelTrack& track,
   if (size<=sizeof(AliHLTTPCTrackBlock)) return -ENOSPC;
   AliHLTTPCTrackBlock* pTrackBlock=reinterpret_cast<AliHLTTPCTrackBlock*>(outputPtr);
   pTrackBlock->fSize=sizeof(AliHLTTPCTrackBlock); // size of cluster block added later
-  pTrackBlock->fSlice=AliHLTUInt8_t(9*track.GetAlpha()/TMath::Pi());
+  float alpha=track.GetAlpha();
+  while (alpha<0.) alpha+=TMath::TwoPi();
+  while (alpha>TMath::TwoPi()) alpha-=TMath::TwoPi();
+  pTrackBlock->fSlice=AliHLTUInt8_t(9*alpha/TMath::Pi());
+  if (pTrackBlock->fSlice>=36) {
+    HLTError("invalid slice %d calculated from alpha %f", pTrackBlock->fSlice, track.GetAlpha());
+  }
   pTrackBlock->fReserved=0;
   pTrackBlock->fX      = track.GetX();
   pTrackBlock->fY      = track.GetY();
@@ -459,6 +475,7 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
       clrow=fRawTrackPoints.begin();
     }
   }
+  const AliHLTUInt32_t clusterCountBitLength=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kClusterCount].fBitLength;
   unsigned long dataPosition=pDeflater->GetCurrentByteOutputPosition();
   for (unsigned row=0; row<159 && bWriteSuccess; row++) {
     if (clrow!=fRawTrackPoints.end()) {
@@ -472,7 +489,7 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	// 1 bit for clusters on that padrow
 	bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(haveClusters);
 	if (haveClusters) {
-	  bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kClusterCount, clusters.size());
+	  bWriteSuccess=bWriteSuccess && pDeflater->OutputBits(clusters.size(), clusterCountBitLength);
 	  for (vector<AliHLTTrackSpacepoint>::const_iterator clid=clusters.begin();
 	       clid!=clusters.end() && bWriteSuccess; clid++) {
 	    if (!pSpacePoints->Check(clid->fId)) {
@@ -483,12 +500,22 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	      writtenClusterIds->push_back(clid->fId);
 	    }
 
-	    float deltapad =clid->fdU;
-	    float deltatime =clid->fdV;
+	    // FIXME: there is a bug in the calculation of the residuals stored with the
+	    // assiciated space point, calculate again, but needs to be fixed
+	    float deltapad =pSpacePoints->GetY(clid->fId)-clrow->GetU();//clid->fdU;
+	    float deltatime =pSpacePoints->GetZ(clid->fId)-clrow->GetV();//clid->fdV;
 	    float sigmaY2=pSpacePoints->GetYWidth(clid->fId);
 	    float sigmaZ2=pSpacePoints->GetZWidth(clid->fId);
 	    AliHLTUInt64_t charge=(AliHLTUInt64_t)pSpacePoints->GetCharge(clid->fId);
 	    AliHLTUInt64_t qmax=(AliHLTUInt64_t)pTPCRawSpacePoints->GetQMax(clid->fId);
+	    // cout << "  row "    << setfill(' ') << setw(3) << fixed << right << row
+	    // 	 << "  pad "    << setfill(' ') << setw(7) << fixed << right << setprecision (4) << pSpacePoints->GetY(clid->fId)
+	    // 	 << "  dpad "   << setfill(' ') << setw(7) << fixed << right << setprecision (4) << deltapad
+	    // 	 << "  time "   << setfill(' ') << setw(7) << fixed << right << setprecision (4) << pSpacePoints->GetZ(clid->fId)
+	    // 	 << "  dtime "  << setfill(' ') << setw(7) << fixed << right << setprecision (4) << deltatime
+	    // 	 << "  charge " << setfill(' ') << setw(5) << fixed << right << charge
+	    // 	 << "  qmax "   << setfill(' ') << setw(4) << fixed << right << qmax
+	    // 	 << endl;
 
 	    AliHLTUInt64_t deltapad64=0;
 	    AliHLTUInt32_t signDeltaPad=0;
@@ -508,10 +535,10 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	    if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
 	    AliHLTUInt64_t sigmaZ264=0;
 	    if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
-	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaPad);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualPad    , deltapad64);  
-	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaTime);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaPad);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kResidualTime   , deltatime64);
+	    bWriteSuccess=bWriteSuccess && pDeflater->OutputBit(signDeltaTime);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaY2        , sigmaY264);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaZ2        , sigmaZ264);
 	    bWriteSuccess=bWriteSuccess && pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge         , charge);
@@ -572,28 +599,47 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
   return pDeflater->GetCurrentByteOutputPosition()-dataPosition;
 }
 
-// int AliHLTTPCTrackGeometry::Read(AliHLTUInt8_t* buffer,
-// 				 AliHLTUInt32_t size,
-// 				 const char* /*option*/) const
-// {
-//   // read track block from buffer
-//   if (!buffer) return -EINVAL;
-//   if (size<sizeof(AliHLTTPCTrackBlock)) {
-//     HLTError("buffer does not contain valid data of track model clusters");
-//     return -ENODATA;
-//   }
-//   AliHLTTPCTrackBlock* pTrackBlock=reinterpret_cast<AliHLTTPCTrackBlock*>(buffer);
-//   if (pTrackBlock->fSize>size) {
-//     HLTError("inconsistent track data block of size %d exceeds available buffer of size %d", pTrackBlock->fSize, size);
-//     return -ENODATA;
-//   }
-//   pTrackBlock->fSlice=AliHLTUInt8_t(9*track.GetAlpha()/TMath::Pi());
-//   pTrackBlock->fReserved=0;
-//   pTrackBlock->fX      = track.GetX();
-//   pTrackBlock->fY      = track.GetY();
-//   pTrackBlock->fZ      = track.GetZ();
-//   pTrackBlock->fSinPsi = track.GetSnp();
-//   pTrackBlock->fTgl    = track.GetTgl();
-//   pTrackBlock->fq1Pt   = track.GetSigned1Pt();
-
-// }
+int AliHLTTPCTrackGeometry::Read(const AliHLTUInt8_t* buffer,
+				 AliHLTUInt32_t size,
+				 float bz,
+				 AliHLTUInt32_t& clusterBlockSize,
+				 const char* /*option*/)
+{
+  // read track block from buffer
+  int iResult=0;
+  if (!buffer) return -EINVAL;
+  if (size<sizeof(AliHLTTPCTrackBlock)) {
+    HLTError("buffer does not contain valid data of track model clusters");
+    return -ENODATA;
+  }
+  const AliHLTTPCTrackBlock* pTrackBlock=reinterpret_cast<const AliHLTTPCTrackBlock*>(buffer);
+  if (pTrackBlock->fSize>size) {
+    HLTError("inconsistent track data block of size %d exceeds available buffer of size %d", pTrackBlock->fSize, size);
+    return -ENODATA;
+  }
+  if (pTrackBlock->fSize<sizeof(AliHLTTPCTrackBlock)) {
+    HLTError("inconsistent size of track data block specified in the header: %d", pTrackBlock->fSize);
+    return -ENODATA;
+  }
+  AliHLTExternalTrackParam param;
+  memset(&param, 0, sizeof(param));
+  param.fAlpha   =( pTrackBlock->fSlice + 0.5 ) * TMath::Pi() / 9.0;
+  if (param.fAlpha>TMath::TwoPi()) param.fAlpha-=TMath::TwoPi();
+  param.fX       = pTrackBlock->fX;
+  param.fY       = pTrackBlock->fY;
+  param.fZ       = pTrackBlock->fZ;
+  param.fSinPsi  = pTrackBlock->fSinPsi;
+  param.fTgl     = pTrackBlock->fTgl;
+  param.fq1Pt    = pTrackBlock->fq1Pt;
+  AliHLTGlobalBarrelTrack track(param);
+  if ((iResult=track.CalculateHelixParams(bz))<0) {
+    HLTError("failed to calculate helix params: %d", iResult);
+    return iResult;
+  }
+  if ((iResult=CalculateTrackPoints(track))<0) {
+    HLTError("failed to calculate track points: %d", iResult);
+    return iResult;
+  }
+  clusterBlockSize=pTrackBlock->fSize-sizeof(AliHLTTPCTrackBlock);
+  return sizeof(AliHLTTPCTrackBlock);
+}
