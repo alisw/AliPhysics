@@ -321,13 +321,13 @@ void AliCaloCellsQA::Init(Int_t nmods, Int_t det, Int_t startRunNumber, Int_t en
 
   // check input (for design limitations only)
   if (det != kEMCAL && det != kPHOS) {
-    Error("AliCaloCellsQA::Init", "Wrong detector provided");
-    Info("AliCaloCellsQA::Init", "I will use EMCAL");
+    AliError("Wrong detector provided");
+    AliInfo("I will use EMCAL");
     det = kEMCAL;
   }
   if (nmods < 1 || nmods > 10) {
-    Error("AliCaloCellsQA::Init", "Wrong last supermodule number + 1 provided");
-    Info("AliCaloCellsQA::Init", "I will use nmods = 10");
+    AliError("Wrong last supermodule number + 1 provided");
+    AliInfo("I will use nmods = 10");
     nmods = 10;
   }
 
@@ -371,7 +371,7 @@ void AliCaloCellsQA::InitTransientFindCurrentRun(Int_t runNumber)
 
   // ... or add a new run
   if (fRI == fNRuns) {
-    if (fNRuns >= 1000) Fatal("AliCaloCellsQA::FindCurrentRunIndex", "Too many runs, how is this possible?");
+    if (fNRuns >= 1000) AliFatal("Too many runs, how is this possible?");
 
     fRunNumbers[fNRuns] = runNumber;
     InitHistosForRun(runNumber);
@@ -661,7 +661,7 @@ Int_t AliCaloCellsQA::GetSM(Int_t absId)
 
   // check for data corruption to avoid segfaults
   if (sm < 0 || sm > 9) {
-    Error("AliCaloCellsQA::GetSM", "Data corrupted");
+    AliError("Data corrupted");
     return -1;
   }
 
@@ -745,7 +745,7 @@ void AliCaloCellsQA::AbsIdToSMEtaPhi(Int_t absId, Int_t &sm, Int_t &eta, Int_t &
   if (fDetector == kEMCAL) {
     AliEMCALGeometry *geomEMCAL = AliEMCALGeometry::GetInstance();
     if (!geomEMCAL)
-      Fatal("AliCaloCellsQA::AbsIdToSMEtaPhi", "EMCAL geometry is not initialized");
+      AliFatal("EMCAL geometry is not initialized");
 
     Int_t nModule, nIphi, nIeta;
     geomEMCAL->GetCellIndex(absId, sm, nModule, nIphi, nIeta);
@@ -757,7 +757,7 @@ void AliCaloCellsQA::AbsIdToSMEtaPhi(Int_t absId, Int_t &sm, Int_t &eta, Int_t &
   if (fDetector == kPHOS) {
     AliPHOSGeometry *geomPHOS = AliPHOSGeometry::GetInstance();
     if (!geomPHOS)
-      Fatal("AliCaloCellsQA::AbsIdToSMEtaPhi", "PHOS geometry is not initialized");
+      AliFatal("PHOS geometry is not initialized");
 
     Int_t relid[4];
     geomPHOS->AbsToRelNumbering(absId, relid);
