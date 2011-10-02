@@ -391,14 +391,43 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
 
   // output of track model clusters
-  if (iResult>=0) {
+  if (iResult>=0) do {
+    AliHLTUInt32_t tracksBufferOffset=sizeof(AliHLTTPCTrackModelBlock);
+    if (capacity-size<tracksBufferOffset) {
+      iResult=-ENOSPC;
+      break;
+    }
     if (fpWrittenAssociatedClusterIds) fpWrittenAssociatedClusterIds->clear();
-    iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size, capacity-size);
+    AliHLTTPCTrackModelBlock* trackModelBlock=reinterpret_cast<AliHLTTPCTrackModelBlock*>(outputPtr+size);
+    trackModelBlock->fVersion=1;
+    trackModelBlock->fDeflaterMode=fpDataDeflater?fpDataDeflater->GetDeflaterVersion():0;
+    trackModelBlock->fTrackCount=inputTrackArray.size();
+    trackModelBlock->fClusterCount=0;
+    trackModelBlock->fGlobalParameterCnt=5;
+    tracksBufferOffset+=trackModelBlock->fGlobalParameterCnt*sizeof(trackModelBlock->fGlobalParameters);
+    if (capacity-size<tracksBufferOffset) {
+      iResult=-ENOSPC;
+      break;
+    }
+
+    AliHLTUInt32_t parameterIndex=0;
+    trackModelBlock->fGlobalParameters[parameterIndex++]=GetBz();
+    trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeFactorA;
+    trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeOffsetA;
+    trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeFactorC;
+    trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeOffsetC;
+    if (parameterIndex!=trackModelBlock->fGlobalParameterCnt) {
+      HLTError("internal error, size of parameter array has changed without providing all values");
+      iResult=-EFAULT;
+      break;
+    }
+
+    iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size+tracksBufferOffset, capacity-size-tracksBufferOffset);
     if (iResult>=0) {
       AliHLTComponent_BlockData bd;
       FillBlockData(bd);
       bd.fOffset        = size;
-      bd.fSize          = iResult;
+      bd.fSize          = tracksBufferOffset+iResult;
       bd.fDataType      = AliHLTTPCDefinitions::ClusterTracksCompressedDataType();
       bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
       outputBlocks.push_back(bd);
@@ -410,16 +439,20 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	AliHLTComponent::FillBlockData(bd);
 	bd.fOffset        = size;
 	bd.fSize        = fpWrittenAssociatedClusterIds->size()*sizeof(vector<AliHLTUInt32_t>::value_type);
-	memcpy(outputPtr+bd.fOffset, &(*fpWrittenAssociatedClusterIds)[0], bd.fSize);
-	bd.fDataType    = AliHLTTPCDefinitions::ClusterIdTracksDataType();
-	bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
-	outputBlocks.push_back(bd);    
-	size += bd.fSize;
+	if (capacity-size>-bd.fSize) {
+	  memcpy(outputPtr+bd.fOffset, &(*fpWrittenAssociatedClusterIds)[0], bd.fSize);
+	  bd.fDataType    = AliHLTTPCDefinitions::ClusterIdTracksDataType();
+	  bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
+	  outputBlocks.push_back(bd);    
+	  size += bd.fSize;
+	} else {
+	  iResult=-ENOSPC;
+	}
 	
 	fpWrittenAssociatedClusterIds->clear();
       }
     }
-  }
+  } while (0);
 
   fRawInputClusters->Clear();
 

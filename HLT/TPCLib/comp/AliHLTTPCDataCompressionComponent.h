@@ -91,6 +91,15 @@ public:
   /// inherited from AliHLTComponent: spawn function.
   virtual AliHLTComponent* Spawn();
 
+  struct AliHLTTPCTrackModelBlock {
+    AliHLTUInt8_t  fVersion;             //! version of the header
+    AliHLTUInt8_t  fDeflaterMode;        //! deflater mode
+    AliHLTUInt16_t fTrackCount;          //! number of tracks in the block
+    AliHLTUInt16_t fClusterCount;        //! number of clusters in the block
+    AliHLTUInt16_t fGlobalParameterCnt;  //! number of global parameters
+    float          fGlobalParameters[1]; //! array of global parameters
+  };
+
 protected:
   /// inherited from AliHLTProcessor: data processing
   int DoEvent( const AliHLTComponentEventData& evtData, 
