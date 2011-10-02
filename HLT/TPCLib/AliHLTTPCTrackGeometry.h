@@ -82,6 +82,9 @@ class AliHLTTPCTrackGeometry : public AliHLTTrackGeometry
 				      vector<AliHLTUInt32_t>* writtenClusterIds=NULL,
 				      const char* option="") const;
 
+  int Read(const AliHLTUInt8_t* buffer, AliHLTUInt32_t size, float bz,
+	   AliHLTUInt32_t& clusterBlockSize, const char* option=NULL);
+
   int InitDriftTimeTransformation(float mA, float nA, float mC, float nC) {
     fDriftTimeFactorA=mA; fDriftTimeOffsetA=nA; fDriftTimeFactorC=mC; fDriftTimeOffsetC=nC; return 0;
   }
