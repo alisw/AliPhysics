@@ -38,6 +38,7 @@ public:
   virtual void InitSummaryHistograms(Int_t nbins = 400, Double_t emax = 4.,
                                      Int_t nbinsh = 100, Double_t emaxh = 300.,
                                      Int_t nbinst = 250, Double_t tmin = 0.4e-6, Double_t tmax = 0.85e-6);
+  virtual void InitTransientFindCurrentRun(Int_t runNumber);
   virtual void Fill(Int_t runNumber, TObjArray *clusArray, AliVCaloCells *cells, Double_t vertexXYZ[3]);  // main method
 
   // getters
@@ -58,7 +59,6 @@ public:
 protected:
 
   virtual void    Init(Int_t nmods, Int_t det, Int_t startRunNumber, Int_t endRunNumber);
-  virtual void    InitTransientFindCurrentRun(Int_t runNumber);
   virtual void    InitTransientMembers(Int_t run);
   virtual void    InitHistosForRun(Int_t run);
 
