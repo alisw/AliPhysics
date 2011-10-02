@@ -214,7 +214,13 @@ int AliHLTGlobalBarrelTrack::SetPoints(const UInt_t* pArray, UInt_t arraySize)
 int AliHLTGlobalBarrelTrack::CalculateHelixParams()
 {
   // calculate radius and center of the helix
-  float bfield=AliHLTMisc::Instance().GetBz();
+  // using the global magnetic field
+  return CalculateHelixParams(AliHLTMisc::Instance().GetBz());
+}
+
+int AliHLTGlobalBarrelTrack::CalculateHelixParams(float bfield)
+{
+  // calculate radius and center of the helix
   if (TMath::Abs(bfield)<kAlmost0) {
     // no magnetic field -> straight lines
     fHelixRadius=kVeryBig;

@@ -128,9 +128,12 @@ class AliHLTGlobalBarrelTrack : public AliKalmanTrack
   /// and phi
   int CalculateCrossingPoint(float xPlane, float phiPlane, float& u, float& v);
 
- protected:
-  /// calculate and set internal helix parameters
+  /// calculate and set internal helix parameters using the global magnetic field
   int CalculateHelixParams();
+  /// calculate and set internal helix parameters
+  int CalculateHelixParams(float bfield);
+
+ protected:
 
  private:
 
