@@ -84,13 +84,20 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
   // BEGIN OF LIMITS
   // Fixme: Move me to reference histos
   Float_t safeFactor = 5.;
-  Float_t alarmPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
-  Float_t alarmPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
-  Float_t alarmPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
+  Float_t warningPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., 100., 100., 100., 100., safeFactor*1., safeFactor*1., safeFactor*1.};
+  Float_t warningPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {safeFactor*0.4, safeFactor*1., 6.2, 0.0001, safeFactor*0.4};
+  Float_t warningPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {safeFactor*1., safeFactor*1., safeFactor*1., safeFactor*1.};
 
-  Float_t* alarmPercent[kNrawsHistos] = {alarmPercentTrigAlgo, alarmPercentCalib, alarmPercentReadout};
+  Float_t* warningPercent[kNrawsHistos] = {warningPercentTrigAlgo, warningPercentCalib, warningPercentReadout};
+  
+  Float_t errorFactor = 30.;
+  Float_t errorPercentTrigAlgo[AliMUONQAIndices::kNtrigAlgoErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., 100., 100., 100., 100., errorFactor*1., errorFactor*1., errorFactor*1.};
+  Float_t errorPercentCalib[AliMUONQAIndices::kNtrigCalibSummaryBins] = {errorFactor*0.4, errorFactor*1., 3.*6.2, 3.*0.0001, errorFactor*0.4};
+  Float_t errorPercentReadout[AliMUONQAIndices::kNtrigStructErrorBins] = {errorFactor*1., errorFactor*1., errorFactor*1., errorFactor*1.};
   // END OF LIMTS
 
+  Float_t* errorPercent[kNrawsHistos] = {errorPercentTrigAlgo, errorPercentCalib, errorPercentReadout};
+  
   TObjArray messages;
   messages.SetOwner(kTRUE);
 
@@ -103,8 +110,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
     if ( hAnalyzedEvents ) 
       nAnalyzedEvents = TMath::Nint(hAnalyzedEvents->GetBinContent(1));
 
-//    if ( nAnalyzedEvents == 0 )
-//      rv[specie] = AliMUONVQAChecker::kFatal;
+    //if ( nAnalyzedEvents == 0 ) rv[specie] = AliMUONVQAChecker::kFatal;
 
     for(Int_t ihisto = 0; ihisto<kNrawsHistos; ihisto++){
       AliMUONVQAChecker::ECheckCode currRv = AliMUONVQAChecker::kInfo;
@@ -114,13 +120,15 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 
       Int_t nbins = currHisto->GetXaxis()->GetNbins();
       for (Int_t ibin = 1; ibin<=nbins; ibin++){
-	Double_t binContent = currHisto->GetBinContent(ibin);
-	if ( binContent > alarmPercent[ihisto][ibin-1] )
-	  currRv = AliMUONVQAChecker::kWarning;
-	else if ( ibin == 4 && binContent > 50. ) {
-	  messages.Add(new TObjString("Do not panic:")); 
-	  messages.Add(new TObjString("copy errors do not affect data"));
-	}
+        Double_t binContent = currHisto->GetBinContent(ibin);
+        if ( binContent > errorPercent[ihisto][ibin-1] )
+          currRv = AliMUONVQAChecker::kError;
+        else if ( binContent > warningPercent[ihisto][ibin-1] )
+          currRv = AliMUONVQAChecker::kWarning;
+        else if ( ibin == 4 && binContent > 50. && AliRecoParam::ConvertIndex(specie) == AliRecoParam::kCalib) {
+          messages.Add(new TObjString("Do not panic:")); 
+          messages.Add(new TObjString("copy errors do not affect data"));
+        }
       } // loop on bins
       if ( currRv != AliMUONVQAChecker::kInfo ) {
 	switch ( histoRawsPercentIndex[ihisto] ) {
@@ -138,7 +146,7 @@ AliMUONTriggerQAChecker::CheckRaws(TObjArray** list, const AliMUONRecoParam* )
 		  currRv == AliMUONVQAChecker::kFatal )
 	  messages.Add(new TObjString("are too high"));
       }
-      else {
+      else if ( nAnalyzedEvents != 0 ) {
 	switch ( histoRawsPercentIndex[ihisto] ) {
 	case AliMUONQAIndices::kTriggerErrorSummaryNorm:
 	case AliMUONQAIndices::kTriggerCalibSummaryNorm:
@@ -181,8 +189,8 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
   /// Add text to histos
   //
 
-  Double_t y1 = 0.97 - (messages.GetLast()+2)*0.075;
-  TPaveText* text = new TPaveText(0.5,y1,0.99,0.99,"NDC");
+  Double_t y1 = 0.87 - (messages.GetLast()+2)*0.075;
+  TPaveText* text = new TPaveText(0.25,y1,0.75,0.89,"NDC");
     
   text->AddText(Form("MTR - Total events %i", nevents));
     
@@ -192,32 +200,38 @@ void AliMUONTriggerQAChecker::SetupHisto(Int_t nevents, const TObjArray& message
   while ( ( str = static_cast<TObjString*>(next()) ) ){
     text->AddText(str->String());
   }
-    
-  if ( nevents == 0 ) 
-  {
-    text->AddText("No event analyzed.");
-  }
 
-  TString defaultText = "";
-
+  TString defaultText = "";  
   Int_t color = 0;
-  switch ( code ) {
-  case AliMUONVQAChecker::kInfo:
-    color = AliMUONVQAChecker::kInfoColor;
-    defaultText = "All is fine!";
-    break;
-  case AliMUONVQAChecker::kWarning:
-    color = AliMUONVQAChecker::kWarningColor;
-    defaultText = "Please keep an eye on it!";
-    break;
-  case AliMUONVQAChecker::kFatal:
+  
+  if ( nevents == 0 ) {
     color = AliMUONVQAChecker::kFatalColor;
-    defaultText = "This is bad: PLEASE CALL EXPERT!!!";
-    break;
-  default:
-    color = AliMUONVQAChecker::kErrorColor;
-    defaultText = "PLEASE NOTIFY EXPERT! (NOT at night)";
-    break;
+    defaultText = "No events analyzed!";
+  }
+  else if ( nevents <= 20 ) {
+    color = AliMUONVQAChecker::kWarningColor;
+    text->AddText("Not enough events to judge");
+    text->AddText("Please wait for more statistics");
+  }
+  else {
+    switch ( code ) {
+      case AliMUONVQAChecker::kInfo:
+        color = AliMUONVQAChecker::kInfoColor;
+        defaultText = "All is fine!";
+        break;
+      case AliMUONVQAChecker::kWarning:
+        color = AliMUONVQAChecker::kWarningColor;
+        defaultText = "Please keep an eye on it!";
+        break;
+      case AliMUONVQAChecker::kFatal:
+        color = AliMUONVQAChecker::kFatalColor;
+        defaultText = "PLEASE CALL MUON TRIGGER EXPERT!!!";
+        break;
+      default:
+        color = AliMUONVQAChecker::kErrorColor;
+        defaultText = "PLEASE CALL MUON TRIGGER EXPERT!";
+        break;
+    }
   }
 
   text->AddText(defaultText.Data());
