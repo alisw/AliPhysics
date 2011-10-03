@@ -56,6 +56,7 @@ AliAODPidHF::AliAODPidHF():
   fMC(kFALSE),
   fOnePad(kFALSE),
   fMCLowEn2011(kFALSE),
+  fppLowEn2011(kFALSE),
   fPbPb(kFALSE),
   fTOFdecide(kFALSE),
   fOldPid(kTRUE),
@@ -116,6 +117,7 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fMC(pid.fMC),
   fOnePad(pid.fOnePad),
   fMCLowEn2011(pid.fMCLowEn2011),
+  fppLowEn2011(pid.fppLowEn2011),
   fPbPb(pid.fPbPb),
   fTOFdecide(pid.fTOFdecide),
   fOldPid(pid.fOldPid),
@@ -804,35 +806,43 @@ void AliAODPidHF::SetBetheBloch(AliTPCPIDResponse &tpcResp) const{
 
    if(fOnePad) { // pp 1-pad (since LHC10d)
 
-    alephParameters[0] =1.34490e+00/50.; 
-    alephParameters[1] = 2.69455e+01; 
-    alephParameters[2] = TMath::Exp(-2.97552e+01); 
-    alephParameters[3] = 2.35339e+00; 
-    alephParameters[4] = 5.98079e+00;
-    
-  } else if(fPbPb) { // PbPb 
-    
-    // alephParameters[0] = 1.25202/50.; 
-    // alephParameters[1] = 2.74992e+01; 
-    // alephParameters[2] = TMath::Exp(-3.31517e+01); 
-    // alephParameters[3] = 2.46246; 
-    // alephParameters[4] = 6.78938;
-    
-    alephParameters[0] = 5.10207e+00/50.; 
-    alephParameters[1] = 7.94982e+00; 
-    alephParameters[2] = TMath::Exp(-9.07942e+00); 
-    alephParameters[3] = 2.38808e+00; 
-    alephParameters[4] = 1.68165e+00;
-    
-  } else {  // pp no 1-pad (LHC10bc)
+     alephParameters[0] =1.34490e+00/50.; 
+     alephParameters[1] = 2.69455e+01; 
+     alephParameters[2] = TMath::Exp(-2.97552e+01); 
+     alephParameters[3] = 2.35339e+00; 
+     alephParameters[4] = 5.98079e+00;
+     
+   } else if(fPbPb) { // PbPb 
+     
+     // alephParameters[0] = 1.25202/50.; 
+     // alephParameters[1] = 2.74992e+01; 
+     // alephParameters[2] = TMath::Exp(-3.31517e+01); 
+     // alephParameters[3] = 2.46246; 
+     // alephParameters[4] = 6.78938;
+     
+     alephParameters[0] = 5.10207e+00/50.; 
+     alephParameters[1] = 7.94982e+00; 
+     alephParameters[2] = TMath::Exp(-9.07942e+00); 
+     alephParameters[3] = 2.38808e+00; 
+     alephParameters[4] = 1.68165e+00;
+     
+   } else if(fppLowEn2011){ // pp low energy
 
-    alephParameters[0] = 0.0283086/0.97;
-    alephParameters[1] = 2.63394e+01;
-    alephParameters[2] = 5.04114e-11;
-    alephParameters[3] = 2.12543e+00;
-    alephParameters[4] = 4.88663e+00;
-    
-  }
+     alephParameters[0]=0.031642;
+     alephParameters[1]=22.353;
+     alephParameters[2]=4.16239e-12;
+     alephParameters[3]=2.61952;
+     alephParameters[4]=5.76086;    
+
+   } else {  // pp no 1-pad (LHC10bc)
+
+     alephParameters[0] = 0.0283086/0.97;
+     alephParameters[1] = 2.63394e+01;
+     alephParameters[2] = 5.04114e-11;
+     alephParameters[3] = 2.12543e+00;
+     alephParameters[4] = 4.88663e+00;
+     
+   }
   
  }
 
