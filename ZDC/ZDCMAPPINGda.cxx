@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
   //const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
   //monitorDeclareTable(const_cast<char**>(tableSOD));
   
-  int status = 0;
+  int status=0, nphys=0;
   int const kNModules = 10;
   int const kNChannels = 24;
   int const kNScChannels = 32;  
@@ -104,12 +104,12 @@ int main(int argc, char **argv) {
   TH1F * hTDC[6];
   char ntdchist[20];
   for(Int_t it=0; it<6; it++){
-    if(it==0)      hTDC[it] = new TH1F("TDCZNC", "TDC ZNC", 200, 150., 350.);
-    else if(it==1) hTDC[it] = new TH1F("TDCZNA", "TDC ZNA", 200, 150., 350.);
-    else if(it==2) hTDC[it] = new TH1F("TDCZPC", "TDC ZPC", 200, 150., 350.);
-    else if(it==3) hTDC[it] = new TH1F("TDCZPA", "TDC ZPA", 200, 150., 350.);
-    else if(it==4) hTDC[it] = new TH1F("TDCZEM1","TDC ZEM1",200, 150., 350.);
-    else if(it==5) hTDC[it] = new TH1F("TDCZEM2","TDC ZEM2",200, 150., 350.);
+    if(it==0)      hTDC[it] = new TH1F("TDCZNC", "TDC ZNC", 200, -200., 200.);
+    else if(it==1) hTDC[it] = new TH1F("TDCZNA", "TDC ZNA", 200, -200., 200.);
+    else if(it==2) hTDC[it] = new TH1F("TDCZPC", "TDC ZPC", 200, -200., 200.);
+    else if(it==3) hTDC[it] = new TH1F("TDCZPA", "TDC ZPA", 200, -200., 200.);
+    else if(it==4) hTDC[it] = new TH1F("TDCZEM1","TDC ZEM1",200, -200., 200.);
+    else if(it==5) hTDC[it] = new TH1F("TDCZEM2","TDC ZEM2",200, -200., 200.);
   }
   
   /* log start of process */
@@ -274,11 +274,16 @@ int main(int argc, char **argv) {
 	       //
 	       if(itdc==15 && ihittdc<1){
 	         tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
-       	         for(int ic=0; ic<6; ic++) if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
+       	         for(int ic=0; ic<6; ic++){
+		   if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
+		 }
 	       }
 	     }
 	  }
         }
+	
+	nphys++;
+	
       }//(if PHYSICS_EVENT) 
       
       iev++; 
@@ -288,6 +293,7 @@ int main(int argc, char **argv) {
     }    
       
   }
+  printf(" \n # of physics events analyzed = %d\n\n", nphys);
 
   /* Analysis of the histograms */
   //
@@ -341,13 +347,13 @@ int main(int argc, char **argv) {
   // [2] File with TDC data
   status = daqDA_FES_storeFile(TDCDATA_FILE, "TDCDATA");
   if(status){
-    printf("Failed to export pedestal data file to DAQ FES\n");
+    printf("Failed to export TDC data file to DAQ FES\n");
     return -1;
   }
   // [3] File with TDC histos
   status = daqDA_FES_storeFile(TDCHISTO_FILE, "TDCHISTOS");
   if(status){
-    printf("Failed to export pedestal histos file to DAQ FES\n");
+    printf("Failed to export TDC histos file to DAQ FES\n");
     return -1;
   }
 
