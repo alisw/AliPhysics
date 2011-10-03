@@ -30,14 +30,12 @@ class AliMUONDigitCalibrator : public TObject
 {
 public:
 
-  AliMUONDigitCalibrator(Int_t runNumber, const char* calibMode="NOGAIN");
+  AliMUONDigitCalibrator(Int_t runNumber);
   
   AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, 
-                         const AliMUONRecoParam* recoParams,
-                         const char* calibMode="NOGAIN");
+                         const AliMUONRecoParam* recoParams);
   
-  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, 
-                         const char* calibMode="NOGAIN");
+  AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, int b);
   
   virtual ~AliMUONDigitCalibrator();
   
@@ -61,8 +59,7 @@ private:
   /// Not implemented
   AliMUONDigitCalibrator& operator=(const AliMUONDigitCalibrator& other);
   
-  void Ctor(const char* calibMode,
-            const AliMUONCalibrationData& calib,
+  void Ctor(const AliMUONCalibrationData& calib,
             const AliMUONRecoParam* recoParams,
             Bool_t deferredInitialization=kTRUE);
   

@@ -231,17 +231,15 @@ AliMUONSDigitizerV2::Exec(Option_t*)
     
     while ( ( d = static_cast<AliMUONVDigit*>(next()) ) )
     {
-      if ( d->Charge() > 0 ) // that check would be better in the disintegrate
-        // method, but to compare with old sdigitizer, it has to be there.
+      d->ChargeInFC(kTRUE);
+      
+      AliMUONVDigit* added = sDigitStore->Add(*d,AliMUONVDigitStore::kMerge);
+      if (!added)
       {
-        AliMUONVDigit* added = sDigitStore->Add(*d,AliMUONVDigitStore::kMerge);
-        if (!added)
-        {
-          AliError("Could not add digit to digitStore");
-        }
+        AliError("Could not add digit to digitStore");
       }
     }
-
+  
     treeS->Fill();
     
     loader->WriteSDigits("OVERWRITE");

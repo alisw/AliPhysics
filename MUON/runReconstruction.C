@@ -35,31 +35,33 @@
 //#include <TObjectTable.h>
 #endif
 
-void runReconstruction(int seed, const char* input, const char* recoptions, bool embedding)
+void runReconstruction(int seed, const char* input, const char* recoptions, bool rawocdb)
 { 
   AliCDBManager* man = AliCDBManager::Instance();
   
-  if ( embedding ) 
+  if ( rawocdb ) 
   {
-    cout << "**** WILL USE RAW OCDB AS WE'RE RECONSTRUCTING EMBEDDED DATA" << endl;
-    man->SetDefaultStorage("raw://");
-  }
+    cout << "**** WILL USE RAW OCDB" << endl;
+    man->SetDefaultStorage("raw://"); //alien://folder=/alice/data/2011/OCDB?cacheFold=/Users/laurent/OCDBcache");
+    man->SetSpecificStorage("ITS/Calib/RecoParam","alien://folder=/alice/cern.ch/user/p/ppillot/OCDB_PbPbSim");
+  } 
   else
   {
     man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
 
     man->SetSpecificStorage("GRP/GRP/Data",
                             Form("local://%s",gSystem->pwd()));
+
   }
   
   gRandom->SetSeed(seed);
   
   AliReconstruction* MuonRec = new AliReconstruction("galice.root");
   MuonRec->SetInput(gSystem->ExpandPathName(input));
-  MuonRec->SetRunReconstruction("MUON");
+  MuonRec->SetRunReconstruction("MUON ITS");
   MuonRec->SetFillESD("HLT");
   MuonRec->SetOption("HLT", "libAliHLTMUON.so");
-  MuonRec->SetNumberOfEventsPerFile(1000);
+  MuonRec->SetNumberOfEventsPerFile(10000);
   MuonRec->SetOption("MUON",recoptions);
   MuonRec->SetRunQA("MUON:ALL");
   MuonRec->SetQAWriteExpert(AliQAv1::kMUON);

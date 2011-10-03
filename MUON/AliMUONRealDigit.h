@@ -57,6 +57,11 @@ public:
   /// Set the calibration status
   virtual void Calibrated(Bool_t value) { SetBit(kCalibrated,value); }
   
+  /// Whether this digit has its charge already in fC
+  virtual Bool_t IsChargeInFC() const { return TestBit(kChargeInFC); }
+  /// Set the charge unit value
+  virtual void ChargeInFC(Bool_t value=kTRUE) { SetBit(kChargeInFC,value); }
+
   /// Whether this digit is part of a cluster or something else
   virtual Bool_t IsUsed() const { return TestBit(kUsed); }
   /// Set the used status
@@ -89,10 +94,11 @@ private:
   {
     kSaturated = BIT(20),  ///< to indicate that manas amplifier has saturated 
     kUsed = BIT(21),       ///< whether the digit is used (e.g. in a cluster)
-    kCalibrated = BIT(22)  ///< whether the digit has been calibrated or not 
+    kCalibrated = BIT(22),  ///< whether the digit has been calibrated or not 
+    kChargeInFC = BIT(23)   ///< whether the digit has a charge in fC or not
   };
   
-  ClassDef(AliMUONRealDigit,1) // Implementation of AliMUONVDigit
+  ClassDef(AliMUONRealDigit,2) // Implementation of AliMUONVDigit
 };
 
 #endif

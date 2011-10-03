@@ -29,6 +29,7 @@ class AliLoader;
 class AliMUONVTriggerStore;
 class AliMUONTriggerElectronics;
 class AliMUONVCalibParam;
+class AliMUONRecoParam;
 class AliMUONTriggerChamberEfficiency;
 class AliMUONTriggerUtilities;
 
@@ -49,11 +50,11 @@ public:
                                        Int_t channel,
                                        Float_t charge,
                                        Bool_t addNoise=kFALSE,
-                                       Bool_t noiseOnly=kFALSE);
+                                       Bool_t noiseOnly=kFALSE,
+                                       const TString& calibrationMode="NOGAIN");
   
-  /// Set calibration data
-  void SetCalibrationData(AliMUONCalibrationData* calibrationData) 
-                          {fCalibrationData = calibrationData;}
+  /// Set calibration (and recoparam) data
+  void SetCalibrationData(AliMUONCalibrationData* calibrationData, AliMUONRecoParam* recoParam);
 
   /// Set the number of sigmas for pedestal cut
   static void SetNSigmas(Double_t nsigmas=4.0) { fgNSigmas = nsigmas; }
@@ -102,11 +103,12 @@ private:
   AliMUONVDigitStore* fDigitStore; //!< temporary digits
   AliMUONVDigitStore* fOutputDigitStore; //!< digits we'll output to disk
   TObjArray* fInputDigitStores; //!< input digit stores (one per input file
+  AliMUONRecoParam* fRecoParam; //!< reco params (to know how to decalibrate) (not owner)
   AliMUONTriggerChamberEfficiency* fTriggerEfficiency; //!< trigger efficiency map
   AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
   TArrayI fEfficiencyResponse; //!< Local board efficiency response
   
-  ClassDef(AliMUONDigitizerV3,10) // MUON Digitizer V3-9
+  ClassDef(AliMUONDigitizerV3,11) // MUON Digitizer V3-11
 };
 
 #endif

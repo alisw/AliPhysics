@@ -268,7 +268,7 @@ AliMUONTrackerDataMaker::Ctor(const AliMUONRecoParam* recoParam,
       AliCDBManager::Instance()->SetDefaultStorage(storage);
     }
     
-    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam,calibMode);
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam);
     //FIXME: get the reco param from GUI and/or from OCDB if not used from the QA code ?
   }
 }

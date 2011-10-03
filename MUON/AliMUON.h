@@ -28,6 +28,7 @@ class AliMUONDigitMaker;
 class AliMUONVHitStore;
 class AliMUONCalibrationData;
 class AliMUONDigitCalibrator;
+class AliMUONRecoParam;
 
 class AliLoader;
 
@@ -150,6 +151,8 @@ class AliMUON : public  AliDetector
 
     const AliMUONGeometry* GetGeometry() const;
 
+  AliMUONRecoParam* GetRecoParam() const;
+  
     Int_t                 fNCh;                ///< Number of chambers   
     Int_t                 fNTrackingCh;        ///< Number of tracking chambers*
     Int_t                 fSplitLevel;         ///< Splitlevel when making branches in outfiles.
@@ -192,9 +195,9 @@ class AliMUON : public  AliDetector
     
     AliMUONCalibrationData* fCalibrationData; ///< pointer of calibration data
 
-  AliMUONDigitCalibrator* fDigitCalibrator; ///< digit calibrator (for raw2sdigits)
+  AliMUONDigitCalibrator* fDigitCalibrator; //!< digit calibrator (for raw2sdigits)
   
-    ClassDef(AliMUON,24)  // MUON Detector base class
+    ClassDef(AliMUON,25)  // MUON Detector base class
 };
 #endif
 

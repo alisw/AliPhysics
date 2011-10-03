@@ -445,7 +445,7 @@ AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
   
   AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
   AliMUONDigitizerV3::SetNSigmas(fDigitizerNSigmas);
-  digitizer->SetCalibrationData(fCalibrationData);
+  digitizer->SetCalibrationData(fCalibrationData,GetRecoParam());
   return digitizer;
 }
 
@@ -540,34 +540,14 @@ Bool_t AliMUON::Raw2SDigits(AliRawReader* rawReader)
 	
   if (!fDigitCalibrator)
   {
-    AliMUONRecoParam* recoParam = 0x0;
-    
-    AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
-    
-    if (entry) 
-    {      
-      // load recoParam according OCDB content (single or array)
-      if (!(recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject()))) 
-      {        
-        TObjArray* recoParamArray = static_cast<TObjArray*>(entry->GetObject());
-        
-        for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); ++i)
-        {
-          recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));
-          if (recoParam && recoParam->IsDefault()) break;
-          recoParam = 0x0;
-        }        
-      }      
-    }
+    AliMUONRecoParam* recoParam = GetRecoParam();
     
     if (!recoParam)
     {
       AliFatal("Cannot work without recoparams !");
     }
     
-    TString calibMode = recoParam->GetCalibrationMode();
-  
-    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam,calibMode.Data());
+    fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,recoParam);
   }
   
 	fDigitMaker->Raw2Digits(rawReader,sDigitStore,triggerStore);
@@ -666,5 +646,30 @@ Int_t  AliMUON::GetDigitizerWithNoise() const
     return fDigitizerWithNoise;
     
 }  
+
+//____________________________________________________________________
+AliMUONRecoParam* AliMUON::GetRecoParam() const
+{
+  AliMUONRecoParam* recoParam = 0x0;
+
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
+
+  if (entry) 
+  {      
+    // load recoParam according OCDB content (single or array)
+    if (!(recoParam = dynamic_cast<AliMUONRecoParam*>(entry->GetObject()))) 
+    {        
+      TObjArray* recoParamArray = static_cast<TObjArray*>(entry->GetObject());
+      
+      for(Int_t i = 0; i < recoParamArray->GetEntriesFast(); ++i)
+      {
+        recoParam = static_cast<AliMUONRecoParam*>(recoParamArray->UncheckedAt(i));
+        if (recoParam && recoParam->IsDefault()) break;
+        recoParam = 0x0;
+      }        
+    }      
+  }
+  return recoParam;
+}
 
 

@@ -70,7 +70,8 @@
 void Config(const char* directory="", 
             const char* option="param", 
             const char* digitstore="AliMUONDigitStoreV2S",
-            bool forEmbedding=kFALSE)
+            bool forEmbedding=kFALSE,
+            bool forRealistic=kFALSE)
 {
   //=====================================================================
   // Config file for MUON test
@@ -99,7 +100,7 @@ void Config(const char* directory="",
     { gAlice->Fatal("Config.C","Can not instatiate the Run Loader");
       return; }
   rl->SetCompressionLevel(2);
-  rl->SetNumberOfEventsPerFile(100);
+  rl->SetNumberOfEventsPerFile(10000);
   gAlice->SetRunLoader(rl);
   //=======================================================================
   // For having more debuging messages
@@ -176,7 +177,11 @@ void Config(const char* directory="",
     gener->SetCutOnChild(1);
     gener->SetChildPhiRange(0.,360.);
     gener->SetChildThetaRange(171.0,178.0);
-    gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0);           //Sigma in (X,Y,Z) (cm) on IP position
+    gener->SetOrigin(0,0,0);          //vertex position    gener->SetSigma(0,0,0); //Sigma in (X,Y,Z) (cm) on IP position
+    if (forRealistic)
+    {
+      gener->SetVertexSmear(kPerEvent);
+    }
     gener->SetForceDecay(kDiMuon);
     gener->SetTrackingFlag(1);
     gener->Init();
@@ -275,8 +280,11 @@ void Config(const char* directory="",
     MUON->SetDigitizerWithNoise(0);
 		MUON->SetConvertTrigger(true);
     
-    new AliITSv11Hybrid("ITS","ITS v11Hybrid");
-    
+    new AliITSv11Hybrid("ITS","ITS v11Hybrid");    
+  }
+  else if (forRealistic)
+  {
+    new AliITSv11Hybrid("ITS","ITS v11Hybrid");        
   }
   
   // Use non-high performance raw data decoder 

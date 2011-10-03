@@ -64,14 +64,16 @@ public:
   /// Set the efficiencyApplied status
   virtual void EfficiencyApplied(Bool_t /*value*/=kTRUE) {}
   
-  /// Whether this digit has been calibrated or not
+  /// Whether this digit has been calibrated or not (see note 1 in AliMUONVDigit.cxx)
   virtual Bool_t IsCalibrated() const=0;
-  /// Set the calibrated status
+  /// Set the calibrated status (see note 1 in AliMUONVDigit.cxx)
   virtual void Calibrated(Bool_t value)=0;
 
-  /// Whether this digit has charge in femto coulomb
+  /// Whether this digit has charge in femto coulomb (see note 1 in AliMUONVDigit.cxx)
   virtual Bool_t IsChargeInFC() const { return kFALSE; }
-  
+  /// Set the unit value (see note 1 in AliMUONVDigit.cxx)
+  virtual void ChargeInFC(Bool_t value=kTRUE)=0;
+
   /// Whether or not this digit was obtained from a conversion (e.g. real to simulated)
   virtual Bool_t IsConverted() const { return kFALSE; }
 

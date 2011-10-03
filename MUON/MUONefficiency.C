@@ -67,7 +67,7 @@
 #endif
 
 Bool_t MUONefficiency(const char* filename = "generated/galice.root", const char* esdFileName = "AliESDs.root",
-		      const char* geoFilename = "geometry.root", const char* ocdbPath = "local://$ALICE_ROOT/OCDB",
+		      const char* geoFilename = "generated/geometry.root", const char* ocdbPath = "local://$ALICE_ROOT/OCDB",
 		      Int_t ExtrapToVertex = -1, Int_t ResType = 553, Int_t FirstEvent = 0, Int_t LastEvent = 1000000 )
 { 
 /// \param ExtrapToVertex (default -1) 

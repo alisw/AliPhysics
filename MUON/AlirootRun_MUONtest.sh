@@ -22,17 +22,18 @@ CURDIR=`pwd`
 #RUN=0 # run number for OCDB access
 SEED=1234567 # random number generator seed
 SIMDIR="generated" # sub-directory where to move simulated files prior to reco
-DUMPEVENT=5 # event to be dump on files
+DUMPEVENT=5 # event to be dump on files (set to negative to skip dumps)
 
 SIMCONFIG="$ALICE_ROOT/MUON/"$MC"Config.C"
 EMBEDWITH="" # no embedding by default
+REALISTIC=0 # ideal simulation by default
 
 # next try to see if there are options of this script that want to change the
 # defaults
  
 EXIT=0
 
-while getopts "SRZX:srxzn:tg:p:d:c:e:" option
+while getopts "SRZX:srxzn:tg:p:d:c:e:b:" option
 do
   case $option in
     R ) RECONSTRUCTION=1;;
@@ -53,6 +54,10 @@ do
     g ) SEED=$OPTARG;;
     p ) RECOPTIONS=$OPTARG;; 
     e ) EMBEDWITH=$OPTARG;;
+    b ) 
+    REALISTIC=$OPTARG
+    RAW=0
+    ;;
     *     ) echo "Unimplemented option chosen."
     EXIT=1
     ;;
@@ -84,6 +89,7 @@ if [ $# -gt 0 ] || [ "$EXIT" -eq 1 ]; then
   echo "       -d full path to output directory (default $OUTDIR)"
   echo "       -c full path to configuration file for simulation (default $SIMCONFIG)"
   echo "       -e full path to a galice.root file relating to SDigits to be merged (embedding)"
+  echo "       -b runnumber (int) make a realistic simulation using runnumber as anchor (default 0=ideal simulation)"
   exit 4;
 fi
 
@@ -95,6 +101,9 @@ if [ "$SIMULATION" -eq 1 ]; then
 fi
 if [ -n "$EMBEDWITH" ]; then
   echo "Will embed simulation with $EMBEDWITH"
+fi
+if [ "$REALISTIC" -gt 0 ]; then
+  echo "Will use anchor run $REALISTIC"
 fi
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 echo "Reconstruction options to be used : $RECOPTIONS"
@@ -169,14 +178,17 @@ if [ "$SIMULATION" -eq 1 ]; then
 
   echo "Running simulation  ..."
 
-  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\,\""$EMBEDWITH"\"\) > $OUTDIR/testSim.out 2>&1
+  aliroot -l -b -q runSimulation.C\($SEED,$NEVENTS,\""$SIMCONFIG"\"\,\""$EMBEDWITH"\"\,$REALISTIC\) > $OUTDIR/testSim.out 2>&1
 
   mkdir $OUTDIR/$SIMDIR
 
   if [ "$RAW" -eq 1 ]; then
-    echo "Moving generated files to $SIMDIR"
-    mv $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
-    mv $OUTDIR/MUON*.root $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
+    if [ "$REALISTIC" -eq 0 ]; then # we can not move for realistic simulations as we need e.g. kinematics to propagate the simulated vertex to the reco.
+      echo "Moving generated files to $SIMDIR"
+      mv $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
+      mv $OUTDIR/MUON*.root $OUTDIR/TrackRefs*.root $OUTDIR/$SIMDIR
+      mv $OUTDIR/Kinematics*.root $OUTDIR/galice.root $OUTDIR/$SIMDIR
+    fi
   else  
     echo "Copying generated files to $SIMDIR"
     cp $OUTDIR/*QA*.root $OUTDIR/*.log $OUTDIR/$SIMDIR
@@ -194,6 +206,9 @@ if [ "$SIMULATION" -eq 1 ]; then
   if [ "$MC" = "g4" ]; then
     cp $ALICE_ROOT/MUON/geometry/geometry.root $OUTDIR
   fi 
+  
+  cp $OUTDIR/geometry.root $OUTDIR/$SIMDIR/geometry.root
+  
 fi
 
 ###############################################################################
@@ -205,8 +220,14 @@ fi
 if [ "$RECONSTRUCTION" -eq 1 ]; then
 
   if [ "$RAW" -eq 1 ]; then
-    rm -f galice.root 
+    if [ "$REALISTIC" -eq 0 ]; then
+      rm -f galice.root
+    fi
   fi  
+
+  if [ "$REALISTIC" -ne 0 ]; then
+    rm -f geometry.root
+  fi
   
   rm -f AliESD*.root *QA*.root
   
@@ -214,19 +235,23 @@ if [ "$RECONSTRUCTION" -eq 1 ]; then
 
   cd $OUTDIR
   
-  BOOLEMBED=kFALSE
+  RAWOCDB=kFALSE
   
   if [ -n "$EMBEDWITH" ]; then
-    BOOLEMBED=kTRUE
+    RAWOCDB=kTRUE
+  fi
+  
+  if [ "$REALISTIC" -gt 0 ]; then
+    RAWOCDB=kTRUE
   fi
   
   if [ "$RAW" -eq 1 ]; then
   
-    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\",$BOOLEMBED\) > $OUTDIR/testReco.out 2>&1
+    aliroot -l -b -q runReconstruction\.C\($SEED,\""$OUTDIR/raw.root"\",\""$RECOPTIONS"\",$RAWOCDB\) > $OUTDIR/testReco.out 2>&1
 
   else
 
-    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\",$BOOLEMBED\) > $OUTDIR/testReco.out  2>&1
+    aliroot -l -b -q runReconstruction\.C\($SEED,\"""\",\""$RECOPTIONS"\",$RAWOCDB\) > $OUTDIR/testReco.out  2>&1
   
   fi
   
@@ -272,6 +297,8 @@ EOF
       fi
     fi
   fi
+  
+if [ "$DUMPEVENT" -ge 0 ]; then
 
   echo "Running dumps for selected event ($DUMPEVENT) ..."
 
@@ -304,6 +331,8 @@ EOF
   else
     echo "$OUTDIR/galice.root is not there. Skipping rec dumps"
   fi
+fi
+
 fi
 
 echo "Finished"  

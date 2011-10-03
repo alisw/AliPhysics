@@ -35,7 +35,8 @@
 void runSimulation(int seed, 
                    int nevents, 
                    const char* config,
-                   const char* embedwith)
+                   const char* embedwith,
+                   int runnumber)
 { 
 // Uncoment following lines to run simulation with local residual mis-alignment
 // (generated via MUONGenerateGeometryData.C macro)
@@ -76,9 +77,29 @@ void runSimulation(int seed,
     
     cout << "***** EMBEDDING MODE : USING RAW OCDB" << endl;
     AliCDBManager::Instance()->SetDefaultStorage("raw://");
-    AliCDBManager::Instance()->SetSpecificStorage("local://$ALICE_ROOT/OCDB","MUON/Calib/Gains");
     AliCDBManager::Instance()->SetSpecificStorage("local://$ALICE_ROOT/OCDB","MUON/Align/Data");
     
+  }
+  else if ( runnumber > 0 )
+  {
+    // simulation with anchor run
+
+    cout << "***** ANCHOR RUN MODE : USING RAW OCDB AS MUCH AS POSSIBLE" << endl;
+    cout << "*****                   AND TAKING VERTEX FROM OCDB IF AVAILABLE" << endl;
+  
+    // Last parameter of Config.C indicates we're doing realistic simulations, so we NEED
+    // the ITS in the geometry
+    gAlice->SetConfigFunction("Config(\"\", \"param\", \"AliMUONDigitStoreV2S\",kFALSE,kTRUE);");
+
+    AliCDBManager::Instance()->SetDefaultStorage("raw://");
+    // use something like : "alien://folder=/alice/data/2011/OCDB?cacheFold=/Users/laurent/OCDBcache" instead of "raw://"
+    // if getting slow/problematic accesses to OCDB...
+        
+    AliCDBManager::Instance()->SetSpecificStorage("MUON/Align/Data","alien://folder=/alice/cern.ch/user/j/jcastill/LHC10hMisAlignCDB");
+    
+    MuonSim.SetRunNumber(runnumber);
+    
+    MuonSim.UseVertexFromCDB();
   }
   else
   {
@@ -89,9 +110,9 @@ void runSimulation(int seed,
   MuonSim.SetTriggerConfig("MUON");
   MuonSim.SetWriteRawData("MUON HLT","raw.root",kTRUE);
 
-  MuonSim.SetMakeDigits("MUON");
   MuonSim.SetMakeSDigits("MUON");
-  MuonSim.SetMakeDigitsFromHits("");
+  MuonSim.SetMakeDigits("MUON ITS"); // ITS needed to propagate the simulated vertex
+  MuonSim.SetMakeDigitsFromHits("ITS"); // ITS needed to propagate the simulated vertex
 
   MuonSim.SetRunHLT("libAliHLTMUON.so chains=dHLT-sim");
 

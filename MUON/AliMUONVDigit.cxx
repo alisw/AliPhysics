@@ -38,6 +38,20 @@
 /// Also, if HasGeometryInformation is true, the digit knows the position and
 /// the (half) dimensions (in cm) of the pad it corresponds to.
 ///
+/// Note 1.
+///
+/// Please note that IsCalibrated and IsChargeInFC are two 
+/// concepts closely related, but not equivalent, at least for SDigits.
+///
+/// For instance a SDigit can have its charge in fC but not being calibrated.
+///
+/// { SDigits coming from a simulation are yet to be merged (i.e. the
+///   SDigitStore can contain several SDigits objects per channel), so, while
+///   their charge is in femto-coulomb, they are not calibrated (e.g. pedestal
+///   is not subtracted yet). }
+///
+/// Conversely, a calibrated (s)digit always has its charge in fC.
+///
 /// \author Laurent Aphecetche, Subatech
 //-----------------------------------------------------------------------------
 
@@ -210,12 +224,39 @@ void
 AliMUONVDigit::Print(Option_t* opt) const
 {
   /// Dump to screen.
+  ///
   /// If opt=="tracks", info on tracks are printed too.
+  /// 
+  /// The last part of the printout indicated the status of the digit :
+  /// (S) means that digit is saturated
+  /// (C) means that digit has been calibrated
+  /// [fC] means that digit's charge is in femto-coulombs (fC)
+  /// (U) means that digit is part of (has been used in) a cluster
+  /// (+) is noise-only digit (added by the simulation)
+  /// (X) has the IsConverted flag on (e.g. has been embedded)
+  
+  TString options(opt);
+  options.ToLower();
+
+  if ( options.Contains("zs") )
+  {
+    if ( IsCalibrated() && Charge() <= 0 )
+    {
+      return;
+    }
+    
+    if ( !IsCalibrated() && ADC() <= 0 )
+    {
+      return;
+    }
+  }
   
   cout << Form("<%s>: ID %12u DE %4d Cath %d (Ix,Iy)=(%3d,%3d) (Manu,Channel)=(%4d,%2d)"
                ", Charge=%7.2f",
                ClassName(),GetUniqueID(),
                DetElemId(),Cathode(),PadX(),PadY(),ManuId(),ManuChannel(),Charge());  
+  
+  
   if ( IsSaturated() ) 
   {
     cout << "(S)";
@@ -234,6 +275,15 @@ AliMUONVDigit::Print(Option_t* opt) const
     cout << "   ";
   }
 
+  if ( IsChargeInFC() )
+  {
+    cout << "[fC]";
+  }
+  else
+  {
+    cout << "    ";
+  }
+  
   if ( IsUsed() )
   {
     cout << "(U)";
@@ -243,10 +293,33 @@ AliMUONVDigit::Print(Option_t* opt) const
     cout << "   ";
   }
   
-  cout << Form(" ADC=%4d StatusMap=%04x",ADC(),StatusMap());
+  if ( IsNoiseOnly() )
+  {
+    cout << "(+)";
+  }
+  else
+  {
+    cout << "   ";
+  }
+  
+  if ( IsConverted() )
+  {
+    cout << "(X)";
+  }
+  else
+  {
+    cout << "   ";
+  }
+    
+  cout << Form(" ADC=%4d",ADC());
+  
+  if ( IsCalibrated() )
+  {
+    // StatusMap is not set before calibration has occured (e.g.
+    // SDigits cannot have it meaningfully filled)
+    cout << Form(" StatusMap=%04x",StatusMap());    
+  }
 
-  TString options(opt);
-  options.ToLower();
   if ( options.Contains("tracks") && HasMCInformation() )
   {
     cout << " Hit " << setw(3) << Hit();

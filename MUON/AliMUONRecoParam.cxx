@@ -355,6 +355,8 @@ void AliMUONRecoParam::Print(Option_t *option) const
   
   if (IsDefault()) cout<<"\t\t*** Parameters used by default ***"<<endl;
   
+  cout << "Event Specie=" << GetEventSpecie() << endl;
+  
   cout<<Form("Calibration mode = %s",fCalibrationMode.Data())<<endl;
   cout<<Form("Clustering mode = %s",fClusteringMode.Data())<<endl;
   cout<<Form("Tracking mode = %s",fTrackingMode.Data())<<endl;

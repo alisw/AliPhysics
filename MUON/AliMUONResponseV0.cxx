@@ -271,6 +271,9 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t ti
     qtot = AliMUONConstants::ReducedQTot(qtot,timeDif);
   }
   
+  // Scale the charge to it'll (roughly) be in fC
+  qtot *= AliMUONConstants::DefaultADC2MV()*AliMUONConstants::DefaultA0()*AliMUONConstants::DefaultCapa();
+  
   // Get the charge correlation between cathodes.
   Float_t currentCorrel = TMath::Exp(gRandom->Gaus(0.0,ChargeCorrel()/2.0));
 
@@ -328,16 +331,19 @@ AliMUONResponseV0::DisIntegrate(const AliMUONHit& hit, TList& digits, Float_t ti
       Float_t qp = TMath::Abs(fMathieson->IntXY(lowerLeft.X(),lowerLeft.Y(),
                                                 upperRight.X(),upperRight.Y()));
             
-      Int_t icharge = Int_t(qp*qcath);
-      
-      if ( qp > fChargeThreshold )
+      if ( qp > fChargeThreshold && 
+           qp*qcath > AliMUONConstants::DefaultADC2MV()*AliMUONConstants::DefaultA0()*AliMUONConstants::DefaultCapa() )
       {
         // If we're above threshold, then we create a digit,
         // and fill it with relevant information, including electronics.
+        
+        // note that the second condition above is to be backward compatible (when 
+        // the sdigitizer was making a cut on Int_t(qp*qcath) > 0 and qcath was in ADC, not in fC)
+        
         AliMUONDigit* d = new AliMUONDigit(detElemId,pad.GetManuId(),
                                            pad.GetManuChannel(),cath);
         d->SetPadXY(pad.GetIx(),pad.GetIy());
-        d->SetCharge(icharge);
+        d->SetCharge(qp*qcath);
         digits.Add(d);   
       }       
       it->Next();

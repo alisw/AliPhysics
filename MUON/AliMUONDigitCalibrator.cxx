@@ -68,7 +68,7 @@ const Int_t AliMUONDigitCalibrator::fgkGain(2);
 const Int_t AliMUONDigitCalibrator::fgkInjectionGain(3);
 
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(Int_t runNumber, const char* calibMode)
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(Int_t runNumber)
 : TObject(),
 fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
@@ -93,6 +93,7 @@ fMask(0)
     if ( o->IsA() == TObjArray::Class() )
     {
       TObjArray* a = static_cast<TObjArray*>(o);
+//      a->SetOwner(kTRUE); // FIXME: this should be done but somehow makes the reco crash at the end at cleaning stage... investigate why ?
       TIter next(a);
       AliMUONRecoParam* p;
       while ( ( p = static_cast<AliMUONRecoParam*>(next()) ))
@@ -115,13 +116,12 @@ fMask(0)
   
   AliMUONCalibrationData calib(runNumber);
   
-  Ctor(calibMode,calib,recoParam,kFALSE);
+  Ctor(calib,recoParam,kFALSE);
 }
 
 //_____________________________________________________________________________
 AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
-                                               const AliMUONRecoParam* recoParams,
-                                               const char* calibMode)
+                                               const AliMUONRecoParam* recoParams)
 : TObject(),
 fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
@@ -137,12 +137,11 @@ fMask(0)
 {
   /// ctor
   
-  Ctor(calibMode,calib,recoParams);
+  Ctor(calib,recoParams);
 }
 
 //_____________________________________________________________________________
-AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib,
-                                               const char* calibMode)
+AliMUONDigitCalibrator::AliMUONDigitCalibrator(const AliMUONCalibrationData& calib, int /*b*/)
 : TObject(),
 fLogger(new AliMUONLogger(20000)),
 fStatusMaker(0x0),
@@ -158,19 +157,19 @@ fMask(0)
 {
   /// ctor
   
-  Ctor(calibMode,calib,0x0);
+  Ctor(calib,0x0);
 }
 
 //_____________________________________________________________________________
 void
-AliMUONDigitCalibrator::Ctor(const char* calibMode,
-                             const AliMUONCalibrationData& calib,
+AliMUONDigitCalibrator::Ctor(const AliMUONCalibrationData& calib,
                              const AliMUONRecoParam* recoParams,
                              Bool_t deferredInitialization)
 {
   /// designated ctor
   
-  TString cMode(calibMode);
+  TString cMode("NOGAIN");
+  if (recoParams) cMode=recoParams->GetCalibrationMode();
   cMode.ToUpper();
   
   if ( cMode == "NOGAIN" ) 
@@ -195,7 +194,7 @@ AliMUONDigitCalibrator::Ctor(const char* calibMode,
 	}  
   else
   {
-    AliError(Form("Invalid calib mode = %s. Will use NOGAIN instead",calibMode));
+    AliError(Form("Invalid calib mode = %s. Will use NOGAIN instead",cMode.Data()));
     fApplyGains = fgkNoGain;
   }
   
@@ -292,6 +291,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     }
     
     digit->Calibrated(kTRUE);
+    digit->ChargeInFC(kTRUE);
     
     Float_t charge(0.0);
     Int_t statusMap;
@@ -302,7 +302,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     Bool_t ok = IsValidDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),&statusMap);
     
     digit->SetStatusMap(statusMap);
-    
+
     if (ok)
     {
       charge = CalibrateDigit(digit->DetElemId(),digit->ManuId(),digit->ManuChannel(),
@@ -315,6 +315,7 @@ AliMUONDigitCalibrator::Calibrate(AliMUONVDigitStore& digitStore)
     
     digit->SetCharge(charge);
     digit->Saturated(isSaturated);
+    
   }
 }
 
@@ -455,6 +456,9 @@ AliMUONDigitCalibrator::IsValidDigit(Int_t detElemId, Int_t manuId, Int_t manuCh
 {
   /// Check if a given pad is ok or not.
   
+  // initialize the statusmap to dead by default
+  if (statusMap) *statusMap = AliMUONPadStatusMapMaker::SelfDeadMask();
+
   // First a protection against bad input parameters
   AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
   if (!de) return kFALSE; // not existing DE
@@ -473,7 +477,7 @@ AliMUONDigitCalibrator::IsValidDigit(Int_t detElemId, Int_t manuId, Int_t manuCh
   // ok, now we have a valid channel number, so let's see if that pad
   // behaves or not ;-)
   
-  Int_t sm = fStatusMapMaker->StatusMap(detElemId,manuId,manuChannel);
+  Int_t sm = StatusMap(detElemId,manuId,manuChannel);
   
   if (statusMap) *statusMap = sm;
   

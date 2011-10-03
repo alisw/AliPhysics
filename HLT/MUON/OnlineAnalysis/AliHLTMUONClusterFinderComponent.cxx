@@ -592,9 +592,7 @@ int AliHLTMUONClusterFinderComponent::ReadConfigFromCDB(
 		AliMUONSimpleClusterServer* clusterServer = NULL;
 		try
 		{
-			calibrator = new AliMUONDigitCalibrator(
-					*fCalibrationData, fRecoParam->GetCalibrationMode()
-				);
+			calibrator = new AliMUONDigitCalibrator(*fCalibrationData, fRecoParam);
 		
 			clusterFinder = AliMUONReconstructor::CreateClusterFinder(
 					fRecoParam->GetClusteringMode()

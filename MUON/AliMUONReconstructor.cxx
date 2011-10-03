@@ -175,13 +175,12 @@ AliMUONReconstructor::~AliMUONReconstructor()
 
   AliDebug(1,"");
 
+  delete fDigitCalibrator;
+
   delete fDigitMaker;
   delete fDigitStore;
   delete fTransformer;
   delete fTriggerCircuit;
-  delete fDigitCalibrator;
-  delete fCalibrationData;
-  delete fClusterServer;
   delete fTriggerStore;
   delete fTrackStore;
   delete fClusterStore;
@@ -189,7 +188,9 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete fTriggerUtilities;
 
   delete AliMpSegmentation::Instance(false);
-  delete AliMpDDLStore::Instance(false);
+  delete AliMpDDLStore::Instance(false);  
+
+  delete fCalibrationData;
 }
 
 //_____________________________________________________________________________
@@ -533,9 +534,7 @@ AliMUONReconstructor::CreateCalibrator() const
     AliWarning("NOSTATUSMAP is obsolete");
   }
 
-  TString calibMode = GetRecoParam()->GetCalibrationMode();
-
-  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam(),calibMode.Data());
+  fDigitCalibrator = new AliMUONDigitCalibrator(*fCalibrationData,GetRecoParam());
 }
 
 //_____________________________________________________________________________

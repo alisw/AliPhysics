@@ -28,6 +28,7 @@
 #include "AliMUONVCalibParam.h"
 #include "AliMUONVDigitStore.h"
 #include "AliMUONGeometryTransformer.h" //ADDED for trigger noise
+#include "AliMUONRecoParam.h"
 #include "AliMUONTriggerChamberEfficiency.h"
 #include "AliMUONTriggerUtilities.h"
 
@@ -61,6 +62,7 @@
 
 //-----------------------------------------------------------------------------
 /// \class AliMUONDigitizerV3
+///
 /// The digitizer is performing the transformation to go from SDigits (digits
 /// w/o any electronic noise) to Digits (w/ electronic noise, and decalibration)
 /// 
@@ -73,7 +75,18 @@
 /// (for performance reason mainly, and because anyway we know we have to do it
 /// here, at the digitization level).
 ///
+/// August 2011. In order to remove the need for specific MC OCDB storages,
+/// we're introducing a dependence of simulation on AliMUONRecoParam (stored
+/// in MUON/Calib/RecoParam in OCDB), which is normally (or conceptually, if
+/// you will) only a reconstruction object. That's not a pretty solution, but,
+/// well, we have to do it...
+/// This dependence comes from the fact that we must know how to decalibrate
+/// the digits, so that the decalibration (done here) - calibration (done during
+/// reco) process is (as much as possible) neutral.
+///
+///
 /// \author Laurent Aphecetche
+///
 //-----------------------------------------------------------------------------
 
 namespace
@@ -110,6 +123,7 @@ fTriggerStore(new AliMUONTriggerStoreV1),
 fDigitStore(0x0),
 fOutputDigitStore(0x0),
 fInputDigitStores(0x0),
+fRecoParam(0x0),
 fTriggerEfficiency(0x0),
 fTriggerUtilities(0x0),
 fEfficiencyResponse(2*AliMUONConstants::NTriggerCh()*AliMUONConstants::NTriggerCircuit())
@@ -153,7 +167,14 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
   /// - add some electronics noise (thus leading to a realistic adc), if requested to do so
   /// - sets the signal to zero if below 3*sigma of the noise
 
-  Float_t charge = digit.IsChargeInFC() ? digit.Charge()*AliMUONConstants::FC2ADC() : digit.Charge();
+  Float_t charge = digit.Charge();
+  
+  if (!digit.IsChargeInFC())
+  {
+    charge *= AliMUONConstants::DefaultADC2MV()*AliMUONConstants::DefaultA0()*AliMUONConstants::DefaultCapa();
+    fLogger->Log("CHECK ME ! WAS NOT SUPPOSED TO BE HERE !!! ARE YOU RECONSTRUCTING OLD SIMULATIONS ? ");
+    AliError("CHECK ME ! WAS NOT SUPPOSED TO BE HERE !!! ARE YOU RECONSTRUCTING OLD SIMULATIONS ? ");
+  }
   
   // We set the charge to 0, as the only relevant piece of information
   // after Digitization is the ADC value.  
@@ -193,7 +214,8 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
   }    
 
   Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise,
-                                      digit.IsNoiseOnly());
+                                      digit.IsNoiseOnly(),
+                                      fRecoParam->GetCalibrationMode());
   
   digit.SetADC(adc);
 }
@@ -293,15 +315,37 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
                                             Int_t channel,
                                             Float_t charge,
                                             Bool_t addNoise,
-                                            Bool_t noiseOnly)
+                                            Bool_t noiseOnly,
+                                            const TString& calibrationMode)
 {
   /// Decalibrate (i.e. go from charge to adc) a tracker digit, given its
   /// pedestal and gain parameters.
   /// Must insure before calling that channel is valid (i.e. between 0 and
   /// pedestals or gains->GetSize()-1, but also corresponding to a valid channel
   /// otherwise results are not predictible...)
-
+  ///
+  /// This method is completely tied to what happens in its sister method :
+  /// AliMUONDigitCalibrator::CalibrateDigit, which is doing the reverse work...
+  ///
+  
   static const Int_t kMaxADC = (1<<12)-1; // We code the charge on a 12 bits ADC.
+  
+  Bool_t nogain = calibrationMode.Contains("NOGAIN");
+  
+  Float_t a1(0.0);
+  Int_t thres(4095);
+  Int_t qual(0xF);
+  Float_t capa(AliMUONConstants::DefaultCapa()); // capa = 0.2 and a0 = 1.25
+  Float_t a0(AliMUONConstants::DefaultA0());  // is equivalent to gain = 4 mV/fC
+  Float_t adc2mv(AliMUONConstants::DefaultADC2MV()); // 1 ADC channel = 0.61 mV
+               
+  if ( ! nogain )
+  {
+    a0 = gains.ValueAsFloat(channel,0);
+    a1 = gains.ValueAsFloat(channel,1);
+    thres = gains.ValueAsInt(channel,2);
+    qual = gains.ValueAsInt(channel,3);
+  }
   
   Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);
   Float_t pedestalSigma = pedestals.ValueAsFloat(channel,1);
@@ -309,18 +353,13 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   AliDebugClass(1,Form("DE %04d MANU %04d CH %02d PEDMEAN %7.2f PEDSIGMA %7.2f",
 		       pedestals.ID0(),pedestals.ID1(),channel,pedestalMean,pedestalSigma));
   
-  Float_t a0 = gains.ValueAsFloat(channel,0);
-  Float_t a1 = gains.ValueAsFloat(channel,1);
-  Int_t thres = gains.ValueAsInt(channel,2);
-  Int_t qual = gains.ValueAsInt(channel,3);
-
   if ( qual <= 0 ) return 0;
   
   Float_t chargeThres = a0*thres;
   
   Float_t padc(0); // (adc - ped) value
   
-  if ( charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
+  if ( nogain || charge <= chargeThres || TMath::Abs(a1) < 1E-12 ) 
   {
     // linear part only
     
@@ -331,6 +370,11 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
   }
   else 
   {
+    // FIXME: when we'll use capacitances and real gains, revise this part
+    // to take capa properly into account...
+    
+    AliWarningClass("YOU PROBABLY NEED TO REVISE THIS PART OF CODE !!!");
+    
     // linear + parabolic part
     Double_t qt = chargeThres - charge;
     Double_t delta = a0*a0-4*a1*qt;
@@ -370,6 +414,8 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
 
     }
   }
+  
+  padc /= capa*adc2mv;
   
   Int_t adc(0);
   
@@ -905,5 +951,17 @@ AliMUONDigitizerV3::NoiseFunction()
     f->SetParameters(1,0,1);
   }
   return f;
+}
+
+//_____________________________________________________________________________
+void AliMUONDigitizerV3::SetCalibrationData(AliMUONCalibrationData* calibrationData, 
+                                            AliMUONRecoParam* recoParam) 
+{
+  fCalibrationData = calibrationData;
+  fRecoParam = recoParam;
+  if (!fRecoParam)
+  {
+    AliError("Cannot work (e.g. decalibrate) without recoparams !");
+  }
 }
 
