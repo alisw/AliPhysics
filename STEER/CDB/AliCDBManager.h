@@ -57,7 +57,7 @@ class AliCDBManager: public TObject {
 	void UnsetDefaultStorage();
 
 	void SetSpecificStorage(const char* calibType, const char* dbString);
-	void SetSpecificStorage(const char* calibType, AliCDBParam* param);
+	void SetSpecificStorage(const char* calibType, const AliCDBParam* param);
 
 	AliCDBStorage* GetSpecificStorage(const char* calibType);
 
@@ -91,7 +91,7 @@ class AliCDBManager: public TObject {
 	TList* GetAll(const AliCDBPath& path, const AliCDBRunRange& runRange,
 				 Int_t version = -1, Int_t subVersion = -1); 
 
-	Bool_t Put(TObject* object, AliCDBId& id,
+	Bool_t Put(TObject* object, const AliCDBId& id,
 			AliCDBMetaData* metaData, const DataType type=kPrivate);
 	Bool_t Put(AliCDBEntry* entry, DataType type=kPrivate);
 
@@ -127,6 +127,7 @@ class AliCDBManager: public TObject {
 
 	void Init();
 	void InitFromCache(TMap *entryCache, Int_t run);
+	Bool_t InitFromSnapshot(const char* snapshotFileName);
   
 protected:
 

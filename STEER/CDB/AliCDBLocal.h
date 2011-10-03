@@ -90,6 +90,7 @@ class AliCDBLocalParam: public AliCDBParam {
 public:
 	AliCDBLocalParam();
 	AliCDBLocalParam(const char* dbPath);
+	AliCDBLocalParam(const char* dbPath, const char* uri);
 	
 	virtual ~AliCDBLocalParam();
 

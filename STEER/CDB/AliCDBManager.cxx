@@ -30,6 +30,7 @@
 #include <TObjString.h>
 #include <TSAXParser.h>
 #include <TFile.h>
+#include <TKey.h>
 #include <TUUID.h>
 #include <TGrid.h>
 
@@ -95,6 +96,84 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
   fEntryCache.SetOwnerKeyValue(kTRUE,kTRUE);
   entryCache->SetOwnerKeyValue(kFALSE,kFALSE);
   AliInfo(Form("%d cache entries have been loaded",fEntryCache.GetEntries()));
+}
+
+//_____________________________________________________________________________
+Bool_t AliCDBManager::InitFromSnapshot(const char* snapshotFileName){
+// initialize manager from a CDB snapshot, that is add the entries
+// to the entries map and the ids to the ids list taking them from
+// the map and the list found in the input file
+
+    // open the file
+    TString snapshotFile(snapshotFileName);
+    if(snapshotFile.BeginsWith("alien://")){
+	if(!gGrid) {
+	    TGrid::Connect("alien://","");
+	    if(!gGrid) {
+		AliError("Connection to alien failed!");
+		return kFALSE;
+	    }
+	}
+    }
+
+    TFile *f = TFile::Open(snapshotFileName);
+    if (!f || f->IsZombie()){
+	AliError(Form("Cannot open file %s",snapshotFileName));
+	return kFALSE;
+    }
+
+    // retrieve entries map
+    TMap *entriesMap = 0;
+    TIter next(f->GetListOfKeys());
+    TKey *key;
+    while ((key = (TKey*)next())) {
+	if (strcmp(key->GetClassName(),"TMap") != 0) continue;
+	entriesMap = (TMap*)key->ReadObj();
+	break;
+    }
+    if (!entriesMap || entriesMap->GetEntries()==0){
+	AliError("Cannot get valid map of CDB entries from snapshot file");
+	return kFALSE;
+    }
+
+    // retrieve ids list
+    TList *idsList = 0;
+    TIter nextKey(f->GetListOfKeys());
+    TKey *keyN;
+    while ((keyN = (TKey*)nextKey())) {
+	if (strcmp(keyN->GetClassName(),"TList") != 0) continue;
+	idsList = (TList*)keyN->ReadObj();
+	break;
+    }
+    if (!idsList || idsList->GetEntries()==0){
+	AliError("Cannot get valid list of CDB entries from snapshot file");
+	return kFALSE;
+    }
+
+    TIter iterObj(entriesMap->GetTable());
+    TPair* pair = 0;
+
+    while((pair = dynamic_cast<TPair*> (iterObj.Next()))){
+	fEntryCache.Add(pair->Key(),pair->Value());
+    }
+    // fEntry is the new owner of the cache
+    fEntryCache.SetOwnerKeyValue(kTRUE,kTRUE);
+    entriesMap->SetOwnerKeyValue(kFALSE,kFALSE);
+    AliInfo(Form("%d cache entries have been loaded",fEntryCache.GetEntries()));
+
+    TIter iterId(idsList);	 
+
+    AliCDBId* id=0;
+    while((id = dynamic_cast<AliCDBId*> (iterId.Next()))){	 
+	fIds->Add(id);	 
+    }	 
+    fIds->SetOwner(kTRUE);
+    idsList->SetOwner(kFALSE);
+    f->Close();
+    delete f;
+    AliInfo(Form("%d cache ids loaded. Total number of ids is %d",idsList->GetEntries(),fIds->GetEntries()));
+
+    return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -523,7 +602,7 @@ void AliCDBManager::SetSpecificStorage(const char* calibType, const char* dbStri
 }
 
 //_____________________________________________________________________________
-void AliCDBManager::SetSpecificStorage(const char* calibType, AliCDBParam* param) {
+void AliCDBManager::SetSpecificStorage(const char* calibType, const AliCDBParam* param) {
 // sets storage specific for detector or calibration type (works with AliCDBManager::Get(...))
 // Default storage should be defined prior to any specific storages, e.g.:
 // AliCDBManager::instance()->SetDefaultStorage("alien://");
@@ -931,7 +1010,7 @@ TList* AliCDBManager::GetAll(const AliCDBId& query) {
 }
 
 //_____________________________________________________________________________
-Bool_t AliCDBManager::Put(TObject* object, AliCDBId& id, AliCDBMetaData* metaData, const DataType type){
+Bool_t AliCDBManager::Put(TObject* object, const AliCDBId& id, AliCDBMetaData* metaData, const DataType type){
 // store an AliCDBEntry object into the database
 
 	if (object==0x0) {

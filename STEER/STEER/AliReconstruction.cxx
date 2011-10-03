@@ -275,6 +275,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fQARefUri(),
   fSpecCDBUri(), 
   fInitCDBCalled(kFALSE),
+  fFromCDBSnapshot(kFALSE),
   fSetRunNumberFromDataCalled(kFALSE),
   fQADetectors("ALL"), 
   fQATasks("ALL"), 
@@ -393,6 +394,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fQARefUri(rec.fQARefUri),
   fSpecCDBUri(), 
   fInitCDBCalled(rec.fInitCDBCalled),
+  fFromCDBSnapshot(rec.fFromCDBSnapshot),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
   fQATasks(rec.fQATasks), 
@@ -559,6 +561,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fQARefUri      = rec.fQARefUri;
   fSpecCDBUri.Delete();
   fInitCDBCalled               = rec.fInitCDBCalled;
+  fFromCDBSnapshot             = rec.fFromCDBSnapshot;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
   fQADetectors                 = rec.fQADetectors;
   fQATasks                     = rec.fQATasks; 
@@ -1496,6 +1499,14 @@ void AliReconstruction::Begin(TTree *)
     AliSysInfo::AddStamp("CheckGeom");
   }
 
+  if(fFromCDBSnapshot){
+      AliDebug(2,"Initializing from a CDB snapshot");
+      if(!AliCDBManager::Instance()->InitFromSnapshot(fSnapshotFileName.Data())){
+	  Abort("InitFromSnapshot", TSelector::kAbortProcess);
+	  return;
+      }
+  }
+
   if (!MisalignGeometry(fLoadAlignData)) {
     Abort("MisalignGeometry", TSelector::kAbortProcess);
     return;
@@ -1509,11 +1520,13 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("InitGRP");
 
-  if (!LoadCDB()) {
-    Abort("LoadCDB", TSelector::kAbortProcess);
-    return;
+  if(!fFromCDBSnapshot){
+      if (!LoadCDB()) {
+	  Abort("LoadCDB", TSelector::kAbortProcess);
+	  return;
+      }
+      AliSysInfo::AddStamp("LoadCDB");
   }
-  AliSysInfo::AddStamp("LoadCDB");
 
   if (!LoadTriggerScalersCDB()) {
     Abort("LoadTriggerScalersCDB", TSelector::kAbortProcess);

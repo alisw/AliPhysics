@@ -942,9 +942,9 @@ ClassImp(AliCDBLocalFactory)
 Bool_t AliCDBLocalFactory::Validate(const char* dbString) {
 // check if the string is valid local URI
 
-        TRegexp dbPattern("^local://.+$");
+        TRegexp dbPatternLocal("^local://.+$");
 
-        return TString(dbString).Contains(dbPattern);
+        return (TString(dbString).Contains(dbPatternLocal) || TString(dbString).BeginsWith("snapshot://folder="));
 }
 
 //_____________________________________________________________________________
@@ -955,13 +955,25 @@ AliCDBParam* AliCDBLocalFactory::CreateParameter(const char* dbString) {
 		return NULL;
 	}
 
+	TString checkSS(dbString);
+	if(checkSS.BeginsWith("snapshot://"))
+	{
+	    TString snapshotPath("OCDB");
+	    snapshotPath.Prepend(TString(gSystem->WorkingDirectory()) + '/');
+	    checkSS.Remove(0,checkSS.First(':')+3);
+	    return new AliCDBLocalParam(snapshotPath,checkSS);
+	}
+		
+	// if the string argument is not a snapshot URI, than it is a plain local URI
 	TString pathname(dbString + sizeof("local://") - 1);
 	
-	gSystem->ExpandPathName(pathname);
+	if(gSystem->ExpandPathName(pathname))
+	    return NULL;
 
 	if (pathname[0] != '/') {
 		pathname.Prepend(TString(gSystem->WorkingDirectory()) + '/');
 	}
+	//pathname.Prepend("local://");
 
 	return new AliCDBLocalParam(pathname);
 }
@@ -1017,6 +1029,17 @@ AliCDBLocalParam::AliCDBLocalParam(const char* dbPath):
 
 	SetType("local");
 	SetURI(TString("local://") + dbPath);
+}
+
+//_____________________________________________________________________________
+AliCDBLocalParam::AliCDBLocalParam(const char* dbPath, const char* uri):
+ AliCDBParam(),
+ fDBPath(dbPath)
+{
+// constructor
+
+	SetType("local");
+	SetURI(TString("alien://") + uri);
 }
 
 //_____________________________________________________________________________
