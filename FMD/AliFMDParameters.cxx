@@ -744,7 +744,9 @@ AliFMDParameters::InitZeroSuppression(AliFMDPreprocessor* pp)
   if (!fZeroSuppression->Ptr()) {
     AliWarningF("Empty zero suppression object from CDB, assuming %d",
 		fFixedZeroSuppression);
-    delete fZeroSuppression;
+    AliCDBManager* cdbMan = AliCDBManager::Instance();
+    if(!cdbMan || !cdbMan->GetCacheFlag())
+      delete fZeroSuppression;
     fZeroSuppression = 0;
   }
 }
