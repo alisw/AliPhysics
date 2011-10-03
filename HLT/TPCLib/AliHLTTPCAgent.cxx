@@ -201,8 +201,12 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
-    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 1");
-    handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-mode 2 -deflater-mode 3");
+    arg.Form("-deflater-mode 1");
+    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), arg.Data());
+    arg+=" -cluster-verification 1";
+    handler->CreateConfiguration("TPC-compression-verification", "TPCDataCompressor", compressorInput.Data(), arg.Data());
+    handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
+    handler->CreateConfiguration("TPC-compression-monitoring", "TPCDataCompressorMonitor", "TPC-compression-verification TPC-hwcfdata","");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
