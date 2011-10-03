@@ -806,7 +806,7 @@ Int_t AliCDBDump::GetLatestSubVersion(const char* path, Int_t run, Int_t version
 }
 
 //_____________________________________________________________________________
-void AliCDBDump::SetRetry(Int_t nretry, Int_t initsec) {
+void AliCDBDump::SetRetry(Int_t /* nretry */, Int_t /* initsec */) {
 
 	// Function to set the exponential retry for putting entries in the OCDB
 
