@@ -570,6 +570,34 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
 }
 
 //______________________________________________________________________________
+Bool_t AliAnalysisAlien::GenerateTrain(const char *name)
+{
+// Generate the full train.
+   fAdditionalLibs = "";
+   if (!LoadModules()) return kFALSE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr->InitAnalysis()) return kFALSE;
+   mgr->PrintStatus();
+   Int_t productionMode = fProductionMode;
+   SetProductionMode();
+   TString macro = fAnalysisMacro;
+   TString executable = fExecutable;
+   TString validation = fValidationScript;
+   TString execCommand = fExecutableCommand;
+   SetAnalysisMacro(Form("%s.C", name));
+   SetExecutable(Form("%s.sh", name));
+   SetExecutableCommand("aliroot -b -q ");
+   SetValidationScript(Form("%s_validation.sh", name));
+   StartAnalysis();
+   SetProductionMode(productionMode);
+   fAnalysisMacro = macro;
+   fExecutable = executable;
+   fExecutableCommand = execCommand;
+   fValidationScript = validation;
+   return kTRUE;   
+}   
+
+//______________________________________________________________________________
 Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
 {
 // Generate test macros for a single module or for the full train.
@@ -969,7 +997,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
 }   
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output, const char *anchorfile)
+Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output, const char *anchorfile, const char *outputdir)
 {
 // Copy data from the given grid directory according a pattern and make a local
 // dataset.
@@ -996,8 +1024,8 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
    TMap *map;
    TString turl, dirname, filename, temp;
    TString cdir = gSystem->WorkingDirectory();
-   gSystem->MakeDirectory("data");
-   gSystem->ChangeDirectory("data");
+   gSystem->MakeDirectory(outputdir);
+   gSystem->ChangeDirectory(outputdir);
    for (Int_t i=0; i<nfound; i++) {
       map = (TMap*)res->At(i);
       turl = map->GetValue("turl")->GetName();
@@ -1007,7 +1035,7 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
       gSystem->MakeDirectory(dirname);
       if (TFile::Cp(turl, Form("file:./%s/%s", dirname.Data(), filename.Data()))) {
          if (strlen(anchorfile)) filename = Form("%s#%s", filename.Data(), anchorfile);
-         out << cdir << "/data/" << Form("%s/%s", dirname.Data(), filename.Data()) << endl;
+         out << cdir << Form("/%s/%s/%s", outputdir, dirname.Data(), filename.Data()) << endl;
       }
    }
    gSystem->ChangeDirectory(cdir);
@@ -3761,7 +3789,10 @@ void AliAnalysisAlien::WriteAnalysisMacro()
       if (IsLocalTest()) {
          out << "   AliAnalysisAlien *plugin = new AliAnalysisAlien();" << endl;
          out << "   plugin->SetRunMode(\"test\");" << endl;
-         out << "   plugin->SetFileForTestMode(\"data.txt\");" << endl;
+         if (fFileForTestMode.IsNull())
+            out << "   plugin->SetFileForTestMode(\"data.txt\");" << endl;
+         else   
+            out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
          out << "   mgr->SetDebugLevel(10);" << endl;
          out << "   mgr->SetNSysInfo(100);" << endl;
@@ -3910,7 +3941,7 @@ void AliAnalysisAlien::WriteMergingMacro()
    }   
    TString mergingMacro = fExecutable;
    mergingMacro.ReplaceAll(".sh","_merge.C");
-   if (!fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
+   if (gGrid && !fGridOutputDir.Contains("/")) fGridOutputDir = Form("%s/%s/%s", gGrid->GetHomeDirectory(), fGridWorkingDir.Data(), fGridOutputDir.Data());
    if (!TestBit(AliAnalysisGrid::kSubmit)) {  
       ofstream out;
       out.open(mergingMacro.Data(), ios::out);
