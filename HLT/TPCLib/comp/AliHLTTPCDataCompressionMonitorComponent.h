@@ -18,6 +18,7 @@
 class AliHLTTPCHWCFData;
 class AliHLTDataInflater;
 class AliHLTTPCTrackGeometry;
+class AliHLTTPCHWCFSpacePointContainer;
 class TH1;
 class TH2;
 
@@ -81,6 +82,126 @@ public:
     kHaveHWClusters = 0x2
   };
 
+  enum {
+    kHistogramPadrow,
+    kHistogramPad,
+    kHistogramTime,
+    kHistogramSigmaY2,
+    kHistogramSigmaZ2,
+    kHistogramCharge,
+    kHistogramQMax,
+    kHistogramDeltaPadrow,
+    kHistogramDeltaPad,
+    kHistogramDeltaTime,
+    kHistogramDeltaSigmaY2,
+    kHistogramDeltaSigmaZ2,
+    kHistogramDeltaCharge,
+    kHistogramDeltaQMax,
+    kNumberOfHistograms
+  };
+
+  struct AliHistogramDefinition {
+    int fId; //!
+    const char* fName; //!
+    const char* fTitle; //!
+    int fBins; //!
+    float fLowerBound; //!
+    float fUpperBound; //!
+  };
+
+  /**
+   * @class AliDataContainer
+   * Cluster read interface for monitoring.
+   * The class implements the interface to be used in the decoding
+   * of compressed TPC data.
+   */
+  class AliDataContainer {
+  public:
+    AliDataContainer();
+    virtual ~AliDataContainer();
+
+    struct AliClusterIdBlock {
+      AliClusterIdBlock() : fIds(NULL), fSize(0) {}
+      AliHLTUInt32_t* fIds; //!
+      AliHLTUInt32_t  fSize; //!
+    };
+
+    class iterator {
+    public:
+      iterator() : fClusterNo(0), fData(NULL), fClusterId(kAliHLTVoidDataSpec) {}
+      iterator(AliDataContainer* pData) : fClusterNo(0), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec) {}
+      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fClusterId(other.fClusterId) {}
+      iterator& operator=(const iterator& other) {
+	fClusterNo=other.fClusterNo; fData=other.fData; fClusterId=other.fClusterId; return *this;
+      }
+      ~iterator() {}
+
+      void SetPadRow(int row)          {if (fData) fData->FillPadRow(row, fClusterId);}
+      void SetPad(float pad) 	       {if (fData) fData->FillPad(pad, fClusterId);}
+      void SetTime(float time) 	       {if (fData) fData->FillTime(time, fClusterId);}
+      void SetSigmaY2(float sigmaY2)   {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId);}
+      void SetSigmaZ2(float sigmaZ2)   {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
+      void SetCharge(unsigned charge)  {if (fData) fData->FillCharge(charge, fClusterId);}
+      void SetQMax(unsigned qmax)      {if (fData) fData->FillQMax(qmax, fClusterId);}
+
+      // prefix operators
+      iterator& operator++() {fClusterNo++; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
+      iterator& operator--() {fClusterNo--; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
+      // postfix operators
+      iterator operator++(int) {iterator i(*this); fClusterNo++; return i;}
+      iterator operator--(int) {iterator i(*this); fClusterNo--; return i;}
+
+      bool operator==(const iterator other) const {return fData==other.fData;}
+      bool operator!=(const iterator other) const {return fData!=other.fData;}
+
+    private:
+      int fClusterNo; //! cluster no in the current block
+      AliDataContainer* fData; //! pointer to actual data
+      AliHLTUInt32_t fClusterId; //! id of the cluster, from optional cluster id blocks
+    };
+
+    /// iterator of remaining clusters block of specification
+    iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification);
+    /// iterator of track model clusters
+    iterator& BeginTrackModelClusterBlock(int count);
+    /// end iterator
+    const iterator& End();
+
+    /// add raw data bloack
+    int AddRawData(const AliHLTComponentBlockData* pDesc);
+    /// add cluster id block for remaining or track model clusters
+    int AddClusterIds(const AliHLTComponentBlockData* pDesc);
+    /// get the cluster id from the current cluster id block (optional)
+    AliHLTUInt32_t GetClusterId(int clusterNo) const;
+
+    /// internal cleanup
+    virtual void  Clear(Option_t * option="");
+    /// get histogram object
+    virtual TObject* FindObject(const char *name) const;
+    
+  protected:
+    void FillPadRow(int row, AliHLTUInt32_t clusterId);
+    void FillPad(float pad, AliHLTUInt32_t clusterId);
+    void FillTime(float time, AliHLTUInt32_t clusterId);
+    void FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId);
+    void FillSigmaZ2(float sigmaZ2, AliHLTUInt32_t clusterId);
+    void FillCharge(unsigned charge, AliHLTUInt32_t clusterId);
+    void FillQMax(unsigned qmax, AliHLTUInt32_t clusterId);
+
+  private:
+    AliDataContainer(const AliDataContainer&);
+    AliDataContainer& operator=(const AliDataContainer&);
+
+    TObjArray* fHistograms;     //! array of histograms
+    vector<TH1*> fHistogramPointers; //! pointers to histograms
+    vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
+    AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
+    AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
+    AliHLTTPCHWCFSpacePointContainer* fRawData; //! raw data container
+    iterator fBegin; //!
+    iterator fEnd; //!
+  };
+
 protected:
   /// inherited from AliHLTProcessor: data processing
   int DoEvent( const AliHLTComponentEventData& evtData, 
@@ -104,11 +225,12 @@ private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
 
-  int ReadRemainingClustersCompressed(const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
-  int ReadRemainingClustersCompressed(AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
+  typedef AliDataContainer::iterator T;
+  int ReadRemainingClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
+  int ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
 
-  int ReadTrackModelClustersCompressed(const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
-  int ReadTrackClustersCompressed(AliHLTDataInflater* pInflater, AliHLTTPCTrackGeometry* pTrackPoints);
+  int ReadTrackModelClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
+  int ReadTrackClustersCompressed(T& c, AliHLTDataInflater* pInflater, AliHLTTPCTrackGeometry* pTrackPoints);
 
   AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
@@ -118,10 +240,13 @@ private:
   TH2* fHistoHWCFReductionFactor;  //! reduction factor vs. event size
   TH2* fHistoNofClusters; //! number of clusters vs. event size
   TString fHistogramFile; //! file to save histogram
+  AliDataContainer* fMonitoringContainer; //! cluster read interface for monitoring
 
   /// verbosity
   int fVerbosity;  //! verbosity for debug printout
   unsigned fFlags; //! flags to indicate various conditions
+
+  static const AliHistogramDefinition fgkHistogramDefinitions[]; //! histogram definitions
 
   ClassDef(AliHLTTPCDataCompressionMonitorComponent, 0)
 };
