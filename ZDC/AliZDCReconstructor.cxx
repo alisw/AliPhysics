@@ -43,6 +43,7 @@
 #include "AliZDCEnCalib.h"
 #include "AliZDCTowerCalib.h"
 #include "AliZDCMBCalib.h"
+#include "AliZDCTDCCalib.h"
 #include "AliZDCRecoParam.h"
 #include "AliZDCRecoParampp.h"
 #include "AliZDCRecoParamPbPb.h"
@@ -59,6 +60,7 @@ AliZDCReconstructor:: AliZDCReconstructor() :
   fPedData(GetPedestalData()),
   fEnCalibData(GetEnergyCalibData()),
   fTowCalibData(GetTowerCalibData()),
+  fTDCCalibData(GetTDCCalibData()),
   fRecoMode(0),
   fBeamEnergy(0.),
   fNRun(0),
@@ -557,7 +559,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
    }// ADC DATA
    // ***************************** Reading Scaler
    else if(rawData.GetADCModule()==kScalerGeo){
-     if(rawData.IsScalerWord()==kTRUE && rawData.IsScEventGood()==kTRUE){
+     if(rawData.IsScalerWord()==kTRUE){
        isScalerOn = kTRUE;
        scalerData[jsc] = rawData.GetTriggerCount();
        // Ch. debug
@@ -574,7 +576,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        iprevtdc=itdc;
        tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
        // Ch. debug
-       //printf("   Reconstructed TDC[%d, %d] %d  ",itdc, ihittdc, tdcData[itdc][ihittdc]);
+       //if(ihittdc==0) printf("   TDC%d %d  ",itdc, tdcData[itdc][ihittdc]);
    }// ZDC TDC DATA
    // ***************************** Reading PU
    else if(rawData.GetADCModule()==kPUGeo){
@@ -1293,6 +1295,13 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
 {
   // fill energies and number of participants to the ESD
 
+  // Retrieving TDC calibration data  
+  // Parameters for TDC centering around zero
+  int const knTDC = 6;
+  Float_t tdcOffset[knTDC];
+  for(Int_t jj=0; jj<knTDC; jj++) tdcOffset[jj] = fTDCCalibData->GetMeanTDC(jj);
+  //fTDCCalibData->Print("");
+
   AliZDCReco reco;
   AliZDCReco* preco = &reco;
   clustersTree->SetBranchAddress("ZDC", &preco);
@@ -1343,21 +1352,32 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
     fESDZDC->SetZDCScaler(counts);
   }    
   
-  // Writing TDC data into ZDC ESDs
   Int_t tdcValues[32][4]; 
   Float_t tdcCorrected[32][4];
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
       tdcValues[jk][lk] = reco.GetZDCTDCData(jk, lk);
+      //Ch debug
+      //if((jk>=8 && jk<=13 && lk==0) || jk==15) printf(" *** ZDC: tdc%d =  %d = %f ns \n",jk,tdcValues[jk][lk],0.025*tdcValues[jk][lk]);
     }
   }
+  
+  // Writing TDC data into ZDC ESDs
   // 4/2/2011 -> Subtracting L0 (tdcValues[15]) instead of ADC gate 
   // we try to keep the TDC oscillations as low as possible!
   for(Int_t jk=0; jk<32; jk++){
     for(Int_t lk=0; lk<4; lk++){
-      if(tdcValues[jk][lk]!=0.) tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
+      if(TMath::Abs(tdcValues[jk][lk])>1e-10){
+        tdcCorrected[jk][lk] = 0.025*(tdcValues[jk][lk]-tdcValues[15][0])+fMeanPhase;
+        // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
+	if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
+	//Ch. debug
+	//if((jk>=8 && jk<=13) || jk==15) printf(" *** tdcOffset%d %f  tdcCorr%d %f ",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
+   
+      }
     }
   }
+
   fESDZDC->SetZDCTDCData(tdcValues);
   fESDZDC->SetZDCTDCCorrected(tdcCorrected);
   fESDZDC->AliESDZDC::SetBit(AliESDZDC::kCorrectedTDCFilled, reco.GetEnergyFlag());
@@ -1451,6 +1471,22 @@ AliZDCMBCalib* AliZDCReconstructor::GetMBCalibData() const
   entry->SetOwner(kFALSE);
 
   AliZDCMBCalib *calibdata = dynamic_cast<AliZDCMBCalib*> (entry->GetObject());
+  if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
+
+  return calibdata;
+}
+
+//_____________________________________________________________________________
+AliZDCTDCCalib* AliZDCReconstructor::GetTDCCalibData() const
+{
+
+  // Getting TDC object for ZDC 
+
+  AliCDBEntry  *entry = AliCDBManager::Instance()->Get("ZDC/Calib/TDCCalib");
+  if(!entry) AliFatal("No calibration data loaded!");  
+  entry->SetOwner(kFALSE);
+
+  AliZDCTDCCalib *calibdata = dynamic_cast<AliZDCTDCCalib*> (entry->GetObject());
   if(!calibdata)  AliFatal("Wrong calibration object in calibration  file!");
 
   return calibdata;

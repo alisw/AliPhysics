@@ -21,6 +21,7 @@ class AliZDCPedestals;
 class AliZDCEnCalib;
 class AliZDCTowerCalib;
 class AliZDCMBCalib;
+class AliZDCTDCCalib;
 class AliZDCRecoParampp;
 class AliZDCRecoParamPbPb;
 class AliLog;
@@ -71,6 +72,7 @@ public:
   AliZDCEnCalib       *GetEnergyCalibData() const; 
   AliZDCTowerCalib    *GetTowerCalibData() const; 
   AliZDCMBCalib       *GetMBCalibData() const; 
+  AliZDCTDCCalib      *GetTDCCalibData() const; 
   
 private:
   AliZDCReconstructor(const AliZDCReconstructor&); //Not implemented
@@ -97,6 +99,7 @@ private:
   AliZDCPedestals  *fPedData; 	    	  //! pedestal calibration data
   AliZDCEnCalib    *fEnCalibData;   	  //! energy calibration data
   AliZDCTowerCalib *fTowCalibData;  	  //! equalization calibration data
+  AliZDCTDCCalib   *fTDCCalibData;  	  //! TDC offset data
   
   Int_t    fRecoMode;	    // =1->p-p, =2->A-A
   Float_t  fBeamEnergy;	    // beam energy
@@ -108,7 +111,7 @@ private:
   
   AliESDZDC* fESDZDC;       // ESD output object  
 
-  ClassDef(AliZDCReconstructor, 12)   // class for the ZDC reconstruction
+  ClassDef(AliZDCReconstructor, 13)   // class for the ZDC reconstruction
 };
 
 #endif

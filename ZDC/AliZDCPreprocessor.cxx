@@ -20,6 +20,7 @@
 #include "AliZDCEnCalib.h"
 #include "AliZDCTowerCalib.h"
 #include "AliZDCMBCalib.h"
+#include "AliZDCTDCCalib.h"
 
 /////////////////////////////////////////////////////////////////////
 //								   //
@@ -51,6 +52,10 @@
 // return 17: error storing laser histos in RefData 
 // return 18: error in ZDCMBCalib.root file retrieved from DAQ FXS 
 // return 19: error storing MB calibration obj. in OCDB
+// return 20: error in ZDCTDCCalib.root file retrieved from DAQ FXS
+// return 21: error in storing TDC calibration obj. in OCDB
+// return 22: error in ZDCTDCHisto.root file retrieved from DAQ FXS
+// Return 23: error storing TDC reference histos in RefData
 // ******************************************************************
 
 ClassImp(AliZDCPreprocessor)
@@ -333,6 +338,93 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
   }
   
   delete daqSource; daqSource=0;
+  // Reading the file for mapping from FXS
+  TList* daqSourcetdc = GetFileSources(kDAQ, "TDCDATA");
+  if(!daqSourcetdc){
+    AliError(Form("No sources for file ZDCChMappingTDCCalib.dat in run %d ", fRun));
+    return 20;
+  }
+  if(daqSourcetdc->GetEntries()==0) return 20;
+  Log("\t List of DAQ sources for TDCDATA id: "); daqSourcetdc->Print();
+  //
+  Bool_t resTDCcal = kTRUE;
+  TIter itertdc(daqSourcetdc);
+  TObjString* sourcetdc = 0;
+  Int_t isoutdc = 0;
+  //
+  while((sourcetdc = dynamic_cast<TObjString*> (itertdc.Next()))){
+     TString fileNametdc = GetFile(kDAQ, "TDCDATA", sourcetdc->GetName());
+     Log(Form("\t Getting file #%d: ZDCTDCdata.dat from %s\n",++isoutdc, sourcetdc->GetName()));
+
+     if(fileNametdc.Length() <= 0){
+       Log(Form("No file from source %s!", sourcetdc->GetName()));
+       return 20;
+     }
+     // --- Initializing TDC calibration object
+     AliZDCTDCCalib *tdcCalib = new AliZDCTDCCalib("ZDC");
+     // --- Reading file with calibration data
+     //const char* fname = fileName.Data();
+     if(fileNametdc){
+       FILE *filetdc;
+       if((filetdc = fopen(fileNametdc,"r")) == NULL){
+	 printf("Cannot open file %s \n",fileNametdc.Data());
+         return 20;
+       }
+       Log(Form("File %s connected to process TDC data", fileNametdc.Data()));
+       //
+       Float_t tdcMean[6][2];
+       for(Int_t it=0; it<6; it++){
+         for(Int_t iu=0; iu<2; iu++) tdcMean[it][iu]=0.;
+       }
+       for(Int_t k=0; k<6; k++){
+        for(Int_t j=0; j<2; j++){
+           int leggi = fscanf(filetdc,"%f",&tdcMean[k][j]);
+	   if(leggi==0) AliDebug(3," Failing reading data from tdc file");
+	   tdcCalib->SetMeanTDC(k, tdcMean[k][0]);
+	   tdcCalib->SetWidthTDC(k, tdcMean[k][1]);
+	}
+       }
+       fclose(filetdc);
+     }
+     else{
+       Log(Form("File %s not found", fileNametdc.Data()));
+       return 20;
+     }
+     //
+     AliCDBMetaData metaData;
+     metaData.SetBeamPeriod(0);
+     metaData.SetResponsible("Chiara Oppedisano");
+     metaData.SetComment("Filling AliZDCTDCCalib object");  
+     //
+     resTDCcal = Store("Calib","TDCCalib",tdcCalib, &metaData, 0, kTRUE);
+     if(resTDCcal==kFALSE) return 21;
+  }
+  delete daqSourcetdc; daqSourcetdc = 0;
+
+  Bool_t restdcHist = kTRUE;
+  TList* daqSourceH = GetFileSources(kDAQ, "TDCHISTOS");
+  if(!daqSourceH){
+    Log(Form("No source for TDCHISTOS id run %d !", fRun));
+    return 22;
+  }
+  Log("\t List of DAQ sources for TDCHISTOS id: "); daqSourceH->Print();
+  //
+  TIter iterH(daqSourceH);
+  TObjString* sourceH = 0;
+  Int_t iH=0;
+  while((sourceH = dynamic_cast<TObjString*> (iterH.Next()))){
+     TString stringTDCFileName = GetFile(kDAQ, "TDCHISTOS", sourceH->GetName());
+     if(stringTDCFileName.Length() <= 0){
+     	Log(Form("No TDCHISTOS file from source %s!", sourceH->GetName()));
+        return 22;
+     }
+     const char* tdcFileName = stringTDCFileName.Data();
+     Log(Form("\t Getting file #%d: %s from %s\n",++iH, tdcFileName, sourceH->GetName()));
+     restdcHist = StoreReferenceFile(tdcFileName, "tdcReference.root");
+     if(restdcHist==kFALSE) return 23;
+  }
+  delete daqSourceH; daqSourceH=0;
+  
   
   if(resChMapStore==kFALSE) return 5;
   else return 0;

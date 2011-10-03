@@ -436,11 +436,11 @@ Bool_t AliZDCRawStream::Next()
       if((fBuffer&0xff000001) == 0xff000001){ // ************** Mapping
         // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum @ fDataOffset=0
         if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
-	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
+	   //printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
 	   fCurrentCh=0; fCurrScCh=0; fCurrTDCCh=0;	
         }
 	else{
-	  printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
+	  //printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
           fSODReading = kFALSE;
 	  return kFALSE;
 	}
@@ -825,9 +825,10 @@ Bool_t AliZDCRawStream::Next()
         //printf("  AliZDCRawStream -> VME SCALER HEADER: geo %d Nwords %d TrigSource %d TrigNo. %d\n",
         //   fScGeo,fScNWords,fScTriggerSource,fScTriggerNumber);
       } 
-      else if(!(fBuffer & 0x04000000)){
-        fIsScEventGood = kFALSE;
-      }
+      // Commented by C.O. & M.G. (23/09/2011)
+      //else if(!(fBuffer & 0x04000000) && fIsScHeaderRead==kFALSE){
+      //  fIsScEventGood = kFALSE;
+      //}
     }
     // *********************************** PATTERN UNIT ***********************************
     else if(fADCModule == kPUGeo){
@@ -861,12 +862,14 @@ Bool_t AliZDCRawStream::Next()
     // ********************************** VME SCALER DATA **********************************
     //  Reading VME scaler data 
     if(fIsScHeaderRead && fPosition>=fScStartCounter+1){ // *** Scaler word
-      fADCModule=kScalerGeo; fIsADCDataWord=kFALSE; fIsScalerWord=kTRUE;
+      fADCModule=kScalerGeo; 
+      fIsADCDataWord=kFALSE; 
+      fIsScalerWord=kTRUE;
       fScEvCounter = fBuffer;
       Int_t nWords = (Int_t) (fScNWords);
       if(fPosition == fScStartCounter+nWords) fIsScHeaderRead = kFALSE;
       //Ch. debug
-      //printf("  AliZDCRawStream -> scaler datum %d", fScEvCounter);
+      //printf("  AliZDCRawStream -> scaler datum %x \n", fScEvCounter);
     }
     // ********************************** ZDC TDC DATA **********************************
     //  ZDC TDC data
@@ -965,7 +968,7 @@ Bool_t AliZDCRawStream::Next()
           }
         }       
         // Ch. debug
-        //printf("  AliZDCRawStream -> Trigger history word %d\n", fPosition-fTrigHistStart);
+        //printf("  AliZDCRawStream -> Trigger history word[%d] %x\n", fPosition, fBuffer);
     }
     
   }

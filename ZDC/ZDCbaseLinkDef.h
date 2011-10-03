@@ -18,6 +18,7 @@
 #pragma link C++ class  AliZDCMBCalib+;
 #pragma link C++ class  AliZDCMisAligner+;
 #pragma link C++ class  AliZDCChMap+;
+#pragma link C++ class  AliZDCTDCCalib+;
 #pragma link C++ class  AliZDCDataDCS+;
 #pragma link C++ class  AliZDCPreprocessor+;
 #pragma link C++ class  AliZDCQAChecker+;

@@ -37,6 +37,7 @@ set ( SRCS
     AliZDCTowerCalib.cxx 
     AliZDCMBCalib.cxx 
     AliZDCChMap.cxx 
+    AliZDCTDCCalib.cxx 
     AliZDCMisAligner.cxx 
     AliZDCDataDCS.cxx 
     AliZDCPreprocessor.cxx 

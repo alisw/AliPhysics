@@ -76,8 +76,10 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "MBCALIB", "LDC", "ZDCMBCalib.root");
   //
   shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "MAPPING", "MON", "ZDCChMapping.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "TDCDATA", "MON", "ZDCTDCCalib.dat");
+  shuttle->AddInputFile(AliTestShuttle::kDAQ, "ZDC", "TDCHISTOS", "MON", "ZDCTDCHisto.root");
 
-  // TODO(3)
+  // Todo(3)
   //
   // The shuttle can read run type stored in the DAQ logbook.
   // To test it, we must provide the run type manually. They will be retrieved in the preprocessor
@@ -145,6 +147,8 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
   			->Get("ZDC/Calib/LaserCalib", 0);
   else if((str.CompareTo("CALIBRATION_EMD")) == 0) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
   			->Get("ZDC/Calib/EnergyCalib", 0);
+  else if((str.CompareTo("PHYSICS")) == 0) chkEntry1 = AliCDBManager::Instance()->GetStorage(AliShuttleInterface::GetMainCDB())
+  			->Get("ZDC/Calib/TDCCalib", 0);
   
   
   if(!chkEntry0){
@@ -155,6 +159,7 @@ void TestZDCPreprocessor(const char* runType="PHYSICS")
     if((str.CompareTo("STANDALONE_PEDESTAL")) == 0)  printf("No file in ZDC/Calib/Pedestal\n");
     else if((str.CompareTo("STANDALONE_LASER")) == 0) printf("No file in ZDC/Calib/LaserCalib\n");
     else if((str.CompareTo("CALIBRATION_EMD")) == 0)  printf("No file in ZDC/Calib/EnergyCalib\n");
+    else if((str.CompareTo("PHYSICS")) == 0)  printf("No file in ZDC/Calib/TDCCalib\n");
     return;
   }
   
