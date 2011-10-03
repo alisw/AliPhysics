@@ -20,6 +20,9 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   virtual void Print(const Option_t* option="") const;
   static   Bool_t  GetUseTimeCalibration();
   static   void    SetUseTimeCalibration(Bool_t useTimeCalibration);
+
+  void     SetUseHLTClusters(Int_t useHLTClusters){fUseHLTClusters=useHLTClusters;}
+  Int_t    GetUseHLTClusters() const {return fUseHLTClusters;}
   void     SetClusterSharing(Bool_t sharing){fBClusterSharing=sharing;}
   Bool_t   GetClusterSharing() const {return fBClusterSharing;}
   Double_t GetCtgRange() const     { return fCtgRange;}
@@ -126,6 +129,7 @@ class AliTPCRecoParam : public AliDetectorRecoParam
   static   AliTPCRecoParam *GetCosmicTestParam(Bool_t bPedestal); // special setting for cosmic  
   //
  protected:
+  Int_t    fUseHLTClusters;  // allows usage of HLT clusters instead of RAW data
   Bool_t   fBClusterSharing; // allows or disable cluster sharing during tracking 
   Double_t fCtgRange;        // +-fCtgRange is the ctg(Theta) window used for clusterization and tracking (MI) 
   Double_t fMaxSnpTracker;   // max sin of local angle  - for TPC tracker
@@ -196,7 +200,7 @@ public:
                                       // to be switched off for pass 0 reconstruction
                                       // Use static function, other option will be to use 
                                       // additional specific storage ?
-  ClassDef(AliTPCRecoParam, 14)
+  ClassDef(AliTPCRecoParam, 15)
 };
 
 

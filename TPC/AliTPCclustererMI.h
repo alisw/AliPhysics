@@ -97,7 +97,7 @@ private:
   const AliTPCRecoParam  * fRecoParam;        //! reconstruction parameters
   Bool_t  fBDumpSignal; // dump signal flag
   Bool_t  fBClonesArray; // output clusters stored in TClonesArray 
-  Bool_t  fBUseHLTClusters; // use HLT clusters instead of offline clusters
+  Int_t  fUseHLTClusters; // use HLT clusters instead of offline clusters
 
   // Non-persistent arrays
 
@@ -106,7 +106,7 @@ private:
   Int_t*  fAllNSigBins;//! Number of signal bins in a sector
 
 
-  ClassDef(AliTPCclustererMI,2)  // Time Projection Chamber digits
+  ClassDef(AliTPCclustererMI,3)  // Time Projection Chamber digits
 };
 
 inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bins) const {

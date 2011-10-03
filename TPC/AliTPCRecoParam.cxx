@@ -61,6 +61,7 @@ Bool_t AliTPCRecoParam::fgUseTimeCalibration=kTRUE; // flag usage the time depen
 //_____________________________________________________________________________
 AliTPCRecoParam::AliTPCRecoParam():
   AliDetectorRecoParam(),
+  fUseHLTClusters(1),  // use RAW data
   fBClusterSharing(kTRUE),
   fCtgRange(1.05),       
   fMaxSnpTracker(0.95),
@@ -206,6 +207,7 @@ AliTPCRecoParam *AliTPCRecoParam::GetLaserTestParam(Bool_t bPedestal){
   param->fMaxC          = 0.02;
   param->fBSpecialSeeding = kTRUE;
   param->fUseTOFCorrection=kFALSE;
+  param->fUseHLTClusters=1; // always RAW data
   //
   //
   param->SetName("Laser Flux");

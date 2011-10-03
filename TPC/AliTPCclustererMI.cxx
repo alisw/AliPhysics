@@ -24,6 +24,12 @@
 //      1.c HLT clusters    - Digits2Clusters and Digits2Clusters(AliRawReader* rawReader)
 //                            invoke ReadHLTClusters()
 //
+//      fUseHLTClusters     - switches between different inputs
+//                            1 -> only TPC raw/sim data
+//                            2 -> if present TPC raw/sim data, otherwise HLT clusters
+//                            3 -> only HLT clusters
+//                            4 -> if present HLT clusters, otherwise TPC raw/sim data
+//
 //  2. The Output data
 //      2.a TTree with clusters - if  SetOutput(TTree * tree) invoked
 //      2.b TObjArray           - Faster option for HLT
@@ -112,7 +118,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
-  fBUseHLTClusters(kFALSE),
+  fUseHLTClusters(1),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -193,7 +199,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
-  fBUseHLTClusters(kFALSE),
+  fUseHLTClusters(1),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -719,13 +725,30 @@ void AliTPCclustererMI::Digits2Clusters()
   //-----------------------------------------------------------------
   // Use HLT clusters
   //-----------------------------------------------------------------
-  if (fBUseHLTClusters) {
+  fUseHLTClusters = fRecoParam->GetUseHLTClusters();
+
+  printf(" HLT TPC Reco foo : %d \n",fUseHLTClusters );
+  if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();
-    ReadHLTClusters();
+    Int_t iResult = ReadHLTClusters();
 
-    return;
-  }
+    // HLT clusters present
+    if (!iResult)
+      return;
+    // HLT clusters not present
+    else if(iResult == -1) {
+      if (fUseHLTClusters == 3) {
+	AliError("No HLT clusters present, but requiered.");
+	return;
+      }
+    }
+    // Some other problem during cluster reading
+    else {
+      AliWarning("Some problem while unpacking of HLT clusters.");
+      return;
+    }
+  } // if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
 
   //-----------------------------------------------------------------
   // Run TPC off-line clusterer
@@ -962,13 +985,29 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //-----------------------------------------------------------------
   // Use HLT clusters
   //-----------------------------------------------------------------
-  if (fBUseHLTClusters) {
+  fUseHLTClusters = fRecoParam->GetUseHLTClusters();
+
+  if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();
-    ReadHLTClusters();
+    Int_t iResult = ReadHLTClusters();
 
-    return;
-  }
+    // HLT clusters present
+    if (!iResult)
+      return;
+    // HLT clusters not present
+    else if(iResult == -1) {
+      if (fUseHLTClusters == 3) {
+	AliError("No HLT clusters present, but requiered.");
+	return;
+      }
+    }
+    // Some other problem during cluster reading
+    else {
+      AliWarning("Some problem while unpacking of HLT clusters.");
+      return;
+    }
+  } // if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
    
   //-----------------------------------------------------------------
   // Run TPC off-line clusterer
