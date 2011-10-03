@@ -266,12 +266,6 @@ int AliHLTTPCDataCompressionMonitorComponent::DoDeinit()
   /// inherited from AliHLTComponent: component cleanup
   int iResult=0;
 
-  if (fMonitoringContainer) {
-    fMonitoringContainer->Clear();
-    delete fMonitoringContainer;
-  }
-  fMonitoringContainer=NULL;
-
   if (fpHWClusterDecoder) delete fpHWClusterDecoder;
   fpHWClusterDecoder=NULL;
 
@@ -295,6 +289,12 @@ int AliHLTTPCDataCompressionMonitorComponent::DoDeinit()
   fHistoHWCFReductionFactor=NULL;
   if (fHistoNofClusters) delete fHistoNofClusters;
   fHistoNofClusters=NULL;
+  if (fMonitoringContainer) {
+    fMonitoringContainer->Clear();
+    delete fMonitoringContainer;
+  }
+  fMonitoringContainer=NULL;
+
 
   return iResult;
 }

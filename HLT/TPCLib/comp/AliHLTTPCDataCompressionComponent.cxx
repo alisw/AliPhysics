@@ -439,7 +439,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	AliHLTComponent::FillBlockData(bd);
 	bd.fOffset        = size;
 	bd.fSize        = fpWrittenAssociatedClusterIds->size()*sizeof(vector<AliHLTUInt32_t>::value_type);
-	if (capacity-size>-bd.fSize) {
+	if (capacity-size>bd.fSize) {
 	  memcpy(outputPtr+bd.fOffset, &(*fpWrittenAssociatedClusterIds)[0], bd.fSize);
 	  bd.fDataType    = AliHLTTPCDefinitions::ClusterIdTracksDataType();
 	  bd.fSpecification = AliHLTTPCDefinitions::EncodeDataSpecification(minSlice, maxSlice, minPatch, maxPatch);
@@ -992,6 +992,18 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
       if ((bMissingParam=(++i>=argc))) break;
       fTrainingTableOutput=argv[i++];
       return 2;
+    }
+    // -cluster-verification
+    if (argument.CompareTo("-cluster-verification")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString parameter=argv[i];
+      if (parameter.IsDigit()) {
+	fVerificationMode=parameter.Atoi();
+	return 2;
+      } else {
+	HLTError("invalid parameter for argument %s, expecting number instead of %s", argument.Data(), parameter.Data());
+	return -EPROTO;
+      }
     }
   } while (0); // using do-while only to have break available
 
