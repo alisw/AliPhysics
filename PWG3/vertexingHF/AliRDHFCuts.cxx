@@ -253,6 +253,11 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
     // pp, from LHC10d onwards
     if((event->GetRunNumber()>121693 && event->GetRunNumber()<136851) ||
        event->GetRunNumber()>139517) fPidHF->SetOnePad(kTRUE);
+    // pp, 2011 low energy run
+    if((event->GetRunNumber()>=146686 && event->GetRunNumber()<=146860)){
+      fPidHF->SetppLowEn2011(kTRUE);
+      fPidHF->SetOnePad(kFALSE);
+    }
     // PbPb LHC10h
     if(event->GetRunNumber()>=136851 && event->GetRunNumber()<=139517) fPidHF->SetPbPb(kTRUE);
     // MC

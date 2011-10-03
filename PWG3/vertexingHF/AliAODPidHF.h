@@ -50,6 +50,7 @@ class AliAODPidHF : public AliAODPid{
  void SetMC(Bool_t mc){fMC=mc;return;}
  void SetMClowenpp2011(Bool_t mc){fMCLowEn2011=mc;return;}
  void SetOnePad(Bool_t onepad){fOnePad=onepad;return;}
+ void SetppLowEn2011(Bool_t opt){fppLowEn2011=opt;return;}
  void SetPbPb(Bool_t pbpb){fPbPb=pbpb;return;}
  void SetPCompatTOF(Double_t pTOF){fPCompatTOF=pTOF;return;}
  void SetTOFdecide(Bool_t tOFdecide){fTOFdecide=tOFdecide;return;}
@@ -73,6 +74,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t GetCompat() const{return fCompat;}
  Bool_t GetMC() const{return fMC;}
  Bool_t GetOnePad() const{return fOnePad;}
+ Bool_t GetppLowEn2011() const {return fppLowEn2011;}
  Bool_t GetMCLowEn2011() const {return fMCLowEn2011;}
  Bool_t GetPbPb() const{return fPbPb;}
  Bool_t GetTOFdecide() const{return fTOFdecide;}
@@ -138,6 +140,7 @@ class AliAODPidHF : public AliAODPid{
  Bool_t fMC; // MC(kTRUE) or real data (kFALSE, default option)
  Bool_t fOnePad; //  real data with one pad clusters 
  Bool_t fMCLowEn2011; //  MC for low energy MC
+ Bool_t fppLowEn2011; //  Data for low energy pp 2011
  Bool_t fPbPb; //  real data PbPb 
  Bool_t fTOFdecide; //  real data PbPb 
  Bool_t fOldPid; //  old PID method implemented
@@ -146,7 +149,7 @@ class AliAODPidHF : public AliAODPid{
  AliPIDCombined* fPidCombined; //combined PID object 
 
 
- ClassDef(AliAODPidHF,14) // AliAODPid for heavy flavor PID
+ ClassDef(AliAODPidHF,15) // AliAODPid for heavy flavor PID
 
 };
 
