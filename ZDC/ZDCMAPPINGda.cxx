@@ -12,7 +12,7 @@ Contact: Chiara.Oppedisano@to.infn.it
 Link: 
 Run Type: PHYSICS
 DA Type: MON
-Number of events needed: 1 (SOD is read) 
+Number of events needed: at least 50% 
 Input Files:  none
 Output Files: ZDCChMapping.dat
 Trigger Types Used: different trigger types are used
@@ -61,27 +61,55 @@ int main(int argc, char **argv) {
       "Minuit", "TMinuitMinimizer(const char *)");
   TVirtualFitter::SetDefaultFitter("Minuit");
 
-  const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
-  monitorDeclareTable(const_cast<char**>(tableSOD));
+  //const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
+  //monitorDeclareTable(const_cast<char**>(tableSOD));
   
   int status = 0;
   int const kNModules = 10;
   int const kNChannels = 24;
-  int const kNScChannels = 32;
+  int const kNScChannels = 32;  
+  int const kZDCTDCGeo=4;
   
-  int kScalerGeo=8;
-  int itdc=0, iprevtdc=-1, ihittdc=0
-  float tdcData[6], tdcL0;	
+  int itdc=0, iprevtdc=-1, ihittdc=0;
+  float tdcData[6], tdcL0=-999.;	
+  for(int ij=0; ij<6; ij++) tdcData[ij]=-999.;
+  
+  Int_t iMod=-1;
+  Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
+  for(Int_t kl=0; kl<kNModules; kl++){
+     modGeo[kl]=modType[kl]=modNCh[kl]=0;
+  }
+  
+  Int_t ich=0;
+  Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
+  Int_t det[2*kNChannels], sec[2*kNChannels];
+  for(Int_t y=0; y<2*kNChannels; y++){
+    adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=0;
+  }
+  
+  Int_t iScCh=0;
+  Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
+  Int_t scDet[kNScChannels], scSec[kNScChannels];
+  for(Int_t y=0; y<kNScChannels; y++){
+    scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=0;
+  }
+      
+  Int_t itdcCh=0;
+  Int_t tdcMod[kNScChannels], tdcCh[kNScChannels], tdcSigCode[kNScChannels];
+  Int_t tdcDet[kNScChannels], tdcSec[kNScChannels];
+  for(Int_t y=0; y<kNScChannels; y++){
+    tdcMod[y]=tdcCh[y]=tdcSigCode[y]=tdcDet[y]=tdcSec[y]=-1;
+  }
  
   TH1F * hTDC[6];
   char ntdchist[20];
-  for(Int_t itdc=0; itdc<6; itdc++){
-    if(itdc==0)      hTDC[itdc] = new TH1F("TDCZNC", "TDC ZNC", 200, 150., 350.);
-    else if(itdc==1) hTDC[itdc] = new TH1F("TDCZNA", "TDC ZNA", 200, 150., 350.);
-    else if(itdc==2) hTDC[itdc] = new TH1F("TDCZPC", "TDC ZPC", 200, 150., 350.);
-    else if(itdc==3) hTDC[itdc] = new TH1F("TDCZPA", "TDC ZPA", 200, 150., 350.);
-    else if(itdc==4) hTDC[itdc] = new TH1F("TDCZEM1","TDC ZEM1",200, 150., 350.);
-    else if(itdc==5) hTDC[itdc] = new TH1F("TDCZEM2","TDC ZEM2",200, 150., 350.);
+  for(Int_t it=0; it<6; it++){
+    if(it==0)      hTDC[it] = new TH1F("TDCZNC", "TDC ZNC", 200, 150., 350.);
+    else if(it==1) hTDC[it] = new TH1F("TDCZNA", "TDC ZNA", 200, 150., 350.);
+    else if(it==2) hTDC[it] = new TH1F("TDCZPC", "TDC ZPC", 200, 150., 350.);
+    else if(it==3) hTDC[it] = new TH1F("TDCZPA", "TDC ZPA", 200, 150., 350.);
+    else if(it==4) hTDC[it] = new TH1F("TDCZEM1","TDC ZEM1",200, 150., 350.);
+    else if(it==5) hTDC[it] = new TH1F("TDCZEM2","TDC ZEM2",200, 150., 350.);
   }
   
   /* log start of process */
@@ -153,34 +181,6 @@ int main(int argc, char **argv) {
       
       if(eventT==START_OF_DATA){
 	  	
-      
-        Int_t iMod=-1;
-        Int_t modGeo[kNModules], modType[kNModules],modNCh[kNModules];
-        for(Int_t kl=0; kl<kNModules; kl++){
-      	   modGeo[kl]=modType[kl]=modNCh[kl]=0;
-        }
-        
-        Int_t ich=0;
-        Int_t adcMod[2*kNChannels], adcCh[2*kNChannels], sigCode[2*kNChannels];
-        Int_t det[2*kNChannels], sec[2*kNChannels];
-        for(Int_t y=0; y<2*kNChannels; y++){
-          adcMod[y]=adcCh[y]=sigCode[y]=det[y]=sec[y]=-1;
-        }
-      
-        Int_t iScCh=0;
-        Int_t scMod[kNScChannels], scCh[kNScChannels], scSigCode[kNScChannels];
-        Int_t scDet[kNScChannels], scSec[kNScChannels];
-        for(Int_t y=0; y<kNScChannels; y++){
-          scMod[y]=scCh[y]=scSigCode[y]=scDet[y]=scSec[y]=-1;
-        }
-      
-        Int_t itdcCh=0;
-        Int_t tdcMod[kNScChannels], tdcCh[kNScChannels], tdcSigCode[kNScChannels];
-        Int_t tdcDet[kNScChannels], tdcSec[kNScChannels];
-        for(Int_t y=0; y<kNScChannels; y++){
-          tdcMod[y]=tdcCh[y]=tdcSigCode[y]=tdcDet[y]=tdcSec[y]=-1;
-        }
-	
 	rawStreamZDC->SetSODReading(kTRUE);
 	
 	// --------------------------------------------------------
@@ -249,24 +249,37 @@ int main(int argc, char **argv) {
 	}
         fclose(mapFile4Shuttle);
       }// SOD event
-      else{ 
-        printf("\t SOR read -> analyzing TDC info!\n");
-	if(rawData.GetADCModule()==kZDCTDCGeo && rawData.IsZDCTDCDatum()==kTRUE && ihittdc<1){
-           itdc = rawData.GetChannel(); 
-	   if(itdc>=8 && itdc<=13){
-             if(itdc==iprevtdc) ihittdc++;
-             else ihittdc=0;
-             iprevtdc=itdc;
-             tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
-	   }
-	   if(itdc==15) tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
+      else if(eventT==PHYSICS_EVENT){ 
+
+	rawStreamZDC->SetSODReading(kTRUE);
+
+  	// ----- Setting ch. mapping -----
+	for(Int_t jk=0; jk<2*kNChannels; jk++){
+	  rawStreamZDC->SetMapADCMod(jk, adcMod[jk]);
+	  rawStreamZDC->SetMapADCCh(jk, adcCh[jk]);
+	  rawStreamZDC->SetMapADCSig(jk, sigCode[jk]);
+	  rawStreamZDC->SetMapDet(jk, det[jk]);
+	  rawStreamZDC->SetMapTow(jk, sec[jk]);
 	}
-	for(int it=0; it<6; it++){
-	   for(int ih=0; ih<4; ih++){
-	     hTDC[it]->Fill(tdcData[it]-tdcL0);
-	   }
-	}	
-      }
+	
+  	while(rawStreamZDC->Next()){
+          if(rawStreamZDC->GetADCModule()==kZDCTDCGeo && rawStreamZDC->IsZDCTDCDatum()==kTRUE){
+             //
+	     itdc = rawStreamZDC->GetChannel(); 
+	     if((itdc>=8 && itdc<=13) || itdc==15){
+               if(itdc==iprevtdc) ihittdc++;
+               else ihittdc=0;
+               iprevtdc=itdc;
+               if(ihittdc<1) tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
+	       //
+	       if(itdc==15 && ihittdc<1){
+	         tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
+       	         for(int ic=0; ic<6; ic++) if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
+	       }
+	     }
+	  }
+        }
+      }//(if PHYSICS_EVENT) 
       
       iev++; 
 
@@ -288,7 +301,6 @@ int main(int argc, char **argv) {
   for(Int_t k=0; k<6; k++){
     if(hTDC[k]->GetEntries()!=0){
        binMax = hTDC[k]->GetMaximumBin();
-       printf("\n\t hTDC[%d]: binMax = %d", k, binMax);
        if(binMax<=1){
          printf("\n WARNING! Something wrong with det %d histo \n\n", k);
          continue;
@@ -307,13 +319,14 @@ int main(int argc, char **argv) {
        //
        fprintf(fileShuttle,"\t%f\t%f\n",mean[k], sigma[k]);
      }
+     else printf("  WARNING! TDC histo %d has no entries and can't be processed!\n",k);
   }
   //						       
   fclose(fileShuttle);
   
   TFile *histofile = new TFile(TDCHISTO_FILE,"RECREATE");
   histofile->cd();
-  for(int k=0; k<6; k++) hTDC[6]->Write();						       
+  for(int k=0; k<6; k++) hTDC[k]->Write();						       
   histofile->Close();
   //
   for(Int_t j=0; j<6; j++) delete hTDC[j];
