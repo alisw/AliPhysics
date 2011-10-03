@@ -37,6 +37,7 @@ Also calculate the ratio of amplitude from LED Monitor system (current/Reference
 #include <TLine.h>
 #include <TText.h>
 #include <TProfile.h> 
+#include <TProfile2D.h> 
 #include <TStyle.h>
 // --- Standard library ---
 
@@ -324,7 +325,9 @@ void AliEMCALQADataMakerRec::InitRaws()
   Int_t nSMSectors = fSuperModules / 2; // 2 SMs per sector
   Int_t nbinsZ = 2*AliEMCALGeoParams::fgkEMCALCols;
   Int_t nbinsPhi = nSMSectors * AliEMCALGeoParams::fgkEMCALRows;
-   
+	
+  Int_t nTRUCols = 2*AliEMCALGeoParams::fgkEMCALTRUCols; //total TRU columns for 2D TRU histos
+  Int_t nTRURows = nSMSectors*AliEMCALGeoParams::fgkEMCALTRUsPerSM*AliEMCALGeoParams::fgkEMCALTRURows; //total TRU rows for 2D TRU histos
    // counter info: number of channels per event (bins are SM index)
   TProfile * h0 = new TProfile("hLowEmcalSupermodules", "Low Gain EMC: # of towers vs SuperMod;SM Id;# of towers",
 			       fSuperModules, -0.5, fSuperModules-0.5, profileOption) ;
@@ -385,12 +388,14 @@ void AliEMCALQADataMakerRec::InitRaws()
   Add2RawsList(hT2, kNtotTRU, expert, !image, !saveCorr) ;
 
   // L0 trigger hits: # of hits (bins are TRU channels)
-  TH1I * hT3 = new TH1I("hTRUEmcalL0hits", "L0 trigger hits: Total number of 2x2 L0 generated", nTot2x2, -0.5, nTot2x2);
-  hT3->Sumw2();
+  TH2I * hT3 = new TH2I("hTRUEmcalL0hits", "L0 trigger hits: Total number of 2x2 L0 generated",  nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5);
+  hT3->SetOption("COLZ");
+  //hT3->Sumw2();
   Add2RawsList(hT3, kNL0TRU, !expert, image, !saveCorr);
 
   // L0 trigger hits: average time (bins are TRU channels)
-  TProfile * hT4 = new TProfile("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTot2x2, -0.5, nTot2x2, profileOption); 
+  TProfile2D * hT4 = new TProfile2D("hTRUEmcalL0hitsAvgTime", "L0 trigger hits: average time bin", nTRUCols, -0.5, nTRUCols - 0.5, nTRURows, -0.5, nTRURows-0.5, profileOption);
+  hT4->SetOption("COLZ");
   Add2RawsList(hT4, kTimeL0TRU, !expert, image, !saveCorr);
 
   // L0 trigger hits: first in the event (bins are TRU channels)
@@ -549,14 +554,13 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   if (rawReader->GetType() == AliRawEventHeaderBase::kCalibrationEvent) { 
     SetEventSpecie(AliRecoParam::kCalib) ;	
   }
-  
+
   const Int_t nTowersPerSM = AliEMCALGeoParams::fgkEMCALRows * AliEMCALGeoParams::fgkEMCALCols; // number of towers in a SuperModule; 24x48
   const Int_t nRows        = AliEMCALGeoParams::fgkEMCALRows; // number of rows per SuperModule
   const Int_t nStripsPerSM = AliEMCALGeoParams::fgkEMCALLEDRefs; // number of strips per SuperModule
   const Int_t n2x2PerSM    = AliEMCALGeoParams::fgkEMCALTRUsPerSM * AliEMCALGeoParams::fgkEMCAL2x2PerTRU; // number of TRU 2x2's per SuperModule
   const Int_t n2x2PerTRU   = AliEMCALGeoParams::fgkEMCAL2x2PerTRU;
-	const Int_t nTot2x2			 = fSuperModules * n2x2PerSM; // total TRU channels
-
+  const Int_t nTot2x2	   = fSuperModules * n2x2PerSM; // total TRU channel
 
   // SM counters; decl. should be safe, assuming we don't get more than expected SuperModules..
   Int_t nTotalSMLG[AliEMCALGeoParams::fgkEMCALModules]       = {0};
@@ -574,9 +578,12 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
   // start loop over input stream  
   while (in.NextDDL()) {
     Int_t iRCU = in.GetDDLNumber() % 2; // RCU0 or RCU1, within SuperModule
+    Int_t iDDL = in.GetDDLNumber();
     fRawAnalyzer->SetIsZeroSuppressed( in.GetZeroSupp() ); 
-
+    
     while (in.NextChannel()) {
+      Int_t iBranch = in.GetBranch();
+      
       iSM = in.GetModule(); // SuperModule
       //prInt_tf("iSM %d DDL %d", iSM, in.GetDDLNumber()); 
       if (iSM>=0 && iSM<fSuperModules) { // valid module reading
@@ -656,18 +663,21 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  if(iTRUIdInSM < n2x2PerTRU) {
 		    Int_t iTRUAbsId = iTRUIdInSM + n2x2PerTRU * iTRUId;
 		    // Fill the histograms
-		    FillRawsData(kNL0TRU,iTRUAbsId);
-		    FillRawsData(kTimeL0TRU,iTRUAbsId, startBin);
-        triggers[iTRUAbsId][startBin] = 1;
-				
-				if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;
+		    Int_t globTRUCol, globTRURow;
+		    GetTruChannelPosition(globTRURow, globTRUCol, iSM, iDDL, iBranch, iTRUIdInSM );
+		    
+		    FillRawsData(kNL0TRU, globTRUCol, globTRURow);
+		    FillRawsData(kTimeL0TRU, globTRUCol, globTRURow, startBin);
+		    triggers[iTRUAbsId][startBin] = 1;
+		    
+		    if((int)startBin < firstL0TimeBin) firstL0TimeBin = startBin;
 		  }
 		}
 	      }
 	      startBin--;
 	    } // i	
 	  } // TRU L0 Id data			
-
+	  
 	  // fill histograms
 	  if ( in.IsLowGain() || in.IsHighGain() ) { // regular towers
 	    Int_t towerId = iSM*nTowersPerSM + in.GetColumn()*nRows + in.GetRow();
@@ -752,16 +762,16 @@ void AliEMCALQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     }// end while over channel 
    
   }//end while over DDL's, of input stream 
-	//filling some L0 trigger histos
-	if( firstL0TimeBin < 999 ){
-		for(Int_t i = 0; i < nTot2x2; i++) {	
-			if( triggers[i][firstL0TimeBin] > 0 ) {
-				//histo->Fill(i,j);
-				FillRawsData(kNL0FirstTRU, i);
-				FillRawsData(kTimeL0FirstTRU, i, firstL0TimeBin);
-			}
-		}
-	}
+  //filling some L0 trigger histos
+  if( firstL0TimeBin < 999 ){
+    for(Int_t i = 0; i < nTot2x2; i++) {	
+      if( triggers[i][firstL0TimeBin] > 0 ) {
+	//histo->Fill(i,j);
+	FillRawsData(kNL0FirstTRU, i);
+	FillRawsData(kTimeL0FirstTRU, i, firstL0TimeBin);
+      }
+    }
+  }
   
   //calculate the ratio of the amplitude and fill the histograms, only if the events type is Calib
   // RS: operation on the group of histos kSigHG,k2DRatioAmp,kRatioDist,kLEDMonRatio,kLEDMonRatio,kSigLGLEDMon
@@ -1027,3 +1037,50 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
     histo->SetBinContent(col2d+1, row2d+1, binContent);
   }
 } 
+
+
+
+void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column )
+{
+  Int_t mrow;
+  Int_t mcol;
+  Int_t trow;
+  Int_t tcol;
+  Int_t drow;
+  Int_t rcu;
+  // RCU 0 or 1
+  rcu = ddl % 2;
+
+  // 12 rows of 2x2s in a module (3 TRUs by 4 rows)
+  mrow = (module/2) * 12;
+  // 24 columns per module, odd module numbers increased by 24
+  mcol = (module%2) * 24;
+
+  // position within TRU coordinates
+  tcol = column / 4;
+  trow = column % 4;
+
+  //.combine
+  if( module%2 == 0 ){   // A side
+    // mirror rows
+    trow = 3 - trow;
+
+    // TRU in module row addition
+    drow = (rcu*branch+rcu) * 4;
+
+  }
+  else{   // C side
+    // mirror columns
+    tcol = 23 - tcol;
+
+    // TRU in module row addition
+    drow = (2 - (rcu*branch+rcu)) * 4;
+  }
+
+  // output global row/collumn position (0,0 = SMA0, phi = 0, |eta| = max)
+  globRow = mrow + drow + trow;
+  globColumn = mcol + tcol;
+	return;
+
+}
+

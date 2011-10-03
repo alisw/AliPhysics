@@ -34,6 +34,8 @@ public:
   // TRU numbers
   static const int fgkEMCALTRUsPerSM = 3; // number of TRU's in a SuperModule
   static const int fgkEMCAL2x2PerTRU = 96; // number of 2x2's in a TRU
+  static const int fgkEMCALTRURows   = 4;
+  static const int fgkEMCALTRUCols   = 24;
   
   // RAW/AliCaloAltroMapping provides the correspondence information between
   // an electronics HWAddress (Branch<<1 | FEC<<7 | ALTRO<<4 | Channel) 
