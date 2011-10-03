@@ -246,10 +246,18 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
   //
   // Main loop function, executed on Event basis
   //
-  for (Int_t iTrack = 0; iTrack<fESD->GetNumberOfTracks(); iTrack++) {
+  
+  if( !fESD->GetPrimaryVertex()) return;
+  if( fESD->GetPrimaryVertex()->GetNContributors() < 1 ) return;
+  if( TMath::Abs(fESD->GetPrimaryVertex()->GetZ()) > 10.0 /* cm */) return;
+  
+  
+  for (Int_t iTrack = 0; iTrack < fESD->GetNumberOfTracks(); iTrack++) {
 
     track = fESD->GetTrack(iTrack);
     if(!track) continue;
+    if(! track->IsOn(AliESDtrack::kITSrefit) || !track->IsOn(AliESDtrack::kITSrefit) ) continue;
+     
     Double_t rin[3], rout[3];
     track->GetInnerXYZ(rin);
     track->GetOuterXYZ(rout);
