@@ -515,10 +515,7 @@ Int_t AliHFEextraCuts::GetTRDnTrackletsPID(AliVTrack *track){
 		// this is normally NOT the way to do this, but due to limitation in the
 		// AOD track it is not possible in a different way
 		if(pidobject){
-			Float_t *trdmom = pidobject->GetTRDmomentum();
-			for(Int_t ily = 0; ily < 6; ily++){
-				if(trdmom[ily] > -1) nTracklets++;
-			}
+      nTracklets = pidobject->GetTRDntrackletsPID();
 		} else nTracklets = 6; 	// No Cut possible
 	}
 	return nTracklets;
