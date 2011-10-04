@@ -243,7 +243,7 @@ const char *AliAnalysisTaskCfg::GetLibrary(Int_t i) const
 // Returns library name for the i-th library.
    Int_t nlibs = GetNlibs();
    if (i>=nlibs) return 0;
-   TString libname;
+   static TString libname;
    TObjArray *list  = fLibs.Tokenize(",");
    libname = list->At(i)->GetName();
    libname.ReplaceAll(".so","");
@@ -298,7 +298,7 @@ const char *AliAnalysisTaskCfg::GetDependency(Int_t i) const
 // Returns library name for the i-th library.
    Int_t ndeps = GetNdeps();
    if (i>=ndeps) return 0;
-   TString depname;
+   static TString depname;
    TObjArray *list  = fDeps.Tokenize(",");
    depname = list->At(i)->GetName();
    depname.ReplaceAll(" ","");
@@ -433,7 +433,8 @@ void AliAnalysisTaskCfg::SaveAs(const char *filename, Option_t *option) const
 const char *AliAnalysisTaskCfg::DecodeValue(TString &line)
 {
 // Decode the value string from the line
-   TString value = line(line.Index(' '),line.Length());
+   static TString value;
+   value = line(line.Index(' '),line.Length());
    value = value.Strip(TString::kLeading,' ');
    value = value.Strip(TString::kTrailing,' ');
    return value.Data();
