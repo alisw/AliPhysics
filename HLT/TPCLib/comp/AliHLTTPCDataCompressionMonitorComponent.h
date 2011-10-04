@@ -144,6 +144,8 @@ public:
       void SetCharge(unsigned charge)  {if (fData) fData->FillCharge(charge, fClusterId);}
       void SetQMax(unsigned qmax)      {if (fData) fData->FillQMax(qmax, fClusterId);}
 
+      // switch to next cluster
+      iterator& Next(int /*slice*/, int /*partition*/) {return operator++();}
       // prefix operators
       iterator& operator++() {fClusterNo++; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
       iterator& operator--() {fClusterNo--; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
@@ -164,8 +166,6 @@ public:
     iterator& BeginRemainingClusterBlock(int count, AliHLTUInt32_t specification);
     /// iterator of track model clusters
     iterator& BeginTrackModelClusterBlock(int count);
-    /// end iterator
-    const iterator& End();
 
     /// add raw data bloack
     int AddRawData(const AliHLTComponentBlockData* pDesc);
@@ -224,15 +224,6 @@ protected:
 private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
-
-  typedef AliDataContainer::iterator T;
-  int ReadRemainingClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
-  int ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
-
-  int ReadTrackModelClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
-  int ReadTrackClustersCompressed(T& c, AliHLTDataInflater* pInflater, AliHLTTPCTrackGeometry* pTrackPoints);
-
-  AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
   AliHLTTPCHWCFData* fpHWClusterDecoder; //! data decoder for HW clusters
 
