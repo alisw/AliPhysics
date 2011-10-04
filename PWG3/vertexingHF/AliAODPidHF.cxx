@@ -506,13 +506,8 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 
  if(detectors.Contains("TRD")){
   if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return kFALSE;
-  AliAODPid *pidObj = track->GetDetPid();
-  Float_t *mom=pidObj->GetTRDmomentum();
-  Int_t ntracklets=0;
-  for(Int_t iPl=0;iPl<6;iPl++){
-   if(mom[iPl]>0.) ntracklets++;
-  }
-   if(ntracklets<4) return kFALSE;
+  UChar_t ntracklets = track->GetTRDntrackletsPID();
+  if(ntracklets<4) return kFALSE;
  }
 
  return kTRUE;

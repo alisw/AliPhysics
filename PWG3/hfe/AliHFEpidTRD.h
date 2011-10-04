@@ -30,6 +30,7 @@ class AliESDtrack;
 class AliHFEcollection;
 class AliMCParticle;
 class AliVParticle;
+class AliVTrack;
 class TList;
 class TH2F;
 
@@ -73,7 +74,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
     Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
-    void     GetTRDmomenta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType, Double_t *mom) const;
+    void     GetTRDmomenta(const AliVTrack *track,Double_t *mom) const;
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
     Double_t GetTRDthresholds(Double_t electronEff, Double_t p) const;
     Double_t GetChargeLayer(const AliVParticle *track, UInt_t layer, AliHFEpidObject::AnalysisType_t anatype) const;
