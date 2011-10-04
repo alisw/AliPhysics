@@ -35,6 +35,7 @@ AliAODPid::AliAODPid():
     fTPCsignalN(0),
     fTPCmomentum(0),
     fTRDnSlices(0),
+    fTRDntls(0),
     fTRDslices(0x0),
     fTOFesdsignal(0),
     fHMPIDsignal(0)
@@ -44,10 +45,12 @@ AliAODPid::AliAODPid():
     for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = 0.;
     for(Int_t i=0; i<3; i++) fEMCALPosition[i]    = 0.;
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i] = 0.;
-    for(Int_t i=0; i<6; i++) fTRDmomentum[i]      = 0.;
+    for(Int_t i=0; i<6; i++) {
+      fTRDmomentum[i]      = 0.;
+      fTRDncls[i]          = 0;
+    }
     for(Int_t i=0; i<3; i++) fEMCALMomentum[i]    = 0.;
     for(Int_t i=0; i<4; i++) fITSdEdxSamples[i]   = 0.;
-  
 }
 
 //______________________________________________________________________________
@@ -67,20 +70,23 @@ AliAODPid::AliAODPid(const AliAODPid& pid) :
   fTPCsignalN(pid.fTPCsignalN),
   fTPCmomentum(pid.fTPCmomentum),
   fTRDnSlices(pid.fTRDnSlices),
+  fTRDntls(pid.fTRDntls),
   fTRDslices(0x0),
   fTOFesdsignal(pid.fTOFesdsignal),
   fHMPIDsignal(pid.fHMPIDsignal)
 {
   // Copy constructor
-    fTRDslices = new Double32_t[fTRDnSlices];
-    for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
+  SetTRDsignal(fTRDnSlices, pid.fTRDslices);
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
     for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
     for(Int_t i=0; i<3; i++) {
       fEMCALPosition[i]=pid.fEMCALPosition[i];
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
-    for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
+    for(Int_t i=0; i<6; i++){ 
+      fTRDmomentum[i]=pid.fTRDmomentum[i];
+      fTRDncls[i] = 0;
+    }
 
     for(Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
 
@@ -109,7 +115,10 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
     fHMPIDsignal=pid.fHMPIDsignal;
     for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
     for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
-    for(Int_t i=0; i<6; i++) fTRDmomentum[i]=pid.fTRDmomentum[i];
+    for(Int_t i=0; i<6; i++){ 
+      fTRDmomentum[i]=pid.fTRDmomentum[i];
+      fTRDncls[i] = pid.fTRDncls[i];
+    }
     for(Int_t i=0; i<3; i++) {
       fEMCALPosition[i]=pid.fEMCALPosition[i];
       fEMCALMomentum[i]=pid.fEMCALMomentum[i];

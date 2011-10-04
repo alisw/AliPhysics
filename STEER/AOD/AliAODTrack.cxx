@@ -658,19 +658,17 @@ UChar_t AliAODTrack::GetTRDntrackletsPID() const{
   // return number of tracklets calculated from the slices
   //
   if(!fDetPid) return -1;
+  return fDetPid->GetTRDntrackletsPID();
+}
 
-  Int_t ntracklets = 0,                                           // Number of tracklets / track
-        nSlicesTracklet = fDetPid->GetTRDnSlices()/kTRDnPlanes,   // Number of slices per tracklet
-        nSlicesNonZero = 0;                                       // Number of slices containing a dE/dx measurement
-  for(Int_t ily = 0; ily < kTRDnPlanes; ily++){
-    // a tracklet is found if it has at least one slice containing a dE/dx measurement
-    nSlicesNonZero = 0;
-    for(Int_t islice = 0; islice < nSlicesTracklet; islice++){
-      if(fDetPid->GetTRDsignal()[nSlicesTracklet * ily + islice] > 0.01) nSlicesNonZero++;
-    }
-    if(nSlicesNonZero) ntracklets++;
-  }
-  return ntracklets;
+//______________________________________________________________________________
+UChar_t AliAODTrack::GetTRDncls(Int_t layer) const {
+  // 
+  // return number of TRD clusters
+  //
+  if(!fDetPid || layer > 5) return -1;
+  if(layer < 0) return fDetPid->GetTRDncls();
+  else return fDetPid->GetTRDncls(layer);
 }
 
 //______________________________________________________________________________
@@ -680,7 +678,7 @@ Double_t AliAODTrack::GetTRDmomentum(Int_t plane, Double_t */*sp*/) const
   // in TRD layer "plane".
 
   if (!fDetPid) return -1;
-  Float_t *trdMomentum=fDetPid->GetTRDmomentum();
+  const Float_t *trdMomentum=fDetPid->GetTRDmomentum();
 
   if (!trdMomentum) {
     return -1.;

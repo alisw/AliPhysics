@@ -739,12 +739,28 @@ void AliPIDResponse::SetTRDPidResponseMaster()
   if(fTRDPIDParams) return;
   AliOADBContainer contParams("contParams"); 
 
-  contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()), "AliTRDPIDParams");
-  fTRDPIDParams = (TObjArray *)contParams.GetObject(fRun);
+  Int_t statusPars = contParams.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()), "AliTRDPIDParams");
+  if(statusPars){
+    AliError("Failed initializing PID Params from OADB");
+  } else {
+    AliInfo(Form("Loading TRD Params from %s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()));
+    fTRDPIDParams = dynamic_cast<TObjArray *>(contParams.GetObject(fRun));
+    if(!fTRDPIDParams){
+      AliError(Form("TRD Params not found in run %d", fRun));
+    }
+  }
 
   AliOADBContainer contRefs("contRefs");
-  contRefs.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
-  fTRDPIDReference = (AliTRDPIDReference *)contRefs.GetObject(fRun);
+  Int_t statusRefs = contRefs.InitFromFile(Form("%s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()), "AliTRDPIDReference");
+  if(statusRefs){
+    AliInfo("Failed Loading References for TRD");
+  } else {
+    AliInfo(Form("Loading TRD References from %s/COMMON/PID/data/TRDPIDReferenceLQ1D.root", fOADBPath.Data()));
+    fTRDPIDReference = dynamic_cast<AliTRDPIDReference *>(contRefs.GetObject(fRun));
+    if(!fTRDPIDReference){
+      AliError(Form("TRD References not found in OADB Container for run %d", fRun));
+    }
+  }
 }
 
 //______________________________________________________________________________

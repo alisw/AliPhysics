@@ -1983,7 +1983,7 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
 
  //n TRD planes = 6
  Int_t nslices = track->GetNumberOfTRDslices()*6;
- Double_t *trdslices = new Double_t[nslices];
+ TArrayD trdslices(nslices);
  for(Int_t iSl =0; iSl < track->GetNumberOfTRDslices(); iSl++) {
    for(Int_t iPl =0; iPl<6; iPl++) trdslices[iPl*track->GetNumberOfTRDslices()+iSl] = track->GetTRDslice(iPl,iSl);
  }
@@ -1994,8 +1994,12 @@ void AliAnalysisTaskESDfilter::SetDetectorRawSignals(AliAODPid *aodpid, AliESDtr
    aodpid->SetTRDmomentum(iPl,trdmom);
  }
 
- aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices);
+ aodpid->SetTRDsignal(track->GetNumberOfTRDslices()*6,trdslices.GetArray());
 
+ //TRD clusters and tracklets
+ aodpid->SetTRDncls(track->GetTRDncls());
+ aodpid->SetTRDntrackletsPID(track->GetTRDntrackletsPID());
+ 
  //TOF PID  
  Double_t times[AliAODPid::kSPECIES]; track->GetIntegratedTimes(times);
  aodpid->SetIntegratedTimes(times);
