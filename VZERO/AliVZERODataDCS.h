@@ -38,7 +38,7 @@ public:
   Int_t GetDaqStartTime() const {return fDaqStartTime;}
   Int_t GetDaqEndTime() const {return fDaqEndTime;}
   
-  void ProcessData(TMap& aliasMap);
+  Bool_t ProcessData(TMap& aliasMap);
   
   const char* GetAliasName(Int_t pos) const 
     {return pos<kNAliases ? fAliasNames[pos].Data() : 0;}

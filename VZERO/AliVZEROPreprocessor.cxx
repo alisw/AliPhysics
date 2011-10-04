@@ -99,7 +99,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
   if(!dcsAliasMap) return 1;
 
  	// The Processing of the DCS input data is forwarded to AliVZERODataDCS
-	fData->ProcessData(*dcsAliasMap);
+  if (!fData->ProcessData(*dcsAliasMap)) return 1;
 
 	// Writes VZERO PMs HV values into VZERO calibration object and Timing resolution parameters
   	calibData->FillDCSData(fData);

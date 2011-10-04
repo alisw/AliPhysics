@@ -103,9 +103,10 @@ AliVZERODataDCS::~AliVZERODataDCS() {
 }
 
 //_____________________________________________________________________________
-void AliVZERODataDCS::ProcessData(TMap& aliasMap){
+Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
 
   // method to process the data
+  Bool_t success = kTRUE;
 
   if(!(fAliasNames[0])) Init();
 
@@ -118,6 +119,7 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
     aliasArr = (TObjArray*) aliasMap.GetValue(fAliasNames[iAlias].Data());
     if(!aliasArr){
       AliError(Form("Alias %s not found!", fAliasNames[iAlias].Data()));
+      success = kFALSE;
       continue;
     }
 
@@ -172,6 +174,8 @@ void AliVZERODataDCS::ProcessData(TMap& aliasMap){
   }
   
   fIsProcessed=kTRUE;
+
+  return success;
 }
 
 //_____________________________________________________________________________
