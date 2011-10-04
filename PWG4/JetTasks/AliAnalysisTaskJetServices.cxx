@@ -1135,7 +1135,7 @@ Bool_t AliAnalysisTaskJetServices::CalculateReactionPlaneAngleVZERO(AliAODEvent 
 
     XC = numXZNC/sumZNC; 
     YC = numYZNC/sumZNC; 
-    fPsiVZEROC = 0.5*TMath::ATan2(YC-meanYC, XA-meanXC);
+    fPsiVZEROC = 0.5*TMath::ATan2(YC-meanYC, XC-meanXC);
     if(fPsiVZEROC>TMath::Pi()){fPsiVZEROC-=TMath::Pi();}
     if(fPsiVZEROC<0){fPsiVZEROC+=TMath::Pi();}
 
