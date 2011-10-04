@@ -128,8 +128,8 @@ public:
 
     class iterator {
     public:
-      iterator() : fClusterNo(0), fData(NULL), fClusterId(kAliHLTVoidDataSpec) {}
-      iterator(AliDataContainer* pData) : fClusterNo(0), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec) {}
+      iterator() : fClusterNo(-1), fData(NULL), fClusterId(kAliHLTVoidDataSpec) {}
+      iterator(AliDataContainer* pData) : fClusterNo(-1), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec) {}
       iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fClusterId(other.fClusterId) {}
       iterator& operator=(const iterator& other) {
 	fClusterNo=other.fClusterNo; fData=other.fData; fClusterId=other.fClusterId; return *this;

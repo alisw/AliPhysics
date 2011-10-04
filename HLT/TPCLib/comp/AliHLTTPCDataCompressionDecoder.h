@@ -89,16 +89,20 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   // the compressed format stores the difference of the local row number in
   // the partition to the row of the last cluster
   // add the first row in the partition to get global row number
-  // offline uses row number in physical sector, inner sector consists of
-  // partitions 0 and 1, outer sector of partition 2-5
-  int rowOffset=AliHLTTPCTransform::GetFirstRow(partition);//-(partition<2?0:AliHLTTPCTransform::GetFirstRow(2));
+  int rowOffset=AliHLTTPCTransform::GetFirstRow(partition);
 
   int parameterId=0;
   int outClusterCnt=0;
   AliHLTUInt64_t value=0;
   AliHLTUInt32_t length=0;
   AliHLTUInt32_t lastPadRow=0;
+  bool bNextCluster=true;
   while (outClusterCnt<nofClusters && pInflater->NextValue(value, length)) {
+    if (bNextCluster) {
+      // switch to next cluster
+      c.Next(slice, partition);
+      bNextCluster=false;
+    }
     const AliHLTTPCDefinitions::AliClusterParameter& parameter
       =AliHLTTPCDefinitions::fgkClusterParameterDefinitions[parameterId];
 
@@ -125,8 +129,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       {c.SetQMax(value); break;}
     }
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
-      // switch to next cluster
-      c.Next(slice, partition);
+      bNextCluster=true;
       outClusterCnt++;
       parameterId=-1;
     }
@@ -280,7 +283,13 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
     int inClusterCnt=0;
     AliHLTUInt64_t value=0;
     AliHLTUInt32_t length=0;
+    bool bNextCluster=true;
     while (bReadSuccess && inClusterCnt<nofClusters && pInflater->NextValue(value, length)) {
+      if (bNextCluster) {
+	// switch to next cluster
+	c.Next(slice, partition);
+	bNextCluster=false;
+      }
       const AliHLTTPCDefinitions::AliClusterParameter& parameter
 	=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[kParameterIdMapping[parameterId]];
 
@@ -338,7 +347,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	//      << "  charge " << setfill(' ') << setw(5) << fixed << right << setprecision (0) << c.GetQ()
 	//      << "  qmax "   << setfill(' ') << setw(4) << fixed << right << setprecision (0) << c.GetMax()
 	//      << endl;
-	c.Next(slice, partition);
+	bNextCluster=true;
 	inClusterCnt++;
 	parameterId=-1;
       }
