@@ -1409,8 +1409,8 @@ Double_t AliAnaElectron::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , floa
 
   if(GetDebug() > 5) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
 
-  AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
-  AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
+  AliExternalTrackParam *param1 = new AliExternalTrackParam; param1->CopyFromVTrack(tr);
+  AliExternalTrackParam *param2 = new AliExternalTrackParam; param2->CopyFromVTrack(tr2);
 
   //Replaced functions to get the B-field. They do not work.
   Double_t bfield[3];
@@ -1581,7 +1581,7 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
     return kFALSE; //Don't proceed because we can't get the track
   }
 
-  AliExternalTrackParam *param1 = new AliExternalTrackParam(track);
+  AliExternalTrackParam *param1 = new AliExternalTrackParam; param1->CopyFromVTrack(track);
 
   //Loop on stored AOD electrons and compute the angle differences and Minv
   for (Int_t k2 =0; k2 < GetOutputAODBranch()->GetEntriesFast() ; k2++) {
@@ -1601,7 +1601,7 @@ Bool_t AliAnaElectron::PhotonicPrim(const AliAODPWG4Particle* part)
       if(GetDebug() >0) printf("AliAnaElectron::PhotonicPrim - problem getting the partner track.  Continuing on to the next one");
       continue;
     }
-    AliExternalTrackParam *param2 = new AliExternalTrackParam(track2);
+    AliExternalTrackParam *param2 = new AliExternalTrackParam; param2->CopyFromVTrack(track2);
     Int_t id1 = 0, id2 = 0;
     AliESDv0 photonVtx(*param1,id1,*param2,id2);
     Double_t vx,vy,vz;

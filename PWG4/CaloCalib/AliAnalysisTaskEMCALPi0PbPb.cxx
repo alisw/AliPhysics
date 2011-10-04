@@ -985,8 +985,10 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         if (fEsdEv) {
           AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
           tParam = new AliExternalTrackParam(*esdTrack->GetTPCInnerParam());
-        } else 
-          tParam = new AliExternalTrackParam(track);
+        } else {
+          tParam = new AliExternalTrackParam;
+	  tParam->CopyFromVTrack(track);
+	}
 
         Double_t bfield[3] = {0};
         track->GetBxByBz(bfield);
@@ -1009,7 +1011,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
       } else {
         if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
           continue;
-        AliExternalTrackParam tParam(track);
+        AliExternalTrackParam tParam; tParam.CopyFromVTrack(track);
         if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpR, tmpZ))
           continue;
       }
@@ -1210,7 +1212,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
         continue;
 
       if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
-        AliExternalTrackParam tParam(track);
+        AliExternalTrackParam tParam; tParam.CopyFromVTrack(track);
         if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
           Double_t trkPos[3];
           tParam.GetXYZ(trkPos);

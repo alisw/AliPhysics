@@ -734,8 +734,8 @@ Double_t AliAnaBtag::ComputeSignDca(AliAODTrack *tr, AliAODTrack *tr2 , Double_t
   TVector3 primV(vertex[0],vertex[1],vertex[2]) ; 
   if(GetDebug()>0) printf(">>ComputeSdca:: primary vertex = %2.2f,%2.2f,%2.2f \n",vertex[0],vertex[1],vertex[2]) ;
 
-  AliExternalTrackParam *param1 = new AliExternalTrackParam(tr);
-  AliExternalTrackParam *param2 = new AliExternalTrackParam(tr2);
+  AliExternalTrackParam *param1 = new AliExternalTrackParam; param1->CopyFromVTrack(tr);
+  AliExternalTrackParam *param2 = new AliExternalTrackParam; param2->CopyFromVTrack(tr2);
 
   Double_t bfield[3];
   param1->GetBxByBz(bfield);
