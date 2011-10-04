@@ -216,8 +216,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
-  Int_t trackDepth = 5000; 
-  Int_t poolsize   = 100;  // Maximum number of events
+  Int_t trackDepth = 50000; 
+  Int_t poolsize   = 1000;  // Maximum number of events
   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
