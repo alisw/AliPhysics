@@ -17,11 +17,13 @@
 #include <AliCounterCollection.h>
 #include <AliRDHFCuts.h>
 
+TString *periodsname;
+
 //read the file and take list and stat
 
-Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
-Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename="AnalysisResults.root"/*"PWG3histograms.root"*/);
-void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h 3=MC*/,TCanvas* cpid, Int_t set);
+Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root");
+Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString listname,TString partname,TString path="./",TString filename=/*"AnalysisResults.root"*/"PWG3histograms.root");
+void SuperimposeBBToTPCSignal(Int_t period /*0=LHC10bc, 1=LHC10d, 2=LHC10h*/,TCanvas* cpid, Int_t set);
 void TPCBetheBloch(Int_t set);
 
 Bool_t ReadFile(TList* &list,TH1F* &hstat, TString listname,TString partname,TString path,TString filename){
@@ -67,7 +69,7 @@ Bool_t ReadFileMore(TList* &list,TH1F* &hstat, AliRDHFCuts* &cutobj, TString lis
 
   if(partname.Contains("Dplus")) cutobjname="AnalysisCuts";//"DplustoKpipiCutsStandard";
   else{
-    if(partname.Contains("D0")) cutobjname="D0toKpiCutsStandard";//"D0toKpiCuts";
+    if(partname.Contains("D0")) cutobjname="D0toKpiCuts";//"D0toKpiCutsStandard"
     else{
       if(partname.Contains("Dstar")) cutobjname="DStartoKpipiCuts";
       else{
@@ -122,7 +124,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputTrack",name1="",name2="",path2="",filename="AnalysisResults.root"/*"PWG3histograms.root"*/,filename2="PWG3histograms.root";
+  TString listname="outputTrack",name1="",name2="",path2="",filename=/*"AnalysisResults.root"*/"PWG3histograms.root",filename2="PWG3histograms.root";
   TString tmp="y";
 
   if(superimpose){
@@ -133,9 +135,11 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     cout<<"Are they in the same output file? (y/n)"<<endl;
     cin>>tmp;
     if(tmp=="n"){
-      cout<<"Path: \t";
+      cout<<"Path: \n";
+      cout<<">";
       cin>>path2;
-      cout<<"Filename; "<<endl;
+      cout<<"Filename: "<<endl;
+      cout<<">";
       cin>>filename2;
     }
     
@@ -166,6 +170,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     }
     TText *redtext=pvtxt->AddText(name2);
     redtext->SetTextColor(kRed);
+    hhstat->Scale(hstat->Integral()/hhstat->Integral());
 
   }
 
@@ -174,6 +179,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     TH1F* hh=0x0;
     if(superimpose){
       hh=(TH1F*)llist->At(i);
+      hh->Scale(h->Integral()/hh->Integral());
     }
     if(!h || (superimpose && !hh)){
       cout<<"Histogram "<<i<<" not found"<<endl;
@@ -188,18 +194,12 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     c->cd();
     c->SetGrid();
     TString hname=h->GetName();
-    if(!hname.Contains("hn")){
+    if(!hname.Contains("nCls")){
       c->SetLogy();
       //h->SetMinimum(1);
       h->Draw();
       if(superimpose) hh->Draw("sames");
     } else {
-      if(hname.Contains("layer")){
-	Int_t ntracks=h->GetBinContent(1);
-	h->Scale(1./ntracks);
-	h->GetYaxis()->SetTitle("Fraction of tracks with point in layer x");
-	h->GetXaxis()->SetRangeUser(0.5,6.5);
-      }
       h->Draw("htext0");
       if(superimpose)hh->Draw("htext0sames");
     }
@@ -230,7 +230,7 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
 
   Int_t period=2 ,set=0;
   if(mode==1){
-    cout<<"Choose period: \n-MC -> 3;\n-LHC10h -> 2;\n-LHC10de -> 1;\n-LHC10bc -> 0"<<endl;
+    cout<<"Choose period: \n-LHC10h -> 2;\n-LHC10de -> 1;\n-LHC10bc -> 0"<<endl;
     cin>>period;
     if(period>0){
       cout<<"Choose set: "<<endl;
@@ -257,6 +257,10 @@ void DrawOutputPID(TString partname="D0", Int_t mode=0/*0=with pull, 1=with nsig
       return;
     }
     aodpid=(AliAODPidHF*)cutobj->GetPidHF();
+    if(!aodpid){
+      cout<<"PidHF object not found! cannot get the nsigma values"<<endl;
+      return;
+    }
     nsigmaTOF=aodpid->GetSigma(3);
   
     nsigmaTPC[0]=aodpid->GetSigma(0);
@@ -453,45 +457,16 @@ void TPCBetheBloch(Int_t set){
   TString partnames[npart]={"Kaon","Pion","Electron","Proton"};
   //printf("%s = %.4f,%s = %.4f,%s = %.4f\n",partnames[0].Data(),masses[0],partnames[1].Data(),masses[1],partnames[2].Data(),masses[2]);
   TCanvas *cBethe=new TCanvas("cBethe","Bethe Bloch K pi e p");
-  Int_t nperiods=4; //LHC10b+c, LHC10d, LHC10h
+  Int_t nperiods=4; //LHC10b+c, LHC10d, LHC10h, MC
   Double_t alephParameters[5]={};
+  Int_t nsets=1/*LHC10bc*/+2/*LHC10de*/+2/*LHC10h*/+3/*MC*/;
 
+  periodsname=new TString[nsets];
+  cout<<"Creating the file of the Bethe Bloch"<<endl;
   TFile* fout=new TFile("BetheBlochTPC.root","recreate");
 
   for(Int_t iperiod=0;iperiod<nperiods;iperiod++){
-    if(iperiod==2){//LHC10h
-      if(set==0){//pass1 
-	alephParameters[0]=1.25202/50.;
-	alephParameters[1]=2.74992e+01;
-	alephParameters[2]=TMath::Exp(-3.31517e+01);
-	alephParameters[3]=2.46246;
-	alephParameters[4]=6.78938;
-      }
-      if (set==1){//pass2 (AOD044)
-	alephParameters[0]=1.25202/50.;
-	alephParameters[1]=2.74992e+01;
-	alephParameters[2]=TMath::Exp(-3.31517e+01);
-	alephParameters[3]=2.46246;
-	alephParameters[4]=6.78938;
-
-      }
-    }
-    if(iperiod==1){ //LHC10de
-      if(set==0){   
-	alephParameters[0] = 1.63246/50.;
-	alephParameters[1] = 2.20028e+01;
-	alephParameters[2] = TMath::Exp(-2.48879e+01);
-	alephParameters[3] = 2.39804e+00;
-	alephParameters[4] = 5.12090e+00;
-      }
-      if(set==1){
-	alephParameters[0] = 1.34490e+00/50.;
-	alephParameters[1] =  2.69455e+01;
-	alephParameters[2] =  TMath::Exp(-2.97552e+01);
-	alephParameters[3] = 2.35339e+00;
-	alephParameters[4] = 5.98079e+00;
-      }
-    }
+    cout<<"Period "<<iperiod<<" : ";
     if(iperiod==0){ //LHC10bc
       
       alephParameters[0] = 0.0283086/0.97;
@@ -499,15 +474,53 @@ void TPCBetheBloch(Int_t set){
       alephParameters[2] = 5.04114e-11;
       alephParameters[3] = 2.12543e+00;
       alephParameters[4] = 4.88663e+00;
-      
+      periodsname[0]="dataLHC10bc";  
     }
-   if(iperiod==3){ //MC
+    if(iperiod==1){ //LHC10de,low energy
+      if(set==0){   
+	alephParameters[0] = 1.63246/50.;
+	alephParameters[1] = 2.20028e+01;
+	alephParameters[2] = TMath::Exp(-2.48879e+01);
+	alephParameters[3] = 2.39804e+00;
+	alephParameters[4] = 5.12090e+00;
+	periodsname[1]="dataLHC10deold"; 
+      }
+      if(set==1){
+	alephParameters[0] = 1.34490e+00/50.;
+	alephParameters[1] =  2.69455e+01;
+	alephParameters[2] =  TMath::Exp(-2.97552e+01);
+	alephParameters[3] = 2.35339e+00;
+	alephParameters[4] = 5.98079e+00;
+	periodsname[2]="dataLHC10denew";
+      }
+    }
+
+    if(iperiod==2){//LHC10h
+      if(set==0){//pass1 
+	alephParameters[0]=1.25202/50.;
+	alephParameters[1]=2.74992e+01;
+	alephParameters[2]=TMath::Exp(-3.31517e+01);
+	alephParameters[3]=2.46246;
+	alephParameters[4]=6.78938;
+	periodsname[3]="dataLHC10hpass1";
+      }
+      if (set==1){//pass2 (AOD044)
+	alephParameters[0]=1.25202/50.;
+	alephParameters[1]=2.74992e+01;
+	alephParameters[2]=TMath::Exp(-3.31517e+01);
+	alephParameters[3]=2.46246;
+	alephParameters[4]=6.78938;
+	periodsname[4]="dataLHC10hpass2";
+      }
+    }
+    if(iperiod==3){ //MC
       if(set==0){
 	alephParameters[0] = 2.15898e+00/50.;
 	alephParameters[1] = 1.75295e+01;
 	alephParameters[2] = 3.40030e-09;
 	alephParameters[3] = 1.96178e+00;
 	alephParameters[4] = 3.91720e+00;
+	periodsname[5]="MCold";
       }
       if(set==1){ //new
 	alephParameters[0] = 1.44405/50;
@@ -515,11 +528,32 @@ void TPCBetheBloch(Int_t set){
 	alephParameters[2] = TMath::Exp(-2.90330e+01);
 	alephParameters[3] = 2.10681;
 	alephParameters[4] = 4.62254;
- 
+	periodsname[6]="MCnew";
       }
-    }
-    tpcResp->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
 
+      if(set==2){ //new BB from Francesco
+	alephParameters[0] = 0.029021;
+	alephParameters[1] = 25.4181;
+	alephParameters[2] = 4.66596e-08;
+	alephParameters[3] = 1.90008;
+	alephParameters[4] = 4.63783;
+	periodsname[7]="MCBBFrancesco";
+      }
+
+      if(set==3){ //low energy 2011
+	alephParameters[0] = 0.0207667;
+	alephParameters[1] = 29.9936;
+	alephParameters[2] = 3.87866e-11;
+	alephParameters[3] = 2.17291;
+	alephParameters[4] = 7.1623;
+	//periodsname[8]="MClowen2011";
+      }
+
+
+    }
+    //cout<<periodsname[iperiod]<<endl;
+    tpcResp->SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
+    cout<<"here"<<endl;
     for(Int_t ipart=0;ipart<npart;ipart++){
 
       const Int_t n=1000;
@@ -565,13 +599,33 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   gStyle->SetStatColor(0);
   gStyle->SetPalette(1);
 
-  TString listname="outputCentrCheck",name1="",name2="";
+  TString listname="outputCentrCheck",name1="",name2="",path2="",filename=/*"AnalysisResults.root"*/"PWG3histograms.root",filename2="PWG3histograms.root";
+
+  // if(superimpose){
+  //   cout<<"Enter the names:\n>";
+  //   cin>>name1;
+  //   cout<<">";
+  //   cin>>name2;
+  // }
+  // TString listname="outputTrack",name1="",name2="";
+  TString tmp="y";
 
   if(superimpose){
     cout<<"Enter the names:\n>";
     cin>>name1;
     cout<<">";
     cin>>name2;
+    cout<<"Are they in the same output file? (y/n)"<<endl;
+    cin>>tmp;
+    if(tmp=="n"){
+      cout<<"Path: \n";
+      cout<<">";
+      cin>>path2;
+      cout<<"Filename: "<<endl;
+      cout<<">";
+      cin>>filename2;
+    }
+    
   }
   // Int_t nhist=1;
   // TString *name=0x0;
@@ -603,7 +657,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   TList* llist;
   TH1F* hhstat;
   if(superimpose){
-    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path);
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2);
     if(!isRead) return;
     if(!llist || !hhstat){
       cout<<":-( null pointers..."<<endl;
@@ -621,7 +675,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   Int_t nevents=hstat->Integral(1,2);
   hstat->Draw("htext0");
   cst->SaveAs(Form("%s%s.png",hstat->GetName(),textleg.Data()));
-  Int_t nevents080=1;
+  Int_t nevents080=1,nnevents080=1;
 
   //TCanvas *spare=new TCanvas("sparecv","Spare");
 
@@ -655,7 +709,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       c->SetGrid();
       c->SetLogy();
       Int_t entries=h->Integral();
-      pvtxt2->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
+      pvtxt2->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
       h->Draw();
       if(superimpose) {
 	hh->Draw("sames");
@@ -678,7 +732,7 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       c->cd();
       c->SetGrid();
       Int_t entries=h->Integral();
-      pvtxt->AddText(Form("%.1f per cent of the events",(Double_t)entries/(Double_t)nevents));
+      pvtxt->AddText(Form("%.1f %s of the events",(Double_t)entries/(Double_t)nevents*100,"%"));
       h->Draw("colz");
       c->SetLogz();
       pvtxt->Draw();
@@ -689,14 +743,28 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
   
   listname="countersCentrality";
 
-  isRead=ReadFile(list,hstat,listname,partname,path);
+  isRead=ReadFile(list,hstat,listname,Form("%s%s",partname.Data(),name1.Data()),path);
   if(!isRead) return;
   if(!list || !hstat){
     cout<<":-( null pointers..."<<endl;
     return;
   }
 
+
+  if(superimpose){
+    isRead=ReadFile(llist,hhstat,listname,Form("%s%s",partname.Data(),name2.Data()),path2);
+    if(!isRead) return;
+    if(!llist || !hhstat){
+      cout<<":-( null pointers..."<<endl;
+      return;
+    }
+    TText *redtext=pvtxt->AddText(name2);
+    redtext->SetTextColor(kRed);
+
+  }
+
   TH1F* hallcntr=0x0;
+  TH1F* hhallcntr=0x0;
   cout<<"normalizing to 0-80% as a check"<<endl;
 
   TCanvas *cvnocnt=new TCanvas("cvnocnt","No Centrality estimation",800,400);
@@ -704,13 +772,17 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
   for(Int_t i=0;i<list->GetEntries();i++){
     AliCounterCollection* coll=(AliCounterCollection*)list->At(i);
-    
+    AliCounterCollection* colle=0x0;
+    if(superimpose) colle=(AliCounterCollection*)llist->At(i);
     coll->SortRubric("run");//sort by run number
     //coll->PrintKeyWords();
     Int_t ncentr=10;//check this
     TH1F* h020=0x0;
     TH1F* h2080=0x0;
+    TH1F* hh020=0x0;
+    TH1F* hh2080=0x0;
     hallcntr=0x0; 
+    hhallcntr=0x0; 
 
     TH1F* hbad=(TH1F*)coll->Get("run",Form("centralityclass:-990_-980"));
     cvnocnt->cd(i+1);
@@ -718,6 +790,8 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 
     TCanvas *ccent=new TCanvas(Form("ccent%s",coll->GetName()),Form("Centrality vs Run (%s)",coll->GetName()),1400,800);
     ccent->Divide(5,3);
+    
+    TH1F* hh=0x0;
 
     for(Int_t ic=0;ic<8/*ncentr*/;ic++){ //normalizing to 0-80% as a check
 
@@ -726,9 +800,22 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
       if(!hallcntr) {
 	hallcntr=(TH1F*)h->Clone("hallcntr");
 	hallcntr->Sumw2();
-      } else hallcntr->Add(h);
+      } else {
+	hallcntr->Add(h);
+      }
 
       nevents080+=h->Integral();
+
+      if(superimpose){
+	hh=(TH1F*)colle->Get("run",Form("centralityclass:%d_%d",ic*10,ic*10+10));
+	hh->SetName(Form("hh%d%d",i,ic));
+	if(!hhallcntr) {
+	  hhallcntr=(TH1F*)hh->Clone("hhallcntr");
+	  hhallcntr->Sumw2();
+	}else hhallcntr->Add(hh);
+	nnevents080+=hh->Integral();
+
+      }
     }
 
     for(Int_t ic=0;ic<ncentr;ic++){
@@ -741,15 +828,30 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
 	if(!h020) {
 	  h020=(TH1F*)h->Clone(Form("h020%s",coll->GetName()));
 	  h020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
+	  if(superimpose){
+	    hh020=(TH1F*)hh->Clone(Form("hh020%s",coll->GetName()));
+	    hh020->SetTitle(Form("Centrality 0-20 %s",coll->GetName()));
+	  }
 	}
-	else h020->Add(h);
+	else {
+	  h020->Add(h);
+	  if(superimpose)hh020->Add(hh);
+	}
       }
       if(ic>=2 && ic<=7){ //20-80
 	if(!h2080) {
 	  h2080=(TH1F*)h->Clone(Form("h2080%s",coll->GetName()));
 	  h2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
+	  if(superimpose){
+	    hh2080=(TH1F*)hh->Clone(Form("hh2080%s",coll->GetName()));
+	    hh2080->SetTitle(Form("Centrality 20-80 %s",coll->GetName()));
+	  }
 	}
-	else h2080->Add(h);
+	else {
+	  h2080->Add(h);
+	  if(superimpose)hh2080->Add(hh);
+	}
+
       }
 
       h->Divide(hallcntr);
@@ -772,20 +874,34 @@ void DrawOutputCentrality(TString partname="D0",TString textleg="",TString path=
     ccent->cd(ncentr+1);
     h020->Divide(hallcntr);
     h020->DrawClone();
+    if(superimpose){
+      hh020->Divide(hhallcntr);
+      hh020->SetLineColor(2);
+      hh020->SetMarkerColor(2);
+      hh020->DrawClone("sames");
+    }
     TCanvas* cv020=new TCanvas(Form("cv020-%d",i),"0-20% vs run number",1400,600);
     cv020->cd();
     h020->GetYaxis()->SetRangeUser(0.,1.);
     h020->DrawClone();
+    if(superimpose)hh020->DrawClone("sames");
     cv020->SaveAs(Form("cv020-%d.png",i));
 
     ccent->cd(ncentr+2);
     h2080->Divide(hallcntr);
     h2080->DrawClone();
+    if(superimpose){
+      hh2080->Divide(hhallcntr);
+      hh2080->SetLineColor(2);
+      hh2080->SetMarkerColor(2);
+      hh2080->DrawClone("sames");
+    }
 
     TCanvas* cv2080=new TCanvas(Form("cv2080-%d",i),"20-80% vs run number",1400,600);
     cv2080->cd();
     h2080->GetYaxis()->SetRangeUser(0.,1.);
     h2080->DrawClone();
+    if(superimpose)hh2080->DrawClone("sames");
     cv2080->SaveAs(Form("cv2080-%d.png",i));
 
     ccent->SaveAs(Form("%s%s.png",ccent->GetName(),textleg.Data()));
