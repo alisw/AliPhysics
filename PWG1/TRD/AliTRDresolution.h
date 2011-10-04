@@ -141,7 +141,7 @@ private:
     void  Increment(Int_t bin[], Double_t v);
     TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0);
     void  SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
-    void  SetShowRange(Float_t zm, Float_t zM) {fRange[0] = zm; fRange[1] = zM;}
+    void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
   private:
     AliTRDresolutionProjection(const AliTRDresolutionProjection&);
     AliTRDresolutionProjection& operator=(const AliTRDresolutionProjection&);
@@ -151,7 +151,7 @@ private:
     Int_t fNrebin;     // no. of rebinning steps
     Int_t *fRebinX;    //[fNrebin] rebinning of the X axis
     Int_t *fRebinY;    //[fNrebin] rebinning of the Y axis
-    Float_t fRange[2]; //show range of the z processed
+    Float_t fRange[4]; //show range of the z processed
   ClassDef(AliTRDresolutionProjection, 1)  // wrapper for a projection container THnSparse -> TH3
   };
 
@@ -162,6 +162,7 @@ private:
   TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE, Float_t range=-1.);
   TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
   TObjArray*  BuildMonitorContainerTrack(const char* name);
+  void        DrawSigma(TH2 *h2, Float_t scale=1, Float_t m=0., Float_t M=-1.,  const Char_t *t=NULL);
   void        GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
