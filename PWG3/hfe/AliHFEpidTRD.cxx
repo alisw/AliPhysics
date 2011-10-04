@@ -348,25 +348,11 @@ Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, A
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::GetTRDmomenta(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType, Double_t *mom) const {
+void AliHFEpidTRD::GetTRDmomenta(const AliVTrack*track, Double_t *mom) const {
   //
   // Fill Array with momentum information at the TRD tracklet
   //
-  if(anaType == AliHFEpidObject::kESDanalysis){
-    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    if(esdtrack)
-      for(Int_t itl = 0; itl < 6; itl++) 
-        mom[itl] = esdtrack->GetTRDmomentum(itl);
-  } else {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    AliAODPid *aoddetpid = aodtrack ? aodtrack->GetDetPid() : NULL;
-    if(aoddetpid){
-      Float_t *trdmom = aoddetpid->GetTRDmomentum();
-      for(Int_t itl = 0; itl < 6; itl++){
-        mom[itl] = trdmom[itl]; 
-      }
-    }
-  }
+  for(Int_t itl = 0; itl < 6; itl++) mom[itl] = track->GetTRDmomentum(itl);
 }
 
 //___________________________________________________________________
