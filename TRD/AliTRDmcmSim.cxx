@@ -559,7 +559,7 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
 
       // If there is no data, set dictionary to zero to avoid crashes
       if (fDict[iDict]->GetDim() == 0)  {
-        AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
+        AliError(Form("Dictionary %i of det. %i has dim. 0", iDict, fDetector));
         fDict[iDict] = 0x0;
       }
     }
@@ -616,7 +616,7 @@ void AliTRDmcmSim::SetDataByPad(AliTRDarrayADC* const adcArray, AliTRDdigitsMana
 
       // If there is no data, set dictionary to zero to avoid crashes
       if (fDict[iDict]->GetDim() == 0)  {
-        AliError(Form("Dictionary %i of det. %i has dim. 0", fDetector, iDict));
+        AliError(Form("Dictionary %i of det. %i has dim. 0", iDict, fDetector));
         fDict[iDict] = 0x0;
       }
     }
