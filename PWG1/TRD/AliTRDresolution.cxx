@@ -953,15 +953,18 @@ void AliTRDresolution::MakeSummary()
   gStyle->SetPalette(1);
   const Int_t nClViews(8);
   const Char_t *vClName[nClViews] = {"HClY", "HClYn", "HClYp", "HClQn", "HClQp", "HClYXTCp", "HClYXTCn", "HClYXPh"};
+  const UChar_t vClOpt[nClViews] = {1, 1, 1, 0, 0, 0, 0, 0};
   if((arr = (TObjArray*)fProj->At(kCluster))){
     for(Int_t iview(0); iview<nClViews; iview++){
       cOut = new TCanvas(Form("TRDsummary%s_Cl%02d", GetName(), iview), "Cluster Resolution", 1024, 768);
-      cOut->Divide(3,2, 2.e-3, 2.e-3);
+      cOut->Divide(3,2, 1.e-5, 1.e-5);
       Int_t nplot(0);
       for(Int_t iplot(0); iplot<6; iplot++){
         p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("%s%d_2D", vClName[iview], iplot)))) continue;
-        h2->Draw("colz"); nplot++;
+        nplot++;
+        if(vClOpt[iview]==0) h2->Draw("colz");
+        else if(vClOpt[iview]==1) DrawSigma(h2, 1.e4, 2.e2, 6.e2, "#sigma(#Deltay) [#mum]");
       }
       if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
       else delete cOut;
@@ -974,7 +977,7 @@ void AliTRDresolution::MakeSummary()
   if((arr = (TObjArray*)fProj->At(kTracklet))){
     for(Int_t iview(0); iview<nTrkltViews; iview++){
       cOut = new TCanvas(Form("TRDsummary%s_Trklt%02d", GetName(), iview), "Tracklet Resolution", 1024, 768);
-      cOut->Divide(3,2, 2.e-3, 2.e-3);
+      cOut->Divide(3,2, 1.e-5, 1.e-5);
       Int_t nplot(0);
       for(Int_t iplot(0); iplot<6; iplot++){
         p=cOut->cd(iplot+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
@@ -989,7 +992,7 @@ void AliTRDresolution::MakeSummary()
   const Char_t *hname[] = {"HTrkInY", "HTrkInYn", "HTrkInYp", "HTrkInZ", "HTrkInPhn", "HTrkInPhp"};
   if((arr = (TObjArray*)fProj->At(kTrackIn))){
     cOut = new TCanvas(Form("TRDsummary%s_TrkIn", GetName()), "Track IN Resolution", 1024, 768);
-    cOut->Divide(3,2, 2.e-3, 2.e-3);
+    cOut->Divide(3,2, 1.e-5, 1.e-5);
     Int_t nplot(0);
     for(Int_t iplot(0); iplot<6; iplot++){
       p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
@@ -1000,6 +1003,29 @@ void AliTRDresolution::MakeSummary()
     else delete cOut;
   }
   gStyle->SetPalette(1);
+}
+
+//________________________________________________________
+void AliTRDresolution::DrawSigma(TH2 *h2, Float_t scale, Float_t m, Float_t M, const Char_t *title)
+{
+  // Draw error bars scaled with "scale" instead of content values
+  //use range [m,M] if limits are specified
+
+  if(!h2) return;
+  TH2 *h2e = (TH2F*)h2->Clone(Form("%s_E", h2->GetName()));
+  h2e->SetContour(10);
+  if(M>m) h2e->GetZaxis()->SetRangeUser(m, M);
+  if(title) h2e->GetZaxis()->SetTitle(title);
+  
+  for(Int_t ix(1); ix<=h2->GetNbinsX(); ix++){
+    for(Int_t iy(1); iy<=h2->GetNbinsY(); iy++){
+      if(h2->GetBinContent(ix, iy)<-100.) continue;
+      Float_t v(scale*h2->GetBinError(ix, iy));
+      if(M>m && v<m) v=m+TMath::Abs((M-m)*1.e-3);
+      h2e->SetBinContent(ix, iy, v);
+    }
+  }
+  h2e->Draw("colz");
 }
 
 //________________________________________________________
@@ -1100,8 +1126,9 @@ Bool_t AliTRDresolution::MakeProjectionCluster()
     hp[ih].Build(Form("HClYn%d", ily), Form("Clusters[-]:: r-#phi residuals ly%d", ily), kEta, kPhi, kYrez, aa);
     hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
       php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("HClQn%d", ily), Form("Clusters[-]:: r-#phi residuals ly%d", ily), kEta, kPhi, kSpeciesChgRC, aa);
+    hp[ih].Build(Form("HClQn%d", ily), Form("Clusters[-]:: Charge distribution ly%d", ily), kEta, kPhi, kSpeciesChgRC, aa);
     hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    hp[ih].SetShowRange(20., 40.);
       php[isel][np[isel]++] = &hp[ih++];
     hp[ih].Build(Form("HClYXTCn%d", ily), Form("Clusters[-]:: r-#phi(x,TC) residuals ly%d", ily), kPrez, kZrez, kYrez, aa);
 //    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
@@ -1114,7 +1141,8 @@ Bool_t AliTRDresolution::MakeProjectionCluster()
     hp[ih].Build(Form("HClYp%d", ily), Form("Clusters[+]:: r-#phi residuals ly%d", ily), kEta, kPhi, kYrez, aa);
     hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
       php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("HClQp%d", ily), Form("Clusters[+]:: r-#phi residuals ly%d", ily), kEta, kPhi, kSpeciesChgRC, aa);
+    hp[ih].Build(Form("HClQp%d", ily), Form("Clusters[+]:: Charge distribution ly%d", ily), kEta, kPhi, kSpeciesChgRC, aa);
+    hp[ih].SetShowRange(20., 40.);
     hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
       php[isel][np[isel]++] = &hp[ih++];
     hp[ih].Build(Form("HClYXTCp%d", ily), Form("Clusters[+]:: r-#phi(x,TC) residuals ly%d", ily), kPrez, kZrez, kYrez, aa);
@@ -2062,7 +2090,7 @@ AliTRDresolution::AliTRDresolutionProjection::AliTRDresolutionProjection()
 {
   // constructor
   memset(fAx, 0, 3*sizeof(Int_t));
-  fRange[0] = 0.;fRange[1] = 0.;
+  memset(fRange, 0, 4*sizeof(Float_t));
 }
 
 //________________________________________________________
@@ -2100,15 +2128,14 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
 {
 // build the 2D projection and adjust binning
 
+  const Char_t *title[] = {"Mean", "#mu", "MPV"};
   if(!fH) return NULL;
   TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
   TH2 *h2s = (TH2*)fH->Project3D("yx");
-  //printf("%s[%s] :: X[%d]  Y[%d] \n", h2s->GetName(), h2s->GetTitle(), h2s->GetNbinsX(), h2s->GetNbinsY());
   Int_t irebin(0), dxBin(1), dyBin(1);
   while(irebin<fNrebin && (AliTRDresolution::GetMeanStat(h2s, .5, ">")<nstat)){
     h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
     dxBin*=fRebinX[irebin];dyBin*=fRebinY[irebin];
-    //printf("   ireb[%d] rex[%2d] rey[%2d]\n", irebin, dxBin, dyBin);
     irebin++;
   }
   Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
@@ -2117,8 +2144,9 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   // start projection
   TH1 *h(NULL);
   Float_t dz=(fRange[1]-fRange[1])/ncol;
+  TString titlez(az->GetTitle()); TObjArray *tokenTitle(titlez.Tokenize(" "));
   TH2 *h2 = new TH2F(Form("%s_2D", fH->GetName()),
-            Form("%s;%s;%s;%s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), az->GetTitle()),
+            Form("%s;%s;%s;%s(%s) %s", fH->GetTitle(), ax->GetTitle(), ay->GetTitle(), title[mid], (*tokenTitle)[0]->GetName(), tokenTitle->GetEntriesFast()>1?(*tokenTitle)[1]->GetName():""),
             nx, ax->GetXmin(), ax->GetXmax(), ny, ay->GetXmin(), ay->GetXmax());
   h2->SetContour(ncol);
   h2->GetZaxis()->CenterTitle();
