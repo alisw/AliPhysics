@@ -69,7 +69,6 @@
 
 class AliTOFcluster;
 
-extern TFile *gFile;
 extern TROOT *gROOT;
 extern TVirtualMC *gMC;
 

@@ -51,8 +51,6 @@
 #include "AliTOFSDigit.h"
 #include "AliTOF.h"
 
-extern TDirectory *gDirectory;
-//extern TFile *gFile;
 extern TRandom *gRandom;
 
 extern AliRun *gAlice;

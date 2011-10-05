@@ -109,7 +109,6 @@ Revision 0.1 2007 March G. Cara Romeo and A. De Caro
 #include "AliTOFGeometry.h"
 #include "AliTOFv6T0.h"
 
-extern TDirectory *gDirectory;
 extern TVirtualMC *gMC;
 extern TGeoManager *gGeoManager;
 

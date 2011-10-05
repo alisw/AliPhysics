@@ -19,10 +19,6 @@ class TFile;
 class AliESD;
 
 
-R__EXTERN TDirectory *  gDirectory;
- 
- 
- 
 class AliT0 : public AliDetector {
 
 
