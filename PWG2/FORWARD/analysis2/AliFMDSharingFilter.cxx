@@ -1025,8 +1025,8 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   //    d detector
   //    r ring 
   //
-  fBefore = new TH1D("esdEloss", "Energy loss (reconstruction)", 
-		     600, 0, 15);
+  fBefore = new TH1D("esdEloss", Form("Energy loss in %s (reconstruction)", 
+				      GetName()), 600, 0, 15);
   fBefore->SetXTitle("#Delta E/#Delta E_{mip}");
   fBefore->SetYTitle("P(#Delta E/#Delta E_{mip})");
   fBefore->SetFillColor(Color());
@@ -1036,39 +1036,29 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fBefore->SetDirectory(0);
 
   fAfter  = static_cast<TH1D*>(fBefore->Clone("anaEloss"));
-  fAfter->SetTitle("Energy loss in %s (sharing corrected)");
+  fAfter->SetTitle(Form("Energy loss in %s (sharing corrected)", GetName()));
   fAfter->SetFillColor(Color()+2);
   fAfter->SetLineStyle(1);
   fAfter->SetDirectory(0);
   
   fSingle = new TH1D("singleEloss", "Energy loss (single strips)", 
 		     600, 0, 15);
-  fSingle->SetXTitle("#Delta E/#Delta E_{mip}");
-  fSingle->SetYTitle("P(#Delta E/#Delta E_{mip})");
-  fSingle->SetFillColor(kMagenta);
+  fSingle->SetXTitle("#Delta/#Delta_{mip}");
+  fSingle->SetYTitle("P(#Delta/#Delta_{mip})");
+  fSingle->SetFillColor(Color());
   fSingle->SetFillStyle(3001);
   fSingle->SetLineColor(kBlack);
   fSingle->SetLineStyle(2);
   fSingle->SetDirectory(0);
 
-  fDouble = new TH1D("doubleEloss", "Energy loss (two strips)", 
-		     600, 0, 15);
-  fDouble->SetXTitle("#Delta E/#Delta E_{mip}");
-  fDouble->SetYTitle("P(#Delta E/#Delta E_{mip})");
-  fDouble->SetFillColor(kMagenta+1);
-  fDouble->SetFillStyle(3001);
-  fDouble->SetLineColor(kBlack);
-  fDouble->SetLineStyle(2);
+  fDouble = static_cast<TH1D*>(fSingle->Clone("doubleEloss"));
+  fDouble->SetTitle("Energy loss (two strips)");
+  fDouble->SetFillColor(Color()+1);
   fDouble->SetDirectory(0);
-
-  fTriple = new TH1D("tripleEloss", "Energy loss (three strips)", 
-		     600, 0, 15);
-  fTriple->SetXTitle("#Delta E/#Delta E_{mip}");
-  fTriple->SetYTitle("P(#Delta E/#Delta E_{mip})");
-  fTriple->SetFillColor(kMagenta+2);
-  fTriple->SetFillStyle(3001);
-  fTriple->SetLineColor(kBlack);
-  fTriple->SetLineStyle(2);
+  
+  fTriple = static_cast<TH1D*>(fSingle->Clone("tripleEloss"));
+  fTriple->SetTitle("Energy loss (three strips)"); 
+  fTriple->SetFillColor(Color()+2);
   fTriple->SetDirectory(0);
   
   //Int_t nBinsForInner = (r == 'I' ? 32 : 16);
@@ -1077,13 +1067,13 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   
   fSinglePerStrip = new TH2D("singlePerStrip", "SinglePerStrip", 
 			     600,0,15, nBinsForInner,0,nStrips);
-  fSinglePerStrip->SetXTitle("Eloss");
-  fSinglePerStrip->SetYTitle("Strip");
+  fSinglePerStrip->SetXTitle("#Delta/#Delta_{mip}");
+  fSinglePerStrip->SetYTitle("Strip #");
   fSinglePerStrip->SetZTitle("Counts");
   fSinglePerStrip->SetDirectory(0);
 
   fDistanceBefore = new TH1D("distanceBefore", "Distance before sharing", 
-			    nStrips , 0,nStrips );
+			     nStrips , 0,nStrips );
   fDistanceBefore->SetXTitle("Distance");
   fDistanceBefore->SetYTitle("Counts");
   fDistanceBefore->SetFillColor(kGreen+2);
@@ -1092,14 +1082,9 @@ AliFMDSharingFilter::RingHistos::RingHistos(UShort_t d, Char_t r)
   fDistanceBefore->SetLineStyle(2);
   fDistanceBefore->SetDirectory(0);
 
-  fDistanceAfter = new TH1D("distanceAfter", "Distance after sharing", 
-			    nStrips , 0,nStrips );
-  fDistanceAfter->SetXTitle("Distance");
-  fDistanceAfter->SetYTitle("Counts");
+  fDistanceAfter = static_cast<TH1D*>(fDistanceBefore->Clone("distanceAfter"));
+  fDistanceAfter->SetTitle("Distance after sharing"); 
   fDistanceAfter->SetFillColor(kGreen+1);
-  fDistanceAfter->SetFillStyle(3001);
-  fDistanceAfter->SetLineColor(kBlack);
-  fDistanceAfter->SetLineStyle(2);
   fDistanceAfter->SetDirectory(0);
 
   

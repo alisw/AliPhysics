@@ -913,10 +913,16 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
   Int_t nDists = dists->GetEntries();
   Int_t low    = nDists;
   Int_t high   = 0;
+  Int_t nEmpty = 0;
+  Int_t nLow   = 0;
+  Int_t nFitted= 0;
   for (Int_t i = 0; i < nDists; i++) { 
     TH1D* dist = static_cast<TH1D*>(dists->At(i));
     // Ignore empty histograms altoghether 
-    if (!dist || dist->GetEntries() <= 0) continue; 
+    if (!dist || dist->GetEntries() <= 0) { 
+      nEmpty++;
+      continue;
+    }
 
     // Scale to the bin-width
     dist->Scale(1., "width");
@@ -927,10 +933,11 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     dist->Scale(1/max);
     
     // Check that we have enough entries 
-    if (dist->GetEntries() <= minEntries) { 
+    Int_t nEntries = Int_t(dist->GetEntries());
+    if (nEntries <= minEntries) { 
       AliWarning(Form("Histogram at %3d (%s) has too few entries (%d <= %d)",
-		      i, dist->GetName(), Int_t(dist->GetEntries()), 
-		      minEntries));
+		      i, dist->GetName(), nEntries, minEntries));
+      nLow++;
       continue;
     }
 
@@ -938,6 +945,7 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
     TF1* res = FitHist(dist,lowCut,nParticles,minusBins,
 		       relErrorCut,chi2nuCut);
     if (!res) continue;
+    nFitted++;
     // dist->GetListOfFunctions()->Add(res);
 
     // Store eta limits 
@@ -970,6 +978,29 @@ AliFMDEnergyFitter::RingHistos::Fit(TList*           dir,
       hA[j]->SetBinError(i+1, res->GetParError(kA+j));
     }
   }
+  printf("%s: Out of %d histograms, %d where empty, %d had too little data,"
+	 "leaving %d to be fitted, of which %d succeeded\n",  
+	 GetName(), nDists, nEmpty, nLow, nDists-nEmpty-nLow, nFitted);
+
+  TH1* status = new TH1I("status", "Status of Fits", 5, 0, 5);
+  status->GetXaxis()->SetBinLabel(1, "Total");
+  status->GetXaxis()->SetBinLabel(2, "Empty");
+  status->GetXaxis()->SetBinLabel(3, Form("<%d", minEntries));
+  status->GetXaxis()->SetBinLabel(4, "Candidates");
+  status->GetXaxis()->SetBinLabel(5, "Fitted");
+  status->SetXTitle("Status");
+  status->SetYTitle("# of #Delta distributions");
+  status->SetBinContent(1, nDists);
+  status->SetBinContent(2, nEmpty);
+  status->SetBinContent(3, nLow);
+  status->SetBinContent(4, nDists-nLow-nEmpty);
+  status->SetBinContent(5, nFitted);
+  status->SetFillColor(Color());
+  status->SetFillStyle(3001);
+  status->SetLineColor(Color());
+  status->SetDirectory(0);
+  status->SetStats(0);
+  pars->Add(status);
 
   // Fit the full-ring histogram 
   TH1* total = GetOutputHist(l, Form("%s_edist", fName.Data()));

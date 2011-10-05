@@ -237,9 +237,11 @@ public:
    * - sys   Contains the collision system string and identifier. 
    * - sNN   Contains the center-of-mass energy per nucleon (GeV)
    * - field Contains the L3 magnetic field (kG)
+   * - run   Contains the run number
    * 
+   * @param runNo Run number - read off from ESD event
    */
-  virtual void StoreInformation();
+  virtual void StoreInformation(Int_t runNo);
 protected:
   /** 
    * Read the trigger information from the ESD event 

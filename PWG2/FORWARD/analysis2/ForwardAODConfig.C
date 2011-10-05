@@ -48,10 +48,8 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   //c.SetNXi(mc ? 1 : 1);
   //c.SetIncludeSigma(true);
   //c.SetMPVFraction(0.5);
-  
   Double_t factor = 1.;
   //if(mc) factor = 1.15;
-  
   cSharing.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
  
   AliFMDMultCuts cDensity;
@@ -79,7 +77,6 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
   // Enable use of angle corrected signals in the algorithm 
-  
   task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().GetHCuts().SetNXi(nXi);
@@ -89,12 +86,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetSharingFilter().SetLCuts(cSharing);
   
    
-  // --- Density calculator 
+  // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 
   task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
-
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
   
