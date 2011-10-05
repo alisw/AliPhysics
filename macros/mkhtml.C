@@ -64,7 +64,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
 
     // EVE
     gSystem->Load("libEve.so");
-    gSystem->Load("libEvebase.so");
+    gSystem->Load("libEveBase.so");
     gSystem->Load("libEveDet.so");
     gSystem->Load("libEveHLT.so");
 
