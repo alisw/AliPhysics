@@ -447,6 +447,7 @@ AliHLTUInt32_t AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::GetCl
 {
   /// get the cluster id from the current cluster id block (optional)
   if (!fCurrentClusterIds ||
+      clusterNo<0 ||
       (int)fCurrentClusterIds->fSize<=clusterNo)
     return kAliHLTVoidDataSpec;
   return fCurrentClusterIds->fIds[clusterNo];
