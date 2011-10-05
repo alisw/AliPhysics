@@ -336,23 +336,27 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
     Log(" ZDC/Calib/ChMap entry in OCDB is valid and won't be updated");
     resChMapStore = kTRUE;
   }
-  
   delete daqSource; daqSource=0;
-  // Reading the file for mapping from FXS
-  TList* daqSourcetdc = GetFileSources(kDAQ, "TDCDATA");
-  if(!daqSourcetdc){
-    AliError(Form("No sources for file ZDCChMappingTDCCalib.dat in run %d ", fRun));
-    return 20;
-  }
-  if(daqSourcetdc->GetEntries()==0) return 20;
-  Log("\t List of DAQ sources for TDCDATA id: "); daqSourcetdc->Print();
-  //
-  Bool_t resTDCcal = kTRUE;
-  TIter itertdc(daqSourcetdc);
-  TObjString* sourcetdc = 0;
-  Int_t isoutdc = 0;
-  //
-  while((sourcetdc = dynamic_cast<TObjString*> (itertdc.Next()))){
+  
+  TString runType = GetRunType();
+  if(runType.CompareTo("PHYSICS")==0){
+    Log(Form("RunType %s -> producing TDC calibration data",runType.Data()));
+    
+    // Reading the file for mapping from FXS
+    TList* daqSourcetdc = GetFileSources(kDAQ, "TDCDATA");
+    if(!daqSourcetdc){
+      AliError(Form("No sources for file ZDCChMappingTDCCalib.dat in run %d ", fRun));
+      return 20;
+    }
+    if(daqSourcetdc->GetEntries()==0) return 20;
+    Log("\t List of DAQ sources for TDCDATA id: "); daqSourcetdc->Print();
+    //
+    Bool_t resTDCcal = kTRUE;
+    TIter itertdc(daqSourcetdc);
+    TObjString* sourcetdc = 0;
+    Int_t isoutdc = 0;
+    //
+    while((sourcetdc = dynamic_cast<TObjString*> (itertdc.Next()))){
      TString fileNametdc = GetFile(kDAQ, "TDCDATA", sourcetdc->GetName());
      Log(Form("\t Getting file #%d: ZDCTDCdata.dat from %s\n",++isoutdc, sourcetdc->GetName()));
 
@@ -398,21 +402,21 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
      //
      resTDCcal = Store("Calib","TDCCalib",tdcCalib, &metaData, 0, kTRUE);
      if(resTDCcal==kFALSE) return 21;
-  }
-  delete daqSourcetdc; daqSourcetdc = 0;
+    }
+    delete daqSourcetdc; daqSourcetdc = 0;
 
-  Bool_t restdcHist = kTRUE;
-  TList* daqSourceH = GetFileSources(kDAQ, "TDCHISTOS");
-  if(!daqSourceH){
-    Log(Form("No source for TDCHISTOS id run %d !", fRun));
-    return 22;
-  }
-  Log("\t List of DAQ sources for TDCHISTOS id: "); daqSourceH->Print();
-  //
-  TIter iterH(daqSourceH);
-  TObjString* sourceH = 0;
-  Int_t iH=0;
-  while((sourceH = dynamic_cast<TObjString*> (iterH.Next()))){
+    Bool_t restdcHist = kTRUE;
+    TList* daqSourceH = GetFileSources(kDAQ, "TDCHISTOS");
+    if(!daqSourceH){
+      Log(Form("No source for TDCHISTOS id run %d !", fRun));
+      return 22;
+    }
+    Log("\t List of DAQ sources for TDCHISTOS id: "); daqSourceH->Print();
+    //
+    TIter iterH(daqSourceH);
+    TObjString* sourceH = 0;
+    Int_t iH=0;
+    while((sourceH = dynamic_cast<TObjString*> (iterH.Next()))){
      TString stringTDCFileName = GetFile(kDAQ, "TDCHISTOS", sourceH->GetName());
      if(stringTDCFileName.Length() <= 0){
      	Log(Form("No TDCHISTOS file from source %s!", sourceH->GetName()));
@@ -422,12 +426,12 @@ UInt_t AliZDCPreprocessor::ProcessChMap()
      Log(Form("\t Getting file #%d: %s from %s\n",++iH, tdcFileName, sourceH->GetName()));
      restdcHist = StoreReferenceFile(tdcFileName, "tdcReference.root");
      if(restdcHist==kFALSE) return 23;
+    }
+    delete daqSourceH; daqSourceH=0;
   }
-  delete daqSourceH; daqSourceH=0;
   
-  
-  if(resChMapStore==kFALSE) return 5;
-  else return 0;
+    if(resChMapStore==kFALSE) return 5;
+    else return 0;
 
 }
 
@@ -919,7 +923,6 @@ UInt_t AliZDCPreprocessor::Process(TMap* dcsAliasMap)
  // *****************************************************
  else if(runType.CompareTo("CALIBRATION_MB")==0) resMBCalib = ProcessMBCalibData();
  
-
  if(resDCS!=0)  	      return resDCS;
  else if(resChMap!=0)	      return resChMap;
  else if(resEnergyCalib!=0)   return resEnergyCalib;
