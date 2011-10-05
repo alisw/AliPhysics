@@ -34,19 +34,25 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   
   // --- Make the task and add it to the manager ---------------------
   AliForwardQATask* task = new AliForwardQATask("forwardQA");
-  // task->SetBLow(blow);
-  // task->SetBLow(bhigh);
   mgr->AddTask(task);
 
+
+  // --- Cuts --------------------------------------------------------
+  // Old style cuts
   Double_t nXi = mc ? 2 : 2;   //HHD test
   Bool_t   includeSigma = false; //true;
-
+  // High cuts for sharing filter
+  AliFMDMultCuts cHigh;
+  cHigh.SetMPVFraction(0.7);
+  cHigh.SetMultCuts(-1);
+  // Low cuts for sharing and density calculator
+  AliFMDMultCuts cLow;
+  cLow.SetMultCuts(0.1, 0.1, 0.12, 0.1, 0.12);
+  // Density cuts
   AliFMDMultCuts cDensity;
-  //c2.SetNXi(mc ? 1 : 1);
-  //  c2.SetIncludeSigma(false);
-  //c2.SetMPVFraction(0.5);
-  //Double_t factor = 1.2;
-  cDensity.SetMultCuts(0.3, 0.3, 0.3, 0.3, 0.3);
+  cDensity.SetMPVFraction(0.7);
+  cDensity.SetMultCuts(-1);
+
   
   // --- Set parameters on the algorithms ----------------------------
   // Set the number of SPD tracklets for which we consider the event a
@@ -54,6 +60,8 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
+  // Disable use of code from 1st Physics
+  task->GetEventInspector().SetUseFirstPhysicsVtx(kFALSE);
 
   // --- Set parameters on energy loss fitter ------------------------
   // Set the eta axis to use - note, this overrides whatever is used
@@ -85,27 +93,34 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
   // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
+  task->GetSharingFilter().SetHCuts(cHigh);
+  // Multiplicity cut 
+  // task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
   // Set the number of xi's (width of landau peak) to stop at 
-  task->GetSharingFilter().GetHCuts().SetNXi(nXi);
+  // task->GetSharingFilter().GetHCuts().SetNXi(nXi);
   // Set whether or not to include sigma in cut
-  task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
-  // Enable use of angle corrected signals in the algorithm 
-  task->GetSharingFilter().SetLCuts(cDensity);
+  // task->GetSharingFilter().GetHCuts().SetIncludeSigma(includeSigma);
+  // Lower cuts from object
+  task->GetSharingFilter().SetLCuts(cLow);
+  // Use simplified sharing algorithm 
+  task->GetSharingFilter().SetUseSimpleSharing(kTRUE);
 
   // --- Density calculator ------------------------------------------
   // Set the maximum number of particle to try to reconstruct 
-  task->GetDensityCalculator().SetMaxParticles(10);
+  task->GetDensityCalculator().SetMaxParticles(3);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
+  // How to lump for Poisson calculator - 64 strips, 4 regions
+  task->GetDensityCalculator().SetLumping(64,4);
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch
   //   AliFMDDensityCalculator::kPhiCorrectELoss
-  task->GetDensityCalculator()
-    .SetUsePhiAcceptance(AliFMDDensityCalculator::kPhiCorrectNch);
+  task->GetDensityCalculator().
+    SetUsePhiAcceptance(AliFMDDensityCalculator::kPhiNoCorrect);
+
   // --- Set limits on fits the energy -------------------------------
   // Maximum relative error on parameters 
   AliFMDCorrELossFit::ELossFit::fgMaxRelError = .12;
@@ -113,6 +128,10 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   AliFMDCorrELossFit::ELossFit::fgLeastWeight = 1e-5;
   // Maximum value of reduced chi^2 
   AliFMDCorrELossFit::ELossFit::fgMaxChi2nu   = 20;
+
+  // --- Debug -------------------------------------------------------
+  // Set the overall debug level (1: some output, 3: a lot of output)
+  task->SetDebug(3);
     
   // --- Make the output container and connect it --------------------
   // TString outputfile = ;
@@ -125,11 +144,14 @@ AddTaskForwardQA(Bool_t mc=false, Bool_t useCent=false)
   AliAnalysisDataContainer *output = 
     mgr->CreateContainer("ForwardResults", TList::Class(), 
 			 AliAnalysisManager::kParamContainer, 
-			 AliAnalysisManager::GetCommonFileName());
+			 "trending.root");
+			 // AliAnalysisManager::GetCommonFileName());
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, histOut);
   mgr->ConnectOutput(task, 2, output);
 
-
   return task;
 }
+//
+// EOF
+// 

@@ -337,7 +337,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
 
 //____________________________________________________________________
 void
-AliFMDEventInspector::StoreInformation()
+AliFMDEventInspector::StoreInformation(Int_t runNo)
 {
   // Write TNamed objects to output list containing information about
   // the running conditions 
@@ -346,16 +346,19 @@ AliFMDEventInspector::StoreInformation()
   TNamed* sys = new TNamed("sys", "");
   TNamed* sNN = new TNamed("sNN", "");
   TNamed* fld = new TNamed("field", "");
+  TNamed* run = new TNamed("runNo", Form("%d", runNo));
   sys->SetTitle(AliForwardUtil::CollisionSystemString(fCollisionSystem));
   sNN->SetTitle(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
   fld->SetTitle(AliForwardUtil::MagneticFieldString(fField));
   sys->SetUniqueID(fCollisionSystem);
   sNN->SetUniqueID(fEnergy);
   fld->SetUniqueID(fField);
+  run->SetUniqueID(runNo);
 
   fList->Add(sys);
   fList->Add(sNN);
   fList->Add(fld);
+  fList->Add(run);
 }
 
 //____________________________________________________________________
@@ -851,7 +854,7 @@ AliFMDEventInspector::ReadRunDetails(const AliESDEvent* esd)
   fField           = 
     AliForwardUtil::ParseMagneticField(esd->GetMagneticField());
 
-  StoreInformation();
+  StoreInformation(esd->GetRunNumber());
   if (fCollisionSystem   == AliForwardUtil::kUnknown || 
       fEnergy            <= 0                        || 
       TMath::Abs(fField) >  10) 

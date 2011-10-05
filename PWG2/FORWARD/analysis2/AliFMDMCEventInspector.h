@@ -125,8 +125,10 @@ public:
    * The presence of this indicate MC data.
    *
    * - mc    Nothing special, and unique id is 1
+   * 
+   * @param runNo Run number 
    */
-  virtual void StoreInformation();
+  virtual void StoreInformation(Int_t runNo);
   /** 
    * Read the production details 
    * 

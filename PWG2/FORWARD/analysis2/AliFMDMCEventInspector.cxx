@@ -222,11 +222,11 @@ AliFMDMCEventInspector::Init(const TAxis& vtxAxis)
 
 //____________________________________________________________________
 void
-AliFMDMCEventInspector::StoreInformation()
+AliFMDMCEventInspector::StoreInformation(Int_t runNo)
 {
   // Store information about running conditions in the output list 
   if (!fList) return;
-  AliFMDEventInspector::StoreInformation();
+  AliFMDEventInspector::StoreInformation(runNo);
   TNamed* mc = new TNamed("mc", fProduction.Data());
   mc->SetUniqueID(1);
   fList->Add(mc);

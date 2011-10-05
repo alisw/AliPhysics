@@ -41,7 +41,8 @@ AliForwardQATask::AliForwardQATask()
     fEnergyFitter(),
     fSharingFilter(),
     fDensityCalculator(),
-    fList(0)
+    fList(0),
+    fDebug(0)
 {
   // 
   // Constructor
@@ -60,7 +61,8 @@ AliForwardQATask::AliForwardQATask(const char* name)
     fEnergyFitter("energy"),
     fSharingFilter("sharing"), 
     fDensityCalculator("density"),
-    fList(0)
+    fList(0),
+    fDebug(0)
 {
   // 
   // Constructor 
@@ -92,7 +94,8 @@ AliForwardQATask::AliForwardQATask(const AliForwardQATask& o)
     fEnergyFitter(o.fEnergyFitter),
     fSharingFilter(o.fSharingFilter),
     fDensityCalculator(o.fDensityCalculator),
-    fList(o.fList) 
+    fList(o.fList),
+    fDebug(o.fDebug) 
 {
   // 
   // Copy constructor 
@@ -128,6 +131,7 @@ AliForwardQATask::operator=(const AliForwardQATask& o)
   fDensityCalculator = o.fDensityCalculator;
   fHistos            = o.fHistos;
   fList              = o.fList;
+  fDebug             = o.fDebug;
 
   return *this;
 }
@@ -142,6 +146,7 @@ AliForwardQATask::SetDebug(Int_t dbg)
   // Parameters:
   //    dbg Debug level
   //
+  fDebug = dbg;
   fEventInspector.SetDebug(dbg);
   fEnergyFitter.SetDebug(dbg);
   fSharingFilter.SetDebug(dbg);
@@ -389,6 +394,7 @@ AliForwardQATask::Terminate(Option_t*)
   // Parameters:
   //    option Not used 
   //
+  if (fDebug) AliInfo("In Forwards terminate");
   TStopwatch swt;
   swt.Start();
 
@@ -424,6 +430,8 @@ AliForwardQATask::Terminate(Option_t*)
   // Make a deep copy and post that as output 2 
   TList* list2 = static_cast<TList*>(list->Clone(Form("%sResults", 
 						      list->GetName())));
+  if (fDebug) AliInfoF("Posting post processing results to %s", 
+		       list2->GetName());
   list2->SetOwner();
   PostData(2, list2);
 
