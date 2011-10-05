@@ -26,10 +26,10 @@ class AliZDCTDCCalib: public TNamed {
 
   Float_t GetMeanTDC(Int_t ch) const 
   	{if(ch<6) return fMeanTDC[ch];
-	 else printf(" ERROR! ZDC TDC calib data only for ch<6\n\n");}
+	 else return 0.;};
   Float_t GetWidthTDC(Int_t ch) const 
   	{if(ch<6) return fWidthTDC[ch];
-	 else printf(" ERROR! ZDC TDC calib data only for ch<6\n\n");}
+	 else return 0.;};
 	 
   void SetMeanTDC(Int_t ch, Float_t val) {fMeanTDC[ch]=val;}
   void SetWidthTDC(Int_t ch, Float_t val) {fWidthTDC[ch]=val;}

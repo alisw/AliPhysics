@@ -839,13 +839,13 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
     for (int itc=-1;itc<GetNTrigClasses();itc++) { // RS: loop over eventual clones per trigger class
       //
       if( task == AliQAv1::kRAWS) {
-	TH1* h16 = GetRawsData(16, itc);
-	TH1* h17 = GetRawsData(17, itc);
-	TH1* h18 = GetRawsData(18, itc);
-	TH1* h19 = GetRawsData(19, itc);
-	TH1* h20 = GetRawsData(20, itc);
-	TH1* h21 = GetRawsData(21, itc);
-	TH1* h22 = GetRawsData(22, itc);
+	TProfile* h16 = dynamic_cast<TProfile*> (GetRawsData(16, itc));
+	TProfile* h17 =  dynamic_cast<TProfile*> (GetRawsData(17, itc));
+	TH1F* h18 =  dynamic_cast<TH1F*> (GetRawsData(18, itc));
+	TH1F* h19 =  dynamic_cast<TH1F*> (GetRawsData(19, itc));
+	TH2F* h20 =  dynamic_cast<TH2F*> (GetRawsData(20, itc));
+	TH2F* h21 =  dynamic_cast<TH2F*> (GetRawsData(21, itc));
+	TH2F* h22 =  dynamic_cast<TH2F*> (GetRawsData(22, itc));
 	if (!h16 || !h17 || !h18 || !h19){
 	 AliWarning("AliZDCQADataMakerRec -> RAW histos 16||17||18||19 not found!"); 
 	 AliWarning(Form("for specie %s and trigger class %s",
