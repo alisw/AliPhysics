@@ -1519,12 +1519,12 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 
 	if (nFiles == 0){
 		Log("no raw data tags in this run: it could be that one or more files were found in the DAQ FXS, but they were ignored, since not interesting for the raw data tag: nothing to merge!");
-		if (iter) delete iter;
-		if (list) delete list;
-		if (fRawTagChain){
-			delete fRawTagChain; 
-			fRawTagChain=0;
-		}
+		delete iter;
+		iter = 0;
+		delete list;
+		list = 0;
+		delete fRawTagChain; 
+		fRawTagChain=0;
 		return 0;
 	}
 	
@@ -1533,12 +1533,12 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	
 	if (fRawTagChain->Merge(fRawDataFileName) < 1 ) {
 		Log(Form("Error merging %d raw data files!!!",nFiles));
-		if (iter) delete iter;
-		if (list) delete list;
-		if (fRawTagChain){
-			delete fRawTagChain; 
-			fRawTagChain=0;
-		}
+		delete iter;
+		iter = 0;
+		delete list;
+		list = 0;
+		delete fRawTagChain; 
+		fRawTagChain=0;
 		return 3;
 	}
 		
@@ -1552,7 +1552,9 @@ UInt_t AliGRPPreprocessor::ProcessDaqFxs()
 	}
 	
 	delete iter;
+	iter = 0;
 	delete list;
+	list = 0;
 	delete fRawTagChain; fRawTagChain=0;
 	
 	if (result == kFALSE) {
