@@ -757,6 +757,7 @@ void AliAnalysisManager::ImportWrappers(TList *source)
             Error("ImportWrappers", "Cannot open file %s in read-only mode", filename);
             continue;
          }   
+         f->cd();
          TObject *obj = 0;
          // Cd to the directory pointed by the container
          TString folder = cont->GetFolderName();
