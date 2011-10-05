@@ -138,7 +138,7 @@ void AliMUONTriggerQADataMakerRec::EndOfDetectorCycleRaws(Int_t /*specie*/, TObj
     // if it is not there, it means that the trigger is not taken into account
     // so we can skip the trigger class for all other histos
     if ( ! histo1D ) continue;
-    Float_t nbevent = histo1D ? histo1D->GetBinContent(1) : 0;
+    Float_t nbevent = histo1D->GetBinContent(1);
     for(Int_t ihisto=0; ihisto<kNrawsHistos; ihisto++){
       TH1* inputHisto = GetRawsData(histoRawsIndex[ihisto],itc);
       TH1* scaledHisto = GetRawsData(histoRawsScaledIndex[ihisto],itc);
