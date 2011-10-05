@@ -75,9 +75,9 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fRejectExoticCluster(kFALSE),           fPIDUtils(),                            fAODFilterMask(32),
   fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kTRUE),                   fCutEtaPhiSeparate(kFALSE), 
-  fCutR(0.1),                             fCutEta(0.02),                          fCutPhi(0.04), 
-  fMass(0.139),                           fStep(50),
-  fTrackCutsType(kTPCOnlyCut),            fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
+  fCutR(0.1),                             fCutEta(0.025),                         fCutPhi(0.05), 
+  fMass(0.139),                           fStep(10),
+  fTrackCutsType(kLooseCut),              fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
   fCutMinNClusterITS(-1),                 fCutMaxChi2PerClusterTPC(1e10),         fCutMaxChi2PerClusterITS(1e10),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
   fCutMaxDCAToVertexXY(1e10),             fCutMaxDCAToVertexZ(1e10),              fCutDCAToVertex2D(kFALSE)
@@ -1771,9 +1771,12 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
 
 
   //DCA cuts
-  Float_t maxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
-  //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
-  SetMaxDCAToVertexXY(maxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
+  if(fTrackCutsType==kGlobalCut)
+    {
+      Float_t maxDCAToVertexXYPtDep = 0.0182 + 0.0350/TMath::Power(esdTrack->Pt(),1.01); //This expression comes from AliESDtrackCuts::GetStandardITSTPCTrackCuts2010()
+      //AliDebug(3,Form("Track pT = %f, DCAtoVertexXY = %f",esdTrack->Pt(),MaxDCAToVertexXYPtDep));
+      SetMaxDCAToVertexXY(maxDCAToVertexXYPtDep); //Set pT dependent DCA cut to vertex in x-y plane
+    }
 
 
   Float_t b[2];
@@ -1820,12 +1823,15 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   if (!fCutDCAToVertex2D && TMath::Abs(dcaToVertexZ) > fCutMaxDCAToVertexZ)
     cuts[9] = kTRUE;
 
-  //Require at least one SPD point + anything else in ITS
-  if( (esdTrack->HasPointOnITSLayer(0) || esdTrack->HasPointOnITSLayer(1)) == kFALSE)
-    cuts[10] = kTRUE;
+  if(fTrackCutsType==kGlobalCut)
+    {
+      //Require at least one SPD point + anything else in ITS
+      if( (esdTrack->HasPointOnITSLayer(0) || esdTrack->HasPointOnITSLayer(1)) == kFALSE)
+	cuts[10] = kTRUE;
+    }
 
   Bool_t cut=kFALSE;
-  for (Int_t i=0; i<kNCuts; i++) 
+  for (Int_t i=0; i<kNCuts; i++)
     if (cuts[i]) {cut = kTRUE;}
 
     // cut the track
@@ -1834,6 +1840,8 @@ Bool_t AliEMCALRecoUtils::IsAccepted(AliESDtrack *esdTrack)
   else 
     return kTRUE;
 }
+
+
 //__________________________________________________
 void AliEMCALRecoUtils::InitTrackCuts()
 {
