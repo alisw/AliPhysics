@@ -201,6 +201,7 @@ protected:
   AliFMDDensityCalculator fDensityCalculator; // Algorithm
 
   TList* fList; // Output list 
+  Int_t fDebug; // Debug flag
 
   ClassDef(AliForwardQATask,1) // Forward QA class
 };
