@@ -59,12 +59,12 @@ class AliITSgeom : public TObject {
     // for Global GEANT coordinate system to the local "Tracking" coordinate
     // system of the detector. These are the transformation used by the
     // Tracking code.
-    Bool_t IsGeantToTracking()  const {return ((fTrans&&0xfffe)!= 0);}
+    Bool_t IsGeantToTracking()  const {return ((fTrans&0xfffe)!= 0);}
     // returns kTRUE if the transformation defined by this class is
     // for Global GEANT coordinate system to the local GEANT coordinate system
     // of the detector but may have been displaced by some typically small
     // amount. These are modified transformation similar to that used by GEANT.
-    Bool_t IsGeantToDisplaced() const {return ((fTrans&&0xfffd)!= 0);}
+    Bool_t IsGeantToDisplaced() const {return ((fTrans&0xfffd)!= 0);}
     //
     //     This function returns a pointer to the particular AliITSgeomMatrix
     // class for a specific module index.
