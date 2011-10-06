@@ -3793,6 +3793,7 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   plugin->SetFileForTestMode(\"data.txt\");" << endl;
          else   
             out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
+         out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
          if (AliAnalysisManager::GetAnalysisManager())
             out << "   mgr->SetDebugLevel(" << AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() << ");" << endl;
