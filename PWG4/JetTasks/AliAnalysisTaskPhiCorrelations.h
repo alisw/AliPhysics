@@ -32,6 +32,8 @@
 #include "AliAnalysisTask.h"
 #include "AliUEHist.h"
 #include "TString.h"
+#include "AliVParticle.h"
+#include "AliLog.h"
 
 class AliAODEvent;
 class AliAnalyseLeadingTrackUE;
@@ -142,6 +144,54 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     ClassDef( AliAnalysisTaskPhiCorrelations, 1); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
 
+class AliDPhiBasicParticle : public AliVParticle
+{
+  public:
+    AliDPhiBasicParticle(Float_t eta, Float_t phi, Float_t pt, Short_t charge)
+      : fEta(eta), fPhi(phi), fpT(pt), fCharge(charge)
+    {
+    }
+    ~AliDPhiBasicParticle() {}
+    
+    // kinematics
+    virtual Double_t Px() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Py() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pz() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Pt() const { return fpT; }
+    virtual Double_t P() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   PxPyPz(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t Xv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Yv() const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Zv() const { AliFatal("Not implemented"); return 0; }
+    virtual Bool_t   XvYvZv(Double_t[3]) const { AliFatal("Not implemented"); return 0; }
+
+    virtual Double_t OneOverPt()  const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t Phi()        const { return fPhi; }
+    virtual Double_t Theta()      const { AliFatal("Not implemented"); return 0; }
+
+
+    virtual Double_t E()          const { AliFatal("Not implemented"); return 0; }
+    virtual Double_t M()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Double_t Eta()        const { return fEta; }
+    virtual Double_t Y()          const { AliFatal("Not implemented"); return 0; }
+    
+    virtual Short_t Charge()      const { return fCharge; }
+    virtual Int_t   GetLabel()    const { AliFatal("Not implemented"); return 0; }
+    // PID
+    virtual Int_t   PdgCode()     const { AliFatal("Not implemented"); return 0; }      
+    virtual const Double_t *PID() const { AliFatal("Not implemented"); return 0; }
+    
+  private:
+    Float_t fEta;      // eta
+    Float_t fPhi;      // phi
+    Float_t fpT;       // pT
+    Short_t fCharge;   // charge
+    
+    ClassDef( AliDPhiBasicParticle, 1); // class which contains only quantities requires for this analysis to reduce memory consumption for event mixing
+};
+  
 #endif
 
     
