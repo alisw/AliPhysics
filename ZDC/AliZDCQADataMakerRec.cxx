@@ -864,7 +864,7 @@ void AliZDCQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArr
 	  h18->SetLineColor(kBlue); h18->SetLineWidth(2);
 	  h19->SetLineColor(kAzure-3); h19->SetLineWidth(2);
         }
-	if(!h20){
+	if(!h20 || !h21){
 	 AliWarning("AliZDCQADataMakerRec -> RAW histos 20||21 not found!"); 
 	 AliWarning(Form("for specie %s and trigger class %s",
 			 AliRecoParam::GetEventSpecieName(specie), AliQADataMaker::GetTrigClassName(itc)));
