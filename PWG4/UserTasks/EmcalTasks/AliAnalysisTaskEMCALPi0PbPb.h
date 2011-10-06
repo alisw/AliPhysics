@@ -326,17 +326,17 @@ class AliStaVertex
 class AliStaCluster : public TObject
 {
  public:
-    AliStaCluster() : TObject(), 
-                      fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), 
-                      fTmax(0), fDbc(-1), fDisp(-1), fM20(-1), fM02(-1), fEcc(-1), fSig(-1), fSigEtaEta(-1), fSigPhiPhi(-1),
-                      fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
-                      fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),
-                      fTrIsoD4(0), fTrIso1D4(0), fTrIso2D4(0), fTrIsoStrip(0), fCeIso(0), fCeIso1(0), 
-                      fCeIso3(0), fCeIso4(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
-                      fIsShared(0), fTrigId(-1), fTrigE(0), fMcLabel(-1), fEmbE(0) {;}
+  AliStaCluster() : TObject(), 
+                    fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), 
+                    fTmax(0), fDbc(-1), fDisp(-1), fM20(-1), fM02(-1), fEcc(-1), fSig(-1), fSigEtaEta(-1), fSigPhiPhi(-1),
+                    fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
+                    fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),
+                    fTrIsoD4(0), fTrIso1D4(0), fTrIso2D4(0), fTrIsoStrip(0), fCeIso(0), fCeIso1(0), 
+                    fCeIso3(0), fCeIso4(0), fCeIso3x3(0), fCeIso4x4(0), fCeIso5x5(0), fCeCore(0), fCeIso3x22(0), 
+                    fIsShared(0), fTrigId(-1), fTrigE(0), fMcLabel(-1), fEmbE(0) {;}
 
-  void                GetMom(TLorentzVector& p, Double_t *vertex=0);
-  void                GetMom(TLorentzVector& p, AliStaVertex *vertex);
+  void          GetMom(TLorentzVector& p, Double_t *vertex=0);
+  void          GetMom(TLorentzVector& p, AliStaVertex *vertex);
 
  public:
   Double32_t    fE;                //[0,0,16] energy
@@ -380,7 +380,8 @@ class AliStaCluster : public TObject
   Double32_t    fCeIso;            //[0,0,16] cell isolation in R=0.20
   Double32_t    fCeIso1;           //[0,0,16] cell isolation in R=0.10
   Double32_t    fCeIso3;           //[0,0,16] cell isolation in R=0.30
-  Double32_t    fCeIso4;           //[0,0,16] cell isolation in R=0.30
+  Double32_t    fCeIso4;           //[0,0,16] cell isolation in R=0.40
+  Double32_t    fCeIso3x3;         //[0,0,16] cell isolation in 3x3 cells
   Double32_t    fCeIso4x4;         //[0,0,16] cell isolation in 4x4 cells
   Double32_t    fCeIso5x5;         //[0,0,16] cell isolation in 5x5 cells
   Double32_t    fCeCore;           //[0,0,16] cell content in R=0.05 
@@ -391,7 +392,7 @@ class AliStaCluster : public TObject
   Short_t       fMcLabel;          //         index of closest MC particle
   Double32_t    fEmbE;             //[0,0,16] sum of energy of embedded (MC) cells in cluster
 
-  ClassDef(AliStaCluster,8) // Cluster class
+  ClassDef(AliStaCluster,9) // Cluster class
 };
 
 class AliStaTrigger : public TObject
