@@ -32,8 +32,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTTPCHWCFSpacePointContainer.h"
-#include "AliHLTDataInflaterSimple.h"
-#include "AliHLTDataInflaterHuffman.h"
+#include "AliHLTErrorGuard.h"
 #include "AliRawDataHeader.h"
 #include "AliTPCclusterMI.h"
 #include "TH1I.h"
@@ -125,12 +124,15 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   unsigned rawDataSize=0;
   unsigned hwclustersDataSize=0;
   unsigned nofClusters=0;
+
+  // check size of TPC raw data
   for (pDesc=GetFirstInputBlock(kAliHLTDataTypeDDLRaw | kAliHLTDataOriginTPC);
        pDesc!=NULL; pDesc=GetNextInputBlock()) {
     fFlags|=kHaveRawData;
     rawDataSize+=pDesc->fSize;
   }
 
+  // check size of HWCF data and add to the MonitoringContainer
   for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkHWClustersDataType);
        pDesc!=NULL; pDesc=GetNextInputBlock()) {
     fFlags|=kHaveHWClusters;
@@ -166,12 +168,29 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 
     // read data
     AliHLTTPCDataCompressionDecoder decoder;
+    bool bHaveRawClusters=false;
+    for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RawClustersDataType());
+	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
+      // Note: until r51411 and v5-01-Rev-03 the compressed cluster format was sent with data
+      // type {CLUSTRAW,TPC }, the version member indicated the actual type of data
+      // transparently handled in the decoder
+      bHaveRawClusters=true;
+      iResult=decoder.ReadClustersPartition(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
+					    reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
+					    pDesc->fSize,
+					    pDesc->fSpecification);
+      if (iResult<0) {
+	HLTError("reading of partition clusters failed with error %d", iResult);
+      }
+    }
+
+    if (!bHaveRawClusters) {
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
-      iResult=decoder.ReadRemainingClustersCompressed(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
-					      reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
-					      pDesc->fSize,
-					      pDesc->fSpecification);
+      iResult=decoder.ReadClustersPartition(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
+					    reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
+					    pDesc->fSize,
+					    pDesc->fSpecification);
     }
 
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::ClusterTracksCompressedDataType());
@@ -180,6 +199,12 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 					       reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
 					       pDesc->fSize,
 					       pDesc->fSpecification);
+    }
+    } else {
+      if (GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType()) ||
+	  GetFirstInputBlock(AliHLTTPCDefinitions::ClusterTracksCompressedDataType())) {
+	ALIHLTERRORGUARD(5, "conflicting data blocks, monitoring histograms already filled from raw cluster data, ignoring blocks of compressed partition and track clusters");
+      }		     
     }
 
     fMonitoringContainer->Clear();

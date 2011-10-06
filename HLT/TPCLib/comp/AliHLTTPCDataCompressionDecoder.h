@@ -44,6 +44,9 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   template<typename T>
   int ReadTrackClustersCompressed(T& c, AliHLTDataInflater* pInflater, AliHLTTPCTrackGeometry* pTrackPoints);
 
+  template<typename T>
+  int ReadClustersPartition(T& c, const AliHLTUInt8_t* pData, unsigned dataSize, AliHLTUInt32_t specification);
+
   AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
  protected:
@@ -361,5 +364,34 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
     currentTrackPoint++;
   }
   return iResult;
+}
+
+template<typename T>
+int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUInt8_t* pData, unsigned dataSize, AliHLTUInt32_t specification)
+{
+  // read raw cluster data
+  if (!pData) return -EINVAL;
+  if (dataSize<sizeof(AliHLTTPCRawClusterData)) return -ENODATA;
+  const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pData);
+  Int_t nCount = (Int_t) clusterData->fCount;
+  if (clusterData->fVersion!=0) {
+    return ReadRemainingClustersCompressed(c, pData, dataSize, specification);
+  }
+  if (nCount*sizeof(AliHLTTPCRawCluster) + sizeof(AliHLTTPCRawClusterData) != dataSize) return -EBADF;
+  AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
+  AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
+
+  const AliHLTTPCRawCluster *clusters = clusterData->fClusters;
+  for (int i=0; i<nCount; i++) {
+    c.Next(slice, partition);
+    c.SetPadRow(clusters[i].GetPadRow());
+    c.SetPad(clusters[i].GetPad());
+    c.SetTime(clusters[i].GetTime());
+    c.SetSigmaY2(clusters[i].GetSigmaY2());
+    c.SetSigmaZ2(clusters[i].GetSigmaZ2());
+    c.SetCharge(clusters[i].GetCharge());
+    c.SetQMax(clusters[i].GetQMax());
+  }
+  return 0;
 }
 #endif
