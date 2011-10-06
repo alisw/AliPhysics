@@ -48,7 +48,9 @@ ClassImp(AliAnalysisTaskSPD)
     fSegSPD(0x0),
     fOutput(0x0),
     fRunNb(999),
-    fOCDBLocation("local://$ALICE_ROOT/OCDB")
+    fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+    fHI(kFALSE),
+    fTest(kFALSE)
 {
   //
   //Default ctor
@@ -60,7 +62,9 @@ AliAnalysisTaskSPD::AliAnalysisTaskSPD(const Char_t* name) :
   fSegSPD(0x0),
   fOutput(0x0),
   fRunNb(999),
-  fOCDBLocation("local://$ALICE_ROOT/OCDB")
+  fOCDBLocation("local://$ALICE_ROOT/OCDB"),
+  fHI(kFALSE),
+  fTest(kFALSE)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -83,6 +87,8 @@ AliAnalysisTaskSPD& AliAnalysisTaskSPD::operator=(const AliAnalysisTaskSPD& c)
     fOutput = c.fOutput ;
     fRunNb = c.fRunNb;
     fOCDBLocation = c.fOCDBLocation;
+    fHI = c.fHI;
+    fTest = c.fTest;
   }
   return *this;
 }
@@ -93,7 +99,9 @@ AliAnalysisTaskSPD::AliAnalysisTaskSPD(const AliAnalysisTaskSPD& c) :
   fSegSPD(c.fSegSPD),
   fOutput(c.fOutput),
   fRunNb(c.fRunNb),
-  fOCDBLocation(c.fOCDBLocation)
+  fOCDBLocation(c.fOCDBLocation),
+  fHI(c.fHI),
+  fTest(c.fTest)
 {
   //
   // Copy Constructor
@@ -182,8 +190,17 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   // Booking ESD related histograms
   //
 
+  Int_t nbin, nTrMax;
+  if(fHI) {
+   nbin   =  800;
+   nTrMax = 8000;
+  } else {
+  nbin =  500;
+  nTrMax = 500; 
+  }
+
   // 11
-  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",500,0,500);
+  TH1I *hTracklets = new TH1I("hNtracklets","Tracklet distribution",nbin,0,nTrMax);
   hTracklets->SetXTitle("# Tracklets");
   fOutput->AddLast(hTracklets);
   //12
@@ -204,12 +221,12 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
   hVertexZ->SetXTitle("Z Vertex [cm]");
   fOutput->AddLast(hVertexZ); 
   //16
-  TH2F *hTracklVsClu1 = new TH2F("hTrackVsClu1","Tracklet Vs Clusters Layer 1",100,0,8000,300,0,12000);
+  TH2F *hTracklVsClu1 = new TH2F("hTrackVsClu1","Tracklet Vs Clusters Layer 1",nbin/2,0,1.5*nTrMax,nbin/2,0,nTrMax);
   hTracklVsClu1->SetXTitle("clusters SPD Layer 1");
   hTracklVsClu1->SetYTitle("tracklets");
   fOutput->AddLast(hTracklVsClu1);
   //17
-  TH2F *hTracklVsClu2 = new TH2F("hTrackVsClu2","Tracklet Vs Clusters Layer 2",100,0,8000,300,0,12000);
+  TH2F *hTracklVsClu2 = new TH2F("hTrackVsClu2","Tracklet Vs Clusters Layer 2",nbin/2,0,1.5*nTrMax,nbin/2,0,nTrMax);
   hTracklVsClu2->SetXTitle("clusters SPD Layer 2");
   hTracklVsClu2->SetYTitle("tracklets");
   fOutput->AddLast(hTracklVsClu2);
@@ -390,10 +407,19 @@ void AliAnalysisTaskSPD::LoadGeometryFromOCDB(){
   //method to get the gGeomanager
   // it is called at the CreatedOutputObject stage
   // to comply with the CAF environment
+
+  if(fTest){ 
   AliCDBManager *man = AliCDBManager::Instance();
   man->SetDefaultStorage(fOCDBLocation.Data());
   man->SetRun(fRunNb);  
-  AliCDBEntry* obj = man->Get(AliCDBPath("GRP", "Geometry", "Data"));
+  }
+
+  if(!AliCDBManager::Instance()){
+  AliWarning("No CDB MANAGER, geometry can not be loaded");
+  return;
+  }
+
+  AliCDBEntry* obj =(AliCDBManager::Instance())->Get(AliCDBPath("GRP", "Geometry", "Data"));
   if (obj)
       AliGeomManager::SetGeometry((TGeoManager*)obj->GetObject());
   AliGeomManager::GetNalignable("ITS");
