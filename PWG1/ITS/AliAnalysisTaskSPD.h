@@ -41,16 +41,22 @@ class AliAnalysisTaskSPD : public AliAnalysisTaskSE {
   void     UserCreateOutputObjects();
   void     UserExec(Option_t *option);
   void     Terminate(Option_t *);
+
   void     SetOCDBInfo(UInt_t runNb, const char *location) {fRunNb=runNb; fOCDBLocation=location;}
   void     LoadGeometryFromOCDB(); 
- 
+  
+  void     SetHeavyIonMode() {fHI=kTRUE;}
+  void     SetTestMode() {fTest=kTRUE;} 
+
  protected:
   AliITSsegmentationSPD *fSegSPD;  
   TList          *fOutput   ;  // user histograms list
-  UInt_t fRunNb;                 // run number
-  TString fOCDBLocation;         // ocdb path
+  UInt_t fRunNb;               // run number
+  TString fOCDBLocation;       // ocdb path
+  Bool_t fHI;                  // changes to the histo limits 
+  Bool_t fTest;                // ocdb settings 
 
-  ClassDef(AliAnalysisTaskSPD,1);
+  ClassDef(AliAnalysisTaskSPD,2);
 };
 
 #endif
