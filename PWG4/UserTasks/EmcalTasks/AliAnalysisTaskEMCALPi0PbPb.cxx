@@ -511,13 +511,16 @@ void AliAnalysisTaskEMCALPi0PbPb::UserCreateOutputObjects()
   fOutput->Add(fHPrimTrackEta);
   fHPrimTrackPhi = new TH1F("hPrimTrackPhi",";#varPhi [rad]",63,0,6.3);
   fOutput->Add(fHPrimTrackPhi);
+
   // histograms for track matching
-  fHMatchDr = new TH1F("hMatchDrDist",";dR [cm]",500,0,200);
-  fOutput->Add(fHMatchDr);
-  fHMatchDz = new TH1F("hMatchDzDist",";dZ [cm]",500,-100,100);
-  fOutput->Add(fHMatchDz);
-  fHMatchEp = new TH1F("hMatchEpDist",";E/p",100,0,10);
-  fOutput->Add(fHMatchEp);
+  if (fDoTrMatGeom) {
+    fHMatchDr = new TH1F("hMatchDrDist",";dR [cm]",500,0,200);
+    fOutput->Add(fHMatchDr);
+    fHMatchDz = new TH1F("hMatchDzDist",";dZ [cm]",500,-100,100);
+    fOutput->Add(fHMatchDz);
+    fHMatchEp = new TH1F("hMatchEpDist",";E/p",100,0,10);
+    fOutput->Add(fHMatchEp);
+  }
 
   // histograms for pion candidates
   if (!fTrainMode) {
@@ -917,14 +920,23 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
   if (!clusters)
     return;
 
-  Int_t ncells = cells->GetNumberOfCells();
-  Int_t nclus  = clusters->GetEntries();
-  Int_t ntrks  = fSelTracks->GetEntries();
+  const Int_t ncells = cells->GetNumberOfCells();
+  const Int_t nclus  = clusters->GetEntries();
+  const Int_t ntrks  = fSelTracks->GetEntries();
 
   std::map<Short_t,Short_t> map;
-  for (Short_t pos=0;pos<ncells;++pos) {
+  for (Short_t pos=0; pos<ncells; ++pos) {
     Short_t id = cells->GetCellNumber(pos);
-    map[id]=pos;
+    if (id>24*48*fGeom->GetNumberOfSuperModules()) {
+      AliError(Form("Id of cell found to be too large: %d", id));
+      continue;
+    }
+    AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigits->At(pos));
+    if (digit->GetId() != id) {
+      AliError(Form("Ids should be equal: %d %d", id, digit->GetId()));
+      return;
+    }
+    map[id]    = pos;
   }
 
   TObjArray filtMcParts;
@@ -1013,6 +1025,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     cl->fCeIso1     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.10);
     cl->fCeIso3     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.30);
     cl->fCeIso4     = GetCellIsolation(clsVec.Eta(),clsVec.Phi(),0.40);
+    cl->fCeIso3x3   = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 3, 3);
     cl->fCeIso4x4   = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 4, 4);
     cl->fCeIso5x5   = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 5, 5);
     cl->fCeIso3x22  = GetCellIsoNxM(clsVec.Eta(),clsVec.Phi(), 3, 22);
@@ -1037,24 +1050,21 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
     }
 
     // track matching
-    Double_t mind2 = 1e10;
-    for(Int_t j = 0; j<ntrks; ++j) {
-      AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
-      if (!track)
-        continue;
-
-      if (TMath::Abs(clsEta-track->Eta())>0.5)
-        continue;
-
-      TVector3 vec(clsPos);
-
-      Float_t tmpEta=-1, tmpPhi=-1, tmpR2=1e10;
-      Double_t dedx = -1;
-      if (fEsdEv) {
-        AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
-        dedx = esdTrack->GetTPCsignal();
-      }
-      if (fDoTrMatGeom) {
+    if (fDoTrMatGeom) {
+      Double_t mind2 = 1e10;
+      for(Int_t j = 0; j<ntrks; ++j) {
+        AliVTrack *track = static_cast<AliVTrack*>(fSelTracks->At(j));
+        if (!track)
+          continue;
+        if (TMath::Abs(clsEta-track->Eta())>0.5)
+          continue;
+        TVector3 vec(clsPos);
+        Float_t tmpEta=-1, tmpPhi=-1, tmpR2=1e10;
+        Double_t dedx = -1;
+        if (fEsdEv) {
+          AliESDtrack *esdTrack = static_cast<AliESDtrack*>(track);
+          dedx = esdTrack->GetTPCsignal();
+        }
         if (TMath::Abs(clsEta-track->Eta())>fIsoDist)
           continue;
         AliExternalTrackParam tParam; 
@@ -1062,22 +1072,21 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         if (!fReco->ExtrapolateTrackToCluster(&tParam, clus, tmpEta, tmpPhi))
           continue;
         tmpR2 = tmpEta*tmpEta + tmpPhi*tmpPhi;
+        Double_t d2 = tmpR2;
+        if (mind2>d2) {
+          mind2=d2;
+          cl->fTrDz   = tmpEta;
+          cl->fTrDr   = tmpPhi;
+          cl->fTrEp   = clus->E()/track->P();
+          cl->fTrDedx = dedx;
+          cl->fIsTrackM = 1;
+        }
       }
-      Double_t d2 = tmpR2;
-      if (mind2>d2) {
-        mind2=d2;
-        cl->fTrDz   = tmpEta;
-        cl->fTrDr   = tmpPhi;
-        cl->fTrEp   = clus->E()/track->P();
-	cl->fTrDedx = dedx;
-        cl->fIsTrackM = 1;
+      if (cl->fIsTrackM) {
+        fHMatchDr->Fill(cl->fTrDr);
+        fHMatchDz->Fill(cl->fTrDz);
+        fHMatchEp->Fill(cl->fTrEp);
       }
-    }
-    
-    if (cl->fIsTrackM) {
-      fHMatchDr->Fill(cl->fTrDr);
-      fHMatchDz->Fill(cl->fTrDz);
-      fHMatchEp->Fill(cl->fTrEp);
     }
 
     //mc matching
@@ -1113,10 +1122,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcClusterProps()
         AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigits->At(pos));
         if (!digit)
           continue;
-        if (digit->GetId() != cid) {
-          AliError(Form("Ids should be equal: %d %d", cid, digit->GetId()));
-          continue;
-        }
         if (digit->GetType()<-1) {
           cl->fEmbE += digit->GetChi2();
         }
@@ -1181,7 +1186,6 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcPrimTracks()
         continue;
       if (track->Phi()<phimin||track->Phi()>phimax)
         continue;
-
       if (!doConstrain) {
         fSelPrimTracks->Add(track);
         continue;
@@ -1297,7 +1301,7 @@ void AliAnalysisTaskEMCALPi0PbPb::CalcTracks()
       if (0 && (track->Pt()>=0.6) && (track->PxAtDCA()==-999)) { // compute position on EMCAL 
         AliExternalTrackParam tParam; 
         tParam.CopyFromVTrack(track);
-        if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 438, 0.139, 1, kTRUE)) {
+        if (AliTrackerBase::PropagateTrackToBxByBz(&tParam, 430, 0.139, 1, kTRUE)) {
           Double_t trkPos[3];
           tParam.GetXYZ(trkPos);
           track->SetPxPyPzAtDCA(trkPos[0],trkPos[1],trkPos[2]);
@@ -2495,7 +2499,7 @@ void AliStaCluster::GetMom(TLorentzVector& p, Double_t *vertex)
   TVector3 pos;
   pos.SetPtEtaPhi(fR,fEta,fPhi);
 
-  if(vertex){ //calculate direction relative to  vertex
+  if(vertex){ //calculate direction relative to vertex
     pos -= vertex;
   }
   
