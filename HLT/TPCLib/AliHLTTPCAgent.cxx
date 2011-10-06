@@ -201,7 +201,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
-    arg.Form("-deflater-mode 1");
+    arg.Form("");
     handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), arg.Data());
     arg+=" -cluster-verification 1";
     handler->CreateConfiguration("TPC-compression-verification", "TPCDataCompressor", compressorInput.Data(), arg.Data());
@@ -277,6 +277,21 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 
     // the HLTOUT component collects the blocks and stores the file
     handler->CreateConfiguration("TPC-hltout-cluster-dump", "HLTOUT", "TPC-hltout-cluster-publisher", "-digitfile HLT.TPC.Clusters.root -rawout=off -links 2");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //
+    // monitoring of compressed TPC data {CLUSTRAW:TPC }, {REMCLSCM,TPC }, {CLSTRKCM,TPC }
+    // 
+
+    // publisher component
+    handler->CreateConfiguration("TPC-hltout-compressionmonitor-publisher", "AliHLTOUTPublisher"   , NULL,
+				 "-datatype CLUSTRAW 'TPC '"
+				 "-datatype REMCLSCM 'TPC '"
+				 "-datatype CLSTRKCM 'TPC '"
+				 );
+
+    // the HLTOUT component collects the blocks and stores the file
+    handler->CreateConfiguration("TPC-hltout-compressionmonitor", "TPCDataCompressorMonitor", "TPC-hltout-compressionmonitor-publisher", "");
   }
 
   return 0;
