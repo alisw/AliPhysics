@@ -178,7 +178,7 @@ protected:
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Float_t               fDyRange;         // min/max dy
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
-  static const Int_t    fgkNproj[kNclasses];//! number of projections per task
+  static Int_t const    fgkNproj[kNclasses];//! number of projections per task
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections
   static Double_t const fgkMax[kNdim];    //! high limits for projections

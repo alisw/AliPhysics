@@ -135,7 +135,7 @@ Char_t const *AliTRDresolution::fgkTitle[kNdim] = {
   "bin_p_{t}"
 };  //! title of projection
 
-const Int_t AliTRDresolution::fgkNproj[kNclasses] = {
+Int_t const AliTRDresolution::fgkNproj[kNclasses] = {
   48, 72, 8, 5,
   2, 5, 11, 11, 11
 };
@@ -1177,7 +1177,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster()
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     Int_t mid(1), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
+    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=300;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
     arr->AddAt(h2, ih);
   }
@@ -1284,7 +1284,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet()
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     Int_t mid(0), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
+    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=300;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
     arr->AddAt(h2, ih);
   }
