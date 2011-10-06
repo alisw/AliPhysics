@@ -73,6 +73,7 @@
 
 
 ClassImp( AliAnalysisTaskPhiCorrelations )
+ClassImp( AliDPhiBasicParticle )
 
 //____________________________________________________________________
 AliAnalysisTaskPhiCorrelations:: AliAnalysisTaskPhiCorrelations(const char* name):
@@ -216,8 +217,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
-  Int_t trackDepth = 50000; 
-  Int_t poolsize   = 1000;  // Maximum number of events
+  Int_t trackDepth = 10000; 
+  Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPool
   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
@@ -233,6 +234,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   }
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
+//   fPoolMgr->SetDebug(1);
 }
 
 //____________________________________________________________________
@@ -585,11 +587,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     
     //pool->SetDebug(1);
       
-    if (pool->IsReady()) 
+    if (pool->IsReady() || pool->NTracksInPool() > 1000) 
     {
       
       Int_t nMix = pool->GetCurrentNEvents();
-      //cout << "nMix = " << nMix << endl;
+//       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
     
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++) 
@@ -606,9 +608,15 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       }
     }
     
-    // clone and give ownership to event pool
-    TObjArray* tracksClone = (TObjArray*) tracks->Clone();
+    // create a list of reduced objects (to reduce memory consumption) and give ownership to event pool
+    TObjArray* tracksClone = new TObjArray;
     tracksClone->SetOwner(kTRUE);
+    
+    for (Int_t i=0; i<tracks->GetEntries(); i++)
+    {
+      AliVParticle* particle = (AliVParticle*) tracks->At(i);
+      tracksClone->Add(new AliDPhiBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge()));
+    }
     
     pool->UpdatePool(tracksClone);
     //pool->PrintInfo();
