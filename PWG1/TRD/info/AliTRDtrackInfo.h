@@ -78,7 +78,7 @@ public:
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
     Int_t   GetPID() const ;
-    Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, UChar_t &s) const;
+    Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, Float_t &phi, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
     static Double_t GetKalmanStep() {return fgKalmanStep;}
     static Bool_t IsKalmanUpdate() {return fgKalmanUpdate;}
