@@ -364,7 +364,7 @@ void AliITSQASSDDataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
 	      //occupancy per module - threshold @ 3%
 	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+3]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyThreshold);
 	      //average occupancy per module
-	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+4]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
+	      if ( (h2t=(TH2*)harr[offs+fSSDRawsCommonLevelOffset+fgkSSDMODULES+2*fgkSSDLADDERSLAYER5+2*fgkSSDLADDERSLAYER6+5]) ) h2t->SetBinContent(gModule,lLadderLocationY-1,occupancyAverage);
 	    }
 	  } // htmpo
 	}//module loop
