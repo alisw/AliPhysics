@@ -52,12 +52,12 @@ public:
     kCluster=0        // cluster - track
     ,kTracklet        // tracklet - track residuals/pulls
     ,kTrackIn         // tracklet - track residuals/pulls at lower TRD entrance
-    ,kTrackOut        // tracklet - track residuals/pulls at lower TRD entrance during refit
     ,kMCcluster       // cluster-mc resolution/pulls
     ,kMCtracklet      // tracklet-mc resolution/pulls
     ,kMCtrackIn       // TPC track monitor
-    ,kMCtrackOut      // TOF/HMPID track monitor
     ,kMCtrack         // TRD track monitor
+/*    ,kTrackOut        // tracklet - track residuals/pulls at lower TRD entrance during refit
+    ,kMCtrackOut      // TOF/HMPID track monitor*/
     ,kNclasses        // total number of resolution classes
   };
   enum ETRDresolutionProjs {
@@ -114,7 +114,7 @@ public:
   TH1*            PlotCluster(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTracklet(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTrackIn(const AliTRDtrackV1 *t=NULL);
-  TH1*            PlotTrackOut(const AliTRDtrackV1 *t=NULL);
+//  TH1*            PlotTrackOut(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotMC(const AliTRDtrackV1 *t=NULL);
 
   static Bool_t   Process(TH2* const h2, TGraphErrors **g, Int_t stat=100);
@@ -167,9 +167,10 @@ private:
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
 protected:
-  Bool_t      MakeProjectionCluster();
-  Bool_t      MakeProjectionTracklet();
-  Bool_t      MakeProjectionTrackIn();
+  Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
+  Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
+  Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE);
+  Bool_t      MakeProjectionTrack();
   Bool_t      Process(TH2* const h2, TF1 *f, Float_t k, TGraphErrors **g);
   Bool_t      Pulls(Double_t dyz[2], Double_t cc[3], Double_t tilt) const;
 

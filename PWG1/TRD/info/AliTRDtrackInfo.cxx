@@ -450,7 +450,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, UChar_t &status) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, Float_t &phi, UChar_t &status) const
 {
 // Check for 2 track ref for the tracklet defined bythe radial position x0
 // The "status" is a bit map and gives a more informative output in case of failure:
@@ -474,7 +474,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     if(nFound == 2) break;
   } 
   if(nFound < 2){ 
-    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
+    AliDebugGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", 1, Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
     if(!nFound) SETBIT(status, 0);
     else SETBIT(status, 1);
     return kFALSE;
@@ -497,6 +497,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
   eta  =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
+  phi  =  tr[1]->PhiPos();
   return kTRUE;
 }
 
