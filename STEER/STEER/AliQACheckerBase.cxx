@@ -251,7 +251,7 @@ void AliQACheckerBase::DeleteImages()
         if ( fRefOCDBSubDir[esIndex] ) 
             delete fRefOCDBSubDir[esIndex] ; 
     }
-    delete[] fImage ; 
+    // delete[] fImage ; 
 }
 
 //____________________________________________________________________________ 
