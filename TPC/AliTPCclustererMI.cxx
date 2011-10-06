@@ -727,8 +727,9 @@ void AliTPCclustererMI::Digits2Clusters()
   //-----------------------------------------------------------------
   fUseHLTClusters = fRecoParam->GetUseHLTClusters();
 
-  printf(" HLT TPC Reco foo : %d \n",fUseHLTClusters );
-  if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
+  AliInfo(Form("Usage of HLT clusters in TPC reconstruction : %d",fUseHLTClusters));
+
+  if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();
     Int_t iResult = ReadHLTClusters();
@@ -748,7 +749,7 @@ void AliTPCclustererMI::Digits2Clusters()
       AliWarning("Some problem while unpacking of HLT clusters.");
       return;
     }
-  } // if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
+  } // if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
 
   //-----------------------------------------------------------------
   // Run TPC off-line clusterer
@@ -987,10 +988,14 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //-----------------------------------------------------------------
   fUseHLTClusters = fRecoParam->GetUseHLTClusters();
 
-  if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
+  AliInfo(Form("Usage of HLT clusters in TPC reconstruction : %d",fUseHLTClusters));
+
+  if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();
     Int_t iResult = ReadHLTClusters();
+
+    AliError(Form("HLT result : %d",iResult));
 
     // HLT clusters present
     if (!iResult)
@@ -1007,7 +1012,7 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
       AliWarning("Some problem while unpacking of HLT clusters.");
       return;
     }
-  } // if (fUseHLTClusters == 3 && fUseHLTClusters == 4) {
+  } // if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
    
   //-----------------------------------------------------------------
   // Run TPC off-line clusterer
