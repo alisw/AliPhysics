@@ -35,9 +35,11 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
                 TList::Class(),
                 AliAnalysisManager::kOutputContainer,
                 "EventStat_temp.root");
-
+		
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
+
+  mgr->RegisterExtraFile("event_stat.root");
 
   return task;
 }   
