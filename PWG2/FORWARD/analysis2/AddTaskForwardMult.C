@@ -49,6 +49,11 @@ AddTaskForwardMult(Bool_t mc, UShort_t sys=0, UShort_t sNN=0, Short_t field=0)
     AliForwardCorrectionManager::Instance().Init(sys,sNN,field,mc);
 
   // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWG2/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWG2/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
   const char* config = gSystem->Which(gROOT->GetMacroPath(),
 				      "ForwardAODConfig.C");
   if (!config) 

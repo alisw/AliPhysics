@@ -37,6 +37,11 @@ AddTaskCentralMult(Bool_t mc=false,
   mgr->AddTask(task);
 
   // --- Configure the task ------------------------------------------
+  TString macroPath(gROOT->GetMacroPath());
+  if (!macroPath.Contains("$(ALICE_ROOT)/PWG2/FORWARD/analysis2")) { 
+    macroPath.Append(":$(ALICE_ROOT)/PWG2/FORWARD/analysis2");
+    gROOT->SetMacroPath(macroPath);
+  }
   const char* config = gSystem->Which(gROOT->GetMacroPath(),
 				      "CentralAODConfig.C");
   if (!config) 
