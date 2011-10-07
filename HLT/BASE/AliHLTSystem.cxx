@@ -1263,7 +1263,7 @@ int AliHLTSystem::ScanOptions(const char* options)
 	  // separated HLTOUTComponents for digit and raw data. All others indicate
 	  // HLTOUTComponent type 'global' where the data generation is steered from global
 	  // flags
-	  fUseHLTOUTComponentTypeGlobal=token.CompareTo("hltout-mode=split")==1;
+	  fUseHLTOUTComponentTypeGlobal=token.CompareTo("hltout-mode=split")!=0;
 	} else if (token.BeginsWith("lib") && token.EndsWith(".so")) {
 	  libs+=token;
 	  libs+=" ";
