@@ -3357,6 +3357,7 @@ Bool_t AliShuttle::SendMail(EMailTarget target, Int_t system)
 		if (system == kDAQ) sys="DAQ";
 		else if (system == kDCS) sys="DCS";
 		else if (system == kHLT) sys="HLT";
+		else if (system == kDQM) sys="DQM";
 		else return kFALSE;
 		body = Form("Dear  %s FXS experts, \n\n",sys.Data());
 		body += Form("SHUTTLE couldn\'t retrieve data from the FXS for detector %s "
