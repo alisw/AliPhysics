@@ -59,6 +59,7 @@ public:
      kStatTrk = 0
     ,kEvType
     ,kBunchCross
+    ,kTrigger
     ,kNclasses
   };
   AliTRDinfoGen();
@@ -102,7 +103,7 @@ private:
   static const Float_t fgkTRD;      // end TRD
 
   // Trigger selection
-  TString              *fEvTrigger; // list of trigger classes separated by space
+  TString              *fEvTrigger; // list of accepted trigger classes separated by space
   // Vertex selection
   static const Float_t fgkEvVertexZ;// cm
   static const Int_t   fgkEvVertexN;// cm

@@ -259,6 +259,8 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fContainer->AddAt(h, kEvType);
   h=new TH1I("hBC", "TOF Bunch Cross statistics;BC index;Entries", 31, -10.5, 20.5);
   fContainer->AddAt(h, kBunchCross);
+  h=new TH1I("hTriggers", "Triggers statistics;;Entries", 21, -0.5, 20.5);
+  fContainer->AddAt(h, kTrigger);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
 
@@ -378,6 +380,23 @@ void AliTRDinfoGen::UserExec(Option_t *){
 
   // link MC if available
   fMCev = MCEvent();
+  
+  // trigger monitor
+  h = (TH1I*)fContainer->At(kTrigger);
+  TAxis *ax(h->GetXaxis());
+  TObjArray *evTriggers = fESDev->GetFiredTriggerClasses().Tokenize(" ");
+  for(Int_t iet(evTriggers->GetEntriesFast()); iet--;){
+    Int_t ix(1);
+    for(; ix<=ax->GetNbins(); ix++){
+      if(!Int_t(h->GetBinContent(ix))){
+        ax->SetBinLabel(ix, (*evTriggers)[iet]->GetName());
+        break;
+      }
+      if(strcmp((*evTriggers)[iet]->GetName(), ax->GetBinLabel(ix))==0 ||
+         strcmp(Form("#color[2]{%s}", (*evTriggers)[iet]->GetName()), ax->GetBinLabel(ix))==0) break;
+    }
+    h->AddBinContent(ix);
+  }
 
   // event selection : trigger cut
   if(UseLocalEvSelection() && fEvTrigger){ 
@@ -386,6 +405,12 @@ void AliTRDinfoGen::UserExec(Option_t *){
     for(Int_t itrig=trig->GetEntriesFast(); itrig--;){
       const Char_t *trigClass(((TObjString*)(*trig)[itrig])->GetName());
       if(fESDev->IsTriggerClassFired(trigClass)) {
+        for(Int_t ix(1); ix<ax->GetNbins(); ix++){
+          if(strcmp(ax->GetBinLabel(ix), trigClass)==0){
+            ax->SetBinLabel(ix, Form("#color[2]{%s}", trigClass));
+            break;
+          }
+        }
         AliDebug(2, Form("Ev[%4d] Trigger[%s]", fESDev->GetEventNumberInFile(), trigClass));
         kTRIGGERED = kTRUE;
         break; 
@@ -395,6 +420,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
       AliDebug(2, Form("Reject Ev[%4d] Trigger", fESDev->GetEventNumberInFile()));
       return;
     }
+    //printf("Ev[%4d] Trigger[%s]\n", fESDev->GetEventNumberInFile(), fESDev->GetFiredTriggerClasses().Data());
+
     // select only physical events
     if(fESDev->GetEventType() != 7){ 
       AliDebug(2, Form("Reject Ev[%4d] EvType[%d]", fESDev->GetEventNumberInFile(), fESDev->GetEventType()));
