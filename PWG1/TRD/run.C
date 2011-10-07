@@ -89,7 +89,7 @@ TChain* MakeChainLST(const char* filename = NULL);
 TChain* MakeChainXML(const char* filename = NULL);
 Bool_t UseMC(Char_t *opt);
 Bool_t UseFriends(Char_t *opt);
-void run(Char_t *optList="ALL", const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0)
+void run(Char_t *optList="ALL", Int_t run, const Char_t *files=NULL, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TMemStat *mem = NULL;
   if(MEM){ 
@@ -138,6 +138,12 @@ void run(Char_t *optList="ALL", const Char_t *files=NULL, Long64_t nev=123456789
   if(fHasMCdata) mgr->SetMCtruthEventHandler(mcH = new AliMCEventHandler());
   //mgr->SetDebugLevel(10);
   mgr->SetSkipTerminate(kTRUE);
+
+  // add CDB task
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskCDBconnect.C");
+  AliTaskCDBconnect *taskCDB = AddTaskCDBconnect();
+  if (!taskCDB) return;
+  taskCDB->SetRunNumber(run);
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
   if(!AddTrainPerformanceTRD(optList)) {
