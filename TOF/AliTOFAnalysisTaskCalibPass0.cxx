@@ -51,6 +51,16 @@ ClassImp(AliTOFAnalysisTaskCalibPass0)
   
 //_______________________________________________________
 
+const Char_t *AliTOFAnalysisTaskCalibPass0::fgkStatusCodeName[AliTOFAnalysisTaskCalibPass0::kNStatusCodes] = {
+  "ok",
+  "input error",
+  "data error",
+  "not active",
+  "low statistics",
+  "no measurement",
+  "store error"
+};
+
 const Int_t AliTOFAnalysisTaskCalibPass0::fgkMaxNumberOfPoints = 10000; // max number of points
 Double_t AliTOFAnalysisTaskCalibPass0::fgMinVertexIntegral = 100.;
 Double_t AliTOFAnalysisTaskCalibPass0::fgMinDeltatIntegral = 2000.;
@@ -61,6 +71,7 @@ Double_t AliTOFAnalysisTaskCalibPass0::fgMinDeltatIntegralSample = 20000.;
   
 AliTOFAnalysisTaskCalibPass0::AliTOFAnalysisTaskCalibPass0() :
   AliAnalysisTaskSE("TOFCalib-Pass0"),
+  fStatus(kOk),
   fInitFlag(kFALSE),
   fEventSelectionFlag(kFALSE),
   fVertexSelectionFlag(kFALSE),
@@ -336,6 +347,46 @@ AliTOFAnalysisTaskCalibPass0::UserExec(Option_t *)
 
 //_______________________________________________________
 
+Int_t
+AliTOFAnalysisTaskCalibPass0::GetStatus()
+{
+  /*
+   * get status
+   */
+
+  switch (fStatus) {
+
+    /* OK, return zero */
+  case kOk:
+    return 0;
+    break;
+    
+    /* non-fatal error, return negative status */
+  case kNotActive:
+  case kLowStatistics:
+  case kNoMeasurement:
+    return -fStatus;
+    break;
+    
+    /* fatal error, return positive status */
+  case kInputError: 
+  case kDataError:
+  case kStoreError:
+    return fStatus;
+    break;
+
+    /* anything else, return negative large number */
+  default:
+    return -999;
+    break;
+  }
+  
+  /* should never arrive here, anyway return negative large number */
+  return -999;
+}
+
+//_______________________________________________________
+
 Bool_t
 AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t *dbString)
 {
@@ -343,10 +394,38 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
    * process output
    */
 
+  Int_t ret = DoProcessOutput(filename, dbString);
+  Int_t status = GetStatus();
+  if (status == 0) {
+    AliInfo(Form("TOF calibration successful: %s (status=%d)", fgkStatusCodeName[fStatus], status));
+  }
+  else if (status > 0) {
+    AliInfo(Form("TOF calibration failed: %s (status=%d)", fgkStatusCodeName[fStatus], status));
+  }
+  else if (status < 0) {
+    AliInfo(Form("TOF calibration failed (expected): %s (status=%d)", fgkStatusCodeName[fStatus], status));
+  }
+  
+  return ret;
+}
+
+//_______________________________________________________
+
+Bool_t
+AliTOFAnalysisTaskCalibPass0::DoProcessOutput(const Char_t *filename, const Char_t *dbString)
+{
+  /*
+   * do process output
+   */
+
+  /* reset status to OK */
+  fStatus = kOk;
+
   /* open file */
   TFile *file = TFile::Open(filename);
   if (!file || !file->IsOpen()) {
     AliError(Form("cannot open output file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   /* get histograms */
@@ -378,28 +457,35 @@ AliTOFAnalysisTaskCalibPass0::ProcessOutput(const Char_t *filename, const Char_t
   /* check histos */ 
   if (!histoVertexTimestamp) {
     AliError(Form("cannot get \"hHistoVertexTimestamp\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   if (!histoDeltatTimestamp) {
     AliError(Form("cannot get \"hHistoDeltatTimestamp\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   if (!histoDeltazEta) {
     AliError(Form("cannot get \"hHistoDeltazEta\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   if (!histoDeltazCosTheta) {
     AliError(Form("cannot get \"hHistoDeltazCosTheta\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   if (!histoAcceptedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoAccptedTracksEtaPt\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
   if (!histoMatchedTracksEtaPt) {
     AliError(Form("cannot get \"hHistoMatchedTracksEtaPt\" object from file %s", filename));
+    fStatus = kInputError;
     return kFALSE;
   }
+
   /* check matching performance */
   if (!CheckMatchingPerformance(histoDeltazEta, histoAcceptedTracksEtaPt, histoMatchedTracksEtaPt)) {
     AliError("error while checking matching efficiency");
@@ -453,6 +539,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   strarr = str.Tokenize(",");
   if (!strarr) {
     AliError("problems whith tokenize histogram title");
+    fStatus = kDataError;
     return kFALSE;
   }
   
@@ -460,17 +547,20 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   ostr = (TObjString *)strarr->At(0);
   if (!ostr) {
     AliError("problems while getting run number from histogram title");
+    fStatus = kDataError;
     return kFALSE;
   }
   str = ostr->GetString();
   if (!str.BeginsWith("run:")) {
     AliError("problems while getting run number from histogram title");
+    fStatus = kDataError;
     return kFALSE;
   }
   str.Remove(0, 5);
   Int_t runNb = atoi(str.Data());
   if (runNb <= 0) {
     AliError(Form("bad run number: %d", runNb));
+    fStatus = kDataError;
     return kFALSE;
   }
   AliInfo(Form("got run number: %d", runNb));
@@ -479,18 +569,21 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   ostr = (TObjString *)strarr->At(1);
   if (!ostr) {
     AliError("problems while getting start timestamp from histogram title");
+    fStatus = kDataError;
     return kFALSE;
   }
   str = ostr->GetString();
   str.Remove(0, 1); /* remove empty space at the beginning */
   if (!str.BeginsWith("startTimestamp:")) {
     AliError("problems while getting start timestamp from histogram title");
+    fStatus = kDataError;
     return kFALSE;
   }
   str.Remove(0, 16);
   UInt_t startTimestamp = atoi(str.Data());
   if (startTimestamp <= 0) {
     AliError(Form("bad start timestamp: %d", startTimestamp));
+    fStatus = kDataError;
     return kFALSE;
   }
   TTimeStamp ts = startTimestamp;
@@ -504,6 +597,13 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   /* projection-x */
   TH1D *histoVertexTimestamppx = histoVertexTimestamp->ProjectionX("histoVertexTimestamppx");
   TH1D *histoDeltatTimestamppx = histoDeltatTimestamp->ProjectionX("histoDeltatTimestamppx");
+
+  /* check statistics */
+  if (histoVertexTimestamppx->Integral() < fgMinVertexIntegral ||
+      histoDeltatTimestamppx->Integral() < fgMinDeltatIntegral) {
+    fStatus = kLowStatistics;
+    return kFALSE;
+  }
 
   /* define mix and max time bin */
   Int_t minBin = histoVertexTimestamppx->FindFirstBinAbove(0);
@@ -596,6 +696,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   /* check points */
   if (nPoints <= 0) {
     AliError("no measurement available, quit");
+    fStatus = kNoMeasurement;
     return kFALSE;
   }
   AliInfo(Form("average time-zero  = %f", averageTimeZero / nPoints));
@@ -651,6 +752,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
 
   if (!dbString) {
     AliError("cannot store object because of NULL string");
+    fStatus = kStoreError;
     return kFALSE;
   }
 
@@ -659,6 +761,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   AliCDBStorage *sto = cdb->GetStorage(dbString);
   if (!sto) {
     AliError(Form("cannot get storage %s", dbString));
+    fStatus = kStoreError;
     return kFALSE;
   }
   AliCDBId id("TOF/Calib/RunParams", runNb, runNb);
@@ -668,7 +771,9 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   md.SetAliRootVersion(gSystem->Getenv("ARVERSION"));
   md.SetBeamPeriod(0);
   if (!sto->Put(&obj, id, &md)) {
+    fStatus = kStoreError;
     AliError(Form("error while putting object in storage %s", dbString));
+    return kFALSE;
   }
 
   /* success */

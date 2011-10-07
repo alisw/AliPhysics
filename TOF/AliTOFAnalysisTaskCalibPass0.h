@@ -49,6 +49,8 @@ public AliAnalysisTaskSE
 
   /* post-processing methods */
   Bool_t ProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
+  Bool_t DoProcessOutput(const Char_t *filename, const Char_t *dbString); // process output
+  Int_t GetStatus(); // get status
 
   /* static setters */
   static void SetMinVertexIntegral(Double_t value) {fgMinVertexIntegral = value;}; // setter
@@ -60,6 +62,20 @@ public AliAnalysisTaskSE
 
   AliTOFAnalysisTaskCalibPass0(const AliTOFAnalysisTaskCalibPass0 &); // copy constructor
   AliTOFAnalysisTaskCalibPass0 &operator=(const AliTOFAnalysisTaskCalibPass0 &); // operator=
+
+  /* status codes */
+  enum EStatusCode_t {
+    kOk,
+    kInputError, /* open file error, missing histos */
+    kDataError, /* problems with histo information */
+    kNotActive, /* not active in data taking and/or reconstruction */
+    kLowStatistics, /* too low statistics */
+    kNoMeasurement, /* no measurement performed */
+    kStoreError, /* problems storing OCDB */
+    kNStatusCodes
+  };
+  Int_t fStatus; /* status code */
+  static const Char_t *fgkStatusCodeName[kNStatusCodes];
 
   /* methods */
   Bool_t InitRun(); // init run

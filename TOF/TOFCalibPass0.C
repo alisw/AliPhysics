@@ -14,6 +14,7 @@ MakeOCDB(const Char_t *filename = "TOFCalibPass0.root", const Char_t *dbString =
   LoadLibraries();
   AliTOFAnalysisTaskCalibPass0 calibTask;
   calibTask.ProcessOutput(filename, dbString);
+  printf("TOF calibration status code: %d\n", calibTask.GetStatus()); 
 }
 
 //___________________________________________________________________________
