@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
   }
   
   printf("First LHC Clock = %d; Last LHC Clock = %d; N Pre Clock = %d ; N Post Clock = %d; Trigger mask for accepted events = %u; Trigger mask for rejected events = %u; Number of histogram bins = %d; Histogram range = %.3f\n",
-	 kClockStart, kClockStop, kNPreClock, kNPostClock, kTriggerAcc, kTriggerRej, kNBins, kRange);
+	 kStartClock, kEndClock, kNPreClocks, kNPostClocks, kTriggerAcc, kTriggerRej, kNBins, kRange);
 
   TH1D *fMedian[64];
   for(Int_t j = 0; j < 64; ++j) fMedian[j] = new TH1D(Form("fMedian_%d",j),"Slopes weighted median, channel par channel",kNBins,0,kRange);
