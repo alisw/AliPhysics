@@ -698,7 +698,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     val[kYrez] = dy;
     val[kPrez] = TMath::ATan((dydx - dydx0)/(1.+ dydx*dydx0))*TMath::RadToDeg();
     val[kZrez] = dz;
-    val[kNdim] = pt/pt0-1.;
+    val[kNdim] = 1.e2*(pt/pt0-1.);
     if((H = (THnSparse*)fContainer->At(kMCtrack))) H->Fill(val);
 /*      // theta resolution/ tgl pulls
       Double_t dzdl0 = dzdx0/TMath::Sqrt(1.+dydx0*dydx0),
@@ -1849,7 +1849,7 @@ TObjArray* AliTRDresolution::Histos()
     Double_t trMax[kNdim+1]; memcpy(trMax, fgkMax, kNdim*sizeof(Double_t));
     // set specific fields
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
-    trTitle[kNdim]=StrDup("#Deltap_{t}/p_{t} [%]"); trNbins[kNdim] = 30; trMin[kNdim] = -15.; trMax[kNdim] = 15.;
+    trTitle[kNdim]=StrDup("#Deltap_{t}/p_{t} [%]"); trNbins[kNdim] = 25; trMin[kNdim] = -4.5; trMax[kNdim] = 20.5;
     trMin[kYrez] = -0.9; trMax[kYrez] = -trMin[kYrez];
     trMin[kPrez] = -1.5; trMax[kPrez] = -trMin[kPrez];
     trMin[kZrez] = -0.9; trMax[kZrez] = -trMin[kZrez];
