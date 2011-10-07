@@ -1,30 +1,30 @@
 # -*- mode: CMake -*-
-#--------------------------------------------------------------------------------#
-# Package File for PWG2AOD                                                       #
-# Author : Johny Jose (johny.jose@cern.ch)                                       #
-# Variables Defined :                                                            #
-#                                                                                #
-# SRCS - C++ source files                                                        #
-# HDRS - C++ header files                                                        #
-# DHDR - ROOT Dictionary Linkdef header file                                     #
-# CSRCS - C source files                                                         #
-# CHDRS - C header files                                                         #
-# EINCLUDE - Include directories                                                 #
-# EDEFINE - Compiler definitions                                                 #
-# ELIBS - Extra libraries to link                                                #
-# ELIBSDIR - Extra library directories                                           #
-# PACKFFLAGS - Fortran compiler flags for package                                #
-# PACKCXXFLAGS - C++ compiler flags for package                                  #
-# PACKCFLAGS - C compiler flags for package                                      #
-# PACKSOFLAGS - Shared library linking flags                                     #
-# PACKLDFLAGS - Module linker flags                                              #
-# PACKBLIBS - Libraries to link (Executables only)                               #
-# EXPORT - Header files to be exported                                           #
-# CINTHDRS - Dictionary header files                                             #
-# CINTAUTOLINK - Set automatic dictionary generation                             #
-# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
-# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
-#--------------------------------------------------------------------------------#
+#-----------------------------------------------------------------------#
+# Package File for PWG2AOD                                              #
+# Author : Johny Jose (johny.jose@cern.ch)                              #
+# Variables Defined :                                                   #
+#                                                                       #
+# SRCS - C++ source files                                               #
+# HDRS - C++ header files                                               #
+# DHDR - ROOT Dictionary Linkdef header file                            #
+# CSRCS - C source files                                                #
+# CHDRS - C header files                                                #
+# EINCLUDE - Include directories                                        #
+# EDEFINE - Compiler definitions                                        #
+# ELIBS - Extra libraries to link                                       #
+# ELIBSDIR - Extra library directories                                  #
+# PACKFFLAGS - Fortran compiler flags for package                       #
+# PACKCXXFLAGS - C++ compiler flags for package                         #
+# PACKCFLAGS - C compiler flags for package                             #
+# PACKSOFLAGS - Shared library linking flags                            #
+# PACKLDFLAGS - Module linker flags                                     #
+# PACKBLIBS - Libraries to link (Executables only)                      #
+# EXPORT - Header files to be exported                                  #
+# CINTHDRS - Dictionary header files                                    #
+# CINTAUTOLINK - Set automatic dictionary generation                    #
+# ARLIBS - Archive Libraries and objects for linking (Executables only) #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)  #
+#-----------------------------------------------------------------------#
 
 set ( SRCS  
     AOD/AliPWG2AODTrack.cxx 
@@ -39,3 +39,10 @@ set ( DHDR PWG2AODLinkDef.h)
 set ( EXPORT )
 
 set ( EINCLUDE  PYTHIA6 PWG2/AOD STEER/AOD STEER/STEERBase)
+
+install (FILES centraltrain/AnalysisTrainPWG2.C 
+         DESTINATION PWG2/centraltrain)
+
+#
+# EOF
+#
