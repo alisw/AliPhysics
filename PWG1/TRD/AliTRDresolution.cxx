@@ -135,11 +135,6 @@ Char_t const *AliTRDresolution::fgkTitle[kNdim] = {
   "bin_p_{t}"
 };  //! title of projection
 
-Int_t const AliTRDresolution::fgkNproj[kNclasses] = {
-  48, 72, 8    // clusters/tracklet/trackIn
- ,48, 72, 8, 72 // MCclusters/MCtracklet/MCtrackIn/MCtrack
-// ,5, 11 // trackOut/MCtrackOut
-};
 Char_t const * AliTRDresolution::fgPerformanceName[kNclasses] = {
     "Cluster2Track"
     ,"Tracklet2Track"
@@ -1112,7 +1107,7 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
   const Int_t nsel(12), npsel(5);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[fgkNproj[cidx]], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
+  AliTRDresolutionProjection hp[kClNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     isel++; // new selection
@@ -1167,13 +1162,13 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
   }
   TObjArray *arr(NULL);
-  fProj->AddAt(arr = new TObjArray(fgkNproj[cidx]), cidx);
+  fProj->AddAt(arr = new TObjArray(kClNproj), cidx);
 
   TH2 *h2(NULL);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     Int_t mid(1), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
+    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=300;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
     arr->AddAt(h2, ih);
   }
@@ -1207,7 +1202,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   const Int_t nsel(18), npsel(6);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[fgkNproj[cidx]], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
+  AliTRDresolutionProjection hp[kTrkltNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     isel++; // new selection
@@ -1280,13 +1275,13 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
   }
   TObjArray *arr(NULL);
-  fProj->AddAt(arr = new TObjArray(fgkNproj[cidx]), cidx);
+  fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
 
   TH2 *h2(NULL);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     Int_t mid(0), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
+    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=200;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
     arr->AddAt(h2, ih);
   }
@@ -1322,7 +1317,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   const Int_t nPtPhi(2); Int_t rebinPtPhiX[nEtaPhi] = {1, 1}, rebinPtPhiY[nEtaPhi] = {2, 5};
-  AliTRDresolutionProjection hp[fgkNproj[cidx]], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
+  AliTRDresolutionProjection hp[kTrkInNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   // define list of projections
   isel++;  // negative tracks
@@ -1373,12 +1368,12 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
   }
   TObjArray *arr(NULL);
-  fProj->AddAt(arr = new TObjArray(fgkNproj[cidx]), cidx);
+  fProj->AddAt(arr = new TObjArray(kTrkInNproj), cidx);
 
   TH2 *h2(NULL);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
-    if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours/*, mid*/))) continue;
+    if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
     arr->AddAt(h2, ih);
   }
   return kTRUE;
@@ -1411,7 +1406,7 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
   const Int_t nsel(18), npsel(6);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  AliTRDresolutionProjection hp[fgkNproj[cidx]], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
+  AliTRDresolutionProjection hp[kTrkNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     isel++; // new selection
@@ -1478,14 +1473,12 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
     fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
   }
   TObjArray *arr(NULL);
-  fProj->AddAt(arr = new TObjArray(fgkNproj[cidx]), cidx);
+  fProj->AddAt(arr = new TObjArray(kTrkNproj), cidx);
 
   TH2 *h2(NULL);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
-    Int_t mid(0), nstat(kNstat);
-    if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; /*nstat=300;*/}
-    if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
+    if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
     arr->AddAt(h2, ih);
   }
   return kTRUE;
