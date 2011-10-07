@@ -60,6 +60,12 @@ public:
     ,kMCtrackOut      // TOF/HMPID track monitor*/
     ,kNclasses        // total number of resolution classes
   };
+  enum ETRDresolutionClassProjs {
+    kClNproj=48       // cluster projections
+    ,kTrkltNproj=72   // tracklet projections
+    ,kTrkInNproj=8    // trackIn projections
+    ,kTrkNproj=72     // track projections
+  };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
     ,kPhi
@@ -179,7 +185,6 @@ protected:
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Float_t               fDyRange;         // min/max dy
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
-  static Int_t const    fgkNproj[kNclasses];//! number of projections per task
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections
   static Double_t const fgkMax[kNdim];    //! high limits for projections
