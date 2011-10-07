@@ -1,4 +1,4 @@
-CheckEnabledChannels(Int_t run, const Char_t *dbString = "raw://")
+CheckEnabledChannels(Int_t run, Bool_t checkROEff = kTRUE, const Char_t *dbString = "raw://")
 {
 
   /* init */
@@ -19,7 +19,7 @@ CheckEnabledChannels(Int_t run, const Char_t *dbString = "raw://")
   Float_t hitmapx, hitmapy;
   /* loop over channels */
   for (Int_t ich = 0; ich < 157248; ich++) {
-    if (!calib.IsChannelEnabled(ich)) continue;
+    if (!calib.IsChannelEnabled(ich, checkROEff)) continue;
     sector = calibhisto.GetCalibMap(AliTOFcalibHisto::kSector, ich);
     sectorStrip = calibhisto.GetCalibMap(AliTOFcalibHisto::kSectorStrip, ich);
     padx = calibhisto.GetCalibMap(AliTOFcalibHisto::kPadX, ich);
