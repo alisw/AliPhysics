@@ -21,19 +21,19 @@ ReadT0FillReference(Int_t run, Int_t year = 2010)
   Float_t maxBinCenter = hT0Fill->GetBinCenter(maxBin);
 
   /* rough fit of the edge */
-  TF1 *gaus = (TF1 *)gROOT->GetFunction("landau");
+  TF1 *gaus = (TF1 *)gROOT->GetFunction("gaus");
   gaus->SetParameter(1, maxBinCenter);
-  Float_t fitMin = maxBinCenter - 1000.; /* fit from 1 ns before max */
-  Float_t fitMax = maxBinCenter + 1000.; /* fit until 1 ns above max */
+  Float_t fitMin = maxBinCenter - 100.; /* fit from 0.1 ns before max */
+  Float_t fitMax = maxBinCenter + 100.; /* fit until 0.1 ns above max */
   hT0Fill->Fit("gaus", "q0", "", fitMin, fitMax);
   /* better fit of the edge */
   Float_t mean, sigma;
   for (Int_t istep = 0; istep < 10; istep++) {
     mean = gaus->GetParameter(1);
     sigma = gaus->GetParameter(2);
-    fitMin = mean - 2. * sigma;
-    fitMax = mean + 1. * sigma;
-    hT0Fill->Fit("landau", "q", "", fitMin, fitMax);
+    fitMin = mean - 1. * sigma;
+    fitMax = mean + 0.1 * sigma;
+    hT0Fill->Fit("gaus", "q", "", fitMin, fitMax);
   }
   /* print params */
   mean = gaus->GetParameter(1);
