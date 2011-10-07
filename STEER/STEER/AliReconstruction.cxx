@@ -276,6 +276,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fSpecCDBUri(), 
   fInitCDBCalled(kFALSE),
   fFromCDBSnapshot(kFALSE),
+  fSnapshotFileName(""),
   fSetRunNumberFromDataCalled(kFALSE),
   fQADetectors("ALL"), 
   fQATasks("ALL"), 
@@ -395,6 +396,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fSpecCDBUri(), 
   fInitCDBCalled(rec.fInitCDBCalled),
   fFromCDBSnapshot(rec.fFromCDBSnapshot),
+  fSnapshotFileName(rec.fSnapshotFileName),
   fSetRunNumberFromDataCalled(rec.fSetRunNumberFromDataCalled),
   fQADetectors(rec.fQADetectors), 
   fQATasks(rec.fQATasks), 
@@ -562,6 +564,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fSpecCDBUri.Delete();
   fInitCDBCalled               = rec.fInitCDBCalled;
   fFromCDBSnapshot             = rec.fFromCDBSnapshot;
+  fSnapshotFileName            = rec.fSnapshotFileName;
   fSetRunNumberFromDataCalled  = rec.fSetRunNumberFromDataCalled;
   fQADetectors                 = rec.fQADetectors;
   fQATasks                     = rec.fQATasks; 
