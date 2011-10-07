@@ -38,6 +38,7 @@ public TObject
   Float_t GetTOFResolution(Int_t i) const {return fTOFResolution && i < fNPoints ? fTOFResolution[i] : 0.;}; // getter
   Float_t GetT0Spread(Int_t i) const {return fT0Spread && i < fNPoints ? fT0Spread[i] : 0.;}; // getter
   
+  Int_t GetNRuns() const {return fNRuns;}; // getter
   UInt_t GetRunNb(Int_t i) const {return fRunNb && i < fNRuns ? fRunNb[i] : 0;}; // getter
   UInt_t GetRunFirstPoint(Int_t i) const {return fRunFirstPoint && i < fNRuns ? fRunFirstPoint[i] : 0;}; // getter
   UInt_t GetRunLastPoint(Int_t i) const {return fRunLastPoint && i < fNRuns ? fRunLastPoint[i] : 0;}; // getter
@@ -62,6 +63,7 @@ public TObject
   TGraph *DrawGraphT0(Option_t *option = "") {return DrawGraph(fT0, option);}; // draw graph t0
   TGraph *DrawGraphTOFResolution(Option_t *option = "") {return DrawGraph(fTOFResolution, option);}; // draw graph t0
   TGraph *DrawGraphT0Spread(Option_t *option = "") {return DrawGraph(fT0Spread, option);}; // draw graph t0
+  TGraph *DrawCorrelationGraphTOFResolutionT0Spread(Option_t *option = "") {return DrawCorrelationGraph(fT0Spread, fTOFResolution, option);}; // draw correlation graph
 
 
  private:
@@ -71,6 +73,7 @@ public TObject
   Float_t Average(Float_t *data, UInt_t runNb); // average
   Float_t Average(Float_t *data, Int_t first, Int_t last); // average
   TGraph *DrawGraph(Float_t *data, Option_t *option = ""); // draw graph
+  TGraph *DrawCorrelationGraph(Float_t *datax, Float_t *datay, Option_t *option = ""); // draw graph
   
   /* data members */
 

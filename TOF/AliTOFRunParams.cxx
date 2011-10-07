@@ -338,3 +338,20 @@ AliTOFRunParams::DrawGraph(Float_t *data, Option_t* option)
   graph->Draw(option);
   return graph;
 }
+
+//_________________________________________________________
+
+TGraph *
+AliTOFRunParams::DrawCorrelationGraph(Float_t *datax, Float_t *datay, Option_t* option)
+{
+  /*
+   * draw
+   */
+
+  if (fNPoints == 0 || !datax || !datay) return NULL;
+
+  TGraph *graph = new TGraph(fNPoints, datax, datay);
+  graph->Draw(option);
+  return graph;
+}
+
