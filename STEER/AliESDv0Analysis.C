@@ -56,6 +56,7 @@ Int_t AliESDv0Analysis(const Char_t *dir=".") {
 
      while (nv0--) {
        AliESDv0 *v0=event->GetV0(nv0);
+       if (v0->GetOnFlyStatus()) continue;
 
        Int_t protonIdx=v0->GetPindex();
        Int_t pionIdx  =v0->GetNindex();
