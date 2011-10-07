@@ -131,8 +131,8 @@ AliHLTComponent* AliHLTTPCDataCompressionComponent::Spawn()
   return new AliHLTTPCDataCompressionComponent;
 }
 
-int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& evtData, 
-						const AliHLTComponentBlockData* inputBlocks, 
+int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, 
+						const AliHLTComponentBlockData* /*inputBlocks*/, 
 						AliHLTComponentTriggerData& /*trigData*/,
 						AliHLTUInt8_t* outputPtr,
 						AliHLTUInt32_t& size,
@@ -202,7 +202,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
 
   // track data input
-  if (fMode==2) { // FIXME: condition to be adjusted
+  if (fMode==2) {
     for (pDesc=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       if (GetBenchmarkInstance()) {
@@ -350,36 +350,15 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     if (iResult>=0) {
       size+=iResult;
       outputDataSize+=iResult;
+      // the size of the optional cluster id array must be subtracted
+      if (fpWrittenAssociatedClusterIds && outputBlocks.size()>0 &&
+	  outputBlocks.back().fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
+	outputDataSize-=outputBlocks.back().fSize;
+      }
       if (GetBenchmarkInstance()) GetBenchmarkInstance()->AddOutput(iResult);
     }
     if (GetBenchmarkInstance()) {
       GetBenchmarkInstance()->Stop(5);
-    }
-
-    // forward MC labels
-    if (bHaveMC) {
-      // loop over input blocks and find MC block of current specification
-      unsigned mcBlock=0;
-      for (; mcBlock<evtData.fBlockCnt; mcBlock++) {
-	if (inputBlocks[mcBlock].fDataType!=(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC) ||
-	    inputBlocks[mcBlock].fSpecification!=pDesc->fSpecification) {
-	  continue;
-	}
-	if (size+inputBlocks[mcBlock].fSize>capacity) {
-	  iResult=-ENOSPC;
-	  break;
-	}
-	iResult=ForwardMCLabels(inputBlocks[mcBlock], fSpacePointGrid, outputPtr+size, capacity-size, size, outputBlocks);
-	if (iResult>0) {
-	  size+=iResult;
-	}
-
-	HLTDebug("forwarded MC data block of slice %d partition %d", slice, patch);
-	break;
-      }
-      if (mcBlock==evtData.fBlockCnt) {
-	HLTWarning("no mc data found for slice %d partition %d", slice, patch);
-      }
     }
 
     fSpacePointGrid->Clear();
@@ -422,6 +401,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       break;
     }
 
+    if (fMode==2) {
     iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size+tracksBufferOffset, capacity-size-tracksBufferOffset);
     if (iResult>=0) {
       AliHLTComponent_BlockData bd;
@@ -452,6 +432,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
 	fpWrittenAssociatedClusterIds->clear();
       }
     }
+    }
   } while (0);
 
   fRawInputClusters->Clear();
@@ -478,6 +459,12 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   }
   if (fTrackGrid) {
     fTrackGrid->Clear();
+  }
+
+  // forward MC labels
+  for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo | kAliHLTDataOriginTPC);
+       pDesc!=NULL; pDesc=GetNextInputBlock()) {
+    outputBlocks.push_back(*pDesc);
   }
 
   return iResult;
@@ -1013,68 +1000,6 @@ int AliHLTTPCDataCompressionComponent::ScanConfigurationArgument(int argc, const
   }
 
   return iResult;
-}
-
-int AliHLTTPCDataCompressionComponent::ForwardMCLabels(const AliHLTComponentBlockData& desc,
-						       AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pIndex,
-						       AliHLTUInt8_t* outputPtr,
-						       AliHLTUInt32_t size, AliHLTUInt32_t offset,
-						       vector<AliHLTComponentBlockData>& outputBlocks) const
-{
-  // forward the mc labels in the same order as the clusters
-  // sorted according to the index grid
-  if (!outputPtr || !pIndex) return -EINVAL;
-  if (!desc.fPtr) return -ENODATA;
-  if (size<desc.fSize) return -ENOSPC;
-
-  int slice=AliHLTTPCDefinitions::GetMinSliceNr(desc.fSpecification);
-  int part=AliHLTTPCDefinitions::GetMinPatchNr(desc.fSpecification);
-
-  const AliHLTTPCClusterMCData* pInput = reinterpret_cast<const AliHLTTPCClusterMCData*>(desc.fPtr);
-  Int_t nLabels = (Int_t) pInput->fCount;
-  if (nLabels*sizeof(AliHLTTPCClusterMCLabel) + sizeof(AliHLTTPCClusterMCData) != desc.fSize) {
-    HLTError("inconsistent cluster mc data block size, skipping block");
-    return -EBADF;
-  }
-  const AliHLTTPCClusterMCLabel *pInputLabels = pInput->fLabels;
-
-  AliHLTTPCClusterMCData* pOutput = reinterpret_cast<AliHLTTPCClusterMCData*>(outputPtr);
-  AliHLTTPCClusterMCLabel *pOutputLabels = pOutput->fLabels;
-
-  unsigned outIndex=0;
-  for (AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid::iterator clusterID=pIndex->begin();
-       clusterID!=pIndex->end(); clusterID++, outIndex++) {
-      if (clusterID.Data().fTrackId>-1) {
-	// this is an assigned cluster, skip
-	// TODO: introduce selectors into AliHLTIndexGrid::begin to loop
-	// consistently over entries, e.g. this check has to be done also
-	// in the forwarding of MC labels in
-	// AliHLTTPCHWCFSpacePointContainer::WriteSorted
-	continue;
-      }
-      if ((unsigned)slice!=AliHLTTPCSpacePointData::GetSlice(clusterID.Data().fId) ||
-      	  (unsigned)part!=AliHLTTPCSpacePointData::GetPatch(clusterID.Data().fId)) {
-	HLTError("spacepoint index 0x%08x out of slice %d partition %d", clusterID.Data().fId, slice, part);
-      }
-      int index=AliHLTTPCSpacePointData::GetNumber(clusterID.Data().fId);
-      pOutputLabels[outIndex]=pInputLabels[index];
-  }
-  if (outIndex==pInput->fCount) {
-    pOutput->fCount=outIndex;
-  } else {
-    HLTError("failed to copy MC label data block 0x%08x: expecting %d, copied %d entries", desc.fSpecification, pInput->fCount, outIndex);
-    return -EBADMSG;
-  }
-
-  AliHLTComponent_BlockData bd;
-  AliHLTComponent::FillBlockData(bd);
-  bd.fSize          = desc.fSize;
-  bd.fOffset        = offset;
-  bd.fSpecification = desc.fSpecification;
-  bd.fDataType      = desc.fDataType;
-  outputBlocks.push_back(bd);
-
-  return bd.fSize;
 }
 
 int AliHLTTPCDataCompressionComponent::InitDriftTimeTransformation()

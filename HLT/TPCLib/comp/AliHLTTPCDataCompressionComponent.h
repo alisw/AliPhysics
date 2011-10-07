@@ -119,11 +119,6 @@ protected:
   /// inherited from AliHLTComponent: argument scan
   int ScanConfigurationArgument(int argc, const char** argv);
 
-  int ForwardMCLabels(const AliHLTComponentBlockData& pDesc,
-  		      AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pIndex,
-  		      AliHLTUInt8_t* outputPtr, AliHLTUInt32_t size, AliHLTUInt32_t offset,
-  		      vector<AliHLTComponentBlockData>& outputBlocks) const;
-
   int ProcessTrackClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
 			   AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
 			   AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,

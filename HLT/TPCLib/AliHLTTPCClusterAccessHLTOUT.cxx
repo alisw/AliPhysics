@@ -23,6 +23,7 @@
 ///
 
 #include "AliHLTTPCClusterAccessHLTOUT.h"
+#include "AliHLTTPCDataCompressionDecoder.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCRawCluster.h"
@@ -40,6 +41,8 @@
 #include <cstdlib>
 #include <string>
 #include <memory>
+#include <iostream>
+#include <iomanip>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterAccessHLTOUT)
@@ -48,6 +51,7 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   : TObject()
   , fVerbosity(0)
   , fClusters(NULL)
+  , fCurrentSector(-1)
 {
   // see header file for class documentation
   // or
@@ -95,32 +99,26 @@ void AliHLTTPCClusterAccessHLTOUT::Execute(const char *method,  const char *para
 TObject* AliHLTTPCClusterAccessHLTOUT::FindObject(const char *name) const
 {
   /// inherited from TObject: return the cluster array if name id "clusterarray"
-  if (strcmp(name, "clusterarray")==0) return fClusters;
+  if (strcmp(name, "clusterarray")==0) {
+    if (fCurrentSector<0) return NULL;
+    return fClusters->GetSectorArray(fCurrentSector);
+  }
   return TObject::FindObject(name);
 }
 
-void AliHLTTPCClusterAccessHLTOUT::Clear(Option_t * /*option*/)
+void AliHLTTPCClusterAccessHLTOUT::Clear(Option_t * option)
 {
   /// inherited from TObject: cleanup
-  if (fClusters) fClusters->Clear();
+  if (strcmp(option, "event")==0) {
+    if (fClusters) fClusters->Clear();
+    fCurrentSector=-1;
+  }
 }
 
-void AliHLTTPCClusterAccessHLTOUT::Print(Option_t */*option*/) const
+void AliHLTTPCClusterAccessHLTOUT::Print(Option_t *option) const
 {
   /// inherited from TObject
-  if (!fClusters) return;
-  for (int i=0; i<fClusters->GetEntriesFast(); i++) {
-    if (!fClusters->At(i)) continue;
-    AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(fClusters->At(i));
-    if (!pCluster) break;
-    cout << "AliTPCclusterMI:"
-	 << "  row="    << pCluster->GetRow() 
-	 << "  pad="    << pCluster->GetPad()
-	 << "  time="   << pCluster->GetTimeBin()
-	 << "  charge=" << pCluster->GetQ()
-	 << "  maxq="   << pCluster->GetMax()
-	 << endl;
-  }
+  if (fClusters) fClusters->Print(option);
 }
 
 int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
@@ -130,33 +128,45 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   /// raw or compressed
   int iResult=0;
   TString strparams(params);
-  int minSlice=0, maxSlice=35, minPart=0, maxPart=5;
+  int sector=-1;
   std::auto_ptr<TObjArray> tokens(strparams.Tokenize(" "));
   if (!tokens.get()) return -ENOMEM;
   for (int i=0; i< tokens->GetEntriesFast(); i++) {
     if (!tokens->At(i)) continue;
     TString argument=tokens->At(i)->GetName();
+    // the offline code enumerates first the 36 inner (partitions 0+1) and then 36 outer
+    // sectors (partitions 2-5)
     if (argument.BeginsWith("sector=")) {
       argument.ReplaceAll("sector=", "");
-      int sector=argument.Atoi();
-      // the offline code enumerates first the 36 inner (partitions 0+1) and then 36 outer
-      // sectors (partitions 2-5)
-      if (fVerbosity>0) AliInfo(Form("processing HLT clusters for sector %d", sector));
-      if (sector<36) { // inner sectors
-	minSlice=maxSlice=sector;
-	minPart=0; maxPart=1;
-      } else { // outer sectors
-	minSlice=maxSlice=sector-36;
-	minPart=2; maxPart=5;
-      }
+      sector=argument.Atoi();
     }
+  }
+  if (sector<0) {
+    AliError("invalid argument, please specify \"sector=sectorno\"");
+    return -EINVAL;
+  }
+  if (sector>=76) {
+    AliError(Form("invalid sector number %d", sector));
+    return -EINVAL;
   }
 
   if (!fClusters) {
-    fClusters=new TClonesArray("AliTPCclusterMI");
+    fClusters=new AliTPCclusterMIContainer;
   }
   if (!fClusters) return -ENOMEM;
 
+  if (fCurrentSector>=0) {
+    // cluster container already filled
+    fCurrentSector=sector;
+    TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
+    if (!pArray) {
+      AliError(Form("can not get cluster array for sector %d", sector));
+      return -ENOBUFS;
+    }
+    return pArray->GetEntriesFast();
+  }
+
+  // fill the cluster container
   AliHLTSystem* pSystem=AliHLTPluginBase::GetInstance();
   if (!pSystem) {
     AliError("can not access HLT system");
@@ -165,32 +175,85 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   AliHLTOUT* pHLTOUT=pSystem->RequestHLTOUT();
   if (!pHLTOUT) {
     AliError("can not access HLTOUT");
-    return -ENODEV;
+    return -EACCES;
   }
 
-  for (int slice=minSlice; slice<=maxSlice; slice++) {
-    for (int part=minPart; part<=maxPart; part++) {
-      if (fVerbosity>0) AliInfo(Form("processing HLT clusters for slice %d partitions %d", slice, part));
-      AliHLTUInt32_t spec=slice<<24 | slice<<16 | part<<8 | part;
-      AliHLTTPCClusterMCDataList tpcClusterLabels;
-      bool bHaveLabels=false;
-      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkAliHLTDataTypeClusterMCInfo, spec)>=0) {
-	iResult=ReadAliHLTTPCClusterMCData(pHLTOUT, tpcClusterLabels);
-	bHaveLabels=true;
+  bool bNextBlock=false;
+  bool bHaveLabels=false;
+  bool bHaveIds=false;
+  // add cluster id and mc information data blocks
+  for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
+       bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
+    AliHLTComponentBlockData desc;
+    // FIXME: extend HLTOUT to get the full descriptor
+    const AliHLTUInt8_t* buffer=NULL;
+    if ((iResult=pHLTOUT->GetDataBuffer(buffer, desc.fSize))<0) {
+      continue;
+    }
+    desc.fPtr=(void*)buffer;
+    if (pHLTOUT->GetDataBlockDescription(desc.fDataType, desc.fSpecification)<0) {
+      continue;
+    }
+    if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
+      // add mc information
+      if ((iResult=fClusters->AddClusterMCData(&desc))<0) {
+	return iResult;
       }
+      bHaveLabels=true;
+    }
+    if (desc.fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
+	desc.fDataType==AliHLTTPCDefinitions::ClusterIdTracksDataType()) {
+      // add cluster ids
+      if ((iResult=fClusters->AddClusterIds(&desc))<0) {
+	return iResult;
+      }
+      bHaveIds=true;
+    }
+  }
 
-      if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType(), spec)>=0) {
-	iResult=ReadRemainingClustersCompressed(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
-      } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkRawClustersDataType, spec)>=0) {
-	iResult=ReadAliHLTTPCRawClusterData(pHLTOUT, fClusters, bHaveLabels?&tpcClusterLabels:NULL);
-      } else if (pHLTOUT->SelectFirstDataBlock(AliHLTTPCDefinitions::fgkClustersDataType, spec)>=0) {
-	ALIHLTERRORGUARD(1, "HLTOUT data contains tarnsformed TPC clusters instead of raw TPC clusters, can not create clusters for reconstruction");
-      }
+  // read data
+  iResult=-ENODATA;
+  AliHLTTPCDataCompressionDecoder decoder;
+  for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
+       bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
+    AliHLTComponentBlockData desc;
+    // FIXME: extend HLTOUT to get the full descriptor with one call
+    const AliHLTUInt8_t* buffer=NULL;
+    if ((iResult=pHLTOUT->GetDataBuffer(buffer, desc.fSize))<0) {
+      continue;
+    }
+    desc.fPtr=(void*)buffer;
+    if (pHLTOUT->GetDataBlockDescription(desc.fDataType, desc.fSpecification)<0) {
+      continue;
+    }
+    if (!TestBit(kSkipPartitionClusters) &&
+	(desc.fDataType==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
+	 desc.fDataType==AliHLTTPCDefinitions::RawClustersDataType())) {
+      iResult=decoder.ReadClustersPartition(fClusters->BeginRemainingClusterBlock(0, desc.fSpecification),
+					    reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
+					    desc.fSize,
+					    desc.fSpecification);
+      continue;
+    } else if (!TestBit(kSkipTrackClusters) &&
+	       desc.fDataType==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {
+      iResult=decoder.ReadTrackModelClustersCompressed(fClusters->BeginTrackModelClusterBlock(0),
+							reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
+							desc.fSize,
+							desc.fSpecification);
+      continue;
     }
   }
 
   pSystem->ReleaseHLTOUT(pHLTOUT);
-  return iResult;
+
+  if (iResult<0) return iResult;
+  fCurrentSector=sector;
+  TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
+  if (!pArray) {
+    AliError(Form("can not get cluster array for sector %d", sector));
+    return -ENOBUFS;
+  }
+  return pArray->GetEntriesFast();
 }
 
 int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCClusterMCData(AliHLTOUT* pHLTOUT, AliHLTTPCClusterMCDataList &tpcClusterLabels) const
@@ -550,4 +613,238 @@ int AliHLTTPCClusterAccessHLTOUT::ReadAliHLTTPCRawClusterDataDeflateSimple(const
     return -EPROTO;
   }
   return iResult;
+}
+
+AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::AliTPCclusterMIContainer()
+  : fClusterArrays()
+  , fRemainingClusterIds()
+  , fTrackModelClusterIds()
+  , fCurrentClusterIds(NULL)
+  , fClusterMCData()
+  , fIterator()
+
+{
+  /// constructor
+  for (int i=0; i<72; i++) {
+    fClusterArrays.push_back(new TClonesArray("AliTPCclusterMI"));
+  }
+}
+
+AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::~AliTPCclusterMIContainer()
+{
+  /// dectructor
+  for (vector<TClonesArray*>::iterator i=fClusterArrays.begin(); i!=fClusterArrays.end(); i++) {
+    if (*i) {
+      (*i)->Clear();
+      delete *i;
+    }
+  }
+}
+
+AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::iterator& AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::BeginRemainingClusterBlock(int /*count*/, AliHLTUInt32_t specification)
+{
+  /// iterator of remaining clusters block of specification
+  AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(specification);
+  AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(specification);
+  unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+  if (index<fRemainingClusterIds.size())
+    fCurrentClusterIds=&fRemainingClusterIds[index];
+  else
+    fCurrentClusterIds=NULL;
+  fIterator=iterator(this);
+  return fIterator;
+}
+
+AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::iterator& AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::BeginTrackModelClusterBlock(int /*count*/)
+{
+  /// iterator of track model clusters
+  if (fTrackModelClusterIds.fIds && fTrackModelClusterIds.fSize>0)
+    fCurrentClusterIds=&fTrackModelClusterIds;
+  else
+    fCurrentClusterIds=NULL;
+  fIterator=iterator(this);
+  return fIterator;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::AddClusterMCData(const AliHLTComponentBlockData* pDesc)
+{
+  /// add cluster mc data block
+  if (!pDesc) return -EINVAL;
+  if (pDesc->fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
+    AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(pDesc->fSpecification);
+    AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(pDesc->fSpecification);
+    unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+    if (fClusterMCData.size()<=index) {
+      if ((int)fClusterMCData.size()<AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches()) {
+	fClusterMCData.resize(AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches(), NULL);
+      } else {
+	fClusterMCData.resize(index+1, NULL);
+      }
+    }
+    if (pDesc->fSize<sizeof(AliHLTTPCClusterMCData)) return -EINVAL;
+    const AliHLTTPCClusterMCData* pData=reinterpret_cast<const AliHLTTPCClusterMCData*>(pDesc->fPtr);
+    unsigned nLabels = pData->fCount;
+    if (nLabels*sizeof(AliHLTTPCClusterMCLabel) + sizeof(AliHLTTPCClusterMCData) != pDesc->fSize) {
+      return -EINVAL;
+    }
+    fClusterMCData[index]=pData;
+    return 0;
+  }
+  return -ENODATA;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::AddClusterIds(const AliHLTComponentBlockData* pDesc)
+{
+  /// add cluster id block for remaining or track model clusters
+  if (!pDesc) return -EINVAL;
+  if (pDesc->fDataType==AliHLTTPCDefinitions::ClusterIdTracksDataType()) {
+    fTrackModelClusterIds.fIds=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
+    fTrackModelClusterIds.fSize=pDesc->fSize/sizeof(AliHLTUInt32_t);
+    return 0;
+  }
+  if (pDesc->fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType()) {
+    AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(pDesc->fSpecification);
+    AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(pDesc->fSpecification);
+    unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+    if (fRemainingClusterIds.size()<=index) {
+      if ((int)fRemainingClusterIds.size()<AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches()) {
+	fRemainingClusterIds.resize(AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches());
+      } else {
+	fRemainingClusterIds.resize(index+1);
+      }
+    }
+    fRemainingClusterIds[index].fIds=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
+    fRemainingClusterIds[index].fSize=pDesc->fSize/sizeof(AliHLTUInt32_t);
+    return 0;
+  }
+  return -ENODATA;
+}
+
+AliHLTUInt32_t AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::GetClusterId(int clusterNo) const
+{
+  /// get the cluster id from the current cluster id block (optional)
+  if (!fCurrentClusterIds ||
+      (int)fCurrentClusterIds->fSize<=clusterNo)
+    return kAliHLTVoidDataSpec;
+  return fCurrentClusterIds->fIds[clusterNo];
+}
+
+AliTPCclusterMI* AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::NextCluster(int slice, int partition)
+{
+  /// load next cluster from array of the sepcific sector
+  unsigned sector=partition<2?slice:slice+36;
+  if (fClusterArrays.size()<=sector ||
+      fClusterArrays[sector]==NULL) {
+    AliErrorClass(Form("no cluster array available for sector %d", sector));
+    return NULL;
+  }
+  TClonesArray& array=*(fClusterArrays[sector]);
+  int count=array.GetEntriesFast();
+  return new (array[count]) AliTPCclusterMI;
+}
+
+int AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::SetMC(AliTPCclusterMI* pCluster, AliHLTUInt32_t clusterId)
+{
+  /// set MC data for the cluster
+  if (!pCluster) return -EINVAL;
+  if (clusterId==kAliHLTVoidDataSpec) return 0;
+
+  unsigned slice=AliHLTTPCSpacePointData::GetSlice(clusterId);
+  unsigned partition=AliHLTTPCSpacePointData::GetPatch(clusterId);
+  unsigned number=AliHLTTPCSpacePointData::GetNumber(clusterId);
+  if ((int)slice>=AliHLTTPCTransform::GetNSlice() ||
+      (int)partition>=AliHLTTPCTransform::GetNumberOfPatches()) return -EDOM;
+  unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+  if (fClusterMCData.size()<=index ||
+      fClusterMCData[index]==NULL ||
+      fClusterMCData[index]->fCount<=number) return 0;
+  const AliHLTTPCClusterMCWeight* mcWeights=fClusterMCData[index]->fLabels[number].fClusterID;
+  for (int k=0; k<3; k++) {
+    // TODO: sort the labels according to the weight in order to assign the most likely mc label
+    // to the first component 
+    pCluster->SetLabel(mcWeights[k].fMCID, k);
+  }
+
+  return 0;
+}
+
+void  AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::Clear(Option_t* /*option*/)
+{
+  /// internal cleanup
+  {
+    for (vector<TClonesArray*>::iterator i=fClusterArrays.begin(); i!=fClusterArrays.end(); i++)
+      if (*i) (*i)->Clear();
+  }
+  {
+    for (vector<AliClusterIdBlock>::iterator i=fRemainingClusterIds.begin(); i!=fRemainingClusterIds.end(); i++)
+      {i->fIds=NULL; i->fSize=0;}
+  }
+  fTrackModelClusterIds.fIds=NULL; fTrackModelClusterIds.fSize=0;
+  fCurrentClusterIds=NULL;
+  {
+    for (vector<const AliHLTTPCClusterMCData*>::iterator i=fClusterMCData.begin(); i!=fClusterMCData.end(); i++)
+      *i=NULL;
+  }
+}
+
+TObjArray* AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::GetSectorArray(unsigned sector) const
+{
+  /// get the cluster array for a sector
+  if (fClusterArrays.size()<=sector) return NULL;
+  return fClusterArrays[sector];
+}
+
+void AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::Print(Option_t *option) const
+{
+  /// inherited from TObject
+  cout << "AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer" << endl;
+  ios::fmtflags coutflags=cout.flags(); // backup cout status flags
+  bool bAll=false;
+  if ((bAll=(strcmp(option, "full")==0)) ||
+      strcmp(option, "short")==0) {
+    for (unsigned iArray=0; iArray<fClusterArrays.size(); iArray++) {
+      if (fClusterArrays[iArray]) {
+	TClonesArray* pArray=fClusterArrays[iArray];
+	cout << "  sector " << setfill(' ') << setw(2) << iArray << ": " << pArray->GetEntriesFast() << endl;
+	if (bAll) {
+	  for (int iCluster=0; iCluster<pArray->GetEntriesFast(); iCluster++) {
+	    if (!pArray->At(iCluster)) continue;
+	    AliTPCclusterMI* pCluster=dynamic_cast<AliTPCclusterMI*>(pArray->At(iCluster));
+	    if (!pCluster) break;
+	    cout << "    AliTPCclusterMI:"
+		 << "  row="    << pCluster->GetRow() 
+		 << "  pad="    << pCluster->GetPad()
+		 << "  time="   << pCluster->GetTimeBin()
+		 << "  charge=" << pCluster->GetQ()
+		 << "  maxq="   << pCluster->GetMax()
+		 << endl;
+	  }
+	}
+      }
+    }
+  }
+  cout.flags(coutflags); // restore the original flags
+}
+
+AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::iterator& AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::iterator::Next(int slice, int partition)
+{
+  // switch to next cluster
+  if (!fData) {
+    fCluster=NULL;
+    fClusterId=kAliHLTVoidDataSpec;
+    return *this;
+  }
+  if (fClusterNo>=0 && !fCluster) {
+    // end was reached before
+    return *this;
+  }
+  fCluster=fData->NextCluster(slice, partition);
+  fClusterId=fData->GetClusterId(++fClusterNo);
+  if (fCluster && fClusterId!=kAliHLTVoidDataSpec) {
+    fData->SetMC(fCluster, fClusterId);
+  }
+  // offline uses row number in physical sector, inner sector consists of
+  // partitions 0 and 1, outer sector of partition 2-5
+  fRowOffset=partition<2?0:AliHLTTPCTransform::GetFirstRow(2);
+  return *this;
 }
