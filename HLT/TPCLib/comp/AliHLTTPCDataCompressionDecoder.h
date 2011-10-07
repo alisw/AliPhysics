@@ -267,11 +267,12 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       HLTError("decoding error, can not find track point on row %d", row);
       return -EFAULT;
     }
-    AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(currentTrackPoint->GetId());
-    AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(currentTrackPoint->GetId());
+    AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(currentTrackPoint->GetId());
+    AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(currentTrackPoint->GetId());
     AliHLTUInt8_t nofClusters=0;
     bReadSuccess=bReadSuccess && pInflater->InputBits(nofClusters, clusterCountBitLength);
     if (!bReadSuccess) break;
+    HLTDebug("slice %02d partition %d row %03d: %d cluster(s)", slice, partition, row, nofClusters);
 
     static const AliHLTTPCDefinitions::AliClusterParameterId_t kParameterIdMapping[] = {
       AliHLTTPCDefinitions::kResidualPad,
