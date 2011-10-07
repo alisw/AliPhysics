@@ -1,30 +1,30 @@
 # -*- mode: CMake -*-
-#--------------------------------------------------------------------------------#
-# Package File for PWG2femtoscopy                                                #
-# Author : Johny Jose (johny.jose@cern.ch)                                       #
-# Variables Defined :                                                            #
-#                                                                                #
-# SRCS - C++ source files                                                        #
-# HDRS - C++ header files                                                        #
-# DHDR - ROOT Dictionary Linkdef header file                                     #
-# CSRCS - C source files                                                         #
-# CHDRS - C header files                                                         #
-# EINCLUDE - Include directories                                                 #
-# EDEFINE - Compiler definitions                                                 #
-# ELIBS - Extra libraries to link                                                #
-# ELIBSDIR - Extra library directories                                           #
-# PACKFFLAGS - Fortran compiler flags for package                                #
-# PACKCXXFLAGS - C++ compiler flags for package                                  #
-# PACKCFLAGS - C compiler flags for package                                      #
-# PACKSOFLAGS - Shared library linking flags                                     #
-# PACKLDFLAGS - Module linker flags                                              #
-# PACKBLIBS - Libraries to link (Executables only)                               #
-# EXPORT - Header files to be exported                                           #
-# CINTHDRS - Dictionary header files                                             #
-# CINTAUTOLINK - Set automatic dictionary generation                             #
-# ARLIBS - Archive Libraries and objects for linking (Executables only)          #
-# SHLIBS - Shared Libraries and objects for linking (Executables only)           #
-#--------------------------------------------------------------------------------#
+#------------------------------------------------------------------------#
+# Package File for PWG2femtoscopy                                        #
+# Author : Johny Jose (johny.jose@cern.ch)                               #
+# Variables Defined :                                                    #
+#                                                                        #
+# SRCS - C++ source files                                                #
+# HDRS - C++ header files                                                #
+# DHDR - ROOT Dictionary Linkdef header file                             #
+# CSRCS - C source files                                                 #
+# CHDRS - C header files                                                 #
+# EINCLUDE - Include directories                                         #
+# EDEFINE - Compiler definitions                                         #
+# ELIBS - Extra libraries to link                                        #
+# ELIBSDIR - Extra library directories                                   #
+# PACKFFLAGS - Fortran compiler flags for package                        #
+# PACKCXXFLAGS - C++ compiler flags for package                          #
+# PACKCFLAGS - C compiler flags for package                              #
+# PACKSOFLAGS - Shared library linking flags                             #
+# PACKLDFLAGS - Module linker flags                                      #
+# PACKBLIBS - Libraries to link (Executables only)                       #
+# EXPORT - Header files to be exported                                   #
+# CINTHDRS - Dictionary header files                                     #
+# CINTAUTOLINK - Set automatic dictionary generation                     #
+# ARLIBS - Archive Libraries and objects for linking (Executables only)  #
+# SHLIBS - Shared Libraries and objects for linking (Executables only)   #
+#------------------------------------------------------------------------#
 
 set ( SRCS  
     FEMTOSCOPY/AliFemto/AliFemtoSimpleAnalysis.cxx 
@@ -138,3 +138,11 @@ set ( DHDR  PWG2femtoscopyLinkDef.h)
 set ( EXPORT )
 
 set ( EINCLUDE  PWG3/FEMTOSCOPY/AliFemto PWG2/AOD PWG2/FORWARD/analysis STEER/AOD STEER/ESD STEER/STEERBase)
+
+install (DIRECTORY FEMTOSCOPY/macros
+         DESTINATION PWG2/FEMTOSCOPY 
+         PATTERN .svn EXCLUDE)
+
+#
+# EOF
+#
