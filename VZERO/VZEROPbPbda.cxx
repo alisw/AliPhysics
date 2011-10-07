@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     /* open the config file and retrieve cuts */
     FILE *fpConfig = fopen("V00DAEqualFactors.config","r");
     int res = fscanf(fpConfig,"%d %d %d %d %u %u %d %f",
-		     &kClockStart,&kClockStop,&kNPreClock,&kNPostClock,&kTriggerAcc,&kTriggerRej,&kNBins,&kRange);
+		     &kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kTriggerAcc,&kTriggerRej,&kNBins,&kRange);
     if(res!=8) {
       printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 7 integers and 1 float are expected - \n");
     }
@@ -92,6 +92,11 @@ int main(int argc, char **argv) {
 
   TH1D *fMedian[64];
   for(Int_t j = 0; j < 64; ++j) fMedian[j] = new TH1D(Form("fMedian_%d",j),"Slopes weighted median, channel par channel",kNBins,0,kRange);
+
+  Bool_t fFirst = kTRUE;
+  Float_t fPrevTotCharge = 0;
+  Float_t fPrevadc[64];
+  for(Int_t j = 0; j < 64; ++j) fPrevadc[j] = 0;
 
 //___________________________________________________ 
 
