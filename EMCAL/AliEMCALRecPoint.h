@@ -83,7 +83,6 @@ class AliEMCALRecPoint : public AliCluster {
   virtual void    GetElipsAxis(Float_t * lambda) const {lambda[0] = fLambda[0]; lambda[1] = fLambda[1];};
   Float_t *       GetEnergiesList()            const { return fEnergyList  ; } // gets the list of energies making this recpoint
   Double_t        GetPointEnergy()             const;                          // gets point energy (sum of energy list)
-  Float_t *       GetTimeList()                const { return fTimeList    ; } // gets the list of digit times in this recpoint
   Float_t         GetMaximalEnergy(void)       const ;                         // get the highest energy in the cluster
   Int_t           GetMaximalEnergyIndex(void)  const ;                         // get the index of highest energy digit
   Int_t           GetMaximumMultiplicity()     const { return fMaxDigit    ; } // gets the maximum number of digits allowed
@@ -157,7 +156,6 @@ private:
 	  Float_t  fLambda[2] ;        // shower ellipse axes
 	  Float_t  fDispersion ;       // shower dispersion
 	  Float_t *fEnergyList ;       //[fMulDigit] energy of digits
-	  Float_t *fTimeList ;         //[fMulDigit] time of digits
 	  Int_t   *fAbsIdList;         //[fMulDigit] absId  of digits
 	  Float_t  fTime ;             // Time of the digit with maximal energy deposition
 	  Short_t  fNExMax ;           // number of (Ex-)maxima before unfolding
@@ -172,7 +170,7 @@ private:
 	  Float_t  fDistToBadTower;    // Distance to nearest bad tower
 	  Bool_t   fSharedCluster;     // States if cluster is shared by 2 SuperModules in same phi rack (0,1), (2,3) ... (10,11).
 	
-  ClassDef(AliEMCALRecPoint,12) // RecPoint for EMCAL (Base Class)
+  ClassDef(AliEMCALRecPoint,13) // RecPoint for EMCAL (Base Class)
  
 };
 
