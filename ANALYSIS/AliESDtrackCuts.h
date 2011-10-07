@@ -59,7 +59,7 @@ public:
   static Int_t GetReferenceMultiplicity(const AliESDEvent* esd, MultEstTrackType trackType = kTrackletsITSTPC, Float_t etaRange = 0.5);
   static AliESDtrackCuts* GetMultEstTrackCuts(MultEstTrackCuts cut);
 
-  static AliESDtrack* GetTPCOnlyTrack(AliESDEvent* esd, Int_t iTrack);
+  static AliESDtrack* GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack);
   
   // Standard cut definitions
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
