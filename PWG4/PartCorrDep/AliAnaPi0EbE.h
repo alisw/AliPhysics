@@ -59,21 +59,28 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   
   void           MakeShowerShapeIdentification() ;
   
+  void           RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
+  
+  void           WeightHistograms(AliVCluster *clus);
+    
+  void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
+  void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
+  
   //Setters Getters
   
   //Analysis types
   enum anaTypes  {kIMCalo, kSSCalo, kIMCaloTracks};  
-  anaTypes       GetAnalysisType()                     const { return fAnaType               ; }
-  void           SetAnalysisType(anaTypes ana)               { fAnaType = ana                ; }
+  anaTypes       GetAnalysisType()                     const { return fAnaType                ; }
+  void           SetAnalysisType(anaTypes ana)               { fAnaType = ana                 ; }
   
-  TString        GetInputAODGammaConvName()            const { return fInputAODGammaConvName ; }
-  void           SetInputAODGammaConvName(TString name)      { fInputAODGammaConvName = name ; }	
+  TString        GetInputAODGammaConvName()            const { return fInputAODGammaConvName  ; }
+  void           SetInputAODGammaConvName(TString name)      { fInputAODGammaConvName = name  ; }	
   
   //Only for pi0 SS identification case
-  void           SetCalorimeter(TString & det)               { fCalorimeter = det            ; }
+  void           SetCalorimeter(TString & det)               { fCalorimeter = det             ; }
   
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
-                  fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                              ; }
+                  fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                               ; }
 
   //For histograms
   enum mcTypes   { mcPhoton = 0, mcConversion = 1, mcPi0    = 2,  
@@ -88,6 +95,8 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   Float_t        fMinDist ;                // Minimal distance to bad channel to accept cluster
   Float_t        fMinDist2;                // Cuts on Minimal distance to study acceptance evaluation
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
+  
+  Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TClonesArray * fInputAODGammaConv;       //! AOD array with conversion photons reconstructed in CTS
@@ -126,7 +135,16 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhPhiMCPi0;               //! Phi of identified pi0, coming from pi0
   TH2F         * fhEtaMCPi0;               //! eta of identified pi0, coming from pi0
   
-  ClassDef(AliAnaPi0EbE,7)
+  // Weight studies
+  
+  TH2F         * fhECellClusterRatio;      //! e cell / e cluster vs e cluster for selected photons
+  TH2F         * fhECellClusterLogRatio;   //! log (e cell / e cluster)  vs e cluster for selected photons
+  TH2F         * fhEMaxCellClusterRatio;   //! e max cell / e cluster vs e cluster for selected photons
+  TH2F         * fhEMaxCellClusterLogRatio;//! log (e max cell / e cluster) vs e cluster for selected photons
+  TH2F         * fhLambda0ForW0[7];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
+  TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
+  
+  ClassDef(AliAnaPi0EbE,8)
 } ;
 
 

@@ -67,11 +67,17 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   
   Bool_t       ClusterSelected(AliVCluster* cl, TLorentzVector mom) ;
   
-  //           Fill Shower Shape histograms
   void         FillShowerShapeHistograms( AliVCluster* cluster, const Int_t mcTag , const Int_t pidTag) ;
   
   void         SwitchOnFillShowerShapeHistograms()    { fFillSSHistograms = kTRUE  ; }
   void         SwitchOffFillShowerShapeHistograms()   { fFillSSHistograms = kFALSE ; }  
+  
+  void         RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
+  
+  void         WeightHistograms(AliVCluster *clus);
+  
+  void         SwitchOnFillWeightHistograms()         { fFillWeightHistograms = kTRUE  ; }
+  void         SwitchOffFillWeightHistograms()        { fFillWeightHistograms = kFALSE ; }  
   
   //---------------------------------------
   // Analysis parameters setters getters
@@ -122,6 +128,7 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   Double_t fTimeCutMax  ;                      // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                        // Accept for the analysis clusters with more than fNCellsCut cells
   Bool_t   fFillSSHistograms ;                 // Fill shower shape histograms
+  Bool_t   fFillWeightHistograms ;             // Fill weigth histograms
   Int_t    fNOriginHistograms;                 // Fill only NOriginHistograms of the 14 defined types
 
   Float_t  fdEdxMin;                           // Max dEdx for electrons
@@ -163,6 +170,15 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   TH2F * fhEtaLam0HighE[2];                    //! cluster eta vs lambda0, E>2
   TH2F * fhPhiLam0HighE[2];                    //! cluster phi vs lambda0, E>2
     
+  // Weight studies
+  
+  TH2F * fhECellClusterRatio;                  //! e cell / e cluster vs e cluster for selected electrons
+  TH2F * fhECellClusterLogRatio;               //! log (e cell / e cluster)  vs e cluster for selected electrons
+  TH2F * fhEMaxCellClusterRatio;               //! e max cell / e cluster vs e cluster for selected electrons
+  TH2F * fhEMaxCellClusterLogRatio;            //! log (e max cell / e cluster) vs e cluster for selected electrons
+  TH2F * fhLambda0ForW0[7];                    //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected electrons
+  TH2F * fhLambda1ForW0[7];                    //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected electrons
+  
   //Fill MC dependent histograms, Origin of this cluster is ...
 
   TH2F * fhMCDeltaE[2][10]  ;                  //! MC-Reco E distribution coming from MC particle     
@@ -189,7 +205,7 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded electrons with 50%<fraction<10% 
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!  Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
-   ClassDef(AliAnaElectron,1)
+   ClassDef(AliAnaElectron,2)
 
 } ;
  
