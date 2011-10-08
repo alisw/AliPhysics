@@ -360,8 +360,8 @@ AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::AliDataContainer()
   , fTrackModelClusterIds()
   , fCurrentClusterIds(NULL)
   , fRawData(NULL)
+  , fLastPadRow(-1)
   , fBegin()
-  , fEnd()
 {
   /// constructor
   if (fHistograms) {
@@ -395,6 +395,7 @@ const AliHLTTPCDataCompressionMonitorComponent::AliHistogramDefinition AliHLTTPC
   {kHistogramDeltaSigmaZ2,  "d_sigmaZ2", "d_sigmaZ2", 1000,  -1.,     1.},
   {kHistogramDeltaCharge,   "d_chareg" , "d_charge" , 1000,  -1.,     1.},
   {kHistogramDeltaQMax,     "d_qmax"   , "d_qmax"   , 1000,  -1.,     1.},
+  {kHistogramOutOfRange,    "OutOfR"   , "OutOfR"   ,  159,   0.,   158.},
   {kNumberOfHistograms, NULL    ,  NULL    ,    0,  0.,     0.}
 };
 
@@ -482,6 +483,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPadRow(int 
 {
   /// fill padrow histogram
   unsigned index=kHistogramPadrow;
+  fLastPadRow=row;
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
     fHistogramPointers[index]->Fill(row);
   if (clusterId!=kAliHLTVoidDataSpec) {
@@ -504,7 +506,18 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
     index=kHistogramDeltaPad;
     if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
       if (fRawData->Check(clusterId)) {
-	fHistogramPointers[index]->Fill(pad-fRawData->GetY(clusterId));
+	float dPad=pad-fRawData->GetY(clusterId);
+	fHistogramPointers[index]->Fill(dPad);
+	static const float maxdPad=0.01;
+	if (TMath::Abs(dPad)>maxdPad) {
+	  AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(clusterId);
+	  AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(clusterId);
+	  HLTError("cluster 0x%08x slice %d partition %d: pad difference %f - max %f", clusterId, slice, partition, dPad, maxdPad);
+	  index=kHistogramOutOfRange;
+	  if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
+	    fHistogramPointers[index]->Fill(fLastPadRow>=0?fLastPadRow:0);
+	  }
+	}
       }
     }
   }
@@ -520,18 +533,31 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillTime(float 
     index=kHistogramDeltaTime;
     if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
       if (fRawData->Check(clusterId)) {
-	fHistogramPointers[index]->Fill(time-fRawData->GetZ(clusterId));
+	float dTime=time-fRawData->GetZ(clusterId);
+	fHistogramPointers[index]->Fill(dTime);
+	static const float maxdTime=0.025;
+	if (TMath::Abs(dTime)>maxdTime) {
+	  AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(clusterId);
+	  AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(clusterId);
+	  HLTError("cluster 0x%08x slice %d partition %d: pad difference %f - max %f", clusterId, slice, partition, dTime, maxdTime);
+	  index=kHistogramOutOfRange;
+	  if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
+	    fHistogramPointers[index]->Fill(fLastPadRow>=0?fLastPadRow:0);
+	  }
+	}
       }
     }
   }
 }
 
-void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId)
+void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId, int partition)
 {
   /// fill sigmaY2 histogram
   unsigned index=kHistogramSigmaY2;
+  /// take account for different pad widths
+  float weight=AliHLTTPCTransform::GetPadPitchWidth(partition);
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
-    fHistogramPointers[index]->Fill(sigmaY2);
+    fHistogramPointers[index]->Fill(sigmaY2*weight*weight);
   if (clusterId!=kAliHLTVoidDataSpec) {
     index=kHistogramDeltaSigmaY2;
     if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
@@ -546,8 +572,11 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillSigmaZ2(flo
 {
   /// fill sigmaZ2 histogram
   unsigned index=kHistogramSigmaZ2;
+  // FIXME: this is just a fixed value, to be correct the values from the global
+  // parameter block has to be used
+  float weight=AliHLTTPCTransform::GetZWidth();
   if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL)
-    fHistogramPointers[index]->Fill(sigmaZ2);
+    fHistogramPointers[index]->Fill(sigmaZ2*weight*weight);
   if (clusterId!=kAliHLTVoidDataSpec) {
     index=kHistogramDeltaSigmaZ2;
     if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {

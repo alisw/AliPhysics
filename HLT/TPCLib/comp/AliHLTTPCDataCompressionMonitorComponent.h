@@ -97,6 +97,7 @@ public:
     kHistogramDeltaSigmaZ2,
     kHistogramDeltaCharge,
     kHistogramDeltaQMax,
+    kHistogramOutOfRange,
     kNumberOfHistograms
   };
 
@@ -115,7 +116,7 @@ public:
    * The class implements the interface to be used in the decoding
    * of compressed TPC data.
    */
-  class AliDataContainer {
+  class AliDataContainer : public AliHLTLogging {
   public:
     AliDataContainer();
     virtual ~AliDataContainer();
@@ -128,24 +129,26 @@ public:
 
     class iterator {
     public:
-      iterator() : fClusterNo(-1), fData(NULL), fClusterId(kAliHLTVoidDataSpec) {}
-      iterator(AliDataContainer* pData) : fClusterNo(-1), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec) {}
-      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fClusterId(other.fClusterId) {}
+      iterator() : fClusterNo(-1), fData(NULL), fClusterId(kAliHLTVoidDataSpec), fSlice(-1), fPartition(-1) {}
+      iterator(AliDataContainer* pData) : fClusterNo(-1), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec), fSlice(-1), fPartition(-1) {}
+      iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fClusterId(other.fClusterId), fSlice(other.fSlice), fPartition(other.fPartition) {}
       iterator& operator=(const iterator& other) {
-	fClusterNo=other.fClusterNo; fData=other.fData; fClusterId=other.fClusterId; return *this;
+	fClusterNo=other.fClusterNo; fData=other.fData; fClusterId=other.fClusterId; fSlice=other.fSlice; fPartition=other.fPartition; return *this;
       }
       ~iterator() {}
 
       void SetPadRow(int row)          {if (fData) fData->FillPadRow(row, fClusterId);}
       void SetPad(float pad) 	       {if (fData) fData->FillPad(pad, fClusterId);}
       void SetTime(float time) 	       {if (fData) fData->FillTime(time, fClusterId);}
-      void SetSigmaY2(float sigmaY2)   {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId);}
+      void SetSigmaY2(float sigmaY2)   {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId, fPartition);}
       void SetSigmaZ2(float sigmaZ2)   {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
       void SetCharge(unsigned charge)  {if (fData) fData->FillCharge(charge, fClusterId);}
       void SetQMax(unsigned qmax)      {if (fData) fData->FillQMax(qmax, fClusterId);}
 
       // switch to next cluster
-      iterator& Next(int /*slice*/, int /*partition*/) {return operator++();}
+      iterator& Next(int slice, int partition) {
+	fSlice=slice; fPartition=partition; return operator++();
+      }
       // prefix operators
       iterator& operator++() {fClusterNo++; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
       iterator& operator--() {fClusterNo--; fClusterId=fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec;return *this;}
@@ -160,6 +163,8 @@ public:
       int fClusterNo; //! cluster no in the current block
       AliDataContainer* fData; //! pointer to actual data
       AliHLTUInt32_t fClusterId; //! id of the cluster, from optional cluster id blocks
+      int fSlice;     //! current slice
+      int fPartition; //! current partition
     };
 
     /// iterator of remaining clusters block of specification
@@ -183,7 +188,7 @@ public:
     void FillPadRow(int row, AliHLTUInt32_t clusterId);
     void FillPad(float pad, AliHLTUInt32_t clusterId);
     void FillTime(float time, AliHLTUInt32_t clusterId);
-    void FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId);
+    void FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId, int partition);
     void FillSigmaZ2(float sigmaZ2, AliHLTUInt32_t clusterId);
     void FillCharge(unsigned charge, AliHLTUInt32_t clusterId);
     void FillQMax(unsigned qmax, AliHLTUInt32_t clusterId);
@@ -198,8 +203,8 @@ public:
     AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
     AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
     AliHLTTPCHWCFSpacePointContainer* fRawData; //! raw data container
+    int fLastPadRow; //! last padrow
     iterator fBegin; //!
-    iterator fEnd; //!
   };
 
 protected:
