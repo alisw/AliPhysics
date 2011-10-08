@@ -201,10 +201,8 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     // compression component
     if (compressorInput.Length()>0) compressorInput+=" ";
     compressorInput+="TPC-globalmerger";
-    arg.Form("");
-    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), arg.Data());
-    arg+=" -cluster-verification 1";
-    handler->CreateConfiguration("TPC-compression-verification", "TPCDataCompressor", compressorInput.Data(), arg.Data());
+    handler->CreateConfiguration("TPC-compression", "TPCDataCompressor", compressorInput.Data(), "");
+    handler->CreateConfiguration("TPC-compression-verification", "TPCDataCompressor", compressorInput.Data(), " -cluster-verification 1");
     handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
     handler->CreateConfiguration("TPC-compression-monitoring", "TPCDataCompressorMonitor", "TPC-compression-verification TPC-hwcfdata","");
 
