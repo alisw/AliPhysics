@@ -36,6 +36,8 @@
 #include "TMath.h"
 #include "TH2F.h"
 #include <memory>
+#include <sstream>
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackGeometry)
@@ -181,13 +183,24 @@ int AliHLTTPCTrackGeometry::CalculateTrackPoints(AliHLTGlobalBarrelTrack& track,
       }
       if (TMath::Abs(m)>0.) {
       	rpt[2]=(z-n)/m;
-	fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
-	// cout << "  row "    << setfill(' ') << setw(3) << fixed << right << padrow
+	if (step>0) {
+	  // ascending padrows added at end
+	  fRawTrackPoints.push_back(AliHLTTrackPoint(id, rpt[1], rpt[2]));
+	} else {
+	  // descending padrows added at begin
+	  fRawTrackPoints.insert(fRawTrackPoints.begin(), AliHLTTrackPoint(id, rpt[1], rpt[2]));
+	}
+	// FIXME: implement a Print function for the raw track points
+	// stringstream sout;
+	// sout << "  slice "  << setfill(' ') << setw(3) << fixed << right << slice
+	//      << "  row "    << setfill(' ') << setw(3) << fixed << right << padrow
+	//      << "  id 0x"     << hex << setw(8) << id << dec
 	//      << "  y "      << setfill(' ') << setw(5) << fixed << right << setprecision (2) << y
 	//      << "  z "      << setfill(' ') << setw(5) << fixed << right << setprecision (2) << z
 	//      << "  pad "    << setfill(' ') << setw(5) << fixed << right << setprecision (2) << rpt[1]
 	//      << "  time "   << setfill(' ') << setw(5) << fixed << right << setprecision (2) << rpt[2]
 	//      << endl;
+	// cout << sout.str();
       } else {
 	ALIHLTERRORGUARD(1, "drift time correction not initialized, can not add track points in raw coordinates");
       }
@@ -504,6 +517,12 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	    // assiciated space point, calculate again, but needs to be fixed
 	    float deltapad =pSpacePoints->GetY(clid->fId)-clrow->GetU();//clid->fdU;
 	    float deltatime =pSpacePoints->GetZ(clid->fId)-clrow->GetV();//clid->fdV;
+	    if (TMath::Abs(deltapad)>=AliHLTTPCDefinitions::fgkMaxClusterDeltaPad ||
+		TMath::Abs(deltatime)>=AliHLTTPCDefinitions::fgkMaxClusterDeltaTime) {
+	      AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(clid->fId);
+	      AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(clid->fId);
+	      HLTFatal("cluster 0x%08x slice %d partition %d: residual out of range - pad %f (max %d), time %f (max %d)", clid->fId, slice, partition, deltapad, AliHLTTPCDefinitions::fgkMaxClusterDeltaPad, deltatime, AliHLTTPCDefinitions::fgkMaxClusterDeltaTime);
+	    }
 	    float sigmaY2=pSpacePoints->GetYWidth(clid->fId);
 	    float sigmaZ2=pSpacePoints->GetZWidth(clid->fId);
 	    AliHLTUInt64_t charge=(AliHLTUInt64_t)pSpacePoints->GetCharge(clid->fId);
