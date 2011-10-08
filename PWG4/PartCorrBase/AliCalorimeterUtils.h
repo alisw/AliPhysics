@@ -198,15 +198,27 @@ class AliCalorimeterUtils : public TObject {
                   if (fRecalculateMatching) fEMCALRecoUtils->FindMatches(event,0,fEMCALGeo)     ; }
   void          GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {
                   if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ)   ; }
+  
   //This could be used for PHOS ...
   void          SwitchOnRecalculateClusterTrackMatching()       { fRecalculateMatching = kTRUE  ; } 
   void          SwitchOffRecalculateClusterTrackMatching()      { fRecalculateMatching = kFALSE ; } 
   Bool_t        IsRecalculationOfClusterTrackMatchingOn() const { return fRecalculateMatching   ; }
-  Float_t       GetCutR()                                 const { return fCutR                  ; }
-  Float_t       GetCutZ()                                 const { return fCutZ                  ; }
   
-  void          SetCutR(Float_t cutR)                           { fCutR=cutR ; fEMCALRecoUtils->SetCutR(cutR) ; }
-  void          SetCutZ(Float_t cutZ)                           { fCutZ=cutZ ; fEMCALRecoUtils->SetCutZ(cutZ) ; }
+  Float_t       GetCutZ()                                 const { return fCutZ                  ; } // PHOS only
+  void          SetCutZ(Float_t z)                              { fCutZ = z                     ; } // PHOS only
+
+  
+  Float_t       GetCutR()                                 const { return fCutR                  ; } // PHOS and EMCAL
+  void          SetCutR(Float_t r)                              { fCutR = r                     ;   // PHOS and EMCA
+                                                                  fEMCALRecoUtils->SetCutR(r)   ; }
+  
+  Float_t       GetCutEta()                               const { return fCutEta                ; } // EMCAL only
+  void          SetCutEta(Float_t e)                            { fCutEta = e                   ;   // EMCAL only
+                                                                  fEMCALRecoUtils->SetCutEta(e) ; }
+
+  Float_t       GetCutPhi()                               const { return fCutPhi                ; } // EMCAL only
+  void          SetCutPhi(Float_t p)                            { fCutPhi = p                   ;   // EMCAL only
+                                                                  fEMCALRecoUtils->SetCutPhi(p) ; }
   
  private:
 
@@ -232,11 +244,13 @@ class AliCalorimeterUtils : public TObject {
   Bool_t             fRecalculatePosition;   //  Recalculate cluster position
   Bool_t             fCorrectELinearity  ;   //  Correct cluster energy linearity
   Bool_t             fRecalculateMatching;   //  Recalculate cluster position
-  Float_t            fCutR;                  //  dR cut on matching
-  Float_t            fCutZ;                  //  dZ cut on matching
+  Float_t            fCutR;                  //  dR cut on matching (PHOS)
+  Float_t            fCutZ;                  //  dZ cut on matching (EMCAL/PHOS)
+  Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
+  Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
 
   
-  ClassDef(AliCalorimeterUtils,6)
+  ClassDef(AliCalorimeterUtils,7)
 } ;
 
 

@@ -43,16 +43,18 @@ ClassImp(AliCalorimeterUtils)
   AliCalorimeterUtils::AliCalorimeterUtils() : 
     TObject(), fDebug(0), 
     fEMCALGeoName("EMCAL_COMPLETEV1"),fPHOSGeoName("PHOSgeo"), 
-    fEMCALGeo(0x0), fPHOSGeo(0x0), 
-    fEMCALGeoMatrixSet(kFALSE), fPHOSGeoMatrixSet(kFALSE), 
-    fLoadEMCALMatrices(kFALSE), fLoadPHOSMatrices(kFALSE),
-    fRemoveBadChannels(kFALSE),fPHOSBadChannelMap(0x0), 
+    fEMCALGeo(0x0),                   fPHOSGeo(0x0), 
+    fEMCALGeoMatrixSet(kFALSE),       fPHOSGeoMatrixSet(kFALSE), 
+    fLoadEMCALMatrices(kFALSE),       fLoadPHOSMatrices(kFALSE),
+    fRemoveBadChannels(kFALSE),       fPHOSBadChannelMap(0x0), 
     fNCellsFromPHOSBorder(0),
-    fNMaskCellColumns(0), fMaskCellColumns(0x0),
-    fRecalibration(kFALSE), fPHOSRecalibrationFactors(),
+    fNMaskCellColumns(0),             fMaskCellColumns(0x0),
+    fRecalibration(kFALSE),           fPHOSRecalibrationFactors(),
     fEMCALRecoUtils(new AliEMCALRecoUtils),
-    fRecalculatePosition(kFALSE),fCorrectELinearity(kFALSE),
-    fRecalculateMatching(kFALSE),fCutR(20), fCutZ(20)
+    fRecalculatePosition(kFALSE),     fCorrectELinearity(kFALSE),
+    fRecalculateMatching(kFALSE),
+    fCutR(20),                        fCutZ(20),
+    fCutEta(20),                      fCutPhi(20)
 {
   //Ctor
   
