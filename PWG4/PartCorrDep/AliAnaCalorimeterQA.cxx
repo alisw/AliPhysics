@@ -862,6 +862,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(TObjArray *caloClusters, AliVCal
     if(!goodCluster) continue;
     
     nCaloClustersAccepted++;
+    nModule = GetModuleNumber(clus);
     if(nModule >=0 && nModule < fNModules) {
       if     (fCalorimeter=="EMCAL" && mom.E() > 2*fEMCALCellAmpMin)  nClustersInModule[nModule]++;
       else if(fCalorimeter=="PHOS"  && mom.E() > 2*fPHOSCellAmpMin )  nClustersInModule[nModule]++;
@@ -2529,10 +2530,11 @@ void AliAnaCalorimeterQA::InvariantMassHistograms(const Int_t iclus,   const TLo
     
     //All modules
     fhIM  ->Fill((mom+mom2).Pt(),(mom+mom2).M());
-    
+
     //Single module
-    if(nModule == nModule2 && nModule >=0 && nModule < fNModules)
+    if(nModule == nModule2 && nModule >=0 && nModule < fNModules){
       fhIMMod[nModule]->Fill((mom+mom2).Pt(),(mom+mom2).M());
+    }
     
     //Asymetry histograms
     fhAsym->Fill((mom+mom2).Pt(),TMath::Abs((mom.E()-mom2.E())/(mom.E()+mom2.E())));
