@@ -779,13 +779,17 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
     if(fRecalculateClusters){
       //Recalibrate the cluster energy 
       if(GetCaloUtils()->IsRecalibrationOn()) {
+        
         Float_t energy = GetCaloUtils()->RecalibrateClusterEnergy(clus, GetEMCALCells());
+        
         clus->SetE(energy);
         //printf("Recalibrated Energy %f\n",clus->E());  
+        
         GetCaloUtils()->RecalculateClusterShowerShapeParameters(GetEMCALCells(),clus);
         GetCaloUtils()->RecalculateClusterPID(clus);
-      }
       
+      } // recalculate E
+            
       //Recalculate distance to bad channels, if new list of bad channels provided
       GetCaloUtils()->RecalculateClusterDistanceToBadChannel(GetEMCALCells(),clus);
       
@@ -796,6 +800,23 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
         //printf("After  Corrections: e %f, x %f, y %f, z %f\n",clus->E(),pos[0],pos[1],pos[2]);
       }
     }
+    
+    // Recalculate TOF
+    if(GetCaloUtils()->GetEMCALRecoUtils()->IsTimeRecalibrationOn()) {
+      
+      Double_t tof      = clus->GetTOF();
+      Float_t  frac     =-1;
+      Int_t    absIdMax = GetCaloUtils()->GetMaxEnergyCell(fEMCALCells, clus,frac);
+      
+      if(fDataType==AliCaloTrackReader::kESD){ 
+        tof = fEMCALCells->GetCellTime(absIdMax);
+      }
+      
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalibrateCellTime(absIdMax,fInputEvent->GetBunchCrossNumber(),tof);
+  
+      clus->SetTOF(tof);
+      
+    }// Time recalibration    
     
     //Correct non linearity
     if(GetCaloUtils()->IsCorrectionOfClusterEnergyOn()){
