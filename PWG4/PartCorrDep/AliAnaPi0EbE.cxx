@@ -59,8 +59,7 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fhEDispersion(0),             fhELambda0(0),                fhELambda1(0), 
     fhELambda0NoTRD(0),           fhELambda0FracMaxCellCut(0),  
     fhEFracMaxCell(0),            fhEFracMaxCellNoTRD(0),            
-    //Time histograms
-    fhClusterPairDiffTimeE(0),    fhClusterPairDiffTimeAsy(0),  
+    fhENCells(0),                 fhETime(0),                   fhEPairDiffTime(0),    
     //MC histos
     fhPtMCNoPi0(0),               fhPhiMCNoPi0(0),              fhEtaMCNoPi0(0), 
     fhPtMCPi0(0),                 fhPhiMCPi0(0),                fhEtaMCPi0(0),
@@ -98,6 +97,185 @@ AliAnaPi0EbE::~AliAnaPi0EbE()
     fInputAODGammaConv->Clear() ; 
     delete fInputAODGammaConv ;
   }
+}
+
+//_____________________________________________________________________________________
+void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag){
+  
+  // Fill shower shape, timing and other histograms for selected clusters from decay
+  
+  Float_t e    = cluster->E();
+  Float_t disp = cluster->GetDispersion()*cluster->GetDispersion();
+  Float_t l0   = cluster->GetM02();
+  Float_t l1   = cluster->GetM20(); 
+  Int_t   nSM  = GetModuleNumber(cluster);
+  
+  AliVCaloCells * cell = 0x0; 
+  if(fCalorimeter == "PHOS") 
+    cell = GetPHOSCells();
+  else		              
+    cell = GetEMCALCells();
+  
+  Float_t maxCellFraction = 0;
+  GetCaloUtils()->GetMaxEnergyCell(cell, cluster, maxCellFraction);
+  fhEFracMaxCell->Fill(e,maxCellFraction);  
+  
+  FillWeightHistograms(cluster);
+  
+  fhEDispersion->Fill(e, disp);   
+  fhELambda0   ->Fill(e, l0  );  
+  fhELambda1   ->Fill(e, l1  );  
+  
+  if(fCalorimeter=="EMCAL" && nSM < 6) {
+    fhELambda0NoTRD->Fill(e, l0  );
+    fhEFracMaxCellNoTRD->Fill(e,maxCellFraction);  
+  }
+  
+  if(maxCellFraction < 0.5) 
+    fhELambda0FracMaxCellCut->Fill(e, l0  );  
+  
+  fhETime  ->Fill(e, cluster->GetTOF()*1.e9);
+  fhENCells->Fill(e, cluster->GetNCells());
+  
+  if(IsDataMC()) {
+    //Photon1
+    if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ){
+      fhEMCLambda0[mcPi0]    ->Fill(e, l0);
+      fhEMCLambda1[mcPi0]    ->Fill(e, l1);
+      fhEMCDispersion[mcPi0] ->Fill(e, disp);
+      
+      fhEMCFracMaxCell[mcPi0]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcPi0]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcPi0]->Fill(e, l0  );  
+      
+    }//pi0
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ){
+      fhEMCLambda0[mcEta]    ->Fill(e, l0);
+      fhEMCLambda1[mcEta]    ->Fill(e, l1);
+      fhEMCDispersion[mcEta] ->Fill(e, disp);
+      fhEMCFracMaxCell[mcEta]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcEta]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcEta]->Fill(e, l0  );  
+    }//eta          
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
+              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) ){
+      fhEMCLambda0[mcConversion]    ->Fill(e, l0);
+      fhEMCLambda1[mcConversion]    ->Fill(e, l1);
+      fhEMCDispersion[mcConversion] ->Fill(e, disp);
+      fhEMCFracMaxCell[mcConversion]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcConversion]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcConversion]->Fill(e, l0  );  
+    }//conversion photon
+    else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) ){
+      fhEMCLambda0[mcPhoton]    ->Fill(e, l0);
+      fhEMCLambda1[mcPhoton]    ->Fill(e, l1);
+      fhEMCDispersion[mcPhoton] ->Fill(e, disp);
+      fhEMCFracMaxCell[mcPhoton]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcPhoton]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcPhoton]->Fill(e, l0  );  
+    }//photon   no conversion
+    else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)){
+      fhEMCLambda0[mcElectron]    ->Fill(e, l0);
+      fhEMCLambda1[mcElectron]    ->Fill(e, l1);
+      fhEMCDispersion[mcElectron] ->Fill(e, disp);
+      fhEMCFracMaxCell[mcElectron]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcElectron]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcElectron]->Fill(e, l0  );  
+    }//electron
+    else {
+      fhEMCLambda0[mcHadron]    ->Fill(e, l0);
+      fhEMCLambda1[mcHadron]    ->Fill(e, l1);
+      fhEMCDispersion[mcHadron] ->Fill(e, disp);
+      fhEMCFracMaxCell[mcHadron]->Fill(e,maxCellFraction);  
+      if(fCalorimeter=="EMCAL" && nSM < 6) 
+        fhEMCLambda0NoTRD[mcHadron]->Fill(e, l0  );
+      if(maxCellFraction < 0.5) 
+        fhEMCLambda0FracMaxCellCut[mcHadron]->Fill(e, l0  );  
+    }//other particles 
+  }//MC
+}
+
+//________________________________________________________
+void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
+{
+  // Calculate weights and fill histograms
+  
+  if(!fFillWeightHistograms || GetMixedEvent()) return;
+  
+  AliVCaloCells* cells = 0;
+  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
+  else                        cells = GetPHOSCells();
+  
+  // First recalculate energy in case non linearity was applied
+  Float_t  energy = 0;
+  Float_t  ampMax = 0;  
+  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
+    
+    Int_t id       = clus->GetCellsAbsId()[ipos];
+    
+    //Recalibrate cell energy if needed
+    Float_t amp = cells->GetCellAmplitude(id);
+    RecalibrateCellAmplitude(amp,id);
+    
+    energy    += amp;
+    
+    if(amp> ampMax) 
+      ampMax = amp;
+    
+  } // energy loop       
+  
+  if(energy <=0 ) {
+    printf("AliAnaPi0EbE::WeightHistograms()- Wrong calculated energy %f\n",energy);
+    return;
+  }
+  
+  fhEMaxCellClusterRatio   ->Fill(energy,ampMax/energy);
+  fhEMaxCellClusterLogRatio->Fill(energy,TMath::Log(ampMax/energy));
+  
+  //Get the ratio and log ratio to all cells in cluster
+  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
+    Int_t id       = clus->GetCellsAbsId()[ipos];
+    
+    //Recalibrate cell energy if needed
+    Float_t amp = cells->GetCellAmplitude(id);
+    RecalibrateCellAmplitude(amp,id);
+    
+    fhECellClusterRatio   ->Fill(energy,amp/energy);
+    fhECellClusterLogRatio->Fill(energy,TMath::Log(amp/energy));
+  }        
+  
+  //Recalculate shower shape for different W0
+  if(fCalorimeter=="EMCAL"){
+    
+    Float_t l0org = clus->GetM02();
+    Float_t l1org = clus->GetM20();
+    Float_t dorg  = clus->GetDispersion();
+    
+    for(Int_t iw = 0; iw < 7; iw++){
+      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(3+iw*0.5); 
+      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
+      
+      fhLambda0ForW0[iw]->Fill(energy,clus->GetM02());
+      fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
+      
+    } // w0 loop
+    
+    // Set the original values back
+    clus->SetM02(l0org);
+    clus->SetM20(l1org);
+    clus->SetDispersion(dorg);
+    
+  }// EMCAL
 }
 
 //___________________________________________
@@ -146,7 +324,9 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Int_t netabins = GetHistoEtaBins();          Float_t etamax = GetHistoEtaMax();          Float_t etamin = GetHistoEtaMin();
   Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax  = GetHistoShowerShapeMax();  Float_t ssmin  = GetHistoShowerShapeMin();
   Int_t tdbins   = GetHistoDiffTimeBins() ;    Float_t tdmax  = GetHistoDiffTimeMax();     Float_t tdmin  = GetHistoDiffTimeMin();
-  
+  Int_t tbins    = GetHistoTimeBins() ;        Float_t tmax   = GetHistoTimeMax();         Float_t tmin   = GetHistoTimeMin();
+  Int_t nbins    = GetHistoNClusterCellBins(); Int_t   nmax   = GetHistoNClusterCellMax(); Int_t   nmin   = GetHistoNClusterCellMin(); 
+
   fhPtPi0  = new TH1F("hPtPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
   fhPtPi0->SetYTitle("N");
   fhPtPi0->SetXTitle("p_{T #pi^{0}}(GeV/c)");
@@ -180,7 +360,12 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhELambda0->SetXTitle("E (GeV)");
     outputContainer->Add(fhELambda0) ; 
 
-    
+    fhELambda1  = new TH2F
+    ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    fhELambda1->SetYTitle("#lambda_{1}^{2}");
+    fhELambda1->SetXTitle("E (GeV)");
+    outputContainer->Add(fhELambda1) ; 
+        
     fhELambda0FracMaxCellCut  = new TH2F
     ("hELambda0FracMaxCellCut","Selected #pi^{0} pairs: E vs #lambda_{0}, Max cell fraction of energy < 0.5",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhELambda0FracMaxCellCut->SetYTitle("#lambda_{0}^{2}");
@@ -207,21 +392,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       outputContainer->Add(fhEFracMaxCellNoTRD) ; 
     }
     
-    fhELambda1  = new TH2F
-    ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-    fhELambda1->SetYTitle("#lambda_{1}^{2}");
-    fhELambda1->SetXTitle("E (GeV)");
-    outputContainer->Add(fhELambda1) ; 
+    fhENCells  = new TH2F ("hENCells","N cells in cluster vs E ", nptbins,ptmin,ptmax, nbins,nmin,nmax); 
+    fhENCells->SetXTitle("E (GeV)");
+    fhENCells->SetYTitle("# of cells in cluster");
+    outputContainer->Add(fhENCells);  
     
-    fhClusterPairDiffTimeE = new TH2F("hClusterPairDiffTimeE","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
-    fhClusterPairDiffTimeE->SetXTitle("E_{pair} (GeV)");
-    fhClusterPairDiffTimeE->SetYTitle("#Delta t (ns)");
-    outputContainer->Add(fhClusterPairDiffTimeE);
+    fhETime = new TH2F("hETime","cluster time vs pair E",nptbins,ptmin,ptmax, tbins,tmin,tmax);
+    fhETime->SetXTitle("E (GeV)");
+    fhETime->SetYTitle(" t (ns)");
+    outputContainer->Add(fhETime);    
     
-    fhClusterPairDiffTimeAsy = new TH2F("hClusterPairDiffTime","cluster pair time difference vs pair asymmetry",100,0,1, tdbins,tdmin,tdmax);
-    fhClusterPairDiffTimeAsy->SetXTitle("Asymmetry");
-    fhClusterPairDiffTimeAsy->SetYTitle("#Delta t (ns)");
-    outputContainer->Add(fhClusterPairDiffTimeAsy);    
+    fhEPairDiffTime = new TH2F("hEPairDiffTime","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
+    fhEPairDiffTime->SetXTitle("E_{pair} (GeV)");
+    fhEPairDiffTime->SetYTitle("#Delta t (ns)");
+    outputContainer->Add(fhEPairDiffTime);
+    
     
   }// Invariant mass analysis in calorimeters only
   
@@ -430,7 +615,7 @@ void  AliAnaPi0EbE::MakeAnalysisFillAOD()
   }
 }
 
-//__________________________________________________________________
+//____________________________________________
 void  AliAnaPi0EbE::MakeInvMassInCalorimeter() 
 {
   //Do analysis and fill aods
@@ -450,6 +635,16 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     abort();
   }
   
+  //Get shower shape information of clusters
+  TObjArray *clusters = 0;
+  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
+  else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
+  
+  if(!clusters) {
+    printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Clusters array not found, skip event\n");
+    return;
+  }
+  
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast()-1; iphoton++){
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     
@@ -460,28 +655,26 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     if(TMath::Abs(GetVertex(evtIndex1)[2]) > GetZvertexCut()) continue ;  //vertex cut
     mom1 = *(photon1->Momentum());
     
-    //Get shower shape information of clusters
-    TObjArray *clusters = 0;
-    if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
-    else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
-    
     Bool_t bFound1        = kFALSE;
     Int_t  caloLabel1     = photon1->GetCaloLabel(0);
     Bool_t iclus1         = -1;    
     AliVCluster *cluster1 = 0; 
-    if(clusters) {
-      //Get original cluster, to recover some information
-      for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster){
-          if     (cluster->GetID()==caloLabel1) {
-            bFound1  = kTRUE  ;
-            cluster1 = cluster;
-            iclus1   = iclus;
-          }
-        }      
-        if(bFound1) break;
-      }// calorimeter clusters loop
+    //Get original cluster, to recover some information
+    for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
+      AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+      if(cluster){
+        if     (cluster->GetID()==caloLabel1) {
+          bFound1  = kTRUE  ;
+          cluster1 = cluster;
+          iclus1   = iclus;
+        }
+      }      
+      if(bFound1) break;
+    }// calorimeter clusters loop
+    
+    if(!bFound1){
+      printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - First cluster not found\n");
+      return;
     }
     
     for(Int_t jphoton = iphoton+1; jphoton < GetInputAODBranch()->GetEntriesFast(); jphoton++){
@@ -495,68 +688,41 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) continue ;  //vertex cut
       mom2 = *(photon2->Momentum());
       
-      //Photon1
-      Float_t e1    = photon1->E();
-      Float_t tof1  = -1;
-      Float_t disp1 = -1;
-      Float_t l01   = -1;
-      Float_t l11   = -1; 
-      
-      //Photon2
-      Float_t e2    = photon2->E();
-      Float_t disp2 = -1;
-      Float_t tof2  = -1;
-      Float_t l02   = -1;
-      Float_t l12   = -1; 
       Bool_t bFound2        = kFALSE;
       Int_t  caloLabel2     = photon2->GetCaloLabel(0);
       AliVCluster *cluster2 = 0; 
-      if(clusters){      
-        for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-          AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-          if(cluster){
-            if(cluster->GetID()==caloLabel2) {
-              bFound2  = kTRUE  ;
-              cluster2 = cluster;
-            }          
-          }      
-          if(bFound2) break;
-        }// calorimeter clusters loop
-        
-        //Photon/Cluster 1
-        if(cluster1 && bFound1){
-          disp1   = cluster1->GetDispersion()*cluster1->GetDispersion();
-          l11     = cluster1->GetM20();
-          l01     = cluster1->GetM02();
-          tof1    = cluster1->GetTOF()*1e9;
-        }
-        //        else printf("cluster1 not available: calo label %d / %d, cluster ID %d\n",
-        //                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster1->GetID());
-        
-        //Photon/Cluster 2
-        if(cluster2 && bFound2){
-          disp2   = cluster2->GetDispersion()*cluster2->GetDispersion();
-          l12     = cluster2->GetM20();
-          l02     = cluster2->GetM02();
-          tof2    = cluster2->GetTOF()*1e9;
-        }
-        //        else printf("cluster2 not available: calo label %d / %d, cluster ID %d\n",
-        //                     photon2->GetCaloLabel(0),(GetReader()->GetInputEvent())->GetNumberOfCaloClusters()-1,cluster2->GetID());    
-        
-        //Select clusters with good time window difference
-        Double_t t12diff = tof1-tof2;
-        Float_t asymmetry = TMath::Abs(e1-e2)/(e1+e2);
-        fhClusterPairDiffTimeE  ->Fill(e1+e2,    t12diff);
-        fhClusterPairDiffTimeAsy->Fill(asymmetry,t12diff);
-        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
+      for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
+        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+        if(cluster){
+          if(cluster->GetID()==caloLabel2) {
+            bFound2  = kTRUE  ;
+            cluster2 = cluster;
+          }          
+        }      
+        if(bFound2) break;
+      }// calorimeter clusters loop
+      
+      if(!bFound2) {
+        printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Second cluster not found\n");
+        continue;
       }
+      
+      Float_t e1    = photon1->E();      
+      Float_t e2    = photon2->E();
+      
+      //Select clusters with good time window difference
+      Float_t tof1  = cluster1->GetTOF()*1e9;;
+      Float_t tof2  = cluster2->GetTOF()*1e9;;
+      Double_t t12diff = tof1-tof2;
+      fhEPairDiffTime->Fill(e1+e2,    t12diff);
+      if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter))
       {
         if(GetDebug()>1) 
           printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Selected gamma pair: pt %f, phi %f, eta%f \n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
-                
+        
         //Play with the MC stack if available
         if(IsDataMC()){
           //Check origin of the candidates
@@ -604,186 +770,9 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         
         //Fill some histograms about shower shape
         if(clusters && GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
-          
-          AliVCaloCells * cell = 0x0; 
-          if(fCalorimeter == "PHOS") 
-            cell = GetPHOSCells();
-          else		              
-            cell = GetEMCALCells();
-          
-          Float_t maxCellFraction1 = 0;
-          Float_t maxCellFraction2 = 0;
-          GetCaloUtils()->GetMaxEnergyCell(cell, cluster1, maxCellFraction1);
-          GetCaloUtils()->GetMaxEnergyCell(cell, cluster2, maxCellFraction2);
-          //printf("frac1 %f, frac2 %f\n",maxCellFraction1,maxCellFraction2);
-          fhEFracMaxCell->Fill(e1,maxCellFraction1);  
-          fhEFracMaxCell->Fill(e2,maxCellFraction2); 
-          
-          WeightHistograms(cluster1);
-          WeightHistograms(cluster2);
-          
-          //Photon1 
-          
-          //printf("Signal Cl1: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",
-          //       e,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
-          
-          fhEDispersion->Fill(e1, disp1);   
-          fhELambda0   ->Fill(e1, l01  );  
-          fhELambda1   ->Fill(e1, l11  );  
-          //printf("SM1 %d SM2 %d\n",GetModuleNumber(cluster2),GetModuleNumber(cluster1));
-
-          if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) {
-            fhELambda0NoTRD->Fill(e1, l01  );
-            fhEFracMaxCellNoTRD->Fill(e1,maxCellFraction1);  
-          }
-          
-          if(maxCellFraction1 < 0.5) 
-            fhELambda0FracMaxCellCut->Fill(e1, l01  );  
-          
-          //Photon2
-          //printf("Signal Cl2: e %f, pt %f, disp %f, l1 %f, l0 %f, eta %f, phi %f \n",e
-          //     ,pt,disp,l1,l0,photon2->Eta(),photon2->Phi());
-          
-          fhEDispersion->Fill(e2, disp2);   
-          fhELambda0   ->Fill(e2, l02  ); 
-          fhELambda1   ->Fill(e2, l12  ); 
-          if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) {
-            fhELambda0NoTRD->Fill(e2, l02  );
-            fhEFracMaxCellNoTRD->Fill(e2,maxCellFraction2);  
-          }
-          if(maxCellFraction2 < 0.5) 
-            fhELambda0FracMaxCellCut->Fill(e2, l02  );  
-          
-          if(IsDataMC()) {
-            //Photon1
-            if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPi0)  ){
-              fhEMCLambda0[mcPi0]    ->Fill(e1, l01);
-              fhEMCLambda1[mcPi0]    ->Fill(e1, l11);
-              fhEMCDispersion[mcPi0] ->Fill(e1, disp1);
-              
-              fhEMCFracMaxCell[mcPi0]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcPi0]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcPi0]->Fill(e1, l01  );  
-              
-            }//pi0
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCEta)  ){
-              fhEMCLambda0[mcEta]    ->Fill(e1, l01);
-              fhEMCLambda1[mcEta]    ->Fill(e1, l11);
-              fhEMCDispersion[mcEta] ->Fill(e1, disp1);
-              fhEMCFracMaxCell[mcEta]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcEta]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcEta]->Fill(e1, l01  );  
-            }//eta          
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) &&
-                      GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCConversion) ){
-              fhEMCLambda0[mcConversion]    ->Fill(e1, l01);
-              fhEMCLambda1[mcConversion]    ->Fill(e1, l11);
-              fhEMCDispersion[mcConversion] ->Fill(e1, disp1);
-              fhEMCFracMaxCell[mcConversion]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcConversion]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcConversion]->Fill(e1, l01  );  
-            }//conversion photon
-            else if( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCPhoton) ){
-              fhEMCLambda0[mcPhoton]    ->Fill(e1, l01);
-              fhEMCLambda1[mcPhoton]    ->Fill(e1, l11);
-              fhEMCDispersion[mcPhoton] ->Fill(e1, disp1);
-              fhEMCFracMaxCell[mcPhoton]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcPhoton]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcPhoton]->Fill(e1, l01  );  
-            }//photon   no conversion
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag1,AliMCAnalysisUtils::kMCElectron)){
-              fhEMCLambda0[mcElectron]    ->Fill(e1, l01);
-              fhEMCLambda1[mcElectron]    ->Fill(e1, l11);
-              fhEMCDispersion[mcElectron] ->Fill(e1, disp1);
-              fhEMCFracMaxCell[mcElectron]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcElectron]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcElectron]->Fill(e1, l01  );  
-            }//electron
-            else {
-              fhEMCLambda0[mcHadron]    ->Fill(e1, l01);
-              fhEMCLambda1[mcHadron]    ->Fill(e1, l11);
-              fhEMCDispersion[mcHadron] ->Fill(e1, disp1);
-              fhEMCFracMaxCell[mcHadron]->Fill(e1,maxCellFraction1);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster1) < 6) 
-                fhEMCLambda0NoTRD[mcHadron]->Fill(e1, l01  );
-              if(maxCellFraction1 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcHadron]->Fill(e1, l01  );  
-            }//other particles 
-            
-            //Photon 2
-            if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPi0)  ){
-              fhEMCLambda0[mcPi0]    ->Fill(e2, l02);
-              fhEMCLambda1[mcPi0]    ->Fill(e2, l12);
-              fhEMCDispersion[mcPi0] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcPi0]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcPi0]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcPi0]->Fill(e2, l02  );  
-            }//pi0
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCEta)  ){
-              fhEMCLambda0[mcEta]    ->Fill(e2, l02);
-              fhEMCLambda1[mcEta]    ->Fill(e2, l12);
-              fhEMCDispersion[mcEta] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcEta]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcEta]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcEta]->Fill(e2, l02  );  
-            }//eta            
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && 
-                      GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) ){
-              fhEMCLambda0[mcConversion]    ->Fill(e2, l02);
-              fhEMCLambda1[mcConversion]    ->Fill(e2, l12);
-              fhEMCDispersion[mcConversion] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcConversion]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcConversion]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcConversion]->Fill(e2, l02  );  
-            }//conversion photon
-            else if( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCPhoton) ){              
-              fhEMCLambda0[mcPhoton]    ->Fill(e2, l02);
-              fhEMCLambda1[mcPhoton]    ->Fill(e2, l12);
-              fhEMCDispersion[mcPhoton] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcPhoton]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcPhoton]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcPhoton]->Fill(e2, l02  );  
-            }//photon   no conversion
-            else if  ( GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCElectron)){
-              fhEMCLambda0[mcElectron]    ->Fill(e2, l02);
-              fhEMCLambda1[mcElectron]    ->Fill(e2, l12);
-              fhEMCDispersion[mcElectron] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcElectron]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcElectron]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcElectron]->Fill(e2, l02  );  
-            }//electron
-            else {
-              fhEMCLambda0[mcHadron]    ->Fill(e2, l02);
-              fhEMCLambda1[mcHadron]    ->Fill(e2, l12);
-              fhEMCDispersion[mcHadron] ->Fill(e2, disp2);
-              fhEMCFracMaxCell[mcHadron]->Fill(e2,maxCellFraction2);  
-              if(fCalorimeter=="EMCAL" && GetModuleNumber(cluster2) < 6) 
-                fhEMCLambda0NoTRD[mcHadron]->Fill(e2, l02  );
-              if(maxCellFraction2 < 0.5) 
-                fhEMCLambda0FracMaxCellCut[mcHadron]->Fill(e2, l02  );  
-            }//other particles 
-          }//is datamc
-        }//MC histograms
+          FillSelectedClusterHistograms(cluster1, tag1);
+          FillSelectedClusterHistograms(cluster2, tag2);
+        }
         
         //Create AOD for analysis
         mom = mom1+mom2;
@@ -1125,76 +1114,4 @@ void AliAnaPi0EbE::RecalibrateCellAmplitude(Float_t & amp, const Int_t id)
   }
 }
 
-//_________________________________________________________________________________
-void AliAnaPi0EbE::WeightHistograms(AliVCluster *clus)
-{
-  // Calculate weights and fill histograms
-  
-  if(!fFillWeightHistograms || GetMixedEvent()) return;
-  
-  AliVCaloCells* cells = 0;
-  if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
-  else                        cells = GetPHOSCells();
-  
-  // First recalculate energy in case non linearity was applied
-  Float_t  energy = 0;
-  Float_t  ampMax = 0;  
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
-    
-    Int_t id       = clus->GetCellsAbsId()[ipos];
-    
-    //Recalibrate cell energy if needed
-    Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
-    
-    energy    += amp;
-    
-    if(amp> ampMax) 
-      ampMax = amp;
-    
-  } // energy loop       
-  
-  if(energy <=0 ) {
-    printf("AliAnaPi0EbE::WeightHistograms()- Wrong calculated energy %f\n",energy);
-    return;
-  }
-  
-  fhEMaxCellClusterRatio   ->Fill(energy,ampMax/energy);
-  fhEMaxCellClusterLogRatio->Fill(energy,TMath::Log(ampMax/energy));
-  
-  //Get the ratio and log ratio to all cells in cluster
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
-    Int_t id       = clus->GetCellsAbsId()[ipos];
-    
-    //Recalibrate cell energy if needed
-    Float_t amp = cells->GetCellAmplitude(id);
-    RecalibrateCellAmplitude(amp,id);
-    
-    fhECellClusterRatio   ->Fill(energy,amp/energy);
-    fhECellClusterLogRatio->Fill(energy,TMath::Log(amp/energy));
-  }        
-  
-  //Recalculate shower shape for different W0
-  if(fCalorimeter=="EMCAL"){
-    
-    Float_t l0org = clus->GetM02();
-    Float_t l1org = clus->GetM20();
-    Float_t dorg  = clus->GetDispersion();
-    
-    for(Int_t iw = 0; iw < 7; iw++){
-      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(3+iw*0.5); 
-      GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
-      
-      fhLambda0ForW0[iw]->Fill(energy,clus->GetM02());
-      fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
-      
-    } // w0 loop
-    
-    // Set the original values back
-    clus->SetM02(l0org);
-    clus->SetM20(l1org);
-    clus->SetDispersion(dorg);
-    
-  }// EMCAL
-}
 
