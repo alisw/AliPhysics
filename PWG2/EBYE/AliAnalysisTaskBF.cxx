@@ -50,7 +50,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistPhi(0),
   fHistV0M(0),
   fESDtrackCuts(0),
-  fCentralityEstimator("VOM"),
+  fCentralityEstimator("V0M"),
   fCentralityPercentileMin(0.), 
   fCentralityPercentileMax(5.),
   fUseOfflineTrigger(kFALSE),
@@ -328,8 +328,19 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		  
       //Centrality stuff (centrality in AOD header)
       AliAODHeader *aodHeader = gAOD->GetHeader();
-      Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile("V0M");
-      //cout<< aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")<<" "<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL1")<<" "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TRK")<<endl;
+      Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+      // cout<<fCentralityEstimator.Data()<<" = "<<fCentrality<<" ,  others are V0M =  "
+      // 	  << aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")
+      // 	  <<"  FMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("FMD")
+      // 	  <<"  TRK = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TRK")
+      // 	  <<"  TKL = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKL")
+      // 	  <<"  CL0 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL0")
+      // 	  <<"  CL1 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL1")
+      // 	  <<"  V0MvsFMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD")
+      // 	  <<"  TKLvsV0M = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M")
+      // 	  <<"  ZEMvsZDC = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC")
+      // 	  <<endl;
+
       // take only events inside centrality class
       if(fCentrality > fCentralityPercentileMin && fCentrality < fCentralityPercentileMax){
 
@@ -439,48 +450,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     } //track loop
   }//MC analysis
   
-
-  // calculate balance function
-  fBalance->CalculateBalance(array);
-
-
-
   // shuffle charges
   random_shuffle( chargeVectorShuffle.begin(), chargeVectorShuffle.end() );
- 
-  for(Int_t iArray = 0; iArray < array->GetEntries(); iArray++){
 
-    // setting the charge in this way only possible for AOD tracks 
-    // --> shuffling only for AODs up to now
-    if(gAnalysisLevel == "AOD") {
-      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
-      if (!aodTrack) {
-	Printf("ERROR: Could not receive track %d", iArray);
-	continue;
-      }
-
-      aodTrack->SetCharge(chargeVectorShuffle.at(iArray));
-    }
-  }
-	
-  //calculate shuffled balance function
-  fShuffledBalance->CalculateBalance(array);
-
-  // set back the charges!
-  for(Int_t iArray = 0; iArray < array->GetEntries(); iArray++){
-
-    // setting the charge in this way only possible for AOD tracks 
-    // --> shuffling only for AODs up to now
-    if(gAnalysisLevel == "AOD") {
-      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(array->At(iArray));
-      if (!aodTrack) {
-	Printf("ERROR: Could not receive track %d", iArray);
-	continue;
-      }
-
-      aodTrack->SetCharge(chargeVector.at(iArray));
-    }
-  }
+  // calculate balance function (also for shuffled events)
+  fBalance->CalculateBalance(array,chargeVector);
+  fShuffledBalance->CalculateBalance(array,chargeVectorShuffle);
 
   
   delete array;

@@ -1,5 +1,7 @@
 //=============================================//
 const char* centralityEstimator = "V0M";
+//const char* centralityEstimator = "CL1";
+//const char* centralityEstimator = "TRK";
 //=============================================//
 
 //_________________________________________________________//
@@ -77,7 +79,6 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject();
     taskBF->SetAnalysisCutObject(trackCuts);
-    taskBF->SetCentralityEstimator(centralityEstimator);
 
     // offline trigger selection (AliVEvent.h)
     // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
@@ -90,6 +91,10 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
   }
+
+  // centrality estimator (default = V0M)
+    taskBF->SetCentralityEstimator(centralityEstimator);
+
 
     // vertex cut (x,y,z)
     taskBF->SetVertexDiamond(.3,.3,vertexZ);
