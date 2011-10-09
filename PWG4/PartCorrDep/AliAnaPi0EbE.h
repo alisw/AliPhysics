@@ -53,6 +53,10 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   
   // Main
   
+  void           FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag);
+    
+  void           FillWeightHistograms(AliVCluster *clus);
+  
   void           MakeInvMassInCalorimeter() ;
   
   void           MakeInvMassInCalorimeterAndCTS() ;
@@ -60,8 +64,6 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void           MakeShowerShapeIdentification() ;
   
   void           RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
-  
-  void           WeightHistograms(AliVCluster *clus);
     
   void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
   void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
@@ -108,17 +110,17 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH1F         * fhEPi0   ;                //! Number of identified  pi0 vs E
   TH3F         * fhEEtaPhiPi0  ;           //! E vs eta phi of identified  pi0 
   
-  TH2F         * fhEDispersion ;           //! E vs disp of pi0 pairs
-  TH2F         * fhELambda0 ;              //! E vs lambda0 of pi0 pairs 
-  TH2F         * fhELambda1 ;              //! E vs lambda1 of pi0 pairs 
-  TH2F         * fhELambda0NoTRD ;         //! E vs lambda0 of pi0 pairs, not behind TRD 
-  TH2F         * fhELambda0FracMaxCellCut ;//! E vs lambda0 of pi0 pairs, fraction of cluster energy in max cell cut 
-  TH2F         * fhEFracMaxCell ;          //! E vs frac max cell of cluster  
-  TH2F         * fhEFracMaxCellNoTRD ;     //! E vs frac max cell of cluster, not behind TRD  
+  TH2F         * fhEDispersion ;           //! E vs disp of selected cluster
+  TH2F         * fhELambda0 ;              //! E vs lambda0 of selected cluster 
+  TH2F         * fhELambda1 ;              //! E vs lambda1 of selected cluster 
+  TH2F         * fhELambda0NoTRD ;         //! E vs lambda0 of selected cluster, not behind TRD 
+  TH2F         * fhELambda0FracMaxCellCut ;//! E vs lambda0 of selected cluster, fraction of cluster energy in max cell cut 
+  TH2F         * fhEFracMaxCell ;          //! E vs frac max cell of selected cluster 
+  TH2F         * fhEFracMaxCellNoTRD ;     //! E vs frac max cell of selected cluster, not behind TRD  
+  TH2F         * fhENCells;                //! E vs N cells in selected cluster
+  TH2F         * fhETime;                  //! E vs Time of selected cluster 
+  TH2F         * fhEPairDiffTime;          //! E vs Pair of clusters time difference vs E
 
-  TH2F         * fhClusterPairDiffTimeE;   //! Pair of clusters time difference vs E
-  TH2F         * fhClusterPairDiffTimeAsy; //! Pair of clusters time difference vs Asymmetry
-  
   //MC histograms
   
   TH2F         * fhEMCLambda0[6] ;         //! E vs lambda0 of pi0 pairs but really from MC particle
@@ -144,7 +146,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhLambda0ForW0[7];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
   TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
   
-  ClassDef(AliAnaPi0EbE,8)
+  ClassDef(AliAnaPi0EbE,9)
 } ;
 
 
