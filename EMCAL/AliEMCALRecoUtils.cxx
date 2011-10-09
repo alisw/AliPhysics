@@ -885,7 +885,7 @@ void AliEMCALRecoUtils::RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells *
   // of the cells that compose the cluster.
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
 
-  if(!IsRecalibrationOn()) return;
+  if(!IsRecalibrationOn() && !IsTimeRecalibrationOn()) return;
   
   if(!cells){
     AliInfo("Cells pointer null!");
