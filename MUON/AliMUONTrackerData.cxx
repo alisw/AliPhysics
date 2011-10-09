@@ -656,6 +656,8 @@ AliMUONTrackerData::Add(const AliMUONTrackerData& data)
 
   // First cross check we have compatible objects.
   
+  AliCodeTimerAuto("",0);
+  
   if ( fIsChannelLevelEnabled != data.fIsChannelLevelEnabled ) 
   {
     AliError("Incompatible IsChannelLevelEnabled status");
@@ -777,7 +779,10 @@ AliMUONTrackerData::Add(const AliMUONTrackerData& data)
     }
   }
   
-  fNevents =  TMath::Max(fNevents,data.fNevents);
+  for ( Int_t i = 0 ; i < fNofDDLs; ++i ) 
+  {
+    fNevents = TMath::Max(fNevents,fNofEventsPerDDL[i]);
+  }
   
   return kTRUE;
 }
