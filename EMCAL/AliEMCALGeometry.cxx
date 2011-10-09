@@ -171,7 +171,8 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
 }
 
 //____________________________________________________________________________
-AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title) 
+AliEMCALGeometry::AliEMCALGeometry(const Text_t* name,   const Text_t* title,
+                                   const Text_t* mcname, const Text_t* mctitle) 
   : TNamed(name, title),
     fEMCGeometry(0x0),fGeoName(0),
     fKey110DEG(0),fNCellsInSupMod(0),fNETAdiv(0),fNPHIdiv(0),
@@ -187,8 +188,8 @@ AliEMCALGeometry::AliEMCALGeometry(const Text_t* name, const Text_t* title)
 { 
 
   // ctor only for normal usage 
-
-  fEMCGeometry = new AliEMCALEMCGeometry(name,title);
+  
+  fEMCGeometry = new AliEMCALEMCGeometry(name,title,mcname,mctitle);
 
   fGeoName = fEMCGeometry->GetGeoName();
   fKey110DEG = fEMCGeometry->GetKey110DEG();
@@ -285,16 +286,16 @@ AliEMCALGeometry *  AliEMCALGeometry::GetInstance(){
 }
 
 //______________________________________________________________________
-AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,
-                                                const Text_t* title){
+AliEMCALGeometry* AliEMCALGeometry::GetInstance(const Text_t* name,   const Text_t* title,
+                                                const Text_t* mcname, const Text_t* mctitle ){
   // Returns the pointer of the unique instance
-  
+    
   AliEMCALGeometry * rv = 0; 
   if ( fgGeom == 0 ) {
     if ( strcmp(name,"") == 0 ) { // get default geometry
-      fgGeom = new AliEMCALGeometry(fgkDefaultGeometryName, title);
+      fgGeom = new AliEMCALGeometry(fgkDefaultGeometryName, title,mcname,mctitle);
     } else {
-      fgGeom = new AliEMCALGeometry(name, title);
+      fgGeom = new AliEMCALGeometry(name, title,mcname,mctitle);
     }  // end if strcmp(name,"")
     if ( AliEMCALEMCGeometry::fgInit ) rv = (AliEMCALGeometry * ) fgGeom;
     else {

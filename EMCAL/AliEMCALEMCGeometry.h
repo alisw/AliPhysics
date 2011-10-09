@@ -32,7 +32,8 @@ public:
   AliEMCALEMCGeometry(); // default ctor only for internal usage (singleton)
   AliEMCALEMCGeometry(const AliEMCALEMCGeometry& geom);
   // ctor only for internal usage (singleton)
-  AliEMCALEMCGeometry(const Text_t* name, const Text_t* title);
+  AliEMCALEMCGeometry(const Text_t* name, const Text_t* title,
+                      const Text_t* mcname="", const Text_t* mctitle="");
 
   virtual ~AliEMCALEMCGeometry(void); 
 
@@ -49,9 +50,9 @@ public:
   static const Char_t* GetDefaultGeometryName() {return fgkDefaultGeometryName;}
   void   PrintGeometry();        //*MENU*  
   
-  void   Init(void);     		  // initializes the parameters of EMCAL
+  void   Init(const Text_t* mcname="", const Text_t* mctitle=""); // initializes the parameters of EMCAL
   void   CheckAdditionalOptions();        //
-  void   DefineSamplingFraction();        // Jun 5, 2006
+  void   DefineSamplingFraction(const Text_t* mcname="", const Text_t* mctitle="");        
 
   //////////////////////////////////////
   // Return EMCAL geometrical parameters

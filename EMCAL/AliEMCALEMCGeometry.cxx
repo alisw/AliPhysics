@@ -111,7 +111,8 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry()
   AliDebug(2, "AliEMCALEMCGeometry : default ctor ");
 }
 //______________________________________________________________________
-AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title) :
+AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title,
+                                         const Text_t* mcname, const Text_t* mctitle ) :
   TNamed(name,title),
     fGeoName(0),fArrayOpts(0),fNAdditionalOpts(0),fECPbRadThickness(0.),fECScintThick(0.),
     fNECLayers(0),fArm1PhiMin(0.),fArm1PhiMax(0.),fArm1EtaMin(0.),fArm1EtaMax(0.),fIPDistance(0.),
@@ -133,9 +134,9 @@ AliEMCALEMCGeometry::AliEMCALEMCGeometry(const Text_t* name, const Text_t* title
     f2Trd2Dy2(0.), fEmptySpace(0.), fTubsR(0.), fTubsTurnAngle(0.)
 {
   // ctor only for internal usage (singleton)
-  AliDebug(2, Form("AliEMCALEMCGeometry(%s,%s) ", name,title));
+  AliDebug(2, Form("AliEMCALEMCGeometry(%s,%s,%s,%s) ", name,title,mcname,mctitle));
 
-  Init();
+  Init(mcname,mctitle);
 
   //  CreateListOfTrd1Modules();
 
@@ -227,7 +228,7 @@ AliEMCALEMCGeometry::~AliEMCALEMCGeometry(void){
 }
 
 //______________________________________________________________________
-void AliEMCALEMCGeometry::Init(void){
+void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   //
   // Initializes the EMCAL parameters based on the name
   // Only Shashlyk geometry is available, but various combinations of
@@ -413,7 +414,7 @@ void AliEMCALEMCGeometry::Init(void){
   }
 
   //called after setting of scintillator and lead layer parameters
-  DefineSamplingFraction();
+  DefineSamplingFraction(mcname,mctitle);
 
   
   // TRU parameters - Apr 29,08 by PAI. 
@@ -536,12 +537,14 @@ void AliEMCALEMCGeometry::CheckAdditionalOptions()
 }
 
 //__________________________________________________________________
-void AliEMCALEMCGeometry::DefineSamplingFraction()
+void AliEMCALEMCGeometry::DefineSamplingFraction(const Text_t* mcname, const Text_t* mctitle)
 {
   // Jun 05,2006
   // Look http://rhic.physics.wayne.edu/~pavlinov/ALICE/SHISHKEBAB/RES/linearityAndResolutionForTRD1.html
   // Keep for compatibilty
   //
+  
+  // Sampling factor for G3
   fSampling = 10.87; // Default value - Nov 25,2010
   if(fNECLayers == 69) {        // 10% layer reduction
     fSampling = 12.55;
@@ -558,6 +561,25 @@ void AliEMCALEMCGeometry::DefineSamplingFraction()
       fSampling = 8.93; // fECScintThick = 0.192, fECPbRadThickness=0.128;
     }
   }
+
+  // Default sampling factor for G3, modify it for other transport model
+  TString mcName  = mcname;
+  TString mcTitle = mctitle;
+
+  Float_t samplingFactorTranportModel = 1. ;
+  if     (mcName.Contains("Geant3")) samplingFactorTranportModel = 1.;//0.988 // Do nothing
+  else if(mcName.Contains("Fluka") ) samplingFactorTranportModel = 1.; // To be set
+  else if(mcName.Contains("Geant4")){
+    if(mcTitle.Contains("EMV"))      samplingFactorTranportModel = 1.096; // 0.906, 0.896 (OPT)
+    else                             samplingFactorTranportModel = 0.86; // 1.15 (CHIPS), 1.149 (BERT), 1.147 (BERT_CHIPS) 
+  }      
+  
+  AliDebug(2,Form("MC modeler <%s>, Title <%s>: Sampling %f, model fraction with respect to G3 %f, final sampling %f \n",
+               mcName.Data(),mcTitle.Data(),fSampling,samplingFactorTranportModel,fSampling*samplingFactorTranportModel));
+
+  
+  fSampling*=samplingFactorTranportModel;
+  
 }
 
 //________________________________________________________________________________________________

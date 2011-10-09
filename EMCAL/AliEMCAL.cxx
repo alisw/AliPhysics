@@ -440,12 +440,22 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
 {
   //Initializes and returns geometry
   
+  // Pass the transpor model name (Geant3, Geant4, Fluka) and title to the geometry
+  TString mcname   = "";
+  TString mctitle  = "";
+  if(gMC){
+    mcname  = gMC->GetName()  ;
+    mctitle = gMC->GetTitle() ;
+  }
+  
   //Check if run number and requested geometry correspond to the same geometry as
   //in real data taking. To prevent errors in official simulation productions
   if(!(AliEMCALGeometry::GetInstance()))
   {
+    // Check the transport model name and option, set sampling fraction depending on it
+    
     if(!fCheckRunNumberAndGeoVersion){// Set geometry with the name used in the configuration file
-      return AliEMCALGeometry::GetInstance(GetTitle(),"EMCAL") ;
+      return AliEMCALGeometry::GetInstance(GetTitle(),"EMCAL",mcname,mctitle) ;
     }
     else{//Check run number and version and set the corresponding one.
       //Get run number
@@ -466,7 +476,7 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         else {
           AliDebug(1,"Initialized geometry with name <<EMCAL_FIRSTYEARV1>>");}
         
-        return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL") ;// Set geometry with the name used in the configuration file
+        return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
       else{ //Default geometry
         //Complete EMCAL geometry, 10 SM.
@@ -477,10 +487,11 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         else {
           AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETEV1>>");}
 
-        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL") ;// Set geometry with the name used in the configuration file
+        return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
     }
   }// Init geometry for the first time
+  
   
   return AliEMCALGeometry::GetInstance();
     

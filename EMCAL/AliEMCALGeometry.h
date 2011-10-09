@@ -35,14 +35,15 @@ class AliEMCALGeometry : public TNamed {
 public: 
 
   AliEMCALGeometry();
-  AliEMCALGeometry(const Text_t* name, const Text_t* title="");
+  AliEMCALGeometry(const Text_t* name, const Text_t* title="",
+                   const Text_t* mcname="", const Text_t* mctitle="");
   AliEMCALGeometry(const AliEMCALGeometry & geom);
   
   virtual ~AliEMCALGeometry(void); 
   AliEMCALGeometry & operator = (const AliEMCALGeometry  & rvalue);
   
-  static AliEMCALGeometry * GetInstance(const Text_t* name,
-					const Text_t* title="") ; 
+  static AliEMCALGeometry * GetInstance(const Text_t* name,      const Text_t* title="",
+                                        const Text_t* mcname="TGeant3", const Text_t* mctitle="") ; 
   static AliEMCALGeometry * GetInstance();
 
 
