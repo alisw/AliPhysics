@@ -88,7 +88,8 @@ public:
   virtual void    SetPar5     (Int_t ipar, Double_t par)    { fPar5  [ipar] = par;             }
   virtual void    SetPar6     (Int_t ipar, Double_t par)    { fPar6  [ipar] = par;             }
   virtual void    InitClusterUnfolding()                    {
-    fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6);          }
+    fClusterUnfolding=new AliEMCALUnfolding(fGeom,fECALocMaxCut,fSSPars,fPar5,fPar6); 
+    fClusterUnfolding->SetThreshold(fMinECut);                                                 }
 
   //NxN (only used in NxN clusterizer)
   

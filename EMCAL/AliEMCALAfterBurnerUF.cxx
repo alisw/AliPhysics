@@ -80,6 +80,7 @@ AliEMCALAfterBurnerUF::AliEMCALAfterBurnerUF():
   fGeom(NULL),
   fLogWeight(4.5),      // correct?
   fECALocMaxCut(0.03),  // value suggested by Adam
+  fMinECut(0.01),
   fRecPoints(NULL),
   fDigitsArr(NULL),
   fClusterUnfolding(NULL)
@@ -90,10 +91,11 @@ AliEMCALAfterBurnerUF::AliEMCALAfterBurnerUF():
 }
 
 //------------------------------------------------------------------------
-AliEMCALAfterBurnerUF::AliEMCALAfterBurnerUF(Float_t logWeight, Float_t ECALocMaxCut):
+AliEMCALAfterBurnerUF::AliEMCALAfterBurnerUF(Float_t logWeight, Float_t ecaLocMaxCut, Float_t minECut):
   fGeom(NULL),
   fLogWeight(logWeight),
-  fECALocMaxCut(ECALocMaxCut),
+  fECALocMaxCut(ecaLocMaxCut),
+  fMinECut(minECut),
   fRecPoints(NULL),
   fDigitsArr(NULL),
   fClusterUnfolding(NULL)
@@ -135,7 +137,8 @@ void AliEMCALAfterBurnerUF::Init()
 
   fClusterUnfolding = new AliEMCALUnfolding(fGeom);
   fClusterUnfolding->SetECALocalMaxCut(fECALocMaxCut);
-
+  fClusterUnfolding->SetThreshold(fMinECut); 
+  
   // clusters --> recPoints, cells --> digits and back ;)
   fRecPoints = new TObjArray(100);
   fDigitsArr = new TClonesArray("AliEMCALDigit",1152);

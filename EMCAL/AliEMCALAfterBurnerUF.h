@@ -26,7 +26,7 @@ class AliEMCALAfterBurnerUF {
 
   public:
     AliEMCALAfterBurnerUF();
-    AliEMCALAfterBurnerUF(Float_t logWeight, Float_t locMaxCut);
+    AliEMCALAfterBurnerUF(Float_t logWeight, Float_t locMaxCut, Float_t minEcut);
     virtual ~AliEMCALAfterBurnerUF();
 
   private:
@@ -46,12 +46,13 @@ class AliEMCALAfterBurnerUF {
     AliEMCALGeometry  *fGeom;          // EMCAL geometry
     Float_t            fLogWeight;     // used in AliEMCALRecPoint::EvalGlobalPosition()
     Float_t            fECALocMaxCut;  // this amount of energy must distinguish a local maximum from its neighbours
+    Float_t            fMinECut;       // minimum energy of cell   
     TObjArray         *fRecPoints;     //! cluster <=> recPoint
     TClonesArray      *fDigitsArr;     //->   cell <=> digit
 
     AliEMCALUnfolding *fClusterUnfolding;  // unfolding class instance
 
-    ClassDef(AliEMCALAfterBurnerUF,1)
+    ClassDef(AliEMCALAfterBurnerUF,2)
 } ;
 
 #endif // AliEMCALAFTERBURNERUF_H
