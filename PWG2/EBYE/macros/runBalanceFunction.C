@@ -33,9 +33,9 @@ void runBalanceFunction(
          const bool bAOD = 1, // 1 = AOD ANALYSIS, 0 = ESD ANALYSIS
          const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
          const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
-         const Long64_t nentries = 5000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
+         const Long64_t nentries = 50000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
-         const char *proofdataset = "bunchPROOF.txt", // path to dataset on proof cluster, for proof analysis
+         TString proofdataset = "bunchPROOF", // path to dataset on proof cluster, for proof analysis
          const char *proofcluster = "miweber@alice-caf.cern.ch", // which proof cluster to use in proof mode
          const char *taskname = "BF_Syst_Test" // sets name of grid generated macros
          )
@@ -77,7 +77,7 @@ void runBalanceFunction(
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%i",taskname,bunchN));
     
     // create the alien handler and attach it to the manager
-    AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, proofdataset); 
+    AliAnalysisGrid *plugin = CreateAlienHandler(bAOD,bunchN,Form("%s%i",taskname,bunchN), gridmode, proofcluster, Form("%s_%d.txt",proofdataset.Data(),bunchN)); 
     mgr->SetGridHandler(plugin);
     
 
@@ -155,21 +155,23 @@ void runBalanceFunction(
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
-    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
+    //AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,5,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
     
-    // //Add the BFG task (different centralities)
-    // for (Int_t i=binfirst; i<binlast+1; i++) {
-    //   Float_t lowCentralityBinEdge = centralityArray[i];
-    //   Float_t highCentralityBinEdge = centralityArray[i+1];
-
-    //   // For systematic studies ( A train of centrality trains )
-    //   for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
-    // 	Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
-    // 	AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
-    //   }
-    // } 
-   
+    //Add the BFG task (different centralities)
+    for (Int_t i=binfirst; i<binlast+1; i++) {
+      Float_t lowCentralityBinEdge = centralityArray[i];
+      Float_t highCentralityBinEdge = centralityArray[i+1];
+      
+      // For systematic studies ( A train of centrality trains )
+      //for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
+      Int_t j = 0;
+      Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
+      AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
+      //}
+    } 
+    
         
+
     // enable debug printouts
     //mgr->SetDebugLevel(2);
     //mgr->SetUseProgressBar(1,100);
