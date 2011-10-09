@@ -144,7 +144,8 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
 
   TH2F * fhNCellsE[2];                         //! number of cells in cluster vs E 
   TH2F * fhMaxCellDiffClusterE[2];             //! Fraction of energy carried by cell with maximum energy
-  
+  TH2F * fhTimeE[2];                           //! E vs Time of selected cluster 
+
   TH1F * fhE[2]    ;                           //! Number of identified electron vs energy
   TH1F * fhPt[2]   ;                           //! Number of identified electron vs transerse momentum 
   TH2F * fhPhi[2]  ;                           //! Azimuthal angle of identified  electron vs transerse momentum 

@@ -914,9 +914,13 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
   
   //Fill histograms only possible when simulation
   
+  if(!labels || nLabels<=0){
+    if(GetDebug() > 1) printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Strange, labels array %p, n labels %d \n", labels,nLabels);
+    return kFALSE;
+  }
+  
   if(GetDebug() > 1) {
-    printf("\t Primaries: nlabels %d\n",nLabels);
-    if(!nLabels || !labels) printf("\t Strange, no labels!!!\n");
+    printf("AliAnaCalorimeterQA::ClusterMCHistograms() - Primaries: nlabels %d\n",nLabels);
   }  
   
   Float_t e   = mom.E();
@@ -1178,6 +1182,7 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
                                                             const Bool_t okPrimary, const Int_t pdg)
 {
   //Histograms for clusters matched with tracks
+  
   Float_t e   = mom.E();
   Float_t pt  = mom.Pt();
   Float_t eta = mom.Eta();
@@ -1191,6 +1196,14 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
     fhEtaCharged    ->Fill(eta);
   }
   
+  if(fFillAllTMHisto){
+    if(fFillAllTH3)fhEtaPhiECharged->Fill(eta,phi,e);		
+    if((fCalorimeter=="EMCAL" && GetReader()->GetEMCALPtMin() < 0.3) ||
+       (fCalorimeter=="PHOS"  && GetReader()->GetPHOSPtMin()  < 0.3))   fhNCellsPerClusterMIPCharged->Fill(e, clus->GetNCells());
+  }
+  
+  //Study the track and matched cluster if track exists.
+    
   AliVTrack * track = 0x0;
   if(!strcmp("AliESDCaloCluster",Form("%s",clus->ClassName())))
   { 
@@ -1202,16 +1215,7 @@ void AliAnaCalorimeterQA::ClusterMatchedWithTrackHistograms(AliVCluster *clus, T
   }
   
   if(!track) return ;
-  
-  if(fFillAllTMHisto){
-    if(fFillAllTH3)fhEtaPhiECharged->Fill(eta,phi,e);		
-    if((fCalorimeter=="EMCAL" && GetReader()->GetEMCALPtMin() < 0.3) ||
-       (fCalorimeter=="PHOS"  && GetReader()->GetPHOSPtMin()  < 0.3))   fhNCellsPerClusterMIPCharged->Fill(e, clus->GetNCells());
-  }
-  //printf("track index %d ntracks %d\n", esd->GetNumberOfTracks());
-  
-  //Study the track and matched cluster if track exists.
-  if(!track) return;
+
   Double_t emcpos[3] = {0.,0.,0.};
   Double_t emcmom[3] = {0.,0.,0.};
   Double_t radius    = 441.0; //[cm] EMCAL radius +13cm

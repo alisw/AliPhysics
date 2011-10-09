@@ -77,7 +77,8 @@ AliAnaElectron::AliAnaElectron() :
   //default ctor
   for(Int_t index = 0; index < 2; index++){
     
-    fhNCellsE [index] = 0;                  
+    fhNCellsE [index] = 0;    
+    fhTimeE   [index] = 0;  
     fhMaxCellDiffClusterE[index] = 0;
     fhE       [index] = 0;                        
     fhPhi     [index] = 0;                      
@@ -400,6 +401,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   Int_t nbins       = GetHistoNClusterCellBins(); Int_t   nmax      = GetHistoNClusterCellMax(); Int_t   nmin      = GetHistoNClusterCellMin(); 
   Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
   Int_t nPoverEbins = GetHistoPOverEBins();       Float_t pOverEmax = GetHistoPOverEMax();       Float_t pOverEmin = GetHistoPOverEMin();
+  Int_t tbins       = GetHistoTimeBins() ;        Float_t tmax      = GetHistoTimeMax();         Float_t tmin      = GetHistoTimeMin();
 
   fhdEdxvsE  = new TH2F ("hdEdxvsE","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
   fhdEdxvsE->SetXTitle("E (GeV)");
@@ -588,6 +590,13 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
     fhNCellsE[pidIndex]->SetXTitle("E (GeV)");
     fhNCellsE[pidIndex]->SetYTitle("# of cells in cluster");
     outputContainer->Add(fhNCellsE[pidIndex]);  
+    
+    fhTimeE[pidIndex] = new TH2F(Form("h%sTimeE",pidParticle[pidIndex].Data()),
+                                 Form("Time in %s cluster vs E ",pidParticle[pidIndex].Data())
+                                 ,nptbins,ptmin,ptmax, tbins,tmin,tmax);
+    fhTimeE[pidIndex]->SetXTitle("E (GeV)");
+    fhTimeE[pidIndex]->SetYTitle(" t (ns)");
+    outputContainer->Add(fhTimeE[pidIndex]);  
     
     fhMaxCellDiffClusterE[pidIndex]  = new TH2F (Form("h%sMaxCellDiffClusterE",pidParticle[pidIndex].Data()),
                                                  Form("%s: energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",pidParticle[pidIndex].Data()),
@@ -1015,7 +1024,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     
     fhMaxCellDiffClusterE[pidIndex]->Fill(aodph.E(),maxCellFraction);
     fhNCellsE[pidIndex]            ->Fill(aodph.E(),calo->GetNCells());
-    
+    fhTimeE[pidIndex]              ->Fill(aodph.E(),calo->GetTOF()*1.e9);
+
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
