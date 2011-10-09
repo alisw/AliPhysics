@@ -35,6 +35,16 @@ public:
   Float_t GetAPDNoise() const { return fAPDNoise;  }          //RMS of APD noise
   void SetAPDNoise(Float_t noise=0.012){fAPDNoise = noise;  }
 
+  //Parameters to apply non-lineary on cell level
+  Bool_t IsCellNonlinearityOn() const {return fCellNonLineaityOn;}
+  void SetCellNonLinearity(Bool_t on=kTRUE){fCellNonLineaityOn=on;} //default: on=kFALSE
+  Double_t GetCellNonLineairyA(void) const {return fCellNonLineaityA; }
+  Double_t GetCellNonLineairyB(void) const {return fCellNonLineaityB; }
+  void SetCellNonLineairyA(Double_t a=0.30) {fCellNonLineaityA = a; }
+  void SetCellNonLineairyB(Double_t b=0.109){fCellNonLineaityB = b; }
+
+
+
   Float_t GetEmcDigitsThreshold() const { return fEMCDigitThreshold ; }  //Minimal energy to keep digit
   void SetEMCDigitsThreshold(Float_t thresh=0.01){fEMCDigitThreshold=thresh;} 
 
@@ -102,6 +112,8 @@ private:
   Float_t fEMCADCchannel ;      //width of ADC channel in GeV
   Float_t fTOFa  ;              //constant term of TOF resolution 
   Float_t fTOFb  ;              //stohastic term of TOF resolution 
+  Float_t fCellNonLineaityA ;   //Amp of cel non-linearity
+  Float_t fCellNonLineaityB ;   //Energy scale of cel non-linearity
 
   //Parameters used for RAW embedding
   Bool_t  fEMCSubtractPedestals;   // true if pedestal should be subtracted (in non-ZS)
@@ -118,7 +130,8 @@ private:
  
   Bool_t fDStream[10] ;   //Mark mixing stream contains digits or SDigits
   Bool_t fDigitizeE ;     //Use energy digitization in simulation or left to Digits2Raw()
-
+  Bool_t fCellNonLineaityOn ;  //Model scintillator non-linearity in AliPHOSDigitizer
+  
   static AliPHOSSimParam * fgSimParam ; // pointer to the unique instance of the class
 
   ClassDef(AliPHOSSimParam,2)

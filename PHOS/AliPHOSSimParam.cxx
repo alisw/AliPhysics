@@ -31,11 +31,12 @@ AliPHOSSimParam::AliPHOSSimParam() :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fCellNonLineaityA(0.),fCellNonLineaityB(1.),
   fEMCSubtractPedestals(kFALSE),
   fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(0),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
-  fDigitizeE(0)
+  fDigitizeE(0),fCellNonLineaityOn(0)
 {
   //Default constructor.
   for(Int_t i=0; i<10; i++) fDStream[i] = 0 ;
@@ -48,12 +49,13 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fCellNonLineaityA(0.),fCellNonLineaityB(1.),
   fEMCSubtractPedestals(kFALSE),
   fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(0),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),
   fNADCcpv(0),
-  fDigitizeE(0)
+  fDigitizeE(0),fCellNonLineaityOn(0)
 {
   //Real (private) constructor 
   //Set default parameters
@@ -86,6 +88,8 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fEMCADCchannel      = 0.005 ;  // [GeV]
   fTOFa               = 0.5e-9 ; // [sec] constant term
   fTOFb               = 1.e-9 ;  // [sec/sqrt(GeV)]] stohastic term
+  fCellNonLineaityA   = 0.30 ;   //Amp of non-linearity of cell responce
+  fCellNonLineaityB   = 0.109;   //Scale of non-linearity of cell responce
 
   fADCpedestalCpv     = 0.012 ;  // [aux units]
   fADCchanelCpv       = 0.0012;  // [aux units]    
@@ -111,11 +115,12 @@ AliPHOSSimParam::AliPHOSSimParam(const AliPHOSSimParam& ):
   fLightFactor(0.),fAPDFactor(0.),         
   fAPDNoise(0.),fEMCDigitThreshold(0.),
   fEMCADCchannel(0.),fTOFa(0.),fTOFb(0.),
+  fCellNonLineaityA(0.),fCellNonLineaityB(1.),
   fEMCSubtractPedestals(kFALSE),
   fGlobalAltroOffset(0),fGlobalAltroThreshold(0),fEMCSampleQualityCut(1.),
   fADCpedestalCpv(0.),fADCchanelCpv(0.),
   fCPVNoise(0.),fCPVDigitThreshold(0.),fNADCcpv(0),
-  fDigitizeE(0)
+  fDigitizeE(0),fCellNonLineaityOn(0)
 {
   //Copy constructor.
   AliError("Should not use copy constructor for singleton") ;

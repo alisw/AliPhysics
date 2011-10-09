@@ -508,6 +508,20 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     }
   }
 
+
+  //Apply non-linearity
+  if(AliPHOSSimParam::GetInstance()->IsCellNonlinearityOn()){ //Apply non-lineairyt on cell level
+    const Double_t aNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyA() ;
+    const Double_t bNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyB() ;
+    for(Int_t i = 0 ; i < nEMC ; i++){
+      digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
+      Double_t e= digit->GetEnergy() ;
+      // version(1)      digit->SetEnergy(e*(1+a*TMath::Exp(-e/b))) ;
+      digit->SetEnergy(e*(1.+aNL*TMath::Exp(-e*e/2./bNL/bNL))) ; //Better agreement with data...
+    }  
+  }
+
+
   //distretize energy if necessary
   if(AliPHOSSimParam::GetInstance()->IsEDigitizationOn()){
     Float_t adcW=AliPHOSSimParam::GetInstance()->GetADCchannelW() ;
@@ -516,12 +530,12 @@ void AliPHOSDigitizer::Digitize(Int_t event)
       digit->SetEnergy(adcW*ceil(digit->GetEnergy()/adcW)) ;
     } 
   }
+ 
   //Apply decalibration if necessary
   for(Int_t i = 0 ; i < nEMC ; i++){
     digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
     Decalibrate(digit) ;
   }
- 
   
 //  ticks->Delete() ;
 //  delete ticks ;
@@ -610,7 +624,7 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 
     geom->AbsToRelNumbering(digit->GetId(),relId);
 
-    digit->SetEnergy(TMath::Ceil(digit->GetEnergy())-0.9999) ;
+//    digit->SetEnergy(TMath::Ceil(digit->GetEnergy())-0.9999) ;
 
     Float_t tres = TimeResolution(digit->GetEnergy()) ; 
     digit->SetTime(gRandom->Gaus(digit->GetTime(), tres) ) ;
@@ -676,8 +690,7 @@ void AliPHOSDigitizer::Decalibrate(AliPHOSDigit *digit)
   Int_t row   =relId[2];
   Int_t column=relId[3];
   if(relId[1]==0){ //This Is EMC
-    Float_t decalib     = fcdb->GetADCchannelEmcDecalib(module,column,row); // O(1)
-    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row)*decalib;
+    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row);
     Float_t energy = digit->GetEnergy()/calibration;
     digit->SetEnergy(energy); //Now digit measures E in ADC counts
     Float_t time = digit->GetTime() ;
