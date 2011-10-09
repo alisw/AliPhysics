@@ -75,7 +75,7 @@ class AliBalance : public TObject {
   Double_t GetNnp(Int_t analysisType, Int_t p2) const { 
     return 1.0*fNnp[analysisType][p2]; }
 
-  void CalculateBalance(TObjArray *gTrackArray);
+  void CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVector);
   
   Double_t GetBalance(Int_t a, Int_t p2);
   Double_t GetError(Int_t a, Int_t p2);

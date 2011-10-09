@@ -230,7 +230,7 @@ void AliBalance::PrintAnalysisSettings() {
 }
 
 //____________________________________________________________________//
-void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
+void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVector) {
   // Calculates the balance function
   fAnalyzedEvents++;
   Int_t i = 0 , j = 0;
@@ -258,7 +258,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
       track = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
 
     if(track) {
-      Short_t charge          = track->Charge();
+      Short_t charge          = chargeVector.at(i);
       Double_t pseudorapidity = track->Eta();
       Double_t rapidity       = track->Y();
       Double_t phi            = track->Phi() * TMath::RadToDeg();
@@ -305,7 +305,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
     }//track object valid
     else continue;
   }
-  //Printf("Np: %lf - Nn: %lf",fNp,fNn);
+  //Printf("Np: %lf - Nn: %lf",fNp[0],fNn[0]);
 
   Double_t dy = 0., deta = 0.;
   Double_t qLong = 0., qOut = 0., qSide = 0., qInv = 0.;
@@ -335,7 +335,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 
 
     if(track1) {
-      charge1 = track1->Charge();
+      charge1 = chargeVector.at(i);;
       p1      = track1->P();
       pX1     = track1->Px();
       pY1     = track1->Py();
@@ -356,7 +356,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray) {
 	track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
       
       if(track2) {
-	charge2 = track2->Charge();
+	charge2 = chargeVector.at(j);
 	p2      = track2->P();
 	pX2     = track2->Px();
 	pY2     = track2->Py();

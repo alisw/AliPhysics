@@ -51,8 +51,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 
   AliBalance *bf[10][7];
   AliBalance *bfs[10][7];
-  TH1F *gbf[10][7];
-  TH1F *gbfs[10][7];
+  TH1D *gbf[10][7];
+  TH1D *gbfs[10][7];
 
   TH1D *fHistP[7]; //N+
   TH1D *fHistN[7]; //N-
@@ -60,6 +60,13 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
   TH1D *fHistNP[7]; //N-+
   TH1D *fHistPP[7]; //N++
   TH1D *fHistNN[7]; //N--
+
+  TH1D *fHistPS[7]; //N+
+  TH1D *fHistNS[7]; //N-
+  TH1D *fHistPNS[7]; //N+-
+  TH1D *fHistNPS[7]; //N-+
+  TH1D *fHistPPS[7]; //N++
+  TH1D *fHistNNS[7]; //N--
 
   while ( (key = (TKey*)nextkey())) {
 
@@ -175,9 +182,10 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	  gbf[iCanvas][a]->Draw("AP");
 	}
 	else{
-	  fHistPP[a]->Draw();
 	  fHistPN[a]->SetLineColor(2);
-	  fHistPN[a]->Draw("same");
+	  fHistPN[a]->Draw();
+	  fHistPP[a]->SetLineColor(1);
+	  fHistPP[a]->Draw("same");
 	  fHistNP[a]->SetLineColor(4);
 	  fHistNP[a]->Draw("same");
 	  fHistNN[a]->SetLineColor(8);
@@ -199,37 +207,38 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	// create the BF object
 	bfs[iCanvas][a]  = new AliBalance();
 
-	fHistP[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistN[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistPP[a] = (TH1D*)list->FindObject(Form("fHistPP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistPN[a] = (TH1D*)list->FindObject(Form("fHistPN%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistNN[a] = (TH1D*)list->FindObject(Form("fHistNN%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistPS[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistNS[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistPPS[a] = (TH1D*)list->FindObject(Form("fHistPP%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistPNS[a] = (TH1D*)list->FindObject(Form("fHistPN%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistNPS[a] = (TH1D*)list->FindObject(Form("fHistNP%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistNNS[a] = (TH1D*)list->FindObject(Form("fHistNN%s_shuffle",gBFAnalysisType[a].Data()));
 
 	// set histograms in AliBalance object
-	bfs[iCanvas][a]->SetHistNp(a, fHistP[a]);
-	bfs[iCanvas][a]->SetHistNn(a, fHistN[a]);
-	bfs[iCanvas][a]->SetHistNpp(a, fHistPP[a]);
-	bfs[iCanvas][a]->SetHistNpn(a, fHistPN[a]);
-	bfs[iCanvas][a]->SetHistNnp(a, fHistNP[a]);
-	bfs[iCanvas][a]->SetHistNnn(a, fHistNN[a]);
+	bfs[iCanvas][a]->SetHistNp(a, fHistPS[a]);
+	bfs[iCanvas][a]->SetHistNn(a, fHistNS[a]);
+	bfs[iCanvas][a]->SetHistNpp(a, fHistPPS[a]);
+	bfs[iCanvas][a]->SetHistNpn(a, fHistPNS[a]);
+	bfs[iCanvas][a]->SetHistNnp(a, fHistNPS[a]);
+	bfs[iCanvas][a]->SetHistNnn(a, fHistNNS[a]);
 
-	gbfs[iCanvas][a] = bf[iCanvas][a]->GetBalanceFunctionHistogram(a);
+	gbfs[iCanvas][a] = bfs[iCanvas][a]->GetBalanceFunctionHistogram(a);
 	gbfs[iCanvas][a]->SetName(Form("%s_BF_%s",listName.Data(),gBFAnalysisType[a].Data()));
 
 	cBFS[iCanvas]->cd(a+1);
 	gbfs[iCanvas][a]->SetMarkerStyle(20);
 	if(!bHistos){
-	  gbf[iCanvas][a]->Draw("AP");
+	  gbfs[iCanvas][a]->Draw("AP");
 	}
 	else{
-	  fHistPP[a]->Draw();
-	  fHistPN[a]->SetLineColor(2);
-	  fHistPN[a]->Draw("same");
-	  fHistNP[a]->SetLineColor(4);
-	  fHistNP[a]->Draw("same");
-	  fHistNN[a]->SetLineColor(8);
-	  fHistNN[a]->Draw("same");
+	  fHistPNS[a]->SetLineColor(2);
+	  fHistPNS[a]->Draw();
+	  fHistPPS[a]->SetLineColor(1);
+	  fHistPPS[a]->Draw("same");
+	  fHistNPS[a]->SetLineColor(4);
+	  fHistNPS[a]->Draw("same");
+	  fHistNNS[a]->SetLineColor(8);
+	  fHistNNS[a]->Draw("same");
 	}
       }
     }
