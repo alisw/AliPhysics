@@ -3795,11 +3795,13 @@ void AliAnalysisAlien::WriteAnalysisMacro()
             out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
          out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
-         if (AliAnalysisManager::GetAnalysisManager())
+         if (AliAnalysisManager::GetAnalysisManager()) {
             out << "   mgr->SetDebugLevel(" << AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() << ");" << endl;
-         else   
+            out << "   mgr->SetNSysInfo(" << AliAnalysisManager::GetAnalysisManager()->GetNsysInfo() << ");" << endl;
+         } else {
             out << "   mgr->SetDebugLevel(10);" << endl;
-         out << "   mgr->SetNSysInfo(100);" << endl;
+            out << "   mgr->SetNSysInfo(100);" << endl;
+         }
       }
       out << "   mgr->PrintStatus();" << endl;
       if (AliAnalysisManager::GetAnalysisManager()) {

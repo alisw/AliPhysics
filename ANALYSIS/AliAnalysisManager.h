@@ -110,6 +110,7 @@ enum EAliAnalysisFlags {
    TObjArray          *GetInputs() const          {return fInputs;}
    AliVEventHandler*   GetInputEventHandler() const   {return fInputEventHandler;}
    AliVEventHandler*   GetMCtruthEventHandler() const {return fMCtruthEventHandler;}
+   Int_t               GetNsysInfo() const        {return fNSysInfo;}
    AliVEventHandler*   GetOutputEventHandler() const  {return fOutputEventHandler;}
    TObjArray          *GetOutputs() const         {return fOutputs;}
    TObjArray          *GetParamOutputs() const    {return fParamCont;}
