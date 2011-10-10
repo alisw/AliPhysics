@@ -372,3 +372,33 @@ Double_t AliStrLine::GetDistFromPoint(const Double_t *point) const
   AliStrLine tmpline(point, fCd, kFALSE);
   return GetDCA(&tmpline);
 }
+
+//________________________________________________________
+Bool_t AliStrLine::GetParamAtRadius(Double_t r,Double_t &t1,Double_t &t2) const
+{
+  // Input: radial distance from the origin (x=0, x=0) in the bending plane
+  // Returns a boolean: kTRUE if the line crosses the cylinder of radius r
+  // and axis coincident with the z axis. It returns kFALSE otherwise
+  // Output: t1 and t2 in ascending order. The parameters of the line at 
+  // the two intersections with the cylinder
+  Double_t p1= fCd[0]*fP0[0]+fCd[1]*fP0[1];
+  Double_t p2=fCd[0]*fCd[0]+fCd[1]*fCd[1];
+  Double_t delta=p1*p1-p2*(fP0[0]*fP0[0]+fP0[1]*fP0[1]-r*r);
+  if(delta<0.){
+    t1=-1000.;
+    t2=t1;
+    return kFALSE;
+  }
+  delta=TMath::Sqrt(delta);
+  t1=(-p1-delta)/p2;
+  t2=(-p1+delta)/p2;
+
+  if(t2<t1){
+    // use delta as a temporary buffer
+    delta=t1;
+    t1=t2;
+    t2=delta;
+  }
+  if(TMath::AreEqualAbs(t1,t2,1.e-9))t1=t2;
+  return kTRUE;
+}

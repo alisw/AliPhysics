@@ -50,6 +50,9 @@ public:
     Int_t Cross(AliStrLine *line, Double_t *point);
     Double_t GetDCA(const AliStrLine *line) const;
     Double_t GetDistFromPoint(const Double_t *point) const;
+    Bool_t GetParamAtRadius(Double_t r,Double_t &t1,Double_t &t2) const;
+    void ComputePointAtT(Double_t t,Double_t *p) const {
+      for(Int_t i=0;i<3;i++)p[i]=fP0[i]+fCd[i]*t; }
  protected:
     void InitDirection(const Double_t *const point, const Double_t *const cd);
     void InitTwoPoints(const Double_t *const pA, const Double_t *const pB);
