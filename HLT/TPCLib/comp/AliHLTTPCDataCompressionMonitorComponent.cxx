@@ -508,7 +508,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
       if (fRawData->Check(clusterId)) {
 	float dPad=pad-fRawData->GetY(clusterId);
 	fHistogramPointers[index]->Fill(dPad);
-	static const float maxdPad=0.01;
+	static const float maxdPad=0.015; // better 100um for 4 and 6mm pad width
 	if (TMath::Abs(dPad)>maxdPad) {
 	  AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(clusterId);
 	  AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(clusterId);
@@ -535,11 +535,11 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillTime(float 
       if (fRawData->Check(clusterId)) {
 	float dTime=time-fRawData->GetZ(clusterId);
 	fHistogramPointers[index]->Fill(dTime);
-	static const float maxdTime=0.025;
+	static const float maxdTime=0.04; // corresponds to 100um
 	if (TMath::Abs(dTime)>maxdTime) {
 	  AliHLTUInt8_t slice = AliHLTTPCSpacePointData::GetSlice(clusterId);
 	  AliHLTUInt8_t partition = AliHLTTPCSpacePointData::GetPatch(clusterId);
-	  HLTError("cluster 0x%08x slice %d partition %d: pad difference %f - max %f", clusterId, slice, partition, dTime, maxdTime);
+	  HLTError("cluster 0x%08x slice %d partition %d: time difference %f - max %f", clusterId, slice, partition, dTime, maxdTime);
 	  index=kHistogramOutOfRange;
 	  if (index<fHistogramPointers.size() && fHistogramPointers[index]!=NULL && fRawData) {
 	    fHistogramPointers[index]->Fill(fLastPadRow>=0?fLastPadRow:0);
