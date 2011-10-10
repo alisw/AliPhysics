@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
   } else {
     /* open the config file and retrieve cuts */
     FILE *fpConfig = fopen("V00DAEqualFactors.config","r");
-    int res = fscanf(fpConfig,"%d %d %d %d %u %u %d %f",
+    int res = fscanf(fpConfig,"%d %d %d %d %hu %hu %d %f",
 		     &kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kTriggerAcc,&kTriggerRej,&kNBins,&kRange);
     if(res!=8) {
       printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 7 integers and 1 float are expected - \n");
