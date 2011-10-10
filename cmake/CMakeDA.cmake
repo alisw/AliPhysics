@@ -181,6 +181,9 @@ foreach(detector ${ONLINEDETECTORS} )
 	  execute_process(COMMAND svn info $ENV{ALICE_ROOT}/${DASRC} OUTPUT_VARIABLE _daversion OUTPUT_STRIP_TRAILING_WHITESPACE)
 	  string(REGEX REPLACE ".*Last Changed Rev: ([^\n]+)\n.*" "\\1" DAVERSION ${_daversion})
 
+	#DAREVISION
+	  execute_process(COMMAND svn info ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE _darevision OUTPUT_STRIP_TRAILING_WHITESPACE)
+          string(REGEX REPLACE ".*Revision: ([^\n]+)\n.*" "\\1" DAREVISION ${_darevision})
 	# DAROOTRELEASE 
 	  execute_process(COMMAND root-config --version OUTPUT_VARIABLE _darootrelease OUTPUT_STRIP_TRAILING_WHITESPACE)
 	  string(REGEX REPLACE "/" "." DAROOTRELEASE ${_darootrelease})
@@ -190,7 +193,7 @@ foreach(detector ${ONLINEDETECTORS} )
           string (REPLACE "-" "." DAALIROOTRELEASE "${DAALIROOTRELEASE}")
 	
 	  set(DAARCNAME "${DATARGETNAME}")
-	  string(REPLACE "-" "" DAARCNAME "${DAARCNAME}")
+	  #string(REPLACE "-" "" DAARCNAME "${DAARCNAME}")
 	  set(DAARC "${DAARCNAME}-${DAVERSION}")
 	  set(DATAR "${DATARGETDIR}/${DAARC}.src.tar.gz")
 	  set(DASPECFILE "${DATARGETDIR}/${DAMODULE}${SUBDAMODULE}${DANAME}da.spec")
@@ -337,7 +340,7 @@ COMMAND @echo '\# RPM specfile for $(DAMODULE)${SUBDAMODULE}$(DANAME) Detector A
 COMMAND @echo "Summary: ${ONLINEDETECTORNAME} Detector Algorithm" >> ${DASPECFILE}
 COMMAND @echo "Name: ${DAARCNAME}" >> ${DASPECFILE}
 COMMAND @echo "Version: ${DAVERSION}" >> ${DASPECFILE}
-COMMAND @echo "Release: ${DAALIROOTRELEASE}" >> ${DASPECFILE}
+COMMAND @echo "Release: ${DAALIROOTRELEASE}.${DAREVISION}" >> ${DASPECFILE}
 COMMAND @echo "License: CERN Alice DAQ/Offine" >> ${DASPECFILE}
 COMMAND @echo "Source: %{name}-%{version}.src.tar.gz" >> ${DASPECFILE}
 COMMAND @echo "Group: Applications/Alice" >> ${DASPECFILE}
@@ -434,7 +437,7 @@ add_custom_command(TARGET ${DATARGETNAME}-rpm
 COMMAND mkdir -p ${CMAKE_BINARY_DIR}/junk/SOURCES ${CMAKE_BINARY_DIR}/junk/SPECS ${CMAKE_BINARY_DIR}/junk/BUILD ${CMAKE_BINARY_DIR}/junk/RPMS ${CMAKE_BINARY_DIR}/junk/SRPMS
 COMMAND cp ${DATAR} ${CMAKE_BINARY_DIR}/junk/SOURCES
 COMMAND rpmbuild --verbose --define "_topdir ${CMAKE_BINARY_DIR}/junk" --nodeps -bb ${DASPECFILE}
-COMMAND cp -p `find ${CMAKE_BINARY_DIR}/junk/ -name "${DAARC}-*.rpm"` . ;
+COMMAND cp `find './junk/' -name '${DAARC}*.rpm'` ./ 
 COMMAND rm -rf junk
 COMMAND echo "***** RPMS created and put ${CMAKE_BINARY_DIR} folder *****"
 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}  
@@ -452,12 +455,16 @@ WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
 
 add_dependencies(${DAEXE} ${DASRC} DAOBJ_${DAEXE}_ ${BINPATH} ${LIBPATH} ${DALIB}.a ${DAQDALIB} ${ROOTLIB})
 
+
 add_custom_target(DAOBJ_${DAEXE}_
 )
 add_custom_command(
 TARGET DAOBJ_${DAEXE}_
 COMMAND echo "***** Compiling ${DASRC} *****"
-COMMAND g++ -c -DLinux -DDATE_SYS=Linux -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
+COMMAND echo "${DFLAGS}"
+COMMAND g++ -c -D${CMAKE_SYSTEM_NAME} -DDATE_SYS=${CMAKE_SYSTEM_NAME} -Dlong32="int" -Dlong64="long long" -DdatePointer="long" -I/date/rorc -I/date/runControl -I/date/readList -I/date/eventBuilder -I/date/banksManager -I/date/bufferManager -I/date/db -I/date/commonDefs -I/date/monitoring -I/date/infoLogger -I/date/logbook -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
+#COMMAND g++ -c ${DATEFLAGS} -I${DAQDADIR} -I${ALICE_ROOT}/RAW -I${CMAKE_BINARY_DIR}/include -I$ENV{ROOTSYS}/include ${mod} ${date_head} ${ALICE_ROOT}/${DASRC} -o ${DAOBJ}
+
 WORKING_DIRECTORY ${ALICE_ROOT} 
 )
 add_dependencies(DAOBJ_${DAEXE}_ DADEP_${DAEXE}_ )
