@@ -370,6 +370,13 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
     seed->SetNFoundable(seed->GetNFoundable()-1);
     return 2;    
   }
+
+  if (AliTPCReconstructor::GetRecoParam()->GetUseHLTClusters() == 3 ||
+      AliTPCReconstructor::GetRecoParam()->GetUseHLTClusters() == 4 ) {
+    if(!AliTPCReconstructor::GetRecoParam()->GetUseOnePadCluster())
+      if (TMath::Abs(cluster->GetSigmaY2()) < kAlmost0)
+	return 2;
+  }
   return 0;
 }
 

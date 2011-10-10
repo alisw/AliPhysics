@@ -5,7 +5,7 @@
  *    3 -> only HLT clusters
  *    4 -> if present HLT clusters, otherwise TPC raw/sim data
  *
- * Usage : aliroot -b -q ModifyRecoParamHLTUsage'("/lustre/alice/alien/alice/data/2011/OCDB/TPC/Calib/RecoParam/Run136844_999999999_v2_s0.root",3,"local:///tmp/ocdb/")'
+ * Usage : aliroot -b -q ModifyRecoParamHLTUsage.C'("/lustre/alice/alien/alice/data/2011/OCDB/TPC/Calib/RecoParam/Run136844_999999999_v2_s0.root",3,"local:///tmp/ocdb/")'
  *
  */
 
@@ -58,6 +58,12 @@ void ModifyRecoParamHLTUsage( const Char_t* lastOCDBEntry,
   parHighFlux->SetUseHLTClusters(iHLTusage);
   parLowFlux->SetUseHLTClusters(iHLTusage);
   parCosmicFlux->SetUseHLTClusters(iHLTusage);
+
+  if (iHLTusage == 3 || iHLTusage == 4) {
+    parHighFlux->SetUseOnePadCluster(0);
+    parLowFlux->SetUseOnePadCluster(0);
+    parCosmicFlux->SetUseOnePadCluster(0);
+  }
 
   // -- Write out
   // -------------------------------------------------------------------
