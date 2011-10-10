@@ -735,13 +735,17 @@ void AliTPCclustererMI::Digits2Clusters()
     Int_t iResult = ReadHLTClusters();
 
     // HLT clusters present
-    if (!iResult)
-      return;
+    if (iResult >= 0 && fNclusters > 0)
+      return; 
+
     // HLT clusters not present
-    else if(iResult == -1) {
-      if (fUseHLTClusters == 3) {
-	AliError("No HLT clusters present, but requiered.");
+    if (iResult < 0 || fNclusters == 0) {
+      if (fUseHLTClusters == 3) { 
+	AliError("No HLT clusters present, but requested.");
 	return;
+      }
+      else {
+	AliInfo("Now trying to read TPC RAW");
       }
     }
     // Some other problem during cluster reading
@@ -785,7 +789,7 @@ void AliTPCclustererMI::Digits2Clusters()
     fZWidth = fParam->GetZWidth();
     if (fSector < kNIS) {
       fMaxPad = fParam->GetNPadsLow(row);
-      fSign = (fSector < kNIS/2) ? 1 : -1;
+      fSign =  (fSector < kNIS/2) ? 1 : -1;
       fPadLength = fParam->GetPadPitchLength(fSector,row);
       fPadWidth = fParam->GetPadPitchWidth();
     } else {
@@ -828,6 +832,13 @@ void AliTPCclustererMI::Digits2Clusters()
   }  
  
   Info("Digits2Clusters", "Number of found clusters : %d", nclusters);
+
+  if (fUseHLTClusters == 2 && nclusters == 0) {
+    AliInfo("No clusters from TPC Raw data, now trying to read HLT clusters.");
+
+    fZWidth = fParam->GetZWidth();
+    ReadHLTClusters();
+  }
 }
 
 void AliTPCclustererMI::ProcessSectorData(){
@@ -995,16 +1006,18 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
     fZWidth = fParam->GetZWidth();
     Int_t iResult = ReadHLTClusters();
 
-    AliError(Form("HLT result : %d",iResult));
-
     // HLT clusters present
-    if (!iResult)
+    if (iResult >= 0 && fNclusters > 0)
       return;
+
     // HLT clusters not present
-    else if(iResult == -1) {
-      if (fUseHLTClusters == 3) {
-	AliError("No HLT clusters present, but requiered.");
+    if (iResult < 0 || fNclusters == 0) {
+      if (fUseHLTClusters == 3) { 
+	AliError("No HLT clusters present, but requested.");
 	return;
+      }
+      else {
+	AliInfo("Now trying to read TPC RAW");
       }
     }
     // Some other problem during cluster reading
@@ -1183,6 +1196,13 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   
   if(fBClonesArray) {
     //Info("Digits2Clusters", "Number of found clusters : %d\n",fOutputClonesArray->GetEntriesFast());
+  }
+
+  if (fUseHLTClusters == 2 && fNclusters == 0) {
+    AliInfo("No clusters from TPC Raw data, now trying to read HLT clusters.");
+
+    fZWidth = fParam->GetZWidth();
+    ReadHLTClusters();
   }
 }
 
@@ -1642,9 +1662,15 @@ Int_t AliTPCclustererMI::ReadHLTClusters()
   
   for(fSector = 0; fSector < kNS; fSector++) {
 
+    Int_t iResult = 1;
     TString param("sector="); param+=fSector;
     pClusterAccess->Clear();
-    pClusterAccess->Execute("read", param);
+    pClusterAccess->Execute("read", param, &iResult);
+    if (iResult < 0) {
+      return iResult;
+      AliError("HLT Clusters can not be found");
+    }
+
     if (pClusterAccess->FindObject("clusterarray")==NULL) {
       AliError("HLT clusters requested, but not cluster array not present");
       return -4;
