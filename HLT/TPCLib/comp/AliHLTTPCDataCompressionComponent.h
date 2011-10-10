@@ -121,6 +121,7 @@ protected:
 
   int ProcessTrackClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
 			   AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
+			   const vector<int>& trackIndexMap,
 			   AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
 			   AliHLTSpacePointContainer* pClusters,
 			   int slice, int partition) const;
@@ -134,7 +135,8 @@ protected:
   int FindCellClusters(int trackId, int padrow, float pad, float time,
 		       AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
 		       AliHLTSpacePointContainer* pClusters,
-		       AliHLTTrackGeometry::AliHLTTrackPoint* pTrackPoint) const;
+		       AliHLTTrackGeometry::AliHLTTrackPoint* pTrackPoint,
+		       AliHLTUInt32_t clusterId=~(AliHLTUInt32_t)0) const;
 
   int WriteTrackClusters(const vector<AliHLTGlobalBarrelTrack>& tracks,
 			 AliHLTSpacePointContainer* pSpacePoints,
