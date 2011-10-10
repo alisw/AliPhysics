@@ -99,13 +99,6 @@ int main(int argc, char **argv) {
   for(Int_t j = 0; j < 64; ++j) fPrevadc[j] = 0;
 
 //___________________________________________________ 
-
-  /* open result file to be exported to FES */
-  FILE *fp=NULL;
-  fp=fopen("./V0_EqualizationFactors.dat","w");
-  if (fp==NULL) {
-      printf("Failed to open local result file\n");
-      return -1;}
    
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
@@ -244,33 +237,40 @@ int main(int argc, char **argv) {
 //  Computes regression parameters
 // charge_i = p0 + charge_tot * p1
 
-  Double_t beta[64];
-  Double_t q = 0.5;
-  for(int i = 0; i < 64; ++i) fMedian[i]->GetQuantiles(1,&beta[i],&q);
+  if(neventsPhysics>2000){
+    /* open result file to be exported to FES */
+    FILE *fp=NULL;
+    fp=fopen("./V0_EqualizationFactors.dat","w");
+    if (fp==NULL) {
+      printf("Failed to open local result file\n");
+      return -1;}
 
-  for(Int_t i=0; i<64; i++) {
-    fprintf(fp," %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
-    printf(" %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
+    Double_t beta[64];
+    Double_t q = 0.5;
+    for(int i = 0; i < 64; ++i) fMedian[i]->GetQuantiles(1,&beta[i],&q);
+
+    for(Int_t i=0; i<64; i++) {
+      fprintf(fp," %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
+      printf(" %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
+    }
+
+    /* close local result file and FXS result file*/
+    fclose(fp);
   }
- 
+
 //________________________________________________________________________
    
-  /* close local result file and FXS result file*/
-  fclose(fp);
+  /* export result file to FES */
+  status=daqDA_FES_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
+  if (status)    {
+    printf("Failed to export file : %d\n",status);
+    return -1; }
 
-  if(neventsPhysics>2000){
-    /* export result file to FES */
-    status=daqDA_FES_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
-    if (status)    {
-      printf("Failed to export file : %d\n",status);
-      return -1; }
-
-    /* store result file into Online DB */
-    status=daqDA_DB_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
-    if (status)    {
-      printf("Failed to store file into Online DB: %d\n",status);
-      return -1; }
-  }
+  /* store result file into Online DB */
+  status=daqDA_DB_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
+  if (status)    {
+    printf("Failed to store file into Online DB: %d\n",status);
+    return -1; }
 
   return status;
 }
