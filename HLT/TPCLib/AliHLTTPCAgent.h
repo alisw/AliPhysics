@@ -121,6 +121,11 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
 
   };
 
+  enum EOptions {
+    // indicate cluster id data blocks in the HLTOUT
+    kHaveCompressedClusterIdDataBlock = BIT(15)
+  };
+
  protected:
 
  private:
@@ -137,6 +142,9 @@ class AliHLTTPCAgent : public AliHLTModuleAgent {
 
   /// handler for {'CLUSTERS':'TPC '}
   AliHLTOUTHandlerChain* fClustersDataHandler; //! transient
+
+  /// handler for data blocks related to data compression
+  AliHLTOUTHandlerChain* fCompressionMonitorHandler; //! transient
 
   ClassDef(AliHLTTPCAgent, 0);
 };
