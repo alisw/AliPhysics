@@ -200,8 +200,11 @@ void PrintEsd()
     idx = word%1000;
     Double_t rout[3]; pTrk->GetOuterXYZ(rout);
     vol = gGeoManager->FindNode(rout[0],rout[1],rout[2]);
+    Float_t thetaCkov = -999.;
+    if(pTrk->GetHMPIDsignal()<0) thetaCkov = pTrk->GetHMPIDsignal();
+    else                         thetaCkov = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();
     Printf("Trk %02i Ch.%2i (%5.2f,%5.2f) pOut %7.2f ThCer %7.3f phots %3i QMip %4i size %2i (idx %3i) in vol. %s",iTrk,ch,
-        xra,yra,pMomOut,pTrk->GetHMPIDsignal(),nacc,q,size,idx,vol->GetName());
+        xra,yra,pMomOut,thetaCkov,nacc,q,size,idx,vol->GetName());
   }  
 }//PrintEsd()
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -380,10 +383,11 @@ void RenderEsd(AliESDEvent *pEsd)
     Int_t npTrk = fRenTxC[ch]->SetNextPoint(xRa,yRa);                           //add this intersection point
     Float_t ckov=pTrk->GetHMPIDsignal();                                        //get ckov angle stored for this track  
     if(ckov>0){
+      Float_t thetaCkov = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();
       rec.SetTrack(xRa,yRa,thRa,phRa);
       fRenRin[ch]->SetUniqueID(npTrk);
       for(Int_t j=0;j<500;j++){
-        TVector2 pos; pos=rec.TracePhot(ckov,j*6.28/500.);
+        TVector2 pos; pos=rec.TracePhot(thetaCkov,j*6.28/500.);
        if(!AliHMPIDParam::IsInDead(pos.X(),pos.Y())) fRenRin[ch]->SetNextPoint(pos.X(),pos.Y());
       }      
     }//if ckov is valid
@@ -582,9 +586,10 @@ void DisplayInfo(Int_t evt,Int_t px, Int_t py)
     Double_t prob[5];
     pTrk->GetHMPIDpid(prob);
     if(ckov>0){
+      Float_t thetaCkov = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();
       Float_t x,y;Int_t q,nacc;   pTrk->GetHMPIDmip(x,y,q,nacc);
       text3="";text3.Append(Form("Theta Cherenkov %5.3f with %i photons |  e %5.1f%% | u %5.1f%% | pi %5.1f%% | K %5.1f%% | p %5.1f%%",
-          pTrk->GetHMPIDsignal(),nacc,prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100));
+          thetaCkov,nacc,prob[0]*100,prob[1]*100,prob[2]*100,prob[3]*100,prob[4]*100));
     }      
   }
 //Update toolbar status  

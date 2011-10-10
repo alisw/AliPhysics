@@ -42,9 +42,12 @@ void AliHMPIDPid::FindPid(AliESDtrack *pTrk,Int_t nsp,Double_t *prob)
 // (i.e. apriory probability to be the particle of the given sort is the same for all sorts)
 
   AliPID *pPid = new AliPID();
-  Double_t thetaCerExp = pTrk->GetHMPIDsignal();                                                                           //  measured thetaCherenkov
   
-  if(thetaCerExp<=0){                                         //HMPID does not find anything reasonable for this track, assign 0.2 for all species
+  Double_t thetaCerExp = -999.;                                                                           
+  if(pTrk->GetHMPIDsignal()<=0) thetaCerExp = pTrk->GetHMPIDsignal();                                                                           
+  else                          thetaCerExp = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();     //  measured thetaCherenkov
+  
+  if(thetaCerExp<=0){                                                                                     //HMPID does not find anything reasonable for this track, assign 0.2 for all species
     for(Int_t iPart=0;iPart<nsp;iPart++) prob[iPart]=1.0/(Float_t)nsp;
     delete pPid ; pPid=0x0; return;
   } 

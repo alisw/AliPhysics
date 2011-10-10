@@ -388,7 +388,10 @@ void AliHMPIDQADataMaker::MakeESDs(AliESDEvent * esd)
   //
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
-    FillESDsData(0,pTrk->GetP(),pTrk->GetHMPIDsignal());
+    Float_t thetaCkov = -999.;
+    if(pTrk->GetHMPIDsignal()<0.) thetaCkov = pTrk->GetHMPIDsignal();
+    else                          thetaCkov = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();;
+    FillESDsData(0,pTrk->GetP(),thetaCkov);
     FillESDsData(1, pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
     Float_t xm,ym; Int_t q,np;  
     pTrk->GetHMPIDmip(xm,ym,q,np);                       //mip info

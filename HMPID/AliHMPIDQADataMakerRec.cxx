@@ -423,7 +423,10 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
  
   for(Int_t iTrk = 0 ; iTrk < esd->GetNumberOfTracks() ; iTrk++){
     AliESDtrack *pTrk = esd->GetTrack(iTrk) ;
-    FillESDsData(0,pTrk->GetP(),pTrk->GetHMPIDsignal());
+    Float_t thetaCkov = -999.;
+    if(pTrk->GetHMPIDsignal()<0.) thetaCkov = pTrk->GetHMPIDsignal();
+    else                          thetaCkov = pTrk->GetHMPIDsignal() - (Int_t)pTrk->GetHMPIDsignal();;
+    FillESDsData(0,pTrk->GetP(),thetaCkov);
     FillESDsData(1, pTrk->GetP(),TMath::Sqrt(pTrk->GetHMPIDchi2()));
     Float_t xm,ym; Int_t q,np;  
     pTrk->GetHMPIDmip(xm,ym,q,np);                       //mip info
@@ -433,9 +436,9 @@ void AliHMPIDQADataMakerRec::MakeESDs(AliESDEvent * esd)
     Float_t yPc = yRad+9.25*TMath::Tan(th)*TMath::Sin(ph); // temporar:          "
     FillESDsData(2,xm-xPc,ym-yPc); //track info
     if(pTrk->GetHMPIDsignal()>0) {
-     Double_t a = 1.292*1.292*TMath::Cos(pTrk->GetHMPIDsignal())*TMath::Cos(pTrk->GetHMPIDsignal())-1.;
+     Double_t a = 1.292*1.292*TMath::Cos(thetaCkov)*TMath::Cos(thetaCkov)-1.;
      if(a > 0) {
-    Double_t mass = pTrk->P()*TMath::Sqrt(1.292*1.292*TMath::Cos(pTrk->GetHMPIDsignal())*TMath::Cos(pTrk->GetHMPIDsignal())-1.);
+    Double_t mass = pTrk->P()*TMath::Sqrt(1.292*1.292*TMath::Cos(thetaCkov)*TMath::Cos(thetaCkov)-1.);
     FillESDsData(3, pTrk->GetP(),mass);
      }
     }

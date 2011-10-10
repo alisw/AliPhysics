@@ -311,26 +311,27 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
     }
 
     if(track->GetHMPIDsignal() > 0 ){
+      Double_t thetaCkov = track->GetHMPIDsignal() - (Int_t)track->GetHMPIDsignal();
       if (pHmp3) fHmpPesdPhmp->Fill(track->P(),pHmp3);
       if (dist<=1.0) fHmpMipCharge1cm->Fill(q);
       fHmpNumPhots->Fill(nph);
-      fHmpCkovPesd->Fill(track->P(),track->GetHMPIDsignal());
-      if (pHmp3) fHmpCkovPhmp->Fill(pHmp3,track->GetHMPIDsignal());
+      fHmpCkovPesd->Fill(track->P(),thetaCkov);
+      if (pHmp3) fHmpCkovPhmp->Fill(pHmp3,thetaCkov);
 
       if (fUseMC && dist<distCut && TMath::Abs(th)<thetaCut){
         if (!pStack->IsPhysicalPrimary(label)) continue;
         Int_t pdgCode = TMath::Abs(pPart->GetPdgCode());
         if (pdgCode==211){
-          fThetapivsPesd->Fill(track->P(),track->GetHMPIDsignal());
+          fThetapivsPesd->Fill(track->P(),thetaCkov);
           Int_t mot=pPart->GetFirstMother();
           if (mot > -1){
             TParticle *pMot=pStack->Particle(mot);
             TString str=pMot->GetName();
-            if (str.Contains("K")) fThetavsPiFromK->Fill(pHmp3,track->GetHMPIDsignal());
+            if (str.Contains("K")) fThetavsPiFromK->Fill(pHmp3,thetaCkov);
           }
         }
-        if (pdgCode==321) fThetaKvsPesd->Fill(track->P(),track->GetHMPIDsignal());
-        if (pdgCode==2212) fThetaPvsPesd->Fill(track->P(),track->GetHMPIDsignal());
+        if (pdgCode==321) fThetaKvsPesd->Fill(track->P(),thetaCkov);
+        if (pdgCode==2212) fThetaPvsPesd->Fill(track->P(),thetaCkov);
 
         if (track->P()<1. || track->P()>5.) continue;
         Int_t pBin=(Int_t) (2*(track->P()-1));
@@ -371,7 +372,7 @@ void AliHMPIDAnalysisTask::UserExec(Option_t *)
     fVar[4] = ypc;
     fVar[5] = x;
     fVar[6] = y;
-    fVar[7] = (Float_t)track->GetHMPIDsignal();
+    fVar[7] = (Float_t)thetaCkov;
     fVar[8] = q;
     fVar[9] = th;
     fVar[10] = ph;

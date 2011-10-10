@@ -109,8 +109,11 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
   
   fPhotCnt=0;
   
+  Int_t nPads = 0;
+  
   for (Int_t iClu=0; iClu<pCluLst->GetEntriesFast();iClu++){//clusters loop
-    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster    
+    AliHMPIDCluster *pClu=(AliHMPIDCluster*)pCluLst->UncheckedAt(iClu);                       //get pointer to current cluster
+    nPads+=pClu->Size();    
     if(iClu == index) {                                                                       // this is the MIP! not a photon candidate: just store mip info
       mipX = pClu->X();
       mipY = pClu->Y();
@@ -150,10 +153,12 @@ void AliHMPIDRecon::CkovAngle(AliESDtrack *pTrk,TClonesArray *pCluLst,Int_t inde
     return;
   }
   
+  Int_t occupancy = (Int_t)(1000*(nPads/(6.*80.*48.))); 
+  
   Double_t thetaC = FindRingCkov(pCluLst->GetEntries());                                    //find the best reconstructed theta Cherenkov
 //    FindRingGeom(thetaC,2);
-  pTrk->SetHMPIDsignal(thetaC);                                                             //store theta Cherenkov
-  pTrk->SetHMPIDchi2(fCkovSigma2);                                                          //store errors squared
+  pTrk->SetHMPIDsignal(thetaC+occupancy);                                                             //store theta Cherenkov
+  pTrk->SetHMPIDchi2(fCkovSigma2);                                                              //store errors squared
   
   DeleteVars();
 }//CkovAngle()
