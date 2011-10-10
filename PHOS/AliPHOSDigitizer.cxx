@@ -690,7 +690,8 @@ void AliPHOSDigitizer::Decalibrate(AliPHOSDigit *digit)
   Int_t row   =relId[2];
   Int_t column=relId[3];
   if(relId[1]==0){ //This Is EMC
-    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row);
+    Float_t decalib     = fcdb->GetADCchannelEmcDecalib(module,column,row); // O(1)
+    Float_t calibration = fcdb->GetADCchannelEmc(module,column,row)*decalib;
     Float_t energy = digit->GetEnergy()/calibration;
     digit->SetEnergy(energy); //Now digit measures E in ADC counts
     Float_t time = digit->GetTime() ;
