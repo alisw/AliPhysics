@@ -724,7 +724,8 @@ AliHLTUInt32_t AliHLTTPCClusterAccessHLTOUT::AliTPCclusterMIContainer::GetCluste
 {
   /// get the cluster id from the current cluster id block (optional)
   if (!fCurrentClusterIds ||
-      (int)fCurrentClusterIds->fSize<=clusterNo)
+      (int)fCurrentClusterIds->fSize<=clusterNo ||
+      clusterNo<0)
     return kAliHLTVoidDataSpec;
   return fCurrentClusterIds->fIds[clusterNo];
 }
