@@ -15,6 +15,8 @@ fChi2(-1),
 fOpeningAngle(-1),
 fAlpha(-1)
 {
+	fLabel[0] = -1;
+	fLabel[1] = -1;
 }
 
 AliAODConversionMother::AliAODConversionMother(AliKFConversionMother *kf):

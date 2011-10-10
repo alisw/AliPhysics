@@ -3191,12 +3191,14 @@ void AliAnalysisTaskGammaConversion::AddGammaToAOD(AliKFConversionPhoton * kfPar
     //Fill AOD with particles
     TClonesArray *branch=fAODGamma;
     if(branch){
-	new((*branch)[branch->GetEntriesFast()])  AliAODConversionPhoton(kfParticle);
-    }
+		new((*branch)[branch->GetEntriesFast()])  AliAODConversionPhoton(kfParticle);
+    } else {
+		return;
+	}
 
     //Add PID information with ESD tender (AOD implementation is not complete)
 
-    AliAODConversionPhoton *gamma=dynamic_cast<AliAODConversionPhoton*>(fAODGamma->At(fAODGamma->GetEntriesFast()-1));
+    AliAODConversionPhoton *gamma=static_cast<AliAODConversionPhoton*>(fAODGamma->At(fAODGamma->GetEntriesFast()-1));
 
     AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
