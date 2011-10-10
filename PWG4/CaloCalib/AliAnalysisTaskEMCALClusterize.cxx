@@ -870,7 +870,7 @@ void AliAnalysisTaskEMCALClusterize::InitClusterization()
   if (fJustUnfold){
     // init the unfolding afterburner 
     delete fUnfolder;
-    fUnfolder =  new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut());
+    fUnfolder =  new AliEMCALAfterBurnerUF(fRecParam->GetW0(),fRecParam->GetLocMaxCut(),fRecParam->GetMinECut());
     return;
   }
   
