@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTOUT_H
 #define ALIHLTOUT_H
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTOUT.h
-    @author Matthias Richter
-    @date   
-    @brief  The control class for HLTOUT data.
-*/
+/// @file   AliHLTOUT.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  The control class for HLTOUT data.
+///
 
 #include <vector>
 #include "AliHLTLogging.h"
@@ -220,6 +220,9 @@ class AliHLTOUT {
      */
     const AliHLTOUTHandlerListEntry& GetHandlerDesc();
 
+    /// print info
+    void Print(const char* option="") const;
+
   private:      
     /** data type of the block */
     AliHLTComponentDataType fDataType; //!transient
@@ -307,6 +310,9 @@ class AliHLTOUT {
      * Check whether the entry has valid blocks.
      */
     bool IsEmpty() {return fBlocks.size()==0;}
+
+    /// print info
+    void Print(const char* option="") const;
 
   private:
     /** standard constructor prohibited */
@@ -629,6 +635,9 @@ class AliHLTOUT {
    * Switch output.
    */
   void SwitchVerbosity(bool verbose) {fbVerbose=verbose;}
+
+  /// print info
+  void Print(const char* option="") const;
 
  private:
   /** copy constructor prohibited */

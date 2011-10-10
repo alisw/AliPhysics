@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTOUT.cxx
-    @author Matthias Richter
-    @date   
-    @brief  The control class for HLTOUT data.
-*/
+/// @file   AliHLTOUT.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  The control class for HLTOUT data.
+///
 
 #include <cerrno>
 #include <cassert>
@@ -30,6 +30,9 @@
 #include "TSystem.h"
 #include "TClass.h"
 #include "TROOT.h"
+#include <sstream>
+#include <iomanip>
+using namespace std;
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUT)
@@ -44,7 +47,7 @@ AliHLTOUT::AliHLTOUT()
   fCurrent(0),
   fpBuffer(NULL),
   fDataHandlers(),
-  fbVerbose(true),
+  fbVerbose(false),
   fLog()
   , fpDataObject(NULL)
   , fpObjectBuffer(NULL)
@@ -287,6 +290,12 @@ int AliHLTOUT::InitHandlers()
 	InsertHandler(fDataHandlers, entry);
 	remnants.pop_back();
 	bHaveHandler=true;
+	if (fbVerbose) {
+	  stringstream sout;
+	  sout << "adding handler for block " << AliHLTComponent::DataType2Text(dt).c_str()
+	       << " 0x" << setfill('0') << setw(8) << hex << spec;
+	  cout << sout.str() << endl;
+	}
 	break;
       }
     }
@@ -322,6 +331,9 @@ int AliHLTOUT::InitHandlers()
       assert(block!=fBlockDescList.end());
     }
   }
+
+  if (fbVerbose) Print();
+
   return iResult;
 }
 
@@ -878,4 +890,55 @@ void AliHLTOUT::SetEventId(AliHLTUInt64_t id)
     fLog.LoggingVarargs(kHLTLogWarning, "AliHLTOUT", "SetEventId" , __FILE__ , __LINE__ , "event id was already set to 0x%llx, setting now to 0x%llx", fCurrentEventId, id);
   }
   fCurrentEventId=id;
+}
+
+void AliHLTOUT::Print(const char* option) const
+{
+  // print info
+  {
+    for (AliHLTOUTBlockDescriptorVector::const_iterator  i=fBlockDescList.begin();
+	 i!=fBlockDescList.end(); i++)
+      i->Print(option);
+  }
+  {
+    for (AliHLTOUTHandlerListEntryVector::const_iterator  i=fDataHandlers.begin();
+	 i!=fDataHandlers.end(); i++)
+      i->Print(option);
+  }
+}
+
+void AliHLTOUT::AliHLTOUTBlockDescriptor::Print(const char* /*option*/) const
+{
+  // print info
+  stringstream sout;
+  sout << "AliHLTOUTBlockDescriptor index 0x" << setfill('0') << setw(8) << hex << right << fIndex 
+       << ":   " << AliHLTComponent::DataType2Text(fDataType).c_str()
+       << "  0x" << setfill('0') << setw(8) << hex << fSpecification
+       << "  processed " << dec << fProcessed;
+  cout << sout.str() << endl;
+}
+
+void AliHLTOUT::AliHLTOUTHandlerListEntry::Print(const char* /*option*/) const
+{
+  // print info
+  stringstream sout;
+  AliHLTModuleAgent::AliHLTOUTHandlerType type=AliHLTModuleAgent::kUnknownOutput;
+  AliHLTComponentDataType dt=kAliHLTVoidDataType;
+  if (this->fpHandlerDesc) {
+    type=*(this->fpHandlerDesc);
+    dt=*(this->fpHandlerDesc);
+  }
+  const char* stype="";
+  switch(type) {
+  case AliHLTModuleAgent::kEsd: stype="ESD"; break;
+  case AliHLTModuleAgent::kRawReader: stype="RawReader"; break;
+  case AliHLTModuleAgent::kRawStream: stype="RawStream"; break;
+  case AliHLTModuleAgent::kChain: stype="Chain"; break;
+  case AliHLTModuleAgent::kProprietary: stype="Proprietary"; break;
+  default: stype="unknown";
+  }
+  sout << "HLTOUT handler: "
+       << "  " << type << " (" << stype << ")"
+       << "  " << AliHLTComponent::DataType2Text(dt).c_str();
+  cout << sout.str() << endl;
 }
