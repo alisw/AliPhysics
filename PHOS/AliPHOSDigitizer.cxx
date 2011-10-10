@@ -513,11 +513,12 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   if(AliPHOSSimParam::GetInstance()->IsCellNonlinearityOn()){ //Apply non-lineairyt on cell level
     const Double_t aNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyA() ;
     const Double_t bNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyB() ;
+    const Double_t cNL = AliPHOSSimParam::GetInstance()->GetCellNonLineairyC() ;
     for(Int_t i = 0 ; i < nEMC ; i++){
       digit = static_cast<AliPHOSDigit*>( digits->At(i) ) ;
       Double_t e= digit->GetEnergy() ;
       // version(1)      digit->SetEnergy(e*(1+a*TMath::Exp(-e/b))) ;
-      digit->SetEnergy(e*(1.+aNL*TMath::Exp(-e*e/2./bNL/bNL))) ; //Better agreement with data...
+      digit->SetEnergy(e*cNL*(1.+aNL*TMath::Exp(-e*e/2./bNL/bNL))) ; //Better agreement with data...
     }  
   }
 

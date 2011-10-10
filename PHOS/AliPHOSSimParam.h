@@ -40,8 +40,10 @@ public:
   void SetCellNonLinearity(Bool_t on=kTRUE){fCellNonLineaityOn=on;} //default: on=kFALSE
   Double_t GetCellNonLineairyA(void) const {return fCellNonLineaityA; }
   Double_t GetCellNonLineairyB(void) const {return fCellNonLineaityB; }
+  Double_t GetCellNonLineairyC(void) const {return fCellNonLineaityC; }
   void SetCellNonLineairyA(Double_t a=0.30) {fCellNonLineaityA = a; }
   void SetCellNonLineairyB(Double_t b=0.109){fCellNonLineaityB = b; }
+  void SetCellNonLineairyC(Double_t c=0.955){fCellNonLineaityC = c; }
 
 
 
@@ -114,6 +116,7 @@ private:
   Float_t fTOFb  ;              //stohastic term of TOF resolution 
   Float_t fCellNonLineaityA ;   //Amp of cel non-linearity
   Float_t fCellNonLineaityB ;   //Energy scale of cel non-linearity
+  Float_t fCellNonLineaityC ;   //Overall calibration
 
   //Parameters used for RAW embedding
   Bool_t  fEMCSubtractPedestals;   // true if pedestal should be subtracted (in non-ZS)
@@ -134,7 +137,7 @@ private:
   
   static AliPHOSSimParam * fgSimParam ; // pointer to the unique instance of the class
 
-  ClassDef(AliPHOSSimParam,2)
+  ClassDef(AliPHOSSimParam,3)
 };
 
 #endif
