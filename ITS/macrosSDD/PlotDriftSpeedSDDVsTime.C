@@ -327,12 +327,14 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
   gAverSpeedVsTime->Write();
   ofil->Close();
 
-  Int_t mod1=244-240;
+  //  Int_t mod1=244-240;
+  Int_t mod1 = 243-240;
   Int_t mod2=277-240;
   //  Int_t mod2=259-240;
 //   Int_t mod2=274-240;
   Int_t mod3=327-240;
-   Int_t mod4=453-240;
+  //  Int_t mod4=453-240;
+  Int_t mod4=422-240;
    //  Int_t mod4=497-240;
   Int_t lay1,lad1,det1;
   Int_t lay2,lad2,det2;
