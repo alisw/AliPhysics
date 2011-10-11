@@ -128,6 +128,7 @@ protected:
 
   int ProcessRemainingClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
 			       AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
+			       const vector<int>& trackIndexMap,
 			       AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
 			       AliHLTSpacePointContainer* pClusters,
 			       int slice, int partition) const;

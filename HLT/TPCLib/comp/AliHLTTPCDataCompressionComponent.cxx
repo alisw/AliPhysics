@@ -336,7 +336,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       assignedInThisPartition=iResult;
       associatedClusters+=iResult;
     }
-    iResult=ProcessRemainingClusters(&inputTrackArray[0], inputTrackArray.size(), fTrackGrid, fSpacePointGrid, fRawInputClusters, slice, patch);
+    iResult=ProcessRemainingClusters(&inputTrackArray[0], inputTrackArray.size(), fTrackGrid, trackindexmap, fSpacePointGrid, fRawInputClusters, slice, patch);
     if (iResult>=0) {
       if (fSpacePointGrid->GetNumberOfSpacePoints()>0) {
 	if (fVerbosity>0) HLTInfo("associated %d (%d) of %d clusters in slice %d partition %d", iResult+assignedInThisPartition, assignedInThisPartition, fSpacePointGrid->GetNumberOfSpacePoints(), slice, patch);
@@ -545,6 +545,7 @@ int AliHLTTPCDataCompressionComponent::ProcessTrackClusters(AliHLTGlobalBarrelTr
 
 int AliHLTTPCDataCompressionComponent::ProcessRemainingClusters(AliHLTGlobalBarrelTrack* pTracks, unsigned nofTracks,
 								AliHLTTrackGeometry::AliHLTTrackGrid* pTrackIndex,
+								const vector<int>& trackIndexMap,
 								AliHLTSpacePointContainer::AliHLTSpacePointPropertyGrid* pClusterIndex,
 								AliHLTSpacePointContainer* pClusters,
 								int slice, int partition) const
@@ -557,15 +558,16 @@ int AliHLTTPCDataCompressionComponent::ProcessRemainingClusters(AliHLTGlobalBarr
   for (int padrow=0; padrow<AliHLTTPCTransform::GetNRows(partition); padrow++) {
     for (AliHLTTrackGeometry::AliHLTTrackGrid::iterator& trackId=pTrackIndex->begin(slice, partition, padrow);
 	 trackId!=pTrackIndex->end(); trackId++) {
-      unsigned i=0;
-      for (; i<nofTracks; i++) {
-	if ((unsigned)pTracks[i].GetID()==trackId.Data()) break;
-      }
-      if (i>=nofTracks) {
-	HLTError("can not find track of id %d", trackId.Data());
+      if (trackId.Data()>=trackIndexMap.size()) {
+	HLTError("can not find track id %d in index map of size %d", trackId.Data(), trackIndexMap.size());
 	continue;
       }
-      AliHLTGlobalBarrelTrack& track=pTracks[i];
+      int trackindex=trackIndexMap[trackId.Data()];
+      if (trackindex<0 || trackindex>=(int)nofTracks) {
+	HLTError("invalid index %d found for track id %d", trackindex, trackId.Data());
+	continue;
+      }
+      AliHLTGlobalBarrelTrack& track=pTracks[trackindex];
       if (!track.GetTrackGeometry()) {
 	HLTError("can not find track geometry for track %d", trackId.Data());
 	continue;
