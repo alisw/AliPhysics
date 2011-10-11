@@ -923,8 +923,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     //Get track for analysis
     AliESDtrack *track = 0x0;
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
+    AliESDtrack *origtrack = new AliESDtrack(*esdtrack);
     if(!esdtrack) {
       fh1NTracksReject->Fill("noESDtrack",1);
+      if(origtrack) delete origtrack;
       continue;
     }
 
@@ -932,6 +934,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       FillSystematicCutHist(esdtrack);
       if (!(fTrackCuts->AcceptTrack(esdtrack))) {
 	fh1NTracksReject->Fill("trackCuts",1);
+	if(origtrack) delete origtrack;
 	continue;
       }
     }
@@ -942,6 +945,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
       if(!track) {
 	fh1NTracksReject->Fill("noTPConly",1);
+	if(origtrack) delete origtrack;
 	continue;
       }
       AliExternalTrackParam exParam;
@@ -949,12 +953,14 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       if( !relate ) {
 	fh1NTracksReject->Fill("relate",1);
     	if(track) delete track;
+	if(origtrack) delete origtrack;
 	continue;
       }
       track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
     }
     else if(fTrackType==5 || fTrackType==6) {
       if(fTrackCuts->AcceptTrack(esdtrack)) {
+	if(origtrack) delete origtrack;
 	continue;
       }
       else {
@@ -965,6 +971,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 	    track = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
 	    if(!track) {
 	      fh1NTracksReject->Fill("noTPConly",1);
+	      if(origtrack) delete origtrack;
 	      continue;
 	    }
 	    AliExternalTrackParam exParam;
@@ -972,13 +979,14 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 	    if( !relate ) {
 	      fh1NTracksReject->Fill("relate",1);
 	      if(track) delete track;
+	      if(origtrack) delete origtrack;
 	      continue;
 	    }
 	    track->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
 	  }
 	  else if(fTrackType==6) {
 	    //use global constrained track
-	    track = esdtrack;
+	    track = new AliESDtrack(*esdtrack);
 	    track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
 
 	  }
@@ -988,19 +996,21 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     else if(fTrackType==7) {
       //use global constrained track
       track = new AliESDtrack(*esdtrack);
-      //     track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
     }
     else
       track = esdtrack;
     
-    if(!track)
+    if(!track) {
+      if(origtrack) delete origtrack;
       continue;
+    }
 
     if(fTrackType==2 || fTrackType==4 || fTrackType==5) {
       //Cut on chi2 of constrained fit
       if(track->GetConstrainedChi2TPC() > fSigmaConstrainedMax*fSigmaConstrainedMax && fSigmaConstrainedMax>0.) {
 	fh1NTracksReject->Fill("chi2",1);
 	if(track) delete track;
+	if(origtrack) delete origtrack;
 	continue;
       }
     }
@@ -1012,9 +1022,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     if (!(fTrackCuts->AcceptTrack(track)) && fTrackType!=4 && fTrackType!=5 && fTrackType!=6) {
       fh1NTracksReject->Fill("trackCuts",1);
-      if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==7) {
+      if(fTrackType==1 || fTrackType==2 || fTrackType==7) {
 	if(track) delete track;
       }
+      if(origtrack) delete origtrack;
       continue;
     }
 
@@ -1022,6 +1033,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       if(fTrackCutsITSLoose ) {
 	if(fTrackCutsITSLoose->AcceptTrack(track) ) {
 	  if(track) delete track;
+	  if(origtrack) delete origtrack;
 	  continue;
 	}
       }
@@ -1031,9 +1043,10 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     }
 
     if(!track) {
-      if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==7) {
+      if(fTrackType==1 || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
 	if(track) delete track;
       }
+      if(origtrack) delete origtrack;
       continue;
     }
     
@@ -1091,8 +1104,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
 
     fVariables->SetAt(track->GetTPCnclsS(),20);
 
-    Float_t chi2Gold = GetGoldenChi2(iTrack);
-    Float_t chi2GGC  = GetGGCChi2(iTrack,track);
+    Float_t chi2Gold = GetGoldenChi2(origtrack);
+    Float_t chi2GGC  = GetGGCChi2(origtrack);
 
     fVariables->SetAt(chi2Gold,21);
     fVariables->SetAt(chi2GGC,22);
@@ -1101,7 +1114,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     //      int mult = fTrackCuts->CountAcceptedTracks(fESD);
 
-    if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==7) {
+    if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
       if(track) delete track;
     }
     
@@ -1472,16 +1485,16 @@ Int_t AliPWG4HighPtTrackQA::GetTrackLengthTPC(AliAODTrack *track) {
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(Int_t iTrack) {
+Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(AliESDtrack *origtrack) {
   //
   // Return chi2 between global and TPC constrained track
+  // track should be the global unconstrained track
   //
 
   Float_t chi2Gold = 0.;
 
-  AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
   AliESDtrack *tpcTrack = 0x0;
-  tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESD,esdtrack->GetID());
+  tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(fESD,origtrack->GetID());
   if(tpcTrack) {
     AliExternalTrackParam exParam;
     Bool_t relate = tpcTrack->RelateToVertexTPC(fVtx,fESD->GetMagneticField(),kVeryBig,&exParam);
@@ -1490,8 +1503,8 @@ Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(Int_t iTrack) {
       //	  Double_t pTPC[2],covTPC[3];	  tpcTrack->PropagateToDCA(fVtx, fESD->GetMagneticField(), 10000,  pTPC, covTPC);
     }
   
-    tpcTrack->Propagate(esdtrack->GetAlpha(), esdtrack->GetX(), fESD->GetMagneticField());
-    chi2Gold = (Float_t)esdtrack->GetPredictedChi2(tpcTrack);
+    tpcTrack->Propagate(origtrack->GetAlpha(), origtrack->GetX(), fESD->GetMagneticField());
+    chi2Gold = (Float_t)origtrack->GetPredictedChi2(tpcTrack);
   }
 
   if(tpcTrack) delete tpcTrack;
@@ -1501,28 +1514,26 @@ Float_t AliPWG4HighPtTrackQA::GetGoldenChi2(Int_t iTrack) {
 }
 
 //_______________________________________________________________________
-Float_t AliPWG4HighPtTrackQA::GetGGCChi2(Int_t iTrack, AliESDtrack *track) {
+Float_t AliPWG4HighPtTrackQA::GetGGCChi2(AliESDtrack *origtrack) {
   //
   // Return chi2 between global and global constrained track
-  // track should be the global track constrained to the primary vertex
+  // track should be the global unconstrained track
   //
 
   Float_t chi2GGC = 0.;
 
-  AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
-  chi2GGC = (Float_t)esdtrack->GetPredictedChi2(track);
-
-  if(chi2GGC==0. && fTrackType!=7) {
-    AliESDtrack *esdtrackC = new AliESDtrack(*esdtrack);
-    if(esdtrackC) {
-      esdtrackC->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
-      chi2GGC = (Float_t)esdtrack->GetPredictedChi2(esdtrackC);
-
-      delete esdtrackC;
-    }
-
+  AliESDtrack *esdtrackC = new AliESDtrack(*origtrack);
+  if(esdtrackC) {
+    esdtrackC->Set(origtrack->GetConstrainedParam()->GetX(),origtrack->GetConstrainedParam()->GetAlpha(),origtrack->GetConstrainedParam()->GetParameter(),origtrack->GetConstrainedParam()->GetCovariance());
+    chi2GGC = (Float_t)origtrack->GetPredictedChi2(esdtrackC);
+    
+    /*
+    if(chi2GGC==0.)
+      cout << "origtrack: " << origtrack << "\tesdtrackC: " << esdtrackC << endl;
+    */
+    delete esdtrackC;
   }
-
+  
   return chi2GGC;
 
 }

@@ -88,8 +88,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Float_t GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   Int_t   GetTrackLengthTPC(AliESDtrack *track);
   Int_t   GetTrackLengthTPC(AliAODTrack *track);
-  Float_t GetGoldenChi2(Int_t iTrack);
-  Float_t GetGGCChi2(Int_t iTrack, AliESDtrack *track);
+  Float_t GetGoldenChi2(AliESDtrack *origtrack);
+  Float_t GetGGCChi2(AliESDtrack *origtrack);
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
