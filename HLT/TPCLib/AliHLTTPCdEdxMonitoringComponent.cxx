@@ -205,12 +205,9 @@ Int_t AliHLTTPCdEdxMonitoringComponent::DoEvent(const AliHLTComponentEventData& 
   // support this and we need the const_cast
   AliESDEvent* esd = dynamic_cast<AliESDEvent*>(const_cast<TObject*>(obj));
   if (esd != NULL) {
-    AliInfoClass(Form("==================== event %3d ================================", GetEventCount()));
     esd->GetStdContent();
     for (Int_t i = 0; i < esd->GetNumberOfTracks(); i++) {
       AliESDtrack* track = esd->GetTrack(i);
-      AliInfoClass(Form("-------------------- track %3d --------------------------------", i));
-      track->Print("");
       sig=track->GetTPCsignal();
       if(!fESDTrackCuts->AcceptTrack(track)) continue;
       if (!track->GetInnerParam()) continue;
@@ -219,7 +216,7 @@ Int_t AliHLTTPCdEdxMonitoringComponent::DoEvent(const AliHLTComponentEventData& 
     }
   }
   // publish the histogram
-  PushBack(dynamic_cast<TObject*>(fHist), kAliHLTDataTypeHistogram);
+  PushBack(fHist, kAliHLTDataTypeHistogram | kAliHLTDataOriginHLT);
 
   return 0;
 }

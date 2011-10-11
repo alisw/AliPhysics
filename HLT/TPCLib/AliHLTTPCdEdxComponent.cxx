@@ -45,7 +45,9 @@
 #include "AliTPCseed.h"
 #include "AliTPCclusterMI.h"
 #include "TGeoGlobalMagField.h"
-
+#include "AliTPCcalibDB.h"
+#include "AliTPCRecoParam.h"
+#include "AliTPCTransform.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp( AliHLTTPCdEdxComponent )
@@ -276,7 +278,14 @@ int AliHLTTPCdEdxComponent::DoInit( int argc, const char** argv )
     HLTError("magnetic field not initialized, please set up TGeoGlobalMagField and AliMagF");
     return -ENODEV;
   }
-  
+
+  AliTPCcalibDB::Instance()->SetRun(GetRunNo());
+  AliTPCcalibDB::Instance()->UpdateRunInformations(GetRunNo());
+
+  AliTPCcalibDB::Instance()->GetTransform()->SetCurrentRun(GetRunNo());
+  AliTPCcalibDB::Instance()->GetTransform()->SetCurrentTimeStamp( GetTimeStamp() );
+  AliTPCcalibDB::Instance()->GetTransform()->SetCurrentRecoParam(AliTPCRecoParam::GetHLTParam());
+
   //AliTPCTransform *transform = AliTPCcalibDB::Instance()->GetTransform();
   //if( transform ){
   //AliTPCRecoParam *reco = transform->GetCurrentRecoParam();
