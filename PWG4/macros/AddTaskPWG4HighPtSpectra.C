@@ -6,8 +6,8 @@ const Float_t phimax = 2.*TMath::Pi();
 const Float_t etamin = -0.9;
 const Float_t etamax = 0.9;
 
-const Int_t   mintrackrefsTPC = 1;
-const Int_t   mintrackrefsITS = 1;
+const Int_t   mintrackrefsTPC = 0;
+const Int_t   mintrackrefsITS = 0;
 
 void AddTaskPWG4HighPtSpectraAll(char *prodType = "LHC10h",Bool_t isPbPb=kTRUE, Int_t iAODanalysis = 0)
 {
@@ -84,6 +84,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   UInt_t ipt   = 0;
   UInt_t iphi  = 1;
   UInt_t ieta  = 2;
+  UInt_t incls = 3;
 
   //Setting up the container grid... 
   UInt_t nstep = 4; //Steps/Modes for containers
@@ -106,7 +107,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   ptBinEdges[3][0] = 100.;
   ptBinEdges[3][1] = 5.;
   
-  const Int_t nvar   = 3; //number of variables on the grid: pt:phi:eta
+  const Int_t nvar   = 4; //number of variables on the grid: pt:phi:eta:NClsIter1
 
   const Int_t nbin11 = round((ptBinEdges[0][0]-ptmin)/ptBinEdges[0][1]);
   const Int_t nbin12 = round((ptBinEdges[1][0]-ptBinEdges[0][0])/ptBinEdges[1][1])+nbin11;
@@ -116,17 +117,21 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   const Int_t nbin1  = nbin14; //bins in pt 
   const Int_t nbin2  =  18;    //bins in phi
   const Int_t nbin3  =  2;     //bins in eta
+  const Int_t nbin4  =  6;     //bins in NClsIter1: 0 70 80 90 100 120
+
 
   //arrays for the number of bins in each dimension
   Int_t iBin[nvar];
   iBin[0]=nbin1;
   iBin[1]=nbin2;
   iBin[2]=nbin3;
+  iBin[3]=nbin4;
    
   //arrays for lower bounds :
   Double_t *binLim1=new Double_t[nbin1+1];
   Double_t *binLim2=new Double_t[nbin2+1];
   Double_t *binLim3=new Double_t[nbin3+1];
+  Double_t *binLim4=new Double_t[nbin4+1];
   
   //values for bin lower bounds 
   for(Int_t i=0; i<=nbin1; i++) {
@@ -137,19 +142,28 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   }
   for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)phimin + (phimax-phimin)/nbin2*(Double_t)i ;
   for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)etamin + (etamax-etamin)/nbin3*(Double_t)i ;  
-  
+  binLim4[0] = 0.;
+  binLim4[1] = 70.;
+  binLim4[2] = 80.;
+  binLim4[3] = 90.;
+  binLim4[4] = 100.;
+  binLim4[5] = 120.;
+  binLim4[6] = 160.;
+
 
   AliCFContainer* containerPos = new AliCFContainer("containerPos","container for positive tracks",nstep,nvar,iBin);
   //setting the bin limits
   containerPos -> SetBinLimits(ipt,binLim1);
   containerPos -> SetBinLimits(iphi,binLim2);
   containerPos -> SetBinLimits(ieta,binLim3);
+  containerPos -> SetBinLimits(incls,binLim4);
 
   AliCFContainer* containerNeg = new AliCFContainer("containerNeg","container for negative tracks",nstep,nvar,iBin);
   //setting the bin limits
   containerNeg -> SetBinLimits(ipt,binLim1);
   containerNeg -> SetBinLimits(iphi,binLim2);
   containerNeg -> SetBinLimits(ieta,binLim3);
+  containerNeg -> SetBinLimits(incls,binLim4);
   
   //CREATE THE  CUTS -----------------------------------------------
   //Use AliESDtrackCuts
@@ -173,7 +187,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWG4(10041005);   //no ITSrefit requirement
     trackCutsReject = CreateTrackCutsPWG4(1005); //ITSrefit requirement
-    trackCutsReject->SetEtaRange(-0.9,0.9);
+    trackCutsReject->SetEtaRange(-etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
@@ -184,7 +198,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWG4(10041005);       //no ITSrefit requirement filter 256
     trackCutsReject = CreateTrackCutsPWG4(10001005); //ITSrefit requirement filter 16
-    trackCutsReject->SetEtaRange(-0.9,0.9);
+    trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
 
@@ -196,19 +210,19 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
      //	      Set track cuts for TPConly constrained tracks
     trackCuts = CreateTrackCutsPWG4(2001);
   }
-  trackCuts->SetEtaRange(-0.9,0.9);
+  trackCuts->SetEtaRange(etamin,etamax);
   trackCuts->SetPtRange(0.15, 1e10);
 
   // Gen-Level kinematic cuts
   AliCFTrackKineCuts *mcKineCuts = new AliCFTrackKineCuts("mcKineCuts","MC-level kinematic cuts");
   mcKineCuts->SetPtRange(0.15,1e10);
-  mcKineCuts->SetRapidityRange(-0.9,0.9);//-0.5,0.5);
+  mcKineCuts->SetEtaRange(etamin,etamax);//-0.5,0.5);
   mcKineCuts->SetRequireIsCharged(kTRUE);
 
   //Acceptance Cuts
-  AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts","MC acceptance cuts");
+  //AliCFAcceptanceCuts *mcAccCuts = new AliCFAcceptanceCuts("mcAccCuts","MC acceptance cuts");
   // mcAccCuts->SetMinNHitITS(mintrackrefsITS);
-  mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
+  //mcAccCuts->SetMinNHitTPC(mintrackrefsTPC);
 
   TObjArray* recList = new TObjArray(0);
   TObjArray* secList = new TObjArray(0) ;
@@ -217,7 +231,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
   printf("CREATE MC KINE CUTS\n");
   TObjArray* mcList = new TObjArray(0) ;
   mcList->AddLast(mcKineCuts);
-  mcList->AddLast(mcAccCuts);
+  //mcList->AddLast(mcAccCuts);
 
   //CREATE THE INTERFACE TO CORRECTION FRAMEWORK USED IN THE TASK
   printf("CREATE INTERFACE AND CUTS\n");
@@ -247,7 +261,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
     taskPWG4HighPtSpectra->SetIsPbPb(kTRUE);
     taskPWG4HighPtSpectra->SetCentralityClass(centClass);
   }
-  taskPWG4HighPtSpectra->SetSigmaConstrainedMax(5.);
+  //  taskPWG4HighPtSpectra->SetSigmaConstrainedMax(5.);
 
 
   // E. Create ONLY the output containers for the data produced by the task.

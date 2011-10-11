@@ -88,6 +88,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Float_t GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   Int_t   GetTrackLengthTPC(AliESDtrack *track);
   Int_t   GetTrackLengthTPC(AliAODTrack *track);
+  Float_t GetGoldenChi2(Int_t iTrack);
+  Float_t GetGGCChi2(Int_t iTrack, AliESDtrack *track);
 
   static AliGenPythiaEventHeader*  GetPythiaEventHeader(AliMCEvent *mcEvent);
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
@@ -171,13 +173,18 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
   TH3F *fPtRelUncertainty1PtChi2Iter1;         //! Pt vs relUncertainty1Pt vs Chi2TPC/NClusIter1
   TH3F *fPtRelUncertainty1PtPhi;               //! Pt vs relUncertainty1PtPhi
-  TH3F *fPtRelUncertainty1PtTrkLength;         //! Pt vs relUncertainty1Pt vs track length in TPC
   TH2F *fPtUncertainty1Pt;                     //! Pt vs Uncertainty1Pt
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
-  TH2F *fPtChi2PerClusterTPCIter1;                  //! Pt vs Chi2PerClusterTPCIter1
+  TH2F *fPtChi2PerClusterTPCIter1;             //! Pt vs Chi2PerClusterTPCIter1
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
+
+  TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
+  TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track
+  TH3F *fPtChi2GoldPhi;                        //! Pt vs Chi2 between global and TPC constrained track vs phi
+  TH3F *fPtChi2GGCPhi;                         //! Pt vs Chi2 between global and global constrained track vs phi
+  TH2F *fChi2GoldChi2GGC;                      //! Correlations between gold chi2 and GGC chi2
 
   //histos for covariance matrix elements
   TH2F *fPtSigmaY2;                            //! 1/Pt vs sigma(y) extCov[0]
