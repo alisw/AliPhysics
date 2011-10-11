@@ -88,7 +88,7 @@ Int_t AliDAQ::fgkNumberOfDdls[AliDAQ::kNDetectors] = {
   1,
   46,
   1,
-  10
+  28
 };
 
 Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
@@ -112,7 +112,7 @@ Float_t AliDAQ::fgkNumberOfLdcs[AliDAQ::kNDetectors] = {
   1,
   8,
   1,
-  5
+  7
 };
 
 const char* AliDAQ::fgkOfflineModuleName[AliDAQ::kNDetectors] = {
