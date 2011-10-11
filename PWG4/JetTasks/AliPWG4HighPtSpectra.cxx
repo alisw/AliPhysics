@@ -76,7 +76,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsReject(0x0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(100.),
   fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
@@ -107,7 +107,7 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fTrackType(0),
   fTrackCuts(0x0),
   fTrackCutsReject(0x0),
-  fSigmaConstrainedMax(5.),
+  fSigmaConstrainedMax(100.),
   fAvgTrials(1),
   fHistList(0),
   fNEventAll(0),
@@ -351,10 +351,11 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
   // Selected events for analysis
   fNEventSel->Fill(0.);
   
+  const Int_t nvar = 4;
   
-  Double_t containerInputRec[3]       = {0.,0.,0.};
-  Double_t containerInputMC[3]        = {0.,0.,0.};
-  Double_t containerInputRecMC[3]     = {0.,0.,0.}; //reconstructed yield as function of MC variable
+  Double_t containerInputRec[nvar]       = {0.,0.,0.,0.};
+  Double_t containerInputMC[nvar]        = {0.,0.,0.,0.};
+  Double_t containerInputRecMC[nvar]     = {0.,0.,0.,0.}; //reconstructed yield as function of MC variable
 
   //Now go to rec level
   for (Int_t iTrack = 0; iTrack<nTracks; iTrack++) 
@@ -414,6 +415,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	containerInputRec[0] = track->Pt();
 	containerInputRec[1] = track->Phi();
 	containerInputRec[2] = track->Eta();
+	containerInputRec[3] = track->GetTPCNclsIter1();
 
 	if(track->GetSign()>0.) fCFManagerPos->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
 	if(track->GetSign()<0.) fCFManagerNeg->GetParticleContainer()->Fill(containerInputRec,kStepReconstructed);
@@ -431,6 +433,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  containerInputRecMC[0] = particle->Pt();      
 	  containerInputRecMC[1] = particle->Phi();      
 	  containerInputRecMC[2] = particle->Eta();  
+	  containerInputRecMC[3] = track->GetTPCNclsIter1();
 
 	  //Container with primaries
 	  if(fStack->IsPhysicalPrimary(label)) {
@@ -469,7 +472,9 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       containerInputMC[0] = mcPart->Pt();
       containerInputMC[1] = mcPart->Phi();      
       containerInputMC[2] = mcPart->Eta();  
-      
+      //      AliESDtrack *esdtrack = fESD->GetTrack(mcPart->GetLabel());
+      containerInputMC[3] = 159.;
+
       if(fStack->IsPhysicalPrimary(iPart)) {
 	if(mcPart->Charge()>0. && fCFManagerPos->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerPos->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);
 	if(mcPart->Charge()<0. && fCFManagerNeg->CheckParticleCuts(kStepMCAcceptance,mcPart)) fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepMCAcceptance);

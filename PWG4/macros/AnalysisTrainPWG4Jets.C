@@ -2148,7 +2148,7 @@ AliAnalysisAlien* CreateAlienHandler(const char *plugin_mode)
    if(kGridLocalRunList.Length()>0){
      ifstream in1;
      in1.open(kGridLocalRunList.Data());
-     int iRun;
+     int iRun = 0;
      int icount = 0;
      Int_t nRun = 0;
      // just use run numbers, negatives will be excluded
