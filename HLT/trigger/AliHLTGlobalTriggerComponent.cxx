@@ -648,23 +648,40 @@ int AliHLTGlobalTriggerComponent::DoTrigger()
   // If we are dealing with a software trigger on the other hand then
   // mask with the participating detector list.
   // In both cases we must make sure that HLT is part of the readout mask.
+  AliHLTReadoutList readoutlist = decision.ReadoutList();
+  AliHLTReadoutList readoutMask;
   if (CTPData() != NULL and CTPData()->Mask() != 0x0)
   {
-    AliHLTReadoutList readoutlist = decision.ReadoutList();
-    AliHLTReadoutList ctpreadout = CTPData()->ReadoutList(*GetTriggerData());
-    ctpreadout.Enable(AliHLTReadoutList::kHLT);
-    readoutlist.AndEq(ctpreadout);
-    decision.ReadoutList(readoutlist); // override the readout list with the masked one.
+    readoutMask = CTPData()->ReadoutList(*GetTriggerData());
+    readoutMask.Enable(AliHLTReadoutList::kHLT);
   }
   else if (softwareTriggerIsValid)
   {
     assert(fCDH != NULL);
-    AliHLTReadoutList readoutlist = decision.ReadoutList();
     UInt_t detectors = fCDH->GetSubDetectors();
-    AliHLTReadoutList softwareReadout(Int_t(detectors | AliHLTReadoutList::kHLT));
-    readoutlist.AndEq(softwareReadout);
-    decision.ReadoutList(readoutlist); // override the readout list with the masked one.
+    readoutMask = AliHLTReadoutList(Int_t(detectors | AliHLTReadoutList::kHLT));
   }
+  readoutlist.AndEq(readoutMask);
+  decision.ReadoutList(readoutlist); // override the readout list with the masked one.
+    
+  // Also check whether the final readout list equals a full readout of detectors
+  // irrespective of HLT.
+  // Calculate the difference between the input and output list (xor)
+  // and check if any bits are set (ignoring HLT).
+  AliHLTReadoutList::EDetectorId minDetector = ( readoutlist ^ readoutMask ).GetFirstUsedDetector();
+  // Create the readout list specification word:
+  // Bit 0:    Original Data Present (bit 15 of CDH status & error bit to be set)
+  // Bit 1-31: Reserved for future use
+  AliHLTUInt32_t spec = 0x0;
+  if ( AliHLTReadoutList::kNoDetector == minDetector || AliHLTReadoutList::kHLT == minDetector )  // Any bits set after XOR?
+  {
+    spec |=  (AliHLTUInt32_t) 0x1;
+  }
+  else
+  {
+    spec &= ~((AliHLTUInt32_t) 0x1);
+  }
+  SetReadoutListSpecBits(spec);
 
   if (TriggerEvent(&decision, kAliHLTDataTypeGlobalTrigger) == -ENOSPC)
   {

@@ -235,6 +235,16 @@ class AliHLTTrigger : public AliHLTProcessor
   void SetReadoutList(const AliHLTReadoutList& value) { fReadoutList = value; }
   
   /**
+   * Returns the DDL readout list block specification bits to be used.
+   */
+  AliHLTUInt32_t GetReadoutListSpecBits() const { return fReadoutListSpecBits; }
+
+  /**
+   * Sets the DDL readout list block specification bits to be used.
+   */
+  void SetReadoutListSpecBits(AliHLTUInt32_t spec) { fReadoutListSpecBits = spec; }
+  
+  /**
    * Returns the trigger domain object.
    */
   const AliHLTTriggerDomain& GetTriggerDomain() const { return fTriggerDomain; }
@@ -327,6 +337,7 @@ class AliHLTTrigger : public AliHLTProcessor
   TString fDescription;   //! The description to use for the trigger decision.
   AliHLTReadoutList fReadoutList; //! The DDL readout list object for the current event being processed.
   AliHLTTriggerDomain fTriggerDomain; //! The trigger domain object for the current event being processed.
+  AliHLTUInt32_t fReadoutListSpecBits;  //! Readout list data block specification bits used when generating the data block.
   
   ClassDef(AliHLTTrigger, 0) // Base class for HLT triggers.
 

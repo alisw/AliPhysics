@@ -42,7 +42,8 @@ AliHLTTrigger::AliHLTTrigger() :
 	fTriggerEventResult(0),
 	fDescription(),
 	fReadoutList(),
-	fTriggerDomain()
+	fTriggerDomain(),
+	fReadoutListSpecBits(kAliHLTVoidDataSpec)
 {
   // Default constructor sets pointers to NULL.
 }
@@ -142,7 +143,7 @@ int AliHLTTrigger::TriggerEvent(
   
   fTriggerEventResult = PushBack(result, type, spec);
   if (fTriggerEventResult == 0) {
-    fTriggerEventResult = PushBack(readoutlist.Buffer(), readoutlist.BufferSize(), kAliHLTDataTypeReadoutList);
+    fTriggerEventResult = PushBack(readoutlist.Buffer(), readoutlist.BufferSize(), kAliHLTDataTypeReadoutList, fReadoutListSpecBits);
   }
   
   if (fTriggerEventResult == 0) fDecisionMade = true;
