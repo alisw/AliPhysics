@@ -476,37 +476,7 @@ void AliITShit::GetPositionL0(Double_t &x,Double_t &y,Double_t &z,
     tof = ft0;
     return;
 }
-//______________________________________________________________________
-void AliITShit::GetMomentumL(Float_t &px,Float_t &py,Float_t &pz){
-    //     Returns the momentum of this hit in the local coordinates of this
-    // module, and in the units of the Monte Carlo.
-    // Inputs:
-    //   none.
-    // Outputs:
-    //   Float_t px   Track x momentum at this hit [GeV/c]
-    //   Float_t py   Track y momentum at this hit [GeV/c]
-    //   Float_t pz   Track z momentum at this hit [GeV/c]
-    // Return:
-    //   none.
-    AliITSgeom *gm = ((AliITS*)gAlice->GetDetector("ITS"))->GetITSgeom();
-    Float_t g[3],l[3];
 
-    g[0] = fPx;
-    g[1] = fPy;
-    g[2] = fPz;
-    if (gm) {
-        gm->GtoLMomentum(fModule,g,l);
-        px = l[0];
-        py = l[1];
-        pz = l[2];
-    } else {
-        Error("AliITShit","NULL pointer to the geometry! return smth else");
-        px=fPx;
-        py=fPy;
-        pz=fPz;
-    } // end if
-    return;
-}
 //______________________________________________________________________
 TParticle * AliITShit::GetParticle() const {
     //     Returns the pointer to the TParticle for the particle that created

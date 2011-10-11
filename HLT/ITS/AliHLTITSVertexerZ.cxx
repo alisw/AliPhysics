@@ -23,6 +23,7 @@
 #include <AliITS.h>
 #include "AliITSLoader.h"
 #include <AliITSgeom.h>
+#include <AliITSgeomTGeo.h>
 #include <AliITSRecPoint.h>
 #include <AliITSclusterV2.h>
 
@@ -59,13 +60,13 @@ AliHLTITSVertexerZ::~AliHLTITSVertexerZ()
 }
 
 //______________________________________________________________________
-AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTree *tR){
+AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom* /* geom */,TTree *tR){
   // Defines the AliESDVertex for the current event
 
   fCurrentVertex = 0;
 
-  Float_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
-  Float_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
+  Double_t lc[3]; for(Int_t ii=0; ii<3; ii++) lc[ii]=0.;
+  Double_t gc[3]; for(Int_t ii=0; ii<3; ii++) gc[ii]=0.;
   //Float_t lc2[3]; for(Int_t ii=0; ii<3; ii++) lc2[ii]=0.;
   //Float_t gc2[3]; for(Int_t ii=0; ii<3; ii++) gc2[ii]=0.;
 
@@ -127,7 +128,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       AliITSclusterV2 *recp = (AliITSclusterV2*)clusters->UncheckedAt(j);
       lc[0]=-recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
-      geom->LtoG(module,lc,gc);
+      AliITSgeomTGeo::LocalToGlobal(module,lc,gc);
+      //      geom->LtoG(module,lc,gc);
       gc[0]-=GetNominalPos()[0];
       gc[1]-=GetNominalPos()[1];
       Float_t xc1,yc1;
@@ -156,7 +158,8 @@ AliESDVertex* AliHLTITSVertexerZ::FindVertexForCurrentEvent(AliITSgeom *geom,TTr
       AliITSclusterV2 *recp = (AliITSclusterV2*)clusters->UncheckedAt(j);
       lc[0]=recp->GetY()+yshift;
       lc[2]=-recp->GetZ()+zshift[module%4];
-      geom->LtoG(module,lc,gc);
+      AliITSgeomTGeo::LocalToGlobal(module,lc,gc);
+      //      geom->LtoG(module,lc,gc);
       gc[0]-=GetNominalPos()[0];
       gc[1]-=GetNominalPos()[1];
       Float_t xc2,yc2;

@@ -54,18 +54,6 @@ public TObject {
     // Transformation from detector segmentation/cell coordiantes starting
     // from (0,0) to Geant cm detector center local coordinates.
     virtual void    DetToLocal(Int_t,Int_t,Float_t &,Float_t &) const = 0;
-
-    // Transform from real global to local coordinates
-    void GetLocal(Int_t module,Float_t *g ,Float_t *l, AliITSgeom *geom) const {
-      if(geom) geom->GtoL(module,g,l);
-      else AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-    }
-    // Transform from real local to global coordinates
-    void GetGlobal(Int_t module,Float_t *l ,Float_t *g, AliITSgeom *geom) const {
-      if(geom) geom->LtoG(module,l,g);
-      else AliFatal("Pointer to ITS geometry class (AliITSgeom) is null\n");
-    }
-
     // Initialisation
     virtual void Init() = 0;
     //

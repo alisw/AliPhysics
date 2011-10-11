@@ -29,7 +29,7 @@ public:
   AliHLTITSVertexerZ(Float_t x0, Float_t y0);
   virtual ~AliHLTITSVertexerZ();
 
-  AliESDVertex* FindVertexForCurrentEvent(AliITSgeom *geom,TTree *tR);
+  AliESDVertex* FindVertexForCurrentEvent(AliITSgeom* /* geom */,TTree *tR);
 
   void SetBinWidthFine(Float_t bw=0.0005){fStepFine = bw;}
 

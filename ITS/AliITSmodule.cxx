@@ -23,7 +23,7 @@
 #include "AliITS.h"
 #include "AliITShit.h"
 #include "AliITSmodule.h"
-#include "AliITSgeom.h"
+#include "AliITSgeomTGeo.h"
 
 ClassImp(AliITSmodule)
 
@@ -274,11 +274,10 @@ Bool_t AliITSmodule::MedianHitG(AliITShit *h1,AliITShit *h2,
     // passing through a volume. Returns kFALSE untill the the track leaves
     // the volume.
     // median hit
-   AliITSgeom *gm = fITS->GetITSgeom();
    Float_t x1l=0.,y1l=0.,z1l=0.;
    Float_t x2l=0.,y2l=0.,z2l=0.;
    Float_t xMl,yMl=0,zMl;
-   Float_t l[3], g[3];
+   Double_t l[3], g[3];
 
    h1->GetPositionG(x1l,y1l,z1l);
    h2->GetPositionG(x2l,y2l,z2l);
@@ -294,7 +293,7 @@ Bool_t AliITSmodule::MedianHitG(AliITShit *h1,AliITShit *h2,
    l[0] = xMl;
    l[1] = yMl;
    l[2] = zMl;
-   gm->LtoG(h1->GetModule(),l,g);
+   AliITSgeomTGeo::LocalToGlobal(h1->GetModule(),l,g);
    x = g[0];
    y = g[1];
    z = g[2];
@@ -306,16 +305,15 @@ void AliITSmodule::MedianHitG(Int_t index,
 			      Float_t hitx2,Float_t hity2,Float_t hitz2,
 			      Float_t &xMg, Float_t &yMg, Float_t &zMg){
   // median hit
-   AliITSgeom *gm = fITS->GetITSgeom();
    Float_t x1l,y1l,z1l;
    Float_t x2l,y2l,z2l;
    Float_t xMl,yMl=0,zMl;
-   Float_t l[3], g[3];
+   Double_t l[3], g[3];
 
    g[0] = hitx1;
    g[1] = hity1;
    g[2] = hitz1;
-   gm->GtoL(index,g,l);
+   AliITSgeomTGeo::GlobalToLocal(index,g,l);
    x1l = l[0];
    y1l = l[1];
    z1l = l[2];
@@ -323,7 +321,7 @@ void AliITSmodule::MedianHitG(Int_t index,
    g[0] = hitx2;
    g[1] = hity2;
    g[2] = hitz2;
-   gm->GtoL(index,g,l);
+   AliITSgeomTGeo::GlobalToLocal(index,g,l);
    x2l = l[0];
    y2l = l[1];
    z2l = l[2];
@@ -339,7 +337,7 @@ void AliITSmodule::MedianHitG(Int_t index,
    l[0] = xMl;
    l[1] = yMl;
    l[2] = zMl;
-   gm->LtoG(index,l,g);
+   AliITSgeomTGeo::LocalToGlobal(index,l,g);
    xMg = g[0];
    yMg = g[1];
    zMg = g[2];
@@ -388,7 +386,7 @@ void AliITSmodule::MedianHit(Int_t index,
 //___________________________________________________________________________
 void AliITSmodule::GetID(Int_t &lay,Int_t &lad,Int_t &det){
   // get ID
-	fITS->GetITSgeom()->GetModuleId(fIndex,lay,lad,det);
-	return ;
+  AliITSgeomTGeo::GetModuleId(fIndex,lay,lad,det);
+  return ;
 }
 

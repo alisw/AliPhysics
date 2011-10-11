@@ -196,6 +196,7 @@ class AliITShit : public AliHit {
     virtual Float_t GetZL(){
         // Returns particle Z position at this hit in local coordinates.
         Float_t xf,yf,zf,tf;GetPositionL(xf,yf,zf,tf);return zf;}
+  
     // Get Monti Carlo information about hit.
     virtual void GetMomentumG(Float_t &px,Float_t &py,Float_t &pz)const {
         // returns the particle momentum in the Global frame
@@ -212,18 +213,6 @@ class AliITShit : public AliHit {
     virtual Float_t GetPZG()const {// Returns particle Z momentum at
         // this hit in global coordinates.
         return fPz;}
-    virtual void GetMomentumL(Float_t &px,Float_t &py,Float_t &pz);
-    virtual void GetMomentumL(Double_t &px,Double_t &py,Double_t &pz){
-        // Returns particle 3 momentum at this hit in local coordinates.	 
-        Float_t x,y,z;GetMomentumL(x,y,z);px=x,py=y,pz=z;}
-    virtual Float_t GetPXL(){Float_t px,py,pz;GetMomentumL(px,py,pz);
-                             return px;}
-    // Returns particle X momentum at this hit in local coordinates.
-    virtual Float_t GetPYL(){Float_t px,py,pz;GetMomentumL(px,py,pz);
-                             return py;}
-    // Returns particle Y momentum at this hit in local coordinates.
-    virtual Float_t GetPZL(){Float_t px,py,pz;GetMomentumL(px,py,pz);
-                             return pz;}
     // Returns particle Z momentum at this hit in local coordinates.
     virtual TParticle * GetParticle() const; // Returns ptr to this particle.
     Bool_t StatusInside() const {// checks if the particle is "inside"
