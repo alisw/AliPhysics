@@ -147,6 +147,7 @@ void trigEffQA(TString fileListName, TString outFilename = "")
   for ( Int_t ihisto=0; ihisto<chEffList.GetEntries(); ihisto++ ) {
     TH1* histo = (TH1*)chEffList.At(ihisto);
     histo->GetXaxis()->SetRange(1,fileNameArray.GetEntries());
+    histo->GetXaxis()->SetLabelSize(0.04);
   }
 
   TH1* totEff = (TH1*)chEffList.At(12);
