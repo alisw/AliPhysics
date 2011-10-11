@@ -43,18 +43,12 @@ void AliEveDigitScaleInfo::ScaleChanged(Int_t s)
   fScale = s;
 
   AliEveITSScaledModule* sm;
-#if ROOT_VERSION_CODE >= 334599 
   RefMap_i i = fBackRefs.begin();
-#else
-  std::list<TEveElement*>::iterator i = fBackRefs.begin();
-#endif
+  // #endif
   while (i != fBackRefs.end())
   {
-#if ROOT_VERSION_CODE >= 334599 
-    sm = dynamic_cast<AliEveITSScaledModule*>((*i).first);
-#else
-    sm = dynamic_cast<AliEveITSScaledModule*>(*i);
-#endif
+    sm = dynamic_cast<AliEveITSScaledModule*>(i->first);
+    // #endif
     if(sm) sm->LoadQuads();
     ++i;
   }
@@ -66,18 +60,12 @@ void AliEveDigitScaleInfo::StatTypeChanged(Int_t t)
   fSyncPalette = kTRUE;
 
   AliEveITSScaledModule* sm;
-#if ROOT_VERSION_CODE >= 334599 
   RefMap_i i = fBackRefs.begin();
-#else
-  std::list<TEveElement*>::iterator i = fBackRefs.begin();
-#endif
+  // #endif
   while (i != fBackRefs.end())
   {
-#if ROOT_VERSION_CODE >= 334599 
-    sm = dynamic_cast<AliEveITSScaledModule*>((*i).first);
-#else
-    sm = dynamic_cast<AliEveITSScaledModule*>(*i);
-#endif
+    sm = dynamic_cast<AliEveITSScaledModule*>(i->first);
+    // #endif
     if (sm) sm->SetQuadValues();
     ++i;
   }
