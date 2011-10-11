@@ -48,7 +48,6 @@ void AddTaskPWG4HighPtTrackQAAllReduced(char *prodType = "LHC10h",Bool_t isPbPb=
     for(cent=0; cent<4; cent++) {
       AliPWG4HighPtTrackQA *taskTrackQA00 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,0);
       AliPWG4HighPtTrackQA *taskTrackQA01 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,1);
-      AliPWG4HighPtTrackQA *taskTrackQA02 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,0,2);
       AliPWG4HighPtTrackQA *taskTrackQA70 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,0);
       AliPWG4HighPtTrackQA *taskTrackQA71 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,1);
       AliPWG4HighPtTrackQA *taskTrackQA72 = AddTaskPWG4HighPtTrackQA(prodType,isPbPb,iAODanalysis,cent,7,2);

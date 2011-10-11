@@ -1083,12 +1083,13 @@ void AliAnalysisTaskJetSpectrum2::FillTrackHistos(TList &particlesList,int iType
       if(phiRP<0)phiRP += TMath::Pi();
       const float allPhi = -1./180.*TMath::Pi();
 
-      fp2MultRPPhiTrackPt[iType]->Fill(refMult,phiRP,tmpPt);
-      fp2MultRPPhiTrackPt[iType]->Fill(refMult,allPhi,tmpPt);
-
-      fp2CentRPPhiTrackPt[iType]->Fill(fCentrality,phiRP,tmpPt);
-      fp2CentRPPhiTrackPt[iType]->Fill(fCentrality,allPhi,tmpPt);
-
+      if(tmpPt<100){
+	fp2MultRPPhiTrackPt[iType]->Fill(refMult,phiRP,tmpPt);
+	fp2MultRPPhiTrackPt[iType]->Fill(refMult,allPhi,tmpPt);
+	
+	fp2CentRPPhiTrackPt[iType]->Fill(fCentrality,phiRP,tmpPt);
+	fp2CentRPPhiTrackPt[iType]->Fill(fCentrality,allPhi,tmpPt);
+      }
       Int_t phiBin = GetPhiBin(tmpPhi-fRPAngle);
       var3[0] = 1;
       var3[1] = tmpPt;
