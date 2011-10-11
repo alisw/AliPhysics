@@ -46,6 +46,7 @@
 #include "TH1I.h"
 #include "TH2F.h"
 #include "TH1F.h"
+#include "TMath.h"
 #include "TProfile2D.h"
 #include "AliTRDCalDet.h"
 #include "AliTRDCalPad.h"
@@ -92,7 +93,8 @@ ClassImp(AliTRDPreprocessorOffline)
   fBackCorrectVdrift(kTRUE),
   fNotEnoughStatisticsForTheGain(kFALSE),
   fNotEnoughStatisticsForTheVdriftLinear(kFALSE),
-  fStatus(0)
+  fStatusNeg(0),
+  fStatusPos(0)
 {
   //
   // default constructor
@@ -147,11 +149,11 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   // 4. validate OCDB entries
   //
   if(fSwitchOnValidation==kTRUE && ValidateVdrift()==kFALSE) { 
-    AliError("TRD vdrift OCDB parameters out of range!");
+    //AliError("TRD vdrift OCDB parameters out of range!");
     fVdriftValidated = kFALSE;
   }
   if(fSwitchOnValidation==kTRUE && ValidateT0()==kFALSE) { 
-    AliError("TRD t0 OCDB parameters out of range!");
+    //AliError("TRD t0 OCDB parameters out of range!");
     fT0Validated = kFALSE;
   }
   //
@@ -195,7 +197,7 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   // 4. validate OCDB entries
   //
   if(fSwitchOnValidation==kTRUE && ValidateGain()==kFALSE) { 
-    AliError("TRD gain OCDB parameters out of range!");
+    //AliError("TRD gain OCDB parameters out of range!");
     return;
   }
   //
@@ -235,7 +237,7 @@ void AliTRDPreprocessorOffline::CalibPRF(const Char_t* file, Int_t startRunNumbe
   // 4. validate OCDB entries
   //
   if(fSwitchOnValidation==kTRUE && ValidatePRF()==kFALSE) { 
-    AliError("TRD prf OCDB parameters out of range!");
+    //AliError("TRD prf OCDB parameters out of range!");
     return;
   }
   //
@@ -270,7 +272,7 @@ void AliTRDPreprocessorOffline::CalibChamberStatus(Int_t startRunNumber, Int_t e
   // 4. validate OCDB entries
   //
   if(fSwitchOnValidation==kTRUE && ValidateChamberStatus()==kFALSE) { 
-    AliError("TRD Chamber status OCDB parameters not ok!");
+    //AliError("TRD Chamber status OCDB parameters not ok!");
     return;
   }
   //
@@ -307,7 +309,8 @@ Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
 
   }
    
-  if((fVersionVdriftUsed == 0) && (fVersionGainUsed == 0)) fStatus = -1;
+  if(fVersionVdriftUsed == 0) fStatusPos = fStatusPos |kVdriftErrorOld;
+  if(fVersionGainUsed == 0) fStatusPos = fStatusPos | kGainErrorOld;
 
   return kTRUE;
   
@@ -470,14 +473,15 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
 	fPlots->AddAt(coefGain,kGain);
 	// 
 	ok = kTRUE;
-	fStatus += 1000000;
+	fStatusNeg = fStatusNeg | kGainNotEnoughStatsButFill;
       }
       else {
-	fStatus += 1000;
+	fStatusPos = fStatusPos | kGainErrorOld;
       }      
     }
     else {
-      fStatus += 1000;
+      if(gainoverallnotnormalized <= 0.0) fStatusNeg = fStatusNeg | kGainNotEnoughStatsNotFill;
+      if(!fCalDetGainUsed) fStatusPos = fStatusPos | kGainErrorOld;
     }
   }
   
@@ -537,7 +541,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
     ok = kTRUE;
   }
   else {
-    fStatus += 100;
+    fStatusNeg = fStatusNeg | kTimeOffsetNotEnoughStatsNotFill;
   }
   calibra->ResetVectorFit();
  
@@ -609,11 +613,16 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 	fPlots->AddAt(coefDriftLinear,kVdriftLinear);
 	// 
 	ok = kTRUE;
-	fStatus += 10000;
+	fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsButFill;
       }
-      else fStatus += 1;      
+      else {
+	fStatusPos = fStatusPos | kVdriftErrorOld;
+      }      
     }
-    else fStatus += 1;
+    else {
+      if(vdriftoverall <= 0.0) fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsNotFill;
+      if(!fCalDetVdriftUsed) fStatusPos = fStatusPos | kVdriftErrorOld;
+    }
   }
   
   calibra->ResetVectorFit();
@@ -999,7 +1008,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      if((mean > 0.2) && (mean < 1.4) && (rms < 0.5)) return kTRUE;
      //if((mean > 0.2) && (mean < 1.4)) return kTRUE;
      else {
-       fStatus += 1000000000;
+       fStatusPos = fStatusPos | kGainErrorRange;
        return kFALSE;
      }
    }
@@ -1025,7 +1034,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      Double_t rms = calDet->GetRMSRobust();
      //printf("Vdrift::mean %f, rms %f\n",mean,rms);
      if(!((mean > 1.0) && (mean < 2.0) && (rms < 0.5))) {
-       fStatus += 10000000;
+       fStatusPos = fStatusPos | kVdriftErrorRange;
        ok = kFALSE;
      }
    }
@@ -1038,7 +1047,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
        Double_t rms = calPad->GetRMS();
        //printf("Vdrift::meanpad %f, rmspad %f\n",mean,rms);
        if(!((mean > 0.9) && (mean < 1.1) && (rms < 0.6))) {
-	 fStatus += 10000000;
+	 fStatusPos = fStatusPos | kVdriftErrorRange;
 	 ok = kFALSE;
        }
      }
@@ -1064,7 +1073,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
      //printf("T0::minimum %f, rmsdet %f,meanpad %f, rmspad %f\n",meandet,rmsdet,meanpad,rmspad);
      if((meandet > -1.5) && (meandet < 5.0) && (rmsdet < 4.0) && (meanpad < 5.0) && (meanpad > -0.5)) return kTRUE;
      else {
-       fStatus += 100000000;
+       fStatusPos = fStatusPos | kTimeOffsetErrorRange;
        return kFALSE;
      }
    }
@@ -1090,7 +1099,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
 
  }
  //__________________________________________________________________________________________________________________________
-Bool_t AliTRDPreprocessorOffline::ValidateChamberStatus() const{
+Bool_t AliTRDPreprocessorOffline::ValidateChamberStatus(){
   //
   // Update OCDB entry
   //
@@ -1102,7 +1111,10 @@ Bool_t AliTRDPreprocessorOffline::ValidateChamberStatus() const{
       if(calChamberStatus->IsMasked(det)) detectormasked++;
     }
     //printf("Number of chambers masked %d\n",detectormasked);
-    if(detectormasked > 40) return kFALSE;
+    if(detectormasked > 40) {
+      fStatusPos = fStatusPos | kChamberStatusErrorRange;
+      return kFALSE;
+    }
     else return kTRUE;
   }
   else return kFALSE;
@@ -1199,4 +1211,52 @@ Int_t AliTRDPreprocessorOffline::GetFirstRun(TString name) const
   return -1;
 
 }
+//_____________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::CheckStatus(Int_t status, Int_t bitMask) const
+{
+  //
+  // Checks the status
+  //
+
+  return (status & bitMask) ? kTRUE : kFALSE;
+  
+}
+//_____________________________________________________________________________
+Int_t AliTRDPreprocessorOffline::GetStatus() const
+{
+  //
+  // Checks the status
+  // fStatusPos: errors
+  // fStatusNeg: only info
+  //
+
+  if(fStatusPos > 0) return fStatusPos;
+  else return (-TMath::Abs(fStatusNeg));
+  
+}
+//_____________________________________________________________________________
+void AliTRDPreprocessorOffline::PrintStatus() const
+{
+  //
+  // Do Summary
+  //
+
+  AliInfo(Form("The error status is %d",fStatusPos));
+  AliInfo(Form("IsGainErrorOld? %d",(Int_t)IsGainErrorOld()));
+  AliInfo(Form("IsVdriftErrorOld? %d",(Int_t)IsVdriftErrorOld()));
+  AliInfo(Form("IsGainErrorRange? %d",(Int_t)IsGainErrorRange()));
+  AliInfo(Form("IsVdriftErrorRange? %d",(Int_t)IsVdriftErrorRange()));
+  AliInfo(Form("IsTimeOffsetErrorRange? %d",(Int_t)IsTimeOffsetErrorRange()));
+  AliInfo(Form("IsChamberStatusErrorRange? %d",(Int_t)IsChamberStatusErrorRange()));
+
+ 
+  AliInfo(Form("The info status is %d",fStatusNeg));
+  AliInfo(Form("IsGainNotEnoughStatsButFill? %d",(Int_t)IsGainNotEnoughStatsButFill()));
+  AliInfo(Form("IsVdriftNotEnoughStatsButFill? %d",(Int_t)IsVdriftNotEnoughStatsButFill()));
+  AliInfo(Form("IsGainNotEnoughStatsNotFill? %d",(Int_t)IsGainNotEnoughStatsNotFill()));
+  AliInfo(Form("IsVdriftNotEnoughStatsNotFill? %d",(Int_t)IsVdriftNotEnoughStatsNotFill()));
+  AliInfo(Form("IsTimeOffsetNotEnoughStatsNotFill? %d",(Int_t)IsTimeOffsetNotEnoughStatsNotFill()));
+  
+}
+
 

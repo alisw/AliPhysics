@@ -35,9 +35,40 @@ public:
       kChamberStatus = 7,
       kPRF = 8
       };   
-  
+  enum { kGainNotEnoughStatsButFill = 2, kVdriftNotEnoughStatsButFill = 4, kGainNotEnoughStatsNotFill = 8, kVdriftNotEnoughStatsNotFill = 16, kTimeOffsetNotEnoughStatsNotFill = 32};  
+  enum { kGainErrorOld = 2, kVdriftErrorOld = 4, kGainErrorRange = 8, kVdriftErrorRange = 16, kTimeOffsetErrorRange = 32, kChamberStatusErrorRange = 64};  
+
+
   AliTRDPreprocessorOffline();
   virtual ~AliTRDPreprocessorOffline();
+
+  Bool_t      IsGainNotEnoughStatsButFill() const 
+    { return CheckStatus(fStatusNeg, kGainNotEnoughStatsButFill);  };
+  Bool_t      IsGainNotEnoughStatsNotFill() const 
+    { return CheckStatus(fStatusNeg, kGainNotEnoughStatsNotFill);  };
+  Bool_t      IsVdriftNotEnoughStatsButFill() const 
+    { return CheckStatus(fStatusNeg, kVdriftNotEnoughStatsButFill);  };
+  Bool_t      IsVdriftNotEnoughStatsNotFill() const 
+    { return CheckStatus(fStatusNeg, kVdriftNotEnoughStatsNotFill);  };
+  Bool_t      IsTimeOffsetNotEnoughStatsNotFill() const 
+    { return CheckStatus(fStatusNeg, kVdriftNotEnoughStatsNotFill);  };
+  
+  Bool_t      IsGainErrorOld() const 
+    { return CheckStatus(fStatusPos, kGainErrorOld);  };
+  Bool_t      IsVdriftErrorOld() const 
+    { return CheckStatus(fStatusPos, kVdriftErrorOld);  };
+  Bool_t      IsGainErrorRange() const 
+    { return CheckStatus(fStatusPos, kGainErrorRange);  };
+  Bool_t      IsVdriftErrorRange() const 
+    { return CheckStatus(fStatusPos, kVdriftErrorRange);  };
+  Bool_t      IsTimeOffsetErrorRange() const 
+    { return CheckStatus(fStatusPos, kTimeOffsetErrorRange);  };
+  Bool_t      IsChamberStatusErrorRange() const 
+    { return CheckStatus(fStatusPos, kChamberStatusErrorRange);  };
+  
+  Bool_t      CheckStatus(Int_t status, Int_t bitMask) const;
+  void PrintStatus() const;
+
 
   void SetLinearFitForVdrift(Bool_t methodsecond) { fMethodSecond = methodsecond;};
   Bool_t GetLinearFitForVdrift() const { return fMethodSecond;};
@@ -81,9 +112,11 @@ public:
   Bool_t ValidateVdrift();
   Bool_t ValidateT0();
   Bool_t ValidatePRF() const;
-  Bool_t ValidateChamberStatus() const;
+  Bool_t ValidateChamberStatus();
 
-  Int_t    GetStatus() const                                         { return fStatus;                 }
+  Int_t    GetStatus() const;
+  Int_t    GetStatusPos() const                                      { return fStatusPos;              }
+  Int_t    GetStatusNeg() const                                      { return fStatusNeg;              }
   Int_t    GetVersionGainUsed() const                                { return fVersionGainUsed;        }
   Int_t    GetSubVersionGainUsed() const                             { return fSubVersionGainUsed;     }
   Int_t    GetFirstRunVdriftUsed() const                             { return fFirstRunVdriftUsed;     }
@@ -128,7 +161,8 @@ public:
   Bool_t   fBackCorrectVdrift;            // Back correction afterwards vdrift
   Bool_t   fNotEnoughStatisticsForTheGain;// Take the chamber per chamber distribution from the default distribution
   Bool_t   fNotEnoughStatisticsForTheVdriftLinear;// Take the chamber per chamber distribution from the default distribution
-  Int_t    fStatus;                       // Status of the TRD offline preprocessor: -1 nothing but do not worry; 0 everything ok; 1 not enough stat vdrift, 2 not enough stat to, 3 not enough stat gain and chammber status, 4 not enough stat vdrift but could put a mean, 5 not enough stat gain but could put a mean
+  Int_t    fStatusNeg;                    // Info but ok
+  Int_t    fStatusPos;                    // Problems
 
 
   Int_t GetSubVersion(TString name) const;
