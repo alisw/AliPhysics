@@ -38,6 +38,7 @@
 #include "TLegend.h"
 #include "TObjArray.h"
 #include "TObjString.h"
+#include "TF1.h"
 
 // ALIROOT includes
 #include "AliCounterCollection.h"
@@ -865,6 +866,13 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   //        monitor quantities run per run        //
   //--------------------------------------------- //
   
+  TH1F* hTriggerCutVsRun[2], *hTriggerCutWidthVsRun[2];
+  for ( Int_t ihisto=0; ihisto<2; ++ihisto ) {
+    TString cutName = ( ihisto == 0 ) ? "Lpt" : "Hpt";
+    hTriggerCutVsRun[ihisto] = new TH1F(Form("hTriggerCutVsRun%s", cutName.Data()), Form("Trigger %s cut per run", cutName.Data()), 10000,1,10000);
+    hTriggerCutWidthVsRun[ihisto] = (TH1F*)hTriggerCutVsRun[ihisto]->Clone(Form("hTriggerCutWidthVsRun%s", cutName.Data()));
+  }
+  TF1* fitMatchTrig = new TF1("fitMatchTrig","[3] + [0] * ( 1. + TMath::Erf((x - [1]) / [2]))", 0.1, 6.);
   TH1F* hNClustersPerTrackVsRun_Mean = new TH1F("hNClustersPerTrackVsRun_Mean", "averaged number of associated clusters per track;run;<n_{clusters}>",10000,1,10000);
   TH1F* hNClustersPerTrackVsRun_Sigma = new TH1F("hNClustersPerTrackVsRun_Sigma", "dispersion of the number of associated clusters per track;run;#sigma_{n_{clusters}}",10000,1,10000);
   TH1F* hNChamberHitPerTrack_Mean = new TH1F("hNChamberHitPerTrack_Mean", "averaged number of chambers hit per track;run;<n_{chamber hit}>",10000,1,10000);
@@ -987,7 +995,51 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       TH1* hNChamberHitPerTrack = static_cast<TH1*>(general1->FindObject("hNChamberHitPerTrack"));
       TH1* hChi2 = static_cast<TH1*>(general1->FindObject("hChi2"));
       TH1* hNClustersPerCh = static_cast<TH1*>(general2->FindObject("hNClustersPerCh"));
-      
+      TH1* hPtDistrib = static_cast<TH1*>(general1->FindObject("hPt"));
+      TH1* hPtDistribLpt = static_cast<TH1*>(general1->FindObject("hPtMatchLpt"));
+      TH1* hPtDistribHpt = static_cast<TH1*>(general1->FindObject("hPtMatchHpt"));
+      if ( hPtDistrib && hPtDistribLpt && hPtDistribHpt ) {
+        if ( hPtDistrib->GetSumw2N() == 0 ) hPtDistrib->Sumw2();
+        TH1* histoMatch[2] = {hPtDistribLpt, hPtDistribHpt};
+        for ( Int_t ihisto=0; ihisto<2; ++ihisto ) {
+          if ( histoMatch[ihisto]->GetSumw2N() == 0 ) histoMatch[ihisto]->Sumw2();
+          if ( histoMatch[ihisto]->GetEntries() == 0 ) continue;
+          histoMatch[ihisto]->Divide(hPtDistrib);
+          Double_t minEff = 99999., maxEff = -1.;
+          Double_t ptMinFit = 0.1;
+          Double_t ptMaxFit = 6.;
+          Int_t ptBinLow = histoMatch[ihisto]->GetXaxis()->FindBin(ptMinFit);
+          Int_t ptBinHigh = histoMatch[ihisto]->GetXaxis()->FindBin(ptMaxFit);
+          for ( Int_t currBin=ptBinLow; currBin<=ptBinHigh; currBin++ ) {
+            Double_t currEff = histoMatch[ihisto]->GetBinContent(currBin);
+            Double_t currPt = histoMatch[ihisto]->GetXaxis()->GetBinCenter(currBin);
+            if ( currPt < 1.5 && minEff > currEff ) {
+              ptMinFit = currPt;
+              minEff = currEff;
+            }
+            if ( currPt > 0.5 && maxEff < currEff ) {
+              ptMaxFit = currPt;
+              maxEff = currEff;
+            }
+          } // loop on histo bins
+          fitMatchTrig->SetParameters(0.5, 0.5, 0.8, 0.2);
+          fitMatchTrig->SetParLimits(0,0.,1.);
+          fitMatchTrig->SetParLimits(1,0.,5.);
+          fitMatchTrig->SetParLimits(2,0.,5.);
+          fitMatchTrig->SetParLimits(3,0.,0.5);
+          histoMatch[ihisto]->Fit(fitMatchTrig,"RQ0","",ptMinFit,ptMaxFit);          
+          Double_t ptCut = fitMatchTrig->GetParameter(1);
+          Double_t ptCutErr = fitMatchTrig->GetParError(1);
+          Double_t ptCutWidth = fitMatchTrig->GetParameter(2);
+          if ( ptCut < 0 || ptCut > 10. ) {
+            ptCut = ptCutErr = ptCutWidth = 0.;
+          }
+          hTriggerCutVsRun[ihisto]->SetBinContent(ibin, ptCut);
+          hTriggerCutVsRun[ihisto]->SetBinError(ibin, ptCutErr);
+          hTriggerCutWidthVsRun[ihisto]->SetBinContent(ibin, ptCut);
+          hTriggerCutWidthVsRun[ihisto]->SetBinError(ibin, ptCutWidth);
+        } // loop on match histos
+      }
       TH2* hClusterHitMapInCh[10];
       for(Int_t ich=0; ich<10; ich++) hClusterHitMapInCh[ich] = static_cast<TH2*>(expert->FindObject(Form("hClusterHitMapInCh%d",ich+1)));
       
@@ -1058,7 +1110,10 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
 	hClusterHitMapXInCh[ich]->GetXaxis()->SetBinLabel(ibin, run.Data());
 	hClusterHitMapYInCh[ich]->GetXaxis()->SetBinLabel(ibin, run.Data());
       }
-      
+      for ( Int_t ihisto=0; ihisto<2; ++ihisto) {
+        hTriggerCutVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin, run.Data());
+        hTriggerCutWidthVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin, run.Data());
+      }
       // close outfile for this run
       runFile->Close();
       ibin++;      
@@ -1079,7 +1134,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     hNClustersInCh[ich]->LabelsOption("a");
     hClusterHitMapXInCh[ich]->LabelsOption("a");
     hClusterHitMapYInCh[ich]->LabelsOption("a");
-  }
+  }  
 
   TString dirToGo =  OutFileNameROOT.Data(); dirToGo+=":/";
   gDirectory->Cd(dirToGo.Data());
@@ -1225,7 +1280,40 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
 
   cChi2->Print(OutFileNamePDF.Data());
   cChi2->Write();
-
+  
+  //==================================================
+  // Display track Lpt/Hpt 
+  if ( hTriggerCutVsRun[0] && hTriggerCutVsRun[1] ) {
+    TCanvas* cLptHpt = new TCanvas("cLptHpt","cLptHpt",1200,900);
+    cLptHpt->Divide(1,2);
+    TLegend* legLptHpt = new TLegend(0.72,0.7,0.9,0.85);
+    legLptHpt->SetBorderSize(1);
+    for ( Int_t ihisto=0; ihisto<2; ++ihisto) {
+      cLptHpt->cd(ihisto+1);
+      TH1* currHistos[2] = {hTriggerCutVsRun[ihisto], hTriggerCutWidthVsRun[ihisto]};
+      for ( Int_t jhisto=0; jhisto<2; jhisto++ ) {
+        currHistos[jhisto]->GetXaxis()->SetRange(1,ibin-1);
+        currHistos[jhisto]->GetYaxis()->SetRangeUser(0.,5.);
+        currHistos[jhisto]->LabelsOption("a");
+        currHistos[jhisto]->SetStats(kFALSE);
+        currHistos[jhisto]->GetXaxis()->SetLabelSize(0.04);
+        currHistos[jhisto]->SetLineWidth(2);
+      }
+      hTriggerCutWidthVsRun[ihisto]->SetLineColor(2);
+      hTriggerCutWidthVsRun[ihisto]->SetMarkerColor(2);
+      hTriggerCutWidthVsRun[ihisto]->SetFillColor(2);
+      hTriggerCutWidthVsRun[ihisto]->SetFillStyle(3001);
+      hTriggerCutWidthVsRun[ihisto]->Draw("e2");
+      hTriggerCutVsRun[ihisto]->Draw("esame");
+      if ( ihisto == 0 ) {
+        legLptHpt->AddEntry(hTriggerCutWidthVsRun[ihisto],"Fit width","f");
+        legLptHpt->AddEntry(hTriggerCutVsRun[ihisto],"pt cut from fit (stat error)","lp");
+        legLptHpt->Draw("same");
+      }
+    }
+    cLptHpt->Print(OutFileNamePDF.Data());
+    cLptHpt->Write();
+  }
 
   // close the PDF file
   c1->Print(OutFileNamePDF_close.Data());

@@ -213,20 +213,23 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   
   TH1F* hP = new TH1F("hP", "momentum distribution;p (GeV/c)", 300, 0., 300.);
   fList->AddAtAndExpand(hP, kP);
-  
+    
   TH1F* hPMuPlus = new TH1F("hPMuPlus", "momentum distribution of #mu^{+};p (GeV/c)", 300, 0., 300.);
   fList->AddAtAndExpand(hPMuPlus, kPMuPlus);
   
   TH1F* hPMuMinus = new TH1F("hPMuMinus", "momentum distribution of #mu^{-};p (GeV/c)", 300, 0., 300.);
   fList->AddAtAndExpand(hPMuMinus, kPMuMinus);
   
-  TH1F* hPt = new TH1F("hPt", "transverse momentum distribution;p_{t} (GeV/c)", 300, 0., 30);
+  Int_t nPtBins = 300;
+  Double_t ptMin = 0., ptMax = 30.;
+  
+  TH1F* hPt = new TH1F("hPt", "transverse momentum distribution;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPt, kPt);
   
-  TH1F* hPtMuPlus = new TH1F("hPtMuPlus", "transverse momentum distribution of #mu^{+};p_{t} (GeV/c)", 300, 0., 30);
+  TH1F* hPtMuPlus = new TH1F("hPtMuPlus", "transverse momentum distribution of #mu^{+};p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPtMuPlus, kPtMuPlus);
   
-  TH1F* hPtMuMinus = new TH1F("hPtMuMinus", "transverse momentum distribution of #mu^{-};p_{t} (GeV/c)", 300, 0., 30);
+  TH1F* hPtMuMinus = new TH1F("hPtMuMinus", "transverse momentum distribution of #mu^{-};p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPtMuMinus, kPtMuMinus);
   
   TH1F* hRapidity = new TH1F("hRapidity", "rapidity distribution;rapidity", 200, -4.5, -2.);
@@ -250,6 +253,25 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   
   TH1F* hNChamberHitPerTrack = new TH1F("hNChamberHitPerTrack", "number of chambers hit per track;n_{chamber hit}", 15, 0., 15.);
   fList->AddAtAndExpand(hNChamberHitPerTrack, kNChamberHitPerTrack);
+
+  // Matched tracks info
+  TH1F* hPtMatchLpt = new TH1F("hPtMatchLpt", "transverse momentum distribution matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMatchLpt, kPtMatchLpt);
+  
+  TH1F* hPtMatchHpt = new TH1F("hPtMatchHpt", "transverse momentum distribution matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMatchHpt, kPtMatchHpt);
+  
+  TH1F* hPtMuPlusMatchLpt = new TH1F("hPtMuPlusMatchLpt", "transverse momentum distribution of #mu^{+} matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuPlusMatchLpt, kPtMuPlusMatchLpt);
+
+  TH1F* hPtMuPlusMatchHpt = new TH1F("hPtMuPlusMatchHpt", "transverse momentum distribution of #mu^{+} matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuPlusMatchHpt, kPtMuPlusMatchHpt);
+  
+  TH1F* hPtMuMinusMatchLpt = new TH1F("hPtMuMinusMatchLpt", "transverse momentum distribution of #mu^{-} matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuMinusMatchLpt, kPtMuMinusMatchLpt);
+  
+  TH1F* hPtMuMinusMatchHpt = new TH1F("hPtMuMinusMatchHpt", "transverse momentum distribution of #mu^{-} matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuMinusMatchHpt, kPtMuMinusMatchHpt);  
   
   TH1F* hNClustersPerCh = new TH1F("hNClustersPerCh", "averaged number of clusters per chamber per track;chamber ID;<n_{clusters}>", nCh, -0.5, nCh-0.5);
   hNClustersPerCh->Sumw2();
@@ -484,12 +506,20 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     Short_t trackCharge = esdTrack->Charge();
     ((TH1F*)fList->UncheckedAt(kP))->Fill(trackP);
     ((TH1F*)fList->UncheckedAt(kPt))->Fill(trackPt);
+    Bool_t matchTrigLpt = (esdTrack->GetMatchTrigger()>=2);
+    Bool_t matchTrigHpt = (esdTrack->GetMatchTrigger()>=3);
+    if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMatchLpt))->Fill(trackPt);
+    if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMatchHpt))->Fill(trackPt);
     if (trackCharge < 0) {
       ((TH1F*)fList->UncheckedAt(kPMuMinus))->Fill(trackP);
       ((TH1F*)fList->UncheckedAt(kPtMuMinus))->Fill(trackPt);
+      if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMuMinusMatchLpt))->Fill(trackPt);
+      if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMuMinusMatchHpt))->Fill(trackPt);
     } else {
       ((TH1F*)fList->UncheckedAt(kPMuPlus))->Fill(trackP);
       ((TH1F*)fList->UncheckedAt(kPtMuPlus))->Fill(trackPt);
+      if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMuPlusMatchLpt))->Fill(trackPt);
+      if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMuPlusMatchHpt))->Fill(trackPt);
     }
     ((TH1F*)fList->UncheckedAt(kRapidity))->Fill(esdTrack->Y());
     Int_t ndf = 2 * esdTrack->GetNHit() - 5;

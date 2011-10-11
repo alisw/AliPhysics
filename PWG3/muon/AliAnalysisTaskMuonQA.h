@@ -75,7 +75,13 @@ private:
     kChi2                    = 13, ///< normalized chi2 distribution
     kProbChi2                = 14, ///< distribution of probability of chi2
     kNClustersPerTrack       = 15, ///< number of clusters per track
-    kNChamberHitPerTrack     = 16  ///< number of chamber hit per track
+    kNChamberHitPerTrack     = 16, ///< number of chamber hit per track
+    kPtMatchLpt              = 17, ///< Pt distribution match Lpt
+    kPtMatchHpt              = 18, ///< Pt distribution match Hpt
+    kPtMuPlusMatchLpt        = 19,  ///< Pt distribution of mu+ match Lpt
+    kPtMuPlusMatchHpt        = 20,  ///< Pt distribution of mu+ match Hpt
+    kPtMuMinusMatchLpt       = 21,  ///< Pt distribution of mu- match Lpt
+    kPtMuMinusMatchHpt       = 22   ///< Pt distribution of mu- match Hpt
   };
   
   enum eListExpert {
