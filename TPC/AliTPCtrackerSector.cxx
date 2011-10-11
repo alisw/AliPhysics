@@ -93,8 +93,10 @@ AliTPCtrackerRow::InsertCluster(const AliTPCclusterMI* c, UInt_t index) {
 
   if (fN==0) {fIndex[0]=index; fClusters[fN++]=c; return;}
   Int_t i=Find(c->GetZ());
-  memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTPCclusterMI*));
-  memmove(fIndex   +i+1 ,fIndex   +i,(fN-i)*sizeof(UInt_t));
+  if (i>=0 && i<=kMaxClusterPerRow-2) {
+    memmove(fClusters+i+1 ,fClusters+i,(fN-i)*sizeof(AliTPCclusterMI*));
+    memmove(fIndex   +i+1 ,fIndex   +i,(fN-i)*sizeof(UInt_t));
+  }
   fIndex[i]=index; fClusters[i]=c; fN++;
 }
 
