@@ -112,7 +112,7 @@ public:
   /** 
    * Get the detector name
    */
-  TString DetName() { return fName; }
+  TString& DetName() { return fName; }
 
   /** 
    * Print the geometry
