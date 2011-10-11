@@ -383,7 +383,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       }
       else if(fTrackType==7) {
 	//use global constrained track
-	track = esdtrack;
+	track = new AliESDtrack(*esdtrack);
+	//	track = esdtrack;
 	//	track->Set(esdtrack->GetConstrainedParam()->GetX(),esdtrack->GetConstrainedParam()->GetAlpha(),esdtrack->GetConstrainedParam()->GetParameter(),esdtrack->GetConstrainedParam()->GetCovariance());
 
       }
@@ -403,8 +404,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 
 	if(fTrackType==7) {
 	  if(fTrackCutsReject ) {
-	    if(fTrackCutsReject->AcceptTrack(track) )
+	    if(fTrackCutsReject->AcceptTrack(track) ) {
+	      if(track) delete track;
 	      continue;
+	    }
 	  }
 	  
 	  if(esdtrack->GetConstrainedParam()) 
@@ -426,7 +429,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	  Int_t label = TMath::Abs(track->GetLabel());
 	  TParticle *particle = fStack->Particle(label) ;
 	  if(!particle) {
-	    if(fTrackType==1 || fTrackType==2)
+	    if(fTrackType==1 || fTrackType==2 || fTrackType==7)
 	      delete track;
 	    continue;
 	  }
@@ -458,8 +461,9 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	
       }//trackCuts global tracks
 
-      if(fTrackType==1 || fTrackType==2)
-	delete track;
+      if(fTrackType==1 || fTrackType==2 || fTrackType==7) {
+	if(track) delete track;
+      }
     }//track loop
   
 
