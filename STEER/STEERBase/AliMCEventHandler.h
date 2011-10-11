@@ -1,4 +1,4 @@
-// -*- mode: C++ -*-
+  // -*- mode: C++ -*-
 #ifndef ALIMCEVENTHANDLER_H
 #define ALIMCEVENTHANDLER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -15,7 +15,7 @@
 //      
 // Origin: Andreas Morsch, CERN, andreas.morsch@cern.ch 
 //-------------------------------------------------------------------------
-#include "AliVEventHandler.h"
+#include "AliInputEventHandler.h"
 #include "AliHeader.h"
 #include <TExMap.h>
 
@@ -32,7 +32,7 @@ class AliMCEvent;
 
 
 
-class AliMCEventHandler : public AliVEventHandler
+class AliMCEventHandler : public AliInputEventHandler
 {
 public:
 
@@ -57,13 +57,13 @@ public:
     virtual Bool_t       Terminate();
     virtual Bool_t       TerminateIO();
     virtual void         ResetIO();
-    virtual Bool_t       GetEvent(Int_t iev);
+    virtual Bool_t       LoadEvent(Int_t iev);
     virtual void         SetReadTR(Bool_t flag) { fReadTR = flag; }
     virtual void         AddSubsidiaryHandler(AliMCEventHandler* handler);
     virtual void         SetNumberOfEventsInContainer(Int_t nev) {fEventsInContainer = nev;}
     virtual void         SetPreReadMode(PreReadMode_t mode) {fPreReadMode = mode;}
     //
-    AliMCEvent* MCEvent() const {return fMCEvent;} 
+    AliMCEvent* MCEvent() const {return fMCEvent;}
     TTree*      TreeTR()  const {return fTreeTR;}
     TTree*      TreeK()   const {return fTreeK;}
     virtual TTree*      GetTree() const {return fTreeE;}

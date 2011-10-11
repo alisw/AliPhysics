@@ -45,7 +45,7 @@
 ClassImp(AliMCEventHandler)
 
 AliMCEventHandler::AliMCEventHandler() :
-    AliVEventHandler(),
+    AliInputEventHandler(),
     fMCEvent(new AliMCEvent()),
     fFileE(0),
     fFileK(0),
@@ -77,7 +77,7 @@ AliMCEventHandler::AliMCEventHandler() :
 }
 
 AliMCEventHandler::AliMCEventHandler(const char* name, const char* title) :
-    AliVEventHandler(name, title),
+    AliInputEventHandler(name, title),
     fMCEvent(new AliMCEvent()),
     fFileE(0),
     fFileK(0),
@@ -176,7 +176,7 @@ Bool_t AliMCEventHandler::Init(Option_t* opt)
     return kTRUE;
 }
 
-Bool_t AliMCEventHandler::GetEvent(Int_t iev)
+Bool_t AliMCEventHandler::LoadEvent(Int_t iev)
 {
     // Load the event number iev
     //
@@ -289,7 +289,7 @@ Bool_t AliMCEventHandler::BeginEvent(Long64_t entry)
 	return kFALSE;
     }
     
-    Bool_t result = GetEvent(entry);
+    Bool_t result = LoadEvent(entry);
 
     if (fSubsidiaryHandlers) {
 	TIter next(fSubsidiaryHandlers);
