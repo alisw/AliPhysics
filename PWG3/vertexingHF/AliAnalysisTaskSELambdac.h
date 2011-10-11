@@ -27,7 +27,8 @@
 #include "AliRDHFCutsLctopKpi.h"
 #include "AliRDHFCuts.h"
 #include "TClonesArray.h"
-#include "AliAODpidUtil.h"
+//#include "AliAODpidUtil.h"
+#include "AliPIDResponse.h"
 
 class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
 {
@@ -48,6 +49,8 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetPtBinLimit(Int_t n, Float_t *limitarray);
   void SetFillVarHists(Bool_t setter) {fFillVarHists=setter;return;}
+  void SetMultiplicityHists(Bool_t setter) {fMultiplicityHists=setter;return;}
+  void SetPriorsHists(Bool_t setter) {fPriorsHists=setter;return;}
   
   Float_t GetUpperMassLimit() const {return fUpmasslimit;}
   Float_t GetLowerMassLimit() const {return fLowmasslimit;}
@@ -62,7 +65,11 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const ;
 
   void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, AliRDHFCutsLctopKpi *cuts);
-  void FillVarHists(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, AliRDHFCutsLctopKpi *cuts, TList *listout,AliAODEvent *aod);
+  void FillVarHists(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, AliRDHFCutsLctopKpi *cuts, /*TList *listout,*/ AliAODEvent *aod);
+  Bool_t Is3ProngFromPDG(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, Int_t pdgToBeCompared=4);
+  Bool_t IsTrackFromPDG(AliAODTrack *daugh, TClonesArray *arrayMC, Int_t pdgToBeCompared);
+  Bool_t IsThereAGeneratedLc(TClonesArray *arrayMC);
+  Int_t NumberPrimaries(AliAODEvent *aods);
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -80,7 +87,12 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
 
   Bool_t ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const;
- 
+  void FillAPrioriConcentrations(AliAODRecoDecayHF3Prong *part, AliRDHFCutsLctopKpi *cuts,
+				 AliAODEvent* aod, TClonesArray *arrMC);
+  void MultiplicityStudies(AliAODRecoDecayHF3Prong *part, AliRDHFCutsLctopKpi *cuts,
+			   AliAODEvent* aod, TClonesArray *arrMC,
+			   Bool_t &flag1,Bool_t &flag2,Bool_t &flag3,
+			   Bool_t &flag4, Bool_t &flag5, Bool_t &flag6); 
   enum {kMaxPtBins=10};
 
   TList   *fOutput; //! list send on output slot 0
@@ -122,11 +134,16 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fAnalysis;      //apply analysis cuts
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
   Bool_t fFillVarHists;
+  Bool_t fMultiplicityHists;
+  Bool_t fPriorsHists;
   TH1F *fNentries;
   TList *fOutputMC;
-  AliAODpidUtil* fUtilPid;
-  
-  ClassDef(AliAnalysisTaskSELambdac,4); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  TList *fAPriori;
+  TList *fMultiplicity;
+  //AliAODpidUtil* fUtilPid;
+  AliPIDResponse *fPIDResponse;     //! PID response object
+
+  ClassDef(AliAnalysisTaskSELambdac,5); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
