@@ -134,12 +134,13 @@ fDigitStore(0x0),
 fTriggerCircuit(0x0),
 fCalibrationData(0x0),
 fDigitCalibrator(0x0),
-fClusterServer(0x0),
 fTriggerStore(0x0),
 fTrackStore(0x0),
 fClusterStore(0x0),
 fTriggerProcessor(0x0),
-fTriggerUtilities(0x0)
+fTriggerUtilities(0x0),
+fClusterServers(),
+fTrackers()
 {
   /// normal ctor
 
@@ -165,7 +166,9 @@ fTriggerUtilities(0x0)
   
   // Load geometry data
   fTransformer->LoadGeometryData();
-  
+ 
+  fClusterServers.SetOwner(kTRUE);
+  fTrackers.SetOwner(kTRUE);
 }
 
 //_____________________________________________________________________________
@@ -190,7 +193,7 @@ AliMUONReconstructor::~AliMUONReconstructor()
   delete AliMpSegmentation::Instance(false);
   delete AliMpDDLStore::Instance(false);  
 
-  delete fCalibrationData;
+  delete fCalibrationData;  
 }
 
 //_____________________________________________________________________________
@@ -330,27 +333,44 @@ AliMUONReconstructor::CreateTracker() const
   
   CreateTriggerCircuit();
   CreateTriggerUtilities();
-  CreateClusterServer();
-
-  AliMUONTracker* tracker(0x0);
   
-  if ( ! GetRecoParam()->CombineClusterTrackReco() )
+  const AliMUONRecoParam* rp = GetRecoParam();
+  
+  Int_t es = rp->GetEventSpecie();
+  
+  AliTracker* tracker = static_cast<AliTracker*>(fTrackers.At(es));
+  
+  if (!tracker ) 
   {
-    tracker = new AliMUONTracker(GetRecoParam(),
-				 0x0,
-                                 *DigitStore(),
-                                 fTransformer,
-                                 fTriggerCircuit,
-                                 fTriggerUtilities);
-  }
-  else
-  {
-    tracker = new AliMUONTracker(GetRecoParam(),
-				 fClusterServer,
-                                 *DigitStore(),
-                                 fTransformer,
-                                 fTriggerCircuit,
-                                 fTriggerUtilities);
+    if ( ! rp->CombineClusterTrackReco() )
+    {
+      tracker = new AliMUONTracker(rp,
+                                   0x0,
+                                   *DigitStore(),
+                                   fTransformer,
+                                   fTriggerCircuit,
+                                   fTriggerUtilities);
+
+      AliInfo(Form("Created tracker %p for recoparam of type %s es=%d",
+                   tracker,
+                   AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(rp->GetEventSpecie())),es));
+    }
+    else
+    {
+      
+      tracker = new AliMUONTracker(rp,
+                                   CreateClusterServer(*rp),
+                                   *DigitStore(),
+                                   fTransformer,
+                                   fTriggerCircuit,
+                                   fTriggerUtilities);
+
+      AliInfo(Form("Created (combined) tracker %p for recoparam of type %s es=%d",
+                   tracker,
+                   AliRecoParam::GetEventSpecieName(AliRecoParam::Convert(rp->GetEventSpecie())),es));      
+    }
+    
+    fTrackers.AddAtAndExpand(tracker,es);
   }
   
   
@@ -428,22 +448,30 @@ AliMUONReconstructor::CreateClusterFinder(const char* clusterFinderType)
 }
 
 //_____________________________________________________________________________
-void
-AliMUONReconstructor::CreateClusterServer() const
+AliMUONVClusterServer*
+AliMUONReconstructor::CreateClusterServer(const AliMUONRecoParam& rp) const
 {
   /// Create cluster server
   
-  if ( fClusterServer ) return;
-  
   AliCodeTimerAuto("",0);
+  
+  AliMUONVClusterServer* clusterServer = static_cast<AliMUONVClusterServer*>(fClusterServers.At(rp.GetEventSpecie()));
+  
+  if (!clusterServer )
+  {
+    AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(rp.GetClusteringMode());
     
-  AliMUONVClusterFinder* clusterFinder = CreateClusterFinder(GetRecoParam()->GetClusteringMode());
+    if ( !clusterFinder ) return 0x0;
+    
+    clusterServer = new AliMUONSimpleClusterServer(clusterFinder,*fTransformer);
+
+    AliInfo(Form("Created AliMUONSimpleClusterServer (%p) for specie %d with clustering = %s",
+                 clusterServer,rp.GetEventSpecie(),clusterFinder->ClassName()));
+    
+    fClusterServers.AddAtAndExpand(clusterServer,rp.GetEventSpecie());
+  }
   
-  if ( !clusterFinder ) return;
-  
-  AliInfo(Form("Will use %s for clusterizing",clusterFinder->ClassName()));
-  
-  fClusterServer = new AliMUONSimpleClusterServer(clusterFinder,*fTransformer);
+  return clusterServer;
 }
 
 //_____________________________________________________________________________
@@ -598,7 +626,9 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   Bool_t ok(kFALSE);
   Bool_t alone(kTRUE); // is trigger the only info in TreeR ?
   
-  if ( ! GetRecoParam()->CombineClusterTrackReco() )
+   const AliMUONRecoParam* rp = GetRecoParam();
+  
+  if ( ! rp->CombineClusterTrackReco() )
   {
     alone = kFALSE; // we'll get both tracker and trigger information in TreeR
   }
@@ -620,23 +650,23 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
       fClusterStore = new AliMUONClusterStoreV2;
     }
     
-    CreateClusterServer();
+    AliMUONVClusterServer* clusterServer = CreateClusterServer(*rp);
     
     TIter next(DigitStore()->CreateIterator());
-    fClusterServer->UseDigits(next,DigitStore());
+    clusterServer->UseDigits(next,DigitStore());
 
     AliMpArea area;
     
-    AliDebug(1,Form("Doing full clusterization in local reconstruction using %s ",fClusterServer->ClassName()));
+    AliDebug(1,Form("Doing full clusterization in local reconstruction using %s ",clusterServer->ClassName()));
     
     for ( Int_t i = 0; i < AliMpConstants::NofTrackingChambers(); ++i ) 
     {
-      if (GetRecoParam()->UseChamber(i))
+      if (rp->UseChamber(i))
       {
-        if ( ( i == 6 || i == 7 )  && GetRecoParam()->BypassSt4() ) continue;
-        if ( ( i == 8 || i == 9 )  && GetRecoParam()->BypassSt5() ) continue;
+        if ( ( i == 6 || i == 7 )  && rp->BypassSt4() ) continue;
+        if ( ( i == 8 || i == 9 )  && rp->BypassSt5() ) continue;
         
-        fClusterServer->Clusterize(i,*fClusterStore,area,GetRecoParam());
+        clusterServer->Clusterize(i,*fClusterStore,area,rp);
       }
     }
     
@@ -656,6 +686,14 @@ AliMUONReconstructor::FillTreeR(AliMUONVTriggerStore* triggerStore,
   
   if (fClusterStore) fClusterStore->Clear();
 }
+
+//_____________________________________________________________________________
+const AliMUONRecoParam* AliMUONReconstructor::GetRecoParam()
+{ 
+  /// Get the recoparam from reconstruction
+  return dynamic_cast<const AliMUONRecoParam*>(AliReconstructor::GetRecoParam(AliReconstruction::GetDetIndex("MUON"))); 
+}
+
 
 //_____________________________________________________________________________
 Bool_t 

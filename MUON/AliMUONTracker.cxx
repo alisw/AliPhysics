@@ -58,6 +58,7 @@
 #include <Riostream.h>
 #include <TRandom.h>
 #include <TTree.h>
+#include "AliLog.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTracker)
@@ -83,9 +84,11 @@ fIsOwnerOfClusterServer(kFALSE),
 fkDigitStore(digitStore), // not owner
 fInputClusterStore(0x0),
 fTriggerTrackStore(0x0),
-fkRecoParam(recoParam)
+fkRecoParam(recoParam),
+fInternalTrackStore(0x0)
 {
   /// constructor
+  
   if (fkTransformer)
     fTrackHitPatternMaker = new AliMUONTrackHitPattern(recoParam,*fkTransformer,fkDigitStore,triggerUtilities);
   
@@ -107,6 +110,7 @@ fkRecoParam(recoParam)
 AliMUONTracker::~AliMUONTracker()
 {
   /// dtor
+  
   delete fTrackReco;
   delete fTrackHitPatternMaker;
   delete fClusterStore;
@@ -114,6 +118,7 @@ AliMUONTracker::~AliMUONTracker()
   if ( fIsOwnerOfClusterServer ) delete fClusterServer;
   delete fInputClusterStore;
   delete fTriggerTrackStore;
+  delete fInternalTrackStore;
 }
 
 //_____________________________________________________________________________
@@ -145,16 +150,15 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
 {
   /// Load triggerStore from clustersTree
 
-  delete fTriggerStore;
-  delete fInputClusterStore;
-  fInputClusterStore=0x0;
-
   if ( ! clustersTree ) {
     AliFatal("No clustersTree");
     return 1;
   }
 
-  fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);
+  if ( !fTriggerStore ) 
+  {
+    fTriggerStore = AliMUONVTriggerStore::Create(*clustersTree);    
+  }
   
   if (!fTriggerStore)
   {
@@ -162,22 +166,32 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
     return 2;
   }
   
-  if ( fIsOwnerOfClusterServer )
+  if (!fInputClusterStore) 
   {
     fInputClusterStore = AliMUONVClusterStore::Create(*clustersTree);
-    if ( fInputClusterStore ) 
+    if (!fInputClusterStore)
     {
-      AliDebug(1,Form("Created %s from cluster tree",fInputClusterStore->ClassName()));
-      fInputClusterStore->Clear();
-      fInputClusterStore->Connect(*clustersTree,kFALSE);
+      AliError("Could not get clusterStore");
+      return 3;
     }
-    delete fClusterServer;
-    fClusterServer = new AliMUONLegacyClusterServer(*fkTransformer,fInputClusterStore,
-																										GetRecoParam()->BypassSt4(),
-																										GetRecoParam()->BypassSt5());
-    SetupClusterServer(*fClusterServer);
+    AliDebug(1,Form("Created %s from cluster tree",fInputClusterStore->ClassName()));
+  }
+    
+  if ( !fClusterServer && fIsOwnerOfClusterServer )
+  {
+    if ( !fClusterServer ) 
+    {
+      fClusterServer = new AliMUONLegacyClusterServer(*fkTransformer,fInputClusterStore,
+                                                      GetRecoParam()->BypassSt4(),
+                                                      GetRecoParam()->BypassSt5());
+      SetupClusterServer(*fClusterServer);
+    }
+
   }
   
+  fInputClusterStore->Clear();
+  fInputClusterStore->Connect(*clustersTree,kFALSE);
+  fTriggerStore->Clear();
   fTriggerStore->Connect(*clustersTree,kFALSE);
   
   clustersTree->GetEvent(0);
@@ -189,12 +203,21 @@ Int_t AliMUONTracker::LoadClusters(TTree* clustersTree)
 Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
 {
   /// Performs the tracking and store the resulting tracks in the ESD
-  AliDebug(1,"");
+  ///
+  /// note that we're dealing with two cluster stores here : fInputClusterStore
+  /// and ClusterStore().
+  /// The first one is read from the TreeR and may be used by the cluster server 
+  /// (that's the case for the legacy cluster server) to fill the other one.
+  /// The second one is more dynamic and might be created on the fly by the cluster
+  /// server (used by the combined tracking, in which case the first one is not used
+  /// at all).
+  
   AliCodeTimerAuto("",0)
   
   if (!fTrackReco) 
   {
     fTrackReco = CreateTrackReconstructor(GetRecoParam(),fClusterServer);
+    fInternalTrackStore = new AliMUONTrackStoreV1;
   }
   
   // if the required tracking mode does not exist
@@ -230,21 +253,19 @@ Int_t AliMUONTracker::Clusters2Tracks(AliESDEvent* esd)
     return 0;
   }
        
-  // Make tracker tracks
-  AliMUONVTrackStore* trackStore = new AliMUONTrackStoreV1;
-  fTrackReco->EventReconstruct(*(ClusterStore()),*trackStore);
+  fTrackReco->EventReconstruct(*(ClusterStore()),*fInternalTrackStore);
   
   // Match tracker/trigger tracks
   if ( fTrackHitPatternMaker ) 
   {
-    fTrackReco->ValidateTracksWithTrigger(*trackStore,*(TriggerTrackStore()),*fTriggerStore,*fTrackHitPatternMaker);
+    fTrackReco->ValidateTracksWithTrigger(*fInternalTrackStore,*(TriggerTrackStore()),*fTriggerStore,*fTrackHitPatternMaker);
   }
   
   // Fill ESD
-  FillESD(*trackStore,esd);
+  FillESD(*fInternalTrackStore,esd);
   
-  // cleanup
-  delete trackStore;
+  fInternalTrackStore->Clear();
+  ClusterStore()->Clear();
   
   return 0;
 }
@@ -355,8 +376,7 @@ void AliMUONTracker::UnloadClusters()
 {
   /// Clear internal clusterStore
   
-  delete fInputClusterStore;
-  fInputClusterStore = 0x0;
+  fInputClusterStore->Clear();
 }
 
 

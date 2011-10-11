@@ -85,6 +85,7 @@ private:
   mutable AliMUONVClusterStore* fInputClusterStore; //!< cluster container
   mutable AliMUONVTriggerTrackStore* fTriggerTrackStore; //!< trigger track store
   const AliMUONRecoParam* fkRecoParam; //!< pointer to reco param
+  AliMUONVTrackStore* fInternalTrackStore; //!< internal track store
   
   ClassDef(AliMUONTracker,0)  //tracker base class for MUON
 };

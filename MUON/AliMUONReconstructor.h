@@ -15,6 +15,9 @@
 #ifndef ALIRECONSTRUCTOR_H
 #  include "AliReconstructor.h"
 #endif
+#ifndef ROOT_TObjArray
+#define "TObjArray.h"
+#endif
 
 class AliMUONCalibrationData;
 class AliMUONDigitCalibrator;
@@ -51,7 +54,7 @@ public:
   virtual AliTracker* CreateTracker() const;
   
   /// Get param object
-  static const AliMUONRecoParam* GetRecoParam() { return dynamic_cast<const AliMUONRecoParam*>(AliReconstructor::GetRecoParam(7)); }
+  static const AliMUONRecoParam* GetRecoParam();
   
   static AliMUONVClusterFinder* CreateClusterFinder(const char* clusterFinderType);
 
@@ -70,7 +73,7 @@ private:
   void CreateDigitMaker() const;
   void CreateTriggerCircuit() const;
   void CreateTriggerUtilities() const;
-  void CreateClusterServer() const;
+  AliMUONVClusterServer* CreateClusterServer(const AliMUONRecoParam& rp) const;
   void FillTreeR(AliMUONVTriggerStore* triggerStore,
                  TTree& clustersTree) const;
   
@@ -86,14 +89,15 @@ private:
   mutable AliMUONTriggerCircuit* fTriggerCircuit; //!< Trigger Circuit
   mutable AliMUONCalibrationData* fCalibrationData; //!< Calibration data
   mutable AliMUONDigitCalibrator* fDigitCalibrator; //!<  Digit to calibrate digit converter
-  mutable AliMUONVClusterServer* fClusterServer; //!<  Clusterizer
   mutable AliMUONVTriggerStore* fTriggerStore; //!< Trigger container
   mutable AliMUONVTrackStore* fTrackStore; //!< Track container
   mutable AliMUONVClusterStore* fClusterStore; //!< cluster store (when not in combined tracking mode)
   mutable AliMUONTriggerElectronics* fTriggerProcessor; //!< Processor to recalculate trigger response
   mutable AliMUONTriggerUtilities* fTriggerUtilities; //!< Trigger utilities for masks
-  
-  ClassDef(AliMUONReconstructor,10) // Implementation of AliReconstructor
+  mutable TObjArray fClusterServers; //!<  Clusterizers (one per event specie)
+  mutable TObjArray fTrackers; //!< trackers (one per event specie)
+    
+  ClassDef(AliMUONReconstructor,11) // Implementation of AliReconstructor
 };
 
 #endif

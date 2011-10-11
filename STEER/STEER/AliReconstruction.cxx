@@ -2760,9 +2760,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
     AliError("Missing runLoader!");
     return kFALSE;
   }
-  Int_t iDet = 7; // for MUON
-
-  AliInfo("is running...");
+  Int_t iDet =  GetDetIndex("MUON"); // for MUON
 
   // Get a pointer to the MUON reconstructor
   AliReconstructor *reconstructor = GetReconstructor(iDet);
@@ -2787,8 +2785,6 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
   fLoader[iDet]->UnloadRecPoints();
 
   tracker->UnloadClusters();
-  
-  delete tracker;
   
   if ( rv )
   {
