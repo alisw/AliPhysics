@@ -2381,8 +2381,7 @@ void AliReconstruction::SlaveTerminate()
   }
 
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
-    AliReconstructor *reconstructor = GetReconstructor(iDet);
-    if (reconstructor) reconstructor->Terminate();
+    if (fReconstructor[iDet]) fReconstructor[iDet]->Terminate();
   }
   // End of cycle for the in-loop  
 
