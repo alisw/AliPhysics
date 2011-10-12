@@ -39,7 +39,7 @@
 
 ClassImp(AliAnalysisTaskEMCALTriggerQA)
 
-//_________________________________________________________________________
+//______________________________________________________________
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() : 
 AliAnalysisTaskSE(), 
 fOutputList(0),
@@ -51,24 +51,23 @@ fhL1Pos(0),
 fhL0Patch(0),
 fhL1GPatch(0),
 fhL1JPatch(0),
+fhFEESTU(0),
+fhTRUSTU(0),
 fhV0STU(0),
 fhFullTRUSTU(0),
 fhSTUChecks(0),
-fNBinsSTUSignal(1000),fMaxSTUSignal(100000),
-fNBinsTRUSignal(1000),fMaxTRUSignal(100000),
-fNBinsV0Signal (1000),fMaxV0Signal (10000)
+fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
+fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
+fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
+fNBinsSTUFEERatio(2000), fMaxSTUFEERatio(20000),
+fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200)
 
 {
   // Constructor
-  for (int i = 0; i < 30; i++)
-  {
-    fhFEESTU[i] = 0;
-    fhTRUSTU[i] = 0;
-  }
   
 }		      
 
-//________________________________________________________________________
+//______________________________________________________________________________
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) : 
 AliAnalysisTaskSE(name), 
 fOutputList(0),
@@ -80,83 +79,81 @@ fhL1Pos(0),
 fhL0Patch(0),
 fhL1GPatch(0),
 fhL1JPatch(0),
+fhFEESTU(0),
+fhTRUSTU(0),
 fhV0STU(0),
 fhFullTRUSTU(0),
 fhSTUChecks(0),
-fNBinsSTUSignal(1000),fMaxSTUSignal(100000),
-fNBinsTRUSignal(1000),fMaxTRUSignal(100000),
-fNBinsV0Signal (1000),fMaxV0Signal (10000)
+fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
+fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
+fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
+fNBinsSTUFEERatio(2000), fMaxSTUFEERatio(20000),
+fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200)
 
 {
   // Constructor
-  for (int i = 0; i < 30; i++)
-  {
-    fhFEESTU[i] = 0;
-    fhTRUSTU[i] = 0;
-  }
   
   DefineOutput(1, TList::Class());
   
 }
 
 
-//________________________________________________________________________
+//___________________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects() 
 {
   // Init histograms and geometry 
   
   fGeometry = AliEMCALGeometry::GetInstance(fGeoName);
   
-  fOutputList = new TList;
-  fOutputList->SetOwner(kTRUE);
+  fOutputList  = new TList;
+  fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents = new TH1F("hNEvents","Number of selected events",1,0,1);
-  fhNEvents->SetYTitle("N events");
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",1,0,1);
+  fhNEvents   ->SetYTitle("N events");
   
-  fhFORPos  = new TH2F("hFORPos", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhFORPos->SetXTitle("Index #eta (collumns)");
-  fhFORPos->SetYTitle("Index #phi (rows)");
+  fhFORPos     = new TH2F("hFORPos", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhFORPos    ->SetXTitle("Index #eta (collumns)");
+  fhFORPos    ->SetYTitle("Index #phi (rows)");
   
-  fhL0Pos   = new TH2F("hL0Pos","FALTRO signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhL0Pos->SetXTitle("Index #eta (collumns)");
-  fhL0Pos->SetYTitle("Index #phi (rows)");
+  fhL0Pos      = new TH2F("hL0Pos","FALTRO signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL0Pos     ->SetXTitle("Index #eta (collumns)");
+  fhL0Pos     ->SetYTitle("Index #phi (rows)");
   
-  fhL1Pos   = new TH2F("hL1Pos","STU signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhL1Pos->SetXTitle("Index #eta (collumns)");
-  fhL1Pos->SetYTitle("Index #phi (rows)");
+  fhL1Pos      = new TH2F("hL1Pos","STU signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1Pos     ->SetXTitle("Index #eta (collumns)");
+  fhL1Pos     ->SetYTitle("Index #phi (rows)");
   
-  fhL0Patch   = new TH2F("fhL0Patch","FOR with associated L0 Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhL0Patch->SetXTitle("Index #eta (collumns)");
-  fhL0Patch->SetYTitle("Index #phi (rows)");
+  fhL0Patch    = new TH2F("hL0Patch","FOR with associated L0 Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL0Patch   ->SetXTitle("Index #eta (collumns)");
+  fhL0Patch   ->SetYTitle("Index #phi (rows)");
   
-  fhL1GPatch   = new TH2F("fhL1GPatch","FOR with associated L1 Gamma Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhL1GPatch->SetXTitle("Index #eta (collumns)");
-  fhL1GPatch->SetYTitle("Index #phi (rows)");
+  fhL1GPatch   = new TH2F("hL1GPatch","FOR with associated L1 Gamma Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1GPatch  ->SetXTitle("Index #eta (collumns)");
+  fhL1GPatch  ->SetYTitle("Index #phi (rows)");
   
-  fhL1JPatch   = new TH2F("fhL1JPatch","FOR with associated L1 Jet Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
-  fhL1JPatch->SetXTitle("Index #eta (collumns)");
-  fhL1JPatch->SetYTitle("Index #phi (rows)");
+  fhL1JPatch   = new TH2F("hL1JPatch","FOR with associated L1 Jet Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1JPatch  ->SetXTitle("Index #eta (collumns)");
+  fhL1JPatch  ->SetYTitle("Index #phi (rows)");
   
-  fhFullTRUSTU  = new TH2I("hFullTRUSTU","Total signal STU vs TRU",fNBinsTRUSignal,0,fMaxTRUSignal,fNBinsSTUSignal,0,fMaxSTUSignal);
+  fhFullTRUSTU = new TH2I("hFullTRUSTU","Total signal STU vs TRU",fNBinsTRUSignal,0,fMaxTRUSignal,fNBinsSTUSignal,0,fMaxSTUSignal);
   fhFullTRUSTU->SetXTitle("Total signal TRU");
   fhFullTRUSTU->SetYTitle("Total signal STU");
   
-  fhV0STU   = new TH2I("hV0STU","Total signal STU vs V0C+V0S",fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
-  fhV0STU->SetXTitle("Signal V0C+V0A");
-  fhV0STU->SetYTitle("Total signal STU");
+  fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
+  fhV0STU     ->SetXTitle("Signal V0C+V0A");
+  fhV0STU     ->SetYTitle("Total signal STU");
   
-  fhSTUChecks = new TH2I("hSTUChecks","Check FEE/STU link",2,0,2,15,0,15);
-  fhSTUChecks->SetXTitle("Index #eta");
-  fhSTUChecks->SetYTitle("Index #phi");
+  fhSTUChecks  = new TH2I("hSTUChecks","Check FEE/STU link",2,0,2,15,0,15);
+  fhSTUChecks ->SetXTitle("Index #eta");
+  fhSTUChecks ->SetYTitle("Index #phi");
   
-  for (int i = 0; i < 30; i++)
-  {
-    fhFEESTU[i] = new TH1F(Form("hFEESTU%d",i),Form("STU / FEE, channel %d",i),1000,0,100);
-    fhFEESTU[i]->SetXTitle("STU/FEE signal");
-    
-    fhTRUSTU[i] = new TH1F(Form("hTRUSTU%d",i),Form("STU / TRU, channel %d",i),1000,0,100);
-    fhTRUSTU[i]->SetXTitle("STU/TRU signal");
-  }
+  fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
+  fhFEESTU    ->SetXTitle("STU/FEE signal");
+  fhFEESTU    ->SetYTitle("channel");
+  
+  fhTRUSTU     = new TH2F("hTRUSTU","STU / TRU vs channel", fNBinsSTUTRURatio,0,fMaxSTUTRURatio,30,0,30);
+  fhTRUSTU    ->SetXTitle("STU/TRU signal");
+  fhTRUSTU    ->SetYTitle("channel");
   
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
@@ -168,22 +165,16 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1JPatch);
   fOutputList->Add(fhFullTRUSTU);
   fOutputList->Add(fhSTUChecks);
-  
-  
-  for (int i = 0; i < 30; i++)
-  {
-    fOutputList->Add(fhFEESTU[i]);
-    fOutputList->Add(fhTRUSTU[i]);
-  }
+  fOutputList->Add(fhFEESTU);
+  fOutputList->Add(fhTRUSTU);
   
   PostData(1, fOutputList);  
   
 }
-//________________________________________________________________________
+//______________________________________________________
 void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *) 
 {
   // Main loop
-  // Called for each event
   
   AliVEvent* event = InputEvent();
   
@@ -198,20 +189,19 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   fhNEvents->Fill(0);
   
-  
   //map for cells and patches
   
-  Double_t emcalCell   [fgkFALTRORows][fgkFALTROCols], emcalTrigL0 [fgkFALTRORows][fgkFALTROCols], emcalTrigL1[fgkFALTRORows][fgkFALTROCols];
+  Double_t emcalCell   [fgkFALTRORows][fgkFALTROCols], emcalTrigL0  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1  [fgkFALTRORows][fgkFALTROCols];
   Double_t emcalPatchL0[fgkFALTRORows][fgkFALTROCols], emcalPatchL1G[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J[fgkFALTRORows][fgkFALTROCols];
   
   for (Int_t i = 0; i < fgkFALTRORows; i++) 
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++) 
     {   
-      emcalTrigL0[i][j]  = 0.;
-      emcalTrigL1[i][j]  = 0.;
-      emcalCell[i][j]    = 0.;
-      emcalPatchL0[i][j] = 0.;
+      emcalTrigL0[i][j]   = 0.;
+      emcalTrigL1[i][j]   = 0.;
+      emcalCell[i][j]     = 0.;
+      emcalPatchL0[i][j]  = 0.;
       emcalPatchL1G[i][j] = 0.;
       emcalPatchL1J[i][j] = 0.;
     }
@@ -244,16 +234,20 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
       posX = (nSupMod % 2) ? ieta + AliEMCALGeoParams::fgkEMCALCols : ieta;				
       posY = iphi + AliEMCALGeoParams::fgkEMCALRows * int(nSupMod / 2);
-      if(int(posX/2) > fgkFALTROCols) printf("Wrong X, posX %d\n",posX);
-      if(int(posY/2) > fgkFALTRORows) printf("Wrong Y, posY %d\n",posX);
       
-      emcalCell[int(posY/2)][int(posX/2)] += amp;     
+      if(int(posX/2) > fgkFALTROCols || int(posY/2) > fgkFALTRORows ) {
+        printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Wrong Position (x,y) = (%d,%d)\n",posX,posY);
+        continue;
+      }
+      
+      emcalCell[int(posY/2)][int(posX/2)] += amp; 
+      
     }
   }
   
-  // -----------------------------------  
-  //Trigger analysis, fill L0, L1 arrays
-  // ----------------------------------- 
+  //-------------------------------------  
+  // Trigger analysis, fill L0, L1 arrays
+  //------------------------------------- 
   
   AliESDCaloTrigger& trg= * (esdEvent->GetCaloTrigger("EMCAL"));
   
@@ -273,12 +267,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       //L0 analysis  
       Int_t nTimes = 0;
       trg.GetNL0Times(nTimes);
+      
       if (nTimes) 
 	    {
 	      nL0Patch += nTimes;
 	      Float_t ampL0 = 0.;
 	      trg.GetAmplitude(ampL0);
-	      emcalTrigL0[posY][posX] = ampL0;
+	      emcalTrigL0 [posY][posX] = ampL0;
 	      emcalPatchL0[posY][posX] = 1.;
 	      totTRU += ampL0;
 	      fhL0Patch->Fill(posX-1,posY-1);//-1 is used to compare in good way patch L0 and patch L1
@@ -298,6 +293,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
         Int_t ts = 0;
         trg.GetL1TimeSum(ts);
         emcalTrigL1[posY][posX] += ts;
+        //printf("Gamma STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
         totSTU += ts;
       }
       
@@ -311,14 +307,15 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
         Int_t ts = 0;
         trg.GetL1TimeSum(ts);
         emcalTrigL1[posY][posX] += ts;
+        //printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
         totSTU += ts;
       }
       
     }
   }
   
-  if(totTRU > fMaxTRUSignal)printf("large totTRU %f\n",totTRU);
-  if(totSTU > fMaxSTUSignal)printf("large totSTU %f\n",totSTU);
+  if(totTRU > fMaxTRUSignal)printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totTRU %f\n",totTRU);
+  if(totSTU > fMaxSTUSignal)printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totSTU %f\n",totSTU);
   
   if (totTRU != 0) fhFullTRUSTU->Fill(totTRU,totSTU);
   
@@ -338,8 +335,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   if (totSTU != 0) {
     fhV0STU->Fill(v0A+v0C,totSTU);
-    if( v0A+v0C > fMaxV0Signal) printf("large v0A+v0C %f\n",v0A+v0C);
+    if( v0A+v0C > fMaxV0Signal) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
   }
+  
+  //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
+  //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
+  
   
   //Matrix with signal per channel
   for (Int_t i = 0; i < fgkFALTRORows-1; i++) 
@@ -360,12 +361,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     {
       
       //method to get TRU number
-      Int_t FORid = -1;
-      fGeometry->GetAbsFastORIndexFromPositionInEMCAL(j,i,FORid);
-      Int_t iTRU = -1;
-      Int_t iADC = -1;
-      fGeometry->GetTRUFromAbsFastORIndex(FORid,iTRU,iADC);	
-      
+      Int_t idFOR = -1;
+      fGeometry->GetAbsFastORIndexFromPositionInEMCAL(j,i,idFOR);
+      Int_t iTRU  = -1;
+      Int_t iADC  = -1;
+      fGeometry->GetTRUFromAbsFastORIndex(idFOR,iTRU,iADC);	
+      //printf("i %d, j %d, iTRU %d, iADC %d, idFOR %d; cell %f, L0 %f, L1 %f\n", 
+      //       i,j,iTRU,iADC,idFOR, emcalCell  [i][j],emcalTrigL0[i][j],emcalTrigL1[i][j]);
       if (iTRU >= 0)
       {
         ampFOR[iTRU] += emcalCell  [i][j];
@@ -375,265 +377,53 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     }
   }
   
-  
-  //   Double_t ampFOR[30] = {0.}, ampL0[30] = {0.}, ampL1[30] = {0.};
-  //   for (Int_t i = 0; i < fgkFALTRORows-1; i++) 
-  //   {
-  //     for (Int_t j = 0; j < fgkFALTROCols-1; j++) //A-side
-  //     {
-  //       if (i < 3)
-  //       {
-  //         if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[0] += emcalCell  [i][j];
-  // 	    ampL0[0]  += emcalTrigL0[i][j];
-  // 	    ampL1[0]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[15] += emcalCell  [i][j];
-  // 	    ampL0[15]  += emcalTrigL0[i][j];
-  // 	    ampL1[15]  += emcalTrigL1[i][j];
-  // 	  }
-	
-  //       }
-  //       else if (i > 3 && i < 8)
-  //       {
-  //         if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[1] += emcalCell  [i][j];
-  // 	    ampL0[1]  += emcalTrigL0[i][j];
-  // 	    ampL1[1]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[16] += emcalCell  [i][j];
-  // 	    ampL0[16]  += emcalTrigL0[i][j];
-  // 	    ampL1[16]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 8 && i < 12)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[2] += emcalCell  [i][j];
-  // 	    ampL0[2]  += emcalTrigL0[i][j];
-  // 	    ampL1[2]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[17] += emcalCell  [i][j];
-  // 	    ampL0[17]  += emcalTrigL0[i][j];
-  // 	    ampL1[17]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 12 && i < 16)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[3] += emcalCell  [i][j];
-  // 	    ampL0[3]  += emcalTrigL0[i][j];
-  // 	    ampL1[3]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[18] += emcalCell  [i][j];
-  // 	    ampL0[18]  += emcalTrigL0[i][j];
-  // 	    ampL1[18]  += emcalTrigL1[i][j];
-  // 	  }
-	
-  //       }
-  //       else if (i > 16 && i < 20)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[4] += emcalCell  [i][j];
-  // 	    ampL0[4]  += emcalTrigL0[i][j];
-  // 	    ampL1[4]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[19] += emcalCell  [i][j];
-  // 	    ampL0[19]  += emcalTrigL0[i][j];
-  // 	    ampL1[19]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 20 && i < 24)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[5] += emcalCell  [i][j];
-  // 	    ampL0[5]  += emcalTrigL0[i][j];
-  // 	    ampL1[5]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[20] += emcalCell  [i][j];
-  // 	    ampL0[20]  += emcalTrigL0[i][j];
-  // 	    ampL1[20]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //        else if (i > 24 && i < 28)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[6] += emcalCell  [i][j];
-  // 	    ampL0[6]  += emcalTrigL0[i][j];
-  // 	    ampL1[6]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[21] += emcalCell  [i][j];
-  // 	    ampL0[21]  += emcalTrigL0[i][j];
-  // 	    ampL1[21]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 28 && i < 32)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[7] += emcalCell  [i][j];
-  // 	    ampL0[7]  += emcalTrigL0[i][j];
-  // 	    ampL1[7]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[22] += emcalCell  [i][j];
-  // 	    ampL0[22]  += emcalTrigL0[i][j];
-  // 	    ampL1[22]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 32 && i < 36)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[8] += emcalCell  [i][j];
-  // 	    ampL0[8]  += emcalTrigL0[i][j];
-  // 	    ampL1[8]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[23] += emcalCell  [i][j];
-  // 	    ampL0[23]  += emcalTrigL0[i][j];
-  // 	    ampL1[23]  += emcalTrigL1[i][j];
-  // 	  }
-	
-  //       }
-  //       else if (i > 36 && i < 40)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[9] += emcalCell  [i][j];
-  // 	    ampL0[9]  += emcalTrigL0[i][j];
-  // 	    ampL1[9]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[24] += emcalCell  [i][j];
-  // 	    ampL0[24]  += emcalTrigL0[i][j];
-  // 	    ampL1[24]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 40 && i < 44)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[10] += emcalCell  [i][j];
-  // 	    ampL0[10]  += emcalTrigL0[i][j];
-  // 	    ampL1[10]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[25] += emcalCell  [i][j];
-  // 	    ampL0[25]  += emcalTrigL0[i][j];
-  // 	    ampL1[25]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 44 && i < 48)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[11] += emcalCell  [i][j];
-  // 	    ampL0[11]  += emcalTrigL0[i][j];
-  // 	    ampL1[11]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[26] += emcalCell  [i][j];
-  // 	    ampL0[26]  += emcalTrigL0[i][j];
-  // 	    ampL1[26]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //        else if (i > 48 && i < 52)
-  //       {
-  // 	if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[12] += emcalCell  [i][j];
-  // 	    ampL0[12]  += emcalTrigL0[i][j];
-  // 	    ampL1[12]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[27] += emcalCell  [i][j];
-  // 	    ampL0[27]  += emcalTrigL0[i][j];
-  // 	    ampL1[27]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 52 && i < 56)
-  //       {
-  //         if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[13] += emcalCell  [i][j];
-  // 	    ampL0[13]  += emcalTrigL0[i][j];
-  // 	    ampL1[13]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[28] += emcalCell  [i][j];
-  // 	    ampL0[28]  += emcalTrigL0[i][j];
-  // 	    ampL1[28]  += emcalTrigL1[i][j];
-  // 	  }
-  //       }
-  //       else if (i > 56 && i < 60)
-  //       {
-  //         if(j-23 <= 0) //A-side
-  // 	  {
-  // 	    ampFOR[14] += emcalCell  [i][j];
-  // 	    ampL0[14]  += emcalTrigL0[i][j];
-  // 	    ampL1[14]  += emcalTrigL1[i][j];
-  // 	  }
-  // 	else //C-side
-  // 	  {
-  // 	    ampFOR[29] += emcalCell  [i][j];
-  // 	    ampL0[29]  += emcalTrigL0[i][j];
-  // 	    ampL1[29]  += emcalTrigL1[i][j];
-  // 	  }	
-  //       }
-  
-  //     }
-  //   }
-  
+  // FEE vs STU and TRU vs STU ratios  
   for (Int_t i = 0; i < 30; i++)
   {
-    if (ampFOR[i] != 0 && ampL1[i] != 0) fhFEESTU[i]->Fill(ampL1[i]/ampFOR[i]);
-    if (ampL0[i] != 0 && ampL1[i] != 0) fhTRUSTU[i]->Fill(ampL1[i]/ampL0[i]);
+    
+    if (ampFOR[i] != 0 && ampL1[i] != 0) { 
+      fhFEESTU->Fill(ampL1[i]/ampFOR[i],i);
+      if(ampL1[i]/ampFOR[i] > fMaxSTUFEERatio) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large STU/FEE ratio %f\n",ampL1[i]/ampFOR[i]);
+    }
+    
+    if (ampL0[i]  != 0 && ampL1[i] != 0) {
+      fhTRUSTU->Fill(ampL1[i]/ampL0[i] ,i);
+      if(ampL1[i]/ampL0[i] > fMaxSTUTRURatio) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large STU/TRU ratio %f\n",ampL1[i]/ampL0[i]);
+    }
+    
   }
-  
-  //  Int_t TRUCheck[30] = {1};
-  //   Int_t STUCheck[30] = {1};
-  //   for (Int_t i = 0; i < 30; i++)
-  //   {
-  //     if (fhTRUSTU[i]->GetEntries()>0) if(fhTRUSTU[i]->Integral(10,20)/fhTRUSTU[i]->GetEntries() < 0.9) STUCheck[i] = 0;
-  //     if (fhTRUSTU[i]->GetEntries()==0) STUCheck[i] = 0;
-  //   }
-  
-  //   for (Int_t i = 0; i < 30; i++)
-  //     {
-  //       if (i<15) fhSTUChecks->Fill(0.,i,STUCheck[i]);
-  //       else fhSTUChecks->Fill(1.,i,STUCheck[i]);
-  //     }
   
   PostData(1, fOutputList);  
   
 }
 
+//_______________________________________________________
+void AliAnalysisTaskEMCALTriggerQA::Terminate(Option_t *)
+{
+  // Terminate analysis
+  // Do some plots
+  
+  Int_t checkSTU[30];
+  for (Int_t i = 0; i < 30; i++)
+  {
+    checkSTU[i] = 1 ; // Init array
+    TH1F* hTRUSTUChannel = (TH1F*) fhTRUSTU->ProjectionY(Form("hTRUSTUChannel%d",i),i,i);
+    //printf("AliAnalysisTaskEMCALTriggerQA::Terminate() - Channel %d TRUSTU Entries %d, Integral(10,20) %f ",
+    //      i, hTRUSTUChannel->GetEntries(), hTRUSTUChannel->Integral(10,20));
+    if     (hTRUSTUChannel->GetEntries() > 0 && 
+            hTRUSTUChannel->Integral(10,20)/hTRUSTUChannel->GetEntries() < 0.9) 
+      checkSTU[i] = 0;
+    else if(hTRUSTUChannel->GetEntries() <= 0)
+      checkSTU[i] = 0;
+    
+    //printf(" - %d\n",checkSTU[i]);
+    delete hTRUSTUChannel;
+  }
+  
+  for (Int_t i = 0; i < 30; i++)
+  {
+    if (i<15) fhSTUChecks->Fill(0.,i,checkSTU[i]);
+    else      fhSTUChecks->Fill(1.,i,checkSTU[i]);
+  }
+  
+}
