@@ -52,6 +52,7 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fESD(0x0),
                         fESDVZEROfriend(0x0),
                         fCalibData(NULL),
+                        fTriggerData(NULL),
                         fTimeSlewing(NULL),
                         fSaturationCorr(NULL),
                         fCollisionMode(0),
@@ -99,6 +100,10 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
   AliCDBEntry *entry5 =  AliCDBManager::Instance()->Get("VZERO/Calib/Saturation");
   if (!entry5) AliFatal("Saturation entry is not found in OCDB !");
   fSaturationCorr = (TObjArray*)entry5->GetObject();
+
+  AliCDBEntry *entry6 = AliCDBManager::Instance()->Get("VZERO/Trigger/Data");
+  if (!entry6) AliFatal("VZERO trigger config data is not found in OCDB !");
+  fTriggerData = (AliVZEROTriggerData*)entry6->GetObject();
 }
 
 
@@ -206,6 +211,7 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     }  
 
     // Filling the global part of esd friend object that is available only for raw data
+    rawStream.FillTriggerBits(fTriggerData);
     fESDVZEROfriend->SetTriggerInputs(rawStream.GetTriggerInputs());
     fESDVZEROfriend->SetTriggerInputsMask(rawStream.GetTriggerInputsMask());
 
@@ -220,6 +226,12 @@ void AliVZEROReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     digitsTree->GetUserInfo()->Add(new TParameter<int>("BBflagsV0C",aBBflagsV0C));
     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0A",aBGflagsV0A));
     digitsTree->GetUserInfo()->Add(new TParameter<int>("BGflagsV0C",aBGflagsV0C));
+
+    UShort_t chargeA,chargeC;
+    rawStream.CalculateChargeForCentrTriggers(fTriggerData,chargeA,chargeC);
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("ChargeA",(Int_t)chargeA));
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("ChargeC",(Int_t)chargeC));
+    digitsTree->GetUserInfo()->Add(new TParameter<int>("TriggerInputs",(Int_t)rawStream.GetTriggerInputs()));
 
     digitsTree->Fill();
   }
@@ -265,27 +277,35 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   if (digitsTree->GetUserInfo()->FindObject("BBflagsV0A")) {
     aBBflagsV0A = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BBflagsV0A"))->GetVal();
   }
-  else
-    AliWarning("V0A beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0A beam-beam flags not found in digits tree UserInfo!");
+  }
 
   if (digitsTree->GetUserInfo()->FindObject("BBflagsV0C")) {
     aBBflagsV0C = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BBflagsV0C"))->GetVal();
   }
-  else
-    AliWarning("V0C beam-beam flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0C beam-beam flags not found in digits tree UserInfo!");
+  }
 
   if (digitsTree->GetUserInfo()->FindObject("BGflagsV0A")) {
     aBGflagsV0A = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BGflagsV0A"))->GetVal();
   }
-  else
-    AliWarning("V0A beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0A beam-gas flags not found in digits tree UserInfo!");
+  }
 
   if (digitsTree->GetUserInfo()->FindObject("BGflagsV0C")) {
     aBGflagsV0C = ((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("BGflagsV0C"))->GetVal();
   }
-  else
-    AliWarning("V0C beam-gas flags not found in digits tree UserInfo! The flags will not be written to the raw-data stream!");
-  
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0C beam-gas flags not found in digits tree UserInfo!");
+  }
+
   // Beam-beam and beam-gas flags (hardware)
   for (Int_t iChannel = 0; iChannel < 64; ++iChannel) {
     if(iChannel < 32) {
@@ -296,6 +316,34 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
       aBBflag[iChannel] = (aBBflagsV0A >> (iChannel-32)) & 0x1;
       aBGflag[iChannel] = (aBGflagsV0A >> (iChannel-32)) & 0x1;
     }
+  }
+
+  // Fill the trigger charges and bits
+  UShort_t chargeA = 0;
+  UShort_t chargeC = 0;
+  UShort_t triggerInputs = 0;
+  if (digitsTree->GetUserInfo()->FindObject("ChargeA")) {
+    chargeA = (UShort_t)(((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("ChargeA"))->GetVal());
+  }
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0A trigger charge not found in digits tree UserInfo!");
+  }
+
+  if (digitsTree->GetUserInfo()->FindObject("ChargeC")) {
+    chargeC = (UShort_t)(((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("ChargeC"))->GetVal());
+  }
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0C trigger charge not found in digits tree UserInfo!");
+  }
+
+  if (digitsTree->GetUserInfo()->FindObject("TriggerInputs")) {
+    triggerInputs = (UShort_t)(((TParameter<int>*)digitsTree->GetUserInfo()->FindObject("TriggerInputs"))->GetVal());
+  }
+  else {
+    if (esd && (esd->GetEventType() == 7))
+      AliWarning("V0C trigger charge not found in digits tree UserInfo!");
   }
 
   Int_t nEntries = (Int_t)digitsTree->GetEntries();

@@ -21,6 +21,7 @@
 
 class TF1;
 class AliVZEROCalibData;
+class AliVZEROTriggerData;
 class AliESDEvent;
 class AliESDVZEROfriend;
 
@@ -69,6 +70,7 @@ private:
   AliVZEROReconstructor& operator = (const AliVZEROReconstructor& reconstructor);
   
   AliVZEROCalibData* fCalibData;      //! calibration data
+  AliVZEROTriggerData* fTriggerData;    //! calibration data
   Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
   TObjArray*         fSaturationCorr; //! Array with functions for correcting the signal saturation
@@ -78,7 +80,7 @@ private:
 
   mutable TClonesArray *fDigitsArray; // clones-array for ConvertDigits() and FillESD()
 
-  ClassDef(AliVZEROReconstructor, 3)  // class for the VZERO reconstruction
+  ClassDef(AliVZEROReconstructor, 4)  // class for the VZERO reconstruction
 };
 
 #endif

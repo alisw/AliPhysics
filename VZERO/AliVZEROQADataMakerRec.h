@@ -82,7 +82,7 @@ private:
   Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
 
-  ClassDef(AliVZEROQADataMakerRec,3)  // description 
+  ClassDef(AliVZEROQADataMakerRec,4)  // description 
 
 };
 
