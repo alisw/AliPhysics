@@ -76,6 +76,10 @@ class AliVZERORawStream: public TObject {
 
     void              CalculateChargeForCentrTriggers(AliVZEROTriggerData *triggerData,
 						      UShort_t &chargeA, UShort_t &chargeC) const;
+    void              CalculateBBandBGFlags(AliVZEROTriggerData *triggerData,
+					    UChar_t &nBBA, UChar_t &nBBC,
+					    UChar_t &nBGA, UChar_t &nBGC) const;
+    void              FillTriggerBits(AliVZEROTriggerData *triggerData);
 
 // Getter of Offline Channel number as used in aliroot (defined by aliroot 
 // numbering convention) from FEE channel (electronic channel number given 
