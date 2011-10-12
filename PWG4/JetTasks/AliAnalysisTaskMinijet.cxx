@@ -4,7 +4,6 @@
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
-#include <TH3F.h>
 #include <THnSparse.h>
 #include <TProfile.h>
 #include <TCanvas.h>
@@ -401,7 +400,6 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
   // step 4 =  Triggered events, reconstructed accepted vertex, reconstructed tracks with MC properties, reconstructed multiplicity
   // step 3 =  Triggered events, reconstructed accepted vertex, mc primary particles,                    reconstructed multiplicity, 
   // step 2 =  Triggered events, all                            mc primary particles,                    reconstructed multiplicity
-  // step 1 =  Triggered events, all                            mc primary particles,                    true multiplicity
   // step 1 =  Triggered events, all                            mc primary particles,                    true multiplicity
   // step 0 =  All events,       all                            mc primary particles,                    true multiplicity
 
@@ -1317,8 +1315,8 @@ void AliAnalysisTaskMinijet::Analyse(const vector<Float_t> &pt,
   Float_t phiOthers = 0; // phi others
   Short_t chargeOthers = 0; // charge others
 
-  Int_t *pindexInnerEta  = new Int_t[nAll];
-  Float_t *ptInnerEta = new Float_t[nAll];
+  Int_t   *pindexInnerEta  = new Int_t  [nAll+1];
+  Float_t *ptInnerEta      = new Float_t[nAll+1];
   
  
 
@@ -1505,7 +1503,7 @@ void AliAnalysisTaskMinijet::Terminate(Option_t*)
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(const Short_t charge, const Int_t pdg, Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1539,7 +1537,7 @@ const Bool_t AliAnalysisTaskMinijet::SelectParticlePlusCharged(Short_t charge, I
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, Bool_t prim)
+Bool_t AliAnalysisTaskMinijet::SelectParticle(const Short_t charge, const Int_t pdg, const Bool_t prim)
 {
   //selection of mc particle
   //fSelectParticles=0: use charged primaries and pi0 and k0
@@ -1571,7 +1569,7 @@ const Bool_t AliAnalysisTaskMinijet::SelectParticle(Short_t charge, Int_t pdg, B
 }
 
 //________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
+Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
 {
   // This function tests the quality of an event (ESD/AOD) (rec and/or mc part)
   // recVertex=false:  check if Mc events and stack is there, Nmc>0
@@ -1700,8 +1698,8 @@ const Double_t * AliAnalysisTaskMinijet::CreateLogAxis(const Int_t nbins,
 }
 
 //_____________________________________________________________________________
-const Bool_t AliAnalysisTaskMinijet::CheckLikeSign(const Short_t chargeEventAxis, 
-						   const Short_t chargeOthers)
+Bool_t AliAnalysisTaskMinijet::CheckLikeSign(const Short_t chargeEventAxis, 
+					     const Short_t chargeOthers)
 {
   // compute if charge of two particles/tracks has same sign or different sign
 
