@@ -1524,13 +1524,10 @@ Float_t AliPWG4HighPtTrackQA::GetGGCChi2(AliESDtrack *origtrack) {
 
   AliESDtrack *esdtrackC = new AliESDtrack(*origtrack);
   if(esdtrackC) {
-    esdtrackC->Set(origtrack->GetConstrainedParam()->GetX(),origtrack->GetConstrainedParam()->GetAlpha(),origtrack->GetConstrainedParam()->GetParameter(),origtrack->GetConstrainedParam()->GetCovariance());
-    chi2GGC = (Float_t)origtrack->GetPredictedChi2(esdtrackC);
-    
-    /*
-    if(chi2GGC==0.)
-      cout << "origtrack: " << origtrack << "\tesdtrackC: " << esdtrackC << endl;
-    */
+    if(origtrack->GetConstrainedParam()) {
+      esdtrackC->Set(origtrack->GetConstrainedParam()->GetX(),origtrack->GetConstrainedParam()->GetAlpha(),origtrack->GetConstrainedParam()->GetParameter(),origtrack->GetConstrainedParam()->GetCovariance());
+      chi2GGC = (Float_t)origtrack->GetPredictedChi2(esdtrackC);
+    }
     delete esdtrackC;
   }
   
