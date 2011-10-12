@@ -46,7 +46,11 @@ public:
 
   void SetV0ADecision(Decision des) {fV0ADecision = des;}
   void SetV0CDecision(Decision des) {fV0CDecision = des;}
-         
+
+  void SetTriggerChargeA(UShort_t chargeA) {fTriggerChargeA = chargeA;}
+  void SetTriggerChargeC(UShort_t chargeC) {fTriggerChargeC = chargeC;}
+  void SetTriggerBits(UShort_t triggerBits) {fTriggerBits = triggerBits;}
+
   // Getters  
   virtual Short_t  GetNbPMV0A() const;
   virtual Short_t  GetNbPMV0C() const;
@@ -81,6 +85,10 @@ public:
 
   virtual Decision GetV0ADecision() const { return fV0ADecision; }
   virtual Decision GetV0CDecision() const { return fV0CDecision; }
+
+  virtual UShort_t GetTriggerChargeA() const { return fTriggerChargeA; }
+  virtual UShort_t GetTriggerChargeC() const { return fTriggerChargeC; }
+  virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
   
   AliESDVZERO &operator=(const AliESDVZERO& source);
     
@@ -106,7 +114,11 @@ protected:
   Decision fV0ADecision;     // V0A final decision based on average time of channels
   Decision fV0CDecision;     // V0C final decision based on average time of channels
 
-  ClassDef(AliESDVZERO,9)
+  UShort_t fTriggerChargeA;  // Sum of the trigger (clock=10) charge on A side
+  UShort_t fTriggerChargeC;  // Sum of the trigger (clock=10) charge on C side
+  UShort_t fTriggerBits;     // V0 trigger bits as defined in the firmware
+
+  ClassDef(AliESDVZERO,10)
 };
 
 #endif

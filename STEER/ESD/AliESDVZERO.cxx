@@ -35,7 +35,10 @@ AliESDVZERO::AliESDVZERO()
    fV0ATimeError(0),
    fV0CTimeError(0),
    fV0ADecision(kV0Invalid),
-   fV0CDecision(kV0Invalid)
+   fV0CDecision(kV0Invalid),
+   fTriggerChargeA(0),
+   fTriggerChargeC(0),
+   fTriggerBits(0)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
@@ -60,7 +63,10 @@ AliESDVZERO::AliESDVZERO(const AliESDVZERO &o)
    fV0ATimeError(o.fV0ATimeError),
    fV0CTimeError(o.fV0CTimeError),
    fV0ADecision(o.fV0ADecision),
-   fV0CDecision(o.fV0CDecision)
+   fV0CDecision(o.fV0CDecision),
+   fTriggerChargeA(o.fTriggerChargeA),
+   fTriggerChargeC(o.fTriggerChargeC),
+   fTriggerBits(o.fTriggerBits)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++) {
@@ -88,7 +94,10 @@ AliESDVZERO::AliESDVZERO(UInt_t BBtriggerV0A, UInt_t BGtriggerV0A,
    fV0ATimeError(0),
    fV0CTimeError(0),
    fV0ADecision(kV0Invalid),
-   fV0CDecision(kV0Invalid)
+   fV0CDecision(kV0Invalid),
+   fTriggerChargeA(0),
+   fTriggerChargeC(0),
+   fTriggerBits(0)
 {
    // Constructor
    for(Int_t j=0; j<64; j++) {
@@ -119,6 +128,9 @@ AliESDVZERO& AliESDVZERO::operator=(const AliESDVZERO& o)
   fV0CTimeError = o.fV0CTimeError;
   fV0ADecision = o.fV0ADecision;
   fV0CDecision = o.fV0CDecision;
+  fTriggerChargeA = o.fTriggerChargeA;
+  fTriggerChargeC = o.fTriggerChargeC;
+  fTriggerBits = o.fTriggerBits;
 
    for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = o.fMultiplicity[j];

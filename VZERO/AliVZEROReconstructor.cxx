@@ -346,6 +346,11 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
       AliWarning("V0C trigger charge not found in digits tree UserInfo!");
   }
 
+  fESDVZERO->SetTriggerChargeA(chargeA);
+  fESDVZERO->SetTriggerChargeC(chargeC);
+  fESDVZERO->SetTriggerBits(triggerInputs);
+  fESDVZERO->SetBit(AliESDVZERO::kTriggerChargeBitsFilled,kTRUE);
+
   Int_t nEntries = (Int_t)digitsTree->GetEntries();
   for (Int_t e=0; e<nEntries; e++) {
     digitsTree->GetEvent(e);

@@ -24,7 +24,8 @@ public:
     kDecisionFilled = BIT(16),
     kOnlineBitsFilled = BIT(17),
     kCorrectedForSaturation = BIT(18),
-    kRobustMeanTime = BIT(19)
+    kRobustMeanTime = BIT(19),
+    kTriggerChargeBitsFilled = BIT(20)
   };
   enum Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
 
@@ -52,11 +53,15 @@ public:
   virtual Decision GetV0ADecision() const = 0;
   virtual Decision GetV0CDecision() const = 0;
 
+  virtual UShort_t GetTriggerChargeA() const = 0;
+  virtual UShort_t GetTriggerChargeC() const = 0;
+  virtual UShort_t GetTriggerBits() const = 0;
+
 protected:  
 
   Bool_t OutOfRange(Int_t i, const char *s, Int_t upper) const;
     
-  ClassDef(AliVVZERO,1)
+  ClassDef(AliVVZERO,2)
 };
 
 #endif

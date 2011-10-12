@@ -34,7 +34,10 @@ AliAODVZERO::AliAODVZERO()
    fV0ATime(-1024),
    fV0CTime(-1024),
    fV0ADecision(kV0Invalid),
-   fV0CDecision(kV0Invalid)
+   fV0CDecision(kV0Invalid),
+   fTriggerChargeA(0),
+   fTriggerChargeC(0),
+   fTriggerBits(0)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++){ 
@@ -54,7 +57,10 @@ AliAODVZERO::AliAODVZERO(const AliAODVZERO &source)
    fV0ATime(source.fV0ATime),
    fV0CTime(source.fV0CTime),
    fV0ADecision(source.fV0ADecision),
-   fV0CDecision(source.fV0CDecision)
+   fV0CDecision(source.fV0CDecision),
+   fTriggerChargeA(source.fTriggerChargeA),
+   fTriggerChargeC(source.fTriggerChargeC),
+   fTriggerBits(source.fTriggerBits)
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++) {
@@ -74,7 +80,10 @@ AliAODVZERO::AliAODVZERO(const AliVVZERO &source)
    fV0ATime(source.GetV0ATime()),
    fV0CTime(source.GetV0CTime()),
    fV0ADecision(source.GetV0ADecision()),
-   fV0CDecision(source.GetV0CDecision())
+   fV0CDecision(source.GetV0CDecision()),
+   fTriggerChargeA(source.GetTriggerChargeA()),
+   fTriggerChargeC(source.GetTriggerChargeC()),
+   fTriggerBits(source.GetTriggerBits())
 {   
    // Default constructor 
    for(Int_t j=0; j<64; j++) {
@@ -108,6 +117,9 @@ AliAODVZERO& AliAODVZERO::operator=(const AliAODVZERO& source)
   fV0CTime = source.fV0CTime;
   fV0ADecision = source.fV0ADecision;
   fV0CDecision = source.fV0CDecision;
+  fTriggerChargeA = source.fTriggerChargeA;
+  fTriggerChargeC = source.fTriggerChargeC;
+  fTriggerBits = source.fTriggerBits;
 
    for(Int_t j=0; j<64; j++) {
        fMultiplicity[j] = source.fMultiplicity[j];
@@ -129,6 +141,9 @@ AliAODVZERO& AliAODVZERO::operator=(const AliVVZERO& source)
   fV0CTime = source.GetV0CTime();
   fV0ADecision = source.GetV0ADecision();
   fV0CDecision = source.GetV0CDecision();
+  fTriggerChargeA = source.GetTriggerChargeA();
+  fTriggerChargeC = source.GetTriggerChargeC();
+  fTriggerBits = source.GetTriggerBits();
 
   for(Int_t j=0; j<64; j++) {
     fMultiplicity[j] = source.GetMultiplicity(j);

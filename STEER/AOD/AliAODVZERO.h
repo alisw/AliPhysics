@@ -47,6 +47,10 @@ public:
 
   virtual Decision GetV0ADecision() const { return fV0ADecision; }
   virtual Decision GetV0CDecision() const { return fV0CDecision; }
+
+  virtual UShort_t GetTriggerChargeA() const { return fTriggerChargeA; }
+  virtual UShort_t GetTriggerChargeC() const { return fTriggerChargeC; }
+  virtual UShort_t GetTriggerBits() const { return fTriggerBits; }
   
 protected:
 
@@ -66,7 +70,11 @@ protected:
   Decision fV0ADecision;     // V0A final decision based on average time of channels
   Decision fV0CDecision;     // V0C final decision based on average time of channels
 
-  ClassDef(AliAODVZERO,1)
+  UShort_t fTriggerChargeA;  // Sum of the trigger (clock=10) charge on A side
+  UShort_t fTriggerChargeC;  // Sum of the trigger (clock=10) charge on C side
+  UShort_t fTriggerBits;     // V0 trigger bits as defined in the firmware
+
+  ClassDef(AliAODVZERO,2)
 };
 
 #endif
