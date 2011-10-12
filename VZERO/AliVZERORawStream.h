@@ -21,6 +21,7 @@
 #include <TMath.h>
 
 class AliRawReader;
+class AliVZEROTriggerData;
 
 class AliVZERORawStream: public TObject {
   public :
@@ -72,6 +73,9 @@ class AliVZERORawStream: public TObject {
       { return fTrigger; }
     UShort_t          GetTriggerInputsMask() const
       { return fTriggerMask; }
+
+    void              CalculateChargeForCentrTriggers(AliVZEROTriggerData *triggerData,
+						      UShort_t &chargeA, UShort_t &chargeC) const;
 
 // Getter of Offline Channel number as used in aliroot (defined by aliroot 
 // numbering convention) from FEE channel (electronic channel number given 

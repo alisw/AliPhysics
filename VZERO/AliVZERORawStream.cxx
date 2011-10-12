@@ -25,7 +25,8 @@
 #include "AliRawReader.h"
 #include "AliLog.h"
 #include "AliDAQ.h"
-
+#include "AliVZEROCalibData.h"
+#include "AliVZEROTriggerData.h"
 ClassImp(AliVZERORawStream)
 
 //_____________________________________________________________________________
@@ -226,4 +227,39 @@ UShort_t AliVZERORawStream::GetNextShort()
   word |= fData[fPosition++] << 8;
 
   return word;
+}
+
+//_____________________________________________________________________________
+void AliVZERORawStream::CalculateChargeForCentrTriggers(AliVZEROTriggerData *triggerData,
+							UShort_t &chargeA, UShort_t &chargeC) const
+{
+  // Use the raw-data payload
+  // in order to calculate the total
+  // charge (which is used in the
+  // centrality triggers) on each side of V0
+  if (!triggerData) {
+    AliFatal("Trigger configuration data is not provided. Exiting...");
+    return;
+  }
+  chargeA = chargeC = 0;
+  for(Int_t iChannel=0; iChannel<64; iChannel++) {
+    Int_t offlineCh = GetOfflineChannel(iChannel);
+    Int_t board = AliVZEROCalibData::GetBoardNumber(offlineCh);
+    Int_t feeChannel = AliVZEROCalibData::GetFEEChannelNumber(offlineCh);
+    if (triggerData->GetEnableCharge(board,feeChannel)) {
+      Bool_t integ10 = GetIntegratorFlag(iChannel,10);
+      UShort_t ch10 = (UShort_t)GetPedestal(iChannel,10);
+      UShort_t trPed = (integ10 == kFALSE) ? triggerData->GetPedestal(0,board,feeChannel) : triggerData->GetPedestal(1,board,feeChannel);
+      UShort_t trPedCut = (integ10 == kFALSE) ? triggerData->GetPedestalCut(0,board,feeChannel) : triggerData->GetPedestalCut(1,board,feeChannel);
+      if (!triggerData->GetPedestalSubtraction(board)) trPed = trPedCut = 0;
+      if (ch10 > trPedCut) {
+	if (offlineCh < 32) {
+	  chargeC += (ch10 - trPed);
+	}
+	else {
+	  chargeA += (ch10 - trPed);
+	}
+      }
+    }
+  }
 }

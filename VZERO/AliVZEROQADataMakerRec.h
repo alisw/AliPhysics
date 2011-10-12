@@ -22,6 +22,7 @@ class TObjArray;
 class AliCDBManager;
 class AliCDBStorage;
 class AliVZEROCalibData;
+class AliVZEROTriggerData;
 
 class AliVZEROQADataMakerRec: public AliQADataMakerRec {
 
@@ -36,7 +37,8 @@ public:
 		  ,kMultiV0A,kMultiV0C,kChargeV0A,kChargeV0C,kChargeV0 
 		  ,kV0ATime,kV0CTime,kDiffTime
 		  ,kRawMIPV0A,kRawMIPV0C,kRawMIPV0,kRawMIPChannel
-                  ,kBBFlagsPerChannel, kTriggers,kTriggers2,kTimeV0AV0C} ;
+		  ,kBBFlagsPerChannel, kTriggers,kTriggers2,kTimeV0AV0C
+		  ,kCentrChargeV0AV0C};
 	
  enum HESDType_t {kCellMultiV0A,kCellMultiV0C,kMIPMultiV0A,kMIPMultiV0C,kMIPMultiChannel
 		  ,kBBFlag,kBGFlag,kChargeChannel,kTimeChannel
@@ -52,6 +54,7 @@ public:
   
 protected: 
   AliVZEROCalibData *fCalibData;        //! calibration data
+  AliVZEROTriggerData *fTriggerData;    //! trigger config data
    
 private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObjArray ** list) ;

@@ -48,6 +48,7 @@
 #include "AliVZEROReconstructor.h"
 #include "AliVZEROTrending.h"
 #include "AliVZEROCalibData.h"
+#include "AliVZEROTriggerData.h"
 #include "AliCTPTimeParams.h"
 #include "event.h"
 
@@ -70,6 +71,7 @@ ClassImp(AliVZEROQADataMakerRec)
 AliVZEROQADataMakerRec::AliVZEROQADataMakerRec() : 
 AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance Data Maker"),
   fCalibData(0x0),
+  fTriggerData(0x0),
 //  fEvent(0), 
 //  fNTotEvents(0), 
 //  fNSubEvents(0), 
@@ -98,6 +100,7 @@ AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kVZERO), "VZERO Quality Assurance
 AliVZEROQADataMakerRec::AliVZEROQADataMakerRec(const AliVZEROQADataMakerRec& qadm) :
   AliQADataMakerRec(),
   fCalibData(0x0),
+  fTriggerData(0x0),
   //  fEvent(0), 
   //  fNTotEvents(0), 
   //  fNSubEvents(0), 
@@ -239,9 +242,9 @@ void AliVZEROQADataMakerRec::InitRaws()
   const Int_t kNTdcTimeBins  = 1280;
   const Float_t kTdcTimeMin    =    0.;
   const Float_t kTdcTimeMax    = 75.;
-    const Int_t kNTdcWidthBins =  128;
+    const Int_t kNTdcWidthBins =  256;
   const Float_t kTdcWidthMin   =    0;
-  const Float_t kTdcWidthMax   =  50.;
+  const Float_t kTdcWidthMax   =  200.;
   const Int_t kNChargeBins   = 1024;
   const Float_t kChargeMin     =    0;
   const Float_t kChargeMax     = 1024;
@@ -295,11 +298,11 @@ void AliVZEROQADataMakerRec::InitRaws()
   Add2RawsList(h1i,kMultiV0C, expert, image, saveCorr);   iHisto++;
  
   // Creation of Total Charge Histograms
-  h1d = new TH1F("H1D_Charge_V0A", "Total Charge in V0A;Charge [ADC counts];Counts", 2000, 0, 10000) ;  
+  h1d = new TH1F("H1D_Charge_V0A", "Total Charge in V0A;Charge [ADC counts];Counts", 4000, 0, 30000) ;  
   Add2RawsList(h1d,kChargeV0A, expert, !image, saveCorr);   iHisto++;
-  h1d = new TH1F("H1D_Charge_V0C", "Total Charge in V0C;Charge [ADC counts];Counts", 2000, 0, 10000) ;  
+  h1d = new TH1F("H1D_Charge_V0C", "Total Charge in V0C;Charge [ADC counts];Counts", 4000, 0, 50000) ;  
   Add2RawsList(h1d,kChargeV0C, expert, !image, saveCorr);   iHisto++;
-  h1d = new TH1F("H1D_Charge_V0", "Total Charge in V0;Charge [ADC counts];Counts", 2000, 0, 20000) ;  
+  h1d = new TH1F("H1D_Charge_V0", "Total Charge in V0;Charge [ADC counts];Counts", 4000, 0, 80000) ;  
   Add2RawsList(h1d,kChargeV0, expert, !image, saveCorr);   iHisto++;
   
   // Creation of MIP Histograms
@@ -316,7 +319,7 @@ void AliVZEROQADataMakerRec::InitRaws()
 
   // Creation of Charge EoI histogram 
   h2d = new TH2F("H2D_ChargeEoI", "Charge Event of Interest;Channel Number;Charge [ADC counts]"
-		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, kChargeMax);
+		 ,kNChannelBins, kChannelMin, kChannelMax, kNChargeBins, kChargeMin, 2.*kChargeMax);
   Add2RawsList(h2d,kChargeEoI, !expert, image, !saveCorr); iHisto++;
 
   for(Int_t iInt=0;iInt<kNintegrator;iInt++){
@@ -417,6 +420,11 @@ void AliVZEROQADataMakerRec::InitRaws()
   h2d = new TH2F("H2D_BGFlagVsClock", "BG-Flags Versus LHC-Clock;Channel;LHC Clocks",kNChannelBins, kChannelMin, kChannelMax,21, -10.5, 10.5 );
   Add2RawsList(h2d,kBGFlagVsClock, expert, !image, !saveCorr); iHisto++;
   // 
+  // Creation of histograms with the charge sums used inthe centrality triggers
+  h2d = new TH2F("H2D_CentrChargeV0A_V0C","Trigger charge sums V0C vs V0A; V0A Charge Sum [ADC counts]; V0C Charge Sum [ADC counts];",
+		 300,0,15000,500,0,25000);
+  Add2RawsList(h2d,kCentrChargeV0AV0C, !expert, image, saveCorr); iHisto++;
+
   AliDebug(AliQAv1::GetQADebugLevel(), Form("%d Histograms has been added to the Raws List",iHisto));
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
@@ -835,8 +843,14 @@ void AliVZEROQADataMakerRec::MakeRaws(AliRawReader* rawReader)
     FillRawsData(kRawMIPV0A,mipV0A);
     FillRawsData(kRawMIPV0C,mipV0C);
     FillRawsData(kRawMIPV0,mipV0A + mipV0C);
-    break;
+
+    // Fill the histograms with charge sums used in the centrality triggers
+    UShort_t chargeA = 0;
+    UShort_t chargeC = 0;
+    rawStream->CalculateChargeForCentrTriggers(fTriggerData,chargeA,chargeC);
+    FillRawsData(kCentrChargeV0AV0C,(Float_t)chargeA,(Float_t)chargeC);
 	    
+    break;
   } // END of SWITCH : EVENT TYPE 
 	
   //  fEvent++;  // RS: Use framework counters instead
@@ -906,6 +920,10 @@ void AliVZEROQADataMakerRec::StartOfDetectorCycle()
   AliCDBEntry *entry3 = AliCDBManager::Instance()->Get("VZERO/Calib/TimeSlewing");
   if (!entry3) AliFatal("VZERO time slewing function is not found in OCDB !");
   fTimeSlewing = (TF1*)entry3->GetObject();
+
+  AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("VZERO/Trigger/Data");
+  if (!entry4) AliFatal("VZERO trigger config data is not found in OCDB !");
+  fTriggerData = (AliVZEROTriggerData*)entry4->GetObject();
 
   for(Int_t i = 0 ; i < 64; ++i) {
     //Int_t board = AliVZEROCalibData::GetBoardNumber(i);
