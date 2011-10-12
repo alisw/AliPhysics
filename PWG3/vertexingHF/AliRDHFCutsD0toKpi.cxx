@@ -220,7 +220,7 @@ void AliRDHFCutsD0toKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int
   
    if(fVarsForOpt[10]){
 		iter++;
-	   vars[iter]=(dd->NormalizedDecayLengthXY()*(dd->P()/dd->Pt()));
+	   vars[iter]=dd->NormalizedDecayLengthXY();
 	}
 
    if(cleanvtx)CleanOwnPrimaryVtx(dd,aod,origownvtx);
@@ -330,7 +330,7 @@ Int_t AliRDHFCutsD0toKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEve
       
       if(TMath::Abs(d->CosPointingAngleXY()) < fCutsRD[GetGlobalIndex(9,ptbin)])  {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 	
-      Double_t normalDecayLengXY=(d->NormalizedDecayLengthXY()*(d->P()/d->Pt()));
+      Double_t normalDecayLengXY=d->NormalizedDecayLengthXY();
       if (normalDecayLengXY < fCutsRD[GetGlobalIndex(10, ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
       
       if (returnvalueCuts!=0) {
@@ -1284,7 +1284,7 @@ void AliRDHFCutsD0toKpi::SetStandardCutsPbPb2010() {
   esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
   esdTrackCuts->SetMinDCAToVertexXY(0.);
   esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.8,1.e10);
+  esdTrackCuts->SetPtRange(0.7,1.e10);
 
   esdTrackCuts->SetMaxDCAToVertexXY(1.);  
   esdTrackCuts->SetMaxDCAToVertexZ(1.);
