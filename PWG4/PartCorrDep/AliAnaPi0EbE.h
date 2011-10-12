@@ -28,7 +28,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
 
  public: 
   AliAnaPi0EbE() ; // default ctor
-  virtual ~AliAnaPi0EbE() ; //virtual dtor
+  virtual ~AliAnaPi0EbE() { ; } //virtual dtor
  private:
   AliAnaPi0EbE(const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ;//cpy assignment
@@ -56,6 +56,8 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void           FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag);
     
   void           FillWeightHistograms(AliVCluster *clus);
+  
+  AliVCluster*   FindCluster(TObjArray* clusters, const Int_t id, Int_t & iclus, const Int_t first=0) ;
   
   void           MakeInvMassInCalorimeter() ;
   
@@ -101,7 +103,6 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
   
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
-  TClonesArray * fInputAODGammaConv;       //! AOD array with conversion photons reconstructed in CTS
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
   
   //Histograms
@@ -146,7 +147,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhLambda0ForW0[7];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
   TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
   
-  ClassDef(AliAnaPi0EbE,9)
+  ClassDef(AliAnaPi0EbE,10)
 } ;
 
 

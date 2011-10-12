@@ -52,7 +52,7 @@ ClassImp(AliAnaPi0EbE)
 AliAnaPi0EbE::AliAnaPi0EbE() : 
     AliAnaPartCorrBaseClass(),    fAnaType(kIMCalo),            fCalorimeter(""),
     fMinDist(0.),fMinDist2(0.),   fMinDist3(0.),	              fFillWeightHistograms(kFALSE),
-    fInputAODGammaConv(0x0),      fInputAODGammaConvName(""),
+    fInputAODGammaConvName(""),
     //Histograms
     fhPtPi0(0),                   fhEPi0(0),                    fhEEtaPhiPi0(0),
     //Shower shape histos
@@ -87,16 +87,6 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   //Initialize parameters
   InitParameters();
   
-}
-
-//___________________________
-AliAnaPi0EbE::~AliAnaPi0EbE() 
-{
-  //dtor
-  if(fInputAODGammaConv){
-    fInputAODGammaConv->Clear() ; 
-    delete fInputAODGammaConv ;
-  }
 }
 
 //_____________________________________________________________________________________
@@ -278,6 +268,25 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
   }// EMCAL
 }
 
+//_____________________________________________________________________________________
+AliVCluster * AliAnaPi0EbE::FindCluster(TObjArray* clusters, const Int_t id, Int_t & iclus, const Int_t first) {
+  // Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster and its index in the array
+  
+  if(!clusters) return 0x0;
+  
+  for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++){
+    AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+    if(cluster){
+      if     (cluster->GetID()==id) {
+        return cluster;
+      }
+    }      
+  }// calorimeter clusters loop
+  
+  return 0x0;
+
+}
+
 //___________________________________________
 TObjString *  AliAnaPi0EbE::GetAnalysisCuts()
 {	
@@ -346,7 +355,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   ////////
   
-  if(fAnaType == kIMCalo){
+  if(fAnaType == kIMCalo || fAnaType == kIMCaloTracks ){
     
     fhEDispersion  = new TH2F
     ("hEDispersion","Selected #pi^{0} pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
@@ -584,7 +593,7 @@ void AliAnaPi0EbE::InitParameters()
   //Initialize the parameters of the analysis.  
   AddToHistogramsName("AnaPi0EbE_");
   
-  fInputAODGammaConvName = "gammaconv" ;
+  fInputAODGammaConvName = "PhotonsCTS" ;
   fAnaType = kIMCalo ;
   fCalorimeter = "EMCAL" ;
   fMinDist  = 2.;
@@ -640,11 +649,6 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
   if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
   else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;
   
-  if(!clusters) {
-    printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Clusters array not found, skip event\n");
-    return;
-  }
-  
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast()-1; iphoton++){
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     
@@ -655,24 +659,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
     if(TMath::Abs(GetVertex(evtIndex1)[2]) > GetZvertexCut()) continue ;  //vertex cut
     mom1 = *(photon1->Momentum());
     
-    Bool_t bFound1        = kFALSE;
-    Int_t  caloLabel1     = photon1->GetCaloLabel(0);
-    Bool_t iclus1         = -1;    
-    AliVCluster *cluster1 = 0; 
     //Get original cluster, to recover some information
-    for(Int_t iclus = 0; iclus < clusters->GetEntriesFast(); iclus++){
-      AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-      if(cluster){
-        if     (cluster->GetID()==caloLabel1) {
-          bFound1  = kTRUE  ;
-          cluster1 = cluster;
-          iclus1   = iclus;
-        }
-      }      
-      if(bFound1) break;
-    }// calorimeter clusters loop
+    Int_t iclus = -1;
+    AliVCluster *cluster1 = FindCluster(clusters,photon1->GetCaloLabel(0),iclus); 
     
-    if(!bFound1){
+    if(!cluster1){
       printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - First cluster not found\n");
       return;
     }
@@ -688,23 +679,13 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(TMath::Abs(GetVertex(evtIndex2)[2]) > GetZvertexCut()) continue ;  //vertex cut
       mom2 = *(photon2->Momentum());
       
-      Bool_t bFound2        = kFALSE;
-      Int_t  caloLabel2     = photon2->GetCaloLabel(0);
-      AliVCluster *cluster2 = 0; 
-      for(Int_t iclus = iclus1+1; iclus < clusters->GetEntriesFast(); iclus++){
-        AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
-        if(cluster){
-          if(cluster->GetID()==caloLabel2) {
-            bFound2  = kTRUE  ;
-            cluster2 = cluster;
-          }          
-        }      
-        if(bFound2) break;
-      }// calorimeter clusters loop
+      //Get original cluster, to recover some information
+      Int_t iclus2;
+      AliVCluster *cluster2 = FindCluster(clusters,photon2->GetCaloLabel(0),iclus2,iclus+1); 
       
-      if(!bFound2) {
+      if(!cluster2){
         printf("AliAnaPi0EbE::MakeInvMassInCalorimeter() - Second cluster not found\n");
-        continue;
+        return;
       }
       
       Float_t e1    = photon1->E();      
@@ -810,31 +791,57 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
   Int_t tag2 = 0;
   Int_t tag  = 0;
   Int_t evtIndex = 0;
+  
+  // Check calorimeter input
   if(!GetInputAODBranch()){
     printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input calo photons in AOD branch with name < %s > , STOP\n",GetInputAODName().Data());
     abort();
   }
   
+  // Get the array with conversion photons
+  TClonesArray * inputAODGammaConv = (TClonesArray *) GetReader()->GetOutputEvent()->FindListObject(fInputAODGammaConvName);
+  if(!inputAODGammaConv) {
+    
+    inputAODGammaConv = (TClonesArray *) GetReader()->GetInputEvent()->FindListObject(fInputAODGammaConvName);
+    
+    if(!inputAODGammaConv) {
+      printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input gamma conversions in AOD branch with name < %s >\n",fInputAODGammaConvName.Data());
+      
+      return;
+    }
+  }  
+  
+  //Get shower shape information of clusters
+  TObjArray *clusters = 0;
+  if     (fCalorimeter=="EMCAL") clusters = GetEMCALClusters();
+  else if(fCalorimeter=="PHOS")  clusters = GetPHOSClusters() ;  
+  
+  Int_t nCTS  = inputAODGammaConv->GetEntriesFast();
+  Int_t nCalo = GetInputAODBranch()->GetEntriesFast();
+  if(nCTS<=0 || nCalo <=0) {
+    if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - nCalo %d, nCTS %d, cannot loop\n",nCalo,nCTS);
+    return;
+  }
+  
+  if(GetDebug() > 1)
+    printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - Number of conversion photons %d\n",nCTS);
+  
+  // Do the loop, first calo, second CTS
   for(Int_t iphoton = 0; iphoton < GetInputAODBranch()->GetEntriesFast(); iphoton++){
     AliAODPWG4Particle * photon1 =  (AliAODPWG4Particle*) (GetInputAODBranch()->At(iphoton));
     mom1 = *(photon1->Momentum());
     
-    //Play with the MC stack if available
-    fInputAODGammaConv = (TClonesArray *) GetReader()->GetOutputEvent()->FindListObject(fInputAODGammaConvName);
-    if(!fInputAODGammaConv) {
-      printf("AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() - No input gamma conversions in AOD branch with name < %s >, STOP\n",fInputAODGammaConvName.Data());
-      abort();	
-    }
-    for(Int_t jphoton = 0; jphoton < fInputAODGammaConv->GetEntriesFast(); jphoton++){
-      AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (fInputAODGammaConv->At(jphoton));
+    //Get original cluster, to recover some information
+    Int_t iclus = -1;
+    AliVCluster *cluster = FindCluster(clusters,photon1->GetCaloLabel(0),iclus);     
+    
+    for(Int_t jphoton = 0; jphoton < nCTS; jphoton++){
+      AliAODPWG4Particle * photon2 =  (AliAODPWG4Particle*) (inputAODGammaConv->At(jphoton));
       if(GetMixedEvent())
         evtIndex = GetMixedEvent()->EventIndexForCaloCluster(photon2->GetCaloLabel(0)) ;
       if(TMath::Abs(GetVertex(evtIndex)[2]) > GetZvertexCut()) continue ;  //vertex cut
       
       mom2 = *(photon2->Momentum());
-      
-      //Int_t input = -1;	//if -1 photons come from different files, not a pi0
-      //if(photon1->GetInputFileIndex() == photon2->GetInputFileIndex()) input = photon1->GetInputFileIndex();
       
       //Select good pair (good phi, pt cuts, aperture and invariant mass)
       if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,fCalorimeter)){
@@ -880,6 +887,11 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
               GetMCAnalysisUtils()->SetTagBit(tag,AliMCAnalysisUtils::kMCPi0);
           }
         }//Work with stack also   
+        
+        //Fill some histograms about shower shape
+        if(cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
+          FillSelectedClusterHistograms(cluster, tag1);
+        }        
         
         //Create AOD for analysis
         mom = mom1+mom2;
