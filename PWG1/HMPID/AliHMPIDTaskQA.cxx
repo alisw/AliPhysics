@@ -283,7 +283,9 @@ void AliHMPIDTaskQA::UserExec(Option_t *)
     if(Equal(x,0.,ktol) && Equal(y,0.,ktol) && Equal(xpc,0.,ktol) && Equal(ypc,0.,ktol)) continue;
 
     Float_t sign = track->GetSign();
-    Int_t ch = track->GetHMPIDcluIdx()/1000000;
+    Int_t ch = track->GetHMPIDcluIdx()/1000000; 
+    if( ch < 0 || ch > 6 ) continue; //Chamber numbering is [0,6]
+    
     if (sign > 0.) fHmpMipTrkDistPosX[ch]->Fill(xpc - x), fHmpMipTrkDistPosY[ch]->Fill(ypc - y);
     if (sign < 0.) fHmpMipTrkDistNegX[ch]->Fill(xpc - x), fHmpMipTrkDistNegY[ch]->Fill(ypc - y);
     fHmpMipCharge[ch]->Fill(q);
