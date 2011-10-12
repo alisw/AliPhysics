@@ -137,6 +137,19 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  if (gSystem->AccessPathName("localOCDB/ITS/Calib/SPDSparseDead",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/ITS/Calib/SPDSparseDead",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/ITS/Calib/SPDSparseDead");
+      return -1;
+    }
+  }
+
+  status = daqDA_DB_getFile("spd_sparsedead_ocdb","localOCDB/ITS/Calib/SPDSparseDead/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get spd file (spd_sparsedead_ocdb) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+
   if (gSystem->AccessPathName("localOCDB/TRIGGER/SPD/PITConditions",kFileExists)) {
     if (gSystem->mkdir("localOCDB/TRIGGER/SPD/PITConditions",kTRUE) != 0) {
       printf("Failed to create directory: localOCDB/TRIGGER/SPD/PITConditions");
