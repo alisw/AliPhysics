@@ -63,7 +63,9 @@ class AliAnalysisTaskSECharmFraction : public AliAnalysisTaskSE {
   void CheckInvMassD0(AliAODRecoDecayHF2Prong *d,Double_t &invMassD0,Double_t &invMassD0bar,Bool_t &isPeakD0,Bool_t &isPeakD0bar,Bool_t &isSideBandD0,Bool_t &isSideBandD0bar);
   void SetAnalysisLevel(Int_t level){fFastAnalysis=level;}
   Int_t GetAnalysisLevel(){return fFastAnalysis;}
+  Int_t CheckOrigin(const TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate)const;
   AliAODRecoDecayHF *GetD0toKPiSignalType(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
+  AliAODRecoDecayHF *GetD0toKPiSignalTypeObsolete(const AliAODRecoDecayHF2Prong *d,TClonesArray *arrayMC,Int_t &signaltype,Double_t &massMumTrue,Double_t *primaryVtx);
   AliAODRecoDecayHF* ConstructFakeTrueSecVtx(const AliAODMCParticle *b1,const AliAODMCParticle *b2,const AliAODMCParticle *mum,Double_t *primaryVtxTrue);
   void SetUseMC(Bool_t useMC){fUseMC=useMC;}
   Bool_t SpecialSelD0(AliAODRecoDecayHF2Prong *d,Int_t &nusedforVtx);
