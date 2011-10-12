@@ -12,7 +12,6 @@
 #pragma link C++ class AliPHOSEmbedding+;
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
 #pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
-#pragma link C++ class AliPHOSDigitDecalibrate+;
 
 // CaloCellQA
 #pragma link C++ class AliCaloCellsQA+;
