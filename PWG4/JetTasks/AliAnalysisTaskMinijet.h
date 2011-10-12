@@ -9,7 +9,6 @@
 class TList;
 class TH1F;
 class TH2F;
-class TH3F;
 class TProfile;
 class THnSparse;
 class AliESDtrackCuts;
@@ -69,11 +68,11 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 			 const Int_t ntacks, const Int_t ntacklets=0, 
 			 const Int_t nAll=0, const Int_t step=0);
   
-  const Bool_t           SelectParticlePlusCharged(Short_t charge, Int_t pdg, Bool_t prim);
-  const Bool_t           SelectParticle(Short_t charge, Int_t pdg, Bool_t prim);
-  const Bool_t           CheckEvent(const Bool_t recVertex);
+  Bool_t                 SelectParticlePlusCharged(const Short_t charge, const Int_t pdg, const Bool_t prim);
+  Bool_t                 SelectParticle(const Short_t charge, const Int_t pdg, const Bool_t prim);
+  Bool_t                 CheckEvent(const Bool_t recVertex);
   const Double_t*        CreateLogAxis(const Int_t nbins, const Double_t xmin, const Double_t xmax); 
-  const Bool_t           CheckLikeSign(const Short_t chargeEventAxis, const Short_t chargeOthers);
+  Bool_t                 CheckLikeSign(const Short_t chargeEventAxis, const Short_t chargeOthers);
 
 
   Bool_t       fUseMC;                      // flag for Monte Carlo usages
