@@ -84,6 +84,14 @@ public:
   };
 
   enum {
+    kPublishOff      = 0,
+    kPublishSeparate = 1,
+    kPublishList     = 2,
+    kPublishArray    = 3,
+    kPublishInvalid  = 4    
+  };
+
+  enum {
     kHistogramPadrow,
     kHistogramPad,
     kHistogramTime,
@@ -267,6 +275,9 @@ protected:
   /// inherited from AliHLTComponent: argument scan
   int ScanConfigurationArgument(int argc, const char** argv);
 
+  /// publish to output
+  int Publish(int mode);
+    
 private:
   AliHLTTPCDataCompressionMonitorComponent(const AliHLTTPCDataCompressionMonitorComponent&);
   AliHLTTPCDataCompressionMonitorComponent& operator=(const AliHLTTPCDataCompressionMonitorComponent&);
@@ -282,6 +293,7 @@ private:
   /// verbosity
   int fVerbosity;  //! verbosity for debug printout
   unsigned fFlags; //! flags to indicate various conditions
+  int fPublishingMode; //! publishing mode
 
   static const AliHistogramDefinition fgkHistogramDefinitions[]; //! histogram definitions
   static const AliHistogramDefinition2D fgkHistogramDefinitions2D[]; //! histogram definitions

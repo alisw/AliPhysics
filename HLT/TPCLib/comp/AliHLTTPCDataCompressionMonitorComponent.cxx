@@ -43,6 +43,7 @@
 #include "TH3F.h"
 #include "TFile.h"
 #include "TObjArray.h"
+#include "TList.h"
 #include <memory>
 
 ClassImp(AliHLTTPCDataCompressionMonitorComponent)
@@ -53,10 +54,11 @@ AliHLTTPCDataCompressionMonitorComponent::AliHLTTPCDataCompressionMonitorCompone
   , fHistoHWCFDataSize(NULL)
   , fHistoHWCFReductionFactor(NULL)
   , fHistoNofClusters(NULL)
-  , fHistogramFile("HLT.TPC-compression-statistics.root")
+  , fHistogramFile()
   , fMonitoringContainer(NULL)
   , fVerbosity(0)
   , fFlags(0)
+  , fPublishingMode(kPublishSeparate)
 {
 }
 
@@ -101,7 +103,7 @@ int AliHLTTPCDataCompressionMonitorComponent::GetOutputDataTypes(AliHLTComponent
 void AliHLTTPCDataCompressionMonitorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   /// inherited from AliHLTComponent: output data size estimator
-  constBase=0;
+  constBase=100000;
   inputMultiplier=1.0;
 }
 
@@ -223,6 +225,74 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   if (fHistoNofClusters)         fHistoNofClusters        ->Fill(hwclustersDataSize/1024, nofClusters);
   HLTInfo("raw data %d, hwcf data %d, comp data %d, ratio %f, %d clusters\n", rawDataSize, hwclustersDataSize, compDataSize, ratio, nofClusters);
 
+  if (iResult>=0 && fPublishingMode!=kPublishOff) {
+    iResult=Publish(fPublishingMode);
+  }
+
+  return iResult;
+}
+
+int AliHLTTPCDataCompressionMonitorComponent::Publish(int mode)
+{
+  /// publish to output
+
+  // FIXME: code needs to be optimized, maybe a bit to much new and delete for the
+  // moment, the data type might need adjustment
+  int iResult=0;
+  TObjArray* pArray=mode==kPublishArray?(new TObjArray):NULL;
+  TList* pList=mode==kPublishList?(new TList):NULL;
+  if (mode==kPublishSeparate) {
+    if (fHistoHWCFDataSize)        PushBack(fHistoHWCFDataSize       , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoHWCFReductionFactor) PushBack(fHistoHWCFReductionFactor, kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+    if (fHistoNofClusters)         PushBack(fHistoNofClusters        , kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+  } else if (pList) {
+    if (fHistoHWCFDataSize)        pList->Add(fHistoHWCFDataSize->Clone());
+    if (fHistoHWCFReductionFactor) pList->Add(fHistoHWCFReductionFactor->Clone());
+    if (fHistoNofClusters)         pList->Add(fHistoNofClusters->Clone());
+  } else if (pArray) {
+    if (fHistoHWCFDataSize)        pArray->Add(fHistoHWCFDataSize->Clone());
+    if (fHistoHWCFReductionFactor) pArray->Add(fHistoHWCFReductionFactor->Clone());
+    if (fHistoNofClusters)         pArray->Add(fHistoNofClusters->Clone());
+  }
+
+  if (fMonitoringContainer) {
+    static const char* searchIds[] = {"fHistograms", "fHistograms2D", "fHistograms3D", NULL};
+    const char** searchId=searchIds;
+    while (*searchId && iResult>=0) {
+      const TObject* o=fMonitoringContainer->FindObject(*searchId);
+      if (o) {
+	const TObjArray* histograms=dynamic_cast<const TObjArray*>(o);
+	if (histograms) {
+	  for (int i=0; i<histograms->GetEntriesFast() && iResult>=0; i++) {
+	    if (!histograms->At(i)) continue;
+	    if (mode==kPublishSeparate) {
+	      iResult=PushBack(histograms->At(i), kAliHLTDataTypeHistogram|kAliHLTDataOriginTPC);
+	    } else if (pList) {
+	      pList->Add(histograms->At(i)->Clone());
+	    } else if (pArray) {
+	      pArray->Add(histograms->At(i)->Clone());
+	    }
+	  }
+	}
+      } else {
+	HLTError("failed to find object \"%s\"", *searchId);
+      }
+      searchId++;
+    }
+  }
+
+  if (pArray) {
+    iResult=PushBack(pArray, kAliHLTDataTypeTObjArray|kAliHLTDataOriginTPC);
+    pArray->SetOwner(kTRUE);
+    delete pArray;
+    pArray=NULL;
+  }
+  if (pList) {
+    iResult=PushBack(pList, kAliHLTDataTypeTObject|kAliHLTDataOriginTPC);
+    pList->SetOwner(kTRUE);
+    delete pList;
+    pList=NULL;
+  }
   return iResult;
 }
 
@@ -281,13 +351,9 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
     if (yaxis) yaxis->SetTitle("N. of clusters");
   }
 
-  // initialize the histograms if stored at the end
-  // condition might be extended
-  if (!fHistogramFile.IsNull()) {
-    fHistoHWCFDataSize=histoHWCFDataSize.release();
-    fHistoHWCFReductionFactor=histoHWCFReductionFactor.release();
-    fHistoNofClusters=histoNofClusters.release();
-  }
+  fHistoHWCFDataSize=histoHWCFDataSize.release();
+  fHistoHWCFReductionFactor=histoHWCFReductionFactor.release();
+  fHistoNofClusters=histoNofClusters.release();
 
   fpHWClusterDecoder=hwClusterDecoder.release();
   fMonitoringContainer=dataContainer.release();
@@ -351,7 +417,21 @@ int AliHLTTPCDataCompressionMonitorComponent::ScanConfigurationArgument(int argc
     if (argument.CompareTo("-histogram-file")==0) {
       if ((bMissingParam=(++i>=argc))) break;
       fHistogramFile=argv[i++];
-      return 2;
+      return i;
+    }
+    // -publishing-mode
+    if (argument.CompareTo("-publishing-mode")==0) {
+      if ((bMissingParam=(++i>=argc))) break;
+      TString option=argv[i++];
+      if (option.CompareTo("off")==0)           fPublishingMode=kPublishOff     ;
+      else if (option.CompareTo("separate")==0) fPublishingMode=kPublishSeparate;
+      else if (option.CompareTo("list")==0)     fPublishingMode=kPublishList    ;
+      else if (option.CompareTo("array")==0)    fPublishingMode=kPublishArray   ;
+      else {
+	HLTError("invalid option \"%s\" for argument \"%s\", expecting 'off', 'separate', 'list', or 'array'", option.Data(), argument.Data());
+	return -EPROTO;
+      }
+      return i;
     }
   } while (0); // using do-while only to have break available
 
@@ -724,6 +804,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::Clear(Option_t 
 TObject* AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FindObject(const char *name) const
 {
   /// get histogram object  
+  if (!name) return NULL;
   if ( strcmp(name,"fHistograms")   == 0 )
     return fHistograms;
   if ( strcmp(name,"fHistograms2D") == 0 )
