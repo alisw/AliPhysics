@@ -21,6 +21,7 @@ class AliHLTTPCTrackGeometry;
 class AliHLTTPCHWCFSpacePointContainer;
 class TH1;
 class TH2;
+class TH3;
 
 /**
  * @class AliHLTTPCDataCompressionMonitorComponent
@@ -100,6 +101,16 @@ public:
     kHistogramOutOfRange,
     kNumberOfHistograms
   };
+  enum {
+    kHistogramQMaxSector,
+    kHistogramSigmaY2Sector,
+    kHistogramSigmaZ2Sector,
+    kNumberOfHistograms2D
+  };
+  enum {
+    kHistogramPadrowPadSector,
+    kNumberOfHistograms3D
+  };
 
   struct AliHistogramDefinition {
     int fId; //!
@@ -108,6 +119,31 @@ public:
     int fBins; //!
     float fLowerBound; //!
     float fUpperBound; //!
+  };
+  struct AliHistogramDefinition2D {
+    int fId; //!
+    const char* fName; //!
+    const char* fTitle; //!
+    int fBinsX; //!
+    float fLowerBoundX; //!
+    float fUpperBoundX; //!
+    int fBinsY; //!
+    float fLowerBoundY; //!
+    float fUpperBoundY; //!
+  };
+  struct AliHistogramDefinition3D {
+    int fId; //!
+    const char* fName; //!
+    const char* fTitle; //!
+    int fBinsX; //!
+    float fLowerBoundX; //!
+    float fUpperBoundX; //!
+    int fBinsY; //!
+    float fLowerBoundY; //!
+    float fUpperBoundY; //!
+    int fBinsZ; //!
+    float fLowerBoundZ; //!
+    float fUpperBoundZ; //!
   };
 
   /**
@@ -137,13 +173,13 @@ public:
       }
       ~iterator() {}
 
-      void SetPadRow(int row)          {if (fData) fData->FillPadRow(row, fClusterId);}
-      void SetPad(float pad) 	       {if (fData) fData->FillPad(pad, fClusterId);}
-      void SetTime(float time) 	       {if (fData) fData->FillTime(time, fClusterId);}
-      void SetSigmaY2(float sigmaY2)   {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId, fPartition);}
-      void SetSigmaZ2(float sigmaZ2)   {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
-      void SetCharge(unsigned charge)  {if (fData) fData->FillCharge(charge, fClusterId);}
-      void SetQMax(unsigned qmax)      {if (fData) fData->FillQMax(qmax, fClusterId);}
+      void SetPadRow(int row)             {if (fData) fData->FillPadRow(row, fSlice, fClusterId);}
+      void SetPad(float pad) 	          {if (fData) fData->FillPad(pad, fClusterId);}
+      void SetTime(float time) 	          {if (fData) fData->FillTime(time, fClusterId);}
+      void SetSigmaY2(float sigmaY2)      {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId, fPartition);}
+      void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
+      void SetCharge(unsigned charge)     {if (fData) fData->FillCharge(charge, fClusterId);}
+      void SetQMax(unsigned qmax)         {if (fData) fData->FillQMax(qmax, fClusterId);}
 
       // switch to next cluster
       iterator& Next(int slice, int partition) {
@@ -185,7 +221,7 @@ public:
     virtual TObject* FindObject(const char *name) const;
     
   protected:
-    void FillPadRow(int row, AliHLTUInt32_t clusterId);
+    void FillPadRow(int row, int slice, AliHLTUInt32_t clusterId);
     void FillPad(float pad, AliHLTUInt32_t clusterId);
     void FillTime(float time, AliHLTUInt32_t clusterId);
     void FillSigmaY2(float sigmaY2, AliHLTUInt32_t clusterId, int partition);
@@ -198,12 +234,17 @@ public:
     AliDataContainer& operator=(const AliDataContainer&);
 
     TObjArray* fHistograms;     //! array of histograms
+    TObjArray* fHistograms2D;     //! array of histograms
+    TObjArray* fHistograms3D;     //! array of histograms
     vector<TH1*> fHistogramPointers; //! pointers to histograms
+    vector<TH2*> fHistogram2DPointers; //! pointers to histograms
+    vector<TH3*> fHistogram3DPointers; //! pointers to histograms
     vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
     AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
     AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
     AliHLTTPCHWCFSpacePointContainer* fRawData; //! raw data container
     int fLastPadRow; //! last padrow
+    int fSector; //! sector
     iterator fBegin; //!
   };
 
@@ -243,6 +284,8 @@ private:
   unsigned fFlags; //! flags to indicate various conditions
 
   static const AliHistogramDefinition fgkHistogramDefinitions[]; //! histogram definitions
+  static const AliHistogramDefinition2D fgkHistogramDefinitions2D[]; //! histogram definitions
+  static const AliHistogramDefinition3D fgkHistogramDefinitions3D[]; //! histogram definitions
 
   ClassDef(AliHLTTPCDataCompressionMonitorComponent, 0)
 };
