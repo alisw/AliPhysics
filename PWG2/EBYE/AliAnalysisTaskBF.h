@@ -26,8 +26,11 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   virtual void   FinishTaskOutput();
   virtual void   Terminate(Option_t *);
 
-  void SetAnalysisObject(AliBalance *const analysis, AliBalance *const analysisShuffled = NULL) {
+  void SetAnalysisObject(AliBalance *const analysis) {
     fBalance         = analysis;
+    }
+  void SetShufflingObject(AliBalance *const analysisShuffled) {
+    fRunShuffling = kTRUE;
     fShuffledBalance = analysisShuffled;
   }
   void SetAnalysisCutObject(AliESDtrackCuts *const trackCuts) {
@@ -51,7 +54,12 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
- 
+  void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
+                           Double_t etamin, Double_t etamax){
+    fPtMin  = ptmin; fPtMax  = ptmax;
+    fEtaMin = etamin; fEtaMax = etamax;
+  }
+
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
@@ -64,6 +72,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
  private:
   AliBalance *fBalance; //BF object
+  Bool_t fRunShuffling;//run shuffling or not
   AliBalance *fShuffledBalance; //BF object (shuffled)
   TList *fList; //fList object
   TList *fListBF; //fList object

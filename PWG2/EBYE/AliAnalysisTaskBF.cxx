@@ -33,6 +33,7 @@ ClassImp(AliAnalysisTaskBF)
 AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name) 
 : AliAnalysisTaskSE(name), 
   fBalance(0),
+  fRunShuffling(kFALSE),
   fShuffledBalance(0),
   fList(0),
   fListBF(0),
@@ -109,11 +110,13 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     //fBalance->SetNumberOfBins(-1,16);
     fBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
   }
-  if(!fShuffledBalance) {
-    fShuffledBalance = new AliBalance();
-    fShuffledBalance->SetAnalysisLevel("ESD");
-    //fShuffledBalance->SetNumberOfBins(-1,16);
-    fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
+  if(fRunShuffling) {
+    if(!fShuffledBalance) {
+      fShuffledBalance = new AliBalance();
+      fShuffledBalance->SetAnalysisLevel("ESD");
+      //fShuffledBalance->SetNumberOfBins(-1,16);
+      fShuffledBalance->SetInterval(-1,-0.8,0.8,16,0.,1.6);
+    }
   }
 
   //QA list
@@ -126,9 +129,11 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fListBF->SetName("listBF");
   fListBF->SetOwner();
 
-  fListBFS = new TList();
-  fListBFS->SetName("listBFShuffled");
-  fListBFS->SetOwner();
+  if(fRunShuffling) {
+    fListBFS = new TList();
+    fListBFS->SetName("listBFShuffled");
+    fListBFS->SetOwner();
+  }
 
   //Event stats.
   TString gCutName[4] = {"Total","Offline trigger",
@@ -171,11 +176,18 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   // Balance function histograms
 
   // Initialize histograms if not done yet
-  if(!fBalance->GetHistNp(0) || !fShuffledBalance->GetHistNp(0)){
+  if(!fBalance->GetHistNp(0)){
     AliWarning("Histograms not yet initialized! --> Will be done now");
     AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
     fBalance->InitHistograms();
-    fShuffledBalance->InitHistograms();
+  }
+
+  if(fRunShuffling) {
+    if(!fShuffledBalance->GetHistNp(0)) {
+      AliWarning("Histograms (shuffling) not yet initialized! --> Will be done now");
+      AliWarning("--> Add 'gBalance->InitHistograms()' in your configBalanceFunction");
+      fShuffledBalance->InitHistograms();
+    }
   }
 
   for(Int_t a = 0; a < ANALYSIS_TYPES; a++){
@@ -186,23 +198,24 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fListBF->Add(fBalance->GetHistNpp(a));
     fListBF->Add(fBalance->GetHistNnp(a));
 
-    fListBFS->Add(fShuffledBalance->GetHistNp(a));
-    fListBFS->Add(fShuffledBalance->GetHistNn(a));
-    fListBFS->Add(fShuffledBalance->GetHistNpn(a));
-    fListBFS->Add(fShuffledBalance->GetHistNnn(a));
-    fListBFS->Add(fShuffledBalance->GetHistNpp(a));
-    fListBFS->Add(fShuffledBalance->GetHistNnp(a));
-  }  
-
+    if(fRunShuffling) {
+      fListBFS->Add(fShuffledBalance->GetHistNp(a));
+      fListBFS->Add(fShuffledBalance->GetHistNn(a));
+      fListBFS->Add(fShuffledBalance->GetHistNpn(a));
+      fListBFS->Add(fShuffledBalance->GetHistNnn(a));
+      fListBFS->Add(fShuffledBalance->GetHistNpp(a));
+      fListBFS->Add(fShuffledBalance->GetHistNnp(a));
+    }  
+  }
 
   if(fESDtrackCuts) fList->Add(fESDtrackCuts);
 
   // Post output data.
   PostData(1, fList);
   PostData(2, fListBF);
-  PostData(3, fListBFS);
+  if(fRunShuffling) PostData(3, fListBFS);
   
-}
+  }
 
 //________________________________________________________________________
 void AliAnalysisTaskBF::UserExec(Option_t *) {
@@ -292,11 +305,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      // fill BF array
 		      array->Add(track);
 
-		      // fill charge vector
-		      chargeVector.push_back(track->Charge());
-		      chargeVectorShuffle.push_back(track->Charge());
-      
-		      
+		      if(fRunShuffling){
+			// fill charge vector
+			chargeVector.push_back(track->Charge());
+			chargeVectorShuffle.push_back(track->Charge());
+		      }
 		    } //track loop
 		  }//Vz cut
 		}//Vy cut
@@ -408,11 +421,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      // fill BF array
 		      array->Add(aodTrack);
 
-		      // fill charge vector
-		      chargeVector.push_back(aodTrack->Charge());
-		      chargeVectorShuffle.push_back(aodTrack->Charge());
-      
-
+		      if(fRunShuffling) {
+			// fill charge vector
+			chargeVector.push_back(aodTrack->Charge());
+			chargeVectorShuffle.push_back(aodTrack->Charge());
+		      }
 		    } //track loop
 		  }//Vz cut
 		}//Vy cut
@@ -440,23 +453,28 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	Printf("ERROR: Could not receive particle %d", iTracks);
 	continue;
       }
+
+      if( track->Pt() < fPtMin || track->Pt() > fPtMax)      continue;
+      if( track->Eta() < fEtaMin || track->Eta() > fEtaMax)  continue;
+
       array->Add(track);
 
-
-      // fill charge vector
-      chargeVector.push_back(track->Charge());
-      chargeVectorShuffle.push_back(track->Charge());
-
+      if(fRunShuffling) {
+	// fill charge vector
+	chargeVector.push_back(track->Charge());
+	chargeVectorShuffle.push_back(track->Charge());
+      }
     } //track loop
   }//MC analysis
   
-  // shuffle charges
-  random_shuffle( chargeVectorShuffle.begin(), chargeVectorShuffle.end() );
-
-  // calculate balance function (also for shuffled events)
+  // calculate balance function
   fBalance->CalculateBalance(array,chargeVector);
-  fShuffledBalance->CalculateBalance(array,chargeVectorShuffle);
 
+  if(fRunShuffling) {
+    // shuffle charges
+    random_shuffle( chargeVectorShuffle.begin(), chargeVectorShuffle.end() );
+    fShuffledBalance->CalculateBalance(array,chargeVectorShuffle);
+  }
   
   delete array;
   
@@ -471,11 +489,12 @@ void  AliAnalysisTaskBF::FinishTaskOutput(){
     Printf("ERROR: fBalance not available");
     return;
   }  
-  if (!fShuffledBalance) {
-    Printf("ERROR: fShuffledBalance not available");
-    return;
+  if(fRunShuffling) {
+    if (!fShuffledBalance) {
+      Printf("ERROR: fShuffledBalance not available");
+      return;
+    }
   }
-
 
 }
 
