@@ -40,7 +40,8 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
 
   enum {
     kModeSingle = 0x1,
-    kModeCreateMap = 0x2
+    kModeCreateMap = 0x2,
+    kModeDifferentialPadTime = 0x4
   };
 
   virtual bool Check(AliHLTUInt32_t clusterID) const;

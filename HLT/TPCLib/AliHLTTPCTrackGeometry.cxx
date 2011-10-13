@@ -536,19 +536,51 @@ int AliHLTTPCTrackGeometry::WriteAssociatedClusters(AliHLTSpacePointContainer* p
 	    // 	 << "  qmax "   << setfill(' ') << setw(4) << fixed << right << qmax
 	    // 	 << endl;
 
+	    // time and pad coordinates are scaled and transformed to integer values for
+	    // both cluster and track point before calculating the residual. this makes
+	    // the compression lossless with respect to the format without track model
+	    // compression
 	    AliHLTUInt64_t deltapad64=0;
 	    AliHLTUInt32_t signDeltaPad=0;
 	    if (!isnan(deltapad)) {
-	      if (deltapad<0.) {deltapad*=-1; signDeltaPad=1;}
-	      deltapad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
-	      deltapad64=(AliHLTUInt64_t)round(deltapad);
+	      double clusterpad=pSpacePoints->GetY(clid->fId);
+	      double trackpad=clrow->GetU();
+	      if (clusterpad<0.) {
+		HLTError("cluster 0x%08x has negative pad position", clid->fId, clusterpad);
+	      }
+	      clusterpad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
+	      trackpad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
+	      AliHLTUInt64_t clusterpad64=(AliHLTUInt64_t)round(clusterpad);
+	      AliHLTUInt64_t trackpad64=0;
+	      if (trackpad>0.) trackpad64=(AliHLTUInt64_t)round(trackpad);
+	      if (clusterpad64<trackpad64) {
+		deltapad64=trackpad64-clusterpad64;
+		signDeltaPad=1;
+	      } else {
+		deltapad64=clusterpad64-trackpad64;
+		signDeltaPad=0;
+	      }
 	    }
 	    AliHLTUInt64_t deltatime64=0;
 	    AliHLTUInt32_t signDeltaTime=0;
 	    if (!isnan(deltatime)) {
-	      if (deltatime<0.) {deltatime*=-1; signDeltaTime=1;}
-	      deltatime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
-	      deltatime64=(AliHLTUInt64_t)round(deltatime);
+	      double clustertime=pSpacePoints->GetZ(clid->fId);
+	      double tracktime=clrow->GetV();
+	      if (clustertime<0.) {
+		HLTError("cluster 0x%08x has negative time position", clid->fId, clustertime);
+	      }
+	      clustertime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
+	      tracktime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
+	      AliHLTUInt64_t clustertime64=(AliHLTUInt64_t)round(clustertime);
+	      AliHLTUInt64_t tracktime64=0;
+	      if (tracktime>0.) tracktime64=(AliHLTUInt64_t)round(tracktime);
+	      if (clustertime64<tracktime64) {
+		deltatime64=tracktime64-clustertime64;
+		signDeltaTime=1;
+	      } else {
+		deltatime64=clustertime64-tracktime64;
+		signDeltaTime=0;
+	      }
 	    }
 	    AliHLTUInt64_t sigmaY264=0;
 	    if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);

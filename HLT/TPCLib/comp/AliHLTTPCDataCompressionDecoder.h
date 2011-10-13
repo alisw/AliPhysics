@@ -36,7 +36,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   int ReadRemainingClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
 
   template<typename T>
-  int ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification);
+  int ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification, int formatVersion=0);
 
   template<typename T>
   int ReadTrackModelClustersCompressed(T& c, const AliHLTUInt8_t* pData, int dataSize, AliHLTUInt32_t specification);
@@ -66,7 +66,17 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, const
   const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pBuffer);
   Int_t nCount = (Int_t) clusterData->fCount;
 
-  AliHLTDataInflater* inflater=CreateInflater(clusterData->fVersion, 1);
+  int formatVersion=1;
+  int deflaterMode=2;
+  switch (clusterData->fVersion) {
+  case 1: deflaterMode=1; formatVersion=0; break;
+  case 2: deflaterMode=2; formatVersion=0; break;
+  case 3: deflaterMode=1; formatVersion=1; break;
+  case 4: deflaterMode=2; formatVersion=1; break;
+  default:
+    return -EBADF;
+  }
+  AliHLTDataInflater* inflater=CreateInflater(deflaterMode, 1);
   if (!inflater) return -ENODEV;
 
   if ((iResult=inflater->InitBitDataInput(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
@@ -74,13 +84,13 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, const
     return iResult;
   }
 
-  iResult=ReadRemainingClustersCompressed(c, inflater, nCount, specification);
+  iResult=ReadRemainingClustersCompressed(c, inflater, nCount, specification, formatVersion);
 
   return iResult;
 }
 
 template<typename T>
-int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification)
+int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHLTDataInflater* pInflater, int nofClusters, AliHLTUInt32_t specification, int formatVersion)
 {
   // read cluster data
 
@@ -94,13 +104,19 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   // add the first row in the partition to get global row number
   int rowOffset=AliHLTTPCTransform::GetFirstRow(partition);
 
-  int parameterId=0;
+  int parameterId=pInflater->NextParameter();
+  if (parameterId<0) return parameterId;
   int outClusterCnt=0;
   AliHLTUInt64_t value=0;
   AliHLTUInt32_t length=0;
   AliHLTUInt32_t lastPadRow=0;
+  AliHLTUInt64_t lastPad64=0;
+  AliHLTUInt64_t lastTime64=0;
+  AliHLTUInt8_t isSinglePad=0;
+  AliHLTUInt8_t sign=0;
   bool bNextCluster=true;
-  while (outClusterCnt<nofClusters && pInflater->NextValue(value, length)) {
+  bool bReadSuccess=true;
+  while (outClusterCnt<nofClusters && bReadSuccess && pInflater->NextValue(value, length)) {
     if (bNextCluster) {
       // switch to next cluster
       c.Next(slice, partition);
@@ -118,10 +134,39 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     switch (parameterId) {
     case AliHLTTPCDefinitions::kPadRow:
       {c.SetPadRow(value+lastPadRow+rowOffset); lastPadRow+=value;break;}
-    case AliHLTTPCDefinitions::kPad:
-      {float pad=value; pad/=parameter.fScale; c.SetPad(pad); break;}
-    case AliHLTTPCDefinitions::kTime:
-      {float time=value; time/=parameter.fScale; c.SetTime(time); break;}
+    case AliHLTTPCDefinitions::kPad: {
+      if (formatVersion==1) {
+	bReadSuccess=bReadSuccess && pInflater->InputBit(isSinglePad);
+	if (isSinglePad==0) {
+	  bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
+	  if (sign) {
+	    value=lastPad64-value;
+	  } else {
+	    value+=lastPad64;
+	  }
+	  lastPad64=value;
+	}
+      }
+      float pad=value;
+      if (isSinglePad==0) pad/=parameter.fScale;
+      else pad/=2; // for the sake of the 0.5 pad offset (see AliHLTTPCHWCFSpacePointContainer::WriteSorted for details)
+      c.SetPad(pad);
+      break;
+    }
+    case AliHLTTPCDefinitions::kTime: {
+      if (formatVersion==1) {
+	bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
+	if (sign) {
+	  value=lastTime64-value;
+	} else {
+	  value+=lastTime64;
+	}
+	lastTime64=value;
+      }
+      float time=value; time/=parameter.fScale;
+      c.SetTime(time);
+      break;
+    }
     case AliHLTTPCDefinitions::kSigmaY2:
       {float sigmaY2=value; sigmaY2/=parameter.fScale; c.SetSigmaY2(sigmaY2); break;}
     case AliHLTTPCDefinitions::kSigmaZ2:
@@ -134,9 +179,14 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
       bNextCluster=true;
       outClusterCnt++;
-      parameterId=-1;
     }
-    parameterId++;
+    parameterId=pInflater->NextParameter();
+    if (parameterId==AliHLTTPCDefinitions::kSigmaY2 && isSinglePad==1) {
+      // skip sigmaY for single pad clusters in format version 1
+      parameterId=pInflater->NextParameter();
+      isSinglePad=0;
+      c.SetSigmaY2(0.);
+    }
   }
   pInflater->Pad8Bits();
   AliHLTUInt8_t bit=0;
@@ -292,6 +342,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       if (bNextCluster) {
 	// switch to next cluster
 	c.Next(slice, partition);
+	c.SetPadRow(row);
 	bNextCluster=false;
       }
       const AliHLTTPCDefinitions::AliClusterParameter& parameter
@@ -311,9 +362,17 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	{
 	  AliHLTUInt8_t sign=0;
 	  bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
-	  float pad=value*(sign?-1.:1.); pad/=parameter.fScale;
-	  deltapad=pad;
-	  pad+=currentTrackPoint->GetU();
+	  deltapad=((float)value)*(sign?-1.:1.)/parameter.fScale;
+	  AliHLTUInt64_t trackpad64=0;
+	  double trackpad=currentTrackPoint->GetU();
+	  trackpad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
+	  if (currentTrackPoint->GetU()>0.) trackpad64=(AliHLTUInt64_t)round(trackpad);
+	  if (sign) {
+	    value=trackpad64-value;
+	  } else {
+	    value+=trackpad64;
+	  }
+	  float pad=((float)value)/parameter.fScale;
 	  c.SetPad(pad); 
 	  break;
 	}
@@ -321,10 +380,18 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	{
 	  AliHLTUInt8_t sign=0;
 	  bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
-	  float time=value*(sign?-1.:1.); time/=parameter.fScale;
-	  deltatime=time;
-	  time+=currentTrackPoint->GetV();
-	  c.SetTime(time);
+	  deltatime=((float)value)*(sign?-1.:1.)/parameter.fScale;
+	  AliHLTUInt64_t tracktime64=0;
+	  double tracktime=currentTrackPoint->GetV();
+	  tracktime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
+	  if (currentTrackPoint->GetV()>0.) tracktime64=(AliHLTUInt64_t)round(tracktime);
+	  if (sign) {
+	    value=tracktime64-value;
+	  } else {
+	    value+=tracktime64;
+	  }
+	  float time=((float)value)/parameter.fScale;
+	  c.SetTime(time); 
 	  break;
 	}
       case AliHLTTPCDefinitions::kSigmaY2:
@@ -342,7 +409,6 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       }
       if (lastParameter) {
 	// switch to next cluster
-	c.SetPadRow(row);
 	// cout << "  row "    << setfill(' ') << setw(3) << fixed << right                     << c.GetRow()
 	//      << "  pad "    << setfill(' ') << setw(7) << fixed << right << setprecision (4) << c.GetPad()
 	//      << "  dpad "   << setfill(' ') << setw(7) << fixed << right << setprecision (4) << deltapad

@@ -31,6 +31,12 @@ class TH1F;
  * of TPC data.
  *
  * <h2>General properties:</h2>
+ * The component subscribes to the output of the HW cluster finder (emulator)
+ * and performs various types of dat compressions. For each input block a
+ * block of compressed clusters is created. If track model compression is
+ * enabled, all clusters associated to a track are stored in a separate
+ * block together with the tracks. Those clusters are removed from the cluster
+ * blocks of the individual partitions.
  *
  * Component ID: \b TPCDataCompressor      <br>
  * Library: \b libAliHLTTPC.so     <br>
@@ -40,22 +46,54 @@ class TH1F;
  *  -  kAliHLTDataTypeTrack|kAliHLTDataOriginTPC
  * Output Data Types: none <br>
  *
+ * <h2>Data Formats</h2>
+ * Two formats for compressed clusters can be used.
+ * <h3>Format v1</h3>
+ * Format v1 stores the cluster parameters with the following precision:
+ * <pre>
+ *   padrow number & local padrow in partition    &   6 \\ 
+ *   pad position  & pitch 0.4/0.6 cm -> 1/60     &  14 \\ 
+ *   timebin       & 0.25cm/timebin   -> 1/25     &  15 \\ 
+ *   sigmaY2       &                              &   8 \\ 
+ *   sigmaZ2       &                              &   8 \\ 
+ *   total charge  & encoded 10bit number         &   8 \\ 
+ *   max charge    & encoded 16bit number         &  11 \\ 
+ * <pre>
+ * For the padrow, only the difference to the last padrow is stored. The
+ * clusters are ordered by padrow such that there are only positive differences.
+ *
+ * <h3>Format v2</h3>
+ * Format v2 uses the same parameters as v1 but treats single-pad clusters
+ * specially. Furthermore it stores the differences of pad and time with respect
+ * to the previous cluster. The difference is calculated on integers after the
+ * scale and lossy conversion of the float values to integer numbers. Format v2
+ * prepares all parameters for optimal huffman compression.
+ *
  * <h2>Mandatory arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Optional arguments:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  * \li -mode     <i> number  </i> <br>
- *      compression mode
- * \li -deflater-mode     <i> number  </i> <br>
- *      data deflater mode
- * \li -histogram-file     <i> file  </i> <br>
+ *      compression mode                                             <br>
+ *      1 compressed format version 1                                <br>
+ *      2 compressed format version 1 & track model compression      <br>
+ *      3 compressed format version 2                                <br>
+ *      4 compressed format version 2 & track model compression      <br>
+ * \li -deflater-mode     <i> number  </i>                           <br>
+ *      data deflater mode                                           <br>
+ *      0 no data deflation                                          <br>
+ *      1 simple deflation (AliHLTDataDeflaterSimple)                <br>
+ *      2 huffman deflation (AliHLTDataDeflaterHuffman)              <br>
+ * \li -histogram-file     <i> file  </i>                            <br>
  *      file to store internal histograms at the end
  *
  * <h2>Configuration:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
  * <h2>Default CDB entries:</h2>
+ * - HLT/ConfigTPC/TPCDataCompressor
+ * - HLT/ConfigTPC/TPCDataCompressorHuffmanTables
  *
  * <h2>Performance:</h2>
  *
@@ -90,6 +128,9 @@ public:
 
   /// inherited from AliHLTComponent: spawn function.
   virtual AliHLTComponent* Spawn();
+
+  /// inherited from AliHLTComponent: list of OCDB objects
+  void GetOCDBObjectDescription(TMap* const targetMap);
 
   struct AliHLTTPCTrackModelBlock {
     AliHLTUInt8_t  fVersion;             //! version of the header

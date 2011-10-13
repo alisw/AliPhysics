@@ -671,9 +671,12 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
     pDeflater->Clear();
     pDeflater->InitBitDataOutput(reinterpret_cast<AliHLTUInt8_t*>(blockout->fClusters), capacity-size-sizeof(AliHLTTPCRawClusterData));
     blockout->fVersion=pDeflater->GetDeflaterVersion();
+    if (fMode&kModeDifferentialPadTime) blockout->fVersion+=2;
   }
 
   unsigned lastPadRow=0;
+  AliHLTUInt64_t lastPad64=0.;
+  AliHLTUInt64_t lastTime64=0.;
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
   if (clusterID!=pGrid->end()) {
     for (; clusterID!=pGrid->end(); clusterID++) {
@@ -707,7 +710,6 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
       float time =input.GetTime();
       float sigmaY2=input.GetSigmaY2();
       float sigmaZ2=input.GetSigmaZ2();
-
       if (!pDeflater) {
 	AliHLTTPCRawCluster& c=blockout->fClusters[blockout->fCount];
 	padrow+=AliHLTTPCTransform::GetFirstRow(part);
@@ -729,18 +731,58 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
 	  AliFatal("padrows not ordered");
 	}
 
+	AliHLTUInt32_t padType=0;
+	AliHLTUInt32_t signdPad=0;
 	AliHLTUInt64_t pad64=0;
+	if ((fMode&kModeDifferentialPadTime)!=0 && sigmaY2<.00001) {
+	  // single pad cluster
+	  // use twice the pad position to take account for the 0.5 offset
+	  // added in the AliHLTTPCHWCFData decoder in accordance with the
+	  // offline definition. Using the factor 2, this offset is not
+	  // cut off by rounding
+	  pad64=(AliHLTUInt64_t)round(2*pad);
+	  padType=1;
+	} else {
 	if (!isnan(pad)) pad64=(AliHLTUInt64_t)round(pad*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kPad].fScale);
+	}
+	if (fMode&kModeDifferentialPadTime && padType==0) {
+	  AliHLTUInt64_t dpad64=0;
+	  if (pad64<lastPad64) {
+	    dpad64=lastPad64-pad64;
+	    signdPad=1;
+	  } else {
+	    dpad64=pad64-lastPad64;
+	    signdPad=0;
+	  }
+	  lastPad64=pad64;
+	  pad64=dpad64;
+	}
+	AliHLTUInt32_t signdTime=0;
 	AliHLTUInt64_t time64=0;
 	if (!isnan(time)) time64=(AliHLTUInt64_t)round(time*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kTime].fScale);
+	if (fMode&kModeDifferentialPadTime) {
+	  AliHLTUInt64_t dtime64=0;
+	  if (time64<lastTime64) {
+	    dtime64=lastTime64-time64;
+	    signdTime=1;
+	  } else {
+	    dtime64=time64-lastTime64;
+	    signdTime=0;
+	  }
+	  lastTime64=time64;
+	  time64=dtime64;
+	}
 	AliHLTUInt64_t sigmaY264=0;
 	if (!isnan(sigmaY2)) sigmaY264=(AliHLTUInt64_t)round(sigmaY2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaY2].fScale);
 	AliHLTUInt64_t sigmaZ264=0;
 	if (!isnan(sigmaZ2)) sigmaZ264=(AliHLTUInt64_t)round(sigmaZ2*AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kSigmaZ2].fScale);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPadRow , padrow64);
-	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPad    , pad64);  
+	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kPad    , pad64);
+	if (fMode&kModeDifferentialPadTime) pDeflater->OutputBit(padType);
+	if (fMode&kModeDifferentialPadTime && padType==0) pDeflater->OutputBit(signdPad);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kTime   , time64);
-	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaY2, sigmaY264);
+	if (fMode&kModeDifferentialPadTime) pDeflater->OutputBit(signdTime);
+	if (padType==0) pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaY2, sigmaY264);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kSigmaZ2, sigmaZ264);
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kCharge , input.GetCharge());
 	pDeflater->OutputParameterBits(AliHLTTPCDefinitions::kQMax   , input.GetQMax());

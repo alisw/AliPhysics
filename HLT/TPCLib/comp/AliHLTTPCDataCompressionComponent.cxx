@@ -132,6 +132,19 @@ AliHLTComponent* AliHLTTPCDataCompressionComponent::Spawn()
   return new AliHLTTPCDataCompressionComponent;
 }
 
+void AliHLTTPCDataCompressionComponent::GetOCDBObjectDescription(TMap* const targetMap)
+{
+  /// Get a list of OCDB object needed for the particular component
+  if (!targetMap) return;
+
+  targetMap->Add(new TObjString("HLT/ConfigTPC/TPCDataCompressor"),
+		 new TObjString("component arguments"));
+  if (fDeflaterMode==2) {
+    targetMap->Add(new TObjString("HLT/ConfigTPC/TPCDataCompressorHuffmanTables"),
+		   new TObjString("huffman tables for deflater mode 2"));
+  }
+}
+
 int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& /*evtData*/, 
 						const AliHLTComponentBlockData* /*inputBlocks*/, 
 						AliHLTComponentTriggerData& /*trigData*/,
@@ -169,6 +182,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   AliHLTUInt32_t outputDataSize=0;
   int allClusters=0;
   int associatedClusters=0;
+  float bz=GetBz();
 
   /// input track array
   vector<AliHLTGlobalBarrelTrack> inputTrackArray;
@@ -205,7 +219,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
   vector<int> trackindexmap; // stores index for every track id
 
   // track data input
-  if (fMode==2) {
+  if (fMode==2 || fMode==4) {
     for (pDesc=GetFirstInputBlock(kAliHLTDataTypeTrack|kAliHLTDataOriginTPC);
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       if (GetBenchmarkInstance()) {
@@ -261,9 +275,33 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     AliHLTTPCTrackGeometry* trackpoints=new AliHLTTPCTrackGeometry;
     if (!trackpoints) continue;
     HLTDebug("track %d id %d:", trackindex, trackID);
+
+    // in order to avoid rounding errors the track points are
+    // calculated in exactly the same way as in the decoding
+    // Thats why the track instance can not be used directly
+    // but a new instance is created from the values in the
+    // storage format.
+    // think about moving that to some common code used by
+    // both compression and decoding
+    AliHLTExternalTrackParam param;
+    memset(&param, 0, sizeof(param));    
+    float alpha=track->GetAlpha();
+    while (alpha<0.) alpha+=TMath::TwoPi();
+    while (alpha>TMath::TwoPi()) alpha-=TMath::TwoPi();
+    AliHLTUInt8_t tSlice=AliHLTUInt8_t(9*alpha/TMath::Pi());
+    param.fAlpha   =( tSlice + 0.5 ) * TMath::Pi() / 9.0;
+    if (param.fAlpha>TMath::TwoPi()) param.fAlpha-=TMath::TwoPi();
+    param.fX       = track->GetX();
+    param.fY       = track->GetY();
+    param.fZ       = track->GetZ();
+    param.fSinPsi  = track->GetSnp();
+    param.fTgl     = track->GetTgl();
+    param.fq1Pt    = track->GetSigned1Pt();
+    AliHLTGlobalBarrelTrack ctrack(param);
+    ctrack.CalculateHelixParams(bz);
     trackpoints->InitDriftTimeTransformation(fDriftTimeFactorA, fDriftTimeOffsetA, fDriftTimeFactorC, fDriftTimeOffsetC);
     trackpoints->SetTrackId(trackID);
-    trackpoints->CalculateTrackPoints(*track);
+    trackpoints->CalculateTrackPoints(ctrack);
     trackpoints->RegisterTrackPoints(fTrackGrid);
     track->SetTrackGeometry(trackpoints);
   }
@@ -399,7 +437,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
     }
 
     AliHLTUInt32_t parameterIndex=0;
-    trackModelBlock->fGlobalParameters[parameterIndex++]=GetBz();
+    trackModelBlock->fGlobalParameters[parameterIndex++]=bz;
     trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeFactorA;
     trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeOffsetA;
     trackModelBlock->fGlobalParameters[parameterIndex++]=fDriftTimeFactorC;
@@ -410,7 +448,7 @@ int AliHLTTPCDataCompressionComponent::DoEvent( const AliHLTComponentEventData& 
       break;
     }
 
-    if (fMode==2) {
+    if (trackindexmap.size()>0) {// condition for track model compression
     iResult=WriteTrackClusters(inputTrackArray, fRawInputClusters, fpDataDeflater, outputPtr+size+tracksBufferOffset, capacity-size-tracksBufferOffset);
     if (iResult>=0) {
       AliHLTComponent_BlockData bd;
@@ -750,7 +788,15 @@ int AliHLTTPCDataCompressionComponent::DoInit( int argc, const char** argv )
     return -ENOMEM;
   }
 
-  unsigned spacePointContainerMode=(fMode==2)?AliHLTTPCHWCFSpacePointContainer::kModeCreateMap:0;
+  unsigned spacePointContainerMode=0;
+  if (fMode==2 || fMode==4) {
+    // initialize map data for cluster access in the track association loop
+    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeCreateMap;
+  }
+  if (fMode==3 || fMode==4) {
+    // optimized storage format: differential pad and time storage
+    spacePointContainerMode|=AliHLTTPCHWCFSpacePointContainer::kModeDifferentialPadTime;
+  }
   std::auto_ptr<AliHLTTPCHWCFSpacePointContainer> rawInputClusters(new AliHLTTPCHWCFSpacePointContainer(spacePointContainerMode));
   std::auto_ptr<AliHLTTPCSpacePointContainer> inputClusters(new AliHLTTPCSpacePointContainer);
 
