@@ -17,6 +17,7 @@
 
 
 //-----------------------------------------------------------------
+//
 //           Implementation of the TPC seed class
 //        This class is used by the AliTPCtrackerMI class
 //      Origin: Marian Ivanov, CERN, Marian.Ivanov@cern.ch
@@ -1344,10 +1345,19 @@ Float_t  AliTPCseed::CookdEdxAnalytical(Double_t low, Double_t up, Int_t type, I
   Float_t meanL = sumL/sumLN;  
   Float_t meanD =(sumD/sumDN);           // lower half mean
   */
-  Float_t rms  =TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
-  Float_t mean2=suma2/sumn;
-  Float_t mean3=suma3/sumn;
-  Float_t meanS=sumaS/sumn;
+
+  Float_t rms = 0;
+  Float_t mean2=0;
+  Float_t mean3=0;
+  Float_t meanS=0;
+
+  if(sumn>0){
+    rms = TMath::Sqrt(TMath::Abs(suma2/sumn-mean*mean));
+    mean2=suma2/sumn;
+    mean3=suma3/sumn;
+    meanS=sumaS/sumn;
+  }
+
   if (mean2>0) mean2=TMath::Power(TMath::Abs(mean2),1./2.);
   if (mean3>0) mean3=TMath::Power(TMath::Abs(mean3),1./3.);
   if (meanS>0) meanS=TMath::Power(TMath::Abs(meanS),3.);
