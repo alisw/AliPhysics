@@ -1,19 +1,20 @@
 void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON/", const char * outdir="") {
   gEnv->SetValue("XSec.GSI.DelegProxy","2");
-  TProof::Open("alice-caf","workers=50");
+  TProof::Open("alice-caf","workers=1x");
+  gProof->EnablePackage("VO_ALICE@AliRoot::v4-21-33-AN");
   
   //  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/ -I${ALICE_ROOT}/PWG0/ -I${ALICE_ROOT}/PWG0/dNdEta/");
-  gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
-  gProof->UploadPackage("$ALICE_ROOT/STEERBase");
-  gProof->EnablePackage("$ALICE_ROOT/STEERBase");
-  gProof->UploadPackage("$ALICE_ROOT/ESD");
-  gProof->EnablePackage("$ALICE_ROOT/ESD");
-  gProof->UploadPackage("$ALICE_ROOT/AOD");
-  gProof->EnablePackage("$ALICE_ROOT/AOD");
-  gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
-  gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
-  gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
-  gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
+  // gSystem->AddIncludePath("-I${ALICE_ROOT}/include/");
+  // gProof->UploadPackage("$ALICE_ROOT/STEERBase");
+  // gProof->EnablePackage("$ALICE_ROOT/STEERBase");
+  // gProof->UploadPackage("$ALICE_ROOT/ESD");
+  // gProof->EnablePackage("$ALICE_ROOT/ESD");
+  // gProof->UploadPackage("$ALICE_ROOT/AOD");
+  // gProof->EnablePackage("$ALICE_ROOT/AOD");
+  // gProof->UploadPackage("$ALICE_ROOT/ANALYSIS");
+  // gProof->EnablePackage("$ALICE_ROOT/ANALYSIS");
+  // gProof->UploadPackage("$ALICE_ROOT/ANALYSISalice");
+  // gProof->EnablePackage("$ALICE_ROOT/ANALYSISalice");
  
 
     // Make the analysis manager
@@ -48,6 +49,7 @@ void runTaskProof(const char * dataset, const char * datasetpath="/COMMON/COMMON
 	
   mgr->PrintStatus();
   mgr->StartAnalysis("proof",Form("%s%s#TE",datasetpath,dataset),5000);
+  // mgr->StartAnalysis("proof",Form("%s%s#TE",datasetpath,dataset),5000);
   //  mgr->StartAnalysis("proof","/COMMON/COMMON/LHC09b14_7TeV_0.5T_Phojet#esdTree");
 
   if (!strcmp(outdir,"")){
