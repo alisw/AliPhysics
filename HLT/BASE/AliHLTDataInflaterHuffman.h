@@ -33,6 +33,14 @@ public:
 
   /// overloaded from AliHLTDataInflater
   virtual bool NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t& length);
+  /// switch to next parameter
+  virtual int NextParameter() {
+    if (fHuffmanCoders.size()==0) return -1;
+    if (fLegacyMode>0) return fCurrentParameter;
+    fLegacyMode=0;
+    if ((++fCurrentParameter)>=(int)fHuffmanCoders.size()) fCurrentParameter=0;
+    return fCurrentParameter;
+  }
 
 protected:
 private:
@@ -49,6 +57,8 @@ private:
 
   /// current parameter during reading
   int fCurrentParameter; //!
+  /// legacy mode to handle code not using NextParameter()
+  int fLegacyMode;
 
   ClassDef(AliHLTDataInflaterHuffman, 0)
 };

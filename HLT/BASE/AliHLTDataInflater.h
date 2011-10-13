@@ -166,6 +166,8 @@ public:
    * Data read function for inflaters for different formats
    */
   virtual bool NextValue(AliHLTUInt64_t& /*value*/, AliHLTUInt32_t& /*length*/) {return false;}
+  /// switch to next parameter
+  virtual int NextParameter() {return -ENOSYS;}
 
   /// clear the object and reset pointer references
   virtual void Clear(Option_t * /*option*/ ="");

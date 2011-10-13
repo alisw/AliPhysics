@@ -31,6 +31,7 @@ AliHLTDataInflaterSimple::AliHLTDataInflaterSimple()
   : AliHLTDataInflater()
   , fParameterDefinitions()
   , fCurrentParameter(-1)
+  , fLegacyMode(-1)
 {
   // see header file for class documentation
   // or
@@ -58,8 +59,11 @@ bool AliHLTDataInflaterSimple::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t& 
   /// list, than it starts at the first parameter again
   value=0;
   length=0;
-  if (fParameterDefinitions.size()==0) return false;
+  if (fLegacyMode!=0) {
   if ((++fCurrentParameter)>=(int)fParameterDefinitions.size()) fCurrentParameter=0;
+  fLegacyMode=1;
+  }
+  if (fParameterDefinitions.size()==0 || fCurrentParameter<0) return false;
   const AliHLTDataDeflaterSimple::AliHLTDataDeflaterParameter& parameter
     =fParameterDefinitions[fCurrentParameter];
 

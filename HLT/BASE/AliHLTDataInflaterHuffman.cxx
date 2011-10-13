@@ -34,6 +34,7 @@ AliHLTDataInflaterHuffman::AliHLTDataInflaterHuffman()
   , fHuffmanCoders()
   , fHuffmanCoderList(NULL)
   , fCurrentParameter(-1)
+  , fLegacyMode(-1)
 {
   // see header file for class documentation
   // or
@@ -119,7 +120,11 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
     inputLength-=(7-GetCurrentBitInputPosition());
   }
   if (!InputBits(input, inputLength)) return false;
+  if (fLegacyMode!=0) {
   if ((++fCurrentParameter)>=(int)fHuffmanCoders.size()) fCurrentParameter=0;
+  fLegacyMode=1;
+  }
+  if (fHuffmanCoders.size()==0 || fCurrentParameter<0) return false;
   // the huffman code is decoded from bit 0 corresponding to the top node and then to
   // the left. The bitstream stores the reversed huffman code from MSB to LSB to ensure
   // a continous bit stream, that's why then input word needs to be reversed before
