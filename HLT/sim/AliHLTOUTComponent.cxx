@@ -67,15 +67,8 @@ AliHLTOUTComponent::AliHLTOUTComponent(EType type)
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-  // I guess DDL definitions should never change any more
-  assert(fNofDDLs==AliDAQ::NumberOfDdls("HLT"));
   fNofDDLs=AliDAQ::NumberOfDdls("HLT");
   
-  /* AliDAQ::DdlIDOffset returns wrong offset for HLT links
-  assert(fIdFirstDDL==AliDAQ::DdlIDOffset("HLT"));
-  fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
-  */
-
   if (fType!=kGlobal && fType!=kDigits && fType!=kRaw) {
     ALIHLTERRORGUARD(1, "invalid component type %d", fType);
   }
