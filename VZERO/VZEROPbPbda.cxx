@@ -66,8 +66,7 @@ int main(int argc, char **argv) {
   Int_t    kNPreClocks = 6;  // Number of clock before max used in the charge sum
   Int_t    kNPostClocks = 1; // Number of clock after max used in the charge sum
 
-  UShort_t    kTriggerAcc = 64;    // Trigger mask for accepted events (64 = CTA1 & CTC1)
-  UShort_t    kTriggerRej = 256;   // Trigger mask for rejected events (256 = CTA2 & CTC2)
+  UChar_t  kNFlagsCut   = 63;// Minimum number of TDC flags requested, replaces the trigger selection
 
   Int_t    kNBins = 10000;
   Float_t  kRange = 0.1;
@@ -79,16 +78,16 @@ int main(int argc, char **argv) {
   } else {
     /* open the config file and retrieve cuts */
     FILE *fpConfig = fopen("V00DAEqualFactors.config","r");
-    int res = fscanf(fpConfig,"%d %d %d %d %hu %hu %d %f",
-		     &kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kTriggerAcc,&kTriggerRej,&kNBins,&kRange);
-    if(res!=8) {
-      printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 7 integers and 1 float are expected - \n");
+    int res = fscanf(fpConfig,"%d %d %d %d %hhu %d %f",
+		     &kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kNFlagsCut,&kNBins,&kRange);
+    if(res!=7) {
+      printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 6 integers and 1 float are expected - \n");
     }
     fclose(fpConfig);
   }
   
-  printf("First LHC Clock = %d; Last LHC Clock = %d; N Pre Clock = %d ; N Post Clock = %d; Trigger mask for accepted events = %u; Trigger mask for rejected events = %u; Number of histogram bins = %d; Histogram range = %.3f\n",
-	 kStartClock, kEndClock, kNPreClocks, kNPostClocks, kTriggerAcc, kTriggerRej, kNBins, kRange);
+  printf("First LHC Clock = %d; Last LHC Clock = %d; N Pre Clock = %d ; N Post Clock = %d; Minimum number of TDC flags = %hhu; Number of histogram bins = %d; Histogram range = %.3f\n",
+	 kStartClock, kEndClock, kNPreClocks, kNPostClocks, kNFlagsCut, kNBins, kRange);
 
   TH1D *fMedian[64];
   for(Int_t j = 0; j < 64; ++j) fMedian[j] = new TH1D(Form("fMedian_%d",j),"Slopes weighted median, channel par channel",kNBins,0,kRange);
@@ -165,8 +164,12 @@ int main(int argc, char **argv) {
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	   if (rawStream->Next()) {	
 	     UShort_t triggers = rawStream->GetTriggerInputs();
-	     if (((triggers & kTriggerAcc) == kTriggerAcc) &&  // Check if the requested trigger(s) is fired
-		 ((triggers & kTriggerRej) == 0)) { // Check if the requested trigger(s) is NOT fired
+	     UChar_t nFlags = 0;
+	     for(Int_t i = 0; i < 64; ++i) {
+	       if (rawStream->GetBBFlag(i,10)) nFlags++;
+	     }
+	     if (nFlags >= kNFlagsCut) { // Check if the number of minimum number of TDC flags is reached (trigger selection)
+
 	       neventsPhysics++;
 
 	       Float_t adc[64];
