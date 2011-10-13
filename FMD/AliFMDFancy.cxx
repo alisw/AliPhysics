@@ -168,7 +168,7 @@ AliFMDFancy::AliFancyDetector::Init()
       Int_t          nv = vs.GetEntries();
       Double_t       a  = TMath::Pi() / 180 * (m * 2 + 1) * ring->GetTheta();
       TGraph2D*      g  = new TGraph2D(nv);
-      Double_t       x0 = 0, y0 = 0, z0 = 0;
+      // Double_t       x0 = 0, y0 = 0, z0 = 0;
       Double_t       z  = zd + (m % 2==0 ? 0 : 
 				TMath::Sign(ring->GetModuleSpacing(), zd));
       minZ              = TMath::Min(minZ, z);
@@ -178,7 +178,7 @@ AliFMDFancy::AliFancyDetector::Init()
       for (Int_t c = 0; c < nv; c++) {
 	TVector2* v = static_cast<TVector2*>(vs.At(nv - 1 - c));
 	TVector2  w(v->Rotate(a));
-	if (c == 0) { x0 = w.X(); y0 = w.Y(); z0 = z; }
+	// if (c == 0) { x0 = w.X(); y0 = w.Y(); z0 = z; }
 	g->SetPoint(c, w.X(), w.Y(), z);
 	maxR        = TMath::Max(maxR, v->Mod());
       }

@@ -446,7 +446,7 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
   static Short_t             tstr     = 0;   
   static Short_t             bstr     = -1;
   static UShort_t            tsam     = 0;   
-  static UInt_t              trate    = 0;
+  // static UInt_t           trate    = 0;
   static Int_t               hwaddr   = -1;
   static UShort_t            start    = 0;
   static UShort_t            length   = 0;
@@ -463,7 +463,7 @@ AliFMDRawReader::NextSample(UShort_t& det, Char_t&   rng, UShort_t& sec,
 
     // Reset variables
     ddl    = -1;  
-    trate  = 0;   
+    // trate= 0;   
     tdet   = 0;   
     trng   = '\0';
     tsec   = 0;   

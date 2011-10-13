@@ -249,9 +249,9 @@ AliFMDDisplay::ShowOnlyFMD()
   TGeoIterator next(top);
   TGeoNode* node;
   TGeoVolume* v = 0;
-  Bool_t hasFMD1 = kFALSE;
-  Bool_t hasFMD2 = kFALSE;
-  Bool_t hasFMD3 = kFALSE;
+  // Bool_t hasFMD1 = kFALSE;
+  // Bool_t hasFMD2 = kFALSE;
+  // Bool_t hasFMD3 = kFALSE;
   AliFMDDebug(1, ("Getting material FMD_Si$"));
   TGeoMaterial* si   = gGeoManager->GetMaterial("FMD_Si$");      // kRed 
   AliFMDDebug(1, ("Getting material FMD_Carbon$"));
@@ -285,13 +285,13 @@ AliFMDDisplay::ShowOnlyFMD()
       }
       if (name[2] == 'M' && (name[3] == 'T' || name[3] == 'B')) {
 	// Virtual Master half-ring volume - top-level
-	Int_t det = node->GetNumber();
-	switch (det) {
-	case 1: hasFMD1 = true; break;
-	case 2: hasFMD2 = true; break;
-	case 3: hasFMD3 = true; break;
-	default: continue;
-	}
+	// Int_t det = node->GetNumber();
+	/* switch (det) {
+	   case 1: hasFMD1 = true; break;
+	   case 2: hasFMD2 = true; break;
+	   case 3: hasFMD3 = true; break;
+	   default: continue;
+	   } */
 	toshow.Add(v);
       }
       else if (name[3] == 'V' && (name[2] == 'T' || name[2] == 'B')) 
