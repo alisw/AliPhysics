@@ -281,7 +281,7 @@ AliFMDMCTrackDensity::Calculate(const AliESDFMD&  input,
     Char_t   oR       = '\0';
     UShort_t nC       = 0;
     UShort_t nT       = 0;
-    Double_t oTheta   = 0;
+    // Double_t oTheta= 0;
     for (Int_t iTrRef = 0; iTrRef < nTrRef; iTrRef++) { 
       AliTrackReference* ref = particle->GetTrackReference(iTrRef);
       
@@ -364,7 +364,7 @@ AliFMDMCTrackDensity::Calculate(const AliESDFMD&  input,
 	longest = iTrRef;
 	angle   = ang;
       }
-      oTheta = ang;
+      // oTheta = ang;
     } // Loop over track references
     if (longest < 0) continue; // Nothing found
 
