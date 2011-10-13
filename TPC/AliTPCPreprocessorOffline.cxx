@@ -261,7 +261,11 @@ Bool_t AliTPCPreprocessorOffline::ValidateTimeGain()
   Float_t maxGain = fMaxGain;
 
   TGraphErrors *gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_BEAM_ALL");
-  if(!gr) return kFALSE;
+  if (!gr) {
+    gr = (TGraphErrors*)fGainArray->FindObject("TGRAPHERRORS_MEAN_GAIN_COSMIC_ALL");
+    if (!gr) return kFALSE;
+    Printf("Assuming given run is a cosmic run. Using gain calibration from Fermi-plateau muons.");
+  }
   if(gr->GetN()<1) return kFALSE;
 
   // check whether gain in the range
