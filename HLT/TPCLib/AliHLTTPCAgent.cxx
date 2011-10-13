@@ -205,7 +205,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-compression-component", "TPCDataCompressor", compressorInput.Data(), " -cluster-verification 1");
     handler->CreateConfiguration("TPC-compression-huffman-trainer", "TPCDataCompressor", compressorInput.Data(),"-deflater-mode 3");
     handler->CreateConfiguration("TPC-compression", "BlockFilter", "TPC-compression-component TPC-hwcfdata", "");
-    handler->CreateConfiguration("TPC-compression-monitoring", "TPCDataCompressorMonitor", "TPC-compression","");
+    handler->CreateConfiguration("TPC-compression-monitoring", "TPCDataCompressorMonitor", "TPC-compression","-histogram-file HLT.TPC-compression-statistics.root -publishing-mode off");
 
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
@@ -293,7 +293,7 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
 				 );
 
     // the HLTOUT component collects the blocks and stores the file
-    handler->CreateConfiguration("TPC-hltout-compressionmonitor", "TPCDataCompressorMonitor", "TPC-hltout-compressionmonitor-publisher", "");
+    handler->CreateConfiguration("TPC-hltout-compressionmonitor", "TPCDataCompressorMonitor", "TPC-hltout-compressionmonitor-publisher", "-histogram-file HLT.TPC-compression-statistics.root -publishing-mode off");
   }
 
   return 0;
