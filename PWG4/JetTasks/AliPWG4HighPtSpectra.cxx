@@ -391,6 +391,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
       else
 	track = esdtrack;
     
+      if(!track) continue;
  
       if(fTrackType==2) {
 	//Cut on chi2 of constrained fit
