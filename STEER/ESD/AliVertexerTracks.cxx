@@ -86,7 +86,10 @@ fMVScanStep(3.),
 fMVMaxWghNtr(10.),
 fMVFinalWBinary(kTRUE),
 fBCSpacing(50),
-fMVVertices(0)
+fMVVertices(0),
+fClusterize(kFALSE),
+fDeltaZCutForCluster(0.1),
+fnSigmaZCutForCluster(999999.)
 {
 //
 // Default constructor
@@ -136,7 +139,10 @@ fMVScanStep(3.),
 fMVMaxWghNtr(10.),
 fMVFinalWBinary(kTRUE),
 fBCSpacing(50),
-fMVVertices(0)
+fMVVertices(0),
+fClusterize(kFALSE),
+fDeltaZCutForCluster(0.1),
+fnSigmaZCutForCluster(999999.)
 {
 //
 // Standard constructor
@@ -192,6 +198,8 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
   if(nTrks>500) f = new TFile("VertexerTracks.root","recreate");
   TObjArray trkArrayOrig(nTrks);
   UShort_t *idOrig = new UShort_t[nTrks];
+  Double_t *zTr = new Double_t[nTrks];
+  Double_t *err2zTr = new Double_t[nTrks];
 
   Int_t nTrksOrig=0;
   AliExternalTrackParam *t=0;
@@ -246,16 +254,21 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
     //
     trkArrayOrig.AddLast(t);
     idOrig[nTrksOrig]=(UShort_t)track->GetID();
+    zTr[nTrksOrig]=t->GetZ();
+    err2zTr[nTrksOrig]=t->GetSigmaZ2();
+
     nTrksOrig++;
   } // end loop on tracks
   
   // call method that will reconstruct the vertex
-  FindPrimaryVertex(&trkArrayOrig,idOrig);
-
+  if(fClusterize) FindAllVertices(nTrksOrig,&trkArrayOrig,zTr,err2zTr,idOrig);
+  else FindPrimaryVertex(&trkArrayOrig,idOrig);
   if(!inputAOD) AnalyzePileUp((AliESDEvent*)vEvent);
 
   if(fMode==0) trkArrayOrig.Delete();
   delete [] idOrig; idOrig=NULL;
+  delete [] zTr; zTr=NULL;
+  delete [] err2zTr; err2zTr=NULL;
 
   if(f) {
     f->Close(); delete f; f = NULL;
@@ -273,7 +286,7 @@ AliESDVertex* AliVertexerTracks::FindPrimaryVertex(const AliVEvent *vEvent)
       esdt->SetVertexID(-1);
     }
   }
-
+ 
   return fCurrentVertex;
 }
 //----------------------------------------------------------------------------
@@ -1017,7 +1030,11 @@ void AliVertexerTracks::SetCuts(Double_t *cuts, Int_t ncuts)
   if (ncuts>19) SetMVFinalWBinary(cuts[19]>0);
   if (ncuts>20) if (cuts[20]>20.)  SetBCSpacing(int(cuts[20]));
   //
-  if (fAlgo==kMultiVertexer) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
+  if (ncuts>21) if (cuts[21]>0.5)  SetUseTrackClusterization(kTRUE);
+  if (ncuts>22) SetDeltaZCutForCluster(cuts[22]);
+  if (ncuts>23) SetnSigmaZCutForCluster(cuts[23]);  
+  //
+  if (fAlgo==kMultiVertexer || fClusterize) SetSelectOnTOFBunchCrossing(kTRUE,kTRUE);
   else                       SetSelectOnTOFBunchCrossing(kFALSE,kTRUE);
   //
   return;
@@ -2071,3 +2088,113 @@ void AliVertexerTracks::AnalyzePileUp(AliESDEvent* esdEv)
   //
 }
 
+//______________________________________________________
+void AliVertexerTracks::FindAllVertices(Int_t nTrksOrig, 
+					const TObjArray *trkArrayOrig,
+					Double_t* zTr, 
+					Double_t* err2zTr, 
+					UShort_t* idOrig){
+
+  // clusterize tracks using z coordinates of intersection with beam axis
+  // and compute all vertices 
+
+  UShort_t* posOrig=new UShort_t[nTrksOrig];
+  for(Int_t iTr=0; iTr<nTrksOrig; iTr++) posOrig[iTr]=iTr;
+ 
+
+  // sort points along Z
+  AliDebug(1,Form("Sort points along Z, used tracks %d",nTrksOrig));
+  for(Int_t iTr1=0; iTr1<nTrksOrig; iTr1++){
+    for(Int_t iTr2=iTr1+1; iTr2<nTrksOrig; iTr2++){
+      if(zTr[iTr1]>zTr[iTr2]){
+	Double_t tmpz=zTr[iTr2];
+	Double_t tmperr=err2zTr[iTr2];
+	UShort_t tmppos=posOrig[iTr2];
+	UShort_t tmpid=idOrig[iTr2];
+	zTr[iTr2]=zTr[iTr1];
+	err2zTr[iTr2]=err2zTr[iTr1];
+	posOrig[iTr2]=posOrig[iTr1];
+	idOrig[iTr2]=idOrig[iTr1];
+	zTr[iTr1]=tmpz;
+	err2zTr[iTr1]=tmperr;
+	idOrig[iTr1]=tmpid;
+	posOrig[iTr1]=tmppos;
+      }
+    }
+  }
+
+  // clusterize
+  Int_t nClusters=0;
+  Int_t* firstTr=new Int_t[nTrksOrig];
+  Int_t* lastTr=new Int_t[nTrksOrig];
+
+  firstTr[0]=0;
+  for(Int_t iTr=0; iTr<nTrksOrig-1; iTr++){
+    Double_t distz=zTr[iTr+1]-zTr[iTr];
+    Double_t errdistz=TMath::Sqrt(err2zTr[iTr+1]+err2zTr[iTr]);
+    if(errdistz<=0.000001) errdistz=0.000001;
+    if(distz>fDeltaZCutForCluster || (distz/errdistz)>fnSigmaZCutForCluster){
+      lastTr[nClusters]=iTr;
+      firstTr[nClusters+1]=iTr+1;
+      nClusters++;
+    }
+  }
+  lastTr[nClusters]=nTrksOrig-1;
+
+  // Compute vertices
+  AliDebug(1,Form("Number of found clusters %d",nClusters+1));
+  Int_t nFoundVertices=0;
+
+  if (!fMVVertices) fMVVertices = new TObjArray(nClusters+1);
+
+  fMVVertices->Clear();
+  TObjArray cluTrackArr(nTrksOrig);
+  UShort_t *idTrkClu=new UShort_t[nTrksOrig];
+  //  Int_t maxContr=0;
+  //  Int_t maxPos=-1;
+
+  for(Int_t iClu=0; iClu<=nClusters; iClu++){
+    Int_t nCluTracks=lastTr[iClu]-firstTr[iClu]+1;
+    cluTrackArr.Clear();
+    AliDebug(1,Form(" Vertex #%d tracks %d first tr %d  last track %d",iClu,nCluTracks,firstTr[iClu],lastTr[iClu]));
+    Int_t nSelTr=0;
+    for(Int_t iTr=firstTr[iClu]; iTr<=lastTr[iClu]; iTr++){
+      AliExternalTrackParam* t=(AliExternalTrackParam*)trkArrayOrig->At(posOrig[iTr]);
+      if(TMath::Abs(t->GetZ()-zTr[iTr])>0.00001){
+	AliError(Form("Clu %d Track %d zTrack=%f  zVec=%f\n",iClu,iTr,t->GetZ(),zTr[iTr]));
+      }
+      cluTrackArr.AddAt(t,nSelTr);
+      idTrkClu[nSelTr]=idOrig[iTr];
+      AliDebug(1,Form("   Add track %d: id %d, z=%f",iTr,idOrig[iTr],zTr[iTr]));
+      nSelTr++;
+    }
+    AliESDVertex* vert=FindPrimaryVertex(&cluTrackArr,idTrkClu);
+    AliDebug(1,Form("Found vertex in z=%f with %d contributors",vert->GetZv(),
+		 vert->GetNContributors()));
+
+    fCurrentVertex=0;
+    if(vert->GetNContributors()>0){
+      nFoundVertices++;
+      fMVVertices->AddLast(vert);
+    }
+    //    if(vert->GetNContributors()>maxContr){
+    //      maxContr=vert->GetNContributors();
+    //      maxPos=nFoundVertices-1;
+    //    }
+  }
+
+  AliDebug(1,Form("Number of found vertices %d (%d)",nFoundVertices,fMVVertices->GetEntriesFast()));
+  // if(maxPos>=0 && maxContr>0){
+  //   AliESDVertex* vtxMax=(AliESDVertex*)fMVVertices->At(maxPos);
+  //   if(fCurrentVertex) delete fCurrentVertex; 
+  //   fCurrentVertex=new AliESDVertex(*vtxMax);
+  // }
+
+  delete [] firstTr;
+  delete [] lastTr;
+  delete [] idTrkClu;
+  delete [] posOrig;
+
+  return;
+
+}

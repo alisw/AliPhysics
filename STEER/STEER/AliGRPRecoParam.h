@@ -30,13 +30,27 @@ class AliGRPRecoParam : public AliDetectorRecoParam
 
   void  SetVertexerTracksConstraintITS(Bool_t constr=kTRUE) { fVertexerTracksConstraintITS=constr; return; }
   void  SetVertexerTracksConstraintTPC(Bool_t constr=kTRUE) { fVertexerTracksConstraintTPC=constr; return; }
-  void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t cuts[21]);
-  void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t cuts[21])
+  void  SetVertexerTracksCuts(Int_t mode,Int_t ncuts,Double_t* cuts);
+  void  SetVertexerTracksCutsITS(Int_t ncuts,Double_t* cuts)
     { SetVertexerTracksCuts(0,ncuts,cuts); return; }
-  void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t cuts[21])
+  void  SetVertexerTracksCutsTPC(Int_t ncuts,Double_t* cuts)
     { SetVertexerTracksCuts(1,ncuts,cuts); return; }
   void  SetVertexerV0Cuts(Int_t ncuts,Double_t cuts[7]);
   void  SetVertexerCascadeCuts(Int_t ncuts,Double_t cuts[8]);
+  void  SetVertexerTracksTPCClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut){
+    if(use) fVertexerTracksTPCclusterize=1.;
+    else fVertexerTracksTPCclusterize=0.;
+    fVertexerTracksTPCclusterdz=dzcut;
+    fVertexerTracksTPCclusternsigmaz=nsigmazcut;
+  }
+  void  SetVertexerTracksITSClusterization(Bool_t use, Double_t dzcut, Double_t nsigmazcut){
+    if(use) fVertexerTracksITSclusterize=1.;
+    else fVertexerTracksITSclusterize=0.;
+    fVertexerTracksITSclusterdz=dzcut;
+    fVertexerTracksITSclusternsigmaz=nsigmazcut;
+  }
+
+
   Bool_t GetVertexerTracksConstraintITS() const { return fVertexerTracksConstraintITS; }
   Bool_t GetVertexerTracksConstraintTPC() const { return fVertexerTracksConstraintTPC; }
   Int_t GetVertexerTracksNCuts() const { return fVertexerTracksNCuts; }
@@ -84,7 +98,11 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksITSMVMaxWghNtr;       // min wdist*ncontrib between to vertices to eliminate
   Double_t fVertexerTracksITSMVFinalWBinary;    // for the final fit used binary weights
   Double_t fVertexerTracksITSMVBCSpacing;       // assumer BC spacing
- 
+  //
+  Double_t fVertexerTracksITSclusterize; // pre-clusterization of tracks
+  Double_t fVertexerTracksITSclusterdz;  // cut in absolute dz
+  Double_t fVertexerTracksITSclusternsigmaz;  // cut in standardized dz
+
   // cuts for AliVertexerTracks: TPC-only mode
   Double_t fVertexerTracksTPCdcacut; // general dca
   Double_t fVertexerTracksTPCdcacutIter0; // dca in iteration 0
@@ -109,6 +127,10 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerTracksTPCMVFinalWBinary;    // for the final fit used binary weights
   Double_t fVertexerTracksTPCMVBCSpacing;       // assumer BC spacing
   //
+  Double_t fVertexerTracksTPCclusterize; // pre-clusterization of tracks
+  Double_t fVertexerTracksTPCclusterdz;  // cut in absolute dz
+  Double_t fVertexerTracksTPCclusternsigmaz;  // cut in standardized dz
+  //
   Int_t    fVertexerV0NCuts;      // number of cuts for AliV0vertexer
 
   // cuts for AliV0vertexer:
@@ -132,7 +154,7 @@ class AliGRPRecoParam : public AliDetectorRecoParam
   Double_t fVertexerCascadeRmin;     //min radius of the fiducial volume
   Double_t fVertexerCascadeRmax;     //max radius of the fiducial volume
 
-  ClassDef(AliGRPRecoParam,6) // global reco parameters
+  ClassDef(AliGRPRecoParam,7) // global reco parameters
 };
 
 #endif

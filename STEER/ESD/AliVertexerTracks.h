@@ -147,6 +147,17 @@ class AliVertexerTracks : public TObject {
   TObjArray*    GetVerticesArray() const {return (TObjArray*)fMVVertices;}   // RS to be removed
   void          AnalyzePileUp(AliESDEvent* esdEv);
   void          SetBCSpacing(Int_t ns=50) {fBCSpacing = ns;}
+
+  // Configuration of multi-vertexing vis pre-clusterization of tracks
+  void SetUseTrackClusterization(Bool_t opt=kFALSE){fClusterize=opt;}
+  void SetDeltaZCutForCluster(Double_t cut){fDeltaZCutForCluster=cut;}
+  void SetnSigmaZCutForCluster(Double_t cut){fnSigmaZCutForCluster=cut;}
+
+  Bool_t GetUseTrackClusterization() const {return fClusterize;}
+  Double_t GetDeltaZCutForCluster() const {return fDeltaZCutForCluster;}
+  Double_t GetnSigmaZCutForCluster() const {return fnSigmaZCutForCluster;}
+
+
   //
  protected:
   void     HelixVertexFinder();
@@ -162,6 +173,8 @@ class AliVertexerTracks : public TObject {
   void     VertexFitter(Bool_t vfit=kTRUE, Bool_t chiCalc=kTRUE,Int_t useWeights=0);
   void     StrLinVertexFinderMinDist(Int_t optUseWeights=0);
   void     TooFewTracks();
+
+  void     FindAllVertices(Int_t nTrksOrig, const TObjArray *trkArrayOrig, Double_t* zTr, Double_t* err2zTr, UShort_t* idOrig);
 
   AliESDVertex fVert;         // vertex after vertex finder
   AliESDVertex *fCurrentVertex;  // ESD vertex after fitter
@@ -224,12 +237,16 @@ class AliVertexerTracks : public TObject {
   Bool_t   fMVFinalWBinary;            // for the final fit use binary weights
   Int_t    fBCSpacing;                 // BC Spacing in ns (will define the rounding of BCid)
   TObjArray* fMVVertices;              // array of found vertices
+
+  Bool_t   fClusterize;                // flag to activate track clusterization into vertices before vertex finder
+  Double_t fDeltaZCutForCluster;       // minimum distance in z between tracks to create new cluster
+  Double_t fnSigmaZCutForCluster;      // minimum distacnce in number of sigma along z to create new cluster
   //
  private:
   AliVertexerTracks(const AliVertexerTracks & source);
   AliVertexerTracks & operator=(const AliVertexerTracks & source);
 
-  ClassDef(AliVertexerTracks,15) // 3D Vertexing with tracks 
+  ClassDef(AliVertexerTracks,16) // 3D Vertexing with tracks 
 };
 
 #endif
