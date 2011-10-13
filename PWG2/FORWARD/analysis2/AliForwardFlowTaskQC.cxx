@@ -119,11 +119,12 @@ void AliForwardFlowTaskQC::UserCreateOutputObjects()
   fFlowUtil = new AliForwardFlowUtil(fOutputList);
   
   Double_t x[101] = { 0. };
-  Double_t etaMin = -6;
-  Double_t etaMax = 6;
+  // Double_t etaMin = -6;
+  // Double_t etaMax = 6;
 
-  // First we have a number of options for eta binning, also if it is not really eta, 
-  // but centrality or pt we want to do flow as a function of, then this is possible:
+  // First we have a number of options for eta binning, also if it is
+  // not really eta, but centrality or pt we want to do flow as a
+  // function of, then this is possible:
   if (fEtaBins == 5) {
     x[0] = 0.;
     x[1] = 1.;
@@ -131,16 +132,16 @@ void AliForwardFlowTaskQC::UserCreateOutputObjects()
     x[3] = 3.;
     x[4] = 4.5;
     x[5] = 6.0;
-    etaMin = 0;
-    etaMax = 6;
+    // etaMin = 0;
+    // etaMax = 6;
   }
 
   else if (fEtaBins == 100) { 
     for (Int_t e = 0; e<= 100; e++) {
       x[e] = e;
     }
-    etaMin = 0;
-    etaMax = 100;
+    // etaMin = 0;
+    // etaMax = 100;
   }
   
   else {
@@ -527,7 +528,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
   TList* vList = 0;
 
   // For flow calculations
-  Double_t two = 0, qc2 = 0, vnTwo = 0, four = 0, qc4 = 0, vnFour = 0; 
+  Double_t two = 0, qc2 = 0, /* vnTwo = 0, */ four = 0, qc4 = 0 /*, vnFour = 0*/; 
   Double_t twoPrime = 0, qc2Prime = 0, vnTwoDiff = 0, fourPrime = 0, qc4Prime = 0, vnFourDiff = 0;
   Double_t w2 = 0, w4 = 0, w2p = 0, w4p = 0;
   Double_t w2Two = 0, w2pTwoPrime = 0, w4Four = 0, w4pFourPrime = 0;
@@ -585,7 +586,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
             two = w2Two / w2;
             qc2 = two - TMath::Power(cosP1nPhi, 2) - TMath::Power(sinP1nPhi, 2);
             if (qc2 <= 0) continue;
-            vnTwo = TMath::Sqrt(qc2);
+            // vnTwo = TMath::Sqrt(qc2);
        //     if (!TMath::IsNaN(vnTwo*mult)) 
        //       cumulant2diffHist->Fill(eta, vnTwo, cumulantsHist->GetBinContent(0,vertexBin,0)); 
 
@@ -612,7 +613,7 @@ void AliForwardFlowTaskQC::Terminate(Option_t */*option*/)
                - 6.*TMath::Power((TMath::Power(cosP1nPhi,2.)+TMath::Power(sinP1nPhi,2.)),2.);
             
             if (qc4 >= 0) continue;
-            vnFour = TMath::Power(-qc4, 0.25);
+            // vnFour = TMath::Power(-qc4, 0.25);
        //     if (!TMath::IsNaN(vnFour*mult)) 
        //         cumulant4diffHist->Fill(eta, vnFour, cumulantsHist->GetBinContent(0,vertexBin,0));
   

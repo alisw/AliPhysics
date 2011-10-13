@@ -303,14 +303,14 @@ void AliCentralMultiplicityTask::FindEtaLimits()
     TH1D* accClone   = static_cast<TH1D*>(hAcceptance->Clone(Form("acceptance%02d",v)));
     secs->Add(accClone);
     
-    Double_t prev = 0;
+    // Double_t prev = 0;
     for (Int_t e = 1; e <= proj->GetNbinsX(); e++) { 
       Double_t c = proj->GetBinContent(e);
       if (c > .5 /*&& TMath::Abs(c - prev) < .1*c*/) {
 	fEtaMin[v-1] = e;
 	break;
       }
-      prev = c;
+      // prev = c;
       after->SetBinContent(e, 0);
       after->SetBinError(e, 0);
       for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)
@@ -323,7 +323,7 @@ void AliCentralMultiplicityTask::FindEtaLimits()
 	fEtaMax[v-1] = e;
 	break;
       }
-      prev = c;
+      // prev = c;
       after->SetBinContent(e, 0);
       after->SetBinError(e, 0);
       for(Int_t nn =1; nn <=obg->GetNbinsY();nn++)

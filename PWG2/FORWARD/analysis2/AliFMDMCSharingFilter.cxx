@@ -259,9 +259,6 @@ AliFMDMCSharingFilter::Print(Option_t* option) const
   // Parameters:
   //    option Not used 
   //
-  char ind[gROOT->GetDirLevel()+1];
-  for (Int_t i = 0; i < gROOT->GetDirLevel(); i++) ind[i] = ' ';
-  ind[gROOT->GetDirLevel()] = '\0';
   AliFMDSharingFilter::Print(option);
   gROOT->IncreaseDirLevel();
   fTrackDensity.Print(option);
