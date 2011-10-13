@@ -1,6 +1,7 @@
 //__________________________________________________//
-AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD", Bool_t bShuffle = kFALSE) {
-  //Function to setup the AliProtonAnalysis object and return it
+AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD", 
+				     Bool_t bShuffle = kFALSE) {
+  //Function to setup the AliBalance object and return it
   AliBalance *gBalance = new AliBalance();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);

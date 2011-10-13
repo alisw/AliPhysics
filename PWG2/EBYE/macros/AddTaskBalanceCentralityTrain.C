@@ -3,7 +3,8 @@ const char* centralityEstimator = "V0M";
 //const char* centralityEstimator = "CL1";
 //const char* centralityEstimator = "TRK";
 //=============================================//
-
+Bool_t gRunShuffling = kFALSE;
+//=============================================//
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
@@ -60,15 +61,15 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 
   if (analysisType=="ESD"){
     bf  = GetBalanceFunctionObject("ESD");
-    bfs = GetBalanceFunctionObject("ESD",kTRUE);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",kTRUE);
   }
   else if (analysisType=="AOD"){
     bf  = GetBalanceFunctionObject("AOD");
-    bfs = GetBalanceFunctionObject("AOD",kTRUE);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",kTRUE);
   }
   else{
     bf  = GetBalanceFunctionObject("MC");
-    bfs = GetBalanceFunctionObject("MC",kTRUE);
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",kTRUE);
   }
 
   // Create the task, add it to manager and configure it.
@@ -109,11 +110,11 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   outputFileName += ":PWG2EbyE.outputBalanceFunctionAnalysis";
   AliAnalysisDataContainer *coutQA = mgr->CreateContainer(Form("listQA_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   AliAnalysisDataContainer *coutBF = mgr->CreateContainer(Form("listBF_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
-  AliAnalysisDataContainer *coutBFS= mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
+  if(gRunShuffling) AliAnalysisDataContainer *coutBFS= mgr->CreateContainer(Form("listBFShuffled_%s",centralityName.Data()), TList::Class(),AliAnalysisManager::kOutputContainer,outputFileName.Data());
   mgr->ConnectInput(taskBF, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(taskBF, 1, coutQA);
   mgr->ConnectOutput(taskBF, 2, coutBF);
-  mgr->ConnectOutput(taskBF, 3, coutBFS);
+  if(gRunShuffling) mgr->ConnectOutput(taskBF, 3, coutBFS);
 
   return taskBF;
 }
