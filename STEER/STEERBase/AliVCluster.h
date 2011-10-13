@@ -73,8 +73,8 @@ class AliVCluster : public TObject
   
   //CaloClusters, PHOS/EMCAL
   
-  virtual Bool_t      IsEMCAL() const               {return -1 ; }
-  virtual Bool_t      IsPHOS()  const               {return -1 ; }
+  virtual Bool_t      IsEMCAL() const               {return kFALSE ; }
+  virtual Bool_t      IsPHOS()  const               {return kFALSE ; }
   
   virtual void        SetDispersion(Double_t )      { ; }
   virtual Double_t    GetDispersion() const         {return 0. ;}
