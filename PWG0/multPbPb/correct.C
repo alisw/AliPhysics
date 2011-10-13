@@ -294,8 +294,8 @@ void CheckSecondaries(Double_t &fracWeak, Double_t &fracMaterial) {
   // Set the components which are used in HistoSum, the static
   // function for GetFunctionHistoSum
   // Project onti DCA axis
-  //const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
-  const Int_t ptBinsFit[] = {3,20,-1};
+  const Int_t ptBinsFit[] = {3,5,7,9,11,15,19,23,31,-1};
+  //const Int_t ptBinsFit[] = {3,20,-1};
   Int_t ibinPt = -1;
   while(ptBinsFit[(++ibinPt)+1]!=-1){
     c1->cd(ibinPt+1);
