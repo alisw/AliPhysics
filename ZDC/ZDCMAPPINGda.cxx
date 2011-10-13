@@ -142,12 +142,16 @@ int main(int argc, char **argv) {
     monitorSetNowait();
     monitorSetNoWaitNetworkTimeout(1000);
 
-    struct eventHeaderStruct *event;
-    eventTypeType eventT;
 
-    Int_t iev = 0;
-    Bool_t sodRead = kFALSE;
-    while(!sodRead){
+    int iev = 0;
+    //Bool_t sodRead = kFALSE;
+    //while(!sodRead){
+    
+    /* loop on events (infinite) */
+    for(;;) {
+
+      struct eventHeaderStruct *event;
+      eventTypeType eventT;
  
       /* check shutdown condition */
       if (daqDA_checkShutdown()) {break;}
@@ -186,8 +190,7 @@ int main(int argc, char **argv) {
 	// --------------------------------------------------------
 	// --- Writing ascii data file for the Shuttle preprocessor
         mapFile4Shuttle = fopen(MAPDATA_FILE,"w");
-	if(!rawStreamZDC->Next()) printf(" \t No raw data found!! \n");
-        else{
+	//if(rawStreamZDC->Next()){
 	  while((rawStreamZDC->Next())){
             if(rawStreamZDC->IsHeaderMapping()){ // mapping header
 	       iMod++;
@@ -246,7 +249,7 @@ int main(int argc, char **argv) {
 	     //  modGeo[is],modType[is],modNCh[is]);
 	  }
 	  
-	}
+	//} //if (rawstream)
         fclose(mapFile4Shuttle);
       }// SOD event
       else if(eventT==PHYSICS_EVENT){ 
@@ -285,12 +288,19 @@ int main(int argc, char **argv) {
 	nphys++;
 	
       }//(if PHYSICS_EVENT) 
+      else if(eventT==END_OF_RUN){
+        printf("End Of Run detected\n");
+        break;
+      }
+      
+      delete rawStreamZDC;
+      rawStreamZDC = 0x0;
       
       iev++; 
 
       /* free resources */
       free(event);
-    }    
+    } // event loop    
       
   }
   printf(" \n # of physics events analyzed = %d\n\n", nphys);
