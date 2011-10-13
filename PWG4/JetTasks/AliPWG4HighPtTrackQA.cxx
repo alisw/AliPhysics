@@ -923,12 +923,11 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     //Get track for analysis
     AliESDtrack *track = 0x0;
     AliESDtrack *esdtrack = fESD->GetTrack(iTrack);
-    AliESDtrack *origtrack = new AliESDtrack(*esdtrack);
     if(!esdtrack) {
       fh1NTracksReject->Fill("noESDtrack",1);
-      if(origtrack) delete origtrack;
       continue;
     }
+    AliESDtrack *origtrack = new AliESDtrack(*esdtrack);
 
     if(fTrackType==4) {
       FillSystematicCutHist(esdtrack);
@@ -1117,6 +1116,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     if(fTrackType==1  || fTrackType==2 || fTrackType==4 || fTrackType==5 || fTrackType==6 || fTrackType==7) {
       if(track) delete track;
     }
+    if(origtrack) delete origtrack;
     
   }//track loop
 
