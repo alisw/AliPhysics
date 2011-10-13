@@ -45,9 +45,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskdNdetaMC)
 
 Float_t      AliAnalysisTaskdNdetaMC::fEtaMax = 0.5;
-Int_t        AliAnalysisTaskdNdetaMC::fPDGCodes[]  = {211,2212,321,-11,-13,-211,-2212,-321,11,13,0} ; // 0 ==> all others
+Int_t        AliAnalysisTaskdNdetaMC::fPDGCodes[]  = {211,2212,321,-11,-13,
+						      -211,-2212,-321,11,13,
+						      3122,-3122,3122,-3122,
+						      0} ; // 0 ==> all others
 const char * AliAnalysisTaskdNdetaMC::fPartNames[] = {"PionPos", "ProtonPos", "KaonPos", "ePos", "muPos", 
 						      "PionNeg", "ProtonNeg", "KaonNeg", "eNeg", "muNeg", 
+						      "Lambda", "Lambda_bar", "LambdaInclusive", "Lambda_barInclusive",
 						      "Others"} ;
 
 
@@ -315,7 +319,7 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
     if(headPho->ProcessType() != 5 && headPho->ProcessType() != 6  && headPho->ProcessType() != 7 ) {
       isND = kTRUE;
     }       
-  }
+  } 
 
   // HL definition: is there at least one particle in |eta|<1?
   Bool_t isThereOneCentralPart = kFALSE;
@@ -334,20 +338,46 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
     }
   }
 
-  
-
-  fHistIev->Fill(kHistINEL);
-  if (!isSD)                 fHistIev->Fill(kHistNSD);
-  if (isSD)                  fHistIev->Fill(kHistSiD);
-  if (isND)                  fHistIev->Fill(kHistND);
-  if (isThereOneCentralPart) fHistIev->Fill(kHistHL);
-  if(!(Int_t(fHistIev->GetBinContent(fHistIev->FindBin(kHistINEL)))%500)) 
-    cout << "Event " << Int_t(fHistIev->GetBinContent(fHistIev->FindBin(kHistINEL))) << endl;
+    
   
 
   static const Float_t ymax =0.5;
   // Track loop
   Int_t multiplicity[kNHist][kNEtaHist] = {{0}};  
+
+  // first loop to determine multiplicity
+  for (Int_t iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
+    AliMCParticle *track = (AliMCParticle*)mcEvent->GetTrack(iTrack);
+    if (!track) {
+      Printf("ERROR: Could not receive track %d", iTrack);
+      continue;
+    }
+    Bool_t isPrimary = mcEvent->Stack()->IsPhysicalPrimary(iTrack);
+    if (isPrimary && track->Charge() != 0){
+      for(Int_t ihist = 0; ihist < kNEtaHist; ihist++){
+	if(track->Eta() > -fEtaBins[ihist] && track->Eta() < fEtaBins[ihist]) {
+	  multiplicity[kHistINEL][ihist]++;
+	  if(!isSD)                  multiplicity[kHistNSD][ihist]++;
+	  if(isSD)                   multiplicity[kHistSiD][ihist]++;
+	  if(isND)                   multiplicity[kHistND] [ihist]++;
+	  if(isThereOneCentralPart)  multiplicity[kHistHL] [ihist]++;
+  
+	}
+      }
+    }
+  }
+
+  // if(multiplicity[kHistINEL][kEta05] < 1450 || multiplicity[kHistINEL][kEta05] > 1750) return; // FIXME:  ONLY CENTRAL EVENTS 1600 +- 150
+  // fHistIev->Fill(kHistINEL);
+  // if (!isSD)                 fHistIev->Fill(kHistNSD);
+  // if (isSD)                  fHistIev->Fill(kHistSiD);
+  // if (isND)                  fHistIev->Fill(kHistND);
+  // if (isThereOneCentralPart) fHistIev->Fill(kHistHL);
+  // if(!(Int_t(fHistIev->GetBinContent(fHistIev->FindBin(kHistINEL)))%500)) 
+    
+    cout << "Event " << Int_t(fHistIev->GetBinContent(fHistIev->FindBin(kHistINEL))) << endl;
+	  
+
   for (Int_t iTrack = 0; iTrack < mcEvent->GetNumberOfTracks(); iTrack++) {
     AliMCParticle *track = (AliMCParticle*)mcEvent->GetTrack(iTrack);
     if (!track) {
@@ -365,7 +395,9 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
       Int_t particleID = kNPart;
       for(Int_t ipart = 0; ipart < kNPart; ipart++){
 	if(track->PdgCode() == fPDGCodes[ipart]) particleID = ipart; // Found one otf the expected particles, will be used to fille species histos
+	
 	if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart]) {
+	  cout << "Found " << iTrack <<" "  << fPartNames[ipart] << endl;
 	  fHistPtID[kHistINEL][ipart]->Fill(track->Pt());
 	}
 	else if(track->Y() > -ymax && track->Y() < ymax) {
@@ -405,7 +437,7 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
 	fHistEta[kHistND]->Fill(track->Eta());      
 	if (isEtaLess08) fHistPt [kHistND]->Fill(track->Pt());      
 	if(track->Eta() > -fEtaMax && track->Eta() < fEtaMax) fHistNParticlesAtMidRapidity->Fill(kHistND);
-		for(Int_t ipart = 0; ipart < kNPart; ipart++){
+	for(Int_t ipart = 0; ipart < kNPart; ipart++){
 	  if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart])  fHistPtID[kHistND][ipart]->Fill(track->Pt());
 	  //	  else fHistPtID[kHistINEL][kNPart]->Fill(track->Pt()); // all others
 	}
@@ -423,18 +455,33 @@ void AliAnalysisTaskdNdetaMC::UserExec(Option_t *)
       }
 
       // fill array of multiplicity for different classes of events
-      // and in different eta ranges
-      for(Int_t ihist = 0; ihist < kNEtaHist; ihist++){
-	if(track->Eta() > -fEtaBins[ihist] && track->Eta() < fEtaBins[ihist]) {
-	  multiplicity[kHistINEL][ihist]++;
-	  if(!isSD)                  multiplicity[kHistNSD][ihist]++;
-	  if(isSD)                   multiplicity[kHistSiD][ihist]++;
-	  if(isND)                   multiplicity[kHistND] [ihist]++;
-	  if(isThereOneCentralPart)  multiplicity[kHistHL] [ihist]++;
+      // and in different eta ranges 
+      // MOVED IN A SEPARATE LOOP
+      // for(Int_t ihist = 0; ihist < kNEtaHist; ihist++){
+      // 	if(track->Eta() > -fEtaBins[ihist] && track->Eta() < fEtaBins[ihist]) {
+      // 	  multiplicity[kHistINEL][ihist]++;
+      // 	  if(!isSD)                  multiplicity[kHistNSD][ihist]++;
+      // 	  if(isSD)                   multiplicity[kHistSiD][ihist]++;
+      // 	  if(isND)                   multiplicity[kHistND] [ihist]++;
+      // 	  if(isThereOneCentralPart)  multiplicity[kHistHL] [ihist]++;
   
-	}
+      // 	}
+      //}
+    } // if (primary and charged)
+    // extra loop to check for lambdas
+    for(Int_t ipart = kLambda; ipart < kLambdaInclusive; ipart++){
+      //	if(track->PdgCode() == fPDGCodes[ipart]) particleID = ipart; // Found one otf the expected particles, will be used to fille species histos
+      if(track->Y() > -ymax && track->Y() < ymax && track->PdgCode() == fPDGCodes[ipart]) {
+	//	cout << "Found (LAMBDA)" << " " << iTrack << " " << isPrimary << " " << fPartNames[ipart] << " " << fPartNames[ipart+2] << endl;
+	if(isPrimary) {
+	  //	  cout << " - prim" << endl;
+	  fHistPtID[kHistINEL][ipart]->Fill(track->Pt());
+	} else if(mcEvent->Stack()->IsSecondaryFromWeakDecay(iTrack)) {
+	  fHistPtID[kHistINEL][ipart+2]->Fill(track->Pt()); // inclusive lambdas are offset by 2 elements
+	}       
       }
     }
+
   } //track loop 
 
 

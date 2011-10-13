@@ -14,6 +14,7 @@ enum {kHistINEL,kHistNSD,kHistND,kHistSiD,kHistHL,kNHist};
 enum {kEta05,kEta10,kEta14,kNEtaHist};// 
 enum {kPionPos, kProtonPos, kKaonPos, kElectronPos, kMuonPos,
       kPionNeg, kProtonNeg, kKaonNeg, kElectronNeg, kMuonNeg,
+      kLambda, kLambdaBar, kLambdaInclusive, kLambdaBarInclusive,
       kNPart}; //Particles used for identified particles pt spectra
 #include "AliAnalysisTaskSE.h"
 
