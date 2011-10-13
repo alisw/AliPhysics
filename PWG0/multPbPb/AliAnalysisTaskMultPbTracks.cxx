@@ -22,6 +22,7 @@
 #include <iostream>
 #include "AliAnalysisMultPbCentralitySelector.h"
 #include "AliTriggerAnalysis.h"
+#include "AliPIDResponse.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ ClassImp(AliAnalysisTaskMultPbTracks)
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 : AliAnalysisTaskSE("TaskMultPbTracks"),
-  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+  fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0), fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
 {
   // constructor
 
@@ -43,7 +44,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks()
 }
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
   : AliAnalysisTaskSE(name),
-    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+    fESD(0),fHistoManager(0),fCentrSelector(0),fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
 {
   //
   // Standard constructur which should be used
@@ -59,7 +60,7 @@ AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const char * name)
 }
 
 AliAnalysisTaskMultPbTracks::AliAnalysisTaskMultPbTracks(const AliAnalysisTaskMultPbTracks& obj) : 
-  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0)
+  AliAnalysisTaskSE(obj) ,fESD (0), fHistoManager(0), fCentrSelector(0), fTrackCuts(0),fTrackCutsNoDCA(0),fOfflineTrigger(0),fIsMC(0),fIsTPCOnly(0), fTriggerAnalysis(0),fPIDResponse(0)
 {
   //copy ctor
   fESD = obj.fESD ;
@@ -103,6 +104,12 @@ void AliAnalysisTaskMultPbTracks::UserCreateOutputObjects()
 
   fTriggerAnalysis = new AliTriggerAnalysis();
   fTriggerAnalysis->SetAnalyzeMC(fIsMC);
+
+  //The common PID object can then be retrieved from the input handler. This can naturally be done in the UserCreateOutputObjects:
+  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
+  fPIDResponse = inputHandler->GetPIDResponse();
+
 }
 
 
@@ -290,6 +297,20 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     Bool_t accepted = fTrackCuts->AcceptTrack(esdTrack);
     Bool_t acceptedNoDCA = fTrackCutsNoDCA->AcceptTrack(esdTrack);
 
+    // accepted = accepted && ((fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) > 2) ||
+    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion    ) < 1) || 
+    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton  ) < 1) || 
+    // 			    (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon    ) < 1) 
+    // 			    //			    (esdTrack->P() > 1.2)
+    // 			    );//FIXME SKIP ELECTRONS below p = 1.2 gev, make configurable. Keep particles if they are in the crossing
+
+    // acceptedNoDCA = acceptedNoDCA && ((fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kElectron) > 2) ||
+    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion    ) < 1) || 
+    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton  ) < 1) || 
+    // 				      (fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon    ) < 1) 
+    // 				      //				      (esdTrack->P() > 1.2)
+    // 				      );//FIXME SKIP ELECTRONS below p = 1.2 gev, make configurable. Keep particles if they are in the crossing
+
     if(accepted) acceptedTracks++;
 
     // Compute weighted offset
@@ -351,7 +372,6 @@ void AliAnalysisTaskMultPbTracks::UserExec(Option_t *)
     // Get label and corresponding mcPart;
     if (fIsMC) {
       Int_t label = TMath::Abs(esdTrack->GetLabel()); // no fakes!!!
-      //Int_t label = esdTrack->GetLabel(); // 
       AliMCParticle *mcPart  = label < 0 ? 0 : (AliMCParticle*)fMCEvent->GetTrack(label);
       if (!mcPart)  {
 	if(accepted)

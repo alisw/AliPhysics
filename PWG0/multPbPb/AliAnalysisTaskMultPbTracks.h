@@ -19,7 +19,7 @@ class AliESDtrackCuts;
 class AliAnalysisMultPbCentralitySelector;
 class AliAnalysisMultPbTrackHistoManager;
 class AliTriggerAnalysis;
-
+class AliPIDResponse;
 
 class AliAnalysisTaskMultPbTracks : public AliAnalysisTaskSE {
 
@@ -61,6 +61,7 @@ private:
   Bool_t fIsMC; // true if processing montecarlo
   Bool_t fIsTPCOnly; // if you only want to use TPC tracks
   AliTriggerAnalysis * fTriggerAnalysis; // for offline triggers
+  AliPIDResponse *fPIDResponse;     //! PID response object
 
 
   AliAnalysisTaskMultPbTracks& operator=(const AliAnalysisTaskMultPbTracks& task);
