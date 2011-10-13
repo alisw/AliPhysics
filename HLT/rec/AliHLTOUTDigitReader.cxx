@@ -205,6 +205,10 @@ int AliHLTOUTDigitReader::CloseTree()
 {
   // see header file for class documentation
   int iResult=0;
+  for (int i=0; i<fNofDDLs; i++) {
+    if (fppDigitArrays[i]) delete fppDigitArrays[i];
+    fppDigitArrays[i]=NULL;
+  }
   if (fppDigitArrays) delete[] fppDigitArrays;
   fppDigitArrays=NULL;
   if (fpEquipments) delete[] fpEquipments;
