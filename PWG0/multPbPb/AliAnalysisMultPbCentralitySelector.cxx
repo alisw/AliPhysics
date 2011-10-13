@@ -62,7 +62,7 @@ Bool_t AliAnalysisMultPbCentralitySelector::IsCentralityBinSelected(AliESDEvent*
     //    cout << "ok" << endl;
 
   }
- else if(fIsMC || fUseMultRange) {
+ else if(fUseMultRange) {
     if(!trackCuts){
       AliFatal("Track cuts object is invalid");
     }

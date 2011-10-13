@@ -31,7 +31,8 @@ etaMax=0.5
 npart=381.188
 weakFactor=-1
 useSingleBin=kTRUE
-OUTPATH=output.BAK2010
+#OUTPATH=output.BAK2010
+OUTPATH=output
 
 give_help() {
 
