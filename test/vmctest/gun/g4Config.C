@@ -48,8 +48,12 @@ void Config()
 //                                "specialCuts+specialControls+stackPopper+stepLimiter",
 //                                 true);
       
-
-    geant4 = new TGeant4("TGeant4", "The Geant4 Monte Carlo", runConfiguration);
+    geant4 = new TGeant4("TGeant4", 
+                         "The Geant4 Monte Carlo : QGSP_BERT_EMV+optical", 
+                         runConfiguration);
+             // Repeat physics selection in the title; to be removed
+             // with new geant4_vmc tag (1.13)            
+                         
     cout << "Geant4 has been created." << endl;
   } 
   else {
