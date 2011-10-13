@@ -1804,8 +1804,8 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
   //
 
   // Current track X-position
-  Double_t xpos = t.GetX(),
-           mass = t.GetMass();
+  Double_t xpos = t.GetX()/*,
+           mass = t.GetMass()*/;
 
   // Direction: inward or outward
   Double_t dir  = (xpos < xToGo) ? 1.0 : -1.0;
@@ -1843,7 +1843,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
     // Propagate the track to the X-position after the next step
     if (!t.PropagateTo(x, param[1], param[0]*param[4])) return 0;
 
-    // Correct for mean material budget
+/*    // Correct for mean material budget
     Double_t dEdx(0.),
              bg(t.GetP()/mass);
     if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=3){
@@ -1877,7 +1877,7 @@ Int_t AliTRDtrackerV1::PropagateToX(AliTRDtrackV1 &t, Double_t xToGo, Double_t m
     }
     if(AliLog::GetDebugLevel("TRD", "AliTRDtrackerV1")>=2) printf("D-AliTRDtrackerV1::PropagateTo(): dEdx(bg=%e, m=%e)= %e[GeV/cm]\n", bg, mass, dEdx);
     if (!t.CorrectForMeanMaterialdEdx(param[1], dir*param[0]*param[4], mass, dEdx)) return 0;
-
+*/
     // Rotate the track if necessary
     if(!AdjustSector(&t)) return 0;
 

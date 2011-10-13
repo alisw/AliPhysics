@@ -584,7 +584,7 @@ Int_t AliTRDtrackV1::GetProlongation(Double_t xk, Double_t &y, Double_t &z) cons
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t /*xx0*/, Double_t xrho)
+Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t xx0, Double_t xrho)
 {
   //
   // Propagates this track to a reference plane defined by "xk" [cm] 
@@ -621,8 +621,7 @@ Bool_t AliTRDtrackV1::PropagateTo(Double_t xk, Double_t /*xx0*/, Double_t xrho)
       AddTimeStep(l2);
     }
   }
-
-//   if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
+  if (!AliExternalTrackParam::CorrectForMeanMaterial(xx0, xrho, GetMass())) return kFALSE;
 
 
   {
