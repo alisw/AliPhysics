@@ -1081,6 +1081,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
       "trackIn.="<<trackIn<<
       "trackOut.="<<trackOut<<
       "tpcOut.="<<tpcOut<<
+      "seed.="<<seed<<
       "medianMIP0="<<medianMIP0<<    // median MIP position as estimated from the array of (not only) "MIPS"
       //dedx 
       "truncUp.="<<&truncUp<<
