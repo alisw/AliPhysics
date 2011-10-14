@@ -128,7 +128,8 @@ void AliAnalysisTaskSPD::UserCreateOutputObjects() {
 
   Info("CreateOutputObjects","CreateOutputObjects of task %s", GetName());
   if(fRunNb!=999){
-    LoadGeometryFromOCDB();
+    // Geometry is loaded (including ITS alignment) by AliTaskCDBconnect (A.G. 14/10/2011) 
+    if (fTest) LoadGeometryFromOCDB();
   }
   fSegSPD = new AliITSsegmentationSPD();
 

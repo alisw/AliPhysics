@@ -1659,6 +1659,7 @@ void AliAnalysisTaskITSTrackingCheck::UserCreateOutputObjects()
   fNtupleITSAlignSPDTracklets = new TNtuple("fNtupleITSAlignSPDTracklets","ITS alignment checks: SPD tracklets wrt SPD vertex","phi:theta:z:dxy:dz:pt");  
   fOutput->Add(fNtupleITSAlignSPDTracklets);
 
+  PostData(1, fOutput);
   return;
 }
 
