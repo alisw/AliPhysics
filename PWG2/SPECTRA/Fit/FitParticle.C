@@ -14,18 +14,19 @@
 #include "TSystem.h"
 #include "THashList.h"
 #include "TMinuit.h"
+#include "TLatex.h"
 
 using namespace std;
 #endif
 
-enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave};
+enum {kFitExpPt, kFitLevi, fFitExpMt, kFitBoltzmann, kFitBlastWave, kFitBoseEinstein, kFitFermiDirac};
 
-void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt) {
+void FitParticle(const char * file, const char * histo, const char * partName,  const char * listname=0, Float_t min = 0, Float_t max =3, Float_t scaleHisto = -1., Int_t fitFunc = kFitLevi, Int_t vartype = AliBWFunc::kdNdpt, const char * fileOut = 0, Bool_t wait = 0) {
 
   // Generic Macro to fit any particle using the PWG2/SPECTRA/Fit macros
   //
   // You have to provide:
-  // - file: file name 
+  // - file: file name. If not set, uses gFile
   // - histo: histogram name name (assumend to be in the main folder of the file)
   // - listname: if different from 0, histo is looked in this tlist
   // - partName: it is used to get the mass of the particle from
@@ -78,28 +79,69 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   Double_t mass = TDatabasePDG::Instance()->GetParticle(partName)->Mass();
   cout << "Fitting ["<<partName<<"], mass: " << mass << endl;
   
+
+  AliLatexTable * table;
+
   TF1* func = 0;
   Int_t normPar = -1;
+  Int_t slopePar=0;
   if (fitFunc == kFitLevi)   {
     func = fm->GetLevi (mass, 0.4, 20,3);
-    func->SetParLimits(1,1,100);
+    func->SetParLimits(1,0.0001,20000);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
     normPar = 0;
+    slopePar = 2;
   }
   if (fitFunc == kFitExpPt)  {
     func = fm->GetPTExp(0.2, 20);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & pT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    normPar = 0;
+    slopePar = 1;
   }
   if (fitFunc == fFitExpMt)  {
     func = fm->GetMTExp(mass,0.2, 20);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & mT Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    normPar = 0;
+    slopePar = 1;
   }
   if (fitFunc == kFitBoltzmann)  {
     func = fm->GetBoltzmann(mass, 0.2, 20);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & Bz Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    normPar = 0;
+    slopePar = 1;
+
   }
   if (fitFunc == kFitBlastWave)  {
-    func = fm->GetBGBW(mass,0.6,0.3, 20);
+    func = fm->GetBGBW(mass,0.6,0.3, 1, 1e5);// beta, T, n, norm 
+    table = new AliLatexTable(11,"cc|ccccccccccc");
+    table->InsertCustomRow("Part & Func & Yield & T & beta & n & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    func->SetParLimits(1, 0.1, 0.99);
+    func->SetParLimits(2, 0.01, 1);
+    func->SetParLimits(3, 0.01, 2);
+    normPar = 4;
+    slopePar = 2;
+  }
+  if (fitFunc == kFitBoseEinstein)  {
+    func = fm->GetBoseEinstein(mass,0.3,20);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & BE Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    normPar = 0;
+    slopePar = 1;
+  }
+  if (fitFunc == kFitFermiDirac)  {
+    func = fm->GetFermiDirac(mass,0.3,20);
+    table = new AliLatexTable(9,"c|cccccccc");
+    table->InsertCustomRow("Part & Func & Yield & FD Slope & $\\Chi^2$/NDF & Min X & Fit Min & Fit Max & Frac Below ");
+    normPar = 0;
+    slopePar = 1;
   }
 
-
-  TFile * f = new TFile(file);  
+  
+  TFile * f = file ? new TFile(file) : gFile;  
   TH1 * h = 0;
   if(listname){
     TList * l = (TList*) gDirectory->Get(listname);
@@ -132,45 +174,59 @@ void FitParticle(const char * file, const char * histo, const char * partName,  
   func->Draw("same");
   cout << "4" << endl;
 
-
   // Print results nicely
-  AliLatexTable table(9,"c|ccccccc");
-  table.InsertCustomRow("Part & Integral & T Slope & n & $\\Chi^2$/NDF & Min X & Frac Above & \\langle p_{t} \\rangle  & \\langle p_{t}^{2} \\rangle");
   // populate table
-  // Float_t yield  = func->Integral(0,100);
-  // Float_t yieldE = func->IntegralError(0,100);
+
   Double_t yield=0,yieldE=0;
   cout << "Y" << endl;
   AliBWTools::GetYield(h,func,yield,yieldE);  
   cout << "YE" << endl;
+  TLatex * l = new TLatex(2,(h->GetMaximum()+h->GetMinimum())/2,Form("%3.3f #pm %3.3f (%s)", yield,yieldE, func->GetName()));
+  l->Draw();
+
+  if(wait)  c->WaitPrimitive();
+  if(fileOut) {
+    TFile * fout = new TFile(fileOut, "update");    
+    c->SetName(Form("c_%s_%s_fit_%2.2f_%2.2f",histo, func->GetName(), min, max));
+    c->Write();
+    fout->Purge(); // remove old canvases
+    fout->Close();
+  }
+
 //   Float_t yield  = func->Integral(0.45,1.05);
 //   Float_t yieldE = func->IntegralError(0.45,1.05);
-  Double_t tslope   = func->GetParameter(2);
-  Double_t tslopeE = func->GetParError(2);	
+  cout << "Slope Par: "<< slopePar << endl;
 
-  table.SetNextCol(partName);
-  table.SetNextCol(yield,yieldE,-4);
-  table.SetNextCol(tslope,tslopeE,-4);
-  table.SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
-  table.SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF()));
-  cout << "5" << endl;
+  Double_t tslope   = func->GetParameter(slopePar);
+  Double_t tslopeE = func->GetParError(slopePar);	
+
+  table->SetNextCol(Form("%s (%s)", partName, h->GetName()));
+  table->SetNextCol(func->GetName());
+  table->SetNextCol(yield,yieldE,-4);
+  table->SetNextCol(tslope,tslopeE,-4);
+  if(fitFunc == kFitBlastWave) {
+    table->SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
+    table->SetNextCol(func->GetParameter(3),func->GetParError(3),-4);
+  }
+  //  table->SetNextCol(func->GetParameter(1),func->GetParError(1),-4);
+  table->SetNextCol(Form("%2.2f/%d",func->GetChisquare(),func->GetNDF()));
   Float_t lowestPoint = TMath::Max(AliBWTools::GetLowestNotEmptyBinEdge(h),min);
-  cout << "6" << endl;
-  //Float_t yieldAbove = 0;
-  Float_t yieldAbove  = func->Integral(lowestPoint,100);
-  table.SetNextCol(lowestPoint,-3);
-  table.SetNextCol(yieldAbove/yield,-3);
-  Float_t mean=0, meane=0;
-  Float_t mean2=0, mean2e=0;
-  cout << "6" << endl;
-  AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
-  AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
-  cout << "8" << endl;
-  table.SetNextCol(mean,  meane ,-4);
-  table.SetNextCol(mean2, mean2e,-4);
+  //  Float_t yieldAbove  = func->Integral(lowestPoint,100);
+  Float_t yieldBelow  = func->Integral(0,lowestPoint);
+  table->SetNextCol(lowestPoint,-3);
+  table->SetNextCol(min,-2);
+  table->SetNextCol(max,-2);
+  table->SetNextCol(yieldBelow/yield,-3);
+
+  // Float_t mean=0, meane=0;
+  // Float_t mean2=0, mean2e=0;
+  // AliBWTools::GetMean      (func, mean,  meane , 0.,100., normPar);
+  // AliBWTools::GetMeanSquare(func, mean2, mean2e, 0.,100., normPar);
+  // table->SetNextCol(mean,  meane ,-4);
+  // table->SetNextCol(mean2, mean2e,-4);
   //			 fMean2->IntegralError(0,100)/func->Integral(0,100),-7);
-  table.InsertRow();
-  table.PrintTable("ASCII");
+  table->InsertRow();
+  table->PrintTable("ASCII");
   
 
 
