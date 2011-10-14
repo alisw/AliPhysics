@@ -203,7 +203,9 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
        // fhRawEff[ih]->GetListOfFunctions()->Add(text);	
 
      }
-  return checkr;
+    delete linelowyellow;
+    delete linelowred;
+    return checkr;
   
 }
 
