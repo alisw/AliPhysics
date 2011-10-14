@@ -40,10 +40,13 @@ public:
   virtual AliFemtoPairCut* Clone();
   void SetMaxEEMinv(Double_t maxeeminv);
   void SetMaxThetaDiff(Double_t maxdtheta);
+  void SetTPCEntranceSepMinimum(double dtpc);
   
  protected:
   Double_t fMaxEEMinv; // Maximum allowed ee Minv
   Double_t fMaxDTheta; // Maximum polar angle difference
+  Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
+
 
 #ifdef __ROOT__
   ClassDef(AliFemtoPairCutAntiGamma, 0)

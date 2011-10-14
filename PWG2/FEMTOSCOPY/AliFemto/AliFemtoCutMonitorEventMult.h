@@ -39,6 +39,8 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   virtual void Fill(const AliFemtoEvent* aEvent,const AliFemtoParticleCollection* aCollection)
   {AliFemtoCutMonitor::Fill(aEvent, aCollection);}
 
+  void SetReadMC(Bool_t mc);
+  void AdditionalMultHistsOn(Bool_t addhists);
   void Write();
 
   virtual TList *GetOutputList();
@@ -48,6 +50,9 @@ class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor{
   TH1D *fNormEvMult; // Normalized event multiplicity distribution
   TH1D *fSPDMult;    // SPD tracklet multiplicity
   TH2D *fMultSumPt;  // Event total pT vs. multiplicity
+
+  Bool_t freadMC;     // If true - add only one histogram to the output
+  Bool_t faddhists;   // If true - add only additional multiplicity histograms
   
   TH1D *fEstimateITSTPC;     // Multiplicity estimate ITS+TPC
   TH1D *fEstimateTracklets;  // Multiplicity estimate Tracklets
