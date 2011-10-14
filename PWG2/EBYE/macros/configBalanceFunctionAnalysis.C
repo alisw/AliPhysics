@@ -29,14 +29,27 @@ AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD",
 }
 
 //__________________________________________________//
-AliESDtrackCuts *GetTrackCutsObject() {
+AliESDtrackCuts *GetTrackCutsObject(Double_t ptMin, Double_t ptMax, Double_t etaMin, Double_t etaMax, Double_t maxTPCchi2, Double_t maxDCAz, Double_t maxDCAxy, Int_t minNClustersTPC) {
+
   // only used for ESDs
   // Function to setup the AliESDtrackCuts object and return it
   AliESDtrackCuts *cuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  cuts->SetMinNClustersTPC(70);
+  cuts->SetRequireTPCStandAlone(kTRUE); // TPC only cuts!  
+
+  // extra TPC cuts (Syst studies)
+  if(minNClustersTPC != -1)  cuts->SetMinNClustersTPC(minNClustersTPC);
+  else cuts->SetMinNClustersTPC(70); // standard for filter bit 128
   
-  cuts->SetPtRange(0.3,1.5);
-  cuts->SetEtaRange(-0.8,0.8);
+  if(maxTPCchi2 != -1) cuts->SetMaxChi2PerClusterTPC(maxTPCchi2);
+
+  // extra DCA cuts (Syst studies)  
+  if(maxDCAz!=-1 && maxDCAxy != -1){
+    cuts->SetMaxDCAToVertexZ(maxDCAz);
+    cuts->SetMaxDCAToVertexXY(maxDCAxy);
+  }
+
+  cuts->SetPtRange(ptMin,ptMax);
+  cuts->SetEtaRange(etaMin,etaMax);
   cuts->DefineHistograms(1);
   //cuts->SaveHistograms("trackCuts");
 
