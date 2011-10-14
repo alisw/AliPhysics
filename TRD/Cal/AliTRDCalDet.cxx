@@ -639,6 +639,10 @@ Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads)
     det++;
   }
   
+  Double_t mean;
+  if(!wghtPads) mean= meanALL;
+  if(wghtPads) mean= meanWP;
+  
   det=0;
   while(det < 540) {
     Float_t val= fData[det];
@@ -649,7 +653,7 @@ Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads)
 		 (TMath::Abs(val - meanWP) > 0.0001) &&
 		 (TMath::Abs(val - meanSMWP[(Int_t)(det / (6*5) )]) > 0.0001) )
         ) {
-      sum+=val*val;
+      sum+=(val-mean)*(val-mean);
       ndet++;
     }
     det++;
