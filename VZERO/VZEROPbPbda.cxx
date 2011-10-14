@@ -60,6 +60,7 @@ int main(int argc, char **argv) {
   
 //___________________________________________________
 // Get parameters from V00DAEqualFactors.config file
+  Int_t    neventsMin = 2000;
 
   Int_t    kStartClock = 9;  // First clock in the search for max adc
   Int_t    kEndClock = 11;   // Last clock in the search for max adc
@@ -78,16 +79,16 @@ int main(int argc, char **argv) {
   } else {
     /* open the config file and retrieve cuts */
     FILE *fpConfig = fopen("V00DAEqualFactors.config","r");
-    int res = fscanf(fpConfig,"%d %d %d %d %hhu %d %f",
-		     &kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kNFlagsCut,&kNBins,&kRange);
-    if(res!=7) {
-      printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 6 integers and 1 float are expected - \n");
+    int res = fscanf(fpConfig,"%d %d %d %d %d %hhu %d %f",
+		     &neventsMin,&kStartClock,&kEndClock,&kNPreClocks,&kNPostClocks,&kNFlagsCut,&kNBins,&kRange);
+    if(res!=8) {
+      printf("Failed to get values from Config file (V00DAEqualFactors.config): wrong file format - 7 integers and 1 float are expected - \n");
     }
     fclose(fpConfig);
   }
   
-  printf("First LHC Clock = %d; Last LHC Clock = %d; N Pre Clock = %d ; N Post Clock = %d; Minimum number of TDC flags = %hhu; Number of histogram bins = %d; Histogram range = %.3f\n",
-	 kStartClock, kEndClock, kNPreClocks, kNPostClocks, kNFlagsCut, kNBins, kRange);
+  printf("Minimum number of events to process = %d; First LHC Clock = %d; Last LHC Clock = %d; N Pre Clock = %d; N Post Clock = %d; Minimum number of TDC flags = %hhu; Number of histogram bins = %d; Histogram range = %.3f\n",
+	 neventsMin,kStartClock, kEndClock, kNPreClocks, kNPostClocks, kNFlagsCut, kNBins, kRange);
 
   TH1D *fMedian[64];
   for(Int_t j = 0; j < 64; ++j) fMedian[j] = new TH1D(Form("fMedian_%d",j),"Slopes weighted median, channel par channel",kNBins,0,kRange);
@@ -118,6 +119,7 @@ int main(int argc, char **argv) {
   monitorSetNoWaitNetworkTimeout(1000);
   
   /* init counters on events */
+  int neventsPhysicsAll=0;
   int neventsPhysics=0;
   int neventsTotal=0;
 
@@ -163,6 +165,7 @@ int main(int argc, char **argv) {
   
 	   AliVZERORawStream* rawStream  = new AliVZERORawStream(rawReader); 
 	   if (rawStream->Next()) {	
+	     neventsPhysicsAll++;
 	     UShort_t triggers = rawStream->GetTriggerInputs();
 	     UChar_t nFlags = 0;
 	     for(Int_t i = 0; i < 64; ++i) {
@@ -234,13 +237,13 @@ int main(int argc, char **argv) {
 
   }  // loop over events
   
-  printf("%d physics events processed\n",neventsPhysics);
+  printf("%d physics events processed (out of %d physics and %d total events)\n",neventsPhysics,neventsPhysicsAll,neventTotal);
     
 //___________________________________________________________________________
 //  Computes regression parameters
 // charge_i = p0 + charge_tot * p1
 
-  if(neventsPhysics>2000){
+  if(neventsPhysics>neventsMin){
     /* open result file to be exported to FES */
     FILE *fp=NULL;
     fp=fopen("./V0_EqualizationFactors.dat","w");
