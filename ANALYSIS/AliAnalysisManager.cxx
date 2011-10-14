@@ -234,27 +234,29 @@ Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
 // alice data in alien.
 //    sim:  /alice/sim/<production>/run_no/...
 //    data: /alice/data/year/period/000run_no/... (ESD or AOD)
+   TString type = "unknown";
    TString s(path);
+   if (s.Contains("/alice/data")) type = "real";
+   else if (s.Contains("/alice/sim")) type = "simulated";
    TString srun;
-   Int_t run = 0;
-   Int_t index = s.Index("/alice/sim");
-   if (index >= 0) {
-      for (Int_t i=0; i<3; i++) {
-         index = s.Index("/", index+1);
-         if (index<0) return 0;
+   Int_t ind1, ind2;
+   ind1 = s.Index("/00");
+   if (ind1>0) {
+      ind2 = s.Index("/",ind1+1);
+      if (ind2>0) srun = s(ind1+1, ind2-ind1-1);
+   }   
+   if (srun.IsNull()) {
+      ind1 = s.Index("/LHC");
+      if (ind1>0) {
+         ind1 = s.Index("/",ind1+1);
+         if (ind1>0) {
+            ind2 = s.Index("/",ind1+1);
+            if (ind2>0) srun = s(ind1+1, ind2-ind1-1);
+         }
       }
-      srun = s(index+1,6);
-      run = atoi(srun);
-   }
-   index = s.Index("/alice/data");
-   if (index >= 0) {
-      for (Int_t i=0; i<4; i++) {
-         index = s.Index("/", index+1);
-         if (index<0) return 0;
-      }
-      srun = s(index+1,9);
-      run = atoi(srun);
-   }
+   }         
+   Int_t run = srun.Atoi();
+   if (run>0) printf("=== GetRunFromAlienPath: run %d of %s data ===\n", run, type.Data());
    return run;
 }   
 
