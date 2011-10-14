@@ -39,7 +39,8 @@ AliHLTEMCALMapper::AliHLTEMCALMapper(const unsigned long specification ) : AliHL
 
 AliHLTEMCALMapper::~AliHLTEMCALMapper()
 {
-
+  if (fSpecificationMapPtr) delete [] fSpecificationMapPtr;
+  if (fHw2geomapPtr) delete [] fHw2geomapPtr;
 }
 
 
