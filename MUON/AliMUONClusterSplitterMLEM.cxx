@@ -440,7 +440,7 @@ AliMUONClusterSplitterMLEM::Fit(const AliMUONCluster& cluster,
 	param[j] = parOk[j]; 
       }
       param[fNpar] = 0.6;
-      parmin[fNpar] = 0; 
+      parmin[fNpar] = 1E-9; 
       parmax[fNpar++] = 1; 
     }
       
@@ -945,7 +945,7 @@ AliMUONClusterSplitterMLEM::Split(const AliMUONCluster& cluster,
         
         // Flag clusters for fit
         nForFit = 0;
-        while (minGroup[nForFit] >= 0 && nForFit < 3)
+        while (nForFit < 3 && minGroup[nForFit] >= 0)
         {
           if (fDebug) cout << clustNumb[minGroup[nForFit]] << " ";
           clustFit[nForFit] = clustNumb[minGroup[nForFit]];
