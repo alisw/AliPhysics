@@ -83,7 +83,9 @@ set ( SRCS
     FEMTOSCOPY/AliFemto/AliFemtoCutMonitor.cxx 
     FEMTOSCOPY/AliFemto/AliFemtoCorrFctn.cxx 
     FEMTOSCOPY/AliFemto/AliAnalysisTaskFemto.cxx 
-    FEMTOSCOPY/AliFemto/AliTwoTrackRes.cxx 
+    FEMTOSCOPY/AliFemto/AliTwoTrackRes.cxx
+    FEMTOSCOPY/AliFemto/AliFemtoMCTrackCut.cxx
+    FEMTOSCOPY/AliFemto/AliFemtoEventReaderKinematicsChain.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -129,6 +131,8 @@ set ( HDRS ${HDRS}
     FEMTOSCOPY/AliFemto/AliFemtoPicoEventCollectionVector.h 
     FEMTOSCOPY/AliFemto/AliFemtoEventWriter.h 
     FEMTOSCOPY/AliFemto/AliFemtoEventWriterCollection.h 
+    FEMTOSCOPY/AliFemto/AliFemtoMCTrackCut.h
+    FEMTOSCOPY/AliFemto/AliFemtoEventReaderKinematicsChain.h
     )
 
 set ( FSRCS  FEMTOSCOPY/AliFemto/AliFemtoFsiTools.F FEMTOSCOPY/AliFemto/AliFemtoFsiWeightLednicky.F)

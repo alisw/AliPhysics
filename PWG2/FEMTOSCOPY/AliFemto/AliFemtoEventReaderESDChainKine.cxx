@@ -15,6 +15,10 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 
+#include "AliMultiplicity.h"
+#include "AliCentrality.h"
+#include "AliEventplane.h"
+
 #include "AliFmPhysicalHelixD.h"
 #include "AliFmThreeVectorF.h"
 
@@ -29,6 +33,8 @@
 #include "AliGenCocktailEventHeader.h"
 
 #include "AliVertexerTracks.h"
+
+#include "AliPID.h"
 
 ClassImp(AliFemtoEventReaderESDChainKine)
 
@@ -48,7 +54,10 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fEvent(0x0),
   fStack(0x0),
   fGenHeader(0x0),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fESDpid(0),
+  fIsPidOwner(0)
+
 {
   //constructor with 0 parameters , look at default settings 
 }
@@ -65,7 +74,9 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fEvent(0x0),
   fStack(0x0),
   fGenHeader(0x0),
-  fRotateToEventPlane(0)
+  fRotateToEventPlane(0),
+  fESDpid(0),
+  fIsPidOwner(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
@@ -76,6 +87,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fEvent = new AliESDEvent();
   fStack = aReader.fStack;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fESDpid = aReader.fESDpid;
+  fIsPidOwner = aReader.fIsPidOwner;
 }
 //__________________
 AliFemtoEventReaderESDChainKine::~AliFemtoEventReaderESDChainKine()
@@ -101,6 +114,9 @@ AliFemtoEventReaderESDChainKine& AliFemtoEventReaderESDChainKine::operator=(cons
   fStack = aReader.fStack;
   fGenHeader = aReader.fGenHeader;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
+  fESDpid = aReader.fESDpid;
+  fIsPidOwner = aReader.fIsPidOwner;
+
   return *this;
 }
 //__________________
@@ -122,6 +138,31 @@ bool AliFemtoEventReaderESDChainKine::GetConstrained() const
 {
   // Check whether we read constrained or not constrained momentum
   return fConstrained;
+}
+//__________________
+void AliFemtoEventReaderESDChainKine::SetReadTPCInner(const bool readinner)
+{
+  fReadInner=readinner;
+}
+
+bool AliFemtoEventReaderESDChainKine::GetReadTPCInner() const
+{
+  return fReadInner;
+}
+
+//__________________
+void AliFemtoEventReaderESDChainKine::SetUseTPCOnly(const bool usetpconly)
+{
+  fUseTPCOnly=usetpconly;
+}
+
+bool AliFemtoEventReaderESDChainKine::GetUseTPCOnly() const
+{
+  return fUseTPCOnly;
+}
+void AliFemtoEventReaderESDChainKine::SetUseMultiplicity(EstEventMult aType)
+{
+  fEstEventMult = aType;
 }
 //__________________
 AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
@@ -149,8 +190,19 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   hbtEvent->SetZDCEMEnergy(fEvent->GetZDCEMEnergy());
   hbtEvent->SetZDCParticipants(fEvent->GetZDCParticipants());
   hbtEvent->SetTriggerMask(fEvent->GetTriggerMask());
-  hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
-	
+  //hbtEvent->SetTriggerCluster(fEvent->GetTriggerCluster());
+
+  if ((fEvent->IsTriggerClassFired("CINT1WU-B-NOPF-ALL")) ||
+      (fEvent->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) ||
+      (fEvent->IsTriggerClassFired("CINT1-B-NOPF-ALLNOTRD")) ||
+      (fEvent->IsTriggerClassFired("CINT1-B-NOPF-FASTNOTRD")))
+    hbtEvent->SetTriggerCluster(1);
+  else if ((fEvent->IsTriggerClassFired("CSH1WU-B-NOPF-ALL")) ||
+	   (fEvent->IsTriggerClassFired("CSH1-B-NOPF-ALLNOTRD")))
+    hbtEvent->SetTriggerCluster(2);
+  else 
+    hbtEvent->SetTriggerCluster(0);
+
   //Vertex
   double fV1[3];
   double fVCov[6];
@@ -161,42 +213,13 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       fVCov[4] = -1001.0;
   }
   else {
-    if (fEvent->GetPrimaryVertex()) {
-      fEvent->GetPrimaryVertex()->GetXYZ(fV1);
-      fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
-
-      if (!fEvent->GetPrimaryVertex()->GetStatus()) {
-	// Get the vertex from SPD
-	fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
-	fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
-	
-	
-	if (!fEvent->GetPrimaryVertexSPD()->GetStatus())
-	  fVCov[4] = -1001.0;
-	else {
-	  fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
-	  fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
-	}
-      }
-    }
-    else {
-      if (fEvent->GetPrimaryVertexSPD()) {
-	fEvent->GetPrimaryVertexSPD()->GetXYZ(fV1);
-	fEvent->GetPrimaryVertexSPD()->GetCovMatrix(fVCov);
-      }
-    }
-    if ((!fEvent->GetPrimaryVertex()) && (!fEvent->GetPrimaryVertexSPD()))
-      {
-	cout << "No vertex found !!!" << endl;
-	fV1[0] = 10000.0;
-	fV1[1] = 10000.0;
-	fV1[2] = 10000.0;
-	fVCov[4] = -1001.0;
-      }
+    fEvent->GetPrimaryVertex()->GetXYZ(fV1);
+    fEvent->GetPrimaryVertex()->GetCovMatrix(fVCov);
+    if (!fEvent->GetPrimaryVertex()->GetStatus())
+      fVCov[4] = -1001.0;
   }
 
   AliFmThreeVectorF vertex(fV1[0],fV1[1],fV1[2]);
-  
   hbtEvent->SetPrimVertPos(vertex);
   hbtEvent->SetPrimVertCov(fVCov);
 
@@ -222,10 +245,37 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 
   hbtEvent->SetReactionPlaneAngle(tReactionPlane);
 
+  Int_t spdetaonecount = 0;
+  
+  for (int iter=0; iter<fEvent->GetMultiplicity()->GetNumberOfTracklets(); iter++) 
+    if (fabs(fEvent->GetMultiplicity()->GetEta(iter)) < 1.0)
+      spdetaonecount++;
+
+  //  hbtEvent->SetSPDMult(fEvent->GetMultiplicity()->GetNumberOfTracklets());
+  hbtEvent->SetSPDMult(spdetaonecount);
+
   //starting to reading tracks
   int nofTracks=0;  //number of reconstructed tracks in event
   nofTracks=fEvent->GetNumberOfTracks();
   int realnofTracks=0;//number of track which we use ina analysis
+
+  int tNormMult = 0;
+  int tNormMultPos = 0;
+  int tNormMultNeg = 0;
+
+  Float_t tTotalPt = 0.0;
+
+  Float_t b[2];
+  Float_t bCov[3];
+
+  Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
+  
+  fEvent->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 1.2);
+  
+  hbtEvent->SetMultiplicityEstimateITSTPC(tITSTPC);
+  hbtEvent->SetMultiplicityEstimateTracklets(tTracklet);
+  //  hbtEvent->SetMultiplicityEstimateITSPure(tITSPure);
+  hbtEvent->SetMultiplicityEstimateITSPure(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
 
   Int_t *motherids;
   if (fStack) {
@@ -264,10 +314,67 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       //      cout << "Reading track " << i << endl;
       bool  tGoodMomentum=true; //flaga to chcek if we can read momentum of this track
 		
-      AliFemtoTrack* trackCopy = new AliFemtoTrack();	
+	
       const AliESDtrack *esdtrack=fEvent->GetTrack(i);//getting next track
       //      const AliESDfriendTrack *tESDfriendTrack = esdtrack->GetFriendTrack();
 
+
+      if ((esdtrack->GetStatus() & AliESDtrack::kTPCrefit) &&
+	  (esdtrack->GetStatus() & AliESDtrack::kITSrefit)) {
+	if (esdtrack->GetTPCNcls() > 70) 
+	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
+	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
+	      esdtrack->GetImpactParameters(b,bCov);
+	      if ((b[0]<0.2) && (b[1] < 0.25)) {
+		tNormMult++;
+		tTotalPt += esdtrack->Pt();
+	      }
+	    }
+	  }
+      }
+      else if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) {
+	if (esdtrack->GetTPCNcls() > 100) 
+	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 4.0) {
+	    if (TMath::Abs(esdtrack->Eta()) < 1.2) {
+	      esdtrack->GetImpactParameters(b,bCov);
+	      if ((b[0]<2.4) && (b[1] < 3.2)) {
+		tNormMult++;
+		tTotalPt += esdtrack->Pt();
+	      }
+	    }
+	  }
+      }
+      
+      hbtEvent->SetZDCEMEnergy(tTotalPt);
+      //       if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit)
+      // 	if (esdtrack->GetTPCNcls() > 80) 
+      // 	  if (esdtrack->GetTPCchi2()/esdtrack->GetTPCNcls() < 6.0) 
+      // 	    if (esdtrack->GetConstrainedParam())
+      // 	      if (fabs(esdtrack->GetConstrainedParam()->Eta()) < 0.5)
+      // 		if (esdtrack->GetConstrainedParam()->Pt() < 1.0) {
+      // 		  if (esdtrack->GetSign() > 0)
+      // 		    tNormMultPos++;
+      // 		  else if (esdtrack->GetSign() < 0)
+      // 		    tNormMultNeg--;
+      // 		}
+
+      // If reading ITS-only tracks, reject all with TPC
+      if (fTrackType == kITSOnly) {
+	if (esdtrack->GetStatus() & AliESDtrack::kTPCrefit) continue;
+	if (!(esdtrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
+	if (esdtrack->GetStatus() & AliESDtrack::kTPCin) continue;
+	UChar_t iclm = esdtrack->GetITSClusterMap();
+	Int_t incls = 0;
+	for (int iter=0; iter<6; iter++) if (iclm&(1<<iter)) incls++;
+	if (incls<=3) {
+	  if (Debug()>1) cout << "Rejecting track with " << incls << " clusters" << endl;
+	  continue;
+	}
+      }
+
+
+
+      AliFemtoTrack* trackCopy = new AliFemtoTrack();
       trackCopy->SetCharge((short)esdtrack->GetSign());
 
       //in aliroot we have AliPID 
@@ -280,6 +387,76 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
       trackCopy->SetPidProbPion(esdpid[2]);
       trackCopy->SetPidProbKaon(esdpid[3]);
       trackCopy->SetPidProbProton(esdpid[4]);
+
+      esdpid[0] = -100000.0;
+      esdpid[1] = -100000.0;
+      esdpid[2] = -100000.0;
+      esdpid[3] = -100000.0;
+      esdpid[4] = -100000.0;
+
+      double tTOF = 0.0;
+
+      if (esdtrack->GetStatus()&AliESDtrack::kTOFpid) {
+	tTOF = esdtrack->GetTOFsignal();
+	esdtrack->GetIntegratedTimes(esdpid);
+      }
+
+      trackCopy->SetTofExpectedTimes(tTOF-esdpid[2], tTOF-esdpid[3], tTOF-esdpid[4]);
+
+
+      //////  TPC ////////////////////////////////////////////
+      float nsigmaTPCK=-1000.;                                                        
+      float nsigmaTPCPi=-1000.;                                                        
+      float nsigmaTPCP=-1000.;  
+
+     if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTPCpid))){
+        nsigmaTPCK = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kKaon);
+        nsigmaTPCPi = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kPion);
+        nsigmaTPCP = fESDpid->NumberOfSigmasTPC(esdtrack,AliPID::kProton);
+
+      }
+      trackCopy->SetNSigmaTPCPi(nsigmaTPCPi);
+      trackCopy->SetNSigmaTPCK(nsigmaTPCK);
+      trackCopy->SetNSigmaTPCP(nsigmaTPCP);
+
+      ///// TOF ///////////////////////////////////////////////
+
+      float vp=-1000.;
+      float nsigmaTOFPi=-1000.;
+      float nsigmaTOFK=-1000.;
+      float nsigmaTOFP=-1000.;
+
+	if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	    (esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	    (esdtrack->GetStatus()&AliESDtrack::kTIME) &&
+	    !(esdtrack->GetStatus()&AliESDtrack::kTOFmismatch))
+	  {
+
+	    //if ((esdtrack->GetStatus()&AliESDtrack::kTOFpid) &&
+	    //(esdtrack->GetStatus()&AliESDtrack::kTOFout) &&
+	    //(esdtrack->GetStatus()&AliESDtrack::kTIME)){
+	    // collect info from ESDpid class
+	  
+	      if ((fESDpid) && (esdtrack->IsOn(AliESDtrack::kTOFpid))) {
+	      
+	      
+	      double tZero = fESDpid->GetTOFResponse().GetStartTime(esdtrack->P());
+	      
+	      nsigmaTOFPi = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kPion,tZero);
+	      nsigmaTOFK = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kKaon,tZero);
+	      nsigmaTOFP = fESDpid->NumberOfSigmasTOF(esdtrack,AliPID::kProton,tZero);
+	      
+	      Double_t len=esdtrack->GetIntegratedLength();
+	      Double_t tof=esdtrack->GetTOFsignal();
+	      if(tof > 0.) vp=len/tof/0.03;
+	    }
+	  }
+
+      trackCopy->SetVTOF(vp);
+      trackCopy->SetNSigmaTOFPi(nsigmaTOFPi);
+      trackCopy->SetNSigmaTOFK(nsigmaTOFK);
+      trackCopy->SetNSigmaTOFP(nsigmaTOFP);
+
 						
       double pxyz[3];
       double rxyz[3];
@@ -298,6 +475,17 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	param->PropagateToDCA(fEvent->GetPrimaryVertexTPC(), (fEvent->GetMagneticField()), 10000, impact, covimpact);
 	param->GetPxPyPz(pxyz);//reading noconstarined momentum
 
+	  if (fReadInner == true) {
+	    AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	    tInfo->SetPDGPid(211);
+	    tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+	    tInfo->SetMass(0.13957);
+	    //	  tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	    //	  tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	    tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+	    trackCopy->SetHiddenInfo(tInfo);
+	  }
+
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
 	  double tRad = TMath::Hypot(pxyz[0], pxyz[1]);
@@ -312,7 +500,6 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	  delete trackCopy;
 	  continue;
 	}
-
 	trackCopy->SetP(v);//setting momentum
 	trackCopy->SetPt(sqrt(pxyz[0]*pxyz[0]+pxyz[1]*pxyz[1]));
 
@@ -333,11 +520,47 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	delete param;
       }
       else {
+	  if (fReadInner == true) {
+	  
+	    if (esdtrack->GetTPCInnerParam()) {
+	      AliExternalTrackParam *param = new AliExternalTrackParam(*esdtrack->GetTPCInnerParam());
+	      param->GetXYZ(rxyz);
+	      //	    param->PropagateToDCA(fEvent->GetPrimaryVertex(), (fEvent->GetMagneticField()), 10000);
+	      param->GetPxPyPz(pxyz);//reading noconstarined momentum
+	      delete param;
+	    
+	      AliFemtoModelHiddenInfo *tInfo = new AliFemtoModelHiddenInfo();
+	      tInfo->SetPDGPid(211);
+	      tInfo->SetTrueMomentum(pxyz[0], pxyz[1], pxyz[2]);
+	      tInfo->SetMass(0.13957);
+	      //	    tInfo->SetEmissionPoint(rxyz[0], rxyz[1], rxyz[2], 0.0);
+	      //tInfo->SetEmissionPoint(fV1[0], fV1[1], fV1[2], 0.0);
+	      tInfo->SetEmissionPoint(rxyz[0]-fV1[0], rxyz[1]-fV1[1], rxyz[2]-fV1[2], 0.0);
+	      trackCopy->SetHiddenInfo(tInfo);
+	    }
+	  }
+
+
+	if(fTrackType == kGlobal) {
 	if (fConstrained==true)		    
 	  tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
 	else
 	  tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
-	
+	}
+	  else if (fTrackType == kTPCOnly) {
+	    if (esdtrack->GetTPCInnerParam())
+	      esdtrack->GetTPCInnerParam()->GetPxPyPz(pxyz);
+	    else {
+	      delete trackCopy;
+	      continue;
+	    }
+	  }
+	  else if (fTrackType == kITSOnly) {
+	    if (fConstrained==true)		    
+	      tGoodMomentum=esdtrack->GetConstrainedPxPyPz(pxyz); //reading constrained momentum
+	    else
+	      tGoodMomentum=esdtrack->GetPxPyPz(pxyz);//reading noconstarined momentum
+	  }
 
 	if (fRotateToEventPlane) {
 	  double tPhi = TMath::ATan2(pxyz[1], pxyz[0]);
@@ -411,6 +634,7 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
 	indexes[ik] = esdtrack->GetKinkIndex(ik);
       }
       trackCopy->SetKinkIndexes(indexes);
+
 
       // Fill the hidden information with the simulated data
       if (TMath::Abs(esdtrack->GetLabel()) < fStack->GetNtrack()) {
@@ -533,6 +757,52 @@ AliFemtoEvent* AliFemtoEventReaderESDChainKine::ReturnHbtEvent()
   delete [] motherids;
   
   hbtEvent->SetNumberOfTracks(realnofTracks);//setting number of track which we read in event	
+
+  AliCentrality *cent = fEvent->GetCentrality();
+  if (cent) {
+    hbtEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
+    //    hbtEvent->SetCentralityFMD(cent->GetCentralityPercentile("FMD"));
+    hbtEvent->SetCentralitySPD1(cent->GetCentralityPercentile("CL1"));
+    //    hbtEvent->SetCentralityTrk(cent->GetCentralityPercentile("TRK"));
+
+    if (Debug()>1) printf("  FemtoReader Got Event with %f %f %f %f\n", cent->GetCentralityPercentile("V0M"), 0.0, cent->GetCentralityPercentile("CL1"), 0.0);
+  }
+
+  if (fEstEventMult == kGlobalCount) 
+    hbtEvent->SetNormalizedMult(tNormMult);
+  else if (fEstEventMult == kTracklet)
+    hbtEvent->SetNormalizedMult(tTracklet);
+  else if (fEstEventMult == kITSTPC)
+    hbtEvent->SetNormalizedMult(tITSTPC);
+  else if (fEstEventMult == kITSPure)
+    hbtEvent->SetNormalizedMult(tITSPure);
+  else if (fEstEventMult == kSPDLayer1)
+    hbtEvent->SetNormalizedMult(fEvent->GetMultiplicity()->GetNumberOfITSClusters(1));
+  else if (fEstEventMult == kV0Centrality) {
+    // centrality between 0 (central) and 1 (very peripheral)
+
+    if (cent) {
+      if (cent->GetCentralityPercentile("V0M") < 0.00001)
+	hbtEvent->SetNormalizedMult(-1);
+      else
+	hbtEvent->SetNormalizedMult(lrint(10.0*cent->GetCentralityPercentile("V0M")));
+      if (Debug()>1) printf ("Set Centrality %i %f %li\n", hbtEvent->UncorrectedNumberOfPrimaries(), 
+			     10.0*cent->GetCentralityPercentile("V0M"), lrint(10.0*cent->GetCentralityPercentile("V0M")));
+    }
+  }
+
+  if (tNormMultPos > tNormMultNeg)
+    hbtEvent->SetZDCParticipants(tNormMultPos);
+  else
+    hbtEvent->SetZDCParticipants(tNormMultNeg);
+  
+  AliEventplane* ep = fEvent->GetEventplane();
+  if (ep) {
+    hbtEvent->SetEP(ep);
+    hbtEvent->SetReactionPlaneAngle(ep->GetEventplane("Q"));
+  }
+
+
   fCurEvent++;	
   //  cout<<"end of reading nt "<<nofTracks<<" real number "<<realnofTracks<<endl;
   return hbtEvent; 
@@ -558,20 +828,9 @@ void AliFemtoEventReaderESDChainKine::SetGenEventHeader(AliGenEventHeader *aGenH
   // You must provide the address where it can be found
   fGenHeader = aGenHeader;
 }
-
-//__________________
-void AliFemtoEventReaderESDChainKine::SetUseTPCOnly(const bool usetpconly)
-{
-  fUseTPCOnly=usetpconly;
-}
 void AliFemtoEventReaderESDChainKine::SetRotateToEventPlane(short dorotate)
 {
   fRotateToEventPlane=dorotate;
-}
-
-bool AliFemtoEventReaderESDChainKine::GetUseTPCOnly() const
-{
-  return fUseTPCOnly;
 }
 Float_t AliFemtoEventReaderESDChainKine::GetSigmaToVertex(double *impact, double *covar)
 {
@@ -614,3 +873,9 @@ Float_t AliFemtoEventReaderESDChainKine::GetSigmaToVertex(double *impact, double
   d = TMath::ErfInverse(1 - TMath::Exp(-d * d / 2)) * TMath::Sqrt(2);
   return d;
 }
+
+void AliFemtoEventReaderESDChainKine::SetReadTrackType(ReadTrackType aType)
+{
+  fTrackType = aType;
+}
+
