@@ -675,8 +675,8 @@ int AliHLTTPCHWCFSpacePointContainer::WriteSorted(AliHLTUInt8_t* outputPtr,
   }
 
   unsigned lastPadRow=0;
-  AliHLTUInt64_t lastPad64=0.;
-  AliHLTUInt64_t lastTime64=0.;
+  AliHLTUInt64_t lastPad64=0;
+  AliHLTUInt64_t lastTime64=0;
   AliHLTSpacePointPropertyGrid::iterator clusterID=pGrid->begin();
   if (clusterID!=pGrid->end()) {
     for (; clusterID!=pGrid->end(); clusterID++) {
