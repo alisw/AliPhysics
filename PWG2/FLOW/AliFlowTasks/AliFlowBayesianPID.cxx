@@ -8,6 +8,7 @@
 #include "TF1.h"
 #include "AliTOFGeometry.h"
 #include "AliTOFT0maker.h"
+#include "AliCentrality.h"
 
 ClassImp(AliFlowBayesianPID)
   
@@ -17,7 +18,7 @@ AliTOFGeometry* AliFlowBayesianPID::fTofGeo = NULL; // TOF geometry needed to re
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(84.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(84.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
@@ -124,6 +125,14 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
     printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
     return;
   }
+
+  if(centrality > 0){
+    // get centrality from VZERO
+    AliCentrality *currCentrality = esd->GetCentrality();
+    centrality = currCentrality->GetCentralityPercentile("V0M");
+    if(centrality <= 0) centrality = 0.001;
+  }
+  fCurrCentrality = centrality;
 
   // retune BB
   Double_t AlephParameters[5];
@@ -234,7 +243,9 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->MakePID(esd,kFALSE);
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
+void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centrObsolete){
+  Float_t centr = fCurrCentrality;
+
   Float_t pt = t->Pt();
   Float_t p = t->P();
   Double_t ptpc[3];
@@ -339,10 +350,12 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centr){
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t,Float_t centr){
-  ComputeWeights(t,centr);
+void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t centrObsolete){
+  ComputeWeights(t);
   Float_t priors[fNspecies];
   fProbTofMism = 0;
+
+  Float_t centr = fCurrCentrality;
 
   for(Int_t iS=0;iS<fNspecies;iS++) priors[iS] = hPriors[iS]->GetBinContent(hPriors[iS]->GetXaxis()->FindBin(centr),hPriors[iS]->GetYaxis()->FindBin(t->Pt()));
 

@@ -91,8 +91,8 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Bool_t GetCurrentMask(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
 
   // methods for Bayesina Combined PID
-  void ComputeWeights(const AliESDtrack *t,Float_t centr=-1.0);
-  void ComputeProb(const AliESDtrack *t,Float_t centr=-1.0);
+  void ComputeWeights(const AliESDtrack *t,Float_t centrObsolete=10);
+  void ComputeProb(const AliESDtrack *t,Float_t centrObsolete=10);
 
   void SetTOFres(Float_t res){fTOFres=res;};
 
@@ -128,6 +128,8 @@ class AliFlowBayesianPID : public AliPIDResponse {
   TF1 *fBBdata; // Bethe Bloch function (needed to compute the charge of the particle)
 
   Bool_t fMaskAND[fNdetectors],fMaskOR[fNdetectors],fMaskCurrent[fNdetectors]; // mask detector should be used
+
+  Float_t fCurrCentrality; // Centrality in current event
 
   ClassDef(AliFlowBayesianPID, 4); // example of analysis
 };
