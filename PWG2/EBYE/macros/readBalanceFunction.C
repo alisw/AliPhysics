@@ -249,8 +249,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
   fOut->cd();
   for(Int_t i = 0; i < iCanvas; i++){
     for(Int_t a = 0; a < 7; a++){
-      gbf[iCanvas][a]->Write();
-      gbfs[iCanvas][a]->Write();
+      if(gbf[iCanvas][a]) gbf[iCanvas][a]->Write();
+      if(gbfs[iCanvas][a]) gbfs[iCanvas][a]->Write();
     }
   }
 }

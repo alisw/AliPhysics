@@ -155,20 +155,20 @@ void runBalanceFunction(
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
-    //AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,5,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
+    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
     
-    //Add the BFG task (different centralities)
-    for (Int_t i=binfirst; i<binlast+1; i++) {
-      Float_t lowCentralityBinEdge = centralityArray[i];
-      Float_t highCentralityBinEdge = centralityArray[i+1];
+    // //Add the BFG task (different centralities)
+    // for (Int_t i=binfirst; i<binlast+1; i++) {
+    //   Float_t lowCentralityBinEdge = centralityArray[i];
+    //   Float_t highCentralityBinEdge = centralityArray[i+1];
       
-      // For systematic studies ( A train of centrality trains )
-      //for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
-      Int_t j = 0;
-      Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
-      AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
-      //}
-    } 
+    //   // For systematic studies ( A train of centrality trains )
+    //   //for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
+    //   Int_t j = 0;
+    //   Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
+    //   AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
+    //   //}
+    // } 
     
         
 
