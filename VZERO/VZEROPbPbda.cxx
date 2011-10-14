@@ -237,7 +237,7 @@ int main(int argc, char **argv) {
 
   }  // loop over events
   
-  printf("%d physics events processed (out of %d physics and %d total events)\n",neventsPhysics,neventsPhysicsAll,neventTotal);
+  printf("%d physics events processed (out of %d physics and %d total events)\n",neventsPhysics,neventsPhysicsAll,neventsTotal);
     
 //___________________________________________________________________________
 //  Computes regression parameters
