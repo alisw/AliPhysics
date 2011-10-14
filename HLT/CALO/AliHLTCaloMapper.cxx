@@ -62,8 +62,10 @@ AliHLTCaloMapper::AliHLTCaloMapper( const unsigned long  specification , TString
 
 AliHLTCaloMapper::~AliHLTCaloMapper()
 {
-  delete []  fHw2geomapPtr;
-  fHw2geomapPtr = 0;
+  if (fSpecificationMapPtr) delete [] fSpecificationMapPtr;
+  fSpecificationMapPtr = NULL;
+  if (fHw2geomapPtr) delete [] fHw2geomapPtr;
+  fHw2geomapPtr = NULL;
 }
 
 
