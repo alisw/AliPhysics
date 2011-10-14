@@ -926,31 +926,21 @@ void AliEMCALRecoUtils::RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells *
   
 }
 
-//________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & celltime){
+//_________________________________________________________________________________________________
+void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & celltime)
+{
 	// Recalibrate time of cell with absID  considering the recalibration map 
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
-    
+  
   if(!fCellsRecalibrated && IsTimeRecalibrationOn()){
-//    printf("cell time org %g, ",celltime);
-
-    Double_t timeBCoffset = 0.;
-    if( bc%4 ==0 || bc%4==1) timeBCoffset = 100.*1.e-9; //in ns	
     
-    Double_t celloffset = GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9; 
+    celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9;    ;  
     
-//    printf("absId %d, time %f bc %d-%d: bc0 %f, bc1 %f, bc2 %f, bc3 %f \n", absId, celltime*1.e9,bc, bc%4, 
-//           GetEMCALChannelTimeRecalibrationFactor(0,absId),GetEMCALChannelTimeRecalibrationFactor(1,absId),
-//           GetEMCALChannelTimeRecalibrationFactor(2,absId),GetEMCALChannelTimeRecalibrationFactor(3,absId));
-    
-    celltime -= timeBCoffset ;
-    celltime -= celloffset   ;  
-//    printf("new %g\n",celltime);
   }
   
 }
   
-//__________________________________________________
+//________________________________________________________________________________________________________________
 void AliEMCALRecoUtils::RecalculateClusterPosition(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu)
 {
   //For a given CaloCluster recalculates the position for a given set of misalignment shifts and puts it again in the CaloCluster.
