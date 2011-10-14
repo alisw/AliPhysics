@@ -54,6 +54,10 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
+   void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+    fTPCchi2Cut      = maxTPCchi2;
+    fNClustersTPCCut = minNClustersTPC;
+  }
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
     fPtMin  = ptmin; fPtMax  = ptmax;
@@ -79,6 +83,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TList *fListBFS; //fList object
 
   TH1F *fHistEventStats; //event stats
+  TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
   TH1F *fHistVy; //y coordinate of the primary vertex
@@ -113,6 +118,9 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
   Double_t fDCAxyCut;//only used for AODs
   Double_t fDCAzCut;//only used for AODs
+
+  Double_t fTPCchi2Cut;//only used for AODs
+  Int_t fNClustersTPCCut;//only used for AODs
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented

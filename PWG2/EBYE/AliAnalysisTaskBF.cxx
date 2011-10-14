@@ -39,6 +39,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fListBF(0),
   fListBFS(0),
   fHistEventStats(0),
+  fHistTriggerStats(0),
   fHistTrackStats(0),
   fHistVx(0),
   fHistVy(0),
@@ -63,8 +64,10 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fPtMax(1.5),
   fEtaMin(-0.8),
   fEtaMax(-0.8),
-  fDCAxyCut(2.4),
-  fDCAzCut(3.2){
+  fDCAxyCut(-1),
+  fDCAzCut(-1),
+  fTPCchi2Cut(-1),
+  fNClustersTPCCut(-1){
   // Constructor
 
   // Define input and output slots here
@@ -145,6 +148,9 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
+  fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",130,0,130);
+  fList->Add(fHistTriggerStats);
+
   fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TriggerBit;N_{events}",130,0,130);
   fList->Add(fHistTrackStats);
 
@@ -214,8 +220,7 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   PostData(1, fList);
   PostData(2, fListBF);
   if(fRunShuffling) PostData(3, fListBFS);
-  
-  }
+}
 
 //________________________________________________________________________
 void AliAnalysisTaskBF::UserExec(Option_t *) {
@@ -224,10 +229,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   TString gAnalysisLevel = fBalance->GetAnalysisLevel();
 
   TObjArray *array         = new TObjArray();
+  AliESDtrack *track_TPC   = NULL;
+
 
   // vector holding the charges of all tracks
   vector<Int_t> chargeVectorShuffle;   // this will be shuffled
-  vector<Int_t> chargeVector;          // to remember the original charge ( set back after shuffling )
+  vector<Int_t> chargeVector;          // original charge 
   
   //ESD analysis
   if(gAnalysisLevel == "ESD") {
@@ -236,6 +243,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       Printf("ERROR: gESD not available");
       return;
     }
+
+    // store offline trigger bits
+    fHistTriggerStats->Fill(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected());
 
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
     fHistEventStats->Fill(1); //all events
@@ -280,36 +290,50 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 			continue;
 		      }	
 
-		      // take only TPC only tracks (HOW IS THIS DONE IN ESDs???)
-		      //if(!track->IsTPCOnly()) continue;
-
+		      // take only TPC only tracks
+		      track_TPC   = new AliESDtrack();
+		      if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+		      
 		      //ESD track cuts
 		      if(fESDtrackCuts) 
-			if(!fESDtrackCuts->AcceptTrack(track)) continue;
-
+			if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+		      
 		      // fill QA histograms
 		      Float_t b[2];
 		      Float_t bCov[3];
-		      track->GetImpactParameters(b,bCov);
+		      track_TPC->GetImpactParameters(b,bCov);
 		      if (bCov[0]<=0 || bCov[2]<=0) {
 			AliDebug(1, "Estimated b resolution lower or equal zero!");
 			bCov[0]=0; bCov[2]=0;
 		      }
-
-		      fHistClus->Fill(track->GetITSclusters(0),track->GetTPCclusters(0));
+		      
+		      Int_t nClustersTPC = -1;
+		      nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+		      //nClustersTPC = track->GetTPCclusters(0);   // global track
+		      Float_t chi2PerClusterTPC = -1;
+		      if (nClustersTPC!=0) {
+			chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+			//chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
+		      }
+		      
+		      fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
 		      fHistDCA->Fill(b[1],b[0]);
-		      fHistPt->Fill(track->Pt());
-		      fHistEta->Fill(track->Eta());
-		      fHistPhi->Fill(track->Phi()*TMath::RadToDeg());
+		      fHistChi2->Fill(chi2PerClusterTPC);
+		      fHistPt->Fill(track_TPC->Pt());
+		      fHistEta->Fill(track_TPC->Eta());
+		      fHistPhi->Fill(track_TPC->Phi()*TMath::RadToDeg());
 		      
 		      // fill BF array
-		      array->Add(track);
+		      array->Add(track_TPC);
 
+		      // fill charge vector
+		      chargeVector.push_back(track_TPC->Charge());
 		      if(fRunShuffling){
-			// fill charge vector
-			chargeVector.push_back(track->Charge());
-			chargeVectorShuffle.push_back(track->Charge());
+			chargeVectorShuffle.push_back(track_TPC->Charge());
 		      }
+      
+		      delete track_TPC;
+
 		    } //track loop
 		  }//Vz cut
 		}//Vy cut
@@ -330,6 +354,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       return;
     }
 
+    AliAODHeader *aodHeader = gAOD->GetHeader();
+
+    // store offline trigger bits
+    fHistTriggerStats->Fill(aodHeader->GetOfflineTrigger());
+
     // event selection done in AliAnalysisTaskSE::Exec() --> this is not used
     fHistEventStats->Fill(1); //all events
     Bool_t isSelected = kTRUE;
@@ -337,10 +366,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     if(isSelected) {
       fHistEventStats->Fill(2); //triggered events
-
 		  
       //Centrality stuff (centrality in AOD header)
-      AliAODHeader *aodHeader = gAOD->GetHeader();
       Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
       // cout<<fCentralityEstimator.Data()<<" = "<<fCentrality<<" ,  others are V0M =  "
       // 	  << aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")
@@ -410,6 +437,15 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 			}
 		      }
 
+		      // Extra TPC cuts (for systematic studies [!= -1])
+		      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+			continue;
+		      }
+		      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+			continue;
+		      }
+
+
 		      // fill QA histograms
 		      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
 		      fHistDCA->Fill(DCAz,DCAxy);
@@ -421,9 +457,9 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		      // fill BF array
 		      array->Add(aodTrack);
 
+		      // fill charge vector
+		      chargeVector.push_back(aodTrack->Charge());
 		      if(fRunShuffling) {
-			// fill charge vector
-			chargeVector.push_back(aodTrack->Charge());
 			chargeVectorShuffle.push_back(aodTrack->Charge());
 		      }
 		    } //track loop
@@ -459,11 +495,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
       array->Add(track);
 
+      // fill charge vector
+      chargeVector.push_back(track->Charge());
       if(fRunShuffling) {
-	// fill charge vector
-	chargeVector.push_back(track->Charge());
 	chargeVectorShuffle.push_back(track->Charge());
       }
+
     } //track loop
   }//MC analysis
   

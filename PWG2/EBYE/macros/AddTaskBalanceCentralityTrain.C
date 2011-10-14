@@ -3,18 +3,21 @@ const char* centralityEstimator = "V0M";
 //const char* centralityEstimator = "CL1";
 //const char* centralityEstimator = "TRK";
 //=============================================//
-Bool_t gRunShuffling = kFALSE;
+//Bool_t gRunShuffling = kFALSE;
+Bool_t gRunShuffling = kTRUE;
 //=============================================//
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
 						 Double_t vertexZ=10.,
-						 Double_t DCAxy=2.4,
-						 Double_t DCAz=3.2,
+						 Double_t DCAxy=-1,
+						 Double_t DCAz=-1,
 						 Double_t ptMin=0.3,
 						 Double_t ptMax=1.5,
 						 Double_t etaMin=-0.8,
 						 Double_t etaMax=0.8,
+						 Double_t maxTPCchi2 = -1, 
+						 Int_t minNClustersTPC = -1,
 						 TString fileNameBase="AnalysisResults") {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -75,10 +78,12 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   // Create the task, add it to manager and configure it.
   //===========================================================================
   AliAnalysisTaskBF *taskBF = new AliAnalysisTaskBF("TaskBF");
-  taskBF->SetAnalysisObject(bf,bfs);
+  taskBF->SetAnalysisObject(bf);
+  if(gRunShuffling) taskBF->SetShufflingObject(bfs);
+
   taskBF->SetCentralityPercentileRange(centrMin,centrMax);
   if(analysisType == "ESD") {
-    AliESDtrackCuts *trackCuts = GetTrackCutsObject();
+    AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
 
     // offline trigger selection (AliVEvent.h)
@@ -90,15 +95,22 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
     taskBF->SetAODtrackCutBit(128);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
+
+    // set extra DCA cuts (-1 no extra cut)
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
+
+    // set extra TPC chi2 / nr of clusters cut
+    taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+    
   }
 
   // centrality estimator (default = V0M)
     taskBF->SetCentralityEstimator(centralityEstimator);
 
-
     // vertex cut (x,y,z)
     taskBF->SetVertexDiamond(.3,.3,vertexZ);
+
+
 
     //bf->PrintAnalysisSettings();
     mgr->AddTask(taskBF);
