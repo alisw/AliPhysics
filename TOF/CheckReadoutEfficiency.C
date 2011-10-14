@@ -1,3 +1,4 @@
+TH1F *
 CheckReadoutEfficiency(Int_t run)
 {
 
@@ -10,6 +11,7 @@ CheckReadoutEfficiency(Int_t run)
 
 }
 
+TH1F *
 CheckReadoutEfficiency(const Char_t *fileName)
 {
 
@@ -18,6 +20,7 @@ CheckReadoutEfficiency(const Char_t *fileName)
   CheckReadoutEfficiency(cdbe);
 }
 
+TH1F *
 CheckReadoutEfficiency(AliCDBEntry *cdbe)
 {
 
@@ -51,9 +54,6 @@ CheckReadoutEfficiency(AliCDBEntry *cdbe)
   }
 
   hEfficiencyMap->DrawCopy("colz");
-  TFile *fout = TFile::Open("CheckReadoutEfficiency.root", "RECREATE");
-  hEfficiencyMap->Write();
-  hEfficiencyFlag->Write();
-  fout->Close();
-
+  
+  return hEfficiencyFlag;
 }
