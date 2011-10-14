@@ -465,8 +465,8 @@ AliMUONReconstructor::CreateClusterServer(const AliMUONRecoParam& rp) const
     
     clusterServer = new AliMUONSimpleClusterServer(clusterFinder,*fTransformer);
 
-    AliInfo(Form("Created AliMUONSimpleClusterServer (%p) for specie %d with clustering = %s",
-                 clusterServer,rp.GetEventSpecie(),clusterFinder->ClassName()));
+    AliInfo(Form("Created AliMUONSimpleClusterServer (%p) for specie %d with clustering = %s (following requesting clustering mode %s)",
+                 clusterServer,rp.GetEventSpecie(),clusterFinder->ClassName(),rp.GetClusteringMode()));
     
     fClusterServers.AddAtAndExpand(clusterServer,rp.GetEventSpecie());
   }
