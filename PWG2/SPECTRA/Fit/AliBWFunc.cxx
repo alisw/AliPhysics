@@ -43,6 +43,7 @@ TF1 * AliBWFunc::GetHistoFunc(TH1 * h, const char * name) {
 
   // Regardless of the variable type, this returns a function made
   // from the histo * a multiplicative normalization.
+  // This uses a bad hack...
 
   fLastFunc = new TF1 (name, StaticHistoFunc, 0.0, 10, 2);
   fLastFunc->SetParameter(0,1);
@@ -52,20 +53,36 @@ TF1 * AliBWFunc::GetHistoFunc(TH1 * h, const char * name) {
   return fLastFunc;
   
 
+
+}
+TF1 * AliBWFunc::GetGraphFunc(TGraph * g, const char * name) {
+
+  // Regardless of the variable type, this returns a function made
+  // from the graph * a multiplicative normalization.
+  // This uses a bad hack...
+
+  fLastFunc = new TF1 (name, StaticHistoFunc, 0.0, 10, 2);
+  fLastFunc->SetParameter(0,1);
+  fLastFunc->FixParameter(1,Double_t(Long64_t(g)));
+  fLastFunc->SetParNames("norm", "pointer to histo");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+  
+
 }
 
 
 TF1 * AliBWFunc::GetBGBW(Double_t mass, Double_t beta, Double_t T,
-	      Double_t norm, const char * name){
+			 Double_t n, Double_t norm, const char * name){
 
   // Boltzmann-Gibbs blast wave
 
   switch (fVarType) {
   case kdNdpt:
-    return GetBGBWdNdptTimesPt(mass,beta,T,norm,name);
+    return GetBGBWdNdptTimesPt(mass,beta,T,n,norm,name);
     break;
   case kOneOverPtdNdpt:
-    return GetBGBWdNdpt(mass,beta,T,norm,name);
+    return GetBGBWdNdpt(mass,beta,T,n,norm,name);
     break;
   case kOneOverMtdNdmt:
     AliFatal("Not implemented");
@@ -143,6 +160,52 @@ TF1 * AliBWFunc::GetMTExp(Double_t mass, Double_t T, Double_t norm, const char *
 
 
 }
+
+
+TF1 * AliBWFunc::GetBoseEinstein(Double_t mass, Double_t T, Double_t norm, const char * name){
+
+  // Bose einstein
+  switch (fVarType) {
+  case kdNdpt:
+    return GetBoseEinsteindNdptTimesPt(mass,T,norm,name);
+    break;
+  case kOneOverPtdNdpt:
+    return GetBoseEinsteindNdpt(mass,T,norm,name);
+    break;
+  case kOneOverMtdNdmt:
+    AliFatal("Not implemented");
+    break;
+  default:
+    AliFatal("Not implemented");
+  }
+  
+  return 0;
+
+
+}
+
+TF1 * AliBWFunc::GetFermiDirac(Double_t mass, Double_t T, Double_t norm, const char * name){
+
+  // Simple exponential in 1/mt*MT
+  switch (fVarType) {
+  case kdNdpt:
+    return GetFermiDiracdNdptTimesPt(mass,T,norm,name);
+    break;
+  case kOneOverPtdNdpt:
+    return GetFermiDiracdNdpt(mass,T,norm,name);
+    break;
+  case kOneOverMtdNdmt:
+    AliFatal("Not implemented");
+    break;
+  default:
+    AliFatal("Not implemented");
+  }
+  
+  return 0;
+
+
+}
+
 
 TF1 * AliBWFunc::GetPTExp(Double_t T, Double_t norm, const char * name){
 
@@ -269,18 +332,26 @@ Double_t AliBWFunc::StaticHistoFunc(const double * x, const double* p){
 
   double norm = p[0];
   
-  TH1 * h     = (TH1*) Long64_t(p[1]);
+  TObject * h     = (TObject*) Long64_t(p[1]);
 
 //    Int_t bin = h->FindBin(x[0]);
 //    double value = h->GetBinContent(bin);
 
-  if (h->FindBin(x[0]) > h->GetNbinsX()) return 0;
 
   // static TH1 * oldptr = 0;
   // static TSpline3 * spl = 0;
   // if (h!=oldptr) {
   // FIXME: recheck static pointers
-  TSpline3 * spl  = new TSpline3(h);
+  TSpline3 * spl  = 0;
+  if(h->InheritsFrom("TH1")) {
+    if ( ((TH1*)h)->FindBin(x[0]) > ((TH1*)h)->GetNbinsX()) return 0;
+    spl= new TSpline3((TH1*)h);
+  }
+  else if(h->InheritsFrom("TGraph")) spl= new TSpline3("fGraph",(TGraph*)h);
+  else {
+    Printf("AliBWFunc::StaticHistoFunc: Unsupported type");
+    return 0;
+  }
     //  }
   double value = spl->Eval(x[0]);
   delete spl;
@@ -329,20 +400,35 @@ Double_t AliBWFunc::StaticUA1Func(const double * x, const double* p) {
 
 Double_t AliBWFunc::IntegrandBG(const double * x, const double* p){
   // integrand for boltzman-gibbs blast wave
+     // x[0] -> r (radius)
+     // p[0] -> mass
+     // p[1] -> pT (transverse momentum)
+     // p[2] -> beta_max (surface velocity)
+     // p[3] -> T (freezout temperature)
+     // p[4] -> n (velocity profile)
+
 
   double x0 = x[0]; 
   
-  double mass = p[0];
-  double pT   = p[1];
-  double beta = p[2];
-  double temp    = p[3];
-  
+  double mass     = p[0];
+  double pT       = p[1];
+  double beta_max = p[2];
+  double temp     = p[3];
+  Double_t n      = p[4];
+
+  // Keep beta within reasonable limits
+  Double_t beta = beta_max * TMath::Power(x0, n);
+  if (beta > 0.9999999999999999) beta = 0.9999999999999999;
+
   double mT      = TMath::Sqrt(mass*mass+pT*pT);
 
-  double rho0   = TMath::ATanH(beta*x0);  
+  double rho0   = TMath::ATanH(beta);  
   double arg00 = pT*TMath::SinH(rho0)/temp;
+  if (arg00 > 700.) arg00 = 700.; // avoid FPE
   double arg01 = mT*TMath::CosH(rho0)/temp;
   double f0 = x0*mT*TMath::BesselI0(arg00)*TMath::BesselK1(arg01);
+
+  //  printf("r=%f, pt=%f, beta_max=%f, temp=%f, n=%f, mt=%f, beta=%f, rho=%f, argI0=%f, argK1=%f\n", x0, pT, beta_max, temp, n, mT, beta, rho0, arg00, arg01);
 
   return f0;
 }
@@ -356,17 +442,20 @@ Double_t AliBWFunc::StaticBGdNdPt(const double * x, const double* p) {
   double pT = x[0];;
   
 
-  double mass = p[0];
-  double beta = p[1];
+  double mass    = p[0];
+  double beta    = p[1];
   double temp    = p[2];
+  double n       = p[3];
+  double norm    = p[4];
 
   static TF1 * fIntBG = 0;
   if(!fIntBG)
-    fIntBG = new TF1 ("fIntBG", IntegrandBG, 0, 1, 4);
+    fIntBG = new TF1 ("fIntBG", IntegrandBG, 0, 1, 5);
 
-  fIntBG->SetParameters(mass, pT, beta, temp);
+  fIntBG->SetParameters(mass, pT, beta, temp,n);
   double result = fIntBG->Integral(0,1);
-  return result*p[3];//*1e30;;
+  //  printf ("[%4.4f], Int :%f\n", pT, result);
+  return result*norm;//*1e30;;
 
 }
 
@@ -377,13 +466,14 @@ Double_t AliBWFunc::StaticBGdNdPtTimesPt(const double * x, const double* p) {
 
 
 TF1 * AliBWFunc::GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
-			    Double_t norm, const char * name){
+			      Double_t n, Double_t norm, const char * name){
   
   // BGBW 1/pt dNdpt
 
-  fLastFunc = new TF1 (name, StaticBGdNdPt, 0.0, 10, 4);
-  fLastFunc->SetParameters(mass,beta,temp,norm);    
-  fLastFunc->SetParNames("mass", "#beta", "T", "norm");
+  fLastFunc = new TF1 (name, StaticBGdNdPt, 0.0, 10, 5);
+  fLastFunc->SetParameters(mass,beta,temp,n,norm);    
+  fLastFunc->FixParameter(0,mass);
+  fLastFunc->SetParNames("mass", "#beta", "T", "n", "norm");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
   
@@ -484,14 +574,15 @@ TF1 * AliBWFunc::GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t temp, 
 
 // Times Pt funcs
 // Boltzmann-Gibbs Blast Wave
-TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp,
+TF1 * AliBWFunc::GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t temp, Double_t n,
 				     Double_t norm, const char * name){
 
   // BGBW, dNdpt
 
-  fLastFunc = new TF1 (name, StaticBGdNdPtTimesPt, 0.0, 10, 4);
-  fLastFunc->SetParameters(mass,beta,temp,norm);    
-  fLastFunc->SetParNames("mass", "#beta", "temp", "norm");
+  fLastFunc = new TF1 (name, StaticBGdNdPtTimesPt, 0.0, 10, 5);
+  fLastFunc->SetParameters(mass,beta,temp,n,norm);    
+  fLastFunc->FixParameter(0,mass);
+  fLastFunc->SetParNames("mass", "#beta", "temp", "n", "norm");
   fLastFunc->SetLineWidth(fLineWidth);
   return fLastFunc;
 
@@ -530,6 +621,37 @@ TF1 * AliBWFunc::GetMTExpdNdptTimesPt(Double_t mass, Double_t temp, Double_t nor
 
 
 }
+
+TF1 * AliBWFunc::GetBoseEinsteindNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+
+  // Bose einstein distribution as a function of dNdpt
+  char formula[500];
+  snprintf(formula,500,"[0]*x*1./(exp(sqrt(x**2+%f**2)/[1])-1)", mass);
+  fLastFunc=new TF1(name,formula,0,10);
+  fLastFunc->SetParameters(norm, temp);
+  fLastFunc->SetParLimits(1, 0.01, 10);
+  fLastFunc->SetParNames("norm", "T");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+
+
+}
+
+TF1 * AliBWFunc::GetFermiDiracdNdptTimesPt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+
+  // Bose einstein distribution as a function of dNdpt
+  char formula[500];
+  snprintf(formula,500,"[0]*x*1./(exp(sqrt(x**2+%f**2)/[1])+1)", mass);
+  fLastFunc=new TF1(name,formula,0,10);
+  fLastFunc->SetParameters(norm, temp);
+  fLastFunc->SetParLimits(1, 0.01, 10);
+  fLastFunc->SetParNames("norm", "T");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+
+
+}
+
 
 
 TF1 * AliBWFunc::GetPTExpdNdptTimesPt(Double_t temp, Double_t norm, const char * name){
@@ -740,6 +862,30 @@ TF1 * AliBWFunc::GetMTExpdNdpt(Double_t mass, Double_t temp, Double_t norm, cons
   // mt scaling
   char formula[500];
   snprintf(formula,500,"[0]*exp(-sqrt(x**2+%f**2)/[1])", mass);
+  fLastFunc=new TF1(name,formula,0,10);
+  fLastFunc->SetParameters(norm, temp);
+  fLastFunc->SetParLimits(1, 0.01, 10);
+  fLastFunc->SetParNames("norm", "T");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+}
+
+TF1 * AliBWFunc::GetBoseEinsteindNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+  // bose einstein
+  char formula[500];
+  snprintf(formula,500,"[0]*1./(exp(sqrt(x**2+%f**2)/[1])-1)", mass);
+  fLastFunc=new TF1(name,formula,0,10);
+  fLastFunc->SetParameters(norm, temp);
+  fLastFunc->SetParLimits(1, 0.01, 10);
+  fLastFunc->SetParNames("norm", "T");
+  fLastFunc->SetLineWidth(fLineWidth);
+  return fLastFunc;
+}
+
+TF1 * AliBWFunc::GetFermiDiracdNdpt(Double_t mass, Double_t temp, Double_t norm, const char * name){
+  // bose einstein
+  char formula[500];
+  snprintf(formula,500,"[0]*1./(exp(sqrt(x**2+%f**2)/[1])+1)", mass);
   fLastFunc=new TF1(name,formula,0,10);
   fLastFunc->SetParameters(norm, temp);
   fLastFunc->SetParLimits(1, 0.01, 10);

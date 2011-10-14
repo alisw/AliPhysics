@@ -23,7 +23,7 @@
 
 class TF1;
 class TH1;
-
+class TGraph;
 #endif
 
 
@@ -38,9 +38,10 @@ public:
   AliBWFunc();
   ~AliBWFunc();
 
-  // Boltzmann-Gibbs blast wave
-  TF1 * GetBGBW(Double_t mass, Double_t beta, Double_t T,
+  // Boltzmann-Gibbs Blast Wave
+  TF1 * GetBGBW(Double_t mass, Double_t beta, Double_t T, Double_t n,
 		Double_t norm, const char * name = "fBGBW");
+
   
   // Boltzmann
   TF1 * GetBoltzmann(Double_t mass, Double_t T, Double_t norm, const char * name ="fBoltzmann");
@@ -50,10 +51,10 @@ public:
 		     Double_t norm, Double_t ymax = 0.5, const char * name = "fTsallisBW");
 
   // Simple exponential in 1/mt*dNdmt
-  TF1 * GetMTExp(Double_t mass, Double_t T, Double_t norm, const char * name ="fExp");
+  TF1 * GetMTExp(Double_t mass, Double_t T, Double_t norm, const char * name ="fMtExp");
 
   // Simple exponential in 1/pt*dNdpt
-  TF1 * GetPTExp(Double_t T, Double_t norm, const char * name ="fExp");
+  TF1 * GetPTExp(Double_t T, Double_t norm, const char * name ="fPtExp");
 
   // Tsallis (no BW, a la CMS)
   TF1 * GetTsallis(Double_t mass, Double_t T, Double_t q, Double_t norm, const char * name="fTsallis") 
@@ -68,8 +69,18 @@ public:
   // Function derived from a histo
   TF1 * GetHistoFunc(TH1 * h, const char * name = "fHisto");
 
+  // Function derived from a graph
+  TF1 * GetGraphFunc(TGraph * h, const char * name = "fHisto");
+
   // Power law
   TF1 * GetPowerLaw(Double_t pt0, Double_t n, Double_t norm, const char * name="fPowerLaw");
+  
+
+  // Bose-Einstein
+  TF1 * GetBoseEinstein(Double_t mass, Double_t T, Double_t norm, const char * name="fBoseEinstein");
+
+  // Fermi-Dirac
+  TF1 * GetFermiDirac(Double_t mass, Double_t T, Double_t norm, const char * name="fFermiDirac");
 
 
   void SetVarType(VarType_t tp) {fVarType=tp;}
@@ -78,9 +89,10 @@ protected:
 
   // dNdpt here means 1/pt dN/dpt
   
-  // Boltzmann-Gibbs Blast Wave
-  TF1 * GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t T,
-		     Double_t norm, const char * name = "fBGBW");
+
+  // Boltzmann-Gibbs blast wave
+  TF1 * GetBGBWdNdpt(Double_t mass, Double_t beta, Double_t temp,
+		     Double_t n, Double_t norm, const char * name= "fBGBW");
 
   // Tsallis blast wave
   TF1 * GetTsallisBWdNdpt(Double_t mass, Double_t beta, Double_t T, Double_t q,
@@ -88,6 +100,13 @@ protected:
 
   // Simple exponential in 1/mt*MT
   TF1 * GetMTExpdNdpt(Double_t mass, Double_t T, Double_t norm, const char * name ="fExp");
+
+  // Bose-Einstein
+  TF1 * GetBoseEinsteindNdpt(Double_t mass, Double_t T, Double_t norm, const char * name="fBoseEinstein");
+
+  // Fermi-Dirac
+  TF1 * GetFermiDiracdNdpt(Double_t mass, Double_t T, Double_t norm, const char * name="fFermiDirac");
+
 
   // Tsallis (no BW, a la CMS)
   TF1 * GetTsallisdNdpt(Double_t mass, Double_t T, Double_t q, Double_t norm, const char * name="fTsallis");
@@ -104,7 +123,7 @@ protected:
   // TimesPt means dNdpt
 
   // Boltzmann-Gibbs Blast Wave
-  TF1 * GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T,
+  TF1 * GetBGBWdNdptTimesPt(Double_t mass, Double_t beta, Double_t T, Double_t n,
 			    Double_t norm, const char * name = "fBGBWTimesPt");
 
   // Tsallis blast wave
@@ -121,6 +140,13 @@ protected:
 
   // Simple exponential in 1/mt*dNdmT
   TF1 * GetMTExpdNdptTimesPt(Double_t mass, Double_t T, Double_t norm, const char * name ="fMtExpTimesPt");
+
+  // Bose-Einstein
+  TF1 * GetBoseEinsteindNdptTimesPt(Double_t mass, Double_t T, Double_t norm, const char * name="fBoseEinstein");
+
+  // Fermi-Dirac
+  TF1 * GetFermiDiracdNdptTimesPt(Double_t mass, Double_t T, Double_t norm, const char * name="fFermiDirac");
+
 
   // Simple exponential in 1/mp*dNdpT
   TF1 * GetPTExpdNdptTimesPt(Double_t T, Double_t norm, const char * name ="fPtExpTimesPt");
