@@ -243,7 +243,7 @@ Int_t AliAnalysisManager::GetRunFromAlienPath(const char *path)
    ind1 = s.Index("/00");
    if (ind1>0) {
       ind2 = s.Index("/",ind1+1);
-      if (ind2>0) srun = s(ind1+1, ind2-ind1-1);
+      if (ind2-ind1>8) srun = s(ind1+1, ind2-ind1-1);
    }   
    if (srun.IsNull()) {
       ind1 = s.Index("/LHC");

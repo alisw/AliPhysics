@@ -158,21 +158,6 @@ AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskSE::CheckPostData() const
-{
-// Checks if data was posted to all outputs defined by the task. If task does
-// not have output slots this returns always kTRUE.
-   AliAnalysisDataContainer *coutput;
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   for (Int_t islot=1; islot<fNoutputs; islot++) {
-      coutput = GetOutputSlot(islot)->GetContainer();
-      if (!mgr->GetOutputs()->FindObject(coutput)) continue;
-      if (!coutput->GetData()) return kFALSE;
-   }
-   CheckOwnership();
-   return kTRUE;
-}
-
 void AliAnalysisTaskSE::ConnectInputData(Option_t* /*option*/)
 {
 // Connect the input data

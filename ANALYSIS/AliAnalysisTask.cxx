@@ -260,15 +260,20 @@ Bool_t AliAnalysisTask::CheckPostData() const
 {
 // Checks if data was posted to all outputs defined by the task. If task does
 // not have output slots this returns always kTRUE.
+   Bool_t dataPosted = kTRUE;
    AliAnalysisDataContainer *coutput;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    for (Int_t islot=0; islot<fNoutputs; islot++) {
       coutput = GetOutputSlot(islot)->GetContainer();
       if (!mgr->GetOutputs()->FindObject(coutput)) continue;
-      if (!coutput->GetData()) return kFALSE;
+      if (!coutput->GetData()) {
+         Error("CheckPostData", "Data not posted for slot #%d of task %s (%s)", 
+               islot, GetName(), ClassName());
+         dataPosted = kFALSE;
+      }   
    }
    CheckOwnership();
-   return kTRUE;
+   return dataPosted;
 }
 
 //______________________________________________________________________________

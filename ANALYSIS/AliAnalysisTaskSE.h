@@ -34,7 +34,6 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     AliAnalysisTaskSE& operator=(const AliAnalysisTaskSE& other);
     virtual ~AliAnalysisTaskSE() {;}
     // Implementation of interface methods
-    virtual Bool_t CheckPostData() const;
     virtual void   ConnectInputData(Option_t *option = "");
     virtual void   CreateOutputObjects();
     virtual void   Exec(Option_t* option);
