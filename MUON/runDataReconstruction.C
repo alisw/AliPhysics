@@ -57,8 +57,6 @@ void runDataReconstruction(const char* input = "raw://run124360",
 
   rec.SetStopOnError(kFALSE);
 
-  rec.SetNumberOfEventsPerFile(500); // must set a limit otherwise time per event increases with event number (this is a "bug" of the loaders)
-
   rec.SetOption("MUON",recoptions);  
 
   rec.SetQAWriteExpert(AliQAv1::kMUON);
