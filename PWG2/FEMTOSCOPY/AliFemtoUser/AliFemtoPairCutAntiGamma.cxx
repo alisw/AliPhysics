@@ -34,17 +34,20 @@ ClassImp(AliFemtoPairCutAntiGamma)
 AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma():
   AliFemtoShareQualityPairCut(),
   fMaxEEMinv(0.0),
-  fMaxDTheta(0.0)
+  fMaxDTheta(0.0),
+  fDTPCMin(0)
 {
 }
 //__________________
 AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamma& c) : 
   AliFemtoShareQualityPairCut(c),
   fMaxEEMinv(0.0),
-  fMaxDTheta(0.0)
+  fMaxDTheta(0.0),
+  fDTPCMin(0)
 { 
   fMaxEEMinv = c.fMaxEEMinv;
   fMaxDTheta = c.fMaxDTheta;
+  fDTPCMin = c.fDTPCMin;
 }
 
 //__________________
@@ -75,15 +78,28 @@ bool AliFemtoPairCutAntiGamma::Pass(const AliFemtoPair* pair){
     if ((minv < fMaxEEMinv) && (dtheta < fMaxDTheta)) temp = false;
   }
 
-  if (temp) {
+  bool tempTPCEntrance = true;
+  
+  double distx = pair->Track1()->Track()->NominalTpcEntrancePoint().x() - pair->Track2()->Track()->NominalTpcEntrancePoint().x();
+  double disty = pair->Track1()->Track()->NominalTpcEntrancePoint().y() - pair->Track2()->Track()->NominalTpcEntrancePoint().y();
+  double distz = pair->Track1()->Track()->NominalTpcEntrancePoint().z() - pair->Track2()->Track()->NominalTpcEntrancePoint().z();
+  double dist = sqrt(distx*distx + disty*disty + distz*distz);
+
+  tempTPCEntrance = dist > fDTPCMin;
+
+
+  if (temp && tempTPCEntrance) {
     temp = AliFemtoShareQualityPairCut::Pass(pair);
     if (temp) fNPairsPassed++;
     else fNPairsFailed++;
+    return temp;
   }
   else
+    {
     fNPairsFailed++;
+    return false;
+    }
 
-  return temp;
 }
 //__________________
 AliFemtoString AliFemtoPairCutAntiGamma::Report(){
@@ -118,4 +134,9 @@ void AliFemtoPairCutAntiGamma::SetMaxEEMinv(Double_t maxeeminv)
 void AliFemtoPairCutAntiGamma::SetMaxThetaDiff(Double_t maxdtheta)
 {
   fMaxDTheta = maxdtheta;
+}
+
+void AliFemtoPairCutAntiGamma::SetTPCEntranceSepMinimum(double dtpc)
+{
+  fDTPCMin = dtpc;
 }
