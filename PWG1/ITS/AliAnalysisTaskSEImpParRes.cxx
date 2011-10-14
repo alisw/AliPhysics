@@ -1127,7 +1127,41 @@ void AliAnalysisTaskSEImpParRes::UserCreateOutputObjects()
 
   if(!fNentries) fNentries = new TH1F("hNentries", "number of entries", 26, 0., 40.);
   if(!fEstimVtx) fEstimVtx = new TH1F("vtxRes","Resolution of vertex",1000,-5000.,5000);
-
+  PostData(1, fOutputitspureSARec);
+  PostData(2, fOutputitspureSASkip);
+  PostData(3, fOutputallPointRec);
+  PostData(4, fOutputallPointSkip);
+  PostData(5, fOutputpartPointRec);
+  PostData(6, fOutputpartPointSkip);
+  PostData(7, fOutputonepointSPDRec);
+  PostData(8, fOutputonepointSPDSkip);
+  PostData(9, fOutputpostvTracRec);
+  PostData(10, fOutputpostvTracSkip);
+  PostData(11, fOutputnegtvTracRec);
+  PostData(12, fOutputnegtvTracSkip);
+  PostData(13, fOutputpullAllpointRec);
+  PostData(14, fOutputpullAllpointSkip);
+  PostData(15, fOutputOnlyRefitRec);
+  PostData(16, fOutputOnlyRefitSkip);
+  PostData(17, fOutputSinThetaRec);
+  PostData(18, fOutputSinThetaSkip);
+  PostData(19, fOutputallPointTrue);
+  PostData(20, fOutputpostvTracTrue);
+  PostData(21, fOutputnegtvTracTrue);
+  PostData(22, fOutputpullAllpointTrue);
+  PostData(23, fOutputphiAllpointSkip);
+  PostData(24, fOutputphiPostvtracSkip);
+  PostData(25, fOutputphiNegtvtracSkip);
+  PostData(26, fOutputclusterTypeSPD01Skip);
+  PostData(27, fOutputclusterTypeSPD02Skip);
+  PostData(28, fOutputclusterTypeSPD03Skip);
+  PostData(29, fOutputclusterTypeSPD11Skip);
+  PostData(30, fOutputclusterTypeSPD12Skip);
+  PostData(31, fOutputclusterTypeSPD13Skip);
+  PostData(32, fOutputparticlePID);
+  PostData(33, fOutputPt);
+  PostData(34, fNentries);
+  PostData(35, fEstimVtx);  
 
   return;
 }
