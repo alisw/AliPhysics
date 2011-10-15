@@ -187,7 +187,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
     // no requirements on SPD and ITSrefit failed
     trackCuts = CreateTrackCutsPWG4(10041005);   //no ITSrefit requirement
     trackCutsReject = CreateTrackCutsPWG4(1005); //ITSrefit requirement
-    trackCutsReject->SetEtaRange(-etamin,etamax);
+    trackCutsReject->SetEtaRange(etamin,etamax);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {

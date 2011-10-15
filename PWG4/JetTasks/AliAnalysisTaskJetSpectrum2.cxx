@@ -349,11 +349,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
 
 
-  const Int_t nBinPt = 100;
+  const Int_t nBinPt = 120;
   Double_t binLimitsPt[nBinPt+1];
   for(Int_t iPt = 0;iPt <= nBinPt;iPt++){
     if(iPt == 0){
-      binLimitsPt[iPt] = 0.0;
+      binLimitsPt[iPt] = -50.0;
     }
     else {// 1.0
       binLimitsPt[iPt] =  binLimitsPt[iPt-1] + 2.5;
@@ -475,8 +475,8 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
     // Bins:  Jet number: pTJet, cent, mult, RP, Area.   total bins = 4.5M
     const Int_t nBinsSparse1 = 6;
-    const Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,100, 10,  25,    fNRPBins, 10};
-    const Double_t xmin1[nBinsSparse1]  = {        -0.5,  0,  0,   0,        -0.5, 0.};
+    const Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10};
+    const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0};
     
     fhnJetPt[ij] = new THnSparseF(Form("fhnJetPt%s",cAdd.Data()),";jet number;p_{T,jet};cent;# tracks;RP;area",nBinsSparse1,nBins1,xmin1,xmax1);
@@ -894,6 +894,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   for(int ij = 0;ij < nJets;ij++){
     AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
     Float_t ptJet = jet->Pt();
+    if(ptJet<1.)jet->GetPtSubtracted(0);
     if(jet->Trigger()&fJetTriggerExcludeMask){
       fh1PtJetsInRej[iType]->Fill(ptJet);
       continue;
