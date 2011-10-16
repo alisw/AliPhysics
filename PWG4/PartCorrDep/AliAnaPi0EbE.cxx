@@ -79,9 +79,9 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
   }
   
   //Weight studies
-  for(Int_t i =0; i < 7; i++){
+  for(Int_t i =0; i < 14; i++){
     fhLambda0ForW0[i] = 0;
-    fhLambda1ForW0[i] = 0;
+    //fhLambda1ForW0[i] = 0;
   }
   
   //Initialize parameters
@@ -251,12 +251,12 @@ void AliAnaPi0EbE::FillWeightHistograms(AliVCluster *clus)
     Float_t l1org = clus->GetM20();
     Float_t dorg  = clus->GetDispersion();
     
-    for(Int_t iw = 0; iw < 7; iw++){
-      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(3+iw*0.5); 
+    for(Int_t iw = 0; iw < 14; iw++){
+      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(1+iw*0.5); 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
       
       fhLambda0ForW0[iw]->Fill(energy,clus->GetM02());
-      fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
+      //fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
       
     } // w0 loop
     
@@ -428,9 +428,9 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhECellClusterRatio);
     
     fhECellClusterLogRatio  = new TH2F ("hECellClusterLogRatio"," Log(cell energy / cluster energy) vs cluster energy, for selected decay photons from neutral meson",
-                                        nptbins,ptmin,ptmax, 100,-10,10); 
+                                        nptbins,ptmin,ptmax, 100,-10,0); 
     fhECellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
-    fhECellClusterLogRatio->SetYTitle("E_{cell i}/E_{cluster}");
+    fhECellClusterLogRatio->SetYTitle("Log (E_{max cell}/E_{cluster})");
     outputContainer->Add(fhECellClusterLogRatio);
     
     fhEMaxCellClusterRatio  = new TH2F ("hEMaxCellClusterRatio"," max cell energy / cluster energy vs cluster energy, for selected decay photons from neutral meson",
@@ -440,23 +440,23 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhEMaxCellClusterRatio);
     
     fhEMaxCellClusterLogRatio  = new TH2F ("hEMaxCellClusterLogRatio"," Log(max cell energy / cluster energy) vs cluster energy, for selected decay photons from neutral meson",
-                                           nptbins,ptmin,ptmax, 100,-10,10); 
+                                           nptbins,ptmin,ptmax, 100,-10,0); 
     fhEMaxCellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
-    fhEMaxCellClusterLogRatio->SetYTitle("E_{max cell}/E_{cluster}");
+    fhEMaxCellClusterLogRatio->SetYTitle("Log (E_{max cell}/E_{cluster})");
     outputContainer->Add(fhEMaxCellClusterLogRatio);
     
-    for(Int_t iw = 0; iw < 7; iw++){
-      fhLambda0ForW0[iw]  = new TH2F (Form("hLambda0ForW0%d",iw),Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f, for selected decay photons from neutral meson",3+0.5*iw),
+    for(Int_t iw = 0; iw < 14; iw++){
+      fhLambda0ForW0[iw]  = new TH2F (Form("hLambda0ForW0%d",iw),Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f, for selected decay photons from neutral meson",1+0.5*iw),
                                       nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhLambda0ForW0[iw]->SetXTitle("E_{cluster}");
       fhLambda0ForW0[iw]->SetYTitle("#lambda^{2}_{0}");
       outputContainer->Add(fhLambda0ForW0[iw]); 
       
-      fhLambda1ForW0[iw]  = new TH2F (Form("hLambda1ForW0%d",iw),Form("shower shape, #lambda^{2}_{1} vs E, w0 = %1.1f, for selected decay photons from neutral meson",3+0.5*iw),
-                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-      fhLambda1ForW0[iw]->SetXTitle("E_{cluster}");
-      fhLambda1ForW0[iw]->SetYTitle("#lambda^{2}_{1}");
-      outputContainer->Add(fhLambda1ForW0[iw]); 
+//      fhLambda1ForW0[iw]  = new TH2F (Form("hLambda1ForW0%d",iw),Form("shower shape, #lambda^{2}_{1} vs E, w0 = %1.1f, for selected decay photons from neutral meson",0.5+0.5*iw),
+//                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+//      fhLambda1ForW0[iw]->SetXTitle("E_{cluster}");
+//      fhLambda1ForW0[iw]->SetYTitle("#lambda^{2}_{1}");
+//      outputContainer->Add(fhLambda1ForW0[iw]); 
       
     }
   }  

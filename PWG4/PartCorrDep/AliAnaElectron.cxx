@@ -116,9 +116,9 @@ AliAnaElectron::AliAnaElectron() :
   }
   
   //Weight studies
-  for(Int_t i =0; i < 7; i++){
+  for(Int_t i =0; i < 14; i++){
     fhLambda0ForW0[i] = 0;
-    fhLambda1ForW0[i] = 0;
+    //fhLambda1ForW0[i] = 0;
   }
   
   //Initialize parameters
@@ -426,6 +426,48 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   
   TString pidParticle[] = {"Electron","ChargedHadron"} ;
   
+  if(fFillWeightHistograms){
+    
+    fhECellClusterRatio  = new TH2F ("hECellClusterRatio"," cell energy / cluster energy vs cluster energy, for selected electrons",
+                                     nptbins,ptmin,ptmax, 100,0,1.); 
+    fhECellClusterRatio->SetXTitle("E_{cluster} (GeV) ");
+    fhECellClusterRatio->SetYTitle("E_{cell i}/E_{cluster}");
+    outputContainer->Add(fhECellClusterRatio);
+    
+    fhECellClusterLogRatio  = new TH2F ("hECellClusterLogRatio"," Log(cell energy / cluster energy) vs cluster energy, for selected electrons",
+                                        nptbins,ptmin,ptmax, 100,-10,0); 
+    fhECellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
+    fhECellClusterLogRatio->SetYTitle("Log (E_{max cell}/E_{cluster})");
+    outputContainer->Add(fhECellClusterLogRatio);
+    
+    fhEMaxCellClusterRatio  = new TH2F ("hEMaxCellClusterRatio"," max cell energy / cluster energy vs cluster energy, for selected electrons",
+                                        nptbins,ptmin,ptmax, 100,0,1.); 
+    fhEMaxCellClusterRatio->SetXTitle("E_{cluster} (GeV) ");
+    fhEMaxCellClusterRatio->SetYTitle("E_{max cell}/E_{cluster}");
+    outputContainer->Add(fhEMaxCellClusterRatio);
+    
+    fhEMaxCellClusterLogRatio  = new TH2F ("hEMaxCellClusterLogRatio"," Log(max cell energy / cluster energy) vs cluster energy, for selected electrons",
+                                           nptbins,ptmin,ptmax, 100,-10,0); 
+    fhEMaxCellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
+    fhEMaxCellClusterLogRatio->SetYTitle("Log (E_{max cell}/E_{cluster})");
+    outputContainer->Add(fhEMaxCellClusterLogRatio);
+    
+    for(Int_t iw = 0; iw < 14; iw++){
+      fhLambda0ForW0[iw]  = new TH2F (Form("hLambda0ForW0%d",iw),Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f, for selected electrons",1+0.5*iw),
+                                      nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhLambda0ForW0[iw]->SetXTitle("E_{cluster}");
+      fhLambda0ForW0[iw]->SetYTitle("#lambda^{2}_{0}");
+      outputContainer->Add(fhLambda0ForW0[iw]); 
+      
+      //        fhLambda1ForW0[iw]  = new TH2F (Form("hLambda1ForW0%d",iw),Form("shower shape, #lambda^{2}_{1} vs E, w0 = %1.1f, for selected electrons",1+0.5*iw),
+      //                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      //        fhLambda1ForW0[iw]->SetXTitle("E_{cluster}");
+      //        fhLambda1ForW0[iw]->SetYTitle("#lambda^{2}_{1}");
+      //        outputContainer->Add(fhLambda1ForW0[iw]); 
+      
+    }
+  }  
+  
   for(Int_t pidIndex = 0; pidIndex < 2; pidIndex++){
     
     //Shower shape
@@ -518,49 +560,7 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
       outputContainer->Add(fhPhiLam0HighE[pidIndex]);  
       
     } // Shower shape
-    
-    if(fFillWeightHistograms){
-      
-      fhECellClusterRatio  = new TH2F ("hECellClusterRatio"," cell energy / cluster energy vs cluster energy, for selected electrons",
-                                       nptbins,ptmin,ptmax, 100,0,1.); 
-      fhECellClusterRatio->SetXTitle("E_{cluster} (GeV) ");
-      fhECellClusterRatio->SetYTitle("E_{cell i}/E_{cluster}");
-      outputContainer->Add(fhECellClusterRatio);
-      
-      fhECellClusterLogRatio  = new TH2F ("hECellClusterLogRatio"," Log(cell energy / cluster energy) vs cluster energy, for selected electrons",
-                                          nptbins,ptmin,ptmax, 100,-10,10); 
-      fhECellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
-      fhECellClusterLogRatio->SetYTitle("E_{cell i}/E_{cluster}");
-      outputContainer->Add(fhECellClusterLogRatio);
-      
-      fhEMaxCellClusterRatio  = new TH2F ("hEMaxCellClusterRatio"," max cell energy / cluster energy vs cluster energy, for selected electrons",
-                                          nptbins,ptmin,ptmax, 100,0,1.); 
-      fhEMaxCellClusterRatio->SetXTitle("E_{cluster} (GeV) ");
-      fhEMaxCellClusterRatio->SetYTitle("E_{max cell}/E_{cluster}");
-      outputContainer->Add(fhEMaxCellClusterRatio);
-      
-      fhEMaxCellClusterLogRatio  = new TH2F ("hEMaxCellClusterLogRatio"," Log(max cell energy / cluster energy) vs cluster energy, for selected electrons",
-                                             nptbins,ptmin,ptmax, 100,-10,10); 
-      fhEMaxCellClusterLogRatio->SetXTitle("E_{cluster} (GeV) ");
-      fhEMaxCellClusterLogRatio->SetYTitle("E_{max cell}/E_{cluster}");
-      outputContainer->Add(fhEMaxCellClusterLogRatio);
-      
-      for(Int_t iw = 0; iw < 7; iw++){
-        fhLambda0ForW0[iw]  = new TH2F (Form("hLambda0ForW0%d",iw),Form("shower shape, #lambda^{2}_{0} vs E, w0 = %1.1f, for selected electrons",3+0.5*iw),
-                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhLambda0ForW0[iw]->SetXTitle("E_{cluster}");
-        fhLambda0ForW0[iw]->SetYTitle("#lambda^{2}_{0}");
-        outputContainer->Add(fhLambda0ForW0[iw]); 
         
-        fhLambda1ForW0[iw]  = new TH2F (Form("hLambda1ForW0%d",iw),Form("shower shape, #lambda^{2}_{1} vs E, w0 = %1.1f, for selected electrons",3+0.5*iw),
-                                        nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
-        fhLambda1ForW0[iw]->SetXTitle("E_{cluster}");
-        fhLambda1ForW0[iw]->SetYTitle("#lambda^{2}_{1}");
-        outputContainer->Add(fhLambda1ForW0[iw]); 
-        
-      }
-    }
-    
     if(IsDataMC()){
       
       if(fFillSSHistograms){
@@ -975,7 +975,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //---------------------------------
     //Fill some shower shape histograms
     //---------------------------------
-    
+
     FillShowerShapeHistograms(calo,aodph.GetTag(),pid);
     
     if(pid == AliCaloPID::kElectron)
@@ -1355,7 +1355,7 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
     return;
   }
   
-  //printf("energy %f, ampmax %f, rat %f, lograt %f\n",energy,ampMax,ampMax/energy,TMath::Log(ampMax/energy));
+  //printf("AliAnaElectron::WeightHistograms() - energy %f, ampmax %f, rat %f, lograt %f\n",energy,ampMax,ampMax/energy,TMath::Log(ampMax/energy));
   fhEMaxCellClusterRatio   ->Fill(energy,ampMax/energy);
   fhEMaxCellClusterLogRatio->Fill(energy,TMath::Log(ampMax/energy));
   
@@ -1379,13 +1379,13 @@ void AliAnaElectron::WeightHistograms(AliVCluster *clus)
     Float_t l1org = clus->GetM20();
     Float_t dorg  = clus->GetDispersion();
     
-    for(Int_t iw = 0; iw < 7; iw++){
-
-      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(3+iw*0.5); 
+    for(Int_t iw = 0; iw < 14; iw++){
+      
+      GetCaloUtils()->GetEMCALRecoUtils()->SetW0(1+iw*0.5); 
       GetCaloUtils()->GetEMCALRecoUtils()->RecalculateClusterShowerShapeParameters(GetEMCALGeometry(), cells, clus);
       
       fhLambda0ForW0[iw]->Fill(energy,clus->GetM02());
-      fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
+      //fhLambda1ForW0[iw]->Fill(energy,clus->GetM20());
       
       //printf("\t w %1.1f, l0 %f, l1 %f,\n",3+iw*0.5,clus->GetM02(),clus->GetM20());
       

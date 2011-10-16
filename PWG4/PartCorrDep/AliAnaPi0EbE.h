@@ -144,8 +144,8 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhECellClusterLogRatio;   //! log (e cell / e cluster)  vs e cluster for selected photons
   TH2F         * fhEMaxCellClusterRatio;   //! e max cell / e cluster vs e cluster for selected photons
   TH2F         * fhEMaxCellClusterLogRatio;//! log (e max cell / e cluster) vs e cluster for selected photons
-  TH2F         * fhLambda0ForW0[7];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
-  TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
+  TH2F         * fhLambda0ForW0[14];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
+  //TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
   
   ClassDef(AliAnaPi0EbE,10)
 } ;
