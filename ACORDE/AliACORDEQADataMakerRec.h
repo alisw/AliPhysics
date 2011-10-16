@@ -49,17 +49,6 @@ private:
   virtual void   EndOfDetectorCycle(AliQAv1::TASKINDEX_t, TObjArray ** list) ;
   virtual void   StartOfDetectorCycle();
   //
-  //For DQM shifter histogram
-  // SL0 ACO trigger mode
-  TLine* fhACOMean;
-  TLine* fhACOMin;
-  TLine* fhACOMax;
-  TLine* fhACOMulti;
-  // AMU trigger mode
-  TLine* fhACOMeanAMU;
-  TLine* fhACOMinAMU;
-  TLine* fhACOMaxAMU;
-  TLine* fhACOMultiAMU;
   //
   ClassDef(AliACORDEQADataMakerRec,1)  // description 
 

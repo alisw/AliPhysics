@@ -19,6 +19,8 @@
 class TFile ; 
 class TH1F ; 
 class TObjArray ;
+class TLine;
+class TPaveText;
 
 // --- Standard library ---
 
@@ -28,8 +30,10 @@ class TObjArray ;
 class AliACORDEQAChecker: public AliQACheckerBase {
 
 public:
-  AliACORDEQAChecker() : AliQACheckerBase("ACORDE","ACORDE Quality Assurance Data Checker") {;}          // constructor
-  virtual ~AliACORDEQAChecker() {;} // destructor
+  AliACORDEQAChecker();	// constructor
+  AliACORDEQAChecker(const AliACORDEQAChecker& qac);
+  AliACORDEQAChecker& operator = (const AliACORDEQAChecker& qac);
+  virtual ~AliACORDEQAChecker(); // destructor
   virtual void Check(Double_t *, AliQAv1::ALITASK_t /*index*/) ;
   virtual void Check(Double_t *, AliQAv1::ALITASK_t /*index*/, TObjArray ** list, const AliDetectorRecoParam * /* recoParam*/) ;
 
@@ -37,6 +41,11 @@ public:
 
 private:
 
+  // for DQM shifter plots
+
+  TPaveText * fTextDQMShifterInfo; //! Pave text for alarm in DQM plots
+  TLine * fMax; //! Maximum hits allowed per module (normalized data)
+  TLine * fMin; //! Minimum hits allowed per module (normalized data)
   
   ClassDef(AliACORDEQAChecker,1)  // description 
 

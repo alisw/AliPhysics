@@ -57,29 +57,13 @@
 ClassImp(AliACORDEQADataMakerRec)
            
 //____________________________________________________________________________ 
- AliACORDEQADataMakerRec::AliACORDEQADataMakerRec():AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kACORDE), "ACORDE Quality Assurance Data Maker"),
-  fhACOMean(new TLine(0.,4.,60.,4.)),
-  fhACOMin(new TLine(0.,4.,60.,4.)),
-  fhACOMax(new TLine(0.,4.,60.,4.)),
-  fhACOMulti(new TLine(0.,4.,60.,4.)),
-  fhACOMeanAMU(new TLine(0.,4.,60.,4.)),
-  fhACOMinAMU(new TLine(0.,4.,60.,4.)),
-  fhACOMaxAMU(new TLine(0.,4.,60.,4.)),
-  fhACOMultiAMU(new TLine(0.,4.,60.,4.))
+ AliACORDEQADataMakerRec::AliACORDEQADataMakerRec():AliQADataMakerRec(AliQAv1::GetDetName(AliQAv1::kACORDE), "ACORDE Quality Assurance Data Maker")
 {
 
 }
 //____________________________________________________________________________ 
 AliACORDEQADataMakerRec::AliACORDEQADataMakerRec(const AliACORDEQADataMakerRec& qadm):
-  AliQADataMakerRec(),
-  fhACOMean(qadm.fhACOMean),
-  fhACOMin(qadm.fhACOMin),
-  fhACOMax(qadm.fhACOMax),
-  fhACOMulti(qadm.fhACOMulti),
-  fhACOMeanAMU(qadm.fhACOMeanAMU),
-  fhACOMinAMU(qadm.fhACOMinAMU),
-  fhACOMaxAMU(qadm.fhACOMaxAMU),
-  fhACOMultiAMU(qadm.fhACOMultiAMU)
+  AliQADataMakerRec()
 {
   SetName((const char*)qadm.GetName()) ; 
   SetTitle((const char*)qadm.GetTitle()); 
@@ -88,14 +72,6 @@ AliACORDEQADataMakerRec::AliACORDEQADataMakerRec(const AliACORDEQADataMakerRec& 
 //__________________________________________________________________
 AliACORDEQADataMakerRec::~AliACORDEQADataMakerRec()
 {
-  delete fhACOMean;
-  delete fhACOMin;
-  delete fhACOMax;
-  delete fhACOMulti;
-  delete fhACOMeanAMU;
-  delete fhACOMinAMU;
-  delete fhACOMaxAMU;
-  delete fhACOMultiAMU;
 }
 
 //__________________________________________________________________
@@ -115,26 +91,6 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
   // Update for DQM GUI
   //
 
-  // Thresholds and alarms definitions
-  /*******************************************************************************************
-
-	We check the performance of the ACORDE's modules respect to the mean
-	value over the integral for hits for all the modules (in SL0 and AMU), then
-	for the threshold lines we don't use a fixed threshold value.
-
-	For the alarms, we need two fixed values (one for each configuration, SL0 and AMU):
-
-	   -) SL0_ThresholdAlarm: minimum number of ACORDE's modules woriking properly
-           -) AMU_ThresholdAlarm: minimum number of ACORDE's modules woriking properly
-
-	This should work for p-p*, HI* and cosmic** data taking.
-
-	* only as readout detector (if ACORDE is triggering, in some rare trigger cluster, 
-				    an improvement should be done)
-	** as readout and trigger detector.
-
-  *********************************************************************************************/
-
   for (Int_t specie = 0; specie < AliRecoParam::kNSpecies ; specie++) {
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie) ) continue ;
     // 
@@ -147,235 +103,52 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       	if (!parr) continue;
       	TObjArray &harr = *parr;
       	TH1* h0 = (TH1*)harr[0];
-      	TH1* h1 = (TH1*)harr[1];
-      	if (!h0 || !h1) continue;
       	TH1* h2 = (TH1*)harr[2];
-      	TH1* h3 = (TH1*)harr[3];
-      	if (!h2 || !h3) continue;
+      	if (!h0 || !h2) continue;
 
       	Double_t integralSL0 = 0;
       	Double_t integralAMU = 0;
 
-      	// maximimum and minimum for Pads
+	if (itc==-1 && (integralAMU=h2->Integral()==0)||(integralSL0=h0->Integral()==0)) continue;
 
-      	Double_t maxPad = h0->GetMaximum();
-	
-      	if ((itc==-1 && !(integralAMU=h2->Integral()) || h2->GetMaximum()==0)||(itc==-1 && !(integralSL0=h0->Integral()) || h0->GetMaximum()==0)) { // default clone
-		printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
-		Float_t maxPadAMU = h3->GetMaximum();
-		TPaveText *acoBoxFatalAMU = new TPaveText(35,0,55,1,"b");
-		acoBoxFatalAMU->SetFillColor(kRed);
-		acoBoxFatalAMU->SetLineColor(kRed);
-		acoBoxFatalAMU->SetLineWidth(2);
-		acoBoxFatalAMU->AddText("ACO: Not O.K.");
-		acoBoxFatalAMU->AddText("Call the experts");
+	Float_t maxSL0 = 1.1*h0->GetMaximum();
+	Float_t scaleSL0 = 0.;
+	if (maxSL0!=0) scaleSL0 = 1./maxSL0;
+	else scaleSL0 = 1.;
+	h0->Scale(scaleSL0);
 
-		TPaveText *acoBoxFatalMultiAMU = new TPaveText(35,0,55,maxPadAMU,"b");
-		acoBoxFatalMultiAMU->SetFillColor(kRed);
-		acoBoxFatalMultiAMU->SetLineColor(kRed);
-		acoBoxFatalMultiAMU->SetLineWidth(2);
-		acoBoxFatalMultiAMU->AddText("ACO: Not O.K.");
-		acoBoxFatalMultiAMU->AddText("Call the experts");
 
-		h2->GetListOfFunctions()->Add(acoBoxFatalAMU);
-		h3->GetListOfFunctions()->Add(acoBoxFatalMultiAMU);
-
-		Float_t maxPadSL0 = h1->GetMaximum();
-
-        	printf("No entries in ACORDE Hits histograms for trigger class %d, fatal error, please check !!!\n",itc);
-        	TPaveText *acoBoxFatal = new TPaveText(35,0,55,1,"b");
-        	acoBoxFatal->SetFillColor(kRed);
-        	acoBoxFatal->SetLineColor(kRed);
-        	acoBoxFatal->SetLineWidth(2);
-        	acoBoxFatal->AddText("ACO: Not O.K.");
-		acoBoxFatal->AddText("Call the experts");
-
-        	TPaveText *acoBoxFatalMulti = new TPaveText(35,0,55,maxPadSL0,"b");
-        	acoBoxFatalMulti->SetFillColor(kRed);
-        	acoBoxFatalMulti->SetLineColor(kRed);
-        	acoBoxFatalMulti->SetLineWidth(2);
-        	acoBoxFatalMulti->AddText("ACO: Not O.K.");
-		acoBoxFatalMulti->AddText("Call the experts");
-
-        	h0->GetListOfFunctions()->Add(acoBoxFatal);
-        	h1->GetListOfFunctions()->Add(acoBoxFatalMulti);
-		continue;
-	}
+	Float_t maxAMU = 1.1*h2->GetMaximum();
+	Float_t scaleAMU = 0.;
+	if (maxAMU!=0) scaleAMU = 1./maxAMU;
+	else scaleAMU = 1.;
+	h2->Scale(scaleAMU);
       
-	// Check DQM
-
-	// setting the thresholds
-
-	Int_t SL0_ThresholdAlarm = 45; // default value until the creation of AliACORDEThreshold class
-	Int_t AMU_ThresholdAlarm = 45; // default value until the creation of AliACORDEThreshold class
-
-	// SL0 - histograms
-
 	Int_t indexActiveModuleSL0 = 0;
-        for(Int_t iModule=0;iModule<60;iModule++){	
-		if (h0->GetBinContent(iModule)>0) indexActiveModuleSL0++;
+	Int_t indexActiveModuleAMU = 0;
+
+	for(Int_t iModule = 0; iModule < 60; iModule++){
+		if (h0->GetBinContent(iModule) > 0) indexActiveModuleSL0++;
+		if (h2->GetBinContent(iModule) > 0) indexActiveModuleAMU++;
 	}
 	
 	Float_t meanHitsSL0 = 0.;
-	if (indexActiveModuleSL0!=0) meanHitsSL0=h0->Integral()/indexActiveModuleSL0;
-
-	Int_t indexSL0 = 0;
-	
-	// set the threshold lines: minimum, maximum and mean
-
-	fhACOMean->SetX1(0);
-	fhACOMean->SetY1(meanHitsSL0);
-	fhACOMean->SetX2(59);
-	fhACOMean->SetY2(meanHitsSL0);
-	
-	fhACOMin->SetX1(0);
-	fhACOMin->SetX2(59);
-	fhACOMin->SetY1(meanHitsSL0-0.80*meanHitsSL0);
-	fhACOMin->SetY2(meanHitsSL0-0.80*meanHitsSL0);
-
-	fhACOMax->SetX1(0);
-	fhACOMax->SetX2(59);
-	fhACOMax->SetY1(meanHitsSL0+0.80*meanHitsSL0);
-	fhACOMax->SetY2(meanHitsSL0+0.80*meanHitsSL0);
-
-	fhACOMulti->SetX1(0);
-	fhACOMulti->SetY1(0);
-	fhACOMulti->SetX2(0);
-	Float_t maxMulti = 0;
-	if (h1->GetMaximum()>0) maxMulti = h1->GetMaximum();
-	fhACOMulti->SetY2(maxMulti);
-
-	TPaveText *acoBoxOkHitsSL0 = new TPaveText(35,meanHitsSL0+0.5*meanHitsSL0,55,maxPad,"b");
-	acoBoxOkHitsSL0->SetFillColor(kGreen);
-	acoBoxOkHitsSL0->SetLineColor(kGreen);
-	acoBoxOkHitsSL0->SetLineWidth(2);
-	acoBoxOkHitsSL0->AddText("ACO: O.K.");
-
-	TPaveText *acoBoxErrorHitsSL0 = new TPaveText(35,meanHitsSL0+0.5*meanHitsSL0,55,maxPad,"b");
-	acoBoxErrorHitsSL0->SetFillColor(kRed);
-	acoBoxErrorHitsSL0->SetLineColor(kRed);
-	acoBoxErrorHitsSL0->SetLineWidth(2);
-	acoBoxErrorHitsSL0->AddText("ACO: Not O.K.");
-
-	Float_t maxPadMulti = h1->GetMaximum();
-
-	TPaveText *acoBoxOkMultiSL0 = new TPaveText(35,maxPadMulti-0.3*maxPadMulti,55,maxPadMulti,"b");
-	acoBoxOkMultiSL0->SetFillColor(kGreen);
-	acoBoxOkMultiSL0->SetLineColor(kGreen);
-	acoBoxOkMultiSL0->SetLineWidth(2);
-	acoBoxOkMultiSL0->AddText("ACO: O.K.");
-
-	TPaveText *acoBoxErrorMultiSL0 = new TPaveText(35,maxPadMulti-0.3*maxPadMulti,55,maxPadMulti,"b");
-	acoBoxErrorMultiSL0->SetFillColor(kRed);
-	acoBoxErrorMultiSL0->SetLineColor(kRed);
-	acoBoxErrorMultiSL0->SetLineWidth(2);
-	acoBoxErrorMultiSL0->AddText("ACO: Not O.K.");
-        TH1* h4 = (TH1*)harr[4];
-
-	for (Int_t iModule = 0; iModule < 60; iModule++){
-		if (meanHitsSL0!=0){
-			if (TMath::Abs(h0->GetBinContent(iModule)/meanHitsSL0-1) < 1) indexSL0++;
-			if (h4){
-				h4->Fill(h0->GetBinContent(iModule)/meanHitsSL0-1);
-			}
-		}
-	}
-
-	if (indexSL0>=SL0_ThresholdAlarm){
-		h0->GetListOfFunctions()->Add(acoBoxOkHitsSL0);
-		h1->GetListOfFunctions()->Add(acoBoxOkMultiSL0);
-	}
-	else{
-		h0->GetListOfFunctions()->Add(acoBoxErrorHitsSL0);
-		h1->GetListOfFunctions()->Add(acoBoxErrorMultiSL0);
-	}
-
-
-	// AMU - histograms	
-
-	Int_t indexActiveModuleAMU = 0;
-        for(Int_t iModule=0;iModule<60;iModule++){
-		if (h2->GetBinContent(iModule)>0) indexActiveModuleAMU++;
-	}
-
 	Float_t meanHitsAMU = 0.;
-	if (indexActiveModuleAMU!=0) meanHitsAMU=h2->Integral()/indexActiveModuleAMU;
+	if ((indexActiveModuleSL0==0) || (indexActiveModuleAMU == 0)) continue;
 
-	// setting the line's thresholds: min, max and mean of hits
+	meanHitsSL0 = h0->Integral()/indexActiveModuleSL0;
+	meanHitsAMU = h2->Integral()/indexActiveModuleAMU;
 
-	fhACOMeanAMU->SetX1(0);
-	fhACOMeanAMU->SetY1(meanHitsAMU);
-	fhACOMeanAMU->SetX2(59);
-	fhACOMeanAMU->SetY2(meanHitsAMU);
-
-	fhACOMinAMU->SetX1(0);
-	fhACOMinAMU->SetX2(59);
-	fhACOMinAMU->SetY1(meanHitsAMU-0.80*meanHitsAMU);
-	fhACOMinAMU->SetY2(meanHitsAMU-0.80*meanHitsAMU);
-
-
-	fhACOMaxAMU->SetX1(0);
-	fhACOMaxAMU->SetX2(59);
-	fhACOMaxAMU->SetY1(meanHitsAMU+0.80*meanHitsAMU);
-	fhACOMaxAMU->SetY2(meanHitsAMU+0.80*meanHitsAMU);
-
-
-	fhACOMultiAMU->SetX1(0);
-	fhACOMultiAMU->SetY1(0);
-	fhACOMultiAMU->SetX2(0);
-	Float_t maxMultiAMU = 0;
-	if (h3->GetMaximum()>0) maxMultiAMU = h3->GetMaximum();
-	fhACOMultiAMU->SetY2(maxMultiAMU);
-	
-	// setting the alarms
-
-	TPaveText *acoBoxOkHitsAMU = new TPaveText(35,meanHitsAMU+0.5*meanHitsAMU,55,maxPad,"b");
-	acoBoxOkHitsAMU->SetFillColor(kGreen);
-	acoBoxOkHitsAMU->SetLineColor(kGreen);
-	acoBoxOkHitsAMU->SetLineWidth(2);
-	acoBoxOkHitsAMU->AddText("ACO: O.K.");
-
-	TPaveText *acoBoxErrorHitsAMU = new TPaveText(35,meanHitsAMU+0.5*meanHitsAMU,55,maxPad,"b");
-	acoBoxErrorHitsAMU->SetFillColor(kRed);
-	acoBoxErrorHitsAMU->SetLineColor(kRed);
-	acoBoxErrorHitsAMU->SetLineWidth(2);
-	acoBoxErrorHitsAMU->AddText("ACO: Not O.K.");
-
-	Float_t maxPadMultiAMU = h3->GetMaximum();
-
-	TPaveText *acoBoxOkMultiAMU = new TPaveText(35,maxPadMultiAMU-0.3*maxPadMultiAMU,55,maxPadMultiAMU,"b");
-	acoBoxOkMultiAMU->SetFillColor(kGreen);
-	acoBoxOkMultiAMU->SetLineColor(kGreen);
-	acoBoxOkMultiAMU->SetLineWidth(2);
-	acoBoxOkMultiAMU->AddText("ACO: O.K.");
-
-	TPaveText *acoBoxErrorMultiAMU = new TPaveText(35,maxPadMultiAMU-0.3*maxPadMultiAMU,55,maxPadMultiAMU,"b");
-	acoBoxErrorMultiAMU->SetFillColor(kRed);
-	acoBoxErrorMultiAMU->SetLineColor(kRed);
-	acoBoxErrorMultiAMU->SetLineWidth(2);
-	acoBoxErrorMultiAMU->AddText("ACO: Not O.K.");
+        TH1* h4 = (TH1*)harr[4];
         TH1* h5 = (TH1*)harr[5];
 
-	Int_t indexAMU=0;
-
-	for (Int_t iModule = 0; iModule < 60; iModule++){
-		if (meanHitsAMU!=0){
-			if (TMath::Abs(h2->GetBinContent(iModule)/meanHitsAMU-1) < 1) indexAMU++;
-			if (h5){
-				h5->Fill(h2->GetBinContent(iModule)/meanHitsAMU-1);
-			}
+	if (h4 && h5 && meanHitsAMU!=0 && meanHitsSL0!=0){
+		for (Int_t iModule = 0; iModule < 60; iModule++){
+			h4->Fill(h0->GetBinContent(iModule)/meanHitsSL0-1);
+			h5->Fill(h2->GetBinContent(iModule)/meanHitsAMU-1);
 		}
 	}
 
-	if (indexAMU>=AMU_ThresholdAlarm) {
-		h2->GetListOfFunctions()->Add(acoBoxOkHitsAMU);
-		h3->GetListOfFunctions()->Add(acoBoxOkMultiAMU);
-	}
-	else{
-		h2->GetListOfFunctions()->Add(acoBoxErrorHitsAMU);
-		h3->GetListOfFunctions()->Add(acoBoxErrorMultiAMU);
-	}
-      
     } // end of trigger classes loop
   } // end specie loop
   // QA Checker standar (to be updated)
@@ -402,8 +175,8 @@ void AliACORDEQADataMakerRec::InitRaws()
         TH1F * fhACORDEMultiplicitySL0DQM = new TH1F("ACOMultiSL0_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
         TH1F * fhACORDEBitPatternAMUDQM = new TH1F("ACOHitsAMU_DQM_Shifter","Distribution of ACORDE fired modules for DQM shifter; No. of module; Counts",60,-0.5,59.5);// Hits histogram for QA-shifter ACO-SL0 trigger mode
         TH1F * fhACORDEMultiplicityAMUDQM = new TH1F("ACOMultiAMU_DQM_Shifter","Multiplicity of ACORDE fired modules for DQM shifter; No. of fired modules; No. of events",62,-1,60); // Multiplicity histo. for QA-shifter ACO-SL0 trigger mode
-        TH1F * fhACORDEBitPatternCheckDQMSL0 = new TH1F("ACOHitsTriggerCheck_DQMExpertSL0","Check the activity of ACORDE's modules; |Hits per module/mean of Hits - 1|; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
-        TH1F * fhACORDEBitPatternCheckDQMAMU = new TH1F("ACOHitsTriggerCheck_DQMExpertAMU","Check the activity of ACORDE's modules; |Hits per module/mean of Hits - 1|; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
+        TH1F * fhACORDEBitPatternCheckDQMSL0 = new TH1F("ACOHitsTriggerCheck_DQMExpertSL0","Check the activity of ACORDE's modules; Hits per module/mean of Hits; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
+        TH1F * fhACORDEBitPatternCheckDQMAMU = new TH1F("ACOHitsTriggerCheck_DQMExpertAMU","Check the activity of ACORDE's modules; Hits per module/mean of Hits; Counts",100,-3,5); // Check the trigger status of ACORDE (SL0 vs AMU)
          // Expert histograms
          // Check the hits multiplicity from trigger configuration
          Add2RawsList(fhACORDEBitPatternCheckDQMSL0,4,expert,image,!saveCorr);
@@ -424,26 +197,10 @@ void AliACORDEQADataMakerRec::InitRaws()
          // For Hits distribution on ACORDE
  
          fhACORDEBitPatternDQM->SetFillColor(kMagenta+2);
-         fhACOMean->SetLineColor(kBlue);
-         fhACOMean->SetLineStyle(2);
-         fhACOMean->SetLineWidth(4);
-         fhACORDEBitPatternDQM->GetListOfFunctions()->Add(fhACOMean);
-         fhACOMin->SetLineColor(kGreen);
-         fhACOMin->SetLineStyle(2);
-         fhACOMin->SetLineWidth(4);
-         fhACORDEBitPatternDQM->GetListOfFunctions()->Add(fhACOMin);
-         fhACOMax->SetLineColor(kGreen);
-         fhACOMax->SetLineStyle(2);
-         fhACOMax->SetLineWidth(4);
-         fhACORDEBitPatternDQM->GetListOfFunctions()->Add(fhACOMax);
  
          // For ACORDE Multiplicity distribution of fired modules
  
          fhACORDEMultiplicitySL0DQM->SetFillColor(kMagenta);
-         fhACOMulti->SetLineColor(kMagenta);
-         fhACOMulti->SetLineStyle(2);
-         fhACOMulti->SetLineWidth(4);
-         fhACORDEMultiplicitySL0DQM->GetListOfFunctions()->Add(fhACOMulti);
  
          // For AMU ACO trigger mode
  
@@ -453,26 +210,10 @@ void AliACORDEQADataMakerRec::InitRaws()
          // For Hits distribution on ACORDE
  
          fhACORDEBitPatternAMUDQM->SetFillColor(kViolet+7);
-         fhACOMeanAMU->SetLineColor(kBlue);
-         fhACOMeanAMU->SetLineStyle(2);
-         fhACOMeanAMU->SetLineWidth(4);
-         fhACORDEBitPatternAMUDQM->GetListOfFunctions()->Add(fhACOMeanAMU);
-         fhACOMinAMU->SetLineColor(kGreen);
-         fhACOMinAMU->SetLineStyle(2);
-         fhACOMinAMU->SetLineWidth(4);
-         fhACORDEBitPatternAMUDQM->GetListOfFunctions()->Add(fhACOMinAMU);
-         fhACOMaxAMU->SetLineColor(kGreen);
-         fhACOMaxAMU->SetLineStyle(2);
-         fhACOMaxAMU->SetLineWidth(4);
-         fhACORDEBitPatternAMUDQM->GetListOfFunctions()->Add(fhACOMaxAMU);
  
          // For ACORDE Multiplicity distribution of fired modules
  
          fhACORDEMultiplicityAMUDQM->SetFillColor(kViolet+6);
-         fhACOMultiAMU->SetLineColor(kAzure-2);
-         fhACOMultiAMU->SetLineStyle(2);
-         fhACOMultiAMU->SetLineWidth(4);
-         fhACORDEMultiplicityAMUDQM->GetListOfFunctions()->Add(fhACOMultiAMU);
  
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
