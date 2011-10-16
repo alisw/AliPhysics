@@ -47,8 +47,10 @@
 // ========================== Parameters section ==============================
 
 // input
-// char *infile = "CellQA_LHC11d_pass1_PHI7.root";
-char *infile = "CellQA_LHC11d_pass1_AnyInt.root";
+// char *infile = "LHC11e_cpass1_CellQA_AnyInt.root";
+char *infile = "LHC11e_cpass1_CellQA_PHI7.root";
+
+Bool_t trendPlotEvents = kFALSE;
 
 // supermodule colors
 Color_t colorsSM[] = {0,2,3,4};
@@ -57,8 +59,8 @@ Color_t colorsSM[] = {0,2,3,4};
 // mess up the results, it is suggested to list (known and newly found with
 // this code) problematic cell candidates explicitly
 
-Int_t excells[] = {1,2};
-Int_t nexc = 2;
+Int_t excells[] = {1};
+Int_t nexc = 0;
 
 // ====================== End of parameters section ===========================
 
@@ -161,7 +163,7 @@ void getCellsRunsQAPHOS()
   TH2** hBadCellMap = FindDeadNoisyCellsPerRun(nruns, runNumbers, 0.05, 2.5, 200, 10.);
   
   // Look for noisy channels only:
-  // TH2** hBadCellMap = FindDeadNoisyCellsPerRun(nruns, runNumbers, -1.0, 3.0, 200, 20.);
+  // TH2** hBadCellMap = FindDeadNoisyCellsPerRun(nruns, runNumbers, -1.0, 2.5, 200, 20.);
 
   // Look for dead channels only:
   // TH2** hBadCellMap = FindDeadNoisyCellsPerRun(nruns, runNumbers, 0.05, 1.e9, 200, 10.);
@@ -215,15 +217,15 @@ void getCellsRunsQAPHOS()
 
   // Draw everything for combined
   DrawDeadNoisyCellMap(hBadCellMapPrimary, "Primary_hMapRuns");
-  DrawDeadNoisyCellMap((TH2*)ConvertMapRuns2Events(nruns,runNumbers,hBadCellMapPrimary), "Primary_hMapEvents");
-  DrawDeadNoisyCellPercent(nruns, runNumbers, hBadCellMapPrimary, "Primary_hPercent");
+  // DrawDeadNoisyCellMap((TH2*)ConvertMapRuns2Events(nruns,runNumbers,hBadCellMapPrimary), "Primary_hMapEvents");
+  // DrawDeadNoisyCellPercent(nruns, runNumbers, hBadCellMapPrimary, "Primary_hPercent");
 
   // Print full information on cells which are dead/noisy;
   // kTRUE -- print also the percentage % dead/% noisy
   PrintDeadNoisyCells(hBadCellMapPrimary, 0.9, 1.);          // in 90-100% of runs
   // PrintDeadNoisyCells(hBadCellMapPrimary, 0.5, 0.9, kTRUE);  // in 50-90% of runs
   // PrintDeadNoisyCells(hBadCellMapPrimary, 0.3, 0.5);      // in 30-50% of runs
-  PrintDeadNoisyCells(hBadCellMapPrimary, 0.1, 0.5);      // in 10-50% of runs
+  // PrintDeadNoisyCells(hBadCellMapPrimary, 0.1, 0.5);      // in 10-50% of runs
 
   // visualize dead/noisy cell map for EMCAL/PHOS; requires aliroot
   DrawOccupancy(nruns, runNumbers, hBadCellMapPrimary, "hDeadNoisyCellsOccupancy");
@@ -246,10 +248,12 @@ void getCellsRunsQAPHOS()
   DrawClusterAveragesPerRun(nruns, runNumbers, 1, 0.3, -1, hBadCellMapPrimary);
 
   // Draw random slices of the pi0 peak in one supermodule and in whole detector
-  DrawPi0Slice(runNumbers[6],  1);
-  DrawPi0Slice(runNumbers[6],  2);
-  DrawPi0Slice(runNumbers[6],  3);
-  DrawPi0Slice(runNumbers[gRandom->Integer(nruns)], -1);
+  // Int_t rndRun = runNumbers[gRandom->Integer(nruns)];
+  Int_t rndRun = runNumbers[30];
+  DrawPi0Slice(rndRun,  1);
+  DrawPi0Slice(rndRun,  2);
+  DrawPi0Slice(rndRun,  3);
+  DrawPi0Slice(rndRun, -1);
 
   // Draw number of pi0s per event, pi0 mass and width
   DrawPi0Averages(nruns, runNumbers);
@@ -1599,8 +1603,10 @@ void DrawClusterAveragesPerRun(Int_t nruns, Int_t runNumbers[], Int_t ncellsMin 
   gPad->SetLeftMargin(0.04);
   gPad->SetRightMargin(0.02);
   gPad->SetTopMargin(0.10);
-  gPad->SetBottomMargin(0.13);
-  TLegend *leg = new TLegend(0.65,0.15,0.85,0.15+0.04*(SM2-SM1+1));
+  gPad->SetBottomMargin(0.14);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  TLegend *leg = new TLegend(0.65,0.16,0.75,0.15+0.08*(SM2-SM1+1));
 
   hAvECluster->SetAxisRange(hAvECluster->GetMinimum()*0.5, hAvECluster->GetMaximum()*1.5,"Y");
   hAvECluster->SetLineWidth(2);
@@ -1620,8 +1626,10 @@ void DrawClusterAveragesPerRun(Int_t nruns, Int_t runNumbers[], Int_t ncellsMin 
   gPad->SetLeftMargin(0.04);
   gPad->SetRightMargin(0.02);
   gPad->SetTopMargin(0.10);
-  gPad->SetBottomMargin(0.13);
-  leg = new TLegend(0.65,0.15,0.85,0.15+0.06*(SM2-SM1+1));
+  gPad->SetBottomMargin(0.14);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  leg = new TLegend(0.65,0.16,0.75,0.15+0.08*(SM2-SM1+1));
 
   hAvNCluster->SetAxisRange(0, hAvNCluster->GetMaximum()*1.5,"Y");
   hAvNCluster->SetLineWidth(2);
@@ -1641,8 +1649,10 @@ void DrawClusterAveragesPerRun(Int_t nruns, Int_t runNumbers[], Int_t ncellsMin 
   gPad->SetLeftMargin(0.04);
   gPad->SetRightMargin(0.02);
   gPad->SetTopMargin(0.10);
-  gPad->SetBottomMargin(0.13);
-  leg = new TLegend(0.65,0.15,0.85,0.15+0.04*(SM2-SM1+1));
+  gPad->SetBottomMargin(0.14);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  leg = new TLegend(0.65,0.16,0.75,0.15+0.08*(SM2-SM1+1));
 
   hAvNCellsInCluster->SetAxisRange(0, hAvNCellsInCluster->GetMaximum()*1.3,"Y");
   hAvNCellsInCluster->SetLineWidth(2);
@@ -1656,7 +1666,9 @@ void DrawClusterAveragesPerRun(Int_t nruns, Int_t runNumbers[], Int_t ncellsMin 
   }
   hAvNCellsInCluster->Draw("same"); // to top
   leg->Draw("same");
+  c1->Update();
 
+  if (!trendPlotEvents) return;
 
   /* Draw the same vs number of events
    */
@@ -1722,7 +1734,6 @@ void DrawClusterAveragesPerRun(Int_t nruns, Int_t runNumbers[], Int_t ncellsMin 
   hAvNCellsInClusterEvents->Draw("same"); // to top
   leg->Draw("same");
 
-  c1->Update();
   c2->Update();
 }
 
@@ -1764,7 +1775,7 @@ void DrawPi0Slice(Int_t run, Int_t sm = -1)
       continue;
     }
     h->SetName(Form("hPi0SliceSM%i_run%i",sm,run));
-    h->SetTitle(Form("#pi^{0} in M%i, run %i, %.0fk events", sm, run, GetNumberOfEvents(run)/1e+3));
+    h->SetTitle(Form("#pi^{0} in M%i, run %i, %.0fk events", 5-sm, run, GetNumberOfEvents(run)/1e+3));
   }
   else {// whole detector
     for (Int_t sm1 = 0; sm1 < 10; sm1++)
@@ -1843,12 +1854,12 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   TH1* hPi0Mass = new TH1F(Form("hPi0Mass%s",suff),"#pi^{0} mass position", nruns,0,nruns);
   SetRunLabel(hPi0Mass,nruns,runNumbers,1);
   // hPi0Mass->SetXTitle("Run index");
-  hPi0Mass->SetYTitle("M_{#pi^{0}}, GeV");
+  hPi0Mass->SetYTitle("M_{#pi^{0}}, GeV/c^{2}");
 
   TH1* hPi0Sigma = new TH1F(Form("hPi0Sigma%s",suff),"#pi^{0} width", nruns,0,nruns);
   SetRunLabel(hPi0Sigma,nruns,runNumbers,1);
   // hPi0Sigma->SetXTitle("Run index");
-  hPi0Sigma->SetYTitle("#sigma_{#pi^{0}}, GeV");
+  hPi0Sigma->SetYTitle("#sigma_{#pi^{0}}, GeV/c^{2}");
 
   // initialize histograms per SM
   TH1* hPi0NumSM[10];
@@ -1856,15 +1867,16 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   TH1* hPi0SigmaSM[10];
 
   for (Int_t sm = SM1; sm <= SM2; sm++) {
-    hPi0NumSM[sm] = new TH1F(Form("hPi0NumSM%i%s",sm,suff),"", nruns,0,nruns);
-    hPi0MassSM[sm] = new TH1F(Form("hPi0MassSM%i%s",sm,suff),"", nruns,0,nruns);
+    hPi0NumSM[sm]   = new TH1F(Form("hPi0NumSM%i%s",sm,suff),"", nruns,0,nruns);
+    hPi0MassSM[sm]  = new TH1F(Form("hPi0MassSM%i%s",sm,suff),"", nruns,0,nruns);
     hPi0SigmaSM[sm] = new TH1F(Form("hPi0SigmaSM%i%s",sm,suff),"", nruns,0,nruns);
   }
 
+  TCanvas cFit("cFit","cFit");
   // run index loop
   for (Int_t ri = 0; ri < nruns; ri++)
   {
-    fprintf(stderr, "\rDrawPi0Averages(): analysing run index %i/%i ...  ", ri, nruns-1);
+    fprintf(stderr, "\rDrawPi0Averages(): analysing run index %i/%i, run # %i...  ", ri, nruns-1,runNumbers[ri]);
 
     Int_t nevents = GetNumberOfEvents(runNumbers[ri]);
 
@@ -1884,12 +1896,12 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
       Double_t nraw, enraw, mass, emass, sigma, esigma;
       FitPi0(h, nraw, enraw, mass, emass, sigma, esigma);
 
-      hPi0NumSM[sm]->SetBinContent(ri+1, nraw/nevents/accep);
-      hPi0MassSM[sm]->SetBinContent(ri+1, mass);
+      hPi0NumSM[sm]  ->SetBinContent(ri+1, nraw/nevents/accep);
+      hPi0MassSM[sm] ->SetBinContent(ri+1, mass);
       hPi0SigmaSM[sm]->SetBinContent(ri+1, sigma);
 
-      hPi0NumSM[sm]->SetBinError(ri+1, enraw/nevents/accep);
-      hPi0MassSM[sm]->SetBinError(ri+1, emass);
+      hPi0NumSM[sm]  ->SetBinError(ri+1, enraw/nevents/accep);
+      hPi0MassSM[sm] ->SetBinError(ri+1, emass);
       hPi0SigmaSM[sm]->SetBinError(ri+1, esigma);
 
       delete h;
@@ -1933,12 +1945,12 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
     Double_t nraw, enraw, mass, emass, sigma, esigma;
     FitPi0(hsum, nraw, enraw, mass, emass, sigma, esigma);
 
-    hPi0Num->SetBinContent(ri+1, nraw/nevents/(SM2-SM1+1-noSM));
-    hPi0Mass->SetBinContent(ri+1, mass);
+    hPi0Num  ->SetBinContent(ri+1, nraw/nevents/(SM2-SM1+1-noSM));
+    hPi0Mass ->SetBinContent(ri+1, mass);
     hPi0Sigma->SetBinContent(ri+1, sigma);
 
-    hPi0Num->SetBinError(ri+1, enraw/nevents/(SM2-SM1+1-noSM));
-    hPi0Mass->SetBinError(ri+1, emass);
+    hPi0Num  ->SetBinError(ri+1, enraw/nevents/(SM2-SM1+1-noSM));
+    hPi0Mass ->SetBinError(ri+1, emass);
     hPi0Sigma->SetBinError(ri+1, esigma);
 
     delete hsum;
@@ -1955,11 +1967,16 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   gPad->SetLeftMargin(0.08);
   gPad->SetRightMargin(0.03);
   gPad->SetTopMargin(0.12);
-  TLegend *leg = new TLegend(0.75,0.15,0.89,0.15+0.06*(SM2-SM1+1));
+  gPad->SetBottomMargin(0.12);
+  gPad->SetGridx();
+  gPad->SetGridy();
+  // TLegend *leg = new TLegend(0.75,0.15,0.89,0.15+0.06*(SM2-SM1+1));
+  TLegend *leg = new TLegend(0.75,0.89-0.06*(SM2-SM1+1),0.89,0.89);
 
-  hPi0Num->SetAxisRange(0., hPi0Num->GetMaximum()*1.2, "Y");
+  hPi0Num->SetAxisRange(0., hPi0Num->GetMaximum()*1.8, "Y");
   hPi0Num->SetTitleOffset(0.8, "Y");
   hPi0Num->SetLineWidth(2);
+  hPi0Num->SetLabelSize(0.04,"X");
   hPi0Num->Draw();
   leg->AddEntry(hPi0Num, Form("(All Modules)/%i",SM2-SM1+1),"l");
   for (Int_t sm = SM1; sm <= SM2; sm++) {
@@ -1971,28 +1988,31 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   hPi0Num->Draw("same"); // to the top
   hPi0Num->Draw("hist,same");
   leg->Draw("same");
+  c1->Update();
 
+  if (trendPlotEvents) {
 
-  // number of pi0s vs event count
-  TCanvas *c2 = new TCanvas(Form("hPi0NumEvents%s",suff),Form("hPi0NumEvents%s",suff), 800,400);
-  gPad->SetLeftMargin(0.08);
-  gPad->SetRightMargin(0.06);
-  gPad->SetTopMargin(0.12);
-  leg = new TLegend(0.75,0.15,0.92,0.15+0.04*(SM2-SM1+1));
-
-  TH1* hPi0NumEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Num);
-  hPi0NumEvents->Draw();
-  leg->AddEntry(hPi0NumEvents, Form("(All Modules)/%i",SM2-SM1+1),"l");
-  for (Int_t sm = SM1; sm <= SM2; sm++) {
-    TH1* hPi0NumSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0NumSM[sm]);
-    hPi0NumSMEvents->Draw("same");
-    leg->AddEntry(hPi0NumSMEvents, Form("Module %i",5-sm),"l");
+    // number of pi0s vs event count
+    TCanvas *c2 = new TCanvas(Form("hPi0NumEvents%s",suff),Form("hPi0NumEvents%s",suff), 800,400);
+    gPad->SetLeftMargin(0.08);
+    gPad->SetRightMargin(0.06);
+    gPad->SetTopMargin(0.12);
+    leg = new TLegend(0.75,0.15,0.92,0.15+0.04*(SM2-SM1+1));
+    
+    TH1* hPi0NumEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Num);
+    hPi0NumEvents->Draw();
+    leg->AddEntry(hPi0NumEvents, Form("(All Modules)/%i",SM2-SM1+1),"l");
+    for (Int_t sm = SM1; sm <= SM2; sm++) {
+      TH1* hPi0NumSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0NumSM[sm]);
+      hPi0NumSMEvents->Draw("same");
+      leg->AddEntry(hPi0NumSMEvents, Form("Module %i",5-sm),"l");
+    }
+    hPi0NumEvents->Draw("same"); // to the top
+    hPi0NumEvents->Draw("hist,same");
+    leg->Draw("same");
+    c2->Update();
   }
-  hPi0NumEvents->Draw("same"); // to the top
-  hPi0NumEvents->Draw("hist,same");
-  leg->Draw("same");
-
-
+    
   // pi0 mass and width vs run index
   TCanvas *c3 = new TCanvas(Form("hPi0MassSigmaRuns%s",suff),Form("hPi0MassSigmaRuns%s",suff), 1000,707);
   c3->Divide(1,2);
@@ -2002,11 +2022,15 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.10);
   gPad->SetBottomMargin(0.13);
-  leg = new TLegend(0.75,0.15,0.95,0.15+0.06*(SM2-SM1+1));
+  gPad->SetGridx();
+  gPad->SetGridy();
+  // leg = new TLegend(0.75,0.15,0.85,0.16+0.06*(SM2-SM1+1));
+  leg = new TLegend(0.75,0.89-0.06*(SM2-SM1+1),0.85,0.89);
 
-  hPi0Mass->SetAxisRange(0.125, 0.145, "Y");
-  hPi0Mass->SetTitleOffset(0.6, "Y");
+  hPi0Mass->SetAxisRange(0.125, 0.149, "Y");
+  hPi0Mass->SetTitleOffset(0.8, "Y");
   hPi0Mass->SetLineWidth(2);
+  hPi0Mass->SetLabelSize(0.06,"X");
   hPi0Mass->Draw();
   leg->AddEntry(hPi0Mass, "All Modules","l");
   for (Int_t sm = SM1; sm <= SM2; sm++) {
@@ -2024,11 +2048,15 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.10);
   gPad->SetBottomMargin(0.13);
-  leg = new TLegend(0.75,0.15,0.95,0.15+0.06*(SM2-SM1+1));
+  gPad->SetGridx();
+  gPad->SetGridy();
+  // leg = new TLegend(0.75,0.15,0.85,0.16+0.06*(SM2-SM1+1));
+  leg = new TLegend(0.75,0.89-0.06*(SM2-SM1+1),0.85,0.89);
 
   hPi0Sigma->SetAxisRange(0., hPi0Sigma->GetMaximum()*1.5, "Y");
   hPi0Sigma->SetTitleOffset(0.8, "Y");
   hPi0Sigma->SetLineWidth(2);
+  hPi0Sigma->SetLabelSize(0.06,"X");
   hPi0Sigma->Draw();
   leg->AddEntry(hPi0Sigma, "All Modules","l");
   for (Int_t sm = SM1; sm <= SM2; sm++) {
@@ -2040,51 +2068,50 @@ void DrawPi0Averages(Int_t nruns, Int_t runNumbers[], Bool_t samesm = kFALSE, TH
   hPi0Sigma->Draw("same"); // to the top
   hPi0Sigma->Draw("hist,same");
   leg->Draw("same");
-
-
-  // pi0 mass and width vs number of events
-  TCanvas *c4 = new TCanvas(Form("hPi0MassSigmaEvents%s",suff),Form("hPi0MassSigmaEvents%s",suff), 800,400);
-  c4->Divide(1,2);
-
-  c4->cd(1);
-  gPad->SetLeftMargin(0.16);
-  gPad->SetRightMargin(0.08);
-  leg = new TLegend(0.75,0.15,0.91,0.15+0.04*(SM2-SM1+1));
-
-  TH1* hPi0MassEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Mass);
-  hPi0MassEvents->Draw();
-  leg->AddEntry(hPi0MassEvents, "All Modules","l");
-  for (Int_t sm = SM1; sm <= SM2; sm++) {
-    TH1* hPi0MassSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0MassSM[sm]);
-    hPi0MassSMEvents->Draw("same");
-    leg->AddEntry(hPi0MassSMEvents, Form("Module %i",5-sm),"l");
-  }
-  hPi0MassEvents->Draw("same"); // to the top
-  hPi0MassEvents->Draw("hist,same");
-  leg->Draw("same");
-
-  c4->cd(2);
-  gPad->SetLeftMargin(0.16);
-  gPad->SetRightMargin(0.08);
-  leg = new TLegend(0.75,0.15,0.91,0.15+0.04*(SM2-SM1+1));
-
-  TH1* hPi0SigmaEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Sigma);
-  hPi0SigmaEvents->Draw();
-  leg->AddEntry(hPi0SigmaEvents, "All Modules","l");
-  for (Int_t sm = SM1; sm <= SM2; sm++) {
-    TH1* hPi0SigmaSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0SigmaSM[sm]);
-    hPi0SigmaSMEvents->Draw("same");
-    leg->AddEntry(hPi0SigmaSMEvents, Form("Module %i",5-sm),"l");
-  }
-  hPi0SigmaEvents->Draw("same"); // to the top
-  hPi0SigmaEvents->Draw("hist,same");
-  leg->Draw("same");
-
-
-  c1->Update();
-  c2->Update();
   c3->Update();
-  c4->Update();
+
+
+  if (trendPlotEvents) {
+    // pi0 mass and width vs number of events
+    TCanvas *c4 = new TCanvas(Form("hPi0MassSigmaEvents%s",suff),Form("hPi0MassSigmaEvents%s",suff), 800,400);
+    c4->Divide(1,2);
+    
+    c4->cd(1);
+    gPad->SetLeftMargin(0.16);
+    gPad->SetRightMargin(0.08);
+    leg = new TLegend(0.75,0.15,0.91,0.15+0.04*(SM2-SM1+1));
+    
+    TH1* hPi0MassEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Mass);
+    hPi0MassEvents->Draw();
+    leg->AddEntry(hPi0MassEvents, "All Modules","l");
+    for (Int_t sm = SM1; sm <= SM2; sm++) {
+      TH1* hPi0MassSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0MassSM[sm]);
+      hPi0MassSMEvents->Draw("same");
+      leg->AddEntry(hPi0MassSMEvents, Form("Module %i",5-sm),"l");
+    }
+    hPi0MassEvents->Draw("same"); // to the top
+    hPi0MassEvents->Draw("hist,same");
+    leg->Draw("same");
+    
+    c4->cd(2);
+    gPad->SetLeftMargin(0.16);
+    gPad->SetRightMargin(0.08);
+    leg = new TLegend(0.75,0.15,0.91,0.15+0.04*(SM2-SM1+1));
+    
+    TH1* hPi0SigmaEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0Sigma);
+    hPi0SigmaEvents->Draw();
+    leg->AddEntry(hPi0SigmaEvents, "All Modules","l");
+    for (Int_t sm = SM1; sm <= SM2; sm++) {
+      TH1* hPi0SigmaSMEvents = ConvertMapRuns2Events(nruns, runNumbers, hPi0SigmaSM[sm]);
+      hPi0SigmaSMEvents->Draw("same");
+      leg->AddEntry(hPi0SigmaSMEvents, Form("Module %i",5-sm),"l");
+    }
+    hPi0SigmaEvents->Draw("same"); // to the top
+    hPi0SigmaEvents->Draw("hist,same");
+    leg->Draw("same");
+    c4->Update();
+  }
+
 }
 
 //_________________________________________________________________________
@@ -2194,14 +2221,17 @@ void FitPi0(TH1* h, Double_t &nraw, Double_t &enraw,
 
   // make a preliminary fit to estimate parameters
   TF1* ff = new TF1("fastfit", "gaus(0) + [3]");
-  ff->SetParLimits(0, 5., h->GetMaximum()*1.5);
+  ff->SetParLimits(0, 0., h->GetMaximum()*1.5);
   ff->SetParLimits(1, 0.1, 0.2);
-  ff->SetParLimits(2, 0.005,0.030);
+  ff->SetParLimits(2, 0.004,0.030);
   ff->SetParameters(h->GetMaximum()/3., 0.135, 0.010, 0.);
-  h->Fit(ff, "0QEM", "", 0.105, 0.165);
+  h->Fit(ff, "0QL", "", 0.105, 0.165);
 
+  fitfun->SetParLimits(0, 0., h->GetMaximum()*1.5);
+  fitfun->SetParLimits(1, 0.12, 0.15);
+  fitfun->SetParLimits(2, 0.004,0.030);
   fitfun->SetParameters(ff->GetParameter(0), ff->GetParameter(1), ff->GetParameter(2), ff->GetParameter(3));
-  h->Fit(fitfun,"QLEMR", "");
+  h->Fit(fitfun,"QLR", "");
 
   // calculate pi0 values
   mass = fitfun->GetParameter(1);
@@ -2304,9 +2334,11 @@ void DrawRunsDistribution(Int_t nruns, Int_t runNumbers[], Int_t dnbins = 100)
   gPad->SetLeftMargin(0.06);
   gPad->SetRightMargin(0.04);
   gPad->SetTopMargin(0.10);
-  gPad->SetBottomMargin(0.13);
+  gPad->SetBottomMargin(0.14);
+  gPad->SetGridx();
   hNEventsPerRunIndex->SetTitleOffset(0.6,"Y");
   hNEventsPerRunIndex->SetTickLength(0.01,"Y");
+  hNEventsPerRunIndex->SetLabelSize(0.06,"X");
   hNEventsPerRunIndex->Draw();
 
   c1->cd(2);
