@@ -54,7 +54,7 @@ public:
   void         BadClusterHistograms(AliVCluster* clus, TObjArray *caloClusters, AliVCaloCells * cells, 
                                     const Int_t absIdMax,       const Double_t maxCellFraction, const Double_t tmax,
                                     Double_t timeAverages[4]);  
-  
+    
   void         CalculateAverageTime(AliVCluster *clus, AliVCaloCells *cells, Double_t timeAverages[4]);
   
   void         CellHistograms(AliVCaloCells * cells);
@@ -76,6 +76,8 @@ public:
                                                  const Bool_t mcOK, const Int_t pdg);
 
   void         Correlate();
+  
+  Float_t      GetECross(const Int_t absId, AliVCaloCells* cells);
   
   void         InvariantMassHistograms(const Int_t iclus, const TLorentzVector mom, const Int_t nModule,
                                        TObjArray* caloClusters);
@@ -212,6 +214,7 @@ public:
   TH2F *   fhClusterMaxCellDiffAverageNoMaxTime; //! Difference between cluster average time without max cell and time of cell with more energy
   TH2F *   fhClusterMaxCellDiffWeightedTime;     //! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhClusterMaxCellDiffWeightedNoMaxTime;//! Difference between cluster weighted time without max cell and time of cell with more energy
+  TH2F *   fhClusterMaxCellECross;               //! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, good clusters
 
   TH2F *   fhLambda0vsClusterMaxCellDiffE0;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E < 2, no cut on bad clusters
   TH2F *   fhLambda0vsClusterMaxCellDiffE2;   //! Lambda0 of bad cluster vs Fraction of energy of max cell for E > 2, E < 6, no cut on bad clusters
@@ -235,6 +238,7 @@ public:
   TH2F *   fhBadClusterMaxCellDiffAverageNoMaxTime; //! Difference between cluster average time without max cell and time of cell with more energy
   TH2F *   fhBadClusterMaxCellDiffWeightedTime;     //! Difference between cluster weighted time and time of cell with more energy
   TH2F *   fhBadClusterMaxCellDiffWeightedNoMaxTime;//! Difference between cluster weighted time without max cell and time of cell with more energy  
+  TH2F *   fhBadClusterMaxCellECross;               //! 1 - Energy in cross around max energy cell / max energy cell vs cluster energy, bad clusters
 
   // Cluster cell size
   TH2F *   fhDeltaIEtaDeltaIPhiE0[2];         //! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching; 
@@ -281,8 +285,11 @@ public:
   TH3F *   fhEtaPhiAmp;                       //! eta vs phi vs amplitude, cells
   
   TH1F *   fhTime;                            //! Time measured in towers/crystals
+  TH2F *   fhTimeVz;                          //! Time measured in towers/crystals vs vertex z component, for E > 0.5
   TH2F *   fhTimeId;                          //! Time vs Absolute cell Id
   TH2F *   fhTimeAmp;                         //! Time vs Amplitude 
+  
+  TH2F *   fhCellECross;                      //! 1 - Energy in cross around cell /  cell energy 
   
   //Calorimeters Correlation
   TH2F *   fhCaloCorrNClusters;               //! EMCAL vs PHOS, number of clusters	
@@ -327,11 +334,11 @@ public:
   TH2F* fhEMaxCellClusterRatio;               //! e max cell / e cluster vs e cluster
   TH2F* fhEMaxCellClusterLogRatio;            //! log (e max cell / e cluster) vs e cluster
   
-  TH2F* fhLambda0ForW0[7];                    //! L0 for 7 defined w0= 3, 3.5 ... 6
-  TH2F* fhLambda1ForW0[7];                    //! L1 for 7 defined w0= 3, 3.5 ... 6
+  TH2F* fhLambda0ForW0[14];                    //! L0 for 7 defined w0= 3, 3.5 ... 6
+  //TH2F* fhLambda1ForW0[7];                    //! L1 for 7 defined w0= 3, 3.5 ... 6
 
-  TH2F* fhLambda0ForW0MC[7][5];               //! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
-  TH2F* fhLambda1ForW0MC[7][5];               //! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  TH2F* fhLambda0ForW0MC[14][5];               //! L0 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
+  //TH2F* fhLambda1ForW0MC[7][5];               //! L1 for 7 defined w0= 3, 3.5 ... 6, depending on the particle of origin
   
   //Pure MC
 
