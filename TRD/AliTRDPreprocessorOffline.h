@@ -35,8 +35,19 @@ public:
       kChamberStatus = 7,
       kPRF = 8
       };   
-  enum { kGainNotEnoughStatsButFill = 2, kVdriftNotEnoughStatsButFill = 4, kGainNotEnoughStatsNotFill = 8, kVdriftNotEnoughStatsNotFill = 16, kTimeOffsetNotEnoughStatsNotFill = 32};  
-  enum { kGainErrorOld = 2, kVdriftErrorOld = 4, kGainErrorRange = 8, kVdriftErrorRange = 16, kTimeOffsetErrorRange = 32, kChamberStatusErrorRange = 64};  
+  enum { kGainNotEnoughStatsButFill = 2,
+	 kVdriftNotEnoughStatsButFill = 4,
+	 kGainNotEnoughStatsNotFill = 8,
+	 kVdriftNotEnoughStatsNotFill = 16,
+	 kTimeOffsetNotEnoughStatsNotFill = 32,
+	 kExBErrorRange = 64};  
+  enum { kGainErrorOld = 2,
+	 kVdriftErrorOld = 4,
+	 kExBErrorOld = 8,
+	 kGainErrorRange = 16,
+	 kVdriftErrorRange = 32,
+	 kTimeOffsetErrorRange = 64,
+	 kChamberStatusErrorRange = 128};  
 
 
   AliTRDPreprocessorOffline();
@@ -51,12 +62,16 @@ public:
   Bool_t      IsVdriftNotEnoughStatsNotFill() const 
     { return CheckStatus(fStatusNeg, kVdriftNotEnoughStatsNotFill);  };
   Bool_t      IsTimeOffsetNotEnoughStatsNotFill() const 
-    { return CheckStatus(fStatusNeg, kVdriftNotEnoughStatsNotFill);  };
+    { return CheckStatus(fStatusNeg, kTimeOffsetNotEnoughStatsNotFill);  };
+  Bool_t      IsExBErrorRange() const 
+    { return CheckStatus(fStatusNeg, kExBErrorRange);  };
   
   Bool_t      IsGainErrorOld() const 
     { return CheckStatus(fStatusPos, kGainErrorOld);  };
   Bool_t      IsVdriftErrorOld() const 
     { return CheckStatus(fStatusPos, kVdriftErrorOld);  };
+  Bool_t      IsExBErrorOld() const 
+    { return CheckStatus(fStatusPos, kExBErrorOld);  };
   Bool_t      IsGainErrorRange() const 
     { return CheckStatus(fStatusPos, kGainErrorRange);  };
   Bool_t      IsVdriftErrorRange() const 
@@ -75,7 +90,8 @@ public:
   void SetNameList(TString nameList) { fNameList = nameList;};
   TString GetNameList() const { return fNameList;}; 
   void SetCalDetGain(AliTRDCalDet *calDetGainUsed) {fCalDetGainUsed = calDetGainUsed;};
-  void SetCalDetVdrift(AliTRDCalDet *calDetVdriftUsed) {fCalDetVdriftUsed = calDetVdriftUsed;};
+  void SetCalDetVdrift(AliTRDCalDet *calDetVdriftUsed);
+  void SetCalDetVdriftExB(AliTRDCalDet *calDetVdriftUsed,AliTRDCalDet *calDetExBUsed) {fCalDetVdriftUsed = calDetVdriftUsed; fCalDetExBUsed = calDetExBUsed;};
   void SetSwitchOnValidation(Bool_t switchOnValidation) {fSwitchOnValidation = switchOnValidation;};
   AliTRDCalDet *GetCalDetGain() const { return fCalDetGainUsed;};
   AliTRDCalDet *GetCalDetVdrift() const { return fCalDetVdriftUsed;};
@@ -110,6 +126,7 @@ public:
 
   Bool_t ValidateGain();
   Bool_t ValidateVdrift();
+  Bool_t ValidateExB();
   Bool_t ValidateT0();
   Bool_t ValidatePRF() const;
   Bool_t ValidateChamberStatus();
@@ -137,6 +154,7 @@ public:
   TString fNameList;                         // Name of the list
   AliTRDCalDet *fCalDetGainUsed;             // CalDet used and to be corrected for
   AliTRDCalDet *fCalDetVdriftUsed;           // CalDet used and to be corrected for
+  AliTRDCalDet *fCalDetExBUsed;              // CalDet used and to be corrected for
   TH2I *fCH2d;                               // Gain
   TProfile2D *fPH2d;                         // Drift velocity first method
   TProfile2D *fPRF2d;                        // PRF
@@ -152,6 +170,7 @@ public:
   Int_t    fSubVersionVdriftUsed;         // SubVersionVdriftUsed
   Bool_t   fSwitchOnValidation;           // Validation
   Bool_t   fVdriftValidated;              // Vdrift validation
+  Bool_t   fExBValidated;                 // ExB validation
   Bool_t   fT0Validated;                  // T0 validation
   Int_t    fMinStatsVdriftT0PH;           // MinStats VdriftT0
   Int_t    fMinStatsVdriftLinear;         // MinStats Vdrift Linear

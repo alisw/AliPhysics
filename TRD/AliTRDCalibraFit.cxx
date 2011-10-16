@@ -159,6 +159,8 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fCalROC(0x0)
   ,fCalDet2(0x0)
   ,fCalROC2(0x0)
+  ,fCalDetVdriftUsed(0x0)
+  ,fCalDetExBUsed(0x0)
   ,fCurrentCoefDetector(0x0)
   ,fCurrentCoefDetector2(0x0)
   ,fVectorFit(0)
@@ -219,6 +221,8 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fCalROC(0x0)
 ,fCalDet2(0x0)
 ,fCalROC2(0x0)
+,fCalDetVdriftUsed(0x0)
+,fCalDetExBUsed(0x0)
 ,fCurrentCoefDetector(0x0)
 ,fCurrentCoefDetector2(0x0)
 ,fVectorFit(0)
@@ -244,6 +248,9 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
   
   if(c.fCalROC) fCalROC   = new AliTRDCalROC(*c.fCalROC);
   if(c.fCalROC2) fCalROC  = new AliTRDCalROC(*c.fCalROC2);
+
+  if(c.fCalDetVdriftUsed) fCalDetVdriftUsed = new AliTRDCalDet(*c.fCalDetVdriftUsed);
+  if(c.fCalDetExBUsed)    fCalDetExBUsed = new AliTRDCalDet(*c.fCalDetExBUsed);
 
   fVectorFit.SetName(c.fVectorFit.GetName());
   for(Int_t k = 0; k < c.fVectorFit.GetEntriesFast(); k++){
@@ -300,6 +307,8 @@ AliTRDCalibraFit::~AliTRDCalibraFit()
   if ( fCalDet2 ) delete fCalDet2;
   if ( fCalROC )  delete fCalROC;
   if ( fCalROC2 ) delete fCalROC2;
+  if ( fCalDetVdriftUsed)  delete fCalDetVdriftUsed;
+  if ( fCalDetExBUsed) delete fCalDetExBUsed;
   if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
   if( fCurrentCoefDetector2 ) delete [] fCurrentCoefDetector2; 
   fVectorFit.Delete();
@@ -1245,6 +1254,7 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
 
     // CalculDatabaseVdriftandTan
     CalculVdriftLorentzCoef();
+    //printf("AliTRDCalibraFit::AnalyzeVdriftLinearFit detector %d, vdrift %f and %f and exB %f and %f\n",idet,fCalDetVdriftUsed->GetValue(idet),fCurrentCoef[1],fCalDetExBUsed->GetValue(idet),fCurrentCoef2[1]);
 
     // Statistics   
     fNumberFitSuccess ++;
@@ -1277,11 +1287,21 @@ Bool_t AliTRDCalibraFit::AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *cali
   
 }
 //____________Functions fit Online CH2d________________________________________
-Double_t AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli)
+void AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli, Double_t &vdriftoverall, Double_t &exboverall)
 {
   //
   // The linear method
   //
+
+  // Get the mean vdrift and exb used
+  Double_t meanvdriftused = 0.0;
+  Double_t meanexbused = 0.0;
+  Double_t counterdet = 0.0;
+  if((!fCalDetVdriftUsed) || (!fCalDetExBUsed)) {
+    vdriftoverall = -100.0;
+    exboverall = 100.0;
+    return;
+  }  
 
   // Add histos
 
@@ -1290,10 +1310,31 @@ Double_t AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLi
   for(Int_t idet = 0; idet < 540; idet++){
     
     TH2S * u = calivdli->GetLinearFitterHistoForce(idet);
+    Double_t detectorentries = u->Integral();
+    meanvdriftused += fCalDetVdriftUsed->GetValue(idet)*detectorentries;
+    meanexbused += fCalDetExBUsed->GetValue(idet)*detectorentries;
+    counterdet += detectorentries;
+
+    //printf("detectorentries %f\n",detectorentries);
+    
+    //printf("AliTRDCalibraFit::AnalyzeVdriftLinearFitsAllTogether detector %d, vdrift %f and exB %f\n",idet,fCalDetVdriftUsed->GetValue(idet),fCalDetExBUsed->GetValue(idet));
+
     if(idet == 0) linearfitterhisto = u;
     else linearfitterhisto->Add(u);
 
   }
+  if(counterdet > 0.0){
+    meanvdriftused = meanvdriftused/counterdet;
+    meanexbused = meanexbused/counterdet;    
+  }
+  else {
+    vdriftoverall = -100.0;
+    exboverall = 100.0;
+    return;
+  }
+  
+  
+  //printf("AliTRDCalibraFit::AnalyzeVdriftLinearFitsAllTogether MEAN vdrift %f and exB %f\n",meanvdriftused,meanexbused);
 
   // Fit
 
@@ -1332,7 +1373,9 @@ Double_t AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLi
   //printf("AnalyseLinearFittersAllTogether::Find %d entries\n",entries);
   //printf("Minstats %d\n",fMinEntries);
 
-      // Eval the linear fitter
+  
+
+  // Eval the linear fitter
   if(entries > fMinEntries){
     TVectorD  par  = TVectorD(2);
     //printf("Fit\n");
@@ -1340,23 +1383,35 @@ Double_t AliTRDCalibraFit::AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLi
       //printf("Take the param\n");
       linearfitter.GetParameters(par);
       //printf("Done\n");
-      par.Print();
+      //par.Print();
       //printf("Finish\n");
       // Put the fCurrentCoef
       fCurrentCoef[0]  = -par[1];
       // here the database must be the one of the reconstruction for the lorentz angle....
-      fCurrentCoef2[0] = (par[0]+fCurrentCoef[1]*fCurrentCoef2[1])/fCurrentCoef[0];
-      
-      return fCurrentCoef[0];
+      if(fCurrentCoef[0] > 0.0) fCurrentCoef2[0] = (par[0]+meanvdriftused*meanexbused)/fCurrentCoef[0];
+      else fCurrentCoef2[0] = 100.0;      
+
     }
-    else return -100.0;
+    else {
+      
+      fCurrentCoef[0] = -100.0;
+      fCurrentCoef2[0] = 100.0;
+      
+    }
     
     
   }
   else {
-    return -100.0;
+
+    fCurrentCoef[0] = -100.0;
+    fCurrentCoef2[0] = 100.0;
+    
   }
   
+  vdriftoverall = fCurrentCoef[0];
+  exboverall = fCurrentCoef2[0];
+  
+
   delete linearfitterhisto;
   delete fDebugStreamer;
   fDebugStreamer = 0x0;
@@ -2015,11 +2070,11 @@ void AliTRDCalibraFit::PutMeanValueOtherVectorFit2(Int_t ofwhat, Bool_t perdetec
       for (Int_t col = 0; col < colMax; col++) {
 	value = coef[(Int_t)(col*rowMax+row)];
 	if(value > 70.0) {
-	  if((ofwhat == 0) && (meanAll > -1.5) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	  if((ofwhat == 0) && (meanAll > -3.0) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  if(ofwhat == 1){
-	    if((meanDetector[detector] > -1.5) && (countDetector[detector] > 20)) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
-	    else if((meanSupermodule[sector] > -1.5) && (countSupermodule[sector] > 15)) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
-	    else if((meanAll > -1.5) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
+	    if((meanDetector[detector] > -3.0) && (countDetector[detector] > 20)) coef[(Int_t)(col*rowMax+row)] = meanDetector[detector]+100.0;
+	    else if((meanSupermodule[sector] > -3.0) && (countSupermodule[sector] > 15)) coef[(Int_t)(col*rowMax+row)] = meanSupermodule[sector]+100.0;
+	    else if((meanAll > -3.0) && (countAll > 15)) coef[(Int_t)(col*rowMax+row)] = meanAll+100.0;
 	  }  
 	}
 	// Debug
@@ -2224,7 +2279,8 @@ AliTRDCalDet *AliTRDCalibraFit::CreateDetObjectLorentzAngle(const TObjArray *vec
       if(count > 0) mean = mean/count;
     */
     value = ((AliTRDFitInfo *) vectorFit->At(k))->GetCoef()[0];
-    object->SetValue(detector,-TMath::Abs(value));
+    if(value > 70.0) value = value-100.0;
+    object->SetValue(detector,value);
   }
 
   return object;
@@ -2844,45 +2900,10 @@ Bool_t AliTRDCalibraFit::InitFitLinearFitter()
     fCurrentCoefDetector2[k] = 0.0;    
   }
 
-  //printf("test0\n");
-  
-  AliTRDcalibDB     *cal    = AliTRDcalibDB::Instance();
-  if (!cal) {
-    AliInfo("Could not get calibDB");
-    return kFALSE;
-  }
-  
-  //Get the CalDet object
-  if(fAccCDB){
-    if(fCalDet) delete fCalDet;
-    if(fCalDet2) delete fCalDet2;
-    fCalDet  = new AliTRDCalDet(*(cal->GetVdriftDet()));
-    //printf("test1\n");
-    fCalDet2 = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
-    //printf("test2\n");
-    for(Int_t k = 0; k < 540; k++){
-      fCalDet2->SetValue(k,AliTRDCommonParam::Instance()->GetOmegaTau(fCalDet->GetValue(k)));
-    }
-    //printf("test3\n");
-  }
-  else{
-    Float_t devalue  = 1.5;
-    Float_t devalue2 = AliTRDCommonParam::Instance()->GetOmegaTau(1.5); 
-    if(fCalDet) delete fCalDet;
-    if(fCalDet2) delete fCalDet2;
-    //printf("test1\n");
-    fCalDet  = new AliTRDCalDet("ChamberVdrift","TRD drift velocities (detector value)");
-    fCalDet2 = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
-    //printf("test2\n");
-    for(Int_t k = 0; k < 540; k++){
-      fCalDet->SetValue(k,devalue);
-      fCalDet2->SetValue(k,devalue2);
-    }
-    //printf("test3\n");
-  }
+  if((!fCalDetVdriftUsed) || (!fCalDetExBUsed)) return kFALSE; 
+
   return kTRUE;
 }
-
 //____________Functions for initialising the AliTRDCalibraFit in the code_________
 void AliTRDCalibraFit::InitfCountDetAndfCount(Int_t i)
 {
@@ -3060,8 +3081,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
   else if (fNbDet > 0){
     Int_t firstdetector = fCountDet;
     Int_t lastdetector  = fCountDet+fNbDet;
-    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
-		 ,idect,firstdetector,lastdetector));
+    //AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted",idect,firstdetector,lastdetector));
     // loop over detectors
     for(Int_t det = firstdetector; det < lastdetector; det++){
 
@@ -3142,8 +3162,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticCH(Int_t idect)
   }
   else {
 
-    AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted"
-		 ,idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0))),fCountDet));
+//AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted",idect-(fCount-(fCalibraMode->GetNfragZ(0)*fCalibraMode->GetNfragRphi(0))),fCountDet));
     
     // Calcul the coef from the database choosen
     CalculChargeCoefMean(kFALSE);
@@ -3186,8 +3205,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect,Double_t nentries)
 
     Int_t firstdetector = fCountDet;
     Int_t lastdetector  = fCountDet+fNbDet;
-    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
-		 ,idect,firstdetector,lastdetector));
+//AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted",idect,firstdetector,lastdetector));
     // loop over detectors
     for(Int_t det = firstdetector; det < lastdetector; det++){
 
@@ -3283,8 +3301,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPH(Int_t idect,Double_t nentries)
   }    
   else {
 
-    AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted"
-		 ,idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1))),fCountDet));
+//AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted",idect-(fCount-(fCalibraMode->GetNfragZ(1)*fCalibraMode->GetNfragRphi(1))),fCountDet));
 
     CalculVdriftCoefMean();
     CalculT0CoefMean();
@@ -3334,8 +3351,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPRF(Int_t idect)
   
     Int_t firstdetector = fCountDet;
     Int_t lastdetector  = fCountDet+fNbDet;
-    AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted"
-		 ,idect,firstdetector,lastdetector));
+//  AliInfo(Form("The element %d containing the detectors %d to %d has not enough statistic to be fitted",idect,firstdetector,lastdetector));
     
     // loop over detectors
     for(Int_t det = firstdetector; det < lastdetector; det++){
@@ -3418,8 +3434,7 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticPRF(Int_t idect)
   }
   else {
     
-    AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted"
-		 ,idect-(fCount-(fCalibraMode->GetNfragZ(2)*fCalibraMode->GetNfragRphi(2))),fCountDet));
+//  AliInfo(Form("The element %d in this detector %d has not enough statistic to be fitted",idect-(fCount-(fCalibraMode->GetNfragZ(2)*fCalibraMode->GetNfragRphi(2))),fCountDet));
     
     CalculPRFCoefMean();
     
@@ -3467,14 +3482,14 @@ Bool_t AliTRDCalibraFit::NotEnoughStatisticLinearFitter()
   for (Int_t k = 0; k < factor; k++) {
     fCurrentCoefDetector[k] = -TMath::Abs(fCurrentCoef[1]);
     // should be negative
-    fCurrentCoefDetector2[k] = +TMath::Abs(fCurrentCoef2[1]);
+    fCurrentCoefDetector2[k] = fCurrentCoef2[1]+100.0;
   }
    
   
-  //Put default opposite sign
+  //Put default opposite sign only for vdrift
   fCurrentCoef[0]  = -TMath::Abs(fCurrentCoef[1]);
   fCurrentCoefE    = 0.0;
-  fCurrentCoef2[0] = +TMath::Abs(fCurrentCoef2[1]);
+  fCurrentCoef2[0] = fCurrentCoef2[1]+100.0;
   fCurrentCoefE2 = 0.0; 
   
   FillFillLinearFitter();
@@ -3494,8 +3509,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitCH(Int_t idect)
     if (fNbDet > 0){
       Int_t firstdetector = fCountDet;
       Int_t lastdetector  = fCountDet+fNbDet;
-      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
-		   ,idect,firstdetector,lastdetector));
+      //    AliInfo(Form("The element %d containing the detectors %d to %d has been fitted",idect,firstdetector,lastdetector));
       // loop over detectors
       for(Int_t det = firstdetector; det < lastdetector; det++){
 	
@@ -3606,8 +3620,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitPH(Int_t idect,Double_t nentries)
       
       Int_t firstdetector = fCountDet;
       Int_t lastdetector  = fCountDet+fNbDet;
-      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
-		   ,idect,firstdetector,lastdetector));
+// AliInfo(Form("The element %d containing the detectors %d to %d has been fitted",idect,firstdetector,lastdetector));
       
       // loop over detectors
       for(Int_t det = firstdetector; det < lastdetector; det++){
@@ -3736,8 +3749,7 @@ Bool_t AliTRDCalibraFit::FillInfosFitPRF(Int_t idect)
     
       Int_t firstdetector = fCountDet;
       Int_t lastdetector  = fCountDet+fNbDet;
-      AliInfo(Form("The element %d containing the detectors %d to %d has been fitted"
-		   ,idect,firstdetector,lastdetector));
+//    AliInfo(Form("The element %d containing the detectors %d to %d has been fitted",idect,firstdetector,lastdetector));
       
       // loop over detectors
       for(Int_t det = firstdetector; det < lastdetector; det++){
@@ -4209,8 +4221,8 @@ Bool_t AliTRDCalibraFit::CalculVdriftLorentzCoef()
   // For the detector fCountDet, mean drift velocity and tan lorentzangle
   //
 
-  fCurrentCoef[1]  = fCalDet->GetValue(fCountDet);
-  fCurrentCoef2[1] = fCalDet2->GetValue(fCountDet); 
+  fCurrentCoef[1]  = fCalDetVdriftUsed->GetValue(fCountDet);
+  fCurrentCoef2[1] = fCalDetExBUsed->GetValue(fCountDet); 
 
   return kTRUE;
 }

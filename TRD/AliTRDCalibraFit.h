@@ -56,6 +56,9 @@ class AliTRDCalibraFit : public TObject {
 
   // Function for integration range of the charge 
   void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const;
+
+  // ExB calibration
+  void     SetCalDetVdriftExB(AliTRDCalDet *calDetVdriftUsed,AliTRDCalDet *calDetExBUsed) {fCalDetVdriftUsed = calDetVdriftUsed; fCalDetExBUsed = calDetExBUsed;};
   
   // Functions fit for CH
   Bool_t   AnalyseCH(const TH2I *ch);
@@ -76,7 +79,7 @@ class AliTRDCalibraFit : public TObject {
   
   // Functions fit for vdrift/lorentzangle
   Bool_t   AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *calivdli);
-  Double_t AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli);
+  void     AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli, Double_t &vdriftoverall, Double_t &exboverall);
   
   // Pad Calibration
   Bool_t   SetModeCalibration(TString name, Int_t i);
@@ -251,6 +254,9 @@ class AliTRDCalibraFit : public TObject {
        AliTRDCalROC *fCalROC;            // Current calib object
        AliTRDCalDet *fCalDet2;           // Current calib object
        AliTRDCalROC *fCalROC2;           // Current calib object
+
+       AliTRDCalDet *fCalDetVdriftUsed;  // ExB calibration
+       AliTRDCalDet *fCalDetExBUsed;     // ExB calibration
        
        // Current values detector
        

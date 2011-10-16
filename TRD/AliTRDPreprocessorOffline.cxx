@@ -59,6 +59,7 @@
 #include "AliTRDCalibraVdriftLinearFit.h"
 #include "AliTRDPreprocessorOffline.h"
 #include "AliTRDCalChamberStatus.h"
+#include "AliTRDCommonParam.h"
 
 
 ClassImp(AliTRDPreprocessorOffline)
@@ -69,6 +70,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fNameList("TRDCalib"),
   fCalDetGainUsed(0x0),
   fCalDetVdriftUsed(0x0),
+  fCalDetExBUsed(0x0),
   fCH2d(0x0),
   fPH2d(0x0),
   fPRF2d(0x0),
@@ -84,6 +86,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fSubVersionVdriftUsed(0),
   fSwitchOnValidation(kTRUE),
   fVdriftValidated(kFALSE),
+  fExBValidated(kFALSE),
   fT0Validated(kFALSE),
   fMinStatsVdriftT0PH(800*20),
   fMinStatsVdriftLinear(800),
@@ -108,6 +111,7 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
 
   if(fCalDetGainUsed) delete fCalDetGainUsed;
   if(fCalDetVdriftUsed) delete fCalDetVdriftUsed;
+  if(fCalDetExBUsed) delete fCalDetExBUsed;
   if(fCH2d) delete fCH2d;
   if(fPH2d) delete fPH2d;
   if(fPRF2d) delete fPRF2d;
@@ -134,11 +138,12 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   //
   fVdriftValidated = kTRUE;
   fT0Validated = kTRUE;
+  fExBValidated = kTRUE;
   fNotEnoughStatisticsForTheVdriftLinear = kFALSE;
   //
   // 2. extraction of the information
   //
-  if(ReadVdriftLinearFitGlobal(file)) AnalyzeVdriftLinearFit();
+  if(ReadVdriftLinearFitGlobal(file) && fCalDetVdriftUsed && fCalDetExBUsed) AnalyzeVdriftLinearFit();
   if(ReadVdriftT0Global(file)) AnalyzeVdriftT0();
   //
   // 3. Append QA plots
@@ -156,13 +161,17 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
     //AliError("TRD t0 OCDB parameters out of range!");
     fT0Validated = kFALSE;
   }
+  if(fSwitchOnValidation==kTRUE && ValidateExB()==kFALSE) { 
+    //AliError("TRD t0 OCDB parameters out of range!");
+    fExBValidated = kFALSE;
+  }
   //
   // 5. update of OCDB
   //
   //
   if(fVdriftValidated) UpdateOCDBVdrift(startRunNumber,endRunNumber,ocdbStorage);
   if(fT0Validated) UpdateOCDBT0(startRunNumber,endRunNumber,ocdbStorage);
-  UpdateOCDBExB(startRunNumber,endRunNumber,ocdbStorage);
+  if(fExBValidated) UpdateOCDBExB(startRunNumber,endRunNumber,ocdbStorage);
   
 }
 //_________________________________________________________________________________________________________________
@@ -311,7 +320,7 @@ Bool_t AliTRDPreprocessorOffline::Init(const Char_t* fileName){
    
   if(fVersionVdriftUsed == 0) fStatusPos = fStatusPos |kVdriftErrorOld;
   if(fVersionGainUsed == 0) fStatusPos = fStatusPos | kGainErrorOld;
-
+ 
   return kTRUE;
   
 }
@@ -541,6 +550,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftT0(){
     ok = kTRUE;
   }
   else {
+    //printf("Not enough stats timeoffset\n");
     fStatusNeg = fStatusNeg | kTimeOffsetNotEnoughStatsNotFill;
   }
   calibra->ResetVectorFit();
@@ -558,6 +568,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
 
   
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
+  calibra->SetCalDetVdriftExB(fCalDetVdriftUsed,fCalDetExBUsed);
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   //printf("Fill PE Array\n");
   fAliTRDCalibraVdriftLinearFit->FillPEArray();
@@ -598,30 +609,41 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
     fNotEnoughStatisticsForTheVdriftLinear = kTRUE;
     Int_t minNumberOfEntriesForAll = fMinStatsVdriftLinear*30;
     calibra->SetMinEntries(minNumberOfEntriesForAll); // Because we do it for all, we increase this
-    Double_t vdriftoverall =  calibra->AnalyseLinearFittersAllTogether(fAliTRDCalibraVdriftLinearFit);
-    if(fCalDetVdriftUsed && (vdriftoverall > 0.0)) {
+    Double_t vdriftoverall = -100.0;
+    Double_t exboverall = 100.0;
+    calibra->AnalyseLinearFittersAllTogether(fAliTRDCalibraVdriftLinearFit,vdriftoverall,exboverall);
+    //printf("Found mean vdrift %f and exb %f\n",vdriftoverall,exboverall);
+    if(fCalDetVdriftUsed && (vdriftoverall > 0.0) && (exboverall < 70.0)) {
       AliTRDCalDet *calDetVdrift = new AliTRDCalDet(*fCalDetVdriftUsed);
-      Double_t oldmean = fCalDetVdriftUsed->CalcMean(kFALSE);
+      AliTRDCalDet *calDetLorentz = new AliTRDCalDet(*fCalDetExBUsed);
+      Double_t oldmeanvdrift = fCalDetVdriftUsed->CalcMean(kFALSE);
+      Double_t oldmeanexb = fCalDetExBUsed->CalcMean(kFALSE);
       //printf("oldmean %f\n",oldmean);
-      if(oldmean > 0.0)  {
+      if((oldmeanvdrift > 0.0) && (oldmeanexb < 70.0))  {
 	//printf("Correction factor %f\n",vdriftoverall);
-	calDetVdrift->Multiply(vdriftoverall/oldmean);
+	calDetVdrift->Multiply(vdriftoverall/oldmeanvdrift);
+	calDetLorentz->Multiply(exboverall/oldmeanexb);
 	//printf("newmean %f\n",calDetVdrift->CalcMean(kFALSE));
 	TH1F *coefDriftLinear  = calDetVdrift->MakeHisto1DAsFunctionOfDet();
+	TH1F *coefLorentzAngle = calDetLorentz->MakeHisto1DAsFunctionOfDet();
 	// Put them in the array
 	fCalibObjects->AddAt(calDetVdrift,kVdriftLinear);
+	fCalibObjects->AddAt(calDetLorentz,kLorentzLinear);
 	fPlots->AddAt(coefDriftLinear,kVdriftLinear);
+	fPlots->AddAt(coefLorentzAngle,kLorentzLinear);
 	// 
 	ok = kTRUE;
 	fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsButFill;
       }
       else {
-	fStatusPos = fStatusPos | kVdriftErrorOld;
+	if(oldmeanvdrift) fStatusPos = fStatusPos | kVdriftErrorOld;
+	if(oldmeanexb) fStatusPos = fStatusPos | kExBErrorOld;
       }      
     }
     else {
-      if(vdriftoverall <= 0.0) fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsNotFill;
+      if((vdriftoverall <= 0.0) && (exboverall > 70.0)) fStatusNeg = fStatusNeg | kVdriftNotEnoughStatsNotFill;
       if(!fCalDetVdriftUsed) fStatusPos = fStatusPos | kVdriftErrorOld;
+      if(!fCalDetExBUsed) fStatusPos = fStatusPos | kExBErrorOld;
     }
   }
   
@@ -682,22 +704,26 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   // get calibration objects
   AliTRDCalDet *calDetGain   = (AliTRDCalDet *) fCalibObjects->At(kGain);
   AliTRDCalDet *calDetVDrift = (AliTRDCalDet *) fCalibObjects->At(kVdriftLinear);
+  AliTRDCalDet *calDetExB    = (AliTRDCalDet *) fCalibObjects->At(kLorentzLinear);
 
   // Check
-  if((!calDetGain) || (!calDetVDrift) || (!fCH2d)) return kFALSE;
+  if((!calDetGain) || (!calDetVDrift) || (!fCH2d) || (!calDetExB)) return kFALSE;
 
   // Gain
   Double_t gainmean = calDetGain->GetMean();
   Double_t vdriftmean = calDetVDrift->GetMean();
+  Double_t exbmean = calDetExB->GetMean();
 
   Double_t gainrms = calDetGain->GetRMSRobust();
   Double_t vdriftrms = calDetVDrift->GetRMSRobust();
+  Double_t exbrms = calDetExB->GetRMSRobust();
 
   //printf("Gain mean: %f, rms: %f\n",gainmean,gainrms);
   //printf("Vdrift mean: %f, rms: %f\n",vdriftmean,vdriftrms);
-  
+  //printf("ExB mean: %f, rms: %f\n",exbmean,exbrms);
+
   // Check
-  if((TMath::Abs(gainrms) < 0.001) || (TMath::Abs(vdriftrms) < 0.001)) return kFALSE;
+  if((TMath::Abs(gainrms) < 0.001) || (TMath::Abs(vdriftrms) < 0.001) || (TMath::Abs(exbrms) < 0.0000001)) return kFALSE;
 
   // mask chambers with empty gain entries
   //Int_t counter = 0;
@@ -713,14 +739,20 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
     // vdrift
     Double_t vdrift = calDetVDrift->GetValue(idet);
 
+    // exb
+    Double_t exb = calDetExB->GetValue(idet);
+
 
     if(entries<=0.5 ||
        TMath::Abs(gainmean-gain) > (15.0*gainrms) ||
-       TMath::Abs(vdriftmean-vdrift) > (15.0*vdriftrms)) {
+       TMath::Abs(vdriftmean-vdrift) > (15.0*vdriftrms) ||
+       TMath::Abs(exbmean-exb) > (50.0*exbrms)) {
      
       //printf(" chamber det %03d masked \n",idet);
       //printf(" gainmean %f and gain %f, gainrms %f \n",gainmean,gain,gainrms);
       //printf(" vdriftmean %f and vdrift %f, vdriftrms %f \n",vdriftmean,vdrift,vdriftrms);
+      //printf(" exbmean %f and exb %f, exbrms %f \n",exbmean,exb,exbrms);
+      
       CalChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kMasked);
       //counter++;
     }
@@ -1058,6 +1090,26 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
 
  }
  //__________________________________________________________________________________________________________________________
+ Bool_t AliTRDPreprocessorOffline::ValidateExB(){
+   //
+   // Update OCDB entry
+   //
+
+   AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(kLorentzLinear);
+   if(calDet) {
+     Double_t mean = calDet->GetMean();
+     Double_t rms = calDet->GetRMSRobust();
+     //printf("Vdrift::mean %f, rms %f\n",mean,rms);
+     if(!((mean > -1.0) && (mean < 1.0) && (rms < 0.5))) {
+       fStatusNeg = fStatusNeg | kExBErrorRange;
+       return kFALSE;
+     }
+     else return kTRUE;
+   }
+   else return kFALSE; 
+   
+ }
+ //__________________________________________________________________________________________________________________________
  Bool_t AliTRDPreprocessorOffline::ValidateT0(){
    //
    // Update OCDB entry
@@ -1256,7 +1308,23 @@ void AliTRDPreprocessorOffline::PrintStatus() const
   AliInfo(Form("IsGainNotEnoughStatsNotFill? %d",(Int_t)IsGainNotEnoughStatsNotFill()));
   AliInfo(Form("IsVdriftNotEnoughStatsNotFill? %d",(Int_t)IsVdriftNotEnoughStatsNotFill()));
   AliInfo(Form("IsTimeOffsetNotEnoughStatsNotFill? %d",(Int_t)IsTimeOffsetNotEnoughStatsNotFill()));
+
+  AliInfo(Form("IsExBErrorRange? %d",(Int_t)IsExBErrorRange()));
+  AliInfo(Form("IsExBErrorOld? %d",(Int_t)IsExBErrorOld()));
   
 }
+//___________________________________________________________________________________
+void AliTRDPreprocessorOffline::SetCalDetVdrift(AliTRDCalDet *calDetVdriftUsed) 
+{
+
+  fCalDetVdriftUsed = calDetVdriftUsed;
+
+  fCalDetExBUsed = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
+  for(Int_t k = 0; k < 540; k++){
+    fCalDetExBUsed->SetValue(k,AliTRDCommonParam::Instance()->GetOmegaTau(fCalDetVdriftUsed->GetValue(k)));
+    //printf("Set the exb object for detector %d, vdrift %f and exb %f\n",k,fCalDetVdriftUsed->GetValue(k),fCalDetExBUsed->GetValue(k));
+  }
+  
+};
 
 
