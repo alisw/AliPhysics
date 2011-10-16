@@ -33,7 +33,10 @@
 // p-p collisions
 ////////////////////////////////////////////////////////////////
 
-const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 1000;
+const Int_t    AliITSVertexer3D::fgkMaxNumOfClDefault = 300;
+const Int_t    AliITSVertexer3D::fgkMaxNumOfClRebinDefault = 500;
+const Int_t    AliITSVertexer3D::fgkMaxNumOfClDownscaleDefault = 1000;
+const Float_t  AliITSVertexer3D::fgk3DBinSizeDefault = 0.1;
 
 ClassImp(AliITSVertexer3D)
 
@@ -64,8 +67,16 @@ AliITSVertexer3D::AliITSVertexer3D():
   fBinSizeZ(0.),
   fPileupAlgo(0),
   fMaxNumOfCl(fgkMaxNumOfClDefault),
+  fMaxNumOfClForRebin(fgkMaxNumOfClRebinDefault),
+  fMaxNumOfClForDownScale(fgkMaxNumOfClDownscaleDefault),
+  fNRecPLay1(0),
+  fNRecPLay2(0),
+  f3DBinSize(fgk3DBinSizeDefault),
   fDoDownScale(kFALSE),
-  fGenerForDownScale(0)
+  fGenerForDownScale(0),
+  f3DPeak(),
+  fHighMultAlgo(1),
+  fSwitchAlgorithm(kFALSE)
 {
   // Default constructor
   SetCoarseDiffPhiCut();
@@ -121,15 +132,20 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
   Int_t nolines = FindTracklets(itsClusterTree,0);
   Int_t rc;
   if(nolines>=2){
-    rc=Prepare3DVertex(0);
-    if(fVert3D.GetNContributors()>0){
-      fLines.Clear("C");
-      nolines = FindTracklets(itsClusterTree,1);
-      if(nolines>=2){
-	rc=Prepare3DVertex(1);
-	if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
-	else if(fPileupAlgo!=2 && rc == 0) FindVertex3D(itsClusterTree);
-	if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
+    if(fSwitchAlgorithm) {
+      rc = Prepare3DVertexPbPb();
+      FindVertex3D(itsClusterTree);
+    } else {
+      rc=Prepare3DVertex(0);
+      if(fVert3D.GetNContributors()>0){
+	fLines.Clear("C");
+	nolines = FindTracklets(itsClusterTree,1);
+	if(nolines>=2){
+	  rc=Prepare3DVertex(1);
+	  if(fPileupAlgo == 2 && rc == 0) FindVertex3DIterative();
+	  else if(fPileupAlgo!=2 && rc == 0) FindVertex3D(itsClusterTree);
+	  if(rc!=0) fVert3D.SetNContributors(0); // exclude this vertex      
+	}
       }
     }
   }
@@ -480,7 +496,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 
   TClonesArray *itsRec  = 0;
   if(optCuts==0) fZHisto->Reset();
- // gc1 are local and global coordinates for layer 1
+  // gc1 are local and global coordinates for layer 1
   Float_t gc1f[3]={0.,0.,0.};
   Double_t gc1[3]={0.,0.,0.};
   // gc2 are local and global coordinates for layer 2
@@ -518,32 +534,49 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
     deltaR=fMaxRCut;
   }
 
-  Int_t nrpL1 = 0;    // number of rec points on layer 1
-  Int_t nrpL2 = 0;    // number of rec points on layer 2
-  nrpL1=rpcont->GetNClustersInLayerFast(1);
-  nrpL2=rpcont->GetNClustersInLayerFast(2);
-  if(nrpL1 == 0 || nrpL2 == 0){
-    AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",nrpL1,nrpL2));
+  fNRecPLay1=rpcont->GetNClustersInLayerFast(1);
+  fNRecPLay2=rpcont->GetNClustersInLayerFast(2);
+  if(fNRecPLay1 == 0 || fNRecPLay2 == 0){
+    AliDebug(1,Form("No RecPoints in at least one SPD layer (%d %d)",fNRecPLay1,fNRecPLay2));
     return -1;
   }
-  AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",nrpL1,nrpL2));
+  AliDebug(1,Form("RecPoints on Layer 1,2 = %d, %d\n",fNRecPLay1,fNRecPLay2));
   fDoDownScale=kFALSE;
+  fSwitchAlgorithm=kFALSE;
+
   Float_t factDownScal=1.;
   Int_t origLaddersOnLayer2=fLadOnLay2;
 
-  if(nrpL1>fMaxNumOfCl || nrpL2>fMaxNumOfCl){
-    SetLaddersOnLayer2(2);
-    fDoDownScale=kTRUE;
-    factDownScal=(Float_t)fMaxNumOfCl*(Float_t)fMaxNumOfCl/(Float_t)nrpL1/(Float_t)nrpL2;
-    if(optCuts==1){
-      factDownScal*=(fCoarseDiffPhiCut/fDiffPhiMax)*10;
-      if(factDownScal>1.){
-	fDoDownScale=kFALSE;
-	SetLaddersOnLayer2(origLaddersOnLayer2);
+  switch(fHighMultAlgo){
+  case 0: 
+    if(fNRecPLay1>fMaxNumOfClForDownScale || fNRecPLay2>fMaxNumOfClForDownScale){
+      if(optCuts==2) return -1; // do not try to search for pileup
+      SetLaddersOnLayer2(2);
+      fDoDownScale=kTRUE;
+      factDownScal=(Float_t)fMaxNumOfClForDownScale*(Float_t)fMaxNumOfClForDownScale/(Float_t)fNRecPLay1/(Float_t)fNRecPLay2;
+      if(optCuts==1){
+	factDownScal*=(fCoarseDiffPhiCut/fDiffPhiMax)*10;
+	if(factDownScal>1.){
+	  fDoDownScale=kFALSE;
+	  SetLaddersOnLayer2(origLaddersOnLayer2);
+	}
       }
+      if(fDoDownScale)AliDebug(1,Form("Too many recpoints on SPD(%d %d ), downscale by %f",fNRecPLay1,fNRecPLay2,factDownScal));
     }
-    else if(optCuts==2) return -1;
-    if(fDoDownScale)AliDebug(1,Form("Too many recpoints on SPD(%d %d ), downscale by %f",nrpL1,nrpL2,factDownScal));
+    break;
+  case 1: 
+    if(fNRecPLay1>fMaxNumOfCl || fNRecPLay2>fMaxNumOfCl) {
+      if(optCuts==2) return -1; // do not try to search for pileup
+      fSwitchAlgorithm=kTRUE;
+    }
+    break;
+  default: break; // no pileup algo  
+  }
+
+  if(!fDoDownScale && !fSwitchAlgorithm){
+    if(fNRecPLay1>fMaxNumOfClForRebin || fNRecPLay2>fMaxNumOfClForRebin){
+      SetLaddersOnLayer2(2);
+    }
   }
 
   Double_t a[3]={xbeam,ybeam,0.}; 
@@ -566,7 +599,9 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
       if(j>kMaxCluPerMod) continue;
       UShort_t idClu1=modul1*kMaxCluPerMod+j;
       if(fUsedCluster.TestBitNumber(idClu1)) continue;
-      if(fDoDownScale && fGenerForDownScale->Rndm()>factDownScal) continue;
+      if(fDoDownScale && !fSwitchAlgorithm){
+	if(fGenerForDownScale->Rndm()>factDownScal) continue;
+      }
       AliITSRecPoint *recp1 = (AliITSRecPoint*)prpl1->At(j);
       recp1->GetGlobalXYZ(gc1f);
       for(Int_t ico=0;ico<3;ico++)gc1[ico]=gc1f[ico];
@@ -664,10 +699,7 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
     }
   }
 
-  if(fDoDownScale){
-    SetLaddersOnLayer2(origLaddersOnLayer2);
-  }
-
+  SetLaddersOnLayer2(origLaddersOnLayer2);
 
   if(nolines == 0)return -2;
   return nolines;
@@ -677,7 +709,6 @@ Int_t AliITSVertexer3D::FindTracklets(TTree *itsClusterTree, Int_t optCuts){
 Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   // Finds the 3D vertex information using tracklets
   Int_t retcode = -1;
-
   Double_t xbeam=GetNominalPos()[0];
   Double_t ybeam=GetNominalPos()[1];
   Double_t zvert=0.;
@@ -701,11 +732,18 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
 
   Double_t origBinSizeR=fBinSizeR;
   Double_t origBinSizeZ=fBinSizeZ;
+  Bool_t rebinned=kFALSE;
   if(fDoDownScale){
     SetBinSizeR(0.05);
     SetBinSizeZ(0.05);
+    rebinned=kTRUE;
+  }else{
+    if(optCuts==0 && (fNRecPLay1>fMaxNumOfClForRebin || fNRecPLay2>fMaxNumOfClForRebin)){
+      SetBinSizeR(0.1);
+      SetBinSizeZ(0.2);
+      rebinned=kTRUE;
+    }
   }
-
   Double_t rl=-fCoarseMaxRCut;
   Double_t rh=fCoarseMaxRCut;
   Double_t zl=-fZCutDiamond;
@@ -732,7 +770,7 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       Int_t retc = l1->Cross(l2,point);
       if(retc<0)continue;
       Double_t deltaZ=point[2]-zvert;
-     if(TMath::Abs(deltaZ)>dZmax)continue;
+      if(TMath::Abs(deltaZ)>dZmax)continue;
       Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
       if(rad>fCoarseMaxRCut)continue;
       Double_t deltaX=point[0]-xbeam;
@@ -746,14 +784,14 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     }
   }
 
-
-
   Int_t numbtracklets=0;
   for(Int_t i=0; i<vsiz;i++)if(validate[i]>=1)numbtracklets++;
   if(numbtracklets<2){
     delete [] validate; 
     delete h3d; 
     delete h3dcs; 
+    SetBinSizeR(origBinSizeR);
+    SetBinSizeZ(origBinSizeZ);
     return retcode; 
   }
 
@@ -768,6 +806,8 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
   if(fPileupAlgo == 2 && optCuts==1){
     delete h3d; 
     delete h3dcs;     
+    SetBinSizeR(origBinSizeR);
+    SetBinSizeZ(origBinSizeZ);
     return 0;
   }
 
@@ -785,12 +825,25 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     FindPeaks(h3dcs,peak,ntrkl,ntimes);  
     binsizer=(rh-rl)/nbrcs;
     binsizez=(zh-zl)/nbzcs;
-    if(ntrkl==1 || ntimes>1){delete h3dcs; return retcode;}
+    if(ntrkl==1 || ntimes>1){
+      delete h3dcs; 
+      SetBinSizeR(origBinSizeR);
+      SetBinSizeZ(origBinSizeZ);
+      return retcode;
+    }
   }
   delete h3dcs;
 
+  Double_t bs=(binsizer+binsizez)/2.;
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+    if(l1->GetDistFromPoint(peak)>2.5*bs)fLines.RemoveAt(i);
+  }
+  fLines.Compress();
+  AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines.GetEntriesFast()));
+
   // Finer Histo in limited range in case of high mult.
-  if(fDoDownScale){
+  if(rebinned){
     SetBinSizeR(0.01);
     SetBinSizeZ(0.01);
     Double_t xl=peak[0]-0.3;
@@ -808,9 +861,19 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       AliStrLine *l1 = (AliStrLine*)fLines.At(i);
       for(Int_t j=i+1;j<fLines.GetEntriesFast();j++){
 	AliStrLine *l2 = (AliStrLine*)fLines.At(j);
+	Double_t dca=l1->GetDCA(l2);
+	if(dca > fDCAcut || dca<0.00001) continue;
 	Double_t point[3];
 	Int_t retc = l1->Cross(l2,point);
 	if(retc<0)continue;
+	Double_t deltaZ=point[2]-zvert;
+	if(TMath::Abs(deltaZ)>dZmax)continue;
+	Double_t rad=TMath::Sqrt(point[0]*point[0]+point[1]*point[1]);
+	if(rad>fCoarseMaxRCut)continue;
+	Double_t deltaX=point[0]-xbeam;
+	Double_t deltaY=point[1]-ybeam;
+	Double_t raddist=TMath::Sqrt(deltaX*deltaX+deltaY*deltaY);
+	if(raddist>deltaR)continue;
 	h3dfs->Fill(point[0],point[1],point[2]);
       }
     }
@@ -825,20 +888,20 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
       binsizez=fBinSizeZ;
     }
     delete h3dfs;
-    SetBinSizeR(origBinSizeR);
-    SetBinSizeZ(origBinSizeZ);
+    bs=(binsizer+binsizez)/2.;
+    for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+      AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+      if(l1->GetDistFromPoint(peak)>2.5*bs)fLines.RemoveAt(i);
+    }
+    fLines.Compress();
+    AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines.GetEntriesFast()));
   }
+  SetBinSizeR(origBinSizeR);
+  SetBinSizeZ(origBinSizeZ);
 
 
   //         Second selection loop
 
-  Double_t bs=(binsizer+binsizez)/2.;
-  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
-    AliStrLine *l1 = (AliStrLine*)fLines.At(i);
-    if(l1->GetDistFromPoint(peak)>2.5*bs)fLines.RemoveAt(i);
-  }
-  fLines.Compress();
-  AliDebug(1,Form("Number of tracklets (after 2nd compression) %d",fLines.GetEntriesFast()));
 
   if(fLines.GetEntriesFast()>1){
     retcode=0;
@@ -881,6 +944,90 @@ Int_t  AliITSVertexer3D::Prepare3DVertex(Int_t optCuts){
     }
   }
   return retcode;  
+}
+
+//________________________________________________________
+Int_t  AliITSVertexer3D::Prepare3DVertexPbPb(){
+  // Finds the 3D vertex information in Pb-Pb events using tracklets
+  AliDebug(1,"High multiplicity event.\n");
+
+  Int_t nxy=(Int_t)(2.*fCoarseMaxRCut/f3DBinSize);
+  Double_t xymi= -nxy*f3DBinSize/2.;
+  Double_t xyma= nxy*f3DBinSize/2.;
+  Int_t nz=(Int_t)(2.*fZCutDiamond/f3DBinSize);
+  Double_t zmi=-nz*f3DBinSize/2.;
+  Double_t zma=nz*f3DBinSize/2.;
+  Int_t nolines=fLines.GetEntriesFast();
+  TH3F *h3dv = new TH3F("h3dv","3d tracklets",nxy,xymi,xyma,nxy,xymi,xyma,nz,zmi,zma);
+  
+  for(Int_t itra=0; itra<nolines; itra++){
+    Double_t wei = GetFraction(itra);
+    //printf("tracklet %d ) - weight %f \n",itra,wei);
+    if(wei>1.e-6){
+      AliStrLine *str=(AliStrLine*)fLines.At(itra);
+      Double_t t1,t2;
+      if(str->GetParamAtRadius(fCoarseMaxRCut,t1,t2)){
+	do{
+	  Double_t punt[3];
+	  str->ComputePointAtT(t1,punt);
+	  h3dv->Fill(punt[0],punt[1],punt[2],wei);
+	  t1+=f3DBinSize/3.;
+	} while(t1<t2);
+      }
+    }
+  }
+  Int_t noftrk,noftim;
+  FindPeaks(h3dv,f3DPeak,noftrk,noftim); // arg: histo3d, peak, # of contrib., # of other peak with same magnitude
+  
+  
+  // Remove all the tracklets which are not passing near peak
+  
+  while(nolines--){
+    AliStrLine *str=(AliStrLine*)fLines.At(nolines);
+    Double_t dist = str->GetDistFromPoint(f3DPeak);
+    if(dist>(2.*f3DBinSize)) fLines.RemoveAt(nolines);
+    }
+  fLines.Compress();
+  nolines=fLines.GetEntriesFast();
+
+  delete h3dv;
+
+  Int_t *validate2 = new Int_t [fLines.GetEntriesFast()];
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++) validate2[i]=1; 
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    if(validate2[i]==0) continue; 
+    AliStrLine *l1 = (AliStrLine*)fLines.At(i);
+    if(l1->GetDistFromPoint(f3DPeak)> fDCAcut)fLines.RemoveAt(i);
+    for(Int_t j=i+1; j<fLines.GetEntriesFast();j++){
+      AliStrLine *l2 = (AliStrLine*)fLines.At(j);
+      if(l1->GetDCA(l2)<0.00001){ 
+	Int_t delta1=(Int_t)l1->GetIdPoint(0)-(Int_t)l2->GetIdPoint(0);
+	Int_t delta2=(Int_t)l1->GetIdPoint(1)-(Int_t)l2->GetIdPoint(1);
+	Int_t deltamod1=(Int_t)l1->GetIdPoint(0)/kMaxCluPerMod
+	  -(Int_t)l2->GetIdPoint(0)/kMaxCluPerMod;
+	Int_t deltamod2=(Int_t)l1->GetIdPoint(1)/kMaxCluPerMod
+	  -(Int_t)l2->GetIdPoint(1)/kMaxCluPerMod;
+	// remove tracklets sharing a point
+	if( (delta1==0 && deltamod2==0)  || 
+	    (delta2==0 && deltamod1==0)  ) validate2[j]=0; 
+	
+      }
+    }
+  }
+  for(Int_t i=0; i<fLines.GetEntriesFast();i++){
+    if(validate2[i]==0)  fLines.RemoveAt(i);
+  }
+  
+  delete [] validate2;
+  fLines.Compress();
+
+  
+  AliDebug(1,Form("Number of tracklets (after 3rd compression) %d",fLines.GetEntriesFast()));
+
+  fVert3D=AliVertexerTracks::TrackletVertexFinder(&fLines,0); 
+  fVert3D.GetXYZ(f3DPeak);
+  
+  return 0;  
 }
 
 //________________________________________________________
@@ -1056,6 +1203,54 @@ void AliITSVertexer3D::PileupFromZ(){
     }
   }
 }
+
+//________________________________________________________
+Double_t AliITSVertexer3D::GetFraction(Int_t itr) const {
+  // this method is used to fill a 3D histogram representing
+  // the trajectories of the candidate tracklets
+  // The computed fraction is used as a weight at filling time
+  AliStrLine *str = (AliStrLine*)fLines.At(itr);
+  Double_t spigolo=10.;
+  Double_t cd[3];
+  str->GetCd(cd);
+  Double_t par=0.;
+  Double_t maxl=TMath::Sqrt(3.)*spigolo;
+ // intersection with a plane normal to the X axis 
+  if(TMath::AreEqualAbs(cd[0],0.,1.e-9)){
+    par=1000000.;
+  }
+  else {
+    par=spigolo/cd[0];
+  }
+  Double_t zc=cd[2]*par;
+  Double_t yc=cd[1]*par;
+  if((-spigolo<=yc && yc<=spigolo) && (-spigolo<=zc && zc<=spigolo))return TMath::Abs(par/maxl);
+ // intersection with a plane normal to the Y axis
+  if(TMath::AreEqualAbs(cd[1],0.,1.e-9)){
+    par=1000000.;
+  }
+  else {
+    par=spigolo/cd[1];
+  }
+  zc=cd[2]*par;
+  Double_t xc=cd[0]*par;
+  if((-spigolo<=xc && xc<=spigolo) && (-spigolo<=zc && zc<=spigolo))return TMath::Abs(par/maxl);
+ // intersection with a plane normal to the Z axis
+  if(TMath::AreEqualAbs(cd[2],0.,1.e-9)){
+    par=1000000.;
+  }
+  else {
+    par=spigolo/cd[2];
+  }
+  yc=cd[1]*par;
+  xc=cd[0]*par;
+  if((-spigolo<=xc && xc<=spigolo) && (-spigolo<=yc && yc<=spigolo))return TMath::Abs(par/maxl);
+  // control should never reach the following lines
+  AliError(Form("anomalous tracklet direction for tracklet %d in fLines\n",itr));
+  str->PrintStatus();
+  return 0.;
+}
+
 //________________________________________________________
 void AliITSVertexer3D::PrintStatus() const {
   // Print current status
@@ -1073,7 +1268,8 @@ void AliITSVertexer3D::PrintStatus() const {
   printf("Pileup algo: %d\n",fPileupAlgo);
   printf("Min DCA to 1st vertex for pileup (algo 0 and 1): %f\n",fDCAforPileup);
   printf("Cut on distance between pair-vertices  (algo 2): %f\n",fCutOnPairs);
-  printf("Maximum number of clusters allowed on L1 or L2: %d\n",fMaxNumOfCl);
+  printf("Maximum number of clusters on L1 or L2 for downscale: %d\n",fMaxNumOfClForDownScale);
+  printf("Maximum number of clusters on L1 or L2 for histo rebin: %d\n",fMaxNumOfClForRebin);
   printf("=======================================================\n");
 }
 

@@ -28,6 +28,7 @@ class AliITSVertexer3D : public AliITSVertexer {
   void FindVertex3DIterativeMM();
   void FindVertex3D(TTree *itsClusterTree);
   AliESDVertex GetVertex3D() const {return fVert3D;}
+  //  Double_t *Get3DPeak() {return f3DPeak;}
   virtual void PrintStatus() const;
   static Bool_t DistBetweenVertices(AliESDVertex &a, AliESDVertex &b, Double_t test, Double_t &dist);
   void SetWideFiducialRegion(Double_t dz = 40.0, Double_t dr=2.5){
@@ -60,24 +61,36 @@ class AliITSVertexer3D : public AliITSVertexer {
   void SetPileupAlgo(UShort_t optalgo=1){fPileupAlgo=optalgo;}
   void SetBinSizeR(Double_t siz=0.1){fBinSizeR=siz;}
   void SetBinSizeZ(Double_t siz=0.8){fBinSizeZ=siz;}
-  void SetMaxNumOfClusters(Int_t ncl){fMaxNumOfCl=ncl;}
-  Int_t GetMaxNumOfClusters() const {return fMaxNumOfCl;}
+  void SetHighMultAlgo(UChar_t n){
+    if(n<2) fHighMultAlgo=n;
+    else AliError("Only algos 0 and 1 implemented");
+  }
+  void SetHighMultDownscalingAlgo(){fHighMultAlgo=0;}
+  void SetHighMultTracesAlgo(){fHighMultAlgo=1;}
+
+  void SetMaxNumOfClustersForHighMult(Int_t ncl){fMaxNumOfCl=ncl;}
+  void SetMaxNumOfClustersForDownScale(Int_t ncl){fMaxNumOfClForDownScale=ncl;}
+  void SetMaxNumOfClustersForRebin(Int_t ncl){fMaxNumOfClForRebin=ncl;}
+  Int_t GetMaxNumOfClustersForHighMult() const {return fMaxNumOfCl;}
+  Int_t GetMaxNumOfClustersForDownScale() const {return fMaxNumOfClForDownScale;}
+  Int_t GetMaxNumOfClustersForRebin() const {return fMaxNumOfClForRebin;}
 
 protected:
   AliITSVertexer3D(const AliITSVertexer3D& vtxr);
   AliITSVertexer3D& operator=(const AliITSVertexer3D& /* vtxr */);
   Int_t FindTracklets(TTree *itsClusterTree, Int_t optCuts);
   Int_t Prepare3DVertex(Int_t optCuts);
+  Int_t Prepare3DVertexPbPb();
   void ResetVert3D();
   void FindPeaks(TH3F* histo, Double_t *peak, Int_t &nOfTracklets, Int_t &nOfTimes);
   void PileupFromZ();
   void MarkUsedClusters();
   Int_t RemoveTracklets();
   void  FindOther3DVertices(TTree *itsClusterTree);
+  Double_t GetFraction(Int_t itr) const;
 
   enum {kMaxCluPerMod=250};
   enum {kMaxPileupVertices=10};
-
   TClonesArray fLines;      //! array of tracklets
   AliESDVertex fVert3D;        // 3D Vertex
   Double_t fCoarseDiffPhiCut; // loose cut on DeltaPhi for RecPoint matching
@@ -101,13 +114,24 @@ protected:
   UShort_t fPileupAlgo;    // Algo for pileup identification
                            // 0->VertexerZ pileup algo
                            // 1->Unused RecPoints algo
-  Int_t fMaxNumOfCl;       // max number of clusters on L1 or L2
+  Int_t fMaxNumOfCl;          // max n. of clusters on L1 or L2 for high mult definition
+  Int_t fMaxNumOfClForRebin;  // max n. of clusters on L1 or L2 for rebin
+  Int_t fMaxNumOfClForDownScale;  // max n. of clusters on L1 or L2 for downscale
+  Int_t  fNRecPLay1;       // number of rec ponts on SPD layer 1
+  Int_t  fNRecPLay2;       // number of rec ponts on SPD layer 2
+  Float_t f3DBinSize;           // Size of the 3D bins
   Bool_t fDoDownScale;     // Control downscaling of tracklets in high mult
   TRandom3 *fGenerForDownScale; // randomnumber generator fordownscaling
+  Double_t f3DPeak[3];           // TH3F peak coords
+  UChar_t fHighMultAlgo;    // algorithm used for high mult. events
+  Bool_t fSwitchAlgorithm; // Switch between two algoritms in testing phase
 
-  static const Int_t fgkMaxNumOfClDefault; // Default max number of clusters
+  static const Int_t fgkMaxNumOfClDefault;      // Default max n. of clusters for downscale
+  static const Int_t fgkMaxNumOfClRebinDefault; // Default max n. of clusters for rebin
+  static const Int_t fgkMaxNumOfClDownscaleDefault; // Default max n. of clusters for rebin
+  static const Float_t fgk3DBinSizeDefault;  // Default 3D bins size
 
-  ClassDef(AliITSVertexer3D,14);
+  ClassDef(AliITSVertexer3D,15);
 
 };
 

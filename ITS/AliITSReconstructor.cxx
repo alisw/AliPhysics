@@ -231,6 +231,8 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
     vtxr->SetDCACut(dcacut);
     Int_t pileupAlgo=GetRecoParam()->GetSPDVertexerPileupAlgo();
     vtxr->SetPileupAlgo(pileupAlgo);
+    UChar_t highmultAlgo=GetRecoParam()->GetSPDVertexerHighMultAlgo();
+    vtxr->SetHighMultAlgo(highmultAlgo);
     AliDebug(1,Form("AliITSVertexer3D with pileup algo %d has been selected",pileupAlgo));
     vptr = vtxr;
   }
