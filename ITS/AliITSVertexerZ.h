@@ -46,6 +46,10 @@ class AliITSVertexerZ : public AliITSVertexer {
   void SetWindowWidth(Float_t ww=0.2){fWindowWidth=ww;}
   Float_t GetTolerance() const {return fTolerance;}
   //  virtual void MakeTracklet(Double_t * /* pA */, Double_t * /*pB */, Int_t & /* nolines */) {} // implemented in a derived class
+
+  void SetSearchForPileup(Bool_t opt){fSearchForPileup=opt;}
+  Bool_t IsSearchForPileupActive() const { return fSearchForPileup;}
+
  protected:
   void ResetHistograms();
   void VertexZFinder(TTree *itsClusterTree);
@@ -68,11 +72,13 @@ class AliITSVertexerZ : public AliITSVertexer {
   Int_t fMaxIter;            // Maximum number of iterations (<=5)
   Float_t fPhiDiffIter[5];   // Delta phi used in iterations
   Float_t fWindowWidth;      // Z window width for symmetrization
+  Bool_t  fSearchForPileup;  // flag to switch pileup off/on
+
  private:
   AliITSVertexerZ(const AliITSVertexerZ& vtxr);
   AliITSVertexerZ& operator=(const AliITSVertexerZ& vtxr );
 
-  ClassDef(AliITSVertexerZ,10);
+  ClassDef(AliITSVertexerZ,11);
 };
 
 #endif

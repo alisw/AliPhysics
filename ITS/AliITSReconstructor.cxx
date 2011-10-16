@@ -201,7 +201,10 @@ AliVertexer* AliITSReconstructor::CreateVertexer() const
   }
   else if(vtxOpt==1){
     AliDebug(1,"AliITSVertexerZ has been selected");
-    vptr =  new AliITSVertexerZ();
+    AliITSVertexerZ* vtxrz =  new AliITSVertexerZ();
+    Int_t pileupAlgo=GetRecoParam()->GetSPDVertexerPileupAlgo();
+    if(pileupAlgo==3) vtxrz->SetSearchForPileup(kFALSE);
+    vptr = vtxrz;
   }
   else if(vtxOpt==2){
     AliDebug(1,"AliITSVertexerCosmics has been selected");

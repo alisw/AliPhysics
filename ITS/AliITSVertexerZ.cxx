@@ -51,7 +51,9 @@ fHighLim(0.),
 fStepCoarse(0),
 fTolerance(0.),
 fMaxIter(0),
-fWindowWidth(0) {
+fWindowWidth(0),
+fSearchForPileup(kTRUE)
+{
   // Default constructor
   SetDiffPhiMax();
   SetFirstLayerModules();
@@ -80,7 +82,9 @@ fHighLim(0.),
 fStepCoarse(0),
 fTolerance(0.),
 fMaxIter(0),
-fWindowWidth(0) {
+fWindowWidth(0),
+fSearchForPileup(kTRUE)
+{
   // Standard Constructor
   SetDiffPhiMax();
   SetFirstLayerModules();
@@ -370,7 +374,7 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
   fCurrentVertex->SetDispersion(fDiffPhiMax);
   fNoVertices=1;
   points.Clear();
-  if(ncontr>fMinTrackletsForPilup){ 
+  if(fSearchForPileup && ncontr>fMinTrackletsForPilup){ 
     Float_t secPeakPos;
     Int_t ncontr2=FindSecondPeak(fZCombc,binmin,binmax,secPeakPos);
     if(ncontr2>=fMinTrackletsForPilup){ 
