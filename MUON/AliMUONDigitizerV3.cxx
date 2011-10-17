@@ -440,14 +440,14 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
     // this is an error only in specific cases
     if ( !addNoise || (addNoise && noiseOnly) ) 
     {
-      AliErrorClass(Form(" DE %04d Manu %04d Channel %02d "
-                         " a0 %7.2f a1 %7.2f thres %04d ped %7.2f pedsig %7.2f adcNoise %7.2f "
-                         " charge=%7.2f padc=%7.2f adc=%04d ZS=%04d fgNSigmas=%e addNoise %d noiseOnly %d ",
-                         pedestals.ID0(),pedestals.ID1(),channel, 
-                         a0, a1, thres, pedestalMean, pedestalSigma, adcNoise,
-                         charge, padc, adc, 
-                         TMath::Nint(pedestalMean + fgNSigmas*pedestalSigma + 0.5),
-                         fgNSigmas,addNoise,noiseOnly));
+      AliDebugClass(1,Form(" DE %04d Manu %04d Channel %02d "
+													 " a0 %7.2f a1 %7.2f thres %04d ped %7.2f pedsig %7.2f adcNoise %7.2f "
+													 " charge=%7.2f padc=%7.2f adc=%04d ZS=%04d fgNSigmas=%e addNoise %d noiseOnly %d ",
+													 pedestals.ID0(),pedestals.ID1(),channel, 
+													 a0, a1, thres, pedestalMean, pedestalSigma, adcNoise,
+													 charge, padc, adc, 
+													 TMath::Nint(pedestalMean + fgNSigmas*pedestalSigma + 0.5),
+													 fgNSigmas,addNoise,noiseOnly));
     }
     
     adc = 0;
