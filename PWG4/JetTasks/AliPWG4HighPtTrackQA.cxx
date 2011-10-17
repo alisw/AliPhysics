@@ -928,6 +928,8 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
       continue;
     }
     AliESDtrack *origtrack = new AliESDtrack(*esdtrack);
+    if(!origtrack)
+      continue;
 
     if(fTrackType==4) {
       FillSystematicCutHist(esdtrack);
