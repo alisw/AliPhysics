@@ -89,10 +89,12 @@ class AliFlowBayesianPID : public AliPIDResponse {
   Bool_t GetDetANDstatus(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskAND[idet];} else{return kFALSE;} };
   Bool_t GetDetORstatus(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskOR[idet];} else{return kFALSE;} };
   Bool_t GetCurrentMask(Int_t idet){if(idet < fNdetectors && idet >= 0){return fMaskCurrent[idet];} else{return kFALSE;} };
+  Float_t GetExpDeDx(const AliESDtrack *t,Int_t iS);
 
   // methods for Bayesina Combined PID
-  void ComputeWeights(const AliESDtrack *t,Float_t centrObsolete=10);
-  void ComputeProb(const AliESDtrack *t,Float_t centrObsolete=10);
+  void ComputeWeights(const AliESDtrack *t);
+  void ComputeProb(const AliESDtrack *t,Float_t); // obsolete method
+  void ComputeProb(const AliESDtrack *t){ComputeProb(t,0.0);}; 
 
   void SetTOFres(Float_t res){fTOFres=res;};
 
