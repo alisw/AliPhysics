@@ -28,7 +28,7 @@ class AliTrackPointArray;
 class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
  public:
-
+  enum {kEvAll=0,kEvCnt,kEvVtx,kEvPlp,kNTracks,kNEvStatBins,  kEvAcc=kEvPlp};
   AliAnalysisTaskITSAlignQA();
   virtual ~AliAnalysisTaskITSAlignQA();
 
@@ -83,14 +83,15 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetUseVertex(Bool_t v=kTRUE)         { fUseVertex = v; }
   void SetUseVertexForZOnly(Bool_t v=kTRUE) { fUseVertexForZOnly = v; } // Use the vertex for SDD Z residuals only
   void SetRemovePileupWithSPD(Bool_t opt=kTRUE) { fRemovePileupWithSPD = opt; }
-  
-  void     SetOCDBInfo(UInt_t runNb, const char *location) {
+  void SetMinMaxMult(Double_t mn=0,Double_t mx=1e9) {fMinMult=mn; fMaxMult=mx;} 
+  void SetOCDBInfo(UInt_t runNb, const char *location) {
     fRunNb=runNb; 
     fOCDBLocation=location;
   }
 
   Bool_t   AcceptTrack(const AliESDtrack * track);
   Bool_t   AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD);
+  Bool_t   AcceptCentrality(const AliESDEvent *esd) const;
   void     CreateSPDHistos();
   void     CreateSDDHistos();
   void     CreateSSDHistos();
@@ -159,13 +160,15 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Int_t    fMinTPCpts;        // Minimum number of TPC points per track
   Float_t  fMinPt;            // Minimum pt to accept tracks
   Int_t    fNPtBins;          // number of pt bins
+  Double_t fMinMult;          // min centrality cut
+  Double_t fMaxMult;          // max centrality cut
   Double_t fPtBinLimits[kMaxPtBins+1];  // limits of Pt bins
 
   AliITSTPArrayFit* fFitter;  // Track Point fitter
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
 
-  ClassDef(AliAnalysisTaskITSAlignQA,4);
+  ClassDef(AliAnalysisTaskITSAlignQA,5);
 };
 
 
