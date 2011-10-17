@@ -1077,7 +1077,11 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     pout = pt*TMath::Sin(deltaPhi) ;
     rat  = pt/ptTrig ;
     xE   =-pt/ptTrig*TMath::Cos(deltaPhi);
-    cosi = TMath::Log(1/xE);   
+    if(xE > 0 )cosi = TMath::Log(1/xE); 
+    else {
+      printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - xE=%f negative or null, check!, pT %f, ptTrig %f\n", xE,pt,ptTrig);
+      return kFALSE;
+    }
     
     if(GetDebug() > 2)
       printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Charged hadron: pt %f, phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
@@ -1141,7 +1145,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
         if(uexE < 0.) uexE = -uexE;
         if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - xe = %f, uexE = %f \n", xE, uexE);
         fhPtImbalanceUeCharged->Fill(ptTrig,uexE);
-        fhPtHbpUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
+        if(uexE>0)fhPtHbpUeCharged->Fill(ptTrig,TMath::Log(1/uexE));
         if(DoEventSelect()){
           for(Int_t im=0; im<GetMultiBin(); im++){
             if(nTracks < ( GetMaxMulti() - GetMinMulti() )/GetMultiBin()*(im+1))
