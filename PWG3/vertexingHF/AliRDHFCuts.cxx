@@ -73,6 +73,7 @@ fWhyRejection(0),
 fEvRejectionBits(0),
 fRemoveDaughtersFromPrimary(kFALSE),
 fUseMCVertex(kFALSE),
+fUsePhysicsSelection(kTRUE),
 fOptPileup(0),
 fMinContrPileup(3),
 fMinDzPileup(0.6),
@@ -118,6 +119,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fEvRejectionBits(source.fEvRejectionBits),
   fRemoveDaughtersFromPrimary(source.fRemoveDaughtersFromPrimary),
   fUseMCVertex(source.fUseMCVertex),
+  fUsePhysicsSelection(source.fUsePhysicsSelection),
   fOptPileup(source.fOptPileup),
   fMinContrPileup(source.fMinContrPileup),
   fMinDzPileup(source.fMinDzPileup),
@@ -172,6 +174,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fEvRejectionBits=source.fEvRejectionBits;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
   fUseMCVertex=source.fUseMCVertex;
+  fUsePhysicsSelection=source.fUsePhysicsSelection;
   fOptPileup=source.fOptPileup;
   fMinContrPileup=source.fMinContrPileup;
   fMinDzPileup=source.fMinDzPileup;
@@ -296,6 +299,15 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
   //
 
 
+  // physics selection requirements
+  if(fUsePhysicsSelection){
+    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    if(!isSelected) {
+      if(accept) fWhyRejection=7;
+      fEvRejectionBits+=1<<kPhysicsSelection;
+      accept=kFALSE;
+    }
+  }
 
   // vertex requirements
    
