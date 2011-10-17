@@ -2275,7 +2275,8 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   const Char_t *title[] = {"Mean", "#mu", "MPV"};
   if(!fH) return NULL;
   TAxis *ax(fH->GetXaxis()), *ay(fH->GetYaxis()), *az(fH->GetZaxis());
-  TH2 *h2s = (TH2*)fH->Project3D("yx");
+  TH2 *h2s(NULL);
+  if(!(h2s = (TH2*)fH->Project3D("yx"))) return NULL;
   Int_t irebin(0), dxBin(1), dyBin(1);
   while(irebin<fNrebin && (AliTRDresolution::GetMeanStat(h2s, .5, ">")<nstat)){
     h2s->Rebin2D(fRebinX[irebin], fRebinY[irebin]);
