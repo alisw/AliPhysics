@@ -146,7 +146,7 @@ void AliHFSystErr::InitD0toKpi2010pp() {
 
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 4% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -154,7 +154,7 @@ void AliHFSystErr::InitD0toKpi2010pp() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.02); // 2% (1% per track)
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.08); // 8% (4% per track)
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
@@ -385,7 +385,7 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
 
 // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.07); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 4% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -393,7 +393,7 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
-  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  for(Int_t i=1;i<=24;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
 
 
   // Raw yield extraction
@@ -619,7 +619,7 @@ void AliHFSystErr::InitDstartoD0pi2010pp() {
 
  // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.10); // 10% error on sigmaV0and
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.04); // 4% error on sigmaV0and
 
   // Branching ratio 
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -628,10 +628,10 @@ void AliHFSystErr::InitDstartoD0pi2010pp() {
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
   fTrackingEff->SetBinContent(1,1.0);
-  fTrackingEff->SetBinContent(2,0.12);
-  fTrackingEff->SetBinContent(3,0.08);
-  fTrackingEff->SetBinContent(3,0.05);
-  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  fTrackingEff->SetBinContent(2,0.13); // 10% (ITSsa) \oplus 8% (4% per ITSTPC track)
+  fTrackingEff->SetBinContent(3,0.12);
+  fTrackingEff->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=24;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
 
 
   // Raw yield extraction
