@@ -12,6 +12,7 @@
 #include "AliITSCalibrationSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliGeomManager.h"
+#include "AliMultiplicity.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -69,6 +70,8 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fMinTPCpts(70),
   fMinPt(0.5),
   fNPtBins(8),
+  fMinMult(0),
+  fMaxMult(1e9),
   fFitter(0),
   fRunNb(0),
   fOCDBLocation("local://$ALICE_ROOT/OCDB")
@@ -133,12 +136,14 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",4,-1.5,2.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",kNEvStatBins,-0.5,kNEvStatBins-0.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"All Events");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"After Vertex cut");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"After Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvAll+1,"All Events");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvCnt+1,"After Centrality cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvVtx+1,"After Vertex cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvPlp+1,"After Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kNTracks+1,"Tracks Accepted");
   fOutput->Add(fHistNEvents);
 
   fHistPtAccept = new TH1F("hPtAccept","Pt distrib of accepted tracks",50,0.,5.);
@@ -324,19 +329,23 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     return;
   }
   //
+  if (!AcceptCentrality(esd)) return;
+  fHistNEvents->Fill(kEvCnt);
+
   const AliESDVertex* vtx=0,*vtxSPD=0;
-  fHistNEvents->Fill(0);
+  fHistNEvents->Fill(kEvAll);
   if (fUseVertex) {  // check the vertex if it is requested as an extra point
     vtx = esd->GetPrimaryVertex();
     vtxSPD = esd->GetPrimaryVertexSPD();
     if (!AcceptVertex(vtx,vtxSPD)) return;
   }
-  fHistNEvents->Fill(1);
+
+  fHistNEvents->Fill(kEvVtx);
   if (fRemovePileupWithSPD){
     // skip events tagged by SPD as pileup
     if(esd->IsPileupFromSPD()) return;
   }
-  fHistNEvents->Fill(2);
+  fHistNEvents->Fill(kEvPlp);
 
   //
   fFitter->SetBz(esd->GetMagneticField());
@@ -354,6 +363,8 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     array = track->GetTrackPointArray();
     if(!array) continue;
     arrayITS = PrepareTrack(array, vtx);
+    //
+    fHistNEvents->Fill(kNTracks);
     //
     Int_t npts  = arrayITS->GetNPoints();
     Int_t npts1 = fUseVertexForZOnly ? npts-1 : npts;
@@ -615,7 +626,8 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
   if(fHistNEvents){
-    printf("Number of analyzed events = %d\n",(Int_t)(fHistNEvents->GetBinContent(2)));
+    printf("Number of analyzed events = %d, %d tracks accepted\n",
+	   (Int_t)fHistNEvents->GetBinContent(kEvAcc+1),(Int_t)fHistNEvents->GetBinContent(kNTracks+1));
   }else{
     printf("Warning: pointer to fHistNEvents is NULL\n");
   }
@@ -694,3 +706,15 @@ void AliAnalysisTaskITSAlignQA::PrepareVertexConstraint(const AliESDVertex* vtx,
 }
 
 
+//_______________________________________________________________________________________
+Bool_t AliAnalysisTaskITSAlignQA::AcceptCentrality(const AliESDEvent *esd) const
+{
+  // check if events is in the required multiplicity range
+  //
+  const AliMultiplicity *alimult = esd->GetMultiplicity();
+  Int_t nclsSPDouter=0;
+  if(alimult) nclsSPDouter = alimult->GetNumberOfITSClusters(1);
+  if(nclsSPDouter<fMinMult || nclsSPDouter>fMaxMult) return kFALSE;
+  //
+  return kTRUE;
+}
