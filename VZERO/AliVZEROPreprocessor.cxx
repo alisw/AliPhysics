@@ -13,6 +13,7 @@
 #include <TTimeStamp.h>
 #include <TObjString.h>
 #include <TSystem.h>
+#include <TH1F.h>
 
 
 class Tlist;
@@ -182,7 +183,6 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	
 	resECal=kTRUE;
 	
-	result = 0;
 	metaData.SetBeamPeriod(0);
 	metaData.SetResponsible("Brigitte Cheynis");
 	metaData.SetComment("This preprocessor fills an AliVZEROTriggerData object");
@@ -190,6 +190,67 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 	resECal = Store("Trigger", "Data", triggerData, &metaData, 0, kTRUE);
 	if(resECal==kFALSE ) result = 1;
 	
+
+   // *************** From DAQ DA - Equalization factors ******************
+  
+  TH1F *eqFactors = new TH1F("VZEROEqualizationFactors","VZERO Equalization Factors for Pb-Pb",64,-0.5,63.5);
+  sourcesId = "V00DAEqualFactors";
+
+  TList* sourceList2 = GetFileSources(kDAQ, sourcesId.Data());
+  if (!sourceList2)  {
+    Log(Form("No sources found for id %s", sourcesId.Data()));      		
+    return 1; }
+  Log(Form("The following sources produced files with the id %s",sourcesId.Data()));
+  sourceList2->Print();
+
+  TIter iter2(sourceList2);
+  TObjString *source2;
+		
+  while((source2=dynamic_cast<TObjString*> (iter2.Next()))){
+    fileName = GetFile(kDAQ, sourcesId.Data(), source2->GetName());
+    if (fileName.Length() > 0)
+      Log(Form("Got the file %s, now we can extract some values.", fileName.Data()));
+    FILE *file2;
+    if((file2 = fopen(fileName.Data(),"r")) == NULL){
+      Log(Form("Cannot open file %s",fileName.Data()));
+      return 1;}
+
+    Double_t alpha[66];
+    alpha[0] = alpha[65] = 0;
+    Int_t tempCh;
+    Float_t tempAlpha;
+    for(Int_t j=0; j<64; ++j) {
+      fscanf(file2,"%d %f", &tempCh, &tempAlpha);
+      alpha[tempCh+1] = tempAlpha;
+    }
+    fclose(file2);
+
+    // Check that everything was properly transmitted
+    printf("Equalization factors (0->64): ");
+    for(Int_t j=0; j<64; ++j) printf("%.3f ",alpha[j+1]);
+    printf("\n");
+
+    eqFactors->SetContent(alpha);
+  }
+
+  delete source2;      
+  
+  // Now we store the VZERO Equalization Factors Object into OCDB
+
+  resECal=kTRUE;
+  
+  AliCDBMetaData metaData2;
+  metaData2.SetBeamPeriod(0);
+  metaData2.SetResponsible("Brigitte Cheynis");
+  metaData2.SetComment("VZERO Equalization Factors object filled by VZERO preprocessor");
+
+  resECal = Store("Calib", "EqualizationFactors", eqFactors, &metaData2, 0, kTRUE);
+
+  if(resECal==kFALSE ) result = 1;
+
+  delete eqFactors;
+  delete sourceList2; 
+
 	
   return result;
 }
