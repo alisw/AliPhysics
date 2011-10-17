@@ -117,7 +117,7 @@ ClassImp(AliT0Reconstructor)
  
   for (Int_t i=0; i<24; i++) {
     if( fTime0vertex[i] < 500 || fTime0vertex[i] > 50000) fTime0vertex[i] =( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
-    //   printf(" calulated mean %i %f \n",fTime0vertex[i]);
+    //  printf(" calulated mean %i %f \n",i, fTime0vertex[i]);
   }
   //here real Z position
   fdZonC = TMath::Abs(fParam->GetZPosition("T0/C/PMT1"));
@@ -492,15 +492,18 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	// Set triggers
       
       Bool_t tr[5];
-      Int_t trchan[5]= {50,51,52,55,56};
+      Int_t trchan[5] = {50,51,52,55,56};
+      Float_t lowtr[5] = {meanTVDC-700, meanOrA-700, meanOrC-700, meanOrC-1000, meanOrC-1000 };
+      Float_t hightr[5] = {meanTVDC+700, meanOrA+700, meanOrC+700, meanOrC+1000, meanOrC+1000};
+
       for (Int_t i=0; i<5; i++) tr[i] = false; 
       for (Int_t itr=0; itr<5; itr++) {
  	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
-	    if( allData[trr][iHit] > 0 && allData[trr][iHit] < 4000)  tr[itr]=true;
+	    if( allData[trr][iHit] > lowtr[itr] && allData[trr][iHit] < hightr[itr])  tr[itr]=true;
 
-	    AliDebug(1,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
+	    AliDebug(5,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
       }
       frecpoints.SetT0Trig(tr);
@@ -627,7 +630,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   }
   Int_t trig= frecpoints.GetT0Trig();
   frecpoints.PrintTriggerSignals( trig);
-  printf(" FillESD trigger %i \n",trig);
+  //  printf(" !!!!! FillESD trigger %i \n",trig);
   fESDTZERO->SetT0Trig(trig);
   //pESD->SetT0Trig(trig);
   //  pESD->SetT0zVertex(zPosition); //vertex Z position 
