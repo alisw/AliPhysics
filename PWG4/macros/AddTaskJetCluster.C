@@ -1,8 +1,9 @@
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Int_t nSkipCone = 2);
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec = "AOD",char* bGen = "",UInt_t filterMask = 16, UInt_t iPhysicsSelectionFlag = AliVEvent::kAny,Char_t *jf = "KT", Float_t radius = 0.4,Int_t nSkip = 0,Int_t kWriteAOD = kFALSE,char* deltaFile = "",Float_t ptTrackCut = 0.15, Float_t etaTrackWindow = 0.9,Float_t vertexWindow = 10.,Int_t nSkipCone = 2);
 
 Int_t kBackgroundMode = 0;
 Float_t kPtTrackCut = 0.15;
 Float_t kTrackEtaWindow = 0.8;
+Float_t kVertexWindow = 10;
 
 AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t kUseAODMC = kFALSE,UInt_t iPhysicsSelectionFlag = AliVEvent::kMB,Char_t *jf = "KT", UInt_t iFlag){
    AliAnalysisTaskJetCluster *js = 0;
@@ -29,11 +30,12 @@ AliAnalysisTaskJetCluster *AddTaskJetClusterDelta(UInt_t filterMask = 16,Bool_t 
  }
 
 
-AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Int_t nSkipCone)
+AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filterMask,UInt_t iPhysicsSelectionFlag,Char_t *jf,Float_t radius,Int_t nSkip,Int_t kWriteAOD,char *deltaFile,Float_t ptTrackCut,Float_t etaTrackWindow,Float_t vertexWindow,Int_t nSkipCone)
  {
  // Creates a jet fider task, configures it and adds it to the analysis manager.
    kPtTrackCut = ptTrackCut;
    kTrackEtaWindow = etaTrackWindow;
+   kVertexWindow = vertexWindow;
 
    TString outputFile(deltaFile);
     // Get the pointer to the existing analysis manager via the static access method.
@@ -80,7 +82,7 @@ AliAnalysisTaskJetCluster *AddTaskJetCluster(char* bRec,char* bGen ,UInt_t filte
    // pwg4clus->SetDebugLevel(11); 
    pwg4clus->SetFilterMask(filterMask); 
    //   pwg4clus->SetUseGlobalSelection(kTRUE); 
-
+   pwg4clus->SetVtxCuts(kVertexWindow,1);
    if(type == "AOD"){
      // Assume all jet are produced already
      pwg4clus->SetAODTrackInput(kTRUE);
