@@ -29,7 +29,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   enum ESelLevel {kAll,kTracks,kPID,kCandidate};
   enum EPileup {kNoPileupSelection,kRejectPileupEvent,kRejectTracksFromPileupVertex};
   enum ESele {kD0toKpiCuts,kD0toKpiPID,kD0fromDstarCuts,kD0fromDstarPID,kDplusCuts,kDplusPID,kDsCuts,kDsPID,kLcCuts,kLcPID,kDstarCuts,kDstarPID};
-  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality};
+  enum ERejBits {kNotSelTrigger,kNoVertex,kTooFewVtxContrib,kZVtxOutFid,kPileupSPD,kOutsideCentrality,kPhysicsSelection};
   AliRDHFCuts(const Char_t* name="RDHFCuts", const Char_t* title="");
   
   virtual ~AliRDHFCuts();
@@ -146,6 +146,9 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t IsEventRejectedDueToCentrality() const {
     return fEvRejectionBits&(1<<kOutsideCentrality);
   }
+  Bool_t IsEventRejectedDuePhysicsSelection() const {
+    return fEvRejectionBits&(1<<kPhysicsSelection);
+  }
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
 
@@ -203,6 +206,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   UInt_t fEvRejectionBits; //bit map storing the full info about event rejection
   Bool_t fRemoveDaughtersFromPrimary; // flag to switch on the removal of duaghters from the primary vertex computation
   Bool_t fUseMCVertex; // use MC primary vertex 
+  Bool_t fUsePhysicsSelection; // use Physics selection criteria
   Int_t  fOptPileup;      // option for pielup selection
   Int_t  fMinContrPileup; // min. n. of tracklets in pileup vertex
   Float_t fMinDzPileup;   // min deltaz between main and pileup vertices
@@ -220,7 +224,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMaxPtCand; // minimum pt of the candidate
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
 
-  ClassDef(AliRDHFCuts,18);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,19);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
