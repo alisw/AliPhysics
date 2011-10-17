@@ -126,7 +126,7 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
     return;
   }
 
-  if(centrality > 0){
+  if(centrality >= 0){
     // get centrality from VZERO
     AliCentrality *currCentrality = esd->GetCentrality();
     centrality = currCentrality->GetCentralityPercentile("V0M");
@@ -243,7 +243,44 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->MakePID(esd,kFALSE);
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centrObsolete){
+Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS){
+  Double_t ptpc[3];
+  t->GetInnerPxPyPz(ptpc);
+  Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
+
+  Float_t dedxExp=0;
+  if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
+  else if(iS==1) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
+  else if(iS==2) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
+  else if(iS==3) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
+  else if(iS==4) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
+  else if(iS==5) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kDeuteron);
+  else if(iS==6) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kTriton);
+  else if(iS==7) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5;
+    
+  Float_t eta = t->Eta();
+  Float_t etaCorr = 7.98368e-03 - 1.67208e-02 - 1.89776e-01*eta*eta  -2.90836e-02*eta*eta + 5.96093e-01*eta*eta*eta*eta + 6.06450e-02*eta*eta*eta*eta - 3.55884e-01*eta*eta*eta*eta*eta*eta;
+  if(fCurrCentrality < 0){
+  }
+  else if(fCurrCentrality < 5) etaCorr += 17E-3;
+  else if(fCurrCentrality < 10) etaCorr += 21E-3;
+  else if(fCurrCentrality < 20) etaCorr += 21E-3;
+  else if(fCurrCentrality < 30) etaCorr += 21E-3;
+  else if(fCurrCentrality < 40) etaCorr += 21E-3;
+  else if(fCurrCentrality < 50) etaCorr += 14E-3;
+  else if(fCurrCentrality < 60) etaCorr += 21E-3;
+  else etaCorr += 14E-3;
+
+
+//   dedxExp *= 1+etaCorr;
+//   Float_t betagamma = momtpc/fMass[iS];
+//   Float_t bgCorr = 0.01/betagamma/betagamma;
+//   dedxExp *= 1+bgCorr;
+
+  return dedxExp;
+}
+//________________________________________________________________________
+void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   Float_t centr = fCurrCentrality;
 
   Float_t pt = t->Pt();
@@ -256,16 +293,8 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centrObsole
   Float_t dedx = t->GetTPCsignal();
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
     for(Int_t iS=0;iS<fNspecies;iS++){
-      Float_t dedxExp=0;
-      if(iS==0) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kElectron);
-      else if(iS==1) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kMuon);
-      else if(iS==2) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kPion);
-      else if(iS==3) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kKaon);
-      else if(iS==4) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kProton);
-      else if(iS==5) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kDeuteron);
-      else if(iS==6) dedxExp = fPIDesd->GetTPCResponse().GetExpectedSignal(momtpc,AliPID::kTriton);
-      else if(iS==7) dedxExp = fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5;
-      
+      Float_t dedxExp=GetExpDeDx(t,iS);
+
       Float_t resolutionTPC = 1;
       if(iS==0) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kElectron); 
       else if(iS==1) resolutionTPC =  fPIDesd->GetTPCResponse().GetExpectedSigma(momtpc,t->GetTPCsignalN(),AliPID::kMuon);
@@ -277,15 +306,15 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centrObsole
       else if(iS==7) resolutionTPC =  fPIDesd->GetTPCResponse().Bethe(momtpc/fMass[7])*5*0.07;
 
       if(centr < 0) resolutionTPC *= 0.78;
-      if(centr < 10) resolutionTPC *= 1.055;
-      else if(centr < 20) resolutionTPC *= 1.03;
+      if(centr < 10) resolutionTPC *= 1.0;
+      else if(centr < 20) resolutionTPC *= 1.0;
       else if(centr < 30) resolutionTPC *= 1.0;
       else if(centr < 40) resolutionTPC *= 0.95;
       else if(centr < 50) resolutionTPC *= 0.93;
       else if(centr < 60) resolutionTPC *= 0.91;
       else if(centr < 70) resolutionTPC *= 0.88;
       else resolutionTPC *= 0.83;
-
+      
       fWeights[0][iS] = fTPCResponse->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
     }
     fMaskCurrent[0] = kTRUE;
@@ -350,7 +379,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t,Float_t centrObsole
   }  
 }
 //________________________________________________________________________
-void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t centrObsolete){
+void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsolete*/){
   ComputeWeights(t);
   Float_t priors[fNspecies];
   fProbTofMism = 0;
