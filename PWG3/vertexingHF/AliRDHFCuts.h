@@ -150,7 +150,11 @@ class AliRDHFCuts : public AliAnalysisCuts
     return fEvRejectionBits&(1<<kPhysicsSelection);
   }
 
+
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
+  void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
+
+
 
   Bool_t CompareCuts(const AliRDHFCuts *obj) const;
   void MakeTable()const;
