@@ -104,18 +104,18 @@ Bool_t  AliT0CalibSeasonTimeShift::SetT0Par(Float_t par[4],Float_t spar[4])
 }
 
 //________________________________________________________________
-Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime)
+Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime)
 {
   // compute online equalized time
   Float_t mean, sigma;
-  Bool_t ok=true;
+  Int_t ok = 0;
   TH1F *cfd = NULL;
   TObjArray * TzeroObj = NULL;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
-    ok = false;
+    ok = 2000;
   }
   else
     {
@@ -132,16 +132,19 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 	  cfd =  (TH1F*)gFile ->Get(histname[i].Data());
 
 	if(!cfd) {
-	  AliWarning(Form("no histograms collected for %s", histname[i].Data()));
-	  ok=false;
-	  //  fMeanPar[i] = cdbtime[i];
-	  //fSigmaPar[i] = 0;
+	  ok=300;
+	  AliError(Form("no histograms collected for %s", histname[i].Data()));
 	  return ok;
 	}
 	if(cfd) {
+	  if( cfd->GetEntries() == 0) {
+	  ok=300;
+	  AliError(Form("%s histogram is empty", histname[i].Data()));
+	  return ok;
+	  }
 	    GetMeanAndSigma(cfd, mean, sigma);
 	    if (sigma == 0 || sigma > 500 || cfd->GetEntries()<200 ){
-	      //ok = false;
+	      ok = -100;
 	      fMeanPar[i] = cdbtime[i];
 	      fSigmaPar[i] = -1;
 	    }
@@ -149,7 +152,6 @@ Bool_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtim
 	      { 
 		fMeanPar[i] =   mean;
 		fSigmaPar[i] = sigma;
-		ok=true;
 	      }
 	  }
       } 

@@ -83,13 +83,13 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
     ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
  
   AliT0CalibTimeEq *offline = new AliT0CalibTimeEq();
-  Bool_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
+  Int_t writeok = offline->ComputeOfflineParams(filePhysName.Data(), timecdb, cfdvalue, badpmt);
+  printf(" AliT0PreprocessorOffline::CalibOffsetChannels :: writeok %i \n", writeok);
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
   metaData.SetComment("Time equalizing result with slew");
-      
-  if (writeok)  {
+  if (writeok<=0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeDelay", ustartRun, uendRun );
     AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);
@@ -113,13 +113,14 @@ void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t usta
     ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
   
   AliT0CalibSeasonTimeShift *offline = new AliT0CalibSeasonTimeShift();
-  Bool_t writeok = offline->SetT0Par(filePhysName.Data(), timecdb);
+  Int_t writeok = offline->SetT0Par(filePhysName.Data(), timecdb);
+  printf(" AliT0PreprocessorOffline::CalibT0sPosition :: writeok %i \n", writeok);
   AliCDBMetaData metaData;
   metaData.SetBeamPeriod(1);
   metaData.SetResponsible("Alla Maevskaya");
   metaData.SetComment("Time equalizing result with slew");
   
-  if (writeok)  {
+  if (writeok <= 0)  {
     AliCDBId* id1=NULL;
     id1=new AliCDBId("T0/Calib/TimeAdjust", ustartRun, uendRun);
     AliCDBStorage* gStorage = AliCDBManager::Instance()->GetStorage(ocdbStorage);

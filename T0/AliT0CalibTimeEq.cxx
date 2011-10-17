@@ -114,6 +114,8 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
   Double_t rmsver=0;
   Int_t nent=0;
+  Int_t okdiff=0;
+  Int_t oktime=0;
   Bool_t ok=false;
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -130,12 +132,37 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  TH1F *cfdtime = (TH1F*) gFile->Get(Form("CFD%d",i+1));
 	  if(!cfd) {
 	    AliWarning(Form("no Diff histograms collected by PHYS DA for channel %i", i));
+	    okdiff++;
+	    if(okdiff<4) {
+	      meandiff = 0;
+	      sigmadiff = 0;
+	    }
+	    else
+	      ok = false; 
 	  }
 	  if(!cfdtime) {
 	    AliWarning(Form("no CFD histograms collected by PHYS DA for channel %i", i));
+	    oktime++;
+	    if(oktime<4) {
+	      meancfdtime = 0;
+	    }
+	    else
+	      ok = false; 
 	  }
 	  if(cfd) {
 	    nent = Int_t(cfd->GetEntries());
+	    if( nent<=50 || cfd->GetRMS() == 0 || cfd->GetMean() ) {
+	      okdiff++;
+	      if(okdiff<4) {
+		meandiff = 0;
+		sigmadiff = 0;
+	      }
+	      else
+		{
+		  AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
+		  ok = false; 
+		}
+	    }
 	    if(nent>50)  { 
 	      if(cfd->GetRMS()>1.5 )
 		GetMeanAndSigma(cfd, meandiff, sigmadiff);
@@ -148,14 +175,21 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      Double_t  meanEstimate = cfd->GetBinCenter( maxBin); 
 	      if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 
 	    }
-	    else 
-	      {
-		//	ok=false;
-		AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
-	      }
 	  }
+	  
 	  if(cfdtime) {
 	    nent = Int_t(cfdtime->GetEntries());
+	    if( nent<=50 || cfd->GetRMS() == 0 || cfd->GetMean() ) {
+	      oktime++;
+	      if(oktime<4) {
+		meancfdtime = 0;
+	      }
+	      else
+		{
+		  AliWarning(Form(" Not  enouph data in PMT %i:  %i ", i, nent));
+		  ok = false; 
+		}
+	    }
 	    if(nent > 50 )  { //!!!!!!!!!!
 	      if(cfdtime->GetRMS()>1.5 )
 		GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
@@ -168,18 +202,12 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	      Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
 	      if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
 	    }
-	    else 
-	      {
-		//	ok=false;
-		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
-	      }
 	  }
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0,meancfdtime);
 	  if (cfd) delete cfd;
 	  if (cfdtime) delete cfdtime;
-	  
 	}
       TH1F *ver = (TH1F*) gFile->Get("hVertex");
       if(ver) {
@@ -197,13 +225,28 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 }
 
 //________________________________________________________________
-  Bool_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *timecdb, Float_t *cfdvalue, Int_t badpmt)
+  Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *timecdb, Float_t *cfdvalue, Int_t badpmt)
 {
+  // fStatus implementation:
+  //ok means
+  // 1000  - can not open file 
+  // for timediff
+  // 1-24  no histograms with time diff for more than okdiff channenls
+  // 100 >3 histos are empty
+  // - 1 if less 3 channels are empty ;for these channels OCDB value will be written back WARNING
+  // -2  low statistics in few channels; for these channels OCDB value will be written back WARNING
+  // for cfd
+  // 200 >3 histos are empty 
+  // -11 if less 3 channels are empty ;for these channels OCDB value will be written back WARNING
+  // -22  low statistics in few channels; for these channels OCDB value will be written back WARNING
+   //
   // compute offline equalized time
   Float_t meandiff, sigmadiff, meanver, meancfdtime, sigmacfdtime;
   meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
   Int_t nent=0;
-  Bool_t ok=false;
+  Int_t ok = 0;
+  Int_t okdiff=0;
+  Int_t okcfd=0;
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
   TObjArray * TzeroObj = NULL;
@@ -211,15 +254,14 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
+    ok = 1000;
     return ok;
   }
   else
     {
       meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-      ok=true;
       TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
       if (dr)   TzeroObj = (TObjArray*) dr->Get("T0Calib");
-      
       for (Int_t i=0; i<24; i++)
 	{
 	  if (i != badpmt) {
@@ -234,65 +276,121 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		
 	      }
 	    if(!cfddiff ) {
-	      AliWarning(Form("no  histograms collected by pass0 for diff channel %i", i));      
-	      meandiff = timecdb[i];
-	      sigmadiff = 0; 
+	      AliWarning(Form("no  histograms collected by pass0 for diff channel %i", i));    
+	      okdiff++;
+	      if(okdiff<4) {
+		meandiff = timecdb[i];
+		sigmadiff = 0;
+		ok = -1;
+	      }
+	      else
+		return 100+okdiff; 
 	    }
 	    if(cfddiff) {
 	      nent = Int_t(cfddiff->GetEntries());
-	      if(nent>100 )  { //!!!!!
-		if(cfddiff->GetRMS()>1.5 )
-		  GetMeanAndSigma(cfddiff, meandiff, sigmadiff);
-		if(cfddiff->GetRMS()<=1.5) 
-		  {
-		    meandiff = cfddiff->GetMean();
-		    sigmadiff = cfddiff->GetRMS();
-		  }
-		Int_t   maxBin = cfddiff->GetMaximumBin(); 
-		Double_t  meanEstimate = cfddiff->GetBinCenter( maxBin); 
-		if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 	      
-	      }
-	      else 
-		{
-		  AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
-		//  ok=false;
+	      if ( nent == 0) {
+		okdiff++;
+		if(okdiff<4) {
 		  meandiff = timecdb[i];
-		  sigmadiff = 0; 
-		  
+		  sigmadiff = 0;
+		  ok = - 1;
 		}
-	    }	    
-	    
+		else
+		  return 100; 
+	      }	      
+	      if(nent<100 && nent>0) { //!!!!!
+		AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
+		ok=-2;
+		meandiff = timecdb[i];
+		sigmadiff = 0; 
+	      }
+	      if(nent>100 )  { //!!!!!
+		{
+		  if(cfddiff->GetRMS()>1.5 )
+		    GetMeanAndSigma(cfddiff, meandiff, sigmadiff);
+		  if(cfddiff->GetRMS()<=1.5) 
+		    {
+		      meandiff = cfddiff->GetMean();
+		      sigmadiff = cfddiff->GetRMS();
+		    }
+		  Int_t   maxBin = cfddiff->GetMaximumBin(); 
+		  Double_t  meanEstimate = cfddiff->GetBinCenter( maxBin); 
+		  if(TMath::Abs(meanEstimate - meandiff) > 20 ) meandiff = meanEstimate; 
+		}
+	      }	    
+	    }
 	    if(!cfdtime ) {
 	      AliWarning(Form("no  histograms collected by pass0 for time channel %i", i));
 	      meancfdtime = cfdvalue[i];
-	      ok = false;
+	      okcfd++;
+	      if(okcfd<4) {
+		meancfdtime = cfdvalue[i];
+		ok = -11;
+	      }
+	      else {
+		AliError(Form("no  histograms collected by pass0 for time %i channels ", okcfd));
+		return 200; 
+	      }
 	    }
 	    if(cfdtime) {
 	      nent = Int_t(cfdtime->GetEntries());
-	      if(nent>100 )  { //!!!!!
+	      if (nent == 0 || 
+		  (cfdtime->GetRMS() == 0 || cfdtime->GetMean() ==0 ) ) 
+		{
+		  okcfd++;
+		  if(okcfd<4) {
+		    meancfdtime = cfdvalue[i];
+		    ok = -11;
+		    printf("!!!!bad data:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
+			   i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  fCFDvalue[i][0]);
+		  }
+		  else
+		    {
+		    printf("!!!!fatal data:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
+			   i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  fCFDvalue[i][0]);
+		      AliError(Form(" histograms collected by pass0 for time %i channels are empty", okcfd));
+		      return 200; 
+		    }
+		}
+	      
+		  
+	      if(nent<100 && nent>0 ) 
+		{
+		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
+		if(okcfd<4) {
+		  meancfdtime = cfdvalue[i];
+		  ok = -22;
+		  printf("!!!!low statstics:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
+			 i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  fCFDvalue[i][0]);
+		}
+		else {
+		  printf("!!!!low fatal statstics:: pmt %i nent%i RMS %f mean %f cdbtime %f \n",
+			 i, nent, cfdtime->GetRMS(), cfdtime->GetMean(),  fCFDvalue[i][0]);
+
+		  AliError(Form(" Not  enouph data in PMT in CFD peak %i in channels ", okcfd));
+		  return 200; 
+		}
+
+	      }
+
+	      if( nent>100 && cfdtime->GetRMS() != 0 )    { //!!!!!
 		if(cfdtime->GetRMS()>1.5 )
 		  GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 		if(cfdtime->GetRMS()<=1.5) 
 		  {
 		    meancfdtime = cfdtime->GetMean();
 		    sigmacfdtime=cfdtime->GetRMS();
-		    if(cfdtime->GetRMS() == 0 || cfdtime->GetMean() ==0 ) ok = false;
-		}
+		  }
 		Int_t   maxBin = cfdtime->GetMaximumBin(); 
 		Double_t  meanEstimate = cfdtime->GetBinCenter( maxBin); 
 		if(TMath::Abs(meanEstimate - meancfdtime) > 20 ) meancfdtime = meanEstimate; 
 	    }
-	    else 
-	      {
-		AliWarning(Form(" Not  enouph data in PMT in CFD peak %i - %i ", i, nent));
-         	ok = false;
-	      }
 	  }
 	  
 	  SetTimeEq(i,meandiff);
 	  SetTimeEqRms(i,sigmadiff);
 	  SetCFDvalue(i,0, meancfdtime );
-//	  printf(" pmt %i diff %f sigma %f meancfdtime %f cdbtime %f \n",i, meandiff, sigmadiff, meancfdtime, fCFDvalue[i][0]);
+	  printf(" pmt %i diff %f sigma %f meancfdtime %f cdbtime %f \n",i, meandiff, sigmadiff, meancfdtime, fCFDvalue[i][0]);
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt

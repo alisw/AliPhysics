@@ -32,7 +32,7 @@ class AliT0CalibSeasonTimeShift: public TNamed {
   Float_t *GetT0Sigmas() { return fSigmaPar;};
  
   Bool_t SetT0Par(Float_t par[4],Float_t spar[4] );
-  Bool_t SetT0Par(const char* filePhys , Float_t *cdbtime);
+  Int_t SetT0Par(const char* filePhys , Float_t *cdbtime);
   
   void GetMeanAndSigma(TH1F* hist, Float_t &mean, Float_t &sigma); 
 

@@ -24,7 +24,7 @@ class AliT0CalibTimeEq: public TNamed {
   virtual void  Print(Option_t* option= "") const; 
   
   Bool_t ComputeOnlineParams(const char* filePhys);
-  Bool_t ComputeOfflineParams(const char* filePhys, Float_t *timecdb,Float_t *cfdcdb, Int_t badpmt);
+  Int_t ComputeOfflineParams(const char* filePhys, Float_t *timecdb,Float_t *cfdcdb, Int_t badpmt);
   Float_t  GetCFDvalue(Int_t channel,Int_t number)  const {return fCFDvalue[channel][number];}
   Float_t* GetCFDvalue()          const {return (float*)fCFDvalue;}
   Float_t  GetTimeEq(Int_t channel)        const {return fTimeEq[channel];}
@@ -33,7 +33,7 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t  GetTimeEqRms(Int_t channel)        const {return fTimeEqRms[channel];}
 
   Float_t  GetMeanT0() const {return 1.;} // WARNING: USED IN AliT0Parameters!!!!
-  void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
+   void SetCFDvalue(Int_t channel, Int_t number, Float_t val) {fCFDvalue[channel][number]=val;}
   void SetTimeEq(Int_t channel, Float_t val) {fTimeEq[channel]=val;}
   void  SetTimeEqRms(Int_t channel, Float_t rms)  { fTimeEqRms[channel]=rms;}
   
@@ -52,7 +52,8 @@ class AliT0CalibTimeEq: public TNamed {
   Float_t     fTimeEqRms[24];	      // RMS of Time Equalized for OCDB	 
   Float_t     fMeanVertex;            // mean of vertex distribution   
   Float_t     fRmsVertex;            // RMS of vertex distribution   
-  //
+ 
+ //
   ClassDef(AliT0CalibTimeEq,4)    // T0 Sensor Calibration data
 };
 
