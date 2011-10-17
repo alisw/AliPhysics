@@ -48,6 +48,12 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetDoSDDdEdxCalib(Bool_t opt){
     fDoSDDdEdxCalib=opt;
   }
+  void SetDoSDDVDriftCalib(Bool_t opt){
+    fDoSDDVDriftCalib=opt;
+  }
+  void SetDoSDDDriftTime(Bool_t opt){
+    fDoSDDDriftTime=opt;
+  }
   void SetDoAllResiduals(){
     fDoSPDResiduals=kTRUE;
     fDoSDDResiduals=kTRUE;
@@ -141,6 +147,8 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fDoSDDResiduals;   // Flag to enable histos of SDD residuals
   Bool_t   fDoSSDResiduals;   // Flag to enable histos of SSD residuals
   Bool_t   fDoSDDdEdxCalib;   // Flag to enable histos for SDD dE/dx calibration
+  Bool_t   fDoSDDVDriftCalib; // Flag to enable histos for SDD VDrift calibration
+  Bool_t   fDoSDDDriftTime;   // Flag to enable histos for SDD Drift times
   Bool_t   fUseITSsaTracks;   // Flag for using standalone ITS tracks
   Bool_t   fLoadGeometry;     // Flag to control the loading of geometry from OCDB
   Bool_t   fUseVertex;        // Use the vertex as an extra point
@@ -157,7 +165,7 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
 
-  ClassDef(AliAnalysisTaskITSAlignQA,3);
+  ClassDef(AliAnalysisTaskITSAlignQA,4);
 };
 
 
