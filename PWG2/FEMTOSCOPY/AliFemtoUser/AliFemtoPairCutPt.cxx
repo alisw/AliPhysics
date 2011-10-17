@@ -20,7 +20,9 @@ ClassImp(AliFemtoPairCutPt)
 AliFemtoPairCutPt::AliFemtoPairCutPt():
   AliFemtoPairCut(),
   fSumPtMin(0),
-  fSumPtMax(10000)
+  fSumPtMax(10000),
+  fNPairsFailed(0),
+  fNPairsPassed(0)
 {
 
 }
@@ -28,7 +30,9 @@ AliFemtoPairCutPt::AliFemtoPairCutPt():
 AliFemtoPairCutPt::AliFemtoPairCutPt(double lo, double hi):
   AliFemtoPairCut(),
   fSumPtMin(lo),
-  fSumPtMax(hi)
+  fSumPtMax(hi),
+  fNPairsFailed(0),
+  fNPairsPassed(0)
 {
   fSumPtMin=lo;
   fSumPtMax=hi;
@@ -37,7 +41,9 @@ AliFemtoPairCutPt::AliFemtoPairCutPt(double lo, double hi):
 AliFemtoPairCutPt::AliFemtoPairCutPt(const AliFemtoPairCutPt& c) : 
   AliFemtoPairCut(c),
   fSumPtMin(0),
-  fSumPtMax(0)
+  fSumPtMax(0),
+  fNPairsFailed(0),
+  fNPairsPassed(0)
 { 
   fSumPtMin = c.fSumPtMin;
   fSumPtMax = c.fSumPtMax;
@@ -76,7 +82,7 @@ AliFemtoString AliFemtoPairCutPt::Report(){
   string stemp = "AliFemtoPairCutPt Pair Cut\n";  
   char ctemp[100];
   stemp += ctemp;
-  sprintf(ctemp,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",fNPairsPassed,fNPairsFailed);
+  snprintf(ctemp,100,"Number of pairs which passed:\t%ld  Number which failed:\t%ld\n",(long int) fNPairsPassed,(long int) fNPairsFailed);
   stemp += ctemp;
   AliFemtoString returnThis = stemp;
   return returnThis;}

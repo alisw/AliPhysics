@@ -141,8 +141,8 @@ AliFemtoEvent* AliFemtoEventReaderKinematicsChain::ReturnHbtEvent()
   hbtEvent->SetTriggerCluster(0);
 	
   //Vertex
-  double fV1[3];
-  double fVCov[6];
+  double fV1[3] = {0.0,0.0,0.0};
+  double fVCov[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 
 
   AliFmThreeVectorF vertex(0,0,0);

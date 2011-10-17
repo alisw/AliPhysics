@@ -47,6 +47,7 @@ using namespace std;
 AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fFileName(" "),
   fConstrained(true),
+  fReadInner(false),
   fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
@@ -54,6 +55,8 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine():
   fEvent(0x0),
   fStack(0x0),
   fGenHeader(0x0),
+  fTrackType(kGlobal),
+  fEstEventMult(kV0Centrality),
   fRotateToEventPlane(0),
   fESDpid(0),
   fIsPidOwner(0)
@@ -67,6 +70,7 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   AliFemtoEventReader(aReader),
   fFileName(" "),
   fConstrained(true),
+  fReadInner(false),
   fUseTPCOnly(false),
   fNumberofEvent(0),
   fCurEvent(0),
@@ -74,18 +78,23 @@ AliFemtoEventReaderESDChainKine::AliFemtoEventReaderESDChainKine(const AliFemtoE
   fEvent(0x0),
   fStack(0x0),
   fGenHeader(0x0),
+  fTrackType(kGlobal),
+  fEstEventMult(kV0Centrality),
   fRotateToEventPlane(0),
   fESDpid(0),
   fIsPidOwner(0)
 {
   // Copy constructor
   fConstrained = aReader.fConstrained;
+  fReadInner = aReader.fReadInner;
   fUseTPCOnly = aReader.fUseTPCOnly;
   fNumberofEvent = aReader.fNumberofEvent;
   fCurEvent = aReader.fCurEvent;
   fCurFile = aReader.fCurFile;
   fEvent = new AliESDEvent();
   fStack = aReader.fStack;
+  fTrackType = aReader.fTrackType;
+  fEstEventMult = aReader.fEstEventMult;
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fESDpid = aReader.fESDpid;
   fIsPidOwner = aReader.fIsPidOwner;
