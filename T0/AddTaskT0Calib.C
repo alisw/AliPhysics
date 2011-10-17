@@ -1,16 +1,6 @@
-/*
 
- This macros setup the TPC calibration task AddTaskTPCCalib
- for Pass0.
- - the run number is required to config TPC OCDB
- 
- The following calibration components are added to the AliTPCAnalysisTaskcalib task:
- 1. AliTPCcalibCalib - redo reconstruction with current calibration
- 2. AliTPCcalibTimeGain - TPC time dependent gain calibration
- 3. AliTPCcalibTime - TPC time dependent drift time calibration
- 4. AliTPCcalibLaser - laser track calibration
 
-*/
+void    readCDB (TObject *task1);
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
 {
@@ -33,9 +23,12 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   //ConfigOCDB(runNumber);
 
   // setup task
- AliT0CalibOffsetChannelsTask  *task1=new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
- // SetupCalibTaskTrain1(task1);
+  AliT0CalibOffsetChannelsTask  *task1 = new AliT0CalibOffsetChannelsTask("CalibObjectsTrain1");
+  readCDB(task1, runNumber);
   mgr->AddTask(task1);
+  
+  //  AliT0AnalysisTaskQA * task2 = new AliT0AnalysisTaskQA("QA task");
+  //    mgr->AddTask(task2);
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), 
@@ -45,4 +38,73 @@ AliAnalysisTask  *AddTaskT0Calib(Int_t runNumber)
   mgr->ConnectInput(task1,0,cinput1);
   mgr->ConnectOutput(task1,1,coutput1);
   return task1;
+}
+//_____________________________________________________________________________
+void    readCDB (TObject *task1,  Int_t runNumber) {
+
+  Float_t zero_timecdb[24]={0};
+  Float_t *timecdb = zero_timecdb;
+  Float_t cfdvalue[24][5];
+  Float_t zero_shiftcdb[4]={0};
+  Float_t *shiftcdb = zero_shiftcdb;
+  AliT0CalibOffsetChannelsTask *mytask = (AliT0CalibOffsetChannelsTask*)task1;
+
+  AliCDBManager* man = AliCDBManager::Instance();
+  man->SetDefaultStorage("raw://");
+  man->SetRun(runNumber);
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("GRP/CTP/CTPtiming");
+  if (!entry) AliFatal("CTP timing parameters are not found in OCDB !");
+  AliCTPTimeParams *ctpParams = (AliCTPTimeParams*)entry->GetObject();
+  Float_t l1Delay = (Float_t)ctpParams->GetDelayL1L0()*25.0;
+
+  AliCDBEntry *entry1 = AliCDBManager::Instance()->Get("GRP/CTP/TimeAlign");
+  if (!entry1) AliFatal("CTP time-alignment is not found in OCDB !");
+  AliCTPTimeParams *ctpTimeAlign = (AliCTPTimeParams*)entry1->GetObject();
+  l1Delay += ((Float_t)ctpTimeAlign->GetDelayL1L0()*25.0);
+ 
+  AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
+  if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
+  AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
+  fGRPdelays = l1Delay - phase->GetMeanPhase();
+
+  AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
+  fLatencyL1 = entryCalib0->GetLatencyL1();
+  fLatencyHPTDC = entryCalib0->GetLatencyHPTDC();
+  AliDebug(2,Form(" LatencyL1 %f latencyHPTDC %f \n",fLatencyL1, fLatencyHPTDC));
+ 
+  AliCDBEntry *entryCalib1 = man->Get("T0/Calib/TimeDelay");
+  if(!entryCalib1) {
+    AliError::(Form("Cannot find any AliCDBEntry for [Calib, TimeDelay]!"));
+    return;
+  }
+  else
+    {
+      AliT0CalibTimeEq *clb = (AliT0CalibTimeEq*)entryCalib1->GetObject();
+      timecdb = clb->GetTimeEq();
+      for(Int_t i=0; i<24; i++) 
+	for (Int_t i0=0; i0<5; i0++){
+	  cfdvalue[i][i0] = clb->GetCFDvalue(i, i0);
+	  if ( i0 ==0) prinf(" CFD value %i %f \n", i, cfdvalue[i][i0]);  
+	}
+    }
+ 
+  for (Int_t i=0; i<24; i++) {
+    Float_t cfdmean = cfdvalue[i][0];
+    if( cfdvalue[i][0] < 500 || cfdvalue[i][0] > 50000) cfdmean = ( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
+    //  printf(" calulated mean %i %f \n", cfdmean);
+    mytask->SetCFDvalue(i, cfdmean);
+    mytask->SetTimeEq(i, timecdb[i]);
+  } 
+
+  AliCDBEntry *entryCalib2 = man->Get("T0/Calib/TimeAdjust");
+  if(!entryCalib2) {
+     AliError(Form("Cannot find any AliCDBEntry for [Calib, TimeAdjust]!"));
+  }
+ else
+    {
+      AliT0CalibSeasonTimeShift *clb1 = (AliT0CalibSeasonTimeShift*)entryCalib2->GetObject();
+      shiftcdb = clb1->GetT0Means();
+    }
+  
+  for (Int_t i=0; i<4; i++)  mytask->SetT0Means(i,shiftcdb[i]);
 }

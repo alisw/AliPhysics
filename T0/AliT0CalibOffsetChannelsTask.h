@@ -29,7 +29,7 @@ class AliT0CalibOffsetChannelsTask : public AliAnalysisTaskSE {
   void SetTimeEq(Int_t channel, Float_t val) {fCDBdelays[channel]=val;}
   Float_t *GetT0Means() { return fCDBT0s;}
   void SetT0Means(Int_t ihist, Float_t mean ) {fCDBT0s[ihist]=mean;};
-
+  void SetRefPMT(Int_t refPMTA = 12, Int_t refPMTC=0) {fRefPMTA = refPMTA; fRefPMTC = refPMTC;};
 private:
   AliESDEvent *fESD;          //! ESD object
   TObjArray   *fTzeroObject;  // array with CFDi-CFD1 and  CFDi
@@ -43,6 +43,9 @@ private:
   Float_t fCDBdelays[24];  //time delays from OCDB
   Float_t fCDBcfds[24];    // mean CFD from OCDB
   Float_t fCDBT0s[4];      //position T0AC, T0A, T0A, resolution
+  Int_t fRefPMTA;           // ref. PMT A side 
+  Int_t fRefPMTC;           // ref. PMT C side
+ 
 
   
  

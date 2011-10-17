@@ -27,7 +27,7 @@ ClassImp(AliT0CalibOffsetChannelsTask)
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask() 
   : AliAnalysisTaskSE(),  fESD(0x0), fTzeroObject(0x0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-  fRunNumber(0)
+    fRunNumber(0),fRefPMTA(12), fRefPMTC(0)
 {
   // Constructor
 
@@ -50,7 +50,7 @@ AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask()
 AliT0CalibOffsetChannelsTask::AliT0CalibOffsetChannelsTask(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fTzeroObject(0),
   fTzeroORA(0x0), fTzeroORC(0x0), fResolution(0x0), fTzeroORAplusORC(0x0),
-    fRunNumber(0)
+    fRunNumber(0),fRefPMTA(12), fRefPMTC(0)
 {
   // Constructor
  
@@ -113,9 +113,12 @@ AliT0CalibOffsetChannelsTask::~AliT0CalibOffsetChannelsTask()
 void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
 {
   // Create histograms
+  Float_t low = fCDBcfds[fRefPMTC] - 500;
+  Float_t high = fCDBcfds[fRefPMTA] + 500;
+  printf(" AliT0CalibOffsetChannelsTask::UserCreateOutputObjects ::low %f high %f \n", low, high);
   for (Int_t i=0; i<24; i++) {
     fTimeDiff[i]   = new TH1F (Form("CFD1minCFD%d",i+1),"fTimeDiff",150, -300, 300);
-    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, 2000, 3000);//6000, 7000);
+    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250,low, high);//6000, 7000);
     //    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, -1000, 1000);//6000, 7000);
   }
 
@@ -166,8 +169,8 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
       fCFD[i]->Fill( time[i] );
       //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
       
-      if(  time[0] != 0 ) {
-	diff =  time[i]-time[0] + fCDBdelays[i];
+      if(  time[fRefPMTC] != 0 ) {
+	diff =  time[i]-time[fRefPMTC] + fCDBdelays[i];
 	fTimeDiff[i]->Fill( diff);
       }
     }
@@ -176,8 +179,8 @@ void AliT0CalibOffsetChannelsTask::UserExec(Option_t *)
     if( time[i] != 0 && amp[i]>0.1) {
       fCFD[i]->Fill( time[i]);
       //  printf(" time %f ocdb %f \n", time[i],fCDBcfds[i]); 
-       if( time[12] != 0 ) {
-	diff =  time[i]-time[12] + fCDBdelays[i];
+       if( time[fRefPMTA] != 0 ) {
+	diff =  time[i]-time[fRefPMTA] + fCDBdelays[i];
 	fTimeDiff[i]->Fill( diff);
       }
     }
