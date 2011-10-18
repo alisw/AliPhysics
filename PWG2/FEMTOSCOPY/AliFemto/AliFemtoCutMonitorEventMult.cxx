@@ -16,6 +16,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fNormEvMult(0),
   fSPDMult(0),
   fMultSumPt(0),
+  freadMC(kFALSE),
+  faddhists(kFALSE),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
@@ -24,9 +26,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0),
-  freadMC(kFALSE),
-  faddhists(kFALSE)
+  fEst3Norm(0)
 {
   // Default constructor
   fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
@@ -39,6 +39,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   fNormEvMult(0),
   fSPDMult(0),
   fMultSumPt(0),
+  freadMC(kFALSE),
+  faddhists(kFALSE),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
@@ -47,9 +49,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName):
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0),
-  freadMC(kFALSE),
-  faddhists(kFALSE)
+  fEst3Norm(0)
 {
   // Normal constructor
   char name[200];
@@ -105,6 +105,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   fNormEvMult(0),
   fSPDMult(0),
   fMultSumPt(0),
+  freadMC(kFALSE),
+  faddhists(kFALSE),
   fEstimateITSTPC(0),
   fEstimateTracklets(0),
   fEstimateITSPure(0),
@@ -113,9 +115,7 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const AliFemtoCutMonito
   fEst2Est3(0),
   fEst1Norm(0),
   fEst2Norm(0),
-  fEst3Norm(0),
-  freadMC(kFALSE),
-  faddhists(kFALSE)
+  fEst3Norm(0)
 {
   // copy constructor
   if (fEvMult) delete fEvMult;
