@@ -472,23 +472,27 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 
     }//check event (true)
 
+    if(fUseMC){
     //reset values
-    fNMcPrimAccept=0;// number of accepted primaries
-    fNRecAccept=0;   // number of accepted tracks
-
-    if(CheckEvent(false)){// all events, with and without reconstucted vertex
-      ntracks  = LoopAOD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-      ntracks  = LoopAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
-      if(pt.size()){
-	Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
+      fNMcPrimAccept=0;// number of accepted primaries
+      fNRecAccept=0;   // number of accepted tracks
+      
+      if(CheckEvent(false)){// all events, with and without reconstucted vertex
+	ntracks  = LoopAOD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
+	ntracks  = LoopAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+	if(pt.size()){
+	  Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
+	  
+	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
+	}
 	
-	Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
-      }
+	//step 0 (include not triggered events) is not possible with AODs generated before October 2011
+	//step 0 can be implemented for new AODs
+	
+      }//check event (false)
 
-      //step 0 (include not triggered events) is not possible with AODs generated before October 2011
-      //step 0 can be implemented for new AODs
+    }//if "use mc"
 
-    }
   }//AOD loop
 
 
@@ -544,30 +548,33 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 	
 	
       }//check event (true)
-      
-      //reset values
-      fNMcPrimAccept=0;// number of accepted primaries
-      fNRecAccept=0;   // number of accepted tracks
-      
-      if(CheckEvent(false)){// all events, with and without reconstucted vertex
-	ntracks  = LoopESD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-	ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
-	if(pt.size()){
-	  Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
+      if(fUseMC){
+	//reset values
+	fNMcPrimAccept=0;// number of accepted primaries
+	fNRecAccept=0;   // number of accepted tracks
+	
+	if(CheckEvent(false)){// all events, with and without reconstucted vertex
+	  ntracks  = LoopESD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
+	  ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+	  if(pt.size()){
+	    Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
+	    
+	    Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
+	    
+	    Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //first part of step 0 // step 0 = AllAllMcNmc
+	  }
 	  
-	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
-
-	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //first part of step 0 // step 0 = AllAllMcNmc
+	  
 	}
-	
-	
       }
     }// triggered event
     
     else { // not selected by physics selection task = not triggered
-      if(CheckEvent(false)){
-	ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 0);//read tracks
-	if(pt.size())Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //second part of step 0 // step 0 = AllAllMcNmc
+      if(fUseMC){
+	if(CheckEvent(false)){
+	  ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 0);//read tracks
+	  if(pt.size())Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //second part of step 0 // step 0 = AllAllMcNmc
+	}
       }
     }
 
@@ -841,9 +848,12 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
   //vertex
   AliGenEventHeader*  header = MCEvent()->GenEventHeader();
   TArrayF mcV;
-  header->PrimaryVertex(mcV);
-  Float_t vzMC = mcV[2];
-  fVertexZ[step]->Fill(vzMC);
+  Float_t vzMC=0.;
+  if(header){
+    header->PrimaryVertex(mcV);
+    vzMC = mcV[2];
+    fVertexZ[step]->Fill(vzMC);
+  }
 
   //----------------------------------
   //first track loop to check how many chared primary tracks are available
@@ -945,7 +955,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
     fPNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
   }
   
-  fVzEvent= mcV[2];
+  fVzEvent= vzMC;
   return fNRecAccept;
   
 }
