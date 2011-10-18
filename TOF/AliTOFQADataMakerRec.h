@@ -65,7 +65,7 @@ private:
   static void SetNbinsMultiplicityHisto(Int_t value){fgNbinsMultiplicity=value; return;}; 
   static void SetMultiplicityHistoRange (Int_t valueMin, Int_t valueMax){fgRangeMinMultiplicity=valueMin; fgRangeMaxMultiplicity=valueMax; return;}
   static void SetNbinsTimeHisto(Int_t value){fgNbinsTime=value; return;};
-  static void SetTimeHistoRange (Int_t valueMin, Int_t valueMax){fgRangeMinTime=valueMin; fgRangeMaxTime=valueMax; return;};
+  static void SetTimeHistoRange (Float_t valueMin, Float_t valueMax){fgRangeMinTime=valueMin; fgRangeMaxTime=valueMax; return;};
   static void SetCutNmaxFiredMacropad(Int_t value){fgCutNmaxFiredMacropad=value;return;};
 
  	  // void   ResetAllTRMcounters();

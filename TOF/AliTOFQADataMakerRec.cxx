@@ -666,7 +666,7 @@ void AliTOFQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 		  halfSMphi=indexCTTM[0]*10.+5.;
 		else  halfSMphi=(indexCTTM[0]-36)*10.+5.;
 		macropadPhiTimeUPC[iFiredMacropad][0]=halfSMphi;
-		indexBC=(Int_t) tofRawDatum->GetTOF()*tdc2ns/25;
+		indexBC= TMath::Nint(tofRawDatum->GetTOF()*tdc2ns)/25;
 		macropadPhiTimeUPC[iFiredMacropad][1]=indexBC;
 	      }
 	    }
@@ -1372,7 +1372,7 @@ void AliTOFQADataMakerRec::ReadHistogramRangeFromFile(const Char_t * filename)
   Float_t minTime=9999.0, maxTime=-9999.0;
   Int_t cutFiredMacropad=0;
 
-  fscanf(configFile,"%i %i %i %f %f", &cutFiredMacropad,&minMulti,&maxMulti,&minTime,&maxTime);
+  fscanf(configFile,"%10i %10i %10i %10f %10f", &cutFiredMacropad,&minMulti,&maxMulti,&minTime,&maxTime);
   
   //set multiplicity histo ranges
   if (minMulti>maxMulti){
@@ -1391,7 +1391,7 @@ void AliTOFQADataMakerRec::ReadHistogramRangeFromFile(const Char_t * filename)
     AliInfo("Invalid range for time histogram set. Changing to defualt values.");
     SetDefaultTimeHistogramRange();
   } else {
-    nbinsTime = ceil((maxTime - minTime)/fgkNbinsWidthTime);//ns
+    nbinsTime = TMath::Nint((maxTime - minTime)/fgkNbinsWidthTime);//ns
     maxTime=minTime+nbinsTime*fgkNbinsWidthTime;//ns
     SetNbinsTimeHisto(nbinsTime);
     SetTimeHistoRange(minTime,maxTime);
