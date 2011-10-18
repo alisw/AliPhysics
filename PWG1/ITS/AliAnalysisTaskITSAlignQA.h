@@ -28,7 +28,7 @@ class AliTrackPointArray;
 class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
 
  public:
-
+  enum {kEvAll=0,kEvCnt,kEvVtx,kEvPlp,kNTracks,kNEvStatBins,  kEvAcc=kEvPlp};
   AliAnalysisTaskITSAlignQA();
   virtual ~AliAnalysisTaskITSAlignQA();
 
@@ -47,6 +47,12 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   }
   void SetDoSDDdEdxCalib(Bool_t opt){
     fDoSDDdEdxCalib=opt;
+  }
+  void SetDoSDDVDriftCalib(Bool_t opt){
+    fDoSDDVDriftCalib=opt;
+  }
+  void SetDoSDDDriftTime(Bool_t opt){
+    fDoSDDDriftTime=opt;
   }
   void SetDoAllResiduals(){
     fDoSPDResiduals=kTRUE;
@@ -76,15 +82,16 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   void SetMinVtxContributors(Int_t n=5)     { fMinVtxContributors = n; }
   void SetUseVertex(Bool_t v=kTRUE)         { fUseVertex = v; }
   void SetUseVertexForZOnly(Bool_t v=kTRUE) { fUseVertexForZOnly = v; } // Use the vertex for SDD Z residuals only
-
-  
-  void     SetOCDBInfo(UInt_t runNb, const char *location) {
+  void SetRemovePileupWithSPD(Bool_t opt=kTRUE) { fRemovePileupWithSPD = opt; }
+  void SetMinMaxMult(Double_t mn=0,Double_t mx=1e9) {fMinMult=mn; fMaxMult=mx;} 
+  void SetOCDBInfo(UInt_t runNb, const char *location) {
     fRunNb=runNb; 
     fOCDBLocation=location;
   }
 
   Bool_t   AcceptTrack(const AliESDtrack * track);
-  Bool_t   AcceptVertex(const AliESDVertex * vtx);
+  Bool_t   AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD);
+  Bool_t   AcceptCentrality(const AliESDEvent *esd) const;
   void     CreateSPDHistos();
   void     CreateSDDHistos();
   void     CreateSSDHistos();
@@ -141,24 +148,30 @@ class AliAnalysisTaskITSAlignQA : public AliAnalysisTaskSE {
   Bool_t   fDoSDDResiduals;   // Flag to enable histos of SDD residuals
   Bool_t   fDoSSDResiduals;   // Flag to enable histos of SSD residuals
   Bool_t   fDoSDDdEdxCalib;   // Flag to enable histos for SDD dE/dx calibration
+  Bool_t   fDoSDDVDriftCalib; // Flag to enable histos for SDD VDrift calibration
+  Bool_t   fDoSDDDriftTime;   // Flag to enable histos for SDD Drift times
   Bool_t   fUseITSsaTracks;   // Flag for using standalone ITS tracks
   Bool_t   fLoadGeometry;     // Flag to control the loading of geometry from OCDB
   Bool_t   fUseVertex;        // Use the vertex as an extra point
   Bool_t   fUseVertexForZOnly; // Use the vertex for SDD Z residuals only
   Int_t    fMinVtxContributors; // min N contributors to accept vertex if fUseVertex is on
+  Bool_t   fRemovePileupWithSPD; // Use/not use pileup rejection with SPD
   Int_t    fMinITSpts;        // Minimum number of ITS points per track
   Int_t    fMinTPCpts;        // Minimum number of TPC points per track
   Float_t  fMinPt;            // Minimum pt to accept tracks
   Int_t    fNPtBins;          // number of pt bins
+  Double_t fMinMult;          // min centrality cut
+  Double_t fMaxMult;          // max centrality cut
   Double_t fPtBinLimits[kMaxPtBins+1];  // limits of Pt bins
 
   AliITSTPArrayFit* fFitter;  // Track Point fitter
   Int_t fRunNb;               // Run number
   TString fOCDBLocation;      // OCDB location
 
-  ClassDef(AliAnalysisTaskITSAlignQA,3);
+  ClassDef(AliAnalysisTaskITSAlignQA,5);
 };
 
 
 #endif
+
 

@@ -12,6 +12,7 @@
 #include "AliITSCalibrationSDD.h"
 #include "AliITSresponseSDD.h"
 #include "AliGeomManager.h"
+#include "AliMultiplicity.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TH1F.h>
@@ -57,15 +58,20 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
   fDoSDDResiduals(kTRUE),
   fDoSSDResiduals(kTRUE),
   fDoSDDdEdxCalib(kTRUE),
+  fDoSDDVDriftCalib(kTRUE),
+  fDoSDDDriftTime(kTRUE),
   fUseITSsaTracks(kFALSE),
   fLoadGeometry(kFALSE),
   fUseVertex(kFALSE),
   fUseVertexForZOnly(kFALSE),
   fMinVtxContributors(5),
+  fRemovePileupWithSPD(kTRUE),
   fMinITSpts(3),
   fMinTPCpts(70),
   fMinPt(0.5),
   fNPtBins(8),
+  fMinMult(0),
+  fMaxMult(1e9),
   fFitter(0),
   fRunNb(0),
   fOCDBLocation("local://$ALICE_ROOT/OCDB")
@@ -89,6 +95,16 @@ AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
     delete fHistNEvents;
     fHistNEvents=0;    
   }
+  for(Int_t i=0;i<kNSPDmods;i++) {
+    if (fHistSPDResidX[i]) {delete fHistSPDResidX[i]; fHistSPDResidX[i]=0;}
+    if (fHistSPDResidZ[i]) {delete fHistSPDResidZ[i]; fHistSPDResidZ[i]=0;}
+  }
+  //
+  for(Int_t i=0;i<kNSSDmods;i++) {
+    if (fHistSSDResidX[i]) {delete fHistSSDResidX[i]; fHistSSDResidX[i]=0;}
+    if (fHistSSDResidZ[i]) {delete fHistSSDResidZ[i]; fHistSSDResidZ[i]=0;}
+  }
+  //
   for(Int_t i=0;i<kNSDDmods;i++){
     if(fHistSDDResidXvsX[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
     if(fHistSDDResidXvsZ[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
@@ -120,9 +136,14 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->SetOwner();
   fOutput->SetName("OutputHistos");
 
-  fHistNEvents = new TH1F("hNEvents", "Number of processed events",3,-1.5,1.5);
+  fHistNEvents = new TH1F("hNEvents", "Number of processed events",kNEvStatBins,-0.5,kNEvStatBins-0.5);
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvAll+1,"All Events");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvCnt+1,"After Centrality cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvVtx+1,"After Vertex cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kEvPlp+1,"After Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(kNTracks+1,"Tracks Accepted");
   fOutput->Add(fHistNEvents);
 
   fHistPtAccept = new TH1F("hPtAccept","Pt distrib of accepted tracks",50,0.,5.);
@@ -131,7 +152,7 @@ void AliAnalysisTaskITSAlignQA::UserCreateOutputObjects() {
   fOutput->Add(fHistPtAccept);
 
   if(fDoSPDResiduals) CreateSPDHistos();
-  if(fDoSDDResiduals || fDoSDDdEdxCalib) CreateSDDHistos();
+  if(fDoSDDResiduals || fDoSDDdEdxCalib || fDoSDDVDriftCalib || fDoSDDDriftTime) CreateSDDHistos();
   if(fDoSSDResiduals) CreateSSDHistos();
 
   PostData(1,fOutput);
@@ -165,7 +186,7 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
   // Histos for SDD
 
   for(Int_t iMod=0; iMod<kNSDDmods; iMod++){
-    if(fDoSDDResiduals){
+    if (fDoSDDResiduals) {
       fHistSDDResidX[iMod] = new TH2F(Form("hSDDResidX%d",iMod+kNSPDmods),
 				      Form("hSDDResidX%d",iMod+kNSPDmods),
 				      fNPtBins,fPtBinLimits,
@@ -204,6 +225,9 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
       fHistSDDResidZvsZ[iMod]->Sumw2();
       fOutput->Add(fHistSDDResidZvsZ[iMod]);
       //
+    }
+    //
+    if (fDoSDDVDriftCalib) {
       for (int ix=0;ix<2;ix++) { // profile histos per side
 	//
 	char* hnm = Form("hpSDDResXvsXD%d_%d",iMod+kNSPDmods,ix);
@@ -230,7 +254,7 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
 	//
       }
     }
-
+    
     if(fDoSDDdEdxCalib){
       fHistSDDdEdxvsDrTime[iMod] = new TH2F(Form("hSDDdEdxvsDrTime%d",iMod+kNSPDmods),
 					    Form("hSDDdEdxvsDrTime%d",iMod+kNSPDmods),
@@ -238,32 +262,34 @@ void AliAnalysisTaskITSAlignQA::CreateSDDHistos(){
       fHistSDDdEdxvsDrTime[iMod]->Sumw2();
       fOutput->Add(fHistSDDdEdxvsDrTime[iMod]);
     }
-
-    fHistSDDDrTimeAll[iMod]=new TH1F(Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
-				     Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
-				     3200,0.,6400.);
-    fHistSDDDrTimeAll[iMod]->Sumw2();
-    fHistSDDDrTimeAll[iMod]->SetMinimum(0.);
-    fOutput->Add(fHistSDDDrTimeAll[iMod]);
-
-    fHistSDDDrTimeExtra[iMod]=new TH1F(Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
-				       Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
+    //
+    if (fDoSDDDriftTime) {
+      fHistSDDDrTimeAll[iMod]=new TH1F(Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
+				       Form("hSDDDrTimeAll%d",iMod+kNSPDmods),
 				       3200,0.,6400.);
-    fHistSDDDrTimeExtra[iMod]->Sumw2();
-    fHistSDDDrTimeExtra[iMod]->SetMinimum(0.);
-    fOutput->Add(fHistSDDDrTimeExtra[iMod]);
-
-    fHistSDDDrTimeAttac[iMod]=new TH1F(Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
-				       Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
-				       3200,0.,6400.);
-    fHistSDDDrTimeAttac[iMod]->Sumw2();
-    fHistSDDDrTimeAttac[iMod]->SetMinimum(0.);
-    fOutput->Add(fHistSDDDrTimeAttac[iMod]);
-
+      fHistSDDDrTimeAll[iMod]->Sumw2();
+      fHistSDDDrTimeAll[iMod]->SetMinimum(0.);
+      fOutput->Add(fHistSDDDrTimeAll[iMod]);
+      
+      fHistSDDDrTimeExtra[iMod]=new TH1F(Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
+					 Form("hSDDDrTimeExtra%d",iMod+kNSPDmods),
+					 3200,0.,6400.);
+      fHistSDDDrTimeExtra[iMod]->Sumw2();
+      fHistSDDDrTimeExtra[iMod]->SetMinimum(0.);
+      fOutput->Add(fHistSDDDrTimeExtra[iMod]);
+      
+      fHistSDDDrTimeAttac[iMod]=new TH1F(Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
+					 Form("hSDDDrTimeAttac%d",iMod+kNSPDmods),
+					 3200,0.,6400.);
+      fHistSDDDrTimeAttac[iMod]->Sumw2();
+      fHistSDDDrTimeAttac[iMod]->SetMinimum(0.);
+      fOutput->Add(fHistSDDDrTimeAttac[iMod]);
+    }
   }
   return;
-
+  //
 }
+
 //___________________________________________________________________________
 void AliAnalysisTaskITSAlignQA::CreateSSDHistos(){
   // Histos for SSD
@@ -303,13 +329,25 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     return;
   }
   //
-  const AliESDVertex* vtx = 0;
+  if (!AcceptCentrality(esd)) return;
+  fHistNEvents->Fill(kEvCnt);
+
+  const AliESDVertex* vtx=0,*vtxSPD=0;
+  fHistNEvents->Fill(kEvAll);
   if (fUseVertex) {  // check the vertex if it is requested as an extra point
     vtx = esd->GetPrimaryVertex();
-    if (!vtx || !AcceptVertex(vtx)) return;
+    vtxSPD = esd->GetPrimaryVertexSPD();
+    if (!AcceptVertex(vtx,vtxSPD)) return;
   }
+
+  fHistNEvents->Fill(kEvVtx);
+  if (fRemovePileupWithSPD){
+    // skip events tagged by SPD as pileup
+    if(esd->IsPileupFromSPD()) return;
+  }
+  fHistNEvents->Fill(kEvPlp);
+
   //
-  fHistNEvents->Fill(0);
   fFitter->SetBz(esd->GetMagneticField());
 
   const AliTrackPointArray *array = 0;
@@ -326,6 +364,8 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
     if(!array) continue;
     arrayITS = PrepareTrack(array, vtx);
     //
+    fHistNEvents->Fill(kNTracks);
+    //
     Int_t npts  = arrayITS->GetNPoints();
     Int_t npts1 = fUseVertexForZOnly ? npts-1 : npts;
     //
@@ -333,10 +373,12 @@ void AliAnalysisTaskITSAlignQA::UserExec(Option_t *)
       FitAndFillSPD(1,arrayITS,npts1,track);
       FitAndFillSPD(2,arrayITS,npts1,track);
     }
-    if(fDoSDDResiduals || fDoSDDdEdxCalib){
+    if(fDoSDDResiduals || fDoSDDdEdxCalib || fDoSDDVDriftCalib || fDoSDDDriftTime) {
       FitAndFillSDDrphi(arrayITS,npts,track);
-      FitAndFillSDDz(3,arrayITS,npts1,track);
-      FitAndFillSDDz(4,arrayITS,npts1,track);
+      if (fDoSDDResiduals) {
+	FitAndFillSDDz(3,arrayITS,npts1,track);
+	FitAndFillSDDz(4,arrayITS,npts1,track);
+      }
     }
     if(fDoSSDResiduals){ 
       FitAndFillSSD(5,arrayITS,npts1,track);
@@ -367,10 +409,12 @@ Bool_t AliAnalysisTaskITSAlignQA::AcceptTrack(const AliESDtrack * track){
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskITSAlignQA::AcceptVertex(const AliESDVertex * vtx) {
+Bool_t AliAnalysisTaskITSAlignQA::AcceptVertex(const AliESDVertex * vtx, const AliESDVertex * vtxSPD) {
   // vertex selection cuts
-  if (!vtx) return kFALSE;
+  if (!vtx || vtx->GetStatus()<1) return kFALSE;
+  if (!vtxSPD || vtxSPD->GetStatus()<1) return kFALSE;
   if (vtx->GetNContributors()<fMinVtxContributors) return kFALSE;
+  if (TMath::Abs(vtx->GetZ()-vtxSPD->GetZ())>0.3) return kFALSE;
   return kTRUE;
 }
 
@@ -436,11 +480,15 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       drTime[nPtSDD] = point.GetDriftTime();
       modId+=AliITSgeomTGeo::GetModuleIndex(layerId,1,1);
       Int_t index=modId-kNSPDmods;
-      fHistSDDDrTimeAll[index]->Fill(drTime[nPtSDD]);
-      if(point.IsExtra()) fHistSDDDrTimeExtra[index]->Fill(drTime[nPtSDD]);
-      else fHistSDDDrTimeAttac[index]->Fill(drTime[nPtSDD]);
-      Float_t dedxLay=dedx[layerId-3];
-      if(dedxLay>1.) fHistSDDdEdxvsDrTime[index]->Fill(drTime[nPtSDD],dedxLay);
+      if (fDoSDDDriftTime) {
+	fHistSDDDrTimeAll[index]->Fill(drTime[nPtSDD]);
+	if(point.IsExtra()) fHistSDDDrTimeExtra[index]->Fill(drTime[nPtSDD]);
+	else fHistSDDDrTimeAttac[index]->Fill(drTime[nPtSDD]);
+      }
+      if (fDoSDDdEdxCalib) {
+	Float_t dedxLay=dedx[layerId-3];
+	if(dedxLay>1.) fHistSDDdEdxvsDrTime[index]->Fill(drTime[nPtSDD],dedxLay);
+      }
       iPtSDD[nPtSDD] = ipt;
       modIdSDD[nPtSDD] = modId;
       modSide[nPtSDD] = point.GetClusterType()&BIT(16) ? 0:1; 
@@ -464,19 +512,23 @@ void AliAnalysisTaskITSAlignQA::FitAndFillSDDrphi(const AliTrackPointArray *arra
       TGeoHMatrix *mcurr = AliITSgeomTGeo::GetMatrix(modIdSDD[ip]);
       mcurr->MasterToLocalVect(resGlo,resLoc);
       Int_t index=modIdSDD[ip]-kNSPDmods;
-      fHistSDDResidX[index]->Fill(track->Pt(),resLoc[0]);
-      fHistSDDResidXvsX[index]->Fill(xLocSDD[ip],resLoc[0]);
-      fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
+      if (fDoSDDResiduals) {
+	fHistSDDResidX[index]->Fill(track->Pt(),resLoc[0]);
+	fHistSDDResidXvsX[index]->Fill(xLocSDD[ip],resLoc[0]);
+	fHistSDDResidXvsZ[index]->Fill(zLocSDD[ip],resLoc[0]);
+      }
       //
-      double cf = modSide[ip] ? 1.e4:-1.e4;
-      double xMeas = cf*xLocSDD[0];            // measured coordinate in microns
-      double xRes  = cf*resLoc[0];             // X residual in microns
-      double xDriftTrue  = 3.5085e4 - (xMeas + xRes);   // "true" drift distance
-      //
-      fHProfSDDResidXvsXD[index][modSide[ip]]->Fill(xDriftTrue, xRes);
-      fHProfSDDResidXvsZ[index][modSide[ip]]->Fill(zLocSDD[ip], xRes);
-      fHProfSDDDrTimevsXD[index][modSide[ip]]->Fill(xDriftTrue, drTime[ip]);
-      fHProfSDDDrTimevsZ[index][modSide[ip]]->Fill(zLocSDD[ip], drTime[ip]);      
+      if (fDoSDDVDriftCalib) {
+	double cf = modSide[ip] ? 1.e4:-1.e4;
+	double xMeas = cf*xLocSDD[ip];            // measured coordinate in microns
+	double xRes  = cf*resLoc[0];             // X residual in microns
+	double xDriftTrue  = 3.5085e4 - (xMeas + xRes);   // "true" drift distance
+	//
+	fHProfSDDResidXvsXD[index][modSide[ip]]->Fill(xDriftTrue, xRes);
+	fHProfSDDResidXvsZ[index][modSide[ip]]->Fill(zLocSDD[ip]*1e4, xRes);
+	fHProfSDDDrTimevsXD[index][modSide[ip]]->Fill(xDriftTrue, drTime[ip]);
+	fHProfSDDDrTimevsZ[index][modSide[ip]]->Fill(zLocSDD[ip]*1e4, drTime[ip]);      
+      }
     }
   }
 }
@@ -574,7 +626,8 @@ void AliAnalysisTaskITSAlignQA::Terminate(Option_t */*option*/)
 
   fHistNEvents = dynamic_cast<TH1F*>(fOutput->FindObject("hNEvents"));
   if(fHistNEvents){
-    printf("Number of analyzed events = %d\n",(Int_t)(fHistNEvents->GetBinContent(2)));
+    printf("Number of analyzed events = %d, %d tracks accepted\n",
+	   (Int_t)fHistNEvents->GetBinContent(kEvAcc+1),(Int_t)fHistNEvents->GetBinContent(kNTracks+1));
   }else{
     printf("Warning: pointer to fHistNEvents is NULL\n");
   }
@@ -652,3 +705,16 @@ void AliAnalysisTaskITSAlignQA::PrepareVertexConstraint(const AliESDVertex* vtx,
   point.SetXYZ(vtx->GetX(),vtx->GetY(),vtx->GetZ(), cmatF);
 }
 
+
+//_______________________________________________________________________________________
+Bool_t AliAnalysisTaskITSAlignQA::AcceptCentrality(const AliESDEvent *esd) const
+{
+  // check if events is in the required multiplicity range
+  //
+  const AliMultiplicity *alimult = esd->GetMultiplicity();
+  Int_t nclsSPDouter=0;
+  if(alimult) nclsSPDouter = alimult->GetNumberOfITSClusters(1);
+  if(nclsSPDouter<fMinMult || nclsSPDouter>fMaxMult) return kFALSE;
+  //
+  return kTRUE;
+}

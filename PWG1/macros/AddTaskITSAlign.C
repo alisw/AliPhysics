@@ -1,4 +1,4 @@
-AliAnalysisTaskITSAlignQA *AddTaskITSAlign(Int_t nrun, Int_t year){
+AliAnalysisTaskITSAlignQA *AddTaskITSAlign(Int_t nrun, Int_t year, Bool_t pbpb=kFALSE) {
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -22,7 +22,20 @@ AliAnalysisTaskITSAlignQA *AddTaskITSAlign(Int_t nrun, Int_t year){
   //  taskali->SelectCollisionCandidates();
   taskali->SetOCDBInfo(nrun,Form("alien://folder=/alice/data/%d/OCDB",year)) ; 
   mgr->AddTask(taskali);
-  
+  //  
+  taskali->SetUseVertex(kTRUE);
+  taskali->SetUseVertexForZOnly(kFALSE);
+  taskali->SetMinMaxMult(0.,1070.);
+  if (pbpb) {
+    //    taskali->SetMinMaxMult(20.,1070.);
+    taskali->SetRemovePileupWithSPD(kFALSE);
+    //
+    //    taskali->SetDoSPDResiduals(kFALSE);
+    //    taskali->SetDoSDDResiduals(kFALSE);
+    //    taskali->SetDoSSDResiduals(kFALSE);
+    //
+  }
+  //
   TString outputFileName = AliAnalysisManager::GetCommonFileName();
   outputFileName += ":ITSAlignQA";
   
