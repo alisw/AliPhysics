@@ -1032,7 +1032,14 @@ void AliKFParticleBase::GetDStoParticleBz( Double_t B, const AliKFParticleBase &
     
     Double_t p2  = (px *px  + py *py); 
     Double_t p21 = (px1*px1 + py1*py1);
-    
+
+    if( TMath::Abs(p2) < 1.e-8 || TMath::Abs(p21) < 1.e-8 )
+    {
+      DS=0.;
+      DS1=0.;
+      return;
+    }
+
     Double_t a = (px*py1 - py*px1);
     Double_t b = (px*px1 + py*py1);
     
