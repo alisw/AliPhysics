@@ -40,6 +40,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   vHF->SetTrackFilterSoftPi(trkFilterSoftPi);
   //--- set cuts for candidates selection
   AliRDHFCutsD0toKpi *cutsD0toKpi = new AliRDHFCutsD0toKpi("CutsD0toKpi");
+  cutsD0toKpi->SetUsePhysicsSelection(kFALSE);
   cutsD0toKpi->SetMaxVtxZ(1.e6);
   cutsD0toKpi->SetTriggerClass("");
   Float_t cutsArrayD0toKpi[11]={0.3,999999.,1.1,0.,0.,999999.,999999.,999999.,0.,-1,0.};
