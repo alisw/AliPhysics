@@ -72,7 +72,8 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "require ITS Pid",
  "n crossed rows TPC",
  "n crossed rows / n findable clusters",
- "missing ITS points"
+ "missing ITS points",
+ "#Chi^{2} TPC constrained vs. global"
 };
 
 AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
@@ -85,6 +86,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
+  fCutMaxChi2TPCConstrainedVsGlobal(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(kVertexTracks | kVertexSPD),
   fCutMaxMissingITSPoints(0),
   fCutMaxC11(0),
   fCutMaxC22(0),
@@ -148,7 +151,9 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   SetMinNCrossedRowsTPC();
   SetMinRatioCrossedRowsOverFindableClustersTPC();
   SetMaxChi2PerClusterTPC();
-  SetMaxChi2PerClusterITS();  				    
+  SetMaxChi2PerClusterITS();
+  SetMaxChi2TPCConstrainedGlobal();
+  SetMaxChi2TPCConstrainedGlobalVertexType();
   SetMaxNOfMissingITSPoints();
   SetMaxCovDiagonalElements();
   SetMaxRel1PtUncertainty();
@@ -189,6 +194,8 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
+  fCutMaxChi2TPCConstrainedVsGlobal(0),
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType(kVertexTracks | kVertexSPD),
   fCutMaxMissingITSPoints(0),
   fCutMaxC11(0),
   fCutMaxC22(0),
@@ -268,6 +275,8 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhChi2PerClusterITS[i];       
     if (fhChi2PerClusterTPC[i])
       delete fhChi2PerClusterTPC[i];    
+    if (fhChi2TPCConstrainedVsGlobal[i])
+      delete fhChi2TPCConstrainedVsGlobal[i];
     if(fhNClustersForITSPID[i])
       delete fhNClustersForITSPID[i];
     if(fhNMissingITSPoints[i])
@@ -339,6 +348,8 @@ void AliESDtrackCuts::Init()
 
   fCutMaxChi2PerClusterTPC = 0;
   fCutMaxChi2PerClusterITS = 0;
+  fCutMaxChi2TPCConstrainedVsGlobal = 0;
+  fCutMaxChi2TPCConstrainedVsGlobalVertexType = kVertexTracks | kVertexSPD;
   fCutMaxMissingITSPoints  = 0;
   
   for (Int_t i = 0; i < 3; i++)
@@ -413,6 +424,7 @@ void AliESDtrackCuts::Init()
 
     fhChi2PerClusterITS[i] = 0;
     fhChi2PerClusterTPC[i] = 0;
+    fhChi2TPCConstrainedVsGlobal[i] = 0;
     fhNClustersForITSPID[i] = 0;
     fhNMissingITSPoints[i] = 0;
 
@@ -473,6 +485,8 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
+  target.fCutMaxChi2TPCConstrainedVsGlobal = fCutMaxChi2TPCConstrainedVsGlobal;
+  target.fCutMaxChi2TPCConstrainedVsGlobalVertexType = fCutMaxChi2TPCConstrainedVsGlobalVertexType;
   target.fCutMaxMissingITSPoints = fCutMaxMissingITSPoints;
 
   for (Int_t i = 0; i < 3; i++)
@@ -543,6 +557,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
 
     if (fhChi2PerClusterITS[i]) target.fhChi2PerClusterITS[i] = (TH1F*) fhChi2PerClusterITS[i]->Clone();
     if (fhChi2PerClusterTPC[i]) target.fhChi2PerClusterTPC[i] = (TH1F*) fhChi2PerClusterTPC[i]->Clone();
+    if (fhChi2TPCConstrainedVsGlobal[i]) target.fhChi2TPCConstrainedVsGlobal[i] = (TH1F*) fhChi2TPCConstrainedVsGlobal[i]->Clone();
     if (fhNClustersForITSPID[i]) target.fhNClustersForITSPID[i] = (TH1F*) fhNClustersForITSPID[i]->Clone();
     if (fhNMissingITSPoints[i]) target.fhNMissingITSPoints[i] = (TH1F*) fhNMissingITSPoints[i]->Clone();
 
@@ -612,6 +627,8 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
       					  			    
       fhChi2PerClusterITS[i] ->Add(entry->fhChi2PerClusterITS[i]); 
       fhChi2PerClusterTPC[i] ->Add(entry->fhChi2PerClusterTPC[i]); 
+      if (fhChi2TPCConstrainedVsGlobal[i])
+	fhChi2TPCConstrainedVsGlobal[i]->Add(entry->fhChi2TPCConstrainedVsGlobal[i]);
       if (fhNClustersForITSPID[i])
 	fhNClustersForITSPID[i]->Add(entry->fhNClustersForITSPID[i]);
       if (fhNMissingITSPoints[i])
@@ -887,7 +904,7 @@ Int_t AliESDtrackCuts::GetReferenceMultiplicity(const AliESDEvent* esd, Bool_t t
 }
 
 //____________________________________________________________________
-Float_t AliESDtrackCuts::GetSigmaToVertex(AliESDtrack* const esdTrack)
+Float_t AliESDtrackCuts::GetSigmaToVertex(const AliESDtrack* const esdTrack)
 {
   // Calculates the number of sigma to the vertex.
 
@@ -950,7 +967,7 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 }
 
 //____________________________________________________________________
-Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack) 
+Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack, const AliESDEvent* esdEvent) 
 {
   // 
   // figure out if the tracks survives all the track cuts defined
@@ -975,6 +992,8 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   // fTracks.fR   //GetMass
   // fTracks.fP   //GetMass
   // fTracks.fKinkIndexes
+  //
+  // esdEvent is only required for the MaxChi2TPCConstrainedVsGlobal
 
   UInt_t status = esdTrack->GetStatus();
 
@@ -987,7 +1006,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   else {
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
-  Float_t nCrossedRowsTPC = esdTrack->GetTPCClusterInfo(2,1); 
+  Float_t nCrossedRowsTPC = esdTrack->GetTPCCrossedRows();
   Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
   if (esdTrack->GetTPCNclsF()>0) {
     ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC / esdTrack->GetTPCNclsF();
@@ -1012,9 +1031,6 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
   Double_t extCov[15];
   esdTrack->GetExternalCovariance(extCov);
 
-  // getting the track to vertex parameters
-  Float_t nSigmaToVertex = GetSigmaToVertex(esdTrack);
-      
   Float_t b[2];
   Float_t bCov[3];
   esdTrack->GetImpactParameters(b,bCov);
@@ -1095,11 +1111,9 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     cuts[10]=kTRUE;  
   if (extCov[14]  > fCutMaxC55) 
     cuts[11]=kTRUE;  
-  if (nSigmaToVertex > fCutNsigmaToVertex && fCutSigmaToVertexRequired)
-    cuts[12] = kTRUE;
-  // if n sigma could not be calculated
-  if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
-    cuts[13]=kTRUE;
+  
+  // cut 12 and 13 see below
+  
   if (!fCutAcceptKinkDaughters && esdTrack->GetKinkIndex(0)>0)
     cuts[14]=kTRUE;
   // track kinematics cut
@@ -1177,12 +1191,61 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
     if(retc && statusLay==5) ++nMissITSpts;
   }
   if(nMissITSpts>fCutMaxMissingITSPoints) cuts[38] = kTRUE;
-
+  
   Bool_t cut=kFALSE;
   for (Int_t i=0; i<kNCuts; i++) 
     if (cuts[i]) {cut = kTRUE;}
 
+  // for performance evaluate the CPU intensive cuts only when the others have passed, and when they are requested
+  Double_t chi2TPCConstrainedVsGlobal = -2;
+  Float_t nSigmaToVertex = -2;
+  if (!cut)
+  {
+    // getting the track to vertex parameters
+    if (fCutSigmaToVertexRequired)
+    {
+      nSigmaToVertex = GetSigmaToVertex(esdTrack);
+      if (nSigmaToVertex > fCutNsigmaToVertex && fCutSigmaToVertexRequired)
+      {
+	cuts[12] = kTRUE;
+	cut = kTRUE;
+      }
+      // if n sigma could not be calculated
+      if (nSigmaToVertex<0 && fCutSigmaToVertexRequired)
+      {
+	cuts[13] = kTRUE;
+	cut = kTRUE;
+      }
+    }
+      
+    // max chi2 TPC constrained vs global track only if track passed the other cut
+    if (fCutMaxChi2TPCConstrainedVsGlobal < 1e9)
+    {
+      if (!esdEvent)
+	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not provided.");
+      
+      // get vertex
+      const AliESDVertex* vertex = 0;
+      if (fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTracks)
+	vertex = esdEvent->GetPrimaryVertexTracks();
+      
+      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexSPD)
+	vertex = esdEvent->GetPrimaryVertexSPD();
+	
+      if ((!vertex || !vertex->GetStatus()) && fCutMaxChi2TPCConstrainedVsGlobalVertexType & kVertexTPC)
+	vertex = esdEvent->GetPrimaryVertexTPC();
 
+      if (vertex->GetStatus())
+	chi2TPCConstrainedVsGlobal = esdTrack->GetChi2TPCConstrainedVsGlobal(vertex);
+      
+      if (chi2TPCConstrainedVsGlobal < 0 || chi2TPCConstrainedVsGlobal > fCutMaxChi2TPCConstrainedVsGlobal)
+      {
+	cuts[39] = kTRUE;
+	cut = kTRUE;
+      }
+    }
+  }
+  
   //########################################################################
   // filling histograms
   if (fHistogramsOn) {
@@ -1224,6 +1287,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(AliESDtrack* esdTrack)
       fhRatioCrossedRowsOverFindableClustersTPC[id]->Fill(ratioCrossedRowsOverFindableClustersTPC);
       fhChi2PerClusterITS[id]->Fill(chi2PerClusterITS);
       fhChi2PerClusterTPC[id]->Fill(chi2PerClusterTPC);
+      fhChi2TPCConstrainedVsGlobal[id]->Fill(chi2TPCConstrainedVsGlobal);
       fhNClustersForITSPID[id]->Fill(nITSPointsForPid);
       fhNMissingITSPoints[id]->Fill(nMissITSpts);
 
@@ -1286,9 +1350,7 @@ Bool_t AliESDtrackCuts::CheckITSClusterRequirement(ITSClusterRequirement req, Bo
 //____________________________________________________________________
 AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTrack)
 {
-  
-  // Utility function to 
-  // create a TPC only track from the given esd track
+  // Utility function to create a TPC only track from the given esd track
   // 
   // IMPORTANT: The track has to be deleted by the user
   //
@@ -1317,16 +1379,11 @@ AliESDtrack* AliESDtrackCuts::GetTPCOnlyTrack(const AliESDEvent* esd, Int_t iTra
     return 0;
   }
 
-  // propagate to Vertex
-  // not needed for normal reconstructed ESDs...
-  // Double_t pTPC[2],covTPC[3];
-  // tpcTrack->PropagateToDCA(esd->GetPrimaryVertexTPC(), esd->GetMagneticField(), 10000,  pTPC, covTPC);
-
   return tpcTrack;
 }
 
 //____________________________________________________________________
-TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
+TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTPC)
 {
   //
   // returns an array of all tracks that pass the cuts
@@ -1347,7 +1404,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
       if (!tpcTrack)
         continue;
 
-      if (AcceptTrack(tpcTrack)) {
+      if (AcceptTrack(tpcTrack, esd)) {
         acceptedTracks->Add(tpcTrack);
       }
       else
@@ -1356,7 +1413,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(AliESDEvent* esd,Bool_t bTPC)
     else
     {
       AliESDtrack* track = esd->GetTrack(iTrack);
-      if(AcceptTrack(track))
+      if(AcceptTrack(track, esd))
         acceptedTracks->Add(track);
     }
   } 
@@ -1376,7 +1433,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
-    if (AcceptTrack(track))
+    if (AcceptTrack(track, esd))
       count++;
   }
 
@@ -1423,6 +1480,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
     fhRatioCrossedRowsOverFindableClustersTPC[i]     = new TH1F("ratioCrossedRowsOverFindableClustersTPC"  ,"",60,0,1.5);
     fhChi2PerClusterITS[i]   = new TH1F("chi2PerClusterITS","",500,0,10);
     fhChi2PerClusterTPC[i]   = new TH1F("chi2PerClusterTPC","",500,0,10);
+    fhChi2TPCConstrainedVsGlobal[i]   = new TH1F("chi2TPCConstrainedVsGlobal","",600,-2,50);
     fhNClustersForITSPID[i]  = new TH1F("nPointsForITSpid","",5,-0.5,4.5);
     fhNMissingITSPoints[i]   = new TH1F("nMissingITSClusters","",7,-0.5,6.5);
 
@@ -1453,6 +1511,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
     fhNSharedClustersTPC[i]->SetTitle("n TPC shared clusters");
     fhChi2PerClusterITS[i]->SetTitle("#Chi^{2} per ITS cluster");
     fhChi2PerClusterTPC[i]->SetTitle("#Chi^{2} per TPC cluster");
+    fhChi2TPCConstrainedVsGlobal[i]->SetTitle("#Chi^{2} TPC constrained track vs global track");
     fhNClustersForITSPID[i]->SetTitle("n ITS points for PID");
     fhNMissingITSPoints[i]->SetTitle("n ITS layers with missing cluster");
 
@@ -1481,6 +1540,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
     fhNSharedClustersTPC[i]->SetLineColor(color);  fhNSharedClustersTPC[i]->SetLineWidth(2);
     fhChi2PerClusterITS[i]->SetLineColor(color);   fhChi2PerClusterITS[i]->SetLineWidth(2);
     fhChi2PerClusterTPC[i]->SetLineColor(color);   fhChi2PerClusterTPC[i]->SetLineWidth(2);
+    fhChi2TPCConstrainedVsGlobal[i]->SetLineColor(color);   fhChi2TPCConstrainedVsGlobal[i]->SetLineWidth(2);
     fhNClustersForITSPID[i]->SetLineColor(color);  fhNClustersForITSPID[i]->SetLineWidth(2);
     fhNMissingITSPoints[i]->SetLineColor(color);   fhNMissingITSPoints[i]->SetLineWidth(2);
 
@@ -1542,6 +1602,7 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
     fhRatioCrossedRowsOverFindableClustersTPC[i]   = dynamic_cast<TH1F*> (gDirectory->Get("ratioCrossedRowsOverFindableClustersTPC"  ));
     fhChi2PerClusterITS[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterITS"));
     fhChi2PerClusterTPC[i] = dynamic_cast<TH1F*> (gDirectory->Get("chi2PerClusterTPC"));
+    fhChi2TPCConstrainedVsGlobal[i] = dynamic_cast<TH1F*> (gDirectory->Get("fhChi2TPCConstrainedVsGlobal"));
     fhNClustersForITSPID[i] = dynamic_cast<TH1F*> (gDirectory->Get("nPointsForITSpid"));
     fhNMissingITSPoints[i] = dynamic_cast<TH1F*> (gDirectory->Get("nMissingITSClusters"));
 
@@ -1614,6 +1675,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
     fhRatioCrossedRowsOverFindableClustersTPC[i]     ->Write();
     fhChi2PerClusterITS[i]   ->Write();
     fhChi2PerClusterTPC[i]   ->Write();
+    fhChi2TPCConstrainedVsGlobal[i]   ->Write();
     fhNClustersForITSPID[i]  ->Write();
     fhNMissingITSPoints[i]   ->Write();
 

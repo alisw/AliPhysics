@@ -2248,3 +2248,30 @@ void AliExternalTrackParam::CheckCovariance() {
 //       eig.Print();
 //     }
 }
+
+Bool_t AliExternalTrackParam::ConstrainToVertex(const AliVVertex* vtx, Double_t b[3])
+{
+  // Constrain TPC inner params constrained
+  //
+  if (!vtx) 
+    return kFALSE;
+
+  Double_t dz[2], cov[3];
+  if (!PropagateToDCABxByBz(vtx, b, 3, dz, cov)) 
+    return kFALSE; 
+
+  Double_t covar[6]; 
+  vtx->GetCovarianceMatrix(covar);
+  
+  Double_t p[2]= { fP[0] - dz[0], fP[1] - dz[1] };
+  Double_t c[3]= { covar[2], 0., covar[5] };
+  
+  Double_t chi2C = GetPredictedChi2(p,c);
+  if (chi2C>kVeryBig) 
+    return kFALSE; 
+
+  if (!Update(p,c)) 
+    return kFALSE; 
+
+  return kTRUE;
+}

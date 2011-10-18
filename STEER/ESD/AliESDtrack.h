@@ -102,6 +102,7 @@ public:
               (Double_t &alpha, Double_t &x, Double_t p[5]) const;
   Bool_t GetConstrainedExternalCovariance(Double_t cov[15]) const;
   Double_t GetConstrainedChi2() const {return fCchi2;}
+  Double_t GetChi2TPCConstrainedVsGlobal(const AliESDVertex* vtx) const;
   //
   
   // global track chi2
@@ -231,6 +232,7 @@ public:
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCCrossedRows() const;
   
   void    SetTRDpid(const Double_t *p);
   void    SetTRDsignal(Double_t sig) {fTRDsignal = sig;}
@@ -499,11 +501,15 @@ protected:
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
   AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
+  mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
+  mutable Float_t fCacheChi2TPCConstrainedVsGlobal; //! Cache for the chi2 of constrained TPC vs global track
+  mutable const AliESDVertex* fCacheChi2TPCConstrainedVsGlobalVertex; //! Vertex for which the cache is valid
+  
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,60)  //ESDtrack 
+  ClassDef(AliESDtrack,61)  //ESDtrack 
 };
 
 
