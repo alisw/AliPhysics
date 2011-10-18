@@ -215,36 +215,36 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *) {
     }
 }
 
-  AliFemtoEventReaderKinematicsChain *femtoReaderKine = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader);
-if ((dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader))) {
+  //  AliFemtoEventReaderKinematicsChain *femtoReaderKine = dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader);
+  if ((dynamic_cast<AliFemtoEventReaderKinematicsChain *> (fReader))) {
     AliESDInputHandler *esdH = dynamic_cast<AliESDInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     
     if(esdH) {
       AliInfo("Selected ESD analysis");
       fAnalysisType = 1;
       
-//       if (!esdH) {
-// 	AliWarning("Could not get ESDInputHandler");
-//       } 
-//       else {
-	fESD = esdH->GetEvent();
-        //fESDpid = esdH->GetESDpid();
-        //femtoReader->SetESDPid(fESDpid);
-//       }
+      //       if (!esdH) {
+      // 	AliWarning("Could not get ESDInputHandler");
+      //       } 
+      //       else {
+      fESD = esdH->GetEvent();
+      //fESDpid = esdH->GetESDpid();
+      //femtoReader->SetESDPid(fESDpid);
+      //       }
     }
- }
-
+  }
   
-    AliFemtoEventReaderAODChain *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *> (fReader);
+  
+  AliFemtoEventReaderAODChain *femtoReaderAOD = dynamic_cast<AliFemtoEventReaderAODChain *> (fReader);
   if (dynamic_cast<AliFemtoEventReaderAODChain *> (fReader)) {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler*> (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-	
+    
     if (!aodH) {
       TObject *handler = AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler();
       AliInfo("Has output handler ");
       if( handler && handler->InheritsFrom("AliAODHandler") ) {
 	AliInfo("Selected AOD analysis");
-
+	
 	fAOD = ((AliAODHandler*)handler)->GetAOD();
 	fAnalysisType = 2;
       }
