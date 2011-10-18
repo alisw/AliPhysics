@@ -90,7 +90,7 @@ int AliHLTGlobalEsdConverterComponent::Configure(const char* arguments)
   TObjArray* pTokens=allArgs.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->GetString();	
+      argument=((TObjString*)pTokens->At(i))->String();	
       if (argument.IsNull()) continue;
       
       if (argument.CompareTo("-solenoidBz")==0) {
@@ -129,8 +129,8 @@ int AliHLTGlobalEsdConverterComponent::Reconfigure(const char* cdbEntry, const c
     if (pEntry) {
       TObjString* pString=dynamic_cast<TObjString*>(pEntry->GetObject());
       if (pString) {
-	HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	iResult=Configure(pString->GetString().Data());
+	HLTInfo("received configuration object string: \'%s\'", pString->String().Data());
+	iResult=Configure(pString->String().Data());
       } else {
 	HLTError("configuration object \"%s\" has wrong type, required TObjString", path);
       }
@@ -210,7 +210,7 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
   TObjArray* pTokens=allArgs.Tokenize(" ");
   if (pTokens) {
     for (int i=0; i<pTokens->GetEntries() && iResult>=0; i++) {
-      argument=((TObjString*)pTokens->At(i))->GetString();	
+      argument=((TObjString*)pTokens->At(i))->String();	
       if (argument.IsNull()) continue;
 
       // -notree
@@ -222,7 +222,7 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	fWriteTree=1;
       } else if (argument.CompareTo("-solenoidBz")==0) {
 	if ((bMissingParam=(++i>=pTokens->GetEntries()))) break;
-	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->GetString().Data());
+	HLTInfo("Magnetic Field set to: %s", ((TObjString*)pTokens->At(i))->String().Data());
 	HLTWarning("argument '-solenoidBz' is deprecated, solenoid field initiaized from CDB settings");
 	continue;
       } else if (argument.Contains("-skipobject=")) {
@@ -255,7 +255,7 @@ int AliHLTGlobalEsdConverterComponent::DoInit(int argc, const char** argv)
 	  TIter next(pTokens);
 	  TObject* pObject=NULL;
 	  while ((pObject=next())!=NULL) {
-	    id=((TObjString*)pObject)->GetString().Data();
+	    id=((TObjString*)pObject)->String().Data();
 	    TObject* pObj=fESD->GetList()->FindObject(id);
 	    if (pObj) {
 	      HLTDebug("removing object %s", id);
