@@ -51,6 +51,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpi->SetStandardCutsPbPb2010();
   cutsD0toKpi->SetMinPtCandidate(0.);
   cutsD0toKpi->SetUsePID(kFALSE);
+  cutsD0toKpi->SetUsePhysicsSelection(kFALSE);
   cutsD0toKpi->SetMaxVtxZ(1.e6);
   cutsD0toKpi->SetTriggerClass("");
   Float_t cutsArrayD0toKpi[11]={0.2,999999.,1.1,0.,0.,999999.,999999.,0.,0.5,-1,0.};
