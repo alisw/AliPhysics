@@ -57,6 +57,7 @@ fListQAtpc(0x0),
 fListQAtrd(0x0),
 fListQAtof(0x0),
 fListQAemcal(0x0),
+fListQAhmpid(0x0),
 fListQAtpctof(0x0)
 {
   //
@@ -76,6 +77,7 @@ fListQAtpc(0x0),
 fListQAtrd(0x0),
 fListQAtof(0x0),
 fListQAemcal(0x0),
+fListQAhmpid(0x0),
 fListQAtpctof(0x0)
 {
   //
@@ -143,7 +145,11 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAemcal=new TList;
   fListQAemcal->SetOwner();
   fListQAemcal->SetName("EMCAL");
-
+  
+  fListQAhmpid=new TList;
+  fListQAhmpid->SetOwner();
+  fListQAhmpid->SetName("HMPID");
+  
   fListQAtpctof=new TList;
   fListQAtpctof->SetOwner();
   fListQAtpctof->SetName("TPC_TOF");
@@ -155,6 +161,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQA->Add(fListQAtrd);
   fListQA->Add(fListQAtof);
   fListQA->Add(fListQAemcal);
+  fListQA->Add(fListQAhmpid);
   fListQA->Add(fListQAtpctof);
 
   SetupITSqa();
@@ -162,6 +169,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   SetupTRDqa();
   SetupTOFqa();
   SetupEMCALqa();
+  SetupHMPIDqa();
   SetupTPCTOFqa();
 
   PostData(1,fListQA);
@@ -184,6 +192,7 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
   FillTRDqa();
   FillTOFqa();
   FillEMCALqa();
+  FillHMPIDqa();
   FillTPCTOFqa();
 
   PostData(1,fListQA);
@@ -463,22 +472,39 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
 
       if(nMatchClus > -1){
     
-	AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
-    
-	if(matchedClus){
+        AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
 
-	  // matched cluster is EMCAL
-	  if(matchedClus->IsEMCAL()){
-      
-	    Double_t fClsE       = matchedClus->E();
-	    eop                  = fClsE/mom;
+        if(matchedClus){
 
-	    h->Fill(pt,eop);
-	    
-	  }
-	}
+          // matched cluster is EMCAL
+          if(matchedClus->IsEMCAL()){
+
+            Double_t fClsE       = matchedClus->E();
+            eop                  = fClsE/mom;
+
+            h->Fill(pt,eop);
+
+          }
+        }
       }
     }
+  }
+}
+
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::FillHMPIDqa()
+{
+  //
+  // Fill PID qa histograms for the HMPID
+  //
+  
+  AliVEvent *event=InputEvent();
+  
+  Int_t ntracks=event->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack < ntracks; itrack++){
+    AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
+    
   }
 }
 
@@ -745,6 +771,14 @@ void AliAnalysisTaskPIDqa::SetupEMCALqa()
 
   delete vX;  
 }
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::SetupHMPIDqa()
+{
+  //
+  // Create the HMPID qa objects
+  //
+}  
 
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
