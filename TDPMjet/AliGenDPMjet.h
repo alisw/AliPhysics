@@ -101,8 +101,10 @@ class AliGenDPMjet : public AliGenMC
     Bool_t Stable(TParticle*  particle);
  
    Bool_t CheckDiffraction();
+   Bool_t GetWeightsDiffraction(Double_t M, Double_t &Mmin, Double_t &Mmax, 
+					       Double_t &wSD, Double_t &wDD, Double_t &wND);
 
-    ClassDef(AliGenDPMjet,3) // AliGenerator interface to DPMJET
+    ClassDef(AliGenDPMjet,4) // AliGenerator interface to DPMJET
 };
 #endif
 
