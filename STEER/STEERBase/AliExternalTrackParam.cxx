@@ -695,7 +695,7 @@ Bool_t AliExternalTrackParam::Rotate(Double_t alpha) {
   // RS: check if rotation does no invalidate track model (cos(local_phi)>=0, i.e. particle
   // direction in local frame is along the X axis
   if ((cf*ca+sf*sa)<0) {
-    AliWarning(Form("Rotation failed: local cos(phi) would become %.2f",cf*ca+sf*sa));
+    AliDebug(1,Form("Rotation failed: local cos(phi) would become %.2f",cf*ca+sf*sa));
     return kFALSE;
   }
   //
