@@ -262,21 +262,32 @@ int main(int argc, char **argv) {
 
     /* close local result file and FXS result file*/
     fclose(fp);
-  }
-
-//________________________________________________________________________
    
-  /* export result file to FES */
-  status=daqDA_FES_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
-  if (status)    {
-    printf("Failed to export file : %d\n",status);
-    return -1; }
+    /* export result file to FES */
+    status=daqDA_FES_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
+    if (status)    {
+      printf("Failed to export file : %d\n",status);
+      return -1; }
 
-  /* store result file into Online DB */
-  status=daqDA_DB_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
-  if (status)    {
-    printf("Failed to store file into Online DB: %d\n",status);
-    return -1; }
+    /* store result file into Online DB */
+    status=daqDA_DB_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
+    if (status)    {
+      printf("Failed to store file into Online DB: %d\n",status);
+      return -1; }
+  }
+  else {
+    // Take the last run's file from the DB
+    status=daqDA_DB_getFile("V00DAEqualFactors","./V0_EqualizationFactors.dat");
+    if (status)    {
+      printf("Failed to get file from Online DB: %d\n",status);
+      return -1; }
+
+    /* export result file to FES */
+    status=daqDA_FES_storeFile("./V0_EqualizationFactors.dat","V00DAEqualFactors");
+    if (status)    {
+      printf("Failed to export file : %d\n",status);
+      return -1; }
+  }
 
   return status;
 }
