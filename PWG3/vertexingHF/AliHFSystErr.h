@@ -74,6 +74,7 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2010pp();
   void InitDplustoKpipi2010pp();
   void InitDstartoD0pi2010pp();
+  void InitDstoKKpi2010pp();
 
   void InitD0toKpi2010PbPb020();
   void InitDplustoKpipi2010PbPb020();

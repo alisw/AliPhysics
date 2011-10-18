@@ -130,6 +130,11 @@ void AliHFSystErr::Init(Int_t decay){
       if (fCentralityClass!="4080" && fCentralityClass!="2040" && fCentralityClass!="020")  AliError("Not yet implemented");
     }
     break;
+  case 4: // D+s->KKpi
+    if (fCollisionType==0) InitDstoKKpi2010pp();
+    else AliError("Not yet implemented");
+    break;
+    
   default:
     printf("Invalid decay type: %d\n",decay);
     break;
@@ -437,6 +442,67 @@ void AliHFSystErr::InitDplustoKpipi2010pp() {
   */
   return;
 }
+ 
+//--------------------------------------------------------------------------
+void AliHFSystErr::InitDstoKKpi2010pp() {
+  // 
+  // D+s->KKpi syst errors. Responsible: G.M. Innocenti
+  //  2010 pp sample
+  //
+
+
+// Normalization
+  fNorm = new TH1F("fNorm","fNorm",12,0,12);
+  for(Int_t i=1;i<=12;i++) fNorm->SetBinContent(i,0.07); // 7% error on sigmaV0and
+
+  // Branching ratio 
+  fBR = new TH1F("fBR","fBR",12,0,12);
+  for(Int_t i=1;i<=12;i++) fBR->SetBinContent(i,0.05); // 5% PDG2010
+
+  // Tracking efficiency
+  fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",12,0,12);
+  for(Int_t i=1;i<=12;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+
+
+  // Raw yield extraction
+  fRawYield = new TH1F("fRawYield","fRawYield",12,0,12);
+  fRawYield->SetBinContent(1,1);
+  fRawYield->SetBinContent(2,1);
+  fRawYield->SetBinContent(3,0.20);
+  fRawYield->SetBinContent(4,0.20);
+  fRawYield->SetBinContent(5,0.15);
+  fRawYield->SetBinContent(6,0.15);
+  fRawYield->SetBinContent(7,0.15);
+  fRawYield->SetBinContent(8,0.15);
+  fRawYield->SetBinContent(9,0.20);
+  fRawYield->SetBinContent(10,0.20);
+  fRawYield->SetBinContent(11,0.20);
+  fRawYield->SetBinContent(12,0.20);
+  
+  // Cuts efficiency (from cuts variation)
+  fCutsEff = new TH1F("fCutsEff","fCutsEff",12,0,12);
+  for(Int_t i=1;i<=12;i++) fCutsEff->SetBinContent(i,0.15); // 15%
+
+  // PID efficiency (from PID/noPID)
+  fPIDEff = new TH1F("fPIDEff","fPIDEff",12,0,12);
+  for(Int_t i=1;i<=12;i++) fPIDEff->SetBinContent(i,0.07); // 7%
+
+  // MC dN/dpt  (copied from D0 : will update later)
+  //fMCPtShape = new TH1F("fMCPtShape","fMCPtShape",12,0,12);
+  //for(Int_t i=1;i<=12;i++) fMCPtShape->SetBinContent(i,(Float_t)i*0.006);
+
+
+  // particle-antiparticle
+  /*
+  fPartAntipart = new TH1F("fPartAntipart","fPartAntipart",12,0,12);
+  fPartAntipart->SetBinContent(1,1);
+  fPartAntipart->SetBinContent(2,1);
+  fPartAntipart->SetBinContent(3,0.12);
+  for(Int_t i=4;i<=12;i++) fPartAntipart->SetBinContent(i,0.05);   //5 to 12%
+  */
+  return;
+}
+   
  
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
