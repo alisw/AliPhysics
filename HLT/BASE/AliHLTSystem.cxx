@@ -1091,7 +1091,7 @@ int AliHLTSystem::LoadComponentLibraries(const char* libraries)
       if (pTokens) {
 	int iEntries=pTokens->GetEntriesFast();
 	for (int i=0; i<iEntries && iResult>=0; i++) {
-	  iResult=fpComponentHandler->LoadLibrary((((TObjString*)pTokens->At(i))->GetString()).Data());
+	  iResult=fpComponentHandler->LoadLibrary((((TObjString*)pTokens->At(i))->String()).Data());
 	}
 	delete pTokens;
       }
@@ -1164,7 +1164,7 @@ int AliHLTSystem::ScanOptions(const char* options)
     if (pTokens) {
       int iEntries=pTokens->GetEntriesFast();
       for (int i=0; i<iEntries; i++) {
-	TString token=(((TObjString*)pTokens->At(i))->GetString());
+	TString token=(((TObjString*)pTokens->At(i))->String());
 	if (token.Contains("loglevel=")) {
 	  TString param=token.ReplaceAll("loglevel=", "");
 	  if (param.IsDigit()) {
@@ -1348,7 +1348,7 @@ int AliHLTSystem::LoadConfigurations(AliRawReader* rawReader, AliRunLoader* runl
     TObjArray* pTokens=dependencies.Tokenize(" ");
     if (pTokens) {
       for (int n=0; n<pTokens->GetEntriesFast(); n++) {
-	TString module=((TObjString*)pTokens->At(n))->GetString();
+	TString module=((TObjString*)pTokens->At(n))->String();
 	HLTDebug("  checking %s", module.Data());
 	module.ReplaceAll("libAliHLT", "");
 	module.ReplaceAll(".so", "");
@@ -1427,7 +1427,7 @@ int AliHLTSystem::BuildTaskListsFromReconstructionChains(AliRawReader* rawReader
   if (pTokens) {
     int iEntries=pTokens->GetEntriesFast();
     for (int i=0; i<iEntries && iResult>=0; i++) {
-      const char* pCID=((TObjString*)pTokens->At(i))->GetString().Data();
+      const char* pCID=((TObjString*)pTokens->At(i))->String().Data();
       AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(pCID);
       if (pConf) {
 	iResult=BuildTaskList(pConf);
@@ -1531,7 +1531,7 @@ int AliHLTSystem::AddHLTOUTTask(const char* hltoutchains)
   if (pTokens) {
     int iEntries=pTokens->GetEntriesFast();
     for (int i=0; i<iEntries && iResult>=0; i++) {
-      const char* token=((TObjString*)pTokens->At(i))->GetString().Data();
+      const char* token=((TObjString*)pTokens->At(i))->String().Data();
       AliHLTConfiguration* pConf=fpConfigurationHandler->FindConfiguration(token);
       if (pConf) {
 	TString cid=pConf->GetComponentID();
