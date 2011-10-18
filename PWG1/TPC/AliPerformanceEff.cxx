@@ -114,17 +114,17 @@ void AliPerformanceEff::Init()
 {
   // Init histograms
   //
+
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-2, ptMax = 10.;
+  Double_t ptMin = 1.e-2, ptMax = 20.;
 
   Double_t *binsPt = 0;
+
   if (IsHptGenerator())  { 
-    nPtBins = 100; ptMax = 100.;
-    binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
-  } else {
-    binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
-  }
+        ptMax = 100.;
+  } 
+   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
 
   /*
   Int_t nPtBins = 31;

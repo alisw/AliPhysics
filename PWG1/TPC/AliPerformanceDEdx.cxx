@@ -123,17 +123,16 @@ void AliPerformanceDEdx::Init()
   // Init histograms
   
   // TPC dEdx
-  // set pt bins
+  // set p bins
   Int_t nPBins = 50;
-  Double_t pMin = 1.e-2, pMax = 10.;
+  Double_t pMin = 1.e-2, pMax = 20.;
 
   Double_t *binsP = 0;
+
   if (IsHptGenerator())  { 
-    nPBins = 100; pMax = 100.;
-    binsP = CreateLogAxis(nPBins,pMin,pMax);
-  } else {
-    binsP = CreateLogAxis(nPBins,pMin,pMax);
-  }
+        pMax = 100.;
+  } 
+   binsP = CreateLogAxis(nPBins,pMin,pMax);
 
 
   /*
@@ -152,12 +151,12 @@ void AliPerformanceDEdx::Init()
    //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
    //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
    //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
-   Int_t binsQA[9]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 160};
-   Double_t xminQA[9] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0.};
-   Double_t xmaxQA[9] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160.};
+  Int_t binsQA[10]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 160,100};
+  Double_t xminQA[10] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0., 0.};
+  Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 1.};
 
    //fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:alpha:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
-   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN",9,binsQA,xminQA,xmaxQA);
+   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
    fDeDxHisto->SetBinEdges(7,binsP);
 
    fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
@@ -169,6 +168,7 @@ void AliPerformanceDEdx::Init()
    fDeDxHisto->GetAxis(6)->SetTitle("ncls");
    fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
    fDeDxHisto->GetAxis(8)->SetTitle("number of cls used for dEdx");
+   fDeDxHisto->GetAxis(9)->SetTitle("number of cls found over findable");
    //fDeDxHisto->Sumw2();
 
    // Init cuts
@@ -247,6 +247,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Float_t dedx = esdTrack->GetTPCsignal();
   Int_t ncls = esdTrack->GetTPCNcls();
   Int_t TPCSignalN = esdTrack->GetTPCsignalN();
+  Float_t nClsF = esdTrack->GetTPCClusterInfo(2,0);
 
 
   Double_t pt = innerParam->Pt();
@@ -261,7 +262,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Double_t tgl = innerParam->GetTgl();
 
   //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
-  Double_t vDeDxHisto[9] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN};
+  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nClsF};
   fDeDxHisto->Fill(vDeDxHisto); 
 
   if(!stack) return;
@@ -429,7 +430,7 @@ void AliPerformanceDEdx::Analyse()
   char name[256];
   char title[256];
 
-  for(Int_t i=1; i<9; i++) { 
+  for(Int_t i=1; i<10; i++) { 
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
   }
 
@@ -448,10 +449,10 @@ void AliPerformanceDEdx::Analyse()
   AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
 
   //
-  TObjArray *arr[8] = {0};
-  TF1 *f1[8] = {0};
+  TObjArray *arr[9] = {0};
+  TF1 *f1[9] = {0};
   
-  for(Int_t i=0; i<8; i++) 
+  for(Int_t i=0; i<9; i++) 
   { 
     arr[i] = new TObjArray;
     f1[i] = new TF1("gaus","gaus");
@@ -496,6 +497,7 @@ void AliPerformanceDEdx::Analyse()
     fDeDxHisto->GetAxis(6)->SetRangeUser(80,160);
     fDeDxHisto->GetAxis(7)->SetRangeUser(0.4,0.55);
     fDeDxHisto->GetAxis(8)->SetRangeUser(80,160);
+    fDeDxHisto->GetAxis(9)->SetRangeUser(0.5,1.);
 
     selString = "mips";
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, &selString);
@@ -519,6 +521,10 @@ void AliPerformanceDEdx::Analyse()
     fDeDxHisto->GetAxis(6)->SetRangeUser(0,160);
     fDeDxHisto->GetAxis(7)->SetRangeUser(1e-2,10);    
     fDeDxHisto->GetAxis(8)->SetRangeUser(0,160);
+    fDeDxHisto->GetAxis(9)->SetRangeUser(0.,1.);
+
+
+
 
     printf("exportToFolder\n");
     // export objects to analysis folder
@@ -528,7 +534,7 @@ void AliPerformanceDEdx::Analyse()
     aFolderObj=0;
 
 
-  for(Int_t i=0;i<7;i++) { 
+  for(Int_t i=0;i<9;i++) { 
     if(f1[i]) delete f1[i]; f1[i]=0;
   }
 
