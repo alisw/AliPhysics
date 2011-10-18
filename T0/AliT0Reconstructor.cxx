@@ -758,7 +758,7 @@ Bool_t  AliT0Reconstructor::SatelliteFlag() const
   Bool_t satellite = false;
   for (Int_t i0=0; i0<24; i0++) {
     Float_t timefull =  fESDTZERO -> GetTimeFull(i0,0);
-    if( timefull < -1.5 && timefull > -5) satellite=true;
+    if( timefull < -1.5 && timefull > -10)  satellite=true;
   }
 	
   return satellite;
