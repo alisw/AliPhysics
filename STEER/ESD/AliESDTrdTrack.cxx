@@ -163,7 +163,7 @@ Int_t AliESDTrdTrack::GetPt() const
     Int_t layerMaskId = maskIdLut[this->GetLayerMask()];
     Int_t c1 = c1Lut[layerMaskId];
     Int_t c1Ext = c1 << 8;
-    Int_t ptRawStage4 = c1Ext / (this->GetA() >> 2);
+    Int_t ptRawStage4 = c1Ext / ((this->GetA() >> 2) != 0 ? (this->GetA() >> 2) : 1 );
     Int_t ptRawComb4 = ptRawStage4;
     Int_t ptExtComb4 = (ptRawComb4 > 0) ? ptRawComb4 + 33 : ptRawComb4 - 30;
 
