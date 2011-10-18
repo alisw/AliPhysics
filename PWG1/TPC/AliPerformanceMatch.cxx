@@ -132,15 +132,15 @@ void AliPerformanceMatch::Init(){
 
   // set pt bins
   Int_t nPtBins = 50;
-  Double_t ptMin = 1.e-2, ptMax = 10.;
+  Double_t ptMin = 1.e-2, ptMax = 20.;
 
   Double_t *binsPt = 0;
+
   if (IsHptGenerator())  { 
-    nPtBins = 100; ptMax = 100.;
-    binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
-  } else {
-    binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
-  }
+        ptMax = 100.;
+  } 
+   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
+
 
   Double_t yMin = -0.02, yMax = 0.02;
   Double_t zMin = -12.0, zMax = 12.0;
