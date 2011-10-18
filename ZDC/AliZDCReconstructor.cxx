@@ -574,7 +574,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        if(itdc==iprevtdc) ihittdc++;
        else ihittdc=0;
        iprevtdc=itdc;
-       tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
+       if(ihittdc<4) tdcData[itdc][ihittdc] = rawData.GetZDCTDCDatum();
        // Ch. debug
        //if(ihittdc==0) printf("   TDC%d %d  ",itdc, tdcData[itdc][ihittdc]);
    }// ZDC TDC DATA
