@@ -586,8 +586,8 @@ TObjArray* AliTRDcheckESD::Histos()
   Float_t pt(0.2);
   Float_t binsPt[kNpt+1];
   for(Int_t i=0;i<kNpt+1; i++,pt+=(TMath::Exp(i*i*.001)-1.)) binsPt[i]=pt;
-  if(!(h = (TH2S*)gROOT->FindObject("hNCl"))){
-    h = new TH2S("hNCl", "Clusters per TRD track;N_{cl}^{TRD};SPECIES;entries", 60, 0., 180., 10, -0.5, 9.5);
+  if(!(h = (TH2I*)gROOT->FindObject("hNCl"))){
+    h = new TH2I("hNCl", "Clusters per TRD track;N_{cl}^{TRD};SPECIES;entries", 60, 0., 180., 10, -0.5, 9.5);
     TAxis *ay(h->GetYaxis());
     ay->SetLabelOffset(0.015);
     for(Int_t i(0); i<AliPID::kSPECIES; i++){
@@ -1074,7 +1074,8 @@ TObjArray* AliTRDcheckESD::Histos()
   fCfContainer->SetStepTitle(1, "TRD");
   fCfContainer->SetStepTitle(2, "TOF");
   
-  fHistos->AddAt(fCfContainer, kNhistos);
+  //  fHistos->AddAt(fCfContainer, kNhistos);
+  fHistos->AddAt(fCfContainer, 0);
   
   return fHistos;
 }
@@ -1101,7 +1102,7 @@ Bool_t AliTRDcheckESD::Load(const Char_t *file, const Char_t *dir, const Char_t 
     return kFALSE;
   }
   fHistos = (TObjArray*)o->Clone(GetName());
-  fCfContainer = (AliCFContainer*)fHistos->At(fHistos->GetEntries());
+  fCfContainer = (AliCFContainer*)fHistos->At(0);
   gFile->Close();
   return kTRUE;
 }
@@ -2210,26 +2211,30 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass, Double_t* 
   delete h3TOFrefNegAll; delete h3TOFrefNegTrk4; delete h3TOFrefNegTrk5; delete h3TOFrefNegTrk6;
   
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
-  if(trendValues && hTRDEffPtPosAll && hTRDEffPtPosAll->Integral()>0.1) {
-    hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-    trendValues[0] = funcConst->GetParameter(0);
-    trendValues[1] = funcConst->GetParError(0);
-  }
-  if(trendValues && hTRDEffPtNegAll && hTRDEffPtNegAll->Integral()>0.1) {
-    hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-    trendValues[2] = funcConst->GetParameter(0);
-    trendValues[3] = funcConst->GetParError(0);
-  }
-  if(trendValues && hTOFEffPtPosAll && hTOFEffPtPosAll->Integral()>0.1) {
-    hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-    trendValues[4] = funcConst->GetParameter(0);
-    trendValues[5] = funcConst->GetParError(0);
-  }
-  if(trendValues && hTOFEffPtNegAll && hTOFEffPtNegAll->Integral()>0.1) {
-    hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
-    trendValues[6] = funcConst->GetParameter(0);
-    trendValues[7] = funcConst->GetParError(0);
-  }
+  if(trendValues && hTRDEffPtPosAll) 
+    if(hTRDEffPtPosAll->Integral()>0.1) {
+      hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[0] = funcConst->GetParameter(0);
+      trendValues[1] = funcConst->GetParError(0);
+    }
+  if(trendValues && hTRDEffPtNegAll) 
+    if(hTRDEffPtNegAll->Integral()>0.1) {
+      hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[2] = funcConst->GetParameter(0);
+      trendValues[3] = funcConst->GetParError(0);
+    }
+  if(trendValues && hTOFEffPtPosAll) 
+    if(hTOFEffPtPosAll->Integral()>0.1) {
+      hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[4] = funcConst->GetParameter(0);
+      trendValues[5] = funcConst->GetParError(0);
+    }
+  if(trendValues && hTOFEffPtNegAll) 
+    if(hTOFEffPtNegAll->Integral()>0.1) {
+      hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
+      trendValues[6] = funcConst->GetParameter(0);
+      trendValues[7] = funcConst->GetParError(0);
+    }
     
   // get matching efficiencies for isolated bunches
   TH3D* h3TPCrefPos_IsolatedBC=0x0; TH3D* h3TPCrefNeg_IsolatedBC=0x0;
