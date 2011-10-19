@@ -179,7 +179,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  
 	  if(cfdtime) {
 	    nent = Int_t(cfdtime->GetEntries());
-	    if( nent<=50 || cfd->GetRMS() == 0 || cfd->GetMean() ) {
+	    if( nent<=50 || cfdtime->GetRMS() == 0 || cfdtime->GetMean() ) {
 	      oktime++;
 	      if(oktime<4) {
 		meancfdtime = 0;
