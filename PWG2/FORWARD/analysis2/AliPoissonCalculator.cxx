@@ -104,7 +104,7 @@ AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
 //____________________________________________________________________
 AliPoissonCalculator::~AliPoissonCalculator()
 {
-  CleanUp();
+  // CleanUp();
 }
 
 //____________________________________________________________________
