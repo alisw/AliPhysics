@@ -8,6 +8,8 @@
  * @ingroup pwg2_forward_trains
  */
 //====================================================================
+#include "TrainSetup.C"
+
 /**
  * Analysis train to make Forward and Central multiplicity
  * 
