@@ -33,10 +33,10 @@
 #include <TROOT.h> 
 #include <TString.h>
 #include <TSystem.h>
-#include <TVectorT.h>
 
 #include "AliLog.h"
 
+#include "AliTRDPIDParams.h"
 #include "AliTRDPIDReference.h"
 #include "AliTRDPIDResponse.h"
 
@@ -262,39 +262,13 @@ Bool_t AliTRDPIDResponse::IdentifiedAsElectron(Int_t nTracklets, const Double_t 
     return kTRUE;
   } 
   Double_t probEle = like[AliPID::kElectron]/(like[AliPID::kElectron] + like[AliPID::kPion]);
-  const TVectorD *params = GetParams(nTracklets, level);
-  if(!params){
+  Double_t params[4];
+  if(!fkPIDParams->GetThresholdParameters(nTracklets, level, params)){
     AliError("No Params found for the given configuration");
     return kTRUE;
   }
-  Double_t threshold = 1. - (*params)[0] - (*params)[1] * p - (*params)[2] * TMath::Exp(-(*params)[3] * p);
+  Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
   if(probEle > TMath::Max(TMath::Min(threshold, 0.99), 0.2)) return kTRUE; // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
   return kFALSE;
 }
 
-//____________________________________________________________
-const TVectorD* AliTRDPIDResponse::GetParams(Int_t ntracklets, Double_t level) const {
-  //
-  // returns the threshold for a given number of tracklets and a given efficiency level
-  //tby definition the lower of step is given.
-  //
-  if(ntracklets > 6 || ntracklets <=0) return NULL;
-  TObjArray * entry = dynamic_cast<TObjArray *>(fkPIDParams->At(ntracklets - 1));
-  if(!entry) return NULL;
-  
-  TObjArray*cut = NULL;
-  TVectorF *effLevel = NULL; const TVectorD *parameters = NULL;
-  Float_t currentLower = 0.;
-  TIter cutIter(entry);
-  while((cut = dynamic_cast<TObjArray *>(cutIter()))){
-    effLevel = static_cast<TVectorF *>(cut->At(0));
-    if((*effLevel)[0] > currentLower && (*effLevel)[0] <= level){
-      // New Lower entry found
-      parameters = static_cast<const TVectorD *>(cut->At(1));
-      currentLower = (*effLevel)[0];
-    }
-  }  
-  AliDebug(2, Form("Taking params for %d tracklets and %f electron Efficiency\n", ntracklets, currentLower));
-
-  return parameters;
-}

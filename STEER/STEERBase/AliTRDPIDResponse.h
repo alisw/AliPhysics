@@ -28,10 +28,9 @@
 #include "AliPID.h"
 #endif
 
-#include <TVectorDfwd.h>
-
 class TObjArray;
 class AliVTrack;
+class AliTRDPIDParams;
 class AliTRDPIDReference;
 class AliTRDPIDResponse : public TObject {
   public:
@@ -66,7 +65,7 @@ class AliTRDPIDResponse : public TObject {
     void      SetOwner();
     void      SetPIDmethod(ETRDPIDMethod m) {fPIDmethod=m;}
     void      SetGainNormalisationFactor(Double_t gainFactor) { fGainNormalisationFactor = gainFactor; }
-    void      SetPIDParams(const TObjArray * params) { fkPIDParams = params; }
+    void      SetPIDParams(const AliTRDPIDParams * params) { fkPIDParams = params; }
 
     Bool_t    Load(const Char_t *filename = NULL, const Char_t *refName = "RefTRDLQ1D");
     Bool_t    Load(const AliTRDPIDReference *ref) { fkPIDReference = ref; return kTRUE; }
@@ -76,10 +75,9 @@ class AliTRDPIDResponse : public TObject {
   private:
     Bool_t    CookdEdx(Int_t nSlice, const Double_t * const in, Double_t *out) const;
     Double_t  GetProbabilitySingleLayer(Int_t species, Double_t plocal, Double_t dEdx) const;
-    const TVectorD * GetParams(Int_t ntracklets, Double_t level) const;
     
     const AliTRDPIDReference *fkPIDReference;   // PID References
-    const TObjArray *fkPIDParams;               // PID Params
+    const AliTRDPIDParams *fkPIDParams;         // PID Params
     Double_t  fGainNormalisationFactor;         // Gain normalisation factor
     ETRDPIDMethod   fPIDmethod;                 // PID method selector
       
