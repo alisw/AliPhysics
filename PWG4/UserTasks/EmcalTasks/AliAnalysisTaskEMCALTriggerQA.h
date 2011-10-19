@@ -57,8 +57,9 @@ private:
   TH1F             *fhNEvents;       //! Number of selected events
   TH2F             *fhFORAmp;        //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
   TH2F             *fhL0Amp;         //! FALTRO signal per Row and Column for FOR involves L0 patch
-  TH2F             *fhL1GAmp;         //! STU signal per Row and Column for FOR involves in L1 Gamma patch
-  TH2F             *fhL1JAmp;         //! STU signal per Row and Column for FOR involves in L1 Jet patch
+  TH2F             *fhL1Amp;         //! STU signal per Row and Column for FOR involves L0 patch
+  TH2F             *fhL1GAmp;         //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
+  TH2F             *fhL1JAmp;         //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
   TH2F             *fhL0Patch;       //! FOR with L0 patch associated
   TH2F             *fhL1GPatch;      //! FOR with L1 Gamma patch associated
   TH2F             *fhL1JPatch;      //! FOR with L1 Jet patch associated
