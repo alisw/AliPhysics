@@ -203,7 +203,8 @@ struct TrainSetup
       fESDPass(3),
       fPassPostfix(""),
       fEscapedName(name),
-      fAllowOverwrite(kFALSE)
+      fAllowOverwrite(kFALSE),
+      fUseGDB(kFALSE)
   {
     char  c[] = { ' ', '/', '@', 0 };
     char* p   = c;
@@ -390,6 +391,13 @@ struct TrainSetup
    * @param postfix Post fix to pass number 
    */
   void SetPassPostfix(const char* postfix) { fPassPostfix = postfix; }
+  //__________________________________________________________________
+  /** 
+   * Use GDB to wrap PROOF slaves 
+   * 
+   * @param use Whether to use GDB or not 
+   */
+  void SetUseGDB(Bool_t use=kTRUE) { fUseGDB = use; }
   //__________________________________________________________________
   /** 
    * Add a source file to be copied and byte compiled on slaves 
@@ -1098,6 +1106,10 @@ protected:
 	      fProofServer.Data(), userName.Data());
 	return false;
       }
+      if (fUseGDB) { 
+	TProof::AddEnvVar("PROOF_WRAPPERCMD", 
+			  "gdb --batch -ex run -ex bt --args ");
+      }
       if (lite) return true;
     }
 
@@ -1544,10 +1556,11 @@ protected:
   TList   fListOfLibraries;  // List of libraries to load
   TList   fListOfExtras;     // List of extra files to upload
   Int_t   fNReplica;         // Storage replication
-  Int_t   fESDPass;
+  Int_t   fESDPass;          // ESD pass number 
   TString fPassPostfix;      // Possible pass postfix
-  TString fEscapedName;
-  Bool_t  fAllowOverwrite;
+  TString fEscapedName;      // Name escaped for special chars
+  Bool_t  fAllowOverwrite;   // Allow overwriting output dir
+  Bool_t  fUseGDB;           // Wrap PROOF slaves in GDB 
 };
 
 
