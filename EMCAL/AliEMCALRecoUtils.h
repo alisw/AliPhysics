@@ -245,7 +245,9 @@ public:
   Bool_t   ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
 
   void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, AliEMCALGeometry *geom=0x0);
-  Int_t    FindMatchedCluster(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom);
+  Int_t    FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
+  Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
+
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack(Int_t trkIndex)   const;
   
@@ -266,15 +268,19 @@ public:
   Float_t  GetCutR()                            const { return fCutR                  ; }
   Float_t  GetCutEta()                          const { return fCutEta                ; }
   Float_t  GetCutPhi()                          const { return fCutPhi                ; }
+  Double_t GetClusterWindow()                   const { return fClusterWindow         ; }
   void     SetCutR(Float_t cutR)                      { fCutR   = cutR                ; }
   void     SetCutEta(Float_t cutEta)                  { fCutEta = cutEta              ; }
   void     SetCutPhi(Float_t cutPhi)                  { fCutPhi = cutPhi              ; }
+  void     SetClusterWindow(Double_t window)          { fClusterWindow = window       ; }
   void     SetCutZ(Float_t cutZ)                      { printf("Obsolete fucntion of cutZ=%1.1f\n",cutZ) ; } //Obsolete
 
   Double_t GetMass()                            const { return fMass                  ; }
-  Double_t GetStep()                            const { return fStep                  ; }
+  Double_t GetStep()                            const { return fStepCluster           ; }
+  Double_t GetStepSurface()                     const { return fStepSurface           ; }
   void     SetMass(Double_t mass)                     { fMass = mass                  ; }
-  void     SetStep(Double_t step)                     { fStep = step                  ; }
+  void     SetStep(Double_t step)                     { fStepCluster = step           ; }
+  void     SetStepSurface(Double_t step)              { fStepSurface = step           ; }
  
   //Cluster cut
   Bool_t   IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells);
@@ -319,8 +325,7 @@ public:
   Bool_t   GetDCAToVertex2D()                  const { return fCutDCAToVertex2D        ; }
 
 
-private:
-  
+private:  
   //Position recalculation
   Float_t    fMisalTransShift[15];       // Shift parameters
   Float_t    fMisalRotShift[15];         // Shift parameters
@@ -377,8 +382,10 @@ private:
   Float_t    fCutR;                      // sqrt(dEta^2+dPhi^2) cut on matching
   Float_t    fCutEta;                    // dEta cut on matching
   Float_t    fCutPhi;                    // dPhi cut on matching
+  Double_t   fClusterWindow;             // Select clusters in the window to be matched
   Double_t   fMass;                      // Mass hypothesis of the track
-  Double_t   fStep;                      // Length of each step used in extrapolation in the unit of cm.
+  Double_t   fStepSurface;               // Length of step to extrapolate tracks to EMCal surface
+  Double_t   fStepCluster;               // Length of step to extrapolate tracks to clusters
 
   // Track cuts  
   Int_t      fTrackCutsType;             // Esd track cuts type for matching
@@ -392,9 +399,9 @@ private:
   Bool_t     fCutAcceptKinkDaughters;    // Accepting kink daughters?
   Float_t    fCutMaxDCAToVertexXY;       // Track-to-vertex cut in max absolute distance in xy-plane
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
-  Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made. Tracks are accepted if sqrt((DCAXY / fCutMaxDCAToVertexXY)^2 + (DCAZ / fCutMaxDCAToVertexZ)^2) < 1 AND sqrt((DCAXY / fCutMinDCAToVertexXY)^2 + (DCAZ / fCutMinDCAToVertexZ)^2) > 1
+  Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
   
-  ClassDef(AliEMCALRecoUtils, 14)
+  ClassDef(AliEMCALRecoUtils, 15)
   
 };
 

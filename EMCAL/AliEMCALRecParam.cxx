@@ -411,6 +411,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   params->SetName("Low Flux - p+p");
   params->SetTitle("Low Flux - p+p");
   params->SetEventSpecie(AliRecoParam::kLowMult);
+  params->SetExtrapolateStep(1);
   
   
   //PID parameters for pp  implemented 

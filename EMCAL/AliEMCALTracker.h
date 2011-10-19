@@ -29,8 +29,10 @@ class TList;
 class TTree;
 class TObjArray;
 class AliESDEvent;
+class AliVCluster;
 class AliESDCaloCluster;
 class AliEMCALTrack;
+class AliExternalTrackParam;
 class AliEMCALRecPoint;
 class AliEMCALGeometry;
 
@@ -63,6 +65,10 @@ public:
 	void                SetStepLength(Float_t length) {fStep=length;}
 	void                SetTrackCorrectionMode(Option_t *option);
 
+	static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Double_t &eta, Double_t &phi);
+	static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi);
+	static Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi);
+
 	enum {	kUnmatched = -99999 };
 	
 	class  AliEMCALMatchCluster : public TObject
@@ -84,7 +90,7 @@ public:
 	};
    
 private:
-	Int_t FindMatchedCluster(AliESDtrack *track);
+	Int_t  FindMatchedCluster(AliESDtrack *track);
 	
 	enum ETrackCorr { 
 		kTrackCorrNone  = 0, // do not correct for energy loss
@@ -96,7 +102,8 @@ private:
 	Double_t    fCutNTPC;         // mimimum number of track hits in the TPC
 	
 	Float_t     fStep;            // Length of each step in propagation
-	ETrackCorr  fTrackCorrMode;   // Material budget correction mode	
+	ETrackCorr  fTrackCorrMode;   // Material budget correction mode
+	Double_t    fClusterWindow;   // Select clusters in the window to be matched to tracks
 	Double_t    fCutEta;	      // cut on eta difference
 	Double_t    fCutPhi;	      // cut on phi difference
 
@@ -105,7 +112,7 @@ private:
 	
 	AliEMCALGeometry *fGeom;      //! EMCAL geometry
 	
-	ClassDef(AliEMCALTracker, 4)  // EMCAL "tracker"
+	ClassDef(AliEMCALTracker, 5)  // EMCAL "tracker"
 };
 
 #endif

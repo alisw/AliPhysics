@@ -64,17 +64,18 @@ ClassImp(AliEMCALTracker)
 //------------------------------------------------------------------------------
 //
 AliEMCALTracker::AliEMCALTracker() 
-  : AliTracker(),
-    fCutPt(0),
-    fCutNITS(0),
-    fCutNTPC(50),
-    fStep(50),
-    fTrackCorrMode(kTrackCorrMMB),	
-    fCutEta(0.025),
-    fCutPhi(0.05),
-    fTracks(0),
-    fClusters(0),
-    fGeom(0)
+: AliTracker(),
+  fCutPt(0),
+  fCutNITS(0),
+  fCutNTPC(50),
+  fStep(10),
+  fTrackCorrMode(kTrackCorrMMB),
+  fClusterWindow(50),
+  fCutEta(0.025),
+  fCutPhi(0.05),
+  fTracks(0),
+  fClusters(0),
+  fGeom(0)
 {
   //
   // Default constructor.
@@ -94,6 +95,7 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
     fCutNTPC(copy.fCutNTPC),
     fStep(copy.fStep),
     fTrackCorrMode(copy.fTrackCorrMode),
+    fClusterWindow(copy.fClusterWindow),
     fCutEta(copy.fCutEta),
     fCutPhi(copy.fCutPhi),
     fTracks((TObjArray*)copy.fTracks->Clone()),
@@ -116,6 +118,7 @@ AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
   //
 
   fCutPt  = copy.fCutPt;
+  fClusterWindow = copy.fClusterWindow;
   fCutEta = copy.fCutEta;
   fCutPhi = copy.fCutPhi;	
   fStep = copy.fStep;
@@ -149,10 +152,10 @@ void AliEMCALTracker::InitParameters()
  
     fCutEta  =  recParam->GetMthCutEta();
     fCutPhi  =  recParam->GetMthCutPhi();
-    fStep    =   recParam->GetExtrapolateStep();
+    fStep    =  recParam->GetExtrapolateStep();
     fCutPt   =  recParam->GetTrkCutPt();
-    fCutNITS = recParam->GetTrkCutNITS();
-    fCutNTPC = recParam->GetTrkCutNTPC();
+    fCutNITS =  recParam->GetTrkCutNITS();
+    fCutNTPC =  recParam->GetTrkCutNTPC();
   }
 	
 }
@@ -272,24 +275,17 @@ Int_t AliEMCALTracker::LoadTracks(AliESDEvent *esd)
   fTracks = new TObjArray(0);
 	
   Int_t nTracks = esd->GetNumberOfTracks();
-  Bool_t isKink=kFALSE;
+  //Bool_t isKink=kFALSE;
   for (Int_t i = 0; i < nTracks; i++) 
     {
       AliESDtrack *esdTrack = esd->GetTrack(i);
       // set by default the value corresponding to "no match"
       esdTrack->SetEMCALcluster(kUnmatched);
+      esdTrack->ResetStatus(AliESDtrack::kEMCALmatch);
 
       //Select good quaulity tracks
       if(esdTrack->Pt()<fCutPt) continue;
       if(esdTrack->GetNcls(1)<fCutNTPC)continue;
-
-      //Reject kink daughters
-      isKink = kFALSE;
-      for (Int_t j = 0; j < 3; j++)
-	{
-	  if (esdTrack->GetKinkIndex(j) != 0) isKink = kTRUE;
-	}
-      if (isKink) continue;
 
       //Loose geometric cut
       Double_t phi = esdTrack->Phi()*TMath::RadToDeg();
@@ -401,39 +397,105 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
     trkParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
   if(!trkParam) return index;
 
+
+  AliExternalTrackParam trkParamTmp(*trkParam);
+  Double_t eta, phi;
+  if(!ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi)) return index;
+  if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
+
   //Perform extrapolation
   Double_t trkPos[3];
+  trkParamTmp.GetXYZ(trkPos);
   Int_t nclusters = fClusters->GetEntries();
   for(Int_t ic=0; ic<nclusters; ic++)
     {
-      //AliExternalTrackParam *trkParamTmp = new AliExternalTrackParam(*trkParam);
-      AliExternalTrackParam trkParamTmp(*trkParam);
       AliEMCALMatchCluster *cluster = (AliEMCALMatchCluster*)fClusters->At(ic);
-      TVector3 vec(cluster->X(),cluster->Y(),cluster->Z());
-      Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
-      //Rotate to proper local coordinate
-      vec.RotateZ(-alpha); 
-      //extrapolation is done here
-      if(!AliTrackerBase::PropagateTrackToBxByBz(&trkParamTmp, vec.X(), track->GetMass(), fStep, kTRUE, 0.8, -1)) continue; 
+      Float_t clsPos[3] = {cluster->X(),cluster->Y(),cluster->Z()};
+      Double_t dR = TMath::Sqrt(TMath::Power(trkPos[0]-clsPos[0],2)+TMath::Power(trkPos[1]-clsPos[1],2)+TMath::Power(trkPos[2]-clsPos[2],2));
+      if(dR > fClusterWindow) continue;
+      
+      AliExternalTrackParam trkParTmp(trkParamTmp);
 
-      //Calculate the residuals
-      trkParamTmp.GetXYZ(trkPos);        
-      TVector3 clsPosVec(cluster->X(),cluster->Y(),cluster->Z());
-      TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-
-      Double_t tmpPhi = clsPosVec.DeltaPhi(trkPosVec);
-      Double_t tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
-  
+      Double_t tmpEta, tmpPhi;
+      if(!ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), fStep, tmpEta, tmpPhi)) continue;
       if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
         {
           maxPhi=tmpPhi;
           maxEta=tmpEta;
           index=ic;
         }
-      //delete trkParamTmp;
       }
   return index;
 }
+
+
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALTracker::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Double_t &eta, Double_t &phi)
+{
+  eta = -999, phi = -999;
+  if(!trkParam) return kFALSE;
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
+  Double_t trkPos[3] = {0.,0.,0.};
+  if(!trkParam->GetXYZ(trkPos)) return kFALSE;
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+  eta = trkPosVec.Eta();
+  phi = trkPosVec.Phi();
+  if(phi<0)
+    phi += 2*TMath::Pi();
+
+  return kTRUE;
+}
+
+
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALTracker::ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi)
+{
+  //
+  //Return the residual by extrapolating a track param to a global position
+  //
+  tmpEta = -999;
+  tmpPhi = -999;
+  if(!trkParam) return kFALSE;
+  Double_t trkPos[3] = {0.,0.,0.};
+  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
+  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), mass, step,kTRUE, 0.8, -1)) return kFALSE;
+  if(!trkParam->GetXYZ(trkPos)) return kFALSE; //Get the extrapolated global position
+
+  TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+
+  // track cluster matching
+  tmpPhi = clsPosVec.DeltaPhi(trkPosVec);    // tmpPhi is between -pi and pi
+  tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
+
+  return kTRUE;
+}
+
+
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALTracker::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi)
+{
+  //
+  //Return the residual by extrapolating a track param to a cluster
+  //
+  tmpEta = -999;
+  tmpPhi = -999;
+  if(!cluster) return kFALSE;
+
+  Float_t clsPos[3] = {0.,0.,0.};
+  cluster->GetPosition(clsPos);
+
+  return ExtrapolateTrackToPosition(trkParam, clsPos, mass, step, tmpEta, tmpPhi);
+}
+
 
 //
 //------------------------------------------------------------------------------
