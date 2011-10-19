@@ -35,6 +35,7 @@
 #include <AliLog.h>
 #include <AliPID.h>
 #include <AliOADBContainer.h>
+#include <AliTRDPIDParams.h>
 #include <AliTRDPIDReference.h>
 
 #include "AliPIDResponse.h"
@@ -67,6 +68,7 @@ fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(kBest_T0),
 fTOFres(100.),
+fEMCALPIDParams(0x0),
 fCurrentEvent(0x0)
 {
   //
@@ -117,6 +119,7 @@ fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(AliPIDResponse::kBest_T0),
 fTOFres(100.),
+fEMCALPIDParams(0x0),
 fCurrentEvent(0x0)
 {
   //
@@ -156,6 +159,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     fResolutionCorrection=0x0;
     fTRDPIDParams=0x0;
     fTRDPIDReference=0x0;
+    fEMCALPIDParams=0x0;
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFTimeZeroType=AliPIDResponse::kBest_T0;
     fTOFres=100.;
@@ -537,6 +541,9 @@ void AliPIDResponse::ExecNewRun()
 
   SetTRDPidResponseMaster(); 
   InitializeTRDResponse();
+
+  SetEMCALPidResponseMaster(); 
+  InitializeEMCALResponse();
   
   fTOFResponse.SetTimeResolution(fTOFres);
 }
@@ -744,7 +751,7 @@ void AliPIDResponse::SetTRDPidResponseMaster()
     AliError("Failed initializing PID Params from OADB");
   } else {
     AliInfo(Form("Loading TRD Params from %s/COMMON/PID/data/TRDPIDParams.root", fOADBPath.Data()));
-    fTRDPIDParams = dynamic_cast<TObjArray *>(contParams.GetObject(fRun));
+    fTRDPIDParams = dynamic_cast<AliTRDPIDParams *>(contParams.GetObject(fRun));
     if(!fTRDPIDParams){
       AliError(Form("TRD Params not found in run %d", fRun));
     }
@@ -798,3 +805,49 @@ Bool_t AliPIDResponse::IdentifiedAsElectronTRD(const AliVTrack *vtrack, Double_t
   return fTRDResponse.IdentifiedAsElectron(ntracklets, probs, p, efficiencyLevel);
 }
 
+//______________________________________________________________________________
+void AliPIDResponse::SetEMCALPidResponseMaster()
+{
+  //
+  // Load the EMCAL pid response functions from the OADB
+  //
+  TObjArray* fEMCALPIDParamsRun      = NULL;
+  TObjArray* fEMCALPIDParamsPass     = NULL;
+
+  if(fEMCALPIDParams) return;
+  AliOADBContainer contParams("contParams"); 
+
+  Int_t statusPars = contParams.InitFromFile(Form("%s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()), "AliEMCALPIDParams");
+  if(statusPars){
+    AliError("Failed initializing PID Params from OADB");
+  } 
+  else {
+    AliInfo(Form("Loading EMCAL Params from %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));
+
+    fEMCALPIDParamsRun = dynamic_cast<TObjArray *>(contParams.GetObject(fRun));
+    if(fEMCALPIDParamsRun)  fEMCALPIDParamsPass = dynamic_cast<TObjArray *>(fEMCALPIDParamsRun->FindObject(Form("pass%d",fRecoPass)));
+    if(fEMCALPIDParamsPass) fEMCALPIDParams     = dynamic_cast<TObjArray *>(fEMCALPIDParamsPass->FindObject(Form("EMCALPIDParams_Particles")));
+
+    if(!fEMCALPIDParams){
+      AliError(Form("EMCAL Params not found in run %d pass %d", fRun, fRecoPass));
+      AliInfo("Will take the standard LHC11a pass2 instead ...");
+
+      fEMCALPIDParamsRun = dynamic_cast<TObjArray *>(contParams.GetObject(144871));
+      if(fEMCALPIDParamsRun)  fEMCALPIDParamsPass = dynamic_cast<TObjArray *>(fEMCALPIDParamsRun->FindObject(Form("pass%d",2)));
+      if(fEMCALPIDParamsPass) fEMCALPIDParams     = dynamic_cast<TObjArray *>(fEMCALPIDParamsPass->FindObject(Form("EMCALPIDParams_Particles")));
+
+      if(!fEMCALPIDParams){
+	AliError(Form("DEFAULT EMCAL Params (LHC11a pass2) not found in file %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));	
+      }
+    }
+  }
+}
+
+//______________________________________________________________________________
+void AliPIDResponse::InitializeEMCALResponse(){
+  //
+  // Set PID Params to the EMCAL PID response
+  // 
+  fEMCALResponse.SetPIDParams(fEMCALPIDParams);
+
+}

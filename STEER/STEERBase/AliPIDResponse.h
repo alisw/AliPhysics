@@ -127,6 +127,8 @@ private:
   Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
   Float_t fTOFres;                     //! TOF resolution
 
+  TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
+
   AliVEvent *fCurrentEvent;            //! event currently being processed
   
   void ExecNewRun();
@@ -148,7 +150,11 @@ private:
   void InitializeTRDResponse();
 
   //TOF
-  
+
+  //EMCAL
+  void SetEMCALPidResponseMaster();
+  void InitializeEMCALResponse();
+
   //
   void SetRecoInfo();
   

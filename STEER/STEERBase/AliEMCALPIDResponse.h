@@ -11,10 +11,12 @@
 // EMCAL class to perfom PID                                            //
 // This is a prototype and still under development                      //
 //                                                                      //
-//                                                                      //
+// Author: Michael Weber (m.weber@cern.ch)                              //
 //////////////////////////////////////////////////////////////////////////
 
 #include "AliPID.h"
+#include <TVectorD.h>
+
 class TF1;
 
 class AliEMCALPIDResponse: public TObject 
@@ -28,22 +30,12 @@ public :
   
 
     // Getters
-    Int_t     GetPtBin(Float_t pt) const;
-    Int_t     GetNPtBins() const {return fNptBins;};
-
-    Float_t   GetLowEoP() const {return fLowEoP;};
-    Float_t   GetHighEoP() const {return fHighEoP;};
-
-    Double_t  GetExpectedSignal( Float_t pt, AliPID::EParticleType n,  Int_t charge) const;
-    Double_t  GetExpectedSigma ( Float_t pt, AliPID::EParticleType n,  Int_t charge) const;
     Double_t  GetNumberOfSigmas( Float_t pt,  Float_t eop, AliPID::EParticleType n,  Int_t charge) const;
     Double_t  GetExpectedNorm  ( Float_t pt, AliPID::EParticleType n,  Int_t charge) const;
-    Double_t  GetLowProb       ( Float_t pt, AliPID::EParticleType n,  Int_t charge) const;
-    Double_t  GetHighProb      ( Float_t pt, AliPID::EParticleType n,  Int_t charge) const;
-
+  
     //Setters
-    void   SetPtBoundary();
-    void   SetParametrizations();
+    void   SetPIDParams(const TObjArray * params) { fkPIDParams = params; }
+    
 
     // EMCAL probability -> should go to another place?
     Double_t ComputeEMCALProbability( Float_t pt, Float_t eop, Int_t charge, Double_t *pEMCAL) const;
@@ -54,16 +46,9 @@ private:
 
   TF1 *fNorm;                            // Gauss function for normalizing NON electron probabilities 
 
-  static const Int_t fNptBins   = 6;     // number of momentum bins
-  static const Float_t fLowEoP;   // lower E/p threshold for NON electrons
-  static const Float_t fHighEoP;   // upper E/p threshold for NON electrons
+  const TObjArray *fkPIDParams;               // PID Params
 
-  Float_t fPtCutMin[fNptBins+1];                       // min values for pt bins
-  Float_t fMeanEoP[2*AliPID::kSPECIES][fNptBins];      // mean value of E/p distribution (charge dependent)
-  Float_t fSigmaEoP[2*AliPID::kSPECIES][fNptBins];     // mean value of E/p distribution (charge dependent)
-  Float_t fProbLow[2*AliPID::kSPECIES][fNptBins];      // probability below E/p threshold for NON electrons (charge dependent)
-  Float_t fProbHigh[2*AliPID::kSPECIES][fNptBins];     // probability above E/p threshold for NON electrons (charge dependent)
-
+  const TVectorD* GetParams(Int_t nParticle, Float_t fPt) const; 
 
   ClassDef(AliEMCALPIDResponse, 1)
 };
