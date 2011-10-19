@@ -727,6 +727,12 @@ protected:
 
     // --- Print setup -----------------------------------------------
     Print();
+    // if (mode == kProof) {
+    // Info("Run", "Exported environment variables to PROOF slaves:");
+    // TProof::GetEnvVars()->ls();
+    // Info("Run", "Environment variables for this session:");
+    // gSystem->Exec("printenv");
+    // }
 
     // --- Initialise the train --------------------------------------
     if (!mgr->InitAnalysis())  {
@@ -1090,8 +1096,8 @@ protected:
 
       // --- Set prefered GSI method ---------------------------------
       gEnv->SetValue("XSec.GSI.DelegProxy", "2");
-      
-      // --- Now open connection to PROOF cluster --------------------
+
+      // --- Figure out some server settings -------------------------
       TString serv = "";
       Bool_t  lite = false;
       if (fProofServer.BeginsWith("workers=") || fProofServer.IsNull()) {
@@ -1100,15 +1106,32 @@ protected:
       }
       else 
 	serv = Form("%s@%s", userName.Data(), fProofServer.Data());
+
+      // --- Possibly debug slave sessions with GDB ------------------
+      if (fUseGDB) { 
+	TString gdbCmd("\"gdb --batch -ex run -ex bt --args\"");
+	Info("Connect", "Using GDB to wrap slaves: %s", gdbCmd.Data());
+	TProof::AddEnvVar("PROOF_WRAPPERCMD", gdbCmd);
+      }
+      
+      // --- Add ALICE_ROOT directory to search path for packages ----
+      gEnv->SetValue("Proof.GlobalPackageDirs", 
+		     Form("%s:%s", 
+			  gEnv->GetValue("Proof.GlobalPackageDirs", "."), 
+			  gSystem->Getenv("ALICE_ROOT")));
+						     
+      // --- Set OADB path on workers --------------------------------
+      const char* oadbPath = AliAnalysisManager::GetOADBPath();
+      TProof::AddEnvVar("OADB_PATH", oadbPath);
+      // if (lite) gSystem->Setenv("OADB_PATH", oadbPath);
+      // Info("Connect", "OADB_PATH=%s", gSystem->Getenv("OADB_PATH"));
+
+      // --- Now open connection to PROOF cluster --------------------
       TProof::Open(serv);
       if (!gProof) { 
 	Error("Connect", "Failed to connect to Proof cluster %s as %s",
 	      fProofServer.Data(), userName.Data());
 	return false;
-      }
-      if (fUseGDB) { 
-	TProof::AddEnvVar("PROOF_WRAPPERCMD", 
-			  "gdb --batch -ex run -ex bt --args ");
       }
       if (lite) return true;
     }
@@ -1165,6 +1188,14 @@ protected:
     gSystem->Load("libVMC.so");
     gSystem->Load("libPhysics.so");
     gSystem->Load("libMinuit.so");
+    if (mode == kProof) { 
+      gProof->Exec("gSystem->Load(\"libTree.so\");");
+      gProof->Exec("gSystem->Load(\"libGeom.so\");");
+      gProof->Exec("gSystem->Load(\"libMinuit.so\");");
+      gProof->Exec("gSystem->Load(\"libVMC.so\");");
+
+      
+    }
 
     Bool_t ret   = true;
     Bool_t basic = mode == kGrid ? false : par;
@@ -1173,6 +1204,7 @@ protected:
     ret &= LoadLibrary("ESD",           mode, basic, false);
     ret &= LoadLibrary("AOD",           mode, basic, false);
     ret &= LoadLibrary("ANALYSIS",      mode, basic, true);
+    ret &= LoadLibrary("OADB",          mode, basic, true);
     ret &= LoadLibrary("ANALYSISalice", mode, basic, true);
 
     return ret;
