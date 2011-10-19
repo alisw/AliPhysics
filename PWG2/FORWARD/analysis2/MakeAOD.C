@@ -43,7 +43,8 @@ void MakeAOD(const char* esddir,
 	     Int_t       proof      = 0,
 	     Bool_t      mc         = false,
 	     Bool_t      centrality = true,
-	     const char* name       = 0)
+	     const char* name       = 0,
+	     bool        debug      = false)
 {
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
@@ -57,6 +58,7 @@ void MakeAOD(const char* esddir,
     t.SetDataDir(esddir);
     t.SetDataSet("");
     t.SetProofServer(Form("workers=%d",proof));
+    t.SetUseGDB(debug);
     t.Run(proof > 0 ? "PROOF" : "LOCAL", "FULL", nEvents, mc, proof > 0);
     return;
   }
