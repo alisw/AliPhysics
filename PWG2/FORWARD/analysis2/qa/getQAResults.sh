@@ -1,20 +1,6 @@
 #!/bin/bash
 
 # --------------------------------------------------------------------
-uid=`id -u`
-genv_file=/tmp/gclient_env_${uid}
-
-if test ! -f ${genv_file} ; then 
-    echo "No such file: ${genv_file}, please do alien-token-init" >/dev/stderr
-    exit 1
-fi
-alien-token-info | grep -q "Token is still valid"
-if test $? -ne 0 ; then 
-    echo "Token not valid, please re-new" > /dev/stderr 
-    exit 1
-fi
-
-# --------------------------------------------------------------------
 verb=0
 
 mess()
@@ -35,6 +21,8 @@ Options:
 	-p,--production  IDENTIFIER   Production identifier [$prod]
 	-y,--year        YEAR         Year of production [$year]
 	-P,--pass 	 NUMBER	      Reconstruction pass number [$pass]
+	-Q,--pre-pass	 STRING	      Prefix to pass identifier [${prep}]
+	-R,--post-pass	 STRING       Postfix to pass identifier [$post]
 	-d,--destination DIRECTORY    Directory to store result in [$dest] 
 	-r,--run         NUMBER       Run number [$runn]
 	-q,--qa          NUMBER       QA number 
@@ -54,6 +42,7 @@ check_file()
     cat <<EOF > ${scr}.C  
 void ${scr}() 
 {
+  int ret = 0;
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTENDER");
@@ -64,20 +53,18 @@ void ${scr}()
   if (!file) { 
     Error("${scr}", "No such file ${inp}");
     exit(1);
-    return false;
   }
   TObject* forward1 = file->Get("Forward");
   if (!forward1) {
     Error("${scr}", "No Forward object found in ${inp}");
-    exit(2);
-    ret = false;
+    ret |= 2;
   } 
   TObject* forward2 = file->Get("ForwardResults");
   if (!forward2) {
     Error("${scr}", "No ForwardResults object found in ${inp}");
-    exit(4);
+    ret |= 4;
   } 
-  exit(0);
+  exit(ret);
 }
 EOF
     # cat ${scr}.C 
@@ -90,15 +77,17 @@ EOF
 }
 
 # --------------------------------------------------------------------
-year=
-prod=
-pass=1
-qual=
+year=""
+prod=""
+pass=-1
+prep=""
+post=""
 dest=.
 runn=0
 qano=0
 noac=0
 arch=0
+file=QAresults.root 
 
 while test $# -gt 0 ; do 
     case $1 in 
@@ -106,17 +95,35 @@ while test $# -gt 0 ; do
 	-v|--verbose)	  let verb=$verb+1  ;; 
 	-p|--production)  prod=$2 ; shift ;; 
 	-P|--pass)        pass=$2 ; shift ;; 
-	-Q|--prepass)     qual=$2 ; shift ;; 
+	-Q|--prepass)     prep=$2 ; shift ;; 
+	-R|--postpass)    post=$2 ; shift ;; 
 	-y|--year)        year=$2 ; shift ;; 
 	-d|--destination) dest=$2 ; shift ;; 
 	-r|--run)         runn=$2 ; shift ;; 
 	-q|--qa)          qano=$2 ; shift ;; 
+	-f|--file)        file=$2 ; shift ;; 
 	-n|--no-action)   noac=1  ;; 
 	-a|--archives)    arch=1  ;; 
 	*) echo "$0: Unknown option $1" > /dev/stderr ; exit 2 ;; 
     esac
     shift
 done
+
+# --------------------------------------------------------------------
+uid=`id -u`
+genv_file=/tmp/gclient_env_${uid}
+
+if test ! -f ${genv_file} ; then 
+    echo "No such file: ${genv_file}, please do alien-token-init" >/dev/stderr
+    exit 1
+fi
+. ${genv_file}
+alien-token-info | grep -q "Token is still valid"
+if test $? -ne 0 ; then 
+    echo "Token not valid, please re-new" > /dev/stderr 
+    exit 1
+fi
+
 
 # --------------------------------------------------------------------
 if test "x$prod" = "x" ; then 
@@ -131,40 +138,70 @@ if test "x$year" = "x" ; then
 	exit 2
     fi
 fi
+lett=`echo $prod | sed -e "s/LHC${year}\(.\).*/\1/"`
+suff=`echo $prod | sed -e "s/LHC${year}${lett}//"`
 
 redir="/dev/null"
-if test $verb -gt 1 ; then redir1=/dev/stderr ; fi
+if test $verb -gt 1 ; then redir=/dev/stderr ; fi
 
 # --------------------------------------------------------------------
-path=/alice/data/20${year}/${prod}/
-store=${dest}/${prod}/${qual}pass${pass}
-search="ESDs/${qual}pass${pass}/"
+if test "x$post" != "x" ; then 
+    case $post in 
+	_*) ;; 
+	*) post="_${post}" ;; 
+    esac
+fi
+if test ${pass} -ge 0 ; then 
+    paid=pass${pass} 
+fi
+datd=data
+esdd=ESDs/
+if test "x${suff}" != "x" ; then 
+    datd=sim
+    esdd=
+fi
+path=/alice/${datd}/20${year}/${prod}/
+store=${dest}/${prod}/${prep}${paid}${post}
+search="${esdd}${prep}${paid}${post}"
 if test $runn -gt 0 ; then 
-    path=`printf "${path}%09d/ESDs/${qual}pass${pass}/" $runn` 
+    path=`printf "${path}%09d/ESDs/${prep}${paid}${pass}${post}/" $runn` 
     store=`printf "${store}/%09d" $runn` 
     search=
 fi
 if test $qano -gt 0 ; then 
-    path=`printf "%sQA%02d/" $path $qano` 
+    if test $runn -gt 0 ; then 
+	path=`printf "%sQA%02d/" $path $qano` 
+    else
+	if test "x$search" != "x" ; then search=${search}/ ; fi
+	search=${search}QA`printf %02d ${qano}`/ 
+    fi
 fi
 if test $arch -gt 0 ; then 
-    search="${search}QA_archive.zip"
-else
-    search="${search}QAresults.root"
+    file=QA_archive.zip
 fi
+base=`basename $file .root`
+if test "x$search" != "x" ; then search=${search}/ ; fi
+search="${search}${file}"
 
+# --------------------------------------------------------------------
 cat <<EOF
 Settings:
 
 	Production:		$prod
 	Year:			$year
+	Letter:                 $lett
+	Suffix:			$suff
 	Pass:			$pass
-	Pass qualifier:		$qual
+	Pass prefix:		$prep
+	Pass postfix:		$post
+	File:			$file
 	Path:                   $path
 	Destination:		$dest
 	Store:			$store
 	Run number:             $runn
 	Search string:		$search
+	Verbosity:		$verb
+	Redirection:		$redir
 EOF
     
 # --------------------------------------------------------------------
@@ -179,15 +216,15 @@ for i in $files ; do
     if test $runn -gt 0 ; then 
 	r=`echo $b | sed -e "s,[0-9]*${runn}\([0-9.]*\)/.*,\1," | tr '.' '_'`
 	if test $arch -lt 1 ; then 
-	    o=${store}/QAresults_${r}.zip
+	    o=${store}/${base}_${r}.root
 	else
 	    d=${store}/${r}
 	    mkdir -p $d
-	    o=${d}/QAarchive.zip 
+	    o=${d}/${file}
 	fi
     else 
 	r=`echo $b | sed -e "s,/.*,,"` 
-	o=${store}/QAresults_${r}.root
+	o=${store}/${base}_${r}.root
     fi
     runs="$runs $r" 
     mess "$i -> $o"
