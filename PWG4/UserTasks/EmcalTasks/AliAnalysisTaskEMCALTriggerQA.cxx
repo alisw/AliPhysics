@@ -47,6 +47,7 @@ fGeometry(0),  fGeoName("EMCAL_COMPLETEV1"),
 fhNEvents(0),
 fhFORAmp(0),
 fhL0Amp(0),
+fhL1Amp(0),
 fhL1GAmp(0),
 fhL1JAmp(0),
 fhL0Patch(0),
@@ -76,6 +77,7 @@ fGeometry(0), fGeoName("EMCAL_COMPLETEV1"),
 fhNEvents(0),
 fhFORAmp(0),
 fhL0Amp(0),
+fhL1Amp(0),
 fhL1GAmp(0),
 fhL1JAmp(0),
 fhL0Patch(0),
@@ -117,65 +119,71 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmp    ->SetXTitle("Index #eta (collumns)");
   fhFORAmp    ->SetYTitle("Index #phi (rows)");
   fhFORAmp    ->SetZTitle("Amplitude");
-
+  
   fhL0Amp      = new TH2F("hL0Amp","FALTRO signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL0Amp     ->SetXTitle("Index #eta (collumns)");
   fhL0Amp     ->SetYTitle("Index #phi (rows)");
   fhL0Amp     ->SetZTitle("Amplitude");
-
+  
+  fhL1Amp      = new TH2F("hL1Amp","STU signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1Amp     ->SetXTitle("Index #eta (collumns)");
+  fhL1Amp     ->SetYTitle("Index #phi (rows)");
+  fhL1Amp     ->SetZTitle("Amplitude");
+  
   fhL1GAmp     = new TH2F("hL1GAmp","STU signal per Row and Column for L1 Gamma",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GAmp    ->SetXTitle("Index #eta (collumns)");
   fhL1GAmp    ->SetYTitle("Index #phi (rows)");
   fhL1GAmp    ->SetZTitle("Amplitude");
-
+  
   fhL1JAmp     = new TH2F("hL1JAmp","STU signal per Row and Column for L1 Jet",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1JAmp    ->SetXTitle("Index #eta (collumns)");
   fhL1JAmp    ->SetYTitle("Index #phi (rows)");
   fhL1JAmp    ->SetZTitle("Amplitude");
-
+  
   fhL0Patch    = new TH2F("hL0Patch","FOR with associated L0 Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL0Patch   ->SetXTitle("Index #eta (collumns)");
   fhL0Patch   ->SetYTitle("Index #phi (rows)");
   fhL0Patch   ->SetZTitle("counts");
-
+  
   fhL1GPatch   = new TH2F("hL1GPatch","FOR with associated L1 Gamma Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1GPatch  ->SetXTitle("Index #eta (collumns)");
   fhL1GPatch  ->SetYTitle("Index #phi (rows)");
   fhL1GPatch  ->SetZTitle("counts");
-
+  
   fhL1JPatch   = new TH2F("hL1JPatch","FOR with associated L1 Jet Patch",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1JPatch  ->SetXTitle("Index #eta (collumns)");
   fhL1JPatch  ->SetYTitle("Index #phi (rows)");
   fhL1JPatch  ->SetZTitle("counts");
-
+  
   fhFullTRUSTU = new TH2I("hFullTRUSTU","Total signal STU vs TRU",fNBinsTRUSignal,0,fMaxTRUSignal,fNBinsSTUSignal,0,fMaxSTUSignal);
   fhFullTRUSTU->SetXTitle("Total signal TRU");
   fhFullTRUSTU->SetYTitle("Total signal STU");
   fhFullTRUSTU->SetZTitle("counts");
-
+  
   fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
   fhV0STU     ->SetXTitle("Signal V0C+V0A");
   fhV0STU     ->SetYTitle("Total signal STU");
   fhV0STU     ->SetZTitle("counts");
-
+  
   fhSTUChecks  = new TH2I("hSTUChecks","Check FEE/STU link",2,0,2,15,0,15);
   fhSTUChecks ->SetXTitle("Index #eta");
   fhSTUChecks ->SetYTitle("Index #phi");
-
+  
   fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
   fhFEESTU    ->SetXTitle("STU/FEE signal");
   fhFEESTU    ->SetYTitle("channel");
   fhFEESTU    ->SetZTitle("counts");
-
+  
   fhTRUSTU     = new TH2F("hTRUSTU","STU / TRU vs channel", fNBinsSTUTRURatio,0,fMaxSTUTRURatio,30,0,30);
   fhTRUSTU    ->SetXTitle("STU/TRU signal");
   fhTRUSTU    ->SetYTitle("channel");
   fhTRUSTU    ->SetZTitle("counts");
-
+  
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);
   fOutputList->Add(fhL0Amp);
+  fOutputList->Add(fhL1Amp);
   fOutputList->Add(fhL1GAmp);
   fOutputList->Add(fhL1JAmp);
   fOutputList->Add(fhL0Patch);
@@ -288,38 +296,37 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       Int_t nTimes = 0;
       trg.GetNL0Times(nTimes);
       
+      Float_t ampL0 = 0.;
+      trg.GetAmplitude(ampL0);
+      emcalTrigL0[posY][posX] += ampL0;
+      totTRU += ampL0;
+      
       if (nTimes) 
 	    {
 	      nL0Patch += nTimes;
-	      Float_t ampL0 = 0.;
-	      trg.GetAmplitude(ampL0);
-	      if (ampL0 > 0) {
-          emcalTrigL0[posY][posX] += ampL0;
-          totTRU                  += ampL0;
-        }
 	      emcalPatchL0[posY][posX] = 1.;
-	      fhL0Patch->Fill(posX-1,60-posY-1);//-1 is used to compare in good way patch L0 and patch L1, 60 is due to FOR reference
+	      fhL0Patch->Fill(posX,59-posY);//59 is due to FOR reference
 	    }
       
       //L1 analysis
       Int_t bit = 0;
       trg.GetTriggerBits(bit);
       
+      Int_t ts = 0;
+      trg.GetL1TimeSum(ts);
+      emcalTrigL1 [posY][posX] += ts;
+      totSTU += ts;
+      
       //L1-Gamma
       if (bit >> 4 & 0x1) 
       {
         nL1Patch ++;
         emcalPatchL1G[posY][posX] = 1.;
-        fhL1GPatch->Fill(posX,60-posY);
+        fhL1GPatch->Fill(posX,59-posY);
         
-        Int_t ts = 0;
-        trg.GetL1TimeSum(ts);
-        if (ts > 0){ 
-          emcalTrigL1G[posY][posX] += ts;
-          emcalTrigL1 [posY][posX] += ts;
-        }
+        emcalTrigL1G[posY][posX] += ts;
+        
         //printf("Gamma STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
-        totSTU += ts;
       }
       
       //L1-Jet
@@ -327,16 +334,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       {
         nL1Patch ++;
         emcalPatchL1J[posY][posX] = 1.;
-        fhL1JPatch->Fill(posX,60-posY);
+        fhL1JPatch->Fill(posX,59-posY);
         
-        Int_t ts = 0;
-        trg.GetL1TimeSum(ts);
-        if (ts > 0){
-          emcalTrigL1J[posY][posX] += ts;
-          emcalTrigL1 [posY][posX] += ts;
-        }
+        emcalTrigL1J[posY][posX] += ts;
+        
         //printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
-        totSTU += ts;
+        
       }
       
     }
@@ -376,12 +379,13 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     {
       fhFORAmp->Fill( j, fgkFALTRORows-i-1, emcalCell   [i][j]);
       fhL0Amp ->Fill( j, fgkFALTRORows-i-1, emcalTrigL0 [i][j]);
+      fhL0Amp ->Fill( j, fgkFALTRORows-i-1, emcalTrigL1 [i][j]);
       fhL1GAmp->Fill( j, fgkFALTRORows-i-1, emcalTrigL1G[i][j]);
       fhL1JAmp->Fill( j, fgkFALTRORows-i-1, emcalTrigL1J[i][j]);
     }
   }
   
-  //TRU checks
+  //FEE-TRU-STU correlation checks
   Double_t ampFOR[30] = {0.}, ampL0[30] = {0.}, ampL1[30] = {0.};
   for (Int_t i = 0; i < fgkFALTRORows; i++) 
   {
@@ -438,8 +442,10 @@ void AliAnalysisTaskEMCALTriggerQA::Terminate(Option_t *)
     TH1F* hTRUSTUChannel = (TH1F*) fhTRUSTU->ProjectionY(Form("hTRUSTUChannel%d",i),i,i);
     //printf("AliAnalysisTaskEMCALTriggerQA::Terminate() - Channel %d TRUSTU Entries %d, Integral(10,20) %f ",
     //      i, hTRUSTUChannel->GetEntries(), hTRUSTUChannel->Integral(10,20));
+    Int_t binMin = hTRUSTUChannel->FindBin(10);
+    Int_t binMax = hTRUSTUChannel->FindBin(20);
     if     (hTRUSTUChannel->GetEntries() > 0 && 
-            hTRUSTUChannel->Integral(10,20)/hTRUSTUChannel->GetEntries() < 0.9) 
+            hTRUSTUChannel->Integral(binMin,binMax)/hTRUSTUChannel->GetEntries() < 0.9) 
       checkSTU[i] = 0;
     else if(hTRUSTUChannel->GetEntries() <= 0)
       checkSTU[i] = 0;
