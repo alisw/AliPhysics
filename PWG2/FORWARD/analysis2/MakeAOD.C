@@ -49,7 +49,7 @@ void MakeAOD(const char* esddir,
   // --- Possibly use plug-in for this -------------------------------
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
     const char* builder = 
-      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C" 
+      "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/trains/BuildTrain.C";
     gROOT->LoadMacro(builder);
 
     BuildTrain("MakeAODTrain");
