@@ -1,4 +1,4 @@
-AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE)
+AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, Bool_t ppRun = kFALSE, const char* outputFileName = 0, Bool_t eventMixing = kTRUE, Bool_t zVtxAxis = kFALSE)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -39,6 +39,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelations(Int_t analysisMode = 0, B
   //ana->SetSelectCharge(2);
   
   ana->SetEventMixing(eventMixing);
+  ana->SetUseVtxAxis(zVtxAxis);
   
 //   ana->SetCompareCentralities(kTRUE);
 //   ana->SetTwoTrackEfficiencyStudy(kTRUE);

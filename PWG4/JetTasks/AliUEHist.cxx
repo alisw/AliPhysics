@@ -136,34 +136,40 @@ AliUEHist::AliUEHist(const char* reqHist) :
   const Int_t kNVertexBins = 7;
   Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
   
+  Bool_t useVtxAxis = kFALSE;
+  
   // selection depending on requested histogram
   Int_t axis = -1; // 0 = pT,lead, 1 = phi,lead
   if (strcmp(reqHist, "NumberDensitypT") == 0)
   {
     axis = 0;
-    title = "d^{2}N_{ch}/d#phid#eta";
+    title = "d^{2}N_{ch}/d#varphid#eta";
   }
   else if (strcmp(reqHist, "NumberDensityPhi") == 0)
   {
     axis = 1;
-    title = "d^{2}N_{ch}/d#phid#eta";
+    title = "d^{2}N_{ch}/d#varphid#eta";
   }
-  else if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0)
+  else if (strcmp(reqHist, "NumberDensityPhiCentrality") == 0 || strcmp(reqHist, "NumberDensityPhiCentralityVtx") == 0)
   {
+    if (strcmp(reqHist, "NumberDensityPhiCentralityVtx") == 0)
+    {
+      reqHist = "NumberDensityPhiCentrality";
+      fHistogramType = reqHist;
+      useVtxAxis = kTRUE;
+    }
     axis = 2;
-    title = "d^{2}N_{ch}/d#phid#eta";
+    title = "d^{2}N_{ch}/d#varphid#eta";
   }
   else if (strcmp(reqHist, "SumpT") == 0)
   {
     axis = 0;
-    title = "d^{2}#Sigma p_{T}/d#phid#eta";
+    title = "d^{2}#Sigma p_{T}/d#varphid#eta";
   }
   else
     AliFatal(Form("Invalid histogram requested: %s", reqHist));
   
   UInt_t initRegions = fkRegions;
-  
-  Bool_t useVtxAxis = kFALSE;
   
   if (axis == 0)
   {
@@ -183,7 +189,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
     
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
-    trackAxisTitle[4] = "#Delta #phi w.r.t. leading track";
+    trackAxisTitle[4] = "#Delta #varphi w.r.t. leading track";
   }
   else if (axis == 2)
   {
@@ -204,7 +210,7 @@ AliUEHist::AliUEHist(const char* reqHist) :
   
     iTrackBin[4] = kNLeadingPhiBins;
     trackBins[4] = leadingPhiBins;
-    trackAxisTitle[4] = "#Delta#phi (rad.)";
+    trackAxisTitle[4] = "#Delta#varphi (rad.)";
 
     if (useVtxAxis)
     {
@@ -540,7 +546,7 @@ void AliUEHist::CountEmptyBins(AliUEHist::CFStep step, Float_t ptLeadMin, Float_
 }  
 
 //____________________________________________________________________
-TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD, Bool_t etaNorm)
+TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Int_t twoD, Bool_t etaNorm, Int_t* normEvents)
 {
   // Extracts the UE histogram at the given step and in the given region by projection and dividing tracks by events
   //
@@ -553,6 +559,8 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   //       11: 1D histogram, within 0.8 < |deltaeta| < 1.6
   //
   // etaNorm: if kTRUE (default), the distributions are divided by the area in delta eta
+  //
+  // normEvents: if non-0 the number of events/trigger particles for the normalization is filled
   
   // unzoom all axes
   ResetBinLimits(fTrackHist[region]->GetGrid(step));
@@ -625,7 +633,7 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     
     if (twoD == 10 || twoD == 11)
     {
-      Float_t etaLimit = 0.8;
+      Float_t etaLimit = 1.0;
       if (twoD == 10)
       {
         tracks = (TH1D*) ((TH2*) tracks)->ProjectionX("proj", tracks->GetYaxis()->FindBin(-etaLimit + 0.01), tracks->GetYaxis()->FindBin(etaLimit - 0.01))->Clone();
@@ -674,6 +682,8 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
     TH1D* events = fEventHist->ShowProjection(0, step);
     Int_t nEvents = (Int_t) events->Integral(firstBin, lastBin);
     Printf("Calculated histogram --> %d events", nEvents);
+    if (normEvents)
+      *normEvents = nEvents;
       
     if (nEvents > 0)
       tracks->Scale(1.0 / nEvents);
@@ -685,6 +695,104 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
   ResetBinLimits(fEventHist->GetGrid(step));
 
   return tracks;
+}
+
+//____________________________________________________________________
+TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm, Bool_t useVertexBins)
+{
+  // Calls GetUEHist(...) for *each* multiplicity bin and performs a sum of ratios:
+  // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
+  // where N is the total number of events/trigger particles and the subscript is the multiplicity bin
+  //
+  // Can only be used for the 2D histogram at present
+  //
+  // Parameters:
+  //   mixed: AliUEHist containing mixed event corresponding to this object
+  //   <other parameters> : check documentation of AliUEHist::GetUEHist
+  
+  Int_t multIter = multBinBegin;
+  
+  TH2* totalTracks = 0;
+  Int_t totalEvents = 0;
+  
+  Int_t vertexBin = 1;
+  TAxis* vertexAxis = fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5);
+  
+  // vertex bin loop
+  while (1)
+  {
+    if (useVertexBins && vertexAxis)
+    {
+      SetZVtxRange(vertexAxis->GetBinLowEdge(vertexBin) + 0.01, vertexAxis->GetBinUpEdge(vertexBin) - 0.01);
+      mixed->SetZVtxRange(vertexAxis->GetBinLowEdge(vertexBin) + 0.01, vertexAxis->GetBinUpEdge(vertexBin) - 0.01);
+      vertexBin++;
+    }
+    
+    // multiplicity loop
+    while (1)
+    {
+      Int_t multBinBeginLocal = multBinBegin;
+      Int_t multBinEndLocal = multBinEnd;
+      
+      if (multBinEnd >= multBinBegin)
+      {
+	multBinBeginLocal = multIter;
+	multBinEndLocal = multIter;
+	multIter++;
+      }
+	
+      Int_t nEvents = 0;
+      TH2* tracks = (TH2*) GetUEHist(step, region, ptLeadMin, ptLeadMax, multBinBeginLocal, multBinEndLocal, 1, etaNorm, &nEvents);
+      // undo normalization
+      tracks->Scale(nEvents);
+      totalEvents += nEvents;
+      
+      TH2* mixedTwoD = (TH2*) mixed->GetUEHist(step, region, ptLeadMin, ptLeadMax, multBinBeginLocal, multBinEndLocal, 1, etaNorm);
+      
+      // asssume flat in dphi, gain in statistics
+  //     TH1* histMixedproj = mixedTwoD->ProjectionY();
+  //     histMixedproj->Scale(1.0 / mixedTwoD->GetNbinsX());
+  //     
+  //     for (Int_t x=1; x<=mixedTwoD->GetNbinsX(); x++)
+  //       for (Int_t y=1; y<=mixedTwoD->GetNbinsY(); y++)
+  // 	mixedTwoD->SetBinContent(x, y, histMixedproj->GetBinContent(y));
+
+  //       delete histMixedproj;
+  
+      // get mixed event normalization by assuming full acceptance at deta of 0 (only works for flat dphi)
+/*      Double_t mixedNorm = mixedTwoD->Integral(1, mixedTwoD->GetNbinsX(), mixedTwoD->GetYaxis()->FindBin(-0.01), mixedTwoD->GetYaxis()->FindBin(0.01));
+      mixedNorm /= mixedTwoD->GetNbinsX() * (mixedTwoD->GetYaxis()->FindBin(0.01) - mixedTwoD->GetYaxis()->FindBin(-0.01) + 1);
+      tracks->Scale(mixedNorm);*/
+      
+      tracks->Scale(mixedTwoD->Integral() / tracks->Integral());
+
+      tracks->Divide(mixedTwoD);
+      
+      delete mixedTwoD;
+      
+      if (!totalTracks)
+	totalTracks = tracks;
+      else
+      {
+	totalTracks->Add(tracks);
+	delete tracks;
+      }
+
+      if (multIter > multBinEnd)
+	break;
+    }
+    
+    if (!useVertexBins || vertexBin > vertexAxis->GetNbins())
+      break;
+  }
+
+  if (useVertexBins)
+    totalEvents = vertexAxis->GetNbins();
+  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+  if (totalEvents > 0)
+    totalTracks->Scale(1.0 / totalEvents);
+  
+  return totalTracks;
 }
 
 //____________________________________________________________________
@@ -888,9 +996,9 @@ void AliUEHist::Correct(AliUEHist* corrections)
     Printf("W-AliUEHist::Correct: fHistogramType not defined. Guessing histogram type...");
     if (fTrackHist[kToward]->GetNVar() < 5)
     {
-      if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}N_{ch}/d#phid#eta") == 0)
+      if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}N_{ch}/d#varphid#eta") == 0)
         fHistogramType = "NumberDensitypT";
-      else if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}#Sigma p_{T}/d#phid#eta") == 0)
+      else if (strcmp(fTrackHist[kToward]->GetTitle(), "d^{2}#Sigma p_{T}/d#varphid#eta") == 0)
         fHistogramType = "SumpT";
     }
     else if (fTrackHist[kToward]->GetNVar() == 5)
@@ -907,7 +1015,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
   
   Printf("AliUEHist::Correct: Correcting %s...", fHistogramType.Data());
   
-  if (strcmp(fHistogramType, "NumberDensitypT") == 0 || strcmp(fHistogramType, "NumberDensityPhi") == 0 || strcmp(fHistogramType, "SumpT") == 0) // the last is for backward compatibilty
+  if (strcmp(fHistogramType, "NumberDensitypT") == 0 || strcmp(fHistogramType, "NumberDensityPhi") == 0 || strcmp(fHistogramType, "SumpT") == 0)
   {
     // ---- track level
     
@@ -1076,7 +1184,7 @@ void AliUEHist::Correct(AliUEHist* corrections)
         }
     }
     
-//     new TCanvas; correlatedContamination->DrawCopy("COLZ");
+    new TCanvas; correlatedContamination->DrawCopy("COLZ");
     CorrectCorrelatedContamination(kCFStepTrackedOnlyPrim, 0, correlatedContamination);
 //     Printf("\n\n\nWARNING ---> SKIPPING CorrectCorrelatedContamination\n\n\n");
     
@@ -1149,6 +1257,7 @@ TH1* AliUEHist::GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_
   ResetBinLimits(sourceContainer->GetGrid(step2));
   if (fEtaMax > fEtaMin && axis1 != 0 && axis2 != 0 && axis3 != 0)
   {
+    Printf("Restricted eta-range to %f %f", fEtaMin, fEtaMax);
     sourceContainer->GetGrid(step1)->SetRangeUser(0, fEtaMin, fEtaMax);
     sourceContainer->GetGrid(step2)->SetRangeUser(0, fEtaMin, fEtaMax);
   }
@@ -1620,7 +1729,7 @@ TH2* AliUEHist::GetCorrelatedContamination()
   
   for (Int_t x=1; x<=tracksStep1->GetNbinsX(); x++)
     for (Int_t y=1; y<=tracksStep1->GetNbinsY(); y++)
-      if (singleParticle->GetBinContent(x) > 0)
+      if (singleParticle->GetBinContent(x) > 0 && triggersStep1->GetBinContent(y) > 0)
         tracksStep1->SetBinContent(x, y, tracksStep1->GetBinContent(x, y) / triggersStep1->GetBinContent(y) * triggersStep2->GetBinContent(y) / singleParticle->GetBinContent(x));
       else
         tracksStep1->SetBinContent(x, y, 0);
@@ -1878,7 +1987,8 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
     // fit in centrality intervals of 20% for efficiency, one bin for contamination
     Float_t* trackingEff = 0;
     Float_t* trackingCont = 0;
-    Int_t centralityBins = 5;
+    Float_t centralityBins[] = { 0, 10, 20, 40, 60, 100 };
+    Int_t nCentralityBins = 5;
     
     Printf("AliUEHist::ExtendTrackingEfficiency: Fitting efficiencies between %f and %f. Extending from %f onwards (within %f < eta < %f)", fitRangeBegin, fitRangeEnd, extendRangeBegin, fEtaMin, fEtaMax);
     
@@ -1886,7 +1996,7 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
     for (Int_t caseNo = 0; caseNo < 2; caseNo++)
     {
       Float_t* target = 0;
-      Int_t centralityBinsLocal = centralityBins;
+      Int_t centralityBinsLocal = nCentralityBins;
       
       if (caseNo == 0)
       {
@@ -1902,7 +2012,10 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
     
       for (Int_t i=0; i<centralityBinsLocal; i++)
       {
-        SetCentralityRange(100.0/centralityBinsLocal*i + 0.1, 100.0/centralityBinsLocal*(i+1) - 0.1);
+	if (centralityBinsLocal == 1)
+	  SetCentralityRange(centralityBins[0] + 0.1, centralityBins[nCentralityBins] - 0.1);
+	else
+	  SetCentralityRange(centralityBins[i] + 0.1, centralityBins[i+1] - 0.1);
         TH1* proj = (caseNo == 0) ? GetTrackingEfficiency(1) : GetTrackingContamination(1);
         if (verbose)
         {
@@ -1931,7 +2044,10 @@ void AliUEHist::ExtendTrackingEfficiency(Bool_t verbose)
             bins[2] = z;
             bins[3] = z2;
             
-            Int_t z2Bin = (Int_t) (fTrackHistEfficiency->GetAxis(3, 0)->GetBinCenter(z2) / (100.0 / centralityBins));
+            Int_t z2Bin = 0;
+	    while (centralityBins[z2Bin+1] < fTrackHistEfficiency->GetAxis(3, 0)->GetBinCenter(z2))
+	      z2Bin++;
+	    
             //Printf("%d %d", z2, z2Bin);
             
             fTrackHistEfficiency->GetGrid(0)->SetElement(bins, 100);

@@ -85,6 +85,7 @@ fReduceMemoryFootprint(kFALSE),
 fFillMixed(kTRUE),
 fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
+fUseVtxAxis(kFALSE),
 // pointers to UE classes
 fAnalyseUE(0x0),
 fHistos(0x0),
@@ -197,8 +198,11 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   	}
 
   // Initialize class to handle histograms 
-  fHistos = new AliUEHistograms("AliUEHistogramsSame", "4");
-  fHistosMixed = new AliUEHistograms("AliUEHistogramsMixed", "4");
+  const char* histType = "4";
+  if (fUseVtxAxis)
+    histType = "5";
+  fHistos = new AliUEHistograms("AliUEHistogramsSame", histType);
+  fHistosMixed = new AliUEHistograms("AliUEHistogramsMixed", histType);
   
   fHistos->SetSelectCharge(fSelectCharge);
   fHistosMixed->SetSelectCharge(fSelectCharge);
