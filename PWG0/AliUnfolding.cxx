@@ -55,6 +55,7 @@ Float_t AliUnfolding::fgRegularizationWeight = 10000;
 Int_t AliUnfolding::fgSkipBinsBegin = 0;
 Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not needed to be changed) step size in minimization
 Float_t AliUnfolding::fgMinuitPrecision = 1e-6;               // minuit precision
+Int_t   AliUnfolding::fgMinuitMaxIterations = 5000;           // minuit maximum number of iterations
 Bool_t AliUnfolding::fgMinimumInitialValue = kFALSE;          // set all initial values at least to the smallest value among the initial values
 Float_t AliUnfolding::fgMinimumInitialValueFix = -1;
 Bool_t AliUnfolding::fgNormalizeInput = kFALSE;               // normalize input spectrum
@@ -391,6 +392,8 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   // set precision
   minuit->SetPrecision(fgMinuitPrecision);
 
+  minuit->SetMaxIterations(fgMinuitMaxIterations);
+
   for (Int_t i=0; i<fgMaxParams; i++)
     (*fgEntropyAPriori)[i] = 1;
 
@@ -509,10 +512,12 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
     result->SetBinContent(i+1, value);
     result->SetBinError(i+1, error);
   }
-  
-  fgCallCount = 0;
+
+  Int_t tmpCallCount = fgCallCount;
+  fgCallCount = 0; // needs to be 0 so that the Chi2Function prints its output
   Chi2Function(dummy, 0, chi2, results, 0);
-  Printf("AliUnfolding::UnfoldWithMinuit: Chi2 of final parameters is = %f", chi2);
+  
+  Printf("AliUnfolding::UnfoldWithMinuit: iterations %d. Chi2 of final parameters is = %f", tmpCallCount, chi2);
   
   delete[] results;
 
