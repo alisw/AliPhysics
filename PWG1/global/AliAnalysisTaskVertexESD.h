@@ -92,6 +92,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhSPDVertexDiffZPileContr3; //! output histo
   TH1F        *fhSPDVertexDiffZPileContr4; //! output histo
   TH1F        *fhSPDVertexDiffZPileContr5; //! output histo
+  TH1F        *fhSPDVertexDiffZPileDefault; //! output histo
   TH1F        *fhSPDContributorsPile; //! output histo
   TH2F        *fhSPDDispContributors; //! output histo
   AliVEvent::EOfflineTriggerTypes    fTriggerType; //flag to set trigger type
