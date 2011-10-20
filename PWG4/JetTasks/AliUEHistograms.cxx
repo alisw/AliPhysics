@@ -79,12 +79,14 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
     fNumberDensityPhi = new AliUEHist("NumberDensityPhi");
   else if (histogramsStr.Contains("4"))
     fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentrality");
+  else if (histogramsStr.Contains("5"))
+    fNumberDensityPhi = new AliUEHist("NumberDensityPhiCentralityVtx");
   
   // do not add this hists to the directory
   Bool_t oldStatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
   
-  if (!histogramsStr.Contains("4"))
+  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5"))
   {
     fCorrelationpT  = new TH2F("fCorrelationpT", ";p_{T,lead} (MC);p_{T,lead} (RECO)", 200, 0, 50, 200, 0, 50);
     fCorrelationEta = new TH2F("fCorrelationEta", ";#eta_{lead} (MC);#eta_{T,lead} (RECO)", 200, -1, 1, 200, -1, 1);
@@ -101,7 +103,7 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms) :
   fCorrelationLeading2Phi = new TH2F("fCorrelationLeading2Phi", ";#Delta #varphi;p_{T,lead} (MC)", 200, -TMath::Pi(), TMath::Pi(), 200, 0, 50);
   fCorrelationMultiplicity = new TH2F("fCorrelationMultiplicity", ";MC tracks;Reco tracks", 100, -0.5, 99.5, 100, -0.5, 99.5);
   
-  if (!histogramsStr.Contains("4"))
+  if (!histogramsStr.Contains("4") && !histogramsStr.Contains("5"))
   {
     fEventCount = new TH2F("fEventCount", ";step;event type;count", AliUEHist::fgkCFSteps+2, -2.5, -0.5 + AliUEHist::fgkCFSteps, 3, -0.5, 2.5);
     fEventCount->GetYaxis()->SetBinLabel(1, "ND");

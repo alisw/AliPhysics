@@ -67,6 +67,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
     virtual	void	SetCompareCentralities(Bool_t flag) { fCompareCentralities = flag; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
+    virtual	void	SetUseVtxAxis(Bool_t flag) { fUseVtxAxis = flag; }
     
     // histogram settings
     void SetTrackingEfficiency( const TH1D* hist) { fkTrackingEfficiency = hist; }
@@ -106,6 +107,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
     Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
+    Bool_t		fUseVtxAxis;              // use z vtx as axis (needs 7 times more memory!)
     
     // Pointers to external UE classes
     AliAnalyseLeadingTrackUE*     fAnalyseUE;      //! points to class containing common analysis algorithms
@@ -141,7 +143,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 1); // Analysis task for Underlying Event analysis w.r.t. leading track
+    ClassDef( AliAnalysisTaskPhiCorrelations, 2); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
 
 class AliDPhiBasicParticle : public AliVParticle

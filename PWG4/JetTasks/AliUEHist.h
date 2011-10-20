@@ -47,9 +47,10 @@ class AliUEHist : public TObject
   
   void CopyReconstructedData(AliUEHist* from);
   
-  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE);
+  TH1* GetUEHist(CFStep step, Region region, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1, Int_t multBinBegin = 0, Int_t multBinEnd = -1, Int_t twoD = 0, Bool_t etaNorm = kTRUE, Int_t* normEvents = 0);
   TH1* GetPtHist(CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Float_t phiMin, Float_t phiMax, Float_t etaMin, Float_t etaMax, Bool_t skipPhiNormalization = kFALSE);
-  
+  TH2* GetSumOfRatios(AliUEHist* mixed, CFStep step, Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm = kTRUE, Bool_t useVertexBins = kFALSE);
+
   TH1* GetTrackEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Int_t source = 1, Int_t axis3 = -1);
   TH1* GetEventEfficiency(CFStep step1, CFStep step2, Int_t axis1, Int_t axis2 = -1, Float_t ptLeadMin = -1, Float_t ptLeadMax = -1);
   TH1* GetBias(CFStep step1, CFStep step2, Int_t region, const char* axis, Float_t leadPtMin = 0, Float_t leadPtMax = -1, Int_t weighting = 0);
