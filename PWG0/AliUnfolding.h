@@ -40,6 +40,7 @@ class AliUnfolding : public TObject
     static void SetChi2Regularization(RegularizationType type, Float_t weight);
     static void SetMinuitStepSize(Float_t stepSize) { fgMinuitStepSize = stepSize; }
     static void SetMinuitPrecision(Float_t pres) {fgMinuitPrecision = pres;}
+    static void SetMinuitMaxIterations(Int_t iter) {fgMinuitMaxIterations = iter;}
     static void SetMinimumInitialValue(Bool_t flag, Float_t value = -1) { fgMinimumInitialValue = flag; fgMinimumInitialValueFix = value; }
     static void SetNormalizeInput(Bool_t flag) { fgNormalizeInput = flag; }
     static void SetNotFoundEvents(Float_t notFoundEvents) { fgNotFoundEvents = notFoundEvents; }
@@ -118,6 +119,7 @@ class AliUnfolding : public TObject
     static Int_t fgSkipBinsBegin;                    // (optional) skip the given number of bins in the regularization
     static Float_t fgMinuitStepSize;                 // (usually not needed to be changed) step size in minimization
     static Float_t fgMinuitPrecision;                // precision used by minuit. default = 1e-6
+    static Int_t   fgMinuitMaxIterations;            // maximum number of iterations used by minuit. default = 5000
     static Bool_t fgMinimumInitialValue;             // set all initial values at least to the smallest value among the initial values
     static Float_t fgMinimumInitialValueFix;         // use this as the minimum initial value instead of determining it automatically
     static Bool_t fgNormalizeInput;                  // normalize input spectrum
