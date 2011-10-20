@@ -19,6 +19,7 @@
 #include "Riostream.h"
 #include "TError.h"
 #include "TMacro.h"
+#include "TInterpreter.h"
 #include "TSystem.h"
 #include "TObjArray.h"
 #include "TObjString.h"
@@ -205,11 +206,20 @@ Long64_t AliAnalysisTaskCfg::ExecuteMacro(const char *newargs)
    Int_t ntasks0 = mgr->GetTasks()->GetEntriesFast();
    TString args = newargs;
    if (args.IsNull()) args = fMacroArgs;
-   Long64_t retval = fMacro->Exec(args);
+   Int_t error = 0;
+   Long64_t retval = fMacro->Exec(args, &error);
+   if (error != TInterpreter::kNoError)
+   {
+      Error("ExecuteMacro", "Macro interpretation failed");
+      return -1;
+   }
    Int_t ntasks = mgr->GetTasks()->GetEntriesFast();
-   Long64_t ptrTask = 1;
-   if (ntasks>ntasks0)
-      ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
+   if (ntasks<=ntasks0)
+   {
+      Error("ExecuteMacro", "The macro did not add any tasks to the manager");
+      return -1;
+   }
+   Long64_t ptrTask = (Long64_t)mgr->GetTasks()->At(ntasks0);
    if (retval >= ptrTask) {
       TObject::SetBit(AliAnalysisTaskCfg::kLoaded, kTRUE);
       fRAddTask = reinterpret_cast<TObject*>(retval);
