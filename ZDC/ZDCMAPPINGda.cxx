@@ -64,6 +64,13 @@ int main(int argc, char **argv) {
   //const Char_t* tableSOD[]  = {"ALL", "no", "SOD", "all", NULL, NULL};
   //monitorDeclareTable(const_cast<char**>(tableSOD));
   
+  char *monitor_table[] = { "ALL", "no", "PHY", "yes", "SOD", "all", NULL };
+  err = monitorDeclareTable(monitor_table);
+  if(err){
+    printf("monitorDeclareTable() failed: %s\n", monitorDecodeError(err));
+    return -1;
+  } 
+  
   int status=0, nphys=0;
   int const kNModules = 10;
   int const kNChannels = 24;
@@ -172,6 +179,7 @@ int main(int argc, char **argv) {
       
       // Initalize raw-data reading and decoding
       AliRawReader *reader = new AliRawReaderDate((void*)event);
+      reader->Reset();
       reader->Select("ZDC");
       // --- Reading event header
       //UInt_t evtype = reader->GetType();
@@ -300,6 +308,7 @@ int main(int argc, char **argv) {
 
       /* free resources */
       free(event);
+ 
     } // event loop    
       
   }
