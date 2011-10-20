@@ -79,7 +79,8 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistFMDSum(0),
   fTriggerClasses(0),
   fMC(kFALSE),
-  fEsdTrackCuts(0)
+  fEsdTrackCuts(0),
+  fTPCOnly(kFALSE)
 {
   // constructor
 }
@@ -678,13 +679,37 @@ Bool_t AliTriggerAnalysis::IsOfflineTriggerFired(const AliESDEvent* aEsd, Trigge
     if (vertex && vertex->GetNContributors() > 0 && (!vertex->IsFromVertexerZ() || vertex->GetDispersion() < 0.02) && TMath::Abs(vertex->GetZv()) < 10.) {
       AliDebug(3,Form("Check on the vertex passed\n"));
       for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){
-	if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
-	  AliDebug(2, Form("pt of track = %f --> check passed\n",aEsd->GetTrack(i)->Pt()));
-	  decision = kTRUE;
-	  break;
-        }
-      }
-    }
+	if (fTPCOnly == kFALSE){
+          if (fEsdTrackCuts->AcceptTrack(aEsd->GetTrack(i))){
+	    AliDebug(2, Form("pt of track = %f --> check passed\n",aEsd->GetTrack(i)->Pt()));
+	    decision = kTRUE;
+	     break;
+          }
+	}
+	else {
+	  // TPC only tracks
+	  AliESDtrack *tpcTrack = fEsdTrackCuts->GetTPCOnlyTrack((AliESDEvent*)aEsd, i);
+	  if (!tpcTrack){
+	    AliDebug(3,Form("track %d is NOT a TPC track",i));
+	    continue;
+	  }
+	  else{
+	    AliDebug(3,Form("track %d IS a TPC track",i));
+	    if (!(fEsdTrackCuts->AcceptTrack(tpcTrack))) {
+	      AliDebug(2, Form("TPC track %d NOT ACCEPTED, pt = %f, eta = %f",i,tpcTrack->Pt(), tpcTrack->Eta()));
+	      delete tpcTrack; tpcTrack = 0x0;
+	      continue;
+	    } // end if the TPC track is not accepted
+	    else{
+	      AliDebug(2, Form("TPC track %d ACCEPTED, pt = %f, eta = %f",i,tpcTrack->Pt(), tpcTrack->Eta()));
+	      decision = kTRUE;
+	      delete tpcTrack; tpcTrack = 0x0;
+	      break;
+	    } // end if the TPC track is accepted
+	  } // end if it is a TPC track
+	} // end if you are looking at TPC only tracks			
+      } // end loop on tracks
+    } // end check on vertex
     else{
       AliDebug(4,Form("Check on the vertex not passed\n"));
       for (Int_t i=0; i<aEsd->GetNumberOfTracks(); ++i){

@@ -93,6 +93,8 @@ class AliTriggerAnalysis : public TObject
     void SetESDTrackCuts(AliESDtrackCuts* cuts) { fEsdTrackCuts = cuts;}
     AliESDtrackCuts* GetESDTrackCuts() const  {return fEsdTrackCuts;}
 
+    void SetTPCOnly(Bool_t bTPCOnly) {fTPCOnly = bTPCOnly;}
+    Bool_t GetTPCOnly() const {return fTPCOnly;}
 
   protected:
     Bool_t IsL0InputFired(const AliESDEvent* aEsd, UInt_t input) const;
@@ -146,7 +148,9 @@ class AliTriggerAnalysis : public TObject
     Bool_t fMC;              // flag if MC is analyzed
     AliESDtrackCuts* fEsdTrackCuts;  //Track Cuts to select ESD tracks
 
-    ClassDef(AliTriggerAnalysis, 15)
+    Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
+
+    ClassDef(AliTriggerAnalysis, 16)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
