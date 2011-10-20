@@ -185,15 +185,24 @@ int main(int argc, char **argv) {
   }
   AliTPCConfigDA config(CONFIG_FILE);
   // check configuration
+  Bool_t  skipAmore=kFALSE;
+
   if ( (Int_t)config.GetValue("NoTimeAnalysis") == 1 ) {
     printf("WARNING: Time analysis was switched off in the configuration file!\n");
     timeAnalysis=kFALSE;
   }
+
   if ( (Int_t)config.GetValue("UseFastDecoder") == 1 ){
     printf("Info: The fast decoder will be used for the processing.\n");
     fastDecoding=kTRUE;
   }
-  
+
+  if ( config.GetConfigurationMap()->GetValue("SkipAmore") ) {
+    skipAmore=((TObjString*)config.GetConfigurationMap()->GetValue("SkipAmore"))->GetString().Atoi();
+    printf("TPCPEDESTALda: Skip Amore set in config\n");
+  }
+
+
   // create calibration object
   AliTPCCalibPedestal calibPedestal(config.GetConfigurationMap()); // pedestal and noise calibration
   calibPedestal.SetAltroMapping(mapping->GetAltroMapping()); // Use altro mapping we got from daqDetDb
@@ -271,45 +280,47 @@ int main(int argc, char **argv) {
   //
   //Send objects to the AMORE DB
   //
-  printf ("AMORE part\n");
-  const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
-  //cheet a little -- temporary solution (hopefully)
-  //
-  //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
-  //table in which the calib objects are stored. This table is dropped each time AmoreDA
-  //is initialised. This of course makes a problem if we would like to store different
-  //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
-  //the AMORE_DA_NAME env variable is overwritten.  
+  if (!skipAmore){
+    printf ("AMORE part\n");
+    const char *amoreDANameorig=gSystem->Getenv("AMORE_DA_NAME");
+    //cheet a little -- temporary solution (hopefully)
+    //
+    //currently amoreDA uses the environment variable AMORE_DA_NAME to create the mysql
+    //table in which the calib objects are stored. This table is dropped each time AmoreDA
+    //is initialised. This of course makes a problem if we would like to store different
+    //calibration entries in the AMORE DB. Therefore in each DA which writes to the AMORE DB
+    //the AMORE_DA_NAME env variable is overwritten.
 
-  //find processed sector
-  Char_t sideName='A';
-  Int_t sector = -1;
-  for ( Int_t roc = 0; roc < 72; roc++ ) {
-    if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
-    if (mapping->GetSideFromRoc(roc)==1) sideName='C';
-    sector = mapping->GetSectorFromRoc(roc);
+    //find processed sector
+    Char_t sideName='A';
+    Int_t sector = -1;
+    for ( Int_t roc = 0; roc < 72; roc++ ) {
+      if ( !calibPedestal.GetCalRocPedestal(roc) ) continue;
+      if (mapping->GetSideFromRoc(roc)==1) sideName='C';
+      sector = mapping->GetSectorFromRoc(roc);
+    }
+  //   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
+    gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",gSystem->Getenv("DATE_ROLE_NAME"),FILE_ID));
+
+    //
+    // end cheet
+    if (sector>-1){
+      TDatime time;
+      TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
+
+      amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
+      Int_t statusDA=0;
+      statusDA+=amoreDA.Send("Pedestals",calibPedestal.GetCalPadPedestal());
+      statusDA+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
+      statusDA+=amoreDA.Send("Info",&info);
+      if ( statusDA )
+        printf("Warning: Failed to write one of the calib objects to the AMORE database\n");
+    }  else {
+      printf("Warning: No data found!\n");
+    }
+    // reset env var
+    if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
   }
-//   gSystem->Setenv("AMORE_DA_NAME",Form("TPC-%c%02d-%s",sideName,sector,FILE_ID));
-  gSystem->Setenv("AMORE_DA_NAME",Form("%s-%s",gSystem->Getenv("DATE_ROLE_NAME"),FILE_ID));
-  
-  //
-  // end cheet
-  if (sector>-1){
-    TDatime time;
-    TObjString info(Form("Run: %u; Date: %s",runNb,time.AsSQLString()));
-    
-    amore::da::AmoreDA amoreDA(amore::da::AmoreDA::kSender);
-    Int_t statusDA=0;
-    statusDA+=amoreDA.Send("Pedestals",calibPedestal.GetCalPadPedestal());
-    statusDA+=amoreDA.Send("Noise",calibPedestal.GetCalPadRMS());
-    statusDA+=amoreDA.Send("Info",&info);
-    if ( statusDA )
-      printf("Warning: Failed to write one of the calib objects to the AMORE database\n");
-  }  else {
-    printf("Warning: No data found!\n");
-  }
-  // reset env var
-  if (amoreDANameorig) gSystem->Setenv("AMORE_DA_NAME",amoreDANameorig);
   
   //
   // Now prepare ASCII files for local ALTRO configuration through DDL.

@@ -155,6 +155,8 @@ int main(int argc, char **argv) {
   Double_t updateInterval=30; //seconds
   TString laserTriggerName("C0LSR-ABCE-NOPF-CENT");
   TString forceLaserTriggerId("-1");
+  TString monitorAttributes=Form("%d",ATTR_ORIGINAL_EVENT);
+  Bool_t  skipAmore=kFALSE;
   
   //amore update interval
   Double_t valConf=config.GetValue("AmoreUpdateInterval");
@@ -163,14 +165,23 @@ int main(int argc, char **argv) {
   //laser trigger class name
   if ( config.GetConfigurationMap()->GetValue("LaserTriggerName") ) {
     laserTriggerName=config.GetConfigurationMap()->GetValue("LaserTriggerName")->GetName();
-    printf("TPCRAWda: Laser trigger class name set to: %s.\n",laserTriggerName.Data());
+    printf("TPCQAda: Laser trigger class name set to: %s.\n",laserTriggerName.Data());
   }
   //force laser trigger id
   if ( config.GetConfigurationMap()->GetValue("ForceLaserTriggerId") ) {
     forceLaserTriggerId=config.GetConfigurationMap()->GetValue("ForceLaserTriggerId")->GetName();
-    printf("TPCRAWda: Force laser trigger Id: %s.\n",forceLaserTriggerId.Data());
+    printf("TPCQAda: Force laser trigger Id: %s.\n",forceLaserTriggerId.Data());
   }
-  
+  //skip the amore part
+  if ( config.GetConfigurationMap()->GetValue("SkipAmore") ) {
+    skipAmore=((TObjString*)config.GetConfigurationMap()->GetValue("SkipAmore"))->GetString().Atoi();
+    printf("TPCQAda: Skip Amore set in config\n");
+  }
+  //monitoring Attributes
+  if ( config.GetConfigurationMap()->GetValue("MonitorAttributes") ) {
+    monitorAttributes=config.GetConfigurationMap()->GetValue("MonitorAttributes")->GetName();
+    printf("TPCQAda: Monitor attributes set in config: %s\n",monitorAttributes.Data());
+  }
   
   //reject laser triggers in a global partition if we have interleaved laser events
   unsigned char classId=0;
@@ -188,15 +199,19 @@ int main(int argc, char **argv) {
     //TODO
     //TODO: in the next release of daq put 49 back to 50!!!
     //TODO
-    for (unsigned char iclassId=0; iclassId<49; ++iclassId){
+    for (unsigned char iclassId=0; iclassId<50; ++iclassId){
       if (iclassId==classId) continue; //exclude laser trigger
       triggerClasses+=Form("%u|",(unsigned int)iclassId);
     }
     triggerClasses.Chop();
-    char *table[5] = {"PHY","Y","*",const_cast<char*>(triggerClasses.Data()),NULL};
+    char *table[5] = {"PHY",
+                      "Y",
+                      const_cast<char*>(monitorAttributes.Data()),
+                      const_cast<char*>(triggerClasses.Data()),NULL};
     monitorDeclareTableExtended(table);
-    printf("TPCRAWda: Using laser trigger class Id: %u\n",(unsigned int)classId);
-    printf("TPCRAWda: Accepted trigger class Ids: %s\n",triggerClasses.Data());
+    printf("TPCQAda: Using laser trigger class Id: %u\n",(unsigned int)classId);
+    printf("TPCQAda: Accepted trigger class Ids: %s\n",triggerClasses.Data());
+    printf("TPCQAda: Monitor attributes used: %s\n",monitorAttributes.Data());
   }
   
   //
@@ -255,7 +270,7 @@ int main(int argc, char **argv) {
       
       // sending to AMOREdb
       if (stopWatch.RealTime()>updateInterval){
-        SendToAmoreDB(&calibQA,runNb);
+        if (!skipAmore) SendToAmoreDB(&calibQA,runNb);
         stopWatch.Start();
       } else {
         stopWatch.Continue();
@@ -283,8 +298,10 @@ int main(int argc, char **argv) {
   //
   //Send objects to the AMORE DB
   //
-  printf ("TPCQAda: AMORE part\n");
-  SendToAmoreDB(&calibQA, runNb);
+  if (!skipAmore){
+    printf ("TPCQAda: AMORE part\n");
+    SendToAmoreDB(&calibQA, runNb);
+  }
   
   return status;
 }

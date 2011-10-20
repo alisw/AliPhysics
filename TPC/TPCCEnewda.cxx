@@ -139,6 +139,7 @@ int main(int argc, char **argv) {
   TString monitoringType("YES");
   TString cdb("local:///local/cdb");
   Int_t   forceTriggerId=-1;
+  Bool_t  skipAmore=kFALSE;
   
   if ( config.GetConfigurationMap()->GetValue("LaserTriggerName") ) {
     laserTriggerName=config.GetConfigurationMap()->GetValue("LaserTriggerName")->GetName();
@@ -154,7 +155,12 @@ int main(int argc, char **argv) {
     forceTriggerId=TMath::Nint(config.GetValue("ForceLaserTriggerId"));
     printf("TPCCEnewda: Only processing triggers with Id: %d.\n",forceTriggerId);
   }
-  
+
+  if ( config.GetConfigurationMap()->GetValue("SkipAmore") ) {
+    skipAmore=((TObjString*)config.GetConfigurationMap()->GetValue("SkipAmore"))->GetString().Atoi();
+    printf("TPCCENEWda: Skip Amore set in config\n");
+  }
+
   //subsribe to laser triggers only in physics partition
   //if the trigger class is not available the return value is -1
   //in this case we are most probably running as a standalone
@@ -280,7 +286,7 @@ int main(int argc, char **argv) {
         // send the data to AMOREdb
         if (stopWatch.RealTime()>updateInterval){
           calibCE.Analyse();
-          SendToAmoreDB(calibCE,runNb);
+          if (!skipAmore) SendToAmoreDB(calibCE,runNb);
           stopWatch.Start();
         } else {
           stopWatch.Continue();
@@ -332,9 +338,11 @@ int main(int argc, char **argv) {
   if (status) {
     status = -2;
   }
-  
-  printf("TPCCEnewda: Amore part %s\n",RESULT_FILE);
-  SendToAmoreDB(calibCE,runNb);
+
+  if (!skipAmore) {
+    printf("TPCCEnewda: Amore part %s\n",RESULT_FILE);
+    SendToAmoreDB(calibCE,runNb);
+  }
   
   return status;
 }

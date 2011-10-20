@@ -138,6 +138,7 @@ int main(int argc, char **argv) {
   TString monitoringType("YES");
   Int_t   forceTriggerId=-1;
   Int_t   saveOption=2; // how to store the object. See AliTPCCalibCE::DumpToFile
+  Bool_t  skipAmore=kFALSE;
   
   if ( config.GetConfigurationMap()->GetValue("LaserTriggerName") ) {
     laserTriggerName=config.GetConfigurationMap()->GetValue("LaserTriggerName")->GetName();
@@ -157,6 +158,11 @@ int main(int argc, char **argv) {
   if ( config.GetConfigurationMap()->GetValue("SaveOption") ) {
     saveOption=TMath::Nint(config.GetValue("SaveOption"));
     printf("TPCCEda: Saving option set to: %d.\n",saveOption);
+  }
+
+  if ( config.GetConfigurationMap()->GetValue("SkipAmore") ) {
+    skipAmore=((TObjString*)config.GetConfigurationMap()->GetValue("SkipAmore"))->GetString().Atoi();
+    printf("TPCCEda: Skip Amore set in config\n");
   }
   
   //subsribe to laser triggers only in physics partition
@@ -274,7 +280,7 @@ int main(int argc, char **argv) {
         // send the data to AMOREdb
         if (stopWatch.RealTime()>updateInterval){
           calibCE->Analyse();
-          SendToAmoreDB(calibCE,runNb);
+          if (!skipAmore) SendToAmoreDB(calibCE,runNb);
           stopWatch.Start();
         } else {
           stopWatch.Continue();
@@ -311,24 +317,22 @@ int main(int argc, char **argv) {
   // Analyse CE data and write them to rootfile
   //
   printf ("TPCCEda: %d events processed, %d used\n",nevents,calibCE->GetNeventsProcessed());
-  
-//   TFile * fileTPC = new TFile (RESULT_FILE,"recreate");
-//   calibCE->Write("tpcCalibCE");
-//   delete fileTPC;
-  
+
+  //save data to file
   calibCE->DumpToFile(RESULT_FILE,Form("name=tpcCalibCE,type=%d",saveOption));
   printf("TPCCEda: Wrote %s\n",RESULT_FILE);
   
   /* store the result file on FES */
-  
   status=daqDA_FES_storeFile(RESULT_FILE,FILE_ID);
   if (status) {
     status = -2;
   }
 
-  printf("TPCCEda: Amore part\n");
-  calibCE->Analyse();
-  SendToAmoreDB(calibCE,runNb);
+  if (!skipAmore){
+    printf("TPCCEda: Amore part\n");
+    calibCE->Analyse();
+    SendToAmoreDB(calibCE,runNb);
+  }
   
   delete calibCE;
   return status;
