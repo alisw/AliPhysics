@@ -69,7 +69,11 @@
 #include "AliESDACORDE.h"
 #include "AliESDHLTDecision.h"
 #include "AliCentrality.h"
+#ifdef MFT_UPGRADE
+#include "AliESDMFT.h"
+#endif
 #include "AliEventplane.h"
+
 
 ClassImp(AliESDEvent)
 
@@ -105,7 +109,11 @@ ClassImp(AliESDEvent)
 							"PHOSCells",
 							"AliRawDataErrorLogs",
 							"AliESDACORDE",
-							"AliTOFHeader"};
+							"AliTOFHeader"
+	                        #ifdef MFT_UPGRADE
+//	                        , "AliESDMFT"
+							#endif
+  };
 
 //______________________________________________________________________________
 AliESDEvent::AliESDEvent():
@@ -145,6 +153,9 @@ AliESDEvent::AliESDEvent():
   fTOFHeader(0),
   fCentrality(0),
   fEventplane(0)
+  #ifdef MFT_UPGRADE
+//  , fESDMFT(0)
+  #endif
 {
 }
 //______________________________________________________________________________
@@ -186,7 +197,13 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
   fCentrality(new AliCentrality(*esd.fCentrality)),
   fEventplane(new AliEventplane(*esd.fEventplane))
+  #ifdef MFT_UPGRADE
+//  , fESDMFT(new AliESDMFT(*esd.fESDMFT))
+  #endif
+
+
 {
+  printf("copying ESD event...\n");   // AU
   // CKB init in the constructor list and only add here ...
   AddObject(fESDRun);
   AddObject(fHeader);
@@ -217,7 +234,9 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   AddObject(fErrorLogs);
   AddObject(fESDACORDE);
   AddObject(fTOFHeader);
-
+  #ifdef MFT_UPGRADE
+//  AddObject(fESDMFT);
+  #endif
   GetStdContent();
 
 }
@@ -461,6 +480,13 @@ void AliESDEvent::ResetStdContent()
     fTrdTrigger->~AliESDTrdTrigger();
     new (fTrdTrigger) AliESDTrdTrigger();
   }
+  #ifdef MFT_UPGRADE
+  //if(fESDMFT){
+//	fESDMFT->~AliESDMFT();
+//	new (fESDMFT) AliESDMFT();
+ // }  
+  #endif
+	
   if(fPHOSTrigger)fPHOSTrigger->DeAllocate(); 
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
@@ -538,6 +564,11 @@ void AliESDEvent::Print(Option_t *) const
   printf("                 CaloClusters %d\n", GetNumberOfCaloClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
+  #ifdef MFT_UPGRADE
+  //printf("                 MFT     %s\n", (fESDMFT ? "yes" : "no"));
+  #endif
+	
+	
   TObject* pHLTDecision=GetHLTTriggerDecision();
   printf("HLT trigger decision: %s\n", pHLTDecision?pHLTDecision->GetOption():"not available");
   if (pHLTDecision) pHLTDecision->Print("compact");
@@ -1109,6 +1140,14 @@ void AliESDEvent::SetTZEROData(AliESDTZERO * obj)
     *fESDTZERO = *obj;
 }
 
+#ifdef MFT_UPGRADE
+//void AliESDEvent::SetMFTData(AliESDMFT * obj)
+//{ 
+//  if(fESDMFT)
+//	*fESDMFT = *obj;
+//}
+#endif
+
 void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
 {
   if(fESDACORDE)
@@ -1182,6 +1221,9 @@ void AliESDEvent::GetStdContent()
   fErrorLogs = (TClonesArray*)fESDObjects->FindObject(fgkESDListName[kErrorLogs]);
   fESDACORDE = (AliESDACORDE*)fESDObjects->FindObject(fgkESDListName[kESDACORDE]);
   fTOFHeader = (AliTOFHeader*)fESDObjects->FindObject(fgkESDListName[kTOFHeader]);
+  #ifdef MFT_UPGRADE
+ // fESDMFT = (AliESDMFT*)fESDObjects->FindObject(fgkESDListName[kESDMFT]);
+  #endif
 }
 
 void AliESDEvent::SetStdNames(){
@@ -1243,7 +1285,10 @@ void AliESDEvent::CreateStdContent()
   AddObject(new TClonesArray("AliRawDataErrorLog",0));
   AddObject(new AliESDACORDE()); 
   AddObject(new AliTOFHeader());
-
+  #ifdef MFT_UPGRADE
+  //AddObject(new AliESDMFT());
+  #endif
+	
   // check the order of the indices against enum...
 
   // set names
@@ -1608,6 +1653,11 @@ void AliESDEvent::CopyFromOldESD()
     for(int i = 0;i<fESDOld->GetNumberOfCaloClusters();i++){
       AddCaloCluster(fESDOld->GetCaloCluster(i));
     }
+	  
+	#ifdef MFT_UPGRADE  
+	// MFT
+//	if (fESDOld->GetMFTData()) SetMFTData(fESDOld->GetMFTData());
+    #endif
 
   }// if fesdold
 }

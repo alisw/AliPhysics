@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 2.8.4 FATAL_ERROR)
 
 #list of detectors 
 #set(ONLINEDETECTORS T00)
-set(ONLINEDETECTORS SPD SDD SSD ACO GRP TST HLT EMC TRI T00 PMD CPV PHS FMD TPC TRD ZDC V00 MTR MCH HMP TOF)
+set(ONLINEDETECTORS SPD SDD SSD ACO GRP TST HLT EMC TRI T00 PMD CPV PHS FMD TPC TRD ZDC V00 MTR MCH HMP TOF MFT)
 function(expand output input)
     string(REGEX MATCH "\\\${[^}]*}" m "${input}")
     while(m)
@@ -25,7 +25,7 @@ endfunction()
 #function to get module for detector
 function (detector_module _module detector)
   #Map of online detectors to DA in pairs of ONLINEDETECTORNAME DAMODULE
-  set (DETECTORMODULEMAP SPD ITS SDD ITS SSD ITS HMP HMPID PHS PHOS CPV PHOS MCH MUON MTR MUON T00 T0 V00 VZERO ACO ACORDE EMC EMCAL)
+  set (DETECTORMODULEMAP SPD ITS SDD ITS SSD ITS HMP HMPID PHS PHOS CPV PHOS MCH MUON MTR MUON T00 T0 V00 VZERO ACO ACORDE EMC EMCAL MFT)
   list(FIND DETECTORMODULEMAP ${detector} _index)
   if(_index STREQUAL "-1")
     set(${_module} "${detector}" PARENT_SCOPE)

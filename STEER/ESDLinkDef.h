@@ -73,7 +73,9 @@
 #pragma link C++ class  AliESDVZERO+;
 #pragma link C++ class  AliESDTZERO+;
 #pragma link C++ class  AliESDACORDE+;
-
+#ifdef MFT_UPGRADE
+//#pragma link C++ class  AliESDMFT+;
+#endif
 
 #pragma link C++ class  AliESDMultITS+;
 #pragma link C++ class  AliMultiplicity+;

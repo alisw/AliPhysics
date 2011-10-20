@@ -123,7 +123,12 @@ public:
   static const char* fgLayerName[kLastLayer - kFirstLayer]; // Name of layers
   static TGeoPNEntry** fgPNEntry[kLastLayer - kFirstLayer]; // TGeoPNEntries
   static AliAlignObj** fgAlignObjs[kLastLayer - kFirstLayer]; // Alignment objects
-  static const Int_t   fgkNDetectors = 15;              // number of detectors
+//   #ifdef MFT_UPGRADE
+//   static const Int_t   fgkNDetectors = 16;              // number of detectors
+//   #else
+//   static const Int_t   fgkNDetectors = 15;              // number of detectors
+//   #endif
+  static const Int_t   fgkNDetectors = 16;              // number of detectors    // AU
   static const char *  fgkDetectorName[fgkNDetectors] ; // name of detectors
   static Int_t       fgNalignable[fgkNDetectors];
 

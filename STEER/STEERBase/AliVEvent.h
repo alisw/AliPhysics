@@ -26,6 +26,7 @@ class AliCentrality;
 class AliEventplane;
 class AliVVZERO;
 class AliVZDC;
+class AliVMFT;   // AU
 
 class AliVEvent : public TObject {
 

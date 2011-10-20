@@ -199,7 +199,12 @@ private:
   time_t          fTimeEnd;            // EOR time-stamp
   
   //QA stuff
-  static const Int_t   fgkNDetectors = 15 ;             // number of detectors
+//   #ifdef MFT_UPGRADE
+//   static const Int_t   fgkNDetectors = 16 ;             // number of detectors
+//   #else
+//   static const Int_t   fgkNDetectors = 15 ;             // number of detectors
+//   #endif
+  static const Int_t   fgkNDetectors = 16 ;             // number of detectors    // AU
   static const char *  fgkDetectorName[fgkNDetectors] ; // names of detectors
   TString              fQADetectors ;                   // list of detectors to be QA'ed 	
   TString              fQATasks ;                       // list of QA tasks to be performed	

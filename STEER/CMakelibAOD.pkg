@@ -1,4 +1,13 @@
+set(MFT_UPGRADE $ENV{MFT_UPGRADE})
+
+if(MFT_UPGRADE)
+set ( SRCS  AliAODEvent.cxx AliAODHeader.cxx AliAODTrack.cxx AliAODPid.cxx AliAODVertex.cxx AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx AliAODJet.cxx AliAODJetEventBackground.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx AliAODExtension.cxx AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx AliAODv0.cxx AliAODcascade.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx AliAODDiJet.cxx AliAODMCParticle.cxx AliAODMCHeader.cxx AliAODPWG4Particle.cxx AliAODPWG4ParticleCorrelation.cxx AliAODDimuon.cxx AliAODpidUtil.cxx AliAODCentrality.cxx AliAODBranchReplicator.cxx AliAODVZERO.cxx)
+
 # -*- mode: CMake -*-
+
+else(MFT_UPGRADE)
+set ( SRCS  AliAODEvent.cxx AliAODHeader.cxx AliAODTrack.cxx AliAODPid.cxx AliAODVertex.cxx AliAODCluster.cxx AliAODCaloCluster.cxx AliAODPmdCluster.cxx AliAODFmdCluster.cxx AliAODJet.cxx AliAODJetEventBackground.cxx AliAODPhoton.cxx AliAODRedCov.cxx AliAODRecoDecay.cxx AliAODExtension.cxx AliAODHandler.cxx AliAODTracklets.cxx AliAODTagCreator.cxx AliAODv0.cxx AliAODcascade.cxx AliAODCaloCells.cxx AliAODInputHandler.cxx AliAODDiJet.cxx AliAODMCParticle.cxx AliAODMCHeader.cxx AliAODPWG4Particle.cxx AliAODPWG4ParticleCorrelation.cxx AliAODDimuon.cxx AliAODpidUtil.cxx AliAODCentrality.cxx AliAODBranchReplicator.cxx AliAODVZERO.cxx)
+endif(MFT_UPGRADE)
 
 set ( SRCS  
     AOD/AliAODEvent.cxx 

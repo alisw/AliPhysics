@@ -98,9 +98,18 @@ AliAlignObj** AliGeomManager::fgAlignObjs[kLastLayer - kFirstLayer] = {
   0x0
 };
 
-const char* AliGeomManager::fgkDetectorName[AliGeomManager::fgkNDetectors] = {"GRP","ITS","TPC","TRD","TOF","PHOS","HMPID","EMCAL","MUON","FMD","ZDC","PMD","T0","VZERO","ACORDE"};
-Int_t AliGeomManager::fgNalignable[fgkNDetectors] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
+const char* AliGeomManager::fgkDetectorName[AliGeomManager::fgkNDetectors] = {"GRP","ITS","TPC","TRD","TOF","PHOS","HMPID","EMCAL","MUON","FMD","ZDC","PMD","T0","VZERO","ACORDE"
+									      // #ifdef MFT_UPGRADE	
+									      //  ,"MFT"
+									      // #endif 
+									      ,"MFT"   // AU
+};
+Int_t AliGeomManager::fgNalignable[fgkNDetectors] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+// #ifdef MFT_UPGRADE
+// 						     , 0
+// #endif 
+						     , 0    // AU
+};
 
 TGeoManager* AliGeomManager::fgGeometry = 0x0;
 

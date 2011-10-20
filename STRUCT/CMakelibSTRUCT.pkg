@@ -43,6 +43,7 @@ set ( SRCS
     AliPIPE.cxx 
     AliPIPEv0.cxx 
     AliPIPEv3.cxx 
+    AliPIPEv4.cxx 
     AliBODY.cxx 
     AliSHILv2.cxx 
     AliSHILv3.cxx

@@ -53,7 +53,11 @@ AliHLTModulePreprocessor::~AliHLTModulePreprocessor()
 }
 
 // TODO: map this constants to AliHLTDAQ class
+#ifndef MFT_UPGRADE
+const Int_t AliHLTModulePreprocessor::kNDetectors = 22;
+#else
 const Int_t AliHLTModulePreprocessor::kNDetectors = 21;
+#endif
 
 const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] = 
 {
@@ -78,6 +82,9 @@ const char* AliHLTModulePreprocessor::fgkDetectorName[kNDetectors] =
   "EMCAL",
   "DAQ_TEST",
   "HLT"
+  #ifndef MFT_UPGRADE
+  , "MFT"
+  #endif
 };
 
 void AliHLTModulePreprocessor::SetShuttleInterface(AliHLTShuttleInterface* pInterface)

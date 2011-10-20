@@ -108,7 +108,7 @@ void runSimulation(int seed,
   
   MuonSim.SetSeed(seed);
   MuonSim.SetTriggerConfig("MUON");
-  MuonSim.SetWriteRawData("MUON HLT","raw.root",kTRUE);
+  MuonSim.SetWriteRawData("MUON ","raw.root",kTRUE);
 
   MuonSim.SetMakeSDigits("MUON");
   MuonSim.SetMakeDigits("MUON ITS"); // ITS needed to propagate the simulated vertex

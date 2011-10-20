@@ -142,6 +142,11 @@ public:
   virtual AliVVZERO    *GetVZEROData() const {return 0;}
   virtual AliVZDC      *GetZDCData()   const {return 0;}
     
+//   #ifdef MFT_UPGRADE
+//   virtual AliVMFT *GetMFTData() const {return 0;}
+//   #endif
+  virtual AliVMFT *GetMFTData() const {return 0;}    // AU
+	
 private:
     virtual void      ReorderAndExpandTreeTR();
     virtual Int_t     FindIndexAndEvent(Int_t oldidx, AliMCEvent*& event) const;

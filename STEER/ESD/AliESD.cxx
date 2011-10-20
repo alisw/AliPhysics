@@ -75,6 +75,9 @@ AliESD::AliESD():
   fESDVZERO(0x0),
   fESDACORDE(0x0),
   fErrorLogs("AliRawDataErrorLog",5)
+  #ifdef MFT_UPGRADE
+ // ,fESDMFT(0x0)
+  #endif
 {
   // 
   // Standar constructor
@@ -138,6 +141,9 @@ AliESD::AliESD(const AliESD& esd):
   fESDVZERO(esd.fESDVZERO),
   fESDACORDE(esd.fESDACORDE),
   fErrorLogs(*((TClonesArray*)esd.fErrorLogs.Clone()))
+  #ifdef MFT_UPGRADE
+  //, fESDMFT(esd.fESDMFT)
+  #endif
 {
   // 
   // copy constructor
@@ -174,7 +180,9 @@ AliESD::~AliESD()
   delete fPHOSTriggerPosition;
   delete fPHOSTriggerAmplitudes;
   delete fESDACORDE;
-
+  #ifdef MFT_UPGRADE
+//  delete fESDMFT;
+  #endif
   fErrorLogs.Delete();
 
 }
@@ -254,7 +262,14 @@ void AliESD::Reset()
   if (fESDACORDE){
       fESDACORDE->~AliESDACORDE();
       new (fESDACORDE) AliESDACORDE();	
-  }
+  }	
+//
+  #ifdef MFT_UPGRADE
+ // if (fESDMFT){
+//	  fESDMFT->~AliESDMFT();
+//	  new (fESDMFT) AliESDMFT();	
+//  }
+  #endif
 //
   fErrorLogs.Delete();
 }
@@ -577,6 +592,9 @@ void AliESD::Print(Option_t *) const
   printf("                 emcal     %d\n", GetNumberOfEMCALClusters());
   printf("                 FMD       %s\n", (fESDFMD ? "yes" : "no"));
   printf("                 VZERO     %s\n", (fESDVZERO ? "yes" : "no"));
+  #ifdef MFT_UPGRADE
+ // printf("                 MFT       %s\n", (fESDMFT ? "yes" : "no"));
+  #endif
 }
 
 void AliESD::SetESDfriend(const AliESDfriend *ev) {

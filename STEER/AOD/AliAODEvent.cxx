@@ -50,6 +50,9 @@ ClassImp(AliAODEvent)
 						      "dimuons",
 						      "AliAODVZERO",
 						      "AliAODZDC"
+#ifdef MFT_UPGRADE	  
+						      ,"AliAODMFT"
+#endif						      
 						      
 };
 //______________________________________________________________________________
@@ -73,6 +76,9 @@ AliAODEvent::AliAODEvent() :
   fDimuons(0),
   fAODVZERO(0),
   fAODZDC(0)
+#ifdef MFT_UPGRADE
+  ,fAODMFT(0)
+#endif
 {
   // default constructor
 }
@@ -98,6 +104,9 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   fDimuons(new TClonesArray(*aod.fDimuons)),
   fAODVZERO(new AliAODVZERO(*aod.fAODVZERO)),
   fAODZDC(new AliAODZDC(*aod.fAODZDC))
+#ifdef MFT_UPGRADE
+  ,fAODMFT(new AliAODMFT(*aod.fAODMFT))
+#endif
 {
   // Copy constructor
   AddObject(fHeader);
@@ -115,6 +124,9 @@ AliAODEvent::AliAODEvent(const AliAODEvent& aod):
   AddObject(fDimuons);
   AddObject(fAODVZERO);
   AddObject(fAODZDC);
+#ifdef MFT_UPGRADE	
+  AddObject(fAODVZERO);
+#endif
   fConnected = aod.fConnected;
   GetStdContent();
   CreateStdFolders();
@@ -274,6 +286,9 @@ void AliAODEvent::CreateStdContent()
   AddObject(new TClonesArray("AliAODDimuon", 0));
   AddObject(new AliAODVZERO());
   AddObject(new AliAODZDC());
+#ifdef MFT_UPGRADE
+  AddObject(new AliAODMFT());
+#endif
   // set names
   SetStdNames();
 
@@ -359,6 +374,9 @@ void AliAODEvent::GetStdContent()
   fDimuons       = (TClonesArray*)fAODObjects->FindObject("dimuons");
   fAODVZERO      = (AliAODVZERO*)fAODObjects->FindObject("AliAODVZERO");
   fAODZDC        = (AliAODZDC*)fAODObjects->FindObject("AliAODZDC");
+#ifdef MFT_UPGRADE
+  fAODMFT        = (AliAODMFT*)fAODObjects->FindObject("AliAODMFT");
+#endif
 }
 
 //______________________________________________________________________________

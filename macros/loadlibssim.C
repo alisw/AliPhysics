@@ -96,6 +96,13 @@ Int_t loadlibssim ()
   if ( gSystem->Load("libHLTinterface") < 0 ) return ret; ret--;
   if ( gSystem->Load("libHLTsim") < 0 ) return ret; ret--;
   if ( gSystem->Load("libHLTrec") < 0 ) return ret; ret--;
-  
+
+  #ifdef MFT_UPGRADE 
+  if ( gSystem->Load("libMFTbase") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMFTrec") < 0 ) return ret; ret--;
+  if ( gSystem->Load("libMFTsim") < 0 ) return ret; ret--;
+  #endif
+	
+	
   return 0;
 }

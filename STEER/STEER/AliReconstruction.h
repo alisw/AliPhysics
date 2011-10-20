@@ -163,7 +163,12 @@ public:
   void    SetRunPlaneEff(Bool_t flag=kFALSE)  {fRunPlaneEff = flag;}
 
   enum {
-    kNDetectors = 15   // number of detectors
+// #ifdef MFT_UPGRADE 
+//     kNDetectors = 16   // number of detectors
+// #else
+//     kNDetectors = 15   // number of detectors
+// #endif 
+    kNDetectors = 16   // number of detectors    // AU
   };
   static Int_t   GetDetIndex(const char * detector);
 

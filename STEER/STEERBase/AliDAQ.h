@@ -69,19 +69,29 @@ class AliDAQ: public TObject {
   static const char *OnlineName(Int_t detectorID);
 
   enum {
-    kNDetectors = 21,    // Number of detectors
+// #ifdef MFT_UPGRADE
+//     kNDetectors = 22,    // Number of detectors
+// #else
+//     kNDetectors = 21,    // Number of detectors
+// #endif
+    kNDetectors = 22,    // Number of detectors   // AU
     kHLTId = 30          // HLT detector index
   };
-
+  
   enum DetectorBits {kSPD = 0x0001, kSDD = 0x0002, kSSD = 0x0004, kITS = 0x0007, 
 		     kTPC = 0x0008, kTRD = 0x0010, kTOF = 0x0020, kHMPID = 0x0040, 
 		     kPHOS = 0x0080, kCPV = 0x0100, kPMD = 0x0200, kMUONTRK = 0x0400,
 		     kMUONTRG = 0x0800, kMUON = 0x0c00, kFMD = 0x1000, kT0 = 0x2000, kVZERO = 0x4000,
 		     kZDC = 0x8000, kACORDE = 0x10000, kTRG = 0x20000, kEMCAL = 0x40000,
-		     kDAQTEST = 0x80000, kHLT = 0x40000000 };
-
- private:
-
+		     kDAQTEST = 0x80000, kHLT = 0x40000000
+// #ifdef MFT_UPGRADE
+// 		     ,kMFT = 0x80000000
+// #endif
+		     ,kMFT = 0x80000000     // AU
+  };
+  
+private:
+  
   static const char *fgkDetectorName[kNDetectors]; // Detector names
   static Int_t       fgkNumberOfDdls[kNDetectors]; // Number of DDLs per detector
   static Float_t     fgkNumberOfLdcs[kNDetectors]; // Number of LDCs per detector (not fixed - used only for the raw data simulation)

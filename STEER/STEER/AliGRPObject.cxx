@@ -395,12 +395,14 @@ void AliGRPObject::ReadValuesFromMap(const TMap* mapGRP){
 	}
 	if(mapGRP->GetValue("fNumberOfDetectors")){
 		SetNumberOfDetectors((Char_t)(((TObjString*)(mapGRP->GetValue("fNumberOfDetectors")))->GetString()).Atoi()); 
+		AliDebug(1, Form("fNumberOfDetectors = %d", fNumberOfDetectors));
 	}
 	else { 
 		AliError(Form("No fNumberOfDetectors value found in GRP map!"));
 	}
 	if(mapGRP->GetValue("fDetectorMask")){
 		SetDetectorMask((UInt_t)(((TObjString*)(mapGRP->GetValue("fDetectorMask")))->GetString()).Atoi());  
+		AliDebug(1, Form("fDetectorMask = %d",fDetectorMask));
 	}
 	else { 
 		AliError(Form("No fDetectorMask value found in GRP map!"));

@@ -205,7 +205,13 @@
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
-const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT"};
+const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
+// #ifdef MFT_UPGRADE
+//                                                                                   , "MFT"
+// #endif 
+                                                                                  , "MFT"    // AU
+										  , "HLT"
+};
 
 //_____________________________________________________________________________
 AliReconstruction::AliReconstruction(const char* gAliceFilename) :
@@ -1076,6 +1082,7 @@ Bool_t AliReconstruction::InitGRP() {
     AliError("GRP/GRP/Data entry:  missing value for the detector mask ! Using 1074790399");
     activeDetectors = 1074790399;
   }
+  AliDebug(1, Form("activeDetectors = %d", activeDetectors));
 
   fRunInfo = new AliRunInfo(lhcState, beamType, beamEnergy, runType, activeDetectors);
   fRunInfo->Dump();
@@ -1084,7 +1091,9 @@ Bool_t AliReconstruction::InitGRP() {
   // Process the list of active detectors
   if (activeDetectors) {
     UInt_t detMask = activeDetectors;
+    AliDebug(1, Form("Detector List = %s", fRunLocalReconstruction.Data()));
     fRunLocalReconstruction = MatchDetectorList(fRunLocalReconstruction,detMask);
+    AliDebug(1, Form("Detector List = %s", fRunLocalReconstruction.Data()));
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
@@ -2470,15 +2479,22 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       // https://savannah.cern.ch/bugs/?35473
       AliInfo("running reconstruction for HLT");
       if (fRawReader) {
+	AliInfo("reconstructor->Reconstruct(fRawReader, NULL)");
         reconstructor->Reconstruct(fRawReader, NULL);
-      } else {
+      } 
+      else {
+	AliInfo("reconstructor->Reconstruct(dummy, NULL)");
         TTree* dummy=NULL;
         reconstructor->Reconstruct(dummy, NULL);
       }
     }
   }
+
+  AliInfo(Form("kNDetectors = %d",kNDetectors));
+
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!IsSelected(fgkDetectorName[iDet], detStr)) continue;
+    AliDebug(1, Form("Detector: %s", fgkDetectorName[iDet]));
     AliReconstructor* reconstructor = GetReconstructor(iDet);
     if (!reconstructor) continue;
     AliLoader* loader = fLoader[iDet];
@@ -2503,20 +2519,28 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     // local reconstruction
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
     //AliCodeTimerAuto(Form("running reconstruction for %s", fgkDetectorName[iDet]),0);
+    AliDebug(1, "Loading Rec Points");
     loader->LoadRecPoints("update");
+    AliDebug(1, "Cleaning Rec Points");
     loader->CleanRecPoints();
+    AliDebug(1, "Making Rec Points Container");
     loader->MakeRecPointsContainer();
     TTree* clustersTree = loader->TreeR();
     if (fRawReader && !reconstructor->HasDigitConversion()) {
       reconstructor->Reconstruct(fRawReader, clustersTree);
-    } else {
+    } 
+    else {
+      AliDebug(1, "Loading Digits");
       loader->LoadDigits("read");
       TTree* digitsTree = loader->TreeD();
+      AliDebug(1, Form("Digits Tree = %p",digitsTree));
       if (!digitsTree) {
         AliError(Form("Can't get the %s digits tree", fgkDetectorName[iDet]));
         if (fStopOnError) 
           return kFALSE;
-      } else {
+      } 
+      else {
+	AliDebug(1, "Digits -> Clusters");
         reconstructor->Reconstruct(digitsTree, clustersTree);
         if (fRunQA && IsInTasks(AliQAv1::kDIGITSR)) {
           AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;

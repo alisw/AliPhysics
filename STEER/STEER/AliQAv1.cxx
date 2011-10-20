@@ -57,7 +57,11 @@ TFile    *     AliQAv1::fgQAResultFile         = 0x0 ;
 TString        AliQAv1::fgQAResultDirName      = "" ;  
 TString        AliQAv1::fgQAResultFileName     = "QA.root" ; 
 TString        AliQAv1::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-                                                  "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
+                                                  "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"
+												  #ifdef MFT_UPGRADE
+												  , "MFT" 
+												  #endif 
+												  } ;   
 TString        AliQAv1::fgGRPPath              = "GRP/GRP/Data" ; 
 TString        AliQAv1::fgTaskNames[]          = {"Raws", "Hits", "SDigits", "Digits", "DigitsR", "RecPoints", "TrackSegments", "RecParticles", "ESDs"} ;   
 TString        AliQAv1::fgModeNames[]          = {"", "Sim", "Rec", "QA"} ;   

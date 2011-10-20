@@ -351,7 +351,7 @@ void AliMUONTrack::AddTrackParamAtCluster(const AliMUONTrackParam &trackParam, A
   }
   
   // check whether track parameters are given at the correct cluster z position
-  if (cluster.GetZ() != trackParam.GetZ()) {
+  if (TMath::Abs(cluster.GetZ() - trackParam.GetZ())>1.e-5) {   // AU
     AliError("track parameters are given at a different z position than the one of the associated cluster");
     return;
   }

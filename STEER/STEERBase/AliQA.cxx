@@ -57,7 +57,11 @@ TFile    * AliQA::fgQAResultFile         = 0x0 ;
 TString    AliQA::fgQAResultDirName      = "" ;  
 TString    AliQA::fgQAResultFileName     = "QA.root" ; 
 TString    AliQA::fgDetNames[]           = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD",
-                                            "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"} ;   
+                                            "ZDC", "PMD", "T0", "VZERO", "ACORDE", "HLT", "Global", "CORR"
+											#ifdef MFT_UPGRADE
+	                                        , "MFT"
+											#endif 
+											};   
 TString    AliQA::fgGRPPath              = "GRP/GRP/Data" ; 
 TString    AliQA::fgRTNames[]            = {"UNKNOWN", "AUTO_TEST", "CALIBRATION", "CALIBRATION_PULSER", "CHANNEL_DELAY_TUNING", "COSMIC", 
 																						"COSMICS", "DAQ_FO_UNIF_SCAN", "DAQ_GEN_DAC_SCAN", "DAQ_MEAN_TH_SCAN", "DAQ_MIN_TH_SCAN", 

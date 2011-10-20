@@ -32,11 +32,21 @@ ClassImp(AliShuttleInterface)
 
 // names of the detectors preprocessors
 const char* AliShuttleInterface::fgkDetName[kNDetectors] = {"SPD", "SDD", "SSD", "TPC", "TRD", "TOF",
-       "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00", "GRP", "HLT", "ACO", "TRI"};
+       "PHS", "CPV", "HMP", "EMC", "MCH", "MTR", "FMD", "ZDC", "PMD", "T00", "V00", "GRP", "HLT", "ACO", "TRI"
+// #ifdef MFT_UPGRADE
+// 							    , "MFT" 
+// #endif 
+							    , "MFT"     // AU
+       };
 
 // names of the detectors in OCDB
 const char* AliShuttleInterface::fgkOfflineDetName[kNDetectors] = {"ITS", "ITS", "ITS", "TPC", "TRD", "TOF",
-       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "GRP", "HLT", "ACORDE", "TRIGGER"};
+       "PHOS", "PHOS", "HMPID", "EMCAL", "MUON", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "GRP", "HLT", "ACORDE", "TRIGGER"
+// #ifdef MFT_UPGRADE
+// 	   , "MFT" 
+// #endif 
+								   , "MFT"     // AU
+	   };
 
 TString AliShuttleInterface::fgkMainCDB("alien://folder=ShuttleCDB");
 TString AliShuttleInterface::fgkLocalCDB("local://LocalShuttleCDB");

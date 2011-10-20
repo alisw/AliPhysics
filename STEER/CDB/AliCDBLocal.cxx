@@ -39,6 +39,8 @@ fBaseDirectory(baseDir)
 {
 // constructor
 
+  AliDebug(1, Form("fBaseDirectory = %s",fBaseDirectory.Data()));
+
 	// check baseDire: trying to cd to baseDir; if it does not exist, create it
 	void* dir = gSystem->OpenDirectory(baseDir);
 	if (dir == NULL) {
@@ -101,6 +103,8 @@ Bool_t AliCDBLocal::FilenameToId(const char* filename, AliCDBRunRange& runRange,
 //_____________________________________________________________________________
 Bool_t AliCDBLocal::IdToFilename(const AliCDBId& id, TString& filename) const {
 // build file name from AliCDBId data (run range, version, subVersion)
+
+  AliDebug(1, Form("fBaseDirectory = %s",fBaseDirectory.Data()));
 
 	if (!id.GetAliCDBRunRange().IsValid()) {
 		AliDebug(2,Form("Invalid run range <%d, %d>.", 

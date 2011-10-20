@@ -31,7 +31,13 @@ set ( CSRCS fpu.c)
 
 set ( ELIBSDIR )
 
+set(MFT_UPGRADE $ENV{MFT_UPGRADE})
+  
+if(MFT_UPGRADE)
+set ( ELIBS  MUONevaluation 	MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM microcern HLTbase TRIGGERbase STEER STAT CDB AOD  STEERBase ESD ANALYSIS RAWDatasim RAWDatarec RAWDatabase)
+else(MFT_UPGRADE)
 set ( ELIBS  MUONevaluation 	MUONmapping MUONshuttle MUONgraphics MUONsim MUONrec MUONgeometry MUONcalib MUONbase MUONraw MUONtrigger MUONcore TPCbase TPCsim TPCrec TPCfast ITSbase ITSsim ITSrec PMDbase PMDsim PMDrec TRDbase TRDsim TRDrec FMDbase FMDsim FMDrec TOFbase TOFrec TOFsim PHOSUtils PHOSbase PHOSsim PHOSrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDrec HMPIDsim ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec EMCALraw BCM STRUCT T0base T0sim T0rec FASTSIM microcern HLTbase TRIGGERbase STEER STAT CDB AOD  STEERBase ESD ANALYSIS RAWDatasim RAWDatarec RAWDatabase)
+endif(MFT_UPGRADE)
 
 if(PYTHIA6)
   list(APPEND ELIBS EVGEN)
@@ -48,7 +54,11 @@ if( ALICE_TARGET STREQUAL "macosx")
 
 endif( ALICE_TARGET STREQUAL "macosx")
 
-set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
+if(MFT_UPGRADE)
+  set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec MFTbase MFTsim MFTrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
+else(MFT_UPGRADE)
+  set (ARPACKS FMDbase FMDsim FMDrec ACORDEbase ACORDEsim ACORDErec HMPIDbase HMPIDsim HMPIDrec ZDCbase ZDCsim ZDCrec VZERObase VZEROsim VZEROrec EMCALUtils EMCALbase EMCALsim EMCALrec T0base T0sim T0rec TOFbase TOFsim TOFrec TRDbase TRDsim TRDrec PMDbase PMDsim PMDrec MUONmapping MUONmapping MUONgeometry MUONbase MUONsim MUONrec MUONraw PHOSUtils PHOSbase PHOSsim PHOSrec HLTbase ITSbase ITSsim ITSrec STRUCT TPCbase TPCsim TPCrec TPCfast STEER CDB ESD STEERBase RAWDatabase RAWDatasim RAWDatarec MDC TRIGGERbase)
+endif(MFT_UPGRADE)
 
 set(GFILES)
 foreach (pkg ${ARPACKS})

@@ -32,6 +32,9 @@
 #include "AliAODDimuon.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
+#ifdef MFT_UPGRADE
+#include "AliAODMFT.h"
+#endif
 
 class TTree;
 class TFolder;
@@ -57,6 +60,9 @@ class AliAODEvent : public AliVEvent {
 		       kAODVZERO,
 		       kAODZDC,
 		       kAODListN
+	           #ifdef MFT_UPGRADE
+	           ,kAODVZERO
+			   #endif
   };
 
   AliAODEvent();
@@ -249,6 +255,11 @@ class AliAODEvent : public AliVEvent {
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
 
+#ifdef MFT_UPGRADE
+  // MFT 
+  AliAODMFT *GetMFTData() const { return fAODMFT; }
+#endif
+
   private :
 
   TList   *fAODObjects; //  list of AODObjects
@@ -270,6 +281,9 @@ class AliAODEvent : public AliVEvent {
   TClonesArray    *fDimuons;      //! dimuons
   AliAODVZERO     *fAODVZERO;     //! VZERO AOD
   AliAODZDC       *fAODZDC;       //! ZDC AOD
+#ifdef MFT_UPGRADE
+  AliAODMFT       *fAODMFT;       //! VZERO AOD
+#endif
   
   static const char* fAODListName[kAODListN]; //!
 

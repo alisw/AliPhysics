@@ -347,6 +347,8 @@ Int_t AliRunLoader::SetEventNumber(Int_t evno)
 AliCDBEntry* AliRunLoader::GetCDBEntry(const char* name) const
 {
 //Get an AliCDBEntry from the run data storage
+  
+  AliDebug(1, Form("Getting CDBEntry with name %s",name));
 
   if ( !(AliCDBManager::Instance()->IsDefaultStorageSet()) ) {
     AliError("No run data storage defined!");

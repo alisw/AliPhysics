@@ -106,5 +106,6 @@
 #pragma link C++ class  TTreeStream+;
 #pragma link C++ class  TTreeSRedirector+;
 
+#pragma link C++ class AliVMFT+;
 
 #endif
