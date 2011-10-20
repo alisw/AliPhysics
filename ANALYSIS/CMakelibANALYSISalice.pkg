@@ -58,6 +58,7 @@ set ( SRCS
     AliPIDResponseInputHandler.cxx 
     AliHEPDataParser.cxx 
     AliAnalysisTaskPIDqa.cxx 
+    AliAnalysisTaskBaseLine.cxx
     )
 
 if( ROOTHASALIEN STREQUAL "yes")
