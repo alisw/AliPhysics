@@ -498,7 +498,8 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
   //
   // Fill PID qa histograms for the HMPID
   //
-  
+
+  /*
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
@@ -506,6 +507,7 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
     
   }
+  */
 }
 
 //______________________________________________________________________________
