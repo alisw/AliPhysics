@@ -1,3 +1,4 @@
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -206,9 +207,11 @@ int AliHLTEMCALAgent::GetHandlerDescription(AliHLTComponentDataType dt,
                                             AliHLTOUTHandlerDesc& desc) const
 {
     // see header file for class documentation
-    
+
+    // FIXME: there is memory allocated in the mapper, this happens for every event
+    // and is time consuming, think about initializing the mappers only once, or make
+    // the mapper class more flexible to handle more than one specification
     AliHLTEMCALMapper mapper(spec);
-    mapper.InitDDLSpecificationMapping();
     
     // raw data blocks to be fed into offline reconstruction
     if (dt==(kAliHLTDataTypeDDLRaw|kAliHLTDataOriginEMCAL)) 

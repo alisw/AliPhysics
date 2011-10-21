@@ -1,3 +1,5 @@
+// $Id$
+
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
  * Physics Group, Dep. of Physics                                         *
@@ -125,6 +127,7 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 void 
 AliHLTEMCALMapper::InitDDLSpecificationMapping()
 {
+  if (fSpecificationMapPtr) delete [] fSpecificationMapPtr;
   fSpecificationMapPtr = new fDDLSpecificationMap[NMODULES*NRCUSPERMODULE];
   
   for(Int_t ddl = 0; ddl < NMODULES*NRCUSPERMODULE; ddl++)
