@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
   //monitorDeclareTable(const_cast<char**>(tableSOD));
   
   char *monitor_table[] = { "ALL", "no", "PHY", "yes", "SOD", "all", NULL };
-  err = monitorDeclareTable(monitor_table);
+  int err = monitorDeclareTable(monitor_table);
   if(err){
     printf("monitorDeclareTable() failed: %s\n", monitorDecodeError(err));
     return -1;
@@ -121,6 +121,7 @@ int main(int argc, char **argv) {
   
   /* log start of process */
   printf("\n ZDC MAPPING program started\n");  
+  signal(SIGSEGV, SIG_DFL);
 
   /* check that we got some arguments = list of files */
   if (argc<2) {
