@@ -717,11 +717,16 @@ TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHi
   
   Int_t vertexBin = 1;
   TAxis* vertexAxis = fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5);
+  if (useVertexBins && !vertexAxis)
+  {
+    Printf("Vertex axis requested but not available");
+    return 0;
+  }
   
   // vertex bin loop
   while (1)
   {
-    if (useVertexBins && vertexAxis)
+    if (useVertexBins)
     {
       SetZVtxRange(vertexAxis->GetBinLowEdge(vertexBin) + 0.01, vertexAxis->GetBinUpEdge(vertexBin) - 0.01);
       mixed->SetZVtxRange(vertexAxis->GetBinLowEdge(vertexBin) + 0.01, vertexAxis->GetBinUpEdge(vertexBin) - 0.01);
