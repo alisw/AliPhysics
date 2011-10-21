@@ -39,6 +39,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fListBF(0),
   fListBFS(0),
   fHistEventStats(0),
+  fHistCentStats(0),
   fHistTriggerStats(0),
   fHistTrackStats(0),
   fHistVx(0),
@@ -51,6 +52,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistEta(0),
   fHistPhi(0),
   fHistV0M(0),
+  fHistRefTracks(0),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
   fCentralityPercentileMin(0.), 
@@ -148,10 +150,18 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
     fHistEventStats->GetXaxis()->SetBinLabel(i,gCutName[i-1].Data());
   fList->Add(fHistEventStats);
 
+  TString gCentName[9] = {"V0M","FMD","TRK","TKL","CL0","CL1","V0MvsFMD","TKLvsV0M","ZEMvsZDC"};
+  fHistCentStats = new TH2F("fHistCentStats",
+                             "Centrality statistics;;Cent percentile",
+			    9,-0.5,8.5,220,-5,105);
+  for(Int_t i = 1; i <= 9; i++)
+    fHistCentStats->GetXaxis()->SetBinLabel(i,gCentName[i-1].Data());
+  fList->Add(fHistCentStats);
+
   fHistTriggerStats = new TH1F("fHistTriggerStats","Trigger statistics;TriggerBit;N_{events}",130,0,130);
   fList->Add(fHistTriggerStats);
 
-  fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TriggerBit;N_{events}",130,0,130);
+  fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",130,0,130);
   fList->Add(fHistTrackStats);
 
   // Vertex distributions
@@ -177,6 +187,11 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fList->Add(fHistPhi);
   fHistV0M  = new TH2F("fHistV0M","V0 Multiplicity C vs. A",500, 0, 20000, 500, 0, 20000);
   fList->Add(fHistV0M);
+  TString gRefTrackName[6] = {"tracks","tracksPos","tracksNeg","tracksTPConly","clusITS0","clusITS1"};
+  fHistRefTracks  = new TH2F("fHistRefTracks","Nr of Ref tracks/event vs. ref track estimator;;Nr of tracks",6, 0, 6, 400, 0, 20000);
+  for(Int_t i = 1; i <= 6; i++)
+    fHistRefTracks->GetXaxis()->SetBinLabel(i,gRefTrackName[i-1].Data());
+  fList->Add(fHistRefTracks);
 
 
   // Balance function histograms
@@ -381,12 +396,35 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       // 	  <<"  ZEMvsZDC = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC")
       // 	  <<endl;
 
+      // QA for centrality estimators
+      fHistCentStats->Fill(0.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
+      fHistCentStats->Fill(1.,aodHeader->GetCentralityP()->GetCentralityPercentile("FMD"));
+      fHistCentStats->Fill(2.,aodHeader->GetCentralityP()->GetCentralityPercentile("TRK"));
+      fHistCentStats->Fill(3.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKL"));
+      fHistCentStats->Fill(4.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL0"));
+      fHistCentStats->Fill(5.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL1"));
+      fHistCentStats->Fill(6.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+      fHistCentStats->Fill(7.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+      fHistCentStats->Fill(8.,aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+
       // take only events inside centrality class
       if(fCentrality > fCentralityPercentileMin && fCentrality < fCentralityPercentileMax){
 
 	// centrality QA (V0M)
 	fHistV0M->Fill(gAOD->GetVZEROData()->GetMTotV0A(), gAOD->GetVZEROData()->GetMTotV0C());
       
+	// centrality QA (reference tracks)
+	fHistRefTracks->Fill(0.,aodHeader->GetRefMultiplicity());
+	fHistRefTracks->Fill(1.,aodHeader->GetRefMultiplicityPos());
+	fHistRefTracks->Fill(2.,aodHeader->GetRefMultiplicityNeg());
+	fHistRefTracks->Fill(3.,aodHeader->GetTPConlyRefMultiplicity());
+	fHistRefTracks->Fill(4.,aodHeader->GetNumberOfITSClusters(0));
+	fHistRefTracks->Fill(5.,aodHeader->GetNumberOfITSClusters(1));
+	fHistRefTracks->Fill(6.,aodHeader->GetNumberOfITSClusters(2));
+	fHistRefTracks->Fill(7.,aodHeader->GetNumberOfITSClusters(3));
+	fHistRefTracks->Fill(8.,aodHeader->GetNumberOfITSClusters(4));
+
+
 	const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
 
 	if(vertex) {

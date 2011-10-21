@@ -1,6 +1,9 @@
 const TString gBFAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
-void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
+const Double_t cent[9]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
+const Double_t centE[9] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
+
+void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 1, Int_t fRebin = 1) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -13,19 +16,23 @@ void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResul
   gSystem->Load("libPWG2ebye.so");
 
   //Draw BF              
-  drawBF(bHistos,inFile);
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin);
 
   //Merge the output
   //mergeOutput("/alice/cern.ch/user/p/pchrist/Balance/pp/7TeV/LHC10b/output/");
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
+void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1) {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 10;
   Int_t iCanvas         = 0;
   TCanvas *cQA[10];
+  TCanvas *cQAV0M = new TCanvas("cQAV0M","V0M multiplicities");
+  cQAV0M->Divide(4,3);
+  TCanvas *cQARef = new TCanvas("cQARef","reference track multiplicities");
+  cQARef->Divide(4,3);
   TCanvas *cBF[10];
   TCanvas *cBFS[10];
 
@@ -54,6 +61,13 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
   TH1D *gbf[10][7];
   TH1D *gbfs[10][7];
 
+  for(Int_t i = 0; i < 10; i++){
+    for(Int_t j = 0; j < 7; j++){
+      gbf[i][j] = NULL;
+      gbfs[i][j] = NULL;
+    }
+  }
+
   TH1D *fHistP[7]; //N+
   TH1D *fHistN[7]; //N-
   TH1D *fHistPN[7]; //N+-
@@ -67,6 +81,11 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
   TH1D *fHistNPS[7]; //N-+
   TH1D *fHistPPS[7]; //N++
   TH1D *fHistNNS[7]; //N--
+
+  Double_t WM[10];     // weighted mean for eta (recalculated from fStartBin)
+  Double_t WME[10];    // error
+  Double_t WMS[10];     // weighted mean for eta (recalculated from fStartBin) (shuffled)
+  Double_t WMSE[10];    // error (shuffled)
 
   while ( (key = (TKey*)nextkey())) {
 
@@ -82,64 +101,103 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
       iCanvas ++;
       if(iCanvas == 10) {cout<<"TOO MANY LISTS --> increase MAXIMUM"<<endl; return;}
       cQA[iCanvas] = new TCanvas(listName,listName);
-      cQA[iCanvas]->Divide(3,3);
+      cQA[iCanvas]->Divide(4,3);
 
-      cQA[iCanvas]->cd(1);
+     cQA[iCanvas]->cd(1);
+      TH1F* histEventStats = (TH1F*)list->FindObject("fHistEventStats");
+      if(histEventStats){
+	histEventStats->SetFillColor(9);
+	histEventStats->Draw();
+      }
+
+      cQA[iCanvas]->cd(2);
+      TH1F* histTriggerStats = (TH1F*)list->FindObject("fHistTriggerStats");
+      if(histTriggerStats){
+	histTriggerStats->SetFillColor(9);
+	histTriggerStats->Draw();
+      }
+
+     cQA[iCanvas]->cd(3);
+      TH1F* histTrackStats = (TH1F*)list->FindObject("fHistTrackStats");
+      if(histTrackStats){
+	histTrackStats->SetFillColor(9);
+	histTrackStats->Draw();
+      }
+
+      cQA[iCanvas]->cd(4);
+      TH1F* histCentStats = (TH1F*)list->FindObject("fHistCentStats");
+      if(histCentStats){
+	histCentStats->SetFillColor(9);
+	histCentStats->Draw("colz");
+      }
+
+
+
+      cQA[iCanvas]->cd(5);
       TH1F* histVx = (TH1F*)list->FindObject("fHistVx");
       if(histVx){
 	histVx->SetFillColor(9);
 	histVx->Draw();
       }
-      cQA[iCanvas]->cd(2);
+      cQA[iCanvas]->cd(6);
       TH1F* histVy = (TH1F*)list->FindObject("fHistVy");
       if(histVy){
 	histVy->SetFillColor(9);
 	histVy->Draw();
       }
       
-      cQA[iCanvas]->cd(3);
+      cQA[iCanvas]->cd(7);
       TH1F* histVz = (TH1F*)list->FindObject("fHistVz");
       if(histVz){
 	histVz->SetFillColor(9);
 	histVz->Draw();
       }
-      
-      cQA[iCanvas]->cd(4);
-      TH1F* histEventStats = (TH1F*)list->FindObject("fHistEventStats");
-      if(histEventStats){
-	histEventStats->SetFillColor(9);
-	histEventStats->Draw();
-      }
-      
-      cQA[iCanvas]->cd(5);
-      cQA[iCanvas]->cd(5)->SetLogz();
-      TH2F* histClus = (TH2F*)list->FindObject("fHistClus");
-      if(histClus) histClus->Draw("colz");
-      
-      cQA[iCanvas]->cd(6);
-      cQA[iCanvas]->cd(6)->SetLogz();
+
+      cQA[iCanvas]->cd(8);
+      cQA[iCanvas]->cd(8)->SetLogz();
       TH2F* histDCA = (TH2F*)list->FindObject("fHistDCA");  
       if(histDCA) histDCA->Draw("colz");
       
-      cQA[iCanvas]->cd(7);
+
+      cQA[iCanvas]->cd(9);
+      cQA[iCanvas]->cd(9)->SetLogz();
+      TH2F* histClus = (TH2F*)list->FindObject("fHistClus");
+      if(histClus) histClus->Draw("colz");
+      
+      cQA[iCanvas]->cd(10);
       TH1F* histPt = (TH1F*)list->FindObject("fHistPt");
       if(histPt){
 	histPt->SetFillColor(9);
 	histPt->Draw();
       }
       
-      cQA[iCanvas]->cd(8);
+      cQA[iCanvas]->cd(11);
       TH1F* histEta = (TH1F*)list->FindObject("fHistEta");
       if(histEta){
 	histEta->SetFillColor(9);
 	histEta->Draw();
       }
       
-      cQA[iCanvas]->cd(9);
+      cQA[iCanvas]->cd(12);
       TH1F* histPhi = (TH1F*)list->FindObject("fHistPhi");
       if(histPhi){
 	histPhi->SetFillColor(9);
 	histPhi->Draw();
+      }
+
+      // centrality estimator QA
+      cQAV0M->cd(iCanvas);
+      cQAV0M->cd(iCanvas)->SetLogz();
+      TH1F* histV0M = (TH1F*)list->FindObject("fHistV0M");
+      if(histV0M){
+	histV0M->Draw("colz");
+      }
+
+      cQARef->cd(iCanvas);
+      cQARef->cd(iCanvas)->SetLogz();
+      TH1F* histRef = (TH1F*)list->FindObject("fHistRefTracks");
+      if(histRef){
+	histRef->Draw("colz");
       }
     }
     // ----------------------------------------------------
@@ -164,6 +222,14 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s",gBFAnalysisType[a].Data()));
 	fHistNN[a] = (TH1D*)list->FindObject(Form("fHistNN%s",gBFAnalysisType[a].Data()));
 
+	// rebin histograms (be careful with divider!)
+	fHistP[a]->Rebin(fRebin);
+	fHistN[a]->Rebin(fRebin);
+	fHistPP[a]->Rebin(fRebin);
+	fHistPN[a]->Rebin(fRebin);
+	fHistNP[a]->Rebin(fRebin);
+	fHistNN[a]->Rebin(fRebin);
+
 	// set histograms in AliBalance object
 	bf[iCanvas][a]->SetHistNp(a, fHistP[a]);
 	bf[iCanvas][a]->SetHistNn(a, fHistN[a]);
@@ -179,7 +245,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	gbf[iCanvas][a]->SetMarkerStyle(20);
 
 	if(!bHistos){
-	  gbf[iCanvas][a]->Draw("AP");
+	  gbf[iCanvas][a]->DrawCopy("AP");
+	  if(a==1) GetWeightedMean(gbf[iCanvas][a],fStartBinBFWidth,WM[iCanvas-1],WME[iCanvas-1]); // for eta recalculate width (from 0.1 only!)
 	}
 	else{
 	  fHistPN[a]->SetLineColor(2);
@@ -198,7 +265,6 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
     // ----------------------------------------------------
     // calculate and plot BF (shuffled)
     if(listName.Contains("BFShuffled")){
-  
       cBFS[iCanvas] = new TCanvas(listName,listName);
       cBFS[iCanvas]->Divide(3,3);
 
@@ -214,6 +280,14 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	fHistNPS[a] = (TH1D*)list->FindObject(Form("fHistNP%s_shuffle",gBFAnalysisType[a].Data()));
 	fHistNNS[a] = (TH1D*)list->FindObject(Form("fHistNN%s_shuffle",gBFAnalysisType[a].Data()));
 
+	// rebin histograms (be careful with divider!)
+	fHistPS[a]->Rebin(fRebin);
+	fHistNS[a]->Rebin(fRebin);
+	fHistPPS[a]->Rebin(fRebin);
+	fHistPNS[a]->Rebin(fRebin);
+	fHistNPS[a]->Rebin(fRebin);
+	fHistNNS[a]->Rebin(fRebin);
+
 	// set histograms in AliBalance object
 	bfs[iCanvas][a]->SetHistNp(a, fHistPS[a]);
 	bfs[iCanvas][a]->SetHistNn(a, fHistNS[a]);
@@ -228,7 +302,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
 	cBFS[iCanvas]->cd(a+1);
 	gbfs[iCanvas][a]->SetMarkerStyle(20);
 	if(!bHistos){
-	  gbfs[iCanvas][a]->Draw("AP");
+	  gbfs[iCanvas][a]->DrawCopy("AP");
+	  if(a==1) GetWeightedMean(gbfs[iCanvas][a],fStartBinBFWidth,WMS[iCanvas-1],WMSE[iCanvas-1]); // for eta recalculate width (from 0.1 only!)
 	}
 	else{
 	  fHistPNS[a]->SetLineColor(2);
@@ -245,14 +320,89 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root") {
     // ----------------------------------------------------
   }
 
-  TFile *fOut = TFile::Open(Form("Histograms_%s",inFile.Data()),"RECREATE");
+  // for BF calculation create also graphs with weighted mean for eta
+  TGraphErrors *gWM  = NULL;
+  TGraphErrors *gWMS = NULL;
+  if(!bHistos && gbf[1][1]){
+    gWM = new TGraphErrors(iCanvas,cent,WM,centE,WME);
+    gWM->SetName("gCentrality");    
+  }
+  if(!bHistos && gbfs[1][1]){
+    gWMS = new TGraphErrors(iCanvas,cent,WMS,centE,WMSE);  
+    gWMS->SetName("gCentralityS");
+  }
+
+  TFile *fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_%s", fStartBinBFWidth, fRebin,inFile.Data()),"RECREATE");
   fOut->cd();
-  for(Int_t i = 0; i < iCanvas; i++){
+  for(Int_t i = 0; i <= iCanvas; i++){
     for(Int_t a = 0; a < 7; a++){
-      if(gbf[iCanvas][a]) gbf[iCanvas][a]->Write();
-      if(gbfs[iCanvas][a]) gbfs[iCanvas][a]->Write();
+      if(gbf[i][a]){
+	gbf[i][a]->Write();
+	gbf[i][a]->Delete();
+      }
+      if(gbfs[i][a]){
+	gbfs[i][a]->Write();
+	gbfs[i][a]->Delete();	
+      }
     }
   }
+
+  if(gWM) gWM->Write();
+  if(gWMS) gWMS->Write();
+
+  fOut->Close();
+  f->Close();
+  gROOT->Reset();
+}
+
+//____________________________________________________________________//
+void GetWeightedMean(TH1D *gHistBalance, Int_t fStartBin = 1, Double_t &WM, Double_t &WME) {
+
+  //Prints the calculated width of the BF and its error
+  Double_t gSumXi = 0.0, gSumBi = 0.0, gSumBiXi = 0.0;
+  Double_t gSumBiXi2 = 0.0, gSumBi2Xi2 = 0.0;
+  Double_t gSumDeltaBi2 = 0.0, gSumXi2DeltaBi2 = 0.0;
+  Double_t deltaBalP2 = 0.0, integral = 0.0;
+  Double_t deltaErrorNew = 0.0;
+
+  //Retrieve this variables from Histogram
+  Int_t fNumberOfBins = gHistBalance->GetNbinsX();
+  Double_t fP2Step    = gHistBalance->GetBinWidth(1); // assume equal binning!
+  
+  cout<<"=================================================="<<endl;
+  cout<<"RECALCULATION OF BF WIDTH (StartBin = "<<fStartBin<<")"<<endl;
+  cout<<"HISTOGRAM has "<<fNumberOfBins<<" bins with bin size of "<<fP2Step<<endl;
+  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) { 
+    cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
+  } 
+  cout<<"=================================================="<<endl;
+  for(Int_t i = fStartBin; i <= fNumberOfBins; i++) {
+    gSumXi += gHistBalance->GetBinCenter(i);
+    gSumBi += gHistBalance->GetBinContent(i);
+    gSumBiXi += gHistBalance->GetBinContent(i)*gHistBalance->GetBinCenter(i);
+    gSumBiXi2 += gHistBalance->GetBinContent(i)*TMath::Power(gHistBalance->GetBinCenter(i),2);
+    gSumBi2Xi2 += TMath::Power(gHistBalance->GetBinContent(i),2)*TMath::Power(gHistBalance->GetBinCenter(i),2);
+    gSumDeltaBi2 +=  TMath::Power(gHistBalance->GetBinError(i),2);
+    gSumXi2DeltaBi2 += TMath::Power(gHistBalance->GetBinCenter(i),2) * TMath::Power(gHistBalance->GetBinError(i),2);
+    
+    deltaBalP2 += fP2Step*TMath::Power(gHistBalance->GetBinError(i),2);
+    integral += fP2Step*gHistBalance->GetBinContent(i);
+  }
+  for(Int_t i = 1; i < fNumberOfBins; i++)
+    deltaErrorNew += gHistBalance->GetBinError(i)*(gHistBalance->GetBinCenter(i)*gSumBi - gSumBiXi)/TMath::Power(gSumBi,2);
+  
+  Double_t integralError = TMath::Sqrt(deltaBalP2);
+  
+  Double_t delta = gSumBiXi / gSumBi;
+  Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
+  
+  cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
+  cout<<"New error: "<<deltaErrorNew<<endl;
+  cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
+  cout<<"=================================================="<<endl;
+
+  WM  = delta;
+  WME = deltaError;
 }
 
 //___________________________________________________________//
