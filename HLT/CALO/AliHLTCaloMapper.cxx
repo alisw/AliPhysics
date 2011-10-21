@@ -1,4 +1,4 @@
-// $Id: AliHLTCalorimeterMapper.cxx 34622 2009-09-04 13:22:01Z odjuvsla $
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the Experimental Nuclear     *
@@ -96,6 +96,7 @@ AliHLTCaloMapper::GetFilePath()
 int 
 AliHLTCaloMapper::GetChannelID(const AliHLTUInt32_t spec, const Int_t hadd)
 {
+  if (!fSpecificationMapPtr) return -ENODEV;
   Short_t index = GetDDLFromSpec(spec);
   if( index < 0 )
     {
