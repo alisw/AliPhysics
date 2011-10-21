@@ -93,34 +93,38 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
     pLst[i]=(TClonesArray*)(*pDigLst)[i];
     iCnt[i]=0; if(pLst[i]->GetEntries()!=0) AliErrorClass("Some of digits lists is not empty");         //in principle those lists should be empty                                                                       
   }
-
-  TMatrixF *pM[7];
-  
-  AliCDBEntry *pDaqSigEnt = AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
-  if(pDaqSigEnt){
-    TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
-    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop    
-      pM[iCh] = (TMatrixF*)pDaqSig->At(iCh);     
-    }
-  }
-  else{
-      for (Int_t iCh=0; iCh<7; iCh++)
-        for (Int_t i=0; i<160; i++)
-          for (Int_t j=0; j<144; j++)
-            (*pM[iCh])(i,j) = 1.0;  
-     }
   
   // make noise array
-  Float_t arrNoise[7][6][80][48];
+  Float_t arrNoise[7][6][80][48], arrSigmaPed[7][6][80][48];
   if(fgDoNoise) {
     for (Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++)
       for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
         for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
           for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++){
-            Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
-            Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
-            arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,(*pM[iCh])(padX,padY));
-          }         
+            arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1.);
+            arrSigmaPed[iCh][iPc][iPx][iPy] = 1.;
+          }
+          
+    AliCDBEntry *pDaqSigEnt = AliCDBManager::Instance()->Get("HMPID/Calib/DaqSig");  //contains TObjArray of TObjArray 14 TMatrixF sigmas values for pads 
+   
+    if(pDaqSigEnt){
+      TObjArray *pDaqSig = (TObjArray*)pDaqSigEnt->GetObject();
+      for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++){                  //chambers loop    
+	TMatrixF *pM = (TMatrixF*)pDaqSig->At(iCh);     
+	for (Int_t iPc=AliHMPIDParam::kMinPc;iPc<=AliHMPIDParam::kMaxPc;iPc++)
+	  for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
+	    for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++){
+	      Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
+	      Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
+	      if((*pM)(padX,padY)>0.){
+		arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,(*pM)(padX,padY));
+		arrSigmaPed[iCh][iPc][iPx][iPy] = (*pM)(padX,padY);}
+	      else{
+		arrNoise[iCh][iPc][iPx][iPy] = gRandom->Gaus(0,1.);
+		arrSigmaPed[iCh][iPc][iPx][iPy] = 1.;}
+	    } 
+      }
+    }
   }  
   
   pSdiLst->Sort();  
@@ -134,7 +138,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
       continue;
     }
     if(i!=0 && iCh>=AliHMPIDParam::kMinCh && iCh<=AliHMPIDParam::kMaxCh){
-      AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iCh])(pSdig->PadChX(),pSdig->PadChY()))*AliHMPIDParam::Nsig()));         
+      AliHMPIDParam::Instance()->SetThreshold((TMath::Nint(arrSigmaPed[iCh][pSdig->Pc()][pSdig->PadPcX()][pSdig->PadPcY()])*AliHMPIDParam::Nsig()));
       if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);}  //do not create digit for the very first sdigit 
     
     iPad=pSdig->Pad(); iCh=AliHMPIDParam::A2C(iPad);                                                            //new sdigit comes, reset collectors
@@ -147,10 +151,11 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
   
   if(iCh>=AliHMPIDParam::kMinCh && iCh<=AliHMPIDParam::kMaxCh){
     Int_t pc = AliHMPIDParam::A2P(iPad);
-    Int_t padX = (pc%2)*AliHMPIDParam::kPadPcX+AliHMPIDParam::A2X(iPad); 
-    Int_t padY = (pc/2)*AliHMPIDParam::kPadPcY+AliHMPIDParam::A2Y(iPad);
-    AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iCh])(padX,padY))*AliHMPIDParam::Nsig()));
-    if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);}  //add the last one, in case of empty sdigits list q=-1 
+    Int_t px = AliHMPIDParam::A2X(iPad); 
+    Int_t py = AliHMPIDParam::A2Y(iPad);
+    AliHMPIDParam::Instance()->SetThreshold((TMath::Nint(arrSigmaPed[iCh][pc][px][py])*AliHMPIDParam::Nsig()));
+    if(AliHMPIDParam::IsOverTh(q)) new((*pLst[iCh])[iCnt[iCh]++]) AliHMPIDDigit(iPad,(Int_t)q,aTids);
+  }  //add the last one, in case of empty sdigits list q=-1 
   
 // add noise pad above threshold with no signal merged...if any
   if(!fgDoNoise) return;
@@ -161,9 +166,7 @@ void AliHMPIDDigitizer::Sdi2Dig(TClonesArray *pSdiLst,TObjArray *pDigLst)
       for(Int_t iPx=AliHMPIDParam::kMinPx;iPx<=AliHMPIDParam::kMaxPx;iPx++)
         for(Int_t iPy=AliHMPIDParam::kMinPy;iPy<=AliHMPIDParam::kMaxPy;iPy++) {
           Float_t qNoise = arrNoise[iChCurr][iPc][iPx][iPy];
-          Int_t padX = (iPc%2)*AliHMPIDParam::kPadPcX+iPx; 
-          Int_t padY = (iPc/2)*AliHMPIDParam::kPadPcY+iPy;
-          AliHMPIDParam::Instance()->SetThreshold(TMath::Nint(((*pM[iChCurr])(padX,padY))*AliHMPIDParam::Nsig()));
+          AliHMPIDParam::Instance()->SetThreshold((TMath::Nint(arrSigmaPed[iChCurr][iPc][iPx][iPy])*AliHMPIDParam::Nsig()));
           if(AliHMPIDParam::IsOverTh(qNoise)) new((*pLst[iChCurr])[iCnt[iChCurr]++]) AliHMPIDDigit(AliHMPIDParam::Abs(iChCurr,iPc,iPx,iPy),(Int_t)qNoise,aTids);
         }
   }        
