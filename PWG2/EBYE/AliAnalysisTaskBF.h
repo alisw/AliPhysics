@@ -83,6 +83,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TList *fListBFS; //fList object
 
   TH1F *fHistEventStats; //event stats
+  TH2F *fHistCentStats; //centrality stats
   TH1F *fHistTriggerStats; //trigger stats
   TH1F *fHistTrackStats; //Track filter bit stats
   TH1F *fHistVx; //x coordinate of the primary vertex
@@ -96,6 +97,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TH1F *fHistEta;
   TH1F *fHistPhi;
   TH2F *fHistV0M;
+  TH2F *fHistRefTracks;
 
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
