@@ -2211,31 +2211,34 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Int_t centralityClass, Double_t* 
   delete h3TOFrefNegAll; delete h3TOFrefNegTrk4; delete h3TOFrefNegTrk5; delete h3TOFrefNegTrk6;
   
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
-  if(trendValues && hTRDEffPtPosAll) 
+  if(trendValues && hTRDEffPtPosAll){ 
     if(hTRDEffPtPosAll->Integral()>0.1) {
       hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[0] = funcConst->GetParameter(0);
       trendValues[1] = funcConst->GetParError(0);
     }
-  if(trendValues && hTRDEffPtNegAll) 
+  }
+  if(trendValues && hTRDEffPtNegAll){ 
     if(hTRDEffPtNegAll->Integral()>0.1) {
       hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[2] = funcConst->GetParameter(0);
       trendValues[3] = funcConst->GetParError(0);
     }
-  if(trendValues && hTOFEffPtPosAll) 
+  }
+  if(trendValues && hTOFEffPtPosAll){ 
     if(hTOFEffPtPosAll->Integral()>0.1) {
       hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[4] = funcConst->GetParameter(0);
       trendValues[5] = funcConst->GetParError(0);
     }
-  if(trendValues && hTOFEffPtNegAll) 
+  }
+  if(trendValues && hTOFEffPtNegAll){ 
     if(hTOFEffPtNegAll->Integral()>0.1) {
       hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[6] = funcConst->GetParameter(0);
       trendValues[7] = funcConst->GetParError(0);
     }
-    
+  }  
   // get matching efficiencies for isolated bunches
   TH3D* h3TPCrefPos_IsolatedBC=0x0; TH3D* h3TPCrefNeg_IsolatedBC=0x0;
   TH3D* h3TRDrefPosAll_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk4_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk5_IsolatedBC=0x0; TH3D* h3TRDrefPosTrk6_IsolatedBC=0x0;
