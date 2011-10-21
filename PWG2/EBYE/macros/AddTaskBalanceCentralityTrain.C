@@ -1,14 +1,17 @@
+// now in options
 //=============================================//
-const char* centralityEstimator = "V0M";
+//const char* centralityEstimator = "V0M";
 //const char* centralityEstimator = "CL1";
 //const char* centralityEstimator = "TRK";
 //=============================================//
 //Bool_t gRunShuffling = kFALSE;
-Bool_t gRunShuffling = kTRUE;
+//Bool_t gRunShuffling = kTRUE;
 //=============================================//
 //_________________________________________________________//
 AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t centrMax=100.,
+						 Bool_t gRunShuffling=kFALSE,
+						 TString centralityEstimator="V0M",
 						 Double_t vertexZ=10.,
 						 Double_t DCAxy=-1,
 						 Double_t DCAz=-1,
@@ -58,7 +61,11 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     return NULL;
   }
   TString analysisType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-  gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
+  if(dynamic_cast<AliMCEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())) analysisType = "MC";
+
+  // for local changed BF configuration
+  //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
   AliBalance *bfs = 0;  // shuffled Balance function object
 
@@ -70,9 +77,13 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     bf  = GetBalanceFunctionObject("AOD");
     if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",kTRUE);
   }
-  else{
+  else if (analysisType=="MC"){
     bf  = GetBalanceFunctionObject("MC");
     if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",kTRUE);
+  }
+  else{
+    ::Error("AddTaskBF", "analysis type NOT known.");
+    return NULL;
   }
 
   // Create the task, add it to manager and configure it.
@@ -85,11 +96,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   if(analysisType == "ESD") {
     AliESDtrackCuts *trackCuts = GetTrackCutsObject(ptMin,ptMax,etaMin,etaMax,maxTPCchi2,DCAxy,DCAz,minNClustersTPC);
     taskBF->SetAnalysisCutObject(trackCuts);
-
-    // offline trigger selection (AliVEvent.h)
-    // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
-    // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
-    taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+    
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
@@ -103,18 +110,27 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
     taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
     
   }
+  else if(analysisType == "MC") {
+    taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
+  }
 
+  // offline trigger selection (AliVEvent.h)
+  // taskBF->UseOfflineTrigger(); // NOT used (selection is done with the AliAnalysisTaskSE::SelectCollisionCandidates()) 
+  // with this only selected events are analyzed (first 2 bins in event QA histogram are the same))
+  // documentation in https://twiki.cern.ch/twiki/bin/viewauth/ALICE/PWG1EvSelDocumentation
+  taskBF->SelectCollisionCandidates(AliVEvent::kMB);
+  
   // centrality estimator (default = V0M)
-    taskBF->SetCentralityEstimator(centralityEstimator);
+  taskBF->SetCentralityEstimator(centralityEstimator);
+  
+  // vertex cut (x,y,z)
+  taskBF->SetVertexDiamond(.3,.3,vertexZ);
+  
 
-    // vertex cut (x,y,z)
-    taskBF->SetVertexDiamond(.3,.3,vertexZ);
 
-
-
-    //bf->PrintAnalysisSettings();
-    mgr->AddTask(taskBF);
-
+  //bf->PrintAnalysisSettings();
+  mgr->AddTask(taskBF);
+  
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================

@@ -68,9 +68,9 @@ void runBalanceFunction(
     gROOT->LoadMacro("AliAnalysisTaskBF.cxx++g");
 
     // add aliroot indlude path
-    gROOT->ProcessLine(".include $PWD/.");
-    gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
-    //gROOT->ProcessLine(Form(".include %s/PWG2/EBYE",gSystem->ExpandPathName("$ALICE_ROOT")));
+    //gROOT->ProcessLine(".include $PWD/.");
+    //gROOT->ProcessLine(Form(".include %s/include",gSystem->ExpandPathName("$ALICE_ROOT")));
+
     gROOT->SetStyle("Plain");
 
     // analysis manager
@@ -149,13 +149,15 @@ void runBalanceFunction(
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
       AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
 
+      // Add physics selection task (NOT needed for AODs)
       gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
-      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection();
+      AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(bMCphyssel);
+
     }
 
     //Add the BF task (all centralities)
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
-    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0]);
+    AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1);
     
     // //Add the BFG task (different centralities)
     // for (Int_t i=binfirst; i<binlast+1; i++) {
@@ -166,7 +168,7 @@ void runBalanceFunction(
     //   //for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
     //   Int_t j = 0;
     //   Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
-    //   AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j]);
+    //   AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,0,"V0M",vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j],-1,-1);
     //   //}
     // } 
     
@@ -193,7 +195,7 @@ AliAnalysisGrid* CreateAlienHandler(Bool_t bAOD, Int_t bunchN, const char *taskn
     // Set versions of used packages
     plugin->SetAPIVersion("V1.1x");
     plugin->SetROOTVersion("v5-28-00d");
-    plugin->SetAliROOTVersion("v4-21-32-AN");
+    plugin->SetAliROOTVersion("v5-02-05-AN");
 
     // Declare input data to be processed.
 
