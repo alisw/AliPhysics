@@ -71,7 +71,7 @@ public:
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
   void SetSkipV0(Bool_t flag=kTRUE) { AliError ("This method is deprecated! Please change the OADB configuration instead") ; fSkipV0 = flag;}
    
-  void AddBackgroundIdentification(AliAnalysisCuts* background) { fBackgroundIdentification = background; }
+  void AddBackgroundIdentification(AliAnalysisCuts* background) { AliFatal ("This method is deprecated. Please use the kSPDClsVsTrkBG tag in the OADB configuration instead"); }
     
   virtual void Print(const Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
@@ -119,9 +119,7 @@ protected:
   TList fBGTrigClasses;   // trigger classes identifying background events
     
   TList fTriggerAnalysis; // list of offline trigger objects (several are needed to keep the control histograms separate per trigger class)
-  
-  AliAnalysisCuts* fBackgroundIdentification; // class that performs additional background identification
-    
+      
   TH2F* fHistStatistics[2];      // how many events are cut away why {all,bin 0}
   //  TH2F* fHistStatisticsTokens;   // how many events are cut away why (new version, bins for all tokens. Only used tokens are filled)
   TH2F* fHistBunchCrossing;   // histograms of accepted bunch crossing numbers

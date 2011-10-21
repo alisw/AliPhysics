@@ -1,4 +1,4 @@
-AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t withBckgndRejection = kTRUE, UInt_t computeBG = 0) 
+AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE, Bool_t deprecatedFlag = kTRUE, UInt_t computeBG = 0) 
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -23,12 +23,13 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
   mgr->AddTask(task);
   
   AliPhysicsSelection* physSel = task->GetPhysicsSelection();
-  if (withBckgndRejection) 
-    physSel->AddBackgroundIdentification(new AliBackgroundSelection());
   if (mCAnalysisFlag)      
     physSel->SetAnalyzeMC();
   if (computeBG)
     physSel->SetComputeBG(computeBG);
+
+  if(!deprecatedFlag) 
+    AliFatal("The BG ID flag is deprecated. Please use the OADB to configure the cuts");
 
   AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("cstatsout",

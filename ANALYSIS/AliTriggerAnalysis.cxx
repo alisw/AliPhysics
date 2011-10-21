@@ -62,11 +62,14 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fZDCCutRefDeltaCorr(-2.1),
   fZDCCutSigmaSumCorr(6.0),
   fZDCCutSigmaDeltaCorr(1.2),
+  fASPDCvsTCut(65),
+  fBSPDCvsTCut(4),
   fDoFMD(kTRUE),
   fFMDLowCut(0.2),
   fFMDHitCut(0.5),
   fHistBitsSPD(0),
   fHistFiredBitsSPD(0),
+  fHistSPDClsVsTrk(0),
   fHistV0A(0),       
   fHistV0C(0),
   fHistZDC(0),    
@@ -99,6 +102,12 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
   {
     delete fHistFiredBitsSPD;
     fHistFiredBitsSPD = 0;
+  }
+
+  if (fHistSPDClsVsTrk)
+  {
+    delete fHistSPDClsVsTrk;
+    fHistSPDClsVsTrk = 0;
   }
 
   if (fHistV0A)
@@ -181,6 +190,7 @@ void AliTriggerAnalysis::EnableHistograms()
   
   fHistBitsSPD = new TH2F("fHistBitsSPD", "SPD GFO;number of fired chips (offline);number of fired chips (hardware)", 1202, -1.5, 1200.5, 1202, -1.5, 1200.5);
   fHistFiredBitsSPD = new TH1F("fHistFiredBitsSPD", "SPD GFO Hardware;chip number;events", 1200, -0.5, 1199.5);
+  fHistSPDClsVsTrk = new TH2F("fHistSPDClsVsTrk", "SPD Clusters vs Tracklets", 300, -0.5, 2999.5, 1000, -0.5, 9999.5);
   fHistV0A = new TH1F("fHistV0A", "V0A;leading time (ns);events", 400, -100, 100);
   fHistV0C = new TH1F("fHistV0C", "V0C;leading time (ns);events", 400, -100, 100);
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
@@ -220,6 +230,7 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kSPDGFOBits : str = "SPD GFO Bits"; break;
     case kSPDGFOL0 : str = "SPD GFO L0 (first layer)"; break;
     case kSPDGFOL1 : str = "SPD GFO L1 (second layer)"; break;
+    case kSPDClsVsTrkBG :  str = "Cluster vs Tracklets"; break;
     case kV0A : str = "V0 A BB"; break;
     case kV0C : str = "V0 C BB"; break;
     case kV0OR : str = "V0 OR BB"; break;
@@ -353,6 +364,13 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
     case kSPDGFOL1:
     {
       decision = SPDFiredChips(aEsd, (offline) ? 0 : 1, kFALSE, 2);
+      break;
+    } 
+    case kSPDClsVsTrkBG:
+    {
+      if(!offline) 
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      decision = IsSPDClusterVsTrackletBG(aEsd);
       break;
     }
     case kV0A:
@@ -812,6 +830,7 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
   ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
   ZDCTimeTrigger(aEsd,kTRUE);
+  IsSPDClusterVsTrackletBG(aEsd, kTRUE);
 
   AliESDZDC* zdcData = aEsd->GetESDZDC();
   if (zdcData)
@@ -933,6 +952,34 @@ Bool_t AliTriggerAnalysis::SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin)
     return kTRUE;
   return kFALSE;
 }
+
+Bool_t AliTriggerAnalysis::IsSPDClusterVsTrackletBG(const AliESDEvent* aEsd, Bool_t fillHists){
+  //rejects BG based on the cluster vs tracklet correlation
+  // returns true if the event is BG
+  const AliMultiplicity* mult = aEsd->GetMultiplicity();
+  if (!mult){
+    AliFatal("No multiplicity object"); // TODO: Should this be fatal?
+  }
+  Int_t ntracklet = mult->GetNumberOfTracklets();
+
+  Int_t spdClusters = 0;
+  for(Int_t ilayer = 0; ilayer < 2; ilayer++){
+    spdClusters += mult->GetNumberOfITSClusters(ilayer);
+  }
+
+  if(fillHists) {
+    fHistSPDClsVsTrk->Fill(ntracklet,spdClusters);
+  }
+
+  Bool_t isCvsTOk = kFALSE;
+  Float_t limit = Float_t(fASPDCvsTCut) + Float_t(ntracklet) * fBSPDCvsTCut;  
+  if (spdClusters > limit)        isCvsTOk = kTRUE;
+  else                            isCvsTOk = kFALSE ;
+
+  return isCvsTOk;
+
+}
+  
 
 AliTriggerAnalysis::V0Decision AliTriggerAnalysis::V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists)
 {
@@ -1388,6 +1435,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[n++].Add(entry->fHistFMDSum);
     collections[n++].Add(entry->fHistBitsSPD);
     collections[n++].Add(entry->fHistFiredBitsSPD);
+    collections[n++].Add(entry->fHistSPDClsVsTrk);
 
     // merge fTriggerClasses
     TIterator* iter2 = entry->fTriggerClasses->MakeIterator();
@@ -1432,7 +1480,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistFMDSum->Merge(&collections[n++]);
   fHistBitsSPD->Merge(&collections[n++]);
   fHistFiredBitsSPD->Merge(&collections[n++]);
-  
+  fHistSPDClsVsTrk->Merge(&collections[n++]);
   delete iter;
 
   return count+1;
@@ -1474,6 +1522,7 @@ void AliTriggerAnalysis::SaveHistograms() const
   if (fHistFMDSum) fHistFMDSum->Write();
   else Printf("Cannot save fHistFMDSum");
   if (fSPDGFOEfficiency) fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
+  if (fHistSPDClsVsTrk) fHistSPDClsVsTrk->Write("fHistSPDClsVsTrk");
   //  else Printf("Cannot save fSPDGFOEfficiency");
   
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);

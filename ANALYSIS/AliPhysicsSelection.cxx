@@ -134,7 +134,6 @@ AliPhysicsSelection::AliPhysicsSelection() :
   fCollTrigClasses(),
   fBGTrigClasses(),
   fTriggerAnalysis(),
-  fBackgroundIdentification(0),
 //  fHistStatisticsTokens(0),
   fHistBunchCrossing(0),
   fHistTriggerPattern(0),
@@ -206,11 +205,6 @@ AliPhysicsSelection::~AliPhysicsSelection()
     delete fHistTriggerPattern;
     fHistTriggerPattern = 0;
   }
-  if (fBackgroundIdentification)
-  { 
-    delete fBackgroundIdentification;
-    fBackgroundIdentification = 0;
-  }  
 
   if (fPSOADB)
   { 
@@ -422,12 +416,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
   } 
   mgr->LoadBranch("AliESDHeader.");
   mgr->LoadBranch("AliESDRun.");
-  mgr->LoadBranch("AliMultiplicity.");
-  mgr->LoadBranch("AliESDFMD.");
-  mgr->LoadBranch("AliESDVZERO.");
-  mgr->LoadBranch("AliESDZDC.");
-  mgr->LoadBranch("SPDVertex.");
-  mgr->LoadBranch("PrimaryVertex.");
+
   if (fCurrentRun != aEsd->GetRunNumber()) {
     if (!Initialize(aEsd))
       AliFatal(Form("Could not initialize for run %d", aEsd->GetRunNumber()));
@@ -452,6 +441,16 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       AliFatal(Form("Invalid event type for MC: %d", esdHeader->GetEventType()));
   }
   
+  mgr->LoadBranch("AliMultiplicity.");
+//mgr->LoadBranch("AliESDFMD.");
+  mgr->LoadBranch("AliESDVZERO.");
+  mgr->LoadBranch("AliESDZDC.");
+  mgr->LoadBranch("SPDVertex.");
+  mgr->LoadBranch("PrimaryVertex.");
+  mgr->LoadBranch("TPCVertex.");
+  mgr->LoadBranch("Tracks");
+  mgr->LoadBranch("SPDPileupVertices");
+
   UInt_t accept = 0;
     
   Int_t count = fCollTrigClasses.GetEntries() + fBGTrigClasses.GetEntries();
@@ -527,9 +526,7 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 
       // Background rejection
       Bool_t bgID = kFALSE;
-      if (fBackgroundIdentification)
-        bgID = ! fBackgroundIdentification->IsSelected(const_cast<AliESDEvent*> (aEsd));
-        
+      bgID = triggerAnalysis->EvaluateTrigger(aEsd,  (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kSPDClsVsTrkBG | AliTriggerAnalysis::kOfflineFlag)); // FIXME: temporarily, we keep both ways to validate the new one. if the external BG id is not set, it will use the new one
       
       /*Int_t ntrig = fastOROffline; // any 2 hits
       if(v0A)              ntrig += 1;
@@ -623,7 +620,8 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	if (v0A && v0C && !v0BG && (!bgID && fIsPP))
 	  fHistStatistics[iHistStat]->Fill(kStatV0, i);
 
-
+	if (bgID && !v0BG) 
+	  fHistStatistics[iHistStat]->Fill(kStatBG, i);
 
 	// FIXME: check lines below
 	if ( offlineTrigger )
@@ -631,25 +629,16 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	    if (!v0BG || fSkipV0)
 	      {
 		if (!v0BG) fHistStatistics[iHistStat]->Fill(kStatOffline, i);
-      
-		if (fBackgroundIdentification && bgID && fIsPP)
-		  {
-		    AliDebug(AliLog::kDebug, "Rejecting event because of background identification");
-		    fHistStatistics[iHistStat]->Fill(kStatBG, i);
-		  }
-		else
-		  {
-		    AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
+		AliDebug(AliLog::kDebug, Form("Accepted event for histograms with trigger logic %d", triggerLogic));
             
-		    fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
-
-		    if (aEsd->IsPileupFromSPD())
-		      fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
-
+		fHistStatistics[iHistStat]->Fill(kStatAccepted, i);
+		
+		if (aEsd->IsPileupFromSPD())
+		  fHistStatistics[iHistStat]->Fill(kStatAcceptedPileUp, i);
+		
 		    // if(iHistStat == kStatIdxAll) fHistBunchCrossing->Fill(aEsd->GetBunchCrossNumber(), i); // Fill only for all (avoid double counting)
-		    if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
-		      accept |= singleTriggerResult; // only set for "all" (should not really matter)
-		  }
+		if((i < fCollTrigClasses.GetEntries() || fSkipTriggerClassSelection) && (iHistStat==kStatIdxAll))
+		  accept |= singleTriggerResult; // only set for "all" (should not really matter)
 	      }
 	    else
 	      AliDebug(AliLog::kDebug, "Rejecting event because of V0 BG flag");
@@ -1330,7 +1319,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   TObject* obj;
   
   // collections of all histograms
-  const Int_t nHists = 9;
+  const Int_t nHists = 8;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -1393,8 +1382,6 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
       collections[3].Add(entry->fHistBunchCrossing);
     if (entry->fHistTriggerPattern)
       collections[4].Add(entry->fHistTriggerPattern);
-    if (entry->fBackgroundIdentification)
-      collections[5].Add(entry->fBackgroundIdentification);
 
     count++;
   }
@@ -1441,15 +1428,7 @@ Long64_t AliPhysicsSelection::Merge(TCollection* list)
   }
   if (fHistTriggerPattern)
     fHistTriggerPattern->Merge(&collections[4]);
-  
-  if (!fBackgroundIdentification && collections[5].GetEntries() > 0)
-  {
-    fBackgroundIdentification = (AliAnalysisCuts*) collections[5].First()->Clone();
-    collections[5].RemoveAt(0);
-  }
-  if (fBackgroundIdentification)
-    fBackgroundIdentification->Merge(&collections[5]);
-  
+    
   delete iter;
 
   return count+1;
@@ -1660,17 +1639,7 @@ void AliPhysicsSelection::SaveHistograms(const char* folder)
       
       gDirectory->cd("..");
     }
-  
-  if (fBackgroundIdentification)
-    {
-      gDirectory->mkdir("background_identification");
-      gDirectory->cd("background_identification");
-      
-      fBackgroundIdentification->GetOutput()->Write();
-      
-      gDirectory->cd("..");
-    }
-  
+    
   if (folder)
     gDirectory->cd("..");
   

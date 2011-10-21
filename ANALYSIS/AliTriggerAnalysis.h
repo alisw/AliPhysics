@@ -26,9 +26,9 @@ class AliTriggerAnalysis : public TObject
 {
   public:
     enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
-      kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
-      kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, 
-      kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
+		   kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
+		   kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
+		   kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
     
@@ -55,6 +55,7 @@ class AliTriggerAnalysis : public TObject
     // some "raw" trigger functions
     Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
+  Bool_t IsSPDClusterVsTrackletBG(const AliESDEvent* esd, Bool_t fillHists = kFALSE);
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
@@ -70,6 +71,7 @@ class AliTriggerAnalysis : public TObject
     
     void SetSPDGFOThreshhold(Int_t t) { fSPDGFOThreshold = t; }
     void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
+    void SetSPDClustersVsTrackletsParameters(Float_t a, Float_t b) { fASPDCvsTCut = a; fBSPDCvsTCut =b;}
     void SetV0TimeOffset(Float_t offset) { fV0TimeOffset = offset; }
     void SetV0AdcThr(Float_t thr) { fV0AdcThr = thr; }
     void SetV0HwPars(Float_t thr, Float_t winLow, Float_t winHigh) { fV0HwAdcThr = thr; fV0HwWinLow = winLow; fV0HwWinHigh = winHigh; }
@@ -126,12 +128,18 @@ class AliTriggerAnalysis : public TObject
     Float_t fZDCCutSigmaSumCorr;    // Corrected ZDC time cut configuration
     Float_t fZDCCutSigmaDeltaCorr;  // Corrected ZDC time cut configuration
 
+    Float_t fASPDCvsTCut; // constant for the linear cut in SPD clusters vs tracklets
+    Float_t fBSPDCvsTCut; // slope for the linear cut in SPD  clusters vs tracklets
+
+
+
     Bool_t  fDoFMD;                 // If false, skips the FMD (physics selection runs much faster)
     Float_t fFMDLowCut;		    // 
     Float_t fFMDHitCut;		    // 
     
     TH2F* fHistBitsSPD;        // offline trigger bits (calculated from clusters) vs hardware trigger bits
     TH1F* fHistFiredBitsSPD;   // fired hardware bits
+    TH2F* fHistSPDClsVsTrk;    // histogram of clusters vs tracklet BG cut
     TH1F* fHistV0A;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1F* fHistV0C;            // histograms that histogram the criterion the cut is applied on: bb triggers
     TH1F* fHistZDC;            //histograms that histogram the criterion the cut is applied on: fired bits (6 bins)
@@ -150,7 +158,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 16)
+    ClassDef(AliTriggerAnalysis, 17)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
