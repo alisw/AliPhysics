@@ -36,7 +36,6 @@
 #include "AliMultiplicity.h"
 #include "AliLog.h"
 #include "AliAnalysisManager.h"
-#include "AliBackgroundSelection.h"
 #include <iostream>
 #include "TFile.h"
 #include "TCanvas.h"
@@ -161,9 +160,9 @@ void AliAnalysisTaskBGvsTime::UserCreateOutputObjects()
 
   fPhysicsSelection->SetSkipTriggerClassSelection();// 
 
-  AliBackgroundSelection * bg = new AliBackgroundSelection();
-  bg->SetDeltaPhiCut(10);
-  fPhysicsSelection->AddBackgroundIdentification(bg);
+  // AliBackgroundSelection * bg = new AliBackgroundSelection();
+  // bg->SetDeltaPhiCut(10);
+  // fPhysicsSelection->AddBackgroundIdentification(bg);
 
   if (fSkipV0) {
     fPhysicsSelection->SetSkipV0();
