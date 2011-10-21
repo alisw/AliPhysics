@@ -1208,7 +1208,7 @@ void AliPhysicsSelection::Print(const Option_t *option) const
 		singleTrigStrFull = singleTrigStr;
 	      }
 	      
-	      TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL"; // We know we dont support those, so we print no warning	      
+	      TString blacklist = "CEMC7WU-B-NOPF-ALL, CEMC7WU-AC-NOPF-ALL CEMC7WU-E-NOPF-ALL C0LSR-ABCE-NOPF-TPC CBEAMB-B-NOPF-ALLNOTRD"; // We know we dont support those, so we print no warning	      
 	      if(counts>0 && !found && !blacklist.Contains(singleTrig) && !singleTrigStr.Contains("WU") && !alreadyFoundTriggers.Contains(singleTrig)) {
 		Printf("WARNING: Found unknown trigger [%s] with %ld counts in the ESD!", singleTrig, counts);
 		alreadyFoundTriggers += singleTrig; // Avoid printing warning twice for the same trigger
