@@ -170,7 +170,7 @@ Int_t       kProofOffset = 0;
 //== grid plugin setup variables
 Bool_t      kPluginUse         = kTRUE;   // do not change
 Bool_t      kPluginUseProductionMode  = kFALSE;   // use the plugin in production mode
-TString     kPluginRootVersion       = "v5-28-00c";  // *CHANGE ME IF MORE RECENT IN GRID*
+TString     kPluginRootVersion       = "v5-30-02";  // *CHANGE ME IF MORE RECENT IN GRID*
 TString     kPluginAliRootVersion    = "v4-21-01a-AN";  // *CHANGE ME IF MORE RECENT IN GRID*                                          
 Bool_t      kPluginMergeViaJDL       = kTRUE;  // merge via JDL
 Bool_t      kPluginFastReadOption   = kFALSE;  // use xrootd tweaks

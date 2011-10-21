@@ -39,7 +39,7 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "111016a";
+  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "111018b";
   //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
