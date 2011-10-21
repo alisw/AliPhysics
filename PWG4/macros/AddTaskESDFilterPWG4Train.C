@@ -1,6 +1,6 @@
 
 
-AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE, 
+AliAnalysisTaskESDfilter *AddTaskESDFilterPWG4Train(Bool_t useKineFilter=kTRUE, 
                                            Bool_t writeMuonAOD=kFALSE,
                                            Bool_t writeDimuonAOD=kFALSE,
 					   Bool_t usePhysicsSelection=kFALSE,
