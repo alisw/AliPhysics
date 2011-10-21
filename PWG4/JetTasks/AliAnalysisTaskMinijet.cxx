@@ -60,6 +60,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fTriggerPtCut(0.7),
       fAssociatePtCut(0.4),
       fMode(0),
+      fTriggerType(1),
+      fFilterBit(128),
       fVertexZCut(10.),
       fEtaCut(0.9),
       fEtaCutSeed(0.9),
@@ -390,9 +392,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskMinijet::UserExec(Option_t *)
 {
-  // Main loop, called for each event
+  // Main function, called for each event
   // Kinematics-only, ESD and AOD can be processed.
-  // Data is read (LoopESD, LoopAOD...) and then analysed (Analyse). 
+  // Data is read (ReadEventESD, ReadEventAOD...) and then analysed (Analyse). 
   //  - in case of MC with full detector simulation, all correction steps(0-5) can be processed
   //  - for Data, only step 5 is performed
   //  - for kinematics-only, only step 0 is processed
@@ -402,6 +404,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
   // step 2 =  Triggered events, all                            mc primary particles,                    reconstructed multiplicity
   // step 1 =  Triggered events, all                            mc primary particles,                    true multiplicity
   // step 0 =  All events,       all                            mc primary particles,                    true multiplicity
+
+  // can be changed with new AOD definition -> AOD076
 
   if(fDebug) Printf("UserExec: Event starts");
 
@@ -437,161 +441,140 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 
   //=================== AOD ===============
 
-  if(fAODEvent){//AOD loop
+ 
 
-    //reset global values
-    fNMcPrimAccept=0;// number of accepted primaries
-    fNRecAccept=0;   // number of accepted tracks
+
+  //reset values
+  fNMcPrimAccept=0;// number of accepted primaries
+  fNRecAccept=0;   // number of accepted tracks
   
-    if(CheckEvent(true)){//step 5 = TrigVtxRecNrec, step 4 = TrigVtxRecMcPropNrec ,step 3 = TrigVtxMcNrec
+  // instead of task->SelectCollisionCandidate(mask) in AddTask macro
+  Bool_t isSelected = (((AliInputEventHandler*)
+			(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
+		       ->IsEventSelected() &  fTriggerType); 
+
     
+  if(fDebug){
+    Printf("IsSelected = %d", isSelected);
+    Printf("CheckEvent(true)= %d", CheckEvent(true));
+    Printf("CheckEvent(false)= %d", CheckEvent(false));
+  }
+
+  //check trigger
+  if(isSelected){ // has offline trigger
+      
+    if(CheckEvent(true)){//step 5 = TrigVtxRecNrec, step 4 = TrigVtxRecMcPropNrec ,step 3 = TrigVtxMcNrec
+	
       if(!fMcOnly){ 
 	//step 5 = TrigVtxRecNrec
-	ntracks = LoopAOD(pt, eta, phi, charge, nTracksTracklets, 5);//read tracks
+
+	// read tracks
+	if(fESDEvent)     ntracks = ReadEventESD(pt, eta, phi, charge,nTracksTracklets, 5);
+	else if(fAODEvent)ntracks = ReadEventAOD(pt, eta, phi, charge,nTracksTracklets, 5);
+	else Printf("Fatal Error");
+
+	// analyse
 	if(pt.size()){ //(internally ntracks=fNRecAccept)
-	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);//analyse
+	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);
 	}
-      
+	  
 	if(fUseMC){
 	  // step 4 = TrigVtxRecMcPropNrec
-	  ntracks = LoopAODRecMcProp(pt, eta, phi, charge, nTracksTracklets, 4);//read tracks
+	    
+	  // read tracks
+	  if(fESDEvent)       ntracks = ReadEventESDRecMcProp(pt, eta, phi, charge, nTracksTracklets, 4);
+	  else if(fAODEvent)  ntracks = ReadEventAODRecMcProp(pt, eta, phi, charge, nTracksTracklets, 4);
+	  else Printf("Fatal Error");
+	   
+	  //analyse
 	  if(pt.size()){//(internally ntracks=fNRecAccept)
-	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 4);//analyse
+	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 4);
 	  }
 	}
-      }
-    
+      
+	
       if(fUseMC){
 	// step 3 = TrigVtxMcNrec
-	ntracks = LoopAODMC(pt, eta, phi, charge, nTracksTracklets, 3);//read tracks
+
+	// read tracks
+	if(fESDEvent)       ntracks = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 3);
+	else if(fAODEvent)  ntracks = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 3);
+	else Printf("Fatal Error");
+
+	// analyse
 	if(pt.size()){//(internally ntracks=fNRecAccept)
-	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1],nTracksTracklets[2], 3);//analyse
+	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1],nTracksTracklets[2], 3);
 	}
       }
-
-
+      }	
+	
     }//check event (true)
-
-    if(fUseMC){
-    //reset values
+    if(fUseMC && !fMcOnly){
+      //reset values
       fNMcPrimAccept=0;// number of accepted primaries
       fNRecAccept=0;   // number of accepted tracks
-      
+	
       if(CheckEvent(false)){// all events, with and without reconstucted vertex
-	ntracks  = LoopAOD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-	ntracks  = LoopAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+	if(fESDEvent){
+	  ntracks  = ReadEventESD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
+	  ntracks  = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+	}
+	else if(fAODEvent){
+	  ntracks  = ReadEventAOD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
+	  ntracks  = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+	}
+	else Printf("Fatal Error");
+
+	// analyse
 	if(pt.size()){
 	  Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
-	  
+	    
 	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
-	}
-	
-	//step 0 (include not triggered events) is not possible with AODs generated before October 2011
-	//step 0 can be implemented for new AODs
-	
-      }//check event (false)
-
-    }//if "use mc"
-
-  }//AOD loop
-
-
-  //=================== ESD ===============
-
-    
-  if(fESDEvent){//ESD loop
-
-    //reset values
-    fNMcPrimAccept=0;// number of accepted primaries
-    fNRecAccept=0;   // number of accepted tracks
-  
-    // instead of task->SelectCollisionCandidate(mask) in AddTask macro
-    Bool_t isSelected = (((AliInputEventHandler*)
-			  (AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
-			 ->IsEventSelected() &    AliVEvent::kMB);
-
-    
-    if(fDebug){
-      Printf("IsSelected = %d", isSelected);
-      Printf("CheckEvent(true)= %d", CheckEvent(true));
-      Printf("CheckEvent(false)= %d", CheckEvent(false));
-    }
-
-    //check trigger
-    if(isSelected){ // has offline trigger
-      
-      if(CheckEvent(true)){//step 5 = TrigVtxRecNrec, step 4 = TrigVtxRecMcPropNrec ,step 3 = TrigVtxMcNrec
-	
-	if(!fMcOnly){ 
-	  //step 5 = TrigVtxRecNrec
-	  ntracks = LoopESD(pt, eta, phi, charge,nTracksTracklets, 5);//read tracks
-	  if(pt.size()){ //(internally ntracks=fNRecAccept)
-	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);//analyse
-	  }
-	  
-	  if(fUseMC){
-	    // step 4 = TrigVtxRecMcPropNrec
-	    ntracks = LoopESDRecMcProp(pt, eta, phi, charge, nTracksTracklets, 4);//read tracks
-	    if(pt.size()){//(internally ntracks=fNRecAccept)
-	      Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 4);//analyse
-	    }
-	  }
-	}
-	
-	if(fUseMC){
-	  // step 3 = TrigVtxMcNrec
-	  ntracks = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 3);//read tracks
-	  if(pt.size()){//(internally ntracks=fNRecAccept)
-	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1],nTracksTracklets[2], 3);//analyse
-	  }
-	}
-	
-	
-      }//check event (true)
-      if(fUseMC){
-	//reset values
-	fNMcPrimAccept=0;// number of accepted primaries
-	fNRecAccept=0;   // number of accepted tracks
-	
-	if(CheckEvent(false)){// all events, with and without reconstucted vertex
-	  ntracks  = LoopESD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-	  ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
-	  if(pt.size()){
-	    Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
 	    
-	    Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
-	    
-	    Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //first part of step 0 // step 0 = AllAllMcNmc
-	  }
-	  
-	  
+	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //first part of step 0 // step 0 = AllAllMcNmc
 	}
+	  
+	  
       }
-    }// triggered event
+    }
+  }// triggered event
     
-    else { // not selected by physics selection task = not triggered
-      if(fUseMC){
-	if(CheckEvent(false)){
-	  ntracks  = LoopESDMC(pt, eta, phi, charge, nTracksTracklets, 0);//read tracks
-	  if(pt.size())Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //second part of step 0 // step 0 = AllAllMcNmc
+  else { // not selected by physics selection task = not triggered
+    if(fUseMC && !fMcOnly){
+      if(CheckEvent(false)){
+	
+	//read tracks
+	if(fESDEvent)	   ntracks  = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 0);
+	else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 0);
+	else Printf("Fatal Error");
+	
+	//analyse
+	if(pt.size()){
+	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //second part of step 0 // step 0 = AllAllMcNmc
 	}
       }
     }
+  }
 
+  if(fMcOnly){
+    // read event
+    if(fMode==0)       ntracks  = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 0);
+    else if (fMode==1) ntracks  = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 0);
 
-  }//ESD loop
-
-
-
+    // analyse
+    if(pt.size()){
+      Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0); 
+    }
+  }
 
 
 }      
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopESD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
-				       vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
-				       vector<Int_t> &nTracksTracklets, const Int_t step)
+Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+					    vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
+					    vector<Int_t> &nTracksTracklets, const Int_t step)
 {
   // gives back the number of esd tracks and pointer to arrays with track
   // properties (pt, eta, phi)
@@ -617,7 +600,7 @@ Int_t AliAnalysisTaskMinijet::LoopESD( vector<Float_t> &ptArray,  vector<Float_t
  
     AliESDtrack *esdTrack = (AliESDtrack *)fESDEvent->GetTrack(iTracks);
     if (!esdTrack) {
-      Error("LoopESD", "Could not receive track %d", iTracks);
+      Error("ReadEventESD", "Could not receive track %d", iTracks);
       continue;
     }
     
@@ -689,7 +672,7 @@ Int_t AliAnalysisTaskMinijet::LoopESD( vector<Float_t> &ptArray,  vector<Float_t
 }   
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopESDRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+Int_t AliAnalysisTaskMinijet::ReadEventESDRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
 						vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
 						vector<Int_t> &nTracksTracklets, const Int_t step)
 {  
@@ -706,7 +689,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDRecMcProp( vector<Float_t> &ptArray,  vecto
   
   AliMCEvent *mcEvent = (AliMCEvent*) MCEvent();
   if (!mcEvent) {
-    Error("LoopESDRecMcProp", "Could not retrieve MC event");
+    Error("ReadEventESDRecMcProp", "Could not retrieve MC event");
     return 0;
   }
   AliStack* stack = MCEvent()->Stack();
@@ -727,7 +710,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDRecMcProp( vector<Float_t> &ptArray,  vecto
     AliVParticle *vtrack = fESDEvent->GetTrack(iTracks);
     AliESDtrack *esdTrack = (AliESDtrack *)fESDEvent->GetTrack(iTracks);
     if (!esdTrack) {
-      Error("LoopESDRecMcProp", "Could not receive track %d", iTracks);
+      Error("ReadEventESDRecMcProp", "Could not receive track %d", iTracks);
       continue;
     }
     
@@ -818,7 +801,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDRecMcProp( vector<Float_t> &ptArray,  vecto
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
 					vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
 					vector<Int_t> &nTracksTracklets, const Int_t step)
 {
@@ -835,7 +818,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
 
   AliMCEvent *mcEvent = (AliMCEvent*) MCEvent();
   if (!mcEvent) {
-    Error("LoopESDMC", "Could not retrieve MC event");
+    Error("ReadEventESDMC", "Could not retrieve MC event");
     return 0;
   }
 
@@ -864,7 +847,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliMCParticle *track = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(iTracks));
     if (!track) {
-      Error("LoopESDMC", "Could not receive track %d", iTracks);
+      Error("ReadEventESDMC", "Could not receive track %d", iTracks);
       continue;
     }
 
@@ -909,7 +892,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliMCParticle *track = dynamic_cast<AliMCParticle*>(mcEvent->GetTrack(iTracks));
     if (!track) {
-      Error("LoopESDMC", "Could not receive track %d", iTracks);
+      Error("ReadEventESDMC", "Could not receive track %d", iTracks);
       continue;
     }
    
@@ -961,7 +944,7 @@ Int_t AliAnalysisTaskMinijet::LoopESDMC(vector<Float_t> &ptArray,  vector<Float_
 }
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopAOD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
 				       vector<Float_t> &phiArray,  vector<Short_t> &chargeArray,
 				       vector<Int_t> &nTracksTracklets, const Int_t step)
 {
@@ -993,7 +976,7 @@ Int_t AliAnalysisTaskMinijet::LoopAOD( vector<Float_t> &ptArray,  vector<Float_t
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
     if (!track) {
-      Error("LoopAOD", "Could not receive track %d", iTracks);
+      Error("ReadEventAOD", "Could not receive track %d", iTracks);
       continue;
     }
    
@@ -1005,7 +988,7 @@ Int_t AliAnalysisTaskMinijet::LoopAOD( vector<Float_t> &ptArray,  vector<Float_t
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
     
-    if(track->TestFilterBit(128) && TMath::Abs(track->Eta())<fEtaCut  
+    if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut  
        && track->Pt()>fPtMin && track->Pt()<fPtMax){
       
       nAcceptedTracks++;
@@ -1047,7 +1030,7 @@ Int_t AliAnalysisTaskMinijet::LoopAOD( vector<Float_t> &ptArray,  vector<Float_t
 }   
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopAODRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
 						vector<Float_t> &phiArray, vector<Short_t> &chargeArray, 
 						vector<Int_t> &nTracksTracklets, const Int_t step)
 {
@@ -1086,7 +1069,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODRecMcProp( vector<Float_t> &ptArray,  vecto
     AliVParticle *vtrack = fAODEvent->GetTrack(iTracks);
 
     if (!track) {
-      Error("LoopAODRecMcProp", "Could not receive track %d", iTracks);
+      Error("ReadEventAODRecMcProp", "Could not receive track %d", iTracks);
       continue;
     }
    
@@ -1096,7 +1079,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODRecMcProp( vector<Float_t> &ptArray,  vecto
       if(!(static_cast<AliAODMCParticle*>(mcArray->At(vtrack->GetLabel()))->IsPhysicalPrimary()))continue;
     }
 
-    if(track->TestFilterBit(128) &&  TMath::Abs(track->Eta())<fEtaCut &&
+    if(track->TestFilterBit(fFilterBit) &&  TMath::Abs(track->Eta())<fEtaCut &&
        track->Pt()>fPtMin && track->Pt()<fPtMax){
       
       nAcceptedTracks++;
@@ -1153,7 +1136,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODRecMcProp( vector<Float_t> &ptArray,  vecto
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskMinijet::LoopAODMC( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
+Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<Float_t> &etaArray, 
 					 vector<Float_t> &phiArray, vector<Short_t> &chargeArray,
 					 vector<Int_t> &nTracksTracklets, const Int_t step)
 {
@@ -1193,7 +1176,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC( vector<Float_t> &ptArray,  vector<Float
   for (Int_t it = 0; it < ntracks; it++) {
     AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
     if (!track) {
-      Error("LoopAODMC", "Could not receive particle %d", it);
+      Error("ReadEventAODMC", "Could not receive particle %d", it);
       continue;
     }
 
@@ -1226,7 +1209,7 @@ Int_t AliAnalysisTaskMinijet::LoopAODMC( vector<Float_t> &ptArray,  vector<Float
   for (Int_t it = 0; it < ntracks; it++) {
     AliAODMCParticle *track = (AliAODMCParticle*)mcArray->At(it);
     if (!track) {
-      Error("LoopAODMC", "Could not receive particle %d", it);
+      Error("ReadEventAODMC", "Could not receive particle %d", it);
       continue;
     }
 
