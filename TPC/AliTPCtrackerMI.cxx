@@ -221,8 +221,10 @@ Int_t AliTPCtrackerMI::UpdateTrack(AliTPCseed * track, Int_t accept){
 
 
   AliTPCclusterMI* c =track->GetCurrentCluster();
-  if (accept>0) track->SetCurrentClusterIndex1(track->GetCurrentClusterIndex1() | 0x8000);  //sign not accepted clusters
-
+  if (accept > 0) //sign not accepted clusters
+    track->SetCurrentClusterIndex1(track->GetCurrentClusterIndex1() | 0x8000);  
+  else // unsign accpeted clusters
+    track->SetCurrentClusterIndex1(track->GetCurrentClusterIndex1() & 0xffff7fff);  
   UInt_t i = track->GetCurrentClusterIndex1();
 
   Int_t sec=(i&0xff000000)>>24; 
@@ -1598,7 +1600,7 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   if (fIteration>0 && tpcindex>=-1){  //if we have already clusters 
     //        
     if (tpcindex==-1) return 0; //track in dead zone
-    if (tpcindex>0){     //
+    if (tpcindex >= 0){     //
       cl = t.GetClusterPointer(nr);
       if ( (cl==0) ) cl = GetClusterMI(tpcindex);
       t.SetCurrentClusterIndex1(tpcindex); 
@@ -1632,7 +1634,11 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
 	t.SetNFoundable(t.GetNFoundable()+1);
 	UpdateTrack(&t,accept);
 	return 1;
-      }    
+      }
+      else { // Remove old cluster from track
+	t.SetClusterIndex(nr, -3);
+	t.SetClusterPointer(nr, 0);
+      }
     }
   }
   if (TMath::Abs(t.GetSnp())>AliTPCReconstructor::GetMaxSnpTracker()) return 0;  // cut on angle
@@ -1644,7 +1650,11 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
   //
   UInt_t index=0;
   //  if (TMath::Abs(t.GetSnp())>0.95 || TMath::Abs(x*t.GetC()-t.GetEta())>0.95) return 0;// patch 28 fev 06
-  Double_t  y=t.GetYat(x);
+  if (!t.PropagateTo(x)) {
+    if (fIteration==0) t.SetRemoval(10);
+    return 0;
+  }
+  Double_t y = t.GetY(); 
   if (TMath::Abs(y)>ymax){
     if (y > ymax) {
       t.SetRelativeSector((t.GetRelativeSector()+1) % fN);
@@ -1655,14 +1665,13 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
       if (!t.Rotate(-fSectors->GetAlpha())) 
 	return 0;
     }
-    //return 1;
+    if (!t.PropagateTo(x)) {
+      if (fIteration==0) t.SetRemoval(10);
+      return 0;
+    }
+    y = t.GetY();
   }
   //
-  if (!t.PropagateTo(x)) {
-    if (fIteration==0) t.SetRemoval(10);
-    return 0;
-  }
-  y=t.GetY(); 
   Double_t z=t.GetZ();
   //
 
@@ -1787,7 +1796,7 @@ Int_t AliTPCtrackerMI::UpdateClusters(AliTPCseed& t,  Int_t nr) {
   // This function tries to find a track prolongation to next pad row
   //-----------------------------------------------------------------
   t.SetCurrentCluster(0);
-  t.SetCurrentClusterIndex1(0);   
+  t.SetCurrentClusterIndex1(-3);   
    
   Double_t xt=t.GetX();
   Int_t     row = GetRowNumber(xt)-1; 
@@ -1925,8 +1934,8 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
  
   } else {
     if (fIteration==0){
-      if ( ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16)&& t.GetNumberOfClusters()>18) t.SetRemoval(10);      
-      if (  t.GetChi2()/t.GetNumberOfClusters()>6 &&t.GetNumberOfClusters()>18) t.SetRemoval(10);      
+      if ( t.GetNumberOfClusters()>18 && ( (t.GetSigmaY2()+t.GetSigmaZ2())>0.16)) t.SetRemoval(10);      
+      if ( t.GetNumberOfClusters()>18 && t.GetChi2()/t.GetNumberOfClusters()>6 ) t.SetRemoval(10);      
 
       if (( (t.GetNFoundable()*0.5 > t.GetNumberOfClusters()) || t.GetNoCluster()>15)) t.SetRemoval(10);
     }
@@ -1937,19 +1946,21 @@ Int_t AliTPCtrackerMI::FollowToNextCluster(AliTPCseed & t, Int_t nr) {
 
 
 //_____________________________________________________________________________
-Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step) {
+Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step, Bool_t fromSeeds) {
   //-----------------------------------------------------------------
   // This function tries to find a track prolongation.
   //-----------------------------------------------------------------
   Double_t xt=t.GetX();
   //
-  Double_t alpha=t.GetAlpha() - fSectors->GetAlphaShift();
+  Double_t alpha=t.GetAlpha();
   if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();  
   if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
   //
-  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN);
+  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha())%fN);
     
-  Int_t first = GetRowNumber(xt)-1;
+  Int_t first = GetRowNumber(xt);
+  if (!fromSeeds)
+    first -= step;
   for (Int_t nr= first; nr>=rf; nr-=step) {
     // update kink info
     if (t.GetKinkIndexes()[0]>0){
@@ -1992,19 +2003,23 @@ Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step) {
 
 
 
-Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf) {
+Int_t AliTPCtrackerMI::FollowBackProlongation(AliTPCseed& t, Int_t rf, Bool_t fromSeeds) {
   //-----------------------------------------------------------------
   // This function tries to find a track prolongation.
   //-----------------------------------------------------------------
   //
   Double_t xt=t.GetX();  
-  Double_t alpha=t.GetAlpha() - fSectors->GetAlphaShift();
+  Double_t alpha=t.GetAlpha();
   if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();  
   if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
-  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN);
+  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha())%fN);
     
   Int_t first = t.GetFirstPoint();
-  if (first<GetRowNumber(xt)+1) first = GetRowNumber(xt)+1;
+  Int_t ri = GetRowNumber(xt); 
+  if (!fromSeeds)
+    ri += 1;
+
+  if (first<ri) first = ri;
   //
   if (first<0) first=0;
   for (Int_t nr=first; nr<=rf; nr++) {
@@ -2723,6 +2738,7 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
     AliESDtrack *esd=event->GetTrack(i);
 
     if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
+      AliInfo("Refitting track");
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
@@ -2949,17 +2965,20 @@ void AliTPCtrackerMI::ReadSeeds(const AliESDEvent *const event, Int_t direction)
     // rotate to the local coordinate system
     //   
     fSectors=fInnerSec; fN=fkNIS;    
-    Double_t alpha=seed->GetAlpha() - fSectors->GetAlphaShift();
+    Double_t alpha=seed->GetAlpha();
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
     Int_t ns=Int_t(alpha/fSectors->GetAlpha())%fN;
     alpha =ns*fSectors->GetAlpha() + fSectors->GetAlphaShift();
+    alpha-=seed->GetAlpha();  
     if (alpha<-TMath::Pi()) alpha += 2*TMath::Pi();
     if (alpha>=TMath::Pi()) alpha -= 2*TMath::Pi();
-    alpha-=seed->GetAlpha();  
-    if (!seed->Rotate(alpha)) {
-      delete seed;
-      continue;
+    if (TMath::Abs(alpha) > 0.001) { // This should not happen normally
+      AliWarning(Form("Rotating track over %f",alpha));
+      if (!seed->Rotate(alpha)) {
+	delete seed;
+	continue;
+      }
     }
     seed->SetESD(esd);
     // sign clusters
@@ -6006,7 +6025,7 @@ Int_t AliTPCtrackerMI::Clusters2Tracks() {
   fIteration = 2;
   
   PrepareForProlongation(fSeeds,5.);
-  PropagateForward2(fSeeds);
+  PropagateForard2(fSeeds);
    
   printf("Time for FORWARD propagation: \t");timer.Print();timer.Start();
   // RemoveUsed(fSeeds,0.7,0.7,6);
@@ -6466,7 +6485,7 @@ Int_t AliTPCtrackerMI::PropagateBack(const TObjArray *const arr)
       fSectors = fInnerSec;
       //FollowBackProlongation(*pt,fInnerSec->GetNRows()-1);
       //fSectors = fOuterSec;
-      FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);     
+      FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1,1);     
       //if (pt->GetNumberOfClusters()<(pt->fEsd->GetTPCclusters(0)) ){
       //	Error("PropagateBack","Not prolonged track %d",pt->GetLabel());
       //	FollowBackProlongation(*pt2,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);
@@ -6476,7 +6495,7 @@ Int_t AliTPCtrackerMI::PropagateBack(const TObjArray *const arr)
       AliESDkink * kink = fEvent->GetKink(pt->GetKinkIndex(0)-1);
       pt->SetFirstPoint(kink->GetTPCRow0());
       fSectors = fInnerSec;
-      FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1);  
+      FollowBackProlongation(*pt,fInnerSec->GetNRows()+fOuterSec->GetNRows()-1,1);  
     }
     CookLabel(pt,0.3);
   }
@@ -6494,12 +6513,12 @@ Int_t AliTPCtrackerMI::PropagateForward2(const TObjArray *const arr)
   for (Int_t i=0;i<nseed;i++){
     AliTPCseed *pt = (AliTPCseed*)arr->UncheckedAt(i);
     if (pt) { 
-      FollowProlongation(*pt,0);
+      FollowProlongation(*pt,0,1,1);
       CookLabel(pt,0.3);
     }
     
   }
-  return 0;
+ return 0;
 }
 
 
