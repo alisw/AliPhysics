@@ -281,7 +281,7 @@ int main(int argc, char **argv) {
                if(itdc==iprevtdc) ihittdc++;
                else ihittdc=0;
                iprevtdc=itdc;
-               if(ihittdc<1) tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
+               if(ihittdc<1 && itdc!=15) tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	       //
 	       if(itdc==15 && ihittdc<1){
 	         tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
