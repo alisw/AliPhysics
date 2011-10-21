@@ -28,10 +28,12 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   
   void         SetUseMC(Bool_t useMC=kTRUE, Bool_t mcOnly=kFALSE)    {fUseMC = useMC; fMcOnly=mcOnly;}
   void         SetAnalyseOnlyPrimaries(Bool_t analysePrimOnly)       {fAnalysePrimOnly = analysePrimOnly;} // not used anymore
-  void         SetPtRangeMultiplicity(Float_t ptMin, Float_t ptMax)  {fPtMin = ptMin; fPtMax = ptMax; }
+  void         SetPtRange(Float_t ptMin, Float_t ptMax)              {fPtMin = ptMin; fPtMax = ptMax; }
   void         SetTriggerPtCut(Float_t triggerPtCut)                 {fTriggerPtCut = triggerPtCut;}  
   void         SetAssociatePtCut(Float_t associatePtCut)             {fAssociatePtCut = associatePtCut;} 
   void         SetModeEsdAod(Int_t mode)                             {fMode = mode;}
+  void         SetTriggerMask(Int_t triggerType)                     {fTriggerType = triggerType;}
+  void         SetFilterBit(Int_t filterBit)                         {fFilterBit = filterBit;}
   void         SetMaxVertexZ(Float_t vertexZCut)                     {fVertexZCut = vertexZCut;}
   void         SetMaxEta(Float_t etaCut)                             {fEtaCut = etaCut;}
   void         SetMaxEtaSeed(Float_t etaCutSeed)                     {fEtaCutSeed = etaCutSeed;}
@@ -41,25 +43,25 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 
  private:
 
-  Int_t LoopESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
-  			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t LoopESDRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
-  			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t LoopESDMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
-  			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventESD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventESDRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventESDMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   
-  Int_t LoopAOD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
-			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t LoopAODRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
-			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
-  Int_t LoopAODMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
-			 std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
-			 std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventAOD         (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventAODRecMcProp(std::vector<Float_t> &pt,  std::vector<Float_t> &eta,
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
+  Int_t ReadEventAODMC       (std::vector<Float_t> &pt,  std::vector<Float_t> &eta,  
+			      std::vector<Float_t> &phi,  std::vector<Short_t> &charge,
+			      std::vector<Int_t> &nTracksTracklets, const Int_t step);
   
   void  Analyse         (const std::vector<Float_t> &pt, 
 			 const std::vector<Float_t> &eta, 
@@ -85,6 +87,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Float_t      fTriggerPtCut;               // cut on particle pt used as event axis
   Float_t      fAssociatePtCut;             // cut on particle pt used for correlations
   Int_t        fMode;                       // ESD(=0) of AOD(=1) reading 
+  Int_t        fTriggerType;                // sets trigger -> AliVEvent::kMB, AliVEvent::kHighMult
+  Int_t        fFilterBit;                  // Filter bit written in ESD filter, select track type
   Float_t      fVertexZCut;                 // vertex cut
   Float_t      fEtaCut;                     // eta acceptance cut
   Float_t      fEtaCutSeed;                 // eta acceptance cut for seed

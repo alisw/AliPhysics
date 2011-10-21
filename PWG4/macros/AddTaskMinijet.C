@@ -1,110 +1,115 @@
-AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber, TString format="esd",Bool_t useMC = kFALSE, TString kGridDataSet="LHC10e")
+AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1, 
+				       TString format      = "esd",
+				       Bool_t  useMC       = false, 
+				       Bool_t  mcOnly      = false,
+				       Bool_t  useHighMult = false
+				       )
 {
-
-  //starting with periode LHC10e, there are also events triggered with High Mult trigger
-  //add stand alone task in case these events are availale
-  Bool_t IsHighMult= (!kGridDataSet.CompareTo("LHC10e") || !kGridDataSet.CompareTo("LHC10f"));
-  //extent with new periods (LHC10g,h,...)
+  //Seetings
+  Float_t ptTrigMin   = 0.7;
+  Float_t ptAssocMin  = 0.4;
+  Float_t maxVtxZ     = 10.;
+  Int_t filterBit     = 128;
+  Int_t debugLevel    =   0;
 
   // Get the pointer to the existing analysis manager via the static access method.
-  //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("Analysis train");
 
-  // Set cuts (used for ESDs) 
-  //===========================================================================
-  AliESDtrackCuts* esdTrackCutsITSTPC=0x0;
+  // Set TPC track cuts (used for ESDs) 
+  AliESDtrackCuts* esdTrackCutsTPC=0x0;
   if(!format.CompareTo("esd")){
-    esdTrackCutsITSTPC = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
+    esdTrackCutsTPC = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+    esdTrackCutsTPC->SetMinNClustersTPC(80);
   }
 
-  // Configure tasks
-  //===========================================================================
-   
-  //first task for min bias events
-  AliAnalysisTaskMinijet *task = new AliAnalysisTaskMinijet("AliAnalysisTaskMinijet Min bias");
-  task->UseMC(useMC);
-  task->SetRadiusCut(0.7);
-  task->SetTriggerPtCut(0.7);
-  task->SetAssociatePtCut(0.4);
-  task->SetEventAxis(1); //1=random track
-  task->SetDebugLevel(0);
-  task->SetMaxVertexZ(10.);
+  // First task for min bias events
+  AliAnalysisTaskMinijet *taskMB = 
+    new AliAnalysisTaskMinijet("AliAnalysisTaskMinijet Min bias");
+  taskMB->SetUseMC(useMC,mcOnly);
+  taskMB->SetTriggerPtCut(ptTrigMin);
+  taskMB->SetAssociatePtCut(ptAssocMin);
+  taskMB->SetMaxVertexZ(maxVtxZ);
+  taskMB->SetTriggerMask(AliVEvent::kMB);
+  // taskMB->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
+  taskMB->SetFilterBit(filterBit); // used only in AOD case
+  taskMB->SetDebugLevel(debugLevel);
+ 
   if(!format.CompareTo("esd")){
-    task->SetCuts(esdTrackCutsITSTPC);
-    task->SetMode(0);//0=reading ESDs
-    task->SelectCollisionCandidates(AliVEvent::kMB);//MB
+    taskMB->SetCuts(esdTrackCutsTPC);
+    taskMB->SetModeEsdAod(0); // 0 = reading ESDs
+  }  
+  else if (!format.CompareTo("aod")){
+    // Cuts already applied through esd filter
+    taskMB->SetModeEsdAod(1); // 1 = reading AODs
   }
 
-  //second task for high multipliciy events
+  // Second task for high multipliciy events
   AliAnalysisTaskMinijet *taskHM =0x0;
-  if(IsHighMult && !format.CompareTo("esd")){
+  if(useHighMult){
     taskHM  = new AliAnalysisTaskMinijet("AliAnalysisTaskMinijet HighMult");
-    taskHM->UseMC(useMC);
-    taskHM->SetRadiusCut(0.7);
-    taskHM->SetTriggerPtCut(0.7);
-    taskHM->SetAssociatePtCut(0.4);
-    taskHM->SetEventAxis(1); //1=random track
-    taskHM->SetDebugLevel(0);
-    taskHM->SetMaxVertexZ(10.);
-    taskHM->SetCuts(esdTrackCutsITSTPC);
-    taskHM->SetMode(0);//0=reading ESDs
-    taskHM->SelectCollisionCandidates(AliVEvent::kHighMult);//high mult triggered event
-  }
+    taskHM->SetUseMC(useMC, mcOnly);
+    taskHM->SetTriggerPtCut(ptTrigMin);
+    taskHM->SetAssociatePtCut(ptAssocMin);
+    taskHM->SetMaxVertexZ(maxVtxZ);
+    taskHM->SetTriggerMask(AliVEvent::kHighMult);
+    //taskHM->SelectCollisionCandidates(AliVEvent::kHighMult); // now inside task
+    taskMB->SetFilterBit(filterBit); // used only in AOD case
+    taskHM->SetDebugLevel(debugLevel);
 
-  if (!format.CompareTo("aod")){
-    task->SetMode(1);// 1 = reading AODs
+    if(!format.CompareTo("esd")){
+      taskHM->SetCuts(esdTrackCutsTPC);
+      taskHM->SetModeEsdAod(0); // 0 = reading ESDs
+    }
+    else if (!format.CompareTo("aod")){
+      //cuts already applied through esd filter during writing of AODs
+      taskHM->SetModeEsdAod(1); // 1 = reading AODs
+    }
+    
   }
 
   //create output containers 
-  //===========================================================================
-  AliAnalysisDataContainer *output1  = 0x0;
+  AliAnalysisDataContainer *outputMB  = 0x0;
   AliAnalysisDataContainer *outputHM = 0x0;
 
   if(runNumber>0){ 
-    output1  =  mgr->CreateContainer("MiniJets",TList::Class(),
-				  AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
-    if(!format.CompareTo("esd") && IsHighMult){
+    outputMB  =  mgr->CreateContainer("MiniJets",TList::Class(),
+				      AliAnalysisManager::kOutputContainer, 
+				      Form("run%d.root",runNumber));
+    if(useHighMult){
       outputHM =  mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
-				       AliAnalysisManager::kOutputContainer, Form("run%d.root",runNumber));
-    }
-   }
-   
-   else{
-     output1  = mgr->CreateContainer("MiniJets",TList::Class(),
-				 AliAnalysisManager::kOutputContainer, 
-				 Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
-     if(!format.CompareTo("esd") && IsHighMult){
-       outputHM = mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
 				       AliAnalysisManager::kOutputContainer, 
-				       Form("%s:PWG4_MiniJets",AliAnalysisManager::GetCommonFileName()));
-     }
-     
-   }
+				       Form("run%d.root",runNumber));
+    }
+  }
+  else{
+    outputMB  = mgr->CreateContainer("MiniJets",TList::Class(),
+				     AliAnalysisManager::kOutputContainer, 
+				     Form("%s:PWG4_MiniJets",
+					  AliAnalysisManager::GetCommonFileName()));
+    if(useHighMult){
+      outputHM = mgr->CreateContainer("MiniJets_HighMult",TList::Class(),
+				      AliAnalysisManager::kOutputContainer, 
+				      Form("%s:PWG4_MiniJets",
+					   AliAnalysisManager::GetCommonFileName()));
+    }
+  }
+  
 
-  //===========================================================================  
-  // add first task to the manager
-  
-  mgr->AddTask(task);
-  
-  //connect input and output
-  mgr->ConnectInput(task, 0,  mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 1, output1);
+  // Add first task to the manager and connect container
+  mgr->AddTask(taskMB);
+  mgr->ConnectInput(taskMB, 0,  mgr->GetCommonInputContainer());
+  mgr->ConnectOutput(taskMB, 1, outputMB);
   
   
-  //===========================================================================
-  //do same for high mult task if necassary
-  if(!format.CompareTo("esd") && IsHighMult){
-    
-    // add task to the manager
+  // Add second task to the manager and connect container
+  if(useHighMult){
     mgr->AddTask(taskHM);
-    
-    //connect input and output
     mgr->ConnectInput (taskHM, 0,  mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskHM, 1, outputHM);
   }
   
-  return task;
+  return taskMB;
 
 }
 
