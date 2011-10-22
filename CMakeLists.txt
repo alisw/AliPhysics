@@ -16,7 +16,7 @@ project(AliRoot CXX C Fortran)
 
 # Environment variables
 set(ALICE_ROOT $ENV{ALICE_ROOT})
-set(ALICE $ENV{ALICEVE/E})
+set(ALICE $ENV{ALICE})
 set(ALICE_INSTALL $ENV{ALICE_INSTALL})
 if(${ALICE_INSTALL} MATCHES ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "Install dir should be different from build dir")
