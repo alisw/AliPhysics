@@ -71,7 +71,7 @@ public:
   void SetSkipTriggerClassSelection(Bool_t flag = kTRUE) { fSkipTriggerClassSelection = flag; }
   void SetSkipV0(Bool_t flag=kTRUE) { AliError ("This method is deprecated! Please change the OADB configuration instead") ; fSkipV0 = flag;}
    
-  void AddBackgroundIdentification(AliAnalysisCuts* background) { AliFatal ("This method is deprecated. Please use the kSPDClsVsTrkBG tag in the OADB configuration instead"); }
+  void AddBackgroundIdentification(AliAnalysisCuts*) { AliFatal ("This method is deprecated. Please use the kSPDClsVsTrkBG tag in the OADB configuration instead"); }
     
   virtual void Print(const Option_t* option = "") const;
   virtual Long64_t Merge(TCollection* list);
