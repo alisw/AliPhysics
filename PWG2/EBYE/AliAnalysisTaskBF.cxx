@@ -55,6 +55,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistRefTracks(0),
   fESDtrackCuts(0),
   fCentralityEstimator("V0M"),
+  fUseCentrality(kFALSE),
   fCentralityPercentileMin(0.), 
   fCentralityPercentileMax(5.),
   fUseOfflineTrigger(kFALSE),
@@ -270,97 +271,98 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     if(isSelected) {
       fHistEventStats->Fill(2); //triggered events
 
-      //Centrality stuff
-      AliCentrality *centrality = gESD->GetCentrality();
-      //Int_t nCentrality = 0;
-      //nCentrality = centrality->GetCentralityClass5(fCentralityEstimator.Data());
-      //cout<<nCentrality<<" "<<centrality->IsEventInCentralityClass(fCentralityPercentileMin,fCentralityPercentileMax,fCentralityEstimator.Data())<<endl;
-
-      // take only events inside centrality class
-      if(centrality->IsEventInCentralityClass(fCentralityPercentileMin,
-					      fCentralityPercentileMax,
-					      fCentralityEstimator.Data())){
-
+      if(fUseCentrality) {
+	//Centrality stuff
+	AliCentrality *centrality = gESD->GetCentrality();
+	//Int_t nCentrality = 0;
+	//nCentrality = centrality->GetCentralityClass5(fCentralityEstimator.Data());
+	//cout<<nCentrality<<" "<<centrality->IsEventInCentralityClass(fCentralityPercentileMin,fCentralityPercentileMax,fCentralityEstimator.Data())<<endl;
+	
+	// take only events inside centrality class
+	if(!centrality->IsEventInCentralityClass(fCentralityPercentileMin,
+						 fCentralityPercentileMax,
+						 fCentralityEstimator.Data()))
+	  return;
+	
 	// centrality QA (V0M)
 	fHistV0M->Fill(gESD->GetVZEROData()->GetMTotV0A(), gESD->GetVZEROData()->GetMTotV0C());
+      }
 	
-	const AliESDVertex *vertex = gESD->GetPrimaryVertex();
-	if(vertex) {
-	  if(vertex->GetNContributors() > 0) {
-	    if(vertex->GetZRes() != 0) {
-	      fHistEventStats->Fill(3); //events with a proper vertex
-	      if(TMath::Abs(vertex->GetXv()) < fVxMax) {
-		if(TMath::Abs(vertex->GetYv()) < fVyMax) {
-		  if(TMath::Abs(vertex->GetZv()) < fVzMax) {
-		    fHistEventStats->Fill(4); //analayzed events
-		    fHistVx->Fill(vertex->GetXv());
-		    fHistVy->Fill(vertex->GetYv());
-		    fHistVz->Fill(vertex->GetZv());
+      const AliESDVertex *vertex = gESD->GetPrimaryVertex();
+      if(vertex) {
+	if(vertex->GetNContributors() > 0) {
+	  if(vertex->GetZRes() != 0) {
+	    fHistEventStats->Fill(3); //events with a proper vertex
+	    if(TMath::Abs(vertex->GetXv()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetYv()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZv()) < fVzMax) {
+		  fHistEventStats->Fill(4); //analayzed events
+		  fHistVx->Fill(vertex->GetXv());
+		  fHistVy->Fill(vertex->GetYv());
+		  fHistVz->Fill(vertex->GetZv());
+		  
+		  //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
+		  for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
+		    AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
+		    if (!track) {
+		      Printf("ERROR: Could not receive track %d", iTracks);
+		      continue;
+		    }	
 		    
-		    //Printf("There are %d tracks in this event", gESD->GetNumberOfTracks());
-		    for (Int_t iTracks = 0; iTracks < gESD->GetNumberOfTracks(); iTracks++) {
-		      AliESDtrack* track = dynamic_cast<AliESDtrack *>(gESD->GetTrack(iTracks));
-		      if (!track) {
-			Printf("ERROR: Could not receive track %d", iTracks);
-			continue;
-		      }	
-
-		      // take only TPC only tracks
-		      track_TPC   = new AliESDtrack();
-		      if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
-		      
-		      //ESD track cuts
-		      if(fESDtrackCuts) 
-			if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
-		      
-		      // fill QA histograms
-		      Float_t b[2];
-		      Float_t bCov[3];
-		      track_TPC->GetImpactParameters(b,bCov);
-		      if (bCov[0]<=0 || bCov[2]<=0) {
-			AliDebug(1, "Estimated b resolution lower or equal zero!");
-			bCov[0]=0; bCov[2]=0;
-		      }
-		      
-		      Int_t nClustersTPC = -1;
-		      nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
-		      //nClustersTPC = track->GetTPCclusters(0);   // global track
-		      Float_t chi2PerClusterTPC = -1;
-		      if (nClustersTPC!=0) {
-			chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
-			//chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
-		      }
-		      
-		      fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
-		      fHistDCA->Fill(b[1],b[0]);
-		      fHistChi2->Fill(chi2PerClusterTPC);
-		      fHistPt->Fill(track_TPC->Pt());
-		      fHistEta->Fill(track_TPC->Eta());
-		      fHistPhi->Fill(track_TPC->Phi()*TMath::RadToDeg());
-		      
-		      // fill BF array
-		      array->Add(track_TPC);
-
-		      // fill charge vector
-		      chargeVector.push_back(track_TPC->Charge());
-		      if(fRunShuffling){
-			chargeVectorShuffle.push_back(track_TPC->Charge());
-		      }
-      
-		      delete track_TPC;
-
-		    } //track loop
-		  }//Vz cut
-		}//Vy cut
-	      }//Vx cut
-	    }//proper vertex resolution
-	  }//proper number of contributors
-	}//vertex object valid
-      }//centrality
+		    // take only TPC only tracks
+		    track_TPC   = new AliESDtrack();
+		    if(!track->FillTPCOnlyTrack(*track_TPC)) continue;
+		    
+		    //ESD track cuts
+		    if(fESDtrackCuts) 
+		      if(!fESDtrackCuts->AcceptTrack(track_TPC)) continue;
+		    
+		    // fill QA histograms
+		    Float_t b[2];
+		    Float_t bCov[3];
+		    track_TPC->GetImpactParameters(b,bCov);
+		    if (bCov[0]<=0 || bCov[2]<=0) {
+		      AliDebug(1, "Estimated b resolution lower or equal zero!");
+		      bCov[0]=0; bCov[2]=0;
+		    }
+		    
+		    Int_t nClustersTPC = -1;
+		    nClustersTPC = track_TPC->GetTPCNclsIter1();   // TPC standalone
+		    //nClustersTPC = track->GetTPCclusters(0);   // global track
+		    Float_t chi2PerClusterTPC = -1;
+		    if (nClustersTPC!=0) {
+		      chi2PerClusterTPC = track_TPC->GetTPCchi2Iter1()/Float_t(nClustersTPC);      // TPC standalone
+		      //chi2PerClusterTPC = track->GetTPCchi2()/Float_t(nClustersTPC);     // global track
+		    }
+		    
+		    fHistClus->Fill(track_TPC->GetITSclusters(0),nClustersTPC);
+		    fHistDCA->Fill(b[1],b[0]);
+		    fHistChi2->Fill(chi2PerClusterTPC);
+		    fHistPt->Fill(track_TPC->Pt());
+		    fHistEta->Fill(track_TPC->Eta());
+		    fHistPhi->Fill(track_TPC->Phi()*TMath::RadToDeg());
+		    
+		    // fill BF array
+		    array->Add(track_TPC);
+		    
+		    // fill charge vector
+		    chargeVector.push_back(track_TPC->Charge());
+		    if(fRunShuffling){
+		      chargeVectorShuffle.push_back(track_TPC->Charge());
+		    }
+		    
+		    delete track_TPC;
+		    
+		  } //track loop
+		}//Vz cut
+	      }//Vy cut
+	    }//Vx cut
+	  }//proper vertex resolution
+	}//proper number of contributors
+      }//vertex object valid
     }//triggered event 
   }//ESD analysis
   
-
   //AOD analysis (vertex and track cuts also here!!!!)
   else if(gAnalysisLevel == "AOD") {
     AliAODEvent* gAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
@@ -383,36 +385,38 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       fHistEventStats->Fill(2); //triggered events
 		  
       //Centrality stuff (centrality in AOD header)
-      Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
-      // cout<<fCentralityEstimator.Data()<<" = "<<fCentrality<<" ,  others are V0M =  "
-      // 	  << aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")
-      // 	  <<"  FMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("FMD")
-      // 	  <<"  TRK = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TRK")
-      // 	  <<"  TKL = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKL")
-      // 	  <<"  CL0 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL0")
-      // 	  <<"  CL1 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL1")
-      // 	  <<"  V0MvsFMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD")
-      // 	  <<"  TKLvsV0M = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M")
-      // 	  <<"  ZEMvsZDC = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC")
-      // 	  <<endl;
-
-      // QA for centrality estimators
-      fHistCentStats->Fill(0.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
-      fHistCentStats->Fill(1.,aodHeader->GetCentralityP()->GetCentralityPercentile("FMD"));
-      fHistCentStats->Fill(2.,aodHeader->GetCentralityP()->GetCentralityPercentile("TRK"));
-      fHistCentStats->Fill(3.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKL"));
-      fHistCentStats->Fill(4.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL0"));
-      fHistCentStats->Fill(5.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL1"));
-      fHistCentStats->Fill(6.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
-      fHistCentStats->Fill(7.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
-      fHistCentStats->Fill(8.,aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
-
-      // take only events inside centrality class
-      if(fCentrality > fCentralityPercentileMin && fCentrality < fCentralityPercentileMax){
-
+      if(fUseCentrality) {
+	Float_t fCentrality     = aodHeader->GetCentralityP()->GetCentralityPercentile(fCentralityEstimator.Data());
+	// cout<<fCentralityEstimator.Data()<<" = "<<fCentrality<<" ,  others are V0M =  "
+	// 	  << aodHeader->GetCentralityP()->GetCentralityPercentile("V0M")
+	// 	  <<"  FMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("FMD")
+	// 	  <<"  TRK = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TRK")
+	// 	  <<"  TKL = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKL")
+	// 	  <<"  CL0 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL0")
+	// 	  <<"  CL1 ="<<aodHeader->GetCentralityP()->GetCentralityPercentile("CL1")
+	// 	  <<"  V0MvsFMD = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD")
+	// 	  <<"  TKLvsV0M = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M")
+	// 	  <<"  ZEMvsZDC = "<<aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC")
+	// 	  <<endl;
+	
+	// QA for centrality estimators
+	fHistCentStats->Fill(0.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0M"));
+	fHistCentStats->Fill(1.,aodHeader->GetCentralityP()->GetCentralityPercentile("FMD"));
+	fHistCentStats->Fill(2.,aodHeader->GetCentralityP()->GetCentralityPercentile("TRK"));
+	fHistCentStats->Fill(3.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKL"));
+	fHistCentStats->Fill(4.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL0"));
+	fHistCentStats->Fill(5.,aodHeader->GetCentralityP()->GetCentralityPercentile("CL1"));
+	fHistCentStats->Fill(6.,aodHeader->GetCentralityP()->GetCentralityPercentile("V0MvsFMD"));
+	fHistCentStats->Fill(7.,aodHeader->GetCentralityP()->GetCentralityPercentile("TKLvsV0M"));
+	fHistCentStats->Fill(8.,aodHeader->GetCentralityP()->GetCentralityPercentile("ZEMvsZDC"));
+	
+	// take only events inside centrality class
+	if((fCentrality < fCentralityPercentileMin) || (fCentrality > fCentralityPercentileMax)) 
+	  return;
+	
 	// centrality QA (V0M)
 	fHistV0M->Fill(gAOD->GetVZEROData()->GetMTotV0A(), gAOD->GetVZEROData()->GetMTotV0C());
-      
+	
 	// centrality QA (reference tracks)
 	fHistRefTracks->Fill(0.,aodHeader->GetRefMultiplicity());
 	fHistRefTracks->Fill(1.,aodHeader->GetRefMultiplicityPos());
@@ -423,91 +427,90 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	fHistRefTracks->Fill(6.,aodHeader->GetNumberOfITSClusters(2));
 	fHistRefTracks->Fill(7.,aodHeader->GetNumberOfITSClusters(3));
 	fHistRefTracks->Fill(8.,aodHeader->GetNumberOfITSClusters(4));
+      }
 
-
-	const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
-
-	if(vertex) {
-	  Double32_t fCov[6];
-	  vertex->GetCovarianceMatrix(fCov);
-	  	  
-	  if(vertex->GetNContributors() > 0) {
-	    if(fCov[5] != 0) {
-	      fHistEventStats->Fill(3); //events with a proper vertex
-	      if(TMath::Abs(vertex->GetX()) < fVxMax) {
-		if(TMath::Abs(vertex->GetY()) < fVyMax) {
-		  if(TMath::Abs(vertex->GetZ()) < fVzMax) {
-		    fHistEventStats->Fill(4); //analyzed events
-		    fHistVx->Fill(vertex->GetX());
-		    fHistVy->Fill(vertex->GetY());
-		    fHistVz->Fill(vertex->GetZ());
-
-		    //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
-		    for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
-		      AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
-		      if (!aodTrack) {
-			Printf("ERROR: Could not receive track %d", iTracks);
-			continue;
+      const AliAODVertex *vertex = gAOD->GetPrimaryVertex();
+      
+      if(vertex) {
+	Double32_t fCov[6];
+	vertex->GetCovarianceMatrix(fCov);
+	
+	if(vertex->GetNContributors() > 0) {
+	  if(fCov[5] != 0) {
+	    fHistEventStats->Fill(3); //events with a proper vertex
+	    if(TMath::Abs(vertex->GetX()) < fVxMax) {
+	      if(TMath::Abs(vertex->GetY()) < fVyMax) {
+		if(TMath::Abs(vertex->GetZ()) < fVzMax) {
+		  fHistEventStats->Fill(4); //analyzed events
+		  fHistVx->Fill(vertex->GetX());
+		  fHistVy->Fill(vertex->GetY());
+		  fHistVz->Fill(vertex->GetZ());
+		  
+		  //Printf("There are %d tracks in this event", gAOD->GetNumberOfTracks());
+		  for (Int_t iTracks = 0; iTracks < gAOD->GetNumberOfTracks(); iTracks++) {
+		    AliAODTrack* aodTrack = dynamic_cast<AliAODTrack *>(gAOD->GetTrack(iTracks));
+		    if (!aodTrack) {
+		      Printf("ERROR: Could not receive track %d", iTracks);
+		      continue;
+		    }
+		    
+		    // AOD track cuts
+		    
+		    // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
+		    // take only TPC only tracks 
+		    fHistTrackStats->Fill(aodTrack->GetFilterMap());
+		    if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
+		    
+		    Float_t pt  = aodTrack->Pt();
+		    Float_t eta = aodTrack->Eta();
+		    
+		    Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
+		    Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+		    
+		    
+		    // Kinematics cuts from ESD track cuts
+		    if( pt < fPtMin || pt > fPtMax)      continue;
+		    if( eta < fEtaMin || eta > fEtaMax)  continue;
+		    
+		    // Extra DCA cuts (for systematic studies [!= -1])
+		    if( fDCAxyCut != -1 && fDCAxyCut != -1){
+		      if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
+			continue;  // 2D cut
 		      }
-
-		      // AOD track cuts
-		      
-		      // For ESD Filter Information: ANALYSIS/macros/AddTaskESDfilter.C
-		      // take only TPC only tracks 
-		      fHistTrackStats->Fill(aodTrack->GetFilterMap());
-		      if(!aodTrack->TestFilterBit(nAODtrackCutBit)) continue;
-
-		      Float_t pt  = aodTrack->Pt();
-		      Float_t eta = aodTrack->Eta();
-
-		      Float_t DCAxy = aodTrack->DCA();      // this is the DCA from global track (not exactly what is cut on)
-		      Float_t DCAz  = aodTrack->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
-		      
-		      
-		      // Kinematics cuts from ESD track cuts
-		      if( pt < fPtMin || pt > fPtMax)      continue;
-		      if( eta < fEtaMin || eta > fEtaMax)  continue;
-
-		      // Extra DCA cuts (for systematic studies [!= -1])
-		      if( fDCAxyCut != -1 && fDCAxyCut != -1){
-			if(TMath::Sqrt((DCAxy*DCAxy)/(fDCAxyCut*fDCAxyCut)+(DCAz*DCAz)/(fDCAzCut*fDCAzCut)) > 1 ){
-			  continue;  // 2D cut
-			}
-		      }
-
-		      // Extra TPC cuts (for systematic studies [!= -1])
-		      if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
-			continue;
-		      }
-		      if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
-			continue;
-		      }
-
-
-		      // fill QA histograms
-		      fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
-		      fHistDCA->Fill(DCAz,DCAxy);
-		      fHistChi2->Fill(aodTrack->Chi2perNDF());
-		      fHistPt->Fill(pt);
-		      fHistEta->Fill(eta);
-		      fHistPhi->Fill(aodTrack->Phi()*TMath::RadToDeg());
-		      
-		      // fill BF array
-		      array->Add(aodTrack);
-
-		      // fill charge vector
-		      chargeVector.push_back(aodTrack->Charge());
-		      if(fRunShuffling) {
-			chargeVectorShuffle.push_back(aodTrack->Charge());
-		      }
-		    } //track loop
-		  }//Vz cut
-		}//Vy cut
-	      }//Vx cut
-	    }//proper vertex resolution
-	  }//proper number of contributors
-	}//vertex object valid
-      }//centrality
+		    }
+		    
+		    // Extra TPC cuts (for systematic studies [!= -1])
+		    if( fTPCchi2Cut != -1 && aodTrack->Chi2perNDF() > fTPCchi2Cut){
+		      continue;
+		    }
+		    if( fNClustersTPCCut != -1 && aodTrack->GetTPCNcls() < fNClustersTPCCut){
+		      continue;
+		    }
+		    
+		    
+		    // fill QA histograms
+		    fHistClus->Fill(aodTrack->GetITSNcls(),aodTrack->GetTPCNcls());
+		    fHistDCA->Fill(DCAz,DCAxy);
+		    fHistChi2->Fill(aodTrack->Chi2perNDF());
+		    fHistPt->Fill(pt);
+		    fHistEta->Fill(eta);
+		    fHistPhi->Fill(aodTrack->Phi()*TMath::RadToDeg());
+		    
+		    // fill BF array
+		    array->Add(aodTrack);
+		    
+		    // fill charge vector
+		    chargeVector.push_back(aodTrack->Charge());
+		    if(fRunShuffling) {
+		      chargeVectorShuffle.push_back(aodTrack->Charge());
+		    }
+		  } //track loop
+		}//Vz cut
+	      }//Vy cut
+	    }//Vx cut
+	  }//proper vertex resolution
+	}//proper number of contributors
+      }//vertex object valid
     }//triggered event 
   }//AOD analysis
 
