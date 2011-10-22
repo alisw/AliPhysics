@@ -68,6 +68,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
   void SetCentralityPercentileRange(Double_t min, Double_t max) { 
+    fUseCentrality = kTRUE;
     fCentralityPercentileMin=min;
     fCentralityPercentileMax=max;
   }
@@ -102,6 +103,7 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   AliESDtrackCuts *fESDtrackCuts; //ESD track cuts
 
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
+  Bool_t fUseCentrality;//use the centrality (PbPb) or not (pp)
   Double_t fCentralityPercentileMin;
   Double_t fCentralityPercentileMax;
 
