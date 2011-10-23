@@ -255,12 +255,12 @@ AliITSUpg::~AliITSUpg(){
 }
 
 //______________________________________________________________________
-AliDigitizer* AliITSUpg::CreateDigitizer(AliRunDigitizer* manager)const{
+AliDigitizer* AliITSUpg::CreateDigitizer(AliDigitizationInput* manager)const{
     // Creates the AliITSDigitizer in a standard way for use via AliModule.
     // This function can not be included in the .h file because of problems
     // with the order of inclusion (recursive).
     // Inputs:
-    //    AliRunDigitizer *manager  The Manger class for Digitization
+    //    AliDigitizationInput *manager  The Manger class for Digitization
     // Output:
     //    none.
     // Return:

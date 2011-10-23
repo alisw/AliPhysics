@@ -57,7 +57,6 @@
 
 // --- ROOT system ---
 class TString ; 
-class TTask ;
 class TFolder ;
 class TTree ; 
 class TRandom ; 
@@ -83,7 +82,7 @@ public:
   }
   virtual void   AddHit( Int_t shunt, Int_t primary, Int_t track, 
 			 Int_t id, Float_t *hits ) = 0 ;   
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual void  CreateMaterials() ;            
   virtual void  Digits2Raw();
   virtual Bool_t Raw2SDigits(AliRawReader* rawReader);

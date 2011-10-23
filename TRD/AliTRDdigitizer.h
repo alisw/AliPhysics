@@ -16,7 +16,7 @@
 class TFile;
 class TF1;
 
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliRunLoader;
 
 class AliTRD;
@@ -32,8 +32,8 @@ class AliTRDdigitizer : public AliDigitizer {
 
   AliTRDdigitizer();
   AliTRDdigitizer(const Text_t *name, const Text_t *title);
-  AliTRDdigitizer(AliRunDigitizer *manager, const Text_t *name, const Text_t *title);
-  AliTRDdigitizer(AliRunDigitizer *manager);
+  AliTRDdigitizer(AliDigitizationInput* digInput, const Text_t *name, const Text_t *title);
+  AliTRDdigitizer(AliDigitizationInput* digInput);
   AliTRDdigitizer(const AliTRDdigitizer &d);
   virtual             ~AliTRDdigitizer();
   AliTRDdigitizer     &operator=(const AliTRDdigitizer &d);
@@ -41,7 +41,7 @@ class AliTRDdigitizer : public AliDigitizer {
   virtual void         Copy(TObject &d) const;
           Bool_t       InitDetector();
           void         InitOutput(Int_t iEvent);
-  virtual void         Exec(const Option_t * const option = 0);  
+  virtual void         Digitize(const Option_t * option = 0);  
 
   virtual Bool_t       Open(const Char_t *file, Int_t nEvent = 0);
   virtual Bool_t       Open(AliRunLoader * const runLoader, Int_t nEvent = 0);

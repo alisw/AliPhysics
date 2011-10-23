@@ -47,7 +47,7 @@
 #include "AliCodeTimer.h"
 #include "AliLog.h"
 #include "AliRun.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliLoader.h"
 #include "AliRunLoader.h"
 
@@ -110,9 +110,9 @@ ClassImp(AliMUONDigitizerV3)
 /// \endcond
 
 //_____________________________________________________________________________
-AliMUONDigitizerV3::AliMUONDigitizerV3(AliRunDigitizer* manager, 
+AliMUONDigitizerV3::AliMUONDigitizerV3(AliDigitizationInput* digInput, 
                                        Int_t generateNoisyDigits)
-: AliDigitizer(manager),
+: AliDigitizer(digInput),
 fIsInitialized(kFALSE),
 fCalibrationData(0x0),
 fTriggerProcessor(0x0),
@@ -130,7 +130,7 @@ fEfficiencyResponse(2*AliMUONConstants::NTriggerCh()*AliMUONConstants::NTriggerC
 {
   /// Ctor.
 
-  AliDebug(1,Form("AliRunDigitizer=%p",fManager));
+  AliDebug(1,Form("AliDigitizationInput=%p",fDigInput));
 
 }
 
@@ -478,9 +478,9 @@ AliMUONDigitizerV3::CreateInputDigitStores()
   
   fInputDigitStores->SetOwner(kTRUE);
   
-  for ( Int_t iFile = 0; iFile < fManager->GetNinputs(); ++iFile )
+  for ( Int_t iFile = 0; iFile < fDigInput->GetNinputs(); ++iFile )
   {    
-    AliLoader* inputLoader = GetLoader(fManager->GetInputFolderName(iFile));
+    AliLoader* inputLoader = GetLoader(fDigInput->GetInputFolderName(iFile));
     
     inputLoader->LoadSDigits("READ");
     
@@ -496,7 +496,7 @@ AliMUONDigitizerV3::CreateInputDigitStores()
 
 //_____________________________________________________________________________
 void
-AliMUONDigitizerV3::Exec(Option_t*)
+AliMUONDigitizerV3::Digitize(Option_t*)
 {
   /// Main method.
   /// We first loop over input files, and merge the sdigits we found there.
@@ -506,7 +506,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
     
   AliCodeTimerAuto("",0)
   
-  if ( fManager->GetNinputs() == 0 )
+  if ( fDigInput->GetNinputs() == 0 )
   {
     AliWarning("No input set. Nothing to do.");
     return;
@@ -518,9 +518,9 @@ AliMUONDigitizerV3::Exec(Option_t*)
     return;
   }
   
-  Int_t nInputFiles = fManager->GetNinputs();
+  Int_t nInputFiles = fDigInput->GetNinputs();
   
-  AliLoader* outputLoader = GetLoader(fManager->GetOutputFolderName());
+  AliLoader* outputLoader = GetLoader(fDigInput->GetOutputFolderName());
   
   outputLoader->MakeDigitsContainer();
   
@@ -536,7 +536,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
   
   for ( Int_t iFile = 0; iFile < nInputFiles; ++iFile )
   {  
-    AliLoader* inputLoader = GetLoader(fManager->GetInputFolderName(iFile));
+    AliLoader* inputLoader = GetLoader(fDigInput->GetInputFolderName(iFile));
 
     inputLoader->LoadSDigits("READ");
 
@@ -557,7 +557,7 @@ AliMUONDigitizerV3::Exec(Option_t*)
     
     iTreeS->GetEvent(0);
 
-    MergeWithSDigits(fDigitStore,*dstore,fManager->GetMask(iFile));
+    MergeWithSDigits(fDigitStore,*dstore,fDigInput->GetMask(iFile));
 
     inputLoader->UnloadSDigits();
     
@@ -845,7 +845,7 @@ AliMUONDigitizerV3::GetLoader(const TString& folderName)
 Bool_t
 AliMUONDigitizerV3::Init()
 {
-  /// Initialization of the TTask :
+  /// Initialization of the digitization :
   /// a) create the calibrationData, according to run number
   /// b) create the trigger processing task
 
@@ -857,9 +857,9 @@ AliMUONDigitizerV3::Init()
     return kFALSE;
   }
   
-  if (!fManager)
+  if (!fDigInput)
   {
-    AliError("fManager is null !");
+    AliError("fDigInput is null !");
     return kFALSE;
   }
   

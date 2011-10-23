@@ -23,7 +23,7 @@ public:
           void    CreateMaterials  (                                 );                                        //from AliModule invoked from AliMC
 static    void    IdealPosition(Int_t iCh,TGeoHMatrix *m);                                                     //ideal position of a given chamber 
           void    CreateGeometry   (                                 );                                        //from AliModule invoked from AliMC
-  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer*   CreateDigitizer  (AliDigitizationInput *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
   virtual void    DefineOpticalProperties(                           );                                        //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
           //void    InitProperties   (                                 );                                        //define the phys processes on/off (dray,eloss...)                                                 

@@ -67,7 +67,7 @@ Float_t  AliMUONSDigitizerV2::fgkMinTimeDif = 25E-9;
 
 //_____________________________________________________________________________
 AliMUONSDigitizerV2::AliMUONSDigitizerV2() 
-: TTask("AliMUONSDigitizerV2","From Hits to SDigits for MUON")
+: TNamed("AliMUONSDigitizerV2","From Hits to SDigits for MUON")
 {
   ///
   /// ctor.
@@ -89,7 +89,7 @@ AliMUONSDigitizerV2::~AliMUONSDigitizerV2()
 
 //_____________________________________________________________________________
 void
-AliMUONSDigitizerV2::Exec(Option_t*)
+AliMUONSDigitizerV2::Digitize(Option_t*)
 {
   ///
   /// Go from hits to sdigits.

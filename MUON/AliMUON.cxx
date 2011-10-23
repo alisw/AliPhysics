@@ -55,7 +55,7 @@
 
 #include "AliLoader.h"
 #include "AliCDBManager.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliMC.h"
 #include "AliRun.h"
 #include "AliRawDataHeaderSim.h"
@@ -439,11 +439,11 @@ void   AliMUON::SetResponseModel(Int_t id, const AliMUONResponse& response)
 }
 
 //____________________________________________________________________
-AliDigitizer* AliMUON::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliMUON::CreateDigitizer(AliDigitizationInput* digInput) const
 {
 /// Return digitizer
   
-  AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(manager, fDigitizerWithNoise);
+  AliMUONDigitizerV3* digitizer = new AliMUONDigitizerV3(digInput, fDigitizerWithNoise);
   AliMUONDigitizerV3::SetNSigmas(fDigitizerNSigmas);
   digitizer->SetCalibrationData(fCalibrationData,GetRecoParam());
   return digitizer;
@@ -466,7 +466,7 @@ void AliMUON::Hits2SDigits()
 /// Perform Hits2Digits using SDigitizerV2
   
   AliMUONSDigitizerV2 sdigitizer;
-  sdigitizer.ExecuteTask();
+  sdigitizer.Digitize();
 }
 
 //_____________________________________________________________________

@@ -34,7 +34,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliLog.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliITSDigitizer.h"
 #include "AliITSgeom.h"
 #include "AliITSgeomTGeo.h"
@@ -63,7 +63,7 @@ fFlagFirstEv(kTRUE){
 
 }
 //______________________________________________________________________
-AliITSDigitizer::AliITSDigitizer(AliRunDigitizer *mngr) : AliDigitizer(mngr),
+AliITSDigitizer::AliITSDigitizer(AliDigitizationInput* digInp) : AliDigitizer(digInp),
 fITS(0),
 fModActive(0),
 fInit(kFALSE),
@@ -130,7 +130,7 @@ Bool_t AliITSDigitizer::Init(){
     return fInit;
 }
 //______________________________________________________________________
-void AliITSDigitizer::Exec(Option_t* opt){
+void AliITSDigitizer::Digitize(Option_t* opt){
     // Main digitization function. 
     // Inputs:
     //      Option_t * opt   list of sub detector to digitize. =0 all.
@@ -145,8 +145,8 @@ void AliITSDigitizer::Exec(Option_t* opt){
                           strstr(opt,"SSD")};
     if( !det[0] && !det[1] && !det[2] ) all = "All";
     else all = 0;
-    Int_t nfiles = GetManager()->GetNinputs();
-    Int_t event  = GetManager()->GetOutputEventNr();
+    Int_t nfiles = GetDigInput()->GetNinputs();
+    Int_t event  = GetDigInput()->GetOutputEventNr();
     AliITSsimulation *sim      = 0;
     if(fFlagFirstEv){
       fITS->SetDefaults();    
@@ -181,7 +181,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     AliRunLoader *inRL = 0x0, *outRL = 0x0;
     AliLoader *ingime = 0x0, *outgime = 0x0;    
     
-    outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    
+    outRL = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());    
     if ( outRL == 0x0)
      {
        Error("Exec","Can not get Output Run Loader");
@@ -212,7 +212,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
 
     for(ifiles=0; ifiles<nfiles; ifiles++ )
      {
-       inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+       inRL =  AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(fl[ifiles]));
        ingime = inRL->GetLoader(loadname);
        if (ingime->TreeS() == 0x0) ingime->LoadSDigits();
      }
@@ -234,7 +234,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
          {
            if(fRoif!=0) if(!fModActive[module]) continue;
             
-           inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+           inRL =  AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(fl[ifiles]));
            ingime = inRL->GetLoader(loadname);
            
            TTree *treeS = ingime->TreeS();
@@ -252,11 +252,11 @@ void AliITSDigitizer::Exec(Option_t* opt){
 		return;
             } // end if brchSDigits
             sdig->Clear();
-            mask = GetManager()->GetMask(ifiles);
+            mask = GetDigInput()->GetMask(ifiles);
             // add summable digits to module
             brchSDigits->GetEvent( module );
             lmod = sim->AddSDigitsToModule(sdig,mask);
-            if(fRegionOfInterest && (ifiles==0))
+            if(GetRegionOfInterest() && (ifiles==0))
              {
                fModActive[module] = lmod;
              } // end if
@@ -275,7 +275,7 @@ void AliITSDigitizer::Exec(Option_t* opt){
     outgime->UnloadDigits();
     for(ifiles=0; ifiles<nfiles; ifiles++ )
      {
-       inRL =  AliRunLoader::GetRunLoader(fManager->GetInputFolderName(fl[ifiles]));
+       inRL =  AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(fl[ifiles]));
        ingime = inRL->GetLoader(loadname);
        ingime->UnloadSDigits();
      }

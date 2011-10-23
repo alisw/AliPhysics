@@ -41,7 +41,7 @@ public:
   virtual void  CreateMaterials();
   virtual void  AddAlignableVolumes() const {}
   
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual void  SDigits2Digits(){;} //MI change -cycling to production
   virtual void  SDigits2Digits2(Int_t eventnumber=0);
 

@@ -28,7 +28,7 @@
 #include <TRandom.h>           //Resolution()
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDPid::AliHMPIDPid():TTask("HMPIDrec","HMPIDPid")
+AliHMPIDPid::AliHMPIDPid():TNamed("HMPIDrec","HMPIDPid")
 {
 //..
 //init of data members

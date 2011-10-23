@@ -64,7 +64,7 @@ ClassImp(AliTOFClusterFinderV1)
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
-  TTask("AliTOFClusterFinderV1",""),
+  TNamed("AliTOFClusterFinderV1",""),
   fRunLoader(0),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
@@ -105,7 +105,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliTOFcalib *calib):
 
 //_____________________________________________________________________________
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcalib *calib):
-  TTask("AliTOFClusterFinderV1",""),
+  TNamed("AliTOFClusterFinderV1",""),
   fRunLoader(runLoader),
   fDigits(new TClonesArray("AliTOFdigit", 4000)),
   fRecPoints(new TClonesArray("AliTOFcluster", 4000)),
@@ -146,7 +146,7 @@ AliTOFClusterFinderV1::AliTOFClusterFinderV1(AliRunLoader* runLoader, AliTOFcali
 //_____________________________________________________________________________
 
 AliTOFClusterFinderV1::AliTOFClusterFinderV1(const AliTOFClusterFinderV1 &source)
-  :TTask(source),
+  :TNamed(source),
    fRunLoader(0),
    fDigits(source.fDigits),
    fRecPoints(source.fRecPoints),

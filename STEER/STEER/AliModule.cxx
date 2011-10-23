@@ -52,6 +52,7 @@
 #include "AliMC.h"
 #include "AliSimulation.h"
 #include "AliRawDataHeader.h"
+#include "AliDigitizationInput.h"
 
 #include "AliDAQ.h"
 
@@ -69,7 +70,8 @@ AliModule::AliModule():
   fEnable(1),
   fMaxIterTrackRef(0),
   fCurrentIterTrackRef(0),
-  fRunLoader(0)
+  fRunLoader(0),
+  fDigInput(0)
 {
   //
   // Default constructor for the AliModule class
@@ -87,7 +89,8 @@ AliModule::AliModule(const char* name,const char *title):
   fEnable(1),
   fMaxIterTrackRef(0),
   fCurrentIterTrackRef(0),
-  fRunLoader(0)
+  fRunLoader(0),
+  fDigInput(0)
 {
   //
   // Normal constructor invoked by all Modules.

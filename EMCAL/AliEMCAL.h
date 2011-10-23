@@ -31,7 +31,6 @@
 // --- ROOT system ---
 
 class TString ;
-class TTask ;
 class TFolder ;
 class TRandom ; 
 class TGraph;
@@ -57,7 +56,7 @@ class AliEMCAL : public AliDetector {
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {
     Fatal("AddHit(Int_t, Int_t*, Float_t *", "not to be used: use AddHit( Int_t shunt, Int_t primary, Int_t track,Int_t id, Float_t *hits )") ;  
   }
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual void  CreateMaterials() ;   
   virtual void  Init() ;   
   virtual void  Digits2Raw();

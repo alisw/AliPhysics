@@ -26,7 +26,6 @@ class TDirectory;
 class TFile;
 class TFolder ;
 class TString ;  
-class TTask ;
 
 class AliTOFGeometry;
 
@@ -65,7 +64,7 @@ public:
   //virtual void    Hits2Digits();   
   virtual void    Hits2SDigits();
   virtual void    Hits2SDigits(Int_t evNumber1, Int_t evNumber2);
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const; 
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const; 
   virtual void    Digits2Reco () {};
           void    Digits2Raw  ();
 	  void    Raw2Digits  () {};
@@ -90,8 +89,6 @@ public:
 
 protected:
   TFolder* fFGeom ;       //  Folder that holds the Geometry definition
-  TTask*   fDTask ;       //  TOF Digitizer container
-  TTask*   fReTask;       //  TOF Reconstructioner container
   TClonesArray* fSDigits; //! List of summable digits
   Int_t   fNSDigits;      //! Number of sdigits
   TClonesArray* fReconParticles; // List of reconstructed particles
@@ -115,7 +112,7 @@ private:
   AliTOF(const AliTOF &source); // copy constructor
   AliTOF& operator=(const AliTOF &source); // ass. op.
 
-  ClassDef(AliTOF,11)  // Time Of Flight base class
+  ClassDef(AliTOF,12)  // Time Of Flight base class
 };
  
 #endif /* ALITOF_H */

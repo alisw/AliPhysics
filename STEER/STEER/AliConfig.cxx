@@ -33,7 +33,6 @@
 #include <TROOT.h>
 #include <TString.h>
 #include <TSystem.h>
-#include <TTask.h>
 #include <TVirtualMC.h>
 
 #include "AliConfig.h"
@@ -42,23 +41,11 @@
 #include "AliLoader.h"
 #include "AliLog.h"
 
-enum 
- {
-  kDetTaskQA = 0,
-  kDetTaskSDigitizer,
-  kDetTaskDigitizer,
-  kDetTaskRecontructioner,
-  kDetTaskTracker,
-  kDetTaskPID,
-  kDetTaskLast
- };
-
 enum
  {
    kDetFolderData = 0,
    kDetFolderCalibration,
    kDetFolderAligmnet,
-   kDetFolderQA,
    kDetFolderLast
  };
 ClassImp(AliConfig)
@@ -69,7 +56,6 @@ AliConfig* AliConfig::fgInstance = 0;
 const TString AliConfig::fgkTopFolderName("Folders");
 
 //1st level folder
-const TString AliConfig::fgkTasksFolderName("Tasks"); //task folder, commn
 const TString AliConfig::fgkConstantsFolderName("Constants");
 const TString AliConfig::fgkDefaultEventFolderName("Event");  //default folder for event, always used except merging
 
@@ -81,19 +67,10 @@ const TString AliConfig::fgkConditionsFolderName("Conditions");//folder with con
 const TString AliConfig::fgkConfigurationFolderName("Configuration");//folder with configuration (setup) of the detector
 const TString AliConfig::fgkHeaderFolderName("Header");//folder with header and other MC information
 
-//Tasks names, goes into fgkTasksFolderName folder
-const TString AliConfig::fgkDigitizerTaskName("Digitizer");
-const TString AliConfig::fgkSDigitizerTaskName("SDigitizer");
-const TString AliConfig::fgkReconstructionerTaskName("Reconstructioner");
-const TString AliConfig::fgkTrackerTaskName("Tracker");
-const TString AliConfig::fgkPIDTaskName("PIDTask");//;=) PIDer???
-const TString AliConfig::fgkQATaskName("QAtask");
-
 //3rd level folder
 //fgkConditionsFolderName subfolders
 const TString AliConfig::fgkCalibrationFolderName("Calibration");
 const TString AliConfig::fgkAligmentFolderName("Aligment");
-const TString AliConfig::fgkQAFolderName("QAout");
   
 //3rd level folder
 //fgkConfigurationFolderName subfolders
@@ -123,9 +100,7 @@ AliConfig* AliConfig::Instance ()
 AliConfig::AliConfig(const char *name, const char *title): 
   TNamed(name,title), 
   fTopFolder(gROOT->GetRootFolder()->AddFolder(name,title)),
-  fTaskFolder(fTopFolder->AddFolder(fgkTasksFolderName, "ALICE Tasks")),
   fConstFolder(0x0),
-  fDetectorTask(0x0),
   fDetectorFolder(new TString[kDetFolderLast+1])
 {
 // Constructor
@@ -141,7 +116,6 @@ AliConfig::AliConfig(const char *name, const char *title):
   fDetectorFolder[kDetFolderData] = fgkDataFolderName;
   fDetectorFolder[kDetFolderCalibration] = fgkConditionsFolderName+"/"+fgkCalibrationFolderName;
   fDetectorFolder[kDetFolderAligmnet] = fgkConditionsFolderName+"/"+fgkAligmentFolderName;
-  fDetectorFolder[kDetFolderQA] = fgkConditionsFolderName+"/"+fgkQAFolderName;
   fDetectorFolder[kDetFolderLast] = "";
   
   gROOT->GetListOfBrowsables()->Add(fTopFolder, name);
@@ -150,30 +124,6 @@ AliConfig::AliConfig(const char *name, const char *title):
   fConstFolder = fTopFolder->AddFolder (fgkConstantsFolderName, "Constant parameters");
   fConstFolder->AddFolder("DatabasePDG", "PDG database");
   
-  // Add the tasks to //Folders
-  
-  TTask * qa = new TTask(fgkQATaskName, "Alice QA tasks");
-  fTaskFolder->Add(qa); 
-  TTask * sd = new TTask(fgkSDigitizerTaskName, "Alice SDigitizer") ;
-  fTaskFolder->Add(sd); 
-  TTask * di = new TTask(fgkDigitizerTaskName, "Alice Digitizer") ;
-  fTaskFolder->Add(di); 
-  TTask * re = new TTask(fgkReconstructionerTaskName, "Alice Reconstructioner") ;
-  fTaskFolder->Add(re); 
-  TTask * tr = new TTask(fgkTrackerTaskName,"Alice Tracker");
-  fTaskFolder->Add(tr);
-  TTask * pid = new TTask(fgkPIDTaskName,"Alice Particle Identification Task");
-  fTaskFolder->Add(pid);
-  fDetectorTask    =  new TString[kDetTaskLast+1];
-  
-  fDetectorTask[kDetTaskQA] = fgkQATaskName;
-  fDetectorTask[kDetTaskSDigitizer] = fgkSDigitizerTaskName;
-  fDetectorTask[kDetTaskDigitizer] =  fgkDigitizerTaskName;
-  fDetectorTask[kDetTaskRecontructioner] = fgkReconstructionerTaskName;
-  fDetectorTask[kDetTaskTracker] = fgkTrackerTaskName;
-  fDetectorTask[kDetTaskPID] = fgkPIDTaskName;
-  fDetectorTask[kDetTaskLast] = "";
-
   fgInstance=this;
 }
 
@@ -182,7 +132,6 @@ AliConfig::~AliConfig()
 { 
   // destructor
   delete [] fDetectorFolder ;  
-  delete [] fDetectorTask;
   if (fTopFolder)
    {
     fTopFolder->SetOwner();
@@ -197,37 +146,6 @@ void AliConfig::AddInFolder (const char *dir, TObject *obj)
   TFolder *folder = dynamic_cast<TFolder *>(fTopFolder->FindObject(dir));
   if (folder)
     folder->Add (static_cast<TObject *>(obj));
-}
-//____________________________________________________________________________
-
-Int_t AliConfig::AddSubTask(const char *taskname, const char* name,const char* title)
-{
-//Create new task named 'name' and titled 'title' 
-//as a subtask of the task named 'taskname'
-
-   AliDebug(1, Form("Try to get folder named %s",taskname));
-   TObject* obj = fTopFolder->FindObject(taskname);
-   TTask * task = (obj)?dynamic_cast<TTask*>(obj):0x0;
-   if (task)
-     {
-      AliDebug(1, "          Got");
-      TTask * subtask = static_cast<TTask*>(task->GetListOfTasks()->FindObject(name));
-      if (!subtask) 
-        {
-          subtask = new TTask(name,title);
-          task->Add(subtask);
-        }
-      else
-       {
-         AliWarning(Form("Task named \"%s\" already exists in Task %s",name,taskname));
-       }
-     }
-   else
-     {
-       AliError(Form("Can not find task %s to put a new task in.",taskname));
-       return 1;
-     }
-  return 0;
 }
 
 //____________________________________________________________________________
@@ -279,7 +197,7 @@ void AliConfig::Add(AliModule* obj,const char* eventfolder)
 
 Int_t AliConfig::AddDetector(TFolder* evntfolder, const char *name, const char* title)
 {
-//creates folders and tasks for the detector 'name'
+//creates folders for the detector 'name'
  Int_t retval;//returned value
  retval = CreateDetectorFolders(evntfolder,name,title);
  if (retval)
@@ -293,7 +211,7 @@ Int_t AliConfig::AddDetector(TFolder* evntfolder, const char *name, const char* 
 
 Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const char* title)
 {
-//creates folders and tasks for the detector 'name'
+//creates folders for the detector 'name'
  Int_t retval;//returned value
  retval = CreateDetectorFolders(evntfoldername,name,title);
  if (retval)
@@ -301,12 +219,6 @@ Int_t AliConfig::AddDetector(const char* evntfoldername,const char *name, const 
     AliError(Form("CreateDetectorFolders returned error for detector %s",name));
     return retval;
   }
-// retval = CreateDetectorTasks(name,title);
-// if (retval)
-//  {
-//    Error("AddDetector","CreateDetectorTasks returned error for detector %s",name);
-//    return retval;
-//  }
  return 0; 
 }
 //____________________________________________________________________________
@@ -326,8 +238,6 @@ void  AliConfig::Add(AliDetector * obj,const char* eventfolder)
    } 
   CreateDetectorFolders(evfolder, obj->GetName(), obj->GetTitle());
   
-//  CreateDetectorTasks(obj->GetName(),obj->GetTitle());
-
 }
 //____________________________________________________________________________
 
@@ -369,26 +279,6 @@ Int_t  AliConfig::CreateDetectorFolders(TFolder* evntfolder,const char *name, co
   }
  return 0;
 }
-//____________________________________________________________________________
-Int_t AliConfig::CreateDetectorTasks(const char *name, const char* title)
-{
-  // Creates new detector's task "name"
-   Int_t i = 0;
-   Int_t tmp;
-   while (i < kDetTaskLast)
-    {
-      tmp = AddSubTask(fgkTasksFolderName+"/"+fDetectorTask[i],
-                       name+fDetectorTask[i],(fDetectorTask[i]+" for ")+title);
-      if (tmp)
-       {
-         AliError(Form("Error occured while creating task for %s in %s.",
-		       name,fDetectorTask[i-1].Data()));
-         return 1;
-       }
-      i++;
-    }
-   return 0;
-}
 
 /*****************************************************************************/
 
@@ -396,9 +286,7 @@ TFolder* AliConfig::BuildEventFolder(const char* name,const char* title)
 {
 /*
  creates the folder structure for one event
- TopFolder_
-         | \
-         |  Tasks
+ TopFolder
          |_
          | \
          |  Constants
@@ -510,7 +398,6 @@ TFolder* AliConfig::BuildEventFolder(const char* name,const char* title)
   TFolder *conditions = eventfolder->AddFolder(fgkConditionsFolderName, "Run conditions");
   conditions->AddFolder(fgkCalibrationFolderName,"Detector calibration data");
   conditions->AddFolder(fgkAligmentFolderName,"Detector aligment");
-  conditions->AddFolder(fgkQAFolderName,"Quality Asurance Output"); //Folder with output of the QA task(s)
   //Configuration
   TFolder *configuration = eventfolder->AddFolder(fgkConfigurationFolderName, "Run configuration");
   configuration->AddFolder(fgkFieldFolderName, "Magnetic field maps");
@@ -526,60 +413,12 @@ TFolder* AliConfig::BuildEventFolder(const char* name,const char* title)
 
 /*****************************************************************************/
 
-TString AliConfig::GetQATaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskQA];
- }
-/*****************************************************************************/
- 
-TString AliConfig::GetDigitizerTaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskDigitizer];
- }
-/*****************************************************************************/
- 
-TString AliConfig::GetSDigitizerTaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskSDigitizer];
- }
-/*****************************************************************************/
-
-TString AliConfig::GetReconstructionerTaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskRecontructioner];
- }
-/*****************************************************************************/
-
-TString AliConfig::GetTrackerTaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskTracker];
- }
-/*****************************************************************************/
-
-TString AliConfig::GetPIDTaskName() const
- {
- //returns task name
-  return fDetectorTask[kDetTaskPID];
- }
-/*****************************************************************************/
-
-const TString& AliConfig::GetQAFolderName() const
-{
-//returns pathname of folder with QA output relative to Top Alice Folder
-  return fDetectorFolder[kDetFolderQA];
-}
-/*****************************************************************************/
-
 const TString& AliConfig::GetDataFolderName() const
 {
 //returns name of data folder path relative to event folder
  return fgkDataFolderName;
 }
+
 /*****************************************************************************/
 
 Int_t AliConfig::AddSubFolder(TFolder* topfolder, const char* infoler, 

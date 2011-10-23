@@ -27,7 +27,6 @@ class TString;
 class TFolder;
 class TObjArray;
 class TTree;
-class TTask;
 class TParticle;
 
 class AliRun;
@@ -182,14 +181,6 @@ class AliRunLoader: public TNamed
     static TTree*        GetTreeR(const char* detname, Bool_t maketree, const char* eventfoldername);
     static TTree*        GetTreeT(const char* detname, Bool_t maketree, const char* eventfoldername);
     static TTree*        GetTreeP(const char* detname, Bool_t maketree, const char* eventfoldername);
-
-//  Tasks are supposed to be singletons, that is why following methods are static
-    static TTask*           GetRunDigitizer();        //
-    static TTask*           GetRunSDigitizer();       //
-    static TTask*           GetRunReconstructioner(); //
-    static TTask*           GetRunTracker();          //
-    static TTask*           GetRunPIDTask();          // 
-    static TTask*           GetRunQATask();           //
 
     static TString GetRunLoaderName () {return fgkRunLoaderName;}
     static TString GetHeaderContainerName () {return fgkHeaderContainerName;}

@@ -63,7 +63,7 @@ public:
   virtual void   SetMaxDestepQua(Float_t p1);
   virtual void   SetMaxDestepAlu(Float_t p1);
 
-  AliDigitizer*  CreateDigitizer(AliRunDigitizer* manager) const;
+  AliDigitizer*  CreateDigitizer(AliDigitizationInput* digInput) const;
 
   void           GetCalibData();
   Float_t        CorrectLeadingTime(Int_t i, Float_t time, Float_t adc) const;

@@ -1,5 +1,5 @@
-#ifndef ALIRUNDIGITIZER_H
-#define ALIRUNDIGITIZER_H
+#ifndef ALIDIGITIZATIONINPUT_H
+#define ALIDIGITIZATIONINPUT_H
 /* Copyright(c) 1998-2000, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -16,7 +16,7 @@
 // --- ROOT system ---
 
 #include "TArrayI.h"
-#include "TTask.h"
+#include "TNamed.h"
 #include "TClonesArray.h"
 class TFile;
 class TParticle;
@@ -31,18 +31,13 @@ class AliRunLoader;
 
 #define MAXSTREAMSTOMERGE 4
 
-class AliRunDigitizer: public TTask {
+class AliDigitizationInput: public TNamed {
 
 public:
-  AliRunDigitizer();
-  AliRunDigitizer(Int_t nInputStreams, Int_t sperb=1);
+  AliDigitizationInput();
+  AliDigitizationInput(Int_t nInputStreams, Int_t sperb=1);
 
-  virtual ~AliRunDigitizer();
-
-  void      ExecuteTask(Option_t* option = 0);
-  void      Exec(Option_t *option) {this->Digitize(option);}
-  void      Digitize(Option_t* option = 0);
-  void      AddDigitizer(AliDigitizer *digitizer);
+  virtual ~AliDigitizationInput();
 
   void      SetOutputFile(TString fn);
   TString   GetOutputFile() const {return fOutputFileName;}
@@ -60,8 +55,8 @@ public:
   void      SetCombinationFileName(TString fn) {fCombinationFileName = fn;} 
   TString   GetCombinationFileName() const {return fCombinationFileName;}
   Int_t     GetMask(Int_t i) const {return fkMASK[i];}
-
-
+  void      SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
+  Bool_t    GetRegionOfInterest() const {return fRegionOfInterest;};
   Int_t     GetNinputs() const {return fNinputs;}
   const TString& GetInputFolderName(Int_t i) const;
   const char* GetOutputFolderName();
@@ -94,17 +89,18 @@ public:
 
 // return TString with input file name  
   TString GetInputFileName(Int_t input, Int_t order) const;
-  
-private:
-  AliRunDigitizer(const AliRunDigitizer& dig); // not implemented
-  AliRunDigitizer& operator=(const AliRunDigitizer& dig); // not implemented
-  void Copy(TObject& dig) const;
+  AliRunLoader*     GetOutRunLoader();
+  //
   Bool_t            ConnectInputTrees();
-  Bool_t            InitGlobal();
   Bool_t            InitOutputGlobal();
   void              InitEvent();
   void              FinishEvent();
   void              FinishGlobal();
+  
+private:
+  AliDigitizationInput(const AliDigitizationInput& dig); // not implemented
+  AliDigitizationInput& operator=(const AliDigitizationInput& dig); // not implemented
+  void Copy(TObject& dig) const;
 
   Int_t             fkMASK[MAXSTREAMSTOMERGE];  //! masks for track ids from
                                               //  different source files
@@ -120,6 +116,7 @@ private:
                                           // should be copied, -1 for no copies
   Int_t             fNinputs;             // nr of input streams - can be taken from the TClonesArray dimension
   Int_t             fNinputsGiven;        // nr of input streams given by user
+  Bool_t            fRegionOfInterest;    // digitization in region of interest
   TClonesArray *    fInputStreams;        // input signal streams
 
 //  AliStream*        fOutputStream;
@@ -129,13 +126,10 @@ private:
   AliMergeCombi *   fCombi;               // pointer to the combination object
   TArrayI           fCombination;         //! combination of events from
   TString           fCombinationFileName; // fn with combinations (used
-                                          // with type 2 of comb.)
-
-  AliRunLoader*     GetOutRunLoader();
-  
+                                          // with type 2 of comb.)  
   static const TString fgkDefOutFolderName;//default name for output foler 
   static const TString fgkBaseInFolderName;//default name for input foler
-  ClassDef(AliRunDigitizer,6)
+  ClassDef(AliDigitizationInput,2)
 };
 
 #endif // ALIRUNDIGITIZER_H

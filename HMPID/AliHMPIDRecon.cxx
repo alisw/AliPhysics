@@ -31,7 +31,7 @@
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDRecon::AliHMPIDRecon():
-  TTask("RichRec","RichPat"),
+  TNamed("RichRec","RichPat"),
   fPhotCnt(-1),
   fPhotFlag(0x0),
   fPhotClusIndex(0x0),    

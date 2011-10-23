@@ -292,9 +292,9 @@ void AliT0::MakeBranchInTreeD(TTree *treeD, const char *file)
 }
 
 //_____________________________________________________________________________
-AliDigitizer* AliT0::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliT0::CreateDigitizer(AliDigitizationInput* digInput) const
 {
-  return new AliT0Digitizer(manager);
+  return new AliT0Digitizer(digInput);
 }
 //____________________________________________________________________________
 void AliT0::Digits2Raw()

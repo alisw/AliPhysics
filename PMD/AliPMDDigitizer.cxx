@@ -40,7 +40,7 @@
 #include "AliLoader.h"
 #include "AliConfig.h"
 #include "AliMagF.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliDigitizer.h"
 #include "AliHeader.h"
 #include "AliCDBManager.h"
@@ -128,8 +128,8 @@ AliPMDDigitizer & AliPMDDigitizer::operator=(const AliPMDDigitizer& /*digitizer*
   return *this;
 }
 //____________________________________________________________________________
-AliPMDDigitizer::AliPMDDigitizer(AliRunDigitizer* manager):
-  AliDigitizer(manager),
+AliPMDDigitizer::AliPMDDigitizer(AliDigitizationInput* digInput):
+  AliDigitizer(digInput),
   fRunLoader(0),
   fPMDHit(0),
   fPMD(0),
@@ -863,7 +863,7 @@ void AliPMDDigitizer::SDigits2Digits(Int_t ievt)
 
 }
 //____________________________________________________________________________
-void AliPMDDigitizer::Exec(Option_t *option)
+void AliPMDDigitizer::Digitize(Option_t *option)
 {
   // Does the event merging and digitization
   const char *cdeb = strstr(option,"deb");
@@ -872,17 +872,17 @@ void AliPMDDigitizer::Exec(Option_t *option)
       AliDebug(100," *** PMD Exec is called ***");
     }
 
-  Int_t ninputs = fManager->GetNinputs();
+  Int_t ninputs = fDigInput->GetNinputs();
   AliDebug(1,Form("Number of files to be processed = %d",ninputs));
   ResetCellADC();
 
   for (Int_t i = 0; i < ninputs; i++)
     {
-      Int_t troffset = fManager->GetMask(i);
+      Int_t troffset = fDigInput->GetMask(i);
       MergeSDigits(i, troffset);
     }
 
-  fRunLoader = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  fRunLoader = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   fPMD  = (AliPMD*)gAlice->GetDetector("PMD");
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   if (fPMDLoader == 0x0)
@@ -1175,7 +1175,7 @@ void AliPMDDigitizer::TrackAssignment2CPVCell()
 void AliPMDDigitizer::MergeSDigits(Int_t filenumber, Int_t troffset)
 {
   // merging sdigits
-  fRunLoader = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(filenumber));
+  fRunLoader = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(filenumber));
   fPMDLoader = fRunLoader->GetLoader("PMDLoader");
   fPMDLoader->LoadSDigits("read");
   TTree* treeS = fPMDLoader->TreeS();

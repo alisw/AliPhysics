@@ -45,7 +45,7 @@ class TClonesArray ;
 #include "AliDigitizer.h"
 #include "AliConfig.h"
 #include "AliPHOSPulseGenerator.h"
-class AliRunDigitizer ;
+class AliDigitizationInput ;
 class AliPHOSCalibData ; 
 
 class AliPHOSDigitizer: public AliDigitizer {
@@ -54,11 +54,11 @@ public:
   AliPHOSDigitizer() ;          // ctor
   AliPHOSDigitizer(TString alirunFileNameFile, TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
   AliPHOSDigitizer(const AliPHOSDigitizer & dtizer) ;
-  AliPHOSDigitizer(AliRunDigitizer * manager) ;
+  AliPHOSDigitizer(AliDigitizationInput * digInput) ;
   virtual ~AliPHOSDigitizer() ;       
 
   void    Digitize(Int_t event) ;            // Make Digits from SDigits 
-  void    Exec(Option_t *option);                  // Supervising method
+  void    Digitize(Option_t *option);                  // Supervising method
 
   void   SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 

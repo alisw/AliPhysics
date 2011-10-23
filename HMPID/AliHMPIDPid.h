@@ -12,12 +12,11 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
-
-#include <TTask.h>        //base class
+#include <TNamed.h>
 
 class AliESDtrack;
 
-class AliHMPIDPid : public TTask 
+class AliHMPIDPid : public TNamed 
 {
 public : 
              AliHMPIDPid();    //ctor

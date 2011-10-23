@@ -13,14 +13,14 @@
 //////////////////////////////////////////////////////////////////////////
 
 
-#include <TTask.h>        //base class
+#include <TNamed.h>        //base class
 #include <TVector3.h>     //fields 
 
 class TClonesArray; //CkovAngle()
 class AliESDtrack;  //CkovAngle()
 class AliHMPIDParam;//general pourpose
 
-class AliHMPIDRecon : public TTask 
+class AliHMPIDRecon : public TNamed 
 {
 public : 
              AliHMPIDRecon();
@@ -83,7 +83,7 @@ private:
   AliHMPIDRecon(const AliHMPIDRecon& r);              //dummy copy constructor
   AliHMPIDRecon &operator=(const AliHMPIDRecon& r);   //dummy assignment operator
 //
-  ClassDef(AliHMPIDRecon,2)
+  ClassDef(AliHMPIDRecon,3)
 };
 
 #endif // #ifdef AliHMPIDRecon_cxx

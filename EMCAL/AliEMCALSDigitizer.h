@@ -4,7 +4,7 @@
  * See cxx source for full Copyright notice                               */
 /* $Id$ */
 //_________________________________________________________________________
-// This is a TTask that makes SDigits out of Hits
+// This is a class that makes SDigits out of Hits
 // A Summable Digits is the sum of all hits originating 
 // from one in one tower of the EMCAL 
 // A threshold for assignment of the primary to SDigit is applied 
@@ -20,7 +20,7 @@
 //_________________________________________________________________________
  
 // --- ROOT system ---
-#include "TTask.h"
+#include "TNamed.h"
 class TBrowser;
 
 // --- Standard library ---
@@ -28,7 +28,7 @@ class TBrowser;
 // --- AliRoot header files ---
 #include "AliConfig.h"
 
-class AliEMCALSDigitizer: public TTask {
+class AliEMCALSDigitizer: public TNamed {
 
 public:
   AliEMCALSDigitizer() ;          // ctor
@@ -39,7 +39,7 @@ public:
   Float_t       Digitize(Float_t energy)const; //convert energy in GeV to int amplitude
   Float_t       Calibrate(Float_t amp)const;  //opposite of Digitize()
 
-  virtual void  Exec(Option_t *option); 
+  virtual void  Digitize(Option_t *option=""); 
   Int_t         GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void  Print(Option_t *option="") const;
   void          Print1(Option_t *option="all");  // *MENU*
@@ -61,7 +61,7 @@ private:
   Float_t fA ;                     // Pedestal parameter
   Float_t fB ;                     // Slope Digitizition parameters
   Float_t fECPrimThreshold ;       // To store primary if EC Shower Elos > threshold
-  Bool_t  fDefaultInit;            //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Bool_t  fDefaultInit;            //! Says if the object was created by defaut ctor (only parameters are initialized)
   TString fEventFolderName;        // event folder name
   Bool_t  fInit ;                  //! tells if initialisation went OK, will revent exec if not
   Int_t   fSDigitsInRun ;          //! Total number of sdigits in one run
@@ -70,7 +70,7 @@ private:
   Float_t fSampling;               // See AliEMCALGeometry
   TClonesArray* fHits;             //-> Temporal array with hits
 	
-  ClassDef(AliEMCALSDigitizer,7)  // description 
+  ClassDef(AliEMCALSDigitizer,8)  // description 
 };
 
 #endif // AliEMCALSDIGITIZER_H

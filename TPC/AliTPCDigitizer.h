@@ -7,22 +7,22 @@
 
 #include "AliDigitizer.h"
 
-class AliRunDigitizer;
+class AliDigitizationInput;
 
 class AliTPCDigitizer : public AliDigitizer {
  public:    
     AliTPCDigitizer();
-    AliTPCDigitizer(AliRunDigitizer * manager);
+    AliTPCDigitizer(AliDigitizationInput * digInput);
     virtual ~AliTPCDigitizer();
     // Initialize merging and digitization
     virtual Bool_t Init();
     // Do the main work
-    virtual void Exec(Option_t* option=0);    
+    virtual void Digitize(Option_t* option=0);    
     Int_t GetDebug() const {return fDebug;}       // get debug level
     void SetDebug(Int_t level){fDebug = level;}   // set debug level        
  private: 
-    void ExecFast(Option_t* option=0); //digitize - using row pointers
-    void ExecSave(Option_t* option=0); // digitize using controlled arrays   
+    void DigitizeFast(Option_t* option=0); //digitize - using row pointers
+    void DigitizeSave(Option_t* option=0); // digitize using controlled arrays   
     Int_t fDebug;
  private:
     ClassDef(AliTPCDigitizer,2)  // MUON merging/digitization

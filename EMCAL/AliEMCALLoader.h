@@ -23,7 +23,6 @@
 #include "TTree.h"
 class TString ;
 class TParticle ;
-class TTask ;
 
 // --- AliRoot header files ---
 #include "AliLoader.h"

@@ -17,7 +17,7 @@
 
 //__________________________________________________________//
 //                                                          //
-//   This is a TTask that constructs SDigits out of Hits    //
+//   This is a class that constructs SDigits out of Hits    //
 //   A Summable Digits is the "sum" of all hits in a pad    //
 //   Detector response has been simulated via the method    //
 //   SimulateDetectorResponse                               //
@@ -57,7 +57,7 @@ ClassImp(AliTOFSDigitizer)
 
 //____________________________________________________________________________ 
 AliTOFSDigitizer::AliTOFSDigitizer():
-  TTask("TOFSDigitizer",""),
+  TNamed("TOFSDigitizer",""),
   fEvent1(-1),
   fEvent2(-1),
   ftail(0x0),
@@ -104,7 +104,7 @@ AliTOFSDigitizer::AliTOFSDigitizer():
 
 //------------------------------------------------------------------------
 AliTOFSDigitizer::AliTOFSDigitizer(const AliTOFSDigitizer &source):
-  TTask(source),
+  TNamed(source),
   fEvent1(-1),
   fEvent2(-1),
   ftail(0x0),
@@ -160,7 +160,7 @@ AliTOFSDigitizer& AliTOFSDigitizer::operator=(const AliTOFSDigitizer &/*source*/
 
 //____________________________________________________________________________ 
 AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_t nEvents):
-  TTask("TOFSDigitizer",""),
+  TNamed("TOFSDigitizer",""),
   fEvent1(-1),
   fEvent2(-1),
   ftail(0x0),
@@ -265,16 +265,12 @@ AliTOFSDigitizer::AliTOFSDigitizer(const char* HeaderFile, Int_t evNumber1, Int_
       AliFatal("Can not find TOF loader in event. Exiting.");
       return;
     }
-  fTOFLoader->PostSDigitizer(this);
-
 }
 
 //____________________________________________________________________________ 
 AliTOFSDigitizer::~AliTOFSDigitizer()
 {
   // dtor
-  fTOFLoader->CleanSDigitizer();
-
   if (fCalib) delete fCalib;
 
 }
@@ -350,7 +346,7 @@ Double_t TimeWithTail(const Double_t * const x, const Double_t * const par)
 }
 
 //____________________________________________________________________________
-void AliTOFSDigitizer::Exec(Option_t *verboseOption) { 
+void AliTOFSDigitizer::Digitize(Option_t *verboseOption) { 
   //execute TOF sdigitization
   if (strstr(verboseOption,"tim") || strstr(verboseOption,"all"))
     gBenchmark->Start("TOFSDigitizer");

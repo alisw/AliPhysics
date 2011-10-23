@@ -13,18 +13,17 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "TTask.h"
+#include "TNamed.h"
+#include "AliDigitizationInput.h"
 
-class AliRunDigitizer;
-
-class AliDigitizer: public TTask {
+class AliDigitizer: public TNamed {
 
  public:
 // ctor with name and title
     AliDigitizer(const Text_t* name="AliDigitizer",
                 const Text_t* title="AliDigitizer");
 // ctor to be used with name and title
-    AliDigitizer(AliRunDigitizer *manager,
+    AliDigitizer(AliDigitizationInput *manager,
                  const Text_t* name="AliDigitizer",
                  const Text_t* title="AliDigitizer");
 // Copy ctor needed because there is a pointer
@@ -34,17 +33,16 @@ class AliDigitizer: public TTask {
       
     virtual ~AliDigitizer();
     virtual Bool_t Init() {return kTRUE;}
-    void SetRegionOfInterest(Bool_t flag) {fRegionOfInterest = flag;};
-//    virtual void Digitize() = 0;
+    virtual void Digitize(Option_t* option) = 0;
+    Bool_t GetRegionOfInterest() const {return fDigInput ? fDigInput->GetRegionOfInterest() : kFALSE;}
 
 protected:
     Int_t GetNInputStreams() const;
     void Copy(TObject &dig) const;
 
-    AliRunDigitizer *fManager;   //! Pointer to the Digitizer manager
-    Bool_t fRegionOfInterest;    // Flag for digitization only in region of interest
+    AliDigitizationInput *fDigInput;   //! Pointer to the Digitizer input
     
-    ClassDef(AliDigitizer,2) // Base class for detector digitizers
+    ClassDef(AliDigitizer,3) // Base class for detector digitizers
 };
 
 #endif // ALIDIGITIZER_H

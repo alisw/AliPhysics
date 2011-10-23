@@ -17,7 +17,10 @@
 
 //_______________________________________________________________________
 //
-// AliRunDigitizer.cxx
+// AliDigitizationInput.cxx
+// RS: Created from former AliDigitizationInput. It does not anymore manage digitization:
+// (now it is steared by the AliSimulation) but just provides input info for 
+// AliDetector::SDigits2Ditits.
 //
 // Manager object for merging/digitization
 //
@@ -25,8 +28,8 @@
 // Sdigits into Digits. 
 //
 // Only one instance of this class is created in the macro:
-//   AliRunDigitizer * manager = 
-//      new AliRunDigitizer(nInputStreams,SPERB);
+//   AliDigitizationInput * manager = 
+//      new AliDigitizationInput(nInputStreams,SPERB);
 // where nInputStreams is number of input streams and SPERB is
 // signals per background variable, which determines how combinations
 // of signal and background events are generated.
@@ -59,7 +62,7 @@
 //
 // Example with MUON digitizer, no merging, just digitization
 //
-//  AliRunDigitizer * manager = new AliRunDigitizer(1,1);
+//  AliDigitizationInput * manager = new AliDigitizationInput(1,1);
 //  manager->SetInputStream(0,"galice.root");
 //  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
 //  manager->Exec("");
@@ -69,7 +72,7 @@
 //   (background) file. Number of merged events is
 //   min(number of events in galice.root, number of events in bgr.root)
 //
-//  AliRunDigitizer * manager = new AliRunDigitizer(2,1);
+//  AliDigitizationInput * manager = new AliDigitizationInput(2,1);
 //  manager->SetInputStream(0,"galice.root");
 //  manager->SetInputStream(1,"bgr.root");
 //  AliMUONDigitizer *dMUON  = new AliMUONDigitizer(manager);
@@ -78,7 +81,7 @@
 // Example with MUON digitizer, save digits in a new file digits.root,
 //   process only 1 event
 //
-//  AliRunDigitizer * manager = new AliRunDigitizer(2,1);
+//  AliDigitizationInput * manager = new AliDigitizationInput(2,1);
 //  manager->SetInputStream(0,"galice.root");
 //  manager->SetInputStream(1,"bgr.root");
 //  manager->SetOutputFile("digits.root");
@@ -104,17 +107,17 @@ class TList;
 #include "AliLoader.h"
 #include "AliMergeCombi.h"
 #include "AliRun.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 
-ClassImp(AliRunDigitizer)
+ClassImp(AliDigitizationInput)
 
-const TString AliRunDigitizer::fgkDefOutFolderName("Output");
-const TString AliRunDigitizer::fgkBaseInFolderName("Input");
+const TString AliDigitizationInput::fgkDefOutFolderName("Output");
+const TString AliDigitizationInput::fgkBaseInFolderName("Input");
 
 
 //_______________________________________________________________________
-AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Merging"),
+AliDigitizationInput::AliDigitizationInput(): TNamed("AliDigitizationInput","The manager for Merging"),
  fkMASKSTEP(0),
  fOutputFileName(0),
  fOutputDirName(0),
@@ -124,6 +127,7 @@ AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Mer
  fCopyTreesFromInput(0),
  fNinputs(0),
  fNinputsGiven(0),
+ fRegionOfInterest(kFALSE),
  fInputStreams(0x0),
  fOutRunLoader(0x0),
  fOutputInitialized(kFALSE),
@@ -138,8 +142,8 @@ AliRunDigitizer::AliRunDigitizer(): TTask("AliRunDigitizer","The manager for Mer
 }
 
 //_______________________________________________________________________
-AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
- TTask("AliRunDigitizer","The manager for Merging"),
+AliDigitizationInput::AliDigitizationInput(Int_t nInputStreams, Int_t sperb):
+ TNamed("AliDigitizationInput","The manager for Merging"),
  fkMASKSTEP(10000000),
  fOutputFileName(""),
  fOutputDirName("."),
@@ -149,6 +153,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
  fCopyTreesFromInput(-1),
  fNinputs(nInputStreams),
  fNinputsGiven(0),
+ fRegionOfInterest(kFALSE),
  fInputStreams(new TClonesArray("AliStream",nInputStreams)),
  fOutRunLoader(0x0),
  fOutputInitialized(kFALSE),
@@ -184,7 +189,7 @@ AliRunDigitizer::AliRunDigitizer(Int_t nInputStreams, Int_t sperb):
 }
 //_______________________________________________________________________
 
-void AliRunDigitizer::Copy(TObject&) const
+void AliDigitizationInput::Copy(TObject&) const
 {
   //
   // Non implemented copy function
@@ -194,7 +199,7 @@ void AliRunDigitizer::Copy(TObject&) const
 
 //_______________________________________________________________________
 
-AliRunDigitizer::~AliRunDigitizer() 
+AliDigitizationInput::~AliDigitizationInput() 
 {
   //
   // dtor
@@ -203,16 +208,9 @@ AliRunDigitizer::~AliRunDigitizer()
   delete fCombi;
   delete fOutRunLoader;
 }
+
 //_______________________________________________________________________
-void AliRunDigitizer::AddDigitizer(AliDigitizer *digitizer)
-{
-  //
-  // add digitizer to the list of active digitizers
-  //
-  this->Add(digitizer);
-}
-//_______________________________________________________________________
-void AliRunDigitizer::SetInputStream(Int_t i, const char *inputFile, TString foldername)
+void AliDigitizationInput::SetInputStream(Int_t i, const char *inputFile, TString foldername)
 {
 //
 // Sets the name of the input file
@@ -231,46 +229,7 @@ void AliRunDigitizer::SetInputStream(Int_t i, const char *inputFile, TString fol
 }
 
 //_______________________________________________________________________
-void AliRunDigitizer::Digitize(Option_t* option)
-{
-// get a new combination of inputs, loads events to folders
-
-// take gAlice from the first input file. It is needed to access
-//  geometry data
-// If gAlice is already in memory, use it
-  
-  if (!static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice()) 
-   {
-     AliError("Error occured while getting gAlice from Input 0");
-     return;
-   }
-    
-  if (!InitGlobal()) //calls Init() for all (sub)digitizers
-   {
-     AliError("InitGlobal returned error");
-     return;
-   }
-   
-  Int_t eventsCreated = 0;
-// loop until there is anything on the input in case fNrOfEventsToWrite < 0
-  while ((eventsCreated++ < fNrOfEventsToWrite) || (fNrOfEventsToWrite < 0)) 
-   {
-      if (!ConnectInputTrees()) break;
-      InitEvent();//this must be after call of Connect Input tress.
-      if (fOutRunLoader)
-       {
-         fOutRunLoader->SetEventNumber(eventsCreated-1);
-       }
-      static_cast<AliStream*>(fInputStreams->At(0))->ImportgAlice(); // use gAlice of the first input stream
-      ExecuteTasks(option);// loop over all registered digitizers and let them do the work
-      FinishEvent();
-      CleanTasks();
-   }
-  FinishGlobal();
-}
-
-//_______________________________________________________________________
-Bool_t AliRunDigitizer::ConnectInputTrees()
+Bool_t AliDigitizationInput::ConnectInputTrees()
 {
   //
   // loads events 
@@ -294,26 +253,10 @@ Bool_t AliRunDigitizer::ConnectInputTrees()
   return kTRUE;
 }
 
-//_______________________________________________________________________
-Bool_t AliRunDigitizer::InitGlobal()
-{
-  //
-  // Method called once before Digitize() is called
-  // initialize digitizers and output
-  //
-  fOutputInitialized = kFALSE;
-  TList* subTasks = this->GetListOfTasks();
-  if (subTasks) {
-    TIter next(subTasks);
-    while (AliDigitizer * dig = (AliDigitizer *) next())
-     dig->Init();
-  }
-  return kTRUE;
-}
 
 //_______________________________________________________________________
 
-void AliRunDigitizer::SetOutputFile(TString fn)
+void AliDigitizationInput::SetOutputFile(TString fn)
 {
   //
   // The output will be to separate file, 
@@ -326,7 +269,7 @@ void AliRunDigitizer::SetOutputFile(TString fn)
 }
 
 //_______________________________________________________________________
-Bool_t AliRunDigitizer::InitOutputGlobal()
+Bool_t AliDigitizationInput::InitOutputGlobal()
 {
   //
   // Creates the output file, called by InitEvent()
@@ -372,7 +315,7 @@ Bool_t AliRunDigitizer::InitOutputGlobal()
 }
 //_______________________________________________________________________
 
-void AliRunDigitizer::InitEvent()
+void AliDigitizationInput::InitEvent()
 {
   //
   // redirects output properly
@@ -385,7 +328,7 @@ void AliRunDigitizer::InitEvent()
 }
 //_______________________________________________________________________
 
-void AliRunDigitizer::FinishEvent()
+void AliDigitizationInput::FinishEvent()
 {
   //
   // called at the end of loop over digitizers
@@ -430,7 +373,7 @@ void AliRunDigitizer::FinishEvent()
 }
 //_______________________________________________________________________
 
-void AliRunDigitizer::FinishGlobal()
+void AliDigitizationInput::FinishGlobal()
 {
   //
   // called at the end of Exec
@@ -466,7 +409,7 @@ void AliRunDigitizer::FinishGlobal()
 }
 //_______________________________________________________________________
 
-Int_t  AliRunDigitizer::GetNParticles(Int_t event) const
+Int_t  AliDigitizationInput::GetNParticles(Int_t event) const
 {
 // return number of particles in all input files for a given
 // event (as numbered in the output file)
@@ -483,7 +426,7 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t event) const
 }
 //_______________________________________________________________________
 
-Int_t  AliRunDigitizer::GetNParticles(Int_t /*event*/, Int_t /*input*/) const
+Int_t  AliDigitizationInput::GetNParticles(Int_t /*event*/, Int_t /*input*/) const
 {
 // return number of particles in input file input for a given
 // event (as numbered in this input file)
@@ -496,7 +439,7 @@ Int_t  AliRunDigitizer::GetNParticles(Int_t /*event*/, Int_t /*input*/) const
 }
 
 //_______________________________________________________________________
-Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event) const
+Int_t* AliDigitizationInput::GetInputEventNumbers(Int_t event) const
 {
 // return pointer to an int array with input event numbers which were
 // merged in the output event event
@@ -509,7 +452,7 @@ Int_t* AliRunDigitizer::GetInputEventNumbers(Int_t event) const
   return a;
 }
 //_______________________________________________________________________
-Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t /*input*/) const
+Int_t AliDigitizationInput::GetInputEventNumber(Int_t event, Int_t /*input*/) const
 {
 // return an event number of an eventInput from input file input
 // which was merged to create output event event
@@ -518,7 +461,7 @@ Int_t AliRunDigitizer::GetInputEventNumber(Int_t event, Int_t /*input*/) const
   return event;
 }
 //_______________________________________________________________________
-TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event) const
+TParticle* AliDigitizationInput::GetParticle(Int_t i, Int_t event) const
 {
 // return pointer to particle with index i (index with mask)
 
@@ -528,7 +471,7 @@ TParticle* AliRunDigitizer::GetParticle(Int_t i, Int_t event) const
 }
 
 //_______________________________________________________________________
-TParticle* AliRunDigitizer::GetParticle(Int_t /*i*/, Int_t /*input*/, Int_t /*event*/) const
+TParticle* AliDigitizationInput::GetParticle(Int_t /*i*/, Int_t /*input*/, Int_t /*event*/) const
 {
 // return pointer to particle with index i in the input file input
 // (index without mask)
@@ -541,19 +484,7 @@ TParticle* AliRunDigitizer::GetParticle(Int_t /*i*/, Int_t /*input*/, Int_t /*ev
 }
 
 //_______________________________________________________________________
-void AliRunDigitizer::ExecuteTask(Option_t* option)
-{
-  //
-  // overwrite ExecuteTask to do Digitize only
-  //
-  if (!IsActive()) return;
-  Digitize(option);
-  fHasExecuted = kTRUE;
-  return;
-}
-
-//_______________________________________________________________________
-const TString& AliRunDigitizer::GetInputFolderName(Int_t i) const
+const TString& AliDigitizationInput::GetInputFolderName(Int_t i) const
 {
   //
   // Get the input Folder Name
@@ -565,7 +496,7 @@ const TString& AliRunDigitizer::GetInputFolderName(Int_t i) const
 }
 //_______________________________________________________________________
 
-const char* AliRunDigitizer::GetOutputFolderName()
+const char* AliDigitizationInput::GetOutputFolderName()
 {
   //
   // Get output folder name
@@ -574,7 +505,7 @@ const char* AliRunDigitizer::GetOutputFolderName()
 }
 //_______________________________________________________________________
 
-AliRunLoader* AliRunDigitizer::GetOutRunLoader()
+AliRunLoader* AliDigitizationInput::GetOutRunLoader()
 {
   //
   // Returns Run Loader
@@ -591,7 +522,7 @@ AliRunLoader* AliRunDigitizer::GetOutRunLoader()
 }
 //_______________________________________________________________________
 
-TString AliRunDigitizer::GetInputFileName(Int_t input, Int_t order) const 
+TString AliDigitizationInput::GetInputFileName(Int_t input, Int_t order) const 
 {
 // returns file name of the order-th file in the input stream input
 // returns empty string if such file does not exist

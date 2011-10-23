@@ -240,7 +240,7 @@ AliFMDHitDigitizer::operator=(const AliFMDHitDigitizer& o)
 
 //____________________________________________________________________
 void
-AliFMDHitDigitizer::Exec(Option_t* /*option*/)
+AliFMDHitDigitizer::Digitize(Option_t* /*option*/)
 {
   // Run this digitizer 
   // Get an inititialize parameter manager

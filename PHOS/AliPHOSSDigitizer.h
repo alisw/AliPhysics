@@ -30,7 +30,7 @@
  */
 
 //_________________________________________________________________________
-//  Task Class for making SDigits in PHOS      
+//  Class for making SDigits in PHOS      
 // A Summable Digits is the sum of all hits originating 
 // from one primary in one active cell
 //*--
@@ -38,7 +38,7 @@
 
 
 // --- ROOT system ---
-#include "TTask.h"
+#include "TNamed.h"
 #include "AliConfig.h"
 class TFile ;
 
@@ -48,7 +48,7 @@ class TFile ;
 // --- AliRoot header files ---
 //class AliPHOSQADataMaker ; 
 
-class AliPHOSSDigitizer: public TTask {
+class AliPHOSSDigitizer: public TNamed {
 
 public:
   AliPHOSSDigitizer() ;          // ctor
@@ -58,8 +58,8 @@ public:
 
   virtual ~AliPHOSSDigitizer(); // dtor
 
-  virtual void   Exec(Option_t *option); 
-  Int_t    GetSDigitsInRun() const {return fSDigitsInRun ;}  
+  virtual void   Digitize(Option_t *option); 
+  Int_t          GetSDigitsInRun() const {return fSDigitsInRun ;}  
   virtual void   Print(const Option_t * = "") const ;
   void           SetEventFolderName(TString name) { fEventFolderName = name ; }
   void           SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
@@ -84,7 +84,7 @@ private:
   Int_t   fFirstEvent;      // first event to process
   Int_t   fLastEvent;       // last  event to process
 
-  ClassDef(AliPHOSSDigitizer,5)  // description 
+  ClassDef(AliPHOSSDigitizer,6)  // description 
 
 };
 

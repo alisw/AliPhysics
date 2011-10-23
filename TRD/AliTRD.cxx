@@ -179,13 +179,13 @@ void AliTRD::Hits2SDigits()
 }
 
 //_____________________________________________________________________________
-AliDigitizer *AliTRD::CreateDigitizer(AliRunDigitizer *manager) const
+AliDigitizer *AliTRD::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   //
   // Creates a new digitizer object
   //
 
-  return new AliTRDdigitizer(manager);
+  return new AliTRDdigitizer(digInput);
 
 }
 

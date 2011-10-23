@@ -234,11 +234,11 @@ AliLoader* AliACORDE::MakeLoader(const char* topfoldername)
 }
 
 
-AliDigitizer* AliACORDE::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliACORDE::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   //
   //
-  return new AliACORDEDigitizer(manager);
+  return new AliACORDEDigitizer(digInput);
 }
 
 void AliACORDE::Digits2Raw()

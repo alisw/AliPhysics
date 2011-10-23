@@ -63,7 +63,6 @@
 #include <TFolder.h>
 #include <TObjArray.h>
 #include <TString.h>
-#include <TTask.h>
 
 ClassImp(AliRunLoader)
 
@@ -1866,68 +1865,6 @@ void AliRunLoader::Clean(const TString& name)
      delete obj;
      obj = 0x0;
    }
-}
-
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunDigitizer()
-{
-//returns Run Digitizer from folder
-
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetDigitizerTaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
-}
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunSDigitizer()
-{
-//returns SDigitizer Task from folder
-
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetSDigitizerTaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
-}
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunReconstructioner()
-{
-//returns Reconstructioner Task from folder
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetReconstructionerTaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
-}
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunTracker()
-{
-//returns Tracker Task from folder
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetTrackerTaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
-}
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunPIDTask()
-{
-//returns Tracker Task from folder
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetPIDTaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
-}
-/*****************************************************************************/ 
-
-TTask* AliRunLoader::GetRunQATask()
-{
-//returns Quality Assurance Task from folder
- TFolder* topf = AliConfig::Instance()->GetTaskFolder();
- if (topf == 0x0)
-  {
-    AliErrorClass("Can not get task folder from AliConfig");
-    return 0x0;
-  }
- TObject* obj = topf->FindObjectAny(AliConfig::Instance()->GetQATaskName());
- return (obj)?dynamic_cast<TTask*>(obj):0x0;
 }
 
 /*****************************************************************************/ 

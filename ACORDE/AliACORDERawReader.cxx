@@ -34,7 +34,7 @@
 ClassImp(AliACORDERawReader)
   
 AliACORDERawReader::AliACORDERawReader (AliRawReader *rawReader, Bool_t isOnline):
-       TTask("ACORDERawReader","read raw ACORDE data"),
+       TNamed("ACORDERawReader","read raw ACORDE data"),
        fRawReader(rawReader),
        fData(NULL),
        fPosition(0),

@@ -6,7 +6,7 @@
 
 //__________________________________________//
 //                                          //
-//  Task Class for making SDigits in TOF    // 
+//       Class for making SDigits in TOF    // 
 //                                          //
 //-- Authors: F. Pierella, A. De Caro       //
 //                                          //
@@ -14,7 +14,7 @@
 
 /* $Id$ */
 
-#include "TTask.h"
+#include "TNamed.h"
 
 class TF1;
 class TString;
@@ -24,7 +24,7 @@ class AliRunLoader;
 
 class AliTOFcalib;
 
-class AliTOFSDigitizer: public TTask {
+class AliTOFSDigitizer: public TNamed {
 
 public:
   AliTOFSDigitizer() ;          // ctor
@@ -38,7 +38,7 @@ public:
 
   //static Float_t WidthTdcBin() {return fgkTdcBin;};
 
-  virtual void  Exec(Option_t *verboseOption); 
+  virtual void  Digitize(Option_t *verboseOption); 
   void SetSDigitsFile(char * /*file*/ ) const {;}
   
   void InitParameters();
@@ -182,7 +182,7 @@ private:
 
   AliTOFcalib * fCalib; //! calibration object
 
-  ClassDef(AliTOFSDigitizer,4)  // creates TOF SDigits
+  ClassDef(AliTOFSDigitizer,5)  // creates TOF SDigits
 
 };
 

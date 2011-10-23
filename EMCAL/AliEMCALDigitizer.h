@@ -36,7 +36,7 @@ class TBrowser;
 #include "AliConfig.h"
 class AliEMCALCalibData ;
 class AliEMCALSDigitizer ;
-class AliRunDigitizer ;
+class AliDigitizationInput ;
 
 class AliEMCALDigitizer: public AliDigitizer {
 
@@ -45,11 +45,11 @@ public:
   AliEMCALDigitizer(TString alirunFileNameFile, 
                     TString eventFolderName = AliConfig::GetDefaultEventFolderName()) ;  
   AliEMCALDigitizer(const AliEMCALDigitizer & dtizer) ;
-  AliEMCALDigitizer(AliRunDigitizer * manager) ;
+  AliEMCALDigitizer(AliDigitizationInput * manager) ;
   virtual ~AliEMCALDigitizer() ;       
 
   void     Digitize(Int_t event);   // Make Digits from SDigits stored in fSDigits
-  void     Exec(Option_t *option);  // Supervising method
+  void     Digitize(Option_t *option);  // Supervising method
 
   Int_t    GetDigitThreshold()     const { return fDigitThreshold     ; }
   Float_t  GetPinNoise()           const { return fPinNoise           ; }
@@ -124,8 +124,8 @@ private:
   Int_t    fLastEvent;            // last  event to process
 	
   AliEMCALCalibData * fCalibData; //Calibration data pointer
-
-  ClassDef(AliEMCALDigitizer,11)  // description 
+  AliEMCALSDigitizer* fSDigitizer; // SDigitization object
+  ClassDef(AliEMCALDigitizer,12)  // description 
 };
 
 

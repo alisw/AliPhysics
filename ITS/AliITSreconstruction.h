@@ -12,13 +12,13 @@
 //                                                                     //
 ////////////////////////////////////////////////////////////////////////
 
-#include <TTask.h>
+#include <TNamed.h>
 
 class AliRunLoader;
 class AliITSLoader;
 class TString;
 
-class AliITSreconstruction : public TTask{
+class AliITSreconstruction : public TNamed{
  public:
     AliITSreconstruction(); // default constructor
     AliITSreconstruction(const char *filename); // standard constructor
@@ -44,7 +44,7 @@ class AliITSreconstruction : public TTask{
     AliITSLoader *fLoader; //! ITS loader
     AliRunLoader* fRunLoader;//!Run Loader
  
-    ClassDef(AliITSreconstruction,3) // Task to Reconstruct ITS from Digits.
+    ClassDef(AliITSreconstruction,4) // Class to Reconstruct ITS from Digits.
 
 };
 #endif

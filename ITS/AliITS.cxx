@@ -257,18 +257,18 @@ AliITS::~AliITS(){
 }
 
 //______________________________________________________________________
-AliDigitizer* AliITS::CreateDigitizer(AliRunDigitizer* manager)const{
+AliDigitizer* AliITS::CreateDigitizer(AliDigitizationInput* digInput)const{
     // Creates the AliITSDigitizer in a standard way for use via AliModule.
     // This function can not be included in the .h file because of problems
     // with the order of inclusion (recursive).
     // Inputs:
-    //    AliRunDigitizer *manager  The Manger class for Digitization
+    //    AliDigitizationInput* digInput  The Manger class for Digitization
     // Output:
     //    none.
     // Return:
     //    A new AliITSRunDigitizer (cast as a AliDigitizer).
 
-     return new AliITSDigitizer(manager);
+     return new AliITSDigitizer(digInput);
 }
 //______________________________________________________________________
 void AliITS::Init(){

@@ -10,18 +10,18 @@
 //	Mario Rodriguez Cahuantzi <mrodrigu@mail.cern.ch>
 //	Arturo Fernandez Tellez   <afernan@mail.cern.ch>
  
-#include <TTask.h>
+#include <TNamed.h>
 #include "AliRawReader.h"
 
   
-class AliACORDERawReader : public TTask {
+class AliACORDERawReader : public TNamed {
   public :
 
   AliACORDERawReader(AliRawReader *rawReader,Bool_t isOnline = kFALSE) ;
 //AliACORDERawReader(AliRawReader *rawReader,Bool_t isOnline = kTRUE) ;
 
   virtual  ~AliACORDERawReader();
-  AliACORDERawReader(const AliACORDERawReader& o): TTask(o),fRawReader(0),fData(NULL),fPosition(0),fIsOnline(kFALSE),fDataSize(0)
+  AliACORDERawReader(const AliACORDERawReader& o): TNamed(o),fRawReader(0),fData(NULL),fPosition(0),fIsOnline(kFALSE),fDataSize(0)
 {
 	fWord[0] = fWord[1] = fWord[2] = fWord[3] = 0;
 }
@@ -64,7 +64,7 @@ enum EACORDERawStreamError {
       kRawDataSizeErr = 1
   };
   
- ClassDef(AliACORDERawReader,2) //class for reading ACORDE Raw data
+ ClassDef(AliACORDERawReader,3) //class for reading ACORDE Raw data
 };
 
 typedef AliACORDERawReader AliSTARTRawReader; // for backward compatibility

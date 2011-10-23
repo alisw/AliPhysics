@@ -12,7 +12,7 @@
 class TObjArray;
 class TTree;
 
-class AliRunDigitizer;
+class AliDigitizationInput;
 
 #include "AliDigitizer.h" // Base class from which this one is derived
 #include "AliITS.h"   // ITS class functions used in inline functions.
@@ -21,14 +21,14 @@ class AliITSmodule;
 class AliITSDigitizer : public AliDigitizer{
  public:
     AliITSDigitizer();
-    AliITSDigitizer(AliRunDigitizer *manager);
+    AliITSDigitizer(AliDigitizationInput* digInput);
 
     virtual ~AliITSDigitizer();
     // Standard routines.
     virtual Bool_t Init();
     // Perform SDigits to Digits, with or without merging, depending on the
     // number of files.
-    virtual void Exec(Option_t* opt=0);
+    virtual void Digitize(Option_t* opt=0);
     // Sets a particular module active
     virtual void SetModuleActive(Int_t i){if(fModActive) fModActive[i] = kTRUE;}
     // Sets a particular module inactive
@@ -53,7 +53,7 @@ class AliITSDigitizer : public AliDigitizer{
     // Returns a pointer to a  specific module.
     AliITSmodule* GetModule(Int_t i){return fITS->GetModule(i);}
     // Returns a pointer to the manager
-    AliRunDigitizer* GetManager(){return fManager;}
+    AliDigitizationInput* GetDigInput(){return fDigInput;}
     // Sets the region of Interest based on which module have SDigits
     // Defined (non-noise SDigits).
     virtual void SetByRegionOfInterest(TTree *ts);

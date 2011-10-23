@@ -211,7 +211,7 @@
 #include "AliFMDSDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+#include <AliDigitizationInput.h>	// ALIRUNDIGITIZER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRunLoader.h>	// ALIRUNLOADER_H
@@ -256,18 +256,18 @@ AliFMDDigitizer::Init()
 
 //____________________________________________________________________
 void
-AliFMDDigitizer::Exec(Option_t*)
+AliFMDDigitizer::Digitize(Option_t*)
 {
   // 
   // Execute this digitizer.  
   // This member function will be called once per event by the passed
-  // AliRunDigitizer manager object. 
+  // AliDigitizationInput* digInput object. 
   // 
   // Parameters:
   //    options Not used 
   //
-  if (!fManager) { 
-    AliError("No digitisation manager defined");
+  if (!fDigInput) { 
+    AliError("No digitisation input defined");
     return;
   }
 
@@ -276,7 +276,7 @@ AliFMDDigitizer::Exec(Option_t*)
 
   AliRunLoader* runLoader = 0;
   if (!gAlice) { 
-    TString folderName(fManager->GetInputFolderName(0));
+    TString folderName(fDigInput->GetInputFolderName(0));
     runLoader = AliRunLoader::GetRunLoader(folderName.Data());
     if (!runLoader) { 
       AliError(Form("Failed at getting run loader from %s",
@@ -300,14 +300,14 @@ AliFMDDigitizer::Exec(Option_t*)
 
 
   // Loop over input files
-  Int_t nFiles= fManager->GetNinputs();
+  Int_t nFiles= fDigInput->GetNinputs();
   AliFMDDebug(1, (" Digitizing event number %d, got %d inputs",
-		  fManager->GetOutputEventNr(), nFiles));
+		  fDigInput->GetOutputEventNr(), nFiles));
   for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
     AliFMDDebug(5, ("Now reading input # %d", inputFile));
     // Get the current loader 
     AliRunLoader* currentLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+      AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
     if (!currentLoader) { 
       Error("Exec", "no run loader for input file # %d", inputFile);
       continue;
@@ -324,7 +324,7 @@ AliFMDDigitizer::Exec(Option_t*)
     // Get the tree of summable digits
     TTree* sdigitsTree = inFMD->TreeS();
     if (!sdigitsTree)  {
-      AliError("No sdigit tree from manager");
+      AliError("No sdigit tree from input");
       continue;
     }
     if (AliLog::GetDebugLevel("FMD","") >= 10) {
@@ -359,7 +359,7 @@ AliFMDDigitizer::Exec(Option_t*)
     inFMD->UnloadSDigits();
   }  
 
-  TString       outFolder(fManager->GetOutputFolderName());
+  TString       outFolder(fDigInput->GetOutputFolderName());
   AliRunLoader* out    = AliRunLoader::GetRunLoader(outFolder.Data());
   AliLoader*    outFMD = out->GetLoader("FMDLoader");
   if (!outFMD) { 

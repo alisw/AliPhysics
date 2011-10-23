@@ -36,7 +36,7 @@ public:
   virtual void  SetTreeAddress();
   virtual void  MakeBranch(Option_t* opt);
   virtual void  Hits2SDigits();
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
   virtual void  Digits2Raw();
   virtual Bool_t Raw2SDigits(AliRawReader* rawReader);
   Int_t   Pedestal(Int_t Detector, Int_t Quadrant, Int_t Res) const;

@@ -122,7 +122,7 @@
     class  AliDebugVolume {};
     class  AliConfig {};
     class  AliDigitizer {};
-    class  AliRunDigitizer {};
+    class  AliDigitizationInput {};
     class  AliStream {};
     class  AliMergeCombi {};
     class  AliGausCorr {};

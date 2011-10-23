@@ -47,7 +47,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliConfig.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliLog.h"
@@ -119,9 +119,9 @@ AliTRDdigitizer::AliTRDdigitizer(const Text_t *name, const Text_t *title)
 }
 
 //_____________________________________________________________________________
-AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
+AliTRDdigitizer::AliTRDdigitizer(AliDigitizationInput* digInput
                                , const Text_t *name, const Text_t *title)
-  :AliDigitizer(manager,name,title)
+  :AliDigitizer(digInput,name,title)
   ,fRunLoader(0)
   ,fDigitsManager(0)
   ,fSDigitsManager(0)
@@ -142,8 +142,8 @@ AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager
 }
 
 //_____________________________________________________________________________
-AliTRDdigitizer::AliTRDdigitizer(AliRunDigitizer *manager)
-  :AliDigitizer(manager,"AliTRDdigitizer","TRD digitizer")
+AliTRDdigitizer::AliTRDdigitizer(AliDigitizationInput* digInput)
+  :AliDigitizer(digInput,"AliTRDdigitizer","TRD digitizer")
   ,fRunLoader(0)
   ,fDigitsManager(0)
   ,fSDigitsManager(0)
@@ -262,7 +262,7 @@ void AliTRDdigitizer::Copy(TObject &d) const
 }
 
 //_____________________________________________________________________________
-void AliTRDdigitizer::Exec(const Option_t * const option)
+void AliTRDdigitizer::Digitize(const Option_t* option)
 {
   //
   // Executes the merging
@@ -285,7 +285,7 @@ void AliTRDdigitizer::Exec(const Option_t * const option)
     AliDebug(1,"AliRun object found on file.");
   }
   else {
-    inrl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+    inrl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
     inrl->LoadgAlice();
     gAlice = inrl->GetAliRun();
     if (!gAlice) {
@@ -294,17 +294,17 @@ void AliTRDdigitizer::Exec(const Option_t * const option)
     }
   }
                                                                            
-  Int_t nInput = fManager->GetNinputs();
+  Int_t nInput = fDigInput->GetNinputs();
   fMasks       = new Int_t[nInput];
   for (iInput = 0; iInput < nInput; iInput++) {
-    fMasks[iInput] = fManager->GetMask(iInput);
+    fMasks[iInput] = fDigInput->GetMask(iInput);
   }
 
   //
   // Initialization
   //
 
-  AliRunLoader *orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  AliRunLoader *orl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
 
   if (InitDetector()) {
 
@@ -337,7 +337,7 @@ void AliTRDdigitizer::Exec(const Option_t * const option)
     AliDebug(1,Form("Add input stream %d",iInput));
 
     // Check if the input tree exists
-    inrl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+    inrl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iInput));
     AliLoader *gime = inrl->GetLoader("TRDLoader");
 
     TTree *treees = gime->TreeS();
@@ -358,7 +358,7 @@ void AliTRDdigitizer::Exec(const Option_t * const option)
     sdigitsManager = new AliTRDdigitsManager();
     sdigitsManager->SetSDigits(kTRUE);
     
-    AliRunLoader *rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+    AliRunLoader *rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iInput));
     AliLoader *gimme = rl->GetLoader("TRDLoader");
     if (!gimme->TreeS()) 
       {

@@ -17,7 +17,7 @@
 
 //----------------------------------------------------------------------
 //  Base Class for Detector specific Merging/Digitization   
-//  Collaborates with AliRunDigitizer class                
+//  Collaborates with AliDigitizationInput class                
 //  Author: Jiri Chudoba (CERN)
 //----------------------------------------------------------------------
 
@@ -29,15 +29,14 @@
 // AliROOT includes
 #include "AliLog.h"
 #include "AliDigitizer.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 
 ClassImp(AliDigitizer)
 
 //_______________________________________________________________________
 AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
-  TTask(name,title),
-  fManager(0),
-  fRegionOfInterest(kTRUE)
+  TNamed(name,title),
+  fDigInput(0)
 {
   //
   // Default ctor with name and title
@@ -46,9 +45,8 @@ AliDigitizer::AliDigitizer(const Text_t* name, const Text_t* title):
 
 //_______________________________________________________________________
 AliDigitizer::AliDigitizer(const AliDigitizer &dig):
-  TTask(dig.GetName(),dig.GetTitle()),
-  fManager(0),
-  fRegionOfInterest(kTRUE)
+  TNamed(dig.GetName(),dig.GetTitle()),
+  fDigInput(0)
 {
   //
   // Copy ctor with
@@ -63,16 +61,13 @@ void AliDigitizer::Copy(TObject &) const
 }
 
 //_______________________________________________________________________
-AliDigitizer::AliDigitizer(AliRunDigitizer *manager, 
+AliDigitizer::AliDigitizer(AliDigitizationInput *digInput, 
                            const Text_t* name, const Text_t* title):
-  TTask(name,title),
-  fManager(manager),
-  fRegionOfInterest(kFALSE)
+  TNamed(name,title),
+  fDigInput(digInput)
 {
   //
   // ctor with name and title
-  //
-  fManager->AddDigitizer(this);
 }
 
 //_______________________________________________________________________
@@ -87,7 +82,6 @@ Int_t AliDigitizer::GetNInputStreams() const
   // return number of input streams
   //
   Int_t nInputStreams = 0 ;
-  if (fManager)
-    nInputStreams = fManager->GetNinputs() ;
+  if (fDigInput) nInputStreams = fDigInput->GetNinputs() ;
   return nInputStreams ; 
 }

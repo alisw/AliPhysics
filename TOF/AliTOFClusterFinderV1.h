@@ -7,7 +7,7 @@
 // and feed TOF tracking 
 
 #include "TObject.h"
-#include "TTask.h"
+#include "TNamed.h"
 
 #include "AliTOFGeometry.h"
 #include "AliTOFRawStream.h"
@@ -72,7 +72,7 @@ class  AliTOFselectedDigit : public TObject {
 }; 
 
 
-class AliTOFClusterFinderV1 : public TTask
+class AliTOFClusterFinderV1 : public TNamed
 {
 
   enum {kTofMaxCluster=77777}; //maximal number of the TOF clusters
@@ -162,7 +162,7 @@ class AliTOFClusterFinderV1 : public TTask
 
   Bool_t fCalibrateTOFtimes;     // used for check
 
-  ClassDef(AliTOFClusterFinderV1,4) // To run TOF clustering
+  ClassDef(AliTOFClusterFinderV1,5) // To run TOF clustering
 };
 #endif
 

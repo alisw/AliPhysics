@@ -18,7 +18,7 @@
 
 #include <AliRun.h>
 #include <AliRunLoader.h>
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include <AliLoader.h>
 #include <AliLog.h>
 #include "AliITSupgradeDigitizer.h"
@@ -53,13 +53,13 @@ ClassImp(AliITSupgradeDigitizer)
   }  
 }   
 //______________________________________________________________________________      
-void AliITSupgradeDigitizer::Exec(Option_t*)
+void AliITSupgradeDigitizer::Digitize(Option_t*)
 {
   // This method is responsible for merging sdigits to a list of digits
   //  Disintegration leeds to the fact that one hit affects several neighbouring pads, 
   // which means that the same pad might be affected by few hits.     
   
-  AliDebug(1,Form("Start with %i input(s) for event %i",fManager->GetNinputs(),fManager->GetOutputEventNr()));
+  AliDebug(1,Form("Start with %i input(s) for event %i",fDigInput->GetNinputs(),fDigInput->GetOutputEventNr()));
   
   
   AliITSsegmentationUpgrade *s = new AliITSsegmentationUpgrade();
@@ -74,9 +74,9 @@ void AliITSupgradeDigitizer::Exec(Option_t*)
   
   
   Int_t total[10]={0,0,0,0,0,0,0,0,0,0};
-  for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
+  for(Int_t inFileN=0;inFileN<fDigInput->GetNinputs();inFileN++){//files loop
     
-    pInRunLoader  = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));          //get run loader from current input 
+    pInRunLoader  = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inFileN));          //get run loader from current input 
     pITSLoader = pInRunLoader->GetLoader("ITSLoader"); 
     if(pITSLoader==0) {
       continue;       //no ITS in this input, check the next input
@@ -95,7 +95,7 @@ void AliITSupgradeDigitizer::Exec(Option_t*)
       //collect sdigits from current input
       for(Int_t ientr =0; ientr < ((TClonesArray*)pITS->SDigitsList()->At(is))->GetEntries(); ientr++){
 	AliITSDigitUpgrade *pSDig=(AliITSDigitUpgrade*)((TClonesArray*)pITS->SDigitsList()->At(is))->At(ientr);
-	pSDig->AddTidOffset(fManager->GetMask(inFileN)); // -> To be introduced for merging (apply TID shift since all inputs count tracks independently starting from 0)
+	pSDig->AddTidOffset(fDigInput->GetMask(inFileN)); // -> To be introduced for merging (apply TID shift since all inputs count tracks independently starting from 0)
 	new((sdigits[is])[total[is]++]) AliITSDigitUpgrade(*pSDig);  
       }
     }
@@ -104,7 +104,7 @@ void AliITSupgradeDigitizer::Exec(Option_t*)
     pITS->SDigitsReset(); //close current input and reset 
   }//files loop  
   
-  AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());  //open output stream (only 1 possible)
+  AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());  //open output stream (only 1 possible)
   AliLoader    *pOutITSLoader = pOutRunLoader->GetLoader("ITSLoader");                        
   AliRun *pArun = pOutRunLoader->GetAliRun();
   AliITSupgrade      *pOutITS       = (AliITSupgrade*)pArun->GetDetector("ITS");      
@@ -201,7 +201,7 @@ void AliITSupgradeDigitizer::Sdigits2Digits(TClonesArray *pSDigitList,TObjArray 
 
 	if(iNtrackPart>maxLab) {	
 	  AliWarning(Form(" Event %d: Number of summable digits for this pixel (lay=%d,mod=%d,pixId=%lu) is too large (%d<%d). Sum is ok but skipping track Id %d ... ",
-			  fManager->GetOutputEventNr(),ilay,module,pixId,maxLab,iNtrackPart,trackId));
+			  fDigInput->GetOutputEventNr(),ilay,module,pixId,maxLab,iNtrackPart,trackId));
 	}
 	eloss+=tmpdig->GetSignal();
 	nele +=tmpdig->GetNelectrons();

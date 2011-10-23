@@ -21,7 +21,7 @@ public:
           void    AddAlignableVolumes(                               )const;                                   //from AliModule invoked from AliMC    
           void    CreateMaterials  (                                 );                                        //from AliModule invoked from AliMC
           void    CreateGeometry   (                                 );                                        //from AliModule invoked from AliMC
-  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer*   CreateDigitizer  (AliDigitizationInput *m               )const{return new AliHMPIDDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
           void    Digits2Raw       (                                 );                                        //from AliModule invoked from AliSimulation::WriteRawFiles()
   virtual void    DefineOpticalProperties();                                                                   //from AliModule invoked from AliMC::ConstructOpGeometry() to set Cerenkov properties
           void    Hits2SDigits     (                                 );                                        //from AliModule invoked from AliSimulation::RunSDigitization()

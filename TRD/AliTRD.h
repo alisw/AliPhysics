@@ -56,7 +56,7 @@ class AliTRD : public AliDetector {
   virtual Bool_t   GetTR() const              = 0;
 
           AliTRDgeometry     *GetGeometry() const           { return fGeometry; };
-  virtual AliDigitizer       *CreateDigitizer(AliRunDigitizer *manager) const; 
+  virtual AliDigitizer       *CreateDigitizer(AliDigitizationInput* digInput) const; 
   virtual AliLoader          *MakeLoader(const char* topfoldername);
   virtual AliTriggerDetector *CreateTriggerDetector() const { return new AliTRDTrigger(); }
   void    SetPrimaryIonisation(Bool_t flag = kTRUE) {fPrimaryIonisation = flag;}  

@@ -33,7 +33,7 @@ public:
 
   virtual AliLoader* MakeLoader(const char* topfoldername);
 
-  AliDigitizer*  CreateDigitizer(AliRunDigitizer* manager) const;
+  AliDigitizer*  CreateDigitizer(AliDigitizationInput* digInput) const;
 
   virtual AliTriggerDetector* CreateTriggerDetector() const
   { return new AliACORDETrigger(); }

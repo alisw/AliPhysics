@@ -156,8 +156,8 @@
       hits, digits, reconstructed points and ESD data. 
 
     - AliFMDCalibFaker, AliFMDAlignFaker: Classes to write fake (or
-      dummy) calibration and alignment 	data.  These derive from
-      TTask.  
+      dummy) calibration and alignment 	data. 
+
 
     @section script Scripts 
     
@@ -542,7 +542,7 @@ public:
   /** Create a digitizer object
       @param manager Digitization manager
       @return a newly allocated AliFMDDigitizer */
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
   /** Create AliFMDDigit's from AliFMDHit's.  This is done by creating
       an AliFMDDigitizer object, and executing it.  */
   virtual        void   Hits2Digits();

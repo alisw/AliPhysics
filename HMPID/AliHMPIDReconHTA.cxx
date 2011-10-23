@@ -37,7 +37,7 @@
 Int_t AliHMPIDReconHTA::fgDB[500][150]={{75000*0}};
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 AliHMPIDReconHTA::AliHMPIDReconHTA():
-  TTask("RichRec","RichPat"),
+  TNamed("RichRec","RichPat"),
   fMipX(-999),
   fMipY(-999),
   fMipQ(-999),

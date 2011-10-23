@@ -12,18 +12,18 @@
 //                                                     //
 ///////////////////////////////////////////////////////// 
  
-#include <TTask.h>
+#include <TNamed.h>
  
 class TString;
 class AliITS;
  
-class AliITSsDigitize : public TTask{
+class AliITSsDigitize : public TNamed {
  public:
     AliITSsDigitize(); // default constructor
     AliITSsDigitize(const char *filename); // standard constructor
     virtual ~AliITSsDigitize();//Destructor
     virtual Bool_t Init();
-    virtual void Exec(const Option_t *opt="ALL");
+    virtual void Digitize(const Option_t *opt="ALL");
  private:
     Bool_t InitSDig() const;  // Standard SDigitization initilization.
  private:
@@ -39,7 +39,7 @@ class AliITSsDigitize : public TTask{
     Int_t   fEnt0;     //! first event to process, default 0.
     AliITS  *fITS;     //! Local pointer to ITS class.
     AliRunLoader* fRunLoader;//!Run Loader 
-    ClassDef(AliITSsDigitize,1) // Task to SDigitize ITS from Hits.
+    ClassDef(AliITSsDigitize,2) // Class to SDigitize ITS from Hits.
  
 };
 #endif

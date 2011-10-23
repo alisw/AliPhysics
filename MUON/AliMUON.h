@@ -60,7 +60,7 @@ class AliMUON : public  AliDetector
     virtual void   SetSplitLevel(Int_t SplitLevel)     {fSplitLevel=SplitLevel;}
 
     // Digitisation 
-    virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+    virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
     virtual void   SDigits2Digits();      
     virtual void   Hits2SDigits();
     virtual void   Digits2Raw();

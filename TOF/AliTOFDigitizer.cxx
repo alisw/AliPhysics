@@ -36,7 +36,7 @@
 
 #include "AliLoader.h"
 #include "AliLog.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 #include "AliRun.h"
 
@@ -71,8 +71,8 @@ ClassImp(AliTOFDigitizer)
 }
 
 //___________________________________________
-AliTOFDigitizer::AliTOFDigitizer(AliRunDigitizer* manager): 
-  AliDigitizer(manager), 
+AliTOFDigitizer::AliTOFDigitizer(AliDigitizationInput* digInput): 
+  AliDigitizer(digInput), 
   fDigits(new TClonesArray("AliTOFdigit",4000)),
   fSDigitsArray(new TClonesArray("AliTOFSDigit",1000)),
   fhitMap(0x0),
@@ -129,7 +129,7 @@ AliTOFDigitizer::~AliTOFDigitizer()
 
 //---------------------------------------------------------------------
 
-void AliTOFDigitizer::Exec(Option_t* /*option*/)
+void AliTOFDigitizer::Digitize(Option_t* /*option*/)
 {
   //
   // Perform digitization and merging.
@@ -153,7 +153,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   char branchname[kSize];
   snprintf(branchname,kSize,"%s", tof->GetName ());
  
-  AliRunLoader* outrl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  AliRunLoader* outrl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   if (outrl == 0x0)
    {
      AliError("Can not find Run Loader in output folder.");
@@ -184,7 +184,7 @@ void AliTOFDigitizer::Exec(Option_t* /*option*/)
   
   // Loop over files to digitize
 
-  for (Int_t inputFile=0; inputFile<fManager->GetNinputs();
+  for (Int_t inputFile=0; inputFile<fDigInput->GetNinputs();
        inputFile++) {
     ReadSDigit(inputFile);
    }
@@ -306,8 +306,8 @@ void AliTOFDigitizer::ReadSDigit(Int_t inputFile )
   static TClonesArray sdigitsClonesArray("AliTOFSDigit",  1000); 
   sdigitsClonesArray.Clear();
 
-  // get the treeS from manager
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+  // get the treeS from digInput
+  AliRunLoader* rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
   if (rl == 0x0)
    {
      AliError(Form("Can not find Run Loader in input %d folder.",inputFile));

@@ -10,7 +10,7 @@
 #include <AliDigitizer.h>
 #include "AliT0Parameters.h"
 
-#include <AliRunDigitizer.h>
+#include <AliDigitizationInput.h>
 class AliT0;
 class AliT0hit;
 class AliT0digit;
@@ -19,7 +19,7 @@ class AliT0Digitizer : public AliDigitizer {
  public:
   
   AliT0Digitizer();
-  AliT0Digitizer(AliRunDigitizer * manager);
+  AliT0Digitizer(AliDigitizationInput * digInput);
   virtual ~AliT0Digitizer();
   virtual Bool_t Init();
   TClonesArray *Hits() const {return fHits;}
@@ -29,7 +29,7 @@ class AliT0Digitizer : public AliDigitizer {
   TArrayI * ADC0() {return fADC0;} 
 
   // Do the main work
-  void Exec (Option_t* /*option=0*/) ;
+  void Digitize(Option_t* /*option=0*/) ;
   //  Bool_t RegisterPhotoE(Int_t impt, Double_t energy);
   enum {kBgTag = -1};
  

@@ -94,7 +94,7 @@
 #include <TVirtualMC.h>	        // ROOT_TVirtualMC
 #include <cmath>                // __CMATH__
 
-#include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+#include <AliDigitizationInput.h>	// ALIRUNDIGITIZER_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRun.h>		// ALIRUN_H
 #include <AliMC.h>		// ALIMC_H
@@ -943,7 +943,7 @@ AliFMD::Hits2Digits()
   // 
   AliFMDHitDigitizer digitizer(this, AliFMDHitDigitizer::kDigits);
   digitizer.Init();
-  digitizer.Exec("");
+  digitizer.Digitize("");
 }
 
 //____________________________________________________________________
@@ -955,13 +955,13 @@ AliFMD::Hits2SDigits()
   // 
   AliFMDHitDigitizer digitizer(this, AliFMDHitDigitizer::kSDigits);
   digitizer.Init();
-  digitizer.Exec("");
+  digitizer.Digitize("");
 }
 
   
 //____________________________________________________________________
 AliDigitizer* 
-AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
+AliFMD::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   // Create a digitizer object 
   
@@ -969,14 +969,14 @@ AliFMD::CreateDigitizer(AliRunDigitizer* manager) const
   AliFMDBaseDigitizer* digitizer = 0;
   
 #ifdef USE_SSDIGITIZER
-  digitizer = new AliFMDSSDigitizer(manager);
+  digitizer = new AliFMDSSDigitizer(digInput);
 #else 
   /* This is what we actually do, and will work */
 #if 0
   AliInfo("SDigit->Digit conversion not really supported, "
 	  "doing Hit->Digit conversion instead");
 #endif
-  digitizer = new AliFMDDigitizer(manager);
+  digitizer = new AliFMDDigitizer(digInput);
 #endif
   return digitizer;
 }

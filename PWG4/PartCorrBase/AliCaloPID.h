@@ -32,7 +32,7 @@
 class TString ;
 class TLorentzVector ;
 #include <TFormula.h>
-class TTask;
+class TList;
 class TH2F ;
 
 //--- AliRoot system ---
@@ -47,7 +47,7 @@ class AliCaloPID : public TObject {
   
   AliCaloPID() ; // ctor
   AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
-  AliCaloPID(const TTask * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
+  AliCaloPID(const TNamed * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   virtual ~AliCaloPID() ;//virtual dtor
   
 private:

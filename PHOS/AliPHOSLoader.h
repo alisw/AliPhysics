@@ -33,7 +33,6 @@
 // --- ROOT system ---
 class TString ;
 class TParticle ;
-class TTask ;
 #include <TClonesArray.h>
 #include <TTree.h>
 
@@ -93,11 +92,6 @@ public:
   void    CleanTracks()const;
   void    CleanRecParticles();
 
-//up to now it is only here -> no definition about global/incremental tracking/PID
- 
-//   Int_t   WriteRecParticles(Option_t* opt="");//writes the reconstructed particles
-//   Int_t   WritePID(Option_t* opt="");//writes the task for PID to file
-//   Bool_t  PostPID  (AliPHOSPID * pid) const {return kTRUE;}
   
 /*******************************************************************/
 /*******************************************************************/
@@ -115,7 +109,7 @@ public:
 
   static AliPHOSLoader* GetPHOSLoader(const  char* eventfoldername);
 
-  //Method to be used when digitizing under AliRunDigitizer, who opens all files etc.
+  //Method to be used when digitizing under AliDigitizationInput, who opens all files etc.
   Int_t  EventNumber()       { return (Int_t) GetRunLoader()->GetEventNumber();}
   Int_t  MaxEvent()          { return (Int_t) GetRunLoader()->TreeE()->GetEntries();}
 
@@ -153,23 +147,6 @@ public:
   TClonesArray * RecParticles() ;
   const AliPHOSRecParticle * RecParticle(Int_t index);
   void MakeRecParticlesArray();
-
-  /*********************************************/
-  /************    T A S K S      **************/
-  /*********************************************/
-  // 
-  //  AliPHOSSDigitizer*  PHOSSDigitizer(TString name = AliConfig::GetDefaultEventFolderName());
-  //AliPHOSDigitizer*   PHOSDigitizer()  { return  dynamic_cast<AliPHOSDigitizer*>(Digitizer()) ;}
-
-  AliPHOSPID * PID () const {return dynamic_cast<AliPHOSPID*>(PIDTask()) ;}
-  Int_t LoadPID(Option_t * opt="") const {return LoadPIDTask(opt);}
-  Int_t WritePID(Option_t * opt="") const {return WritePIDTask(opt);}
-
-
-  AliPHOSTrackSegmentMaker * TrackSegmentMaker () const { return dynamic_cast<AliPHOSTrackSegmentMaker *>(Tracker()) ;}
-  Int_t LoadTrackSegmentMaker(Option_t * opt="") const {return LoadTracker(opt);}
-  Int_t WriteTrackSegmentMaker(Option_t * opt="") const {return WriteTracker(opt);}
-
   
   void   SetDebug(Int_t level) {fDebug = level;} // Set debug level
   void   SetBranchTitle(const TString& btitle);

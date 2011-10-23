@@ -100,12 +100,6 @@ AliEMCAL::~AliEMCAL()
   //dtor
   delete fgRawUtils;
   delete fTriggerData;
-    
-  AliLoader *emcalLoader=0;
-  if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
-    emcalLoader->CleanSDigitizer();
-  
-
 }
 
 //____________________________________________________________________________
@@ -196,10 +190,10 @@ void AliEMCAL::InitConstants()
 // }
 
 //____________________________________________________________________________
-AliDigitizer* AliEMCAL::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliEMCAL::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   //create and return the digitizer
-  return new AliEMCALDigitizer(manager);
+  return new AliEMCALDigitizer(digInput);
 }
 
 //____________________________________________________________________________
@@ -314,7 +308,7 @@ void AliEMCAL::Hits2SDigits()
   GetGeometry();
   AliEMCALSDigitizer emcalDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   emcalDigitizer.SetEventRange(0, -1) ; // do all the events
-  emcalDigitizer.ExecuteTask() ;
+  emcalDigitizer.Digitize() ;
 }
 
 //______________________________________________________________________

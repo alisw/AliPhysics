@@ -26,7 +26,7 @@ class TTree;
 class AliLoader;
 class AliTrackReference;
 class AliDigitizer;
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliVertexer;
 class AliTracker;
 class AliESD;
@@ -88,7 +88,7 @@ public:
   virtual void        AddHit(Int_t, Int_t*, Float_t *) {
   Error("AddDigit","Hits cannot be added to module %s\n",fName.Data());}
   virtual void        Hits2SDigits() {}
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* /*manager*/) const 
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* /*manager*/) const 
     {return NULL;}
   virtual AliTriggerDetector* CreateTriggerDetector() const
     { AliTriggerDetector* det = new AliTriggerDetector(); det->SetName(GetName()); return det;}
@@ -142,7 +142,8 @@ public:
   
 // Quality Assurance methods
   virtual void CheckQA()    { ; }
-  
+  AliDigitizationInput* GetDigitizationInput() const {return fDigInput;}
+  //  
   static void SetDensityFactor(Float_t density) { fgDensityFactor = density; }
   static Float_t GetDensityFactor() { return fgDensityFactor; }
   
@@ -161,13 +162,12 @@ protected:
   Int_t         fCurrentIterTrackRef; //!for track refernce iterator routines
 
   AliRunLoader* fRunLoader;   //!local pointer to run loader
-
+  AliDigitizationInput* fDigInput; //! input for sdigits -> digits
   static Float_t fgDensityFactor; //! factor that is multiplied to all material densities (ONLY for systematic studies)
-
  private:
   AliModule(const AliModule&);
   AliModule& operator=(const AliModule&);
 
-  ClassDef(AliModule, 9)  //Base class for ALICE Modules
+  ClassDef(AliModule, 10)  //Base class for ALICE Modules
 };
 #endif

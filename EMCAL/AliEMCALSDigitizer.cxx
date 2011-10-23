@@ -16,7 +16,7 @@
 /* $Id$ */
 
 //_________________________________________________________________________
-// This is a TTask that makes SDigits out of Hits
+// This is a Class that makes SDigits out of Hits
 // A Summable Digits is the sum of all hits originating 
 // from one in one tower of the EMCAL 
 // A threshold for assignment of the primary to SDigit is applied 
@@ -36,13 +36,13 @@
 // User case:
 // root [0] AliEMCALSDigitizer * s = new AliEMCALSDigitizer("galice.root")
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-// root [1] s->ExecuteTask()
+// root [1] s->Digitize()
 //             // Makes SDigitis for all events stored in galice.root
 // root [2] s->SetPedestalParameter(0.001)
 //             // One can change parameters of digitization
 // root [3] s->SetSDigitsBranch("Redestal 0.001")
 //             // and write them into the new branch
-// root [4] s->ExeciteTask("deb all tim")
+// root [4] s->Digitize("deb all tim")
 //             // available parameters:
 //             deb - print # of produced SDigitis
 //             deb all  - print # and list of produced SDigits
@@ -77,7 +77,7 @@ ClassImp(AliEMCALSDigitizer)
            
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer()
-  : TTask("",""),
+  : TNamed("",""),
     fA(0.),fB(0.),fECPrimThreshold(0.),
     fDefaultInit(kTRUE),
     fEventFolderName(0),
@@ -95,7 +95,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer()
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName, 
 				       const char * eventFolderName)
-  : TTask("EMCAL"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
+  : TNamed("EMCALSDigitizer", alirunFileName),
     fA(0.),fB(0.),fECPrimThreshold(0.),
     fDefaultInit(kFALSE),
     fEventFolderName(eventFolderName),
@@ -115,7 +115,7 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const char * alirunFileName,
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) 
-  : TTask(sd.GetName(),sd.GetTitle()),
+  : TNamed(sd.GetName(),sd.GetTitle()),
     fA(sd.fA),
     fB(sd.fB),
     fECPrimThreshold(sd.fECPrimThreshold),
@@ -135,9 +135,6 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::~AliEMCALSDigitizer() {
   //dtor
-  AliLoader *emcalLoader=0;
-  if ((emcalLoader = AliRunLoader::Instance()->GetDetectorLoader("EMCAL")))
-      emcalLoader->CleanSDigitizer();
 	
   if(fHits){
 	  fHits->Clear();
@@ -147,8 +144,7 @@ AliEMCALSDigitizer::~AliEMCALSDigitizer() {
 
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Init(){
-  // Initialization: open root-file, allocate arrays for hits and sdigits,
-  // attach task SDigitizer to the list of EMCAL tasks
+  // Initialization: open root-file, allocate arrays for hits and sdigits
   // 
   // Initialization can not be done in the default constructor
   //============================================================= YS
@@ -162,9 +158,6 @@ void AliEMCALSDigitizer::Init(){
     Fatal("Init", "Could not obtain the AliEMCALLoader");
     return ;
   } 
-  
-  emcalLoader->PostSDigitizer(this);
-  emcalLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
   
 }
 
@@ -220,7 +213,7 @@ void AliEMCALSDigitizer::InitParameters()
 }
 
 //____________________________________________________________________________
-void AliEMCALSDigitizer::Exec(Option_t *option) 
+void AliEMCALSDigitizer::Digitize(Option_t *option) 
 { 
 	// Collects all hit of the same tower into digits
 	TString o(option); o.ToUpper();
@@ -247,11 +240,10 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 	AliRunLoader *rl = AliRunLoader::Instance();
 	AliEMCALLoader *emcalLoader = dynamic_cast<AliEMCALLoader*>(rl->GetDetectorLoader("EMCAL"));
 	
-	//switch off reloading of this task while getting event
 	if (!fInit) { // to prevent overwrite existing file
-		AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
-		return ;
-  }
+	  AliError( Form("Give a version name different from %s", fEventFolderName.Data()) ) ;
+	  return ;
+	}
 	
 	if (fLastEvent == -1) 
 		fLastEvent = rl->GetNumberOfEvents() - 1 ;
@@ -317,7 +309,7 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
                                                  Digitize(energy), hit->GetTime(),kFALSE,
                                                  -1, 0,0,energy ) ;
               } else {
-                Warning("Exec"," abs id %i is bad \n", hit->GetId());
+                Warning("Digitize"," abs id %i is bad \n", hit->GetId());
                 newsdigit = kFALSE;
                 curSDigit = 0;
               }
@@ -380,19 +372,17 @@ void AliEMCALSDigitizer::Exec(Option_t *option)
 		emcalLoader->WriteSDigits("OVERWRITE");
 		
 		//NEXT - SDigitizer
-		emcalLoader->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
+		//emcalLoader->WriteSDigitizer("OVERWRITE");  // why in event cycle ?
 		
 		if(strstr(option,"deb"))
 			PrintSDigits(option) ;  
 	}
 	
 	Unload();
-	
-	emcalLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-	
+		
 	if(strstr(option,"tim")){
 		gBenchmark->Stop("EMCALSDigitizer"); 
-		printf("\n Exec: took %f seconds for SDigitizing %f seconds per event\n", 
+		printf("\n Digitize: took %f seconds for SDigitizing %f seconds per event\n", 
            gBenchmark->GetCpuTime("EMCALSDigitizer"), gBenchmark->GetCpuTime("EMCALSDigitizer")/nEvents ) ; 
 	}
 }
@@ -533,5 +523,5 @@ void AliEMCALSDigitizer::Unload() const
 //____________________________________________________________________________ 
 void AliEMCALSDigitizer::Browse(TBrowser* b)
 {
-  TTask::Browse(b);
+  TNamed::Browse(b);
 }

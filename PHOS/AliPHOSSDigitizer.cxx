@@ -56,7 +56,7 @@
 // User case:
 //  root [0] AliPHOSSDigitizer * s = new AliPHOSSDigitizer("galice.root")
 //  Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
-//  root [1] s->ExecuteTask()
+//  root [1] s->Digitize()
 //             // Makes SDigitis for all events stored in galice.root
 //  root [2] s->SetPedestalParameter(0.001)
 //             // One can change parameters of digitization
@@ -90,7 +90,7 @@ ClassImp(AliPHOSSDigitizer)
            
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::AliPHOSSDigitizer() : 
-  TTask("",""),
+  TNamed("",""),
   fPrimThreshold(0.f),
   fDefaultInit(kTRUE),
   fEventFolderName(""),
@@ -106,7 +106,7 @@ AliPHOSSDigitizer::AliPHOSSDigitizer() :
 //____________________________________________________________________________ 
 AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName, 
 				     const char * eventFolderName):
-  TTask("PHOS"+AliConfig::Instance()->GetSDigitizerTaskName(), alirunFileName),
+  TNamed("PHOSSDigitizer", alirunFileName),
   fPrimThreshold(0.f),
   fDefaultInit(kFALSE),
   fEventFolderName(eventFolderName),
@@ -123,7 +123,7 @@ AliPHOSSDigitizer::AliPHOSSDigitizer(const char * alirunFileName,
 
 //____________________________________________________________________________
 AliPHOSSDigitizer::AliPHOSSDigitizer(const AliPHOSSDigitizer& sd) :
-  TTask(sd.GetName(), sd.GetTitle()),
+  TNamed(sd.GetName(), sd.GetTitle()),
   fPrimThreshold(sd.fPrimThreshold),
   fDefaultInit(kFALSE),
   fEventFolderName(sd.fEventFolderName),
@@ -146,15 +146,9 @@ AliPHOSSDigitizer& AliPHOSSDigitizer::operator = (const AliPHOSSDigitizer& qa)
 }
 
 //____________________________________________________________________________ 
-AliPHOSSDigitizer::~AliPHOSSDigitizer() {
+AliPHOSSDigitizer::~AliPHOSSDigitizer() 
+{
   //dtor
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  if(rl){
-    AliPHOSLoader * phosLoader = 
-      static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-    if(phosLoader)
-      phosLoader->CleanSDigitizer() ;
-  }
 }
 
 //____________________________________________________________________________ 
@@ -166,12 +160,7 @@ void AliPHOSSDigitizer::Init()
   
   //to prevent cleaning of this object while GetEvent is called
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  if (!rl)
-    rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
-
-  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-  phosLoader->PostSDigitizer(this);
-  phosLoader->GetSDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
+  if (!rl) rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
 }
 
 //____________________________________________________________________________ 
@@ -183,7 +172,7 @@ void AliPHOSSDigitizer::InitParameters()
 }
 
 //____________________________________________________________________________
-void AliPHOSSDigitizer::Exec(Option_t *option) 
+void AliPHOSSDigitizer::Digitize(Option_t *option) 
 { 
   // Steering method to produce summable digits for events
   // in the range from fFirstEvent to fLastEvent.
@@ -301,7 +290,6 @@ void AliPHOSSDigitizer::Exec(Option_t *option)
     sdigitsBranch->Fill() ;
 
     phosLoader->WriteSDigits("OVERWRITE");
-    phosLoader->WriteSDigitizer("OVERWRITE");
 
     if(strstr(option,"deb"))
       PrintSDigits(option) ;

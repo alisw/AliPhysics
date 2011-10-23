@@ -41,7 +41,7 @@
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliGRPObject.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -94,8 +94,8 @@ ClassImp(AliVZERODigitizer)
 }
            
 //____________________________________________________________________________ 
-  AliVZERODigitizer::AliVZERODigitizer(AliRunDigitizer* manager)
-                    :AliDigitizer(manager),
+  AliVZERODigitizer::AliVZERODigitizer(AliDigitizationInput* digInput)
+                    :AliDigitizer(digInput),
 		     fCalibData(GetCalibData()),
                      fPhotoCathodeEfficiency(0.18),
 		     fNdigits(0),
@@ -219,12 +219,12 @@ Bool_t AliVZERODigitizer::Init()
 }
 
 //____________________________________________________________________________
-void AliVZERODigitizer::Exec(Option_t* /*option*/) 
+void AliVZERODigitizer::Digitize(Option_t* /*option*/) 
 {   
   // Creates digits from hits
   fNdigits = 0;  
 
-  if (fVZERO && !fManager) {
+  if (fVZERO && !fDigInput) {
     AliLoader *loader = fVZERO->GetLoader();
     if (!loader) {
       AliError("Can not get VZERO Loader via AliVZERO object!");
@@ -244,10 +244,10 @@ void AliVZERODigitizer::Exec(Option_t* /*option*/)
       }
     }
   }
-  else if (fManager) {
+  else if (fDigInput) {
       ReadSDigits();
       DigitizeSDigits();
-      AliRunLoader *currentLoader = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+      AliRunLoader *currentLoader = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
       AliLoader *loader = currentLoader->GetLoader("VZEROLoader");
       if (!loader) { 
 	AliError("Cannot get VZERO Loader via RunDigitizer!");
@@ -563,11 +563,11 @@ void AliVZERODigitizer::ReadSDigits()
   }
 
   // Loop over input files
-  Int_t nFiles= fManager->GetNinputs();
+  Int_t nFiles= fDigInput->GetNinputs();
   for (Int_t inputFile = 0; inputFile < nFiles; inputFile++) {
     // Get the current loader 
     AliRunLoader* currentLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+      AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
 
     AliLoader *loader = currentLoader->GetLoader("VZEROLoader");
     loader->LoadSDigits("READ");
@@ -575,7 +575,7 @@ void AliVZERODigitizer::ReadSDigits()
     // Get the tree of summable digits
     TTree* sdigitsTree = loader->TreeS();
     if (!sdigitsTree)  {
-      AliError("No sdigit tree from manager");
+      AliError("No sdigit tree from digInput");
       continue;
     }
 

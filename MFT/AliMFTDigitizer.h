@@ -14,7 +14,7 @@
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliMFTDigit.h"
@@ -30,10 +30,10 @@ class AliMFTDigitizer : public AliDigitizer {
 public:
 
   AliMFTDigitizer();
-  AliMFTDigitizer(AliRunDigitizer *pRunDig);
+  AliMFTDigitizer(AliDigitizationInput *digInp);
   virtual ~AliMFTDigitizer() { }
 
-  void Exec(Option_t *option);
+  void Digitize(Option_t *option);
   void SDigits2Digits(TClonesArray *pSDigitList, TObjArray *pDigitLst);
 
   void MergeDigits(AliMFTDigit *mainDig, AliMFTDigit *digToSum);

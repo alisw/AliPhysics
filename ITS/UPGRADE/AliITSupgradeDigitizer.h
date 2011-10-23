@@ -28,10 +28,10 @@ class AliITSupgradeDigitizer : public AliDigitizer //TObject-TNamed-TTask-AliDig
 {
  public:
   AliITSupgradeDigitizer():AliDigitizer(),fNxCells(0),fNzCells(0),fNlayers(0)              {;}
-    AliITSupgradeDigitizer(AliRunDigitizer *pRunDig):AliDigitizer(pRunDig),fNxCells(0),fNzCells(0),fNlayers(0){;}
+    AliITSupgradeDigitizer(AliDigitizationInput *pRunDig):AliDigitizer(pRunDig),fNxCells(0),fNzCells(0),fNlayers(0){;}
       virtual ~AliITSupgradeDigitizer()                                                {;}
       void   SetConfiguration(TArrayD xcell, TArrayD zcell);
-      void   Exec(Option_t* option=0);                //virtual
+      void   Digitize(Option_t* option=0);                //virtual
    
       void    Sdigits2Digits(TClonesArray *pSDigitList,TObjArray *pDigitLst);
  

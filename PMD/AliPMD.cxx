@@ -316,9 +316,9 @@ void AliPMD::Hits2Digits()
 
 }
 // ---------------------------------------------------------------------------
-AliDigitizer* AliPMD::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliPMD::CreateDigitizer(AliDigitizationInput* digInput) const
 { 
-  return new AliPMDDigitizer(manager);
+  return new AliPMDDigitizer(digInput);
 }
 // ---------------------------------------------------------------------------
 void AliPMD::Digits2Raw()

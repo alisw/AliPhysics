@@ -9,13 +9,13 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 //Root includes
-#include "TTask.h"
+#include "TNamed.h"
 class TArrayD ;
 
 //AliRoot includes
 #include "AliPID.h" 
 
-class AliEMCALPIDUtils : public TTask {
+class AliEMCALPIDUtils : public TNamed {
 
 public:
   
@@ -76,7 +76,7 @@ protected:
   Double_t fWeightGammaEnergy;	          // Weight for a  Gamma to have a given energy  (for the moment =1.)
   Double_t fWeightPiZeroEnergy;	          // Weight for a Pi0 Hadron to have a given energy (for the moment =1.)
   
-  ClassDef(AliEMCALPIDUtils, 1)
+  ClassDef(AliEMCALPIDUtils, 2)
 
 };
 

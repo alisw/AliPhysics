@@ -48,7 +48,7 @@
 #include "AliRun.h"
 #include "AliLoader.h"
 #include "AliPDG.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliSimDigits.h"
 #include "AliLog.h"
 
@@ -68,13 +68,13 @@ ClassImp(AliTPCDigitizer)
 }
 
 //___________________________________________
-AliTPCDigitizer::AliTPCDigitizer(AliRunDigitizer* manager) 
-  :AliDigitizer(manager),fDebug(0)
+AliTPCDigitizer::AliTPCDigitizer(AliDigitizationInput* digInput) 
+  :AliDigitizer(digInput),fDebug(0)
 {
   //
 // ctor which should be used
 //  
-  AliDebug(2,"(AliRunDigitizer* manager) was processed");
+  AliDebug(2,"(AliDigitizationInput* digInput) was processed");
 }
 
 //------------------------------------------------------------------------
@@ -95,12 +95,12 @@ Bool_t AliTPCDigitizer::Init()
 
 
 //------------------------------------------------------------------------
-void AliTPCDigitizer::Exec(Option_t* option)
+void AliTPCDigitizer::Digitize(Option_t* option)
 {
-  ExecFast(option);  
+  DigitizeFast(option);  
 }
 //------------------------------------------------------------------------
-void AliTPCDigitizer::ExecFast(Option_t* option)
+void AliTPCDigitizer::DigitizeFast(Option_t* option)
 {
   
   // merge input tree's with summable digits
@@ -109,7 +109,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   char ss[100];
   TString optionString = option;
   if (!strcmp(optionString.Data(),"deb")) {
-    cout<<"AliTPCDigitizer::Exec: called with option deb "<<endl;
+    cout<<"AliTPCDigitizer:::DigitizeFast called with option deb "<<endl;
     fDebug = 3;
   }
   //get detector and geometry
@@ -120,11 +120,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   
   if (gAlice == 0x0)
    {
-     Warning("ExecFast","gAlice is NULL. Loading from input 0");
-     rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+     Warning("DigitizeFast","gAlice is NULL. Loading from input 0");
+     rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
      if (rl == 0x0)
       {
-        Error("ExecFast","Can not find Run Loader for input 0. Can not proceed.");
+        Error("DigitizeFast","Can not find Run Loader for input 0. Can not proceed.");
         return;
       }
      rl->LoadgAlice();
@@ -134,7 +134,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   AliTPCParam * param = pTPC->GetParam();
   
   //sprintf(s,param->GetTitle());
-  snprintf(s,100,param->GetTitle());
+  snprintf(s,100,"%s",param->GetTitle());
   //sprintf(ss,"75x40_100x60");
   snprintf(ss,100,"75x40_100x60");
   if(strcmp(s,ss)==0){
@@ -153,10 +153,10 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   
   pTPC->GenerNoise(500000); //create table with noise
   //
-  Int_t nInputs = fManager->GetNinputs();
+  Int_t nInputs = fDigInput->GetNinputs();
   Int_t * masks = new Int_t[nInputs];
   for (Int_t i=0; i<nInputs;i++)
-    masks[i]= fManager->GetMask(i);
+    masks[i]= fDigInput->GetMask(i);
   Short_t **pdig= new Short_t*[nInputs];   //pointers to the expanded digits array
   Int_t **ptr=  new Int_t*[nInputs];       //pointers to the expanded tracks array
   Bool_t *active=  new Bool_t[nInputs];    //flag for active input segments
@@ -166,7 +166,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
   // make indexes
   //
   //create branch's in TPC treeD
-  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  orl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   ogime = orl->GetLoader("TPCLoader");
   TTree * tree  = ogime->TreeD();
   AliSimDigits * digrow = new AliSimDigits;  
@@ -183,7 +183,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     {
       digarr[i1]=0;
      //    intree[i1]
-      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i1));
+      rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i1));
       gime = rl->GetLoader("TPCLoader");
       gime->LoadSDigits("read");
       TTree * treear =  gime->TreeS();
@@ -260,7 +260,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
     for (Int_t i=0;i<nInputs; i++) 
      { 
 
-      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+      rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
       
       if (gime->TreeS()->GetEntryWithIndex(segmentID,segmentID) >= 0) {
@@ -269,11 +269,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
         nrows = digarr[i]->GetNRows();
         ncols = digarr[i]->GetNCols();
 	active[i] = kTRUE;
-	if (!fRegionOfInterest || (i == 0)) digitize = kTRUE;
+	if (!GetRegionOfInterest() || (i == 0)) digitize = kTRUE;
       } else {
 	active[i] = kFALSE;
       }
-      if (fRegionOfInterest && !digitize) break;
+      if (GetRegionOfInterest() && !digitize) break;
      }   
     if (!digitize) continue;
 
@@ -358,11 +358,11 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
    } //for (Int_t n=0; n<param->GetNRowsTotal(); n++) 
   
 
-  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  orl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   ogime = orl->GetLoader("TPCLoader");
   ogime->WriteDigits("OVERWRITE");
   
-  //fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+  //fDigInput->GetTreeDTPC()->Write(0,TObject::kOverwrite);
   
   delete digrow;     
   for (Int_t i1=0;i1<nInputs; i1++) delete digarr[i1];
@@ -376,7 +376,7 @@ void AliTPCDigitizer::ExecFast(Option_t* option)
 
 
 //------------------------------------------------------------------------
-void AliTPCDigitizer::ExecSave(Option_t* option)
+void AliTPCDigitizer::DigitizeSave(Option_t* option)
 {
   
   // merge input tree's with summable digits
@@ -384,7 +384,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
 
   TString optionString = option;
   if (!strcmp(optionString.Data(),"deb")) {
-    cout<<"AliTPCDigitizer::Exec: called with option deb "<<endl;
+    cout<<"AliTPCDigitizer::Digitize: called with option deb "<<endl;
     fDebug = 3;
   }
   //get detector and geometry 
@@ -392,10 +392,10 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   AliLoader *gime, *ogime;
 
   
-  orl = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  orl = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   ogime = orl->GetLoader("TPCLoader");
   
-  rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
   //gime = rl->GetLoader("TPCLoader");
   rl->GetLoader("TPCLoader");
   rl->LoadgAlice();
@@ -406,13 +406,13 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   pTPC->GenerNoise(500000); //create teble with noise
   printf("noise %f \n",  param->GetNoise()*param->GetNoiseNormFac());
   //
-  Int_t nInputs = fManager->GetNinputs();
+  Int_t nInputs = fDigInput->GetNinputs();
   // stupid protection...
   if (nInputs <= 0) return;
   //
   Int_t * masks = new Int_t[nInputs];
   for (Int_t i=0; i<nInputs;i++)
-    masks[i]= fManager->GetMask(i);
+    masks[i]= fDigInput->GetMask(i);
 
   AliSimDigits ** digarr = new AliSimDigits*[nInputs]; 
   for(Int_t ii=0;ii<nInputs;ii++) digarr[ii]=0;
@@ -421,7 +421,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
    {
      //digarr[i1]=0;
     //    intree[i1]
-    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i1));
+    rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i1));
     gime = rl->GetLoader("TPCLoader");
 
     TTree * treear =  gime->TreeS();
@@ -439,7 +439,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     treear->GetBranch("Segment")->SetAddress(&digarr[i1]);
    }
   
-  rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+  rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
   gime = rl->GetLoader("TPCLoader");
   Stat_t nentries = gime->TreeS()->GetEntries();
   
@@ -457,7 +457,7 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
   AliTPCCalPad * gainTPC = AliTPCcalibDB::Instance()->GetDedxGainFactor();
   AliTPCCalPad * noiseTPC = AliTPCcalibDB::Instance()->GetPadNoise();
   for (Int_t n=0; n<nentries; n++) {
-    rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(0));
+    rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(0));
     gime = rl->GetLoader("TPCLoader");
     gime->TreeS()->GetEvent(n);
 
@@ -466,8 +466,8 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
 
 
     for (Int_t i=1;i<nInputs; i++){ 
-//      fManager->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());      
-      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+//      fDigInput->GetInputTreeTPCS(i)->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());      
+      rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
       gime->TreeS()->GetEntryWithIndex(digarr[0]->GetID(),digarr[0]->GetID());  
       digarr[i]->ExpandBuffer();
@@ -554,13 +554,13 @@ void AliTPCDigitizer::ExecSave(Option_t* option)
     tree->Fill();
     if (fDebug>0) cerr<<sec<<"\t"<<row<<"\n";  
   } 
-//  printf("end TPC merging - end -Tree %s\t%p\n",fManager->GetInputTreeH(0)->GetName(),fManager->GetInputTreeH(0)->GetListOfBranches()->At(3));
-  //fManager->GetTreeDTPC()->Write(0,TObject::kOverwrite);
+//  printf("end TPC merging - end -Tree %s\t%p\n",fDigInput->GetInputTreeH(0)->GetName(),fDigInput->GetInputTreeH(0)->GetListOfBranches()->At(3));
+  //fDigInput->GetTreeDTPC()->Write(0,TObject::kOverwrite);
     ogime->WriteDigits("OVERWRITE");
 
     for (Int_t i=1;i<nInputs; i++) 
      { 
-      rl = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(i));
+      rl = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(i));
       gime = rl->GetLoader("TPCLoader");
       gime->UnloadSDigits();
      }

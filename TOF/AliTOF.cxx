@@ -42,7 +42,6 @@
 #include <TFile.h>
 #include <TFolder.h>
 #include <TROOT.h>
-#include <TTask.h>
 #include <TTree.h>
 #include <TVirtualMC.h>
 #include <TStopwatch.h>
@@ -79,8 +78,6 @@ ClassImp(AliTOF)
 //_____________________________________________________________________________
 AliTOF::AliTOF():
   fFGeom(0x0),
-  fDTask(0x0),
-  fReTask(0x0),
   fSDigits(0x0),
   fNSDigits(0),
   fReconParticles(0x0),
@@ -108,8 +105,6 @@ AliTOF::AliTOF(const char *name, const char *title, Option_t *option)
        : 
   AliDetector(name,title),
   fFGeom(0x0),
-  fDTask(0x0),
-  fReTask(0x0),
   fSDigits(0x0),
   fNSDigits(0),
   fReconParticles(0x0),
@@ -197,7 +192,6 @@ void AliTOF::GetTOFSectors(Int_t *sectors) const
 void AliTOF::CreateTOFFolders()
 {
   // create the ALICE TFolder
-  // create the ALICE TTasks
   // create the ALICE main TFolder
   // to be done by AliRun
 
@@ -210,31 +204,6 @@ void AliTOF::CreateTOFFolders()
   aliceF->SetOwner() ;
   // geometry folder
   TFolder * geomF = aliceF->AddFolder("Geometry", "Geometry objects") ;
-  TFolder * aliceT  = alice->AddFolder("tasks", "Alice tasks Folder") ;   
-  //  make it the owner of the objects that it contains
-  aliceT->SetOwner() ;
-
-  TTask * aliceDi = new TTask("(S)Digitizer", "Alice SDigitizer & Digitizer") ;
-  aliceT->Add(aliceDi);
-
-  TTask * aliceRe = new TTask("Reconstructioner", "Alice Reconstructioner") ;
-  aliceT->Add(aliceRe);
-
-  const Int_t kSize=80;
-  //char * tempo = new char[80] ;
-  char tempo[kSize];
-
-  // creates the TOF Digitizer and adds it to alice main (S)Digitizer task
-  snprintf(tempo,kSize, "%sDigitizers container",GetName() ) ;
-  fDTask = new TTask(GetName(), tempo);
-  aliceDi->Add(fDTask) ;
-
-  // creates the TOF reconstructioner and adds it to alice main Reconstructioner task
-  snprintf(tempo,kSize, "%sReconstructioner container",GetName() ) ;
-  fReTask = new TTask(GetName(), tempo);
-  aliceRe->Add(fReTask) ;
-
-  //delete [] tempo ;
  
   // creates the TOF geometry  folder
   geomF->AddFolder("TOF", "Geometry for TOF") ;
@@ -245,7 +214,6 @@ AliTOF::~AliTOF()
 {
   // dtor:
   // it remove also the alice folder 
-  // and task that TOF creates instead of AliRun
   /* PH Temporarily commented because of problems
   TFolder * alice = (TFolder*)gROOT->GetListOfBrowsables()->FindObject("FPAlice") ;
   delete alice;
@@ -552,8 +520,8 @@ void AliTOF::Hits2SDigits()
   //ToAliDebug(1, sd.Print(""));
   //AliInfo("ToAliDebug");
 
-  //sd.Exec("all") ;
-  sd.Exec("partial") ;
+  //sd.Digitize("all") ;
+  sd.Digitize("partial") ;
 
   AliDebug(2,"I am sorting from AliTOF class");
 
@@ -575,15 +543,15 @@ void AliTOF::Hits2SDigits(Int_t evNumber1, Int_t evNumber2)
   AliTOFSDigitizer sd((rl->GetFileName()).Data(),evNumber1,evNumber2) ;
   ToAliDebug(1, sd.Print(""));
 
-  sd.Exec("") ;
+  sd.Digitize("") ;
 
 }
 
 //___________________________________________________________________________
-AliDigitizer* AliTOF::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliTOF::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   AliDebug(2,"I am creating the TOF digitizer");
-  return new AliTOFDigitizer(manager);
+  return new AliTOFDigitizer(digInput);
 }
 
 //___________________________________________________________________________

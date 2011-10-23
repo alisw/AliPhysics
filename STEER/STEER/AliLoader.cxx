@@ -14,12 +14,10 @@
 #include <TFile.h>
 #include <TFolder.h>
 #include <TString.h>
-#include <TTask.h>
 
 //AliRoot includes
 #include "AliConfig.h"
 #include "AliDetector.h"
-#include "AliDigitizer.h"
 #include "AliLog.h"
 #include "AliRun.h"
 #include "AliRunLoader.h"
@@ -53,13 +51,11 @@ AliLoader::AliLoader():
  fEventFolder(0x0),
  fDataFolder(0x0),
  fDetectorDataFolder(0x0),
- fModuleFolder(0x0),
- fTasksFolder(0x0),
- fQAFolder(0x0)
+ fModuleFolder(0x0)
 {
-//default constructor
-
- }
+  //default constructor
+  
+}
 /******************************************************************/
 
 AliLoader::AliLoader(const Char_t* detname,const Char_t* eventfoldername):
@@ -68,9 +64,7 @@ AliLoader::AliLoader(const Char_t* detname,const Char_t* eventfoldername):
  fEventFolder(0x0),
  fDataFolder(0x0),
  fDetectorDataFolder(0x0),
- fModuleFolder(0x0),
- fTasksFolder(0x0),
- fQAFolder(0x0)
+ fModuleFolder(0x0)
 {
   //ctor
    AliDebug(1, Form("detname = %s eventfoldername = %s",detname,eventfoldername));
@@ -95,9 +89,7 @@ AliLoader::AliLoader(const Char_t * detname,TFolder* eventfolder):
  fEventFolder(0x0),
  fDataFolder(0x0),
  fDetectorDataFolder(0x0),
- fModuleFolder(0x0),
- fTasksFolder(0x0),
- fQAFolder(0x0)
+ fModuleFolder(0x0)
 {
 //constructor
    fDetectorName = detname;
@@ -126,37 +118,22 @@ void AliLoader::InitDefaults()
   
   // S U M M A B L E   D I G I T S
   dl = new AliDataLoader(fDetectorName + ".SDigits.root",fgkDefaultSDigitsContainerName, "Summable Digits");
-  AliTaskLoader* tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetSDigitizerTaskName(),
-                                        dl,AliRunLoader::GetRunSDigitizer(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kSDigits);
 
   // D I G I T S  
   dl = new AliDataLoader(fDetectorName + ".Digits.root",fgkDefaultDigitsContainerName, "Digits");
-  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetDigitizerTaskName(),
-                                        dl,AliRunLoader::GetRunDigitizer(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kDigits);
   
   // R E C O N S T R U C T E D   P O I N T S aka C L U S T E R S 
   dl = new AliDataLoader(fDetectorName + ".RecPoints.root",fgkDefaultRecPointsContainerName, "Reconstructed Points");
-  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetReconstructionerTaskName(),
-                                        dl,AliRunLoader::GetRunReconstructioner(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kRecPoints);
   
   // T R A C K S
   dl = new AliDataLoader(fDetectorName + ".Tracks.root",fgkDefaultTracksContainerName, "Tracks");
-  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetTrackerTaskName(),
-                                        dl,AliRunLoader::GetRunTracker(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kTracks);
   
   // R E C O N S T R U C T E D   P O I N T S aka C L U S T E R S 
   dl = new AliDataLoader(fDetectorName + ".RecParticles.root",fgkDefaultRecParticlesContainerName, "Reconstructed Particles");
-  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetPIDTaskName(),
-                                        dl,AliRunLoader::GetRunPIDTask(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kRecParticles);
 
  }
@@ -275,24 +252,6 @@ TFolder* AliLoader::GetDataFolder()
 
 /*****************************************************************************/ 
 
-TFolder* AliLoader::GetTasksFolder()
-{
-//Returns pointer to Folder with Alice Tasks
- if (!fTasksFolder)
-  {
-   fTasksFolder =  dynamic_cast<TFolder*>(GetTopFolder()->FindObject(AliConfig::GetTasksFolderName()));
-   
-   if (!fTasksFolder)
-    {
-     AliFatal("Can not find tasks folder. Aborting");
-     return 0x0;
-    }
-  }
-  return fTasksFolder;
-   
-}
-/*****************************************************************************/ 
-
 TFolder* AliLoader::GetModulesFolder()
 {
   //returns pointer to the folder containing modules
@@ -309,98 +268,7 @@ TFolder* AliLoader::GetModulesFolder()
  return fModuleFolder;
    
 }
-/*****************************************************************************/ 
 
-TFolder* AliLoader::GetQAFolder()
-{ 
-  //returns folder with Quality assurance 
-  if (fQAFolder == 0x0)
-   {
-     TObject *obj = GetEventFolder()->FindObjectAny(AliConfig::Instance()->GetQAFolderName());
-     fQAFolder = (obj)?dynamic_cast<TFolder*>(obj):0x0;
-
-     if (fQAFolder == 0x0)
-      {
-       AliFatal("Can not find Quality Assurance folder. Aborting");
-       return 0x0;
-      }
-   }
-  return fQAFolder;
-  
-}
-/*****************************************************************************/ 
-TTask* AliLoader::SDigitizer() const
-{
-//returns SDigitizer task for this detector
-  return GetSDigitsDataLoader()->GetBaseTaskLoader()->Task();
-
-}
-/*****************************************************************************/ 
-
-AliDigitizer* AliLoader::Digitizer() const
-{
-//returns Digitizer task for this detector
-  return dynamic_cast<AliDigitizer*>(GetDigitsDataLoader()->GetBaseTaskLoader()->Task());
-}
-/*****************************************************************************/ 
-
-TTask* AliLoader::Reconstructioner() const
-{
-//returns Recontructioner (Cluster Finder, Cluster Maker, 
-//or whatever you want to call it) task for this detector
-  return GetRecPointsDataLoader()->GetBaseTaskLoader()->Task();
-}
-/*****************************************************************************/ 
-
-TTask* AliLoader::Tracker() const
-{
-//returns tracker
-  return dynamic_cast<TTask*>(GetTracksDataLoader()->GetBaseTaskLoader()->Task());
-}
-
-/*****************************************************************************/ 
-TTask* AliLoader::PIDTask() const
-{
-//returns tracker
-  return dynamic_cast<TTask*>(GetRecParticlesDataLoader()->GetBaseTaskLoader()->Task());
-}
-
-/*****************************************************************************/ 
-
-TTask* AliLoader::QAtask(const char* name) const
-{
-  // Returns pointer to the quality assurance task
-  TTask* qat = AliRunLoader::GetRunQATask();
-  if ( qat == 0x0 ) 
-   {
-    AliError(Form("Can not get RunQATask. (Name:%s)",GetName()));
-    return 0x0;
-   }
-  
-  TString dqatname(fDetectorName + AliConfig::Instance()->GetQATaskName());
-  TTask* dqat = dynamic_cast<TTask*>(qat->GetListOfTasks()->FindObject(dqatname));
-  
-  if ( dqat == 0x0 ) 
-   {
-    AliError(Form("Can not find QATask in RunQATask for %s",GetDetectorName().Data()));
-    return 0x0;
-   }
-  
-  if (strlen(name) == 0) return dqat;
-  
-  TList* list = dqat->GetListOfTasks();
-  
-  TIter it(list) ;
-  TTask * task = 0 ; 
-  while((task = static_cast<TTask *>(it.Next()) ))
-   {
-    TString taskname(task->GetName()) ;
-    if(taskname.BeginsWith(name))
-      return task ;
-   }
-  AliError(Form("Can not find sub-task with name starting with %s in task %s",name,dqat->GetName()));
-  return 0x0;   
-}
 /*****************************************************************************/ 
 
 TDirectory* AliLoader::ChangeDir(TFile* file, Int_t eventno)
@@ -519,41 +387,6 @@ Int_t AliLoader::WriteSDigits(Option_t* opt) const
  
 /*****************************************************************************/ 
 
-Int_t AliLoader::PostSDigitizer(TTask* sdzer) const
-{
-  // Posts sdigitizer
-  return GetSDigitsDataLoader()->GetBaseTaskLoader()->Post(sdzer);
-}
-/*****************************************************************************/ 
-
-Int_t AliLoader::PostDigitizer(AliDigitizer* task) const
- {
-   // Posts digitizer
-  return GetDigitsDataLoader()->GetBaseTaskLoader()->Post(task);
- }
-/*****************************************************************************/ 
-
-Int_t AliLoader::PostReconstructioner(TTask* task) const
- {
-   // Posts Reconstructioner
-  return GetRecPointsDataLoader()->GetBaseTaskLoader()->Post(task);
- }
-/*****************************************************************************/ 
-
-Int_t AliLoader::PostTracker(TTask* task) const
- {
-   // Posts a tracker
-  return GetTracksDataLoader()->GetBaseTaskLoader()->Post(task);
- }
-/*****************************************************************************/ 
-
-Int_t AliLoader::PostPIDTask(TTask* task) const
- {
-  // Posts particle identification task
-  return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Post(task);
- }
-/*****************************************************************************/ 
-
 TObject** AliLoader::GetDetectorDataRef(TObject *obj)
 {
   // Returns pointer to an entry in the list of folders pointing to "obj"
@@ -562,66 +395,6 @@ TObject** AliLoader::GetDetectorDataRef(TObject *obj)
     return 0x0;
   }
  return GetDetectorDataFolder()->GetListOfFolders()->GetObjectRef(obj) ;
-}
-/*****************************************************************************/ 
-
-TObject** AliLoader::SDigitizerRef()
-{
-  // Returns pointer to a Runloader's task-list entry pointing to SDigitizer
-  TTask* rsd = AliRunLoader::GetRunSDigitizer();
-  if (rsd == 0x0)
-   {
-     return 0x0;
-   }
-  return rsd->GetListOfTasks()->GetObjectRef(SDigitizer());
-}
-/*****************************************************************************/ 
-
-TObject** AliLoader::DigitizerRef()
-{
-  // Returns pointer to a Runloader's task-list entry pointing to Digitizer
- TTask* rd = AliRunLoader::GetRunDigitizer();
- if (rd == 0x0)
-  {
-    return 0x0;
-  }
- return rd->GetListOfTasks()->GetObjectRef(Digitizer()) ;
-}
-/*****************************************************************************/ 
-
-TObject** AliLoader::ReconstructionerRef()
-{
-  // Returns pointer to a Runloader's task-list entry pointing to Reconstructioner
-  TTask* rrec = AliRunLoader::GetRunReconstructioner();
-  if (rrec == 0x0)
-   {
-     return 0x0;
-   }
-  return rrec->GetListOfTasks()->GetObjectRef(Reconstructioner());
-}
-/*****************************************************************************/ 
-
-TObject** AliLoader::TrackerRef()
-{
-  // Returns pointer to a Runloader's task-list entry pointing to Tracker
-   TTask* rrec = AliRunLoader::GetRunTracker();
-   if (rrec == 0x0)
-    {
-      return 0x0;
-    }
-   return rrec->GetListOfTasks()->GetObjectRef(Tracker());
-}
-/*****************************************************************************/ 
-
-TObject** AliLoader::PIDTaskRef()
-{
-  // Returns pointer to a Runloader's task-list entry pointing to PIDTask
-  TTask* rrec = AliRunLoader::GetRunPIDTask();
-  if (rrec == 0x0)
-   {
-     return 0x0;
-   }
-  return rrec->GetListOfTasks()->GetObjectRef(PIDTask());
 }
 
 /*****************************************************************************/ 
@@ -636,69 +409,7 @@ void AliLoader::CleanFolders()
       dl->Clean();
     }
  }
-/*****************************************************************************/ 
 
-/*****************************************************************************/ 
-
-void AliLoader::CleanSDigitizer()
-{
-//removes and deletes detector task from Run Task
- if ( GetSDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
-  {
-    AliWarning("Task Loader for SDigits does not exist");
-    return;
-  }
- GetSDigitsDataLoader()->GetBaseTaskLoader()->Clean();
-}
-/*****************************************************************************/ 
-
-void AliLoader::CleanDigitizer()
-{
-//removes and deletes detector task from Run Task
- if ( GetDigitsDataLoader()->GetBaseTaskLoader() == 0x0 )
-  {
-    AliWarning("Task Loader for Digits does not exist");
-    return;
-  }
- GetDigitsDataLoader()->GetBaseTaskLoader()->Clean();
-}
-/*****************************************************************************/ 
-
-void AliLoader::CleanReconstructioner()
-{
-//removes and deletes detector Reconstructioner from Run Reconstructioner
- if ( GetRecPointsDataLoader()->GetBaseTaskLoader() == 0x0 )
-  {
-    AliWarning("Task Loader for SDigits does not exist");
-    return;
-  }
- GetRecPointsDataLoader()->GetBaseTaskLoader()->Clean();
-}
-/*****************************************************************************/ 
-
-void AliLoader::CleanTracker()
-{
-//removes and deletes detector task from Run Task
- if ( GetTracksDataLoader()->GetBaseTaskLoader() == 0x0 )
-  {
-    AliWarning("Task Loader for Tracks does not exist");
-    return;
-  }
- GetTracksDataLoader()->GetBaseTaskLoader()->Clean();
-}
-/*****************************************************************************/ 
-
-void AliLoader::CleanPIDTask()
-{
-//removes and deletes detector Reconstructioner from Run Reconstructioner
-
- if (  GetRecParticlesDataLoader()->GetBaseTaskLoader() == 0x0 )
-  {
-    AliWarning("Task Loader for Reconstructed Particles does not exist");
-    return;
-  }
-  GetRecParticlesDataLoader()->GetBaseTaskLoader()->Clean();
-}
 /*****************************************************************************/ 
 
 Int_t AliLoader::ReloadAll()
@@ -773,7 +484,7 @@ Int_t AliLoader::Register(TFolder* eventFolder)
  Int_t retval = AliConfig::Instance()->AddDetector(eventFolder,fDetectorName,fDetectorName);
  if(retval)
   {
-    AliError(Form("Can not create tasks and/or folders for %s. Event folder name is %s",
+    AliError(Form("Can not create folders for %s. Event folder name is %s",
 		  fDetectorName.Data(),eventFolder->GetName()));
     return retval;
   }
@@ -884,7 +595,6 @@ void AliLoader::SetDebug(Int_t deb)
   AliLog::SetClassDebugLevel("AliBaseLoader", deb);
   AliLog::SetClassDebugLevel("AliObjectLoader", deb);
   AliLog::SetClassDebugLevel("AliTreeLoader", deb);
-  AliLog::SetClassDebugLevel("AliTaskLoader", deb);
   AliLog::SetClassDebugLevel("AliConfig", deb);
 }
 /*****************************************************************************/ 

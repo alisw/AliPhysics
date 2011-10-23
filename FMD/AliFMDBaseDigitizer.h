@@ -32,7 +32,7 @@
 # include <AliDigitizer.h>
 #endif
 #ifndef ALIRUNDIGITIZER_H
-# include <AliRunDigitizer.h>
+# include <AliDigitizationInput.h>
 #endif
 #ifndef ALIFMDEdepMAP_H
 # include "AliFMDEdepMap.h"
@@ -160,7 +160,7 @@ public:
   AliFMDBaseDigitizer();
   /** Normal CTOR 
       @param manager Manager of digitization */
-  AliFMDBaseDigitizer(AliRunDigitizer * manager);
+  AliFMDBaseDigitizer(AliDigitizationInput * digInp);
   /** Normal ctor 
       @param name Name 
       @param title Title */
@@ -278,7 +278,7 @@ protected:
    */
   AliFMDBaseDigitizer& operator=(const AliFMDBaseDigitizer& o);
 
-  ClassDef(AliFMDBaseDigitizer,4) // Base class for FMD digitizers
+  ClassDef(AliFMDBaseDigitizer,5) // Base class for FMD digitizers
 };
 
 

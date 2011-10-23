@@ -145,7 +145,7 @@
 #include "AliRawReaderFile.h"
 #include "AliRawReaderRoot.h"
 #include "AliRun.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 #include "AliSimulation.h"
 #include "AliSysInfo.h"
@@ -1266,50 +1266,56 @@ Bool_t AliSimulation::RunDigitization(const char* detectors,
   Int_t nStreams = 1;
   if (fBkgrdFileNames) nStreams = fBkgrdFileNames->GetEntriesFast() + 1;
   Int_t signalPerBkgrd = GetNSignalPerBkgrd();
-  AliRunDigitizer* manager = new AliRunDigitizer(nStreams, signalPerBkgrd);
-  // manager->SetEmbeddingFlag(fEmbeddingFlag);
-  manager->SetInputStream(0, fGAliceFileName.Data());
+  AliDigitizationInput digInp(nStreams, signalPerBkgrd);
+  // digInp.SetEmbeddingFlag(fEmbeddingFlag);
+  digInp.SetRegionOfInterest(fRegionOfInterest);
+  digInp.SetInputStream(0, fGAliceFileName.Data());
   for (Int_t iStream = 1; iStream < nStreams; iStream++) {
-    const char* fileName = ((TObjString*)
-			    (fBkgrdFileNames->At(iStream-1)))->GetName();
-    manager->SetInputStream(iStream, fileName);
+    const char* fileName = ((TObjString*)(fBkgrdFileNames->At(iStream-1)))->GetName();
+    digInp.SetInputStream(iStream, fileName);
   }
-
+  TObjArray detArr;
+  detArr.SetOwner(kTRUE);
   TString detStr = detectors;
   TString detExcl = excludeDetectors;
-  manager->GetInputStream(0)->ImportgAlice();
-  AliRunLoader* runLoader = 
-    AliRunLoader::GetRunLoader(manager->GetInputStream(0)->GetFolderName());
+  if (!static_cast<AliStream*>(digInp.GetInputStream(0))->ImportgAlice()) {
+    AliError("Error occured while getting gAlice from Input 0");
+    return kFALSE;
+  }
+  AliRunLoader* runLoader = AliRunLoader::GetRunLoader(digInp.GetInputStream(0)->GetFolderName());
   TObjArray* detArray = runLoader->GetAliRun()->Detectors();
   for (Int_t iDet = 0; iDet < detArray->GetEntriesFast(); iDet++) {
     AliModule* det = (AliModule*) detArray->At(iDet);
     if (!det || !det->IsActive()) continue;
-    if (IsSelected(det->GetName(), detStr) && 
-	!IsSelected(det->GetName(), detExcl)) {
-      AliDigitizer* digitizer = det->CreateDigitizer(manager);
-      
-      if (!digitizer) {
-	AliError(Form("no digitizer for %s", det->GetName()));
-	if (fStopOnError) return kFALSE;
-      } else {
-	digitizer->SetRegionOfInterest(fRegionOfInterest);
-      }
+    if (!IsSelected(det->GetName(), detStr) || IsSelected(det->GetName(), detExcl)) continue;
+    AliDigitizer* digitizer = det->CreateDigitizer(&digInp);
+    if (!digitizer || !digitizer->Init()) {
+      AliError(Form("no digitizer for %s", det->GetName()));
+      if (fStopOnError) return kFALSE;
+      else continue;
     }
+    detArr.AddLast(digitizer);    
+    AliInfo(Form("Created digitizer from SDigits -> Digits for %s", det->GetName()));    
   }
-
+  //
   if ((detStr.CompareTo("ALL") != 0) && !detStr.IsNull()) {
-    AliError(Form("the following detectors were not found: %s", 
-                  detStr.Data()));
+    AliError(Form("the following detectors were not found: %s", detStr.Data()));
     if (fStopOnError) return kFALSE;
   }
-
-  if (!manager->GetListOfTasks()->IsEmpty()) {
-    AliInfo("executing digitization");
-    manager->Exec("");
-  }
-
-  delete manager;
-
+  //
+  Int_t ndigs = detArr.GetEntriesFast();
+  Int_t eventsCreated = 0;
+  AliRunLoader* outRl =  digInp.GetOutRunLoader();
+  while ((eventsCreated++ < fNEvents) || (fNEvents < 0)) {
+    if (!digInp.ConnectInputTrees()) break;
+    digInp.InitEvent(); //this must be after call of Connect Input tress.
+    if (outRl) outRl->SetEventNumber(eventsCreated-1);
+    static_cast<AliStream*>(digInp.GetInputStream(0))->ImportgAlice(); // use gAlice of the first input stream
+    for (int id=0;id<ndigs;id++) ((AliDigitizer*)detArr[id])->Digitize("");
+    digInp.FinishEvent();
+  };
+  digInp.FinishGlobal();
+  //
   return kTRUE;
 }
 

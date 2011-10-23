@@ -77,7 +77,7 @@ public:
   void ResetDigits()    { if(fDigitsPerPlane)    for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fDigitsPerPlane   ->At(iPlane))->Clear(); }   // reset digits list
   void ResetRecPoints() { if(fRecPointsPerPlane) for(int iPlane=0; iPlane<fNPlanes; iPlane++) ((TClonesArray*) fRecPointsPerPlane->At(iPlane))->Clear(); }   // reset recPoints list
   
-  AliDigitizer* CreateDigitizer(AliRunDigitizer *manager) const { return new AliMFTDigitizer(manager); }   // from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer* CreateDigitizer(AliDigitizationInput *digInp) const { return new AliMFTDigitizer(digInp); }   // from AliModule invoked from AliSimulation::RunDigitization()
   
   AliMFTSegmentation* GetSegmentation() const { return fSegmentation; }
 

@@ -23,7 +23,7 @@
 
 #include "AliRun.h"
 #include "AliRunLoader.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliLoader.h"
 #include "AliLog.h"
 #include "AliMFTDigitizer.h"
@@ -50,8 +50,8 @@ AliMFTDigitizer::AliMFTDigitizer():
 
 //====================================================================================================================================================
 
-AliMFTDigitizer::AliMFTDigitizer(AliRunDigitizer *pRunDig):
-  AliDigitizer(pRunDig),
+AliMFTDigitizer::AliMFTDigitizer(AliDigitizationInput *digInp) :
+  AliDigitizer(digInp),
   fNPlanes(0),
   fSegmentation(0)
 {
@@ -60,7 +60,7 @@ AliMFTDigitizer::AliMFTDigitizer(AliRunDigitizer *pRunDig):
 
 //====================================================================================================================================================
 
-void AliMFTDigitizer::Exec(Option_t*) {
+void AliMFTDigitizer::Digitize(Option_t*) {
 
   // This method is responsible for merging sdigits to a list of digits
 
@@ -75,7 +75,7 @@ void AliMFTDigitizer::Exec(Option_t*) {
 
   AliDebug(1, Form("nPlanes = %d",fNPlanes));
 
-  AliDebug(1,Form("Start with %i input(s) for event %i", fManager->GetNinputs(), fManager->GetOutputEventNr()));
+  AliDebug(1,Form("Start with %i input(s) for event %i", fDigInput->GetNinputs(), fDigInput->GetOutputEventNr()));
     
   AliRunLoader *pInRunLoader=0;
   AliLoader    *pInMFTLoader=0;
@@ -85,9 +85,9 @@ void AliMFTDigitizer::Exec(Option_t*) {
   
   // filling the arrays of sdigits...
 
-  for (Int_t iFile=0; iFile<fManager->GetNinputs(); iFile++) {
+  for (Int_t iFile=0; iFile<fDigInput->GetNinputs(); iFile++) {
     
-    pInRunLoader = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iFile));
+    pInRunLoader = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iFile));
     pInMFTLoader = pInRunLoader->GetLoader("MFTLoader"); 
     if (!pInMFTLoader) {
       AliDebug(1,"no MFT lodader, checking in the other input \n"); 
@@ -109,7 +109,7 @@ void AliMFTDigitizer::Exec(Option_t*) {
 	AliDebug(2, Form("Reading digit %03d of plane %02d (A)", iSDig, iPlane));
 	AliMFTDigit *pSDig = (AliMFTDigit*) ((TClonesArray*)pInMFT->GetSDigitsList()->At(iPlane))->At(iSDig);
 	AliDebug(2, Form("Reading digit %03d of plane %02d (B)", iSDig, iPlane));
-	pSDig->AddOffset2TrackID(fManager->GetMask(iFile));   // -> To be introduced for merging (since all inputs count tracks independently from 0)
+	pSDig->AddOffset2TrackID(fDigInput->GetMask(iFile));   // -> To be introduced for merging (since all inputs count tracks independently from 0)
 	AliDebug(2, Form("Reading digit %03d of plane %02d (C)", iSDig, iPlane));
 	new ((sDigits[iPlane])[sDigits[iPlane].GetEntries()]) AliMFTDigit(*pSDig);  
 	AliDebug(2, Form("Reading digit %03d of plane %02d (D)", iSDig, iPlane));
@@ -121,7 +121,7 @@ void AliMFTDigitizer::Exec(Option_t*) {
 
   }
   
-  AliRunLoader *pOutRunLoader = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());  // open output stream (only 1 possible)
+  AliRunLoader *pOutRunLoader = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());  // open output stream (only 1 possible)
   AliLoader    *pOutMFTLoader = pOutRunLoader->GetLoader("MFTLoader");                        
   AliRun       *pAliRun       = pOutRunLoader->GetAliRun();
   AliMFT       *pOutMFT       = (AliMFT*) pAliRun->GetDetector("MFT");      

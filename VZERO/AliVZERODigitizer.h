@@ -19,7 +19,7 @@
 
 class TClonesArray;
 class TF1;
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliCDBManager;
 class AliCDBStorage;
 class AliVZEROCalibData;
@@ -36,11 +36,11 @@ class AliVZERODigitizer: public AliDigitizer {
   
    AliVZERODigitizer() ;                       // default constructor
    AliVZERODigitizer(AliVZERO *vzero, DigiTask_t task);         // constructor
-   AliVZERODigitizer(AliRunDigitizer *manager); // constructor
+   AliVZERODigitizer(AliDigitizationInput* digInput); // constructor
    virtual ~AliVZERODigitizer() ;              // destructor
 
    virtual Bool_t Init();
-   virtual void   Exec(Option_t* option=0);
+   virtual void   Digitize(Option_t* option=0);
 
    void DigitizeHits();
    void DigitizeSDigits();

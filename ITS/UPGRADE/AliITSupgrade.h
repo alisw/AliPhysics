@@ -72,7 +72,7 @@ class AliITSupgrade : public AliITS //TObject-TNamed-AliModule-AliDetector-AliIT
     for(Int_t i=0;i<fNlayers;i++)fDigitArray->AddAt(new TClonesArray("AliITSDigitUpgrade"),i);}//create digits list
   void          DigitsReset ()              {if(fDigitArray)for(int i=0;i<fNlayers;i++)fDigitArray->At(i)->Clear();                     }//clean digits list
 
-  AliDigitizer*   CreateDigitizer  (AliRunDigitizer *m) const {return new AliITSupgradeDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
+  AliDigitizer*   CreateDigitizer  (AliDigitizationInput *m) const {return new AliITSupgradeDigitizer(m);}  //from AliModule invoked from AliSimulation::RunDigitization()
            
   void Hit2SumDig(TClonesArray *hits,const TObjArray *pSDig, Int_t *nSdigit);
 

@@ -19,7 +19,7 @@
 //.
 #include <AliRun.h>
 #include <AliRunLoader.h>
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include <AliLoader.h>
 #include "AliLog.h"
 #include <AliCDBEntry.h> 
@@ -38,18 +38,18 @@ ClassImp(AliHMPIDDigitizer)
 
 Bool_t AliHMPIDDigitizer::fgDoNoise=kTRUE;
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-void AliHMPIDDigitizer::Exec(Option_t*)
+void AliHMPIDDigitizer::Digitize(Option_t*)
 {
 // This methode is responsible for merging sdigits to a list of digits
 //Disintegration leeds to the fact that one hit affects several neighbouring pads, which means that the same pad might be affected by few hits.     
-  AliDebug(1,Form("Start with %i input(s) for event %i",fManager->GetNinputs(),fManager->GetOutputEventNr()));
+  AliDebug(1,Form("Start with %i input(s) for event %i",fDigInput->GetNinputs(),fDigInput->GetOutputEventNr()));
 //First we read all sdigits from all inputs  
   AliRunLoader *pInRunLoader=0;//in and out Run loaders
   AliLoader    *pInRichLoader=0;//in and out HMPID loaders  
   static TClonesArray sdigs("AliHMPIDDigit");//tmp storage for sdigits sum up from all input files
   Int_t total=0;
-  for(Int_t inFileN=0;inFileN<fManager->GetNinputs();inFileN++){//files loop
-    pInRunLoader  = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inFileN));          //get run loader from current input 
+  for(Int_t inFileN=0;inFileN<fDigInput->GetNinputs();inFileN++){//files loop
+    pInRunLoader  = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inFileN));          //get run loader from current input 
     pInRichLoader = pInRunLoader->GetLoader("HMPIDLoader"); if(pInRichLoader==0) continue;       //no HMPID in this input, check the next input
     if (!pInRunLoader->GetAliRun()) pInRunLoader->LoadgAlice();
     AliHMPID* pInRich=(AliHMPID*)pInRunLoader->GetAliRun()->GetDetector("HMPID");                  //take HMPID from current input
@@ -57,7 +57,7 @@ void AliHMPIDDigitizer::Exec(Option_t*)
     AliDebug(1,Form("input %i has %i sdigits",inFileN,pInRich->SdiLst()->GetEntries()));
     for(Int_t i=0;i<pInRich->SdiLst()->GetEntries();i++){                                        //collect sdigits from current input
       AliHMPIDDigit *pSDig=(AliHMPIDDigit*)pInRich->SdiLst()->At(i);
-      pSDig->AddTidOffset(fManager->GetMask(inFileN));                                          //apply TID shift since all inputs count tracks independently starting from 0
+      pSDig->AddTidOffset(fDigInput->GetMask(inFileN));                                          //apply TID shift since all inputs count tracks independently starting from 0
       new(sdigs[total++]) AliHMPIDDigit(*pSDig);       
     }
     pInRichLoader->UnloadSDigits();   pInRich->SdiReset(); //close current input and reset 
@@ -65,7 +65,7 @@ void AliHMPIDDigitizer::Exec(Option_t*)
 
   //PH  if(sdigs.GetEntries()==0) return;                                                              //no sdigits collected, nothing to convert  
   
-  AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());    //open output stream (only 1 possible)
+  AliRunLoader *pOutRunLoader  = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());    //open output stream (only 1 possible)
   AliLoader    *pOutRichLoader = pOutRunLoader->GetLoader("HMPIDLoader");                         //take output HMPID loader
   AliRun *pArun = pOutRunLoader->GetAliRun();
   AliHMPID      *pOutRich       = (AliHMPID*)pArun->GetDetector("HMPID");      //take output HMPID

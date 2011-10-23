@@ -34,7 +34,7 @@
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenHijingEventHeader.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
 #include "AliGRPObject.h"
@@ -66,8 +66,8 @@ AliZDCDigitizer::AliZDCDigitizer() :
 }
 
 //____________________________________________________________________________
-AliZDCDigitizer::AliZDCDigitizer(AliRunDigitizer* manager):
-  AliDigitizer(manager),
+AliZDCDigitizer::AliZDCDigitizer(AliDigitizationInput* digInput):
+  AliDigitizer(digInput),
   fIsCalibration(0), //By default the simulation doesn't create calib. data
   fIsSignalInADCGate(kFALSE),
   fFracLostSignal(0.),
@@ -208,7 +208,7 @@ Bool_t AliZDCDigitizer::Init()
 }
 
 //____________________________________________________________________________
-void AliZDCDigitizer::Exec(Option_t* /*option*/)
+void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 {
   // Execute digitization
 
@@ -245,11 +245,11 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
   Float_t signalTime0 = 0.;
 
   // loop over input streams
-  for(Int_t iInput = 0; iInput<fManager->GetNinputs(); iInput++){
+  for(Int_t iInput = 0; iInput<fDigInput->GetNinputs(); iInput++){
 
     // get run loader and ZDC loader
     AliRunLoader* runLoader = 
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+      AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iInput));
     AliLoader* loader = runLoader->GetLoader("ZDCLoader");
     if(!loader) continue;
 
@@ -344,7 +344,7 @@ void AliZDCDigitizer::Exec(Option_t* /*option*/)
 
   // get the output run loader and loader
   AliRunLoader* runLoader = 
-    AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+    AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   AliLoader* loader = runLoader->GetLoader("ZDCLoader");
   if(!loader) {
     AliError("no ZDC loader found");

@@ -18,17 +18,15 @@
 #ifndef ALIMUONSDIGITIZERV2_H
 #define ALIMUONSDIGITIZERV2_H
 
-#ifndef ROOT_TTask
-#  include "TTask.h"
-#endif
+#include "TNamed.h"
 
-class AliMUONSDigitizerV2 : public TTask
+class AliMUONSDigitizerV2 : public TNamed
 {
 public:
   AliMUONSDigitizerV2();
   virtual ~AliMUONSDigitizerV2();
   
-  virtual void Exec(Option_t* opt="");
+  virtual void Digitize(Option_t* opt="");
   
 private:
   static Float_t  fgkMaxIntTime; ///< maximum time of interaction
@@ -36,7 +34,7 @@ private:
   static Float_t  fgkMaxNegTimeDif; ///< maximum event time before the triggered event for a hit to be digitized 
   static Float_t  fgkMinTimeDif; ///< minimum time difference for the reduction factor to be applied  
     
-  ClassDef(AliMUONSDigitizerV2,1) // MUON SDigitizer V2-1
+  ClassDef(AliMUONSDigitizerV2,2) // MUON SDigitizer V2-1
 };
 
 #endif

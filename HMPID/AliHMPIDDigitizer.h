@@ -11,13 +11,13 @@
 class TClonesArray;
 class TObjArray;
 
-class AliHMPIDDigitizer : public AliDigitizer //TObject-TNamed-TTask-AliDigitizer-AliHMPIDDigitizer
+class AliHMPIDDigitizer : public AliDigitizer //TObject-TNamed-AliDigitizer-AliHMPIDDigitizer
 {
 public:
            AliHMPIDDigitizer()                                                {}
-           AliHMPIDDigitizer(AliRunDigitizer *pRunDig):AliDigitizer(pRunDig)  {}
+           AliHMPIDDigitizer(AliDigitizationInput *digInp):AliDigitizer(digInp)  {}
   virtual ~AliHMPIDDigitizer()                                                {}
-  void     Exec(Option_t* option=0);                //virtual
+  void     Digitize(Option_t* option=0);                //virtual
   void     DoNoise(Bool_t doNoise)                           {fgDoNoise=doNoise;} // Set noise or not
 //   
   static void    Sdi2Dig(TClonesArray *pSDigLst,TObjArray *pDigLst);

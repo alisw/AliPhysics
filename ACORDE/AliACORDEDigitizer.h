@@ -16,7 +16,7 @@
 #include "AliDigitizer.h"
 
 class TClonesArray;
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliCDBManager;
 class AliCDBStorage;
 class AliACORDECalibData;
@@ -26,11 +26,11 @@ class AliACORDEDigitizer: public AliDigitizer {
  public:
 
    AliACORDEDigitizer() ;                       // constructor
-   AliACORDEDigitizer(AliRunDigitizer *manager);// constructor
+   AliACORDEDigitizer(AliDigitizationInput* digInput);// constructor
    virtual ~AliACORDEDigitizer() ;              // destructor
   
    virtual Bool_t Init();
-   virtual void   Exec(Option_t* option=0);
+   virtual void   Digitize(Option_t* option=0);
 
    void AddDigit(Int_t* track, Int_t module, Float_t time);
    void AddDigit(Int_t* modul, Float_t time);	

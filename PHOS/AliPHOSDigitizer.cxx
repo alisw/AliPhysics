@@ -83,12 +83,12 @@
 //_________________________________________________________________________
 //*-- Author :  Dmitri Peressounko (SUBATECH & Kurchatov Institute) 
 //////////////////////////////////////////////////////////////////////////////
-// This TTask performs digitization of Summable digits (in the PHOS case it is just
+// This class performs digitization of Summable digits (in the PHOS case it is just
 // the sum of contributions from all primary particles into a given cell). 
 // In addition it performs mixing of summable digits from different events.
-// The name of the TTask is also the title of the branch that will contain 
+// The name of the class is also the title of the branch that will contain 
 // the created SDigits
-// The title of the TTAsk is the name of the file that contains the hits from
+// The title of the class is the name of the file that contains the hits from
 // which the SDigits are created
 //
 // For each event two branches are created in TreeD:
@@ -100,7 +100,7 @@
 //
 // Use case:
 // root[0] AliPHOSDigitizer * d = new AliPHOSDigitizer() ;
-// root[1] d->ExecuteTask()             
+// root[1] d->Digitize()             
 // Warning in <TDatabasePDG::TDatabasePDG>: object already instantiated
 //                       //Digitizes SDigitis in all events found in file galice.root 
 //
@@ -111,7 +111,7 @@
 //                       // Reads another set of sdigits from galice2.root
 // root[3] d1->MixWith("galice3.root")       
 //                       // Reads another set of sdigits from galice3.root
-// root[4] d->ExecuteTask("deb timing")    
+// root[4] d->Digitize("deb timing")    
 //                       // Reads SDigits from files galice1.root, galice2.root ....
 //                       // mixes them and stores produced Digits in file galice1.root          
 //                       // deb - prints number of produced digits
@@ -131,7 +131,7 @@
 // --- AliRoot header files ---
 #include <TGeoManager.h>                                                                                                                   
 #include "AliLog.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliPHOSDigit.h"
 #include "AliPHOSDigitizer.h"
 #include "AliPHOSGeometry.h"
@@ -166,13 +166,13 @@ AliPHOSDigitizer::AliPHOSDigitizer() :
 {
   // ctor
   InitParameters() ; 
-  fManager = 0 ;                     // We work in the standalong mode
+  fDigInput = 0 ;                     // We work in the standalong mode
 }
 
 //____________________________________________________________________________ 
 AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName, 
 				   TString eventFolderName):
-  AliDigitizer("PHOS"+AliConfig::Instance()->GetDigitizerTaskName(), alirunFileName), 
+  AliDigitizer("PHOSDigitizer", alirunFileName), 
   fDefaultInit(kFALSE),
   fDigitsInRun(0),
   fInit(kFALSE),
@@ -193,7 +193,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(TString alirunFileName,
   InitParameters() ; 
   Init() ;
   fDefaultInit = kFALSE ; 
-  fManager = 0 ;                     // We work in the standalone mode
+  fDigInput = 0 ;                     // We work in the standalone mode
   fcdb = new AliPHOSCalibData(-1);
 }
 
@@ -223,8 +223,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
 }
 
 //____________________________________________________________________________ 
-AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
-  AliDigitizer(rd,"PHOS"+AliConfig::Instance()->GetDigitizerTaskName()),
+AliPHOSDigitizer::AliPHOSDigitizer(AliDigitizationInput * rd) :
+  AliDigitizer(rd,"PHOSDigitizer"),
   fDefaultInit(kFALSE),
   fDigitsInRun(0),
   fInit(kFALSE),
@@ -232,7 +232,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
   fInputFileNames(0x0),
   fEventNames(0x0),
   fEmcCrystals(0),
-  fEventFolderName(fManager->GetInputFolderName(0)),
+  fEventFolderName(fDigInput->GetInputFolderName(0)),
   fFirstEvent(0),
   fLastEvent(0), 
   fcdb (0x0), 
@@ -243,8 +243,8 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
 
 {
   // ctor Init() is called by RunDigitizer
-  fManager = rd ; 
-  SetTitle(static_cast<AliStream*>(fManager->GetInputStream(0))->GetFileName(0));
+  fDigInput = rd ; 
+  SetTitle(static_cast<AliStream*>(fDigInput->GetInputStream(0))->GetFileName(0));
   InitParameters() ; 
   fDefaultInit = kFALSE ; 
   fcdb = new AliPHOSCalibData(-1);
@@ -253,15 +253,7 @@ AliPHOSDigitizer::AliPHOSDigitizer(AliRunDigitizer * rd) :
 //____________________________________________________________________________ 
   AliPHOSDigitizer::~AliPHOSDigitizer()
 {
-  // dtor
-  AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  if(rl){                                                                                                                               
-    AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));    
-    
-    if(phosLoader)
-      phosLoader->CleanDigitizer() ;
-  }
-  
+  // dtor  
   delete [] fInputFileNames ; 
   delete [] fEventNames ; 
 
@@ -291,8 +283,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
   AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
 
   Int_t readEvent = event ; 
-  if (fManager) 
-    readEvent = static_cast<AliStream*>(fManager->GetInputStream(0))->GetCurrentEventNumber() ; 
+  if (fDigInput) 
+    readEvent = static_cast<AliStream*>(fDigInput->GetInputStream(0))->GetCurrentEventNumber() ; 
   AliDebug(1,Form("Adding event %d from input stream 0 %s %s", 
 		  readEvent, GetTitle(), fEventFolderName.Data())) ; 
   rl->GetEvent(readEvent) ;
@@ -369,8 +361,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
     }
     AliPHOSLoader * phosLoader2 = static_cast<AliPHOSLoader*>(rl2->GetLoader("PHOSLoader"));
  
-    if(fManager){ 
-      readEvent = static_cast<AliStream*>(fManager->GetInputStream(i))->GetCurrentEventNumber() ; 
+    if(fDigInput){ 
+      readEvent = static_cast<AliStream*>(fDigInput->GetInputStream(i))->GetCurrentEventNumber() ; 
     }
     TClonesArray * digs ;
     if(AliPHOSSimParam::GetInstance()->IsStreamDigits(i)){ //This is Digits Stream
@@ -464,8 +456,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	  while(curSDigit && curSDigit->GetId() == absID){	   
 	    //Shift primary to separate primaries belonging different inputs
 	    Int_t primaryoffset ;
-	    if(fManager)
-	      primaryoffset = fManager->GetMask(i) ; 
+	    if(fDigInput)
+	      primaryoffset = fDigInput->GetMask(i) ; 
 	    else
 	      primaryoffset = 10000000*i ;
 	    curSDigit->ShiftPrimary(primaryoffset) ;
@@ -569,8 +561,8 @@ void AliPHOSDigitizer::Digitize(Int_t event)
 	     while(curSDigit && curSDigit->GetId() == absID){	   
 	       //Shift primary to separate primaries belonging different inputs
 	       Int_t primaryoffset ;
-	       if(fManager)
-	         primaryoffset = fManager->GetMask(i) ; 
+	       if(fDigInput)
+	         primaryoffset = fDigInput->GetMask(i) ; 
 	       else
 	         primaryoffset = 10000000*i ;
 	       curSDigit->ShiftPrimary(primaryoffset) ;
@@ -744,7 +736,7 @@ Int_t AliPHOSDigitizer::DigitizeCPV(Float_t charge, Int_t absId)
 }
 
 //____________________________________________________________________________
-void AliPHOSDigitizer::Exec(Option_t *option) 
+void AliPHOSDigitizer::Digitize(Option_t *option) 
 { 
   // Steering method to process digitization for events
   // in the range from fFirstEvent to fLastEvent.
@@ -768,13 +760,10 @@ void AliPHOSDigitizer::Exec(Option_t *option)
   
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-
-  // Post Digitizer to the white board
-  phosLoader->PostDigitizer(this) ;
   
   if (fLastEvent == -1) 
     fLastEvent = rl->GetNumberOfEvents() - 1 ;
-  else if (fManager) 
+  else if (fDigInput) 
     fLastEvent = fFirstEvent ; 
  
   Int_t nEvents   = fLastEvent - fFirstEvent + 1;
@@ -795,8 +784,6 @@ void AliPHOSDigitizer::Exec(Option_t *option)
     fDigitsInRun += phosLoader->Digits()->GetEntriesFast() ;  
  }
  
-  phosLoader->CleanDigitizer();
-
   if(strstr(option,"tim")){
     gBenchmark->Stop("PHOSDigitizer");
     TString message ; 
@@ -851,8 +838,8 @@ Bool_t AliPHOSDigitizer::Init()
   
   fFirstEvent = 0 ; 
   fLastEvent = fFirstEvent ; 
-  if (fManager) 
-    fInput = fManager->GetNinputs() ; 
+  if (fDigInput) 
+    fInput = fDigInput->GetNinputs() ; 
   else 
     fInput           = 1 ;
   
@@ -862,9 +849,9 @@ Bool_t AliPHOSDigitizer::Init()
   fEventNames[0]     = fEventFolderName.Data() ; 
   Int_t index ; 
   for (index = 1 ; index < fInput ; index++) {
-    fInputFileNames[index] = static_cast<AliStream*>(fManager->GetInputStream(index))->GetFileName(0); 
-    TString tempo = fManager->GetInputFolderName(index) ;
-    fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added by fManager
+    fInputFileNames[index] = static_cast<AliStream*>(fDigInput->GetInputStream(index))->GetFileName(0); 
+    TString tempo = fDigInput->GetInputFolderName(index) ;
+    fEventNames[index] = tempo.Remove(tempo.Length()-1) ; // strip of the stream number added by fDigInput
   }
 
   //to prevent cleaning of this object while GetEvent is called
@@ -872,9 +859,6 @@ Bool_t AliPHOSDigitizer::Init()
   if(!rl){
     rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
   }
-  AliPHOSLoader * phosLoader = static_cast<AliPHOSLoader*>(rl->GetLoader("PHOSLoader"));
-  phosLoader->GetDigitsDataLoader()->GetBaseTaskLoader()->SetDoNotReload(kTRUE);
-
   return fInit ; 
 }
 
@@ -900,7 +884,7 @@ void AliPHOSDigitizer::Print(const Option_t *)const
     printf(" Writing Digits to branch with title  %s\n", fEventFolderName.Data()) ;
     
     Int_t nStreams ; 
-    if (fManager) 
+    if (fDigInput) 
       nStreams =  GetNInputStreams() ;
     else 
       nStreams = fInput ; 
@@ -1042,7 +1026,6 @@ void AliPHOSDigitizer::WriteDigits()
   digitsBranch->Fill() ;
   
   phosLoader->WriteDigits("OVERWRITE");
-  phosLoader->WriteDigitizer("OVERWRITE");
 
   Unload() ; 
 

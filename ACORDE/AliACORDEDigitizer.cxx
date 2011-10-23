@@ -34,7 +34,7 @@
 #include "AliACORDEhit.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliCDBEntry.h"
@@ -56,8 +56,8 @@ AliACORDEDigitizer::AliACORDEDigitizer()
   // default constructor
 }
 
-AliACORDEDigitizer::AliACORDEDigitizer(AliRunDigitizer* manager)
-  :AliDigitizer(manager),
+AliACORDEDigitizer::AliACORDEDigitizer(AliDigitizationInput* digInput)
+  :AliDigitizer(digInput),
    fCalibData(GetCalibData()),
    fNdigits(0),
    fDigits(0)
@@ -89,7 +89,7 @@ Bool_t AliACORDEDigitizer::Init()
   return kTRUE;
 }
 
-void AliACORDEDigitizer::Exec(Option_t* /*option*/)
+void AliACORDEDigitizer::Digitize(Option_t* /*option*/)
 {
 
   // Creates digits from hits
@@ -128,7 +128,7 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
 
   // 2.- get loaders
   AliRunLoader* outRunLoader =
-    AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+    AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   if (!outRunLoader) {
     Error("Exec", "Can not get output Run Loader");
     return;}
@@ -146,9 +146,9 @@ void AliACORDEDigitizer::Exec(Option_t* /*option*/)
   treeD->Branch("ACORDEdigit", &fDigits, bufsize);
   
   // 3. loop over inputs
-  for (Int_t iInput = 0; iInput < fManager->GetNinputs(); iInput++) {
+  for (Int_t iInput = 0; iInput < fDigInput->GetNinputs(); iInput++) {
     AliRunLoader* runLoader =
-      AliRunLoader::GetRunLoader(fManager->GetInputFolderName(iInput));
+      AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(iInput));
     AliLoader* loader = runLoader->GetLoader("ACORDELoader");
     if (!loader) {
       Error("Exec", "Can not get ACORDE Loader for input %d", iInput);

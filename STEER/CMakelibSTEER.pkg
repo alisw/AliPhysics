@@ -7,7 +7,6 @@ set ( SRCS
     STEER/AliObjectLoader.cxx 
     STEER/AliBaseLoader.cxx 
     STEER/AliTreeLoader.cxx 
-    STEER/AliTaskLoader.cxx 
     STEER/AliDetector.cxx 
     STEER/AliDigit.cxx 
     STEER/AliHit.cxx 
@@ -28,7 +27,7 @@ set ( SRCS
     STEER/AliRndm.cxx 
     STEER/AliDebugVolume.cxx 
     STEER/AliConfig.cxx 
-    STEER/AliRunDigitizer.cxx 
+    STEER/AliDigitizationInput.cxx 
     STEER/AliDigitizer.cxx 
     STEER/AliStream.cxx 
     STEER/AliMergeCombi.cxx 

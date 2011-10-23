@@ -28,7 +28,7 @@ class AliDetector;
 class AliPMDhit;
 class AliHit;
 class AliHeader;
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliCDBManager;
 class AliCDBStorage;
 
@@ -45,7 +45,7 @@ class AliPMDDigitizer:public AliDigitizer
   AliPMDDigitizer();
   AliPMDDigitizer(const AliPMDDigitizer &digitizer);  // copy constructor
   AliPMDDigitizer &operator=(const AliPMDDigitizer &digitizer); // assign op
-  AliPMDDigitizer(AliRunDigitizer *manager);
+  AliPMDDigitizer(AliDigitizationInput* digInput);
   virtual ~AliPMDDigitizer();
 
   void OpengAliceFile(const char *file, Option_t *option);
@@ -53,7 +53,7 @@ class AliPMDDigitizer:public AliDigitizer
   void Hits2SDigits(Int_t ievt);
   void Hits2Digits(Int_t ievt);
   void SDigits2Digits(Int_t ievt);
-  void Exec(Option_t *option);
+  void Digitize(Option_t *option);
   void MergeSDigits(Int_t filenumber, Int_t troffset);
   void TrackAssignment2CPVCell();
   void TrackAssignment2Cell();

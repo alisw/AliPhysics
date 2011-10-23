@@ -209,7 +209,7 @@
 #include "AliFMDHit.h"		// ALIFMDHIT_H
 // #include "AliFMDDigit.h"	// ALIFMDDIGIT_H
 #include "AliFMDParameters.h"   // ALIFMDPARAMETERS_H
-// #include <AliRunDigitizer.h>	// ALIRUNDIGITIZER_H
+// #include <AliDigitizationInput.h>	// ALIRUNDIGITIZER_H
 //#include <AliRun.h>		// ALIRUN_H
 #include <AliLoader.h>		// ALILOADER_H
 #include <AliRun.h>		// ALILOADER_H
@@ -239,8 +239,8 @@ AliFMDBaseDigitizer::AliFMDBaseDigitizer()
 }
 
 //____________________________________________________________________
-AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliRunDigitizer* manager) 
-  : AliDigitizer(manager, "AliFMDBaseDigitizer", "FMD Digitizer base class"), 
+AliFMDBaseDigitizer::AliFMDBaseDigitizer(AliDigitizationInput* digInput) 
+  : AliDigitizer(digInput, "AliFMDBaseDigitizer", "FMD Digitizer base class"), 
     fFMD(0),
     fRunLoader(0),
     fEdep(0),        // nDet==0 means 51200 slots

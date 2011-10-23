@@ -137,7 +137,7 @@ void AliPHOSLoader::CleanFolders()
 Int_t AliPHOSLoader::SetEvent()
 {
 //Cleans loaded stuff and and sets Files and Directories
-// do not post any data to folder/tasks
+// do not post any data to folder
 
 
  Int_t retval = AliLoader::SetEvent();

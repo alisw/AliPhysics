@@ -4,17 +4,15 @@
 class TDirectory;
 class TFile;
 class TString;
-class TTask;
 class TTree;
 
 #include <TFolder.h>
 #include <TObjArray.h>
 
-class AliDigitizer;
 class AliRunLoader;
 
 #include "AliDataLoader.h"
-#include "AliTaskLoader.h"
+#include "AliBaseLoader.h"
 
 
 //___________________________________________________________________
@@ -71,21 +69,6 @@ class AliLoader: public TNamed
     TFolder*       GetDetectorDataFolder();//returns the folder that hits, sdigits, etc 
                                      //are sitting for a given detector (subfolder of Data Folder)
     TFolder*       GetModulesFolder();
-    TFolder*       GetTasksFolder();
-    TFolder*       GetQAFolder();
-   
-    TTask*         SDigitizer() const;//return detector SDigitizer()
-    AliDigitizer*  Digitizer() const;
-    TTask*         Reconstructioner() const;
-    TTask*         Tracker() const;
-    TTask*         PIDTask() const;
-    TTask*         QAtask(const char* name = 0x0) const;
-
-    TObject**      SDigitizerRef();
-    TObject**      DigitizerRef();
-    TObject**      ReconstructionerRef();
-    TObject**      TrackerRef();
-    TObject**      PIDTaskRef();
     
     virtual void   MakeHitsContainer() const {GetHitsDataLoader()->MakeTree();}
     virtual void   MakeSDigitsContainer() const {GetSDigitsDataLoader()->MakeTree();}
@@ -96,23 +79,6 @@ class AliLoader: public TNamed
         
     virtual void   CleanFolders();
     virtual void   CloseFiles();
-
-    virtual Int_t  PostSDigitizer(TTask* sdzer) const;//adds it to Run SDigitizer
-    virtual Int_t  PostDigitizer(AliDigitizer* task) const;
-    virtual Int_t  PostReconstructioner(TTask* task) const;
-    virtual Int_t  PostTracker(TTask* task) const;
-    virtual Int_t  PostPIDTask(TTask* task) const;
-    
-    virtual Int_t  WriteSDigitizer(Option_t* opt="") const
-      {return GetSDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteDigitizer(Option_t* opt="") const
-      {return GetDigitsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteReconstructioner(Option_t* opt="") const
-      {return GetRecPointsDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WriteTracker(Option_t* opt="") const
-      {return GetTracksDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
-    virtual Int_t  WritePIDTask(Option_t* opt="") const
-      {return GetRecParticlesDataLoader()->GetBaseTaskLoader()->WriteData(opt);}
 
     TTree*         TreeH() const
       {return GetHitsDataLoader()->Tree();}      //returns the tree from folder; shortcut method
@@ -158,22 +124,6 @@ class AliLoader: public TNamed
       Int_t status = GetRecParticlesDataLoader()->Load(opt);
       SetTAddrInDet();
       return status;
-    }
-    
-    Int_t          LoadSDigitizer(Option_t* opt="") const {
-      return GetSDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
-    }
-    Int_t          LoadDigitizer(Option_t* opt="") const {
-      return GetDigitsDataLoader()->GetBaseTaskLoader()->Load(opt);
-    }
-    Int_t          LoadReconstructioner(Option_t* opt="") const {
-      return GetRecPointsDataLoader()->GetBaseTaskLoader()->Load(opt);
-    }
-    Int_t          LoadTracker(Option_t* opt="") const {
-      return GetTracksDataLoader()->GetBaseTaskLoader()->Load(opt);
-    }
-    Int_t          LoadPIDTask(Option_t* opt="") const {
-      return GetRecParticlesDataLoader()->GetBaseTaskLoader()->Load(opt);
     }
 
     void           UnloadHits() const {GetHitsDataLoader()->Unload();}
@@ -239,12 +189,6 @@ class AliLoader: public TNamed
       {GetRecPointsDataLoader()->Clean();}  //cleans rec. points from folder
     virtual void  CleanTracks() const
       {GetTracksDataLoader()->Clean();}     //cleans tracks from folder
-    
-    virtual void  CleanSDigitizer();                    //cleans SDigitizer from folder
-    virtual void  CleanDigitizer();                     //cleans Digitizer from folder
-    virtual void  CleanReconstructioner();              //cleans Reconstructions (clusterizer) from folder
-    virtual void  CleanTracker();                       //cleans tracker from folder
-    virtual void  CleanPIDTask();              //cleans Reconstructions (clusterizer) from folder
 
     virtual void  SetHitsFileOption(Option_t* newopt) const
       {GetHitsDataLoader()->SetFileOption(newopt);}          //Sets Hits File Option in open
@@ -351,9 +295,6 @@ class AliLoader: public TNamed
     TFolder*      fDetectorDataFolder;//!Folder that contains the detector data
     TFolder*      fModuleFolder;      //!Folder that contains the modules 
 
-    TFolder*      fTasksFolder;       //!Folder that contains the Tasks (sdigitizer, digitizer, reconstructioner)
-    TFolder*      fQAFolder;          //!Folder that contains the QA objects
-    
  // file option varible was introduced because if TFile is created with "recreate" 
  // stored option in TFile is "CREATE". We need to remeber "recreate" for
  // Max events per file functionality
@@ -372,7 +313,7 @@ class AliLoader: public TNamed
     AliLoader(const AliLoader&); //Not implemented
     AliLoader& operator=(const AliLoader&); //Not implemented
 
-    ClassDef(AliLoader,2)
+    ClassDef(AliLoader,3)
  };
 /******************************************************************/
 /************************ I N L I N E S ***************************/

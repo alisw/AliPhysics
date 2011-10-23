@@ -155,7 +155,7 @@ Bool_t AliITSsDigitize::InitSDig() const {
 }
  
 //______________________________________________________________________
-void AliITSsDigitize::Exec(const Option_t *opt){
+void AliITSsDigitize::Digitize(const Option_t *opt){
     // Main SDigitization function.
     // Inputs:
     //      Option_t * opt   list of subdetector to digitize. =0 all.
@@ -184,7 +184,7 @@ void AliITSsDigitize::Exec(const Option_t *opt){
     } // end if strstr(opt,...)
  
     if(!fInit){
-        cout << "Initilization Failed, Can't run Exec." << endl;
+        cout << "Initilization Failed, Can't run Digitize." << endl;
         return;
     } // end if !fInit
 

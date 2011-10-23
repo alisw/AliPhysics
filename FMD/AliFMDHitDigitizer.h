@@ -61,7 +61,7 @@ public:
   /** DTOR */
   virtual ~AliFMDHitDigitizer() {}
   /** Run over the input events (retrieved via run loader) */
-  void Exec(Option_t* option="");
+  void Digitize(Option_t* option="");
   /** 
    * Set the end of integration
    * 

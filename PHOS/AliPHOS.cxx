@@ -126,9 +126,9 @@ AliPHOS::~AliPHOS()
 }
 
 //____________________________________________________________________________
-AliDigitizer* AliPHOS::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliPHOS::CreateDigitizer(AliDigitizationInput* digInput) const
 {
-  return new AliPHOSDigitizer(manager);
+  return new AliPHOSDigitizer(digInput);
 }
 
 //____________________________________________________________________________
@@ -561,7 +561,7 @@ void AliPHOS::Hits2SDigits()
   AliPHOSSDigitizer phosDigitizer(fLoader->GetRunLoader()->GetFileName().Data()) ;
   phosDigitizer.SetEventRange(0, -1) ; // do all the events
  
-  phosDigitizer.ExecuteTask("all") ; 
+  phosDigitizer.Digitize("all") ; 
 }
 
 

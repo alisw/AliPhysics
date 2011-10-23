@@ -41,7 +41,7 @@
 #include "AliT0.h"
 #include "AliT0hit.h"
 #include "AliT0digit.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliRun.h"
 #include <AliLoader.h>
 #include <AliRunLoader.h>
@@ -69,8 +69,8 @@ ClassImp(AliT0Digitizer)
 }
 
 //___________________________________________
-AliT0Digitizer::AliT0Digitizer(AliRunDigitizer* manager) 
-  :AliDigitizer(manager),
+AliT0Digitizer::AliT0Digitizer(AliDigitizationInput* digInput) 
+  :AliDigitizer(digInput),
    fT0(0),
    fHits(0),
    fdigits(0),
@@ -153,7 +153,7 @@ Bool_t AliT0Digitizer::Init()
 }
  
 //---------------------------------------------------------------------
-void AliT0Digitizer::Exec(Option_t* /*option*/)
+void AliT0Digitizer::Digitize(Option_t* /*option*/)
 {
 
   /*
@@ -167,7 +167,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   */
 
   //output loader 
-  AliRunLoader *outRL = AliRunLoader::GetRunLoader(fManager->GetOutputFolderName());
+  AliRunLoader *outRL = AliRunLoader::GetRunLoader(fDigInput->GetOutputFolderName());
   AliLoader * pOutStartLoader = outRL->GetLoader("T0Loader");
 
   AliDebug(1,"start...");
@@ -202,7 +202,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
   AliT0hit  *startHit;
   TBranch *brHits=0;
   
-  Int_t nFiles=fManager->GetNinputs();
+  Int_t nFiles=fDigInput->GetNinputs();
   for (Int_t inputFile=0; inputFile<nFiles;  inputFile++) {
     if (inputFile < nFiles-1) {
       AliWarning(Form("ignoring input stream %d", inputFile));
@@ -227,7 +227,7 @@ void AliT0Digitizer::Exec(Option_t* /*option*/)
       {
 	time[i0]=besttime[i0]=timeGaus[i0]=999999; countE[i0]=0;
       }
-    AliRunLoader * inRL = AliRunLoader::GetRunLoader(fManager->GetInputFolderName(inputFile));
+    AliRunLoader * inRL = AliRunLoader::GetRunLoader(fDigInput->GetInputFolderName(inputFile));
     AliLoader * pInStartLoader = inRL->GetLoader("T0Loader");
     if (!inRL->GetAliRun()) inRL->LoadgAlice();
     fT0  = (AliT0*)inRL ->GetAliRun()->GetDetector("T0");

@@ -36,12 +36,12 @@ class AliMUONTriggerUtilities;
 class AliMUONDigitizerV3 : public AliDigitizer
 {
 public:
-  AliMUONDigitizerV3(AliRunDigitizer* manager=0, 
+  AliMUONDigitizerV3(AliDigitizationInput* digInput=0, 
                      Int_t generateNoisyDigits=1);
   
   virtual ~AliMUONDigitizerV3();
 
-  virtual void Exec(Option_t* opt="");
+  virtual void Digitize(Option_t* opt="");
   
   virtual Bool_t Init();
 

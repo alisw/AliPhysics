@@ -1095,9 +1095,9 @@ Bool_t AliTPC::Raw2SDigits(AliRawReader* rawReader){
 }
 
 //______________________________________________________________________
-AliDigitizer* AliTPC::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliTPC::CreateDigitizer(AliDigitizationInput* digInput) const
 {
-  return new AliTPCDigitizer(manager);
+  return new AliTPCDigitizer(digInput);
 }
 //__
 void AliTPC::SDigits2Digits2(Int_t /*eventnumber*/)  

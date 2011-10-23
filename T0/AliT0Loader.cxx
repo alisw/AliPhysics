@@ -24,8 +24,6 @@ void AliT0Loader::InitObjectLoaders()
     delete fDataLoaders->Remove(fDataLoaders->At(kDigits));
   }
   AliDataLoader* dl = new AliDataLoader(fDetectorName + ".Digits.root","T0_D", "Digits","O");//we want to have object data not tree
-  AliTaskLoader* tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetDigitizerTaskName(),dl,AliRunLoader::GetRunDigitizer(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kDigits);
 
   // R E C O N S T R U C T E D   P O I N T S, here: V E R T E X
@@ -33,7 +31,5 @@ void AliT0Loader::InitObjectLoaders()
     delete fDataLoaders->Remove(fDataLoaders->At(kRecPoints));
   }
   dl = new AliDataLoader(fDetectorName + ".RecPoints.root","T0_V", "Reconstructed Points","O");//we want to have object data not tree
-  tl = new AliTaskLoader(fDetectorName + AliConfig::Instance()->GetReconstructionerTaskName(),dl,AliRunLoader::GetRunReconstructioner(),kTRUE);
-  dl->SetBaseTaskLoader(tl);
   fDataLoaders->AddAt(dl,kRecPoints);  
 }

@@ -59,10 +59,10 @@ public:
   /** 
    * CTOR 
    *
-   * @param manager Manager of digitization 
+   * @param input Input of digitization 
    */
-  AliFMDDigitizer(AliRunDigitizer * manager)
-    : AliFMDBaseDigitizer(manager) {}
+  AliFMDDigitizer(AliDigitizationInput * digInput)
+    : AliFMDBaseDigitizer(digInput) {}
   /** 
    * DTOR 
    */
@@ -74,11 +74,11 @@ public:
   /** 
    * Execute this digitizer.  
    * This member function will be called once per event by the passed
-   * AliRunDigitizer manager object. 
+   * AliDigitizationInput* digInput object. 
    *
    * @param options Not used 
    */
-  virtual void Exec(Option_t* option="");
+  virtual void Digitize(Option_t* option="");
 protected:
   /** 
    * Sum contributions from SDigits 

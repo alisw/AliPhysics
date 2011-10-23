@@ -35,7 +35,7 @@
 #pragma link C++ class  AliDebugVolume+;
 #pragma link C++ class  AliConfig+;
 #pragma link C++ class  AliDigitizer+;
-#pragma link C++ class  AliRunDigitizer+;
+#pragma link C++ class  AliDigitizationInput+;
 #pragma link C++ class  AliStream+;
 #pragma link C++ class  AliMergeCombi+;
 #pragma link C++ class  AliGausCorr+;
@@ -44,7 +44,6 @@
 #pragma link C++ class  AliBaseLoader+;
 #pragma link C++ class  AliObjectLoader+;
 #pragma link C++ class  AliTreeLoader+;
-#pragma link C++ class  AliTaskLoader+;
 #pragma link C++ class  AliRunLoader+;
 #pragma link C++ class  AliReconstructor+;
 #pragma link C++ class  AliMemoryWatcher+;

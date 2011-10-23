@@ -11,13 +11,9 @@
 //  Data managed by these standard base loaders has fixed naming convention                //
 //  e.g. - tree with hits is always named TreeH                                            //
 //                     (defined in AliLoader::fgkDefaultHitsContainerName)                 //
-//       - task DtectorName+Name defined                                                   //
 //                                                                                         //
 //  EStdBasicLoaders   idx     Object Type        Description                              //
 //      kData           0    TTree or TObject     main data itself (hits,digits,...)       //
-//      kTask           1        TTask            object producing main data               //
-//      kQA             2        TTree                quality assurance tree               //
-//      kQATask         3        TTask            task producing QA object                 //
 //                                                                                         //
 //                                                                                         //
 //  User can define and add more basic loaders even Run Time.                              //
@@ -33,7 +29,6 @@
 #include "AliLoader.h"
 #include "AliObjectLoader.h"
 #include "AliTreeLoader.h"
-#include "AliTaskLoader.h"
 #include "AliLog.h"
 
 #include <TFile.h>
@@ -52,9 +47,6 @@ AliDataLoader::AliDataLoader():
  fCompressionLevel(2),
  fNEventsPerFile(0),
  fBaseLoaders(0x0),
- fHasTask(kFALSE),
- fTaskName(),
- fParentalTask(0x0),
  fEventFolder(0x0),
  fFolder(0x0)
 {
@@ -72,9 +64,6 @@ AliDataLoader::AliDataLoader(const char* filename, const char* contname,
  fCompressionLevel(2),
  fNEventsPerFile(0),
  fBaseLoaders(new TObjArray(4)),
- fHasTask(kFALSE),
- fTaskName(),
- fParentalTask(0x0),
  fEventFolder(0x0),
  fFolder(0x0)
 {
@@ -275,7 +264,7 @@ void AliDataLoader::Unload()
 void AliDataLoader::UnloadAll()
 {
   //
-  // Unloads all data and tasks
+  // Unloads all data 
   //
   if ( fFile == 0x0 ) return; //nothing loaded
   
@@ -457,7 +446,7 @@ void AliDataLoader::Clean()
 void AliDataLoader::CleanAll()
 {
   //
-  // Cleans all folders and tasks
+  // Cleans all folders 
   //
   TIter next(fBaseLoaders);
   AliBaseLoader* bl;
@@ -595,10 +584,9 @@ Bool_t AliDataLoader::IsOptionContrary(const TString& option) const
 void AliDataLoader::AddBaseLoader(AliBaseLoader* bl)
 {
   //Adds a base loader to lits of base loaders managed by this data loader
-  //Managed data/task will be stored in proper root directory,
+  //Managed data will be stored in proper root directory,
   //and posted to 
   // - in case of tree/object - data folder connected with detector associated with this data loader
-  // - in case of task - parental task which defined in this AliTaskLoader 
   
   if (bl == 0x0)
     {
@@ -672,33 +660,6 @@ AliObjectLoader* AliDataLoader::GetBaseDataLoader()
 }
 
 //______________________________________________________________________________
-AliTaskLoader* AliDataLoader::GetBaseTaskLoader()
-{
-  //
-  // Gets the base task loader
-  //
-  return dynamic_cast<AliTaskLoader*>(GetBaseLoader(kTask));
-}
-
-//______________________________________________________________________________
-AliBaseLoader* AliDataLoader::GetBaseQALoader()
-{
-  //
-  // Gets the base QA loader
-  //
-  return GetBaseLoader(kQA);
-}
-
-//______________________________________________________________________________
-AliTaskLoader* AliDataLoader::GetBaseQATaskLoader()
-{
-  //
-  // Returns pointer to QA base loader
-  //
-  return dynamic_cast<AliTaskLoader*>(GetBaseLoader(kQATask));
-}
-
-//______________________________________________________________________________
 void AliDataLoader::SetBaseDataLoader(AliBaseLoader* bl)
 {
   //
@@ -711,51 +672,6 @@ void AliDataLoader::SetBaseDataLoader(AliBaseLoader* bl)
     }
   if (GetBaseDataLoader()) delete GetBaseDataLoader();
   fBaseLoaders->AddAt(bl,kData);
-}
-
-//______________________________________________________________________________
-void AliDataLoader::SetBaseTaskLoader(AliTaskLoader* bl)
-{
-  //
-  // Sets Task base loader
-  //
-  if (bl == 0x0)
-   {
-     AliError("Parameter is null");
-     return;
-   }
-  if (GetBaseTaskLoader()) delete GetBaseTaskLoader();
-  fBaseLoaders->AddAt(bl,kTask);
-}
-
-//______________________________________________________________________________
-void AliDataLoader::SetBaseQALoader(AliBaseLoader* bl)
-{
-  //
-  // Sets QA base loader
-  //
-  if (bl == 0x0)
-    {
-      AliError("Parameter is null");
-      return;
-    }
-  if (GetBaseQALoader()) delete GetBaseQALoader();
-  fBaseLoaders->AddAt(bl,kQA);
-}
-
-//______________________________________________________________________________
-void AliDataLoader::SetBaseQATaskLoader(AliTaskLoader* bl)
-{
-  //
-  // Sets QA Task base loader
-  //
-  if (bl == 0x0)
-    {
-      AliError("Parameter is null");
-      return;
-   }
-  if (GetBaseQATaskLoader()) delete GetBaseQATaskLoader();
-  fBaseLoaders->AddAt(bl,kQATask);
 }
 
 //______________________________________________________________________________

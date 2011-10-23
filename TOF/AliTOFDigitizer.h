@@ -19,7 +19,7 @@
 
 #include "AliDigitizer.h"
 
-class AliRunDigitizer;
+class AliDigitizationInput;
 class AliTOFHitMap;
 class AliTOFSDigit;
 class AliTOFcalib;
@@ -28,13 +28,13 @@ class AliTOFDigitizer : public AliDigitizer {
  public:
   
   AliTOFDigitizer();
-  AliTOFDigitizer(AliRunDigitizer * manager);
+  AliTOFDigitizer(AliDigitizationInput * digInput);
   virtual ~AliTOFDigitizer();
   AliTOFDigitizer(const AliTOFDigitizer &source); // copy constructor
   AliTOFDigitizer& operator=(const AliTOFDigitizer &source); // ass. op.
   
   // Do the main work
-  void Exec(Option_t* option=0) ;
+  void Digitize(Option_t* option=0) ;
   TClonesArray* SDigits() const {return fSDigitsArray;}
   void ReadSDigit(Int_t inputFile);
   void CreateDigits();

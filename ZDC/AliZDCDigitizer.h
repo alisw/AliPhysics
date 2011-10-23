@@ -14,7 +14,7 @@
 #include "AliCDBStorage.h"
 #include "AliZDCPedestals.h"
 
-class AliRunDigitizer;
+class AliDigitizationInput;
 
 class AliZDC;
 class AliZDCHit;
@@ -24,11 +24,11 @@ class AliZDCDigitizer: public AliDigitizer {
 
 public:
   AliZDCDigitizer();
-  AliZDCDigitizer(AliRunDigitizer* manager);
+  AliZDCDigitizer(AliDigitizationInput* digInput);
   virtual ~AliZDCDigitizer();
    
   virtual Bool_t Init();
-  virtual void Exec(Option_t* option=0);    
+  virtual void Digitize(Option_t* option=0);    
 
   //  PM gain
   void    SetPMGain(Int_t det, Int_t pmDet, Int_t pmGain)

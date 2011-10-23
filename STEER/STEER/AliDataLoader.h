@@ -14,14 +14,10 @@
 //  i.e. Hits, Kine, etc.                 //
 //  many objects type can be assciated    //
 //  with one data type: storing object    //
-//  (usually tree), task producing it,    //
-//  Quality Assurance(QA), QA Task, and   //
-//  others.                               //
-//                                        //
+//  (usually tree)                        //
 //                                        //
 ////////////////////////////////////////////
 
-class TTask;
 class TTree;
 class TFile;
 class TFolder;
@@ -29,7 +25,6 @@ class TFolder;
 class AliBaseLoader;
 class AliObjectLoader;
 class AliRunLoader;
-class AliTaskLoader;
 
 #include <TDirectory.h>
 #include <TNamed.h>
@@ -85,19 +80,13 @@ class AliDataLoader: public TNamed
    void               SetDirName(TString& dirname);
 
    void               AddBaseLoader(AliBaseLoader* bl);
-   enum EStdBasicLoaders {kData = 0,kTask,kQA,kQATask};//standard basic loaders identifiers
+   enum EStdBasicLoaders {kData = 0};//standard basic loaders identifiers
 
    AliBaseLoader*     GetBaseLoader(const TString& name) const;
    AliBaseLoader*     GetBaseLoader(Int_t n) const;
    AliObjectLoader*   GetBaseDataLoader();
-   AliTaskLoader*     GetBaseTaskLoader();
-   AliBaseLoader*     GetBaseQALoader();
-   AliTaskLoader*     GetBaseQATaskLoader();
    
    void               SetBaseDataLoader(AliBaseLoader* bl);
-   void               SetBaseTaskLoader(AliTaskLoader* bl);
-   void               SetBaseQALoader(AliBaseLoader* bl);
-   void               SetBaseQATaskLoader(AliTaskLoader* bl);
    
    Bool_t             CheckReload();//checks if we have to reload given file
    Bool_t             IsFileWritable() const;
@@ -121,14 +110,11 @@ class AliDataLoader: public TNamed
    Int_t        fNEventsPerFile;  //defines number of events stored per one file
    
    TObjArray*   fBaseLoaders;//base loaders
-   Bool_t       fHasTask;// flag if has a task
-   TString      fTaskName;// name of the task
-   TTask*       fParentalTask;//Parental task
 
    TFolder*     fEventFolder;//!event folder
    TFolder*     fFolder;//! folder with data
    
-   ClassDef(AliDataLoader,2)
+   ClassDef(AliDataLoader,3)
  };
 
 #endif

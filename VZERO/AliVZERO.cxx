@@ -52,7 +52,7 @@
 #include "AliVZEROLoader.h"
 #include "AliVZERODigitizer.h"
 #include "AliVZEROBuffer.h"
-#include "AliRunDigitizer.h"
+#include "AliDigitizationInput.h"
 #include "AliVZEROdigit.h"
 #include "AliVZEROSDigit.h"
 #include "AliDAQ.h"
@@ -247,12 +247,12 @@ void AliVZERO::SetTreeAddress()
 }
 
 //_____________________________________________________________________________
-AliDigitizer* AliVZERO::CreateDigitizer(AliRunDigitizer* manager) const
+AliDigitizer* AliVZERO::CreateDigitizer(AliDigitizationInput* digInput) const
 {
   //
   // Creates a digitizer for VZERO
   //
-  return new AliVZERODigitizer(manager);
+  return new AliVZERODigitizer(digInput);
 }
 
 //_____________________________________________________________________________
@@ -264,7 +264,7 @@ void AliVZERO::Hits2Digits(){
   AliVZERODigitizer* dig = new AliVZERODigitizer(this,AliVZERODigitizer::kHits2Digits);
 
   // Creates the digits
-  dig->Exec("");
+  dig->Digitize("");
 
   // deletes the digitizer
   delete dig;
@@ -279,7 +279,7 @@ void AliVZERO::Hits2SDigits(){
   AliVZERODigitizer* dig = new AliVZERODigitizer(this,AliVZERODigitizer::kHits2SDigits);
 
   // Creates the sdigits
-  dig->Exec("");
+  dig->Digitize("");
 
   // deletes the digitizer
   delete dig;

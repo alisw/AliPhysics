@@ -48,7 +48,7 @@ public:
   virtual void  SDigits2Digits();
   virtual void  Hits2Digits();
 
-  virtual AliDigitizer* CreateDigitizer(AliRunDigitizer* manager) const;
+  virtual AliDigitizer* CreateDigitizer(AliDigitizationInput* digInput) const;
 
   virtual void  Digits2Raw();
   virtual Bool_t Raw2SDigits(AliRawReader *rawReader);
