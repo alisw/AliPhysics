@@ -76,15 +76,15 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, const
   default:
     return -EBADF;
   }
-  AliHLTDataInflater* inflater=CreateInflater(deflaterMode, 1);
-  if (!inflater) return -ENODEV;
+  std::auto_ptr<AliHLTDataInflater> inflater(CreateInflater(deflaterMode, 1));
+  if (!inflater.get()) return -ENODEV;
 
   if ((iResult=inflater->InitBitDataInput(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
 					  size-sizeof(AliHLTTPCRawClusterData)))<0) {
     return iResult;
   }
 
-  iResult=ReadRemainingClustersCompressed(c, inflater, nCount, specification, formatVersion);
+  iResult=ReadRemainingClustersCompressed(c, inflater.get(), nCount, specification, formatVersion);
 
   return iResult;
 }
