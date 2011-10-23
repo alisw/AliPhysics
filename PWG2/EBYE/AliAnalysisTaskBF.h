@@ -72,8 +72,19 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fCentralityPercentileMin=min;
     fCentralityPercentileMax=max;
   }
+  void SetImpactParameterRange(Double_t min, Double_t max) { 
+    fUseCentrality = kTRUE;
+    fImpactParameterMin=min;
+    fImpactParameterMax=max;
+  }
 
-  void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  //multiplicity
+  void SetCentralityPercentileRange(Int_t min, Int_t max) {
+    fUseMultiplicity = kTRUE;
+    fNumberOfAcceptedTracksMin = min;
+    fNumberOfAcceptedTracksMax = max;}
+  
+    void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
 
  private:
   AliBalance *fBalance; //BF object
@@ -104,8 +115,14 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
   TString fCentralityEstimator;      //"V0M","TRK","TKL","ZDC","FMD"
   Bool_t fUseCentrality;//use the centrality (PbPb) or not (pp)
-  Double_t fCentralityPercentileMin;
-  Double_t fCentralityPercentileMax;
+  Double_t fCentralityPercentileMin;//centrality percentile min
+  Double_t fCentralityPercentileMax;//centrality percentile max
+  Double_t fImpactParameterMin;//impact parameter min (used for MC)
+  Double_t fImpactParameterMax;//impact parameter max (used for MC)
+
+  Bool_t fUseMultiplicity;//use the multiplicity cuts
+  Int_t fNumberOfAcceptedTracksMin;//min. number of number of accepted tracks (used for the multiplicity dependence study - pp)
+  Int_t fNumberOfAcceptedTracksMax;//max. number of number of accepted tracks (used for the multiplicity dependence study - pp)
 
   Bool_t fUseOfflineTrigger;//Usage of the offline trigger selection
 
