@@ -91,7 +91,7 @@ class AliEMCALReconstructor : public AliReconstructor {
     Double_t   fdEta;        // track - cluster residual in eta
     Double_t   fdPhi;        // track - cluster residual in phi
   };
-  Bool_t CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Double_t &dEta, Double_t &dPhi) const;
+  Bool_t CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Float_t &dEta, Float_t &dPhi) const;
   
  private:
   

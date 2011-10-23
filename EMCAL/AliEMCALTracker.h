@@ -31,8 +31,6 @@ class TObjArray;
 class AliESDEvent;
 class AliVCluster;
 class AliESDCaloCluster;
-class AliEMCALTrack;
-class AliExternalTrackParam;
 class AliEMCALRecPoint;
 class AliEMCALGeometry;
 
@@ -64,10 +62,6 @@ public:
 	void                SetCutNTPC(Double_t value) {fCutNTPC=value;}
 	void                SetStepLength(Float_t length) {fStep=length;}
 	void                SetTrackCorrectionMode(Option_t *option);
-
-	static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Double_t &eta, Double_t &phi);
-	static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi);
-	static Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi);
 
 	enum {	kUnmatched = -99999 };
 	
@@ -112,7 +106,7 @@ private:
 	
 	AliEMCALGeometry *fGeom;      //! EMCAL geometry
 	
-	ClassDef(AliEMCALTracker, 5)  // EMCAL "tracker"
+	ClassDef(AliEMCALTracker, 6)  // EMCAL "tracker"
 };
 
 #endif

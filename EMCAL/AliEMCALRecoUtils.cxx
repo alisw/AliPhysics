@@ -56,10 +56,10 @@
 // EMCAL includes
 #include "AliEMCALRecoUtils.h"
 #include "AliEMCALGeometry.h"
-#include "AliEMCALTrack.h"
+#include "AliTrackerBase.h"
 #include "AliEMCALCalibTimeDepCorrection.h" // Run dependent
 #include "AliEMCALPIDUtils.h"
-#include "AliEMCALTracker.h"
+
 
 ClassImp(AliEMCALRecoUtils)
   
@@ -1443,8 +1443,8 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
 
     //Extrapolate the track to EMCal surface
     AliExternalTrackParam emcalParam(*trackParam);
-    Double_t eta, phi;
-    if(!AliEMCALTracker::ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) 
+    Float_t eta, phi;
+    if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) 
       {
 	if(aodevent && trackParam) delete trackParam;
 	continue;
@@ -1511,8 +1511,8 @@ Int_t AliEMCALRecoUtils::FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent
   AliExternalTrackParam *trackParam = const_cast<AliExternalTrackParam*>(track->GetInnerParam());
   if(!trackParam) return index;
   AliExternalTrackParam emcalParam(*trackParam);
-  Double_t eta, phi;
-  if(!AliEMCALTracker::ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) return index;
+  Float_t eta, phi;
+  if(!ExtrapolateTrackToEMCalSurface(&emcalParam, 430., fMass, fStepSurface, eta, phi)) return index;
   if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
 
   TObjArray *clusterArr = new TObjArray(event->GetNumberOfCaloClusters());
@@ -1537,7 +1537,7 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *
   dEta=-999, dPhi=-999;
   Float_t dRMax = fCutR, dEtaMax=fCutEta, dPhiMax=fCutPhi;
   Int_t index = -1;
-  Double_t tmpEta=-999, tmpPhi=-999;
+  Float_t tmpEta=-999, tmpPhi=-999;
 
   Double_t exPos[3] = {0.,0.,0.};
   if(!emcalParam->GetXYZ(exPos)) return index;
@@ -1552,7 +1552,7 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *
       if(dR > fClusterWindow) continue;
 
       AliExternalTrackParam trkPamTmp (*trkParam);//Retrieve the starting point every time before the extrapolation
-      if(!AliEMCALTracker::ExtrapolateTrackToCluster(&trkPamTmp, cluster, fMass, fStepCluster, tmpEta, tmpPhi)) continue;
+      if(!ExtrapolateTrackToCluster(&trkPamTmp, cluster, fMass, fStepCluster, tmpEta, tmpPhi)) continue;
       if(fCutEtaPhiSum)
         {
           Float_t tmpR=TMath::Sqrt(tmpEta*tmpEta + tmpPhi*tmpPhi);
@@ -1588,18 +1588,83 @@ Int_t  AliEMCALRecoUtils::FindMatchedClusterInClusterArr(AliExternalTrackParam *
   return index;
 }
 
-//________________________________________________________________________________
-Bool_t  AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi)
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Float_t &eta, Float_t &phi)
+{
+  eta = -999, phi = -999;
+  if(!trkParam) return kFALSE;
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
+  Double_t trkPos[3] = {0.,0.,0.};
+  if(!trkParam->GetXYZ(trkPos)) return kFALSE;
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+  eta = trkPosVec.Eta();
+  phi = trkPosVec.Phi();
+  if(phi<0)
+    phi += 2*TMath::Pi();
+
+  return kTRUE;
+}
+
+
+//
+//------------------------------------------------------------------------------
+//
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi)
 {
   //
-  //Return the residual by extrapolating a track to a cluster
+  //Return the residual by extrapolating a track param to a global position
+  //
+  tmpEta = -999;
+  tmpPhi = -999;
+  if(!trkParam) return kFALSE;
+  Double_t trkPos[3] = {0.,0.,0.};
+  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
+  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
+  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
+  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), mass, step,kTRUE, 0.8, -1)) return kFALSE;
+  if(!trkParam->GetXYZ(trkPos)) return kFALSE; //Get the extrapolated global position
+
+  TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
+  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
+
+  // track cluster matching
+  tmpPhi = clsPosVec.DeltaPhi(trkPosVec);    // tmpPhi is between -pi and pi
+  tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
+
+  return kTRUE;
+}
+
+
+//
+//------------------------------------------------------------------------------
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi)
+{
+  //
+  //Return the residual by extrapolating a track param to a cluster
+  //
+  tmpEta = -999;
+  tmpPhi = -999;
+  if(!cluster || !trkParam) return kFALSE;
+
+  Float_t clsPos[3] = {0.,0.,0.};
+  cluster->GetPosition(clsPos);
+
+  return ExtrapolateTrackToPosition(trkParam, clsPos, mass, step, tmpEta, tmpPhi);
+}
+
+//
+//------------------------------------------------------------------------------
+Bool_t AliEMCALRecoUtils::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi)
+{
+  //
+  //Return the residual by extrapolating a track param to a clusterfStepCluster
   //
 
-  Double_t dEta = -999, dPhi = -999;
-  Bool_t result = AliEMCALTracker::ExtrapolateTrackToCluster(trkParam, cluster, fMass, fStepCluster, dEta, dPhi);
-  tmpEta=dEta, tmpPhi=dPhi;
-  return result;
+  return ExtrapolateTrackToCluster(trkParam, cluster, fMass, fStepCluster, tmpEta, tmpPhi);
 }
+
 
 //________________________________________________________________________________
 void AliEMCALRecoUtils::GetMatchedResiduals(Int_t clsIndex, Float_t &dEta, Float_t &dPhi)

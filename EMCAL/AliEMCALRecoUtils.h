@@ -242,11 +242,14 @@ public:
   // Track matching
   //----------------------------------------------------
 
-  Bool_t   ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
-
   void     FindMatches(AliVEvent *event, TObjArray * clusterArr=0x0, AliEMCALGeometry *geom=0x0);
   Int_t    FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
   Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
+  
+  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Float_t &eta, Float_t &phi);
+  static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+  static Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+  Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
 
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack(Int_t trkIndex)   const;
@@ -401,7 +404,7 @@ private:
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
   Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
   
-  ClassDef(AliEMCALRecoUtils, 15)
+  ClassDef(AliEMCALRecoUtils, 16)
   
 };
 

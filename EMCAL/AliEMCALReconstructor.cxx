@@ -49,7 +49,7 @@
 #include "AliEMCALClusterizerNxN.h"
 #include "AliEMCALRecPoint.h"
 #include "AliEMCALPID.h"
-#include "AliEMCALTracker.h"
+#include "AliEMCALRecoUtils.h"
 #include "AliRawReader.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -560,7 +560,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
       	  AliESDtrack * track = esd->GetTrack(itrack) ; // retrieve track
       	  if(track->GetEMCALcluster()==iClust)
       	    {
-      	      Double_t dEta=-999, dPhi=-999;
+      	      Float_t dEta=-999, dPhi=-999;
       	      Bool_t isMatch =  CalculateResidual(track, ec, dEta, dPhi);
       	      if(!isMatch) 
       		{
@@ -692,7 +692,7 @@ void AliEMCALReconstructor::ReadDigitsArrayFromTree(TTree *digitsTree) const
 }
 
 //==================================================================================
-Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Double_t &dEta, Double_t &dPhi)const
+Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCluster *cluster, Float_t &dEta, Float_t &dPhi)const
 {
   //
   // calculate the residual between track and cluster
@@ -712,7 +712,7 @@ Bool_t AliEMCALReconstructor::CalculateResidual(AliESDtrack *track, AliESDCaloCl
   if(!trkParam) return kFALSE;
 
   AliExternalTrackParam trkParamTmp (*trkParam);
-  if(!AliEMCALTracker::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToCluster(&trkParamTmp, cluster, track->GetMass(), GetRecParam()->GetExtrapolateStep(), dEta, dPhi)) return kFALSE;
 
   return kTRUE;
 }

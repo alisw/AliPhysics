@@ -55,6 +55,7 @@
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
 #include "AliEMCALReconstructor.h"
+#include "AliEMCALRecoUtils.h"
 
 #include "AliEMCALTracker.h"
 
@@ -383,8 +384,8 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
   // Find the closest one as matched if the residuals (dEta, dPhi) satisfy the cuts
   //
 
-  Double_t maxEta=fCutEta;
-  Double_t maxPhi=fCutPhi;
+  Float_t maxEta=fCutEta;
+  Float_t maxPhi=fCutPhi;
   Int_t index = -1;
   
   // If the esdFriend is available, use the TPCOuter point as the starting point of extrapolation
@@ -399,8 +400,8 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
 
 
   AliExternalTrackParam trkParamTmp(*trkParam);
-  Double_t eta, phi;
-  if(!ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi)) return index;
+  Float_t eta, phi;
+  if(!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&trkParamTmp, 430., track->GetMass(), fStep, eta, phi)) return index;
   if(TMath::Abs(eta)>0.75 || (phi) < 70*TMath::DegToRad() || (phi) > 190*TMath::DegToRad()) return index;
 
   //Perform extrapolation
@@ -416,8 +417,8 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       
       AliExternalTrackParam trkParTmp(trkParamTmp);
 
-      Double_t tmpEta, tmpPhi;
-      if(!ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), fStep, tmpEta, tmpPhi)) continue;
+      Float_t tmpEta, tmpPhi;
+      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), fStep, tmpEta, tmpPhi)) continue;
       if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
         {
           maxPhi=tmpPhi;
@@ -427,75 +428,6 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       }
   return index;
 }
-
-
-//
-//------------------------------------------------------------------------------
-//
-Bool_t AliEMCALTracker::ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Double_t &eta, Double_t &phi)
-{
-  eta = -999, phi = -999;
-  if(!trkParam) return kFALSE;
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, emcalR, mass, step, kTRUE, 0.8, -1)) return kFALSE;
-  Double_t trkPos[3] = {0.,0.,0.};
-  if(!trkParam->GetXYZ(trkPos)) return kFALSE;
-  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-  eta = trkPosVec.Eta();
-  phi = trkPosVec.Phi();
-  if(phi<0)
-    phi += 2*TMath::Pi();
-
-  return kTRUE;
-}
-
-
-//
-//------------------------------------------------------------------------------
-//
-Bool_t AliEMCALTracker::ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi)
-{
-  //
-  //Return the residual by extrapolating a track param to a global position
-  //
-  tmpEta = -999;
-  tmpPhi = -999;
-  if(!trkParam) return kFALSE;
-  Double_t trkPos[3] = {0.,0.,0.};
-  TVector3 vec(clsPos[0],clsPos[1],clsPos[2]);
-  Double_t alpha =  ((int)(vec.Phi()*TMath::RadToDeg()/20)+0.5)*20*TMath::DegToRad();
-  vec.RotateZ(-alpha); //Rotate the cluster to the local extrapolation coordinate system
-  if(!AliTrackerBase::PropagateTrackToBxByBz(trkParam, vec.X(), mass, step,kTRUE, 0.8, -1)) return kFALSE;
-  if(!trkParam->GetXYZ(trkPos)) return kFALSE; //Get the extrapolated global position
-
-  TVector3 clsPosVec(clsPos[0],clsPos[1],clsPos[2]);
-  TVector3 trkPosVec(trkPos[0],trkPos[1],trkPos[2]);
-
-  // track cluster matching
-  tmpPhi = clsPosVec.DeltaPhi(trkPosVec);    // tmpPhi is between -pi and pi
-  tmpEta = clsPosVec.Eta()-trkPosVec.Eta();
-
-  return kTRUE;
-}
-
-
-//
-//------------------------------------------------------------------------------
-//
-Bool_t AliEMCALTracker::ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Double_t &tmpEta, Double_t &tmpPhi)
-{
-  //
-  //Return the residual by extrapolating a track param to a cluster
-  //
-  tmpEta = -999;
-  tmpPhi = -999;
-  if(!cluster) return kFALSE;
-
-  Float_t clsPos[3] = {0.,0.,0.};
-  cluster->GetPosition(clsPos);
-
-  return ExtrapolateTrackToPosition(trkParam, clsPos, mass, step, tmpEta, tmpPhi);
-}
-
 
 //
 //------------------------------------------------------------------------------
