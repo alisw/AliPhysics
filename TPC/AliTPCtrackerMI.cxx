@@ -1956,11 +1956,13 @@ Int_t AliTPCtrackerMI::FollowProlongation(AliTPCseed& t, Int_t rf, Int_t step, B
   if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();  
   if (alpha < 0.            ) alpha += 2.*TMath::Pi();  
   //
-  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha())%fN);
+  t.SetRelativeSector(Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN);
     
   Int_t first = GetRowNumber(xt);
   if (!fromSeeds)
     first -= step;
+  if (first < 0)
+    first = 0;
   for (Int_t nr= first; nr>=rf; nr-=step) {
     // update kink info
     if (t.GetKinkIndexes()[0]>0){
@@ -2738,7 +2740,6 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
     AliESDtrack *esd=event->GetTrack(i);
 
     if (seed->GetNumberOfClusters()<60 && seed->GetNumberOfClusters()<(esd->GetTPCclusters(0) -5)*0.8){
-      AliInfo("Refitting track");
       AliExternalTrackParam paramIn;
       AliExternalTrackParam paramOut;
       Int_t ncl = seed->RefitTrack(seed,&paramIn,&paramOut);
@@ -2968,7 +2969,7 @@ void AliTPCtrackerMI::ReadSeeds(const AliESDEvent *const event, Int_t direction)
     Double_t alpha=seed->GetAlpha();
     if (alpha > 2.*TMath::Pi()) alpha -= 2.*TMath::Pi();
     if (alpha < 0.            ) alpha += 2.*TMath::Pi();
-    Int_t ns=Int_t(alpha/fSectors->GetAlpha())%fN;
+    Int_t ns=Int_t(alpha/fSectors->GetAlpha()+0.0001)%fN;
     alpha =ns*fSectors->GetAlpha() + fSectors->GetAlphaShift();
     alpha-=seed->GetAlpha();  
     if (alpha<-TMath::Pi()) alpha += 2*TMath::Pi();
