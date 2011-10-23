@@ -24,7 +24,7 @@
 
 class AliRawReaderDateOnline: public AliRawReaderDate {
   public :
-    AliRawReaderDateOnline(const char* fileName);
+    AliRawReaderDateOnline(const char* fileName, const Char_t** customTable = NULL);
     virtual ~AliRawReaderDateOnline();
 
     virtual Bool_t   NextEvent();
@@ -64,6 +64,7 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);
 
+    const Char_t**   fTable;// custom monitoring table
     Bool_t           fStop; // raw-reader signaled to stop
 
     ClassDef(AliRawReaderDateOnline, 0) // class for reading DATE raw data from shared memory

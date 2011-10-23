@@ -40,12 +40,13 @@ ClassImp(AliRawReaderDateOnline)
 
 AliRawReaderDateOnline::AliRawReaderDateOnline(
 #ifdef ALI_DATE
-				   const char* filename
+				     const char* filename
 #else
-				   const char* /* filename */
+				     const char* /* filename */
 #endif
-				   ) :
+				   , const Char_t** customTable) :
   AliRawReaderDate((void*)NULL),
+  fTable(customTable),
   fStop(kFALSE)
 {
 
@@ -77,11 +78,21 @@ AliRawReaderDateOnline::AliRawReaderDateOnline(
   monitorSetNowait();
   monitorSetNoWaitNetworkTimeout(1000);
 
-  const Char_t* table[]  = {"ALL", "few", "*", "*",
-                            "EOR", "yes","*", "*",
-                            NULL, NULL, NULL, NULL};
-  monitorDeclareTableExtended(const_cast<char**>(table));
-
+  if (!fTable) {
+    const Char_t* table[]  = {"ALL", "few", "*", "*",
+			      "EOR", "yes","*", "*",
+			      NULL, NULL, NULL, NULL};
+    monitorDeclareTableExtended(const_cast<char**>(table));
+  }
+  else {
+    AliInfo("Custom monitoring table:");
+    Int_t index = 0;
+    while (fTable[index] != NULL) {
+      AliInfo(Form("%s %s %s %s",fTable[index],fTable[index+1],fTable[index+2],fTable[index+3]));
+      index += 4;
+    }
+    monitorDeclareTableExtended(const_cast<char**>(fTable));
+  }
   // install SIGUSR1 handler to allow clean end-of-events loop
   gSystem->AddSignalHandler(new AliRawReaderDateIntHandler(this));
 
