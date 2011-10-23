@@ -42,6 +42,7 @@
 // --- ROOT system ---
 #include <TMath.h>
 #include <TString.h>
+#include <TList.h>
 
 //---- ANALYSIS system ----
 #include "AliCaloPID.h"
@@ -101,7 +102,7 @@ fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x
 }
 
 //________________________________________________
-AliCaloPID::AliCaloPID(const TTask * emcalpid) : 
+AliCaloPID::AliCaloPID(const TNamed * emcalpid) : 
 TObject(), 
 fEMCALPhotonWeight(0.),   fEMCALPi0Weight(0.),  
 fEMCALElectronWeight(0.), fEMCALChargeWeight(0.),      fEMCALNeutralWeight(0.),
