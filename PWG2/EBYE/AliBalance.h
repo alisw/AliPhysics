@@ -39,8 +39,10 @@ class AliBalance : public TObject {
   AliBalance();
   AliBalance(const AliBalance& balance);
   ~AliBalance();
+
+  void SetCentralityIdentifier(const char* centralityId) {
+    fCentralityId = centralityId;}
   
-  //void SetNumberOfBins(Int_t ibin, Int_t ibins);
   void SetAnalysisLevel(const char* analysisLevel) {
     fAnalysisLevel = analysisLevel;}
   void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
@@ -107,12 +109,13 @@ class AliBalance : public TObject {
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
-
   Bool_t bShuffle; //shuffled balance function object
   TString fAnalysisLevel; //ESD, AOD or MC
   Int_t fAnalyzedEvents; //number of events that have been analyzed
 
-  Int_t fNumberOfBins[ANALYSIS_TYPES]; //number of bins of the analyzed interval
+  TString fCentralityId;//Centrality identifier to be used for the histo naming
+
+  Int_t fNumberOfBins[ANALYSIS_TYPES];//number of bins of the analyzed interval
   Double_t fP1Start[ANALYSIS_TYPES];
   Double_t fP1Stop[ANALYSIS_TYPES];
   Double_t fP2Start[ANALYSIS_TYPES];
