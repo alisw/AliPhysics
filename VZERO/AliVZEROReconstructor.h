@@ -20,6 +20,7 @@
 #include "AliVZERORecoParam.h"
 
 class TF1;
+class TH1F;
 class AliVZEROCalibData;
 class AliVZEROTriggerData;
 class AliESDEvent;
@@ -74,13 +75,14 @@ private:
   Float_t            fTimeOffset[64]; //! HPTDC time offsets channel by channel
   TF1*               fTimeSlewing;    //! Function for time slewing correction
   TObjArray*         fSaturationCorr; //! Array with functions for correcting the signal saturation
+  TH1F*              fEqFactors;      //! Histogram with the equalization factors used in event-plane reconstruction
 
   Int_t              fCollisionMode;  // =0->p-p, =1->A-A
   Float_t            fBeamEnergy;     // beam energy
 
   mutable TClonesArray *fDigitsArray; // clones-array for ConvertDigits() and FillESD()
 
-  ClassDef(AliVZEROReconstructor, 4)  // class for the VZERO reconstruction
+  ClassDef(AliVZEROReconstructor, 5)  // class for the VZERO reconstruction
 };
 
 #endif

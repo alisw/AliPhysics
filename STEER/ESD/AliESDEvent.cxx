@@ -1856,3 +1856,21 @@ AliEventplane* AliESDEvent::GetEventplane()
     if (!fEventplane) fEventplane = new AliEventplane();
     return  fEventplane;
 }
+
+Float_t AliESDEvent::GetVZEROEqMultiplicity(Int_t i) const
+{
+  // Get VZERO Multiplicity for channel i
+  // Themethod uses the equalization factors
+  // stored in the ESD-run object in order to
+  // get equal multiplicities within a VZERO rins (1/8 of VZERO)
+  if (!fESDVZERO || !fESDRun) return -1;
+
+  Int_t ring = i/8;
+  Float_t factorSum = 0;
+  for(Int_t j = 8*ring; j < (8*ring+8); ++j) {
+    factorSum += fESDRun->GetVZEROEqFactors(j);
+  }
+  Float_t factor = fESDRun->GetVZEROEqFactors(i)*8./factorSum;
+
+  return (fESDVZERO->GetMultiplicity(i)/factor);
+}

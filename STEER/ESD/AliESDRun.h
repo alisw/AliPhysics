@@ -104,6 +104,10 @@ public:
   void       SetCaloTriggerType(const Int_t* in) {for (int i = 0; i < 8; i++) fCaloTriggerType[i] = in[i];}
   Int_t*     GetCaloTriggerType() {return fCaloTriggerType;}
 
+  void           SetVZEROEqFactors(Float_t factors[64]) {for (Int_t i = 0; i < 64; ++i) fVZEROEqFactors[i] = factors[i];}
+  const Float_t* GetVZEROEqFactors() const {return fVZEROEqFactors;}
+  Float_t        GetVZEROEqFactors(Int_t i) const {return fVZEROEqFactors[i];}
+
 private:
   Float_t         fCurrentL3;       // signed current in the L3     (LHC convention: +current -> +Bz)
   Float_t         fCurrentDip;      // signed current in the Dipole (LHC convention: +current -> -Bx)
@@ -125,8 +129,9 @@ private:
   TGeoHMatrix*    fEMCALMatrix[kNEMCALMatrix]; //EMCAL supermodule position and orientation matrices
   Float_t         fT0spread[kT0spreadSize];     // spread of time distributions on T0A, T0C, (T0A+T0C)/2, (T0A-T0C)/2
   Int_t           fCaloTriggerType[8]; // Calorimeter trigger type
+  Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
 	
-  ClassDef(AliESDRun,11)
+  ClassDef(AliESDRun,12)
 };
 
 #endif 

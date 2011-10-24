@@ -55,6 +55,7 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
                         fTriggerData(NULL),
                         fTimeSlewing(NULL),
                         fSaturationCorr(NULL),
+                        fEqFactors(NULL),
                         fCollisionMode(0),
                         fBeamEnergy(0.),
                         fDigitsArray(0)
@@ -104,6 +105,10 @@ AliVZEROReconstructor:: AliVZEROReconstructor(): AliReconstructor(),
   AliCDBEntry *entry6 = AliCDBManager::Instance()->Get("VZERO/Trigger/Data");
   if (!entry6) AliFatal("VZERO trigger config data is not found in OCDB !");
   fTriggerData = (AliVZEROTriggerData*)entry6->GetObject();
+
+  AliCDBEntry *entry7 = AliCDBManager::Instance()->Get("VZERO/Calib/EqualizationFactors");
+  if (!entry7) AliFatal("VZERO equalization factors are not found in OCDB !");
+  fEqFactors = (TH1F*)entry7->GetObject();
 }
 
 
@@ -444,6 +449,20 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
   if (esd) { 
      AliDebug(1, Form("Writing VZERO data to ESD tree"));
      esd->SetVZEROData(fESDVZERO);
+     const AliESDRun *esdRun = esd->GetESDRun();
+     if (esdRun) {
+       Float_t factors[64];
+       Float_t factorSum = 0;
+       for(Int_t i = 0; i < 64; ++i) {
+	 factors[i] = fEqFactors->GetBinContent(i+1)*fCalibData->GetMIPperADC(i);
+	 factorSum += factors[i];
+       }
+       for(Int_t i = 0; i < 64; ++i) factors[i] *= (64./factorSum);
+       
+       esd->SetVZEROEqFactors(factors);
+     }
+     else
+       AliError("AliESDRun object is not available! Cannot write the equalization factors!");
   }
 
   if (esd) {

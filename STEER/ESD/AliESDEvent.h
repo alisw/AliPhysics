@@ -144,7 +144,9 @@ public:
   void     SetEMCALMatrix(TGeoHMatrix*matrix, Int_t i) {if(fESDRun) fESDRun->SetEMCALMatrix(matrix,i);}
   const TGeoHMatrix* GetEMCALMatrix(Int_t i) const {return fESDRun?fESDRun->GetEMCALMatrix(i):0x0;}
   void     SetCaloTriggerType(const Int_t* type) {if (fESDRun) fESDRun->SetCaloTriggerType(type);}
-  Int_t*   GetCaloTriggerType() const {return fESDRun?fESDRun->GetCaloTriggerType():0x0;};
+  Int_t*   GetCaloTriggerType() const {return fESDRun?fESDRun->GetCaloTriggerType():0x0;}
+  const Float_t* GetVZEROEqFactors() const {return fESDRun?fESDRun->GetVZEROEqFactors():0x0;}
+  Float_t        GetVZEROEqMultiplicity(Int_t i) const;
 	
   //
   void        SetCurrentL3(Float_t cur)           const  {if(fESDRun) fESDRun->SetCurrentL3(cur);}
@@ -162,6 +164,7 @@ public:
   //
   Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
   void      SetT0spread(Float_t *t)               const  {if(fESDRun) fESDRun->SetT0spread(t);} 
+  void      SetVZEROEqFactors(Float_t factors[64]) const {if(fESDRun) fESDRun->SetVZEROEqFactors(factors);}
   // HEADER
   AliESDHeader* GetHeader() const {return fHeader;}
 
