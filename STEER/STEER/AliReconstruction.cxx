@@ -2244,7 +2244,15 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   if (pHLTSrc && pHLTTgt) {
     pHLTSrc->Copy(*pHLTTgt);
   }
-
+  //
+  // Perform analysis of this event if requested
+  // RS: Should be done before WriteESDfriend, since the latter may clean the esdfriend
+  if (fAnalysis) {
+    fRecoHandler->BeginEvent(iEvent);
+    fAnalysis->ExecAnalysis();
+    fRecoHandler->FinishEvent();
+  }  
+  //
     if (fWriteESDfriend) 
       fesd->GetESDfriend(fesdf);
 
@@ -2252,7 +2260,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     if (fWriteESDfriend) {
       WriteESDfriend();
     }
-
     // Auto-save the ESD tree in case of prompt reco @P2
     if (fRawReader && fRawReader->UseAutoSaveESD()) {
       ftree->AutoSave("SaveSelf");
@@ -2264,13 +2271,6 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
-    //
-    // Perform analysis of this event if requested
-    if (fAnalysis) {
-      fRecoHandler->BeginEvent(iEvent);
-      fAnalysis->ExecAnalysis();
-      fRecoHandler->FinishEvent();
-    }  
     //
     fesd->Reset();
     fhltesd->Reset();
