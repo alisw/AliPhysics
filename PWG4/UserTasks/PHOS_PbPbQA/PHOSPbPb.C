@@ -13,11 +13,7 @@ void PHOSPbPbQA(const char* dataset="collection.xml")
   
   gSystem->AddIncludePath("-I$ALICE_ROOT/include -I$ALICE_ROOT/PHOS");
 
-  // A task can be compiled dynamically with AClic
-  // gROOT->LoadMacro("AliCaloPhoton.cxx+g");
-  gROOT->LoadMacro("AliAnalysisTaskPHOSPbPbQA.cxx+g");
-
-  cout << "PbPbQA: processing collection " << dataset << endl;
+  cout << "PHOSPbPbQA: processing collection " << dataset << endl;
 
   TString data = dataset;
   TChain* chain = 0;
@@ -72,12 +68,8 @@ void PHOSPbPbQA(const char* dataset="collection.xml")
   //Add centrality task!
   gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
   AliCentralitySelectionTask *taskCentrality = AddTaskCentrality() ;
-  taskCentrality->SetMCInput();
+  // taskCentrality->SetMCInput();
 
-  //Add REACTION PLANE task!
-  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskEventplane.C");
-  AliEPSelectionTask*taskEP=  AddTaskEventplane() ;
-  
   // Add my task
   AliAnalysisTaskPHOSPbPbQA *task1 = new AliAnalysisTaskPHOSPbPbQA("PbPbQA");
   mgr->AddTask(task1);
