@@ -330,7 +330,6 @@ void AliMeanVertexPreprocessorOffline::ProcessOutput(const char *filename, const
 		
 		  if ((TMath::Abs(posOnline[0]-xMeanVtx) > 0.1) || (TMath::Abs(posOnline[1]-yMeanVtx) > 0.1) || (TMath::Abs(posOnline[2]-zMeanVtx) > 1.)){
 		    AliWarning(Form("vertex offline far from the online one"));
-		    return;
 		  }
 		}
 	}
