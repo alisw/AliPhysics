@@ -13,6 +13,9 @@
 #pragma link C++ class AliAnalysisTaskPi0Efficiency+;
 #pragma link C++ class AliAnalysisTaskPi0DiffEfficiency+;
 
+// PHOS_PbPbQA
+#pragma link C++ class AliAnalysisTaskPHOSPbPbQA+;
+
 // CaloCellQA
 #pragma link C++ class AliCaloCellsQA+;
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
