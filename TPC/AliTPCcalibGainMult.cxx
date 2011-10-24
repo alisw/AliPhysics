@@ -147,14 +147,14 @@ AliTPCcalibGainMult::AliTPCcalibGainMult(const Text_t *name, const Text_t *title
   //
   //
   //
-  Int_t binsPadEqual[6]    = { 400, 400,    4,   20,   50, 100};
-  Double_t xminPadEqual[6] = { 0.0, 0.0, -0.5,    0, -250,   0}; 
-  Double_t xmaxPadEqual[6] = { 2.0, 2.0,  3.5, 13000,  250,   3};
-  TString axisNamePadEqual[6]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength", "1_pt"};
-  TString axisTitlePadEqual[6]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","driftlength", "1/pt"};
+  Int_t binsPadEqual[5]    = { 400, 400,    4,   10,   10};
+  Double_t xminPadEqual[5] = { 0.0, 0.0, -0.5,    0, -250}; 
+  Double_t xmaxPadEqual[5] = { 2.0, 2.0,  3.5, 13000, 250};
+  TString axisNamePadEqual[5]   = {"dEdxRatioMax","dEdxRatioTot","padType","mult","driftlength"};
+  TString axisTitlePadEqual[5]  = {"dEdx_padRegion/mean_dEdx Qmax", "dEdx_padRegion/mean_dEdx Qtot","padType","mult","driftlength"};
   //
-  fHistPadEqual = new THnSparseF("fHistPadEqual","0:dEdx_pad/dEdx_mean, 1:pad, 2:mult, 3:drift, 4:1/pt", 6, binsPadEqual, xminPadEqual, xmaxPadEqual);
-  for (Int_t iaxis=0; iaxis<6;iaxis++){
+  fHistPadEqual = new THnSparseF("fHistPadEqual","0:dEdx_pad/dEdx_mean, 1:pad, 2:mult, 3:drift", 5, binsPadEqual, xminPadEqual, xmaxPadEqual);
+  for (Int_t iaxis=0; iaxis<5;iaxis++){
     fHistPadEqual->GetAxis(iaxis)->SetName(axisNamePadEqual[iaxis]);
     fHistPadEqual->GetAxis(iaxis)->SetTitle(axisTitlePadEqual[iaxis]);
   }
@@ -373,8 +373,8 @@ void AliTPCcalibGainMult::Process(AliESDEvent *event) {
       Float_t meanTot = (1/3.)*(signalArrayTot[0] + signalArrayTot[1] + signalArrayTot[2]); 
       if (meanMax < 1e-5 || meanTot < 1e-5) continue;
       for(Int_t ipad = 0; ipad < 4; ipad ++) {
-	Double_t vecPadEqual[6] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift, track->OneOverPt()};
-	fHistPadEqual->Fill(vecPadEqual);
+	Double_t vecPadEqual[5] = {signalArrayMax[ipad]/meanMax, signalArrayTot[ipad]/meanTot, ipad, nContributors, meanDrift};
+	if ( TMath::Abs(meanP-kMIPPt)<0.05 ) fHistPadEqual->Fill(vecPadEqual);
       }
       //
       //      if (meanP > 0.4 && meanP < 0.55) {
@@ -462,6 +462,7 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
   // merging of the component
   //
 
+  const Int_t kMaxEntriesSparse=2000000; // MI- temporary - restrict the THnSparse size
   TIterator* iter = li->MakeIterator();
   AliTPCcalibGainMult* cal = 0;
 
@@ -476,7 +477,10 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
     if (cal->GetHistQA()) fHistQA->Add(cal->GetHistQA());
     if (cal->GetHistGainSector()) fHistGainSector->Add(cal->GetHistGainSector());
     if (cal->GetHistPadEqual()) fHistPadEqual->Add(cal->GetHistPadEqual());
-    if (cal->GetHistGainMult()) fHistGainMult->Add(cal->GetHistGainMult());
+    if (cal->GetHistGainMult()) {
+       if (fHistGainMult->GetEntries()<kMaxEntriesSparse) fHistGainMult->Add(cal->GetHistGainMult());
+    } 
+
     if (cal->fHistdEdxMap){
       if (fHistdEdxMap) fHistdEdxMap->Add(cal->fHistdEdxMap);
     }
