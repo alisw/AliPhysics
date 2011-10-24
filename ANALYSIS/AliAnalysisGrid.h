@@ -54,6 +54,7 @@ enum EPluginBits {
 // Getters
    virtual EPluginRunMode GetRunMode() const;
 // Setters   
+   virtual void        AddAdditionalLibrary(const char *name)            = 0;
    virtual void        AddIncludePath(const char *path)                  = 0;
    virtual void        AddRunNumber(Int_t run)                           = 0;
    virtual void        AddRunNumber(const char *run)                     = 0;
@@ -91,6 +92,7 @@ enum EPluginBits {
    virtual void        SetJDLName(const char *name="analysis.jdl")       = 0;
    virtual void        SetPreferedSE(const char *se)                     = 0;
    virtual void        SetProductionMode(Int_t mode=1)                   = 0;
+   virtual void        SetRegisterExcludes(const char *list)             = 0;
    virtual void        SetRunPrefix(const char *prefix)                  = 0;
    virtual void        SetOutputSingleFolder(const char *folder)         = 0;
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                = 0;

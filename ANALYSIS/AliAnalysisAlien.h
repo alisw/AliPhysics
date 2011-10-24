@@ -40,6 +40,7 @@ public:
    AliAnalysisAlien(const AliAnalysisAlien& other); 
    AliAnalysisAlien& operator=(const AliAnalysisAlien& other);
 // Setters   
+   virtual void        AddAdditionalLibrary(const char *name);
    virtual void        AddIncludePath(const char *path);
    virtual void        AddRunNumber(Int_t run);
    virtual void        AddRunNumber(const char *run);
@@ -89,6 +90,7 @@ public:
    virtual void        SetJDLName(const char *name="analysis.jdl")       {fJDLName = name;}
    virtual void        SetPreferedSE(const char *se);
    virtual void        SetProductionMode(Int_t mode=1)                   {fProductionMode = mode;}
+   virtual void        SetRegisterExcludes(const char *list)             {fRegisterExcludes = list;}
    virtual void        SetRunPrefix(const char *prefix);
    virtual void        SetOutputSingleFolder(const char *folder)         {fOutputSingle = folder; fSplitMode="file"; fSplitMaxInputFileNumber=1;}
    virtual void        SetFastReadOption(Bool_t on=kTRUE)                {fFastReadOption = on ? 1 : 0;}
@@ -213,6 +215,7 @@ private:
    TString          fJDLName;         // JDL file to be generated
    TString          fTerminateFiles;  // List of output files produced during Terminate
    TString          fMergeExcludes;   // List of output files excluded from merging
+   TString          fRegisterExcludes; // List of liles not to be registered/merged
    TString          fIncludePath;     // Include path
    TString          fCloseSE;         // Preffered storage element. Taken from alien_CLOSE_SE environment.
    TString          fFriendChainName; // File name to construct friend chain (for AOD)
@@ -230,6 +233,6 @@ private:
    TObjArray       *fModules;         // List of AliAnalysisTaskCfg modules
    TMap             fProofParam;      // Key-value pairs for proof mode
    
-   ClassDef(AliAnalysisAlien, 19)   // Class providing some AliEn utilities
+   ClassDef(AliAnalysisAlien, 20)   // Class providing some AliEn utilities
 };
 #endif

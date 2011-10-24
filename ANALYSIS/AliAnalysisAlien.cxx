@@ -117,6 +117,7 @@ AliAnalysisAlien::AliAnalysisAlien()
                   fJDLName(),
                   fTerminateFiles(),
 		            fMergeExcludes(),
+                  fRegisterExcludes(),
                   fIncludePath(),
                   fCloseSE(),
                   fFriendChainName(),
@@ -189,6 +190,7 @@ AliAnalysisAlien::AliAnalysisAlien(const char *name)
                   fJDLName(),
                   fTerminateFiles(),
                   fMergeExcludes(),
+                  fRegisterExcludes(),
                   fIncludePath(),
                   fCloseSE(),
                   fFriendChainName(),
@@ -261,6 +263,7 @@ AliAnalysisAlien::AliAnalysisAlien(const AliAnalysisAlien& other)
                   fJDLName(other.fJDLName),
                   fTerminateFiles(other.fTerminateFiles),
                   fMergeExcludes(other.fMergeExcludes),
+                  fRegisterExcludes(other.fRegisterExcludes),
                   fIncludePath(other.fIncludePath),
                   fCloseSE(other.fCloseSE),
                   fFriendChainName(other.fFriendChainName),
@@ -375,6 +378,7 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
       fJDLName                 = other.fJDLName;
       fTerminateFiles          = other.fTerminateFiles;
       fMergeExcludes           = other.fMergeExcludes;
+      fRegisterExcludes        = other.fRegisterExcludes;
       fIncludePath             = other.fIncludePath;
       fCloseSE                 = other.fCloseSE;
       fFriendChainName         = other.fFriendChainName;
@@ -414,6 +418,23 @@ AliAnalysisAlien &AliAnalysisAlien::operator=(const AliAnalysisAlien& other)
    }
    return *this;
 }
+
+//______________________________________________________________________________
+void AliAnalysisAlien::AddAdditionalLibrary(const char *name)
+{
+// Add a single additional library to be loaded. Extension must be present.
+   TString lib(name);
+   if (!lib.Contains(".")) {
+      Error("AddAdditionalLibrary", "Extension not defined for %s", name);
+      return;
+   }
+   if (fAdditionalLibs.Contains(name)) {
+      Warning("AddAdditionalLibrary", "Library %s already added.", name);
+      return;
+   }
+   if (!fAdditionalLibs.IsNull()) fAdditionalLibs += " ";
+   fAdditionalLibs += lib;
+}   
 
 //______________________________________________________________________________
 void AliAnalysisAlien::AddModule(AliAnalysisTaskCfg *module)
@@ -1615,9 +1636,9 @@ Bool_t AliAnalysisAlien::CreateJDL()
             outputArchive = "log_archive.zip:std*@disk=1 ";
             // Add normal output files, extra files + terminate files
             TString files = GetListOfFiles("outextter");
-            // Do not register merge excludes
-            if (!fMergeExcludes.IsNull()) {
-               arr = fMergeExcludes.Tokenize(" ");
+            // Do not register files in fRegisterExcludes
+            if (!fRegisterExcludes.IsNull()) {
+               arr = fRegisterExcludes.Tokenize(" ");
                TIter next1(arr);
                while ((os=(TObjString*)next1())) {
                   files.ReplaceAll(Form("%s,",os->GetString().Data()),"");
@@ -1658,6 +1679,8 @@ Bool_t AliAnalysisAlien::CreateJDL()
          sout.ReplaceAll(".root", "");
          if (sout.Index("@")>0) sout.Remove(sout.Index("@"));
          if (fOutputArchive.Contains(sout)) continue;
+         // Ignore fRegisterExcludes
+         if (fRegisterExcludes.Contains(sout)) continue;
          if (!first) comment = NULL;
          if (!os->GetString().Contains("@") && fCloseSE.Length())
             fGridJDL->AddToOutputSandbox(Form("%s@%s",os->GetString().Data(), fCloseSE.Data()), comment); 
@@ -2314,6 +2337,7 @@ void AliAnalysisAlien::Print(Option_t *) const
    printf("=   List of output files to be registered: _______ %s\n", fOutputFiles.Data());
    printf("=   List of outputs going to be archived: ________ %s\n", fOutputArchive.Data());
    printf("=   List of outputs that should not be merged: ___ %s\n", fMergeExcludes.Data());
+   printf("=   List of outputs that should not be registered: %s\n", fRegisterExcludes.Data());
    printf("=   List of outputs produced during Terminate: ___ %s\n", fTerminateFiles.Data());
    printf("=====================================================================\n");
    printf("=   Job price: ___________________________________ %d\n", fPrice);
@@ -2790,8 +2814,8 @@ Bool_t AliAnalysisAlien::MergeOutputs()
             gSystem->Exec(Form("rm -f %s", outputChunk.Data()));
          }   
       }
-      if (fMergeExcludes.Length() &&
-          fMergeExcludes.Contains(outputFile.Data())) continue;
+      if (fMergeExcludes.Contains(outputFile.Data()) || 
+          fRegisterExcludes.Contains(outputFile.Data())) continue;
       // Perform a 'find' command in the output directory, looking for registered outputs    
       merged = MergeOutput(outputFile, fGridOutputDir, fMaxMergeFiles);
       if (!merged) {
@@ -3430,7 +3454,8 @@ Bool_t AliAnalysisAlien::SubmitMerging()
          outputFile = str->GetString();
          Int_t index = outputFile.Index("@");
          if (index > 0) outputFile.Remove(index);
-         if (!fMergeExcludes.Contains(outputFile)) break;
+         if (!fMergeExcludes.Contains(outputFile) && 
+             !fRegisterExcludes.Contains(outputFile)) break;
       }
       delete list;
       Bool_t done = CheckMergedFiles(outputFile, runOutDir, fMaxMergeFiles, mergeJDLName);
@@ -4121,7 +4146,7 @@ void AliAnalysisAlien::WriteMergingMacro()
       out << "   if (!TGrid::Connect(\"alien://\")) return;" << endl;
       out << "   TString outputDir = dir;" << endl;  
       out << "   TString outputFiles = \"" << GetListOfFiles("out") << "\";" << endl;
-      out << "   TString mergeExcludes = \"" << fMergeExcludes << "\";" << endl;
+      out << "   TString mergeExcludes = \"" << fMergeExcludes << " " << fRegisterExcludes << "\";" << endl;
       out << "   TObjArray *list = outputFiles.Tokenize(\",\");" << endl;
       out << "   TIter *iter = new TIter(list);" << endl;
       out << "   TObjString *str;" << endl;
