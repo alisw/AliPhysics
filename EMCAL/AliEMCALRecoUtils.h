@@ -98,7 +98,7 @@ public:
   void     SetW0(Float_t w0)                             { fW0  = w0                ; }
 
   //-----------------------------------------------------
-  //Non Linearity
+  // Non Linearity
   //-----------------------------------------------------
 
   Float_t  CorrectClusterEnergyLinearity(AliVCluster* clu) ;
@@ -127,14 +127,15 @@ public:
   Bool_t   IsClusterEnergySmeared()                const { return fSmearClusterEnergy          ; }   
   void     SetSmearingParameters(Int_t i, Float_t param) { if(i < 3){ fSmearClusterParam[i] = param ; }
                                                            else     { AliInfo(Form("Index %d larger than 2, do nothing\n",i)) ; } }
-  
   //-----------------------------------------------------
-  // Energy Recalibration
+  // Recalibration
   //-----------------------------------------------------
-  
-  void     RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells * cells, Int_t bc) ; // Energy and Time
-  void     RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=0) ; // Energy and time
+  Bool_t   AcceptCalibrateCell(const Int_t absId, const Int_t bc,
+                               Float_t & amp, Double_t & time, AliVCaloCells* cells) ; // Energy and Time
+  void     RecalibrateCells(AliVCaloCells * cells, Int_t bc) ; // Energy and Time
+  void     RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=-1) ; // Energy and time
 
+  // Energy recalibration
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
   void     SwitchOffRecalibration()                      { fRecalibration = kFALSE ; }
   void     SwitchOnRecalibration()                       { fRecalibration = kTRUE  ; 
@@ -160,10 +161,7 @@ public:
                                                            SwitchOnRecalibration()           ; }
   void     SetRunDependentCorrections(Int_t runnumber);
       
-  //-----------------------------------------------------
-  // Time Recalibration
-  //-----------------------------------------------------
-  
+  // Time Recalibration  
   void     RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & time);
   
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
@@ -172,25 +170,25 @@ public:
     if(!fEMCALTimeRecalibrationFactors)InitEMCALTimeRecalibrationFactors() ; }
   void     InitEMCALTimeRecalibrationFactors() ;
   
-  Float_t  GetEMCALChannelTimeRecalibrationFactor(Int_t bc, Int_t absID) const { 
+  Float_t  GetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID) const { 
     if(fEMCALTimeRecalibrationFactors) 
       return (Float_t) ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->GetBinContent(absID); 
-    else return 1 ; } 
+    else return 0 ; } 
 	
-  void     SetEMCALChannelTimeRecalibrationFactor(Int_t bc,Int_t absID, Double_t c = 1) { 
+  void     SetEMCALChannelTimeRecalibrationFactor(const Int_t bc, const Int_t absID, Double_t c = 0) { 
     if(!fEMCALTimeRecalibrationFactors) InitEMCALTimeRecalibrationFactors() ;
     ((TH1F*)fEMCALTimeRecalibrationFactors->At(bc))->SetBinContent(absID,c) ; }  
   
-  TH1F *   GetEMCALChannelTimeRecalibrationFactors(Int_t bc)      const { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
-  void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)      { fEMCALTimeRecalibrationFactors = map                 ; }
-  void     SetEMCALChannelTimeRecalibrationFactors(Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
+  TH1F *   GetEMCALChannelTimeRecalibrationFactors(const Int_t bc)const       { return (TH1F*)fEMCALTimeRecalibrationFactors->At(bc) ; }	
+  void     SetEMCALChannelTimeRecalibrationFactors(TObjArray *map)            { fEMCALTimeRecalibrationFactors = map                 ; }
+  void     SetEMCALChannelTimeRecalibrationFactors(const Int_t bc , TH1F* h)  { fEMCALTimeRecalibrationFactors->AddAt(h,bc)          ; }
   
   //-----------------------------------------------------
   // Modules fiducial region, remove clusters in borders
   //-----------------------------------------------------
 
   Bool_t   CheckCellFiducialRegion(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells* cells) ;
-  void     SetNumberOfCellsFromEMCALBorder(Int_t n)      { fNCellsFromEMCALBorder = n      ; }
+  void     SetNumberOfCellsFromEMCALBorder(const Int_t n){ fNCellsFromEMCALBorder = n      ; }
   Int_t    GetNumberOfCellsFromEMCALBorder()      const  { return fNCellsFromEMCALBorder   ; }
     
   void     SwitchOnNoFiducialBorderInEMCALEta0()         { fNoEMCALBorderAtEta0 = kTRUE    ; }
@@ -285,14 +283,24 @@ public:
   void     SetStep(Double_t step)                     { fStepCluster = step           ; }
   void     SetStepSurface(Double_t step)              { fStepSurface = step           ; }
  
-  //Cluster cut
-  Bool_t   IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells);
-  Bool_t   IsExoticCluster(AliVCluster *cluster) const ;
-
-  void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster=kTRUE     ; }
-  void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster=kFALSE    ; }
+  // Exotic cells / clusters
+  
+  Bool_t   IsExoticCell(const Int_t absId, AliVCaloCells* cells, const Int_t bc =-1) ;
+  void     SwitchOnRejectExoticCell()                 { fRejectExoticCells = kTRUE     ; }
+  void     SwitchOffRejectExoticCell()                { fRejectExoticCells = kFALSE    ; } 
+   
+  void     SetExoticCellFractionCut(Float_t f)        { fExoticCellFraction     = f    ; }
+  void     SetExoticCellDiffTimeCut(Float_t dt)       { fExoticCellDiffTime     = dt   ; }
+  void     SetExoticCellMinAmplitudeCut(Float_t ma)   { fExoticCellMinAmplitude = ma   ; }
+  
+  Bool_t   IsExoticCluster(AliVCluster *cluster, AliVCaloCells* cells, const Int_t bc=0) ;
+  void     SwitchOnRejectExoticCluster()              { fRejectExoticCluster = kTRUE   ;
+                                                        fRejectExoticCells   = kTRUE   ; }
+  void     SwitchOffRejectExoticCluster()             { fRejectExoticCluster = kFALSE  ; }
   Bool_t   IsRejectExoticCluster()              const { return fRejectExoticCluster    ; }
-
+  
+  //Cluster cut
+  Bool_t   IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells, const Int_t bc =-1);
 
   //Track Cuts 
   Bool_t   IsAccepted(AliESDtrack *track);
@@ -368,8 +376,12 @@ private:
   Int_t      fNCellsFromEMCALBorder;     // Number of cells from EMCAL border the cell with maximum amplitude has to be.
   Bool_t     fNoEMCALBorderAtEta0;       // Do fiducial cut in EMCAL region eta = 0?
   
-  // Cluster cuts
+  // Exotic cell / cluster
   Bool_t     fRejectExoticCluster;       // Switch on or off exotic cluster rejection
+  Bool_t     fRejectExoticCells;         // Remove exotic cells
+  Float_t    fExoticCellFraction;        // Good cell if fraction < 1-ecross/ecell
+  Float_t    fExoticCellDiffTime;        // If time of candidate to exotic and close cell is too different (in ns), it must be noisy, set amp to 0
+  Float_t    fExoticCellMinAmplitude;    // Check for exotic only if amplitud is larger than this value
   
   // PID
   AliEMCALPIDUtils * fPIDUtils;          // Recalculate PID parameters
@@ -404,7 +416,7 @@ private:
   Float_t    fCutMaxDCAToVertexZ;        // Track-to-vertex cut in max absolute distance in z-plane
   Bool_t     fCutDCAToVertex2D;          // If true a 2D DCA cut is made.
   
-  ClassDef(AliEMCALRecoUtils, 16)
+  ClassDef(AliEMCALRecoUtils, 17)
   
 };
 

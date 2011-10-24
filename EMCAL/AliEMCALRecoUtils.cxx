@@ -73,12 +73,14 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fUseRunCorrectionFactors(kFALSE),       fRunCorrectionFactorsSet(kFALSE),
   fRemoveBadChannels(kFALSE),             fRecalDistToBadChannels(kFALSE),        fEMCALBadChannelMap(),
   fNCellsFromEMCALBorder(0),              fNoEMCALBorderAtEta0(kTRUE),
-  fRejectExoticCluster(kFALSE),           fPIDUtils(),                            fAODFilterMask(32),
+  fRejectExoticCluster(kFALSE),           fRejectExoticCells(kFALSE), 
+  fExoticCellFraction(0.97),              fExoticCellDiffTime(1e6),               fExoticCellMinAmplitude(0.5),
+  fPIDUtils(),                            fAODFilterMask(32),
   fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kTRUE),                   fCutEtaPhiSeparate(kFALSE), 
   fCutR(0.1),                             fCutEta(0.025),                         fCutPhi(0.05),
-  fClusterWindow(100),
-  fMass(0.139),                           fStepSurface(10.),                      fStepCluster(5.),
+  fClusterWindow(100),                    fMass(0.139),                           
+  fStepSurface(10.),                      fStepCluster(5.),
   fTrackCutsType(kLooseCut),              fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
   fCutMinNClusterITS(-1),                 fCutMaxChi2PerClusterTPC(1e10),         fCutMaxChi2PerClusterITS(1e10),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),
@@ -142,8 +144,10 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fRemoveBadChannels(reco.fRemoveBadChannels),               fRecalDistToBadChannels(reco.fRecalDistToBadChannels),
   fEMCALBadChannelMap(reco.fEMCALBadChannelMap),
   fNCellsFromEMCALBorder(reco.fNCellsFromEMCALBorder),       fNoEMCALBorderAtEta0(reco.fNoEMCALBorderAtEta0),
-  fRejectExoticCluster(reco.fRejectExoticCluster),           fPIDUtils(reco.fPIDUtils), 
-  fAODFilterMask(reco.fAODFilterMask),
+  fRejectExoticCluster(reco.fRejectExoticCluster),           fRejectExoticCells(reco.fRejectExoticCells), 
+  fExoticCellFraction(reco.fExoticCellFraction),             fExoticCellDiffTime(reco.fExoticCellDiffTime),               
+  fExoticCellMinAmplitude(reco.fExoticCellMinAmplitude),
+  fPIDUtils(reco.fPIDUtils),                                 fAODFilterMask(reco.fAODFilterMask),
   fMatchedTrackIndex(  reco.fMatchedTrackIndex?  new TArrayI(*reco.fMatchedTrackIndex):0x0),
   fMatchedClusterIndex(reco.fMatchedClusterIndex?new TArrayI(*reco.fMatchedClusterIndex):0x0),
   fResidualEta(        reco.fResidualEta?        new TArrayF(*reco.fResidualEta):0x0),
@@ -206,8 +210,13 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   
   fNCellsFromEMCALBorder     = reco.fNCellsFromEMCALBorder;
   fNoEMCALBorderAtEta0       = reco.fNoEMCALBorderAtEta0;
+  
   fRejectExoticCluster       = reco.fRejectExoticCluster;           
-
+  fRejectExoticCells         = reco.fRejectExoticCells; 
+  fExoticCellFraction        = reco.fExoticCellFraction;
+  fExoticCellDiffTime        = reco.fExoticCellDiffTime;              
+  fExoticCellMinAmplitude    = reco.fExoticCellMinAmplitude;
+  
   fPIDUtils                  = reco.fPIDUtils;
 
   fAODFilterMask             = reco.fAODFilterMask;
@@ -221,7 +230,6 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fMass                      = reco.fMass;
   fStepSurface               = reco.fStepSurface;
   fStepCluster               = reco.fStepCluster;
-  fRejectExoticCluster       = reco.fRejectExoticCluster;
 
   fTrackCutsType             = reco.fTrackCutsType;
   fCutMinTrackPt             = reco.fCutMinTrackPt;
@@ -288,7 +296,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
 }
 
 
-//__________________________________________________
+//_____________________________________
 AliEMCALRecoUtils::~AliEMCALRecoUtils()
 {
   //Destructor.
@@ -315,6 +323,40 @@ AliEMCALRecoUtils::~AliEMCALRecoUtils()
   delete fPIDUtils            ;
 
   InitTrackCuts();
+}
+
+//_______________________________________________________________________________
+Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(const Int_t absID, const Int_t bc,
+                                              Float_t  & amp,    Double_t & time, 
+                                              AliVCaloCells* cells) 
+{
+  // Reject cell if criteria not passed and calibrate it
+  
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  
+  if(absID < 0 || absID >= 24*48*geom->GetNumberOfSuperModules()) return kFALSE;
+  
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
+  geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+  
+  // Do not include bad channels found in analysis,
+  if( IsBadChannelsRemovalSwitchedOn() && GetEMCALChannelStatus(imod, ieta, iphi)) {
+    return kFALSE;
+  }
+  
+  //Recalibrate energy
+  amp  = cells->GetCellAmplitude(absID);
+  if(IsRecalibrationOn())
+    amp *= GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
+  
+  
+  // Recalibrate time
+  time = cells->GetCellTime(absID);
+  
+  RecalibrateCellTime(absID,bc,time);
+  
+  return kTRUE;
 }
 
 //_______________________________________________________________
@@ -415,22 +457,89 @@ Bool_t AliEMCALRecoUtils::ClusterContainsBadChannel(AliEMCALGeometry* geom, USho
 	
 }
 
+//_______________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsExoticCell(const Int_t absID, AliVCaloCells* cells, const Int_t bc)
+{
+  // Look to cell neighbourhood and reject if it seems exotic
+  // Do before recalibrating the cells
+  if(!fRejectExoticCells) return kFALSE;
+    
+  AliEMCALGeometry * geom = AliEMCALGeometry::GetInstance();
+  
+  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+  geom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
+  geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
+  
+  //Get close cells index, energy and time, not in corners
+  Int_t absID1 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
+  Int_t absID2 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
+  Int_t absID3 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
+  Int_t absID4 = geom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
+  
+  Float_t  ecell  = 0, ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+  Double_t tcell  = 0, tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
+  Bool_t   accept = 0, accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
+  
+  accept  = AcceptCalibrateCell(absID, bc, ecell ,tcell ,cells); 
+    
+  if(!accept) return kTRUE; // reject this cell
+  
+  if(ecell < fExoticCellMinAmplitude) return kFALSE; // do not reject low energy cells
+  
+  accept1 = AcceptCalibrateCell(absID1,bc, ecell1,tcell1,cells); 
+  accept2 = AcceptCalibrateCell(absID2,bc, ecell2,tcell2,cells); 
+  accept3 = AcceptCalibrateCell(absID3,bc, ecell3,tcell3,cells); 
+  accept4 = AcceptCalibrateCell(absID4,bc, ecell4,tcell4,cells); 
+  
+  /*
+    printf("Cell absID %d \n",absID);
+    printf("\t  accept1 %d, accept2 %d, accept3 %d, accept4 %d\n",
+           accept1,accept2,accept3,accept4);
+    printf("\t id %d: id1 %d, id2 %d, id3 %d, id4 %d\n",
+           absID,absID1,absID2,absID3,absID4);
+    printf("\t e %f: e1 %f, e2 %f, e3 %f, e4 %f\n",
+           ecell,ecell1,ecell2,ecell3,ecell4);
+    printf("\t t %f: t1 %f, t2 %f, t3 %f, t4 %f;\n dt1 %f, dt2 %f, dt3 %f, dt4 %f\n",
+           tcell*1.e9,tcell1*1.e9,tcell2*1.e9,tcell3*1.e9,tcell4*1.e9,
+           TMath::Abs(tcell-tcell1)*1.e9, TMath::Abs(tcell-tcell2)*1.e9, TMath::Abs(tcell-tcell3)*1.e9, TMath::Abs(tcell-tcell4)*1.e9);
+  */
+  
+  if(TMath::Abs(tcell-tcell1)*1.e9 > fExoticCellDiffTime) ecell1 = 0 ;
+  if(TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
+  if(TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
+  if(TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
+
+  Float_t eCross = ecell1+ecell2+ecell3+ecell4;
+
+  //printf("\t eCell %f, eCross %f, 1-eCross/eCell %f\n",ecell,eCross,1-eCross/ecell);
+  
+  if(1-eCross/ecell > fExoticCellFraction) {
+    AliDebug(2,Form("AliEMCALRecoUtils::IsExoticCell() - EXOTIC CELL id %d, eCell %f, eCross %f, 1-eCross/eCell %f\n",absID,ecell,eCross,1-eCross/ecell));
+    return kTRUE;
+  }
+  
+  return kFALSE;
+  
+}
+
 //_________________________________________________
-Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster) const {
-  // Check if the cluster has high energy  but small number of cells
-  // The criteria comes from Gustavo's study
-  //
+Bool_t AliEMCALRecoUtils::IsExoticCluster(AliVCluster *cluster, AliVCaloCells *cells, const Int_t bc) {
+  // Check if the cluster highest energy tower is exotic
   
   if(!cluster){
     AliInfo("Cluster pointer null!");
     return kFALSE;
   }
   
-  Int_t nc = cluster->GetNCells() ;
+  if(!fRejectExoticCluster) return kFALSE;
   
-  if      ( nc > 8 )                   return kFALSE ; // Good cluster, needed for 3x3 clusterizer  
-  else if ( nc < 1 + cluster->E()/3. ) return kTRUE  ; // Bad cluster
-  else                                 return kFALSE ; // Good cluster
+  // Get highest energy tower
+  AliEMCALGeometry* geom = AliEMCALGeometry::GetInstance();
+  Int_t iSupMod = -1, absId = -1, ieta = -1, iphi = -1;
+  Bool_t shared = kFALSE;
+  GetMaxEnergyCell(geom, cells, cluster, absId, iSupMod, ieta, iphi, shared);
+
+  return IsExoticCell(absId,cells,bc);
   
 }
 
@@ -885,7 +994,7 @@ void AliEMCALRecoUtils::RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVClu
 }
 
 //________________________________________________________________
-void AliEMCALRecoUtils::RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells * cells, Int_t bc){
+void AliEMCALRecoUtils::RecalibrateCells(AliVCaloCells * cells, Int_t bc){
 	// Recalibrate the cells time and energy, considering the recalibration map and the energy 
   // of the cells that compose the cluster.
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
@@ -899,33 +1008,24 @@ void AliEMCALRecoUtils::RecalibrateCells(AliEMCALGeometry* geom, AliVCaloCells *
   
   fCellsRecalibrated = kTRUE;
   
-  Int_t absId  =-1;
-  Int_t icol   =-1, irow  =-1, imod  = 1;
-  Int_t iTower =-1, iIeta =-1, iIphi =-1;
-
-  Int_t nEMcell = cells->GetNumberOfCells() ;
+  Int_t    absId  =-1;
+  Bool_t   accept = kFALSE;
+  Float_t  ecell  = 0;
+  Double_t tcell  = 0;
   
+  Int_t    nEMcell  = cells->GetNumberOfCells() ;  
   for (Int_t iCell = 0; iCell < nEMcell; iCell++) { 
     
-    absId = cells->GetCellNumber(iCell);
+    absId  = cells->GetCellNumber(iCell);
     
-    // Energy
-    Float_t factor = 1;
-    if(IsRecalibrationOn()){
-      geom->GetCellIndex(absId,imod,iTower,iIphi,iIeta); 
-      if(fEMCALRecalibrationFactors->GetEntries() <= imod) continue;
-      geom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,irow,icol);	
-      factor = GetEMCALChannelRecalibrationFactor(imod,icol,irow);
-		}
-    
-    Float_t cellE      = cells->GetAmplitude(iCell) * factor ;
-    
-    //Time
-    Double_t celltime = cells->GetCellTime(absId);
-    RecalibrateCellTime(absId, bc, celltime);
+    accept = AcceptCalibrateCell(absId, bc, ecell ,tcell ,cells); 
+    if(!accept) {
+      ecell = 0;
+      tcell = 0;
+    }
     
     //Set new values
-    cells->SetCell(iCell,cells->GetCellNumber(iCell),cellE, celltime);
+    cells->SetCell(iCell,absId,ecell, tcell);
     
   }
   
@@ -937,7 +1037,7 @@ void AliEMCALRecoUtils::RecalibrateCellTime(const Int_t absId, const Int_t bc, D
 	// Recalibrate time of cell with absID  considering the recalibration map 
   // bc= bunch crossing number returned by esdevent->GetBunchCrossNumber();
   
-  if(!fCellsRecalibrated && IsTimeRecalibrationOn()){
+  if(!fCellsRecalibrated && IsTimeRecalibrationOn() && bc >= 0){
     
     celltime -= GetEMCALChannelTimeRecalibrationFactor(bc%4,absId)*1.e-9;    ;  
     
@@ -1797,17 +1897,22 @@ UInt_t AliEMCALRecoUtils::FindMatchedPosForTrack(Int_t trkIndex) const
   return pos;
 }
 
-//__________________________________________________________
-Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, AliVCaloCells* cells)
+//___________________________________________________________________________________
+Bool_t AliEMCALRecoUtils::IsGoodCluster(AliVCluster *cluster, AliEMCALGeometry *geom, 
+                                        AliVCaloCells* cells,const Int_t bc)
 {
   // check if the cluster survives some quality cut
   //
   //
   Bool_t isGood=kTRUE;
-  if(!cluster || !cluster->IsEMCAL()) return kFALSE;
+  
+  if(!cluster || !cluster->IsEMCAL())              return kFALSE;
+  
   if(ClusterContainsBadChannel(geom,cluster->GetCellsAbsId(),cluster->GetNCells())) return kFALSE;
+  
   if(!CheckCellFiducialRegion(geom,cluster,cells)) return kFALSE;
-  if(fRejectExoticCluster && IsExoticCluster(cluster)) return kFALSE;
+  
+  if(IsExoticCluster(cluster, cells,bc))           return kFALSE;
 
   return isGood;
 }

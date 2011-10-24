@@ -177,7 +177,8 @@ public:
   Int_t            GetV0Signal(Int_t i)              const { return fV0ADC[i]              ; }
   Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]              ; }
   
-  void             SetEMCALClusterListName(TString &name)  {fEMCALClustersListName = name  ; }
+  void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name ; }
+  TString          GetEMCALClusterListName()               { return fEMCALClustersListName ; }
 
   // Arrayes with clusters/track/cells access method
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks             ; }

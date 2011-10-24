@@ -32,7 +32,6 @@
 #include "TROOT.h"
 #include "TInterpreter.h"
 #include "TFile.h"
-//#include "string.h"
 
 // --- AliRoot Analysis Steering
 #include "AliAnalysisTask.h"
@@ -83,8 +82,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellLabels(),          fCellSecondLabels(),        fCellTime()
 , fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
-, fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE), fRemoveExoticCells(kFALSE)
-, fExoticCellFraction(0.9), fExoticCellDiffTime(1e6),    fExoticCellMinAmplitude(0.5)
+, fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE)
 
 {
   //ctor
@@ -122,8 +120,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fCellLabels(),            fCellSecondLabels(),        fCellTime()
 , fMaxEvent(1000000000),    fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
-, fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE), fRemoveExoticCells(kFALSE)
-, fExoticCellFraction(0.9), fExoticCellDiffTime(1e6),    fExoticCellMinAmplitude(0.5)
+, fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE)
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -166,52 +163,6 @@ AliAnalysisTaskEMCALClusterize::~AliAnalysisTaskEMCALClusterize()
   if(fRecoUtils)   delete fRecoUtils;
   
 }
-
-//_________________________________________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::AcceptCalibrateCell(const Int_t absID,
-                                                           Float_t  & amp, 
-                                                           Double_t & time, 
-                                                           AliVCaloCells* cells) 
-{
-  // Reject cell if criteria not passed and calibrate it
-  
-  if(absID < 0 || absID >= 24*48*fGeom->GetNumberOfSuperModules()) return kFALSE;
-  
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-  fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
-  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-  
-  // Do not include bad channels found in analysis,
-  if( fRecoUtils->IsBadChannelsRemovalSwitchedOn() && 
-     fRecoUtils->GetEMCALChannelStatus(imod, ieta, iphi)) {
-    return kFALSE;
-  }
-  //Recalibrate energy
-  amp  = cells->GetCellAmplitude(absID);
-  if(fRecoUtils->IsRecalibrationOn()){ 
-    amp *=fRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
-  }
-  
-  // Do not include cells with too low energy, nor exotic cell
-  if(amp < fRecParam->GetMinECut() ) {
-    amp = 0.;
-    return kFALSE;
-  }
-  
-  // Recalibrate time
-  time = cells->GetCellTime(absID);
-  Int_t bc = InputEvent()->GetBunchCrossNumber();
-  
-  // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
-  if (time*1e9 < 1.) time = fCellTime[absID];
-  
-  fRecoUtils->RecalibrateCellTime(absID,bc,time);
-    
-  //printf("AliAnalysisTaskEMCALClusterize::AcceptCalibrateCell() - Accepted Cell id %d, amp %f, t %f\n",absID,amp,time*1.e9);
-  
-  return kTRUE;
-}
-
 
 //_________________________________________________
 Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
@@ -396,14 +347,27 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     
   TTree *digitsTree = new TTree("digitstree","digitstree");
   digitsTree->Branch("EMCAL","TClonesArray", &fDigitsArr, 32000);
-  
+  Int_t bc = InputEvent()->GetBunchCrossNumber();
   for (Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++)
   {
     
     // Get cell values, recalibrate and not include bad channels found in analysis, nor cells with too low energy, nor exotic cell
     id = cells->GetCellNumber(icell);
-    Bool_t accept =  AcceptCalibrateCell(id,amp,time,cells);
-    if(  accept && IsExoticCell(id,amp,time,cells)) accept = kFALSE;
+    Bool_t accept = fRecoUtils->AcceptCalibrateCell(id,bc,amp,time,cells);
+    
+    // Do not include cells with too low energy, nor exotic cell
+    if(amp < fRecParam->GetMinECut() ) accept = kFALSE;
+    
+    // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
+    if (time*1e9 < 1.) { 
+      time = fCellTime[id];
+      fRecoUtils->RecalibrateCellTime(id,bc,time);
+    }
+    
+    if(  accept && fRecoUtils->IsExoticCell(id,cells,bc)){
+      accept = kFALSE;
+    }
+
     if( !accept ){
       fCellLabels[id]      =-1; //reset the entry in the array for next event
       fCellSecondLabels[id]=-1; //reset the entry in the array for next event
@@ -809,71 +773,6 @@ void AliAnalysisTaskEMCALClusterize::InitGeometry()
   
 }
 
-//___________________________________________________________________
-Bool_t AliAnalysisTaskEMCALClusterize::IsExoticCell(const Int_t absID, 
-                                                    const Float_t ecell, 
-                                                    const Float_t tcell, 
-                                                    AliVCaloCells* cells)
-{
-  //Look to cell neighbourhood and reject if it seems exotic
-  
-  if(!fRemoveExoticCells) return kFALSE;
-  
-  if(ecell < fExoticCellMinAmplitude) return kFALSE;
-  
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-  fGeom->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
-  fGeom->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-  
-  //Get close cells index, energy and time, not in corners
-  Int_t absID1 = fGeom-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
-  Int_t absID2 = fGeom-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
-  Int_t absID3 = fGeom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-  Int_t absID4 = fGeom-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
-  
-  Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
-  Double_t tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
-  Bool_t   accept1 = 0, accept2 = 0, accept3 = 0, accept4 = 0;
-  
-  accept1 = AcceptCalibrateCell(absID1,ecell1,tcell1,cells); 
-  accept2 = AcceptCalibrateCell(absID2,ecell2,tcell2,cells); 
-  accept3 = AcceptCalibrateCell(absID3,ecell3,tcell3,cells); 
-  accept4 = AcceptCalibrateCell(absID4,ecell4,tcell4,cells); 
-
-  if(DebugLevel() > 2 ){
-    printf("AliAnalysisTaksEMCALClusterize::IsExoticCell() -  Cell absID %d \n",absID);
-    printf("\t  accept1 %d, accept2 %d, accept3 %d, accept4 %d\n",
-         accept1,accept2,accept3,accept4);
-    printf("\t id %d: id1 %d, id2 %d, id3 %d, id4 %d\n",
-           absID,absID1,absID2,absID3,absID4);
-    printf("\t e %f: e1 %f, e2 %f, e3 %f, e4 %f\n",
-           ecell,ecell1,ecell2,ecell3,ecell4);
-    printf("\t t %f: t1 %f, t2 %f, t3 %f, t4 %f;\n dt1 %f, dt2 %f, dt3 %f, dt4 %f\n",
-           tcell*1.e9,tcell1*1.e9,tcell2*1.e9,tcell3*1.e9,tcell4*1.e9,
-           TMath::Abs(tcell-tcell1)*1.e9, TMath::Abs(tcell-tcell2)*1.e9, TMath::Abs(tcell-tcell3)*1.e9, TMath::Abs(tcell-tcell4)*1.e9);
-  }
-  
-  if(TMath::Abs(tcell-tcell1)*1.e9 > fExoticCellDiffTime) ecell1 = 0 ;
-  if(TMath::Abs(tcell-tcell2)*1.e9 > fExoticCellDiffTime) ecell2 = 0 ;
-  if(TMath::Abs(tcell-tcell3)*1.e9 > fExoticCellDiffTime) ecell3 = 0 ;
-  if(TMath::Abs(tcell-tcell4)*1.e9 > fExoticCellDiffTime) ecell4 = 0 ;
-  
-  
-  Float_t eCross = ecell1+ecell2+ecell3+ecell4;
-  if(DebugLevel() > 2 ){  
-    printf("\t eCell %f, eCross %f, 1-eCross/eCell %f\n",ecell,eCross,1-eCross/ecell);
-  }
-  
-  if(1-eCross/ecell > fExoticCellFraction) {
-    //cells->SetCell(icell,absID,0,1e6);
-    if(DebugLevel() > 2 ) printf("AliAnalysisTaskEMCALClusterize::IsExoticCell() - EXOTIC CELL REMOVED id %d, eCell %f, eCross %f, 1-eCross/eCell %f\n",absID,ecell,eCross,1-eCross/ecell);
-    return kTRUE;
-  }
-  
-  return kFALSE;
-  
-}
-
 //____________________________________________________
 Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
 {
@@ -886,14 +785,15 @@ Bool_t AliAnalysisTaskEMCALClusterize::IsExoticEvent()
   // Loop on cells
   AliVCaloCells * cells = fEvent->GetEMCALCells();
   Float_t totCellE = 0;
+  Int_t bc = InputEvent()->GetBunchCrossNumber();
   for(Int_t icell = 0; icell < cells->GetNumberOfCells(); icell++){
     
     Float_t  ecell = 0 ;
     Double_t tcell = 0 ;
     
     Int_t absID   = cells->GetCellNumber(icell);
-    Bool_t accept = AcceptCalibrateCell(absID,ecell,tcell,cells);
-    if(accept && !IsExoticCell(absID, ecell,tcell,cells)) totCellE += ecell;
+    Bool_t accept = fRecoUtils->AcceptCalibrateCell(absID,bc,ecell,tcell,cells);
+    if(accept && !fRecoUtils->IsExoticCell(absID,cells,bc)) totCellE += ecell;
   }
   
   //  TString triggerclasses = "";

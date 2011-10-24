@@ -47,15 +47,18 @@ ClassImp(AliAnalysisTaskEMCALPi0CalibSelection)
 AliAnalysisTaskEMCALPi0CalibSelection::AliAnalysisTaskEMCALPi0CalibSelection(const char* name) :
 AliAnalysisTaskSE(name),fEMCALGeo(0x0), 
 fEmin(0.5),               fEmax(15.),      
-fL0min(0.01),             fL0max(0.5),     fDTimeCut(100.), 
-fAsyCut(1.),              fMinNCells(2),   fGroupNCells(0),
-fLogWeight(4.5),          fSameSM(kFALSE), fFilteredInput(kFALSE),
+fL0min(0.01),             fL0max(0.5),              fDTimeCut(100.), 
+fAsyCut(1.),              fMinNCells(2),            fGroupNCells(0),
+fLogWeight(4.5),          fSameSM(kFALSE),          fFilteredInput(kFALSE),
 fCorrectClusters(kFALSE), fEMCALGeoName("EMCAL_COMPLETEV1"), 
 fTriggerName("EMC"),      fRecoUtils(new AliEMCALRecoUtils), 
 fCuts(0x0),               fLoadMatrices(0),
 fNMaskCellColumns(11),    fMaskCellColumns(0x0),
+fInvMassCutMin(110.),     fInvMassCutMax(160.),
 //Histograms
-fNbins(300), fMinBin(0.), fMaxBin(300.),   fOutputContainer(0x0),
+fOutputContainer(0x0),    fNbins(300),              
+fMinBin(0.),              fMaxBin(300.),   
+fNTimeBins(1000),         fMinTimeBin(0.),          fMaxTimeBin(1000.),   
 fHmgg(0x0),               fHmggDifferentSM(0x0), 
 fHmggMaskFrame(0x0),      fHmggDifferentSMMaskFrame(0x0), 
 fHOpeningAngle(0x0),      fHOpeningAngleDifferentSM(0x0),  
@@ -69,10 +72,16 @@ fhClusterTime(0x0),       fhClusterPairDiffTime(0x0)
   for(Int_t iMod=0; iMod < AliEMCALGeoParams::fgkEMCALModules; iMod++) {
     for(Int_t iX=0; iX<24; iX++) {
       for(Int_t iZ=0; iZ<48; iZ++) {
-        fHmpi0[iMod][iZ][iX]=0;
+        fHmpi0[iMod][iZ][iX]   = 0 ;
       }
     } 
   }
+  
+  fHTpi0[0]= 0 ;
+  fHTpi0[1]= 0 ;
+  fHTpi0[2]= 0 ;
+  fHTpi0[3]= 0 ;
+  
   
   fMaskCellColumns = new Int_t[fNMaskCellColumns];
   fMaskCellColumns[0] = 6 ;  fMaskCellColumns[1] = 7 ;  fMaskCellColumns[2] = 8 ; 
@@ -141,14 +150,16 @@ void AliAnalysisTaskEMCALPi0CalibSelection::LocalInit()
   char onePar[buffersize] ;
   fCuts = new TList();
   
-  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f", 
-           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut) ;
+  snprintf(onePar,buffersize, "Custer cuts: %2.2f < E < %2.2f GeV; %2.2f < Lambda0_2 < %2.2f GeV; min number of cells %d; Assymetry cut %1.2f, time1-time2 < %2.2f; %3.1f < Mass < %3.1f", 
+           fEmin,fEmax, fL0min, fL0max, fMinNCells, fAsyCut, fDTimeCut, fInvMassCutMin, fInvMassCutMax) ;
   fCuts->Add(new TObjString(onePar));
   snprintf(onePar,buffersize, "Group %d cells;", fGroupNCells) ;
   fCuts->Add(new TObjString(onePar));
   snprintf(onePar,buffersize, "Cluster maximal cell away from border at least %d cells;", fRecoUtils->GetNumberOfCellsFromEMCALBorder()) ;
   fCuts->Add(new TObjString(onePar));
-  snprintf(onePar,buffersize, "Histograms: bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
+  snprintf(onePar,buffersize, "Histograms, Mass bins %d; energy range: %2.2f < E < %2.2f GeV;",fNbins,fMinBin,fMaxBin) ;
+  fCuts->Add(new TObjString(onePar));
+  snprintf(onePar,buffersize, "Histograms, Time bins %d; energy range: %2.2f < E < %2.2f GeV;",fNTimeBins,fMinTimeBin,fMaxTimeBin) ;
   fCuts->Add(new TObjString(onePar));
   snprintf(onePar,buffersize, "Switchs: Remove Bad Channels? %d; Use filtered input? %d;  Correct Clusters? %d, Mass per channel same SM clusters? %d ",
            fRecoUtils->IsBadChannelsRemovalSwitchedOn(),fFilteredInput,fCorrectClusters, fSameSM) ;
@@ -181,9 +192,19 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
         snprintf(hname,buffersize, "%d_%d_%d",iMod,iCol,iRow);
         snprintf(htitl,buffersize, "Two-gamma inv. mass for super mod %d, cell(col,row)=(%d,%d)",iMod,iCol,iRow);
         fHmpi0[iMod][iCol][iRow] = new TH1F(hname,htitl,fNbins,fMinBin,fMaxBin);
+        fHmpi0[iMod][iCol][iRow]->SetXTitle("mass (MeV/c^{2})");
         fOutputContainer->Add(fHmpi0[iMod][iCol][iRow]);
       }
     }
+  }
+  
+  Int_t nchannels = nSM*AliEMCALGeoParams::fgkEMCALRows*AliEMCALGeoParams::fgkEMCALCols;
+  for(Int_t ibc = 0; ibc < 4; ibc++){
+    fHTpi0[ibc] = new TH2F(Form("hTime_BC%d",ibc),Form("Time of cell clusters under pi0 peak, bunch crossing %d",ibc),
+                           nchannels,0,nchannels, fNTimeBins,fMinTimeBin,fMaxTimeBin);
+    fOutputContainer->Add(fHTpi0[ibc]);       
+    fHTpi0[ibc]->SetYTitle("time (ns)");
+    fHTpi0[ibc]->SetXTitle("abs. Id. ");
   }
   
   fHmgg = new TH2F("hmgg","2-cluster invariant mass",fNbins,fMinBin,fMaxBin,100,0,10);
@@ -398,7 +419,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserCreateOutputObjects()
   fhClusterTime->SetYTitle("t (ns)");
   fOutputContainer->Add(fhClusterTime);
   
-  fhClusterPairDiffTime = new TH2F("hClusterPairDiffTime","cluster pair time difference vs E",100,0,10, 200,-100,100);
+  fhClusterPairDiffTime = new TH2F("hClusterPairDiffTime","cluster pair time difference vs E",100,0,10, 800,-400,400);
   fhClusterPairDiffTime->SetXTitle("E_{pair} (GeV)");
   fhClusterPairDiffTime->SetYTitle("#Delta t (ns)");
   fOutputContainer->Add(fhClusterPairDiffTime);
@@ -587,7 +608,8 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
   }
   
   //----------------------------------------------------------
-  //Now the invariant mass analysis with the corrected clusters  
+  //Now the invariant mass analysis with the corrected clusters
+  Int_t bc = event->GetBunchCrossNumber();
   for(Int_t iClu=0; iClu<kNumberOfEMCALClusters-1; iClu++) {
     
     AliVCluster *c1 = (AliVCluster *) caloClustersArr->At(iClu);
@@ -596,6 +618,7 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     Float_t e1i = c1->E();   // cluster energy before correction   
     if      (e1i < fEmin) continue;
     else if (e1i > fEmax) continue;
+    else if (!fRecoUtils->IsGoodCluster(c1,fEMCALGeo,emCells,bc));
     else if (c1->GetNCells() < fMinNCells) continue; 
     else if (c1->GetM02() < fL0min || c1->GetM02() > fL0max) continue;
 
@@ -623,11 +646,11 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
     for (Int_t jClu=iClu+1; jClu<kNumberOfEMCALClusters; jClu++) {
       AliAODCaloCluster *c2 = (AliAODCaloCluster *) caloClustersArr->At(jClu);
       
-      if(fRecoUtils->ClusterContainsBadChannel(fEMCALGeo, c2->GetCellsAbsId(), c2->GetNCells())) continue;	
-      
+
       Float_t e2i = c2->E();
       if      (e2i < fEmin) continue;
       else if (e2i > fEmax) continue;
+      else if (!fRecoUtils->IsGoodCluster(c2,fEMCALGeo,emCells,bc))continue;
       else if (c2->GetNCells() < fMinNCells) continue; 
       else if (c2->GetM02() < fL0min || c2->GetM02() > fL0max) continue;
 
@@ -710,9 +733,21 @@ void AliAnalysisTaskEMCALPi0CalibSelection::UserExec(Option_t* /* option */)
           }// Pair not facing frame
           
           
-          if(invmass > 100. && invmass < 160.){//restrict to clusters really close to pi0 peak
+          if(invmass > fInvMassCutMin && invmass < fInvMassCutMax){//restrict to clusters really close to pi0 peak
             
-            //Opening angle of 2 photons
+            
+            // Check time of cells in both clusters, and fill time histogram
+            for(Int_t icell = 0; icell < c1->GetNCells(); icell++){
+              Int_t absID = c1->GetCellAbsId(icell);   
+              fHTpi0[bc%4]->Fill(absID, emCells->GetCellTime(absID)*1.e9);  
+            }
+            
+            for(Int_t icell = 0; icell < c2->GetNCells(); icell++){
+              Int_t absID = c2->GetCellAbsId(icell);   
+              fHTpi0[bc%4]->Fill(absID, emCells->GetCellTime(absID)*1.e9);  
+            }
+            
+             //Opening angle of 2 photons
             Float_t opangle = p1.Angle(p2.Vect())*TMath::RadToDeg();
             //printf("*******>>>>>>>> In PEAK pt %f, angle %f \n",p12.Pt(),opangle);
             
