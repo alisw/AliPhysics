@@ -32,6 +32,7 @@ set ( SRCS
  UserTasks/PHOS_embedding/AliPHOSEmbedding.cxx
  UserTasks/PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
  UserTasks/PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
+ UserTasks/PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
  UserTasks/CaloCellQA/AliCaloCellsQA.cxx
  UserTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
  UserTasks/EmcalTasks/AliEmcalPhysicsSelection.cxx
