@@ -429,7 +429,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       //        continue;
       //      }
 
-      if(fEMCALRecoUtils->IsRejectExoticCluster() && fEMCALRecoUtils->IsExoticCluster(cluster)) continue;	
+      if(fEMCALRecoUtils->IsExoticCluster(cluster, InputEvent()->GetEMCALCells(),InputEvent()->GetBunchCrossNumber())) continue;	
 
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
       cluster->SetTrackDistance(dR,dZ);
@@ -483,7 +483,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       if(TMath::Abs(dR) < 990 && TMath::Abs(dZ) < 990) { //Default value in PHOS 999, in EMCAL 1024, why?
         if(DebugLevel() > 2) 
           printf("*** Cluster Track-Matched *** dR %f, dZ %f\n",caloCluster->GetEmcCpvDistance(),caloCluster->Chi2());
-        caloCluster->AddTrackMatched(0x0); 
+        caloCluster->AddTrackMatched(new AliAODTrack); 
       }// fill the array with one entry to signal a possible match
       //TArrayI* matchedT = 	((AliESDCaloCluster*)cluster)->GetTracksMatched();
       //if (InputEvent()->GetNumberOfTracks() > 0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
