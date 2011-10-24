@@ -57,6 +57,9 @@ public:
   void    SetNCellsGroup(Int_t n)                        { fGroupNCells = n          ; }
   void    SetLogWeight(Float_t w)                        { fLogWeight   = w          ; }
   	  
+  void    SetPairMinMassCut(Float_t min)                 { fInvMassCutMin = min      ; }
+  void    SetPairMaxMassCut(Float_t max)                 { fInvMassCutMax = max      ; }
+  
   void    SwitchOnSameSM()                               { fSameSM = kTRUE           ; }
   void    SwitchOffSameSM()                              { fSameSM = kFALSE          ; }
   
@@ -80,8 +83,12 @@ public:
   AliEMCALRecoUtils* GetEMCALRecoUtils()    const        { return fRecoUtils         ; }
   
   void    SetInvariantMassHistoBinRange(Int_t nBins, Float_t minbin, Float_t maxbin){
-                                        fNbins = nBins; fMinBin = minbin; fMaxBin = maxbin; }
+                                        fNbins     = nBins ; fMinBin     = minbin ; fMaxBin     = maxbin ; }
 
+  void    SetTimeHistoBinRange         (Int_t nBins, Float_t minbin, Float_t maxbin){
+                                        fNTimeBins = nBins ; fMinTimeBin = minbin ; fMaxTimeBin = maxbin ; }
+
+  
   // Mask clusters
   void    SetNMaskCellColumns(Int_t n) {
     if(n > fNMaskCellColumns){ delete [] fMaskCellColumns ; fMaskCellColumns = new Int_t[n] ; }
@@ -120,12 +127,22 @@ private:
   Int_t   fNMaskCellColumns;   // Number of masked columns
   Int_t*  fMaskCellColumns;    //[fNMaskCellColumns] list of masked cell collumn
   
+  // Pi0 clusters selection
+  
+  Float_t fInvMassCutMin;      // Min mass cut for clusters to fill time or other histograms
+  Float_t fInvMassCutMax;      // Mas mass cut for clusters to fill time or other histograms
+  
   //Output histograms	
+
+  TList*  fOutputContainer;    //!histogram container
+
   Int_t   fNbins;              // N       mass bins of invariant mass histograms
   Float_t fMinBin;             // Minimum mass bins of invariant mass histograms
   Float_t fMaxBin;             // Maximum mass bins of invariant mass histograms
-
-  TList*  fOutputContainer;    //!histogram container
+  
+  Int_t   fNTimeBins;          // N       time bins of invariant mass histograms
+  Float_t fMinTimeBin;         // Minimum time bins of invariant mass histograms
+  Float_t fMaxTimeBin;         // Maximum time bins of invariant mass histograms
   
   TH1F*   fHmpi0[AliEMCALGeoParams::fgkEMCALModules][AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows];//! two-cluster inv. mass assigned to each cell.
 
@@ -164,6 +181,7 @@ private:
   TH1I*   fhNEvents;                                                             //! Number of events counter histogram
  
   //Time
+  TH2F*   fHTpi0[4];                                                             //! Time of cell under pi0 mass, for 4 bunch crossings
   TH2F*   fhClusterTime ;                                                        //! Timing of clusters vs energy
   TH2F*   fhClusterTimeSM[AliEMCALGeoParams::fgkEMCALModules] ;                  //! Timing of clusters vs energy per SM
   TH2F*   fhClusterPairDiffTime;                                                 //! Diference in time of clusters
@@ -171,7 +189,7 @@ private:
   TH2F*   fhClusterPairDiffTimeSameSector[AliEMCALGeoParams::fgkEMCALModules/2]; //! Diference in time of clusters same sector
   TH2F*   fhClusterPairDiffTimeSameSide[AliEMCALGeoParams::fgkEMCALModules-2];   //! Diference in time of clusters same side
 
-  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,16);
+  ClassDef(AliAnalysisTaskEMCALPi0CalibSelection,17);
 
 };
 

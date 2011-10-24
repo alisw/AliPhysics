@@ -44,20 +44,9 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOnExoticEventsRemoval()                  { fRemoveExoticEvents= kTRUE   ; }
   void           SwitchOffExoticEventsRemoval()                 { fRemoveExoticEvents= kFALSE  ; } 
   
-  Bool_t         IsExoticCell(const Int_t absId, const Float_t ecell, 
-                              const Float_t tcell, AliVCaloCells* cells);
-  void           SwitchOnExoticCellRemoval()                    { fRemoveExoticCells = kTRUE   ; }
-  void           SwitchOffExoticCellRemoval()                   { fRemoveExoticCells = kFALSE  ; } 
-  
-  void           SetExoticCellFractionCut(Float_t f)            { fExoticCellFraction = f      ; }
-  void           SetExoticCellDiffTimeCut(Float_t dt)           { fExoticCellDiffTime = dt     ; }
-  void           SetExoticCellMinAmplitudeCut(Float_t ma)       { fExoticCellMinAmplitude = ma ; }
-  
   Bool_t         IsLEDEvent();
   void           SwitchOnLEDEventsRemoval()                     { fRemoveLEDEvents   = kTRUE   ; }
   void           SwitchOffLEDEventsRemoval()                    { fRemoveLEDEvents   = kFALSE  ; } 
-
-  Bool_t         AcceptCalibrateCell(const Int_t absId, Float_t & amp, Double_t & time, AliVCaloCells* cells) ;
   
   //OCDB
   Bool_t         AccessOCDB();
@@ -160,12 +149,8 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Float_t                fSelectCellMinFrac;       // Min fraction of cell energy after unfolding cut
   Bool_t                 fRemoveLEDEvents;         // Remove LED events, use only for LHC11a 
   Bool_t                 fRemoveExoticEvents;      // Remove exotic events
-  Bool_t                 fRemoveExoticCells;       // Remove exotic cells
-  Float_t                fExoticCellFraction;      // Good cell if fraction < 1-ecross/ecell
-  Float_t                fExoticCellDiffTime;      // If time of candidate to exotic and close cell is too different, it must be noisy, set amp to 0
-  Float_t                fExoticCellMinAmplitude;  // Check for exotic only if amplitud is larger than this value
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 14);
+  ClassDef(AliAnalysisTaskEMCALClusterize, 15);
 
 };
 
