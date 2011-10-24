@@ -12,6 +12,7 @@
 #include <TGraphErrors.h>
 #include <TSystem.h>
 #include <TLatex.h>
+#include <TMinuit.h>
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliCDBStorage.h"
@@ -23,7 +24,7 @@
 #include "AliITSresponseSDD.h"
 #endif
 
-/*  $Id$    */
+Bool_t verbose = kFALSE;
 
 /*
   // master equations
@@ -53,7 +54,7 @@ TString cdbComment = "";
 //--------------------------------------------------------------------
 
 const Int_t kSDDMin=240,kSDDMax=499,kNSDD=kSDDMax-kSDDMin+1;
-enum {kSXvsX,kSXvsZ,kSTDvsX,kSTDvsZ,kSDXvsXclean,kSVDvxX,kSCorrMapX,kSXvsXCorr,kSXvsZCorr,kSDVvsZ,kSDVvsZOrig,kSGrDxx,kSGrTDx,kSGrTXCorr, kNStore};
+enum {kSXvsX,kSXvsZ,kSTDvsX,kSTDvsZ,kSDXvsXclean,kSVDvsX,kSCorrMapX,kSXvsXCorr,kSXvsZCorr,kSDVvsZ,kSDVvsZOrig,kSGrDxx,kSGrTDx,kSGrTXCorr, kNStore};
 const Int_t maxVZOrd    = 4;            // max order of polinomial for VD vs Z correction (normal sensors)
 const Double_t chi2BadVZ = 2.9;         // treat as bad module if chi2/ndf is worse
 //
@@ -61,13 +62,23 @@ enum {kDxX,kDxZ,kTDX,kTDZ,kNQATypes};
 // Prefixes for residuals histos prepared by PrepSDDResidMap.C from MP2 output
 // For QA histograms the name should be changed to "hpSDDResXvsXD","hpSDDResXvsZ","hpSDDDrTimevsXD","hpSDDDrTimevsZ" respectively
 const Char_t* kQAHistoNames[] = {    // 
+  "hpSDDResXvsXD",                   // DX vs Xdrift 
+  "hpSDDResXvsZ",                    // DX vs local Z
+  "hpSDDDrTimevsXD",                 // TDrift-T0 vs Xdrift
+  "hpSDDDrTimevsZ"                   // TDrift-T0 vs local Z
+};
+const Char_t* kLRNames[] = {"0","1"};  // identifiers for left/right sides in histo names
+/*
+const Char_t* kQAHistoNames[] = {    // 
   "Xdrift_Mod_",                     // DX vs Xdrift 
   "ZAnode_Mod_",                     // DX vs local Z
   "TD_vs_Xdrift_Mod_",               // TDrift-T0 vs Xdrift
   "TD_vs_ZAnode_Mod_"                // TDrift-T0 vs local Z
 };
 const Char_t* kLRNames[] = {"left","right"};  // identifiers for left/right sides in histo names
+*/
 //
+const double kMaxChi2SimpleMap = 1.0; // if polinomial fit gives chi2 below this value, make map out of it
 double minBEntryX = 10;        // min entries in the bin to account (vs Xdrift)
 double minBEntryZ = 20;        // min entries in the bin to account (vs Z)
 double skipDXEdge = 1000.;     // microns to skip from each side of XDrift when smoothing
@@ -81,8 +92,13 @@ int    smoothLevel= 5;         // smoothing level
 int    minBinsEdge = 5;        // min number of X>0 good bins to fit the edge
 Bool_t useSplieForR2V = kFALSE;      // if true, extract Vd profile using Derivateve of spline (may be inadequate for sharp turns)
 //
-Bool_t forceT0CorrTo0   = kTRUE;
+Bool_t forceT0CorrTo0   = kFALSE;//kTRUE;
 Bool_t forceRPhiCorrTo0 = kTRUE;
+Bool_t userDummyCorrMap = kFALSE;//kTRUE;
+Bool_t userDummyt0Corr  = kFALSE;//kTRUE;
+Bool_t userDummyxlCorr  = kFALSE;//kTRUE;
+Int_t  userRebinX = 1;
+Int_t  userRebinZ = 2;
 //
 //
 AliITSsegmentationSDD sddSeg;
@@ -94,7 +110,7 @@ TProfile*  currHDXvsZ = 0;                // raw DX vs Z histo from QA
 TProfile*  currHTDvsX = 0;                // raw DriftTime-T0 vs X histo from QA
 TProfile*  currHTDvsZ = 0;                // raw DriftTime-T0 vs Z histo from QA
 TH1*       currHDXvsXclean = 0;           // smoothed DX vs X histo
-TH1*       currHVDvxX = 0;                // extracted VDrift vs X profile
+TH1*       currHVDvsX = 0;                // extracted VDrift vs X profile
 TH1*       currHCorrMapX = 0;             // extracted correction map
 TH1*       currHDXvsXCorr = 0;            // DX vs X histo after application of the map
 TH1*       currHDXvsZCorrMT0 = 0;         // DX vs X histo after application of the map and t0 correction
@@ -136,6 +152,7 @@ Bool_t    ProcSDDSideDXvsZ();
 TProfile* GetQAHisto(Int_t qaType);
 TProfile* H2Profile(TH2* h2);
 TH1*      H2ProfileAsTH1(TH2* h2);
+TH1*      GetProfHEntries(TProfile* prof);
 TH1*      ProfileAsTH1(TProfile* prof, const char* addName);
 TH1*      CleanProfile(TProfile* profR);
 TH1*      Vdrift2Resid(TH1* vd);
@@ -158,6 +175,11 @@ void      GetHistoMinMaxInRange(TH1* h, double &mn,double &mx);
 double    edgeLow(double* x, double *par);
 double    edgeHigh(double* x, double *par);
 void      CureEdges(TH1* prof);
+void      SafeRebin(TProfile* prof, Int_t factor, Bool_t xprof);
+TH1*      FitDXEdges(TProfile* prof);
+Bool_t    TestMapFunction(TH1* smap, TF1* fun, double lft, double rgt);
+double    ftPolComb(double* x, double *par);
+TH1*      SimpleMap(TH1* prof);
 //
 Bool_t    LoadSDDVDrift(TString& path, TObjArray *&arr);
 Bool_t    LoadSDDResponse(TString& path, AliITSresponseSDD *&resp);
@@ -240,8 +262,11 @@ Bool_t ProcSDDSideDXvsX()
     delete currHDXvsXCorr;
     currHDXvsXCorr = (TH1*)currHDXvsXclean->Clone( Form("%s_corrCheck",currHDXvsX->GetName()) );
     //
-    currHVDvxX      = Resid2Vdrift(currHDXvsXclean);
-    currHCorrMapX   = Vdrift2Resid(currHVDvxX);
+    // try simple solution
+    if (!(currHCorrMapX=SimpleMap(currHDXvsXclean))) { 
+      currHVDvsX      = Resid2Vdrift(currHDXvsXclean);
+      currHCorrMapX   = Vdrift2Resid(currHVDvsX);
+    }
     //
     currHDXvsXCorr->Add(currHCorrMapX,-1);
   }
@@ -447,6 +472,9 @@ TProfile* GetQAHisto(Int_t qaType)
   //
   if (h->InheritsFrom(TH2::Class())) h = H2Profile((TH2*)h); // make sure it is not TH2 histo
   //
+  if ( (qaType==kDxX || qaType==kTDX) && userRebinX>1) SafeRebin((TProfile*)h,userRebinX,kTRUE);
+  if ( (qaType==kDxZ || qaType==kTDZ) && userRebinZ>1) SafeRebin((TProfile*)h,userRebinZ,kFALSE);
+  //
   return (TProfile*)h;
 }
 
@@ -466,7 +494,14 @@ TH1* ProfileAsTH1(TProfile* prf, const char* addName)
   // convert profile to TH1 histo
   TString nm = prf->GetName(); nm += addName;
   TAxis* xax = prf->GetXaxis();
-  TH1* prof = new TH1F(nm.Data(),nm.Data(),prf->GetNbinsX(),xax->GetXmin(),xax->GetXmax());
+  TH1* prof = 0;
+  const TArrayD *bins = xax->GetXbins();
+  if (bins->GetSize() == 0) {
+    prof = new TH1F(nm.Data(),nm.Data(),prf->GetNbinsX(),xax->GetXmin(),xax->GetXmax());
+  }
+  else {
+    prof = new TH1F(nm.Data(),nm.Data(),xax->GetNbins(),bins->GetArray());
+  }
   for (int i=1;i<=prof->GetNbinsX();i++) {
     prof->SetBinContent(i, prf->GetBinContent(i));
     prof->SetBinError(i, prf->GetBinError(i));
@@ -487,18 +522,13 @@ TProfile* H2Profile(TH2* h2)
 TH1* CleanProfile(TProfile* profR)
 {
   // clean profile copy
+  TH1* prof = FitDXEdges(profR); // cure edges
+
   int ib0 = profR->FindBin(1), ib1 = profR->FindBin(sddSeg.Dx()-1);
   int nbn = profR->GetNbinsX();
-  int nSkip = skipDXEdge/profR->GetBinWidth(1);
-  int nMean = wDXEdge/profR->GetBinWidth(1);
+  int nSkip = skipDXEdge/profR->GetBinWidth(nbn/2);
+  int nMean = wDXEdge/profR->GetBinWidth(nbn/2);
   //
-  TH1* prof = ProfileAsTH1(profR,"_Clean");
-  RedoProfileErrors(prof,profR);
-  //
-  CureEdges(prof);
-  //
-  //  for (int i=1;i<ib0;i++) {prof->SetBinContent(i,0); prof->SetBinError(i,0);}
-  //  for (int i=ib1+1;i<=nbn;i++) {prof->SetBinContent(i,0); prof->SetBinError(i,0);}
   // get mean occupancy skipping first and last nSkip occupied bins
   //
   int nbCntL=0, nbCntR=0,nskipL=0,nskipR=0;
@@ -546,7 +576,7 @@ TH1* Resid2Vdrift(TH1* res)
   vd->Reset();
   int nb = vd->GetNbinsX();
   //
-  int nbcnt=0, nbfl = wVDEdge/vd->GetBinWidth(1);
+  int nbcnt=0, nbfl = wVDEdge/vd->GetBinWidth(nb/2);
   if (nbfl<nVDEdge) nbfl=nVDEdge;
   //
   double vAv=0,eAv=0;                           // average vdrift / v0
@@ -565,7 +595,7 @@ TH1* Resid2Vdrift(TH1* res)
     }
     if (nbd) err2/=nbd;
     if (err2>0 && v>0 && v<3) {vAv += v/err2; eAv += 1./err2;}
-    err2 = TMath::Sqrt(err2)/res->GetBinWidth(1);
+    err2 = TMath::Sqrt(err2)/res->GetBinWidth(nb/2);
     vd->SetBinError(i, err2 );
     nbcnt++;
   }
@@ -643,6 +673,7 @@ TH1* Vdrift2Resid(TH1* vd)
   TString nm = vd->GetName(); nm += "_vd2res";
   TH1* res = (TH1*) vd->Clone(nm.Data());
   res->Reset();
+  if (userDummyCorrMap) return res;
   int ib0 = res->FindBin(1);
   int ib1 = res->FindBin(sddSeg.Dx()-1);
   double resv=0;
@@ -691,9 +722,9 @@ void CheckResultDX()
   int b0 = currHDXvsXCorr->FindBin(1),b1 = currHDXvsXCorr->FindBin(sddSeg.Dx()-1);
   int nb = 0;
   for (int ib=b0;ib<b1;ib++) if (currHTDvsX->GetBinEntries(ib)>=minBEntryX) nb++;
-  currHDXvsX->Fit(fitP0,"q","");
+  currHDXvsX->Fit(fitP0,"q0N","");
   double offsRaw = fitP0->GetParameter(0);
-  currHDXvsXCorr->Fit(fitP0,"q0","");
+  currHDXvsXCorr->Fit(fitP0,"q0N","");
   double offsAMap = fitP0->GetParameter(0);
 
   //
@@ -813,6 +844,8 @@ void CalcDXCorrections()
   else if (vL>1) xlCorr = -offsL; // only one side is available
   else if (vR>1) xlCorr =  offsR;
   //
+  if (userDummyt0Corr) t0Corr = 0;
+  if (userDummyxlCorr) xlCorr = 0;  
   //  printf("SDD%d VL:%f VR:%f offsL:%+f offsR:%+f  dT:%+f dX:%+f\n",currSDDId, vL,vR, offsL,offsR, t0Corr,xlCorr);
   resT0Corr->SetBinContent(currMod+1, t0Corr);        // T0 correction
   resXLocCorr->SetBinContent(currMod+1, xlCorr);      // X alignment correction
@@ -871,7 +904,7 @@ void CleanPrev()
   currHTDvsX = 0;
   currHTDvsZ = 0;
   currHDXvsXclean = 0;
-  currHVDvxX = 0;
+  currHVDvsX = 0;
   currHCorrMapX = 0;
   currHDXvsXCorr = 0;
   currHDVvsZ = 0;
@@ -890,7 +923,7 @@ void StoreCurrent()
   if (currHTDvsX)       procHistos.AddAtAndExpand(currHTDvsX,      GetStoreID(kSTDvsX));
   if (currHTDvsZ)       procHistos.AddAtAndExpand(currHTDvsZ,      GetStoreID(kSTDvsZ));
   if (currHDXvsXclean)  procHistos.AddAtAndExpand(currHDXvsXclean, GetStoreID(kSDXvsXclean));
-  if (currHVDvxX)       procHistos.AddAtAndExpand(currHVDvxX,      GetStoreID(kSVDvxX));
+  if (currHVDvsX)       procHistos.AddAtAndExpand(currHVDvsX,      GetStoreID(kSVDvsX));
   if (currHCorrMapX)    procHistos.AddAtAndExpand(currHCorrMapX,   GetStoreID(kSCorrMapX));
   if (currHDXvsXCorr)   procHistos.AddAtAndExpand(currHDXvsXCorr,  GetStoreID(kSXvsXCorr));
   if (currHDXvsZCorrMT0) procHistos.AddAtAndExpand(currHDXvsZCorrMT0,  GetStoreID(kSXvsZCorr));
@@ -1308,7 +1341,7 @@ void PlotReport(const char* psname)
   //
   for (int ix=0;ix<2;ix++) { // mean residuals before/after correction
     sddCanv->cd(++cntPad);
-    PlotHisto(resOffsDXraw[ix],"p"     ,7,kBlack,1);
+    PlotHisto(resOffsDXraw[ix],"p"     ,7,kBlack,0.5);
     PlotHisto(resOffsDX[ix]   ,"p same",7,kRed  ,1);    
     AddPadLabel(Form("<#DeltaX> %s : Raw",ix?"Right":"Left"), 0.1,0.93,kBlack,0.05);
     AddPadLabel("After Map", 0.5,0.93,kRed,0.05);
@@ -1355,23 +1388,35 @@ void PlotReport(const char* psname)
     }
     for (int ix=0;ix<2;ix++) {
       sddCanv->cd(++cntPad);
+      TH1* hsddcl = (TH1*)procHistos.At(GetStoreID(kSDXvsXclean,imd,ix)); // raw residuals
+      if (hsddcl) {
+	ib0 = hsddcl->FindBin(1);
+	ib1 = hsddcl->FindBin(sddSeg.Dx()-1);
+	hsddcl->GetXaxis()->SetRange(ib0,ib1);
+      }            
+      PlotHisto(hsddcl,"p",24,kGreen+2,0.5);
+      //
       hsdd = (TH1*)procHistos.At(GetStoreID(kSXvsX,imd,ix)); // raw residuals
       if (hsdd) {
 	ib0 = hsdd->FindBin(1);
 	ib1 = hsdd->FindBin(sddSeg.Dx()-1);
 	hsdd->GetXaxis()->SetRange(ib0,ib1);
       }
-      PlotHisto(hsdd," ",7,kBlack,1);
+      PlotHisto(hsdd,"p same",20,kBlack,0.4);
+      PlotHisto(hsddcl,"p sames",24,kGreen+2,0.5);
+      //
+      //
       hsdd = (TH1*)procHistos.At(GetStoreID(kSCorrMapX,imd,ix)); // map
       if (hsdd) hsdd->GetXaxis()->SetRange(ib0,ib1);
-      PlotHisto(hsdd,"same",7,kRed,1);
-      hsdd = (TH1*)procHistos.At(GetStoreID(kSXvsXCorr,imd,ix)); // map
+      PlotHisto(hsdd,"same",7,kRed,0.5);
+      hsdd = (TH1*)procHistos.At(GetStoreID(kSXvsXCorr,imd,ix)); 
       if (hsdd) hsdd->GetXaxis()->SetRange(ib0,ib1);
-      PlotHisto(hsdd,"same",7,kBlue,1);
+      PlotHisto(hsdd,"histo same",7,kBlue,0.5);
       //
       AddPadLabel(Form("<#DeltaX> %d %s: Raw",imd,ix?"Right":"Left"), 0.1,0.93,kBlack,0.07);
-      AddPadLabel("Map", 0.4,0.93,kRed,0.07);
-      AddPadLabel("Corr.Map", 0.5,0.93,kBlue,0.07);
+      AddPadLabel("Clean", 0.35,0.93,kGreen+2,0.07);
+      AddPadLabel("Map", 0.42,0.93,kRed,0.07);
+      AddPadLabel("+Map", 0.5,0.93,kBlue,0.07);
       //
       AddPadLabel(Form("#DeltaV:%+.4f | #DeltaT0:%+5.0f | #DeltaX:%+4.0f",
 		       resVDCorr[ix] ? resVDCorr[ix]->GetBinContent(imd-kSDDMin+1):0,
@@ -1618,4 +1663,515 @@ void CureEdges(TH1* prof)
     }
   }
   //
+}
+
+//_________________________________________________________________________
+void SafeRebin(TProfile* prof, Int_t factor, Bool_t xprof)
+{
+  // rebin taking into account left/right margins
+  const int minBins = 5;
+  int bmn,bmx;
+  if (factor<1) return;
+  Bool_t firstX=kTRUE,firstZ=kTRUE;
+  //
+  if (xprof) { // drift profiles
+    bmn = prof->FindBin(1);
+    bmx = prof->FindBin(sddSeg.Dx()-1); 
+  }
+  else { // Z profile
+    double zrange = sddSeg.Dz()/2 - 1.;
+    bmn = prof->FindBin(-zrange);
+    bmx = prof->FindBin( zrange);
+  }
+  int nbTot = prof->GetNbinsX();
+  int nbUse = bmx - bmn + 1;
+  int edge = bmn-1; // number of edge bins from each side
+  //
+  // find closest divisor
+  int fCClose = 2;
+  int dst = 9999;
+  for (int i=2;i<nbUse;i++) {
+    if ((nbUse%i)==0 && (nbUse/fCClose)>=minBins) {
+      int dsti = TMath::Abs(factor-i);
+      if (dsti<dst) {fCClose=i; dst=dsti;}
+    }
+  }
+  if (dst==9999) {
+    printf("Could find good rebinning factor\n"); exit(1);
+  }
+  //
+  if (fCClose!=factor) {
+    if ( (xprof&&firstX) || ((!xprof)&&firstZ) ) printf("Rebin%c: For roundness will use factor %d instead of %d\n",xprof ? 'X':'Z',fCClose,factor);
+    factor = fCClose;
+  }
+  //
+  int nbUseNew = nbUse/factor;
+  if (nbUseNew<minBins) {
+    factor = nbUse/5;
+    if (factor<2) factor=1;
+    nbUseNew = nbUse/factor;
+  }
+  //
+  if ( (xprof&&firstX) || ((!xprof)&&firstZ) ) printf("Rebin%c: Will rebin %d to %d\n",xprof ? 'X':'Z',nbUse,nbUseNew);
+  if (factor<2) return;
+  //
+  int nbTotNew = nbUseNew + 2*edge;
+  double *xnew = new double[nbTotNew+1];
+  TAxis* xax = prof->GetXaxis();
+  for (int i=1;i<=edge;i++) { // edges are not rebined
+    xnew[i-1] = xax->GetBinLowEdge(i);
+    xnew[nbTotNew-i+1] = xax->GetBinLowEdge(nbTot+2-i);
+  }
+  int cnt = 0, bcnt = edge+1;
+  for (int i=edge+1;i<=nbTot-edge+1;i++) {
+    if (cnt==0) {xnew[bcnt-1] = xax->GetBinLowEdge(i); bcnt++;}
+    if (++cnt>=factor) cnt = 0;
+  }
+  TProfile *profNew = (TProfile*)prof->Rebin(nbTotNew,"rbTMPprof$",xnew);
+  profNew->SetName(prof->GetName());
+  profNew->SetTitle(prof->GetTitle());  
+  *prof = *profNew;
+  delete profNew;
+  //
+  if (xprof&&firstX) firstX = kFALSE;
+  else if (firstZ) firstZ = kFALSE;
+}
+
+//____________________________________________________
+Double_t EdgeFun(double *x, double *par)
+{
+  // Function to fit Xresiduals vs X, accounting for the limited sensor size and finite gaussian track resolution
+  // Assumes that the hits density along sensor X has linear dependence rho(x) = a+b*x, and the track have resolution N(x,sig)
+  // Then, the <residual> seen at coordinate X will be 
+  // R(x) = Integrate[(y-x)*F,{y,t0,t1}]/Integrate[F,{y,t0,t1}];
+  // with 
+  // F = (a+b*y)*Exp(-(y-x)^2/2/sig^2)
+  // where t0 and t1 are start and end coordinates of the physical module (in fact, only the coordinate
+  // of the fitted edge is relevant.
+  //
+  const double sqrt2 = 1.41421356237309515e+00;
+  const double sqrtPi = 1.77245385090551588e+00;
+  double px = x[0];
+  //
+  // edge parameters
+  double sig = par[0];   // resolution
+  double t0  = par[1];   // active left edge
+  double t1  = par[2];   // active right edge
+  double tc0   = t0+par[3];  // constant occupancy left edge
+  double tc1   = t1-par[4];  // constant occupancy right edge
+  if (t0>t1)  return 1e6;
+  if (tc0<t0) tc0 = t0;
+  if (tc1>t1) tc1 = t1;
+  double ped = par[5];
+  //
+  if (sig<1e-6) return 1e6;
+  //
+  // slope parameters
+  double offset = par[6];
+  double slope  = par[7];
+  double curve  = par[8];
+  //
+  double top=0,norm=0;
+  for (int it=0;it<3;it++) { // assume three regions of occupance: rise, const, fall
+    double tmp0,tmp1,a,b;
+    //
+    if (it==0) {
+      tmp0 = t0;
+      tmp1 = tc0;
+      double rise = tmp1-tmp0;
+      if (rise<1e-9) continue;
+      b = (1.-ped)/rise; // linear occupancy rise from ped at t0 to 1 at tc0
+      a = ped-t0*b;
+    }
+    else if (it==1) {
+      tmp0 = tc0;
+      tmp1 = tc1;
+      if (tmp0>=tmp1) continue;
+      a = 1.;      // constant occupancy between tc0 and tc1
+      b = 0; 
+    }
+    else {
+      tmp0 = tc1;
+      tmp1 = t1;
+      double rise = tmp1-tmp0;
+      if (rise<1e-9) continue;
+      b = -(1.-ped)/rise;   // linear occupancy fall from 1 at tc1 to ped at t1
+      a = ped+(1.-ped)*tmp1/rise;
+    }
+    double q0 = (tmp0-px)/sig/sqrt2;
+    double q1 = (tmp1-px)/sig/sqrt2;
+    double expq0 = TMath::Abs(q0)<27. ? TMath::Exp(-q0*q0) : 0;
+    double expq1 = TMath::Abs(q1)<27. ? TMath::Exp(-q1*q1) : 0;
+    //
+    double erfcq0 = TMath::Abs(q0)<27. ? TMath::Erfc(TMath::Abs(q0)) : 0;
+    double erfcq1 = TMath::Abs(q1)<27. ? TMath::Erfc(TMath::Abs(q1)) : 0;
+    //
+    double derfc = 0;
+    if       (q0>0 && q1>0) derfc = erfcq0 - erfcq1;
+    else if  (q0<0 && q1>0) derfc = (2.-erfcq0) - erfcq1;
+    else if  (q0>0 && q1<0) derfc = erfcq0 - (2.-erfcq1);
+    else if  (q0<0 && q1<0) derfc = erfcq1 - erfcq0;
+    //
+    double topLoc = sig*(expq0*(a+b*tmp0) - expq1*(a+b*tmp1) + b*sqrtPi/sqrt2*sig*derfc);
+    double nrmLoc = b*(expq0-expq1)*sig + sqrtPi/sqrt2*(a+b*px)*derfc;
+    top += topLoc;
+    norm+= nrmLoc;
+    if (verbose) {
+      printf("it%d | a:%+e b:%+e | topLoc: %+e nrmLoc:%+e -> top: %+e norm: %+e\n",it, a,b,topLoc,nrmLoc,top,norm);
+    }
+  }
+  //
+  double res = 0;
+  if (TMath::Abs(norm)==0) {
+    printf("!! x= %f sig=%+e t0=%+e t1=%+e | Top=%e Norm=%e -> %+e\n",px,sig,t0,t1,top,norm,res);
+  }
+  else res = top/norm;
+  //
+  return res + offset + slope*px + curve*px*px;
+}
+
+/*
+//____________________________________________________
+Double_t EdgeFun(double *x, double *par)
+{
+  // Function to fit Xresiduals vs X, accounting for the limited sensor size and finite gaussian track resolution
+  // Assumes that the hits density along sensor X has linear dependence rho(x) = a+b*x, and the track have resolution N(x,sig)
+  // Then, the <residual> seen at coordinate X will be 
+  // R(x) = Integrate[(y-x)*F,{y,t0,t1}]/Integrate[F,{y,t0,t1}];
+  // with 
+  // F = (a+b*y)*Exp(-(y-x)^2/2/sig^2)
+  // where t0 and t1 are start and end coordinates of the physical module (in fact, only the coordinate
+  // of the fitted edge is relevant.
+  //
+  const double sqrt2 = 1.41421356237309515e+00;
+  const double sqrtPi = 1.77245385090551588e+00;
+  double px = x[0];
+  //
+  // edge parameters
+  double sig = par[0];
+  double t0  = par[1];
+  double t1  = par[2];
+  double a   = par[3];
+  double b   = par[4];
+  if (sig<1e-6) return 0;
+  //
+  // slope parameters
+  double offset = par[5];
+  double slope  = par[6];
+  //
+  double q0 = (t0-px)/sig/sqrt2;
+  double q1 = (t1-px)/sig/sqrt2;
+  double expq0 = TMath::Abs(q0)<27. ? TMath::Exp(-q0*q0) : 0;
+  double expq1 = TMath::Abs(q1)<27. ? TMath::Exp(-q1*q1) : 0;
+  //
+  double erfcq0 = TMath::Abs(q0)<27. ? TMath::Erfc(TMath::Abs(q0)) : 0;
+  double erfcq1 = TMath::Abs(q1)<27. ? TMath::Erfc(TMath::Abs(q1)) : 0;
+  //
+  double derfc = 0;
+  if       (q0>=0 && q1>=0) derfc = erfcq0 - erfcq1;
+  else if  (q0<=0 && q1>=0) derfc = (2.-erfcq0) - erfcq1;
+  else if  (q0>=0 && q1<=0) derfc = erfcq0 - (2.-erfcq1);
+  else if  (q0<=0 && q1<=0) derfc = erfcq1 - erfcq0;
+  //
+  double top = sig*(expq0*(a+b*t0) - expq1*(a+b*t1) + b*sqrtPi/sqrt2*sig*derfc);
+  double norm= b*(expq0-expq1)*sig + sqrtPi/sqrt2*(a+b*px)*derfc;
+  //
+  if (verbose) {
+    printf("x=%+.2f | q0:%+e q1:%+e exp0:%+e exp1:%+e erf0:%+e erf1:%+e (->%+.e)-> %+e/%+e\n",
+	   px,q0,q1,expq0,expq1,erfcq0,erfcq1, derfc, top,norm);
+  }
+  //
+  double res = 0;
+  if (TMath::Abs(norm)<1e-300) {
+    printf("!! x= %f sig=%+e t0=%+e t1=%+e a=%+e b=%+e | Top=%e Norm=%e -> %+e\n",px,sig,t0,t1,a,b,top,norm,res);
+  }
+  else res = top/norm;
+  //
+  return res + offset + slope*px;
+}
+*/
+
+//____________________________________________________________
+TH1* GetProfHEntries(TProfile* prof)
+{
+  // create histo with entries of the profile histo
+  TH1* hent = ProfileAsTH1(prof, "_Entries");
+  if (!hent) return 0;
+  hent->Reset();
+  int nb = hent->GetNbinsX()+1;
+  for (int ib=0;ib<=nb;ib++) hent->SetBinContent(ib, prof->GetBinEntries(ib));
+  return hent;
+}
+
+//___________________________________________________________
+TH1* FitDXEdges(TProfile* prof)
+{
+  //
+  static TF1 *flft=0,*frgt=0;
+  const double kMinTot = 1000;
+  const double kMinThresh = 0.15;
+  const double kEdgeTol = 2000.; 
+  const double kFitLgt = 10000.;
+  const double kMinRes = 300.;
+  const double kMaxRes = 600.;
+  const double kMaxDX = 5000.;
+  const double kMaxRiseRange = 10000;
+  const double kMaxChi2 = 6;
+  double xspan = sddSeg.Dx();
+  TString fstatus;
+  //
+  TH1* histo = ProfileAsTH1(prof,"_h1");
+  //
+  int nb = prof->GetNbinsX();
+  double tot = prof->GetEntries();
+  histo->SetBinContent(0,0);        // lower active edge
+  histo->SetBinContent(nb+1,xspan); // upper active edge
+  if (tot<kMinTot) return histo;
+  double meanbin = tot/nb;
+  //
+  //  RedoProfileErrors(histo,prof);
+  // find left/right significant bins
+  int bleft = -1;
+  for (int i=1;i<=nb;i++) {
+    double enti = prof->GetBinEntries(i);
+    if (enti>kMinThresh*meanbin) {bleft=i; break;}
+  }
+  if (bleft<0) return kFALSE;
+  if (bleft<prof->FindBin(1)) bleft = 1;
+  double lEdgeMn = TMath::Max(0.,prof->GetBinLowEdge(bleft)-kEdgeTol/2);
+  double lEdgeMx = lEdgeMn + kEdgeTol;
+  //
+  int bright = -1;
+  for (int i=nb;i>0;i--) {
+    double enti = prof->GetBinEntries(i);
+    if (enti>kMinThresh*meanbin) {bright=i; break;}
+  }
+  if (bright<0) return kFALSE;
+  if (bright>prof->FindBin(xspan-1)) bleft = prof->FindBin(xspan-1);
+  double rEdgeMx = TMath::Min(xspan,prof->GetBinLowEdge(bright)+kEdgeTol/2);
+  double rEdgeMn = rEdgeMx - kEdgeTol;
+  //
+  printf("Fit left edge\n");
+  if (!flft) flft = new TF1("lftEdge",EdgeFun,		      
+		      prof->GetBinLowEdge(1),
+		      prof->GetBinLowEdge(nb+1),
+		      9);
+  flft->SetParameters((kMaxRes+kMinRes)/2, (lEdgeMn+lEdgeMx)/2,(rEdgeMn+rEdgeMx)/2,lEdgeMx,0,0.5);
+  flft->SetParLimits(0,kMinRes,kMaxRes);
+  flft->SetParLimits(1,lEdgeMn,lEdgeMx);
+  flft->SetParLimits(2,rEdgeMn,rEdgeMx);
+  flft->SetParLimits(3,0,kMaxRiseRange);
+  flft->FixParameter(4,0);
+  flft->SetParLimits(5,0.,1.);
+  flft->SetParLimits(6,-kMaxDX,kMaxDX);
+  flft->SetParLimits(7,-kMaxDX/xspan,kMaxDX/xspan);
+  flft->SetParLimits(8,-kMaxDX/xspan/xspan,kMaxDX/xspan/xspan);
+  flft->SetLineWidth(1);
+  double fitLStart = TMath::Max(prof->GetBinLowEdge(1),lEdgeMn-5.*(kMinRes+kMaxRes)/2.);
+  double fitLEnd   = TMath::Min(fitLStart+kFitLgt,rEdgeMn);
+  int cntL = 0;
+  double chiL = 0;
+  do {
+    prof->Fit(flft,"q+","",fitLStart,fitLEnd);
+    fstatus = (char*)gMinuit->fCstatu.Data();
+    if (fstatus.Contains("CONVERGED") || fstatus.Contains("SUCCESSFUL")) {
+      cntL=100;
+      chiL = flft->GetNDF()>0 ? flft->GetChisquare()/flft->GetNDF() : 0;
+    }
+    else {
+      TF1* oldf = (TF1*)prof->GetListOfFunctions()->FindObject(flft->GetName());
+      if (oldf) prof->GetListOfFunctions()->Remove(oldf);
+    }
+  } while(++cntL<3);
+  if (chiL<kMaxChi2 && cntL>=100) {
+    // flft->SetParameter(6,0.);
+    // flft->SetParameter(7,0.);
+    // flft->SetParameter(8,0.);
+    // int mxbin = histo->FindBin(flft->GetParameter(1)+6*flft->GetParameter(0));
+    double edgL = TMath::Max(skipDXEdge,flft->GetParameter(1)+3*flft->GetParameter(0));
+    printf("Smoothing left edge up to %.4f\n",edgL);
+    int mxbin = histo->FindBin(edgL);
+    for (int i=1;i<=mxbin;i++) {
+      double x = histo->GetBinCenter(i);
+      double val = flft->GetParameter(6)+x*(flft->GetParameter(7)+x*flft->GetParameter(8));
+      histo->SetBinContent(i,val);
+    }
+    histo->SetBinContent(0, TMath::Max(0.0, flft->GetParameter(1)-6*flft->GetParameter(0))); // effective lower sensor edge
+  }
+  else {
+    printf("Left edge bad: %f %d %s\n",chiL,cntL,fstatus.Data());
+  }
+  //
+  printf("Fit right edge\n");
+  if (!frgt) frgt = new TF1("rgtEdge",EdgeFun,		      
+			    prof->GetBinLowEdge(1),
+			    prof->GetBinLowEdge(nb+1),
+			    9);
+  frgt->SetParameters((kMaxRes+kMinRes)/2, (lEdgeMn+lEdgeMx)/2,(rEdgeMn+rEdgeMx)/2,0,(rEdgeMx-rEdgeMn)/2.,0.5);
+  frgt->SetParLimits(0,kMinRes,kMaxRes);
+  frgt->SetParLimits(1,lEdgeMn,lEdgeMx);
+  frgt->SetParLimits(2,rEdgeMn,rEdgeMx);
+  frgt->FixParameter(3,0);
+  frgt->SetParLimits(4,0,kMaxRiseRange);
+  frgt->SetParLimits(5,0.,1.);
+  frgt->SetParLimits(6,-kMaxDX,kMaxDX);
+  frgt->SetParLimits(7,-kMaxDX/xspan,kMaxDX/xspan);
+  frgt->SetParLimits(8,-kMaxDX/xspan/xspan,kMaxDX/xspan/xspan);
+  frgt->SetLineWidth(1);
+  double fitREnd   = TMath::Min(prof->GetBinLowEdge(nb+1),rEdgeMx+5.*(kMinRes+kMaxRes)/2.);
+  double fitRStart = TMath::Max(fitREnd-kFitLgt,lEdgeMx);
+  double chiR = 0;
+  int cntR = 0;
+  do {
+    prof->Fit(frgt,"q+","",fitRStart,fitREnd);
+    fstatus = (char*)gMinuit->fCstatu.Data();
+    if (fstatus.Contains("CONVERGED") || fstatus.Contains("SUCCESSFUL")) {
+      cntR=100;
+      chiR = frgt->GetNDF()>0 ? frgt->GetChisquare()/frgt->GetNDF() : 0;
+    }
+    else {
+      TF1* oldf = (TF1*)prof->GetListOfFunctions()->FindObject(frgt->GetName());
+      if (oldf) prof->GetListOfFunctions()->Remove(oldf);
+    }
+  } while((++cntR<3));
+  //
+  if (chiR<kMaxChi2 && cntR>=100) {
+    // frgt->SetParameter(6,0.);
+    // frgt->SetParameter(7,0.);
+    // frgt->SetParameter(8,0.);
+    // int mnbin = histo->FindBin(frgt->GetParameter(2)-6*frgt->GetParameter(0));
+    double edgR = TMath::Min(xspan-skipDXEdge,frgt->GetParameter(2)-3*frgt->GetParameter(0));
+    printf("Smoothing right edge from %.4f\n",edgR);
+    int mnbin = histo->FindBin(edgR);
+    for (int i=mnbin;i<=nb;i++) {
+      double x = histo->GetBinCenter(i);
+      double val = frgt->GetParameter(6)+x*(frgt->GetParameter(7)+x*frgt->GetParameter(8));
+      histo->SetBinContent(i,val);
+    }
+    histo->SetBinContent(nb+1, TMath::Min((double)sddSeg.Dx(), frgt->GetParameter(2)+6*frgt->GetParameter(0))); // effective upper sensor edge
+  }
+  else {
+    printf("Right edge bad: %f %d %s\n",chiR,cntR,fstatus.Data());
+  }
+  //
+  return histo;
+}
+
+double ftPolComb(double* x, double *par)
+{
+  // fit with combination of 2 polinomials of order par[0]
+  int ord = int(par[0]);
+  int npars = ord+1;
+  double brk = par[1];
+  //
+  double px = x[0];
+  double res = 0;
+  int start = 2;
+  if (px<=brk) start += npars;
+  for (int i=npars;i--;) {
+    //    printf("%.1f (%+.1f) | %d %d %e\n",px,brk,start,start+i,par[start+i]);
+    res = px*res+par[start+i];
+  }
+  return res;
+}
+
+//______________________________________________________________
+TH1* SimpleMap(TH1* prof)
+{
+  // get limits as over/under flows
+  int nb = prof->GetNbinsX();
+  double lft = prof->GetBinContent(0);
+  double rgt = prof->GetBinContent(nb+1);  
+  //
+  int b0 = prof->FindBin(lft+1);
+  int b1 = prof->FindBin(rgt-1);  
+  TString nm = prof->GetName(); nm += "_map";
+  TH1* smap = (TH1*)prof->Clone(nm.Data());
+  //
+  while(1) {
+    //
+    TF1* smapf = 0;
+    double mean = 0;
+    // 1) try pol1
+    smapf = new TF1("smapf","pol1",prof->GetBinLowEdge(0),prof->GetBinLowEdge(nb+1));
+    if (TestMapFunction(prof,smapf,lft,rgt)) {delete smapf; break;}
+    else {
+      mean = smapf->GetParameter(0);
+      delete smapf;
+    }
+    //
+    // 2) try pol2
+    smapf = new TF1("smapf","pol2",prof->GetBinLowEdge(0),prof->GetBinLowEdge(nb+1));
+    if (TestMapFunction(prof,smapf,lft,rgt)) {delete smapf; break;}
+    else delete smapf;
+    //
+    /*
+    double middle = (lft+rgt)/2;
+    int bmid = prof->FindBin(middle);
+    double a0 = prof->GetBinContent(b0);
+    double a1 = prof->GetBinContent(bmid+1);
+    double s0 = prof->GetBinContent(bmid-1);
+    double s1 = prof->GetBinContent(b1);
+    //
+    s0 = (s0-a0)/((rgt-lft)/2); // slope for 1st part
+    a0 -= b0*lft;               // offset for 1st part
+    s1 = (s1-a1)/((rgt-lft)/2); // slope for 2nd part
+    a1 -= s1*middle;            // offset for 2nd part
+    //
+    // 3) try pol1 + pol1
+    smapf = new TF1("smapf",ftPolComb,prof->GetBinLowEdge(0),prof->GetBinLowEdge(nb+1),2+2*2);
+    smapf->SetParameters(1,middle,a0,b0,a1,b1);
+    smapf->FixParameter(0,1);
+    smapf->SetParLimits(1,lft+4*prof->GetBinWidth(nb/2),rgt-4*prof->GetBinWidth(nb/2));
+    if (TestMapFunction(prof,smapf,lft,rgt)) {delete smapf; break;}
+    else delete smapf;
+    //
+    // 3) try pol2 + pol2
+    smapf = new TF1("smapf",ftPolComb,prof->GetBinLowEdge(0),prof->GetBinLowEdge(nb+1),2+2*3);
+    smapf->SetParameters(2,middle,a0,b0,0,a1,b1,0);
+    smapf->FixParameter(0,2);
+    smapf->SetParLimits(1,lft+4*prof->GetBinWidth(nb/2),rgt-4*prof->GetBinWidth(nb/2));
+    if (TestMapFunction(prof,smapf,lft,rgt)) {delete smapf; break;}
+    else delete smapf;
+    //
+    */
+    break;
+  }
+  TF1* fnsel = (TF1*) prof->GetListOfFunctions()->FindObject("smapf");
+  if (!fnsel) {delete smap; return 0;} // no simple solution
+  //
+  // function is ok, set edges to 0
+  b0 = smap->FindBin(1);
+  b1 = smap->FindBin(sddSeg.Dx()-1);
+  double f0 = fnsel->Eval( smap->GetBinCenter(b0) );
+  double f1 = fnsel->Eval( smap->GetBinCenter(b1) );
+  double slp = (f1-f0)/(smap->GetBinCenter(b1) -  smap->GetBinCenter(b0));
+  smap->Reset();
+  for (int ib=b0+1;ib<b1;ib++) {
+    double x = smap->GetBinCenter(ib);
+    double diff = fnsel->Eval(x) - (f0+slp*x);
+    smap->SetBinContent(ib, diff);
+  }
+  return smap;
+}
+
+
+//______________________________________________________________________
+Bool_t TestMapFunction(TH1* smap, TF1* fun, double lft, double rgt)
+{
+  // test if fun describes the shape
+  TString fstatus;
+  double chi2;
+  smap->Fit(fun,"0qN","",lft,rgt);
+  fstatus = (char*)gMinuit->fCstatu.Data();
+  if ( fstatus.Contains("CONVERGED") || fstatus.Contains("SUCCESSFUL")) {
+    chi2 = fun->GetNDF()>0 ? fun->GetChisquare()/fun->GetNDF() : 0;
+    if (chi2<=kMaxChi2SimpleMap) {
+      fun->SetLineWidth(1);
+      fun->SetLineStyle(2);
+      smap->Fit(fun,"q","",lft,rgt);
+      return kTRUE;
+    }
+  }
+  return kFALSE;
 }
