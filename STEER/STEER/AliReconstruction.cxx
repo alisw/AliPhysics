@@ -2264,7 +2264,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
-
+    //
+    // Perform analysis of this event if requested
+    if (fAnalysis) {
+      fRecoHandler->BeginEvent(iEvent);
+      fAnalysis->ExecAnalysis();
+      fRecoHandler->FinishEvent();
+    }  
+    //
     fesd->Reset();
     fhltesd->Reset();
     if (fWriteESDfriend) {
@@ -2296,13 +2303,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	
   if (fRunQA || fRunGlobalQA) 
     AliQAManager::QAManager()->Increment() ; 
-  
-  // Perform analysis of this event if requested
-  if (fAnalysis) {
-     fRecoHandler->BeginEvent(iEvent);
-     fAnalysis->ExecAnalysis();
-     fRecoHandler->FinishEvent();
-  }  
+
     return kTRUE;
 }
 
@@ -3467,7 +3468,7 @@ void AliReconstruction::CleanUp()
     AliQAManager::QAManager()->ShowQA() ; 
   //  AliQAManager::Destroy() ;
   delete fAnalysis; 
-  
+  fAnalysis = NULL;
 }
 
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
