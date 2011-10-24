@@ -655,6 +655,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
       Printf("ERROR: mcEvent not available");
       return;
     }
+    fHistEventStats->Fill(1); //total events
+    fHistEventStats->Fill(2); //offline trigger
 
     Double_t gReactionPlane = 0., gImpactParameter = 0.;
     if(fUseCentrality) {

@@ -1,6 +1,6 @@
 // now in options
 //=============================================//
-const char* centralityEstimator = "V0M";
+//const char* centralityEstimator = "V0M";
 //const char* centralityEstimator = "CL1";
 //const char* centralityEstimator = "TRK";
 //=============================================//
@@ -52,16 +52,16 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
   AliBalance *bfs = 0;  // shuffled Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",kTRUE);
+    bf  = GetBalanceFunctionObject("ESD",centralityName.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityName.Data(),kTRUE);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",kTRUE);
+    bf  = GetBalanceFunctionObject("AOD",centralityName.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityName.Data(),kTRUE);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",kTRUE);
+    bf  = GetBalanceFunctionObject("MC",centralityName.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityName.Data(),kTRUE);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");

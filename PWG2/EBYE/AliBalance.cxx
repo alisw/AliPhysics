@@ -44,7 +44,8 @@ AliBalance::AliBalance() :
   TObject(), 
   bShuffle(kFALSE),
   fAnalysisLevel("ESD"),
-  fAnalyzedEvents(0) {
+  fAnalyzedEvents(0) ,
+  fCentralityId(0) {
   // Default constructor
  
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
@@ -89,8 +90,10 @@ AliBalance::AliBalance() :
 
 //____________________________________________________________________//
 AliBalance::AliBalance(const AliBalance& balance):
-  TObject(balance), bShuffle(balance.bShuffle), fAnalysisLevel(balance.fAnalysisLevel),
-  fAnalyzedEvents(balance.fAnalyzedEvents) {
+  TObject(balance), bShuffle(balance.bShuffle), 
+  fAnalysisLevel(balance.fAnalysisLevel),
+  fAnalyzedEvents(balance.fAnalyzedEvents), 
+  fCentralityId(balance.fCentralityId) {
   //copy constructor
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
     fNn[i] = balance.fNn[i];
@@ -138,25 +141,6 @@ AliBalance::~AliBalance() {
   }
 }
 
-
-//____________________________________________________________________//
-/*void AliBalance::SetNumberOfBins(Int_t ibin, Int_t ibins) {
-  // Sets the number of bins for the analyzed interval
-  // Set the same Information for all analyses
-  if(ibin == -1){             
-    for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
-      fNumberOfBins[i] = ibins;
-    }
-  }
-  // Set the Information for one analysis
-  else if(ibin > -1 && ibin < ANALYSIS_TYPES){
-    fNumberOfBins[ibin] = ibins;
-  }
-  else{
-    AliError("Wrong ANALYSIS number!");
-  }
-  }*/
-
 //____________________________________________________________________//
 void AliBalance::SetInterval(Int_t iAnalysisType,
 			     Double_t p1Start, Double_t p1Stop,
@@ -186,29 +170,42 @@ void AliBalance::SetInterval(Int_t iAnalysisType,
   else {
     AliError("Wrong ANALYSIS number!");
   }
-
-  //InitHistograms();
 }
 
 //____________________________________________________________________//
 void AliBalance::InitHistograms() {
-  //
+  //Initialize the histograms
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
-    histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistP[iAnalysisType] = new TH1D(histName.Data(),"",100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
-    histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+
+    histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistN[iAnalysisType] = new TH1D(histName.Data(),"",100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
   
-    histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+    histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistPN[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
-    histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+    
+    histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistNP[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
-    histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+    
+    histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistPP[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
-    histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; if(bShuffle) histName.Append("_shuffle");
+    
+    histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; 
+    if(bShuffle) histName.Append("_shuffle");
+    if(fCentralityId) histName += fCentralityId.Data();
     fHistNN[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
-
   }
 }
 
