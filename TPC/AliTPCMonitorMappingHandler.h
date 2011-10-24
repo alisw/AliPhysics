@@ -22,7 +22,7 @@
 class AliTPCMonitorMappingHandler:   public TNamed {
  public:
     
-    AliTPCMonitorMappingHandler(Char_t* name, Char_t* title);
+    AliTPCMonitorMappingHandler(const Char_t* name, const Char_t* title);
     AliTPCMonitorMappingHandler(const  AliTPCMonitorMappingHandler &maphand);
     AliTPCMonitorMappingHandler& operator= (const AliTPCMonitorMappingHandler& maphand);
 

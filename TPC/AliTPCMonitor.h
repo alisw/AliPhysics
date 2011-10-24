@@ -16,12 +16,13 @@
 //// The Monitor can handle rootified data, files and online streams in DATE format.
 //// The monitor GUI is started by the macro TPCMonitor.C
 //// 
-//// Author: Stefan Kniege, IKF, Frankfurt
-////       
+//// Author: Stefan Kniege, IKF, Frankfurt=
+////         Jens Wiechula, Uni Tuebingen (Jens.Wiechula@cern.ch)
 ////
 /////////////////////////////////////////////////////////////////////////
 
 #include "AliTPCMonitorConfig.h"
+#include "TString.h"
 
 class TH1F;
 class TH1D;
@@ -40,7 +41,7 @@ class AliTPCMonitor : public AliTPCMonitorConfig {
   
 public:
   
-  AliTPCMonitor(char* name, char* title);
+  AliTPCMonitor(const char* name, const char* title);
   AliTPCMonitor(const  AliTPCMonitor &monitor);
   AliTPCMonitor& operator= (const AliTPCMonitor& monitor);
   
@@ -64,7 +65,7 @@ public:
   void          FillGlobal(Int_t sector);
   void          FillHistsPadPlane();
   
-  static double Gamma4(double* x, double* par);
+  static double Gamma4(const double* x, const double* par);
   Int_t         GetChannelsProc()  const  { return fChannelIter     ;}
   Int_t         GetEventID()       const  { return fEventNumber     ;}
   TH1*          GetHisto(char* histname);
@@ -82,7 +83,7 @@ public:
   void          SetMirror(Int_t val)      { fMirror=val;}
   void          SetVerbose(Int_t val)     { fVerb = val;}
   void          SetMappingHandler(AliTPCMonitorMappingHandler* val ) { fMapHand  = val;}
-  void          ShowSel(Int_t* compval);
+  void          ShowSel(const Int_t* compval);
   void          SetEqIds();
   
   void          ResizeCanv();
@@ -92,9 +93,10 @@ public:
     
   void          WriteHistos() ;
   void          Write10bitChannel();
+
+  void          SetupMonitoringTable(const char* table);
   
-  
-//  private:
+ private:
   
     // stats for size of arrays and histograms /////////////////////////////////////////////////
   Int_t**      fPad;                      // array to store channel adc in time
@@ -191,7 +193,11 @@ public:
   
   AliRawReader*                 fRawReader;         // reader for ROOT format
   
-
+  //for monitoring table
+  const Char_t **fkMonTable;                              //! table to pass to the raw reader
+  TString  fMonTableString;                        //! string that keep the table definition
+  TObjArray *fMonTableArray;                       //! tokenized array of the table string
+  Bool_t   fMonTableChanged;                       //! indicates that the table changed and a new raw reader instance is needed.
   
   static const Int_t       fgkHwMaskFEC            ;                          // mask for fec in hardware address
   static const Int_t       fgkHwMaskBranch         ;                          // mask for branch in hardware address

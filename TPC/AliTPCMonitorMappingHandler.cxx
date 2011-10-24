@@ -53,7 +53,7 @@
 ClassImp(AliTPCMonitorMappingHandler)
 
 //_____________________________________________________________________________________________
-AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(Char_t* name, Char_t* title): 
+AliTPCMonitorMappingHandler::AliTPCMonitorMappingHandler(const Char_t* name, const Char_t* title): 
   TNamed(name,title),
   fnumofChannels(0),
   fmaxHWAdress(0),

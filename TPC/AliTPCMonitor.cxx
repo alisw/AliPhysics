@@ -43,7 +43,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 //// e.g baseline and baseline rms are calculated and stored. 
 //// 
 //// Author: Stefan Kniege, IKF, Frankfurt
-////       
+////         Jens Wiechula, Uni Tuebingen (Jens.Wiechula@cern.ch)
 ////
 /////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +54,7 @@ New TPC monitoring package from Stefan Kniege. The monitoring package can be sta
 #include "AliTPCMonitorMappingHandler.h"
 #include "AliTPCMonitorFFT.h"
 #include "AliRawReader.h"
+#include "AliRawReaderDateOnline.h"
 #include "AliRawReaderRoot.h"
 #include "AliRawEventHeaderBase.h"
 #include "AliAltroRawStreamV3.h"
@@ -81,7 +82,7 @@ const Int_t AliTPCMonitor::fgkHwMaskAltroChip        = 0x0070;
 const Int_t AliTPCMonitor::fgkHwMaskRCU              = 0x7000;                          
 
 //____________________________________________________________________________
-AliTPCMonitor::AliTPCMonitor(char* name, char* title) : 
+AliTPCMonitor::AliTPCMonitor(const char* name, const char* title) : 
 AliTPCMonitorConfig(name,title),
 fPad(new Int_t*[GetMaxHwAddr()]),
 fPadMapHw(new Float_t[GetMaxHwAddr()]),
@@ -151,7 +152,12 @@ fMapEqidsRcu(new Int_t[1000]),
 fMirror(1),
 fChannelIter(0),
 fMapHand(0),
-fRawReader(0)
+fRawReader(0),
+fkMonTable(0x0),
+fMonTableString(""),
+fMonTableArray(0x0),
+fMonTableChanged(kFALSE)
+
 {
   // Constructor
   
@@ -248,7 +254,11 @@ fMapEqidsRcu(new Int_t[1000]),
 fMirror(monitor.fMirror),
 fChannelIter(monitor.fChannelIter),
 fMapHand(monitor.fMapHand),
-fRawReader(monitor.fRawReader)
+fRawReader(monitor.fRawReader),
+fkMonTable(0x0),
+fMonTableString(""),
+fMonTableArray(0x0),
+fMonTableChanged(kFALSE)
 {
   // copy constructor
   
@@ -360,7 +370,10 @@ AliTPCMonitor &AliTPCMonitor:: operator= (const AliTPCMonitor& monitor)
     fLdcIdOld=monitor.fLdcIdOld;
     fMapHand=monitor.fMapHand;
     fRawReader=monitor.fRawReader;
-    
+    fkMonTable=0x0;
+    fMonTableString="";
+    fMonTableArray=0x0;
+    fMonTableChanged=kFALSE;
     
     fHistList = new TObjArray();
     fHistIROC=(TH2F*)monitor.fHistIROC->Clone(); fHistList->Add(fHistIROC);
@@ -549,14 +562,20 @@ Int_t AliTPCMonitor::ReadDataNew(Int_t secid)
   // Read Data File/Stream  for specified Format.
   // Payload will be extracted from either ROOT or DATE format
   // and passed to FillHistsDecode for decoding of the adc information
+
+  if (TString(GetLastProcFile())!=GetFile() || fMonTableChanged) {
+    delete fRawReader;
+    fRawReader=0x0;
+  }
   
   if (!fRawReader){
-    fRawReader = AliRawReader::Create(GetFile());
-    SetLastProcFile(GetFile());
-  } else if (TString(GetLastProcFile())!=GetFile()) {
-    delete fRawReader;
-    fRawReader = AliRawReader::Create(GetFile());
-//     printf("New file!!!\n");
+    TString file(GetFile());
+    if (file.BeginsWith("mem://")){
+      file.ReplaceAll("mem://","");
+      fRawReader = new AliRawReaderDateOnline(file.Data(),fkMonTable);
+    }else{
+      fRawReader = AliRawReader::Create(GetFile());
+    }
     SetLastProcFile(GetFile());
   }
   
@@ -1889,7 +1908,7 @@ void AliTPCMonitor::ExecTransform()
 }
 
 //__________________________________________________________________
-void AliTPCMonitor::ShowSel(Int_t* compval)               
+void AliTPCMonitor::ShowSel(const Int_t* compval)
 {
   
   // Show only selected components
@@ -2164,7 +2183,7 @@ void AliTPCMonitor::DumpHeader(AliRawReader * reader) const
 
 
 //__________________________________________________________________
-Double_t AliTPCMonitor::Gamma4(Double_t* x, Double_t* par) {
+Double_t AliTPCMonitor::Gamma4(const Double_t* x, const Double_t* par) {
   
   // Gamma4 function used to fit signals
   // Defined in sections: diverging branch set to 0
@@ -2265,4 +2284,42 @@ TH1* AliTPCMonitor::GetHisto(char* histname)
     cout << " AliTPCMonitor::GetHisto :: Can not find histo with name " << histname << endl;
   }
   return hist ;
+}
+
+//_________________________________
+void AliTPCMonitor::SetupMonitoringTable(const char* table)
+{
+  //
+  // Setup the monitoring table
+  //
+  fMonTableChanged=kFALSE;
+  TString newTable(table);
+
+  //check if we have a new table
+  if (newTable==fMonTableString) return;
+  fMonTableString=newTable;
+  
+  //delete old data
+  delete fkMonTable;
+  delete fMonTableArray;
+  fkMonTable=0x0;
+
+  //parse table request
+  fMonTableArray=fMonTableString.Tokenize(",;");
+  fMonTableArray->SetOwner();
+
+  //consistency check
+  Int_t entries=fMonTableArray->GetEntries();
+  if (entries%4){
+    AliError(Form("Monitoring table has to be given in muliples of 4\nEntries need to be sparated by ',' or ';'\nCannot parse the current table request: %s",fMonTableString.Data()));
+    delete fMonTableArray;
+    fMonTableArray=0x0;
+    return;
+  }
+
+  fkMonTable=new const Char_t*[entries+1];
+  for (Int_t i=0;i<entries;++i) fkMonTable[i]=fMonTableArray->At(i)->GetName();
+  fkMonTable[entries]=0x0;
+
+  fMonTableChanged=kTRUE;
 }

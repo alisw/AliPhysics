@@ -19,6 +19,7 @@
 #include "TStyle.h"
 #include "TDirectory.h"
 #include "TFileMerger.h"
+#include "TGComboBox.h"
 
 #include "AliTPCMonitor.h"
 #include "AliTPCMonitorMappingHandler.h"
@@ -38,6 +39,8 @@ static    TGCheckButton*               fFrameCheckVerb    = 0;
 static    TGCheckButton*               fFrameCheckProcOne = 0;
 static    TGCheckButton*               fFrameCheckPed     = 0;
 static    TGCheckButton*               fFrameCalcBSL      = 0;           
+
+static    TGComboBox*                  fTableField        = 0;
 
 static    Int_t                        fVerb              = 0;
 static    TGTextEntry*                 fTextEvId          = 0;
@@ -95,7 +98,7 @@ void TPCMonitor()
 }
 
 //_________________________________________________________________________
-void MonitorGui(AliTPCMonitor *fMon)
+void MonitorGui(AliTPCMonitor */*fMon*/)
 {
   // Display the main Window 
 
@@ -113,6 +116,7 @@ void MonitorGui(AliTPCMonitor *fMon)
 
 //  TGTextButton*  fFrameSelForm    = new TGTextButton(fFrameMain,  "Sel. Format "         );
   TGTextButton*  fFrameSelFil     = new TGTextButton(fFrameMain,  "Sel. File/Stream"     );
+                 fTableField      = new TGComboBox(fFrameMain                            );
   TGTextButton*  fFrameFFT        = new TGTextButton(fFrameMain,  "FFT"                  );
   TGTextButton*  fFrameWRITE      = new TGTextButton(fFrameMain,  "Write Channel"        );
   fFrameChDisFit                  = new TGCheckButton(fFrameMain, "Disable G4-fit"       );
@@ -148,7 +152,20 @@ void MonitorGui(AliTPCMonitor *fMon)
   fFrameres->SetCommand(       "ResizeCanv()"      );
   fFramewrite->SetCommand(     "WriteHistos()"     );
   fFrameQuit->SetCommand(      "Quit()"            );
+
   
+  fTableField->EnableTextInput(kTRUE);
+  Int_t id=0;
+  fTableField->RemoveAll();
+  fTableField->AddEntry("PHY,Y,73,*",id++);
+  fTableField->AddEntry("PHY,Y,*,*",id++);
+  TString fields=gSystem->GetFromPipe("cat ~/TPCMonTable");
+  TObjArray *arr=fields.Tokenize("\n");
+  for (Int_t ifield=0; ifield<arr->GetEntries(); ++ifield) fTableField->AddEntry(arr->At(ifield)->GetName(),id++);
+  fTableField->Select(0,kFALSE);
+//   fTableField->Connect("ReturnPressed()", "", this, "DoCustomDraw()");
+//   fTableField->Connect("Selected(Int_t)", "", this, "DoCustomDraw()");
+
   fFrameCalcBSL->SetDown(  1);
   fFrameCheckPed->SetDown( 1);
   fFrameChDisFit->SetDown( 1);
@@ -165,6 +182,7 @@ void MonitorGui(AliTPCMonitor *fMon)
   fFrameMain->AddFrame(fFrameRMS       , fLayout);
   fFrameMain->AddFrame(fFrameSetConf   , fLayout);
   fFrameMain->AddFrame(fFrameSelFil    , fLayout);
+  fFrameMain->AddFrame(fTableField     , fLayout);
 //  fFrameMain->AddFrame(fFrameSelForm   , fLayout);
   fFrameMain->AddFrame(fFrameFFT       , fLayout);
 //  Int_t step = (Int_t)(ysize/2.);
@@ -173,7 +191,8 @@ void MonitorGui(AliTPCMonitor *fMon)
 //  fFrameSelForm->MoveResize(     10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
   fFrameSelFil->MoveResize(      10, (Int_t)(start+ 1.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
  
-  fFrameSetConf->MoveResize(     10, (Int_t)(start+ 2.5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fFrameSetConf->MoveResize(     10, (Int_t)(start+ 2.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
+  fTableField->MoveResize(       10, (Int_t)(start+ 3.0*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize+5);
  
   fFrameCalcBSL->MoveResize(     10, (Int_t)(start+   5*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
   fFrameCheckPed->MoveResize(    10, (Int_t)(start+   6*ysize)        ,(UInt_t)(mainx-20)  ,(UInt_t)ysize);
@@ -261,8 +280,9 @@ void FFT()
 //_________________________________________________________________________
 void NextEvent()
 {
-  // Process next event 
+  // Process next event
   fMon->SetProcNextEvent(1);
+  fMon->SetupMonitoringTable(fTableField->GetTextEntry()->GetText());
   Int_t eventid =0;
   TString s1 =  fTextEvId->GetDisplayText();
   if(!s1.IsDigit()) { cout << " Invalid EventID  " << endl; return ;}
