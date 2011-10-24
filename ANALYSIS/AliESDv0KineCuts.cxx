@@ -992,8 +992,10 @@ void AliESDv0KineCuts::SetMode(Int_t mode, Int_t type){
   switch(mode){
   case kPurity:
     fMode = kPurity;  // used to obtain highest purity possible - the efficiency may be low
+    break;
   case kEffGamma:
     fMode = kEffGamma; // used to obtain highes efficiency possible - the purity may be worse
+    break;
   default:
     AliError("V0 selection mode not recognozed, setting 'kPurity'");
     fMode = kPurity;
@@ -1002,8 +1004,10 @@ void AliESDv0KineCuts::SetMode(Int_t mode, Int_t type){
   switch(type){
   case kPP:
     fType = kPP;  // cuts optimized for low multiplicity 
+    break;
   case kPbPb:
     fType = kPbPb;  // cuts optimized for high multiplicity
+    break;
   }
   
   // setup the cut values for selected mode & type
