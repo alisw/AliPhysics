@@ -1,0 +1,17 @@
+PHOS QA class for using in PbPb runs in the PWG1 QA train.
+
+The main objective is to provide a user with an input for pi0 mass,
+width and number-of-pi0-per-event trend plots in PbPb
+runs. Unfortunately, large combinatorial background prevents from the
+direct using of CaloCellQA framework for this, so the event mixing
+technique is essential.
+
+This class provides the standard set of 2D-histograms: invariant mass
+of two clusters in PHOS vs their pT both for "real" and "mixed" events
+for each of the three PHOS modules in centrality bins 0-20% and
+20-100% (cen0 and cen1 in the histogram names, resp).  Only clusters
+with energy > 0.3 GeV and number of cells >2 are accepted.
+
+"Mixed" histograms are identified by "Mi" in their names.
+
+Requires no configuration.
