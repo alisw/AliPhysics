@@ -60,10 +60,7 @@ class AliDetectorTag : public TObject {
   Bool_t GetVZERO()  const {return fMaskDAQ & AliDAQ::kVZERO;}
   Bool_t GetZDC()    const {return fMaskDAQ & AliDAQ::kZDC;}
   Bool_t GetEMCAL()  const {return fMaskDAQ & AliDAQ::kEMCAL;}
-//   #ifdef MFT_UPGRADE
-//   Bool_t GetMFT()    const {return fMaskDAQ & AliDAQ::kMFT;}
-//   #endif
-  Bool_t GetMFT()    const {return fMaskDAQ & AliDAQ::kMFT;}   // AU
+  
   //____________________________________________________//
  private:
   //  void Int2Bin();
@@ -84,11 +81,7 @@ class AliDetectorTag : public TObject {
   void SetVZERO()  {fMaskDAQ |= AliDAQ::kVZERO;}
   void SetZDC()    {fMaskDAQ |= AliDAQ::kZDC  ;}
   void SetEMCAL()  {fMaskDAQ |= AliDAQ::kEMCAL;}
-//   #ifdef MFT_UPGRADE
-//   void SetMFT()    {fMaskDAQ |= AliDAQ::kMFT;}
-//   #endif
-  void SetMFT()    {fMaskDAQ |= AliDAQ::kMFT;}   // AU
-	
+  
   //   TObjArray *fDetectorArray; //detectors' names - active
   UInt_t     fMaskDAQ;          //detector mask in DAQ
   UInt_t     fMaskReco;         //detector mask in Reco

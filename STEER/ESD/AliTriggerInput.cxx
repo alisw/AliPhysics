@@ -44,12 +44,7 @@
 
 ClassImp( AliTriggerInput )
 
-Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,0
-// #ifdef MFT_UPGRADE
-// 								     ,0 
-// #endif
-								     ,0     // AU
-};
+Bool_t AliTriggerInput::fgkIsTriggerDetector[AliDAQ::kNDetectors] = {1,0,0,1,1,1,0,1,0,0,0,1,0,1,1,1,1,1,1,1,0};
 const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
   "SPD",
   "SDD",
@@ -72,10 +67,6 @@ const char* AliTriggerInput::fgkCTPDetectorName[AliDAQ::kNDetectors] = {
   "EMCal",
   "DAQ_TEST",
   "HLT"
-//   #ifdef MFT_UPGRADE
-//   , "MFT"
-//   #endif	
-  , "MFT"    // AU
 };
 
 //_____________________________________________________________________________
