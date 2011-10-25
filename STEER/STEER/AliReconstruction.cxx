@@ -4213,14 +4213,9 @@ void AliReconstruction::WriteESDfriend() {
 
   if (IsCosmicOrCalibSpecie()) { // Selection of calib or cosmic events
     fNspecie++;
-    Double_t curentSpecieFraction = ((Double_t)(fNspecie+1))/((Double_t)(fNall+1)); 
-    // "Bayesian" estimate supposing that without events all the events are of the required type
-    
-    Double_t rnd = gRandom->Rndm()*curentSpecieFraction;
-    if (rnd<fFractionFriends) {
-      isSelected = kTRUE;
-      fSspecie++;
-    }
+
+    isSelected = kTRUE;
+    fSspecie++;
   }
   
   Double_t remainingFraction = fFractionFriends;
