@@ -88,8 +88,8 @@ AliMUONPainterMatrixFrame::AliMUONPainterMatrixFrame(const TGWindow* window,
     
     fInterface = new TGHorizontalFrame(this,fCanvasWidth);
     
-    fMainFrame->AddFrame(fView, new TGLayoutHints(kLHintsLeft));
-    fMainFrame->AddFrame(fColorSlider,new TGLayoutHints(kLHintsTop|kLHintsRight|kLHintsExpandX|kLHintsCenterY,kBorderSize/2));
+    fMainFrame->AddFrame(fView, new TGLayoutHints(kLHintsExpandX));
+    fMainFrame->AddFrame(fColorSlider,new TGLayoutHints(kLHintsTop|kLHintsRight|kLHintsCenterY,kBorderSize/2));
 
     AliMUONPainterInterfaceHelper::SetBackgroundColor("MatrixFrame.ColorSlider",*fColorSlider);
     

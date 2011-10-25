@@ -97,6 +97,7 @@ private:
   TGCompositeFrame* fRawSelector2; ///< idem
   TGCompositeFrame* fRawSelector21; ///< idem
   TGCompositeFrame* fRawSelector22; ///< idem
+  TGCompositeFrame* fRawSelector24; ///< idem
   TGCompositeFrame* fRawSelector23; ///< idem
   TGCheckButton* fCalibrateNoGain; ///< to trig calibration of raw data (only 0 suppression)
   TGCheckButton* fCalibrateGainConstantCapa; ///< to trig calibration of raw data (0-supp and gain w/ constant capacitance)

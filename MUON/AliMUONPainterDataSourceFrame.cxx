@@ -19,6 +19,8 @@
 #include "AliMUONPainterDataSourceFrame.h"
 
 #include "AliLog.h"
+#include "AliCDBEntry.h"
+#include "AliCDBManager.h"
 #include "AliMUONChamberPainter.h"
 #include "AliMUONMchViewApplication.h"
 #include "AliMUONPainterDataRegistry.h"
@@ -68,6 +70,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fRawSelector2(new TGCompositeFrame(fRawSelector,w,h,kVerticalFrame)),
   fRawSelector21(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector22(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
+  fRawSelector24(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fRawSelector23(new TGCompositeFrame(fRawSelector2,w,h,kHorizontalFrame)),
   fCalibrateNoGain(new TGCheckButton(fRawSelector22,"Ped sub")),
   fCalibrateGainConstantCapa(new TGCheckButton(fRawSelector22,"Ped sub+gain (capa cste)")),
@@ -79,7 +82,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
   fEventRangeButton(new TGCheckButton(fRawSelector23,"Event range")),
   fEventMin(new TGNumberEntry(fRawSelector23,-1,10)),
   fEventMax(new TGNumberEntry(fRawSelector23,-1,10)),
-  fRawOCDBPath(new TGTextEntry(fRawSelector22,"")),
+  fRawOCDBPath(new TGTextEntry(fRawSelector24,"alien://folder=/alice/data/2011/OCDB")),
   fOCDBSelector(new TGGroupFrame(this,"OCDB Path",kHorizontalFrame)),
   fDataReaders(new TGGroupFrame(this,"Data sources")),
   fFilePath(new TGTextEntry(fRawSelector21,"")),
@@ -138,6 +141,7 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
                                         
     fRawSelector2->AddFrame(fRawSelector21, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
     fRawSelector2->AddFrame(fRawSelector22, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
+    fRawSelector2->AddFrame(fRawSelector24, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector2->AddFrame(fRawSelector23, new TGLayoutHints(kLHintsExpandX,5,5,5,5));
 
     fRawSelector21->AddFrame(openButton,new TGLayoutHints(kLHintsTop,5,5,5,5));
@@ -147,7 +151,8 @@ AliMUONPainterDataSourceFrame::AliMUONPainterDataSourceFrame(const TGWindow* p, 
     fRawSelector22->AddFrame(fCalibrateGainConstantCapa, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector22->AddFrame(fCalibrateGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
     fRawSelector22->AddFrame(fCalibrateEmelecGain, new TGLayoutHints(kLHintsTop,5,5,5,5));
-    fRawSelector22->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
+  
+    fRawSelector24->AddFrame(fRawOCDBPath, new TGLayoutHints(kLHintsExpandX | kLHintsTop,5,5,5,5));
     fRawOCDBPath->SetEnabled(kFALSE);
     
     fRawSelector23->AddFrame(fHistogramButton,new TGLayoutHints(kLHintsTop,5,5,5,5));    
@@ -705,14 +710,20 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
   }
   
   /// Basic test to see if the file is correct
+  /// and to get run numbre
+  Int_t runNumber(-1);
   Bool_t ok = rawReader->NextEvent();
   if (!ok)
   {
-    AliError(Form("File %s does not seem to be a raw data file",filename.Data()));
+    AliError(Form("File %s does not seem to be a raw data file",filename.Data()));    
     fFilePath->SetText("");
     return kFALSE;
   }
-  
+  else
+  {
+    runNumber = rawReader->GetRunNumber();    
+  }
+
   rawReader->RewindEvents();
   
   AliMUONVTrackerDataMaker* reader(0x0);
@@ -722,9 +733,28 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
 
   if ( ocdbPath.Length() > 0 ) 
   {
-    AliMUONRecoParam* recoParam = AliMUONRecoParam::GetCosmicParam();
+        
+    AliMUONRecoParam* recoParam(0x0);
     
-    // FIXME: where to get the reco params from in reality ?
+    AliCDBEntry* e = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam",runNumber);
+    if (e)
+    {
+      TObject* o = e->GetObject();
+      if ( o->IsA() == TObjArray::Class() )
+      {
+        TObjArray* a = static_cast<TObjArray*>(o);
+        TIter next(a);
+        AliMUONRecoParam* p;
+        while ( ( p = static_cast<AliMUONRecoParam*>(next()) ))
+        {
+          if ( p->IsDefault()) recoParam = p;
+        }
+      }
+      else
+      {
+        recoParam = static_cast<AliMUONRecoParam*>(o);
+      }
+    }
     
     reader = new AliMUONTrackerDataMaker(recoParam,
                                          rawReader,

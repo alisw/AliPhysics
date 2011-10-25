@@ -135,9 +135,10 @@ AliMUONMchViewApplication::AliMUONMchViewApplication(const char* name,
   
   fMainFrame->Connect("CloseWindow()","AliMUONMchViewApplication",this,"Terminate()");
 
-  fMainFrame->MoveResize(ox,oy, w, h); 
+//  fMainFrame->MoveResize(ox,oy, w, h); 
   fMainFrame->SetWMPosition(ox, oy);
-  fMainFrame->SetWMSizeHints(w,h,w,h,0,0);
+//  fMainFrame->SetWMSizeHints(w,h,w,h,0,0);
+//  fMainFrame->SetWMSizeHints(w,h,w,h,10,10);
   
   cout << "***************************************************" << endl;
   cout << "   Welcome to mchview" << endl;
@@ -466,6 +467,11 @@ AliMUONMchViewApplication::ReleaseNotes()
   
   TGTextView* rn = new TGTextView(t);
 
+  rn->AddLine("1.10");
+  rn->AddLine("");
+  rn->AddLine("Make the raw OCDB more obvious in the data source tab");
+  rn->AddLine("");
+  
   rn->AddLine("1.08");
   rn->AddLine("");
   rn->AddLine("Changed the default OCDB to 2011 version");
