@@ -230,7 +230,7 @@ AliRawReaderChain::AliRawReaderChain(Int_t runNumber) :
     return;
   }
 
-  TGridResult *res = gGrid->Query("/alice/data",Form("%09d/raw/*%09d*0.root",runNumber,runNumber));
+  TGridResult *res = gGrid->Query("/alice/data",Form("%09d/raw/*%09d*.root",runNumber,runNumber));
   Int_t nFiles = res->GetEntries();
   if (!nFiles) {
     Error("AliRawReaderChain","No raw-data files found for run %d",runNumber);
