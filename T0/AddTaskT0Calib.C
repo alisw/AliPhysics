@@ -45,6 +45,10 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   Float_t zero_timecdb[24]={0};
   Float_t *timecdb = zero_timecdb;
   Float_t cfdvalue[24][5];
+  for(Int_t i=0; i<24; i++) 
+    for (Int_t i0=0; i0<5; i0++)
+      cfdvalue[i][i0] = 0;
+      
   Float_t zero_shiftcdb[4]={0};
   Float_t *shiftcdb = zero_shiftcdb;
   AliT0CalibOffsetChannelsTask *mytask = (AliT0CalibOffsetChannelsTask*)task1;
@@ -65,7 +69,7 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   AliCDBEntry *entry4 = AliCDBManager::Instance()->Get("GRP/Calib/LHCClockPhase");
   if (!entry4) AliFatal("LHC clock-phase shift is not found in OCDB !");
   AliLHCClockPhase *phase = (AliLHCClockPhase*)entry4->GetObject();
-  fGRPdelays = l1Delay - phase->GetMeanPhase();
+  Float_t fGRPdelays = l1Delay - phase->GetMeanPhase();
 
   AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
   if(!entryCalib0) {
@@ -88,15 +92,13 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
       for(Int_t i=0; i<24; i++) 
 	for (Int_t i0=0; i0<5; i0++){
 	  cfdvalue[i][i0] = clb->GetCFDvalue(i, i0);
-	  if ( i0 ==0) prinf(" CFD value %i %f \n", i, cfdvalue[i][i0]);  
 	}
     }
  
   for (Int_t i=0; i<24; i++) {
     Float_t cfdmean = cfdvalue[i][0];
     if( cfdvalue[i][0] < 500 || cfdvalue[i][0] > 50000) cfdmean = ( 1000.*fLatencyHPTDC - 1000.*fLatencyL1 + 1000.*fGRPdelays)/24.4;
-    //  printf(" calulated mean %i %f \n", cfdmean);
-    mytask->SetCFDvalue(i, cfdmean);
+     mytask->SetCFDvalue(i, cfdmean);
     mytask->SetTimeEq(i, timecdb[i]);
   } 
 
