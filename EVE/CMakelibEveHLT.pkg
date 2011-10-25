@@ -34,4 +34,4 @@ set ( DHDR  EveHLT/EveHLTLinkDef.h)
 
 set ( EINCLUDE  HLT/BASE HLT/EVE HLT/BASE/util HLT/BASE/HOMER EVE/EveHLT STEER/ESD STEER/STEERBase)
 
-set (ELIBS -lGL -lGLU)
+set (ELIBS -L/usr/X11/lib -lGL -lGLU)
