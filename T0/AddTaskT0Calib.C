@@ -68,9 +68,13 @@ void    readCDB (TObject *task1,  Int_t runNumber) {
   fGRPdelays = l1Delay - phase->GetMeanPhase();
 
   AliCDBEntry *entryCalib0 = man->Get("T0/Calib/Latency");
-  fLatencyL1 = entryCalib0->GetLatencyL1();
-  fLatencyHPTDC = entryCalib0->GetLatencyHPTDC();
-  AliDebug(2,Form(" LatencyL1 %f latencyHPTDC %f \n",fLatencyL1, fLatencyHPTDC));
+  if(!entryCalib0) {
+    AliError::(Form("Cannot find any AliCDBEntry for [Calib, Latency]!"));
+    return;
+  }
+  AliT0CalibLatency *calibda=(AliT0CalibLatency*)entryCalib0->GetObject();
+  Float_t fLatencyL1 = calibda->GetLatencyL1();
+  Float_t fLatencyHPTDC = calibda->GetLatencyHPTDC();
  
   AliCDBEntry *entryCalib1 = man->Get("T0/Calib/TimeDelay");
   if(!entryCalib1) {
