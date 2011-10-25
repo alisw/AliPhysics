@@ -49,6 +49,8 @@ class AliExternalTrackParam: public AliVTrack {
   template <typename T>
   void Set(T x, T alpha, const T param[5], const T covar[15]) {
     //  Sets the parameters
+    if      (alpha < -TMath::Pi()) alpha += 2*TMath::Pi();
+    else if (alpha >= TMath::Pi()) alpha -= 2*TMath::Pi();
     fX=x; fAlpha=alpha;
     for (Int_t i = 0; i < 5; i++)  fP[i] = param[i];
     for (Int_t i = 0; i < 15; i++) fC[i] = covar[i];
