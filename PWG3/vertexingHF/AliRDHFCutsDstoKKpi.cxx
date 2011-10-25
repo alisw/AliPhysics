@@ -582,11 +582,11 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     
     if(okDsKKpi){
       Double_t cosPiDsLabFrameKKpi=d->CosPiDsLabFrameKKpi();
-      if(TMath::Abs(cosPiDsLabFrameKKpi)>fCutsRD[GetGlobalIndex(15,ptbin)]) okDsKKpi=0;
+      if(cosPiDsLabFrameKKpi>fCutsRD[GetGlobalIndex(15,ptbin)]) okDsKKpi=0;
     }
     if(okDspiKK){
       Double_t cosPiDsLabFramepiKK=d->CosPiDsLabFramepiKK();
-      if(TMath::Abs(cosPiDsLabFramepiKK)>fCutsRD[GetGlobalIndex(15,ptbin)]) okDspiKK=0;
+      if(cosPiDsLabFramepiKK>fCutsRD[GetGlobalIndex(15,ptbin)]) okDspiKK=0;
     }
     if(!okDsKKpi && !okDspiKK){
       CleanOwnPrimaryVtx(d,aod,origownvtx);
