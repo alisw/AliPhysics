@@ -127,6 +127,7 @@
 #include "AliTrackPointArray.h"
 #include "TPolyMarker3D.h"
 #include "AliTrackerBase.h"
+#include "AliTPCdEdxInfo.h"
 
 ClassImp(AliESDtrack)
 
@@ -199,6 +200,7 @@ AliESDtrack::AliESDtrack() :
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
+  fTPCdEdxInfo(0),
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
@@ -307,6 +309,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fITSsignal(track.fITSsignal),
   fTPCsignal(track.fTPCsignal),
   fTPCsignalS(track.fTPCsignalS),
+  fTPCdEdxInfo(0),
   fTRDsignal(track.fTRDsignal),
   fTRDQuality(track.fTRDQuality),
   fTRDBudget(track.fTRDBudget),
@@ -366,6 +369,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
     for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=track.fTRDslices[i];
   }
 
+
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
   for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
   for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
@@ -378,6 +382,8 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   if (track.fTPCInner) fTPCInner=new AliExternalTrackParam(*track.fTPCInner);
   if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
   if (track.fHMPIDp) fHMPIDp=new AliExternalTrackParam(*track.fHMPIDp);
+  if (track.fTPCdEdxInfo) fTPCdEdxInfo = new AliTPCdEdxInfo(*track.fTPCdEdxInfo);
+
   
   if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
 }
@@ -424,6 +430,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
+  fTPCdEdxInfo(0),
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
@@ -564,6 +571,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fITSsignal(0),
   fTPCsignal(0),
   fTPCsignalS(0),
+  fTPCdEdxInfo(0),
   fTRDsignal(0),
   fTRDQuality(0),
   fTRDBudget(0),
@@ -728,6 +736,7 @@ AliESDtrack::~AliESDtrack(){
   delete fHMPIDp;
   delete fCp; 
   if (fFriendTrack) delete fFriendTrack;
+  if (fTPCdEdxInfo) delete fTPCdEdxInfo;
   fFriendTrack=NULL;
   if(fTRDnSlices)
     delete[] fTRDslices;
@@ -774,6 +783,10 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fTPCInner = 0;
   }
 
+  if(source.fTPCdEdxInfo) {
+    if(fTPCdEdxInfo) *fTPCdEdxInfo = *source.fTPCdEdxInfo;
+    fTPCdEdxInfo = new AliTPCdEdxInfo(*source.fTPCdEdxInfo);
+  }
 
   if(source.fOp){
     // we have the trackparam: assign or copy construct
@@ -798,7 +811,6 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fHMPIDp = 0;
   }
 
-  
   // copy also the friend track 
   // use copy constructor
   if(source.fFriendTrack){

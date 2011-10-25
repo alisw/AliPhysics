@@ -32,6 +32,7 @@
 #include "AliVTrack.h"
 #include "AliPID.h"
 #include "AliESDfriendTrack.h"
+#include "AliTPCdEdxInfo.h"
 
 class TParticle;
 class AliESDVertex;
@@ -39,6 +40,7 @@ class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
+
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -216,6 +218,8 @@ public:
   void    SetTPCsignal(Float_t signal, Float_t sigma, UChar_t npoints){ 
      fTPCsignal = signal; fTPCsignalS = sigma; fTPCsignalN = npoints;
   }
+  void    SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo){ fTPCdEdxInfo = dEdxInfo;}
+  AliTPCdEdxInfo * GetTPCdEdxInfo(){return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}
   UShort_t GetTPCsignalN() const {return fTPCsignalN;}
@@ -455,9 +459,10 @@ protected:
   Double32_t  fITSsignal;     // [0.,0.,10] detector's PID signal
   Double32_t  fITSdEdxSamples[4]; // [0.,0.,10] ITS dE/dx samples
 
-  Double32_t  fTPCsignal;     // [0.,0.,10] detector's PID signal
-  Double32_t  fTPCsignalS;    // [0.,0.,10] RMS of dEdx measurement
-  Double32_t  fTPCPoints[4];  // [0.,0.,10] TPC points -first, max. dens, last and max density
+  Double32_t  fTPCsignal;        // [0.,0.,10] detector's PID signal
+  Double32_t  fTPCsignalS;       // [0.,0.,10] RMS of dEdx measurement
+  AliTPCdEdxInfo * fTPCdEdxInfo; // object containing dE/dx information for different pad regions
+  Double32_t  fTPCPoints[4];     // [0.,0.,10] TPC points -first, max. dens, last and max density
 
   Double32_t fTRDsignal;      // detector's PID signal
   Double32_t fTRDQuality;     // trd quality factor for TOF
@@ -509,7 +514,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,61)  //ESDtrack 
+  ClassDef(AliESDtrack,62)  //ESDtrack 
 };
 
 

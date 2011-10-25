@@ -109,6 +109,7 @@
 #pragma link C++ class AliTriggerConfiguration+;
 #pragma link C++ class AliExpression+;
 #pragma link C++ class AliVariableExpression+;
+#pragma link C++ class AliTPCdEdxInfo+;
 
 #pragma link C++ function AliESDUtils::GetCorrV0(const AliESDEvent*,Float_t &);
 #pragma link C++ function AliESDUtils::GetCorrSPD2(Float_t,Float_t);
