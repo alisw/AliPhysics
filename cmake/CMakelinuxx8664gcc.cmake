@@ -85,7 +85,7 @@ execute_process(COMMAND find /lib64 -name 'libNoVersion*.so'
                 OUTPUT_STRIP_TRAILING_WHITESPACE)
                 
 
-set(SYSLIBS "-ldl -lcrypt -L/usr/X11R6/lib -lX11 ${LIBNOVER}")
+set(SYSLIBS "-ldl -lcrypt -L/usr/X11R6/lib -lX11 -lGL -lGLU ${LIBNOVER}")
 
 if(${CMAKE_Fortran_COMPILER} MATCHES "g95")
   
