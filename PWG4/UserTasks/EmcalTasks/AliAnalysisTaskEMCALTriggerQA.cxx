@@ -46,7 +46,11 @@ fOutputList(0),
 fGeometry(0),  fGeoName("EMCAL_COMPLETEV1"),
 fhNEvents(0),
 fhFORAmp(0),
+fhFORAmpL1G(0),
+fhFORAmpL1J(0),
 fhL0Amp(0),
+fhL0AmpL1G(0),
+fhL0AmpL1J(0),
 fhL1Amp(0),
 fhL1GAmp(0),
 fhL1JAmp(0),
@@ -76,7 +80,11 @@ fOutputList(0),
 fGeometry(0), fGeoName("EMCAL_COMPLETEV1"),
 fhNEvents(0),
 fhFORAmp(0),
+fhFORAmpL1G(0),
+fhFORAmpL1J(0),
 fhL0Amp(0),
+fhL0AmpL1G(0),
+fhL0AmpL1J(0),
 fhL1Amp(0),
 fhL1GAmp(0),
 fhL1JAmp(0),
@@ -119,11 +127,31 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhFORAmp    ->SetXTitle("Index #eta (collumns)");
   fhFORAmp    ->SetYTitle("Index #phi (rows)");
   fhFORAmp    ->SetZTitle("Amplitude");
+
+  fhFORAmpL1G  = new TH2F("hFORAmpL1G", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1G trigger condition",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhFORAmpL1G ->SetXTitle("Index #eta (collumns)");
+  fhFORAmpL1G ->SetYTitle("Index #phi (rows)");
+  fhFORAmpL1G ->SetZTitle("Amplitude");
+
+  fhFORAmpL1J  = new TH2F("hFORAmpL1J", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1J trigger condition",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhFORAmpL1J ->SetXTitle("Index #eta (collumns)");
+  fhFORAmpL1J ->SetYTitle("Index #phi (rows)");
+  fhFORAmpL1J ->SetZTitle("Amplitude");
   
   fhL0Amp      = new TH2F("hL0Amp","FALTRO signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL0Amp     ->SetXTitle("Index #eta (collumns)");
   fhL0Amp     ->SetYTitle("Index #phi (rows)");
   fhL0Amp     ->SetZTitle("Amplitude");
+
+  fhL0AmpL1G   = new TH2F("hL0AmpL1G","FALTRO signal per Row and Column, with L1G trigger condition",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL0AmpL1G  ->SetXTitle("Index #eta (collumns)");
+  fhL0AmpL1G  ->SetYTitle("Index #phi (rows)");
+  fhL0AmpL1G  ->SetZTitle("Amplitude");
+
+  fhL0AmpL1J   = new TH2F("hL0AmpL1J","FALTRO signal per Row and Column, with L1j trigger condition",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL0AmpL1J  ->SetXTitle("Index #eta (collumns)");
+  fhL0AmpL1J  ->SetYTitle("Index #phi (rows)");
+  fhL0AmpL1J  ->SetZTitle("Amplitude");
   
   fhL1Amp      = new TH2F("hL1Amp","STU signal per Row and Column",fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
   fhL1Amp     ->SetXTitle("Index #eta (collumns)");
@@ -182,7 +210,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);
+  fOutputList->Add(fhFORAmpL1G);
+  fOutputList->Add(fhFORAmpL1J);
   fOutputList->Add(fhL0Amp);
+  fOutputList->Add(fhL0AmpL1G);
+  fOutputList->Add(fhL0AmpL1J);
   fOutputList->Add(fhL1Amp);
   fOutputList->Add(fhL1GAmp);
   fOutputList->Add(fhL1JAmp);
@@ -214,10 +246,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   }
   
   fhNEvents->Fill(0);
+
+  //trigger configuration
+  TString triggerclasses = esdEvent->GetFiredTriggerClasses();
+  std::cout << "trigger = " << triggerclasses << std::endl;
   
   //map for cells and patches
   
-  Double_t emcalCell   [fgkFALTRORows][fgkFALTROCols], emcalTrigL0  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1G  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1[fgkFALTRORows][fgkFALTROCols];
+  Double_t emcalCell   [fgkFALTRORows][fgkFALTROCols], emcalCellL1G   [fgkFALTRORows][fgkFALTROCols], emcalCellL1J   [fgkFALTRORows][fgkFALTROCols], emcalTrigL0  [fgkFALTRORows][fgkFALTROCols],  emcalTrigL0L1G  [fgkFALTRORows][fgkFALTROCols],  emcalTrigL0L1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1G  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1J  [fgkFALTRORows][fgkFALTROCols], emcalTrigL1[fgkFALTRORows][fgkFALTROCols];
   Double_t emcalPatchL0[fgkFALTRORows][fgkFALTROCols], emcalPatchL1G[fgkFALTRORows][fgkFALTROCols], emcalPatchL1J[fgkFALTRORows][fgkFALTROCols];
   
   for (Int_t i = 0; i < fgkFALTRORows; i++) 
@@ -225,10 +261,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     for (Int_t j = 0; j < fgkFALTROCols; j++) 
     {   
       emcalTrigL0[i][j]   = 0.;
+      emcalTrigL0L1G[i][j]= 0.;
+      emcalTrigL0L1J[i][j]= 0.;
       emcalTrigL1G[i][j]  = 0.;
       emcalTrigL1J[i][j]  = 0.;
       emcalTrigL1[i][j]   = 0.;
       emcalCell[i][j]     = 0.;
+      emcalCellL1G[i][j]  = 0.;
+      emcalCellL1J[i][j]  = 0.;
       emcalPatchL0[i][j]  = 0.;
       emcalPatchL1G[i][j] = 0.;
       emcalPatchL1J[i][j] = 0.;
@@ -269,6 +309,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       }
       
       emcalCell[int(posY/2)][int(posX/2)] += amp; 
+
+      if(triggerclasses.Contains("CEMCTEGA-B-NOPF-CENTNOTRD")) emcalCellL1G[int(posY/2)][int(posX/2)] += amp;
+      if(triggerclasses.Contains("CEMCTEJE-B-NOPF-CENTNOTRD")) emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
       
     }
   }
@@ -299,6 +342,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       Float_t ampL0 = 0.;
       trg.GetAmplitude(ampL0);
       emcalTrigL0[posY][posX] += ampL0;
+      if(triggerclasses.Contains("CEMCTEGA-B-NOPF-CENTNOTRD")) emcalTrigL0L1G[posY][posX] += ampL0;
+      if(triggerclasses.Contains("CEMCTEJE-B-NOPF-CENTNOTRD")) emcalTrigL0L1J[posY][posX] += ampL0;
       totTRU += ampL0;
       
       if (nTimes) 
@@ -378,8 +423,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     for (Int_t j = 0; j < fgkFALTROCols; j++) //check x,y direction for reading FOR ((0,0) = top left);
     {
       fhFORAmp->Fill( j, fgkFALTRORows-i-1, emcalCell   [i][j]);
+      fhFORAmpL1G->Fill( j, fgkFALTRORows-i-1, emcalCellL1G   [i][j]);
+      fhFORAmpL1J->Fill( j, fgkFALTRORows-i-1, emcalCellL1J   [i][j]);
       fhL0Amp ->Fill( j, fgkFALTRORows-i-1, emcalTrigL0 [i][j]);
-      fhL0Amp ->Fill( j, fgkFALTRORows-i-1, emcalTrigL1 [i][j]);
+      fhL0AmpL1G ->Fill( j, fgkFALTRORows-i-1, emcalTrigL0L1G [i][j]);
+      fhL0AmpL1J ->Fill( j, fgkFALTRORows-i-1, emcalTrigL0L1J [i][j]);
+      fhL1Amp ->Fill( j, fgkFALTRORows-i-1, emcalTrigL1 [i][j]);
       fhL1GAmp->Fill( j, fgkFALTRORows-i-1, emcalTrigL1G[i][j]);
       fhL1JAmp->Fill( j, fgkFALTRORows-i-1, emcalTrigL1J[i][j]);
     }
