@@ -819,3 +819,20 @@ Bool_t AliAODEvent::IsPileupFromSPDInMultBins() const {
     else return IsPileupFromSPD(5,0.8);
 }
 
+Float_t AliAODEvent::GetVZEROEqMultiplicity(Int_t i) const
+{
+  // Get VZERO Multiplicity for channel i
+  // Themethod uses the equalization factors
+  // stored in the ESD-run object in order to
+  // get equal multiplicities within a VZERO rins (1/8 of VZERO)
+  if (!fAODVZERO || !fHeader) return -1;
+
+  Int_t ring = i/8;
+  Float_t factorSum = 0;
+  for(Int_t j = 8*ring; j < (8*ring+8); ++j) {
+    factorSum += fHeader->GetVZEROEqFactors(j);
+  }
+  Float_t factor = fHeader->GetVZEROEqFactors(i)*8./factorSum;
+
+  return (fAODVZERO->GetMultiplicity(i)/factor);
+}

@@ -76,6 +76,7 @@ AliAODHeader::AliAODHeader() :
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
+  for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=-1;
 }
 
 //______________________________________________________________________________
@@ -130,6 +131,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   fDiamondCovXY[1]=0.;
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
+  for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=-1;
 }
 
 //______________________________________________________________________________
@@ -152,6 +154,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
  			   ULong64_t trigMask,
 			   UChar_t trigClus,
 			   UInt_t evttype,
+			   const Float_t *vzeroEqFactors,
 			   const Char_t *title,
 			   Int_t nMuons,
 			   Int_t nDimuons) :
@@ -202,6 +205,7 @@ AliAODHeader::AliAODHeader(Int_t nRun,
   for (Int_t m=0; m<kNPHOSMatrix; m++) fPHOSMatrix[m]=NULL;
   for (Int_t sm=0; sm<kNEMCALMatrix; sm++) fEMCALMatrix[sm]=NULL;
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = 0;
+  if (vzeroEqFactors) for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j] = vzeroEqFactors[j];
 }
 
 //______________________________________________________________________________
@@ -275,6 +279,7 @@ AliAODHeader::AliAODHeader(const AliAODHeader& hdr) :
 	  fEMCALMatrix[sm]=0;
   }
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
+  for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j]=hdr.fVZEROEqFactors[j];
 }
 
 //______________________________________________________________________________
@@ -354,6 +359,7 @@ AliAODHeader& AliAODHeader::operator=(const AliAODHeader& hdr)
   }
 
   for (Int_t i = 0; i < 6; i++)  fITSClusters[i] = hdr.fITSClusters[i];
+  for (Int_t j=0; j<64; ++j) fVZEROEqFactors[j] = hdr.fVZEROEqFactors[j];
   return *this;
 }
 
@@ -449,6 +455,9 @@ void AliAODHeader::Print(Option_t* /*option*/) const
       printf("QTheta[%d]              : %13.3e\n", i, GetQTheta(i));
     }
   }
+  printf("V0 Eq factors: ");
+  for (Int_t j=0; j<64; ++j) printf(" %.3f",fVZEROEqFactors[j]);
+  printf("\n");
 
   return;
 }

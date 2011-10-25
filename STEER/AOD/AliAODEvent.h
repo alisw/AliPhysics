@@ -251,6 +251,11 @@ class AliAODEvent : public AliVEvent {
 
   // VZERO 
   AliAODVZERO *GetVZEROData() const { return fAODVZERO; }
+  virtual const Float_t* GetVZEROEqFactors() const {return fHeader?fHeader->GetVZEROEqFactors():0x0;}
+  virtual Float_t        GetVZEROEqMultiplicity(Int_t i) const;
+  void           SetVZEROEqFactors(const Float_t *factors) const {
+    if(fHeader && factors)
+      fHeader->SetVZEROEqFactors(factors);}
 
   //ZDC
   AliAODZDC   *GetZDCData() const { return fAODZDC; }
@@ -287,7 +292,7 @@ class AliAODEvent : public AliVEvent {
   
   static const char* fAODListName[kAODListN]; //!
 
-  ClassDef(AliAODEvent,87);
+  ClassDef(AliAODEvent,88);
 };
 
 #endif

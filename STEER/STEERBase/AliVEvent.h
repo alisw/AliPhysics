@@ -153,9 +153,11 @@ public:
   virtual Int_t        EventIndexForEMCALCell(Int_t icell)  const = 0;  
 
   virtual AliVVZERO *GetVZEROData() const = 0;   
+  virtual const Float_t* GetVZEROEqFactors() const {return NULL;}
+  virtual Float_t        GetVZEROEqMultiplicity(Int_t /* i */) const {return -1;}
   virtual AliVZDC   *GetZDCData() const = 0;
 
-  ClassDef(AliVEvent,1)  // base class for AliEvent data
+  ClassDef(AliVEvent,2)  // base class for AliEvent data
 };
 #endif 
 

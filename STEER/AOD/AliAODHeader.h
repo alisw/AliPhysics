@@ -45,6 +45,7 @@ class AliAODHeader : public AliVHeader {
 	       ULong64_t fTriggerMask,
 	       UChar_t   fTriggerCluster,
 	       UInt_t    fEventType,
+	       const Float_t *vzeroEqFactors,
 	       const Char_t *title="",
 	       Int_t nMuons=0,
 	       Int_t nDimuons=0);
@@ -163,6 +164,12 @@ class AliAODHeader : public AliVHeader {
   void Clear(Option_t* = "");
   enum {kNPHOSMatrix = 5};
   enum {kNEMCALMatrix = 12};
+
+  void           SetVZEROEqFactors(const Float_t* factors) {
+    if (factors)
+      for (Int_t i = 0; i < 64; ++i) fVZEROEqFactors[i] = factors[i];}
+  const Float_t* GetVZEROEqFactors() const {return fVZEROEqFactors;}
+  Float_t        GetVZEROEqFactors(Int_t i) const {return fVZEROEqFactors[i];}
   
  private :
   
@@ -206,7 +213,8 @@ class AliAODHeader : public AliVHeader {
   Int_t       fTPConlyRefMult;      // Reference multiplicty for standard TPC only tracks
   AliCentrality* fCentralityP;      // Pointer to full centrality information
   AliEventplane* fEventplaneP;	    // Pointer to full event plane information
-  ClassDef(AliAODHeader, 16);
+  Float_t     fVZEROEqFactors[64];  // V0 channel equalization factors for event-plane reconstruction
+  ClassDef(AliAODHeader, 17);
 };
 inline
 void AliAODHeader::SetCentrality(AliCentrality* cent)      { 
