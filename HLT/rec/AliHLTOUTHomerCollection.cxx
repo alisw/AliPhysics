@@ -27,6 +27,7 @@
 #include "AliHLTHOMERReader.h"
 #include "AliRawDataHeader.h"
 #include "AliHLTEsdManager.h"
+#include "AliDAQ.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTOUTHomerCollection)
@@ -64,12 +65,9 @@ int AliHLTOUTHomerCollection::GenerateIndex()
   int iResult=0;
   if (fpManager) {
     Reset();
-    // there was a bug in AliDAQ returning the wrong equipment id
-    // for the HLT links. It has been fixed in the trunk on Feb 5th 2008
-    // and from v4-10-Release (Rev-02). For the moment we select directly
-    // to support older AliRoot versions
-    //Select("HLT");
-    SelectEquipment(-1,7680, 7689);
+    int firstLink=AliDAQ::DdlIDOffset("HLT");
+    int nofDDLs=AliDAQ::NumberOfDdls("HLT");
+    SelectEquipment(-1,firstLink, firstLink+nofDDLs);
     UChar_t* pSrc=NULL;
     while (ReadNextData(pSrc) && pSrc!=NULL && iResult>=0) {
       AliHLTUInt32_t id=(GetEquipmentId());
