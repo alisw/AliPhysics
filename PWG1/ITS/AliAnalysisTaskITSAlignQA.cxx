@@ -87,39 +87,9 @@ AliAnalysisTaskITSAlignQA::AliAnalysisTaskITSAlignQA() : AliAnalysisTaskSE("SDD 
 //___________________________________________________________________________
 AliAnalysisTaskITSAlignQA::~AliAnalysisTaskITSAlignQA(){
   //
-  if (fOutput) {
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
-  }
-  if(fHistNEvents){
-    delete fHistNEvents;
-    fHistNEvents=0;    
-  }
-  for(Int_t i=0;i<kNSPDmods;i++) {
-    if (fHistSPDResidX[i]) {delete fHistSPDResidX[i]; fHistSPDResidX[i]=0;}
-    if (fHistSPDResidZ[i]) {delete fHistSPDResidZ[i]; fHistSPDResidZ[i]=0;}
-  }
-  //
-  for(Int_t i=0;i<kNSSDmods;i++) {
-    if (fHistSSDResidX[i]) {delete fHistSSDResidX[i]; fHistSSDResidX[i]=0;}
-    if (fHistSSDResidZ[i]) {delete fHistSSDResidZ[i]; fHistSSDResidZ[i]=0;}
-  }
-  //
-  for(Int_t i=0;i<kNSDDmods;i++){
-    if(fHistSDDResidXvsX[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
-    if(fHistSDDResidXvsZ[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
-    if(fHistSDDResidZvsX[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
-    if(fHistSDDResidZvsZ[i]){ delete fHistSDDResidXvsX[i]; fHistSDDResidXvsX[i]=0;}
-    if(fHistSDDdEdxvsDrTime[i]){ delete fHistSDDdEdxvsDrTime[i]; fHistSDDdEdxvsDrTime[i]=0;}
-    if(fHistSDDDrTimeAll[i]){ delete fHistSDDDrTimeAll[i]; fHistSDDDrTimeAll[i]=0;}
-    if(fHistSDDDrTimeExtra[i]){ delete fHistSDDDrTimeExtra[i]; fHistSDDDrTimeExtra[i]=0;}
-    if(fHistSDDDrTimeAttac[i]){ delete fHistSDDDrTimeAttac[i]; fHistSDDDrTimeAttac[i]=0;}
-    for (int ix=2;ix--;) {
-      if (fHProfSDDResidXvsXD[i][ix]) delete fHProfSDDResidXvsXD[i][ix]; fHProfSDDResidXvsXD[i][ix] = 0;
-      if (fHProfSDDResidXvsZ[i][ix])  delete fHProfSDDResidXvsZ[i][ix];  fHProfSDDResidXvsZ[i][ix]  = 0;
-      if (fHProfSDDDrTimevsXD[i][ix]) delete fHProfSDDDrTimevsXD[i][ix]; fHProfSDDDrTimevsXD[i][ix] = 0;
-      if (fHProfSDDDrTimevsZ[i][ix])  delete fHProfSDDDrTimevsZ[i][ix];  fHProfSDDDrTimevsZ[i][ix]  = 0;
-    }
   }
   if(fFitter){
     delete fFitter;
