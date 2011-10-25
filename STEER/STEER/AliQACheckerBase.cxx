@@ -337,6 +337,7 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * reco
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
+  for (int i=AliRecoParam::kNSpecies;i--;) rv[i] = 0.0;
   Check(rv, index, recoParam) ;
   SetQA(index, rv) ; 	
   
