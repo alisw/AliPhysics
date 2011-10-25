@@ -272,7 +272,7 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS){
   else etaCorr += 14E-3;
 
 
-//   dedxExp *= 1+etaCorr;
+  dedxExp *= 1+etaCorr;
 //   Float_t betagamma = momtpc/fMass[iS];
 //   Float_t bgCorr = 0.01/betagamma/betagamma;
 //   dedxExp *= 1+bgCorr;
