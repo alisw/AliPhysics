@@ -139,7 +139,7 @@ Bool_t   AliHMPIDtrack::PropagateToR(Double_t r,Double_t step)
 
     GetXYZ(xyz0);	
     Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
-    Rotate(alpha,kTRUE);
+    if(!Rotate(alpha,kTRUE)) return kFALSE;
     GetXYZ(xyz0);	
     if (!GetProlongation(x,y,z)) return kFALSE;
     xyz1[0] = x * TMath::Cos(alpha) + y * TMath::Sin(alpha); 
@@ -156,7 +156,7 @@ Bool_t   AliHMPIDtrack::PropagateToR(Double_t r,Double_t step)
 
   GetXYZ(xyz0);	
   Double_t alpha = TMath::ATan2(xyz0[1],xyz0[0]);
-  Rotate(alpha,kTRUE);
+  if(!Rotate(alpha,kTRUE)) return kFALSE;
   GetXYZ(xyz0);	
   if (!GetProlongation(r,y,z)) return kFALSE;
   xyz1[0] = r * TMath::Cos(alpha) + y * TMath::Sin(alpha); 

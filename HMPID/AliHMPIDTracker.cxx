@@ -295,12 +295,12 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if (AliHMPIDReconstructor::StreamLevel()>0) {	
       AliExternalTrackParam * trackTPC=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
       AliExternalTrackParam * trackCurrent=new AliExternalTrackParam(*pTrk);      
-      trackTPC->Rotate(alpha);
-      trackCurrent->Rotate(alpha);      
+      if(!trackTPC->Rotate(alpha)) continue;
+      if(!trackCurrent->Rotate(alpha)) continue;      
       Bool_t statusTPC= AliTracker::PropagateTrackToBxByBz(trackTPC,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);      
       Bool_t statusCurrent=AliTracker::PropagateTrackToBxByBz(trackCurrent,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);  
       AliExternalTrackParam * trackTPCNB=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
-      trackTPCNB->Rotate(alpha);
+      if(!trackTPCNB->Rotate(alpha)) continue;
       Bool_t statusTPCNB=kTRUE;
       Double_t bfield[3]={0,0,0};
       for (Double_t radius=trackTPCNB->GetX(); radius<radiusH; radius+=1){
@@ -423,15 +423,15 @@ Int_t AliHMPIDTracker::Recon(AliESDEvent *pEsd,TObjArray *pClus,TObjArray *pNmea
     if (AliHMPIDReconstructor::StreamLevel()>0) {	
       AliExternalTrackParam * trackTPC=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
       AliExternalTrackParam * trackCurrent=new AliExternalTrackParam(*pTrk);      
-      trackTPC->Rotate(alpha);
-      trackCurrent->Rotate(alpha);      
+      if(!trackTPC->Rotate(alpha)) continue;
+      if(!trackCurrent->Rotate(alpha)) continue;      
       Bool_t statusTPC= AliTracker::PropagateTrackToBxByBz(trackTPC,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);      
       Bool_t statusCurrent=AliTracker::PropagateTrackToBxByBz(trackCurrent,radiusH,pTrk->GetMass(),1,kFALSE,kMaxSnp,-1);    
       Double_t tanAlpha=TMath::Tan(TMath::ASin(trackTPC->GetSnp()));
       Double_t deltaC= trackTPC->GetC(AliTrackerBase::GetBz())-ftrack->GetTPCOut()->GetC(AliTrackerBase::GetBz());    
       //
       AliExternalTrackParam * trackTPCNB=new AliExternalTrackParam(*(ftrack->GetTPCOut()));
-      trackTPCNB->Rotate(alpha);
+      if(!trackTPCNB->Rotate(alpha)) continue;
       Bool_t statusTPCNB=kTRUE;
       Double_t bfield[3]={0,0,0};
       for (Double_t radius=trackTPCNB->GetX(); radius<radiusH; radius+=1){
