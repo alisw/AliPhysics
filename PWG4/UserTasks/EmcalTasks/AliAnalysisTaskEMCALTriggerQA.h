@@ -28,7 +28,7 @@ public:
   
   AliAnalysisTaskEMCALTriggerQA(const char *name);   // named constructor
   
-  virtual ~AliAnalysisTaskEMCALTriggerQA() {;}       // destructor
+  virtual ~AliAnalysisTaskEMCALTriggerQA() { ; }     // destructor
   
   
   void   UserCreateOutputObjects();    // you should create your output objects in that function if possible
@@ -49,17 +49,21 @@ public:
 
   
 private:
-  TList            *fOutputList;  //! Output list
+  TList            *fOutputList;     //! Output list
   
   AliEMCALGeometry *fGeometry;       //  Access to EMCAL geometry utils
   TString           fGeoName;        //  Name of geometry used
   
   TH1F             *fhNEvents;       //! Number of selected events
   TH2F             *fhFORAmp;        //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
+  TH2F             *fhFORAmpL1G;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma trigger event
+  TH2F             *fhFORAmpL1J;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet trigger event
   TH2F             *fhL0Amp;         //! FALTRO signal per Row and Column for FOR involves L0 patch
+  TH2F             *fhL0AmpL1G;      //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1G trigger event
+  TH2F             *fhL0AmpL1J;      //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1J trigger event
   TH2F             *fhL1Amp;         //! STU signal per Row and Column for FOR involves L0 patch
-  TH2F             *fhL1GAmp;         //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
-  TH2F             *fhL1JAmp;         //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
+  TH2F             *fhL1GAmp;        //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
+  TH2F             *fhL1JAmp;        //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
   TH2F             *fhL0Patch;       //! FOR with L0 patch associated
   TH2F             *fhL1GPatch;      //! FOR with L1 Gamma patch associated
   TH2F             *fhL1JPatch;      //! FOR with L1 Jet patch associated
@@ -97,7 +101,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 1);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 2);   
 };
 
 #endif 
