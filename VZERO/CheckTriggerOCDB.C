@@ -35,7 +35,7 @@ void CheckTriggerOCDB(Int_t run = 164744)
     fPedCut[pmNumber][1] = trigData->GetPedestalCut(1,board,channel);
     fPed[pmNumber][0] = trigData->GetPedestal(0,board,channel);
     fPed[pmNumber][1] = trigData->GetPedestal(1,board,channel);
-    printf("Ch=%d Q=%s PedSub=%s Ped0=%.2f TrPed0=%hd TrPedCut0=%hd   Ped1=%.2f TrPed1=%hd TrPedCut1=%hd   delta(ped)=%.2f %f nsigma=%.2f %.2f\n",
+    printf("Ch=%d Q=%s PedSub=%s Ped0=%.1f TrPed0=%hd TrPedCut0=%hd   Ped1=%.1f TrPed1=%hd TrPedCut1=%hd   delta(ped)=%.1f %.1f nsigma=%.1f %.1f\n",
 	   pmNumber,
 	   trigData->GetEnableCharge(board,channel) ? "On" : "Off",
 	   trigData->GetPedestalSubtraction(board)  ? "On" : "Off",
