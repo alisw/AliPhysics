@@ -13,13 +13,16 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 //
-// Static function member
-// as utils for
-// AliTPCCombinedTrackfit
+// Static function member which can be used in standalone cases
+// especially as utils for AliTPCCosmicTrackfit
+//
+// detailed description can be found inside individual function
 //
 // grep "exitreport" in output log to check abnormal termination
 //
-//  Xianguo Lu <lu@physi.uni-heidelberg.de>      
+//  Xianguo Lu 
+//  lu@physi.uni-heidelberg.de
+//  Xianguo.Lu@cern.ch
 //
 
 #ifndef ALITPCCOSMICUTILS_H
@@ -32,18 +35,21 @@ class AliTPCCosmicUtils
     
   static AliExternalTrackParam *MakeSeed(const AliTPCseed *tseed);
 
-  static void SingleFit(AliExternalTrackParam * trackInOld, AliExternalTrackParam * trackOutOld, const AliTPCseed *tseed, const Bool_t kinward, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer=0x0);
+  static void SingleFit(AliExternalTrackParam * trackInOld, AliExternalTrackParam * trackOutOld, const AliTPCseed *tseed, const Bool_t kinward, const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, TTreeSRedirector *debugstreamer=0x0);
 
-  static void CombinedFit(AliExternalTrackParam *trackPars[],  const AliTPCseed *seeds[],  Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer=0x0);
+  static void CombinedFit(AliExternalTrackParam *trackPars[],  const AliTPCseed *seeds[],  const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, Double_t &lfit, Double_t &vtxD, TTreeSRedirector *debugstreamer=0x0);
 
+  static void DrawTracks(AliESDtrack *esdtrks[], const TString tag, const TString outputformat="png");
   static void DrawSeeds(const AliTPCseed * seeds[], const TString tag, const TString outputformat="png");
   static void PrintTrackParam(const Int_t id, const AliExternalTrackParam * trackpar, const char *tag="");
-  static Int_t RotateSafe(AliExternalTrackParam *trackPar, const Double_t aa);
+  static Bool_t RotateSafe(AliExternalTrackParam *trackPar, const Double_t aa);
+  static Double_t AngleInRange(Double_t phi);
+  static Double_t Point2LineDist(const TVector3 p0, const TVector3 l1, const TVector3 l2);
 
  private:
   static void IniCov(AliExternalTrackParam *trackPar, const Double_t ncl);
-  static void SubCombined(AliExternalTrackParam *trackPar, const AliTPCseed *seeds[], const Int_t tk0, const Int_t tk1, const Double_t eloss, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer=0x0);
-  static void FitKernel(AliExternalTrackParam *trackPar, const AliTPCseed *tseed, const Int_t rowstart, const Int_t rowstop, const Double_t eloss, Int_t &ksite, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer, const Bool_t kinicov);
+  static void SubCombined(AliExternalTrackParam *trackPar, const AliTPCseed *seeds[], const Int_t tk0, const Int_t tk1, const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, const Double_t eloss, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, Double_t &lfit, Double_t &vtxD, TTreeSRedirector *debugstreamer=0x0);
+  static void FitKernel(AliExternalTrackParam *trackPar, const AliTPCseed *tseed, const Int_t rowstart, const Int_t rowstop, const Int_t drow, const Double_t xmin, const Double_t xmax, const Double_t eloss, Int_t &ksite, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TVector3 &gposStart, TVector3 &gposStop, TTreeSRedirector *debugstreamer, const Bool_t kinicov);
 
   static const Int_t fgkNRow = 159;           //number of pad rows
   static const Int_t fgkNclsMin = 40;         //minimum requirement of number of TPC cluster

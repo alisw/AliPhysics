@@ -13,14 +13,18 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 //
-// Static function member
-// as utils for
-// AliTPCCombinedTrackfit
+// Static function member which can be used in standalone cases
+// especially as utils for AliTPCCosmicTrackfit
+//
+// detailed description can be found inside individual function
 //
 // grep "exitreport" in output log to check abnormal termination
-// comment tbc
 //
-//  Xianguo Lu <lu@physi.uni-heidelberg.de>      
+//
+//  Xianguo Lu 
+//  lu@physi.uni-heidelberg.de
+//  Xianguo.Lu@cern.ch
+
 //
 
 #include <TAxis.h>
@@ -37,7 +41,38 @@
 
 #include "AliTPCCosmicUtils.h"
 
-Int_t AliTPCCosmicUtils::RotateSafe(AliExternalTrackParam *trackPar, const Double_t aa)
+Double_t AliTPCCosmicUtils::Point2LineDist(const TVector3 p0, const TVector3 l1, const TVector3 l2)
+{
+  //
+  //return distance of p0 to line (l2-l1)
+  //
+
+  const TVector3 va = p0 - l1;
+  const TVector3 vb = l2 - l1;
+
+  const TVector3 dd = va.Cross(vb);
+
+  return dd.Mag()/vb.Mag();
+}
+
+Double_t AliTPCCosmicUtils::AngleInRange(Double_t phi)
+{
+  //
+  //get the phi value (in rad) in -pi ~ pi, so that fabs() works naiively
+  //
+  const Double_t pmin = -TMath::Pi();
+  const Double_t pmax = pmin+TMath::TwoPi();
+
+  while(phi<pmin)
+    phi+= TMath::TwoPi();
+
+  while(phi>=pmax)
+    phi-=  TMath::TwoPi();
+
+  return phi;
+}
+
+Bool_t AliTPCCosmicUtils::RotateSafe(AliExternalTrackParam *trackPar, const Double_t rawalpha)
 {
   //1. in AliExternalTrackParam::GetXYZ
   //r[0]=fX; r[1]=fP[0]; r[2]=fP[1];
@@ -54,6 +89,23 @@ Int_t AliTPCCosmicUtils::RotateSafe(AliExternalTrackParam *trackPar, const Doubl
   //fP[2] = TMath::Sin(mom.Phi());
   //since only sin is used for mom.Phi(), that is assuming cos(mom.Phi())>0
 
+  //the range-changing in AliExternalTrackParam::Rotate not precise enough
+  const Double_t aa = AngleInRange(rawalpha);
+
+  const Double_t a0 = trackPar->GetAlpha();
+  const Double_t p2 = trackPar->GetParameter()[2];
+
+  //copied from AliExternalTrackParam::Rotate
+  const Double_t ca=TMath::Cos(aa-a0), sa=TMath::Sin(aa-a0);
+  const Double_t sf=p2, cf=TMath::Sqrt((1.- p2)*(1.+p2)); 
+
+  if((cf*ca+sf*sa)<0) {
+    return kFALSE;
+  }
+
+  return trackPar->Rotate(aa);
+
+  /*
   Double_t xyz[3], pxpypz[3];
   trackPar->GetXYZ(xyz);
   trackPar->GetPxPyPz(pxpypz);
@@ -79,6 +131,7 @@ Int_t AliTPCCosmicUtils::RotateSafe(AliExternalTrackParam *trackPar, const Doubl
   }
   else 
     return 0;
+  */
 
   /*
   //flip
@@ -112,14 +165,28 @@ void AliTPCCosmicUtils::PrintTrackParam(const Int_t id, const AliExternalTrackPa
   Double_t pxpypz[3]={-999,-999,-999};
   trackpar->GetPxPyPz(pxpypz);
 
-  printf("PrintTrackPar %2s %3d : %6.1f %5.1f : %6.6f %6.6f %6.6f : %8.3f %8.3f %8.3f : (%2d) %8.3f %11.6f %.2f\n", tag, id, trackpar->GetX(), sqrt(pow(xyz[0],2)+pow(xyz[1],2)), xyz[0], xyz[1], xyz[2], pxpypz[0], pxpypz[1], pxpypz[2], trackpar->Charge(), trackpar->Pt(), trackpar->P(), trackpar->GetAlpha()*TMath::RadToDeg());
+  printf("PrintTrackPar %2s %3d : %6.1f %5.1f : %6.6f %6.6f %6.6f :  %6.6f  : %8.3f %8.3f %8.3f : (%2d) %8.3f %11.6f %.2f\n", tag, id, trackpar->GetX(), sqrt(pow(xyz[0],2)+pow(xyz[1],2)), xyz[0], xyz[1], xyz[2], trackpar->Phi(), pxpypz[0], pxpypz[1], pxpypz[2], trackpar->Charge(), trackpar->Pt(), trackpar->P(), trackpar->GetAlpha()*TMath::RadToDeg());
 }
+
+void AliTPCCosmicUtils::DrawTracks(AliESDtrack *esdtrks[], const TString tag, const TString outputformat)
+{
+  //
+  //draw esdtracks
+  //
+  const AliTPCseed *seeds[]={GetTPCseed(esdtrks[0]), GetTPCseed(esdtrks[1])};
+  DrawSeeds(seeds, tag, outputformat);
+}
+
 
 void AliTPCCosmicUtils::DrawSeeds(const AliTPCseed * seeds[], const TString tag, const TString outputformat)
 {
   //
   //draw seed and output to file
   //
+
+  if(!seeds[0] || !seeds[1])
+    return;
+
   TGraph *grsyx[]={new TGraph, new TGraph};
   TGraph *grsyz[]={new TGraph, new TGraph};
 
@@ -178,6 +245,8 @@ void AliTPCCosmicUtils::DrawSeeds(const AliTPCseed * seeds[], const TString tag,
     grsyz[itrk]->SetMarkerSize(1);
     grsyz[itrk]->Draw(itrk?"lp same":"alp");
   }
+
+  gErrorIgnoreLevel = 1001;
   cc->Print(Form("drawTrack%s.%s", tag.Data(), outputformat.Data()));
 
   for(Int_t ii=0; ii<2; ii++){
@@ -315,7 +384,7 @@ void AliTPCCosmicUtils::IniCov(AliExternalTrackParam *trackPar, const Double_t n
   trackPar->AddCovariance(acov);
 }
 
-void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExternalTrackParam * trackOutOld, const AliTPCseed *tseed, const Bool_t kinward,  Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer)
+void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExternalTrackParam * trackOutOld, const AliTPCseed *tseed, const Bool_t kinward,  const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, TTreeSRedirector *debugstreamer)
 {
   //
   //fit single track
@@ -332,22 +401,45 @@ void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExterna
 
   //nmiss is from the 2 FitKernel of the last iteration
   //nfit, pchi2 is from the last FitKernel of the last iteration
+
+  Int_t rowouter = fgkNRow-1-rowstartshift;
+
+  //so that when reversed, the same rows are read! important!!!
+  Int_t rowinner = rowouter - rowouter/rowstep * rowstep;
+
+  TVector3 gposStart;
+  TVector3 gposStop;
+  TVector3 dpos;
+  lfit = 0;
+
   for(Int_t ii=0; ii<fgkNiter; ii++){
     nmiss = 0;
 
+    gposStart.SetXYZ(-999,-999,-999);
     ksite = -999;
     trackIn  = trackOut;
-    FitKernel(&trackIn,  tseed, fgkNRow-1, 0, inde , ksite, nfit, nmiss, pchi2, 0x0, kTRUE); 
-    //PrintTrackParam(9010+ii, &trackIn);                                                                                                    
+    FitKernel(&trackIn,  tseed, rowouter, rowinner, -rowstep, xmin, xmax, inde , ksite, nfit, nmiss, pchi2, gposStart, gposStop, 0x0, kTRUE); 
+    //PrintTrackParam(9010+ii, &trackIn);                
+
+    dpos = gposStart-gposStop;
+    lfit += dpos.Pt();
+
+    //---------------------------
 
     nfit = 0;
     pchi2 = 0;                                        
 
+    gposStart.SetXYZ(-999,-999,-999);
     ksite = -999;
     trackOut = trackIn;
-    FitKernel(&trackOut, tseed, 0, fgkNRow-1, outde, ksite, nfit, nmiss, pchi2, (ii==fgkNiter-1 ? debugstreamer : 0x0), kTRUE);
+    FitKernel(&trackOut, tseed, rowinner, rowouter,  rowstep, xmin, xmax, outde, ksite, nfit, nmiss, pchi2, gposStart, gposStop, (ii==fgkNiter-1 ? debugstreamer : 0x0), kTRUE);
     //PrintTrackParam(90020+ii, &trackOut);
+
+    dpos = gposStart-gposStop;
+    lfit += dpos.Pt();
   }
+
+  lfit /= 2.*fgkNiter;
 
   if(trackInOld)
     (*trackInOld)  = trackIn;
@@ -355,7 +447,7 @@ void AliTPCCosmicUtils::SingleFit(AliExternalTrackParam * trackInOld, AliExterna
   (*trackOutOld) = trackOut;
 }
 
-void AliTPCCosmicUtils::CombinedFit(AliExternalTrackParam *trackPars[],  const AliTPCseed *seeds[],  Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer)
+void AliTPCCosmicUtils::CombinedFit(AliExternalTrackParam *trackPars[],  const AliTPCseed *seeds[],  const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, Double_t &vtxD, Double_t &vtxZ, TTreeSRedirector *debugstreamer)
 {
   //
   //combined propagation
@@ -373,25 +465,36 @@ void AliTPCCosmicUtils::CombinedFit(AliExternalTrackParam *trackPars[],  const A
   AliExternalTrackParam trackUp;
 
   for(Int_t ii=0; ii<fgkNiter; ii++){
-    nmiss = 0;
+    lfit = 0;
+    vtxD = 0;
+    vtxZ = 0;
+    Double_t tmpl = -999, tmpd = -999, tmpz = -999;
 
     //lower->upper
     trackUp = trackLow;
-    SubCombined(&trackUp,  seeds, 1, 0, upde,  nfit, nmiss, pchi2);
+    SubCombined(&trackUp,  seeds, 1, 0, rowstartshift, rowstep, xmin, xmax, upde,  nfit, nmiss, pchi2, tmpl, tmpd, tmpz);
+    lfit += tmpl;
+    vtxD += tmpd;
+    vtxZ += tmpz;
     
-    nfit = 0;
-    pchi2 = 0;
-
     //upper->lower
     trackLow = trackUp;    
-    SubCombined(&trackLow, seeds, 0, 1, lowde, nfit, nmiss, pchi2, (ii==fgkNiter-1? debugstreamer : 0x0));
+    SubCombined(&trackLow, seeds, 0, 1, rowstartshift, rowstep, xmin, xmax, lowde, nfit, nmiss, pchi2, tmpl, tmpd, tmpz, (ii==fgkNiter-1? debugstreamer : 0x0));
+    lfit += tmpl;
+    vtxD += tmpd;
+    vtxZ += tmpz;
   }
 
   *(trackPars[0]) = trackUp;
   *(trackPars[1]) = trackLow;
+
+  //only last iteration used
+  lfit /= 2;
+  vtxD /= 2;
+  vtxZ /= 2;
 }
 
-void AliTPCCosmicUtils::SubCombined(AliExternalTrackParam *trackPar, const AliTPCseed *seeds[], const Int_t tk0, const Int_t tk1, const Double_t eloss, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer)
+void AliTPCCosmicUtils::SubCombined(AliExternalTrackParam *trackPar, const AliTPCseed *seeds[], const Int_t tk0, const Int_t tk1, const Int_t rowstartshift, const Int_t rowstep, const Double_t xmin, const Double_t xmax, const Double_t eloss, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, Double_t &lfit, Double_t &vtxD, Double_t &vtxZ, TTreeSRedirector *debugstreamer)
 {
   //
   //sub-routine for combined propagation
@@ -408,21 +511,47 @@ void AliTPCCosmicUtils::SubCombined(AliExternalTrackParam *trackPar, const AliTP
   nfit = 0;
   nmiss = 0;
   pchi2 = 0;
+  vtxD = -1e10;
+  vtxZ = -1e10;
 
   //always nrow -> 1 -> nrow
-  Int_t rowstart=fgkNRow-1;
-  Int_t rowstop=0;
+  Int_t rowstart= fgkNRow-1-rowstartshift;
+
+  //so that when reversed, the same rows are read! important!!!
+  Int_t rowstop = rowstart - rowstart/rowstep * rowstep;
+  Int_t drow = -rowstep;
+    
+  TVector3 gposStart(-999,-999,-999);
+  TVector3 gposStop(-999,-999,-999);
+
   for(Int_t itrk=tk0; dtk*itrk<=dtk*tk1; itrk+=dtk){
     if(itrk==tk1){
       Int_t tmprow = rowstart;
       rowstart = rowstop;
       rowstop = tmprow;
+      drow *= -1;
     }
-    FitKernel(trackPar, seeds[itrk], rowstart, rowstop, eloss, ksite, nfit, nmiss, pchi2, debugstreamer, kFALSE);
+   
+    FitKernel(trackPar, seeds[itrk], rowstart, rowstop, drow, xmin, xmax, eloss, ksite, nfit, nmiss, pchi2, gposStart, gposStop, debugstreamer, kFALSE);
+
+    //get the impact parameters at the end of the first propagation (X=0)
+    if(itrk==tk0){
+      AliExternalTrackParam vertex(*trackPar);
+      const Double_t maxStep = 1;
+      const Bool_t rotateTo = kFALSE;
+      const Double_t maxSnp = 0.8;
+      if(AliTrackerBase::PropagateTrackToBxByBz(&vertex, 0, fgkMass, maxStep, rotateTo, maxSnp, eloss)){
+        vtxD = TMath::Abs(vertex.GetParameter()[0]);
+        vtxZ = vertex.GetParameter()[1];
+      }
+    }
   }
+
+  TVector3 dpos = gposStart-gposStop;
+  lfit = dpos.Pt();
 }
 
-void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCseed *tseed, const Int_t rowstart, const Int_t rowstop, const Double_t eloss, Int_t &ksite, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TTreeSRedirector *debugstreamer, const Bool_t kinicov)
+void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCseed *tseed, const Int_t rowstart, const Int_t rowstop, const Int_t drow, const Double_t xmin, const Double_t xmax, const Double_t eloss, Int_t &ksite, Int_t &nfit, Int_t &nmiss, Double_t &pchi2, TVector3 &gposStart, TVector3 &gposStop, TTreeSRedirector *debugstreamer, const Bool_t kinicov)
 {
   //
   //routine for propagation
@@ -433,27 +562,23 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
     IniCov(trackPar, tseed->GetNumberOfClusters());
   //<--
 
-  Int_t drow=1;
-  if(rowstart>rowstop)
-    drow = -1;
+  Int_t checkstop = -999;
 
   for(Int_t irow=rowstart; drow*irow<=drow*rowstop; irow+=drow){
-    if(0){
-      //only for momentum resolution investigation, dumm for usual usage
-      if(eloss>0){
-        if(irow%2==0)
-          continue;
-      }
-      else{
-        if(irow%2!=0)
-          continue;
-      }
-    }
+    checkstop = irow;
+    //printf("test irow %d\n", irow);
 
     AliTPCclusterMI *cl=tseed->GetClusterPointer(irow);
     if (!cl) continue;
     if (cl->GetX()< fgkXMin) continue;
 
+    //cut on cluster X (i.e. r) to specify leverarm
+    if(cl->GetX()< xmin){
+      continue;
+    }
+    if(cl->GetX()> xmax){
+      continue;
+    }
     //if propagation not successful, trackPar is not changed
     AliExternalTrackParam tmppar(*trackPar);
 
@@ -469,6 +594,9 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
     //DO NOT rotate trackPar, there is "bug" in trackparam::rotate!! stay in the initial one defined as alpha = ATan2(posy0,posx0)
     Float_t gxyz[3];
     cl->GetGlobalXYZ(gxyz);
+
+    const TVector3 gptmp(gxyz[0], gxyz[1], gxyz[2]);
+
     TVector3 ptogo(gxyz);
 
     //printf("test %d : %f %f %f\n", irow, gxyz[0], gxyz[1], gxyz[2]);
@@ -522,5 +650,15 @@ void AliTPCCosmicUtils::FitKernel(AliExternalTrackParam *trackPar, const AliTPCs
     (*trackPar) = tmppar;
 
     nfit++;
+
+    gposStop = gptmp;
+    if(gposStart.X()<-998)
+      gposStart = gptmp;
+  }
+
+  //to make sure rowstart and rowstop are the actual ending
+  if(checkstop != rowstop){
+    printf("exitreport AliTPCCosmicUtils::FitKernel wrong rowstart, stop, drow!! %d %d %d\n", rowstart, rowstop, drow);
+    exit(1);
   }
 }
