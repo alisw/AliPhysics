@@ -71,6 +71,8 @@ public:
   virtual UShort_t  GetTPCsignalN()      const {return 0 ;}
   virtual Double_t  GetTPCmomentum()     const {return 0.;}
   virtual Double_t  GetTOFsignal()       const {return 0.;}
+  virtual Double_t  GetHMPIDsignal()     const {return 0.;}
+
   virtual void      GetIntegratedTimes(Double_t */*times*/) const { return; }
   virtual Double_t  GetTRDmomentum(Int_t /*plane*/, Double_t */*sp*/=0x0) const {return 0.;}
   virtual void      GetHMPIDpid(Double_t */*p*/) const {;}
