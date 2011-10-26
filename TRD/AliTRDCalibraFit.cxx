@@ -4592,7 +4592,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
       y[1] = pentea->GetBinContent(binmax-1);
       y[2] = pentea->GetBinContent(binmax);
       CalculPolynomeLagrange2(x,y,c0,c1,c2,c3,c4);
-      AliInfo("At the limit for beginning!");
+      //AliInfo("At the limit for beginning!");
       break;  
     case 2:
       minnn = pentea->GetBinCenter(binmax-2);
@@ -4810,20 +4810,20 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   if (binmin <= 1) {
     binmin = 2;
     put = 1;
-    AliInfo("Put the binmax from 1 to 2 to enable the fit");
+    //AliInfo("Put the binmax from 1 to 2 to enable the fit");
   }
   
   //check
   if((projPH->GetBinContent(binmin)-projPH->GetBinError(binmin)) < (projPH->GetBinContent(binmin+1))) {
-    AliInfo("Too many fluctuations at the end!");
+    //AliInfo("Too many fluctuations at the end!");
     put = kFALSE;
   }
   if((projPH->GetBinContent(binmin)+projPH->GetBinError(binmin)) > (projPH->GetBinContent(binmin-1))) {
-    AliInfo("Too many fluctuations at the end!");
+    //AliInfo("Too many fluctuations at the end!");
     put = kFALSE;
   }
   if(TMath::Abs(pente->GetBinContent(binmin+1)) <= 0.0000000000001){
-    AliInfo("No entries for the next bin!");
+    //AliInfo("No entries for the next bin!");
     pente->SetBinContent(binmin,0);
     if(pente->GetEntries() > 0) binmin = (Int_t) pente->GetMinimumBin();
   }
@@ -4873,7 +4873,7 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
        (pente->GetBinContent(binmin+3) <= pente->GetBinContent(binmin+2)) &&
        ((binmin-3) >= TMath::Min(binmax+4, projPH->GetNbinsX())) &&
        (pente->GetBinContent(binmin-3) <= pente->GetBinContent(binmin-2))) {
-      AliInfo("polynome 4 false 2");
+      //AliInfo("polynome 4 false 2");
       put = kFALSE;
     }
     // poly 3
@@ -4991,18 +4991,18 @@ void AliTRDCalibraFit::FitLagrangePoly(TH1* projPH)
   }
   if((binmin == (nbins-1)) && ((binmin-2) < TMath::Min(binmax+4, projPH->GetNbinsX()))) {
     put = kFALSE;
-    AliInfo("At the limit for the drift and not usable!");
+    //AliInfo("At the limit for the drift and not usable!");
   }
 
   //pass
   if((binmin == (nbins-2)) && ((binmin-1) < TMath::Min(binmax+4, projPH->GetNbinsX()))){
     put = kFALSE;
-    AliInfo("For the drift...problem!");
+    //AliInfo("For the drift...problem!");
   }
   //pass but should not happen
   if((binmin <= (nbins-3)) && (binmin < TMath::Min(binmax+6, projPH->GetNbinsX()))){
     put = kFALSE;
-    AliInfo("For the drift...problem!");
+    //AliInfo("For the drift...problem!");
   }
   
   if(put) {

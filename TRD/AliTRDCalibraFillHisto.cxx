@@ -154,6 +154,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fFirstRunVdrift(0)
   ,fVersionVdriftUsed(0) 
   ,fSubVersionVdriftUsed(0)
+  ,fFirstRunExB(0)
+  ,fVersionExBUsed(0) 
+  ,fSubVersionExBUsed(0)
   ,fCalibraMode(new AliTRDCalibraMode())
   ,fDebugStreamer(0)
   ,fDebugLevel(0)
@@ -236,6 +239,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fFirstRunVdrift(c.fFirstRunVdrift)
   ,fVersionVdriftUsed(c.fVersionVdriftUsed) 
   ,fSubVersionVdriftUsed(c.fSubVersionVdriftUsed)
+  ,fFirstRunExB(c.fFirstRunExB)
+  ,fVersionExBUsed(c.fVersionExBUsed) 
+  ,fSubVersionExBUsed(c.fSubVersionExBUsed)
   ,fCalibraMode(0x0)
   ,fDebugStreamer(0)
   ,fDebugLevel(c.fDebugLevel)
@@ -506,6 +512,14 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
       }
     }
     fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit();
+    TString nameee("Ver");
+    nameee += fVersionExBUsed;
+    nameee += "Subver";
+    nameee += fSubVersionExBUsed;
+    nameee += "FirstRun";
+    nameee += fFirstRunExB;
+    nameee += "Nz";
+    fLinearVdriftFit->SetNameCalibUsed(nameee); 
   }
 
   if (fPRF2dOn) {
@@ -576,6 +590,19 @@ Bool_t AliTRDCalibraFillHisto::InitCalDet()
   namee += fCalibraMode->GetNrphi(1);
   
   fPH2d->SetTitle(namee);  
+
+  // title AliTRDCalibraVdriftLinearFit
+  TString nameee("Ver");
+  nameee += fVersionExBUsed;
+  nameee += "Subver";
+  nameee += fSubVersionExBUsed;
+  nameee += "FirstRun";
+  nameee += fFirstRunExB;
+  nameee += "Nz";
+
+  
+  fLinearVdriftFit->SetNameCalibUsed(nameee);  
+
 
 
   return kTRUE;
@@ -1286,8 +1313,8 @@ Bool_t AliTRDCalibraFillHisto::IsPadOn(Int_t detector, Int_t row, Int_t col) con
     return kFALSE;
   }
   
-  if (!cal->IsChamberInstalled(detector)     || 
-       cal->IsChamberMasked(detector)        ||
+  if (!cal->IsChamberGood(detector)     || 
+       cal->IsChamberNoData(detector)        ||
        cal->IsPadMasked(detector,col,row)) {
     return kFALSE;
   }

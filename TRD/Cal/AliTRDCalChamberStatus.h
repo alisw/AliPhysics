@@ -11,6 +11,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include <Rtypes.h>
 #include "TNamed.h"
 
 class TH2D;
@@ -19,21 +20,25 @@ class AliTRDCalChamberStatus : public TNamed {
  public:
 
   enum { kNdet = 540, kNstacks = 90, kNcham = 5, kNsect = 18 };
-  enum { kInstalled = 1, kMasked = 2, kHalfChamberSideAMasked = 3, kHalfChamberSideBMasked = 4};
+  enum { kGood = 0, kNoData = 1, kNoDataHalfChamberSideA = 2, kNoDataHalfChamberSideB = 3, kBadCalibrated = 4};
   
   AliTRDCalChamberStatus();
   AliTRDCalChamberStatus(const Text_t* name, const Text_t* title);
 
   Char_t GetStatus(Int_t det) const          { return fStatus[det];   };
-  void   SetStatus(Int_t det, Char_t status) { fStatus[det] = status; };
+  void   SetStatus(Int_t det, Char_t status);
+  void   UnsetStatusBit(Int_t det, Char_t status);
 
-  Bool_t IsInstalled(Int_t det) const         { return (GetStatus(det) == kInstalled) ? kTRUE : kFALSE; }
-  Bool_t IsMasked(Int_t det) const            { return (GetStatus(det) == kMasked)    ? kTRUE : kFALSE; }
-  Bool_t IsHalfChamberSideAMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideAMasked)    ? kTRUE : kFALSE; }
-  Bool_t IsHalfChamberSideBMasked(Int_t det) const     { return (GetStatus(det) == kHalfChamberSideBMasked)    ? kTRUE : kFALSE; }
+  Bool_t IsGood(Int_t det) const             { return TESTBIT(fStatus[det], kGood);                   }
+  Bool_t IsNoData(Int_t det) const           { return TESTBIT(fStatus[det], kNoData);                 }
+  Bool_t IsNoDataSideA(Int_t det) const      { return TESTBIT(fStatus[det], kNoDataHalfChamberSideA); }
+  Bool_t IsNoDataSideB(Int_t det) const      { return TESTBIT(fStatus[det], kNoDataHalfChamberSideB); }
+  Bool_t IsBadCalibrated(Int_t det) const    { return TESTBIT(fStatus[det], kBadCalibrated);          }
 
- TH2D *Plot(Int_t sm, Int_t rphi);          // Plot fStatus for sm and halfchamberside  
- TH2D *Plot(Int_t sm);                     // Plot fStatus for sm 
+ TH2D *Plot(Int_t sm, Int_t rphi);           // Plot fStatus for sm and halfchamberside  
+ TH2D *PlotNoData(Int_t sm, Int_t rphi);     // Plot data status for sm and halfchamberside  
+ TH2D *PlotBadCalibrated(Int_t sm, Int_t rphi); // Plot calibration status for sm and halfchamberside  
+ TH2D *Plot(Int_t sm);                       // Plot fStatus for sm 
 
 
  protected:

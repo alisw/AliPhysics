@@ -17,6 +17,8 @@
 #include <TH2.h>
 #endif
 
+#include <AliTRDtrackV1.h>
+
 class AliRawReader;
 
 class AliTRDCalChamberStatus;
@@ -36,10 +38,11 @@ public:
 
   AliTRDCalibChamberStatus& operator = (const  AliTRDCalibChamberStatus &source);
 
+  void ProcessTrack(AliTRDtrackV1 * trdTrack);
   void ProcessEvent(AliRawReader    *rawReader, Int_t nevents_physics);
     
   void Init();
-  void AnalyseHisto();
+  void AnalyseHisto(Int_t limit=200);
   void CheckEORStatus(AliTRDCalDCSv2 *calDCS);
 
   void Add(AliTRDCalibChamberStatus *calibChamberStatus);
@@ -53,6 +56,7 @@ public:
   THnSparseI *GetSparseDebug()   const {return fHnSparseDebug;};
   THnSparseI *GetSparseMCM()     const {return fHnSparseMCM;};
   
+  void SetSparseI(THnSparseI *sparse)       { fHnSparseI=sparse; }
 
   AliTRDCalChamberStatus *GetCalChamberStatus() const {return fCalChamberStatus;};
 

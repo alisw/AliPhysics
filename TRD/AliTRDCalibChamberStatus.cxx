@@ -53,6 +53,8 @@
 #include "./Cal/AliTRDCalDCSFEEv2.h"
 
 #include "AliTRDrawStream.h"
+#include "AliTRDseedV1.h"
+#include "AliTRDcluster.h"
 
 #ifdef ALI_DATE
 #include "event.h"
@@ -264,6 +266,49 @@ void AliTRDCalibChamberStatus::Init()
 
 }
 //_____________________________________________________________________
+void AliTRDCalibChamberStatus::ProcessTrack(AliTRDtrackV1 * trdTrack)
+{
+  //
+  // Track Processing to get half chamber status
+  //
+  //
+  
+  
+  const AliTRDseedV1 *tracklet = 0x0;
+  AliTRDcluster *cluster;
+  //////////////////////////////////////
+  // Loop tracklets
+  ///////////////////////////////////// 
+  for(Int_t itr = 0; itr < 6; ++itr){
+	
+    if(!(tracklet = trdTrack->GetTracklet(itr))) continue;
+    if(!tracklet->IsOK()) continue;
+  
+    // Loop on clusters
+    for(int ic=0; ic<AliTRDseedV1::kNtb; ++ic){
+      if((cluster = tracklet->GetClusters(ic))) {
+	//printf("ic %d\n",ic);
+	break;
+      }
+    }
+    if(!cluster) continue;
+    
+    Int_t det     = cluster->GetDetector();	  
+    Int_t layer   = AliTRDgeometry::GetLayer(det);
+    Int_t sm      = AliTRDgeometry::GetSector(det);
+    Int_t stac    = AliTRDgeometry::GetStack(det);
+    
+    Int_t col     = cluster->GetPadCol();
+    Int_t iMcm    = (Int_t)(col/18);   // current group of 18 col pads
+    Double_t rphi = 0.5;
+    if(iMcm > 3) rphi = 1.5;
+	  
+    Double_t val[4] = {sm,layer,stac,rphi}; 
+    if(fHnSparseI->GetBinContent((const Int_t*)val)<2147483646) fHnSparseI->Fill(&val[0]); 
+  }
+  
+}
+//_____________________________________________________________________
 void AliTRDCalibChamberStatus::ProcessEvent(AliRawReader * rawReader, Int_t nevents_physics)
 {
   //
@@ -365,7 +410,7 @@ Bool_t AliTRDCalibChamberStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
 
 }
 //_____________________________________________________________________
-void AliTRDCalibChamberStatus::AnalyseHisto() /*FOLD00*/
+void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
 {
   //
   //  Create the AliTRDCalChamberStatus according to the fHnSparseI
@@ -374,59 +419,57 @@ void AliTRDCalibChamberStatus::AnalyseHisto() /*FOLD00*/
   if(fCalChamberStatus) delete fCalChamberStatus;
   fCalChamberStatus = new AliTRDCalChamberStatus();
 
-  // Check if enough events to say something
-  if(fCounterEventNotEmpty < 200) {
-    // Say all installed
-    for (Int_t ism=0; ism<18; ism++) {
-      for (Int_t ipl=0; ipl<6; ipl++) {
-	for (Int_t istack=0; istack<5; istack++) {
-	  // layer, stack, sector
-	  Int_t det = AliTRDgeometry::GetDetector(ipl,istack,ism);
-	  fCalChamberStatus->SetStatus(det,1);
-	}
-      }
+  // Check if enough events/tracklets per halfchamber to say something
+  Double_t mean=0.0; //number of tracklets per HCS
+  Int_t coord2[4];
+  for(Int_t bin = 0; bin < fHnSparseI->GetNbins(); bin++) {
+    //if(fHnSparseI->GetBinContent(bin,coord2)==0.0) printf(" bin shouldnt be empty!!\n");
+    mean+=fHnSparseI->GetBinContent(bin,coord2);
+  }
+  mean/=fHnSparseI->GetNbins();
+  //printf(" mean tracklets per halfchamber %f \n",mean);
+  if((fCounterEventNotEmpty < limit) && (mean < limit)) {
+    // Say all good
+    for (Int_t idet=0; idet<540; idet++) {
+      fCalChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kGood);
     }
     return;
   }
 
-  // Mask out all chambers
-  for (Int_t ism=0; ism<18; ism++) {
-    for (Int_t ipl=0; ipl<6; ipl++) {
-      for (Int_t istack=0; istack<5; istack++) {
-	// layer, stack, sector
-	Int_t det = AliTRDgeometry::GetDetector(ipl,istack,ism);
-	fCalChamberStatus->SetStatus(det,2);
-      }
-    }
+  // set all chambers to NoData
+  for (Int_t idet=0; idet<540; idet++) {
+    fCalChamberStatus->SetStatus(idet,AliTRDCalChamberStatus::kNoData);
   }
 
-  // Unmask good chambers 
+  // set status according to fHnSparseI 
   Int_t coord[4];
   for(Int_t bin = 0; bin < fHnSparseI->GetNbins(); bin++) {
     
-    fHnSparseI->GetBinContent(bin,coord);
+    Double_t content = fHnSparseI->GetBinContent(bin,coord);
     // layer, stack, sector
     Int_t detector = AliTRDgeometry::GetDetector(coord[1]-1,coord[2]-1,coord[0]-1);
-
+    //
+    //printf("Number of entries for detector %d: %f\n",detector,content);
     //
     // Check which halfchamber side corresponds to the bin number (0=A, 1=B)
     // Change the status accordingly
     //
-
-    switch(fCalChamberStatus->GetStatus(detector)) 
-      {    
-      case 1: break;  // no changes
-      case 2: 
-	if(coord[3]-1==0) {
-	  fCalChamberStatus->SetStatus(detector,4); break;      // only SideB is masked
-	}
-	else {
-	  fCalChamberStatus->SetStatus(detector,3); break;      // only SideA is masked
-	}
-      case 3:  fCalChamberStatus->SetStatus(detector,1); break;  // unmask SideA
-      case 4:  fCalChamberStatus->SetStatus(detector,1); break;  // unmask SideB
-      }
+    if(coord[3]-1==0) { // HCS-A
+      fCalChamberStatus->SetStatus(detector,AliTRDCalChamberStatus::kGood);
+      fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoDataHalfChamberSideA); // A has data
+      //fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoData); 
+    }
+    else { //HCS-B
+      fCalChamberStatus->SetStatus(detector,AliTRDCalChamberStatus::kGood);
+      fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoDataHalfChamberSideB); // B has data
+      //fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoData); 
+    }
   }
+
+  // printf
+  //for (Int_t idet=0; idet<540; idet++) {
+  //  if(fCalChamberStatus->IsNoData(idet)) printf("No Data: chamber %d\n",idet);
+  //}
 
 
 }

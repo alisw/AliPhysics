@@ -46,6 +46,7 @@ ClassImp(AliTRDCalibraVdriftLinearFit) /*FOLD00*/
 AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
   TObject(),
   fVersion(0),
+  fNameCalibUsed(""),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540)
@@ -58,6 +59,7 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
 AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVdriftLinearFit &ped) : /*FOLD00*/
   TObject(ped),
   fVersion(ped.fVersion),
+  fNameCalibUsed(ped.fNameCalibUsed),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540)
@@ -84,6 +86,7 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
 AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja) : /*FOLD00*/
   TObject(),
   fVersion(0),
+  fNameCalibUsed(""),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540)

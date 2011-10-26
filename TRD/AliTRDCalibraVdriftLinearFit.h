@@ -19,6 +19,7 @@
 class TObjArray;
 class TH2S;
 class TTreeSRedirector;
+class TString;
 
 class AliTRDCalibraVdriftLinearFit : public TObject {
 
@@ -35,6 +36,8 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
   void            Update(Int_t detector, Float_t tnp, Float_t pars1);
   void            FillPEArray();
+  void            SetNameCalibUsed(const char*name)          { fNameCalibUsed = name;};
+  const char*     GetNameCalibUsed() const                   { return fNameCalibUsed;};
   void            Add(const AliTRDCalibraVdriftLinearFit *ped);
   TH2S           *GetLinearFitterHisto(Int_t detector, Bool_t force=kFALSE);
   TH2S           *GetLinearFitterHistoForce(Int_t detector);
@@ -49,13 +52,14 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
  private:
    
   Int_t           fVersion;                 // Version of the object
+  TString         fNameCalibUsed;           // Info of the version, subversion, firstrun of the calib used
 
   TObjArray       fLinearFitterHistoArray;  // TObjArray of histo2D for debugging Linear Fitters
   TObjArray       fLinearFitterPArray;      // Array of result parameters from linear fitters for the detectors
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
 
   
-  ClassDef(AliTRDCalibraVdriftLinearFit,1)  // Online Vdrift calibration
+  ClassDef(AliTRDCalibraVdriftLinearFit,2)  // Online Vdrift calibration
 
 };
 

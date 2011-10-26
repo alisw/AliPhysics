@@ -107,7 +107,10 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetFirstRunVdrift(Int_t firstRunVdrift)                   { fFirstRunVdrift = firstRunVdrift;   }
 	  void     SetVersionVdriftUsed(Int_t versionVdriftUsed)             { fVersionVdriftUsed = versionVdriftUsed;   }
 	  void     SetSubVersionVdriftUsed(Int_t subVersionVdriftUsed)       { fSubVersionVdriftUsed = subVersionVdriftUsed;   }
-	
+	  void     SetFirstRunExB(Int_t firstRunExB)                         { fFirstRunExB = firstRunExB;   }
+	  void     SetVersionExBUsed(Int_t versionExBUsed)                   { fVersionExBUsed = versionExBUsed;   }
+	  void     SetSubVersionExBUsed(Int_t subVersionExBUsed)             { fSubVersionExBUsed = subVersionExBUsed;   }
+	  
   
 	  Bool_t   GetPH2dOn() const                                         { return fPH2dOn;                 }
           Bool_t   GetCH2dOn() const                                         { return fCH2dOn;                 }
@@ -214,6 +217,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Int_t    fFirstRunVdrift;         // FirstRunVdrift 
 	  Int_t    fVersionVdriftUsed;      // VersionVdriftUsed 
 	  Int_t    fSubVersionVdriftUsed;   // SubVersionVdriftUsed
+	  Int_t    fFirstRunExB;            // FirstRunExB 
+	  Int_t    fVersionExBUsed;         // VersionExBUsed 
+	  Int_t    fSubVersionExBUsed;      // SubVersionExBUsed
   // Calibration mode
 	  AliTRDCalibraMode *fCalibraMode;  // Calibration mode
 

@@ -28,6 +28,7 @@ class AliTRDCalibraFillHisto;
 class AliTRDcluster;
 class AliESDtrackCuts;
 class AliTRDCalDet;
+class AliTRDCalibChamberStatus;
 
 #include "TObjString.h"
 #include "AliAnalysisTaskSE.h" 
@@ -44,7 +45,6 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   virtual Bool_t Load(const Char_t *filename);
   virtual Bool_t Load(TList *lister);
-  void           Plot();
   virtual Long64_t  Merge(TCollection *li);
   void           AddTask(const AliTRDCalibTask * calibTask);
   Bool_t         FindP1TrackPHtrackletV1Test(const AliTRDseedV1 *tracklet, Int_t nbclusters);
@@ -107,6 +107,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   TList       *fListHist;                        //! list of histograms
 
   AliTRDCalibraFillHisto *fTRDCalibraFillHisto;  //! calibration analyse object
+  AliTRDCalibChamberStatus *fTRDChamberStatus;   //! calibration chamber status
 
   TH1I        *fNEvents;                         //! counter  
   TH1I        *fNEventsInput;                    //! counter  
@@ -177,6 +178,9 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Int_t       fFirstRunVdrift;                   // FirstRunVdriftUsed 
   Int_t       fVersionVdriftUsed;                // VersionVdriftUsed 
   Int_t       fSubVersionVdriftUsed;             // SubVersionVdriftUsed
+  Int_t       fFirstRunExB;                      // FirstRunExBUsed 
+  Int_t       fVersionExBUsed;                   // VersionExBUsed 
+  Int_t       fSubVersionExBUsed;                // SubVersionExBUsed
 
   AliTRDCalDet *fCalDetGain;                     // Calib object gain
 
