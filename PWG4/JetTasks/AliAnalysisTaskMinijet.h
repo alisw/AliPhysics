@@ -99,6 +99,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   AliAODEvent *fAODEvent;                   //! aod event
   Int_t        fNMcPrimAccept;              // global variable for mc multiplucity
   Int_t        fNRecAccept;                 // global variable for rec multiplucity
+  Int_t        fNMcPrimAcceptTracklet;      // global variable for mc multiplucity
+  Int_t        fNRecAcceptTracklet;         // global variable for rec multiplucity
   Float_t      fVzEvent;                    // global variable for rec vertex position
   Double_t     fMeanPtRec;                  // global variable for rec mean pt
   Double_t     fLeadingPtRec;               // global variable for rec mean pt
@@ -112,6 +114,10 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TProfile   *fPNmcNch;                     // N mc - N ch rec
   TH2F       *fNmcNchVtx;                   // N mc - N ch rec for events with reconstructed vertex
   TProfile   *fPNmcNchVtx;                  // N mc - N ch rec for events with reconstructed vertex
+  TH2F       *fNmcNchTracklet;              // N mc - N ch rec
+  TProfile   *fPNmcNchTracklet;             // N mc - N ch rec
+  TH2F       *fNmcNchVtxTracklet;           // N mc - N ch rec for events with reconstructed vertex
+  TProfile   *fPNmcNchVtxTracklet;          // N mc - N ch rec for events with reconstructed vertex
   TH2F       *fChargedPi0;                  // charged versus charged+Pi0
 
   THnSparse   *fMapSingleTrig[6];           //! multi-dim histo for trigger track properties
