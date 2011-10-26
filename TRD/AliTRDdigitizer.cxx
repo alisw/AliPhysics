@@ -653,8 +653,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
   for (Int_t det = 0; det < kNdet; det++) {
 
     // Detectors that are switched off, not installed, etc.
-    if (( calibration->IsChamberInstalled(det)) &&
-	(!calibration->IsChamberMasked(det))    &&
+    if ((!calibration->IsChamberNoData(det))    &&
         ( fGeo->ChamberInGeometry(det))         &&
         (nhit[det] > 0)) {
 
