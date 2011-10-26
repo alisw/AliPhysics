@@ -850,6 +850,17 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
   //histo.SetFillColor(color);
 
   histo.SetStats(kFALSE);
-    
-  histo.GetListOfFunctions()->Add(text);
+  
+  TList* lst = histo.GetListOfFunctions();
+  if(lst){
+     TObject *stats = lst->FindObject("stats");
+     lst->Remove(stats);
+     TObject *obj;
+     while ((obj = lst->First())) {
+       while(lst->Remove(obj)) { }
+       delete obj;
+    }
+    if(stats) lst->Add(stats);
+  }   
+  lst->Add(text);
 }
