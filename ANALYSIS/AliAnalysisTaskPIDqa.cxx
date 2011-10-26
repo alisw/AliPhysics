@@ -266,9 +266,10 @@ void AliAnalysisTaskPIDqa::FillTPCqa()
     // not that nice. status bits not in virtual interface
     // TPC refit + ITS refit + TPC pid
     if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
-        !( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
-        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) ) continue;
-    
+        !( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ) continue;
+
+    // The TPC pid cut removes the light nuclei (>5 sigma from proton line)
+    //||        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  )
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
     if (track->GetTPCNclsF()>0) {
@@ -313,7 +314,7 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
     // TPC refit + ITS refit + TPC pid + TRD out
     if (!( (status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !( (status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
-        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) ||
+//         !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid  ) || //removes light nuclei. So it is out for the moment
         !( (status & AliVTrack::kTRDout  ) == AliVTrack::kTRDout  )) continue;
     
     Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
@@ -343,9 +344,10 @@ void AliAnalysisTaskPIDqa::FillTRDqa()
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillTOFqa()
 {
+  //
+  // Fill TOF information
+  //
   AliVEvent *event=InputEvent();
-
-
 
   Int_t ntracks=event->GetNumberOfTracks();
   Int_t tracksAtTof = 0;
@@ -391,19 +393,19 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
       h->Fill(mom,sig);
     }
 
-    Double_t mask = (Double_t)fPIDResponse->GetTOFResponse().GetStartTimeMask(mom) + 0.5;
-    ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill(mask);
+    Int_t mask = fPIDResponse->GetTOFResponse().GetStartTimeMask(mom);
+    ((TH1F*)fListQAtof->FindObject("hStartTimeMask_TOF"))->Fill((Double_t)(mask+0.5));
 
-    if (mom >= 1.0 && mom <= 2.0 ) {
-      Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kKaon);
+    if (mom >= 0.75 && mom <= 1.25 ) {
+      Double_t nsigma= fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)AliPID::kPion);
       if (mask == 0) {
-	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-Fill"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Pion_T0-Fill"))->Fill(nsigma);
       } else if (mask == 1) {
-	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-TOF"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Pion_T0-TOF"))->Fill(nsigma);
       } else if ( (mask == 2) || (mask == 4) || (mask == 6) ) {
-	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-T0"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Pion_T0-T0"))->Fill(nsigma);
       } else {
-	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Kaon_T0-Best"))->Fill(nsigma);
+	((TH1F*)fListQAtof->FindObject("hNsigma_TOF_Pion_T0-Best"))->Fill(nsigma);
       }
     }
 
@@ -427,7 +429,6 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
     Int_t mask = fPIDResponse->GetTOFResponse().GetStartTimeMask(5.);
     if (mask & 0x1) ((TH1F*)fListQAtof->FindObject("hT0MakerEff"))->Fill(tracksAtTof);
   }
-
 }
 
 
@@ -498,16 +499,55 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
   //
   // Fill PID qa histograms for the HMPID
   //
-
-  /*
+  
   AliVEvent *event=InputEvent();
   
   Int_t ntracks=event->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
     
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    // TPC refit + ITS refit +
+    // TOF out + TOFpid +
+    // kTIME
+    if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
+        !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
+        !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
+        !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
+
+    Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+    if (track->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
+    }
+
+    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
+    
+    Double_t mom = track->P();
+    Double_t ckovAngle = track->GetHMPIDsignal();
+    
+    Double_t nSigmaTOF[3]; 
+    
+    TH1F *h[3];
+    
+    for (Int_t ispecie=2; ispecie<AliPID::kSPECIES; ++ispecie){
+      //TOF nSigma
+      nSigmaTOF[ispecie]=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+      h[ispecie-2] = (TH1F*)fListQAhmpid->At(ispecie-2);}
+      
+    if(TMath::Abs(nSigmaTOF[0])<2)                                                              h[0]->Fill(mom,ckovAngle);
+    
+    if(TMath::Abs(nSigmaTOF[1])<2 && TMath::Abs(nSigmaTOF[0])>3)                                h[1]->Fill(mom,ckovAngle);
+
+    if(TMath::Abs(nSigmaTOF[2])<2 && TMath::Abs(nSigmaTOF[1])>3 && TMath::Abs(nSigmaTOF[0])>3)  h[2]->Fill(mom,ckovAngle);
+      
   }
-  */
+  
 }
 
 //______________________________________________________________________________
@@ -534,7 +574,7 @@ void AliAnalysisTaskPIDqa::FillTPCTOFqa()
     // kTIME
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
-        !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid ) ||
+//         !( (status & AliVTrack::kTPCpid  ) == AliVTrack::kTPCpid ) || //removes light nuclei, so it is out for the moment
         !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
         !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
         !((status & AliVTrack::kTIME    ) == AliVTrack::kTIME    ) ) continue;
@@ -713,13 +753,13 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   }
 
   // for Kaons PID we differentiate on Time Zero
-  TH1F *hnSigT0Fill = new TH1F("hNsigma_TOF_Kaon_T0-Fill","TOF n#sigma (Kaon) T0-FILL [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0Fill = new TH1F("hNsigma_TOF_Pion_T0-Fill","TOF n#sigma (Pion) T0-FILL [0.75-1.25. GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0Fill);
-  TH1F *hnSigT0T0 = new TH1F("hNsigma_TOF_Kaon_T0-T0","TOF n#sigma (Kaon) T0-T0 [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0T0 = new TH1F("hNsigma_TOF_Pion_T0-T0","TOF n#sigma (Pion) T0-T0 [0.75-1.25 GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0T0);
-  TH1F *hnSigT0TOF = new TH1F("hNsigma_TOF_Kaon_T0-TOF","TOF n#sigma (Kaon) T0-TOF [1.-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0TOF = new TH1F("hNsigma_TOF_Pion_T0-TOF","TOF n#sigma (Pion) T0-TOF [0.75-1.25 GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0TOF);
-  TH1F *hnSigT0Best = new TH1F("hNsigma_TOF_Kaon_T0-Best","TOF n#sigma (Kaon) T0-Best [1-2. GeV/c]",200,-10,10);
+  TH1F *hnSigT0Best = new TH1F("hNsigma_TOF_Pion_T0-Best","TOF n#sigma (Pion) T0-Best [0.75-1.25 GeV/c]",200,-10,10);
   fListQAtof->Add(hnSigT0Best);
 
   TH2F *hSig = new TH2F("hSigP_TOF",
@@ -780,6 +820,17 @@ void AliAnalysisTaskPIDqa::SetupHMPIDqa()
   //
   // Create the HMPID qa objects
   //
+  
+  TH2F *hCkovAnglevsMomPion   = new TH2F("hCkovAnglevsMom_pion",  "Cherenkov angle vs momnetum for pions",500,0,5.,500,0,1);
+  fListQAhmpid->Add(hCkovAnglevsMomPion);
+  
+  TH2F *hCkovAnglevsMomKaon   = new TH2F("hCkovAnglevsMom_kaon",  "Cherenkov angle vs momnetum for kaons",500,0,5.,500,0,1);
+  fListQAhmpid->Add(hCkovAnglevsMomKaon);
+  
+  TH2F *hCkovAnglevsMomProton = new TH2F("hCkovAnglevsMom_proton","Cherenkov angle vs momnetum for protons",500,0,5.,500,0,1);
+  fListQAhmpid->Add(hCkovAnglevsMomProton);
+  
+  
 }  
 
 //______________________________________________________________________________
