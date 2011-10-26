@@ -1465,8 +1465,10 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
   /*!dx all tracks low momenta*/
   iproj = 2;
-  hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInXl", mc?"MC":""), "TrackIn :: #Deltax{p_{t}[GeV/c]<0.8}");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+  if(hp[iproj].fH){
+    hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInXl", mc?"MC":""), "TrackIn :: #Deltax{p_{t}[GeV/c]<0.8}");
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+  }
   /*!dphi negative tracks all momenta*/
   iproj =1;
   hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhn", mc?"MC":""), "TrackIn[-]:: #Delta#phi");
