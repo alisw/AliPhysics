@@ -71,6 +71,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fAODEvent(0),
       fNMcPrimAccept(0),
       fNRecAccept(0),
+      fNMcPrimAcceptTracklet(0),
+      fNRecAcceptTracklet(0),
       fVzEvent(0),
       fMeanPtRec(0),
       fLeadingPtRec(0),
@@ -82,6 +84,10 @@ ClassImp(AliAnalysisTaskMinijet)
       fPNmcNch(0),
       fNmcNchVtx(0),
       fPNmcNchVtx(0),
+      fNmcNchTracklet(0),
+      fPNmcNchTracklet(0),
+      fNmcNchVtxTracklet(0),
+      fPNmcNchVtxTracklet(0),
       fChargedPi0(0)
 {
 
@@ -162,6 +168,11 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fPNmcNch = new TProfile("pNmcNch", "pNmcNch", 100,-0.5,99.5);
     fNmcNchVtx = new TH2F("fNmcNchVtx", "fNmcNchVtx", 100,-0.5,99.5,100,-0.5,99.5);
     fPNmcNchVtx = new TProfile("pNmcNchVtx", "pNmcNchVtx", 100,-0.5,99.5);
+
+    fNmcNchTracklet = new TH2F("fNmcNchTracklet", "fNmcNchTracklet", 100,-0.5,99.5,100,-0.5,99.5);
+    fPNmcNchTracklet = new TProfile("pNmcNchTracklet", "pNmcNchTracklet", 100,-0.5,99.5);
+    fNmcNchVtxTracklet = new TH2F("fNmcNchVtxTracklet", "fNmcNchVtxTracklet", 100,-0.5,99.5,100,-0.5,99.5);
+    fPNmcNchVtxTracklet = new TProfile("pNmcNchVtxTracklet", "pNmcNchVtxTracklet", 100,-0.5,99.5);
 
   }
 
@@ -352,10 +363,16 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
   if(fUseMC){
     fHists->Add(fHistPtMC); 
+    
     fHists->Add(fNmcNch); 
     fHists->Add(fPNmcNch); 
     fHists->Add(fNmcNchVtx); 
     fHists->Add(fPNmcNchVtx); 
+    
+    fHists->Add(fNmcNchTracklet); 
+    fHists->Add(fPNmcNchTracklet); 
+    fHists->Add(fNmcNchVtxTracklet); 
+    fHists->Add(fPNmcNchVtxTracklet); 
   }
   fHists->Add(fChargedPi0);
   
@@ -411,7 +428,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
   // step 1 =  Triggered events, all                            mc primary particles,                    true multiplicity
   // step 0 =  All events,       all                            mc primary particles,                    true multiplicity
 
-  // can be changed with new AOD definition -> AOD076
+  // multiplicity selection can be changed with new AOD definition -> AOD076 -> trigger eff is possible
+  // trigger efficiency has not influence on results
 
   if(fDebug) Printf("UserExec: Event starts");
 
@@ -453,6 +471,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
   //reset values
   fNMcPrimAccept=0;// number of accepted primaries
   fNRecAccept=0;   // number of accepted tracks
+  fNMcPrimAcceptTracklet=0;// number of accepted primaries (no pt cut)
+  fNRecAcceptTracklet=0;   // number of accepted tracklets
   
   // instead of task->SelectCollisionCandidate(mask) in AddTask macro
   Bool_t isSelected = (((AliInputEventHandler*)
@@ -521,6 +541,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
       //reset values
       fNMcPrimAccept=0;// number of accepted primaries
       fNRecAccept=0;   // number of accepted tracks
+      fNMcPrimAcceptTracklet=0;// number of accepted primaries (no pt cut)
+      fNRecAcceptTracklet=0;   // number of accepted tracklets
 	
       if(CheckEvent(false)){// all events, with and without reconstucted vertex
 	if(fESDEvent){
@@ -673,7 +695,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESD( vector<Float_t> &ptArray,  vector<Fl
 
 
   fVzEvent=vtxSPD->GetZ(); // needed for correction map
-  if(step==5 || step ==2) fNRecAccept=nAcceptedTracks;
+  if(step==5 || step ==2) {
+    fNRecAccept=nAcceptedTracks;
+    fNRecAcceptTracklet=ntrackletsAccept;
+  }
   return fNRecAccept;
 
 
@@ -938,16 +963,20 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
     nTracksTracklets.push_back(nAllPrimaries-nChargedPrimaries); // only neutral
   }
 
-
-  fNMcPrimAccept=nChargedPrimaries;
+  fNMcPrimAccept = nChargedPrimaries;
+  fNMcPrimAcceptTracklet = nPseudoTracklets;
 
   if(step==1){
     fNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
     fPNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
+    fNmcNchTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
+    fPNmcNchTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
   }
   if(step==3){
     fNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
     fPNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
+    fNmcNchVtxTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
+    fPNmcNchVtxTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
   }
   
   fVzEvent= vzMC;
@@ -1036,7 +1065,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventAOD( vector<Float_t> &ptArray,  vector<Fl
     
   
   fVzEvent= vzAOD;
-  if(step==5 || step==2)fNRecAccept = nAcceptedTracks; // needed for MC case //step5 = TrigVtxRecNrec
+  if(step==5 || step==2){
+    fNRecAccept = nAcceptedTracks; // needed for MC case //step5 = TrigVtxRecNrec
+    fNRecAcceptTracklet = ntrackletsAccept; // needed for MC case //step5 = TrigVtxRecNrec
+  }
   return fNRecAccept; // at the moment, always return reconstructed multiplicity
 
 }   
@@ -1255,14 +1287,19 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<
   
   fVzEvent= vzMC;
   fNMcPrimAccept = nChargedPrim;
+  fNMcPrimAcceptTracklet = nPseudoTracklets;
 
   if(step==1){ // step 1 = Trig All Mc Nmc
     fNmcNch->Fill( fNMcPrimAccept,fNRecAccept);
     fPNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
+    fNmcNchTracklet->Fill( fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
+    fPNmcNchTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
   }
   if(step==3){ // step 3 = Trig vtx Mc
     fNmcNchVtx->Fill( fNMcPrimAccept,fNRecAccept);
     fPNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
+    fNmcNchVtxTracklet->Fill( fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
+    fPNmcNchVtxTracklet->Fill(fNMcPrimAcceptTracklet,fNRecAcceptTracklet);
   }
   return fNRecAccept; // rec value from step 5 or step 2
  
