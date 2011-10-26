@@ -6,6 +6,8 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TArrayF.h"
+#include "TF1.h"
+#include "TRandom.h"
 
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
@@ -78,7 +80,8 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fDCAxyCut(-1),
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
-  fNClustersTPCCut(-1){
+  fNClustersTPCCut(-1),
+  fAcceptanceParameterization(0) {
   // Constructor
 
   // Define input and output slots here
@@ -706,6 +709,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    if( track->Eta() < fEtaMin || track->Eta() > fEtaMax)  
 	      continue;
 	    
+	    if(fAcceptanceParameterization) {
+	      Double_t gRandomNumber = gRandom->Rndm();
+	      if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
+		continue;
+	    }
+	      
 	    array->Add(track);
 	    
 	    // fill charge vector
