@@ -56,9 +56,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void           FillSelectedClusterHistograms(AliVCluster* cluster, const Int_t tag);
     
   void           FillWeightHistograms(AliVCluster *clus);
-  
-  AliVCluster*   FindCluster(TObjArray* clusters, const Int_t id, Int_t & iclus, const Int_t first=0) ;
-  
+    
   void           MakeInvMassInCalorimeter() ;
   
   void           MakeInvMassInCalorimeterAndCTS() ;
