@@ -17,6 +17,7 @@
 #include "AliITSVertexer3DTapan.h"
 #include "AliESDVertex.h"
 #include "AliMeanVertex.h"
+//#include "AliCodeTimer.h"
 
 const Int_t AliITSMeanVertexer::fgkMaxNumOfEvents = 10000;
 ClassImp(AliITSMeanVertexer)
@@ -28,13 +29,8 @@ ClassImp(AliITSMeanVertexer)
 // is built and saved                                                //
 // Individual vertices can be optionally stored                      //
 // Origin: M.Masera  (masera@to.infn.it)                             //
-// Usage:
-// AliITSMeanVertexer mv("RawDataFileName");
-// mv.SetGeometryFileName("FileWithGeometry.root"); // def. geometry.root
-// ....  optional setters ....
-// mv.Reconstruct();  // SPD local reconstruction
-// mv.DoVertices(); 
-// Resulting AliMeanVertex object is stored in a file named fMVFileName
+// Usage:                                                            //
+// Class used by the ITSSPDVertexDiamondda.cxx detector algorithm    //
 ///////////////////////////////////////////////////////////////////////
 
 /* $Id$ */
@@ -57,7 +53,12 @@ fIndex(0),
 fErrXCut(0.),
 fRCut(0.),
 fLowSPD0(0),
-fHighSPD0(0)
+fHighSPD0(0),
+fMultH(NULL),
+fErrXH(NULL),
+fMultHa(NULL),
+fErrXHa(NULL),
+fDistH(NULL)
 {
   // Default Constructor
   Reset();
@@ -74,6 +75,13 @@ fHighSPD0(0)
   fVertexZ  = new TH1F("VertexZ"," Longitudinal Vertex Profile",
 		       2*(Int_t)(zLimit/zDelta),-zLimit,zLimit);
   fVertexZ->SetXTitle("Z , cm");
+  fErrXH = new TH1F("errorX","Error X - before cuts",50,0.,49.);
+  fMultH = new TH1F("multh","mult on layer 1 before cuts",100,0.,300.);
+  fErrXHa = new TH1F("errorXa","Error X - after Filter",50,0.,49.);
+  fErrXHa->SetLineColor(kRed);
+  fMultHa = new TH1F("multha","mult on layer 1 - after Filter",100,0.,300.);
+  fMultHa->SetLineColor(kRed);
+  fDistH = new TH1F("disth","distance (mm)",100,0.,30.);
   fClu0 = new UInt_t [fgkMaxNumOfEvents];
   for(Int_t i=0;i<fgkMaxNumOfEvents;i++)fClu0[i]=0;
   fAccEvents.ResetAllBits(kTRUE);
@@ -147,6 +155,11 @@ AliITSMeanVertexer::~AliITSMeanVertexer() {
   delete fDetTypeRec;
   delete fVertexXY;
   delete fVertexZ;
+  delete fMultH;
+  delete fErrXH;
+  delete fMultHa;
+  delete fErrXHa;
+  delete fDistH;
   delete fVertexer;
 }
 
@@ -157,6 +170,13 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
   // returns true in case a vertex is found
 
   // Run SPD cluster finder
+  static Int_t evcount = -1;
+  if(evcount <0){
+    evcount++;
+    AliInfo(Form("Low and high cuts on SPD L0 clusters %d , %d \n",fLowSPD0,fHighSPD0));
+    AliInfo(Form("Reconstruct: cut on errX %f \n",fErrXCut));
+  }
+  //  AliCodeTimerAuto("",0);
   AliITSRecPointContainer::Instance()->PrepareToRead();
   TTree* clustersTree = new TTree("TreeR", "Reconstructed Points Container"); //make a tree
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
@@ -171,12 +191,30 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
     AliITSRecPointContainer* rpcont= AliITSRecPointContainer::Instance();
     nl1=rpcont->GetNClustersInLayerFast(1);
     if(Filter(vtx,nl1)) vtxOK = kTRUE;
+    /*    if(vtx){
+      if(vtxOK){
+	printf("The vertex is OK\n");
+      }
+      else {
+	printf("The vertex is NOT OK\n");
+      }
+      vtx->PrintStatus();
+    }
+    else {
+      printf("The vertex was not reconstructed\n");
+      }  */
   }
   delete clustersTree;
   if (vtxOK && fMode){
     new(fVertArray[fIndex])AliESDVertex(*vtx);
     fClu0[fIndex]=nl1;
+    fAccEvents.SetBitNumber(fIndex);
     fIndex++;
+    if(fIndex>=fgkMaxNumOfEvents){
+      if(ComputeMean(kFALSE)){
+	if(ComputeMean(kTRUE))AliInfo("Mean vertex computed");
+      }
+    }
   }
   if (vtx) delete vtx;
 
@@ -218,6 +256,11 @@ void AliITSMeanVertexer::WriteVertices(const char *filename){
 
   fVertexXY->Write(fVertexXY->GetName(),TObject::kOverwrite);
   fVertexZ->Write(fVertexZ->GetName(),TObject::kOverwrite);
+  fMultH->Write(fMultH->GetName(),TObject::kOverwrite);
+  fErrXH->Write(fErrXH->GetName(),TObject::kOverwrite);
+  fMultHa->Write(fMultHa->GetName(),TObject::kOverwrite);
+  fErrXHa->Write(fErrXHa->GetName(),TObject::kOverwrite);
+  fDistH->Write(fDistH->GetName(),TObject::kOverwrite);
   fmv.Close();
 }
 
@@ -231,10 +274,13 @@ Bool_t AliITSMeanVertexer::Filter(AliESDVertex *vert,UInt_t mult){
   Int_t ncontr = vert->GetNContributors();
   AliDebug(1,Form("Number of contributors = %d",ncontr));
   Double_t ex = vert->GetXRes();
+  fMultH->Fill(mult);
+  fErrXH->Fill(ex*1000.);
   if(ncontr>fFilterOnContributors && (mult>fLowSPD0 && mult<fHighSPD0) && 
      ((ex*1000.)<fErrXCut)) {
     status = kTRUE;
-    fAccEvents.SetBitNumber(fIndex);
+    fMultHa->Fill(mult);
+    fErrXHa->Fill(ex*1000.);
   }
   return status;
 }
@@ -271,9 +317,18 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
    // compute mean vertex
    // called once with killOutliers = kFALSE and then again with
    // killOutliers = kTRUE
+
+   static Bool_t firstime = kTRUE;
+   if(fNoEventsContr>2 && !killOutliers)return kTRUE;  //ComputeMean is
+                             // executed only once with argument kFALSE
    Double_t wpos[3];
    for(Int_t i=0;i<3;i++)wpos[i]=fWeighPos[i];
-   Reset();
+
+   if(killOutliers && firstime){
+     firstime = kFALSE;
+     Reset();
+   }
+
    for(Int_t i=0;i<fVertArray.GetEntries();i++){
      AliESDVertex* vert = NULL;
 
@@ -283,6 +338,7 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
        Double_t dist=(vert->GetXv()-wpos[0])*(vert->GetXv()-wpos[0]);
        dist+=(vert->GetYv()-wpos[1])*(vert->GetYv()-wpos[1]);
        dist=sqrt(dist)*10.;    // distance in mm
+       fDistH->Fill(dist);
        if(dist>fRCut)fAccEvents.SetBitNumber(i,kFALSE);
      }
      
@@ -303,7 +359,7 @@ void AliITSMeanVertexer::AddToMean(AliESDVertex *vert){
        fAverPosSq[i][j] -= nevents/(nevents -1.)*fAverPos[i]*fAverPos[j];
      }
    } 
-   
+   if(killOutliers)ResetArray();
    fAverContributors = fTotContributors/nevents;
    return kTRUE;
  }

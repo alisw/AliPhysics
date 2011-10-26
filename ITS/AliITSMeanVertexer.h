@@ -56,6 +56,8 @@ class AliITSMeanVertexer : public TObject {
     void   AddToMean(AliESDVertex *vert);
     Bool_t ComputeMean(Bool_t killOutliers);
     void Reset();
+    void ResetArray(){fAccEvents.ResetAllBits(kTRUE); fVertArray.Clear();
+      fIndex=0; for(Int_t i=0;i<fgkMaxNumOfEvents;i++)fClu0[i]=0; }
 
     static const Int_t fgkMaxNumOfEvents;   // max. number of events 
     AliITSDetTypeRec *fDetTypeRec; //! ITS reco class
@@ -86,6 +88,11 @@ class AliITSMeanVertexer : public TObject {
     Double_t fRCut;             //| cut on distance from first estimate (mm)
     UInt_t fLowSPD0;            //! low SPD0 cls value to accept event
     UInt_t fHighSPD0;           //! high SPD0 cls value to accept event
+    TH1F *fMultH;               //! debug hist: mult. on SPD0 before Filter
+    TH1F *fErrXH;               //! debug hist: error on X before Filter
+    TH1F *fMultHa;              //! debug hist: mult. on SPD0 after Filter
+    TH1F *fErrXHa;              //! debug hist: error on X after Filter
+    TH1F *fDistH;               //! debug hist: distance from peak
 
     ClassDef(AliITSMeanVertexer,0)
 };
