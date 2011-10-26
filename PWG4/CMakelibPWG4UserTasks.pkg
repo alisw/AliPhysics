@@ -29,6 +29,7 @@
 set ( SRCS 
  UserTasks/PHOS_pp_pi0/AliCaloPhoton.cxx
  UserTasks/PHOS_pp_pi0/AliAnalysisTaskPi0.cxx
+ UserTasks/PHOS_PbPbQA/AliAnalysisTaskPHOSPbPbQA.cxx
  UserTasks/CaloCellQA/AliCaloCellsQA.cxx
  UserTasks/CaloCellQA/AliAnalysisTaskCaloCellsQA.cxx
 )
