@@ -22,12 +22,12 @@ AliAnalysisTaskPHOSPbPbQA* AddTaskPHOSPbPbQA(char* fname="PHOSPbPbQA.root",
 
   // container output into particular file
   if (fname && contname)
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TObjArray::Class(), AliAnalysisManager::kOutputContainer, fname));
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, fname));
   
   // container output into common file
   if (!fname) {
     if (!contname) contname = "PHOSPbPbQAResults";
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TObjArray::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));		       
+    mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName()));		       
   }
   
   return task;
