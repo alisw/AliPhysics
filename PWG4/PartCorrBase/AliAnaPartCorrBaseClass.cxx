@@ -17,9 +17,10 @@
 //_________________________________________________________________________
 // Base class for analysis algorithms
 //-- Author: Gustavo Conesa (LNF-INFN) 
+//
+//
 //_________________________________________________________________________
-// --Yaxian Mao: Add the possibality for event selection analysis based on vertex and multiplicity bins (10/10/2010)
-  
+
 
 // --- ROOT system ---
 #include <TClonesArray.h>
@@ -41,70 +42,70 @@
 #include "AliAODPWG4Particle.h"
 
 ClassImp(AliAnaPartCorrBaseClass)
-  
-  
+
+
 //_______________________________________________
-  AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
-    TObject(), 
-    fDataMC(0),                   fDebug(0),                   fCheckFidCut(0),
-    fCheckCaloPID(0),             fRecalculateCaloPID(0), 
-    fMinPt(0),                    fMaxPt(0),                   fPairTimeCut(200), 
-    fMultiBin(0),                 fNZvertBin(0),
-    fNrpBin(0),                   fNCentrBin(0),
-    fNmaxMixEv(0),                fMaxMulti(0),                fMinMulti(0),
-    fUseSelectEvent(kFALSE),      fMakePlots(kFALSE),
-    fReader(0x0),                 fInputAODBranch(0x0),        fInputAODName(""),
-    fOutputAODBranch(0x0),        fNewAOD(kFALSE),
-    fOutputAODName(""),           fOutputAODClassName(""),
-    fAODObjArrayName(""),         fAddToHistogramsName(""),
-    fCaloPID(0x0),                fFidCut(0x0),                fIC(0x0),
-    fMCUtils(0x0),                fNMS(0x0),                   fCaloUtils(0x0),
-    fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),
-    fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),
-    fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),
-    fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),
-    fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),
-    fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
-    fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),
-    fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),
-    fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),
-    fHistoPOverEBins(100),        fHistoPOverEMax(100.),       fHistoPOverEMin(0.),
-    fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),
-    fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),
-    fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),
-    fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0),
-    fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
-    fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
-    fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
-    fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
-    fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
-    fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),
-    fHistoYBins(100),             fHistoYMax(1000),            fHistoYMin(-1000),
-    fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
-    fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
-    fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0)
+AliAnaPartCorrBaseClass::AliAnaPartCorrBaseClass() : 
+TObject(), 
+fDataMC(0),                   fDebug(0),                   fCheckFidCut(0),
+fCheckCaloPID(0),             fRecalculateCaloPID(0), 
+fMinPt(0),                    fMaxPt(0),                   fPairTimeCut(200), 
+fMultiBin(0),                 fNZvertBin(0),
+fNrpBin(0),                   fNCentrBin(0),
+fNmaxMixEv(0),                fMaxMulti(0),                fMinMulti(0),
+fUseSelectEvent(kFALSE),      fMakePlots(kFALSE),
+fReader(0x0),                 fInputAODBranch(0x0),        fInputAODName(""),
+fOutputAODBranch(0x0),        fNewAOD(kFALSE),
+fOutputAODName(""),           fOutputAODClassName(""),
+fAODObjArrayName(""),         fAddToHistogramsName(""),
+fCaloPID(0x0),                fFidCut(0x0),                fIC(0x0),
+fMCUtils(0x0),                fNMS(0x0),                   fCaloUtils(0x0),
+fHistoPtBins(0),              fHistoPtMax(0.),             fHistoPtMin(0.),
+fHistoPhiBins(0),             fHistoPhiMax(0.),            fHistoPhiMin(0.),
+fHistoEtaBins(0),             fHistoEtaMax(0.),            fHistoEtaMin(0.),
+fHistoMassBins(0),            fHistoMassMax(0.),           fHistoMassMin(0.),
+fHistoAsymBins(0),            fHistoAsymMax(0.),           fHistoAsymMin(0.),
+fHistoV0SBins(0),             fHistoV0SMax(0),             fHistoV0SMin(0),
+fHistoV0MBins(0),             fHistoV0MMax(0),             fHistoV0MMin(0),
+fHistoTrMBins(0),             fHistoTrMMax(0),             fHistoTrMMin(0),
+fHistoFinePtBins(1000),       fHistoFinePtMax(5.),         fHistoFinePtMin(0.),
+fHistoPOverEBins(100),        fHistoPOverEMax(100.),       fHistoPOverEMin(0.),
+fHistodEdxBins(100),          fHistodEdxMax(100.),         fHistodEdxMin(0.),
+fHistodRBins(100),            fHistodRMax(100.),           fHistodRMin(0.),
+fHistoTimeBins(100),          fHistoTimeMax(100.),         fHistoTimeMin(0.),
+fHistoNClusCellBins(100),     fHistoNClusCellMax(100),     fHistoNClusCellMin(0),
+fHistoNCellsBins(100),        fHistoNCellsMax(100),        fHistoNCellsMin(0),
+fHistoNClustersBins(100),     fHistoNClustersMax(100),     fHistoNClustersMin(0),
+fHistoRatioBins(100),         fHistoRatioMax(100.),        fHistoRatioMin(0.),
+fHistoVertexDistBins(100),    fHistoVertexDistMax(100.),   fHistoVertexDistMin(0.),
+fHistoRBins(100),             fHistoRMax(1000),            fHistoRMin(-1000),
+fHistoXBins(100),             fHistoXMax(1000),            fHistoXMin(-1000),
+fHistoYBins(100),             fHistoYMax(1000),            fHistoYMin(-1000),
+fHistoZBins(100),             fHistoZMax(1000),            fHistoZMin(-1000),
+fHistoSSBins(0),              fHistoSSMax(0),              fHistoSSMin(0),
+fHistoDiffTimeBins(0),        fHistoDiffTimeMax(0),        fHistoDiffTimeMin(0)
 {
   //Default Ctor
-    
+  
   //Initialize parameters
   InitParameters();
 }
 
-//____________________________________________________________________________
+//_________________________________________________
 AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass() 
 {
   // Remove all pointers except analysis output pointers.
-//printf("---Delete analysis %s\n", fAODObjArrayName.Data());
+  //printf("---Delete analysis %s\n", fAODObjArrayName.Data());
   // Not sure if it should be me who deletes the delta AOD branches.
-//  if(fOutputAODBranch){
-//    fOutputAODBranch->Clear() ; 
-//    delete fOutputAODBranch ;
-//  }
-//  
-//  if(fInputAODBranch){
-//    fInputAODBranch->Clear() ; 
-//    delete fInputAODBranch ;
-//  }
+  //  if(fOutputAODBranch){
+  //    fOutputAODBranch->Clear() ; 
+  //    delete fOutputAODBranch ;
+  //  }
+  //  
+  //  if(fInputAODBranch){
+  //    fInputAODBranch->Clear() ; 
+  //    delete fInputAODBranch ;
+  //  }
   
   //if(fCaloUtils)    delete fCaloUtils ; //Already deleted in maker
   //if(fReader)       delete fReader ;    //Already deleted in maker
@@ -114,12 +115,13 @@ AliAnaPartCorrBaseClass::~AliAnaPartCorrBaseClass()
   if(fIC)        delete fIC ;
   if(fMCUtils)   delete fMCUtils ;
   if(fNMS)       delete fNMS ;
-
+  
   //   printf("--- analysis deleted \n");
 }
 
-//____________________________________________________________________________
-void AliAnaPartCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc) {
+//_________________________________________________________________
+void AliAnaPartCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc)
+{
   //Put AOD calo cluster in the AODParticleCorrelation array
   
   if(fOutputAODBranch){
@@ -132,7 +134,7 @@ void AliAnaPartCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc) {
       new((*fOutputAODBranch)[i])  AliAODPWG4ParticleCorrelation(pc);
     else {
       printf("AliAnaPartCorrBaseClass::AddAODParticle() - Cannot add an object of type < %s >, to the AOD TClonesArray \n",  
-	     fOutputAODBranch->GetClass()->GetName());
+             fOutputAODBranch->GetClass()->GetName());
       abort();    
     }
   }
@@ -140,11 +142,98 @@ void AliAnaPartCorrBaseClass::AddAODParticle(AliAODPWG4Particle pc) {
     printf(" AliAnaPartCorrBaseClass::AddAODParticle() - No AOD branch available!!!\n");
     abort();
   }
-
+  
 }	
 
-//___________________________________________________________________________
-TClonesArray * AliAnaPartCorrBaseClass::GetAODBranch(TString aodName) const {
+
+//___________________________________________________________
+void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() 
+{
+  //Recover ouput and input AOD pointers for each event in the maker
+	
+  //Delta AODs
+  if(fDebug > 3) printf("AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data());
+  
+  //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
+  AliAODHandler* aodHandler = 0x0;
+  Bool_t outAOD = kFALSE;
+  if((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()) outAOD = kTRUE;
+  if(outAOD) aodHandler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()); 
+  else 	     aodHandler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
+  
+  if(!GetReader()->WriteDeltaAODToFile())
+  {
+    fOutputAODBranch =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fOutputAODName);
+    fInputAODBranch  =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fInputAODName);	
+  }
+  else if (aodHandler->GetExtensions()) { 
+    
+    AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject(GetReader()->GetDeltaAODFileName()); 
+    if(ext){
+      AliAODEvent *aodEvent = ext->GetAOD(); 
+      if(fNewAOD)fOutputAODBranch = (TClonesArray*) aodEvent->FindListObject(fOutputAODName);
+      fInputAODBranch = (TClonesArray*) aodEvent->FindListObject(fInputAODName); 	  
+      if(!fOutputAODBranch && fNewAOD) fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+      if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);
+    }
+    else{//If no Delta AODs, kept in standard branch, to revise. 
+      if(fNewAOD && fReader->GetOutputEvent()) {
+        fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+        fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
+      }
+      else {
+        fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);	
+        if(!fInputAODBranch && fReader->GetOutputEvent() ) 
+          fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
+      }
+    }
+  }
+  else{ //If no Delta AODs, kept in standard branch
+    if(fNewAOD && fReader->GetOutputEvent()) {
+      fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
+      fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
+    }
+    else{ 
+      fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);
+      if(!fInputAODBranch && fReader->GetOutputEvent())  
+        fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
+    }
+  }
+  
+  if(GetDebug() > 1){
+    if(fNewAOD && !fOutputAODBranch) 
+      printf(" AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Output Branch <%s>, not found!\n",fOutputAODName.Data());
+    if(!fNewAOD && !fInputAODBranch) 
+      printf(" AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Input Branch  <%s>, not found!\n",fInputAODName.Data());
+  }
+}
+
+
+//_____________________________________________________________________________________
+AliVCluster * AliAnaPartCorrBaseClass::FindCluster(TObjArray* clusters, const Int_t id, 
+                                                   Int_t & iclus, const Int_t first) 
+{
+  // Given the cluster ID stored in AliAODPWG4Particle, get the originator cluster and its index in the array
+  
+  if(!clusters) return 0x0;
+  
+  for(iclus = first; iclus < clusters->GetEntriesFast(); iclus++){
+    AliVCluster *cluster= dynamic_cast<AliVCluster*> (clusters->At(iclus));
+    if(cluster){
+      if     (cluster->GetID()==id) {
+        return cluster;
+      }
+    }      
+  }// calorimeter clusters loop
+  
+  return 0x0;
+  
+}
+
+
+//_________________________________________________________________________
+TClonesArray * AliAnaPartCorrBaseClass::GetAODBranch(TString aodName) const 
+{
 	//Recover ouput and input AOD pointers for each event in the maker
 	
 	//Delta AODs
@@ -185,113 +274,56 @@ TClonesArray * AliAnaPartCorrBaseClass::GetAODBranch(TString aodName) const {
   
 }
 
-
-
-//___________________________________________________
-void AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() {
-  //Recover ouput and input AOD pointers for each event in the maker
-	
-  //Delta AODs
-  if(fDebug > 3) printf("AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Connect Input with name: <%s>; Connect output with name <%s>\n",fInputAODName.Data(),fOutputAODName.Data());
-  
-  //Get the AOD handler, if output AOD is created use it, if not get the branches from the input which should be deltaAODs
-  AliAODHandler* aodHandler = 0x0;
-  Bool_t outAOD = kFALSE;
-  if((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()) outAOD = kTRUE;
-  if(outAOD) aodHandler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetOutputEventHandler()); 
-  else 	     aodHandler = (AliAODHandler*) ((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  
-  if(!GetReader()->WriteDeltaAODToFile())
-  {
-    fOutputAODBranch =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fOutputAODName);
-    fInputAODBranch  =  (TClonesArray *) (fReader->GetAODBranchList())->FindObject(fInputAODName);	
-  }
-  else if (aodHandler->GetExtensions()) { 
-    
-    AliAODExtension *ext = (AliAODExtension*)aodHandler->GetExtensions()->FindObject(GetReader()->GetDeltaAODFileName()); 
-    if(ext){
-      AliAODEvent *aodEvent = ext->GetAOD(); 
-      if(fNewAOD)fOutputAODBranch = (TClonesArray*) aodEvent->FindListObject(fOutputAODName);
-      fInputAODBranch = (TClonesArray*) aodEvent->FindListObject(fInputAODName); 	  
-      if(!fOutputAODBranch && fNewAOD) fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
-      if(!fInputAODBranch)  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);
-    }
-    else{//If no Delta AODs, kept in standard branch, to revise. 
-      if(fNewAOD && fReader->GetOutputEvent()) {
-	fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
-	fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
-      }
-      else {
-	fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);	
-	if(!fInputAODBranch && fReader->GetOutputEvent() ) 
-	  fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
-      }
-    }
-  }
-  else{ //If no Delta AODs, kept in standard branch
-    if(fNewAOD && fReader->GetOutputEvent()) {
-      fOutputAODBranch =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fOutputAODName);
-      fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);	
-    }
-    else{ 
-      fInputAODBranch  =  (TClonesArray *) fReader->GetInputEvent()->FindListObject(fInputAODName);
-      if(!fInputAODBranch && fReader->GetOutputEvent())  
-	fInputAODBranch  =  (TClonesArray *) fReader->GetOutputEvent()->FindListObject(fInputAODName);//Try the output event.
-    }
-  }
-  
-  if(GetDebug() > 1){
-    if(fNewAOD && !fOutputAODBranch) 
-      printf(" AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Output Branch <%s>, not found!\n",fOutputAODName.Data());
-    if(!fNewAOD && !fInputAODBranch) 
-      printf(" AliAnaPartCorrBaseClass::ConnectInputOutputAODBranches() - Input Branch  <%s>, not found!\n",fInputAODName.Data());
-  }
-}
-
-//__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetCTSTracks() const {
+//________________________________________________________
+TObjArray *  AliAnaPartCorrBaseClass::GetCTSTracks() const 
+{
   //Get list of referenced tracks from reader
-
+  
   return fReader->GetCTSTracks(); 
-
+  
 }
 
-//__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetPHOSClusters() const {
+//___________________________________________________________
+TObjArray *  AliAnaPartCorrBaseClass::GetPHOSClusters() const 
+{
   //Get list of PHOS reference caloclusters from reader
-
+  
   return fReader->GetPHOSClusters(); 
-
+  
 }
 
-//__________________________________________________
-TObjArray *  AliAnaPartCorrBaseClass::GetEMCALClusters() const {
+//____________________________________________________________
+TObjArray *  AliAnaPartCorrBaseClass::GetEMCALClusters() const 
+{
   //Get list of emcal referenced caloclusters from reader
-
+  
   return fReader->GetEMCALClusters(); 
-
+  
 }
 
-//__________________________________________________
-TClonesArray *  AliAnaPartCorrBaseClass::GetAODCaloClusters() const {
+//_________________________________________________________________
+TClonesArray *  AliAnaPartCorrBaseClass::GetAODCaloClusters() const 
+{
   //Get list of all caloclusters in AOD output file 
-
+  
   return fReader->GetOutputEvent()->GetCaloClusters(); 
-
+  
 }
 
-//__________________________________________________
-TClonesArray *  AliAnaPartCorrBaseClass::GetAODTracks() const {
+//___________________________________________________________
+TClonesArray *  AliAnaPartCorrBaseClass::GetAODTracks() const 
+{
   //Get list of all tracks in AOD output file 
-
+  
   return fReader->GetOutputEvent()->GetTracks(); 
-
+  
 }
 
-//__________________________________________________
-TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
+//_______________________________________________________
+TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  
+{
   //Put data member values in string to keep in output container
-
+  
   TString parList ; //this will be list of parameters used for this analysis.
   const Int_t buffersize = 255;
   char onePar[buffersize] ;
@@ -314,10 +346,10 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   snprintf(onePar,buffersize,"fInputAODName  =%s Input AOD name \n",fInputAODName.Data()) ;
   parList+=onePar ;	
   if(fNewAOD){
-     snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
-     parList+=onePar ;	
-     snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
-     parList+=onePar ;	
+    snprintf(onePar,buffersize,"fOutputAODName  =%s Output AOD name \n",fOutputAODName.Data()) ;
+    parList+=onePar ;	
+    snprintf(onePar,buffersize,"fOutputAODClassName  =%s Output AOD class name \n",fOutputAODClassName.Data()) ;
+    parList+=onePar ;	
   }
   snprintf(onePar,buffersize,"fAODObjArrayName  =%s Reference arrays in AOD name \n",fAODObjArrayName.Data()) ;
   parList+=onePar ;	
@@ -325,55 +357,60 @@ TString  AliAnaPartCorrBaseClass::GetBaseParametersList()  {
   parList+=onePar ;	
 	
   return parList; 
-
+  
 }
 
-//__________________________________________________
- TClonesArray * AliAnaPartCorrBaseClass::GetCreateOutputAODBranch() {
-   //Create AOD branch filled in the analysis
-   
-   printf("Create AOD branch of %s objects and with name < %s >\n",
-	  fOutputAODClassName.Data(),fOutputAODName.Data()) ;
-   
-   TClonesArray * aodBranch = new TClonesArray(fOutputAODClassName, 0);
-   aodBranch->SetName(fOutputAODName);
-   return aodBranch ;
-   
- }
+//________________________________________________________________
+TClonesArray * AliAnaPartCorrBaseClass::GetCreateOutputAODBranch() 
+{
+  //Create AOD branch filled in the analysis
+  
+  printf("Create AOD branch of %s objects and with name < %s >\n",
+         fOutputAODClassName.Data(),fOutputAODName.Data()) ;
+  
+  TClonesArray * aodBranch = new TClonesArray(fOutputAODClassName, 0);
+  aodBranch->SetName(fOutputAODName);
+  return aodBranch ;
+  
+}
 
-//__________________________________________________
-Int_t AliAnaPartCorrBaseClass::GetEventNumber() const {
+//___________________________________________________
+Int_t AliAnaPartCorrBaseClass::GetEventNumber() const 
+{
   //Get current event number
   
   return fReader->GetEventNumber() ; 
-
+  
 }
 
-	
-//__________________________________________________
-AliStack *  AliAnaPartCorrBaseClass::GetMCStack() const {
+
+//_____________________________________________________
+AliStack *  AliAnaPartCorrBaseClass::GetMCStack() const 
+{
   //Get stack pointer from reader
-
+  
   return fReader->GetStack(); 
-
+  
 }
-//__________________________________________________
-AliHeader *  AliAnaPartCorrBaseClass::GetMCHeader() const {
+//_______________________________________________________
+AliHeader *  AliAnaPartCorrBaseClass::GetMCHeader() const
+{
   //Get header pointer from reader
-
+  
   return fReader->GetHeader(); 
-
+  
 }
 
-//__________________________________________________
-AliGenEventHeader *  AliAnaPartCorrBaseClass::GetMCGenEventHeader() const {
+//_______________________________________________________________________
+AliGenEventHeader *  AliAnaPartCorrBaseClass::GetMCGenEventHeader() const
+{
   //Get GenEventHeader pointer from reader
-
+  
   return fReader->GetGenEventHeader(); 
-
+  
 }
 
-//__________________________________________________
+//____________________________________________
 void AliAnaPartCorrBaseClass::InitParameters()
 { 
   //Initialize the parameters of the analysis.
@@ -393,27 +430,27 @@ void AliAnaPartCorrBaseClass::InitParameters()
   
   //fReader    = new AliCaloTrackReader(); //Initialized in maker
   //fCaloUtils = new AliCalorimeterUtils();//Initialized in maker
-  	
+  
   fNewAOD              = kFALSE ;
   fOutputAODName       = "PartCorr";
   fOutputAODClassName  = "AliAODPWG4Particle";
   fInputAODName        = "PartCorr";
   fAddToHistogramsName = "";
   fAODObjArrayName     = "Ref";
-	  
+  
   //Histogram settings
   fHistoPtBins    = 240 ;
   fHistoPtMax     = 120 ;
   fHistoPtMin     = 0.  ;
-
+  
   fHistoPhiBins   = 120 ;
   fHistoPhiMax    = TMath::TwoPi();
   fHistoPhiMin    = 0.  ;
-
+  
   fHistoEtaBins   = 100 ;
   fHistoEtaMax    =  1  ;
   fHistoEtaMin    = -1  ;
-
+  
   fHistoMassBins  = 200;
   fHistoMassMax   = 1. ;
   fHistoMassMin   = 0. ;
@@ -449,10 +486,10 @@ void AliAnaPartCorrBaseClass::InitParameters()
   fHistoZBins            = 100 ;  fHistoZMax            = 600  ;  fHistoZMin            = -500  ;//cm
   fHistoSSBins           = 500 ;  fHistoSSMax           = 5    ;  fHistoSSMin           = 0  ;  
   fHistoDiffTimeBins     = 800 ;  fHistoDiffTimeMax     = 400  ;  fHistoDiffTimeMin     = -400; // ns
-
+  
 }
 
-//__________________________________________________________________
+//_____________________________________________________________
 void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
 {
   //Print some relevant parameters set for the analysis
@@ -493,7 +530,7 @@ void AliAnaPartCorrBaseClass::Print(const Option_t * opt) const
   printf("Histograms: %d < N clusters   < %d, Nbin = %d\n"          , fHistoNClustersMin,   fHistoNClustersMax,   fHistoNClustersBins);
   printf("Histograms: %3.1f < Ratio< %3.1f, Nbin = %d\n", fHistoRatioMin,  fHistoRatioMax,  fHistoRatioBins);
   printf("Histograms: %3.1f < Vertex Distance < %3.1f, Nbin = %d\n", fHistoVertexDistMin, fHistoVertexDistMax, fHistoVertexDistBins);
-    
+  
   printf("Name of reference array      : %s\n", fAODObjArrayName.Data());	
   printf("String added histograms name : %s\n",fAddToHistogramsName.Data());
 	

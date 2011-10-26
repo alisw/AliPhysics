@@ -51,32 +51,34 @@ public:
   
   //General methods, to be declared in deriving classes if needed
   
+  virtual void MakeAnalysisFillAOD()  {;}
+  
+  virtual void MakeAnalysisFillHistograms() {;}  
+  
+  AliVCluster* FindCluster(TObjArray* clusters, const Int_t id, Int_t & iclus, const Int_t first=0) ;
+
   virtual void Init() {;}
   virtual void InitParameters() ;
   
   virtual void Print(const Option_t * ) const ;
-  
-  virtual void MakeAnalysisFillAOD()  {;}
-  
-  virtual void MakeAnalysisFillHistograms() {;}
-  	
+    	
   virtual void Terminate(TList * /*outputList*/) {;}
     
   
   //Histograms, cuts 
   virtual TList * GetCreateOutputObjects()              { return (new TList)          ; }
 	
-  virtual void AddToHistogramsName(TString add)         { fAddToHistogramsName = add  ; }  
+  virtual void    AddToHistogramsName(TString add)      { fAddToHistogramsName = add  ; }  
   virtual TString GetAddedHistogramsStringToName()const { return fAddToHistogramsName ; }
   
   virtual TObjString * GetAnalysisCuts()                { return 0x0                  ; }
-  TString	GetBaseParametersList();
+  TString	        GetBaseParametersList();
 
   //Getters, setters
-  virtual Int_t GetDebug()                        const { return fDebug               ; }
-  virtual void  SetDebug(Int_t d)                       { fDebug = d                  ; }
+  virtual Int_t   GetDebug()                      const { return fDebug               ; }
+  virtual void    SetDebug(Int_t d)                     { fDebug = d                  ; }
 
-  virtual Int_t GetEventNumber() const ;
+  virtual Int_t   GetEventNumber() const ;
 
   virtual AliCaloTrackReader * GetReader()            const { return fReader   ; }
   virtual void SetReader(AliCaloTrackReader * const reader) { fReader = reader ; }

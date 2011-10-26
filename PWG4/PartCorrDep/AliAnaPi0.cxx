@@ -2126,13 +2126,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             //-----------------------            
             if(fMultiCutAna){
               //Several pt,ncell and asymmetry cuts
+              
               for(Int_t ipt=0; ipt<fNPtCuts; ipt++){          
                 for(Int_t icell=0; icell<fNCellNCuts; icell++){
                   for(Int_t iasym=0; iasym<fNAsymCuts; iasym++){
                     Int_t index = ((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym;
                     if(p1->Pt() >   fPtCuts[ipt]      && p2->Pt() > fPtCuts[ipt]        && 
-                       a        <   fAsymCuts[iasym]                                    && 
-                       p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell]){
+                       a        <   fAsymCuts[iasym]                                    //&& 
+                       //p1->GetBtag() >=  fCellNCuts[icell] && p2->GetBtag() >= fCellNCuts[icell] // trick, correct it.
+                       ){
                       fhMiPtNCellAsymCuts[index]->Fill(pt,m) ;
                       //printf("ipt %d, icell%d, iasym %d, name %s\n",ipt, icell, iasym,  fhRePtNCellAsymCuts[((ipt*fNCellNCuts)+icell)*fNAsymCuts + iasym]->GetName());
                     }
