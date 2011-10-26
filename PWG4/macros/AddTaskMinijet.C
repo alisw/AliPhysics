@@ -1,17 +1,18 @@
 AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1, 
-				       TString format      = "esd",
+				       TString format      = "aod",
 				       Bool_t  useMC       = false, 
 				       Bool_t  mcOnly      = false,
-				       Bool_t  useHighMult = false
-				       )
+				       Bool_t  useHighMult = false,
+				       Float_t ptTrigMin   =   0.7,
+				       Float_t ptAssocMin  =   0.4,
+				       Float_t maxVtxZ     =   10.,
+				       Int_t   filterBit   =   128,
+				       Int_t   debugLevel  =     0,
+				       Float_t maxEta      =   0.9,
+				       Float_t ptMin       =   0.2,
+				       Float_t ptMax       =  50.0)
 {
-  //Seetings
-  Float_t ptTrigMin   = 0.7;
-  Float_t ptAssocMin  = 0.4;
-  Float_t maxVtxZ     = 10.;
-  Int_t filterBit     = 128;
-  Int_t debugLevel    =   0;
-
+  
   // Get the pointer to the existing analysis manager via the static access method.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("Analysis train");
@@ -29,6 +30,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   taskMB->SetUseMC(useMC,mcOnly);
   taskMB->SetTriggerPtCut(ptTrigMin);
   taskMB->SetAssociatePtCut(ptAssocMin);
+  taskMB->SetMaxEta(maxEta);
+  taskMB->SetPtRange(ptMin, ptMax);
   taskMB->SetMaxVertexZ(maxVtxZ);
   taskMB->SetTriggerMask(AliVEvent::kMB);
   // taskMB->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
@@ -51,6 +54,8 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
     taskHM->SetUseMC(useMC, mcOnly);
     taskHM->SetTriggerPtCut(ptTrigMin);
     taskHM->SetAssociatePtCut(ptAssocMin);
+    taskMB->SetMaxEta(maxEta);
+    taskMB->SetPtRange(ptMin, ptMax);
     taskHM->SetMaxVertexZ(maxVtxZ);
     taskHM->SetTriggerMask(AliVEvent::kHighMult);
     //taskHM->SelectCollisionCandidates(AliVEvent::kHighMult); // now inside task
