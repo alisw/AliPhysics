@@ -19,6 +19,8 @@ class AliESDTrdTrack;
 class AliTRDtrackGTU : public TObject {
  public:
   AliTRDtrackGTU();
+  AliTRDtrackGTU(const AliTRDtrackGTU &rhs);
+  AliTRDtrackGTU& operator=(const AliTRDtrackGTU &rhs);
   ~AliTRDtrackGTU();
 
 // ----- Track properties
@@ -83,10 +85,6 @@ class AliTRDtrackGTU : public TObject {
   Float_t fC; // fit parameter of y' = a + b*x + c*z
 
   Int_t fLabel; // MC label
-
- private:
-  AliTRDtrackGTU(const AliTRDtrackGTU &rhs); // not implemented
-  AliTRDtrackGTU& operator=(const AliTRDtrackGTU &rhs); // not implemented
 
   ClassDef(AliTRDtrackGTU, 1);
 };

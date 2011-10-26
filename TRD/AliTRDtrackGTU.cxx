@@ -62,6 +62,50 @@ AliTRDtrackGTU::AliTRDtrackGTU() :
 //  fTracklets->BypassStreamer(kFALSE);
 }
 
+AliTRDtrackGTU::AliTRDtrackGTU(const AliTRDtrackGTU &rhs) :
+  TObject(),
+  fStack(rhs.fStack),
+  fSector(rhs.fSector),
+  fPID(rhs.fPID),
+  fTracklets(0x0),
+  fTrackletMask(rhs.fTrackletMask),
+  fNTracklets(rhs.fNTracklets),
+  fRefLayerIdx(rhs.fRefLayerIdx),
+  fZChannel(rhs.fZChannel),
+  fZSubChannel(rhs.fZSubChannel),
+  fA(rhs.fA),
+  fB(rhs.fB),
+  fC(rhs.fC),
+  fLabel(rhs.fLabel)
+{
+  fTracklets = new TClonesArray("AliTRDtrackletGTU", 6);
+  for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++)
+    new ((*fTracklets)[iTracklet]) AliTRDtrackletGTU(*((AliTRDtrackletGTU*)(*(rhs.fTracklets))[iTracklet]));
+}
+
+AliTRDtrackGTU& AliTRDtrackGTU::operator=(const AliTRDtrackGTU &rhs)
+{
+  if (&rhs != this) {
+    TObject::operator=(rhs);
+    fStack         = rhs.fStack;
+    fSector        = rhs.fSector;
+    fPID           = rhs.fPID;
+    fTrackletMask  = rhs.fTrackletMask;
+    fNTracklets    = rhs.fNTracklets;
+    fRefLayerIdx   = rhs.fRefLayerIdx;
+    fZChannel      = rhs.fZChannel;
+    fZSubChannel   = rhs.fZSubChannel;
+    fA             = rhs.fA;
+    fB             = rhs.fB;
+    fC             = rhs.fC;
+    fLabel         = rhs.fLabel;
+    for (Int_t iTracklet = 0; iTracklet < 6; iTracklet++)
+      new ((*fTracklets)[iTracklet]) AliTRDtrackletGTU(*((AliTRDtrackletGTU*)(*(rhs.fTracklets))[iTracklet])); 
+  }
+
+  return *this;
+}
+
 AliTRDtrackGTU::~AliTRDtrackGTU()
 {
 // dtor
