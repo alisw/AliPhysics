@@ -8,8 +8,6 @@
 #pragma link off all classes;
 #pragma link off all functions;
  
-
-#pragma link C++ class AliOADBCentrality+;
 #pragma link C++ class AliOADBPhysicsSelection+;
 #pragma link C++ class AliOADBFillingScheme+;
 #pragma link C++ class AliOADBPWG2Spectra+;
