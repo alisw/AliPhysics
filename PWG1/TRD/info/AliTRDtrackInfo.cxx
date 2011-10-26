@@ -138,6 +138,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTRDnSlices(0)
   ,fTRDslices(NULL)
   ,fOP(NULL)
+  ,fTPCout(NULL)
 {
   //
   // Constructor
@@ -159,6 +160,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTRDnSlices(esd.fTRDnSlices)
   ,fTRDslices(NULL)
   ,fOP(NULL)
+  ,fTPCout(NULL)
 {
   //
   // Constructor
@@ -172,6 +174,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
   if(esd.fOP) fOP = new AliExternalTrackParam(*esd.fOP);
+  if(esd.fTPCout) fTPCout = new AliExternalTrackParam(*esd.fTPCout);
 }
 
 
@@ -213,6 +216,7 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
     fTRDnSlices = 0;
   }
   if(fOP) delete fOP; fOP = NULL;
+  if(fTPCout) delete fTPCout; fTPCout = NULL;
 }
 
 //___________________________________________________
@@ -226,6 +230,7 @@ void AliTRDtrackInfo::AliESDinfo::Delete(const Option_t *){
     fTRDnSlices = 0;
   }
   if(fOP) delete fOP; fOP = NULL;
+  if(fTPCout) delete fTPCout; fTPCout = NULL;
 }
 
 
@@ -310,6 +315,13 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
       new(fOP) AliExternalTrackParam(*esd.fOP);
     } else fOP = new AliExternalTrackParam(*esd.fOP);
   } else fOP = NULL;
+  if(esd.fTPCout){
+    if(fTPCout){
+      fTPCout->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fTPCout) AliExternalTrackParam(*esd.fTPCout);
+    } else fTPCout = new AliExternalTrackParam(*esd.fTPCout);
+  } else fTPCout = NULL;
 
   return *this;
 }
@@ -416,6 +428,20 @@ void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
     fESD.fOP->~AliExternalTrackParam();
     new(fESD.fOP) AliExternalTrackParam(*op);
   } else fESD.fOP = new AliExternalTrackParam(*op);
+}
+
+//___________________________________________________
+void  AliTRDtrackInfo::SetTPCoutParam(const AliExternalTrackParam *op)
+{
+  //
+  // Set TPCout track parameters
+  //
+
+  if(!op) return;
+  if(fESD.fTPCout){
+    fESD.fTPCout->~AliExternalTrackParam();
+    new(fESD.fTPCout) AliExternalTrackParam(*op);
+  } else fESD.fTPCout = new AliExternalTrackParam(*op);
 }
 
 //___________________________________________________

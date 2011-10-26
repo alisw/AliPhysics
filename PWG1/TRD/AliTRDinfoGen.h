@@ -33,10 +33,9 @@ class AliTRDinfoGen : public AliAnalysisTaskSE
 public:
   enum AliTRDinfoGenSteeringBits{
     kMCdata               = BIT(18)
-   ,kUseLocalEvSelection  = BIT(19)
-   ,kUseLocalTrkSelection = BIT(20)
-   ,kCollision            = BIT(21)
-   ,kOCDB                 = BIT(22)
+   ,kUseLocalTrkSelection = BIT(19)
+   ,kCollision            = BIT(20)
+   ,kOCDB                 = BIT(21)
   };
   enum AliTRDinfoGenObjects{
      kTracksESD =  0
@@ -58,7 +57,7 @@ public:
   enum AliTRDinfoGenClasses{
      kStatTrk = 0
     ,kEvType
-    ,kBunchCross
+    ,kBC
     ,kTrigger
     ,kNclasses
   };
@@ -83,30 +82,24 @@ public:
   void    SetInitOCDB(Bool_t set=kTRUE) {SetBit(kOCDB, set);}
   void    SetCollision(Bool_t set=kTRUE) {SetBit(kCollision, set);}
   //void    SetLocalEvSelection(const AliTRDeventCuts */*cut*/){;} 
-  void    SetLocalEvSelection(Bool_t use=kTRUE) {SetBit(kUseLocalEvSelection, use);}
+  void    SetLocalEvSelection(const AliTRDeventCuts &ec);
   //void    SetLocalTrkSelection(const AliESDtrackCuts */*cut*/){;} 
   void    SetLocalTrkSelection(Bool_t use=kTRUE) {SetBit(kUseLocalTrkSelection, use);}
-  void    SetLocalV0Selection(const AliTRDv0Info *v0);
+  void    SetLocalV0Selection(const AliTRDv0Info &v0);
   void    SetMCdata(Bool_t mc = kTRUE) {SetBit(kMCdata, mc);}
   void    SetOCDB(const char *ocdb) {fOCDB=ocdb;}
-  void    SetTrigger(const Char_t *trigger);
 
-  Bool_t  UseLocalEvSelection() const {return TestBit(kUseLocalEvSelection);}
+  Bool_t  UseLocalEvSelection() const {return Bool_t(fEventCut);}
   Bool_t  UseLocalTrkSelection() const {return TestBit(kUseLocalTrkSelection);}
   void    UserCreateOutputObjects();
   void    UserExec(Option_t *);
-
+  void    Terminate(Option_t* option = "");
 private:
   // rough radial limits for TRD
   static const Float_t fgkITS;      // end ITS
   static const Float_t fgkTPC;      // end TPC
   static const Float_t fgkTRD;      // end TRD
 
-  // Trigger selection
-  TString              *fEvTrigger; // list of accepted trigger classes separated by space
-  // Vertex selection
-  static const Float_t fgkEvVertexZ;// cm
-  static const Int_t   fgkEvVertexN;// cm
   // Track selection
   static const Float_t fgkTrkDCAxy; // cm
   static const Float_t fgkTrkDCAz;  // cm

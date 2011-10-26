@@ -5,6 +5,7 @@
 #include "PWG1/TRD/AliTRDinfoGen.h"
 #include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/info/AliTRDeventInfo.h"
+#include "PWG1/TRD/info/AliTRDeventCuts.h"
 #endif
 
 void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **/*ci*/, AliAnalysisDataContainer **co)
@@ -20,16 +21,19 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   // settings for collisions
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
-    /*
-    if(!mc) info->SetTrigger(
-      "CINT1B-ABCE-NOPF-ALL"
-      " CINT5-B-NOPF-ALL"
-      " CINT1WU-B-NOPF-ALL"
-      " CINT5WU-B-NOPF-ALL"
-      " CSCO1-ABCE-NOPF-CENT" // cosmic SPD trigger
-    );
-    */
-    info->SetLocalEvSelection();
+    AliTRDeventCuts ec;
+    if(mc) ec.AddTrigger("kMB");
+    else {
+/*      Int_t bunches[] = ;
+      ec.SetBunchSelection();*/
+      ec.AddTrigger("CINT1B-ABCE-NOPF-ALL");
+      ec.AddTrigger("CINT5-B-NOPF-ALL");
+      ec.AddTrigger("CINT1WU-B-NOPF-ALL");
+      ec.AddTrigger("CINT5WU-B-NOPF-ALL");
+      ec.AddTrigger("CINT7WU-I-NOPF-ALL");
+      ec.AddTrigger("CSCO1-ABCE-NOPF-CENT"); // cosmic SPD trigger
+    }
+    info->SetLocalEvSelection(ec);
   }
   
   // Connect IO slots

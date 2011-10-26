@@ -63,8 +63,9 @@ public:
   enum ETRDresolutionClassProjs {
     kClNproj=48       // cluster projections
     ,kTrkltNproj=72   // tracklet projections
-    ,kTrkInNproj=8    // trackIn projections
+    ,kTrkInNproj=28   // trackIn projections
     ,kTrkNproj=72     // track projections
+    ,kMCTrkInNproj=48 // trackIn projections
   };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
@@ -82,7 +83,7 @@ public:
     ,kStack
     ,kDetector
     ,kNbunchCross = 3  // no of classes for bunch crossing
-    ,kNpt         = 20 // no of log bins in pt spectrum
+    ,kNpt         = 3  // no of log bins in pt spectrum
     ,kNcharge     = 2
   };
 
@@ -143,6 +144,7 @@ private:
   public:
     AliTRDresolutionProjection();
     virtual ~AliTRDresolutionProjection();
+    AliTRDresolutionProjection& operator+=(const AliTRDresolutionProjection& other);
     void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
     void  Increment(Int_t bin[], Double_t v);
     TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0);
