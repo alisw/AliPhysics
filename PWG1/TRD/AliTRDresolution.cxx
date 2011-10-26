@@ -413,15 +413,15 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     val[kEta] = fEta;
     val[kSpeciesChgRC]= fSpecies;
     val[kPt]  = GetPtBin(fTracklet->GetMomentum());
-    Double_t dyt(fTracklet->GetYref(0) - fTracklet->GetYfit(0)),
-             dzt(fTracklet->GetZref(0) - fTracklet->GetZfit(0)),
+    Double_t dyt(fTracklet->GetYfit(0) - fTracklet->GetYref(0)),
+             dzt(fTracklet->GetZfit(0) - fTracklet->GetZref(0)),
              dydx(fTracklet->GetYfit(1)),
              tilt(fTracklet->GetTilt());
     // correct for tilt rotation
     val[kYrez] = dyt - dzt*tilt;
     val[kZrez] = dzt + dyt*tilt;
     dydx+= tilt*fTracklet->GetZref(1);
-    val[kPrez] = TMath::ATan((fTracklet->GetYref(1) - dydx)/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
+    val[kPrez] = TMath::ATan((dydx - fTracklet->GetYref(1))/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
     if(fTracklet->IsRowCross()){
       val[kSpeciesChgRC]= 0.;
 //      val[kPrez] = fkTrack->Charge(); // may be better defined
@@ -524,25 +524,29 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 
   Int_t bc(TMath::Abs(fkESD->GetTOFbc())%2);
   const Double_t *parR(tin->GetParameter());
-  Double_t dyt(parR[0] - fTracklet->GetYfit(0)), dzt(parR[1] - fTracklet->GetZfit(0)),
+  Double_t dyt(fTracklet->GetYfit(0)-parR[0]), dzt(fTracklet->GetZfit(0)-parR[1]),
             phit(fTracklet->GetYfit(1)),
-            tilt(fTracklet->GetTilt());
+            tilt(fTracklet->GetTilt()),
+            norm(1./TMath::Sqrt((1.-parR[2])*(1.+parR[2])));
 
   // correct for tilt rotation
   Double_t dy  = dyt - dzt*tilt,
-           dz  = dzt + dyt*tilt;
+           dz  = dzt + dyt*tilt,
+           dx  = dy/(parR[2]*norm-parR[3]*norm*tilt); 
   phit       += tilt*parR[3];
-  Double_t dphi = TMath::ASin(parR[2])-TMath::ATan(phit);
+  Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
-  Double_t val[kNdim];
+  Double_t val[kNdim+2];
   val[kBC]          = bc;
   val[kPhi]         = fPhi;
   val[kEta]         = fEta;
-  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
-  val[kPt]          = GetPtBin(fPt);
+  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();
+  val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
   val[kYrez]        = dy;
   val[kZrez]        = dz;
   val[kPrez]        = dphi*TMath::RadToDeg();
+  val[kNdim]        = fTracklet->GetDetector();
+  val[kNdim+1]      = dx;
   H->Fill(val);
   if(DebugLevel()>=3){
     (*DebugStream()) << "trackIn"
@@ -663,7 +667,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
     val[kPhi] = phi;
     val[kEta] = eta;
     val[kSpeciesChgRC]= rc?0.:sign*sIdx;
-    val[kPt]  = GetPtBin(pt0);
+    val[kPt]  = pt0<0.8?0:1;//GetPtBin(pt0);
     Double_t tilt(fTracklet->GetTilt());
 //             ,t2(tilt*tilt)
 //             ,corr(1./(1. + t2))
@@ -924,8 +928,12 @@ void AliTRDresolution::MakeSummary()
   const UChar_t vClOpt[nClViews] = {1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0};
   const Int_t nTrkltViews(10);
   const Char_t *vTrkltName[nTrkltViews] = {"TrkltY", "TrkltYn", "TrkltYp", "TrkltPhn", "TrkltPhp", "TrkltZ", "TrkltQn", "TrkltQp", "TrkltPn", "TrkltPp"};
-  const Int_t nTrkInViews(6);
-  const Char_t *vTrkInName[nTrkInViews] = {"TrkInY", "TrkInYn", "TrkInYp", "TrkInZ", "TrkInPhn", "TrkInPhp"};
+  const Int_t nTrkInViews(4);
+  const Char_t *vTrkInName[nTrkInViews][6] = {
+    {"TrkInY", "TrkInYn", "TrkInYp", "TrkInZ", "TrkInPhn", "TrkInPhp"},
+    {"TrkInYnl", "TrkInYni", "TrkInYnh", "TrkInYpl", "TrkInYpi", "TrkInYph"},
+    {"TrkInXnl", "TrkInZn", "TrkInXl", "TrkInXpl", "TrkInZp", "TrkInYh"},
+    {"TrkInPhnl", "TrkInPhni", "TrkInPhnh", "TrkInPhpl", "TrkInPhpi", "TrkInPhph"}};
   const Int_t nTrkViews(10);
   const Char_t *vTrkName[nTrkViews] = {"TrkY", "TrkYn", "TrkYp", "TrkPhn", "TrkPhp", "TrkZ", "TrkQn", "TrkQp", "TrkPn", "TrkPp"};
   const Char_t *typName[] = {"", "MC"};
@@ -964,16 +972,18 @@ void AliTRDresolution::MakeSummary()
     }
     // trackIn systematic
     if((arr = (TObjArray*)fProj->At(ityp?kMCtrackIn:kTrackIn))){
-      cOut = new TCanvas(Form("TRDsummary%s_%sTrkIn", GetName(), typName[ityp]), "Track IN Resolution", 1024, 768);
-      cOut->Divide(3,2, 1.e-5, 1.e-5);
-      Int_t nplot(0);
-      for(Int_t iplot(0); iplot<nTrkInViews; iplot++){
-        p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-          if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s_2D", typName[ityp], vTrkInName[iplot])))) continue;
-          h2->Draw("colz"); nplot++;
+      for(Int_t iview(0); iview<nTrkInViews; iview++){
+        cOut = new TCanvas(Form("TRDsummary%s_%sTrkIn%02d", GetName(), typName[ityp], iview), "Track IN Resolution", 1024, 768);
+        cOut->Divide(3,2, 1.e-5, 1.e-5);
+        Int_t nplot(0);
+        for(Int_t iplot(0); iplot<6; iplot++){
+          p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
+            if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s_2D", typName[ityp], vTrkInName[iview][iplot])))) continue;
+            h2->Draw("colz"); nplot++;
+        }
+        if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+        else delete cOut;
       }
-      if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-      else delete cOut;
     }
   }
   // track MC systematic
@@ -1156,11 +1166,6 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     isel = ly*2+ch;
     for(Int_t jh(0); jh<np[isel]; jh++) php[isel][jh]->Increment(coord, v);
   }
-
-  if(!fProj){
-    AliInfo("Building array of projections ...");
-    fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
-  }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kClNproj), cidx);
 
@@ -1269,11 +1274,6 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     isel = ly*3+ch;
     for(Int_t jh(0); jh<np[isel]; jh++) php[isel][jh]->Increment(coord, v);
   }
-
-  if(!fProj){
-    AliInfo("Building array of projections ...");
-    fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
-  }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
 
@@ -1309,48 +1309,114 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
 
   Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
   Int_t ndim(H->GetNdimensions());
-  TAxis *aa[kNdim+1], *as(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
+  TAxis *aa[kNdim+1], *as(NULL), *ap(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > kSpeciesChgRC) as = H->GetAxis(kSpeciesChgRC);
+  if(ndim > kPt) ap = H->GetAxis(kPt);
   // build list of projections
-  const Int_t nsel(3), npsel(4);
+  const Int_t nsel(15), npsel(3);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
-  const Int_t nPtPhi(2); Int_t rebinPtPhiX[nEtaPhi] = {1, 1}, rebinPtPhiY[nEtaPhi] = {2, 5};
-  AliTRDresolutionProjection hp[kTrkInNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
+  AliTRDresolutionProjection hp[kMCTrkInNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
   // define list of projections
-  isel++;  // negative tracks
-  hp[ih].Build(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: r-#phi residuals", kEta, kPhi, kYrez, aa);
+  isel++;  // negative low pt tracks
+  hp[ih].Build(Form("H%sTrkInYnl", mc?"MC":""), "TrackIn[-]:: #Deltay{p_{t}[GeV/c]<0.8}", kEta, kPhi, kYrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  hp[ih].Build(Form("H%sTrkInYn", mc?"MC":""), "TrackIn[-]:: r-#phi residuals", kEta, kPhi, kYrez, aa);
+  hp[ih].Build(Form("H%sTrkInPhnl", mc?"MC":""), "TrackIn[-]:: #Delta#phi{p_{t}[GeV/c]<0.8}", kEta, kPhi, kPrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  hp[ih].Build(Form("H%sTrkInPhn", mc?"MC":""), "TrackIn[-]:: #Delta#phi residuals", kEta, kPhi, kPrez, aa);
+  hp[ih].Build(Form("H%sTrkInXnl", mc?"MC":""), "TrackIn[-]:: #Deltax{p_{t}[GeV/c]<0.8}", kEta, kPhi, kNdim+1, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  hp[ih].Build(Form("H%sTrkInYPn", mc?"MC":""), "TrackIn[-]:: r-#phi/p_{t} residuals", kPt, kPhi, kYrez, aa);
-  hp[ih].SetRebinStrategy(nPtPhi, rebinPtPhiX, rebinPtPhiY);
-    php[isel][np[isel]++] = &hp[ih++];
-  isel++; // positive tracks
-  php[isel][np[isel]++] = &hp[ih-4]; // relink first histo
-  hp[ih].Build(Form("H%sTrkInYp", mc?"MC":""), "TrackIn[+]:: r-#phi residuals", kEta, kPhi, kYrez, aa);
+  isel++;  // negative intermediate pt tracks
+  hp[ih].Build(Form("H%sTrkInYni", mc?"MC":""), "TrackIn[-]:: #Deltay{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kYrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  hp[ih].Build(Form("H%sTrkInPhp", mc?"MC":""), "TrackIn[+]:: #Delta#phi residuals", kEta, kPhi, kPrez, aa);
+  hp[ih].Build(Form("H%sTrkInPhni", mc?"MC":""), "TrackIn[-]:: #Delta#phi{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kPrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  hp[ih].Build(Form("H%sTrkInYPp", mc?"MC":""), "TrackIn[+]:: r-#phi/p_{t} residuals", kPt, kPhi, kYrez, aa);
-  hp[ih].SetRebinStrategy(nPtPhi, rebinPtPhiX, rebinPtPhiY);
-    php[isel][np[isel]++] = &hp[ih++];
-  isel++; // RC tracks
-  hp[ih].Build(Form("H%sTrkInZ", mc?"MC":""), "TrackIn[RC]:: z residuals", kEta, kPhi, kZrez, aa);
+  hp[ih].Build(Form("H%sTrkInXni", mc?"MC":""), "TrackIn[-]:: #Deltax{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kNdim+1, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
+  isel++;  // negative high pt tracks
+  hp[ih].Build(Form("H%sTrkInYnh", mc?"MC":""), "TrackIn[-]:: #Deltay{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInPhnh", mc?"MC":""), "TrackIn[-]:: #Delta#phi{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInXnh", mc?"MC":""), "TrackIn[-]:: #Deltax{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // positive low pt tracks
+  hp[ih].Build(Form("H%sTrkInYpl", mc?"MC":""), "TrackIn[+]:: #Deltay{p_{t}[GeV/c]<0.8}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInPhpl", mc?"MC":""), "TrackIn[+]:: #Delta#phi{p_{t}[GeV/c]<0.8}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInXpl", mc?"MC":""), "TrackIn[+]:: #Deltax{p_{t}[GeV/c]<0.8}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++;  // positive intermediate pt tracks
+  hp[ih].Build(Form("H%sTrkInYpi", mc?"MC":""), "TrackIn[+]:: #Deltay{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInPhpi", mc?"MC":""), "TrackIn[+]:: #Delta#phi{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInXpi", mc?"MC":""), "TrackIn[+]:: #Deltax{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // positive high pt tracks
+  hp[ih].Build(Form("H%sTrkInYph", mc?"MC":""), "TrackIn[+]:: #Deltay{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInPhph", mc?"MC":""), "TrackIn[+]:: #Delta#phi{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInXph", mc?"MC":""), "TrackIn[+]:: #Deltax{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // negative RC tracks
+  hp[ih].Build(Form("H%sTrkInZn", mc?"MC":""), "TrackIn[RC-]:: #Deltaz", kEta, kPhi, kZrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // positive RC tracks
+  hp[ih].Build(Form("H%sTrkInZp", mc?"MC":""), "TrackIn[RC+]:: #Deltaz", kEta, kPhi, kZrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  if(mc){
+    for(Int_t is(0); is<AliPID::kSPECIES; is++){
+      isel++;  // negative MC tracks
+      hp[ih].Build(Form("HMCTrkInYn%s", AliPID::ParticleShortName(is)), Form("TrackIn[%s-]:: #Deltay", AliPID::ParticleShortName(is)), kEta, kPhi, kYrez, aa);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+      hp[ih].Build(Form("HMCTrkInPhn%s", AliPID::ParticleShortName(is)), Form("TrackIn[%s-]:: #Delta#phi", AliPID::ParticleShortName(is)), kEta, kPhi, kPrez, aa);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+    }
+    for(Int_t is(0); is<AliPID::kSPECIES; is++){
+      isel++;  // positive MC tracks
+      hp[ih].Build(Form("HMCTrkInYp%s", AliPID::ParticleShortName(is)), Form("TrackIn[%s+]:: #Deltay", AliPID::ParticleShortName(is)), kEta, kPhi, kYrez, aa);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+      hp[ih].Build(Form("HMCTrkInPhp%s", AliPID::ParticleShortName(is)), Form("TrackIn[%s+]:: #Delta#phi", AliPID::ParticleShortName(is)), kEta, kPhi, kPrez, aa);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+    }
+  }
+//   for(Int_t jsel(0); jsel<=isel; jsel++){
+//     printf("Selection [%2d]\n", jsel);
+//     for(Int_t n(0); n<np[jsel]; n++){
+//       printf("  %d %s\n", n, php[jsel][n]->fH->GetName());
+//     }
+//   }
 
   // fill projections
-  Int_t ch(0), rcBin(as?as->FindBin(0.):-1);
+  Int_t ch(0), pt(0), rcBin(as?as->FindBin(0.):-1);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
@@ -1361,14 +1427,19 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
       if(coord[kSpeciesChgRC] > rcBin) ch = 1;  // [+] track
       else if(coord[kSpeciesChgRC] == rcBin) ch = 2;  // [RC] track
     }
-    for(Int_t jh(0); jh<np[ch]; jh++) php[ch][jh]->Increment(coord, v);
-  }
-  if(!fProj){
-    AliInfo("Building array of projections ...");
-    fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
+    // pt selection
+    pt = 0; // low pt
+    if(ap) pt = coord[kPt]-1;
+    // global selection
+    Int_t selection = ch*3+pt;
+    for(Int_t jh(0); jh<np[selection]; jh++) php[selection][jh]->Increment(coord, v);
+    if(!mc || rcBin<0 || ch==2) continue;
+    Int_t spec = Int_t(TMath::Abs(as->GetBinCenter(coord[kSpeciesChgRC])))-1;
+    selection+=(ch*AliPID::kSPECIES+spec);
+    for(Int_t jh(0); jh<np[selection]; jh++) php[selection][jh]->Increment(coord, v);
   }
   TObjArray *arr(NULL);
-  fProj->AddAt(arr = new TObjArray(kTrkInNproj), cidx);
+  fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
 
   TH2 *h2(NULL);
   for(; ih--; ){
@@ -1376,6 +1447,39 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
     arr->AddAt(h2, ih);
   }
+  // build combined performance plots
+  /*!dy negative tracks all momenta*/
+  Int_t iproj(0);
+  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYn", mc?"MC":""), "TrackIn[-]:: #Deltay");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  /*!dy positive tracks all momenta*/
+  iproj = 9;
+  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYp", mc?"MC":""), "TrackIn[+]:: #Deltay");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  /*!dy all tracks all momenta*/
+  hp[0]+=hp[9];hp[0].fH->SetNameTitle(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: #Deltay");
+  if((h2 = hp[0].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  /*!dy all tracks high momenta*/
+  iproj = 6;
+  hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInYh", mc?"MC":""), "TrackIn :: #Deltay{p_{t}[GeV/c]>=1.5}");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+  /*!dx all tracks low momenta*/
+  iproj = 2;
+  hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInXl", mc?"MC":""), "TrackIn :: #Deltax{p_{t}[GeV/c]<0.8}");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+  /*!dphi negative tracks all momenta*/
+  iproj =1;
+  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhn", mc?"MC":""), "TrackIn[-]:: #Delta#phi");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  /*!dphi positive tracks all momenta*/
+  iproj = 10;
+  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhp", mc?"MC":""), "TrackIn[+]:: #Delta#phi");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  /*!dy[RC] tracks all charges*/
+  iproj = 18;
+  hp[iproj]+=hp[iproj+1]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInZ", mc?"MC":""), "TrackIn[RC]:: #Deltaz");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+
   return kTRUE;
 }
 
@@ -1467,11 +1571,6 @@ Bool_t AliTRDresolution::MakeProjectionTrack()
     isel = ly*3+ch;
     for(Int_t jh(0); jh<np[isel]; jh++) php[isel][jh]->Increment(coord, v);
   }
-
-  if(!fProj){
-    AliInfo("Building array of projections ...");
-    fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
-  }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkNproj), cidx);
 
@@ -1492,6 +1591,10 @@ Bool_t AliTRDresolution::PostProcess()
   if (!fContainer) {
     AliError("ERROR: list not available");
     return kFALSE;
+  }
+  if(!fProj){
+    AliInfo("Building array of projections ...");
+    fProj = new TObjArray(kNclasses); fProj->SetOwner(kTRUE);
   }
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
@@ -1758,6 +1861,7 @@ TObjArray* AliTRDresolution::Histos()
     trMin[kYrez] = -0.45; trMax[kYrez] = 0.45;
     trMin[kPrez] = -4.5; trMax[kPrez] = 4.5;
     trMin[kZrez] = -1.5; trMax[kZrez] = 1.5;
+//    trNbins[kSpeciesChgRC] = 3;trMin[kSpeciesChgRC] = -1.5; trMax[kSpeciesChgRC] = 1.5;
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
     trTitle[kNdim]=StrDup("dq/dl [a.u.]"); trNbins[kNdim] = 30; trMin[kNdim] = 100.; trMax[kNdim] = 3100;
 
@@ -1772,11 +1876,20 @@ TObjArray* AliTRDresolution::Histos()
   // tracklet to TRDin
   snprintf(hn, nhn, "h%s", fgPerformanceName[kTrackIn]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
+    // set specific fields
+    const Int_t mdim(kNdim+2);
+    Char_t *trinTitle[mdim]; memcpy(trinTitle, fgkTitle, kNdim*sizeof(Char_t*));
+    Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
+    Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
+    Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
+    trinNbins[kSpeciesChgRC] = 3;trinMin[kSpeciesChgRC] = -1.5; trinMax[kSpeciesChgRC] = 1.5;
+    trinTitle[kNdim]=StrDup("detector"); trinNbins[kNdim] = 540; trinMin[kNdim] = -0.5; trinMax[kNdim] = 539.5;
+    trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?kNdim:7;
-    for(Int_t idim(0); idim<ndim; idim++){ st += fgkTitle[idim]; st+=";";}
-    H = new THnSparseI(hn, st.Data(), ndim, fgkNbins, fgkMin, fgkMax);
+    Int_t ndim=DebugLevel()>=1?mdim:7;
+    for(Int_t idim(0); idim<ndim; idim++){st+=trinTitle[idim]; st+=";";}
+    H = new THnSparseI(hn, st.Data(), ndim, trinNbins, trinMin, trinMax);
   } else H->Reset();
   fContainer->AddAt(H, kTrackIn);
   // tracklet to TRDout
@@ -2259,12 +2372,20 @@ void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const 
 }
 
 //________________________________________________________
+AliTRDresolution::AliTRDresolutionProjection& AliTRDresolution::AliTRDresolutionProjection::operator+=(const AliTRDresolutionProjection& other)
+{
+// increment projections  
+  if(!fH || !other.fH) return *this;
+  fH->Add(other.fH);
+  return *this;
+}
+
+//________________________________________________________
 void AliTRDresolution::AliTRDresolutionProjection::Increment(Int_t bin[], Double_t v)
 {
 // increment bin with value "v" pointed by general coord in "bin"
   if(!fH) return;
-  fH->AddBinContent(
-        fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), v);
+  fH->AddBinContent(fH->GetBin(bin[fAx[0]],bin[fAx[1]],bin[fAx[2]]), Int_t(v));
 }
 
 //________________________________________________________
