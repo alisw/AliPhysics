@@ -7,7 +7,7 @@
  * full copyright notice.                                                 *
  **************************************************************************/
 
-#ifndef __CINT__
+#if !defined(__CINT__) || defined(__MAKECINT__)
 
 #include <TGLViewer.h>
 #include <TGLCameraOverlay.h>

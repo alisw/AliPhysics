@@ -201,7 +201,7 @@ void add_muon_trackRefs(AliStack* stack, TTree* treeTR, TEveTrackList* reco, TEv
     {
       track->SortPathMarksByTime();
       // stop track propagation at last path mark
-      track->RefPathMarks().back().fType = TEvePathMark::kDecay;
+      track->RefPathMarks().back().fType = TEvePathMarkT<double>::EType_e(TEvePathMark::kDecay);
       
       // add the track and trackRefs to proper lists
       if (isReconstructible(chHit)) {

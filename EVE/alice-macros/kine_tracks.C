@@ -294,7 +294,7 @@ kine_track(Int_t  label,
     if (cont == 0)
     {
       TEveTrackList* tlist = new TEveTrackList
-	(Form("Kinematics of %d", label, p->GetNDaughters()));
+	(Form("Kinematics of %d %d", label, p->GetNDaughters()));
       cont = tlist;
 
       TEveTrackPropagator* trkProp = tlist->GetPropagator();

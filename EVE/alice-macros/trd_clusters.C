@@ -13,6 +13,7 @@ class TEveElement;
 #else
 #include <TEveManager.h>
 #include <TEvePointSet.h>
+#include <TTree.h>
 #include <EveBase/AliEveEventManager.h>
 
 #include "AliRunLoader.h"

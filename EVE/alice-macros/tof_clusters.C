@@ -13,7 +13,7 @@ class TEvePointSet;
 #else
 
 #include <TMath.h>
-
+#include <TTree.h>
 #include <TEveManager.h>
 #include <TEvePointSet.h>
 #include <EveBase/AliEveEventManager.h>

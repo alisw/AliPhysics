@@ -18,6 +18,7 @@ class TEvePointSet;
 #include <TColor.h>
 #include <TEvePointSet.h>
 #include <EveBase/AliEveEventManager.h>
+#include <TTree.h>
 
 #include <AliRunLoader.h>
 #include <AliCluster.h>
