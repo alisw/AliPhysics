@@ -110,6 +110,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
 
   TH2F       *fNmcNch;                      // N mc - N ch rec
   TProfile   *fPNmcNch;                     // N mc - N ch rec
+  TH2F       *fNmcNchVtx;                   // N mc - N ch rec for events with reconstructed vertex
+  TProfile   *fPNmcNchVtx;                  // N mc - N ch rec for events with reconstructed vertex
   TH2F       *fChargedPi0;                  // charged versus charged+Pi0
 
   THnSparse   *fMapSingleTrig[6];           //! multi-dim histo for trigger track properties

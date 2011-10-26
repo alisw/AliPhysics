@@ -80,6 +80,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fHistPtMC(0),
       fNmcNch(0),
       fPNmcNch(0),
+      fNmcNchVtx(0),
+      fPNmcNchVtx(0),
       fChargedPi0(0)
 {
 
@@ -158,6 +160,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     
     fNmcNch = new TH2F("fNmcNch", "fNmcNch", 100,-0.5,99.5,100,-0.5,99.5);
     fPNmcNch = new TProfile("pNmcNch", "pNmcNch", 100,-0.5,99.5);
+    fNmcNchVtx = new TH2F("fNmcNchVtx", "fNmcNchVtx", 100,-0.5,99.5,100,-0.5,99.5);
+    fPNmcNchVtx = new TProfile("pNmcNchVtx", "pNmcNchVtx", 100,-0.5,99.5);
 
   }
 
@@ -350,6 +354,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHists->Add(fHistPtMC); 
     fHists->Add(fNmcNch); 
     fHists->Add(fPNmcNch); 
+    fHists->Add(fNmcNchVtx); 
+    fHists->Add(fPNmcNchVtx); 
   }
   fHists->Add(fChargedPi0);
   
@@ -509,6 +515,8 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
       }	
 	
     }//check event (true)
+
+
     if(fUseMC && !fMcOnly){
       //reset values
       fNMcPrimAccept=0;// number of accepted primaries
@@ -937,6 +945,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
     fNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
     fPNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
   }
+  if(step==3){
+    fNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
+    fPNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
+  }
   
   fVzEvent= vzMC;
   return fNRecAccept;
@@ -1243,9 +1255,14 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<
   
   fVzEvent= vzMC;
   fNMcPrimAccept = nChargedPrim;
+
   if(step==1){ // step 1 = Trig All Mc Nmc
     fNmcNch->Fill( fNMcPrimAccept,fNRecAccept);
     fPNmcNch->Fill(fNMcPrimAccept,fNRecAccept);
+  }
+  if(step==3){ // step 3 = Trig vtx Mc
+    fNmcNchVtx->Fill( fNMcPrimAccept,fNRecAccept);
+    fPNmcNchVtx->Fill(fNMcPrimAccept,fNRecAccept);
   }
   return fNRecAccept; // rec value from step 5 or step 2
  
