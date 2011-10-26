@@ -104,6 +104,7 @@ protected:
   
   TH1F* fVertexContributors;    // number of contributors to the vertex
   TH1F* fCentralityDistribution; // distribution of the variable used for centrality selection
+  TH2F* fCentralityCorrelation;  // centrality vs multiplicity
   
   TH3F* fITSClusterMap;          // its cluster map vs centrality vs pT
   
@@ -113,7 +114,7 @@ protected:
   
   Long64_t fRunNumber;           // run number that has been processed
   
-  ClassDef(AliUEHistograms, 9)  // underlying event histogram container
+  ClassDef(AliUEHistograms, 10)  // underlying event histogram container
 };
 
 #endif
