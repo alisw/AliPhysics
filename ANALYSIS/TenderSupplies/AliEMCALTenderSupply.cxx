@@ -64,6 +64,7 @@ AliTenderSupply()
 ,fNonLinearThreshold(30)      	
 ,fReCalibCluster(kFALSE)	
 ,fReCalibCell(kFALSE)	
+,fUpdateCell(kFALSE)  
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
 ,fNCellsFromEMCALBorder(1)	
@@ -78,16 +79,18 @@ AliTenderSupply()
 ,fRcut(0.05)	
 ,fEtacut(0.025)	
 ,fPhicut(0.05)	
-,fBasePath(".")
+,fBasePath("")
 ,fReClusterize(kFALSE)
 ,fClusterizer(0)
 ,fGeomMatrixSet(kFALSE)
 ,fLoadGeomMatrices(kFALSE)
-,fRecParam(0)
+,fRecParam(0x0)
+,fRecParamSet(kFALSE)
 ,fOCDBpath(" ")
 ,fUnfolder(0)
 ,fDigitsArr(0)
 ,fClusterArr(0)
+,fMisalignSurvey(kdefault)	
 {
   // Default constructor.
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
@@ -105,6 +108,7 @@ AliTenderSupply(name,tender)
 ,fNonLinearThreshold(30)      	
 ,fReCalibCluster(kFALSE)	
 ,fReCalibCell(kFALSE)	
+,fUpdateCell(kFALSE)  
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
 ,fNCellsFromEMCALBorder(1)	
@@ -119,23 +123,25 @@ AliTenderSupply(name,tender)
 ,fRcut(0.05)
 ,fEtacut(0.025)	
 ,fPhicut(0.05)	
-,fBasePath(".")
+,fBasePath("")
 ,fReClusterize(kFALSE)
 ,fClusterizer(0)
 ,fGeomMatrixSet(kFALSE)
 ,fLoadGeomMatrices(kFALSE)
-,fRecParam(0)
+,fRecParam(0x0)
+,fRecParamSet(kFALSE)
 ,fOCDBpath(" ")
 ,fUnfolder(0)
 ,fDigitsArr(0)
 ,fClusterArr(0)
+,fMisalignSurvey(kdefault)	
 {
   // Named constructor
   
   for(Int_t i = 0; i < 10; i++) fEMCALMatrix[i] = 0 ;
   
-  fRecParam        = new AliEMCALRecParam;
   fEMCALRecoUtils  = new AliEMCALRecoUtils();
+  fRecParam        = new AliEMCALRecParam;
   fDigitsArr       = new TClonesArray("AliEMCALDigit",1000);
 }
 
@@ -157,7 +163,7 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
 void AliEMCALTenderSupply::Init()
 {
   // Initialise EMCAL tender.
-  
+
   if (fDebugLevel>0) 
     AliInfo("Init EMCAL Tender supply");	
   
@@ -220,27 +226,55 @@ void AliEMCALTenderSupply::ProcessEvent()
     AliError("ESD event ptr = 0, returning");
     return;
   }
-  
+/*
+  if(!fRecParamSet)
+   {
+    if(!fRecParam)
+    {
+      InitRecParam();
+      fRecParamSet = kTRUE;
+    }
+   }
+ */ 
   // Initialising parameters once per run number
   if(fTender->RunChanged()){ 
     GetPass();
-    if (!InitBadChannels()) {
-      AliError("InitBadChannels returned false, returning");
-      return;
+    // Init bad channels
+    Int_t fInitBC=InitBadChannels();
+    
+    if (fInitBC==0)
+      {
+	AliError("InitBadChannels returned false, returning");
+	return;
+      }
+    if(fInitBC>1)
+      {
+	AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+      }
+
+    if (fReCalibCluster || fReCalibCell || fUpdateCell) { 
+      Int_t fInitRecalib=InitRecalib();
+      if (fInitRecalib==0)
+	{
+	  AliError("InitRecalib returned false, returning");
+	  return;
+	}
+      if(fInitRecalib >1)
+	{
+	  AliInfo(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+	  fReCalibCell=kFALSE;
+	  fReCalibCluster=kFALSE;
+	}
     }
-    if (fRecalClusPos || fReClusterize) { 
+
+    if (fRecalClusPos || fReClusterize || fUpdateCell) { 
       if (!InitMisalignMatrix()) { 
         AliError("InitMisalignmentMatrix returned false, returning");
         return;
       }
     }
-    if (fReCalibCluster || fReCalibCell) { 
-      if (!InitRecalib()) {
-        AliError("InitRecalib returned false, returning");
-        return;
-      }
-    }
-    if (fReClusterize) {
+
+    if (fReClusterize || fUpdateCell) {
       if (!InitClusterization()) {
         AliError("InitClusterization returned false, returning");
         return;
@@ -249,8 +283,9 @@ void AliEMCALTenderSupply::ProcessEvent()
     
     if(fDebugLevel>1) 
       fEMCALRecoUtils->Print("");
+      
   }
-  
+
   // Test if cells present
   AliESDCaloCells *cells= event->GetEMCALCells();
   if (cells->GetNumberOfCells()<=0) {
@@ -259,16 +294,30 @@ void AliEMCALTenderSupply::ProcessEvent()
   }
   
   // Recalibrate cells
-  if (fReCalibCell) 
-    RecalibrateCells();
-  
-  // Reclusterize
-  if(fReClusterize){
-    FillDigitsArray();
-    Clusterize();
-    UpdateClusters();
-  }
-  
+  if (fReCalibCell || fUpdateCell)
+    { 
+      RecalibrateCells();
+      fReCalibCluster=kFALSE;
+    }
+  if(fDebugLevel>2)
+     AliInfo(Form("Re-calibrate cluster %d\n",fReCalibCluster));
+
+  if(fUpdateCell)
+    {
+      printf("Update cells\n");
+      UpdateCells();
+      fReClusterize=kTRUE;
+    }
+
+    // Reclusterize
+  if(fReClusterize)
+    {
+
+      FillDigitsArray();
+      Clusterize();
+      UpdateClusters();
+    }
+
   // Store good clusters
   TClonesArray *clusArr = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
   if (!clusArr) 
@@ -278,6 +327,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     return;
   }
   Int_t nclusters = clusArr->GetEntriesFast();
+  
   for (Int_t icluster=0; icluster < nclusters; ++icluster) { 
     AliVCluster *clust = static_cast<AliVCluster*>(clusArr->At(icluster));
     if (!clust) 
@@ -342,6 +392,8 @@ void AliEMCALTenderSupply::SetClusterMatchedToTrack(AliESDEvent *event)
     track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
     if(matchClusIndex != -1) 
       track->SetStatus(AliESDtrack::kEMCALmatch);
+    else
+      track->ResetStatus(AliESDtrack::kEMCALmatch);
   }
   if (fDebugLevel>2) 
     AliInfo("Track matched to closest cluster");	
@@ -425,45 +477,54 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   
   Int_t runGM = event->GetRunNumber();
   TObjArray *mobj = 0;
-  
+
+ if(fMisalignSurvey == kdefault){ //take default alignment corresponding to run no
+    AliOADBContainer emcalgeoCont(Form("emcal"));
+    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+    mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
+ }
+
+ if(fMisalignSurvey == kSurveybyS){ //take alignment at sector level
   if (runGM <= 140000) { //2010 data
     AliOADBContainer emcalgeoCont(Form("emcal2010"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     
-  } else if (runGM>140000 && runGM <148531 && (fFilepass == "pass1")) { // 2011 LHC11a pass1 data
+  } else if (runGM>140000) { // 2011 LHC11a pass1 data
     AliOADBContainer emcalgeoCont(Form("emcal2011"));
-    //    emcalgeoCont.InitFromFile(Form("%s/BetaGood.root",fBasePath.Data()),Form("AliEMCALgeo"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
-    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");			}
-  
-  if((runGM<=140000)||(runGM>140000 && runGM <148531 && (fFilepass == "pass1"))){	
-    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
-      fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
-      fEMCALMatrix[mod]->Print();
-    }
-  } else {
-    AliInfo(Form("No external misalignment matrix set: %d - %s, loading from ESD event", runGM, fFilepass.Data()));
-    for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
-      if(fDebugLevel > 2) 
-        event->GetEMCALMatrix(mod)->Print();
-      if(event->GetEMCALMatrix(mod)) 
-        fEMCALGeo->SetMisalMatrix(event->GetEMCALMatrix(mod),mod) ;
-    } 
-    fGeomMatrixSet=kTRUE;
+    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byS");			
   }
+ }
+
+ if(fMisalignSurvey == kSurveybyS){ //take alignment at module level
+  if (runGM <= 140000) { //2010 data
+    AliOADBContainer emcalgeoCont(Form("emcal2010"));
+    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
+    
+  } else if (runGM>140000) { // 2011 LHC11a pass1 data
+    AliOADBContainer emcalgeoCont(Form("emcal2011"));
+    emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
+    mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");			
+  }
+ }
+
+ for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
+   fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
+   fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
+   fEMCALMatrix[mod]->Print();
+ }
   return kTRUE;
 }
 
 //_____________________________________________________
-Bool_t AliEMCALTenderSupply::InitBadChannels()
+Int_t AliEMCALTenderSupply::InitBadChannels()
 {
   // Initialising bad channel maps
-  
   AliESDEvent *event = fTender->GetEvent();
   if (!event) 
-    return kFALSE;
+    return 0;
   
   if (fDebugLevel>0) 
     AliInfo("Initialising Bad channel map");
@@ -478,152 +539,133 @@ Bool_t AliEMCALTenderSupply::InitBadChannels()
     fEMCALRecoUtils->SwitchOnDistToBadChannelRecalculation();
   
   Int_t runBC = event->GetRunNumber();
-  if (runBC <=140000) { //2010
-    TFile *fbad = new TFile(Form("%s/BadChannels.root",fBasePath.Data()),"read");
-    if (fbad->IsZombie()) {
-      TString fPath = TString(fBasePath.Data());
-      if (fPath.Contains("alien")) {
-        if (fDebugLevel>1) 
-          AliInfo("Connecting to alien to get BadChannels.root");	
-        delete fbad;
-        fbad = TFile::Open(Form("%s/BadChannelsDB/BadChannels.root",fBasePath.Data()));
-      }
+  
+  AliOADBContainer *contBC=new AliOADBContainer("");
+  if(fBasePath!=""){ //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0) AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
+    TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
+    if(fbad->IsZombie()){
+      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s, aborting",fBasePath.Data()));
+      return 0;
+    }  
+    if(fbad) delete fbad;
+    contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");    
+  }
+    else { // Else choose the one in the $ALICE_ROOT directory
+      if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_ROOT/OADB/EMCAL");
+      TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","read");
+      if(fbad->IsZombie()){
+	AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root was not found, aborting");
+	return 0;
+      }  
+      if(fbad) delete fbad;
+      contBC->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels"); 
     }
-    for (Int_t i=0; i<4; ++i) {
-      TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
-      if (h)
-        delete h;
-      h = (TH2I*)fbad->Get(Form("EMCALBadChannelMap_Mod%d",i));
-      if (!h) {
-        AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
-        continue;
-      }
-      h->SetDirectory(0);
-      fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
-    }
-    delete fbad;
-    return kTRUE;
+  
+  TObjArray *arrayBC=(TObjArray*)contBC->GetObject(runBC);
+  if(!arrayBC){
+    AliError(Form("No external hot channel set for run number: %d", runBC));
+    return 2; 
   }
   
-  //2011
-  Int_t nSupMod=-1, nModule=-1, nIphi=-1, nIeta=-1, iphi=-1, ieta=-1;
-  if (runBC>=144871 && runBC<=146860){ // LHC11a 2.76 TeV pp
-    
-    if (fFilepass == "pass1") { // pass1
-      const Int_t nTowers=89;
-      Int_t hotChannels[nTowers]={74, 103, 152, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 368, 369, 370, 371, 372, 373, 374,375, 376, 377, 378, 379, 380, 381, 382, 383, 917, 1275, 1288, 1519, 1595, 1860, 1967, 2022, 2026, 2047, 2117, 2298, 2540, 2776, 3135, 3764, 6095, 6111, 6481, 6592, 6800, 6801, 6802, 6803, 6804, 6805, 6806, 6807, 6808, 6809, 6810, 6811, 6812, 6813, 6814, 6815, 7371, 7425, 7430, 7457, 7491, 7709, 8352, 8353, 8356, 8357, 8808, 8810, 8812, 8814, 9056, 9769, 9815, 9837};
-      for (Int_t i=0; i<nTowers; ++i) {
-        fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
-        fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
-        fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
-      }
-    } else if (fFilepass == "pass2") { // pass2
-      const Int_t nTowers=24;
-      Int_t hotChannels[nTowers]= {74, 103, 152, 917, 1059, 1175, 1276, 1288, 1376, 1382, 1595, 2022, 2026, 2210, 2540, 2778, 2793, 3135, 3764, 5767, 6481, 7371, 7878, 9769};
-      for(Int_t i=0; i<nTowers; ++i) {
-        fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
-        fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
-        fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
-      }
+  TObjArray *arrayBCpass=(TObjArray*)arrayBC->FindObject(fFilepass); // Here, it looks for a specific pass
+  if(!arrayBCpass){
+    AliError(Form("No external hot channel set for: %d -%s", runBC,fFilepass.Data()));
+    return 2; 
+  }
+
+  if(fDebugLevel>0) arrayBCpass->Print();
+
+  Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+  for (Int_t i=0; i<sms; ++i) {
+    TH2I *h = fEMCALRecoUtils->GetEMCALChannelStatusMap(i);
+    if (h)
+      delete h;
+    h=(TH2I*)arrayBCpass->FindObject(Form("EMCALBadChannelMap_Mod%d",i));
+
+    if (!h) {
+      AliError(Form("Can not get EMCALBadChannelMap_Mod%d",i));
+      continue;
     }
-    return kTRUE;
+    h->SetDirectory(0);
+    fEMCALRecoUtils->SetEMCALChannelStatusMap(i,h);
   }
   
-  if (runBC>=151636 && runBC<=155384) { //LHC11c 
-    const Int_t nTowers=231;
-    Int_t hotChannels[nTowers]={74, 103, 152, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 368, 369, 370, 371, 372, 373, 374,375, 376, 377, 378, 379, 380, 381, 382, 383, 917, 1059, 1160, 1263, 1275, 1276, 1288, 1376, 1382, 1384, 1414,1519, 1595, 1860, 1720, 1912, 1961, 1967,  2016, 2017, 2019, 2022, 2023, 2026, 2027, 2047, 2065, 2071, 2074, 2079, 2112, 2114, 2115, 2116, 2117, 2120, 2123, 2145, 2160, 2190, 2298, 2506, 2540, 2776, 2778, 3135, 3544, 3567, 3664, 3665, 3666, 3667, 3668, 3669, 3670, 3671, 3672, 3673, 3674, 3675, 3676, 3677, 3678, 3679, 3712, 3713, 3714, 3715, 3716, 3717, 3718, 3719, 3720, 3721, 3722, 3723, 3724, 3725, 3726, 3727, 3764, 4026, 4121, 4157, 4208, 4209, 4568, 5560, 5767, 5969, 6065, 6076, 6084, 6087, 6095, 6111, 6128, 6129, 6130, 6131, 6133, 6136, 6137, 6138, 6139, 6140, 6141, 6142, 6143, 6340, 6369, 6425, 6481, 6561, 6592, 6678, 6907, 6925, 6800, 6801, 6802, 6803, 6804, 6805, 6806, 6807, 6808, 6809, 6810, 6811, 6812, 6813, 6814, 6815, 7089, 7371, 7375, 7425, 7457, 7430, 7491, 7709, 7874,  8273, 8352, 8353, 8354, 8356, 8357, 8362, 8808, 8769, 8810, 8811, 8812, 8814, 9056, 9217, 9302, 9365, 9389, 9815, 9769, 9833, 9837, 9850, 9895, 9997, 10082, 10086, 10087, 10091, 10095, 10112, 10113, 10114, 10115, 10116, 10117, 10118, 10119, 10120, 10121, 10122, 10123, 10576, 10718, 10723, 10918, 10919, 10922, 10925, 10926, 10927, 11276, 1136};
-    for(Int_t i=0; i<nTowers; i++) {
-      fEMCALGeo->GetCellIndex(hotChannels[i],nSupMod,nModule,nIphi,nIeta);
-      fEMCALGeo->GetCellPhiEtaIndexInSModule(nSupMod,nModule,nIphi,nIeta,iphi,ieta);
-      fEMCALRecoUtils->SetEMCALChannelStatus(nSupMod, ieta, iphi);
-    }		
-    return kTRUE;
-  }
-  
-  AliInfo(Form("No external hot channel set: %d - %s", runBC, fFilepass.Data()));
-  return kTRUE;
+  return 1;  
 }
 
+
 //_____________________________________________________
-Bool_t AliEMCALTenderSupply::InitRecalib()
+Int_t AliEMCALTenderSupply::InitRecalib()
 {
   // Initialising recalibration factors.
   
   AliESDEvent *event = fTender->GetEvent();
   if (!event) 
-    return kFALSE;
+    return 0;
   
   if (fDebugLevel>0) 
     AliInfo("Initialising recalibration factors");
   
   fEMCALRecoUtils->SwitchOnRecalibration();
   Int_t runRC = event->GetRunNumber();
-  
-  TFile *fRecalib = 0;
-  if (runRC <= 140000) { // 2010
-    fRecalib = new TFile(Form("%s/RecalibrationFactors.root",fBasePath.Data()),"read");
+      
+  AliOADBContainer *contRF=new AliOADBContainer("");
+  if(fBasePath!="") { //if fBasePath specified in the ->SetBasePath()
+    if (fDebugLevel>0)	AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
+    TFile *fRecalib= new TFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read");
     if (fRecalib->IsZombie()) {
-      TString fPath = TString(fBasePath.Data());
-      if(fPath.Contains("alien")) {
-        if (fDebugLevel>1) 
-          AliInfo("Connecting to alien to get RecalibrationFactors.root");
-        
-        if(     (runRC >= 114737 && runRC <= 117223 && (fFilepass = "pass2")) || //LHC10b pass2 
-           (runRC >= 118503 && runRC <= 121040 && (fFilepass = "pass2")) || //LHC10c pass2
-           (runRC >= 118503 && runRC <= 121040 && (fFilepass = "pass3")) || //LHC10c pass3
-           (runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass1")) || //LHC10d pass1
-           (runRC >= 127712 && runRC <= 130850 && (fFilepass = "pass1")) || //LHC10e pass1
-           (runRC >= 133004 && runRC <  134657 && (fFilepass = "pass1")))   //LHC10f pass1<134657
-        {
-          fRecalib = TFile::Open(Form("%s/RecalDB/summer_december_2010/RecalibrationFactors.root",fBasePath.Data()));
-        }
-        else if((runRC >= 122195 && runRC <= 126437 && (fFilepass = "pass2")) || //LHC10d pass2
-                (runRC >= 134657 && runRC <= 135029 && (fFilepass = "pass1")) || //LHC10f pass1 >= 134657
-                (runRC >= 135654 && runRC <= 136377 && (fFilepass = "pass1")) || //LHC10g pass1
-                (runRC >= 136851 && runRC < 137231  && (fFilepass = "pass1"))) //LHC10h pass1 untill christmas
-        {
-          fRecalib = TFile::Open(Form("%s/RecalDB/december2010/RecalibrationFactors.root",fBasePath.Data()));
-        }
-        else if(runRC >= 137231 && runRC <= 139517 && (fFilepass = "pass1")) //LHC10h pass1 from christmas
-        {
-          fRecalib = TFile::Open(Form("%s/RecalDB/summer2010/RecalibrationFactors.root",fBasePath.Data()));
-        }
-        else {
-          AliError(Form("Run number or pass number not found: %d - %s; RECALIBRATION NOT APPLIED", runRC, fFilepass.Data()));
-          return kTRUE;
-        }
-      }
+      AliFatal(Form("EMCALRecalib.root not found in %s, aborting",fBasePath.Data()));
+      return 0;
     }
-  } else if (runRC > 140000) { // 2011
-    fRecalib = new TFile(Form("%s/RecalibrationFactors.root",fBasePath.Data()),"read");
-    if (fRecalib->IsZombie()){
-      TString fPath = TString(fBasePath.Data());
-      if(fPath.Contains("alien")) {
-        if (fDebugLevel>1) 
-          AliInfo("Connecting to alien to get RecalibrationFactors.root");
-        fRecalib = TFile::Open(Form("%s/RecalDB/2011_v0/RecalibrationFactors.root",fBasePath.Data()));
-        if (!fRecalib) 
-          AliError("Recalibration file not found");
-        return kFALSE;
-      }
-    }
-    
-    Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
-    for (Int_t i=0; i<sms; ++i) {
-      TH2F *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(i);
-      if (h)
-        delete h;
-      h = (TH2F*)fRecalib->Get(Form("EMCALRecalFactors_SM%d",i));
-      if (!h) {
-        AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
-        continue;
-      }
-      h->SetDirectory(0);
-      fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
-    }
+    if(fRecalib) delete fRecalib;
+    contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
   }
-  delete fRecalib;
-  return kTRUE;
+    else{ // Else choose the one in the $ALICE_ROOT directory
+      if (fDebugLevel>0)	AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+      TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
+      if (fRecalib->IsZombie()) {
+	AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found, aborting");
+	return 0;
+      }
+      if(fRecalib) delete fRecalib;
+      contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
+    }
+
+  TObjArray *recal=(TObjArray*)contRF->GetObject(runRC); //GetObject(int runnumber)
+  if(!recal){
+    AliError(Form("No Objects for run: %d",runRC));
+    return 2;
+  } 
+
+  TObjArray *recalpass=(TObjArray*)recal->FindObject(fFilepass);
+  if(!recalpass){
+    AliError(Form("No Objects for run: %d - %s",runRC,fFilepass.Data()));
+    return 2;
+  }
+
+  TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
+  if(!recalib){
+    AliError(Form("No Recalib histos found for  %d - %s",runRC,fFilepass.Data())); 
+    return 2;
+  }
+
+  if(fDebugLevel>0) recalib->Print();
+
+  Int_t sms = fEMCALGeo->GetEMCGeometry()->GetNumberOfSuperModules();
+  for (Int_t i=0; i<sms; ++i) {
+    TH2F *h = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactors(i);
+    if (h)
+      delete h;
+    h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+    if (!h) {
+      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+      continue;
+    }
+    h->SetDirectory(0);
+    fEMCALRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
+  }
+  return 1;
 }
 
 //_____________________________________________________
@@ -642,6 +684,39 @@ void AliEMCALTenderSupply::RecalibrateCells()
     cells->SetCell(icell,cells->GetCellNumber(icell),cells->GetAmplitude(icell)*calibFactor,cells->GetTime(icell));	
   }	
 }
+
+
+//_____________________________________________________
+void AliEMCALTenderSupply::UpdateCells()
+{
+  //Remove bad cells from the cell list 
+  //This is required for later reclusterization
+
+  AliESDCaloCells *cells = fTender->GetEvent()->GetEMCALCells();
+  
+  Int_t nEMCcell = cells->GetNumberOfCells();
+  for(Int_t icell=0; icell<nEMCcell; ++icell) 
+    {
+      Int_t cellId = cells->GetCellNumber(icell);
+      Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
+      fEMCALGeo->GetCellIndex(cellId,imod,iTower,iIphi,iIeta);
+      fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
+      if(fEMCALRecoUtils->GetEMCALChannelStatus(imod,ieta,iphi))
+	{
+	  cells->SetCell(icell,cellId,(-1)*cells->GetAmplitude(icell),cells->GetCellTime(cellId));
+	}
+    }
+}
+
+
+//_____________________________________________________
+void AliEMCALTenderSupply::InitRecParam()
+{
+  if (fDebugLevel>0) 
+    AliInfo("Initialize the recParam");
+  fRecParam = new AliEMCALRecParam;
+}
+
 
 //_____________________________________________________
 Bool_t AliEMCALTenderSupply::InitClusterization()

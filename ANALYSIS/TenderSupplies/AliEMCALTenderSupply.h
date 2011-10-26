@@ -25,8 +25,10 @@ class TTree;
 class TFile;
 class TString;
 class AliEMCALClusterizer;
-class AliEMCALRecParam;
+// class AliEMCALRecParam;
 class AliEMCALAfterBurnerUF;
+
+#include "AliEMCALRecParam.h"
 
 class AliEMCALTenderSupply: public AliTenderSupply {
   
@@ -36,6 +38,7 @@ public:
   virtual ~AliEMCALTenderSupply();
 
   enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5};
+  enum MisalignSettngs{kdefault=0,kSurveybyS=1, kSurveybyM=2};
 
   virtual void Init();
   virtual void ProcessEvent();
@@ -63,6 +66,9 @@ public:
 
   void     SwitchOnRecalculateClusPos()                   { fRecalClusPos = kTRUE            ;}
   void     SwitchOffRecalculateClusPos()                  { fRecalClusPos = kFALSE           ;}
+
+  void 	   SetMisalignmentMatrixSurvey(Int_t misalignSurvey) {fMisalignSurvey = misalignSurvey	     ;}
+  Int_t	   GetMisalignmentMatrixSurvey() const            {return fMisalignSurvey		     ;}	  
 
   void     SwitchOnCellFiducialRegion()                   { fFiducial = kTRUE                ;}
   void     SwitchOffCellFiducialRegion()                  { fFiducial = kFALSE               ;}
@@ -98,21 +104,29 @@ public:
   void     SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE       ;}
   void     SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m           ;}
  
-  AliEMCALRecParam   *GetRecParam()                 const { return fRecParam                 ;}
+//  void     SetRecParam(const AliEMCALRecParam* recParam)  { fRecParam = new AliEMCALRecParam(*recParam);}
+ 
+  AliEMCALRecParam   *GetRecParam() const		  {return fRecParam                 ;}
+ 
   
-  AliEMCALRecoUtils  *GetRecoUtils()                const { return fEMCALRecoUtils           ;}
+  AliEMCALRecoUtils  *GetRecoUtils() const                { return fEMCALRecoUtils           ;}
 
   void     SetOCDBPath(const char *path)                  { fOCDBpath = path                 ;}
+
+  void     SwitchOnUpdateCell()				  { fUpdateCell = kTRUE		     ;}	
+  void     SwitchOffUpdateCell()			  { fUpdateCell = kFALSE	     ;}	
  
 private:
 
-  Bool_t   InitBadChannels();
+  Int_t    InitBadChannels();
 
   Bool_t   InitClusterization();
 
+  void     InitRecParam();
+
   Bool_t   InitMisalignMatrix();
 
-  Bool_t   InitRecalib();
+  Int_t    InitRecalib();
 
   void     Clusterize();
 
@@ -123,6 +137,8 @@ private:
   void     RecPoints2Clusters(TClonesArray *clus);
 
   void     RecalibrateCells();
+
+  void     UpdateCells();
 
   void     SetClusterMatchedToTrack (AliESDEvent *event);
 
@@ -139,6 +155,7 @@ private:
   Int_t                  fNonLinearThreshold;     //  non linearity threshold value for kBeamTesh non linearity function   
   Bool_t                 fReCalibCluster;         //  switch for Recalibrate clusters
   Bool_t                 fReCalibCell;            //  switch for Recalibrate cell
+  Bool_t                 fUpdateCell;             //  Flag cell update
   TGeoHMatrix           *fEMCALMatrix[10];        //  geometry matrices with misalignments
   Bool_t                 fRecalClusPos;           //  switch for applying missalignment
   Bool_t                 fFiducial;               //  switch for checking cells in the fiducial region
@@ -160,15 +177,26 @@ private:
   Bool_t                 fGeomMatrixSet;          //  set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices;       //  matrices set from configuration, not get from geometry.root or from ESDs/AODs
   AliEMCALRecParam      *fRecParam;               //  reconstruction parameters container
+  Bool_t                fRecParamSet;            //  Flag if rec param already set
   TString                fOCDBpath;               //  path with OCDB location
   AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
   TClonesArray          *fDigitsArr;              //! digits array
   TObjArray             *fClusterArr;             //! recpoints array
-
+  Int_t 		fMisalignSurvey;         //! misalignment matrix survey	
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 5); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 6); // EMCAL tender task
 };
+/*
+inline AliEMCALRecParam* AliEMCALTenderSupply::GetRecParam() const
+{
+  if(!fRecParam)
+    {
+      printf("Warning: object not initialized yet, returns a null pointer!\n");
+    }
+  return fRecParam;
+}
+*/
 #endif
 
