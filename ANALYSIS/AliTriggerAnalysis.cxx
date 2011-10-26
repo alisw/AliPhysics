@@ -1412,7 +1412,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 12;
+  const Int_t nHists = 13;
   TList collections[nHists];
 
   Int_t count = 0;
