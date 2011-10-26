@@ -7,6 +7,7 @@
 class TList;
 class TH1F;
 class TH2F;
+class TF1;
 
 class AliBalance;
 class AliESDtrackCuts;
@@ -84,7 +85,11 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fNumberOfAcceptedTracksMin = min;
     fNumberOfAcceptedTracksMax = max;}
   
-    void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  void UseOfflineTrigger() {fUseOfflineTrigger = kTRUE;}
+  
+  //Acceptance filter
+  void SetAcceptanceParameterization(TF1 *parameterization) {
+    fAcceptanceParameterization = parameterization;}
 
  private:
   AliBalance *fBalance; //BF object
@@ -142,6 +147,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
 
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
+
+  TF1 *fAcceptanceParameterization;//acceptance filter used for MC
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
