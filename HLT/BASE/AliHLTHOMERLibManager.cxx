@@ -178,11 +178,8 @@ int AliHLTHOMERLibManager::LoadHOMERLibrary()
   int* refcount = &fgkLibRefCount[0];
   do {
     TString libs = gSystem->GetLibraries();
-    if (libs.Contains(*library)) {
-      iResult=1;
-      break;
-    }
-    if ((gSystem->Load(*library)) >= 0) {
+    if (libs.Contains(*library) ||
+	(gSystem->Load(*library)) >= 0) {
       ++(*refcount);
       fLoadedLib = *library;
       iResult=1;
