@@ -60,6 +60,8 @@ class AliTRDcalibDB : public TObject {
         AliTRDCalROC                 *GetVdriftROC(Int_t det);
   const AliTRDCalDet                 *GetVdriftDet();
 
+  const AliTRDCalDet                 *GetExBDet();
+
   Float_t                             GetT0(Int_t det, Int_t col, Int_t row);
   Float_t                             GetT0Average(Int_t det);
         AliTRDCalROC                 *GetT0ROC(Int_t det);
@@ -103,9 +105,10 @@ class AliTRDcalibDB : public TObject {
   Bool_t                              IsPadBridgedRight(Int_t det, Int_t col, Int_t row);
   Bool_t                              IsPadNotConnected(Int_t det, Int_t col, Int_t row);
   
-  Bool_t                              IsChamberInstalled(Int_t det);
-  Bool_t                              IsChamberMasked(Int_t det);
-  Bool_t                              IsHalfChamberMasked(Int_t det, Int_t side);
+  Bool_t                              IsChamberGood(Int_t det);
+  Bool_t                              IsChamberNoData(Int_t det);
+  Bool_t                              IsHalfChamberNoData(Int_t det, Int_t side);
+  Bool_t                              IsChamberBadCalibrated(Int_t det);
 
   const AliTRDCalMonitoring          *GetMonitoringObject();
   const AliTRDCalPID                 *GetPIDObject(AliTRDpidUtil::ETRDPIDMethod m);
@@ -120,6 +123,7 @@ class AliTRDcalibDB : public TObject {
   // For caching see also implentation of GetCachedCDBObject in the .cxx file
   enum { kIDVdriftPad = 0
        , kIDVdriftChamber
+       , kIDExBChamber
        , kIDT0Pad
        , kIDT0Chamber
        , kIDGainFactorPad

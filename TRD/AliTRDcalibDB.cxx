@@ -37,6 +37,7 @@
 
 #include "AliTRDPIDReference.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDCommonParam.h"
 
 #include "Cal/AliTRDCalROC.h"
 #include "Cal/AliTRDCalPad.h"
@@ -220,6 +221,9 @@ const TObject *AliTRDcalibDB::GetCachedCDBObject(Int_t id)
       break;
     case kIDVdriftChamber : 
       return CacheCDBEntry(kIDVdriftChamber     ,"TRD/Calib/ChamberVdrift"); 
+      break;
+    case kIDExBChamber : 
+      return CacheCDBEntry(kIDExBChamber        ,"TRD/Calib/ChamberExB"); 
       break;
     case kIDT0Pad : 
       return CacheCDBEntry(kIDT0Pad             ,"TRD/Calib/LocalT0"); 
@@ -535,7 +539,39 @@ Float_t AliTRDcalibDB::GetVdriftAverage(Int_t det)
   return calDet->GetValue(det);
 
 }
+//_____________________________________________________________________________
+const AliTRDCalDet *AliTRDcalibDB::GetExBDet()
+{
+  //
+  // Returns the exB calibration object
+  // containing one number per detector
+  //
+  
+  const AliTRDCalDet     *calChamber = dynamic_cast<const AliTRDCalDet *> (GetCachedCDBObject(kIDExBChamber));
+  
+  Double_t meanexb = 100.0;
+  if (calChamber) meanexb = calChamber->GetMean();
+  //printf("mean %f\n",meanexb);  
 
+  if ((!calChamber) || (meanexb > 70.0)) {
+    
+    const AliTRDCalDet     *calChambervdrift = dynamic_cast<const AliTRDCalDet *> 
+	(GetCachedCDBObject(kIDVdriftChamber));
+      if (!calChambervdrift) {
+	return 0;
+      }
+      else {
+	AliTRDCalDet *calDetExB = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
+	for(Int_t k = 0; k < 540; k++){
+	  calDetExB->SetValue(k,AliTRDCommonParam::Instance()->GetOmegaTau(calChambervdrift->GetValue(k)));
+	  //printf("vdrift %f and exb %f\n",calChambervdrift->GetValue(k),calDetExB->GetValue(k));
+	}
+	return calDetExB;
+      }
+  }
+  else return calChamber;
+
+}
 //_____________________________________________________________________________
 Float_t AliTRDcalibDB::GetT0(Int_t det, Int_t col, Int_t row)
 {
@@ -1253,7 +1289,7 @@ Bool_t AliTRDcalibDB::IsPadNotConnected(Int_t det, Int_t col, Int_t row)
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsChamberInstalled(Int_t det)
+Bool_t AliTRDcalibDB::IsChamberGood(Int_t det)
 {
   //
   // Returns status, see name of functions for details ;-)
@@ -1265,12 +1301,12 @@ Bool_t AliTRDcalibDB::IsChamberInstalled(Int_t det)
     return -1;
   }
 
-  return cal->IsInstalled(det);
+  return cal->IsGood(det);
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
+Bool_t AliTRDcalibDB::IsChamberNoData(Int_t det)
 {
   //
   // Returns status, see name of functions for details ;-)
@@ -1282,12 +1318,12 @@ Bool_t AliTRDcalibDB::IsChamberMasked(Int_t det)
     return -1;
   }
 
-  return cal->IsMasked(det);
+  return cal->IsNoData(det);
 
 }
 
 //_____________________________________________________________________________
-Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side)
+Bool_t AliTRDcalibDB::IsHalfChamberNoData(Int_t det, Int_t side)
 {
   //
   // Returns status, see name of functions for details ;-)
@@ -1299,7 +1335,24 @@ Bool_t AliTRDcalibDB::IsHalfChamberMasked(Int_t det, Int_t side)
     return -1;
   }
 
-  return side > 0 ? cal->IsHalfChamberSideBMasked(det) : cal->IsHalfChamberSideAMasked(det);
+  return side > 0 ? cal->IsNoDataSideB(det) : cal->IsNoDataSideA(det);
+
+}
+
+//_____________________________________________________________________________
+Bool_t AliTRDcalibDB::IsChamberBadCalibrated(Int_t det)
+{
+  //
+  // Returns status, see name of functions for details ;-)
+  //
+
+  const AliTRDCalChamberStatus     * cal = dynamic_cast<const AliTRDCalChamberStatus *> 
+                                           (GetCachedCDBObject(kIDChamberStatus));
+  if (!cal) {
+    return -1;
+  }
+
+  return cal->IsBadCalibrated(det);
 
 }
 
