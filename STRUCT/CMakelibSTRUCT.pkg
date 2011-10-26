@@ -29,7 +29,6 @@
 set ( SRCS 
     AliMAG.cxx 
     AliABSO.cxx 
-    AliABSOv0.cxx 
     AliDIPO.cxx 
     AliDIPOv2.cxx 
     AliDIPOv3.cxx 
@@ -38,14 +37,12 @@ set ( SRCS
     AliHALL.cxx 
     AliHALLv3.cxx 
     AliSHIL.cxx	
-    AliSHILv0.cxx 
     AliABSOv3.cxx 
     AliPIPE.cxx 
     AliPIPEv0.cxx 
     AliPIPEv3.cxx 
     AliPIPEv4.cxx 
     AliBODY.cxx 
-    AliSHILv2.cxx 
     AliSHILv3.cxx
     )
 
