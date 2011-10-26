@@ -1018,7 +1018,7 @@ Bool_t AliAnalysisAlien::CheckInputData()
 }   
 
 //______________________________________________________________________________
-Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output, const char *anchorfile, const char *outputdir)
+Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output, const char *archivefile, const char *outputdir)
 {
 // Copy data from the given grid directory according a pattern and make a local
 // dataset.
@@ -1054,9 +1054,20 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
       dirname = gSystem->DirName(turl.Data());
       dirname = gSystem->BaseName(dirname.Data());
       gSystem->MakeDirectory(dirname);
-      if (TFile::Cp(turl, Form("file:./%s/%s", dirname.Data(), filename.Data()))) {
-         if (strlen(anchorfile)) filename = Form("%s#%s", filename.Data(), anchorfile);
-         out << cdir << Form("/%s/%s/%s", outputdir, dirname.Data(), filename.Data()) << endl;
+      
+      TString source(turl);
+      TString targetFileName(filename);
+      
+      if (strlen(archivefile) > 0) {
+	// TODO here the archive in which the file resides should be determined
+	// however whereis returns only a guid, and guid2lfn does not work
+	// Therefore we use the one provided as argument for now
+	source = Form("%s/%s", gSystem->DirName(source.Data()), archivefile);
+	targetFileName = archivefile;
+      }
+      if (TFile::Cp(source, Form("file:./%s/%s", dirname.Data(), targetFileName.Data()))) {
+         if (strlen(archivefile) > 0) targetFileName = Form("%s#%s", targetFileName.Data(), gSystem->BaseName(turl.Data()));
+         out << cdir << Form("/%s/%s/%s", outputdir, dirname.Data(), targetFileName.Data()) << endl;
       }
    }
    gSystem->ChangeDirectory(cdir);
