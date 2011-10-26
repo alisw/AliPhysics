@@ -736,6 +736,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
           FillSelectedClusterHistograms(cluster2, tag2);
         }
         
+        // Tag both photons as decay
+        photon1->SetTagged(kTRUE);
+        photon2->SetTagged(kTRUE);
+
         //Create AOD for analysis
         mom = mom1+mom2;
         AliAODPWG4Particle pi0 = AliAODPWG4Particle(mom);
@@ -873,6 +877,10 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         if(cluster && GetReader()->GetDataType()!=AliCaloTrackReader::kMC){
           FillSelectedClusterHistograms(cluster, tag1);
         }        
+        
+        // Tag both photons as decay
+        photon1->SetTagged(kTRUE);
+        photon2->SetTagged(kTRUE);        
         
         //Create AOD for analysis
         mom = mom1+mom2;

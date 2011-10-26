@@ -29,7 +29,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
 
  public:   
   AliAnaParticleIsolation() ; // default ctor
-  virtual ~AliAnaParticleIsolation() ; //virtual dtor
+  virtual ~AliAnaParticleIsolation() { ; } //virtual dtor
 
  private:
   AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ; // cpy ctor
@@ -38,12 +38,12 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
  public:
 
   // Main general methods
-  
-  void         InitParameters();
-  
+    
   TObjString * GetAnalysisCuts();
   
   TList      * GetCreateOutputObjects();
+  
+  void         InitParameters();
   
   void         MakeAnalysisFillAOD()  ;
   
@@ -51,13 +51,9 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   
   void         Print(const Option_t * opt)const;
  
-  
   //Analysis specific methods 
-  
-  Bool_t       CheckInvMass(const Int_t icalo,const AliAODPWG4Particle * ph) ;
-  
+    
   void         MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelation * ph); 
-  
   
   // Analysis Setters and Getters
   
@@ -68,12 +64,12 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   Float_t GetPtThresholds(Int_t i)        const { return fPtThresholds[i] ; }
   Float_t GetPtFractions(Int_t i)         const { return fPtFractions[i]  ; }
   
-  void    SetCalorimeter(TString & det)         {fCalorimeter     = det   ; }
-  void    SetNCones(Int_t ncs)                  {fNCones          = ncs   ; }
-  void    SetNPtThresFrac(Int_t npt)            {fNPtThresFrac    = npt   ; }
-  void    SetConeSizes(Int_t i, Float_t r)      {fConeSizes[i]    = r     ; }
-  void    SetPtThresholds(Int_t i, Float_t pt)  {fPtThresholds[i] = pt    ; }
-  void    SetPtFractions(Int_t i, Float_t pt)   {fPtFractions[i]  = pt    ; } 
+  void    SetCalorimeter(TString & det)         { fCalorimeter     = det  ; }
+  void    SetNCones(Int_t ncs)                  { fNCones          = ncs  ; }
+  void    SetNPtThresFrac(Int_t npt)            { fNPtThresFrac    = npt  ; }
+  void    SetConeSizes(Int_t i, Float_t r)      { fConeSizes[i]    = r    ; }
+  void    SetPtThresholds(Int_t i, Float_t pt)  { fPtThresholds[i] = pt   ; }
+  void    SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt   ; } 
   
   Bool_t  IsReIsolationOn()               const { return fReMakeIC        ; }
   void    SwitchOnReIsolation()                 { fReMakeIC = kTRUE       ; }
@@ -82,11 +78,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   Bool_t  IsSeveralIsolationOn()          const { return fMakeSeveralIC   ; }
   void    SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE  ; }
   void    SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE ; }
-  
-  Bool_t  IsInvariantMassOn()             const { return fMakeInvMass     ; }
-  void    SwitchOnInvariantMass()               { fMakeInvMass = kTRUE    ; }
-  void    SwitchOffInvariantMass()              { fMakeInvMass = kFALSE   ; }
-  
+    
   //Histogrammes setters and getters
   
   virtual void SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n){
@@ -99,31 +91,17 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   virtual void SetHistoPtInConeRangeAndNBins(Float_t min, Float_t max, Int_t n)   {
     fHistoNPtInConeBins = n ; fHistoPtInConeMax = max ; fHistoPtInConeMin = min ; }
   
-  Int_t        GetHistoNPtInConeBins()     const { return fHistoNPtInConeBins ; }
-  Float_t      GetHistoPtInConeMin()       const { return fHistoPtInConeMin   ; }
-  Float_t      GetHistoPtInConeMax()       const { return fHistoPtInConeMax   ; }
+  Int_t        GetHistoNPtInConeBins()    const { return fHistoNPtInConeBins; }
+  Float_t      GetHistoPtInConeMin()      const { return fHistoPtInConeMin  ; }
+  Float_t      GetHistoPtInConeMax()      const { return fHistoPtInConeMax  ; }
   
  private:
   
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
-  Bool_t   fMakeInvMass;                          // Select candidate if no pair from decay
   
-  //Histograms  
-  
-  TH1F *   fhPtIso ;                              //! Number of isolated particles
-  TH2F *   fhPhiIso ;                             //! Phi of isolated particles
-  TH2F *   fhEtaIso ;                             //! eta of isolated particles
-  TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles
-  TH1F *   fhPtInvMassDecayIso ;                  //! Number of isolated Pi0 decay particles (invariant mass tag)
-  TH1F *   fhPtInvMassDecayNoIso ;                //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
-  TH2F *   fhConeSumPt ;                          //! Sum Pt in the cone
-  TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
-  TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
-  TH2F *   fhPtInFRCone ;                         //! Particle Pt in the forward region cone (phi +90 ) 
-  
-  //Prompt photon analysis data members for multiple cones and pt thresholds 
+  // Analysis data members for multiple cones and pt thresholds 
   Int_t    fNCones ;                              //! Number of cone sizes to test
   Int_t    fNPtThresFrac ;                        //! Number of ptThres and ptFrac to test
   
@@ -134,6 +112,20 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F*    fhPtThresIsolated[5][5] ;              //! Isolated particle with pt threshold 
   TH1F*    fhPtFracIsolated[5][5] ;               //! Isolated particle with pt threshold 
   TH2F*    fhPtSumIsolated[5] ;                   //! Isolated particle with threshold on cone pt sum
+  
+  //Histograms  
+  
+  TH1F *   fhPtIso ;                              //! Number of isolated particles
+  TH2F *   fhPhiIso ;                             //! Phi of isolated particles
+  TH2F *   fhEtaIso ;                             //! eta of isolated particles
+  TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles
+  TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
+  TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
+  TH2F *   fhConeSumPt ;                          //! Sum Pt in the cone
+  TH2F *   fhPtInCone ;                           //! Particle Pt in the cone
+  TH2F *   fhFRConeSumPt ;                        //! Sum Pt in the forward region cone (phi +90)
+  TH2F *   fhPtInFRCone ;                         //! Particle Pt in the forward region cone (phi +90 ) 
+  
   
   //MC
   TH1F *   fhPtIsoPrompt;                         //! Number of isolated prompt gamma 
@@ -148,15 +140,21 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F *   fhPtThresIsolatedFragmentation[5][5];  //! Isolated fragmentation gamma with pt threshold 
   TH1F *   fhPtFracIsolatedFragmentation[5][5];   //! Isolated fragmentation gamma with pt frac
   TH2F *   fhPtSumIsolatedFragmentation[5];       //! Isolated fragmentation gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoPi0Decay;                       //! Number of isolated Pi0Decay gamma 
-  TH2F *   fhPhiIsoPi0Decay;                      //! Phi of isolated Pi0Decay gamma
-  TH2F *   fhEtaIsoPi0Decay;                      //! eta of isolated Pi0Decay gamma
-  TH1F *   fhPtThresIsolatedPi0Decay[5][5];       //! Isolated Pi0Decay gamma with pt threshold 
-  TH1F *   fhPtFracIsolatedPi0Decay[5][5];        //! Isolated Pi0Decay gamma with pt frac
-  TH2F *   fhPtSumIsolatedPi0Decay[5];            //! Isolated Pi0Decay gamma with threshold on cone pt sume
-  TH1F *   fhPtIsoOtherDecay;                     //! Number of isolated OtherDecay gamma 
-  TH2F *   fhPhiIsoOtherDecay;                    //! Phi of isolated OtherDecay gamma
-  TH2F *   fhEtaIsoOtherDecay;                    //! eta of isolated OtherDecay gamma
+  TH1F *   fhPtIsoPi0Decay;                       //! Number of isolated pi0 decay gamma 
+  TH2F *   fhPhiIsoPi0Decay;                      //! Phi of isolated pi0 decay gamma
+  TH2F *   fhEtaIsoPi0Decay;                      //! eta of isolated pi0 decay gamma
+  TH1F *   fhPtThresIsolatedPi0Decay[5][5];       //! Isolated pi0 decay gamma with pt threshold 
+  TH1F *   fhPtFracIsolatedPi0Decay[5][5];        //! Isolated pi0 decay gamma with pt frac
+  TH2F *   fhPtSumIsolatedPi0Decay[5];            //! Isolated pi0 decay gamma with threshold on cone pt sume
+  TH1F *   fhPtIsoEtaDecay;                       //! Number of isolated eta decay gamma 
+  TH2F *   fhPhiIsoEtaDecay;                      //! Phi of isolated eta decay gamma
+  TH2F *   fhEtaIsoEtaDecay;                      //! eta of isolated eta decay gamma
+  TH1F *   fhPtThresIsolatedEtaDecay[5][5];       //! Isolated eta decay gamma with pt threshold 
+  TH1F *   fhPtFracIsolatedEtaDecay[5][5];        //! Isolated eta decay gamma with pt frac
+  TH2F *   fhPtSumIsolatedEtaDecay[5];            //! Isolated eta fecay gamma with threshold on cone pt sume  
+  TH1F *   fhPtIsoOtherDecay;                     //! Number of isolated other decay gamma 
+  TH2F *   fhPhiIsoOtherDecay;                    //! Phi of isolated other decay gamma
+  TH2F *   fhEtaIsoOtherDecay;                    //! eta of isolated other decay gamma
   TH1F *   fhPtThresIsolatedOtherDecay[5][5];     //! Isolated OtherDecay gamma with pt threshold 
   TH1F *   fhPtFracIsolatedOtherDecay[5][5];      //! Isolated OtherDecay gamma with pt frac
   TH2F *   fhPtSumIsolatedOtherDecay[5];          //! Isolated OtherDecay gamma with threshold on cone pt sume	
@@ -173,7 +171,9 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F *   fhPtFracIsolatedUnknown[5][5];         //! Isolated Unknown gamma with pt frac
   TH2F *   fhPtSumIsolatedUnknown[5];             //! Isolated Unknown gamma with threshold on cone pt sume
 
-  TH1F *   fhPtNoIsoPi0Decay;                     //! Number of not isolated leading Pi0Decay gamma 
+  TH1F *   fhPtNoIsoPi0Decay;                     //! Number of not isolated leading pi0 decay gamma 
+  TH1F *   fhPtNoIsoEtaDecay;                     //! Number of not isolated leading eta decay gamma 
+  TH1F *   fhPtNoIsoOtherDecay;                   //! Number of not isolated leading other decay gamma 
   TH1F *   fhPtNoIsoPrompt;                       //! Number of not isolated leading prompt gamma 
   TH1F *   fhPtIsoMCPhoton;                       //! Number of isolated leading gamma 
   TH1F *   fhPtNoIsoMCPhoton;                     //! Number of not isolated leading gamma 
@@ -186,7 +186,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
   
-  ClassDef(AliAnaParticleIsolation,3)
+  ClassDef(AliAnaParticleIsolation,4)
 } ;
 
 
