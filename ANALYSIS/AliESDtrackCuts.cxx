@@ -712,6 +712,9 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
+  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+  
   return esdTrackCuts;
 }
 
@@ -752,12 +755,11 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
+  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+
   return esdTrackCuts;
 }
-
-//____________________________________________________________________
-
-
 
 //____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSPureSATrackCuts2009(Bool_t selPrimaries, Bool_t useForPid)
