@@ -16,17 +16,11 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliRawReaderHLT.cxx
-    @author Matthias Richter
-    @date   
-    @brief  AliRawReader implementation which replaces original input of
-            detectors with the appropriate HLT output.                    */
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliRawReaderHLT.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  AliRawReader implementation which replaces original input of
+///         detectors with the appropriate HLT output.
 
 #include "AliRawReaderHLT.h"
 #include "AliHLTOUTRawReader.h"
@@ -146,7 +140,6 @@ const UInt_t* AliRawReaderHLT::GetEquipmentAttributes() const
 
 Int_t    AliRawReaderHLT::GetEquipmentElementSize() const
 {
-  // see header file for class documentation
   // don't know what it really means, bu the AliRawReaderFile
   // just sets it to 0
   // do the same if we have a valid equipment data set from
@@ -157,8 +150,6 @@ Int_t    AliRawReaderHLT::GetEquipmentElementSize() const
 
 Int_t    AliRawReaderHLT::GetEquipmentHeaderSize() const
 {
-  // see header file for class documentation
-
   // equipment header means the additional data header?
   // if we have a valid equipment data set from the HLT stream
   // there is no additional header
@@ -168,8 +159,11 @@ Int_t    AliRawReaderHLT::GetEquipmentHeaderSize() const
 
 Int_t    AliRawReaderHLT::GetEquipmentSize() const
 {
-  // see header file for class documentation
-  if (fEquipmentId>=0) return fDataSize+sizeof(AliRawDataHeader);
+  // return the equipment size, that's including the CDH
+  // fDataSize has been set to the full size of the block if it is from HLTOUT
+  // if the data block is from the parent rawreader it is only the pointer
+  // to the payload and the size of the CDH must be added
+  if (fEquipmentId>=0) return fDataSize + (fbHaveHLTData?0:sizeof(AliRawDataHeader));
   return fpParentReader->GetEquipmentSize();
 }
 
@@ -181,7 +175,7 @@ Int_t    AliRawReaderHLT::GetEquipmentType() const
 
 Int_t    AliRawReaderHLT::GetEquipmentId() const
 {
-  // see header file for class documentation
+  // id of current equipment
   Int_t id=-1;
   if (fEquipmentId>=0) id=fEquipmentId;
   else id=fpParentReader->GetEquipmentId();
@@ -190,7 +184,9 @@ Int_t    AliRawReaderHLT::GetEquipmentId() const
 
 Bool_t   AliRawReaderHLT::ReadHeader()
 {
-  // see header file for class documentation
+  // read the header of the next equipment
+  // depending on whether there is data redirected from HLT for the current event
+  // first the data in the HLTOUT is tried
   Bool_t result=kFALSE;
   Bool_t firstParentCycle=fbHaveHLTData;
   while ((fbHaveHLTData=(fbHaveHLTData && ReadNextHLTData()))) {
@@ -228,14 +224,13 @@ Bool_t   AliRawReaderHLT::ReadHeader()
 
 Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data)
 {
-  // see header file for class documentation
+  // read data from equipment, return pointer to data, GetDataSize
+  // provides the data size
   return ReadNextData(data, kTRUE);
 }
 
 Bool_t   AliRawReaderHLT::ReadNextData(UChar_t*& data, Bool_t readHeader)
 {
-  // see header file for class documentation
-
   // this function is the backbone of the ReadNext functions, it gets the
   // whole data block either from the HLT stream or the parent raw reader.
   // Each call of ReadNextData directly jumps to the next data set.

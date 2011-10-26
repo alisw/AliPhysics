@@ -7,17 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliRawReaderHLT.h
-    @author Matthias Richter
-    @date   
-    @brief  AliRawReader implementation which replaces original input of
-            detectors with the appropriate HLT output.                    */
-
-// see below for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliRawReaderHLT.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  AliRawReader implementation which replaces original input of
+///         detectors with the appropriate HLT output.
 
 #include "AliHLTDataTypes.h"
 #include "AliRawReader.h"      // RAW, base class
@@ -239,10 +233,10 @@ class AliRawReaderHLT : public AliRawReader {
   /** size of the current data set */
   int fDataSize; // !transient
 
-  /** current stream offset in the data set */
+  /** current stream offset for reading from input stream */
   int fOffset; // !transient
 
-  /** current stream position for the ReadNextData function */
+  /** current stream position for block input ReadNextData function */
   int fPosition; // !transient
 
   /** equipment id of the current data set, >0 indicates data set from HLT stream */
@@ -266,7 +260,7 @@ class AliRawReaderHLT : public AliRawReader {
   /** base class for AliRoot HLT plugins */
   AliHLTPluginBase* fpPluginBase;                                     //!transient
 
-  ClassDef(AliRawReaderHLT, 5)
+  ClassDef(AliRawReaderHLT, 0)
 };
 
 #define ALIHLTREC_LIBRARY                   "libHLTrec.so"
