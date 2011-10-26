@@ -45,7 +45,7 @@ public:
   static Bool_t   HasKalmanUpdate()                    { return fgKalmanUpdate;}
   static void     LoadCalib(Float_t *calib)            { memcpy(fgCalib, calib, 540*2*sizeof(Float_t));}
   TH1*            PlotTrack(const AliTRDtrackV1 *t=NULL);
-  static Bool_t   PropagateKalman(AliTRDtrackV1 &t);
+  static Bool_t   PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref);
   static void     SetKalmanStep(Float_t step)          { fgKalmanStep=step;}
   static void     SetClRecalibrate(Bool_t set=kTRUE)   { fgClRecalibrate=set;}
   static void     SetKalmanUpdate(Bool_t set=kTRUE)    { fgKalmanUpdate=set;}

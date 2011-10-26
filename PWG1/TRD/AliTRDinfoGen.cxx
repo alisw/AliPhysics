@@ -35,7 +35,8 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TString.h>
-#include <TH1S.h>
+#include <TH1.h>
+#include <TH2.h>
 #include <TPad.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -96,9 +97,6 @@ const Float_t AliTRDinfoGen::fgkITS = 100.; // to be checked
 const Float_t AliTRDinfoGen::fgkTPC = 290.;
 const Float_t AliTRDinfoGen::fgkTRD = 365.;
 
-const Float_t AliTRDinfoGen::fgkEvVertexZ = 15.;
-const Int_t   AliTRDinfoGen::fgkEvVertexN = 1;
-
 const Float_t AliTRDinfoGen::fgkTrkDCAxy  = 3.;
 const Float_t AliTRDinfoGen::fgkTrkDCAz   = 10.;
 const Int_t   AliTRDinfoGen::fgkNclTPC    = 70;
@@ -109,7 +107,6 @@ AliTRDgeometry* AliTRDinfoGen::fgGeo(NULL);
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen()
   :AliAnalysisTaskSE()
-  ,fEvTrigger(NULL)
   ,fESDev(NULL)
   ,fMCev(NULL)
   ,fEventCut(NULL)
@@ -136,7 +133,6 @@ AliTRDinfoGen::AliTRDinfoGen()
 //____________________________________________________________________
 AliTRDinfoGen::AliTRDinfoGen(char* name)
   :AliAnalysisTaskSE(name)
-  ,fEvTrigger(NULL)
   ,fESDev(NULL)
   ,fMCev(NULL)
   ,fEventCut(NULL)
@@ -173,7 +169,6 @@ AliTRDinfoGen::~AliTRDinfoGen()
   if(fgGeo) delete fgGeo;
   if(fgReconstructor) delete fgReconstructor;
   if(fDebugStream) delete fDebugStream;
-  if(fEvTrigger) delete fEvTrigger;
   if(fV0Cut) delete fV0Cut;
   if(fTrackCut) delete fTrackCut;
   if(fEventCut) delete fEventCut;
@@ -257,8 +252,8 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(3, "Cosmic");
   ax->SetBinLabel(4, "Calib");
   fContainer->AddAt(h, kEvType);
-  h=new TH1I("hBC", "TOF Bunch Cross statistics;BC index;Entries", 31, -10.5, 20.5);
-  fContainer->AddAt(h, kBunchCross);
+  TH2I* h2=new TH2I("hBC", "Bunch Cross statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
+  fContainer->AddAt(h2, kBC);
   h=new TH1I("hTriggers", "Triggers statistics;;Entries", 21, -0.5, 20.5);
   fContainer->AddAt(h, kTrigger);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
@@ -392,55 +387,13 @@ void AliTRDinfoGen::UserExec(Option_t *){
         ax->SetBinLabel(ix, (*evTriggers)[iet]->GetName());
         break;
       }
-      if(strcmp((*evTriggers)[iet]->GetName(), ax->GetBinLabel(ix))==0 ||
-         strcmp(Form("#color[2]{%s}", (*evTriggers)[iet]->GetName()), ax->GetBinLabel(ix))==0) break;
+      if(strcmp((*evTriggers)[iet]->GetName(), ax->GetBinLabel(ix))==0) break;
     }
     h->AddBinContent(ix);
   }
 
-  // event selection : trigger cut
-  if(UseLocalEvSelection() && fEvTrigger){ 
-    Bool_t kTRIGGERED(kFALSE);
-    std::auto_ptr<TObjArray> trig(fEvTrigger->Tokenize(" "));
-    for(Int_t itrig=trig->GetEntriesFast(); itrig--;){
-      const Char_t *trigClass(((TObjString*)(*trig)[itrig])->GetName());
-      if(fESDev->IsTriggerClassFired(trigClass)) {
-        for(Int_t ix(1); ix<ax->GetNbins(); ix++){
-          if(strcmp(ax->GetBinLabel(ix), trigClass)==0){
-            ax->SetBinLabel(ix, Form("#color[2]{%s}", trigClass));
-            break;
-          }
-        }
-        AliDebug(2, Form("Ev[%4d] Trigger[%s]", fESDev->GetEventNumberInFile(), trigClass));
-        kTRIGGERED = kTRUE;
-        break; 
-      }
-    }
-    if(!kTRIGGERED){ 
-      AliDebug(2, Form("Reject Ev[%4d] Trigger", fESDev->GetEventNumberInFile()));
-      return;
-    }
-    //printf("Ev[%4d] Trigger[%s]\n", fESDev->GetEventNumberInFile(), fESDev->GetFiredTriggerClasses().Data());
-
-    // select only physical events
-    if(fESDev->GetEventType() != 7){ 
-      AliDebug(2, Form("Reject Ev[%4d] EvType[%d]", fESDev->GetEventNumberInFile(), fESDev->GetEventType()));
-      return;
-    }
-  }
-
-  // if the required trigger is a collision trigger then apply event vertex cut
-  if(UseLocalEvSelection() && IsCollision()){
-    const AliESDVertex *vertex = fESDev->GetPrimaryVertex();
-    if(TMath::Abs(vertex->GetZv())<1.e-10 || 
-       TMath::Abs(vertex->GetZv())>fgkEvVertexZ || 
-       vertex->GetNContributors()<fgkEvVertexN) {
-      AliDebug(2, Form("Reject Ev[%4d] Vertex Zv[%f] Nv[%d]", fESDev->GetEventNumberInFile(), TMath::Abs(vertex->GetZv()), vertex->GetNContributors()));
-      return;
-    }
-  }
-
-  if(fEventCut && !fEventCut->IsSelected(fESDev, IsCollision())) return;
+  // event selection based on vertex cuts and trigger
+  if(UseLocalEvSelection() && !fEventCut->IsSelected(fESDev, IsCollision())) return;
 
   if(!fESDfriend){
     AliError("Failed retrieving ESD friend event");
@@ -470,7 +423,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliDebug(2, Form("  Centrality Class: %d", centralityBin));
   }
   fEventInfo->SetCentrality(centralityBin);
-  AliDebug(2, Form("  Bunch Crosses: %d", fESDev->GetBunchCrossNumber()));
+  Int_t evBC(fESDev->GetBunchCrossNumber());
 
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
@@ -616,6 +569,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL;
 
     if(esdFriendTrack){
+      fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       Int_t icalib = 0;
       while((calObject = esdFriendTrack->GetCalibObject(icalib++))){
         if(strcmp(calObject->IsA()->GetName(),"AliTRDtrackV1") != 0) continue; // Look for the TRDtrack
@@ -628,7 +582,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
           while((cl = tracklet->NextCluster())) cl->Use(0);
         }
         fTrackInfo->SetTrack(track);
-        h = (TH1I*)fContainer->At(kBunchCross); h->Fill(esdTrack->GetTOFBunchCrossing());
+        ((TH2I*)fContainer->At(kBC))->Fill(evBC, esdTrack->GetTOFBunchCrossing());
         break;
       }
       AliDebug(3, Form("Ntracklets[%d]\n", fTrackInfo->GetNTracklets()));
@@ -788,19 +742,22 @@ void AliTRDinfoGen::UserExec(Option_t *){
 }
 
 //____________________________________________________________________
-void AliTRDinfoGen::SetLocalV0Selection(const AliTRDv0Info *v0)
+void AliTRDinfoGen::SetLocalEvSelection(const AliTRDeventCuts &ec)
 {
-// Set V0 cuts from outside
-
-  if(!fV0Cut) fV0Cut = new AliTRDv0Info(*v0);
-  else new(fV0Cut) AliTRDv0Info(*v0);
+// Set event cuts from outside
+  if(!fEventCut) fEventCut = new AliTRDeventCuts(ec);
+  else new(fEventCut) AliTRDeventCuts(ec);
+  fEventCut->Print();
 }
 
 //____________________________________________________________________
-void AliTRDinfoGen::SetTrigger(const Char_t *trigger)
+void AliTRDinfoGen::SetLocalV0Selection(const AliTRDv0Info &v0)
 {
-  if(!fEvTrigger) fEvTrigger = new TString(trigger);
-  else (*fEvTrigger) = trigger;
+// Set V0 cuts from outside
+
+  if(!fV0Cut) fV0Cut = new AliTRDv0Info(v0);
+  else new(fV0Cut) AliTRDv0Info(v0);
+  fV0Cut->Print();
 }
 
 //____________________________________________________________________
@@ -815,5 +772,19 @@ TTreeSRedirector* AliTRDinfoGen::DebugStream()
   return fDebugStream;
 }
 
-
+//____________________________________________________________________
+void AliTRDinfoGen::Terminate(Option_t* /*option*/)
+{
+// Process run information
+  AliInfo("");
+  if(!(fContainer = dynamic_cast<TObjArray *>(GetOutputData(AliTRDpwg1Helper::kMonitor)))) return;
+  AliInfo(Form("fContainer(%p)", (void*)fContainer));
+  if(UseLocalEvSelection()){
+    TH1 *h1 = (TH1*)fContainer->At(kTrigger); TAxis *ax(h1->GetXaxis());
+    AliInfo(Form("h1(%p)", (void*)h1));
+    for(Int_t ix(1); ix<=ax->GetNbins(); ix++){
+      if(fEventCut->CheckTrigger(ax->GetBinLabel(ix))) ax->SetBinLabel(ix, Form("#color[2]{%s}", ax->GetBinLabel(ix)));
+    }
+  }
+}
 

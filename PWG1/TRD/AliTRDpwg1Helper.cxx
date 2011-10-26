@@ -148,7 +148,7 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
   Int_t first(0);
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
     first = ibatch*nBatch;
-     if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
+    if(gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, %d)\'", mark, lPURGE, nBatch, first))) continue;
     gSystem->Exec(Form("mv %d_%s merge/%d_%d_%s", first, mark, level, first, mark));
     gSystem->Exec(Form("echo %s/merge/%d_%d_%s >> %s", gSystem->ExpandPathName("$PWD"), level, first, mark, lMERGE));
   }
@@ -170,7 +170,7 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
 
 
 //______________________________________________________
-const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *files, const Int_t nfiles, const Int_t first, Bool_t kSVN, Bool_t kCLEAR)
+Int_t AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *files, const Int_t nfiles, const Int_t first, Bool_t kSVN, Bool_t kCLEAR)
 {
 // Merge files specified in the file list "files" by the token "mark".
 // The script will merge "nfiles" files starting from the "first" file.
@@ -205,14 +205,18 @@ const Char_t* AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *fil
   } else {
     Info("AliTRDpwg1Helper::MergeBatch()", "MERGING FILES[%d] START[%d] %s ... ", nbatch, first, ((nbatch<nfiles)?"INCOMPLETE":""));
   }
-  if(!fFM.Merge()) return NULL;
+  if(!fFM.Merge()){
+    Info("AliTRDpwg1Helper::MergeBatch()", "Failed [%s]", fFM.GetOutputFileName());
+    return 1;
+  }
+  Info("AliTRDpwg1Helper::MergeBatch()", "Done [%s]", fFM.GetOutputFileName());
 
   if(kCLEAR){
     for(Int_t ifile(0); ifile<arr.GetEntries(); ifile++){
       gSystem->Exec(Form("rm -fv %s", ((TObjString*)arr.At(ifile))->GetString().Data()));
     }
   }
-  return fFM.GetOutputFileName();
+  return 0;
 }
 
 //______________________________________________________

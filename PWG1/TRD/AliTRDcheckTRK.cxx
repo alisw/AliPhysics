@@ -102,7 +102,7 @@ TH1* AliTRDcheckTRK::PlotTrack(const AliTRDtrackV1 *track)
   }
   // make a local copy of current track
   AliTRDtrackV1 lt(*fkTrack);
-  if(!PropagateKalman(lt)) return NULL;
+  if(!PropagateKalman(lt, fkESD->GetTPCoutParam())) return NULL;
   PlotCluster(&lt);
   PlotTracklet(&lt);
   PlotTrackIn(&lt);
@@ -111,7 +111,7 @@ TH1* AliTRDcheckTRK::PlotTrack(const AliTRDtrackV1 *track)
 
 
 //___________________________________________________
-Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t)
+Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref)
 {
 // Propagate Back Kalman from the TPC input parameter to the last tracklet attached to track.
 // On the propagation recalibration of clusters, tracklet refit and material budget are recalculated (on demand)
@@ -127,25 +127,29 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t)
   }
 
   AliTRDseedV1 *tr(NULL);
-  AliExternalTrackParam *ref(NULL);
-  if(!(ref = t.GetTrackIn())){
+  AliExternalTrackParam *trdin(NULL);
+  if(!(trdin = t.GetTrackIn())){
     printf("E - AliTRDcheckTRK::PropagateKalman :: Track did not entered TRD fiducial volume.\n");
     return kFALSE;
   }
-  if(ref->Pt()<1.e-3){printf("small refpt\n"); return kFALSE;}
+  if(!ref){
+    printf("E - AliTRDcheckTRK::PropagateKalman :: Missing TPC out param.\n");
+    return kFALSE;
+  }
+  if(ref->Pt()<1.e-3) return kFALSE;
 
 
   // Initialize TRD track to the reference
   AliTRDtrackV1 tt;
   tt.Set(ref->GetX(), ref->GetAlpha(), ref->GetParameter(), ref->GetCovariance());
   tt.SetMass(t.GetMass());
-  tt.SetTrackIn();tt.SetTrackOut(t.GetTrackOut());
+  tt.SetTrackOut(t.GetTrackOut());
 
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     if(!(tr = t.GetTracklet(ily))) continue;
     Int_t det(tr->GetDetector());
-    Float_t *calib = GetCalib(det);
-    if(fgClRecalibrate && calib[0]>0.){
+    //Float_t *calib = GetCalib(det);
+    if(fgClRecalibrate/* && calib[0]>0.*/){
       AliTRDtransform trans(det);
       AliTRDcluster *c(NULL);
       Float_t exb, vd, t0, s2, dl, dt; tr->GetCalibParam(exb, vd, t0, s2, dl, dt);
@@ -159,6 +163,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t)
       if(!tr->FitRobust()) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
     }
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->GetX0(), fgKalmanStep)) continue;
+    if(!tt.GetTrackIn()) tt.SetTrackIn();
     tr->Update(&tt);
     if(fgKalmanUpdate){
       Double_t x(tr->GetX0()),
