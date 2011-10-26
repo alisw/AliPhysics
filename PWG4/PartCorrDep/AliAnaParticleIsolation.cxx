@@ -32,7 +32,6 @@
 #include <TList.h>
 #include <TObjString.h>
 #include <TH2F.h>
-//#include <Riostream.h>
 #include <TClass.h>
 
 // --- Analysis system --- 
@@ -47,31 +46,38 @@
 
 ClassImp(AliAnaParticleIsolation)
   
-//____________________________________________________________________________
+//______________________________________________________________________________
   AliAnaParticleIsolation::AliAnaParticleIsolation() : 
-    AliAnaPartCorrBaseClass(), fCalorimeter(""), 
-    fReMakeIC(0), fMakeSeveralIC(0), fMakeInvMass(0),
-    fhPtIso(0),fhPhiIso(0),fhEtaIso(0), fhPtNoIso(0),fhPtInvMassDecayIso(0),fhPtInvMassDecayNoIso(0), fhConeSumPt(0), fhPtInCone(0),
-    fhFRConeSumPt(0), fhPtInFRCone(0),
-    //Several IC
-    fNCones(0),fNPtThresFrac(0), fConeSizes(),  fPtThresholds(),  fPtFractions(), 
-    //MC
-    fhPtIsoPrompt(0),fhPhiIsoPrompt(0),fhEtaIsoPrompt(0), 
-    fhPtThresIsolatedPrompt(), fhPtFracIsolatedPrompt(),  fhPtSumIsolatedPrompt(),
-    fhPtIsoFragmentation(0),fhPhiIsoFragmentation(0),fhEtaIsoFragmentation(0), 
-    fhPtThresIsolatedFragmentation(), fhPtFracIsolatedFragmentation(),  fhPtSumIsolatedFragmentation(),
-    fhPtIsoPi0Decay(0),fhPhiIsoPi0Decay(0),fhEtaIsoPi0Decay(0),
-    fhPtThresIsolatedPi0Decay(), fhPtFracIsolatedPi0Decay(),  fhPtSumIsolatedPi0Decay(),
-    fhPtIsoOtherDecay(0),fhPhiIsoOtherDecay(0),fhEtaIsoOtherDecay(0), 
-    fhPtThresIsolatedOtherDecay(), fhPtFracIsolatedOtherDecay(),  fhPtSumIsolatedOtherDecay(),
-    fhPtIsoConversion(0),fhPhiIsoConversion(0),fhEtaIsoConversion(0), 
-    fhPtThresIsolatedConversion(), fhPtFracIsolatedConversion(),  fhPtSumIsolatedConversion(),
-    fhPtIsoUnknown(0),fhPhiIsoUnknown(0),fhEtaIsoUnknown(0), 
-    fhPtThresIsolatedUnknown(), fhPtFracIsolatedUnknown(),  fhPtSumIsolatedUnknown(),
-    fhPtNoIsoPi0Decay(0),fhPtNoIsoPrompt(0),fhPtIsoMCPhoton(0),fhPtNoIsoMCPhoton(0),
+    AliAnaPartCorrBaseClass(),        fCalorimeter(""), 
+    fReMakeIC(0),                     fMakeSeveralIC(0),
+    // Several IC
+    fNCones(0),                       fNPtThresFrac(0), 
+    fConeSizes(),                     fPtThresholds(),                 fPtFractions(), 
+    // Histograms
+    fhPtIso(0),                       fhPhiIso(0),                     fhEtaIso(0), 
+    fhPtNoIso(0),                     fhPtDecayIso(0),                 fhPtDecayNoIso(0), 
+    fhConeSumPt(0),                   fhPtInCone(0),
+    fhFRConeSumPt(0),                 fhPtInFRCone(0),
+    // MC histograms
+    fhPtIsoPrompt(0),                 fhPhiIsoPrompt(0),               fhEtaIsoPrompt(0), 
+    fhPtThresIsolatedPrompt(),        fhPtFracIsolatedPrompt(),        fhPtSumIsolatedPrompt(),
+    fhPtIsoFragmentation(0),          fhPhiIsoFragmentation(0),        fhEtaIsoFragmentation(0), 
+    fhPtThresIsolatedFragmentation(), fhPtFracIsolatedFragmentation(), fhPtSumIsolatedFragmentation(),
+    fhPtIsoPi0Decay(0),               fhPhiIsoPi0Decay(0),             fhEtaIsoPi0Decay(0),
+    fhPtThresIsolatedPi0Decay(),      fhPtFracIsolatedPi0Decay(),      fhPtSumIsolatedPi0Decay(),
+    fhPtIsoEtaDecay(0),               fhPhiIsoEtaDecay(0),             fhEtaIsoEtaDecay(0),
+    fhPtThresIsolatedEtaDecay(),      fhPtFracIsolatedEtaDecay(),      fhPtSumIsolatedEtaDecay(),
+    fhPtIsoOtherDecay(0),             fhPhiIsoOtherDecay(0),           fhEtaIsoOtherDecay(0), 
+    fhPtThresIsolatedOtherDecay(),    fhPtFracIsolatedOtherDecay(),    fhPtSumIsolatedOtherDecay(),
+    fhPtIsoConversion(0),             fhPhiIsoConversion(0),           fhEtaIsoConversion(0), 
+    fhPtThresIsolatedConversion(),    fhPtFracIsolatedConversion(),    fhPtSumIsolatedConversion(),
+    fhPtIsoUnknown(0),                fhPhiIsoUnknown(0),              fhEtaIsoUnknown(0), 
+    fhPtThresIsolatedUnknown(),       fhPtFracIsolatedUnknown(),       fhPtSumIsolatedUnknown(),
+    fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOtherDecay(0),
+    fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
     //Histograms settings
-    fHistoNPtSumBins(0),    fHistoPtSumMax(0.),    fHistoPtSumMin(0.),
-    fHistoNPtInConeBins(0), fHistoPtInConeMax(0.), fHistoPtInConeMin(0.)
+    fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
+    fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
 {
   //default ctor
   
@@ -79,87 +85,48 @@ ClassImp(AliAnaParticleIsolation)
   InitParameters();
   	
   for(Int_t i = 0; i < 5 ; i++){ 
-    fConeSizes[i] = 0 ; 
+    fConeSizes[i]      = 0 ; 
     fhPtSumIsolated[i] = 0 ;  
     
-    fhPtSumIsolatedPrompt[i] = 0 ;  
+    fhPtSumIsolatedPrompt[i]        = 0 ;  
     fhPtSumIsolatedFragmentation[i] = 0 ;  
-    fhPtSumIsolatedPi0Decay[i] = 0 ;  
-    fhPtSumIsolatedOtherDecay[i] = 0 ;  
-    fhPtSumIsolatedConversion[i] = 0 ;  
-    fhPtSumIsolatedUnknown[i] = 0 ;  
+    fhPtSumIsolatedPi0Decay[i]      = 0 ;  
+    fhPtSumIsolatedEtaDecay[i]      = 0 ;  
+    fhPtSumIsolatedOtherDecay[i]    = 0 ;  
+    fhPtSumIsolatedConversion[i]    = 0 ;  
+    fhPtSumIsolatedUnknown[i]       = 0 ;  
     
     for(Int_t j = 0; j < 5 ; j++){ 
       fhPtThresIsolated[i][j] = 0 ;  
-      fhPtFracIsolated[i][j] = 0 ; 
+      fhPtFracIsolated[i][j]  = 0 ; 
       
-      fhPtThresIsolatedPrompt[i][j] = 0 ;  
-      fhPtThresIsolatedFragmentation[i][j] = 0 ; 
-      fhPtThresIsolatedPi0Decay[i][j] = 0 ;  
-      fhPtThresIsolatedOtherDecay[i][j] = 0 ;  
-      fhPtThresIsolatedConversion[i][j] = 0 ;  
-      fhPtThresIsolatedUnknown[i][j] = 0 ;  
+      fhPtThresIsolatedPrompt[i][j]       = 0 ;  
+      fhPtThresIsolatedFragmentation[i][j]= 0 ; 
+      fhPtThresIsolatedPi0Decay[i][j]     = 0 ; 
+      fhPtThresIsolatedEtaDecay[i][j]     = 0 ;  
+      fhPtThresIsolatedOtherDecay[i][j]   = 0 ;  
+      fhPtThresIsolatedConversion[i][j]   = 0 ;  
+      fhPtThresIsolatedUnknown[i][j]      = 0 ;  
   
-      fhPtFracIsolatedPrompt[i][j] = 0 ;  
+      fhPtFracIsolatedPrompt[i][j]        = 0 ;  
       fhPtFracIsolatedFragmentation[i][j] = 0 ;  
-      fhPtFracIsolatedPi0Decay[i][j] = 0 ;  
-      fhPtFracIsolatedOtherDecay[i][j] = 0 ;  
-      fhPtFracIsolatedConversion[i][j] = 0 ;
-      fhPtFracIsolatedUnknown[i][j] = 0 ;  
+      fhPtFracIsolatedPi0Decay[i][j]      = 0 ;  
+      fhPtFracIsolatedEtaDecay[i][j]      = 0 ;  
+      fhPtFracIsolatedOtherDecay[i][j]    = 0 ;  
+      fhPtFracIsolatedConversion[i][j]    = 0 ;
+      fhPtFracIsolatedUnknown[i][j]       = 0 ;  
  
     }  
   } 
   
   for(Int_t i = 0; i < 5 ; i++){ 
-    fPtFractions[i]=  0 ; 
+    fPtFractions[i] = 0 ; 
     fPtThresholds[i]= 0 ; 
   } 
 
-
 }
 
-//____________________________________________________________________________
-AliAnaParticleIsolation::~AliAnaParticleIsolation() 
-{
-  //dtor
-  //do not delete histograms
-  
-  //delete [] fConeSizes ; 
-  //delete [] fPtThresholds ; 
-  //delete [] fPtFractions ; 
-
-}
-
-//_________________________________________________________________________
-Bool_t AliAnaParticleIsolation::CheckInvMass(const Int_t iaod, const AliAODPWG4Particle * part1)
-{
-  // Search if there is a companion decay photon to the candidate 
-  // and discard it in such case
-  // Use it only if isolation candidates are photons
-  // Make sure that no selection on photon pt is done in the input aod photon list.
-  TLorentzVector mom1 = *(part1->Momentum());
-  TLorentzVector mom2 ;
-  for(Int_t jaod = 0; jaod < GetInputAODBranch()->GetEntriesFast(); jaod++){
-    if(iaod == jaod) continue ;
-    AliAODPWG4ParticleCorrelation * part2 =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(jaod));
-    mom2 = *(part2->Momentum());
-    
-    //Select good pair (good phi, pt cuts, aperture and invariant mass)
-    
-    TString detector="";
-    if(part1->GetDetector()=="EMCAL" || part2->GetDetector()=="EMCAL" )
-      detector = "EMCAL";
-    
-    if(GetNeutralMesonSelection()->SelectPair(mom1, mom2,detector)){
-      if(GetDebug() > 1)printf("AliAnaParticleIsolation::CheckInvMass() - Selected gamma pair: pt %f, phi %f, eta%f\n",(mom1+mom2).Pt(), (mom1+mom2).Phi()*180./3.1416, (mom1+mom2).Eta());
-      return kTRUE ;
-    }
-  }//loop
-  
-  return kFALSE;
-}
-
-//________________________________________________________________________
+//______________________________________________________
 TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
 { 
 	//Save parameters used for analysis
@@ -174,8 +141,6 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   snprintf(onePar, buffersize,"fReMakeIC =%d (Flag for reisolation during histogram filling) \n",fReMakeIC) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"fMakeSeveralIC=%d (Flag for isolation with several cuts at the same time ) \n",fMakeSeveralIC) ;
-  parList+=onePar ;
-  snprintf(onePar, buffersize,"fMakeInvMass=%d (Flag for rejection of candidates with a pi0 inv mass pair) \n",fMakeInvMass) ;
   parList+=onePar ;
   
   if(fMakeSeveralIC){
@@ -208,7 +173,7 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
 	
 }
 
-//________________________________________________________________________
+//________________________________________________________
 TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
@@ -216,22 +181,22 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("IsolatedParticleHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins();
-  Int_t nphibins = GetHistoPhiBins();
-  Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();
-  Float_t phimax = GetHistoPhiMax();
-  Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();
-  Float_t phimin = GetHistoPhiMin();
-  Float_t etamin = GetHistoEtaMin();	
+  Int_t   nptbins  = GetHistoPtBins();
+  Int_t   nphibins = GetHistoPhiBins();
+  Int_t   netabins = GetHistoEtaBins();
+  Float_t ptmax    = GetHistoPtMax();
+  Float_t phimax   = GetHistoPhiMax();
+  Float_t etamax   = GetHistoEtaMax();
+  Float_t ptmin    = GetHistoPtMin();
+  Float_t phimin   = GetHistoPhiMin();
+  Float_t etamin   = GetHistoEtaMin();	
   
-  Int_t nptsumbins    = fHistoNPtSumBins;
-  Float_t ptsummax    = fHistoPtSumMax;
-  Float_t ptsummin    = fHistoPtSumMin;	
-  Int_t nptinconebins = fHistoNPtInConeBins;
-  Float_t ptinconemax = fHistoPtInConeMax;
-  Float_t ptinconemin = fHistoPtInConeMin;
+  Int_t   nptsumbins    = fHistoNPtSumBins;
+  Float_t ptsummax      = fHistoPtSumMax;
+  Float_t ptsummin      = fHistoPtSumMin;	
+  Int_t   nptinconebins = fHistoNPtInConeBins;
+  Float_t ptinconemax   = fHistoPtInConeMax;
+  Float_t ptinconemin   = fHistoPtInConeMin;
   
   if(!fMakeSeveralIC){
     
@@ -281,15 +246,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
     outputContainer->Add(fhPtNoIso) ;
     
-    fhPtInvMassDecayIso  = new TH1F("hPtInvMassDecayIso","Number of isolated #pi^{0} decay particles",nptbins,ptmin,ptmax); 
+    fhPtDecayIso  = new TH1F("hPtDecayIso","Number of isolated #pi^{0} decay particles",nptbins,ptmin,ptmax); 
     fhPtNoIso->SetYTitle("N");
     fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
-    outputContainer->Add(fhPtInvMassDecayIso) ;
+    outputContainer->Add(fhPtDecayIso) ;
     
-    fhPtInvMassDecayNoIso  = new TH1F("hPtInvMassDecayNoIso","Number of not isolated leading pi0 decay particles",nptbins,ptmin,ptmax); 
+    fhPtDecayNoIso  = new TH1F("hPtDecayNoIso","Number of not isolated leading pi0 decay particles",nptbins,ptmin,ptmax); 
     fhPtNoIso->SetYTitle("N");
     fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
-    outputContainer->Add(fhPtInvMassDecayNoIso) ;
+    outputContainer->Add(fhPtDecayNoIso) ;
     
     if(IsDataMC()){
       
@@ -343,6 +308,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhEtaIsoPi0Decay->SetYTitle("#eta");
       fhEtaIsoPi0Decay->SetXTitle("p_{T #gamma} (GeV/c)");
       outputContainer->Add(fhEtaIsoPi0Decay) ;
+      
+      fhPtIsoEtaDecay  = new TH1F("hPtMCEtaDecay","Number of isolated #gamma from #eta decay",nptbins,ptmin,ptmax); 
+      fhPtIsoEtaDecay->SetYTitle("N");
+      fhPtIsoEtaDecay->SetXTitle("p_{T #gamma}(GeV/c)");
+      outputContainer->Add(fhPtIsoEtaDecay) ; 
+      
+      fhPhiIsoEtaDecay  = new TH2F
+      ("hPhiMCEtaDecay","Number of isolated #gamma from #eta decay",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiIsoEtaDecay->SetYTitle("#phi");
+      fhPhiIsoEtaDecay->SetXTitle("p_{T #gamma} (GeV/c)");
+      outputContainer->Add(fhPhiIsoEtaDecay) ; 
+      
+      fhEtaIsoEtaDecay  = new TH2F
+      ("hEtaMCEtaDecay","Number of isolated #gamma from #eta decay",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      fhEtaIsoEtaDecay->SetYTitle("#eta");
+      fhEtaIsoEtaDecay->SetXTitle("p_{T #gamma} (GeV/c)");
+      outputContainer->Add(fhEtaIsoEtaDecay) ;
       
       fhPtIsoOtherDecay  = new TH1F("hPtMCOtherDecay","Number of isolated #gamma from non-#pi^{0} decay",nptbins,ptmin,ptmax); 
       fhPtIsoOtherDecay->SetYTitle("N");
@@ -401,6 +383,18 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtNoIsoPi0Decay->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtNoIsoPi0Decay) ;
       
+      fhPtNoIsoEtaDecay  = new TH1F
+      ("hPtNoIsoEtaDecay","Number of not isolated leading #gamma from eta decay",nptbins,ptmin,ptmax); 
+      fhPtNoIsoEtaDecay->SetYTitle("N");
+      fhPtNoIsoEtaDecay->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtNoIsoEtaDecay) ;
+      
+      fhPtNoIsoOtherDecay  = new TH1F
+      ("hPtNoIsoOtherDecay","Number of not isolated leading #gamma from other decay",nptbins,ptmin,ptmax); 
+      fhPtNoIsoOtherDecay->SetYTitle("N");
+      fhPtNoIsoOtherDecay->SetXTitle("p_{T} (GeV/c)");
+      outputContainer->Add(fhPtNoIsoOtherDecay) ;
+      
       fhPtNoIsoPrompt  = new TH1F
       ("hPtNoIsoPrompt","Number of not isolated leading prompt #gamma",nptbins,ptmin,ptmax); 
       fhPtNoIsoPrompt->SetYTitle("N");
@@ -456,6 +450,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		    fhPtSumIsolatedPi0Decay[icone]->SetXTitle("p_{T} (GeV/c)");
 		    outputContainer->Add(fhPtSumIsolatedPi0Decay[icone]) ; 
 		    
+        snprintf(name, buffersize,"hPtSumEtaDecay_Cone_%d",icone);
+		    snprintf(title, buffersize,"Candidate EtaDecay cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
+		    fhPtSumIsolatedEtaDecay[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+		    fhPtSumIsolatedEtaDecay[icone]->SetYTitle("#Sigma p_{T} (GeV/c)");
+		    fhPtSumIsolatedEtaDecay[icone]->SetXTitle("p_{T} (GeV/c)");
+		    outputContainer->Add(fhPtSumIsolatedEtaDecay[icone]) ;         
+        
 		    snprintf(name, buffersize,"hPtSumOtherDecay_Cone_%d",icone);
 		    snprintf(title, buffersize,"Candidate OtherDecay cone sum p_{T} for cone size %d vs candidate p_{T}",icone);
 		    fhPtSumIsolatedOtherDecay[icone]  = new TH2F(name, title,nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -529,6 +530,19 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		      fhPtFracIsolatedPi0Decay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
 		      outputContainer->Add(fhPtFracIsolatedPi0Decay[icone][ipt]) ; 
 		      
+          snprintf(name, buffersize,"hPtThresMCEtaDecay_Cone_%d_Pt%d",icone,ipt);
+		      snprintf(title, buffersize,"Isolated candidate EtaDecay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+		      fhPtThresIsolatedEtaDecay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+		      fhPtThresIsolatedEtaDecay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+		      outputContainer->Add(fhPtThresIsolatedEtaDecay[icone][ipt]) ; 
+		      
+		      snprintf(name, buffersize,"hPtFracMCEtaDecay_Cone_%d_Pt%d",icone,ipt);
+		      snprintf(title, buffersize,"Isolated candidate EtaDecay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
+		      fhPtFracIsolatedEtaDecay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
+		      fhPtFracIsolatedEtaDecay[icone][ipt]->SetXTitle("p_{T} (GeV/c)");
+		      outputContainer->Add(fhPtFracIsolatedEtaDecay[icone][ipt]) ; 
+          
+          
 		      snprintf(name, buffersize,"hPtThresMCOtherDecay_Cone_%d_Pt%d",icone,ipt);
 		      snprintf(title, buffersize,"Isolated candidate OtherDecay p_{T} distribution for cone size %d and p_{T}^{th} %d",icone,ipt);
 		      fhPtThresIsolatedOtherDecay[icone][ipt]  = new TH1F(name, title,nptbins,ptmin,ptmax);
@@ -571,20 +585,43 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 		}//ipt loop
   }
   
-  //Keep neutral meson selection histograms if requiered
-  //Setting done in AliNeutralMesonSelection
-  if(fMakeInvMass && GetNeutralMesonSelection()){
-    TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
-    if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
-      for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
-    delete nmsHistos;
-  }
   
   return outputContainer ;
   
 }
 
-//__________________________________________________________________
+//____________________________________________
+void AliAnaParticleIsolation::InitParameters()
+{
+  
+  //Initialize the parameters of the analysis.
+  SetInputAODName("PWG4Particle");
+  SetAODObjArrayName("IsolationCone");  
+  AddToHistogramsName("AnaIsolation_");
+  
+  fCalorimeter = "PHOS" ;
+  fReMakeIC = kFALSE ;
+  fMakeSeveralIC = kFALSE ;
+  
+  //----------- Several IC-----------------
+  fNCones          = 5 ; 
+  fNPtThresFrac    = 5 ; 
+  fConeSizes[0]    = 0.1;  fConeSizes[1]     = 0.2;  fConeSizes[2]    = 0.3; fConeSizes[3]    = 0.4;  fConeSizes[4]    = 0.5;
+  fPtThresholds[0] = 1.;   fPtThresholds[1] = 2.;    fPtThresholds[2] = 3.;  fPtThresholds[3] = 4.;   fPtThresholds[4] = 5.; 
+  fPtFractions[0]  = 0.05; fPtFractions[1]  = 0.075; fPtFractions[2]  = 0.1; fPtFractions[3]  = 1.25; fPtFractions[4]  = 1.5; 
+  
+  //------------- Histograms settings -------
+  fHistoNPtSumBins = 100 ;
+  fHistoPtSumMax   = 50 ;
+  fHistoPtSumMin   = 0.  ;
+  
+  fHistoNPtInConeBins = 100 ;
+  fHistoPtInConeMax   = 50 ;
+  fHistoPtInConeMin   = 0.  ;
+  
+}
+
+//__________________________________________________
 void  AliAnaParticleIsolation::MakeAnalysisFillAOD() 
 {
   //Do analysis and fill aods
@@ -602,7 +639,6 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
 	
   Int_t n = 0, nfrac = 0;
   Bool_t  isolated  = kFALSE ;
-  Bool_t  decay     = kFALSE;
   Float_t coneptsum = 0 ;
   TObjArray * pl    = 0x0; ; 
   
@@ -660,15 +696,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
   AliAODPWG4ParticleCorrelation * aodinput =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(idLeading));
   aodinput->SetLeadingParticle(kTRUE);
-  
-  //Check invariant mass, if pi0, tag decay.
-  if(fMakeInvMass) decay = CheckInvMass(idLeading,aodinput);
-  
+    
   //After cuts, study isolation
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
   GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
   aodinput->SetIsolated(isolated);
-  aodinput->SetTagged(decay);
   
   if(GetDebug() > 1) {
     if(isolated)printf("AliAnaParticleIsolation::MakeAnalysisFillAOD() : Particle %d IS ISOLATED \n",idLeading);
@@ -677,23 +709,22 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
   
 }
 
-//__________________________________________________________________
+//_________________________________________________________
 void  AliAnaParticleIsolation::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
-  Int_t n = 0, nfrac = 0;
-  Bool_t isolated = kFALSE ;
+  Int_t   n = 0, nfrac = 0;
+  Bool_t  isolated  = kFALSE ;
   Float_t coneptsum = 0 ;
+  
   //Loop on stored AOD 
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Histo aod branch entries %d\n", naod);
   
   //Get vertex for photon momentum calculation
   Double_t vertex[]={0,0,0} ; //vertex ;
-  //Double_t vertex2[]={0,0,0} ; //vertex ;
   if(GetReader()->GetDataType() != AliCaloTrackReader::kMC) {
 	  GetReader()->GetVertex(vertex);
-	  //if(GetReader()->GetSecondInputAODTree()) GetReader()->GetSecondInputAODVertex(vertex2);
   }	
 	
   for(Int_t iaod = 0; iaod < naod ; iaod++){
@@ -702,7 +733,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(!aod->IsLeadingParticle()) continue; // Try to isolate only leading cluster or track
     
     Bool_t  isolation  = aod->IsIsolated(); 
-    Bool_t  dec        = aod->IsTagged();
+    Bool_t  decay      = aod->IsTagged();
     Float_t pt         = aod->Pt();
     Float_t phi        = aod->Phi();
     Float_t eta        = aod->Eta();
@@ -786,10 +817,15 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       fhPtIso  ->Fill(pt);
       fhPhiIso ->Fill(pt,phi);
       fhEtaIso ->Fill(pt,eta);
-      if (dec) fhPtInvMassDecayIso->Fill(pt);
+      if (decay) fhPtDecayIso->Fill(pt);
       
       if(IsDataMC()){
         Int_t tag =aod->GetTag();
+        
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+        {
+          fhPtIsoMCPhoton  ->Fill(pt);
+        }        
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)){
           fhPtIsoPrompt  ->Fill(pt);
@@ -808,7 +844,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhPhiIsoPi0Decay ->Fill(pt,phi);
           fhEtaIsoPi0Decay ->Fill(pt,eta);
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+        {
+          fhPtIsoEtaDecay  ->Fill(pt);
+          fhPhiIsoEtaDecay ->Fill(pt,phi);
+          fhEtaIsoEtaDecay ->Fill(pt,eta);
+        }        
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
         {
           fhPtIsoOtherDecay  ->Fill(pt);
           fhPhiIsoOtherDecay ->Fill(pt,phi);
@@ -820,12 +862,7 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
           fhPhiIsoConversion ->Fill(pt,phi);
           fhEtaIsoConversion ->Fill(pt,eta);
         }
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-        {
-          fhPtIsoMCPhoton  ->Fill(pt);
-        }
-        
-        else
+        else // anything else
         {
           fhPtIsoUnknown  ->Fill(pt);
           fhPhiIsoUnknown ->Fill(pt,phi);
@@ -838,21 +875,31 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(!isolation)
     {
       fhPtNoIso  ->Fill(pt);
-      if (dec) fhPtInvMassDecayNoIso->Fill(pt);
+      if (decay) fhPtDecayNoIso->Fill(pt);
       
       if(IsDataMC()){
         Int_t tag =aod->GetTag();
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
+        
+        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
+        {
+          fhPtNoIsoMCPhoton->Fill(pt);
+        }
+        
+        if     (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))
         {
           fhPtNoIsoPi0Decay->Fill(pt);
         }
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
+        {
+          fhPtNoIsoEtaDecay->Fill(pt);
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
+        {
+          fhPtNoIsoOtherDecay->Fill(pt);
+        }        
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))
         {
           fhPtNoIsoPrompt->Fill(pt);
-        }
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton))
-        {
-          fhPtNoIsoMCPhoton->Fill(pt);
         }
         
       }
@@ -862,39 +909,8 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
   
 }
 
-//____________________________________________________________________________
-void AliAnaParticleIsolation::InitParameters()
-{
-  
-  //Initialize the parameters of the analysis.
-  SetInputAODName("PWG4Particle");
-  SetAODObjArrayName("IsolationCone");  
-  AddToHistogramsName("AnaIsolation_");
-  
-  fCalorimeter = "PHOS" ;
-  fReMakeIC = kFALSE ;
-  fMakeSeveralIC = kFALSE ;
-  fMakeInvMass = kFALSE ;
-  
-  //----------- Several IC-----------------
-  fNCones           = 5 ; 
-  fNPtThresFrac     = 5 ; 
-  fConeSizes[0]    = 0.1;  fConeSizes[1]     = 0.2;  fConeSizes[2]    = 0.3; fConeSizes[3]    = 0.4;  fConeSizes[4]    = 0.5;
-  fPtThresholds[0] = 1.;   fPtThresholds[1] = 2.;    fPtThresholds[2] = 3.;  fPtThresholds[3] = 4.;   fPtThresholds[4] = 5.; 
-  fPtFractions[0]  = 0.05; fPtFractions[1]  = 0.075; fPtFractions[2]  = 0.1; fPtFractions[3]  = 1.25; fPtFractions[4]  = 1.5; 
-  
-  //------------- Histograms settings -------
-  fHistoNPtSumBins = 100 ;
-  fHistoPtSumMax   = 50 ;
-  fHistoPtSumMin   = 0.  ;
-  
-  fHistoNPtInConeBins = 100 ;
-  fHistoPtInConeMax   = 50 ;
-  fHistoPtInConeMin   = 0.  ;
-  
-}
 
-//__________________________________________________________________
+//_____________________________________________________________________________________
 void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelation* ph) 
 {
   //Isolation Cut Analysis for both methods and different pt cuts and cones
@@ -929,11 +945,12 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       if(n[icone][ipt] == 0) {
         fhPtThresIsolated[icone][ipt]->Fill(ptC);
         if(IsDataMC()){
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)) fhPtThresIsolatedPrompt[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) fhPtThresIsolatedConversion[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtThresIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)) fhPtThresIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)) fhPtThresIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
+          if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtThresIsolatedPrompt[icone][ipt]       ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtThresIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtThresIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtThresIsolatedPi0Decay[icone][ipt]     ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtThresIsolatedEtaDecay[icone][ipt]     ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtThresIsolatedOtherDecay[icone][ipt]   ->Fill(ptC) ;
           else  fhPtThresIsolatedUnknown[icone][ipt]->Fill(ptC) ;
         }
       }
@@ -942,11 +959,12 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       if(nfrac[icone][ipt] == 0) {
         fhPtFracIsolated[icone][ipt]->Fill(ptC);
         if(IsDataMC()){
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)) fhPtFracIsolatedPrompt[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) fhPtFracIsolatedConversion[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtFracIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)) fhPtFracIsolatedPi0Decay[icone][ipt]->Fill(ptC) ;
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)) fhPtFracIsolatedOtherDecay[icone][ipt]->Fill(ptC) ;
+          if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtFracIsolatedPrompt[icone][ipt]       ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtFracIsolatedConversion[icone][ipt]   ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtFracIsolatedFragmentation[icone][ipt]->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtFracIsolatedPi0Decay[icone][ipt]     ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtFracIsolatedEtaDecay[icone][ipt]     ->Fill(ptC) ;
+          else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtFracIsolatedOtherDecay[icone][ipt]   ->Fill(ptC) ;
           else  fhPtFracIsolatedUnknown[icone][ipt]->Fill(ptC) ;
         }
       }
@@ -955,11 +973,12 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
     //Sum in cone histograms
     fhPtSumIsolated[icone]->Fill(ptC,coneptsum) ;
     if(IsDataMC()){
-      if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt)) fhPtSumIsolatedPrompt[icone]->Fill(ptC,coneptsum) ;
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) fhPtSumIsolatedConversion[icone]->Fill(ptC,coneptsum) ;
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtSumIsolatedFragmentation[icone]->Fill(ptC,coneptsum) ;
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)) fhPtSumIsolatedPi0Decay[icone]->Fill(ptC,coneptsum) ;
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) || GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay)) fhPtSumIsolatedOtherDecay[icone]->Fill(ptC,coneptsum) ;
+      if     ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt))        fhPtSumIsolatedPrompt[icone]       ->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion))    fhPtSumIsolatedConversion[icone]   ->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)) fhPtSumIsolatedFragmentation[icone]->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay))      fhPtSumIsolatedPi0Decay[icone]     ->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))      fhPtSumIsolatedEtaDecay[icone]     ->Fill(ptC,coneptsum) ;
+      else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))    fhPtSumIsolatedOtherDecay[icone]   ->Fill(ptC,coneptsum) ;
       else  fhPtSumIsolatedUnknown[icone]->Fill(ptC,coneptsum) ;
     }
     
@@ -972,7 +991,7 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
   
 }
 
-//__________________________________________________________________
+//_____________________________________________________________
 void AliAnaParticleIsolation::Print(const Option_t * opt) const
 {
   
