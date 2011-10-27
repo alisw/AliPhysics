@@ -39,7 +39,7 @@ public:
   Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TObjArray ** list, AliDetectorRecoParam * recoParam = NULL);
   Bool_t Run(AliQAv1::DETECTORINDEX_t det, AliQAv1::TASKINDEX_t task, TNtupleD ** list, AliDetectorRecoParam * recoParam = NULL);
   void   SetRunInfo(AliRunInfo * ei) {fRunInfo = ei;}
-  Int_t  GetRunNumber() { return fRun ; } 
+  Int_t  GetRunNumber() const { return fRun ; } 
   void   SetRunNumber(Int_t run) { fRun = run ; } 
 
 private:
