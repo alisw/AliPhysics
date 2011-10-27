@@ -23,7 +23,6 @@ public:
   virtual void  CreateGeometry();
  private:
   virtual TGeoPcon* MakeShapeFromTemplate(const TGeoPcon* pcon, Float_t drIn, Float_t drOut);  
- protected:
   ClassDef(AliABSOv3,1)  // Front Absorber as built
 };
 
