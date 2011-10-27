@@ -81,7 +81,8 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fDCAzCut(-1),
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
-  fAcceptanceParameterization(0) {
+  fAcceptanceParameterization(0),
+  fExcludeResonancesInMC(kFALSE) {
   // Constructor
 
   // Define input and output slots here
@@ -709,10 +710,35 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    if( track->Eta() < fEtaMin || track->Eta() > fEtaMax)  
 	      continue;
 	    
+	    //Use the acceptance parameterization
 	    if(fAcceptanceParameterization) {
 	      Double_t gRandomNumber = gRandom->Rndm();
 	      if(gRandomNumber > fAcceptanceParameterization->Eval(track->Pt())) 
 		continue;
+	    }
+
+	    //Exclude resonances
+	    if(fExcludeResonancesInMC) {
+	      TParticle *particle = track->Particle();
+	      if(!particle) continue;
+	      
+	      Bool_t kExcludeParticle = kFALSE;
+	      Int_t gMotherIndex = particle->GetFirstMother();
+	      if(gMotherIndex != -1) {
+		AliMCParticle* motherTrack = dynamic_cast<AliMCParticle *>(mcEvent->GetTrack(gMotherIndex));
+		if(motherTrack) {
+		  TParticle *motherParticle = motherTrack->Particle();
+		  if(motherParticle) {
+		    Int_t pdgCodeOfMother = motherParticle->GetPdgCode();
+		    if((pdgCodeOfMother == 113)||(pdgCodeOfMother == 213)||(pdgCodeOfMother == 221)||(pdgCodeOfMother == 223)||(pdgCodeOfMother == 331)||(pdgCodeOfMother == 333)) {
+		      kExcludeParticle = kTRUE;
+		    }
+		  }
+		}
+	      }
+	      
+	      //Exclude from the analysis decay products of rho0, rho+, eta, eta' and phi
+	      if(kExcludeParticle) continue;
 	    }
 	      
 	    array->Add(track);
