@@ -32,9 +32,9 @@ class AliITSMeanVertexer : public TObject {
  
     void   SetFilterOnContributors(Int_t nc=1){fFilterOnContributors = nc;}
     Bool_t Reconstruct(AliRawReader *rawReader);
-    void SetCutOnErrX(Double_t cut=3.){fErrXCut = cut;}
-    void SetCutOnR(Double_t cut=0.2){fRCut = cut;}
-    void SetCutOnCls(UInt_t vmin=50, UInt_t vmax=4000){fLowSPD0=vmin; fHighSPD0=vmax;}
+    void SetCutOnErrX(Double_t cut=9.5){fErrXCut = cut;}
+    void SetCutOnR(Double_t cut=0.5){fRCut = cut;}
+    void SetCutOnCls(UInt_t vmin=50, UInt_t vmax=7000){fLowSPD0=vmin; fHighSPD0=vmax;}
     void   WriteVertices(const char *filename);
 
     const TH2F*GetVertexXY() const { return fVertexXY; }

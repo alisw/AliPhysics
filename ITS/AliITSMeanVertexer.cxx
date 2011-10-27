@@ -75,11 +75,11 @@ fDistH(NULL)
   fVertexZ  = new TH1F("VertexZ"," Longitudinal Vertex Profile",
 		       2*(Int_t)(zLimit/zDelta),-zLimit,zLimit);
   fVertexZ->SetXTitle("Z , cm");
-  fErrXH = new TH1F("errorX","Error X - before cuts",50,0.,49.);
-  fMultH = new TH1F("multh","mult on layer 1 before cuts",100,0.,300.);
-  fErrXHa = new TH1F("errorXa","Error X - after Filter",50,0.,49.);
+  fErrXH = new TH1F("errorX","Error X - before cuts",100,0.,99.);
+  fMultH = new TH1F("multh","mult on layer 1 before cuts",2400,0.,7200.);
+  fErrXHa = new TH1F("errorXa","Error X - after Filter",100,0.,99.);
   fErrXHa->SetLineColor(kRed);
-  fMultHa = new TH1F("multha","mult on layer 1 - after Filter",100,0.,300.);
+  fMultHa = new TH1F("multha","mult on layer 1 - after Filter",2400,0.,7200.);
   fMultHa->SetLineColor(kRed);
   fDistH = new TH1F("disth","distance (mm)",100,0.,30.);
   fClu0 = new UInt_t [fgkMaxNumOfEvents];
@@ -176,7 +176,7 @@ Bool_t AliITSMeanVertexer::Reconstruct(AliRawReader *rawReader){
     AliInfo(Form("Low and high cuts on SPD L0 clusters %d , %d \n",fLowSPD0,fHighSPD0));
     AliInfo(Form("Reconstruct: cut on errX %f \n",fErrXCut));
   }
-  //  AliCodeTimerAuto("",0);
+//  AliCodeTimerAuto("",0);
   AliITSRecPointContainer::Instance()->PrepareToRead();
   TTree* clustersTree = new TTree("TreeR", "Reconstructed Points Container"); //make a tree
   fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,"SPD");
