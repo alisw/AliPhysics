@@ -13,7 +13,8 @@ AliAODConversionMother::AliAODConversionMother() :
 AliAODConversionParticle(),
 fChi2(-1),
 fOpeningAngle(-1),
-fAlpha(-1)
+    fAlpha(-1),
+    fWeight(1)
 {
 	fLabel[0] = -1;
 	fLabel[1] = -1;
@@ -23,7 +24,8 @@ AliAODConversionMother::AliAODConversionMother(AliKFConversionMother *kf):
 AliAODConversionParticle(),
 fChi2(kf->GetChi2()),
 fOpeningAngle(kf->GetOpeningAngle()),
-fAlpha(kf->GetAlpha())
+fAlpha(kf->GetAlpha()),
+fWeight(1)
 {
     // Set 4momentu
     SetPxPyPzE(kf->GetPx(),kf->GetPy(),kf->GetPz(),kf->GetE());
@@ -37,7 +39,8 @@ AliAODConversionMother::AliAODConversionMother(AliAODConversionPhoton *y1,AliAOD
 AliAODConversionParticle(),
 fChi2(-1),
 fOpeningAngle(-1),
-fAlpha(-1)
+fAlpha(-1),
+fWeight(1)
 {
     // Set 4momentum
     SetPxPyPzE(y1->Px()+y2->Px(),y1->Py()+y2->Py(),y1->Pz()+y2->Pz(),y1->E()+y2->E());

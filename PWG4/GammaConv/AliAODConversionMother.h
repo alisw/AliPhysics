@@ -52,14 +52,17 @@ class AliAODConversionMother : public AliAODConversionParticle{
 
      Double_t GetAlpha() const { return fAlpha;}
 
+     void SetWeight(Double_t weight) {fWeight=weight;}
+     Double_t GetWeight() const {return fWeight;}
 
 private:
     Int_t fLabel[2]; // Labels of the decay photons
     Float_t fChi2; // Chi sq of reconstructed mother
     Double_t fOpeningAngle;
     Double_t fAlpha;
+    Double_t fWeight; // Weight for BG Calculation
 
-    ClassDef(AliAODConversionMother,1)
+    ClassDef(AliAODConversionMother,2)
 };
 
 #endif
