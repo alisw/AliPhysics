@@ -72,7 +72,10 @@ private:
   TH2I             *fhV0STU;         //! Total signal STU vs V0C+V0S
   TH2I             *fhFullTRUSTU;    //! Total signal STU vs TRU
   TH2I             *fhSTUChecks;     //! Checks STU/TRU link
-
+  TH1F             *fhClusMB;        //! Clusters distribution for MB trigger
+  TH1F             *fhClusL0;        //! Clusters distribution for L0 trigger	
+  TH1F             *fhClusL1G;       //! Clusters distribution for L1G trigger
+  TH1F             *fhClusL1J;       //! Clusters distribution for L1J trigger
   
   // Histograms bins
   
@@ -101,7 +104,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 2);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 3);   
 };
 
 #endif 
