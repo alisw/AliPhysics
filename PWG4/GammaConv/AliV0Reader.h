@@ -501,7 +501,7 @@ class AliV0Reader : public TObject {
    * Gets the Pt cut value.
    */
   Double_t GetPtCut() const{return fPtCut;}
-	
+  Double_t GetSinglePtCut() const{return fSinglePtCut;}	
 	
   /*
    * Gets the MaxZCut value.
