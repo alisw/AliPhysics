@@ -49,7 +49,6 @@ set ( SRCS
     AliCollisionNormalization.cxx 
     AliCollisionNormalizationTask.cxx 
     AliCentralitySelectionTask.cxx 
-    AliAnalysisTaskAODCentralityMaker.cxx 
     AliEPSelectionTask.cxx 
     AliAnalysisTaskStat.cxx 
     AliMultiInputEventHandler.cxx 

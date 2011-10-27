@@ -39,7 +39,6 @@ set ( SRCS
     AOD/AliAODPWG4ParticleCorrelation.cxx 
     AOD/AliAODDimuon.cxx 
     AOD/AliAODpidUtil.cxx 
-    AOD/AliAODCentrality.cxx 
     AOD/AliAODBranchReplicator.cxx 
     AOD/AliAODVZERO.cxx
     AOD/AliAODZDC.cxx	
