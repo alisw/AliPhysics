@@ -445,7 +445,8 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
   Int_t coord[4];
   for(Int_t bin = 0; bin < fHnSparseI->GetNbins(); bin++) {
     
-    Double_t content = fHnSparseI->GetBinContent(bin,coord);
+    //Double_t content = fHnSparseI->GetBinContent(bin,coord);
+    fHnSparseI->GetBinContent(bin,coord);
     // layer, stack, sector
     Int_t detector = AliTRDgeometry::GetDetector(coord[1]-1,coord[2]-1,coord[0]-1);
     //
