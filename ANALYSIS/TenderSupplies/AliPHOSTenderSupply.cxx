@@ -22,6 +22,9 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "TROOT.h"
+#include "TH2.h"
+#include "TFile.h"
 
 #include <AliLog.h>
 #include <AliESDEvent.h>
@@ -36,6 +39,7 @@
 #include "AliPHOSCalibData.h"
 #include "AliPHOSGeometry.h"
 #include "AliPHOSEsdCluster.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliPHOSTenderSupply)
 
@@ -44,12 +48,17 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fOCDBpass("local://OCDB")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
+  ,fRunNumber(0)
+  ,fRecoPass(-1)  //to be defined
+  ,fUsePrivateBadMap(0)
+  ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
 {
 	//
 	// default ctor
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
+   for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
 }
 
 //_____________________________________________________
@@ -58,29 +67,110 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fOCDBpass("alien:///alice/cern.ch/user/p/prsnko/PHOSrecalibrations/")
   ,fNonlinearityVersion("Default")
   ,fPHOSGeo(0x0)
+  ,fRunNumber(0)
+  ,fRecoPass(-1)  //to be defined
+  ,fUsePrivateBadMap(0)
+  ,fUsePrivateCalib(0)
   ,fPHOSCalibData(0x0)
 {
 	//
 	// named ctor
 	//
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
+   for(Int_t mod=0;mod<5;mod++)fPHOSBadMap[mod]=0x0 ;
 }
 
 //_____________________________________________________
 AliPHOSTenderSupply::~AliPHOSTenderSupply()
 {
   //Destructor
-  if(fPHOSCalibData)delete fPHOSCalibData;
+  if(fPHOSCalibData)
+    delete fPHOSCalibData;
+  fPHOSCalibData=0x0 ;
 }
 
 //_____________________________________________________
-void AliPHOSTenderSupply::Init()
+void AliPHOSTenderSupply::InitTender()
 {
   //
   // Initialise PHOS tender
   //
-    
+  AliESDEvent *event=fTender->GetEvent();
+  if (!event) return;
+	      
+  fRunNumber=event->GetRunNumber();	      
+  if(fRecoPass<0){ //not defined yet
+    // read if from filename.
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    TTree * t = mgr->GetTree();
+    if(t){  
+      TFile * f = t->GetCurrentFile() ;
+      if(f){  
+        TString fname(f->GetName());
+        if(fname.Contains("pass1"))
+	   fRecoPass=1;
+        else 
+	  if(fname.Contains("pass2"))
+	   fRecoPass=2;
+          else 
+	    if(fname.Contains("pass3")) 
+  	      fRecoPass=3;
+      }
+    }
+    if(fRecoPass<0){
+      AliError("Can not find pass number from file name, set it manually");
+    }
+  }
+   
+  //Init geometry 
+  if(!fPHOSGeo){
+    AliOADBContainer geomContainer("phosGeo");
+    geomContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root","PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(fRunNumber,"PHOSRotationMatrixes");
+    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
+    for(Int_t mod=0; mod<5; mod++) {
+      if(!matrixes->At(mod)) continue;
+      fPHOSGeo->SetMisalMatrix(((TGeoHMatrix*)matrixes->At(mod)),mod) ;
+      printf(".........Adding Matrix(%d), geo=%p\n",mod,fPHOSGeo) ;
+    }
+  }
+  
+  //Init Bad channels map
+  if(!fUsePrivateBadMap){
+   AliOADBContainer badmapContainer(Form("phosBadMap"));
+    badmapContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root","phosBadMap");
+    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(fRunNumber,"phosBadMap");
+    if(!maps){
+      AliError(Form("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",fRunNumber)) ;    
+    }
+    else{
+      AliInfo(Form("Setting PHOS bad map with name %s \n",maps->GetName())) ;
+      for(Int_t mod=0; mod<5;mod++){
+        if(fPHOSBadMap[mod]) 
+          delete fPHOSBadMap[mod] ;
+        TH2I * h = (TH2I*)maps->At(mod) ;      
+	if(h)
+          fPHOSBadMap[mod]=new TH2I(*h) ;
+      }
+    }    
+  } 
 
+  if(!fUsePrivateCalib){
+    //Init recalibration
+    //Check the pass1-pass2-pass3 reconstruction
+    AliOADBContainer calibContainer("phosRecalibration");
+    calibContainer.InitFromFile("$ALICE_ROOT/OADB/PHOS/PHOSCalibrations.root","phosRecalibration");
+    TObjArray *recalib = (TObjArray*)calibContainer.GetObject(fRunNumber,"PHOSRecalibration");
+    if(!recalib){
+      AliFatal(Form("Can not read calibrations for run %d\n. You may choose your specific calibration with ForceUsingCalibration()\n",fRunNumber)) ;
+    }
+    else{
+      fPHOSCalibData = (AliPHOSCalibData*)recalib->At(fRecoPass-1) ;
+      if(!fPHOSCalibData) {
+        AliFatal(Form("Can not find calibration for run %d, pass %d \n",fRunNumber, fRecoPass)) ;
+      }
+    }
+  }
   
 }
 
@@ -93,24 +183,12 @@ void AliPHOSTenderSupply::ProcessEvent()
 
   AliESDEvent *event=fTender->GetEvent();
   if (!event) return;
-
-  // Init goemetry
-  if(!fPHOSGeo){
-    fPHOSGeo =  AliPHOSGeometry::GetInstance("IHEP") ;
-    for(Int_t mod=0; mod<5; mod++) {
-      if(!event->GetPHOSMatrix(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
-    }
-  }
-
+	      
+  fRunNumber=event->GetRunNumber();	      
 
   if(!fPHOSCalibData || fTender->RunChanged()){
-    AliCDBManager * man = AliCDBManager::Instance();
-    man->SetRun(event->GetRunNumber()) ;
-    //    man->SetDefaultStorage("local://OCDB");
-    man->SetSpecificStorage("PHOS/Calib/EmcGainPedestals",fOCDBpass);
-    if(fPHOSCalibData) delete fPHOSCalibData; 
-    fPHOSCalibData = new AliPHOSCalibData();
+    InitTender();
+    
   }
 
 
@@ -128,7 +206,19 @@ void AliPHOSTenderSupply::ProcessEvent()
     AliESDCaloCluster *clu = event->GetCaloCluster(i);
     if ( !clu->IsPHOS()) continue;
     
-    //Apply re-Calibreation
+    Float_t  position[3];
+    clu->GetPosition(position);
+    TVector3 global(position) ;
+    Int_t relId[4] ;
+    fPHOSGeo->GlobalPos2RelId(global,relId) ;
+    Int_t mod  = relId[0] ;
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3] ;
+    if ( !IsGoodChannel(mod,cellX,cellZ) ) {
+      clu->SetE(0.) ;
+      continue ;
+    }  
+   //Apply re-Calibreation
     AliPHOSEsdCluster cluPHOS1(*clu);
     cluPHOS1.Recalibrate(fPHOSCalibData,cells); // modify the cell energies
     cluPHOS1.EvalAll(logWeight,vertex);         // recalculate the cluster parameters
@@ -142,18 +232,19 @@ void AliPHOSTenderSupply::ProcessEvent()
     //    ec->SetPID(rp->GetPID()) ;            //array of particle identification
     clu->SetM02(cluPHOS1.GetM02()) ;               //second moment M2x
     clu->SetM20(cluPHOS1.GetM20()) ;               //second moment M2z
-    Double_t r=0.,dx=0.,dz=0. ;
+    Double_t dx=0.,dz=0. ;
+    fPHOSGeo->GlobalPos2RelId(global,relId) ;
     TVector3 locPos;
-    TVector3 globPos(xyz) ;
-    Int_t relId[4] ;
-    fPHOSGeo->GlobalPos2RelId(globPos,relId) ;
-    Int_t mod  = relId[0] ;
-    fPHOSGeo->Global2Local(locPos,globPos,mod) ;
+    fPHOSGeo->Global2Local(locPos,global,mod) ;
 
-    FindTrackMatching(mod,&locPos,r,dx,dz) ;
-    clu->SetEmcCpvDistance(r);    
+    Double_t pttrack=0.;
+    Int_t charge=0;
+    FindTrackMatching(mod,&locPos,dx,dz,pttrack,charge) ;
+    Double_t r=TestCPV(dx, dz, pttrack,charge) ;
     clu->SetTrackDistance(dx,dz); 
-    //    clu->SetChi2(-1);                     //not yet implemented
+    
+    clu->SetEmcCpvDistance(r);    
+    clu->SetChi2(TestLambda(clu->E(),clu->GetM20(),clu->GetM02()));                     //not yet implemented
     clu->SetTOF(cluPHOS1.GetTOF());       
 
   }
@@ -161,7 +252,9 @@ void AliPHOSTenderSupply::ProcessEvent()
 
 }
 //___________________________________________________________________________________________________
-void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &r,Double_t &dx, Double_t &dz){
+void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,
+					    Double_t &dx, Double_t &dz,
+					    Double_t &pt,Int_t &charge){
   //Find track with closest extrapolation to cluster
   
   AliESDEvent *event= fTender->GetEvent();
@@ -235,10 +328,11 @@ void AliPHOSTenderSupply::FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t 
 	dx = ddx ;
 	dz = ddz ;
 	minDistance=d2 ;
+	pt=esdTrack->Pt() ;
+	charge=esdTrack->Charge() ;
       }
     }
   } //Scanned all tracks
-  r=TMath::Sqrt(minDistance) ;
   
 }
 //____________________________________________________________
@@ -261,7 +355,100 @@ Float_t AliPHOSTenderSupply::CorrectNonlinearity(Float_t en){
 
   return en ;
 }
+//_____________________________________________________________________________
+Double_t AliPHOSTenderSupply::TestLambda(Double_t pt,Double_t l1,Double_t l2){
+  
+  Double_t l2Mean  = 1.53126+9.50835e+06/(1.+1.08728e+07*pt+1.73420e+06*pt*pt) ;
+  Double_t l1Mean  = 1.12365+0.123770*TMath::Exp(-pt*0.246551)+5.30000e-03*pt ;
+  Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
+  Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
+  Double_t c=-0.35-0.550*TMath::Exp(-0.390730*pt) ;
+  Double_t R2=0.5*(l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
+              0.5*(l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
+              0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
+  return (R2<2.5*2.5) ;
+  
+}
+//____________________________________________________________________________
+Double_t AliPHOSTenderSupply::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge){
+  //Parameterization of LHC10h period
+  //_true if neutral_
+  
+  Double_t meanX=0;
+  Double_t meanZ=0.;
+  Double_t sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+  Double_t sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60) ;
+  AliESDEvent *event=fTender->GetEvent();
+  Double_t mf = event->GetMagneticField(); //Positive for ++ and negative for --
 
+  if(mf<0.){ //field --
+    meanZ = -0.468318 ;
+    if(charge>0)
+      meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01)) ;
+    else
+      meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01)) ;
+  }
+  else{ //Field ++
+    meanZ= -0.468318;
+    if(charge>0)
+      meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01)) ;
+    else
+      meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01)) ;     
+  }
 
+  Double_t rz=(dz-meanZ)/sz ;
+  Double_t rx=(dx-meanX)/sx ;
+  return TMath::Sqrt(rx*rx+rz*rz) ;
+}
 
-
+//________________________________________________________________________
+Bool_t AliPHOSTenderSupply::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
+{
+  //Check if this channel belogs to the good ones
+  
+  if(mod>5 || mod<1){
+    AliError(Form("No bad map for PHOS module %d ",mod)) ;
+    return kTRUE ;
+  }
+  if(!fPHOSBadMap[mod]){
+     AliError(Form("No Bad map for PHOS module %d",mod)) ;
+     return kTRUE ;
+  }
+  if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
+    return kFALSE ;
+  else
+    return kTRUE ;
+}
+//________________________________________________________________________
+void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
+  //Read TH2I histograms with bad maps from local or alien file 
+  TFile * fbm = TFile::Open(filename) ;
+  if(!fbm || !fbm->IsOpen()){
+    AliError(Form("Can not open BadMaps file %s \n",filename)) ;
+    return ;
+  }
+  gROOT->cd() ;
+  char key[55] ;
+  for(Int_t mod=1;mod<4; mod++){
+    sprintf(key,"PHOS_BadMap_mod%d",mod) ;
+    TH2I * h = (TH2I*)fbm->Get(key) ;
+    if(h)
+       fPHOSBadMap[mod] = new TH2I(*h) ;
+  }
+  fbm->Close() ;
+  fUsePrivateBadMap=kTRUE ;
+}
+//________________________________________________________________________
+void AliPHOSTenderSupply::ForceUsingCalibration(const char * filename){
+  //Read PHOS recalibration parameters from the file.
+  //We assume that file contains single entry: AliPHOSCalibData
+  TFile * fc = TFile::Open(filename) ;
+  if(!fc || !fc->IsOpen()){
+    AliFatal(Form("Can not open Calibration file %s \n",filename)) ;
+    return ;
+  }
+  fPHOSCalibData = (AliPHOSCalibData*)fc->Get("PHOSCalibration") ;
+  fc->Close() ;
+  fUsePrivateCalib=kTRUE; 
+}
