@@ -310,13 +310,13 @@ void AliAODHandler::StoreMCParticles(){
 	      AliError(Form("MISMATCH New label %d j: %d",fMCEventH->GetNewLabel(i),j));
 	  }
 
-	  AliAODMCParticle mcpart_tmp(mcpart,i,flag);
+	  AliAODMCParticle mcpartTmp(mcpart,i,flag);
 	  
-	  mcpart_tmp.SetStatus(mcpart->Particle()->GetStatusCode());
+	  mcpartTmp.SetStatus(mcpart->Particle()->GetStatusCode());
 	  // 
-	  Int_t d0 =  mcpart_tmp.GetDaughter(0);
-	  Int_t d1 =  mcpart_tmp.GetDaughter(1);
-	  Int_t m =   mcpart_tmp.GetMother();
+	  Int_t d0 =  mcpartTmp.GetDaughter(0);
+	  Int_t d1 =  mcpartTmp.GetDaughter(1);
+	  Int_t m =   mcpartTmp.GetMother();
 	  
 	  // other than for the track labels, negative values mean
 	  // no daughter/mother so preserve it
@@ -325,47 +325,47 @@ void AliAODHandler::StoreMCParticles(){
 	      // no first daughter -> no second daughter
 	      // nothing to be done
 	      // second condition not needed just for sanity check at the end
-	      mcpart_tmp.SetDaughter(0,d0);
-	      mcpart_tmp.SetDaughter(1,d1);
+	      mcpartTmp.SetDaughter(0,d0);
+	      mcpartTmp.SetDaughter(1,d1);
 	  } else if(d1 < 0 && d0 >= 0) {
 	      // Only one daughter
 	      // second condition not needed just for sanity check at the end
 	      if(fMCEventH->IsParticleSelected(d0)){
-		  mcpart_tmp.SetDaughter(0,fMCEventH->GetNewLabel(d0));
+		  mcpartTmp.SetDaughter(0,fMCEventH->GetNewLabel(d0));
 	      } else {
-		  mcpart_tmp.SetDaughter(0,-1);
+		  mcpartTmp.SetDaughter(0,-1);
 	      }
-	      mcpart_tmp.SetDaughter(1,d1);
+	      mcpartTmp.SetDaughter(1,d1);
 	  }
 	  else if (d0 > 0 && d1 > 0 ){
 	      // we have two or more daughters loop on the stack to see if they are
 	      // selected
-	      Int_t d0_tmp = -1;
-	      Int_t d1_tmp = -1;
+	      Int_t d0Tmp = -1;
+	      Int_t d1Tmp = -1;
 	      for(int id = d0; id<=d1;++id){
 		  if(fMCEventH->IsParticleSelected(id)){
-		      if(d0_tmp==-1){
+		      if(d0Tmp==-1){
 			  // first time
-			  d0_tmp = fMCEventH->GetNewLabel(id);
-			  d1_tmp = d0_tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
+			  d0Tmp = fMCEventH->GetNewLabel(id);
+			  d1Tmp = d0Tmp; // this is to have the same schema as on the stack i.e. with one daugther d0 and d1 are the same 
 		      }
-		      else d1_tmp = fMCEventH->GetNewLabel(id);
+		      else d1Tmp = fMCEventH->GetNewLabel(id);
 		  }
 	      }
-	      mcpart_tmp.SetDaughter(0,d0_tmp);
-	      mcpart_tmp.SetDaughter(1,d1_tmp);
+	      mcpartTmp.SetDaughter(0,d0Tmp);
+	      mcpartTmp.SetDaughter(1,d1Tmp);
 	  } else {
 	      AliError(Form("Unxpected indices %d %d",d0,d1));
 	  }
 	  
 	  if(m<0){
-	      mcpart_tmp.SetMother(m);
+	      mcpartTmp.SetMother(m);
 	  } else {
-	      if(fMCEventH->IsParticleSelected(m))mcpart_tmp.SetMother(fMCEventH->GetNewLabel(m));
+	      if(fMCEventH->IsParticleSelected(m))mcpartTmp.SetMother(fMCEventH->GetNewLabel(m));
 	      else AliError(Form("PROBLEM Mother not selected %d \n", m));
 	  }
 
-	  new (l[j++]) AliAODMCParticle(mcpart_tmp);
+	  new (l[j++]) AliAODMCParticle(mcpartTmp);
 	  
       }
   }

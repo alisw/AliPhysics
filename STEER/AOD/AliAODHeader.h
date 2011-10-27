@@ -1,5 +1,5 @@
-#ifndef AliAODHeader_H
-#define AliAODHeader_H
+#ifndef ALIAODHEADER_H
+#define ALIAODHEADER_H
 /* Copyright(c) 1998-2007, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -109,7 +109,7 @@ class AliAODHeader : public AliVHeader {
   void SetEventType(UInt_t evttype)            { fEventType = evttype; }
   void SetMagneticField(Double_t magFld)       { fMagneticField = magFld; }
   void SetMuonMagFieldScale(Double_t magFldScl){ fMuonMagFieldScale = magFldScl; }
-  void SetCentrality(AliCentrality* cent);
+  void SetCentrality(const AliCentrality* cent);
   void SetEventplane(AliEventplane* eventplane);
   void SetZDCN1Energy(Double_t n1Energy)       { fZDCN1Energy = n1Energy; }
   void SetZDCP1Energy(Double_t p1Energy)       { fZDCP1Energy = p1Energy; }
@@ -217,7 +217,7 @@ class AliAODHeader : public AliVHeader {
   ClassDef(AliAODHeader, 17);
 };
 inline
-void AliAODHeader::SetCentrality(AliCentrality* cent)      { 
+void AliAODHeader::SetCentrality(const AliCentrality* cent)      { 
     if(cent){
 	if(fCentralityP)*fCentralityP = *cent;
 	else fCentralityP = new AliCentrality(*cent);
