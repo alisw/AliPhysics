@@ -49,8 +49,11 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
 
   AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
+  void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
  protected:
  private:
+  int fVerbosity; //! verbosity level
+
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
 };
 
@@ -199,7 +202,8 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     HLTError("error reading compressed cluster format of block 0x%08x: expected %d, read only %d cluster(s)", specification, nofClusters, outClusterCnt);
     return -EPROTO;
   }
-  return iResult;
+  if (iResult<0) return iResult;
+  return nofClusters;
 }
 
 template<typename T>
@@ -442,7 +446,11 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
   const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pData);
   Int_t nCount = (Int_t) clusterData->fCount;
   if (clusterData->fVersion!=0) {
-    return ReadRemainingClustersCompressed(c, pData, dataSize, specification);
+    int iResult=ReadRemainingClustersCompressed(c, pData, dataSize, specification);
+    if (iResult>=0 && fVerbosity>0) {
+      HLTInfo("extracted %d cluster(s) from block 0x%08x", iResult, specification);
+    }
+    return iResult;
   }
   if (nCount*sizeof(AliHLTTPCRawCluster) + sizeof(AliHLTTPCRawClusterData) != dataSize) return -EBADF;
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
@@ -459,6 +467,6 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
     c.SetCharge(clusters[i].GetCharge());
     c.SetQMax(clusters[i].GetQMax());
   }
-  return 0;
+  return nCount;
 }
 #endif
