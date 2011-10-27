@@ -86,7 +86,7 @@ int AliHLTTPCHWCFData::Init(const AliHLTUInt8_t* pBuffer, int bufferSize)
     // check if the first RCU trailer word starts with pattern '10'
     rcuTrailer-=nofRCUTrailerWords-1;
     if ((*rcuTrailer >> 30) != 2) {
-      HLTError("inconsistent RCU trailer word: can not find indicator patter '10' in bit 30 and 31 (0x08x)", *rcuTrailer);
+      HLTError("inconsistent first RCU trailer word: can not find indicator pattern '10' in bit 31 and 30 (0x%08x): trailer size %d word(s), buffer size %d byte", *rcuTrailer, nofRCUTrailerWords, bufferSize);
       return -ENODATA;
     }
 
