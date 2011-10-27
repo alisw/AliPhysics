@@ -1,6 +1,7 @@
 #-*- Mode: CMake -*-
 set ( SRCS  
   AliOADBPWG2Spectra.cxx 
+  AliOADBCentrality.cxx 
   AliOADBPhysicsSelection.cxx 
   AliOADBFillingScheme.cxx 
   AliOADBTriggerAnalysis.cxx 
