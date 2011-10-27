@@ -163,6 +163,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       AliError(Form("can not get cluster array for sector %d", sector));
       return -ENOBUFS;
     }
+    if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) for sector %d", pArray->GetEntriesFast() ,sector));
     return pArray->GetEntriesFast();
   }
 
@@ -214,6 +215,8 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   // read data
   iResult=-ENODATA;
   AliHLTTPCDataCompressionDecoder decoder;
+  decoder.SetVerbosity(fVerbosity);
+  int nExtractedClusters=0;
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
        bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
     AliHLTComponentBlockData desc;
@@ -233,6 +236,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 					    reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
 					    desc.fSize,
 					    desc.fSpecification);
+      if (iResult>0) nExtractedClusters+=iResult;
       continue;
     } else if (!TestBit(kSkipTrackClusters) &&
 	       desc.fDataType==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {
@@ -247,12 +251,23 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   pSystem->ReleaseHLTOUT(pHLTOUT);
 
   if (iResult<0) return iResult;
+  if (fVerbosity>0) {
+    int nConvertedClusters=0;
+    for (int s=0; s<72; s++) {
+      TObjArray* pArray=fClusters->GetSectorArray(s);
+      if (!pArray) continue;
+      nConvertedClusters+=pArray->GetEntriesFast();
+    }
+    AliInfo(Form("extracted HLT clusters: %d, converted HLT clusters: %d", nExtractedClusters, nConvertedClusters));
+  }
+
   fCurrentSector=sector;
   TObjArray* pArray=fClusters->GetSectorArray(fCurrentSector);
   if (!pArray) {
     AliError(Form("can not get cluster array for sector %d", sector));
     return -ENOBUFS;
   }
+  if (fVerbosity>0) AliInfo(Form("converted %d cluster(s) for sector %d", pArray->GetEntriesFast() ,sector));
   return pArray->GetEntriesFast();
 }
 
