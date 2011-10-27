@@ -232,7 +232,7 @@ class AliAODTrack : public AliVTrack {
   Bool_t  TestFilterBit(UInt_t filterBit) const {return (Bool_t) ((filterBit & fFilterMap) != 0);}
   Bool_t  TestFilterMask(UInt_t filterMask) const {return (Bool_t) ((filterMask & fFilterMap) == filterMask);}
   void    SetFilterMap(UInt_t i){fFilterMap = i;}
-  UInt_t  GetFilterMap(){return fFilterMap;}
+  UInt_t  GetFilterMap() const {return fFilterMap;}
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
