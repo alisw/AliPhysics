@@ -68,7 +68,7 @@ class AliTRDrawStream : public TObject
   enum ErrorCode_t {
     kUnknown = 0,
     kLinkMonitor,
-    kPtrgCntMismatch,
+    kEvCntMismatch,
     kNonTrdEq,
     kStackHeaderInvalid,
     kInvalidDetector,
@@ -85,6 +85,7 @@ class AliTRDrawStream : public TObject
     kAdcChannelsMiss,
     kMissMcmHeaders,
     kMissTpData,
+    kCRCmismatch,
     kLastErrorCode
   };
 
@@ -175,6 +176,8 @@ class AliTRDrawStream : public TObject
   TString DumpMcmHeader(TString title, UInt_t word);
   TString DumpAdcMask(TString title, UInt_t word);
 
+  static void SortTracklets(TClonesArray *trklArray, TList &sortedTracklets, Int_t *indices);
+
   // temporary: allow to change expected readout order
   static void SetMCMReadoutPos(Int_t mcm, Int_t pos) { if (mcm > -1 && mcm < 16) fgMcmOrder[mcm] = pos; }
   static void SetROBReadoutPos(Int_t robpair, Int_t pos) { if (robpair > -1 && robpair < 4) fgMcmOrder[robpair] = pos; }
@@ -195,6 +198,7 @@ class AliTRDrawStream : public TObject
   Int_t ReadZSData();
   Int_t ReadNonZSData();
 
+  Int_t SeekNextStack();
   Int_t SeekNextLink();
 
   // MCM header decoding
@@ -253,6 +257,7 @@ class AliTRDrawStream : public TObject
   static const Int_t fgkNtriggers;              // number of triggers in data stream
   static const UInt_t fgkDataEndmarker;         // data endmarker
   static const UInt_t fgkTrackletEndmarker;     // tracklet endmarker
+  static const UInt_t fgkStackEndmarker[];      // stack endmarker (used from version 0xd on)
   static       Int_t fgMcmOrder [];             // expected readout order of the MCMs
   static       Int_t fgRobOrder [];             // expected readout order of the ROBs
 
@@ -278,6 +283,7 @@ class AliTRDrawStream : public TObject
   UInt_t fCurrTrgHeaderAvail;	        	// current trigger information availability
   UInt_t fCurrTrgHeaderReadout;                 // current readout mode for the trigger headers
   UInt_t fCurrTrkHeaderAvail;	        	// current tracking information availability
+  UInt_t fCurrStackEndmarkerAvail;              // current stack endmarker availability
   UInt_t fCurrEvType;            		// current event type
   UInt_t fCurrTriggerEnable;                    // current trigger enable
   UInt_t fCurrTriggerFired;                     // current trigger fired
@@ -307,6 +313,12 @@ class AliTRDrawStream : public TObject
   UInt_t *fCurrLinkMonitorFlags;		// current link monitor flags
   UInt_t *fCurrLinkDataTypeFlags;		// current link data flags
   UInt_t *fCurrLinkDebugFlags;			// current link debug flags
+
+  // CRC checks from trailer
+  Char_t fCurrMatchFlagsSRAM;
+  Char_t fCurrMatchFlagsPostBP;
+  UInt_t fCurrChecksumStack[5];
+  UInt_t fCurrChecksumSIU;
 
   // HC information
   Int_t fCurrSpecial;				// current value of the special flag
