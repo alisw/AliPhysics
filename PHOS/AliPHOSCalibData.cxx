@@ -48,25 +48,7 @@ ClassImp(AliPHOSCalibData)
   // Default constructor.
   // Open CDB entry, get EMC and CPV calibration data and bad channel map.
   // If EMC or CPV calibration data does not exist, stop the run
-  
-   AliCDBEntry* entryEmc = AliCDBManager::Instance()->Get(fEmcDataPath.Data());
-  if(entryEmc)
-    fCalibDataEmc = (AliPHOSEmcCalibData*)entryEmc->GetObject();
-
-  if(!fCalibDataEmc)
-    AliWarning("Calibration parameters for PHOS EMC not found. Create a new set.\n");
-    
-  AliCDBEntry* entryCpv = AliCDBManager::Instance()->Get(fCpvDataPath.Data());
-  if(entryCpv)
-    fCalibDataCpv = (AliPHOSCpvCalibData*)entryCpv->GetObject();
-
-  if(!fCalibDataCpv)
-    AliWarning("Calibration parameters for PHOS CPV not found. Create a new set.\n");
-
-  AliCDBEntry* entryEmcBadMap = AliCDBManager::Instance()->Get(fEmcBadChannelsMapPath.Data());
-  if(entryEmcBadMap)
-    fEmcBadChannelsMap = (AliPHOSEmcBadChannelsMap*)entryEmcBadMap->GetObject(); 
-
+ 
 }
 
 //________________________________________________________________
