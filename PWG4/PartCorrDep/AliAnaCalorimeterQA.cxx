@@ -377,22 +377,23 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       //Transform time to ns
       time *= 1.0e9;
       
-      // Remove exotic cells
-      if(fCalorimeter=="EMCAL" && GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
-      
       // Remove noisy channels, only possible in ESDs
       if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
         if(time < fTimeCutMin || time > fTimeCutMax){
           if(GetDebug() > 0 )printf("AliAnaCalorimeterQA - Remove cell with Time %f\n",time);
           continue;
         }
-      }
+      }      
+      
+      // Remove exotic cells
+      fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
+      
+      if(fCalorimeter=="EMCAL" && GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
       
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
       fhAmpMod   ->Fill(amp,nModule);
       
-      fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
       
       if ((fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ||
           (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin))   {
