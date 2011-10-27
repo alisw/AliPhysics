@@ -202,20 +202,27 @@ AliMUONDigitizerV3::ApplyResponseToTrackerDigit(AliMUONVDigit& digit, Bool_t add
     digit.SetADC(0);
     return;
   }
-      
+
+  TString calibrationMode(fRecoParam->GetCalibrationMode());
+  calibrationMode.ToUpper();
+
   AliMUONVCalibParam* gain = fCalibrationData->Gains(detElemId,manuId);
   if (!gain)
   {
-    fLogger->Log(Form("%s:%d:Could not get gain for DE=%4d manuId=%4d. Disabling.",
-                      __FILE__,__LINE__,
-                      detElemId,manuId));
-    digit.SetADC(0);
-    return;        
+    
+    if (!calibrationMode.Contains("NOGAIN") )
+    {
+      fLogger->Log(Form("%s:%d:Could not get gain for DE=%4d manuId=%4d. Disabling.",
+                        __FILE__,__LINE__,
+                        detElemId,manuId));
+      digit.SetADC(0);
+      return;        
+    }
   }    
 
-  Int_t adc = DecalibrateTrackerDigit(*pedestal,*gain,manuChannel,charge,addNoise,
+  Int_t adc = DecalibrateTrackerDigit(*pedestal,gain,manuChannel,charge,addNoise,
                                       digit.IsNoiseOnly(),
-                                      fRecoParam->GetCalibrationMode());
+                                      calibrationMode);
   
   digit.SetADC(adc);
 }
@@ -311,7 +318,7 @@ AliMUONDigitizerV3::ApplyResponse(const AliMUONVDigitStore& store,
 //_____________________________________________________________________________
 Int_t 
 AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
-                                            const AliMUONVCalibParam& gains,
+                                            const AliMUONVCalibParam* gains,
                                             Int_t channel,
                                             Float_t charge,
                                             Bool_t addNoise,
@@ -341,10 +348,14 @@ AliMUONDigitizerV3::DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
                
   if ( ! nogain )
   {
-    a0 = gains.ValueAsFloat(channel,0);
-    a1 = gains.ValueAsFloat(channel,1);
-    thres = gains.ValueAsInt(channel,2);
-    qual = gains.ValueAsInt(channel,3);
+    if  (!gains)
+    {
+      AliFatalClass("Cannot make gain decalibration without gain values !");
+    }
+    a0 = gains->ValueAsFloat(channel,0);
+    a1 = gains->ValueAsFloat(channel,1);
+    thres = gains->ValueAsInt(channel,2);
+    qual = gains->ValueAsInt(channel,3);
   }
   
   Float_t pedestalMean = pedestals.ValueAsFloat(channel,0);

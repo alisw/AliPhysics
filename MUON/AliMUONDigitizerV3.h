@@ -46,7 +46,7 @@ public:
   virtual Bool_t Init();
 
   static Int_t DecalibrateTrackerDigit(const AliMUONVCalibParam& pedestals,
-                                       const AliMUONVCalibParam& gains,
+                                       const AliMUONVCalibParam* gains,
                                        Int_t channel,
                                        Float_t charge,
                                        Bool_t addNoise=kFALSE,

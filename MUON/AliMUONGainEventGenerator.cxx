@@ -162,7 +162,7 @@ AliMUONGainEventGenerator::GeneratePedestals(Int_t runNumber, Float_t injection)
         // non existing channel
         continue;
       }
-      Int_t adc = AliMUONDigitizerV3::DecalibrateTrackerDigit(*ped,*gain,i,
+      Int_t adc = AliMUONDigitizerV3::DecalibrateTrackerDigit(*ped,gain,i,
                                                               injection,kFALSE);
 
       Float_t res = (ped->ValueAsFloat(i,1)/mean);
