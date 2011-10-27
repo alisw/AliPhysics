@@ -65,6 +65,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fEtaMin = etamin; fEtaMax = etamax;
   }
 
+  void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
+
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
   const char* GetCentralityEstimator(void)                     {return fCentralityEstimator;}
@@ -149,6 +151,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Int_t fNClustersTPCCut;//only used for AODs
 
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
+
+  Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
