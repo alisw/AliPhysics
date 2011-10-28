@@ -9,6 +9,8 @@
 ///
 //  Author Diego Stocco
 
+#include "AliAnalysisTaskSE.h"
+
 class TList;
 
 class AliAnalysisTaskTrigChEff : public AliAnalysisTaskSE {
