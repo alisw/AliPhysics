@@ -247,7 +247,7 @@ void AliAnalysisTaskPHOSPbPbQA::UserExec(Option_t *)
 	FillHistogram(key,p12.M() ,p12.Pt()) ;
 
 	if(sm1==sm2) {
-	  snprintf(key,55,"hPi0AllSM%d_cen%d",sm1,fCenBin) ;
+	  snprintf(key,55,"hMiPi0AllSM%d_cen%d",sm1,fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt()) ; 
 	}
 
