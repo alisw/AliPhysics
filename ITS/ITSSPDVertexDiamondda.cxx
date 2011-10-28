@@ -1,17 +1,16 @@
 /*
-Contact: cvetan.cheshkov@cern.ch
-Link: http://alisoft.cern.ch/viewvc/trunk/ITS/ITSSPDVertexDiamondda.cxx?root=AliRoot&view=log , /afs/cern.ch/user/c/cheshkov/public/ITS/VD_da_test.date , /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
-Reference Run: 58338
-Run Type: PHYSICS
-DA Type: MON
-Number of events needed: 100
-Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb , TRIGGER/SPD/PITConditions (all the files are taken from SPD daqDetDB)
-Output Files: SPDVertexDiamondDA.root
-Trigger types used: PHYSICS, SPD-F0 
+  Contact: cvetan.cheshkov@cern.ch
+  Link: http://alisoft.cern.ch/viewvc/trunk/ITS/ITSSPDVertexDiamondda.cxx?root=AliRoot&view=log , /afs/cern.ch/user/c/cheshkov/public/ITS/VD_da_test.date , /afs/cern.ch/user/c/cheshkov/public/08000058338016.30.root.date.gz
+  Reference Run: 58338
+  Run Type: PHYSICS
+  DA Type: MON
+  Number of events needed: 100
+  Input Files: GRP/Geometry/Data , ITS/Align/Data , spd_noisy_ocdb , spd_dead_ocdb , TRIGGER/SPD/PITConditions (all the files are taken from SPD daqDetDB)
+  Output Files: SPDVertexDiamondDA.root
+  Trigger types used: PHYSICS, SPD-F0 
 */
 
 #define OUTPUT_FILE "SPDVertexDiamondDA.root"
-#define N_EVENTS_AUTOSAVE 50
 
 extern "C" {
 #include "daqDA.h"
@@ -29,6 +28,7 @@ extern "C" {
 #include <TROOT.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TPaveText.h>
 #include <TSystem.h>
 #include <TGeoGlobalMagField.h>
 
@@ -51,6 +51,26 @@ int main(int argc, char **argv) {
     printf("Wrong number of arguments\n");
     return -1;
   }
+  // get mean vertex quality cuts
+  status = daqDA_DB_getFile("ITSSPD_VertexQualityTuning_DA.config","./ITSSPD_VertexQualityTuning_DA.config");
+  if (status) {
+    printf("Failed to get config file (ITSSPD_VertexQualityTuning_DA.config) from DAQ DB, status=%d\n", status);
+    return -1;
+  }
+  /* open the config file and retrieve running parameters */
+  Float_t errX  = -1;
+  Float_t r     = -1;
+  UInt_t minClInner = 999 ;
+  UInt_t maxClInner = 999 ;
+  Int_t nEvFirstLoop = 0;
+  Int_t nEvAUTOSAVE = 0; 
+  char name[10][10];
+
+  FILE *fpConfig = fopen("ITSSPD_VertexQualityTuning_DA.config","r");
+  fscanf(fpConfig,"%s %f\n %s %f\n %s %d\n %s %d \n %s %d \n %s %d ",&name[0], &errX, &name[1], &r, &name[2], &minClInner,&name[3], &maxClInner, &name[4],&nEvFirstLoop,&name[5],&nEvAUTOSAVE);
+  fclose(fpConfig);
+
+  printf("\n\n Mean Vertex quality cuts : \n- errX = %f\n- r = %f\n- minSPD0 = %d maxSPD0 = %d\n- nEventsFirstLoop = %d nEventsAUTOSAVE = %d \n\n\n",errX,r,minClInner,maxClInner,nEvFirstLoop,nEvAUTOSAVE);
 
   /* define data source : this is argument 1 */  
   status=monitorSetDataSource( argv[1] );
@@ -162,7 +182,7 @@ int main(int argc, char **argv) {
     return -1;
   }
  
- status = daqDA_DB_getFile("mfchebKGI_sym.root","localOCDB/mfchebKGI_sym.root");
+  status = daqDA_DB_getFile("mfchebKGI_sym.root","localOCDB/mfchebKGI_sym.root");
   if (status) {
     printf("Failed to get spd file (mfchebKGI_sym.root) from DAQdetDB, status=%d\n", status);
     return -1;
@@ -184,6 +204,10 @@ int main(int argc, char **argv) {
     printf("Initialization of mean vertexer object failed ! Check the log for details");
     return -1;
   }
+
+  mv->SetCutOnErrX(errX);
+  mv->SetCutOnR(r);
+  mv->SetCutOnCls(minClInner,maxClInner);
 
   // Initialization of AMORE sender
 #ifdef ALI_AMORE
@@ -221,7 +245,7 @@ int main(int argc, char **argv) {
       break;
       /* END START OF RUN */
       
-    /* END OF RUN */
+      /* END OF RUN */
     case END_OF_RUN:
       break;
       
@@ -231,16 +255,27 @@ int main(int argc, char **argv) {
 
       // Run mean-vertexer reco
       if (mv->Reconstruct(rawReader)) nevents_with_vertex++;
-
+      if(nevents_physics < nEvFirstLoop) continue;
       // Auto save
-      if ((nevents_physics%N_EVENTS_AUTOSAVE) == 0) {
-
-	((TH2F*)mv->GetVertexXY())->SetTitle(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
-
+      if ((nevents_physics%nEvAUTOSAVE) == 0) {
+        TH2F *histo = ((TH2F*)mv->GetVertexXY());
+        histo->SetStats(kFALSE);
+        histo->SetTitle("");
+        histo->GetListOfFunctions()->SetOwner(kTRUE);
+	if(histo->GetListOfFunctions()->GetEntries()<1) histo->GetListOfFunctions()->Add(new TPaveText(-5,4.5,5.,6.2,"br"));
+	for(Int_t i=0; i<histo->GetListOfFunctions()->GetEntries(); i++){
+	  TString funcName = histo->GetListOfFunctions()->At(i)->ClassName();
+	  if(funcName.Contains("TPaveText")){
+	    TPaveText *p = (TPaveText*)histo->GetListOfFunctions()->At(i);
+	    p->Clear();
+	    p->AddText(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
+	    p->AddText(Form("%f events with good vertex (%i out of %i events with vertex)",histo->GetEntries()/((Double_t)nevents_with_vertex),(Int_t)histo->GetEntries(),nevents_with_vertex));
+	  }
+	}
 	mv->WriteVertices(OUTPUT_FILE);
 
 #ifdef ALI_AMORE
-      // send the histos to AMORE pool
+	// send the histos to AMORE pool
 	printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexXY()->GetName(),mv->GetVertexXY()));
 	printf("AMORE send status: %d\n",vtxAmore.Send(mv->GetVertexZ()->GetName(),mv->GetVertexZ()));
 #endif
@@ -258,8 +293,21 @@ int main(int argc, char **argv) {
       break;
     }
   }
-  ((TH2F*)mv->GetVertexXY())->SetTitle(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
 
+  TH2F *histo = ((TH2F*)mv->GetVertexXY());
+  histo->SetStats(kFALSE);
+  histo->SetTitle("");
+  histo->GetListOfFunctions()->SetOwner(kTRUE);
+  if(histo->GetListOfFunctions()->GetEntries()<1) histo->GetListOfFunctions()->Add(new TPaveText(-5,4.5,5.,6.2,"br"));
+  for(Int_t i=0; i<histo->GetListOfFunctions()->GetEntries(); i++){
+    TString funcName = histo->GetListOfFunctions()->At(i)->ClassName();
+    if(funcName.Contains("TPaveText")){
+      TPaveText *p = (TPaveText*)histo->GetListOfFunctions()->At(i);
+      p->Clear(); 
+      p->AddText(Form("%f events with vertex (%i out of %i processed events)",((Double_t)nevents_with_vertex)/((Double_t)nevents_physics),nevents_with_vertex,nevents_physics));
+      p->AddText(Form("%f events with good vertex (%i out of %i events with vertex)",histo->GetEntries()/((Double_t)nevents_with_vertex),(Int_t)histo->GetEntries(),nevents_with_vertex));
+    }
+  }
   mv->WriteVertices(OUTPUT_FILE);
 
 #ifdef ALI_AMORE
