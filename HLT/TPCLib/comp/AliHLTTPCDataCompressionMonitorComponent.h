@@ -13,6 +13,7 @@
 ///
 
 #include "AliHLTProcessor.h"
+#include "AliHLTTPCRawCluster.h"
 #include "TString.h"
 
 class AliHLTTPCHWCFData;
@@ -93,6 +94,7 @@ public:
 
   enum {
     kHistogramPadrow,
+    kHistogramHWCFPad,
     kHistogramPad,
     kHistogramTime,
     kHistogramSigmaY2,
@@ -188,7 +190,7 @@ public:
       void SetSigmaY2(float sigmaY2)      {if (fData) fData->FillSigmaY2(sigmaY2, fClusterId, fPartition);}
       void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
       void SetCharge(unsigned charge)     {if (fData) fData->FillCharge(charge, fClusterId);}
-      void SetQMax(unsigned qmax)         {if (fData) fData->FillQMax(qmax, fClusterId);}
+      void SetQMax(unsigned qmax)         {if (fData) {fData->FillQMax(qmax, fClusterId);fData->Fill(fSlice, fPartition, fClusterId);}}
 
       // switch to next cluster
       iterator& Next(int slice, int partition) {
@@ -223,6 +225,8 @@ public:
     int AddClusterIds(const AliHLTComponentBlockData* pDesc);
     /// get the cluster id from the current cluster id block (optional)
     AliHLTUInt32_t GetClusterId(int clusterNo) const;
+    /// get the cluster id of the nearest original cluster
+    AliHLTUInt32_t FindNearestCluster(int slice, int partition, const AliHLTTPCRawCluster& cluster) const;
 
     /// internal cleanup
     virtual void  Clear(Option_t * option="");
@@ -237,6 +241,7 @@ public:
     void FillSigmaZ2(float sigmaZ2, AliHLTUInt32_t clusterId);
     void FillCharge(unsigned charge, AliHLTUInt32_t clusterId);
     void FillQMax(unsigned qmax, AliHLTUInt32_t clusterId);
+    void Fill(int slice, int partition, AliHLTUInt32_t clusterId);
 
   private:
     AliDataContainer(const AliDataContainer&);
@@ -252,7 +257,7 @@ public:
     AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
     AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
     AliHLTTPCHWCFSpacePointContainer* fRawData; //! raw data container
-    int fLastPadRow; //! last padrow
+    AliHLTTPCRawCluster fCurrentCluster; //! current cluster
     int fSector; //! sector
     iterator fBegin; //!
   };
