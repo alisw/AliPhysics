@@ -41,6 +41,7 @@ set ( SRCS
     AliPHOSCalibData.cxx 
     AliPHOSCpvCalibData.cxx 
     AliPHOSEmcCalibData.cxx 
+    AliPHOSTriggerParameters.cxx
     AliPHOSPulseGenerator.cxx 
     AliPHOSRawFitterv0.cxx 
     AliPHOSRawFitterv1.cxx 

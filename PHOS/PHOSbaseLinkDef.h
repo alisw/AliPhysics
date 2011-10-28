@@ -17,6 +17,7 @@
 #pragma link C++ class AliPHOSCalibData+;
 #pragma link C++ class AliPHOSCpvCalibData+;
 #pragma link C++ class AliPHOSEmcCalibData+;
+#pragma link C++ class AliPHOSTriggerParameters+;
 #pragma link C++ class AliPHOSPulseGenerator+;
 #pragma link C++ class AliPHOSRawFitterv0+;
 #pragma link C++ class AliPHOSRawFitterv1+;
