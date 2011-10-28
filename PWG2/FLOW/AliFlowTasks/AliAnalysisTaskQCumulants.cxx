@@ -42,6 +42,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fEvent(NULL),
  fQC(NULL), 
  fListHistos(NULL),
+ fBookOnlyBasicCCH(kFALSE),
  fFillMultipleControlHistograms(kFALSE),
  fHarmonic(2),  
  fApplyCorrectionForNUA(kFALSE), 
@@ -97,6 +98,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fEvent(NULL),
  fQC(NULL),
  fListHistos(NULL),
+ fBookOnlyBasicCCH(kFALSE),
  fFillMultipleControlHistograms(kFALSE),
  fHarmonic(0),  
  fApplyCorrectionForNUA(kFALSE), 
@@ -143,6 +145,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC = new AliFlowAnalysisWithQCumulants();
  
  // Common:
+ fQC->SetBookOnlyBasicCCH(fBookOnlyBasicCCH);
  fQC->SetFillMultipleControlHistograms(fFillMultipleControlHistograms);
  fQC->SetHarmonic(fHarmonic);
  fQC->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);

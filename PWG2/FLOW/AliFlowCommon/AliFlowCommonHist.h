@@ -26,7 +26,7 @@ class AliFlowCommonHist: public TNamed {
  public:
 
   AliFlowCommonHist();
-  AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist");
+  AliFlowCommonHist(const char *name,const char *title = "AliFlowCommonHist",Bool_t bookOnlyBasic = kFALSE);
   virtual ~AliFlowCommonHist();
   AliFlowCommonHist(const AliFlowCommonHist& aSetOfHists);
 
@@ -82,6 +82,7 @@ class AliFlowCommonHist: public TNamed {
 
   //define histograms here
   //control histograms
+  Bool_t    fBookOnlyBasic;       // book and fill only control histos needed for all methods
   TH1F*     fHistMultRP;          // multiplicity for RP selection
   TH1F*     fHistMultPOI;         // multiplicity for POI selection
   TH2F*     fHistMultPOIvsRP;     // multiplicity for POI versus RP
@@ -111,7 +112,7 @@ class AliFlowCommonHist: public TNamed {
   
   TList*    fHistList;            // list to hold all histograms  
 
-  ClassDef(AliFlowCommonHist,2)   // macro for rootcint
+  ClassDef(AliFlowCommonHist,3)   // macro for rootcint
 };
 #endif
 

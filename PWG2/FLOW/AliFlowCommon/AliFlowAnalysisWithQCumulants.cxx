@@ -70,6 +70,7 @@ AliFlowAnalysisWithQCumulants::AliFlowAnalysisWithQCumulants():
  // 0.) base:
  fHistList(NULL),
  // 1.) common:
+ fBookOnlyBasicCCH(kFALSE),
  fCommonHists(NULL),
  fCommonHists2nd(NULL), 
  fCommonHists4th(NULL),
@@ -1387,7 +1388,7 @@ void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
  //  Common control histograms (all events):
  TString commonHistsName = "AliFlowCommonHistQC";
  commonHistsName += fAnalysisLabel->Data();
- fCommonHists = new AliFlowCommonHist(commonHistsName.Data());
+ fCommonHists = new AliFlowCommonHist(commonHistsName.Data(),commonHistsName.Data(),fBookOnlyBasicCCH);
  fHistList->Add(fCommonHists);  
  //  Common control histograms (selected events):
  if(fFillMultipleControlHistograms)
@@ -1395,22 +1396,22 @@ void AliFlowAnalysisWithQCumulants::BookCommonHistograms()
   // Common control histogram filled for events with 2 and more reference particles:
   TString commonHists2ndOrderName = "AliFlowCommonHist2ndOrderQC";
   commonHists2ndOrderName += fAnalysisLabel->Data();
-  fCommonHists2nd = new AliFlowCommonHist(commonHists2ndOrderName.Data());
+  fCommonHists2nd = new AliFlowCommonHist(commonHists2ndOrderName.Data(),commonHists2ndOrderName.Data(),fBookOnlyBasicCCH);
   fHistList->Add(fCommonHists2nd);  
   // Common control histogram filled for events with 2 and more reference particles:
   TString commonHists4thOrderName = "AliFlowCommonHist4thOrderQC";
   commonHists4thOrderName += fAnalysisLabel->Data();
-  fCommonHists4th = new AliFlowCommonHist(commonHists4thOrderName.Data());
+  fCommonHists4th = new AliFlowCommonHist(commonHists4thOrderName.Data(),commonHists4thOrderName.Data(),fBookOnlyBasicCCH);
   fHistList->Add(fCommonHists4th);  
   // Common control histogram filled for events with 6 and more reference particles:
   TString commonHists6thOrderName = "AliFlowCommonHist6thOrderQC";
   commonHists6thOrderName += fAnalysisLabel->Data();
-  fCommonHists6th = new AliFlowCommonHist(commonHists6thOrderName.Data());
+  fCommonHists6th = new AliFlowCommonHist(commonHists6thOrderName.Data(),commonHists6thOrderName.Data(),fBookOnlyBasicCCH);
   fHistList->Add(fCommonHists6th);  
   // Common control histogram filled for events with 8 and more reference particles:
   TString commonHists8thOrderName = "AliFlowCommonHist8thOrderQC";
   commonHists8thOrderName += fAnalysisLabel->Data();
-  fCommonHists8th = new AliFlowCommonHist(commonHists8thOrderName.Data());
+  fCommonHists8th = new AliFlowCommonHist(commonHists8thOrderName.Data(),commonHists8thOrderName.Data(),fBookOnlyBasicCCH);
   fHistList->Add(fCommonHists8th);    
  } // end of if(fFillMultipleControlHistograms)
  
@@ -8998,6 +8999,8 @@ void AliFlowAnalysisWithQCumulants::GetPointersForOtherDiffCorrelators()
   printf("\n WARNING (QC): fOtherDiffCorrelatorsList is NULL in AFAWQC::GPFDFH() !!!!\n\n");
   exit(0);
  }
+
+ if(!fCalculateDiffFlow){return;} // TBI: This must eventually be moved somewhere else 
  
  // b) Declare local flags: // (to be improved - promoted to data members)
  TString typeFlag[2] = {"RP","POI"}; 
@@ -9057,7 +9060,7 @@ void AliFlowAnalysisWithQCumulants::GetPointersForDiffFlowHistograms()
  fDiffFlowFlags = dynamic_cast<TProfile*>(fDiffFlowList->FindObject(diffFlowFlagsName.Data()));
  if(fDiffFlowFlags)
  {
-  this->SetCalculateDiffFlow((Bool_t)fDiffFlowFlags->GetBinContent(1)); // to be improved - hardwired 5
+  this->SetCalculateDiffFlow((Bool_t)fDiffFlowFlags->GetBinContent(1)); // to be improved - hardwired 1
  } else
    {
     printf("\n WARNING (QC): fDiffFlowFlags is NULL in AFAWQC::GPFDFH() !!!!\n\n");

@@ -175,6 +175,8 @@ class AliFlowAnalysisWithQCumulants{
   TList* GetHistList() const {return this->fHistList;} 
   
   // 1.) common:
+  void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
+  Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};  
   void SetCommonHists(AliFlowCommonHist* const ch) {this->fCommonHists = ch;};
   AliFlowCommonHist* GetCommonHists() const {return this->fCommonHists;};
   void SetCommonHists2nd(AliFlowCommonHist* const ch2nd) {this->fCommonHists2nd = ch2nd;};
@@ -427,6 +429,7 @@ class AliFlowAnalysisWithQCumulants{
   TList* fHistList; // base list to hold all output object
   
   // 1.) common:
+  Bool_t fBookOnlyBasicCCH; // book only basis common control histrograms (by default book them all)
   AliFlowCommonHist *fCommonHists; // common control histograms (taking into account ALL events) 
   AliFlowCommonHist *fCommonHists2nd; // common control histograms (taking into account only the events with 2 and more particles) 
   AliFlowCommonHist *fCommonHists4th; // common control histograms (taking into account only the events with 4 and more particles) 

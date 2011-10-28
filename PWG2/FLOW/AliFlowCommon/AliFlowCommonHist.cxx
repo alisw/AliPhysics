@@ -43,6 +43,7 @@ ClassImp(AliFlowCommonHist)
 
 AliFlowCommonHist::AliFlowCommonHist():
   TNamed(),
+  fBookOnlyBasic(kFALSE),
   fHistMultRP(NULL),
   fHistMultPOI(NULL),
   fHistMultPOIvsRP(NULL),
@@ -78,6 +79,7 @@ AliFlowCommonHist::AliFlowCommonHist():
 
 AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   TNamed(),
+  fBookOnlyBasic(a.fBookOnlyBasic),
   fHistMultRP(new TH1F(*a.fHistMultRP)),
   fHistMultPOI(new TH1F(*a.fHistMultPOI)),
   fHistMultPOIvsRP(new TH2F(*a.fHistMultPOIvsRP)),
@@ -111,30 +113,30 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
   fHistList-> Add(fHistMultPOI);
-  fHistList-> Add(fHistMultPOIvsRP);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistMultPOIvsRP);}
   fHistList-> Add(fHistPtRP);          
   fHistList-> Add(fHistPtPOI);
-  fHistList-> Add(fHistPtSub0);
-  fHistList-> Add(fHistPtSub1);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPtSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPtSub1);}
   fHistList-> Add(fHistPhiRP);          
   fHistList-> Add(fHistPhiPOI);
-  fHistList-> Add(fHistPhiSub0);
-  fHistList-> Add(fHistPhiSub1);    
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiSub1);}    
   fHistList-> Add(fHistEtaRP);          
   fHistList-> Add(fHistEtaPOI); 
-  fHistList-> Add(fHistEtaSub0);
-  fHistList-> Add(fHistEtaSub1);
-  fHistList-> Add(fHistPhiEtaRP);
-  fHistList-> Add(fHistPhiEtaPOI);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistEtaSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistEtaSub1);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiEtaRP);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiEtaPOI);}
   fHistList-> Add(fHistProMeanPtperBin);
-  fHistList-> Add(fHistWeightvsPhi);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistWeightvsPhi);}
   fHistList-> Add(fHarmonic);  
   fHistList-> Add(fRefMultVsNoOfRPs);
   fHistList-> Add(fHistRefMult); 
-  fHistList-> Add(fHistQ); 
-  fHistList-> Add(fHistAngleQ);
-  fHistList-> Add(fHistAngleQSub0);
-  fHistList-> Add(fHistAngleQSub1);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistQ);} 
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub1);}
   //  TListIter next = TListIter(a.fHistList);
 
 }
@@ -142,8 +144,9 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHist::AliFlowCommonHist(const char *anInput,const char *title):
+  AliFlowCommonHist::AliFlowCommonHist(const char *anInput, const char *title, Bool_t bookOnlyBasic):
     TNamed(anInput,title),
+    fBookOnlyBasic(bookOnlyBasic),
     fHistMultRP(NULL),
     fHistMultPOI(NULL),
     fHistMultPOIvsRP(NULL),
@@ -214,12 +217,14 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistMultPOI ->SetXTitle("Multiplicity for POI selection");
   fHistMultPOI ->SetYTitle("Counts");
 
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_MultPOIvsRP_";
   sName +=anInput;
   fHistMultPOIvsRP = new TH2F(sName.Data(), sName.Data(),iNbinsMult, dMultMin, dMultMax,100, dMultMin, dMultMax);
   fHistMultPOIvsRP->SetXTitle("Multiplicity for RP selection");
   fHistMultPOIvsRP->SetYTitle("Multiplicity for POI selection");
-
+  }
+  
   //Pt
   sName = "Control_Flow_PtRP_";
   sName +=anInput;
@@ -234,18 +239,22 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistPtPOI ->SetXTitle("P_{t} (GeV/c) for POI selection");
   fHistPtPOI ->SetYTitle("Counts");
 
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_PtSub0_";
   sName +=anInput;
   fHistPtSub0 = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   fHistPtSub0 ->SetXTitle("P_{t} (GeV/c) for Subevent 0 selection");
   fHistPtSub0 ->SetYTitle("Counts");
-
+  }
+  
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_PtSub1_";
   sName +=anInput;
   fHistPtSub1 = new TH1F(sName.Data(), sName.Data(),iNbinsPt, dPtMin, dPtMax); 
   fHistPtSub1 ->SetXTitle("P_{t} (GeV/c) for Subevent 1 selection");
   fHistPtSub1 ->SetYTitle("Counts");
-
+  }
+  
   //Phi
   sName = "Control_Flow_PhiRP_";
   sName +=anInput;
@@ -259,18 +268,22 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistPhiPOI ->SetXTitle("#phi for POI selection");
   fHistPhiPOI ->SetYTitle("Counts");
 
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_PhiSub0_";
   sName +=anInput;
   fHistPhiSub0 = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiSub0 ->SetXTitle("#phi for Subevent 0 selection");
   fHistPhiSub0 ->SetYTitle("Counts");
-
+  }
+   
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_PhiSub1_";
   sName +=anInput;
   fHistPhiSub1 = new TH1F(sName.Data(), sName.Data(),iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiSub1 ->SetXTitle("#phi for Subevent 1 selection");
   fHistPhiSub1 ->SetYTitle("Counts");
-
+  }
+  
   //Eta
   sName = "Control_Flow_EtaRP_";
   sName +=anInput;
@@ -284,31 +297,39 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistEtaPOI ->SetXTitle("#eta for POI selection");
   fHistEtaPOI ->SetYTitle("Counts");
 
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_EtaSub0_";
   sName +=anInput;
   fHistEtaSub0 = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
   fHistEtaSub0 ->SetXTitle("#eta for Subevent 0 selection");
   fHistEtaSub0 ->SetYTitle("Counts");
-
+  }
+  
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_EtaSub1_";
   sName +=anInput;
   fHistEtaSub1 = new TH1F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax);
   fHistEtaSub1 ->SetXTitle("#eta for Subevent 1 selection");
   fHistEtaSub1 ->SetYTitle("Counts");
+  }
 
+  if(!fBookOnlyBasic){
   //Phi vs Eta
   sName = "Control_Flow_PhiEtaRP_";
   sName +=anInput;
   fHistPhiEtaRP = new TH2F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax, iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiEtaRP ->SetXTitle("#eta");
   fHistPhiEtaRP ->SetYTitle("#phi");
-
+  }
+  
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_PhiEtaPOI_";
   sName +=anInput;
   fHistPhiEtaPOI = new TH2F(sName.Data(), sName.Data(),iNbinsEta, dEtaMin, dEtaMax, iNbinsPhi, dPhiMin, dPhiMax);
   fHistPhiEtaPOI ->SetXTitle("#eta");
   fHistPhiEtaPOI ->SetYTitle("#phi");
-
+  }
+  
   //Mean Pt per pt bin 
   sName = "Control_FlowPro_MeanPtperBin_";
   sName +=anInput;
@@ -316,39 +337,50 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistProMeanPtperBin ->SetXTitle("P_{t} (GeV/c) ");
   fHistProMeanPtperBin ->SetYTitle("<P_{t}> (GeV/c) ");
 
+  
+  if(!fBookOnlyBasic){
   //Particle weight
   sName = "Control_Flow_WeightvsPhi_";
   sName +=anInput;
   fHistWeightvsPhi = new TH2F(sName.Data(), sName.Data(), iNbinsPhi, dPhiMin, dPhiMax, 300, dHistWeightvsPhiMin, dHistWeightvsPhiMax); 
   fHistWeightvsPhi ->SetXTitle("#phi");
   fHistWeightvsPhi ->SetYTitle("weight");
-
+  }
+  
+  if(!fBookOnlyBasic){
   //Q vector
   sName = "Control_Flow_Q_";
   sName +=anInput;
   fHistQ = new TH1F(sName.Data(), sName.Data(),iNbinsQ, dQMin, dQMax);
   fHistQ ->SetXTitle("Q_{vector}/Mult");
   fHistQ ->SetYTitle("Counts");  
-  
+  }
+    
+  if(!fBookOnlyBasic){
   //Angle of Q vector
   sName = "Control_Flow_AngleQ_";
   sName +=anInput;
   fHistAngleQ = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
   fHistAngleQ ->SetXTitle("Angle of Q_{vector}");
   fHistAngleQ ->SetYTitle("Counts"); 
- 
+  }
+   
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_AngleQSub0_";
   sName +=anInput;
   fHistAngleQSub0 = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
   fHistAngleQSub0 ->SetXTitle("Angle of Q_{vector} for Subevent 0");
   fHistAngleQSub0 ->SetYTitle("Counts"); 
-
+  }
+  
+  if(!fBookOnlyBasic){
   sName = "Control_Flow_AngleQSub1_";
   sName +=anInput;
   fHistAngleQSub1 = new TH1F(sName.Data(), sName.Data(),72, 0., TMath::Pi());
   fHistAngleQSub1 ->SetXTitle("Angle of Q_{vector} for Subevent 1");
   fHistAngleQSub1 ->SetYTitle("Counts"); 
-
+  }
+  
   //harmonic
   sName = "Control_Flow_Harmonic_";
   sName +=anInput;
@@ -373,30 +405,30 @@ AliFlowCommonHist::AliFlowCommonHist(const AliFlowCommonHist& a):
   fHistList = new TList();
   fHistList-> Add(fHistMultRP);        
   fHistList-> Add(fHistMultPOI); 
-  fHistList-> Add(fHistMultPOIvsRP);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistMultPOIvsRP);}
   fHistList-> Add(fHistPtRP);          
   fHistList-> Add(fHistPtPOI); 
-  fHistList-> Add(fHistPtSub0);
-  fHistList-> Add(fHistPtSub1);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPtSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPtSub1);}
   fHistList-> Add(fHistPhiRP);          
   fHistList-> Add(fHistPhiPOI);
-  fHistList-> Add(fHistPhiSub0);
-  fHistList-> Add(fHistPhiSub1);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiSub1);}
   fHistList-> Add(fHistEtaRP);          
   fHistList-> Add(fHistEtaPOI); 
-  fHistList-> Add(fHistEtaSub0); 
-  fHistList-> Add(fHistEtaSub1);
-  fHistList-> Add(fHistPhiEtaRP);  
-  fHistList-> Add(fHistPhiEtaPOI);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistEtaSub0);} 
+  if(!fBookOnlyBasic){fHistList-> Add(fHistEtaSub1);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiEtaRP);}  
+  if(!fBookOnlyBasic){fHistList-> Add(fHistPhiEtaPOI);}
   fHistList-> Add(fHistProMeanPtperBin);
-  fHistList-> Add(fHistWeightvsPhi);
+  if(!fBookOnlyBasic){fHistList-> Add(fHistWeightvsPhi);}
   fHistList-> Add(fHarmonic); 
   fHistList-> Add(fRefMultVsNoOfRPs); 
   fHistList-> Add(fHistRefMult);   
-  fHistList-> Add(fHistQ);           
-  fHistList-> Add(fHistAngleQ);
-  fHistList-> Add(fHistAngleQSub0);
-  fHistList-> Add(fHistAngleQSub1); 
+  if(!fBookOnlyBasic){fHistList-> Add(fHistQ);}           
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQ);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub0);}
+  if(!fBookOnlyBasic){fHistList-> Add(fHistAngleQSub1);} 
 
 }
 
@@ -408,27 +440,27 @@ AliFlowCommonHist::~AliFlowCommonHist()
   //deletes histograms
   delete fHistMultRP;       
   delete fHistMultPOI; 
-  delete fHistMultPOIvsRP;
+  if(!fBookOnlyBasic){delete fHistMultPOIvsRP;}
   delete fHistPtRP;         
   delete fHistPtPOI;
-  delete fHistPtSub0;
-  delete fHistPtSub1;
+  if(!fBookOnlyBasic){delete fHistPtSub0;}
+  if(!fBookOnlyBasic){delete fHistPtSub1;}
   delete fHistPhiRP;        
   delete fHistPhiPOI;
-  delete fHistPhiSub0;
-  delete fHistPhiSub1;
+  if(!fBookOnlyBasic){delete fHistPhiSub0;}
+  if(!fBookOnlyBasic){delete fHistPhiSub1;}
   delete fHistEtaRP;        
   delete fHistEtaPOI;
-  delete fHistEtaSub0;
-  delete fHistEtaSub1;
+  if(!fBookOnlyBasic){delete fHistEtaSub0;}
+  if(!fBookOnlyBasic){delete fHistEtaSub1;}
   delete fHistPhiEtaRP;
   delete fHistPhiEtaPOI;
   delete fHistProMeanPtperBin;
-  delete fHistWeightvsPhi;
-  delete fHistQ;
-  delete fHistAngleQ;
-  delete fHistAngleQSub0;
-  delete fHistAngleQSub1;
+  if(!fBookOnlyBasic){delete fHistWeightvsPhi;}
+  if(!fBookOnlyBasic){delete fHistQ;}
+  if(!fBookOnlyBasic){delete fHistAngleQ;}
+  if(!fBookOnlyBasic){delete fHistAngleQSub0;}
+  if(!fBookOnlyBasic){delete fHistAngleQSub1;}
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
   delete fHistRefMult;  
@@ -514,15 +546,15 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
     dQY = vQ.Y()/vQ.GetMult();
   }
   vQ.Set(dQX,dQY);
-  fHistQ->Fill(vQ.Mod());
-  fHistAngleQ->Fill(vQ.Phi()/2);
+  if(!fBookOnlyBasic){fHistQ->Fill(vQ.Mod());}
+  if(!fBookOnlyBasic){fHistAngleQ->Fill(vQ.Phi()/2);}
 
   AliFlowVector* vQSub = new AliFlowVector[2];
   anEvent->Get2Qsub(vQSub, 2, weightsList, usePhiWeights, usePtWeights, useEtaWeights);
   AliFlowVector vQa = vQSub[0];
   AliFlowVector vQb = vQSub[1];
-  fHistAngleQSub0->Fill(vQa.Phi()/2);
-  fHistAngleQSub1->Fill(vQb.Phi()/2);
+  if(!fBookOnlyBasic){fHistAngleQSub0->Fill(vQa.Phi()/2);}
+  if(!fBookOnlyBasic){fHistAngleQSub1->Fill(vQb.Phi()/2);}
 
   Double_t dMultRP = 0.;
   Double_t dMultPOI = 0.;
@@ -564,9 +596,9 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	//eta
 	fHistEtaRP->Fill(dEta,dW);
 	//eta vs phi
-	fHistPhiEtaRP->Fill(dEta,dPhi,dW);
+	if(!fBookOnlyBasic){fHistPhiEtaRP->Fill(dEta,dPhi,dW);}
 	//weight vs phi
-	fHistWeightvsPhi->Fill(dPhi,dW);
+	if(!fBookOnlyBasic){fHistWeightvsPhi->Fill(dPhi,dW);}
 	//count
 	dMultRP += dW;
       }
@@ -588,11 +620,11 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	Double_t dW = dWeight*dWPhi*dWPt*dWEta;  
 
 	//pt
-	fHistPtSub0 ->Fill(dPt,dW);
+	if(!fBookOnlyBasic){fHistPtSub0 ->Fill(dPt,dW);}
 	//phi
-	fHistPhiSub0 ->Fill(dPhi,dW);
+	if(!fBookOnlyBasic){fHistPhiSub0 ->Fill(dPhi,dW);}
 	//eta
-	fHistEtaSub0 ->Fill(dEta,dW);
+	if(!fBookOnlyBasic){fHistEtaSub0 ->Fill(dEta,dW);}
       }
       if (pTrack->InRPSelection() && pTrack->InSubevent(1)) {
 	// determine Phi weight:
@@ -612,11 +644,11 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	Double_t dW = dWeight*dWPhi*dWPt*dWEta;  
 
 	//pt
-	fHistPtSub1 -> Fill(dPt,dW);
+	if(!fBookOnlyBasic){fHistPtSub1 -> Fill(dPt,dW);}
 	//phi
-	fHistPhiSub1 -> Fill(dPhi,dW);
+	if(!fBookOnlyBasic){fHistPhiSub1 -> Fill(dPhi,dW);}
 	//eta
-	fHistEtaSub1 -> Fill(dEta,dW);
+	if(!fBookOnlyBasic){fHistEtaSub1 -> Fill(dEta,dW);}
       }
       if (pTrack->InPOISelection()){
 
@@ -629,7 +661,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
 	//eta
 	fHistEtaPOI ->Fill(dEta,dW);
 	//eta vs phi
-	fHistPhiEtaPOI ->Fill(dEta,dPhi,dW);
+	if(!fBookOnlyBasic){fHistPhiEtaPOI ->Fill(dEta,dPhi,dW);}
 	//mean pt
 	fHistProMeanPtperBin ->Fill(dPt,dPt,dW);
 	//count
@@ -640,7 +672,7 @@ Bool_t AliFlowCommonHist::FillControlHistograms(AliFlowEventSimple* anEvent,TLis
   
   fHistMultRP->Fill(dMultRP);
   fHistMultPOI->Fill(dMultPOI);
-  fHistMultPOIvsRP->Fill(dMultRP,dMultPOI);
+  if(!fBookOnlyBasic){fHistMultPOIvsRP->Fill(dMultRP,dMultPOI);}
   
   //<reference multiplicity> versus # of RPs:
   fRefMultVsNoOfRPs->Fill(dMultRP+0.5,anEvent->GetReferenceMultiplicity(),1.);
