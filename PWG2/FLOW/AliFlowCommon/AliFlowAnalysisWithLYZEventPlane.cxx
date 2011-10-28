@@ -413,7 +413,7 @@ void AliFlowAnalysisWithLYZEventPlane::Finish() {
     //cerr<<"dSigma2"<<dSigma2<<endl;
     if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
     else dChi = -1.;
-    fCommonHistsRes->FillChiRP(dChi);
+    fCommonHistsRes->FillChi(dChi);
 
     // recalculate statistical errors on integrated flow
     //combining 5 theta angles to 1 relative error BP eq. 89

@@ -50,6 +50,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants(const char *name, Bool_t us
  fPropagateErrorAlsoFromNIT(kFALSE),
  fCalculateDiffFlow(kTRUE),
  fCalculate2DDiffFlow(kFALSE),
+ fCalculateDiffFlowVsEta(kTRUE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE), 
  fCalculateAllCorrelationsVsM(kFALSE), 
@@ -106,6 +107,7 @@ AliAnalysisTaskQCumulants::AliAnalysisTaskQCumulants():
  fPropagateErrorAlsoFromNIT(kFALSE),
  fCalculateDiffFlow(kFALSE),
  fCalculate2DDiffFlow(kFALSE),
+ fCalculateDiffFlowVsEta(kTRUE),
  fStoreDistributions(kFALSE),
  fCalculateCumulantsVsM(kFALSE),  
  fCalculateAllCorrelationsVsM(kFALSE),   
@@ -153,6 +155,7 @@ void AliAnalysisTaskQCumulants::UserCreateOutputObjects()
  fQC->SetPropagateErrorAlsoFromNIT(fPropagateErrorAlsoFromNIT);
  fQC->SetCalculateDiffFlow(fCalculateDiffFlow);
  fQC->SetCalculate2DDiffFlow(fCalculate2DDiffFlow);
+ fQC->SetCalculateDiffFlowVsEta(fCalculateDiffFlowVsEta);
  fQC->SetStoreDistributions(fStoreDistributions);
  fQC->SetCalculateCumulantsVsM(fCalculateCumulantsVsM);
  fQC->SetCalculateAllCorrelationsVsM(fCalculateAllCorrelationsVsM);

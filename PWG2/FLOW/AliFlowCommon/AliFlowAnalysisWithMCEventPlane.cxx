@@ -151,7 +151,7 @@ void AliFlowAnalysisWithMCEventPlane::Init() {
 
   fCommonHists = new AliFlowCommonHist("AliFlowCommonHistMCEP");
   fHistList->Add(fCommonHists);
-  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsMCEP");
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsMCEP","",fHarmonic);
   fHistList->Add(fCommonHistsRes);
   
   // store harmonic in common control histogram: 
