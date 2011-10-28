@@ -624,7 +624,7 @@ void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms()
  // common histograms for final results:
  TString commonHistResName = "AliFlowCommonHistResultsFQD";
  commonHistResName += fAnalysisLabel->Data();
- fCommonHistsResults = new AliFlowCommonHistResults(commonHistResName.Data());
+ fCommonHistsResults = new AliFlowCommonHistResults(commonHistResName.Data(),"",fHarmonic);
  fHistList->Add(fCommonHistsResults); 
 
 } // end of void AliFlowAnalysisWithFittingQDistribution::BookCommonHistograms()

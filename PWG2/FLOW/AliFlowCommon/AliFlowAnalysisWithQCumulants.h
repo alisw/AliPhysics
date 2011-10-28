@@ -336,6 +336,8 @@ class AliFlowAnalysisWithQCumulants{
   Bool_t GetCalculateDiffFlow() const {return this->fCalculateDiffFlow;};
   void SetCalculate2DDiffFlow(Bool_t const c2ddf) {this->fCalculate2DDiffFlow = c2ddf;};
   Bool_t GetCalculate2DDiffFlow() const {return this->fCalculate2DDiffFlow;};
+  void SetCalculateDiffFlowVsEta(Bool_t const cdfve) {this->fCalculateDiffFlowVsEta = cdfve;};
+  Bool_t GetCalculateDiffFlowVsEta() const {return this->fCalculateDiffFlowVsEta;};
   //  Profiles:
   //   1D:
   void SetDiffFlowCorrelationsPro(TProfile* const diffFlowCorrelationsPro, Int_t const i, Int_t const j, Int_t const k) {this->fDiffFlowCorrelationsPro[i][j][k] = diffFlowCorrelationsPro;};
@@ -567,6 +569,7 @@ class AliFlowAnalysisWithQCumulants{
   TProfile *fDiffFlowFlags; // profile to hold all flags for differential flow
   Bool_t fCalculateDiffFlow; // if you set kFALSE only reference flow will be calculated
   Bool_t fCalculate2DDiffFlow; // calculate 2D differential flow vs (pt,eta) (Remark: this is expensive in terms of CPU time)
+  Bool_t fCalculateDiffFlowVsEta; // if you set kFALSE only differential flow vs pt is calculated
   //  4c.) event-by-event quantities:
   //   1D:
   TProfile *fReRPQ1dEBE[3][2][4][9]; // real part [0=r,1=p,2=q][0=pt,1=eta][m][k]

@@ -46,15 +46,12 @@ ClassImp(AliFlowCommonHistResults)
 
   AliFlowCommonHistResults::AliFlowCommonHistResults(): 
     TNamed(),
-    fHistIntFlow(NULL),//to be removed
-    fHistDiffFlow(NULL),//to be removed
-    fHistChi(NULL),//to be removed
+    fHistIntFlow(NULL),
+    fHistChi(NULL),
     fHistIntFlowRP(NULL),
-    fHistChiRP(NULL),
     fHistDiffFlowPtRP(NULL),
     fHistDiffFlowEtaRP(NULL),
     fHistIntFlowPOI(NULL),
-    fHistChiPOI(NULL),
     fHistDiffFlowPtPOI(NULL),
     fHistDiffFlowEtaPOI(NULL), 
     fHistList(NULL)
@@ -64,17 +61,14 @@ ClassImp(AliFlowCommonHistResults)
 
 //-----------------------------------------------------------------------
 
-  AliFlowCommonHistResults::AliFlowCommonHistResults(const char *anInput, const char *title): 
+  AliFlowCommonHistResults::AliFlowCommonHistResults(const char *anInput, const char *title, Int_t harmonic): 
     TNamed(anInput,title),
-    fHistIntFlow(NULL),//to be removed
-    fHistDiffFlow(NULL),//to be removed
-    fHistChi(NULL),//to be removed
+    fHistIntFlow(NULL),
+    fHistChi(NULL),
     fHistIntFlowRP(NULL),
-    fHistChiRP(NULL),
     fHistDiffFlowPtRP(NULL),
     fHistDiffFlowEtaRP(NULL),
     fHistIntFlowPOI(NULL),
-    fHistChiPOI(NULL),
     fHistDiffFlowPtPOI(NULL),
     fHistDiffFlowEtaPOI(NULL),  
     fHistList(NULL)
@@ -91,152 +85,114 @@ ClassImp(AliFlowCommonHistResults)
   
   TString name;
 
-
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
-  //                                 !!!     to be removed    !!!
-  //integrated flow
+  // Reference flow: (TBI: rename eventually integrated flow => reference flow)
   name = "Flow_Integrated_";
   name += anInput;
-  fHistIntFlow = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistIntFlow ->SetXTitle("");
-  fHistIntFlow ->SetYTitle("V_{2}");
-
-  //differential flow
-  name = "Flow_Differential_Pt_";
-  name += anInput;
-  fHistDiffFlow = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
-  fHistDiffFlow ->SetXTitle("P_{t}");
-  fHistDiffFlow ->SetYTitle("v_{2}");
-  
-  //Chi (needed for rebinning later on)
+  fHistIntFlow = new TH1D(name.Data(),"Reference Flow",1,0.5,1.5);
+  fHistIntFlow->SetStats(kFALSE);
+  fHistIntFlow->SetMarkerStyle(kOpenSquare);
+  fHistIntFlow->SetLabelSize(0.06,"X");
+  fHistIntFlow->SetLabelOffset(0.015,"X");
+  fHistIntFlow->GetXaxis()->SetBinLabel(1,Form("v_{%d}",harmonic));
+ 
+  // chi (resolution):
   name = "Flow_Chi_";
   name += anInput;
-  fHistChi = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistChi ->SetXTitle("");
-  fHistChi ->SetYTitle("#Chi");
-  //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+  fHistChi = new TH1D(name.Data(),"Resolution",1,0.5,1.5);
+  fHistChi->SetStats(kFALSE);
+  fHistChi->SetMarkerStyle(kOpenSquare);
+  fHistChi->SetLabelSize(0.06,"X");
+  fHistChi->SetLabelOffset(0.015,"X");
+  fHistChi->GetXaxis()->SetBinLabel(1,"#chi");
   
-  //integrated flow
+  // Integrated flow of RPs:
   name = "Flow_Integrated_RP_";
   name += anInput;
-  fHistIntFlowRP = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistIntFlowRP->SetLabelSize(0.06);
-  fHistIntFlowRP->SetLabelOffset(0.01);
-  (fHistIntFlowRP->GetXaxis())->SetBinLabel(1,"V_{2}");
-  
-  //Chi (needed for rebinning later on)
-  name = "Flow_Chi_RP_";
-  name += anInput;
-  fHistChiRP = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistChiRP->SetLabelSize(0.06);
-  fHistChiRP->SetLabelOffset(0.01);
-  (fHistChiRP->GetXaxis())->SetBinLabel(1,"#chi");
-  
-  //differential flow (Pt)
+  fHistIntFlowRP = new TH1D(name.Data(),"Integrated Flow (RP)",1,0.5,1.5);
+  fHistIntFlowRP->SetStats(kFALSE);
+  fHistIntFlowRP->SetMarkerStyle(kOpenSquare);
+  fHistIntFlowRP->SetLabelSize(0.06,"X");
+  fHistIntFlowRP->SetLabelOffset(0.015,"X");
+  fHistIntFlowRP->GetXaxis()->SetBinLabel(1,Form("v_{%d}",harmonic));
+
+  // Differential flow (Pt) of RPs:
   name = "Flow_Differential_Pt_RP_";
   name += anInput;
-  fHistDiffFlowPtRP = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
-  fHistDiffFlowPtRP->SetXTitle("P_{t}");
-  fHistDiffFlowPtRP->SetYTitle("v_{2}");
+  fHistDiffFlowPtRP = new TH1D(name.Data(),"Differential Flow vs p_{t} (RP)",iNbinsPt,dPtMin,dPtMax);
+  fHistDiffFlowPtRP->SetStats(kFALSE);
+  fHistDiffFlowPtRP->SetXTitle("p_{t}");
+  fHistDiffFlowPtRP->SetYTitle(Form("v_{%d}",harmonic));
   
-  //differential flow (eta)
+  // Differential flow (eta) of RPs:
   name = "Flow_Differential_Eta_RP_";
   name += anInput;
-  fHistDiffFlowEtaRP = new TH1D(name.Data(), name.Data(),iNbinsEta,dEtaMin,dEtaMax);
+  fHistDiffFlowEtaRP = new TH1D(name.Data(),"Differential Flow vs #eta (RP)",iNbinsEta,dEtaMin,dEtaMax);
+  fHistDiffFlowEtaRP->SetStats(kFALSE);
   fHistDiffFlowEtaRP->SetXTitle("#eta");
-  fHistDiffFlowEtaRP->SetYTitle("v_{2}");
+  fHistDiffFlowEtaRP->SetYTitle(Form("v_{%d}",harmonic));
   
-  //integrated flow
+  // Integrated flow of POIs:
   name = "Flow_Integrated_POI_";
   name += anInput;
-  fHistIntFlowPOI = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistIntFlowPOI->SetLabelSize(0.06);
-  fHistIntFlowPOI->SetLabelOffset(0.01);
-  (fHistIntFlowPOI->GetXaxis())->SetBinLabel(1,"V_{2}");
-  
-  //Chi (needed for rebinning later on)
-  name = "Flow_Chi_POI_";
-  name += anInput;
-  fHistChiPOI = new TH1D(name.Data(), name.Data(),1,0.5,1.5);
-  fHistChiPOI->SetLabelSize(0.06);
-  fHistChiPOI->SetLabelOffset(0.01);
-  (fHistChiPOI->GetXaxis())->SetBinLabel(1,"#chi");
-  
-  //differential flow (Pt)
+  fHistIntFlowPOI = new TH1D(name.Data(),"Integrated Flow (POI)",1,0.5,1.5);
+  fHistIntFlowPOI->SetStats(kFALSE);
+  fHistIntFlowPOI->SetMarkerStyle(kOpenSquare);
+  fHistIntFlowPOI->SetLabelSize(0.06,"X");
+  fHistIntFlowPOI->SetLabelOffset(0.015,"X");
+  fHistIntFlowPOI->GetXaxis()->SetBinLabel(1,Form("v_{%d}",harmonic));
+
+  // Differential flow (Pt) of POIs:
   name = "Flow_Differential_Pt_POI_";
   name += anInput;
-  fHistDiffFlowPtPOI = new TH1D(name.Data(), name.Data(),iNbinsPt,dPtMin,dPtMax);
-  fHistDiffFlowPtPOI->SetXTitle("P_{t}");
-  fHistDiffFlowPtPOI->SetYTitle("v_{2}");
+  fHistDiffFlowPtPOI = new TH1D(name.Data(),"Differential Flow vs p_{t} (POI)",iNbinsPt,dPtMin,dPtMax);
+  fHistDiffFlowPtPOI->SetXTitle("p_{t}");
+  fHistDiffFlowPtPOI->SetYTitle(Form("v_{%d}",harmonic));
   
-  //differential flow (eta)
+  // Differential flow (eta) of POIs:
   name = "Flow_Differential_Eta_POI_";
   name += anInput;
-  fHistDiffFlowEtaPOI = new TH1D(name.Data(), name.Data(),iNbinsEta,dEtaMin,dEtaMax);
+  fHistDiffFlowEtaPOI = new TH1D(name.Data(),"Differential Flow vs #eta (POI)",iNbinsEta,dEtaMin,dEtaMax);
+  fHistDiffFlowEtaPOI->SetStats(kFALSE);
   fHistDiffFlowEtaPOI->SetXTitle("#eta");
-  fHistDiffFlowEtaPOI->SetYTitle("v_{2}");
+  fHistDiffFlowEtaPOI->SetYTitle(Form("v_{%d}",harmonic));
   
-  //list of histograms
+  // List of histograms:
   fHistList = new TList();
-  
-  
-  fHistList-> Add(fHistIntFlow);//to be removed
-  fHistList-> Add(fHistDiffFlow);//to be removed
-  fHistList-> Add(fHistChi);//to be removed
-  
-  
+  fHistList-> Add(fHistIntFlow);
+  fHistList-> Add(fHistChi);
   fHistList->Add(fHistIntFlowRP);
-  fHistList->Add(fHistChiRP);
   fHistList->Add(fHistDiffFlowPtRP);
   fHistList->Add(fHistDiffFlowEtaRP);
   fHistList->Add(fHistIntFlowPOI);
-  fHistList->Add(fHistChiPOI);
   fHistList->Add(fHistDiffFlowPtPOI);
-  fHistList->Add(fHistDiffFlowEtaPOI);  
-  
+  fHistList->Add(fHistDiffFlowEtaPOI);    
  }
 
 //----------------------------------------------------------------------- 
 
 AliFlowCommonHistResults::~AliFlowCommonHistResults()
 {
-  //deletes histograms
-  delete fHistIntFlow;//to be removed
-  delete fHistDiffFlow;//to be removed
-  delete fHistChi;//to be removed
-  delete fHistIntFlowRP;
-  delete fHistChiRP;
-  delete fHistDiffFlowPtRP;
-  delete fHistDiffFlowEtaRP;
-  delete fHistIntFlowPOI;
-  delete fHistChiPOI;
-  delete fHistDiffFlowPtPOI;
-  delete fHistDiffFlowEtaPOI;
-  delete fHistList;
+ // Deletes histograms:
+ delete fHistIntFlow;
+ delete fHistChi;
+ delete fHistIntFlowRP;
+ delete fHistDiffFlowPtRP;
+ delete fHistDiffFlowEtaRP;
+ delete fHistIntFlowPOI;
+ delete fHistDiffFlowPtPOI;
+ delete fHistDiffFlowEtaPOI;
+ delete fHistList;
 }
 
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
-//                                 !!!     to be removed    !!!
 //----------------------------------------------------------------------- 
 
 Bool_t AliFlowCommonHistResults::FillIntegratedFlow(Double_t aV, Double_t anError)
 {
-  //Fill fHistIntFlow
-  fHistIntFlow -> SetBinContent(1,aV);
-  fHistIntFlow -> SetBinError(1,anError);
+ // Fill fHistIntFlow:
+ fHistIntFlow -> SetBinContent(1,aV);
+ fHistIntFlow -> SetBinError(1,anError);
 
-  return kTRUE; 
-}
-
-//----------------------------------------------------------------------- 
-
-Bool_t AliFlowCommonHistResults::FillDifferentialFlow(Int_t aBin, Double_t av, Double_t anError)
-{
-  //Fill fHistDiffFlow
-  fHistDiffFlow ->SetBinContent(aBin,av); 
-  fHistDiffFlow ->SetBinError(aBin,anError);
-
-  return kTRUE; 
+ return kTRUE; 
 }
 
 //----------------------------------------------------------------------- 
@@ -248,7 +204,6 @@ Bool_t AliFlowCommonHistResults::FillChi(Double_t aChi)
   
   return kTRUE; 
 }
-//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx 
 
 //----------------------------------------------------------------------- 
 
@@ -258,16 +213,6 @@ Bool_t AliFlowCommonHistResults::FillIntegratedFlowRP(Double_t aV, Double_t anEr
   fHistIntFlowRP->SetBinContent(1,aV);
   fHistIntFlowRP->SetBinError(1,anError);
 
-  return kTRUE; 
-}
-
-//----------------------------------------------------------------------- 
-
-Bool_t AliFlowCommonHistResults::FillChiRP(Double_t aChi)
-{
-  //Fill fHistChiRP
-  fHistChiRP->SetBinContent(1,aChi);
-  
   return kTRUE; 
 }
 
@@ -301,16 +246,6 @@ Bool_t AliFlowCommonHistResults::FillIntegratedFlowPOI(Double_t aV, Double_t anE
   fHistIntFlowPOI->SetBinContent(1,aV);
   fHistIntFlowPOI->SetBinError(1,anError);
 
-  return kTRUE; 
-}
-
-//----------------------------------------------------------------------- 
-
-Bool_t AliFlowCommonHistResults::FillChiPOI(Double_t aChi)
-{
-  //Fill fHistChiPOI
-  fHistChiPOI->SetBinContent(1,aChi);
-  
   return kTRUE; 
 }
 

@@ -333,7 +333,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
       
   fCommonHistsSP = new AliFlowCommonHist("AliFlowCommonHistSP");
   fHistList->Add(fCommonHistsSP);
-  fCommonHistsResSP = new AliFlowCommonHistResults("AliFlowCommonHistResultsSP");
+  fCommonHistsResSP = new AliFlowCommonHistResults("AliFlowCommonHistResultsSP","",fHarmonic);
   fHistList->Add(fCommonHistsResSP);  
   fCommonHistsmuQ = new AliFlowCommonHist("AliFlowCommonHistmuQ");
   fHistList->Add(fCommonHistsmuQ);

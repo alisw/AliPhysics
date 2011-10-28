@@ -247,9 +247,12 @@ int runFlowAnalysisOnTheFly(Int_t mode=mLocal)
   qc->SetFillMultipleControlHistograms(kFALSE);     
   qc->SetMultiplicityWeight("combinations"); // default (other supported options are "unit" and "multiplicity")
   qc->SetCalculateCumulantsVsM(kFALSE);
+  qc->SetCalculateAllCorrelationsVsM(kFALSE); // calculate all correlations in mixed harmonics "vs M"
   qc->SetnBinsMult(10000);
   qc->SetMinMult(0);
   qc->SetMaxMult(10000);      
+  qc->SetBookOnlyBasicCCH(kFALSE); // book only basic common control histograms
+  qc->SetCalculateDiffFlowVsEta(kTRUE); // if you set kFALSE only differential flow vs pt is calculated
   qc->Init();  
  } // end of if(QC)
  // GFC = Generating Function Cumulants 

@@ -54,6 +54,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t GetCalculateDiffFlow() const {return this->fCalculateDiffFlow;};
   void SetCalculate2DDiffFlow(Bool_t const calculate2DDiffFlow) {this->fCalculate2DDiffFlow = calculate2DDiffFlow;};
   Bool_t GetCalculate2DDiffFlow() const {return this->fCalculate2DDiffFlow;};
+  void SetCalculateDiffFlowVsEta(Bool_t const cdfve) {this->fCalculateDiffFlowVsEta = cdfve;};
+  Bool_t GetCalculateDiffFlowVsEta() const {return this->fCalculateDiffFlowVsEta;};  
   void SetStoreDistributions(Bool_t const storeDistributions) {this->fStoreDistributions = storeDistributions;};
   Bool_t GetStoreDistributions() const {return this->fStoreDistributions;};
   void SetCalculateCumulantsVsM(Bool_t const ccvm) {this->fCalculateCumulantsVsM = ccvm;};
@@ -104,6 +106,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   Bool_t fPropagateErrorAlsoFromNIT;     // propagate error by taking into account also non-isotrpic terms  
   Bool_t fCalculateDiffFlow;             // calculate differential flow in pt or eta
   Bool_t fCalculate2DDiffFlow;           // calculate differential flow in (pt,eta) (Remark: this is very expensive in terms of CPU time)
+  Bool_t fCalculateDiffFlowVsEta;        // if you set kFALSE only differential flow vs pt is calculated  
   Bool_t fStoreDistributions;            // store or not distributions of correlations
   Bool_t fCalculateCumulantsVsM;         // calculate cumulants versus multiplicity  
   Bool_t fCalculateAllCorrelationsVsM;   // calculate all correlations versus multiplicity     
