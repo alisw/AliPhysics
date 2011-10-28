@@ -13,6 +13,7 @@ MakeCDBEntryRunParams(Float_t time0, Float_t reso, Float_t spread = -1., Int_t s
   obj->SetT0(t0);
   obj->SetTOFResolution(tofReso);
   obj->SetT0Spread(t0Spread);
+  obj->SetUseLHCClockPhase(kTRUE);
 
   /* create cdb info */
   AliCDBId id("TOF/Calib/RunParams", startRun, endRun);

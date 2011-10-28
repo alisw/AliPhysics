@@ -169,13 +169,15 @@ AliTOFAnalysisTaskCalibPass0::InitRun()
   fInitFlag = kTRUE;
   fRunNumber = runNb;
   
+  Int_t useBPTX = fTOFcalib->GetUseLHCClockPhase() ? 1 : 0;
+
   /* set histo title with run-number and start-time */
-  fHistoVertexTimestamp->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
-  fHistoDeltatTimestamp->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
-  fHistoDeltazEta->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
-  fHistoDeltazCosTheta->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
-  fHistoAcceptedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
-  fHistoMatchedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u", fRunNumber, fStartTime));
+  fHistoVertexTimestamp->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoDeltatTimestamp->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoDeltazEta->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoDeltazCosTheta->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoAcceptedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
+  fHistoMatchedTracksEtaPt->SetTitle(Form("run: %d, startTimestamp: %u, BPTX: %d", fRunNumber, fStartTime, useBPTX));
   
   return kTRUE;
 }
@@ -589,6 +591,24 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   TTimeStamp ts = startTimestamp;
   AliInfo(Form("got start timestamp: %d (%s)", startTimestamp, ts.AsString()));
 
+  /* BPTX */
+  ostr = (TObjString *)strarr->At(2);
+  if (!ostr) {
+    AliError("problems while getting BPTX from histogram title");
+    fStatus = kDataError;
+    return kFALSE;
+  }
+  str = ostr->GetString();
+  str.Remove(0, 1); /* remove empty space at the beginning */
+  if (!str.BeginsWith("BPTX:")) {
+    AliError("problems while getting BPTX from histogram title");
+    fStatus = kDataError;
+    return kFALSE;
+  }
+  str.Remove(0, 6);
+  Bool_t useBPTX = atoi(str.Data());
+  AliInfo(Form("got BPTX: %d", useBPTX));
+
   /*** CALIBRATION STAGE ***/
 
   /* get fit function */
@@ -747,6 +767,7 @@ AliTOFAnalysisTaskCalibPass0::CalibrateAndStore(TH2F *histoVertexTimestamp, TH2F
   obj.SetRunNb(run);
   obj.SetRunFirstPoint(runFirstPoint);
   obj.SetRunLastPoint(runLastPoint);
+  obj.SetUseLHCClockPhase(useBPTX);
   
   /*** CREATE OCDB ENTRY ***/
 

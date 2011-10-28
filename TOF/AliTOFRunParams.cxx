@@ -41,7 +41,8 @@ AliTOFRunParams::AliTOFRunParams() :
   fNRuns(0),
   fRunNb(NULL),
   fRunFirstPoint(NULL),
-  fRunLastPoint(NULL)
+  fRunLastPoint(NULL),
+  fUseLHCClockPhase(kFALSE)
 {
   /*
    * default constructor
@@ -60,7 +61,8 @@ AliTOFRunParams::AliTOFRunParams(Int_t nPoints, Int_t nRuns) :
   fNRuns(nRuns),
   fRunNb(new UInt_t[nRuns]),
   fRunFirstPoint(new UInt_t[nRuns]),
-  fRunLastPoint(new UInt_t[nRuns])
+  fRunLastPoint(new UInt_t[nRuns]),
+  fUseLHCClockPhase(kFALSE)
 {
   /*
    * standard constructor
@@ -96,7 +98,8 @@ AliTOFRunParams::AliTOFRunParams(const AliTOFRunParams &source) :
   fNRuns(source.fNRuns),
   fRunNb(new UInt_t[source.fNRuns]),
   fRunFirstPoint(new UInt_t[source.fNRuns]),
-  fRunLastPoint(new UInt_t[source.fNRuns])
+  fRunLastPoint(new UInt_t[source.fNRuns]),
+  fUseLHCClockPhase(source.fUseLHCClockPhase)
 {
   /*
    * copy constructor
@@ -163,6 +166,8 @@ AliTOFRunParams::operator=(const AliTOFRunParams &source)
     fRunFirstPoint[i] = source.fRunFirstPoint[i];
     fRunLastPoint[i] = source.fRunLastPoint[i];
   }
+
+  fUseLHCClockPhase = source.fUseLHCClockPhase;
 
   return *this;
 }

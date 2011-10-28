@@ -118,6 +118,7 @@ author: Chiara Zampolli, zampolli@bo.infn.it
 #include "AliTOFCTPLatency.h"
 #include "AliTOFT0Fill.h"
 #include "AliTOFRunParams.h"
+#include "AliLHCClockPhase.h"
 #include "AliTOFResponseParams.h"
 #include "AliESDEvent.h"
 #include "AliESDtrack.h"
@@ -154,11 +155,13 @@ AliTOFcalib::AliTOFcalib():
   fCTPLatency(NULL),
   fT0Fill(NULL),
   fRunParams(NULL),
+  fLHCClockPhase(NULL),
   fResponseParams(NULL),
   fReadoutEfficiency(NULL),
   fProblematic(NULL),
   fInitFlag(kFALSE),
   fRemoveMeanT0(kTRUE),
+  fUseLHCClockPhase(kFALSE),
   fCalibrateTOFsignal(kTRUE),
   fCorrectTExp(kFALSE)
 { 
@@ -191,11 +194,13 @@ AliTOFcalib::AliTOFcalib(const AliTOFcalib & calib):
   fCTPLatency(NULL),
   fT0Fill(NULL),
   fRunParams(NULL),
+  fLHCClockPhase(NULL),
   fResponseParams(NULL),
   fReadoutEfficiency(NULL),
   fProblematic(NULL),
   fInitFlag(calib.fInitFlag),
   fRemoveMeanT0(calib.fRemoveMeanT0),
+  fUseLHCClockPhase(calib.fUseLHCClockPhase),
   fCalibrateTOFsignal(calib.fCalibrateTOFsignal),
   fCorrectTExp(calib.fCorrectTExp)
 {
@@ -301,6 +306,7 @@ AliTOFcalib& AliTOFcalib::operator=(const AliTOFcalib &calib)
   }
   fInitFlag = calib.fInitFlag;
   fRemoveMeanT0 = calib.fRemoveMeanT0;
+  fUseLHCClockPhase = calib.fUseLHCClockPhase;
   fCalibrateTOFsignal = calib.fCalibrateTOFsignal;
   fCorrectTExp = calib.fCorrectTExp;
 
@@ -2157,6 +2163,29 @@ AliTOFcalib::ReadRunParamsFromCDB(const Char_t *sel , Int_t nrun)
 //----------------------------------------------------------------------------
 
 Bool_t
+AliTOFcalib::ReadLHCClockPhaseFromCDB(const Char_t *sel , Int_t nrun)
+{
+  /*
+   * read LHC clock-phase from CDB
+   */
+  
+  AliCDBManager *man = AliCDBManager::Instance();
+  AliCDBEntry *entry = man->Get(Form("%s/LHCClockPhase", sel),nrun);
+  if (!entry) { 
+    AliFatal("No LHCClockPhase entry found in CDB");
+    exit(0);  
+  }
+  fLHCClockPhase =(AliLHCClockPhase *)entry->GetObject();
+  if(!fRunParams){
+    AliFatal("No LHCClockPhase object found in CDB entry");
+    exit(0);  
+  }  
+  return kTRUE; 
+}
+
+//----------------------------------------------------------------------------
+
+Bool_t
 AliTOFcalib::ReadReadoutEfficiencyFromCDB(const Char_t *sel , Int_t nrun)
 {
   /*
@@ -2239,6 +2268,11 @@ AliTOFcalib::Init(Int_t run)
     AliError("cannot get \"RunParams\" object from OCDB");
     return kFALSE;
   }
+  /* get LHC clock-phase obj */
+  if (!ReadLHCClockPhaseFromCDB("GRP/Calib", run)) {
+    AliError("cannot get \"LHCClockPhase\" object from OCDB");
+    return kFALSE;
+  }
   /* get readout efficiency obj */
   if (!ReadReadoutEfficiencyFromCDB("TOF/Calib", run)) {
     AliError("cannot get \"ReadoutEfficiency\" object from OCDB");
@@ -2261,6 +2295,13 @@ AliTOFcalib::Init(Int_t run)
     return kFALSE;
   }
   responseFile->Close();
+
+  /* check whether to use the clock phase */
+  if (fRunParams->GetUseLHCClockPhase())
+    fUseLHCClockPhase = kTRUE;
+ 
+  if (fUseLHCClockPhase)
+    AliInfo("calibration using BPTX LHC clock-phase");
 
   /* all done */
   fInitFlag = kTRUE;
@@ -2291,9 +2332,12 @@ AliTOFcalib::GetTimeCorrection(Int_t index, Double_t tot, Int_t deltaBC, Int_t l
   Float_t ctpLatency = fCTPLatency->GetCTPLatency();
   Float_t tdcLatencyWindow = fStatus->GetLatencyWindow(index) * 1.e3;
   Float_t timezero = fRunParams->EvalT0(timestamp);
+  Float_t clockphase = fLHCClockPhase->GetPhase(timestamp);
   /* check whether to remove mean T0.
    * useful when one wants to compute mean T0 */
   if (!fRemoveMeanT0) timezero = 0.;
+  /* check whether to use the clock phase */
+  if (fUseLHCClockPhase) timezero -= 1.e3 * clockphase;
 
   /* compute correction */
   Double_t corr = 0.;

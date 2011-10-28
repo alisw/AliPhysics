@@ -754,6 +754,21 @@ AliTOFPreprocessor::ProcessT0Fill()
   /* get params from OCDB */
   AliCDBEntry *cdbe = NULL;
 
+  /*
+   * check UseLHCClockPhase flag in RunParams.
+   * if set do nothing and return successfully
+   */
+  cdbe = GetFromOCDB("Calib", "RunParams");
+  if (!cdbe) {
+    Log("cannot get \"RunParams\" entry from OCDB");
+    return 21;
+  }
+  AliTOFRunParams *runparams = (AliTOFRunParams *)cdbe->GetObject();
+  if (runparams->GetUseLHCClockPhase()) {
+    Log("UseLHCClockPhase flag is set in RunParams: online T0-fill not computed");
+    return 0;
+  }
+
   /* 
    * at this stage status object is not on OCDB yet
    * since it will be stored later. nevertheless we
@@ -950,6 +965,7 @@ AliTOFPreprocessor::ProcessT0Fill()
   runParamsObject->SetT0(t0);
   runParamsObject->SetTOFResolution(tofReso);
   runParamsObject->SetT0Spread(t0Spread);
+  runParamsObject->SetUseLHCClockPhase(kFALSE);
 
   /* store reference data */
   if(fStoreRefData){

@@ -51,6 +51,7 @@ AddTOFAnalysisTaskCalibPass0()
   task->SetVertexCut(25.0);
   /* setup TOF calib */
   task->GetTOFcalib()->SetRemoveMeanT0(kFALSE);
+  task->GetTOFcalib()->SetUseLHCClockPhase(kTRUE);
   task->GetTOFcalib()->SetCalibrateTOFsignal(kTRUE);
   task->GetTOFcalib()->SetCorrectTExp(kFALSE);
   /* setup track cuts */

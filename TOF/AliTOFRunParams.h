@@ -52,6 +52,8 @@ public TObject
   void SetRunFirstPoint(UInt_t *value) {if (fRunFirstPoint) for (Int_t i = 0; i < fNRuns; i++) fRunFirstPoint[i] = value[i];}; // setter
   void SetRunLastPoint(UInt_t *value) {if (fRunLastPoint) for (Int_t i = 0; i < fNRuns; i++) fRunLastPoint[i] = value[i];}; // setter
 
+  void SetUseLHCClockPhase(Bool_t value) {fUseLHCClockPhase = value;}; // setter
+
   Float_t EvalT0(UInt_t timestamp); // eval T0
   Float_t EvalTOFResolution(UInt_t timestamp); // eval TOF resolution
   Float_t EvalT0Spread(UInt_t timestamp); // eval T0 spread
@@ -59,6 +61,8 @@ public TObject
   Float_t AverageT0(UInt_t runNb) {return Average(fT0, runNb);}; // average T0
   Float_t AverageTOFResolution(UInt_t runNb) {return Average(fTOFResolution, runNb);}; // average TOF resolution
   Float_t AverageT0Spread(UInt_t runNb) {return Average(fT0Spread, runNb);}; // average T0 spread
+
+  Bool_t GetUseLHCClockPhase() const {return fUseLHCClockPhase;}; // getter
 
   TGraph *DrawGraphT0(Option_t *option = "") {return DrawGraph(fT0, option);}; // draw graph t0
   TGraph *DrawGraphTOFResolution(Option_t *option = "") {return DrawGraph(fTOFResolution, option);}; // draw graph t0
@@ -88,8 +92,10 @@ public TObject
   UInt_t *fRunFirstPoint; //[fNRuns] run start point
   UInt_t *fRunLastPoint; //[fNRuns] run last point
 
+  Bool_t fUseLHCClockPhase; // use LHC clockphase
 
-  ClassDef(AliTOFRunParams, 2);
+
+  ClassDef(AliTOFRunParams, 3);
 };
 
 #endif /* ALITOFRUNPARAMS_H */

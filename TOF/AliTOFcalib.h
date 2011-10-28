@@ -47,6 +47,7 @@ class AliTOFT0Fill;
 class AliTOFRunParams;
 class AliTOFResponseParams;
 class AliESDEvent;
+class AliLHCClockPhase;
 
 class AliTOFcalib:public TTask{
 public:
@@ -148,6 +149,7 @@ public:
   Bool_t ReadCTPLatencyFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadT0FillFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadRunParamsFromCDB(const Char_t *sel, Int_t nrun);
+  Bool_t ReadLHCClockPhaseFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadReadoutEfficiencyFromCDB(const Char_t *sel, Int_t nrun);
   Bool_t ReadProblematicFromCDB(const Char_t *sel, Int_t nrun);
 
@@ -156,6 +158,8 @@ public:
   void CalibrateESD(AliESDEvent *event); // calibrate ESD
   void CalibrateTExp(AliESDEvent *event) const; // calibrate TExp
   void SetRemoveMeanT0(Bool_t value) {fRemoveMeanT0 = value;}; // setter
+  void SetUseLHCClockPhase(Bool_t value) {fUseLHCClockPhase = value;}; // setter
+  Bool_t GetUseLHCClockPhase() const {return fUseLHCClockPhase;}; // getter
   void SetCalibrateTOFsignal(Bool_t value) {fCalibrateTOFsignal = value;}; // setter
   void SetCorrectTExp(Bool_t value) {fCorrectTExp = value;}; // setter
   Bool_t IsChannelEnabled(Int_t index, Bool_t checkEfficiency = kTRUE, Bool_t checkProblematic = kTRUE); // is channel enabled
@@ -190,12 +194,14 @@ private:
   AliTOFCTPLatency *fCTPLatency; // CTP latency
   AliTOFT0Fill *fT0Fill; // T0 fill
   AliTOFRunParams *fRunParams; // run params
+  AliLHCClockPhase *fLHCClockPhase; // LHC clock-phase
   AliTOFResponseParams *fResponseParams; // run params
   TH1F *fReadoutEfficiency; // readout efficiency
   TH1C *fProblematic; // problematic
   
   Bool_t fInitFlag; // init flag
   Bool_t fRemoveMeanT0; // remove mean T0
+  Bool_t fUseLHCClockPhase; // use LHC clock-phase
   Bool_t fCalibrateTOFsignal; // calibrate TOF signal
   Bool_t fCorrectTExp; // correct expected time
 
