@@ -41,7 +41,19 @@
 // i.e. gener->SetCMSEnergy(AliGenMUONCocktailpp::kCMS07TeV) in Config.C 
 // - resonances now added to the cocktail via AddReso2Generator 
 // - cleaning 
-// B.Vulpescu & P.Crochet         
+// B.Vulpescu & P.Crochet
+//-----------------------         
+// 10/2011: 
+// - added the cocktail for p-Pb & Pb-p @ 8.8 TeV with 4 centrality bins and
+// for Pb-Pb @ 2.76 TeV with 11 centrality bins. Bins should be defined also
+// in the Config.C with one AliGenMUONCocktailpp per bin. These generators
+// included in a AliGenCocktail together with an event generator (e.g. Hijing)
+// providing the underlying event and collision centrality. The bin number n
+// passed via AliGenMUONCocktailpp::SetCentralityBin(n).
+// See details in my presentation at the PWG3-Muon meeting (05.10.2011):
+// https://indico.cern.ch/conferenceDisplay.py?confId=157367
+// - simplifications and bug fix in CreateCocktail() 
+// S. Grigoryan
  
 #include <TObjArray.h>
 #include <TParticle.h>
@@ -77,6 +89,7 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
      fMuonOriginCut(-999.),
      fNSucceded(0),
      fNGenerated(0),
+     fCentralityBin(0),
 
      fJpsiPol(0), 
      fChic1Pol(0), 
@@ -114,24 +127,29 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
 {
 // Constructor
 
-// x-sections for pp @ 7 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
-// bottomnium as for 10 TeV
+// x-sections for pp @ 7 TeV: 
+// -charmonia: 4pi integral of fit function for inclusive J/psi dsigma/dy LHC data 
+// gives 60 mub; so sigma_prompt = 54 mub, while Ref = R.Vogt_arXiv:1003.3497 (Table 2)
+// gives 35 mub. Below we use sigma_direct from the Ref scaled by the factor 54/35.
+// -bottomonia: 4pi integral of fit function for inclusive Upsilon1S dsigma/dy LHC data
+// gives 0.56 mub, sigmas for 2S & 3S obtained using CMS data for ratios 2S/1S & 3S/1S
+// -ccbar & bbbar: NLO pQCD computations - http://www-alice.gsi.de/ana/MNR/results.html
     fCMSEnergyTeVArray[0] =   7.00;
-    fSigmaReactionArray[0] =  0.0695;
-    fSigmaJPsiArray[0] =      21.8e-6;
-    fSigmaChic1Array[0] =     21.1e-6;
-    fSigmaChic2Array[0] =     34.9e-6;
-    fSigmaPsiPArray[0] =      4.93e-6;
-    fSigmaUpsilonArray[0] =   0.463e-6;
-    fSigmaUpsilonPArray[0] =  0.154e-6;
-    fSigmaUpsilonPPArray[0] = 0.0886e-6;
+    fSigmaReactionArray[0] =  0.070;
+    fSigmaJPsiArray[0] =      33.6e-6;
+    fSigmaChic1Array[0] =     32.6e-6;
+    fSigmaChic2Array[0] =     53.8e-6;
+    fSigmaPsiPArray[0] =       7.6e-6;
+    fSigmaUpsilonArray[0] =   0.56e-6;
+    fSigmaUpsilonPArray[0] =  0.19e-6;
+    fSigmaUpsilonPPArray[0] = 0.09e-6;
     fSigmaCCbarArray[0] =     6.91e-3;
     fSigmaBBbarArray[0] =     0.232e-3;
     
 //x-sections for pp @ 10 TeV: charmonia and bottomonia from 14 TeV numbers
-// scaled down according to ccbar and bbar cross-sections
+// scaled down according to ccbar and bbbar cross-sections
     fCMSEnergyTeVArray[1] =   10.00;
-    fSigmaReactionArray[1] =  0.0695;
+    fSigmaReactionArray[1] =  0.070;
     fSigmaJPsiArray[1] =      26.06e-6;
     fSigmaChic1Array[1] =     25.18e-6;
     fSigmaChic2Array[1] =     41.58e-6;
@@ -141,9 +159,9 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
     fSigmaUpsilonPPArray[1] = 0.122e-6;
     fSigmaCCbarArray[1] =     8.9e-3;
     fSigmaBBbarArray[1] =     0.33e-3;
-    
+
 //x-sections for pp @ 14 TeV: charmonia from hep-ph/0311048 Tab.9, page 19,
-// bottomonium from hep-ph/0311048 Tab.9, page 19 taken inton account that 
+// bottomonium from hep-ph/0311048 Tab.9, page 19 taken into account that 
 // feed-down from chib is included
     fCMSEnergyTeVArray[2] =   14.00;
     fSigmaReactionArray[2] =  0.070;
@@ -155,7 +173,49 @@ AliGenMUONCocktailpp::AliGenMUONCocktailpp()
     fSigmaUpsilonPArray[2] =  0.502e-6;
     fSigmaUpsilonPPArray[2] = 0.228e-6;
     fSigmaCCbarArray[2] =     11.2e-3;
-    fSigmaBBbarArray[2] =     0.51e-3;
+    fSigmaBBbarArray[2] =     0.445e-3;
+
+// x-sections for Min. Bias p-Pb & Pb-p @ 8.8 TeV: charmonia and bottomonia 
+// from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
+// and with Glauber scaling
+    fCMSEnergyTeVArray[3] =   9.00;           // for 8.8 TeV
+    fSigmaReactionArray[3] =  2.10;
+    fSigmaJPsiArray[3] =      8.19e-3;        // 208*1.172*33.6e-6
+    fSigmaChic1Array[3] =     7.95e-3;
+    fSigmaChic2Array[3] =     13.1e-3;
+    fSigmaPsiPArray[3] =      1.85e-3;
+    fSigmaUpsilonArray[3] =   0.146e-3;       // 208*1.25*0.56e-6
+    fSigmaUpsilonPArray[3] =  0.049e-3;
+    fSigmaUpsilonPPArray[3] = 0.023e-3;
+    fSigmaCCbarArray[3] =     1.68;           // 208*8.1e-3
+    fSigmaBBbarArray[3] =     0.061;          // 208*0.29e-3
+
+    fCMSEnergyTeVArray[4] =  -fCMSEnergyTeVArray[3];
+    fSigmaReactionArray[4] =  fSigmaReactionArray[3];
+    fSigmaJPsiArray[4] =      fSigmaJPsiArray[3];
+    fSigmaChic1Array[4] =     fSigmaChic1Array[3];
+    fSigmaChic2Array[4] =     fSigmaChic2Array[3];
+    fSigmaPsiPArray[4] =      fSigmaPsiPArray[3];
+    fSigmaUpsilonArray[4] =   fSigmaUpsilonArray[3];
+    fSigmaUpsilonPArray[4] =  fSigmaUpsilonPArray[3];
+    fSigmaUpsilonPPArray[4] = fSigmaUpsilonPPArray[3];
+    fSigmaCCbarArray[4] =     fSigmaCCbarArray[3];
+    fSigmaBBbarArray[4] =     fSigmaBBbarArray[3];
+
+// x-sections for Min. Bias Pb-Pb @ 2.76 TeV: charmonia and bottomonia 
+// from 7 TeV numbers scaled according to pQCD ccbar and bbbar x-sections
+// and with Glauber scaling
+    fCMSEnergyTeVArray[5] =   3.00;           // for 2.76 TeV
+    fSigmaReactionArray[5] =  7.65;
+    fSigmaJPsiArray[5] =      0.734;          // 208*208*0.505*33.6e-6
+    fSigmaChic1Array[5] =     0.712;
+    fSigmaChic2Array[5] =     1.175;
+    fSigmaPsiPArray[5] =      0.166;
+    fSigmaUpsilonArray[5] =   0.0092;         // 208*208*0.379*0.56e-6
+    fSigmaUpsilonPArray[5] =  0.0031;
+    fSigmaUpsilonPPArray[5] = 0.0015;
+    fSigmaCCbarArray[5] =     151.;           // 208*208*3.49e-3
+    fSigmaBBbarArray[5] =     3.8;            // 208*208*0.088e-3
     
 }
 
@@ -280,54 +340,81 @@ void AliGenMUONCocktailpp::CreateCocktail()
     snprintf(nameUpsP,10, "UpsP");
     snprintf(nameUpsPP,10, "UpsPP");
 
-    if(cmsEnergy == 10){
-	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 10", "Jpsi");
-	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp 10", "Chic1");
-	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp 10", "Chic2");
-	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp 10", "PsiP");
-	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp 10", "Upsilon");
-
-	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp 10", "UpsilonP");
-	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp 10", "UpsilonPP");
-    } else if (cmsEnergy == 7){
-	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp 7", "Jpsi");
-	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp 7", "Chic1");
-	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp 7", "Chic2");
-	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp 7", "PsiP");
-
-	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp 7", "Upsilon");
-	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp 7", "UpsilonP");
-	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp 7", "UpsilonPP");
-    } else if (cmsEnergy == 14){
-	genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, "CDF pp ", "Jpsi");
-	genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, "CDF pp ", "Chic1");
-	genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2, "CDF pp ", "Chic2");
-	genpsiP = new AliGenParam(1, AliGenMUONlib::kPsiP, "CDF pp", "PsiP");
-
-	genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, "CDF pp", "Upsilon");
-	genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, "CDF pp", "UpsilonP");
-
-	genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, "CDF pp", "UpsilonPP");	
+    Char_t tname[40] = "";
+    if(cmsEnergy == 10)        {snprintf(tname, 40, "CDF pp 10");
+    } else if (cmsEnergy == 14){snprintf(tname, 40, "CDF pp");
+    } else if (cmsEnergy == 7) {snprintf(tname, 40, "pp 7");
+      //    } else if (cmsEnergy == 2) {snprintf(tname, 40, "pp 2.76");
+    } else if (cmsEnergy == 9) {snprintf(tname, 40, "pPb 8.8");
+      if (fCentralityBin > 0) snprintf(tname, 40, "pPb 8.8c%d",fCentralityBin); 
+    } else if (cmsEnergy == -9){snprintf(tname, 40, "Pbp 8.8");
+      if (fCentralityBin > 0) snprintf(tname, 40, "Pbp 8.8c%d",fCentralityBin); 
+    } else if (cmsEnergy == 3) {snprintf(tname, 40, "PbPb 2.76");
+      if (fCentralityBin > 0) snprintf(tname, 40, "PbPb 2.76c%d",fCentralityBin); 
     } else {
-	AliError("Initialisation failed");
+	AliError("Initialisation failed, wrong cmsEnergy");
 	return;
     }
-    
+    genjpsi = new AliGenParam(1, AliGenMUONlib::kJpsi, tname, "Jpsi");
+    genchic1 = new AliGenParam(1, AliGenMUONlib::kChic1, tname, "Chic1");
+    genchic2 = new AliGenParam(1, AliGenMUONlib::kChic2,  tname, "Chic2");
+    genpsiP   = new AliGenParam(1, AliGenMUONlib::kPsiP,   tname, "PsiP");
+    genupsilon = new AliGenParam(1, AliGenMUONlib::kUpsilon, tname, "Upsilon");
+    genupsilonP = new AliGenParam(1, AliGenMUONlib::kUpsilonP, tname, "UpsilonP");
+    genupsilonPP = new AliGenParam(1, AliGenMUONlib::kUpsilonPP, tname, "UpsilonPP");
 
-    AddReso2Generator(nameJpsi,genjpsi,sigmajpsi,fJpsiPol);
-    AddReso2Generator(nameChic1,genchic2,sigmachic1,fChic2Pol);
-    AddReso2Generator(nameChic2,genpsiP,sigmapsiP,fPsiPPol);    
-    AddReso2Generator(namePsiP,genchic1,sigmachic1,fChic1Pol);    
-    AddReso2Generator(nameUps,genupsilon,sigmaupsilon,fUpsPol);    
-    AddReso2Generator(nameUpsP,genupsilonP,sigmaupsilonP,fUpsPPol);    
-    AddReso2Generator(nameUpsPP,genupsilonPP,sigmaupsilonPP,fUpsPPPol);    
+// Hard process yield per pA or AA collision for i-th centrality bin is R*r[i]*shad[i]
+// where R is the ratio of hard and geometrical x-sections, r[i] is the ratio of these
+// x-section fractions for given centrality and shad[i] is the shadowing factor (in 4pi).
+// The latter is assumed to be the same for HF-hadrons & quarkonia of the same flavour.
+    Int_t i = 0;
+    Double_t chard[20] = {0};     // charm & beauty shadowing factors are different
+    Double_t bhard[20] = {0};
+    chard[0] = 1;                 // 1st element for pp and min. bias (MB) collisions
+    bhard[0] = 1;
+
+// 4 centrality bins for p-Pb & Pb-p: 0-20-40-60-100 % 
+    if (cmsEnergy == 9 || cmsEnergy == -9) {
+      const Int_t n9 = 5;         // 1st element for MB collisions
+      Double_t r9[n9] = {1, 1.936, 1.473, 0.914, 0.333};        // ratio of hard-over-geo fractions
+      Double_t cshad9[n9] = {0.785, 0.715, 0.775, 0.856, 0.951};// EKS98 shadowing factors
+      Double_t bshad9[n9] = {0.889, 0.853, 0.884, 0.926, 0.975};
+      for(i=0; i<n9; i++) {
+	  chard[i] = cshad9[i]*r9[i];   
+	  bhard[i] = bshad9[i]*r9[i];
+      }
+    }
+
+// 11 centrality bins for Pb-Pb: 0-5-10-20-30-40-50-60-70-80-90-100 % 
+    if (cmsEnergy == 3) {
+      const Int_t n3 = 12;        // 1st element for MB collisions
+      Double_t r3[n3] = {1, 4.661, 3.647, 2.551, 1.544, 0.887, 0.474,
+			    0.235, 0.106, 0.044, 0.017, 0.007};        // ratio of hard-over-geo fractions
+      Double_t cshad3[n3] = {0.662, 0.622, 0.631, 0.650, 0.681, 0.718, 
+			     0.760, 0.805, 0.849, 0.888, 0.918, 0.944};// EKS98 shadowing factors
+      Double_t bshad3[n3] = {0.874, 0.856, 0.861, 0.869, 0.883, 0.898, 
+			     0.915, 0.932, 0.948, 0.962, 0.972, 0.981};
+      for(i=0; i<n3; i++) {
+	  chard[i] = cshad3[i]*r3[i];   
+	  bhard[i] = bshad3[i]*r3[i];
+      }
+    }
+
+    AddReso2Generator(nameJpsi,genjpsi,chard[fCentralityBin]*sigmajpsi,fJpsiPol);
+    AddReso2Generator(nameChic1,genchic1,chard[fCentralityBin]*sigmachic1,fChic1Pol);
+    AddReso2Generator(nameChic2,genchic2,chard[fCentralityBin]*sigmachic2,fChic2Pol);
+    AddReso2Generator(namePsiP,genpsiP,chard[fCentralityBin]*sigmapsiP,fPsiPPol);
+
+    AddReso2Generator(nameUps,genupsilon,bhard[fCentralityBin]*sigmaupsilon,fUpsPol);
+    AddReso2Generator(nameUpsP,genupsilonP,bhard[fCentralityBin]*sigmaupsilonP,fUpsPPol);
+    AddReso2Generator(nameUpsPP,genupsilonPP,bhard[fCentralityBin]*sigmaupsilonPP,fUpsPPPol);
 
 //------------------------------------------------------------------
 // Generator of charm
     AliGenCorrHF *gencharm = new AliGenCorrHF(1, 4, cmsEnergy);
     gencharm->SetMomentumRange(0,9999);
     gencharm->SetForceDecay(kAll);
-    Double_t ratioccbar = sigmaccbar/fSigmaReaction;
+    Double_t ratioccbar = chard[fCentralityBin]*sigmaccbar/fSigmaReaction;
     if (!gMC) gencharm->SetDecayer(fDecayer);  
     gencharm->Init();
     if (!fSigmaSilent) {
@@ -340,7 +427,7 @@ void AliGenMUONCocktailpp::CreateCocktail()
     AliGenCorrHF *genbeauty = new AliGenCorrHF(1, 5, cmsEnergy);
     genbeauty->SetMomentumRange(0,9999);
     genbeauty->SetForceDecay(kAll);
-    Double_t ratiobbbar = sigmabbbar/fSigmaReaction;
+    Double_t ratiobbbar = bhard[fCentralityBin]*sigmabbbar/fSigmaReaction;
     if (!gMC) genbeauty->SetDecayer(fDecayer);  
     genbeauty->Init();
     if (!fSigmaSilent) {

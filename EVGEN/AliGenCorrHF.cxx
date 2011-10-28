@@ -32,14 +32,12 @@
 // Oct 09: added energy choice between 7, 10, 14 TeV (for p-p), 4 TeV (for Pb-Pb),
 // 9 TeV (for p-Pb) and -9 TeV (for Pb-p) (S. Grigoryan)
 // April 10: removed "static" from definition of some variables (B. Vulpescu)
-// May 11: Added Flag for transportation Background While using SetForceDecay() function (L. Manceau)
-// June 11 modifications allowing the setting of cuts on Children added 
-//(L. Manceau)
-// Quarks, hadrons and decayed particles are loaded in the stack outside the 
-// main loop on heavy hadrons. 
-// The particles are loaded only when a pair containing
-// two heavy hadrons given children wich statify cut conditions 
-// are tagged in the main loop
+// May 11: added Flag for transportation of background particles while using 
+// SetForceDecay() function (L. Manceau)
+// June 11: added modifications allowing the setting of cuts on HF-hadron children.
+// Quarks, hadrons and decay particles are loaded in the stack outside the loop
+// of HF-hadrons, when the cuts on their children are satisfied (L. Manceau)
+// Oct 11: added Pb-Pb at 2.76 TeV (S. Grigoryan)
 // 
 //-------------------------------------------------------------------------
 // How it works (for the given flavor and p-p energy):
@@ -170,6 +168,8 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP10PythiaMNRwmi.root";
       else if (fEnergy == 14)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPP14PythiaMNRwmi.root";
+      else if (fEnergy == 3)
+	   fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPbPb276PythiaMNR.root";
       else if (fEnergy == 4)
 	   fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/BeautyPbPb394PythiaMNR.root";
       else if (fEnergy == 9 || fEnergy == -9)
@@ -184,6 +184,8 @@ AliGenCorrHF::AliGenCorrHF(Int_t npart, Int_t idquark, Int_t energy):
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP10PythiaMNRwmi.root";
       else if (fEnergy == 14)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPP14PythiaMNRwmi.root";
+      else if (fEnergy == 3)
+           fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPbPb276PythiaMNR.root";
       else if (fEnergy == 4)
            fFileName = "$ALICE_ROOT/EVGEN/dataCorrHF/CharmPbPb394PythiaMNR.root";
       else if (fEnergy == 9 || fEnergy == -9)

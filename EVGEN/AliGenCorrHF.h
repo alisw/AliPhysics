@@ -11,8 +11,6 @@
 // Is a generalisation of AliGenParam class for correlated pairs of hadrons.
 // Author: S. Grigoryan, LPC Clermont-Fd & YerPhI, Smbat.Grigoryan@cern.ch
 //
-// May 11: Added Flag for transportation Background While using SetForceDecay() function (L. Manceau)
-// June 11 modification allowing Seting Cut on Children added (L. Manceau)
 
 #include "AliGenMC.h"
 

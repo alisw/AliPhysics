@@ -20,7 +20,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
  public:
 
     AliGenMUONCocktailpp();
-    enum CMSEnergyCode { kCMS07TeV, kCMS10TeV, kCMS14TeV, kNCMSEs };    
+    enum CMSEnergyCode { kCMS07TeV, kCMS10TeV, kCMS14TeV, kCMS09TeVpPb, kCMS09TeVPbp, kCMS03TeVPbPb, kNCMSEs };    
 
     virtual ~AliGenMUONCocktailpp();    
     virtual void Init();
@@ -28,6 +28,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     virtual void Generate();    
     Int_t   GetNSucceded()         const {return fNSucceded;}    
     Int_t   GetNGenerated()        const {return fNGenerated;}
+    Int_t   GetCentralityBin()     const {return fCentralityBin;}
     Int_t   GetMuonMultiplicity()  const {return fMuonMultiplicity;}
     Float_t GetMuonPtCut()         const {return fMuonPtCut;}
     Float_t GetMuonPCut()          const {return fMuonPCut;}    
@@ -37,6 +38,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t GetDecayModeResonance()const {return fDecayModeResonance;}
     Float_t GetDecayModePythia()   const {return fDecayModePythia;}
     
+    void    SetCentralityBin(Int_t bin) { fCentralityBin = bin;}
     void    SetMuonMultiplicity(Int_t MuonMultiplicity) { fMuonMultiplicity = MuonMultiplicity;}
     void    SetMuonPtCut(Float_t PtCut) { fMuonPtCut = PtCut;}
     void    SetMuonPCut(Float_t PCut) { fMuonPCut = PCut;}    
@@ -73,6 +75,7 @@ class AliGenMUONCocktailpp : public AliGenCocktail
     Float_t fMuonOriginCut; //use only muons whose "part->Vz()" value is larger than fMuonOrigin
     Int_t   fNSucceded;// Number of Succes in the (di)-muon generation in the acceptance
     Int_t   fNGenerated;// Number of generated cocktails
+    Int_t   fCentralityBin;// Collision centrality bin number
     Double_t fJpsiPol, fChic1Pol, fChic2Pol, fPsiPPol, fUpsPol, fUpsPPol, fUpsPPPol;//Resonances polarization parameters
     Int_t    fPolFrame;//Resonances polarization frame (Collins-Soper / Helicity)
 //    Int_t fCMSEnergy; // CMS beam energy
