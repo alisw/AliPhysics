@@ -718,7 +718,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       //cout<<"dSigma2 is "<<dSigma2<<endl; 
       if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
       else dChi = -1.;
-      fCommonHistsRes->FillChiRP(dChi);
+      fCommonHistsRes->FillChi(dChi);
   
       cout<<"*************************************"<<endl;
       cout<<"*************************************"<<endl;
@@ -929,7 +929,7 @@ void AliFlowAnalysisWithLeeYangZeros::GetOutputHistograms(TList *outputListHisto
       dSigma2 = fQ2sum - TMath::Power(fQsum->X(),2.) - TMath::Power(fQsum->Y(),2.) - TMath::Power(dV,2.);  //BP eq. 62
       if (dSigma2>0) dChi = dV/TMath::Sqrt(dSigma2);
       else dChi = -1.;
-      fCommonHistsRes->FillChiRP(dChi);
+      fCommonHistsRes->FillChi(dChi);
 
       // recalculate statistical errors on integrated flow
       //combining 5 theta angles to 1 relative error BP eq. 89

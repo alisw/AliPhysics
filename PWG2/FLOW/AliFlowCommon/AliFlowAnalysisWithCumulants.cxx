@@ -2950,19 +2950,19 @@ void AliFlowAnalysisWithCumulants::BookCommonHistograms()
  fHistList->Add(fCommonHists);  
  // Common histograms for final results from 2nd order GFC:
  TString commonHistResults2ndOrderName = "AliFlowCommonHistResults2ndOrderGFC";
- fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data());
+ fCommonHistsResults2nd = new AliFlowCommonHistResults(commonHistResults2ndOrderName.Data(),"",fHarmonic);
  fHistList->Add(fCommonHistsResults2nd);  
  // Common histograms for final results from 4th order GFC:
  TString commonHistResults4thOrderName = "AliFlowCommonHistResults4thOrderGFC";
- fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data());
+ fCommonHistsResults4th = new AliFlowCommonHistResults(commonHistResults4thOrderName.Data(),"",fHarmonic);
  fHistList->Add(fCommonHistsResults4th); 
  // Common histograms for final results from 6th order GFC:
  TString commonHistResults6thOrderName = "AliFlowCommonHistResults6thOrderGFC";
- fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data());
+ fCommonHistsResults6th = new AliFlowCommonHistResults(commonHistResults6thOrderName.Data(),"",fHarmonic);
  fHistList->Add(fCommonHistsResults6th);  
  // Common histograms for final results from 8th order GFC:
  TString commonHistResults8thOrderName = "AliFlowCommonHistResults8thOrderGFC";
- fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data());
+ fCommonHistsResults8th = new AliFlowCommonHistResults(commonHistResults8thOrderName.Data(),"",fHarmonic);
  fHistList->Add(fCommonHistsResults8th);
  
 } // end of void AliFlowAnalysisWithCumulants::BookCommonHistograms()
