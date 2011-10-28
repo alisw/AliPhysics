@@ -38,6 +38,8 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   virtual void Terminate(Option_t *);
   
   // Common:
+  void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
+  Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};  
   void SetFillMultipleControlHistograms(Bool_t const fmch) {this->fFillMultipleControlHistograms = fmch;};
   Bool_t GetFillMultipleControlHistograms() const {return this->fFillMultipleControlHistograms;}; 
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
@@ -94,6 +96,7 @@ class AliAnalysisTaskQCumulants : public AliAnalysisTaskSE{
   AliFlowAnalysisWithQCumulants *fQC; // Q-cumulant object
   TList *fListHistos;                 // collection of output 
   // Common:
+  Bool_t fBookOnlyBasicCCH;              // book only basis common control histrograms (by default book them all) 
   Bool_t fFillMultipleControlHistograms; // fill separately control histos for events with >= 2, 4, 6 and 8 particles
   Int_t fHarmonic;                       // harmonic  
   Bool_t fApplyCorrectionForNUA;         // apply correction for non-uniform acceptance 
