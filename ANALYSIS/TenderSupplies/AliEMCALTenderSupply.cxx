@@ -63,7 +63,6 @@ AliTenderSupply()
 ,fNonLinearFunc(AliEMCALRecoUtils::kNoCorrection) 
 ,fNonLinearThreshold(30)      	
 ,fReCalibCluster(kFALSE)	
-,fReCalibCell(kFALSE)	
 ,fUpdateCell(kFALSE)  
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
@@ -107,7 +106,6 @@ AliTenderSupply(name,tender)
 ,fNonLinearFunc(AliEMCALRecoUtils::kNoCorrection)      	
 ,fNonLinearThreshold(30)      	
 ,fReCalibCluster(kFALSE)	
-,fReCalibCell(kFALSE)	
 ,fUpdateCell(kFALSE)  
 ,fRecalClusPos(kFALSE)
 ,fFiducial(kFALSE) 
@@ -151,6 +149,7 @@ AliEMCALTenderSupply::~AliEMCALTenderSupply()
   //Destructor
   
   delete fEMCALRecoUtils;
+  delete fRecParam;
   delete fClusterizer;
   delete fUnfolder;
   if (fDigitsArr){
@@ -172,13 +171,11 @@ void AliEMCALTenderSupply::Init()
     AliEMCALTenderSupply *tender = (AliEMCALTenderSupply*)gInterpreter->ProcessLine("ConfigEMCALTenderSupply()");
     fDebugLevel             = tender->fDebugLevel;
     fEMCALGeoName           = tender->fEMCALGeoName; 
-    delete fEMCALRecoUtils;
     fEMCALRecoUtils         = tender->fEMCALRecoUtils; 
     fConfigName             = tender->fConfigName;
     fNonLinearFunc          = tender->fNonLinearFunc;
     fNonLinearThreshold     = tender->fNonLinearThreshold;
     fReCalibCluster         = tender->fReCalibCluster;
-    fReCalibCell            = tender->fReCalibCell;
     fRecalClusPos           = tender->fRecalClusPos;
     fFiducial	            = tender->fFiducial;
     fNCellsFromEMCALBorder  = tender->fNCellsFromEMCALBorder;
@@ -226,16 +223,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     AliError("ESD event ptr = 0, returning");
     return;
   }
-/*
-  if(!fRecParamSet)
-   {
-    if(!fRecParam)
-    {
-      InitRecParam();
-      fRecParamSet = kTRUE;
-    }
-   }
- */ 
+  
   // Initialising parameters once per run number
   if(fTender->RunChanged()){ 
     GetPass();
@@ -243,37 +231,37 @@ void AliEMCALTenderSupply::ProcessEvent()
     Int_t fInitBC=InitBadChannels();
     
     if (fInitBC==0)
-      {
-	AliError("InitBadChannels returned false, returning");
-	return;
-      }
+    {
+      AliError("InitBadChannels returned false, returning");
+      return;
+    }
     if(fInitBC>1)
-      {
-	AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-      }
-
-    if (fReCalibCluster || fReCalibCell || fUpdateCell) { 
+    {
+      AliInfo(Form("No external hot channel set: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+    }
+    
+    if (fReCalibCluster || fUpdateCell) { 
       Int_t fInitRecalib=InitRecalib();
       if (fInitRecalib==0)
-	{
-	  AliError("InitRecalib returned false, returning");
-	  return;
-	}
+      {
+        AliError("InitRecalib returned false, returning");
+        return;
+      }
       if(fInitRecalib >1)
-	{
-	  AliInfo(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
-	  fReCalibCell=kFALSE;
-	  fReCalibCluster=kFALSE;
-	}
+      {
+        AliInfo(Form("No recalibration available: %d - %s", event->GetRunNumber(), fFilepass.Data()));
+        fUpdateCell     = kFALSE;
+        fReCalibCluster = kFALSE;
+      }
     }
-
+    
     if (fRecalClusPos || fReClusterize || fUpdateCell) { 
       if (!InitMisalignMatrix()) { 
         AliError("InitMisalignmentMatrix returned false, returning");
         return;
       }
     }
-
+    
     if (fReClusterize || fUpdateCell) {
       if (!InitClusterization()) {
         AliError("InitClusterization returned false, returning");
@@ -283,41 +271,36 @@ void AliEMCALTenderSupply::ProcessEvent()
     
     if(fDebugLevel>1) 
       fEMCALRecoUtils->Print("");
-      
+    
   }
-
+  
   // Test if cells present
   AliESDCaloCells *cells= event->GetEMCALCells();
   if (cells->GetNumberOfCells()<=0) {
-    AliWarning(Form("Number of EMCAL cells = %d, returning", cells->GetNumberOfCells()));
+    if(fDebugLevel>1) 
+      AliWarning(Form("Number of EMCAL cells = %d, returning", cells->GetNumberOfCells()));
     return;
   }
   
-  // Recalibrate cells
-  if (fReCalibCell || fUpdateCell)
-    { 
-      RecalibrateCells();
-      fReCalibCluster=kFALSE;
-    }
   if(fDebugLevel>2)
-     AliInfo(Form("Re-calibrate cluster %d\n",fReCalibCluster));
-
+    AliInfo(Form("Re-calibrate cluster %d\n",fReCalibCluster));
+  
+  // Recalibrate cells
   if(fUpdateCell)
-    {
-      printf("Update cells\n");
-      UpdateCells();
-      fReClusterize=kTRUE;
-    }
-
-    // Reclusterize
+  {
+    UpdateCells();
+    fReCalibCluster= kFALSE;
+    fReClusterize  = kTRUE;
+  }
+  
+  // Reclusterize
   if(fReClusterize)
-    {
-
-      FillDigitsArray();
-      Clusterize();
-      UpdateClusters();
-    }
-
+  {
+    FillDigitsArray();
+    Clusterize();
+    UpdateClusters();
+  }
+  
   // Store good clusters
   TClonesArray *clusArr = dynamic_cast<TClonesArray*>(event->FindListObject("caloClusters"));
   if (!clusArr) 
@@ -326,6 +309,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     AliWarning(Form("No cluster array, number of cells in event = %d, returning", cells->GetNumberOfCells()));
     return;
   }
+  
   Int_t nclusters = clusArr->GetEntriesFast();
   
   for (Int_t icluster=0; icluster < nclusters; ++icluster) { 
@@ -355,6 +339,7 @@ void AliEMCALTenderSupply::ProcessEvent()
     if(fRecalClusPos) 
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, cells, clust);
   }
+  
   clusArr->Compress();
   
   // Track matching
@@ -370,7 +355,7 @@ void AliEMCALTenderSupply::ProcessEvent()
   }
   
   fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
- 
+  
   SetClusterMatchedToTrack(event);
   SetTracksMatchedToCluster(event);
   
@@ -669,45 +654,21 @@ Int_t AliEMCALTenderSupply::InitRecalib()
 }
 
 //_____________________________________________________
-void AliEMCALTenderSupply::RecalibrateCells()
-{
-  // Recalibrate cells.
-  
-  AliESDCaloCells *cells = fTender->GetEvent()->GetEMCALCells();
-  
-  Int_t nEMCcell = cells->GetNumberOfCells();
-  for(Int_t icell=0; icell<nEMCcell; ++icell) {
-    Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-    fEMCALGeo->GetCellIndex(cells->GetCellNumber(icell),imod,iTower,iIphi,iIeta);
-    fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-    Double_t calibFactor = fEMCALRecoUtils->GetEMCALChannelRecalibrationFactor(imod,ieta,iphi);
-    cells->SetCell(icell,cells->GetCellNumber(icell),cells->GetAmplitude(icell)*calibFactor,cells->GetTime(icell));	
-  }	
-}
-
-
-//_____________________________________________________
 void AliEMCALTenderSupply::UpdateCells()
 {
-  //Remove bad cells from the cell list 
+  //Remove bad cells from the cell list
+  //Recalibrate energy and time cells 
   //This is required for later reclusterization
 
   AliESDCaloCells *cells = fTender->GetEvent()->GetEMCALCells();
-  
-  Int_t nEMCcell = cells->GetNumberOfCells();
-  for(Int_t icell=0; icell<nEMCcell; ++icell) 
-    {
-      Int_t cellId = cells->GetCellNumber(icell);
-      Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-      fEMCALGeo->GetCellIndex(cellId,imod,iTower,iIphi,iIeta);
-      fEMCALGeo->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);
-      if(fEMCALRecoUtils->GetEMCALChannelStatus(imod,ieta,iphi))
-	{
-	  cells->SetCell(icell,cellId,(-1)*cells->GetAmplitude(icell),cells->GetCellTime(cellId));
-	}
-    }
-}
+  Int_t bunchCrossNo = fTender->GetEvent()->GetBunchCrossNumber();
 
+  fEMCALRecoUtils->SwitchOnRecalibration();
+  fEMCALRecoUtils->SwitchOnTimeRecalibration();
+
+  fEMCALRecoUtils->RecalibrateCells(cells, bunchCrossNo);    
+ 
+}
 
 //_____________________________________________________
 void AliEMCALTenderSupply::InitRecParam()
