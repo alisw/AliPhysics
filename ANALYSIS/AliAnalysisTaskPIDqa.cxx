@@ -58,6 +58,7 @@ fListQAtrd(0x0),
 fListQAtof(0x0),
 fListQAemcal(0x0),
 fListQAhmpid(0x0),
+fListQAtofhmpid(0x0),
 fListQAtpctof(0x0)
 {
   //
@@ -78,6 +79,7 @@ fListQAtrd(0x0),
 fListQAtof(0x0),
 fListQAemcal(0x0),
 fListQAhmpid(0x0),
+fListQAtofhmpid(0x0),
 fListQAtpctof(0x0)
 {
   //
@@ -93,7 +95,7 @@ AliAnalysisTaskPIDqa::~AliAnalysisTaskPIDqa()
   //
   // Destructor
   //
-
+  delete fListQA;
 }
 
 //______________________________________________________________________________
@@ -154,6 +156,10 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAtpctof->SetOwner();
   fListQAtpctof->SetName("TPC_TOF");
 
+  fListQAtofhmpid=new TList;
+  fListQAtofhmpid->SetOwner();
+  fListQAtofhmpid->SetName("TOF_HMPID");
+  
   fListQA->Add(fListQAits);
   fListQA->Add(fListQAitsSA);
   fListQA->Add(fListQAitsPureSA);
@@ -163,6 +169,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQA->Add(fListQAemcal);
   fListQA->Add(fListQAhmpid);
   fListQA->Add(fListQAtpctof);
+  fListQA->Add(fListQAtofhmpid);
 
   SetupITSqa();
   SetupTPCqa();
@@ -171,7 +178,8 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   SetupEMCALqa();
   SetupHMPIDqa();
   SetupTPCTOFqa();
-
+  SetupTOFHMPIDqa();
+  
   PostData(1,fListQA);
 }
 
@@ -193,8 +201,11 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
   FillTOFqa();
   FillEMCALqa();
   FillHMPIDqa();
+  
+  //combined detector QA
   FillTPCTOFqa();
-
+  FillTOFHMPIDqa();
+  
   PostData(1,fListQA);
 }
 
@@ -389,7 +400,7 @@ void AliAnalysisTaskPIDqa::FillTOFqa()
 
     TH2 *h=(TH2*)fListQAtof->FindObject("hSigP_TOF");
     if (h) {
-      Double_t sig=track->GetTOFsignal();
+      Double_t sig=track->GetTOFsignal()/1000.;
       h->Fill(mom,sig);
     }
 
@@ -515,6 +526,47 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     // TOF out + TOFpid +
     // kTIME
     if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
+        !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ) continue;
+
+    Float_t nCrossedRowsTPC = track->GetTPCClusterInfo(2,1);
+    Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
+    if (track->GetTPCNclsF()>0) {
+      ratioCrossedRowsOverFindableClustersTPC = nCrossedRowsTPC/track->GetTPCNclsF();
+    }
+
+    if ( nCrossedRowsTPC<70 || ratioCrossedRowsOverFindableClustersTPC<.8 ) continue;
+    
+    Double_t mom = track->P();
+    Double_t ckovAngle = track->GetHMPIDsignal();
+    
+    TH1F *hThetavsMom = (TH1F*)fListQAhmpid->At(0);;
+    
+    hThetavsMom->Fill(mom,ckovAngle);    
+  
+  }
+}
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::FillTOFHMPIDqa()
+{
+  //
+  // Fill PID qa histograms for the HMPID
+  //
+  
+  AliVEvent *event=InputEvent();
+  
+  Int_t ntracks=event->GetNumberOfTracks();
+  for(Int_t itrack = 0; itrack < ntracks; itrack++){
+    AliVTrack *track=(AliVTrack*)event->GetTrack(itrack);
+    
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    // TPC refit + ITS refit +
+    // TOF out + TOFpid +
+    // kTIME
+    if (!((status & AliVTrack::kTPCrefit) == AliVTrack::kTPCrefit) ||
         !((status & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) ||
         !((status & AliVTrack::kTOFout  ) == AliVTrack::kTOFout  ) ||
         !((status & AliVTrack::kTOFpid  ) == AliVTrack::kTOFpid  ) ||
@@ -532,13 +584,12 @@ void AliAnalysisTaskPIDqa::FillHMPIDqa()
     Double_t ckovAngle = track->GetHMPIDsignal();
     
     Double_t nSigmaTOF[3]; 
-    
     TH1F *h[3];
     
     for (Int_t ispecie=2; ispecie<AliPID::kSPECIES; ++ispecie){
       //TOF nSigma
       nSigmaTOF[ispecie]=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
-      h[ispecie-2] = (TH1F*)fListQAhmpid->At(ispecie-2);}
+      h[ispecie-2] = (TH1F*)fListQAtofhmpid->At(ispecie-2);}
       
     if(TMath::Abs(nSigmaTOF[0])<2)                                                              h[0]->Fill(mom,ckovAngle);
     
@@ -763,9 +814,9 @@ void AliAnalysisTaskPIDqa::SetupTOFqa()
   fListQAtof->Add(hnSigT0Best);
 
   TH2F *hSig = new TH2F("hSigP_TOF",
-                        "TOF signal vs. p;p [GeV]; TOF signal [arb. units]",
+                        "TOF signal vs. p;p [GeV]; TOF signal [ns]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
-                        300,0,300);
+                        300,0,30);
 
   delete vX;
   
@@ -821,14 +872,26 @@ void AliAnalysisTaskPIDqa::SetupHMPIDqa()
   // Create the HMPID qa objects
   //
   
+  TH2F *hCkovAnglevsMom   = new TH2F("hCkovAnglevsMom",  "Cherenkov angle vs momnetum",500,0,5.,500,0,1);
+  fListQAhmpid->Add(hCkovAnglevsMom);
+  
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::SetupTOFHMPIDqa()
+{
+  //
+  // Create the HMPID qa objects
+  //
+  
   TH2F *hCkovAnglevsMomPion   = new TH2F("hCkovAnglevsMom_pion",  "Cherenkov angle vs momnetum for pions",500,0,5.,500,0,1);
-  fListQAhmpid->Add(hCkovAnglevsMomPion);
+  fListQAtofhmpid->Add(hCkovAnglevsMomPion);
   
   TH2F *hCkovAnglevsMomKaon   = new TH2F("hCkovAnglevsMom_kaon",  "Cherenkov angle vs momnetum for kaons",500,0,5.,500,0,1);
-  fListQAhmpid->Add(hCkovAnglevsMomKaon);
+  fListQAtofhmpid->Add(hCkovAnglevsMomKaon);
   
   TH2F *hCkovAnglevsMomProton = new TH2F("hCkovAnglevsMom_proton","Cherenkov angle vs momnetum for protons",500,0,5.,500,0,1);
-  fListQAhmpid->Add(hCkovAnglevsMomProton);
+  fListQAtofhmpid->Add(hCkovAnglevsMomProton);
   
   
 }  

@@ -48,6 +48,7 @@ private:
   TList                 *fListQAtof;        //! List with TOF QA histograms
   TList                 *fListQAemcal;      //! List with EMCAL QA histograms
   TList                 *fListQAhmpid;      //! List with EMCAL QA histograms
+  TList                 *fListQAtofhmpid;   //! List with EMCAL QA histograms
   TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
 
   
@@ -60,6 +61,7 @@ private:
   void SetupTOFqa();
   void SetupEMCALqa();
   void SetupHMPIDqa();
+  void SetupTOFHMPIDqa();
   void SetupTPCTOFqa();
 
   //
@@ -69,6 +71,7 @@ private:
   void FillTOFqa();
   void FillEMCALqa();
   void FillHMPIDqa();
+  void FillTOFHMPIDqa();
   void FillTPCTOFqa();
   
   //
