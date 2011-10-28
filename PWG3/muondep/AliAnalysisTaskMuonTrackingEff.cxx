@@ -25,9 +25,10 @@
 // ROOT includes
 #include <TList.h>
 #include <TH3F.h>
-#include <TH2F.h>
+#include <THnSparse.h>
 #include <TObjArray.h>
 #include <TGeoGlobalMagField.h>
+#include <TVector3.h>
 
 // STEER includes
 #include "AliESDEvent.h"
@@ -41,6 +42,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskMuonTrackingEff.h"
 #include "AliCentrality.h"
+#include "AliVVertex.h"
 
 //MUON includes
 #include "AliMUONCDB.h"
@@ -70,7 +72,12 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff() :
   fOCDBpath(""),
   fMatchTrig(kFALSE),
   fApplyAccCut(kFALSE),
+  fPDCACut(-1.),
+  fChi2Cut(-1.),
+  fPtCut(-1.),
+  fUseMCLabel(kFALSE),
   fCurrentCentrality(0.),
+  fCurrentTrack(0x0),
   fTransformer(0x0),
   fDetEltTDHistList(0x0),
   fDetEltTTHistList(0x0),
@@ -90,7 +97,12 @@ AliAnalysisTaskMuonTrackingEff::AliAnalysisTaskMuonTrackingEff(TString name) :
   fOCDBpath("raw://"),
   fMatchTrig(kFALSE),
   fApplyAccCut(kFALSE),
+  fPDCACut(-1.),
+  fChi2Cut(-1.),
+  fPtCut(-1.),
+  fUseMCLabel(kFALSE),
   fCurrentCentrality(100.),
+  fCurrentTrack(0x0),
   fTransformer(0x0),
   fDetEltTDHistList(0x0),
   fDetEltTTHistList(0x0),
@@ -192,55 +204,71 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   fExtraHistList = new TList();
   fExtraHistList->SetOwner();
   
-  TH2F *h2;
-  TH3F *h3;
-  TString histNameTD;
-  TString histNameTT;
-  TString histNameSD;
-  TString histTitle;
+  THnSparse *hn = 0x0;
+  TH3F *h3 = 0x0;
+  TString histName, histTitle;
+  
+  // centrality bins
   Int_t nCentBins = 22;
   Double_t centRange[2] = {-5., 105.};
+  
+  // prepare binning for THnSparse
+  // 1: Ch or DE Id
+  // 2: centrality
+  // 3: pt
+  // 4: y
+  // 5: sign
+  const Int_t nDims = 5;
+  Int_t nBins[nDims] = {0., nCentBins, 20, 15, 2};
+  Double_t xMin[nDims] = {0., centRange[0], 0., -4., -2.};
+  Double_t xMax[nDims] = {0., centRange[1], 20., -2.5, 2.};
+  
+  // global index of DE in the lists
   Int_t iDEGlobal = 0;
-
   
   for (Int_t iCh = 0; iCh < 10; iCh++)
   {
     // histograms per chamber
+    nBins[0] = fgkNbrOfDetectionElt[iCh];
+    xMin[0] = 0.; xMax[0] = static_cast<Double_t>(fgkNbrOfDetectionElt[iCh]);
     histTitle.Form("ChamberNbr %d", iCh+1);
-    histNameTD.Form("TD_ChamberNbr%d", iCh+1);
-    histNameTT.Form("TT_ChamberNbr%d",iCh+1);
-    histNameSD.Form("SD_ChamberNbr%d", iCh+1);
-    h2 = new TH2F(histNameTD, histTitle, fgkNbrOfDetectionElt[iCh], 0., fgkNbrOfDetectionElt[iCh], nCentBins, centRange[0], centRange[1]);
-    fChamberTDHistList->AddAt(h2, iCh);
-    h2 = new TH2F(histNameTT, histTitle, fgkNbrOfDetectionElt[iCh], 0., fgkNbrOfDetectionElt[iCh], nCentBins, centRange[0], centRange[1]);
-    fChamberTTHistList->AddAt(h2, iCh);
-    h2 = new TH2F(histNameSD, histTitle, fgkNbrOfDetectionElt[iCh], 0., fgkNbrOfDetectionElt[iCh], nCentBins, centRange[0], centRange[1]);
-    fChamberSDHistList->AddAt(h2, iCh);
+    histName.Form("TD_ChamberNbr%d", iCh+1);
+    hn = new THnSparseT<TArrayF>(histName, histTitle, nDims, nBins, xMin, xMax);
+    fChamberTDHistList->AddAt(hn, iCh);
+    histName.Form("TT_ChamberNbr%d",iCh+1);
+    hn = new THnSparseT<TArrayF>(histName, histTitle, nDims, nBins, xMin, xMax);
+    fChamberTTHistList->AddAt(hn, iCh);
+    histName.Form("SD_ChamberNbr%d", iCh+1);
+    hn = new THnSparseT<TArrayF>(histName, histTitle, nDims, nBins, xMin, xMax);
+    fChamberSDHistList->AddAt(hn, iCh);
     
     // histograms per DE
     for (Int_t iDE = 0; iDE < fgkNbrOfDetectionElt[iCh]; iDE++)
     {
       Int_t deId = FromLocalId2DetElt(iCh, iDE);
       histTitle.Form("detEltNbr %d",deId);
-      histNameTD.Form("TD_detEltNbr%d",deId);
-      histNameTT.Form("TT_detEltNbr%d",deId);
-      histNameSD.Form("SD_detEltNbr%d",deId);
       if(iCh < 4)
       {// chambers 1 -> 4
-	h3 = new TH3F(histNameTD, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("TD_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltTDHistList->AddAt(h3, iDEGlobal);
-	h3 = new TH3F(histNameTT, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("TT_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltTTHistList->AddAt(h3, iDEGlobal);
-	h3 = new TH3F(histNameSD, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("SD_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 12, -10.0 , 110.0, 12, -10.0, 110.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltSDHistList->AddAt(h3, iDEGlobal);
       }
       else 
       {// chambers 5 -> 10
-	h3 = new TH3F(histNameTD, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("TD_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltTDHistList->AddAt(h3, iDEGlobal);	  
-	h3 = new TH3F(histNameTT, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("TT_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltTTHistList->AddAt(h3, iDEGlobal);
-	h3 = new TH3F(histNameSD, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
+	histName.Form("SD_detEltNbr%d",deId);
+	h3 = new TH3F(histName, histTitle, 28, -140.0, 140.0, 8, -40.0, 40.0, nCentBins, centRange[0], centRange[1]);
 	fDetEltSDHistList->AddAt(h3, iDEGlobal);
       }
       iDEGlobal++;
@@ -248,18 +276,26 @@ void AliAnalysisTaskMuonTrackingEff::UserCreateOutputObjects()
   }
   
   // global histograms per chamber
-  h2 = new TH2F("TD_Chambers 11", "Chambers 11", 10, 0.5, 10.5, nCentBins, centRange[0], centRange[1]);
-  fChamberTDHistList->AddAt(h2, 10);
-  h2 = new TH2F("TT_Chambers 11", "Chambers 11", 10, 0.5, 10.5, nCentBins, centRange[0], centRange[1]);
-  fChamberTTHistList->AddAt(h2, 10);
-  h2 = new TH2F("SD_Chambers 11", "Chambers 11", 10, 0.5, 10.5, nCentBins, centRange[0], centRange[1]);
-  fChamberSDHistList->AddAt(h2, 10);
-
+  nBins[0] = 10;
+  xMin[0] = 0.5; xMax[0] = 10.5;
+  hn = new THnSparseT<TArrayF>("TD_Chambers 11", "Chambers 11", nDims, nBins, xMin, xMax);
+  fChamberTDHistList->AddAt(hn, 10);
+  hn = new THnSparseT<TArrayF>("TT_Chambers 11", "Chambers 11", nDims, nBins, xMin, xMax);
+  fChamberTTHistList->AddAt(hn, 10);
+  hn = new THnSparseT<TArrayF>("SD_Chambers 11", "Chambers 11", nDims, nBins, xMin, xMax);
+  fChamberSDHistList->AddAt(hn, 10);
 
   //Extra histograms
-  TH1F *fHistPt = new TH1F("fHistPt", "Pt distribution", 100, 0.0, 50);
-  fExtraHistList->AddAt(fHistPt,0);
-
+  TH1F *fHistCent = new TH1F("fHistCent", "centrality distribution", nCentBins, centRange[0], centRange[1]);
+  fExtraHistList->AddAt(fHistCent,0);
+  TH1F *fHistPt = new TH1F("fHistPt", "pt distribution", 250, 0., 50.);
+  fExtraHistList->AddAt(fHistPt,1);
+  TH1F *fHistY = new TH1F("fHistY", "y distribution", 60, -4., -2.5);
+  fExtraHistList->AddAt(fHistY,2);
+  TH1F *fHistTheta = new TH1F("fHistTheta", "theta distribution", 120, 2.8, 3.2);
+  fExtraHistList->AddAt(fHistTheta,3);
+  TH1F *fHistP = new TH1F("fHistP", "momentum distribution", 250, 0., 500.);
+  fExtraHistList->AddAt(fHistP,4);
   
   // post the output data at least once
   PostData(1, fDetEltTDHistList);  
@@ -285,6 +321,7 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
   
   // get the centrality
   fCurrentCentrality = esd->GetCentrality()->GetCentralityPercentileUnchecked("V0M");
+  static_cast<TH1F*>(fExtraHistList->At(0))->Fill(fCurrentCentrality);
   
   // loop over tracks
   AliMUONTrack track;
@@ -299,9 +336,33 @@ void AliAnalysisTaskMuonTrackingEff::UserExec(Option_t *)
     
     Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
     Double_t eta = esdTrack->Eta();
-    if(fApplyAccCut && !(thetaTrackAbsEnd >= 2. && thetaTrackAbsEnd <= 9. && eta >= -4. && eta <= -2.5)) continue;
-
-    ((TH1F*) fExtraHistList->At(0))->Fill(esdTrack->Pt());
+    if(fApplyAccCut && !(thetaTrackAbsEnd >= 2. && thetaTrackAbsEnd <= 10. && eta >= -4. && eta <= -2.5)) continue;
+    
+    if (fPDCACut > 0.) {
+      const AliVVertex* primaryVertex = esd->GetPrimaryVertexSPD();
+      TVector3 trackDcaAtVz(esdTrack->GetNonBendingCoorAtDCA(), esdTrack->GetBendingCoorAtDCA(), primaryVertex->GetZ());
+      TVector3 vertex(primaryVertex->GetX(), primaryVertex->GetY(), primaryVertex->GetZ());
+      TVector3 meanDca(-0.46, -0.92, 0.); // LHC10h1
+      TVector3 dcaAtVz = trackDcaAtVz - vertex - meanDca;
+      Double_t correctedDca = dcaAtVz.Mag(); // it should also be equal to dcaAtVz.Pt().
+      Double_t pMean = 0.5 * (esdTrack->P() + esdTrack->PUncorrected());
+      Double_t cutVariable = pMean * correctedDca;
+      Double_t cutValue = (thetaTrackAbsEnd > 3.) ? 63. : 120.;
+      cutValue = TMath::Sqrt(cutValue*cutValue + 0.4*0.4*esdTrack->P()*esdTrack->P());
+      if ( cutVariable > fPDCACut*cutValue ) continue;
+    }
+    
+    if (fChi2Cut > 0. && esdTrack->GetNormalizedChi2() > fChi2Cut) continue;
+    
+    if (fPtCut > 0. && esdTrack->Pt() < fPtCut) continue;
+    
+    if (fUseMCLabel && esdTrack->GetLabel() < 0) continue;
+    
+    fCurrentTrack = esdTrack;
+    static_cast<TH1F*>(fExtraHistList->At(1))->Fill(esdTrack->Pt());
+    static_cast<TH1F*>(fExtraHistList->At(2))->Fill(esdTrack->Y());
+    static_cast<TH1F*>(fExtraHistList->At(3))->Fill(esdTrack->Theta());
+    static_cast<TH1F*>(fExtraHistList->At(4))->Fill(esdTrack->P());
     
     AliMUONESDInterface::ESDToMUON(*esdTrack, track);
     
@@ -526,27 +587,36 @@ Bool_t AliAnalysisTaskMuonTrackingEff::CoordinatesInDetElt(Int_t DeId, Double_t 
 void AliAnalysisTaskMuonTrackingEff::FillTDHistos(Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL)
 {
   /// Fill the histo for detected tracks
-  ((TH3F*) fDetEltTDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
-  ((TH2F*) fChamberTDHistList->At(chamber))->Fill(FromDetElt2LocalId(chamber, detElt), fCurrentCentrality);
-  ((TH2F*) fChamberTDHistList->At(10))->Fill(chamber+1, fCurrentCentrality);
+  static_cast<TH3F*>(fDetEltTDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
+  static_cast<THnSparse*>(fChamberTDHistList->At(chamber))->Fill(x);
+  x[0] = static_cast<Double_t>(chamber+1);
+  static_cast<THnSparse*>(fChamberTDHistList->At(10))->Fill(x);
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskMuonTrackingEff::FillTTHistos(Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL)
 {
   /// Fill the histo for all tracks
-  ((TH3F*) fDetEltTTHistList->At(FromDetElt2iDet(chamber, detElt))) -> Fill(posXL, posYL, fCurrentCentrality);
-  ((TH2F*) fChamberTTHistList->At(chamber))->Fill(FromDetElt2LocalId(chamber, detElt), fCurrentCentrality);
-  ((TH2F*) fChamberTTHistList->At(10))->Fill(chamber+1, fCurrentCentrality);
+  static_cast<TH3F*>(fDetEltTTHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
+  static_cast<THnSparse*>(fChamberTTHistList->At(chamber))->Fill(x);
+  x[0] = static_cast<Double_t>(chamber+1);
+  static_cast<THnSparse*>(fChamberTTHistList->At(10))->Fill(x);
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskMuonTrackingEff::FillSDHistos(Int_t chamber, Int_t detElt, Double_t posXL, Double_t posYL)
 {
   /// Fill the histo for single detected tracks
-  ((TH3F*) fDetEltSDHistList->At(FromDetElt2iDet(chamber, detElt))) -> Fill(posXL, posYL, fCurrentCentrality);
-  ((TH2F*) fChamberSDHistList->At(chamber))->Fill(FromDetElt2LocalId(chamber, detElt), fCurrentCentrality);
-  ((TH2F*) fChamberSDHistList->At(10))->Fill(chamber+1, fCurrentCentrality);
+  static_cast<TH3F*>(fDetEltSDHistList->At(FromDetElt2iDet(chamber, detElt)))->Fill(posXL, posYL, fCurrentCentrality);
+  Double_t x[5] = {0., fCurrentCentrality, fCurrentTrack->Pt(), fCurrentTrack->Y(), fCurrentTrack->Charge()};
+  x[0] = static_cast<Double_t>(FromDetElt2LocalId(chamber, detElt));
+  static_cast<THnSparse*>(fChamberSDHistList->At(chamber))->Fill(x);
+  x[0] = static_cast<Double_t>(chamber+1);
+  static_cast<THnSparse*>(fChamberSDHistList->At(10))->Fill(x);
 }
 
 //________________________________________________________________________
