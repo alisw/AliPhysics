@@ -13,6 +13,7 @@
 #include "AliAnalysisTaskSE.h"
 
 class AliMUONGeometryTransformer;
+class AliESDMuonTrack;
 class AliMUONTrackParam;
 class TList;
 class TString;
@@ -33,6 +34,18 @@ class AliAnalysisTaskMuonTrackingEff : public AliAnalysisTaskSE
   
   /// set the flag to use only tracks passing the acceptance cuts (Rabs, eta)
   void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
+  
+  /// set the sigma cut value on p*DCA
+  void PDCACut(Double_t cut) { fPDCACut = cut; }
+  
+  /// set the cut value on normalized chi2
+  void Chi2Cut(Double_t cut) { fChi2Cut = cut; }
+  
+  /// set the cut value on minimum pt
+  void PtCut(Double_t cut) { fPtCut = cut; }
+  
+  /// set the cut value on minimum pt
+  void UseMCLabel(Bool_t flag = kTRUE) { fUseMCLabel = flag; }
   
   // Implementation of interface methods
   virtual void   UserCreateOutputObjects();
@@ -76,11 +89,16 @@ private:
   static const Int_t fgkNbrOfDetectionElt[10]; ///< The total number of detection element in each chamber.
   static const Int_t fgkOffset;                ///< fFirstDetectionElt[iChamber] = fOffset * (iChamber+1).
   
-  Bool_t  fOCDBLoaded;        //!< Determine if the OCDB and =geometry have been loaded
-  TString fOCDBpath;          ///< OCDB path
-  Bool_t  fMatchTrig;         ///< use only tracks matched with trigger
-  Bool_t  fApplyAccCut;       ///< use only tracks passing the acceptance cuts (Rabs, eta)
-  Float_t fCurrentCentrality; //!< centrality of the current event
+  Bool_t   fOCDBLoaded;           //!< Determine if the OCDB and =geometry have been loaded
+  TString  fOCDBpath;             ///< OCDB path
+  Bool_t   fMatchTrig;            ///< use only tracks matched with trigger
+  Bool_t   fApplyAccCut;          ///< use only tracks passing the acceptance cuts (Rabs, eta)
+  Double_t fPDCACut;              ///< sigma cut on p*DCA
+  Double_t fChi2Cut;              ///< cut on normalized chi2
+  Double_t fPtCut;                ///< cut on minimum pt
+  Bool_t   fUseMCLabel;           ///< select tracks using MC label
+  Float_t  fCurrentCentrality;    //!< centrality of the current event
+  AliESDMuonTrack* fCurrentTrack; //!< pointer to the currently analyzed track
 
   AliMUONGeometryTransformer *fTransformer; //!< Transformer object
 
@@ -93,7 +111,7 @@ private:
   TList* fExtraHistList;     //!< List of extra histograms.
 
   
-  ClassDef(AliAnalysisTaskMuonTrackingEff, 3)
+  ClassDef(AliAnalysisTaskMuonTrackingEff, 4)
 };
 
 #endif
