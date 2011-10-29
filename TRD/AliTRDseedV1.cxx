@@ -543,6 +543,20 @@ Bool_t AliTRDseedV1::GetEstimatedCrossPoint(Float_t &x, Float_t &z) const
 }
 
 //____________________________________________________________________
+Float_t AliTRDseedV1::GetQperTB(Int_t tb) const
+{
+  //
+  // Charge of the clusters at timebin
+  //
+  Float_t Q = 0;
+  if(fClusters[tb] /*&& fClusters[tb]->IsInChamber()*/)
+    Q += TMath::Abs(fClusters[tb]->GetQ());
+  if(fClusters[tb+kNtb] /*&& fClusters[tb+kNtb]->IsInChamber()*/)
+    Q += TMath::Abs(fClusters[tb+kNtb]->GetQ());
+  return Q/TMath::Sqrt(1. + fYref[1]*fYref[1] + fZref[1]*fZref[1]);
+}
+
+//____________________________________________________________________
 Float_t AliTRDseedV1::GetdQdl() const
 {
 // Calculate total charge / tracklet length for 1D PID

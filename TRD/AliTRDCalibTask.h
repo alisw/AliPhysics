@@ -54,6 +54,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetHisto2d(Bool_t histo2d)                                   {fHisto2d=histo2d;};
   void SetVector2d(Bool_t vector2d)                                 {fVector2d=vector2d;};
   void SetVdriftLinear(Bool_t vdriftLinear)                         {fVdriftLinear = vdriftLinear;};
+  void SetExbAlt(Bool_t exbalt)                                     {fExbAlt = exbalt;};
   void SetNbTimeBins(Int_t nbTimeBins)                              {fNbTimeBins=nbTimeBins;};  
   
   void SetNz(Short_t nz, Int_t i)                                      {fNz[i]=nz;};
@@ -141,6 +142,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fHisto2d;                          // histo
   Bool_t      fVector2d;                         // vector
   Bool_t      fVdriftLinear;                     // vdrift Linear
+  Bool_t      fExbAlt;                           // alternative exb calculation
 
   Int_t       fNbTimeBins;                       // number of timebins 
 

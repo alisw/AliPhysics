@@ -57,6 +57,7 @@
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
 #include "AliTRDCalibraVdriftLinearFit.h"
+#include "AliTRDCalibraExbAltFit.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDCommonParam.h"
 #include "AliTRDpadPlane.h"
@@ -65,6 +66,7 @@
 #include "AliRawReader.h"
 #include "AliRawReaderDate.h"
 #include "AliTRDgeometry.h"
+#include "AliTRDfeeParam.h"
 #include "./Cal/AliTRDCalROC.h"
 #include "./Cal/AliTRDCalPad.h"
 #include "./Cal/AliTRDCalDet.h"
@@ -138,6 +140,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fVector2d(kFALSE)
   ,fLinearFitterOn(kFALSE)
   ,fLinearFitterDebugOn(kFALSE)
+  ,fExbAltFitOn(kFALSE)
   ,fRelativeScale(0)
   ,fThresholdClusterPRF2(15.0)
   ,fLimitChargeIntegration(kFALSE)
@@ -190,6 +193,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fCH2d(0x0)
   ,fLinearFitterArray(540)
   ,fLinearVdriftFit(0x0)
+  ,fExbAltFit(0x0)
   ,fCalDetGain(0x0)
   ,fCalROCGain(0x0)
 {
@@ -223,6 +227,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fVector2d(c.fVector2d)
   ,fLinearFitterOn(c.fLinearFitterOn)
   ,fLinearFitterDebugOn(c.fLinearFitterDebugOn)
+  ,fExbAltFitOn(c.fExbAltFitOn)
   ,fRelativeScale(c.fRelativeScale)
   ,fThresholdClusterPRF2(c.fThresholdClusterPRF2)
   ,fLimitChargeIntegration(c.fLimitChargeIntegration)
@@ -275,6 +280,7 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fCH2d(0x0)
   ,fLinearFitterArray(540)
   ,fLinearVdriftFit(0x0)
+  ,fExbAltFit(0x0)
   ,fCalDetGain(0x0)
   ,fCalROCGain(0x0)
 {
@@ -297,6 +303,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   }
   if(c.fLinearVdriftFit){
     fLinearVdriftFit = new AliTRDCalibraVdriftLinearFit(*c.fLinearVdriftFit);
+  }
+  if(c.fExbAltFit){
+    fExbAltFit = new AliTRDCalibraExbAltFit(*c.fExbAltFit);
   }
 
   if(c.fCalDetGain)  fCalDetGain   = new AliTRDCalDet(*c.fCalDetGain);
@@ -341,6 +350,7 @@ AliTRDCalibraFillHisto::~AliTRDCalibraFillHisto()
     if(f) { delete f;}
   }
   if(fLinearVdriftFit) delete fLinearVdriftFit;
+  if(fExbAltFit) delete fExbAltFit;
   if (fGeo) {
     delete fGeo;
   }
@@ -520,6 +530,9 @@ Bool_t AliTRDCalibraFillHisto::Init2Dhistos(Int_t nboftimebin)
     nameee += fFirstRunExB;
     nameee += "Nz";
     fLinearVdriftFit->SetNameCalibUsed(nameee); 
+  }
+  if(fExbAltFitOn){
+    fExbAltFit = new AliTRDCalibraExbAltFit();
   }
 
   if (fPRF2dOn) {
@@ -726,7 +739,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
       // Add the charge if shared cluster
       cls = tracklet->GetClusters(jc+AliTRDseedV1::kNtb);
       //
-      StoreInfoCHPHtrack(cl, tracklet->GetdQdl(jc),group,row,col,cls);
+      StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc),group,row,col,cls); //tracklet->GetdQdl(jc)
     }
     
     ////////////////////////////////////////
@@ -823,8 +836,24 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   //////////////////////////////////
   // Loop clusters
   //////////////////////////////////
+
+  Short_t sigArr[AliTRDfeeParam::GetNcol()];
+  memset(sigArr, 0, AliTRDfeeParam::GetNcol()*sizeof(sigArr[0]));
+  Int_t ncl=0, tbf=0, tbl=0;
+
   for(int ic=0; ic<AliTRDseedV1::kNtb; ic++){
     if(!(cl = tracklet->GetClusters(ic))) continue;
+
+    if(!tbf) tbf=ic;
+    tbl=ic;
+    ncl++;
+    Int_t col = cl->GetPadCol();
+    for(int ip=-1, jp=2; jp<5; ip++, jp++){
+      Int_t idx=col+ip;
+      if(idx<0 || idx>=AliTRDfeeParam::GetNcol()) continue;
+      sigArr[idx]+=cl->GetSignals()[jp];
+    }
+
     if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
     
     Double_t ycluster                 = cl->GetY();
@@ -856,13 +885,36 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   dydt        = pars[1]; 
   //printf("chis %f, nbli %d, pointError %f, parError %f, errorpar %f\n",fLinearFitterTracklet->GetChisquare(),nbli,pointError,fLinearFitterTracklet->GetParError(1),errorpar);
   fLinearFitterTracklet->ClearPoints();  
+
+  ////////////////////////////////////
+  // Calc the projection of the clusters on the y direction
+  ///////////////////////////////////
+
+  Float_t signalSum(0.);
+  Float_t mean = -1, rms = -1;
+  Float_t dydx = tracklet->GetYref(1), tilt = tracklet->GetTilt(); // ,dzdx = tracklet->GetZref(1); (identical to the previous definition!)
+  Float_t dz = dzdx*(tbl-tbf)/10;
+  if(ncl>10){
+    for(Int_t ip(0); ip<AliTRDfeeParam::GetNcol(); ip++){
+      signalSum+=sigArr[ip]; 
+      mean+=ip*sigArr[ip];
+    } 
+    mean/=signalSum;
+  
+    for(Int_t ip = 0; ip<AliTRDfeeParam::GetNcol(); ip++) 
+      rms+=sigArr[ip]*(ip-mean)*(ip-mean);
+    rms = TMath::Sqrt(rms/signalSum);
+    
+    rms -= TMath::Abs(dz*tilt);
+    dydx -= dzdx*tilt;
+  }
  
   ////////////////////////////////
   // Debug stuff
   /////////////////////////////// 
 
 
-  if(fDebugLevel > 0){
+  //if(fDebugLevel > 0){
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
@@ -870,7 +922,8 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
       if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
     } 
     
-
+    float xcoord = tnp-dzdx*tnt;
+    float pt = tracklet->GetPt();
     Int_t layer = GetLayer(fDetectorPreviousTrack);
            
     (* fDebugStreamer) << "FindP1TrackPHtrackletV1"<<
@@ -888,9 +941,16 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
       "crossrow="<<crossrow<<
       "errorpar="<<errorpar<<
       "pointError="<<pointError<<
+      "xcoord="<<xcoord<<
+      "pt="<<pt<<
+      "rms="<<rms<<
+      "dydx="<<dydx<<
+      "dz="<<dz<<
+      "tilt="<<tilt<<
+      "ncl="<<ncl<<
       "\n";
 
-  }
+    //}
   
   /////////////////////////
   // Cuts quality
@@ -915,6 +975,9 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
       }
       fLinearVdriftFit->Update(fDetectorPreviousTrack,x,pars[1]);
     }
+  }
+  if(fExbAltFitOn){
+    fExbAltFit->Update(fDetectorPreviousTrack,dydx,rms);
   }
   
   return kTRUE;
@@ -1521,7 +1584,7 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Do
   if(fIsHLT) correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack);
   else correctthegain = fCalDetGain->GetValue(fDetectorPreviousTrack)*fCalROCGain->GetValue(col,row);
   Float_t correction    = 1.0;
-  Float_t normalisation = 6.67;
+  Float_t normalisation = 1.13; //org: 6.67; 1st: 1.056; 2nd: 1.13;
   // we divide with gain in AliTRDclusterizer::Transform...
   if( correctthegain > 0 ) normalisation /= correctthegain;
 

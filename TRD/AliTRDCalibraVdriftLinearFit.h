@@ -57,7 +57,6 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray       fLinearFitterHistoArray;  // TObjArray of histo2D for debugging Linear Fitters
   TObjArray       fLinearFitterPArray;      // Array of result parameters from linear fitters for the detectors
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
-
   
   ClassDef(AliTRDCalibraVdriftLinearFit,2)  // Online Vdrift calibration
 

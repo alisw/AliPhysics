@@ -73,6 +73,7 @@ set ( SRCS
     AliTRDCalibraMode.cxx
     AliTRDCalibraVector.cxx
     AliTRDCalibraVdriftLinearFit.cxx
+    AliTRDCalibraExbAltFit.cxx
     AliTRDCalibPadStatus.cxx
     AliTRDCalibChamberStatus.cxx
     AliTRDCalibViewer.cxx

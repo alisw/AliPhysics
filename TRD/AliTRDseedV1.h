@@ -122,6 +122,7 @@ public:
   UChar_t   GetErrorMsg() const      { return fErrorMsg;}
   Float_t   GetdX() const            { return fdX;}
   const Float_t*  GetdEdx() const    { return &fdEdx[0];}
+  Float_t   GetQperTB(Int_t tb) const;
   Float_t   GetdQdl() const;
   Float_t   GetdQdl(Int_t ic, Float_t *dx=NULL) const;
   Float_t   GetdYdX() const          { return fYfit[1];}

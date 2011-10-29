@@ -58,6 +58,7 @@
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraFit.h"
 #include "AliTRDCalibraVdriftLinearFit.h"
+#include "AliTRDCalibraExbAltFit.h"
 #include "AliTRDPreprocessorOffline.h"
 #include "AliTRDCalChamberStatus.h"
 #include "AliTRDCalibChamberStatus.h"
@@ -80,10 +81,11 @@ ClassImp(AliTRDPreprocessorOffline)
   fPRF2d(0x0),
   fSparse(0x0),
   fAliTRDCalibraVdriftLinearFit(0x0),
+  fAliTRDCalibraExbAltFit(0x0),
   fNEvents(0x0),
   fAbsoluteGain(0x0),
-  fPlots(new TObjArray(9)),
-  fCalibObjects(new TObjArray(9)),
+  fPlots(new TObjArray(kNumCalibObjs)),
+  fCalibObjects(new TObjArray(kNumCalibObjs)),
   fFirstRunGainUsed(0),
   fVersionGainUsed(0),
   fSubVersionGainUsed(0),
@@ -136,6 +138,7 @@ AliTRDPreprocessorOffline::~AliTRDPreprocessorOffline() {
   if(fPRF2d) delete fPRF2d;
   if(fSparse) delete fSparse;
   if(fAliTRDCalibraVdriftLinearFit) delete fAliTRDCalibraVdriftLinearFit;
+  if(fAliTRDCalibraExbAltFit) delete fAliTRDCalibraExbAltFit;
   if(fNEvents) delete fNEvents;
   if(fAbsoluteGain) delete fAbsoluteGain;
   if(fPlots) delete fPlots;
@@ -212,6 +215,41 @@ void AliTRDPreprocessorOffline::CalibVdriftT0(const Char_t* file, Int_t startRun
   if(fExBValidated) UpdateOCDBExB(startRunNumber,endRunNumber,ocdbStorage);
   
 }
+//___________________________________________________________________________________________________________________
+
+void AliTRDPreprocessorOffline::CalibExbAlt(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage){
+  //
+  // make calibration of the drift velocity
+  // Input parameters:
+  //      file                             - the location of input file
+  //      startRunNumber, endRunNumber     - run validity period 
+  //      ocdbStorage                      - path to the OCDB storage
+  //                                       - if empty - local storage 'pwd' uesed
+  if (ocdbStorage.Length()<=0) ocdbStorage="local://"+gSystem->GetFromPipe("pwd")+"/OCDB";
+  //
+  // 1. Initialization 
+  //
+
+  //
+  // 2. extraction of the information
+  //
+  if(ReadExbAltFitGlobal(file)) AnalyzeExbAltFit();
+  //
+  // 3. Append QA plots
+  //
+  //MakeDefaultPlots(fVdriftArray,fVdriftArray);
+  //
+  //
+  // 4. validate OCDB entries
+  //
+  //
+  // 5. update of OCDB
+  //
+  //
+  UpdateOCDBExBAlt(startRunNumber,endRunNumber,ocdbStorage);
+  
+}
+
 //_________________________________________________________________________________________________________________
 
 void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumber, Int_t endRunNumber, TString ocdbStorage){
@@ -234,7 +272,7 @@ void AliTRDPreprocessorOffline::CalibGain(const Char_t* file, Int_t startRunNumb
   //
   AnalyzeGain();
   if(fBackCorrectGain) CorrectFromDetGainUsed();
-  if(fBackCorrectVdrift) CorrectFromDetVdriftUsed();
+  //if(fBackCorrectVdrift) CorrectFromDetVdriftUsed();
   //
   // 3. Append QA plots
   //
@@ -471,6 +509,28 @@ Bool_t AliTRDPreprocessorOffline::ReadVdriftLinearFitGlobal(const Char_t* fileNa
   }
   if(!fAliTRDCalibraVdriftLinearFit) {
     //printf("No AliTRDCalibraVdriftLinearFit\n");
+    return kFALSE;
+  }
+  return kTRUE;
+  
+}
+//_____________________________________________________________________________________________________________
+Bool_t AliTRDPreprocessorOffline::ReadExbAltFitGlobal(const Char_t* fileName){
+  //
+  // read calibration entries from file
+  // 
+  if(fAliTRDCalibraExbAltFit) return kTRUE;
+  TFile fcalib(fileName);
+  TObjArray * array = (TObjArray*)fcalib.Get(fNameList);
+  if (array){
+    fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) array->FindObject("AliTRDCalibraExbAltFit");
+    //fNEvents = (TH1I *) array->FindObject("NEvents");
+  }else{
+    fAliTRDCalibraExbAltFit = (AliTRDCalibraExbAltFit *) fcalib.Get("AliTRDCalibraExbAltFit");
+    //fNEvents = (TH1I *) fcalib.Get("NEvents");
+  }
+  if(!fAliTRDCalibraExbAltFit) {
+    //printf("No AliTRDCalibraExbAltFit\n");
     return kFALSE;
   }
   return kTRUE;
@@ -720,6 +780,52 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
       if(!fCalDetVdriftUsed) fStatusPos = fStatusPos | kVdriftErrorOld;
       if(!fCalDetExBUsed) fStatusPos = fStatusPos | kExBErrorOld;
     }
+  }
+  
+  calibra->ResetVectorFit();
+  
+  return ok;
+  
+}
+//________________________________________________________________________________________________________________
+
+Bool_t AliTRDPreprocessorOffline::AnalyzeExbAltFit(){
+  //
+  // Analyze vdrift linear fit - produce the calibration objects
+  //
+
+  //printf("Analyse linear fit\n");
+
+  
+  AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
+  calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
+  //printf("Fill PE Array\n");
+  fAliTRDCalibraExbAltFit->FillPEArray();
+  //printf("AliTRDCalibraFit\n");
+  calibra->AnalyseExbAltFit(fAliTRDCalibraExbAltFit);
+  //printf("After\n");
+
+  //Int_t nbtg        = 540;
+  Int_t nbfit       = calibra->GetNumberFit();
+  Int_t nbE         = calibra->GetNumberEnt();
+
+  
+  Bool_t ok = kFALSE;
+  // enough statistics
+  if ((nbfit        >= 0.5*nbE) && (nbE > 30)) {
+    // create the cal objects
+    //calibra->RemoveOutliers(1,kTRUE);
+    calibra->PutMeanValueOtherVectorFit2(1,kTRUE);
+    //
+    TObjArray object  = calibra->GetVectorFit2();
+    AliTRDCalDet *calDetLorentz = calibra->CreateDetObjectExbAlt(&object);
+    TH1F *coefLorentzAngle = calDetLorentz->MakeHisto1DAsFunctionOfDet();
+    //if(!calDetLorentz) printf("No lorentz created\n");
+    // Put them in the array
+    fCalibObjects->AddAt(calDetLorentz,kExbAlt);
+    fPlots->AddAt(coefLorentzAngle,kExbAlt);
+    //
+    ok = kTRUE;
   }
   
   calibra->ResetVectorFit();
@@ -1011,6 +1117,29 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    //if(!calDet) printf("No caldet\n");
 
  }
+//___________________________________________________________________________________________________________________
+void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
+  //
+  // Update OCDB entry
+  //
+
+  Int_t detExB = kExbAlt;
+  if(!fMethodSecond) return;
+
+  //printf("Pass\n");
+
+  AliCDBMetaData *metaData= new AliCDBMetaData();
+  metaData->SetObjectClassName("AliTRDCalDet");
+  metaData->SetResponsible("Raphaelle Bailhache");
+  metaData->SetBeamPeriod(1);
+
+  AliCDBId id1("TRD/Calib/ChamberExBAlt", startRunNumber, endRunNumber);
+  AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
+  AliTRDCalDet *calDet = (AliTRDCalDet *) fCalibObjects->At(detExB);
+  if(calDet) gStorage->Put(calDet, id1, metaData);
+  //if(!calDet) printf("No caldet\n");
+
+}
  //___________________________________________________________________________________________________________________
  void AliTRDPreprocessorOffline::UpdateOCDBVdrift(Int_t startRunNumber, Int_t endRunNumber, const Char_t *storagePath){
    //

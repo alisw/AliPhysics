@@ -71,6 +71,7 @@ using namespace std;
 #include "AliTRDCalibraVector.h"
 #include "AliTRDCalibraFillHisto.h"
 #include "AliTRDCalibraVdriftLinearFit.h" 
+#include "AliTRDCalibraExbAltFit.h" 
 
 #include "AliTRDcalibDB.h"
 #include "AliCDBId.h"
@@ -123,6 +124,7 @@ ClassImp(AliTRDCalibTask)
       fHisto2d(kTRUE),
       fVector2d(kFALSE),
       fVdriftLinear(kTRUE),
+      fExbAlt(kFALSE),
       fNbTimeBins(0),
       fSelectedTrigger(new TObjArray()),
       fRejected(kTRUE),
@@ -264,6 +266,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fTRDCalibraFillHisto->SetPRF2dOn(); // choose to look at the PRF
     fTRDCalibraFillHisto->SetLinearFitterOn(fVdriftLinear); // Other possibility vdrift VDRIFT
     fTRDCalibraFillHisto->SetLinearFitterDebugOn(fVdriftLinear); // Other possibility vdrift
+    fTRDCalibraFillHisto->SetExbAltFitOn(fExbAlt); // Alternative method for exb
     for(Int_t k = 0; k < 3; k++){
       if(((fNz[k] != 10) && (fNrphi[k] != 10)) && ((fNz[k] != 100) && (fNrphi[k] != 100))) {
 	fTRDCalibraFillHisto->SetNz(k,fNz[k]);                                    // Mode calibration
@@ -300,7 +303,8 @@ void AliTRDCalibTask::UserCreateOutputObjects()
       fListHist->Add(fTRDCalibraFillHisto->GetPRF2d());
     } 
     if(fVdriftLinear) fListHist->Add((TObject *)fTRDCalibraFillHisto->GetVdriftLinearFit());
-    if(fVector2d) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector  
+    if(fVector2d) fListHist->Add((TObject *) fTRDCalibraFillHisto->GetCalibraVector()); //calibra vector
+    if(fExbAlt) fListHist->Add((TObject *)fTRDCalibraFillHisto->GetExbAltFit());
   }
   fRelativeScale = fTRDCalibraFillHisto->GetRelativeScale(); // Get the relative scale for the gain
   
@@ -1004,6 +1008,7 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
   TProfile2D *ph2dSM = (TProfile2D *) listcalibTask->FindObject(Form("PH2dSM_%s",(const char*)calibTask->GetName()));
   
   AliTRDCalibraVdriftLinearFit *linearfit = (AliTRDCalibraVdriftLinearFit *) listcalibTask->FindObject("AliTRDCalibraVdriftLinearFit");  
+  AliTRDCalibraExbAltFit *exbaltfit = (AliTRDCalibraExbAltFit *) listcalibTask->FindObject("AliTRDCalibraExbAltFit");  
   AliTRDCalibraVector *calibraVector = (AliTRDCalibraVector *) listcalibTask->FindObject("AliTRDCalibraVector");  
 
   //
@@ -1043,6 +1048,7 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
   TProfile2D *iph2dSM = (TProfile2D *) fListHist->FindObject(Form("PH2dSM_%s",(const char*)fName));
   
   AliTRDCalibraVdriftLinearFit *ilinearfit = (AliTRDCalibraVdriftLinearFit *) fListHist->FindObject("AliTRDCalibraVdriftLinearFit");  
+  AliTRDCalibraExbAltFit *iexbaltfit = (AliTRDCalibraExbAltFit *) fListHist->FindObject("AliTRDCalibraExbAltFit");
   AliTRDCalibraVector *icalibraVector = (AliTRDCalibraVector *) fListHist->FindObject("AliTRDCalibraVector");  
 
 
@@ -1258,7 +1264,15 @@ void  AliTRDCalibTask::AddTask(const AliTRDCalibTask * calibTask) {
       ilinearfit = new AliTRDCalibraVdriftLinearFit(*linearfit);
       fListHist->Add(ilinearfit);
     }
-  }
+  } 
+
+  if(exbaltfit) {
+    if(iexbaltfit) iexbaltfit->Add(exbaltfit);
+    else {
+      iexbaltfit = new AliTRDCalibraExbAltFit(*exbaltfit);
+      fListHist->Add(iexbaltfit);
+    }
+  } 
 
   if(calibraVector) {
     if(icalibraVector) icalibraVector->Add(calibraVector);

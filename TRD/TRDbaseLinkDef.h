@@ -69,6 +69,7 @@
 #pragma link C++ class  AliTRDCalibraMode+;
 #pragma link C++ class  AliTRDCalibraVector+;
 #pragma link C++ class  AliTRDCalibraVdriftLinearFit+;
+#pragma link C++ class  AliTRDCalibraExbAltFit+;
 #pragma link C++ class  AliTRDCalibPadStatus+;
 #pragma link C++ class  AliTRDCalibChamberStatus+;
 #pragma link C++ class  AliTRDCalibViewer+;

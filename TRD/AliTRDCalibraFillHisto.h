@@ -34,6 +34,7 @@ class AliRawReader;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
+class AliTRDCalibraExbAltFit;
 class AliTRDcluster;
 class AliTRDtrackV1;
 class AliTRDseedV1;
@@ -98,6 +99,7 @@ class AliTRDCalibraFillHisto : public TObject {
           void     SetVector2d(Bool_t vector2d = kTRUE)                      { fVector2d        = vector2d;          }
 	  void     SetLinearFitterOn(Bool_t linearfitteron = kTRUE)          { fLinearFitterOn      = linearfitteron;}
 	  void     SetLinearFitterDebugOn(Bool_t debug = kTRUE)              { fLinearFitterDebugOn = debug;         }
+          void     SetExbAltFitOn(Bool_t fiton = kTRUE)                      { fExbAltFitOn      = fiton;}
 	  void     SetFirstRunGain(Int_t firstRunGain)                       { fFirstRunGain = firstRunGain;   }
 	  void     SetVersionGainUsed(Int_t versionGainUsed)                 { fVersionGainUsed = versionGainUsed;   }
 	  void     SetSubVersionGainUsed(Int_t subVersionGainUsed)           { fSubVersionGainUsed = subVersionGainUsed;   }
@@ -131,7 +133,8 @@ class AliTRDCalibraFillHisto : public TObject {
   TProfile2D      *GetPRF2d() const                                          { return fPRF2d;                  } 
   TObjArray        GetLinearFitterArray() const                              { return fLinearFitterArray;      }
   TLinearFitter   *GetLinearFitter(Int_t detector, Bool_t force=kFALSE);
-  AliTRDCalibraVdriftLinearFit *GetVdriftLinearFit() const                   { return fLinearVdriftFit;        }
+  AliTRDCalibraVdriftLinearFit *GetVdriftLinearFit() const                   { return fLinearVdriftFit; }
+  AliTRDCalibraExbAltFit *GetExbAltFit() const                               { return fExbAltFit; }
   
  
   // How to fill the 2D
@@ -198,6 +201,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
           Bool_t   fVector2d;               // Chose to fill vectors
 	  Bool_t   fLinearFitterOn;         // Method with linear fit for drift velocity
 	  Bool_t   fLinearFitterDebugOn;    // Method with linear fit for drift velocity
+          Bool_t   fExbAltFitOn;              // Enable parabolic fit for exb
 
   // How to fill the 2D
           Float_t  fRelativeScale;          // Scale of the deposited charge
@@ -275,6 +279,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  TH2I            *fCH2d;                         // 2D deposited charge
 	  TObjArray       fLinearFitterArray;             // TObjArray of Linear Fitters for the detectors 
 	  AliTRDCalibraVdriftLinearFit *fLinearVdriftFit; // Info Linear Fit
+          AliTRDCalibraExbAltFit *fExbAltFit; // ExB parabolic fit (alternative to vdrift linear fit)
 	  
  // Current calib object: to correct for the database used
 	  AliTRDCalDet *fCalDetGain;                      // Current calib object gain

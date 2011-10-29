@@ -37,6 +37,7 @@ class AliLog;
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
+class AliTRDCalibraExbAltFit;
 class AliTRDCalDet;
 class AliTRDCalROC;
 class AliTRDgeometry;
@@ -80,6 +81,7 @@ class AliTRDCalibraFit : public TObject {
   // Functions fit for vdrift/lorentzangle
   Bool_t   AnalyseLinearFitters(AliTRDCalibraVdriftLinearFit *calivdli);
   void     AnalyseLinearFittersAllTogether(AliTRDCalibraVdriftLinearFit *calivdli, Double_t &vdriftoverall, Double_t &exboverall);
+  Bool_t   AnalyseExbAltFit(AliTRDCalibraExbAltFit *calivdli);
   
   // Pad Calibration
   Bool_t   SetModeCalibration(TString name, Int_t i);
@@ -101,6 +103,7 @@ class AliTRDCalibraFit : public TObject {
   AliTRDCalDet *CreateDetObjectGain(const TObjArray *vectorFit, Bool_t meanOtherBefore=kTRUE, Double_t scaleFitFactor = 0.02431, Bool_t perdetector = kTRUE);
   AliTRDCalDet *CreateDetObjectT0(const TObjArray *vectorFit, Bool_t perdetector = kFALSE);
   AliTRDCalDet *CreateDetObjectLorentzAngle(const TObjArray *vectorFit);
+  AliTRDCalDet *CreateDetObjectExbAlt(const TObjArray *vectorFit);
   
   TObject      *CreatePadObjectGain(const TObjArray *vectorFit = 0, Double_t scaleFitFactor = 1.0, const AliTRDCalDet *detobject = 0);
   TObject      *CreatePadObjectVdrift(const TObjArray *vectorFit = 0, const AliTRDCalDet *detobject = 0);
@@ -276,23 +279,27 @@ class AliTRDCalibraFit : public TObject {
        Bool_t   InitFitPH();
        Bool_t   InitFitPRF();
        Bool_t   InitFitLinearFitter();
+       Bool_t   InitFitExbAlt();
        
        // Not enough Statistics
        Bool_t   NotEnoughStatisticCH(Int_t idect);
        Bool_t   NotEnoughStatisticPH(Int_t idect,Double_t nentries);
        Bool_t   NotEnoughStatisticPRF(Int_t idect);
        Bool_t   NotEnoughStatisticLinearFitter();
+       Bool_t   NotEnoughStatisticExbAlt();
        
        // Fill Infos Fit
        Bool_t   FillInfosFitCH(Int_t idect);
        Bool_t   FillInfosFitPH(Int_t idect,Double_t nentries);
        Bool_t   FillInfosFitPRF(Int_t idect);
        Bool_t   FillInfosFitLinearFitter();
+       Bool_t   FillInfosFitExbAlt();
        
        void     FillFillCH(Int_t idect);
        void     FillFillPH(Int_t idect,Double_t nentries);
        void     FillFillPRF(Int_t idect);
        void     FillFillLinearFitter();
+       void     FillFillExbAlt();
        
        Bool_t   FillVectorFit();
        Bool_t   FillVectorFit2();
