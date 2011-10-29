@@ -26,6 +26,7 @@ Trigger Types Used: different trigger types are used
 #include <stdio.h>
 #include <stdlib.h>
 #include <Riostream.h>
+#include <signal.h>
 
 // DATE
 #include <event.h>
