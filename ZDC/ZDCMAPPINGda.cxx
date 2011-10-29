@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
 	}
 	
   	while(rawStreamZDC->Next()){
-          if(rawStreamZDC->GetADCModule()==kZDCTDCGeo && rawStreamZDC->IsZDCTDCDatum()==kTRUE){
+          if(eventT==PHYSICS_EVENT && rawStreamZDC->GetADCModule()==kZDCTDCGeo && rawStreamZDC->IsZDCTDCDatum()==kTRUE){
              //
 	     itdc = rawStreamZDC->GetChannel(); 
 	     if((itdc>=8 && itdc<=13) || itdc==15){
@@ -337,7 +337,7 @@ int main(int argc, char **argv) {
        deltaX = xUp-xLow;
        nBinsx = (hTDC[k]->GetXaxis())->GetNbins();
        //printf(" xMax = %f\n", xLow+binMax*deltaX/nBinsx);
-       hTDC[k]->Fit("gaus","Q","",xLow+binMax*deltaX/nBinsx*0.6,xLow+binMax*deltaX/nBinsx*1.24);
+       hTDC[k]->Fit("gaus","Q","",xLow+binMax*deltaX/nBinsx*0.75,xLow+binMax*deltaX/nBinsx*1.25);
        fitfun[k] = hTDC[k]->GetFunction("gaus");
        mean[k] = (Float_t) (fitfun[k]->GetParameter(1));
        sigma[k] = (Float_t) (fitfun[k]->GetParameter(2));
