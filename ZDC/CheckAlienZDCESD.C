@@ -17,13 +17,13 @@
 #include "AliRun.h"
 #include "AliRunLoader.h"
 #include "AliPDG.h"
-#include "STEER/AliESDEvent.h"
-#include "STEER/AliESDZDC.h"
+#include "STEER/ESD/AliESDEvent.h"
+#include "STEER/ESD/AliESDZDC.h"
 
 #endif
 void CheckAlienZDCESD(Int_t year=2010, const char* period="10f", 
 	Int_t nRun=0, Int_t recoPass=1, Int_t nMaxFiles=1,
-	Bool_t plot=kTRUE, Bool_t esdWordCut=kFALSE)
+	Bool_t plot=kFALSE, Bool_t esdWordCut=kFALSE)
 {
   
  if(nRun==0){
@@ -33,13 +33,12 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
   
  // Histogram definition
  // ----------------------------------------------------------------
-/* TH2F *centroidZNsideC = new TH2F("centroidZNsideC","Impact point over ZNC",100,-5.,5.,100,-5.,5.);
+ TH2F *centroidZNsideC = new TH2F("centroidZNsideC","Impact point over ZNC",100,-3.5,3.5,100,-3.5,3.5);
   centroidZNsideC->SetXTitle("X_{ZNC} (cm)");
   centroidZNsideC->SetYTitle("Y_{ZNC} (cm)");
- TH2F * centroidZNsideA = new TH2F("centroidZNsideA","Impact point over ZNA",100,-5.,5.,100,-5.,5.);
+ TH2F * centroidZNsideA = new TH2F("centroidZNsideA","Impact point over ZNA",100,-3.5,3.5,100,-3.5,3.5);
   centroidZNsideA->SetXTitle("X_{ZNA} (cm)");
   centroidZNsideA->SetYTitle("Y_{ZNA} (cm)");
-*/
  TH1F * enZNC = new TH1F("enZNC", "ZNC signal",100,0.,2000.);
   enZNC->SetXTitle("E (GeV)");
  TH1F * enZPC = new TH1F("enZPC", "ZPC signal",100,0.,2000.);
@@ -58,35 +57,59 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
  char nomehistznc[30], nomehistzpc[30], nomehistzna[30], nomehistzpa[30];
  for(Int_t i=0; i<5; i++){
    sprintf(nomehistznc,"ZNC-pm%d",i);
-   hZNCTow[i] = new TH1D(nomehistznc, nomehistznc, 100, 0.,1000.);
+   hZNCTow[i] = new TH1D(nomehistznc, nomehistznc, 100, 0.,1200.);
    sprintf(nomehistzpc,"ZPC-pm%d",i);
-   hZPCTow[i] = new TH1D(nomehistzpc, nomehistzpc, 100, 0.,1000.);
+   hZPCTow[i] = new TH1D(nomehistzpc, nomehistzpc, 100, 0.,1200.);
    sprintf(nomehistzna,"ZNA-pm%d",i);
-   hZNATow[i] = new TH1D(nomehistzna, nomehistzna, 100, 0.,1000.);
+   hZNATow[i] = new TH1D(nomehistzna, nomehistzna, 100, 0.,1200.);
    sprintf(nomehistzpa,"ZPA-pm%d",i);
-   hZPATow[i] = new TH1D(nomehistzpa, nomehistzpa, 100, 0.,1000.);
+   hZPATow[i] = new TH1D(nomehistzpa, nomehistzpa, 100, 0.,1200.);
  }
- //
-/* TH1D *hSumQZNC = new TH1D("hSumQZNC", "hSumQZNC", 100, 0., 1000.);
- TH1D *hSumQZPC = new TH1D("hSumQZPC", "hSumQZPC", 100, 0., 1000.);
- TH1D *hSumQZNA = new TH1D("hSumQZNA", "hSumQZNA", 100, 0., 1000.);
- TH1D *hSumQZPA = new TH1D("hSumQZPA", "hSumQZPA", 100, 0., 1000.);
-*/
  //
  TH1F *hESDword = new TH1F("hESDword","hESDword",6,0.5,6.5);
  hESDword->SetXTitle("ZDC trigger pattern"); 
- //
- TH1F * hTDC[32];
- char ntdchist[20];
- for(Int_t itdc=0; itdc<32; itdc++){
-    sprintf(ntdchist,"TDC-ch.%d",itdc);
-    hTDC[itdc] = new TH1F(ntdchist, ntdchist, 160, -350., -310.);
+
+ 
+ // ----------------------------------------------------------------
+ // %%%%% TDCs
+ // ----------------------------------------------------------------
+ TH1F * hTDC[11];
+ for(Int_t itdc=0; itdc<11; itdc++){
+    
+    if(itdc==0)      hTDC[itdc] = new TH1F("TDCZNC", "TDC ZNC", 200, -150., 50.);
+    else if(itdc==1) hTDC[itdc] = new TH1F("TDCZNA", "TDC ZNA", 200, -150., 50.);
+    else if(itdc==2) hTDC[itdc] = new TH1F("TDCL0", "TDC L0", 100, 250., 350.);
+    else if(itdc==3) hTDC[itdc] = new TH1F("TDCADCgate", "TDC ADCgate", 100, 500., 600.);
+    else if(itdc==4) hTDC[itdc] = new TH1F("TDCZNsum", "TDC ZNsum", 60, -100., -40.);
+    else if(itdc==5) hTDC[itdc] = new TH1F("TDCZNdiff", "TDC ZNdiff", 60, -30., 30.);
+    else if(itdc==6) hTDC[itdc] = new TH1F("TDCZPC", "TDC ZPC", 200, -150., 50.);
+    else if(itdc==7) hTDC[itdc] = new TH1F("TDCZPA", "TDC ZPA", 200, -150., 50.);
+    else if(itdc==8) hTDC[itdc] = new TH1F("TDCZEM1", "TDC ZEM1", 200, -150., 50.);
+    else if(itdc==9) hTDC[itdc] = new TH1F("TDCZEM2", "TDC ZEM2", 200, -150., 50.);
+    else if(itdc==10) hTDC[itdc] = new TH1F("TDCorZN", "TDC OR ZN", 400, -150., 50.);
+    
     hTDC[itdc]->SetXTitle("TDC (ns)");
+ }
+ 
+ TH2F *hDebunch = new TH2F("hDebunch","hDebunch",240,-30.,30.,240,-30.,30.);
+ hDebunch->SetYTitle("t_{ZNC}+t_{ZNA} (ns)");
+ hDebunch->SetXTitle("t_{ZNC}-t_{ZNA} (ns)");
+ 
+ TH1F * hTDCcorr[4];
+ for(Int_t itdc=0; itdc<4; itdc++){
+    if(itdc==0)      hTDCcorr[itdc] = new TH1F("TDCZNCcorr", "TDC ZNC corr", 200, -100., 100.);
+    else if(itdc==1) hTDCcorr[itdc] = new TH1F("TDCZNAcorr", "TDC ZNA corr", 200, -100., 100.);
+    else if(itdc==2) hTDCcorr[itdc] = new TH1F("TDCDiffcorr", "TDC Diff corr", 100, -50., 50.);
+    else if(itdc==3) hTDCcorr[itdc] = new TH1F("TDCSumcorr", "TDC Sum corr", 100, -50., 50.);
+    
+    hTDCcorr[itdc]->SetXTitle("TDC (ns)");
  }
 
  TGrid::Connect("alien:",0,0,"t");
  gSystem->Exec(Form("gbbox find \"/alice/data/%d/LHC%s/000%d/ESDs/pass%d\" \"AliESDs.root\" > ESDFiles.txt",
        year, period, nRun, recoPass));
+ //gSystem->Exec(Form("gbbox find \"/alice/data/%d/LHC%s/000%d/ESDs/hlt_clustering\" \"AliESDs.root\" > ESDFiles.txt",
+ //      year, period, nRun));
  FILE* listruns=fopen("ESDFiles.txt","r");
  
  char esdFileName[200], filnamalien[200];
@@ -104,6 +127,7 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
   sprintf(directory,"/alice/data/%d",year);
   if(!strstr(esdFileName,directory)) continue;
   sscanf(esdFileName,"/alice/data/%d/LHC%s/000%d/ESDs/pass%d/%s/AliESDs.root",&year,&yperiod,&nRun,&recoPass,&dirESD);
+  //sscanf(esdFileName,"/alice/data/%d/LHC%s/000%d/ESDs/hlt_clustering/%s/AliESDs.root",&year,&yperiod,&nRun,&dirESD);
   sprintf(filnamalien,"alien://%s",esdFileName);
   printf("\n Opening file: %s\n",filnamalien);
  
@@ -137,10 +161,8 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
     // get the event summary data
     tree->GetEvent(iEvent);
     
-    //printf("    ev. type %d\n",esd->GetEventType());
     //
     if(esd->GetEventType() == 7){
-      nevPhys++;
       if(!esd) {
         Error("CheckESD", "no ESD object found for event %d", iEvent);
         return;
@@ -149,9 +171,14 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
       Double_t sumQznc=0., sumQzpc=0., sumQzna=0., sumQzpa=0.;
     
       AliESDZDC *esdZDC = esd->GetESDZDC();
-      //Double_t centrZNC={-999.,-999.}, centrZNA={-999.,-999.};
-      //esdZDC->GetZNCentroidInpp(centrZNC, centrZNA);
-      //Short_t npart = esdZDC->GetZDCParticipants();
+      //printf("    ev.%d  \n",nevPhys);
+      //esdZDC->Print("");
+      nevPhys++;
+
+      
+      Double_t centrZNC[2]={-999.,-999.}, centrZNA[2]={-999.,-999.};
+      esdZDC->GetZNCentroidInPbPb(2760.,centrZNC, centrZNA);
+      //
       Double_t energyZNC = esdZDC->GetZDCN1Energy();
       Double_t energyZPC = esdZDC->GetZDCP1Energy();
       Double_t energyZNA = esdZDC->GetZDCN2Energy();
@@ -188,8 +215,6 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
         nevZPC++;   
 	hESDword->Fill(6.);
       }
-      //if(centrZNC[0]!=-999. && centrZNC[1]!=-999) centroidZNsideC->Fill(centrZNC[0], centrZNC[1]);
-      //if(centrZNA[0]!=-999. && centrZNA[1]!=-999) centroidZNsideA->Fill(centrZNA[0], centrZNA[1]);
       enZNC->Fill(energyZNC);
       enZPC->Fill(energyZPC);
       enZNA->Fill(energyZNA);
@@ -227,11 +252,12 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
         }
       }
       //
+
+      if(centrZNA[0]!=-999. && centrZNA[1]!=-999) centroidZNsideA->Fill(centrZNA[0], centrZNA[1], towZNA[0]);
+      if(centrZNC[0]!=-999. && centrZNC[1]!=-999) centroidZNsideC->Fill(centrZNC[0], centrZNC[1], towZNC[0]);
 /*      if(esdWordCut){
         if((iWord & 0x00000010) == 0x00000010) {
 	  hSumQZNC->Fill(sumQznc);
-	  //
-	  //if(centrZNA[0]!=-999. && centrZNA[1]!=-999) centroidZNsideC->Fill(centrZNA[0], centrZNA[1]);
         }
 	//
         if((iWord & 0x00000020) == 0x00000020) {
@@ -248,34 +274,137 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
       hSumQZNA->Fill(sumQzna);
       hSumQZPA->Fill(sumQzpa);
 */
-      Float_t tdcData[32][4];
-      for(Int_t isc=0; isc<32; isc++){
-	for(Int_t i=0; i<4; i++) tdcData[isc][i] = esdZDC->GetZDCTDCData(isc, i);
-      }
-      for(Int_t itdc=0; itdc<32; itdc++){
-         for(Int_t j=0; j<4; j++){
-            if((itdc>=0 || itdc<=9) && (tdcData[itdc][j]!=0)){
-	       hTDC[itdc]->Fill(tdcData[itdc][j]-tdcData[15][j]);
-	    } 
+
+      Int_t tdcData[32][4];
+      Float_t tdcCorr[32][4];
+      for(int ij=0; ij<32; ij++){
+         for(int ik=0; ik<4;ik++){
+	   tdcData[ij][ik] = 9999.;
+	   tdcCorr[ij][ik] = -9999./0.025;
 	 }
       }
+      Float_t tdcC=-9999./0.025, tdcA=-9999./0.025, tdcGate=-9999./0.025, tdcL0=-9999./0.025;
+      Float_t tdcDiff=-9999./0.025, tdcSum=-9999./0.025;
+      Float_t tdcZPC=-9999./0.025, tdcZPA=-9999./0.025;
+      Float_t tdcZEM1=-9999./0.025, tdcZEM2=-9999./0.025;
+      Float_t tdcZNCcorr=-9999./0.025, tdcZNAcorr=-9999./0.025;
+      //
+      for(Int_t itdc=0; itdc<21; itdc++){
+         for(Int_t j=0; j<4; j++){
+	    
+	    tdcData[itdc][j] = esdZDC->GetZDCTDCData(itdc, j);
+	    if(tdcData[itdc][j] == 0.) continue; //change in 9999
+	    
+	 //printf(" TDC ch.%d hit %d:  %f   ns\n",itdc,j,0.025*esdZDC->GetZDCTDCData(itdc, j));
+	    tdcCorr[itdc][j] = esdZDC->GetZDCTDCCorrected(itdc, j);
+	 //printf("                  %f ns\n",esdZDC->GetZDCTDCCorrected(itdc, j));
+            if(itdc==12 && j==0 && (tdcData[10][0]!=0. && tdcData[12][0]!=0.)){ //change in 9999!!!
+	       tdcDiff = esdZDC->GetZDCTimeDiff();
+	       tdcSum = esdZDC->GetZDCTimeSum();
+	    }
+	    
+	    if(itdc==8 && tdcData[itdc][j]!=0.){
+	      tdcZEM1 = 0.025*(tdcData[itdc][j]);
+	    }
+	    else if(itdc==9 && tdcData[itdc][j]!=0.){
+	      tdcZEM2 = 0.025*(tdcData[itdc][j]);
+	    }
+	    else if(itdc==10 && tdcData[itdc][j]!=0.){
+	      tdcC = 0.025*(tdcData[itdc][j]); 
+	      tdcZNCcorr = tdcCorr[itdc][j];
+	      hTDCcorr[0]->Fill(tdcZNCcorr);
+	    }
+	    else if(itdc==11 && tdcData[itdc][j]!=0.){
+	      tdcZPC = 0.025*(tdcData[itdc][j]);
+	    }
+	    else if(itdc==12 && tdcData[itdc][j]!=0.){
+	      tdcA = 0.025*(tdcData[itdc][j]); 
+	      tdcZNAcorr = tdcCorr[itdc][j];
+	      hTDCcorr[1]->Fill(tdcZNAcorr);
+	    }
+	    else if(itdc==13 && tdcData[itdc][j]!=0.){
+	      tdcZPA = 0.025*(tdcData[itdc][j]);
+	    }
+	    else if(itdc==14 && tdcData[itdc][j]!=0.){
+	      tdcGate = 0.025*tdcData[itdc][j];
+	      hTDC[3]->Fill(tdcGate);
+	    }
+	    else if(itdc==15 && tdcData[itdc][j]!=0.){
+	      tdcL0 = 0.025*tdcData[itdc][j];
+	      hTDC[2]->Fill(tdcL0);
+              //
+	      if(tdcC!=-9999./0.025)    hTDC[0]->Fill(tdcC-tdcL0);
+              if(tdcA!=-9999./0.025)    hTDC[1]->Fill(tdcA-tdcL0);
+              if(tdcZPC!=-9999./0.025)  hTDC[6]->Fill(tdcZPC-tdcL0);
+              if(tdcZPA!=-9999./0.025)  hTDC[7]->Fill(tdcZPA-tdcL0);
+              if(tdcZEM1!=-9999./0.025) hTDC[8]->Fill(tdcZEM1-tdcL0);
+              if(tdcZEM2!=-9999./0.025) hTDC[9]->Fill(tdcZEM2-tdcL0);
+              if(tdcC!=-9999./0.025 && tdcA!=-9999./0.025 && tdcL0!=-9999./0.025){
+                tdcC = tdcC-tdcL0;
+	        tdcA = tdcA-tdcL0;
+                hTDC[4]->Fill(tdcC+tdcA);
+                hTDC[5]->Fill(tdcC-tdcA);
+                //printf(" TDCdata: sum %f  diff %f ", tdcC+tdcA, tdcC-tdcA);
+             	//hDebunch->Fill(tdcC-tdcA+2.1, tdcC+tdcA+65.5);
+              }
+              if(tdcZNAcorr!=-9999./0.025 && tdcZNCcorr!=-9999./0.025  && tdcL0!=-9999./0.025){
+             	hTDCcorr[2]->Fill(tdcZNCcorr-tdcZNAcorr);
+             	hTDCcorr[3]->Fill(tdcZNCcorr+tdcZNAcorr);
+             	hDebunch->Fill(tdcDiff, tdcSum);
+                //printf("        TDCcorr: sum %f  diff %f (ns) \n", tdcSum, tdcDiff);
+              }
+	    }
+	    else if(itdc==18 && tdcData[itdc][j]!=0.){
+	      hTDC[10]->Fill(0.025*tdcData[itdc][j]-tdcL0);
+	    }
+	 }
+      }//tdc scan
       
-    }
+
+    }//physics event
+      
     
-  }
+  }//event loop
   
   nAnalyzedFiles++;
   esdFile->Close();
   }//if(nAnalyzedFiles<=nMaxFiles)
   else{
-   printf("\t %d files analyzed\n\n",nMaxFiles);
-   break;
+    printf("\t %d files analyzed\n\n",nMaxFiles);
+    break;
   }
  } // while closing
   
- printf("    No. of events over threshold: ZNA: %d  ZPA: %d  ZEM1: %d "
+/* printf("    No. of events over threshold: ZNA: %d  ZPA: %d  ZEM1: %d "
         " ZEM2: %d  ZNC: %d  ZPC: %d\n\n", 
-        nevZNA, nevZPA, nevZEM1, nevZEM2, nevZNC, nevZPC);
+        nevZNA, nevZPA, nevZEM1, nevZEM2, nevZNC, nevZPC);*/
+   
+  TFile * fileout = new TFile("ESDhistos.root","recreate");
+  fileout->cd();
+  centroidZNsideC->Write();
+  centroidZNsideA->Write();
+  enZNC->Write();
+  enZNA->Write();
+  enZPC->Write();
+  enZPA->Write();
+  enZEM1->Write();
+  enZEM2->Write();
+  for(Int_t jj=0; jj<5; jj++){
+      hZNCTow[jj]->Write();
+      hZPCTow[jj]->Write();
+      hZNATow[jj]->Write();
+      hZPATow[jj]->Write();
+  }
+  /*hSumQZNC->Write();
+  hSumQZPC->Write();
+  hSumQZNA->Write();
+  hSumQZPA->Write();*/
+  //
+  hESDword->Write();
+  for(Int_t jj=0; jj<11; jj++) hTDC[jj]->Write();
+  for(Int_t jj=0; jj<4; jj++) hTDCcorr[jj]->Write();
+  //
+  fileout->Close();
 	
  if(plot){  
   //***********************************************************
@@ -466,31 +595,5 @@ void CheckAlienZDCESD(Int_t year=2010, const char* period="10f",
   hTDC[9]->SetFillColor(kAzure+5); hTDC[9]->SetLineColor(kAzure+5);
   hTDC[9]->Draw("");
  }
-   
-  TFile * fileout = new TFile("ESDhistos.root","recreate");
-  fileout->cd();
-  //centroidZNsideC->Write();
-  //centroidZNsideA->Write();
-  enZNC->Write();
-  enZNA->Write();
-  enZPC->Write();
-  enZPA->Write();
-  enZEM1->Write();
-  enZEM2->Write();
-  for(Int_t jj=0; jj<5; jj++){
-      hZNCTow[jj]->Write();
-      hZPCTow[jj]->Write();
-      hZNATow[jj]->Write();
-      hZPATow[jj]->Write();
-  }
-  /*hSumQZNC->Write();
-  hSumQZPC->Write();
-  hSumQZNA->Write();
-  hSumQZPA->Write();*/
-  //
-  hESDword->Write();
-  for(Int_t jj=0; jj<9; jj++) hTDC[jj]->Write();
-  //
-  fileout->Close();
 
 }

@@ -170,6 +170,7 @@ void PlotPedestalsvsTime(Int_t year=2011, Int_t firstRun=141820,
    graph[ic+17]->Draw("P, SAME");
  }
  cHadPeds->SaveAs("ZDCPedvsTime1.gif");
+ cHadPeds->SaveAs("ZDCPedvsTime1.C");
 
  TCanvas *cothPeds = new TCanvas("cothPeds","ZEM + Ref. pedestals",800,0,600,600);
  cothPeds->Divide(2,2);
@@ -202,5 +203,6 @@ void PlotPedestalsvsTime(Int_t year=2011, Int_t firstRun=141820,
     graph[ic+22]->Draw("P, SAME");
  }
  cothPeds->SaveAs("ZDCPedvsTime2.gif");
+ cothPeds->SaveAs("ZDCPedvsTime2.C");
  
 }

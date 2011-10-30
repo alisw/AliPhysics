@@ -27,7 +27,7 @@ void CheckPedestalHistos(Int_t nRun=0,  Int_t optPlot = 1)
   TGrid::Connect("alien:",0,0,"t");
   
   char histoFName[150];
-  sprintf(histoFName,"alien:///alice/data/2010/Reference/ZDC/%d_pedestalReference.root",nRun);
+  sprintf(histoFName,"alien:///alice/data/2011/Reference/ZDC/%d_pedestalReference.root",nRun);
 
   int const kNChannels = 24;
   //
