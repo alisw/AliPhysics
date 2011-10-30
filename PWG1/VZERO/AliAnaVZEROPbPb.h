@@ -35,6 +35,9 @@ public:
   TH2F* CreateHisto2D(const char* name, const char* title, Int_t nBinsX, Double_t xMin, Double_t xMax,
 		      Int_t nBinsY, Double_t yMin, Double_t yMax,
 		      const char* xLabel = NULL, const char* yLabel = NULL);
+  
+  static const Int_t kNBinMult;
+  static const Float_t kMultMax;
 
  private:
   AliESDEvent *fESD;    //! ESD object
@@ -83,6 +86,10 @@ public:
   TH1F **fhTriggerBits;
   TH1F **fhTotRecoMult;
   TH1F **fhCentrality;
+  TH2F **fhEqualizedMult;
+  TH2F **fhEqualizedMultSum;
+  TH1F **fhL2TriggersEfficiency;
+  TH1F *fhVBANDCounts;
 
   AliAnaVZEROPbPb(const AliAnaVZEROPbPb&); // not implemented
   AliAnaVZEROPbPb& operator=(const AliAnaVZEROPbPb&); // not implemented
