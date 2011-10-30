@@ -618,7 +618,7 @@ Int_t AliQADataMaker::ResetData(TObjArray ** list, Int_t index, Option_t* option
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Reset(option);
+    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Reset(option);
   }
   return count;
 }
@@ -631,7 +631,7 @@ Int_t AliQADataMaker::ResetStatsData(TObjArray ** list, Int_t index)
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->ResetStats();
+    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->ResetStats();
   }
   return count;
 }
@@ -831,34 +831,67 @@ void AliQADataMaker::SetCloningRequest(TObjArray* aliases, TObjArray* histos)
   int nhisto = fgCloningRequest->GetEntriesFast();
   //
   int naliasUsed = 0;
+  for (int ial=0;ial<nalias;ial++) fgTrigClasses->At(ial)->SetUniqueID(kDummyID); // reset usage flag
+  //
+  for (int ih=nhisto;ih--;) {
+    TNamed* histo = (TNamed*)fgCloningRequest->At(ih);
+    TString histoReq = histo->GetTitle();    // list of aliases for which the histo must be cloned
+    TObjArray* alList = histoReq.Tokenize(" ");
+    // 
+    if (!alList) {
+      AliErrorClass(Form("Invalid cloning request is found for histo %s :|%s|",histo->GetName(),histo->GetTitle()));
+      fgCloningRequest->RemoveAt(ih);
+      delete histo;
+      continue;
+    }
+    TString confirmedAliases = "";
+    for (int iha=alList->GetEntriesFast();iha--;) {
+      // check if corresponding alias is defined
+      Bool_t aliasOK = kFALSE;
+      for (int ial=0;ial<nalias;ial++) {
+	TNamed* alias = (TNamed*)fgTrigClasses->At(ial);
+	TString aliasName = alias->GetName();
+	if (aliasName == alList->At(iha)->GetName()) { // found
+	  aliasOK = kTRUE;
+	  if (alias->GetUniqueID() == kDummyID) alias->SetUniqueID(naliasUsed++);      // acknowledge used alias
+	}
+      }
+      if (!aliasOK) {
+	AliErrorClass(Form("Cloning for undefined trigger alias %s is requested for histo %s, SUPPRESSING",
+		      alList->At(iha)->GetName(),histo->GetName()));
+      }
+      else confirmedAliases += Form("%s ",alList->At(iha)->GetName());
+    }
+    if (confirmedAliases.IsNull()) {
+      AliErrorClass(Form("All requested trigger aliases for histo %s are undefined, SUPPRESSING",histo->GetName()));
+      fgCloningRequest->RemoveAt(ih);
+      delete histo;
+    }
+    else histo->SetTitle(confirmedAliases.Data());
+    //
+    delete alList;
+  }
+  fgCloningRequest->Compress();
+  //
+  // check if there are unused aliases
+  naliasUsed = 0;
   for (int ial=0;ial<nalias;ial++) {
     TNamed* alias = (TNamed*)fgTrigClasses->At(ial);
-    alias->SetUniqueID(kDummyID);
-    TString aliasName = alias->GetName();
-    for (int ih=nhisto;ih--;) {
-      TNamed* histo = (TNamed*)fgCloningRequest->At(ih);
-      TString histoReq = histo->GetTitle();    // list of aliases for which the histo must be cloned
-      TObjArray* alList = histoReq.Tokenize(" ");
-      if (!alList) continue;
-      for (int iha=alList->GetEntriesFast();iha--;) {
-	if (!(aliasName == alList->At(iha)->GetName())) continue;
-	alias->SetUniqueID(naliasUsed++);      // acknowledge used alias
-	break;
-      }
-      if (alias->GetUniqueID()!=kDummyID) break;  // once alias is validated, check the next one
+    if (alias->GetUniqueID() != kDummyID) alias->SetUniqueID(naliasUsed++); // count as defined
+    else {
+      AliWarningClass(Form("Suppressing unused trigger alias %s\t->\t%s",alias->GetName(),alias->GetTitle()));
+      delete fgTrigClasses->RemoveAt(ial);
     }
   }
-  // eliminate unused aliases
-  for (int ial=0;ial<nalias;ial++) if (fgTrigClasses->At(ial)->GetUniqueID()==kDummyID) delete fgTrigClasses->RemoveAt(ial);
   fgTrigClasses->Compress();
   //
-  AliInfoClass("Aliases for trigger classes:");
+  AliInfoClass("Confirmed aliases for trigger classes:");
   for (int i=0;i<fgTrigClasses->GetEntriesFast();i++) {
     TNamed* item = (TNamed*)fgTrigClasses->At(i);
     AliInfoClass(Form("%s -> %s",item->GetName(),item->GetTitle()));
   }
   //
-  AliInfoClass("Histograms to clone:");
+  AliInfoClass("Confirmed histograms to clone:");
   for (int i=0;i<fgCloningRequest->GetEntriesFast();i++) {
     TNamed* item = (TNamed*)fgCloningRequest->At(i);
     AliInfoClass(Form("%s -> %s %s",item->GetName(),item->GetTitle(),
