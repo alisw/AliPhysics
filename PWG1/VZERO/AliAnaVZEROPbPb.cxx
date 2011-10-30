@@ -20,6 +20,9 @@
 
 ClassImp(AliAnaVZEROPbPb)
 
+  const Int_t   AliAnaVZEROPbPb::kNBinMult = 200;
+  const Float_t AliAnaVZEROPbPb::kMultMax  = 20000.;
+
 
 AliAnaVZEROPbPb::AliAnaVZEROPbPb() 
   : AliAnalysisTaskSE("AliAnaVZEROPbPb"), fESD(0), fEsdV0(0), fOutputList(0), fClassesNames(0),
@@ -44,7 +47,11 @@ fhRecoMult(0),
 fhV0vsSPDCentrality(0),
 fhTriggerBits(0),
 fhTotRecoMult(0),
-fhCentrality(0)
+fhCentrality(0),
+fhEqualizedMult(0),
+fhEqualizedMultSum(0),
+fhL2TriggersEfficiency(0),
+fhVBANDCounts(0)
 {
   // Constructor
   for(Int_t i = 0; i < 2; ++i) {
@@ -84,7 +91,11 @@ fhRecoMult(0),
 fhV0vsSPDCentrality(0),
 fhTriggerBits(0),
 fhTotRecoMult(0),
-fhCentrality(0)
+fhCentrality(0),
+fhEqualizedMult(0),
+fhEqualizedMultSum(0),
+fhL2TriggersEfficiency(0),
+fhVBANDCounts(0)
 {
   // Constructor
   for(Int_t i = 0; i < 2; ++i) {
@@ -148,8 +159,8 @@ void AliAnaVZEROPbPb::UserCreateOutputObjects()
   fOutputList->SetOwner(kTRUE);
 
 
+ 	CreateHistosPerL2Trigger();
     CreateQAHistos();
-	CreateHistosPerL2Trigger();
 
   PostData(1, fOutputList);
  }
@@ -191,13 +202,18 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 	fhOnlineCharge= new TH2F*[fNClasses];
 	fhCentrality= new TH1F*[fNClasses];
 	fhV0vsSPDCentrality= new TH2F*[fNClasses];
+	fhL2TriggersEfficiency = new TH1F*[fNClasses];
 	fhRecoMult= new TH2F*[fNClasses];
 	fhTotRecoMult= new TH1F*[fNClasses];
 	fhTriggerBits= new TH1F*[fNClasses];
-
+	fhEqualizedMult= new TH2F*[fNClasses];
+	fhEqualizedMultSum = new TH2F*[fNClasses];
+	
 	fhL2Triggers = CreateHisto1D("hL2Triggers","L2 Triggers",fNClasses,0,fNClasses);
   	fOutputList->Add(fhL2Triggers);	  
-
+	
+	fhVBANDCounts = CreateHisto1D("hVBANDTrigger","VBAND Triggers counts",kNBinMult,0.,kMultMax,"VZERO charge");
+  	fOutputList->Add(fhVBANDCounts);	  
 
 	TIter iter(fClassesNames);
 	TObjString* name;
@@ -217,7 +233,7 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 		fhRecoMult[iClass] = CreateHisto2D(Form("hRecoMult_%s",name->String().Data()),Form("Reco Multiplicity for %s",name->String().Data()),100,0.,10000.,100,0.,20000,"V0A Mult","V0C Mult");
 	  	fOutputList->Add(fhRecoMult[iClass]);	  
 
-		fhTotRecoMult[iClass] = CreateHisto1D(Form("hTotRecoMult_%s",name->String().Data()),Form("Total Reco Multiplicity for %s",name->String().Data()),200,0.,20000.,"V0A + V0C Mult");
+		fhTotRecoMult[iClass] = CreateHisto1D(Form("hTotRecoMult_%s",name->String().Data()),Form("Total Reco Multiplicity for %s",name->String().Data()),kNBinMult,0.,kMultMax,"V0A + V0C Mult");
 	  	fOutputList->Add(fhTotRecoMult[iClass]);	  
 
 		fhTriggerBits[iClass] = CreateHisto1D(Form("hTriggerBits_%s",name->String().Data()),Form("Trigger Bits for %s",name->String().Data()),16,-0.5,15.5);
@@ -237,8 +253,17 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(14,"BBC");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(15,"BGA_OR_BGC");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(16,"All True BG");
-	  	fOutputList->Add(fhTriggerBits[iClass]);	  
+	  	fOutputList->Add(fhTriggerBits[iClass]);
+	
+		fhEqualizedMult[iClass] = CreateHisto2D(Form("hEqualizedMult_%s",name->String().Data()),Form("Equalized Multiplicity for %s",name->String().Data()),64,-0.5,63.5,1000,0.,50,"PMT channel","Equalized Multiplicity");
+	  	fOutputList->Add(fhEqualizedMult[iClass]);
+	
+		fhEqualizedMultSum[iClass] = CreateHisto2D(Form("hEqualizedMultSum_%s",name->String().Data()),Form("Summed Equalized Multiplicity for %s",name->String().Data()),100,0.,500.,100,0.,1000,"V0A","V0C");
+	  	fOutputList->Add(fhEqualizedMultSum[iClass]);
 
+		fhL2TriggersEfficiency[iClass] = CreateHisto1D(Form("hL2TriggersEfficiency_%s",name->String().Data()),Form("Trigger %s Efficiency",name->String().Data()),kNBinMult,0.,kMultMax,"VZERO Multiplicity");
+	  	fOutputList->Add(fhL2TriggersEfficiency[iClass]);
+		
 		iClass++;
 	}
 	
@@ -340,6 +365,8 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 	TIter iter(fClassesNames);
 	TObjString* name;
 	Int_t iClass =0;
+	if (trigStr.Contains("CPBI2-B"))  fhVBANDCounts->Fill(fEsdV0->GetMTotV0A()+fEsdV0->GetMTotV0C());
+	
   while((name = (TObjString*) iter.Next())){
 	
 	if (!trigStr.Contains(name->String().Data()) && iClass>0) continue;
@@ -350,6 +377,7 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 		
   	fhRecoMult[iClass]->Fill(fEsdV0->GetMTotV0A(),fEsdV0->GetMTotV0C());
   	fhTotRecoMult[iClass]->Fill(fEsdV0->GetMTotV0A()+fEsdV0->GetMTotV0C());
+
 
 	for(int iTrig = 0; iTrig < 16; ++iTrig){
 		if(fEsdV0->GetTriggerBits() & (1<<iTrig)) fhTriggerBits[iClass]->Fill(iTrig);	
@@ -362,6 +390,16 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
   	if (percentile < 0) percentile = 0;
 	fhCentrality[iClass]->Fill(percentile);
 	fhV0vsSPDCentrality[iClass]->Fill(spdPercentile,percentile);
+	
+	Float_t sumEqMult[2] = {0.,0.};
+	for(int iCh = 0; iCh < 64; ++iCh){
+		if(fEsdV0->GetTime(iCh) < 1e-6) continue;
+		Int_t side = iCh / 32 ;
+		sumEqMult[side] += fESD->GetVZEROEqMultiplicity(iCh);
+		fhEqualizedMult[iClass]->Fill(iCh,fESD->GetVZEROEqMultiplicity(iCh));
+	}
+	fhEqualizedMultSum[iClass]->Fill(sumEqMult[1],sumEqMult[0]);
+	
 	iClass++;
   }
 }
@@ -436,4 +474,12 @@ void AliAnaVZEROPbPb::Terminate(Option_t *)
     printf("ERROR: Output list not available\n");
     return;
   }
+	fhVBANDCounts= (TH1F*) fOutputList->At(1); // VBAND histo
+	
+	for(int i = 0; i < fNClasses; ++i){
+		fhTotRecoMult[i] = (TH1F*) fOutputList->At(6+ i*9); // Other defined trigger histo
+		fhL2TriggersEfficiency[i] = (TH1F*) fOutputList->At(10+ i*9); 
+		fhL2TriggersEfficiency[i]->Divide(fhTotRecoMult[i],fhVBANDCounts);
+	}
+
 }
