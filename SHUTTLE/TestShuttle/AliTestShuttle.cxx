@@ -385,7 +385,7 @@ const char* AliTestShuttle::GetFile(Int_t system, const char* detector, const ch
     return 0;
   }
 
-  return fileName->GetString().Data();
+  return fileName->String().Data();
 }
 
 //______________________________________________________________________________________________
