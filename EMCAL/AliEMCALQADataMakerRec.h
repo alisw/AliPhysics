@@ -37,7 +37,8 @@ class TObjArray ;
 #include "AliQADataMakerRec.h"
 class AliCaloRawAnalyzer;
 class AliCaloRawAnalyzerKStandard;
-class AliEMCALGeoParams;
+//class AliEMCALGeoParams;
+class AliEMCALGeometry;
 
 class AliEMCALQADataMakerRec: public AliQADataMakerRec {
 
@@ -57,7 +58,10 @@ public:
     // and also LED Mon info
     kNsmodLGLEDMon,kNsmodHGLEDMon,kTimeLGLEDMon,kTimeHGLEDMon,
     kSigLGLEDMon,kSigHGLEDMon,kNtotLGLEDMon,kNtotHGLEDMon,
-    kPedLGLEDMon,kPedHGLEDMon
+    kPedLGLEDMon,kPedHGLEDMon,
+		//and STU info
+		kAmpL1, kGL1, kJL1,
+		kGL1V0, kJL1V0, kSTUTRU  
   } ;
 
   //Histograms for RecPoints  control
@@ -130,7 +134,8 @@ public:
   virtual void   MakeDigits() ;
   virtual void   MakeDigits(TTree * digTree) ; 
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
-  virtual void   MakeRaws(AliRawReader* rawReader) ; 
+  virtual void   MakeRaws(AliRawReader* rawReader) ;
+	void					 MakeRawsSTU(AliRawReader* rawReader);
   virtual void   StartOfDetectorCycle() ; 
 
 private:
@@ -140,6 +145,7 @@ private:
 
  AliCaloRawAnalyzer *fRawAnalyzer;    // for signal fitting
  AliCaloRawAnalyzerKStandard *fRawAnalyzerTRU;    // for signal fitting, for TRU
+ AliEMCALGeometry *fGeom; //EMCAL geometry, needed for STU decoding
 
   int fSuperModules; //The number of SuperModules activated
   int fFirstPedestalSample; // first sample for pedestal calculation, in bunch
