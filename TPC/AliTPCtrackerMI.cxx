@@ -141,6 +141,7 @@
 #include "AliTPCcalibDButil.h"
 #include "AliTPCTransform.h"
 #include "AliTPCClusterParam.h"
+#include "AliTPCdEdxInfo.h"
 
 //
 
@@ -2785,6 +2786,23 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
 	dedx += (1 - corrGain)*50.; // MIP is normalized to 50
       }
       esd->SetTPCsignal(dedx, sdedx, ndedx);
+      //
+      // fill new dEdx information
+      //
+      Double32_t signal[4]; 
+      Char_t ncl[3]; 
+      Char_t nrows[3];
+      //
+      for(Int_t iarr=0;iarr<3;iarr++) {
+	signal[i] = seed->GetDEDXregion(i+1);
+	ncl[i] = seed->GetNCDEDX(i+1);
+	nrows[i] = seed->GetNCDEDXInclThres(i+1);
+      }
+      signal[3] = seed->GetDEDXregion(4);
+      //
+      AliTPCdEdxInfo * infoTpcPid = new AliTPCdEdxInfo();
+      infoTpcPid->SetTPCSignalRegionInfo(signal, ncl, nrows);
+      esd->SetTPCdEdxInfo(infoTpcPid);
       //
       // add seed to the esd track in Calib level
       //

@@ -576,17 +576,23 @@ Float_t AliTPCseed::CookdEdx(Double_t low, Double_t up,Int_t i1, Int_t i2, Bool_
   fDEDX[1]      = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 0);
   fDEDX[2]      = CookdEdxAnalytical(low,up,useTot ,row0,row1, 0);
   fDEDX[3]      = CookdEdxAnalytical(low,up,useTot ,row1,row2, 0);
+  fDEDX[4]      = CookdEdxAnalytical(low,up,useTot ,row0,row2, 0); // full OROC truncated mean
   //
   fSDEDX[0]     = CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   1);
   fSDEDX[1]     = CookdEdxAnalytical(low,up,useTot ,0   ,row0, 1);
   fSDEDX[2]     = CookdEdxAnalytical(low,up,useTot ,row0,row1, 1);
   fSDEDX[3]     = CookdEdxAnalytical(low,up,useTot ,row1,row2, 1);
   //
-  fNCDEDX[0]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,i1  ,i2,   2));
-  fNCDEDX[1]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,0   ,row0, 2));
-  fNCDEDX[2]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,row0,row1, 2));
-  fNCDEDX[3]    = TMath::Nint(CookdEdxAnalytical(low,up,useTot ,row1,row2, 2));
-
+  fNCDEDX[0]    = TMath::Nint(GetTPCClustInfo(2, 1, i1  , i2));
+  fNCDEDX[1]    = TMath::Nint(GetTPCClustInfo(2, 1, 0   , row0));
+  fNCDEDX[2]    = TMath::Nint(GetTPCClustInfo(2, 1, row0, row1));
+  fNCDEDX[3]    = TMath::Nint(GetTPCClustInfo(2, 1, row1, row2));
+  //
+  fNCDEDXInclThres[0]    = TMath::Nint(GetTPCClustInfo(2, 2, i1  , i2));
+  fNCDEDXInclThres[1]    = TMath::Nint(GetTPCClustInfo(2, 2, 0   , row0));
+  fNCDEDXInclThres[2]    = TMath::Nint(GetTPCClustInfo(2, 2, row0, row1));
+  fNCDEDXInclThres[3]    = TMath::Nint(GetTPCClustInfo(2, 2, row1, row2));
+  //
   SetdEdx(fDEDX[0]);
   return fDEDX[0];
 
@@ -1613,3 +1619,65 @@ Double_t AliTPCseed::GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty,
 
 }
 
+
+//_______________________________________________________________________
+Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1)
+{
+  //
+  // TPC cluster information
+  // type 0: get fraction of found/findable clusters with neighbourhood definition
+  //      1: found clusters
+  //      2: findable (number of clusters above and below threshold)
+  //
+  // definition of findable clusters:
+  //            a cluster is defined as findable if there is another cluster
+  //           within +- nNeighbours pad rows. The idea is to overcome threshold
+  //           effects with a very simple algorithm.
+  //
+
+  const Float_t kClusterShapeCut = 1.5; // IMPPRTANT TO DO: move value to AliTPCRecoParam
+  const Float_t ktany = TMath::Tan(TMath::DegToRad()*10);
+  const Float_t kedgey =3.;
+  
+  Float_t ncl = 0;
+  Float_t nclBelowThr = 0; // counts number of clusters below threshold
+
+  for (Int_t irow=row0; irow<row1; irow++){
+    AliTPCclusterMI* cluster = GetClusterPointer(irow);
+
+    if (!cluster && irow > 1 && irow < 157) {
+      Bool_t isClBefore = kFALSE;
+      Bool_t isClAfter  = kFALSE;
+      for(Int_t ithres = 1; ithres <= nNeighbours; ithres++) {
+	AliTPCclusterMI * clusterBefore = GetClusterPointer(irow - ithres);
+	if (clusterBefore) isClBefore = kTRUE;
+	AliTPCclusterMI * clusterAfter  = GetClusterPointer(irow + ithres);
+	if (clusterAfter) isClAfter = kTRUE;
+      }
+      if (isClBefore && isClAfter) nclBelowThr++;
+    }
+    if (!cluster) continue;
+    //
+    //
+    if (TMath::Abs(cluster->GetY())>cluster->GetX()*ktany-kedgey) continue; // edge cluster
+    //
+    AliTPCTrackerPoint * point = GetTrackPoint(irow);
+    if (point==0) continue;    
+    Float_t rsigmay = TMath::Sqrt(point->GetSigmaY());
+    if (rsigmay > kClusterShapeCut) continue;
+    //
+    if (cluster->IsUsed(11)) continue; // remove shared clusters for PbPb
+    ncl++;
+  }
+
+  if(ncl<10)
+    return 0;
+  if(type==0) 
+    if(nclBelowThr+ncl>0)
+      return ncl/(nclBelowThr+ncl);
+  if(type==1)
+    return ncl;
+  if(type==2)
+    return ncl+nclBelowThr;
+  return 0;
+}

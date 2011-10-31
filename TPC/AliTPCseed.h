@@ -113,7 +113,9 @@ class AliTPCseed : public AliTPCtrack {
      Int_t GetSeed2() const {return fSeed2;}
      AliESDtrack* GetESD() {return fEsd;}
      Float_t GetSDEDX(Int_t i) const {return fSDEDX[i];}
+     Float_t GetDEDXregion(Int_t i) const {return fDEDX[i];}
      Int_t GetNCDEDX(Int_t i) const {return fNCDEDX[i];}
+     Int_t GetNCDEDXInclThres(Int_t i) const {return fNCDEDXInclThres[i];}
      Bool_t GetBSigned() const {return fBSigned;}
      Int_t GetSort() const {return fSort;}
      Int_t GetOverlapLabel(Int_t i) const {return fOverlapLabels[i];}
@@ -141,6 +143,8 @@ class AliTPCseed : public AliTPCtrack {
 			 Double_t& rmsy, Double_t &rmsz);
   static   Double_t GetQCorrGeom(Float_t ty, Float_t tz);
   static   Double_t GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr);
+  //
+  Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1);
   
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
@@ -169,9 +173,10 @@ class AliTPCseed : public AliTPCtrack {
      Bool_t  fBSigned;        //indicates that clusters of this trackes are signed to be used
      //
      //
-     Float_t fDEDX[4];         // dedx according padrows
-     Float_t fSDEDX[4];        // sdedx according padrows
-     Int_t   fNCDEDX[4];       // number of clusters for dedx measurment
+     Float_t fDEDX[5];            // dedx according padrows
+     Float_t fSDEDX[4];           // sdedx according padrows
+     Int_t   fNCDEDX[4];          // number of clusters for dedx measurment
+     Int_t   fNCDEDXInclThres[4]; // number of clusters for dedx measurment including sub-threshold clusters
      Double_t fTPCr[AliPID::kSPECIES];   // rough PID according TPC   
      //
      Int_t   fSeedType;         //seeding type
@@ -181,7 +186,7 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
-     ClassDef(AliTPCseed,4)  
+     ClassDef(AliTPCseed,5)  
 };
 
 
