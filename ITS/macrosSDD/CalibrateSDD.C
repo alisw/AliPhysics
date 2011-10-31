@@ -92,6 +92,8 @@ int    smoothLevel= 5;         // smoothing level
 int    minBinsEdge = 5;        // min number of X>0 good bins to fit the edge
 Bool_t useSplieForR2V = kFALSE;      // if true, extract Vd profile using Derivateve of spline (may be inadequate for sharp turns)
 //
+
+Bool_t userLeftRightFromTASK = kTRUE;   // VERY IMPORTANT: histos produced by AliAnalysisTaskITSAlignQA have inverted left/right side definitions
 Bool_t forceT0CorrTo0   = kFALSE;//kTRUE;
 Bool_t forceRPhiCorrTo0 = kTRUE;
 Bool_t userDummyCorrMap = kFALSE;//kTRUE;
@@ -466,7 +468,8 @@ TProfile* GetQAHisto(Int_t qaType)
   if (qaType<0 || qaType>=kNQATypes) 
     {printf("Illegal QA Histo Type %d\n",qaType); exit(1);}
   //
-  const char* hname = Form("%s%d_%s",kQAHistoNames[qaType],currSDDId,kLRNames[currSDDSide]);
+  int trueSide = userLeftRightFromTASK ? (1-currSDDSide) : currSDDSide;
+  const char* hname = Form("%s%d_%s",kQAHistoNames[qaType],currSDDId,kLRNames[trueSide]);
   TH1* h = (TH1*) qaHistos->FindObject(hname);
   if (!h) {printf("Did not find histo %s in QA output collection\n",hname); exit(1);}
   //
@@ -759,13 +762,16 @@ void CheckResultDX()
   xmin += kFOffs*del;
   xmax -= kFOffs*del;
   //
+  fitP1->SetParameters(0,0);
   currGrDxx->Fit(fitP1,"q","",xmin, xmax);
   double offs = fitP1->GetParameter(0);           // offset of correction line at Xdrift=0
   //
   //  printf("Fitting VD correction in the range %.1f:%.1f\n",tmin,tmax);
+  fitP1->SetParameters(0,0);
   currGrTDx->Fit(fitP1,"q","",tmin,tmax);
   double vcor = fitP1->GetParameter(1);
   //
+  fitP1->SetParameters(0,0);
   currGrTXCorr->Fit(fitP1,"q","",tmin,tmax);
   double vav = fitP1->GetParameter(1);
   //
