@@ -63,6 +63,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhSPDVertexX; //! output histo
   TH1F        *fhSPDVertexY; //! output histo
   TH1F        *fhSPDVertexZ; //! output histo
+  TH1F        *fhSPDVertexZonly; //! output histo
   TH1F        *fhTRKVertexX; //! output histo
   TH1F        *fhTRKVertexY; //! output histo
   TH1F        *fhTRKVertexZ; //! output histo
@@ -96,6 +97,9 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   TH1F        *fhSPDContributorsPile; //! output histo
   TH2F        *fhSPDDispContributors; //! output histo
   AliVEvent::EOfflineTriggerTypes    fTriggerType; //flag to set trigger type
+	
+  TH2F        *fhntrksSPDvsSPDcls;//!  output histo correlation contributors vs number of clustrers spd 
+  TH2F        *fhntrksZvsSPDcls; //! output histo correlation contributors vs number of clustrers spd
 
  private:    
 
@@ -104,7 +108,7 @@ class AliAnalysisTaskVertexESD : public AliAnalysisTaskSE
   AliESDVertex* ReconstructPrimaryVertexTPC(Bool_t constr=kFALSE) const;
   AliESDVertex* ReconstructPrimaryVertexITSTPC(Bool_t constr=kFALSE,Int_t mode=0) const;
   
-  ClassDef(AliAnalysisTaskVertexESD,10); // primary vertex analysis
+  ClassDef(AliAnalysisTaskVertexESD,11); // primary vertex analysis
 };
 
 #endif

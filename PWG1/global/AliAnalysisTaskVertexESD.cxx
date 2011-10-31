@@ -79,6 +79,7 @@ AliAnalysisTaskSE(name),
   fhSPDVertexX(0),
   fhSPDVertexY(0),
   fhSPDVertexZ(0),
+  fhSPDVertexZonly(0),
   fhTRKVertexX(0),
   fhTRKVertexY(0),
   fhTRKVertexZ(0),
@@ -108,7 +109,9 @@ AliAnalysisTaskSE(name),
   fhSPDVertexDiffZPileDefault(0),
   fhSPDContributorsPile(0),
   fhSPDDispContributors(0),
-  fTriggerType(AliVEvent::kMB)	
+  fTriggerType(AliVEvent::kMB),
+  fhntrksSPDvsSPDcls(0),
+  fhntrksZvsSPDcls(0)
 {
   // Constructor
 
@@ -151,6 +154,10 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhSPDVertexY);
   fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(fhSPDVertexZ);
+  	
+  fhSPDVertexZonly = new TH1F("fhSPDVertexZonly","SPDVertexer z; z vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhSPDVertexZonly);	
+	
   fhTRKVertexX = new TH1F("fhTRKVertexX","TRKVertex x; x vertex [cm]; events",200,-1,1);
   fOutput->Add(fhTRKVertexX);
   fhTRKVertexY = new TH1F("fhTRKVertexY","TRKVertex y; y vertex [cm]; events",200,-1,1);
@@ -235,6 +242,12 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fhSPDDispContributors = new TH2F("fhSPDDispContributors","ncontributors main-pile; ncontributors main; ncontributors pile",200,-0.5,199.5,200,-0.5,199.5);
   fOutput->Add(fhSPDDispContributors);
   
+  fhntrksSPDvsSPDcls = new TH2F("fhntrksSPDvsSPDcls", "ncontributors SPD3D vs number of cluster SPD; nContributors 3D; nCluster SPD1",300,0.,3000.,400,0.,8000.);
+  fOutput->Add(fhntrksSPDvsSPDcls);
+	
+  fhntrksZvsSPDcls = new TH2F("fhntrksZvsSPDcls", "ncontributors SPDZ vs number of cluster SPD; nContributors Z; nCluster SPD1",300,0.,3000.,400,0.,8000.); 
+  fOutput->Add(fhntrksZvsSPDcls);
+	
   PostData(1, fOutput);
 
   return;
@@ -344,7 +357,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Int_t nInFile = esdE->GetEventNumberInFile();
 
  const AliMultiplicity *alimult = esdE->GetMultiplicity();
-  Int_t ntrklets=0,spd0cls=0;
+  Int_t ntrklets=0,spd0cls=0, spd1cls=0;
   if(alimult) {
     ntrklets = alimult->GetNumberOfTracklets();
 
@@ -352,6 +365,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
     }
     spd0cls = alimult->GetNumberOfSingleClusters()+ntrklets;
+	spd1cls = alimult->GetNumberOfITSClusters(1);
   }
 
 
@@ -401,13 +415,19 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     if(spdv->GetNContributors()>0) {
       TString title=spdv->GetTitle();
       if(title.Contains("3D")) {
-	fhSPDVertexX->Fill(spdv->GetXv());
-	fhSPDVertexY->Fill(spdv->GetYv());
+		  fhSPDVertexX->Fill(spdv->GetXv());
+		  fhSPDVertexY->Fill(spdv->GetYv());
+		  fhSPDVertexZ->Fill(spdv->GetZv()); 
+		  
+		  fhntrksSPDvsSPDcls->Fill(spdv->GetNContributors(), spd0cls);
       }
-      fhSPDVertexZ->Fill(spdv->GetZv());
-    }
+	 if(title.Contains("Z")){
+		 fhSPDVertexZonly->Fill(spdv->GetZv());
+		 fhntrksZvsSPDcls->Fill(spdv->GetNContributors(), spd1cls);
+	 }
+	}
   }
-  
+	
   if(trkv) {
     if(trkv->GetNContributors()>0) {
       fhTRKVertexX->Fill(trkv->GetXv());
