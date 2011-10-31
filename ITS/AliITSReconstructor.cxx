@@ -98,20 +98,20 @@ void AliITSReconstructor::Reconstruct(TTree *digitsTree, TTree *clustersTree) co
 // reconstruct clusters
 
   Int_t cluFindOpt = GetRecoParam()->GetClusterFinder();
-
+  TString recopt = GetRecoParam()->GetOptReco();
   fDetTypeRec->SetTreeAddressD(digitsTree);
   fDetTypeRec->MakeBranch(clustersTree,"R");
   fDetTypeRec->SetTreeAddressR(clustersTree);
-  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,"All",cluFindOpt);    
+  fDetTypeRec->DigitsToRecPoints(digitsTree,clustersTree,0,recopt.Data(),cluFindOpt);    
 }
 
 //_________________________________________________________________
 void AliITSReconstructor::Reconstruct(AliRawReader* rawReader, TTree *clustersTree) const
 {
   // reconstruct clusters from raw data
- 
+  TString recopt = GetRecoParam()->GetOptReco();
   fDetTypeRec->SetDefaultClusterFindersV2(kTRUE);
-  fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree);
+  fDetTypeRec->DigitsToRecPoints(rawReader,clustersTree,recopt.Data());
 }
 
 //_____________________________________________________________________________

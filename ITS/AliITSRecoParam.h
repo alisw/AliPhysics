@@ -469,6 +469,11 @@ class AliITSRecoParam : public AliDetectorRecoParam
   void SetTanLorentzAngleHolesSSD(Float_t la) {fTanLorentzAngleHolesSSD=la;}
   void SetTanLorentzAngleElectronsSSD(Float_t la) {fTanLorentzAngleElectronsSSD=la;}
 
+  // Option for local reconstruction
+  Bool_t SetOptReco(TString r);
+  void ReconstructOnlySPD(){fOptReco="SPD";}
+  TString GetOptReco() const {return fOptReco;}
+
   //
   enum {kMaxClusterPerLayer=70000}; //7000*10;   // max clusters per layer
   enum {kMaxClusterPerLayer5=28000};//7000*10*2/5;  // max clusters per layer
@@ -741,6 +746,10 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Bool_t fCorrectLorentzAngleSSD;         // flag to enable correction
   Float_t fTanLorentzAngleHolesSSD;       // tan(angle) for holes in SSD @ B = 0.5 T
   Float_t fTanLorentzAngleElectronsSSD;   // tan(angle) for electrons in SSD @ B = 0.5 T
+  //
+  // Possibility of reconstructing only part of the ITS
+  TString fOptReco;                      // "All" by default. It can be any 
+                                         // combination of "SPD" "SDD" and "SSD"
 
  private:
   AliESDV0Params * fESDV0Params;  // declare the AliESDV0Params to be able to used in AliITSV0Finder
@@ -748,7 +757,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,39) // ITS reco parameters
+  ClassDef(AliITSRecoParam,49) // ITS reco parameters
 };
 
 #endif

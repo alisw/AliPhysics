@@ -201,7 +201,8 @@ fCorrectLorentzAngleSSD(kTRUE),
 fTanLorentzAngleHolesSSD(0.016),  // tan(0.94 degrees)
 fTanLorentzAngleElectronsSSD(0.068), // tan(3.98 degrees)
 //
-fESDV0Params(NULL)
+fESDV0Params(NULL),
+fOptReco("All")
 {
   //
   // constructor
@@ -876,4 +877,18 @@ void AliITSRecoParam::PrintParameters() const
   return;
 }
 
+
+//_____________________________________________________________________________
+Bool_t AliITSRecoParam::SetOptReco(TString r){
+  // Set option for local reconstruction. 
+  // The string must contain at least one of the following
+  // substrings: "All", "SPD", "SDD", "SSD"
+  Bool_t isFine = kFALSE;
+  if(r.Contains("All") || r.Contains("SPD") || r.Contains("SDD") 
+     || r.Contains("SSD")){
+      isFine = kTRUE;
+      fOptReco=r;
+  }
+  return isFine;
+} 
 
