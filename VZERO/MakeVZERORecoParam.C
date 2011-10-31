@@ -32,6 +32,8 @@ void MakeVZERORecoParam(AliRecoParam::EventSpecie_t default=AliRecoParam::kLowMu
   }
   {
     AliVZERORecoParam * vzeroRecoParam = new AliVZERORecoParam;
+    vzeroRecoParam->SetStartClock(9);
+    vzeroRecoParam->SetEndClock(11);
     vzeroRecoParam->SetNPreClocks(6);
     vzeroRecoParam->SetEventSpecie(AliRecoParam::kHighMult);
     recoParamArray->AddLast(vzeroRecoParam);
