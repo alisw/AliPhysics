@@ -231,10 +231,12 @@ public:
   Int_t   GetTPCLabel() const {return fTPCLabel;}
   Int_t   GetKinkIndex(Int_t i) const { return fKinkIndexes[i];}
   Int_t   GetV0Index(Int_t i) const { return fV0Indexes[i];}
+  const TBits& GetTPCFitMap() const {return fTPCFitMap;}
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
-  void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
-  void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
+  void    SetTPCFitMap(const TBits &amap) {fTPCFitMap = amap;}
+  void    SetTPCClusterMap(const TBits &amap) {fTPCClusterMap = amap;}
+  void    SetTPCSharedMap(const TBits &amap) {fTPCSharedMap = amap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   Float_t GetTPCCrossedRows() const;
   
@@ -399,6 +401,7 @@ protected:
   AliExternalTrackParam *fHMPIDp; // Track parameters at HMPID
   AliESDfriendTrack *fFriendTrack; //! All the complementary information
 
+  TBits    fTPCFitMap;     // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow which is used in the fit
   TBits    fTPCClusterMap; // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   TBits    fTPCSharedMap;  // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
 
@@ -515,7 +518,7 @@ protected:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 
   AliESDtrack & operator=(const AliESDtrack & );
-  ClassDef(AliESDtrack,62)  //ESDtrack 
+  ClassDef(AliESDtrack,63)  //ESDtrack 
 };
 
 

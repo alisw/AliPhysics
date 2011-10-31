@@ -167,6 +167,7 @@ AliESDtrack::AliESDtrack() :
   fOp(0),
   fHMPIDp(0),  
   fFriendTrack(NULL),
+  fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
   fFlags(0),
@@ -276,6 +277,7 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   fOp(0),
   fHMPIDp(0),  
   fFriendTrack(0),
+  fTPCFitMap(track.fTPCFitMap),
   fTPCClusterMap(track.fTPCClusterMap),
   fTPCSharedMap(track.fTPCSharedMap),
   fFlags(track.fFlags),
@@ -397,6 +399,7 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fOp(0),
   fHMPIDp(0),  
   fFriendTrack(0),
+  fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
   fFlags(0),
@@ -538,6 +541,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   fOp(0),
   fHMPIDp(0),  
   fFriendTrack(0),
+  fTPCFitMap(159),//number of padrows
   fTPCClusterMap(159),//number of padrows
   fTPCSharedMap(159),//number of padrows
   fFlags(0),
@@ -822,6 +826,7 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     delete fFriendTrack; fFriendTrack= 0;
   }
 
+  fTPCFitMap = source.fTPCFitMap; 
   fTPCClusterMap = source.fTPCClusterMap; 
   fTPCSharedMap  = source.fTPCSharedMap;  
   // the simple stuff
@@ -1044,6 +1049,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
     // combined PID is TPC only!
     track.fR[i] = fTPCr[i];
   }
+  track.fTPCFitMap = fTPCFitMap;
   track.fTPCClusterMap = fTPCClusterMap;
   track.fTPCSharedMap = fTPCSharedMap;
 
@@ -1102,7 +1108,8 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCncls = 0;       
   fTPCnclsF = 0;       
   fTPCnclsIter1 = 0;       
-  fTPCnclsFIter1 = 0;       
+  fTPCnclsFIter1 = 0;  
+  fTPCFitMap = 0;       
   fTPCClusterMap = 0;  
   fTPCSharedMap = 0;  
   fTPCsignal= 0;      
