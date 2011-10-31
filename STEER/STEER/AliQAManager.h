@@ -36,13 +36,6 @@ class AliRunLoader ;
 class AliCorrQADataMakerRec ;
 
 class AliQAManager : public AliCDBManager {
-private:
-  AliQAManager() ; 
-	AliQAManager(AliQAv1::MODE_t mode, const Char_t * gAliceFilename = "galice.root") ; 
-	AliQAManager(const AliQAManager & qas) ; 
-	AliQAManager & operator = (const AliQAManager & qas) ; 
-  ~AliQAManager() ; 
-
 public:
   static void      Destroy() ;
   void             EndOfCycle(TObjArray * detArray=0x0) ; 
@@ -92,6 +85,12 @@ public:
   void             ShowQA() ; 
   
 private: 
+  AliQAManager() ; 
+	AliQAManager(AliQAv1::MODE_t mode, const Char_t * gAliceFilename = "galice.root") ; 
+	AliQAManager(const AliQAManager & qas) ; 
+	AliQAManager & operator = (const AliQAManager & qas) ; 
+  ~AliQAManager() ; 
+  
 	Bool_t			DoIt(const AliQAv1::TASKINDEX_t taskIndex) ;
 	AliLoader * GetLoader(Int_t iDet) ; 
 	Int_t       GetQACycles(const Int_t iDet) const { return fQACycles[iDet] ; }

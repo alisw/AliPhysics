@@ -182,7 +182,7 @@ void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t index, const Al
 }  
 
 //____________________________________________________________________________
-void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
+void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray ** list) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
@@ -332,8 +332,9 @@ void AliQACheckerBase::PrintExternParam()
 }
   
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * recoParam) 
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) 
 { 
+    //Run the checker for all kind of species
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Processing %s", AliQAv1::GetAliTaskName(index))) ; 
   
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
@@ -348,7 +349,7 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, AliDetectorRecoParam * reco
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, AliDetectorRecoParam * recoParam) 
+void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * recoParam) 
 { 
   // RS: perform check for all trigger classes in loop
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;

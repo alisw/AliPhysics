@@ -44,9 +44,9 @@ public:
   virtual void   Init(const AliQAv1::DETECTORINDEX_t det)   { AliQAv1::Instance(det) ; }
   virtual void   MakeImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   void           PrintExternParam() ; 
-  void           Run(AliQAv1::ALITASK_t tsk, AliDetectorRecoParam * recoParam = NULL); 
-  void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list, AliDetectorRecoParam * recoParam = NULL); 
-  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, AliDetectorRecoParam * /*recoParam*/) {;} 
+  void           Run(AliQAv1::ALITASK_t tsk, const AliDetectorRecoParam * recoParam = NULL); 
+  void           Run(AliQAv1::ALITASK_t tsk, TObjArray ** list, const AliDetectorRecoParam * recoParam = NULL); 
+  void           Run(AliQAv1::ALITASK_t /*tsk*/, TNtupleD ** /*nt*/, const AliDetectorRecoParam * /*recoParam*/) {;} 
   void           SetExternParamlist(TList * list) { fExternParamList = list ;}
   void           SetHiLo(Float_t * hiValue, Float_t * lowValue) ; 
   void           SetPrintImage(Bool_t opt = kTRUE) { fPrintImage = opt ; }
@@ -71,6 +71,7 @@ protected:
 
 private:
   void Check(Double_t * rv, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
+  void Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray ** list) ;
 
   ClassDef(AliQACheckerBase,3)  // description 
 

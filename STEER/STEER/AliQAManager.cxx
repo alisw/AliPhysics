@@ -900,17 +900,17 @@ void AliQAManager::MergeCustom() const
   // search all the run numbers
   // search all the run numbers
   gROOT->ProcessLine(".! ls *QA*.root > QAtempo.txt") ;
-  TString QAfile ; 
-  FILE * QAfiles = fopen("QAtempo.txt", "r") ; 
+  TString theQAfile ; 
+  FILE * theQAfiles = fopen("QAtempo.txt", "r") ; 
   Int_t index = 0 ; 
   TList srunList ; 
   TIter nextRun(&srunList) ; 
   TObjString * srun = NULL ; 
   Int_t loRun = 999999999 ; 
   Int_t hiRun = 0 ; 
-  while ( QAfile.Gets(QAfiles) ) {
+  while ( theQAfile.Gets(theQAfiles) ) {
     Bool_t runExist = kFALSE ; 
-    TString srunNew(QAfile(QAfile.Index("QA.")+3, QAfile.Index(".root")-(QAfile.Index("QA.")+3))) ; 
+    TString srunNew(theQAfile(theQAfile.Index("QA.")+3, theQAfile.Index(".root")-(theQAfile.Index("QA.")+3))) ; 
     Int_t cuRun = srunNew.Atoi() ;
     if (cuRun < loRun) 
       loRun = cuRun ; 
