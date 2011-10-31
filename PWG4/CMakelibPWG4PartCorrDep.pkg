@@ -43,6 +43,7 @@ set ( SRCS
     PartCorrDep/AliAnaShowerParameter.cxx 
     PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx 
     PartCorrDep/AliAnaOmegaToPi0Gamma.cxx 
+    PartCorrDep/AliAnaPhotonConvInCalo.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
