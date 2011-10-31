@@ -182,7 +182,7 @@ void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t index, const Al
 }  
 
 //____________________________________________________________________________
-void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray ** list) 
+void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t task, TObjArray ** list, const AliDetectorRecoParam * recoParam) 
 {
   // Performs a basic checking
   // Compares all the histograms in the list
