@@ -813,15 +813,14 @@ void AliCaloTrackReader::FillInputEMCALAlgorithm(AliVCluster * clus, const Int_t
   
   clus->GetMomentum(momentum, fVertex[vindex]);      
   
-  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) 
-    return;
+  if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"EMCAL")) return;
+  
+  if(fEMCALPtMin > momentum.E() || fEMCALPtMax < momentum.E())         return;
   
   if(fDebug > 2 && momentum.E() > 0.1) 
     printf("AliCaloTrackReader::FillInputEMCAL() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
            momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());
-  
-  if(fEMCALPtMin < momentum.E() && fEMCALPtMax > momentum.E()) return;
-  
+      
   if (fMixedEvent) 
     clus->SetID(iclus) ; 
   
@@ -869,6 +868,7 @@ void AliCaloTrackReader::FillInputEMCAL() {
         return;
       }
     }
+    
     Int_t nclusters = clusterList->GetEntriesFast();
     for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
       AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));
@@ -922,14 +922,14 @@ void AliCaloTrackReader::FillInputPHOS() {
         
         clus->GetMomentum(momentum, fVertex[vindex]);      
         
-        if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) 
-          continue;
+        if(fCheckFidCut && !fFiducialCut->IsInFiducialCut(momentum,"PHOS")) continue;
+        
+        if(fPHOSPtMin > momentum.E() || fPHOSPtMax < momentum.E())          continue;
         
         if(fDebug > 2 && momentum.E() > 0.1) 
           printf("AliCaloTrackReader::FillInputPHOS() - Selected clusters E %3.2f, pt %3.2f, phi %3.2f, eta %3.2f\n",
                  momentum.E(),momentum.Pt(),momentum.Phi()*TMath::RadToDeg(),momentum.Eta());        
         
-        if(fPHOSPtMin < momentum.E() && fPHOSPtMax > momentum.E()) continue;
         
         if (fMixedEvent) {
           clus->SetID(iclus) ; 
