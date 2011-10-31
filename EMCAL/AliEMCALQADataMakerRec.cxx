@@ -519,10 +519,10 @@ void AliEMCALQADataMakerRec::InitRaws()
  Add2RawsList(hS0, kAmpL1, expert, !image, !saveCorr) ;
 	
  TH2F *hS1 = new TH2F("hL1Gamma", "L1 Gamma patch position (FastOR top-left)", nSTUCols, -0.50, nSTUCols-0.5, nSTURows, -0.5, nSTURows-0.5);
- Add2RawsList(hS1, kGL1, expert, !image, !saveCorr) ;
+ Add2RawsList(hS1, kGL1, expert, image, !saveCorr) ;
 	
  TH2F *hS2 = new TH2F("hL1Jet", "L1 Jet patch position (FastOR top-left)", 12, -0.5, nSTUCols-0.5, 16, 0, nSTURows-0.5);
- Add2RawsList(hS2, kJL1, expert, !image, !saveCorr) ;
+ Add2RawsList(hS2, kJL1, expert, image, !saveCorr) ;
 	
  TH2I *hS3 = new TH2I("hL1GV0", "L1 Gamma patch amplitude versus V0 signal", 500, 0, 50000, 1500, 0, 1500);
  Add2RawsList(hS3, kGL1V0, expert, !image, !saveCorr) ;
