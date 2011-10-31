@@ -385,7 +385,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
 
   std::auto_ptr<TH2I> histoNofClusters(new TH2I("NofClusters",
 					       "Number of HLT TPC clusters",
-					       100, 0., 80000., 500, 0., 1000000.));
+					       100, 0., 80000., 500, 0., 3000000.));
   if (histoNofClusters.get()) {
     TAxis* xaxis=histoNofClusters->GetXaxis();
     if (xaxis) xaxis->SetTitle("raw data size [kB]");
@@ -395,7 +395,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoInit( int argc, const char** arg
 
   std::auto_ptr<TH2I> histoNofClustersReductionFactor(new TH2I("ReductionFactorVsNofClusters",
 							       "Reduction Factor vs. Number of HLT TPC clusters",
-							       500, 0., 1000000., 100, 0., 10.));
+							       500, 0., 3000000., 100, 0., 10.));
   if (histoNofClustersReductionFactor.get()) {
     TAxis* xaxis=histoNofClustersReductionFactor->GetXaxis();
     if (xaxis) xaxis->SetTitle("N. of clusters");
