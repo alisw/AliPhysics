@@ -166,8 +166,6 @@ void AliT0QADataMakerRec::InitRaws()
   fhRefPoint->SetLabelSize(0.02);
   Add2RawsList( fhRefPoint,0, expert, !image, !saveCorr);
 
-  TH1F* fhRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 5000, 0 ,20000);
-  Add2RawsList( fhRefPointcal,250, expert, !image, !saveCorr);
 
   TH1F *fhRawCFD[24]; 
   TH1F * fhRawLEDamp[24];
@@ -597,6 +595,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       for (Int_t ik=0; ik<24; ik++) {
 	//
 	TH1* hik = (TH1*) GetRawsData(ik+1,itrID); if (!hik) continue; 
+	if ( hik -> GetEntries() < 100) continue;
 	hik->GetXaxis()->SetRangeUser(2000, 3000);
 	int  maxBin  =  hik->GetMaximumBin(); 
 	double   meanEstimate  =  hik->GetBinCenter( maxBin);
