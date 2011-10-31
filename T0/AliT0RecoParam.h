@@ -29,9 +29,11 @@ class AliT0RecoParam : public AliDetectorRecoParam
   //old staff  
   Float_t GetRefAmp()  const  {return fRefAmp;}
   void    SetRefAmp(Float_t amp)   { fRefAmp = amp;}
+  //now number of bad channel
   Int_t   GetRefPoint() const {return fRefPoint;}
   void    SetRefPoint(Int_t ref) {fRefPoint = ref;}
   
+  //now low and high limit for multi-bunch recontruction
   Float_t   GetLow(Int_t numhist) const {return fLow[numhist];}
   //  Float_t   GetLow() {return *fLow;}
   void      SetLow(Int_t numhist, Float_t low) {fLow[numhist] = low;}
@@ -56,7 +58,13 @@ class AliT0RecoParam : public AliDetectorRecoParam
   Float_t GetAmpLowThreshold() const {return fLow[200];}
   Float_t GetAmpHighThreshold() const {return fHigh[200];}
   
-  
+  void SetSatelliteThresholds(Float_t low, Float_t high) 
+  {fSatelliteThresholds[0]=low;  fSatelliteThresholds[1]=high;}
+  Float_t GetLowSatelliteThreshold() const {return fSatelliteThresholds[0];}
+  Float_t GetHighSatelliteThreshold() const {return fSatelliteThresholds[1];}
+  void SetEq (Int_t eq) {fEqualised = eq; };
+  Int_t GetEq () const { return fEqualised;}
+
   void PrintParameters() const;
   
  protected:
@@ -70,8 +78,10 @@ class AliT0RecoParam : public AliDetectorRecoParam
   Float_t   fLatencyHPTDC;      //Latency HPTDC
   Float_t   fVertexShift;       // for slewing correcton
   Int_t  fBadChannels[24];   // bad channels map
+  Float_t  fSatelliteThresholds[2];   // what we call satellite
+  Int_t fEqualised;                   // do we write pure CFD or equalized 
   
-  ClassDef(AliT0RecoParam, 5);
+  ClassDef(AliT0RecoParam, 6);
  
 };
 #endif

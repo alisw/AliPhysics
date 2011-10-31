@@ -122,10 +122,10 @@ void AliT0CalibOffsetChannelsTask::UserCreateOutputObjects()
     //    fCFD[i]        = new TH1F(Form("CFD%d",i+1),"CFD",250, -1000, 1000);//6000, 7000);
   }
 
-  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",200,-2500,2500);   //or A plus or C 
+  fTzeroORAplusORC = new TH1F("fTzeroORAplusORC","ORA+ORC /2",400,-4000,4000);   //or A plus or C 
   fResolution      = new TH1F("fResolution","fResolution",400,-2500,2500);// or A minus or C spectrum
-  fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-2500,2500);// or A spectrum
-  fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-2500,2500);// or C spectrum
+  fTzeroORA        = new TH1F("fTzeroORA","fTzeroORA",200,-4000,4000);// or A spectrum
+  fTzeroORC        = new TH1F("fTzeroORC","fTzeroORC",200,-4000,4000);// or C spectrum
 
   
   fTzeroObject     = new TObjArray(0);

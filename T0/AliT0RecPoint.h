@@ -13,7 +13,7 @@ class AliT0RecPoint: public TObject  {
  public:
     AliT0RecPoint();
     AliT0RecPoint(const AliT0RecPoint &o);
-    AliT0RecPoint& operator= (const AliT0RecPoint &)  { return *this;}
+    AliT0RecPoint& operator= (const AliT0RecPoint &) { return *this;}
     virtual ~AliT0RecPoint() {}
 
     Double32_t  GetMeanTime()   const {return fTimeAverage;}
@@ -21,6 +21,8 @@ class AliT0RecPoint: public TObject  {
     Double32_t  GetBestTimeA()  const {return fTimeBestA ;}
     Double32_t  GetBestTimeC()  const {return fTimeBestC ;}
     Float_t GetMultC()       const {return fMultC;}
+    Double32_t  Get1stTimeA()  const {return fTime1stA ;}
+    Double32_t  Get1stTimeC()  const {return fTime1stC ;}
     Float_t GetMultA()       const {return fMultA;}
     Double32_t  GetVertex()   const {return fVertexPosition;}
 
@@ -29,6 +31,8 @@ class AliT0RecPoint: public TObject  {
     void SetOnlineMean(Int_t time) {fTimeOnlineMean=time;}
     void SetTimeBestA( Double32_t time) {fTimeBestA = time;}
     void SetTimeBestC( Double32_t time) {fTimeBestC = time;}
+    void SetTime1stA( Double32_t time) {fTime1stA = time;}
+    void SetTime1stC( Double32_t time) {fTime1stC = time;}
     void SetVertex( Double32_t vertex) {fVertexPosition= vertex;}
     void SetMultC(Float_t mult) {fMultC = mult;}
     void SetMultA(Float_t mult) {fMultA = mult;}
@@ -59,14 +63,14 @@ class AliT0RecPoint: public TObject  {
     void SetTVDC(Int_t hit, Float_t time) { fTVDC[hit] = time;}
 
   private: 
-    Double32_t fTimeAverage;     // Average time
+    Double32_t fTimeAverage;     // Average time with best particles
     Int_t   fTimeOnlineMean; // online mean signal
     Double32_t fVertexPosition;     // Diffrence time between C and A
     Double32_t fTimeBestA;   //TOF first particle on the A
     Double32_t fTimeBestC;    //TOF first particle on the C
     Float_t fMultC; // multiplicity on the 
     Float_t fMultA; // multiplicity on the 
-    Double32_t fT0clock; // T0 with reference point in ns
+    Double32_t fT0clock; // T0 with best particles
     Int_t   fT0trig;    // T0 trigger signals
  
     Double32_t fTime[24];    // array's TDC
@@ -80,8 +84,10 @@ class AliT0RecPoint: public TObject  {
     Float_t fTVDC[5]; //hardware TVDC centred around 0
     Bool_t fPileup;
     Bool_t fSattelite;
+    Double32_t fTime1stA;   //TOF first particle on the A
+    Double32_t fTime1stC;    //TOF first particle on the C
 
-    ClassDef(AliT0RecPoint,7)  // RecPoints (Header) object for set:T0
+    ClassDef(AliT0RecPoint,8)  // RecPoints (Header) object for set:T0
 };
 
 typedef AliT0RecPoint AliSTARTRecPoint; // for backward compatibility

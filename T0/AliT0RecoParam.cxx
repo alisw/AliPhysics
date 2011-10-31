@@ -47,13 +47,17 @@ AliT0RecoParam::AliT0RecoParam():
    fLatencyL1A(0),  
    fLatencyL1C(0),  
    fLatencyHPTDC(0),      
-   fVertexShift(0)   
+  fVertexShift(0),
+  fEqualised(0)
 {
   //
   // constructor
-  //
   SetName("T0");
   SetTitle("T0");
+
+  fSatelliteThresholds[0] =  -15;
+  fSatelliteThresholds[1] =  -1.5;
+
 }
 
 //_____________________________________________________________________________
@@ -73,11 +77,13 @@ AliT0RecoParam::AliT0RecoParam(const AliT0RecoParam &p):
   fLatencyL1(p.fLatencyL1),  
   fLatencyL1A(p.fLatencyL1A),  
   fLatencyL1C(p.fLatencyL1C),  
- fLatencyHPTDC(p.fLatencyHPTDC),      
-  fVertexShift(p.fVertexShift)   
-{
- 
+  fLatencyHPTDC(p.fLatencyHPTDC),      
+  fVertexShift(p.fVertexShift), 
+  fEqualised( p.fEqualised)
+{ 
  //copy constructor
+  fSatelliteThresholds[0] = (p.fSatelliteThresholds[0]);
+  fSatelliteThresholds[1] = (p.fSatelliteThresholds[1]);
 
 }
 //_____________________________________________________________________________
@@ -100,6 +106,11 @@ AliT0RecoParam& AliT0RecoParam:: operator=(const AliT0RecoParam &p)
 
   fLatencyHPTDC = p.fLatencyHPTDC;
   fVertexShift = p.fVertexShift;
+
+  fSatelliteThresholds[0] = (p.fSatelliteThresholds[0]);
+  fSatelliteThresholds[1] = (p.fSatelliteThresholds[1]);
+  fEqualised = p.fEqualised;
+
   return *this;
 
 }
@@ -125,6 +136,8 @@ AliT0RecoParam *AliT0RecoParam::GetLowFluxParam()
     }
   param->SetName("Low Flux");
   param->SetTitle("Low Flux");
+  param->SetSatelliteThresholds(-15, -1.5);
+  param->SetEq(0);
   return param;
 }
 
@@ -150,7 +163,10 @@ AliT0RecoParam *AliT0RecoParam::GetHighFluxParam()
       param-> fHigh[i]=20000.;
     }
   //
-  param->SetName("High Flux");
+  param->SetSatelliteThresholds(-15, -1.5);
+  param->SetEq(0);
+
+   param->SetName("High Flux");
   param->SetTitle("High Flux");
   return param;
 }
@@ -171,7 +187,9 @@ AliT0RecoParam *AliT0RecoParam::GetLaserTestParam()
   param->fLatencyL1C =  7782.19;
   param->fLatencyHPTDC = 22000;
   param->fVertexShift = 0;
-
+  param->SetSatelliteThresholds(-15, -1.5);
+  param->SetEq(0);
+  
   for (Int_t i=0; i<500; i++)
     {
      param-> fLow[i]=0.;
@@ -190,9 +208,7 @@ void AliT0RecoParam::PrintParameters() const
   // Printing of the used T0 reconstruction parameters
   //
   AliInfo(Form(" Reference amplitude for walk corerection : %f", fRefAmp));
-  AliInfo(Form(" Reference point in channel  : %i", fRefPoint));
-  AliInfo(Form(" Current latency  : %f ns", fLatencyL1));
-  AliInfo(Form(" HPTDC latency  : %f ns", fLatencyHPTDC));
-  //  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
-  //  for (Int_t i=0; i<500; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
+  AliInfo(Form(" Bad channel in channel  : %i", fRefPoint));
+  cout<<" AliT0RecoParam::PrintParameters() "<<endl;
+  for (Int_t i=0; i<105; i++) cout<<i<<" "<<fLow[i]<<" "<<fHigh[i]<<endl; 
 }

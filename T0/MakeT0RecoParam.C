@@ -5,7 +5,7 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
   // write it on CDB
   AliCDBManager *man = AliCDBManager::Instance();
   //  man->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
-   man->SetDefaultStorage("local:///home/alla/alice/Feb11/TestCDB");
+  man->SetDefaultStorage("local:///scratch/alla/alice/Oct11/TestCDBf");
   man->SetRun(startRun);
   
   TObjArray *recoParamArray = new TObjArray();
@@ -29,7 +29,7 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
   // bad PMT
   t0RecoParam->SetRefPoint(-1);
   // amplitude range for recontruction
-  low[200]=0.5;
+  low[200]=0.8;
   high[200]=80;
   for (Int_t i=0; i<24; i++) t0RecoParam-> SetBadChannels(i,0);
   
@@ -37,6 +37,9 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
     t0RecoParam->SetLow(i,low[i]);
     t0RecoParam->SetHigh(i,high[i]);
   }
+  t0RecoParam->SetEq(1);
+  t0RecoParam->SetSatelliteThresholds(-15, -1.7);
+
   t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
   
@@ -60,13 +63,14 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
     for (Int_t i=0; i<24; i++) t0RecoParam->SetBadChannels(i,0);
   t0RecoParam->SetRefPoint(-1);
   // amplitude range for recontruction
-  low[200]=0.8;
+   t0RecoParam->SetEq(1);
+ low[200]=0.8;
   high[200]=80;
   for (Int_t i=0; i<500; i++) {
     t0RecoParam->SetLow(i,low[i]);
     t0RecoParam->SetHigh(i,high[i]);
   }
-  t0RecoParam->PrintParameters();
+  //  t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
   //--------------------------------------
   t0RecoParam = AliT0RecoParam::GetLaserTestParam();
@@ -77,9 +81,11 @@ void MakeT0RecoParam(Int_t startRun = 0, Int_t endRun = AliCDBRunRange::Infinity
     t0RecoParam->SetLow(i, 0);
     t0RecoParam->SetHigh(i, 50000);
   }
+  t0RecoParam->SetEq(1);
+  t0RecoParam->SetSatelliteThresholds(-15, -1.7);
   //  t0RecoParam->Dump();
   t0RecoParam->SetRefPoint(1);
-  t0RecoParam->PrintParameters();
+  //  t0RecoParam->PrintParameters();
   recoParamArray->AddLast(t0RecoParam);
 
 

@@ -39,53 +39,106 @@ ClassImp(AliT0RecPoint)
 				   fTimeAverage(99999),
 				   fTimeOnlineMean(99999),
 				   fVertexPosition(999999),
-				   fTimeBestA(0),fTimeBestC(0),
+				   fTimeBestA(99999),
+				   fTimeBestC(99999),
                                    fMultC(0),fMultA(0),
                                    fT0clock(9999999),
 				   fT0trig(0),
 				   fPileup(kFALSE),
-				   fSattelite(kFALSE)
-
+				   fSattelite(kFALSE),
+				   fTime1stA(99999),
+				   fTime1stC(99999)
+    
 
 {
   //ctor
-  // fTimeAverage=99999;
-  fTimeBestA=99999;
-  fTimeBestC=99999;
-  //  fVertexPosition=99999;
-  fMultA=0;
-  fMultC=0;
   for (Int_t i=0; i<24; i++) { fTime[i]=0; fADC[i]=0; fADCLED[i]=0;
     for(Int_t iHit=0; iHit<5; iHit++) {
-     fTimeFull[i][iHit] = 0;   
-     fOrA[iHit] = 0; 
-     fOrC[iHit] = 0;  
-     fTVDC[iHit] = 0; 
+      fTimeFull[i][iHit] = 0;   
+      fOrA[iHit] = 0; 
+      fOrC[iHit] = 0;  
+      fTVDC[iHit] = 0; 
     }
  }
 }
 //_____________________________________________________________________________
 
 AliT0RecPoint::AliT0RecPoint(const AliT0RecPoint &r):TObject(),
- 						     fTimeAverage(999999),
-						     fTimeOnlineMean(999999),
-						     fVertexPosition(999999),
-						     fTimeBestA(0),fTimeBestC(0),
-						     fMultC(0),fMultA(0),
-                                                     fT0clock(9999999),
-						     fT0trig(0),
-						     fPileup(kFALSE),
-						     fSattelite(kFALSE)
+ 						     fTimeAverage(r.fTimeAverage),
+						     fTimeOnlineMean(r.fTimeOnlineMean),
+						     fVertexPosition(r.fVertexPosition),
+						     fTimeBestA(r.fTimeBestA),
+						     fTimeBestC(r.fTimeBestC),
+						     fMultC(r.fMultC),
+						     fMultA(r.fMultA),
+                                                     fT0clock(r.fT0clock),
+						     fT0trig(r.fT0trig),
+						     fPileup(r.fPileup),
+						     fSattelite(r.fSattelite),
+						     fTime1stA(r.fTime1stA),
+						     fTime1stC(r.fTime1stC)
+
 {
   //
   // AliT0RecPoint copy constructor
   //
-
-  ((AliT0RecPoint &) r).Copy(*this);
+  for (Int_t i=0; i<24; i++) {
+    fTime[i] = r. fTime[i];
+    fADC[i] = r.fADC[i]; 
+    fADCLED[i] = r. fADCLED[i];
+    for(Int_t iHit=0; iHit<5; iHit++) {
+      fTimeFull[i][iHit] = r.fTimeFull[i][iHit];   
+      fOrA[iHit] = r.fOrA[iHit]; 
+      fOrC[iHit] = r.fOrC[iHit];  
+      fTVDC[iHit] = r.fTVDC[iHit]; 
+    }
+  }
+  //  ((AliT0RecPoint &) r).Copy(*this);
 
 }
 //_____________________________________________________________________________
 
+/*
+//_____________________________________________________________________________
+
+AliT0RecPoint& AliT0RecPoint:: operator=(const AliT0RecPoint &r)
+{
+  //
+  // assign. operator
+  //
+
+  if (this == &r)
+    return *this;
+  
+  fTimeAverage = r.fTimeAverage;
+  fTimeOnlineMean = r.fTimeOnlineMean;
+  fVertexPosition = r.fVertexPosition;
+  fTimeBestA =  r.fTimeBestA;
+  fTimeBestC = r.fTimeBestC;
+  fMultC = r.fMultC;
+  fMultA = r.fMultA;
+  fT0clock = r.fT0clock;
+  fT0trig = r.fT0trig;
+  fPileup = r.fPileup;
+  fSattelite = r.fSattelite;
+  fTime1stA = r.fTime1stA;
+  fTime1stC = r.fTime1stC;
+  for (Int_t i=0; i<24; i++) {
+    fTime[i] = r. fTime[i];
+    fADC[i] = r.fADC[i]; 
+    fADCLED[i] = r. fADCLED[i];
+    for(Int_t iHit=0; iHit<5; iHit++) {
+      fTimeFull[i][iHit] = r.fTimeFull[i][iHit];   
+      fOrA[iHit] = r.fOrA[iHit]; 
+      fOrC[iHit] = r.fOrC[iHit];  
+      fTVDC[iHit] = r.fTVDC[iHit]; 
+    }
+  }
+  
+  return *this;
+}
+*/
+//_____________________________________________________________________________
 void AliT0RecPoint::SetT0Trig(Bool_t *tr)
 {
   fT0trig=0;

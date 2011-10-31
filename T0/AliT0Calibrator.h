@@ -26,16 +26,18 @@ class AliT0Calibrator: public TNamed
 
 
   Int_t WalkCorrection(Int_t refAmp, Int_t ipmt, Int_t qt, Int_t time) ;
-  //  Int_t EquivalizeChannel(Int_t ipmt)  ;
+  void SetEq(Int_t eq) { fEqualized= eq; };
  protected:
 
   Int_t           fTimeDelayCFD[24];  //CFD[i]-CFD[0]
   Float_t           fMaxValue[24];  //CFD[i]-CFD[0]
   Float_t         fChannelWidth  ;   //channel width
   TObjArray       fWalk;             //walk correction function
-  // const AliT0RecoParam* fRecoParam; ///< reference to reco parameters
+  Int_t           fEqualized;        //if != 0 time centered around 0
+      
+ // const AliT0RecoParam* fRecoParam; ///< reference to reco parameters
    
-  ClassDef(AliT0Calibrator, 1)   // class for the T0 reconstruction
+  ClassDef(AliT0Calibrator, 2)   // class for the T0 reconstruction
 
 };
 
