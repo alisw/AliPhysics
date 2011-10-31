@@ -31,7 +31,6 @@
 #include <TH3D.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-//#include <Riostream.h>
 #include "TParticle.h"
 #include "TDatabasePDG.h"
 
@@ -49,32 +48,19 @@
 
 ClassImp(AliAnaPhoton)
   
-//____________________________________________________________________________
+//____________________________
 AliAnaPhoton::AliAnaPhoton() : 
     AliAnaPartCorrBaseClass(),    fCalorimeter(""), 
     fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.), 
     fRejectTrackMatch(0),         fTimeCutMin(-1),              fTimeCutMax(999999),         
     fNCellsCut(0),                fFillSSHistograms(kFALSE),    
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
-    fCheckConversion(kFALSE),     fRemoveConvertedPair(kFALSE), 
-    fAddConvertedPairsToAOD(kFALSE), 
-    fMassCut(0),                  fConvAsymCut(1.),             fConvDEtaCut(2.),
-    fConvDPhiMinCut(-1.),         fConvDPhiMaxCut(7.), 
 
     // Histograms
     fhNCellsE(0),                 fhMaxCellDiffClusterE(0),
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
-
-    // Conversion histograms
-    fhPtPhotonConv(0),            fhEtaPhiPhotonConv(0),        fhEtaPhi05PhotonConv(0),
-    fhConvDeltaEta(0),            fhConvDeltaPhi(0),            fhConvDeltaEtaPhi(0), 
-    fhConvAsym(0),                fhConvPt(0),
-    fhConvDistEta(0),             fhConvDistEn(0),              fhConvDistMass(0),     
-    fhConvDistEtaCutEta(0),       fhConvDistEnCutEta(0),        fhConvDistMassCutEta(0),
-    fhConvDistEtaCutMass(0),      fhConvDistEnCutMass(0), 
-    fhConvDistEtaCutAsy(0),       fhConvDistEnCutAsy(0),
 
     // Shower shape histograms
     fhDispE(0),                   fhLam0E(0),                   fhLam1E(0), 
@@ -90,29 +76,7 @@ AliAnaPhoton::AliAnaPhoton() :
     fhDispLam1LowE(0),            fhDispLam1HighE(0),
 
     // MC histograms
-    // Conversion MC histograms
-    fhPtConversionTagged(0),           fhPtAntiNeutronTagged(0),       
-    fhPtAntiProtonTagged(0),           fhPtUnknownTagged(0),
-    fhEtaPhiConversion(0),             fhEtaPhi05Conversion(0),
-
-    fhConvDeltaEtaMCConversion(0),     fhConvDeltaPhiMCConversion(0),  fhConvDeltaEtaPhiMCConversion(0),
-    fhConvAsymMCConversion(0),         fhConvPtMCConversion(0),           
-    fhConvDispersionMCConversion(0),   fhConvM02MCConversion(0),
-
-    fhConvDeltaEtaMCAntiNeutron(0),    fhConvDeltaPhiMCAntiNeutron(0), fhConvDeltaEtaPhiMCAntiNeutron(0), 
-    fhConvAsymMCAntiNeutron(0),        fhConvPtMCAntiNeutron(0), 
-    fhConvDispersionMCAntiNeutron(0),  fhConvM02MCAntiNeutron(0),
-    fhConvDeltaEtaMCAntiProton(0),     fhConvDeltaPhiMCAntiProton(0),  fhConvDeltaEtaPhiMCAntiProton(0),  
-    fhConvAsymMCAntiProton(0),         fhConvPtMCAntiProton(0),  
-    fhConvDispersionMCAntiProton(0),   fhConvM02MCAntiProton(0),
-    fhConvDeltaEtaMCString(0),         fhConvDeltaPhiMCString(0),      fhConvDeltaEtaPhiMCString(0),      
-    fhConvAsymMCString(0),             fhConvPtMCString(0),      
-    fhConvDispersionMCString(0),       fhConvM02MCString(0),
-    fhConvDistMCConversion(0),         fhConvDistMCConversionCuts(0),
-
-    // Photon SS MC histograms
-    fhMCPhotonELambda0NoOverlap(0),    fhMCPhotonELambda0TwoOverlap(0),  fhMCPhotonELambda0NOverlap(0),
-
+    fhMCPhotonELambda0NoOverlap(0),     fhMCPhotonELambda0TwoOverlap(0),      fhMCPhotonELambda0NOverlap(0),
     //Embedding
     fhEmbeddedSignalFractionEnergy(0),     
     fhEmbedPhotonELambda0FullSignal(0), fhEmbedPhotonELambda0MostlySignal(0),  
@@ -163,14 +127,9 @@ AliAnaPhoton::AliAnaPhoton() :
   //Initialize parameters
   InitParameters();
 
-}//____________________________________________________________________________
-AliAnaPhoton::~AliAnaPhoton() 
-{
-  //dtor
-
 }
 
-//__________________________________________________________________
+//__________________________________________________________________________
 Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom) 
 {
   //Select clusters if they pass different cuts
@@ -959,9 +918,6 @@ TObjString *  AliAnaPhoton::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fRejectTrackMatch: %d\n",fRejectTrackMatch) ;
   parList+=onePar ;  
-  snprintf(onePar,buffersize,"Conversion Selection: fConvAsymCut %1.2f, fConvDEtaCut %1.2f fConvDPhiCut (%1.2f,%1.2f)\n",
-           fConvAsymCut, fConvDEtaCut, fConvDPhiMinCut, fConvDPhiMaxCut) ;
-  parList+=onePar ; 
   
   //Get parameters set in base class.
   parList += GetBaseParametersList() ;
@@ -1034,133 +990,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     fhEtaPhi05Photon->SetXTitle("#eta");
     outputContainer->Add(fhEtaPhi05Photon) ;
   }
-  
-  //Conversion
-  if(fCheckConversion){
-    
-    fhEtaPhiConversion  = new TH2F
-    ("hEtaPhiConversion","#eta vs #phi for converted clusters",netabins,etamin,etamax,nphibins,phimin,phimax); 
-    fhEtaPhiConversion->SetYTitle("#phi (rad)");
-    fhEtaPhiConversion->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiConversion) ;
-    if(GetMinPt() < 0.5){
-      fhEtaPhi05Conversion  = new TH2F
-      ("hEtaPhi05Conversion","#eta vs #phi, E > 0.5, for converted clusters",netabins,etamin,etamax,nphibins,phimin,phimax); 
-      fhEtaPhi05Conversion->SetYTitle("#phi (rad)");
-      fhEtaPhi05Conversion->SetXTitle("#eta");
-      outputContainer->Add(fhEtaPhi05Conversion) ;
-    }    
-    
-    fhPtPhotonConv  = new TH1F("hPtPhotonConv","Number of #gamma over calorimeter, conversion",nptbins,ptmin,ptmax); 
-    fhPtPhotonConv->SetYTitle("N");
-    fhPtPhotonConv->SetXTitle("p_{T #gamma}(GeV/c)");
-    outputContainer->Add(fhPtPhotonConv) ; 
-    
-    fhEtaPhiPhotonConv  = new TH2F
-    ("hEtaPhiPhotonConv","#eta vs #phi",netabins,etamin,etamax,nphibins,phimin,phimax); 
-    fhEtaPhiPhotonConv->SetYTitle("#phi (rad)");
-    fhEtaPhiPhotonConv->SetXTitle("#eta");
-    outputContainer->Add(fhEtaPhiPhotonConv) ;
-    if(GetMinPt() < 0.5){
-      fhEtaPhi05PhotonConv  = new TH2F
-      ("hEtaPhi05PhotonConv","#eta vs #phi, E > 0.5",netabins,etamin,etamax,nphibins,phimin,phimax); 
-      fhEtaPhi05PhotonConv->SetYTitle("#phi (rad)");
-      fhEtaPhi05PhotonConv->SetXTitle("#eta");
-      outputContainer->Add(fhEtaPhi05PhotonConv) ;
-    }
-    
-    fhConvDeltaEta  = new TH2F
-    ("hConvDeltaEta","#Delta #eta of selected conversion pairs",100,0,fMassCut,netabins*2,-0.5,0.5); 
-    fhConvDeltaEta->SetYTitle("#Delta #eta");
-    fhConvDeltaEta->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaEta) ;
-    
-    fhConvDeltaPhi  = new TH2F
-    ("hConvDeltaPhi","#Delta #phi of selected conversion pairs",100,0,fMassCut,nphibins*2,-0.5,0.5); 
-    fhConvDeltaPhi->SetYTitle("#Delta #phi");
-    fhConvDeltaPhi->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvDeltaPhi) ;
-    
-    fhConvDeltaEtaPhi  = new TH2F
-    ("hConvDeltaEtaPhi","#Delta #eta vs #Delta #phi of selected conversion pairs",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-    fhConvDeltaEtaPhi->SetYTitle("#Delta #phi");
-    fhConvDeltaEtaPhi->SetXTitle("#Delta #eta");
-    outputContainer->Add(fhConvDeltaEtaPhi) ;
-    
-    fhConvAsym  = new TH2F
-    ("hConvAsym","Asymmetry of selected conversion pairs",100,0,fMassCut,100,0,1); 
-    fhConvAsym->SetYTitle("Asymmetry");
-    fhConvAsym->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvAsym) ;  
-    
-    fhConvPt  = new TH2F
-    ("hConvPt","p_{T} of selected conversion pairs",100,0,fMassCut,100,0.,10.); 
-    fhConvPt->SetYTitle("Pair p_{T} (GeV/c)");
-    fhConvPt->SetXTitle("Pair Mass (GeV/c^2)");
-    outputContainer->Add(fhConvPt) ;
-    
-    fhConvDistEta  = new TH2F
-    ("hConvDistEta","distance to conversion vertex",100,-0.7,0.7,100,0.,5.); 
-    fhConvDistEta->SetXTitle("#eta");
-    fhConvDistEta->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEta) ;
-    
-    fhConvDistEn  = new TH2F
-    ("hConvDistEn","distance to conversion vertex",nptbins,ptmin,ptmax,100,0.,5.); 
-    fhConvDistEn->SetXTitle("E (GeV)");
-    fhConvDistEn->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEn) ;
-
-    fhConvDistMass  = new TH2F
-    ("hConvDistMass","distance to conversion vertex",100,0,fMassCut,100,0.,5.); 
-    fhConvDistMass->SetXTitle("m (GeV/c^2)");
-    fhConvDistMass->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistMass) ;
-    
-    fhConvDistEtaCutEta  = new TH2F
-    ("hConvDistEtaCutEta","distance to conversion vertex, dEta < 0.05",100,-0.7,0.7,100,0.,5.); 
-    fhConvDistEtaCutEta->SetXTitle("#eta");
-    fhConvDistEtaCutEta->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEtaCutEta) ;
-    
-    fhConvDistEnCutEta  = new TH2F
-    ("hConvDistEnCutEta","distance to conversion vertex, dEta < 0.05",nptbins,ptmin,ptmax,100,0.,5.); 
-    fhConvDistEnCutEta->SetXTitle("E (GeV)");
-    fhConvDistEnCutEta->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEnCutEta) ;
-    
-    fhConvDistMassCutEta  = new TH2F
-    ("hConvDistMassCutEta","distance to conversion vertex, dEta < 0.05",100,0,fMassCut,100,0.,5.); 
-    fhConvDistMassCutEta->SetXTitle("m (GeV/c^2)");
-    fhConvDistMassCutEta->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistMassCutEta) ;
-    
-    fhConvDistEtaCutMass  = new TH2F
-    ("hConvDistEtaCutMass","distance to conversion vertex, dEta < 0.05, m < 10 MeV",100,-0.7,0.7,100,0.,5.); 
-    fhConvDistEtaCutMass->SetXTitle("#eta");
-    fhConvDistEtaCutMass->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEtaCutMass) ;
-    
-    fhConvDistEnCutMass  = new TH2F
-    ("hConvDistEnCutMass","distance to conversion vertex, dEta < 0.05, m < 10 MeV",nptbins,ptmin,ptmax,100,0.,5.); 
-    fhConvDistEnCutMass->SetXTitle("E (GeV)");
-    fhConvDistEnCutMass->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEnCutMass) ;
-
-    fhConvDistEtaCutAsy  = new TH2F
-    ("hConvDistEtaCutAsy","distance to conversion vertex, dEta < 0.05, m < 10 MeV, A < 0.1",100,-0.7,0.7,100,0.,5.); 
-    fhConvDistEtaCutAsy->SetXTitle("#eta");
-    fhConvDistEtaCutAsy->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEtaCutAsy) ;
-    
-    fhConvDistEnCutAsy  = new TH2F
-    ("hConvDistEnCutAsy","distance to conversion vertex, dEta < 0.05, m < 10 MeV, A < 0.1",nptbins,ptmin,ptmax,100,0.,5.); 
-    fhConvDistEnCutAsy->SetXTitle("E (GeV)");
-    fhConvDistEnCutAsy->SetYTitle(" distance (m)");
-    outputContainer->Add(fhConvDistEnCutAsy) ;
-    
-  } // check conversion
-  
   
   //Shower shape
   if(fFillSSHistograms){
@@ -1410,209 +1239,6 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
       
     }
         	
-    if(fCheckConversion){  
-      fhPtConversionTagged  = new TH1F("hPtMCConversionTagged","Number of converted #gamma over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-      fhPtConversionTagged->SetYTitle("N");
-      fhPtConversionTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-      outputContainer->Add(fhPtConversionTagged) ; 
-      
-      
-      fhPtAntiNeutronTagged  = new TH1F("hPtMCAntiNeutronTagged","Number of AntiNeutron id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-      fhPtAntiNeutronTagged->SetYTitle("N");
-      fhPtAntiNeutronTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-      outputContainer->Add(fhPtAntiNeutronTagged) ; 
-      
-      fhPtAntiProtonTagged  = new TH1F("hPtMCAntiProtonTagged","Number of AntiProton id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-      fhPtAntiProtonTagged->SetYTitle("N");
-      fhPtAntiProtonTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-      outputContainer->Add(fhPtAntiProtonTagged) ; 
-      
-      fhPtUnknownTagged  = new TH1F("hPtMCUnknownTagged","Number of Unknown id as Photon over calorimeter, tagged as converted",nptbins,ptmin,ptmax); 
-      fhPtUnknownTagged->SetYTitle("N");
-      fhPtUnknownTagged->SetXTitle("p_{T #gamma}(GeV/c)");
-      outputContainer->Add(fhPtUnknownTagged) ;     
-      
-      fhConvDeltaEtaMCConversion  = new TH2F
-      ("hConvDeltaEtaMCConversion","#Delta #eta of selected conversion pairs from real conversions",100,0,fMassCut,netabins,-0.5,0.5); 
-      fhConvDeltaEtaMCConversion->SetYTitle("#Delta #eta");
-      fhConvDeltaEtaMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaEtaMCConversion) ;
-      
-      fhConvDeltaPhiMCConversion  = new TH2F
-      ("hConvDeltaPhiMCConversion","#Delta #phi of selected conversion pairs from real conversions",100,0,fMassCut,nphibins,-0.5,0.5); 
-      fhConvDeltaPhiMCConversion->SetYTitle("#Delta #phi");
-      fhConvDeltaPhiMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaPhiMCConversion) ;
-      
-      fhConvDeltaEtaPhiMCConversion  = new TH2F
-      ("hConvDeltaEtaPhiMCConversion","#Delta #eta vs #Delta #phi of selected conversion pairs, from real conversions",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-      fhConvDeltaEtaPhiMCConversion->SetYTitle("#Delta #phi");
-      fhConvDeltaEtaPhiMCConversion->SetXTitle("#Delta #eta");
-      outputContainer->Add(fhConvDeltaEtaPhiMCConversion) ;
-      
-      fhConvAsymMCConversion  = new TH2F
-      ("hConvAsymMCConversion","Asymmetry of selected conversion pairs from real conversions",100,0,fMassCut,100,0,1); 
-      fhConvAsymMCConversion->SetYTitle("Asymmetry");
-      fhConvAsymMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvAsymMCConversion) ;
-      
-      fhConvPtMCConversion  = new TH2F
-      ("hConvPtMCConversion","p_{T} of selected conversion pairs from real conversions",100,0,fMassCut,100,0.,10.); 
-      fhConvPtMCConversion->SetYTitle("Pair p_{T} (GeV/c)");
-      fhConvPtMCConversion->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvPtMCConversion) ;    
-      
-      fhConvDispersionMCConversion  = new TH2F
-      ("hConvDispersionMCConversion","p_{T} of selected conversion pairs from real conversions",100,0.,1.,100,0.,1.); 
-      fhConvDispersionMCConversion->SetYTitle("Dispersion cluster 1");
-      fhConvDispersionMCConversion->SetXTitle("Dispersion cluster 2");
-      outputContainer->Add(fhConvDispersionMCConversion) ;   
-      
-      fhConvM02MCConversion  = new TH2F
-      ("hConvM02MCConversion","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-      fhConvM02MCConversion->SetYTitle("M02 cluster 1");
-      fhConvM02MCConversion->SetXTitle("M02 cluster 2");
-      outputContainer->Add(fhConvM02MCConversion) ;           
-      
-      fhConvDeltaEtaMCAntiNeutron  = new TH2F
-      ("hConvDeltaEtaMCAntiNeutron","#Delta #eta of selected conversion pairs from anti-neutrons",100,0,fMassCut,netabins,-0.5,0.5); 
-      fhConvDeltaEtaMCAntiNeutron->SetYTitle("#Delta #eta");
-      fhConvDeltaEtaMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaEtaMCAntiNeutron) ;
-      
-      fhConvDeltaPhiMCAntiNeutron  = new TH2F
-      ("hConvDeltaPhiMCAntiNeutron","#Delta #phi of selected conversion pairs from anti-neutrons",100,0,fMassCut,nphibins,-0.5,0.5); 
-      fhConvDeltaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
-      fhConvDeltaPhiMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaPhiMCAntiNeutron) ;
-      
-      fhConvDeltaEtaPhiMCAntiNeutron  = new TH2F
-      ("hConvDeltaEtaPhiMCAntiNeutron","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-neutrons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-      fhConvDeltaEtaPhiMCAntiNeutron->SetYTitle("#Delta #phi");
-      fhConvDeltaEtaPhiMCAntiNeutron->SetXTitle("#Delta #eta");
-      outputContainer->Add(fhConvDeltaEtaPhiMCAntiNeutron) ;    
-      
-      fhConvAsymMCAntiNeutron  = new TH2F
-      ("hConvAsymMCAntiNeutron","Asymmetry of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0,1); 
-      fhConvAsymMCAntiNeutron->SetYTitle("Asymmetry");
-      fhConvAsymMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvAsymMCAntiNeutron) ;
-      
-      fhConvPtMCAntiNeutron  = new TH2F
-      ("hConvPtMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0,fMassCut,100,0.,10.); 
-      fhConvPtMCAntiNeutron->SetYTitle("Pair p_{T} (GeV/c)");
-      fhConvPtMCAntiNeutron->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvPtMCAntiNeutron) ;    
-      
-      fhConvDispersionMCAntiNeutron  = new TH2F
-      ("hConvDispersionMCAntiNeutron","p_{T} of selected conversion pairs from anti-neutrons",100,0.,1.,100,0.,1.); 
-      fhConvDispersionMCAntiNeutron->SetYTitle("Dispersion cluster 1");
-      fhConvDispersionMCAntiNeutron->SetXTitle("Dispersion cluster 2");
-      outputContainer->Add(fhConvDispersionMCAntiNeutron) ;       
-      
-      fhConvM02MCAntiNeutron  = new TH2F
-      ("hConvM02MCAntiNeutron","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-      fhConvM02MCAntiNeutron->SetYTitle("M02 cluster 1");
-      fhConvM02MCAntiNeutron->SetXTitle("M02 cluster 2");
-      outputContainer->Add(fhConvM02MCAntiNeutron) ;  
-      
-      fhConvDeltaEtaMCAntiProton  = new TH2F
-      ("hConvDeltaEtaMCAntiProton","#Delta #eta of selected conversion pairs from anti-protons",100,0,fMassCut,netabins,-0.5,0.5); 
-      fhConvDeltaEtaMCAntiProton->SetYTitle("#Delta #eta");
-      fhConvDeltaEtaMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaEtaMCAntiProton) ;
-      
-      fhConvDeltaPhiMCAntiProton  = new TH2F
-      ("hConvDeltaPhiMCAntiProton","#Delta #phi of selected conversion pairs from anti-protons",100,0,fMassCut,nphibins,-0.5,0.5); 
-      fhConvDeltaPhiMCAntiProton->SetYTitle("#Delta #phi");
-      fhConvDeltaPhiMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaPhiMCAntiProton) ;
-      
-      fhConvDeltaEtaPhiMCAntiProton  = new TH2F
-      ("hConvDeltaEtaPhiMCAntiProton","#Delta #eta vs #Delta #phi of selected conversion pairs from anti-protons",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-      fhConvDeltaEtaPhiMCAntiProton->SetYTitle("#Delta #phi");
-      fhConvDeltaEtaPhiMCAntiProton->SetXTitle("#Delta #eta");
-      outputContainer->Add(fhConvDeltaEtaPhiMCAntiProton) ;    
-      
-      fhConvAsymMCAntiProton  = new TH2F
-      ("hConvAsymMCAntiProton","Asymmetry of selected conversion pairs from anti-protons",100,0,fMassCut,100,0,1); 
-      fhConvAsymMCAntiProton->SetYTitle("Asymmetry");
-      fhConvAsymMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvAsymMCAntiProton) ;
-      
-      fhConvPtMCAntiProton  = new TH2F
-      ("hConvPtMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0,fMassCut,100,0.,10.); 
-      fhConvPtMCAntiProton->SetYTitle("Pair p_{T} (GeV/c)");
-      fhConvPtMCAntiProton->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvPtMCAntiProton) ;
-      
-      fhConvDispersionMCAntiProton  = new TH2F
-      ("hConvDispersionMCAntiProton","p_{T} of selected conversion pairs from anti-protons",100,0.,1.,100,0.,1.); 
-      fhConvDispersionMCAntiProton->SetYTitle("Dispersion cluster 1");
-      fhConvDispersionMCAntiProton->SetXTitle("Dispersion cluster 2");
-      outputContainer->Add(fhConvDispersionMCAntiProton) ;       
-      
-      fhConvM02MCAntiProton  = new TH2F
-      ("hConvM02MCAntiProton","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-      fhConvM02MCAntiProton->SetYTitle("M02 cluster 1");
-      fhConvM02MCAntiProton->SetXTitle("M02 cluster 2");
-      outputContainer->Add(fhConvM02MCAntiProton) ;       
-      
-      fhConvDeltaEtaMCString  = new TH2F
-      ("hConvDeltaEtaMCString","#Delta #eta of selected conversion pairs from string",100,0,fMassCut,netabins,-0.5,0.5); 
-      fhConvDeltaEtaMCString->SetYTitle("#Delta #eta");
-      fhConvDeltaEtaMCString->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaEtaMCString) ;
-      
-      fhConvDeltaPhiMCString  = new TH2F
-      ("hConvDeltaPhiMCString","#Delta #phi of selected conversion pairs from string",100,0,fMassCut,nphibins,-0.5,0.5); 
-      fhConvDeltaPhiMCString->SetYTitle("#Delta #phi");
-      fhConvDeltaPhiMCString->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvDeltaPhiMCString) ;
-      
-      fhConvDeltaEtaPhiMCString  = new TH2F
-      ("hConvDeltaEtaPhiMCString","#Delta #eta vs #Delta #phi of selected conversion pairs from string",netabins,-0.5,0.5,nphibins,-0.5,0.5); 
-      fhConvDeltaEtaPhiMCString->SetYTitle("#Delta #phi");
-      fhConvDeltaEtaPhiMCString->SetXTitle("#Delta #eta");
-      outputContainer->Add(fhConvDeltaEtaPhiMCString) ;    
-      
-      fhConvAsymMCString  = new TH2F
-      ("hConvAsymMCString","Asymmetry of selected conversion pairs from string",100,0,fMassCut,100,0,1); 
-      fhConvAsymMCString->SetYTitle("Asymmetry");
-      fhConvAsymMCString->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvAsymMCString) ;
-      
-      fhConvPtMCString  = new TH2F
-      ("hConvPtMCString","p_{T} of selected conversion pairs from string",100,0,fMassCut,100,0.,10.); 
-      fhConvPtMCString->SetYTitle("Pair p_{T} (GeV/c)");
-      fhConvPtMCString->SetXTitle("Pair Mass (GeV/c^2)");
-      outputContainer->Add(fhConvPtMCString) ;
-      
-      fhConvDispersionMCString  = new TH2F
-      ("hConvDispersionMCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-      fhConvDispersionMCString->SetYTitle("Dispersion cluster 1");
-      fhConvDispersionMCString->SetXTitle("Dispersion cluster 2");
-      outputContainer->Add(fhConvDispersionMCString) ;       
-      
-      fhConvM02MCString  = new TH2F
-      ("hConvM02MCString","p_{T} of selected conversion pairs from string",100,0.,1.,100,0.,1.); 
-      fhConvM02MCString->SetYTitle("M02 cluster 1");
-      fhConvM02MCString->SetXTitle("M02 cluster 2");
-      outputContainer->Add(fhConvM02MCString) ; 
-      
-      fhConvDistMCConversion  = new TH2F
-      ("hConvDistMCConversion","calculated conversion distance vs real vertes for MC conversion",100,0.,5.,100,0.,5.); 
-      fhConvDistMCConversion->SetYTitle("distance");
-      fhConvDistMCConversion->SetXTitle("vertex R");
-      outputContainer->Add(fhConvDistMCConversion) ; 
-      
-      fhConvDistMCConversionCuts  = new TH2F
-      ("hConvDistMCConversionCuts","calculated conversion distance vs real vertes for MC conversion, deta < 0.05, m < 10 MeV, asym < 0.1",100,0.,5.,100,0.,5.); 
-      fhConvDistMCConversionCuts->SetYTitle("distance");
-      fhConvDistMCConversionCuts->SetXTitle("vertex R");
-      outputContainer->Add(fhConvDistMCConversionCuts) ; 
-    }
-    
     if(fFillSSHistograms){
       
       TString ptypess[] = { "#gamma","hadron?","#pi^{0}","#eta","#gamma->e^{#pm}","e^{#pm}"} ; 
@@ -1840,16 +1466,12 @@ void AliAnaPhoton::InitParameters()
   fMinDist     = 2.;
   fMinDist2    = 4.;
   fMinDist3    = 5.;
-  fMassCut     = 0.03; //30 MeV
 	
   fTimeCutMin  = -1;
   fTimeCutMax  = 9999999;
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
-  fCheckConversion        = kFALSE;
-  fRemoveConvertedPair    = kFALSE;
-  fAddConvertedPairsToAOD = kFALSE;
 	
 }
 
@@ -1877,13 +1499,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   //Init arrays, variables, get number of clusters
   TLorentzVector mom, mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
-  //List to be used in conversion analysis, to tag the cluster as candidate for conversion
-  Bool_t * indexConverted = 0x0;
-  if(fCheckConversion){
-    indexConverted = new Bool_t[nCaloClusters];
-    for (Int_t i = 0; i < nCaloClusters; i++) 
-      indexConverted[i] = kFALSE;
-	}
   
   if(GetDebug() > 0) printf("AliAnaPhoton::MakeAnalysisFillAOD() - input %s cluster entries %d\n", fCalorimeter.Data(), nCaloClusters);
   
@@ -1993,275 +1608,12 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
-    
-    
-    //--------------------------------------------------------------------------------------
-    // Conversions pairs analysis
-    // Check if cluster comes from a conversion in the material in front of the calorimeter
-    // Do invariant mass of all pairs, if mass is close to 0, then it is conversion.
-    //--------------------------------------------------------------------------------------
-    
-    // Do analysis only if there are more than one cluster
-    if( nCaloClusters > 1 && fCheckConversion){
-      Bool_t bConverted = kFALSE;
-      Int_t id2 = -1;
-		  
-      //Check if set previously as converted couple, if so skip its use.
-      if (indexConverted[icalo]) continue;
-		  
-      // Second cluster loop
-      for(Int_t jcalo = icalo + 1 ; jcalo < nCaloClusters ; jcalo++) {
-        //Check if set previously as converted couple, if so skip its use.
-        if (indexConverted[jcalo]) continue;
-        //printf("Check Conversion indeces %d and %d\n",icalo,jcalo);
-        AliVCluster * calo2 =  (AliVCluster*) (pl->At(jcalo));  //Get cluster kinematics
         
-        
-        //Mixed event, get index of event
-        Int_t evtIndex2 = 0 ; 
-        if (GetMixedEvent()) {
-          evtIndex2=GetMixedEvent()->EventIndexForCaloCluster(calo2->GetID()) ; 
-          
-        }      
-        
-        //Get kinematics of second cluster
-        if(GetReader()->GetDataType() != AliCaloTrackReader::kMC){
-          calo2->GetMomentum(mom2,GetVertex(evtIndex2)) ;}//Assume that come from vertex in straight line
-        else{
-          Double_t vertex[]={0,0,0};
-          calo2->GetMomentum(mom2,vertex) ;
-        }
-        
-        //--------------------------------------
-        // Cluster selection
-        //--------------------------------------
-        
-        if(!ClusterSelected(calo2,mom2)) continue;  
-        
-        //................................................
-        // Get TOF of each cluster in pair, calculate difference if small, 
-        // take this pair. Way to reject clusters from hadrons (or pileup?)
-        Double_t t12diff = calo2->GetTOF()-calo->GetTOF()*1e9;
-        if(TMath::Abs(t12diff) > GetPairTimeCut()) continue;
-        
-        //................................................
-        //Get mass of pair, if small, take this pair.
-        Float_t pairM     = (mom+mom2).M();
-        //printf("\t both in calo, mass %f, cut %f\n",pairM,fMassCut);
-        if(pairM < fMassCut){  
-          aodph.SetTagged(kFALSE);
-          id2 = calo2->GetID();
-          indexConverted[icalo]=kTRUE;
-          indexConverted[jcalo]=kTRUE; 
-          Float_t asymmetry = TMath::Abs(mom.E()-mom2.E())/(mom.E()+mom2.E());
-          Float_t dPhi      = mom.Phi()-mom2.Phi();
-          Float_t dEta      = mom.Eta()-mom2.Eta();  
-          
-          //...............................................
-          //Fill few histograms with kinematics of the pair
-          //FIXME, move all this to MakeAnalysisFillHistograms ...
-          
-          fhConvDeltaEta   ->Fill( pairM, dPhi      );
-          fhConvDeltaPhi   ->Fill( pairM, dEta      );
-          fhConvAsym       ->Fill( pairM, asymmetry );
-          fhConvDeltaEtaPhi->Fill( dEta , dPhi      );
-          fhConvPt         ->Fill( pairM, (mom+mom2).Pt());          
-          
-          //Estimate conversion distance, T. Awes, M. Ivanov
-          //Under the assumption that the pair has zero mass, and that each electron 
-          //of the pair has the same momentum, they will each have the same bend radius 
-          //given by R=p/(qB) = p / (300 B) with p in [MeV/c], B in [Tesla] and R in [m]. 
-          //With nominal ALICE magnet current of 30kA B=0.5T, and so with E_cluster=p,  
-          //R = E/1.5 [cm].  Under these assumptions, the distance from the conversion 
-          //point to the MCEal can be related to the separation distance, L=2y, on the MCEal 
-          //as d = sqrt(R^2 -(R-y)^2) = sqrt(2Ry - y^2). And since R>>y we can write as 
-          //d = sqrt(E*L/1.5) where E is the cluster energy and L is the distance in cm between 
-          //the clusters.
-          Float_t pos1[3];
-          calo->GetPosition(pos1); 
-          Float_t pos2[3];
-          calo2->GetPosition(pos2); 
-          Float_t clustDist = TMath::Sqrt((pos1[0]-pos2[0])*(pos1[0]-pos2[0])+
-                                          (pos1[1]-pos2[1])*(pos1[1]-pos2[1])+
-                                          (pos1[2]-pos2[2])*(pos1[2]-pos2[2]));
-          
-          Float_t convDist  = TMath::Sqrt(mom.E() *clustDist*0.01/0.15);
-          Float_t convDist2 = TMath::Sqrt(mom2.E()*clustDist*0.01/0.15);
-          //printf("l = %f, e1 = %f, d1=%f, e2 = %f, d2=%f\n",clustDist,mom.E(),convDist,mom2.E(),convDist2);
-          if(GetDebug() > 2)
-            printf("AliAnaPhoton::MakeAnalysisFillAOD(): Pair with mass %2.3f < %2.3f, %1.2f < dPhi %2.2f < %2.2f, dEta %f < %2.2f, asymmetry %2.2f< %2.2f; \n    cluster1 id %d, e %2.3f  SM %d, eta %2.3f, phi %2.3f ; \n    cluster2 id %d, e %2.3f, SM %d,eta %2.3f, phi %2.3f\n",
-                   pairM,fMassCut,fConvDPhiMinCut, dPhi, fConvDPhiMaxCut, dEta, fConvDEtaCut, asymmetry, fConvAsymCut,
-                   calo->GetID(),calo->E(),GetCaloUtils()->GetModuleNumber(calo), mom.Eta(), mom.Phi(),
-                   id2, calo2->E(), GetCaloUtils()->GetModuleNumber(calo2),mom2.Eta(), mom2.Phi());
-          
-          fhConvDistEta ->Fill(mom .Eta(), convDist );
-          fhConvDistEta ->Fill(mom2.Eta(), convDist2);
-          fhConvDistEn  ->Fill(mom .E(),   convDist );
-          fhConvDistEn  ->Fill(mom2.E(),   convDist2);        
-          fhConvDistMass->Fill((mom+mom2).M(), convDist );
-          //dEta cut
-          if(dEta<0.05){
-            fhConvDistEtaCutEta ->Fill(mom .Eta(), convDist );
-            fhConvDistEtaCutEta ->Fill(mom2.Eta(), convDist2);
-            fhConvDistEnCutEta  ->Fill(mom .E(),   convDist );
-            fhConvDistEnCutEta  ->Fill(mom2.E(),   convDist2);        
-            fhConvDistMassCutEta->Fill((mom+mom2).M(), convDist );
-            //mass cut
-            if(pairM<0.01){//10 MeV
-              fhConvDistEtaCutMass ->Fill(mom .Eta(), convDist );
-              fhConvDistEtaCutMass ->Fill(mom2.Eta(), convDist2);
-              fhConvDistEnCutMass  ->Fill(mom .E(),   convDist );
-              fhConvDistEnCutMass  ->Fill(mom2.E(),   convDist2);        
-              // asymmetry cut
-              if(asymmetry<0.1){
-                fhConvDistEtaCutAsy ->Fill(mom .Eta(), convDist );
-                fhConvDistEtaCutAsy ->Fill(mom2.Eta(), convDist2);
-                fhConvDistEnCutAsy  ->Fill(mom .E(),   convDist );
-                fhConvDistEnCutAsy  ->Fill(mom2.E(),   convDist2); 
-              }//asymmetry cut
-            }//mass cut            
-          }//dEta cut
-          
-          //...............................................
-          //Select pairs in a eta-phi window
-          if(TMath::Abs(dEta) < fConvDEtaCut    && 
-             TMath::Abs(dPhi) < fConvDPhiMaxCut &&
-             TMath::Abs(dPhi) > fConvDPhiMinCut && 
-             asymmetry        < fConvAsymCut       ){
-            bConverted = kTRUE;          
-          }
-          //printf("Accepted? %d\n",bConverted);
-          //...........................................
-          //Fill more histograms, simulated data
-          //FIXME, move all this to MakeAnalysisFillHistograms ...
-          if(IsDataMC()){
-            
-            //Check the origin of the pair, look for conversion, antinucleons or jet correlations (strings)
-            Int_t ancPDG    = 0;
-            Int_t ancStatus = 0;
-            TLorentzVector momentum;
-            TVector3 prodVertex;
-            Int_t ancLabel  = GetMCAnalysisUtils()->CheckCommonAncestor(calo->GetLabel(), calo2->GetLabel(), 
-                                                                        GetReader(), ancPDG, ancStatus, momentum, prodVertex);
-            
-            // printf("AliAnaPhoton::MakeAnalysisFillHistograms() - Common ancestor label %d, pdg %d, name %s, status %d; \n",
-            //                          ancLabel,ancPDG,TDatabasePDG::Instance()->GetParticle(ancPDG)->GetName(),ancStatus);
-            
-            Int_t tag2 = GetMCAnalysisUtils()->CheckOrigin(calo2->GetLabels(),calo2->GetNLabels(),GetReader(), 0);
-            if(GetMCAnalysisUtils()->CheckTagBit(aodph.GetTag(),AliMCAnalysisUtils::kMCConversion)){
-              if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCConversion) && (ancPDG==22 || TMath::Abs(ancPDG)==11) && ancLabel > -1){
-                fhConvDeltaEtaMCConversion   ->Fill( pairM, dEta      );
-                fhConvDeltaPhiMCConversion   ->Fill( pairM, dPhi      );
-                fhConvAsymMCConversion       ->Fill( pairM, asymmetry );
-                fhConvDeltaEtaPhiMCConversion->Fill( dEta , dPhi      );
-                fhConvPtMCConversion         ->Fill( pairM, (mom+mom2).Pt());
-                fhConvDispersionMCConversion ->Fill( calo->GetDispersion(), calo2->GetDispersion());
-                fhConvM02MCConversion        ->Fill( calo->GetM02(), calo2->GetM02());
-                fhConvDistMCConversion       ->Fill( convDist , prodVertex.Mag() );
-                fhConvDistMCConversion       ->Fill( convDist2, prodVertex.Mag() );
-                
-                if(dEta<0.05 && pairM<0.01 && asymmetry<0.1){
-                  fhConvDistMCConversionCuts->Fill( convDist , prodVertex.Mag() );
-                  fhConvDistMCConversionCuts->Fill( convDist2, prodVertex.Mag() );
-                }
-                
-              }              
-            }
-            else if(GetMCAnalysisUtils()->CheckTagBit(aodph.GetTag(),AliMCAnalysisUtils::kMCAntiNeutron)){
-              if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCAntiNeutron) && ancPDG==-2112 && ancLabel > -1){
-                fhConvDeltaEtaMCAntiNeutron    ->Fill( pairM, dEta      );
-                fhConvDeltaPhiMCAntiNeutron    ->Fill( pairM, dPhi      );
-                fhConvAsymMCAntiNeutron        ->Fill( pairM, asymmetry );
-                fhConvDeltaEtaPhiMCAntiNeutron ->Fill( dEta , dPhi      );
-                fhConvPtMCAntiNeutron          ->Fill( pairM, (mom+mom2).Pt());
-                fhConvDispersionMCAntiNeutron  ->Fill( calo->GetDispersion(), calo2->GetDispersion());
-                fhConvM02MCAntiNeutron         ->Fill( calo->GetM02(), calo2->GetM02());
-              }
-            }
-            else if(GetMCAnalysisUtils()->CheckTagBit(aodph.GetTag(),AliMCAnalysisUtils::kMCAntiProton)){
-              if(GetMCAnalysisUtils()->CheckTagBit(tag2,AliMCAnalysisUtils::kMCAntiProton) && ancPDG==-2212 && ancLabel > -1){
-                fhConvDeltaEtaMCAntiProton    ->Fill( pairM, dEta      );
-                fhConvDeltaPhiMCAntiProton    ->Fill( pairM, dPhi      );
-                fhConvAsymMCAntiProton        ->Fill( pairM, asymmetry );
-                fhConvDeltaEtaPhiMCAntiProton ->Fill( dEta , dPhi      );
-                fhConvPtMCAntiProton          ->Fill( pairM, (mom+mom2).Pt());
-                fhConvDispersionMCAntiProton  ->Fill( calo->GetDispersion(), calo2->GetDispersion());
-                fhConvM02MCAntiProton         ->Fill( calo->GetM02(), calo2->GetM02());
-              }
-            }
-            
-            //Pairs coming from fragmenting pairs.
-            if(ancPDG < 22 && ancLabel > 7 && (ancStatus == 11 || ancStatus == 12) ){
-              fhConvDeltaEtaMCString    ->Fill( pairM, dPhi);
-              fhConvDeltaPhiMCString    ->Fill( pairM, dPhi);
-              fhConvAsymMCString        ->Fill( pairM, TMath::Abs(mom.E()-mom2.E())/(mom.E()+mom2.E()) );
-              fhConvDeltaEtaPhiMCString ->Fill( dPhi, dPhi );
-              fhConvPtMCString          ->Fill( pairM, (mom+mom2).Pt());
-              fhConvDispersionMCString  ->Fill( calo->GetDispersion(), calo2->GetDispersion());
-              fhConvM02MCString         ->Fill( calo->GetM02(), calo2->GetM02());
-            }
-            
-          }// Data MC
-          
-          break;
-        }
-			  
-      }//Mass loop
-		  
-      //..........................................................................................................
-      //Pair selected as converted, remove both clusters or recombine them into a photon and put them in the AOD
-      if(bConverted){ 
-        //Add to AOD
-        if(fAddConvertedPairsToAOD){
-          //Create AOD of pair analysis
-          TLorentzVector mpair = mom+mom2;
-          AliAODPWG4Particle aodpair = AliAODPWG4Particle(mpair);
-          aodpair.SetLabel(aodph.GetLabel());
-          //aodpair.SetInputFileIndex(input);
-          
-          //printf("Index %d, Id %d\n",icalo, calo->GetID());
-          //Set the indeces of the original caloclusters  
-          aodpair.SetCaloLabel(calo->GetID(),id2);
-          aodpair.SetDetector(fCalorimeter);
-          aodpair.SetIdentifiedParticleType(aodph.GetIdentifiedParticleType());
-          aodpair.SetTag(aodph.GetTag());
-          aodpair.SetTagged(kTRUE);
-          //Add AOD with pair object to aod branch
-          AddAODParticle(aodpair);
-          //printf("\t \t both added pair\n");
-        }
-        
-        //Do not add the current calocluster
-        if(fRemoveConvertedPair) continue;
-        else {
-          //printf("TAGGED\n");
-          //Tag this cluster as likely conversion
-          aodph.SetTagged(kTRUE);
-        }
-      }//converted pair
-    }//check conversion
-    //printf("\t \t added single cluster %d\n",icalo);
-	  
-    //FIXME, this to MakeAnalysisFillHistograms ...
-    Int_t absID             = 0; 
-    Float_t maxCellFraction = 0;
-    AliVCaloCells* cells    = 0;
-    
-    if(fCalorimeter == "EMCAL") cells = GetEMCALCells();
-    else                        cells = GetPHOSCells();
-    
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, calo,maxCellFraction);
-    
-    fhMaxCellDiffClusterE->Fill(aodph.E(),maxCellFraction);
-    fhNCellsE            ->Fill(aodph.E(),calo->GetNCells());
-
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
   }//loop
-  
-  delete [] indexConverted;
-	
+  	
   if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD()  End fill AODs, with %d entries \n",GetOutputAODBranch()->GetEntriesFast());  
   
 }
@@ -2338,18 +1690,33 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     if     (ecluster > 0.5)   fhEtaPhiPhoton  ->Fill(etacluster, phicluster);
     else if(GetMinPt() < 0.5) fhEtaPhi05Photon->Fill(etacluster, phicluster);
     
-    if(fCheckConversion &&ph->IsTagged()){
-      fhPtPhotonConv->Fill(ptcluster);
-      if(ecluster > 0.5)        fhEtaPhiPhotonConv  ->Fill(etacluster, phicluster);
-      else if(GetMinPt() < 0.5) fhEtaPhi05PhotonConv->Fill(etacluster, phicluster);
+
+    //Get original cluster, to recover some information
+    Int_t absID             = 0; 
+    Float_t maxCellFraction = 0;
+    AliVCaloCells* cells    = 0;
+    TObjArray * clusters    = 0; 
+    if(fCalorimeter == "EMCAL"){
+      cells    = GetEMCALCells();
+      clusters = GetEMCALClusters();
     }
+    else{
+      cells    = GetPHOSCells();
+      clusters = GetPHOSClusters();
+    }
+    
+    Int_t iclus = -1;
+    AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus); 
+    absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
+    
+    fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
+    fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
     
     //.......................................
     //Play with the MC data if available
     if(IsDataMC()){
       
       FillAcceptanceHistograms();
-      
       
       //....................................................................
       // Access MC information in stack if requested, check that it exists.
@@ -2426,12 +1793,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
           fhMC2Pt[mcConversion]    ->Fill(ptcluster, ptprim);     
           fhMCDeltaE[mcConversion] ->Fill(ecluster,eprim-ecluster);
           fhMCDeltaPt[mcConversion]->Fill(ptcluster,ptprim-ptcluster);     
-          
-          if(fCheckConversion){
-            if(ph->IsTagged()) fhPtConversionTagged ->Fill(ptcluster);
-            if(ptcluster > 0.5)fhEtaPhiConversion   ->Fill(etacluster,phicluster);
-            else               fhEtaPhi05Conversion ->Fill(etacluster,phicluster);
-          }
         }			
         
         if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[mcPrompt]){
@@ -2533,7 +1894,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCPt [mcAntiNeutron] ->Fill(ptcluster);
         fhMCPhi[mcAntiNeutron] ->Fill(ecluster,phicluster);
         fhMCEta[mcAntiNeutron] ->Fill(ecluster,etacluster);
-        if(ph->IsTagged() && fCheckConversion) fhPtAntiNeutronTagged ->Fill(ptcluster);
         
         fhMC2E[mcAntiNeutron]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcAntiNeutron]    ->Fill(ptcluster, ptprim);     
@@ -2547,7 +1907,6 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCPt [mcAntiProton] ->Fill(ptcluster);
         fhMCPhi[mcAntiProton] ->Fill(ecluster,phicluster);
         fhMCEta[mcAntiProton] ->Fill(ecluster,etacluster);
-        if(ph->IsTagged() && fCheckConversion) fhPtAntiProtonTagged ->Fill(ptcluster);
         
         fhMC2E[mcAntiProton]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcAntiProton]    ->Fill(ptcluster, ptprim);     
@@ -2572,13 +1931,11 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
         fhMCPt [mcOther] ->Fill(ptcluster);
         fhMCPhi[mcOther] ->Fill(ecluster,phicluster);
         fhMCEta[mcOther] ->Fill(ecluster,etacluster);
-        if(ph->IsTagged() && fCheckConversion) fhPtUnknownTagged ->Fill(ptcluster);
         
         fhMC2E[mcOther]     ->Fill(ecluster, eprim);
         fhMC2Pt[mcOther]    ->Fill(ptcluster, ptprim);     
         fhMCDeltaE[mcOther] ->Fill(ecluster,eprim-ecluster);
         fhMCDeltaPt[mcOther]->Fill(ecluster,ptprim-ptcluster);     
-        
         
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",
         //					ph->GetLabel(),ph->Pt());
@@ -2612,11 +1969,6 @@ void AliAnaPhoton::Print(const Option_t * opt) const
   printf("Min Distance to Bad Channel 2 = %2.1f\n",fMinDist2);
   printf("Min Distance to Bad Channel 3 = %2.1f\n",fMinDist3);
   printf("Reject clusters with a track matched = %d\n",fRejectTrackMatch);
-  printf("Check Pair Conversion                = %d\n",fCheckConversion);
-  printf("Add conversion pair to AOD           = %d\n",fAddConvertedPairsToAOD);
-  printf("Conversion pair mass cut             = %f\n",fMassCut);
-  printf("Conversion selection cut : A < %1.2f; %1.3f < Dphi < %1.3f; Deta < %1.3f\n",
-         fConvAsymCut,fConvDPhiMinCut, fConvDPhiMaxCut, fConvDEtaCut);
   printf("Time Cut: %3.1f < TOF  < %3.1f\n", fTimeCutMin, fTimeCutMax);
   printf("Number of cells in cluster is        > %d \n", fNCellsCut);
   printf("    \n") ;
