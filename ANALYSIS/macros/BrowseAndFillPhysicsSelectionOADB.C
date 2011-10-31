@@ -131,7 +131,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   // Trigger analysis defaults
   AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("Default");
-  oadbTrigAnalysis->SetZDCCorrParameters(-66.5, -2.1, 4*0.58, 4*0.5);
+  oadbTrigAnalysis->SetZDCCorrParameters(-0.823, -0.653, 4*0.58, 4*0.5);
   oadbContTriggerAnalysis->AddDefaultObject(oadbTrigAnalysis);  
 
   // ----- 2009 - 2010 -----

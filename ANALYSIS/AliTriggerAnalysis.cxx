@@ -196,7 +196,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistZDC = new TH1F("fHistZDC", "ZDC;trigger bits;events", 8, -1.5, 6.5);
   fHistTDCZDC = new TH1F("fHistTDCZDC", "ZDC;TDC bits;events", 32, -0.5, 32-0.5);
   fHistTimeZDC = new TH2F("fHistTimeZDC", "ZDC;TDC timing A+C vs C-A; events", 120,-30,30,120,-600,-540);
-  fHistTimeCorrZDC = new TH2F("fHistTimeCorrZDC", "ZDC;Corrected TDC timing A+C vs C-A; events", 120,-30,30,120,-100,-40);
+  fHistTimeCorrZDC = new TH2F("fHistTimeCorrZDC", "ZDC;Corrected TDC timing A+C vs C-A; events", 120,-30,30,260,-100,30);
   
   // TODO check limits
   fHistFMDA = new TH1F("fHistFMDA", "FMDA;combinations above threshold;events", 102, -1.5, 100.5);
