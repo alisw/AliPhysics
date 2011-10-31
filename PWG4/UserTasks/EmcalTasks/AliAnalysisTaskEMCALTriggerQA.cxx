@@ -128,8 +128,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",1,0,1);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",5,0,5);
   fhNEvents   ->SetYTitle("N events");
+  fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
+  fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"INT");
+  fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"L0");
+  fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L1-J");
+
   
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
@@ -180,7 +186,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GAmp    ->SetZTitle("Amplitude");
   
   fhL1JAmp     = new TH2F("hL1JAmp","STU signal per Row and Column for L1 Jet",
-                          fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                          fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1JAmp    ->SetXTitle("Index #eta (columnns)");
   fhL1JAmp    ->SetYTitle("Index #phi (rows)");
   fhL1JAmp    ->SetZTitle("Amplitude");
@@ -198,7 +204,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1GPatch  ->SetZTitle("counts");
   
   fhL1JPatch   = new TH2F("hL1JPatch","FOR with associated L1 Jet Patch",
-                          fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+                          fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
   fhL1JPatch  ->SetXTitle("Index #eta (columnns)");
   fhL1JPatch  ->SetYTitle("Index #phi (rows)");
   fhL1JPatch  ->SetZTitle("counts");
@@ -283,10 +289,19 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     return;
   }
   
-  fhNEvents->Fill(0);
-
   //trigger configuration
   TString triggerclasses = esdEvent->GetFiredTriggerClasses();
+  
+  if(triggerclasses=="") return;
+  
+  fhNEvents->Fill(0.5);
+  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") || 
+     triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(1.5);
+  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
+     triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
+  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(3.5);
+  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(4.5);
+  
   //std::cout << "trigger = " << triggerclasses << std::endl;
   
   //map for cells and patches
