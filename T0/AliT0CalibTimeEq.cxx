@@ -101,8 +101,8 @@ void  AliT0CalibTimeEq::Print(Option_t*) const
 
   printf("\n	----	PM Arrays	----\n\n");
   printf(" Time delay CFD \n");
-  for (Int_t i=0; i<24; i++) printf(" CFD  %f ",fTimeEq[i]);
-  printf("\n Mean Vertex %f \n", fMeanVertex);
+  for (Int_t i=0; i<24; i++) 
+    printf(" CFD  %f diff %f  \n",fCFDvalue[i][0],fTimeEq[i]);
 } 
 
 
@@ -151,14 +151,18 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  }
 	  if(cfd) {
 	    nent = Int_t(cfd->GetEntries());
-	    if( nent<=50 || cfd->GetRMS() == 0 || cfd->GetMean() ) {
+	    if( nent<=50) {
 	      okdiff++;
+	      //	      printf(" pmt %i nent %i cfd->GetRMS() %f cfd->GetMean() %f \n",
+	      //     i, nent, cfd->GetRMS(), cfd->GetMean() );
 	      if(okdiff<4) {
 		meandiff = 0;
 		sigmadiff = 0;
 	      }
 	      else
 		{
+		  // printf(" OK fsle:: pmt %i nent %i cfd->GetRMS() %f cfd->GetMean() %f \n",
+		  // i, nent, cfd->GetRMS(), cfd->GetMean() );
 		  AliWarning(Form(" Not  enouph data in PMT %i- PMT1:  %i ", i, nent));
 		  ok = false; 
 		}
@@ -179,7 +183,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  
 	  if(cfdtime) {
 	    nent = Int_t(cfdtime->GetEntries());
-	    if( nent<=50 || cfdtime->GetRMS() == 0 || cfdtime->GetMean() ) {
+	    if( nent<=50 ) {
 	      oktime++;
 	      if(oktime<4) {
 		meancfdtime = 0;
@@ -190,11 +194,14 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 		  ok = false; 
 		}
 	    }
-	    if(nent > 50 )  { //!!!!!!!!!!
+	    if(nent > 50  )  { //!!!!!!!!!!
 	      if(cfdtime->GetRMS()>1.5 )
 		GetMeanAndSigma(cfdtime,meancfdtime, sigmacfdtime);
 	      if(cfdtime->GetRMS()<=1.5) 
 		{
+		  if(cfdtime->GetRMS()==0 ||cfdtime->GetMean()==0 ) {
+		    ok = false;
+		  }
 		  meancfdtime = cfdtime->GetMean();
 		  sigmacfdtime = cfdtime->GetRMS();
 		}
