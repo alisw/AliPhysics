@@ -16,6 +16,7 @@ class AliAnalysisTaskPHOSPbPbQA : public AliAnalysisTaskSE {
 
 public:
 
+  AliAnalysisTaskPHOSPbPbQA();
   AliAnalysisTaskPHOSPbPbQA(const char *name);
   virtual ~AliAnalysisTaskPHOSPbPbQA() {}
   
