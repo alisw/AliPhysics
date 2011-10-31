@@ -157,6 +157,7 @@ void AliTRDPreprocessorOffline::Process(const Char_t* file, Int_t startRunNumber
     CalibVdriftT0(file,startRunNumber,endRunNumber,ocdbStorage);
     CalibGain(file,startRunNumber,endRunNumber,ocdbStorage);
     CalibChamberStatus(file,startRunNumber,endRunNumber,ocdbStorage);
+    CalibExbAlt(file,startRunNumber,endRunNumber,ocdbStorage);
     
   }
   

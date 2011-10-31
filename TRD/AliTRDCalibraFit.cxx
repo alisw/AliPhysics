@@ -2889,6 +2889,7 @@ Bool_t AliTRDCalibraFit::InitFitCH()
   gDirectory = gROOT;
  
   fScaleFitFactor = 0.0;
+  if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
   fCurrentCoefDetector   = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
     fCurrentCoefDetector[k] = 0.0;    
@@ -2933,11 +2934,12 @@ Bool_t AliTRDCalibraFit::InitFitPH()
   fVectorFit.SetName("driftvelocitycoefficients");
   fVectorFit2.SetName("t0coefficients");
 
+  if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
   fCurrentCoefDetector   = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
     fCurrentCoefDetector[k] = 0.0;    
   }
-
+  if( fCurrentCoefDetector2 ) delete [] fCurrentCoefDetector2;
   fCurrentCoefDetector2   = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
     fCurrentCoefDetector2[k] = 0.0;    
@@ -2985,6 +2987,7 @@ Bool_t AliTRDCalibraFit::InitFitPRF()
   gDirectory = gROOT;
   fVectorFit.SetName("prfwidthcoefficients");
  
+  if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
   fCurrentCoefDetector   = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
     fCurrentCoefDetector[k] = 0.0;    
@@ -3006,6 +3009,8 @@ Bool_t AliTRDCalibraFit::InitFitLinearFitter()
   
   gDirectory = gROOT;
  
+ if( fCurrentCoefDetector ) delete [] fCurrentCoefDetector;
+ if( fCurrentCoefDetector2 ) delete [] fCurrentCoefDetector2;
   fCurrentCoefDetector   = new Float_t[2304];
   fCurrentCoefDetector2  = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
@@ -3026,7 +3031,8 @@ Bool_t AliTRDCalibraFit::InitFitExbAlt()
   
   gDirectory = gROOT;
  
-  fCurrentCoefDetector   = new Float_t[2304];
+  if( fCurrentCoefDetector2 ) delete [] fCurrentCoefDetector2;
+  fCurrentCoefDetector2   = new Float_t[2304];
   for (Int_t k = 0; k < 2304; k++) {
     fCurrentCoefDetector2[k]  = 0.0;
   }

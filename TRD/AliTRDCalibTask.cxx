@@ -796,7 +796,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
       Double_t phtb[AliTRDseedV1::kNtb];
       memset(phtb, 0, AliTRDseedV1::kNtb*sizeof(Double_t));
       Double_t sum = 0.0;
-      Float_t normalisation = 6.67;
+      Float_t normalisation = 1.13;
       Int_t detector = 0;
       Int_t sector = 0;
       for(Int_t itr = 0; itr < 6; ++itr){
@@ -828,7 +828,8 @@ void AliTRDCalibTask::UserExec(Option_t *)
 	  if(!(fCl = tracklet->GetClusters(ic))) continue;
 	  ++nbclusters;
 	  time = fCl->GetPadTime();
-	  ch =  tracklet->GetdQdl(ic);
+	  //ch =  tracklet->GetdQdl(ic);
+	  ch =  tracklet->GetQperTB(ic);
 	  qcl = TMath::Abs(fCl->GetQ());
 	  detector = fCl->GetDetector();	  
 	  // Add the charge if shared cluster
