@@ -548,7 +548,7 @@ AliQA *  AliQA::Instance(const TASKINDEX_t tsk)
 }
 
 //_______________________________________________________________
-Long64_t AliQA::Merge(TCollection * list) {
+Long64_t AliQA::Merge(const TCollection * list) {
   // Merge the QA resuls in the list into this single AliQA object
   
   Long64_t nmerge=0;
