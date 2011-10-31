@@ -70,7 +70,7 @@ protected:
   TList       * fExternParamList; //List of external parameters (TParameter<double>)  
 
 private:
-  void Check(Double_t * rv, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
+   void PrivateCheck(Double_t * rv, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) ;
 
   ClassDef(AliQACheckerBase,3)  // description 
 

@@ -142,7 +142,7 @@ AliQACheckerBase::~AliQACheckerBase()
 }
 
 //____________________________________________________________________________
-void AliQACheckerBase::Check(Double_t * test, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) 
+void AliQACheckerBase::PrivateCheck(Double_t * test, AliQAv1::ALITASK_t index, const AliDetectorRecoParam * recoParam) 
 {
   // Performs a basic checking
   // Compares all the histograms stored in the directory
@@ -339,7 +339,7 @@ void AliQACheckerBase::Run(AliQAv1::ALITASK_t index, const AliDetectorRecoParam 
   
   Double_t * rv = new Double_t[AliRecoParam::kNSpecies] ;
   for (int i=AliRecoParam::kNSpecies;i--;) rv[i] = 0.0;
-  Check(rv, index, recoParam) ;
+  PrivateCheck(rv, index, recoParam) ;
   SetQA(index, rv) ; 	
   
   AliDebug(AliQAv1::GetQADebugLevel(), Form("Test result of %s", AliQAv1::GetAliTaskName(index))) ;
