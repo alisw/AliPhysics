@@ -23,7 +23,8 @@ class TFile;
 class AliTPCParam;
 class AliTPCseed;
 class AliTPCTrackerPoint;
-class AliESDEvent;   
+class AliESDEvent;
+class AliESDtrack;
 class TTree;
 class AliESDkink;
 class TTreeSRedirector;
@@ -166,7 +167,7 @@ private:
 
    Int_t UpdateTrack(AliTPCseed *t, Int_t accept); //update trackinfo
 
-   void MakeBitmaps(AliTPCseed *t);
+   void MakeESDBitmaps(AliTPCseed *t, AliESDtrack *esd);
 
    const Int_t fkNIS;        //number of inner sectors
    AliTPCtrackerSector *fInnerSec;  //array of inner sectors;

@@ -130,12 +130,6 @@ class AliTPCseed : public AliTPCtrack {
   Float_t GetCMeanSigmaZ2p30R() const {return fCMeanSigmaZ2p30R;}
      //
      //
-     void SetClusterMapBit(int ibit, Bool_t state);
-     Bool_t GetClusterMapBit(int ibit);
-     void SetSharedMapBit(int ibit, Bool_t state);
-     Bool_t GetSharedMapBit(int ibit);
-     const TBits& GetClusterMap() const { return fClusterMap; };
-     const TBits& GetSharedMap() const { return fSharedMap; };
 
   Float_t  CookdEdxNorm(Double_t low=0.05, Double_t up=0.70, Int_t type=0, Int_t i1=0, Int_t i2=159, Bool_t shapeNorm=kTRUE, Int_t posNorm=0, Int_t padNorm=0,Int_t returnVal=0);
 
@@ -187,9 +181,7 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
-     TBits   fClusterMap;       // bit is 1 if track has a hit on padrow
-     TBits   fSharedMap;        // bit is 1 if track shares a hit on padrow
-     ClassDef(AliTPCseed,3)  
+     ClassDef(AliTPCseed,4)  
 };
 
 
