@@ -37,6 +37,20 @@
 ClassImp(AliAnalysisTaskPHOSPbPbQA)
 
 //________________________________________________________________________
+AliAnalysisTaskPHOSPbPbQA::AliAnalysisTaskPHOSPbPbQA() : AliAnalysisTaskSE(),
+  fOutputContainer(0),fPHOSEvent(0),fCentrality(0),fCenBin(0),
+  fPHOSGeo(0),fEventCounter(0)
+{
+  //Default constructor
+  
+  for(Int_t i=0;i<1;i++){
+    for(Int_t j=0;j<2;j++)
+      fPHOSEvents[i][j]=0 ;
+  }
+  
+}
+
+//________________________________________________________________________
 AliAnalysisTaskPHOSPbPbQA::AliAnalysisTaskPHOSPbPbQA(const char *name) 
 : AliAnalysisTaskSE(name),
   fOutputContainer(0),
