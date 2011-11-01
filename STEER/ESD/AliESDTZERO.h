@@ -30,9 +30,15 @@ public:
   void SetT0(Double_t timeStart) {fT0timeStart = timeStart;}
   Float_t GetT0clock() const {return fT0clock;}
   void SetT0clock(Float_t timeStart) {fT0clock = timeStart;}
+  //1st
   Double32_t GetT0TOF(Int_t i) const {return fT0TOF[i];}
   const Double32_t * GetT0TOF() const {return fT0TOF;}
   void SetT0TOF(Int_t icase, Float_t time) { fT0TOF[icase] = time;}
+  //best
+  Double32_t GetT0TOFbest(Int_t i) const {return fT0TOFbest[i];}
+  const Double32_t * GetT0TOFbest() const {return fT0TOFbest;}
+  void SetT0TOFbest(Int_t icase, Float_t time) { fT0TOFbest[icase] = time;}
+
   Int_t GetT0Trig() const {return fT0trig;}
   void SetT0Trig(Int_t tvdc) {fT0trig = tvdc;}
   Bool_t GetT0Trig(Int_t i) {return (fT0trig&(1<<i)) != 0;}
@@ -78,7 +84,7 @@ public:
 private:
 
   Float_t      fT0clock;     // backward compatibility
-  Double32_t   fT0TOF[3];     // interaction time in ps ( A&C, A, C)
+  Double32_t   fT0TOF[3];     // interaction time in ps with 1st time( A&C, A, C)
   Double32_t   fT0zVertex;       // vertex z position estimated by the T0, cm
   Double32_t   fT0timeStart;     // interaction time estimated by the T0
   Int_t        fT0trig;            // T0 trigger signals
@@ -94,8 +100,9 @@ private:
   Float_t fMultA; // multiplicity on the A side
   Bool_t fBackground; //sattelite flag
   Float_t fPileupTime[6];
+  Double32_t   fT0TOFbest[3]; // interaction time in ps ( A&C, A, C) with best time
 
-  ClassDef(AliESDTZERO,6)
+  ClassDef(AliESDTZERO,7)
 };
 
 
