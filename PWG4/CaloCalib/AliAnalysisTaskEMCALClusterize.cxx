@@ -376,7 +376,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
                                     id,icell, cells->GetNumberOfCells(), amp, time*1.e9);
       continue;
     }
-        
+            
     //Create the digit, put a fake primary deposited energy to trick the clusterizer when checking the most likely primary
     new((*fDigitsArr)[idigit]) AliEMCALDigit( fCellLabels[id], fCellLabels[id],id, amp, time,AliEMCALDigit::kHG,idigit, 0, 0, 1); 
  
@@ -952,7 +952,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     clus->SetTOF(recPoint->GetTime()) ; //time-of-flight
     clus->SetNExMax(recPoint->GetNExMax()); //number of local maxima
     clus->SetDistanceToBadChannel(recPoint->GetDistanceToBadTower()); 
-    
+
     if(ncells == ncellsTrue){
       Float_t elipAxis[2];
       recPoint->GetElipsAxis(elipAxis);
@@ -973,7 +973,7 @@ void AliAnalysisTaskEMCALClusterize::RecPoints2Clusters(TClonesArray *digitsArr,
     }
     
     //MC
-    Int_t  parentMult  = 0;
+    Int_t  parentMult = 0;
     Int_t *parentList = recPoint->GetParents(parentMult);
     clus->SetLabel(parentList, parentMult); 
     
@@ -1016,11 +1016,15 @@ void AliAnalysisTaskEMCALClusterize::UserCreateOutputObjects()
   if(fOutputAODBranchName.Length()!=0){
     fOutputAODBranch = new TClonesArray("AliAODCaloCluster", 0);
     fOutputAODBranch->SetName(fOutputAODBranchName);
+    //fOutputAODBranch->SetOwner(kFALSE);
     AddAODBranch("TClonesArray", &fOutputAODBranch);
   }
   else {
     AliFatal("fOutputAODBranchName not set\n");
   }
+  
+  //PostData(0,fOutputAODBranch);
+  
 }
 
 //_______________________________________________________
@@ -1061,9 +1065,7 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   Int_t kNumberOfCaloClusters   = fCaloClusterArr->GetEntriesFast();
   for(Int_t i = 0; i < kNumberOfCaloClusters; i++){
     AliAODCaloCluster *newCluster = (AliAODCaloCluster *) fCaloClusterArr->At(i);
-    newCluster->SetID(i);
-    new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
-
+    
     //Add matched track
     if(fDoTrackMatching){
       Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
@@ -1077,7 +1079,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
     //In case of new bad channels, recalculate distance to bad channels
     if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
       fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
-    
+
+    newCluster->SetID(i);
+    new((*fOutputAODBranch)[i])  AliAODCaloCluster(*newCluster);
+        
     if(DebugLevel() > 1 )    
       printf("AliAnalysisTaksEMCALClusterize::UserExec() - New cluster %d of %d, energy %f\n",newCluster->GetID(), kNumberOfCaloClusters, newCluster->E());
     
@@ -1087,5 +1092,8 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
   
   // Clean up
   fCaloClusterArr->Delete(); // Do not Clear(), it leaks, why?
+  
+  //PostData(0,fOutputAODBranch);
+  
 }      
 
