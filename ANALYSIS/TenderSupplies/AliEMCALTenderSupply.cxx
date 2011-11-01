@@ -289,13 +289,14 @@ void AliEMCALTenderSupply::ProcessEvent()
   if(fUpdateCell)
   {
     UpdateCells();
-    fReCalibCluster= kFALSE;
     fReClusterize  = kTRUE;
   }
   
   // Reclusterize
   if(fReClusterize)
   {
+    fRecalClusPos  = kFALSE; // Done in reclusterization, do nothing
+    fReCalibCluster= kFALSE; // Done in reclusterization, do nothing
     FillDigitsArray();
     Clusterize();
     UpdateClusters();
@@ -690,6 +691,15 @@ void AliEMCALTenderSupply::FillDigitsArray()
     Short_t cellNumber=0;
     if (cells->GetCell(icell, cellNumber, cellAmplitude, cellTime) != kTRUE)
       break;
+
+    // Do not add if already too low (some cells set to 0 if bad channels)
+    if(cellAmplitude < fRecParam->GetMinECut() ) 
+      continue;
+    
+    // If requested, do not include exotic clusters
+    if(fEMCALRecoUtils->IsExoticCell(cellNumber,cells,event->GetBunchCrossNumber())) 
+      continue;
+        
     AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->New(idigit));
     digit->SetId(cellNumber);
     digit->SetTime(cellTime);
@@ -747,7 +757,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
   AliESDEvent *event = fTender->GetEvent();
   if (!event)
     return;
-  
+
   Int_t ncls = fClusterArr->GetEntriesFast();
   for(Int_t i=0, nout=clus->GetEntriesFast(); i < ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
@@ -779,6 +789,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     gpos.GetXYZ(g);
     
     AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->New(nout++));
+    c->SetID(nout-1); 
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
@@ -795,6 +806,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
     cesd->SetCellsAbsId(absIds);
     cesd->SetCellsAmplitudeFraction(ratios);
+    
   }
 }
 
