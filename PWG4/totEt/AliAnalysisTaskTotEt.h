@@ -36,8 +36,8 @@ private:
   AliAnalysisEtReconstructed *fRecAnalysis; // Rec 
   AliAnalysisEtMonteCarlo *fMCAnalysis; // MC
   
-  THnSparseD *fSparseHistRecVsMc; // Hist Rec vs Mc
-  Double_t *fSparseRecVsMc; // Rec vs Mc
+  //THnSparseD *fSparseHistRecVsMc; // Hist Rec vs Mc
+  //Double_t *fSparseRecVsMc; // Rec vs Mc
   
   ClassDef(AliAnalysisTaskTotEt, 2) 
 };

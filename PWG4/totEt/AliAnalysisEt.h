@@ -55,9 +55,9 @@ public:
 	TH2F* CreateEtaEtHisto2D(TString name, TString title, TString ztitle);
 	TH2F* CreateResEHisto2D(TString name, TString title, TString ztitle);
 	TH2F* CreateResPtHisto2D(TString name, TString title, TString ztitle);
-    THnSparseD* CreateClusterHistoSparse(TString name, TString title);
-    THnSparseD* CreateNeutralPartHistoSparse(TString name, TString title);
-    THnSparseD* CreateChargedPartHistoSparse(TString name, TString title);
+    THnSparseF* CreateClusterHistoSparse(TString name, TString title);
+    THnSparseF* CreateNeutralPartHistoSparse(TString name, TString title);
+    THnSparseF* CreateChargedPartHistoSparse(TString name, TString title);
 	
     /** Fills the histograms, must be overloaded if you want to add your own */
     virtual void FillHistograms();
@@ -96,6 +96,8 @@ public:
     
     /** Get contribution from removed gammas */
     virtual Double_t GetGammaContribution(Int_t /*clusterMultiplicity*/) {return 0;}
+
+    void MakeSparseHistograms(){fMakeSparse=kTRUE;}
 
 protected:
 
@@ -244,13 +246,15 @@ protected:
     AliCentrality *fCentrality; //Centrality object
     
     Short_t fDetector;     /** Which detector? (-1 -> PHOS, 1 -> EMCAL)*/
+
+    Bool_t fMakeSparse;//Boolean for whether or not to make sparse histograms
     
-    THnSparseD *fSparseHistTracks;     /** THnSparse histograms */
+    THnSparseF *fSparseHistTracks;     /** THnSparse histograms */
     
-    THnSparseD *fSparseHistClusters;     /** THnSparse histograms */
+    THnSparseF *fSparseHistClusters;     /** THnSparse histograms */
     
     /** ET sparse valuses */
-    THnSparseD *fSparseHistEt; //!
+    THnSparseF *fSparseHistEt; //!
        
     /** Values for sparse hists */
     Double_t *fSparseTracks; //!

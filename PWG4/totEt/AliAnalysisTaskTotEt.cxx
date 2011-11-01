@@ -41,11 +41,10 @@ ClassImp(AliAnalysisTaskTotEt)
     AliAnalysisTaskTransverseEnergy(name, isMc)
     ,fRecAnalysis(0)
     ,fMCAnalysis(0)
-    ,fSparseHistRecVsMc(0)
-    ,fSparseRecVsMc(0)
+					    // ,fSparseHistRecVsMc(0)
+					    //,fSparseRecVsMc(0)
 {
   // Constructor
-	
   // select if we should use EMCal or PHOS class
   // PHOS by default, EMCal if name string contains EMC
   TString t(name);
@@ -104,8 +103,8 @@ AliAnalysisTaskTotEt::~AliAnalysisTaskTotEt() {//Destructor
   //    fOutputList->Clear();
   delete fRecAnalysis;
   delete fMCAnalysis;
-  delete fSparseHistRecVsMc;
-  delete fSparseRecVsMc;
+  //delete fSparseHistRecVsMc;
+  //delete fSparseRecVsMc;
 }
 
 //________________________________________________________________________
@@ -176,7 +175,7 @@ void AliAnalysisTaskTotEt::UserCreateOutputObjects()
   else {
     Printf("Error: no track cuts!");
   }
-	
+
 }
 
 //________________________________________________________________________
