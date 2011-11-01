@@ -22,6 +22,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 /*
+Modified by fbellini on 01/11/2011
+- added histograms for LTM monitoring
+- fix for coverity
+
 Modified by fbellini on 17/10/2011
 - fix for memory leak in constructor
 - added methods to read histos ranges from config file in DQM
@@ -1375,15 +1379,22 @@ void AliTOFQADataMakerRec::ReadHistogramRangeFromFile(const Char_t * filename)
     return;
   }
   
-  FILE * configFile = fopen(filename,"r");
-  if (!configFile){
+  std::fstream configFile;
+  configFile.open(filename, std::fstream::in);
+  if (!configFile.is_open()){
     AliInfo("Cannot open config file with histograms ranges -> use default values.");
     SetDefaultHistogramRange();
     return;
   }
   
-  if (feof(configFile)){
-    AliInfo("Unexpected EOF of config file with histograms ranges -> use default values.");
+  //check file size
+  Int_t begin = configFile.tellg();
+  configFile.seekg(0, std::fstream::end); /* end */
+  Int_t end = configFile.tellg();
+  Int_t size = end - begin;
+  configFile.seekg(0, std::fstream::beg); /* rewind file */
+  if (size <= 0){
+    AliInfo(Form("Unexpected EOF of config file with histograms ranges. File size: %d -> use default values", size));
     SetDefaultHistogramRange();
     return;
   }
@@ -1392,32 +1403,34 @@ void AliTOFQADataMakerRec::ReadHistogramRangeFromFile(const Char_t * filename)
   Int_t nbinsMulti=0,nbinsTime=0;
   Float_t minTime=9999.0, maxTime=-9999.0;
   Int_t cutFiredMacropad=0;
+  TString endoflist;
+  while (!configFile.eof()) {
+    configFile >> cutFiredMacropad >> minMulti >> maxMulti >> minTime >> maxTime;
+    configFile >> endoflist;
+    if (endoflist.Contains("end")) break;
+  }
 
-  fscanf(configFile,"%10i %10i %10i %10f %10f", &cutFiredMacropad,&minMulti,&maxMulti,&minTime,&maxTime);
-  
   //set multiplicity histo ranges
   if (minMulti>maxMulti){
-    AliInfo("Invalid range for multiplicity histogram set. Changing to defualt values.");
+    AliInfo("Invalid range for multiplicity histogram set. Changing to default values.");
     SetDefaultMultiHistogramRange();
   } else {
     nbinsMulti = maxMulti-minMulti;
     SetNbinsMultiplicityHisto(nbinsMulti);
     SetMultiplicityHistoRange(minMulti,maxMulti);
-    AliInfo(Form("Setting multiplicity histogram ranges to: multMin = %i - multMax = %i - nMultBins = %i",
-		 fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity));
+    //AliInfo(Form("Setting multiplicity histogram ranges to: multMin = %i - multMax = %i - nMultBins = %i", fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity));
   }
 
   //set time histo ranges
   if (minTime>maxTime){
-    AliInfo("Invalid range for time histogram set. Changing to defualt values.");
+    AliInfo("Invalid range for time histogram set. Changing to default values.");
     SetDefaultTimeHistogramRange();
   } else {
     nbinsTime = TMath::Nint((maxTime - minTime)/fgkNbinsWidthTime);//ns
     maxTime=minTime+nbinsTime*fgkNbinsWidthTime;//ns
     SetNbinsTimeHisto(nbinsTime);
     SetTimeHistoRange(minTime,maxTime);
-    AliInfo(Form("Setting time histogram ranges to: timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i",
-		 fgRangeMinTime, fgRangeMaxTime,fgNbinsTime));
+    //AliInfo(Form("Setting time histogram ranges to: timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i", fgRangeMinTime, fgRangeMaxTime,fgNbinsTime));
   } 
  
   if ((cutFiredMacropad>0)&&(cutFiredMacropad<fgkFiredMacropadLimit)){
@@ -1425,10 +1438,11 @@ void AliTOFQADataMakerRec::ReadHistogramRangeFromFile(const Char_t * filename)
     SetDefaultCutNmaxFiredMacropad();
   } else {
     SetCutNmaxFiredMacropad(cutFiredMacropad);
-    AliInfo(Form("Setting cut on fired macropad to:  = %i",cutFiredMacropad));
+    //AliInfo(Form("Setting cut on fired macropad to:  = %i",cutFiredMacropad));
   } 
- 
-  fclose(configFile);
+  AliInfo(Form("Setting: multMin = %i - multMax = %i - nMultBins = %i, timeMin = %5.2f ns - timeMax = %5.2f ns - nTimeBins = %i, cutMaxFiredMacropad = %i", 
+	       fgRangeMinMultiplicity, fgRangeMaxMultiplicity, fgNbinsMultiplicity, fgRangeMinTime, fgRangeMaxTime,fgNbinsTime, cutFiredMacropad));
+  configFile.close();
   return;
 }
 
