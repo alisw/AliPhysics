@@ -79,6 +79,7 @@ AliAnalysisTaskSE(name),
   fhSPDVertexX(0),
   fhSPDVertexY(0),
   fhSPDVertexZ(0),
+  fhSPDVertexZonly(0),
   fhTRKVertexX(0),
   fhTRKVertexY(0),
   fhTRKVertexZ(0),
@@ -105,9 +106,12 @@ AliAnalysisTaskSE(name),
   fhSPDVertexDiffZPileContr3(0),
   fhSPDVertexDiffZPileContr4(0),
   fhSPDVertexDiffZPileContr5(0),
+  fhSPDVertexDiffZPileDefault(0),
   fhSPDContributorsPile(0),
   fhSPDDispContributors(0),
-  fTriggerType(AliVEvent::kMB)	
+  fTriggerType(AliVEvent::kMB),
+  fhntrksSPDvsSPDcls(0),
+  fhntrksZvsSPDcls(0)
 {
   // Constructor
 
@@ -140,7 +144,7 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput = new TList;
   fOutput->SetOwner();
 
-  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc:deltaxTRKnc:deltayTRKnc:deltazTRKnc:deltaxerrTRKnc:deltayerrTRKnc:deltazerrTRKnc:ntrksEvenTRKnc:ntrksOddTRKnc");
+  fNtupleVertexESD = new TNtuple("fNtupleVertexESD","vertices","run:tstamp:bunchcross:triggered:dndygen:xdiam:ydiam:zdiam:xerrdiam:yerrdiam:zerrdiam:xtrue:ytrue:ztrue:xSPD:xerrSPD:ySPD:yerrSPD:zSPD:zerrSPD:ntrksSPD:SPD3D:dphiSPD:xTPC:xerrTPC:yTPC:yerrTPC:zTPC:zerrTPC:ntrksTPC:constrTPC:xTRK:xerrTRK:yTRK:yerrTRK:zTRK:zerrTRK:ntrksTRK:constrTRK:ntrklets:nESDtracks:nITSrefit5or6:nTPCin:nTPCinEta09:SPD0cls:ispileupfromSPDdefault:xSPDp:xerrSPDp:ySPDp:yerrSPDp:zSPDp:zerrSPDp:ntrksSPDp:xTPCnc:xerrTPCnc:yTPCnc:yerrTPCnc:zTPCnc:zerrTPCnc:ntrksTPCnc:xTPCc:xerrTPCc:yTPCc:yerrTPCc:zTPCc:zerrTPCc:ntrksTPCc:xTRKnc:xerrTRKnc:yTRKnc:yerrTRKnc:zTRKnc:zerrTRKnc:ntrksTRKnc:xTRKc:xerrTRKc:yTRKc:yerrTRKc:zTRKc:zerrTRKc:ntrksTRKc:deltaxTRKnc:deltayTRKnc:deltazTRKnc:deltaxerrTRKnc:deltayerrTRKnc:deltazerrTRKnc:ntrksEvenTRKnc:ntrksOddTRKnc");
 
   fOutput->Add(fNtupleVertexESD);
 
@@ -150,6 +154,10 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhSPDVertexY);
   fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",200,-20,20);
   fOutput->Add(fhSPDVertexZ);
+  	
+  fhSPDVertexZonly = new TH1F("fhSPDVertexZonly","SPDVertexer z; z vertex [cm]; events",200,-20,20);
+  fOutput->Add(fhSPDVertexZonly);	
+	
   fhTRKVertexX = new TH1F("fhTRKVertexX","TRKVertex x; x vertex [cm]; events",200,-1,1);
   fOutput->Add(fhTRKVertexX);
   fhTRKVertexY = new TH1F("fhTRKVertexY","TRKVertex y; y vertex [cm]; events",200,-1,1);
@@ -171,14 +179,16 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fhSPDVertexZPile = new TH1F("fhSPDVertexZPile","SPDVertexPile z; z vertex [cm]; events",200,-40,40);
   fOutput->Add(fhSPDVertexZPile);
   
-  fhSPDVertexDiffZPileContr2 = new TH1F("fhSPDVertexDiffZPileContr2","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fhSPDVertexDiffZPileContr2 = new TH1F("fhSPDVertexDiffZPileContr2","SPDVertexDiff z; zmain - zpile [cm]; events",2000,-100,100);
   fOutput->Add(fhSPDVertexDiffZPileContr2);
-  fhSPDVertexDiffZPileContr3 = new TH1F("fhSPDVertexDiffZPileContr3","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fhSPDVertexDiffZPileContr3 = new TH1F("fhSPDVertexDiffZPileContr3","SPDVertexDiff z; zmain - zpile [cm]; events",2000,-100,100);
   fOutput->Add(fhSPDVertexDiffZPileContr3);
-  fhSPDVertexDiffZPileContr4 = new TH1F("fhSPDVertexDiffZPileContr4","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fhSPDVertexDiffZPileContr4 = new TH1F("fhSPDVertexDiffZPileContr4","SPDVertexDiff z; zmain - zpile [cm]; events",2000,-100,100);
   fOutput->Add(fhSPDVertexDiffZPileContr4);
-  fhSPDVertexDiffZPileContr5 = new TH1F("fhSPDVertexDiffZPileContr5","SPDVertexDiff z; zmain - zdiff [cm]; events",2000,-100,100);
+  fhSPDVertexDiffZPileContr5 = new TH1F("fhSPDVertexDiffZPileContr5","SPDVertexDiff z; zmain - zpile [cm]; events",2000,-100,100);
   fOutput->Add(fhSPDVertexDiffZPileContr5);
+  fhSPDVertexDiffZPileDefault = new TH1F("fhSPDVertexDiffZPileDefault","SPDVertexDiff z; zmain - zpile [cm]; events",2000,-100,100);
+  fOutput->Add(fhSPDVertexDiffZPileDefault);
 
   fhTrackRefs = new TH2F("fhTrackRefs","Track references; x; y",1000,-4,4,1000,-4,4);
   fOutput->Add(fhTrackRefs);
@@ -232,6 +242,12 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fhSPDDispContributors = new TH2F("fhSPDDispContributors","ncontributors main-pile; ncontributors main; ncontributors pile",200,-0.5,199.5,200,-0.5,199.5);
   fOutput->Add(fhSPDDispContributors);
   
+  fhntrksSPDvsSPDcls = new TH2F("fhntrksSPDvsSPDcls", "ncontributors SPD3D vs number of cluster SPD; nContributors 3D; nCluster SPD1",300,0.,3000.,400,0.,8000.);
+  fOutput->Add(fhntrksSPDvsSPDcls);
+	
+  fhntrksZvsSPDcls = new TH2F("fhntrksZvsSPDcls", "ncontributors SPDZ vs number of cluster SPD; nContributors Z; nCluster SPD1",300,0.,3000.,400,0.,8000.); 
+  fOutput->Add(fhntrksZvsSPDcls);
+	
   PostData(1, fOutput);
 
   return;
@@ -341,7 +357,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Int_t nInFile = esdE->GetEventNumberInFile();
 
  const AliMultiplicity *alimult = esdE->GetMultiplicity();
-  Int_t ntrklets=0,spd0cls=0;
+  Int_t ntrklets=0,spd0cls=0, spd1cls=0;
   if(alimult) {
     ntrklets = alimult->GetNumberOfTracklets();
 
@@ -349,6 +365,7 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
       if(alimult->GetDeltaPhi(l)<-9998.) ntrklets--;
     }
     spd0cls = alimult->GetNumberOfSingleClusters()+ntrklets;
+	spd1cls = alimult->GetNumberOfITSClusters(1);
   }
 
 
@@ -398,13 +415,19 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
     if(spdv->GetNContributors()>0) {
       TString title=spdv->GetTitle();
       if(title.Contains("3D")) {
-	fhSPDVertexX->Fill(spdv->GetXv());
-	fhSPDVertexY->Fill(spdv->GetYv());
+		  fhSPDVertexX->Fill(spdv->GetXv());
+		  fhSPDVertexY->Fill(spdv->GetYv());
+		  fhSPDVertexZ->Fill(spdv->GetZv()); 
+		  
+		  fhntrksSPDvsSPDcls->Fill(spdv->GetNContributors(), spd0cls);
       }
-      fhSPDVertexZ->Fill(spdv->GetZv());
-    }
+	 if(title.Contains("Z")){
+		 fhSPDVertexZonly->Fill(spdv->GetZv());
+		 fhntrksZvsSPDcls->Fill(spdv->GetNContributors(), spd1cls);
+	 }
+	}
   }
-  
+	
   if(trkv) {
     if(trkv->GetNContributors()>0) {
       fhTRKVertexX->Fill(trkv->GetXv());
@@ -476,35 +499,45 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   Float_t eypile=-999.;
   Float_t ezpile=-999.;
   Int_t ntrkspile=-1;
+  Bool_t isPileUpfromSPD=esdE->IsPileupFromSPD();
 
   if(esdE->GetNumberOfPileupVerticesSPD()>0 && spdvp && spdv){
   
-    if(spdvp->GetNContributors()>0) {
-     
-	  fhSPDVertexXPile->Fill(spdvp->GetXv());
-	  fhSPDVertexYPile->Fill(spdvp->GetYv());  
-      fhSPDContributorsPile->Fill(spdvp->GetNContributors());
-      fhSPDDispContributors->Fill(spdv->GetNContributors(),spdvp->GetNContributors());
-      fhSPDVertexZPile->Fill(spdvp->GetZv());
-      if(spdvp->GetNContributors()>=2) {fhSPDVertexDiffZPileContr2->Fill(spdv->GetZv()-spdvp->GetZv());}
-      if(spdvp->GetNContributors()>=3) {fhSPDVertexDiffZPileContr3->Fill(spdv->GetZv()-spdvp->GetZv());}
-      if(spdvp->GetNContributors()>=4) {fhSPDVertexDiffZPileContr4->Fill(spdv->GetZv()-spdvp->GetZv());}
-      if(spdvp->GetNContributors()>=5) {fhSPDVertexDiffZPileContr5->Fill(spdv->GetZv()-spdvp->GetZv());}
-      
-    }
+    if(spdvp->GetNContributors()>=2) {
    
-    xpile=spdvp->GetXv();
-    expile=spdvp->GetXRes();
-    ypile=spdvp->GetYv();
-    eypile=spdvp->GetYRes();
-    zpile=spdvp->GetZv();
-    ezpile=spdvp->GetZRes();
-    ntrkspile=spdvp->GetNContributors();  
+      xpile=spdvp->GetXv();
+      expile=spdvp->GetXRes();
+      ypile=spdvp->GetYv();
+      eypile=spdvp->GetYRes();
+      zpile=spdvp->GetZv();
+      ezpile=spdvp->GetZRes();
+      ntrkspile=spdvp->GetNContributors();  
+    
+      if (esdE->IsPileupFromSPD(2,0.,3.,2.,5.)){
+        
+        fhSPDVertexDiffZPileContr2->Fill(spdv->GetZv()-spdvp->GetZv());
+        if(spdvp->GetNContributors()>=3) {fhSPDVertexDiffZPileContr3->Fill(spdv->GetZv()-spdvp->GetZv());}
+        if(spdvp->GetNContributors()>=4) {fhSPDVertexDiffZPileContr4->Fill(spdv->GetZv()-spdvp->GetZv());}
+        if(spdvp->GetNContributors()>=5) {fhSPDVertexDiffZPileContr5->Fill(spdv->GetZv()-spdvp->GetZv());}
+        
+      }//end IsPileUpFromSPD
+      
+      if (isPileUpfromSPD){
+        
+        fhSPDVertexXPile->Fill(spdvp->GetXv());
+	    fhSPDVertexYPile->Fill(spdvp->GetYv());
+	    fhSPDVertexZPile->Fill(spdvp->GetZv());
+        fhSPDContributorsPile->Fill(spdvp->GetNContributors());
+        fhSPDDispContributors->Fill(spdv->GetNContributors(),spdvp->GetNContributors());
+        fhSPDVertexDiffZPileDefault->Fill(spdv->GetZv()-spdvp->GetZv());
+   
+      }
+    }
   }
-
+  
   // fill ntuple
-  Int_t isize=82;
-  Float_t xnt[82]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
+  Int_t isize=89;
+  Float_t xnt[89]; for(Int_t iii=0;iii<isize;iii++) xnt[iii]=0.;
 
   Int_t isizeSecNt=9;
   Float_t secnt[9]; for(Int_t iii=0;iii<isizeSecNt;iii++) secnt[iii]=0.;
@@ -529,6 +562,15 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   triggered = (UShort_t)(eventTriggered ? 1 : 0);
 
   xnt[index++]=(Float_t)dNchdy;
+  
+  xnt[index++]=(Float_t)esdE->GetDiamondX();
+  xnt[index++]=(Float_t)esdE->GetDiamondY();
+  xnt[index++]=(Float_t)esdE->GetDiamondZ();
+  
+  xnt[index++]=(Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondX()));
+  xnt[index++]=(Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondY()));
+  xnt[index++]=(Float_t)(TMath::Sqrt(esdE->GetSigma2DiamondZ()));
+  
   
   xnt[index++]=mcVertex[0];
   xnt[index++]=mcVertex[1];
@@ -576,7 +618,8 @@ void AliAnalysisTaskVertexESD::UserExec(Option_t *)
   xnt[index++]=float(nTPCinEta09);
 
   xnt[index++]=spd0cls;
-    
+  
+  xnt[index++]=Float_t(isPileUpfromSPD);  
   xnt[index++]=xpile;
   xnt[index++]=expile;
   xnt[index++]=ypile;
