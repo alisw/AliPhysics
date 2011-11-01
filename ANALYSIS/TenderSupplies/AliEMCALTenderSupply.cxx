@@ -318,7 +318,6 @@ void AliEMCALTenderSupply::ProcessEvent()
       continue;
     if  (!clust->IsEMCAL()) 
       continue;
-    
     if (fEMCALRecoUtils->ClusterContainsBadChannel(fEMCALGeo, clust->GetCellsAbsId(), clust->GetNCells())) {
       delete clusArr->RemoveAt(icluster);
       continue; //todo is it really needed to remove it? Or should we flag it?
@@ -331,15 +330,19 @@ void AliEMCALTenderSupply::ProcessEvent()
       }
     }
     
-    fEMCALRecoUtils->CorrectClusterEnergyLinearity(clust);
     if(fRecalDistToBadChannels) 
       fEMCALRecoUtils->RecalculateClusterDistanceToBadChannel(fEMCALGeo, cells, clust);  
     if(fReCalibCluster) 
       fEMCALRecoUtils->RecalibrateClusterEnergy(fEMCALGeo, clust, cells);
     if(fRecalClusPos) 
       fEMCALRecoUtils->RecalculateClusterPosition(fEMCALGeo, cells, clust);
+    
+    Float_t correctedEnergy = fEMCALRecoUtils->CorrectClusterEnergyLinearity(clust);
+    clust->SetE(correctedEnergy);
+    
   }
-  
+
+
   clusArr->Compress();
   
   // Track matching
@@ -356,77 +359,9 @@ void AliEMCALTenderSupply::ProcessEvent()
   
   fEMCALRecoUtils->FindMatches(event,0x0,fEMCALGeo);
   
-  SetClusterMatchedToTrack(event);
-  SetTracksMatchedToCluster(event);
+  fEMCALRecoUtils->SetClusterMatchedToTrack(event);
+  fEMCALRecoUtils->SetTracksMatchedToCluster(event);
   
-}
-
-//_____________________________________________________
-void AliEMCALTenderSupply::SetClusterMatchedToTrack(AliESDEvent *event)
-{
-  // Checks if tracks are matched to EMC clusters and set the matched EMCAL cluster index to ESD track. 
-  
-  Int_t nTracks = event->GetNumberOfTracks();
-  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
-    AliESDtrack* track = event->GetTrack(iTrack);
-    if (!track) {
-      AliWarning(Form("Could not receive track %d", iTrack));
-      continue;
-    }
-    Int_t matchClusIndex = fEMCALRecoUtils->GetMatchedClusterIndex(iTrack);		   
-    track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
-    if(matchClusIndex != -1) 
-      track->SetStatus(AliESDtrack::kEMCALmatch);
-    else
-      track->ResetStatus(AliESDtrack::kEMCALmatch);
-  }
-  if (fDebugLevel>2) 
-    AliInfo("Track matched to closest cluster");	
-}
-
-//_____________________________________________________
-void AliEMCALTenderSupply::SetTracksMatchedToCluster(AliESDEvent *event)
-{
-  // Checks if EMC clusters are matched to ESD track.
-  // Adds track indexes of all the tracks matched to a cluster withing residuals in ESDCalocluster.
-  
-  for (Int_t iClus=0; iClus < event->GetNumberOfCaloClusters(); ++iClus) {
-    AliESDCaloCluster *cluster = event->GetCaloCluster(iClus);
-    if (!cluster->IsEMCAL()) 
-      continue;
-    
-    Int_t nTracks = event->GetNumberOfTracks();
-    TArrayI arrayTrackMatched(nTracks);
-    
-    // Get the closest track matched to the cluster
-    Int_t nMatched = 0;
-    Int_t matchTrackIndex = fEMCALRecoUtils->GetMatchedTrackIndex(iClus);
-    if (matchTrackIndex != -1) {
-      arrayTrackMatched[nMatched] = matchTrackIndex;
-      nMatched++;
-    }
-    
-    // Get all other tracks matched to the cluster
-    for(Int_t iTrk=0; iTrk<nTracks; ++iTrk) {
-      AliESDtrack* track = event->GetTrack(iTrk);
-      if(iTrk == matchTrackIndex) continue;
-      if(track->GetEMCALcluster() == iClus){
-        arrayTrackMatched[nMatched] = iTrk;
-        ++nMatched;
-      }
-    }
-    
-    arrayTrackMatched.Set(nMatched);
-    cluster->AddTracksMatched(arrayTrackMatched);
-    
-    Float_t eta= -999, phi = -999;
-    if (matchTrackIndex != -1) 
-      fEMCALRecoUtils->GetMatchedResiduals(iClus, eta, phi);
-    cluster->SetTrackDistance(phi, eta);
-  }
-  
-  if (fDebugLevel>2) 
-    AliInfo("Cluster matched to tracks");	
 }
 
 //_____________________________________________________
@@ -464,6 +399,7 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   TObjArray *mobj = 0;
 
  if(fMisalignSurvey == kdefault){ //take default alignment corresponding to run no
+   printf("***DEFAULT MATRICES***\n!");
     AliOADBContainer emcalgeoCont(Form("emcal"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
@@ -482,13 +418,14 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   }
  }
 
- if(fMisalignSurvey == kSurveybyS){ //take alignment at module level
+ if(fMisalignSurvey == kSurveybyM){ //take alignment at module level
   if (runGM <= 140000) { //2010 data
     AliOADBContainer emcalgeoCont(Form("emcal2010"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey10");
     
   } else if (runGM>140000) { // 2011 LHC11a pass1 data
+    
     AliOADBContainer emcalgeoCont(Form("emcal2011"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(100,"survey11byM");			

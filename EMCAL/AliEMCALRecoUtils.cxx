@@ -78,7 +78,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fPIDUtils(),                            fAODFilterMask(32),
   fMatchedTrackIndex(0x0),                fMatchedClusterIndex(0x0), 
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kTRUE),                   fCutEtaPhiSeparate(kFALSE), 
-  fCutR(0.1),                             fCutEta(0.025),                         fCutPhi(0.05),
+  fCutR(0.05),                            fCutEta(0.025),                         fCutPhi(0.05),
   fClusterWindow(100),                    fMass(0.139),                           
   fStepSurface(10.),                      fStepCluster(5.),
   fTrackCutsType(kLooseCut),              fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
@@ -576,7 +576,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
   }
   
   Float_t energy = cluster->E();
-  
+
   switch (fNonLinearityFunction) {
       
     case kPi0MC:
@@ -647,7 +647,7 @@ Float_t AliEMCALRecoUtils::CorrectClusterEnergyLinearity(AliVCluster* cluster){
       break;
       
   }
-  
+
   return energy;
 
 }
@@ -1476,7 +1476,7 @@ void AliEMCALRecoUtils::FindMatches(AliVEvent *event,TObjArray * clusterArr,  Al
   
   AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
   AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (event);
-
+  
   TObjArray *clusterArray = 0x0;
   if(!clusterArr)
     {
@@ -2066,6 +2066,76 @@ void AliEMCALRecoUtils::InitTrackCuts()
       }
     }
 }
+
+
+//__________________________________________________________________
+void AliEMCALRecoUtils::SetClusterMatchedToTrack(AliESDEvent *event)
+{
+  // Checks if tracks are matched to EMC clusters and set the matched EMCAL cluster index to ESD track. 
+  
+  Int_t nTracks = event->GetNumberOfTracks();
+  for (Int_t iTrack = 0; iTrack < nTracks; ++iTrack) {
+    AliESDtrack* track = event->GetTrack(iTrack);
+    if (!track) {
+      AliWarning(Form("Could not receive track %d", iTrack));
+      continue;
+    }
+    Int_t matchClusIndex = GetMatchedClusterIndex(iTrack);		   
+    track->SetEMCALcluster(matchClusIndex); //sets -1 if track not matched within residual
+    if(matchClusIndex != -1) 
+      track->SetStatus(AliESDtrack::kEMCALmatch);
+    else
+      track->ResetStatus(AliESDtrack::kEMCALmatch);
+  }
+    AliDebug(2,"Track matched to closest cluster");	
+}
+
+//_________________________________________________________________
+void AliEMCALRecoUtils::SetTracksMatchedToCluster(AliESDEvent *event)
+{
+  // Checks if EMC clusters are matched to ESD track.
+  // Adds track indexes of all the tracks matched to a cluster withing residuals in ESDCalocluster.
+  
+  for (Int_t iClus=0; iClus < event->GetNumberOfCaloClusters(); ++iClus) {
+    AliESDCaloCluster *cluster = event->GetCaloCluster(iClus);
+    if (!cluster->IsEMCAL()) 
+      continue;
+    
+    Int_t nTracks = event->GetNumberOfTracks();
+    TArrayI arrayTrackMatched(nTracks);
+    
+    // Get the closest track matched to the cluster
+    Int_t nMatched = 0;
+    Int_t matchTrackIndex = GetMatchedTrackIndex(iClus);
+    if (matchTrackIndex != -1) {
+      arrayTrackMatched[nMatched] = matchTrackIndex;
+      nMatched++;
+    }
+    
+    // Get all other tracks matched to the cluster
+    for(Int_t iTrk=0; iTrk<nTracks; ++iTrk) {
+      AliESDtrack* track = event->GetTrack(iTrk);
+      if(iTrk == matchTrackIndex) continue;
+      if(track->GetEMCALcluster() == iClus){
+        arrayTrackMatched[nMatched] = iTrk;
+        ++nMatched;
+      }
+    }
+    
+    //printf("Tender::SetTracksMatchedToCluster - cluster E %f, N matches %d, first match %d\n",cluster->E(),nMatched,arrayTrackMatched[0]);
+    
+    arrayTrackMatched.Set(nMatched);
+    cluster->AddTracksMatched(arrayTrackMatched);
+    
+    Float_t eta= -999, phi = -999;
+    if (matchTrackIndex != -1) 
+      GetMatchedResiduals(iClus, eta, phi);
+    cluster->SetTrackDistance(phi, eta);
+  }
+  
+    AliDebug(2,"Cluster matched to tracks");	
+}
+
 
 //___________________________________________________
 void AliEMCALRecoUtils::Print(const Option_t *) const 

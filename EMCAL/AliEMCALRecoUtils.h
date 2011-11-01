@@ -27,6 +27,7 @@ class TH2F;
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
+#include "AliESDEvent.h"
 
 // EMCAL includes
 class AliEMCALGeometry;
@@ -246,8 +247,8 @@ public:
   
   static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Float_t &eta, Float_t &phi);
   static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
-  static Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
-  Bool_t ExtrapolateTrackToCluster(AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
+  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
 
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack(Int_t trkIndex)   const;
@@ -260,6 +261,9 @@ public:
   Bool_t   IsClusterMatched(Int_t clsIndex)         const;
   Bool_t   IsTrackMatched(Int_t trkIndex)           const;
 
+  void     SetClusterMatchedToTrack (AliESDEvent *event);
+  
+  void     SetTracksMatchedToCluster(AliESDEvent *event);  
 
   void     SwitchOnCutEtaPhiSum()                     { fCutEtaPhiSum      = kTRUE    ; 
                                                         fCutEtaPhiSeparate = kFALSE   ; }

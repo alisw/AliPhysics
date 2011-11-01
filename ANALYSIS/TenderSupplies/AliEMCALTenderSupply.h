@@ -134,10 +134,6 @@ private:
 
   void     UpdateCells();
 
-  void     SetClusterMatchedToTrack (AliESDEvent *event);
-
-  void     SetTracksMatchedToCluster(AliESDEvent *event);
-
   void     UpdateClusters();
 
   AliEMCALGeometry      *fEMCALGeo;               //! EMCAL geometry
