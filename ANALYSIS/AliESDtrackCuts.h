@@ -82,6 +82,7 @@ public:
   //######################################################
   // track quality cut setters  
   void SetMinNClustersTPC(Int_t min=-1)          {fCutMinNClusterTPC=min;}
+  void SetMinNClustersTPCPtDep(TFormula *f1=0x0, Float_t ptmax=0.);
   void SetMinNClustersITS(Int_t min=-1)          {fCutMinNClusterITS=min;}
   void SetMinNCrossedRowsTPC(Float_t min=-1) { fCutMinNCrossedRowsTPC=min;}
   void SetMinRatioCrossedRowsOverFindableClustersTPC(Float_t min = -1) { fCutMinRatioCrossedRowsOverFindableClustersTPC=min;}
@@ -125,6 +126,7 @@ public:
 
   Int_t   GetMinNClusterTPC()        const   { return fCutMinNClusterTPC;}
   Int_t   GetMinNClustersITS()       const   { return fCutMinNClusterITS;}
+  TFormula *GetMinNClustersTPCPtDep() const  { return f1CutMinNClustersTPCPtDep;}
   ITSClusterRequirement GetClusterRequirementITS(Detector det) const { return fCutClusterRequirementITS[det]; }
   Float_t GetMaxChi2PerClusterTPC()  const   { return fCutMaxChi2PerClusterTPC;}
   Float_t GetMaxChi2PerClusterITS()  const   { return fCutMaxChi2PerClusterITS;}
@@ -205,6 +207,8 @@ protected:
   Int_t   fCutMinNClusterITS;         // min number of its clusters
   Float_t   fCutMinNCrossedRowsTPC;     // min number of tpc crossed rows
   Float_t fCutMinRatioCrossedRowsOverFindableClustersTPC; // min ratio crossed rows / findable clusters
+  TFormula *f1CutMinNClustersTPCPtDep; // pt dependent tpc clusters cut
+  Float_t fCutMaxPtDepNClustersTPC;   // maximum pt for pt dependend TPC cluster cut. For pt=>ptmax NClusterMin = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC).
 
   ITSClusterRequirement fCutClusterRequirementITS[3];  // detailed ITS cluster requirements for (SPD, SDD, SSD)
 
@@ -305,7 +309,7 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 17)
+  ClassDef(AliESDtrackCuts, 18)
 };
 
 

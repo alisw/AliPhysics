@@ -84,6 +84,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fCutMinNClusterITS(0),
   fCutMinNCrossedRowsTPC(0),
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
+  f1CutMinNClustersTPCPtDep(0x0),
+  fCutMaxPtDepNClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -192,6 +194,8 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fCutMinNClusterITS(0),
   fCutMinNCrossedRowsTPC(0),
   fCutMinRatioCrossedRowsOverFindableClustersTPC(0),
+  f1CutMinNClustersTPCPtDep(0x0),
+  fCutMaxPtDepNClustersTPC(0),
   fCutMaxChi2PerClusterTPC(0),
   fCutMaxChi2PerClusterITS(0),
   fCutMaxChi2TPCConstrainedVsGlobal(0),
@@ -334,7 +338,11 @@ AliESDtrackCuts::~AliESDtrackCuts()
   if (fhCutStatistics)
     delete fhCutStatistics;             
   if (fhCutCorrelation)
-    delete fhCutCorrelation;            
+    delete fhCutCorrelation;    
+
+  if(f1CutMinNClustersTPCPtDep)
+    delete f1CutMinNClustersTPCPtDep;
+        
 }
 
 void AliESDtrackCuts::Init()
@@ -481,7 +489,10 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fCutMinNClusterITS = fCutMinNClusterITS;
   target.fCutMinNCrossedRowsTPC = fCutMinNCrossedRowsTPC;
   target.fCutMinRatioCrossedRowsOverFindableClustersTPC = fCutMinRatioCrossedRowsOverFindableClustersTPC;
-
+  if(f1CutMinNClustersTPCPtDep){
+    target.f1CutMinNClustersTPCPtDep = (TFormula*) f1CutMinNClustersTPCPtDep->Clone("f1CutMinNClustersTPCPtDep");
+  }
+  target.fCutMaxPtDepNClustersTPC =   fCutMaxPtDepNClustersTPC;
 
   target.fCutMaxChi2PerClusterTPC = fCutMaxChi2PerClusterTPC;
   target.fCutMaxChi2PerClusterITS = fCutMaxChi2PerClusterITS;
@@ -662,6 +673,19 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
     count++;
   }
   return count+1;
+}
+
+void AliESDtrackCuts::SetMinNClustersTPCPtDep(TFormula *f1, Float_t ptmax) 
+{
+  //
+  // Sets the pT dependent NClustersTPC cut
+  //
+
+  if(f1){ 
+    delete f1CutMinNClustersTPCPtDep;
+    f1CutMinNClustersTPCPtDep = (TFormula*)f1->Clone("f1CutMinNClustersTPCPtDep"); 
+  }
+  fCutMaxPtDepNClustersTPC=ptmax; 
 }
 
 //____________________________________________________________________
@@ -1008,6 +1032,15 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack, const AliESDEve
   else {
     nClustersTPC = esdTrack->GetTPCclusters(0);
   }
+
+  //Pt dependent NClusters Cut
+  if(f1CutMinNClustersTPCPtDep) {
+    if(esdTrack->Pt()<fCutMaxPtDepNClustersTPC)
+      fCutMinNClusterTPC = f1CutMinNClustersTPCPtDep->Eval(esdTrack->Pt());
+    else
+      fCutMinNClusterTPC = f1CutMinNClustersTPCPtDep->Eval(fCutMaxPtDepNClustersTPC);
+  }
+
   Float_t nCrossedRowsTPC = esdTrack->GetTPCCrossedRows();
   Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
   if (esdTrack->GetTPCNclsF()>0) {
