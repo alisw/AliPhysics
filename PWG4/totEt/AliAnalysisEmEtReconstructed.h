@@ -55,20 +55,20 @@ protected:
 	Double_t fTotalRectotETDep;// total ET deposited
 	
 	AliESDEvent *fESD;// ESD object
-	AliEMCALGeometry *fGeoUt;// EMCal geometry object
+  	AliEMCALGeometry *fGeoUt;// EMCal geometry object
 
 	// *******************
 	// all ET
 	// *******************
-	THnSparseD* fHistAllRecETDep;// ET deposited - all particles
-	THnSparseD* fHistAllRec;// mutliplicity - all particles
+	THnSparseF* fHistAllRecETDep;// ET deposited - all particles
+	THnSparseF* fHistAllRec;// mutliplicity - all particles
 	TH1F *fHistAllRectotETDep;// total ET deposited - all particles
 	
 	// *******************
 	// electron ET reconstructed in EMCal
 	// *******************
-	THnSparseD* fHistElectronRecETDep;// Et deposited - matched electrons
-	THnSparseD* fHistElectronRec;// multiplicity - matched electrons
+	THnSparseF* fHistElectronRecETDep;// Et deposited - matched electrons
+	THnSparseF* fHistElectronRec;// multiplicity - matched electrons
 	TH1F *fHistElectronMatchtotETDep;// total Et deposited - matched electrons
 	
 	TH2F *fHistElectronRecdEdxP;// electron dEdx vs p
@@ -86,8 +86,8 @@ protected:
 	// *******************
 	// muon ET (+ and -)
 	// *******************
-	THnSparseD* fHistMuonRecETDep;// Et deposited
-	THnSparseD* fHistMuonRec;// multiplicity
+	THnSparseF* fHistMuonRecETDep;// Et deposited
+	THnSparseF* fHistMuonRec;// multiplicity
 	TH1F *fHistMuonMatchtotETDep;// total Et deposited
 
 	TH2F *fHistMuonRecdEdxP;// dEdx vs p
@@ -95,8 +95,8 @@ protected:
 	// *******************
 	// pion ET (+ and -)
 	// *******************
-	THnSparseD* fHistPionRecETDep;// Et deposited 
-	THnSparseD* fHistPionRec;// multiplicity
+	THnSparseF* fHistPionRecETDep;// Et deposited 
+	THnSparseF* fHistPionRec;// multiplicity
 	TH1F *fHistPionMatchtotETDep;// total Et deposited
 
 	TH2F *fHistPionRecdEdxP;// dEdx vs p
@@ -104,8 +104,8 @@ protected:
 	// *******************
 	// charged kaon (+ and -) ET
 	// *******************
-	THnSparseD* fHistKaonRecETDep;// Et deposited
-	THnSparseD* fHistKaonRec;// multiplicity
+	THnSparseF* fHistKaonRecETDep;// Et deposited
+	THnSparseF* fHistKaonRec;// multiplicity
 	TH1F *fHistKaonMatchtotETDep;// total Et deposited
 
 	TH2F *fHistKaonRecdEdxP;// dEdx vs p
@@ -113,8 +113,8 @@ protected:
 	// *******************
 	// proton (anti) ET
 	// *******************
-	THnSparseD* fHistProtonRecETDep;// Et deposited
-	THnSparseD* fHistProtonRec;// multiplicity
+	THnSparseF* fHistProtonRecETDep;// Et deposited
+	THnSparseF* fHistProtonRec;// multiplicity
 	TH1F *fHistProtonMatchtotETDep;// total Et deposited
 
 	TH2F *fHistProtonRecdEdxP;// dEdx vs p
