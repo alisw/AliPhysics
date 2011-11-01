@@ -93,6 +93,18 @@ class AliKFParticle :public AliKFParticleBase
   Int_t    GetQ    () const ; //* charge
   Double_t GetChi2 () const ; //* chi^2
   Int_t    GetNDF  () const ; //* Number of Degrees of Freedom
+
+  const Double_t& X    () const { return fP[0]; }
+  const Double_t& Y    () const { return fP[1]; }
+  const Double_t& Z    () const { return fP[2]; }
+  const Double_t& Px   () const { return fP[3]; }
+  const Double_t& Py   () const { return fP[4]; }
+  const Double_t& Pz   () const { return fP[5]; }
+  const Double_t& E    () const { return fP[6]; }
+  const Double_t& S    () const { return fP[7]; }
+  const Int_t   & Q    () const { return fQ;    }
+  const Double_t& Chi2 () const { return fChi2; }
+  const Int_t   & NDF  () const { return fNDF;  }
   
   Double_t GetParameter ( int i ) const ;
   Double_t GetCovariance( int i ) const ;
@@ -299,7 +311,13 @@ class AliKFParticle :public AliKFParticleBase
 
   void ConstructGamma( const AliKFParticle &daughter1,
 		       const AliKFParticle &daughter2  );
-
+  
+    // * Pseudo Proper Time of decay = (r*pt) / |pt| * M/|pt|
+    // @primVertex - primary vertex
+    // @mass - mass of the mother particle (in the case of "Hb -> JPsi" it would be JPsi mass)
+    // @*timeErr2 - squared error of the decay time. If timeErr2 = 0 it isn't calculated
+  Double_t GetPseudoProperDecayTime( const AliKFParticle &primVertex, const Double_t& mass, Double_t* timeErr2 = 0 ) const;
+  
  protected: 
   
   //*

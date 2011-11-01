@@ -360,3 +360,60 @@ void AliKFParticle::GetDStoParticleALICE( const AliKFParticleBase &p,
   return;
 }
 */
+
+  // * Pseudo Proper Time of decay = (r*pt) / |pt| * M/|pt|
+Double_t AliKFParticle::GetPseudoProperDecayTime( const AliKFParticle &pV, const Double_t& mass, Double_t* timeErr2 ) const
+{ // TODO optimize with respect to time and stability
+  const Double_t ipt2 = 1/( Px()*Px() + Py()*Py() );
+  const Double_t mipt2 = mass*ipt2;
+  const Double_t dx = X() - pV.X();
+  const Double_t dy = Y() - pV.Y();
+
+  if ( timeErr2 ) {
+      // -- calculate error = sigma(f(r)) = f'Cf'
+      // r = {x,y,px,py,x_pV,y_pV}
+      // df/dr = { px*m/pt^2,
+      //     py*m/pt^2,
+      //    ( x - x_pV )*m*(1/pt^2 - 2(px/pt^2)^2),
+      //    ( y - y_pV )*m*(1/pt^2 - 2(py/pt^2)^2),
+      //     -px*m/pt^2,
+      //     -py*m/pt^2 }
+    const Double_t f0 = Px()*mipt2;
+    const Double_t f1 = Py()*mipt2;
+    const Double_t mipt2derivative = mipt2*(1-2*Px()*Px()*ipt2);
+    const Double_t f2 = dx*mipt2derivative;
+    const Double_t f3 = -dy*mipt2derivative;
+    const Double_t f4 = -f0;
+    const Double_t f5 = -f1;
+
+    const Double_t& C00 =    GetCovariance(0,0);
+    const Double_t& C10 =    GetCovariance(0,1);
+    const Double_t& C11 =    GetCovariance(1,1);
+    const Double_t& C20 =    GetCovariance(3,0);
+    const Double_t& C21 =    GetCovariance(3,1);
+    const Double_t& C22 =    GetCovariance(3,3);
+    const Double_t& C30 =    GetCovariance(4,0);
+    const Double_t& C31 =    GetCovariance(4,1);
+    const Double_t& C32 =    GetCovariance(4,3);
+    const Double_t& C33 =    GetCovariance(4,4);
+    const Double_t& C44 = pV.GetCovariance(0,0);
+    const Double_t& C54 = pV.GetCovariance(1,0);
+    const Double_t& C55 = pV.GetCovariance(1,1);
+
+    *timeErr2 =
+      f5*C55*f5 +
+      f5*C54*f4 +
+      f4*C44*f4 +
+      f3*C33*f3 +
+      f3*C32*f2 +
+      f3*C31*f1 +
+      f3*C30*f0 +
+      f2*C22*f2 +
+      f2*C21*f1 +
+      f2*C20*f0 +
+      f1*C11*f1 +
+      f1*C10*f0 +
+      f0*C00*f0;
+  }
+  return ( dx*Px() + dy*Py() )*mipt2;
+}

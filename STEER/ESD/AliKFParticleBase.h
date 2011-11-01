@@ -96,6 +96,19 @@ class AliKFParticleBase :public TObject {
   Int_t    GetQ    () const { return fQ;    }
   Double_t GetChi2 () const { return fChi2; }
   Int_t    GetNDF  () const { return fNDF;  }
+
+  const Double_t& X    () const { return fP[0]; }
+  const Double_t& Y    () const { return fP[1]; }
+  const Double_t& Z    () const { return fP[2]; }
+  const Double_t& Px   () const { return fP[3]; }
+  const Double_t& Py   () const { return fP[4]; }
+  const Double_t& Pz   () const { return fP[5]; }
+  const Double_t& E    () const { return fP[6]; }
+  const Double_t& S    () const { return fP[7]; }
+  const Int_t   & Q    () const { return fQ;    }
+  const Double_t& Chi2 () const { return fChi2; }
+  const Int_t   & NDF  () const { return fNDF;  }
+
   
   Double_t GetParameter ( Int_t i )        const { return fP[i];       }
   Double_t GetCovariance( Int_t i )        const { return fC[i];       }
@@ -129,6 +142,8 @@ class AliKFParticleBase :public TObject {
   Int_t    & Q    () { return fQ;    }
   Double_t & Chi2 () { return fChi2; }
   Int_t    & NDF  () { return fNDF;  }
+
+  
 
   Double_t & Parameter ( Int_t i )        { return fP[i];       }
   Double_t & Covariance( Int_t i )        { return fC[i];       }
