@@ -25,7 +25,8 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   gROOT->LoadMacro("AddTaskTRDCalib.C");
   gROOT->LoadMacro("AddTOFAnalysisTaskCalibPass0.C");
   gROOT->LoadMacro("AddTaskT0Calib.C");
-
+  gROOT->LoadMacro("AddTaskMeanVertexCalib.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskITSAlign.C"); 
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);
@@ -62,7 +63,17 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   AliAnalysisTask* tTRD = AddTaskTRDCalib(runNumber);
   AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
   AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
-
+  AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
+  //
+  // add standard ITSAlignQA task with only SDD calibration histos activated 
+  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskITSAlign(0,2011,kFALSE);
+  itsAlign->SetLoadGeometryFromOCDB(kFALSE);
+  itsAlign->SetDoSPDResiduals(kFALSE);
+  itsAlign->SetDoSDDResiduals(kFALSE);
+  itsAlign->SetDoSSDResiduals(kFALSE);
+  itsAlign->SetDoSDDDriftTime(kFALSE);
+  itsAlign->SetMinMaxMult(20.,1070.);
+  //
   // Run the analysis
   if (!mgr->InitAnalysis()) {
     printf("Analysis cannot be started, returning\n");

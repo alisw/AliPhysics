@@ -1,0 +1,29 @@
+Calibraion mactos directory - OCDB updates for TPC, TRD, TOF and T0 and vertex calculation
+
+History:
+
+26/07/2011 - directory created according to http://savannah.cern.ch/bugs/?84135
+           - first run post-creation is from LHC11d, after 157272
+           - AliRoot version v4-20-Rev-35  
+
+29/07/2011 - modified validationMerging.sh to catch "E-AliCDBGrid::PutEntry" and invalidate the merging job.	
+
+09/08/2011 - modified AddTaskTRDCalib.C according to https://savannah.cern.ch/bugs/?85312. Modification valid for all runs > 158780 (LHC11d)  
+
+24/08/2011 - modified AddTaskTRDCalib.C according to https://savannah.cern.ch/bugs/?85791. Modification valid for all runs > 159606 (LHC11d)
+
+13/09/2011 - modified makeOCDB.C - adding Menvertex calculation https://savannah.cern.ch/task/?22379. Valid for LHC11d Pass1 and LHC11e onward. 
+
+14/09/2011 - new AddTaskT0Calib.C as per https://savannah.cern.ch/task/?22276
+
+14/09/2011 - modified makeOCDB.C as per https://savannah.cern.ch/bugs/?86736
+
+15/09/2011 - modified makeOCDB.C as per https://savannah.cern.ch/task/?22379#comment57
+
+16/09/2011 - new AddTaskTRDCalib.C as per http://savannah.cern.ch/bugs/?86830
+
+25/10/2011 - new AddTOFAnalysisTaskCalibPass0.C as per https://savannah.cern.ch/bugs/?87953
+
+25/10/2011 - new AddTaskT0Calib.C as per http://savannah.cern.ch/bugs/?87877 and again after a quickie debugging session
+
+31/11/2011 - added PWG1/macros/AddTaskITSAlign.C to produce SDD calibration histos. No run-level OCDB update is foreseen.
