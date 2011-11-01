@@ -218,7 +218,8 @@ public:
   void    SetTPCsignal(Float_t signal, Float_t sigma, UChar_t npoints){ 
      fTPCsignal = signal; fTPCsignalS = sigma; fTPCsignalN = npoints;
   }
-  void    SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo){ fTPCdEdxInfo = dEdxInfo;}
+  void  SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo); 
+
   AliTPCdEdxInfo * GetTPCdEdxInfo(){return fTPCdEdxInfo;}
   Double_t GetTPCsignal() const {return fTPCsignal;}
   Double_t GetTPCsignalSigma() const {return fTPCsignalS;}

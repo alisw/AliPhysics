@@ -2074,6 +2074,12 @@ void AliESDtrack::SetHMPIDpid(const Double_t *p) {
 }
 
 //_______________________________________________________________________
+void  AliESDtrack::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo){ 
+  if(fTPCdEdxInfo) delete fTPCdEdxInfo;
+  fTPCdEdxInfo = dEdxInfo; 
+}
+
+//_______________________________________________________________________
 void AliESDtrack::GetHMPIDpid(Double_t *p) const {
   // Gets probabilities of each particle type (in HMPID)
   for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fHMPIDr[i];
