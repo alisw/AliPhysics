@@ -40,8 +40,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void SetPass(Int_t pass)                 {fPass = pass;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
   void DontUseCleaning()                   {fUseCleaning=kFALSE;}
-  void ReadCentralityHistos(TString filename);
-  void ReadCentralityHistos2(TString filename);
+
  private:
 
   Int_t SetupRun(AliESDEvent* const esd);
@@ -49,26 +48,31 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Bool_t IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const;
   Bool_t IsOutlierV0MZDC(Float_t zdc, Float_t v0) const;
   Bool_t IsOutlierV0MZDCECal(Float_t zdc, Float_t v0) const;
-  Float_t MyGetScaleFactor(Int_t runnumber, Int_t flag) const; 
-  void MyInitScaleFactor();
-  Float_t MyGetScaleFactorMC(Int_t runnumber) const; 
-  void MyInitScaleFactorMC();
 
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
   Int_t    fPass;               // pass of reconstruction
-  TFile   *fFile;               // file that holds the centrality vs multiplicity 1d
-  TFile   *fFile2;              // file that holds the centrality vs multiplicity 2d  
   Int_t    fCurrentRun;         // current run number
-  Int_t    fRunNo;              // reference run number
-  Int_t    fLowRunN;            // first run  
-  Int_t    fHighRunN;           // last run
   Bool_t   fUseScaling;         // flag to use scaling 
-  Bool_t   fUseCleaning;        // flag to use cleanin  
-  Float_t  fV0MScaleFactor[2667];   // number of runs in PbPb 2010
-  Float_t  fSPDScaleFactor[2667];   // number of runs in PbPb 2010
-  Float_t  fTPCScaleFactor[2667];   // number of runs in PbPb 2010
-  Float_t  fV0MScaleFactorMC[2667]; // number of runs in PbPb 2010
+  Bool_t   fUseCleaning;        // flag to use cleaning  
+  Float_t  fV0MScaleFactor;     // scale factor V0M
+  Float_t  fSPDScaleFactor;     // scale factor SPD
+  Float_t  fTPCScaleFactor;     // scale factor TPC
+  Float_t  fV0MScaleFactorMC;   // scale factor V0M for MC
+  Float_t  fV0MSPDOutlierPar0;  // outliers parameter
+  Float_t  fV0MSPDOutlierPar1;  // outliers parameter
+  Float_t  fV0MTPCOutlierPar0;  // outliers parameter
+  Float_t  fV0MTPCOutlierPar1;  // outliers parameter
+  Float_t  fV0MSPDSigmaOutlierPar0;  // outliers parameter
+  Float_t  fV0MSPDSigmaOutlierPar1;  // outliers parameter
+  Float_t  fV0MSPDSigmaOutlierPar2;  // outliers parameter
+  Float_t  fV0MTPCSigmaOutlierPar0;  // outliers parameter
+  Float_t  fV0MTPCSigmaOutlierPar1;  // outliers parameter
+  Float_t  fV0MTPCSigmaOutlierPar2;  // outliers parameter  			   			   
+  Float_t  fV0MZDCOutlierPar0;	     // outliers parameter
+  Float_t  fV0MZDCOutlierPar1;	     // outliers parameter
+  Float_t  fV0MZDCEcalOutlierPar0;   // outliers parameter
+  Float_t  fV0MZDCEcalOutlierPar1;   // outliers parameter
 
   AliESDtrackCuts* fTrackCuts;  //! optional track cuts
 
@@ -113,7 +117,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutCentV0MvsCentZDC;    //control histogram for centrality
 
   TH1F *fHOutMultV0M ;        //control histogram for multiplicity
-  TH1F *fHOutMultV0R ;        //control histogram for multiplicity
+  TH1F *fHOutMultV0O ;        //control histogram for multiplicity
   TH1F *fHOutMultFMD ;        //control histogram for multiplicity
   TH1F *fHOutMultTRK ;        //control histogram for multiplicity
   TH1F *fHOutMultTKL ;        //control histogram for multiplicity
@@ -128,6 +132,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultV0MvsCL1;    //control histogram for multiplicity
   TH2F *fHOutMultV0MvsTRK;    //control histogram for multiplicity
   TH2F *fHOutMultTRKvsCL1;    //control histogram for multiplicity
+  TH2F *fHOutMultV0MvsV0O;    //control histogram for multiplicity
+  TH2F *fHOutMultV0OvsCL1;    //control histogram for multiplicity
+  TH2F *fHOutMultV0OvsTRK;    //control histogram for multiplicity
 
   TH1F *fHOutCentV0Mqual1     ;    //control histogram for centrality quality 1
   TH1F *fHOutCentTRKqual1     ;    //control histogram for centrality quality 1
@@ -144,9 +151,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH2F *fHOutMultTRKvsCL1qual2;    //control histogram for multiplicity quality 2
 
   TH1F *fHOutQuality ;        //control histogram for quality
-  TH1F *fHOutVertex ;        //control histogram for vertex
+  TH1F *fHOutVertex ;         //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 10); 
+  ClassDef(AliCentralitySelectionTask, 11); 
 };
 
 #endif
