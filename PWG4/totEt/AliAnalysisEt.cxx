@@ -128,6 +128,7 @@ AliAnalysisEt::AliAnalysisEt() : AliAnalysisEtCommon()
 			       ,fTreeDeposit(0)
 			       ,fCentrality(0)
 			       ,fDetector(0)
+			       ,fMakeSparse(kFALSE)
 			       ,fSparseHistTracks(0)
 			       ,fSparseHistClusters(0)
 			       ,fSparseHistEt(0)
@@ -237,10 +238,11 @@ void AliAnalysisEt::FillOutputList(TList *list)
       }
     }
     
-   list->Add(fSparseHistTracks);
-   list->Add(fSparseHistClusters);
-   list->Add(fSparseHistEt);
-    
+    if(fMakeSparse){
+      list->Add(fSparseHistTracks);
+      list->Add(fSparseHistClusters);
+      list->Add(fSparseHistEt);
+    }
 
 }
 
@@ -389,59 +391,60 @@ void AliAnalysisEt::CreateHistograms()
     histname = "fHistTMDxDz" + fHistogramNameSuffix;
     fHistTMDxDz = new TH2F(histname.Data(), "#Delta x vs #Delta z for calorimeter clusters", 800, -200, 200, 800, -200, 200);
     
-    histname = "fSparseHistTracks" + fHistogramNameSuffix;
-    const Int_t stsize = 7;
-    Int_t binsHist[stsize]   = {  1001,    7, 200000, 10000, 10000, 100,   11};
-    Double_t minHist[stsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5, -0.5};
-    Double_t maxHist[stsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 10.5};
-    fSparseTracks = new Double_t[stsize];
-    fSparseHistTracks = new THnSparseD(histname.Data(), "pid:charge:mass:et:pt:rap:cent", stsize, binsHist, minHist, maxHist);
+    if(fMakeSparse){
+      histname = "fSparseHistTracks" + fHistogramNameSuffix;
+      const Int_t stsize = 7;
+      Int_t binsHist[stsize]   = {  1001,    7, 200000, 10000, 10000, 100,   11};
+      Double_t minHist[stsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5, -0.5};
+      Double_t maxHist[stsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 10.5};
+      fSparseTracks = new Double_t[stsize];
+      fSparseHistTracks = new THnSparseF(histname.Data(), "pid:charge:mass:et:pt:rap:cent", stsize, binsHist, minHist, maxHist);
     
-    fSparseHistTracks->GetAxis(0)->SetTitle("pid");
-    fSparseHistTracks->GetAxis(1)->SetTitle("charge");
-    fSparseHistTracks->GetAxis(2)->SetTitle("mass");
-    fSparseHistTracks->GetAxis(3)->SetTitle("et");
-    fSparseHistTracks->GetAxis(4)->SetTitle("pt");
-    fSparseHistTracks->GetAxis(5)->SetTitle("rap");
-    fSparseHistTracks->GetAxis(6)->SetTitle("cent");
+      fSparseHistTracks->GetAxis(0)->SetTitle("pid");
+      fSparseHistTracks->GetAxis(1)->SetTitle("charge");
+      fSparseHistTracks->GetAxis(2)->SetTitle("mass");
+      fSparseHistTracks->GetAxis(3)->SetTitle("et");
+      fSparseHistTracks->GetAxis(4)->SetTitle("pt");
+      fSparseHistTracks->GetAxis(5)->SetTitle("rap");
+      fSparseHistTracks->GetAxis(6)->SetTitle("cent");
 
-    histname = "fSparseHistClusters" + fHistogramNameSuffix;
-    const Int_t scsize = 11;
-    //                            pid     ch    mass     et     pt   eta   et_t   pt_t  eta_t  cent   dist
-    Int_t scbinsHist[scsize]   = {  1001,    7, 200000, 10000, 10000,  100, 10000, 10000,  100,   11,   4000};
-    Double_t scminHist[scsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5,   0.0,   0.0, -1.5, -0.5, -200.0};
-    Double_t scmaxHist[scsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 100.0, 100.0,  1.5, 10.5,  200.0};
-    fSparseClusters = new Double_t[scsize];
-    fSparseHistClusters = new THnSparseD(histname.Data(), "pid:charge:mass:et:pt:rap:et_track:pt_track:eta_track:cent:dist_matched", scsize, scbinsHist, scminHist, scmaxHist);
+      histname = "fSparseHistClusters" + fHistogramNameSuffix;
+      const Int_t scsize = 11;
+      //                            pid     ch    mass     et     pt   eta   et_t   pt_t  eta_t  cent   dist
+      Int_t scbinsHist[scsize]   = {  1001,    7, 200000, 10000, 10000,  100, 10000, 10000,  100,   11,   4000};
+      Double_t scminHist[scsize] = {-500.5, -3.5,    0.0,   0.0,   0.0, -1.5,   0.0,   0.0, -1.5, -0.5, -200.0};
+      Double_t scmaxHist[scsize] = { 499.5,  3.5,  200.0, 100.0, 100.0,  1.5, 100.0, 100.0,  1.5, 10.5,  200.0};
+      fSparseClusters = new Double_t[scsize];
+      fSparseHistClusters = new THnSparseF(histname.Data(), "pid:charge:mass:et:pt:rap:et_track:pt_track:eta_track:cent:dist_matched", scsize, scbinsHist, scminHist, scmaxHist);
     
-    fSparseHistClusters->GetAxis(0)->SetTitle("pid");
-    fSparseHistClusters->GetAxis(1)->SetTitle("charge");
-    fSparseHistClusters->GetAxis(2)->SetTitle("mass");
-    fSparseHistClusters->GetAxis(3)->SetTitle("et");
-    fSparseHistClusters->GetAxis(4)->SetTitle("pt");
-    fSparseHistClusters->GetAxis(5)->SetTitle("rap");
-    fSparseHistClusters->GetAxis(6)->SetTitle("et_track");
-    fSparseHistClusters->GetAxis(7)->SetTitle("pt_track");
-    fSparseHistClusters->GetAxis(8)->SetTitle("rap_track");
-    fSparseHistClusters->GetAxis(9)->SetTitle("cent");
-    fSparseHistClusters->GetAxis(10)->SetTitle("dist_matched");
+      fSparseHistClusters->GetAxis(0)->SetTitle("pid");
+      fSparseHistClusters->GetAxis(1)->SetTitle("charge");
+      fSparseHistClusters->GetAxis(2)->SetTitle("mass");
+      fSparseHistClusters->GetAxis(3)->SetTitle("et");
+      fSparseHistClusters->GetAxis(4)->SetTitle("pt");
+      fSparseHistClusters->GetAxis(5)->SetTitle("rap");
+      fSparseHistClusters->GetAxis(6)->SetTitle("et_track");
+      fSparseHistClusters->GetAxis(7)->SetTitle("pt_track");
+      fSparseHistClusters->GetAxis(8)->SetTitle("rap_track");
+      fSparseHistClusters->GetAxis(9)->SetTitle("cent");
+      fSparseHistClusters->GetAxis(10)->SetTitle("dist_matched");
 
-    histname = "fSparseHistEt" + fHistogramNameSuffix;
-    const Int_t etsize = 7;
-    Int_t etbinsHist[etsize]   = { 10000, 10000,  10000,   3000,   500,   30000,   11};
-    Double_t etminHist[etsize] = {   0.0,   0.0,    0.0,   -0.5,  -0.5,    -0.5, -0.5};
-    Double_t etmaxHist[etsize] = { 200.0, 200.0,  200.0, 2999.5, 499.5,  2999.5, 10.5};
-    fSparseEt = new Double_t[etsize];
-    fSparseHistEt = new THnSparseD(histname.Data(), "tot_et:neutral_et:charged_et:tot_mult:neutral_mult:charged_mult:cent", etsize, etbinsHist, etminHist, etmaxHist);
+      histname = "fSparseHistEt" + fHistogramNameSuffix;
+      const Int_t etsize = 7;
+      Int_t etbinsHist[etsize]   = { 10000, 10000,  10000,   3000,   500,   30000,   11};
+      Double_t etminHist[etsize] = {   0.0,   0.0,    0.0,   -0.5,  -0.5,    -0.5, -0.5};
+      Double_t etmaxHist[etsize] = { 200.0, 200.0,  200.0, 2999.5, 499.5,  2999.5, 10.5};
+      fSparseEt = new Double_t[etsize];
+      fSparseHistEt = new THnSparseF(histname.Data(), "tot_et:neutral_et:charged_et:tot_mult:neutral_mult:charged_mult:cent", etsize, etbinsHist, etminHist, etmaxHist);
     
-    fSparseHistEt->GetAxis(0)->SetTitle("tot_et");
-    fSparseHistEt->GetAxis(1)->SetTitle("neutral_et");
-    fSparseHistEt->GetAxis(2)->SetTitle("charged_et");
-    fSparseHistEt->GetAxis(3)->SetTitle("tot_mult");
-    fSparseHistEt->GetAxis(4)->SetTitle("netral_mult");
-    fSparseHistEt->GetAxis(5)->SetTitle("charged_mult");
-    fSparseHistEt->GetAxis(6)->SetTitle("cent");
-  
+      fSparseHistEt->GetAxis(0)->SetTitle("tot_et");
+      fSparseHistEt->GetAxis(1)->SetTitle("neutral_et");
+      fSparseHistEt->GetAxis(2)->SetTitle("charged_et");
+      fSparseHistEt->GetAxis(3)->SetTitle("tot_mult");
+      fSparseHistEt->GetAxis(4)->SetTitle("netral_mult");
+      fSparseHistEt->GetAxis(5)->SetTitle("charged_mult");
+      fSparseHistEt->GetAxis(6)->SetTitle("cent");
+    }
 }
 
 TH2F* AliAnalysisEt::CreateEtaEHisto2D(TString name, TString title, TString ztitle)
@@ -511,7 +514,7 @@ TH2F* AliAnalysisEt::CreateResPtHisto2D(TString name, TString title, TString zti
 	return histo; 
 }
 
-THnSparseD* AliAnalysisEt::CreateClusterHistoSparse(TString name, TString title)
+THnSparseF* AliAnalysisEt::CreateClusterHistoSparse(TString name, TString title)
 {     //creates a 2D sparse histogram
 	TString histoname   = name + fHistogramNameSuffix;
 	
@@ -519,7 +522,7 @@ THnSparseD* AliAnalysisEt::CreateClusterHistoSparse(TString name, TString title)
 	Double_t min[4] = {0.,-1.,70.,0.5};
 	Double_t max[4] = {50.,1.,190,20.5};
 	
-	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),4,nBins,min, max);
+	THnSparseF *histo = new THnSparseF(histoname.Data(),title.Data(),4,nBins,min, max);
     histo->GetAxis(0)->SetTitle("E");
     histo->GetAxis(1)->SetTitle("#eta_{cluster}");
     histo->GetAxis(2)->SetTitle("#phi_{cluster}");
@@ -529,7 +532,7 @@ THnSparseD* AliAnalysisEt::CreateClusterHistoSparse(TString name, TString title)
 	return histo; 
 }
 
-THnSparseD* AliAnalysisEt::CreateNeutralPartHistoSparse(TString name, TString title)
+THnSparseF* AliAnalysisEt::CreateNeutralPartHistoSparse(TString name, TString title)
 {     //creates a sparse neutral particle histogram
 	TString histoname   = name + fHistogramNameSuffix;
 	
@@ -537,7 +540,7 @@ THnSparseD* AliAnalysisEt::CreateNeutralPartHistoSparse(TString name, TString ti
 	Double_t min[6] = {-1.,0.,0.,-1.,70.,0.5};
 	Double_t max[6] = {1.,50.,50.,1.,190,20.5};
 	
-	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),6,nBins,min, max);
+	THnSparseF *histo = new THnSparseF(histoname.Data(),title.Data(),6,nBins,min, max);
     histo->GetAxis(0)->SetTitle("#eta");
     histo->GetAxis(1)->SetTitle("p_{T}");
     histo->GetAxis(2)->SetTitle("E");
@@ -549,7 +552,7 @@ THnSparseD* AliAnalysisEt::CreateNeutralPartHistoSparse(TString name, TString ti
 	return histo; 
 }
 
-THnSparseD* AliAnalysisEt::CreateChargedPartHistoSparse(TString name, TString title)
+THnSparseF* AliAnalysisEt::CreateChargedPartHistoSparse(TString name, TString title)
 {     //creates a sparse charged particle histogram
 	TString histoname   = name + fHistogramNameSuffix;
 	
@@ -557,7 +560,7 @@ THnSparseD* AliAnalysisEt::CreateChargedPartHistoSparse(TString name, TString ti
 	Double_t min[7] = {-1.,0.,0.,-1.,70.,0.5,0.};
 	Double_t max[7] = {1.,50.,50.,1.,190,20.5,0.1};
 	
-	THnSparseD *histo = new THnSparseD(histoname.Data(),title.Data(),7,nBins,min, max);
+	THnSparseF *histo = new THnSparseF(histoname.Data(),title.Data(),7,nBins,min, max);
     histo->GetAxis(0)->SetTitle("#eta");
     histo->GetAxis(1)->SetTitle("p_{T}");
     histo->GetAxis(2)->SetTitle("E");
