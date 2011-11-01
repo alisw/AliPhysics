@@ -105,6 +105,7 @@ class AliVZEROCalibData: public TNamed {
   void     SetDiscriThr(const Float_t* thresholds);
 
   Float_t  GetMIPperADC(Int_t channel);
+  Float_t  GetHV(Int_t channel, Float_t adcPerMip);
 
   static Int_t GetOfflineChannelNumber(Int_t board, Int_t channel);
   static Int_t GetBoardNumber(Int_t channel);

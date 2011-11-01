@@ -331,6 +331,20 @@ Float_t AliVZEROCalibData::GetMIPperADC(Int_t channel) {
 	
 }
 
+//_____________________________________________________________________________
+Float_t AliVZEROCalibData::GetHV(Int_t channel, Float_t adcPerMip) {
+	
+  // Computes the HV value for certain ADC per MIP value
+  // Arguments passed is the PM number (aliroot numbering) and
+  // required value of ADC per MIP
+  if (!fPMGainsA) InitPMGains();
+
+  if (adcPerMip <= 0) return 0;
+  Float_t nPhPerMIP = (channel < 32) ? 6950 : 33690;
+  Float_t gain = adcPerMip/(nPhPerMIP*GetLightYields(channel)*0.18*TMath::Qe())*kChargePerADC;
+  return TMath::Exp((TMath::Log(gain)-fPMGainsA[channel])/fPMGainsB[channel]);
+}
+
 //________________________________________________________________
 Float_t AliVZEROCalibData::GetGain(Int_t channel)
 {
