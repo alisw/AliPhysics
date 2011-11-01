@@ -45,6 +45,10 @@ AliOADBCentrality::AliOADBCentrality() :
   fV0MZDCOutlierPar1(1.),
   fV0MZDCEcalOutlierPar0(1.),
   fV0MZDCEcalOutlierPar1(1.),
+  fZVCut(10.),
+  fOutliersCut(6.),
+  fUseScaling(kFALSE),
+  fUseCleaning(kTRUE),
   f1DHistos(),
   f2DHistos()
 {
@@ -71,6 +75,10 @@ AliOADBCentrality::AliOADBCentrality(char* name) :
   fV0MZDCOutlierPar1(1.),
   fV0MZDCEcalOutlierPar0(1.),
   fV0MZDCEcalOutlierPar1(1.),
+  fZVCut(10.),
+  fOutliersCut(6.),
+  fUseScaling(kFALSE),
+  fUseCleaning(kTRUE),
   f1DHistos(),
   f2DHistos()
 {

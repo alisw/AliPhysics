@@ -45,6 +45,11 @@ class AliOADBCentrality : public TNamed {
   Float_t V0MZDCEcalOutlierPar0()  const  {return fV0MZDCEcalOutlierPar0  ;}
   Float_t V0MZDCEcalOutlierPar1()  const  {return fV0MZDCEcalOutlierPar1  ;}
 
+  Float_t ZVCut()       const {return fZVCut;}
+  Float_t OutliersCut() const {return fOutliersCut;}
+  Bool_t UseScaling()   const {return fUseScaling;}
+  Bool_t UseCleaning()  const {return fUseCleaning;}
+
   TH1F*   V0hist()         const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultV0M_percentile")));}
   TH1F*   TPChist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultTRK_percentile")));}
   TH1F*   SPDhist()        const  {return ((TH1F*) (Hists1D()->FindObject("fHOutMultCL1_percentile")));}
@@ -69,6 +74,19 @@ class AliOADBCentrality : public TNamed {
   
   void    SetHistReferences(TList* l1, TList* l2)
   {f1DHistos = l1; f2DHistos = l2;}
+
+  void SetZVCut(Float_t z)
+  {fZVCut=z;}
+
+  void SetOutliersCut(Float_t o)
+  {fOutliersCut=o;}
+
+  void SetUseScaling(Bool_t x)
+  {fUseScaling=x;}
+
+  void SetUseCleaning(Bool_t x)
+  {fUseCleaning=x;}
+
 
  private:
   AliOADBCentrality(const AliOADBCentrality& cont); 
@@ -97,9 +115,14 @@ class AliOADBCentrality : public TNamed {
   Float_t fV0MZDCEcalOutlierPar0;
   Float_t fV0MZDCEcalOutlierPar1;
 
+  Float_t fZVCut;
+  Float_t fOutliersCut;
+  Bool_t fUseScaling;
+  Bool_t fUseCleaning;
+
   TList*    f1DHistos; // Reference to list of 1D Centrality histos 
   TList*    f2DHistos; // Reference to list of 2D Centrality histos
-  ClassDef(AliOADBCentrality, 2);
+  ClassDef(AliOADBCentrality, 3);
 };
 
 #endif
