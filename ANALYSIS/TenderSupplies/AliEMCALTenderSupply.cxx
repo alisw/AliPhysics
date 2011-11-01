@@ -399,7 +399,6 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   TObjArray *mobj = 0;
 
  if(fMisalignSurvey == kdefault){ //take default alignment corresponding to run no
-   printf("***DEFAULT MATRICES***\n!");
     AliOADBContainer emcalgeoCont(Form("emcal"));
     emcalgeoCont.InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root",Form("AliEMCALgeo"));
     mobj=(TObjArray*)emcalgeoCont.GetObject(runGM,"EmcalMatrices");
