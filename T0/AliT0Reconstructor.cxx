@@ -134,7 +134,7 @@ ClassImp(AliT0Reconstructor)
 void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
 {
   // T0 digits reconstruction
-  Int_t refAmp = 0 ; /*Int_t (GetRecoParam()->GetRefAmp());*/
+  Int_t refAmp = Int_t (GetRecoParam()->GetRefAmp());
   
   TArrayI * timeCFD = new TArrayI(24); 
   TArrayI * timeLED = new TArrayI(24); 
@@ -142,35 +142,26 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   TArrayI * chargeQT1 = new TArrayI(24); 
 
  
-  Float_t c = 29.9792458; // cm/ns
   Float_t channelWidth = fParam->GetChannelWidth() ;  
-  Double32_t vertex = 9999999, meanVertex = 9999999 ;
+  Float_t meanVertex = fParam->GetMeanVertex();
+  Float_t c = 0.0299792; // cm/ps
+  Double32_t vertex = 9999999;
   Double32_t timeDiff=999999, meanTime=999999, timeclock=999999;
-  
+
   
   AliDebug(1,Form("Start DIGITS reconstruction "));
   
-  Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
-  Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
- 
-  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
-  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
-  Int_t timeDelayCFD[24]; 
-  Int_t badpmt[24];
-  //Bad channel
-  for (Int_t i=0; i<24; i++) {
-    badpmt[i] = GetRecoParam() -> GetBadChannels(i);
-    timeDelayCFD[i] =  Int_t (fParam->GetTimeDelayCFD(i));
-  }
-  fCalib->SetEq(0);
+  Float_t lowAmpThreshold =  GetRecoParam()->GetLow(200);  
+  Float_t highAmpThreshold =  GetRecoParam()->GetHigh(200);  
+  Int_t badpmt = GetRecoParam()->GetRefPoint();
+
   TBranch *brDigits=digitsTree->GetBranch("T0");
   AliT0digit *fDigits = new AliT0digit() ;
   if (brDigits) {
     brDigits->SetAddress(&fDigits);
   }else{
     AliError(Form("EXEC Branch T0 digits not found"));
-    return;
+     return;
   }
   
   digitsTree->GetEvent(0);
@@ -181,10 +172,14 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   fDigits->GetQT0(*chargeQT0);
   fDigits->GetQT1(*chargeQT1);
   Int_t onlineMean =  fDigits->MeanTime();
-  
+
   Bool_t tr[5];
   for (Int_t i=0; i<5; i++) tr[i]=false; 
   
+  Double32_t besttimeA=999999;
+  Double32_t besttimeC=999999;
+  Int_t pmtBestA=99999;
+  Int_t pmtBestC=99999;
   
   AliT0RecPoint frecpoints;
   AliT0RecPoint * pfrecpoints = &frecpoints;
@@ -192,19 +187,19 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
-    if(timeCFD->At(ipmt)>0 ) {
-      if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
+    if(timeCFD->At(ipmt)>0 && ipmt != badpmt) {
+     if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
 	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
       else
 	adc[ipmt] = 0;
       
-      time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
-      
+     time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
+	     
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
       AliDebug(5,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
-		      ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
-      
+		       ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
+
       Double_t ampMip = 0;
       TGraph* ampGraph = (TGraph*)fAmpLED.At(ipmt);
       if (ampGraph) ampMip = ampGraph->Eval(sl);
@@ -212,6 +207,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       TGraph* qtGraph = (TGraph*)fQTC.At(ipmt);
       if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
       AliDebug(5,Form("  Amlitude in MIPS LED %f ,  QTC %f in channels %f\n ",ampMip,qtMip, adc[ipmt]));
+      
       frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
       frecpoints.SetAmpLED(ipmt, Float_t( ampMip)); 
       frecpoints.SetAmp(ipmt, Float_t(qtMip));
@@ -222,72 +218,59 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       time[ipmt] = 0;
       adc[ipmt] = 0;
       adcmip[ipmt] = 0;
-      
+
     }
   }
   
   for (Int_t ipmt=0; ipmt<12; ipmt++){
-    if(time[ipmt] !=0 &&  time[ipmt] > -9000 
-       &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
-      {
-	if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
-	if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
-	  besttimeC_best=time[ipmt]; //timeC	     
+    if(time[ipmt] > 1 && ipmt != badpmt && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold) {
+      if(time[ipmt]<besttimeC){
+	besttimeC=time[ipmt]; //timeC
+	pmtBestC=ipmt;
       }
-  }
-  for ( Int_t ipmt=12; ipmt<24; ipmt++)
-    {
-      if(time[ipmt] != 0 &&  time[ipmt] > -9000 
-	 && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
-	{
-	  if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
-	  if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
-	    besttimeA_best=time[ipmt]; //timeA
-	}
     }
-  
-  if( besttimeA < 999999 && besttimeA!=0) {
-    frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  - 12500.);
-    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c)  - 12500.);
+  }
+  for ( Int_t ipmt=12; ipmt<24; ipmt++){
+    if(time[ipmt] > 1 &&  ipmt != badpmt && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold) {
+      if(time[ipmt]<besttimeA) {
+	besttimeA=time[ipmt]; //timeA
+        pmtBestA=ipmt;}
+    }
+  }
+  if(besttimeA < 999999) {
+    frecpoints.SetTimeBestA(Int_t(besttimeA *channelWidth - fdZonA/c));
     tr[1]=true;
   }
-  
-  if( besttimeC < 999999 && besttimeC!=0) {
-    frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c)  - 12500.);
-    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c)  - 12500.);
+  if( besttimeC < 999999 ) {
+    frecpoints.SetTimeBestC(Int_t(besttimeC *channelWidth - fdZonA/c));
     tr[2]=true;
   }
-  
-  AliDebug(5,Form("1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f ",
-		  besttimeA, besttimeA_best,
-		  besttimeC, besttimeC_best) );
-
+  AliDebug(5,Form(" besttimeA %f ch,  besttimeC %f ch",besttimeA, besttimeC));
   if(besttimeA <999999 && besttimeC < 999999 ){
     //    timeDiff = (besttimeC - besttimeA)*channelWidth;
     timeDiff = (besttimeA - besttimeC)*channelWidth;
-    meanTime = channelWidth * (besttimeA_best + besttimeC_best)/2. ; 
-    timeclock = channelWidth * (besttimeA + besttimeC)/2. ;
+    meanTime = (besttimeA + besttimeC)/2;// * channelWidth); 
+    timeclock = meanTime *channelWidth -fdZonA/c ;
     vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
   }
   frecpoints.SetVertex(vertex);
-  frecpoints.SetMeanTime(meanTime - 12500.);
-  frecpoints.SetT0clock(timeclock - 12500.);
+  frecpoints.SetMeanTime(meanTime);
+  frecpoints.SetT0clock(timeclock);
   frecpoints.SetT0Trig(tr);
-  
- AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f shiftA %f shiftC %f ",
-		  frecpoints.Get1stTimeA(),  frecpoints.GetBestTimeA(),
-		  frecpoints.Get1stTimeC(),  frecpoints.GetBestTimeC(), 
-		  fTimeMeanShift[1],fTimeMeanShift[2] ) );
-  
+
   AliDebug(5,Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
-  
+
   //online mean
   frecpoints.SetOnlineMean(Int_t(onlineMean));
   AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, vertex %f cm online mean %i timeclock %f ps",timeDiff, meanTime,vertex, Int_t(onlineMean), timeclock));
   
-  clustersTree->Fill();
   
+
+   
+  
+  clustersTree->Fill();
+
   delete timeCFD;
   delete timeLED;
   delete chargeQT0; 
@@ -314,9 +297,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
     badpmt[i] = GetRecoParam() -> GetBadChannels(i);
     timeDelayCFD[i] =  Int_t (fParam->GetTimeDelayCFD(i));
   }
-  Int_t equalize = GetRecoParam() -> GetEq();
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam %i \n",equalize);
-  fCalib->SetEq(equalize);
   Int_t low[500], high[500];
   Float_t timefull=-9999;;
   Float_t tvdc  = -9999; Float_t ora = -9999; Float_t orc = -9999;
@@ -324,7 +304,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   Int_t allData[110][5];
   
   Int_t timeCFD[24], timeLED[24], chargeQT0[24], chargeQT1[24];
-  Float_t time2zero[24]; 
   Double32_t timeDiff, meanTime, timeclock;
   timeDiff =  meanTime = timeclock = 9999999;
   Float_t c = 29.9792458; // cm/ns
@@ -334,7 +313,6 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   for (Int_t i0=0; i0<24; i0++) {
     low[i0] = Int_t(fTime0vertex[i0]) - 200;
     high[i0] = Int_t(fTime0vertex[i0]) + 200;
-    time2zero[i0] = 99999;
   }
   
   for (Int_t i0=0; i0<110; i0++)
@@ -342,12 +320,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   
   Float_t lowAmpThreshold =  GetRecoParam()->GetAmpLowThreshold();  
   Float_t highAmpThreshold =  GetRecoParam()->GetAmpHighThreshold(); 
-  printf( "AliT0Reconstructor::Reconstruct::: RecoParam amplitude %f %f \n",lowAmpThreshold, highAmpThreshold);
- 
-  Double32_t besttimeA=9999999;  Double32_t besttimeA_best=9999999;
-  Double32_t besttimeC=9999999;  Double32_t besttimeC_best=9999999;
-
-   Float_t channelWidth = fParam->GetChannelWidth() ;  
+  
+  Double32_t besttimeA=9999999;
+  Double32_t besttimeC=9999999;
+  Int_t pmtBestA=99999;
+  Int_t pmtBestC=99999;
+  Float_t channelWidth = fParam->GetChannelWidth() ;  
 	
   AliT0RecPoint frecpoints;
   AliT0RecPoint * pfrecpoints = &frecpoints;
@@ -378,6 +356,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	    allData[i][iHit] = myrawreader.GetData(i,iHit);
 	  }
 	}
+	Int_t ref=0;
 	
 	for (Int_t in=0; in<12; in++)  
 	  {
@@ -401,7 +380,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	      }
 	    timeLED[in+12] = allData[in+68+1][0] ;
 	    timeLED[in] = allData[in+12+1][0] ;
-	    AliDebug(50, Form(" readed i %i cfdC %i cfdA %i ledC %i ledA%i ",
+	    AliDebug(5, Form(" readed i %i cfdC %i cfdA %i ledC %i ledA%i ",
 			      in, timeCFD[in],timeCFD[in+12],timeLED[in], 
 			     timeLED[in+12]));   
 	    
@@ -449,109 +428,89 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	   TGraph * qtGraph = (TGraph*)fQTC.At(ipmt);
 	   if (qtGraph) qtMip = qtGraph->Eval(adc[ipmt]);
 	   AliDebug(10,Form("  Amlitude in MIPS LED %f ; QTC %f;  in channels %f\n ",ampMip,qtMip, adc[ipmt]));
-	   if( equalize  ==0 ) 
+	   //bad peak removing
 	     frecpoints.SetTime(ipmt, Float_t(time[ipmt]) );
-	   else 
-	     frecpoints.SetTime(ipmt, Float_t(time[ipmt] + fTime0vertex[ipmt]) );
-
-	   frecpoints.SetAmp(ipmt, Double32_t( qtMip)); 
-	   adcmip[ipmt]=qtMip;
-	   frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));	     
-	   noncalibtime[ipmt]= Double32_t (timeCFD[ipmt]);
+	     // frecpoints.SetTime(ipmt,Double32_t(timeCFD[ipmt]));
+	     frecpoints.SetAmp(ipmt, Double32_t( qtMip)); 
+	     adcmip[ipmt]=qtMip;
+	     frecpoints.SetAmpLED(ipmt, Double32_t(ampMip));	     
+	     noncalibtime[ipmt]= Double32_t (timeCFD[ipmt]);
 	 }
 	 else {
-	   time[ipmt] = -9999;
+	   time[ipmt] = 0;
 	   adc[ipmt] = 0;
 	   adcmip[ipmt] = 0;
-	   noncalibtime[ipmt] = -9999;
+	   noncalibtime[ipmt] = 0;
 	 }
        }
-       fESDTZEROfriend->SetT0timeCorr(noncalibtime) ; 
-    
+       fESDTZEROfriend->SetT0timeCorr(noncalibtime) ;     
        for (Int_t ipmt=0; ipmt<12; ipmt++){
-	 if(time[ipmt] !=0 &&  time[ipmt] > -9000 
-	    /*&& badpmt[ipmt]==0 */
-	    &&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
+	 if(time[ipmt] !=0 /*&& badpmt[ipmt]==0 */&&  adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold )
 	   {
-	     if(time[ipmt]<besttimeC) besttimeC=time[ipmt]; //timeC
-	     if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC_best)) 
-	       besttimeC_best=time[ipmt]; //timeC	     
+	       // if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeC)) {
+	     if(time[ipmt]<besttimeC){
+	       besttimeC=time[ipmt]; //timeC
+		  pmtBestC=ipmt;
+	     }
 	   }
        }
        for ( Int_t ipmt=12; ipmt<24; ipmt++)
 	 {
-	   if(time[ipmt] != 0 &&  time[ipmt] > -9000 
-	      /* && badpmt[ipmt]==0*/ 
-	      && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
+	   if(time[ipmt] != 0 /* && badpmt[ipmt]==0*/ && adcmip[ipmt]>lowAmpThreshold && adcmip[ipmt]<highAmpThreshold)
 	     {
-	       if(time[ipmt]<besttimeA) besttimeA=time[ipmt]; 
-	       if(TMath::Abs(time[ipmt] ) < TMath::Abs(besttimeA_best)) 
-		 besttimeA_best=time[ipmt]; //timeA
+	       if(time[ipmt]<besttimeA) {
+		 //	       if(TMath::Abs(time[ipmt])<TMath::Abs(besttimeA)) {
+		 besttimeA=time[ipmt]; //timeA
+		 pmtBestA=ipmt;
+	       }
 	     }
 	 }
-       
-       if(besttimeA < 999999 && besttimeA!=0 ) {
-	 if( equalize  ==0 ) 
-	   frecpoints.SetTime1stA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
-	 else
-	   {
-	     frecpoints.SetTimeBestA((besttimeA_best * channelWidth )); 
-	     frecpoints.SetTime1stA((besttimeA * channelWidth - fTimeMeanShift[1])); 
-	   }
-       }
-       if( besttimeC < 999999 && besttimeC!=0) {
-	 if( equalize  ==0 ) 
-	   frecpoints.SetTime1stC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
-	 else
-	   {
-	     frecpoints.SetTimeBestC((besttimeC_best * channelWidth ));
-	     frecpoints.SetTime1stC((besttimeC * channelWidth - fTimeMeanShift[2]));
-	   }
-       }
-       AliDebug(5,Form("1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f ",
-		       besttimeA, besttimeA_best,
-		       besttimeC, besttimeC_best) );
-       AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f shiftA %f shiftC %f ",
-		       frecpoints.Get1stTimeA(),  frecpoints.GetBestTimeA(),
-		       frecpoints.Get1stTimeC(),  frecpoints.GetBestTimeC(), 
-		       fTimeMeanShift[1],fTimeMeanShift[2] ) );
-       if( besttimeC < 999999 &&  besttimeA < 999999) { 
-	 timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - fTimeMeanShift[0];
-	 meanTime = channelWidth * Float_t(besttimeA_best + besttimeC_best )/2.;
+       if(besttimeA < 999999) 
+	 frecpoints.SetTimeBestA((besttimeA * channelWidth)- 1000.*fLatencyHPTDC + 1000.*fLatencyL1A - 1000.*fGRPdelays - fTimeMeanShift[1] ); 
+       //	 frecpoints.SetTimeBestA((besttimeA * channelWidth- fTimeMeanShift[1])); 
+
+       if( besttimeC < 999999 ) 
+	 frecpoints.SetTimeBestC((besttimeC * channelWidth)- 1000.*fLatencyHPTDC +1000.*fLatencyL1C - 1000.*fGRPdelays - fTimeMeanShift[2]);
+       // frecpoints.SetTimeBestC((besttimeC * channelWidth - fTimeMeanShift[2]));
+       AliDebug(5,Form(" pmtA %i besttimeA %f shift A %f ps, pmtC %i besttimeC %f shiftC %f ps",
+		       pmtBestA,besttimeA, fTimeMeanShift[1],
+		       pmtBestC,  besttimeC,fTimeMeanShift[2]));
+        if(besttimeA <999999 && besttimeC < 999999 ){
+	  //	 timeDiff = ( besttimeA - besttimeC)* 0.001* channelWidth + fLatencyL1A - fLatencyL1C;
+	  timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - 1000.*fLatencyHPTDC + 1000.*fLatencyL1 - 1000.*fGRPdelays - fTimeMeanShift[0] ;  
+	 meanTime = (besttimeA+besttimeC-2.*Float_t(ref))/2.;
 	 timeDiff = ( besttimeA - besttimeC)* 0.001* channelWidth ;
+	 // timeclock = channelWidth * Float_t( besttimeA+besttimeC)/2. - fTimeMeanShift[0] ;  
 	 vertex =  meanVertex - c*(timeDiff)/2. ; //+ (fdZonA - fdZonC)/2; 
-       }
-       
+	}
       }  //if phys event       
-       AliDebug(1,Form("  timeDiff %f #channel,  meanTime %f #ps, TOFmean%f  vertex %f cm meanVertex %f  \n",timeDiff, meanTime,timeclock, vertex,meanVertex));
-       frecpoints.SetT0clock(timeclock);
-       frecpoints.SetVertex(vertex);
-       frecpoints.SetMeanTime(meanTime);
-       frecpoints.SetOnlineMean(Int_t(onlineMean));
+      AliDebug(10,Form("  timeDiff %f #channel,  meanTime %f #channel, TOFmean%f  vertex %f cm meanVertex %f online mean %i \n",timeDiff, meanTime,timeclock, vertex,meanVertex, onlineMean));
+      frecpoints.SetT0clock(timeclock);
+      frecpoints.SetVertex(vertex);
+      frecpoints.SetMeanTime(meanTime);
+      frecpoints.SetOnlineMean(Int_t(onlineMean));
+	// Set triggers
       
-      // Set triggers
       Bool_t tr[5];
       Int_t trchan[5] = {50,51,52,55,56};
       Float_t lowtr[5] = {meanTVDC-700, meanOrA-700, meanOrC-700, meanOrC-1000, meanOrC-1000 };
       Float_t hightr[5] = {meanTVDC+700, meanOrA+700, meanOrC+700, meanOrC+1000, meanOrC+1000};
-      
+
       for (Int_t i=0; i<5; i++) tr[i] = false; 
       for (Int_t itr=0; itr<5; itr++) {
  	for (Int_t iHit=0; iHit<1; iHit++) 
 	  {
 	    Int_t trr=trchan[itr];
 	    if( allData[trr][iHit] > lowtr[itr] && allData[trr][iHit] < hightr[itr])  tr[itr]=true;
-	    
-	    AliDebug(15,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
+
+	    AliDebug(5,Form("Reconstruct :::  T0 triggers iHit %i tvdc %d orA %d orC %d centr %d semicentral %d",iHit, tr[0],tr[1],tr[2],tr[3],tr[4]));
 	  }	  
       }
       frecpoints.SetT0Trig(tr);
       
-      // all times with amplitude correction 
-      Float_t timecent;
       for (Int_t iHit=0; iHit<5; iHit++) 
 	{
-	  timefull = timecent = -9999; 
+	  timefull = -9999; 
 	  tvdc = ora = orc = -9999;
 	  if(allData[50][iHit]>0) 
 	    tvdc = (Float_t(allData[50][iHit]) - meanTVDC) * channelWidth* 0.001; 
@@ -565,13 +524,9 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  frecpoints.SetOrA( iHit, ora);
 	  frecpoints.SetTVDC( iHit, tvdc);
 	  for (Int_t i0=0; i0<12; i0++) {
-	    if (equalize  ==0 )  
-	      timecent = fTime0vertex[i0] + timeDelayCFD[i0];
-	    else
-	      timecent = fTime0vertex[i0];
 	    timefull = -9999; 
 	    if(allData[i0+1][iHit]>1) 
-	      timefull = (Float_t(allData[i0+1][iHit]) - timecent)* channelWidth* 0.001;
+	      timefull = (Float_t(allData[i0+1][iHit])-fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
 	    frecpoints.SetTimeFull(i0, iHit,timefull) ;
 	    //	    if(allData[i0+1][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+1][iHit], fTime0vertex[i0], timefull);
 	    
@@ -579,12 +534,8 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	  
 	  for (Int_t i0=12; i0<24; i0++) {
 	    timefull = -9999; 
-	    if (equalize  ==0 )  
-	      timecent = fTime0vertex[i0] + timeDelayCFD[i0];
-	    else
-	      timecent = fTime0vertex[i0];
 	    if(allData[i0+45][iHit]>1) {
-	      timefull = (Float_t(allData[i0+45][iHit]) - timecent)* channelWidth* 0.001;
+	      timefull = (Float_t(allData[i0+45][iHit]) - fTime0vertex[i0] - timeDelayCFD[i0])* channelWidth* 0.001;
 	    }
 	    //  if(allData[i0+45][iHit]>1)  printf("i0 %d iHit %d data %d fTime0vertex %f timefull %f \n",i0, iHit, allData[i0+45][iHit], fTime0vertex[i0], timefull);
 	    frecpoints.SetTimeFull(i0, iHit, timefull) ;
@@ -604,7 +555,7 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 }
   
   
-//____________________________________________________________
+  //____________________________________________________________
   
   void AliT0Reconstructor::FillESD(TTree */*digitsTree*/, TTree *clustersTree, AliESDEvent *pESD) const
   {
@@ -660,41 +611,35 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
   for(Int_t i=0; i<24; i++) 
     amp[i]=time[i]=ampQTC[i]=timecorr[i]=0;
 
-  //1st time 
+
   Double32_t timeClock[3];
   Double32_t zPosition = frecpoints.GetVertex();
-
+  Double32_t timeStart = frecpoints.GetMeanTime();
   timeClock[0] = frecpoints.GetT0clock() ;
-  timeClock[1] = frecpoints.Get1stTimeA() + shift;
-  timeClock[2] = frecpoints.Get1stTimeC() - shift;
-  //best time
-  Double32_t timemean[3];
-  timemean[0] = frecpoints.GetMeanTime();
-  timemean[1] = frecpoints.GetBestTimeA() + shift;
-  timemean[2] = frecpoints.GetBestTimeC() - shift;
+  timeClock[1] = frecpoints.GetBestTimeA() + shift;
+  timeClock[2] = frecpoints.GetBestTimeC() - shift;
 
-  for(Int_t i=0; i<3; i++) {
-    fESDTZERO->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
-    fESDTZERO->SetT0TOFbest(i,timemean[i]);   // interaction time (ns) 
-  }
   for ( Int_t i=0; i<24; i++) {
     time[i] =  frecpoints.GetTime(i); // ps to ns
-    if ( time[i] != 0 && time[i]>-9999) {
+    //    if ( time[i] >1) {
+    if ( time[i] != 0) {
       ampQTC[i] = frecpoints.GetAmp(i);
       amp[i] = frecpoints.AmpLED(i);
       AliDebug(1,Form("T0: %i  time %f  ampQTC %f ampLED %f \n", i, time[i], ampQTC[i], amp[i]));
    }
   }
-  fESDTZERO->SetT0time(time);         // best TOF on each PMT 
-  fESDTZERO->SetT0amplitude(ampQTC);     // number of particles(MIPs) on each PMT
   Int_t trig= frecpoints.GetT0Trig();
   frecpoints.PrintTriggerSignals( trig);
   //  printf(" !!!!! FillESD trigger %i \n",trig);
   fESDTZERO->SetT0Trig(trig);
+  //pESD->SetT0Trig(trig);
+  //  pESD->SetT0zVertex(zPosition); //vertex Z position 
   fESDTZERO->SetT0zVertex(zPosition); //vertex Z position 
 
   Double32_t multA=frecpoints.GetMultA();
   Double32_t multC=frecpoints.GetMultC();
+  //  pESD->SetT0(multC);        // multiplicity Cside 
+  //  pESD->SetT0clock(multA);        // multiplicity Aside 
   fESDTZERO->SetMultA(multA); // for backward compatubility
   fESDTZERO->SetMultC(multC); // for backward compatubility
 
@@ -716,8 +661,12 @@ void AliT0Reconstructor::Reconstruct(AliRawReader* rawReader, TTree*recTree) con
 	
     }	     	     
   }
+  for(Int_t i=0; i<3; i++) 
+    fESDTZERO->SetT0TOF(i,timeClock[i]);   // interaction time (ns) 
+  fESDTZERO->SetT0time(time);         // best TOF on each PMT 
+  fESDTZERO->SetT0amplitude(ampQTC);     // number of particles(MIPs) on each PMT
   
-  AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 best %f #ps T0signal %f ps OrA %f ps OrC %f ps T0trig %i\n",shift, zPosition, timemean[0], timeClock[0], timeClock[1], timeClock[2], trig));
+  AliDebug(1,Form("T0: SPDshift %f Vertex %f (T0A+T0C)/2 %f #channels T0signal %f ns OrA %f ns OrC %f T0trig %i\n",shift, zPosition, timeStart, timeClock[0], timeClock[1], timeClock[2], trig));
 
   //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   // background flags
@@ -806,12 +755,10 @@ Bool_t AliT0Reconstructor::BackgroundFlag() const
 Bool_t  AliT0Reconstructor::SatelliteFlag() const
 {
 
- Float_t satelliteLow = GetRecoParam() -> GetLowSatelliteThreshold();
-  Float_t satelliteHigh = GetRecoParam() -> GetHighSatelliteThreshold();
   Bool_t satellite = false;
   for (Int_t i0=0; i0<24; i0++) {
     Float_t timefull =  fESDTZERO -> GetTimeFull(i0,0);
-    if( timefull > satelliteLow && timefull < satelliteHigh)  satellite=true;
+    if( timefull < -1.5 && timefull > -10)  satellite=true;
   }
 	
   return satellite;
