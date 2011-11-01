@@ -1,3 +1,312 @@
+void Test(TString fname="QAresults.root") {
+
+  TCanvas *clist;
+  Int_t cnum=1;
+  TFile *f=new TFile(fname.Data());
+  PlotITSTPCMatchingEff(f,clist,cnum);
+
+
+  return;
+}
+//--------------------------------------------------------------------------
+Bool_t PlotITSTPCMatchingEff(TFile *f, TCanvas*& clist,Int_t& cnum) {
+
+  Int_t cnum=1;
+  //clist = new TCanvas[2];
+
+
+  TCanvas* cITSTPCmatch = new TCanvas("cITSTPCmatch","cITSTPCmatch",10,10,1200,600);
+  cITSTPCmatch->Divide(2,1);
+  cITSTPCmatch_1->SetGridy();
+  cITSTPCmatch_2->SetGridy();
+  cITSTPCmatch_1->SetLogx();
+  cITSTPCmatch_2->SetLogx();
+
+  clist = cITSTPCmatch;
+
+  if(!f) return kFALSE;
+
+  TList *list=0;
+  TList *listSPD=0;
+  TDirectoryFile *dir=0;
+
+  // count active SPD HSs
+  dir=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
+  if(dir) listSPD = (TList*)dir->Get("coutput1");
+  if(!dir) return kFALSE;
+
+  Float_t spdFrac[2];
+  TH1F *hnHSsSPD=new TH1F("hnHSsSPD","Active HSs in SPD layers 1 and 2; layer; HSs",2,0.5,2.5);
+  if(listSPD) {
+    //listSPD->Print();
+    TH1F *hFiredChip = (TH1F*)listSPD->FindObject("hFiredChip");
+    Int_t nHSsInner=0,nHSsOuter=0;
+    for(Int_t i=0;i<400;i++) if(hFiredChip->GetBinContent(i)>0) nHSsInner++;
+    for(Int_t i=400;i<1200;i++) if(hFiredChip->GetBinContent(i)>0) nHSsOuter++;
+    nHSsInner = (Int_t)(nHSsInner/10);
+    nHSsOuter = (Int_t)(nHSsOuter/10);
+    hnHSsSPD->SetBinContent(1,nHSsInner);
+    hnHSsSPD->SetBinContent(2,nHSsOuter);
+    spdFrac[0]=(Float_t)nHSsInner/40.;
+    spdFrac[1]=(Float_t)nHSsOuter/80.;
+  }
+  TGraph *spdFrac0=new TGraph(1);
+  spdFrac0->SetPoint(0,0.08,spdFrac[0]);
+  spdFrac0->SetMarkerColor(1); spdFrac0->SetMarkerStyle(20);
+  TGraph *spdFrac1=new TGraph(1);
+  spdFrac1->SetPoint(0,0.08,spdFrac[1]);
+  spdFrac1->SetMarkerColor(1); spdFrac1->SetMarkerStyle(24);
+  TLegend *l2=new TLegend(0.1,0.62,0.5,0.93);
+  l2->SetBorderSize(1);
+  l2->AddEntry(spdFrac0,"Frac. active SPD0","p");
+  l2->AddEntry(spdFrac1,"Frac. active SPD1","p");
+
+  //
+  // Efficiencies for CENTRAL
+  //
+  dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+  if(dir) list = (TList*)dir->Get("cOutputITS_3500_10000");
+  if(!list) return kFALSE;
+
+  TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
+  TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+
+
+  TLegend *l3=new TLegend(0.5,0.62,0.95,0.93);
+  l3->SetBorderSize(1);
+  cITSTPCmatch->cd(1);
+  fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points: central");
+  fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMIge2InAcc->SetMaximum(1.6);
+  fHistPtITSMIge2InAcc->SetMinimum(0);
+  fHistPtITSMIge2InAcc->GetXaxis()->SetRangeUser(0.1,30);
+  fHistPtITSMIge2InAcc->Draw();
+  l3->AddEntry(fHistPtITSMIge2InAcc,">=2 cls","l");
+  fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI6InAcc->SetLineColor(2);
+  l3->AddEntry(fHistPtITSMI6InAcc,"6 cls","l");
+  fHistPtITSMI6InAcc->Draw("same");
+  fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI5InAcc->SetLineColor(3);
+  l3->AddEntry(fHistPtITSMI5InAcc,"5 cls","l");
+  fHistPtITSMI5InAcc->Draw("same");
+  fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI4InAcc->SetLineColor(4);
+  l3->AddEntry(fHistPtITSMI4InAcc,"4 cls","l");
+  fHistPtITSMI4InAcc->Draw("same");
+  fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI3InAcc->SetLineColor(6);
+  l3->AddEntry(fHistPtITSMI3InAcc,"3 cls","l");
+  fHistPtITSMI3InAcc->Draw("same");
+  fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI2InAcc->SetLineColor(7);
+  l3->AddEntry(fHistPtITSMI2InAcc,"2 cls","l");
+  fHistPtITSMI2InAcc->Draw("same");
+  fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMISPDInAcc->SetLineColor(9);
+  l3->AddEntry(fHistPtITSMISPDInAcc,"2SPD + any","l");
+  fHistPtITSMISPDInAcc->Draw("same");
+  fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMIoneSPDInAcc->SetLineColor(15);
+  l3->AddEntry(fHistPtITSMIoneSPDInAcc,">=1SPD + any","l");
+  fHistPtITSMIoneSPDInAcc->Draw("same");
+  fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSTPCsel->SetLineColor(kAzure+1);
+  l3->AddEntry(fHistPtITSTPCsel,">=1SPD + any + d_{0} cut","l");
+  fHistPtITSTPCsel->Draw("same");
+  fHistPtITSMIge2InAcc->Draw("same");
+  l3->Draw();
+  l2->Draw();
+  spdFrac0->Draw("p");
+  spdFrac1->Draw("p");
+  /*
+  if(ioValues) {
+    Int_t index,ptbin;
+    ptbin=fHistPtITSMIge2InAcc->FindBin(0.201);
+    index=2;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(1.001);
+    index=3;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(10.001);
+    index=4;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(0.201);
+    index=5;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(1.001);
+    index=6;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(10.001);
+    index=7;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(0.201);
+    index=8;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(1.001);
+    index=9;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(10.001);
+    index=10;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(0.201);
+    index=11;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(1.001);
+    index=12;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(10.001);
+    index=13;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+  }
+  */
+
+
+
+  //
+  // Efficiencies for PERIPHERAL
+  //
+  dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
+  if(dir) list = (TList*)dir->Get("cOutputITS_70_310");
+  if(!list) return kFALSE;
+
+  TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
+  TH1F *fHistPtITSMI6InAcc = (TH1F*)list->FindObject("fHistPtITSMI6InAcc");
+  TH1F *fHistPtITSMI5InAcc = (TH1F*)list->FindObject("fHistPtITSMI5InAcc");
+  TH1F *fHistPtITSMI4InAcc = (TH1F*)list->FindObject("fHistPtITSMI4InAcc");
+  TH1F *fHistPtITSMI3InAcc = (TH1F*)list->FindObject("fHistPtITSMI3InAcc");
+  TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
+  TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
+  TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
+  TH1F *fHistPtITSTPCsel = (TH1F*)list->FindObject("fHistPtITSTPCsel");
+  TH1F *fHistPtITSMIge2InAcc = (TH1F*)fHistPtITSMI6InAcc->Clone("fHistPtITSMIge2InAcc");
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI5InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
+  fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
+
+
+  cITSTPCmatch->cd(2);
+  fHistPtITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points: peripheral");
+  fHistPtITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
+  fHistPtITSMIge2InAcc->Divide(fHistPtITSMIge2InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMIge2InAcc->SetMaximum(1.6);
+  fHistPtITSMIge2InAcc->SetMinimum(0);
+  fHistPtITSMIge2InAcc->GetXaxis()->SetRangeUser(0.1,30);
+  fHistPtITSMIge2InAcc->Draw();
+  fHistPtITSMI6InAcc->Divide(fHistPtITSMI6InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI6InAcc->SetLineColor(2);
+  fHistPtITSMI6InAcc->Draw("same");
+  fHistPtITSMI5InAcc->Divide(fHistPtITSMI5InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI5InAcc->SetLineColor(3);
+  fHistPtITSMI5InAcc->Draw("same");
+  fHistPtITSMI4InAcc->Divide(fHistPtITSMI4InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI4InAcc->SetLineColor(4);
+  fHistPtITSMI4InAcc->Draw("same");
+  fHistPtITSMI3InAcc->Divide(fHistPtITSMI3InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI3InAcc->SetLineColor(6);
+  fHistPtITSMI3InAcc->Draw("same");
+  fHistPtITSMI2InAcc->Divide(fHistPtITSMI2InAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMI2InAcc->SetLineColor(7);
+  fHistPtITSMI2InAcc->Draw("same");
+  fHistPtITSMISPDInAcc->Divide(fHistPtITSMISPDInAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMISPDInAcc->SetLineColor(9);
+  fHistPtITSMISPDInAcc->Draw("same");
+  fHistPtITSMIoneSPDInAcc->Divide(fHistPtITSMIoneSPDInAcc,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSMIoneSPDInAcc->SetLineColor(15);
+  fHistPtITSMIoneSPDInAcc->Draw("same");
+  fHistPtITSTPCsel->Divide(fHistPtITSTPCsel,fHistPtTPCInAcc,1,1,"B");
+  fHistPtITSTPCsel->SetLineColor(kAzure+1);
+  fHistPtITSTPCsel->Draw("same");
+  fHistPtITSMIge2InAcc->Draw("same");
+  l3->Draw();
+  l2->Draw();
+  spdFrac0->Draw("p");
+  spdFrac1->Draw("p");
+  /*
+  if(ioValues) {
+    Int_t index,ptbin;
+    ptbin=fHistPtITSMIge2InAcc->FindBin(0.201);
+    index=2;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(1.001);
+    index=3;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIge2InAcc->FindBin(10.001);
+    index=4;
+    ioValues[index]=fHistPtITSMIge2InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIge2InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(0.201);
+    index=5;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(1.001);
+    index=6;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMI6InAcc->FindBin(10.001);
+    index=7;
+    ioValues[index]=fHistPtITSMI6InAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMI6InAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(0.201);
+    index=8;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(1.001);
+    index=9;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMISPDInAcc->FindBin(10.001);
+    index=10;
+    ioValues[index]=fHistPtITSMISPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMISPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(0.201);
+    index=11;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(1.001);
+    index=12;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+    ptbin=fHistPtITSMIoneSPDInAcc->FindBin(10.001);
+    index=13;
+    ioValues[index]=fHistPtITSMIoneSPDInAcc->GetBinContent(ptbin);
+    ioErrors[index]=fHistPtITSMIoneSPDInAcc->GetBinError(ptbin);
+  }
+  */
+
+
+
+  return kTRUE;
+}
+
 Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 			    Float_t *ioValues=0,Float_t *ioErrors=0) 
 {
@@ -19,7 +328,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TDirectoryFile *dir=0;
   if(!list) {
     dir=(TDirectoryFile*)f->GetDirectory("ITS_Performance");
-    if(dir) list = (TList*)dir->Get("cOutputITS");
+    if(dir) list = (TList*)dir->Get("cOutputITS_70_310");
     // count active SPD HSs
     dir=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
     if(dir) listSPD = (TList*)dir->Get("coutput1");
@@ -82,8 +391,6 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPhiITSMIokbadoutinz6InAcc = (TH1F*)list->FindObject("fHistPhiITSMIokbadoutinz6InAcc");
 
   TH1F *fHistPtTPCInAcc = (TH1F*)list->FindObject("fHistPtTPCInAcc");
-  TH1F *fHistPhiTPCInAcc = (TH1F*)list->FindObject("fHistPhiTPCInAcc");
-  TH1F *fHistEtaTPCInAcc = (TH1F*)list->FindObject("fHistEtaTPCInAcc");
   TH1F *fHistPtTPCInAccSfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccSfromStrange");
   TH1F *fHistPtTPCInAccPfromStrange = (TH1F*)list->FindObject("fHistPtTPCInAccPfromStrange");
   TH1F *fHistPtTPCInAccMCtwoSPD = (TH1F*)list->FindObject("fHistPtTPCInAccMCtwoSPD");
@@ -95,20 +402,6 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   TH1F *fHistPtITSMI2InAcc = (TH1F*)list->FindObject("fHistPtITSMI2InAcc");
   TH1F *fHistPtITSMISPDInAcc = (TH1F*)list->FindObject("fHistPtITSMISPDInAcc");
   TH1F *fHistPtITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPtITSMIoneSPDInAcc");
-  TH1F *fHistPhiITSMI6InAcc = (TH1F*)list->FindObject("fHistPhiITSMI6InAcc");
-  TH1F *fHistPhiITSMI5InAcc = (TH1F*)list->FindObject("fHistPhiITSMI5InAcc");
-  TH1F *fHistPhiITSMI4InAcc = (TH1F*)list->FindObject("fHistPhiITSMI4InAcc");
-  TH1F *fHistPhiITSMI3InAcc = (TH1F*)list->FindObject("fHistPhiITSMI3InAcc");
-  TH1F *fHistPhiITSMI2InAcc = (TH1F*)list->FindObject("fHistPhiITSMI2InAcc");
-  TH1F *fHistPhiITSMISPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMISPDInAcc");
-  TH1F *fHistPhiITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistPhiITSMIoneSPDInAcc");
-  TH1F *fHistEtaITSMI6InAcc = (TH1F*)list->FindObject("fHistEtaITSMI6InAcc");
-  TH1F *fHistEtaITSMI5InAcc = (TH1F*)list->FindObject("fHistEtaITSMI5InAcc");
-  TH1F *fHistEtaITSMI4InAcc = (TH1F*)list->FindObject("fHistEtaITSMI4InAcc");
-  TH1F *fHistEtaITSMI3InAcc = (TH1F*)list->FindObject("fHistEtaITSMI3InAcc");
-  TH1F *fHistEtaITSMI2InAcc = (TH1F*)list->FindObject("fHistEtaITSMI2InAcc");
-  TH1F *fHistEtaITSMISPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMISPDInAcc");
-  TH1F *fHistEtaITSMIoneSPDInAcc = (TH1F*)list->FindObject("fHistEtaITSMIoneSPDInAcc");
   TH1F *fHistPtITSMI6InAccFake = (TH1F*)list->FindObject("fHistPtITSMI6InAccFake");
   TH1F *fHistPtITSMI5InAccFake = (TH1F*)list->FindObject("fHistPtITSMI5InAccFake");
   TH1F *fHistPtITSMI4InAccFake = (TH1F*)list->FindObject("fHistPtITSMI4InAccFake");
@@ -165,20 +458,6 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI4InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI3InAcc);
   fHistPtITSMIge2InAcc->Add(fHistPtITSMI2InAcc);
-  TH1F *fHistEtaITSMIge2InAcc=0;
-  TH1F *fHistPhiITSMIge2InAcc=0;
-  if(fHistPhiITSMI6InAcc) {
-    fHistPhiITSMIge2InAcc = (TH1F*)fHistPhiITSMI6InAcc->Clone("fHistPhiITSMIge2InAcc");
-    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI5InAcc);
-    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI4InAcc);
-    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI3InAcc);
-    fHistPhiITSMIge2InAcc->Add(fHistPhiITSMI2InAcc);
-    fHistEtaITSMIge2InAcc = (TH1F*)fHistEtaITSMI6InAcc->Clone("fHistEtaITSMIge2InAcc");
-    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI5InAcc);
-    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI4InAcc);
-    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI3InAcc);
-    fHistEtaITSMIge2InAcc->Add(fHistEtaITSMI2InAcc);
-  }
   TH1F *fHistPtITSMIge2InAccFake = 0;
   if(fHistPtITSMI6InAccFake) {
     fHistPtITSMIge2InAccFake=(TH1F*)fHistPtITSMI6InAccFake->Clone("fHistPtITSMIge2InAccFake");
@@ -521,73 +800,6 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
   l4->AddEntry(fHistPtITSMIokbadoutinz4InAcc,"4 layers","l");
   l4->Draw();
 
-  if(fHistPhiITSMI2InAcc) {
-  TCanvas *c5g =new TCanvas("c5g","c5g",10,10,1200,600);
-  c5g->Divide(2,1);
-  c5g_1->SetGridy();
-  c5g_2->SetGridy();
-  c5g->cd(1);
-  fHistPhiITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
-  fHistPhiITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
-  fHistPhiITSMIge2InAcc->Divide(fHistPhiITSMIge2InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMIge2InAcc->SetMaximum(1.5);
-  fHistPhiITSMIge2InAcc->SetMinimum(0);
-  fHistPhiITSMIge2InAcc->Draw();
-  /*  fHistPhiITSMI6InAcc->Divide(fHistPhiITSMI6InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMI6InAcc->SetLineColor(2);
-  fHistPhiITSMI6InAcc->Draw("same");
-  fHistPhiITSMI5InAcc->Divide(fHistPhiITSMI5InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMI5InAcc->SetLineColor(3);
-  fHistPhiITSMI5InAcc->Draw("same");
-  fHistPhiITSMI4InAcc->Divide(fHistPhiITSMI4InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMI4InAcc->SetLineColor(4);
-  fHistPhiITSMI4InAcc->Draw("same");
-  fHistPhiITSMI3InAcc->Divide(fHistPhiITSMI3InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMI3InAcc->SetLineColor(6);
-  fHistPhiITSMI3InAcc->Draw("same");
-  fHistPhiITSMI2InAcc->Divide(fHistPhiITSMI2InAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMI2InAcc->SetLineColor(7);
-  fHistPhiITSMI2InAcc->Draw("same");*/
-  fHistPhiITSMISPDInAcc->Divide(fHistPhiITSMISPDInAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMISPDInAcc->SetLineColor(9);
-  fHistPhiITSMISPDInAcc->Draw("same");
-  fHistPhiITSMIoneSPDInAcc->Divide(fHistPhiITSMIoneSPDInAcc,fHistPhiTPCInAcc,1,1,"B");
-  fHistPhiITSMIoneSPDInAcc->SetLineColor(15);
-  fHistPhiITSMIoneSPDInAcc->Draw("same");
-  fHistPhiITSMIge2InAcc->Draw("same");
-  l3->Draw();
-  c5g->cd(2);
-  fHistEtaITSMIge2InAcc->SetTitle("Fraction of prolonged tracks with N ITS points");
-  fHistEtaITSMIge2InAcc->SetYTitle("ITS+TPC / TPC");
-  fHistEtaITSMIge2InAcc->Divide(fHistEtaITSMIge2InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMIge2InAcc->SetMaximum(1.5);
-  fHistEtaITSMIge2InAcc->SetMinimum(0);
-  fHistEtaITSMIge2InAcc->Draw();
-  /*  fHistEtaITSMI6InAcc->Divide(fHistEtaITSMI6InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMI6InAcc->SetLineColor(2);
-  fHistEtaITSMI6InAcc->Draw("same");
-  fHistEtaITSMI5InAcc->Divide(fHistEtaITSMI5InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMI5InAcc->SetLineColor(3);
-  fHistEtaITSMI5InAcc->Draw("same");
-  fHistEtaITSMI4InAcc->Divide(fHistEtaITSMI4InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMI4InAcc->SetLineColor(4);
-  fHistEtaITSMI4InAcc->Draw("same");
-  fHistEtaITSMI3InAcc->Divide(fHistEtaITSMI3InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMI3InAcc->SetLineColor(6);
-  fHistEtaITSMI3InAcc->Draw("same");
-  fHistEtaITSMI2InAcc->Divide(fHistEtaITSMI2InAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMI2InAcc->SetLineColor(7);
-  fHistEtaITSMI2InAcc->Draw("same");*/
-  fHistEtaITSMISPDInAcc->Divide(fHistEtaITSMISPDInAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMISPDInAcc->SetLineColor(9);
-  fHistEtaITSMISPDInAcc->Draw("same");
-  fHistEtaITSMIoneSPDInAcc->Divide(fHistEtaITSMIoneSPDInAcc,fHistEtaTPCInAcc,1,1,"B");
-  fHistEtaITSMIoneSPDInAcc->SetLineColor(15);
-  fHistEtaITSMIoneSPDInAcc->Draw("same");
-  fHistEtaITSMIge2InAcc->Draw("same");
-  l3->Draw();
-  }
-
   if(fHistPtITSMIge2InAccFake) {
     TCanvas *c5f =new TCanvas("c5f","c5f",10,10,600,600);
     c5f->SetGridy();
@@ -845,7 +1057,7 @@ Bool_t PlotITSTrackingHists(TString fname="ITS.Performance.root",
 //-----------------------------------------------------------------------------
 void PlotEffRatio() {
 
-  TFile *f= new TFile("Runs146806/eff.root");
+  TFile *f= new TFile("eff.root");
 
   TH1F *fHistPtITSMI6InAcc = (TH1F*)f->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAcc = (TH1F*)f->Get("fHistPtITSMI5InAcc");
@@ -861,7 +1073,7 @@ void PlotEffRatio() {
   TH1F *fHistNclsITSMI = (TH1F*)f->Get("fHistNclsITSMI");
 
 
-  TFile *fMC= new TFile("Runs146689_146859_sdd/eff.root");
+  TFile *fMC= new TFile("../MC/MCLHC11b10a/eff.root");
 
   TH1F *fHistPtITSMI6InAccMC = (TH1F*)fMC->Get("fHistPtITSMI6InAcc");
   TH1F *fHistPtITSMI5InAccMC = (TH1F*)fMC->Get("fHistPtITSMI5InAcc");
@@ -2816,9 +3028,11 @@ void ReweightStrange(TH1F *hPt,TH1F* hPtPfromStrange,TH1F* hPtSfromStrange) {
   return;
 }
 //--------------------------------------------------------------------------
-void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
-			 TString pathBeforeRun="/alice/data/2010/LHC10h/000",
-			 TString pathAfterRun="/ESDs/pass2/QA52/QAresults.root",
+void ITSTrackingTrending(Int_t firstrun=158508,Int_t lastrun=158511,
+			 //TString pathBeforeRun="/alice/sim/LHC11a10a_bis/",
+			 //TString pathAfterRun="/QA67/Stage_4/004/QAresults.root",
+			 TString pathBeforeRun="/alice/data/2011/LHC11d/000",
+			 TString pathAfterRun="/ESDs/pass1/QAresults.root",
 			 //TString pathBeforeRun="/alice/data/2010/LHC10b/000",
 			 //TString pathAfterRun="/ESDs/pass2/QA9/QAresults.root",
 			 TString pathAfterRun2="") 
@@ -2826,10 +3040,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   //
   // Make ITS efficiency trending plots from QAresults.root files
   //
-
-  Bool_t merge=kTRUE;
-
-
   gStyle->SetOptStat(0);
 
   TGrid::Connect("alien://");
@@ -2842,6 +3052,7 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",nruns,firstrun-0.5,lastrun+0.5);
   hFracSPD1->SetLineColor(3);
   hFracSPD1->SetMarkerColor(3);
+  hFracSPD1->SetMarkerStyle(20);
   TH1F *hFracSPD2 = new TH1F("hFracSPD2","SPD outer; run number; Fraction of HSs",nruns,firstrun-0.5,lastrun+0.5);
   hFracSPD2->SetLineColor(8);
   hFracSPD2->SetMarkerColor(8);
@@ -2911,10 +3122,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   hEffoneSPDPt10->SetMarkerColor(15);
   hEffoneSPDPt10->SetMarkerStyle(20);
 
-
-  TFileMerger merger;
-  merger.OutputFile("QAresults_merged.root");
-
   // loop on runs
   for(Int_t irun=firstrun; irun<=lastrun; irun++) {
     if(!KeepRun(irun)) continue;
@@ -2924,6 +3131,8 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
     path.Append(pathAfterRun.Data());
     path.Prepend("alien://");
 
+    printf("%s\n",path.Data());
+
     if(!PlotITSTrackingHists(path.Data(),ioValues,ioErrors)) {
       if(pathAfterRun2.Data()=="") continue;
       TString path2=pathBeforeRun;
@@ -2932,8 +3141,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
       path2.Prepend("alien://");
       if(!PlotITSTrackingHists(path2.Data(),ioValues,ioErrors)) continue;
     }
-
-    merger.AddFile(path.Data());
 
     Int_t bin=hEffge2Pt1->FindBin(irun);
 
@@ -2998,7 +3205,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   lSPD->AddEntry(hFracSPD1,"Frac. SPD1 ON","l");
   lSPD->AddEntry(hFracSPD2,"Frac. SPD2 ON","l");
   lSPD->Draw();
-  cSPD->Print("cSPD.root");
 
   TCanvas *cPt02 = new TCanvas("cPt02","cPt02",0,0,1000,300);
   cPt02->SetGridy();
@@ -3014,7 +3220,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   lPt02->AddEntry(hEffSPDPt02,"2 SPD + any","l");
   lPt02->AddEntry(hEff6Pt02,"6 cls","l");
   lPt02->Draw();
-  cPt02->Print("cPt02.root");
 
   TCanvas *cPt1 = new TCanvas("cPt1","cPt1",0,0,1000,300);
   cPt1->SetGridy();
@@ -3025,7 +3230,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   hEffSPDPt1->Draw("same");
   hEffoneSPDPt1->Draw("same");
   lPt02->Draw();
-  cPt1->Print("cPt1.root");
 
   TCanvas *cPt10 = new TCanvas("cPt10","cPt10",0,0,1000,300);
   cPt10->SetGridy();
@@ -3036,9 +3240,6 @@ void ITSTrackingTrending(Int_t firstrun=137161,Int_t lastrun=139517,
   hEffSPDPt10->Draw("same,p");
   hEffoneSPDPt10->Draw("same,p");
   lPt02->Draw();
-  cPt10->Print("cPt10.root");
-
-  if(merge) merger.Merge();
 
   return;
 }
@@ -3062,37 +3263,31 @@ Bool_t KeepRun(Int_t irun) {
   //
 
   // LHC10e good runs
-  /*
-  Int_t nruns10e=152;
-  Int_t goodruns10e[152]={130848, 130847, 130844, 130842, 130840, 130834, 130831, 130799, 130798, 130795, 130793, 130704, 130696, 130628, 130623, 130621, 130620, 130609, 130608, 130601, 130526, 130524, 130520, 130519, 130517, 130481, 130480, 130479, 130375, 130360, 130358, 130356, 130354, 130343, 130342, 130179, 130178, 130172, 130158, 130157, 130151, 130149, 130148, 129983, 129966, 129962, 129961, 129960, 129959, 129744, 129742, 129738, 129736, 129735, 129729, 129726, 129725, 129723, 129667, 129666, 129659, 129654, 129653, 129652, 129650, 129647, 129641, 129639, 129599, 129587, 129586, 129540, 129536, 129528, 129527, 129525, 129524, 129523, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129041, 128913, 128855, 128853, 128850, 128843, 128836, 128835, 128833, 128824, 128823, 128820, 128819, 128813, 128778, 128777, 128776, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128582, 128581, 128507, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128483, 128452, 128366, 128263, 128260, 128192, 128191, 128189, 128186, 128185, 127942, 127941, 127940, 127937, 127936, 127935, 127933, 127932, 127931, 127930, 127822, 127819, 127817, 127815, 127813, 127730, 127729, 127719, 127718, 127714, 127712};
-  */
-  Int_t nruns10e=14;
-  Int_t goodruns10e[14]={127817,
-			  127930,
-			  128819,
-			  129515,
-			  129516,
-			  129521,
-			  129524,
-			  129525,
-			  129536,
-			  130151,
-			  130479,
-			  130481,
-			  130524,
-			  130621};
+  Int_t nruns10e=158;
+  Int_t goodruns10e[158]={130369, 130365, 130360, 130358, 130356, 130354, 130353, 130348, 130343, 130342, 130179, 130178, 130172, 130170, 130168, 130158, 130157, 130156, 130151, 130149, 130148, 129983, 129966, 129962, 129961, 129960, 129959, 129763, 129760, 129750, 129748, 129747, 129745, 129744, 129742, 129738, 129736, 129735, 129734, 129731, 129729, 129726, 129725, 129723, 129667, 129666, 129659, 129655, 129654, 129653, 129652, 129651, 129650, 129649, 129648, 129647, 129641, 129639, 129599, 129598, 129597, 129587, 129586, 129541, 129540, 129536, 129529, 129528, 129527, 129526, 129525, 129524, 129523, 129522, 129521, 129520, 129519, 129516, 129515, 129514, 129513, 129512, 129510, 129508, 129042, 129041, 128913, 128912, 128911, 128910, 128855, 128853, 128850, 128849, 128843, 128836, 128835, 128833, 128824, 128823, 128820, 128819, 128817, 128813, 128777, 128776, 128678, 128677, 128621, 128615, 128611, 128609, 128605, 128596, 128594, 128592, 128590, 128582, 128581, 128507, 128506, 128505, 128504, 128503, 128498, 128495, 128494, 128486, 128483, 128452, 128366, 128260, 128257, 128192, 128191, 128189, 128186, 128185, 128182, 128180, 128175, 128053, 127942, 127941, 127937, 127936, 127935, 127933, 127932, 127931, 127822, 127817, 127815, 127814, 127730, 127729, 127724, 127719};
+
 
 
   // LHC10h good runs
-  Int_t nruns10h=132;
-  Int_t goodruns10h[132]={139517, 139514, 139513, 139511, 139510, 139507, 139505, 139504, 139503, 139471, 139470, 139467, 139466, 139465, 139441, 139440, 139439, 139438, 139437, 139360, 139329, 139328, 139316, 139314, 139311, 139310, 139309, 139308, 139173, 139172, 139110, 139107, 139105, 139104, 139042, 139038, 139037, 139036, 139031, 139029, 139028, 139024, 138980, 138979, 138978, 138977, 138872, 138871, 138870, 138837, 138830, 138828, 138826, 138796, 138795, 138740, 138732, 138731, 138730, 138666, 138662, 138653, 138652, 138638, 138637, 138624, 138621, 138583, 138582, 138578, 138534, 138533, 138469, 138442, 138439, 138438, 138396, 138364, 138359, 138275, 138225, 138201, 138200, 138197, 138192, 138190, 138154, 138150, 138126, 138125, 137848, 137843, 137752, 137751, 137748, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137165, 137162, 137161};
+  Int_t nruns10h=49;
+  Int_t goodruns10h[49]={138624, 138637, 138666, 138730, 138731, 138732, 138737, 138740, 138742, 138830, 138836, 138871, 138872, 138924, 138965, 138972, 138977, 138978, 138980, 138982, 138983, 139029, 139036, 139037, 139038, 139042, 139105, 139107, 139309, 139310, 139314, 139360, 139438, 139439, 139440, 139441, 139465, 139466, 139467, 139470, 139471, 139503, 139505, 139507, 139510, 139511, 139513, 139514, 139517};
 
+  /*
+  Int_t nruns10h=91;
+  Int_t goodruns10h[91]={139510, 139507, 139505, 139503, 139465, 139438, 139437, 139360, 139329, 139328, 139314, 139310, 139309, 139173, 139107, 139105, 139038, 139037, 139036, 139029, 139028, 138872, 138871, 138870, 138837, 138732, 138730, 138666, 138662, 138653, 138652, 138638, 138624, 138621, 138583, 138582, 138579, 138578, 138534, 138469, 138442, 138439, 138438, 138396, 138364, 138275, 138225, 138201, 138197, 138192, 138190, 137848, 137844, 137752, 137751, 137724, 137722, 137718, 137704, 137693, 137692, 137691, 137686, 137685, 137639, 137638, 137608, 137595, 137549, 137546, 137544, 137541, 137539, 137531, 137530, 137443, 137441, 137440, 137439, 137434, 137432, 137431, 137430, 137366, 137243, 137236, 137235, 137232, 137231, 137162, 137161};
+  */
 
-  // LHC11a good runs
-  Int_t nruns11a=24;
-  Int_t goodruns11a[24]={146860, 146859, 146858, 146857, 146856, 146824, 146817, 146814, 146813, 146812, 146808, 146807, 146806, 146805, 146804, 146803, 146802, 146801, 146748, 146747, 146746, 146689, 146688, 146686};
+  // LHC11b good runs
+  Int_t nruns11b=83;
+  Int_t goodruns11b[83]={148531, 148541, 148544, 148648, 148800, 148847, 148857, 149102, 149115, 149122, 149123, 149367, 149382, 149389, 149395, 149398, 149432, 149434, 149442, 149449, 149452, 149453, 149456, 149461, 149462, 149472, 149484, 149487, 149499, 149529, 149530, 149531, 149533, 149534, 149540, 149543, 149544, 149545, 149547, 149549, 149582, 149584, 149585, 149588, 149590, 149592, 149594, 149596, 149598, 149600, 149604, 149657, 149669, 149680, 149682, 149712, 149723, 149726, 149727, 149734, 149735, 149740, 149746, 149749, 149757, 149761, 149769, 149771, 149772, 149773, 149774, 149775, 149776, 149781, 149785, 149786, 149789, 149790, 150375, 150421, 150586, 150589, 150705};
 
+  // LHC11c good runs
+  Int_t nruns11c=244;
+  Int_t goodruns11c[244]={154570, 154495, 154485, 154483, 154482, 154480, 154478, 154448, 154385, 154383, 154382, 154296, 154293, 154289, 154286, 154283, 154281, 154273, 154270, 154269, 154266, 154264, 154261, 154257, 154252, 154222, 154221, 154220, 154219, 154211, 154207, 154163, 154158, 154151, 154145, 154143, 154141, 154138, 154136, 154132, 154131, 154130, 154129, 154126, 154125, 154091, 154083, 154081, 154039, 154031, 154030, 154026, 154024, 154018, 153954, 153946, 153944, 153939, 153938, 153935, 153929, 153924, 153916, 153911, 153909, 153906, 153876, 153875, 153873, 153812, 153808, 153807, 153805, 153798, 153796, 153794, 153784, 153781, 153779, 153778, 153777, 153776, 153738, 153733, 153728, 153727, 153726, 153725, 153718, 153709, 153702, 153594, 153591, 153589, 153588, 153587, 153583, 153578, 153571, 153570, 153566, 153560, 153558, 153552, 153548, 153544, 153542, 153541, 153539, 153536, 153533, 153513, 153465, 153415, 153413, 153373, 153371, 153369, 153363, 153362, 153360, 153296, 153234, 153232, 153227, 153223, 153127, 153121, 153120, 153117, 153116, 153115, 153059, 153056, 152935, 152934, 152907, 152823, 152822, 152821, 152820, 152819, 152817, 152780, 152773, 152772, 152751, 152750, 152718, 152717, 152716, 152715, 152708, 152702, 152701, 152698, 152697, 152696, 152695, 152658, 152581, 152513, 152512, 152488, 152455, 152377, 152371, 152369, 152368, 152367, 152334, 152332, 152323, 152322, 152321, 152320, 152319, 152318, 152314, 152313, 152312, 152311, 152310, 152309, 152307, 152306, 152304, 152285, 152284, 152257, 152256, 152214, 152209, 152208, 152207, 152206, 152146, 152138, 152137, 152136, 152091, 152090, 152089, 152087, 152086, 152083, 152082, 152081, 152079, 152078, 152046, 152015, 152011, 152008, 152007, 152005, 152003, 152002, 151852, 151851, 151850, 151849, 151810, 151809, 151752, 151751, 151732, 151724, 151689, 151681, 151680, 151678, 151674, 151672, 151671, 151669, 151666, 151665, 151664, 151661, 151660, 151655, 151638, 151636};
 
+  // LHC11d good runs
+  Int_t nruns11d=81;
+  Int_t goodruns11d[81]={158508, 158509, 158511, 158518, 158520, 158521, 158526, 158528, 158531, 158592, 158602, 158604, 158611, 158615, 158622, 158626, 158706, 158717, 158722, 158745, 158777, 158780, 158784, 158788, 158791, 158793, 158794, 158848, 158868, 158876, 158877, 158879, 159028, 159042, 159076, 159090, 159120, 159121, 159128, 159147, 159154, 159162, 159168, 159173, 159185, 159191, 159193, 159199, 159201, 159205, 159207, 159214, 159216, 159218, 159221, 159223, 159255, 159258, 159260, 159285, 159286, 159318, 159379, 159451, 159503, 159517, 159521, 159535, 159538, 159571, 159577, 159580, 159581, 159582, 159586, 159593, 159595, 159599, 159602, 159606, 159635};
 
 
   Bool_t found=kFALSE;
@@ -3118,14 +3313,23 @@ Bool_t KeepRun(Int_t irun) {
   }  
   if(found) return kTRUE;
 
-
   for(i=0; i<nruns10h; i++) {
     if(irun==goodruns10h[i]) {found=kTRUE; break;}
   }  
   if(found) return kTRUE;
 
-  for(i=0; i<nruns11a; i++) {
-    if(irun==goodruns11a[i]) {found=kTRUE; break;}
+  for(i=0; i<nruns11b; i++) {
+    if(irun==goodruns11b[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+  for(i=0; i<nruns11c; i++) {
+    if(irun==goodruns11c[i]) {found=kTRUE; break;}
+  }  
+  if(found) return kTRUE;
+
+  for(i=0; i<nruns11d; i++) {
+    if(irun==goodruns11d[i]) {found=kTRUE; break;}
   }  
   if(found) return kTRUE;
 
