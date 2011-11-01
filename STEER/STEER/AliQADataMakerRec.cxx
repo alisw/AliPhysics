@@ -374,7 +374,7 @@ void AliQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
     list = fESDsQAList ; 
   }
   //list was not initialized, skip
-  if (!list) return ; 
+  if (!list) return; 
   
   for (int spec = 0; spec < AliRecoParam::kNSpecies; spec++) {
     if (!AliQAv1::Instance()->IsEventSpecieSet(AliRecoParam::ConvertIndex(spec))) continue;
@@ -385,7 +385,7 @@ void AliQADataMakerRec::ResetDetector(AliQAv1::TASKINDEX_t task)
 	TObjArray* arr = (TObjArray*)obj;
 	for (int ih=arr->GetEntriesFast();ih--;) {
 	  TH1* histo = (TH1*)arr->At(ih); 
-	  if (!ih) continue;
+	  if (!histo) continue;
 	  histo->Reset("ICE");
 	  histo->ResetStats();
 	}
