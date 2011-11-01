@@ -21,9 +21,6 @@
 //     Author: Andreas Morsch, CERN
 //-------------------------------------------------------------------------
 
-
-
-
 #include "AliOADBCentrality.h"
 ClassImp(AliOADBCentrality);
 
@@ -33,24 +30,60 @@ AliOADBCentrality::AliOADBCentrality() :
   fV0MScaleFactor(1.),
   fSPDScaleFactor(1.),
   fTPCScaleFactor(1.),
+  fV0MScaleFactorMC(1.),
+  fV0MSPDOutlierPar0(1.),
+  fV0MSPDOutlierPar1(1.),
+  fV0MTPCOutlierPar0(1.),
+  fV0MTPCOutlierPar1(1.),
+  fV0MSPDSigmaOutlierPar0(1.),
+  fV0MSPDSigmaOutlierPar1(1.),
+  fV0MSPDSigmaOutlierPar2(1.),
+  fV0MTPCSigmaOutlierPar0(1.),
+  fV0MTPCSigmaOutlierPar1(1.),
+  fV0MTPCSigmaOutlierPar2(1.),
+  fV0MZDCOutlierPar0(1.),
+  fV0MZDCOutlierPar1(1.),
+  fV0MZDCEcalOutlierPar0(1.),
+  fV0MZDCEcalOutlierPar1(1.),
+  fZVCut(10.),
+  fOutliersCut(6.),
+  fUseScaling(kFALSE),
+  fUseCleaning(kTRUE),
   f1DHistos(),
   f2DHistos()
 {
   // Default constructor
 }
-
+//______________________________________________________________________________
 AliOADBCentrality::AliOADBCentrality(char* name) : 
   TNamed(name, "Centrality Scaling"),
   fV0MScaleFactor(1.),
   fSPDScaleFactor(1.),
   fTPCScaleFactor(1.),
+  fV0MScaleFactorMC(1.),
+  fV0MSPDOutlierPar0(1.),
+  fV0MSPDOutlierPar1(1.),
+  fV0MTPCOutlierPar0(1.),
+  fV0MTPCOutlierPar1(1.),
+  fV0MSPDSigmaOutlierPar0(1.),
+  fV0MSPDSigmaOutlierPar1(1.),
+  fV0MSPDSigmaOutlierPar2(1.),
+  fV0MTPCSigmaOutlierPar0(1.),
+  fV0MTPCSigmaOutlierPar1(1.),
+  fV0MTPCSigmaOutlierPar2(1.),
+  fV0MZDCOutlierPar0(1.),
+  fV0MZDCOutlierPar1(1.),
+  fV0MZDCEcalOutlierPar0(1.),
+  fV0MZDCEcalOutlierPar1(1.),
+  fZVCut(10.),
+  fOutliersCut(6.),
+  fUseScaling(kFALSE),
+  fUseCleaning(kTRUE),
   f1DHistos(),
   f2DHistos()
 {
   // Constructor
 }
-
-
 //______________________________________________________________________________
 AliOADBCentrality::~AliOADBCentrality() 
 {
