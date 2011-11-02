@@ -248,6 +248,8 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger)
     case kZDCTDCA : str = "ZDC TDC A"; break;
     case kZDCTDCC : str = "ZDC TDC C"; break;
     case kZDCTime : str = "ZDC Time Cut"; break;
+    case kCentral : str = "V0 Central"; break;
+    case kSemiCentral : str = "V0 Semi-central"; break;
     default: str = ""; break;
   }
    
@@ -474,6 +476,34 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
       if (!offline)
         AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
       return IsLaserWarmUpTPCEvent(aEsd);
+    }
+    case kCentral:
+    {
+      if (offline)
+        AliFatal(Form("Offline trigger not available for trigger %d - use centrality selection", triggerNoFlags));
+      if (aEsd->GetVZEROData()) {
+	if (aEsd->GetVZEROData()->TestBit(AliESDVZERO::kTriggerChargeBitsFilled)) {
+	  if (aEsd->GetVZEROData()->GetTriggerBits() & (1<<AliESDVZERO::kCTA2andCTC2))
+	    decision = kTRUE;
+	}
+	else
+	  AliWarning("V0 centrality trigger bits were not filled!");
+      }
+      break;
+    }
+    case kSemiCentral:
+    {
+      if (offline)
+        AliFatal(Form("Offline trigger not available for trigger %d - use centrality selection", triggerNoFlags));
+      if (aEsd->GetVZEROData()) {
+	if (aEsd->GetVZEROData()->TestBit(AliESDVZERO::kTriggerChargeBitsFilled)) {
+	  if (aEsd->GetVZEROData()->GetTriggerBits() & (1<<AliESDVZERO::kCTA1andCTC1))
+	    decision = kTRUE;
+	}
+	else
+	  AliWarning("V0 centrality trigger bits were not filled!");
+      }
+      break;
     }
     default:
     {

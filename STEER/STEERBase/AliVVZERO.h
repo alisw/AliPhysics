@@ -28,6 +28,24 @@ public:
     kTriggerChargeBitsFilled = BIT(20)
   };
   enum Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
+  enum TriggerBits {
+    kBBAandBBC = 0,
+    kBBAorBBC = 1,
+    kBGAandBBC = 2,
+    kBGA = 3,
+    kBGCandBBA = 4,
+    kBGC = 5,
+    kCTA1andCTC1 = 6,
+    kCTA1orCTC1 = 7,
+    kCTA2andCTC2 = 8,
+    kCTA2orCTC2 = 9,
+    kMTAandMTC = 10,
+    kMTAorMTC = 11,
+    kBBA = 12,
+    kBBC = 13,
+    kBGAorBGC = 14,
+    kBGAandBBCorBGCandBBA = 15
+  };
 
   virtual Short_t  GetNbPMV0A() const = 0;
   virtual Short_t  GetNbPMV0C() const = 0;
