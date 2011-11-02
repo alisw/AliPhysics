@@ -305,7 +305,7 @@ int AliHLTTTreeProcessor::ScanConfigurationArgument(int argc, const char** argv)
   // possible arguments: 
   // -maxentries number
   // -interval number
-  // -histogram name -size number -expression expression [-cut expression ][-opt option]
+  // -histogram name -size number -expression expression [-title expression ] -cut expression ][-opt option]
   // As soon as "-histogram" found, -size and -expression and -outtype are required, 
   // cut and option can be omitted.
   if (argc <= 0)
@@ -484,13 +484,36 @@ TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
     hist->SetOption(d.GetDrawOption().Data());
   }
 
+  //Reformatting the histogram name
+  TString str2=d.GetCut().Data();
+  str2.ReplaceAll("Track_", "");
+  str2.ReplaceAll("&&", " ");
+  str2 = histName+" "+str2;
+  hist->SetTitle(str2);
+
+  if(d.GetTitle().Length()){
+  
+    //removing underscore
+    size_t found;
+    string str=d.GetTitle().Data();
+    found=str.find_first_of("_");
+    if(!(d.GetExpression().CompareTo("Track_pt"))){
+      found=str.find_first_of("_",found+1);      
+    }
+    str[found]=' ';
+    char axis[100];
+    sprintf(axis,"%s",str.c_str());
+  
+    hist->SetXTitle(axis);
+    hist->GetXaxis()->CenterTitle();
+  }
   return hist;
 }
 
 int AliHLTTTreeProcessor::ParseHistogramDefinition(int argc, const char** argv, int pos, AliHLTHistogramDefinition& dst)const
 {
   //Histogram-definition:
-  //    -histogram name -size number -expression expression [-cut expression][-opt option]
+  //    -histogram name -size number -expression expression [-title expression][-cut expression][-opt option]
 
   //at pos we have '-histogram', at pos + 1 must be the name.
   if (pos + 1 == argc) {
@@ -534,11 +557,22 @@ int AliHLTTTreeProcessor::ParseHistogramDefinition(int argc, const char** argv, 
   pos += 2;
 
   int processed = 6;
+  dst.SetTitle("");
   dst.SetCut("");
   dst.SetDrawOption("");
 
-  //remaining options can be the cut and Draw option.
-  //cut must be first.
+  //remaining options can be the title, cut and Draw option.
+  //title must be first
+  if (pos + 1 >= argc){
+    return processed;
+  }
+  if (TString(argv[pos]).CompareTo("-title") == 0) {
+    dst.SetTitle(argv[pos + 1]);
+    pos += 2;
+    processed += 2;
+  }
+
+  //cut must be second.
   if (pos + 1 >= argc)
     return processed;
 

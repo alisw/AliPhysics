@@ -75,7 +75,7 @@ protected:
   class AliHLTHistogramDefinition {
   public:
     AliHLTHistogramDefinition()
-        : fName(), fSize(0), fExpr(), fCut(), fOpt()
+      : fName(), fSize(0), fExpr(), fTitle(), fCut(), fOpt()
     {
     }
 
@@ -88,6 +88,9 @@ protected:
 	const TString& GetExpression()const{return fExpr;}
 	void SetExpression(const TString& expr){fExpr = expr;}
 
+	const TString& GetTitle()const{return fTitle;}
+	void SetTitle(const TString& title){fTitle = title;}
+
 	const TString& GetCut()const{return fCut;}
 	void SetCut(const TString& cut){fCut = cut;}
 
@@ -99,6 +102,7 @@ protected:
     TString fName;
     int     fSize;
     TString fExpr;
+    TString fTitle;
     TString fCut;
     TString fOpt;
   };
