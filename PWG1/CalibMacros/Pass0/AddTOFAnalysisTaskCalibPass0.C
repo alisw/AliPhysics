@@ -46,11 +46,12 @@ AddTOFAnalysisTaskCalibPass0()
   mgr->ConnectOutput(task, 1, outputc1);
 
   /* setup task */
-  task->SetEventSelectionFlag(kFALSE);
+  task->SetEventSelectionFlag(kTRUE);
   task->SetVertexSelectionFlag(kTRUE);
   task->SetVertexCut(25.0);
   /* setup TOF calib */
   task->GetTOFcalib()->SetRemoveMeanT0(kFALSE);
+  task->GetTOFcalib()->SetUseLHCClockPhase(kTRUE);
   task->GetTOFcalib()->SetCalibrateTOFsignal(kTRUE);
   task->GetTOFcalib()->SetCorrectTExp(kFALSE);
   /* setup track cuts */
