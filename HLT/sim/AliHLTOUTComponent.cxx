@@ -67,6 +67,7 @@ AliHLTOUTComponent::AliHLTOUTComponent(EType type)
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
+  fIdFirstDDL=AliDAQ::DdlIDOffset("HLT");
   fNofDDLs=AliDAQ::NumberOfDdls("HLT");
   
   if (fType!=kGlobal && fType!=kDigits && fType!=kRaw) {
