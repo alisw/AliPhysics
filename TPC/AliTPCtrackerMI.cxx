@@ -2794,9 +2794,9 @@ Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
       Char_t nrows[3];
       //
       for(Int_t iarr=0;iarr<3;iarr++) {
-	signal[i] = seed->GetDEDXregion(i+1);
-	ncl[i] = seed->GetNCDEDX(i+1);
-	nrows[i] = seed->GetNCDEDXInclThres(i+1);
+	signal[iarr] = seed->GetDEDXregion(iarr+1);
+	ncl[iarr] = seed->GetNCDEDX(iarr+1);
+	nrows[iarr] = seed->GetNCDEDXInclThres(iarr+1);
       }
       signal[3] = seed->GetDEDXregion(4);
       //
