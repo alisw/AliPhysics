@@ -4,7 +4,7 @@
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //*                                                                        *
-//* Primary Authors: Per-Ivar Lønne <perivarlonne@gmail.com>               *
+//* Primary Authors: Per-Ivar Lønne <ploenne@cern.ch>                      *
 //*                  for The ALICE HLT Project.                            *
 //*                                                                        *
 //* Permission to use, copy, modify and distribute this software and its   *
@@ -498,9 +498,13 @@ void AliHLTTPCdEdxMonitoringComponent::SetDefaultConfiguration()
       //fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE);
       fESDTrackCuts->SetEtaRange(-0.8,+0.8);
       fESDTrackCuts->SetPtRange(0.15,1e10);
+      // 2011-10-28 investigation by Per Ivar and Alexander
+      // the following cuts are not needed
+      /*
       fESDTrackCuts->SetMaxCovDiagonalElements(2, 2, 0.5, 0.5, 2);  // BEWARE STANDARD VALUES ARE: 2, 2, 0.5, 0.5, 2
       fESDTrackCuts->SetMaxNsigmaToVertex(3);
       fESDTrackCuts->SetRequireSigmaToVertex(kTRUE);
+      */
       fESDTrackCuts->SetAcceptKinkDaughters(kFALSE);
       fESDTrackCuts->SetMinNClustersTPC(70);
       fESDTrackCuts->SetMaxChi2PerClusterTPC(4);
@@ -508,8 +512,13 @@ void AliHLTTPCdEdxMonitoringComponent::SetDefaultConfiguration()
       fESDTrackCuts->SetMaxDCAToVertexZ(3);
       fESDTrackCuts->SetRequireTPCRefit(kTRUE);
       //fESDTrackCuts->SetRequireITSRefit(kTRUE); //Kills HLT simulated reconstructions?
+      // 2011-10-28 investigation by Per Ivar and Alexander
+      // those cuts remove all data points because the filling is different in the
+      // HLT, needs further investigation
+      /*
       fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny); //TEMPORARY <-> REMOVE
       fESDTrackCuts->SetMinNClustersITS(3);
+      */
       
     }
  fxbins=300;
