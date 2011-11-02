@@ -84,7 +84,7 @@ void cpTimeOut(const char * searchdir, const char* pattern, Int_t timeOut=10)
   cout<<counter<<" files copied!"<<endl;
 
   outputFile.close();
-  gSystem->Exec("cp syswatch.log syswatch_copy.log");
+  gSystem->Exec("mv syswatch.log syswatch_copy.log");
   return;
 }
 
