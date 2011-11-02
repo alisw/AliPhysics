@@ -39,7 +39,7 @@
 ClassImp(AliCalorimeterUtils)
   
   
-//____________________________________________________________________________
+//____________________________________________
   AliCalorimeterUtils::AliCalorimeterUtils() : 
     TObject(), fDebug(0), 
     fEMCALGeoName("EMCAL_COMPLETEV1"),fPHOSGeoName("PHOSgeo"), 
@@ -65,8 +65,9 @@ ClassImp(AliCalorimeterUtils)
   
 }
 
-//_________________________________
-AliCalorimeterUtils::~AliCalorimeterUtils() {
+//_________________________________________
+AliCalorimeterUtils::~AliCalorimeterUtils()
+{
   //Dtor
   
   //if(fPHOSGeo)  delete fPHOSGeo  ;
@@ -87,8 +88,11 @@ AliCalorimeterUtils::~AliCalorimeterUtils() {
   
 }
 
-//_______________________________________________________________
-Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCaloCells* cells, AliVEvent * event, Int_t iev) const {
+//_____________________________________________________________________________________
+Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, 
+                                                    AliVCaloCells* cells, 
+                                                    AliVEvent * event, Int_t iev) const 
+{
   
 	// Given the list of AbsId of the cluster, get the maximum cell and 
 	// check if there are fNCellsFromBorder from the calorimeter border
@@ -224,7 +228,8 @@ Bool_t AliCalorimeterUtils::CheckCellFiducialRegion(AliVCluster* cluster, AliVCa
 }	
 
 //_________________________________________________________________________________________________________
-Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells){
+Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort_t* cellList, Int_t nCells)
+{
 	// Check that in the cluster cells, there is no bad channel of those stored 
 	// in fEMCALBadChannelMap or fPHOSBadChannelMap
 	
@@ -259,16 +264,18 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
   
 }
 
-//____________________________________________________________________________________________________________________________________________________
-void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus){
+//_______________________________________________________________
+void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
+{
   // Correct cluster energy non linearity
   
   clus->SetE(fEMCALRecoUtils->CorrectClusterEnergyLinearity(clus));
 
 }
 
-//____________________________________________________________________________________________________________________________________________________
-Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & clusterFraction) const {
+//___________________________________________________________________________________________________________________
+Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & clusterFraction) const 
+{
   
   //For a given CaloCluster gets the absId of the cell 
   //with maximum energy deposit.
@@ -320,7 +327,7 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* 
   
 }
 
-//____________________________________________________________________________________________________________________________________________________
+//_____________________________________________________________________________________________________
 Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEvent * inputEvent) const
 {
 	//Get the EMCAL/PHOS module number that corresponds to this particle
@@ -370,7 +377,7 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliAODPWG4Particle * particle, AliVEv
 	return -1;
 }
 
-//____________________________________________________________________________________________________________________________________________________
+//_____________________________________________________________________
 Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 {
 	//Get the EMCAL/PHOS module number that corresponds to this cluster
@@ -413,8 +420,9 @@ Int_t AliCalorimeterUtils::GetModuleNumber(AliVCluster * cluster) const
 	return -1;
 }
 
-//_____________________________________________________________________________________________________________
-Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, Int_t & icol, Int_t & irow, Int_t & iRCU) const
+//___________________________________________________________________________________________________
+Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const TString calo, 
+                                                      Int_t & icol, Int_t & irow, Int_t & iRCU) const
 {
 	//Get the EMCAL/PHOS module, columns, row and RCU number that corresponds to this absId
 	Int_t imod = -1;
@@ -461,16 +469,7 @@ Int_t AliCalorimeterUtils::GetModuleNumberCellIndexes(const Int_t absId, const T
 	return -1;
 }
 
-//_______________________________________________________________
-//void AliCalorimeterUtils::Init()
-//{
-//	//Init reader. Method to be called in AliAnaPartCorrMaker
-//	
-//	fEMCALBadChannelMap->SetName(Form("EMCALBadMap_%s",fTaskName.Data()));
-//	fPHOSBadChannelMap->SetName(Form("PHOSBadMap_%s",fTaskName.Data()));
-//}
-
-//_______________________________________________________________
+//________________________________________
 void AliCalorimeterUtils::InitParameters()
 {
   //Initialize the parameters of the analysis.
@@ -491,8 +490,9 @@ void AliCalorimeterUtils::InitParameters()
 }
 
 
-//________________________________________________________________
-void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
+//_____________________________________________________
+void AliCalorimeterUtils::InitPHOSBadChannelStatusMap()
+{
   //Init PHOS bad channels map
   if(fDebug > 0 )printf("AliCalorimeterUtils::InitPHOSBadChannelStatusMap()\n");
   //In order to avoid rewriting the same histograms
@@ -509,8 +509,9 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap(){
   TH1::AddDirectory(oldStatus);		
 }
 
-//________________________________________________________________
-void AliCalorimeterUtils::InitPHOSRecalibrationFactors(){
+//______________________________________________________
+void AliCalorimeterUtils::InitPHOSRecalibrationFactors()
+{
 	//Init EMCAL recalibration factors
 	if(fDebug > 0 )printf("AliCalorimeterUtils::InitPHOSRecalibrationFactors()\n");
 	//In order to avoid rewriting the same histograms
@@ -535,7 +536,7 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors(){
 }
 
 
-//________________________________________________________________
+//___________________________________________
 void AliCalorimeterUtils::InitEMCALGeometry()
 {
 	//Initialize EMCAL geometry if it did not exist previously
@@ -549,7 +550,7 @@ void AliCalorimeterUtils::InitEMCALGeometry()
 	}
 }
 
-//________________________________________________________________
+//__________________________________________
 void AliCalorimeterUtils::InitPHOSGeometry()
 {
 	//Initialize PHOS geometry if it did not exist previously
@@ -563,7 +564,7 @@ void AliCalorimeterUtils::InitPHOSGeometry()
 	}	
 }
 
-//________________________________________________________________
+//_________________________________________________________
 void AliCalorimeterUtils::Print(const Option_t * opt) const
 {
   
@@ -584,8 +585,10 @@ void AliCalorimeterUtils::Print(const Option_t * opt) const
   printf("    \n") ;
 } 
 
-//__________________________________________________
-Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  const Int_t ieta) const {
+//__________________________________________________________________
+Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  
+                                             const Int_t ieta) const 
+{
   //Check if cell is in one of the regions where we have significant amount 
   //of material in front. Only EMCAL
   
@@ -603,8 +606,10 @@ Bool_t AliCalorimeterUtils::MaskFrameCluster(const Int_t iSM,  const Int_t ieta)
 }
 
 
-//________________________________________________________________
-Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, AliVCaloCells * cells){
+//__________________________________________________________________________
+Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, 
+                                                      AliVCaloCells * cells)
+{
 	// Recalibrate the cluster energy, considering the recalibration map and the energy of the cells that compose the cluster.
   
   //Initialize some used variables
@@ -648,7 +653,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster, Ali
 	return energy;
 }
 
-//________________________________________________________________
+//________________________________________________________________________________
 void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEvent) 
 {
   //Set the calorimeters transformation matrices
@@ -727,11 +732,28 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
 	}//PHOS geo	and  geoManager was not set
 }
 
-//________________________________________________________________
-void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu){
+//__________________________________________________________________________________________
+void AliCalorimeterUtils::RecalculateClusterPosition(AliVCaloCells* cells, AliVCluster* clu)
+{
   
   //Recalculate EMCAL cluster position
   
   fEMCALRecoUtils->RecalculateClusterPosition((AliEMCALGeometry*)fEMCALGeo, cells,clu);
   
+}
+
+//________________________________________________________________________________
+void AliCalorimeterUtils::RecalculateClusterTrackMatching(AliVEvent * event, 
+                                                          TObjArray* clusterArray) 
+{ 
+  //Recalculate track matching
+  
+  if (fRecalculateMatching) {
+    fEMCALRecoUtils->FindMatches(event,clusterArray,fEMCALGeo)   ; 
+    //AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (event);
+    //if(esdevent){
+    //  fEMCALRecoUtils->SetClusterMatchedToTrack(esdevent)  ;
+    //  fEMCALRecoUtils->SetTracksMatchedToCluster(esdevent) ; 
+    //}
+  }
 }

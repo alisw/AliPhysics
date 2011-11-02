@@ -194,8 +194,8 @@ class AliCalorimeterUtils : public TObject {
   void          RecalculateClusterPID(AliVCluster* clu)    { fEMCALRecoUtils->RecalculateClusterPID(clu)              ; }
 
   //Track matching recalculation
-  void          RecalculateClusterTrackMatching(AliVEvent * event)         {
-                  if (fRecalculateMatching) fEMCALRecoUtils->FindMatches(event,0,fEMCALGeo)     ; }
+  void          RecalculateClusterTrackMatching(AliVEvent * event, TObjArray* clusterArray = 0x0) ;
+    
   void          GetMatchedResiduals(Int_t index, Float_t &dR, Float_t &dZ) {
                   if (fRecalculateMatching) fEMCALRecoUtils->GetMatchedResiduals(index,dR,dZ)   ; }
   
@@ -248,7 +248,6 @@ class AliCalorimeterUtils : public TObject {
   Float_t            fCutZ;                  //  dZ cut on matching (EMCAL/PHOS)
   Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
   Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
-
   
   ClassDef(AliCalorimeterUtils,7)
 } ;
