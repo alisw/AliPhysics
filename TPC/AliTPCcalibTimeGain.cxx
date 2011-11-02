@@ -398,10 +398,10 @@ void AliTPCcalibTimeGain::ProcessBeamEvent(AliESDEvent *event) {
     if (TMath::Abs(trackIn->Eta()) > 1) continue;
     UInt_t status = track->GetStatus();
     if ((status&AliESDtrack::kTPCrefit)==0) continue;
-    if (track->GetNcls(0) < 3) continue; // ITS clusters
+    //if (track->GetNcls(0) < 3) continue; // ITS clusters
     Float_t dca[2], cov[3];
     track->GetImpactParameters(dca,cov);
-    if (dca[0] > 7 || dca[0] < 0.000001) continue; // cut in xy
+    if (TMath::Abs(dca[0]) > 7 || TMath::Abs(dca[0]) < 0.0000001 || TMath::Abs(dca[1]) > 25 ) continue; // cut in xy
     Double_t eta = trackIn->Eta();
     
     // Get seeds
