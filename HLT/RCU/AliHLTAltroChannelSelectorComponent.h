@@ -17,6 +17,8 @@
 
 #include "AliHLTProcessor.h"
 
+class TH1F;
+
 /**
  * @class AliHLTAltroChannelSelectorComponent
  * A selector component for ALTRO Raw data. The component subscribes
@@ -105,9 +107,13 @@ class AliHLTAltroChannelSelectorComponent : public AliHLTProcessor {
   unsigned int fStartTimeBin; //!transient
   unsigned int fEndTimeBin; //!transient
   unsigned int fSignalThreshold; //!transient
-  unsigned int fRMSThreshold; //!transient
+  float fRMSThreshold; //!transient
+  bool fMakeHistogram; //!transient
+  
+  TH1F *fhThreshold;//! Histgram of the "threshold value" 
+  TH1F *fhRMS;//! Histgrams of the "RMS value"
 
-  ClassDef(AliHLTAltroChannelSelectorComponent, 2);
+  ClassDef(AliHLTAltroChannelSelectorComponent, 0);
 };
 
 #endif

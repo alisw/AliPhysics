@@ -30,6 +30,9 @@
 #include "AliRawReaderMemory.h"
 #include "AliAltroRawStreamV3.h"
 #include "TMath.h"
+#include "TH1.h"
+#include "TH2.h"
+#include "TFile.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTAltroChannelSelectorComponent)
@@ -42,7 +45,10 @@ AliHLTAltroChannelSelectorComponent::AliHLTAltroChannelSelectorComponent()
   fStartTimeBin(0),
   fEndTimeBin(1024),
   fSignalThreshold(0),
-  fRMSThreshold(0)
+  fRMSThreshold(0),
+  fMakeHistogram(false),
+  fhThreshold(NULL),
+  fhRMS(NULL)
 {
   // see header file for class documentation
   // or
@@ -135,10 +141,15 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
     // -rms-threshold
     } else if (argument.CompareTo("-rms-threshold")==0) {
       if ((bMissingParam=(++i>=argc))) break;
-      fRMSThreshold = strtoul( argv[i], &cpErr ,0);
+      fRMSThreshold = strtod( argv[i], &cpErr);
       if ( *cpErr ) break;
 
-    } else {
+    }
+    //-make-histogram
+    else if(argument.CompareTo("-make-histogram")==0){
+      fMakeHistogram=true;
+    }
+    else {
       HLTError("unknown argument %s", argument.Data());
       iResult=-EINVAL;
     }
@@ -152,12 +163,38 @@ int AliHLTAltroChannelSelectorComponent::DoInit(int argc, const char** argv)
     iResult=-EINVAL;
   }
 
+  if(fMakeHistogram){
+    fhThreshold=new TH1F("fhThreshold","signal-threshold",1000,0,20);
+    if (fhThreshold) {
+      fhThreshold->Sumw2();
+      fhThreshold->GetXaxis()->SetTitle("MaxSignal - <Signal>");
+    }
+    fhRMS=new TH1F("fhRMS","rms-threshold",1000,0,10);
+    if (fhRMS) {
+      fhRMS->Sumw2();
+      fhRMS->GetXaxis()->SetTitle("MaxSignal/ #sqrt{<Signal^{2}>}");
+    }
+  }
+
   return iResult;
 }
 
 int AliHLTAltroChannelSelectorComponent::DoDeinit()
 {
   // see header file for class documentation
+  if(fMakeHistogram){
+    std::auto_ptr<TFile> outFile(new TFile("CSHistos.root","recreate"));
+    if (outFile.get() && !outFile->IsZombie()) {
+      if (fhThreshold) fhThreshold->Write();
+      if (fhRMS)       fhRMS->Write();
+      outFile->Write();
+      outFile->Close();
+    }
+  }
+  if (fhThreshold) delete fhThreshold;
+  if (fhRMS)       delete fhRMS;
+  fhRMS=NULL;
+  fhThreshold=NULL;
   return 0;
 }
 
@@ -196,7 +233,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
     // search for the active pad information
     AliHLTUInt16_t* pActiveHwAddressArray=NULL;
     int iArraySize=0;
-    if (fSignalThreshold==0 && fRMSThreshold==0) {
+    if (fSignalThreshold==0 && fabs(fRMSThreshold)<1E-4) {
     for (int i=0; i<(int)evtData.fBlockCnt; i++ ) {
       // search for selection data of hw address type
       // which matches the data specification of the block
@@ -289,8 +326,9 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	if (nofSignals==0 || maxSignal<=(sumSignals/nofSignals)+fSignalThreshold) {
 	  continue;
 	}
+	if (fhThreshold) fhThreshold->Fill(maxSignal-(sumSignals/nofSignals));
 
-      } else if (fRMSThreshold!=0) {
+      } else if (fabs(fRMSThreshold)>1E-4) {
 	// treshold by adc counts
 	unsigned int sumSignals=0;
 	unsigned int maxSignal=0;
@@ -311,7 +349,7 @@ int AliHLTAltroChannelSelectorComponent::DoEvent(const AliHLTComponentEventData&
 	if (nofSignals==0 || maxSignal<=TMath::Sqrt(sumSignals/nofSignals)*fRMSThreshold) {
 	  continue;
 	}
-	
+	if (fhRMS) fhRMS->Fill(maxSignal/TMath::Sqrt(sumSignals/nofSignals));
       } else {
       int active=0;
       for (active=0; active<iArraySize; active++) {
