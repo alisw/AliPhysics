@@ -1284,7 +1284,13 @@ void AliTPCPreprocessorOffline::MakeChainTime(){
   //const char *cptype[5]={"dy","dz","dsnp","dtheta","d1pt"}; 
   const char * hname[5]={"dy","dz","dsnp","dtheta","d1pt"};
   Int_t run=0;
-  AliTPCcalibTime  *calibTime= (AliTPCcalibTime*) f.Get("calibTime");
+  AliTPCcalibTime  *calibTime = 0;
+  TObjArray * array = (TObjArray*)f.Get("TPCCalib");
+  if (array){
+    calibTime = (AliTPCcalibTime *)array->FindObject("calibTime");
+  } else {
+    calibTime = (AliTPCcalibTime*)f.Get("calibTime");
+  }
   if (!calibTime) return;
   TTreeSRedirector *pcstream = new TTreeSRedirector("meanITSVertex.root");
   //
