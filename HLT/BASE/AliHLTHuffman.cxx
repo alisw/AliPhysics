@@ -327,9 +327,9 @@ Bool_t AliHLTHuffman::GenerateHuffmanTree() {
 	}
 	while (nodeCollection.size() > 1) {
 		// insert new node into structure, combining the two with lowest probability
-		nodeCollection.insert(
-				new AliHLTHuffmanTreeNode(*nodeCollection.begin(),
-						*++nodeCollection.begin()));
+		AliHLTHuffmanNode* node=new AliHLTHuffmanTreeNode(*nodeCollection.begin(), *++nodeCollection.begin());
+		if (!node) return kFALSE;
+		nodeCollection.insert(node);
 		nodeCollection.erase(nodeCollection.begin());
 		nodeCollection.erase(nodeCollection.begin());
 	}
