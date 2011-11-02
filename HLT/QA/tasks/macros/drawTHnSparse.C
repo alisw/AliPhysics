@@ -52,6 +52,7 @@
 #include "TStyle.h"
 #include "TPad.h"
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 using std::endl;
 #endif
@@ -67,7 +68,7 @@ void printStats(TH1D *hlt, TH1D *off);
 void defineYaxisMax(TH1D *h1, TH1D *h2);
 void printLegend(TH1D *hlt, TH1D *off);
 void plot2D( THnSparse* h, TText *hText, TString folder, cuts cut );
-void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hText, TString folder);
+void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hText, TString folder,TString fBeamType);
 TString fix1DTitle(const char* c);
 TString fix2DTitle(const char* c1, const char* c2);
 TString cutsToString( cuts cut );
@@ -76,7 +77,7 @@ void printCuts(cuts cut);
 
 //------------------------------------------------------------------//		
 
-void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"){
+void drawTHnSparse(TString beamType="p-p", TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"){
  
   gROOT->SetStyle("Plain");
   gStyle->SetPalette(1);
@@ -124,7 +125,7 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
   folder.ReplaceAll(",","_");    
   gSystem->Exec("mkdir "+folder); // create a folder whose name contains run number and date of run
   
-  if(heventHLT->GetEntries()>0 || heventOFF->GetEntries()>0) plotEventQuantities(heventHLT,heventOFF,hText,folder);
+  if(heventHLT->GetEntries()>0 || heventOFF->GetEntries()>0) plotEventQuantities(heventHLT,heventOFF,hText,folder,beamType);
   else {
     if(heventHLT->GetEntries()==0) printf("\nThe HLT event THnSparse contains 0 entries\n");
     if(heventOFF->GetEntries()==0) printf("\nThe OFF event THnSparse contains 0 entries\n");
@@ -133,9 +134,9 @@ void drawTHnSparse(TString inputFile="HLT-OFFLINE-CentralBarrel-comparison.root"
   cuts p[] = {                                                                                                                                                                               
          // eta    pt      DCAr     DCAz    TPCclus  ITSclus  vtxStatus  |vtxZ|   V0cent                                                                                                
        {-1, 1,  0,   10, -10, 10, -10, 10,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
-       {-1, 1,  0.3, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
-       {-1, 1,  0.6, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
-       {-1, 1,  0.9, 10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100}                                                                                                     
+       {-1, 1,  0.30,10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
+       {-1, 1,  0.60,10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100},                                                                                                    
+       {-1, 1,  0.90,10,  -7,  7,  -7,  7,  0, 200,   0, 10,      2,       10,   0, 100}                                                                                                     
   };                                                                                                                                                                                         
   const int nCutSets = sizeof(p)/sizeof(cuts);
  
@@ -246,7 +247,7 @@ void cutStudies( TString folder, THnSparse* htrackHLT, THnSparse* htrackOFF, TTe
   return;
 }
 
-void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hText, TString folder){
+void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hText, TString folder, TString fBeamType){
 
   TString tmp = "vertex event properties for ";
   tmp += hText->GetTitle();
@@ -285,6 +286,10 @@ void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hTex
   can2->Divide(3,2);
   
   can2->cd(1); // track multiplicity
+  if(fBeamType.Contains("p-p")){
+    heventHLT->GetAxis(7)->SetRangeUser(0,1000);
+    heventOFF->GetAxis(7)->SetRangeUser(0,1000);
+  }
   hlt = heventHLT->Projection(7); 
   off = heventOFF->Projection(7); 
   off->SetLineColor(2); 
@@ -296,6 +301,10 @@ void plotEventQuantities(THnSparse* heventHLT, THnSparse* heventOFF, TText* hTex
   if(hlt->GetEntries()>0 && off->GetEntries()>0) printStats(hlt, off);
 
   can2->cd(2); // number of contributors
+  if(fBeamType.Contains("p-p")){
+    heventHLT->GetAxis(6)->SetRangeUser(0,1000);
+    heventOFF->GetAxis(6)->SetRangeUser(0,1000);
+  }
   hlt = heventHLT->Projection(6); 
   off = heventOFF->Projection(6); 
   off->SetLineColor(2); 
@@ -372,7 +381,7 @@ void plotTrackQuantities( THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hTe
   TString tmp = "";
   tmp += "track properties for ";
   tmp+=hText->GetTitle();     
-  TCanvas *can3 = new TCanvas("can3",tmp,1200,800); 
+  TCanvas *can3 = new TCanvas("can3",tmp,1600,1000); 
   can3->Divide(4,2); 
   // the first 9 track related variables filled in the THnSparse
   //  0	    1     2    3     4      5      6     7   
@@ -380,60 +389,64 @@ void plotTrackQuantities( THnSparse* htrackHLT, THnSparse* htrackOFF, TText* hTe
   
   TH1D *hlt = NULL; 
   TH1D *off = NULL;
-      
+
+  TLegend *leg = new TLegend(0.25,0.2,0.85,0.85);
+
   for(int i=0; i<8; i++){  
-     hlt = htrackHLT->Projection(i); if(!hlt){ printf("plotTrackQuantities: empty HLT histogram for projection %d\n",i); continue; }
-     off = htrackOFF->Projection(i); if(!off){ printf("plotTrackQuantities: empty OFF histogram for projection %d\n",i); continue; }     
-     hlt->SetTitle(fix1DTitle(htrackHLT->Projection(i)->GetTitle())); 
-     off->SetTitle(fix1DTitle(htrackOFF->Projection(i)->GetTitle())); // is necessary in cases where only offline data is available
+    hlt = htrackHLT->Projection(i); if(!hlt){ printf("plotTrackQuantities: empty HLT histogram for projection %d\n",i); continue; }
+    off = htrackOFF->Projection(i); if(!off){ printf("plotTrackQuantities: empty OFF histogram for projection %d\n",i); continue; }     
+    hlt->SetTitle(fix1DTitle(htrackHLT->Projection(i)->GetTitle())); 
+    off->SetTitle(fix1DTitle(htrackOFF->Projection(i)->GetTitle())); // is necessary in cases where only offline data is available
   
-     TString s = hlt->GetTitle();      
-     if(s.Contains("p_")){ 
-  	s+=" (GeV/c)";
-        hlt->SetXTitle(s);     
-     }
-     else if(s.Contains("phi")){
-  	s+=" (rad)"; 
-        hlt->SetXTitle(s);
-     }
-     else if(s.Contains("DCA")){
-  	s+=" (cm)";
-        hlt->SetXTitle(s);
-     }
+    TString s = hlt->GetTitle();      
+    if(s.Contains("p_")){ 
+      s+=" (GeV/c)";
+      hlt->SetXTitle(s);     
+    }
+    else if(s.Contains("phi")){
+      s+=" (rad)"; 
+      hlt->SetXTitle(s);
+    }
+    else if(s.Contains("DCA")){
+      s+=" (cm)";
+      hlt->SetXTitle(s);
+    }
        
-     if(off->GetEntries()>0) defineYaxisMax(hlt, off);
-     off->SetLineColor(2);
+    if(off->GetEntries()>0) defineYaxisMax(hlt, off);
+    off->SetLineColor(2);
    
-     can3->cd(i+1);
-     if(hlt->GetEntries()>0) hlt->Draw();
-     if(off->GetEntries()>0) off->Draw("sames");
-     if(hlt->GetEntries()>0 && off->GetEntries()>0) printStats(hlt, off);
-     if(off->GetEntries()>0 && i==0 ) printLegend(hlt,off);
+    can3->cd(i+1);
+    if(hlt->GetEntries()>0) hlt->Draw();
+    if(off->GetEntries()>0) off->Draw("sames");
+    if(hlt->GetEntries()>0 && off->GetEntries()>0) printStats(hlt, off);
+    if(off->GetEntries()>0 && i==0 ) printLegend(hlt,off);
      
-     if(hlt->GetEntries()>0 && i==0){
-  	TPaveText *pave = new TPaveText(0.7,1356,6.9,9040);
-   	pave->SetFillColor(kWhite);
-  	pave->SetLineColor(kWhite);
-        pave->SetShadowColor(kWhite);
-        s=""; s+=cut.minEta; s+="<#eta< "; s+=cut.maxEta; pave->AddText(s);
-        s=""; s+=cut.minPt; s+="<p_{T} (GeV/c)<"; s+=cut.maxPt; pave->AddText(s);
-        s=""; s+=cut.minDCAr; s+="<DCAr (cm)<"; s+=cut.maxDCAr; pave->AddText(s);
-        s=""; s+=cut.minDCAz; s+="<DCAz (cm)<"; s+=cut.maxDCAz; pave->AddText(s);
-        s=""; s+=cut.minTPCclus; s+="<TPC cls/tr<"; s+=cut.maxTPCclus; pave->AddText(s);
-        s=""; s+=cut.minITSclus; s+="<ITS cls/tr<"; s+=cut.maxITSclus; pave->AddText(s);
-        s=""; s+="|vertexZ| (cm)<"; s+=TMath::Abs(cut.vertexZ); pave->AddText(s);
-        if(cut.vertexStatus!=2) { s=""; s+="vertex status "; s+=cut.vertexStatus; pave->AddText(s); }
-        if(htrackHLT->GetNdimensions()==11) { s=""; s+=cut.minV0cent; s+=" < V0 centr < "; s+=cut.maxV0cent; pave->AddText(s);}
-  	pave->Draw();
-  	can3->Update();
-     }      
+    if(hlt->GetEntries()>0 && i==0){
+      leg->SetFillColor(kWhite);
+      leg->SetLineColor(kWhite);
+      leg->SetShadowColor(kWhite);
+      s=""; s+=cut.minEta; s+="<#eta< "; s+=cut.maxEta;leg->AddEntry((TObject*)0, s, "");  
+      s=""; s+=cut.minPt; s.Resize(4); s+="<p_{T} (GeV/c)<"; s+=cut.maxPt;  leg->AddEntry((TObject*)0, s, ""); 
+      s=""; s+=cut.minDCAr; s+="<DCAr (cm)<"; s+=cut.maxDCAr; leg->AddEntry((TObject*)0, s, "");  
+      s=""; s+=cut.minDCAz; s+="<DCAz (cm)<"; s+=cut.maxDCAz; leg->AddEntry((TObject*)0, s, "");  
+      if(cut.minTPCclus!=0 && cut.maxTPCclus!=200){ s=""; s+=cut.minTPCclus; s+="<TPC cls/tr<"; s+=cut.maxTPCclus; leg->AddEntry((TObject*)0, s, "");}
+      if(cut.minITSclus!=0 && cut.maxITSclus!=10){ s=""; s+=cut.minITSclus; s+="<ITS cls/tr<"; s+=cut.maxITSclus; leg->AddEntry((TObject*)0, s, "");}
+      s=""; s+="|vertexZ| (cm)<"; s+=TMath::Abs(cut.vertexZ); leg->AddEntry((TObject*)0, s, ""); 
+      if(cut.vertexStatus!=2) { s=""; s+="vertex status "; s+=cut.vertexStatus; leg->AddEntry((TObject*)0, s, ""); }
+      if(htrackHLT->GetNdimensions()==11) { s=""; s+=cut.minV0cent; s+=" < V0 centr < "; s+=cut.maxV0cent; leg->AddEntry((TObject*)0, s, "");  }
+      
+      leg->Draw();
+      
+      can3->Update();
+	}      
   } 
   TString strcuts = cutsToString(cut);
   
   can3->SaveAs(folder+"/track_properties_"+strcuts+".root");
   can3->SaveAs(folder+"/track_properties_"+strcuts+".png");
-  //delete can3;
-  
+  delete can3;
+  delete leg;
+
   return;
 }
 
@@ -607,8 +620,5 @@ TString fix2DTitle(const char* c1, const char* c2){
 }
 
 void printCuts(cuts cut){
-  printf("\n %2g<eta<%2g, %2g<pt (GeV/c)<%2g, %2g<DCAr (cm)<%2g, %2g<DCAz (cm)<%2g, %d<TPCclus<%d, %d<ITSclus<%d, vertex status %d, |vertexZ| (cm)<%2g, %d<centr (%)<%d \n\n",
-          cut.minEta, cut.maxEta, cut.minPt, cut.maxPt, cut.minDCAr, cut.maxDCAr, cut.minDCAz, cut.maxDCAz, cut.minTPCclus, cut.maxTPCclus, 
-	  cut.minITSclus, cut.maxITSclus, cut.vertexStatus, cut.vertexZ, cut.minV0cent, cut.maxV0cent
-	);
+  printf("\n %2g<eta<%2g, %2g<pt (GeV/c)<%2g, %2g<DCAr (cm)<%2g, %2g<DCAz (cm)<%2g, %d<TPCclus<%d, %d<ITSclus<%d, vertex status %d, |vertexZ| (cm)<%2g, %d<centr (%)<%d \n\n",cut.minEta, cut.maxEta, cut.minPt, cut.maxPt, cut.minDCAr, cut.maxDCAr, cut.minDCAz, cut.maxDCAz, cut.minTPCclus, cut.maxTPCclus, cut.minITSclus, cut.maxITSclus, cut.vertexStatus, cut.vertexZ, cut.minV0cent, cut.maxV0cent );
 }
