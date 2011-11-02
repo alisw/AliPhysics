@@ -128,22 +128,22 @@ TString makeString(){
   s+="-max-track-count 8000 ";
   //s+="-max-track-count 8000 -fill-V0 -max-V0-count 200 ";
   
-  s+="-histogram TrackPt(100,0,20) -size 1000 -expression Track_pt -cut Track_TPCclus>0 ";
-  s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -cut Track_TPCclus>0 ";
-  s+="-histogram TrackMultiplicity(250,0,5000) -size 1000 -expression trackcount ";
-  s+="-histogram TrackEta(100,-2,2) -size 1000 -expression Track_eta -cut Track_TPCclus>0 ";
-  s+="-histogram TrackTPCclus(200,0,200) -size 1000 -expression Track_TPCclus -cut Track_TPCclus>0 ";
-  s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus ";
-  s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -cut Track_TPCclus>0 ";
-  s+="-histogram TrackDCAr(100,-50,50) -size 1000 -expression Track_DCAr -cut Track_TPCclus>0 ";
-  s+="-histogram TrackCharge -size 1000 -expression Track_charge -cut Track_TPCclus>0 ";
+  s+="-histogram TrackPt(100,0,20) -size 1000 -expression Track_pt -title p_{T}_[GeV/c] -cut Track_TPCclus>0 ";
+  s+="-histogram TrackPhi(180,0,360) -size 1000 -expression Track_phi -title #phi_(deg) -cut Track_TPCclus>0 ";
+  s+="-histogram TrackMultiplicity(250,0,5000) -size 1000 -expression trackcount -title TrackMultiplicity ";
+  s+="-histogram TrackEta(100,-2,2) -size 1000 -expression Track_eta -title #eta -cut Track_TPCclus>0&&Track_DCAr<7&&Track_DCAr>-7&&Track_pt>0.3&&Track_eta<0.9&&Track_eta>-0.9 ";
+  s+="-histogram TrackTPCclus(200,0,200) -size 1000 -expression Track_TPCclus -title TPC_clusters/track -cut Track_TPCclus>0&&Track_DCAr<7&&Track_DCAr>-7&&Track_pt>0.3&&Track_eta<0.9&&Track_eta>-0.9 ";
+  s+="-histogram TrackITSclus(7,0,7) -size 1000 -expression Track_ITSclus -title ITS_clusters/track ";
+  s+="-histogram TrackTheta(90,0,180) -size 1000 -expression Track_theta -title #theta_(deg) -cut Track_TPCclus>0&&Track_DCAr<7&&Track_DCAr>-7&&Track_pt>0.3&&Track_eta<0.9&&Track_eta>-0.9 ";
+  s+="-histogram TrackDCAr(100,-50,50) -size 1000 -expression Track_DCAr -title DCAr_[cm] -cut Track_TPCclus>0 ";
+  s+="-histogram TrackCharge -size 1000 -expression Track_charge -title Polarity -cut Track_TPCclus>0 ";
  
-  s+="-histogram VertexXY -size 1000 -expression vertexY:vertexX -cut nContributors>3 -opt colz ";
-  s+="-histogram VertexX(50,-5,5)  -size 1000 -expression vertexX -cut nContributors>3 ";
-  s+="-histogram VertexY(50,-5,5)  -size 1000 -expression vertexY -cut nContributors>3 ";
-  s+="-histogram VertexZ(200,-50,50)  -size 1000 -expression vertexZ -cut nContributors>3 ";
-  s+="-histogram VertexTrendX -size 1000 -expression vertexX:event -cut nContributors>3 ";
-  s+="-histogram VertexTrendY -size 1000 -expression vertexY:event -cut nContributors>3 ";
+  s+="-histogram VertexXY -size 1000 -expression vertexY:vertexX -title y:x_[cm] -cut nContributors>3 -opt colz ";
+  s+="-histogram VertexX(50,-5,5)  -size 1000 -expression vertexX -title x_[cm] -cut nContributors>3 ";
+  s+="-histogram VertexY(50,-5,5)  -size 1000 -expression vertexY -title y_[cm] -cut nContributors>3 ";
+  s+="-histogram VertexZ(200,-50,50)  -size 1000 -expression vertexZ -title x_[cm] -cut nContributors>3 ";
+  s+="-histogram VertexTrendX -size 1000 -expression vertexX:event -title vertexX_vs_event -cut nContributors>3 ";
+  s+="-histogram VertexTrendY -size 1000 -expression vertexY:event -title vertexY_vs_event -cut nContributors>3 ";
 
   
   return s;
