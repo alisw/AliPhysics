@@ -6,9 +6,6 @@
 //
 //=============================================================================
 
-const AliTRDCalDet *GetCalDetGain(Int_t runNumber, Int_t &version, Int_t &subversion);
-void GetVersionSubversionVdrift(Int_t runNumber, Int_t &version, Int_t &subversion);
-
 AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
 {
   gSystem->Load("libTRDcalib");
@@ -17,13 +14,13 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   if (!mgr) {
     Error("AddTaskTRDCalib", "No analysis manager to connect to.");
     return NULL;
-  }  
-  
+  }
+
   // check the input handler
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTask", "This task requires an input event handler");
     return NULL;
-  }  
+  }
 
   ////////////////////////////////////////////
   // Number of timebins
@@ -52,10 +49,18 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetLow(0);
   calibTask->SetHigh(30);
   calibTask->SetFillZero(kFALSE);
-  calibTask->AddSelectedTriggerClass("CINT1B-ABCE-NOPF-ALL");
-  calibTask->AddSelectedTriggerClass("CINT1WU-B-NOPF-ALL");
-  calibTask->AddSelectedTriggerClass("CINT7WU-B-NOPF-ALL");
-  calibTask->SetReject(kFALSE);
+  // now
+  calibTask->AddSelectedTriggerClass("C0OB0-ABCE-NOPF-ALL");
+  calibTask->AddSelectedTriggerClass("CTRDCO2-ABCE-NOPF-CENT");
+  calibTask->AddSelectedTriggerClass("CTRDCO2-ABCE-NOPF-TRD");
+  calibTask->AddSelectedTriggerClass("CTRDCO2-ABCE-NOPF-ALL");
+  calibTask->SetReject(kTRUE);
+  // before
+  //calibTask->AddSelectedTriggerClass("CINT1B-ABCE-NOPF-ALL");
+  //calibTask->AddSelectedTriggerClass("CINT1WU-B-NOPF-ALL");
+  //calibTask->AddSelectedTriggerClass("CINT7WU-B-NOPF-ALL");
+  //calibTask->AddSelectedTriggerClass("CINT7WU-I-NOPF-ALL");
+  //calibTask->SetReject(kFALSE);
   //calibTask->SetDebug(2);
   calibTask->SetNbTimeBins(nbOfTimeBins);
   //calibTask->SetMaxEvent(10);
@@ -65,13 +70,6 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetMaxCluster(100.0);
   calibTask->SetNbMaxCluster(2);
   //calibTask->SetLimitChargeIntegration(kTRUE);
-
-  //calibTask->SetCalDetGain(GetCalDetGain(runNumber,versiongain,subversiongain));
-  //GetVersionSubversionVdrift(runNumber,versionvdrift,subversionvdrift);
-  //calibTask->SetVersionGainUsed(versiongain);
-  //calibTask->SetSubVersionGainUsed(subversiongain);
-  //calibTask->SetVersionVdriftUsed(versionvdrift);
-  //calibTask->SetSubVersionVdriftUsed(subversionvdrift);
 
 
   /////////////////////////////
@@ -96,52 +94,15 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
 
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //AliAnalysisDataContainer *cinput = mgr->GetCommonOutputContainer();
-  
-  if (!cinput) cinput = mgr->CreateContainer("cchain",TChain::Class(), 
+
+  if (!cinput) cinput = mgr->CreateContainer("cchain",TChain::Class(),
                                       AliAnalysisManager::kInputContainer);
 
-  AliAnalysisDataContainer *coutput =mgr->CreateContainer("TRDCalib",TList::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");  
+  AliAnalysisDataContainer *coutput =mgr->CreateContainer("TRDCalib",TList::Class(), AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root");
 
 
   mgr->ConnectInput(calibTask,0,cinput);
   mgr->ConnectOutput(calibTask,1,coutput);
   return calibTask;
-
-}
-
-const AliTRDCalDet *GetCalDetGain(Int_t runNumber, Int_t &version, Int_t &subversion){
-  // 
-  // Get Cal Det for gas gain
-  //
-  
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",runNumber);
-  if(!entry) {
-    printf("Found no entry\n");
-    return 0x0;
-  }
-  const AliCDBId id = entry->GetId();
-  version = id.GetVersion();
-  subversion = id.GetSubVersion();
-  printf("Found version %d and subversion %d for gain\n",version,subversion);
-  const AliTRDCalDet* calDet = (AliTRDCalDet *)entry->GetObject();
-
-  return calDet;
-
-}
-void GetVersionSubversionVdrift(Int_t runNumber, Int_t &version, Int_t &subversion){
-  // 
-  // Get Version and subversion for Vdrift
-  //
-  
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberVdrift",runNumber);
-  if(!entry) {
-    printf("Found no entry\n");
-    return 0x0;
-  }
-  const AliCDBId id = entry->GetId();
-  version = id.GetVersion();
-  subversion = id.GetSubVersion();
-  printf("Found version %d and subversion %d for vdrift\n",version,subversion);
-
 
 }

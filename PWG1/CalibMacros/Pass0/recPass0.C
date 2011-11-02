@@ -26,7 +26,7 @@ void recPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb
   if (nevents>0) rec.SetEventRange(0,nevents);
 
   //
-  // QA options
+  // QA options - all QA is off
   //
   rec.SetRunQA(":");
   rec.SetRunGlobalQA(kFALSE);
@@ -38,19 +38,6 @@ void recPass0(const char *filename="raw.root",Int_t nevents=-1, const char *ocdb
   rec.SetUseTrackingErrorsForAlignment("ITS");
   rec.SetRunReconstruction("ALL");
   rec.SetFillESD("ALL");
-
-  //rec.SetRunReconstruction("ALL");
-  //rec.SetRunQA("Global:ESDs") ;
-  //rec.SetRunQA(":") ;
-  //rec.SetRunQA("ALL -MUON:ALL") ;
-  //rec.SetRunQA("ALL:ALL") ;
-  //rec.SetQARefDefaultStorage("local://$ALICE_ROOT/QAref") ;
-  //rec.SetWriteESDfriend(kTRUE);
-  //rec.SetWriteAlignmentData();
-  //rec.SetInput(filename);
-  //rec.SetUseTrackingErrorsForAlignment("ITS");
-
-  // switch off cleanESD
   rec.SetCleanESD(kFALSE);
 
   //Ignore SetStopOnError
