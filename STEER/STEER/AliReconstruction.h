@@ -185,6 +185,10 @@ public:
   void        SetAnalysisManager(AliAnalysisManager *mgr) {fAnalysis = mgr;}
   AliAnalysisManager *GetAnalysisManager() const {return fAnalysis;}
 
+  // A method to declare defined trigger classes even if they are not
+  // present in the run, needed for proper event selection based on trigger
+  void        DeclareTriggerClasses(const char *trClasses) {fDeclTriggerClasses = trClasses;}
+
 protected:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
@@ -366,7 +370,8 @@ private:
   TString              fAnalysisMacro; // Full path to a macro creating an analysis manager train
   AliAnalysisManager  *fAnalysis;      //! Analysis manager
   AliRecoInputHandler *fRecoHandler;   //! Input handler adapted for reconstruction
-  ClassDef(AliReconstruction, 41)      // class for running the reconstruction
+  TString              fDeclTriggerClasses; // Declared defined trigger classes
+  ClassDef(AliReconstruction, 42)      // class for running the reconstruction
 };
 
 #endif

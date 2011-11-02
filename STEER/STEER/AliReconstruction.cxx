@@ -313,7 +313,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fUpgradeModule(""),
   fAnalysisMacro(),
   fAnalysis(0),
-  fRecoHandler(0) 
+  fRecoHandler(0),
+  fDeclTriggerClasses("")
 {
 // create reconstruction object with default parameters
   gGeoManager = NULL;
@@ -433,7 +434,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fUpgradeModule(""),
   fAnalysisMacro(rec.fAnalysisMacro),
   fAnalysis(0),
-  fRecoHandler(0)
+  fRecoHandler(0),
+  fDeclTriggerClasses(rec.fDeclTriggerClasses)
 {
 // copy constructor
 
@@ -602,6 +604,7 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fAnalysisMacro = rec.fAnalysisMacro;
   fAnalysis = 0;
   fRecoHandler = 0;
+  fDeclTriggerClasses = rec.fDeclTriggerClasses;
 
   return *this;
 }
@@ -3931,6 +3934,16 @@ Bool_t AliReconstruction::GetEventInfo()
     }
   }
   fEventInfo.SetTriggerClasses(trclasses);
+  // Now put the declared trigger classes (not present in the run)
+  // to 0/false in the event selection
+  if (!fDeclTriggerClasses.IsNull()) {
+    TObjArray *tokens = fDeclTriggerClasses.Tokenize(" ");
+    Int_t ntokens = tokens->GetEntriesFast();
+    for (Int_t itoken = 0; itoken < ntokens; ++itoken) {
+      if (fRawReader) fRawReader->LoadTriggerClass((((TObjString*)tokens->At(itoken))->String()).Data(),-1);
+    }
+    delete tokens;
+  }
 
   // Write names of active trigger inputs in ESD Header
   const TObjArray& inputsArray = config->GetInputs(); 

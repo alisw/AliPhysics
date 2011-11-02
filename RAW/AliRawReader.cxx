@@ -41,6 +41,7 @@
 #include <TROOT.h>
 #include <TInterpreter.h>
 #include <TSystem.h>
+#include <TPRegexp.h>
 
 #include <Riostream.h>
 #include "AliRawReader.h"
@@ -420,7 +421,10 @@ void AliRawReader::LoadTriggerClass(const char* name, Int_t index)
 
   if (fSelectTriggerExpr.IsNull()) return;
 
-  fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
+  if (index >= 0)
+    fSelectTriggerExpr.ReplaceAll(name,Form("[%d]",index));
+  else
+    fSelectTriggerExpr.ReplaceAll(name,"0");
 }
 
 Bool_t AliRawReader::IsSelected() const
@@ -475,7 +479,7 @@ Bool_t AliRawReader::IsEventSelected() const
       }
     }
     // Possibility to introduce downscaling
-    expr.ReplaceAll("%",Form("&& !%d %%",GetEventIndex()));
+    TPRegexp("(%\\s*\\d+)").Substitute(expr,Form("&& !(%d$1)",GetEventIndex()),"g");
     Int_t error;
     if ((gROOT->ProcessLineFast(expr.Data(),&error) == 0) &&
 	(error == TInterpreter::kNoError)) {
