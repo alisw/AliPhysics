@@ -23,7 +23,7 @@ AliMeanVertexCalibTask *AddTaskMeanVertexCalib(){
   if (!cinput1) cinput1 = mgr->CreateContainer("cchain",TChain::Class(), AliAnalysisManager::kInputContainer);
   
   
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("MeanVertexCalib", TList::Class(),AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root"); 
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("MeanVertex", TList::Class(),AliAnalysisManager::kOutputContainer, "AliESDfriends_v1.root"); 
   
   mgr->ConnectInput(meanVertexTask,0,cinput1);
   mgr->ConnectOutput(meanVertexTask,1,coutput1);
