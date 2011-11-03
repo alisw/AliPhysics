@@ -65,6 +65,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     virtual     void    SetMode(Int_t mode)           { fMode  = mode;  }
     virtual     void    SetReduceMemoryFootprint(Bool_t flag) { fReduceMemoryFootprint = flag; }
     virtual	void	SetEventMixing(Bool_t flag) { fFillMixed = flag; }
+    virtual	void    SetMixingTracks(Int_t tracks) { fMixingTracks = tracks; }
     virtual	void	SetCompareCentralities(Bool_t flag) { fCompareCentralities = flag; }
     virtual	void	SetTwoTrackEfficiencyStudy(Bool_t flag) { fTwoTrackEfficiencyStudy = flag; }
     virtual	void	SetUseVtxAxis(Bool_t flag) { fUseVtxAxis = flag; }
@@ -105,6 +106,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     				          //  fMode = 1: corrections analysis	
     Bool_t              fReduceMemoryFootprint; // reduce memory consumption by writing less debug histograms
     Bool_t		fFillMixed;		// enable event mixing (default: ON)
+    Int_t  		fMixingTracks;		// size of track buffer for event mixing
     Bool_t		fCompareCentralities;	// use the z vtx axis for a centrality comparison
     Bool_t		fTwoTrackEfficiencyStudy; // two-track efficiency study on
     Bool_t		fUseVtxAxis;              // use z vtx as axis (needs 7 times more memory!)
@@ -143,7 +145,7 @@ class  AliAnalysisTaskPhiCorrelations : public AliAnalysisTask
     Int_t fSelectCharge;           // (un)like sign selection when building correlations: 0: no selection; 1: unlike sign; 2: like sign
     Bool_t fFillpT;                // fill sum pT instead of number density
     
-    ClassDef( AliAnalysisTaskPhiCorrelations, 2); // Analysis task for Underlying Event analysis w.r.t. leading track
+    ClassDef( AliAnalysisTaskPhiCorrelations, 3); // Analysis task for Underlying Event analysis w.r.t. leading track
   };
 
 class AliDPhiBasicParticle : public AliVParticle
