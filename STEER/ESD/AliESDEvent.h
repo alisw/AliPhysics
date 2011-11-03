@@ -316,7 +316,10 @@ public:
   virtual Bool_t IsPileupFromSPDInMultBins() const;
 
   AliESDtrack *GetTrack(Int_t i) const {
-    return (AliESDtrack *)(fTracks?fTracks->UncheckedAt(i):0x0);
+    if (!fTracks) return 0;
+    AliESDtrack* track = (AliESDtrack*) fTracks->UncheckedAt(i);
+    track->SetESDEvent(this);
+    return track;
   }
   Int_t  AddTrack(const AliESDtrack *t);
 

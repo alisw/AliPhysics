@@ -378,8 +378,8 @@ public:
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
   virtual void Print(Option_t * opt) const ;
-  AliESDEvent* GetESDEvent() const {return fESDEvent;}
-  void         SetESDEvent(AliESDEvent* evt) {fESDEvent = evt;}  
+  const AliESDEvent* GetESDEvent() const {return fESDEvent;}
+  void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}  
   //
   // visualization (M. Ivanov)
   //
@@ -509,7 +509,7 @@ protected:
 
   Char_t  fTRDTimBin[kTRDnPlanes];   // Time bin of Max cluster from all six planes
   Char_t  fVertexID; // ID of the primary vertex this track belongs to
-  AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
+  mutable const AliESDEvent*   fESDEvent; //!Pointer back to event to which the track belongs
   
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
   mutable Float_t fCacheChi2TPCConstrainedVsGlobal; //! Cache for the chi2 of constrained TPC vs global track

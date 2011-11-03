@@ -171,7 +171,7 @@ Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) 
 
   const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
   if(esdtrack==NULL)return feop;
-  AliESDEvent *evt = esdtrack->GetESDEvent();
+  const AliESDEvent *evt = esdtrack->GetESDEvent();
 
    Int_t icl = (const_cast<AliESDtrack *>(esdtrack))->GetEMCALcluster();
 

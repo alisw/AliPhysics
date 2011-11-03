@@ -993,7 +993,7 @@ void AliESDtrackCuts::EnableNeededBranches(TTree* tree)
 }
 
 //____________________________________________________________________
-Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack, const AliESDEvent* esdEvent) 
+Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack) 
 {
   // 
   // figure out if the tracks survives all the track cuts defined
@@ -1256,8 +1256,10 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack, const AliESDEve
     // max chi2 TPC constrained vs global track only if track passed the other cut
     if (fCutMaxChi2TPCConstrainedVsGlobal < 1e9)
     {
+      const AliESDEvent* esdEvent = esdTrack->GetESDEvent();
+      
       if (!esdEvent)
-	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not provided.");
+	AliFatal("fCutMaxChi2TPCConstrainedVsGlobal set but ESD event not set in AliESDTrack. Use AliESDTrack::SetESDEvent before calling AliESDtrackCuts.");
       
       // get vertex
       const AliESDVertex* vertex = 0;
@@ -1439,7 +1441,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTP
       if (!tpcTrack)
         continue;
 
-      if (AcceptTrack(tpcTrack, esd)) {
+      if (AcceptTrack(tpcTrack)) {
         acceptedTracks->Add(tpcTrack);
       }
       else
@@ -1448,7 +1450,7 @@ TObjArray* AliESDtrackCuts::GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTP
     else
     {
       AliESDtrack* track = esd->GetTrack(iTrack);
-      if(AcceptTrack(track, esd))
+      if(AcceptTrack(track))
         acceptedTracks->Add(track);
     }
   } 
@@ -1468,7 +1470,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
   // loop over esd tracks
   for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
     AliESDtrack* track = esd->GetTrack(iTrack);
-    if (AcceptTrack(track, esd))
+    if (AcceptTrack(track))
       count++;
   }
 

@@ -52,7 +52,7 @@ public:
        {return AcceptTrack((AliESDtrack*)obj);}
   virtual Bool_t IsSelected(TList* /*list*/) {return kTRUE;}
 
-  Bool_t AcceptTrack(const AliESDtrack* esdTrack, const AliESDEvent* esdEvent = 0);
+  Bool_t AcceptTrack(const AliESDtrack* esdTrack);
   TObjArray* GetAcceptedTracks(const AliESDEvent* esd, Bool_t bTPC = kFALSE);
   Int_t CountAcceptedTracks(const AliESDEvent* const esd);
   

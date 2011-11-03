@@ -126,7 +126,7 @@ Bool_t AliESDpidCuts::IsSelected(TObject *obj){
     AliError("Provided object is not AliESDtrack!");
     return kFALSE;
   }
-  AliESDEvent* evt = trk->GetESDEvent();
+  const AliESDEvent* evt = trk->GetESDEvent();
   if(!evt){
     AliError("No AliESDEvent!");
     return kFALSE;
