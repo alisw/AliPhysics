@@ -232,7 +232,7 @@ TVector3 AliHFEemcalPIDqa::MomentumEnergyMatchV2(const AliESDtrack *esdtrack) co
   Double_t matchclsE = 9999.9;
   TVector3 refVec(-9999,-9999,-9999);
 
-  AliESDEvent *evt = esdtrack->GetESDEvent();
+  const AliESDEvent *evt = esdtrack->GetESDEvent();
 
    //Int_t icl = esdtrack->GetEMCALcluster();
    Int_t icl = (const_cast<AliESDtrack *>(esdtrack))->GetEMCALcluster();
