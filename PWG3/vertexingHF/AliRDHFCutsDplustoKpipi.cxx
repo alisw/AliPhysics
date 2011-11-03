@@ -362,6 +362,7 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
   if(pt<fMinPtCand) return 0;
   if(pt>fMaxPtCand) return 0;
 
+  if(d->HasBadDaughters()) return 0;
   
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
