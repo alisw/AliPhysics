@@ -76,7 +76,9 @@ class AliAnalysisVertexingHF : public TNamed {
   void SetCascadesOn() { fCascades=kTRUE; }
   void SetCascadesOff() { fCascades=kFALSE; }
   void SetLikeSignOn() { fLikeSign=kTRUE; }
-  void SetLikeSignOff() { fLikeSign=kFALSE; }
+  void SetLikeSignOff() {fLikeSign=kFALSE; fLikeSign3prong=kFALSE;}
+  void SetLikeSign3prongOn() { fLikeSign=kTRUE; fLikeSign3prong=kTRUE; }
+  void SetLikeSign3prongOff() { fLikeSign3prong=kFALSE; }
   void SetMixEventOn() { fMixEvent=kTRUE; }
   void SetMixEventOff() { fMixEvent=kFALSE; }
   void SetInputAOD() { fInputAOD=kTRUE; }
@@ -87,6 +89,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t GetDstar()  const { return fDstar; }
   Bool_t GetCascades() const { return fCascades; }
   Bool_t GetLikeSign() const { return fLikeSign; }
+  Bool_t GetLikeSign3prong() const { return fLikeSign3prong; }
   Bool_t GetMixEvent() const { return fMixEvent; }
   Bool_t GetInputAOD() const { return fInputAOD; }
   Bool_t GetRecoPrimVtxSkippingTrks() const {return fRecoPrimVtxSkippingTrks;}
@@ -149,6 +152,7 @@ class AliAnalysisVertexingHF : public TNamed {
   Bool_t fDstar;     // D*->D0pi
   Bool_t fCascades;  // cascades, Lc --> v0+track
   Bool_t fLikeSign;  // Like-sign pairs
+  Bool_t fLikeSign3prong;  // Like-sign triplets
   Bool_t fMixEvent; // event mixing
 
   // single-track cuts
@@ -215,8 +219,12 @@ class AliAnalysisVertexingHF : public TNamed {
 		       Double_t *px,Double_t *py,Double_t *pz) const;
   Bool_t SelectInvMassAndPt(TObjArray *trkArray) const;
   void   SelectTracksAndCopyVertex(const AliVEvent *event,Int_t trkEntries,
-				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
+				   TObjArray &seleTrksArray,
+				   TObjArray &tracksAtVertex,
+				   Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
+  void SetParametersAtVertex(AliESDtrack* esdt, AliExternalTrackParam* extpar) const;
+
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
 
   void   SetSelectionBitForPID(AliRDHFCuts *cuts,AliAODRecoDecayHF *rd,Int_t bit);
@@ -225,7 +233,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				  TObjArray *twoTrackArrayV0);
 
   //
-  ClassDef(AliAnalysisVertexingHF,18);  // Reconstruction of HF decay candidates
+  ClassDef(AliAnalysisVertexingHF,19);  // Reconstruction of HF decay candidates
 };
 
 
