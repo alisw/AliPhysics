@@ -83,6 +83,7 @@ f4Prong(kTRUE),
 fDstar(kTRUE),
 fCascades(kTRUE),
 fLikeSign(kFALSE),
+fLikeSign3prong(kFALSE),
 fMixEvent(kFALSE),
 fTrackFilter(0x0),
 fTrackFilterSoftPi(0x0),
@@ -130,6 +131,7 @@ f4Prong(source.f4Prong),
 fDstar(source.fDstar),
 fCascades(source.fCascades),
 fLikeSign(source.fLikeSign),
+fLikeSign3prong(source.fLikeSign3prong),
 fMixEvent(source.fMixEvent),
 fTrackFilter(source.fTrackFilter),
 fTrackFilterSoftPi(source.fTrackFilterSoftPi),
@@ -176,6 +178,7 @@ AliAnalysisVertexingHF &AliAnalysisVertexingHF::operator=(const AliAnalysisVerte
   fDstar = source.fDstar;
   fCascades = source.fCascades;
   fLikeSign = source.fLikeSign;
+  fLikeSign3prong = source.fLikeSign3prong;
   fMixEvent = source.fMixEvent;
   fTrackFilter = source.fTrackFilter;
   fTrackFilterSoftPi = source.fTrackFilterSoftPi;
@@ -321,8 +324,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     printf("ERROR: no aodLikeSign2ProngTClArr");
     return;
   }
-  if(fLikeSign && f3Prong && !aodLikeSign3ProngTClArr) {
-    printf("ERROR: no aodLikeSign2ProngTClArr");
+  if(fLikeSign3prong && f3Prong && !aodLikeSign3ProngTClArr) {
+    printf("ERROR: no aodLikeSign3ProngTClArr");
     return;
   }
 
@@ -359,7 +362,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     aodLikeSign2ProngTClArr->Delete();                     
     iLikeSign2Prong = aodLikeSign2ProngTClArr->GetEntriesFast(); 
   }  
-  if(fLikeSign && f3Prong) {                                
+  if(fLikeSign3prong && f3Prong) {                                
     aodLikeSign3ProngTClArr->Delete();                     
     iLikeSign3Prong = aodLikeSign3ProngTClArr->GetEntriesFast(); 
   }  
@@ -424,21 +427,23 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   // for displaced tracks and soft pions (both charges) for D*,
   // and retrieves primary vertex
   TObjArray seleTrksArray(trkEntries);
+  TObjArray tracksAtVertex(trkEntries);
   UChar_t  *seleFlags = new UChar_t[trkEntries]; // bit 0: displaced, bit 1: softpi
   Int_t     nSeleTrks=0;
   Int_t *evtNumber    = new Int_t[trkEntries];
-  SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,nSeleTrks,seleFlags,evtNumber);
-    
+  SelectTracksAndCopyVertex(event,trkEntries,seleTrksArray,tracksAtVertex,nSeleTrks,seleFlags,evtNumber);
+
   AliDebug(1,Form(" Selected tracks: %d",nSeleTrks));
   fnSeleTrksTotal += nSeleTrks;
     
+
   TObjArray *twoTrackArray1    = new TObjArray(2);
   TObjArray *twoTrackArray2    = new TObjArray(2);
   TObjArray *twoTrackArrayV0   = new TObjArray(2);
   TObjArray *twoTrackArrayCasc = new TObjArray(2);
   TObjArray *threeTrackArray   = new TObjArray(3);
   TObjArray *fourTrackArray    = new TObjArray(4);
-  
+
   Double_t dispersion;
   Bool_t isLikeSign2Prong=kFALSE,isLikeSign3Prong=kFALSE;
 
@@ -653,8 +658,10 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       }
 
       // back to primary vertex
-      postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-      negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+      //      postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+      //      negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+      SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
+      SetParametersAtVertex(negtrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN1));
 
       // DCA between the two tracks
       dcap1n1 = postrack1->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
@@ -664,7 +671,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
       twoTrackArray1->AddAt(postrack1,0);
       twoTrackArray1->AddAt(negtrack1,1);
       AliAODVertex *vertexp1n1 = ReconstructSecondaryVertex(twoTrackArray1,dispersion);
-      if(!vertexp1n1) { 
+      if(!vertexp1n1) {
 	twoTrackArray1->Clear();
 	negtrack1=0; 
 	continue; 
@@ -734,8 +741,8 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
 	    // get track from tracks array
 	    trackPi = (AliESDtrack*)seleTrksArray.UncheckedAt(iTrkSoftPi);
-	    trackPi->PropagateToDCA(fV1,fBzkG,kVeryBig);
-
+	    //	    trackPi->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    SetParametersAtVertex(trackPi,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkSoftPi));
 	    twoTrackArrayCasc->AddAt(trackPi,0);
 	    twoTrackArrayCasc->AddAt(trackD0,1);
 
@@ -825,6 +832,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
+	  if(!fLikeSign3prong) continue;
 	  if(postrack1->Charge()>0) { // ok: like-sign triplet (+++)
 	    isLikeSign3Prong=kTRUE;
 	  } else { // not ok
@@ -840,9 +848,13 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	// back to primary vertex
-	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	//	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	//	postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	//	negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
+	SetParametersAtVertex(negtrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN1));
+	SetParametersAtVertex(postrack2,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP2));
+      
 	//printf("********** %d %d %d\n",postrack1->GetID(),postrack2->GetID(),negtrack1->GetID());
 
 	dcap2n1 = postrack2->GetDCA(negtrack1,fBzkG,xdummy,ydummy);
@@ -897,10 +909,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      v3Prong->SetParent(rd);
 	      AddRefs(v3Prong,rd,event,threeTrackArray);
 	    } else { // isLikeSign3Prong
-	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
-	      rd->SetSecondaryVtx(v3Prong);
-	      v3Prong->SetParent(rd);
-	      AddRefs(v3Prong,rd,event,threeTrackArray);
+	      if(fLikeSign3prong){
+		rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+		rd->SetSecondaryVtx(v3Prong);
+		v3Prong->SetParent(rd);
+		AddRefs(v3Prong,rd,event,threeTrackArray);
+	      }
 	    }
 	    // Set selection bit for PID
 	    SetSelectionBitForPID(fCutsDplustoKpipi,rd,AliRDHFCuts::kDplusPID);
@@ -920,13 +934,17 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	   && dcap2n1 < fCutsD0toKpipipi->GetDCACut()) {
 
 	  // back to primary vertex
-	  postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	  postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	  negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	  //	  postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	  //	  postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	  //	  negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	  SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
+	  SetParametersAtVertex(negtrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN1));
+	  SetParametersAtVertex(postrack2,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP2));
+
 	  // Vertexing for these 3 (can be taken from above?)
           threeTrackArray->AddAt(postrack1,0);
           threeTrackArray->AddAt(negtrack1,1);
-          threeTrackArray->AddAt(postrack2,2);
+	  threeTrackArray->AddAt(postrack2,2);
           AliAODVertex* vertexp1n1p2 = ReconstructSecondaryVertex(threeTrackArray,dispersion);
 
 	  // 3rd LOOP  ON  NEGATIVE  TRACKS (for 4 prong) 
@@ -952,10 +970,15 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	    }
 
 	    // back to primary vertex
-	    postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	    postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	    negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	    negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    // postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    // postrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    // negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    // negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	    SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
+	    SetParametersAtVertex(negtrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN1));
+	    SetParametersAtVertex(postrack2,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP2));
+	    SetParametersAtVertex(negtrack2,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN2));
+
 	    dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
 	    if(dcap1n2 > fCutsD0toKpipipi->GetDCACut()) { negtrack2=0; continue; }
             dcap2n2 = postrack2->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
@@ -1029,6 +1052,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	if(isLikeSign2Prong) { // like-sign pair -> have to build only like-sign triplet 
+	  if(!fLikeSign3prong) continue;
 	  if(postrack1->Charge()<0) { // ok: like-sign triplet (---)
 	    isLikeSign3Prong=kTRUE;
 	  } else { // not ok
@@ -1039,9 +1063,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	}
 
 	// back to primary vertex
-	postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
-	negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	// postrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	// negtrack1->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	// negtrack2->PropagateToDCA(fV1,fBzkG,kVeryBig);
+	SetParametersAtVertex(postrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkP1));
+	SetParametersAtVertex(negtrack1,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN1));
+	SetParametersAtVertex(negtrack2,(AliExternalTrackParam*)tracksAtVertex.UncheckedAt(iTrkN2));
 	//printf("********** %d %d %d\n",postrack1->GetID(),negtrack1->GetID(),negtrack2->GetID());
 
 	dcap1n2 = postrack1->GetDCA(negtrack2,fBzkG,xdummy,ydummy);
@@ -1086,10 +1113,12 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	      v3Prong->SetParent(rd);
 	      AddRefs(v3Prong,rd,event,threeTrackArray);
 	    } else { // isLikeSign3Prong
-	      rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
-	      rd->SetSecondaryVtx(v3Prong);
-	      v3Prong->SetParent(rd);
-	      AddRefs(v3Prong,rd,event,threeTrackArray);
+	      if(fLikeSign3prong){
+		rd = new(aodLikeSign3ProngRef[iLikeSign3Prong++])AliAODRecoDecayHF3Prong(*io3Prong);
+		rd->SetSecondaryVtx(v3Prong);
+		v3Prong->SetParent(rd);
+		AddRefs(v3Prong,rd,event,threeTrackArray);
+	      }
 	    }
 	    // Set selection bit for PID
 	    SetSelectionBitForPID(fCutsDplustoKpipi,rd,AliRDHFCuts::kDplusPID);
@@ -1145,7 +1174,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
     AliDebug(1,Form(" Like-sign 2Prong in event = %d;\n",
 		    (Int_t)aodLikeSign2ProngTClArr->GetEntriesFast()));
   }
-  if(fLikeSign && f3Prong) {
+  if(fLikeSign3prong && f3Prong) {
     AliDebug(1,Form(" Like-sign 3Prong in event = %d;\n",
 		    (Int_t)aodLikeSign3ProngTClArr->GetEntriesFast()));
   }
@@ -1160,11 +1189,13 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
   fourTrackArray->Delete();  delete fourTrackArray;
   delete [] seleFlags; seleFlags=NULL;
   if(evtNumber) {delete [] evtNumber; evtNumber=NULL;}
+  tracksAtVertex.Delete();
 
   if(fInputAOD) {
     seleTrksArray.Delete(); 
     if(fAODMap) { delete fAODMap; fAODMap=NULL; }
   }
+  
 
   //printf("Trks: total %d  sele %d\n",fnTrksTotal,fnSeleTrksTotal);
 
@@ -2132,8 +2163,9 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt(Int_t decay,
 //-----------------------------------------------------------------------------
 void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
 						       Int_t trkEntries,
-				   TObjArray &seleTrksArray,Int_t &nSeleTrks,
-			           UChar_t *seleFlags,Int_t *evtNumber)
+						       TObjArray &seleTrksArray,TObjArray &tracksAtVertex,
+						       Int_t &nSeleTrks,
+						       UChar_t *seleFlags,Int_t *evtNumber)
 {
   // Apply single-track preselection.
   // Fill a TObjArray with selected tracks (for displaced vertices or
@@ -2220,7 +2252,10 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     }
 
     if(SingleTrkCuts(esdt,okDisplaced,okSoftPi) && nSeleTrks<trkEntries) {
+      esdt->PropagateToDCA(fV1,fBzkG,kVeryBig);
       seleTrksArray.AddLast(esdt);
+      tracksAtVertex.AddLast(new AliExternalTrackParam(*esdt));
+
       seleFlags[nSeleTrks]=0;
       if(okDisplaced) SETBIT(seleFlags[nSeleTrks],kBitDispl);
       if(okSoftPi)    SETBIT(seleFlags[nSeleTrks],kBitSoftPi);
@@ -2353,3 +2388,13 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   return aodV0;
 }
 //-----------------------------------------------------------------------------
+void AliAnalysisVertexingHF::SetParametersAtVertex(AliESDtrack* esdt, AliExternalTrackParam* extpar) const{
+  // Set the stored track parameters at primary vertex into AliESDtrack
+  Double_t xyz[3], pxpypz[3], cv[21]; 
+  extpar->PxPyPz(pxpypz); 	                  
+  extpar->XvYvZv(xyz);
+  extpar->GetCovarianceXYZPxPyPz(cv);
+  Short_t sign=extpar->Charge();
+  esdt->Set(xyz,pxpypz,cv,sign);
+  return;
+}
