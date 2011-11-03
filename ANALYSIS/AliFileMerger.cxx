@@ -28,7 +28,9 @@
 //  2. syswatch.log is created diring mergin procedure. 
 //     Memeory consumption - for reading and for merging can be monitored
 
-
+//  RS: Changed merger to respect the structure of files being merged (directories, collections...)
+//      Additional option: SetNoTrees (default false) to not merge any tree
+//      The code mostly taken from root's hadd.cxx
 /*
   Usage:
   // Libraries for all classes to be merged should be loaded before using the class
@@ -49,6 +51,11 @@
  
 
 #include <fstream>
+#include <THashList.h>
+#include <TChain.h>
+#include <TKey.h>
+#include <TH1.h>
+#include <THStack.h>
 #include "TSystem.h"
 #include "TFile.h"
 #include "TGrid.h"
@@ -56,7 +63,7 @@
 #include "TObjString.h"
 #include "TObjArray.h"
 #include "TMethodCall.h"
-
+#include "Riostream.h"
 #include "AliSysInfo.h"
 #include "AliFileMerger.h"
 
@@ -67,7 +74,8 @@ ClassImp(AliFileMerger)
 AliFileMerger::AliFileMerger():
   TNamed(),
   fRejectMask(0),
-  fAcceptMask(0)
+  fAcceptMask(0),
+  fNoTrees(kFALSE)
 {
   //
   // Default constructor
@@ -79,7 +87,8 @@ AliFileMerger::AliFileMerger():
 AliFileMerger::AliFileMerger(const char* name):
   TNamed(name,name),
   fRejectMask(0),
-  fAcceptMask(0)
+  fAcceptMask(0),
+  fNoTrees(kFALSE)
 {
   //
   // 
@@ -87,15 +96,13 @@ AliFileMerger::AliFileMerger(const char* name):
 }
 
 
-void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName, const char* pattern){
+void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName, const char* pattern, Bool_t dontOverwrite){
 
   //
   // Merge the files coming out of the calibration job
   // 
-  
-  TObjArray * mergeArray= new TObjArray;
-  
   TString outputFile(outputFileName);
+  gSystem->ExpandPathName(outputFile);
   TString command;
   // looking for files to be merged in the output directory
   command = Form("find %s/ *%s", outputDir, pattern);
@@ -106,6 +113,9 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
   TIter nextmap(res);
   TMap *map = 0;
   // loop over the results
+  TList sourcelist;  
+  sourcelist.SetOwner(kTRUE);
+  //
   while((map=(TMap*)nextmap())) {
     // getting the turl
     TObjString *objs = dynamic_cast<TObjString*>(map->GetValue("turl"));
@@ -115,53 +125,58 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
       break;
     } 
     printf("looking for file %s\n",(objs->GetString()).Data());
-    TFile* currentFile=TFile::Open((objs->GetString()).Data());
-    if(!currentFile) continue; // protection
-    Merge(currentFile, mergeArray);
-
-    if(currentFile) delete currentFile;
+    AddFile(&sourcelist, (objs->GetString()).Data());;
   }
-
-  // StoreSeparateResults(mergeArray,outputFileName);
-    StoreResults(mergeArray,outputFileName);
-
-  delete mergeArray;
+  printf("List of files to be merged:\n");
+  sourcelist.Print();
+  //  
+  TFile* target = TFile::Open( outputFile.Data(), (dontOverwrite ? "CREATE":"RECREATE") );
+  if (!target || target->IsZombie()) {
+    cerr << "Error opening target file (does " << outputFileName << " exist?)." << endl;
+    cerr << "Use force = kTRUE to re-creation of output file." << endl;
+    return;
+  }  
+  MergeRootfile( target, &sourcelist);
   delete res;
-
+  delete target;
 }
 
-
-
-void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName, Bool_t separate){
+void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName, Bool_t dontOverwrite){
   
   // Merge the files indicated in the list - fileList
   // ASCII file option example: 
   // find `pwd`/ | grep AliESDfriends_v1.root > calib.list
   
-  TObjArray * mergeArray= new TObjArray;
-  
   // Open the input stream
-  
   ifstream in;
   in.open(fileList);
   // Read the input list of files 
   TString objfile;
   Int_t counter=0;
+  TList sourcelist;  
+  sourcelist.SetOwner(kTRUE);
   while(in.good()) {
     in >> objfile;
-    if (!objfile.Contains("root")) continue; // protection    
-    printf("Open file:Counter\t%d\tMerging file %s\n",counter++,objfile.Data());
-    TFile currentFile(objfile.Data());
-    Merge(&currentFile, mergeArray);
+    if (!objfile.Contains(".root")) continue; // protection
+    gSystem->ExpandPathName(objfile);
+    printf("Add file:Counter\t%d\tMerging file %s\n",counter++,objfile.Data());
+    AddFile(&sourcelist, objfile.Data());
   }
-  if (separate) { 
-    StoreSeparateResults(mergeArray, outputFileName);
+  //
+  printf("List of files to be merged:\n");
+  sourcelist.Print();
+  //
+  TString outputFile(outputFileName);
+  gSystem->ExpandPathName(outputFile);
+  TFile* target = TFile::Open( outputFile.Data(), (dontOverwrite ? "CREATE":"RECREATE") );
+  if (!target || target->IsZombie()) {
+    cerr << "Error opening target file (does " << outputFileName << " exist?)." << endl;
+    cerr << "Use force = kTRUE to re-creation of output file." << endl;
+    return;
   }
-  else {
-    StoreResults(mergeArray, outputFileName);
-  }
-  
-  delete mergeArray;
+
+  MergeRootfile( target, &sourcelist);
+  delete target;
 }
 
 void AliFileMerger::StoreResults(TObjArray * array, const char* outputFileName){
@@ -192,8 +207,6 @@ void AliFileMerger::StoreSeparateResults(TObjArray * array, const char* outputFi
     delete f;
   }
 }
-
-
 
 void AliFileMerger::Merge(TFile* fileIn, TObjArray * array){
   //
@@ -307,3 +320,254 @@ void AliFileMerger::AddAccept(const char *accept){
 
 }
 
+//___________________________________________________________________________
+int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
+{
+  // Merge all objects in a directory
+  // modified version of root's hadd.cxx
+  Int_t counterF = -1;
+  int status = 0;
+  cout << "Target path: " << target->GetPath() << endl;
+  TString path( (char*)strstr( target->GetPath(), ":" ) );
+  path.Remove( 0, 2 );
+  //
+  // find 1st valid file
+  TDirectory *first_source = (TDirectory*)sourcelist->First();
+  //
+  Int_t nguess = sourcelist->GetSize()+1000;
+  THashList allNames(nguess);
+  ((THashList*)target->GetList())->Rehash(nguess);
+  ((THashList*)target->GetListOfKeys())->Rehash(nguess);
+  TList listH;
+  TString listHargs;
+  listHargs.Form("((TCollection*)0x%lx)", (ULong_t)&listH);
+  //
+  while(first_source) {
+    counterF++;
+    TDirectory *current_sourcedir = first_source->GetDirectory(path);
+    if (!current_sourcedir) {
+      first_source = (TDirectory*)sourcelist->After(first_source);
+      continue;
+    }
+    // loop over all keys in this directory
+    TChain *globChain = 0;
+    TIter nextkey( current_sourcedir->GetListOfKeys() );
+    TKey *key, *oldkey=0;
+    //gain time, do not add the objects in the list in memory
+    TH1::AddDirectory(kFALSE);
+    //
+    int counterK = 0;
+    //
+    while ( (key = (TKey*)nextkey())) {
+      if (current_sourcedir == target) break;
+      //
+      // check if we don't reject this name
+      TString nameK(key->GetName());
+      if (!IsAccepted(nameK)) {
+	if (!counterF) printf("Object %s is in rejection list, skipping...\n",nameK.Data());
+	continue;
+      }
+      //
+      //keep only the highest cycle number for each key
+      if (oldkey && !strcmp(oldkey->GetName(),key->GetName())) continue;
+      if (!strcmp(key->GetClassName(),"TProcessID")) {key->ReadObj(); continue;}
+      if (allNames.FindObject(key->GetName())) continue;
+      TClass *cl = TClass::GetClass(key->GetClassName());
+      if (!cl || !cl->InheritsFrom(TObject::Class())) {
+	cout << "Cannot merge object type, name: "
+	     << key->GetName() << " title: " << key->GetTitle() << endl;
+	continue;
+      }
+      allNames.Add(new TObjString(key->GetName()));
+      AliSysInfo::AddStamp(nameK.Data(),1,counterK++,counterF-1); 
+      // read object from first source file
+      //current_sourcedir->cd();
+      TObject *obj = key->ReadObj();
+      //printf("keyname=%s, obj=%x\n",key->GetName(),obj);
+      
+      if ( obj->IsA()->InheritsFrom( TTree::Class() ) ) {
+	
+	// loop over all source files create a chain of Trees "globChain"
+	if (!fNoTrees) { // 
+	  TString obj_name;
+	  if (path.Length()) {
+	    obj_name = path + "/" + obj->GetName();
+	  } else {
+	    obj_name = obj->GetName();
+	  }
+	  globChain = new TChain(obj_name);
+	  globChain->Add(first_source->GetName());
+	  TFile *nextsource = (TFile*)sourcelist->After( first_source );
+	  while ( nextsource ) {
+	    //do not add to the list a file that does not contain this Tree
+	    TFile *curf = TFile::Open(nextsource->GetName());
+	    if (curf) {
+	      Bool_t mustAdd = kFALSE;
+	      if (curf->FindKey(obj_name)) {
+		mustAdd = kTRUE;
+	      } else {
+		//we could be more clever here. No need to import the object
+		//we are missing a function in TDirectory
+		TObject *aobj = curf->Get(obj_name);
+		if (aobj) { mustAdd = kTRUE; delete aobj;}
+	      }
+	      if (mustAdd) {
+		globChain->Add(nextsource->GetName());
+	      }
+	    }
+	    delete curf;
+	    nextsource = (TFile*)sourcelist->After( nextsource );
+	  }
+	}
+      } else if ( obj->IsA()->InheritsFrom( TDirectory::Class() ) ) {
+	// it's a subdirectory
+	
+	cout << "Found subdirectory " << obj->GetName() << endl;
+	// create a new subdir of same name and title in the target file
+	target->cd();
+	TDirectory *newdir = target->mkdir( obj->GetName(), obj->GetTitle() );
+	
+	// newdir is now the starting point of another round of merging
+	// newdir still knows its depth within the target file via
+	// GetPath(), so we can still figure out where we are in the recursion
+	status = MergeRootfile( newdir, sourcelist);
+	if (status) return status;
+	
+      } else if ( obj->InheritsFrom(TObject::Class())
+		  && obj->IsA()->GetMethodWithPrototype("Merge", "TCollection*") ) {
+	// object implements Merge(TCollection*)
+	
+	// loop over all source files and merge same-name object
+	TFile *nextsource = (TFile*)sourcelist->After( first_source );
+	while ( nextsource ) {
+	  // make sure we are at the correct directory level by cd'ing to path
+	  TDirectory *ndir = nextsource->GetDirectory(path);
+	  if (ndir) {
+	    ndir->cd();
+	    TKey *key2 = (TKey*)gDirectory->GetListOfKeys()->FindObject(key->GetName());
+	    if (key2) {
+	      TObject *hobj = key2->ReadObj();
+	      hobj->ResetBit(kMustCleanup);
+	      listH.Add(hobj);
+	      Int_t error = 0;
+	      obj->Execute("Merge", listHargs.Data(), &error);
+	      if (error) {
+		cerr << "Error calling Merge() on " << obj->GetName()
+		     << " with the corresponding object in " << nextsource->GetName() << endl;
+	      }
+	      listH.Delete();
+	    }
+	  }
+	  nextsource = (TFile*)sourcelist->After( nextsource );
+	}
+      } else if ( obj->IsA()->InheritsFrom( THStack::Class() ) ) {
+	THStack *hstack1 = (THStack*) obj;
+	TList* l = new TList();
+	
+	// loop over all source files and merge the histos of the
+	// corresponding THStacks with the one pointed to by "hstack1"
+	TFile *nextsource = (TFile*)sourcelist->After( first_source );
+	while ( nextsource ) {
+	  // make sure we are at the correct directory level by cd'ing to path
+	  TDirectory *ndir = nextsource->GetDirectory(path);
+	  if (ndir) {
+	    ndir->cd();
+	    TKey *key2 = (TKey*)gDirectory->GetListOfKeys()->FindObject(hstack1->GetName());
+	    if (key2) {
+	      THStack *hstack2 = (THStack*) key2->ReadObj();
+	      l->Add(hstack2->GetHists()->Clone());
+	      delete hstack2;
+	    }
+	  }
+	  
+	  nextsource = (TFile*)sourcelist->After( nextsource );
+	}
+	hstack1->GetHists()->Merge(l);
+	l->Delete();
+      } else {
+	// object is of no type that we can merge
+	cout << "Cannot merge object type, name: "
+	     << obj->GetName() << " title: " << obj->GetTitle() << endl;
+	
+	// loop over all source files and write similar objects directly to the output file
+	TFile *nextsource = (TFile*)sourcelist->After( first_source );
+	while ( nextsource ) {
+	  // make sure we are at the correct directory level by cd'ing to path
+	  TDirectory *ndir = nextsource->GetDirectory(path);
+	  if (ndir) {
+	    ndir->cd();
+	    TKey *key2 = (TKey*)gDirectory->GetListOfKeys()->FindObject(key->GetName());
+	    if (key2) {
+	      TObject *nobj = key2->ReadObj();
+	      nobj->ResetBit(kMustCleanup);
+	      int nbytes1 = target->WriteTObject(nobj, key2->GetName(), "SingleKey" );
+	      if (nbytes1 <= 0) status = -1;
+	      delete nobj;
+	    }
+	  }
+	  nextsource = (TFile*)sourcelist->After( nextsource );
+	}
+      }
+      
+      // now write the merged histogram (which is "in" obj) to the target file
+      // note that this will just store obj in the current directory level,
+      // which is not persistent until the complete directory itself is stored
+      // by "target->Write()" below
+      target->cd();
+      
+      //!!if the object is a tree, it is stored in globChain...
+      if(obj->IsA()->InheritsFrom( TDirectory::Class() )) {
+	//printf("cas d'une directory\n");
+      } else if(obj->IsA()->InheritsFrom( TTree::Class() )) {
+	if (!fNoTrees) {
+	  globChain->ls();
+	  globChain->Merge(target->GetFile(),0,"keep fast");
+	  delete globChain;
+	}
+      } else {
+	int nbytes2 = obj->Write( key->GetName(), TObject::kSingleKey );
+	if (nbytes2 <= 0) status = -1;
+      }
+      oldkey = key;
+      delete obj;
+    } // while ( ( TKey *key = (TKey*)nextkey() ) )
+    first_source = (TDirectory*)sourcelist->After(first_source);
+  }
+  // save modifications to target file
+  target->SaveSelf(kTRUE);
+  //
+  return status;
+}
+
+//___________________________________________________________________________
+int AliFileMerger::AddFile(TList* sourcelist, std::string entry)
+{
+  // add a new file to the list of files
+  //  static int count(0);
+  if( entry.empty() ) return 0;
+  size_t j =entry.find_first_not_of(' ');
+  if( j==std::string::npos ) return 0;
+  entry = entry.substr(j);
+  if( entry.substr(0,1)=="@") {
+    std::ifstream indirect_file(entry.substr(1).c_str() );
+    if( ! indirect_file.is_open() ) {
+      std::cerr<< "Could not open indirect file " << entry.substr(1) << std::endl;
+      return 1;
+    }
+    while( indirect_file ){
+      std::string line;
+      std::getline(indirect_file, line);
+      if( AddFile(sourcelist, line)!=0 )return 1;;
+    }
+    return 0;
+  }
+  //  cout << "Source file " << (++count) << ": " << entry << endl;
+  
+  TFile* source = TFile::Open( entry.c_str());
+  if( source==0 ) {
+    cout << "Failed to open " << entry << " will skip" << endl;
+    return 0;
+  }
+  sourcelist->Add(source);
+  return 0;
+}

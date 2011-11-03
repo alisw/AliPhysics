@@ -24,8 +24,8 @@ class AliFileMerger : public TNamed
   AliFileMerger(const char* name);
   void Merge(TFile* fileIn, TObjArray * array);
 
-  void IterTXT( const char * fileList,  const char* outputFileName,Bool_t separate=kFALSE);
-  void IterAlien(const char* outputDir, const char* outputFileName = "CalibObjects.root" , const char* pattern = "AliESDfriends_v1.root");
+  void IterTXT( const char * fileList,  const char* outputFileName,Bool_t dontOverwrite=kFALSE);
+  void IterAlien(const char* outputDir, const char* outputFileName = "CalibObjects.root" , const char* pattern = "AliESDfriends_v1.root", Bool_t dontOverwrite=kFALSE);
   //
   void StoreResults(TObjArray * array, const char* outputFileName);
   void StoreSeparateResults(TObjArray * array, const char* outputFileName);
@@ -33,10 +33,17 @@ class AliFileMerger : public TNamed
   Bool_t IsAccepted(TString name);
   void AddReject(const char *reject);
   void AddAccept(const char *accept);
+  void SetNoTrees(Bool_t v=kTRUE)        {fNoTrees = v;}
+  Bool_t IsNoTrees()               const {return fNoTrees;}
+
+protected:
+  int AddFile(TList* sourcelist, std::string entry);
+  int MergeRootfile( TDirectory *target, TList *sourceNames);
 
 protected:
   TObjArray * fRejectMask;  // mask of the objects to be rejected
   TObjArray * fAcceptMask;    // mask of the objects to be accepted
+  Bool_t      fNoTrees;       // do we merge trees
 
 private:
   AliFileMerger(const AliFileMerger&);
