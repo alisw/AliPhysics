@@ -519,6 +519,7 @@ Double_t AliHMPIDRecon::HoughResponse()
       fParam->Lors2Pad(pos.X(),pos.Y(),ipc,ipadx,ipady);
       ipadx+=(ipc%2)*fParam->kPadPcX;
       ipady+=(ipc/2)*fParam->kPadPcY;
+      if(ipadx<0 || ipady>160 || ipady<0 || ipady>144 || ch<0 || ch>6) continue;
       if(fParam->IsDeadPad(ipadx,ipady,ch)) continue;
       nPhi++;
     }//point loop
