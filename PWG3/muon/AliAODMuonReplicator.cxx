@@ -145,8 +145,8 @@ void AliAODMuonReplicator::FilterMC(const AliAODEvent& source)
   
   fParticleSelected.Delete();
   
-  if ( !fTracks->GetEntries() ) return;
-  // only copy MC information for events where there's at least one muon track
+  if ( fMCMode>=2 && !fTracks->GetEntries() ) return;
+  // for fMCMode==1 we only copy MC information for events where there's at least one muon track
     
   mcHeader = static_cast<AliAODMCHeader*>(source.FindListObject(AliAODMCHeader::StdBranchName()));
   
@@ -323,7 +323,7 @@ TList* AliAODMuonReplicator::GetList() const
     fList->Add(fTracks);
     fList->Add(fVertices);
     fList->Add(fDimuons);
-
+    
     if ( fMCMode > 0 )
     {
       fMCHeader = new AliAODMCHeader;    
@@ -342,6 +342,7 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
   
   assert(fTracks!=0x0);
+  
   fTracks->Clear("C");
   TIter next(source.GetTracks());
   AliAODTrack* t;
@@ -372,7 +373,12 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
     if ( !fVertexCut || fVertexCut->IsSelected(v) ) 
     {
       AliAODVertex* tmp = v->CloneWithoutRefs();
-      new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
+      AliAODVertex* copiedVertex = new((*fVertices)[nvertices++]) AliAODVertex(*tmp);
+      // to insure the main vertex retains the ncontributors information
+      // (which is otherwise computed dynamically from
+      // references to tracks, which we do not keep in muon aods...)
+      // we set it here
+      copiedVertex->SetNContributors(v->GetNContributors()); 
       delete tmp;
     }
   }
