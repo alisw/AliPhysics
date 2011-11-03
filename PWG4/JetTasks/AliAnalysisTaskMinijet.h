@@ -119,11 +119,12 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH2F       *fNmcNchVtxTracklet;           // N mc - N ch rec for events with reconstructed vertex
   TProfile   *fPNmcNchVtxTracklet;          // N mc - N ch rec for events with reconstructed vertex
   TH2F       *fChargedPi0;                  // charged versus charged+Pi0
+  TH1F       *fVertexCheck;                 // check which fraction of events has vtx_rec but no good vtx_mc
 
-  THnSparse   *fMapSingleTrig[6];           //! multi-dim histo for trigger track properties
-  THnSparse   *fMapPair[6];                 //! multi-dim histo for pair properties
-  THnSparse   *fMapEvent[6];                //! multi-dim histo for event properties
-  THnSparse   *fMapAll[6];                  //! multi-dim histo for properties of all analysed tracks
+  THnSparse  *fMapSingleTrig[6];            //! multi-dim histo for trigger track properties
+  THnSparse  *fMapPair[6];                  //! multi-dim histo for pair properties
+  THnSparse  *fMapEvent[6];                 //! multi-dim histo for event properties
+  THnSparse  *fMapAll[6];                   //! multi-dim histo for properties of all analysed tracks
   
   TH1F       * fVertexZ[6];                 // z of vertex
   TH1F       * fNcharge[6];                 // pt
