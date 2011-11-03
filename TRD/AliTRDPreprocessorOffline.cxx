@@ -1086,6 +1086,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
    metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
 
    AliCDBId id1("TRD/Calib/ChamberGainFactor", startRunNumber, endRunNumber);
@@ -1109,6 +1110,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
    metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
 
    AliCDBId id1("TRD/Calib/ChamberExB", startRunNumber, endRunNumber);
@@ -1131,7 +1133,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
   AliCDBMetaData *metaData= new AliCDBMetaData();
   metaData->SetObjectClassName("AliTRDCalDet");
-  metaData->SetResponsible("Raphaelle Bailhache");
+  metaData->SetResponsible("Theo Rascanu");
+  metaData->AddDateToComment();
   metaData->SetBeamPeriod(1);
 
   AliCDBId id1("TRD/Calib/ChamberExBAlt", startRunNumber, endRunNumber);
@@ -1154,6 +1157,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
    metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
 
    AliCDBId id1("TRD/Calib/ChamberVdrift", startRunNumber, endRunNumber);
@@ -1168,6 +1172,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
      AliCDBMetaData *metaDataPad= new AliCDBMetaData();
      metaDataPad->SetObjectClassName("AliTRDCalPad");
      metaDataPad->SetResponsible("Raphaelle Bailhache");
+     metaDataPad->AddDateToComment();
      metaDataPad->SetBeamPeriod(1);
 
      AliCDBId id1Pad("TRD/Calib/LocalVdrift", startRunNumber, endRunNumber);
@@ -1186,6 +1191,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalDet");
    metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
 
    AliCDBId id1("TRD/Calib/ChamberT0", startRunNumber, endRunNumber);
@@ -1198,6 +1204,7 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    AliCDBMetaData *metaDataPad= new AliCDBMetaData();
    metaDataPad->SetObjectClassName("AliTRDCalPad");
    metaDataPad->SetResponsible("Raphaelle Bailhache");
+   metaDataPad->AddDateToComment();
    metaDataPad->SetBeamPeriod(1);
 
    AliCDBId id1Pad("TRD/Calib/LocalT0", startRunNumber, endRunNumber);
@@ -1216,7 +1223,9 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalPad");
    metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
+
 
    AliCDBId id1("TRD/Calib/PRFWidth", startRunNumber, endRunNumber);
    AliCDBStorage * gStorage = AliCDBManager::Instance()->GetStorage(storagePath);
@@ -1233,7 +1242,8 @@ void AliTRDPreprocessorOffline::UpdateOCDBExBAlt(Int_t startRunNumber, Int_t end
 
    AliCDBMetaData *metaData= new AliCDBMetaData();
    metaData->SetObjectClassName("AliTRDCalChamberStatus");
-   metaData->SetResponsible("Raphaelle Bailhache");
+   metaData->SetResponsible("Raphaelle Bailhache and Julian Book");
+   metaData->AddDateToComment();
    metaData->SetBeamPeriod(1);
 
    AliCDBId id1("TRD/Calib/ChamberStatus", startRunNumber, endRunNumber);
