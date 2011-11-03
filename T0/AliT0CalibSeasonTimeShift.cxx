@@ -110,24 +110,23 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
   Float_t mean, sigma;
   Int_t ok = 0;
   TH1F *cfd = NULL;
-  TObjArray * TzeroObj = NULL;
+  TObjArray * tzeroObj = NULL;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
     ok = 2000;
   }
-  else
-    {
-      //    gFile->ls();
-    TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
-    if (dr) TzeroObj = (TObjArray*) dr->Get("T0Calib");
+  else {
+    //    gFile->ls();
+    //    TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
+    tzeroObj = dynamic_cast<TObjArray*>(gFile->Get("T0Calib"));
     TString histname[4]={"fTzeroORAplusORC", "fTzeroORA", "fTzeroORC",  "fResolution"};
     for (Int_t i=0; i<4; i++)
       {
 	if(cfd) cfd->Reset();
-	if(TzeroObj) 
-	  cfd = (TH1F*)TzeroObj->FindObject( histname[i].Data());
+	if(tzeroObj) 
+	  cfd = (TH1F*)tzeroObj->FindObject( histname[i].Data());
 	else
 	  cfd =  (TH1F*)gFile ->Get(histname[i].Data());
 
@@ -155,11 +154,9 @@ Int_t AliT0CalibSeasonTimeShift::SetT0Par(const char* filePhys, Float_t *cdbtime
 	      }
 	  }
       } 
-    
-    gFile->Close();
-    delete gFile;
-    
-    }
+  }
+  gFile->Close();
+  delete gFile;
   return ok;
 }
 //________________________________________________________________________

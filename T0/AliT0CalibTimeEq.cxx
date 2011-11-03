@@ -117,6 +117,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   Int_t okdiff=0;
   Int_t oktime=0;
   Bool_t ok=false;
+  //
   gFile = TFile::Open(filePhys);
   if(!gFile) {
     AliError("No input PHYS data found ");
@@ -126,9 +127,8 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
       ok=true;
       for (Int_t i=0; i<24; i++)
 	{
-
 	  meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-	  TH1F *cfd = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
+	  TH1F *cfd     = (TH1F*) gFile->Get(Form("CFD1minCFD%d",i+1));
 	  TH1F *cfdtime = (TH1F*) gFile->Get(Form("CFD%d",i+1));
 	  if(!cfd) {
 	    AliWarning(Form("no Diff histograms collected by PHYS DA for channel %i", i));
@@ -216,23 +216,21 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  if (cfd) delete cfd;
 	  if (cfdtime) delete cfdtime;
 	}
-      TH1F *ver = (TH1F*) gFile->Get("hVertex");
+      TH1F *ver = (TH1F*) gFile->Get("hVertex") ;
       if(ver) {
 	meanver = ver->GetMean();
 	rmsver = ver->GetRMS();
       }
       SetMeanVertex(meanver);
       SetRmsVertex(rmsver);
-      
       gFile->Close();
       delete gFile;
-      
     }
     return ok; 
 }
 
 //________________________________________________________________
-  Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *timecdb, Float_t *cfdvalue, Int_t badpmt)
+Int_t AliT0CalibTimeEq::ComputeOfflineParams(const char* filePhys, Float_t *timecdb, Float_t *cfdvalue, Int_t badpmt)
 {
   // fStatus implementation:
   //ok means
@@ -256,7 +254,7 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   Int_t okcfd=0;
   TH1F *cfddiff = NULL; 
   TH1F *cfdtime = NULL;
-  TObjArray * TzeroObj = NULL;
+  TObjArray * tzeroObj = NULL;
 
   gFile = TFile::Open(filePhys);
   if(!gFile) {
@@ -267,14 +265,14 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
   else
     {
       meandiff = sigmadiff =  meanver = meancfdtime = sigmacfdtime =0;
-      TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
-      if (dr)   TzeroObj = (TObjArray*) dr->Get("T0Calib");
+      //      TDirectory *dr = (TDirectory*) gFile->Get("T0Calib");
+      tzeroObj = dynamic_cast<TObjArray*>(gFile->Get("T0Calib"));
       for (Int_t i=0; i<24; i++)
 	{
-	  if (i != badpmt) {
-	    if(TzeroObj) {
-	      cfddiff = (TH1F*)TzeroObj->FindObject(Form("CFD1minCFD%d",i+1));
-	      cfdtime = (TH1F*)TzeroObj->FindObject(Form("CFD%d",i+1));
+	  if (i != badpmt) {	    
+	    if(tzeroObj) {
+	      cfddiff = (TH1F*) tzeroObj->FindObject(Form("CFD1minCFD%d",i+1));
+	      cfdtime = (TH1F*)tzeroObj->FindObject(Form("CFD%d",i+1));
 	    }
 	    else
 	      {
@@ -401,11 +399,9 @@ Bool_t AliT0CalibTimeEq::ComputeOnlineParams(const char* filePhys)
 	  if (cfddiff) cfddiff->Reset();
 	  if (cfdtime) cfdtime->Reset();
 	  } //bad pmt
-	}
-      
+	}      
       gFile->Close();
       delete gFile;
-
     }
     return ok; 
    }
