@@ -77,7 +77,9 @@ public:
   void SetESDTrackCuts(AliESDtrackCuts *cuts) { fESDTrackCuts = cuts; }
 
   /** Set SPD clusters from inner and outer layer */
-  void SetSPDClusters(Int_t inner, Int_t outer) { fSpdNClustersInner = inner; fSpdNClustersOuter = outer; }
+  void SetSPDClusters(Int_t inner, Int_t outer) { 
+    fSpdNClustersInner = inner; fSpdNClustersOuter = outer; 
+  }
 
   /** Set Binning of VZERO */
   void SetBinningVzero(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
@@ -100,14 +102,10 @@ public:
   }
 
   /** Set Binning of ZNP */
-  void SetBinningZnp(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
-    fZnpBinning = i; fZnpBinningMin = f1; fZnpBinningMax = f2;
-  }
+  void SetBinningZnp(Int_t /*i=1*/, Float_t /*f1=0.*/, Float_t /*f2=1.*/) {;}
 
   /** Set Binning of CALO */
-  void SetBinningCalo(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
-    fCaloBinning = i; fCaloBinningMin = f1; fCaloBinningMax = f2;
-  }
+  void SetBinningCalo(Int_t /*i=1*/, Float_t /*f1=0.*/, Float_t /*f2=1.*/) {;}
 
   /** Set Binning of SPD */
   void SetBinningSpd(Int_t i=1, Float_t f1=0., Float_t f2=1.) {
@@ -115,13 +113,12 @@ public:
   }
 
   /** Set process PHOS */
-  void SetProcessPhos(Bool_t b=kTRUE)  { fProcessPhos  = b; }
+  void SetProcessPhos(Bool_t /*b=kTRUE*/)  {;}
   /** Set process EMCAL */
-  void SetProcessEmcal(Bool_t b=kTRUE) { fProcessEmcal = b; }
-
+  void SetProcessEmcal(Bool_t /*b=kTRUE*/) {;}
 
   /** Enable / Disable detectors */
-  void SetProcessCALO(Bool_t b = kTRUE) { fProcessCALO = b; }
+  void SetProcessCALO(Bool_t /*b = kTRUE*/) {;}
   void SetProcessSPD(Bool_t b = kTRUE)  { fProcessSPD = b; }
   void SetProcessTPC(Bool_t b = kTRUE)  { fProcessTPC = b; }
   void SetProcessZDC(Bool_t b = kTRUE)  { fProcessZDC = b; }
@@ -187,9 +184,6 @@ public:
   /** Setup correlation histograms */
   Int_t SetupCorrelations();
   
-  /** Setup CALO histograms */
-  Int_t SetupCALO();
-
   /** Setup SPD histograms */
   Int_t SetupSPD();
 
@@ -210,9 +204,6 @@ public:
 
   /** Process current event - ZDC and correlations */
   Int_t ProcessZDC();
-  
-  /** Process current event - CALO */
-  Int_t ProcessCALO();
   
   /*
    * ---------------------------------------------------------------------------------
@@ -249,9 +240,6 @@ public:
   /** Process ZDC information */
   Bool_t           fProcessZDC;           // see above
 
-  /** Process CALO information */
-  Bool_t           fProcessCALO;          // see above
-
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
   /** N ESD tracks */
@@ -266,23 +254,14 @@ public:
   /** N TPC tracks accepted */
   Int_t fTpcTracksA;                      // see above
 
+  /** N Reference TPC tracks */
+  Int_t fTpcTracksRef;                    // see above
+
   /** VZERO mult */
   Float_t fVzeroMult;                     // see above
 
-  /** VZERO mult A */
-  Float_t fVzeroMultA;                    // see above
-
-  /** VZERO mult C */
-  Float_t fVzeroMultC;                    // see above
-
-  /** VZERO flagged mult */
-  Float_t fVzeroMultFlagged;              // see above
-
-  /** VZERO flagged mult A */
-  Float_t fVzeroMultFlaggedA;             // see above
-
-  /** VZERO flagged mult C */
-  Float_t fVzeroMultFlaggedC;             // see above
+  /** VZERO trigger mult */
+  Float_t fVzeroTriggerMult;              // see above
 
   /** Spd N clusters */
   Int_t   fSpdNClusters;                  // see above
@@ -315,29 +294,11 @@ public:
   Float_t fZemBinningMin;                 // see above
   Float_t fZemBinningMax;                 // see above
 
-  /** Binnning ZNP */
-  Int_t   fZnpBinning;                    // see above
-  Float_t fZnpBinningMin;                 // see above
-  Float_t fZnpBinningMax;                 // see above
-  
-  /** CALO flags */
-  Bool_t fProcessPhos;                    // see above
-  Bool_t fProcessEmcal;                   // see above
-  
-  /** CALO variables */
-  Float_t fPhosTotalEt;                   // see above
-  Float_t fEmcalTotalEt;                  // see above
-  
-  /** Binnning CALO */
-  Int_t   fCaloBinning;                   // see above
-  Float_t fCaloBinningMin;                // see above
-  Float_t fCaloBinningMax;                // see above
-
   /** Binnning SPD */
   Int_t   fSpdBinning;                    // see above
   Float_t fSpdBinningMin;                 // see above
   Float_t fSpdBinningMax;                 // see above
   
-  ClassDef(AliHLTMultiplicityCorrelations, 2);
+  ClassDef(AliHLTMultiplicityCorrelations, 3);
 };
 #endif
