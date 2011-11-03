@@ -263,8 +263,16 @@ void AliPhiCorrelationsQATask::Terminate(Option_t *)
     return;
   }
   
+  fGlobalTracks = dynamic_cast<AliESDtrackCuts*> (fOutput->FindObject("global_cuts"));
+  if (!fGlobalTracks)
+  {
+    Printf("ERROR: fGlobalTracks not available");
+    return;
+  }
+  
   TFile* file = TFile::Open("track_cuts.root", "RECREATE");
   fEsdTrackCuts->SaveHistograms();
   fEsdTrackCuts2->SaveHistograms();
+  fGlobalTracks->SaveHistograms();
   file->Close();
 }
