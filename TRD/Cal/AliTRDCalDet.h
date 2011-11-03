@@ -47,7 +47,9 @@ class AliTRDCalDet : public TNamed {
   Double_t GetMedian(AliTRDCalDet * const outlierDet=0) const;
   Double_t GetLTM(Double_t * sigma=0, Double_t fraction=0.9, AliTRDCalDet * const outlierDet=0);     
   Double_t CalcMean(Bool_t wghtPads=kFALSE);
+  Double_t CalcMean(Bool_t wghtPads, Int_t &calib);
   Double_t CalcRMS(Bool_t wghtPads=kFALSE);
+  Double_t CalcRMS(Bool_t wghtPads, Int_t &calib);
 
   // Plot functions
   TH1F * MakeHisto1Distribution(Float_t min=4, Float_t max=-4, Int_t type=0);     
