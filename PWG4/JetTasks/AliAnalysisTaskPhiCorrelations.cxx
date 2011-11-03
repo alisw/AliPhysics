@@ -83,6 +83,7 @@ fDebug(0),
 fMode(0),
 fReduceMemoryFootprint(kFALSE),
 fFillMixed(kTRUE),
+fMixingTracks(50000),
 fCompareCentralities(kFALSE),
 fTwoTrackEfficiencyStudy(kFALSE),
 fUseVtxAxis(kFALSE),
@@ -221,7 +222,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
 
   // event mixing
   //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
-  Int_t trackDepth = 50000; 
+  Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPool
   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
@@ -286,6 +287,7 @@ void  AliAnalysisTaskPhiCorrelations::AddSettingsTree()
   settingsTree->Branch("fSelectCharge", &fSelectCharge,"SelectCharge/I");
   settingsTree->Branch("fFillpT", &fFillpT,"FillpT/O");
   settingsTree->Branch("fkTrackingEfficiency", "TH1D", &fkTrackingEfficiency);
+  settingsTree->Branch("fMixingTracks", &fMixingTracks,"MixingTracks/I");
   settingsTree->Fill();
   fListOfHistos->Add(settingsTree);
 }  
@@ -591,7 +593,7 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
     
     //pool->SetDebug(1);
       
-    if (pool->IsReady() || pool->NTracksInPool() > 1000) 
+    if (pool->IsReady() || pool->NTracksInPool() > fMixingTracks / 10) 
     {
       
       Int_t nMix = pool->GetCurrentNEvents();
