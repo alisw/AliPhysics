@@ -88,7 +88,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fPNmcNchTracklet(0),
       fNmcNchVtxTracklet(0),
       fPNmcNchVtxTracklet(0),
-      fChargedPi0(0)
+      fChargedPi0(0),
+      fVertexCheck(0)
 {
 
   //Constructor
@@ -176,7 +177,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
   }
 
-  fChargedPi0 = new TH2F("fChargedPi0", "fChargedPi0", 200, -0.5, 199.5, 200, -0.5, 199.5);
+  fChargedPi0  = new TH2F("fChargedPi0", "fChargedPi0", 200, -0.5, 199.5, 200, -0.5, 199.5);
+  fVertexCheck = new TH1F("fVertexCheck", "fVertexCheck", 4, -0.5, 3.5);
     
 
   //----------------------
@@ -227,7 +229,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   TString dataType[2] ={"ESD", "AOD"};
   TString labels[6]={Form("%sAllAllMcNmc",dataType[fMode].Data()),
 		     Form("%sTrigAllMcNmc",dataType[fMode].Data()),
-		     Form("%sTrigAllMcNrec",dataType[fMode].Data()),
+		     Form("%sTrigVtxMcNmc",dataType[fMode].Data()),
 		     Form("%sTrigVtxMcNrec",dataType[fMode].Data()),
 		     Form("%sTrigVtxRecMcPropNrec",dataType[fMode].Data()),
 		     Form("%sTrigVtxRecNrec",dataType[fMode].Data())};
@@ -276,7 +278,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   
     fVertexZ[i]                  = new TH1F(Form("fVertexZ%s",labels[i].Data()),
 					    Form("fVertexZ%s",labels[i].Data()) ,  
-					    200, -10., 10.);
+					    220, -11., 11.);
     fPt[i]                       = new TH1F(Form("fPt%s",labels[i].Data()),
 					    Form("fPt%s",labels[i].Data()) ,  
 					    200, 0., 50);
@@ -375,6 +377,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
     fHists->Add(fPNmcNchVtxTracklet); 
   }
   fHists->Add(fChargedPi0);
+  fHists->Add(fVertexCheck);
   
   for(Int_t i=0;i<6;i++){
     fHists->Add(fMapSingleTrig[i]);
@@ -421,15 +424,15 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
   //  - in case of MC with full detector simulation, all correction steps(0-5) can be processed
   //  - for Data, only step 5 is performed
   //  - for kinematics-only, only step 0 is processed
-  // step 5 =  Triggered events, reconstructed accepted vertex, reconstructed tracks,                    reconstructed multiplicity, 
+
+  //             - trigger -               - vertex -               - tracks -                                 - multiplicity -
+  // step 5 =  Triggered events, reconstructed accepted vertex, reconstructed tracks,                    reconstructed multiplicity 
   // step 4 =  Triggered events, reconstructed accepted vertex, reconstructed tracks with MC properties, reconstructed multiplicity
-  // step 3 =  Triggered events, reconstructed accepted vertex, mc primary particles,                    reconstructed multiplicity, 
-  // step 2 =  Triggered events, all                            mc primary particles,                    reconstructed multiplicity
+  // step 3 =  Triggered events, reconstructed accepted vertex, mc primary particles,                    reconstructed multiplicity
+  // step 2 =  Triggered events, reconstructed accepted vertex, mc primary particles,                    true multiplicity
   // step 1 =  Triggered events, all                            mc primary particles,                    true multiplicity
   // step 0 =  All events,       all                            mc primary particles,                    true multiplicity
 
-  // multiplicity selection can be changed with new AOD definition -> AOD076 -> trigger eff is possible
-  // trigger efficiency has not influence on results
 
   if(fDebug) Printf("UserExec: Event starts");
 
@@ -501,7 +504,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 
 	// analyse
 	if(pt.size()){ //(internally ntracks=fNRecAccept)
-	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);
+	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 5);//step 5 = TrigVtxRecNrec
 	}
 	  
 	if(fUseMC){
@@ -514,24 +517,23 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 	   
 	  //analyse
 	  if(pt.size()){//(internally ntracks=fNRecAccept)
-	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 4);
+	    Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1], nTracksTracklets[2], 4); //step 4 = TrigVtxRecMcPropNrec
 	  }
-	}
-      
-	
-      if(fUseMC){
-	// step 3 = TrigVtxMcNrec
 
-	// read tracks
-	if(fESDEvent)       ntracks = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 3);
-	else if(fAODEvent)  ntracks = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 3);
-	else Printf("Fatal Error");
+	  // step 3 = TrigVtxMcNrec
 
-	// analyse
-	if(pt.size()){//(internally ntracks=fNRecAccept)
-	  Analyse(pt, eta, phi, charge, ntracks, nTracksTracklets[1],nTracksTracklets[2], 3);
+	  // read tracks
+	  if(fESDEvent)       ntracks = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 3);
+	  else if(fAODEvent)  ntracks = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 3);
+	  else Printf("Fatal Error");
+
+	  // analyse
+	  if(pt.size()){
+	    Analyse(pt, eta, phi, charge, fNRecAccept,    nTracksTracklets[1],nTracksTracklets[2], 3); //step 3 = TrigVtxMcNrec
+	    Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 2); //step 2 = TrigVtxMcNmc
+	  }
+
 	}
-      }
       }	
 	
     }//check event (true)
@@ -545,20 +547,12 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
       fNRecAcceptTracklet=0;   // number of accepted tracklets
 	
       if(CheckEvent(false)){// all events, with and without reconstucted vertex
-	if(fESDEvent){
-	  ntracks  = ReadEventESD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-	  ntracks  = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
-	}
-	else if(fAODEvent){
-	  ntracks  = ReadEventAOD  (pt, eta, phi, charge, nTracksTracklets, 2);//need to compute Nrec once more for all events
-	  ntracks  = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
-	}
+	if(fESDEvent) ntracks  = ReadEventESDMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
+       	else if(fAODEvent) ntracks  = ReadEventAODMC(pt, eta, phi, charge, nTracksTracklets, 1);//read tracks
 	else Printf("Fatal Error");
 
 	// analyse
 	if(pt.size()){
-	  Analyse(pt, eta, phi, charge, fNRecAccept, nTracksTracklets[1],nTracksTracklets[2], 2); // step 2 = TrigAllMcNrec
-	    
 	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 1);  // step 1 = TrigAllMcNmc
 	    
 	  Analyse(pt, eta, phi, charge, fNMcPrimAccept, nTracksTracklets[1],nTracksTracklets[2], 0);  //first part of step 0 // step 0 = AllAllMcNmc
@@ -868,6 +862,9 @@ Int_t AliAnalysisTaskMinijet::ReadEventESDMC(vector<Float_t> &ptArray,  vector<F
   if(header){
     header->PrimaryVertex(mcV);
     vzMC = mcV[2];
+    if(step==1){
+      fVertexZ[0]->Fill(vzMC);
+    }
     fVertexZ[step]->Fill(vzMC);
   }
 
@@ -1197,8 +1194,10 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODMC( vector<Float_t> &ptArray,  vector<
   AliAODMCHeader *aodMCheader = (AliAODMCHeader *) fAODEvent->
     FindListObject(AliAODMCHeader::StdBranchName());
   Float_t vzMC = aodMCheader->GetVtxZ();
+  if(step==1){
+    fVertexZ[0]->Fill(vzMC);
+  }
   fVertexZ[step]->Fill(vzMC);
-
   
   //retreive MC particles from event
   TClonesArray *mcArray = (TClonesArray*)fAODEvent->
@@ -1623,7 +1622,6 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
   // recVertex=false: " + check if there is a good, reconstructed SPD vertex 
   // defined by |z|<fVertexCut(10cm), Contributer>0, no PileUpFromSPD(3,0,8)
 
-
   if(fMode==0){//esd
     
     //mc
@@ -1643,13 +1641,14 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       if(ntracksg<0) return false;
 
       //vertex
-      //AliGenEventHeader*  headerg = MCEvent()->GenEventHeader();
-      //TArrayF mcVg;
-      //headerg->PrimaryVertex(mcVg);
-      //  if(TMath::Abs(mcVg[0])<1e-8 && TMath::Abs(mcVg[0])<1e-8 && 
-      // TMath::Abs(mcVg[0])<1e-8) return false;
-      // Float_t vzMCg = mcVg[2];
-      // if(TMath::Abs(vzMCg)>fVertexZCut) return false;
+      AliGenEventHeader*  headerg = MCEvent()->GenEventHeader();
+      TArrayF mcVg;
+      headerg->PrimaryVertex(mcVg);
+      //if(TMath::Abs(mcVg[0])<1e-8 && TMath::Abs(mcVg[0])<1e-8 && 
+      //   TMath::Abs(mcVg[0])<1e-8) return false;
+      Float_t vzMCg = mcVg[2];
+      if(TMath::Abs(vzMCg)>fVertexZCut) return false;
+      //hasVtxMc=true;
     }
 
     //rec
@@ -1657,11 +1656,11 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       if(fESDEvent->IsPileupFromSPD(3,0,8))return false;
       
       //rec vertex
-      // const AliESDVertex*	vertexESDg   = fESDEvent->GetPrimaryVertex(); // uses track or SPD vertexer
-      // if(!vertexESDg) return false;
-      // if(vertexESDg->GetNContributors()<=0)return false;
-      // Float_t fVzg= vertexESDg->GetZ();
-      // if(TMath::Abs(fVzg)>fVertexZCut) return false;
+      const AliESDVertex*	vertexESDg   = fESDEvent->GetPrimaryVertex(); // uses track or SPD vertexer
+      if(!vertexESDg) return false;
+      if(vertexESDg->GetNContributors()<=0)return false;
+      Float_t fVzg= vertexESDg->GetZ();
+      if(TMath::Abs(fVzg)>fVertexZCut) return false;
       
       //rec spd vertex
       const AliESDVertex *vtxSPD = fESDEvent->GetPrimaryVertexSPD();
@@ -1669,21 +1668,16 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       if(vtxSPD->GetNContributors()<=0)return false;
       Float_t fVzSPD= vtxSPD->GetZ();
       if(TMath::Abs(fVzSPD)>fVertexZCut) return false;
+
     }
     return true;
-
   }
   
 
   else if(fMode==1){ //aod
 
     if(fUseMC){
-      //mc
-      //   AliAODMCHeader *aodMCheader = (AliAODMCHeader *) fAODEvent->
-      // 	 FindListObject(AliAODMCHeader::StdBranchName());
-      //        Float_t vzMC = aodMCheader->GetVtxZ();
-      //        if(TMath::Abs(vzMC)>fVertexZCut) return false;
-       
+            
       //retreive MC particles from event
       TClonesArray *mcArray = (TClonesArray*)fAODEvent->
 	FindListObject(AliAODMCParticle::StdBranchName());
@@ -1691,18 +1685,26 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
 	Printf("No MC particle branch found");
 	return false;
       }
+
+      //mc
+      AliAODMCHeader *aodMCheader = (AliAODMCHeader *) fAODEvent->
+	FindListObject(AliAODMCHeader::StdBranchName());
+      Float_t vzMC = aodMCheader->GetVtxZ();
+      if(TMath::Abs(vzMC)>fVertexZCut) return false;
+
+      //hasVtxMc=true;
     }
 
     //rec
     if(recVertex==true){
-      if(fAODEvent->IsPileupFromSPD(3,0.8))return false;
-       
-      //      AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
-      //      if(!vertex) return false;
-      //      if(vertex->GetNContributors()<=0) return false;
-      //      Double_t vzAOD=vertex->GetZ();
-      //      if(TMath::Abs(vzAOD)<1e-9) return false;
-      //      if(TMath::Abs(vzAOD)>fVertexZCut) return false;
+      if(fAODEvent->IsPileupFromSPD(3,0.8)) return false;
+      
+      AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
+      if(!vertex) return false;
+      if(vertex->GetNContributors()<=0) return false;
+      Double_t vzAOD=vertex->GetZ();
+      if(TMath::Abs(vzAOD)<1e-9) return false;
+      if(TMath::Abs(vzAOD)>fVertexZCut) return false;
        
       AliAODVertex*	vertexSPD= (AliAODVertex*)fAODEvent->GetPrimaryVertexSPD();
       if(!vertexSPD) return false;
@@ -1710,6 +1712,7 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       Double_t vzSPD=vertexSPD->GetZ();
       //if(TMath::Abs(vzSPD)<1e-9) return false;
       if(TMath::Abs(vzSPD)>fVertexZCut) return false;
+    
     }
     return true;
    
