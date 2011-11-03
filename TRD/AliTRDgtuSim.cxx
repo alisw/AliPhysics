@@ -301,6 +301,7 @@ Bool_t AliTRDgtuSim::LoadTracklets(AliLoader *const loader)
       for (Int_t iTracklet = 0; iTracklet < trklbranch->GetEntries(); iTracklet++) {
 	trklbranch->GetEntry(iTracklet);
 	new ((*fTrackletArray)[fTrackletArray->GetEntries()]) AliTRDtrackletGTU(new AliTRDtrackletMCM(*trkl));
+	((AliTRDtrackletGTU *)((*fTrackletArray)[fTrackletArray->GetEntries()-1]))->SetMCMtrackletIndex(iTracklet);
       }
       return kTRUE;
     }

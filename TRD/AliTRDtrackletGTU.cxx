@@ -43,6 +43,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU() :
   fGtuParam(AliTRDgtuParam::Instance()),
   fTracklet(fgkDummyTracklet),
   fTrackletESD(0x0),
+  fMCMtrackletIndex(-1),
   fAssignedZ(kFALSE),
   fAlpha(0),
   fYProj(0),
@@ -60,6 +61,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliTRDtrackletBase *tracklet) :
   fGtuParam(AliTRDgtuParam::Instance()),
   fTracklet(fgkDummyTracklet),
   fTrackletESD(0x0),
+  fMCMtrackletIndex(-1),
   fAssignedZ(kFALSE),
   fAlpha(0),
   fYProj(0),
@@ -81,6 +83,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(AliESDTrdTracklet *tracklet) :
   fGtuParam(AliTRDgtuParam::Instance()),
   fTracklet(fgkDummyTracklet),
   fTrackletESD(tracklet),
+  fMCMtrackletIndex(-1),  // has to be set via SetMCMtrackletIndex() separately
   fAssignedZ(kFALSE),
   fAlpha(0),
   fYProj(0),
@@ -98,6 +101,7 @@ AliTRDtrackletGTU::AliTRDtrackletGTU(const AliTRDtrackletGTU& tracklet) :
   fGtuParam(AliTRDgtuParam::Instance()),
   fTracklet(tracklet.fTracklet),
   fTrackletESD(tracklet.fTrackletESD),
+  fMCMtrackletIndex(tracklet.fMCMtrackletIndex),
   fAssignedZ(tracklet.fAssignedZ),
   fAlpha(tracklet.fAlpha),
   fYProj(tracklet.fYProj),
@@ -117,6 +121,7 @@ AliTRDtrackletGTU& AliTRDtrackletGTU::operator=(const AliTRDtrackletGTU &rhs)
   if (&rhs != this) {
     fTracklet = rhs.fTracklet;
     fTrackletESD = rhs.fTrackletESD;
+    fMCMtrackletIndex = rhs.fMCMtrackletIndex;
     for (Int_t zch = 0; zch < fGtuParam->GetNZChannels(); zch++)
       fSubChannel[zch] = rhs.fSubChannel[zch];
     fIndex = rhs.fIndex;

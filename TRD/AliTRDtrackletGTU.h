@@ -54,6 +54,8 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   AliTRDtrackletBase* GetTracklet() const { return fTracklet; }
   AliESDTrdTracklet* GetTrackletESD() const { return fTrackletESD; }
   UInt_t GetTrackletWord() const { return fTrackletESD ? fTrackletESD->GetTrackletWord() : fTracklet->GetTrackletWord(); }
+  Int_t GetMCMtrackletIndex() const { return fMCMtrackletIndex; }
+  void  SetMCMtrackletIndex(Int_t val) { fMCMtrackletIndex=val; }
 
   Int_t GetSide() const { return GetYbin() < 0 ? 0 : 1; }
 
@@ -75,6 +77,8 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
   AliTRDtrackletBase *fTracklet;    //! pointer to the underlying tracklet
   AliESDTrdTracklet  *fTrackletESD; //! pointer to the underlying ESD tracklet
 
+  Int_t fMCMtrackletIndex;      // Index number of the original tracklet in the TrackletTree
+
   Int_t  fSubChannel[AliTRDgtuParam::fgkNZChannels]; // z-channel assignments
   Bool_t fAssignedZ;		// tracklet assigned to a Z-channel
 
@@ -87,7 +91,7 @@ class AliTRDtrackletGTU : public AliTRDtrackletBase {
 
  private:
 
-  ClassDef(AliTRDtrackletGTU, 0);
+  ClassDef(AliTRDtrackletGTU, 1);
 };
 
 #endif
