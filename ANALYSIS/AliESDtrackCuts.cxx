@@ -730,6 +730,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   if(selPrimaries) {
     // 7*(0.0050+0.0060/pt^0.9)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0350+0.0420/pt^0.9");
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
   }
   esdTrackCuts->SetMaxDCAToVertexZ(1.e6);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
@@ -737,7 +738,6 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
   
   return esdTrackCuts;
 }
@@ -774,13 +774,13 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   if(selPrimaries) {
     // 7*(0.0026+0.0050/pt^1.01)
     esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
   }
   esdTrackCuts->SetMaxDCAToVertexZ(2);
   esdTrackCuts->SetDCAToVertex2D(kFALSE);
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
-  esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
   return esdTrackCuts;
 }
