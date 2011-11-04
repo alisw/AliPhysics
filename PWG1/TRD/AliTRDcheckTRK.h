@@ -13,56 +13,33 @@
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
-#ifndef ALITRDRECOTASK_H
-#include "AliTRDrecoTask.h"
+#ifndef ALITRDRESOLUTION_H
+#include "AliTRDresolution.h"
 #endif
 
-template <typename Value> class TVectorT;
-typedef struct TVectorT<Double_t> TVectorD;
-class TH1;
+/*template <typename Value> class TVectorT;
+typedef struct TVectorT<Double_t> TVectorD;*/
 class TObjArray;
-class AliExternalTrackParam;
 class AliTRDtrackV1;
-class AliTRDcheckTRK : public AliTRDrecoTask
+class AliTRDcheckTRK : public AliTRDresolution
 {
 public:
   enum ETRDcheckTRKconst {
-     kNbunchCross = 3  // no of classes for bunch crossing
-    ,kNpt         = 24 // no of log bins in pt spectrum
-    ,kNcharge     = 2
-  };
-  enum ETRDcheckTRKclasses {
-     kEntry = 0
-    ,kPropagation
-    ,kNclasses
-  };
-  enum ETRDcheckTRKprojs {
-    kBC    = 0 // bunch cross
-    ,kPhi
-    ,kEta
-    ,kSpeciesChgRC
-    ,kPt
-    ,kYrez
-    ,kZrez
-    ,kPrez
-    ,kNdim  // no of dimensions in the THnSparse
+     kNptBins    = 25 // no of log bins in pt spectrum
+    ,kNSigmaBins = 25 // no of sigma bins
+    ,kNclusters  = 19 // no of no of clusters
+    ,kNdim       = 7  // no of dimensions in THnSparse
   };
   AliTRDcheckTRK();
   AliTRDcheckTRK(char* name);
   virtual ~AliTRDcheckTRK();
   static Float_t  GetKalmanStep()                      { return fgKalmanStep;}
-  Int_t           GetSpeciesByMass(Float_t m);
-  Int_t           GetPtBin(Float_t pt);
-  Bool_t          GetRefFigure(Int_t ifig);
   static Bool_t   HasClRecalibrate()                   { return fgClRecalibrate;}
   static Bool_t   HasKalmanUpdate()                    { return fgKalmanUpdate;}
-  TObjArray*      Histos();
-  TH1*            PlotEntry(const AliTRDtrackV1 *t=NULL);
-  TH1*            PlotPropagation(const AliTRDtrackV1 *t=NULL);
-  static Bool_t   PropagateKalman(const AliTRDtrackV1 *t, AliExternalTrackParam *ref,
-                    TVectorD *dx, TVectorD *dy, TVectorD *dz, TVectorD *dphi,
-                    TVectorD *pt, TVectorD *phi, TVectorD *eta,
-                    TVectorD *budget=NULL, TVectorD *c=NULL, Option_t *opt="");
+  virtual TObjArray*  Histos();
+  TH1*            PlotTrack(const AliTRDtrackV1 *t=NULL);
+  TH1*            DoRoads(const AliTRDtrackV1 *t=NULL);
+  static Bool_t   PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref);
   static void     SetKalmanStep(Float_t step)          { fgKalmanStep=step;}
   static void     SetClRecalibrate(Bool_t set=kTRUE)   { fgClRecalibrate=set;}
   static void     SetKalmanUpdate(Bool_t set=kTRUE)    { fgKalmanUpdate=set;}
@@ -70,15 +47,14 @@ public:
 private:
   AliTRDcheckTRK(const AliTRDcheckTRK&);
   AliTRDcheckTRK& operator=(const AliTRDcheckTRK&);
-  Bool_t          MakeProjectionEtaPhi();
+  void     MakePtCalib(Float_t pt0=0.3, Float_t dpt=0.002);
+  Int_t    GetPtBinCalib(Float_t pt);
 
   // kalman related settings
   static Bool_t  fgKalmanUpdate;  // update Kalman with TRD point
   static Bool_t  fgClRecalibrate; // recalibrate clusters and recalculate tracklet fit
   static Float_t fgKalmanStep;    // Kalman stepping
-
-  Double_t       fPtBins[kNpt+1]; // discretization of pt range
-  TH1            *fProj[10];      //! array of histo projections
+  Float_t        fPtBinCalib[kNptBins+1];  //! pt segmentation
 
   ClassDef(AliTRDcheckTRK, 1) // TRD tracker systematic
 };

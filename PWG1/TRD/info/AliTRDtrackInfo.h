@@ -39,13 +39,14 @@ public:
     Int_t       GetId() const                    { return fId;}
     ULong_t     GetStatus() const                { return fStatus;}
     Int_t       GetKinkIndex() const             { return fKinkIndex;}
-    UShort_t    GetTOFbc() const                 { return fTOFbc;}
+    Short_t     GetTOFbc() const                 { return fTOFbc;}
     UShort_t    GetTPCncls() const               { return fTPCncls;}
     UChar_t     GetPidQuality() const            { return fTRDpidQuality;}
     Int_t       GetNSlices() const               { return fTRDnSlices;}
     Double32_t* GetSliceIter() const             { return fTRDslices;}
     const Double32_t* GetResponseIter() const    { return &fTRDr[0];}
     AliExternalTrackParam* GetOuterParam() const { return fOP;}
+    AliExternalTrackParam* GetTPCoutParam() const { return fTPCout;}
     const Int_t* GetV0pid() const                { return &fTRDv0pid[0];}
     Int_t       GetV0pid(Int_t i) const          { return fTRDv0pid[i];}
 
@@ -55,15 +56,16 @@ public:
     ULong_t     fStatus;        // ESD track status
     Int_t       fKinkIndex;     // ESD kink index
     UShort_t    fTPCncls;       // Number of Clusters inside TPC
-    UShort_t    fTOFbc;         // TOF bunch crossing index
+    Short_t     fTOFbc;         // TOF bunch crossing index
     Double32_t  fTRDr[AliPID::kSPECIES];  // TRD radial position
     UChar_t     fTRDpidQuality; // TRD PID quality
     Int_t       fTRDnSlices;    // number of slices used for PID
     Double32_t *fTRDslices;     //[fTRDnSlices] 
-    AliExternalTrackParam *fOP; // outer param
+    AliExternalTrackParam *fOP; // outer track param
+    AliExternalTrackParam *fTPCout; // outer TPC param
     Int_t  fTRDv0pid[AliPID::kSPECIES]; // PID from v0s
 
-    ClassDef(AliESDinfo, 4)     // ESD info related to TRD
+    ClassDef(AliESDinfo, 5)     // ESD info related to TRD
   };
 
   class AliMCinfo{
@@ -78,7 +80,7 @@ public:
     Int_t   GetNTrackRefs() const {return fNTrackRefs;}
     Int_t   GetPDG() const {return fPDG;}
     Int_t   GetPID() const ;
-    Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, UChar_t &s) const;
+    Bool_t  GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, Float_t &phi, UChar_t &s) const;
     AliTrackReference const* GetTrackRef(Int_t ref=0) const {return fTrackRefs[ref];}
     static Double_t GetKalmanStep() {return fgKalmanStep;}
     static Bool_t IsKalmanUpdate() {return fgKalmanUpdate;}
@@ -116,7 +118,7 @@ public:
   Int_t              GetNTrackRefs() const            { return fMC ? fMC->fNTrackRefs:0;} 
   Int_t              GetLabel() const                 { return fMC ? fMC->fLabel:0; }
   Int_t              GetKinkIndex() const             { return fESD.fKinkIndex;}
-  UShort_t           GetTOFbc() const                 { return fESD.fTOFbc;}
+  Short_t            GetTOFbc() const                 { return fESD.fTOFbc;}
   UShort_t           GetTPCncls() const               { return fESD.fTPCncls;}
   Int_t              GetPDG() const                   { return fMC ? fMC->fPDG : 0; }
   Int_t              GetPID() const                   { return fMC ? fMC->GetPID() : -1; }
@@ -137,9 +139,10 @@ public:
   void               SetPDG(Int_t pdg)                { if(fMC) fMC->fPDG = pdg; }
   void               SetPrimary(Bool_t prim = kTRUE)  {SetBit(kPrim, prim);}
   void               SetOuterParam(const AliExternalTrackParam *op);
+  void               SetTPCoutParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat)          { fESD.fStatus = stat;}
   void               SetKinkIndex(Int_t kinkIndex)    { fESD.fKinkIndex = kinkIndex;}
-  void               SetTOFbc(UShort_t bc)            { fESD.fTOFbc = bc;}
+  void               SetTOFbc(Int_t bc)               { fESD.fTOFbc = bc;}
   void               SetTPCncls(UShort_t TPCncls)     { fESD.fTPCncls = TPCncls;}
   void               SetTrackId(Int_t id)             { fESD.fId = id;}
   void               SetTrack(const AliTRDtrackV1 *track);

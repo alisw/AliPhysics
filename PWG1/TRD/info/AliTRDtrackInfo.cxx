@@ -138,6 +138,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo()
   ,fTRDnSlices(0)
   ,fTRDslices(NULL)
   ,fOP(NULL)
+  ,fTPCout(NULL)
 {
   //
   // Constructor
@@ -159,6 +160,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
   ,fTRDnSlices(esd.fTRDnSlices)
   ,fTRDslices(NULL)
   ,fOP(NULL)
+  ,fTPCout(NULL)
 {
   //
   // Constructor
@@ -172,6 +174,7 @@ AliTRDtrackInfo::AliESDinfo::AliESDinfo(const AliESDinfo &esd)
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
   if(esd.fOP) fOP = new AliExternalTrackParam(*esd.fOP);
+  if(esd.fTPCout) fTPCout = new AliExternalTrackParam(*esd.fTPCout);
 }
 
 
@@ -213,6 +216,7 @@ AliTRDtrackInfo::AliESDinfo::~AliESDinfo()
     fTRDnSlices = 0;
   }
   if(fOP) delete fOP; fOP = NULL;
+  if(fTPCout) delete fTPCout; fTPCout = NULL;
 }
 
 //___________________________________________________
@@ -226,6 +230,7 @@ void AliTRDtrackInfo::AliESDinfo::Delete(const Option_t *){
     fTRDnSlices = 0;
   }
   if(fOP) delete fOP; fOP = NULL;
+  if(fTPCout) delete fTPCout; fTPCout = NULL;
 }
 
 
@@ -310,6 +315,13 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
       new(fOP) AliExternalTrackParam(*esd.fOP);
     } else fOP = new AliExternalTrackParam(*esd.fOP);
   } else fOP = NULL;
+  if(esd.fTPCout){
+    if(fTPCout){
+      fTPCout->~AliExternalTrackParam();
+      // RS: Constructor from VTrack was used instead of Constructor from AliExternalTrackParam
+      new(fTPCout) AliExternalTrackParam(*esd.fTPCout);
+    } else fTPCout = new AliExternalTrackParam(*esd.fTPCout);
+  } else fTPCout = NULL;
 
   return *this;
 }
@@ -419,6 +431,20 @@ void  AliTRDtrackInfo::SetOuterParam(const AliExternalTrackParam *op)
 }
 
 //___________________________________________________
+void  AliTRDtrackInfo::SetTPCoutParam(const AliExternalTrackParam *op)
+{
+  //
+  // Set TPCout track parameters
+  //
+
+  if(!op) return;
+  if(fESD.fTPCout){
+    fESD.fTPCout->~AliExternalTrackParam();
+    new(fESD.fTPCout) AliExternalTrackParam(*op);
+  } else fESD.fTPCout = new AliExternalTrackParam(*op);
+}
+
+//___________________________________________________
 Int_t AliTRDtrackInfo::GetNTracklets() const
 {
   //
@@ -450,7 +476,7 @@ void AliTRDtrackInfo::SetSlices(Int_t n, Double32_t *s)
 }
  
 //___________________________________________________
-Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, UChar_t &status) const
+Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float_t &z0, Float_t &dydx, Float_t &dzdx, Float_t &pt, Float_t &eta, Float_t &phi, UChar_t &status) const
 {
 // Check for 2 track ref for the tracklet defined bythe radial position x0
 // The "status" is a bit map and gives a more informative output in case of failure:
@@ -474,7 +500,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
     if(nFound == 2) break;
   } 
   if(nFound < 2){ 
-    AliWarningGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
+    AliDebugGeneral("AliTRDtrackInfo::AliMCinfo::GetDirections()", 1, Form("Missing track ref x0[%6.3f] nref[%d]", x0, nFound));
     if(!nFound) SETBIT(status, 0);
     else SETBIT(status, 1);
     return kFALSE;
@@ -497,6 +523,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
   eta  =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
+  phi  =  tr[1]->PhiPos();
   return kTRUE;
 }
 

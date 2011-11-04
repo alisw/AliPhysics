@@ -206,6 +206,7 @@ void AliTRDrecoTask::InitFunctorList()
 // Initialize list of functors
 
   TClass *c = this->IsA();
+  if(fPlotFuncList) fPlotFuncList->Clear();
 
   TMethod *m = NULL;
   TIter methIter(c->GetListOfMethods());
