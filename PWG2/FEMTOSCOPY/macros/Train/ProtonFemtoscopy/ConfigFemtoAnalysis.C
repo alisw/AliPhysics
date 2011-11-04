@@ -266,6 +266,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    //	    sqpcetaphitpc[aniter]->SetEtaDifferenceMinimum(0.02);
 	  }
 	  else if (runtype == 2) {
+	    sqpcetaphitpc[aniter]->SetUseAOD(kTRUE);
 	    sqpcetaphitpc[aniter]->SetShareQualityMax(1.0);
 	    sqpcetaphitpc[aniter]->SetShareFractionMax(0.05);
 	    sqpcetaphitpc[aniter]->SetRemoveSameLabel(kFALSE);
@@ -347,8 +348,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    }
 	  }
 	  
-	  cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
-	  anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
+	 // cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
+	 // anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 	  
 	  Manager->AddAnalysis(anetaphitpc[aniter]);	
 	}
