@@ -312,17 +312,19 @@ AliTPCcalibTime::~AliTPCcalibTime(){
   if (fTPCVertexCorrelation[0]) {
     for (Int_t i=0;i<5;i++)  delete fTPCVertexCorrelation[i];
   }
-  
-  fAlignITSTPC->SetOwner(kTRUE);
-  fAlignTRDTPC->SetOwner(kTRUE);
-  fAlignTOFTPC->SetOwner(kTRUE);
 
-  fAlignITSTPC->Delete();
-  fAlignTRDTPC->Delete();
-  fAlignTOFTPC->Delete();
-  delete fAlignITSTPC;
-  delete fAlignTRDTPC;
-  delete fAlignTOFTPC;
+  if (fAlignITSTPC){
+    fAlignITSTPC->SetOwner(kTRUE);
+    fAlignTRDTPC->SetOwner(kTRUE);
+    fAlignTOFTPC->SetOwner(kTRUE);
+    
+    fAlignITSTPC->Delete();
+    fAlignTRDTPC->Delete();
+    fAlignTOFTPC->Delete();
+    delete fAlignITSTPC;
+    delete fAlignTRDTPC;
+    delete fAlignTOFTPC;
+  }
 }
 
 // Bool_t AliTPCcalibTime::IsLaser(const AliESDEvent *const /*event*/) const{
@@ -1350,7 +1352,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     trackIn.GetXYZ(xyz);
     bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],1.,pimass,kFALSE);
+    AliTracker::PropagateTrackToBxByBz(&trackIn,r[0],pimass,1.,kFALSE);
     if (!trackIn.PropagateTo(r[0],bz)) break;
     nclIn++;
     trackIn.Update(&r[1],cov);    
@@ -1379,7 +1381,7 @@ void  AliTPCcalibTime::ProcessSame(const AliESDtrack *const track, AliESDfriendT
     Double_t r[3]={cl->GetX(),cl->GetY(),cl->GetZ()};
     trackOut.GetXYZ(xyz);
     bz = AliTracker::GetBz(xyz);
-    AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],1.,pimass,kFALSE);
+    AliTracker::PropagateTrackToBxByBz(&trackOut,r[0],pimass,1.,kFALSE);
     if (!trackOut.PropagateTo(r[0],bz)) break;
     nclOut++;
     trackOut.Update(&r[1],cov);    
