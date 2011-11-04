@@ -40,6 +40,7 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   calibTask->SetHisto2d(kTRUE);
   calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);
+  calibTask->SetExbAlt(kTRUE);
   calibTask->SetNz(0,0);
   calibTask->SetNrphi(0,0);
   calibTask->SetNz(0,1);
