@@ -15,20 +15,21 @@
 #include "AliGenerator.h"
 #include "AliPDG.h"
 #include "AliRunLoader.h"
+#include "AliDecayer.h"
+#include "AliDecayerPythia.h"
 #include "AliRun.h"
 #include "AliStack.h"
 #include "AliHeader.h"
 #include "AliGenAmpt.h"
 #endif
 
-void fastGenAmpt(Int_t nev = 1, const char* filename = "galice.root")
+void fastGenAmpt(Int_t nev = 10, const char* filename = "galice.root")
 {
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();
 
   // Run loader
   AliRunLoader* rl = AliRunLoader::Open(filename,"FASTRUN","recreate");
-  
   rl->SetCompressionLevel(2);
   rl->SetNumberOfEventsPerFile(nev);
   rl->LoadKinematics("RECREATE");
@@ -44,12 +45,20 @@ void fastGenAmpt(Int_t nev = 1, const char* filename = "galice.root")
   AliHeader* header = rl->GetHeader();
   
   AliGenAmpt *genHi = new AliGenAmpt(-1);
+//=============================================================================
+// THE DECAYER
+  AliDecayer *decayer = new AliDecayerPythia();
+  cout << "*****************************************" << endl;
+  genHi->SetForceDecay( kHadronicD );
+  genHi->SetDecayer( decayer );
+//=============================================================================
   genHi->SetEnergyCMS(2760);
   genHi->SetReferenceFrame("CMS");
   genHi->SetProjectile("A", 208, 82);
   genHi->SetTarget    ("A", 208, 82);
   genHi->SetPtHardMin (3);
-  genHi->SetImpactParameterRange(9.,9.5);
+  //genHi->SetImpactParameterRange(9.,9.5);
+  genHi->SetImpactParameterRange(0.,20.0);
   genHi->SetJetQuenching(1); // enable jet quenching
   genHi->SetShadowing(1);    // enable shadowing
   genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off

@@ -38,6 +38,7 @@ ClassImp(AliGenAmpt)
 
 AliGenAmpt::AliGenAmpt() 
   : AliGenMC(),
+    fDecayer(NULL),
     fFrame("CMS"),
     fMinImpactParam(0.),
     fMaxImpactParam(5.),
@@ -80,6 +81,7 @@ AliGenAmpt::AliGenAmpt()
     fAlpha(1./3),
     fStringA(0.5),
     fStringB(0.9),
+    fEventTime(0.),
     fHeader(new AliGenAmptEventHeader("Ampt")),
     fDecay(kTRUE)
 {
@@ -90,6 +92,7 @@ AliGenAmpt::AliGenAmpt()
 
 AliGenAmpt::AliGenAmpt(Int_t npart)
   : AliGenMC(npart),
+    fDecayer(NULL),
     fFrame("CMS"),
     fMinImpactParam(0.),
     fMaxImpactParam(5.),
@@ -132,6 +135,7 @@ AliGenAmpt::AliGenAmpt(Int_t npart)
     fAlpha(1./3),
     fStringA(0.5),
     fStringB(0.9),
+    fEventTime(0.),
     fHeader(new AliGenAmptEventHeader("Ampt")),
     fDecay(kTRUE)
 {
@@ -248,13 +252,13 @@ void AliGenAmpt::Generate()
   fTrials = 0;
   for (j = 0;j < 3; j++) 
     origin0[j] = fOrigin[j];
-  time0 = fTimeOrigin;
+  //time0 = fTimeOrigin;
 
   if(fVertexSmear == kPerEvent) {
     Vertex();
     for (j=0; j < 3; j++) 
       origin0[j] = fVertex[j];
-    time0 = fTime;
+    //time0 = fTime;
   } 
 
   Float_t sign = (fRandomPz && (Rndm() < 0.5))? -1. : 1.;
@@ -278,80 +282,85 @@ void AliGenAmpt::Generate()
     }
 
     AliDecayer *decayer = 0;
-    if (gMC)
-      decayer = gMC->GetDecayer();
+    //if (gMC)
+    //  decayer = gMC->GetDecayer();
+    decayer = fDecayer; //AMPT does not do the strong decays per dafault
 
     if (decayer&&fDecay) {
       TClonesArray arr("TParticle",100);
-      Int_t np2 = np;
-      for (Int_t i = 0; i < np; i++) {
-        TParticle *iparticle = (TParticle *)fParticles.At(i);
-        if (!Stable(iparticle)) 
-          continue;
-        kf        = TMath::Abs(iparticle->GetPdgCode());
-        if (kf==92)
-          continue;
-        if (0) { // this turned out to be too cumbersome!
-          if (kf!=331&&kf!=3114&&kf!=3114&&kf!=411&&kf!=-4122&&kf!=-3324&&kf!=-3312&&kf!=-3114&&
-              kf!=-311&&kf!=3214&&kf!=-3214&&kf!=-433&&kf!=413&&kf!=3122&&kf!=-3122&&kf!=-413&&
-              kf!=-421&&kf!=-423&&kf!=3324&&kf!=-313&&kf!=213&&kf!=-213&&kf!=3314&&kf!=3222&&
-              kf!=-3222&&kf!=3224&&kf!=-3224&&kf!=-4212&&kf!=4212&&kf!=433&&kf!=423&&kf!=-3322&&
-              kf!=3322&&kf!=-3314)
-            continue; //decay eta',Sigma*+,Sigma*-,D+,Lambda_c-,Xi*0_bar,Xi-_bar,Sigma*-,
-                      //      K0_bar,Sigma*0,Sigma*0_bar,D*_s-,D*+,Lambda0,Lambda0_bar,D*-
-                      //      D0_bar,D*0_bar,Xi*0,K*0_bar,rho+,rho-,Xi*-,Sigma-,
-                      //      Sigma+,Sigma*+,Sigma*-,Sigma_c-,Sigma_c+,D*_s+,D*0,Xi0_bar
-                      //      Xi0,Xi*+
-        } else { // really only decay particles if there are not known to Geant3
-          if (gMC->IdFromPDG(kf)>0)
-            continue;
+      for( Int_t nLoop=0; nLoop!=2; ++nLoop) { // In order to produce more than one generation of decays: NumberOfNestedLoops set to 2
+        Int_t np2 = np;
+  	    for (Int_t i = 0; i < np; i++) {
+	        TParticle *iparticle = (TParticle *)fParticles.At(i);
+	        if (!Stable(iparticle)) // true if particle has daughters already
+	          continue;
+	        kf = TMath::Abs(iparticle->GetPdgCode());
+	        if (kf==92)
+	          continue;
+          if( !IsThisAKnownParticle(iparticle) ) continue; // skip undesired particles
+	        /*
+	        if (0) { // this turned out to be too cumbersome!
+	          if (kf!=331&&kf!=3114&&kf!=3114&&kf!=411&&kf!=-4122&&kf!=-3324&&kf!=-3312&&kf!=-3114&&
+	              kf!=-311&&kf!=3214&&kf!=-3214&&kf!=-433&&kf!=413&&kf!=3122&&kf!=-3122&&kf!=-413&&
+	              kf!=-421&&kf!=-423&&kf!=3324&&kf!=-313&&kf!=213&&kf!=-213&&kf!=3314&&kf!=3222&&
+	              kf!=-3222&&kf!=3224&&kf!=-3224&&kf!=-4212&&kf!=4212&&kf!=433&&kf!=423&&kf!=-3322&&
+	              kf!=3322&&kf!=-3314)
+	            continue; //decay eta',Sigma*+,Sigma*-,D+,Lambda_c-,Xi*0_bar,Xi-_bar,Sigma*-,
+	                      //      K0_bar,Sigma*0,Sigma*0_bar,D*_s-,D*+,Lambda0,Lambda0_bar,D*-
+	                      //      D0_bar,D*0_bar,Xi*0,K*0_bar,rho+,rho-,Xi*-,Sigma-,
+  	                    //      Sigma+,Sigma*+,Sigma*-,Sigma_c-,Sigma_c+,D*_s+,D*0,Xi0_bar
+  	                    //      Xi0,Xi*+
+  	      //} else { // really only decay particles if there are not known to Geant3
+  	      //  if (gMC->IdFromPDG(kf)>0)
+  	      //    continue;
+  	      }
+  	      if (0) { // defining the particle for Geant3 leads to a floating point exception.
+  	        TParticlePDG *pdg = iparticle->GetPDG(1);
+  	        //pdg->Print(); printf("%s\n",pdg->ParticleClass());
+  	        TString ptype(pdg->ParticleClass());
+  	        TMCParticleType mctype(kPTUndefined);
+  	        if (ptype=="Baryon" || ptype=="Meson")
+  	          mctype = kPTHadron;
+  	        gMC->DefineParticle(pdg->PdgCode(), pdg->GetName(), mctype, pdg->Mass(), pdg->Charge(), pdg->Lifetime(),
+  	                            ptype,pdg->Width(), (Int_t)pdg->Spin(), (Int_t)pdg->Parity(), 0, 
+  	                            (Int_t)pdg->Isospin(), 0, 0, 0, 0, pdg->Stable());
+  	        gMC->SetUserDecay(pdg->PdgCode());
+  	        continue;
+  	      }
+  	      */
+	        TLorentzVector pmom(iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy());
+	        decayer->Decay(kf,&pmom);
+	        decayer->ImportParticles(&arr);
+	        Int_t ndecayed = arr.GetEntries();
+	        if (ndecayed>1) {
+	          if (np2+ndecayed>fParticles.GetSize())
+	            fParticles.Expand(2*fParticles.GetSize());
+	          //arr.Print();
+	          // iparticle->SetStatusCode(2);  to be compatible with Hijing
+	          iparticle->SetFirstDaughter(np2);
+	          for (Int_t jj = 1; jj < ndecayed; jj++) {
+  	          TParticle *jp = (TParticle *)arr.At(jj);
+	            if (jp->GetFirstMother()!=1)
+	              continue;
+  	          TParticle *newp = new(fParticles[np2]) TParticle(jp->GetPdgCode(),
+  	                                                           0, //1,  //to be compatible with Hijing
+  	                                                           i,
+  	                                                           -1,
+  	                                                           -1,
+  	                                                           -1,
+  	                                                           jp->Px(),jp->Py(),jp->Pz(),jp->Energy(),
+  	                                                           jp->Vx(),jp->Vy(),jp->Vz(),jp->T());
+  	          newp->SetUniqueID( jp->GetStatusCode() );
+  	          np2++;
+  	        } // end of jj->nDecayedParticles
+  	        iparticle->SetLastDaughter(np2-1);
+  	      } // end of nDecayedPrticles>1
+  	    } // end of i->np
+        np = fParticles.GetEntries();
+        if (np!=np2) {
+          AliError(Form("Something is fishy: %d %d\n", np,np2));
         }
-        if (0) { // defining the particle for Geant3 leads to a floating point exception.
-          TParticlePDG *pdg = iparticle->GetPDG(1);
-          //pdg->Print(); printf("%s\n",pdg->ParticleClass());
-          TString ptype(pdg->ParticleClass());
-          TMCParticleType mctype(kPTUndefined);
-          if (ptype=="Baryon" || ptype=="Meson")
-            mctype = kPTHadron;
-          gMC->DefineParticle(pdg->PdgCode(), pdg->GetName(), mctype, pdg->Mass(), pdg->Charge(), pdg->Lifetime(),
-                              ptype,pdg->Width(), (Int_t)pdg->Spin(), (Int_t)pdg->Parity(), 0, 
-                              (Int_t)pdg->Isospin(), 0, 0, 0, 0, pdg->Stable());
-          gMC->SetUserDecay(pdg->PdgCode());
-          continue;
-        }
-
-        TLorentzVector pmom(iparticle->Px(),iparticle->Py(),iparticle->Pz(),iparticle->Energy());
-        decayer->Decay(kf,&pmom);
-        decayer->ImportParticles(&arr);
-        Int_t ndecayed = arr.GetEntries();
-        if (ndecayed>1) {
-          if (np2+ndecayed>fParticles.GetSize())
-            fParticles.Expand(2*fParticles.GetSize());
-          //arr.Print();
-          iparticle->SetStatusCode(2);
-          iparticle->SetFirstDaughter(np2);
-          for (Int_t jj = 1; jj < ndecayed; jj++) {
-            TParticle *jp = (TParticle *)arr.At(jj);
-            if (jp->GetFirstMother()!=1)
-              continue;
-            TParticle *newp = new(fParticles[np2]) TParticle(jp->GetPdgCode(),
-                                                             1,
-                                                             i,
-                                                             -1,
-                                                             -1,
-                                                             -1,
-                                                             jp->Px(),jp->Py(),jp->Pz(),jp->Energy(),
-                                                             jp->Vx(),jp->Vy(),jp->Vz(),jp->T());
-            newp->SetUniqueID(999);
-            np2++;
-          }
-          iparticle->SetLastDaughter(np2-1);
-        }
-      }
-      np = fParticles.GetEntries();
-      if (np!=np2) {
-        AliError(Form("Something is fishy: %d %d\n", np,np2));
-      }
+      } // end of nLoop->NumberOfNestedLoops
     } else {
       if (fDecay)
         AliError("No decayer found, but fDecay==kTRUE!");
@@ -374,18 +383,18 @@ void AliGenAmpt::Generate()
     fVertex[0] = origin0[0];
     fVertex[1] = origin0[1];	
     fVertex[2] = origin0[2];
-    fTime = time0;
+    //fTime = time0;
       
     // First select parent particles
     for (Int_t i = 0; i < np; i++) {
       TParticle *iparticle = (TParticle *) fParticles.At(i);
 
     // Is this a parent particle ?
-      if (Stable(iparticle)) continue;
+      if (Stable(iparticle)) continue;  // quit if particle has no daughters
       Bool_t  selected             =  kTRUE;
       Bool_t  hasSelectedDaughters =  kFALSE;
-      kf        = iparticle->GetPdgCode();
-      ks        = iparticle->GetStatusCode();
+      kf = iparticle->GetPdgCode();
+      ks = iparticle->GetStatusCode();
       if (kf == 92) 
         continue;
 	    
@@ -409,14 +418,13 @@ void AliGenAmpt::Generate()
     for (Int_t i = 0; i<np; i++) {
       TParticle *iparticle = (TParticle *) fParticles.At(i);
       // Is this a final state particle ?
-      if (!Stable(iparticle)) 
-        continue;
-      Bool_t  selected             =  kTRUE;
-      kf        = iparticle->GetPdgCode();
+      if (!Stable(iparticle)) continue;  // quit if particle has daughters
+      Bool_t  selected =  kTRUE;
+      kf = iparticle->GetPdgCode();
       if (kf == 92) 
         continue;
-      ks        = iparticle->GetStatusCode();
-      ksp       = iparticle->GetUniqueID();
+      ks  = iparticle->GetStatusCode();
+      ksp = iparticle->GetUniqueID();
 	  
       // --------------------------------------------------------------------------
       // Count spectator neutrons and protons
@@ -444,10 +452,10 @@ void AliGenAmpt::Generate()
 
     // Write particles to stack
     for (Int_t i = 0; i<np; i++) {
-      TParticle *iparticle = (TParticle *) fParticles.At(i);
-      Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
-      Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
       if (pSelected[i]) {
+	      TParticle *iparticle = (TParticle *) fParticles.At(i);
+	      Bool_t  hasMother   = (iparticle->GetFirstMother()     >=0);
+	      Bool_t  hasDaughter = (iparticle->GetFirstDaughter()   >=0);
         kf   = iparticle->GetPdgCode();
         ks   = iparticle->GetStatusCode();
         p[0] = iparticle->Px();
@@ -460,13 +468,19 @@ void AliGenAmpt::Generate()
 
         imo = -1;
         TParticle* mother = 0;
+        TMCProcess procID = (TMCProcess) iparticle->GetUniqueID();
         if (hasMother) {
           imo = iparticle->GetFirstMother();
           mother = (TParticle *) fParticles.At(imo);
           imo = (mother->GetPdgCode() != 92) ? newPos[imo] : -1;
+        } else { // if has no mothers then it was created by AMPT
+          if(procID==999)
+            procID = kPPrimary; // reseting to ALIROOT convention
+          else
+            procID = kPNoProcess; // for expectators
         } // if has mother   
         Bool_t tFlag = (fTrackIt && !hasDaughter);
-        PushTrack(tFlag,imo,kf,p,origin,polar,tof,kPNoProcess,nt, 1., ks);
+        PushTrack(tFlag,imo,kf,p,origin,polar,tof,procID,nt, 1., ks);
         fNprimaries++;
         KeepTrack(nt);
         newPos[i] = nt;
@@ -487,6 +501,33 @@ void AliGenAmpt::Generate()
   } // event loop
   MakeHeader();
   SetHighWaterMark(nt);
+}
+
+Bool_t AliGenAmpt::IsThisAKnownParticle(TParticle *thisGuy)
+{
+  // In order to prevent AMPT to introduce weird particles into the decayer and transporter
+  // blame cperez@cern.ch for this method
+
+  Int_t pdgcode = TMath::Abs( thisGuy->GetPdgCode() );
+
+  Int_t myFavoriteParticles[ 38] = { 3322, 3314, 3312, 3224, 3222,  // Xi0       Xi*+-   Xi+-    Sigma*-+ Sigma-+
+                                     3214, 3212, 3122, 3114, 3112,  // Sigma*0   Sigma0  Lambda0 Sigma*+- Sigma+-
+                                     2224, 2214, 2212, 2114, 2112,  // Delta--++ Delta-+ proton  Delta0   neutron
+                                     1114,  323,  321,  313,  311,  // Delta+-   K*-+    K-+     K*0      K0
+                                      213,  211,   11,   22,  111,  // rho-+     pi-+    e+-     gamma    pi0
+                                      113,  130,  221,  223,  310,  // rho0      K_L0    eta     omega    K_S0
+                                      331,  333, 3324,  431,  421,  // eta'      phi     Xi*0    Ds-+     D0
+                                      411,  413,   13               // D-+       D*-+    mu+-
+                                    };
+
+  Bool_t found = kFALSE;
+  for(Int_t i=0; i!=38; ++i)
+    if( myFavoriteParticles[i] == pdgcode ) {
+      found = kTRUE;
+      break;
+    }
+
+  return found;
 }
 
 void AliGenAmpt::EvaluateCrossSections()
@@ -609,6 +650,9 @@ Bool_t AliGenAmpt::Stable(TParticle* particle) const
   if (particle->GetFirstDaughter() < 0 )
     return kTRUE;
   return kFALSE;
+
+  /// ADD LIST
+
 }
 
 void AliGenAmpt::MakeHeader()
@@ -655,8 +699,8 @@ void AliGenAmpt::MakeHeader()
   fHeader->SetTrials(fTrials);
   // Event Vertex
   fHeader->SetPrimaryVertex(fVertex);
-  fHeader->SetInteractionTime(fTime);
-
+  fHeader->SetInteractionTime(fEventTime);
+  
   fCollisionGeometry = fHeader;
   AddHeader(fHeader);
 }

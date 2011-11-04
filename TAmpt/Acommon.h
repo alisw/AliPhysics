@@ -7,7 +7,7 @@
 //*KEND.
 #endif
 
-#define _MAXNPARTICLE_ 200001
+#define _MAXNPARTICLE_ 150001
 
 extern "C" {
 
