@@ -41,11 +41,13 @@ public:
   void SetMaxEEMinv(Double_t maxeeminv);
   void SetMaxThetaDiff(Double_t maxdtheta);
   void SetTPCEntranceSepMinimum(double dtpc);
+  void SetUseAOD(Bool_t UseAOD);
   
  protected:
   Double_t fMaxEEMinv; // Maximum allowed ee Minv
   Double_t fMaxDTheta; // Maximum polar angle difference
   Double_t fDTPCMin;          // Minimum allowed pair nominal separation at the entrance to the TPC
+  Bool_t fUseAOD; // Use AODs
 
 
 #ifdef __ROOT__
