@@ -19,7 +19,7 @@
 ClassImp(AliAnaVZEROPbPb)
 
 AliAnaVZEROPbPb::AliAnaVZEROPbPb() 
-  : AliAnalysisTaskSE("AliAnaVZEROPbPb"), fESD(0), fEsdV0(0), fOutputList(0), fClassesNames(0),
+  : AliAnalysisTaskSE("AliAnaVZEROPbPb"), fESD(0), fEsdV0(0), fOutputList(0), fNClasses(0), fClassesNames(0),
   fNFlags(0),
   fhAdcPMTNoTime(0),
   fhAdcPMTWithTime(0),
@@ -60,6 +60,7 @@ fV0CEqMultMax(1000)
 
 {
   // Constructor
+  // Init arrays
   for(Int_t i = 0; i < 2; ++i) {
 	fhAdcNoTime[i] = fhAdcWithTime[i] =  fhWidth[i] =  fhTime[i] = NULL;
 	fhAdcTime[i] =  fhAdcWidth[i] = NULL;
@@ -115,6 +116,7 @@ fV0AEqMultMax(1000),
 fV0CEqMultMax(1000)
 {
   // Constructor
+  // Init arrays
   for(Int_t i = 0; i < 2; ++i) {
 	fhAdcNoTime[i] = fhAdcWithTime[i] =  fhWidth[i] =  fhTime[i] = NULL;
 	fhAdcTime[i] =  fhAdcWidth[i] = NULL;
@@ -128,6 +130,8 @@ fV0CEqMultMax(1000)
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::SetClassesNames(const Char_t * nameList){
+  // Initialize the class names
+  // which are used in the trigger split
 	TString  names("AllClasses,");
 	names += nameList;
 	fClassesNames = names.Tokenize(",");
@@ -139,6 +143,7 @@ TH1F * AliAnaVZEROPbPb::CreateHisto1D(const char* name, const char* title,Int_t 
 				    const char* xLabel, const char* yLabel)
 {
   // create a histogram
+  // and set the axis labels and the style
   TH1F* result = new TH1F(name, title, nBins, xMin, xMax);
   result->SetOption("hist");
   if (xLabel) result->GetXaxis()->SetTitle(xLabel);
@@ -155,6 +160,7 @@ TH2F * AliAnaVZEROPbPb::CreateHisto2D(const char* name, const char* title,Int_t 
 				    const char* xLabel, const char* yLabel)
 {
   // create a histogram
+  // and set the axis labels and the style
   TH2F* result = new TH2F(name, title, nBinsX, xMin, xMax, nBinsY, yMin, yMax);
   if (xLabel) result->GetXaxis()->SetTitle(xLabel);
   if (yLabel) result->GetYaxis()->SetTitle(yLabel);
@@ -184,7 +190,8 @@ void AliAnaVZEROPbPb::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnaVZEROPbPb::Init()
 {
-
+  // Nothing nere
+  // ...
 }
 
 //________________________________________________________________________
@@ -215,7 +222,8 @@ void AliAnaVZEROPbPb::UserExec(Option_t *)
 }      
 //________________________________________________________________________
 void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
-	
+  // Create the histograms
+  // for all the required L2 trigger classes	
 	fhOnlineCharge= new TH2F*[fNClasses];
 	fhCentrality= new TH1F*[fNClasses];
 	fhV0vsSPDCentrality= new TH2F*[fNClasses];
@@ -281,7 +289,8 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::CreateQAHistos(){
-
+  // Create the main
+  // QA histos
   fNFlags    = CreateHisto2D("hNFlags","BB Flags",33,-0.5,32.5,33,-0.5,32.5,"V0A","V0C");
   fOutputList->Add(fNFlags);
 
@@ -354,6 +363,8 @@ void AliAnaVZEROPbPb::CreateQAHistos(){
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
+  // Fill the histos which are split
+  // by L2 trigger class
    TString trigStr(fESD->GetFiredTriggerClasses());
   
 	TIter iter(fClassesNames);
@@ -418,6 +429,7 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::FillQAHistos(){
+  // Fill the main QA histos
   // Count V0 flags
   Int_t nV0A = 0, nV0C = 0;
   for(Int_t i = 0; i < 32; ++i) {
@@ -479,7 +491,7 @@ void AliAnaVZEROPbPb::FillQAHistos(){
 //________________________________________________________________________
 void AliAnaVZEROPbPb::Terminate(Option_t *) 
 {
-  // Draw result to the screen
+  // Check if the output list is there
   // Called once at the end of the query
 
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
@@ -490,30 +502,39 @@ void AliAnaVZEROPbPb::Terminate(Option_t *)
 
 }
 //________________________________________________________________________
-
 void AliAnaVZEROPbPb::SetOnlineChargeRange(Int_t nbins, Float_t maxA, Float_t maxC){
+  // Set Trigger charge
+  // range used for histogramming
 	fNBinOnlineCharge = nbins;
 	fV0AOnlineChargeMax = maxA;
 	fV0COnlineChargeMax = maxC;
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::SetTotalMultiplicityRange(Int_t nbins, Float_t max){
+  // Set Multiplicity 
+  // range used for histogramming
 	fNBinTotMult = nbins;
 	fTotMultMax = max;
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::SetMultiplicityRange(Int_t nbins, Float_t maxA, Float_t maxC){
+  // Set Multiplicity 
+  // range used for histogramming
 	fNBinMult = nbins;
 	fV0AMultMax = maxA;
 	fV0CMultMax = maxC;
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::SetEquaMultRange(Int_t nbins, Float_t max){
+  // Set Equalized multiplicity
+  // range used for histogramming
 	fNBinEquaMult = nbins;
 	fEquaMultMax = max;
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::SetSumEquaMultRange(Int_t nbins, Float_t maxA, Float_t maxC){
+  // Set Equalized multiplicity
+  // range used for histogramming
 	fNBinSumsEqMult = nbins;
 	fV0AEqMultMax = maxA;
 	fV0CEqMultMax = maxC;
