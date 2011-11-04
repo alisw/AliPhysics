@@ -33,6 +33,7 @@ public:
   AliESDHeader* GetEventHeader() const                 { return fHeader; }
   AliESDRun*    GetRunInfo() const                     { return fRun; }
   Int_t         GetCentrality() const                  { return fCentrality; }
+  UShort_t      GetBunchFill() const;
   static void   GetListOfIsolatedBunches(TH1D *hbc, Int_t bunchSpacing=10);
   Bool_t        IsOwner() const                        { return TestBit(kOwner); }
   void          SetEventHeader(AliESDHeader *evHeader) { fHeader = evHeader; }

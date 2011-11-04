@@ -67,7 +67,7 @@
 
 #endif
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
+Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWG1.so"};
 // define setup
 TCanvas *c = 0x0;
 Bool_t mc(kFALSE), friends(kFALSE);
@@ -75,6 +75,7 @@ Bool_t summary(kTRUE);
 
 void processTRD(TNamed* task, const Char_t *filename);
 void processESD(TNamed* task, const Char_t *filename);
+void makeSummaryESD(const Char_t* filename="QAResults.root", Double_t* trendValues=0x0, Bool_t useCF=kFALSE, Bool_t useIsolatedBC=kFALSE, Bool_t cutTOFbc=kFALSE, const Char_t* dir="TRD_Performance", Bool_t isGrid=kFALSE);
 void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE, Bool_t dosummary = kTRUE)
 {
   if(kGRID){
@@ -85,7 +86,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
     TGrid::Connect("alien://");
   }
 
-	// Load Libraries in interactive mode
+  // Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;
@@ -122,7 +123,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
     printf(" *** task %s, output file %s\n", task->GetName(), outputFile.Data());
     if(task->IsA()->InheritsFrom("AliTRDrecoTask")) processTRD(task, outputFile.Data());
     else if(strcmp(task->IsA()->GetName(), "AliTRDcheckESD")==0) processESD(task, outputFile.Data());
-    else if(strcmp(task->IsA()->GetName(), "AliTRDinfoGen")==0)processGEN(task, outputFile.Data());
+    else if(strcmp(task->IsA()->GetName(), "AliTRDinfoGen")==0) processGEN(task, outputFile.Data());
     else{
       Error("makeResults.C", Form("Handling of class task \"%s\" not implemented.", task->IsA()->GetName()));
       delete task;
@@ -218,4 +219,32 @@ void processGEN(TNamed *otask, const Char_t *filename)
   }
 
   delete info;
+}
+
+//______________________________________________________
+void makeSummaryESD(const Char_t* filename, Double_t* trendValues, Bool_t useCF, Bool_t useIsolatedBC, Bool_t cutTOFbc, const Char_t* dir, Bool_t isGrid) {
+  //
+  //  Make the summary picture and get trending variables from the ESD task
+  //
+  if(isGrid){
+    if(!gSystem->Getenv("GSHELL_ROOT")){
+      Error("makeResults.C", "AliEn not initialized.");
+      return;
+    }
+    TGrid::Connect("alien://");
+  }
+  
+  // Load Libraries in interactive mode
+  Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
+  for(Int_t ilib=0; ilib<nlibs; ilib++){
+    if(gSystem->Load(libs[ilib]) >= 0) continue;
+    Error("makeResults.C", Form("Failed to load %s.", libs[ilib]));
+    return;
+  }
+  
+  AliTRDcheckESD *esd=new AliTRDcheckESD();
+  if(!esd->Load(filename,dir)) return;
+  //esd->Terminate();
+  if(useCF) esd->MakeSummaryFromCF(trendValues, useIsolatedBC, cutTOFbc);
+  else esd->MakeSummary(trendValues);
 }
