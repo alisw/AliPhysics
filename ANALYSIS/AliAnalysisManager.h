@@ -27,6 +27,7 @@ class TClass;
 class TTree;
 class TFile;
 class TStopwatch;
+class TMap;
 class AliAnalysisSelector;
 class AliAnalysisDataContainer;
 class AliAnalysisTask;
@@ -120,6 +121,10 @@ enum EAliAnalysisFlags {
    TObjArray          *GetTopTasks() const        {return fTopTasks;}
    TTree              *GetTree() const            {return fTree;}
    TObjArray          *GetZombieTasks() const     {return fZombies;}
+   static const char  *GetGlobalStr(const char *key, Bool_t &valid);
+   static Int_t        GetGlobalInt(const char *key, Bool_t &valid);
+   static Double_t     GetGlobalDbl(const char *key, Bool_t &valid);
+   TMap               *GetGlobals()               {return fGlobals;}
    static Bool_t       IsPipe(std::ostream &out);
    Bool_t              IsProofMode() const        {return (fMode==kProofAnalysis)?kTRUE:kFALSE;}
    Bool_t              IsRemote() const           {return fIsRemote;}
@@ -145,6 +150,10 @@ enum EAliAnalysisFlags {
    void                SetSkipTerminate(Bool_t flag)              {TObject::SetBit(kSkipTerminate,flag);}
    void                SetUseProgressBar(Bool_t flag, Int_t freq=1);
    void                SetSpecialOutputLocation(const char *loc)  {fSpecialOutputLocation = loc;}
+   static void         SetGlobalStr(const char *key, const char *value);
+   static void         SetGlobalInt(const char *key, Int_t value);
+   static void         SetGlobalDbl(const char *key, Double_t value);
+   
 
    // Container handling
    AliAnalysisDataContainer *CreateContainer(const char *name, TClass *datatype, 
@@ -229,8 +238,9 @@ private:
    TString                 fStatisticsMsg;       // Statistics user message
    TString                 fRequestedBranches;   // Requested branch names
    AliAnalysisStatistics  *fStatistics;          // Statistics info about input events
+   TMap                   *fGlobals;             // Map with global variables
    static TString          fgCommonFileName;     //! Common output file name (not streamed)
    static AliAnalysisManager *fgAnalysisManager; //! static pointer to object instance
-   ClassDef(AliAnalysisManager,13)  // Analysis manager class
+   ClassDef(AliAnalysisManager,14)  // Analysis manager class
 };   
 #endif

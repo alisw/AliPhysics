@@ -30,6 +30,7 @@
 #include <cerrno>
 #include <Riostream.h>
 #include <TError.h>
+#include <TMap.h>
 #include <TClass.h>
 #include <TFile.h>
 #include <TMath.h>
@@ -92,18 +93,22 @@ AliAnalysisManager::AliAnalysisManager(const char *name, const char *title)
                     fMaxEntries(0),
                     fStatisticsMsg(),
                     fRequestedBranches(),
-                    fStatistics(0)
+                    fStatistics(0),
+                    fGlobals(0)
 {
 // Default constructor.
    fgAnalysisManager = this;
    fgCommonFileName  = "AnalysisResults.root";
-   fTasks      = new TObjArray();
-   fTopTasks   = new TObjArray();
-   fZombies    = new TObjArray();
-   fContainers = new TObjArray();
-   fInputs     = new TObjArray();
-   fOutputs    = new TObjArray();
-   fParamCont  = new TObjArray();
+   if (TClass::IsCallingNew() != TClass::kDummyNew) {
+     fTasks      = new TObjArray();
+     fTopTasks   = new TObjArray();
+     fZombies    = new TObjArray();
+     fContainers = new TObjArray();
+     fInputs     = new TObjArray();
+     fOutputs    = new TObjArray();
+     fParamCont  = new TObjArray();
+     fGlobals    = new TMap();
+   }  
    SetEventLoop(kTRUE);
 }
 
@@ -141,7 +146,8 @@ AliAnalysisManager::AliAnalysisManager(const AliAnalysisManager& other)
                     fMaxEntries(other.fMaxEntries),
                     fStatisticsMsg(other.fStatisticsMsg),
                     fRequestedBranches(other.fRequestedBranches),
-                    fStatistics(other.fStatistics)
+                    fStatistics(other.fStatistics),
+                    fGlobals(other.fGlobals)
 {
 // Copy constructor.
    fTasks      = new TObjArray(*other.fTasks);
@@ -194,6 +200,7 @@ AliAnalysisManager& AliAnalysisManager::operator=(const AliAnalysisManager& othe
       fStatisticsMsg = other.fStatisticsMsg;
       fRequestedBranches = other.fRequestedBranches;
       fStatistics = other.fStatistics;
+      fGlobals = new TMap();
    }
    return *this;
 }
@@ -215,6 +222,7 @@ AliAnalysisManager::~AliAnalysisManager()
    if (fMCtruthEventHandler) delete fMCtruthEventHandler;
    if (fEventPool) delete fEventPool;
    if (fgAnalysisManager==this) fgAnalysisManager = NULL;
+   if (fGlobals) {fGlobals->DeleteAll(); delete fGlobals;}
 }
 
 //______________________________________________________________________________
@@ -964,14 +972,15 @@ void AliAnalysisManager::Terminate()
          // Clear file list to release object ownership to user.
 //         output->GetFile()->Clear();
          output->GetFile()->Close();
-         output->SetFile(NULL);
          // Copy merged outputs in alien if requested
          if (fSpecialOutputLocation.Length() && 
              fSpecialOutputLocation.BeginsWith("alien://")) {
             Info("Terminate", "Copy file %s to %s", output->GetFile()->GetName(),fSpecialOutputLocation.Data()); 
+            gROOT->ProcessLine("if (!gGrid) TGrid::Connect(\"alien:\");");
             TFile::Cp(output->GetFile()->GetName(), 
                       Form("%s/%s", fSpecialOutputLocation.Data(), output->GetFile()->GetName()));
          }             
+         output->SetFile(NULL);
       }   
       if (opwd) opwd->cd();
    }   
@@ -2438,4 +2447,102 @@ const char* AliAnalysisManager::GetOADBPath()
       ::Fatal("AliAnalysisManager::GetOADBPath", "Cannot figure out AODB path. Define ALICE_ROOT or OADB_PATH!");
       
    return oadbPath;
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetGlobalStr(const char *key, const char *value)
+{
+// Define a custom string variable mapped to a global unique name. The variable
+// can be then retrieved by a given analysis macro via GetGlobalStr(key).
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      return;
+   }   
+   Bool_t valid = kFALSE;
+   TString existing = AliAnalysisManager::GetGlobalStr(key, valid);
+   if (valid) {
+      ::Error("AliAnalysisManager::SetGlobalStr", "Global %s = %s already defined.", key, existing.Data());
+      return;
+   }
+   mgr->GetGlobals()->Add(new TObjString(key), new TObjString(value));
+}
+
+//______________________________________________________________________________
+const char *AliAnalysisManager::GetGlobalStr(const char *key, Bool_t &valid)
+{
+// Static method to retrieve a global variable defined via SetGlobalStr.
+   valid = kFALSE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) return 0;
+   TObject *value = mgr->GetGlobals()->GetValue(key);
+   if (!value) return 0;
+   valid = kTRUE;
+   return value->GetName();
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetGlobalInt(const char *key, Int_t value)
+{
+// Define a custom integer variable mapped to a global unique name. The variable
+// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      return;
+   }   
+   Bool_t valid = kFALSE;
+   Int_t existing = AliAnalysisManager::GetGlobalInt(key, valid);
+   if (valid) {
+      ::Error("AliAnalysisManager::SetGlobalInt", "Global %s = %i already defined.", key, existing);
+      return;
+   }
+   mgr->GetGlobals()->Add(new TObjString(key), new TObjString(TString::Format("%i",value)));
+}
+
+//______________________________________________________________________________
+Int_t AliAnalysisManager::GetGlobalInt(const char *key, Bool_t &valid)
+{
+// Static method to retrieve a global variable defined via SetGlobalInt.
+   valid = kFALSE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) return 0;
+   TObject *value = mgr->GetGlobals()->GetValue(key);
+   if (!value) return 0;
+   valid = kTRUE;
+   TString s = value->GetName();
+   return s.Atoi();
+}
+
+//______________________________________________________________________________
+void AliAnalysisManager::SetGlobalDbl(const char *key, Double_t value)
+{
+// Define a custom double precision variable mapped to a global unique name. The variable
+// can be then retrieved by a given analysis macro via GetGlobalInt(key).
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      ::Error("AliAnalysisManager::SetGlobalStr", "No analysis manager defined");
+      return;
+   }   
+   Bool_t valid = kFALSE;
+   Double_t existing = AliAnalysisManager::GetGlobalDbl(key, valid);
+   if (valid) {
+      ::Error("AliAnalysisManager::SetGlobalInt", "Global %s = %g already defined.", key, existing);
+      return;
+   }
+   mgr->GetGlobals()->Add(new TObjString(key), new TObjString(TString::Format("%f.16",value)));
+}
+
+//______________________________________________________________________________
+Double_t AliAnalysisManager::GetGlobalDbl(const char *key, Bool_t &valid)
+{
+// Static method to retrieve a global variable defined via SetGlobalDbl.
+   valid = kFALSE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) return 0;
+   TObject *value = mgr->GetGlobals()->GetValue(key);
+   if (!value) return 0;
+   valid = kTRUE;
+   TString s = value->GetName();
+   return s.Atof();
 }
