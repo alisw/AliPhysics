@@ -41,6 +41,7 @@ file ( GLOB SRCS11 "background/*.cxx" )
 file ( GLOB SRCS12 "Centrality/*.cxx" )
 file ( GLOB SRCS13 "ZDC/*.cxx" )
 file ( GLOB SRCS14 "T0/*.cxx" )
+file ( GLOB SRCS15 "VZERO/*PbPb.cxx" )
 
 list ( APPEND SRCS 
   ${SRCS1} 
@@ -57,6 +58,7 @@ list ( APPEND SRCS
   ${SRCS12} 
   ${SRCS13} 
   ${SRCS14}
+  ${SRCS15}
   )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
@@ -85,6 +87,7 @@ set ( EINCLUDE
   HMPID 
   PWG1/ZDC 
   PWG1/T0 
+  PWG1/VZERO 
   PWG4/PartCorrBase
   STEER/STEER 
   STEER/AOD 
