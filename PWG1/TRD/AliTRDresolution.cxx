@@ -90,6 +90,7 @@
 #include "AliTRDinfoGen.h"
 
 #include "info/AliTRDclusterInfo.h"
+#include "info/AliTRDeventInfo.h"
 
 ClassImp(AliTRDresolution)
 //ClassImp(AliTRDresolution::AliTRDresolutionProjection)
@@ -101,27 +102,27 @@ Int_t const   AliTRDresolution::fgkNbins[kNdim] = {
   50/*dy*/,
   40/*dphi*/,
   50/*dz*/,
-  Int_t(kNcharge)*AliPID::kSPECIES+1/*chg*species*/,
+  3/*chg*species*/,
   kNpt/*pt*/
 };  //! no of bins/projection
 Double_t const AliTRDresolution::fgkMin[kNdim] = {
-  -0.5,
+  -1.5,
   -TMath::Pi(),
   -1.,
   -1.5,
   -10.,
   -2.5,
-  -AliPID::kSPECIES-0.5,
+  -1.5,
   -0.5
 };    //! low limits for projections
 Double_t const AliTRDresolution::fgkMax[kNdim] = {
-  Int_t(kNbunchCross)-0.5,
+  1.5,
   TMath::Pi(),
   1.,
   1.5,
   10.,
   2.5,
-  AliPID::kSPECIES+0.5,
+  1.5,
   kNpt-0.5
 };    //! high limits for projections
 Char_t const *AliTRDresolution::fgkTitle[kNdim] = {
@@ -153,8 +154,10 @@ AliTRDresolution::AliTRDresolution()
   :AliTRDrecoTask()
   ,fIdxPlot(0)
   ,fIdxFrame(0)
-  ,fPtThreshold(1.)
+  ,fPtThreshold(.3)
   ,fDyRange(0.75)
+  ,fBCbinTOF(0)
+  ,fBCbinFill(0)
   ,fProj(NULL)
   ,fDBPDG(NULL)
   ,fCl(NULL)
@@ -172,8 +175,10 @@ AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
   :AliTRDrecoTask(name, "TRD spatial and momentum resolution")
   ,fIdxPlot(0)
   ,fIdxFrame(0)
-  ,fPtThreshold(1.)
+  ,fPtThreshold(.3)
   ,fDyRange(0.75)
+  ,fBCbinTOF(0)
+  ,fBCbinFill(0)
   ,fProj(NULL)
   ,fDBPDG(NULL)
   ,fCl(NULL)
@@ -407,12 +412,12 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
   AliTRDseedV1 *fTracklet(NULL);
   for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
     if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
-    if(!fTracklet->IsOK()) continue;
+    if(!fTracklet->IsOK() || !fTracklet->IsChmbGood()) continue;
     val [kBC] = il; 
     val[kPhi] = fPhi;
     val[kEta] = fEta;
-    val[kSpeciesChgRC]= fSpecies;
-    val[kPt]  = GetPtBin(fTracklet->GetMomentum());
+    val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();// fSpecies;
+    val[kPt]  = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
     Double_t dyt(fTracklet->GetYfit(0) - fTracklet->GetYref(0)),
              dzt(fTracklet->GetZfit(0) - fTracklet->GetZref(0)),
              dydx(fTracklet->GetYfit(1)),
@@ -431,7 +436,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
       val[kZrez] = TMath::ATan((fTracklet->GetYref(1) - exb)/(1+fTracklet->GetYref(1)*exb));
     }*/
     val[kNdim] = fTracklet->GetdQdl();
-    if(DebugLevel()>=1) H->Fill(val);
+    H->Fill(val);
 
 //     // compute covariance matrix
 //     fTracklet->GetCovAt(x, cov);
@@ -514,6 +519,10 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     AliDebug(3, "No Tracklet in ly[0]. Skip track.");
     return NULL;
   }
+  if(!fTracklet->IsOK() || !fTracklet->IsChmbGood()){
+    AliDebug(3, "Tracklet or Chamber not OK. Skip track.");
+    return NULL;
+  }
   // check radial position
   Double_t x = tin->GetX();
   if(TMath::Abs(x-fTracklet->GetX())>1.e-3){
@@ -522,7 +531,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   }
   //printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
 
-  Int_t bc(TMath::Abs(fkESD->GetTOFbc())%2);
+  Int_t bc(fkESD->GetTOFbc()/2);
   const Double_t *parR(tin->GetParameter());
   Double_t dyt(fTracklet->GetYfit(0)-parR[0]), dzt(fTracklet->GetZfit(0)-parR[1]),
             phit(fTracklet->GetYfit(1)),
@@ -536,8 +545,8 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   phit       += tilt*parR[3];
   Double_t dphi = TMath::ATan(phit) - TMath::ASin(parR[2]);
 
-  Double_t val[kNdim+2];
-  val[kBC]          = bc;
+  Double_t val[kNdim+3];
+  val[kBC]          = bc==0?0:(bc<0?-1.:1.);
   val[kPhi]         = fPhi;
   val[kEta]         = fEta;
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();
@@ -547,6 +556,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kPrez]        = dphi*TMath::RadToDeg();
   val[kNdim]        = fTracklet->GetDetector();
   val[kNdim+1]      = dx;
+  val[kNdim+2]      = fEvent->GetBunchFill();
   H->Fill(val);
   if(DebugLevel()>=3){
     (*DebugStream()) << "trackIn"
@@ -926,13 +936,19 @@ void AliTRDresolution::MakeSummary()
   const Int_t nClViews(11);
   const Char_t *vClName[nClViews] = {"ClY", "ClYn", "ClYp", "ClQn", "ClQp", "ClYXTCp", "ClYXTCn", "ClYXPh", "ClYXPh", "ClY", "ClYn"};
   const UChar_t vClOpt[nClViews] = {1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0};
-  const Int_t nTrkltViews(10);
-  const Char_t *vTrkltName[nTrkltViews] = {"TrkltY", "TrkltYn", "TrkltYp", "TrkltPhn", "TrkltPhp", "TrkltZ", "TrkltQn", "TrkltQp", "TrkltPn", "TrkltPp"};
-  const Int_t nTrkInViews(4);
+  const Int_t nTrkltViews(4);
+  const Char_t *vTrkltName[nTrkltViews][6] = {
+    {"TrkltYn", "TrkltYp", "TrkltRCZ", "TrkltPhn", "TrkltPhp", "TrkltQ"}, // general view
+    {"TrkltYnl", "TrkltYni", "TrkltYnh", "TrkltYpl", "TrkltYpi", "TrkltYph"}, // alignment view
+    {"TrkltPhnl", "TrkltPhni", "TrkltPhnh", "TrkltPhpl", "TrkltPhpi", "TrkltPhph"}, // calibration view
+    {"TrkltQnl", "TrkltQni", "TrkltQnh", "TrkltQpl", "TrkltQpi", "TrkltQph"} // PID view
+  };
+  const Int_t nTrkInViews(5);
   const Char_t *vTrkInName[nTrkInViews][6] = {
-    {"TrkInY", "TrkInYn", "TrkInYp", "TrkInZ", "TrkInPhn", "TrkInPhp"},
+    {"TrkInY", "TrkInYn", "TrkInYp", "TrkInRCZ", "TrkInPhn", "TrkInPhp"},
+    {"TrkInRCX", "TrkInRCY", "TrkInRCPh", "TrkInRCZl", "TrkInRCZi", "TrkInRCZh"},
     {"TrkInYnl", "TrkInYni", "TrkInYnh", "TrkInYpl", "TrkInYpi", "TrkInYph"},
-    {"TrkInXnl", "TrkInZn", "TrkInXl", "TrkInXpl", "TrkInZp", "TrkInYh"},
+    {"TrkInXnl", "TrkInXpl", "TrkInXl", "TrkInRCXl", "TrkInRCYl", "TrkInYh"},
     {"TrkInPhnl", "TrkInPhni", "TrkInPhnh", "TrkInPhpl", "TrkInPhpi", "TrkInPhph"}};
   const Int_t nTrkViews(10);
   const Char_t *vTrkName[nTrkViews] = {"TrkY", "TrkYn", "TrkYp", "TrkPhn", "TrkPhp", "TrkZ", "TrkQn", "TrkQp", "TrkPn", "TrkPp"};
@@ -941,7 +957,7 @@ void AliTRDresolution::MakeSummary()
   for(Int_t ityp(0); ityp<(HasMCdata()?2:1); ityp++){
     if((arr = (TObjArray*)fProj->At(ityp?kMCcluster:kCluster))){
       for(Int_t iview(0); iview<nClViews; iview++){
-        cOut = new TCanvas(Form("TRDsummary%s_%sCl%02d", GetName(), typName[ityp], iview), "Cluster Resolution", 1024, 768);
+        cOut = new TCanvas(Form("%s_%sCl%02d", GetName(), typName[ityp], iview), "Cluster Resolution", 1024, 768);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
         Int_t nplot(0);
         for(Int_t iplot(0); iplot<6; iplot++){
@@ -958,28 +974,36 @@ void AliTRDresolution::MakeSummary()
     // tracklet systematic
     if((arr = (TObjArray*)fProj->At(ityp?kMCtracklet:kTracklet))){
       for(Int_t iview(0); iview<nTrkltViews; iview++){
-        cOut = new TCanvas(Form("TRDsummary%s_%sTrklt%02d", GetName(), typName[ityp], iview), "Tracklet Resolution", 1024, 768);
-        cOut->Divide(3,2, 1.e-5, 1.e-5);
-        Int_t nplot(0);
-        for(Int_t iplot(0); iplot<6; iplot++){
-          p=cOut->cd(iplot+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
-          if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vTrkltName[iview], iplot)))) continue;
-          h2->Draw("colz"); nplot++;
+        for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+          cOut = new TCanvas(Form("%s_%sTrklt%02d_%d", GetName(), typName[ityp], iview, ily), "Tracklet Resolution", 1024, 768);
+          cOut->Divide(3,2, 1.e-5, 1.e-5);
+          Int_t nplot(0);
+          for(Int_t iplot(0); iplot<6; iplot++){
+            p=cOut->cd(iplot+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+            if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vTrkltName[iview][iplot], ily)))){
+              AliInfo(Form("Missing H%s%s%d_2D", typName[ityp], vTrkltName[iview][iplot], ily));
+              continue;
+            }
+            h2->Draw("colz"); nplot++;
+          }
+          if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+          else delete cOut;
         }
-        if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-        else delete cOut;
       }
     }
     // trackIn systematic
     if((arr = (TObjArray*)fProj->At(ityp?kMCtrackIn:kTrackIn))){
       for(Int_t iview(0); iview<nTrkInViews; iview++){
-        cOut = new TCanvas(Form("TRDsummary%s_%sTrkIn%02d", GetName(), typName[ityp], iview), "Track IN Resolution", 1024, 768);
+        cOut = new TCanvas(Form("%s_%sTrkIn%02d", GetName(), typName[ityp], iview), "Track IN Resolution", 1024, 768);
         cOut->Divide(3,2, 1.e-5, 1.e-5);
         Int_t nplot(0);
         for(Int_t iplot(0); iplot<6; iplot++){
-          p=cOut->cd(iplot+1);    p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
-            if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s_2D", typName[ityp], vTrkInName[iview][iplot])))) continue;
-            h2->Draw("colz"); nplot++;
+          p=cOut->cd(iplot+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+          if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s_2D", typName[ityp], vTrkInName[iview][iplot])))){
+            AliInfo(Form("Missing H%s%s_2D", typName[ityp], vTrkInName[iview][iplot]));
+            continue;
+          }
+          h2->Draw("colz"); nplot++;
         }
         if(nplot) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
         else delete cOut;
@@ -989,7 +1013,7 @@ void AliTRDresolution::MakeSummary()
   // track MC systematic
   if((arr = (TObjArray*)fProj->At(kMCtrack))) {
     for(Int_t iview(0); iview<nTrkViews; iview++){
-      cOut = new TCanvas(Form("TRDsummary%s_MCTrk%02d", GetName(), iview), "Track Resolution", 1024, 768);
+      cOut = new TCanvas(Form("%s_MCTrk%02d", GetName(), iview), "Track Resolution", 1024, 768);
       cOut->Divide(3,2, 1.e-5, 1.e-5);
       Int_t nplot(0);
       for(Int_t iplot(0); iplot<6; iplot++){
@@ -1186,7 +1210,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
 {
 // Analyse tracklet
   const Int_t kNcontours(9);
-  const Int_t kNstat(100);
+  const Int_t kNstat(30);
   Int_t cidx=mc?kMCtracklet:kTracklet;
   if(fProj && fProj->At(cidx)) return kTRUE;
   if(!fContainer){
@@ -1200,67 +1224,71 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
   }
   Int_t ndim(H->GetNdimensions());
   Int_t coord[kNdim+1]; memset(coord, 0, sizeof(Int_t) * (kNdim+1)); Double_t v = 0.;
-  TAxis *aa[kNdim+1], *as(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
+  TAxis *aa[kNdim+1], *as(NULL), *ap(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > kSpeciesChgRC) as = H->GetAxis(kSpeciesChgRC);
+  if(ndim > kPt) ap = H->GetAxis(kPt);
   // build list of projections
-  const Int_t nsel(18), npsel(6);
+  const Int_t nsel(54), npsel(4);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   AliTRDresolutionProjection hp[kTrkltNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
+  const Char_t chName[kNcharge] = {'n', 'p'};const Char_t chSgn[kNcharge] = {'-', '+'};
+  const Char_t ptName[kNpt] = {'l', 'i', 'h'};
+  const Char_t *ptCut[kNpt] = {"p_{t}[GeV/c]<0.8", "0.8<=p_{t}[GeV/c]<1.5", "p_{t}[GeV/c]>=1.5"};
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-    isel++; // new selection
-    hp[ih].Build(Form("H%sTrkltY%d", mc?"MC":"", ily), Form("Tracklets   :: r-#phi residuals ly%d", ily), kEta, kPhi, kYrez, aa);
-    hp[ih].SetShowRange(-0.03,0.03);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltYn%d", mc?"MC":"", ily), Form("Tracklets[-]:: r-#phi residuals ly%d", ily), kEta, kPhi, kYrez, aa);
-    hp[ih].SetShowRange(-0.03,0.03);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltPhn%d", mc?"MC":"", ily), Form("Tracklets[-]:: #Delta#phi residuals ly%d", ily), kEta, kPhi, kPrez, aa);
-    hp[ih].SetShowRange(-0.5,0.5);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltPn%d", mc?"MC":"", ily), Form("Tracklets[-]:: Momentum distribution ly%d", ily), kEta, kPhi, kPt, aa);
-    hp[ih].SetShowRange(6.,12.);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltYPn%d", mc?"MC":"", ily), Form("Tracklets[-]:: r-#phi/p_{t} residuals ly%d", ily), kPt, kPhi, kYrez, aa);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltQn%d", mc?"MC":"", ily), Form("Tracklets[-]:: dQdl ly%d", ily), kEta, kPhi, kNdim, aa);
-    hp[ih].SetShowRange(700.,1100.);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    isel++; // new selection
-    php[isel][np[isel]++] = &hp[ih-6]; // relink first histo
-    hp[ih].Build(Form("H%sTrkltYp%d", mc?"MC":"", ily), Form("Tracklets[+]:: r-#phi residuals ly%d", ily), kEta, kPhi, kYrez, aa);
-    hp[ih].SetShowRange(-0.03,0.03);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltPhp%d", mc?"MC":"", ily), Form("Tracklets[+]:: #Delta#phi residuals ly%d", ily), kEta, kPhi, kPrez, aa);
-    hp[ih].SetShowRange(-0.5,0.5);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltPp%d", mc?"MC":"", ily), Form("Tracklets[+]:: Momentum distribution ly%d", ily), kEta, kPhi, kPt, aa);
-    hp[ih].SetShowRange(6.,12.);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltYPp%d", mc?"MC":"", ily), Form("Tracklets[+]:: r-#phi/p_{t} residuals ly%d", ily), kPt, kPhi, kYrez, aa);
-      php[isel][np[isel]++] = &hp[ih++];
-    hp[ih].Build(Form("H%sTrkltQp%d", mc?"MC":"", ily), Form("Tracklets[+]:: dQdl ly%d", ily), kEta, kPhi, kNdim, aa);
-    hp[ih].SetShowRange(700.,1100.);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
-    isel++; // new selection
-    hp[ih].Build(Form("H%sTrkltZ%d", mc?"MC":"", ily), Form("Tracklets[RC]:: z residuals ly%d", ily), kEta, kPhi, kZrez, aa);
-    hp[ih].SetShowRange(-0.1,0.1);
-    hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
-      php[isel][np[isel]++] = &hp[ih++];
+    for(Int_t ipt(0); ipt<kNpt; ipt++){
+      for(Int_t ich(0); ich<kNcharge; ich++){
+        isel++; // new selection
+        hp[ih].Build(Form("H%sTrkltY%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], ily),
+                     Form("Tracklets[%c]:: #Deltay{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily),
+                     kEta, kPhi, kYrez, aa);
+        //hp[ih].SetShowRange(-0.1,0.1);
+        hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+          php[isel][np[isel]++] = &hp[ih++];
+        hp[ih].Build(Form("H%sTrkltPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], ily),
+                     Form("Tracklets[%c]:: #Delta#phi{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily),
+                     kEta, kPhi, kPrez, aa);
+        //hp[ih].SetShowRange(-0.5,0.5);
+        hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+          php[isel][np[isel]++] = &hp[ih++];
+        hp[ih].Build(Form("H%sTrkltQ%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], ily),
+                     Form("Tracklets[%c]:: dQdl{%s} Ly[%d]", chSgn[ich], ptCut[ipt], ily),
+                     kEta, kPhi, kNdim, aa);
+        hp[ih].SetShowRange(700.,1100.);
+        hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+          php[isel][np[isel]++] = &hp[ih++];
+      }
+      isel++; // new selection
+      hp[ih].Build(Form("H%sTrkltRCZ%c%d", mc?"MC":"", ptName[ipt], ily),
+                   Form("Tracklets[RC]:: #Deltaz{%s} Ly[%d]", ptCut[ipt], ily),
+                   kEta, kPhi, kZrez, aa);
+//      hp[ih].SetShowRange(-0.1,0.1);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+      hp[ih].Build(Form("H%sTrkltRCY%c%d", mc?"MC":"", ptName[ipt], ily),
+                   Form("Tracklets[RC]:: #Deltay{%s} Ly[%d]", ptCut[ipt], ily),
+                   kEta, kPhi, kYrez, aa);
+      //hp[ih].SetShowRange(-0.1,0.1);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+      hp[ih].Build(Form("H%sTrkltRCPh%c%d", mc?"MC":"", ptName[ipt], ily),
+                   Form("Tracklets[RC]:: #Delta#phi{%s} Ly[%d]", ptCut[ipt], ily),
+                   kEta, kPhi, kPrez, aa);
+      //hp[ih].SetShowRange(-0.1,0.1);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+      hp[ih].Build(Form("H%sTrkltRCQ%c%d", mc?"MC":"", ptName[ipt], ily),
+                   Form("Tracklets[RC]:: dQdl{%s} Ly[%d]", ptCut[ipt], ily),
+                   kEta, kPhi, kNdim, aa);
+      //hp[ih].SetShowRange(-0.1,0.1);
+      hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+        php[isel][np[isel]++] = &hp[ih++];
+    }
   }
 
-  Int_t ly(0), ch(0), rcBin(as?as->FindBin(0.):-1);
+  Int_t ly(0), ch(0), rcBin(as?as->FindBin(0.):-1), pt(0);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
@@ -1271,20 +1299,110 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
       if(coord[kSpeciesChgRC] > rcBin) ch = 1;  // [+] track
       else if(coord[kSpeciesChgRC] == rcBin) ch = 2;  // [RC] track
     }
-    isel = ly*3+ch;
+    // pt selection
+    pt = 0; // low pt
+    if(ap) pt = coord[kPt]-1;
+    // global selection
+    isel = ly*9+pt*3+ch;
     for(Int_t jh(0); jh<np[isel]; jh++) php[isel][jh]->Increment(coord, v);
   }
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(kTrkltNproj), cidx);
 
-  TH2 *h2(NULL);
+  TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     Int_t mid(0), nstat(kNstat);
     if(strchr(hp[ih].fH->GetName(), 'Q')){ mid=2; nstat=200;}
     if(!(h2 = hp[ih].Projection2D(nstat, kNcontours, mid))) continue;
-    arr->AddAt(h2, ih);
+    arr->AddAt(h2, jh++);
   }
+  // build combined performance plots
+  Int_t iproj(0);
+  for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+    /*!dy negative tracks all momenta*/
+    iproj = ily*30;
+    hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+    hp[iproj].fH->SetNameTitle(Form("H%sTrkltYn%d", mc?"MC":"", ily), Form("Tracklet[-]:: #Deltay Ly[%d]", ily));
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    /*!dy positive tracks all momenta*/
+    iproj = ily*30+3;
+    hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+    hp[iproj].fH->SetNameTitle(Form("H%sTrkltYp%d", mc?"MC":"", ily), Form("Tracklet[+]:: #Deltay Ly[%d]", ily));
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    /*!dy all tracks all momenta*/
+    iproj = ily*30;
+    hp[iproj]+=hp[iproj+3];hp[iproj].
+    fH->SetNameTitle(Form("H%sTrkltY%d", mc?"MC":"", ily), Form("Tracklet :: #Deltay Ly[%d]", ily));
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    /*!dy all tracks high momenta*/
+    iproj = ily*30+20;
+    hp[iproj]+=hp[iproj+3];
+    hp[iproj].fH->SetNameTitle(Form("H%sTrkltYh%d", mc?"MC":"", ily), Form("Tracklet :: #Deltay{%s} Ly[%d]", ptCut[2], ily));
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    /*!dphi negative tracks all momenta*/
+    iproj = ily*30+1;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltPhn%d", mc?"MC":"", ily), Form("Tracklet[-]:: #Delta#phi Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
+    /*!dphi positive tracks all momenta*/
+    iproj = ily*30+4;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltPhp%d", mc?"MC":"", ily), Form("Tracklet[+]:: #Delta#phi Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
+    /*!dQdl negative tracks all momenta*/
+    iproj = ily*30+2;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltQn%d", mc?"MC":"", ily), Form("Tracklet[-]:: dQdl Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+    }
+    /*!dQdl positive tracks all momenta*/
+    iproj = ily*30+5;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltQp%d", mc?"MC":"", ily), Form("Tracklet[+]:: dQdl Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+    }
+    /*!dQdl all tracks all momenta*/
+    iproj = ily*30+2;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+3];hp[iproj].
+      fH->SetNameTitle(Form("H%sTrkltQ%d", mc?"MC":"", ily), Form("Tracklet :: dQdl Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+    }
+    /*!dz[RC] tracks all momenta*/
+    iproj = ily*30+6;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltRCZ%d", mc?"MC":"", ily), Form("Tracklet[RC]:: #Deltaz Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
+    /*!dy[RC] tracks all momenta*/
+    iproj = ily*30+7;
+    hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+    hp[iproj].fH->SetNameTitle(Form("H%sTrkltRCY%d", mc?"MC":"", ily), Form("Tracklet[RC]:: #Deltay Ly[%d]", ily));
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    /*!dphi[RC] tracks all momenta*/
+    iproj = ily*30+8;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltRCPh%d", mc?"MC":"", ily), Form("Tracklet[RC]:: #Delta#phi Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+    }
+    /*!dQdl[RC] tracks all momenta*/
+    iproj = ily*30+9;
+    if(hp[iproj].fH){
+      hp[iproj]+=hp[iproj+10]; hp[iproj]+=hp[iproj+20];
+      hp[iproj].fH->SetNameTitle(Form("H%sTrkltRCQ%d", mc?"MC":"", ily), Form("Tracklet[RC]:: dQdl Ly[%d]", ily));
+      if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+    }
+  }
+  
   return kTRUE;
 }
 
@@ -1309,12 +1427,13 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
 
   Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
   Int_t ndim(H->GetNdimensions());
-  TAxis *aa[kNdim+1], *as(NULL), *ap(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
+  TAxis *aa[kNdim+1], *as(NULL), *ap(NULL), *abf(NULL); memset(aa, 0, sizeof(TAxis*) * (kNdim+1));
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
   if(ndim > kSpeciesChgRC) as = H->GetAxis(kSpeciesChgRC);
   if(ndim > kPt) ap = H->GetAxis(kPt);
+  if(ndim > (kNdim+2)) abf = H->GetAxis(kNdim+2);
   // build list of projections
-  const Int_t nsel(15), npsel(3);
+  const Int_t nsel(16), npsel(4);
   // define rebinning strategy
   const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   AliTRDresolutionProjection hp[kMCTrkInNproj], *php[nsel][npsel]; memset(php, 0, nsel*npsel*sizeof(AliTRDresolutionProjection*));
@@ -1380,14 +1499,46 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   hp[ih].Build(Form("H%sTrkInXph", mc?"MC":""), "TrackIn[+]:: #Deltax{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kNdim+1, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  isel++; // negative RC tracks
-  hp[ih].Build(Form("H%sTrkInZn", mc?"MC":""), "TrackIn[RC-]:: #Deltaz", kEta, kPhi, kZrez, aa);
+  isel++; // RC tracks low pt
+  hp[ih].Build(Form("H%sTrkInRCZl", mc?"MC":""), "TrackIn[RC]:: #Deltaz{p_{t}[GeV/c]<0.8}", kEta, kPhi, kZrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
-  isel++; // positive RC tracks
-  hp[ih].Build(Form("H%sTrkInZp", mc?"MC":""), "TrackIn[RC+]:: #Deltaz", kEta, kPhi, kZrez, aa);
+  hp[ih].Build(Form("H%sTrkInRCYl", mc?"MC":""), "TrackIn[RC]:: #Deltay{p_{t}[GeV/c]<0.8}", kEta, kPhi, kYrez, aa);
   hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
     php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCPhl", mc?"MC":""), "TrackIn[RC]:: #Delta#phi{p_{t}[GeV/c]<0.8}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCXl", mc?"MC":""), "TrackIn[RC]:: #Deltax{p_{t}[GeV/c]<0.8}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // RC tracks intermediate pt
+  hp[ih].Build(Form("H%sTrkInRCZi", mc?"MC":""), "TrackIn[RC]:: #Deltaz{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kZrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCYi", mc?"MC":""), "TrackIn[RC]:: #Deltay{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCPhi", mc?"MC":""), "TrackIn[RC]:: #Delta#phi{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCXi", mc?"MC":""), "TrackIn[RC]:: #Deltax{0.8<=p_{t}[GeV/c]<1.5}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  isel++; // RC tracks high pt
+  hp[ih].Build(Form("H%sTrkInRCZh", mc?"MC":""), "TrackIn[RC]:: #Deltaz{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kZrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCYh", mc?"MC":""), "TrackIn[RC]:: #Deltay{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kYrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCPhh", mc?"MC":""), "TrackIn[RC]:: #Delta#phi{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kPrez, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+  hp[ih].Build(Form("H%sTrkInRCXh", mc?"MC":""), "TrackIn[RC]:: #Deltax{p_{t}[GeV/c]>=1.5}", kEta, kPhi, kNdim+1, aa);
+  hp[ih].SetRebinStrategy(nEtaPhi, rebinEtaPhiX, rebinEtaPhiY);
+    php[isel][np[isel]++] = &hp[ih++];
+
   if(mc){
     for(Int_t is(0); is<AliPID::kSPECIES; is++){
       isel++;  // negative MC tracks
@@ -1408,19 +1559,14 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         php[isel][np[isel]++] = &hp[ih++];
     }
   }
-//   for(Int_t jsel(0); jsel<=isel; jsel++){
-//     printf("Selection [%2d]\n", jsel);
-//     for(Int_t n(0); n<np[jsel]; n++){
-//       printf("  %d %s\n", n, php[jsel][n]->fH->GetName());
-//     }
-//   }
 
   // fill projections
   Int_t ch(0), pt(0), rcBin(as?as->FindBin(0.):-1);
   for (Long64_t ib(0); ib < H->GetNbins(); ib++) {
     v = H->GetBinContent(ib, coord);
     if(v<1.) continue;
-    if(coord[kBC]>1) continue; // bunch cross cut
+    if(fBCbinTOF>0 && coord[kBC]!=fBCbinTOF) continue; // TOF bunch cross cut
+    if(fBCbinFill>0 && abf && coord[kNdim+2]!=fBCbinTOF) continue; // Fill bunch cut
     // charge selection
     ch = 0; // [-] track
     if(rcBin>0){ // debug mode in which species are also saved
@@ -1441,47 +1587,60 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   TObjArray *arr(NULL);
   fProj->AddAt(arr = new TObjArray(mc?kMCTrkInNproj:kTrkInNproj), cidx);
 
-  TH2 *h2(NULL);
+  TH2 *h2(NULL); Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
     if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours))) continue;
-    arr->AddAt(h2, ih);
+    arr->AddAt(h2, jh++);
   }
   // build combined performance plots
   /*!dy negative tracks all momenta*/
   Int_t iproj(0);
-  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYn", mc?"MC":""), "TrackIn[-]:: #Deltay");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  hp[iproj]+=hp[iproj+3]; hp[iproj]+=hp[iproj+6]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYn", mc?"MC":""), "TrackIn[-]:: #Deltay");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
   /*!dy positive tracks all momenta*/
   iproj = 9;
-  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYp", mc?"MC":""), "TrackIn[+]:: #Deltay");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  hp[iproj]+=hp[iproj+3]; hp[iproj]+=hp[iproj+6]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInYp", mc?"MC":""), "TrackIn[+]:: #Deltay");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
   /*!dy all tracks all momenta*/
   hp[0]+=hp[9];hp[0].fH->SetNameTitle(Form("H%sTrkInY", mc?"MC":""), "TrackIn :: #Deltay");
-  if((h2 = hp[0].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  if((h2 = hp[0].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
   /*!dy all tracks high momenta*/
   iproj = 6;
   hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInYh", mc?"MC":""), "TrackIn :: #Deltay{p_{t}[GeV/c]>=1.5}");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   /*!dx all tracks low momenta*/
   iproj = 2;
   if(hp[iproj].fH){
     hp[iproj]+=hp[iproj+9];hp[iproj].fH->SetNameTitle(Form("H%sTrkInXl", mc?"MC":""), "TrackIn :: #Deltax{p_{t}[GeV/c]<0.8}");
-    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, arr->GetEntries());
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
   }
   /*!dphi negative tracks all momenta*/
   iproj =1;
-  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhn", mc?"MC":""), "TrackIn[-]:: #Delta#phi");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
+  hp[iproj]+=hp[iproj+3]; hp[iproj]+=hp[iproj+6]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhn", mc?"MC":""), "TrackIn[-]:: #Delta#phi");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
   /*!dphi positive tracks all momenta*/
   iproj = 10;
-  hp[iproj]+=hp[npsel+iproj]; hp[iproj]+=hp[npsel*2+iproj]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhp", mc?"MC":""), "TrackIn[+]:: #Delta#phi");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
-  /*!dy[RC] tracks all charges*/
+  hp[iproj]+=hp[iproj+3]; hp[iproj]+=hp[iproj+6]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInPhp", mc?"MC":""), "TrackIn[+]:: #Delta#phi");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
+  /*!dz[RC] tracks all momenta*/
   iproj = 18;
-  hp[iproj]+=hp[iproj+1]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInZ", mc?"MC":""), "TrackIn[RC]:: #Deltaz");
-  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, arr->GetEntries());
-
+  hp[iproj]+=hp[iproj+4];hp[iproj]+=hp[iproj+8]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInRCZ", mc?"MC":""), "TrackIn[RC]:: #Deltaz");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
+  /*!dy[RC] tracks all momenta*/
+  iproj = 19;
+  hp[iproj]+=hp[iproj+4];hp[iproj]+=hp[iproj+8]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInRCY", mc?"MC":""), "TrackIn[RC]:: #Deltay");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
+  /*!dphi[RC] tracks all momenta*/
+  iproj = 20;
+  hp[iproj]+=hp[iproj+4];hp[iproj]+=hp[iproj+8]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInRCPh", mc?"MC":""), "TrackIn[RC]:: #Delta#phi");
+  if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
+  /*!dx[RC] tracks all momenta*/
+  iproj = 21;
+  if(hp[iproj].fH){
+    hp[iproj]+=hp[iproj+4];hp[iproj]+=hp[iproj+8]; hp[iproj].fH->SetNameTitle(Form("H%sTrkInRCX", mc?"MC":""), "TrackIn[RC]:: #Deltax");
+    if((h2 = hp[iproj].Projection2D(kNstat, kNcontours))) arr->AddAt(h2, jh++);
+  }
   return kTRUE;
 }
 
@@ -1601,7 +1760,7 @@ Bool_t AliTRDresolution::PostProcess()
 
   //PROCESS EXPERIMENTAL DISTRIBUTIONS
   // Clusters residuals
-  if(!MakeProjectionCluster()) return kFALSE;
+//  if(!MakeProjectionCluster()) return kFALSE;
   fNRefFigures = 3;
   // Tracklet residual/pulls
   if(!MakeProjectionTracklet()) return kFALSE;
@@ -1846,7 +2005,7 @@ TObjArray* AliTRDresolution::Histos()
                    clMax[kNdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, 118., 45};
     st = "cluster spatial&charge resolution;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?kNdim:4;
+    Int_t ndim=DebugLevel()>=1?Int_t(kNdim):Int_t(kNdimCl);
     for(Int_t idim(0); idim<ndim; idim++){ st += clTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, clNbins, clMin, clMax);
   } else H->Reset();
@@ -1863,13 +2022,12 @@ TObjArray* AliTRDresolution::Histos()
     trMin[kYrez] = -0.45; trMax[kYrez] = 0.45;
     trMin[kPrez] = -4.5; trMax[kPrez] = 4.5;
     trMin[kZrez] = -1.5; trMax[kZrez] = 1.5;
-//    trNbins[kSpeciesChgRC] = 3;trMin[kSpeciesChgRC] = -1.5; trMax[kSpeciesChgRC] = 1.5;
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
     trTitle[kNdim]=StrDup("dq/dl [a.u.]"); trNbins[kNdim] = 30; trMin[kNdim] = 100.; trMax[kNdim] = 3100;
 
     st = "tracklet spatial&charge resolution;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?(kNdim+1):4;
+    Int_t ndim=DebugLevel()>=1?(kNdim+1):kNdimTrklt;
     for(Int_t idim(0); idim<ndim; idim++){ st += trTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, trNbins, trMin, trMax);
   } else H->Reset();
@@ -1879,17 +2037,17 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kTrackIn]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     // set specific fields
-    const Int_t mdim(kNdim+2);
+    const Int_t mdim(kNdim+3);
     Char_t *trinTitle[mdim]; memcpy(trinTitle, fgkTitle, kNdim*sizeof(Char_t*));
     Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
-    trinNbins[kSpeciesChgRC] = 3;trinMin[kSpeciesChgRC] = -1.5; trinMax[kSpeciesChgRC] = 1.5;
     trinTitle[kNdim]=StrDup("detector"); trinNbins[kNdim] = 540; trinMin[kNdim] = -0.5; trinMax[kNdim] = 539.5;
     trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
+    trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
     // define minimum info to be saved in non debug mode
-    Int_t ndim=DebugLevel()>=1?mdim:7;
+    Int_t ndim=DebugLevel()>=1?mdim:kNdimTrkIn;
     for(Int_t idim(0); idim<ndim; idim++){st+=trinTitle[idim]; st+=";";}
     H = new THnSparseI(hn, st.Data(), ndim, trinNbins, trinMin, trinMax);
   } else H->Reset();
@@ -1906,9 +2064,9 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kMCcluster]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     const Char_t *clTitle[kNdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], fgkTitle[kYrez], "#Deltax [cm]", "Q</Q", fgkTitle[kSpeciesChgRC], "#Phi [deg]"};
-    const Int_t clNbins[kNdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], fgkNbins[kYrez], 20, 10, fgkNbins[kSpeciesChgRC], 15};
-    const Double_t clMin[kNdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], fgkMin[kYrez]/10., 0., 0.1, fgkMin[kSpeciesChgRC], -45},
-                   clMax[kNdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, fgkMax[kSpeciesChgRC], 45};
+    const Int_t clNbins[kNdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], fgkNbins[kYrez], 20, 10, Int_t(kNcharge)*AliPID::kSPECIES+1, 15};
+    const Double_t clMin[kNdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], fgkMin[kYrez]/10., 0., 0.1, -AliPID::kSPECIES-0.5, -45},
+                   clMax[kNdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], fgkMax[kYrez]/10., 4., 2.1, AliPID::kSPECIES+0.5, 45};
     st = "MC cluster spatial resolution;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?kNdim:4;
@@ -1929,6 +2087,7 @@ TObjArray* AliTRDresolution::Histos()
     trMin[kYrez] = -0.54; trMax[kYrez] = -trMin[kYrez];
     trMin[kPrez] = -4.5; trMax[kPrez] = -trMin[kPrez];
     trMin[kZrez] = -1.5; trMax[kZrez] = -trMin[kZrez];
+    trNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1;trMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
 
     st = "MC tracklet spatial resolution;";
     // define minimum info to be saved in non debug mode
@@ -1943,11 +2102,13 @@ TObjArray* AliTRDresolution::Histos()
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     st = "MC r-#phi/z/angular residuals @ TRD entry;";
     // set specific fields
+    Int_t trNbins[kNdim]; memcpy(trNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trMin[kNdim]; memcpy(trMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trMax[kNdim]; memcpy(trMax, fgkMax, kNdim*sizeof(Double_t));
     trMin[kYrez] = -0.54; trMax[kYrez] = -trMin[kYrez];
     trMin[kPrez] = -2.4; trMax[kPrez] = -trMin[kPrez];
     trMin[kZrez] = -0.9; trMax[kZrez] = -trMin[kZrez];
+    trNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1;trMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?kNdim:7;
     for(Int_t idim(0); idim<ndim; idim++){ st += fgkTitle[idim]; st+=";";}
@@ -1964,10 +2125,11 @@ TObjArray* AliTRDresolution::Histos()
     Double_t trMax[kNdim+1]; memcpy(trMax, fgkMax, kNdim*sizeof(Double_t));
     // set specific fields
     trTitle[kBC]=StrDup("layer"); trNbins[kBC] = AliTRDgeometry::kNlayer; trMin[kBC] = -0.5; trMax[kBC] = AliTRDgeometry::kNlayer-0.5;
-    trTitle[kNdim]=StrDup("#Deltap_{t}/p_{t} [%]"); trNbins[kNdim] = 25; trMin[kNdim] = -4.5; trMax[kNdim] = 20.5;
     trMin[kYrez] = -0.9; trMax[kYrez] = -trMin[kYrez];
     trMin[kPrez] = -1.5; trMax[kPrez] = -trMin[kPrez];
     trMin[kZrez] = -0.9; trMax[kZrez] = -trMin[kZrez];
+    trNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1;trMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
+    trTitle[kNdim]=StrDup("#Deltap_{t}/p_{t} [%]"); trNbins[kNdim] = 25; trMin[kNdim] = -4.5; trMax[kNdim] = 20.5;
 
     st = "MC track spatial&p_{t} resolution;";
     // define minimum info to be saved in non debug mode
@@ -1976,18 +2138,6 @@ TObjArray* AliTRDresolution::Histos()
     H = new THnSparseI(hn, st.Data(), ndim, trNbins, trMin, trMax);
   } else H->Reset();
   fContainer->AddAt(H, kMCtrack);
-
-//   // cluster resolution
-//   fContainer->AddAt(BuildMonitorContainerCluster("MCcl"),  kMCcluster);
-//   // track resolution
-//   TObjArray *arr(NULL);
-//   fContainer->AddAt(arr = new TObjArray(AliTRDgeometry::kNlayer), kMCtrack);
-//   arr->SetName("MCtrk");
-//   for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++) arr->AddAt(BuildMonitorContainerTrack(Form("MCtrk_Ly%d", il)), il);
-//   // TRDin TRACK RESOLUTION
-//   fContainer->AddAt(H, kMCtrackIn);
-//   // TRDout TRACK RESOLUTION
-//   fContainer->AddAt(BuildMonitorContainerTrack("MCtrkOUT"), kMCtrackOut);
 
   return fContainer;
 }

@@ -39,7 +39,7 @@ public:
     Int_t       GetId() const                    { return fId;}
     ULong_t     GetStatus() const                { return fStatus;}
     Int_t       GetKinkIndex() const             { return fKinkIndex;}
-    UShort_t    GetTOFbc() const                 { return fTOFbc;}
+    Short_t     GetTOFbc() const                 { return fTOFbc;}
     UShort_t    GetTPCncls() const               { return fTPCncls;}
     UChar_t     GetPidQuality() const            { return fTRDpidQuality;}
     Int_t       GetNSlices() const               { return fTRDnSlices;}
@@ -56,7 +56,7 @@ public:
     ULong_t     fStatus;        // ESD track status
     Int_t       fKinkIndex;     // ESD kink index
     UShort_t    fTPCncls;       // Number of Clusters inside TPC
-    UShort_t    fTOFbc;         // TOF bunch crossing index
+    Short_t     fTOFbc;         // TOF bunch crossing index
     Double32_t  fTRDr[AliPID::kSPECIES];  // TRD radial position
     UChar_t     fTRDpidQuality; // TRD PID quality
     Int_t       fTRDnSlices;    // number of slices used for PID
@@ -118,7 +118,7 @@ public:
   Int_t              GetNTrackRefs() const            { return fMC ? fMC->fNTrackRefs:0;} 
   Int_t              GetLabel() const                 { return fMC ? fMC->fLabel:0; }
   Int_t              GetKinkIndex() const             { return fESD.fKinkIndex;}
-  UShort_t           GetTOFbc() const                 { return fESD.fTOFbc;}
+  Short_t            GetTOFbc() const                 { return fESD.fTOFbc;}
   UShort_t           GetTPCncls() const               { return fESD.fTPCncls;}
   Int_t              GetPDG() const                   { return fMC ? fMC->fPDG : 0; }
   Int_t              GetPID() const                   { return fMC ? fMC->GetPID() : -1; }
@@ -142,7 +142,7 @@ public:
   void               SetTPCoutParam(const AliExternalTrackParam *op);
   void               SetStatus(ULong_t stat)          { fESD.fStatus = stat;}
   void               SetKinkIndex(Int_t kinkIndex)    { fESD.fKinkIndex = kinkIndex;}
-  void               SetTOFbc(UShort_t bc)            { fESD.fTOFbc = bc;}
+  void               SetTOFbc(Int_t bc)               { fESD.fTOFbc = bc;}
   void               SetTPCncls(UShort_t TPCncls)     { fESD.fTPCncls = TPCncls;}
   void               SetTrackId(Int_t id)             { fESD.fId = id;}
   void               SetTrack(const AliTRDtrackV1 *track);

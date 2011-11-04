@@ -31,12 +31,12 @@
 #include "TH3.h"
 #include "TObjArray.h"
 #include "THnSparse.h"
-#include <TVectorT.h>
 
 #include "AliLog.h"
 
 #include "AliTRDcluster.h"
 #include "AliTRDseedV1.h"
+#include "AliTRDtrackletOflHelper.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDtrackerV1.h"
 #include "AliTRDtransform.h"
@@ -48,14 +48,12 @@ ClassImp(AliTRDcheckTRK)
 Bool_t  AliTRDcheckTRK::fgKalmanUpdate = kTRUE;
 Bool_t  AliTRDcheckTRK::fgClRecalibrate = kFALSE;
 Float_t AliTRDcheckTRK::fgKalmanStep = 2.;
-Float_t AliTRDcheckTRK::fgCalib[540][2];
 //__________________________________________________________________________
 AliTRDcheckTRK::AliTRDcheckTRK()
   : AliTRDresolution()
 {
 // Default constructor
   SetNameTitle("TRDtrackerSys", "TRD Tracker Systematic");
-  memset(AliTRDcheckTRK::fgCalib, 0, 540*2*sizeof(Float_t));
 }
 
 //__________________________________________________________________________
@@ -64,7 +62,7 @@ AliTRDcheckTRK::AliTRDcheckTRK(char* name)
 {
 // User constructor
   SetTitle("TRD Tracker Systematic");
-  memset(AliTRDcheckTRK::fgCalib, 0, 540*2*sizeof(Float_t));
+  MakePtCalib();
   InitFunctorList();
 }
 
@@ -74,21 +72,28 @@ AliTRDcheckTRK::~AliTRDcheckTRK()
 // Destructor
 }
 
+
 //__________________________________________________________________________
-Int_t AliTRDcheckTRK::GetSpeciesByMass(Float_t m)
+TObjArray* AliTRDcheckTRK::Histos()
 {
-// Find particle index by mass
-// 0 electron
-// 1 muon
-// 2 pion
-// 3 kaon
-// 4 proton
+// Build extra calibration plots
+  if(!(fContainer = AliTRDresolution::Histos())) return NULL;
+  //fContainer->Expand(AliTRDresolution::kNclasses+1);
 
-  for(Int_t is(0); is<AliPID::kSPECIES; is++) if(TMath::Abs(m-AliPID::ParticleMass(is))<1.e-4) return is;
-  return -1;
+  THnSparse *H(NULL);
+  if(!(H = (THnSparseI*)gROOT->FindObject("Roads"))){
+    const Char_t *title[kNdim] = {"layer", "charge", fgkTitle[kPt], fgkTitle[kYrez], fgkTitle[kPrez], "#sigma^{*}/<#sigma_{y}> [a.u.]", "n_{cl}"};
+    const Int_t nbins[kNdim]   = {AliTRDgeometry::kNlayer, 2, kNptBins, fgkNbins[kYrez], fgkNbins[kPrez], kNSigmaBins, kNclusters};
+    const Double_t min[kNdim]  = {-0.5, -0.5, -0.5, -1., -5., 0., 8.5},
+                   max[kNdim]  = {AliTRDgeometry::kNlayer-0.5, 1.5, kNptBins-0.5, 1., 5., 5., min[6]+kNclusters};
+    TString st("Tracking Roads Calib;");
+    // define minimum info to be saved in non debug mode
+    for(Int_t idim(0); idim<kNdim; idim++){ st += title[idim]; st+=";";}
+    H = new THnSparseI("Roads", st.Data(), kNdim, nbins, min, max);
+  } else H->Reset();
+  fContainer->AddAt(H, fContainer->GetEntries()/*AliTRDresolution::kNclasses*/);
+  return fContainer;
 }
-
-
 
 //__________________________________________________________________________
 TH1* AliTRDcheckTRK::PlotTrack(const AliTRDtrackV1 *track)
@@ -106,9 +111,81 @@ TH1* AliTRDcheckTRK::PlotTrack(const AliTRDtrackV1 *track)
   PlotCluster(&lt);
   PlotTracklet(&lt);
   PlotTrackIn(&lt);
+  DoRoads(&lt);
   return NULL;
 }
 
+//________________________________________________________
+void AliTRDcheckTRK::MakePtCalib(Float_t pt0, Float_t dpt)
+{
+// Build pt segments
+  for(Int_t j(0); j<=kNptBins; j++){
+    pt0+=(TMath::Exp(j*j*dpt)-1.);
+    fPtBinCalib[j]=pt0;
+  }
+}
+
+//__________________________________________________________________________
+Int_t AliTRDcheckTRK::GetPtBinCalib(Float_t pt)
+{
+// Find pt bin according to local pt segmentation
+  Int_t ipt(-1);
+  while(ipt<kNptBins){
+    if(pt<fPtBinCalib[ipt+1]) break;
+    ipt++;
+  }
+  return ipt;
+}
+
+
+//__________________________________________________________________________
+TH1* AliTRDcheckTRK::DoRoads(const AliTRDtrackV1 *track)
+{
+// comment needed
+  if(track) fkTrack = track;
+  if(!fkTrack){
+    AliDebug(4, "No Track defined.");
+    return NULL;
+  }
+  if(TMath::Abs(fkESD->GetTOFbc())>1){
+    AliDebug(4, Form("Track with BC_index[%d] not used.", fkESD->GetTOFbc()));
+    return NULL;
+  }
+  THnSparse *H(NULL);
+  if(!fContainer || !(H = (THnSparse*)fContainer->At(3))){
+    AliWarning("No output container defined.");
+    return NULL;
+  }
+//  return NULL;
+  Double_t val[kNdim];
+  AliTRDseedV1 *fTracklet(NULL);
+  AliTRDtrackletOflHelper helper; TObjArray cl(AliTRDseedV1::kNclusters); cl.SetOwner(kFALSE);
+  for(Int_t il(0); il<AliTRDgeometry::kNlayer; il++){
+    if(!(fTracklet = fkTrack->GetTracklet(il))) continue;
+    if(!fTracklet->IsOK() || !fTracklet->IsChmbGood()) continue;
+    Int_t ipt(GetPtBinCalib(fTracklet->GetPt()));
+    if(ipt<0) continue;
+    val[0] = il;
+    val[1] = fkTrack->Charge()<0?0:1;
+    val[2] = ipt;
+    Double_t dyt(fTracklet->GetYfit(0) - fTracklet->GetYref(0)),
+             dzt(fTracklet->GetZfit(0) - fTracklet->GetZref(0)),
+             dydx(fTracklet->GetYfit(1)),
+             tilt(fTracklet->GetTilt());
+    // correct for tilt rotation
+    val[3] = dyt - dzt*tilt;
+    dydx+= tilt*fTracklet->GetZref(1);
+    val[4] = TMath::ATan((dydx - fTracklet->GetYref(1))/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
+    fTracklet->ResetClusterIter(kTRUE); AliTRDcluster *c(NULL);
+    while((c = fTracklet->NextCluster())) cl.AddLast(c);
+    helper.Init(AliTRDtransform::Geometry().GetPadPlane(fTracklet->GetDetector()), &cl);
+    Double_t r, y, s; helper.GetRMS(r, y, s, fTracklet->GetX0());
+    val[5] = s/helper.GetSyMean();
+    val[6] = fTracklet->GetN();
+    H->Fill(val);
+  }
+  return NULL;
+}
 
 //___________________________________________________
 Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref)
