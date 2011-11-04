@@ -34,6 +34,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDCaloTrigger.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 
 #include "AliAnalysisTaskEMCALTriggerQA.h"
 
@@ -43,7 +44,7 @@ ClassImp(AliAnalysisTaskEMCALTriggerQA)
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA() : 
 AliAnalysisTaskSE(), 
 fOutputList(0),
-fGeometry(0),  fGeoName("EMCAL_COMPLETEV1"),
+fGeometry(0),  fGeoName("EMCAL_COMPLETEV1"), fRecoUtils(new AliEMCALRecoUtils),
 fhNEvents(0),
 fhFORAmp(0),
 fhFORAmpL1G(0),
@@ -81,7 +82,7 @@ fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200)
 AliAnalysisTaskEMCALTriggerQA::AliAnalysisTaskEMCALTriggerQA(const char *name) : 
 AliAnalysisTaskSE(name), 
 fOutputList(0),
-fGeometry(0), fGeoName("EMCAL_COMPLETEV1"),
+fGeometry(0), fGeoName("EMCAL_COMPLETEV1"), fRecoUtils(new AliEMCALRecoUtils),
 fhNEvents(0),
 fhFORAmp(0),
 fhFORAmpL1G(0),
@@ -295,10 +296,12 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   if(triggerclasses=="") return;
   
   fhNEvents->Fill(0.5);
-  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") || 
+  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
+     triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
+     triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(1.5);
   if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
+     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
   if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(3.5);
   if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(4.5);
   
@@ -543,10 +546,19 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     {
       AliESDCaloCluster *clus = (AliESDCaloCluster*) (caloClus->At(icalo));
 		
-      if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") || 
+      if(!clus->IsEMCAL()) continue;
+      
+      if(!fRecoUtils->IsGoodCluster(clus,fGeometry,InputEvent()->GetEMCALCells(),InputEvent()->GetBunchCrossNumber())){ 
+        //printf("Remove Bad \n");
+        return;
+      }
+      
+      if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
+         triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
+         triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
          triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    ) fhClusMB ->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-         triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD")    ) fhClusL0 ->Fill(clus->E());
+         triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    ) fhClusL0 ->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) fhClusL1G->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) fhClusL1J->Fill(clus->E());
     }
