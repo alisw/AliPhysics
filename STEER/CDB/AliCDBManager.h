@@ -128,6 +128,7 @@ class AliCDBManager: public TObject {
 	void Init();
 	void InitFromCache(TMap *entryCache, Int_t run);
 	Bool_t InitFromSnapshot(const char* snapshotFileName);
+	void DumpToSnapshotFile(const char* snapshotFileName);
   
 protected:
 

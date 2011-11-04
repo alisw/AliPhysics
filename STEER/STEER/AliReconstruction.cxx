@@ -1515,12 +1515,22 @@ void AliReconstruction::Begin(TTree *)
     AliSysInfo::AddStamp("CheckGeom");
   }
 
+  Bool_t loadedFromSnapshot=kFALSE;
+  Bool_t toCDBSnapshot=kFALSE;
+  TString snapshotFileOut(""); // we could use fSnapshotFileName if we are not interested
+  // in reading from and writing to a snapshot file at the same time
+  if(TString(gSystem->Getenv("OCDB_SNAPSHOT_CREATE")) == TString("kTRUE")){
+      toCDBSnapshot=kTRUE;
+      //fFromCDBSnapshot=kFALSE;
+      TString snapshotFile(gSystem->Getenv("OCDB_SNAPSHOT_FILENAME"));
+      if(!(snapshotFile.IsNull() || snapshotFile.IsWhitespace()))
+	  snapshotFileOut = snapshotFile;
+      else
+	  snapshotFileOut="OCDB.root";
+  }
   if(fFromCDBSnapshot){
       AliDebug(2,"Initializing from a CDB snapshot");
-      if(!AliCDBManager::Instance()->InitFromSnapshot(fSnapshotFileName.Data())){
-	  Abort("InitFromSnapshot", TSelector::kAbortProcess);
-	  return;
-      }
+      loadedFromSnapshot = AliCDBManager::Instance()->InitFromSnapshot(fSnapshotFileName.Data());
   }
 
   if (!MisalignGeometry(fLoadAlignData)) {
@@ -1536,7 +1546,7 @@ void AliReconstruction::Begin(TTree *)
   }
   AliSysInfo::AddStamp("InitGRP");
 
-  if(!fFromCDBSnapshot){
+  if(!loadedFromSnapshot){
       if (!LoadCDB()) {
 	  Abort("LoadCDB", TSelector::kAbortProcess);
 	  return;
@@ -1567,6 +1577,14 @@ void AliReconstruction::Begin(TTree *)
     AliWarning("Not all detectors have correct RecoParam objects initialized");
   }
   AliSysInfo::AddStamp("InitRecoParams");
+
+  if(toCDBSnapshot){
+      AliCDBManager::Instance()->DumpToSnapshotFile(snapshotFileOut.Data());
+      Printf("\n\n\n*************** here I expect to exit!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
+      //Abort("DumpToSnapshotFile", TSelector::kAbortProcess);
+      //exit;
+  }
+
 
   if (fInput && gProof) {
     if (reco) *reco = *this;

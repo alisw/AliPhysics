@@ -99,6 +99,33 @@ void AliCDBManager::InitFromCache(TMap *entryCache, Int_t run) {
 }
 
 //_____________________________________________________________________________
+void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName){
+// 
+// dump the entries map and the ids list to
+// the output file
+
+    // open the file
+    TFile *f = TFile::Open(snapshotFileName,"RECREATE");
+    if (!f || f->IsZombie()){
+	AliError(Form("Cannot open file %s",snapshotFileName));
+	return;
+    }
+
+    Printf("\ndumping entriesMap (entries'cache) with %d entries!\n", fEntryCache.GetEntries()); 
+    Printf("\ndumping entriesList with %d entries!\n", fIds->GetEntries());
+
+    f->cd();                                                                                           
+
+    f->WriteObject(&fEntryCache,"CDBentriesMap");
+    f->WriteObject(fIds,"CDBidsList");
+    f->Close();
+    delete f;
+
+    //return;
+    exit;
+}
+
+//_____________________________________________________________________________
 Bool_t AliCDBManager::InitFromSnapshot(const char* snapshotFileName){
 // initialize manager from a CDB snapshot, that is add the entries
 // to the entries map and the ids to the ids list taking them from
