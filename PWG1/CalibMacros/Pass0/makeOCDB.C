@@ -10,9 +10,6 @@
 
 */
 
-const AliTRDCalDet *GetCalDetGain(Int_t runNumber, Int_t version, Int_t subversion);
-const AliTRDCalDet *GetCalDetVdrift(Int_t runNumber, Int_t version, Int_t subversion);
-
 void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 {
   //
@@ -70,76 +67,28 @@ void makeOCDB(TString runNumberString, TString  ocdbStorage="")
 
 
    //TRD part
-  AliTRDPreprocessorOffline procestrd;
-  procestrd.SetLinearFitForVdrift(kTRUE);
-  procestrd.Init("CalibObjects.root");
-  Int_t versionVdriftUsed = procestrd.GetVersionVdriftUsed();
-  Int_t subversionVdriftUsed = procestrd.GetSubVersionVdriftUsed();
-  Int_t versionGainUsed = procestrd.GetVersionGainUsed();
-  Int_t subversionGainUsed = procestrd.GetSubVersionGainUsed();
-  if((versionVdriftUsed != 0) && (versionGainUsed != 0)) {
-    
-    AliTRDCalDet *caldetVdrift =GetCalDetVdrift(runNumber,versionVdriftUsed,subversionVdriftUsed);
-    procestrd.SetCalDetVdrift(caldetVdrift);
-    AliTRDCalDet *caldetGain =GetCalDetGain(runNumber,versionGainUsed,subversionGainUsed);
-    procestrd.SetCalDetGain(caldetGain);
-    
-    if(caldetVdrift && caldetGain) {
-      
-      procestrd.SetMinStatsVdriftT0PH(600*10);
-      procestrd.SetMinStatsVdriftLinear(50);
-      procestrd.SetMinStatsGain(600);
-       
-      procestrd.CalibVdriftT0("CalibObjects.root",runNumber,runNumber,ocdbStorage);
-      procestrd.CalibGain("CalibObjects.root",runNumber,runNumber,ocdbStorage);
-      procestrd.CalibChamberStatus(runNumber,runNumber,ocdbStorage);
-    }
-  }
+   AliTRDPreprocessorOffline procestrd;
+   procestrd.SetLinearFitForVdrift(kTRUE);
+   procestrd.SetMinStatsVdriftT0PH(600*10);
+   procestrd.SetMinStatsVdriftLinear(50);
+   procestrd.SetMinStatsGain(600);
+   procestrd.Init("CalibObjects.root");
+   Int_t versionVdriftUsed = procestrd.GetVersionVdriftUsed();
+   Int_t subversionVdriftUsed = procestrd.GetSubVersionVdriftUsed();
+   Int_t versionGainUsed = procestrd.GetVersionGainUsed();
+   Int_t subversionGainUsed = procestrd.GetSubVersionGainUsed();
+   Int_t versionExBUsed = procestrd.GetVersionExBUsed();
+   Int_t subversionExBUsed = procestrd.GetSubVersionExBUsed();
+   printf("version and subversion vdrift %d and %d\n",versionVdriftUsed,subversionVdriftUsed);
+   printf("version and subversion gain %d and %d\n",versionGainUsed,subversionGainUsed);
+   printf("version and subversion exb %d and %d\n",versionExBUsed,subversionExBUsed);
+   procestrd.Process("CalibObjects.root",runNumber,runNumber,ocdbStorage);
+   Int_t trdstatus = procestrd.GetStatus();
+  
   
   //Mean Vertex
   AliMeanVertexPreprocessorOffline procesMeanVtx;
   procesMeanVtx.ProcessOutput("CalibObjects.root", ocdbStorage, runNumber);
 	
   return;
-}
-
-const AliTRDCalDet *GetCalDetVdrift(Int_t runNumber, Int_t version, Int_t subversion){
-  //
-  // Get Cal Det used during reconstruction for vdrift
-  //
-
-
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberVdrift",runNumber, version, subversion);
-  if(!entry) {
-    printf("Found no entry\n");
-    return 0x0;
-  }
-  const AliCDBId id = entry->GetId();
-  version = id.GetVersion();
-  subversion = id.GetSubVersion();
-  //printf("Found version %d and subversion %d for vdrift\n",version,subversion);
-  const AliTRDCalDet* calDet = (AliTRDCalDet *)entry->GetObject();
-
-  return calDet;
-
-}
-const AliTRDCalDet *GetCalDetGain(Int_t runNumber, Int_t version, Int_t subversion){
-  //
-  // Get Cal Det used during reconstruction for vdrift
-  //
-
-
-  AliCDBEntry *entry = AliCDBManager::Instance()->Get("TRD/Calib/ChamberGainFactor",runNumber, version, subversion);
-  if(!entry) {
-    printf("Found no entry\n");
-    return 0x0;
-  }
-  const AliCDBId id = entry->GetId();
-  version = id.GetVersion();
-  subversion = id.GetSubVersion();
-  //printf("Found version %d and subversion %d for vdrift\n",version,subversion);
-  const AliTRDCalDet* calDet = (AliTRDCalDet *)entry->GetObject();
-
-  return calDet;
-
 }
