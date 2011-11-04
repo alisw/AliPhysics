@@ -18,6 +18,7 @@ class TH2F;
 class AliEMCALGeometry;
 
 //--- AliRoot ---
+class AliEMCALRecoUtils;
 #include "AliEMCALGeoParams.h"
 #include "AliAnalysisTaskSE.h"
 
@@ -39,6 +40,8 @@ public:
   
   void   Terminate(Option_t *option);
   
+  AliEMCALRecoUtils* GetRecoUtils()     { return fRecoUtils ; }
+  
   //Histogram setters
   
   void   SetTRUTotalSignalHistogramsRange(Int_t nbins,  Float_t max) { fNBinsTRUSignal   = nbins; fMaxTRUSignal   = max ; }
@@ -53,6 +56,8 @@ private:
   
   AliEMCALGeometry *fGeometry;       //  Access to EMCAL geometry utils
   TString           fGeoName;        //  Name of geometry used
+  
+  AliEMCALRecoUtils *fRecoUtils;     // RecoUtils
   
   TH1F             *fhNEvents;       //! Number of selected events
   TH2F             *fhFORAmp;        //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
@@ -104,7 +109,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 3);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 4);   
 };
 
 #endif 
