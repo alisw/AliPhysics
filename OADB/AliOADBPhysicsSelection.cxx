@@ -100,14 +100,14 @@ void AliOADBPhysicsSelection::AddCollisionTriggerClass(AliVEvent::EOfflineTrigge
 }
 void AliOADBPhysicsSelection::AddBGTriggerClass       (AliVEvent::EOfflineTriggerTypes triggerMask, const char* className,const char * beamSide, UInt_t triggerLogic) 
 { 
-  // add bg gtrigger class
+  // add bg trigger class
   TObjString * tclass = new TObjString(Form("%s &%u *%u",className,triggerMask, triggerLogic));
   fBGTrigClasses  [GetActiveBit(triggerMask)]->Add(tclass);
   SetBeamSide(tclass->String().Data(),beamSide);
 }
 
 const TString AliOADBPhysicsSelection::GetBeamSide (const char * trigger)  {
-  // Associate beam site to trigger class name
+  // Associate beam side to trigger class name
   TObjString * cname = new TObjString(trigger);
   CleanKey(cname->String());  
   static TString retValue="";
@@ -127,7 +127,7 @@ void AliOADBPhysicsSelection::SetBeamSide (const char * className, const char * 
 
 void AliOADBPhysicsSelection::CleanKey(TString & str) {
 
-  //  Remove all wite spacese and "goodies" of the trigger class string (bx ids, trigger logic...)
+  //  Remove all wite spaces and "goodies" of the trigger class string (bx ids, trigger logic...)
   if(str.Index("*")>0)
     str.Remove(str.Index("*")); // keep only the class name (no bx, offline trigger...)   
   if(str.Index("#")>0)

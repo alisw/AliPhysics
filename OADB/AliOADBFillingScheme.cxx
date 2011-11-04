@@ -55,21 +55,23 @@ const char *  AliOADBFillingScheme::GetBXIDs(const char * beamSide) const
 {
   //  Returns the bunch crossing numbers for the different beam classes. By default this is empty
 
-  if (!strcmp(beamSide, "AC")) {
+  if (!strcmp(beamSide, "AC") && !(TObjString*)fBXIds->GetValue(beamSide)) {
 
-    TString  bxa =  ((TObjString*)fBXIds->GetValue("A"))->String(); 
-    TString  bxc =  ((TObjString*)fBXIds->GetValue("C"))->String();
-    if(!bxa && !bxc) return "";
-    if(!bxc)         return bxa.Data();
-    if(!bxa)         return bxa.Data();
-    TString bxBoth = bxa.Data();
+    TString  &bxa =  ((TObjString*)fBXIds->GetValue("A"))->String(); 
+    TString  &bxc =  ((TObjString*)fBXIds->GetValue("C"))->String();
+    if(bxa.IsNull() && bxc.IsNull()) return "";
+    if(bxc.IsNull())         return bxa.Data();
+    if(bxa.IsNull())         return bxc.Data();
+    static TString bxBoth = bxa.Data();
     bxBoth += bxc.Data();
     return bxBoth.Data();
 
   } 
 
-  TString  bx =  ((TObjString*)fBXIds->GetValue(beamSide))->String(); 
-  if(!bx) return "";
+  if(!(TObjString*)fBXIds->GetValue(beamSide)) return "";
+
+  TString  &bx =  ((TObjString*)fBXIds->GetValue(beamSide))->String(); 
+  if(bx.IsNull()) return "";
   return bx.Data();
   
 }
