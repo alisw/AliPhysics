@@ -126,7 +126,8 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   triggerInputs="";
   if (pTokens) {
     for (int n=0; n<pTokens->GetEntriesFast(); n++) {
-      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (!pTokens->At(n)) continue;
+      TString module=pTokens->At(n)->GetName();
       if (pHandler->FindConfiguration(module.Data())) {
 	triggerInputs+=module;
 	triggerInputs+=" ";
@@ -213,7 +214,8 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   triggerInputs="";
   if (pTokens) {
     for (int n=0; n<pTokens->GetEntriesFast(); n++) {
-      TString module=((TObjString*)pTokens->At(n))->GetString();
+      if (!pTokens->At(n)) continue;
+      TString module=pTokens->At(n)->GetName();
       if (pHandler->FindConfiguration(module.Data())) {
 	triggerInputs+=module;
 	triggerInputs+=" ";
@@ -240,7 +242,7 @@ int AliHLTTriggerAgent::CreateConfigurations(AliHLTConfigurationHandler* pHandle
   // the global trigger component
   configurationId="GLOBAL-Trigger";
   HLTInfo("setting inputs for %s: %s", configurationId.Data(), triggerOutputs.IsNull()?"none":triggerOutputs.Data());
-  pHandler->CreateConfiguration(configurationId.Data(), "HLTGlobalTrigger", triggerOutputs.Data(), "");
+  pHandler->CreateConfiguration(configurationId.Data(), "HLTGlobalTrigger", triggerOutputs.Data(), "-skipctp");
   
   return 0;
 }
@@ -271,7 +273,7 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
 					   AliHLTUInt32_t /*spec*/,
 					  AliHLTOUTHandlerDesc& desc) const
 {
-  // see header file for class documentation
+  // get description of HLTOUT data blocks handled by this agent
 
   // handler of the trigger decisions {'ROOTTOBJ':'HLT '}
   // currently stored as a TObject with the common data type and origin
@@ -279,7 +281,8 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
   // avoid interference with other handlers
   // the handler produces an ESD object in order to be merged to the
   // hltEsd afterwards
-  // 2009-11-17 adding the data tyepes for (global) trigger decisions
+  // 2009-11-17 adding the data types for (global) trigger decisions
+  // {GLOBTRIG:HLT } and {TRIG_DEC:HLT }
   // the TObject data types stays for a while in order to preserve
   // backward compatibility
   if (dt==(kAliHLTDataTypeTObject|kAliHLTDataOriginOut) ||
@@ -289,7 +292,7 @@ int AliHLTTriggerAgent::GetHandlerDescription(AliHLTComponentDataType dt,
     return 1;
   }
 
-  // handler for the HLT readou list and trigger data data blocks {'HLTRDLST':'HLT '}
+  // handler for the HLT readout list and trigger data data blocks {'HLTRDLST':'HLT '}
   if (dt==AliHLTComponentDataTypeInitializer("HLTRDLST", kAliHLTDataOriginOut) ||
       dt==AliHLTComponentDataTypeInitializer("HLTTRGDT", kAliHLTDataOriginOut)) {
       desc=AliHLTOUTHandlerDesc(kProprietary, dt, GetModuleId());
