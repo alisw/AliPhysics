@@ -77,6 +77,7 @@
 
 #pragma link C++ class AliAnalysisTaskQASym+;
 #pragma link C++ class AliAnaVZEROQA+;
+#pragma link C++ class AliAnaVZEROPbPb+;
 
 
 // TRD performance classes
