@@ -16,7 +16,7 @@ class TObjArray;
 class AliCounterCollection;
 
 class AliAnalysisTaskMuonQA : public AliAnalysisTaskSE {
-public:
+ public:
   
   AliAnalysisTaskMuonQA();
   AliAnalysisTaskMuonQA(const char *name);
@@ -36,14 +36,14 @@ public:
   /// - if the physics selection is used, apply the mask to the trigger word returned by the physics selection
   /// - if not, apply the mask to the trigger word built by looking for triggers listed in "fSelectTriggerClass"
   void SelectTrigger(Bool_t flag = kTRUE, UInt_t mask = AliVEvent::kMUON) {fSelectTrigger = flag; fTriggerMask = mask;}
-  
+	
   /// Select track matching the trigger to fill histograms
   void SelectMatched(Bool_t flag = kTRUE) {fSelectMatched = flag;}
   
   /// Use only tracks passing the acceptance cuts (Rabs, eta)
   void ApplyAccCut(Bool_t flag = kTRUE) { fApplyAccCut = flag; }
   
-private:
+ private:
   
   /// Not implemented
   AliAnalysisTaskMuonQA(const AliAnalysisTaskMuonQA& rhs);
@@ -55,8 +55,10 @@ private:
   UInt_t BuildTriggerWord(TString& FiredTriggerClasses);
   
   TList* BuildListOfTriggerCases(TString& FiredTriggerClasses);
-  
-private:
+  TList* BuildListOfAllTriggerCases(TString& FiredTriggerClasses);
+  TList* BuildListOfSelectedTriggerCases(TString& FiredTriggerClasses);
+	
+ private:
   
   enum eList {
     kNTracks                 = 0,  ///< number of tracks
@@ -75,7 +77,7 @@ private:
     kChi2                    = 13, ///< normalized chi2 distribution
     kProbChi2                = 14, ///< distribution of probability of chi2
     kNClustersPerTrack       = 15, ///< number of clusters per track
-    kNChamberHitPerTrack     = 16, ///< number of chamber hit per track
+    kNChamberHitPerTrack     = 16,  ///< number of chamber hit per track
     kPtMatchLpt              = 17, ///< Pt distribution match Lpt
     kPtMatchHpt              = 18, ///< Pt distribution match Hpt
     kPtMuPlusMatchLpt        = 19,  ///< Pt distribution of mu+ match Lpt
