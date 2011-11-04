@@ -53,8 +53,10 @@ class AliTRDtransform : public TObject {
   AliTRDCalROC       *fCalPRFROC;           //  Pad wise PRF calibration object
   const AliTRDCalDet *fkCalVdriftDet;       //  ROC wise Vdrift calibration object
   const AliTRDCalDet *fkCalT0Det;           //  ROC wise T0 calibration object
+  const AliTRDCalDet *fkCalExBDet;          //  ROC wise ExB calibration object
   Double_t            fCalVdriftDetValue;   //  ROC wise Vdrift calibration value
   Double_t            fCalT0DetValue;       //  ROC wise T0 calibration value
+  Double_t            fCalExBDetValue;      //  Det wise ExB calibration value
 
   Double_t            fSamplingFrequency;   //  ADC sampling frequency
 

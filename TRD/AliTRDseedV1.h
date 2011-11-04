@@ -66,6 +66,7 @@ public:
    ,kKink       = BIT(18) // kink prolongation tracklet
    ,kStandAlone = BIT(19) // tracklet build during stand alone track finding
    ,kPrimary    = BIT(20) // tracklet from a primary track candidate
+   ,kChmbGood   = BIT(21) // status of the detector from calibration view point
   };
 
   enum ETRDtrackletError { // up to 8 bits
@@ -96,6 +97,7 @@ public:
   void      Init(const AliRieman *fit);
   Bool_t    IsEqual(const TObject *inTracklet) const;
   Bool_t    IsCalibrated() const     { return TestBit(kCalib);}
+  Bool_t    IsChmbGood() const       { return TestBit(kChmbGood);}
   Bool_t    IsOwner() const          { return TestBit(kOwner);}
   Bool_t    IsKink() const           { return TestBit(kKink);}
   Bool_t    IsPrimary() const        { return TestBit(kPrimary);}
@@ -178,6 +180,7 @@ public:
   void      Reset(Option_t *opt="");
 
   void      SetC(Float_t c, Int_t typ=0) { fC[typ] = c;}
+  void      SetChmbGood(Bool_t k = kTRUE){ SetBit(kChmbGood, k);}
   void      SetChi2(Float_t chi2)    { fChi2 = chi2;}
   inline void SetCovRef(const Double_t *cov);
   void      SetErrorMsg(ETRDtrackletError err)  { SETBIT(fErrorMsg, err);}

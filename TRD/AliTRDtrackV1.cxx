@@ -882,8 +882,11 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     // first implementation store no. of time bins filled in tracklet (5bits  see "y" bits) and
     // no. of double clusters in case of pad row cross (4bits see "x" bits)
     // bit map for tracklet quality xxxxyyyyy
+    // 27.10.11 A.Bercuci
+    // add chamber status bit "z" bit 
+    // bit map for tracklet quality zxxxxyyyyy
     Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0);
-    spd = Double_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5));
+    spd = Double_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5) | (fTracklet[ip]->IsChmbGood()<<9));
     track->SetTRDmomentum(p, ip, &spd);
     track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }

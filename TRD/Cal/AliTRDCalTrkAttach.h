@@ -19,12 +19,15 @@ class TObjArray;
 class AliTRDCalTrkAttach : public TNamed
 {
 public:
-  enum ETRDCalTrkAttachCalib {    
+  enum ETRDCalTrkAttachCalib {
     kResPos = 0    // relative position residual location
    ,kResAng        // angular residual location
    ,kSigma         // relative error location
    ,kNclMean       // mean no. of clusters/tracklet location
    ,kNcalib        // no. of calib objects
+  };
+  enum ETRDCalTrkAttachParam {
+    kNcharge = 2
   };
 
   AliTRDCalTrkAttach();

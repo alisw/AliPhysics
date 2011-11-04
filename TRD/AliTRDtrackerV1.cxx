@@ -875,7 +875,11 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
         AliDebug(4, "Failed Tracklet Init");
         break;
       }
-      if(!ptrTracklet->AttachClusters(chamber, kTRUE, t.Charge()>0?kTRUE:kFALSE, fEventInFile)){
+      // Select attachment base on track to B field sign not only track charge which is buggy
+      // mark kFALSE same sign tracks and kTRUE opposite sign tracks
+      // A.Bercuci 3.11.2011
+      Float_t prod(t.GetBz()*t.Charge());
+      if(!ptrTracklet->AttachClusters(chamber, kTRUE, prod<0.?kTRUE:kFALSE, fEventInFile)){
         t.SetStatus(AliTRDtrackV1::kNoAttach, ily);
         if(debugLevel>3){
           AliTRDseedV1 trackletCp(*ptrTracklet);
@@ -984,7 +988,10 @@ Int_t AliTRDtrackerV1::FollowBackProlongation(AliTRDtrackV1 &t)
   
 
     // register tracklet with the tracker and track
-    ptrTracklet->Update(&t);
+    // Save inside the tracklet the track parameters BEFORE track update.
+    // Commented out their overwriting AFTER track update
+    // A.Bercuci 3.11.2011
+    //ptrTracklet->Update(&t); 
     ptrTracklet = SetTracklet(ptrTracklet);
     Int_t index(fTracklets->GetEntriesFast()-1);
     t.SetTracklet(ptrTracklet, index);

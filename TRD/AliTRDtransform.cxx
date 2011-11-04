@@ -48,8 +48,10 @@ AliTRDtransform::AliTRDtransform()
   ,fCalPRFROC(0x0)
   ,fkCalVdriftDet(0x0)
   ,fkCalT0Det(0x0)
+  ,fkCalExBDet(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
+  ,fCalExBDetValue(0)
   ,fSamplingFrequency(0)
   ,fPadPlane(0x0)
   ,fZShiftIdeal(0)
@@ -73,6 +75,7 @@ AliTRDtransform::AliTRDtransform()
   // Get the calibration objects for the global calibration
   fkCalVdriftDet     = fCalibration->GetVdriftDet();
   fkCalT0Det         = fCalibration->GetT0Det();
+  fkCalExBDet        = fCalibration->GetExBDet();
 
 }
 
@@ -87,8 +90,10 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   ,fCalPRFROC(0x0)
   ,fkCalVdriftDet(0x0)
   ,fkCalT0Det(0x0)
+  ,fkCalExBDet(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
+  ,fCalExBDetValue(0)
   ,fSamplingFrequency(0)
   ,fPadPlane(0x0)
   ,fZShiftIdeal(0)
@@ -112,6 +117,7 @@ AliTRDtransform::AliTRDtransform(Int_t det)
   // Get the calibration objects for the global calibration
   fkCalVdriftDet     = fCalibration->GetVdriftDet();
   fkCalT0Det         = fCalibration->GetT0Det();
+  fkCalExBDet        = fCalibration->GetExBDet();
 
   SetDetector(det);
 
@@ -128,8 +134,10 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   ,fCalPRFROC(0x0)
   ,fkCalVdriftDet(0x0)
   ,fkCalT0Det(0x0)
+  ,fkCalExBDet(0x0)
   ,fCalVdriftDetValue(0)
   ,fCalT0DetValue(0)
+  ,fCalExBDetValue(0)
   ,fSamplingFrequency(0)
   ,fPadPlane(0x0)
   ,fZShiftIdeal(0)
@@ -151,7 +159,7 @@ AliTRDtransform::AliTRDtransform(const AliTRDtransform &t)
   }
   fkCalVdriftDet     = fCalibration->GetVdriftDet();
   fkCalT0Det         = fCalibration->GetT0Det();
-
+  fkCalExBDet        = fCalibration->GetExBDet();
 }
 
 //_____________________________________________________________________________
@@ -191,16 +199,19 @@ void AliTRDtransform::Copy(TObject &t) const
   if (fCalibration) {
     ((AliTRDtransform &) t).fkCalVdriftDet   = fCalibration->GetVdriftDet();
     ((AliTRDtransform &) t).fkCalT0Det       = fCalibration->GetT0Det();
+    ((AliTRDtransform &) t).fkCalExBDet      = fCalibration->GetExBDet();
   }
   else {
     ((AliTRDtransform &) t).fkCalVdriftDet   = 0;
     ((AliTRDtransform &) t).fkCalT0Det       = 0;
+    ((AliTRDtransform &) t).fkCalExBDet      = 0;
   }
   ((AliTRDtransform &) t).fCalVdriftROC      = 0x0;
   ((AliTRDtransform &) t).fCalT0ROC          = 0x0;
   ((AliTRDtransform &) t).fCalPRFROC         = 0x0;
   ((AliTRDtransform &) t).fCalVdriftDetValue = 0; 
   ((AliTRDtransform &) t).fCalT0DetValue     = 0;
+  ((AliTRDtransform &) t).fCalExBDetValue     = 0;
   ((AliTRDtransform &) t).fSamplingFrequency = 0;
   ((AliTRDtransform &) t).fPadPlane          = 0x0;
   ((AliTRDtransform &) t).fZShiftIdeal       = 0;
@@ -236,6 +247,7 @@ void AliTRDtransform::SetDetector(Int_t det)
   // Get the detector wise defined calibration values
   fCalVdriftDetValue = fkCalVdriftDet->GetValue(det);
   fCalT0DetValue     = fkCalT0Det->GetValue(det);
+  fCalExBDetValue    = fkCalExBDet->GetValue(det);
 
   // Shift needed to define Z-position relative to middle of chamber
   Int_t layer        = Geometry().GetLayer(det);
@@ -275,7 +287,7 @@ Bool_t AliTRDtransform::Transform(AliTRDcluster *c)
   Double_t t0  = fCalT0DetValue     + fCalT0ROC->GetValue(col,row);
   t0 /= fSamplingFrequency;
   // ExB correction
-  Double_t exb = AliTRDCommonParam::Instance()->GetOmegaTau(vd);
+  Double_t exb = fCalExBDetValue;//AliTRDCommonParam::Instance()->GetOmegaTau(vd);
 
   Float_t x = c->GetXloc(t0, vd);
 

@@ -10,11 +10,11 @@ void AliTRDmakeTrkDB(const Char_t *file)
   metaData->SetObjectClassName("TObjArray");
   metaData->SetResponsible("Alexandru Bercuci");
   metaData->SetBeamPeriod(1);
-  metaData->SetAliRootVersion("05-27-06b"); //root version
+  metaData->SetAliRootVersion("05-30-02"); //root version
   metaData->SetComment(
     "Likelihoods for Attach Cluster.\n"
-    " Tunned on Pb-Pb run 137161.");
-  AliCDBId id("TRD/Calib/TrkAttach", 95352, AliCDBRunRange::Infinity()); 
+    " Tunned on p-p run 159580.");
+  AliCDBId id("TRD/Calib/TrkAttach", 151536, AliCDBRunRange::Infinity());
   AliTRDCalTrkAttach attach;
   if(!attach.LoadReferences(file)) return;
 //   attach.SetNsgmDy(Int_t ns0, Int_t ns1);

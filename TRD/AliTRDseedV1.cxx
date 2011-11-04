@@ -1018,6 +1018,8 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
 // Parameters
 //  - chamber : pointer to tracking chamber container used to search the tracklet
 //  - tilt    : switch for tilt correction during road building [default true]
+//  - chgPos  : mark same[kFALSE] and opposite[kTRUE] sign tracks with respect to Bz field sign [default true]
+//  - ev      : event number for debug purposes [default = -1]
 // Output
 //  - true    : if tracklet found successfully. Failure can happend because of the following:
 //      -
@@ -1075,13 +1077,13 @@ Bool_t  AliTRDseedV1::AttachClusters(AliTRDtrackingChamber *const chamber, Bool_
   if(fkReconstructor->IsHLT()) cp.SetRPhiMethod(AliTRDcluster::kCOG);
   if(!IsCalibrated()) Calibrate();
 
-  Int_t kroadyShift(0);
+/*  Int_t kroadyShift(0);
   Float_t bz(AliTrackerBase::GetBz());
   if(TMath::Abs(bz)>2.){
     if(bz<0.) kroadyShift = chgPos ? +1 : -1;
     else kroadyShift = chgPos ? -1 : +1;
-  }
-  AliDebug(4, Form("\n       syTrk[cm]=%4.2f dydxTrk[deg]=%+6.2f rs[%d] Chg[%c] rY[cm]=%4.2f rZ[cm]=%5.2f TC[%c]", syRef, TMath::ATan(fYref[1])*TMath::RadToDeg(), kroadyShift, chgPos?'+':'-', kroady, kroadz, tilt?'y':'n'));
+  }*/
+  AliDebug(4, Form("\n       syTrk[cm]=%4.2f dydxTrk[deg]=%+6.2f Chg[%c] rY[cm]=%4.2f rZ[cm]=%5.2f TC[%c]", syRef, TMath::ATan(fYref[1])*TMath::RadToDeg(), chgPos?'+':'-', kroady, kroadz, tilt?'y':'n'));
   Double_t phiTrk(TMath::ATan(fYref[1])),
            thtTrk(TMath::ATan(fZref[1]));
 
@@ -2033,6 +2035,9 @@ Bool_t AliTRDseedV1::FitRobust(Bool_t chg)
     } else { 
       kScalePulls = attach->GetScaleCov();//*lyScaler;
     }
+    // Retrieve chamber status
+    SetChmbGood(calibration->IsChamberGood(fDet));
+    if(!IsChmbGood()) kScalePulls*=10.;
   }  
   Double_t xc[kNclusters], yc[kNclusters], sy[kNclusters];
   Int_t n(0),           // clusters used in fit 

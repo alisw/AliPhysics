@@ -34,8 +34,9 @@
 
 #include "AliLog.h"
 
-#include "AliTRDCalTrkAttach.h"
 #include "AliTRDcalibDB.h"
+#include "AliTRDgeometry.h"
+#include "AliTRDCalTrkAttach.h"
 
 ClassImp(AliTRDCalTrkAttach)
 
@@ -71,13 +72,13 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
     return 0.;
   }
   //check likelihood array  
-  if (!fLike || fLike->GetEntries() != 6*2*kNcalib) {
+  if (!fLike || fLike->GetEntries() != AliTRDgeometry::kNlayer*kNcharge*kNcalib) {
     AliError("No usable AttachClusters calib object.");
     return 0.;
   }
-  
+  Int_t offset(ly*kNcalib*kNcharge); // offset for layer
   TGraphErrors *g(NULL);
-  if(!(g = (TGraphErrors*)fLike->At(ly*8+2*Int_t(kResPos)+Int_t(chg)))){
+  if(!(g = (TGraphErrors*)fLike->At(offset+Int_t(kResPos)*kNcharge+Int_t(chg)))){
     AliError("Failed retrieving AttachClusters graph.");
     return 0.;
   }
@@ -109,7 +110,7 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
   dd      = (dyr - dym)/sym; dd*=dd;
   f[0] = TMath::Exp(-0.5*dd);
   // +++ process dphi
-  if(!(g = (TGraphErrors*)fLike->At(ly*8+2*Int_t(kResAng)+Int_t(chg)))){
+  if(!(g = (TGraphErrors*)fLike->At(offset+Int_t(kResAng)*kNcharge+Int_t(chg)))){
     AliError("Failed retrieving AttachClusters graph.");
     return 0.;
   }
@@ -119,7 +120,7 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
   dd      = (dphi - dpm)/spm; dd*=dd;
   f[1] = TMath::Exp(-0.5*dd);
   // +++ process no of clusters
-  if(!(g = (TGraphErrors*)fLike->At(ly*8+2*Int_t(kNclMean)+Int_t(chg)))){
+  if(!(g = (TGraphErrors*)fLike->At(offset+Int_t(kNclMean)*kNcharge+Int_t(chg)))){
     AliError("Failed retrieving AttachClusters graph.");
     return 0.;
   }
@@ -129,7 +130,7 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
  
   // process phi dependences
   // +++ process <s>/s
-  if(!(g = (TGraphErrors*)fLike->At(ly*8+2*Int_t(kSigma)+Int_t(chg)))){
+  if(!(g = (TGraphErrors*)fLike->At(offset+Int_t(kSigma)*kNcharge+Int_t(chg)))){
     AliError("Failed retrieving AttachClusters graph.");
     return 0.;
   }
@@ -156,7 +157,7 @@ Double_t AliTRDCalTrkAttach::CookLikelihood(Bool_t chg, Int_t ly, Float_t pt, Fl
   Double_t sm = boundary?y1:((phiTrk*(y0-y1) + (x0*y1-x1*y0))*invdx),
            ssm = 0.5*(g->GetErrorY(ip)+g->GetErrorY(jp));
   dd      = (sr - sm)/ssm; dd*=dd;
-  f[3] = TMath::Exp(-0.5*dd);
+  f[3] = 1.;//TMath::Exp(-0.5*dd);
 
   // Calculate likelihood
   Double_t length = f[0]*f[0]+f[1]*f[1]+f[2]*f[2]+f[3]*f[3];
@@ -188,12 +189,12 @@ Bool_t AliTRDCalTrkAttach::LoadReferences(const Char_t *file)
          cs[2] = {'n', 'p'};
 
   if(fLike) fLike->Clear();
-  else fLike = new TObjArray(6*2*kNcalib);
-  for(Int_t ily(0); ily<6; ily++){
+  else fLike = new TObjArray(AliTRDgeometry::kNlayer*kNcharge*kNcalib);
+  for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     for(Int_t icalib(0); icalib<kNcalib; icalib++){
-      for(Int_t isgn(0); isgn<2; isgn++){
+      for(Int_t isgn(0); isgn<kNcharge; isgn++){
         if(!(g = (TGraphErrors*)gFile->Get(Form("%c%c%d", co[icalib], cs[isgn], ily)))) return kFALSE;
-        fLike->AddAt(g, ily*8+2*icalib+isgn);
+        fLike->AddAt(g, kNcharge*(ily*kNcalib+icalib)+isgn);
       }
     }
   }
