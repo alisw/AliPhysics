@@ -63,7 +63,8 @@ AliZDC::AliZDC() :
   fEnCalibData(0),
   fTowCalibData(0),
   fZDCCalibFName(""),
-  fSpectatorTracked(1)
+  fSpectatorTracked(1),
+  fIspASystem(kFALSE)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -85,7 +86,8 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fEnCalibData(0),
   fTowCalibData(0),
   fZDCCalibFName(""),
-  fSpectatorTracked(1)
+  fSpectatorTracked(1),
+  fIspASystem(kFALSE)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -125,7 +127,8 @@ fPedCalib(ZDC.fPedCalib),
 fEnCalibData(ZDC.fEnCalibData),
 fTowCalibData(ZDC.fTowCalibData),
 fZDCCalibFName(ZDC.fZDCCalibFName),
-fSpectatorTracked(ZDC.fSpectatorTracked)
+fSpectatorTracked(ZDC.fSpectatorTracked),
+fIspASystem(ZDC.fIspASystem)
 {
   // copy constructor
 }
@@ -140,6 +143,7 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fEnCalibData = ZDC.fEnCalibData;
     fTowCalibData = ZDC.fTowCalibData;
     fZDCCalibFName = ZDC.fZDCCalibFName;
+    fIspASystem = ZDC.fIspASystem;
   } return *this;
 }
 
@@ -408,12 +412,12 @@ void AliZDC::Hits2SDigits()
 }
 
 //_____________________________________________________________________________
-AliDigitizer* AliZDC::CreateDigitizer(AliDigitizationInput* digInput) const
-{
+AliDigitizer* AliZDC::CreateDigitizer(AliDigitizationInput* digInput) const{
   // Create the digitizer for ZDC
   AliZDCDigitizer *zdcDigitizer = new AliZDCDigitizer(digInput);
   if(fSpectatorTracked==0) zdcDigitizer->SetSpectators2Track();
-  //printf("\n**************************ZDC digitizer created with Spectators2Track = %d\n\n", fSpectatorTracked);
+  if(fIspASystem==kTRUE) zdcDigitizer->SetpAsystem();
+  //if(fIspASystem==kTRUE) printf("\n **** ZDC digitizer initialized for p-A collisions\n\n");
   return zdcDigitizer;
 }
 

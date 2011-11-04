@@ -77,6 +77,8 @@ public:
   void  SetSpectatorsTrack() {fSpectatorTracked=0;}
   Int_t SpectatorsTracked() const {return fSpectatorTracked;}
 
+  void  SetpAsystem() {fIspASystem = kTRUE;}
+
 private:
 
   AliZDC& operator = (const AliZDC&);
@@ -93,8 +95,9 @@ protected:
   TString          fZDCCalibFName; 	// Name of the ZDC calibration data
  
   Int_t fSpectatorTracked; // Are spectator tracked by generator?
+  Bool_t  fIspASystem;       // Configuring pA collisions (MC only)
   
-  ClassDef(AliZDC,10)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,11)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration

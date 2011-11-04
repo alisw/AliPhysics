@@ -47,6 +47,9 @@ public:
   
   void    SetSpectators2Track() {fSpectators2Track=kTRUE;}
 
+  // Added for p-A simulations
+  void    SetpAsystem() {fIspASystem=kTRUE;}
+
 private:
 
   AliZDCDigitizer(const AliZDCDigitizer&);
@@ -71,7 +74,10 @@ private:
   
   Bool_t  fSpectators2Track;    // should digitizer track spectators
   Float_t fBeamEnergy;          // beam energy taken from GRP object
+  
+  // Added for p-A simulations
+  Bool_t  fIspASystem;       	// true if collision system is p-A
        
-  ClassDef(AliZDCDigitizer, 12)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 13)     // digitizer for ZDC
 };    
 #endif
