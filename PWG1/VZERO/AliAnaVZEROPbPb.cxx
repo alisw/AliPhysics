@@ -10,19 +10,13 @@
 #include "AliESDInputHandler.h"
 #include "AliAnaVZEROPbPb.h"
 #include "AliMultiplicity.h"
-#include "AliESDtrackCuts.h"
 #include "AliESDUtils.h"
 #include "AliCentrality.h"
 
 // VZERO includes
 #include "AliESDVZERO.h"
-#include "AliESDVZEROfriend.h"
 
 ClassImp(AliAnaVZEROPbPb)
-
-  const Int_t   AliAnaVZEROPbPb::kNBinMult = 200;
-  const Float_t AliAnaVZEROPbPb::kMultMax  = 20000.;
-
 
 AliAnaVZEROPbPb::AliAnaVZEROPbPb() 
   : AliAnalysisTaskSE("AliAnaVZEROPbPb"), fESD(0), fEsdV0(0), fOutputList(0), fClassesNames(0),
@@ -50,8 +44,20 @@ fhTotRecoMult(0),
 fhCentrality(0),
 fhEqualizedMult(0),
 fhEqualizedMultSum(0),
-fhL2TriggersEfficiency(0),
-fhVBANDCounts(0)
+fNBinTotMult(100),
+fTotMultMax(30000),
+fNBinMult(100),
+fV0AMultMax(20000),
+fV0CMultMax(30000),
+fNBinOnlineCharge(100),
+fV0AOnlineChargeMax(20000),
+fV0COnlineChargeMax(30000),
+fNBinEquaMult(100),
+fEquaMultMax(50),
+fNBinSumsEqMult(100),
+fV0AEqMultMax(1000),
+fV0CEqMultMax(1000)
+
 {
   // Constructor
   for(Int_t i = 0; i < 2; ++i) {
@@ -94,8 +100,19 @@ fhTotRecoMult(0),
 fhCentrality(0),
 fhEqualizedMult(0),
 fhEqualizedMultSum(0),
-fhL2TriggersEfficiency(0),
-fhVBANDCounts(0)
+fNBinTotMult(100),
+fTotMultMax(30000),
+fNBinMult(100),
+fV0AMultMax(20000),
+fV0CMultMax(30000),
+fNBinOnlineCharge(100),
+fV0AOnlineChargeMax(20000),
+fV0COnlineChargeMax(30000),
+fNBinEquaMult(100),
+fEquaMultMax(50),
+fNBinSumsEqMult(100),
+fV0AEqMultMax(1000),
+fV0CEqMultMax(1000)
 {
   // Constructor
   for(Int_t i = 0; i < 2; ++i) {
@@ -202,7 +219,6 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 	fhOnlineCharge= new TH2F*[fNClasses];
 	fhCentrality= new TH1F*[fNClasses];
 	fhV0vsSPDCentrality= new TH2F*[fNClasses];
-	fhL2TriggersEfficiency = new TH1F*[fNClasses];
 	fhRecoMult= new TH2F*[fNClasses];
 	fhTotRecoMult= new TH1F*[fNClasses];
 	fhTriggerBits= new TH1F*[fNClasses];
@@ -212,16 +228,13 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 	fhL2Triggers = CreateHisto1D("hL2Triggers","L2 Triggers",fNClasses,0,fNClasses);
   	fOutputList->Add(fhL2Triggers);	  
 	
-	fhVBANDCounts = CreateHisto1D("hVBANDTrigger","VBAND Triggers counts",kNBinMult,0.,kMultMax,"VZERO charge");
-  	fOutputList->Add(fhVBANDCounts);	  
-
 	TIter iter(fClassesNames);
 	TObjString* name;
 	Int_t iClass =0;
 	while((name = (TObjString*) iter.Next())){
 		fhL2Triggers->GetXaxis()->SetBinLabel(iClass+1,name->String().Data());
 		
-		fhOnlineCharge[iClass] = CreateHisto2D(Form("hOnlineCharge_%s",name->String().Data()),Form("Online Charge for %s",name->String().Data()),100,0.,32000.,100,0.,32000,"V0A","V0C");
+		fhOnlineCharge[iClass] = CreateHisto2D(Form("hOnlineCharge_%s",name->String().Data()),Form("Online Charge for %s",name->String().Data()),fNBinOnlineCharge,0.,fV0AOnlineChargeMax,fNBinOnlineCharge,0.,fV0COnlineChargeMax,"V0A","V0C");
 		fOutputList->Add(fhOnlineCharge[iClass]);	  
 
 		fhCentrality[iClass] = CreateHisto1D(Form("hV0Centrality_%s",name->String().Data()),Form("V0 centrality for %s",name->String().Data()),100,0.,100.);
@@ -230,10 +243,10 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 		fhV0vsSPDCentrality[iClass] = CreateHisto2D(Form("hV0vsSPDCentrality_%s",name->String().Data()),Form("Centrality for %s",name->String().Data()),100,0.,100.,100,0.,100,"SPD Centrality (CL1)","V0 Centrality (V0M)");
 		fOutputList->Add(fhV0vsSPDCentrality[iClass]);	  
 
-		fhRecoMult[iClass] = CreateHisto2D(Form("hRecoMult_%s",name->String().Data()),Form("Reco Multiplicity for %s",name->String().Data()),100,0.,10000.,100,0.,20000,"V0A Mult","V0C Mult");
+		fhRecoMult[iClass] = CreateHisto2D(Form("hRecoMult_%s",name->String().Data()),Form("Reco Multiplicity for %s",name->String().Data()),fNBinMult,0.,fV0AMultMax,fNBinMult,0.,fV0CMultMax,"V0A Offline Mult","V0C Offline Mult");
 	  	fOutputList->Add(fhRecoMult[iClass]);	  
 
-		fhTotRecoMult[iClass] = CreateHisto1D(Form("hTotRecoMult_%s",name->String().Data()),Form("Total Reco Multiplicity for %s",name->String().Data()),kNBinMult,0.,kMultMax,"V0A + V0C Mult");
+		fhTotRecoMult[iClass] = CreateHisto1D(Form("hTotRecoMult_%s",name->String().Data()),Form("Total Reco Multiplicity for %s",name->String().Data()),fNBinTotMult,0.,fTotMultMax,"V0A + V0C Offline Mult");
 	  	fOutputList->Add(fhTotRecoMult[iClass]);	  
 
 		fhTriggerBits[iClass] = CreateHisto1D(Form("hTriggerBits_%s",name->String().Data()),Form("Trigger Bits for %s",name->String().Data()),16,-0.5,15.5);
@@ -255,14 +268,12 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(16,"All True BG");
 	  	fOutputList->Add(fhTriggerBits[iClass]);
 	
-		fhEqualizedMult[iClass] = CreateHisto2D(Form("hEqualizedMult_%s",name->String().Data()),Form("Equalized Multiplicity for %s",name->String().Data()),64,-0.5,63.5,1000,0.,50,"PMT channel","Equalized Multiplicity");
+		fhEqualizedMult[iClass] = CreateHisto2D(Form("hEqualizedMult_%s",name->String().Data()),Form("Equalized Multiplicity for %s",name->String().Data()),64,-0.5,63.5,fNBinEquaMult,0.,fEquaMultMax,"PMT channel","Equalized Multiplicity");
 	  	fOutputList->Add(fhEqualizedMult[iClass]);
 	
-		fhEqualizedMultSum[iClass] = CreateHisto2D(Form("hEqualizedMultSum_%s",name->String().Data()),Form("Summed Equalized Multiplicity for %s",name->String().Data()),100,0.,500.,100,0.,1000,"V0A","V0C");
+		fhEqualizedMultSum[iClass] = CreateHisto2D(Form("hEqualizedMultSum_%s",name->String().Data()),Form("Summed Equalized Multiplicity for %s",name->String().Data()),fNBinSumsEqMult,0.,fV0AEqMultMax,fNBinSumsEqMult,0.,fV0CEqMultMax,"V0A","V0C");
 	  	fOutputList->Add(fhEqualizedMultSum[iClass]);
 
-		fhL2TriggersEfficiency[iClass] = CreateHisto1D(Form("hL2TriggersEfficiency_%s",name->String().Data()),Form("Trigger %s Efficiency",name->String().Data()),kNBinMult,0.,kMultMax,"VZERO Multiplicity");
-	  	fOutputList->Add(fhL2TriggersEfficiency[iClass]);
 		
 		iClass++;
 	}
@@ -342,34 +353,35 @@ void AliAnaVZEROPbPb::CreateQAHistos(){
   
 }
 //________________________________________________________________________
-Bool_t AliAnaVZEROPbPb::IsGoodEvent(){
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
-  if (!isSelected) return kFALSE;
-  const AliESDVertex *primaryVtx = fESD->GetPrimaryVertex();
-  if (!primaryVtx) return kFALSE;
-  if (!primaryVtx->GetStatus()) return kFALSE;
-  Double_t tPrimaryVtxPosition[3];
-  primaryVtx->GetXYZ(tPrimaryVtxPosition);
-  if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) return kFALSE;
-
-  AliCentrality *centrality = fESD->GetCentrality();
-  if (centrality->GetQuality()) return kFALSE;
-  
-  return kTRUE;
-}
-//________________________________________________________________________
 void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
    TString trigStr(fESD->GetFiredTriggerClasses());
   
-//  Bool_t isGoodEvt = IsGoodEvent();
 	TIter iter(fClassesNames);
 	TObjString* name;
 	Int_t iClass =0;
-	if (trigStr.Contains("CPBI2-B"))  fhVBANDCounts->Fill(fEsdV0->GetMTotV0A()+fEsdV0->GetMTotV0C());
 	
+   
+	TObjArray * tokens = trigStr.Tokenize(" ");
+    Int_t ntokens = tokens->GetEntriesFast();
+		
   while((name = (TObjString*) iter.Next())){
 	
-	if (!trigStr.Contains(name->String().Data()) && iClass>0) continue;
+	Bool_t goodTrig = kFALSE;
+	if(iClass>0){
+    	for (Int_t itoken = 0; itoken < ntokens; ++itoken) {
+			if (!((((TObjString*)tokens->At(itoken))->String()).Contains("-B-"))) continue;
+			if ((((TObjString*)tokens->At(itoken))->String()).BeginsWith(name->String().Data())) {
+				goodTrig = kTRUE;
+				break;
+			}
+		}
+	} else goodTrig = kTRUE;
+	
+	if (!goodTrig) {
+		iClass++;
+		continue;
+	}
+//	if (!trigStr.Contains(name->String().Data())) continue;
 	
 	fhOnlineCharge[iClass]->Fill(fEsdV0->GetTriggerChargeA(),fEsdV0->GetTriggerChargeC());
  	
@@ -377,7 +389,6 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 		
   	fhRecoMult[iClass]->Fill(fEsdV0->GetMTotV0A(),fEsdV0->GetMTotV0C());
   	fhTotRecoMult[iClass]->Fill(fEsdV0->GetMTotV0A()+fEsdV0->GetMTotV0C());
-
 
 	for(int iTrig = 0; iTrig < 16; ++iTrig){
 		if(fEsdV0->GetTriggerBits() & (1<<iTrig)) fhTriggerBits[iClass]->Fill(iTrig);	
@@ -393,7 +404,7 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 	
 	Float_t sumEqMult[2] = {0.,0.};
 	for(int iCh = 0; iCh < 64; ++iCh){
-		if(fEsdV0->GetTime(iCh) < 1e-6) continue;
+		if(fEsdV0->GetTime(iCh) < -1024.+ 1e-6) continue;
 		Int_t side = iCh / 32 ;
 		sumEqMult[side] += fESD->GetVZEROEqMultiplicity(iCh);
 		fhEqualizedMult[iClass]->Fill(iCh,fESD->GetVZEROEqMultiplicity(iCh));
@@ -402,6 +413,8 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 	
 	iClass++;
   }
+	delete tokens;
+
 }
 //________________________________________________________________________
 void AliAnaVZEROPbPb::FillQAHistos(){
@@ -474,12 +487,35 @@ void AliAnaVZEROPbPb::Terminate(Option_t *)
     printf("ERROR: Output list not available\n");
     return;
   }
-	fhVBANDCounts= (TH1F*) fOutputList->At(1); // VBAND histo
-	
-	for(int i = 0; i < fNClasses; ++i){
-		fhTotRecoMult[i] = (TH1F*) fOutputList->At(6+ i*9); // Other defined trigger histo
-		fhL2TriggersEfficiency[i] = (TH1F*) fOutputList->At(10+ i*9); 
-		fhL2TriggersEfficiency[i]->Divide(fhTotRecoMult[i],fhVBANDCounts);
-	}
 
 }
+//________________________________________________________________________
+
+void AliAnaVZEROPbPb::SetOnlineChargeRange(Int_t nbins, Float_t maxA, Float_t maxC){
+	fNBinOnlineCharge = nbins;
+	fV0AOnlineChargeMax = maxA;
+	fV0COnlineChargeMax = maxC;
+}
+//________________________________________________________________________
+void AliAnaVZEROPbPb::SetTotalMultiplicityRange(Int_t nbins, Float_t max){
+	fNBinTotMult = nbins;
+	fTotMultMax = max;
+}
+//________________________________________________________________________
+void AliAnaVZEROPbPb::SetMultiplicityRange(Int_t nbins, Float_t maxA, Float_t maxC){
+	fNBinMult = nbins;
+	fV0AMultMax = maxA;
+	fV0CMultMax = maxC;
+}
+//________________________________________________________________________
+void AliAnaVZEROPbPb::SetEquaMultRange(Int_t nbins, Float_t max){
+	fNBinEquaMult = nbins;
+	fEquaMultMax = max;
+}
+//________________________________________________________________________
+void AliAnaVZEROPbPb::SetSumEquaMultRange(Int_t nbins, Float_t maxA, Float_t maxC){
+	fNBinSumsEqMult = nbins;
+	fV0AEqMultMax = maxA;
+	fV0CEqMultMax = maxC;
+}
+
