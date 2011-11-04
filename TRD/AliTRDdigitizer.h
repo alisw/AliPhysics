@@ -78,11 +78,9 @@ class AliTRDdigitizer : public AliDigitizer {
 
           Bool_t       GetCompress() const                         { return fCompress;       }
           Bool_t       GetSDigits() const                          { return fSDigits;        }
-          Float_t      GetLorentzFactor(Float_t vdrift);
 
-          Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength
+          Int_t        Diffusion(Float_t vdrift, Double_t absdriftlength, Double_t exbvalue
                                , Double_t &lRow, Double_t &lCol, Double_t &lTime);
-          Int_t        ExB(Float_t vdrift, Double_t driftlength, Double_t &lRow);
 	  void         RunDigitalProcessing(Int_t det = 0);
 
  protected:

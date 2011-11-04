@@ -875,6 +875,8 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
   AliTRDCalROC       *calT0ROC          = 0;
   Float_t             calT0DetValue     = 0.0;
   const AliTRDCalDet *calT0Det          = calibration->GetT0Det();  
+  Double_t            calExBDetValue    = 0.0;
+  const AliTRDCalDet *calExBDet         = calibration->GetExBDet();
 
   if (simParam->TRFOn()) {
     timeBinTRFend = ((Int_t) (simParam->GetTRFhi() 
@@ -924,6 +926,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
     calVdriftDetValue = calVdriftDet->GetValue(det);
     calT0ROC          = calibration->GetT0ROC(det);
     calT0DetValue     = calT0Det->GetValue(det);
+    calExBDetValue    = calExBDet->GetValue(det);
 
     // Go to the local coordinate system:
     // loc[0] - col  direction in amplification or driftvolume
@@ -972,7 +975,7 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
     Float_t  driftvelocity  = calVdriftDetValue * calVdriftROC->GetValue(colE,rowE);
     Double_t absdriftlength = TMath::Abs(driftlength);
     if (commonParam->ExBOn()) {
-      absdriftlength /= TMath::Sqrt(GetLorentzFactor(driftvelocity));
+      absdriftlength /= TMath::Sqrt(1.0 / (1.0 + calExBDetValue*calExBDetValue));
     }
 
     // Loop over all electrons of this hit
@@ -1002,16 +1005,14 @@ Bool_t AliTRDdigitizer::ConvertHits(Int_t det
           
       // Apply the diffusion smearing
       if (simParam->DiffusionOn()) {
-        if (!(Diffusion(driftvelocity,absdriftlength,locR,locC,locT))) {
+        if (!(Diffusion(driftvelocity,absdriftlength,calExBDetValue,locR,locC,locT))) {
           continue;
 	}
       }
 
       // Apply E x B effects (depends on drift direction)
-      if (commonParam->ExBOn()) { 
-        if (!(ExB(driftvelocity,driftlength,locC))) {
-          continue;
-	}
+      if (commonParam->ExBOn()) {
+        locC = locC + calExBDetValue * driftlength;
       }
 
       // The electron position after diffusion and ExB in pad coordinates.
@@ -1903,6 +1904,7 @@ void AliTRDdigitizer::InitOutput(Int_t iEvent)
   
 //_____________________________________________________________________________
 Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t absdriftlength
+                               , Double_t exbvalue
                                , Double_t &lRow, Double_t &lCol, Double_t &lTime)
 {
   //
@@ -1919,8 +1921,14 @@ Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t absdriftlength
     Float_t sigmaT    = driftSqrt * diffT;
     Float_t sigmaL    = driftSqrt * diffL;
     lRow  = gRandom->Gaus(lRow ,sigmaT);
-    lCol  = gRandom->Gaus(lCol ,sigmaT * GetLorentzFactor(vdrift));
-    lTime = gRandom->Gaus(lTime,sigmaL * GetLorentzFactor(vdrift));
+    if (AliTRDCommonParam::Instance()->ExBOn()) {
+      lCol  = gRandom->Gaus(lCol ,sigmaT * 1.0 / (1.0 + exbvalue*exbvalue));
+      lTime = gRandom->Gaus(lTime,sigmaL * 1.0 / (1.0 + exbvalue*exbvalue));
+    }
+    else {
+      lCol  = gRandom->Gaus(lCol ,sigmaT);
+      lTime = gRandom->Gaus(lTime,sigmaL);
+    }
 
     return 1;
 
@@ -1932,40 +1940,7 @@ Int_t AliTRDdigitizer::Diffusion(Float_t vdrift, Double_t absdriftlength
   }
 
 }
-
-//_____________________________________________________________________________
-Float_t AliTRDdigitizer::GetLorentzFactor(Float_t vd)
-{
-  //
-  // Returns the Lorentz factor
-  //
-
-  Double_t omegaTau      = AliTRDCommonParam::Instance()->GetOmegaTau(vd);
-  Double_t lorentzFactor = 1.0;
-  if (AliTRDCommonParam::Instance()->ExBOn()) {
-    lorentzFactor = 1.0 / (1.0 + omegaTau*omegaTau);
-  }
-
-  return lorentzFactor;
-
-}
   
-//_____________________________________________________________________________
-Int_t AliTRDdigitizer::ExB(Float_t vdrift, Double_t driftlength, Double_t &lCol)
-{
-  //
-  // Applies E x B effects to the position of a single electron.
-  // Depends on signed drift length.
-  //
-
-  lCol = lCol 
-       + AliTRDCommonParam::Instance()->GetOmegaTau(vdrift) 
-       * driftlength;
-
-  return 1;
-
-}
-
 //_____________________________________________________________________________
 void AliTRDdigitizer::RunDigitalProcessing(Int_t det)
 {
