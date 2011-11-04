@@ -965,6 +965,7 @@ void AliAnalysisManager::Terminate()
    }
    gROOT->cd();
    next1.Reset();
+   TString copiedFiles;
    while ((output=(AliAnalysisDataContainer*)next1())) {
       // Close all files at output
       TDirectory *opwd = gDirectory;
@@ -973,12 +974,17 @@ void AliAnalysisManager::Terminate()
 //         output->GetFile()->Clear();
          output->GetFile()->Close();
          // Copy merged outputs in alien if requested
-         if (fSpecialOutputLocation.Length() && 
-             fSpecialOutputLocation.BeginsWith("alien://")) {
+         if (fSpecialOutputLocation.BeginsWith("alien://")) {
+            if (copiedFiles.Contains(output->GetFile()->GetName())) {
+               if (opwd) opwd->cd();
+               output->SetFile(NULL);
+               continue;
+            } 
             Info("Terminate", "Copy file %s to %s", output->GetFile()->GetName(),fSpecialOutputLocation.Data()); 
             gROOT->ProcessLine("if (!gGrid) TGrid::Connect(\"alien:\");");
             TFile::Cp(output->GetFile()->GetName(), 
                       Form("%s/%s", fSpecialOutputLocation.Data(), output->GetFile()->GetName()));
+            copiedFiles += output->GetFile()->GetName();
          }             
          output->SetFile(NULL);
       }   
