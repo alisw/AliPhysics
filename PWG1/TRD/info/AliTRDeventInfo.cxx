@@ -114,6 +114,13 @@ void AliTRDeventInfo::SetOwner()
 }
 
 //____________________________________________________________________
+UShort_t  AliTRDeventInfo::GetBunchFill() const
+{
+  // wrapper
+  return fHeader->GetBunchCrossNumber();
+}
+
+//____________________________________________________________________
 void AliTRDeventInfo::GetListOfIsolatedBunches(TH1D* hbc, Int_t bunchSpacing) {
   //
   // Find the isolated bunch crossings

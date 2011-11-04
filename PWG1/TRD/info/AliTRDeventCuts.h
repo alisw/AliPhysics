@@ -33,8 +33,9 @@ public:
 
   void    Print(Option_t *opt="") const;
 
-  void    SetVertexN(Int_t n) { fVertexN = n; };
-  void    SetVertexZ(Double_t z) { fVertexZ = z; };
+  void    SetEventType(Int_t n)     { fEventType = n; };
+  void    SetVertexN(Int_t n)       { fVertexN = n; };
+  void    SetVertexZ(Double_t z)    { fVertexZ = z; };
   void    SetBunchSelection(Int_t n, Int_t bunches[]);
 
 private:
@@ -42,6 +43,7 @@ private:
 
   TObjArray *fTriggerNames; // Container for Trigger names
   Int_t     *fBunches;      // List of bunches accepted for analysis
+  Int_t     fEventType;     // Event type
   Int_t     fVertexN;       // Min number of contributors to Vertex
   Double_t  fVertexZ;       // Max Abs(z) of the reconstructed Vertex
 

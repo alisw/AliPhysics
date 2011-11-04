@@ -62,10 +62,10 @@ public:
   };
   enum ETRDresolutionClassProjs {
     kClNproj=48       // cluster projections
-    ,kTrkltNproj=72   // tracklet projections
-    ,kTrkInNproj=28   // trackIn projections
+    ,kTrkltNproj=258  // tracklet projections
+    ,kTrkInNproj=42   // trackIn projections
     ,kTrkNproj=72     // track projections
-    ,kMCTrkInNproj=48 // trackIn projections
+    ,kMCTrkInNproj=62 // trackIn projections
   };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
@@ -78,10 +78,10 @@ public:
     ,kPt
     ,kNdim  // no of dimensions in the THnSparse
   };
-  enum ETRDresolutionSegmentation {
-     kSector    = 0
-    ,kStack
-    ,kDetector
+  enum ETRDresolutionSize {
+     kNdimCl      = 4
+    ,kNdimTrklt   = 4
+    ,kNdimTrkIn   = 7
     ,kNbunchCross = 3  // no of classes for bunch crossing
     ,kNpt         = 3  // no of log bins in pt spectrum
     ,kNcharge     = 2
@@ -101,21 +101,22 @@ public:
   static Int_t    GetPtBin(Float_t pt);
   Bool_t          GetRefFigure(Int_t ifig);
 
-  TObjArray*  Histos(); 
+  virtual TObjArray*  Histos(); 
 //  Bool_t  Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir="TRD_Performance");
 //  Bool_t  LoadCorrection(const Char_t *file=NULL);
   void            MakeSummary();
   static void     MakePtSegmentation(Float_t pt0=0.5, Float_t dpt=0.002);
 
-  TObjArray*      Results(ETRDresolutionClass c) const {if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
+  TObjArray*      Results(ETRDresolutionClass c) const  { if(!fProj) return NULL; return (TObjArray*)fProj->At(c);}
   void            UserExec(Option_t * opt);
   void            InitExchangeContainers();
-//  Bool_t  HasLoadCorrection() const {return TestBit(kLoadCorr);}
-  Bool_t          HasTrackRefit() const {return TestBit(kTrackRefit);}
-  Bool_t          HasTrackSelection() const {return TestBit(kTrackSelect);}
-  Bool_t          IsVerbose() const {return TestBit(kVerbose);}
-  Bool_t          IsVisual() const {return TestBit(kVisual);}
-  Bool_t          UseExchangeContainers() const {return TestBit(kXchange);}
+  Bool_t          HasTrackRefit() const                 { return TestBit(kTrackRefit);}
+  Bool_t          HasTrackSelection() const             { return TestBit(kTrackSelect);}
+  Bool_t          IsVerbose() const                     { return TestBit(kVerbose);}
+  Bool_t          IsVisual() const                      { return TestBit(kVisual);}
+  Bool_t          UseBCselectTOF() const                { return fBCbinTOF>0;}
+  Bool_t          UseBCselectFill() const               { return fBCbinFill>0;}
+  Bool_t          UseExchangeContainers() const         { return TestBit(kXchange);}
   Bool_t          PostProcess();
 
   TH1*            PlotCluster(const AliTRDtrackV1 *t=NULL);
@@ -127,13 +128,14 @@ public:
   static Bool_t   Process(TH2* const h2, TGraphErrors **g, Int_t stat=100);
   void            SetDyRange(Float_t dy) {fDyRange = dy;}
 //  void    SetSegmentationLevel(Int_t l=0);
-  void            SetPtThreshold(Float_t pt) {fPtThreshold = pt;}
-//  void    SetLoadCorrection(Bool_t v = kTRUE) {SetBit(kLoadCorr, v);}
-  void            SetVerbose(Bool_t v = kTRUE) {SetBit(kVerbose, v);}
-  void            SetVisual(Bool_t v = kTRUE) {SetBit(kVisual, v);}
-  void            SetTrackRefit(Bool_t v = kTRUE) {SetBit(kTrackRefit, v);}
-  void            SetTrackSelection(Bool_t v = kTRUE) {SetBit(kTrackSelect, v);}
-  void            SetUseExchangeContainers(Bool_t v = kTRUE) {SetBit(kXchange, v);}
+  void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
+  void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
+  void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
+  void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
+  void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
+  void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
+  void            SetTrackSelection(Bool_t v = kTRUE)   { SetBit(kTrackSelect, v);}
+  void            SetUseExchangeContainers(Bool_t v = kTRUE) { SetBit(kXchange, v);}
 
   void            Terminate(Option_t * opt);
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
@@ -186,6 +188,8 @@ protected:
   UShort_t              fIdxFrame;        // frame counter (internal)
   Float_t               fPtThreshold;     // pt threshold for some performance plots
   Float_t               fDyRange;         // min/max dy
+  Int_t                 fBCbinTOF;        // set/select by TOF BC index
+  Int_t                 fBCbinFill;       // set/select by Bunch Fill index
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections

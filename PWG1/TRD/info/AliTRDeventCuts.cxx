@@ -50,6 +50,7 @@ AliTRDeventCuts::AliTRDeventCuts()
   :TNamed("trdEventCuts", "")
   ,fTriggerNames(NULL)
   ,fBunches(NULL)
+  ,fEventType(7)
   ,fVertexN(1)
   ,fVertexZ(15.)
 {
@@ -64,6 +65,7 @@ AliTRDeventCuts::AliTRDeventCuts(const Char_t *name)
   :TNamed(name, "")
   ,fTriggerNames(NULL)
   ,fBunches(NULL)
+  ,fEventType(7)
   ,fVertexN(1)
   ,fVertexZ(15.)
 {
@@ -77,6 +79,7 @@ AliTRDeventCuts::AliTRDeventCuts(const AliTRDeventCuts &ref)
   :TNamed((TNamed&)ref)
   ,fTriggerNames(NULL)
   ,fBunches(NULL)
+  ,fEventType(ref.fEventType)
   ,fVertexN(ref.fVertexN)
   ,fVertexZ(ref.fVertexZ)
 {
@@ -119,7 +122,7 @@ Bool_t AliTRDeventCuts::IsSelected(AliESDEvent *ev, Bool_t col)
     return select;
   }
   // select only physical events
-  select = select && (ev->GetEventType() == 7);
+  select = select && (ev->GetEventType() == fEventType);
   if(!select){
     AliDebug(1, Form("Reject Ev[%d] for EvType[%d]", ev->GetEventNumberInFile(), ev->GetEventType()));
     return select;
@@ -189,6 +192,7 @@ Bool_t AliTRDeventCuts::CheckTrigger(const Char_t *name)
 void AliTRDeventCuts::Print(Option_t */*opt*/) const
 {
 // Print content of event cuts
+  printf("Event Type       : %2d\n", fEventType);
   printf("Vertex  selection: N[%2d] Z[cm]=%6.2f\n", fVertexN, fVertexZ);
   if(fTriggerNames){
     printf("Trigger selection: ");

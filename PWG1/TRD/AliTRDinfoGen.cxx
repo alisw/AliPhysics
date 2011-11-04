@@ -423,7 +423,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliDebug(2, Form("  Centrality Class: %d", centralityBin));
   }
   fEventInfo->SetCentrality(centralityBin);
-  Int_t evBC(fESDev->GetBunchCrossNumber());
+  UShort_t evBC(fESDev->GetBunchCrossNumber());
 
   Bool_t *trackMap(NULL);
   AliStack * mStack(NULL);
@@ -548,7 +548,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // some other Informations which we may wish to store in order to find problematic cases
     fTrackInfo->SetKinkIndex(esdTrack->GetKinkIndex(0));
     fTrackInfo->SetTPCncls(static_cast<UShort_t>(esdTrack->GetNcls(1)));
-    fTrackInfo->SetTOFbc(static_cast<UShort_t>(esdTrack->GetTOFBunchCrossing()));
+    fTrackInfo->SetTOFbc(esdTrack->GetTOFBunchCrossing()==AliVTrack::kTOFBCNA?0:esdTrack->GetTOFBunchCrossing());
     nclsTrklt = 0;
   
     // set V0pid info

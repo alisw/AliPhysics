@@ -25,26 +25,20 @@ class AliTRDcheckTRK : public AliTRDresolution
 {
 public:
   enum ETRDcheckTRKconst {
-     kNbunchCross = 3  // no of classes for bunch crossing
-    ,kNpt         = 24 // no of log bins in pt spectrum
-    ,kNcharge     = 2
-  };
-  enum ETRDcheckTRKclasses {
-     kEntry = 0
-    ,kPropagation
-    ,kNclasses
+     kNptBins    = 25 // no of log bins in pt spectrum
+    ,kNSigmaBins = 25 // no of sigma bins
+    ,kNclusters  = 19 // no of no of clusters
+    ,kNdim       = 7  // no of dimensions in THnSparse
   };
   AliTRDcheckTRK();
   AliTRDcheckTRK(char* name);
   virtual ~AliTRDcheckTRK();
   static Float_t  GetKalmanStep()                      { return fgKalmanStep;}
-  static Float_t* GetCalib(Int_t det)                  { return fgCalib[det];}
-  Int_t           GetSpeciesByMass(Float_t m);
-  Int_t           GetPtBin(Float_t pt);
   static Bool_t   HasClRecalibrate()                   { return fgClRecalibrate;}
   static Bool_t   HasKalmanUpdate()                    { return fgKalmanUpdate;}
-  static void     LoadCalib(Float_t *calib)            { memcpy(fgCalib, calib, 540*2*sizeof(Float_t));}
+  virtual TObjArray*  Histos();
   TH1*            PlotTrack(const AliTRDtrackV1 *t=NULL);
+  TH1*            DoRoads(const AliTRDtrackV1 *t=NULL);
   static Bool_t   PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *ref);
   static void     SetKalmanStep(Float_t step)          { fgKalmanStep=step;}
   static void     SetClRecalibrate(Bool_t set=kTRUE)   { fgClRecalibrate=set;}
@@ -53,12 +47,14 @@ public:
 private:
   AliTRDcheckTRK(const AliTRDcheckTRK&);
   AliTRDcheckTRK& operator=(const AliTRDcheckTRK&);
+  void     MakePtCalib(Float_t pt0=0.3, Float_t dpt=0.002);
+  Int_t    GetPtBinCalib(Float_t pt);
 
   // kalman related settings
   static Bool_t  fgKalmanUpdate;  // update Kalman with TRD point
   static Bool_t  fgClRecalibrate; // recalibrate clusters and recalculate tracklet fit
   static Float_t fgKalmanStep;    // Kalman stepping
-  static Float_t fgCalib[540][2]; //! test new calibration params [method][detector][vd/exb]
+  Float_t        fPtBinCalib[kNptBins+1];  //! pt segmentation
 
   ClassDef(AliTRDcheckTRK, 1) // TRD tracker systematic
 };
