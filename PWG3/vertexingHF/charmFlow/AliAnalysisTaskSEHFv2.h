@@ -44,8 +44,6 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
   void SetNMassBins(Int_t nbins){fNMassBins=nbins;}
-  void SetUpperCentLimit(Float_t lim){fCentUpLimit = lim;}
-  void SetLowerCentLimit(Float_t lim){fCentLowLimit = lim;}
   //void SetUseV0EP(Bool_t flagV0EP){fUseV0EP=flagV0EP;}
   void SetV0EventPlaneOrder(Int_t n){fV0EPorder=n;}
   void SetMinCentrality(Int_t mincentr){fMinCentr=mincentr;}
@@ -61,8 +59,6 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t GetPhiBin(Float_t deltaphi);
   //Float_t GetPhi02Pi(Float_t phi);
   Float_t GetPhi0Pi(Float_t phi);
-  Float_t GetLowerCentLimit()const {return fCentLowLimit;}
-  Float_t GetUpperCentLimit()const {return fCentUpLimit;}
   AliHFAfterBurner *GetAfterBurner()const {return fAfterBurner;}
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
@@ -94,8 +90,6 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Int_t fNPtBins;               //number of pt bins
   Int_t fNPhiBinLims;           //number of delta phi bins limits (= number of bins +1)
   Float_t *fPhiBins;            //[fNPhiBinLims] limits of each phi bin
-  Float_t fCentLowLimit;        //lower centrality limit
-  Float_t fCentUpLimit;         //upper centrality limit
   Int_t fNMassBins;             //number of bins in the mass histograms
   Bool_t fReadMC;               //flag for access to MC
   Bool_t fUseAfterBurner;      //enable afterburning
