@@ -20,9 +20,12 @@ public:
 
   virtual void Init();
 
-  Bool_t IsGoodEvent();
-
   void SetClassesNames(const Char_t * names);
+  void SetOnlineChargeRange(Int_t nbins, Float_t maxA, Float_t macC);
+  void SetTotalMultiplicityRange(Int_t nbins, Float_t max);
+  void SetMultiplicityRange(Int_t nbins, Float_t maxA, Float_t maxC);
+  void SetSumEquaMultRange(Int_t nbins, Float_t maxA, Float_t maxC);
+  void SetEquaMultRange(Int_t nbins, Float_t max);
 
   void CreateQAHistos();
   void CreateHistosPerL2Trigger();
@@ -36,14 +39,11 @@ public:
 		      Int_t nBinsY, Double_t yMin, Double_t yMax,
 		      const char* xLabel = NULL, const char* yLabel = NULL);
   
-  static const Int_t kNBinMult;
-  static const Float_t kMultMax;
-
  private:
   AliESDEvent *fESD;    //! ESD object
   AliESDVZERO* fEsdV0;
   TList       *fOutputList; //! Output list
-  Int_t fNClasses;
+  Int_t fNClasses;   
   TObjArray *fClassesNames;
 
   TH2F *fNFlags; //!
@@ -79,22 +79,38 @@ public:
   TH2F *fhVtxXYBGC;       // XY vertex for beam-gas (C side) events
   TH1F *fhVtxZBGC;        // Z vertex for beam-gas (C side) events
 
-  TH1F *fhL2Triggers;
-  TH2F **fhOnlineCharge;
-  TH2F **fhRecoMult;
-  TH2F **fhV0vsSPDCentrality;
-  TH1F **fhTriggerBits;
-  TH1F **fhTotRecoMult;
-  TH1F **fhCentrality;
-  TH2F **fhEqualizedMult;
-  TH2F **fhEqualizedMultSum;
-  TH1F **fhL2TriggersEfficiency;
-  TH1F *fhVBANDCounts;
+  TH1F *fhL2Triggers;    //! Triggers counting histo
+  TH2F **fhOnlineCharge; //! Online Charge (send to EMCAL) histo
+  TH2F **fhRecoMult;     //! Reconstructed Multiplicity V0A % V0C
+  TH2F **fhV0vsSPDCentrality; //! Centrality V0 % SPD
+  TH1F **fhTriggerBits;  //! 16 trigger bits
+  TH1F **fhTotRecoMult;  //! Total Reconstructed Multiplicity V0A + V0C
+  TH1F **fhCentrality;   //! Centrality V0 
+  TH2F **fhEqualizedMult; //! Equalized Multiplicity per channel
+  TH2F **fhEqualizedMultSum; //! Equalized Multiplicity V0A % V0C
+
+  Int_t   fNBinTotMult; //! number of bin of histo fhTotRecoMult
+  Float_t fTotMultMax;  //! max of histo fhTotRecoMult
+
+  Int_t   fNBinMult;    //! number of bin of histo fhRecoMult
+  Float_t fV0AMultMax;  //! max VZERO-A of histo fhRecoMult
+  Float_t fV0CMultMax;  //! max VZERO-C of histo fhRecoMult
+ 
+  Int_t   fNBinOnlineCharge;   //! number of bin of histo fhOnlineCharge
+  Float_t fV0AOnlineChargeMax; //! max VZERO-A of histo fhOnlineCharge
+  Float_t fV0COnlineChargeMax; //! max VZERO-C of histo fhOnlineCharge
+
+  Int_t   fNBinEquaMult;     //! number of bin of histo fhEqualizedMult
+  Float_t fEquaMultMax;      //! max of histo fhEqualizedMult
+
+  Int_t   fNBinSumsEqMult;     //! number of bin of histo fhEqualizedMultSum
+  Float_t fV0AEqMultMax;       //! max VZERO-A of histo fhEqualizedMultSum
+  Float_t fV0CEqMultMax;       //! max VZERO-C of histo fhEqualizedMultSum
 
   AliAnaVZEROPbPb(const AliAnaVZEROPbPb&); // not implemented
   AliAnaVZEROPbPb& operator=(const AliAnaVZEROPbPb&); // not implemented
   
-  ClassDef(AliAnaVZEROPbPb, 1); // example of analysis
+  ClassDef(AliAnaVZEROPbPb, 2); 
 };
 
 #endif
