@@ -185,7 +185,20 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	 pDesc!=NULL; pDesc=GetNextInputBlock()) {
       // Note: until r51411 and v5-01-Rev-03 the compressed cluster format was sent with data
       // type {CLUSTRAW,TPC }, the version member indicated the actual type of data
-      // transparently handled in the decoder
+      // These data do not include the 0.5 shift in pad position, that's wht it has
+      // to be added in the unpacking. This is a very special case, this data type and
+      // data version==1 only occured in the early TPC data compression test runs with
+      // v5-01-Rev-01
+      if (pDesc->fSize<sizeof(AliHLTTPCRawClusterData)) continue;
+      const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(pDesc->fPtr);
+      if (!clusterData) continue;
+      if (clusterData->fVersion==1) {
+	// compressed clusters without the pad shift
+	// data type {CLUSTRAW,TPC } with version==1
+	decoder.SetPadShift(0.5);
+      } else {
+	decoder.SetPadShift(0.0);
+      }
       bHaveRawClusters=true;
       iResult=decoder.ReadClustersPartition(fMonitoringContainer->BeginRemainingClusterBlock(0, pDesc->fSpecification),
 					    reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr),
@@ -195,6 +208,8 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
 	HLTError("reading of partition clusters failed with error %d", iResult);
       }
     }
+
+    decoder.SetPadShift(0.0);
 
     if (!bHaveRawClusters) {
     for (pDesc=GetFirstInputBlock(AliHLTTPCDefinitions::RemainingClustersCompressedDataType());
@@ -795,7 +810,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
   
   AliTPCROC *roc=AliTPCROC::Instance();
   Float_t pos[2]={0};
-  roc->GetPositionGlobal(fSector, fSector>35?currentRow-63:currentRow, pad, pos); 
+  roc->GetPositionGlobal(fSector, fSector>35?currentRow-63:currentRow, (int)pad, pos); 
   index=kHistogramXY;
   if (index<fHistogram2DPointers.size() && fHistogram2DPointers[index]!=NULL)
     fHistogram2DPointers[index]->Fill(pos[0],pos[1]);

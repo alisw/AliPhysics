@@ -212,6 +212,10 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     }
   }
 
+  bool bHavePartitionRawData=false;
+  bool bHavePartitionCompressedData=false;
+  vector<bool> bHavePartitionData(216, false);
+
   // read data
   iResult=-ENODATA;
   AliHLTTPCDataCompressionDecoder decoder;
@@ -219,6 +223,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   int nExtractedClusters=0;
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
        bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
+    decoder.SetPadShift(0.0);
     AliHLTComponentBlockData desc;
     // FIXME: extend HLTOUT to get the full descriptor with one call
     const AliHLTUInt8_t* buffer=NULL;
@@ -230,13 +235,83 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       continue;
     }
     if (!TestBit(kSkipPartitionClusters) &&
-	(desc.fDataType==AliHLTTPCDefinitions::RemainingClustersCompressedDataType() ||
-	 desc.fDataType==AliHLTTPCDefinitions::RawClustersDataType())) {
+	(desc.fDataType==AliHLTTPCDefinitions::RawClustersDataType())) {
+      // This is a special handling of data blocks produced with v5-01-Release
+      // The pad shift by 0.5 was not included in the data but was applied in the
+      // unpacking in this class. Changed in r51306, the next tag containing this
+      // change in the online system is v5-01-Rev-07. There are only very few runs
+      // of Sep 2011 with recorded clusters not containing the 0.5 shift
+      // There was also a chenge in the data type of the compressed partition
+      // cluster blocks which helps to identify the blocks which need the pad shift
+      // here
+      if (desc.fSize<sizeof(AliHLTTPCRawClusterData)) continue;
+      const AliHLTTPCRawClusterData* clusterData = reinterpret_cast<const AliHLTTPCRawClusterData*>(buffer);
+      if (!clusterData) continue;
+      if (clusterData->fVersion==1) {
+	// compressed clusters without the pad shift
+	// no raw clusters (version==0) have ever been recorded
+	decoder.SetPadShift(0.5);
+      }
+      AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(desc.fSpecification);
+      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(desc.fSpecification);
+      if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr(desc.fSpecification) ||
+	  partition!=AliHLTTPCDefinitions::GetMaxPatchNr(desc.fSpecification)) {
+	AliFatal(Form("inconsistent cluster data: can not handle blocks containing multiple partitions, "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
       iResult=decoder.ReadClustersPartition(fClusters->BeginRemainingClusterBlock(0, desc.fSpecification),
 					    reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
 					    desc.fSize,
 					    desc.fSpecification);
       if (iResult>0) nExtractedClusters+=iResult;
+      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
+      if (bHavePartitionData[index]) {
+	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "
+		      "in the production of the data. Probably an HLT emulation chain is executed in the reconstruction "
+		      "and produces data in addition to HLTOUT. Option 'ignore-hltout' is required in that case; "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
+      bHavePartitionData[index]=true;
+      if (bHavePartitionCompressedData) {
+	AliFatal(Form("inconsistent cluster data: both compressed and raw cluster blocks present in HLTOUT, indicates a failure "
+		      "in the production of the data. Probably an HLT emulation chain is executed in the reconstruction "
+		      "and produces data in addition to HLTOUT. Option 'ignore-hltout' is required in that case; "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
+      bHavePartitionRawData=true;
+      continue;
+    } else if (!TestBit(kSkipPartitionClusters) &&
+	       (desc.fDataType==AliHLTTPCDefinitions::RemainingClustersCompressedDataType())) {
+      AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(desc.fSpecification);
+      AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(desc.fSpecification);
+      if (slice!=AliHLTTPCDefinitions::GetMaxSliceNr(desc.fSpecification) ||
+	  partition!=AliHLTTPCDefinitions::GetMaxPatchNr(desc.fSpecification)) {
+	AliFatal(Form("inconsistent cluster data: can not handle blocks containing multiple partitions, "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
+      iResult=decoder.ReadClustersPartition(fClusters->BeginRemainingClusterBlock(0, desc.fSpecification),
+					    reinterpret_cast<AliHLTUInt8_t*>(desc.fPtr),
+					    desc.fSize,
+					    desc.fSpecification);
+      if (iResult>0) nExtractedClusters+=iResult;
+      unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
+      if (index>=bHavePartitionData.size()) bHavePartitionData.resize(index, false);
+      if (bHavePartitionData[index]) {
+	AliFatal(Form("inconsistent cluster data: multiple data blocks of identical specification indicate a failure "
+		      "in the production of the data. Probably an HLT emulation chain is executed in the reconstruction "
+		      "and produces data in addition to HLTOUT. Option 'ignore-hltout' is required in that case; "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
+      bHavePartitionData[index]=true;
+      bHavePartitionData[index]=true;
+      if (bHavePartitionRawData) {
+	AliFatal(Form("inconsistent cluster data: both compressed and raw cluster blocks present in HLTOUT, indicates a failure "
+		      "in the production of the data. Probably an HLT emulation chain is executed in the reconstruction "
+		      "and produces data in addition to HLTOUT. Option 'ignore-hltout' is required in that case; "
+		      "block specification 0x%08x", desc.fSpecification));
+      }
+      bHavePartitionCompressedData=true;
       continue;
     } else if (!TestBit(kSkipTrackClusters) &&
 	       desc.fDataType==AliHLTTPCDefinitions::ClusterTracksCompressedDataType()) {

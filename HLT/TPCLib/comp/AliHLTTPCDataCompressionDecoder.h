@@ -49,9 +49,12 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
 
   AliHLTDataInflater* CreateInflater(int deflater, int mode) const;
 
+  void SetPadShift(float padShift) {fPadShift=padShift;}
+  float PadShift() const {return fPadShift;}
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
  protected:
  private:
+  float fPadShift; //! pad shift
   int fVerbosity; //! verbosity level
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
@@ -153,7 +156,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       float pad=value;
       if (isSinglePad==0) pad/=parameter.fScale;
       else pad/=2; // for the sake of the 0.5 pad offset (see AliHLTTPCHWCFSpacePointContainer::WriteSorted for details)
-      c.SetPad(pad);
+      c.SetPad(pad+PadShift());
       break;
     }
     case AliHLTTPCDefinitions::kTime: {
@@ -377,7 +380,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	    value+=trackpad64;
 	  }
 	  float pad=((float)value)/parameter.fScale;
-	  c.SetPad(pad); 
+	  c.SetPad(pad+PadShift()); 
 	  break;
 	}
       case AliHLTTPCDefinitions::kResidualTime:
@@ -460,7 +463,7 @@ int AliHLTTPCDataCompressionDecoder::ReadClustersPartition(T& c, const AliHLTUIn
   for (int i=0; i<nCount; i++) {
     c.Next(slice, partition);
     c.SetPadRow(clusters[i].GetPadRow());
-    c.SetPad(clusters[i].GetPad());
+    c.SetPad(clusters[i].GetPad()+PadShift());
     c.SetTime(clusters[i].GetTime());
     c.SetSigmaY2(clusters[i].GetSigmaY2());
     c.SetSigmaZ2(clusters[i].GetSigmaZ2());
