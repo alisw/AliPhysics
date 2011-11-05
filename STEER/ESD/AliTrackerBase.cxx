@@ -259,7 +259,7 @@ Double_t AliTrackerBase::MeanMaterialBudget(const Double_t *start, const Double_
 
 Bool_t 
 AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo, 
-			     Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Double_t sign){
+				 Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp, Int_t sign, Bool_t addTimeStep){
   //----------------------------------------------------------------
   //
   // Propagates the track to the plane X=xk (cm) using the magnetic field map 
@@ -273,7 +273,7 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
   //----------------------------------------------------------------
   const Double_t kEpsilon = 0.00001;
   Double_t xpos     = track->GetX();
-  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
   //
   while ( (xToGo-xpos)*dir > kEpsilon){
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
@@ -290,8 +290,12 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
     if (!track->PropagateTo(x,bz))  return kFALSE;
 
     MeanMaterialBudget(xyz0,xyz1,param);	
-    Double_t xrho=param[0]*param[4]*sign, xx0=param[1];
-
+    Double_t xrho=param[0]*param[4], xx0=param[1];
+    if (sign) {if (sign<0) xrho = -xrho;}  // sign is imposed
+    else { // determine automatically the sign from direction
+      if (dir>0) xrho = -xrho; // outward should be negative
+    }
+    //
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
       if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
@@ -306,14 +310,23 @@ AliTrackerBase::PropagateTrackTo(AliExternalTrackParam *track, Double_t xToGo,
       if (!track->Rotate(alphan)) return kFALSE;
     }
     xpos = track->GetX();
+    if (addTimeStep && track->IsStartedTimeIntegral()) {
+      track->GetXYZ(xyz1);
+      Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2]; 
+      Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+      if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction
+      else { // determine automatically the sign from direction
+	if (dir<0) d = -d;
+      }
+      track->AddTimeStep(d);
+    }
   }
   return kTRUE;
 }
 
 Bool_t 
 AliTrackerBase::PropagateTrackToBxByBz(AliExternalTrackParam *track,
-Double_t xToGo, 
-				   Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp,Double_t sign){
+				       Double_t xToGo,Double_t mass, Double_t maxStep, Bool_t rotateTo, Double_t maxSnp,Int_t sign, Bool_t addTimeStep){
   //----------------------------------------------------------------
   //
   // Propagates the track to the plane X=xk (cm)
@@ -328,7 +341,7 @@ Double_t xToGo,
   //----------------------------------------------------------------
   const Double_t kEpsilon = 0.00001;
   Double_t xpos     = track->GetX();
-  Double_t dir      = (xpos<xToGo) ? 1.:-1.;
+  Int_t dir         = (xpos<xToGo) ? 1:-1;
   //
   while ( (xToGo-xpos)*dir > kEpsilon){
     Double_t step = dir*TMath::Min(TMath::Abs(xToGo-xpos), maxStep);
@@ -344,9 +357,13 @@ Double_t xToGo,
     if (TMath::Abs(track->GetSnpAt(x,b[2])) >= maxSnp) return kFALSE;
     if (!track->PropagateToBxByBz(x,b))  return kFALSE;
 
-    MeanMaterialBudget(xyz0,xyz1,param);	
-    Double_t xrho=param[0]*param[4]*sign, xx0=param[1];
-
+    MeanMaterialBudget(xyz0,xyz1,param);    
+    Double_t xrho=param[0]*param[4], xx0=param[1];
+    if (sign) {if (sign<0) xrho = -xrho;}  // sign is imposed
+    else { // determine automatically the sign from direction
+      if (dir>0) xrho = -xrho; // outward should be negative
+    }    
+    //
     if (!track->CorrectForMeanMaterial(xx0,xrho,mass)) return kFALSE;
     if (rotateTo){
       if (TMath::Abs(track->GetSnp()) >= maxSnp) return kFALSE;
@@ -360,7 +377,17 @@ Double_t xToGo,
       if (TMath::Abs(sinNew) >= maxSnp) return kFALSE;
       if (!track->Rotate(alphan)) return kFALSE;
     }
-    xpos = track->GetX();
+    xpos = track->GetX();    
+    if (addTimeStep && track->IsStartedTimeIntegral()) {
+      track->GetXYZ(xyz1);
+      Double_t dX=xyz0[0]-xyz1[0],dY=xyz0[1]-xyz1[1],dZ=xyz0[2]-xyz1[2]; 
+      Double_t d=TMath::Sqrt(dX*dX + dY*dY + dZ*dZ);
+      if (sign) {if (sign>0) d = -d;}  // step sign is imposed, positive means inward direction
+      else { // determine automatically the sign from direction
+	if (dir<0) d = -d;
+      }
+      track->AddTimeStep(d);
+    }
   }
   return kTRUE;
 }

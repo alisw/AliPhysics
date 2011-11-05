@@ -45,7 +45,7 @@ class AliExternalTrackParam: public AliVTrack {
 			Double_t cv[21],Short_t sign);
   virtual ~AliExternalTrackParam(){}
   void CopyFromVTrack(const AliVTrack *vTrack);
-
+  
   template <typename T>
   void Set(T x, T alpha, const T param[5], const T covar[15]) {
     //  Sets the parameters
@@ -70,7 +70,8 @@ class AliExternalTrackParam: public AliVTrack {
 
   const Double_t *GetParameter() const {return fP;}
   const Double_t *GetCovariance() const {return fC;}
-
+  virtual  Bool_t IsStartedTimeIntegral() const {return kFALSE;}
+  virtual  void   AddTimeStep(Double_t ) {} // dummy method, real stuff is done in AliKalmanTrack
   Double_t GetAlpha() const {return fAlpha;}
   Double_t GetX() const {return fX;}
   Double_t GetY()    const {return fP[0];}
