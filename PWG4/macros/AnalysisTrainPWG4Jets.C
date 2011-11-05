@@ -69,7 +69,7 @@ Int_t         kErrorIgnoreLevel = -1; // takes the errror print level from .root
 // const Int_t kSysError =   5000;
 // const Int_t kFatal    =   6000; 
 Int_t         kUseSysInfo         = 0; // activate debugging
-Long64_t    kNumberOfEvents     = 1234567890; // number of events to process from the chain
+Long64_t    kNumberOfEvents     = 1234567890; // Number of events to process from the chain
 Bool_t      kUseMC              = kTRUE;  // use MC info
 Bool_t      kIsMC               = kTRUE;  // is MC info, if false it overwrites Use(AOD)MC
 Bool_t      kUseAODMC           = kTRUE;  // use MC infA
@@ -428,7 +428,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
        iTriggerHIC = 2;
        rejectBkg = false; // for the moment...
      }
-     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,rejectBkg);  
+     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kIsMC,true,rejectBkg);  
 
      //     mgr->RegisterExtraFile("event_stat.root");
      mgr->AddStatisticsTask();
@@ -454,7 +454,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       //  ESD filter task configuration.
       gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/AddTaskESDFilterPWG4Train.C");
       // switch on centrality make for PbPb
-      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilter(kUseKinefilter); // carefull, if physics selection is enabled you may get not primary vertex pointer later on...
+      AliAnalysisTaskESDfilter *taskesdfilter = AddTaskESDFilterPWG4Train(kUseKinefilter); // carefull, if physics selection is enabled you may get not primary vertex pointer later on...
       taskesdfilter->SetEnableFillAOD(!kFilterAOD);
       taskesdfilter->DisableV0s();
       taskesdfilter->DisableCascades();
