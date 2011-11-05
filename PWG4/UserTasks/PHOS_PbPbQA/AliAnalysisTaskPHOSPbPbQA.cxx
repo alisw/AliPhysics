@@ -48,6 +48,9 @@ AliAnalysisTaskPHOSPbPbQA::AliAnalysisTaskPHOSPbPbQA() : AliAnalysisTaskSE(),
       fPHOSEvents[i][j]=0 ;
   }
   
+  // Initialize the PHOS geometry 
+  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
+  
 }
 
 //________________________________________________________________________
