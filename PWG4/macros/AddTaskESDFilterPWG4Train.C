@@ -54,14 +54,6 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWG4Train(Bool_t useKineFilter=kTRUE,
    esdfilter->DisableTracklets();
    esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE);
 
-   AliAnalysisTaskAODCentralityMaker* ctask = 0;
-   if (useCentralityTask) {
-       ctask = new AliAnalysisTaskAODCentralityMaker("AODCentralityMaker");
-       ctask->SetDeltaAODFileName("AliAODCentrality.root");
-       mgr->AddTask(ctask);
-   }
-
-
    mgr->AddTask(esdfilter);
    // Muons
    //   AliAnalysisTaskESDMuonFilter *esdmuonfilter = new AliAnalysisTaskESDMuonFilter("ESD Muon Filter");
