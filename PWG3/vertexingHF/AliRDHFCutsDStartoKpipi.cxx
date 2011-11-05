@@ -268,7 +268,6 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   if(ptD<fMinPtCand) return 0;
   if(ptD>fMaxPtCand) return 0;
   
-  if(d->HasBadDaughters()) return 0;
 
   AliAODRecoDecayHF2Prong* dd = (AliAODRecoDecayHF2Prong*)d->Get2Prong();  
   if(!dd){
