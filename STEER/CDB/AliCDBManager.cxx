@@ -122,7 +122,7 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName){
     delete f;
 
     //return;
-    exit;
+    //exit;
 }
 
 //_____________________________________________________________________________
