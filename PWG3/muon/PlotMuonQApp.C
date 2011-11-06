@@ -31,6 +31,7 @@
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
 #include "TSystem.h"
 #include "TStyle.h"
 #include "TCanvas.h"
@@ -38,20 +39,33 @@
 #include "TLegend.h"
 #include "TObjArray.h"
 #include "TObjString.h"
-#include "TF1.h"
 
 // ALIROOT includes
 #include "AliCounterCollection.h"
 
 #endif
 
+TString GetRunList(const char *runList, TObjArray *runs, TObjArray *runs2);
+//Bool_t GetTriggerLists(const char *triggerList, TObjArray *triggersB=0, TObjArray *triggersAC=0, TObjArray *triggersE=0);
+Bool_t GetTriggerLists(const char *triggerList, TString listFromContainer, TObjArray *triggersB=0, TObjArray *triggersAC=0, TObjArray *triggersE=0);
+void SetCanvas(TCanvas *canvas, Int_t logy=1);
 
-// .x PlotMuonQApp.C("alien:///alice/cern.ch/user/c/cynthia/muon/QA/pp/LHC10e/pass2_test/results",0,kFALSE)
-// .x PlotMuonQApp.C("/Users/cynthia/Documents/alice/data/MuonQA/results",0,kFALSE)
-// .x PlotMuonQApp.C("/Users/cynthia/Documents/alice/data/MuonQA/results","/Users/cynthia/Documents/alice/data/MuonQA/LHC10e/pass2/runlist_period3_test3_3runs.txt",kFALSE)
+TH1* ProcessHisto( AliCounterCollection* counter, TString variable, TString selection, TString hName="", TString xName="", TString yName="", Int_t color=1);
+TH2* ProcessHisto2D( AliCounterCollection* counter, TString hVariable, TString hVariable2, TString hSelection, TString hName);
+
+TCanvas *ProcessCanvasTriggerContent(TObjArray *array, TH1 **histo, TH1 **histo2, TString canvasName);
+TCanvas *ProcessCanvasRelativeTriggerContent(TObjArray *array, TH1 **histo, TString canvasName, Int_t *colorTab);
+TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TObjArray *triggersE, TH1 **hBNoPS, TH1 **hACNoPS,TH1 **hENoPS, TH1 **hBWithPS, TString canvasName, Int_t *colorInd);
+TCanvas *ProcessCanvasTracksoverTrigger(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName);
+TCanvas *ProcessCanvasTrackMultB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName);
+TCanvas *ProcessCanvasRatioTrackB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName);
+TCanvas *ProcessCanvasAsymMatched(TObjArray *triggersB, TH1 **hPosMatchedB, TH1 **hNegMatchedB, TH1 **hAllMatchedB, Int_t indTrigger, TString canvasName);
+TCanvas *ProcessCanvasHighPtMuons(TObjArray *triggersB, TH1 **hB, TH1 **hMatchedLowPtB, TH1 **hAllMatchedHightPtB, Int_t indTrigger, TString canvasName);
+Bool_t IsTrigger(TObjArray *array, Int_t index, TString name);
+
 //--------------------------------------------------------------------------
-void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * triggerList = 0x0, Bool_t selectPhysics = kFALSE, const char *LHCPeriod = "LHC11c", const char *QAFileName = "AnalysisResults.root")
-{
+void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * triggerList = 0x0, Bool_t selectPhysics = kFALSE, const char *LHCPeriod = "LHC11c", const char *QAFileName = "QAresults.root") {
+	
   /// Macro for QA monitoring.
   /// Example: baseDir = "alien:///alice/cern.ch/user/p/ppillot/pp7TeV/LHC10d/MuonQA/pass1/results/".
   /// If runList != 0x0: only the given runs will be used. Otherwise use all runs found in baseDir.
@@ -77,7 +91,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   gStyle->SetPadGridY(kTRUE);
   gStyle->SetPadRightMargin(0.01);
   
-  Int_t colorInd[10]={1,4,2,3,6};
+  Int_t colorInd[10]={1,4,2,3,6,7,12};
 	
   TString OutFileName = "QA_";  OutFileName += LHCPeriod;
   TString OutFileNamePDF=  OutFileName.Data();  OutFileNamePDF+= ".pdf";
@@ -86,9 +100,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   TString OutFileNameROOT=  OutFileName.Data();  OutFileNameROOT+= ".root";
   
   Int_t PRINTSTAT = 1;
-  //Trigger in the trigger list for matched track asymmetry and run per run statistics. 
-  Int_t kCMUS = 2;//2;
-	
+  Int_t kCMUS = 2;
   if (0){ // Equivalent to the fast read option
     gEnv->SetValue("XNet.ConnectTimeout",10);
     gEnv->SetValue("XNet.RequestTimeout",10);
@@ -101,136 +113,29 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   
   TString alienBaseDir = baseDir;
   
-  
   if (alienBaseDir.Contains("alien:") && !TGrid::Connect("alien://")) {
     Error("MergeQA","cannot connect to grid");
     return;
   }
   
-  
-  
+
   //---------------------------------- //
   //          Run selection            //
   //---------------------------------- //
   
-  
-  // list runs to be analyzed
-  TString selectRuns = "run:";
-  TObjArray runs, runs2;
-  runs.SetOwner();
-
-  if (runList) {
-    // only the ones in the runList
-    ifstream inFile(runList);
-    if (!inFile.is_open()) {
-      Error("PlotMuonQApp","unable to open file %s", runList);
-      return;
-    }
-    
-    TString currRun;
-    while (!inFile.eof()) {
-      currRun.ReadLine(inFile, kTRUE);
-      if (currRun.IsNull()) continue;
-      if (!currRun.IsDigit()) {
-	Error("PlotMuonQApp","invalid run number: %s", currRun.Data());
-	return;
-      }
-      runs.AddLast(new TObjString(Form("%09d", currRun.Atoi())));
-			runs2.AddLast(new TObjString(Form("%d", currRun.Atoi())));
-      selectRuns += Form("%s,",currRun.Data());
-    }
-    selectRuns.Remove(TString::kTrailing, ',');
-    inFile.close();
-    
-  } else {
-    // all runs
-    runs.AddLast(new TObjString("*"));
-		runs2.AddLast(new TObjString("*"));
-  }
-  
+  TObjArray *runs = new TObjArray();
+  runs->SetOwner(kTRUE);
+  TObjArray *runs2 = new TObjArray();
+  runs2->SetOwner(kTRUE);
+  TString selectRuns = GetRunList(runList,runs,runs2);
+		
   // physics selection
   TString select = selectPhysics ? "selected:yes" : "";
   
-  cout<<"//---------------------------------- //"<<endl;
-  cout<<"//        Trigger selection          //"<<endl;
-  cout<<"//---------------------------------- //"<<endl;
 
-  TObjArray triggers, triggersB, triggersAC, triggersE;
-  TString selectAllTriggers = "", selectAllTriggersAC = "", selectAllTriggersE = "";
-  triggers.SetOwner();
-
-  TString sTrigList = triggerList;
-  if ( ! sTrigList.IsNull() ) {
-    
-    // only the ones in the triggerList
-    ifstream inFile(triggerList);
-    if (!inFile.is_open()) {
-      Error("PlotMuonQApp","unable to open file %s", triggerList);
-      return;
-    }
-    
-    TString currTrig;
-    while (!inFile.eof()) {
-      currTrig.ReadLine(inFile, kTRUE);
-      if (currTrig.IsNull()) continue;
-      if (!currTrig.IsAlnum()) {
-        Error("PlotMuonQApp","invalid trigger name: %s", currTrig.Data());
-        return;
-      }
-      triggers.AddLast(new TObjString(currTrig));
-    }
-    inFile.close();
-  } else {
-    // by default all triggers from new period in LHC11c
-    triggers.AddLast(new TObjString("CINT7"));
-    triggers.AddLast(new TObjString("CMUSH7"));
-    //triggers.AddLast(new TObjString("CMUS7"));
-    triggers.AddLast(new TObjString("CMUL7"));
-    triggers.AddLast(new TObjString("CMUU7"));
-  }
-  
-  cout<<" Nr of triggers read "<<triggers.GetEntriesFast()<<endl;
-  for(Int_t i = 0; i < triggers.GetEntriesFast(); i++){
-    TString triggerName = ( (TObjString*) triggers.At(i) )->GetString();
-    if(triggerName == "ANY" || triggerName =="OTHER" || triggerName == "CINT7I"){
-      selectAllTriggers += Form("%s,", triggerName.Data());
-      selectAllTriggersAC += Form("%s,", triggerName.Data());//fake
-      selectAllTriggersE += Form("%s,", triggerName.Data());//fake
-      continue;
-    }
-    selectAllTriggers += Form("%sB,", triggerName.Data());
-    selectAllTriggersAC += Form("%sAC,", triggerName.Data());
-    selectAllTriggersE += Form("%sE,", triggerName.Data());
-  }
-  selectAllTriggers.Remove(TString::kTrailing, ',')	;
-  selectAllTriggersAC.Remove(TString::kTrailing, ',')	;
-  selectAllTriggersE.Remove(TString::kTrailing, ',')	;
-  
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
-    TString triggerName = "";
-    if(i==0){
-      triggersB.AddLast(new TObjString(Form("%s", selectAllTriggers.Data())));
-      triggersAC.AddLast(new TObjString(Form("%s", selectAllTriggersAC.Data())));
-      triggersE.AddLast(new TObjString(Form("%s", selectAllTriggersE.Data())));		
-    }
-    else{
-      triggerName = ( (TObjString*) triggers.At(i-1) )->GetString();
-      if(triggerName == "ANY" || triggerName =="OTHER" || triggerName == "CINT7I"){
-	triggersB.AddLast(new TObjString(Form("%s,", triggerName.Data())));
-	triggersAC.AddLast(new TObjString(Form("%s", triggerName.Data())));//fake
-	triggersE.AddLast(new TObjString(Form("%s", triggerName.Data())));//fake
-	continue;
-      }
-      triggersB.AddLast(new TObjString(Form("%sB", triggerName.Data())));
-      triggersAC.AddLast(new TObjString(Form("%sAC", triggerName.Data())));
-      triggersE.AddLast(new TObjString(Form("%sE", triggerName.Data())));
-    }
-    cout<<i<<" "<< ( (TObjString*) triggersB.At(i) )->GetString()<<endl;
-    
-  }
-  
+	
   cout<<"//---------------------------------- //"<<endl;
-  cout<<"//        plot global counter        //"<<endl;
+  cout<<"//        Get global counter        //"<<endl;
   cout<<"//---------------------------------- //"<<endl;
   
   TFile *globalFile = TFile::Open(Form("%s/%s", baseDir,QAFileName));
@@ -246,12 +151,43 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   AliCounterCollection* eventCounters = static_cast<AliCounterCollection*>(globalFile->FindObjectAny("eventCounters"));
   AliCounterCollection* trackCounters = static_cast<AliCounterCollection*>(globalFile->FindObjectAny("trackCounters"));
   if (!runList) selectRuns += trackCounters->GetKeyWords("run");
+	
   
+  cout<<"//---------------------------------- //"<<endl;
+  cout<<"//        Trigger selection          //"<<endl;
+  cout<<"//---------------------------------- //"<<endl;
+
+  TObjArray *triggersB, *triggersAC, *triggersE;
+  triggersB = new TObjArray();
+  triggersB->SetOwner();
+  triggersAC = new TObjArray();
+  triggersAC->SetOwner();
+  triggersE = new TObjArray();
+  triggersE->SetOwner();
+	
+  TString listFromContainer = eventCounters->GetKeyWords("trigger");
+  Bool_t success = GetTriggerLists(triggerList, listFromContainer, triggersB, triggersAC, triggersE);
+  if(!success) return;
+  
+
+  cout<<"//---------------------------------- //"<<endl;
+  cout<<"//        Trigger plots              //"<<endl;
+  cout<<"//---------------------------------- //"<<endl;
+	
+  //plot all trigger from event counters
+  TString CanvasName = "cAll";
+  TCanvas *cAll = new TCanvas(CanvasName.Data(),CanvasName.Data());
+  cAll->cd();
+  //TH2* hAll = (TH2*) ProcessHisto2D(eventCounters, "trigger", "run", Form("run:any/%s",select.Data()) , "");
+  TH2* hAll = (TH2*) ProcessHisto2D(eventCounters, "trigger", "run", "run:any" , "");
+  hAll->Draw("TEXT");
+
+	
   //declare a default canvas c1 
-  TString CanvasName = "c1";
+  CanvasName = "c1";
   TCanvas *c1 = new TCanvas(CanvasName.Data(),CanvasName.Data());
   c1->cd();
-  
+
   TH1* hBNoPS[10]={}; 
   TH1* hBWithPS[10]={};
   TH1* hB[10]={};
@@ -260,551 +196,237 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
   TH1* hPosMatchedB[10], *hNegMatchedB[10], *hAllMatchedB[10];
   TH1 *hACWithPS[10]={}; 
   TH1 *hACNoPS[10]={};
-  //TH1 *hEWithPS[10]={};
+  TH1 *hEWithPS[10]={};
   TH1 *hENoPS[10]={};
   
-  if(triggers.GetEntriesFast()>=10){
+  if(triggersB->GetEntriesFast()>=10){
     cout<<"Too many triggers"<<endl;
     return;
   }
-  //Loop on trigger (first is all triggers, then for each defined trigger)
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
+	
+  //Loop on trigger (last is all triggers, then for each defined trigger)
+  for(Int_t i = 0; i < triggersB->GetEntriesFast(); i++){
     
-    TString triggerName = ( (TObjString*) triggersB.At(i) )->GetString();
-    
+    TString histoNameBase = "h_trig", histoName;
+    histoNameBase+= i+1;
+		
+    TString triggerName = ( (TObjString*) triggersB->At(i) )->GetString();
     // Histo trigger without Phys. Sel. 
-    selection = Form("trigger:%s/%s", triggerName.Data(), selectRuns.Data());
+    selection = Form("trigger:%s/%s", triggerName.Data(), selectRuns.Data());		
     cout<<selection<<endl;
-    hBNoPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hBNoPS[i]) return;
-    hBNoPS[i]->Sumw2();
-    hBNoPS[i]->LabelsOption("a");
-    
-    TString triggerNameAC = ( (TObjString*) triggersAC.At(i) )->GetString();
-    // Histo trigger without Phys. Sel. AC
-    selection = Form("trigger:%s/%s", triggerNameAC.Data(), selectRuns.Data());
-    cout<<selection<<endl;
-    hACNoPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hACNoPS[i]) hACNoPS[i] = new TH1D("hACNoPS","",10,0,10);
-    else{
-      hACNoPS[i]->Sumw2();
-      hACNoPS[i]->LabelsOption("a");
-    }
-    // Histo trigger with Phys. Sel. AC
-    selection = Form("trigger:%s/%s/selected:yes", triggerNameAC.Data(), selectRuns.Data());
-    cout<<selection<<endl;
-    hACWithPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hACWithPS[i]) hACWithPS[i] = new TH1D("hACWithPS","",10,0,10);
-    else{
-      hACWithPS[i]->Sumw2();
-      hACWithPS[i]->LabelsOption("a");
-    }
-    /*TString triggerNameE = ( (TObjString*) triggersE.At(i) )->GetString();
-    // Histo trigger without Phys. Sel. E
-    selection = Form("trigger:%s/%s", triggerNameE.Data(), selectRuns.Data());
-    cout<<selection<<endl;
-    hENoPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hENoPS[i]) hENoPS[i] = new TH1D("hENoPS","",10,0,10);
-    else{
-    hENoPS[i]->Sumw2();
-    hENoPS[i]->LabelsOption("a");
-    }
-    // Histo trigger with Phys. Sel. E
-    selection = Form("trigger:%s/%s/selected:yes", triggerNameE.Data(), selectRuns.Data());
-    cout<<selection<<endl;
-    hEWithPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hEWithPS[i]) hEWithPS[i]=new TH1D("hEWithPS","",10,0,10);
-    else{
-    hEWithPS[i]->Sumw2();
-    hEWithPS[i]->LabelsOption("a");
-    }*/
-    
+    histoName = histoNameBase;
+    histoName += "BNoPS";
+    hBNoPS[i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/o Phys. Sel.", colorInd[i]);
     // Histo trigger with Phys. Sel. 
     selection = Form("trigger:%s/%s/selected:yes", triggerName.Data(), selectRuns.Data());
-    cout<<selection<<endl;
-    hBWithPS[i] = (TH1*) eventCounters->Draw("run",selection);
-    if(!hBWithPS[i]) return;
-    hBWithPS[i]->Sumw2();
-    hBWithPS[i]->LabelsOption("a");
-    
+    histoName = histoNameBase;
+    histoName += "BWithPS";
+    hBWithPS[i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd[i]);
     // Histo trigger : Phys. Sel.  is selected or not depending on the macro arguments
     selection = Form("trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-    hB[i] = (TH1*) eventCounters->Draw("run", selection.Data());
-    hB[i]->Sumw2();
-    hB[i]->LabelsOption("a");	
+    histoName = histoNameBase;
+    histoName += "B";
+    hB[i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
+		
+    TString triggerNameAC = ( (TObjString*) triggersAC->At(i) )->GetString();
+    // Histo trigger without Phys. Sel. AC
+    histoName = histoNameBase;
+    histoName += "ACNoPS";
+    selection = Form("trigger:%s/%s", triggerNameAC.Data(), selectRuns.Data());
+    hACNoPS[i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
+    // Histo trigger with Phys. Sel. AC
+    selection = Form("trigger:%s/%s/selected:yes", triggerNameAC.Data(), selectRuns.Data());
+    histoName = histoNameBase;
+    histoName += "ACWithPS";
+    hACWithPS[i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
     
+    TString triggerNameE = ( (TObjString*) triggersE->At(i) )->GetString();
+    // Histo trigger without Phys. Sel. E
+    selection = Form("trigger:%s/%s", triggerNameE.Data(), selectRuns.Data());
+    histoName = histoNameBase;
+    histoName += "ENoPS";
+    hENoPS[i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
+    // Histo trigger with Phys. Sel. E
+    selection = Form("trigger:%s/%s/selected:yes", triggerNameE.Data(), selectRuns.Data());
+    histoName = histoNameBase;
+    histoName += "EWithPS";
+    hEWithPS[i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
+
     // Histo tracking : Phys. Sel.  is selected or not depending on the macro arguments
     selection = Form("track:triggeronly/trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-    hTriggerB[i] = (TH1*) trackCounters->Draw("run",selection);
-    hTriggerB[i]->Sumw2();
-    hTriggerB[i]->LabelsOption("a");
+    hTriggerB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:trackeronly/trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-    hTrackerB[i] = (TH1*) trackCounters->Draw("run",selection);
-    hTrackerB[i]->Sumw2();
-    hTrackerB[i]->LabelsOption("a");
+    hTrackerB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-    hMatchedB[i] = (TH1*) trackCounters->Draw("run",selection);
-    hMatchedB[i]->Sumw2();
-    hMatchedB[i]->LabelsOption("a");
+    hMatchedB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
-    hAllTracksB[i] = (TH1*) trackCounters->Draw("run",selection);
-    hAllTracksB[i]->Sumw2();  
-    hAllTracksB[i]->LabelsOption("a");
+    hAllTracksB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/%s/pt:low/acc:in", triggerName.Data() ,selectRuns.Data(), select.Data());
-    hMatchedLowPtB[i] = (TH1*) trackCounters->Draw("run", selection);
-    hMatchedLowPtB[i]->Sumw2();  
-    hMatchedLowPtB[i]->LabelsOption("a");
+    hMatchedLowPtB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/%s/pt:high/acc:in", triggerName.Data() ,selectRuns.Data(), select.Data());
-    hMatchedHighPtB[i] = (TH1*) trackCounters->Draw("run", selection);
-    hMatchedHighPtB[i]->Sumw2();  
-    hMatchedHighPtB[i]->LabelsOption("a");
+    hMatchedHighPtB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/pt:low/acc:in", triggerName.Data() ,selectRuns.Data());
-    hMatchedLowPtBNoPS[i] = (TH1*) trackCounters->Draw("run", selection);
-    hMatchedLowPtBNoPS[i]->Sumw2();  
-    hMatchedLowPtBNoPS[i]->LabelsOption("a");
+    hMatchedLowPtBNoPS[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/pt:high/acc:in", triggerName.Data() ,selectRuns.Data());
-    hMatchedHighPtBNoPS[i] = (TH1*) trackCounters->Draw("run", selection);
-    hMatchedHighPtBNoPS[i]->Sumw2();  
-    hMatchedHighPtBNoPS[i]->LabelsOption("a");
+    hMatchedHighPtBNoPS[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/charge:pos/%s/acc:in",triggerName.Data(), select.Data(),selectRuns.Data());
-    hPosMatchedB[i] =  (TH1*) trackCounters->Draw("run",selection);
-    hPosMatchedB[i]->Sumw2();  
-    hPosMatchedB[i]->LabelsOption("a");
+    hPosMatchedB[i] = (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+    
     selection = Form("track:matched/trigger:%s/%s/charge:neg/%s/acc:in",triggerName.Data(), select.Data(),selectRuns.Data());
-    hNegMatchedB[i] =  (TH1*) trackCounters->Draw("run",selection);
-    hNegMatchedB[i]->Sumw2();  
-    hNegMatchedB[i]->LabelsOption("a");
+    hNegMatchedB[i] =  (TH1*) ProcessHisto(trackCounters, "run", selection, "");
+		
     selection = Form("track:matched/trigger:%s/%s/%s/acc:in",triggerName.Data(), select.Data(),selectRuns.Data());
-    hAllMatchedB[i] =  (TH1*) trackCounters->Draw("run",selection);
-    hAllMatchedB[i]->Sumw2();  
-    hAllMatchedB[i]->LabelsOption("a"); 
+    hAllMatchedB[i] =  (TH1*) ProcessHisto(trackCounters, "run", selection, "");
   }
 	
-  TH1* hAll = (TH1*) eventCounters->Draw("trigger","run",Form("run:any/%s",select.Data()));
-  hAll->LabelsOption("a");
-  hAll->Draw("TEXT");
-  
+  //if there is not B triggers just stop now
+  Int_t count_trigger=0;
+  for(Int_t i = 0; i < triggersB->GetEntriesFast(); i++){
+    count_trigger += hBNoPS[i]->GetEntries();
+  }
+  if(count_trigger<=0) return;
+	
+	
   Int_t NumOfBNoPS[10];
   Int_t NumOfBWithPS[10];
   Int_t NumOfACNoPS[10];
   Int_t NumOfENoPS[10];
   Int_t NumOfACWithPS[10];
   Int_t NumOfEWithPS[10];
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
+	
+  for(Int_t i = 0; i < triggersB->GetEntriesFast(); i++){
     NumOfBNoPS[i] = hBNoPS[i]->Integral();
     NumOfBWithPS[i] = hBWithPS[i]->Integral();
-    NumOfACNoPS[i] = 0;//hACNoPS[i]->Integral();
-    NumOfENoPS[i] = 0;//hENoPS[i]->Integral();
-    NumOfACWithPS[i] = 0;//hACWithPS[i]->Integral();
-    NumOfEWithPS[i] = 0;//hEWithPS[i]->Integral();
+    NumOfACNoPS[i] = hACNoPS[i]->Integral();
+    NumOfENoPS[i] = hENoPS[i]->Integral();
+    NumOfACWithPS[i] = hACWithPS[i]->Integral();
+    NumOfEWithPS[i] = hEWithPS[i]->Integral();
   }
-  
+	
+
   cout<<"//==================================================================================="<<endl;
   cout<<"// Put all plots in a ps file, easier to publish (Twiki)"<<endl;
   cout<<"//==================================================================================="<<endl;
   
   c1->Print(OutFileNamePDF_open.Data());
-  
   TFile *rootFileOut = TFile::Open(OutFileNameROOT.Data(),"RECREATE");
-  
+  cAll->Print(OutFileNamePDF.Data());
+  cAll->Write();
+	
+	
   cout<<"//==================================================================================="<<endl;
-  cout<<"// new canvas with the total number of trigger"<<endl;
+  cout<<"// new canvas with the total number of trigger with and without Phys. Sel."<<endl;
   cout<<"//==================================================================================="<<endl;
-  CanvasName =  LHCPeriod ; 
-  CanvasName += "_TriggerContent"; 
-  TCanvas *cTriggerContent = new TCanvas(CanvasName.Data(),"cTriggerContent",1200,900);
-  cTriggerContent->SetTopMargin(0.05);
-  cTriggerContent->SetRightMargin(0.01);
-  cTriggerContent->SetGridy(1);
-  cTriggerContent->cd();
-  
-  TLegend* legcTC = new TLegend(0.2,0.15,0.50,0.40);
-  legcTC->SetHeader("Physics Selection");
-  legcTC->AddEntry(".","applied :","");
-  
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
-    if(i==0) continue;
-    if(i==1){
-      hBWithPS[i]->SetMinimum(0.001);
-      hBWithPS[i]->Draw();
-      hBWithPS[i]->GetYaxis()->SetTitle("Trigger content w/ Phys. Sel."); 
-    }
-    else hBWithPS[i]->Draw("same");
-    hBWithPS[i]->SetLineColor(colorInd[i]);
-    legcTC->AddEntry(hBWithPS[i],(( (TObjString*) triggersB.At(i) )->GetString()).Data(),"l");
-  }
-  legcTC->Draw("same");
-  
+	
+  TCanvas *cTriggerContent = ProcessCanvasTriggerContent(triggersB, hBNoPS, hBWithPS, "TriggerContent");
+  cTriggerContent->Draw(); 
   cTriggerContent->Print(OutFileNamePDF.Data());
   cTriggerContent->Write();
   
   cout<<"//==================================================================================="<<endl;
-  cout<<"// new canvas with the relative content of each trigger w/ and w/o  physics selection"<<endl;
+  cout<<"// new canvas with the relative content of each trigger w/o physics selection"<<endl;
   cout<<"//==================================================================================="<<endl;
-  CanvasName =  LHCPeriod ; 
-  CanvasName += "_RelativeTriggerContent"; 
-  TCanvas *cRelativeTriggerContent = new TCanvas(CanvasName.Data(),"cRelativeTriggerContent",1200,900);
-  cRelativeTriggerContent->SetTopMargin(0.05);
-  cRelativeTriggerContent->SetRightMargin(0.01);
-  cRelativeTriggerContent->SetGridy(1);
-  cRelativeTriggerContent->SetLogy(1);
-  cRelativeTriggerContent->cd();
-  
-  
-  TH1* ratioB[10], *ratioBNoPS[10];
-  TH1*ratioACNoPS[10];
-  TH1*ratioENoPS[10];
-  TLegend* legcRTC = new TLegend(0.2,0.15,0.50,0.40);
-  legcRTC->SetHeader("Physics Selection");
-  
-  TString hName, hTriggerName;
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
-    hName = "ratio";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    ratioB[i] = static_cast<TH1*> (hBWithPS[i]->Clone(hName));
-    ratioB[i]->Divide(hBNoPS[0]);
-    ratioB[i]->SetLineWidth(2);
-    ratioB[i]->SetLineColor(colorInd[i]);
-    hName = "ratioNoPS";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    ratioBNoPS[i] = static_cast<TH1*> (hBNoPS[i]->Clone(hName));
-    ratioBNoPS[i]->Divide(hBNoPS[0]);
-    ratioBNoPS[i]->SetLineWidth(0);
-    ratioBNoPS[i]->SetLineStyle(2);
-    ratioBNoPS[i]->SetMarkerStyle(24+i);
-    ratioBNoPS[i]->SetMarkerSize(1);
-    ratioBNoPS[i]->SetLineColor(colorInd[i]);
-    ratioBNoPS[i]->SetMarkerColor(colorInd[i]);
-    if(NumOfACNoPS[0]>0){
-      hName = "ratioACNoPS";
-      hName += ( (TObjString*) triggersAC.At(i) )->GetString();
-      ratioACNoPS[i] = static_cast<TH1*> (hACNoPS[i]->Clone(hName));
-      ratioACNoPS[i]->Divide(hACNoPS[0]);
-      ratioACNoPS[i]->SetLineWidth(0);
-      ratioACNoPS[i]->SetLineStyle(3);
-      ratioACNoPS[i]->SetMarkerStyle(24+i);
-      ratioACNoPS[i]->SetMarkerSize(1);
-      ratioACNoPS[i]->SetLineColor(colorInd[i]);
-      ratioACNoPS[i]->SetMarkerColor(colorInd[i]);
-    }
-    if(NumOfENoPS[0]>0){
-      hName = "ratioENoPS";
-      hName += ( (TObjString*) triggersE.At(i) )->GetString();
-      ratioENoPS[i] = static_cast<TH1*> (hENoPS[i]->Clone(hName));
-      ratioENoPS[i]->Divide(hENoPS[0]);
-      ratioENoPS[i]->SetLineWidth(0);
-      ratioENoPS[i]->SetLineStyle(3);
-      ratioENoPS[i]->SetMarkerStyle(24+i);
-      ratioENoPS[i]->SetMarkerSize(1);
-      ratioENoPS[i]->SetLineColor(colorInd[i]);
-      ratioENoPS[i]->SetMarkerColor(colorInd[i]);
-    }
-    
-    if(i==0) continue;
-    else if(i==1){
-      ratioB[i]->SetMaximum(1.5);
-      ratioB[i]->SetMinimum(0.001);
-      ratioB[i]->SetLabelSize(0.02);
-      ratioB[i]->GetYaxis()->SetTitle("Relative trigger content w/ and w/o Phys. Sel."); 
-      ratioB[i]->Draw("E");
-      ratioBNoPS[i]->Draw("EPSAME");
-      if(NumOfACNoPS[0]>0) ratioACNoPS[i]->Draw("EPSAME");
-      if(NumOfENoPS[0]>0)ratioENoPS[i]->Draw("EPSAME");
-    }
-    else{
-      ratioB[i]->Draw("ESAME");
-      ratioBNoPS[i]->Draw("EPSAME");
-      if(NumOfACNoPS[0]>0) ratioACNoPS[i]->Draw("EPSAME");
-      if(NumOfENoPS[0]>0) ratioENoPS[i]->Draw("EPSAME");
-    }
-  }
-  
-  legcRTC->AddEntry(".","applied :","");
-  for(Int_t i = 1; i <= triggers.GetEntriesFast(); i++){
-    legcRTC->AddEntry(ratioB[i],(( (TObjString*) triggersB.At(i) )->GetString()).Data(),"l");
-  }
-  legcRTC->AddEntry(".","not applied :","");
-  for(Int_t i = 1; i <= triggers.GetEntriesFast(); i++){
-    legcRTC->AddEntry(ratioBNoPS[i],(( (TObjString*) triggersB.At(i) )->GetString()).Data(),"p");
-    if(NumOfACNoPS[i]) legcRTC->AddEntry(ratioACNoPS[i],(( (TObjString*) triggersAC.At(i) )->GetString()).Data(),"p");
-    if(NumOfENoPS[i]) legcRTC->AddEntry(ratioENoPS[i],(( (TObjString*) triggersE.At(i) )->GetString()).Data(),"p");
-  }
-  legcRTC->Draw("same");
-  
+	
+  TCanvas *cRelativeTriggerContent = ProcessCanvasRelativeTriggerContent(triggersB, hBNoPS, "RelativeTriggerContent", colorInd);
+  cRelativeTriggerContent->Draw();
   cRelativeTriggerContent->Print(OutFileNamePDF.Data());
   cRelativeTriggerContent->Write();
+	
+  cout<<"//==================================================================================="<<endl;
+  cout<<"// new canvas with effect from physics selection for each trigger and background trigger "<<endl;
+  cout<<"//==================================================================================="<<endl;
+	
+  TCanvas *cPhysSelCut = ProcessCanvasPhysSelCut(triggersB, triggersAC, triggersE, hBNoPS, hACNoPS, hENoPS, hBWithPS, "PhysSelCutOnCollTrigger", colorInd);
+  cPhysSelCut->Draw();
+  cPhysSelCut->Print(OutFileNamePDF.Data());
+  cPhysSelCut->Write();
 
-  cout<<"//==========================================="<<endl;
-  cout<<" // Draw ratio of tracks over CINT1B, CMUS1B, ... type versus run"<<endl;
-  cout<<"//==========================================="<<endl;
-  
-  TH1 *hTrackerPerB[10], *hTriggerPerB[10], *hMatchedPerB[10], *hAllTracksPerB[10];
-  
-  TH1* hSumTriggerOverB[10], *hSumTrackerOverB[10]; 
-  
-  TH1* hTrackerOverTriggerB[10], *hMatchedOverTriggerB[10], *hMatchedOverTrackerB[10];	
-  
-  for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
-    
-    hName = "hTrackerPer";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    hTrackerPerB[i] = static_cast<TH1*>(hTrackerB[i]->Clone(hName));
-    hTrackerPerB[i]->Divide(hB[i]);
-    hTrackerPerB[i]->SetLineWidth(2);
-    hTrackerPerB[i]->SetLineColor(kRed);
-    
-    hName = "hTriggerPer";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    hTriggerPerB[i] = static_cast<TH1*>(hTriggerB[i]->Clone(hName));
-    hTriggerPerB[i]->Divide(hB[i]);
-    hTriggerPerB[i]->SetLineWidth(2);
-    hTriggerPerB[i]->SetLineColor(kBlue);
-    
-    hName = "hMatchedPer";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    hMatchedPerB[i] = static_cast<TH1*>(hMatchedB[i]->Clone(hName));
-    hMatchedPerB[i]->Divide(hB[i]);
-    hMatchedPerB[i]->SetLineWidth(2);
-    hMatchedPerB[i]->SetLineColor(kViolet);
-    
-    hName = "hAllTracksPer";
-    hName += ( (TObjString*) triggersB.At(i) )->GetString();
-    hAllTracksPerB[i] = static_cast<TH1*>(hAllTracksB[i]->Clone(hName));
-    hAllTracksPerB[i]->Divide(hB[i]);
-    hAllTracksPerB[i]->SetLineWidth(3);
-    hAllTracksPerB[i]->SetLineColor(kBlack);
-    hAllTracksPerB[i]->SetTitle(Form("Ratio (Number of Tracks)/%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data()));
-    hAllTracksPerB[i]->SetMinimum(0.0001);
-    hAllTracksPerB[i]->SetLabelSize(0.02);
-    
-    hName = Form("hSumTriggerOver%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hSumTriggerOverB[i] = static_cast<TH1*>(hTriggerB[i]->Clone(hName));
-    hSumTriggerOverB[i]->Add(hMatchedB[i]);
-    hSumTriggerOverB[i]->Divide(hB[i]);
-    
-    hTriggerName = ( (TObjString*) triggersB.At(i) )->GetString();
-    hName = Form("Sum of trigger tracks (matched+trigger-only) in %s events / # %s events",hTriggerName.Data(),hTriggerName.Data());
-    hSumTriggerOverB[i]->SetTitle(hName);
-    hSumTriggerOverB[i]->SetLabelSize(0.02);
-    hSumTriggerOverB[i]->SetLineWidth(2);
-    hSumTriggerOverB[i]->SetLineColor(kBlue);
-    hName = Form("hSumTrackerOver%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hSumTrackerOverB[i] = static_cast<TH1*>(hTrackerB[i]->Clone(hName));
-    hSumTrackerOverB[i]->Add(hMatchedB[i]);
-    hSumTrackerOverB[i]->Divide(hB[i]);
-    hName = Form("Sum tracker tracks (matched+tracker-only) in %s events / # %s events",hTriggerName.Data(),hTriggerName.Data());
-    hSumTrackerOverB[i]->SetTitle(hName);
-    //hSumTrackerOverCINT1B->LabelsOption("u");
-    hSumTrackerOverB[i]->SetLabelSize(0.02);
-    hSumTrackerOverB[i]->SetLineWidth(2);
-    hSumTrackerOverB[i]->SetLineColor(kBlue);
-    
-    hName = Form("hTrackerOverTrigger%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hTrackerOverTriggerB[i] = static_cast<TH1*>(hTrackerB[i]->Clone(hName));
-    hTrackerOverTriggerB[i]->Divide(hTriggerB[i]);
-    hTriggerName = ( (TObjString*) triggersB.At(i) )->GetString();
-    hName = Form("# tracker tracks / # trigger tracks in %s",hTriggerName.Data());
-    hTrackerOverTriggerB[i]->SetTitle(hName);
-    //hTrackerOverTriggerCINT1B->LabelsOption("u");
-    hTrackerOverTriggerB[i]->SetLabelSize(0.02);
-    hTrackerOverTriggerB[i]->SetLineWidth(2);
-    hTrackerOverTriggerB[i]->SetLineColor(kBlue);
-    
-    hName = Form("hMatchedOverTrigger%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());	
-    hMatchedOverTriggerB[i] = static_cast<TH1*>(hMatchedB[i]->Clone(hName));
-    hMatchedOverTriggerB[i]->Divide(hTriggerB[i]);
-    hTriggerName = ( (TObjString*) triggersB.At(i) )->GetString();
-    hName = Form("# matched tracks / # trigger tracks in %s",hTriggerName.Data());
-    hMatchedOverTriggerB[i]->SetTitle(hName);
-    //hMatchedOverTriggerCINT1B->LabelsOption("u");
-    hMatchedOverTriggerB[i]->SetLabelSize(0.02);
-    hMatchedOverTriggerB[i]->SetLineWidth(2);
-    hMatchedOverTriggerB[i]->SetLineColor(kBlue);
-    
-    hName = Form("hMatchedOverTracker%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedOverTrackerB[i] = static_cast<TH1*>(hMatchedB[i]->Clone(hName));
-    hMatchedOverTrackerB[i]->Divide(hTrackerB[i]);
-    hTriggerName = ( (TObjString*) triggersB.At(i) )->GetString();
-    hName = Form("# matched tracks / # tracker tracks in %s",hTriggerName.Data());
-    hMatchedOverTrackerB[i]->SetTitle(hName);
-    //hMatchedOverTrackerCINT1B->LabelsOption("u");
-    hMatchedOverTrackerB[i]->SetLabelSize(0.02);
-    hMatchedOverTrackerB[i]->SetLineWidth(2);
-    hMatchedOverTrackerB[i]->SetLineColor(kBlue);
-  }
-  
-  TCanvas *cRatioTrackTypesB[10];
-  TLegend* legcTTCINT1B[10]; 
-  
+  cout<<"//==================================================================================="<<endl;
+  cout<<"// Ratio of tracks over trigger type (3 canvases) "<<endl;
+  cout<<"//==================================================================================="<<endl;
+
+  //Print a canvas per trigger type
+  TCanvas *cTracksoverTrigger[10];
   TCanvas* cTrackMultB[10];
   TCanvas* cRatioTrackB[10];
-  
-  for(Int_t i = 1; i <= triggers.GetEntriesFast(); i++){
-    CanvasName =  LHCPeriod ; 
-    CanvasName += Form("_RatioTrackTypes%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data()); 
-    cout<<CanvasName<<endl;
-    
-    cRatioTrackTypesB[i] = new TCanvas(CanvasName.Data(),Form("cTrackTypes%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data()),1200,900);
-    cRatioTrackTypesB[i]->SetRightMargin(0.01);
-    cRatioTrackTypesB[i]->SetGridy(1);
-    cRatioTrackTypesB[i]->cd();	
-    
-    hAllTracksPerB[i]->Draw("E");
-    hTrackerPerB[i]->Draw("Esame");
-    hMatchedPerB[i]->Draw("Esame");
-    hTriggerPerB[i]->Draw("Esame");
-    
-    legcTTCINT1B[i] = new TLegend(0.70,0.5,0.90,0.70);
-    legcTTCINT1B[i]->AddEntry(hAllTracksPerB[i],"All tracks","l");
-    legcTTCINT1B[i]->AddEntry(hTrackerPerB[i],"Tracking (only) tracks","l");
-    legcTTCINT1B[i]->AddEntry(hMatchedPerB[i],"Matched tracks","l");
-    legcTTCINT1B[i]->AddEntry(hTriggerPerB[i],"Trigger (only) tracks","l");
-    legcTTCINT1B[i]->Draw("same");
-    
-    cRatioTrackTypesB[i]->Print(OutFileNamePDF.Data());
-    cRatioTrackTypesB[i]->Write();
-    
-    if(i!=1&&i!=2) continue;
-    
-    CanvasName = Form("cTrackMult%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    cout<<CanvasName<<endl;
-    cTrackMultB[i] = new TCanvas(CanvasName,CanvasName,1200,900);
-    cTrackMultB[i]->Divide(1,2);
-    cTrackMultB[i]->cd(1);
-    hSumTriggerOverB[i]->Draw("e");
-    cTrackMultB[i]->cd(2);
-    hSumTrackerOverB[i]->Draw("e");
-    
-    cTrackMultB[i]->Print(OutFileNamePDF.Data());
-    cTrackMultB[i]->Write();
-    
-    CanvasName = Form("cRatioTrack%s",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    cout<<CanvasName<<endl;	
-    cRatioTrackB[i] = new TCanvas(CanvasName,CanvasName,1200,900);
-    cRatioTrackB[i]->Divide(1,3);
-    cRatioTrackB[i]->cd(1);
-    hTrackerOverTriggerB[i]->Draw("e");	
-    cRatioTrackB[i]->cd(2);
-    hMatchedOverTriggerB[i]->Draw("e");	
-    cRatioTrackB[i]->cd(3);
-    hMatchedOverTrackerB[i]->Draw("e");	
-    
-    cRatioTrackB[i]->Print(OutFileNamePDF.Data());
-    cRatioTrackB[i]->Write();
+	
+  //loop over trigger
+  Int_t k=0;
+  TString canvasName;
+  TString triggerName;
+  for(k = 0; k < triggersB->GetEntriesFast(); k++){
+    //skip sum of all triggers
+    if(k == (triggersB->GetEntriesFast()-1)) continue;
+    //skip some triggers
+    if( !IsTrigger(triggersB, k, "INT") && !IsTrigger(triggersB, k, "MUS" ) && !IsTrigger(triggersB, k, "ANY") && !IsTrigger(triggersB,k,"CMB") ) continue;
+		
+    cTracksoverTrigger[k]= ProcessCanvasTracksoverTrigger(triggersB, hB, hTrackerB, hTriggerB, hMatchedB, hAllTracksB, k, "RatioTrackTypes");
+    cTracksoverTrigger[k]->Draw();
+    cTracksoverTrigger[k]->Print(OutFileNamePDF.Data());
+    cTracksoverTrigger[k]->Write();
+
+    cTrackMultB[k]= ProcessCanvasTrackMultB(triggersB, hB, hTrackerB, hTriggerB, hMatchedB, hAllTracksB, k, "TrackMult");
+    cTrackMultB[k]->Draw();
+    cTrackMultB[k]->Print(OutFileNamePDF.Data());
+    cTrackMultB[k]->Write();
+	
+    cRatioTrackB[k]= ProcessCanvasRatioTrackB(triggersB, hB, hTrackerB, hTriggerB, hMatchedB, hAllTracksB, k, "RatioTrackB");
+    cRatioTrackB[k]->Draw();
+    cRatioTrackB[k]->Print(OutFileNamePDF.Data());
+    cRatioTrackB[k]->Write();
   }
-  
-  cout<<"  //=================================================="<<endl;
-  cout<<"// Draw matched tracks asymmetry for cmus type  "<<endl;
-  cout<<"  //=================================================="<<endl;
-  
-  TH1 *hDiffMatchedCMUS1B= static_cast<TH1*>(hPosMatchedB[kCMUS]->Clone("hDiffMatchedCMUS1B"));
-  hDiffMatchedCMUS1B->Add(hNegMatchedB[kCMUS],-1);
-  hDiffMatchedCMUS1B->Sumw2();
-  
-  TH1 *hAsymMatchedCMUS1B= static_cast<TH1*>(hDiffMatchedCMUS1B->Clone("hAsymMatchedCMUS1B"));
-  hAsymMatchedCMUS1B->Divide(hAllMatchedB[kCMUS]);
-  hAsymMatchedCMUS1B->SetLineColor(kRed);
-  hAsymMatchedCMUS1B->SetLineWidth(2);
-  hAsymMatchedCMUS1B->SetMinimum(-0.1);
-  hAsymMatchedCMUS1B->SetMaximum(0.1);
-  hAsymMatchedCMUS1B->SetLabelSize(0.02);
-  hName = Form("Matched tracks asymmetry for %s with acc. cuts",(( (TObjString*) triggersB.At(kCMUS) )->GetString()).Data());
-  hAsymMatchedCMUS1B->SetTitle(hName);
-  
-  CanvasName =  LHCPeriod ; 
-  CanvasName += "_AsymMatched"; 
-  TCanvas *cAsymMatched = new TCanvas(CanvasName.Data(),"cAsymMatched",1200,900);
-  cAsymMatched->SetRightMargin(0.01);
-  cAsymMatched->SetGridy(1);
-  cAsymMatched->cd();
-  hAsymMatchedCMUS1B->GetYaxis()->SetTitle("Asymmetry");  
-  hAsymMatchedCMUS1B->Draw("EH");
-  
-  cAsymMatched->Print(OutFileNamePDF.Data());
-  cAsymMatched->Write();
-  
-  
+	
+
+  cout<<"//===================================================="<<endl;
+  cout<<"// Draw matched tracks asymmetry for mus type trigger "<<endl;
+  cout<<"//===================================================="<<endl;
+	
+  //Print a canvas per trigger type
+  TCanvas *cAsymMatched[10];
+	
+  //loop over trigger
+  for(k = 0; k < triggersB->GetEntriesFast(); k++){
+    //skip sum of all triggers
+    if(k == (triggersB->GetEntriesFast()-1)) continue;
+    //skip some triggers
+    if( !IsTrigger(triggersB, k, "MUS" ) ) continue;
+		
+    cAsymMatched[k]= ProcessCanvasAsymMatched(triggersB, hPosMatchedB, hNegMatchedB, hAllMatchedB, k, "AsymMatched");
+    cAsymMatched[k]->Draw();
+    cAsymMatched[k]->Print(OutFileNamePDF.Data());
+    cAsymMatched[k]->Write();
+  }
+	
   cout<<"//=================================================="<<endl;
   cout<<"// Draw high pt tracks per trigger"<<endl;
-  cout<<"  //=================================================="<<endl;
-  
-  TH1* hMatchedLowPtPerB[10], *hMatchedHighPtPerB[10];
-  TH1* hMatchedLowPtPerBNoPS[10], *hMatchedHighPtPerBNoPS[10];
-  
-  for(Int_t i = 1; i <= triggers.GetEntriesFast(); i++){
-    
-    hName = Form("hMatchedLowPtPer%s ",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedLowPtPerB[i] = static_cast<TH1*> (hMatchedLowPtB[i]->Clone(hName));
-    hMatchedLowPtPerB[i]->Sumw2();
-    hMatchedLowPtPerB[i]->Divide(hB[i]);
-    hMatchedLowPtPerB[i]->SetLineWidth(2);
-    hMatchedLowPtPerB[i]->SetLineColor(kBlue);
-    hMatchedLowPtPerB[i]->SetTitle("");
-    hName = Form("Ratio per %s ",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedLowPtPerB[i]->GetYaxis()->SetTitle(hName);
-    //hMatchedLowPtPerB[i]->SetMaximum(0.15);
-    hMatchedLowPtPerB[i]->SetMinimum(0.0001);
-    hMatchedLowPtPerB[i]->SetLabelSize(0.02);
-    
-    hName = Form("hMatchedHighPtPer%s ",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedHighPtPerB[i] = static_cast<TH1*> (hMatchedHighPtB[i]->Clone(hName));
-    hMatchedHighPtPerB[i]->Sumw2();
-    hMatchedHighPtPerB[i]->Divide(hB[i]);
-    hMatchedHighPtPerB[i]->SetLineWidth(2);
-    hMatchedHighPtPerB[i]->SetLineColor(kRed);
-    
-    hName = Form("hMatchedLowPtNoPSPer%s ",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedLowPtPerBNoPS[i] = static_cast<TH1*> (hMatchedLowPtBNoPS[i]->Clone(hName));
-    hMatchedLowPtPerBNoPS[i]->Sumw2();
-    hMatchedLowPtPerBNoPS[i]->Divide(hB[i]);
-    hMatchedLowPtPerBNoPS[i]->SetLineStyle(3);
-    hMatchedLowPtPerBNoPS[i]->SetLineColor(kBlue);
-    
-    hName = Form("hMatchedHighPtNoPSPer%s ",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    hMatchedHighPtPerBNoPS[i] = static_cast<TH1*> (hMatchedHighPtBNoPS[i]->Clone(hName));
-    hMatchedHighPtPerBNoPS[i]->Sumw2();
-    hMatchedHighPtPerBNoPS[i]->Divide(hB[i]);
-    hMatchedHighPtPerBNoPS[i]->SetLineStyle(3);
-    hMatchedHighPtPerBNoPS[i]->SetLineColor(kRed);
-    
-  }
-  
+  cout<<"//=================================================="<<endl;
+
+  //Print a canvas per trigger type
   TCanvas *cHighPtMuons[10];
-  TLegend* legcHPM[10];
-  
-  for(Int_t i = 1; i <= triggers.GetEntriesFast(); i++){
-    CanvasName =  LHCPeriod ; 
-    CanvasName += "_HighPtMuons"; 
-    CanvasName+=i+1;
-    cHighPtMuons[i]	 = new TCanvas(CanvasName.Data(),CanvasName.Data(),1200,900);
-    cHighPtMuons[i]->SetTopMargin(0.05);
-    cHighPtMuons[i]->SetRightMargin(0.01);
-    cHighPtMuons[i]->SetGridy(1);
-    cHighPtMuons[i]->cd();
-    
-    hMatchedLowPtPerB[i]->Draw("E");
-    hMatchedHighPtPerB[i]->Draw("Esame");
-    
-    legcHPM[i] = new TLegend(0.60,0.45,0.98,0.65);
-    hName = Form("Number of matched track per %s (include Vtx and R_{Abs} cuts)",(( (TObjString*) triggersB.At(i) )->GetString()).Data());
-    legcHPM[i]->SetHeader(hName);
-    legcHPM[i]->AddEntry(".","Physics selection applied :","");	
-    legcHPM[i]->AddEntry(hMatchedLowPtPerB[i]," p_{T} > 1 GeV/c ","l");
-    legcHPM[i]->AddEntry(hMatchedHighPtPerB[i]," p_{T} >  2 GeV/c ","l");
-    legcHPM[i]->Draw("same");
-    
-    cHighPtMuons[i]->Print(OutFileNamePDF.Data());
-    cHighPtMuons[i]->Write(); 
+	
+  //loop over trigger
+  for(k = 0; k < triggersB->GetEntriesFast(); k++){
+    //skip sum of all triggers
+    if(k == (triggersB->GetEntriesFast()-1)) continue;
+    //skip some triggers
+    if( !IsTrigger(triggersB, k, "MUS" ) ) continue;
+		
+    cHighPtMuons[k]= ProcessCanvasHighPtMuons(triggersB, hB, hMatchedLowPtB, hMatchedHighPtB, k, "HighPtMuons");
+    cHighPtMuons[k]->Draw();
+    cHighPtMuons[k]->Print(OutFileNamePDF.Data());
+    cHighPtMuons[k]->Write();
   }
-  
-  
+	
   // close merged file	
   globalFile->Close();
-  
-  
-  // close the PDF file
-  //	c1->Print(OutFileNamePDF_close.Data());
-  //		rootFileOut->Close();
   
   //===================================================================================
   //Print out the number of trigger without and with Phys. Sel.
@@ -822,7 +444,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     TObjString* label = 0x0;
     TIter nextLabel(labels);
     cout << "-------------------------------------------------" << endl;
-    cout << "Run Number" << "\t Number of "<< ( (TObjString*) triggersB.At(kCMUS) )->GetString()<<" after Phys. Sel. " << endl ;  
+    cout << "Run Number" << "\t Number of "<< ( (TObjString*) triggersB->At(kCMUS) )->GetString()<<" after Phys. Sel. " << endl ;  
     while ((label = static_cast<TObjString*>(nextLabel()))) {
       nRuns++;
       Int_t bin = (Int_t) label->GetUniqueID();
@@ -836,43 +458,42 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     cout << "Total statistic" << endl; 
     cout << " " << endl ; 
     
-    for(Int_t i = 0; i <= triggers.GetEntriesFast(); i++){
-      cout << "Number of "<< ( (TObjString*) triggersB.At(i) )->GetString() << endl ;
-      cout << "\t before selection " << NumOfBNoPS[i] << "\t  after selection " <<   NumOfBWithPS[i] << " --> rejection = ";
-      if(NumOfBNoPS[i]>0) cout <<  (Double_t) (NumOfBNoPS[i]-NumOfBWithPS[i])/(NumOfBNoPS[i])*100. << "%" << endl ;
-      else cout << "-1" << endl; 
-      
-      if(NumOfACNoPS[i]>0){
-	cout << "Number of "<< ( (TObjString*) triggersAC.At(i) )->GetString() << endl ;
-	cout << "\t before selection " << NumOfACNoPS[i] << "\t  after selection " <<   NumOfACWithPS[i] << " --> rejection = ";
-	cout <<  (Double_t) (NumOfACNoPS[i]-NumOfACWithPS[i])/(NumOfACNoPS[i])*100. << "%" << endl ;
-      }
-      //else cout<<NumOfACNoPS[i]<<endl;
-      if(NumOfENoPS[i]){	
-	cout << "Number of "<< ( (TObjString*) triggersE.At(i) )->GetString() << endl ;
-	cout << "\t before selection " << NumOfENoPS[i] << "\t  after selection " <<   NumOfEWithPS[i] << " --> rejection = ";
-	if(NumOfENoPS[i]>0) cout <<  (Double_t) (NumOfENoPS[i]-NumOfEWithPS[i])/(NumOfENoPS[i])*100. << "%" << endl ;
-      }
-      //else cout<<NumOfENoPS[i]<<endl;
-      cout << " " << endl ; 
+    cout << "-------------------------------------------------------------------" << endl;
+    cout<<"Number of triggers w/o Phys. Sel./ w/ Phys. Sel (Phys. Sel. cut in %)"<<endl;
+    for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+      TString triggerNameB = ( (TObjString*) triggersB->At(i) )->GetString();
+      TString triggerNameAC = ( (TObjString*) triggersAC->At(i) )->GetString();
+      TString triggerNameE = ( (TObjString*) triggersE->At(i) )->GetString();
+			
+      Int_t	cutinpercent	=	0;
+      printf("%10s %30s %30s\n",triggerNameB.Data(),triggerNameAC.Data(),triggerNameE.Data());
+      if(NumOfBNoPS[i]) cutinpercent = (Int_t) ((Double_t)(NumOfBNoPS[i]-NumOfBWithPS[i])/(NumOfBNoPS[i])*100.);
+      printf("%5.2e / %.2e (%d%%)", (Double_t) NumOfBNoPS[i],(Double_t) NumOfBWithPS[i],cutinpercent);
+      cutinpercent = 0;
+      if(NumOfACNoPS[i]) cutinpercent = (Int_t) ((Double_t)(NumOfACNoPS[i]-NumOfACWithPS[i])/(NumOfACNoPS[i])*100.);
+      printf("%15.2e / %.2e (%d%%)", (Double_t)NumOfACNoPS[i],(Double_t)NumOfACWithPS[i],cutinpercent);
+      cutinpercent = 0;
+      if(NumOfENoPS[i]) cutinpercent = (Int_t) ((Double_t)(NumOfENoPS[i]-NumOfEWithPS[i])/(NumOfENoPS[i])*100.);
+      printf("%15.2e  / %.2e (%d%%)\n", (Double_t)NumOfENoPS[i],(Double_t)NumOfEWithPS[i],cutinpercent);
+
     }
     
   }
   
   
   //return;
+	 
   
   //--------------------------------------------- //
   //        monitor quantities run per run        //
   //--------------------------------------------- //
-  
   TH1F* hTriggerCutVsRun[2], *hTriggerCutWidthVsRun[2];
   for ( Int_t ihisto=0; ihisto<2; ++ihisto ) {
     TString cutName = ( ihisto == 0 ) ? "Lpt" : "Hpt";
     hTriggerCutVsRun[ihisto] = new TH1F(Form("hTriggerCutVsRun%s", cutName.Data()), Form("Trigger %s cut per run", cutName.Data()), 10000,1,10000);
     hTriggerCutWidthVsRun[ihisto] = (TH1F*)hTriggerCutVsRun[ihisto]->Clone(Form("hTriggerCutWidthVsRun%s", cutName.Data()));
   }
-  TF1* fitMatchTrig = new TF1("fitMatchTrig","[3] + [0] * ( 1. + TMath::Erf((x - [1]) / [2]))", 0.1, 6.);
+  TF1* fitMatchTrig = new TF1("fitMatchTrig","[3] + [0] * ( 1. + TMath::Erf((x - [1]) / [2]))", 0.1, 6.);	
   TH1F* hNClustersPerTrackVsRun_Mean = new TH1F("hNClustersPerTrackVsRun_Mean", "averaged number of associated clusters per track;run;<n_{clusters}>",10000,1,10000);
   TH1F* hNClustersPerTrackVsRun_Sigma = new TH1F("hNClustersPerTrackVsRun_Sigma", "dispersion of the number of associated clusters per track;run;#sigma_{n_{clusters}}",10000,1,10000);
   TH1F* hNChamberHitPerTrack_Mean = new TH1F("hNChamberHitPerTrack_Mean", "averaged number of chambers hit per track;run;<n_{chamber hit}>",10000,1,10000);
@@ -900,14 +521,14 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     alienBaseDir.ReplaceAll("alien://","");
   }
   cout<<"============================================================"<<endl;
-  cout<< "Monitoring quantities run per run: loop over "<<runs.GetEntriesFast()<<" runs."<<endl;
+  cout<< "Monitoring quantities run per run: loop over "<<runs->GetEntriesFast()<<" runs."<<endl;
   cout<<"  directory = "<<alienBaseDir.Data()<<endl;
   cout<<"============================================================"<<endl;
   // Loop over runs
-  for ( Int_t irun=0; irun<runs.GetEntriesFast(); irun++ ) {
+  for ( Int_t irun=0; irun<runs->GetEntriesFast(); irun++ ) {
     
-    TString run = ((TObjString*)runs.UncheckedAt(irun))->GetString();
-    TString run2 = ((TObjString*)runs2.UncheckedAt(irun))->GetString();
+    TString run = ((TObjString*)runs->UncheckedAt(irun))->GetString();
+    TString run2 = ((TObjString*)runs2->UncheckedAt(irun))->GetString();
     // get the file (or list of files) to be analyzed
     TString command;
     TGridResult *res = 0;
@@ -917,7 +538,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       command = Form("find %s/ %s/%s", alienBaseDir.Data(), run.Data(), QAFileName);
       res = gGrid->Command(command);
       if (!res) {
-	Error("PlotMuonQApp","no result for the command: %s",command.Data());
+	Error("PlotMUONQApp","no result for the command: %s",command.Data());
 	return;
       }
     }
@@ -969,14 +590,14 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       if(iLoop>iLoopMax) break;
       
       if (!objs || !objs->GetString().Length()) {
-	Error("PlotMuonQApp","turl/obj not found for the run %s... SKIPPING", run.Data());
+	Error("PlotMUONQApp","turl/obj not found for the run %s... SKIPPING", run.Data());
 	continue;
       }
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {
-	Error("PlotMuonQApp","failed to open file: %s", objs->GetName());
+	Error("PlotMUONQApp","failed to open file: %s", objs->GetName());
 	continue;//return;
       }
       runFile->Cd("MUON_QA");
@@ -987,7 +608,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
       TObjArray* expert = static_cast<TObjArray*>(runFile->FindObjectAny("expert"));
       
       if (!general1 || !general2 || !expert){
-	Error("PlotMuonQApp","All objects not here !!! ===> Skipping...for %s",objs->GetName());		
+	Error("PlotMUONQApp","All objects not here !!! ===> Skipping...for %s",objs->GetName());		
 	continue;
       }
       
@@ -1039,13 +660,13 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
           hTriggerCutWidthVsRun[ihisto]->SetBinContent(ibin, ptCut);
           hTriggerCutWidthVsRun[ihisto]->SetBinError(ibin, ptCutWidth);
         } // loop on match histos
-      }
+      }			
       TH2* hClusterHitMapInCh[10];
       for(Int_t ich=0; ich<10; ich++) hClusterHitMapInCh[ich] = static_cast<TH2*>(expert->FindObject(Form("hClusterHitMapInCh%d",ich+1)));
       
       // skip empty runs... not anymore ! cs !
       if (!hNClustersPerCh) {
-	Warning("PlotMuonQApp","File: %s has empty histograms !", objs->GetName());
+	Warning("PlotMUONQApp","File: %s has empty histograms !", objs->GetName());
 	hNClustersPerTrackVsRun_Mean->SetBinContent(ibin, 0.);
 	hNClustersPerTrackVsRun_Mean->SetBinError(ibin, 1.);
 	hNClustersPerTrackVsRun_Sigma->SetBinContent(ibin, 0.);
@@ -1110,10 +731,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
 	hClusterHitMapXInCh[ich]->GetXaxis()->SetBinLabel(ibin, run.Data());
 	hClusterHitMapYInCh[ich]->GetXaxis()->SetBinLabel(ibin, run.Data());
       }
-      for ( Int_t ihisto=0; ihisto<2; ++ihisto) {
-        hTriggerCutVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin, run.Data());
-        hTriggerCutWidthVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin, run.Data());
-      }
+      
       // close outfile for this run
       runFile->Close();
       ibin++;      
@@ -1134,7 +752,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     hNClustersInCh[ich]->LabelsOption("a");
     hClusterHitMapXInCh[ich]->LabelsOption("a");
     hClusterHitMapYInCh[ich]->LabelsOption("a");
-  }  
+  }
 
   TString dirToGo =  OutFileNameROOT.Data(); dirToGo+=":/";
   gDirectory->Cd(dirToGo.Data());
@@ -1280,7 +898,7 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
 
   cChi2->Print(OutFileNamePDF.Data());
   cChi2->Write();
-  
+
   //==================================================
   // Display track Lpt/Hpt 
   if ( hTriggerCutVsRun[0] && hTriggerCutVsRun[1] ) {
@@ -1314,13 +932,681 @@ void PlotMuonQApp(const char* baseDir, const char* runList = 0x0, const char * t
     cLptHpt->Print(OutFileNamePDF.Data());
     cLptHpt->Write();
   }
-
+	
+	
   // close the PDF file
   c1->Print(OutFileNamePDF_close.Data());
   rootFileOut->Close();
-	    			
+	    		
+		
+	
+  delete runs;
+  delete runs2;
+  delete triggersB;
+  delete triggersAC;
+  delete triggersE;
+	
   return;
 	
 }
+
+void SetCanvas(TCanvas *canvas, Int_t logy){
+
+  if(!canvas) return;
+  canvas->SetTopMargin(0.05);
+  canvas->SetRightMargin(0.01);
+  canvas->SetGridy(1);
+  canvas->SetLogy(logy);
 	
+  return;
+}
+
+Bool_t IsTrigger(TObjArray *array, Int_t index, TString name){
+	
+  Bool_t process = kFALSE;
+	
+  if( !array) return process;
+	
+  TString triggerName = (( (TObjString*) array->At(index) )->GetString());
+	
+  if( triggerName.Contains(name) ) process = kTRUE;
+	
+  return process;
+}
+
+TCanvas *ProcessCanvasTriggerContent(TObjArray *array, TH1 **hBNoPS, TH1 **hBWithPS, TString canvasName){
  
+  if(!array || !hBNoPS || !hBWithPS) return 0x0;
+	
+  TString cName =  "c"; 
+  cName += canvasName; 
+  TCanvas *cTriggerContent = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(cTriggerContent);
+  cTriggerContent->cd();
+ 
+  TLegend* legcTC = new TLegend(0.2,0.15,0.50,0.40);
+  legcTC->SetHeader("Physics Selection");
+  legcTC->AddEntry(".","applied :","");
+ 
+  for(Int_t i = 0; i < array->GetEntriesFast(); i++){
+    //skip the sum of all triggers
+    if( i== (array->GetEntriesFast()-1) ) continue;
+    hBNoPS[i]->SetLineStyle(2);
+    if(i==0){
+      hBNoPS[i]->SetMinimum(1e-3);
+      hBNoPS[i]->Draw();
+      hBWithPS[i]->Draw("same");
+    }
+    else{
+      hBNoPS[i]->Draw("same");
+      hBWithPS[i]->Draw("same");
+    }
+    legcTC->AddEntry(hBWithPS[i],(( (TObjString*) array->At(i) )->GetString()).Data(),"l");
+  }
+  legcTC->AddEntry(".","not applied :","");
+	
+  for(Int_t i = 0; i < array->GetEntriesFast(); i++){
+    legcTC->AddEntry(hBNoPS[i],(( (TObjString*) array->At(i) )->GetString()).Data(),"l");	 
+  }
+	
+  legcTC->Draw("same");
+ 
+  return cTriggerContent;
+}
+
+TCanvas *ProcessCanvasRelativeTriggerContent(TObjArray *triggersB, TH1 **histo, TString canvasName, Int_t *colorInd){
+	
+  if(!triggersB || !histo || !colorInd) return 0x0;
+	
+  TString cName =  "c" ; 
+  cName += canvasName;
+  TCanvas *cRelativeTriggerContent = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(cRelativeTriggerContent);
+  cRelativeTriggerContent->cd();
+	
+  TH1* ratio[10];
+  TLegend* legcRTC = new TLegend(0.2,0.15,0.50,0.40);
+  legcRTC->SetHeader("Physics Selection");
+	
+  TString hName, hTriggerName;
+  Int_t indAllTrig = triggersB->GetEntriesFast()-1;
+  cout<<indAllTrig<<endl;
+  for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+    hName = "ratio";
+    hName += ( (TObjString*) triggersB->At(i) )->GetString();
+    ratio[i] = static_cast<TH1*> (histo[i]->Clone(hName));
+    ratio[i]->Divide(histo[indAllTrig]);
+    ratio[i]->SetLineWidth(2);
+    ratio[i]->SetLineColor(colorInd[i]);
+    if(i==0){
+      ratio[i]->SetMaximum(1.5);
+      ratio[i]->SetMinimum(0.001);
+      ratio[i]->SetLabelSize(0.02);
+      ratio[i]->GetYaxis()->SetTitle("Relative trigger content"); 
+      ratio[i]->Draw("E");
+    }
+    else{
+      ratio[i]->Draw("ESAME");
+    }
+  }
+	
+  legcRTC->AddEntry(".","not applied :","");
+  for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+    legcRTC->AddEntry(ratio[i],(( (TObjString*) triggersB->At(i) )->GetString()).Data(),"l");
+  }
+  legcRTC->Draw("same");
+	
+  return cRelativeTriggerContent;
+}
+
+TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TObjArray *triggersE, TH1 **hBNoPS, TH1 **hACNoPS, TH1 **hENoPS, TH1 **hBWithPS, TString canvasName, Int_t *colorInd){
+	
+  if(!triggersB || !triggersE || !triggersAC || !hBNoPS || !hACNoPS || !hENoPS || !hBWithPS || !colorInd) return 0x0;
+	
+  TString cName = "c";
+  cName += canvasName;
+  TCanvas *c1 = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(c1);
+  c1->cd();
+	 
+  TH1* ratioB[10], *ratioBNoPS[10];
+  TH1* ratioACNoPS[10];
+  TH1* ratioENoPS[10];
+  TLegend* legcRTC = new TLegend(0.2,0.15,0.50,0.40);
+  legcRTC->SetHeader("Physics Selection");
+	 
+  TString hName;
+  for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+    hName = "ratio";
+    hName += ( (TObjString*) triggersB->At(i) )->GetString();
+    ratioB[i] = static_cast<TH1*> (hBWithPS[i]->Clone(hName));
+    ratioB[i]->Divide(hBNoPS[i]);
+    ratioB[i]->SetLineWidth(2);
+    ratioB[i]->SetLineColor(colorInd[i]);
+    hName = "ratioNoPS";
+    hName += ( (TObjString*) triggersB->At(i) )->GetString();
+    ratioBNoPS[i] = static_cast<TH1*> (hBNoPS[i]->Clone(hName));
+    ratioBNoPS[i]->Divide(hBNoPS[i]);
+    ratioBNoPS[i]->SetLineWidth(0);
+    ratioBNoPS[i]->SetLineStyle(1);
+    ratioBNoPS[i]->SetMarkerStyle(24+i);
+    ratioBNoPS[i]->SetMarkerSize(1);
+    ratioBNoPS[i]->SetLineColor(colorInd[i]);
+    ratioBNoPS[i]->SetMarkerColor(colorInd[i]);
+		 
+    hName = "ratioACNoPS";
+    hName += ( (TObjString*) triggersAC->At(i) )->GetString();
+    ratioACNoPS[i] = static_cast<TH1*> (hACNoPS[i]->Clone(hName));
+    ratioACNoPS[i]->Divide(hBNoPS[i]);
+    ratioACNoPS[i]->SetLineWidth(0);
+    ratioACNoPS[i]->SetLineStyle(2);
+    ratioACNoPS[i]->SetMarkerStyle(24+i);
+    ratioACNoPS[i]->SetMarkerSize(1);
+    ratioACNoPS[i]->SetLineColor(colorInd[i]);
+    ratioACNoPS[i]->SetMarkerColor(colorInd[i]);
+		 
+		
+    hName = "ratioENoPS";
+    hName += ( (TObjString*) triggersE->At(i) )->GetString();
+    ratioENoPS[i] = static_cast<TH1*> (hENoPS[i]->Clone(hName));
+    ratioENoPS[i]->Divide(hBNoPS[i]);
+    ratioENoPS[i]->SetLineWidth(0);
+    ratioENoPS[i]->SetLineStyle(3);
+    ratioENoPS[i]->SetMarkerStyle(24+i);
+    ratioENoPS[i]->SetMarkerSize(1);
+    ratioENoPS[i]->SetLineColor(colorInd[i]);
+    ratioENoPS[i]->SetMarkerColor(colorInd[i]);
+		 
+	 
+    if(i==0){
+      ratioB[i]->SetMaximum(1.5);
+      ratioB[i]->SetMinimum(0.001);
+      ratioB[i]->SetLabelSize(0.02);
+      ratioB[i]->GetYaxis()->SetTitle("Relative trigger content w/ and w/o Phys. Sel."); 
+      ratioB[i]->Draw("E");
+      //ratioBNoPS[i]->Draw("EPSAME");
+      ratioACNoPS[i]->Draw("EPSAME");
+      ratioENoPS[i]->Draw("EPSAME");
+    }
+    else{
+      ratioB[i]->Draw("ESAME");
+      //ratioBNoPS[i]->Draw("EPSAME");
+      ratioACNoPS[i]->Draw("EPSAME");
+      ratioENoPS[i]->Draw("EPSAME");
+    }
+  }
+	 
+  legcRTC->AddEntry(".","applied :","");
+  for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+    legcRTC->AddEntry(ratioB[i],(( (TObjString*) triggersB->At(i) )->GetString()).Data(),"l");
+  }
+  legcRTC->AddEntry(".","not applied :","");
+  for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
+    //legcRTC->AddEntry(ratioBNoPS[i],(( (TObjString*) triggersB->At(i) )->GetString()).Data(),"pl");
+    legcRTC->AddEntry(ratioACNoPS[i],(( (TObjString*) triggersAC->At(i) )->GetString()).Data(),"pl");
+    legcRTC->AddEntry(ratioENoPS[i],(( (TObjString*) triggersE->At(i) )->GetString()).Data(),"pl");
+  }
+  legcRTC->Draw("same");
+	
+	
+  return c1;
+}	
+
+
+TCanvas *ProcessCanvasTracksoverTrigger(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName){
+	 
+  if(!triggersB || !hB || !hTrackerB || !hTriggerB || !hMatchedB || !hAllTracksB || indTrigger<0 ) return 0x0;
+	
+  TH1 *hTrackerPerB, *hTriggerPerB, *hMatchedPerB, *hAllTracksPerB;
+		 
+  TString hName, hNameBase;
+  hNameBase =( (TObjString*) triggersB->At(indTrigger) )->GetString();
+		
+  hName = "hTrackerPer";
+  hName += hNameBase;
+  hTrackerPerB = static_cast<TH1*>(hTrackerB[indTrigger]->Clone(hName));
+  hTrackerPerB->Divide(hB[indTrigger]);
+  hTrackerPerB->SetLineWidth(2);
+  hTrackerPerB->SetLineColor(kRed);
+	 
+  hName = "hTriggerPer";
+  hName += hNameBase;
+  hTriggerPerB = static_cast<TH1*>(hTriggerB[indTrigger]->Clone(hName));
+  hTriggerPerB->Divide(hB[indTrigger]);
+  hTriggerPerB->SetLineWidth(2);
+  hTriggerPerB->SetLineColor(kBlue);
+	 
+  hName = "hMatchedPer";
+  hName += hNameBase;
+  hMatchedPerB = static_cast<TH1*>(hMatchedB[indTrigger]->Clone(hName));
+  hMatchedPerB->Divide(hB[indTrigger]);
+  hMatchedPerB->SetLineWidth(2);
+  hMatchedPerB->SetLineColor(kViolet);
+	 
+  hName = "hAllTracksPer";
+  hName += hNameBase;
+  hAllTracksPerB = static_cast<TH1*>(hAllTracksB[indTrigger]->Clone(hName));
+  hAllTracksPerB->Divide(hB[indTrigger]);
+  hAllTracksPerB->SetLineWidth(3);
+  hAllTracksPerB->SetLineColor(kBlack);
+  hAllTracksPerB->SetTitle(Form("Ratio (Number of Tracks)/%s",hNameBase.Data()));
+  hAllTracksPerB->SetMinimum(0.0001);
+  hAllTracksPerB->SetLabelSize(0.02);
+	
+
+  TString cName = "c";
+  cName += canvasName;
+  hNameBase =( (TObjString*) triggersB->At(indTrigger) )->GetString();
+  cName += hNameBase;	
+  canvasName += indTrigger;
+  TCanvas *cRatioTrackTypesB = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(cRatioTrackTypesB,0);
+  cRatioTrackTypesB->cd();
+	
+  TLegend* legcTTCINT1B; 
+	 	 
+  hAllTracksPerB->Draw("E");
+  hTrackerPerB->Draw("Esame");
+  hMatchedPerB->Draw("Esame");
+  hTriggerPerB->Draw("Esame");
+	 
+  legcTTCINT1B = new TLegend(0.70,0.5,0.90,0.70);
+  legcTTCINT1B->AddEntry(hAllTracksPerB,"All tracks","l");
+  legcTTCINT1B->AddEntry(hTrackerPerB,"Tracking (only) tracks","l");
+  legcTTCINT1B->AddEntry(hMatchedPerB,"Matched tracks","l");
+  legcTTCINT1B->AddEntry(hTriggerPerB,"Trigger (only) tracks","l");
+  legcTTCINT1B->Draw("same");
+
+
+	
+  return cRatioTrackTypesB;
+	
+}
+
+
+TCanvas *ProcessCanvasTrackMultB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName){
+	
+  if(!triggersB || !hB || !hTrackerB || !hTriggerB || !hMatchedB || !hAllTracksB || indTrigger<0 ) return 0x0;
+	
+  TString cName = "c";
+  cName += canvasName;
+  TString hNameBase =( (TObjString*) triggersB->At(indTrigger) )->GetString();
+  cName += hNameBase;	
+  canvasName += indTrigger;
+  TCanvas *cTrackMultB = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(cTrackMultB,0);
+
+  cTrackMultB->Divide(1,2);
+  cTrackMultB->cd(1);
+	
+	
+  TH1* hSumTriggerOverB, *hSumTrackerOverB; 
+
+  TString hName; 
+
+  hName = Form("hSumTriggerOver%s",hNameBase.Data());
+  hSumTriggerOverB = static_cast<TH1*>(hTriggerB[indTrigger]->Clone(hName));
+  hSumTriggerOverB->Add(hMatchedB[indTrigger]);
+  hSumTriggerOverB->Divide(hB[indTrigger]);
+    
+  hName = Form("Sum of trigger tracks (matched+trigger-only) / # events in %s",hNameBase.Data());
+  hSumTriggerOverB->SetTitle(hName);
+  hSumTriggerOverB->SetLabelSize(0.02);
+  hSumTriggerOverB->SetLineWidth(2);
+  hSumTriggerOverB->SetLineColor(kBlue);
+  hName = Form("hSumTrackerOver%s",hNameBase.Data());
+  hSumTrackerOverB = static_cast<TH1*>(hTrackerB[indTrigger]->Clone(hName));
+  hSumTrackerOverB->Add(hMatchedB[indTrigger]);
+  hSumTrackerOverB->Divide(hB[indTrigger]);
+  hName = Form("Sum of tracker tracks (matched+tracker-only) / # events in %s",hNameBase.Data());
+  hSumTrackerOverB->SetTitle(hName);
+  //hSumTrackerOverCINT1B->LabelsOption("u");
+  hSumTrackerOverB->SetLabelSize(0.02);
+  hSumTrackerOverB->SetLineWidth(2);
+  hSumTrackerOverB->SetLineColor(kBlue);
+		
+	
+	
+  hSumTriggerOverB->Draw("e");
+  cTrackMultB->cd(2);
+  hSumTrackerOverB->Draw("e");
+	
+  return cTrackMultB;
+	
+}
+
+TCanvas *ProcessCanvasRatioTrackB(TObjArray *triggersB, TH1 **hB, TH1 **hTrackerB, TH1 **hTriggerB, TH1 **hMatchedB, TH1 **hAllTracksB, Int_t indTrigger, TString canvasName){
+	
+  if(!triggersB || !hB || !hTrackerB || !hTriggerB || !hMatchedB || !hAllTracksB || indTrigger<0 ) return 0x0;
+	
+  TString cName = "c";
+  cName += canvasName;
+  TString hNameBase =( (TObjString*) triggersB->At(indTrigger) )->GetString();
+  cName += hNameBase;	
+  canvasName += indTrigger;
+  TCanvas *cRatioTrackB = new TCanvas(canvasName,cName,1200,900);
+  SetCanvas(cRatioTrackB,0);
+	
+  TH1* hTrackerOverTriggerB, *hMatchedOverTriggerB, *hMatchedOverTrackerB;	
+  
+  TString hName = Form("hTrackerOverTrigger%s",hNameBase.Data());
+  hTrackerOverTriggerB = static_cast<TH1*>(hTrackerB[indTrigger]->Clone(hName));
+  hTrackerOverTriggerB->Divide(hTriggerB[indTrigger]);
+  hName = Form("# tracker tracks / # trigger tracks in %s",hNameBase.Data());
+  hTrackerOverTriggerB->SetTitle(hName);
+  //hTrackerOverTriggerCINT1B->LabelsOption("u");
+  hTrackerOverTriggerB->SetLabelSize(0.02);
+  hTrackerOverTriggerB->SetLineWidth(2);
+  hTrackerOverTriggerB->SetLineColor(kBlue);
+    
+  hName = Form("hMatchedOverTrigger%s",hNameBase.Data());	
+  hMatchedOverTriggerB = static_cast<TH1*>(hMatchedB[indTrigger]->Clone(hName));
+  hMatchedOverTriggerB->Divide(hTriggerB[indTrigger]);
+   
+  hName = Form("# matched tracks / # trigger tracks in %s",hNameBase.Data());
+  hMatchedOverTriggerB->SetTitle(hName);
+  //hMatchedOverTriggerCINT1B->LabelsOption("u");
+  hMatchedOverTriggerB->SetLabelSize(0.02);
+  hMatchedOverTriggerB->SetLineWidth(2);
+  hMatchedOverTriggerB->SetLineColor(kBlue);
+    
+  hName = Form("hMatchedOverTracker%s",hNameBase.Data());
+  hMatchedOverTrackerB = static_cast<TH1*>(hMatchedB[indTrigger]->Clone(hName));
+  hMatchedOverTrackerB->Divide(hTrackerB[indTrigger]);
+  hName = Form("# matched tracks / # tracker tracks in %s",hNameBase.Data());
+  hMatchedOverTrackerB->SetTitle(hName);
+  //hMatchedOverTrackerCINT1B->LabelsOption("u");
+  hMatchedOverTrackerB->SetLabelSize(0.02);
+  hMatchedOverTrackerB->SetLineWidth(2);
+  hMatchedOverTrackerB->SetLineColor(kBlue);
+  
+	
+  cRatioTrackB->Divide(1,3);
+  cRatioTrackB->cd(1);
+  hTrackerOverTriggerB->Draw("e");	
+  cRatioTrackB->cd(2);
+  hMatchedOverTriggerB->Draw("e");	
+  cRatioTrackB->cd(3);
+  hMatchedOverTrackerB->Draw("e");	
+    
+  return cRatioTrackB;
+	
+}
+
+TCanvas *ProcessCanvasAsymMatched(TObjArray *triggersB, TH1 **hPosMatchedB, TH1 **hNegMatchedB, TH1 **hAllMatchedB, Int_t indTrigger, TString canvasName){
+	
+  if(!triggersB || !hPosMatchedB || !hNegMatchedB || !hAllMatchedB || indTrigger<0 ) return 0x0;
+
+  TString hName, hNameBase = (( (TObjString*) triggersB->At(indTrigger) )->GetString());
+	
+  TString cName =	"c";	
+  cName += canvasName;
+  cName += hNameBase;	
+  canvasName += indTrigger;
+  TCanvas *cAsymMatched = new TCanvas(canvasName.Data(),cName,1200,900);
+  SetCanvas(cAsymMatched,0);
+  cAsymMatched->cd();
+	
+	
+  TH1 *hDiffMatchedCMUS1B= static_cast<TH1*>(hPosMatchedB[indTrigger]->Clone("hDiffMatchedCMUS1B"));
+  hDiffMatchedCMUS1B->Add(hNegMatchedB[indTrigger],-1);
+  hDiffMatchedCMUS1B->Sumw2();
+	 
+  TH1 *hAsymMatchedCMUS1B= static_cast<TH1*>(hDiffMatchedCMUS1B->Clone("hAsymMatchedCMUS1B"));
+  hAsymMatchedCMUS1B->Divide(hAllMatchedB[indTrigger]);
+  hAsymMatchedCMUS1B->SetLineColor(kRed);
+  hAsymMatchedCMUS1B->SetLineWidth(2);
+  hAsymMatchedCMUS1B->SetMinimum(-0.3);
+  hAsymMatchedCMUS1B->SetMaximum(0.3);
+  hAsymMatchedCMUS1B->SetLabelSize(0.02);
+  hName = Form("Matched tracks asymmetry for %s with acc. cuts",hNameBase.Data());
+  hAsymMatchedCMUS1B->SetTitle(hName);
+	 
+  hAsymMatchedCMUS1B->GetYaxis()->SetTitle("Charged tracks asymmetry");  
+  hAsymMatchedCMUS1B->Draw("EH");
+	
+  return cAsymMatched;
+	
+}
+
+TCanvas *ProcessCanvasHighPtMuons(TObjArray *triggersB, TH1 **hB, TH1 **hMatchedLowPtB, TH1 **hMatchedHighPtB, Int_t indTrigger, TString canvasName){
+	
+  if(!triggersB || !hB || !hMatchedLowPtB || !hMatchedHighPtB || indTrigger<0 ) return 0x0;
+	
+  TString hName, hNameBase = (( (TObjString*) triggersB->At(indTrigger) )->GetString());
+	
+  TString cName =	"c";	
+  cName += canvasName;
+  cName += hNameBase;	
+  canvasName += indTrigger;
+  TCanvas *cHighPtMuons = new TCanvas(canvasName.Data(),cName,1200,900);
+  SetCanvas(cHighPtMuons,0);
+  cHighPtMuons->cd();
+	
+  TLegend* legcHPM;
+	
+  TH1* hMatchedLowPtPerB, *hMatchedHighPtPerB;
+  hName = Form("hMatchedLowPtPer%s ",hNameBase.Data());
+  hMatchedLowPtPerB = static_cast<TH1*> (hMatchedLowPtB[indTrigger]->Clone(hName));
+  hMatchedLowPtPerB->Sumw2();
+  hMatchedLowPtPerB->Divide(hB[indTrigger]);
+  hMatchedLowPtPerB->SetLineWidth(2);
+  hMatchedLowPtPerB->SetLineColor(kBlue);
+  hMatchedLowPtPerB->SetTitle("");
+  hName = Form("Ratio per %s ",hNameBase.Data());
+  hMatchedLowPtPerB->GetYaxis()->SetTitle(hName);
+  //hMatchedLowPtPerB->SetMaximum(0.15);
+  hMatchedLowPtPerB->SetMinimum(0.0001);
+  hMatchedLowPtPerB->SetLabelSize(0.02);
+	 
+  hName = Form("hMatchedHighPtPer%s ",hNameBase.Data());
+  hMatchedHighPtPerB = static_cast<TH1*> (hMatchedHighPtB[indTrigger]->Clone(hName));
+  hMatchedHighPtPerB->Sumw2();
+  hMatchedHighPtPerB->Divide(hB[indTrigger]);
+  hMatchedHighPtPerB->SetLineWidth(2);
+  hMatchedHighPtPerB->SetLineColor(kRed);
+	 	 
+  hMatchedLowPtPerB->Draw("E");
+  hMatchedHighPtPerB->Draw("Esame");
+	 
+  legcHPM = new TLegend(0.60,0.45,0.98,0.65);
+  hName = Form("Number of matched track per %s (include Vtx and R_{Abs} cuts)",hNameBase.Data());
+  legcHPM->SetHeader(hName);
+  legcHPM->AddEntry(".","Physics selection applied :","");	
+  legcHPM->AddEntry(hMatchedLowPtPerB," p_{T} > 1 GeV/c ","l");
+  legcHPM->AddEntry(hMatchedHighPtPerB," p_{T} >  2 GeV/c ","l");
+  legcHPM->Draw("same");
+	
+  return cHighPtMuons;
+	
+	
+}
+
+TH1* ProcessHisto( AliCounterCollection* counter, TString hVariable, TString hSelection, TString hName, TString xName, TString yName, Int_t color){
+  
+  
+  TH1* h1 = 0x0;
+  if( !counter ) return h1;
+  
+  h1 = (TH1*) counter->Draw(hVariable,hSelection);
+  if ( !h1 ) h1 = new TH1D(hName,"",10,0,10);
+  else {
+    h1->Sumw2();
+    h1->LabelsOption("a");
+    if(hName.Sizeof()>1) h1->SetName(hName);
+    if(xName.Sizeof()>1) h1->GetXaxis()->SetTitle(xName);
+    if(yName.Sizeof()>1) h1->GetYaxis()->SetTitle(yName);
+    if(color>0) h1->SetLineColor(color);
+    
+  }
+  
+  return h1;
+}
+
+TH2* ProcessHisto2D( AliCounterCollection* counter, TString hVariable, TString hVariable2, TString hSelection, TString hName){
+	
+  
+  TH2* h1 = 0x0;
+  if( !counter ) return h1;
+  Bool_t setName = kTRUE;
+  
+  if(hName.Sizeof()==1) setName = kFALSE;
+  
+  h1 = (TH2*) counter->Draw(hVariable,hVariable2,hSelection);
+  if ( !h1 ) h1 = new TH2D(hName,"",10,0,10,10,0,10);
+  else {
+    h1->Sumw2();
+    h1->LabelsOption("a");
+    if(setName) h1->SetName(hName);
+  }
+  
+  return h1;
+}
+Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjArray *triggersB, TObjArray *triggersAC, TObjArray *triggersE){
+	
+  //Get the trigger list from a file
+  //The file should consist of a line for each trigger with the following layout:
+	//        triggernameB triggerNameAC triggerNameE
+	//     or triggernameB triggerNameA,triggerNameC triggerNameE
+	//     or triggernameB triggerNameACE notrigger
+  //if filename is 0, then default trigger names (pp 2011) are used
+	
+  if( !triggersB || !triggersAC || !triggersE) return kFALSE;
+  TObjArray* triggers[3] = {triggersB, triggersAC, triggersE};
+  
+  TString trigSuffix[3] = {"B", "AC", "E"};
+  TString currTrigName = "";
+  TObjArray* fullTriggerList[3];
+	
+  for ( Int_t ibeam=0; ibeam<3; ++ibeam ) {
+    fullTriggerList[ibeam] = new TObjArray;
+    fullTriggerList[ibeam]->SetOwner();
+  }
+  
+  // Build trigger list (from file or default)
+  if ( triggerList ) {
+    // only the ones in the triggerList
+    ifstream inFile(triggerList);
+    if (!inFile.is_open()) {
+      Error("PlotMUONQApp","unable to open file %s", triggerList);
+      return kFALSE;
+    }
+    
+    while ( !inFile.eof() ) {
+      Bool_t isGoodB = kTRUE;
+      for ( Int_t ibeam=0; ibeam<3; ++ibeam ) {
+        currTrigName.ReadToken( inFile );
+        if ( ! isGoodB ) continue;
+        if ( currTrigName.IsNull() || ! currTrigName.IsAscii() ) {
+          if ( ibeam == 0 ) {
+            isGoodB = kFALSE;
+            continue;
+          }
+          currTrigName = "notrigger";
+        }
+        fullTriggerList[ibeam]->AddLast(new TObjString(currTrigName));
+      }
+    }
+    inFile.close();
+  }
+  else {
+    TString baseTrigName[4] = {"CINT7", "CMUSH7", "CMUL7", "CMUU7"};
+    for ( Int_t ibase=0; ibase<4; ++ibase ) {
+      for ( Int_t ibeam=0; ibeam<3; ++ibeam ) {
+        // by default all triggers from new period in LHC11c
+        currTrigName = baseTrigName[ibase] + trigSuffix[ibeam];
+        fullTriggerList[ibeam]->AddLast(new TObjString(currTrigName));
+      }
+    }
+  }
+  //
+  // Select only existing triggers in container
+  //
+  TObjArray *triggersFromContainer = listFromContainer.Tokenize(",");
+  TObjString* trigName = 0x0;
+	
+  TString selectAllTriggers[3] = {"", "", ""};
+  for ( Int_t itrig=0; itrig<fullTriggerList[0]->GetEntries(); ++itrig ) {
+    Bool_t isBadTrig = kFALSE;
+    for ( Int_t ibeam=0; ibeam<3; ++ibeam ) {
+      currTrigName = fullTriggerList[ibeam]->At(itrig)->GetName();
+			
+      //condition on trigger name from trigger list
+      if ( currTrigName.Contains("notrigger") ){
+        isBadTrig = kTRUE;
+        if ( ibeam == 0 ) break;
+        currTrigName = " ";
+      }
+      //select only the existing triggers in the container 
+      //note that the trigger in the trigger file can be a list of different trigger
+      if ( triggersFromContainer ) {
+	TIter nextTrigger( triggersFromContainer );
+	isBadTrig = kTRUE;
+	while ( ( trigName = static_cast<TObjString*>(nextTrigger()) ) ) {
+	  if ( currTrigName.Contains(trigName->GetString()) ){
+	    isBadTrig = kFALSE;
+	  }
+	}
+	if ( isBadTrig == kTRUE ){ 
+	  if ( ibeam == 0 ) break;
+	  currTrigName = " ";
+	}
+      }
+      triggers[ibeam]->AddLast(new TObjString(currTrigName));
+      if ( isBadTrig ) continue;
+      if ( ! selectAllTriggers[ibeam].IsNull() ) selectAllTriggers[ibeam] += ",";
+      selectAllTriggers[ibeam] += currTrigName;
+    }
+  }
+  if(triggersFromContainer) delete triggersFromContainer;
+  if(trigName) delete trigName;
+	
+	
+  // Complete trigger list and print values
+  cout<<" Nr of triggers read "<<triggers[0]->GetEntriesFast()<<endl;
+  for ( Int_t ibeam=0; ibeam<3; ++ibeam ) {
+    triggers[ibeam]->AddLast(new TObjString(selectAllTriggers[ibeam]));
+    printf(" %s triggers:\n", trigSuffix[ibeam].Data());
+    triggers[ibeam]->Print();
+    delete fullTriggerList[ibeam];
+  }
+	
+  return kTRUE;
+}
+
+TString GetRunList(const char *runList, TObjArray *runs, TObjArray *runs2){
+
+  // list of runs to be analyzed
+  TString selectRuns = "run:";
+  
+  if(runList) {
+    // only the ones in the runList
+    ifstream inFile(runList);
+    if (!inFile.is_open()) {
+      Error("PlotMUONQApp","unable to open file %s", runList);
+      return selectRuns;
+    }
+    
+    TString currRun;
+    while (!inFile.eof()) {
+      currRun.ReadLine(inFile, kTRUE);
+      if (currRun.IsNull()) continue;
+      if (!currRun.IsDigit()) {
+	Error("PlotMUONQApp","invalid run number: %s", currRun.Data());
+	return selectRuns;
+      }
+      if(runs) runs->AddLast(new TObjString(Form("%09d", currRun.Atoi())));
+      if(runs2) runs2->AddLast(new TObjString(Form("%d", currRun.Atoi())));
+      selectRuns += Form("%s,",currRun.Data());
+    }
+    selectRuns.Remove(TString::kTrailing, ',');
+    inFile.close();
+    
+  } else {
+    // all runs
+    if(runs) runs->AddLast(new TObjString("*"));
+    if(runs2) runs2->AddLast(new TObjString("*"));
+  }
+  
+  return selectRuns;
+}
