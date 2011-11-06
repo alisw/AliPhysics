@@ -135,7 +135,7 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
     printf("AliAnalysisTaskEMCALClusterize ---Data with kINT7 Trigger and clusterizer %s\n",name.Data());
     clusterize->SelectCollisionCandidates(AliVEvent::kINT7);
   }
-  if(trigger=="EMC1"){
+  else if(trigger=="EMC1"){
     printf("AliAnalysisTaskEMCALClusterize ---Data with kEMC1 Trigger and clusterizer %s\n",name.Data());
     clusterize->SelectCollisionCandidates(AliVEvent::kEMC1);
   }
