@@ -267,6 +267,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     AliPerformanceDEdx* pDEdx = 0;
     AliPerformanceMatch* pMatch = 0;
     AliPerformanceMatch* pPull = 0;
+    AliPerformanceMatch* pConstrain = 0;
     TIterator* itOut = fOutput->MakeIterator();
     itOut->Reset();
     while(( pObj = dynamic_cast<AliPerformanceObject*>(itOut->Next())) != NULL) { 
@@ -279,9 +280,10 @@ void AliPerformanceTask::Terminate(Option_t *)
 	if (!strcmp(pObj->GetName(),"AliPerformanceTPC"))  {    pTPC = dynamic_cast<AliPerformanceTPC*>(pObj); }
         if (!strcmp(pObj->GetName(),"AliPerformanceDEdxTPCInner"))  {   pDEdx = dynamic_cast<AliPerformanceDEdx*>(pObj); }
         if (!strcmp(pObj->GetName(),"AliPerformanceMatchTPCITS")) {  pMatch = dynamic_cast<AliPerformanceMatch*>(pObj); }
-        if (!strcmp(pObj->GetName(),"AliPerformanceMatchITSTPC")) {  pPull = dynamic_cast<AliPerformanceMatch*>(pObj);
-	}
+        if (!strcmp(pObj->GetName(),"AliPerformanceMatchITSTPC")) {  pPull = dynamic_cast<AliPerformanceMatch*>(pObj);}
+        if (!strcmp(pObj->GetName(),"AliPerformanceMatchTPCConstrain")) {  pConstrain = dynamic_cast<AliPerformanceMatch*>(pObj);}
     }
+  
    
     if(!fUseOCDB)  { 
       printf("DO NOT USE OCDB \n");
@@ -291,7 +293,7 @@ void AliPerformanceTask::Terminate(Option_t *)
     if (! AliCDBManager::Instance()->GetDefaultStorage()) { AliCDBManager::Instance()->SetDefaultStorage("raw://"); }
     TUUID uuid;
     TString tmpFile = gSystem->TempDirectory() + TString("/TPCQASummary.") + uuid.AsString() + TString(".root");
-    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, tmpFile.Data());
+    AliTPCPerformanceSummary::WriteToFile(pTPC, pDEdx, pMatch, pPull, pConstrain, tmpFile.Data());
     TChain* chain = new TChain("tpcQA");
     if(!chain) return;
     chain->Add(tmpFile.Data());

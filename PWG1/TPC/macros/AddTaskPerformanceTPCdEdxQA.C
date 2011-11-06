@@ -14,6 +14,7 @@
 // 3. AliPerformancedEdx (TPC dEdx information)
 // 4. AliPerformanceRes (TPC track resolution w.r.t MC at DCA)
 // 5. AliPerformanceEff (TPC track reconstruction efficiency, MC primaries)
+// 6. AliPerformanceMatch (Comparison of TPC constrain and global tracking)
 //
 // Usage on the analysis train (default configuration):
 // gSystem->Load("libANALYSIS");
@@ -39,7 +40,7 @@
 //____________________________________________
 AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t bUseESDfriend=kTRUE, 
 						Bool_t highMult = kFALSE, const char *triggerClass=0, 
-						Bool_t bUseHLT = kFALSE)
+						Bool_t bUseHLT = kFALSE, Bool_t bUseTOF = kFALSE)
 {
   Char_t *taskName[] = {"TPC", "HLT"};
   Int_t idx = 0;
@@ -143,7 +144,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   //  pCompTPC0->SetUseTrackVertex(kFALSE);
   pCompTPC0->SetUseTrackVertex(kTRUE);
   pCompTPC0->SetUseHLT(bUseHLT);
-  pCompTPC0->SetUseTOFBunchCrossing(kTRUE);
+  pCompTPC0->SetUseTOFBunchCrossing(bUseTOF);
   
   //
   // TPC ITS match
@@ -154,7 +155,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   }
   pCompMatch1->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompMatch1->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMatch1->SetUseTOFBunchCrossing(kTRUE);
+  pCompMatch1->SetUseTOFBunchCrossing(bUseTOF);
 
 
   //
@@ -165,7 +166,7 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
     Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchITSTPC");  }
   pCompMatch2->SetAliRecInfoCuts(pRecInfoCutsTPC);
   pCompMatch2->SetAliMCInfoCuts(pMCInfoCuts);
-  pCompMatch2->SetUseTOFBunchCrossing(kTRUE);
+  pCompMatch2->SetUseTOFBunchCrossing(bUseTOF);
 
   //
   // dEdx
@@ -208,6 +209,16 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
   pCompEff5->SetAliMCInfoCuts(pMCInfoCuts);
   pCompEff5->SetUseTrackVertex(kTRUE);
 
+  //
+  // TPC Constrain to vertex
+  //
+  AliPerformanceMatch *pCompConstrain6 = new AliPerformanceMatch("AliPerformanceMatchTPCConstrain","AliPerformanceMatchTPCConstrain",2,kFALSE); 
+  if(!pCompConstrain6) {
+    Error("AddTaskPerformanceTPCdEdxQA", "Cannot create AliPerformanceMatchTPCConstrain");  }
+  pCompConstrain6->SetAliRecInfoCuts(pRecInfoCutsTPC);
+  pCompConstrain6->SetAliMCInfoCuts(pMCInfoCuts);
+  pCompConstrain6->SetUseTOFBunchCrossing(bUseTOF);
+
 
 
   //
@@ -218,11 +229,13 @@ AliPerformanceTask* AddTaskPerformanceTPCdEdxQA(Bool_t bUseMCInfo=kFALSE, Bool_t
     pCompMatch1->SetTriggerClass(triggerClass);
     pCompMatch2->SetTriggerClass(triggerClass);
     pCompDEdx3->SetTriggerClass(triggerClass);
+    pCompConstrain6->SetTriggerClass(triggerClass);
   }
   task->AddPerformanceObject( pCompTPC0 );
   task->AddPerformanceObject( pCompMatch1 );
   task->AddPerformanceObject( pCompMatch2 );
   task->AddPerformanceObject( pCompDEdx3 );
+  task->AddPerformanceObject( pCompConstrain6 );
   if(bUseMCInfo)   {
       task->AddPerformanceObject( pCompRes4 );
       task->AddPerformanceObject( pCompEff5 );

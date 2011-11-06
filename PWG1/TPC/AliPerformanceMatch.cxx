@@ -74,6 +74,7 @@ AliPerformanceMatch::AliPerformanceMatch():
   fResolHisto(0),
   fPullHisto(0),
   fTrackingEffHisto(0),
+  fTPCConstrain(0),
   fFolderObj(0),
   // Cuts 
   fCutsRC(0),  
@@ -93,6 +94,7 @@ AliPerformanceMatch::AliPerformanceMatch(Char_t* name="AliPerformanceMatch", Cha
   fResolHisto(0),
   fPullHisto(0),
   fTrackingEffHisto(0),
+  fTPCConstrain(0),
   fFolderObj(0),
   // Cuts 
   fCutsRC(0),  
@@ -118,6 +120,7 @@ AliPerformanceMatch::~AliPerformanceMatch()
   if(fResolHisto) delete fResolHisto; fResolHisto=0;     
   if(fPullHisto)  delete fPullHisto;  fPullHisto=0;
   if(fTrackingEffHisto) delete fTrackingEffHisto; fTrackingEffHisto = 0x0;
+  if(fTPCConstrain) delete fTPCConstrain; fTPCConstrain = 0x0;
   
   if(fAnalysisFolder) delete fAnalysisFolder; fAnalysisFolder=0;
   if(fFolderObj) delete fFolderObj; fFolderObj=0;
@@ -133,7 +136,7 @@ void AliPerformanceMatch::Init(){
   // set pt bins
   Int_t nPtBins = 50;
   Double_t ptMin = 1.e-2, ptMax = 20.;
-
+ 
   Double_t *binsPt = 0;
 
   if (IsHptGenerator())  { 
@@ -149,54 +152,83 @@ void AliPerformanceMatch::Init(){
     zMin = -100.; zMax = 100.; 
   }
 
-  // res_y:res_z:res_phi,res_lambda:res_pt:y:z:eta:phi:pt:isRec
-  Int_t binsResolHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
-  Double_t minResolHisto[9]={-1.,-1.,-0.03,-0.03,-0.2, 0., -1.5, ptMin,0};
-  Double_t maxResolHisto[9]={ 1., 1., 0.03, 0.03, 0.2, 2.*TMath::Pi(), 1.5, ptMax,2};
-
-  fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:phi:eta:pt:isRec",9,binsResolHisto,minResolHisto,maxResolHisto);
-  fResolHisto->SetBinEdges(7,binsPt);
-
-  fResolHisto->GetAxis(0)->SetTitle("y-y_{ref} (cm)");
-  fResolHisto->GetAxis(1)->SetTitle("z-z_{ref} (cm)");
-  fResolHisto->GetAxis(2)->SetTitle("#phi-#phi_{ref} (rad)");
-  fResolHisto->GetAxis(3)->SetTitle("#lambda-#lambda_{ref} (rad)");
-  fResolHisto->GetAxis(4)->SetTitle("(p_{T}/p_{Tref}-1)");
-  fResolHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
-  fResolHisto->GetAxis(6)->SetTitle("#eta_{ref}");
-  fResolHisto->GetAxis(7)->SetTitle("p_{Tref} (GeV/c)");
-  fResolHisto->GetAxis(8)->SetTitle("isReconstructed");
-  fResolHisto->Sumw2();
-
-  //pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec
-  Int_t binsPullHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
-  Double_t minPullHisto[9]={-5.,-5.,-5.,-5.,-5., 0.,-1.5, ptMin,0};
-  Double_t maxPullHisto[9]={ 5., 5., 5., 5., 5., 2.*TMath::Pi(), 1.5, ptMax,2};
-  fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:phi:eta:1pt:isRec",9,binsPullHisto,minPullHisto,maxPullHisto);
-
-  fPullHisto->GetAxis(0)->SetTitle("(y-y_{ref})/#sigma");
-  fPullHisto->GetAxis(1)->SetTitle("(z-z_{ref})/#sigma");
-  fPullHisto->GetAxis(2)->SetTitle("(sin#phi-sin#phi_{ref})/#sigma");
-  fPullHisto->GetAxis(3)->SetTitle("(tan#lambda-tan#lambda_{ref})/#sigma");
-  fPullHisto->GetAxis(4)->SetTitle("(p_{Tref}/p_{T}-1)/#sigma");
-  fPullHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
-  fPullHisto->GetAxis(6)->SetTitle("#eta_{ref}");
-  fPullHisto->GetAxis(7)->SetTitle("1/p_{Tref} (GeV/c)^{-1}");
-  fPullHisto->GetAxis(8)->SetTitle("isReconstructed");
-  fPullHisto->Sumw2();
-
-  // -> has match:y:z:snp:tgl:phi:pt:ITSclusters
-  Int_t binsTrackingEffHisto[5]    = { 2,   90,           100, 30,    7   };
-  Double_t minTrackingEffHisto[5]  = {-0.5, 0.,            0, -1.5, -0.5 };
-  Double_t maxTrackingEffHisto[5]  = { 1.5, 2*TMath::Pi(), 20, 1.5,  6.5 };
+  //
+  //init ITS TPC Mactching
+  //
+  if(GetAnalysisMode()==1){
+    // res_y:res_z:res_phi,res_lambda:res_pt:y:z:eta:phi:pt:isRec
+    Int_t binsResolHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
+    Double_t minResolHisto[9]={-1.,-1.,-0.03,-0.03,-0.2, 0., -1.5, ptMin,0};
+    Double_t maxResolHisto[9]={ 1., 1., 0.03, 0.03, 0.2, 2.*TMath::Pi(), 1.5, ptMax,2};
+    
+    fResolHisto = new THnSparseF("fResolHisto","res_y:res_z:res_phi:res_lambda:res_pt:phi:eta:pt:isRec",9,binsResolHisto,minResolHisto,maxResolHisto);
+    fResolHisto->SetBinEdges(7,binsPt);
+    
+    fResolHisto->GetAxis(0)->SetTitle("y-y_{ref} (cm)");
+    fResolHisto->GetAxis(1)->SetTitle("z-z_{ref} (cm)");
+    fResolHisto->GetAxis(2)->SetTitle("#phi-#phi_{ref} (rad)");
+    fResolHisto->GetAxis(3)->SetTitle("#lambda-#lambda_{ref} (rad)");
+    fResolHisto->GetAxis(4)->SetTitle("(p_{T}/p_{Tref}-1)");
+    fResolHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
+    fResolHisto->GetAxis(6)->SetTitle("#eta_{ref}");
+    fResolHisto->GetAxis(7)->SetTitle("p_{Tref} (GeV/c)");
+    fResolHisto->GetAxis(8)->SetTitle("isReconstructed");
+    fResolHisto->Sumw2();
+    
+    //pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:y:z:snp:tgl:1pt:isRec
+    Int_t binsPullHisto[9]={100,100,100,100,100,90,30,nPtBins,2};
+    Double_t minPullHisto[9]={-5.,-5.,-5.,-5.,-5., 0.,-1.5, ptMin,0};
+    Double_t maxPullHisto[9]={ 5., 5., 5., 5., 5., 2.*TMath::Pi(), 1.5, ptMax,2};
+    fPullHisto = new THnSparseF("fPullHisto","pull_y:pull_z:pull_snp:pull_tgl:pull_1pt:phi:eta:1pt:isRec",9,binsPullHisto,minPullHisto,maxPullHisto);
+    
+    fPullHisto->GetAxis(0)->SetTitle("(y-y_{ref})/#sigma");
+    fPullHisto->GetAxis(1)->SetTitle("(z-z_{ref})/#sigma");
+    fPullHisto->GetAxis(2)->SetTitle("(sin#phi-sin#phi_{ref})/#sigma");
+    fPullHisto->GetAxis(3)->SetTitle("(tan#lambda-tan#lambda_{ref})/#sigma");
+    fPullHisto->GetAxis(4)->SetTitle("(p_{Tref}/p_{T}-1)/#sigma");
+    fPullHisto->GetAxis(5)->SetTitle("#phi_{ref} (rad)");
+    fPullHisto->GetAxis(6)->SetTitle("#eta_{ref}");
+    fPullHisto->GetAxis(7)->SetTitle("1/p_{Tref} (GeV/c)^{-1}");
+    fPullHisto->GetAxis(8)->SetTitle("isReconstructed");
+    fPullHisto->Sumw2();
+  }
   
-  fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:phi:pt:eta:ITSclusters",5,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
-  fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
-  fTrackingEffHisto->GetAxis(1)->SetTitle("phi (rad)");
-  fTrackingEffHisto->GetAxis(2)->SetTitle("p_{T}");
-  fTrackingEffHisto->GetAxis(3)->SetTitle("eta");
-  fTrackingEffHisto->GetAxis(4)->SetTitle("number of ITS clusters");
-  fTrackingEffHisto->Sumw2();
+  //
+  //TPC  ITS  Mactching
+  // 
+  if(GetAnalysisMode()==0){
+    // -> has match:y:z:snp:tgl:phi:pt:ITSclusters
+    Int_t binsTrackingEffHisto[5]    = { 2,   90,       nPtBins, 30,    7   };
+    Double_t minTrackingEffHisto[5]  = {-0.5, 0.,          ptMin, -1.5, -0.5 };
+    Double_t maxTrackingEffHisto[5]  = { 1.5, 2*TMath::Pi(), ptMax, 1.5,  6.5 };
+    
+    fTrackingEffHisto = new THnSparseF("fTrackingEffHisto","has match:phi:pt:eta:ITSclusters",5,binsTrackingEffHisto,minTrackingEffHisto,maxTrackingEffHisto);
+    fTrackingEffHisto->SetBinEdges(2,binsPt);
+    fTrackingEffHisto->GetAxis(0)->SetTitle("IsMatching");
+    fTrackingEffHisto->GetAxis(1)->SetTitle("phi (rad)");
+    fTrackingEffHisto->GetAxis(2)->SetTitle("p_{T}");
+    fTrackingEffHisto->GetAxis(3)->SetTitle("eta");
+    fTrackingEffHisto->GetAxis(4)->SetTitle("number of ITS clusters");
+    fTrackingEffHisto->Sumw2();
+  }
+
+  //
+  //TPC constraining to vertex
+  //
+  if(GetAnalysisMode()==2){
+    //initilization of fTPCConstrain
+    Int_t  binsTPCConstrain[4] = {100, 90,            nPtBins, 30};
+    Double_t minTPCConstrain[4] = {-5, 0,             ptMin,   -1.5};
+    Double_t maxTPCConstrain[4] = {5,  2*TMath::Pi(), ptMax,  1.5};
+    
+    fTPCConstrain = new THnSparseF("fTPCConstrain","pull_phi:phi:pt:eta",4, binsTPCConstrain,minTPCConstrain,maxTPCConstrain);
+    fTPCConstrain->SetBinEdges(2,binsPt);
+    fTPCConstrain->GetAxis(0)->SetTitle("(#phi-#phi_{ref})/#sigma");
+    fTPCConstrain->GetAxis(1)->SetTitle("phi (rad)");
+    fTPCConstrain->GetAxis(2)->SetTitle("p_{T}");
+    fTPCConstrain->GetAxis(3)->SetTitle("eta");
+    fTPCConstrain->Sumw2();
+  }
 
   // Init cuts 
   if(!fCutsMC) 
@@ -301,6 +333,52 @@ void AliPerformanceMatch::ProcessTPCITS(AliStack* /*const stack*/, AliESDtrack *
   return;
 }*/
 
+void AliPerformanceMatch::ProcessTPCConstrain(AliStack* /*const stack*/, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack){
+  //
+  // Contrain TPC inner track to the vertex
+  // then compare to the global tracks
+  //
+  if(!esdTrack) return;
+  if(esdTrack->Charge()==0) return;
+
+  if(!esdTrack->GetTPCInnerParam()) return;
+  if(!(esdTrack->GetStatus()&AliESDtrack::kITSrefit)) return;
+  if(!(esdTrack->GetStatus()&AliESDtrack::kTPCrefit)) return;
+  if(!fCutsRC->AcceptTrack(esdTrack)) return;
+
+  Double_t x[3]; esdTrack->GetXYZ(x);
+  Double_t b[3]; AliTracker::GetBxByBz(x,b);
+  Bool_t isOK = kFALSE;
+  const AliESDVertex* vtxESD = esdEvent->GetPrimaryVertexTracks();
+  
+  AliExternalTrackParam * TPCinner = (AliExternalTrackParam *)esdTrack->GetTPCInnerParam();
+  if(!TPCinner) return;
+  
+  //  isOK = TPCinner->Rotate(esdTrack->GetAlpha());
+  //isOK = TPCinner->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+
+  AliExternalTrackParam * TPCinnerC = new AliExternalTrackParam(*TPCinner);
+  isOK = TPCinnerC->ConstrainToVertex(vtxESD, b);
+
+  // transform to the track reference frame 
+  isOK = TPCinnerC->Rotate(esdTrack->GetAlpha());
+  isOK = TPCinnerC->PropagateTo(esdTrack->GetX(),esdEvent->GetMagneticField());
+  if(!isOK) return;
+
+  Double_t sigmaPhi=0,deltaPhi=0,pullPhi=0;
+  deltaPhi = TPCinnerC->GetSnp() - esdTrack->GetSnp();
+  sigmaPhi = TMath::Sqrt(esdTrack->GetSigmaSnp2()+TPCinnerC->GetSigmaSnp2());
+  if(sigmaPhi!=0)
+    pullPhi = deltaPhi/sigmaPhi;
+
+  Double_t vTPCConstrain[4] = {pullPhi,esdTrack->Phi(),esdTrack->Pt(),esdTrack->Eta()};
+  fTPCConstrain->Fill(vTPCConstrain);  
+  
+  if(TPCinnerC)
+    delete TPCinnerC;
+
+  return;
+}
 //_____________________________________________________________________________
 void AliPerformanceMatch::FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec) 
 {
@@ -425,14 +503,24 @@ void AliPerformanceMatch::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esd
       }*/
 
     if(GetAnalysisMode() == 0){
-      if(!IsUseTOFBunchCrossing())
+      if(!IsUseTOFBunchCrossing()){
 	ProcessTPCITS(stack,track);
+      }
       else
-	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) 
+	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) {
 	  ProcessTPCITS(stack,track);
+	}
     }
     /* else if(GetAnalysisMode() == 2) ProcessTPCTRD(stack,track,friendTrack);*/
-    else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,esdEvent,stack,track);
+    else if(GetAnalysisMode() == 1) {ProcessITSTPC(iTrack,esdEvent,stack,track);}
+    else if(GetAnalysisMode() == 2){
+      if(!IsUseTOFBunchCrossing()){
+	ProcessTPCConstrain(stack,esdEvent,track);
+      }
+      else
+	if( track->GetTOFBunchCrossing(esdEvent->GetMagneticField())==0) {
+	  ProcessTPCConstrain(stack,esdEvent,track);
+	}
     }
     else {
       printf("ERROR: AnalysisMode %d \n",fAnalysisMode);
@@ -475,7 +563,7 @@ void AliPerformanceMatch::Analyse() {
   // char name[256];
   // char title[256];
 
-  if(GetAnalysisMode()==1 || GetAnalysisMode()==2) { 
+  if(GetAnalysisMode()==1) { 
 
   fResolHisto->GetAxis(8)->SetRangeUser(1.0,2.0); // only reconstructed
   fPullHisto->GetAxis(8)->SetRangeUser(1.0,2.0);  // only reconstructed
@@ -522,6 +610,17 @@ void AliPerformanceMatch::Analyse() {
       }
   }
 
+  //
+  //TPC constrained to vertex
+  //
+  if(GetAnalysisMode()==2) { 
+    selString = "tpc";
+    //    for(Int_t i=1; i<4; i++)
+    AddProjection(aFolderObj, "constrain", fTPCConstrain, 0, 1, 2, &selString);
+    AddProjection(aFolderObj, "constrain", fTPCConstrain, 0, 1, 3, &selString);
+    AddProjection(aFolderObj, "constrain", fTPCConstrain, 0, 2, 3, &selString);
+  }
+  
   printf("exportToFolder\n");
   fAnalysisFolder = ExportToFolder(aFolderObj);
   
@@ -606,6 +705,8 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
         if ((fResolHisto) && (entry->fResolHisto)) { fResolHisto->Add(entry->fResolHisto); }
         if ((fPullHisto) && (entry->fPullHisto)) { fPullHisto->Add(entry->fPullHisto); }
         if ((fTrackingEffHisto) && (entry->fTrackingEffHisto)) { fTrackingEffHisto->Add(entry->fTrackingEffHisto); }
+
+        if ((fTPCConstrain) && (entry->fTPCConstrain)) { fTPCConstrain->Add(entry->fTPCConstrain); }
     }
     // the analysisfolder is only merged if present
     if (entry->fFolderObj) { objArrayList->Add(entry->fFolderObj); }
@@ -614,7 +715,7 @@ Long64_t AliPerformanceMatch::Merge(TCollection* const list)
   }
   if (fFolderObj) { fFolderObj->Merge(objArrayList); } 
   // to signal that track histos were not merged: reset
-  if (!merge) { fResolHisto->Reset(); fPullHisto->Reset(); fTrackingEffHisto->Reset(); }
+  if (!merge) { fResolHisto->Reset(); fPullHisto->Reset(); fTrackingEffHisto->Reset(); fTPCConstrain->Reset(); }
   // delete
   if (objArrayList)  delete objArrayList;  objArrayList=0;
 return count;

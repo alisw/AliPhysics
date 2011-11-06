@@ -48,7 +48,7 @@ Bool_t AliTPCPerformanceSummary::fgForceTHnSparse = kFALSE;
 
 
 //_____________________________________________________________________________
-void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch,const AliPerformanceMatch* pTPCPull, TTreeSRedirector* const pcstream, Int_t run)
+void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch,const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run)
 {
    // 
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -132,11 +132,13 @@ void AliTPCPerformanceSummary::WriteToTTreeSRedirector(const AliPerformanceTPC* 
     AnalyzeGain(pTPCgain, pcstream);
     AnalyzeMatch(pTPCMatch, pcstream);
     AnalyzePull(pTPCPull, pcstream);
+    AnalyzeConstrain(pConstrain, pcstream);
+   
     (*pcstream)<<"tpcQA"<<"\n";
 }
 
 //_____________________________________________________________________________
-void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,  const AliPerformanceMatch* pPull, const Char_t* outfile, Int_t run)
+void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,  const AliPerformanceMatch* pPull, const AliPerformanceMatch* pConstrain, const Char_t* outfile, Int_t run)
 {
     //
     // Extracts performance parameters from pTPC and pTPCgain.
@@ -152,7 +154,7 @@ void AliTPCPerformanceSummary::WriteToFile(const AliPerformanceTPC* pTPC, const 
     TTreeSRedirector* pcstream = 0;
     pcstream = new TTreeSRedirector(outfile);
     if (!pcstream) return;
-    WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pPull, pcstream, run);
+    WriteToTTreeSRedirector(pTPC, pTPCgain, pMatch, pPull, pConstrain, pcstream, run);
     if (pcstream) { delete pcstream; pcstream = 0; }    
     
 }
@@ -195,13 +197,16 @@ Int_t AliTPCPerformanceSummary::MakeReport(const Char_t* infile, const Char_t* o
     AliPerformanceDEdx* pTPCgain = 0; 
     AliPerformanceMatch* pTPCmatch = 0; 
     AliPerformanceMatch* pTPCPull = 0; 
+    AliPerformanceMatch* pConstrain = 0;
+    
     if (list) {  pTPC = dynamic_cast<AliPerformanceTPC*>(list->FindObject("AliPerformanceTPC")); }
     if (list) {  pTPCgain = dynamic_cast<AliPerformanceDEdx*>(list->FindObject("AliPerformanceDEdxTPCInner")); }
     if (list) {  pTPCmatch = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchTPCITS")); }
     if (list) {  pTPCPull = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchITSTPC")); }
+    if (list) {  pConstrain = dynamic_cast<AliPerformanceMatch*>(list->FindObject("AliPerformanceMatchTPCConstrain")); }
     
     Int_t returncode = 0;
-    WriteToFile(pTPC, pTPCgain, pTPCmatch , pTPCPull, outfile, run);
+    WriteToFile(pTPC, pTPCgain, pTPCmatch , pTPCPull, pConstrain, outfile, run);
     if (f) { delete f; f=0; }
     return returncode;
 }
@@ -377,6 +382,11 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"qOverPtA","run",condition);
     SaveGraph(tree,"qOverPtC","run",condition);
 
+    SaveGraph(tree,"dcarAP0","run",condition);
+    SaveGraph(tree,"dcarAP1","run",condition);
+    SaveGraph(tree,"dcarCP0","run",condition);
+    SaveGraph(tree,"dcarCP1","run",condition);
+
     condition = "";
     SaveGraph(tree,"tpcItsMatchA","run",condition);
     SaveGraph(tree,"tpcItsMatchHighPtA","run",condition);
@@ -394,7 +404,9 @@ Int_t AliTPCPerformanceSummary::ProduceTrends(const Char_t* infilelist, const Ch
     SaveGraph(tree,"lambdaPull","run",condition);
     SaveGraph(tree,"lambdaPullHighPt","run",condition);
     
-    
+    SaveGraph(tree,"tpcConstrainPhiA","run",condition);
+    SaveGraph(tree,"tpcConstrainPhiC","run",condition);
+     
     tree->Write();
     
     out->Close();   
@@ -457,6 +469,10 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     static Double_t slopedRAchi2=0;
     static Double_t offsetdRCchi2=0;
     static Double_t slopedRCchi2=0;
+    static Double_t dcarAP0 = 0;
+    static Double_t dcarAP1 = 0;
+    static Double_t dcarCP0 = 0;
+    static Double_t dcarCP1 = 0;
 
     //AliPerformanceTPC* pTPC =  dynamic_cast<AliPerformanceTPC*>(pTPCObject);    
     
@@ -503,6 +519,80 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
     printf("slopedRA\t%f\n",slopedRA);
     printf("offsetdRC\t%f\n",offsetdRC);
     printf("slopedRC\t%f\n",slopedRC);
+
+    //
+    //extraction of DCAr versus pt
+    //
+    TLinearFitter linearFit;
+    linearFit.SetFormula("pol1");
+    TObjArray arrayWidth;  
+    TH1 *width;
+    Int_t nXbins;
+    Double_t x,y;
+    Int_t pn = 1;
+
+    if(!his3D)
+      return 8;
+    his3D->GetYaxis()->SetRangeUser(-1,1);
+
+    //get his2D in A Side
+    his3D->GetYaxis()->SetRangeUser(0,1);
+    his3D->GetZaxis()->SetRangeUser(0.35,8);
+    his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
+    his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
+    width =  dynamic_cast<TH1*>(arrayWidth.At(2));
+    nXbins = width->GetNbinsX();
+    for(Int_t i=2; i<nXbins; i++){
+      x = width->GetBinCenter(i);
+      if(x!=0)
+	x = 1.0/(x*x);
+      y = width->GetBinContent(i);
+      y = y*y;
+      linearFit.AddPoint(&x,y,1);
+    }
+    if(!linearFit.Eval()){
+      
+      dcarAP0 = linearFit.GetParameter(0);
+      if(dcarAP0!=0)
+	pn = Int_t(TMath::Abs(dcarAP0)/dcarAP0);
+      dcarAP0 = pn*TMath::Sqrt(TMath::Abs(dcarAP0));
+
+      dcarAP1 = linearFit.GetParameter(1);
+      if(dcarAP1!=0)
+	pn = Int_t(TMath::Abs(dcarAP1)/dcarAP1);
+      dcarAP1 = pn*TMath::Sqrt(TMath::Abs(dcarAP1));
+    }
+
+    linearFit.ClearPoints();
+    
+    //get his2D in C Side
+    his3D->GetYaxis()->SetRangeUser(-1,-0.001);
+    his2D  = dynamic_cast<TH2*>(his3D->Project3D("xz"));
+    his2D->FitSlicesY(0,0,-1,0,"QNR",&arrayWidth);
+    width =  dynamic_cast<TH1*>(arrayWidth.At(2));
+    nXbins = width->GetNbinsX();
+    for(Int_t i=2; i<nXbins; i++){
+      x = width->GetBinCenter(i);
+      if(x!=0)
+	x = 1.0/(x*x);
+      y = width->GetBinContent(i);
+      y = y*y;
+      linearFit.AddPoint(&x,y);
+    }
+    if(!linearFit.Eval()){
+      dcarCP0 = linearFit.GetParameter(0);
+      if(dcarCP0!=0)
+	pn = Int_t(TMath::Abs(dcarCP0)/dcarCP0);
+      dcarCP0 = pn*TMath::Sqrt(TMath::Abs(dcarCP0));
+
+      dcarCP1 = linearFit.GetParameter(1);
+      if(dcarCP1!=0)
+	pn = Int_t(TMath::Abs(dcarCP1)/dcarCP1);
+      dcarCP1 = pn*TMath::Sqrt(TMath::Abs(dcarCP1));
+    }
+    his3D->GetYaxis()->SetRangeUser(-1,1);
+    his3D->GetZaxis()->SetRangeUser(0,20);
+
     //
     // dump values
     //
@@ -520,7 +610,12 @@ Int_t AliTPCPerformanceSummary::AnalyzeDCARPhi(const AliPerformanceTPC* pTPC, TT
         "offsetdRAchi2="<< offsetdRAchi2<<
         "slopedRAchi2="<< slopedRAchi2<<
         "offsetdRCchi2="<< offsetdRCchi2<<
-        "slopedRCchi2="<<slopedRCchi2;
+        "slopedRCchi2="<<slopedRCchi2<<
+        //
+        "dcarAP0="<<dcarAP0<<
+        "dcarAP1="<<dcarAP1<<
+        "dcarCP0="<<dcarCP0<<
+        "dcarCP1="<<dcarCP1;
         
     return 0;
 }
@@ -1638,16 +1733,16 @@ Int_t AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, 
     if(entries > 0)
       tpcItsMatchA = entries1/entries;
 
-    h2D->GetYaxis()->SetRangeUser(4.0,20.);
-    h2D1->GetYaxis()->SetRangeUser(4.0,20.);
+    h2D->GetYaxis()->SetRangeUser(4.01,20.);
+    h2D1->GetYaxis()->SetRangeUser(4.01,20.);
     entries = h2D->GetEffectiveEntries();
     entries1 = h2D1->GetEffectiveEntries();
     if(entries > 0)
-      tpcItsMatchHighPtA = entries1/entries;
+    tpcItsMatchHighPtA = entries1/entries;
 
 
-    h2D->GetXaxis()->SetRangeUser(-1.5,0);
-    h2D1->GetXaxis()->SetRangeUser(-1.5,0);
+    h2D->GetXaxis()->SetRangeUser(-1.5,-0.01);
+    h2D1->GetXaxis()->SetRangeUser(-1.5,-0.01);
     h2D->GetYaxis()->SetRangeUser(0.0,20.);
     h2D1->GetYaxis()->SetRangeUser(0.0,20.);
 
@@ -1656,8 +1751,8 @@ Int_t AliTPCPerformanceSummary::AnalyzeMatch(const AliPerformanceMatch* pMatch, 
     if(entries > 0)
       tpcItsMatchC = entries1/entries;
 
-    h2D->GetXaxis()->SetRangeUser(4.0,20.);
-    h2D1->GetXaxis()->SetRangeUser(4.0,20.);
+    h2D->GetYaxis()->SetRangeUser(4.01,20.);
+    h2D1->GetYaxis()->SetRangeUser(4.01,20.);
     entries = h2D->GetEffectiveEntries();
     entries1 = h2D1->GetEffectiveEntries();
     if(entries > 0)
@@ -1769,5 +1864,31 @@ Int_t AliTPCPerformanceSummary::AnalyzePull(const AliPerformanceMatch* pPull, TT
     "lambdaPull="<< lambdaPull<<
     "lambdaPullHighPt="<< lambdaPullHighPt;
     
+  return 0;
+}
+Int_t AliTPCPerformanceSummary::AnalyzeConstrain(const AliPerformanceMatch* pConstrain, TTreeSRedirector* pcstream)
+{
+  if (!pcstream) return 5126;
+  if (!pConstrain) return 5126;
+
+    TH3* his3D=0;
+    static Double_t tpcConstrainPhiA = 0;
+    static Double_t tpcConstrainPhiC = 0;
+    
+    if (pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3")) {    
+      
+      his3D = dynamic_cast<TH3*>(pConstrain->GetHistos()->FindObject("h_tpc_constrain_tpc_0_2_3"));//phi pull:pt:eta
+      if(!his3D) return 5126;
+      
+      his3D->GetZaxis()->SetRangeUser(0.0,1.0);
+      tpcConstrainPhiA = his3D->GetMean(1);
+      his3D->GetZaxis()->SetRangeUser(-1.0,-0.001);
+      tpcConstrainPhiC = his3D->GetMean(1);
+    }
+
+  (*pcstream)<<"tpcQA"<<
+    "tpcConstrainPhiA="<<tpcConstrainPhiA <<
+    "tpcConstrainPhiC="<< tpcConstrainPhiC;
+  
   return 0;
 }

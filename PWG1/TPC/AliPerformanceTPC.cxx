@@ -576,7 +576,6 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       if(GetAnalysisMode() == 0) {
         AliESDtrack *tpcTrack = AliESDtrackCuts::GetTPCOnlyTrack(esdEvent,iTrack);
         if(!tpcTrack) continue;
-      
         // track selection
         if( fCutsRC->AcceptTrack(tpcTrack) ) { 
 	  mult++;
@@ -603,7 +602,7 @@ void AliPerformanceTPC::Exec(AliMCEvent* const mcEvent, AliESDEvent *const esdEv
       }
     }
   }
-  
+
   Double_t vTPCEvent[7] = {vtxESD->GetXv(),vtxESD->GetYv(),vtxESD->GetZv(),mult,multP,multN,vtxESD->GetStatus()};
   fTPCEventHisto->Fill(vTPCEvent);
 }
