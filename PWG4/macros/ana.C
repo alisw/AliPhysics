@@ -50,7 +50,7 @@ Int_t   kRun = 0;
 void ana(Int_t mode=mGRID)
 {
   // Main
-      
+  
   //--------------------------------------------------------------------
   // Load analysis libraries
   // Look at the method below, 
@@ -65,11 +65,11 @@ void ana(Int_t mode=mGRID)
   //-------------------------------------------------------------------------------------------------
   
   // Set kInputData and kTreeName looking to the kINDIR
-
+  
   CheckInputData(mode);
-    
+  
   // Check global analysis settings  
-
+  
   CheckEnvironmentVariables();
   
   printf("*********************************************\n");
@@ -90,7 +90,7 @@ void ana(Int_t mode=mGRID)
   }
   
   AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
-    
+  
   //--------------------------------------
   // Make the analysis manager
   //-------------------------------------
@@ -160,32 +160,35 @@ void ana(Int_t mode=mGRID)
     AddTaskCounter("INT7"); // Min Bias
     AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
     AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
-    // Add PHOS trigger counter here
+    AddTaskCounter("PHOS"); //  
   }
   
-
   gROOT->LoadMacro("AddTaskPartCorr.C"); // $ALICE_ROOT/PWG4/macros
+  
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
+    
+  // ------
+  // Tracks
+  // ------  
   
-  // Do not reclusterize, do analysis
-  // TString sTrigger(kTrigger)
-  // AliAnalysisTaskParticleCorrelation *ana = AddTaskPartCorr(kInputData, "EMCAL", kPrint,kMC, deltaAOD,  outputFile.Data(), 
-  //                                                  kYear,kRun,kCollision,sTrigger,"");
+  // QA analysis to compare after clusterization and track isolation-correlation analysis
+  AliAnalysisTaskParticleCorrelation *ana  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                                 kYear,kRun,kCollision,"EMC7","");
   
   // -----
   // EMCAL
-  // -----
+  // -----  
   
   gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros
   Bool_t  bTrackMatch = kTRUE;
-  Int_t   minEcell    = 50;   // 50  MeV (10 MeV used in reconstruction)
-  Int_t   minEseed    = 100;  // 100 MeV
-  Int_t   dTime       = 250;  // 250  ns difference in time of cells in cluster, open
-  Int_t   wTime       = 1000; // 1000 ns time window of cells in cluster, open
-  TString clTrigger   = "";   // Do not select, do Min Bias and triggered
+  Int_t   minEcell    = 50;  // 50  MeV (10 MeV used in reconstruction)
+  Int_t   minEseed    = 100; // 100 MeV
+  Int_t   dTime       = 40;  // 40  ns difference in time of cells in cluster, open
+  Int_t   wTime       = 40;  // 40 ns time window of cells in cluster, open
+  TString clTrigger   = "";  // Do not select, do Min Bias and triggered
   
-  //Analysis with clusterizer V1 (add following lines again with V2, NxN or V1Unfold for other kind of clusterizations in EMCAL)
+  //Analysis with clusterizer V1
   AliAnalysisTaskEMCALClusterize * clv1 = AddTaskEMCALClusterize(kMC,"V1",clTrigger,kRun,kPass, bTrackMatch,
                                                                  minEcell,minEseed,dTime,wTime);    
   
@@ -194,16 +197,41 @@ void ana(Int_t mode=mGRID)
   
   if(!kMC)
   {
-    AliAnalysisTaskParticleCorrelation *anav1tr = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    
+    AliAnalysisTaskParticleCorrelation *anav1tr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                   kYear,kRun,kCollision,"EMC7",arrayNameV1);
     
-    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskParticleCorrelation *anav1mb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                   kYear,kRun,kCollision,"INT7",arrayNameV1);
   }
   else 
   {// No trigger (should be MB, but for single particle productions it does not work)
+    
     AliAnalysisTaskParticleCorrelation *anav1  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                  kYear,kRun,kCollision,"",arrayNameV1);
+  }
+  
+  
+  //Analysis with clusterizer V2
+  AliAnalysisTaskEMCALClusterize * clv2 = AddTaskEMCALClusterize(kMC,"V2",clTrigger,kRun,kPass, bTrackMatch,
+                                                                 minEcell,minEseed,dTime,wTime);    
+  
+  TString arrayNameV2(Form("V2_Ecell%d_Eseed%d_DT%d_WT%d",minEcell,minEseed, dTime,wTime));
+  printf("Name of clusterizer array: %s\n",arrayNameV2.Data());
+  
+  if(!kMC)
+  {
+   
+    AliAnalysisTaskParticleCorrelation *anav2tr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                                   kYear,kRun,kCollision,"EMC7",arrayNameV2);
+    
+    AliAnalysisTaskParticleCorrelation *anav2mb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                                   kYear,kRun,kCollision,"INT7",arrayNameV2);
+  }
+  else 
+  {// No trigger (should be MB, but for single particle productions it does not work)
+    AliAnalysisTaskParticleCorrelation *anav2  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                                 kYear,kRun,kCollision,"",arrayNameV2);    
   }
   
   // -----
@@ -212,21 +240,25 @@ void ana(Int_t mode=mGRID)
   /*
    //Add here PHOS tender or whatever is needed
    
-  if(!kMC)
-  {
-    AliAnalysisTaskParticleCorrelation *anav1tr = AddTaskPartCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"EMC7",""); // Change to PHOS trigger
-    
-    
-    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"INT7","");
-  }
-  else 
-  {// No trigger
-    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                  kYear,kRun,kCollision,"","");
-  }
-  */  
+   if(!kMC)
+   {
+   
+   AliAnalysisTaskParticleCorrelation *anav1tr = AddTaskPartCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
+   kYear,kRun,kCollision,"PHOS",""); // Change to PHOS trigger
+   
+   
+   AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+   kYear,kRun,kCollision,"INT7","");
+   
+   }
+   else 
+   {// No trigger
+   
+   AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+   kYear,kRun,kCollision,"","");
+   
+   }
+   */  
   
   
   //-----------------------
@@ -350,7 +382,7 @@ void CheckInputData(const anaModes mode){
     //If you want to add several ESD files sitting in a common directory INDIR
     //Specify as environmental variables the directory (INDIR), the number of files 
     //to analyze (NFILES) and the pattern name of the directories with files (PATTERN)
-
+    
     if(gSystem->Getenv("INDIR"))  
       kInDir = gSystem->Getenv("INDIR") ; 
     else cout<<"INDIR not set, use default: "<<kInDir<<endl;	
@@ -653,43 +685,43 @@ void GetAverageXsection(TTree * tree, Double_t & xs, Float_t & ntr)
 void CheckEnvironmentVariables()
 {
   
-sprintf(kTrigger,"");
-
-Bool_t bRecalibrate = kFALSE;
-Bool_t bBadChannel = kFALSE;
-
-for (int i=0; i< gApplication->Argc();i++){
+  sprintf(kTrigger,"");
   
+  Bool_t bRecalibrate = kFALSE;
+  Bool_t bBadChannel = kFALSE;
+  
+  for (int i=0; i< gApplication->Argc();i++){
+    
 #ifdef VERBOSEARGS
-  
-  printf("Arg  %d:  %s\n",i,gApplication->Argv(i));
-  
+    
+    printf("Arg  %d:  %s\n",i,gApplication->Argv(i));
+    
 #endif
-  
-  if (!(strcmp(gApplication->Argv(i),"--trigger")))
-    sprintf(trigger,gApplication->Argv(i+1));
+    
+    if (!(strcmp(gApplication->Argv(i),"--trigger")))
+      sprintf(trigger,gApplication->Argv(i+1));
     
     if (!(strcmp(gApplication->Argv(i),"--recalibrate")))
       bRecalibrate = atoi(gApplication->Argv(i+1));
-      
-      if (!(strcmp(gApplication->Argv(i),"--badchannel")))
-        bBadChannel = atoi(gApplication->Argv(i+1));
-        
-        if (!(strcmp(gApplication->Argv(i),"--run"))){
-          TString sRun(gApplication->Argv(i+1));
-          if(sRun.Contains("LHC10")) {
-            kYear = 2010;
-          }
-          else {
-            if(kRun <=0){
-              kRun = atoi(gApplication->Argv(i+1));
-            }
-            else printf("** Run number already set  to %d, do not set to %d\n",kRun,atoi(gApplication->Argv(i+1)));
-          }//numeric run
-        }//--run available
+    
+    if (!(strcmp(gApplication->Argv(i),"--badchannel")))
+      bBadChannel = atoi(gApplication->Argv(i+1));
+    
+    if (!(strcmp(gApplication->Argv(i),"--run"))){
+      TString sRun(gApplication->Argv(i+1));
+      if(sRun.Contains("LHC10")) {
+        kYear = 2010;
+      }
+      else {
+        if(kRun <=0){
+          kRun = atoi(gApplication->Argv(i+1));
+        }
+        else printf("** Run number already set  to %d, do not set to %d\n",kRun,atoi(gApplication->Argv(i+1)));
+      }//numeric run
+    }//--run available
+    
+  }// args loop
   
-}// args loop
-
   if(!sRun.Contains("LHC10")){
     if ( kRun < 140000) {
       kYear = 2010;
@@ -700,14 +732,14 @@ for (int i=0; i< gApplication->Argc();i++){
     }
   }
   
-if(kMC) sprintf(kTrigger,"");
-
-printf("*********************************************\n");
-//printf("*** Settings trigger %s, recalibrate %d, remove bad channels %d, year %d, collision %s, run %d ***\n",
-//       kTrigger,bRecalibrate,bBadChannel, kYear,kCollision.Data(), kRun);
-printf("*** Settings year %d, collision %s, run %d ***\n",kYear,kCollision.Data(), kRun);
-printf("*********************************************\n");
-
+  if(kMC) sprintf(kTrigger,"");
+  
+  printf("*********************************************\n");
+  //printf("*** Settings trigger %s, recalibrate %d, remove bad channels %d, year %d, collision %s, run %d ***\n",
+  //       kTrigger,bRecalibrate,bBadChannel, kYear,kCollision.Data(), kRun);
+  printf("*** Settings year %d, collision %s, run %d ***\n",kYear,kCollision.Data(), kRun);
+  printf("*********************************************\n");
+  
 }
 
 //_____________________________________________________________
@@ -737,6 +769,10 @@ void AddTaskCounter(const TString trigger = "MB")
     printf("counter trigger MB\n");
     counter->SelectCollisionCandidates(AliVEvent::kMB);
   }
+  else if(trigger=="PHOS"){
+    printf("counter trigger PHOS\n");
+    counter->SelectCollisionCandidates(AliVEvent::kPHI7);
+  }
   
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
@@ -746,7 +782,7 @@ void AddTaskCounter(const TString trigger = "MB")
   mgr->AddTask(counter);
   mgr->ConnectInput  (counter, 0, cinput1);
   mgr->ConnectOutput (counter, 1, coutput);
-    
+  
 }
 
 
