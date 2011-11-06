@@ -114,6 +114,7 @@ void ConfigureEMCALRecoUtils(
         }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 1\n");
       }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 2\n");
     }else printf("AliEMCALRecoUtils ---Do NOT recalibrate 3\n");
+    
     //TFile * f = new TFile("RecalibrationFactors.root","read");
     //for(Int_t i =0; i< 10; i++)  reco->SetEMCALChannelRecalibrationFactors( i, (TH2F*) f->Get(Form("EMCALRecalFactors_SM%d",i)));									 
     // //  reco->SwitchOnTimeDepCorrection();
@@ -197,7 +198,7 @@ void ConfigureEMCALRecoUtils(
   else if(run <  140000 && run > 136850)
     ftime = TFile::Open(Form("%s/RefLHC10hpass2PbPb2.76TeV.root",path.Data()));
   else if(run < 136850)
-    ftime = TFile::Open(Form("%s/RefLHC10dpass2-7TeV",path.Data()));
+    ftime = TFile::Open(Form("%s/RefLHC10dpass2-7TeV.root",path.Data()));
   else printf("Run %d, not considered for time calibration\n",run);
   
   if(ftime){
