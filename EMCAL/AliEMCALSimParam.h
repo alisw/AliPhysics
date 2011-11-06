@@ -34,6 +34,8 @@ public:
   Double_t GetTimeResolutionPar1()      const { return fTimeResolutionPar1 ; }
   Int_t    GetNADCEC()                  const { return fNADCEC             ; }
   Int_t    GetMeanPhotonElectron()      const { return fMeanPhotonElectron ; }
+  Float_t  GetGainFluctuations()        const { return fGainFluctuations   ; }
+  
   void     SetDigitThreshold(Int_t val)       { fDigitThreshold      = val ; }
   void     SetPinNoise(Float_t val)           { fPinNoise            = val ; }
   void     SetTimeNoise(Float_t val)          { fTimeNoise           = val ; }
@@ -42,11 +44,13 @@ public:
   void     SetTimeResolutionPar1(Double_t val){ fTimeResolutionPar1  = val ; }
   void     SetNADCED(Int_t val)               { fNADCEC              = val ; }
   void     SetMeanPhotonElectron(Int_t val)   { fMeanPhotonElectron  = val ; }
+  void     SetGainFluctuations(Float_t val)   { fGainFluctuations    = val ; }
 
   //Parameters used in SDigitizer
   Float_t  GetA()                       const { return fA                  ; }
   Float_t  GetB()                       const { return fB                  ; }
   Float_t  GetECPrimaryThreshold()      const { return fECPrimThreshold    ; }
+  
   void     SetA(Float_t val)                  { fA                   = val ; }
   void     SetB(Float_t val)                  { fB                   = val ; }
   void     SetECPrimaryThreshold(Float_t val) { fECPrimThreshold     = val ; }
@@ -60,6 +64,7 @@ private:
   // Digitizer
   Int_t    fDigitThreshold  ;     // Threshold for storing digits in EMC
   Int_t    fMeanPhotonElectron ;  // number of photon electrons per GeV deposited energy 
+  Float_t  fGainFluctuations ;    // correct fMeanPhotonElectron by the gain fluctuations
   Float_t  fPinNoise ;            // Electronics noise in EMC, APD
   Double_t fTimeNoise ;           // Electronics noise in EMC, time
   Double_t fTimeDelay;            // Time delay to reproduce data delay
@@ -72,7 +77,7 @@ private:
   Float_t fB ;                     // Slope Digitizition parameters
   Float_t fECPrimThreshold ;       // To store primary if EC Shower Elos > threshold
 		
-  ClassDef(AliEMCALSimParam,5)
+  ClassDef(AliEMCALSimParam,6)
 };
 
 #endif

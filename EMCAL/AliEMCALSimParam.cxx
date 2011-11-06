@@ -35,6 +35,7 @@ AliEMCALSimParam::AliEMCALSimParam() :
 TNamed(),    
 fDigitThreshold(0),
 fMeanPhotonElectron(0),
+fGainFluctuations(0),
 fPinNoise(0),
 fTimeNoise(0),
 fTimeDelay(0),
@@ -49,6 +50,7 @@ fECPrimThreshold(0.) //SDigitizer
 
   //Parameters in Digitizer
   fMeanPhotonElectron = 4400;    // electrons per GeV 
+  fGainFluctuations   = 15.;     // obtained empiricaly to match beam test, from Paraskevi Ganoti   
   fPinNoise           = 0.012;   // APD noise in GeV from analysis test beam data 
   fDigitThreshold     = 3;       // 3 ADC counts not anymore cut in energy: //fPinNoise * 3; // 3 * sigma
   fTimeNoise          = 1.28e-5; // time noise in s
@@ -71,6 +73,7 @@ AliEMCALSimParam::AliEMCALSimParam(const AliEMCALSimParam& ):
 TNamed(),
 fDigitThreshold(0),
 fMeanPhotonElectron(0),
+fGainFluctuations(0),
 fPinNoise(0),
 fTimeNoise(0),
 fTimeDelay(0),
@@ -123,7 +126,7 @@ void AliEMCALSimParam::Print(Option_t *) const
   printf("\t Time Resolution (fTimeResolutionPar0)      = %g\n", fTimeResolutionPar0) ;
   printf("\t Time Resolution (fTimeResolutionPar1)      = %g\n", fTimeResolutionPar1) ;
   printf("\t Time Delay (fTimeDelay)                    = %g\n", fTimeDelay) ;
-  printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d\n", fMeanPhotonElectron)  ;
+  printf("\t Mean Photon-Electron (fMeanPhotonElectron) = %d, Gain Fluc. (fGainFluctuations) %2.1f\n", fMeanPhotonElectron,fGainFluctuations)  ;
   printf("\t N channels in EC section ADC (fNADCEC)     = %d\n", fNADCEC) ;
 
   printf("\n");

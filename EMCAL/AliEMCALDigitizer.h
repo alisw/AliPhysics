@@ -97,35 +97,37 @@ private:
 	
 private:
   
-  Bool_t   fDefaultInit;         //! Says if the task was created by defaut ctor (only parameters are initialized)
-  Int_t    fDigitsInRun ;        //! Total number of digits in one run
-  Bool_t   fInit ;               //! To avoid overwriting existing files
+  Bool_t   fDefaultInit;           //! Says if the task was created by defaut ctor (only parameters are initialized)
+  Int_t    fDigitsInRun ;          //! Total number of digits in one run
+  Bool_t   fInit ;                 //! To avoid overwriting existing files
 
-  Int_t    fInput ;              // Number of files to merge
-  TString *fInputFileNames ;     //[fInput] List of file names to merge 
-  TString *fEventNames ;         //[fInput] List of event names to merge
+  Int_t    fInput ;                // Number of files to merge
+  TString *fInputFileNames ;       //[fInput] List of file names to merge 
+  TString *fEventNames ;           //[fInput] List of event names to merge
 
-  Int_t    fDigitThreshold  ;     // Threshold for storing digits in EMC, ACD units
-  Int_t    fMeanPhotonElectron ;  // number of photon electrons per GeV deposited energy 
-  Float_t  fPinNoise ;            // Electronics noise in EMC, APD
-  Double_t fTimeNoise;            // Electronics noise in EMC, time
-  Double_t fTimeDelay;            // Time delay to reproduce data delay
-  Double_t fTimeResolutionPar0 ;  // Time resolution of FEE electronics
-  Double_t fTimeResolutionPar1 ;  // Time resolution of FEE electronics
-  Float_t  fADCchannelEC ;        // calibration width of one ADC channel in EC section (GeV)
-  Float_t  fADCpedestalEC ;       // calibration pedestal for one ADC channel
-  Float_t  fADCchannelECDecal ;   // decalibration width of one ADC channel in EC section (GeV)
-  Float_t  fTimeChannel ;         // calibration time width for one channel  
-  Float_t  fTimeChannelDecal ;    // calibration time width for one channel  
-  Int_t    fNADCEC ;              // number of channels in EC section ADC
+  Int_t    fDigitThreshold  ;      // Threshold for storing digits in EMC, ACD units
+  Int_t    fMeanPhotonElectron ;   // number of photon electrons per GeV deposited energy 
+  Float_t  fGainFluctuations ;     // correct fMeanPhotonElectron by the gain fluctuations
+  Float_t  fPinNoise ;             // Electronics noise in EMC, APD
+  Double_t fTimeNoise;             // Electronics noise in EMC, time
+  Double_t fTimeDelay;             // Time delay to reproduce data delay
+  Double_t fTimeResolutionPar0 ;   // Time resolution of FEE electronics
+  Double_t fTimeResolutionPar1 ;   // Time resolution of FEE electronics
+  Float_t  fADCchannelEC ;         // calibration width of one ADC channel in EC section (GeV)
+  Float_t  fADCpedestalEC ;        // calibration pedestal for one ADC channel
+  Float_t  fADCchannelECDecal ;    // decalibration width of one ADC channel in EC section (GeV)
+  Float_t  fTimeChannel ;          // calibration time width for one channel  
+  Float_t  fTimeChannelDecal ;     // calibration time width for one channel  
+  Int_t    fNADCEC ;               // number of channels in EC section ADC
 
-  TString  fEventFolderName;      // skowron: name of EFN to read data from in stand alone mode
-  Int_t    fFirstEvent;           // first event to process
-  Int_t    fLastEvent;            // last  event to process
+  TString  fEventFolderName;       // skowron: name of EFN to read data from in stand alone mode
+  Int_t    fFirstEvent;            // first event to process
+  Int_t    fLastEvent;             // last  event to process
 	
-  AliEMCALCalibData * fCalibData; //Calibration data pointer
+  AliEMCALCalibData * fCalibData;  // Calibration data pointer
   AliEMCALSDigitizer* fSDigitizer; // SDigitization object
-  ClassDef(AliEMCALDigitizer,12)  // description 
+  
+  ClassDef(AliEMCALDigitizer,13)  
 };
 
 

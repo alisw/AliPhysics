@@ -119,6 +119,7 @@ AliEMCALDigitizer::AliEMCALDigitizer()
     fEventNames(0x0),
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
+    fGainFluctuations(0),
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
@@ -152,6 +153,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(TString alirunFileName, TString eventFolder
     fEventNames(0), 
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
+    fGainFluctuations(0),
     fPinNoise(0),
     fTimeNoise(0),
     fTimeDelay(0),
@@ -186,6 +188,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(const AliEMCALDigitizer & d)
     fEventNames(d.fEventNames),
     fDigitThreshold(d.fDigitThreshold),
     fMeanPhotonElectron(d.fMeanPhotonElectron),
+    fGainFluctuations(d.fGainFluctuations),
     fPinNoise(d.fPinNoise),
     fTimeNoise(d.fTimeNoise),
     fTimeDelay(d.fTimeDelay),
@@ -216,6 +219,7 @@ AliEMCALDigitizer::AliEMCALDigitizer(AliDigitizationInput * rd)
     fEventNames(0),
     fDigitThreshold(0),
     fMeanPhotonElectron(0),
+    fGainFluctuations(0),
     fPinNoise(0.),
     fTimeNoise(0.),
     fTimeDelay(0.),
@@ -453,8 +457,10 @@ void AliEMCALDigitizer::Digitize(Int_t event)
 	  energy = fSDigitizer->Calibrate(digit->GetAmplitude()) ; // GeV
             
 	  // add fluctuations for photo-electron creation
-	  energy *= static_cast<Float_t>(gRandom->Poisson(fMeanPhotonElectron)) / static_cast<Float_t>(fMeanPhotonElectron) ;
-            
+    // corrected fluctuations after comparison with beam test, Paraskevi Ganoti (06/11/2011)
+    Float_t fluct = static_cast<Float_t>((energy*fMeanPhotonElectron)/fGainFluctuations);
+    energy       *= static_cast<Float_t>(gRandom->Poisson(fluct)) / fluct ;    
+    
 	  //calculate and set time
 	  digit->SetTime(time) ;
             
@@ -965,7 +971,9 @@ void AliEMCALDigitizer::InitParameters()
     AliWarning("Simulation Parameters not available in OCDB?");
   }
   
-  fMeanPhotonElectron = simParam->GetMeanPhotonElectron();//4400;  // electrons per GeV 
+  fMeanPhotonElectron = simParam->GetMeanPhotonElectron() ; // 4400;  // electrons per GeV 
+  fGainFluctuations   = simParam->GetGainFluctuations()   ; // 15.0; 
+  
   fPinNoise           = simParam->GetPinNoise();//0.012; // pin noise in GeV from analysis test beam data 
   if (fPinNoise < 0.0001 ) 
     Warning("InitParameters", "No noise added\n") ; 
@@ -985,9 +993,9 @@ void AliEMCALDigitizer::InitParameters()
 
   fNADCEC             = simParam->GetNADCEC();//(Int_t) TMath::Power(2,16) ;  // number of channels in Tower ADC - 65536
   
-  AliDebug(2,Form("Mean Photon Electron %d, Noise: APD %f, Time %f; Digit Threshold %d,Time Resolution Par0 %g Par1 %g,NADCEC %d",
-		  fMeanPhotonElectron,fPinNoise,fTimeNoise, fDigitThreshold,fTimeResolutionPar0,fTimeResolutionPar1,fNADCEC));
-   
+  AliDebug(2,Form("Mean Photon Electron %d, Gain Fluct. %2.1f; Noise: APD %f, Time %f; Digit Threshold %d,Time Resolution Par0 %g Par1 %g,NADCEC %d",
+                  fMeanPhotonElectron, fGainFluctuations, fPinNoise,fTimeNoise, fDigitThreshold,fTimeResolutionPar0,fTimeResolutionPar1,fNADCEC));
+  
 }
 
 //__________________________________________________________________
