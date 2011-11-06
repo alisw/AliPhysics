@@ -22,9 +22,9 @@ class AliTPCPerformanceSummary
     AliTPCPerformanceSummary() {} // default contructor 
     virtual ~AliTPCPerformanceSummary() {} // destructor
     
-    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, const AliPerformanceMatch* pTPCPull, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
+    static void WriteToTTreeSRedirector(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pTPCMatch, const AliPerformanceMatch* pTPCPull, const AliPerformanceMatch* pConstrain, TTreeSRedirector* const pcstream, Int_t run = -1); // called by WriteToFile
     
-    static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,const AliPerformanceMatch* pPull, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
+    static void WriteToFile(const AliPerformanceTPC* pTPC, const AliPerformanceDEdx* pTPCgain, const AliPerformanceMatch* pMatch,const AliPerformanceMatch* pPull, const AliPerformanceMatch* pConstrain, const Char_t* outfile, Int_t run = -1); // calles by MakeReport
     
     // the two key functions
     static Int_t MakeReport(const Char_t* infile, const Char_t* outfile, Int_t run);
@@ -57,6 +57,8 @@ class AliTPCPerformanceSummary
     static Int_t AnalyzePt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
 
     static Int_t AnalyzeChargeOverPt(const AliPerformanceTPC* pTPC, TTreeSRedirector* pcstream);
+
+    static Int_t AnalyzeConstrain(const AliPerformanceMatch* pConstrain, TTreeSRedirector* pcstream);
 
     AliTPCPerformanceSummary(const AliTPCPerformanceSummary&); // copy contructor (not implemented)
     AliTPCPerformanceSummary& operator=(const AliTPCPerformanceSummary&); // assignment operator (not implemented)

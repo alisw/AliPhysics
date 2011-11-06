@@ -60,6 +60,7 @@ public :
   void ProcessTPCITS(AliStack* const stack, AliESDtrack *const esdTrack);
   void ProcessTPCTRD(AliStack* const stack, AliESDtrack *const esdTrack, AliESDfriendTrack *const friendTrack);
   void ProcessITSTPC(Int_t trackIdx, AliESDEvent* const esdEvent, AliStack* const stack, AliESDtrack *const esdTrack);
+  void ProcessTPCConstrain(AliStack* const stack, AliESDEvent *const esdEvent, AliESDtrack *const esdTrack); // - 01.11.2011
 
   // Fill histogrrams
   void FillHistograms(AliESDtrack *const refParam, AliESDtrack *const param, Bool_t isRec);
@@ -84,7 +85,8 @@ public :
   THnSparse *GetResolHisto() const  { return fResolHisto; }
   THnSparse *GetPullHisto()  const  { return fPullHisto; }
   THnSparse *GetTrackEffHisto() const  { return fTrackingEffHisto; }
-  
+  THnSparse *GetTPCConstrain() const { return fTPCConstrain; }
+
   TObjArray* GetHistos() const { return fFolderObj; }
   
   static Bool_t GetMergeTHnSparse() { return fgMergeTHnSparse; }
@@ -112,6 +114,10 @@ private:
 
   // tracking efficiency using ITS stand-alone tracks histogram
   THnSparseF *fTrackingEffHisto;  //-> has match:y:z:snp:tgl:phi:pt:ITSclusters
+
+  // TPC Inner constrained to global tracks - 01.11.2011
+  THnSparseF *fTPCConstrain;  //-> pull_phi:phi,pt,eta
+
   
   TObjArray* fFolderObj; // array of analysed histograms  
 
