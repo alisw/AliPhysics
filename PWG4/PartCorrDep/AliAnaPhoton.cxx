@@ -180,7 +180,6 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     return kFALSE ;
   }
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
-  //printf("Cluster %d Pass Bad Dist Cut \n",icalo);
 
   if(GetDebug() > 0) 
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
@@ -1426,7 +1425,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   }//Histos with MC
     
   //Store calo PID histograms
-  if(fRejectTrackMatch && IsCaloPIDOn()){
+  if(fRejectTrackMatch){
     TList * caloPIDHistos = GetCaloPID()->GetCreateOutputObjects() ;
     for(Int_t i = 0; i < caloPIDHistos->GetEntries(); i++) {
       outputContainer->Add(caloPIDHistos->At(i)) ;
