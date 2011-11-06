@@ -56,54 +56,51 @@
 ClassImp(AliAnaParticleHadronCorrelation)
 
 
-//____________________________________________________________________________
+//___________________________________________________________________
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(): 
     AliAnaPartCorrBaseClass(),
-    fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fSelectIsolated(0),
-    fMakeSeveralUE(0),  
-    fUeDeltaPhiMaxCut(0.), fUeDeltaPhiMinCut(0.), 
-    fPi0AODBranchName(""),fNeutralCorr(0), fPi0Trigger(0),
-    fMakeAbsoluteLeading(0), fLeadingTriggerIndex(-1),
-    fNTriggerPtBins(0),
-    fhPtLeading(0),fhPhiLeading(0),fhEtaLeading(0), 
-    fhDeltaPhiDeltaEtaCharged(0),
-    fhPhiCharged(0), fhEtaCharged(0), 
-    fhDeltaPhiCharged(0), 
-    fhDeltaEtaCharged(0), 
-    fhDeltaPhiChargedPt(0), 
-    fhDeltaPhiUeChargedPt(0), 
-    fhPtImbalanceCharged(0), 
-    fhPtImbalanceUeCharged(0),
-    fhPtImbalancePosCharged(0),fhPtImbalanceNegCharged(0),
-    fhPtHbpCharged(0), fhPtHbpUeCharged(0),
-    fhDeltaPhiUeLeftCharged(0),fhDeltaPhiUeRightCharged(0),
-    fhPtImbalanceUeLeftCharged(0),fhPtImbalanceUeRightCharged(0),
-    fhPtHbpUeLeftCharged(0),fhPtHbpUeRightCharged(0), 
-    fhPtTrigPout(0), fhPtAssocDeltaPhi(0),
-    fhPtTrigCharged(0),
-    fhTrigDeltaPhiCharged(0x0), fhTrigDeltaEtaCharged(0x0),fhTrigCorr(0x0),fhTrigUeCorr(0x0),
+    fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),   
+    fSelectIsolated(0),             fMakeSeveralUE(0),              
+    fUeDeltaPhiMaxCut(0.),          fUeDeltaPhiMinCut(0.), 
+    fPi0AODBranchName(""),          fNeutralCorr(0),       
+    fPi0Trigger(0),                 fMakeAbsoluteLeading(0),        
+    fLeadingTriggerIndex(-1),       
+    fNAssocPtBins(0),               fAssocPtBinLimit(),
+    //Histograms
+    fhPtLeading(0),                 fhPhiLeading(0),       
+    fhEtaLeading(0),                fhDeltaPhiDeltaEtaCharged(0),
+    fhPhiCharged(0),                fhEtaCharged(0), 
+    fhDeltaPhiCharged(0),           fhDeltaEtaCharged(0), 
+    fhDeltaPhiChargedPt(0),         fhDeltaPhiUeChargedPt(0), 
+    fhPtImbalanceCharged(0),        fhPtImbalanceUeCharged(0),
+    fhPtImbalancePosCharged(0),     fhPtImbalanceNegCharged(0),
+    fhPtHbpCharged(0),              fhPtHbpUeCharged(0),
+    fhDeltaPhiUeLeftCharged(0),     fhDeltaPhiUeRightCharged(0),
+    fhPtImbalanceUeLeftCharged(0),  fhPtImbalanceUeRightCharged(0),
+    fhPtHbpUeLeftCharged(0),        fhPtHbpUeRightCharged(0), 
+    fhPtTrigPout(0),                fhPtTrigCharged(0),
+    fhTrigDeltaPhiCharged(0x0),     fhTrigDeltaEtaCharged(0x0),
+    fhTrigCorr(0x0),                fhTrigUeCorr(0x0),
+    fhAssocPt(0),                   fhAssocPtBkg(0),  
+    fhDeltaPhiAssocPtBin(0),        fhDeltaPhiBradAssocPtBin(0),
+    fhXEAssocPtBin(0),
     fhDeltaPhiDeltaEtaNeutral(0), 
-    fhPhiNeutral(0), fhEtaNeutral(0), 
-    fhDeltaPhiNeutral(0), fhDeltaEtaNeutral(0),
-    fhDeltaPhiNeutralPt(0),fhDeltaPhiUeNeutralPt(0), 
-    fhPtImbalanceNeutral(0),fhPtImbalanceUeNeutral(0),
-    fhPtHbpNeutral(0), fhPtHbpUeNeutral(0),
-    fhDeltaPhiUeLeftNeutral(0),fhDeltaPhiUeRightNeutral(0),
-    fhPtImbalanceUeLeftNeutral(0),fhPtImbalanceUeRightNeutral(0),
-    fhPtHbpUeLeftNeutral(0),fhPtHbpUeRightNeutral(0),
+    fhPhiNeutral(0),                fhEtaNeutral(0), 
+    fhDeltaPhiNeutral(0),           fhDeltaEtaNeutral(0),
+    fhDeltaPhiNeutralPt(0),         fhDeltaPhiUeNeutralPt(0), 
+    fhPtImbalanceNeutral(0),        fhPtImbalanceUeNeutral(0),
+    fhPtHbpNeutral(0),              fhPtHbpUeNeutral(0),
+    fhDeltaPhiUeLeftNeutral(0),     fhDeltaPhiUeRightNeutral(0),
+    fhPtImbalanceUeLeftNeutral(0),  fhPtImbalanceUeRightNeutral(0),
+    fhPtHbpUeLeftNeutral(0),        fhPtHbpUeRightNeutral(0),
     fhPtPi0DecayRatio(0),
-    fhDeltaPhiDecayCharged(0),
-    fhPtImbalanceDecayCharged(0), 
-    fhDeltaPhiDecayNeutral(0),
-    fhPtImbalanceDecayNeutral(0),
+    fhDeltaPhiDecayCharged(0),      fhPtImbalanceDecayCharged(0), 
+    fhDeltaPhiDecayNeutral(0),      fhPtImbalanceDecayNeutral(0),
     fh2phiLeadingParticle(0x0),
     fhMCLeadingCount(0),
-    fhMCEtaCharged(0),
-    fhMCPhiCharged(0), 
-    fhMCDeltaEtaCharged(0),
-    fhMCDeltaPhiCharged(0x0),
-    fhMCDeltaPhiDeltaEtaCharged(0),
-    fhMCDeltaPhiChargedPt(0),
+    fhMCEtaCharged(0),              fhMCPhiCharged(0), 
+    fhMCDeltaEtaCharged(0),         fhMCDeltaPhiCharged(0x0),
+    fhMCDeltaPhiDeltaEtaCharged(0), fhMCDeltaPhiChargedPt(0),
     fhMCPtImbalanceCharged(0),
     fhMCPtHbpCharged(0),
     fhMCPtTrigPout(0),
@@ -115,7 +112,55 @@ ClassImp(AliAnaParticleHadronCorrelation)
   InitParameters();
 }
 
-//________________________________________________________________________
+//____________________________________________________________
+TObjString* AliAnaParticleHadronCorrelation::GetAnalysisCuts()
+{
+  //Save parameters used for analysis
+  TString parList ; //this will be list of parameters used for this analysis.
+  const Int_t buffersize = 560;
+  char onePar[buffersize] ;
+  
+  snprintf(onePar,buffersize,"--- AliAnaPaticleHadronCorrelation ---\n") ;
+  parList+=onePar ;	
+  snprintf(onePar,buffersize,"Phi trigger particle-Hadron      <     %3.2f ", fDeltaPhiMaxCut) ; 
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Phi trigger particle-Hadron      >     %3.2f ", fDeltaPhiMinCut) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Isolated Trigger?  %d\n", fSelectIsolated) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Phi trigger particle-UeHadron    <    %3.2f ", fUeDeltaPhiMaxCut) ; 
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Phi trigger particle-UeHadron    >    %3.2f ", fUeDeltaPhiMinCut) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Several UE?  %d\n", fMakeSeveralUE) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Name of AOD Pi0 Branch %s ",fPi0AODBranchName.Data());
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Do Decay-hadron correlation ?  %d", fPi0Trigger) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Select absolute leading for cluster triggers ?  %d\n", fMakeAbsoluteLeading) ;
+  parList+=onePar ;
+  snprintf(onePar,buffersize,"Associated particle pt bins  %d: ", fNAssocPtBins) ;
+  parList+=onePar ;
+  for (Int_t ibin = 0; ibin<fNAssocPtBins; ibin++) {
+    snprintf(onePar,buffersize,"bin %d = [%2.1f,%2.1f];", ibin, fAssocPtBinLimit[ibin], fAssocPtBinLimit[ibin+1]) ;
+  }
+  parList+=onePar ;
+  
+  //Get parameters set in base class.
+  parList += GetBaseParametersList() ;
+  
+  //Get parameters set in PID class.
+  //parList += GetCaloPID()->GetPIDParametersList() ;
+  
+  //Get parameters set in FiducialCut class (not available yet)
+  //parlist += GetFidCut()->GetFidCutParametersList() 
+  
+  return new TObjString(parList) ;  
+  
+} 
+
+//________________________________________________________________
 TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
 {  
   
@@ -124,15 +169,9 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("CorrelationHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins();
-  Int_t nphibins = GetHistoPhiBins();
-  Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();
-  Float_t phimax = GetHistoPhiMax();
-  Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();
-  Float_t phimin = GetHistoPhiMin();
-  Float_t etamin = GetHistoEtaMin();	
+  Int_t   nptbins = GetHistoPtBins(); Int_t  nphibins = GetHistoPhiBins(); Int_t   netabins = GetHistoEtaBins();
+  Float_t ptmax   = GetHistoPtMax();  Float_t phimax  = GetHistoPhiMax();  Float_t etamax   = GetHistoEtaMax();
+  Float_t ptmin   = GetHistoPtMin();  Float_t phimin  = GetHistoPhiMin();  Float_t etamin   = GetHistoEtaMin();	
   
   fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
   fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
@@ -233,12 +272,6 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     fhPtTrigPout->SetYTitle("p_{out} (GeV/c)");
     fhPtTrigPout->SetXTitle("p_{T trigger} (GeV/c)"); 
     
-    fhPtAssocDeltaPhi  = 
-    new TH2F("fhPtAssocDeltaPhi"," charged hadrons vs. delta phi",
-             nptbins,ptmin,ptmax,140,-2.,5.); 
-    fhPtAssocDeltaPhi->SetXTitle("p_{T h^{#pm}} (GeV/c)");  
-    fhPtAssocDeltaPhi->SetYTitle("#Delta #phi (GeV/c)"); 
-    
     fhPtTrigCharged  = 
     new TH2F("PtTrigCharged","trgger and charged tracks pt distribution",
              nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
@@ -259,15 +292,14 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     outputContainer->Add(fhPtHbpCharged) ;
     outputContainer->Add(fhPtHbpUeCharged) ;
     outputContainer->Add(fhPtTrigPout) ;
-    outputContainer->Add(fhPtAssocDeltaPhi) ;
     outputContainer->Add(fhPtTrigCharged) ;
     
     if(DoEventSelect()){ 
       Int_t nMultiBins = GetMultiBin();
       fhTrigDeltaPhiCharged = new TH2F*[nMultiBins] ;
       fhTrigDeltaEtaCharged = new TH2F*[nMultiBins] ;
-      fhTrigCorr = new TH2F*[nMultiBins];
-      fhTrigUeCorr = new TH2F*[nMultiBins];
+      fhTrigCorr            = new TH2F*[nMultiBins];
+      fhTrigUeCorr          = new TH2F*[nMultiBins];
       for(Int_t im=0; im<nMultiBins; im++){
         fhTrigDeltaPhiCharged[im]  = new TH2F 
         (Form("fhTrigDeltaPhiCharged_%d",im),Form("fhTrigDeltaPhiCharged_%d",im), nptbins,ptmin,ptmax, 140,-2.,5.); 
@@ -294,23 +326,44 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       }
     }
     
-    for(Int_t i = 0 ; i < fNTriggerPtBins ; i++){
-      fhTrigPt[i]            = new TH1F(Form("fhTrigPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        Form("fhTrigPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]),
-                                        20, fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]);
-      fhDphiTrigPtAssocPt[i] = new TH1F(Form("fhDphiTrigPtAssocPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        Form("fhDphiTrigPtAssocPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        288, -1.0/3.0, 5.0/3.0);
-      fhAssocPtBkg[i]        = new TH1F(Form("fhAssocPtBkg%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        Form("fhAssocPtBkg%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        600, 0., 30.0); 
-      fhXE[i]                = new TH1F(Form("fhXETrigPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]), 
-                                        Form("fhXETrigPt%1.f_%1.f", fTriggerPtBinLimit[i], fTriggerPtBinLimit[i+1]),
-                                        50, 0.0, 2.0);
-      outputContainer->Add(fhTrigPt[i]) ;
-      outputContainer->Add(fhDphiTrigPtAssocPt[i]) ;
-      outputContainer->Add(fhAssocPtBkg[i]);
-      outputContainer->Add(fhXE[i]);
+    fhAssocPt           = new TH2F("fhAssocPt", " Trigger p_{T} vs associated hadron p_{T}",
+                                   nptbins, ptmin, ptmax,nptbins,ptmin,ptmax);
+    fhAssocPt->SetXTitle("p_{T trigger}");
+    fhAssocPt->SetYTitle("p_{T associated}");
+    outputContainer->Add(fhAssocPt) ;
+    
+    fhAssocPtBkg        = new TH2F("fhAssocPtBkg", " Trigger p_{T} vs associated hadron p_{T} from background",
+                                   nptbins, ptmin, ptmax,nptbins,ptmin,ptmax);
+    fhAssocPtBkg->SetXTitle("p_{T trigger}");
+    fhAssocPtBkg->SetYTitle("p_{T associated}");
+    outputContainer->Add(fhAssocPtBkg) ;
+    
+    fhDeltaPhiAssocPtBin     = new TH2F*[fNAssocPtBins] ;
+    fhDeltaPhiBradAssocPtBin = new TH2F*[fNAssocPtBins] ;
+    fhXEAssocPtBin           = new TH2F*[fNAssocPtBins] ;
+    for(Int_t i = 0 ; i < fNAssocPtBins ; i++){
+      fhDeltaPhiAssocPtBin[i] = new TH2F(Form("fhDeltaPhiPtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         nptbins, ptmin, ptmax,140,-2.,5.);
+      fhDeltaPhiAssocPtBin[i]->SetXTitle("p_{T trigger}");
+      fhDeltaPhiAssocPtBin[i]->SetYTitle("#Delta #phi");
+      
+      fhDeltaPhiBradAssocPtBin[i] = new TH2F(Form("fhDeltaPhiBradPtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                             Form("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                             nptbins, ptmin, ptmax,288, -1.0/3.0, 5.0/3.0);
+      fhDeltaPhiBradAssocPtBin[i]->SetXTitle("p_{T trigger}");
+      fhDeltaPhiBradAssocPtBin[i]->SetYTitle("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi");
+      
+      
+      fhXEAssocPtBin[i]       = new TH2F(Form("fhXEAssocPtBin%1.f_%1.f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         Form("x_[E] vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         nptbins, ptmin, ptmax,50, 0.0, 2.0);
+      fhXEAssocPtBin[i]->SetXTitle("p_{T trigger}");
+      fhXEAssocPtBin[i]->SetYTitle("x_{E}");
+      
+      outputContainer->Add(fhDeltaPhiAssocPtBin[i]) ;
+      outputContainer->Add(fhDeltaPhiBradAssocPtBin[i]) ;
+      outputContainer->Add(fhXEAssocPtBin[i]);
     }
     
     if(fPi0Trigger){
@@ -628,7 +681,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   
 }
 
-//____________________________________________________________________________
+//____________________________________________________
 void AliAnaParticleHadronCorrelation::InitParameters()
 {
   
@@ -648,98 +701,21 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fPi0Trigger           = kFALSE ;
   fMakeAbsoluteLeading  = kTRUE;
   
-  fNTriggerPtBins       = 6 ;
-  fTriggerPtBinLimit[0] = 4.; 
-  fTriggerPtBinLimit[1] = 5.; 
-  fTriggerPtBinLimit[2] = 6.; 
-  fTriggerPtBinLimit[3] = 7.; 
-  fTriggerPtBinLimit[4] = 8.; 
-  fTriggerPtBinLimit[5] =10.; 
-  fTriggerPtBinLimit[6] =12.;
-  fTriggerPtBinLimit[7] =15.;
-  fTriggerPtBinLimit[8] =20.;
-  fTriggerPtBinLimit[9] =25.;
-  fTriggerPtBinLimit[6] =100.;
+  fNAssocPtBins        = 7  ;
+  fAssocPtBinLimit[0]  = 2.  ; 
+  fAssocPtBinLimit[1]  = 4.  ; 
+  fAssocPtBinLimit[2]  = 6.  ; 
+  fAssocPtBinLimit[3]  = 8.  ; 
+  fAssocPtBinLimit[4]  = 10. ; 
+  fAssocPtBinLimit[5]  = 13. ; 
+  fAssocPtBinLimit[6]  = 16. ;
+  fAssocPtBinLimit[7]  = 20. ;
+  fAssocPtBinLimit[8]  = 100.;
+  fAssocPtBinLimit[9]  = 200.;
   
 }
 
-//__________________________________________________________________
-void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
-{
-
-  //Print some relevant parameters set for the analysis
-  if(! opt)
-    return;
-  
-  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
-
-  printf("Phi trigger particle-Hadron      <     %3.2f\n", fDeltaPhiMaxCut) ; 
-  printf("Phi trigger particle-Hadron      >     %3.2f\n", fDeltaPhiMinCut) ;
-  printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
-  printf("Phi trigger particle-UeHadron    <    %3.2f\n", fUeDeltaPhiMaxCut) ; 
-  printf("Phi trigger particle-UeHadron    >    %3.2f\n", fUeDeltaPhiMinCut) ;
-  printf("Several UE?  %d\n", fMakeSeveralUE) ;
-  printf("Name of AOD Pi0 Branch %s \n",fPi0AODBranchName.Data());
-  printf("Do Decay-hadron correlation ?  %d\n", fPi0Trigger) ;
-  printf("Select absolute leading for cluster triggers ?  %d\n", fMakeAbsoluteLeading) ;
-  printf("Trigger pt bins  %d\n", fNTriggerPtBins) ;
-  for (Int_t ibin = 0; ibin<fNTriggerPtBins; ibin++) {
-    printf("\t bin %d = [%2.1f,%2.1f]\n", ibin, fTriggerPtBinLimit[ibin], fTriggerPtBinLimit[ibin+1]) ;
-  }
-
-} 
-
-//__________________________________________________________________
-TObjString* AliAnaParticleHadronCorrelation::GetAnalysisCuts()
-{
-  //Save parameters used for analysis
-  TString parList ; //this will be list of parameters used for this analysis.
-  const Int_t buffersize = 560;
-  char onePar[buffersize] ;
-  
-  snprintf(onePar,buffersize,"--- AliAnaPaticleHadronCorrelation ---\n") ;
-  parList+=onePar ;	
-  snprintf(onePar,buffersize,"Phi trigger particle-Hadron      <     %3.2f ", fDeltaPhiMaxCut) ; 
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Phi trigger particle-Hadron      >     %3.2f ", fDeltaPhiMinCut) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Isolated Trigger?  %d\n", fSelectIsolated) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Phi trigger particle-UeHadron    <    %3.2f ", fUeDeltaPhiMaxCut) ; 
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Phi trigger particle-UeHadron    >    %3.2f ", fUeDeltaPhiMinCut) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Several UE?  %d\n", fMakeSeveralUE) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Name of AOD Pi0 Branch %s ",fPi0AODBranchName.Data());
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Do Decay-hadron correlation ?  %d", fPi0Trigger) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Select absolute leading for cluster triggers ?  %d\n", fMakeAbsoluteLeading) ;
-  parList+=onePar ;
-  snprintf(onePar,buffersize,"Trigger pt bins  %d: ", fNTriggerPtBins) ;
-  parList+=onePar ;
-  for (Int_t ibin = 0; ibin<fNTriggerPtBins; ibin++) {
-    snprintf(onePar,buffersize,"bin %d = [%2.1f,%2.1f];", ibin, fTriggerPtBinLimit[ibin], fTriggerPtBinLimit[ibin+1]) ;
-  }
-  parList+=onePar ;
-  
-  //Get parameters set in base class.
-  parList += GetBaseParametersList() ;
-  
-  //Get parameters set in PID class.
-  //parList += GetCaloPID()->GetPIDParametersList() ;
-  
-  //Get parameters set in FiducialCut class (not available yet)
-  //parlist += GetFidCut()->GetFidCutParametersList() 
-  
-  return new TObjString(parList) ;  
-  
-} 
-
-
-//____________________________________________________________________________
+//__________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()  
 {  
   //Particle-Hadron Correlation Analysis, fill AODs
@@ -823,7 +799,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillAOD()
   
 }
 
-//____________________________________________________________________________
+//_________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()  
 {  
   //Particle-Hadron Correlation Analysis, fill histograms
@@ -866,6 +842,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
           return ;
       }
+      
       //check if the particle is isolated or if we want to take the isolation into account
       if(OnlyIsolated() && !particle->IsIsolated()) continue;
       
@@ -917,7 +894,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
 }
 
-//____________________________________________________________________________
+//_________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, 
                                                                 TObjArray* pl, const Bool_t bFillHisto)
 {  
@@ -942,14 +919,6 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   Double_t phiTrig = aodParticle->Phi();
   Double_t etaTrig = aodParticle->Eta(); 
   Double_t ptTrig  = aodParticle->Pt();  
-  Int_t    trBin   = -1; 
-  for(Int_t i = 0 ; i < fNTriggerPtBins ; i++){
-    if(ptTrig > fTriggerPtBinLimit[i] && ptTrig < fTriggerPtBinLimit[i+1]) trBin= i; 
-  }
-  if(trBin==-1) return kFALSE;
-  if(OnlyIsolated() && aodParticle->IsIsolated()){
-    fhTrigPt[trBin]->Fill(ptTrig);
-  }
   
   Double_t pt             = -100. ;
   Double_t px             = -100. ;
@@ -1077,10 +1046,11 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     pout = pt*TMath::Sin(deltaPhi) ;
     rat  = pt/ptTrig ;
     xE   =-pt/ptTrig*TMath::Cos(deltaPhi);
-    if(xE > 0 )cosi = TMath::Log(1/xE); 
+    cosi =-100;
+    if(xE > 0 ) cosi = TMath::Log(1/xE); 
     else {
-      printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - xE=%f negative or null, check!, pT %f, ptTrig %f\n", xE,pt,ptTrig);
-      return kFALSE;
+      if(GetDebug() > 1 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - xE=%f negative or null, check!, pT %f, ptTrig %f\n", xE,pt,ptTrig);
+      //return kFALSE; // shbould return or continue?
     }
     
     if(GetDebug() > 2)
@@ -1090,26 +1060,33 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
     // Fill Histograms
     if(bFillHisto){
       
-      if(OnlyIsolated() && aodParticle->IsIsolated()){      //FILIP, if only wantisolated histograms
-        if(TMath::Cos(deltaPhi)<0){//away side 
-          fhXE[trBin]->Fill(xE) ;
-        }   
-        
-        //Hardcoded values, BAD, FIXME
-        Double_t  dphiBrad = atan2(sin(deltaPhiOrg), cos(deltaPhiOrg))/TMath::Pi();//-1 to 1
-        if(TMath::Abs(dphiBrad)>0.325 && TMath::Abs(dphiBrad)<0.475){
-          fhAssocPtBkg[trBin]->Fill(pt);
-        }
-        if(dphiBrad<-1./3) dphiBrad += 2;
-        fhDphiTrigPtAssocPt[trBin]->Fill(dphiBrad);
+      Int_t    assocBin   = -1; 
+      for(Int_t i = 0 ; i < fNAssocPtBins ; i++){
+        if(ptTrig > fAssocPtBinLimit[i] && ptTrig < fAssocPtBinLimit[i+1]) assocBin= i; 
       }
       
-      fhEtaCharged->Fill(pt,eta);
-      fhPhiCharged->Fill(pt,phi);
+      fhAssocPt->Fill(ptTrig,pt);
+      
+      if(TMath::Cos(deltaPhi) < 0 && assocBin >= 0 )//away side 
+        fhXEAssocPtBin[assocBin]->Fill(ptTrig, xE) ;
+      
+      //Hardcoded values, BAD, FIXME
+      Double_t  dphiBrad = atan2(sin(deltaPhiOrg), cos(deltaPhiOrg))/TMath::Pi();//-1 to 1
+      if(TMath::Abs(dphiBrad)>0.325 && TMath::Abs(dphiBrad)<0.475){
+        fhAssocPtBkg->Fill(ptTrig, pt);
+      }
+      
+      if(dphiBrad<-1./3) dphiBrad += 2;
+      if(assocBin>=0){
+        fhDeltaPhiBradAssocPtBin[assocBin]->Fill(ptTrig, dphiBrad);
+        fhDeltaPhiAssocPtBin    [assocBin]->Fill(ptTrig, deltaPhi);
+      }
+      
+      fhEtaCharged     ->Fill(pt,eta);
+      fhPhiCharged     ->Fill(pt,phi);
       fhDeltaEtaCharged->Fill(ptTrig,aodParticle->Eta()-eta);
       fhDeltaPhiCharged->Fill(ptTrig, deltaPhi);
       fhDeltaPhiDeltaEtaCharged->Fill(deltaPhi,aodParticle->Eta()-eta);
-      fhPtAssocDeltaPhi->Fill(pt, deltaPhi);
       
       if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
       //fill different multiplicity histogram
@@ -1125,11 +1102,11 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       if( (deltaPhi > fDeltaPhiMinCut) && ( deltaPhi < fDeltaPhiMaxCut) ) {
         fhDeltaPhiChargedPt->Fill(pt,deltaPhi);
         fhPtImbalanceCharged->Fill(ptTrig,xE); 
-        fhPtHbpCharged->Fill(ptTrig,cosi);
-        fhPtTrigPout->Fill(ptTrig, pout) ;
+        fhPtHbpCharged ->Fill(ptTrig, cosi);
+        fhPtTrigPout   ->Fill(ptTrig, pout) ;
         fhPtTrigCharged->Fill(ptTrig, pt) ;
-        if(track->Charge()>0) fhPtImbalancePosCharged->Fill(ptTrig,xE) ;
-        else fhPtImbalanceNegCharged->Fill(ptTrig,xE) ;
+        if(track->Charge() > 0) fhPtImbalancePosCharged->Fill(ptTrig,xE) ;
+        else                    fhPtImbalanceNegCharged->Fill(ptTrig,xE) ;
         //fill different multiplicity histogram
         if(DoEventSelect()){
           for(Int_t im=0; im<GetMultiBin(); im++){
@@ -1211,7 +1188,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
   
 }  
 
-//____________________________________________________________________________
+//________________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * const aodParticle, 
                                                                 TObjArray* pi0list, const Bool_t bFillHisto)  
 {  
@@ -1410,7 +1387,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4Partic
   return kTRUE;
 }
   
-//____________________________________________________________________________
+//_________________________________________________________________________________________________________
 void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle)
 {  
   // Charged Hadron Correlation Analysis with MC information
@@ -1652,33 +1629,63 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
   }// AOD MC
 }
 
-//____________________________________________________________________________
-void AliAnaParticleHadronCorrelation::SetNTriggerPtBins(Int_t n)
+//_____________________________________________________________________
+void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
+{
+  
+  //Print some relevant parameters set for the analysis
+  if(! opt)
+    return;
+  
+  printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
+  AliAnaPartCorrBaseClass::Print(" ");
+  
+  printf("Phi trigger particle-Hadron      <     %3.2f\n", fDeltaPhiMaxCut) ; 
+  printf("Phi trigger particle-Hadron      >     %3.2f\n", fDeltaPhiMinCut) ;
+  printf("Isolated Trigger?  %d\n", fSelectIsolated) ;
+  printf("Phi trigger particle-UeHadron    <    %3.2f\n", fUeDeltaPhiMaxCut) ; 
+  printf("Phi trigger particle-UeHadron    >    %3.2f\n", fUeDeltaPhiMinCut) ;
+  printf("Several UE?  %d\n", fMakeSeveralUE) ;
+  printf("Name of AOD Pi0 Branch %s \n",fPi0AODBranchName.Data());
+  printf("Do Decay-hadron correlation ?  %d\n", fPi0Trigger) ;
+  printf("Select absolute leading for cluster triggers ?  %d\n", fMakeAbsoluteLeading) ;
+  printf("Trigger pt bins  %d\n", fNAssocPtBins) ;
+  for (Int_t ibin = 0; ibin<fNAssocPtBins; ibin++) {
+    printf("\t bin %d = [%2.1f,%2.1f]\n", ibin, fAssocPtBinLimit[ibin], fAssocPtBinLimit[ibin+1]) ;
+  }
+  
+} 
+
+//____________________________________________________________
+void AliAnaParticleHadronCorrelation::SetNAssocPtBins(Int_t n)
 {
   // Set number of bins
   
+  fNAssocPtBins  = n ; 
+  
+  
   if(n < 10 && n > 0)
   {
-    fNTriggerPtBins  = n ; 
+    fNAssocPtBins  = n ; 
   }
   else 
   {
     printf("n = larger than 9 or too small, set to 9 \n");
-    fNTriggerPtBins = 9;
+    fNAssocPtBins = 9;
   }
 }
 
-//____________________________________________________________________________
-void AliAnaParticleHadronCorrelation::SetTriggerPtBinLimit(Int_t ibin, Float_t pt)
+//______________________________________________________________________________
+void AliAnaParticleHadronCorrelation::SetAssocPtBinLimit(Int_t ibin, Float_t pt)
 { 
   // Set the list of limits for the trigger pt bins
   
-  if(ibin <= fNTriggerPtBins || ibin >= 0) 
+  if(ibin <= fNAssocPtBins || ibin >= 0) 
   {
-    fTriggerPtBinLimit[ibin] = pt  ;
+    fAssocPtBinLimit[ibin] = pt  ;
   }
   else {
-    printf("AliAnaParticleHadronCorrelation::SetTriggerPtBinLimit() - bin  number too large %d > %d or small, nothing done\n", ibin, fNTriggerPtBins) ; 
+    printf("AliAnaParticleHadronCorrelation::SetAssocPtBinLimit() - bin  number too large %d > %d or small, nothing done\n", ibin, fNAssocPtBins) ; 
     
   }
 }

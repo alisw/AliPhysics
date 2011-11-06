@@ -96,8 +96,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
 
   void         SetPi0AODBranchName(TString n)  { fPi0AODBranchName = n    ; }
   
-  void         SetNTriggerPtBins(Int_t n) ;     
-  void         SetTriggerPtBinLimit(Int_t ibin, Float_t pt) ;
+  void         SetNAssocPtBins(Int_t n) ;     
+  void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
                 
  private:
   
@@ -113,8 +113,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   Bool_t       fMakeAbsoluteLeading ;          // requesting absolute leading while it is cluster triggers
   Int_t        fLeadingTriggerIndex ;          // Store here per event the trigger index, to avoid too many loops
   
-  Int_t        fNTriggerPtBins ;               // Number of trigger bins under study
-  Float_t      fTriggerPtBinLimit[10] ;        // Trigger pt limtis
+  Int_t        fNAssocPtBins ;                 // Number of associated pT bins under study
+  Float_t      fAssocPtBinLimit[10] ;          // Associated pT under study
   
   //Histograms
 
@@ -149,20 +149,20 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F *       fhPtHbpUeRightCharged  ;        //! Trigger particle -underlying charged hadron momentim HBP histogram  
 
   //for pout and kt extraction
-  TH2F *       fhPtTrigPout  ;                 //! Pout =associated pt*sin(delta phi) distribution vs trigger pt vs associated pt
-  TH2F *       fhPtAssocDeltaPhi  ;            //! Pout =associated pt*sin(delta phi) distribution
+  TH2F *       fhPtTrigPout  ;                 //! Pout =associated pt*sin(delta phi) distribution vs trigger pt 
   TH2F *       fhPtTrigCharged ;               //! trigger and correlated particl pt, to be used for mean value for kt	
   
   //if different multiplicity analysis asked
-  TH2F **      fhTrigDeltaPhiCharged ;         //! differences of phi between trigger and charged hadrons
-  TH2F **      fhTrigDeltaEtaCharged ;         //! differences of eta between trigger and charged hadrons
-  TH2F **      fhTrigCorr  ;                   //! Trigger particle -charged hadron momentim imbalance histogram
-  TH2F **      fhTrigUeCorr  ;                 //! Trigger particle -UE charged hadron momentim imbalance histogram
+  TH2F **      fhTrigDeltaPhiCharged ;         //![GetMultiBin()] differences of phi between trigger and charged hadrons
+  TH2F **      fhTrigDeltaEtaCharged ;         //![GetMultiBin()] differences of eta between trigger and charged hadrons
+  TH2F **      fhTrigCorr  ;                   //![GetMultiBin()] Trigger particle -charged hadron momentim imbalance histogram
+  TH2F **      fhTrigUeCorr  ;                 //![GetMultiBin()] Trigger particle -UE charged hadron momentim imbalance histogram
     
-  TH1F *       fhTrigPt[10] ;                  //! add explanation
-  TH1F *       fhDphiTrigPtAssocPt[10];        //! add explanation
-  TH1F *       fhAssocPtBkg[10];               //! add explanation
-  TH1F *       fhXE[10] ;                      //! add explanation
+  TH2F *       fhAssocPt ;                     //! Trigger pT vs associated pT 
+  TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
+  TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins
+  TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins] Trigger pT vs dPhi Brad (?) for different associated pt bins
+  TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs xE for different associated pt bins
   
   //trigger-neutral histograms
   TH2F *       fhDeltaPhiDeltaEtaNeutral ;     //! differences of eta and phi between trigger and neutral hadrons (pi0)
@@ -209,7 +209,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F *       fhMCPtAssocDeltaPhi  ;          //! Pout =associated pt*sin(delta phi) distribution
 
 	
-  ClassDef(AliAnaParticleHadronCorrelation,7)
+  ClassDef(AliAnaParticleHadronCorrelation,8)
 } ;
  
 

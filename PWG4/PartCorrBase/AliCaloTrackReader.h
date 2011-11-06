@@ -30,7 +30,7 @@ class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
-class AliESDtrackCuts;
+#include "AliESDtrackCuts.h"
 class AliCentrality;
 class AliTriggerAnalysis;
 class AliEventplane;
@@ -223,7 +223,8 @@ public:
   void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit    ; }		
   
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts      ; }
-  void             SetTrackCuts(AliESDtrackCuts * cuts)    { fESDtrackCuts = cuts      ; }		  
+  void             SetTrackCuts(AliESDtrackCuts * cuts)    { if(fESDtrackCuts) delete fESDtrackCuts ;
+                                                             fESDtrackCuts = cuts      ; }		  
   Int_t            GetTrackMultiplicity()            const { return fTrackMult         ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut   ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta    ; }		
@@ -247,13 +248,12 @@ public:
   virtual void      GetVertex(Double_t vertex[3],    const Int_t evtIndex) const ;
   virtual void      FillVertexArray();
   virtual Bool_t    CheckForPrimaryVertex();
- // virtual void       GetSecondInputAODVertex(Double_t *) const {;}
   virtual Float_t   GetZvertexCut()                  const { return fZvtxCut                     ; } //cut on vertex position  
   virtual void      SetZvertexCut(Float_t zcut=10.)        { fZvtxCut=zcut                       ; } //cut on vertex position
 
-  //------------------------
+  //--------------------------
   // Centrality / Event Plane
-  //------------------------
+  //--------------------------
   virtual AliCentrality* GetCentrality()             const { return fInputEvent->GetCentrality() ; } //Look in AOD reader, different there
   virtual void     SetCentralityClass(TString name)        { fCentralityClass   = name           ; }
   virtual void     SetCentralityOpt(Int_t opt)             { fCentralityOpt     = opt            ; }
