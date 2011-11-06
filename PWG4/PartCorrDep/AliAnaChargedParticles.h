@@ -15,7 +15,7 @@
 //-- Author: Gustavo Conesa (INFN-LNF)
 // Root system
 class TH2F; 
-class TH3D;
+
 // Analysis system
 #include "AliAnaPartCorrBaseClass.h"
  
@@ -23,7 +23,7 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
   
  public: 
   AliAnaChargedParticles() ; // default ctor
-  virtual ~AliAnaChargedParticles() {;} //virtual dtor
+  virtual ~AliAnaChargedParticles() { ; } //virtual dtor
  private:  
   AliAnaChargedParticles(const AliAnaChargedParticles & g) ; // cpy ctor
   AliAnaChargedParticles & operator = (const AliAnaChargedParticles & g) ;//cpy assignment
@@ -32,55 +32,57 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
 
   TList * GetCreateOutputObjects();
   
-  void Init();
-  void InitParameters();
+  void    Init();
   
-  void Print(const Option_t * opt) const;
+  void    InitParameters();
   
-  void MakeAnalysisFillAOD()  ;
+  void    Print(const Option_t * opt) const;
   
-  void MakeAnalysisFillHistograms() ; 
+  void    MakeAnalysisFillAOD()  ;
   
-  Int_t GetPdgOfSelectedCharged() const {return fPdg ;}
-  void SelectChargedWithPdg( Int_t pdg ) {fPdg = pdg; }
+  void    MakeAnalysisFillHistograms() ; 
   
-  //void Terminate();
-  
+  Int_t   GetPdgOfSelectedCharged()  const  { return fPdg ; }
+  void    SelectChargedWithPdg( Int_t pdg ) { fPdg = pdg  ; }
+    
  private:
   
   Int_t  fPdg ; //identified particle id
+  
   //Histograms 
-  TH1F * fhNtracks; //! track multiplicity distribution
-  TH3D * fhVertex; //! vertex distribution
-  TH1F * fhPt; //! pT distribution
-  TH2F * fhPhi; //! phi distribution vs pT
-  TH2F * fhEta; //! eta distribution vs pT
-  TH3D * fhPtEtaPhiPos; //! pT and phi distribution of positive charge  
-  TH3D * fhPtEtaPhiNeg; //! pT and phi distribution of positive charge  
+  TH1F * fhNtracks;     //! track multiplicity distribution
+  TH1F * fhPt;          //! pT distribution
+  TH2F * fhPhiNeg;      //! phi distribution vs pT, negative
+  TH2F * fhEtaNeg;      //! eta distribution vs pT, negative
+  TH2F * fhPhiPos;      //! phi distribution vs pT, positive
+  TH2F * fhEtaPos;      //! eta distribution vs pT, positive
+  TH2F * fhEtaPhiPos;   //! eta vs phi distribution of positive charge  
+  TH2F * fhEtaPhiNeg;   //! eta vs phi distribution of negative charge  
 
   //MC
-  TH1F * fhPtPion; //! pT distribution
-  TH2F * fhPhiPion; //! phi distribution vs pT
-  TH2F * fhEtaPion; //! eta distribution vs pT
+  TH1F * fhPtPion;      //! pT distribution
+  TH2F * fhPhiPion;     //! phi distribution vs pT
+  TH2F * fhEtaPion;     //! eta distribution vs pT
   
-  TH1F * fhPtProton; //! pT distribution
-  TH2F * fhPhiProton; //! phi distribution vs pT
-  TH2F * fhEtaProton; //! eta distribution vs pT
+  TH1F * fhPtProton;    //! pT distribution
+  TH2F * fhPhiProton;   //! phi distribution vs pT
+  TH2F * fhEtaProton;   //! eta distribution vs pT
   
-  TH1F * fhPtElectron; //! pT distribution
+  TH1F * fhPtElectron;  //! pT distribution
   TH2F * fhPhiElectron; //! phi distribution vs pT
   TH2F * fhEtaElectron; //! eta distribution vs pT
   
-  TH1F * fhPtKaon; //! pT distribution
-  TH2F * fhPhiKaon; //! phi distribution vs pT
-  TH2F * fhEtaKaon; //! eta distribution vs pT
+  TH1F * fhPtKaon;      //! pT distribution
+  TH2F * fhPhiKaon;     //! phi distribution vs pT
+  TH2F * fhEtaKaon;     //! eta distribution vs pT
   
-  TH1F * fhPtUnknown; //! pT distribution
-  TH2F * fhPhiUnknown; //! phi distribution vs pT
-  TH2F * fhEtaUnknown; //! eta distribution vs pT
+  TH1F * fhPtUnknown;   //! pT distribution
+  TH2F * fhPhiUnknown;  //! phi distribution vs pT
+  TH2F * fhEtaUnknown;  //! eta distribution vs pT
   
-  ClassDef(AliAnaChargedParticles,2)
-    } ;
+  ClassDef(AliAnaChargedParticles,3)
+
+} ;
 
 
 #endif //ALIANACHARGEDPARTICLES_H
