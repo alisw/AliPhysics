@@ -659,7 +659,6 @@ void AliTPCclustererMI::AddCluster(AliTPCclusterMI &c, Float_t * /*matrix*/, Int
     c.SetType(-(c.GetType()+3));  //edge clusters
   }
   if (fLoop==2) c.SetType(100);
-  if (!AcceptCluster(&c)) return;
 
   // select output 
   TClonesArray * arr = 0;
@@ -1447,7 +1446,7 @@ void AliTPCclustererMI::FindClusters(AliTPCCalROC * noiseROC)
 }
 
 Bool_t AliTPCclustererMI::AcceptCluster(AliTPCclusterMI *cl){
-  //
+  // -- Depricated --
   // Currently hack to filter digital noise (15.06.2008)
   // To be parameterized in the AliTPCrecoParam
   // More inteligent way  to be used in future
