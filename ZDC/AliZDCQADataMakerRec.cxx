@@ -619,11 +619,11 @@ void AliZDCQADataMakerRec::MakeRaws(AliRawReader *rawReader)
 	    iMultZEM2TDC++;
 	 }
 	 else if(stream.GetChannel()==10){
-	    zncSumTDC[iMultZEM2TDC] = (0.025*stream.GetZDCTDCDatum());
+	    zncSumTDC[iMultTDCC] = (0.025*stream.GetZDCTDCDatum());
 	    iMultTDCC++;
 	 }
 	 else if(stream.GetChannel()==12){
-	    znaSumTDC[iMultZEM2TDC] = (0.025*stream.GetZDCTDCDatum());
+	    znaSumTDC[iMultTDCA] = (0.025*stream.GetZDCTDCDatum());
 	    iMultTDCA++;
 	 }
 	 else if(stream.GetChannel()==14) tdcGate = (0.025*stream.GetZDCTDCDatum());
