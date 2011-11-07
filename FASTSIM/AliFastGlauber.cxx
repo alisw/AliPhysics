@@ -65,6 +65,7 @@ ClassImp(AliFastGlauber)
 
 Float_t AliFastGlauber::fgBMax           = 0.;
 TF1*    AliFastGlauber::fgWSb            = NULL;     
+TF1*    AliFastGlauber::fgRWSb           = NULL;     
 TF2*    AliFastGlauber::fgWSbz           = NULL;    
 TF1*    AliFastGlauber::fgWSz            = NULL;     
 TF1*    AliFastGlauber::fgWSta           = NULL;    
@@ -187,6 +188,12 @@ void AliFastGlauber::Init(Int_t mode)
   fgWSb->SetParameter(2, fWSw);
   fgWSb->SetParameter(3, fWSn);
 
+  fgRWSb = new TF1("RWSb", RWSb, 0, fgBMax, 4);
+  fgRWSb->SetParameter(0, fWSr0);
+  fgRWSb->SetParameter(1, fWSd);
+  fgRWSb->SetParameter(2, fWSw);
+  fgRWSb->SetParameter(3, fWSn);
+
   fgWSbz = new TF2("WSbz", WSbz, 0, fgBMax, 0, fgBMax, 4);
   fgWSbz->SetParameter(0, fWSr0);
   fgWSbz->SetParameter(1, fWSd);
@@ -268,7 +275,7 @@ void AliFastGlauber::Init(Int_t mode)
   //
   // Hard collisions per event
   //
-  fgWSN = new TF1("WSN", WSN, 0., fgBMax, 1);
+  fgWSN = new TF1("WSN", WSN, 0.01, fgBMax, 1);
   fgWSN->SetNpx(100);
 
   //
@@ -314,6 +321,7 @@ void AliFastGlauber::Reset() const
   // in case init is called twice
 
   if(fgWSb)            delete fgWSb;     
+  if(fgRWSb)           delete fgRWSb;     
   if(fgWSbz)           delete fgWSbz;
   if(fgWSz)            delete fgWSz;
   if(fgWSta)           delete fgWSta;
@@ -338,7 +346,7 @@ void AliFastGlauber::DrawWSb() const
   //
   TCanvas *c1 = new TCanvas("c1","Wood Saxon",400,10,600,700);
   c1->cd();
-  Double_t max=fgWSb->GetMaximum(0,fgBMax)*1.01;
+  Double_t max=fgWSb->GetMaximum(0.,fgBMax)*1.01;
   TH2F *h2f=new TH2F("h2fwsb","Wood Saxon: #rho(r) = n (1-#omega(r/r_{0})^2)/(1+exp((r-r_{0})/d)) [fm^{-3}]",2,0,fgBMax,2,0,max);
   h2f->SetStats(0);
   h2f->GetXaxis()->SetTitle("r [fm]");
@@ -473,7 +481,7 @@ void AliFastGlauber::DrawN() const
   //
   TCanvas *c7 = new TCanvas("c7","Binaries per event",400,10,600,700);
   c7->cd();
-  Double_t max=fgWSN->GetMaximum(0,fgBMax)*1.01;
+  Double_t max=fgWSN->GetMaximum(0.01,fgBMax)*1.01;
   TH2F *h2f=new TH2F("h2fhardcols","Number of hard collisions: T_{AB} #sigma^{hard}_{NN}/#sigma_{AB}^{geo}",2,0,fgBMax,2,0,max);
   h2f->SetStats(0);
   h2f->GetXaxis()->SetTitle("b [fm]");
@@ -524,12 +532,13 @@ void AliFastGlauber::DrawAlmond(Double_t b) const
   TCanvas *c9 = new TCanvas("c9","Almond",400,10,600,700);
   c9->cd();
   fgWAlmond->SetParameter(0, b);
-  TH2F *h2f=new TH2F("h2falmond","Interaction Almond [fm^{-4}]",2,0,fgBMax,2,0,fgBMax);
+  TH2F *h2f=new TH2F("h2falmond","Interaction Almond [fm^{-4}]",2,-fgBMax, fgBMax, 2, -fgBMax, fgBMax);
   h2f->SetStats(0);
   h2f->GetXaxis()->SetTitle("x [fm]");
   h2f->GetYaxis()->SetTitle("y [fm]");
-  h2f->Draw(); 
-  fgWAlmond->Draw("same");
+  h2f->Draw("");
+  gStyle->SetPalette(1);
+  fgWAlmond->Draw("colzsame");
   TLegend *l1a = new TLegend(0.65,0.8,.90,0.9);
   l1a->SetFillStyle(0);
   l1a->SetBorderSize(0);
@@ -629,6 +638,22 @@ Double_t AliFastGlauber::WSb(const Double_t* x, const Double_t* par)
   const Double_t kn   = par[3]; //fm^-3 (used to normalize integral to one)
   Double_t y   = kn * (1.+kw*(kxx/kr0)*(kxx/kr0))/(1.+TMath::Exp((kxx-kr0)/kd));
   return y; //fm^-3
+}
+
+Double_t AliFastGlauber::RWSb(const Double_t* x, const Double_t* par)
+{
+  //
+  //  Woods-Saxon Parameterisation
+  //  as a function of radius (xx)
+  //  times r**2
+  const Double_t kxx  = x[0];   //fm
+  const Double_t kr0  = par[0]; //fm
+  const Double_t kd   = par[1]; //fm   
+  const Double_t kw   = par[2]; //no units
+  const Double_t kn   = par[3]; //fm^-3 (used to normalize integral to one)
+  Double_t y   = kxx * kxx * kn * (1.+kw*(kxx/kr0)*(kxx/kr0))/(1.+TMath::Exp((kxx-kr0)/kd));
+
+  return y; //fm^-1
 }
 
 Double_t AliFastGlauber::WSbz(const Double_t* x, const Double_t* par)

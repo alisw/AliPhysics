@@ -38,6 +38,7 @@ class AliFastGlauber : public TObject {
     void SetFileName(const char *fn="$(ALICE_ROOT)/FASTSIM/data/glauberPbPb.root"){fName=fn;}
 
     const TF1* GetWSB()            const {return fgWSb;}
+    const TF1* GetRWSB()           const {return fgRWSb;}
     const TF2* GetWSbz()           const {return fgWSbz;}
     const TF1* GetWSz()            const {return fgWSz;} 
     const TF1* GetWSta()           const {return fgWSta;}
@@ -164,6 +165,7 @@ class AliFastGlauber : public TObject {
     AliFastGlauber& operator=(const AliFastGlauber & rhs);
     void Copy(TObject&) const;
  protected:
+    static Double_t RWSb           (const Double_t *xx, const Double_t *par);
     static Double_t WSb            (const Double_t *xx, const Double_t *par);
     static Double_t WSbz           (const Double_t *xx, const Double_t *par);
     static Double_t WSz            (const Double_t *xx, const Double_t *par);
@@ -192,6 +194,7 @@ class AliFastGlauber : public TObject {
      
     
     static TF1*    fgWSb;            // Wood-Saxon Function (b)
+    static TF1*    fgRWSb;           // Wood-Saxon Function (b) with phase space factor
     static TF2*    fgWSbz;           // Wood-Saxon Function (b, z)
     static TF1*    fgWSz;            // Wood-Saxon Function (b = b0, z)
     static TF1*    fgWSta;           // Thickness Function
