@@ -658,6 +658,7 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(3)->GetContainer();
   if(cont)normName=(TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->Init();
 
   if(fDoLS) CreateLikeSignHistos();
   if(fDoImpPar) CreateImpactParameterHistos();

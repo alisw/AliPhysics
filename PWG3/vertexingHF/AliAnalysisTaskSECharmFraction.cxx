@@ -529,7 +529,8 @@ void AliAnalysisTaskSECharmFraction::UserCreateOutputObjects()
 
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
- 
+  fCounter->Init(); 
+
   //##########  DEFINE THE TLISTS ##################
   flistMCproperties=new TList();
   flistMCproperties->SetOwner();

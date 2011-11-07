@@ -643,6 +643,7 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
+  fCounter->Init();
 
   // Post the data
   PostData(1,fOutputMass);
