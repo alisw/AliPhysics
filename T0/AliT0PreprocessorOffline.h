@@ -18,6 +18,7 @@ class AliT0PreprocessorOffline: public TNamed
   void	CalibOffsetChannels(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
   void	CalibT0sPosition(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
   void  Process(TString FileName, Int_t ustartRun, Int_t uendRun, TString ocdbStorage);
+  void setDArun(Int_t runnumber) {fNewDArun = runnumber; };
   private:
   AliT0PreprocessorOffline(const AliT0PreprocessorOffline & proc); // copy constructor	
   AliT0PreprocessorOffline& operator=(const AliT0PreprocessorOffline&); //operator
@@ -26,6 +27,7 @@ class AliT0PreprocessorOffline: public TNamed
   Int_t startTime;                        // startTime - used to make fast selection in THnSparse
   Int_t endTime;                          // endTime   - used to make fast selection in THnSparse
   TString  ocdbStorage;                   // path to the OCDB storage
+  Int_t fNewDArun;                         // run number with new DA
  
   ClassDef(AliT0PreprocessorOffline, 1)
 };

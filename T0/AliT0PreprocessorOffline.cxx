@@ -50,7 +50,9 @@ TNamed("AliT0PreprocessorOffline","AliT0PreprocessorOffline"),
   endRun(0),  
   startTime(0),    
   endTime(0),     
-  ocdbStorage("")  
+  ocdbStorage(""),
+  fNewDArun(9999999)
+  
 {
   //constructor
 }
@@ -64,7 +66,8 @@ AliT0PreprocessorOffline::~AliT0PreprocessorOffline()
 //____________________________________________________
 void AliT0PreprocessorOffline::Process(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
 {
-  CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
+  if ( ustartRun < fNewDArun)
+    CalibOffsetChannels(filePhysName, ustartRun, uendRun, pocdbStorage);
   CalibT0sPosition(filePhysName, ustartRun, uendRun, pocdbStorage);
 }
 //____________________________________________________
@@ -106,6 +109,7 @@ void AliT0PreprocessorOffline::CalibOffsetChannels(TString filePhysName, Int_t u
 //-------------------------------------------------------------------------------------
 void AliT0PreprocessorOffline::CalibT0sPosition(TString filePhysName, Int_t ustartRun, Int_t uendRun, TString pocdbStorage)
 {
+  printf(" AliT0PreprocessorOffline::CalibT0sPosition \n");
   Float_t zero_timecdb[4]={0};
   Float_t *timecdb = zero_timecdb;
   if (pocdbStorage.Length()>0) ocdbStorage=pocdbStorage;
