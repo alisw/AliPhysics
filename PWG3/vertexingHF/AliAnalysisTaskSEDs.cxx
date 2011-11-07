@@ -374,6 +374,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
 
   //Counter for Normalization
   fCounter = new AliNormalizationCounter("NormalizationCounter");
+  fCounter->Init();
 
   PostData(1,fOutput); 
   PostData(3,fCounter);   

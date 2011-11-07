@@ -551,6 +551,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 
  //Counter for Normalization
  fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
+ fCounter->Init();
 
  if(fDoImpParDstar) CreateImpactParameterHistos();
 
