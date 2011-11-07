@@ -1,12 +1,10 @@
 /*
 T0 DA for online calibration
- 
-Contact: Michal.Oledzki@cern.ch
-Link: http://users.jyu.fi/~mioledzk/
+Contact: AllaMaevskaya@cern.ch
 Run Type: PHYSICS
 DA Type: MON
-Number of events needed: 500000 
-Input Files: inPhys.dat, external parameters
+Number of events needed: 10000 
+Input Files: inPhys.dat, external parameters, T0/Calib/Slewing_Walk
 Output Files: daPhys.root, to be exported to the DAQ FXS
 Trigger types used: PHYSICS_EVENT
 ------------------------------Alla
@@ -30,7 +28,9 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include <AliRawReaderDate.h>
 #include <AliRawReader.h>
 #include <AliT0RawReader.h>
-
+#include <AliT0CalibWalk.h>
+#include <AliCDBManager.h>
+#include <AliCDBEntry.h>
 //ROOT
 #include "TROOT.h"
 #include "TPluginManager.h"
@@ -40,7 +40,6 @@ SOULD BE CHANGED BACK BEFORE BEAM
 #include "TBenchmark.h"
 #include "TString.h"
 #include "TH1.h"
-#include "TSpectrum.h"
 #include "TMath.h"
 
 
@@ -119,6 +118,41 @@ int main(int argc, char **argv) {
   /* log start of process */
   printf("T0 monitoring program started\n");  
   
+  // Get run number
+  if (getenv("DATE_RUN_NUMBER")==0) {
+    printf("DATE_RUN_NUMBER not properly set.\n");
+    return -1;
+  }
+  int runNr = atoi(getenv("DATE_RUN_NUMBER"));
+
+ // Get the necessary OCDB files from the DAQ detector DB
+  if (gSystem->AccessPathName("localOCDB/T0/Calib/Slewing_Walk/",kFileExists)) {
+    if (gSystem->mkdir("localOCDB/T0/Calib/Slewing_Walk/",kTRUE) != 0) {
+      printf("Failed to create directory: localOCDB/T0/Calib/Slewing_Walk/");
+      return -1;
+    }
+  }
+
+  status = daqDA_DB_getFile("T0/Calib/Slewing_Walk","localOCDB/T0/Calib/Slewing_Walk/Run0_999999999_v0_s0.root");
+  if (status) {
+    printf("Failed to get geometry file (GRP/Geometry/Data) from DAQdetDB, status=%d\n", status);
+    return -1;
+  }
+  TGraph *gr[24]; TGraph *gramp[24];
+  AliCDBManager *man = AliCDBManager::Instance();
+  man->SetDefaultStorage("local://localOCDB");
+  man->SetRun(runNr);
+  AliCDBEntry *entry = AliCDBManager::Instance()->Get("T0/Calib/Slewing_Walk");
+  if(entry) {
+    AliT0CalibWalk *fParam = (AliT0CalibWalk*)entry->GetObject();
+    for (Int_t i=0; i<24; i++) {
+      gr[i] = fParam->GetWalk(i); 
+      gramp[i] = fParam->GetQTC(i); 
+    }
+  }
+  Int_t chargeQT0[24], chargeQT1[24];
+  Float_t adc ,walk, amp;
+ 
   // Allocation of histograms - start
 
   TH1F *hCFD1minCFD[24];  
@@ -132,7 +166,8 @@ int main(int argc, char **argv) {
   
    // Allocation of histograms - end
 
-  Int_t iev=0;
+
+ Int_t iev=0;
   /* main loop (infinite) */
   for(;;) {
     struct eventHeaderStruct *event;
@@ -199,21 +234,44 @@ int main(int argc, char **argv) {
       }
       
       // Fill the histograms
-      Float_t besttimeA=9999999;
+      walk = adc = amp = -999;
+      for (Int_t in=0; in<12;  in++)
+	{
+	  chargeQT0[in]=allData[2*in+25][0];
+	  chargeQT1[in]=allData[2*in+26][0];
+	}	
+      for (Int_t in=12; in<24;  in++)
+	{
+	  chargeQT0[in]=allData[2*in+57][0];
+	  chargeQT1[in]=allData[2*in+58][0];
+	}
+     Float_t besttimeA=9999999;
       Float_t besttimeC=9999999;
       Float_t time[24]; 
        Float_t meanShift[24];
        for (Int_t ik = 0; ik<24; ik++)
-	 { 
+	 { 	 
+	   if( ( chargeQT0[ik] - chargeQT1[ik])>0)  {
+	     adc = chargeQT0[ik] - chargeQT1[ik];
+	     //	cout<<ik <<"  "<<adc<<endl;
+	   }
+	   if(gramp[ik])
+	     amp = gramp[ik]->Eval(Double_t(adc));
+	   if(amp < 0.8) continue;
+	   if(gr[ik]) 
+	     walk = Int_t(gr[ik]->Eval(Double_t(adc) ) );
+	   
 	   if(ik<12 && allData[ik+1][0]>0 && allData[knpmtC][0]>0 ){
 	     hCFD1minCFD[ik]->Fill(allData[ik+1][0]-allData[knpmtC][0]);
-	     hCFD[ik]->Fill(allData[ik+1][0]);
+	     if( walk >-100) hCFD[ik]->Fill(allData[ik+1][0] - walk);
+	     // cout<<ik<<" "<<allData[ik+1][0]<<" adc "<<adc<<" walk "<<walk<<endl;
 	   }
 	   
 	   if(ik>11 && allData[ik+45][0]>0 && allData[56+knpmtA][0]>0 )
 	     {
 	     hCFD1minCFD[ik]->Fill(allData[ik+45][0]-allData[56+knpmtA][0]);
-	     hCFD[ik]->Fill(allData[ik+45][0]);
+	      if( walk >-100) hCFD[ik]->Fill(allData[ik+45][0] - walk);
+	      // cout<<ik<<" "<<allData[ik+1][0]<<" adc "<<adc<<" walk "<<walk<<endl;
 	     }
 	   if(iev == 10000) {	
 	     meanShift[ik] =  hCFD1minCFD[ik]->GetMean(); 
