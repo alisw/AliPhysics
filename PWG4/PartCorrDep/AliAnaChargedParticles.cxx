@@ -302,9 +302,11 @@ void  AliAnaChargedParticles::MakeAnalysisFillHistograms()
     
     if(tr->GetChargedBit()){
       fhPhiPos   ->Fill(tr->Pt(), tr->Phi());
+      fhEtaPos   ->Fill(tr->Pt(), tr->Eta());
       fhEtaPhiPos->Fill(tr->Eta(),tr->Phi());
     }
     else{
+      fhPhiNeg   ->Fill(tr->Pt(), tr->Phi());
       fhEtaNeg   ->Fill(tr->Pt(), tr->Eta());
       fhEtaPhiNeg->Fill(tr->Eta(),tr->Phi());
     }
