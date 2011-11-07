@@ -149,7 +149,6 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   }
 
   TString strUri=store->GetURI();
-  bool bIsGrid=strUri.BeginsWith("alien://");
 
   int latest = store->GetLatestVersion(path, runNo);
   if (latest<0) {
