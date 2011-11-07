@@ -25,7 +25,6 @@
 
 #include "AliITSPreprocessorSDD.h"
 #include "AliITSCalibrationSDD.h"
-#include "AliITSDriftSpeedSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDCSAnalyzerSDD.h"
 #include "AliShuttleInterface.h"
@@ -36,6 +35,8 @@
 #include <TObjString.h>
 #include <TSystem.h>
 #include <TList.h>
+#include <TF1.h>
+#include <TH1D.h>
 
 const TString AliITSPreprocessorSDD::fgkNameHistoPedestals = "hpedestal";
 const TString AliITSPreprocessorSDD::fgkNameHistoNoise = "hnoise";
@@ -255,6 +256,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   }
   delete sourceList;
   Int_t retfscf;
+  
 
   for(Int_t iddl=0;iddl<kNumberOfDDL;iddl++){
     for(Int_t imod=0;imod<kModulesPerDDL;imod++){
@@ -319,12 +321,67 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   AliITSDriftSpeedSDD *avdsp3=new AliITSDriftSpeedSDD(evNumb,timeStamp,3,aveCoefLay3);
   AliITSDriftSpeedSDD *avdsp4=new AliITSDriftSpeedSDD(evNumb,timeStamp,3,aveCoefLay4);
 
+  // Check status of golden modules
+  Int_t idGoldenMod=-1, idGoldenSide=-1;
+  Int_t idGoldenModList[5]={319,319,321,243,243};
+  Int_t idGoldenSideList[5]={0,1,0,0,1};
+  AliITSDriftSpeedSDD* refSpeed=0x0;
+  for(Int_t iGold=0; iGold<5; iGold++){
+    Int_t indexG=2*(idGoldenModList[iGold]-240)+idGoldenSideList[iGold];
+    if(modSet[indexG]){
+      idGoldenMod=idGoldenModList[iGold];
+      idGoldenSide=idGoldenSideList[iGold];
+      AliITSDriftSpeedArraySDD* arrRef=(AliITSDriftSpeedArraySDD*)vdrift.At(indexG);
+      refSpeed=arrRef->GetDriftSpeedObject(0);
+      break;
+    }
+  }
+  TList* correctionList=0x0;
+  if(idGoldenMod>=240 && idGoldenSide>=0){
+    // Get rescaling corrections from OCDB
+    AliCDBEntry* entry = GetFromOCDB("Calib", "RescaleDriftSpeedSDD");
+    if(!entry){
+      Log("RescaleDriftSpeedSDD file not found in OCDB.");  
+    }
+    TList* fullList=(TList*)entry->GetObject();
+    if(!fullList){ 
+      Log("TList object not found in file.");
+    }
+    TString listName=Form("RefMod%d_Side%d",idGoldenMod,idGoldenSide);
+    correctionList=(TList*)fullList->FindObject(listName.Data());
+    if(!correctionList){
+      Log(Form("TList for requested module %d side %d not found",idGoldenMod,idGoldenSide));
+    }else{
+      Log(Form("Use module %d side %d as reference module",idGoldenMod,idGoldenSide));
+      if(refSpeed){
+	Log(Form("Drift speed params for golden module = %g %g %g %g",refSpeed->GetDriftSpeedParameter(0),refSpeed->GetDriftSpeedParameter(1),refSpeed->GetDriftSpeedParameter(2),refSpeed->GetDriftSpeedParameter(3)));
+      }else{
+	AliError("No drift speed object for golden module");
+      }
+    }
+  }
+  
   for(Int_t ihyb=0; ihyb<2*kNumberOfSDDLay3; ihyb++){
+    AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
     if(modSet[ihyb]==0){ 
-      AliWarning(Form("No good injector events for mod. %d side %d --> use average values for layer 3",ihyb/2,ihyb%2));
-      AliITSDriftSpeedArraySDD *arr=new AliITSDriftSpeedArraySDD();
-      arr->AddDriftSpeed(avdsp3);
-      arr->SetInjectorStatus(0);
+      Int_t iBadMod=ihyb/2+240;
+      Int_t iBadSide=ihyb%2;
+      Bool_t goldenUsed=kFALSE;
+      if(correctionList && refSpeed){
+	Double_t *params=RescaleDriftSpeedModule(correctionList,iBadMod,iBadSide,refSpeed);
+	if(params){
+	  AliWarning(Form("No good injector events for mod. %d side %d --> use rescaled values from golden module",iBadMod,iBadSide));
+	  AliITSDriftSpeedSDD* dspres=new AliITSDriftSpeedSDD(0,refSpeed->GetEventTimestamp(),3,params);
+	  arr->AddDriftSpeed(dspres);
+	  arr->SetInjectorStatus(1);
+	  goldenUsed=kTRUE;
+	}
+      }
+      if(!goldenUsed){
+	AliWarning(Form("No good injector events for mod. %d side %d --> use average values for layer 3",iBadMod,iBadSide));
+	arr->AddDriftSpeed(avdsp3);
+	arr->SetInjectorStatus(0);
+      }
       vdrift.AddAt(arr,ihyb);
     }
   }
@@ -347,6 +404,34 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
   if(retCode) return 0;
   else return 1;
 }
+
+//______________________________________________________________________
+Double_t* AliITSPreprocessorSDD::RescaleDriftSpeedModule(TList* theList,
+							 Int_t iBadMod, 
+							 Int_t iBadSide,
+							 AliITSDriftSpeedSDD* refSpeed)
+  const
+{
+  // Rescale driftSpeed for a drift region starting from values of golden module
+
+  if(!refSpeed) return 0x0;
+  TString hisName=Form("hRatioMod%d_Side%d",iBadMod,iBadSide);
+  TH1D* h=(TH1D*)theList->FindObject(hisName.Data());
+  if(!h) return 0x0;
+
+  TF1* fpoly=new TF1("fpoly","pol3",0.,255.);
+  for(Int_t iAnode=0; iAnode<256; iAnode++){
+    Double_t vref=refSpeed->GetDriftSpeedAtAnode((Double_t)iAnode);
+    Double_t vcorr=h->GetBinContent(iAnode+1)*vref;
+    h->SetBinContent(iAnode+1,vcorr);
+  }
+  h->Fit(fpoly,"RNQ");
+  Double_t *params=new Double_t[4];
+  for(Int_t iPar=0; iPar<4; iPar++) params[iPar]=fpoly->GetParameter(iPar);
+  delete fpoly;
+  return params;
+}
+
 //______________________________________________________________________
 Bool_t AliITSPreprocessorSDD::ProcessDCSDataPoints(TMap* dcsAliasMap){
   // Process DCS data
