@@ -4340,8 +4340,22 @@ void AliAnalysisAlien::WriteExecutable()
       out << "free -m" << endl;
       out << "echo \"=========================================\"" << endl << endl;
       out << fExecutableCommand << " "; 
-      out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl << endl;
-      out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $? ========\"" << endl;
+      out << fAnalysisMacro.Data() << " " << fExecutableArgs.Data() << endl;
+      out << "RET=$?" << endl;
+      out << "if [ \"$RET\" != \"0\" ];then" << endl;
+      out << "  echo \"======== ERROR : " << fAnalysisMacro.Data() << " finished with NON zero code: $RET ========\"" << endl;
+      out << "  if [ \"$RET\" -gt 128 ] && [ \"$RET\" -lt 160 ]; then"<<endl;
+      out << "    let sig=\"$RET - 128\""<<endl;
+      out << "    sigs='HUP INT QUIT ILL TRAP ABRT BUS FPE"<<endl;
+      out << "    KILL USR1 SEGV USR2 PIPE ALRM TERM STKFLT"<<endl;
+      out << "    CHLD CONT STOP TSTP TTIN TTOU URG XCPU"<<endl;
+      out << "    XFSZ VTALRM PROF WINCH IO PWR SYS'"<<endl;
+      out << "    sig=SIG`echo $sigs | awk '{ print $'\"$sig\"' }'`"<<endl;
+      out << "    echo \"======== it appears to have been killed with signal: $sig ========\""<<endl;
+      out << "  fi"<<endl;
+      out << "  exit $RET"<< endl;
+      out << "fi" << endl << endl ;
+      out << "echo \"======== " << fAnalysisMacro.Data() << " finished with exit code: $RET ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
       out << "free -m" << endl;
    }   
@@ -4404,6 +4418,20 @@ void AliAnalysisAlien::WriteMergeExecutable()
       else
          out << "export ARG=\"" << mergeMacro << "(\\\"$1\\\",$2)\"" << endl;
       out << fExecutableCommand << " " << "$ARG" << endl; 
+      out << "RET=$?" << endl;
+      out << "if [ \"$RET\" != \"0\" ];then" << endl;
+      out << "  echo \"======== ERROR : " << fAnalysisMacro.Data() << " finished with NON zero code: $RET ========\"" << endl;
+      out << "  if [ \"$RET\" -gt 128 ] && [ \"$RET\" -lt 160 ]; then"<<endl;
+      out << "    let sig=\"$RET - 128\""<<endl;
+      out << "    sigs='HUP INT QUIT ILL TRAP ABRT BUS FPE"<<endl;
+      out << "    KILL USR1 SEGV USR2 PIPE ALRM TERM STKFLT"<<endl;
+      out << "    CHLD CONT STOP TSTP TTIN TTOU URG XCPU"<<endl;
+      out << "    XFSZ VTALRM PROF WINCH IO PWR SYS'"<<endl;
+      out << "    sig=SIG`echo $sigs | awk '{ print $'\"$sig\"' }'`"<<endl;
+      out << "    echo \"======== it appears to have been killed with signal: $sig ========\""<<endl;
+      out << "  fi"<<endl;
+      out << "  exit $RET"<< endl;
+      out << "fi" << endl << endl ;
       out << "echo \"======== " << mergeMacro.Data() << " finished with exit code: $? ========\"" << endl;
       out << "echo \"############## memory after: ##############\"" << endl;
       out << "free -m" << endl;
