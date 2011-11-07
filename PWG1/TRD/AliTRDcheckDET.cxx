@@ -1500,7 +1500,7 @@ void AliTRDcheckDET::MakePlotTrackletCharge(){
 	for(Int_t icent = 0; icent < AliTRDeventInfo::kCentralityClasses; icent++){
 		hQtCent[icent] = hQt->ProjectionX(Form("hQt_%d", icent), icent+1, icent+1);
 		if(!hQtCent[icent]->GetEntries()){
-			delete hQtCent[icent];
+			delete hQtCent[icent]; hQtCent[icent]=NULL;
 			continue;
 		}
 		hQtCent[icent]->SetTitle("Tracklet Charge");
