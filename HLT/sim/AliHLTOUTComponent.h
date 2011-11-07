@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-//  @file   AliHLTOUTComponent.h
-//  @author Matthias Richter
-//  @date   
-//  @brief  The HLTOUT data sink component similar to HLTOUT nodes.
-//  @note   Used in the AliRoot environment only.
+/// @file   AliHLTOUTComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  The HLTOUT data sink component similar to HLTOUT nodes.
+/// @note   Used in the AliRoot environment only.
 
 #include "AliHLTOfflineDataSink.h"
 
@@ -257,6 +257,9 @@ class AliHLTOUTComponent : public AliHLTOfflineDataSink  {
   /// type of the component
   EType fType; //! type of the component
 
-  ClassDef(AliHLTOUTComponent, 4)
+  /// counter for round robin usage of HLTOUT links
+  int fRoundRobinCounter; //! counter for round robin usage of HLTOUT links
+
+  ClassDef(AliHLTOUTComponent, 0)
 };
 #endif

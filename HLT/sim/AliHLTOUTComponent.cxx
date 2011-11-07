@@ -16,11 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-//  @file   AliHLTOUTComponent.cxx
-//  @author Matthias Richter
-//  @date   
-//  @brief  The HLTOUT data sink component similar to HLTOUT nodes
-//  @note   Used in the AliRoot environment only.
+/// @file   AliHLTOUTComponent.cxx
+/// @author Matthias Richter
+/// @date   
+/// @brief  The HLTOUT data sink component similar to HLTOUT nodes
+/// @note   Used in the AliRoot environment only.
 
 #if __GNUC__>= 3
 using namespace std;
@@ -60,6 +60,7 @@ AliHLTOUTComponent::AliHLTOUTComponent(EType type)
   , fReservedWriter(-1)
   , fReservedData(0)
   , fType(type)
+  , fRoundRobinCounter(0)
 {
   // see header file for class documentation
   // or
@@ -79,14 +80,14 @@ int AliHLTOUTComponent::fgOptions=kWriteRawFiles|kWriteDigits;
 
 AliHLTOUTComponent::~AliHLTOUTComponent()
 {
-  // see header file for class documentation
+  // destructor
   if (fpLibManager) delete fpLibManager;
   fpLibManager=NULL;
 }
 
 const char* AliHLTOUTComponent::GetComponentID()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: get component id
   switch (fType) {
   case kDigits: return "HLTOUTdigits";
   case kRaw:    return "HLTOUTraw";
@@ -99,20 +100,20 @@ const char* AliHLTOUTComponent::GetComponentID()
 
 void AliHLTOUTComponent::GetInputDataTypes( vector<AliHLTComponentDataType>& list)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: indicate input data types
   list.clear();
   list.push_back(kAliHLTAnyDataType);
 }
 
 AliHLTComponent* AliHLTOUTComponent::Spawn()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: create instance
   return new AliHLTOUTComponent(fType);
 }
 
 int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: initialization
   int iResult=0;
 
   switch (fType) {
@@ -131,15 +132,9 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 
   if ((iResult=ConfigureFromArgumentString(argc, argv))<0) return iResult;
 
-  // Make sure there is no library manager before we try and create a new one.
-  if (fpLibManager) {
-    delete fpLibManager;
-    fpLibManager=NULL;
-  }
-  
   // Create a new library manager and allocate the appropriate number of
   // HOMER writers for the HLTOUT component.
-  fpLibManager=new AliHLTHOMERLibManager;
+  if (!fpLibManager) fpLibManager=new AliHLTHOMERLibManager;
   if (fpLibManager) {
     int writerNo=0;
     for (writerNo=0; writerNo<fNofDDLs; writerNo++) {
@@ -162,7 +157,7 @@ int AliHLTOUTComponent::DoInit( int argc, const char** argv )
 
 int AliHLTOUTComponent::ScanConfigurationArgument(int argc, const char** argv)
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: argument scan
   if (argc<=0) return 0;
   int i=0;
   TString argument=argv[i];
@@ -228,13 +223,21 @@ int AliHLTOUTComponent::ScanConfigurationArgument(int argc, const char** argv)
     return 1;
   }
 
+  // -distribute-blocks
+  key="-distribute-blocks";
+  if (argument.CompareTo(key)==0) {
+    fRoundRobinCounter=-1;
+
+    return 1;
+  }
+
   // unknown argument
   return -EINVAL;
 }
 
 int AliHLTOUTComponent::DoDeinit()
 {
-  // see header file for class documentation
+  // overloaded from AliHLTComponent: cleanup
   int iResult=0;
 
   if (fpLibManager) {
@@ -283,7 +286,7 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
 			 const AliHLTComponentBlockData* blocks, 
 			 AliHLTComponentTriggerData& /*trigData*/ )
 {
-  // see header file for class documentation
+  // overloaded from AliHLTDataSink: event processing
   int iResult=0;
   HLTInfo("write %d output block(s)", evtData.fBlockCnt);
   int writerNo=0;
@@ -376,21 +379,23 @@ int AliHLTOUTComponent::DumpEvent( const AliHLTComponentEventData& evtData,
     iResult=Write(GetEventCount(), GetRunLoader());
   }
 
+  if (fRoundRobinCounter>=0) {
+    if (++fRoundRobinCounter>=fNofDDLs) fRoundRobinCounter=0;
+  }
+
   return iResult;
 }
 
 
 int AliHLTOUTComponent::FillESD(int /*eventNo*/, AliRunLoader* /*runLoader*/, AliESDEvent* /*esd*/)
 {
-  // see header file for class documentation
-  // 2010-04-14 nothing to do any more. The data is written at the end of
-  // DumpEvent
+  // Nop. The data is written at the end of DumpEvent
   return 0;
 }
 
 int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
 {
-  // see header file for class documentation
+  // write digits and raw files for the current event
   int iResult=0;
 
   if (fWriters.size()==0) return 0;
@@ -424,7 +429,9 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
     
     if ((bufferSize=FillOutputBuffer(eventNo, fWriters[*ddlno], pBuffer))>0) {
       if (fOptions&kWriteDigits) WriteDigitArray(*ddlno, pBuffer, bufferSize);
-      if (fOptions&kWriteRawFiles) WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
+      if (fOptions&kWriteRawFiles &&
+	  (fRoundRobinCounter<0 || fRoundRobinCounter==*ddlno))
+	WriteRawFile(eventNo, runLoader, *ddlno, pBuffer, bufferSize);
     }
     fWriters[*ddlno]->Clear();
     ddlno++;
@@ -435,7 +442,23 @@ int AliHLTOUTComponent::Write(int eventNo, AliRunLoader* runLoader)
 
 int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliHLTUInt32_t /*size*/)
 {
-  // see header file for class documentation
+  /// get a writer for the next block
+  /// in round robin mode (like the online HLTOUT) all blocks of one event go to the same link
+  /// this is now also the default behavior of the HLTOUTComponent and indicated by
+  /// fRoundRobinCounter>=0
+  /// Writers are selected randomly otherwise.
+  if (fRoundRobinCounter>=0) {
+    if (fRoundRobinCounter==fReservedWriter) {
+      if (++fRoundRobinCounter>=fNofDDLs) fRoundRobinCounter=0;
+      if (fRoundRobinCounter==fReservedWriter) {
+	HLTWarning("there are not enough links to use a reserved writer, discarding data in reserved writer %d (total %d)",
+		   fReservedWriter, fNofDDLs);
+	fReservedWriter=-1;
+      }
+    }
+    return fRoundRobinCounter;
+  }
+
   int iResult=-ENOENT;
   assert(list.size()>0);
   if (list.size()==0) return iResult;
@@ -470,7 +493,11 @@ int AliHLTOUTComponent::ShuffleWriters(AliHLTMonitoringWriterPVector &list, AliH
 
 int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pWriter, const AliHLTUInt8_t* &pBuffer)
 {
-  // see header file for class documentation
+  // prepare the output buffer for writing, consists of
+  // - CDH
+  // - HLTOUT header
+  // - HOMER data
+  // buffer is allocated internally and data is valid until next call
   int iResult=0;
   unsigned int bufferSize=0;
 
@@ -528,7 +555,7 @@ int AliHLTOUTComponent::FillOutputBuffer(int eventNo, AliHLTMonitoringWriter* pW
 
 int AliHLTOUTComponent::WriteDigitArray(int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
 {
-  // see header file for class documentation
+  // wite a buffer to the associated digit array
   int iResult=0;
   assert(hltddl<fNofDDLs);
   if (hltddl>=fNofDDLs) return -ERANGE;
@@ -551,7 +578,10 @@ int AliHLTOUTComponent::WriteDigitArray(int hltddl, const AliHLTUInt8_t* pBuffer
 
 int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/)
 {
-  // see header file for class documentation
+  // fill tree with digit arrays and write to file
+  // all links must be written, even in round robin mode, where all links but one
+  // do not contain any data blocks.
+  // This is a limitation of storing the links in a tree
   int iResult=0;
   if (!fpDigitFile) {
     fpDigitFile=new TFile(fDigitFileName, "RECREATE");
@@ -597,13 +627,15 @@ int AliHLTOUTComponent::WriteDigits(int /*eventNo*/, AliRunLoader* /*runLoader*/
 
 int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, int hltddl, const AliHLTUInt8_t* pBuffer, unsigned int bufferSize)
 {
-  // see header file for class documentation
+  // write buffer to raw file in the current directory
+  // creates the event raw directories in the current directory
   int iResult=0;
   const char* fileName=AliDAQ::DdlFileName("HLT", hltddl);
   assert(fileName!=NULL);
   TString filePath;
   filePath.Form("raw%d/", eventNo);
-  if (gSystem->AccessPathName(filePath)) {
+  if (gSystem->AccessPathName(filePath)!=0) {
+    // note: AccessPathName return 0 if the path is existing
     TString command="mkdir "; command+=filePath;
     gSystem->Exec(command);
   }
@@ -629,18 +661,18 @@ int AliHLTOUTComponent::WriteRawFile(int eventNo, AliRunLoader* /*runLoader*/, i
 
 void AliHLTOUTComponent::SetGlobalOption(unsigned int options)
 {
-  // see header file for class documentation
+  // set the global options
   fgOptions|=options;
 }
 
 void AliHLTOUTComponent::ClearGlobalOption(unsigned int options)
 {
-  // see header file for class documentation
+  // reset the global options
   fgOptions&=~options;
 }
 
 bool AliHLTOUTComponent::TestGlobalOption(unsigned int option)
 {
-  // see header file for class documentation
+  // check option
   return (fgOptions&option)!=0;
 }
