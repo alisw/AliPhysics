@@ -108,7 +108,7 @@ int AliHLTMiscImplementation::GetCDBRunNo() const
   return -1;
 }
 
-AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo, int version, int subVersion) const
+AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo) const
 {
   // see header file for function documentation
   if (!path) return NULL;
@@ -122,7 +122,7 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
   if (runNo<0) runNo=man->GetRun();
 
   // check the cache first if no specific version required
-  if (version<0) {
+  { //condition was deprecated, but keep for formatting
     const TMap* pCache=man->GetEntryCache();
     TObject* pEntryObj=NULL;
     if (pCache && (pEntryObj=pCache->GetValue(path))!=NULL) {
@@ -156,22 +156,9 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
     log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "Could not find an entry in the CDB for \"%s\".", path);
     return NULL;
   }
-  if (version<0) version=latest;
 
-  // OCDB objects on GRID have no sub version
-  if (subVersion<0 && !bIsGrid) subVersion = store->GetLatestSubVersion(path, runNo, version);
-  AliCDBEntry* entry=man->Get(path, runNo, version, subVersion);
-  if (entry) {
-    // there seems to be a problem with the caching of objects in the CDBManager
-    // regardless what version is specified it returns the object from the cache
-    AliCDBId id=entry->GetId();
-    if ((version<0 || id.GetVersion()==version) &&
-	(subVersion<0 || id.GetSubVersion()==subVersion)) {
-      // entry in the cache has the correct version
-      return entry;
-    }
-  }
-  return store->Get(path, runNo, version, subVersion);
+  AliCDBEntry* entry=man->Get(path, runNo);
+  return entry;
 }
 
 TObject* AliHLTMiscImplementation::ExtractObject(AliCDBEntry* entry) const

@@ -26,7 +26,7 @@ class AliHLTMiscImplementation : public AliHLTMisc
   int SetCDBRunNo(int runNo);
   int GetCDBRunNo() const;
 
-  AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1) const;
+  AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1) const;
 
   TObject* ExtractObject(AliCDBEntry* entry) const;
   int CheckOCDBEntries(const TMap* const pMap) const;

@@ -43,7 +43,7 @@ class AliHLTMisc : public TObject {
   virtual int GetCDBRunNo() const;
 
   /// Load an OCDB object
-  virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1, int version = -1, int subVersion = -1) const;
+  virtual AliCDBEntry* LoadOCDBEntry(const char* path, int runNo=-1) const;
 
   // Extract the TObject instance from the CDB object
   virtual TObject* ExtractObject(AliCDBEntry* entry) const;
@@ -100,7 +100,7 @@ class AliHLTMisc : public TObject {
   };
 
  private:
-  static AliHLTMisc* fgInstance;
+  static AliHLTMisc* fgInstance; //! global instance
 
   ClassDef(AliHLTMisc, 0)
 };
