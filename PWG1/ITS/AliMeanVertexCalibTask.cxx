@@ -95,6 +95,12 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   fOutput->Add(hTRKVertexXdefMult);
   TH1F* hTRKVertexYdefMult = new TH1F("hTRKVertexYdefMult","TRKVertex y Mult; y vertex [cm] 30<Mult<45; events",500,-1,1);
   fOutput->Add(hTRKVertexYdefMult);
+	
+	TH1F* hTRKVertexXHighMult = new TH1F("hTRKVertexXHighMult","TRKVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
+	fOutput->Add(hTRKVertexXHighMult);
+	TH1F* hTRKVertexYHighMult = new TH1F("hTRKVertexYHighMult","TRKVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
+	fOutput->Add(hTRKVertexYHighMult);	
+	
 
   TH1F* hITSSAVertexX = new TH1F("hITSSAVertexX","ITSSAVertex x; x vertex [cm]; events",200,-1,1);
   fOutput->Add(hITSSAVertexX);
@@ -114,6 +120,13 @@ void AliMeanVertexCalibTask::UserCreateOutputObjects()
   TH1F* hITSSAVertexYdefMult = new TH1F("hITSSAVertexYdefMult","ITSSAVertex y Mult; y vertex [cm] 30<Mult<45; events",500,-1,1);
   fOutput->Add(hITSSAVertexYdefMult);
 
+	
+   TH1F* hITSSAVertexXHighMult = new TH1F("hITSSAVertexXHighMult","ITSSAVertex x High Mult; x vertex [cm] Mult>1500; events",500,-0.5,0.5);  
+   fOutput->Add(hITSSAVertexXHighMult);
+   TH1F* hITSSAVertexYHighMult = new TH1F("hITSSAVertexYHighMult","ITSSAVertex y High Mult; y vertex [cm] Mult>1500; events",500,-0.5,0.5);
+   fOutput->Add(hITSSAVertexYHighMult);
+	
+	
 
   PostData(1, fOutput);
   
@@ -166,6 +179,11 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
 	((TH1F*)fOutput->FindObject("hTRKVertexXdefMult"))->Fill(trkv->GetXv());
 	((TH1F*)fOutput->FindObject("hTRKVertexYdefMult"))->Fill(trkv->GetYv());
       }
+		
+	  if (ntrklets>1500){
+			((TH1F*)fOutput->FindObject("hTRKVertexXHighMult"))->Fill(trkv->GetXv());
+			((TH1F*)fOutput->FindObject("hTRKVertexYHighMult"))->Fill(trkv->GetYv());
+		}
       
       ((TH2F*)fOutput->FindObject("hTRKVertexXZ"))->Fill(trkv->GetXv(),trkv->GetZv());
       ((TH2F*)fOutput->FindObject("hTRKVertexYZ"))->Fill(trkv->GetYv(),trkv->GetZv());
@@ -180,10 +198,15 @@ void AliMeanVertexCalibTask::UserExec(Option_t *)
       ((TH1F*)fOutput->FindObject("hITSSAVertexY"))->Fill(itsSAv->GetYv());
       ((TH1F*)fOutput->FindObject("hITSSAVertexZ"))->Fill(itsSAv->GetZv());
       
-      if (ntrklets>30 && ntrklets<45){
-	((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());
-	((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetYv());
-      }
+		if (ntrklets>30 && ntrklets<45){
+			((TH1F*)fOutput->FindObject("hITSSAVertexXdefMult"))->Fill(itsSAv->GetXv());
+		    ((TH1F*)fOutput->FindObject("hITSSAVertexYdefMult"))->Fill(itsSAv->GetYv());
+		}
+		
+		if (ntrklets>1500){
+			((TH1F*)fOutput->FindObject("hITSSAVertexXHighMult"))->Fill(itsSAv->GetXv());
+			((TH1F*)fOutput->FindObject("hITSSAVertexYHighMult"))->Fill(itsSAv->GetYv());
+		}
       
       ((TH2F*)fOutput->FindObject("hITSSAVertexXZ"))->Fill(itsSAv->GetXv(),itsSAv->GetZv());
       ((TH2F*)fOutput->FindObject("hITSSAVertexYZ"))->Fill(itsSAv->GetYv(),itsSAv->GetZv());
