@@ -194,7 +194,7 @@ void ConfigureEMCALRecoUtils(
   else if(run > 146860 && run < 156477 )
     ftime = TFile::Open(Form("%s/RefLHC11cpass1-7TeV.root",path.Data()));
   else if(run >= 156477)
-    ftime = TFile::Open(Form("%s/RefLHC11cpass1-7TeV.root",path.Data()));
+    ftime = TFile::Open(Form("%s/RefLHC11dpass1-7TeV.root",path.Data()));
   else if(run <  140000 && run > 136850)
     ftime = TFile::Open(Form("%s/RefLHC10hpass2PbPb2.76TeV.root",path.Data()));
   else if(run < 136850)
