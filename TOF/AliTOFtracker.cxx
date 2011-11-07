@@ -572,21 +572,15 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
 
       // First of all, propagate the track...
       Float_t xs = AliTOFGeometry::RinTOF()+istep*stepSize;
-      if(!trackTOFin->PropagateTo(xs)) {
-	break;
-      }
+      if (!(trackTOFin->PropagateTo(xs))) break;
 
       //  ...and then, if necessary, rotate the track
       Double_t ymax = xs*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
       Double_t ysect = trackTOFin->GetY();
       if (ysect > ymax) {
-	if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
-	  break;
-	}
+	if (!(trackTOFin->Rotate(AliTOFGeometry::GetAlpha()))) break;
       } else if (ysect <-ymax) {
-	if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
-	  break;
-	}
+	if (!(trackTOFin->Rotate(-AliTOFGeometry::GetAlpha()))) break;
       }
 
       nStepsDone++;
@@ -913,15 +907,24 @@ void AliTOFtracker::MatchTracks( Bool_t mLastStep){
     }
 
     AliTOFtrack *trackTOFout = new AliTOFtrack(*t); 
-    trackTOFout->PropagateTo(xpos);
+    if (!(trackTOFout->PropagateTo(xpos))) {
+      delete trackTOFout;
+      continue;
+    }
 
     // If necessary, rotate the track
     Double_t yATxposMax=xpos*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
     Double_t yATxpos=trackTOFout->GetY();
     if (yATxpos > yATxposMax) {
-      trackTOFout->Rotate(AliTOFGeometry::GetAlpha());
+      if (!(trackTOFout->Rotate(AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFout;
+	continue;
+      }
     } else if (yATxpos < -yATxposMax) {
-      trackTOFout->Rotate(-AliTOFGeometry::GetAlpha());
+      if (!(trackTOFout->Rotate(-AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFout;
+	continue;
+      }
     }
 
     // Fill the track residual histograms.

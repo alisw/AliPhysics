@@ -483,20 +483,23 @@ void AliTOFtrackerV1::MatchTracks( ){
 
     // First of all, propagate the track...
     Float_t xTOF = sensRadius;
-    if(!trackTOFin->PropagateTo(xTOF)) {
-      break;
+    if (!(trackTOFin->PropagateTo(xTOF))) {
+      delete trackTOFin;
+      continue;
     }
 
     // ...and then, if necessary, rotate the track
     Double_t ymax = xTOF*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
     Double_t ysect = trackTOFin->GetY();
     if (ysect > ymax) {
-      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
-	break;
+      if (!(trackTOFin->Rotate(AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFin;
+	continue;
       }
     } else if (ysect <-ymax) {
-      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
-	break;
+      if (!(trackTOFin->Rotate(-AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFin;
+	continue;
       }
     }
 
@@ -542,25 +545,29 @@ void AliTOFtrackerV1::MatchTracks( ){
       fngoodmatch++;
        AliDebug(2,Form(" track label good %5d",trackTOFin->GetLabel()));
 
-    }
-    else{
+    } else {
       fnbadmatch++;
       AliDebug(2,Form(" track label bad %5d",trackTOFin->GetLabel()));
     }
 
     //Propagate the track to the best matched cluster
-    trackTOFin->PropagateTo(bestCluster);
+    if (!(trackTOFin->PropagateTo(bestCluster))) {
+      delete trackTOFin;
+      continue;
+    }
 
     // If necessary, rotate the track
     Double_t yATxMax = trackTOFin->GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha());
     Double_t yATx = trackTOFin->GetY();
     if (yATx > yATxMax) {
-      if (!trackTOFin->Rotate(AliTOFGeometry::GetAlpha())) {
-	break;
+      if (!(trackTOFin->Rotate(AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFin;
+	continue;
       }
     } else if (yATx <-yATxMax) {
-      if (!trackTOFin->Rotate(-AliTOFGeometry::GetAlpha())) {
-	break;
+      if (!(trackTOFin->Rotate(-AliTOFGeometry::GetAlpha()))) {
+	delete trackTOFin;
+	continue;
       }
     }
 
@@ -647,6 +654,7 @@ void AliTOFtrackerV1::MatchTracks( ){
     // no longer there - all info is in the ESDs now
 
     delete trackTOFin;
+
   }
 
 }

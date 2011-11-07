@@ -197,14 +197,17 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
     //AliExternalTrackParam::GetYAt(x,bz,y);
     //AliExternalTrackParam::GetZAt(x,bz,z);
  
-    PropagateTo(x,0.,0.); /* passing 0.,0. as arguments since now
-			      this method queries TGeo for material budget
-			   */
+    if (!(PropagateTo(x,0.,0.))) { /* passing 0.,0. as arguments since now
+				      this method queries TGeo for material budget
+				   */
+      return kFALSE;
+    }
     
-    if (GetY() >  GetX()*kTalphac)
-      Rotate(kAlphac);
-    else if (GetY() < -GetX()*kTalphac)
-      Rotate(-kAlphac);
+    if (GetY() >  GetX()*kTalphac) {
+      if (!(Rotate(kAlphac))) return kFALSE;
+    } else if (GetY() < -GetX()*kTalphac) {
+      if (!(Rotate(-kAlphac))) return kFALSE;
+    }
 
   }
 
@@ -215,10 +218,11 @@ Bool_t AliTOFtrack::PropagateToInnerTOF()
 
   if (!check) return kFALSE;
 
-  if (GetY() >  GetX()*kTalphac)
-    Rotate(kAlphac);
-  else if (GetY() < -GetX()*kTalphac)
-    Rotate(-kAlphac);
+  if (GetY() >  GetX()*kTalphac) {
+    if (!(Rotate(kAlphac))) return kFALSE;
+  } else if (GetY() < -GetX()*kTalphac) {
+    if (!(Rotate(-kAlphac))) return kFALSE;
+  }
 
   return kTRUE;
   
@@ -238,13 +242,9 @@ Bool_t AliTOFtrack::PropagateToInnerTOFold()
     return kFALSE;
   }
   if (y > ymax) {
-    if (!Rotate(AliTOFGeometry::GetAlpha())) {
-      return kFALSE;
-    }
+    if (!Rotate(AliTOFGeometry::GetAlpha())) return kFALSE;
   } else if (y <-ymax) {
-    if (!Rotate(-AliTOFGeometry::GetAlpha())) {
-      return kFALSE;
-    }
+    if (!Rotate(-AliTOFGeometry::GetAlpha())) return kFALSE;
   }
   
   Double_t x = GetX();
@@ -252,14 +252,16 @@ Bool_t AliTOFtrack::PropagateToInnerTOFold()
   for (Int_t istep=0;istep<nsteps;istep++){
     Float_t xp = x+istep*0.5; 
     //    GetPropagationParameters(param);  
-    PropagateTo(xp,0.,0.); /* passing 0.,0. as arguments since now
-			      this method queries TGeo for material budget
-			   */
+    if (!(PropagateTo(xp,0.,0.))) { /* passing 0.,0. as arguments since now
+				       this method queries TGeo for material budget
+				    */
+      return kFALSE;
+    }
     
   }
   
-  if(!PropagateTo(AliTOFGeometry::RinTOF()))return 0;
-  
+  if (!(PropagateTo(AliTOFGeometry::RinTOF()))) return kFALSE;
+
   return kTRUE;
   
 }     
@@ -295,10 +297,11 @@ Bool_t AliTOFtrack::PropagateTo(const AliCluster3D *c) {
 
   }
 
-  if (GetY() >  GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha()))
-    Rotate(AliTOFGeometry::GetAlpha());
-  else if (GetY() < -GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha()))
-    Rotate(-AliTOFGeometry::GetAlpha());
+  if (GetY() >  GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha())) {
+    if (!(Rotate(AliTOFGeometry::GetAlpha()))) return kFALSE;
+  } else if (GetY() < -GetX()*TMath::Tan(0.5*AliTOFGeometry::GetAlpha())) {
+    if (!(Rotate(-AliTOFGeometry::GetAlpha()))) return kFALSE;
+  }
 
   return kTRUE;
 }
