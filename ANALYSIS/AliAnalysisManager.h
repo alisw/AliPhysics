@@ -63,7 +63,8 @@ enum EAliAnalysisFlags {
    kExternalLoop     = BIT(18),
    kSkipTerminate    = BIT(19),
    kUseProgressBar   = BIT(20),
-   kTrueNotify       = BIT(21)
+   kTrueNotify       = BIT(21),
+   kTasksInitialized = BIT(22)
 };   
 
    AliAnalysisManager(const char *name = "mgr", const char *title="");
@@ -130,6 +131,7 @@ enum EAliAnalysisFlags {
    Bool_t              IsRemote() const           {return fIsRemote;}
    Bool_t              IsUsingDataSet() const     {return TObject::TestBit(kUseDataSet);}
    void                LoadBranch(const char *n)  { if(fAutoBranchHandling) return; DoLoadBranch(n); }
+   void                RunLocalInit();
    void                SetAnalysisType(EAliAnalysisExecMode mode) {fMode = mode;}
    void                SetAutoBranchLoading(Bool_t b) { fAutoBranchHandling = b; }
    void                SetCurrentEntry(Long64_t entry)            {fCurrentEntry = entry;}
@@ -180,6 +182,7 @@ enum EAliAnalysisFlags {
    void                 CountEvent(Int_t ninput, Int_t nprocessed, Int_t nfailed, Int_t naccepted);
    Bool_t               InitAnalysis();
    Bool_t               IsInitialized() const {return fInitOK;}
+   Bool_t               IsTrainInitialized() const {return TObject::TestBit(kTasksInitialized);}
    Bool_t               IsExternalLoop() const {return TObject::TestBit(kExternalLoop);}
    Bool_t               IsEventLoop() const {return TObject::TestBit(kEventLoop);}
    Bool_t               IsSkipTerminate() const {return TObject::TestBit(kSkipTerminate);}

@@ -598,6 +598,7 @@ Bool_t AliAnalysisAlien::GenerateTrain(const char *name)
    if (!LoadModules()) return kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr->InitAnalysis()) return kFALSE;
+   mgr->RunLocalInit();
    mgr->PrintStatus();
    Int_t productionMode = fProductionMode;
    SetProductionMode();
@@ -634,6 +635,7 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
    } else if (!LoadModules()) return kFALSE;
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr->InitAnalysis()) return kFALSE;
+   mgr->RunLocalInit();
    mgr->PrintStatus();
    SetLocalTest(kTRUE);
    Int_t productionMode = fProductionMode;

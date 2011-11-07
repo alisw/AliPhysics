@@ -1513,6 +1513,22 @@ void AliAnalysisManager::ResetAnalysis()
 }
 
 //______________________________________________________________________________
+void AliAnalysisManager::RunLocalInit()
+{
+// Run LocalInit method for all tasks.
+   TDirectory *cdir = gDirectory;
+   if (IsTrainInitialized()) return;
+   TIter nextTask(fTasks);
+   AliAnalysisTask *task;
+   while ((task=(AliAnalysisTask*)nextTask())) {
+      gROOT->cd();
+      task->LocalInit();
+   }
+   cdir->cd();
+   TObject::SetBit(kTasksInitialized, kTRUE);
+}   
+
+//______________________________________________________________________________
 Long64_t AliAnalysisManager::StartAnalysis(const char *type, Long64_t nentries, Long64_t firstentry)
 {
 // Start analysis having a grid handler.
@@ -1549,11 +1565,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    TString anaType = type;
    anaType.ToLower();
    fMode = kLocalAnalysis;
-   Bool_t runlocalinit = kTRUE;
-   if (anaType.Contains("file")) {
-      runlocalinit = kFALSE;
-      fIsRemote = kTRUE;
-   }   
+   if (anaType.Contains("file"))      fIsRemote = kTRUE;
    if (anaType.Contains("proof"))     fMode = kProofAnalysis;
    else if (anaType.Contains("grid")) fMode = kGridAnalysis;
    else if (anaType.Contains("mix"))  fMode = kMixingAnalysis;
@@ -1570,12 +1582,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
          // Write analysis manager in the analysis file
          cout << "===== RUNNING GRID ANALYSIS: " << GetName() << endl;
          // run local task configuration
-         TIter nextTask(fTasks);
-         AliAnalysisTask *task;
-         while ((task=(AliAnalysisTask*)nextTask())) {
-            task->LocalInit();
-            gROOT->cd();
-         }
+         RunLocalInit();
          if (!fGridHandler->StartAnalysis(nentries, firstentry)) {
             Info("StartAnalysis", "Grid analysis was stopped and cannot be terminated");
             cdir->cd();
@@ -1621,13 +1628,7 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, TTree * const tree,
    // Initialize locally all tasks (happens for all modes)
    TIter next(fTasks);
    AliAnalysisTask *task;
-   if (runlocalinit) {
-      while ((task=(AliAnalysisTask*)next())) {
-         task->LocalInit();
-         gROOT->cd();
-      }
-      if (getsysInfo) AliSysInfo::AddStamp("LocalInit_all", 0);
-   }   
+   RunLocalInit();
    
    switch (fMode) {
       case kLocalAnalysis:
@@ -1809,12 +1810,8 @@ Long64_t AliAnalysisManager::StartAnalysis(const char *type, const char *dataset
    }   
 
    // Initialize locally all tasks
-   TIter next(fTasks);
-   AliAnalysisTask *task;
-   while ((task=(AliAnalysisTask*)next())) {
-      task->LocalInit();
-   }
-   
+   RunLocalInit();
+      
    line = Form("gProof->AddInput((TObject*)%p);", this);
    gROOT->ProcessLine(line);
    Long_t retv;
