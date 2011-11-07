@@ -52,12 +52,12 @@ ClassImp(AliAnaPhoton)
 AliAnaPhoton::AliAnaPhoton() : 
     AliAnaPartCorrBaseClass(),    fCalorimeter(""), 
     fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.), 
-    fRejectTrackMatch(0),         fTimeCutMin(-1),              fTimeCutMax(999999),         
+    fRejectTrackMatch(0),         fTimeCutMin(-10000),          fTimeCutMax(10000),         
     fNCellsCut(0),                fFillSSHistograms(kFALSE),    
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
 
     // Histograms
-    fhNCellsE(0),                 fhMaxCellDiffClusterE(0),
+    fhNCellsE(0),                 fhMaxCellDiffClusterE(0),     fhTimeE(0), // Control histograms
     fhEPhoton(0),                 fhPtPhoton(0),  
     fhPhiPhoton(0),               fhEtaPhoton(0), 
     fhEtaPhiPhoton(0),            fhEtaPhi05Photon(0),
@@ -941,13 +941,19 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t nptbins  = GetHistoPtBins();  Float_t ptmax  = GetHistoPtMax();  Float_t ptmin  = GetHistoPtMin(); 
   Int_t nphibins = GetHistoPhiBins(); Float_t phimax = GetHistoPhiMax(); Float_t phimin = GetHistoPhiMin(); 
   Int_t netabins = GetHistoEtaBins(); Float_t etamax = GetHistoEtaMax(); Float_t etamin = GetHistoEtaMin();	
-  Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax = GetHistoShowerShapeMax();  Float_t ssmin = GetHistoShowerShapeMin();
-  Int_t nbins    = GetHistoNClusterCellBins(); Int_t nmax    = GetHistoNClusterCellMax(); Int_t nmin    = GetHistoNClusterCellMin(); 
+  Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax   = GetHistoShowerShapeMax();  Float_t ssmin   = GetHistoShowerShapeMin();
+  Int_t nbins    = GetHistoNClusterCellBins(); Int_t   nmax    = GetHistoNClusterCellMax(); Int_t   nmin    = GetHistoNClusterCellMin(); 
+  Int_t ntimebins= GetHistoTimeBins();         Float_t timemax = GetHistoTimeMax();         Float_t timemin = GetHistoTimeMin();       
 
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax); 
   fhNCellsE->SetXTitle("E (GeV)");
   fhNCellsE->SetYTitle("# of cells in cluster");
-  outputContainer->Add(fhNCellsE);  
+  outputContainer->Add(fhNCellsE);    
+  
+  fhTimeE  = new TH2F ("hTimeE","time of cluster vs E of clusters", nptbins,ptmin,ptmax, ntimebins,timemin,timemax); 
+  fhTimeE->SetXTitle("E (GeV)");
+  fhTimeE->SetYTitle("time (ns)");
+  outputContainer->Add(fhTimeE);  
   
   fhMaxCellDiffClusterE  = new TH2F ("hMaxCellDiffClusterE","energy vs difference of cluster energy - max cell energy / cluster energy, good clusters",
                                     nptbins,ptmin,ptmax, 500,0,1.); 
@@ -1708,8 +1714,10 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus); 
     absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
     
+    // Control histograms
     fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
     fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
+    fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
     
     //.......................................
     //Play with the MC data if available

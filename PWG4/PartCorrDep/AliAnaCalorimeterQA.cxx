@@ -67,7 +67,7 @@ fStudyClustersAsymmetry(kFALSE),       fStudyWeight(kFALSE),
 //Parameters and cuts
 fNModules(12),                         fNRCU(2),
 fNMaxCols(48),                         fNMaxRows(24),  
-fTimeCutMin(-1),                       fTimeCutMax(9999999),
+fTimeCutMin(-10000),                   fTimeCutMax(10000),
 fEMCALCellAmpMin(0),                   fPHOSCellAmpMin(0), 
 
 //Histograms
@@ -376,7 +376,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       
       //Transform time to ns
       time *= 1.0e9;
-      
+ 
       // Remove noisy channels, only possible in ESDs
       if(GetReader()->GetDataType() == AliCaloTrackReader::kESD){
         if(time < fTimeCutMin || time > fTimeCutMax){
@@ -384,7 +384,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           continue;
         }
       }      
-      
+
       // Remove exotic cells
       fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
       
