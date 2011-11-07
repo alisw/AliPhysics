@@ -266,9 +266,9 @@ endforeach(MODULE)
 #NY  		       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 #NY endforeach(cfile)
 
-if(DATE_FOUND AND AMORE_FOUND)
+if(DATE_FOUND)
   include (CMakeDA)
-endif(DATE_FOUND AND AMORE_FOUND)
+endif(DATE_FOUND)
 
 if(RULECHECKER_FOUND)
     add_custom_target(factfile DEPENDS ${FACTFILE})
