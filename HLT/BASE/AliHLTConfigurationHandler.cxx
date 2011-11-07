@@ -140,8 +140,18 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
 {
   // see header file for function documentation
   int iResult=0;
+  // if this handler is the global instance the configuration is added
+  // automatically in the creation of the AliHLTConfiguration object
+  // the global instance must be deactivated otherwise in order to just create
+  // the object and then add it to THIS handler
+  bool bIamGlobal=fgpInstance==this;
+  if (!bIamGlobal && fgpInstance) {
+    // deactivate the automatic registration in the global handler
+    fgpInstance->Deactivate(false);
+  }
   AliHLTConfiguration* pConf= new AliHLTConfiguration(id, component, sources, arguments);
   if (pConf) {
+    if (bIamGlobal) {
     // the configuration will be registered automatically, if this failes the configuration
     // is missing -> delete it
     if (FindConfiguration(id)==NULL) {
@@ -149,9 +159,16 @@ int AliHLTConfigurationHandler::CreateConfiguration(const char* id, const char* 
       pConf=NULL;
       iResult=-EEXIST;
     }
+    } else {
+      RegisterConfiguration(pConf);
+    }
   } else {
     HLTError("system error: object allocation failed");
     iResult=-ENOMEM;
+  }
+  if (!bIamGlobal && fgpInstance) {
+    // deactivate the automatic registration in the global handler
+    fgpInstance->Activate();
   }
   return iResult;
 }
