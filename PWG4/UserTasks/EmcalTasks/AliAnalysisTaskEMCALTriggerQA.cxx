@@ -67,6 +67,14 @@ fhClusMB(0),
 fhClusL0(0),
 fhClusL1G(0),
 fhClusL1J(0),
+fhClusL1GOnly(0),
+fhClusL1JOnly(0),
+fhClusMaxMB(0),
+fhClusMaxL0(0),
+fhClusMaxL1G(0),
+fhClusMaxL1J(0),
+fhClusMaxL1GOnly(0),
+fhClusMaxL1JOnly(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
 fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
@@ -105,6 +113,14 @@ fhClusMB(0),
 fhClusL0(0),
 fhClusL1G(0),
 fhClusL1J(0),
+fhClusL1GOnly(0),
+fhClusL1JOnly(0),
+fhClusMaxMB(0),
+fhClusMaxL0(0),
+fhClusMaxL1G(0),
+fhClusMaxL1J(0),
+fhClusMaxL1GOnly(0),
+fhClusMaxL1JOnly(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
 fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
@@ -129,13 +145,15 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",5,0,5);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",7,0,7);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
   fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"INT");
   fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"L0");
   fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"L1-G");
   fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G - !L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-J - !L1-G");
 
   
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
@@ -238,6 +256,30 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhClusL1J     = new TH1F("hClusL1J","clusters distribution for L1J trigger",500,0,100);
   fhClusL1J->SetXTitle("Energy (GeV)");
   
+  fhClusL1GOnly = new TH1F("hClusL1GOnly","clusters distribution for L1G trigger and not L1J",500,0,100);
+  fhClusL1GOnly->SetXTitle("Energy (GeV)");
+  
+  fhClusL1JOnly = new TH1F("hClusL1JOnly","clusters distribution for L1J trigger and not L1G",500,0,100);
+  fhClusL1JOnly->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxMB     = new TH1F("hClusMaxMB","maximum energy cluster per event for MB trigger",500,0,100);
+  fhClusMaxMB->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxL0     = new TH1F("hClusMaxL0","maximum energy cluster per event for L0 trigger",500,0,100);
+  fhClusMaxMB->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxL1G     = new TH1F("hClusMaxL1G","maximum energy cluster per event for L1G trigger",500,0,100);
+  fhClusMaxL1G->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxL1J     = new TH1F("hClusMaxL1J","maximum energy cluster per event for L1J trigger",500,0,100);
+  fhClusMaxL1J->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxL1GOnly = new TH1F("hClusMaxL1GOnly","maximum energy cluster per event for L1G trigger and not L1J",500,0,100);
+  fhClusMaxL1GOnly->SetXTitle("Energy (GeV)");
+  
+  fhClusMaxL1JOnly = new TH1F("hClusMaxL1JOnly","maximum energy cluster per event for L1J trigger and not L1G",500,0,100);
+  fhClusMaxL1JOnly->SetXTitle("Energy (GeV)");
+  
   fhFEESTU     = new TH2F("hFEESTU","STU / FEE vs channel", fNBinsSTUFEERatio,0,fMaxSTUFEERatio,30,0,30);
   fhFEESTU    ->SetXTitle("STU/FEE signal");
   fhFEESTU    ->SetYTitle("channel");
@@ -264,10 +306,21 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL1JPatch);
   fOutputList->Add(fhFullTRUSTU);
   fOutputList->Add(fhSTUChecks);
+  
   fOutputList->Add(fhClusMB);
   fOutputList->Add(fhClusL0);
   fOutputList->Add(fhClusL1G);
   fOutputList->Add(fhClusL1J);
+  fOutputList->Add(fhClusL1GOnly);
+  fOutputList->Add(fhClusL1JOnly);
+  
+  fOutputList->Add(fhClusMaxMB);
+  fOutputList->Add(fhClusMaxL0);
+  fOutputList->Add(fhClusMaxL1G);
+  fOutputList->Add(fhClusMaxL1J);
+  fOutputList->Add(fhClusMaxL1GOnly);
+  fOutputList->Add(fhClusMaxL1JOnly);
+  
   fOutputList->Add(fhFEESTU);
   fOutputList->Add(fhTRUSTU);
   
@@ -302,8 +355,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(1.5);
   if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
-  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(3.5);
-  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))   fhNEvents->Fill(4.5);
+  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) { fhNEvents->Fill(3.5);
+    if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))fhNEvents->Fill(5.5); }
+  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) { fhNEvents->Fill(4.5);
+    if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))fhNEvents->Fill(6.5); }
   
   //std::cout << "trigger = " << triggerclasses << std::endl;
   
@@ -542,6 +597,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   esdEvent->GetEMCALClusters(caloClus);
   
   Int_t nCaloClusters = caloClus->GetEntriesFast();
+  Float_t emax = 0;
   for(Int_t icalo = 0; icalo < nCaloClusters; icalo++)
     {
       AliESDCaloCluster *clus = (AliESDCaloCluster*) (caloClus->At(icalo));
@@ -553,16 +609,32 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
         return;
       }
       
+      if(clus->E() > emax) emax = clus->E();
+      
       if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
          triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
          triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
-         triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    ) fhClusMB ->Fill(clus->E());
+         triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    )   fhClusMB     ->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-         triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    ) fhClusL0 ->Fill(clus->E());
-      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) fhClusL1G->Fill(clus->E());
-      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) fhClusL1J->Fill(clus->E());
+         triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusL0     ->Fill(clus->E());
+      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) { fhClusL1G    ->Fill(clus->E());
+        if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))fhClusL1GOnly->Fill(clus->E()); }
+      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) { fhClusL1J    ->Fill(clus->E());
+        if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))fhClusL1JOnly->Fill(clus->E()); }
+      
     }
-
+  
+  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
+     triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
+     triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
+     triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD")    )   fhClusMaxMB     ->Fill(emax);
+  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
+     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusMaxL0     ->Fill(emax);
+  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) { fhClusMaxL1G    ->Fill(emax);
+    if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD"))fhClusMaxL1GOnly->Fill(emax); }
+  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) { fhClusMaxL1J    ->Fill(emax);
+    if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD"))fhClusMaxL1JOnly->Fill(emax); }
+  
   PostData(1, fOutputList);  
   
 }

@@ -81,6 +81,14 @@ private:
   TH1F             *fhClusL0;        //! Clusters distribution for L0 trigger	
   TH1F             *fhClusL1G;       //! Clusters distribution for L1G trigger
   TH1F             *fhClusL1J;       //! Clusters distribution for L1J trigger
+  TH1F             *fhClusL1GOnly;   //! Clusters distribution for L1G trigger and not L1J
+  TH1F             *fhClusL1JOnly;   //! Clusters distribution for L1J trigger and not L1G
+  TH1F             *fhClusMaxMB;        //! Maximum E Cluster per event distribution for MB trigger
+  TH1F             *fhClusMaxL0;        //! Maximum E Cluster per event distribution for L0 trigger	
+  TH1F             *fhClusMaxL1G;       //! Maximum E Cluster per event distribution for L1G trigger
+  TH1F             *fhClusMaxL1J;       //! Maximum E Cluster per event distribution for L1J trigger
+  TH1F             *fhClusMaxL1GOnly;   //! Maximum E Cluster per event distribution for L1G trigger and not L1J
+  TH1F             *fhClusMaxL1JOnly;   //! Maximum E Cluster per event distribution for L1J trigger and not L1G
   
   // Histograms bins
   
@@ -109,7 +117,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 4);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 5);   
 };
 
 #endif 
