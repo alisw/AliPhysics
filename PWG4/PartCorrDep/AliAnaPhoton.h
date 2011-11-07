@@ -124,7 +124,8 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   //Histograms 
   TH2F * fhNCellsE;                      //! number of cells in cluster vs E 
   TH2F * fhMaxCellDiffClusterE;          //! Fraction of energy carried by cell with maximum energy
-  
+  TH2F * fhTimeE;                        //! time of cluster vs E 
+
   TH1F * fhEPhoton    ;                  //! Number of identified photon vs energy
   TH1F * fhPtPhoton   ;                  //! Number of identified photon vs transerse momentum 
   TH2F * fhPhiPhoton  ;                  //! Azimuthal angle of identified  photon vs transerse momentum 
@@ -214,7 +215,7 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0MostlyBkg ;          //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
   TH2F * fhEmbedPi0ELambda0FullBkg ;            //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   
-   ClassDef(AliAnaPhoton,18)
+   ClassDef(AliAnaPhoton,19)
 
 } ;
  
