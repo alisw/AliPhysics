@@ -560,8 +560,8 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
 	}
 
 	if (pString) {
-	  HLTInfo("received configuration object string: \'%s\'", pString->GetString().Data());
-	  arguments+=pString->GetString().Data();
+	  HLTInfo("received configuration object string: \'%s\'", pString->GetName());
+	  arguments+=pString->GetName();
 	  arguments+=" ";
 	} else {
 	  HLTError("configuration object \"%s\"%s%s has wrong type, required TObjString", path, key?" key ":"",key?key:"");
@@ -581,10 +581,10 @@ int AliHLTComponent::ConfigureFromCDBTObjString(const char* entries, const char*
   return iResult;
 }
 
-TObject* AliHLTComponent::LoadAndExtractOCDBObject(const char* path, int version, int subVersion, const char* key) const
+TObject* AliHLTComponent::LoadAndExtractOCDBObject(const char* path, const char* key) const
 {
   // see header file for function documentation
-  AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry(path, GetRunNo(), version, subVersion);
+  AliCDBEntry* pEntry=AliHLTMisc::Instance().LoadOCDBEntry(path, GetRunNo());
   if (!pEntry) return NULL;
   TObject* pObject=AliHLTMisc::Instance().ExtractObject(pEntry);
   TMap* pMap=dynamic_cast<TMap*>(pObject);
