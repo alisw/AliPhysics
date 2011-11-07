@@ -1794,6 +1794,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArr
     }
   }
   AliDebug(1," Vertex finding completed\n");
+  Double_t vdispersion=fVert.GetDispersion();
 
   // vertex fitter
   if(optUseFitter) {
@@ -1806,7 +1807,7 @@ AliESDVertex* AliVertexerTracks::VertexForSelectedTracks(const TObjArray *trkArr
     Int_t    nTrksUsed=fVert.GetNContributors();
     fCurrentVertex = new AliESDVertex(position,covmatrix,chi2,nTrksUsed);    
   }
-  fCurrentVertex->SetDispersion(fVert.GetDispersion());
+  fCurrentVertex->SetDispersion(vdispersion);
 
 
   // set indices of used tracks and propagate track to found vertex
