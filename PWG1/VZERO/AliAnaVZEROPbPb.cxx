@@ -190,7 +190,7 @@ void AliAnaVZEROPbPb::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnaVZEROPbPb::Init()
 {
-  // Nothing nere
+  // Nothing here
   // ...
 }
 
@@ -267,7 +267,7 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(7,"CTA1_AND_CTC1");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(8,"CTA1_OR_CTC1");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(9,"CTA2_AND_CTC2");
-		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(10,"CTA1_OR_CTC1");
+		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(10,"CTA2_OR_CTC2");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(11,"MTA_AND_MTC");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(12,"MTA_OR_MTC");
 		fhTriggerBits[iClass]->GetXaxis()->SetBinLabel(13,"BBA");
@@ -305,9 +305,9 @@ void AliAnaVZEROPbPb::CreateQAHistos(){
 	  	fOutputList->Add(fhAdcWithTime[iSide]);
 	  	fhTime[iSide] = CreateHisto1D(Form("htimepmt%s",side.Data()),Form("Time measured by TDC %s",side.Data()),400,-100,100,"Leading time (ns)","Entries");
 	  	fOutputList->Add(fhTime[iSide]);
-	  	fhWidth[iSide] = CreateHisto1D(Form("hwidth%s",side.Data()),Form("Signal width measured by TDC %s",side.Data()),128,0,200,"Signal width (ns)","Entries");
+	  	fhWidth[iSide] = CreateHisto1D(Form("hwidth%s",side.Data()),Form("Signal width measured by TDC %s",side.Data()),128,0,800,"Signal width (ns)","Entries");
 	  	fOutputList->Add(fhWidth[iSide]);
-	  	fhAdcWidth[iSide] = CreateHisto2D(Form("hadcwidth%s",side.Data()),Form("Time width vs ADC %s",side.Data()),200,0,200,128,0,200,"ADC charge","Width (ns)");
+	  	fhAdcWidth[iSide] = CreateHisto2D(Form("hadcwidth%s",side.Data()),Form("Time width vs ADC %s",side.Data()),200,0,1200,128,0,800,"ADC charge","Width (ns)");
 	  	fOutputList->Add(fhAdcWidth[iSide]);
 	  	fhAdcTime[iSide] = CreateHisto2D(Form("hAdcTime%s",side.Data()),Form("ADC vs Time %s",side.Data()),1000,-100,100,200,0,200,"Time (ns)","ADC charge");
 	  	fOutputList->Add(fhAdcTime[iSide]);
@@ -317,7 +317,7 @@ void AliAnaVZEROPbPb::CreateQAHistos(){
   fhAdcPMTWithTime = CreateHisto2D("hadcpmtwithtime","ADC vs PMT index (with leading time)",64,-0.5,63.5,200,0,200,"PMT index","ADC charge");
 
   fhTimePMT = CreateHisto2D("htimepmt","Time measured by TDC vs PMT index",64,-0.5,63.5,200,0,100,"PMT Index","Leading time (ns)");
-  fhWidthPMT = CreateHisto2D("hwidthpmt","Time width vs PMT index",64,-0.5,63.5,128,0,200,"PMT Index","Signal width (ns)");
+  fhWidthPMT = CreateHisto2D("hwidthpmt","Time width vs PMT index",64,-0.5,63.5,128,0,800,"PMT Index","Signal width (ns)");
 
   fhTimeCorr = CreateHisto2D("htimecorr","Average time C side vs. A side",200,0,100,200,0,100,"Time V0A (ns)","Time V0C (ns");
 
