@@ -274,7 +274,7 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
 	    }//charge < 0
 	  }//p1 interval check
 	}//analysis type: eta
-	if(iAnalysisType == kPhi) {
+	else if(iAnalysisType == kPhi) {
 	  if((phi >= fP1Start[iAnalysisType]) && (phi <= fP1Stop[iAnalysisType])) {
 	    if(charge > 0) {
 	      fNp[iAnalysisType] += 1.;
