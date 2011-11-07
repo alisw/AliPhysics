@@ -214,7 +214,8 @@ void AliAnaVZEROPbPb::UserExec(Option_t *)
 
   FillQAHistos();
 
-  FillPerL2TriggerHistos();
+  Bool_t isSelected = (fEsdV0->GetV0ADecision()==1) && (fEsdV0->GetV0CDecision()==1);
+  if (isSelected) FillPerL2TriggerHistos();
 
         
 
