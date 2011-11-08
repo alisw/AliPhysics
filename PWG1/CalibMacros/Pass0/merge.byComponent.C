@@ -1,40 +1,43 @@
-/*
-  merge output calib objects on Alien
-  using AliFileMerger functionality
+//___________________________________________________________________
 
-  Directory with runCalibTrain output: outputDir
-  pattern: AliESDfriends_v1.root
-  Output file name: CalibObjects.root
-
-  Example:
-  .L $ALICE_ROOT/ANALYSIS/CalibMacros/MergeCalibration/merge.C
-  merge("alien:///alice/cern.ch/user/j/jotwinow/CalibTrain/output","AliESDfriends_v1.root");
-*/
-
-void merge(const char* outputDir, const char* pattern)
+void merge(TString component, const Char_t *inputstring)
 {
-  //
-  // load libraries
-  //
+
+  /* load libs */
   gROOT->Macro("LoadLibraries.C");
-  //
   TH1::AddDirectory(0);
 
-  //
-  AliFileMerger merger;
-  merger.AddReject("esdFriend"); // do not merge
-  cpTimeOut(outputDir, pattern,10);
-
-  // local
-   merger.IterTXT("calib.list","CalibObjects.root",kFALSE);
-
-  // alien
-  //merger.IterAlien(outputDir, "CalibObjects.root", pattern);
-
-return;
+  /* copy only */
+  if (component == "COPY") {
+    CopyCPass(inputstring, "AliESDfriends_v1.root");
+    return;
+  }
+  
+  /* merge component */
+  MergeCPass(inputstring, component);
+  
 }
 
-void cpTimeOut(const char * searchdir, const char* pattern, Int_t timeOut=10)
+//___________________________________________________________________
+
+void MergeCPass(const Char_t *list, TString component)
+{
+  AliFileMerger merger;
+  /* select what to merge */
+  if (component == "ALL")
+    merger.AddReject("esdFriend");
+  else
+    merger.AddAccept(component.Data());
+  /* merge */
+  merger.IterTXT(list, "CalibObjects.root", kFALSE);
+  /* notify */
+  gSystem->Exec(Form("touch %s_merge_done", component.Data()));
+  return;
+}
+
+//___________________________________________________________________
+
+void CopyCPass(const char *searchdir, const char *pattern, Int_t timeOut=10)
 {
 
   gSystem->Setenv("XRDCLIENTMAXWAIT",Form("%d",timeOut));
@@ -84,7 +87,7 @@ void cpTimeOut(const char * searchdir, const char* pattern, Int_t timeOut=10)
   cout<<counter<<" files copied!"<<endl;
 
   outputFile.close();
-  gSystem->Exec("mv syswatch.log syswatch_copy.log");
+  gSystem->Exec("touch copy_done");
   return;
 }
 

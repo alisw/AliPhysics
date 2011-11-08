@@ -25,7 +25,8 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   gROOT->LoadMacro("AddTaskTRDCalib.C");
   gROOT->LoadMacro("AddTOFAnalysisTaskCalibPass0.C");
   gROOT->LoadMacro("AddTaskT0Calib.C");
-
+  gROOT->LoadMacro("AddTaskMeanVertexCalib.C");
+  gROOT->LoadMacro("AddTaskSDDCalib.C"); 
 
   // switch off debug 
   AliLog::SetClassDebugLevel("AliESDEvent",0);
@@ -53,15 +54,19 @@ void runCalibTrain(TString runNumberString, const char *inFileName = "AliESDs.ro
   mgr->SetInputEventHandler(inpHandler);
   
   // Output
+  const char *outFile = "AliESDfriends_v1.root";
   AliESDHandler* esdHandler   = new AliESDHandler();
   mgr->SetOutputEventHandler(esdHandler);
-  esdHandler->SetOutputFileName("AliESDfriends_v1.root");
-  
+  esdHandler->SetOutputFileName(outFile);
+  mgr->SetCommonFileName(outFile);
+  //  
   // Detector Tasks
   AliAnalysisTask* tTPC = AddTaskTPCCalib(runNumber);
   AliAnalysisTask* tTRD = AddTaskTRDCalib(runNumber);
   AliTOFAnalysisTaskCalibPass0 *thisTask = AddTOFAnalysisTaskCalibPass0();
   AliAnalysisTask* tT0 = AddTaskT0Calib(runNumber);
+  AliMeanVertexCalibTask *tMeanVtx = AddTaskMeanVertexCalib();
+  AliAnalysisTaskITSAlignQA *itsAlign = AddTaskSDDCalib();
 
   // Run the analysis
   if (!mgr->InitAnalysis()) {

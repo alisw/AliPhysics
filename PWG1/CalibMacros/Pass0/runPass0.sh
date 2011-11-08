@@ -16,7 +16,6 @@
 # runPass0.sh raw.root  50  104892
 
 #ALIEN setting
-entries=500
 # $1 = raw input filename
 runnum=`echo $1 | cut -d "/" -f 6`
 
@@ -36,7 +35,7 @@ cat recPass0.C
 echo
 
 echo ">>>>>>> Running AliRoot to reconstruct $1. Run number is $runnum..."
-aliroot -l -b -q recPass0.C\(\"alien://$1\",$entries\) 2>&1 | tee rec.log
+aliroot -l -b -q recPass0.C\(\"alien://$1\"\) 2>&1 | tee rec.log
 mv syswatch.log syswatch_rec.log
 
 echo ">>>>>>> Running AliRoot to make calibration..."

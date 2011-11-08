@@ -196,8 +196,19 @@ void ConfigOCDB(Int_t run){
   //
   //
   AliTPCTransform *transform     = AliTPCcalibDB::Instance()->GetTransform() ;
-  AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
   //
+  //AliTPCRecoParam * tpcRecoParam = AliTPCRecoParam::GetCosmicTestParam(kTRUE);
+  //
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("TPC/Calib/RecoParam");
+  if (!entry){
+    printf("TPC reco param not available");
+  }
+  TObjArray * array = (TObjArray*)entry->GetObject();
+  if (!array){
+    printf("TPC reco param not available");
+  }
+  AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(0);
+
   transform->SetCurrentRecoParam(tpcRecoParam);
   tpcRecoParam->SetUseGainCorrectionTime(0);
   tpcRecoParam->SetUseRPHICorrection(kFALSE); 
