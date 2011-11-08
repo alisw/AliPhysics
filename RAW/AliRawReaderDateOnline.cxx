@@ -38,6 +38,8 @@
 
 ClassImp(AliRawReaderDateOnline)
 
+Bool_t AliRawReaderDateOnline::fgNoSleep = kTRUE;
+
 AliRawReaderDateOnline::AliRawReaderDateOnline(
 #ifdef ALI_DATE
 				     const char* filename
@@ -142,6 +144,7 @@ Bool_t AliRawReaderDateOnline::NextEvent()
     
     /* retry if got no event */
     if (fEvent==NULL) {
+      if (fgNoSleep) gSystem->ProcessEvents();
       continue;
     }
     
@@ -158,6 +161,7 @@ Bool_t AliRawReaderDateOnline::NextEvent()
     if (!IsEventSelected()) {
       free(fEvent);
       fEvent = NULL;
+      if (fgNoSleep) gSystem->ProcessEvents();
       continue;
     }
 

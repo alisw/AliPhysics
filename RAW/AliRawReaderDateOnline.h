@@ -40,7 +40,9 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     // NextEvent() returns fFALSE and the
     // processing of raw data stops
     virtual void     Stop();
-
+    static Bool_t GetNoSleep()               {return fgNoSleep;}
+    static void   SetNoSleep(Bool_t v=kTRUE) {fgNoSleep = v;}
+    //
   protected:
     class AliRawReaderDateIntHandler : public TSignalHandler {
     public:
@@ -59,14 +61,13 @@ class AliRawReaderDateOnline: public AliRawReaderDate {
     };
 
     virtual void     SelectEvents(Int_t type, ULong64_t triggerMask = 0, const char *triggerExpr = NULL);
-
   private:
     AliRawReaderDateOnline(const AliRawReaderDateOnline& rawReader);
     AliRawReaderDateOnline& operator = (const AliRawReaderDateOnline& rawReader);
 
     const Char_t**   fTable;// custom monitoring table
     Bool_t           fStop; // raw-reader signaled to stop
-
+    static Bool_t    fgNoSleep; // do we freez the system while looping in event waiting? 
     ClassDef(AliRawReaderDateOnline, 0) // class for reading DATE raw data from shared memory
 };
 
