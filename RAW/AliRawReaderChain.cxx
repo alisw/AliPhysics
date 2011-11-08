@@ -38,8 +38,11 @@
 
 #include "AliRawReaderChain.h"
 #include "AliRawVEvent.h"
+#include "AliLog.h"
 
 ClassImp(AliRawReaderChain)
+
+TString AliRawReaderChain::fgSearchPath = "/alice/data";
 
 AliRawReaderChain::AliRawReaderChain() :
   AliRawReaderRoot(),
@@ -230,7 +233,8 @@ AliRawReaderChain::AliRawReaderChain(Int_t runNumber) :
     return;
   }
 
-  TGridResult *res = gGrid->Query("/alice/data",Form("%09d/raw/*%09d*.root",runNumber,runNumber));
+  if (fgSearchPath.IsNull()) fgSearchPath = "/alice/data";
+  TGridResult *res = gGrid->Query(fgSearchPath.Data(),Form("%09d/raw/*%09d*.root",runNumber,runNumber));
   Int_t nFiles = res->GetEntries();
   if (!nFiles) {
     Error("AliRawReaderChain","No raw-data files found for run %d",runNumber);
@@ -343,4 +347,11 @@ Int_t AliRawReaderChain::GetNumberOfEvents() const
   if (!fChain) return -1;
 
   return fChain->GetEntries();
+}
+
+void AliRawReaderChain::SetSearchPath(const char* path)
+{
+  // set alien query search path
+  AliInfoGeneral("SetSearchPath",Form("Setting search path to \"%s\" (was \"%s\")",path,fgSearchPath.Data()));
+  fgSearchPath = path;
 }

@@ -10,6 +10,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "AliRawReaderRoot.h"
+#include <TString.h>
 
 class TChain;
 class TFileCollection;
@@ -33,10 +34,12 @@ class AliRawReaderChain: public AliRawReaderRoot {
     virtual Int_t    GetNumberOfEvents() const;
 
     virtual TChain*  GetChain() const { return fChain; }
-
+    //
+    static const char* GetSearchPath()                               {return fgSearchPath;}
+    static       void  SetSearchPath(const char* path="/alice/data");
   protected :
     TChain*          fChain;        // root chain with raw events
-
+    static TString   fgSearchPath;   // search path for "find"
     ClassDef(AliRawReaderChain, 0) // class for reading raw digits from a root file
 };
 
