@@ -18,6 +18,8 @@
 //   e-mail: Alberto.Colla@cern.ch
 //-------------------------------------------------------------------------
 
+#include <stdlib.h>
+
 #include "AliCDBManager.h"
 #include "AliCDBStorage.h"
 #include "AliLog.h"
@@ -121,8 +123,7 @@ void  AliCDBManager::DumpToSnapshotFile(const char* snapshotFileName){
     f->Close();
     delete f;
 
-    //return;
-    //exit;
+    exit(0);
 }
 
 //_____________________________________________________________________________
