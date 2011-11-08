@@ -71,8 +71,11 @@ AliT0QADataMakerRec::AliT0QADataMakerRec(const AliT0QADataMakerRec& qadm) :
 
 {
   //copy ctor 
- SetName((const char*)qadm.GetName()) ; 
-  SetTitle((const char*)qadm.GetTitle()); 
+  SetName((const char*)qadm.GetName()) ; 
+  SetTitle((const char*)qadm.GetTitle());
+  for(Int_t i=0; i<24; i++){ 
+     fMeans[i]=qadm.fMeans[i];
+  }//FK// 
 }
 
 //__________________________________________________________________
@@ -166,6 +169,8 @@ void AliT0QADataMakerRec::InitRaws()
   fhRefPoint->SetLabelSize(0.02);
   Add2RawsList( fhRefPoint,0, expert, !image, !saveCorr);
 
+  TH1F* fhRefPointcal = new TH1F("hRefPointcal","Ref Point laser", 5000, 0 ,20000);
+  Add2RawsList( fhRefPointcal,250, expert, !image, !saveCorr);
 
   TH1F *fhRawCFD[24]; 
   TH1F * fhRawLEDamp[24];
@@ -211,10 +216,7 @@ void AliT0QADataMakerRec::InitRaws()
       
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," triggers;Trigger ;Counts",6,0,6);
   for (Int_t itr=0; itr<6; itr++) fhRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
-  fhRawTrigger->SetMinimum(0);
-  fhRawTrigger->SetMaximum(2);
-   Add2RawsList(fhRawTrigger ,169, !expert, image, !saveCorr);
-  
+  Add2RawsList(fhRawTrigger ,169, !expert, image, !saveCorr);
   TH1F* fhRawMean = new TH1F("hRawMean","online mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
   Add2RawsList( fhRawMean,170, expert, !image, !saveCorr);
 
@@ -454,7 +456,7 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     for (Int_t iHit=0; iHit<5; iHit++)
       allData[i][iHit]= start->GetData(i,iHit);
   
-  //if ( allData[0][0] > 0  && (type == 7))
+  if ( allData[0][0] > 0  && (type == 7))
     FillRawsData(0, allData[0][0]);
   refpoint = allData[refPointParam][0];
   if (refPointParam <  0 ) refpoint=0; 
@@ -595,7 +597,6 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
       for (Int_t ik=0; ik<24; ik++) {
 	//
 	TH1* hik = (TH1*) GetRawsData(ik+1,itrID); if (!hik) continue; 
-	if ( hik -> GetEntries() < 100) continue;
 	hik->GetXaxis()->SetRangeUser(2000, 3000);
 	int  maxBin  =  hik->GetMaximumBin(); 
 	double   meanEstimate  =  hik->GetBinCenter( maxBin);

@@ -145,26 +145,38 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
 	 }
     }
      
-   TLine *linelowyellow = new TLine(0, 0.7, 24, 0.7);    
-   linelowyellow->SetLineColor(5);
-   linelowyellow->SetLineStyle(3);
-   linelowyellow->SetLineWidth(4);
-   TLine *linelowred = new TLine(0, 0.2, 24, 0.2);    
-   linelowred->SetLineColor(2);
-   linelowred->SetLineStyle(3);
-   linelowred->SetLineWidth(4);
+   TLine linelowyellow(0, 0.7, 24, 0.7);    
+   linelowyellow.SetLineColor(5);
+   linelowyellow.SetLineStyle(3);
+   linelowyellow.SetLineWidth(4);
+   TLine linelowred(0, 0.2, 24, 0.2);    
+   linelowred.SetLineColor(2);
+   linelowred.SetLineStyle(3);
+   linelowred.SetLineWidth(4);
 
    Float_t thryell = 0.7;
-   //   TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");    
+   //   TPaveText text(0.30,0.50,0.99,0.99,"NDC");    
    Float_t thrred = 0.2;
    Float_t chcont =0;
     for (Int_t ih= 0; ih<4; ih++)
      { 
+       // clean objects added at previous checks
+       TList* lstF = fhRawEff[ih]->GetListOfFunctions();
+       if (lstF) {
+	 TObject *stats = lstF->FindObject("stats");
+	 lstF->Remove(stats);
+	 TObject *obj;
+	 while ((obj = lstF->First())) {
+	   while(lstF->Remove(obj)) { }
+	   delete obj;
+	 }
+	 if (stats) lstF->Add(stats);
+       } 
        fhRawEff[ih]->SetLineWidth(2);
        fhRawEff[ih]->SetMaximum(2.);
        fhRawEff[ih]->SetMinimum(0.);
-       fhRawEff[ih]->GetListOfFunctions()->Add(linelowyellow);
-       fhRawEff[ih]->GetListOfFunctions()->Add(linelowred);
+       fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowyellow.Clone());
+       fhRawEff[ih]->GetListOfFunctions()->Add((TLine*)linelowred.Clone());
 
        Int_t nbins= fhRawEff[ih]->GetNbinsX();
        Bool_t yell = kFALSE;
@@ -180,31 +192,28 @@ Double_t AliT0QAChecker::CheckRaw(TObjArray *listrec) const
        if (! yell && !red) {
 	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is good", fhRawEff[ih]->GetName() ));
 	 checkr=1.;
-	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text->AddText(Form(" No problems "));
-	 //	 text->SetFillColor(3);
+	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text.AddText(Form(" No problems "));
+	 //	 text.SetFillColor(3);
        }
        
        if(red ) {
 	 checkr = 0.;
 	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
-	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text->AddText(Form("Very serious problem, call expert "));
-	 //	 text->SetFillColor(2);
+	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text.AddText(Form("Very serious problem, call expert "));
+	 //	 text.SetFillColor(2);
        }
        
        if ( yell && !red) {
 	 AliDebug(AliQAv1::GetQADebugLevel(), Form(" efficiency in all channes %s  is not so good", fhRawEff[ih]->GetName() ));
 	 checkr=0.75;
-	 //	 text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
-	 //	 text->AddText(Form("Some problems "));
-	 //	 text->SetFillColor(5);
+	 //	 text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+	 //	 text.AddText(Form("Some problems "));
+	 //	 text.SetFillColor(5);
       }
-       // fhRawEff[ih]->GetListOfFunctions()->Add(text);	
-
+       // fhRawEff[ih]->GetListOfFunctions()->Add((TPaveText*)text.Clone());	       
      }
-    delete linelowyellow;
-    delete linelowred;
     return checkr;
   
 }
@@ -224,33 +233,45 @@ Double_t AliT0QAChecker::CheckESD(TObjArray *listrec ) const
     Double_t par[3];
     f1->GetParameters(&par[0]);
     
-    TPaveText* text = new TPaveText(0.30,0.50,0.99,0.99,"NDC");
+    TPaveText text(0.30,0.50,0.99,0.99,"NDC");
     
-    text->AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
+    text.AddText(Form("T0 RUN %d ",AliCDBManager::Instance()->GetRun()));
     
     AliDebug(AliQAv1::GetQADebugLevel(), Form("numentries %d mean %f  #sigma %f", (int)fhESD->GetEntries(),par[1], par[2]));
     
     
     if (par[2] > 0.07 && par[2] < 1.) {
       checkr=0.5;
-       text->AddText(Form("not good resolution :\n %f ns\n", par[2] ));
-       text->SetFillColor(5);
+       text.AddText(Form("not good resolution :\n %f ns\n", par[2] ));
+       text.SetFillColor(5);
        printf("T0 detector resolution is not good enouph: %f ns\n",par[2] );
     }
     if(TMath::Abs(par[1])>0.05) {
       checkr = 0.5;
-      text->AddText(Form(" Check clock shift on %f ns", par[1]));
-      text->SetFillColor(5);
+      text.AddText(Form(" Check clock shift on %f ns", par[1]));
+      text.SetFillColor(5);
     }
     if (par[2] >  1. || TMath::Abs(par[1])>0.1) {
       checkr = 0.25;
-      text->AddText(Form(" Bad resolution:\n mean %f ns sigma %f ns", par[1], par[2]));
-      text->SetFillColor(2);
-      
-      fhESD->GetListOfFunctions()->Add(text);	
-       AliDebug(AliQAv1::GetQADebugLevel(),
-		Form("Please, check calibration: shift= %f resolution %f test=%f\n",
-		     par[1], par[2], checkr) ) ; 
+      text.AddText(Form(" Bad resolution:\n mean %f ns sigma %f ns", par[1], par[2]));
+      text.SetFillColor(2);
+      { // RS Clean previous additions
+	TList* lstF = fhESD->GetListOfFunctions();
+	if (lstF) {
+	  TObject *stats = lstF->FindObject("stats");
+	  lstF->Remove(stats);
+	  TObject *obj;
+	  while ((obj = lstF->First())) {
+	    while(lstF->Remove(obj)) { }
+	    delete obj;
+	  }
+	  if (stats) lstF->Add(stats);
+	} 
+      }
+      fhESD->GetListOfFunctions()->Add((TPaveText*)text.Clone());	
+      AliDebug(AliQAv1::GetQADebugLevel(),
+	       Form("Please, check calibration: shift= %f resolution %f test=%f\n",
+		    par[1], par[2], checkr) ) ; 
     }
   }
   else
