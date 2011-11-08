@@ -216,7 +216,7 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 	bf[iCanvas][a]  = new AliBalance();
 
 	fHistP[a] = (TH1D*)list->FindObject(Form("fHistP%s",gBFAnalysisType[a].Data()));
-	fHistN[a] = (TH1D*)list->FindObject(Form("fHistP%s",gBFAnalysisType[a].Data()));
+	fHistN[a] = (TH1D*)list->FindObject(Form("fHistN%s",gBFAnalysisType[a].Data()));
 	fHistPP[a] = (TH1D*)list->FindObject(Form("fHistPP%s",gBFAnalysisType[a].Data()));
 	fHistPN[a] = (TH1D*)list->FindObject(Form("fHistPN%s",gBFAnalysisType[a].Data()));
 	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s",gBFAnalysisType[a].Data()));
