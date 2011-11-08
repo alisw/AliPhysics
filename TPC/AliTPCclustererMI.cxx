@@ -118,7 +118,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
-  fUseHLTClusters(1),
+  fUseHLTClusters(4),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -199,7 +199,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
   fRecoParam(0),
   fBDumpSignal(kFALSE),
   fBClonesArray(kFALSE),
-  fUseHLTClusters(1),
+  fUseHLTClusters(4),
   fAllBins(NULL),
   fAllSigBins(NULL),
   fAllNSigBins(NULL)
@@ -724,10 +724,6 @@ void AliTPCclustererMI::Digits2Clusters()
   //-----------------------------------------------------------------
   // Use HLT clusters
   //-----------------------------------------------------------------
-  fUseHLTClusters = fRecoParam->GetUseHLTClusters();
-
-  AliInfo(Form("Usage of HLT clusters in TPC reconstruction : %d",fUseHLTClusters));
-
   if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();
@@ -744,7 +740,7 @@ void AliTPCclustererMI::Digits2Clusters()
 	return;
       }
       else {
-	AliInfo("Now trying to read TPC RAW");
+	AliInfo("Now trying to read from TPC RAW");
       }
     }
     // Some other problem during cluster reading
@@ -996,10 +992,6 @@ void AliTPCclustererMI::Digits2Clusters(AliRawReader* rawReader)
   //-----------------------------------------------------------------
   // Use HLT clusters
   //-----------------------------------------------------------------
-  fUseHLTClusters = fRecoParam->GetUseHLTClusters();
-
-  AliInfo(Form("Usage of HLT clusters in TPC reconstruction : %d",fUseHLTClusters));
-
   if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
     AliInfo("Using HLT clusters for TPC off-line reconstruction");
     fZWidth = fParam->GetZWidth();

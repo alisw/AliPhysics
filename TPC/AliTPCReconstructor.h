@@ -10,6 +10,7 @@
 
 class AliTPCParam;
 class AliTPCclustererMI;
+class AliTPCtrackerMI;
 class AliTPCAltroEmulator;
 
 class AliTPCReconstructor: public AliReconstructor {
@@ -38,6 +39,7 @@ public:
   static void  SetAltroEmulator(AliTPCAltroEmulator *altro) { fAltroEmulator=altro;}
   static AliTPCAltroEmulator *  GetAltroEmulator() { return fAltroEmulator;}
 
+  void ParseOptions(AliTPCtrackerMI* tracker) const;
 
 private:
   AliTPCReconstructor(const AliTPCReconstructor&); //Not implemented

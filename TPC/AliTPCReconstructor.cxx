@@ -15,6 +15,20 @@
 
 /* $Id$ */
 
+//--------------------------------------------------------------------
+//          Options for the TPC Reconstruction in rec.C
+//
+//  4 options can be set to change the input for TPC reconstruction
+//  which overwrites the usage of fUseHLTClusters of the AliTPCRecoParam
+//
+//  1) useRAW        - use RAW, if not present -> do nothing
+//  2) useRAWorHLT   - use RAW, if not present -> use HLT clusters
+//  3) useHLT        - use HLT clusters, if not present -> do nothing
+//  4) useHLTorRAW   - use HLT clusters, if not present -> use RAW
+//
+//  -> The current default is useHLTorRAW
+//--------------------------------------------------------------------
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
 // class for TPC reconstruction                                              //
@@ -112,7 +126,12 @@ AliTracker* AliTPCReconstructor::CreateTracker() const
     param = new AliTPCParamSR;
   }
   param->ReadGeoMatrices();
-  return new AliTPCtrackerMI(param);
+  
+  AliTPCtrackerMI* tracker = new AliTPCtrackerMI(param);
+
+  ParseOptions(tracker);
+
+  return tracker;
 }
 
 //_____________________________________________________________________________
@@ -136,4 +155,40 @@ AliTPCParam* AliTPCReconstructor::GetTPCParam() const
   AliTPCParam* param = AliTPCcalibDB::Instance()->GetParameters();
 
   return param;
+}
+
+
+//_____________________________________________________________________________
+void AliTPCReconstructor::ParseOptions( AliTPCtrackerMI* tracker ) const
+{
+// parse options from rec.C and set in clusterer and tracker
+  
+  TString option = GetOption();
+  
+  Int_t useHLTClusters = 3;
+
+  if (option.Contains("use")) {
+    
+    AliInfo(Form("Overide TPC RecoParam with option %s",option.Data()));
+    
+    if (!option.CompareTo("useRAW"))
+      useHLTClusters = 1;
+    if (!option.CompareTo("useRAWorHLT"))
+      useHLTClusters = 2;
+    if (!option.CompareTo("useHLT"))
+      useHLTClusters = 3;
+    if (!option.CompareTo("useHLTorRAW"))
+      useHLTClusters = 4;
+  }
+  else {
+    const AliTPCRecoParam* param = GetRecoParam();
+    useHLTClusters = param->GetUseHLTClusters();
+  }
+
+  AliInfo(Form("Usage of HLT clusters in TPC reconstruction : %d", useHLTClusters));
+
+  fClusterer->SetUseHLTClusters(useHLTClusters);
+  tracker->SetUseHLTClusters(useHLTClusters);
+
+  return;
 }

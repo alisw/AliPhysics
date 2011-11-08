@@ -105,7 +105,7 @@ public:
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
 
  public:
-
+   void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
    Float_t OverlapFactor(AliTPCseed * s1, AliTPCseed * s2, Int_t &sum1, Int_t &sum2);
    void  SignShared(AliTPCseed * s1, AliTPCseed * s2);
@@ -194,6 +194,7 @@ private:
    Double_t fPadLength[200];                // max y for given pad row
    const AliTPCParam *fkParam;          //pointer to the parameters
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
+   Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    ClassDef(AliTPCtrackerMI,2) 
 };
 

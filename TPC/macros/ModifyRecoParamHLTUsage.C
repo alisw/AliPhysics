@@ -59,12 +59,6 @@ void ModifyRecoParamHLTUsage( const Char_t* lastOCDBEntry,
   parLowFlux->SetUseHLTClusters(iHLTusage);
   parCosmicFlux->SetUseHLTClusters(iHLTusage);
 
-  if (iHLTusage == 3 || iHLTusage == 4) {
-    parHighFlux->SetUseOnePadCluster(0);
-    parLowFlux->SetUseOnePadCluster(0);
-    parCosmicFlux->SetUseOnePadCluster(0);
-  }
-
   // -- Write out
   // -------------------------------------------------------------------
   const Char_t *comment = "Modified RecoParam with HLT clusters usage";

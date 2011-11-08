@@ -48,6 +48,8 @@ public:
 
   void StoreInClonesArray(Bool_t bOutput = kTRUE) {fBClonesArray = bOutput;} // store output clusters in TClonesArray
 
+  void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
+
 private:
   Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,

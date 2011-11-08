@@ -200,7 +200,8 @@ AliTPCtrackerMI::AliTPCtrackerMI()
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-		 fDebugStreamer(0)
+		 fDebugStreamer(0),
+		 fUseHLTClusters(4)
 {
   //
   // default constructor
@@ -374,12 +375,13 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
     return 2;    
   }
 
-  if (AliTPCReconstructor::GetRecoParam()->GetUseHLTClusters() == 3 ||
-      AliTPCReconstructor::GetRecoParam()->GetUseHLTClusters() == 4 ) {
-    if(!AliTPCReconstructor::GetRecoParam()->GetUseOnePadCluster())
+  if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
+    if(!AliTPCReconstructor::GetRecoParam()->GetUseHLTOnePadCluster()) {
       if (TMath::Abs(cluster->GetSigmaY2()) < kAlmost0)
 	return 2;
+    }
   }
+
   return 0;
 }
 
@@ -407,7 +409,9 @@ AliTracker(),
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-		 fDebugStreamer(0)
+                 fDebugStreamer(0),
+                 fUseHLTClusters(4)
+
 {
   //---------------------------------------------------------------------
   // The main TPC tracker constructor
@@ -461,7 +465,8 @@ AliTPCtrackerMI::AliTPCtrackerMI(const AliTPCtrackerMI &t):
 		 fSeeds(0),
 		 fIteration(0),
 		 fkParam(0),
-		 fDebugStreamer(0)
+                 fDebugStreamer(0),
+                 fUseHLTClusters(4)
 {
   //------------------------------------
   // dummy copy constructor

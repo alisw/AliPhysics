@@ -61,7 +61,7 @@ Bool_t AliTPCRecoParam::fgUseTimeCalibration=kTRUE; // flag usage the time depen
 //_____________________________________________________________________________
 AliTPCRecoParam::AliTPCRecoParam():
   AliDetectorRecoParam(),
-  fUseHLTClusters(1),  // use RAW data
+  fUseHLTClusters(4),  // use HLTorRAW data
   fBClusterSharing(kTRUE),
   fCtgRange(1.05),       
   fMaxSnpTracker(0.95),
@@ -76,6 +76,7 @@ AliTPCRecoParam::AliTPCRecoParam():
   fMaxNoise(2.),
   //
   fUseOnePadCluster(kTRUE),
+  fUseHLTOnePadCluster(kFALSE),
   fMinMaxCutAbs(4.),
   fMinLeftRightCutAbs(6.),
   fMinUpDownCutAbs(6.),
