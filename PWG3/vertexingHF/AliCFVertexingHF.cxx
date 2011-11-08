@@ -35,6 +35,7 @@
 #include "AliLog.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDtrack.h"
+#include "AliCFTaskVertexingHF.h"
 
 #include "AliCFVertexingHF.h"
 
@@ -59,7 +60,9 @@ AliCFVertexingHF::AliCFVertexingHF() :
 	fEtaAccCut(0x0),
 	fFakeSelection(0),
 	fFake(1.), // setting to MC value
-	fRejectIfNoQuark(kFALSE)
+	fRejectIfNoQuark(kFALSE),
+	fMultiplicity(0.),
+	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
 	// constructor
@@ -92,7 +95,9 @@ AliCFVertexingHF::AliCFVertexingHF(TClonesArray *mcArray, UShort_t originDselect
 	fEtaAccCut(0x0),
 	fFakeSelection(0),
 	fFake(1.), // setting to MC value
-	fRejectIfNoQuark(kFALSE)
+	fRejectIfNoQuark(kFALSE),
+	fMultiplicity(0.),
+	fConfiguration(AliCFTaskVertexingHF::kCheetah) // by default, setting the fast configuration
 {
 	//
 	// constructor with mcArray
@@ -162,6 +167,8 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 				fEtaAccCut[iP]=c.fEtaAccCut[iP];
 			}
 		}
+		fMultiplicity=c.fMultiplicity;
+		fConfiguration=c.fConfiguration;
 	}
 	
 	return *this;
@@ -189,7 +196,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	fEtaAccCut(0x0),
 	fFakeSelection(c.fFakeSelection),
 	fFake(c.fFake),
-	fRejectIfNoQuark(c.fRejectIfNoQuark)
+	fRejectIfNoQuark(c.fRejectIfNoQuark),	
+	fMultiplicity(c.fMultiplicity),
+	fConfiguration(c.fConfiguration)
 {  
 	//
 	//copy constructor

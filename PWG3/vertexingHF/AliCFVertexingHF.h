@@ -111,6 +111,9 @@ class AliCFVertexingHF : public TObject {
 
 	void SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
 
+	void SetMultiplicity(Double_t multiplicity) {fMultiplicity = multiplicity;}
+	void SetConfiguration(Int_t configuration) {fConfiguration = configuration;}
+
 	protected:
 	
 	TClonesArray      *fmcArray;               //mcArray candidate
@@ -136,8 +139,10 @@ class AliCFVertexingHF : public TObject {
 	Int_t fFakeSelection; // fakes selection: 0 --> all, 1 --> non-fake, 2 --> fake
 	Float_t fFake;              // variable to indicate whether the D0 was a fake or not: 0 --> fake, 1 --> MC, 2 --> non-fake
 	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
+	Double_t fMultiplicity;    // multiplicity of the event
+	Int_t fConfiguration;    // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
-	ClassDef(AliCFVertexingHF, 6);
+	ClassDef(AliCFVertexingHF, 7);
 	
 };
 

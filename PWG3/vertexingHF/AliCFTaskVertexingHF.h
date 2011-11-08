@@ -58,6 +58,10 @@ public:
 		kStepRecoPID         = 9
 	};
 
+	enum {
+		kSnail = 0,    // slow configuration, all variables
+		kCheetah = 1   // fast configuration, only a subset of variables
+	};
 	
 	AliCFTaskVertexingHF();
 	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts);
@@ -115,6 +119,9 @@ public:
 	void SetKeepAllDs(){fDsOption=3;}
 
 	Bool_t ProcessDs(Int_t returnCodeDs) const;
+
+	void SetConfiguration(Int_t configuration) {(configuration == kSnail) ? Printf("Slow configuration chosen, all variables will be used!") : Printf("Fast configuration chosen, all variablesOnly pt, y, phi, ct, fake, z_vtx, centrality and multiplicity will be used!"); fConfiguration = configuration;} 
+	Int_t GetConfiguration() const {return fConfiguration;} 
 	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
@@ -146,8 +153,9 @@ protected:
 	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
 	Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
 	Int_t  fDsOption;     // Ds decay option
+	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 
-	ClassDef(AliCFTaskVertexingHF,7); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,8); // class for HF corrections as a function of many variables
 };
 
 #endif
