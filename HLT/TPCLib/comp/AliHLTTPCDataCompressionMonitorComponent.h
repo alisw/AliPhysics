@@ -115,7 +115,8 @@ public:
     kHistogramQMaxSector,
     kHistogramSigmaY2Sector,
     kHistogramSigmaZ2Sector,
-    kHistogramXY,
+    kHistogramXYA,
+    kHistogramXYC,
     kNumberOfHistograms2D
   };
   enum {

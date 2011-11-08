@@ -246,6 +246,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   if (fHistoNofClusters)         fHistoNofClusters        ->Fill(rawDataSize/1024, nofClusters);
   if (fHistoNofClustersReductionFactor) fHistoNofClustersReductionFactor ->Fill(nofClusters, ratio);
   HLTInfo("raw data %d, hwcf data %d, comp data %d, ratio %f, %d clusters\n", rawDataSize, hwclustersDataSize, compDataSize, ratio, nofClusters);
+  printf("raw data %d, hwcf data %d, comp data %d, ratio %f, %d clusters\n", rawDataSize, hwclustersDataSize, compDataSize, ratio, nofClusters);
 
   if (iResult>=0 && fPublishingMode!=kPublishOff) {
     iResult=Publish(fPublishingMode);
@@ -611,7 +612,8 @@ const AliHLTTPCDataCompressionMonitorComponent::AliHistogramDefinition AliHLTTPC
    {kHistogramQMaxSector,    "qmaxsector"   , "qmaxsector; sector; Q_{max}"           , 72,0.,72., 1024,0.,1024.},
    {kHistogramSigmaY2Sector, "sigmaY2sector", "sigmaY2sector; sector; #sigma_{Y}^{2}" , 72,0.,72., 100,0.,1.},
    {kHistogramSigmaZ2Sector, "sigmaZ2sector", "sigmaZ2sector; sector; #sigma_{Z}^{2}" , 72,0.,72., 100,0.,1.},
-   {kHistogramXY,            "XY", "XY; X[cm]; Y[cm]" , 100,-300.,300., 100,-300.,300.},
+   {kHistogramXYA,            "XYA", "XY - A side; X[cm]; Y[cm]" , 100,-300.,300., 100,-300.,300.},
+   {kHistogramXYC,            "XYC", "XY - C side; X[cm]; Y[cm]" , 100,-300.,300., 100,-300.,300.},
    {kNumberOfHistograms2D, NULL, NULL, 0,0.,0., 0,0.,0.}
  };
 
@@ -811,10 +813,18 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
   AliTPCROC *roc=AliTPCROC::Instance();
   Float_t pos[2]={0};
   roc->GetPositionGlobal(fSector, fSector>35?currentRow-63:currentRow, (int)pad, pos); 
-  index=kHistogramXY;
-  if (index<fHistogram2DPointers.size() && fHistogram2DPointers[index]!=NULL)
-    fHistogram2DPointers[index]->Fill(pos[0],pos[1]);
-  
+  if (fSector<=17 || (fSector>=36&&fSector<=53))
+    //Sectors 0 to 17 and 36 to 53 are on the A side, sectors 18 to 35 and 54 to 71 are on the C side. 
+    { 
+      index=kHistogramXYA;
+      if (index<fHistogram2DPointers.size() && fHistogram2DPointers[index]!=NULL)
+	fHistogram2DPointers[index]->Fill(pos[0],pos[1]);
+    } else {
+    index=kHistogramXYC;
+    if (index<fHistogram2DPointers.size() && fHistogram2DPointers[index]!=NULL)
+      fHistogram2DPointers[index]->Fill(pos[0],pos[1]);
+  }
+
 }
 
 void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillTime(float time, AliHLTUInt32_t /*clusterId*/)
