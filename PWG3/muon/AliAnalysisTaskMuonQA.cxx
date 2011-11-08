@@ -70,7 +70,7 @@ AliAnalysisTaskMuonQA::AliAnalysisTaskMuonQA() :
   fTriggerClass(0x0),
   fSelectTriggerClass(0x0)
 {
-// Dummy constructor
+  // Dummy constructor
 }
 
 //________________________________________________________________________
@@ -220,13 +220,16 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   TH1F* hPMuMinus = new TH1F("hPMuMinus", "momentum distribution of #mu^{-};p (GeV/c)", 300, 0., 300.);
   fList->AddAtAndExpand(hPMuMinus, kPMuMinus);
   
-  TH1F* hPt = new TH1F("hPt", "transverse momentum distribution;p_{t} (GeV/c)", 300, 0., 30);
+  Int_t nPtBins = 300;
+  Double_t ptMin = 0., ptMax = 30.;
+	
+  TH1F* hPt = new TH1F("hPt", "transverse momentum distribution;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPt, kPt);
   
-  TH1F* hPtMuPlus = new TH1F("hPtMuPlus", "transverse momentum distribution of #mu^{+};p_{t} (GeV/c)", 300, 0., 30);
+  TH1F* hPtMuPlus = new TH1F("hPtMuPlus", "transverse momentum distribution of #mu^{+};p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPtMuPlus, kPtMuPlus);
   
-  TH1F* hPtMuMinus = new TH1F("hPtMuMinus", "transverse momentum distribution of #mu^{-};p_{t} (GeV/c)", 300, 0., 30);
+  TH1F* hPtMuMinus = new TH1F("hPtMuMinus", "transverse momentum distribution of #mu^{-};p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
   fList->AddAtAndExpand(hPtMuMinus, kPtMuMinus);
   
   TH1F* hRapidity = new TH1F("hRapidity", "rapidity distribution;rapidity", 200, -4.5, -2.);
@@ -251,6 +254,25 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   TH1F* hNChamberHitPerTrack = new TH1F("hNChamberHitPerTrack", "number of chambers hit per track;n_{chamber hit}", 15, 0., 15.);
   fList->AddAtAndExpand(hNChamberHitPerTrack, kNChamberHitPerTrack);
   
+  // Matched tracks info
+  TH1F* hPtMatchLpt = new TH1F("hPtMatchLpt", "transverse momentum distribution matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMatchLpt, kPtMatchLpt);
+  
+  TH1F* hPtMatchHpt = new TH1F("hPtMatchHpt", "transverse momentum distribution matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMatchHpt, kPtMatchHpt);
+  
+  TH1F* hPtMuPlusMatchLpt = new TH1F("hPtMuPlusMatchLpt", "transverse momentum distribution of #mu^{+} matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuPlusMatchLpt, kPtMuPlusMatchLpt);
+
+  TH1F* hPtMuPlusMatchHpt = new TH1F("hPtMuPlusMatchHpt", "transverse momentum distribution of #mu^{+} matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuPlusMatchHpt, kPtMuPlusMatchHpt);
+  
+  TH1F* hPtMuMinusMatchLpt = new TH1F("hPtMuMinusMatchLpt", "transverse momentum distribution of #mu^{-} matching Lpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuMinusMatchLpt, kPtMuMinusMatchLpt);
+  
+  TH1F* hPtMuMinusMatchHpt = new TH1F("hPtMuMinusMatchHpt", "transverse momentum distribution of #mu^{-} matching Hpt;p_{t} (GeV/c)", nPtBins, ptMin, ptMax);
+  fList->AddAtAndExpand(hPtMuMinusMatchHpt, kPtMuMinusMatchHpt);  
+	
   TH1F* hNClustersPerCh = new TH1F("hNClustersPerCh", "averaged number of clusters per chamber per track;chamber ID;<n_{clusters}>", nCh, -0.5, nCh-0.5);
   hNClustersPerCh->Sumw2();
   hNClustersPerCh->SetOption("P");
@@ -268,7 +290,7 @@ void AliAnalysisTaskMuonQA::UserCreateOutputObjects()
   for (Int_t i = 0; i < nCh; i++) {
     Float_t rMax = 0.5*dMax[i/2];
     TH2F* hClusterHitMapInCh = new TH2F(Form("hClusterHitMapInCh%d",i+1), Form("cluster position distribution in chamber %d;X (cm);Y (cm)",i+1),
-				       100, -rMax, rMax, 100, -rMax, rMax);
+					100, -rMax, rMax, 100, -rMax, rMax);
     fListExpert->AddAtAndExpand(hClusterHitMapInCh, kClusterHitMapInCh+i);
     
     TH1F* hClusterChargeInCh = new TH1F(Form("hClusterChargeInCh%d",i+1), Form("cluster charge distribution in chamber %d;charge (fC)",i+1), 100, 0., 1000.);
@@ -360,8 +382,9 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
   // --- fill event counters ---
   
   // build the list of trigger cases
-  TList* triggerCases = BuildListOfTriggerCases(FiredTriggerClasses);
-  
+  //TList* triggerCases = BuildListOfTriggerCases(FiredTriggerClasses);
+  TList* triggerCases = BuildListOfAllTriggerCases(FiredTriggerClasses);
+
   // loop over trigger cases
   TObjString* triggerKey = 0x0;
   TIter nextTriggerCase(triggerCases);
@@ -410,11 +433,11 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
       
       Double_t thetaTrackAbsEnd = TMath::ATan(esdTrack->GetRAtAbsorberEnd()/505.) * TMath::RadToDeg();
       Double_t trackPt = esdTrack->Pt();
-			Double_t eta = esdTrack->Eta();
-      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 9. && eta > -4. && eta < -2.5) lowPt = kTRUE;
-      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 9. && eta > -4. && eta < -2.5) highPt = kTRUE;
+      Double_t eta = esdTrack->Eta();
+      if (trackPt > 1. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 10. && eta > -4. && eta < -2.5) lowPt = kTRUE;
+      if (trackPt > 2. && nPVTracks>0 && thetaTrackAbsEnd>2. && thetaTrackAbsEnd < 10. && eta > -4. && eta < -2.5) highPt = kTRUE;
       
-      if (thetaTrackAbsEnd < 2. || thetaTrackAbsEnd > 9. || eta < -4. || eta > -2.5) accKey += "out";
+      if (thetaTrackAbsEnd < 2. || thetaTrackAbsEnd > 10. || eta < -4. || eta > -2.5) accKey += "out";
       else accKey += "in";
       
     } else {
@@ -484,12 +507,20 @@ void AliAnalysisTaskMuonQA::UserExec(Option_t *)
     Short_t trackCharge = esdTrack->Charge();
     ((TH1F*)fList->UncheckedAt(kP))->Fill(trackP);
     ((TH1F*)fList->UncheckedAt(kPt))->Fill(trackPt);
+    Bool_t matchTrigLpt = (esdTrack->GetMatchTrigger()>=2);
+    Bool_t matchTrigHpt = (esdTrack->GetMatchTrigger()>=3);
+    if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMatchLpt))->Fill(trackPt);
+    if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMatchHpt))->Fill(trackPt);
     if (trackCharge < 0) {
       ((TH1F*)fList->UncheckedAt(kPMuMinus))->Fill(trackP);
       ((TH1F*)fList->UncheckedAt(kPtMuMinus))->Fill(trackPt);
+      if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMuMinusMatchLpt))->Fill(trackPt);
+      if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMuMinusMatchHpt))->Fill(trackPt);
     } else {
       ((TH1F*)fList->UncheckedAt(kPMuPlus))->Fill(trackP);
       ((TH1F*)fList->UncheckedAt(kPtMuPlus))->Fill(trackPt);
+      if ( matchTrigLpt ) ((TH1F*)fList->UncheckedAt(kPtMuPlusMatchLpt))->Fill(trackPt);
+      if ( matchTrigHpt ) ((TH1F*)fList->UncheckedAt(kPtMuPlusMatchHpt))->Fill(trackPt);
     }
     ((TH1F*)fList->UncheckedAt(kRapidity))->Fill(esdTrack->Y());
     Int_t ndf = 2 * esdTrack->GetNHit() - 5;
@@ -719,6 +750,73 @@ UInt_t AliAnalysisTaskMuonQA::BuildTriggerWord(TString& FiredTriggerClasses)
 }
 
 //________________________________________________________________________
+TList* AliAnalysisTaskMuonQA::BuildListOfAllTriggerCases(TString& FiredTriggerClasses)
+{
+  /// build the list of trigger for the counters from the fired trigger classes
+  /// returned TList must be deleted by user
+  
+  TList* list = new TList();
+  list->SetOwner();
+  
+  // add case any
+  list->AddLast(new TObjString("trigger:any"));
+  
+  TObjString* trigClasseName = 0x0;
+  TObjArray *obj = FiredTriggerClasses.Tokenize(" ");
+  if ( obj ){
+    TIter nextTrigger(obj);
+    while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
+			
+      //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
+			
+      //Add specific trigger
+      list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
+    }
+    delete obj;
+    if(trigClasseName) delete trigClasseName;
+  }
+  
+  // add case other if no specific trigger was found
+  if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
+	
+  return list;
+}
+
+
+//________________________________________________________________________
+TList* AliAnalysisTaskMuonQA::BuildListOfSelectedTriggerCases(TString& FiredTriggerClasses)
+{
+  /// build the list of trigger for the counters from the fired trigger classes
+  /// returned TList must be deleted by user
+  
+  TList* list = new TList();
+  list->SetOwner();
+  
+  // add case any
+  list->AddLast(new TObjString("trigger:any"));
+  
+  TObjString* trigClasseName = 0x0;
+  TObjArray *obj = FiredTriggerClasses.Tokenize(" ");
+  if ( obj ){
+    TIter nextTrigger(obj);
+    while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
+			
+      //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
+      //loop on rejected trigger if (trigClasseName.Contains()
+      //Add specific trigger
+      list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
+    }
+    delete obj;
+    if(trigClasseName) delete trigClasseName;
+  }
+  
+  // add case other if no specific trigger was found
+  if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
+	
+  return list;
+}
+
+//________________________________________________________________________
 TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClasses)
 {
   /// build the list of trigger for the counters from the fired trigger classes and the list of trigger classes
@@ -733,12 +831,16 @@ TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClass
   list->AddLast(new TObjString("trigger:any"));
   
   TObjString* trigClasseName = 0x0;
+	
   TIter nextTrigger(fTriggerClass);
   while ((trigClasseName = static_cast<TObjString*>(nextTrigger()))) {
     
+    //AliInfo(Form("trigger name %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
+    //  cout<<"trigger name loop on "<<trigClasseName->GetName()<<" to look for "<<FiredTriggerClasses.Data()<<endl;
     TRegexp GenericTriggerClasseName(trigClasseName->String());
     if (FiredTriggerClasses.Contains(GenericTriggerClasseName)) {
-      
+      //AliInfo(Form("trigger names match = %s %s",trigClasseName->GetName(),FiredTriggerClasses.Data()));
+      //cout<<"trigger names match "<<trigClasseName->GetName()<<" and "<<FiredTriggerClasses.Data()<<endl;
       // add specific trigger case
       TObjString* trigShortName = static_cast<TObjString*>(fTriggerClass->GetValue(trigClasseName));
       list->AddLast(new TObjString(Form("trigger:%s",trigShortName->GetName())));
@@ -746,17 +848,12 @@ TList* AliAnalysisTaskMuonQA::BuildListOfTriggerCases(TString& FiredTriggerClass
       // check for CINT1B and CMUS1B trigger
       if (trigShortName->String() == "CINT1B") foundCINT1B = kTRUE;
       else if (trigShortName->String() == "CMUS1B") foundCMUS1B = kTRUE;
-      
     }
-    
   }
-  
+	
   // add the special case CINT1B+CMUS1B
   if (foundCINT1B && foundCMUS1B) list->AddLast(new TObjString("trigger:CINT1B+CMUS1B"));
-  
-  // add case other if no specific trigger was found
-  if (list->GetSize() == 1) list->AddLast(new TObjString("trigger:other"));
-  
+	 
   return list;
 }
 

@@ -1,5 +1,5 @@
-AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t selectMatched = kFALSE, 
-				     Bool_t applyAccCut = kFALSE, Bool_t selectTrigger = kFALSE,
+AliAnalysisTaskMuonQA *AddTaskMuonQA(Bool_t selectPhysics = kTRUE, Bool_t selectMatched = kTRUE, 
+				     Bool_t applyAccCut = kTRUE, Bool_t selectTrigger = kFALSE,
 				     UInt_t triggerMask = AliVEvent::kMUS7,
 						 Short_t selectCharge = 0)
 {
