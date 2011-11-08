@@ -34,9 +34,9 @@
 
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
-#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidBase.h"
@@ -220,6 +220,7 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   if(species >= AliPID::kSPECIES) species = -1;
 
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
+  const AliPIDResponse *pidResponse = tpcpid ? tpcpid->GetPIDResponse() : NULL;
   Double_t contentSignal[5];
   contentSignal[0] = species;
   contentSignal[1] = tpcpid ? tpcpid->GetP(track->GetRecTrack(), anatype) : 0.;
@@ -228,7 +229,7 @@ void AliHFEtpcPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   contentSignal[4] = centrality;
   fHistos->Fill("tpcDedx", contentSignal);
 
-  contentSignal[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.; 
+  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.; 
   fHistos->Fill("tpcnSigma", contentSignal);
 }
 

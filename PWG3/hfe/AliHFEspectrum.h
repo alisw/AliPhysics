@@ -1,4 +1,4 @@
-        /**************************************************************************
+/**************************************************************************
 * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -42,12 +42,11 @@ class AliHFEspectrum : public TNamed{
       kBackgroundData = 1,
       kMCContainerMC = 2,
       kMCContainerESD = 3,
-      kDataContainerV0 = 4,
-      kNonHFEBackgroundData = 5, 
-      kMCContainerCharmMC = 6,
-      kMCContainerConversionMC = 7,
-      kMCContainerNonHFEMC = 8
-    };
+      kMCContainerCharmMC = 4,
+      kMCWeightedContainerNonHFEESD =5,
+      kMCWeightedContainerConversionESD = 6,
+      kDataContainerV0 = 7
+   };
    
     AliHFEspectrum(const char* name);
     ~AliHFEspectrum();
@@ -69,6 +68,7 @@ class AliHFEspectrum : public TNamed{
     TGraphErrors *Normalize(AliCFDataGrid * const spectrum,Int_t i = 0) const;
     TGraphErrors *NormalizeTH1N(TH1 *input,Int_t normalization) const;
     void CorrectFromTheWidth(TH1D *h1) const;
+    void CorrectStatErr(AliCFDataGrid *backgroundGrid) const;
     
     void SetCorrelation(THnSparseF * const correlation) {fCorrelation = correlation; };
     void SetContainer(AliCFContainer *cont, AliHFEspectrum::CFContainer_t type);
@@ -85,6 +85,7 @@ class AliHFEspectrum : public TNamed{
     void SetStepAfterCutsV0(Int_t step) { fStepAfterCutsV0 = step; };
     void SetNbDimensions(Int_t nbDimensions) { fNbDimensions = nbDimensions; };
     void SetChargeChoosen(Int_t chargechoosen) {fChargeChoosen = chargechoosen; };
+    void SetEtaRange(Double_t etamin, Double_t etamax) { fEtaRange[0] = etamin; fEtaRange[1] = etamax; fEtaSelected = kTRUE; }
     void SetUnSetCorrelatedErrors(Bool_t unsetcorrelatederrors) {fUnSetCorrelatedErrors = unsetcorrelatederrors;};
     void SetSmoothing(Bool_t setSmoothing) {fSetSmoothing = setSmoothing;};
 
@@ -94,6 +95,7 @@ class AliHFEspectrum : public TNamed{
     void SetBeautyAnalysis() { fInclusiveSpectrum = kFALSE; };
     void SetHadronEffbyIPcut(THnSparseF* hsHadronEffbyIPcut) { fHadronEffbyIPcut = hsHadronEffbyIPcut;};
     void SetNonHFEBackground2ndMethod() { fNonHFEbgMethod2 = kTRUE; };
+    void SetNonHFEmode(Int_t mode){ fNonHFEmode = mode; };
 
     void SetStepGuessedUnfolding(Int_t stepGuessedUnfolding) { fStepGuessedUnfolding = stepGuessedUnfolding; };
     void SetNumberOfIteration(Int_t numberOfIteration) { fNumberOfIterations = numberOfIteration; };
@@ -105,7 +107,10 @@ class AliHFEspectrum : public TNamed{
     AliCFDataGrid* GetCharmBackground();
     AliCFDataGrid* GetConversionBackground();
     AliCFDataGrid* GetNonHFEBackground();
-    THnSparse* GetWeights();
+    THnSparse* GetCharmWeights();
+    THnSparse* GetBeautyIPEff();
+    THnSparse* GetCharmEff();
+    THnSparse* GetPIDxIPEff(Int_t source);
 
     void EnableIPanaHadronBgSubtract() { fIPanaHadronBgSubtract = kTRUE; };
     void EnableIPanaCharmBgSubtract() { fIPanaCharmBgSubtract = kTRUE; };
@@ -141,6 +146,7 @@ class AliHFEspectrum : public TNamed{
     Bool_t fInclusiveSpectrum;     // Inclusive Spectrum
     Bool_t fDumpToFile;           // Write Result in a file
 
+    Bool_t fEtaSelected;              // Switch for eta selection
     Bool_t fUnSetCorrelatedErrors;    // Unset correlated errors
     Bool_t fSetSmoothing;             // Set smoothing
 
@@ -149,6 +155,7 @@ class AliHFEspectrum : public TNamed{
     Bool_t fIPanaConversionBgSubtract; // Conversion background subtraction
     Bool_t fIPanaNonHFEBgSubtract;     // nonHFE except for conversion background subtraction
     Bool_t fNonHFEbgMethod2;           // switch for 2nd method to subtract non HFE background
+    Int_t fNonHFEmode;            // choose NonHFE background level (upper, lower, central)
 
     Int_t fNbDimensions;          // Number of dimensions for the correction
     Int_t fNEvents[20];           // Number of Events
@@ -163,12 +170,16 @@ class AliHFEspectrum : public TNamed{
     Int_t fNumberOfIterations;    // Number of iterations
     Int_t fChargeChoosen;         // Select positive or negative electrons
 
+    Double_t fEtaRange[2];        // Eta range 
+
     Int_t fNCentralityBinAtTheEnd; // Number of centrality class at the end
     Int_t fLowBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
     Int_t fHighBoundaryCentralityBinAtTheEnd[20];  // Boundary of the bins
 
     THnSparseF *fHadronEffbyIPcut;// container for hadron efficiency by IP cut
-    Char_t fBeamType;              // beamtype; default -1; pp =0; PbPb=1
+    TH1D *fConversionEff;         // conversion IP cut eff
+    TH1D *fNonHFEEff;             // nonhfe IP cut eff
+    Char_t fBeamType;             // beamtype; default -1; pp =0; PbPb=1
 
 
     Int_t fDebugLevel;            // Debug Level

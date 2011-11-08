@@ -27,16 +27,17 @@
 #include <TList.h>
 #include <TString.h>
 
-#include "AliAODpidUtil.h"
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
 #include "AliESDtrack.h"
-#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliMCParticle.h"
+#include "AliOADBContainer.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 
+#include "AliHFEOADBThresholdsTRD.h"
 #include "AliHFEpidQAmanager.h"
 #include "AliHFEpidTRD.h"
 
@@ -45,39 +46,43 @@ ClassImp(AliHFEpidTRD)
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD() :
     AliHFEpidBase()
-  , fMinP(1.)
-  , fElectronEfficiency(0.91)
-  , fPIDMethod(kNN)
+  , fOADBThresholds(NULL)
+  , fMinP(0.5)
+  , fNTracklets(6)
+  , fRunNumber(0)
+  , fElectronEfficiency(0.90)
   , fTotalChargeInSlice0(kFALSE)
 {
   //
   // default  constructor
   // 
   memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
-  SetUseDefaultParameters();
 }
 
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const char* name) :
     AliHFEpidBase(name)
-  , fMinP(1.)
+  , fOADBThresholds(NULL)
+  , fMinP(0.5)
+  , fNTracklets(6)
+  , fRunNumber(0)
   , fElectronEfficiency(0.91)
-  , fPIDMethod(kNN)
   , fTotalChargeInSlice0(kFALSE)
 {
   //
   // default  constructor
   // 
   memset(fThreshParams, 0, sizeof(Double_t) * kThreshParams);
-  SetUseDefaultParameters();
 }
 
 //___________________________________________________________________
 AliHFEpidTRD::AliHFEpidTRD(const AliHFEpidTRD &ref):
     AliHFEpidBase("")
+  , fOADBThresholds(NULL)
   , fMinP(ref.fMinP)
+  , fNTracklets(ref.fNTracklets)
+  , fRunNumber(ref.fRunNumber)
   , fElectronEfficiency(ref.fElectronEfficiency)
-  , fPIDMethod(ref.fPIDMethod)
   , fTotalChargeInSlice0(ref.fTotalChargeInSlice0)
 {
   //
@@ -105,10 +110,9 @@ void AliHFEpidTRD::Copy(TObject &ref) const {
   //
   AliHFEpidTRD &target = dynamic_cast<AliHFEpidTRD &>(ref);
   
-  Bool_t defaultParameters = UseDefaultParameters();
-  target.SetUseDefaultParameters(defaultParameters);
   target.fMinP = fMinP;
-  target.fPIDMethod = fPIDMethod;
+  target.fNTracklets = fNTracklets;
+  target.fRunNumber = fRunNumber;
   target.fTotalChargeInSlice0 = fTotalChargeInSlice0;
   target.fElectronEfficiency = fElectronEfficiency;
   memcpy(target.fThreshParams, fThreshParams, sizeof(Double_t) * kThreshParams);
@@ -123,18 +127,20 @@ AliHFEpidTRD::~AliHFEpidTRD(){
 }
 
 //______________________________________________________
-Bool_t AliHFEpidTRD::InitializePID(){
+Bool_t AliHFEpidTRD::InitializePID(Int_t run){
   //
   // InitializePID: Load TRD thresholds and create the electron efficiency axis
   // to navigate 
   //
-  if(UseDefaultParameters()){
-    if(fPIDMethod == kLQ)
-      InitParameters1DLQ();
-    else
-      InitParameters();
+  AliDebug(1, Form("Initializing TRD PID for run %d", run));
+  if(InitParamsFromOADB(run)){
+    SetBit(kThresholdsInitialized);
+    return kTRUE;
   }
-  return kTRUE;
+  AliDebug(1, Form("Threshold Parameters for %d tracklets and an electron efficiency %f loaded:", fNTracklets, fElectronEfficiency));
+  AliDebug(1, Form("Params: [%f|%f|%f|%f]", fThreshParams[0], fThreshParams[1], fThreshParams[2], fThreshParams[3]));
+  fRunNumber = run;
+  return kFALSE;
 }
 
 //______________________________________________________
@@ -144,23 +150,38 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   // PID thresholds based on 90% Electron Efficiency level approximated by a linear 
   // step function
   //
-  AliDebug(1, "Applying TRD PID");
-  if((!fESDpid && track->IsESDanalysis()) || (!fAODpid && track->IsAODanalysis())){ 
-    AliDebug(1, "Cannot process track");
+  if(!TestBit(kThresholdsInitialized)) {
+    AliDebug(1,"Threshold Parameters not available");
+    return 0;
+  }
+  AliDebug(2, "Applying TRD PID");
+  if(!fkPIDResponse){
+    AliDebug(2, "Cannot process track");
     return 0;
   }
 
+/*
+  const AliESDtrack *esdt = dynamic_cast<const AliESDtrack *>(track->GetRecTrack());
+  printf("checking IdentifiedAsElectronTRD, number of Tracklets: %d\n", esdt->GetTRDntrackletsPID());
+  if(fkPIDResponse->IdentifiedAsElectronTRD(dynamic_cast<const AliVTrack *>(track->GetRecTrack()), 0.8)) printf("Track identified as electron\n");
+  else printf("Track rejected\n");
+*/
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis: AliHFEpidObject::kAODanalysis;
   Double_t p = GetP(track->GetRecTrack(), anatype);
   if(p < fMinP){ 
-    AliDebug(1, Form("Track momentum below %f", fMinP));
+    AliDebug(2, Form("Track momentum below %f", fMinP));
     return 0;
   }
 
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kBeforePID); 
-  Double_t electronLike = GetElectronLikelihood(track->GetRecTrack(), anatype);
-  Double_t threshold = GetTRDthresholds(fElectronEfficiency, p);
-  AliDebug(1, Form("Threshold: %f\n", threshold));
+  Double_t electronLike = GetElectronLikelihood(static_cast<const AliVTrack *>(track->GetRecTrack()), anatype);
+  Double_t threshold;
+  if(TestBit(kSelectCutOnTheFly)){ 
+    threshold = GetTRDthresholds(p, (static_cast<const AliVTrack *>(track->GetRecTrack()))->GetTRDntrackletsPID());
+  } else {
+    threshold = GetTRDthresholds(p);
+  }
+  AliDebug(2, Form("Threshold: %f\n", threshold));
   if(electronLike > threshold){
     if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTRDpid, AliHFEdetPIDqa::kAfterPID);
     return 11;
@@ -170,94 +191,45 @@ Int_t AliHFEpidTRD::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
 }
 
 //___________________________________________________________________
-Double_t AliHFEpidTRD::GetTRDthresholds(Double_t electronEff, Double_t p) const { 
+Double_t AliHFEpidTRD::GetTRDthresholds(Double_t p, UInt_t nTracklets) const { 
   //
   // Return momentum dependent and electron efficiency dependent TRD thresholds
+  // Determine threshold based on the number of tracklets on the fly, electron efficiency not modified
   // 
-  Double_t params[4];
-  GetParameters(electronEff, params);
-  Double_t threshold = 1. - params[0] - params[1] * p - params[2] * TMath::Exp(-params[3] * p);
+  Double_t threshParams[4];
+  // Get threshold paramters for the given number of tracklets from OADB container
+  AliHFEOADBThresholdsTRD *thresholds = dynamic_cast<AliHFEOADBThresholdsTRD *>(fOADBThresholds->GetObject(fRunNumber));
+  if(!thresholds){
+    AliDebug(1, Form("Thresholds for run %d not in the OADB", fRunNumber));
+    return 0.;
+  }
+  if(!thresholds->GetThresholdParameters(nTracklets, fElectronEfficiency, threshParams)) return 0.;
+
+  Double_t threshold = 1. - threshParams[0] - threshParams[1] * p - threshParams[2] * TMath::Exp(-threshParams[3] * p);
   return TMath::Max(TMath::Min(threshold, 0.99), 0.2); // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::SetThresholdParameters(Double_t electronEff, Double_t *params){
+Double_t AliHFEpidTRD::GetTRDthresholds(Double_t p) const { 
   //
-  // Set threshold parameters for the given bin
-  //
-  if(electronEff >= 1. || electronEff < 0.7) return;
-  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.05); 
-  memcpy(&fThreshParams[effbin * 4], params, sizeof(Double_t) * 4); 
-  SetUseDefaultParameters(kFALSE);
+  // Return momentum dependent and electron efficiency dependent TRD thresholds
+  // 
+  Double_t threshold = 1. - fThreshParams[0] - fThreshParams[1] * p - fThreshParams[2] * TMath::Exp(-fThreshParams[3] * p);
+  return TMath::Max(TMath::Min(threshold, 0.99), 0.2); // truncate the threshold upperwards to 0.999 and lowerwards to 0.2 and exclude unphysical values
 }
 
-//___________________________________________________________________
-void AliHFEpidTRD::InitParameters(){
-  //
-  // Fill the Parameters into an array
-  //
-
-  AliDebug(2, "Loading threshold Parameter");
-  // Parameters for 6 Layers
-  fThreshParams[0] = -0.001839; // 0.7 electron eff
-  fThreshParams[1] = 0.000276;
-  fThreshParams[2] = 0.044902; 
-  fThreshParams[3] = 1.726751;
-  fThreshParams[4] = -0.002405; // 0.75 electron eff
-  fThreshParams[5] = 0.000372;
-  fThreshParams[6] = 0.061775;
-  fThreshParams[7] = 1.739371;
-  fThreshParams[8] = -0.003178; // 0.8 electron eff
-  fThreshParams[9] = 0.000521;
-  fThreshParams[10] = 0.087585;
-  fThreshParams[11] = 1.749154;
-  fThreshParams[12] = -0.004058; // 0.85 electron eff
-  fThreshParams[13] = 0.000748;
-  fThreshParams[14] = 0.129583;
-  fThreshParams[15] = 1.782323;
-  fThreshParams[16] = -0.004967; // 0.9 electron eff
-  fThreshParams[17] = 0.001216;
-  fThreshParams[18] = 0.210128;
-  fThreshParams[19] = 1.807665;
-  fThreshParams[20] = -0.000996; // 0.95 electron eff
-  fThreshParams[21] = 0.002627;
-  fThreshParams[22] = 0.409099;
-  fThreshParams[23] = 1.787076;
-}
 
 //___________________________________________________________________
-void AliHFEpidTRD::InitParameters1DLQ(){
+Bool_t AliHFEpidTRD::InitParamsFromOADB(Int_t run){
   //
-  // Init Parameters for 1DLQ PID (M. Fasel, Sept. 6th, 2010)
+  // The name of the function says it all
   //
-
-  // Parameters for 6 Layers
-  AliDebug(2, Form("Loading threshold parameter for Method 1DLQ"));
-  fThreshParams[0] = -0.02241; // 0.7 electron eff
-  fThreshParams[1] = 0.05043;
-  fThreshParams[2] = 0.7925; 
-  fThreshParams[3] = 2.625;
-  fThreshParams[4] = 0.07438; // 0.75 electron eff
-  fThreshParams[5] = 0.05158;
-  fThreshParams[6] = 2.864;
-  fThreshParams[7] = 4.356;
-  fThreshParams[8] = 0.1977; // 0.8 electron eff
-  fThreshParams[9] = 0.05956;
-  fThreshParams[10] = 2.853;
-  fThreshParams[11] = 3.713;
-  fThreshParams[12] = 0.5206; // 0.85 electron eff
-  fThreshParams[13] = 0.03077;
-  fThreshParams[14] = 2.966;
-  fThreshParams[15] = 4.07;
-  fThreshParams[16] = 0.8808; // 0.9 electron eff
-  fThreshParams[17] = 0.002092;
-  fThreshParams[18] = 1.17;
-  fThreshParams[19] = 4.506;
-  fThreshParams[20] = 1.; // 0.95 electron eff
-  fThreshParams[21] = 0.;
-  fThreshParams[22] = 0.;
-  fThreshParams[23] = 0.;
-
+  AliHFEOADBThresholdsTRD *thresholds = dynamic_cast<AliHFEOADBThresholdsTRD *>(fOADBThresholds->GetObject(run));
+  if(!thresholds){
+    AliDebug(1, Form("Thresholds for run %d not in the OADB", run));
+    return kFALSE;
+  }
+  return thresholds->GetThresholdParameters(fNTracklets, fElectronEfficiency, fThreshParams);
 }
 
 //___________________________________________________________________
@@ -274,16 +246,7 @@ void AliHFEpidTRD::RenormalizeElPi(const Double_t * const likein, Double_t * con
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::GetParameters(Double_t electronEff, Double_t *parameters) const {
-  //
-  // return parameter set for the given efficiency bin
-  //
-  Int_t effbin = static_cast<Int_t>((electronEff - 0.7)/0.05);
-  memcpy(parameters, fThreshParams + effbin * 4, sizeof(Double_t) * 4);
-}
-
-//___________________________________________________________________
-Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const {
+Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVTrack *track, AliHFEpidObject::AnalysisType_t anaType) const {
   //
   // Get TRD likelihoods for ESD respectively AOD tracks
   //
@@ -292,8 +255,7 @@ Double_t AliHFEpidTRD::GetElectronLikelihood(const AliVParticle *track, AliHFEpi
     const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
     if(esdtrack) esdtrack->GetTRDpid(pidProbs);
   } else {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    if(aodtrack)fAODpid->MakeTRDPID(const_cast<AliAODTrack *>(aodtrack), pidProbs);
+    fkPIDResponse->ComputeTRDProbability(track, AliPID::kSPECIES, pidProbs);
   }
   if(!IsRenormalizeElPi()) return pidProbs[AliPID::kElectron];
   Double_t probsNew[AliPID::kSPECIES];
@@ -348,11 +310,12 @@ Double_t AliHFEpidTRD::GetChargeLayer(const AliVParticle *track, UInt_t layer, A
 }
 
 //___________________________________________________________________
-void AliHFEpidTRD::GetTRDmomenta(const AliVTrack*track, Double_t *mom) const {
+void AliHFEpidTRD::GetTRDmomenta(const AliVTrack *track, Double_t *mom) const {
   //
   // Fill Array with momentum information at the TRD tracklet
   //
-  for(Int_t itl = 0; itl < 6; itl++) mom[itl] = track->GetTRDmomentum(itl);
+  for(Int_t itl = 0; itl < 6; itl++) 
+    mom[itl] = track->GetTRDmomentum(itl);
 }
 
 //___________________________________________________________________

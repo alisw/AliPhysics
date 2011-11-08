@@ -53,7 +53,9 @@ class AliHFEmcQA: public TObject {
     };
     enum{
       kBgPtBins = 44,
-      kElecBgSpecies = 6
+	kElecBgSpecies = 6,
+	kCentBins = 11,
+	kBgLevels = 3
     };
 
 
@@ -81,10 +83,17 @@ class AliHFEmcQA: public TObject {
     Int_t GetSource(const TParticle * const mcpart); // return source id 
     Int_t GetElecSource(TParticle * const mcpart); // return electron source id 
     Int_t GetSource(const AliAODMCParticle * const mcpart); // return electron source id for AOD
-    Double_t GetWeightFactor(AliMCParticle *mctrack); // return weighting factor for electron's mother meson
+    Double_t GetWeightFactor(AliMCParticle *mctrack, const Int_t iBgLevel); // return best/lower/upper weighting factor for electron's mother meson
 
     void SetBackgroundWeightFactor(Double_t *elecBackgroundFactor, Double_t *binLimit);
-//    void SetBackgroundWeightFactor(Double_t const elecBackgroundFactor[6][44], Double_t const binLimit[45]) {fElecBackgroundFactor=elecBackgroundFactor; fBinLimit=binLimit;} 
+
+    void SetCentrality(Int_t centrality) { fCentrality = centrality; };
+    void SetPbPb() { fIsPbPb = kTRUE; };
+    void SetPP() { fIsPbPb = kFALSE; };
+    void SetPPMultiBin() { fIsppMultiBin = kFALSE; };
+    Bool_t IsPbPb() const { return fIsPbPb; };
+    Bool_t IsPP() const { return !fIsPbPb; };
+    Bool_t IsPPMultiBin() const { return fIsppMultiBin; };
 
   protected:
     void IdentifyMother(Int_t motherlabel, Int_t &motherpdg, Int_t &grandmotherlabel); // 
@@ -191,8 +200,13 @@ class AliHFEmcQA: public TObject {
     Int_t fNparents; // number of heavy hadrons to be considered
     Int_t fParentSelect[2][7]; // heavy hadron species
 
-    Double_t fElecBackgroundFactor[6][44];     // Electron background factors
-    Double_t fBinLimit[45];      // Electron background bins
+    Double_t fElecBackgroundFactor[kBgLevels][kCentBins][kElecBgSpecies][kBgPtBins];     // Electron background factors
+    Double_t fBinLimit[kBgPtBins+1];      // Electron background bins
+
+private:
+    Int_t              fCentrality;  // Centrality
+    Bool_t             fIsPbPb;        // Analysis Type: pp or PbPb
+    Bool_t             fIsppMultiBin;  // pp multiplicity bin analysis
 
   ClassDef(AliHFEmcQA,1);
 };

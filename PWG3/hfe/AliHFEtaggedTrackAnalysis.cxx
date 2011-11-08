@@ -29,6 +29,7 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliExternalTrackParam.h"
 
 #include "AliHFEcollection.h"
@@ -223,7 +224,7 @@ void AliHFEtaggedTrackAnalysis::ProcessTrack(AliVParticle *track, Int_t abinitio
     if(abinitioPID == AliPID::kElectron){
       AliHFEpidTPC *pidTPC = (AliHFEpidTPC *) fPID->GetDetPID(AliHFEpid::kTPCpid);
       if(pidTPC) {
-	      Double_t numberOfSigmaTPC = pidTPC->NumberOfSigmas(track,AliPID::kElectron,AliHFEpidObject::kESDanalysis);
+	      Double_t numberOfSigmaTPC = pidTPC->GetPIDResponse()->NumberOfSigmasTPC(track,AliPID::kElectron);
 	      if(numberOfSigmaTPC < -5) return;
       }
     }

@@ -36,7 +36,7 @@ class AliAODTrack;
 class AliESDtrack;
 class AliMCEvent;
 class AliVEvent;
-class AliESDpid;
+class AliPIDResponse;
 class AliExternalTrackParam;
 class AliLog;
 
@@ -71,7 +71,7 @@ class AliHFEpidQA : public TObject{
     void     SetRecalculateTRDpid(Bool_t recal = kTRUE) { SetBit(kRecalculateTRDpid, recal); };
     void     SetTRDTotalChargeInSlice0() { fTRDTotalChargeInSlice0 = kTRUE; }
 
-    void     SetESDpid(AliESDpid* const pid) { fESDpid = pid; }
+    void     SetPIDResponse(AliPIDResponse* const pid) { fESDpid = pid; }
     Float_t  TOFbeta(const AliESDtrack* const track) const;
 
     void     CheckEvent();
@@ -100,6 +100,7 @@ class AliHFEpidQA : public TObject{
     void FillPIDresponse(const TObjArray * const particles, Int_t species);
     void FillIllumination(const TObjArray *const particles, Int_t species);
     void FillTPCinfo(AliESDtrack * const track, Int_t species);
+    void TestTRDResponse(const TObjArray * const tracks, Int_t species);
     void RecalculateTRDpid(AliESDtrack *track, Double_t *pidProbs) const;
     void RecalculateTRDpid(AliAODTrack *track, Double_t *pidProbs) const;
     void CheckTenderV0pid(const TObjArray * const particles, Int_t species);
@@ -119,7 +120,7 @@ class AliHFEpidQA : public TObject{
     AliHFEV0pidMC     *fV0pidMC;      // V0 MC PID
     AliHFEtrdPIDqa    *fTRDpidQA;     //! TRD PID QA object
     AliHFEcollection  *fOutput;       // Output container
-    AliESDpid         *fESDpid;       // ESD PID object
+    AliPIDResponse    *fESDpid;       // ESD PID object
  private:
     TFile             *fNNref;        // reference file for NN pid 
     TMultiLayerPerceptron *fNet[11];  //  reference networks

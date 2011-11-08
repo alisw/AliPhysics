@@ -73,6 +73,10 @@ set (SRCS
     hfe/AliAnalysisTaskHFE.cxx 
     hfe/AliHFEV0pidMC.cxx 
     hfe/AliHFEV0cuts.cxx
+    hfe/AliHFEOADBThresholdsTRD.cxx
+    hfe/AliHFEbayesPIDqa.cxx
+    hfe/AliHFEpidBayes.cxx
+    hfe/AliHFEpidObject.cxx
     )
 
 string (REPLACE ".cxx" ".h" HDRS "${SRCS}")

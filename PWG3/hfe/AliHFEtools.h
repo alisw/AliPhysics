@@ -24,8 +24,7 @@
 
 class TParticle;
 class AliAODMCParticle;
-class AliESDpid;
-class AliAODpidUtil;
+class AliPIDResponse;
 class AliVParticle;
 
 class AliHFEtools : public TObject{
@@ -40,16 +39,14 @@ class AliHFEtools : public TObject{
     static Float_t GetRapidity(const AliAODMCParticle *part); // return rapidity
     static Int_t GetPdg(const AliVParticle *track);
     static Int_t PDG2AliPID(Int_t pdg);
-    static AliESDpid *GetDefaultPID(Bool_t isMC = kTRUE);
-    static AliAODpidUtil *GetDefaultAODPID(Bool_t isMC = kTRUE);
+    static AliPIDResponse *GetDefaultPID(Bool_t isMC = kTRUE, Bool_t isESD = kTRUE);
     static void DestroyDefaultPID();
     static void SetLogLevel(Int_t loglevel) { fgLogLevel = loglevel ;}
 
   private:
       AliHFEtools(const AliHFEtools &);
       AliHFEtools &operator=(const AliHFEtools &);
-      static AliESDpid *fgDefaultPID;           // Default PID object
-      static AliAODpidUtil *fgDefaultPIDaod;    // Default PID object
+      static AliPIDResponse *fgDefaultPID;      // Default PID object
       static Int_t fgLogLevel;                  // Log Level
 
     ClassDef(AliHFEtools, 0)

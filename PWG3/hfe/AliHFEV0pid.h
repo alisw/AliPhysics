@@ -75,7 +75,7 @@ class AliHFEV0pid : public TNamed{
     void   ArmenterosPlotMC(AliESDv0 * const v0, Int_t idMC);
     Bool_t IsGammaConv(TObject *v0);
     Bool_t IsK0s(TObject *v0);
-    Bool_t IsPhi(TObject *v0);
+    Bool_t IsPhi(const TObject *v0) const;
     Bool_t IsLambda(TObject *v0);        
     TList *GetV0pidQA(); 
 

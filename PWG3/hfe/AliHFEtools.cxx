@@ -38,8 +38,7 @@
 
 ClassImp(AliHFEtools)
 
-AliESDpid *AliHFEtools::fgDefaultPID = NULL;
-AliAODpidUtil *AliHFEtools::fgDefaultPIDaod = NULL;
+AliPIDResponse *AliHFEtools::fgDefaultPID = NULL;
 Int_t AliHFEtools::fgLogLevel = 0;
 
 //__________________________________________
@@ -160,12 +159,14 @@ Float_t AliHFEtools::GetRapidity(const AliAODMCParticle *part){
 }
 
 //__________________________________________
-AliESDpid* AliHFEtools::GetDefaultPID(Bool_t isMC){
+AliPIDResponse* AliHFEtools::GetDefaultPID(Bool_t isMC, Bool_t isESD){
   //
   // Get the default PID as singleton instance
   //
   if(!fgDefaultPID){
-    fgDefaultPID = new AliESDpid;
+
+    if(isESD) fgDefaultPID = new AliESDpid;
+    else fgDefaultPID = new AliAODpidUtil;
     Double_t tres = isMC ? 80. : 130.;
     fgDefaultPID->GetTOFResponse().SetTimeResolution(tres);
 
@@ -199,44 +200,6 @@ AliESDpid* AliHFEtools::GetDefaultPID(Bool_t isMC){
   return fgDefaultPID;
 }
 
-//__________________________________________
-AliAODpidUtil* AliHFEtools::GetDefaultAODPID(Bool_t isMC){
-  //
-  // Get the default PID as singleton instance
-  //
-  if(!fgDefaultPID){
-    fgDefaultPIDaod = new AliAODpidUtil;
-    Double_t tres = isMC ? 80. : 130.;
-    fgDefaultPIDaod->GetTOFResponse().SetTimeResolution(tres);
-
-    // TPC Bethe Bloch parameters
-    Double_t alephParameters[5];
-    if(isMC){
-      // simulation
-      alephParameters[0] = 2.15898e+00/50.;
-      alephParameters[1] = 1.75295e+01;
-      alephParameters[2] = 3.40030e-09;
-      alephParameters[3] = 1.96178e+00;
-      alephParameters[4] = 3.91720e+00;
-    } else {
-      alephParameters[0] = 0.0283086/0.97;
-      //alephParameters[0] = 0.0283086;
-      alephParameters[1] = 2.63394e+01;
-      alephParameters[2] = 5.04114e-11;
-      alephParameters[3] = 2.12543e+00;
-      alephParameters[4] = 4.88663e+00;
-    }
-    fgDefaultPIDaod->GetTPCResponse().SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2], alephParameters[3],alephParameters[4]);
-    fgDefaultPIDaod->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
-  }
-  if(fgLogLevel){
-    printf("Error - You are using the default PID: You should use the PID coming from the tender\n");
-    printf("Error - Arrrrrrrrr...\n");
-    printf("Error - Please rethink your program logic. Using default PID is really dangerous\n");
-    printf("Error - TOF PID is adapted to Monte Carlo\n");
-  }
-  return fgDefaultPIDaod;
-}
 
 //__________________________________________
 void AliHFEtools::DestroyDefaultPID(){
@@ -245,8 +208,6 @@ void AliHFEtools::DestroyDefaultPID(){
   //
   if(fgDefaultPID) delete fgDefaultPID;
   fgDefaultPID = NULL;
-  if(fgDefaultPIDaod) delete fgDefaultPIDaod;
-  fgDefaultPIDaod = NULL;
 }
 
 //__________________________________________

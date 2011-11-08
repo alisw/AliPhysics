@@ -193,10 +193,10 @@ Long64_t AliHFEcontainer::Merge(TCollection *coll){
   if(coll->IsEmpty())
     return 1;
 
-  TIterator *iter = coll->MakeIterator();
+  TIter iter(coll);
   TObject *o = NULL;
   Long64_t count = 0;
-  while((o = iter->Next())){
+  while((o = iter())){
     AliHFEcontainer *cont = dynamic_cast<AliHFEcontainer *>(o);
     if(!cont) continue;
 
@@ -420,6 +420,15 @@ void AliHFEcontainer::MakeLogarithmicBinning(UInt_t var, UInt_t nBins, Double_t 
 }
 
 //__________________________________________________________________
+void AliHFEcontainer::MakeUserDefinedBinning(UInt_t var, UInt_t nBins, const Double_t *binning){
+  //
+  // Set User defined binning
+  //
+  AliHFEvarInfo *myvar = dynamic_cast<AliHFEvarInfo *>(fVariables->UncheckedAt(var));
+  if(myvar) myvar->SetBinning(nBins, binning);
+}
+
+//__________________________________________________________________
 void AliHFEcontainer::SetVariableName(UInt_t var, const Char_t *varname){
   //
   // Variable name
@@ -540,7 +549,7 @@ void AliHFEcontainer::AliHFEvarInfo::SetVarName(const Char_t *name){
 }
 
 //__________________________________________________________________
-void AliHFEcontainer::AliHFEvarInfo::SetBinning(UInt_t nBins, Double_t *content){
+void AliHFEcontainer::AliHFEvarInfo::SetBinning(UInt_t nBins, const Double_t *content){
   // Setter for binning
   //
   fBinning->Set(nBins + 1, content);

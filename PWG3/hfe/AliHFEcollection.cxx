@@ -22,6 +22,7 @@
 
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <THnSparse.h>
 #include <TProfile.h>
 #include <TString.h>
@@ -255,6 +256,23 @@ Bool_t AliHFEcollection::CreateTH1Fvector2(Int_t X, Int_t Y, const char* name, c
   return kTRUE;  
 }
 //___________________________________________________________________
+Bool_t AliHFEcollection::CreateTH3F(const char* name, const char* title, Int_t nBinX, Float_t nMinX, Float_t nMaxX, Int_t nBinY, Float_t nMinY, Float_t nMaxY, Int_t nBinZ, Float_t nMinZ, Float_t nMaxZ, Int_t logAxis){
+
+  //
+  // Creates a TH2F histogram for the collection
+  //
+
+  if(!fList){
+    AliError("No TList pointer ! ");
+    return kFALSE;
+  }
+  fList->Add(new TH3F(name, title, nBinX, nMinX, nMaxX, nBinY, nMinY, nMaxY, nBinZ, nMinZ, nMaxZ));
+  if(logAxis >= 0){
+    BinLogAxis(name, logAxis);
+  }
+  return CheckObject(name); 
+}
+//___________________________________________________________________
 Bool_t AliHFEcollection::CreateProfile(const char* name, const char* title, Int_t nbins, Double_t xmin, Double_t xmax){
   
   //
@@ -270,7 +288,7 @@ Bool_t AliHFEcollection::CreateProfile(const char* name, const char* title, Int_
 
 }
 //___________________________________________________________________
-Bool_t AliHFEcollection::CreateTHnSparse(const char* name, const char* title, Int_t dim, Int_t* nbins, Double_t* xmin, Double_t* xmax){
+Bool_t AliHFEcollection::CreateTHnSparse(const char* name, const char* title, Int_t dim, const Int_t* nbins, const Double_t* xmin, const Double_t* xmax){
 
   //
   // create 'dim' dimensional THnSparse
@@ -405,6 +423,28 @@ Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2){
   
 }
 //___________________________________________________________________
+Bool_t AliHFEcollection::Fill(const char* name, Double_t v1, Double_t v2, Double_t v3){
+
+  //
+  // fill function for TH3 objects
+  //
+
+  if(!CheckObject(name)){
+    AliError(Form("Not possible to fill the object '%s', the object does not exist\n", name));
+    return kFALSE;
+  }
+
+  // chack the possible object types
+  TH3 *h3 = dynamic_cast<TH3F*>(fList->FindObject(name));
+  if(h3){ 
+    h3->Fill(v1, v2, v3);
+    return kTRUE;
+  }
+
+  return kFALSE;
+  
+}
+//___________________________________________________________________
 Bool_t AliHFEcollection::Fill(const char* name, Double_t* entry, Double_t weight){
   //
   // Fill a THnSparse object
@@ -472,11 +512,11 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
 
   TObject *o = Get(name);
   TAxis *axis = NULL;
-  if(o->InheritsFrom("TH1")){
+  TString type(o->IsA()->GetName()); 
+  if(type.Contains("TH1")){ // 1D histogram
     TH1 *h1 = dynamic_cast<TH1F*>(o);
     if(h1) axis = h1->GetXaxis();
-  }
-  if(o->InheritsFrom("TH2")){
+  } else if(type.Contains("TH2")){
     TH2 *h2 = dynamic_cast<TH2F*>(o);
     if(h2){
       if(0 == dim){
@@ -489,12 +529,27 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
          AliError("Only dim = 0 or 1 possible for TH2F");
       }
     }
-  }
-  if(o->InheritsFrom("THnSparse")){
+  } else if(type.Contains("TH3")){
+    TH3 *h3 = dynamic_cast<TH3F*>(o);
+    if(h3){
+      if(0 == dim){
+        axis = h3->GetXaxis();
+      }
+      else if(1 == dim){
+        axis = h3->GetYaxis();
+      }
+      else if(2 == dim){
+        axis = h3->GetZaxis();
+      }
+      else{
+         AliError("Only dim = 0, 1 or 2 possible for TH3F");
+      }
+    }
+  } else if(type.Contains("THnSparse")){
     THnSparse *hs = dynamic_cast<THnSparse*>(o);
     if(hs) axis = hs->GetAxis(dim);
   }
-  
+
   if(!axis){
     AliError(Form("Axis '%d' could not be identified in the object '%s'\n", dim, name));
     return kFALSE;
@@ -522,7 +577,7 @@ Bool_t AliHFEcollection::BinLogAxis(const char* name, Int_t dim){
 
 }
 //___________________________________________________________________
-Long64_t AliHFEcollection::Merge(TCollection *list){
+Long64_t AliHFEcollection::Merge(const TCollection *list){
 
   //
   // Merge the collections

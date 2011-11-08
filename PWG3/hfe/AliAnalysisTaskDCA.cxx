@@ -39,6 +39,7 @@
 
 #include "AliCFManager.h"
 
+#include "AliAODEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
 #include "AliVertexerTracks.h"
@@ -47,8 +48,8 @@
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliMCParticle.h"
+#include "AliPIDResponse.h"
 
-#include "AliESDpid.h"
 #include "AliHFEpid.h"
 #include "AliHFEcuts.h"
 #include "AliHFEdca.h"
@@ -62,7 +63,6 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA():
   AliAnalysisTaskSE("Impact Parameter Resolution and Pull Analysis")
   , fPlugins(0)
   , fCuts(0x0)
-  , fDefaultPID(0x0)
   , fHFEpid(0x0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
@@ -95,7 +95,6 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const char * name):
   AliAnalysisTaskSE(name)
   , fPlugins(0)
   , fCuts(0x0)
-  , fDefaultPID(0x0)
   , fHFEpid(0x0)
   , fPIDdetectors("")
   , fPIDstrategy(0)
@@ -139,7 +138,6 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const char * name):
   hfecuts->SetMaxImpactParam(maxDcaXY, maxDcaZ);
   SetHFECuts(hfecuts);
  
-  fDefaultPID = new AliESDpid();
   fHFEpid = new AliHFEpid("PIDforDCAanalysis");
 
 }
@@ -149,7 +147,6 @@ AliAnalysisTaskDCA::AliAnalysisTaskDCA(const AliAnalysisTaskDCA &ref):
   AliAnalysisTaskSE(ref)
   , fPlugins(ref.fPlugins)
   , fCuts(ref.fCuts)  
-  , fDefaultPID(ref.fDefaultPID)
   , fHFEpid(ref.fHFEpid)
   , fPIDdetectors(ref.fPIDdetectors)
   , fPIDstrategy(ref.fPIDstrategy)
@@ -188,7 +185,6 @@ AliAnalysisTaskDCA &AliAnalysisTaskDCA::operator=(const AliAnalysisTaskDCA &ref)
   AliAnalysisTaskSE::operator=(ref);
   fPlugins = ref.fPlugins;
   fCuts = ref.fCuts;
-  fDefaultPID = ref.fDefaultPID;
   fHFEpid = ref.fHFEpid;
   fPIDdetectors = ref.fPIDdetectors;
   fPIDstrategy = ref.fPIDstrategy;
@@ -220,7 +216,6 @@ AliAnalysisTaskDCA::~AliAnalysisTaskDCA(){
   // Destructor
   //
 
-  if(fDefaultPID) delete fDefaultPID;
   if(fHFEpid) delete fHFEpid;
   if(fCFM) delete fCFM;
   if(fDCA) delete fDCA;  
@@ -453,24 +448,15 @@ void AliAnalysisTaskDCA::UserExec(Option_t *){
     if(!mcH->TreeTR()) return;
   }
 
-  if(!IsAODanalysis()) {
-    AliESDInputHandler *inH = dynamic_cast<AliESDInputHandler *>(fInputHandler);
-    if(!inH){
-      AliError("No ESD Event Handler available");
-      return;
-    }
-    AliESDpid *workingPID = inH->GetESDpid();
-    if(workingPID){
-      AliDebug(1, "Using ESD PID from the input handler");
-      fHFEpid->SetESDpid(workingPID);
-    } else {
-      AliDebug(1, "Using default ESD PID");
-      fHFEpid->SetESDpid(AliHFEtools::GetDefaultPID(HasMCData()));
-    }
-    ProcessDcaAnalysis();
-  }
-
   
+  AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+  if(!pidResponse){
+    AliDebug(1, "Using default PID Response");
+    pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliAODEvent::Class());
+  }
+  fHFEpid->SetPIDResponse(pidResponse);
+  ProcessDcaAnalysis();
+
   PostData(1, fNEvents);
   PostData(2, fOutput);
 }

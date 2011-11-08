@@ -150,6 +150,7 @@ void AliHFEvarManager::Copy(TObject &o) const{
 void AliHFEvarManager::AddVariable(TString name){
   //
   // Add new variable to the var manager
+  // Use default binning
   // Value derived via GetValue()
   //
    AliDebug(1, Form("Var Name: %s", name.Data()));
@@ -157,9 +158,9 @@ void AliHFEvarManager::AddVariable(TString name){
   if(!name.CompareTo("pt")) 
     fVariables->AddLast(new AliHFEvariable("pt", "pt", kPt, 44, 0.1, 20, kTRUE));
   else if(!name.CompareTo("eta"))
-    fVariables->AddLast(new AliHFEvariable("eta", "eta", kEta, 80, -0.8, 0.8));
+    fVariables->AddLast(new AliHFEvariable("eta", "eta", kEta, 8, -0.8, 0.8));
   else if(!name.CompareTo("phi"))
-    fVariables->AddLast(new AliHFEvariable("phi", "phi", kPhi, 180, -0, 2*TMath::Pi()));
+    fVariables->AddLast(new AliHFEvariable("phi", "phi", kPhi, 18, -0, 2*TMath::Pi()));
   else if(!name.CompareTo("charge"))
     fVariables->AddLast(new AliHFEvariable("charge", "charge", kCharge, 2, -1.1, 1.1));
   else if(!name.CompareTo("source"))
@@ -169,6 +170,65 @@ void AliHFEvarManager::AddVariable(TString name){
   else if(!name.CompareTo("species"))
     fVariables->AddLast(new AliHFEvariable("species", "species", kSpecies, 6, -1, 5));
 
+  // More to come ...
+}
+
+//____________________________________________________________
+void AliHFEvarManager::AddVariable(TString name, Int_t nBins, Double_t min, Double_t max, Bool_t isLogarithmic){
+  //
+  // Add new variable to the var manager
+  // User can define minimum and maximum
+  // Function can be used to copy variables to a new var manager
+  // Value derived via GetValue()
+  //
+  AliDebug(1, Form("Var Name: %s", name.Data()));
+
+  UInt_t varcode = 1000; 
+  if(!name.CompareTo("pt")){
+    varcode = kPt;
+  } else if(!name.CompareTo("eta")){
+    varcode = kEta;
+  } else if(!name.CompareTo("phi")){
+    varcode = kPhi;
+  } else if(!name.CompareTo("charge")){
+    varcode = kCharge;
+  } else if(!name.CompareTo("source")){
+    varcode = kSource;
+  } else if(!name.CompareTo("species")){
+    varcode = kSpecies;
+  } else if(!name.CompareTo("centrality")) {
+    varcode = kCentrality;
+  } else {
+    AliError("Variable not defined or not supposed to have a user-defined binning.");
+  }
+
+  if(varcode < 1000) fVariables->AddLast(new AliHFEvariable(name.Data(), name.Data(), varcode, nBins, min, max, isLogarithmic));
+  // More to come ...
+}
+
+//____________________________________________________________
+void AliHFEvarManager::AddVariable(TString name, Int_t nBins, const Double_t *binning){
+  //
+  // Add new variable to the var manager
+  // Not to be applied for Variables which have a limited amount of possible values like charge, species, source
+  // Value derived via GetValue()
+  //
+  AliDebug(1, Form("Var Name: %s", name.Data()));
+
+  UInt_t varcode = 1000; 
+  if(!name.CompareTo("pt")){
+    varcode = kPt;
+  } else if(!name.CompareTo("eta")){
+    varcode = kEta;
+  } else if(!name.CompareTo("phi")){
+    varcode = kPhi;
+  } else if(!name.CompareTo("centrality")) {
+    varcode = kCentrality;
+  } else {
+    AliError("Variable not defined or not supposed to have a user-defined binning.");
+  }
+
+  if(varcode < 1000) fVariables->AddLast(new AliHFEvariable(name.Data(), name.Data(), varcode, nBins, binning));
   // More to come ...
 }
 
@@ -201,6 +261,8 @@ void AliHFEvarManager::DefineVariables(AliHFEcontainer *cont){
     cont->SetVariableName(counter, var->GetName());
     if(var->IsLogarithmic())
       cont->MakeLogarithmicBinning(counter, var->GetNumberOfBins(), var->GetMinimum(), var->GetMaximum());
+    else if(var->HasUserDefinedBinning())
+      cont->MakeUserDefinedBinning(counter, var->GetNumberOfBins(), var->GetBinning());
     else
       cont->MakeLinearBinning(counter, var->GetNumberOfBins(), var->GetMinimum(), var->GetMaximum());
     counter++;
@@ -390,11 +452,29 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable():
   , fNBins(0)
   , fMin(0)
   , fMax(0)
+  , fBinning(NULL)
   , fIsLogarithmic(kFALSE)
 {
   // 
   // Dummy constructor
   //
+}
+
+//_______________________________________________
+AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_t *title, UInt_t code, UInt_t nBins, const Double_t *binning):
+    TNamed(name, title)
+  , fCode(code)
+  , fNBins(nBins)
+  , fMin(0.)
+  , fMax(0.)
+  , fBinning(NULL)
+  , fIsLogarithmic(kFALSE)
+{
+  // 
+  // Default constructor
+  //
+  fBinning = new Double_t[nBins+1];
+  memcpy(fBinning, binning, sizeof(Double_t) * (nBins+1));
 }
 
 //_______________________________________________
@@ -404,6 +484,7 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const Char_t *name, const Char_
   , fNBins(nBins)
   , fMin(min)
   , fMax(max)
+  , fBinning(NULL)
   , fIsLogarithmic(isLogarithmic)
 {
   // 
@@ -418,11 +499,16 @@ AliHFEvarManager::AliHFEvariable::AliHFEvariable(const AliHFEvarManager::AliHFEv
   , fNBins(ref.fNBins)
   , fMin(ref.fMin)
   , fMax(ref.fMax)
+  , fBinning(NULL)
   , fIsLogarithmic(ref.fIsLogarithmic)
 {
   // 
   // Copy constructor
   //
+  if(ref.fBinning){
+    fBinning = new Double_t[ref.fNBins + 1];
+    memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
+  }
 }
 
 //_______________________________________________
@@ -440,5 +526,13 @@ AliHFEvarManager::AliHFEvariable& AliHFEvarManager::AliHFEvariable::operator=(co
     fIsLogarithmic = ref.fIsLogarithmic;
   }
   return *this;
+}
+
+//_______________________________________________
+AliHFEvarManager::AliHFEvariable::~AliHFEvariable(){
+  //
+  // Destruktor
+  //
+  if(fBinning) delete fBinning;
 }
 

@@ -140,7 +140,6 @@ class AliAnalysisTaskDisplacedElectrons : public AliAnalysisTaskSE{
   UShort_t fDePlugins;                    // Enabled Plugins    
 
   AliHFEcuts *fDeCuts;                    // Cut Collection
-  AliESDpid *fDeDefaultPID;               //! ESD PID method
   AliHFEpid *fDePID;                      //! PID method
   AliCFManager *fDeCFM;                   //! Correction Framework Manager
   AliHFEdisplacedElectrons *fDisplacedElectrons;        //! HFE displaced Electrons pointer 
