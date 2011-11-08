@@ -243,7 +243,9 @@ Int_t AliAnalysisTaskCfg::GetNlibs() const
 {
 // Returns number of requested libraries.
    if (fLibs.IsNull()) return 0;
-   Int_t nlibs = fLibs.CountChar(',')+1;
+   TObjArray *list  = fLibs.Tokenize(",");
+   Int_t nlibs = list->GetEntriesFast();
+   delete list;
    return nlibs;
 }
 

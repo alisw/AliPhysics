@@ -26,21 +26,26 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   }   
   
   //========= Attach VZERO supply ======
+/*
   if (useV0) {
      AliVZEROTenderSupply *vzeroSupply=new AliVZEROTenderSupply("VZEROtender");
      vzeroSupply->SetDebug(kFALSE);
      tender->AddSupply(vzeroSupply);
   }   
+*/
+
+/*  
   //========= Attach TPC supply ======
   AliTPCTenderSupply *tpcSupply=new AliTPCTenderSupply("TPCtender");
   tpcSupply->SetDebugLevel(2);
   //tpcSupply->SetMip(50.);
   tender->AddSupply(tpcSupply);
-
+*/
   //========= Attach TOF supply ======
   AliTOFTenderSupply *tofTender = new AliTOFTenderSupply("TOFtender");
   tender->AddSupply(tofTender);
-  
+
+/*  
   //========= Attach TRD supply ======
   AliTRDTenderSupply *trdSupply=new AliTRDTenderSupply("TRDtender");
   trdSupply->SetLoadReferencesFromCDB();
@@ -71,7 +76,7 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
 
   //========= Attach Primary Vertex supply ======
   tender->AddSupply(new AliVtxTenderSupply("PriVtxtender"));
-  
+*/  
   //================================================
   //              data containers
   //================================================
