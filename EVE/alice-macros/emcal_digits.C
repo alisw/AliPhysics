@@ -16,6 +16,7 @@
 #include <TStyle.h>
 #include <TEveTrans.h>
 #include <TClonesArray.h>
+#include <TTree.h>
 
 #include <EveBase/AliEveEventManager.h>
 
