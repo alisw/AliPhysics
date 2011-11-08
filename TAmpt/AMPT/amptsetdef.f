@@ -28,7 +28,7 @@ c     initialization value for hadron cascade:
      &   IMOMEN, NFREQ, ICFLOW, ICRHO, ICOU, KPOTEN, KMUL
       common/oscar1/iap,izp,iat,izt
       common/oscar2/FRAME,amptvn
-      common/resdcy/NSAV,iksdcy
+      common/resdcy/NSAV,iksdcy,ikstardcy
 clin-6/2009:
 c      common/phidcy/iphidcy
       common/phidcy/iphidcy,pttrig,ntrig,maxmiss
@@ -73,6 +73,7 @@ c     2 seeds for random number generators in HIJING/hadron cascade and ZPC:
       nseed    = 53153511	! random seed for HIJING
       iseedp   = 8		! random seed for parton cascade
       iksdcy   = 0		! flag for Ks0 weak decays (D=0,no; 1,yes)
+      ikstardcy   = 0		! flag for K* weak decays (D=0,no; 1,yes)
       iphidcy  = 0		! flag for phi decays at end of hadron cascade (D=1,yes; 0,no)
 c     flag for OSCAR output for final partons and hadrons:
       ioscar   = 0		! optional OSCAR output (D=0,no; 1,yes; 2&3,more parton info)
@@ -116,6 +117,7 @@ c$$$	and 2.2814d0 for 6mb. Using 1d4 effectively turns off parton cascade.
 c$$$ihjsed: if =11, take HIJING random seed at runtime so that 
 c$$$	every run may be automatically different (see file 'exec').
 c$$$iksdcy: flag for Ks0 weak decays for comparison with data.
+c$$$ikstardcy: flag for K* weak decays for comparison with data.
 c$$$iphidcy: flag for phi meson decays at the end of hadron cascade for comparison 
 c$$$	with data; default is yes; use 0 to turn off these decays. 
 c$$$	Note: phi meson decay during hadron cascade is always enabled.

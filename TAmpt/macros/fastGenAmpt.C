@@ -23,7 +23,7 @@
 #include "AliGenAmpt.h"
 #endif
 
-void fastGenAmpt(Int_t nev = 10, const char* filename = "galice.root")
+void fastGenAmpt(Int_t nev = 100, const char* filename = "galice.root")
 {
   AliPDG::AddParticlesToPdgDataBase();
   TDatabasePDG::Instance();
@@ -56,13 +56,16 @@ void fastGenAmpt(Int_t nev = 10, const char* filename = "galice.root")
   genHi->SetReferenceFrame("CMS");
   genHi->SetProjectile("A", 208, 82);
   genHi->SetTarget    ("A", 208, 82);
+  genHi->SetIsoft(4); //1: defaul - 4: string melting
   genHi->SetPtHardMin (3);
   //genHi->SetImpactParameterRange(9.,9.5);
   genHi->SetImpactParameterRange(0.,20.0);
-  genHi->SetJetQuenching(1); // enable jet quenching
+  genHi->SetNtMax(150); //NTMAX: number of timesteps (D=150)
+  genHi->SetXmu(3.2264); //parton screening mass in fm^(-1) (D=3.2264d0)
+  genHi->SetJetQuenching(0); // enable jet quenching
   genHi->SetShadowing(1);    // enable shadowing
   genHi->SetDecaysOff(1);    // neutral pion and heavy particle decays switched off
-  genHi->SetSpectators(1);   // track spectators 
+  genHi->SetSpectators(0);   // track spectators 
   genHi->Init();
 
   rl->CdGAFile();

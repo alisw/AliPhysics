@@ -1614,6 +1614,7 @@ cc      SAVE /RNDF77/
         irun=idecay
         if(lb1.eq.0.or.lb1.eq.25.or.lb1.eq.26.or.lb1.eq.27
      &       .or.lb1.eq.28.or.lb1.eq.29.or.iabs(lb1).eq.30
+c     &       .or.lb1.eq.28.or.lb1.eq.29
      &       .or.lb1.eq.24.or.(iabs(lb1).ge.6.and.iabs(lb1).le.9) 
      &       .or.iabs(lb1).eq.16) then
            kf=INVFLV(lb1)

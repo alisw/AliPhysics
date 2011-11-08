@@ -128,14 +128,14 @@ TObjArray* TAmpt::ImportParticles(Option_t */*option*/)
     Double_t py = HBT.plast[i][1];//GeV/c
     Double_t pz = HBT.plast[i][2];//GeV/c
     Double_t ma = HBT.plast[i][3];//GeV/c/c
-//    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
-//    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
-//    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
-//    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
-    Double_t vx = HBT.xlast[i][0]*1e-12;//mm
-    Double_t vy = HBT.xlast[i][1]*1e-12;//mm
-    Double_t vz = HBT.xlast[i][2]*1e-12;//mm
-    Double_t vt = HBT.xlast[i][3]*1e-12;//mm/c
+    Double_t vx = 0;//HBT.xlast[i][0]*1e-12;//mm
+    Double_t vy = 0;//HBT.xlast[i][1]*1e-12;//mm
+    Double_t vz = 0;//HBT.xlast[i][2]*1e-12;//mm
+    Double_t vt = 0;//HBT.xlast[i][3]*1e-12;//mm/c
+    //Double_t vx = HBT.xlast[i][0]*1e-12;//mm
+    //Double_t vy = HBT.xlast[i][1]*1e-12;//mm
+    //Double_t vz = HBT.xlast[i][2]*1e-12;//mm
+    //Double_t vt = HBT.xlast[i][3]*1e-12;//mm/c
     Int_t pdg   = invflv(HBT.lblast[i]);
     TParticle *p = new TParticle(pdg,
                                  status,

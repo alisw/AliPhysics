@@ -1828,6 +1828,8 @@ cc             WID=0.40
              pdecay=1.1
 clin-5b/2008 forbid phi decay at the end of hadronic cascade:
              if(iphidcy.eq.0.and.iabs(LB1).eq.29) pdecay=0.
+cpchrist forbid K* decay at the end of hadronic cascade:
+             if(ikstardcy.eq.0.and.iabs(LB1).eq.30) pdecay=0.
           else
              T0=0.19733/WID
              GFACTR=E1/EM1
