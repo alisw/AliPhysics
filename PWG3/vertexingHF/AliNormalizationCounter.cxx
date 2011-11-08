@@ -152,6 +152,11 @@ returns kTRUE if the event is to be counted for normalization
 void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Bool_t mc){
   //
 
+  Bool_t isEventSelected = rdCut->IsEventSelected(event);
+
+  // events not passing physics selection. do nothing
+  if(rdCut->IsEventRejectedDuePhysicsSelection()) return;
+
   Bool_t v0A=kFALSE; 
   Bool_t v0B=kFALSE;
   Bool_t flag03=kFALSE;
@@ -204,7 +209,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   }
 
   //FindPrimary vertex  
-  if(rdCut->IsEventSelected(event)){
+  if(isEventSelected){
     if(fMultiplicity) 
       fCounters.Count(Form("Event:PrimaryV/Run:%d/Multiplicity:%d",runNumber,multiplicity));
     else
