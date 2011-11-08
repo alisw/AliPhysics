@@ -70,16 +70,16 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   AliBalance *bfs = 0;  // shuffled Balance function object
 
   if (analysisType=="ESD"){
-    bf  = GetBalanceFunctionObject("ESD");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",kTRUE);
+    bf  = GetBalanceFunctionObject("ESD",centralityEstimator.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("ESD",centralityEstimator.Data(),kTRUE);
   }
   else if (analysisType=="AOD"){
-    bf  = GetBalanceFunctionObject("AOD");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",kTRUE);
+    bf  = GetBalanceFunctionObject("AOD",centralityEstimator.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("AOD",centralityEstimator.Data(),kTRUE);
   }
   else if (analysisType=="MC"){
-    bf  = GetBalanceFunctionObject("MC");
-    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",kTRUE);
+    bf  = GetBalanceFunctionObject("MC",centralityEstimator.Data());
+    if(gRunShuffling) bfs = GetBalanceFunctionObject("MC",centralityEstimator.Data(),kTRUE);
   }
   else{
     ::Error("AddTaskBF", "analysis type NOT known.");

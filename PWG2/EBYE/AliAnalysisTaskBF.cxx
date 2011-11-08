@@ -68,6 +68,7 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fUseMultiplicity(kFALSE),
   fNumberOfAcceptedTracksMin(0),
   fNumberOfAcceptedTracksMax(10000),
+  fHistNumberOfAcceptedTracks(0),
   fUseOfflineTrigger(kFALSE),
   fVxMax(0.3),
   fVyMax(0.3),
@@ -176,6 +177,9 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
 
   fHistTrackStats = new TH1F("fHistTrackStats","Event statistics;TrackFilterBit;N_{events}",130,0,130);
   fList->Add(fHistTrackStats);
+
+  fHistNumberOfAcceptedTracks = new TH1F("fHistNumberOfAcceptedTracks",";N_{acc.};Entries",4001,-0.5,4000.5);
+  fList->Add(fHistNumberOfAcceptedTracks);
 
   // Vertex distributions
   fHistVx = new TH1F("fHistVx","Primary vertex distribution - x coordinate;V_{x} (cm);Entries",100,-0.5,0.5);
@@ -754,9 +758,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     }//Vx cut
   }//MC analysis
   
-  if(fUseMultiplicity) 
-    if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
+  if(fUseMultiplicity) {
+    if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax)) {
+      fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
       return;
+    }
+  }
   
   // calculate balance function
   fBalance->CalculateBalance(array,chargeVector);
