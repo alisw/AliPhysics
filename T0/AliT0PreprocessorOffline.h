@@ -29,7 +29,7 @@ class AliT0PreprocessorOffline: public TNamed
   TString  ocdbStorage;                   // path to the OCDB storage
   Int_t fNewDArun;                         // run number with new DA
  
-  ClassDef(AliT0PreprocessorOffline, 1)
+  ClassDef(AliT0PreprocessorOffline, 2)
 };
 
 
