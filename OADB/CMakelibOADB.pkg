@@ -2,7 +2,6 @@
 set ( SRCS  
   AliOADBCentrality.cxx 
   AliOADBPWG2Spectra.cxx 
-  AliOADBCentrality.cxx 
   AliOADBPhysicsSelection.cxx 
   AliOADBFillingScheme.cxx 
   AliOADBTriggerAnalysis.cxx 
