@@ -34,7 +34,7 @@ AliAnalysisTaskITSsaTracks *AddTaskITSsaTracks(Bool_t readMC=kFALSE,Bool_t UseMC
   // Create and configure the task
   AliAnalysisTaskITSsaTracks *taskits = new AliAnalysisTaskITSsaTracks();
   taskits->SelectCollisionCandidates();
-  taskits->SetMinITSPoints(6);
+  taskits->SetMinITSPoints(4);
   taskits->SetReadMC(readMC);
   taskits->SetUseMCtruthForPID(UseMCtruthForPID);
   mgr->AddTask(taskits);
@@ -54,3 +54,4 @@ AliAnalysisTaskITSsaTracks *AddTaskITSsaTracks(Bool_t readMC=kFALSE,Bool_t UseMC
   mgr->ConnectOutput(taskits, 1, coutput1);
   return taskits;
 }   
+
