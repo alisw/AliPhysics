@@ -2181,30 +2181,46 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
    in.open(fFileForTestMode);
    Int_t count = 0;
     // Read the input list of files and add them to the chain
-    TString line;
-    TChain *chain = new TChain(treeName);
-    while (in.good())
-    {
+   TString line;
+   TChain *chain = new TChain(treeName);
+   TChain *chainFriend = 0;
+   if (!fFriendChainName.IsNull()) chainFriend = new TChain(treeName);       
+   while (in.good())
+   {
       in >> line;
       if (line.IsNull()) continue;
       if (count++ == fNtestFiles) break;
       TString esdFile(line);
       TFile *file = TFile::Open(esdFile);
-      if (file) {
-         if (!file->IsZombie()) chain->Add(esdFile);
+      if (file && !file->IsZombie()) {
+         chain->Add(esdFile);
          file->Close();
+         if (!fFriendChainName.IsNull()) {
+            esdFile.ReplaceAll("AliAOD.root", fFriendChainName.Data());
+            esdFile.ReplaceAll("AliAODs.root", fFriendChainName.Data());
+            file = TFile::Open(esdFile);
+            if (file && !file->IsZombie()) {
+               file->Close();
+               chainFriend->Add(esdFile);
+            } else {
+               Fatal("GetChainForTestMode", "Cannot open friend file: %s", esdFile.Data());
+               return 0;
+            }   
+         }   
       } else {
          Error("GetChainforTestMode", "Skipping un-openable file: %s", esdFile.Data());
       }   
-    }
-    in.close();
-    if (!chain->GetListOfFiles()->GetEntries()) {
+   }
+   in.close();
+   if (!chain->GetListOfFiles()->GetEntries()) {
        Error("GetChainForTestMode", "No file from %s could be opened", fFileForTestMode.Data());
        delete chain;
+       delete chainFriend;
        return NULL;
-    }
+   }
 //    chain->ls();
-    return chain;
+   if (!fFriendChainName.IsNull()) chain->AddFriend(chainFriend);
+   return chain;
 }    
 
 //______________________________________________________________________________
