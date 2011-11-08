@@ -30,6 +30,7 @@
 #include "AliAODRecoCascadeHF.h"
 #include "AliCFVertexingHFCascade.h"
 #include "AliCFContainer.h"
+#include "AliCFTaskVertexingHF.h"
 
 ClassImp(AliCFVertexingHFCascade)
 
@@ -221,21 +222,36 @@ Bool_t AliCFVertexingHFCascade::GetGeneratedValuesFromMCParticle(Double_t* vecto
 	}
 
 	
-	vectorMC[0] = fmcPartCandidate->Pt();
-	vectorMC[1] = fmcPartCandidate->Y() ;
-	vectorMC[2] = cosThetaStar ;
-	vectorMC[3] = vectorD0[0]; 
-	vectorMC[4] = vectorD0[1];
-	vectorMC[5] = cT*1.E4 ;  // in micron
-	vectorMC[6] = 0.;   // dummy value, meaningless in MC
-	vectorMC[7] = 0.;   // dummy value, meaningless in MC, in micron
-	vectorMC[8] = 0.;   // dummy value, meaningless in MC, in micron
-	vectorMC[9] = -100000.; // dummy value, meaningless in MC, in micron^2
-	vectorMC[10] = 1.01;    // dummy value, meaningless in MC
-	vectorMC[11] = fmcPartCandidate->Phi(); 
-	vectorMC[12] = fzMCVertex;    // z of reconstructed of primary vertex
-	vectorMC[13] = fCentValue; // reconstructed centrality
-	vectorMC[14] = 1.;           // always filling with 1 at MC level 
+	switch (fConfiguration){
+	case AliCFTaskVertexingHF::kSnail:
+		vectorMC[0] = fmcPartCandidate->Pt();
+		vectorMC[1] = fmcPartCandidate->Y() ;
+		vectorMC[2] = cosThetaStar ;
+		vectorMC[3] = vectorD0[0]; 
+		vectorMC[4] = vectorD0[1];
+		vectorMC[5] = cT*1.E4 ;  // in micron
+		vectorMC[6] = 0.;   // dummy value, meaningless in MC
+		vectorMC[7] = -100000.; // dummy value, meaningless in MC, in micron^2
+		vectorMC[8] = 1.01;    // dummy value, meaningless in MC
+		vectorMC[9] = fmcPartCandidate->Phi(); 
+		vectorMC[10] = fzMCVertex;    // z of reconstructed of primary vertex
+		vectorMC[11] = fCentValue; // reconstructed centrality
+		vectorMC[12] = 1.;           // always filling with 1 at MC level 
+		vectorMC[13] = 1.01; // dummy value for cosPointingXY  multiplicity
+		vectorMC[14] = 0.; // dummy value for NormalizedDecayLengthXY multiplicity
+		vectorMC[15] = fMultiplicity; // reconstructed multiplicity
+		break;
+	case AliCFTaskVertexingHF::kCheetah:
+		vectorMC[0] = fmcPartCandidate->Pt();
+		vectorMC[1] = fmcPartCandidate->Y() ;
+		vectorMC[2] = cT*1.E4; // in micron
+		vectorMC[3] = fmcPartCandidate->Phi();
+		vectorMC[4] = fzMCVertex;
+		vectorMC[5] = fCentValue;   // dummy value for dca, meaningless in MC
+		vectorMC[6] = 1. ;  // fake: always filling with 1 at MC level 
+		vectorMC[7] = fMultiplicity;   // dummy value for d0pi, meaningless in MC, in micron
+		break;
+	}
 
 	delete decay;
 	bGenValues = kTRUE;
@@ -268,6 +284,8 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   Double_t d0xd0 = d0toKpi->Prodd0d0();
   Double_t cosPointingAngle = d0toKpi->CosPointingAngle();
   Double_t phi = dstarD0pi->Phi();
+  Double_t cosPointingAngleXY = d0toKpi->CosPointingAngleXY();
+  Double_t normDecayLengthXY = d0toKpi->NormalizedDecayLengthXY();
 
   Int_t pdgCode = fmcPartCandidate->GetPdgCode();
  
@@ -290,24 +308,39 @@ Bool_t AliCFVertexingHFCascade::GetRecoValuesFromCandidate(Double_t *vectorReco)
   
   Double_t cT = d0toKpi->CtD0();
   
-  vectorReco[0] = pt;
-  vectorReco[1] = rapidity;
-  vectorReco[2] = cosThetaStar;
-  vectorReco[3] = pTpi;
-  vectorReco[4] = pTK;
-  vectorReco[5] = cT*1.E4;  // in micron
-  vectorReco[6] = dca*1.E4;  // in micron
-  vectorReco[7] = d0pi*1.E4;  // in micron
-  vectorReco[8] = d0K*1.E4;  // in micron
-  vectorReco[9] = d0xd0*1.E8;  // in micron^2
-  vectorReco[10] = cosPointingAngle;  // in micron
-  vectorReco[11] = phi;  
-  vectorReco[12] = fzPrimVertex;    // z of reconstructed of primary vertex
-  vectorReco[13] = fCentValue;
-  vectorReco[14] = fFake;      // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
+	switch (fConfiguration){
+	case AliCFTaskVertexingHF::kSnail:
+		vectorReco[0] = pt;
+		vectorReco[1] = rapidity;
+		vectorReco[2] = cosThetaStar;
+		vectorReco[3] = pTpi;
+		vectorReco[4] = pTK;
+		vectorReco[5] = cT*1.E4;  // in micron
+		vectorReco[6] = dca*1.E4;  // in micron
+		vectorReco[7] = d0xd0*1.E8;  // in micron^2
+		vectorReco[8] = cosPointingAngle;  // in micron
+		vectorReco[9] = phi;  
+		vectorReco[10] = fzPrimVertex;    // z of reconstructed of primary vertex
+		vectorReco[11] = fCentValue;
+		vectorReco[12] = fFake;      // whether the reconstructed candidate was a fake (fFake = 0) or not (fFake = 2) 
+		vectorReco[13] = cosPointingAngleXY; 
+		vectorReco[14] = normDecayLengthXY; // in cm
+		vectorReco[15] = fMultiplicity; // reconstructed multiplicity
+		break;
+	case AliCFTaskVertexingHF::kCheetah:
+		vectorReco[0] = pt;
+		vectorReco[1] = rapidity ;
+		vectorReco[2] = cT*1.E4; // in micron
+		vectorReco[3] = phi; 
+		vectorReco[4] = fzPrimVertex;
+		vectorReco[5] = fCentValue;   
+		vectorReco[6] = fFake ; 
+		vectorReco[7] = fMultiplicity;  
+		break;
+	}
 
-  bFillRecoValues = kTRUE;
-
+	bFillRecoValues = kTRUE;
+		
   return bFillRecoValues;
 }
 

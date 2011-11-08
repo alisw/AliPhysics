@@ -1,24 +1,11 @@
 //DEFINITION OF A FEW CONSTANTS
-const Double_t ymin  = -2.1 ;
-const Double_t ymax  =  2.1 ;
-// const Double_t ptmin_0_4 =  0.0 ;
-// const Double_t ptmax_0_4 =  4.0 ;
-// const Double_t ptmin_4_8 =  4.0 ;
-// const Double_t ptmax_4_8 =  8.0 ;
-// const Double_t ptmin_8_10 =  8.0 ;
-// const Double_t ptmax_8_10 =  10.0 ;
-const Double_t cosmin = -1.05;
+const Double_t ymin  = -1.2 ;
+const Double_t ymax  =  1.2 ;
+const Double_t cosmin = -0.7;
 const Double_t cosmax =  1.05;
 const Double_t cTmin = 0;  // micron
 const Double_t cTmax = 500;  // micron
-const Double_t dcamin = 0;  // micron
-const Double_t dcamax = 500;  // micron
-const Double_t d0min = -1000;  // micron
-const Double_t d0max = 1000;  // micron
-const Double_t d0xd0min = -100000;  // micron
-const Double_t d0xd0max = 100000;  // micron
 const Double_t phimin = 0.0;  
-//const Double_t phimax = 2Pi;  // defined in the macro!!!!!!!!!!!!!!  
 const Int_t    mintrackrefsTPC = 2 ;
 const Int_t    mintrackrefsITS = 3 ;
 const Int_t    charge  = 1 ;
@@ -28,30 +15,54 @@ const Double_t ptmin = 0.1;
 const Double_t ptmax = 9999.;
 const Double_t etamin = -0.9;
 const Double_t etamax = 0.9;
-const Double_t zmin = -15;
-const Double_t zmax = 15;
+const Double_t zvtxmin = -15;
+const Double_t zvtxmax = 15;
 const Int_t    minITSClusters = 5;
 
-const Float_t centmin = 0.;
+const Float_t centmin_0_10 = 0.;
+const Float_t centmax_0_10 = 10.;
+const Float_t centmin_10_100 = 10.;
+const Float_t centmax_10_100 = 100.;
 const Float_t centmax = 100.;
 const Float_t fakemin = -0.5;
 const Float_t fakemax = 2.5.;
-
 const Double_t distTwoPartmin=0;
 const Double_t distTwoPartmax=600;
-
 const Double_t dispVtxmin = 0;
 const Double_t dispVtxmax = 600;
-
 const Double_t sumd02min = 0.;
 const Double_t sumd02max = 50000.;
+const Float_t cosminXY = 0.95;
+const Float_t cosmaxXY = 1.0;
+const Float_t normDecLXYmin = 0;
+const Float_t normDecLXYmax = 20;
+const Float_t multmin_0_20 = 0;
+const Float_t multmax_0_20 = 20;
+const Float_t multmin_20_50 = 20;
+const Float_t multmax_20_50 = 50;
+const Float_t multmin_50_102 = 50;
+const Float_t multmax_50_102 = 102;
+
 
 //----------------------------------------------------
 
-AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root",Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
+//AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
+AliCFContainer *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts4LctopKpi.root", Int_t configuration = AliCFTaskVertexingHF::kSnail, Bool_t isKeepDfromB=kFALSE, Bool_t isKeepDfromBOnly=kFALSE, Int_t pdgCode = 4122, Char_t isSign = 2)
 {
 	printf("Addig CF task using cuts from file %s\n",cutFile);
-
+	if (configuration == AliCFTaskVertexingHF::kSnail){
+		printf("The configuration is set to be SLOW --> all the variables will be used to fill the CF\n");
+	}
+	else if (configuration == AliCFTaskVertexingHF::kCheetah){
+		printf("The configuration is set to be FAST --> using only pt, y, ct, phi, zvtx, centrality, fake, multiplicity to fill the CF\n");
+	}
+	else{
+		printf("The configuration is not defined! returning\n");
+		return;
+	}
+	
+	gSystem->Sleep(2000);
+	
 	// isSign = 0 --> D0 only
 	// isSign = 1 --> D0bar only
 	// isSign = 2 --> D0 + D0bar
@@ -69,7 +80,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 		AliError(Form("Sign not valid (%d, possible values are 0, 1, 2), returning"));
 		return 0x0;
 	}
-
+	
 	TFile* fileCuts = new TFile(cutFile);
 	AliRDHFCutsLctopKpi *cutsLctopKpi = (AliRDHFCutsLctopKpi*)fileCuts->Get("LctopKpiProdCuts");
 	
@@ -77,7 +88,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	//  for now the binning is the same than for all D's
 	if(isKeepDfromBOnly) isKeepDfromB = true;
 	
-
 	/*
 	  Double_t ptmin_0_4;
 	  Double_t ptmax_0_4;
@@ -105,314 +115,373 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 
 	//CONTAINER DEFINITION
 	Info("AliCFTaskVertexingHF","SETUP CONTAINER");
-	//the sensitive variables, their indices
-	UInt_t ipt = 0;
-	UInt_t iy  = 1;
-	UInt_t iphi  = 2;
-	UInt_t icT  = 3;
-	UInt_t ipointing  = 4;
-	UInt_t iptpi  = 5;
-	UInt_t iptK  = 6;
-	UInt_t iptpi2  = 7;
-	UInt_t id0pi  = 8;
-	UInt_t id0K  = 9;
-	UInt_t id0pi2  = 10;
-	UInt_t iz  = 11;
-	UInt_t icent = 12;
-	UInt_t ifake = 13;	
-
-	UInt_t idist12 = 14;
-	UInt_t idist23 = 15;
-	UInt_t idispVtx = 16;
-	UInt_t isumd02 = 17;
 
 	const Double_t phimax = 2*TMath::Pi();
 
 	//Setting up the container grid... 
 	UInt_t nstep = 10; //number of selection steps: MC with limited acceptance, MC, Acceptance, Vertex, Refit, Reco (no cuts), RecoAcceptance, RecoITSClusters (RecoAcceptance included), RecoPPR (RecoAcceptance+RecoITSCluster included), RecoPID 
-	const Int_t nvar   = 18; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi 
-// 	const Int_t nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-// 	const Int_t nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-// 	const Int_t nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+// 	const Int_t nbinpt_0_4  = 8 ; //bins in pt from 0 to 4 GeV
+// 	const Int_t nbinpt_4_8  = 4 ; //bins in pt from 4 to 8 GeV
+// 	const Int_t nbinpt_8_10  = 1 ; //bins in pt from 8 to 10 GeV
 
 /*
-	Int_t nbin0_0_4;
-	Int_t nbin0_4_8;
-	Int_t nbin0_8_10;
+	Int_t nbinpt_0_4;
+	Int_t nbinpt_4_8;
+	Int_t nbinpt_8_10;
 	if (!isKeepDfromB){
-	  nbin0_0_4  = 8 ; //bins in pt from 0 to 4 GeV
-	  nbin0_4_8  = 4 ; //bins in pt from 4 to 8 GeV
-	  nbin0_8_10  = 1 ; //bins in pt from 8 to 10 GeV
+	  nbinpt_0_4  = 8 ; //bins in pt from 0 to 4 GeV
+	  nbinpt_4_8  = 4 ; //bins in pt from 4 to 8 GeV
+	  nbinpt_8_10  = 1 ; //bins in pt from 8 to 10 GeV
 	}else{
-	  nbin0_0_4  = 3 ; //bins in pt from 0 to 3 GeV
-	  nbin0_4_8  = 1 ; //bins in pt from 3 to 5 GeV
-	  nbin0_8_10  = 1 ; //bins in pt from 5 to 10 GeV
+	  nbinpt_0_4  = 3 ; //bins in pt from 0 to 3 GeV
+	  nbinpt_4_8  = 1 ; //bins in pt from 3 to 5 GeV
+	  nbinpt_8_10  = 1 ; //bins in pt from 5 to 10 GeV
 	}
 */
-	const Int_t nbin0 = cutsLctopKpi->GetNPtBins(); // bins in pT
-	printf("pT: nbin (from cuts file) = %d\n",nbin0);
-	const Int_t nbin1  = 42 ; //bins in y
-	const Int_t nbin2  = 20 ; //bins in phi
-	const Int_t nbin3  = 24 ; //bins in cT 
-	const Int_t nbin4  = 1050 ; //bins in cosPointingAngle	
-	const Int_t nbin5_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
-	const Int_t nbin5_4_8  = 4 ; //bins in ptPi from 4 to 8 GeV
-	const Int_t nbin5_8_10  = 1 ; //bins in ptPi from 8 to 10 GeV
-	const Int_t nbin6_0_4  = 8 ; //bins in ptKa from 0 to 4 GeV
-	const Int_t nbin6_4_8  = 4 ; //bins in ptKa from 4 to 8 GeV
-	const Int_t nbin6_8_10  = 1 ; //bins in ptKa from 8 to 10 GeV
-	const Int_t nbin7_0_4  = 8 ; //bins in ptpi2 from 0 to 4 GeV
-	const Int_t nbin7_4_8  = 4 ; //bins in ptpi2 from 4 to 8 GeV
-	const Int_t nbin7_8_10  = 1 ; //bins in ptpi2 from 8 to 10 GeV
-	const Int_t nbin8  = 100 ; //bins in d0pi
-	const Int_t nbin9  = 100 ; //bins in d0K
-	const Int_t nbin10  = 100 ; //bins in d0pi2
-	const Int_t nbin11  = 60 ; //bins in z vertex
-	const Int_t nbin12 = 10; //bins in centrality
-	const Int_t nbin13 = 3;  //bins in fake	
+	const Int_t nbinpt = cutsLctopKpi->GetNPtBins(); // bins in pT
+	printf("pT: nbin (from cuts file) = %d\n",nbinpt);
+	const Int_t nbiny  = 24 ; //bins in y
+	const Int_t nbinphi  = 18 ; //bins in phi
+	const Int_t nbincT  = 25 ; //bins in cT 
+	const Int_t nbinpointing  = 350 ; //bins in cosPointingAngle	
+	const Int_t nbinpTpi_0_4  = 8 ; //bins in ptPi from 0 to 4 GeV
+	const Int_t nbinpTpi_4_8  = 4 ; //bins in ptPi from 4 to 8 GeV
+	const Int_t nbinpTpi_8_10  = 1 ; //bins in ptPi from 8 to 10 GeV
+	const Int_t nbinpTk_0_4  = 8 ; //bins in ptKa from 0 to 4 GeV
+	const Int_t nbinpTk_4_8  = 4 ; //bins in ptKa from 4 to 8 GeV
+	const Int_t nbinpTk_8_10  = 1 ; //bins in ptKa from 8 to 10 GeV
+	const Int_t nbinpTpi2_0_4  = 8 ; //bins in ptpi2 from 0 to 4 GeV
+	const Int_t nbinpTpi2_4_8  = 4 ; //bins in ptpi2 from 4 to 8 GeV
+	const Int_t nbinpTpi2_8_10  = 1 ; //bins in ptpi2 from 8 to 10 GeV
+	const Int_t nbinzvtx  = 30 ; //bins in z vertex
+	const Int_t nbincent = 11; //bins in centrality
+	const Int_t nbincent_0_10 = 2;  //bins in centrality between 0 and 10
+	const Int_t nbincent_10_100 = 9;  //bins in centrality between 10 and 100
+	const Int_t nbinfake = 3;  //bins in fake
+ 	const Int_t nbindist12 = 10; //bins dist12
+ 	const Int_t nbindist23 = 10; //bins dist23
+ 	const Int_t nbinsigmaVtx = 10; //bin sigmaVtx	
+ 	const Int_t nbinsumd02 = 10; //bin sumD0^2	
+	const Int_t nbinpointingXY = 50;  //bins in cosPointingAngleXY
+	const Int_t nbinnormDecayLXY = 20;  //bins in NormDecayLengthXY
+	const Int_t nbinmult = 48;  //bins in multiplicity (total number)
+	const Int_t nbinmult_0_20 = 20; //bins in multiplicity between 0 and 20
+	const Int_t nbinmult_20_50 = 15; //bins in multiplicity between 20 and 50
+	const Int_t nbinmult_50_102 = 13; //bins in multiplicity between 50 and 102
 	
-	const Int_t nbin14 = 10; //bins dist12
-	const Int_t nbin15 = 10; //bins dist23
-	const Int_t nbin16 = 10; //bin sigmaVtx	
-	const Int_t nbin17 = 10; //bin sumD0^2	
- 
+	//the sensitive variables, their indices
+	const UInt_t ipT = 0;
+	const UInt_t iy  = 1;
+	const UInt_t iphi  = 2;
+	const UInt_t icT  = 3;
+	const UInt_t ipointing  = 4;
+	const UInt_t ipTpi  = 5;
+	const UInt_t ipTk  = 6;
+	const UInt_t ipTpi2  = 7;
+	const UInt_t izvtx  = 8;
+	const UInt_t icent = 9;
+	const UInt_t ifake = 10;
+ 	const UInt_t idist12 = 11;
+ 	const UInt_t idist23 = 12;
+ 	const UInt_t isigmaVtx = 13;
+ 	const UInt_t isumd02 = 14;
+	const UInt_t ipointingXY = 15;
+	const UInt_t inormDecayLXY = 16;
+	const UInt_t imult = 17;
+
+	const Int_t nvarTot   = 18 ; //number of variables on the grid:pt, y, cosThetaStar, pTpi, pTk, cT, dca, d0pi, d0K, d0xd0, cosPointingAngle, phi, zvtx, centrality, fake, cosPointingAngleXY, normDecayLengthXY, multiplicity
 
 	//arrays for the number of bins in each dimension
-	Int_t iBin[nvar];
- 	//iBin[0]=nbin0_0_4+nbin0_4_8+nbin0_8_10;
-	iBin[0]=nbin0;
-	iBin[1]=nbin1;
-	iBin[2]=nbin2;
-	// 	iBin[3]=nbin3_0_4+nbin3_4_8+nbin3_8_10;
- 	//iBin[4]=nbin4_0_4+nbin4_4_8+nbin4_8_10;
- 	iBin[3]=nbin3;
- 	iBin[4]=nbin4;
-	iBin[5]=nbin0;
-	iBin[6]=nbin0;
-	iBin[7]=nbin0;
-	iBin[8]=nbin8;
-	iBin[9]=nbin9;
-	iBin[10]=nbin10;
-	iBin[11]=nbin11;
-	iBin[12]=nbin12;
-
-	iBin[13]=nbin13;
-	iBin[14]=nbin14;
-	iBin[15]=nbin15;
-	iBin[16]=nbin16;
-	iBin[17]=nbin17;
-
+	Int_t iBin[nvarTot];
+ 	//iBin[ipT]=nbinpt_0_4+nbinpt_4_8+nbinpt_8_10;
+	iBin[ipT]=nbinpt;
+	iBin[iy]=nbiny;
+	iBin[iphi]=nbinphi;
+	// 	iBin[icT]=nbincT_0_4+nbincT_4_8+nbincT_8_10;
+ 	//iBin[4]=nbinpointing_0_4+nbinpointing_4_8+nbinpointing_8_10;
+ 	iBin[icT]=nbincT;
+ 	iBin[ipointing]=nbinpointing;
+	iBin[ipTpi]=nbinpt;
+	iBin[ipTk]=nbinpt;
+	iBin[ipTpi2]=nbinpt;
+	iBin[izvtx]=nbinzvtx;
+	iBin[icent]=nbincent;
+	iBin[ifake]=nbinfake;
+ 	iBin[idist12]=nbindist12;
+ 	iBin[idist23]=nbindist23;
+ 	iBin[isigmaVtx]=nbinsigmaVtx;
+ 	iBin[isumd02]=nbinsumd02;
+	iBin[ipointingXY]=nbinpointingXY;
+	iBin[inormDecayLXY]=nbinnormDecayLXY;
+	iBin[imult]=nbinmult;
+	
 	//arrays for lower bounds :
-	Double_t *binLim0=new Double_t[iBin[0]+1];
-	Double_t *binLim1=new Double_t[iBin[1]+1];
-	Double_t *binLim2=new Double_t[iBin[2]+1];
-	Double_t *binLim3=new Double_t[iBin[3]+1];
-	Double_t *binLim4=new Double_t[iBin[4]+1];
-	Double_t *binLim5=new Double_t[iBin[5]+1];
-	Double_t *binLim6=new Double_t[iBin[6]+1];
-	Double_t *binLim7=new Double_t[iBin[7]+1];
-	Double_t *binLim8=new Double_t[iBin[8]+1];
-	Double_t *binLim9=new Double_t[iBin[9]+1];
-	Double_t *binLim10=new Double_t[iBin[10]+1];
-	Double_t *binLim11=new Double_t[iBin[11]+1];
-	Double_t *binLim12=new Double_t[iBin[12]+1];
-
-	Double_t *binLim13=new Double_t[iBin[13]+1];
-	Double_t *binLim14=new Double_t[iBin[14]+1];
-	Double_t *binLim15=new Double_t[iBin[15]+1];
-	Double_t *binLim16=new Double_t[iBin[16]+1];
-    Double_t *binLim17=new Double_t[iBin[17]+1];	
+	Double_t *binLimpT=new Double_t[iBin[ipT]+1];
+	Double_t *binLimy=new Double_t[iBin[iy]+1];
+	Double_t *binLimphi=new Double_t[iBin[iphi]+1];
+	Double_t *binLimcT=new Double_t[iBin[icT]+1];
+	Double_t *binLimpointing=new Double_t[iBin[ipointing]+1];
+	Double_t *binLimpTpi=new Double_t[iBin[ipTpi]+1];
+	Double_t *binLimpTk=new Double_t[iBin[ipTk]+1];
+	Double_t *binLimpTpi2=new Double_t[iBin[ipTpi2]+1];
+	Double_t *binLimzvtx=new Double_t[iBin[izvtx]+1];
+	Double_t *binLimcent=new Double_t[iBin[icent]+1];
+	Double_t *binLimfake=new Double_t[iBin[ifake]+1];
+ 	Double_t *binLimdist12=new Double_t[iBin[idist12]+1];
+ 	Double_t *binLimdist23=new Double_t[iBin[idist23]+1];
+ 	Double_t *binLimsigmaVtx=new Double_t[iBin[isigmaVtx]+1];
+	Double_t *binLimsumd02=new Double_t[iBin[isumd02]+1];	
+	Double_t *binLimpointingXY=new Double_t[iBin[ipointingXY]+1];
+	Double_t *binLimnormDecayLXY=new Double_t[iBin[inormDecayLXY]+1];
+	Double_t *binLimmult=new Double_t[iBin[imult]+1];
 	
 	// checking limits
 	/*
-	if (ptmax_0_4 != ptmin_4_8) {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 1st range != min lim 2nd range, please check!");
-	}
-	if (ptmax_4_8 != ptmin_8_10) {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 2nd range != min lim 3rd range, please check!");
-	}
+	  if (ptmax_0_4 != ptmin_4_8) {
+	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 1st range != min lim 2nd range, please check!");
+	  }
+	  if (ptmax_4_8 != ptmin_8_10) {
+	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","max lim 2nd range != min lim 3rd range, please check!");
+	  }
 	*/
 	// values for bin lower bounds
 	// pt
-	Float_t* floatbinLim0 = cutsLctopKpi->GetPtBinLimits();
-	for (Int_t ibin0 = 0 ; ibin0<iBin[0]+1; ibin0++){
-		binLim0[ibin0] = (Double_t)floatbinLim0[ibin0];
-		binLim5[ibin0] = (Double_t)floatbinLim0[ibin0];
-		binLim6[ibin0] = (Double_t)floatbinLim0[ibin0];
-		binLim7[ibin0] = (Double_t)floatbinLim0[ibin0];
+	Float_t* floatbinLimpT = cutsLctopKpi->GetPtBinLimits();
+	for (Int_t ibinpT = 0 ; ibinpT<iBin[ipT]+1; ibinpT++){
+		binLimpT[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+		binLimpTpi[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+		binLimpTk[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
+		binLimpTpi2[ibinpT] = (Double_t)floatbinLimpT[ibinpT];
 	}
-	for(Int_t i=0; i<=nbin0; i++) printf("binLim0[%d]=%f\n",i,binLim0[i]);  
-
+	for(Int_t i=0; i<=nbinpt; i++) printf("binLimpT[%d]=%f\n",i,binLimpT[i]);  
+	
 	/*
-	for(Int_t i=0; i<=nbin0_0_4; i++) binLim0[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin0_0_4*(Double_t)i ; 
-	if (binLim0[nbin0_0_4] != ptmin_4_8)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
-	}
-	for(Int_t i=0; i<=nbin0_4_8; i++) binLim0[i+nbin0_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin0_4_8*(Double_t)i ; 
-	if (binLim0[nbin0_0_4+nbin0_4_8] != ptmin_8_10)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
-	}
-	for(Int_t i=0; i<=nbin0_8_10; i++) binLim0[i+nbin0_0_4+nbin0_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin0_8_10*(Double_t)i ; 
+	  for(Int_t i=0; i<=nbinpt_0_4; i++) binLimpT[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbinpt_0_4*(Double_t)i ; 
+	  if (binLimpT[nbinpt_0_4] != ptmin_4_8)  {
+	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 1st range - differs from expected!\n");
+	  }
+	  for(Int_t i=0; i<=nbinpt_4_8; i++) binLimpT[i+nbinpt_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbinpt_4_8*(Double_t)i ; 
+	  if (binLimpT[nbinpt_0_4+nbinpt_4_8] != ptmin_8_10)  {
+	  Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for pt - 2nd range - differs from expected!\n");
+	  }
+	  for(Int_t i=0; i<=nbinpt_8_10; i++) binLimpT[i+nbinpt_0_4+nbinpt_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbinpt_8_10*(Double_t)i ; 
 	*/
-
+	
 	// y
-	for(Int_t i=0; i<=nbin1; i++) binLim1[i]=(Double_t)ymin  + (ymax-ymin)  /nbin1*(Double_t)i ;
-
-	// cosThetaStar
-	//	for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbin2*(Double_t)i ;
+	for(Int_t i=0; i<=nbiny; i++) binLimy[i]=(Double_t)ymin  + (ymax-ymin)  /nbiny*(Double_t)i ;
+	
 	// Phi
-	for(Int_t i=0; i<=nbin2; i++) binLim2[i]=(Double_t)phimin  + (phimax-phimin)  /nbin2*(Double_t)i ;
-
+	for(Int_t i=0; i<=nbinphi; i++) binLimphi[i]=(Double_t)phimin  + (phimax-phimin)  /nbinphi*(Double_t)i ;
+	
 	// cT
-	for(Int_t i=0; i<=nbin3; i++) binLim3[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbin3*(Double_t)i ;
-
+	for(Int_t i=0; i<=nbincT; i++) binLimcT[i]=(Double_t)cTmin  + (cTmax-cTmin)  /nbincT*(Double_t)i ;
+	
 	// cosPointingAngle
-	for(Int_t i=0; i<=nbin4; i++) binLim4[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbin4*(Double_t)i ;
+	for(Int_t i=0; i<=nbinpointing; i++) binLimpointing[i]=(Double_t)cosmin  + (cosmax-cosmin)  /nbinpointing*(Double_t)i ;
 
 	/*
 	// ptPi
-	for(Int_t i=0; i<=nbin3_0_4; i++) binLim3[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin3_0_4*(Double_t)i ; 
-	if (binLim3[nbin3_0_4] != ptmin_4_8)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 1st range - differs from expected!");
+	for(Int_t i=0; i<=nbincT_0_4; i++) binLimcT[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbincT_0_4*(Double_t)i ; 
+	if (binLimcT[nbincT_0_4] != ptmin_4_8)  {
+	Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 1st range - differs from expected!");
 	}
-	for(Int_t i=0; i<=nbin3_4_8; i++) binLim3[i+nbin3_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin3_4_8*(Double_t)i ; 
-	if (binLim3[nbin3_0_4+nbin3_4_8] != ptmin_8_10)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 2nd range - differs from expected!\n");
+	for(Int_t i=0; i<=nbincT_4_8; i++) binLimcT[i+nbincT_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbincT_4_8*(Double_t)i ; 
+	if (binLimcT[nbincT_0_4+nbincT_4_8] != ptmin_8_10)  {
+	Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptPi - 2nd range - differs from expected!\n");
 	}
-	for(Int_t i=0; i<=nbin3_8_10; i++) binLim3[i+nbin3_0_4+nbin3_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin3_8_10*(Double_t)i ; 
-
-	// ptKa
-	for(Int_t i=0; i<=nbin4_0_4; i++) binLim4[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbin4_0_4*(Double_t)i ; 
-	if (binLim4[nbin4_0_4] != ptmin_4_8)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 1st range - differs from expected!");
-	}
-	for(Int_t i=0; i<=nbin4_4_8; i++) binLim4[i+nbin4_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbin4_4_8*(Double_t)i ; 
-	if (binLim4[nbin4_0_4+nbin4_4_8] != ptmin_8_10)  {
-		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 2nd range - differs from expected!\n");
-	}
-	for(Int_t i=0; i<=nbin4_8_10; i++) binLim4[i+nbin4_0_4+nbin4_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbin4_8_10*(Double_t)i ; 
-	*/
-
-
-	// dca
-	//for(Int_t i=0; i<=nbin6; i++) binLim6[i]=(Double_t)dcamin  + (dcamax-dcamin)  /nbin6*(Double_t)i ;
-
-	// d0pi
-	for(Int_t i=0; i<=nbin8; i++) binLim8[i]=(Double_t)d0min  + (d0max-d0min)  /nbin8*(Double_t)i ;
-
-	// d0K
-	for(Int_t i=0; i<=nbin9; i++) binLim9[i]=(Double_t)d0min  + (d0max-d0min)  /nbin9*(Double_t)i ;
-
-	// d0pi2
-	for(Int_t i=0; i<=nbin10; i++) binLim10[i]=(Double_t)d0min  + (d0max-d0min)  /nbin10*(Double_t)i ;
-
-
-
-
-
-	// z Primary Vertex
-	for(Int_t i=0; i<=nbin11; i++) {
-		binLim11[i]=(Double_t)zmin  + (zmax-zmin)  /nbin11*(Double_t)i ;
-		//		Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim12[i]));
-	}
-
-	//centrality
-	for(Int_t i=0; i<=nbin12; i++) {
-	  binLim12[i]=(Double_t)centmin  + (centmax-centmin)/nbin12 * (Double_t)i;
-	}
-
-	// fake
-	for(Int_t i=0; i<=nbin13; i++) {
-		binLim13[i]=(Double_t)fakemin  + (fakemax-fakemin)/nbin13 * (Double_t)i;
-	}	
+	for(Int_t i=0; i<=nbincT_8_10; i++) binLimcT[i+nbincT_0_4+nbincT_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbincT_8_10*(Double_t)i ; 
 	
-	//dist12
-	for(Int_t i=0; i<=nbin14; i++) {
-	  binLim14[i]=(Double_t)distTwoPartmin  + (distTwoPartmax-distTwoPartmin)/nbin14 * (Double_t)i;
+	// ptKa
+	for(Int_t i=0; i<=nbinpointing_0_4; i++) binLimpointing[i]=(Double_t)ptmin_0_4 + (ptmax_0_4-ptmin_0_4)/nbinpointing_0_4*(Double_t)i ; 
+	if (binLimpointing[nbinpointing_0_4] != ptmin_4_8)  {
+	Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 1st range - differs from expected!");
+	}
+	for(Int_t i=0; i<=nbinpointing_4_8; i++) binLimpointing[i+nbinpointing_0_4]=(Double_t)ptmin_4_8 + (ptmax_4_8-ptmin_4_8)/nbinpointing_4_8*(Double_t)i ; 
+	if (binLimpointing[nbinpointing_0_4+nbinpointing_4_8] != ptmin_8_10)  {
+	Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for ptKa - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbinpointing_8_10; i++) binLimpointing[i+nbinpointing_0_4+nbinpointing_4_8]=(Double_t)ptmin_8_10 + (ptmax_8_10-ptmin_8_10)/nbinpointing_8_10*(Double_t)i ; 
+	*/
+	
+	// z Primary Vertex
+	for(Int_t i=0; i<=nbinzvtx; i++) {
+		binLimzvtx[i]=(Double_t)zvtxmin  + (zvtxmax-zvtxmin)  /nbinzvtx*(Double_t)i ;
+	}
+	
+	// centrality
+	for(Int_t i=0; i<=nbincent_0_10; i++) binLimcent[i]=(Double_t)centmin_0_10 + (centmax_0_10-centmin_0_10)/nbincent_0_10*(Double_t)i ; 
+	if (binLimcent[nbincent_0_10] != centmin_10_100)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for cent - 1st range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbincent_10_100; i++) binLimcent[i+nbincent_0_10]=(Double_t)centmin_10_100 + (centmax_10_100-centmin_10_100)/nbincent_10_100*(Double_t)i ; 
+	
+	// fake
+	for(Int_t i=0; i<=nbinfake; i++) {
+	  binLimfake[i]=(Double_t)fakemin  + (fakemax-fakemin)/nbinfake * (Double_t)i;
 	}
 
-	//dist23
-	for(Int_t i=0; i<=nbin15; i++) {
-	  binLim15[i]=(Double_t)distTwoPartmin  + (distTwoPartmax-distTwoPartmin)/nbin15 * (Double_t)i;
-	}
-
-	//dispersion Vtx
-	for(Int_t i=0; i<=nbin16; i++) {
-	  binLim16[i]=(Double_t)dispVtxmin  + (dispVtxmax-dispVtxmin)/nbin16 * (Double_t)i;
+ 	//dist12
+ 	for(Int_t i=0; i<=nbindist12; i++) {
+ 	  binLimdist12[i]=(Double_t)distTwoPartmin  + (distTwoPartmax-distTwoPartmin)/nbindist12 * (Double_t)i;
+ 	}
+ 
+ 	//dist23
+ 	for(Int_t i=0; i<=nbindist23; i++) {
+ 	  binLimdist23[i]=(Double_t)distTwoPartmin  + (distTwoPartmax-distTwoPartmin)/nbindist23 * (Double_t)i;
+ 	}
+ 
+ 	//dispersion Vtx
+ 	for(Int_t i=0; i<=nbinsigmaVtx; i++) {
+ 	  binLimsigmaVtx[i]=(Double_t)dispVtxmin  + (dispVtxmax-dispVtxmin)/nbinsigmaVtx * (Double_t)i;
 	}
 
 	//sumd0^2
-	for(Int_t i=0; i<=nbin17; i++) {
-	  binLim17[i]=(Double_t)sumd02min  + (sumd02max-sumd02min)/nbin17 * (Double_t)i;
-}
+ 	for(Int_t i=0; i<=nbinsumd02; i++) {
+ 	  binLimsumd02[i]=(Double_t)sumd02min  + (sumd02max-sumd02min)/nbinsumd02 * (Double_t)i;
+	}
+
+	// cosPointingAngleXY
+	for(Int_t i=0; i<=nbinpointingXY; i++) binLimpointingXY[i]=(Double_t)cosminXY  + (cosmaxXY-cosminXY)  /nbinpointingXY*(Double_t)i ;
+
+	// normDecayLXY
+	for(Int_t i=0; i<=nbinnormDecayLXY; i++) binLimnormDecayLXY[i]=(Double_t)normDecLXYmin  + (normDecLXYmax-normDecLXYmin)  /nbinnormDecayLXY*(Double_t)i ;
+
+	// multiplicity
+	for(Int_t i=0; i<=nbinmult_0_20; i++) binLimmult[i]=(Double_t)multmin_0_20 + (multmax_0_20-multmin_0_20)/nbinmult_0_20*(Double_t)i ; 
+	if (binLimmult[nbinmult_0_20] != multmin_20_50)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 1st range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbinmult_20_50; i++) binLimmult[i+nbinmult_0_20]=(Double_t)multmin_20_50 + (multmax_20_50-multmin_20_50)/nbinmult_20_50*(Double_t)i ; 
+	if (binLimmult[nbinmult_0_20+nbinmult_20_50] != multmin_50_102)  {
+		Error("AliCFHeavyFlavourTaskMultiVarMultiStep","Calculated bin lim for mult - 2nd range - differs from expected!\n");
+	}
+	for(Int_t i=0; i<=nbinmult_50_102; i++) binLimmult[i+nbinmult_0_20+nbinmult_20_50]=(Double_t)multmin_50_102 + (multmax_50_102-multmin_50_102)/nbinmult_50_102*(Double_t)i ; 
 	
-
-	// debugging printings
-	//Info("AliCFHeavyFlavourTaskMultiVarMultiStep","Printing lower limits for bins in pt");
-	//for (Int_t i =0; i<= iBin[0]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim0[i]));
-	//}
-	//Info("Printing lower limits for bins in ptPi");
-	//for (Int_t i =0; i<= iBin[3]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim3[i]));
-	//}
-	//Info("Printing lower limits for bins in ptKa");
-	//for (Int_t i =0; i<= iBin[4]; i++){
-	//	Info("AliCFHeavyFlavourTaskMultiVarMultiStep",Form("i-th bin, lower limit = %f", binLim4[i]));
-	//	}
-
 	//one "container" for MC
 	TString nameContainer="";
 	if(!isKeepDfromB) {
-	  nameContainer="CFHFccontainer0_3Prong_CommonFramework";
+		nameContainer="CFHFccontainer0_3Prong_CommonFramework";
 	}
 	else  if(isKeepDfromBOnly){
-	  nameContainer="CFHFccontainer0DfromB_3Prong_CommonFramework";
+		nameContainer="CFHFccontainer0DfromB_3Prong_CommonFramework";
 	}
 	else  {
-	  nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
+		nameContainer="CFHFccontainer0allD_3Prong_CommonFramework";          
 	}
 	
-	AliCFContainer* container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBin);
-	//setting the bin limits
-	printf("pt\n");
-	container -> SetBinLimits(ipt,binLim0);
-	printf("y\n");
-	container -> SetBinLimits(iy,binLim1);
-	printf("Phi\n");
-	container -> SetBinLimits(iphi,binLim2);
-	printf("cT\n");
-	container -> SetBinLimits(icT,binLim3);
-	printf("pointing angle\n");
-	container -> SetBinLimits(ipointing,binLim4);
-	printf("ptpi\n");
-	container -> SetBinLimits(iptpi,binLim5);
-	printf("ptK\n");
-	container -> SetBinLimits(iptK,binLim6);
-	printf("ptpi2\n");
-	container -> SetBinLimits(iptpi2,binLim7);
-	printf("d0pi\n");
-	container -> SetBinLimits(id0pi,binLim8);
-	printf("d0K\n");
-	container -> SetBinLimits(id0K,binLim9);
-	printf("d0pi2\n");
-	container -> SetBinLimits(id0pi2,binLim10);
-	printf("z \n");
-	container -> SetBinLimits(iz,binLim11);
-	printf("cent\n");
-	container -> SetBinLimits(icent,binLim12);
-	printf("fake\n");
-	container -> SetBinLimits(ifake,binLim13);
-	printf("dist12\n");
-	container -> SetBinLimits(idist12,binLim14);
-	printf("dist23\n");
-	container -> SetBinLimits(idist23,binLim15);
-	printf("dispVtx\n");
-	container -> SetBinLimits(idispVtx,binLim16);
-	printf("sumd0^2\n");
-	container -> SetBinLimits(isumd02,binLim17);
-	
-	
+	AliCFContainer* container;
+	if (configuration == AliCFTaskVertexingHF::kSnail){
+		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvarTot,iBin);
+		//setting the bin limits
+		printf("pt\n");
+		container -> SetBinLimits(ipT,binLimpT);
+		printf("y\n");
+		container -> SetBinLimits(iy,binLimy);
+		printf("Phi\n");
+		container -> SetBinLimits(iphi,binLimphi);
+		printf("cT\n");
+		container -> SetBinLimits(icT,binLimcT);
+		printf("pointing angle\n");
+		container -> SetBinLimits(ipointing,binLimpointing);
+		printf("ptpi\n");
+		container -> SetBinLimits(ipTpi,binLimpTpi);
+		printf("ptK\n");
+		container -> SetBinLimits(ipTk,binLimpTk);
+		printf("ptpi2\n");
+		container -> SetBinLimits(ipTpi2,binLimpTpi2);
+		printf("zvtx \n");
+		container -> SetBinLimits(izvtx,binLimzvtx);
+		printf("cent\n");
+		container -> SetBinLimits(icent,binLimcent);
+		printf("fake\n");
+		container -> SetBinLimits(ifake,binLimfake);
+		printf("dist12\n");
+		container -> SetBinLimits(idist12,binLimdist12);
+		printf("dist23\n");
+		container -> SetBinLimits(idist23,binLimdist23);
+		printf("dispVtx\n");
+		container -> SetBinLimits(isigmaVtx,binLimsigmaVtx);
+		printf("sumd0^2\n");
+		container -> SetBinLimits(isumd02,binLimsumd02);
+		printf("pointingXY\n");
+		container -> SetBinLimits(ipointingXY,binLimpointingXY);
+		printf("normDecayLXY\n");
+		container -> SetBinLimits(inormDecayLXY,binLimnormDecayLXY);
+		printf("multiplicity\n");
+		container -> SetBinLimits(imult,binLimmult);
+		
+		container -> SetVarTitle(ipT,"pt");
+		container -> SetVarTitle(iy,"y");
+		container -> SetVarTitle(iphi, "phi");
+		container -> SetVarTitle(icT, "ct");
+		container -> SetVarTitle(ipointing, "pionting");        
+		container -> SetVarTitle(ipTpi, "ptpi");
+		container -> SetVarTitle(ipTk, "ptK");
+		container -> SetVarTitle(ipTpi2, "ptpi2");
+		container -> SetVarTitle(izvtx, "zvtx");
+		container -> SetVarTitle(icent, "centrality");
+		container -> SetVarTitle(ifake, "fake");
+		container -> SetVarTitle(idist12, "dist12toVtx");
+		container -> SetVarTitle(idist23, "dist23toVtx");
+		container -> SetVarTitle(isigmaVtx, "dispertionToSecVtx");
+		container -> SetVarTitle(isumd02, "sumd0^2");
+		container -> SetVarTitle(ipointingXY, "piointingXY");
+		container -> SetVarTitle(inormDecayLXY, "normDecayLXY");
+		container -> SetVarTitle(imult, "multiplicity");
+	}
+	else if (configuration == AliCFTaskVertexingHF::kCheetah){
+		//arrays for the number of bins in each dimension
+		const Int_t nvar = 8;
+
+		const UInt_t ipTFast = 0;
+		const UInt_t iyFast = 1;
+		const UInt_t icTFast = 2;
+		const UInt_t iphiFast = 3;
+		const UInt_t izvtxFast = 4;
+		const UInt_t icentFast = 5;
+		const UInt_t ifakeFast = 6;
+		const UInt_t imultFast = 7;
+
+		Int_t iBinFast[nvar];
+		iBinFast[ipTFast] = iBin[ipT];
+		iBinFast[iyFast] = iBin[iy];
+		iBinFast[icTFast] = iBin[icT];
+		iBinFast[iphiFast] = iBin[iphi];
+		iBinFast[izvtxFast] = iBin[izvtx];
+		iBinFast[icentFast] = iBin[icent];
+		iBinFast[ifakeFast] = iBin[ifake];
+		iBinFast[imultFast] = iBin[imult];
+
+		container = new AliCFContainer(nameContainer,"container for tracks",nstep,nvar,iBinFast);
+		printf("pt\n");
+		container -> SetBinLimits(ipTFast,binLimpT);
+		printf("y\n");
+		container -> SetBinLimits(iyFast,binLimy);
+		printf("ct\n");
+		container -> SetBinLimits(icTFast,binLimcT);
+		printf("phi\n");
+		container -> SetBinLimits(iphiFast,binLimphi);
+		printf("zvtx\n");
+		container -> SetBinLimits(izvtxFast,binLimzvtx);
+		printf("centrality\n");
+		container -> SetBinLimits(icentFast,binLimcent);
+		printf("fake\n");
+		container -> SetBinLimits(ifakeFast,binLimfake);
+		printf("multiplicity\n");
+		container -> SetBinLimits(imultFast,binLimmult);
+
+		container -> SetVarTitle(ipTFast,"pt");
+		container -> SetVarTitle(iyFast,"y");
+		container -> SetVarTitle(icTFast, "ct");
+		container -> SetVarTitle(iphiFast, "phi");
+		container -> SetVarTitle(izvtxFast, "zvtx");
+		container -> SetVarTitle(icentFast, "centrality");
+		container -> SetVarTitle(ifakeFast, "fake");
+		container -> SetVarTitle(imultFast, "multiplicity");
+	}
+
+	return container;
+
 	container -> SetStepTitle(0, "MCLimAcc");
 	container -> SetStepTitle(1, "MC");
         container -> SetStepTitle(2, "MCAcc");
@@ -424,24 +493,6 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	container -> SetStepTitle(8, "RecoCuts");
 	container -> SetStepTitle(9, "RecoPID");
 
-        container -> SetVarTitle(ipt,"pt");
-	container -> SetVarTitle(iy,"y");
-        container -> SetVarTitle(iphi, "phi");
-        container -> SetVarTitle(icT, "ct");
-	container -> SetVarTitle(ipointing, "pionting");        
-	container -> SetVarTitle(iptpi, "ptpi");
-	container -> SetVarTitle(iptK, "ptK");
-	container -> SetVarTitle(iptpi2, "ptpi2");
-	container -> SetVarTitle(id0pi, "d0pi");
-        container -> SetVarTitle(id0K, "d0K");
-	container -> SetVarTitle(id0pi2, "d0pi2");
-	container -> SetVarTitle(iz, "z");
-	container -> SetVarTitle(icent, "centrality");
-	container -> SetVarTitle(ifake, "fake");
-	container -> SetVarTitle(idist12, "dist12toVtx");
-	container -> SetVarTitle(idist23, "dist23toVtx");
-	container -> SetVarTitle(idispVtx, "dispertionToSecVtx");
-	container -> SetVarTitle(isumd02, "sumd0^2");
 
 	//CREATE THE  CUTS -----------------------------------------------
 	
@@ -519,10 +570,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	task->SetUseWeight(kFALSE);
 	task->SetCFManager(man); //here is set the CF manager
 	task->SetSign(isSign);
-	task->SetCentralitySelection(kTRUE);
+	task->SetCentralitySelection(kFALSE);
+	task->SetFakeSelection(0);
 	task->SetRejectCandidateIfNotFromQuark(kTRUE); // put to false if you want to keep HIJING D0!!
 	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
-
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
@@ -537,7 +588,7 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	Printf("RejectCandidateIfNotFromQuark selection = %d",(Int_t)task->GetRejectCandidateIfNotFromQuark());
 	Printf("UseMCVertex selection = %d",(Int_t)task->GetUseMCVertex());
 	Printf("***************END CONTAINER SETTINGS *****************\n");
-	
+
         //-----------------------------------------------------------//
         //   create correlation matrix for unfolding - only eta-pt   //
         //-----------------------------------------------------------//
@@ -549,10 +600,10 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
         //first half  : reconstructed 
         //second half : MC
 
-        thnDim[0] = iBin[0];
-        thnDim[2] = iBin[0];
-        thnDim[1] = iBin[1];
-        thnDim[3] = iBin[1];
+        thnDim[0] = iBin[ipT];
+        thnDim[2] = iBin[ipT];
+        thnDim[1] = iBin[iy];
+        thnDim[3] = iBin[iy];
 
 	TString nameCorr="";
 	if(!isKeepDfromB) {
@@ -570,8 +621,8 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 
         // set bin limits
 
-        binEdges[0]= binLim0;
-        binEdges[1]= binLim1;
+        binEdges[0]= binLimpT;
+        binEdges[1]= binLimy;
 
         correlation->SetBinEdges(0,binEdges[0]);
         correlation->SetBinEdges(2,binEdges[0]);
@@ -630,5 +681,5 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF3ProngLc(const char* cutFile = "./cuts
 	mgr->ConnectOutput(task,4,coutput4);
 
 	return task;
-}
+	}
 

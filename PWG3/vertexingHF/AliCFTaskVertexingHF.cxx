@@ -103,7 +103,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fFakeSelection(0),
 	fRejectIfNoQuark(kTRUE),	
 	fUseMCVertex(kFALSE),
-	fDsOption(1)
+	fDsOption(1),
+	fConfiguration(kCheetah)  // by default, setting the fast configuration
 {
 	//
 	//Default ctor
@@ -140,7 +141,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fFakeSelection(0),
 	fRejectIfNoQuark(kTRUE),
 	fUseMCVertex(kFALSE),
-	fDsOption(1)
+	fDsOption(1),
+	fConfiguration(kCheetah)  // by default, setting the fast configuration
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -203,7 +205,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fFakeSelection(c.fFakeSelection),
 	fRejectIfNoQuark(c.fRejectIfNoQuark),
 	fUseMCVertex(c.fUseMCVertex),
-	fDsOption(c.fDsOption)
+	fDsOption(c.fDsOption),
+	fConfiguration(c.fConfiguration)
 {
 	//
 	// Copy Constructor
@@ -239,42 +242,84 @@ void AliCFTaskVertexingHF::Init()
 	switch (fDecayChannel){
 	case 2:{
 		copyfCuts = new AliRDHFCutsD0toKpi(*(static_cast<AliRDHFCutsD0toKpi*>(fCuts)));
-		fNvar = 15;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 16;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}
 		fPartName="D0";
 		fDauNames="K+pi";
 		break;
 	}
 	case 21:{ 
 		copyfCuts = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi*>(fCuts)));
-		fNvar = 15;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 16;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}			
 		fPartName="Dstar";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 31:{
 		copyfCuts = new AliRDHFCutsDplustoKpipi(*(static_cast<AliRDHFCutsDplustoKpipi*>(fCuts)));
-		fNvar = 14;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 14;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}			
 		fPartName="Dplus";
 		fDauNames="K+pi+pi";
 		break;
 	}
 	case 32:{
 		copyfCuts = new AliRDHFCutsLctopKpi(*(static_cast<AliRDHFCutsLctopKpi*>(fCuts)));
-		fNvar = 18;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 18;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}			
 		fPartName="Lambdac";
 		fDauNames="p+K+pi";
 		break;
 	}
 	case 33:{
 		copyfCuts = new AliRDHFCutsDstoKKpi(*(static_cast<AliRDHFCutsDstoKKpi*>(fCuts)));
-		fNvar = 14;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 14;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}			
 		fPartName="Ds";
 		fDauNames="K+K+pi";
 		break;
 	}
 	case 4:{
 		copyfCuts = new AliRDHFCutsD0toKpipipi(*(static_cast<AliRDHFCutsD0toKpipipi*>(fCuts)));
-		fNvar = 15;
+		switch (fConfiguration) {
+		case kSnail:  // slow configuration: all variables in
+			fNvar = 16;
+			break;
+		case kCheetah:// fast configuration: only pt_candidate, y, phi, ct, fake, z_vtx, centrality, multiplicity will be filled
+			fNvar = 8;
+			break;
+		}			
 		fPartName="D0";
 		fDauNames="K+pi+pi+pi";
 		break;
@@ -382,7 +427,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 			break;
 		}
 	}
-	
+
 	AliAODVertex *aodVtx = (AliAODVertex*)aodEvent->GetPrimaryVertex();
 	if (!aodVtx) return;
 	
@@ -486,6 +531,7 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	cfVtxHF->SetNVar(fNvar);
 	cfVtxHF->SetFakeSelection(fFakeSelection);
 	cfVtxHF->SetRejectCandidateIfNotFromQuark(fRejectIfNoQuark);
+	cfVtxHF->SetConfiguration(fConfiguration);
 
 	// switch-off the trigger class selection (doesn't work for MC)
 	fCuts->SetTriggerClass("");
@@ -505,9 +551,12 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	  fCuts->SetMaxCentrality(100.);
 	}
 	
-	
 	Float_t centValue = fCuts->GetCentrality(aodEvent);
 	cfVtxHF->SetCentralityValue(centValue);  
+	
+	// number of tracklets - multiplicity estimator
+	Double_t multiplicity = (Double_t)(aodEvent->GetTracklets()->GetNumberOfTracklets()); // casted to double because the CF is filled with doubles
+	cfVtxHF->SetMultiplicity(multiplicity);
 	
 	for (Int_t iPart=0; iPart<mcArray->GetEntriesFast(); iPart++) { 
 	  AliAODMCParticle* mcPart = dynamic_cast<AliAODMCParticle*>(mcArray->At(iPart));
@@ -576,8 +625,6 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 						fCFManager->GetParticleContainer()->Fill(containerInputMC,kStepRefit, fWeight);
 						AliDebug(3,"MC Refit cut passed and container filled\n");
 						icountRefit++;
-
-				      
 					}
 					else{
 						AliDebug(3,"MC Refit cut not passed\n");
@@ -776,6 +823,8 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	//	}
        	delete [] trackCuts;
 	}
+
+
 }
 
 //___________________________________________________________________________
@@ -798,67 +847,104 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	AliInfo(Form("Among the above, found %i reco %s that are decaying in %s and satisfy PPR+PID cuts, in %d events",fCountRecoPID,fPartName.Data(),fDauNames.Data(),fEvents));
 	
 	// draw some example plots....
-	
-	AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
+       	AliCFContainer *cont= dynamic_cast<AliCFContainer*> (GetOutputData(2));
 	if(!cont) {
 		printf("CONTAINER NOT FOUND\n");
 		return;
 	}
 	// projecting the containers to obtain histograms
 	// first argument = variable, second argument = step
-	
-	TH1D* h[3][12];
-	for(Int_t iC=0;iC<12; iC++){ 
-	  // MC-level
-	  h[0][iC] =   cont->ShowProjection(iC,0);
-	  // MC-Acceptance level
-	  h[1][iC] =   cont->ShowProjection(iC,1);
-	  // Reco-level
-	  h[2][iC] =   cont->ShowProjection(iC,4);
+
+	TH1D** h = new TH1D*[3]; 
+	if (fConfiguration == kSnail){
+		//h = new TH1D[3][12];
+	       	for (Int_t ih = 0; ih<3; ih++){
+			h[ih] = new TH1D[12];
+		}
+		for(Int_t iC=1;iC<12; iC++){ 
+			// MC-level
+			h[0][iC] =   *(cont->ShowProjection(iC,0));
+			// MC-Acceptance level
+			h[1][iC] =   *(cont->ShowProjection(iC,1));
+			// Reco-level
+			h[2][iC] =   *(cont->ShowProjection(iC,4));
+		}
 	}	
-	TString titles[12];
-	if(fDecayChannel==31){
-	  titles[0]="pT_Dplus (GeV/c)";
-	  titles[1]="rapidity";
-	  titles[2]="phi (rad)";
-	  titles[3]="cT (#mum)";
-	  titles[4]="cosPointingAngle";
-	  titles[5]="pT_1 (GeV/c)";
-	  titles[6]="pT_2 (GeV/c)";
-	  titles[7]="pT_3 (GeV/c)";
-	  titles[8]="d0_1 (#mum)";
-	  titles[9]="d0_2 (#mum)";
-	  titles[10]="d0_3 (#mum)";
-	  titles[11]="zVertex (cm)";
-	}else{
-	  titles[0]="pT_D0 (GeV/c)";
-	  titles[1]="rapidity";
-	  titles[2]="cosThetaStar";
-	  titles[3]="pT_pi (GeV/c)";
-	  titles[4]="pT_K (Gev/c)";
-	  titles[5]="cT (#mum)";
-	  titles[6]="dca (#mum)";
-	  titles[7]="d0_pi (#mum)";
-	  titles[8]="d0_K (#mum)";
-	  titles[9]="d0xd0 (#mum^2)";
-	  titles[10]="cosPointingAngle";
-	  titles[11]="phi (rad)";
+	else{
+		//h = new TH1D[3][12];
+		for (Int_t ih = 0; ih<3; ih++){
+			h[ih] = new TH1D[8];
+		}
+		for(Int_t iC=0;iC<8; iC++){ 
+			// MC-level
+			h[0][iC] =   *(cont->ShowProjection(iC,0));
+			// MC-Acceptance level
+			h[1][iC] =   *(cont->ShowProjection(iC,1));
+			// Reco-level
+			h[2][iC] =   *(cont->ShowProjection(iC,4));
+		}	
 	}
+
+	TString* titles;
+	Int_t nvarToPlot = 0;
+	if (fConfiguration == kSnail){
+		nvarToPlot = 12;
+		titles = new TString[nvarToPlot];
+		if(fDecayChannel==31){
+			titles[0]="pT_Dplus (GeV/c)";
+			titles[1]="rapidity";
+			titles[2]="phi (rad)";
+			titles[3]="cT (#mum)";
+			titles[4]="cosPointingAngle";
+			titles[5]="pT_1 (GeV/c)";
+			titles[6]="pT_2 (GeV/c)";
+			titles[7]="pT_3 (GeV/c)";
+			titles[8]="d0_1 (#mum)";
+			titles[9]="d0_2 (#mum)";
+			titles[10]="d0_3 (#mum)";
+			titles[11]="zVertex (cm)";
+		}else{
+			titles[0]="pT_D0 (GeV/c)";
+			titles[1]="rapidity";
+			titles[2]="cosThetaStar";
+			titles[3]="pT_pi (GeV/c)";
+			titles[4]="pT_K (Gev/c)";
+			titles[5]="cT (#mum)";
+			titles[6]="dca (#mum)";
+			titles[7]="d0_pi (#mum)";
+			titles[8]="d0_K (#mum)";
+			titles[9]="d0xd0 (#mum^2)";
+			titles[10]="cosPointingAngle";
+			titles[11]="phi (rad)";
+			
+		}
+	}
+	else{
+		nvarToPlot = 8;
+		titles = new TString[nvarToPlot];
+		titles[0]="pT_candidate (GeV/c)";
+		titles[1]="rapidity";
+		titles[2]="cT (#mum)";
+		titles[3]="phi";
+		titles[4]="z_{vtx}";
+		titles[5]="centrality";
+		titles[6]="fake";
+		titles[7]="multiplicity";
+	}
+
 	Int_t markers[12]={20,24,21,25,27,28,
 			   20,24,21,25,27,28};
 	Int_t colors[3]={2,8,4};
-	for(Int_t iC=0;iC<12; iC++){ 
-	  for(Int_t iStep=0;iStep<3;iStep++){
-	    h[iStep][iC]->SetTitle(titles[iC].Data());
-	    h[iStep][iC]->GetXaxis()->SetTitle(titles[iC].Data());
-	    Double_t maxh=h[iStep][iC]->GetMaximum();
-	    h[iStep][iC]->GetYaxis()->SetRangeUser(0,maxh*1.2);
-	    h[iStep][iC]->SetMarkerStyle(markers[iC]);
-	    h[iStep][iC]->SetMarkerColor(colors[iStep]);	    
-	  }
+	for(Int_t iC=0;iC<nvarToPlot; iC++){ 
+		for(Int_t iStep=0;iStep<3;iStep++){
+			h[iStep][iC].SetTitle(titles[iC].Data());
+			h[iStep][iC].GetXaxis()->SetTitle(titles[iC].Data());
+			Double_t maxh=h[iStep][iC].GetMaximum();
+			h[iStep][iC].GetYaxis()->SetRangeUser(0,maxh*1.2);
+			h[iStep][iC].SetMarkerStyle(markers[iC]);
+			h[iStep][iC].SetMarkerColor(colors[iStep]);	    
+		}
 	}
-
-	
 	
 	gStyle->SetCanvasColor(0);
 	gStyle->SetFrameFillColor(0);
@@ -866,54 +952,42 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	gStyle->SetStatColor(0);
 	
 	// drawing in 2 separate canvas for a matter of clearity
-	TCanvas * c1 =new TCanvas("c1New","Vars 0,1,2",1100,1600);
-	c1->Divide(3,3);
+	TCanvas * c1 =new TCanvas(Form("c1New_%d",fDecayChannel),"Vars 0, 1, 2, 3",1100,1200);
+	c1->Divide(3,4);
 	Int_t iPad=1;
-	for(Int_t iVar=0; iVar<3; iVar++){
-	  c1->cd(iPad++);
-	  h[0][iVar]->Draw("p");
-	  c1->cd(iPad++);
-	  h[1][iVar]->Draw("p");
-	  c1->cd(iPad++);
-	  h[2][iVar]->Draw("p");
+	for(Int_t iVar=0; iVar<4; iVar++){
+		c1->cd(iPad++);
+		h[0][iVar].Draw("p");
+		c1->cd(iPad++);
+		h[1][iVar].Draw("p");
+		c1->cd(iPad++);
+		h[2][iVar].Draw("p");
 	}
 	
-	TCanvas * c2 =new TCanvas("c2New","Vars 3,4,5",1100,1600);
-	c2->Divide(3,3);
+	TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
+	c2->Divide(3,4);
 	iPad=1;
-	for(Int_t iVar=3; iVar<6; iVar++){
-	  c2->cd(iPad++);
-	  h[0][iVar]->Draw("p");
-	  c2->cd(iPad++);
-	  h[1][iVar]->Draw("p");
-	  c2->cd(iPad++);
-	  h[2][iVar]->Draw("p");
-	}
-
-	
-	TCanvas * c3 =new TCanvas("c3New","Vars 6,7,8",1100,1600);
-	c3->Divide(3,3);
-	iPad=1;
-	for(Int_t iVar=6; iVar<9; iVar++){
-	  c3->cd(iPad++);
-	  h[0][iVar]->Draw("p");
-	  c3->cd(iPad++);
-	  h[1][iVar]->Draw("p");
-	  c3->cd(iPad++);
-	  h[2][iVar]->Draw("p");
+	for(Int_t iVar=4; iVar<8; iVar++){
+		c2->cd(iPad++);
+		h[0][iVar].Draw("p");
+		c2->cd(iPad++);
+		h[1][iVar].Draw("p");
+		c2->cd(iPad++);
+		h[2][iVar].Draw("p");
 	}
 
-	
-	TCanvas * c4 =new TCanvas("c4New","Vars 9,10,11",1100,1600);
-	c4->Divide(3,3);
-	iPad=1;
-	for(Int_t iVar=9; iVar<11; iVar++){
-	  c4->cd(iPad++);
-	  h[0][iVar]->Draw("p");
-	  c4->cd(iPad++);
-	  h[1][iVar]->Draw("p");
-	  c4->cd(iPad++);
-	  h[2][iVar]->Draw("p");
+	if (fConfiguration == kSnail){
+		TCanvas * c3 =new TCanvas(Form("c3New_%d",fDecayChannel),"Vars 8, 9, 10, 11",1100,1200);
+		c3->Divide(3,4);
+		iPad=1;
+		for(Int_t iVar=8; iVar<12; iVar++){
+			c3->cd(iPad++);
+			h[0][iVar].Draw("p");
+			c3->cd(iPad++);
+			h[1][iVar].Draw("p");
+			c3->cd(iPad++);
+			h[2][iVar].Draw("p");
+		}
 	}
 
 	
@@ -922,38 +996,24 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	TH2D* corr1 =hcorr->Projection(0,2);
 	TH2D* corr2 = hcorr->Projection(1,3);
 	
-	TCanvas * c7 =new TCanvas("c7New","",800,400);
+	TCanvas * c7 =new TCanvas(Form("c7New_%d",fDecayChannel),"",800,400);
 	c7->Divide(2,1);
 	c7->cd(1);
 	corr1->Draw("text");
 	c7->cd(2);
 	corr2->Draw("text");
 	
-	
 	TFile* file_projection = new TFile("CFtaskHFprojectionNew.root","RECREATE");
 	
 	corr1->Write();
 	corr2->Write();
-	for(Int_t iC=0;iC<12; iC++){ 
-	  for(Int_t iStep=0;iStep<3;iStep++){
-	    h[iStep][iC]->Write(Form("Step%d_%s",iStep,titles[iC].Data()));
-	  }
+	for(Int_t iC=0;iC<nvarToPlot; iC++){ 
+		for(Int_t iStep=0;iStep<3;iStep++){
+			h[iStep][iC].Write(Form("Step%d_%s",iStep,titles[iC].Data()));
+		}
 	}
 	file_projection->Close();
 	
-    
-	
-	/*
-	 c1->SaveAs("Plots/pT_rapidity_cosThetaStar.eps");
-	 c2->SaveAs("Plots/pTpi_pTK_cT.eps");
-	 c3->SaveAs("Plots/dca_d0pi_d0TK.eps");
-	 c4->SaveAs("Plots/d0xd0_cosPointingAngle.eps");
-	 
-	 c1->SaveAs("Plots/pT_rapidity_cosThetaStar.gif");
-	 c2->SaveAs("Plots/pTpi_pTK_cT.gif");
-	 c3->SaveAs("Plots/dca_d0pi_d0TK.gif");
-	 c4->SaveAs("Plots/d0xd0_cosPointingAngle.gif");
-	 */	
 }
 
 //___________________________________________________________________________
