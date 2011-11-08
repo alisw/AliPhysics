@@ -29,6 +29,8 @@
 #include "TObjArray.h"
 #include "TMath.h"
 #include "THashTable.h"
+#include "TString.h"
+#include "TRegexp.h"
 #include "AliDetectorRecoParam.h"
 
 #include "AliLog.h"
@@ -191,48 +193,45 @@ void  AliRecoParam::Print(Option_t *option) const {
 }
 
 void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo &evInfo,
-				  const THashTable *cosmicTriggersList)
+	const THashTable *cosmicTriggersList)
 {
-  // Implemented according to the discussions
-  // and meetings with physics and trigger coordination
+    // Implemented according to the discussions
+    // and meetings with physics and trigger coordination
 
-  fEventSpecie = kDefault;
+    fEventSpecie = kDefault;
 
-  if (strcmp(runInfo->GetRunType(),"PHYSICS")) {
-    // Not a physics run, the event specie is set to kCalib
-    fEventSpecie = kCalib;
-    return;
-  }
-
-  // Special DAQ events considered as calibration events
-  if (evInfo.GetEventType() != 7) {
-    // START_OF_*, END_OF_*, CALIBRATION etc events
-    fEventSpecie = kCalib;
-    return;
-  }
-
-    if (((strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) ||
-         (strcmp(runInfo->GetLHCState(),"STABLE BEAMS") == 0)) &&
-	((strcmp(runInfo->GetBeamType(),"A-A") == 0) ||
-	(strcmp(runInfo->GetBeamType(),"A-") == 0) ||
-	(strcmp(runInfo->GetBeamType(),"-A") == 0))) {
-      // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
-      fEventSpecie = kHighMult;
+    if (strcmp(runInfo->GetRunType(),"PHYSICS")) {
+	// Not a physics run, the event specie is set to kCalib
+	fEventSpecie = kCalib;
+	return;
     }
-    else if (((strcmp(runInfo->GetLHCState(),"STABLE_BEAMS") == 0) ||
-	      (strcmp(runInfo->GetLHCState(),"STABLE BEAMS") == 0)) &&
-	     ((strcmp(runInfo->GetBeamType(),"p-p") == 0) ||
-	      (strcmp(runInfo->GetBeamType(),"p-") == 0) ||
-	      (strcmp(runInfo->GetBeamType(),"-p") == 0) ||
-	      (strcmp(runInfo->GetBeamType(),"P-P") == 0) ||
-	      (strcmp(runInfo->GetBeamType(),"P-") == 0) ||
-	      (strcmp(runInfo->GetBeamType(),"-P") == 0))) {
-      // Proton run, the event specie is set to kLowMult
-      fEventSpecie = kLowMult;
+
+    // Special DAQ events considered as calibration events
+    if (evInfo.GetEventType() != 7) {
+	// START_OF_*, END_OF_*, CALIBRATION etc events
+	fEventSpecie = kCalib;
+	return;
     }
-    else if (strcmp(runInfo->GetBeamType(),"-") == 0) {
-      // No beams, we assume cosmic data
-      fEventSpecie = kCosmic;
+
+    TString lhcState(runInfo->GetLHCState());
+    TString beamType(runInfo->GetBeamType());
+    TRegexp reStable("^STABLE[_ ]BEAMS$");
+    TRegexp reASthg("^A-");
+    TRegexp reSthgA(".*-A$");
+    TRegexp repSthg("^[pP]-.*");
+    TRegexp reSthgp(".*-[pP]$");
+
+    if(lhcState.Index(reStable)==0){
+        if(beamType.Index(reASthg)==0 || beamType.Index(reSthgA)==0){
+            // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
+            fEventSpecie = kHighMult;
+        }else if(beamType.Index(repSthg)==0 || beamType.Index(reSthgp)==0){
+            // Proton run, the event specie is set to kLowMult
+            fEventSpecie = kLowMult;
+        }
+    }else if(beamType==TString("-")){
+	// No beams, we assume cosmic data
+	fEventSpecie = kCosmic;
     }
 
     // Now we look into the trigger type in order to decide
@@ -242,42 +241,42 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
     TObjArray* trClassArray = triggerClasses.Tokenize(" ");
     Int_t nTrClasses = trClassArray->GetEntriesFast();
     Bool_t cosmicTrigger = kFALSE,
-      calibTrigger = kFALSE,
-      otherTrigger = kFALSE;
+	   calibTrigger = kFALSE,
+	   otherTrigger = kFALSE;
     for( Int_t i=0; i<nTrClasses; ++i ) {
-      TString trClass = ((TObjString*)trClassArray->At(i))->String();
+	TString trClass = ((TObjString*)trClassArray->At(i))->String();
 
-      if (trClass.BeginsWith("C0L")) {
-	// Calibration triggers always start with C0L
-	calibTrigger = kTRUE;
-	continue;
-      }
-
-      if (cosmicTriggersList) {
-	if (cosmicTriggersList->FindObject(trClass.Data())) {
-	  // Cosmic trigger accorind to the table
-	  // provided in OCDB
-	  cosmicTrigger = kTRUE;
-	  AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",
-			  trClass.Data()));
-	  continue;
+	if (trClass.BeginsWith("C0L")) {
+	    // Calibration triggers always start with C0L
+	    calibTrigger = kTRUE;
+	    continue;
 	}
-      }
-      else {
-	AliDebug(1,"Cosmic trigger list is not provided, cosmic event specie is effectively disabled!");
-      }
 
-      otherTrigger = kTRUE;
+	if (cosmicTriggersList) {
+	    if (cosmicTriggersList->FindObject(trClass.Data())) {
+		// Cosmic trigger accorind to the table
+		// provided in OCDB
+		cosmicTrigger = kTRUE;
+		AliDebug(1,Form("Trigger %s identified as cosmic according to the list defined in OCDB.",
+			    trClass.Data()));
+		continue;
+	    }
+	}
+	else {
+	    AliDebug(1,"Cosmic trigger list is not provided, cosmic event specie is effectively disabled!");
+	}
+
+	otherTrigger = kTRUE;
     }
     delete trClassArray;
 
     if (calibTrigger) {
-      fEventSpecie = kCalib;
-      return;
+	fEventSpecie = kCalib;
+	return;
     }
     if (cosmicTrigger && !otherTrigger) {
-      fEventSpecie = kCosmic;
-      return;
+	fEventSpecie = kCosmic;
+	return;
     }
 
     // Here we have to add if we have other cases
