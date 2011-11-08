@@ -585,6 +585,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	  delete negV0track; negV0track=NULL;
 	  delete trackV0; trackV0=NULL;
 	  if(!fInputAOD) {delete v0; v0=NULL;}
+	  twoTrackArrayV0->Clear();
 	  twoTrackArrayCasc->Clear();
 	  continue; 
 	}
