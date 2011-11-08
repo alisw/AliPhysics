@@ -111,6 +111,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
   if(!kNoDraw) c0->Print(psnm0.Data());
   Int_t cntpad = 0;
   Int_t iGoodInj=0;
+  Int_t iRescaledSpeed=0;
   Int_t iAverSpeed=0;
   TLatex* tleft=new TLatex(0.2,0.82,"Side 0");
   tleft->SetNDC();
@@ -158,12 +159,14 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     }
     Int_t statusInj0=vdriftarr0->GetInjectorStatus();
     Int_t statusInj1=vdriftarr1->GetInjectorStatus();
-    if(statusInj0>0) iGoodInj++;
+    if(statusInj0>1) iGoodInj++;
+    else if(statusInj0==1) iRescaledSpeed++;
     else iAverSpeed++;
     if(statusInj1>0) iGoodInj++;
+    else if(statusInj1==1) iRescaledSpeed++;
     else iAverSpeed++;
 
-    printf(" Mod. %d \tStatusLR=%X %X \t v(an 128l)= %f",iMod,statusInj0,statusInj1,vdriftarr0->GetDriftSpeed(0,128));
+    printf(" Mod. %d \tStatusLR=%X %X \t TimeStamp=%d \t v(an 128l)= %f",iMod,statusInj0,statusInj1,vdrift0->GetEventTimestamp(),vdriftarr0->GetDriftSpeed(0,128));
     printf("        \t v(an 128r)= %f  Degree=%d %d\n",vdriftarr1->GetDriftSpeed(0,128),vdrift0->GetDegreeofPoly(),vdrift1->GetDegreeofPoly());
 
     Int_t n7=(statusInj0&(0x1F<<25))>>25;
@@ -266,8 +269,9 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     c0->Update();
     c0->Print(psnm2.Data());
   }
-  printf("Number of half-modules with drift speed from injectors = %d\n",iGoodInj);
-  printf("Number of half-modules with average drift speed        = %d\n",iAverSpeed);
+  printf("Number of half-modules with drift speed from injectors               = %d\n",iGoodInj);
+  printf("Number of half-modules with drift speed rewscaled from golden module = %d\n",iRescaledSpeed);
+  printf("Number of half-modules with average drift speed                      = %d\n",iAverSpeed);
 
   gStyle->SetPalette(59);
 
