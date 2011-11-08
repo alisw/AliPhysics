@@ -290,15 +290,14 @@ int AliHLTConfiguration::GetArguments(const char*** pArgv) const
 }
 
 
-int AliHLTConfiguration::ExtractSources()
+int AliHLTConfiguration::ExtractSources(AliHLTConfigurationHandler* pHandler)
 {
   // see header file for function documentation
   int iResult=0;
   fNofSources=0; // indicates that the function was called, there are either n or 0 sources
   fListSources.clear();
-  AliHLTConfigurationHandler* pHandler=AliHLTConfigurationHandler::Instance();
   if (!pHandler) {
-    HLTError("global configuration handler not initialized, can not resolve sources");
+    HLTError("configuration handler missing, can not resolve sources");
     return -EFAULT;
   }
   if (!fStringSources.IsNull()) {

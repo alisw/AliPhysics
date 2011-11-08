@@ -166,7 +166,7 @@ class AliHLTConfiguration : public TObject, public AliHLTLogging {
    * builds up the internal list of source configurations
    * @result 1 if sources resolved, 0 if not
    */
-  int ExtractSources();
+  int ExtractSources(AliHLTConfigurationHandler* pHandler);
 
   /**
    * Start iteration and get the first source.
