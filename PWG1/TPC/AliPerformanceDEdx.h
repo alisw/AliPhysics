@@ -85,7 +85,7 @@ private:
   static Bool_t fgUseMergeTHnSparse;
   
   // TPC dE/dx 
-  THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p
+  THnSparseF *fDeDxHisto; //-> signal:phi:y:z:snp:tgl:ncls:p:nclsDEdx:nclsF
   TObjArray* fFolderObj; // array of analysed histograms
   
   // Selection cuts
@@ -99,7 +99,7 @@ private:
   AliPerformanceDEdx(const AliPerformanceDEdx&); // not implemented
   AliPerformanceDEdx& operator=(const AliPerformanceDEdx&); // not implemented
 
-  ClassDef(AliPerformanceDEdx,3);
+  ClassDef(AliPerformanceDEdx,4);
 };
 
 #endif
