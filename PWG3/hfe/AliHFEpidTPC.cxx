@@ -28,7 +28,6 @@
 #include <TF1.h>
 #include <TMath.h>
 
-#include "AliAODpidUtil.h"
 #include "AliAODPid.h"
 #include "AliAODTrack.h"
 #include "AliAODMCParticle.h"
@@ -37,7 +36,7 @@
 #include "AliLog.h"
 #include "AliMCParticle.h"
 #include "AliPID.h"
-#include "AliESDpid.h"
+#include "AliPIDResponse.h"
 
 #include "AliHFEpidTPC.h"
 #include "AliHFEpidQAmanager.h"
@@ -49,7 +48,6 @@ AliHFEpidTPC::AliHFEpidTPC() :
   // add a list here
   AliHFEpidBase()
   , fLineCrossingsEnabled(0)
-  , fkElectronMeanCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
@@ -73,7 +71,6 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
   // add a list here
   AliHFEpidBase(name)
   , fLineCrossingsEnabled(0)
-  , fkElectronMeanCorrection(NULL)
   , fHasCutModel(kFALSE)
   , fNsigmaTPC(3)
   , fRejectionEnabled(0)
@@ -95,7 +92,6 @@ AliHFEpidTPC::AliHFEpidTPC(const char* name) :
 AliHFEpidTPC::AliHFEpidTPC(const AliHFEpidTPC &ref) :
   AliHFEpidBase("")
   , fLineCrossingsEnabled(0)
-  , fkElectronMeanCorrection(NULL)
   , fHasCutModel(ref.fHasCutModel)
   , fNsigmaTPC(2)
   , fRejectionEnabled(0)
@@ -125,7 +121,6 @@ void AliHFEpidTPC::Copy(TObject &o) const{
   AliHFEpidTPC &target = dynamic_cast<AliHFEpidTPC &>(o);
 
   target.fLineCrossingsEnabled = fLineCrossingsEnabled;
-  target.fkElectronMeanCorrection = fkElectronMeanCorrection;
   target.fHasCutModel = fHasCutModel;
   target.fNsigmaTPC = fNsigmaTPC;
   target.fRejectionEnabled = fRejectionEnabled;
@@ -148,7 +143,7 @@ AliHFEpidTPC::~AliHFEpidTPC(){
 }
 
 //___________________________________________________________________
-Bool_t AliHFEpidTPC::InitializePID(){
+Bool_t AliHFEpidTPC::InitializePID(Int_t /*run*/){
   //
   // Add TPC dE/dx Line crossings
   //
@@ -166,13 +161,13 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   // exclusion of the crossing points
   //
 
-  if((!fESDpid && track->IsESDanalysis()) || (!fAODpid && track->IsAODanalysis())) return 0;
+  if(!fkPIDResponse) return 0;
   
   // QA before selection
   if(pidqa) pidqa->ProcessTrack(track, AliHFEpid::kTPCpid, AliHFEdetPIDqa::kBeforePID);
   AliDebug(1, "Doing TPC PID based on n-Sigma cut approach");
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  Float_t nsigma = NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
   AliDebug(1, Form("TPC NSigma: %f", nsigma));
   // exclude crossing points:
   // Determine the bethe values for each particle species
@@ -180,7 +175,7 @@ Int_t AliHFEpidTPC::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager 
   for(Int_t ispecies = 0; ispecies < AliPID::kSPECIES; ispecies++){
     if(ispecies == AliPID::kElectron) continue;
     if(!(fLineCrossingsEnabled & 1 << ispecies)) continue;
-    if(TMath::Abs(NumberOfSigmas(track->GetRecTrack(), (AliPID::EParticleType)ispecies, anatype)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
+    if(TMath::Abs(fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), (AliPID::EParticleType)ispecies)) < fLineCrossingSigma[ispecies] && TMath::Abs(nsigma) < fNsigmaTPC){
       // Point in a line crossing region, no PID possible, but !PID still possible ;-)
       isLineCrossing = kTRUE;      
       break;
@@ -219,10 +214,11 @@ Bool_t AliHFEpidTPC::CutSigmaModel(const AliHFEpidObject * const track) const {
   //
   Bool_t isSelected = kTRUE;
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
-  Float_t nsigma = NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype);
+  Float_t nsigma = fkPIDResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron);
   Double_t p = GetP(track->GetRecTrack(), anatype);
   Int_t centrality = track->IsPbPb() ? track->GetCentrality() + 1 : 0;
   AliDebug(2, Form("Centrality: %d\n", centrality));
+  if(centrality > 11) return kFALSE;
   const TF1 *cutfunction;
   if((cutfunction = fkUpperSigmaCut[centrality]) && nsigma > cutfunction->Eval(p)) isSelected = kFALSE;
   if((cutfunction = fkLowerSigmaCut[centrality]) && nsigma < cutfunction->Eval(p)) isSelected = kFALSE;
@@ -240,7 +236,7 @@ Int_t AliHFEpidTPC::Reject(const AliVParticle *track, AliHFEpidObject::AnalysisT
     if(!TESTBIT(fRejectionEnabled, ispec)) continue;
     // Particle rejection enabled
     if(p < fRejection[4*ispec] || p > fRejection[4*ispec+2]) continue;
-    Double_t sigma = NumberOfSigmas(track, static_cast<AliPID::EParticleType>(ispec), anaType);
+    Double_t sigma = fkPIDResponse->NumberOfSigmasTPC(track, static_cast<AliPID::EParticleType>(ispec));
     if(sigma >= fRejection[4*ispec+1] && sigma <= fRejection[4*ispec+3]) return pdc[ispec] * track->Charge();
   }
   return 0;
@@ -258,26 +254,6 @@ void AliHFEpidTPC::AddTPCdEdxLineCrossing(Int_t species, Double_t sigma){
   }
   fLineCrossingsEnabled |= 1 << species;
   fLineCrossingSigma[species] = sigma;
-}
-
-//___________________________________________________________________
-Double_t AliHFEpidTPC::NumberOfSigmas(const AliVParticle *track, AliPID::EParticleType species, AliHFEpidObject::AnalysisType_t anaType) const {
-  //    
-  // Get the number of sigmas
-  //
-  Double_t nSigmas = 100;
-  if(anaType == AliHFEpidObject::kESDanalysis){
-    // ESD analysis
-    const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
-    if(esdtrack && fESDpid) nSigmas = fESDpid->NumberOfSigmasTPC(esdtrack, species);
-  } else {
-    const AliAODTrack *aodtrack = dynamic_cast<const AliAODTrack *>(track);
-    if(aodtrack && fAODpid) nSigmas = fAODpid->NumberOfSigmasTPC(aodtrack, species);
-  }
-  // Correct for the mean o
-  if(fkElectronMeanCorrection)
-    nSigmas -= fkElectronMeanCorrection->Eval(GetP(track, anaType));   
-  return nSigmas;
 }
 
 //___________________________________________________________________

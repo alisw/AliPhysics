@@ -26,11 +26,17 @@ class AliHFEpidEMCAL : public AliHFEpidBase{
     AliHFEpidEMCAL(const AliHFEpidEMCAL &c);
     AliHFEpidEMCAL &operator=(const AliHFEpidEMCAL &c);
   
-    virtual Bool_t    InitializePID();
+    virtual Bool_t    InitializePID(Int_t /*run*/);
     virtual Int_t     IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *piqa) const;
       
     //Double_t MomentumEnergyMatchV1(const AliVParticle *track) const;
     Double_t MomentumEnergyMatchV2(const AliVParticle *track) const;
+    Double_t CalEopCutMax(const AliVParticle *const track, Int_t flageop) const;
+    Double_t CalEopCutMim(const AliVParticle *const track, Int_t flageop) const;
+
+    void SetEoPMax(Float_t eopmax) {feopMax = eopmax;}
+    void SetEoPMim(Float_t eopmim) {feopMim = eopmim;}
+
 
   protected:
     void Copy(TObject &ref) const;

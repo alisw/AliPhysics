@@ -27,12 +27,11 @@
 #include <TF1.h>
 #include <TIterator.h>
 #include <TList.h>
+#include <TMath.h>
 #include <TObjArray.h>
 #include <TObjString.h>
 #include <TString.h>
 
-#include "AliAODpidUtil.h"
-#include "AliESDpid.h"
 #include "AliLog.h"
 #include "AliPID.h"
 #include "AliVParticle.h"
@@ -46,13 +45,14 @@
 #include "AliHFEpidTOF.h"
 #include "AliHFEpidEMCAL.h"
 #include "AliHFEpidMC.h"
+#include "AliHFEpidBayes.h"
 #include "AliHFEvarManager.h"
 
 ClassImp(AliHFEpid)
 
 const Char_t* AliHFEpid::fgkDetectorName[AliHFEpid::kNdetectorPID + 1] = {
   "MCPID",
-  "ESDPID",
+  "BAYESPID",
   "ITSPID",
   "TPCPID",
   "TRDPID",
@@ -74,7 +74,7 @@ AliHFEpid::AliHFEpid():
   //
   memset(fDetectorPID, 0, sizeof(AliHFEpidBase *) * kNdetectorPID);
   memset(fDetectorOrder, kUndefined, sizeof(UInt_t) * kNdetectorPID);
-  memset(fDetectorOrder, 0, sizeof(UInt_t) * kNdetectorPID);
+  memset(fSortedOrder, 0, sizeof(UInt_t) * kNdetectorPID);
 }
 
 //____________________________________________________________
@@ -94,6 +94,7 @@ AliHFEpid::AliHFEpid(const Char_t *name):
   memset(fSortedOrder, 0, sizeof(UInt_t) * kNdetectorPID);
 
   fDetectorPID[kMCpid] = new AliHFEpidMC("MCPID");
+  fDetectorPID[kBAYESpid] = new AliHFEpidBayes("BAYESPID");
   fDetectorPID[kTPCpid] = new AliHFEpidTPC("TPCPID");
   fDetectorPID[kTRDpid] = new AliHFEpidTRD("TRDPID");
   fDetectorPID[kTOFpid] = new AliHFEpidTOF("TOFPID");
@@ -190,6 +191,7 @@ void AliHFEpid::AddDetector(TString detector, UInt_t position){
   UInt_t detectorID = kUndefined;
   detector.ToUpper();
   if(!detector.CompareTo("MC")) detectorID = kMCpid;
+  else if(!detector.CompareTo("BAYES")) detectorID = kBAYESpid;
   else if(!detector.CompareTo("TPC")) detectorID = kTPCpid;
   else if(!detector.CompareTo("TRD")) detectorID = kTRDpid;
   else if(!detector.CompareTo("TOF")) detectorID = kTOFpid;
@@ -204,21 +206,21 @@ void AliHFEpid::AddDetector(TString detector, UInt_t position){
 }
 
 //____________________________________________________________
-Bool_t AliHFEpid::InitializePID(){
+Bool_t AliHFEpid::InitializePID(Int_t run){
   //
   // Initializes the PID object
   //
 
-  TMath::Sort(static_cast<UInt_t>(kNdetectorPID), fDetectorOrder, fSortedOrder, kFALSE);
-  // Initialize PID Objects
+  if(!TestBit(kDetectorsSorted)) SortDetectors();
   Bool_t status = kTRUE;
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
     if(!IsDetectorOn(idet)) continue;
     if(fDetectorPID[idet]){ 
-      status &= fDetectorPID[idet]->InitializePID();
+      status &= fDetectorPID[idet]->InitializePID(run);
       if(HasMCData() && status) fDetectorPID[idet]->SetHasMCData();
     }
   }
+  SetBit(kIsInit);
   PrintStatus();
   return status;
 }
@@ -263,23 +265,38 @@ Bool_t AliHFEpid::IsSelected(const AliHFEpidObject * const track, AliHFEcontaine
 }
 
 //____________________________________________________________
-void AliHFEpid::SetESDpid(AliESDpid *pid){
+void AliHFEpid::SortDetectors(){
+  //
+  // Make sorted list of detectors
+  //
+  if(TestBit(kDetectorsSorted)) return; // Don't sort detectors when they are already sorted
+  TMath::Sort(static_cast<UInt_t>(kNdetectorPID), fDetectorOrder, fSortedOrder, kFALSE);
+  SetBit(kDetectorsSorted);
+}
+
+//____________________________________________________________
+void AliHFEpid::SetPIDResponse(const AliPIDResponse * const pid){
   //
   // Set ESD PID to the Detector PID objects
   //
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
-    if(fDetectorPID[idet]) fDetectorPID[idet]->SetESDpid(pid);
+    if(fDetectorPID[idet]) fDetectorPID[idet]->SetPIDResponse(pid);
   }
 }
 
 //____________________________________________________________
-void AliHFEpid::SetAODpid(AliAODpidUtil *pid){
+const AliPIDResponse *AliHFEpid::GetPIDResponse() const {
   //
-  // Set ESD PID to the Detector PID objects
+  // Return PID response function
   //
+  const AliPIDResponse *response = NULL;
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
-    if(fDetectorPID[idet]) fDetectorPID[idet]->SetAODpid(pid);
-  }
+    if(fDetectorPID[idet]){
+      response = fDetectorPID[idet]->GetPIDResponse();
+      break;
+    }
+  } 
+  return response;
 }
 
 //____________________________________________________________
@@ -378,6 +395,42 @@ void AliHFEpid::ConfigureTPCcut(Int_t centralityBin, const char *lowerCutParam, 
 }
 
 //____________________________________________________________
+void AliHFEpid::ConfigureBayesDetectorMask(Int_t detmask){
+  //
+  // Configure detector mask for Bayes PID
+  // if no detector mask is set the default mask is chosen
+  //
+  
+  if(HasMCData()) AliInfo("Configuring Bayes for MC\n");
+  AliHFEpidBayes *bayespid = dynamic_cast<AliHFEpidBayes *>(fDetectorPID[kBAYESpid]);
+
+  if(bayespid)
+  {
+      bayespid->SetBayesDetectorMask(detmask);
+      printf("detector mask in pid class %i \n",detmask);
+  }
+
+}
+
+//____________________________________________________________
+void AliHFEpid::ConfigureBayesPIDThreshold(Float_t pidthres){
+  //
+  // Configure pid threshold for Bayes PID
+  // if no threshold is set the default threshold is chosen
+  //
+  
+  if(HasMCData()) AliInfo("Configuring Bayes for MC\n");
+  AliHFEpidBayes *bayespid = dynamic_cast<AliHFEpidBayes *>(fDetectorPID[kBAYESpid]);
+
+  if(bayespid)
+  {
+      bayespid->SetBayesPIDThreshold(pidthres);
+      printf("combined pidthreshold %f \n",pidthres);
+  }
+
+}
+
+//____________________________________________________________
 void AliHFEpid::PrintStatus() const {
   //
   // Print the PID configuration
@@ -386,7 +439,7 @@ void AliHFEpid::PrintStatus() const {
   printf("===============================================\n");
   printf("PID Detectors: \n");
   Int_t npid = 0;
-  TString detectors[kNdetectorPID] = {"MC", "ESD", "ITS", "TPC", "TRD", "TOF", "EMCAL"};
+  TString detectors[kNdetectorPID] = {"MC", "BAYES", "ITS", "TPC", "TRD", "TOF", "EMCAL"};
   for(Int_t idet = 0; idet < kNdetectorPID; idet++){
     if(IsDetectorOn(idet)){
       printf("\t%s\n", detectors[idet].Data());

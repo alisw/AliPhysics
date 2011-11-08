@@ -81,7 +81,7 @@ void AliHFEpidITS::Copy(TObject &o) const {
 }
 
 //___________________________________________________________________
-Bool_t AliHFEpidITS::InitializePID(){
+Bool_t AliHFEpidITS::InitializePID(Int_t /*run*/){
   //
   // ITS PID initialization
   //

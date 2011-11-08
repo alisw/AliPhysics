@@ -100,7 +100,6 @@ class AliAnalysisTaskDCA : public AliAnalysisTaskSE{
   UShort_t fPlugins;                   // Enabled Plugins 
   AliHFEcuts *fCuts;                   // Cut Collection
 
-  AliESDpid *fDefaultPID;               //! Default ESD PID
   AliHFEpid *fHFEpid;                  //! PID
   TString fPIDdetectors;               // Detectors for Particle Identification
   UInt_t fPIDstrategy;                 // PID Strategy

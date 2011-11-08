@@ -71,6 +71,7 @@ class AliHFEcontainer : public TNamed{
     void SetStepTitle(const Char_t *contname, const Char_t *steptitle, UInt_t step);
     void MakeLinearBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
     void MakeLogarithmicBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
+    void MakeUserDefinedBinning(UInt_t var, UInt_t nBins, const Double_t *binning);
 
     virtual void Print(const Option_t * opt = NULL) const;
 
@@ -82,11 +83,11 @@ class AliHFEcontainer : public TNamed{
         ~AliHFEvarInfo();
 
         UInt_t GetNumberOfBins() const { return fBinning->GetSize() ? fBinning->GetSize() - 1 : 0; };
-        Double_t *GetBinning() const { return fBinning->GetArray(); };
+        const Double_t *GetBinning() const { return fBinning->GetArray(); };
         TString *GetVarName() const { return fVarName; };
 
         void SetVarName(const Char_t *name);
-        void SetBinning(UInt_t nBins, Double_t *binning);
+        void SetBinning(UInt_t nBins, const Double_t *binning);
       private:
         TString *fVarName;  // Variable Name
         TArrayD *fBinning;  // Binning

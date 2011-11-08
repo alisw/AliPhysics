@@ -35,6 +35,7 @@
 
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliVParticle.h"
 
 #include "AliHFEcollection.h"
@@ -160,9 +161,6 @@ void AliHFEtofPIDqa::Initialize(){
   Double_t maxSigma[5] = {kMaxPID, kMaxP, 12., 2., 11.};
   fHistos->CreateTHnSparse("tofnSigma", "TOF signal; species; p [GeV/c]; TOF signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
 
-  // 2nd histogram: TOF time - pion hypothesis (TOF Time Resolution Monitor)
-  fHistos->CreateTH2F("tofTimeRes", "Difference between measured and expected time for Pions; p [GeV/c]; #Deltat [ps]", 100, 0.1, 10, 100, -200, 200); 
-  
   // 3rd histogram: TPC sigmas to the electron line: (species, p nsigma, step - only filled if apriori PID information available)
   fHistos->CreateTHnSparse("tofMonitorTPC", "TPC signal; species; p [GeV/c]; TPC signal [a.u.]; Selection Step; Centrality", 5, nBinsSigma, minSigma, maxSigma);
 }
@@ -172,31 +170,24 @@ void AliHFEtofPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::
   //
   // Fill TPC histograms
   //
-  AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
+  //AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
   Float_t centrality = track->GetCentrality();
   Int_t species = track->GetAbInitioPID();
   if(species >= AliPID::kSPECIES) species = -1;
 
   AliDebug(1, Form("Monitoring particle of type %d for step %d", species, step));
   AliHFEpidTOF *tofpid= dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
-  AliHFEpidTPC *tpcpid= dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   
+  const AliPIDResponse *pidResponse = tofpid ? tofpid->GetPIDResponse() : NULL;
   Double_t contentSignal[5];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
-  contentSignal[2] = tofpid ? tofpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype): 0.;
+  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron): 0.;
   contentSignal[3] = step;
   contentSignal[4] = centrality;
   fHistos->Fill("tofnSigma", contentSignal);
-  if(tofpid){
-    Double_t timeTof = tofpid->GetTOFsignal(track->GetRecTrack(), anatype);
-    Double_t time0 = tofpid->GetTime0(anatype);
-    Double_t tof = timeTof - time0;
-    Double_t times[AliPID::kSPECIES]; tofpid->GetIntegratedTimes(track->GetRecTrack(), times, anatype);
-    fHistos->Fill("tofTimeRes",contentSignal[1], tof - times[AliPID::kPion]);
-  }
   if(species > -1){
-    contentSignal[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.;
+    contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
     fHistos->Fill("tofMonitorTPC", contentSignal);
   }
 }
@@ -212,8 +203,8 @@ TH2 *AliHFEtofPIDqa::MakeSpectrumNSigma(AliHFEdetPIDqa::EStep_t istep, Int_t spe
   if(species >= 0 && species < AliPID::kSPECIES)
     hSignal->GetAxis(0)->SetRange(2 + species, 2 + species);
   TH2 *hTmp = hSignal->Projection(2,1);
-  TString hname = Form("hTPCsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
-          htitle = Form("TPC dE/dx Spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
+  TString hname = Form("hTOFsigma%s", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after"), 
+          htitle = Form("Time-of-flight spectrum[#sigma] %s selection", istep == AliHFEdetPIDqa::kBeforePID ? "before" : "after");
   if(species > -1){
     hname += AliPID::ParticleName(species);
     htitle += Form(" for %ss", AliPID::ParticleName(species));

@@ -123,10 +123,10 @@ void AliAnalysisTaskHFEpidQA::UserExec(Option_t *){
   // 
   AliMCEventHandler* mcHandler = (dynamic_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()));
   AliESDInputHandler *inh = dynamic_cast<AliESDInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-  AliESDpid *workingPID = NULL;
-  if(inh && (workingPID = inh->GetESDpid()))
-    fPIDqa->SetESDpid(workingPID);
-  else fPIDqa->SetESDpid(AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE));
+  AliPIDResponse *workingPID = NULL;
+  if(inh && (workingPID = inh->GetPIDResponse()))
+    fPIDqa->SetPIDResponse(workingPID);
+  else fPIDqa->SetPIDResponse(AliHFEtools::GetDefaultPID(mcHandler ? kTRUE : kFALSE, kFALSE));
   
   // check the MC data
   if(fMCEvent && !mcHandler ) return;

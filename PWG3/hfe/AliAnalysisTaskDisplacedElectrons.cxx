@@ -36,16 +36,17 @@
 #include <TString.h>
 #include <TCanvas.h>
 
+#include "AliAODEvent.h"
 #include "AliCFManager.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
+#include "AliPIDResponse.h"
 #include "AliStack.h"
 
 #include "AliESDEvent.h"
 #include "AliESDInputHandler.h"
 #include "AliESDtrack.h"
-#include "AliESDpid.h"
 
 #include "AliAnalysisManager.h"
 
@@ -66,7 +67,6 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons():
   , fDePIDstrategy(0)
   , fDePlugins(0)
   , fDeCuts(0x0)
-  , fDeDefaultPID(0x0)
   , fDePID(0x0)
   , fDeCFM(0x0)
   , fDisplacedElectrons(0x0)
@@ -93,7 +93,6 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const char 
   , fDePIDstrategy(0)
   , fDePlugins(0)
   , fDeCuts(0x0)
-  , fDeDefaultPID(0x0)
   , fDePID(0x0)
   , fDeCFM(0x0)
   , fDisplacedElectrons(0x0)
@@ -114,7 +113,6 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const char 
   DefineOutput(3, TList::Class());
 
   // Initialize pid
-  fDeDefaultPID = new AliESDpid;
   fDePID = new AliHFEpid("DEPID");
 
 }
@@ -129,7 +127,6 @@ AliAnalysisTaskDisplacedElectrons::AliAnalysisTaskDisplacedElectrons(const AliAn
   , fDePIDstrategy(ref.fDePIDstrategy)
   , fDePlugins(ref.fDePlugins)
   , fDeCuts(ref.fDeCuts)
-  , fDeDefaultPID(ref.fDeDefaultPID)
   , fDePID(ref.fDePID)
   , fDeCFM(ref.fDeCFM)
   , fDisplacedElectrons(ref.fDisplacedElectrons)
@@ -159,7 +156,6 @@ AliAnalysisTaskDisplacedElectrons &AliAnalysisTaskDisplacedElectrons::operator=(
   fDePIDdetectors = ref.fDePIDdetectors;
   fDePIDstrategy = ref.fDePIDstrategy;
   fDePlugins = ref.fDePlugins;
-  fDeDefaultPID = ref.fDeDefaultPID;
   fDePID = ref.fDePID;
   fDeCuts = ref.fDeCuts;
   fDeCFM = ref.fDeCFM;
@@ -181,7 +177,6 @@ AliAnalysisTaskDisplacedElectrons::~AliAnalysisTaskDisplacedElectrons(){
   // Destructor
   //
 
-  if(fDeDefaultPID) delete fDeDefaultPID;
   if(fDePID) delete fDePID;
   if(fDeCFM) delete fDeCFM;
   if(fDisplacedElectrons) delete fDisplacedElectrons;  
@@ -301,16 +296,12 @@ void AliAnalysisTaskDisplacedElectrons::UserExec(Option_t *){
   // from now on, only ESD are analyzed
   // using HFE pid, using HFE cuts
   // using CORRFW
-  AliESDpid *workingPID = inH->GetESDpid();
-  if(workingPID){
-    AliDebug(1, "Using ESD PID from the input handler");
-    //printf("\n ESD PID\n");
-    fDePID->SetESDpid(workingPID);
-  } else { 
-    AliDebug(1, "Using default ESD PID");
-    //printf(" DEFAULT PID!\n\n");
-    fDePID->SetESDpid(AliHFEtools::GetDefaultPID(HasMCData()));
+  AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+  if(!pidResponse){
+    AliDebug(1, "Using default PID Response");
+    pidResponse = AliHFEtools::GetDefaultPID(HasMCData(), fInputEvent->IsA() == AliAODEvent::Class());
   }
+  fDePID->SetPIDResponse(pidResponse);
 
   if(!fDeCuts){
     AliError("HFE cuts not available");

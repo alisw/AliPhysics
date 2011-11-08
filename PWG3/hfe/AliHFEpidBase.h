@@ -19,64 +19,19 @@
 #ifndef ALIHFEPIDBASE_H
 #define ALIHFEPIDBASE_H
  
- #ifndef ROOT_TNamed
- #include <TNamed.h>
- #endif
+#ifndef ROOT_TNamed
+#include <TNamed.h>
+#endif
+
+#ifndef ALIHFEPIDOBJECT_H
+#include "AliHFEpidObject.h"
+#endif
 
 class TList;
-class AliAODpidUtil;
-class AliESDpid;
+class AliPIDResponse;
 class AliVParticle;
 class AliMCParticle;
 class AliHFEpidQAmanager;
-
-class AliHFEpidObject{
-  public:
-    typedef enum{ 
-      kESDanalysis,
-      kAODanalysis
-    }AnalysisType_t;
-    AliHFEpidObject():
-      fkRecTrack(NULL), 
-      fAnalysisType(kESDanalysis),
-      fAbInitioPID(-1),
-      fCentrality(99),
-      fIsPbPb(kFALSE)         // Default: pp
-      {
-      }
-    AliHFEpidObject(const AliHFEpidObject &ref):
-      fkRecTrack(ref.fkRecTrack), 
-      fAnalysisType(ref.fAnalysisType),
-      fAbInitioPID(ref.fAbInitioPID),
-      fCentrality(ref.fCentrality),
-      fIsPbPb(ref.fIsPbPb)
-      {
-      }
-    AliHFEpidObject &operator=(const AliHFEpidObject &ref);
-    ~AliHFEpidObject(){};
-
-    void SetRecTrack(const AliVParticle * recTrack) {fkRecTrack = recTrack; }
-    void SetMCTrack(const AliVParticle * mcTrack);
-    void SetAnalysisType(AnalysisType_t type) { fAnalysisType = type; }
-    void SetAbInitioPID(Int_t abInitioPID) { fAbInitioPID = abInitioPID; }
-    void SetCentrality(Int_t centrality) { fCentrality = centrality; }
-    void SetPbPb() { fIsPbPb = kTRUE; }
-    void SetPP() { fIsPbPb = kFALSE; }
-
-    const AliVParticle *GetRecTrack() const { return fkRecTrack; }
-    Int_t GetAbInitioPID() const { return fAbInitioPID; }
-    Int_t GetCentrality() const { return fCentrality; }
-    Bool_t IsAODanalysis() const { return fAnalysisType == static_cast<UChar_t>(kAODanalysis); }
-    Bool_t IsESDanalysis() const { return fAnalysisType == static_cast<UChar_t>(kESDanalysis); }
-    Bool_t IsPbPb() const { return fIsPbPb; }
-
-  private:
-    const AliVParticle *fkRecTrack;     // Reconstructed track
-    UChar_t fAnalysisType;              // Analysis Mode (ESD or AOD)
-    Int_t fAbInitioPID;                 // AbInitio PID
-    Int_t fCentrality;                  // Centrality Information
-    Bool_t fIsPbPb;                     // Collision type
-};
 
 class AliHFEpidBase : public TNamed{
   public:
@@ -86,20 +41,18 @@ class AliHFEpidBase : public TNamed{
     AliHFEpidBase &operator=(const AliHFEpidBase &c);
     virtual ~AliHFEpidBase() {};
     // Framework functions that have to be implemented by the detector PID classes
-    virtual Bool_t InitializePID() = 0;
+    virtual Bool_t InitializePID(Int_t run) = 0;
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa = NULL) const = 0;
 
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
-    void SetESDpid(AliESDpid * const pid) { fESDpid = pid; }
-    void SetAODpid(AliAODpidUtil * const pid) { fAODpid = pid; }
+    void SetPIDResponse(const AliPIDResponse * const pid) { fkPIDResponse = pid; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData,hasMCdata); };
 
-    AliESDpid *GetESDpid() const { return fESDpid; }; 
+    const AliPIDResponse *GetPIDResponse() const { return fkPIDResponse; }; 
 
   protected:
-    AliESDpid *fESDpid;                         //! ESD PID object
-    AliAODpidUtil *fAODpid;                     //! AOD PID object
+    const AliPIDResponse *fkPIDResponse;        //! PID Response
     void Copy(TObject &ref) const;
 
   private:

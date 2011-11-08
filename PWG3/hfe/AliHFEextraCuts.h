@@ -69,16 +69,18 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut);
     inline void SetMinTrackletsTRD(Int_t minTracklets);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
-    void SetTOFPID(Bool_t tofPid) { fTOFpid = tofPid;}
-    void SetTOFMISMATCH(Bool_t tofMismatch) { fTOFmismatch = tofMismatch;}
-    void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) {fMaxImpactParameterRpar = maxImpactParameterRpar;}
-    void SetFractionOfTPCSharedClusters(Double_t fractionOfTPCSharedClusters) {fFractionOfTPCSharedClusters = fractionOfTPCSharedClusters;}
+    void SetTOFPID(Bool_t tofPid) { tofPid ? SETBIT(fRequirements, kTOFPID) : CLRBIT(fRequirements, kTOFPID); }
+    void SetTOFMISMATCH(Bool_t tofMismatch) { tofMismatch ? SETBIT(fRequirements, kTOFmismatch) : CLRBIT(fRequirements, kTOFmismatch); }
+    void SetTPCPIDCleanUp(Bool_t tpcPIDCleanUp) { tpcPIDCleanUp ? SETBIT(fRequirements, kTPCPIDCleanUp) : CLRBIT(fRequirements, kTPCPIDCleanUp); }
+    void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { maxImpactParameterRpar ? SETBIT(fRequirements, kMaxImpactParameterRpar) : CLRBIT(fRequirements, kMaxImpactParameterRpar); }
+    void SetFractionOfTPCSharedClusters(Double_t fractionShared) { fFractionTPCShared= fractionShared; SETBIT(fRequirements, kTPCfractionShared); }
 
     void SetCheckITSstatus(Bool_t check) { fCheck = check; };
-    Bool_t GetCheckITSstatus() const { return fCheck; };
-
     void SetDebugLevel(Int_t level) { fDebugLevel = level; };
+
+    Bool_t GetCheckITSstatus() const { return fCheck; };
     Int_t GetDebugLevel() const { return fDebugLevel; };
+    void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy); // temporary moved from protected to publich for IP QA 
     
   protected:
     virtual void AddQAHistograms(TList *qaList);
@@ -91,12 +93,13 @@ class AliHFEextraCuts : public AliCFCutBase{
     void PrintBitMap(Int_t bitmap);
     
     // Getter Functions for ESD/AOD compatible mode
-    Int_t GetTRDnTrackletsPID(AliVTrack *track);
     Int_t GetITSstatus(AliVTrack *track, Int_t layer);
     UInt_t GetTPCncls(AliVTrack *track);
+    UInt_t GetTPCnclusdEdx(AliVTrack *track);
+    Bool_t GetTPCCountSharedMapBitsAboveThreshold(AliVTrack *track);
     Double_t GetTPCclusterRatio(AliVTrack *track);
     void GetImpactParameters(AliVTrack *track, Float_t &radial, Float_t &z);
-    void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
+    //void GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, Double_t &dcansigmaxy);
     void GetHFEImpactParameterCuts(AliVTrack *track, Double_t &hfeimpactRcut, Double_t &hfeimpactnsigmaRcut);
     void GetMaxImpactParameterCutR(AliVTrack *track, Double_t &maximpactRcut);
     Float_t GetTPCsharedClustersRatio(AliVTrack *track);
@@ -113,7 +116,13 @@ class AliHFEextraCuts : public AliCFCutBase{
       kMinHFEImpactParamR = 7,
       kMinHFEImpactParamNsigmaR = 8,
       kMinNClustersTPC = 9,
-      kNcuts = 10
+      kTPCfractionShared = 10,
+      kTOFPID = 11,
+      kTOFmismatch = 12,
+      kTPCPIDCleanUp = 13,
+      kEMCALmatch = 14,
+      kMaxImpactParameterRpar = 15,
+      kNcuts = 16
     } Cut_t;
     enum{
       //
@@ -122,6 +131,7 @@ class AliHFEextraCuts : public AliCFCutBase{
       kBeforeCuts =0,
       kAfterCuts = 1
     };
+    static const Int_t fgkNQAhistos;    // Number of QA histos
     AliVEvent *fEvent;                //! working event
     ULong64_t fCutCorrelation;		    // Cut Correlation
     ULong64_t fRequirements;		      // Cut Requirements
@@ -131,12 +141,9 @@ class AliHFEextraCuts : public AliCFCutBase{
     Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
     UChar_t fPixelITS;                // Cut on ITS Pixels
-    Bool_t  fTOFpid;                  // TOF pid
-    Bool_t  fTOFmismatch;             // TOF mismatch
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
-    Bool_t  fMaxImpactParameterRpar;  // Parametrized max impact parameter cut
-    Double_t  fFractionOfTPCSharedClusters; // Cut on fraction of shared clusters
+    Double_t  fFractionTPCShared;     // Cut on fraction of shared clusters
 
     Bool_t  fCheck;                     // check
     TList *fQAlist;			//! Directory for QA histograms

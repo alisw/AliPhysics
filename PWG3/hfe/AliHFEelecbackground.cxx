@@ -2823,7 +2823,7 @@ void AliHFEelecbackground::Plot() const
   leginput->AddEntry(histopassedcuts[source*nbcuts+0],"c","p");
   leginput->Draw("same");
   
-  //printf("Gamma %f, pi^{0} %f and #eta %f, c %f\n",nbGamma,nbPi0,nbEta,nbC);
+  AliInfo(Form("Gamma %f, pi^{0} %f and #eta %f, c %f",nbGamma,nbPi0,nbEta,nbC));
   
   //////////////////////
   // Tracked
