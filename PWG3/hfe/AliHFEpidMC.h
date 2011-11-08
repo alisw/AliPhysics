@@ -32,7 +32,7 @@ class AliHFEpidMC : public AliHFEpidBase{
     AliHFEpidMC(const Char_t *name);
     virtual ~AliHFEpidMC(){};
     
-    virtual Bool_t InitializePID();
+    virtual Bool_t InitializePID(Int_t /*run*/);
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
   private:

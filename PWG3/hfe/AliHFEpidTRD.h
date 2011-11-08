@@ -29,6 +29,7 @@ class AliAODMCParticle;
 class AliESDtrack;
 class AliHFEcollection;
 class AliMCParticle;
+class AliOADBContainer;
 class AliVParticle;
 class AliVTrack;
 class TList;
@@ -41,7 +42,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
       kNN = 1
     } PIDMethodTRD_t;
     enum{
-      kThreshParams = 24
+      kThreshParams = 4
     };
     enum{
       kHistTRDlikeBefore = 0,
@@ -57,7 +58,7 @@ class AliHFEpidTRD : public AliHFEpidBase{
     AliHFEpidTRD& operator=(const AliHFEpidTRD &ref);
     virtual ~AliHFEpidTRD();
 
-    virtual Bool_t InitializePID();
+    virtual Bool_t InitializePID(Int_t run);
     virtual Int_t IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanager *pidqa) const;
 
     Double_t GetTRDSignalV1(const AliESDtrack *track, Float_t truncation = 0.7) const;
@@ -65,38 +66,40 @@ class AliHFEpidTRD : public AliHFEpidBase{
 
     Bool_t IsCalculateTRDSignals() const { return TestBit(kTRDsignals); }
     Bool_t IsRenormalizeElPi() const { return TestBit(kTRDrenormalize); }
-    void SetPIDMethod(PIDMethodTRD_t method) { fPIDMethod = method; };
+    void SelectCutOnTheFly(Bool_t onFly = kTRUE) { if(onFly) SetBit(kSelectCutOnTheFly, kTRUE); else SetBit(kSelectCutOnTheFly, kFALSE);}
+    void SetOADBThresholds(AliOADBContainer *cont) { fOADBThresholds = cont; }
     void SetTotalChargeInSlice0() { fTotalChargeInSlice0 = kTRUE; }
     void SetRenormalizeElPi(Bool_t doRenorm = kTRUE) { if(doRenorm) SetBit(kTRDrenormalize, kTRUE); else SetBit(kTRDrenormalize, kFALSE);}
     void SetElectronEfficiency(Double_t electronEfficiency) { fElectronEfficiency = electronEfficiency; }
-    void SetThresholdParameters(Double_t electronEff, Double_t *params);
+    void SetNTracklets(Int_t nTracklets) { fNTracklets = nTracklets; }
     void SetMinP(Double_t p) { fMinP = p; }
     void CalculateTRDSignals(Bool_t docalc) { SetBit(kTRDsignals, docalc); } 
 
-    Double_t GetElectronLikelihood(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
-    void     GetTRDmomenta(const AliVTrack *track,Double_t *mom) const;
+    Double_t GetElectronLikelihood(const AliVTrack *track, AliHFEpidObject::AnalysisType_t anaType) const;
+    Int_t    GetNTracklets() const { return fNTracklets; }
+    void     GetTRDmomenta(const AliVTrack *track, Double_t *mom) const;
     Double_t GetP(const AliVParticle *track, AliHFEpidObject::AnalysisType_t anaType) const;
-    Double_t GetTRDthresholds(Double_t electronEff, Double_t p) const;
+    Double_t GetTRDthresholds(Double_t p) const;
+    Double_t GetTRDthresholds(Double_t p, UInt_t nTracklets) const;
     Double_t GetChargeLayer(const AliVParticle *track, UInt_t layer, AliHFEpidObject::AnalysisType_t anatype) const;
   protected:
     enum{
       kTRDsignals = BIT(16),
-      kTRDdefaultThresholds = BIT(17),
-      kTRDrenormalize = BIT(18)
+      kThresholdsInitialized = BIT(17),
+      kTRDrenormalize = BIT(18),
+      kSelectCutOnTheFly = BIT(19)
     };
     void Copy(TObject &ref) const;
-    void InitParameters();
-    void InitParameters1DLQ();
-    void GetParameters(Double_t electronEff, Double_t *parameters) const;
-    void SetUseDefaultParameters(Bool_t useDefault = kTRUE) { SetBit(kTRDdefaultThresholds, useDefault); }
-    Bool_t UseDefaultParameters() const { return TestBit(kTRDdefaultThresholds); }
+    Bool_t InitParamsFromOADB(Int_t run);
     void RenormalizeElPi(const Double_t * const likein, Double_t * const likeout) const;
 
   private:
     static const Double_t fgkVerySmall = 1e-12;             // Check for 0
+    AliOADBContainer *fOADBThresholds;                      // OADBContainer with thresholds
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
+    Int_t    fNTracklets;                                   // Select cut for the number of tracklets
+    Int_t    fRunNumber;                                    // Run number
     Double_t fElectronEfficiency;                           // Cut on electron efficiency
-    PIDMethodTRD_t fPIDMethod;                              // PID Method: 2D Likelihood or Neural Network
     Double_t fThreshParams[kThreshParams];                  // Threshold parametrisation
     Bool_t fTotalChargeInSlice0;                            // Flag for foreward/backward compatibility for the TRD total charge
   ClassDef(AliHFEpidTRD, 1)     // TRD electron ID class

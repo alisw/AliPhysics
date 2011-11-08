@@ -29,11 +29,12 @@
 #endif
 
 #include <climits>
+//#include "AliPIDResponse.h"
 
-class AliAODpidUtil;
-class AliESDpid;
 class AliHFEcontainer;
 class AliHFEvarManager;
+class AliPIDResponse;
+class AliHFEpidBase;
 class AliVParticle;
 class AliMCParticle;
 
@@ -46,7 +47,7 @@ class AliHFEpid : public TNamed{
     };
     enum EDETtype_t {
       kMCpid = 0,
-      kESDpid = 1,
+      kBAYESpid = 1,
       kITSpid = 2,
       kTPCpid = 3,
       kTRDpid = 4,
@@ -61,23 +62,26 @@ class AliHFEpid : public TNamed{
     void Copy(TObject &o) const;
     ~AliHFEpid();
     
-    Bool_t InitializePID();
+    Bool_t InitializePID(Int_t run = 0);
     Bool_t IsSelected(const AliHFEpidObject * const track, AliHFEcontainer *cont = NULL, const Char_t *contname = "trackContainer", AliHFEpidQAmanager *qa = NULL);
 
     Bool_t HasMCData() const { return TestBit(kHasMCData); };
 
     void AddDetector(TString detector, UInt_t position);
-    void SetESDpid(AliESDpid *pid);
-    void SetAODpid(AliAODpidUtil *pid);
+    void SetPIDResponse(const AliPIDResponse * const pid);
     void SetVarManager(AliHFEvarManager *vm) { fVarManager = vm; }
     void SetHasMCData(Bool_t hasMCdata = kTRUE) { SetBit(kHasMCData, hasMCdata); };
 
+    const AliPIDResponse *GetPIDResponse() const;
     UInt_t GetNumberOfPIDdetectors() const { return fNPIDdetectors; }
     Bool_t HasDetector(EDETtype_t det) const { return IsDetectorOn(det); }
+    Bool_t IsInitialized() const { return TestBit(kIsInit); }
+    void SortDetectors();
     AliHFEpidBase *GetDetPID(EDETtype_t det) const { return det < kNdetectorPID ? fDetectorPID[det] : NULL; }
 
     void PrintStatus() const;
-    const Char_t *SortedDetectorName(Int_t det) const {
+    const Char_t *SortedDetectorName(Int_t det) {
+      if(!TestBit(kDetectorsSorted)) SortDetectors();
       if(det < kNdetectorPID) return fgkDetectorName[fSortedOrder[det]]; 
       else return fgkDetectorName[kNdetectorPID];
     }    
@@ -87,13 +91,17 @@ class AliHFEpid : public TNamed{
     void ConfigureTPCrejectionSimple();
     void ConfigureTPCcentralityCut(Int_t centralityBin, const char *lowerCutParam = NULL, const Double_t * const params = NULL, Float_t upperTPCCut=3.0);
     void ConfigureTPCdefaultCut(const char *lowerCutParam = NULL, const Double_t * const params = NULL, Float_t upperTPCCut=3.0);
+    void ConfigureBayesDetectorMask(Int_t detmask = 10);
+    void ConfigureBayesPIDThreshold(Float_t pidthres = 0.9);
     //------------------------------------------------------------
 
   protected:
     Bool_t MakePidTpcTof(AliHFEpidObject *track);
   private:
     enum{
-      kHasMCData = BIT(14)
+      kHasMCData = BIT(14),
+      kIsInit = BIT(15),
+      kDetectorsSorted = BIT(16)
     };
     enum{
       kCombinedTPCTRD=0

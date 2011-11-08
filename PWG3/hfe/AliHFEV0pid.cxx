@@ -565,7 +565,7 @@ Bool_t AliHFEV0pid::IsK0s(TObject *v0){
 }
 
 //____________________________________________________________
-Bool_t AliHFEV0pid::IsPhi(TObject *v0){
+Bool_t AliHFEV0pid::IsPhi(const TObject *v0) const {
   //
   // Identify Phi - very preliminary - requires diffrent approach (V0 fnder is not effective)
   //
@@ -576,12 +576,12 @@ Bool_t AliHFEV0pid::IsPhi(TObject *v0){
 
   if(!v0) return kFALSE;
  
-  Int_t pIndex = 0, nIndex = 0;
+  //Int_t pIndex = 0, nIndex = 0;
   if(IsESDanalysis()){
     // ESD - cut V0
-    AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
-    pIndex = esdV0->GetPindex();
-    nIndex = esdV0->GetNindex();
+    //AliESDv0 *esdV0 = static_cast<AliESDv0 *>(v0);
+    //pIndex = esdV0->GetPindex();
+    //nIndex = esdV0->GetNindex();
   } else {
     // PRELIMINARY - !!!
     // AOD Analysis - not possible to cut

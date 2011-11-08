@@ -43,8 +43,9 @@ class AliHFEcuts : public TNamed{
       kStepRecPrim = 2,
       kStepHFEcutsITS = 3,
       kStepHFEcutsTOF = 4,
-      kStepHFEcutsTRD = 5,
-      kNcutStepsRecTrack = 6
+      kStepHFEcutsTPC = 5,
+      kStepHFEcutsTRD = 6,
+      kNcutStepsRecTrack = 7
     } RecoCutStep_t;
     typedef enum{
       kStepHFEcutsDca = 0, 
@@ -76,6 +77,7 @@ class AliHFEcuts : public TNamed{
     AliHFEcuts(const AliHFEcuts &c);
     AliHFEcuts &operator=(const AliHFEcuts &c);
     void Copy(TObject &o) const;
+    Long64_t Merge(const TCollection *list);
     ~AliHFEcuts();
     
     void Initialize(AliCFManager *cfm);
@@ -133,6 +135,7 @@ class AliHFEcuts : public TNamed{
     void SetMinNClustersTPC(UChar_t minClustersTPC) { fMinClustersTPC = minClustersTPC; }
     void SetMinNClustersITS(UChar_t minClustersITS) { fMinClustersITS = minClustersITS; }
     void SetMinNTrackletsTRD(UChar_t minNtrackletsTRD) { fMinTrackletsTRD = minNtrackletsTRD; }
+    void SetMaxChi2perClusterITS(Double_t chi2) { fMaxChi2clusterITS = chi2; };
     void SetMaxChi2perClusterTPC(Double_t chi2) { fMaxChi2clusterTPC = chi2; };
     inline void SetMaxImpactParam(Double_t radial, Double_t z);
     inline void SetIPcutParam(Float_t p0, Float_t p1, Float_t p2, Float_t p3, Bool_t isipsigma);
@@ -140,6 +143,8 @@ class AliHFEcuts : public TNamed{
     void SetPtRange(Double_t ptmin, Double_t ptmax){fPtRange[0] = ptmin; fPtRange[1] = ptmax;};
     inline void SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin, Double_t ymax);
     inline void SetSigmaToVertex(Double_t sig);
+    inline void SetSigmaToVertexXY(Double_t sig);
+    inline void SetSigmaToVertexZ(Double_t sig);
     void SetTPCmodes(AliHFEextraCuts::ETPCclusterDef_t clusterDef, AliHFEextraCuts::ETPCclrDef_t ratioDef) {
       fTPCclusterDef= clusterDef;
       fTPCratioDef = ratioDef;
@@ -147,6 +152,7 @@ class AliHFEcuts : public TNamed{
     void SetVertexRange(Double_t zrange){fVertexRangeZ = zrange;};
     void SetTOFPIDStep(Bool_t tofPidStep) {fTOFPIDStep = tofPidStep;};
     void SetTOFMISMATCHStep(Bool_t tofMismatchStep) {fTOFMISMATCHStep = tofMismatchStep;};
+    void SetTPCPIDCleanUpStep(Bool_t tpcPIDCleanUpStep) {fTPCPIDCLEANUPStep = tpcPIDCleanUpStep;};
     void SetUseMixedVertex(Bool_t useMixedVertex) {fUseMixedVertex = useMixedVertex;};    
     void SetFractionOfSharedTPCClusters( Bool_t fractionOfSharedTPCClusters) {fFractionOfSharedTPCClusters = fractionOfSharedTPCClusters;};
     void SetMaxImpactParameterRpar(Bool_t maxImpactParameterRpar) { fMaxImpactParameterRpar = maxImpactParameterRpar; };
@@ -185,6 +191,7 @@ class AliHFEcuts : public TNamed{
     void SetRecPrimaryCutList();
     void SetHFElectronITSCuts();
     void SetHFElectronTOFCuts();
+    void SetHFElectronTPCCuts();
     void SetHFElectronTRDCuts();
     void SetHFElectronDcaCuts();
     void SetEventCutList(Int_t istep);
@@ -207,12 +214,14 @@ class AliHFEcuts : public TNamed{
     UChar_t fMinTrackletsTRD;	    // Min. Number of TRD tracklets
     UChar_t fCutITSPixel;	        // Cut on ITS pixel
     Bool_t  fCheckITSLayerStatus;       // Check ITS layer status
+    Double_t fMaxChi2clusterITS;	// Max Chi2 per ITS cluster
     Double_t fMaxChi2clusterTPC;	// Max Chi2 per TPC cluster
     Double_t fMinClusterRatioTPC;	// Min. Ratio findable / found TPC clusters
-    Double_t fSigmaToVtx;	        // Sigma To Vertex
+    Double_t fSigmaToVtx[3];	    // Sigma To Vertex
     Double_t fVertexRangeZ;             // Vertex Range reconstructed
     Bool_t   fTOFPIDStep;               // TOF matching step efficiency
     Bool_t   fTOFMISMATCHStep;        // TOF mismatch step
+    Bool_t   fTPCPIDCLEANUPStep;      // TPC PIC cleanup step
     Bool_t   fUseMixedVertex;         // Use primary vertex from track only as before
     Float_t  fIPCutParams[4];         // Parameters of impact parameter cut parametrization
     Bool_t   fIsIPSigmacut;           // if abs IP cut or IP sigma cut 
@@ -242,7 +251,19 @@ void AliHFEcuts::SetProductionVertex(Double_t xmin, Double_t xmax, Double_t ymin
 //__________________________________________________________________
 void AliHFEcuts::SetSigmaToVertex(Double_t sig){
   SetRequireSigmaToVertex();
-  fSigmaToVtx = sig;
+  fSigmaToVtx[0] = sig;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetSigmaToVertexXY(Double_t sig){
+  SetRequireSigmaToVertex();
+  fSigmaToVtx[1] = sig;
+}
+
+//__________________________________________________________________
+void AliHFEcuts::SetSigmaToVertexZ(Double_t sig){
+  SetRequireSigmaToVertex();
+  fSigmaToVtx[2] = sig;
 }
 
 //__________________________________________________________________
@@ -286,6 +307,7 @@ void AliHFEcuts::CreateStandardCuts(){
   fMinTrackletsTRD = 0;
   SetRequireITSPixel();
   fCutITSPixel = AliHFEextraCuts::kFirst;
+  fMaxChi2clusterITS = -1.;
   fMaxChi2clusterTPC = 4.;
   fMinClusterRatioTPC = 0.6;
   fPtRange[0] = 0.1;

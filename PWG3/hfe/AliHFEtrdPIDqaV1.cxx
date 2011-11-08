@@ -37,6 +37,7 @@
 #include "AliESDtrack.h"
 #include "AliLog.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 
 #include "AliHFEcollection.h"
 #include "AliHFEpidBase.h"
@@ -189,7 +190,6 @@ void AliHFEtrdPIDqaV1::Initialize(){
   AliDebug(1, "Initializing PID QA for TRD");
   // Make common binning
   const Int_t kPIDbins = AliPID::kSPECIES + 1;
-  const Int_t kPbins = 100;
   const Int_t kSteps = 2;
   const Double_t kMinPID = -1;
   const Double_t kMinP = 0.;
@@ -197,7 +197,8 @@ void AliHFEtrdPIDqaV1::Initialize(){
   const Double_t kMaxP = 20.;
   const Int_t kCentralityBins = 11;
 
-  // Define number of bins
+  // Define number of bins 
+  Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
   Int_t tpcSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 140;
   Int_t trdLikelihoodBins = fQAmanager->HasHighResolutionHistos() ? 200 : 100;
 
@@ -242,17 +243,17 @@ void AliHFEtrdPIDqaV1::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   AliHFEpidObject::AnalysisType_t anatype = track->IsESDanalysis() ? AliHFEpidObject::kESDanalysis : AliHFEpidObject::kAODanalysis;
 
   AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
-  AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
+  const AliPIDResponse *pidResponse = trdpid ? trdpid->GetPIDResponse() : NULL;
  
   Double_t container[5];
   container[0] = species;
   container[1] = trdpid ? trdpid->GetP(track->GetRecTrack(), anatype) : 0.;
-  container[2] = tpcpid ? tpcpid->NumberOfSigmas(track->GetRecTrack(), AliPID::kElectron, anatype) : 0.;
+  container[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
   container[3] = step;
   container[4] = track->GetCentrality();
   fHistos->Fill("hTPCsigma", container);
 
-  container[2] = trdpid ? trdpid->GetElectronLikelihood(track->GetRecTrack(), anatype) : 0;
+  container[2] = trdpid ? trdpid->GetElectronLikelihood(static_cast<const AliVTrack*>(track->GetRecTrack()), anatype) : 0;
   fHistos->Fill("hTRDlikelihood", container);
 
   if(track->IsESDanalysis()){

@@ -61,6 +61,8 @@ public:
   Bool_t IsOwner() const { return TestBit(kOwner); }
 
   void AddVariable(TString name);
+  void AddVariable(TString name, Int_t nBins, Double_t min, Double_t max, Bool_t isLogarithmic = kFALSE);
+  void AddVariable(TString name, Int_t nBins, const Double_t *binning);
   Bool_t IsVariableDefined(TString name);
   void DefineVariables(AliHFEcontainer *cont);
   void NewTrack(AliVParticle *track, AliVParticle *mcTrack = NULL, Float_t centrality = 99.0, Int_t aprioriPID = -1, Bool_t signal = kTRUE);
@@ -78,12 +80,15 @@ public:
     public:
       AliHFEvariable();
       AliHFEvariable(const Char_t *name, const Char_t *title, UInt_t fCode, UInt_t nBins, Double_t min, Double_t max, Bool_t isLogarithmic = kFALSE);
+      AliHFEvariable(const Char_t *name, const Char_t *title, UInt_t fCode, UInt_t nBins, const Double_t *binning);
       AliHFEvariable(const AliHFEvariable &ref);
       AliHFEvariable &operator=(const AliHFEvariable &ref);
-      ~AliHFEvariable(){}
+      ~AliHFEvariable();
 
       UInt_t GetVarCode() const { return fCode; }
       UInt_t GetNumberOfBins() const { return fNBins; }
+      const Double_t* GetBinning() const { return fBinning; }
+      Bool_t HasUserDefinedBinning() const { return fBinning != NULL; }
       Double_t GetMinimum() const { return fMin; }
       Double_t GetMaximum() const { return fMax; } 
       Int_t IsLogarithmic() const { return fIsLogarithmic; }
@@ -92,6 +97,7 @@ public:
       UInt_t    fNBins;             // Number of bins
       Double_t  fMin;               // Minimum
       Double_t  fMax;               // Maximum
+      Double_t *fBinning;           // User defined binning
       Bool_t    fIsLogarithmic;     // Logarithmic binning
 
       ClassDef(AliHFEvarManager::AliHFEvariable, 1) // HFE variable definition

@@ -51,7 +51,7 @@ AliHFEpidMC::AliHFEpidMC(const Char_t *name):
 }
 
 //___________________________________________________________________
-Bool_t AliHFEpidMC::InitializePID(){
+Bool_t AliHFEpidMC::InitializePID(Int_t /*run*/){
   // 
   // Implementation of the framework function InitializePID
   // Not yet anything to implement in case of MC PID

@@ -59,7 +59,7 @@ const Int_t AliHFEtrdPIDqa::fgkNBinsCommon[kQuantitiesCommon] = {
 };
 const Double_t AliHFEtrdPIDqa::fgkMinBinCommon[kQuantitiesCommon] = {
   -1,      // species
-  0.1,     // p-bins
+  0.1,     // p-bins:
   0        // tracklets including 0
 };
 
@@ -219,10 +219,13 @@ void AliHFEtrdPIDqa::CreateLikelihoodHistogram(){
   //
   Int_t nbins[kQuantitiesLike]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
   nbins[kElectronLike] = 100;
+  nbins[kNClustersLike] = 200;
   Double_t binMin[kQuantitiesLike]; memcpy(binMin, fgkMinBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   Double_t binMax[kQuantitiesLike]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
   binMin[kElectronLike] = 0.;      
+  binMin[kNClustersLike] = 0.;
   binMax[kElectronLike] = 1.;
+  binMax[kNClustersLike] = 200.;
 
   fHistos->CreateTHnSparse("fLikeTRD","TRD Likelihood Studies", kQuantitiesLike, nbins, binMin, binMax);
   fHistos->BinLogAxis("fLikeTRD", kP);
@@ -263,7 +266,7 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
   binMin[kNclusters] = 0;
   binMin[kNonZeroSlices] = 0.;
   Double_t binMax[kQuantitiesdEdx]; memcpy(binMax, fgkMaxBinCommon, sizeof(Double_t) * kQuantitiesCommon);
-  binMax[kdEdx] = 100000.;
+  binMax[kdEdx] = 10000.;
   binMax[kNclusters] = 260.;
   binMax[kNonZeroSlices] = 8.;
 
@@ -275,7 +278,7 @@ void AliHFEtrdPIDqa::CreatedEdxHistogram(){
 //__________________________________________________________________
 void AliHFEtrdPIDqa::CreateHistoTruncatedMean(){
   //
-  // Create Histogram for Basic TRD PID QA
+  // Create Histogram for Basic TRD PID QA:
   //
   AliDebug(1, "Called");
   Int_t nbins[kQuantitiesTruncMean]; memcpy(nbins, fgkNBinsCommon, sizeof(Int_t) * kQuantitiesCommon);
@@ -368,6 +371,7 @@ void AliHFEtrdPIDqa::FillTRDLikelihoods(const AliESDtrack * const track, Int_t s
   quantities[kP] = outerPars ? outerPars->P() : track->P();
   quantities[kNTracklets] = track->GetTRDntrackletsPID();
   quantities[kElectronLike] = likeEle;
+  quantities[kNClustersLike] =  track->GetTRDncls();
 
   fHistos->Fill("fLikeTRD", quantities);
 }
@@ -467,7 +471,7 @@ void AliHFEtrdPIDqa::FinishAnalysis(){
   // Calculate thresholds for ntracklets = 4...6
   //
   
-  if(!fPionEfficiencies){
+  if(!fPionEfficiencies){ 
     fPionEfficiencies = new TList;
     fPionEfficiencies->SetName("pionEfficiencies");
     fPionEfficiencies->SetOwner();
@@ -619,7 +623,7 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
   TGraphErrors *effPi = NULL, *effPr = NULL; TGraph *thresholds = NULL;
   Double_t p = 0, dp = 0;
   Int_t threshbin = 0;
-  Double_t noElEff[2]; // value and error
+  Double_t eff, error; // value and error
   for(Int_t ieff = 0; ieff < kNElectronEffs; ieff++){
     
     if(fShowMessage){
@@ -643,31 +647,28 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
       p = likeElectron->GetXaxis()->GetBinCenter(imom);
       dp = likeElectron->GetXaxis()->GetBinWidth(imom)/2;
 
-      probsEl = likeElectron->ProjectionY("el", imom);
+      probsEl = likeElectron->ProjectionY("el", imom, imom);
       if(!probsEl->GetEntries()) continue;
       probsEl->Scale(1./probsEl->Integral());
-      probsPi = likePion->ProjectionY("pi", imom);
+      probsPi = likePion->ProjectionY("pi", imom, imom);
       if(!probsPi->GetEntries()) continue;
       probsPi->Scale(1./probsPi->Integral());
-      probsPr = likeProton->ProjectionY("pr", imom);
+      probsPr = likeProton->ProjectionY("pr", imom, imom);
       if(!probsPr->GetEntries()) continue;
       probsPr->Scale(1./probsPr->Integral());
       AliDebug(1, Form("Calculating Values for p = %f", p));
 
-      // Calculare threshold we need to achive the x% electron Efficiency
-      threshbin = GetThresholdBin(probsEl, fgkElectronEff[ieff]);
+      // Calculate non-electronEfficiency and error
+      eff = CalculateHadronEfficiency(probsPi, probsEl, fgkElectronEff[ieff], threshbin, error);
       thresholds->SetPoint(imom - 1, p, probsEl->GetXaxis()->GetBinCenter(threshbin));
       AliDebug(1, Form("threshold %d|%f", threshbin, probsEl->GetXaxis()->GetBinCenter(threshbin)));
-
-      // Calculate non-electronEfficiency and error
-      CalculateEfficiency(probsPi, threshbin, noElEff);
-      AliDebug(1, Form("Pion Efficiency %f", noElEff[0]));
-      effPi->SetPoint(imom - 1, p, noElEff[0]);
-      effPi->SetPointError(imom - 1, dp, noElEff[1]);
-      CalculateEfficiency(probsPr, threshbin, noElEff);
-      effPr->SetPoint(imom - 1, p, noElEff[0]);
-      effPr->SetPointError(imom - 1, dp, noElEff[1]);
-      AliDebug(1, Form("Proton Efficiency %f", noElEff[0]));
+      AliDebug(1, Form("Pion Efficiency %f +- %f", eff, error));
+      effPi->SetPoint(imom - 1, p, eff);
+      effPi->SetPointError(imom - 1, dp, error);
+      eff = CalculateHadronEfficiency(probsPr, probsEl, fgkElectronEff[ieff] , threshbin, error);
+      AliDebug(1, Form("Proton Efficiency %f", eff));
+      effPr->SetPoint(imom - 1, p, eff);
+      effPr->SetPointError(imom - 1, dp, error);
  
       // cleanup
       delete probsEl;
@@ -683,37 +684,137 @@ void AliHFEtrdPIDqa::AnalyseNTracklets(Int_t nTracklets){
 }
 
 //__________________________________________________________________
-Int_t AliHFEtrdPIDqa::GetThresholdBin(const TH1 * const input, Double_t eff){
+Double_t AliHFEtrdPIDqa::CalculateHadronEfficiency(const TH1 * const hadron, const TH1 *const electron, Double_t eff, Int_t &threshbin, Double_t &error){
+  // 
+  // Calculate non-electron efficiency
+  // optionally returns sums as second parameter
   //
-  // Calculate the threshold bin  
-  //
-  Double_t integralEff = 0.;
-  Int_t currentBin = 0;
-  for(Int_t ibin = input->GetXaxis()->GetLast(); ibin >= input->GetXaxis()->GetFirst(); ibin--){
+
+  TArrayD sumsEl(electron->GetNbinsX()), sumsHd(electron->GetNbinsX());
+
+  // calculate threshold and estimated electron efficiency the threshold was taken
+  Double_t elEff = 0.;  // estimated electron efficiency at the end
+  Int_t currentBin = 0, nbins = 0;
+  for(Int_t ibin = electron->GetXaxis()->GetLast(); ibin >= electron->GetXaxis()->GetFirst(); ibin--){
     currentBin = ibin;
-    integralEff += input->GetBinContent(ibin);
-    if(integralEff >= eff){
+    nbins++;
+    elEff += electron->GetBinContent(ibin);
+    sumsEl[electron->GetXaxis()->GetLast() - ibin] = elEff;
+    if(elEff >= eff){
       // we found the matching bin, break the loop
       break;
     }
   }
-  return currentBin;
+  threshbin = currentBin;
+
+  Double_t hdEff = 0; 
+  for(Int_t ibin = hadron->GetXaxis()->GetLast(); ibin >= threshbin; ibin--) {
+    hdEff += hadron->GetBinContent(ibin);
+    sumsHd[hadron->GetXaxis()->GetLast() - ibin] = hdEff;
+  }
+
+  // search sums of electron efficiency for double counts, eliminate in electron and hadron array
+  TArrayD newsumsEl(100), newsumsHd(100);
+  Int_t nusable = 0;
+  for(Int_t ien = 0; ien < nbins; ien++){
+    if(ien==0){
+      newsumsEl[0] = sumsEl[0];
+      nusable++;
+      continue;
+    }
+    Int_t index = TMath::BinarySearch(nusable, newsumsEl.GetArray(), sumsEl[ien]);
+    if(TMath::Abs(sumsEl[ien] - newsumsEl[index]) < 1e-13){
+      // element already counted, don't add to the new arrays
+      continue; 
+    }
+    newsumsEl[nusable] = sumsEl[ien];
+    newsumsHd[nusable] = sumsHd[ien];
+    nusable++;
+  }
+
+  //printf("New array\n");
+  //for(Int_t ib = 0; ib < nusable; ib++){
+  //  printf("Electron Efficiency %f, Pion Efficiency %f\n", newsumsEl[ib], newsumsHd[ib]);
+  //}
+  //printf("Do Fit\n");
+
+  // Calculate error
+  error = 0;
+  if(hadron->GetEntries() > 0 && electron->GetEntries() > 0 && nusable > 2){
+    // Do error calculation in case the bins have enough statistics
+    TGraph gevh(nusable, newsumsEl.GetArray(), newsumsHd.GetArray()); 
+    TF1 evh("evh","pol2", eff-.05, eff+.05);
+    gevh.Fit(&evh, "Q", "", eff-.05, eff+.05);
+  
+    // return the error of the pion efficiency
+    if(((1.-hdEff) < 0) || ((1.- elEff) < 0)){
+      AliError(" ElEffi or HdEffi > 1. Error can not be calculated. Please increase statistics!");
+    }   else {
+      error = TMath::Sqrt(hdEff*(1-hdEff)/hadron->GetEntries()+TMath::Power(evh.Derivative(eff), 2)*elEff*(1-elEff)/electron->GetEntries());
+    }
+    AliDebug(2, Form("Pion Effi at [%f] : [%f +/- %f], Threshold[%f]", elEff, hdEff, error, electron->GetBinCenter(threshbin)));
+    AliDebug(2, Form("Derivative at %4.2f : %f\n", eff, evh.Derivative(eff)));
+  }
+
+  return hdEff;
 }
 
 //__________________________________________________________________
-Bool_t AliHFEtrdPIDqa::CalculateEfficiency(const TH1 * const input, Int_t threshbin, Double_t * const par){
-  // 
-  // Calculate non-electron efficiency
+Double_t AliHFEtrdPIDqa::CalculateIntegratedPionEfficiency(UInt_t nTracklets, Double_t electronEff, Double_t pmin, Double_t pmax, Double_t *error){
   //
-  Double_t integralEff = 0; 
-  for(Int_t ibin = threshbin; ibin <= input->GetXaxis()->GetLast(); ibin++) 
-    integralEff += input->GetBinContent(ibin);
-  par[0] = integralEff;
+  // Calculate Pion Efficiency for a given electron efficiency in the specified momentum range
+  //
+  if(nTracklets < 4 || nTracklets > 6){
+    AliError("Pion Efficiency calculation only available for 4, 5, and 6 tracklets");
+    return 0.;
+  }
+  if(electronEff < 0.6 || electronEff > 1.){
+    AliError("Pion Efficiency calculation only available in the electron efficiency range 0.6 to 1");
+    return 0.;
+  }
+  if(pmin < 0.1 || pmin > 10 || pmax < 0.1 || pmax > 10.){
+    AliError("Pion Efficiency calculation only available in the momentum range 0.1 to 10 GeV/c");
+    return 0.;
+  }
+  if(pmax < pmin){
+    AliError("pmin is expected to be >= pmax");
+    return 0.;
+  }
 
-  // @TODO: Error calculation
-  par[1] = 0;
+  // prerequierements fullfiled
+  // prepare histos
+  THnSparse *hLikeTRD = dynamic_cast<THnSparseF *>(fHistos->Get("fLikeTRD"));
+  if(!hLikeTRD){
+    AliError("Likelihood Histogram not available");
+    return 0;
+  }
+  Int_t binTracklets = hLikeTRD->GetAxis(kNTracklets)->FindBin(nTracklets);
+  hLikeTRD->GetAxis(kNTracklets)->SetRange(binTracklets, binTracklets);
+  Int_t pbinMin = hLikeTRD->GetAxis(kP)->FindBin(pmax),
+        pbinMax = hLikeTRD->GetAxis(kP)->FindBin(pmax);
+  hLikeTRD->GetAxis(kP)->SetRange(pbinMin, pbinMax);
+  Int_t binElectrons = hLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kElectron); 
+  Int_t binPions = hLikeTRD->GetAxis(kSpecies)->FindBin(AliPID::kPion);
+  hLikeTRD->GetAxis(kSpecies)->SetRange(binElectrons, binElectrons);
+  TH1 *likeElectron = hLikeTRD->Projection(kElectronLike);
+  likeElectron->Scale(1./likeElectron->Integral());
+  likeElectron->SetName("likeElectron");
+  hLikeTRD->GetAxis(kSpecies)->SetRange(binPions, binPions);
+  TH1 *likePion = hLikeTRD->Projection(kElectronLike);
+  likePion->Scale(1./likePion->Integral());
+  likePion->SetName("likePion");
+  
+  // Undo ranges
+  hLikeTRD->GetAxis(kSpecies)->SetRange(0, hLikeTRD->GetAxis(kSpecies)->GetNbins());
+  hLikeTRD->GetAxis(kNTracklets)->SetRange(0, hLikeTRD->GetAxis(kNTracklets)->GetNbins());
+  hLikeTRD->GetAxis(kP)->SetRange(0, hLikeTRD->GetAxis(kP)->GetNbins());
 
-  return kTRUE;
+  // Do Calculation
+  Int_t thresh; Double_t err;
+  Double_t effpi = CalculateHadronEfficiency(likePion, likeElectron, electronEff, thresh, err);
+  delete likePion; delete likeElectron;
+  if(error) *error = err;
+  return effpi;
 }
 
 //__________________________________________________________________
@@ -743,9 +844,9 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax,
   TF1 *threshfit = NULL;
   for(Int_t ieff = 0; ieff < kNElectronEffs; ieff++){
     c1->cd(ieff + 1);
-    leg = new TLegend(0.6, 0.7, 0.89, 0.89);
-    leg->SetBorderSize(0);
-    leg->SetFillStyle(0);
+    gPad->SetGrid(0,0);
+    gPad->SetLeftMargin(0.12);
+    gPad->SetRightMargin(0.08);
     pi = dynamic_cast<TGraphErrors *>(lpions->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
     pr = dynamic_cast<TGraphErrors *>(lprotons->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
     tr = dynamic_cast<TGraph *>(lthresholds->FindObject(Form("eff%d", static_cast<Int_t>(fgkElectronEff[ieff] * 100))));
@@ -759,11 +860,20 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax,
     pr->GetYaxis()->SetTitle("Efficiency");
     tr->GetXaxis()->SetTitle("p / GeV/c");
     tr->GetYaxis()->SetTitle("Efficiency");
+    pi->GetYaxis()->SetTitleOffset(1.2);
+    pr->GetYaxis()->SetTitleOffset(1.2);
+    tr->GetYaxis()->SetTitleOffset(1.2);
+    pi->GetXaxis()->SetTitleSize(0.045);
+    pi->GetYaxis()->SetTitleSize(0.045);
+    pr->GetXaxis()->SetTitleSize(0.045);
+    pr->GetYaxis()->SetTitleSize(0.045);
+    tr->GetXaxis()->SetTitleSize(0.045);
+    tr->GetYaxis()->SetTitleSize(0.045);
     // Axis Range
     pi->GetYaxis()->SetRangeUser(1e-3, 1.);
     pr->GetYaxis()->SetRangeUser(1e-3, 1.);
     tr->GetYaxis()->SetRangeUser(1e-3, 1.);
-    if(pmin > 0 && pmax > 0.){
+    if(pmin >= 0 && pmax >= 0.){
       pi->GetXaxis()->SetRangeUser(pmin, pmax);
       pr->GetXaxis()->SetRangeUser(pmin, pmax);
       tr->GetXaxis()->SetRangeUser(pmin, pmax);
@@ -790,12 +900,18 @@ void AliHFEtrdPIDqa::DrawTracklet(Int_t itracklet, Double_t pmin, Double_t pmax,
     }
 
     // Add entries to legend
-    leg->AddEntry(pi, "Pion Efficiency", "lp");
-    leg->AddEntry(pr, "Proton Efficiency", "lp");
-    leg->AddEntry(tr, "Thresholds", "lp");
-    leg->Draw();
-    c1->Update();
+    if(ieff==0){
+      leg = new TLegend(0.5, 0.65, 0.89, 0.85);
+      leg->SetBorderSize(0);
+      leg->SetFillStyle(0);
+      leg->AddEntry(pi, "Pion Efficiency", "lp");
+      leg->AddEntry(pr, "Proton Efficiency", "lp");
+      leg->AddEntry(tr, "Thresholds", "lp");
+      leg->Draw();
+      gPad->Update();
+    }
   }
+  c1->cd();
 }
 
 //__________________________________________________________________
@@ -840,9 +956,7 @@ Double_t AliHFEtrdPIDqa::EvalPionEfficiency(Int_t ntls, Int_t eEff, Double_t p){
   //   Electron Efficiency
   //   Momentum
   //
-  TList *graphs = dynamic_cast<TList *>(fPionEfficiencies->FindObject(Form("%dTracklets", ntls)));
-  if(!graphs) return -1.;
-  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  TGraphErrors *measurement = GetPionEfficiency(ntls, eEff);
   if(!measurement) return -1.;
   return measurement->Eval(p);
 }
@@ -856,9 +970,7 @@ Double_t AliHFEtrdPIDqa::EvalProtonEfficiency(Int_t ntls, Int_t eEff, Double_t p
   //   Electron Efficiency
   //   Momentum
   //
-  TList *graphs = dynamic_cast<TList *>(fProtonEfficiencies->FindObject(Form("%dTracklets", ntls)));
-  if(!graphs) return -1.;
-  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  TGraphErrors *measurement = GetProtonEfficiency(ntls, eEff);
   if(!measurement) return -1.;
   return measurement->Eval(p);
 }
@@ -872,10 +984,38 @@ Double_t AliHFEtrdPIDqa::EvalThreshold(Int_t ntls, Int_t eEff, Double_t p){
   //   Electron Efficiency
   //   Momentum
   //
-  TList *graphs = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", ntls)));
-  if(!graphs) return -1.;
-  TGraph *measurement = dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eEff)));
+  TGraph *measurement = GetThreshold(ntls, eEff);
   if(!measurement) return -1.;
   return measurement->Eval(p);
+}
+
+//__________________________________________________________________
+TGraphErrors *AliHFEtrdPIDqa::GetPionEfficiency(Int_t ntracklets, Int_t eleffpercent){
+  //
+  // Get Graph with pion efficiencies
+  //
+  TList *graphs = dynamic_cast<TList *>(fPionEfficiencies->FindObject(Form("%dTracklets", ntracklets)));
+  if(!graphs) return NULL;
+  return dynamic_cast<TGraphErrors *>(graphs->FindObject(Form("eff%d", eleffpercent)));
+}
+
+//__________________________________________________________________
+TGraphErrors *AliHFEtrdPIDqa::GetProtonEfficiency(Int_t ntracklets, Int_t eleffpercent){
+  // 
+  // Get Graph with proton efficiencies
+  //
+  TList *graphs = dynamic_cast<TList *>(fProtonEfficiencies->FindObject(Form("%dTracklets", ntracklets)));
+  if(!graphs) return NULL;
+  return dynamic_cast<TGraphErrors *>(graphs->FindObject(Form("eff%d", eleffpercent)));
+}
+
+//__________________________________________________________________
+TGraph *AliHFEtrdPIDqa::GetThreshold(Int_t ntracklets, Int_t eleffpercent){
+  //
+  // Get Graph with threshols
+  //
+  TList *graphs = dynamic_cast<TList *>(fThresholds->FindObject(Form("%dTracklets", ntracklets)));
+  if(!graphs) return NULL;
+  return dynamic_cast<TGraph *>(graphs->FindObject(Form("eff%d", eleffpercent)));
 }
 
