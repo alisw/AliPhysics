@@ -124,45 +124,47 @@ AliHLTCaloClusterAnalyser::CalculateCenterOfGravity()
 /*       Float_t maxAmp = 0;
        Int_t maxX = 0;
        Int_t maxZ = 0;*/
-      for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
-	{
+       if (fDigitDataArray[*digitIndexPtr])
 
-	  digit = fDigitDataArray[*digitIndexPtr];
-
-	  xi = digit->fX;
-	  zi = digit->fZ;
-
-	  //xi = digit->fX+0.5;
-	  //zi = digit->fZ+0.5;
-
-	  if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
-	    {
-	      Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
-	      x    += xi * w ;
-	      z    += zi * w ;
-	      wtot += w ;
-/*	      if(digit->fEnergy > maxAmp)
-	      {
-		 maxAmp = digit->fEnergy;
-		 maxX = digit->fX;// + 0.5;
-		 maxZ = digit->fZ;// + 0.5;
-	      }*/
-	    }
-	  digitIndexPtr++;
-	}
-
-      if (wtot>0) 
-	{
-	  recPoint->fX = x/wtot ;
-	  recPoint->fZ = z/wtot ;
-	}
-      else
-	{
-	  recPoint->fX = -9999;
-          recPoint->fZ =-9999;
-	  // no good crashes depth with FP exception
-	  //recPoint->fAmp = 0;
-	}
+	 for(iDigit = 0; iDigit < recPoint->fMultiplicity; iDigit++)
+	   {
+	     
+	     digit = fDigitDataArray[*digitIndexPtr];
+	     
+	     xi = digit->fX;
+	     zi = digit->fZ;
+	     
+	     //xi = digit->fX+0.5;
+	     //zi = digit->fZ+0.5;
+	     
+	     if (recPoint->fAmp > 0 && digit->fEnergy > 0) 
+	       {
+		 Float_t w = TMath::Max( 0., fLogWeight + TMath::Log( digit->fEnergy / recPoint->fAmp ) ) ;
+		 x    += xi * w ;
+		 z    += zi * w ;
+		 wtot += w ;
+		 /*	      if(digit->fEnergy > maxAmp)
+			      {
+			      maxAmp = digit->fEnergy;
+			      maxX = digit->fX;// + 0.5;
+			      maxZ = digit->fZ;// + 0.5;
+			      }*/
+	       }
+	     digitIndexPtr++;
+	   }
+       
+       if (wtot>0) 
+	 {
+	   recPoint->fX = x/wtot ;
+	   recPoint->fZ = z/wtot ;
+	 }
+       else
+	 {
+	   recPoint->fX = -9999;
+	   recPoint->fZ =-9999;
+	   // no good crashes depth with FP exception
+	   //recPoint->fAmp = 0;
+	 }
 //	printf("Max digit: E = %f, x = %d, z= %d, cluster: E = %f, x = %f, z = %f\n" , maxAmp, maxX, maxZ, recPoint->fAmp, recPoint->fX, recPoint->fZ);
     }
   return 0;
