@@ -382,6 +382,10 @@ typedef vector<AliHLTMemoryFile*>         AliHLTMemoryFilePList;
  * \li -pushback-period=period     <br>
  *      scale down for PushBack of objects, shipped only for one event
  *      every <i>period</i> seconds
+ * \li -event-module=number     <br>
+ *      This option reduces the event processing rate by processing only n'th event
+ *      based on the modulo number <i>number</i>. The scale down should be about
+ *      1/<i>number</i>, where <i>number</i> is a positive integer.
  *
  * @ingroup alihlt_component
  * @section alihltcomponent-members Class members
@@ -1819,6 +1823,9 @@ class AliHLTComponent : public AliHLTLogging {
   int fPushbackPeriod;                                             //! transient
   /// time of last executed PushBack
   int fLastPushBackTime;                                           //! transient
+  
+  /// Event modulo for down scaling the processing rate.
+  int fEventModulo;                                                //! transient
 
   ClassDef(AliHLTComponent, 0)
 };

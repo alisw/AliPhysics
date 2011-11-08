@@ -102,7 +102,8 @@ AliHLTComponent::AliHLTComponent()
   , fLastObjectSize(0)
   , fpCTPData(NULL)
   , fPushbackPeriod(0)
-  , fLastPushBackTime(-1)
+  , fLastPushBackTime(-1),
+  fEventModulo(-1)
 {
   // see header file for class documentation
   // or
@@ -244,6 +245,19 @@ int AliHLTComponent::Init(const AliHLTAnalysisEnvironment* comenv, void* environ
 	    fPushbackPeriod=argument.Atoi();
 	  } else {
 	    HLTError("wrong parameter for argument -pushback-period, number expected");
+	  }
+	  // -event-modulo
+	} else if (argument.BeginsWith("-event-modulo=")) {
+	  argument.ReplaceAll("-event-modulo=", "");
+	  if (argument.IsDigit()) {
+	    fEventModulo=argument.Atoi();
+	    if (fEventModulo < 1)
+	    {
+	      fEventModulo = -1;
+	      HLTError("number passed in -event-modulo must be a positive integer greater or equal to 1.");
+	    }
+	  } else {
+	    HLTError("wrong parameter for argument -event-modulo, integer number expected");
 	  }
 	  // -disable-component-stat
 	} else if (argument.CompareTo("-disable-component-stat")==0) {
@@ -2053,6 +2067,15 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
     fpCTPData->SetTriggers(trigData);
     // increment CTP trigger counters if available
     if (IsDataEvent()) fpCTPData->Increment(trigData);
+  }
+  
+  // Check if the event processing should be skipped because of the
+  // down scaling from the event modulo argument. Using a prime number
+  // as pre divisor to pseudo-randomise the event number to get a more
+  // uniform distribution.
+  if (fEventModulo > 1)
+  {
+    bSkipDataProcessing |= ( ((AliHLTUInt64_t(fCurrentEvent) / AliHLTUInt64_t(4789)) % AliHLTUInt64_t(fEventModulo)) == 0 );
   }
 
   AliHLTComponentBlockDataList blockData;
