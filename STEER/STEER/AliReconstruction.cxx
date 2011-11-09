@@ -3117,10 +3117,9 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       esdheader->SetL2TriggerInputs(input.GetL2Inputs());
       // IR
       UInt_t orbit=input.GetOrbitID();
-       for(Int_t i=0 ; i<input.GetNIRs() ; i++ )
-          if(TMath::Abs(Int_t(orbit-(input.GetIR(i))->GetOrbit()))<=1){
-	     esdheader->AddTriggerIR(input.GetIR(i));
-	  }
+      for(Int_t i=0 ; i<input.GetNIRs() ; i++ ) {
+	esdheader->AddTriggerIR(input.GetIR(i));
+      }
        AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
        rlCTP->SetL0TriggerInputs(input.GetL0Inputs());
        rlCTP->SetL1TriggerInputs(input.GetL1Inputs());

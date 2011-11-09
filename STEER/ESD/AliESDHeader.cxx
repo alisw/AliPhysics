@@ -48,7 +48,8 @@ AliESDHeader::AliESDHeader() :
   fTriggerScalersDeltaEvent(),
   fTriggerScalersDeltaRun(),
   fTriggerInputsNames(kNTriggerInputs),
-  fCTPConfig(NULL)
+  fCTPConfig(NULL),
+  fIRBufferArray()
 {
   // default constructor
 
@@ -62,6 +63,8 @@ AliESDHeader::~AliESDHeader()
   // destructor
   for(Int_t i=0;i<kNMaxIR;i++)if(fIRArray[i])delete fIRArray[i];
   delete fCTPConfig;
+
+  fIRBufferArray.Delete();
 }
 
 
@@ -83,7 +86,8 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   fTriggerScalersDeltaEvent(header.fTriggerScalersDeltaEvent),
   fTriggerScalersDeltaRun(header.fTriggerScalersDeltaRun),
   fTriggerInputsNames(TObjArray(kNTriggerInputs)),
-  fCTPConfig(header.fCTPConfig)
+  fCTPConfig(header.fCTPConfig),
+  fIRBufferArray()
 {
   // copy constructor
   SetName(header.fName);
@@ -95,6 +99,11 @@ AliESDHeader::AliESDHeader(const AliESDHeader &header) :
   for(Int_t i = 0; i < kNTriggerInputs; i++) {
     TNamed *str = (TNamed *)((header.fTriggerInputsNames).At(i));
     if (str) fTriggerInputsNames.AddAt(new TNamed(*str),i);
+  }
+
+  for(Int_t i = 0; i < (header.fIRBufferArray).GetEntries(); ++i) {
+    AliTriggerIR *ir = (AliTriggerIR*)((header.fIRBufferArray).At(i));
+    if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
   }
 }
 
@@ -131,6 +140,12 @@ AliESDHeader& AliESDHeader::operator=(const AliESDHeader &header)
     }
     SetName(header.fName);
     SetTitle(header.fTitle);
+
+    fIRBufferArray.Delete();
+    for(Int_t i = 0; i < (header.fIRBufferArray).GetEntries(); ++i) {
+      AliTriggerIR *ir = (AliTriggerIR*)((header.fIRBufferArray).At(i));
+      if (ir) fIRBufferArray.Add(new AliTriggerIR(*ir));
+    }
   }
   return *this;
 }
@@ -173,19 +188,18 @@ void AliESDHeader::Reset()
    delete fIRArray[i];
    fIRArray[i]=0;
   }
+
+  fIRBufferArray.Delete();
 }
 //______________________________________________________________________________
 Bool_t AliESDHeader::AddTriggerIR(const AliTriggerIR* ir)
 {
- // Adds trigger interaction record to array
- for(Int_t i=0;i<kNMaxIR;i++){
-  if(!fIRArray[i]){
-    fIRArray[i]=new AliTriggerIR(*ir);
-    return 0;
-  }
- }
- //AliErrorClass("Attempt to add # of IRs > kNMaxIR \n");
- return 1;
+  // Add an IR object into the array
+  // of IRs in the ESD header
+
+ fIRBufferArray.Add(new AliTriggerIR(*ir));
+
+ return kTRUE;
 }
 //______________________________________________________________________________
 void AliESDHeader::Print(const Option_t *) const

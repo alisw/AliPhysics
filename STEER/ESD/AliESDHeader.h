@@ -12,6 +12,7 @@
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
+#include <TObjArray.h>
 #include <TClonesArray.h>
 #include "AliVHeader.h"
 #include "AliTriggerScalersESD.h"
@@ -54,7 +55,7 @@ public:
   const AliTriggerScalersRecordESD* GetTriggerScalersRecord() const {return &fTriggerScalers; }
   const AliTriggerScalersRecordESD* GetTriggerScalersDeltaEvent() const {return &fTriggerScalersDeltaEvent; }
   const AliTriggerScalersRecordESD* GetTriggerScalersDeltaRun() const {return &fTriggerScalersDeltaRun; }
-  const AliTriggerIR* GetTriggerIR(Int_t i) const { return fIRArray[i]; }
+  const AliTriggerIR* GetTriggerIR(Int_t i) const { return (const AliTriggerIR*)fIRBufferArray[i]; }
   void SetActiveTriggerInputs(const char*name, Int_t index);
   const char* GetTriggerInputName(Int_t index, Int_t trglevel) const;
   TString     GetActiveTriggerInputs() const;
@@ -100,8 +101,11 @@ private:
   AliTriggerIR*  fIRArray[kNMaxIR];// Array with trigger IRs 
   TObjArray    fTriggerInputsNames;// Array of TNamed of the active trigger inputs (L0,L1 and L2)
   AliTriggerConfiguration*  fCTPConfig; // Trigger configuration for the run
+  TObjArray    fIRBufferArray;// Array with interaction records before and after triggered event
 
-  ClassDef(AliESDHeader,9)
+
+
+  ClassDef(AliESDHeader,10)
 };
 
 #endif
