@@ -419,6 +419,8 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
   if(fCalChamberStatus) delete fCalChamberStatus;
   fCalChamberStatus = new AliTRDCalChamberStatus();
 
+  //printf("test0\n");
+
   // Check if enough events/tracklets per halfchamber to say something
   Double_t mean=0.0; //number of tracklets per HCS
   Int_t coord2[4];
@@ -426,7 +428,7 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
     //if(fHnSparseI->GetBinContent(bin,coord2)==0.0) printf(" bin shouldnt be empty!!\n");
     mean+=fHnSparseI->GetBinContent(bin,coord2);
   }
-  mean/=fHnSparseI->GetNbins();
+  if(fHnSparseI->GetNbins() > 0.0) mean/=fHnSparseI->GetNbins();
   //printf(" mean tracklets per halfchamber %f \n",mean);
   if((fCounterEventNotEmpty < limit) && (mean < limit)) {
     // Say all good
@@ -435,6 +437,8 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
     }
     return;
   }
+
+  //printf("test1\n");
 
   // set all chambers to NoData
   for (Int_t idet=0; idet<540; idet++) {
@@ -466,6 +470,8 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
       //fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoData); 
     }
   }
+
+  //printf("test2\n");
 
   // printf
   //for (Int_t idet=0; idet<540; idet++) {
