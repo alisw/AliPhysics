@@ -107,7 +107,7 @@ void
 AliMUONVQADataMakerRec::ResetDetector(const TObjArray* list)
 {
   /// Reset all histograms found in list, that match either trigger or tracker
-
+  
   TString cn(ClassName());
   TString pattern;
   
@@ -128,20 +128,7 @@ AliMUONVQADataMakerRec::ResetDetector(const TObjArray* list)
     // histo was cloned, so we are dealing with TObjArray
     TIter nextCl( (TObjArray*)o );
     TH1* hclone = 0;
-    while ( (hclone = (TH1*) next()) ) hclone->Reset();
-    /*    
-    // RS: I did not understand this code: the hcn will be "TH.." and not the histo name
-    //     Should not one use h->GetName() ? 
-    TH1* h = dynamic_cast<TH1*>(o);
-    if ( h ) 
-    {
-      TString hcn(h->ClassName());  
-      if ( hcn.Contains(pattern) ) 
-      {
-        h->Reset();
-      }
-    }
-    */
+    while ( (hclone = (TH1*) nextCl()) ) hclone->Reset();
   }
 }
 

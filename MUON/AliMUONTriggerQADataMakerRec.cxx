@@ -551,8 +551,6 @@ void AliMUONTriggerQADataMakerRec::MakeRaws(AliRawReader* rawReader)
 	
     // Init Local/Regional/Global decision with fake values
     //
-    
-    //
 
     UInt_t globalInput[4];
     for (Int_t bit=0; bit<4; bit++){
@@ -1516,9 +1514,10 @@ AliMUONCalibrationData* AliMUONTriggerQADataMakerRec::CalibrationData()
 }
 
 //____________________________________________________________________________ 
-void AliMUONTriggerQADataMakerRec::ResetDetectorRaws(TObjArray*/* list*/)
+void AliMUONTriggerQADataMakerRec::ResetDetectorRaws(TObjArray* list)
 {
   /// Reset the calibration data
+  ResetDetector(list);
   delete fTriggerProcessor;
   fTriggerProcessor = 0x0;
   delete fCalibrationData;
