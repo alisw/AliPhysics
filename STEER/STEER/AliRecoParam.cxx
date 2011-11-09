@@ -229,7 +229,8 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
             // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
             fEventSpecie = kHighMult;
 	}
-    }else if(beamType==TString("-")){
+    }
+    if(beamType==TString("-")){
 	// No beams, we assume cosmic data
 	fEventSpecie = kCosmic;
     }
