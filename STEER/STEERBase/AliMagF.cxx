@@ -128,6 +128,7 @@ AliMagF::AliMagF(const char *name, const char* title, Double_t factorSol, Double
   if (fBeamEnergy<=0 && fBeamType!=kNoBeamField) {
     if      (fBeamType == kBeamTypepp) fBeamEnergy = 7000.; // max proton energy
     else if (fBeamType == kBeamTypeAA) fBeamEnergy = 2760;  // max PbPb energy
+    else if (fBeamType == kBeamTypepA || fBeamType == kBeamTypeAp) fBeamEnergy = 2760;  // same rigitiy max PbPb energy
     AliInfo("Maximim possible beam energy for requested beam is assumed");
   } 
   const char* parname = 0;
@@ -260,7 +261,7 @@ void AliMagF::InitMachineField(BeamType_t btype, Double_t benergy)
   //
   double rigScale = benergy/7000.;   // scale according to ratio of E/Enominal
   // for ions assume PbPb (with energy provided per nucleon) and account for A/Z
-  if (btype == kBeamTypeAA) rigScale *= 208./82.;
+  if (btype == kBeamTypeAA || kBeamTypepA || kBeamTypeAp) rigScale *= 208./82.;
   //
   fQuadGradient = 22.0002*rigScale;
   fDipoleField  = 37.8781*rigScale;
@@ -519,9 +520,13 @@ AliMagF* AliMagF::CreateFieldMap(Float_t l3Cur, Float_t diCur, Int_t convention,
   TString btypestr = beamtype;
   btypestr.ToLower();
   TPRegexp protonBeam("(proton|p)\\s*-?\\s*\\1");
-  TPRegexp ionBeam("(lead|pb|ion|a)\\s*-?\\s*\\1");
+  TPRegexp ionBeam("(lead|pb|ion|a|A)\\s*-?\\s*\\1");
+  TPRegexp protonionBeam("(proton|p)\\s*-?\\s*(lead|pb|ion|a|A)");
+  TPRegexp ionprotonBeam("(lead|pb|ion|a|A)\\s*-?\\s*(proton|p)");
   if (btypestr.Contains(ionBeam)) btype = kBeamTypeAA;
   else if (btypestr.Contains(protonBeam)) btype = kBeamTypepp;
+  else if (btypestr.Contains(protonionBeam)) btype = kBeamTypepA;
+  else if (btypestr.Contains(ionprotonBeam)) btype = kBeamTypeAp;
   else AliInfoGeneral("AliMagF",Form("Assume no LHC magnet field for the beam type %s, ",beamtype));
   char ttl[80];
   snprintf(ttl,79,"L3: %+5d Dip: %+4d kA; %s | Polarities in %s convention",(int)TMath::Sign(l3Cur,float(sclL3)),
@@ -539,10 +544,14 @@ const char*  AliMagF::GetBeamTypeText() const
 {
   const char *beamNA  = "No Beam";
   const char *beamPP  = "p-p";
-  const char *beamPbPb= "Pb-Pb";
+  const char *beamPbPb= "A-A";
+  const char *beamPPb = "p-A";
+  const char *beamPbP = "A-p";
   switch ( fBeamType ) {
   case kBeamTypepp : return beamPP;
   case kBeamTypeAA : return beamPbPb;
+  case kBeamTypepA : return beamPPb;
+  case kBeamTypeAp : return beamPbP;
   case kNoBeamField: 
   default:           return beamNA;
   }
@@ -559,7 +568,7 @@ void AliMagF::Print(Option_t *opt) const
 	       fDipoleOFF ? "OFF":"ON",GetFactorDip(),fMapType==k5kGUniform?" |Constant Field!":""));
   if (opts.Contains("a")) {
     AliInfo(Form("Machine B fields for %s beam (%.0f GeV): QGrad: %.4f Dipole: %.4f",
-		 fBeamType==kBeamTypeAA ? "A-A":(fBeamType==kBeamTypepp ? "p-p":"OFF"),
+		 GetBeamTypeText(),
 		 fBeamEnergy,fQuadGradient,fDipoleField));
     AliInfo(Form("Uses %s of %s",GetParamName(),GetDataFileName()));
   }

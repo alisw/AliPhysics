@@ -19,7 +19,7 @@ class AliMagF : public TVirtualMagField
 {
  public:
   enum BMap_t      {k2kG, k5kG, k5kGUniform};
-  enum BeamType_t  {kNoBeamField, kBeamTypepp, kBeamTypeAA};
+  enum BeamType_t  {kNoBeamField, kBeamTypepp, kBeamTypeAA, kBeamTypepA, kBeamTypeAp};
   enum PolarityConvention_t {kConvLHC,kConvDCS2008,kConvMap2005};
   enum             {kOverrideGRP=BIT(14)}; // don't recreate from GRP if set
   //
