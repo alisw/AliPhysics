@@ -97,7 +97,7 @@ public:
   /** Get node name of this source 
    * @return           hostname
    */
-  TString GetHostname()       { return fHostname; }
+  TString& GetHostname()       { return fHostname; }
 
   /** Get node name of this source 
    * @return           port
@@ -107,12 +107,12 @@ public:
   /** Get name of this source 
    * @return           name
    */
-  TString GetSourceName()     { return fSourceName; }
+  TString& GetSourceName()     { return fSourceName; }
 
   /** Get detector of this source 
    * @return           detector
    */
-  TString GetDetector()       { return fDetector; }
+  TString& GetDetector()       { return fDetector; }
 
   /** Get sub detector of this source 
    * @return           subdetector
@@ -127,7 +127,7 @@ public:
   /** Get HLT data type of this source
    * @return           HLT data type
    */
-  TString GetDataType()       { return fDataType; }
+  TString& GetDataType()       { return fDataType; }
 
   /** Get HLT specification of this source
    * @return           HLT specification
