@@ -2075,7 +2075,7 @@ int AliHLTComponent::ProcessEvent( const AliHLTComponentEventData& evtData,
   // uniform distribution.
   if (fEventModulo > 1)
   {
-    bSkipDataProcessing |= ( ((AliHLTUInt64_t(fCurrentEvent) / AliHLTUInt64_t(4789)) % AliHLTUInt64_t(fEventModulo)) == 0 );
+    bSkipDataProcessing |= ( ((AliHLTUInt64_t(fCurrentEvent) / AliHLTUInt64_t(4789)) % AliHLTUInt64_t(fEventModulo)) != 0 );
   }
 
   AliHLTComponentBlockDataList blockData;
