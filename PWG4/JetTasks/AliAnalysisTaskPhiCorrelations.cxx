@@ -503,6 +503,26 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       //centrality = centralityObj->GetCentralityPercentileUnchecked(fCentralityMethod);
     else
       centrality = -1;
+
+    if (fAOD)
+    {
+      // remove outliers
+      if (centrality == 0)
+      {
+	if (fAOD->GetVZEROData())
+	{
+	  Float_t multV0 = 0;
+	  for (Int_t i=0; i<64; i++)
+	    multV0 += fAOD->GetVZEROData()->GetMultiplicity(i);
+	  if (multV0 < 19500)
+	  {
+	    centrality = -1;
+	    AliInfo("Rejecting event due to too small V0 multiplicity");
+	  }
+	}
+      }
+    }
+    
     AliInfo(Form("Centrality is %f", centrality));
   }
   
