@@ -222,13 +222,13 @@ void AliRecoParam::SetEventSpecie(const AliRunInfo *runInfo, const AliEventInfo 
     TRegexp reSthgp(".*-[pP]$");
 
     if(lhcState.Index(reStable)==0){
-        if(beamType.Index(reASthg)==0 || beamType.Index(reSthgA)==0){
-            // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
-            fEventSpecie = kHighMult;
-        }else if(beamType.Index(repSthg)==0 || beamType.Index(reSthgp)==0){
+        if(beamType.Index(repSthg)==0 || beamType.Index(reSthgp)==0){
             // Proton run, the event specie is set to kLowMult
             fEventSpecie = kLowMult;
-        }
+        }else if(beamType.Index(reASthg)==0 || beamType.Index(reSthgA)==0){
+            // Heavy ion run (any beam that is not pp, the event specie is set to kHighMult
+            fEventSpecie = kHighMult;
+	}
     }else if(beamType==TString("-")){
 	// No beams, we assume cosmic data
 	fEventSpecie = kCosmic;
