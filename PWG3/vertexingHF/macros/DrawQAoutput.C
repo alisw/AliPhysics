@@ -177,8 +177,10 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
   for(Int_t i=0;i<list->GetEntries();i++){
     TH1F* h=(TH1F*)list->At(i);
     TH1F* hh=0x0;
+    TH1F* hr=0x0;
     if(superimpose){
       hh=(TH1F*)llist->At(i);
+      hr=(TH1F*)hh->Clone(Form("$s_ratio",hh->GetName()));
       hh->Scale(h->Integral()/hh->Integral());
     }
     if(!h || (superimpose && !hh)){
@@ -188,6 +190,7 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
     if(superimpose){
       hhstat->SetLineColor(kRed);
       hh->SetLineColor(kRed);
+      hr->Divide(h);
     }
 
     TCanvas* c=new TCanvas(Form("c%s",h->GetName()),h->GetName());
@@ -198,11 +201,19 @@ void DrawOutputTrack(TString partname="D0",TString textleg="",TString path="./",
       c->SetLogy();
       //h->SetMinimum(1);
       h->Draw();
-      if(superimpose) hh->Draw("sames");
+      if(superimpose) {
+	hh->Draw("sames");
+	TCanvas* c2=new TCanvas(Form("c2%s",h->GetName()),h->GetName());
+	c2->cd();
+	c2->SetGrid();
+	hr->Draw();
+	c2->SaveAs(Form("%s%s%s%sRatio.png",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
+      }
     } else {
       h->Draw("htext0");
       if(superimpose)hh->Draw("htext0sames");
     }
+    c->cd();
     pvtxt->Draw();
     c->SaveAs(Form("%s%s%s%s.png",c->GetName(),name1.Data(),name2.Data(),textleg.Data()));
   }
