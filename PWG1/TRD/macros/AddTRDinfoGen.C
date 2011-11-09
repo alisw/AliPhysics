@@ -22,16 +22,19 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   info->SetCollision(/*kFALSE*/);
   if(info->IsCollision()){
     AliTRDeventCuts ec;
-    if(mc) ec.AddTrigger("kMB");
-    else {
+    if(mc){
+      ec.SetEventType(0);
+//      ec.AddTrigger("MB1");
+    } else {
 /*      Int_t bunches[] = ;
       ec.SetBunchSelection();*/
-      ec.AddTrigger("CINT1B-ABCE-NOPF-ALL");
+/*      ec.AddTrigger("CINT1B-ABCE-NOPF-ALL");
       ec.AddTrigger("CINT5-B-NOPF-ALL");
       ec.AddTrigger("CINT1WU-B-NOPF-ALL");
       ec.AddTrigger("CINT5WU-B-NOPF-ALL");
       ec.AddTrigger("CINT7WU-I-NOPF-ALL");
       ec.AddTrigger("CSCO1-ABCE-NOPF-CENT"); // cosmic SPD trigger
+*/
     }
     info->SetLocalEvSelection(ec);
   }
