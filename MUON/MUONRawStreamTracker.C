@@ -44,6 +44,7 @@
 #include "TStopwatch.h"
 #include "AliRawDataErrorLog.h"
 #include "Riostream.h"
+#include "AliMUONLogger.h"
 
 #endif
 
@@ -404,8 +405,13 @@ void MUONRawStreamTrackerErrorCount(TString fileName = "collection://filelist", 
   
   // raw stream
   AliMUONRawStreamTrackerHP rawStream(rawReader);
-  rawStream.EnableRawReaderErrorLogger();    
   rawStream.DisableWarnings();    
+
+  AliMUONLogger logger;
+  
+  rawStream.EnableMUONErrorLogger();  
+  rawStream.SetMUONErrorLogger(&logger);    
+  rawStream.SetLoggingDetailLevel(AliMUONRawStreamTrackerHP::kMediumErrorDetail);
   
   //   Loop over events  
   Int_t iEvent = 0;
@@ -421,10 +427,14 @@ void MUONRawStreamTrackerErrorCount(TString fileName = "collection://filelist", 
     while ((buspatch = rawStream.Next()) != NULL)
     {
     }
+    
+    ++iEvent;
   }
   
-  ShowErrors(*rawReader);
+  logger.Print();
   
+//  ShowErrors(*rawReader);
+
   delete rawReader;
   timer.Print();
 }
