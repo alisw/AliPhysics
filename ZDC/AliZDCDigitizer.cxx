@@ -155,7 +155,7 @@ Bool_t AliZDCDigitizer::Init()
     fBeamEnergy = 0.;
   }
 
-  if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0){
+  if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0 && !fIspASystem){
     // PTM gains rescaled to beam energy for p-p
     // New correction coefficients for PMT gains needed
     // to reproduce experimental spectra (from Grazia Jul 2010)
@@ -186,7 +186,7 @@ Bool_t AliZDCDigitizer::Init()
     	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
     }
   }
-  else if((beamType.CompareTo("A-A")) == 0){
+  else if((beamType.CompareTo("A-A")) == 0 && !fIspASystem){
     // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
     // rescaled for Pb-Pb @ 1.38+1.38 A TeV ***************
     // Values corrected after 2010 Pb-Pb data taking (7/2/2011 - Ch.)
@@ -205,21 +205,19 @@ Bool_t AliZDCDigitizer::Init()
   }
   
   if(fIspASystem){
-    // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side C
-    // PTM gains rescaled to beam energy for p-p on side A
-    Float_t scalGainFactor = fBeamEnergy/2760.;
-    if(TMath::Abs(scalGainFactor)<0.001) scalGainFactor=0.5;
+    // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side A
+    // PTM gains rescaled to beam energy for p-p on side C
+    // WARNING! Energies are set by hand for 2011 pA RUN!!!
+    Float_t scalGainFactor = 0.5;
     Float_t fpBeamEnergy = 3500.;
     
     for(Int_t j = 0; j < 5; j++){
-       fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC (Pb)	         
-       fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC (Pb)  
-       fPMGain[3][j] = 1.350938*(661.444/fpBeamEnergy+0.000740671)*10000000; //ZNA (p)
-       fPMGain[4][j] = 0.678597*(864.350/fpBeamEnergy+0.00234375)*10000000;  //ZPA (p)
+       fPMGain[0][j] = 1.350938*(661.444/fpBeamEnergy+0.000740671)*10000000; //ZNC (p)
+       fPMGain[1][j] = 0.678597*(864.350/fpBeamEnergy+0.00234375)*10000000;  //ZPC (p)
+       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
+       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)	         
+       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
     }
-    // ZEM (p)
-    fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
-    fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
     AliInfo(Form("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
   }
