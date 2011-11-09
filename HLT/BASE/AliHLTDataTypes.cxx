@@ -238,6 +238,10 @@ const AliHLTComponentDataType kAliHLTDataTypeInputTriggerCounters = AliHLTCompon
 const char kAliHLTOutputTriggerCountersDataTypeIDstring[8] = kAliHLTOutputTriggerCountersDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeOutputTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTOutputTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
 
+/** Common Data Header block type */
+const char kAliHLTCDHBlockDataTypeIDstring[8] = kAliHLTCDHBlockDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeCDHBlock = AliHLTComponentDataTypeInitializer(kAliHLTCDHBlockDataTypeIDstring, kAliHLTDataOriginPrivate);
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Data origin variables, to be used with the operator|
