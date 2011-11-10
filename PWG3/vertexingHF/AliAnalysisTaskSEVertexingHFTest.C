@@ -11,10 +11,11 @@ void AliAnalysisTaskSEVertexingHFTest()
   Bool_t writeKineToAOD = kFALSE;
   TString mode="local"; // otherwise, "grid" 
   Bool_t useParFiles=kFALSE;
+  Bool_t doCentrality=kTRUE;
 
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/vertexingHF/macros/LoadLibraries.C");
   LoadLibraries(useParFiles);
-
+  gSystem->Load("libPWG3muon");
   TChain *chain = 0;
 
   if(mode=="local") {
@@ -91,26 +92,15 @@ void AliAnalysisTaskSEVertexingHFTest()
     if(writeKineToAOD) mgr->SetMCtruthEventHandler(mcHandler);
     AliAnalysisTaskMCParticleFilter *kinefilter = new AliAnalysisTaskMCParticleFilter("Particle Filter");
     if(writeKineToAOD) mgr->AddTask(kinefilter);  
-    // Barrel Tracks
-    AliAnalysisTaskESDfilter *filter = new AliAnalysisTaskESDfilter("Filter");
-    mgr->AddTask(filter);
-
-    AliESDtrackCuts* esdTrackCutsHF = new AliESDtrackCuts("AliESDtrackCuts", "Heavy flavour");
-    esdTrackCutsHF->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
-    
-    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-    trackFilter->AddCuts(esdTrackCutsHF);
-
-    filter->SetTrackFilter(trackFilter);
-   
-    // Pipelining
-    mgr->ConnectInput(filter,0,mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(filter,0,mgr->GetCommonOutputContainer());
-    if(writeKineToAOD) {
-      mgr->ConnectInput(kinefilter,0,mgr->GetCommonInputContainer());
-      mgr->ConnectOutput(kinefilter,0,mgr->GetCommonOutputContainer());
+    // Centrality
+    if(doCentrality){
+      gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+      AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
     }
- 
+
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskESDFilter.C");
+    AliAnalysisTaskESDfilter *filter = AddTaskESDFilter(writeKineToAOD);
+   
   }
 
   // Vertexing analysis task    
