@@ -60,13 +60,21 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
 
+  void SetUseImpParProdCorrCut(Bool_t use){
+    fUseImpParProdCorrCut=use;
+  }
+  Bool_t GetUseImpParProdCorrCut() const {
+    return fUseImpParProdCorrCut;
+  }
+
   Bool_t ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const;
  protected:
   AliAODPidHF *fPidObjprot;
   AliAODPidHF *fPidObjpion;
   Bool_t fRecoKF;
+  Bool_t fUseImpParProdCorrCut; //switch for cut on d0p*d0K vs. d0K*d0pi 
 
-  ClassDef(AliRDHFCutsLctopKpi,3);  // class for cuts on AOD reconstructed Lc->pKpi
+  ClassDef(AliRDHFCutsLctopKpi,4);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif
