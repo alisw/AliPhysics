@@ -24,7 +24,8 @@ AliAnalysisTaskSE* AddTaskVZEROPbPb(Int_t runNumber)
  
  
    AliAnaVZEROPbPb* task = new AliAnaVZEROPbPb("AliAnaVZEROPbPb");
-   task->SetClassesNames("CTRUE-,CVLN-,CVHN-,CPBI1-,CPBI2-,C0HWU-");
+   task->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVLNWU-,CVLN-");
+   //   task->SetClassesNames("CTRUE-,CVLN-,CVHN-,CPBI1-,CPBI2-,C0HWU-");
    mgr->AddTask(task);
   
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("PbPbVZEROHists",TList::Class(),
