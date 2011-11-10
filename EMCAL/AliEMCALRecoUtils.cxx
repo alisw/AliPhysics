@@ -80,7 +80,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fResidualEta(0x0), fResidualPhi(0x0),   fCutEtaPhiSum(kTRUE),                   fCutEtaPhiSeparate(kFALSE), 
   fCutR(0.05),                            fCutEta(0.025),                         fCutPhi(0.05),
   fClusterWindow(100),                    fMass(0.139),                           
-  fStepSurface(10.),                      fStepCluster(5.),
+  fStepSurface(20.),                      fStepCluster(5.),
   fTrackCutsType(kLooseCut),              fCutMinTrackPt(0),                      fCutMinNClusterTPC(-1), 
   fCutMinNClusterITS(-1),                 fCutMaxChi2PerClusterTPC(1e10),         fCutMaxChi2PerClusterITS(1e10),
   fCutRequireTPCRefit(kFALSE),            fCutRequireITSRefit(kFALSE),            fCutAcceptKinkDaughters(kFALSE),

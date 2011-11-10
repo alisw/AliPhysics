@@ -69,7 +69,7 @@ AliEMCALTracker::AliEMCALTracker()
   fCutPt(0),
   fCutNITS(0),
   fCutNTPC(50),
-  fStep(10),
+  fStep(20),
   fTrackCorrMode(kTrackCorrMMB),
   fClusterWindow(50),
   fCutEta(0.025),
@@ -418,7 +418,7 @@ Int_t AliEMCALTracker::FindMatchedCluster(AliESDtrack *track)
       AliExternalTrackParam trkParTmp(trkParamTmp);
 
       Float_t tmpEta, tmpPhi;
-      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), fStep, tmpEta, tmpPhi)) continue;
+      if(!AliEMCALRecoUtils::ExtrapolateTrackToPosition(&trkParTmp, clsPos,track->GetMass(), 5, tmpEta, tmpPhi)) continue;
       if(TMath::Abs(tmpPhi)<TMath::Abs(maxPhi) && TMath::Abs(tmpEta)<TMath::Abs(maxEta))
         {
           maxPhi=tmpPhi;

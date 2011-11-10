@@ -284,8 +284,8 @@ public:
   Double_t GetStep()                            const { return fStepCluster           ; }
   Double_t GetStepSurface()                     const { return fStepSurface           ; }
   void     SetMass(Double_t mass)                     { fMass = mass                  ; }
-  void     SetStep(Double_t step)                     { fStepCluster = step           ; }
-  void     SetStepSurface(Double_t step)              { fStepSurface = step           ; }
+  void     SetStep(Double_t step)                     { fStepSurface = step           ; }
+  void     SetStepCluster(Double_t step)              { fStepCluster = step           ; }
  
   // Exotic cells / clusters
   

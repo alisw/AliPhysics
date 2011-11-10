@@ -51,7 +51,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fNColDiff(1),
   fMthCutEta(0.025), 
   fMthCutPhi(0.05),
-  fStep(50),
+  fStep(20),
   fTrkCutPt(0.0),
   fTrkCutNITS(0.0),
   fTrkCutNTPC(50.0), //track matching
