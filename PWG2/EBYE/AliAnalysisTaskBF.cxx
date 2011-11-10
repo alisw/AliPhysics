@@ -83,7 +83,9 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
   fAcceptanceParameterization(0),
-  fExcludeResonancesInMC(kFALSE) {
+  fExcludeResonancesInMC(kFALSE),
+  fUseMCPdgCode(kFALSE),
+  fPDGCodeToBeAnalyzed(-1) {
   // Constructor
 
   // Define input and output slots here
@@ -709,11 +711,24 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      continue;
 	    }
 	    
+	    //exclude non stable particles
+	    if(!mcEvent->IsPhysicalPrimary(iTracks)) continue;
+
 	    if( track->Pt() < fPtMin || track->Pt() > fPtMax)      
 	      continue;
 	    if( track->Eta() < fEtaMin || track->Eta() > fEtaMax)  
 	      continue;
 	    
+	    //analyze one set of particles
+	    if(fUseMCPdgCode) {
+	      TParticle *particle = track->Particle();
+	      if(!particle) continue;
+	      
+	      Int_t gPdgCode = particle->GetPdgCode();
+	      if(TMath::Abs(fPDGCodeToBeAnalyzed) != TMath::Abs(gPdgCode)) 
+		continue;
+	    }
+
 	    //Use the acceptance parameterization
 	    if(fAcceptanceParameterization) {
 	      Double_t gRandomNumber = gRandom->Rndm();
@@ -758,12 +773,12 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
     }//Vx cut
   }//MC analysis
   
+  //multiplicity cut (used in pp)
   if(fUseMultiplicity) {
-    if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax)) {
-      fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
+    if((gNumberOfAcceptedTracks < fNumberOfAcceptedTracksMin)||(gNumberOfAcceptedTracks > fNumberOfAcceptedTracksMax))
       return;
-    }
   }
+  fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
   
   // calculate balance function
   fBalance->CalculateBalance(array,chargeVector);
