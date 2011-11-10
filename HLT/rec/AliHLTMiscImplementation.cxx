@@ -148,11 +148,9 @@ AliCDBEntry* AliHLTMiscImplementation::LoadOCDBEntry(const char* path, int runNo
     return NULL;
   }
 
-  TString strUri=store->GetURI();
-
   int latest = store->GetLatestVersion(path, runNo);
   if (latest<0) {
-    log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "Could not find an entry in the CDB for \"%s\".", path);
+    log.Logging(kHLTLogError, "AliHLTMiscImplementation::LoadOCDBEntry", "CDB handling", "Could not find an entry for \"%s\" in storage \"%s\", run %d.", path, uri, runNo>=0?runNo:man->GetRun());
     return NULL;
   }
 
