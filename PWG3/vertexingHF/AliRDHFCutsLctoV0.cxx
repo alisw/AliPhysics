@@ -194,7 +194,6 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
     return 0;
   }
 
-  if(d->HasBadDaughters()) return 0;
 
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -205,6 +204,7 @@ Int_t AliRDHFCutsLctoV0::IsSelected(TObject* obj,Int_t selectionLevel) {
 
   // Get the v0 and all daughter tracks
   AliAODTrack *bachelor_track = d->GetBachelor();
+  if(!(bachelor_track->TestFilterMask(BIT(4)))) return 0;
   AliAODv0 *v0 = d->Getv0();
   AliAODTrack *v0positive_track = d->Getv0PositiveTrack();
   AliAODTrack *v0negative_track = d->Getv0NegativeTrack(); 
