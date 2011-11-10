@@ -177,7 +177,7 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fOutput->SetOwner();
   //fOutput->SetName("output");
   
-  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",60,-100.,-40.);
+  fhTDCZNSum = new TH1F("fhTDCZNSum","TDC_{ZNC}+TDC_{ZNA}",60,-30.,-30.);
   fhTDCZNSum->GetXaxis()->SetTitle("TDC_{ZNC}+TDC_{ZNA} (ns)");
   fOutput->Add(fhTDCZNSum);      
   
@@ -221,7 +221,7 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   fhPMCZNAemd = new TH1F("fhPMCZNAemd","ZNA PMC lg",200, 10., 6000.);   
   fOutput->Add(fhPMCZNAemd);     
   
-  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-100,-40);
+  fDebunch = new TH2F("fDebunch","ZN TDC sum vs. diff", 120,-30,30,120,-30,-30);
   fOutput->Add(fDebunch);     
     
   PostData(1, fOutput);
