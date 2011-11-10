@@ -403,11 +403,16 @@ void AliVZEROReconstructor::FillESD(TTree* digitsTree, TTree* /*clustersTree*/,
 	width[pmNumber] =  digit->Width();
 
 	if (adc[pmNumber] > 0) {
-	  AliDebug(1,Form("PM = %d ADC = %f TDC %f (%f)   Int %d (%d %d %d %d %d)    %f %f   %f %f    %d %d",pmNumber, adc[pmNumber],
+	  AliDebug(1,Form("PM = %d ADC = %.2f (%.2f) TDC %.2f (%.2f)   Int %d (%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d)    %.2f %.2f   %.2f %.2f    %d %d",pmNumber, adc[pmNumber],
+		       digit->ChargeADC(11)+digit->ChargeADC(10)+digit->ChargeADC(9)+digit->ChargeADC(8)+
+		       digit->ChargeADC(7)+digit->ChargeADC(6)+digit->ChargeADC(5)+digit->ChargeADC(4)-
+		       4.*fCalibData->GetPedestal(pmNumber)-4.*fCalibData->GetPedestal(pmNumber+64),
 			  digit->Time(),time[pmNumber],
 			  integrator,
+		          digit->ChargeADC(0),digit->ChargeADC(1),digit->ChargeADC(2),digit->ChargeADC(3),digit->ChargeADC(4),digit->ChargeADC(5),digit->ChargeADC(6),digit->ChargeADC(7),
 			  digit->ChargeADC(8),digit->ChargeADC(9),digit->ChargeADC(10),
 			  digit->ChargeADC(11),digit->ChargeADC(12),
+		          digit->ChargeADC(13),digit->ChargeADC(14),digit->ChargeADC(15),digit->ChargeADC(16),digit->ChargeADC(17),digit->ChargeADC(18),digit->ChargeADC(19),digit->ChargeADC(20),
 			  fCalibData->GetPedestal(pmNumber),fCalibData->GetSigma(pmNumber),
 			  fCalibData->GetPedestal(pmNumber+64),fCalibData->GetSigma(pmNumber+64),
 			  aBBflag[pmNumber],aBGflag[pmNumber]));
