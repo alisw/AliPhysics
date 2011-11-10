@@ -19,11 +19,17 @@
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
 
-
 #include "AliHLTProcessor.h"
 
+class TH1F;
+class TList;
+
+class AliESDEvent;
+class AliESDVZERO;
 class AliESDtrackCuts;
+class AliHLTCTPData;
 class AliHLTMultiplicityCorrelations;
+class AliHLTGlobalTriggerDecision;
 
 /**
  * @class AliHLTMultiplicityCorrelationsComponent
@@ -66,13 +72,15 @@ class AliHLTMultiplicityCorrelations;
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
  * \li -binningZdc      <i> bins min max  </i> <br>
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
- * \li -binningZnp    <i> bins min max  </i> <br>
+ * \li -binningZnp     <i> bins min max  </i> <br>
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
- * \li -binningZem    <i> bins min max  </i> <br>
+ * \li -binningZem     <i> bins min max  </i> <br>
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
  * \li -binningCalo    <i> bins min max  </i> <br>
  *       bins (Int_t), minBin (Float_t), maxBin (Float_t)
  *
+ * \li -addTrigger     <i> TriggerClass beginning (eg CPBI1)  </i> <br>
+
  * <h2>Default CDB entries:</h2>
  * <!-- NOTE: ignore the \li. <i> and </i>: it's just doxygen formatting -->
  *
@@ -208,6 +216,15 @@ private:
   /** Set Default Configuartion for track cuts */
   void SetDefaultConfiguration();
 
+  /** Select event as PhysicsSelection */
+  Bool_t SelectEvent(AliESDEvent *esdEvent, AliESDVZERO* esdV0);
+
+  /** Checks if event was triggered by the selected trigger classes */
+  Bool_t IsEventTriggered();
+  
+  /** Create selection list of triggers to be checked */
+  void CreateTriggerList();
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -222,6 +239,18 @@ private:
 
   /** UID for merging */
   AliHLTUInt32_t fUID;                        // see above
+
+  /** Centrality estimation histogram */
+  TH1F *fCentHistV0Mpercentile;               // see above
+
+  /** List of possible trigger descriptor */
+  TList *fListTriggerDescriptor;              //! transient
+  
+  /** List of trigger classnames */
+  TList *fListTrigger;                        //! transient
+
+  /** Ptr to CTP data */
+  const AliHLTCTPData *fCTPData;              //! transient
 
   ClassDef(AliHLTMultiplicityCorrelationsComponent, 0)
 };

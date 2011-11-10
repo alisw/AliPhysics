@@ -123,6 +123,10 @@ public:
   void SetProcessTPC(Bool_t b = kTRUE)  { fProcessTPC = b; }
   void SetProcessZDC(Bool_t b = kTRUE)  { fProcessZDC = b; }
   void SetProcessVZERO(Bool_t b = kTRUE){ fProcessVZERO = b; }
+  void SetProcessCentrality(Bool_t b = kTRUE){ fProcessCentrality = b; }
+
+  /** Centrality Estimator */
+  void SetCentralityEstimator(TH1F* hist) { fCentHistV0Mpercentile = hist; }
 
   /*
    * ---------------------------------------------------------------------------------
@@ -140,7 +144,7 @@ public:
    */
   
   /** Process current event */
-  Int_t ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, Int_t nSpdClusters );
+  Int_t ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, Int_t nSpdClusters);
 
   Int_t ProcessEvent( AliESDEvent *esd ) {
     return ProcessEvent(esd, NULL, 0);
@@ -187,6 +191,9 @@ public:
   /** Setup SPD histograms */
   Int_t SetupSPD();
 
+  /** Setup Centrality histograms */
+  Int_t SetupCentrality();
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Process - private
@@ -204,7 +211,10 @@ public:
 
   /** Process current event - ZDC and correlations */
   Int_t ProcessZDC();
-  
+
+  /** Process current event - centrality */
+  Int_t ProcessCentrality();
+
   /*
    * ---------------------------------------------------------------------------------
    *                             Members - private
@@ -226,6 +236,9 @@ public:
   /** Ptr to AliESD track cuts */
   AliESDtrackCuts *fESDTrackCuts;         //! transient
 
+  /** Centrality Estimator */
+  TH1F* fCentHistV0Mpercentile;           //! transient
+
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
   /** Process TPC information */
@@ -239,6 +252,9 @@ public:
 
   /** Process ZDC information */
   Bool_t           fProcessZDC;           // see above
+
+  /** Process Centrality information */
+  Bool_t           fProcessCentrality;    // see above
 
   // -- -- -- -- -- -- -- -- -- -- -- -- -- -- 
 
@@ -299,6 +315,6 @@ public:
   Float_t fSpdBinningMin;                 // see above
   Float_t fSpdBinningMax;                 // see above
   
-  ClassDef(AliHLTMultiplicityCorrelations, 3);
+  ClassDef(AliHLTMultiplicityCorrelations, 4);
 };
 #endif

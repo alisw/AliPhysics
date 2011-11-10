@@ -29,11 +29,14 @@ using namespace std;
 #include "TSystem.h"
 #include "TTimeStamp.h"
 #include "TObjString.h"
+#include "TH1F.h"
+#include "TList.h"
 #include "AliESDVZERO.h"
 #include "AliESDtrackCuts.h"
+#include "AliHLTGlobalTriggerDecision.h"
 #include "AliHLTMultiplicityCorrelations.h"
 #include <AliHLTDAQ.h>
-
+#include "AliHLTCTPData.h"
 #include "AliHLTErrorGuard.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTMultiplicityCorrelationsComponent.h"
@@ -53,7 +56,11 @@ AliHLTMultiplicityCorrelationsComponent::AliHLTMultiplicityCorrelationsComponent
   AliHLTProcessor(),
   fESDTrackCuts(NULL),  
   fCorrObj(NULL),
-  fUID(0) {
+  fUID(0),
+  fCentHistV0Mpercentile(NULL),
+  fListTriggerDescriptor(NULL),
+  fListTrigger(NULL),
+  fCTPData(NULL) {
   // an example component which implements the ALICE HLT processor
   // interface and does some analysis on the input raw data
   //
@@ -112,6 +119,8 @@ void AliHLTMultiplicityCorrelationsComponent::GetOCDBObjectDescription( TMap* co
   if (!targetMap) return;
   targetMap->Add(new TObjString("HLT/ConfigGlobal/MultiplicityCorrelations"),
 		 new TObjString("configuration object"));
+  targetMap->Add(new TObjString("HLT/ConfigGlobal/MultiplicityCorrelationsCentrality"),
+		 new TObjString("centrality configuration object"));
 
   return;
 }
@@ -152,8 +161,21 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoInit( Int_t argc, const Char_t*
       break;
     }
 
+    fListTriggerDescriptor = new TList;
+    if (!fListTriggerDescriptor) {
+      iResult=-ENOMEM;
+      break;
+    }
+    fListTriggerDescriptor->SetOwner(kTRUE);
+
+    fListTrigger = new TList;
+    if (!fListTrigger) {
+      iResult=-ENOMEM;
+      break;
+    }
+    fListTrigger->SetOwner(kTRUE);
+
     fUID = 0;
-    
     // implement further initialization
   } while (0);
 
@@ -181,12 +203,24 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoInit( Int_t argc, const Char_t*
     if (iResult>=0) {
       iResult=ConfigureFromArgumentString(argc, argv);
     }
+    
+    // -- Read configuration object : HLT/ConfigGlobal/MultiplicityCorrelationsCentrality
+    TString cdbPathCent="HLT/ConfigGlobal/";
+    cdbPathCent+=GetComponentID();
+    cdbPathCent+="Centrality";
+    
+    TObject* obj = LoadAndExtractOCDBObject(cdbPathCent);
+    if (obj && obj->IsA() != TH1F::Class())
+      iResult=-1;
+    else
+      fCentHistV0Mpercentile = static_cast<TH1F*>(obj);
   }
 
   if (iResult>=0) {
     HLTInfo("ESD track cuts : %s",fESDTrackCuts->GetTitle() );
 
     fCorrObj->SetESDTrackCuts(fESDTrackCuts);
+    fCorrObj->SetCentralityEstimator(fCentHistV0Mpercentile);
     fCorrObj->Initialize();
   }
 
@@ -238,7 +272,7 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
 
   // ---------------------
 
- // -maxpt
+  // -maxpt
   if (argument.CompareTo("-maxpt")==0) {
     if (++ii>=argc) return -EPROTO;
     argument=argv[ii];
@@ -416,22 +450,6 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     return 4;
   }
 
-  // binningZnp
-  if (argument.CompareTo("-binningZnp")==0) {
-    if (++ii>=argc) return -EPROTO;
-    argument=argv[ii];
-    Int_t binning = argument.Atoi();
-    if (++ii>=argc) return -EPROTO;
-    argument=argv[ii];
-    Float_t min = argument.Atof();
-    if (++ii>=argc) return -EPROTO;
-    argument=argv[ii];
-    Float_t max = argument.Atof();
-
-    fCorrObj->SetBinningZnp(binning, min, max);
-    return 4;
-  }
-
   // binningZem
   if (argument.CompareTo("-binningZem")==0) {
     if (++ii>=argc) return -EPROTO;
@@ -462,26 +480,8 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetBinningCalo(binning, min, max);
     return 4;
   }
-  if (argument.CompareTo("-enablePhos")==0) {
-    if (++ii>=argc) return -EPROTO;
-    argument=argv[ii];
-    Int_t enabled = argument.Atoi();
-    fCorrObj->SetProcessPhos(enabled);
-    return 2;
-  }
-  if (argument.CompareTo("-enableEmcal")==0) {
-    if (++ii>=argc) return -EPROTO;
-    argument=argv[ii];
-    Int_t enabled = argument.Atoi();
-    fCorrObj->SetProcessEmcal(enabled);
-    return 2;
-  }
 
   // -- enable
-  if (argument.CompareTo("-enableCALO")==0) {
-    fCorrObj->SetProcessCALO(kTRUE);
-    return 1;
-  }
   if (argument.CompareTo("-enableVZERO")==0) {
     fCorrObj->SetProcessVZERO(kTRUE);
     return 1;
@@ -498,12 +498,12 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetProcessSPD(kTRUE);
     return 1;
   }
-
-  // -- disable
-  if (argument.CompareTo("-disableCALO")==0) {
-    fCorrObj->SetProcessCALO(kFALSE);
+  if (argument.CompareTo("-enableCentrality")==0) {
+    fCorrObj->SetProcessCentrality(kTRUE);
     return 1;
   }
+
+  // -- disable
   if (argument.CompareTo("-disableVZERO")==0) {
     fCorrObj->SetProcessVZERO(kFALSE);
     return 1;
@@ -520,6 +520,21 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ScanConfigurationArgument(Int_t a
     fCorrObj->SetProcessSPD(kFALSE);
     return 1;
   }
+  if (argument.CompareTo("-disableCentrality")==0) {
+    fCorrObj->SetProcessCentrality(kFALSE);
+    return 1;
+  }
+
+  // -- TRIGGER --------------
+
+  // -add trigger descriptor
+  if (argument.CompareTo("-addTrigger")==0) {
+    if (++ii>=argc) return -EPROTO;
+    fListTriggerDescriptor->Add(new TObjString(argv[ii]));
+    return 2;
+  }
+
+  // -- UNKNOWN --------------
 
   // unknown argument
   return -EINVAL;
@@ -557,8 +572,9 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
     TTimeStamp t;
     fUID = ( gSystem->GetPid() + t.GetNanoSec())*10 + evtData.fEventID;
   }
-
-  // -- Get ESD object 
+  
+  // -- Get ESD object
+  // -------------------
   AliESDEvent *esdEvent = NULL;
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDObject); iter != NULL; iter = GetNextInputObject() ) {
     esdEvent = dynamic_cast<AliESDEvent*>(const_cast<TObject*>( iter ) );
@@ -570,7 +586,33 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
     esdEvent->GetStdContent();
   }
 
+  // -- Get GlobalTriggerDecision object
+  // -------------------------------------
+  AliHLTGlobalTriggerDecision *globalTrigDec = NULL;
+  for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeGlobalTrigger); iter != NULL; iter = GetNextInputObject() ) {
+    globalTrigDec = dynamic_cast<AliHLTGlobalTriggerDecision*>(const_cast<TObject*>( iter ) );
+    if( !globalTrigDec ){ 
+      HLTWarning("Wrong GlobalTriggerDecision object received");
+      iResult = -1;
+      continue;
+    }
+  }
+  
+  // -- Get CTP data object
+  // ------------------------
+  fCTPData = NULL;
+
+  if (globalTrigDec) {
+    for (Int_t idx = 0; idx < globalTrigDec->NumberOfInputObjects(); ++idx) {
+      const TObject *obj = globalTrigDec->InputObject(idx);
+      
+      if (obj && obj->IsA() == AliHLTCTPData::Class())
+	fCTPData = static_cast<const AliHLTCTPData*>(obj);
+    }
+  }
+
   // -- Get VZEROESD object 
+  // ------------------------
   AliESDVZERO *esdVZERO = NULL;
   for ( const TObject *iter = GetFirstInputObject(kAliHLTDataTypeESDContent|kAliHLTDataOriginVZERO); 
 	iter != NULL; iter = GetNextInputObject() ) {
@@ -607,7 +649,8 @@ Int_t AliHLTMultiplicityCorrelationsComponent::DoEvent(const AliHLTComponentEven
 
   // -- Process Event
   // ------------------
-  if (esdEvent)
+  // check that event is selected by PhysicsSelection and TriggerSelection
+  if ( esdEvent && IsEventTriggered() && SelectEvent(esdEvent,esdVZERO) )
     iResult = fCorrObj->ProcessEvent(esdEvent,esdVZERO,totalClusters);
 
   if (iResult) {
@@ -646,4 +689,80 @@ Int_t AliHLTMultiplicityCorrelationsComponent::ReadPreprocessorValues(const Char
   // see header file for class documentation
   ALIHLTERRORGUARD(5, "ReadPreProcessorValues not implemented for this component");
   return 0;
+}
+
+// #################################################################################
+Bool_t AliHLTMultiplicityCorrelationsComponent::IsEventTriggered() {
+  // see header file for class documentation
+
+  if (!fCTPData)
+    return kFALSE;
+  
+  // -- Check if MinBiasTrigger list exists - otherwise create it
+  if ( fListTrigger->GetEntries() == 0 )
+    CreateTriggerList();
+
+  // -- Check if event is selected by one of the MinBiasTriggers
+  for (Int_t ii = 0; ii < fListTrigger->GetEntries(); ++ii) {
+    TObjString *oStr = static_cast<TObjString*>(fListTrigger->At(ii));
+    TString trigger(oStr->String());
+      
+    if (fCTPData->EvaluateCTPTriggerClass(trigger))
+      return kTRUE;
+  }
+
+  return kFALSE;
+}
+
+// #################################################################################
+void AliHLTMultiplicityCorrelationsComponent::CreateTriggerList() {
+  // see header file for class documentation
+
+  // -- loop over all trigger bits
+  for (Int_t idx = 0 ; idx < 49 ; ++idx) {
+
+    TString triggerName(fCTPData->Name(idx));
+
+    // -- used bit
+    if (!triggerName.CompareTo("AliHLTReadoutList"))
+      continue;
+
+    // -- check for interaction trigger
+    if (!triggerName.Contains("-B-") && !triggerName.Contains("-I-"))
+      continue;
+
+    Bool_t isMinBias = kFALSE;
+
+    for (Int_t ii = 0; !isMinBias && ii < fListTriggerDescriptor->GetEntries(); ++ii) {
+      TObjString *oStr = static_cast<TObjString*>(fListTriggerDescriptor->At(ii));
+      TString str(oStr->String());
+      
+      if (triggerName.BeginsWith(oStr->String()+"-") || triggerName.BeginsWith(oStr->String()+"WU-") ||
+	  triggerName.BeginsWith(oStr->String()+"_") || triggerName.BeginsWith(oStr->String()+"WU_"))
+	isMinBias = kTRUE;
+    }
+    
+    if (!isMinBias)
+      continue;
+    
+    fListTrigger->Add(new TObjString(triggerName));
+  }
+  
+  return;
+}
+
+// #################################################################################
+Bool_t AliHLTMultiplicityCorrelationsComponent::SelectEvent(AliESDEvent *esdEvent, AliESDVZERO* esdV0) {
+  // see header file for class documentation
+
+  if (!esdEvent) 
+    return kFALSE;
+
+  if (!esdV0)
+    esdV0 = esdEvent->GetVZEROData();
+
+  if (!esdV0)
+    return kFALSE;
+
+  return ((esdV0->GetV0ADecision() == 1) && (esdV0->GetV0CDecision() == 1));
 }

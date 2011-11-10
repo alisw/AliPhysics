@@ -54,8 +54,9 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations() :
   fESDZDC(NULL),
   fESDVZERO(NULL),
   fESDTrackCuts(NULL),
+  fCentHistV0Mpercentile(NULL),
   fProcessTPC(kTRUE), fProcessSPD(kTRUE),
-  fProcessVZERO(kTRUE), fProcessZDC(kTRUE),
+  fProcessVZERO(kTRUE), fProcessZDC(kTRUE), fProcessCentrality(kTRUE),
   fEsdTracks(0), fEsdTracksA(0),
   fTpcTracks(0), fTpcTracksA(0),
   fTpcTracksRef(0),
@@ -81,8 +82,9 @@ AliHLTMultiplicityCorrelations::AliHLTMultiplicityCorrelations(Char_t* name, Cha
   fESDZDC(NULL),
   fESDVZERO(NULL),
   fESDTrackCuts(NULL),
+  fCentHistV0Mpercentile(NULL),
   fProcessTPC(kTRUE), fProcessSPD(kTRUE),
-  fProcessVZERO(kTRUE), fProcessZDC(kTRUE),
+  fProcessVZERO(kTRUE), fProcessZDC(kTRUE), fProcessCentrality(kTRUE),
   fEsdTracks(0), fEsdTracksA(0),
   fTpcTracks(0), fTpcTracksA(0),
   fTpcTracksRef(0),
@@ -133,6 +135,7 @@ Int_t AliHLTMultiplicityCorrelations::Initialize() {
   if (fProcessTPC)   { HLTInfo ("Processing of TPC enabled"); }
   if (fProcessSPD)   { HLTInfo ("Processing of SPD enabled"); }
   if (fProcessVZERO) { HLTInfo ("Processing of VZERO enabled"); }
+  if (fProcessCentrality) { HLTInfo ("Processing of Centrality enabled"); }
 
   return iResult;
 }
@@ -152,6 +155,7 @@ Int_t AliHLTMultiplicityCorrelations::Initialize( const Char_t* listName) {
   if (fProcessTPC)   { HLTInfo ("Processing of TPC enabled"); }
   if (fProcessSPD)   { HLTInfo ("Processing of SPD enabled"); }
   if (fProcessVZERO) { HLTInfo ("Processing of VZERO enabled"); }
+  if (fProcessCentrality) { HLTInfo ("Processing of Centrality enabled"); }
 
   return iResult;
 }
@@ -163,8 +167,7 @@ Int_t AliHLTMultiplicityCorrelations::Initialize( const Char_t* listName) {
  */
 
 //##################################################################################
-Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, 
-						    Int_t nSpdClusters) {
+Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, AliESDVZERO* esdVZERO, Int_t nSpdClusters) {
   // see header file for class documentation  
 
   Int_t iResult = 0;
@@ -194,6 +197,10 @@ Int_t AliHLTMultiplicityCorrelations::ProcessEvent( AliESDEvent *esd, AliESDVZER
   if (fESDZDC && fProcessZDC)
     iResult = ProcessZDC();
  
+  // -- Centrality
+  if (fCentHistV0Mpercentile && fProcessCentrality && fVzeroMult > 0.)
+    iResult = ProcessCentrality();
+
   return iResult;
 }
 
@@ -252,7 +259,8 @@ Int_t AliHLTMultiplicityCorrelations::SetupHistograms() {
   if (fProcessZDC)   iResult = SetupZDC();
   if (fProcessTPC)   iResult = SetupTPC();
   if (fProcessSPD)   iResult = SetupSPD();
-  
+  if (fProcessCentrality)   iResult = SetupCentrality();
+
   iResult = SetupCorrelations();
 
   return iResult;
@@ -411,7 +419,21 @@ Int_t AliHLTMultiplicityCorrelations::SetupSPD() {
 
   return 0;
 }
+//##################################################################################
+Int_t AliHLTMultiplicityCorrelations::SetupCentrality() {
+  // see header file for class documentation  
 
+  
+  if (!fCentHistV0Mpercentile) {
+    fProcessCentrality = kFALSE;
+    return -1;  
+  }
+
+  // Vzero Centrality
+  fHistList->Add(new TH1F("fVzeroCentV0M", "Centrality V0M;Centrality", 100, 0, 100));
+
+  return 0;
+}
 
 /*
  * ---------------------------------------------------------------------------------
@@ -564,6 +586,16 @@ Int_t AliHLTMultiplicityCorrelations::ProcessSPD() {
     (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdOuterTpc")))->Fill(fSpdNClustersOuter,fTpcTracksA);
     (static_cast<TH2F*>(fHistList->FindObject("fCorrSpdOuterRefTpc")))->Fill(fSpdNClustersOuter,fTpcTracksRef);
   }
+
+  return 0;
+}
+
+//##################################################################################
+Int_t AliHLTMultiplicityCorrelations::ProcessCentrality() {
+  // see header file for class documentation
+
+  Double_t centV0M = fCentHistV0Mpercentile->GetBinContent(fCentHistV0Mpercentile->FindBin((fVzeroMult)));
+  (static_cast<TH1F*>(fHistList->FindObject("fVzeroCentV0M")))->Fill(centV0M);
 
   return 0;
 }

@@ -6,18 +6,18 @@
 # -------------------------------------------
 
 # N events
-NEVENTS=1
+NEVENTS=60
 
 # Path to ESD
-ESDPATH="/lustre/alice/jthaeder/data/v4-20-Rev-01/2760TeV/000001"
-
+#ESDPATH="/lustre/alice/jthaeder/data/compressionSGE/test2010"
+ESDPATH="/lustre/alice/jthaeder/data/compressionSGE/test2011"
 # -------------------------------------------
 
 pushd $ESDPATH > /dev/null
 
 #rm *.root  2> /dev/null
-#rm *.log   2> /dev/null
-#rm *.ps    2> /dev/null
+rm *.log   2> /dev/null
+rm *.ps    2> /dev/null
 
 if [ ! -d ./analysis ] ; then
     mkdir analysis
