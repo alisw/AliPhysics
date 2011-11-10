@@ -18,6 +18,8 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
 						   Double_t ptMax=1.5,
 						   Double_t etaMin=-0.8,
 						   Double_t etaMax=0.8,
+						   TF1* gAcceptanceParameterization = 0x0,
+						   Int_t gPdgCode = -1,
 						   TString fileNameBase="AnalysisResults") {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -46,8 +48,8 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
   TString analysisType = "MC";
 
   // for local changed BF configuration
-  //gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
-  gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
+  gROOT->LoadMacro("./configBalanceFunctionAnalysis.C");
+  //gROOT->LoadMacro("$ALICE_ROOT/PWG2/EBYE/macros/configBalanceFunctionAnalysis.C");
   AliBalance *bf  = 0;  // Balance Function object
   AliBalance *bfs = 0;  // shuffled Balance function object
 
@@ -98,6 +100,11 @@ AliAnalysisTaskBF *AddTaskBalanceMCCentralityTrain(Double_t centrMin=0.,
     taskBF->SetCentralityEstimator(centralityEstimator);    
   }
   else if(analysisType == "MC") {
+    Printf("********************ANALYSIS TYPE MC********************************");
+    if(gAcceptanceParameterization)
+      taskBF->SetAcceptanceParameterization(gAcceptanceParameterization);
+    if(gPdgCode != -1)
+      taskBF->SetPDGCode(gPdgCode);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax); 
     taskBF->SetImpactParameterRange(impactParameterMin,
 				    impactParameterMax);
