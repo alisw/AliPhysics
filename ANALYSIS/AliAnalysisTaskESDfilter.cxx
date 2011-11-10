@@ -2044,7 +2044,7 @@ Double_t  AliAnalysisTaskESDfilter::Chi2perNDF(AliESDtrack* track)
     Int_t  nClustersTPC = track->GetTPCNcls();
 
     if ( nClustersTPC > 5) {
-       return (track->GetTPCchi2()/Float_t(2. * nClustersTPC - 5));
+       return (track->GetTPCchi2()/Float_t(nClustersTPC - 5));
     } else {
        return (-1.);
     }
