@@ -13,6 +13,14 @@ const Int_t numberOfCentralityBins = 9;
 Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.}; // in centrality percentile
 Float_t impactParameterArray[numberOfCentralityBins+1] = {0.0,3.79,5.30,7.41,9.04,10.40,11.61,12.68,13.67,14.63}; // in fm (impact parametger taken from the MC header)
 
+//Acceptance parameterization
+Bool_t kUseAcceptance = kTRUE;
+const char *acceptanceFilename = "efficiencyALICE.root";
+TF1 *fParameterization[numberOfCentralityBins];
+
+//Analyze a particle
+Int_t gPdgCode = -1;
+
 //________________________________________________________________________//
 void runBalanceFunctionMC(Int_t mode = mLocal, 
 			  Int_t type = mMC,
@@ -55,20 +63,10 @@ void runBalanceFunctionMC(Int_t mode = mLocal,
     else if(type == mMC)
       chain = new TChain("TE");
 
-    TString filename;
-    for(Int_t i = 1; i < 10; i++) {
-      filename = "/data/alice2/pchrist/HIJING/Full/2.76TeV/";
-      filename += "Set"; filename += i; 
-      if((type == mESD)||(type == mMCESD))  
-	filename += "/AliESDs.root";
-      else if(type == mAOD)
-	filename += "/AliAOD.root";
-      else if(type == mMC)
-     	filename += "/galice.root";
-
-      chain->Add(filename.Data());
-    }
+    TString filename = "galice.root";
+    chain->Add(filename.Data());
   }
+
   //Proof
   if(mode == mPROOF) {
     gROOT->ProcessLine(Form(".include %s/include", gSystem->ExpandPathName("$ALICE_ROOT")));
@@ -104,6 +102,21 @@ void runBalanceFunctionMC(Int_t mode = mLocal,
     AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(DATA);
   }
 
+  //Setup the parameterization
+  if(kUseAcceptance) {
+    TFile *gParamFile = TFile::Open(acceptanceFilename);
+    if((!gParamFile) || (!gParamFile->IsOpen())) {
+      Printf("File %s not found!!!",acceptanceFilename);
+      return;
+    }
+
+    TString gParamName;
+    for(Int_t iCentrality = 0; iCentrality < numberOfCentralityBins; iCentrality++) {
+      gParamName = "gParamCentrality"; gParamName += iCentrality;
+      fParameterization[iCentrality] = dynamic_cast<TF1 *>(gParamFile->Get(gParamName.Data()));
+    }
+  }
+
   //Add the BF task (all centralities)
   gROOT->LoadMacro("AddTaskBalanceMCCentralityTrain.C"); 
   for (Int_t i=binfirst; i<binlast+1; i++) {
@@ -115,7 +128,9 @@ void runBalanceFunctionMC(Int_t mode = mLocal,
 				    impactParameterArray[i],
 				    impactParameterArray[i+1],
 				    kTRUE,
-				    10.,0.3,1.5,-0.8,0.8);
+				    10.,0.3,1.5,-0.8,0.8,
+				    fParameterization[i],
+				    gPdgCode);
   }
 
   // enable debug printouts

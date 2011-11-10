@@ -41,9 +41,12 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fVyMax = vy;
     fVzMax = vz;
   }
+
+  //==============AOD analysis==============//
   void SetAODtrackCutBit(Int_t bit){
     nAODtrackCutBit = bit;
   }
+
   void SetKinematicsCutsAOD(Double_t ptmin, Double_t ptmax, Double_t etamin, Double_t etamax){
     fPtMin  = ptmin;
     fPtMax  = ptmax;
@@ -51,14 +54,18 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fEtaMax = etamax;
 
   }
+
   void SetExtraDCACutsAOD(Double_t DCAxy, Double_t DCAz){
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
+
    void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
     fTPCchi2Cut      = maxTPCchi2;
     fNClustersTPCCut = minNClustersTPC;
   }
+
+  //==============MC analysis==============//
   void SetKinematicsCutsMC(Double_t ptmin, Double_t ptmax,
                            Double_t etamin, Double_t etamax){
     fPtMin  = ptmin; fPtMax  = ptmax;
@@ -66,6 +73,11 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   }
 
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
+
+  void SetPDGCode(Int_t gPdgCode) {
+    fUseMCPdgCode = kTRUE;
+    fPDGCodeToBeAnalyzed = gPdgCode;
+  }
 
   //Centrality
   void SetCentralityEstimator(const char* centralityEstimator) {fCentralityEstimator = centralityEstimator;}
@@ -154,6 +166,8 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
 
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
+  Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
+  Int_t fPDGCodeToBeAnalyzed; //Analyze a set of particles in MC
 
   AliAnalysisTaskBF(const AliAnalysisTaskBF&); // not implemented
   AliAnalysisTaskBF& operator=(const AliAnalysisTaskBF&); // not implemented
