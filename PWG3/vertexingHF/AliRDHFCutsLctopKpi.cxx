@@ -40,7 +40,8 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const char* name) :
 AliRDHFCuts(name),
 fPidObjprot(0),
 fPidObjpion(0),
-fRecoKF(kFALSE)
+fRecoKF(kFALSE),
+fUseImpParProdCorrCut(kFALSE)
 {
   //
   // Default Constructor
@@ -97,7 +98,8 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   AliRDHFCuts(source),
   fPidObjprot(0),
   fPidObjpion(0),
-  fRecoKF(kFALSE)
+  fRecoKF(kFALSE),
+  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
 {
   //
   // Copy constructor
@@ -307,8 +309,10 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
     if(d->GetDist12toPrim()>1.) return 0;
     if(d->GetDist23toPrim()>1.) return 0;
-    if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
-    
+    if(fUseImpParProdCorrCut){
+      if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
+    }
+
     //sec vert
     if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
 
