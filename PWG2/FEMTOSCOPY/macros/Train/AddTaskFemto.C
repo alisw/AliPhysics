@@ -43,7 +43,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *configMa
   }  
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",gSystem->ExpandPathName("$ALICE_ROOT/")+configMacroName,configMacroParameters);
+  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_ROOT/"+configMacroName,configMacroParameters);
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
