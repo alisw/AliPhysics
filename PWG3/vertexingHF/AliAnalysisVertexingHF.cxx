@@ -563,7 +563,6 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 	// Fill in the object array to create the cascade
 	twoTrackArrayCasc->AddAt(postrack1,0);
 	twoTrackArrayCasc->AddAt(trackV0,1);
-
 	// Compute the cascade vertex
 	AliAODVertex *vertexCasc = 0;
 	if(fFindVertexForCascades) {  
@@ -1357,8 +1356,15 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   //--- selection cuts
   //
   AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);
-  tmpCascade->GetSecondaryVtx()->AddDaughter(trackPi);
+  if(fInputAOD){
+    Int_t idSoftPi=(Int_t)trackPi->GetID();
+    AliAODTrack* trackPiAOD=(AliAODTrack*)event->GetTrack(fAODMap[idSoftPi]);
+    tmpCascade->GetSecondaryVtx()->AddDaughter(trackPiAOD);
+  }else{
+    tmpCascade->GetSecondaryVtx()->AddDaughter(trackPi);
+  }
   tmpCascade->GetSecondaryVtx()->AddDaughter(rd2Prong);
+
   AliAODVertex *primVertexAOD=0;
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     // take event primary vertex
@@ -1414,9 +1420,17 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
 
   //--- selection cuts
   //
+
   AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);  
-  tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
+  if(fInputAOD){
+    Int_t idBachelor=(Int_t)trackBachelor->GetID();
+    AliAODTrack* trackBachelorAOD=(AliAODTrack*)event->GetTrack(fAODMap[idBachelor]);
+    tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
+  }else{
+    tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
+  }
   tmpCascade->GetSecondaryVtx()->AddDaughter(v0);
+  
   AliAODVertex *primVertexAOD=0;
   if(!fRecoPrimVtxSkippingTrks && !fRmTrksFromPrimVtx) {
     // take event primary vertex
@@ -1424,7 +1438,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
     if(!primVertexAOD) primVertexAOD = (AliAODVertex*)event->GetPrimaryVertex(); 
     tmpCascade->SetOwnPrimaryVtx(primVertexAOD);
   }
-
+  
   // select Cascades
   if(fCascades && fInputAOD){
     okCascades = (Bool_t)fCutsLctoV0->IsSelected(tmpCascade,AliRDHFCuts::kCandidate);
@@ -1475,6 +1489,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   if(!okMassCut && fD0toKpi)   if(SelectInvMassAndPt(0,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut && fJPSItoEle) if(SelectInvMassAndPt(1,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut && fDstar)     if(SelectInvMassAndPt(3,2,px,py,pz)) okMassCut=kTRUE;
+  if(!okMassCut && fCascades)  if(SelectInvMassAndPt(5,2,px,py,pz)) okMassCut=kTRUE;
   if(!okMassCut) {
     //AliDebug(2," candidate didn't pass mass cut");
     return 0x0;    
@@ -2153,6 +2168,16 @@ Bool_t AliAnalysisVertexingHF::SelectInvMassAndPt(Int_t decay,
       mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
       minv = fMassCalc4->InvMass(nprongs,pdg4);
       if(TMath::Abs(minv-mPDG)<fCutsD0toKpipipi->GetMassCut()) retval=kTRUE;
+      break;
+    case 5:
+      fMassCalc2->SetPxPyPzProngs(nprongs,px,py,pz);
+      mPDG=TDatabasePDG::Instance()->GetParticle(4122)->Mass();
+      pdg2[0]=2212;pdg2[1]=310;
+      minv=fMassCalc2->InvMass(2,pdg2);
+      if(TMath::Abs(minv-mPDG)<fCutsLctoV0->GetMassCut()) retval=kTRUE;
+      pdg2[0]=211;pdg2[1]=3122;
+      minv=fMassCalc2->InvMass(2,pdg2);
+      if(TMath::Abs(minv-mPDG)<fCutsLctoV0->GetMassCut()) retval=kTRUE;
       break;
     default:
       printf("SelectInvMassAndPt(): wrong decay selection\n");
