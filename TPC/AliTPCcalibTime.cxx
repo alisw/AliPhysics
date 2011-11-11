@@ -1469,7 +1469,7 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
-  const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
+  const Double_t kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kMinPt   = 0.3;   // minimal pt
   const Double_t kMax1Pt=0.5;        //maximal 1/pt distance
   const  Int_t     kN=50;         // deepnes of history
@@ -1574,7 +1574,9 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
-    align->SetRejectOutliers(kFALSE);
+    //    align->SetRejectOutliers(kFALSE);
+    align->SetRejectOutliers(kTRUE);
+    align->SetRejectOutliersSigma2Median(kTRUE);
 
     align->SetTPCvd(AliTPCcalibDB::Instance()->GetParameters()->GetDriftV()/1000000.);
     align->SetMagField(fMagF); 
@@ -1596,8 +1598,11 @@ void  AliTPCcalibTime::ProcessAlignITS(AliESDtrack *const track, const AliESDfri
   }
   //
   Int_t nupdates=align->GetNUpdates();
-  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
-  align->SetRejectOutliers(kFALSE);
+  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates+1));
+  //  align->SetRejectOutliers(kFALSE);
+  align->SetRejectOutliers(kTRUE);
+  align->SetRejectOutliersSigma2Median(kTRUE);
+
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
     TVectorD gpTPC(3), gdTPC(3);
@@ -1653,7 +1658,7 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   const Double_t kVdErr   = 0.1;  // initial uncertainty of the vd correction 
   const Double_t kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
-  const Double_t kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
+  const Double_t kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
   const Double_t kRefX    = 275;   // reference X
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
@@ -1731,7 +1736,10 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
-    align->SetRejectOutliers(kFALSE);
+    //    align->SetRejectOutliers(kFALSE);
+    align->SetRejectOutliers(kTRUE);
+    align->SetRejectOutliersSigma2Median(kTRUE);
+
     align->SetTPCvd(AliTPCcalibDB::Instance()->GetParameters()->GetDriftV()/1000000.);
     align->SetMagField(fMagF); 
     fAlignTRDTPC->AddAt(align,htime);
@@ -1755,8 +1763,11 @@ void  AliTPCcalibTime::ProcessAlignTRD(AliESDtrack *const track, const AliESDfri
   }
   //
   Int_t nupdates=align->GetNUpdates();
-  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
-  align->SetRejectOutliers(kFALSE);
+  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates+1));
+  //  align->SetRejectOutliers(kFALSE);
+  align->SetRejectOutliers(kTRUE);
+  align->SetRejectOutliersSigma2Median(kTRUE);
+
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
     TVectorD gpTPC(3), gdTPC(3);
@@ -1810,7 +1821,7 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
   const Double_t   kT0Err   = 3.;  // initial uncertainty of the T0 time
   const Double_t   kVdYErr  = 0.05;  // initial uncertainty of the vd correction 
 
-  const Double_t   kOutCut  = 1.0;   // outlyer cut in AliRelAlgnmentKalman
+  const Double_t   kOutCut  = 3.0;   // outlyer cut in AliRelAlgnmentKalman
   const  Int_t     kN=50;         // deepnes of history
   static Int_t     kglast=0;
   static Double_t* kgdP[4]={new Double_t[kN], new Double_t[kN], new Double_t[kN], new Double_t[kN]};
@@ -1908,7 +1919,10 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
     (*align->GetStateCov())(7,7)=kT0Err*kT0Err;
     (*align->GetStateCov())(8,8)=kVdYErr*kVdYErr;
     align->SetOutRejSigma(kOutCut+kOutCut*kN);
-    align->SetRejectOutliers(kFALSE);
+    //    align->SetRejectOutliers(kFALSE);
+    align->SetRejectOutliers(kTRUE);
+    align->SetRejectOutliersSigma2Median(kTRUE);
+
     align->SetTPCvd(AliTPCcalibDB::Instance()->GetParameters()->GetDriftV()/1000000.);
     align->SetMagField(fMagF); 
     fAlignTOFTPC->AddAt(align,htime);
@@ -1932,8 +1946,11 @@ void  AliTPCcalibTime::ProcessAlignTOF(AliESDtrack *const track, const AliESDfri
   align->SetRunNumber(fRun );
   //
   Int_t nupdates=align->GetNUpdates();
-  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates));
-  align->SetRejectOutliers(kFALSE);
+  align->SetOutRejSigma(kOutCut+kOutCut*kN/Double_t(nupdates+1));
+  //  align->SetRejectOutliers(kFALSE);
+  align->SetRejectOutliers(kTRUE);
+  align->SetRejectOutliersSigma2Median(kTRUE);
+
   TTreeSRedirector *cstream = GetDebugStreamer();  
   if (cstream && align->GetState() && align->GetState()->GetNrows()>2 ){
     TVectorD gpTPC(3), gdTPC(3);
@@ -2013,7 +2030,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   fResHistoTPCTOF[0] = new THnSparseS("TPCTOF#Delta_{Y} (cm)","#Delta_{Y} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta z
-  xminTrack[0] =-3.; xmaxTrack[0]=3.;  // 
+  xminTrack[0] =-6.; xmaxTrack[0]=6.;  // 
   fResHistoTPCCE[1] = new THnSparseS("TPCCE#Delta_{Z} (cm)","#Delta_{Z} (cm)",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[1] = new THnSparseS("TPCITS#Delta_{Z} (cm)","#Delta_{Z} (cm)",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[1]    = new THnSparseS("TPCVertex#Delta_{Z} (cm)","#Delta_{Z} (cm)", 4, binsTrack,xminTrack, xmaxTrack);
@@ -2030,7 +2047,7 @@ void  AliTPCcalibTime::BookDistortionMaps(){
   fResHistoTPCTOF[2] = new THnSparseS("TPCTOF#Delta_{#phi}","#Delta_{#phi}", 4, binsTrack,xminTrack, xmaxTrack);
   //
   // delta theta-P3
-  xminTrack[0] =-0.025; xmaxTrack[0]=0.025;  // 
+  xminTrack[0] =-0.05; xmaxTrack[0]=0.05;  // 
   fResHistoTPCCE[3] = new THnSparseS("TPCCE#Delta_{#theta}","#Delta_{#theta}",    5, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCITS[3] = new THnSparseS("TPCITS#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
   fResHistoTPCvertex[3] = new THnSparseS("TPCITSv#Delta_{#theta}","#Delta_{#theta}",    4, binsTrack,xminTrack, xmaxTrack);
