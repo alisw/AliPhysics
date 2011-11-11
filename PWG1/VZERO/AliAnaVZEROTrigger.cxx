@@ -408,12 +408,12 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
   }
 
   if (trigStr.Contains("CVHN")) {
-    fV0CentHwAll->Fill(percentile);
-    if (goodEvent) fV0CentHw->Fill(percentile);
+    fV0CentTrAll->Fill(percentile);
+    if (goodEvent) fV0CentTr->Fill(percentile);
   }
   if (trigStr.Contains("CVLN")) {
-    fV0SemiCentHwAll->Fill(percentile);
-    if (goodEvent) fV0SemiCentHw->Fill(percentile);
+    fV0SemiCentTrAll->Fill(percentile);
+    if (goodEvent) fV0SemiCentTr->Fill(percentile);
   }
 
   PostData(1, fOutputList);
