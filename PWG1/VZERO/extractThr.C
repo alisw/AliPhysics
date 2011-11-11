@@ -37,6 +37,7 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   TH1F *h3 = (TH1F*)list->FindObject("fV0Percent");
   new TCanvas;
   h3->Draw();
+  Double_t nTotalEvts = (Double_t)h3->Integral(h3->FindBin(0.0),h3->FindBin(91.0))/0.9;
 
   Int_t nb = task->GetNThr();
   new TCanvas;
@@ -45,12 +46,14 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   TH1F **hhall = new TH1F*[nb];
   TF1 **ff = new TF1*[nb];
   Double_t *nent = new Double_t[nb];
+  Double_t *nBinEvts = new Double_t[nb];
   Double_t *nentall = new Double_t[nb];
   for(Int_t i = 0; i < nb; ++i) {
     hh[i] = (TH1F*)list->FindObject(Form("fV0PercentBins_%d",i));
     hhall[i] = (TH1F*)list->FindObject(Form("fV0PercentBinsAll_%d",i));
 
     nent[i] = hh[i]->GetEntries();
+    nBinEvts[i] = (Double_t)hh[i]->Integral(hh[i]->FindBin(0.0),hh[i]->FindBin(91.0));
     nentall[i] = hhall[i]->GetEntries();
 
     hh[i]->Sumw2();
@@ -158,12 +161,28 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   thr->Draw("AP");
 
   new TCanvas;
+  Double_t *intThr = new Double_t[nb];
+  for(Int_t i = 0; i < nb; ++i) {
+    intThr[i] = 100.*nBinEvts[i]/nTotalEvts;
+  }
+  TGraph *grInt = new TGraph(nb,intThr,thrA);
+  grInt->SetMarkerStyle(21);
+  TF1 *fIntThr = new TF1("fIntThr","[0]*x*x*x+[1]*x*x+[2]*x+[3]",1.5,50);
+  grInt->Fit(fIntThr,"R");
+  grInt->Draw("AP");
+
+  new TCanvas;
   TH2F *hall = (TH2F*)list->FindObject("fV0Charge2dAll");
   h2->Draw("colz");
   TLine *line0 = new TLine(fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio(),25000,fThr->Eval(centrValue)*task->GetRatio());
   line0->Draw("same");
   TLine *line1 = new TLine(fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio(),fThr->Eval(centrValue),25000);
   line1->Draw("same");
+
+  TLine *line01 = new TLine(fIntThr->Eval(centrValue),fIntThr->Eval(centrValue)*task->GetRatio(),25000,fIntThr->Eval(centrValue)*task->GetRatio());
+  line01->Draw("same");
+  TLine *line11 = new TLine(fIntThr->Eval(centrValue),fIntThr->Eval(centrValue)*task->GetRatio(),fIntThr->Eval(centrValue),25000);
+  line11->Draw("same");
 
   TLine *line2 = new TLine(fThr->Eval(semiCentrValue),fThr->Eval(semiCentrValue)*task->GetRatio(),25000,fThr->Eval(semiCentrValue)*task->GetRatio());
   line2->Draw("same");
@@ -177,6 +196,9 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   printf("A&C @ %.1f %%   ThrA = %f   ThrC = %f\n",centrValue,fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio());
   printf("A&C @ %.1f %%   ThrA = %f   ThrC = %f\n",semiCentrValue,fThr->Eval(semiCentrValue),fThr->Eval(semiCentrValue)*task->GetRatio());
 
+  printf("A&C (Integral) @ %.1f %%   ThrA = %f   ThrC = %f\n",centrValue,fIntThr->Eval(centrValue),fIntThr->Eval(centrValue)*task->GetRatio());
+  printf("A&C (Intergal) @ %.1f %%   ThrA = %f   ThrC = %f\n",semiCentrValue,fIntThr->Eval(semiCentrValue),fIntThr->Eval(semiCentrValue)*task->GetRatio());
+
   printf("\n\n");
   FILE *fout=fopen("./trigger.txt","w");
   if (!fout) {
@@ -189,13 +211,13 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
 	 0.5*(f1->GetParameter(0)+f2->GetParameter(0)),
 	 task->GetNThr(),
 	 fThr->Eval(semiCentrValue),fThr->Eval(semiCentrValue)*task->GetRatio(),
-	 fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio());
+	 fIntThr->Eval(centrValue),fIntThr->Eval(centrValue)*task->GetRatio());
   fprintf(fout,"%.0f %.0f %f %d %.0f %.0f %.0f %.0f\n",
 	  task->GetMinThr(),
 	  task->GetMaxThr(),
 	  0.5*(f1->GetParameter(0)+f2->GetParameter(0)),
 	  task->GetNThr(),
 	  fThr->Eval(semiCentrValue),fThr->Eval(semiCentrValue)*task->GetRatio(),
-	  fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio());
+	  fIntThr->Eval(centrValue),fIntThr->Eval(centrValue)*task->GetRatio());
   fclose(fout);
 }
