@@ -19,7 +19,7 @@
 ClassImp(AliAnaVZEROPbPb)
 
 AliAnaVZEROPbPb::AliAnaVZEROPbPb() 
-  : AliAnalysisTaskSE("AliAnaVZEROPbPb"), fESD(0), fEsdV0(0), fOutputList(0), fNClasses(0), fClassesNames(0),
+  : AliAnalysisTaskSE(), fESD(0), fEsdV0(0), fOutputList(0), fNClasses(0), fClassesNames(0),
   fNFlags(0),
   fhAdcPMTNoTime(0),
   fhAdcPMTWithTime(0),
@@ -38,6 +38,7 @@ AliAnaVZEROPbPb::AliAnaVZEROPbPb()
   fhL2Triggers(0),
 fhOnlineCharge(0),
 fhRecoMult(0),
+fhRecoMultPMT(0),
 fhV0vsSPDCentrality(0),
 fhTriggerBits(0),
 fhTotRecoMult(0),
@@ -66,12 +67,6 @@ fV0CEqMultMax(1000)
 	fhAdcTime[i] =  fhAdcWidth[i] = NULL;
   }
 
-  // Define input and output slots here
-  // Input slot #0 works with a TChain
-  DefineInput(0, TChain::Class());
-  // Output slot #0 id reserved by the base class for AOD
-  // Output slot #1 writes into a TH1 container
-  DefineOutput(1, TList::Class());
 }
 
 //________________________________________________________________________
@@ -95,6 +90,7 @@ AliAnaVZEROPbPb::AliAnaVZEROPbPb(const char *name)
   fhL2Triggers(0),
 fhOnlineCharge(0),
 fhRecoMult(0),
+fhRecoMultPMT(0),
 fhV0vsSPDCentrality(0),
 fhTriggerBits(0),
 fhTotRecoMult(0),
@@ -229,6 +225,7 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 	fhCentrality= new TH1F*[fNClasses];
 	fhV0vsSPDCentrality= new TH2F*[fNClasses];
 	fhRecoMult= new TH2F*[fNClasses];
+	fhRecoMultPMT= new TH2F*[fNClasses];
 	fhTotRecoMult= new TH1F*[fNClasses];
 	fhTriggerBits= new TH1F*[fNClasses];
 	fhEqualizedMult= new TH2F*[fNClasses];
@@ -254,6 +251,9 @@ void AliAnaVZEROPbPb::CreateHistosPerL2Trigger(){
 
 		fhRecoMult[iClass] = CreateHisto2D(Form("hRecoMult_%s",name->String().Data()),Form("Reco Multiplicity for %s",name->String().Data()),fNBinMult,0.,fV0AMultMax,fNBinMult,0.,fV0CMultMax,"V0A Offline Mult","V0C Offline Mult");
 	  	fOutputList->Add(fhRecoMult[iClass]);	  
+
+		fhRecoMultPMT[iClass] = CreateHisto2D(Form("hRecoMultPMT_%s",name->String().Data()),Form("Reco Multiplicity per PMT for %s",name->String().Data()),64,-0.5,63.5,200,0.,2000.,"PMT channel","Offline Mult");
+	  	fOutputList->Add(fhRecoMultPMT[iClass]);	  
 
 		fhTotRecoMult[iClass] = CreateHisto1D(Form("hTotRecoMult_%s",name->String().Data()),Form("Total Reco Multiplicity for %s",name->String().Data()),fNBinTotMult,0.,fTotMultMax,"V0A + V0C Offline Mult");
 	  	fOutputList->Add(fhTotRecoMult[iClass]);	  
@@ -304,23 +304,23 @@ void AliAnaVZEROPbPb::CreateQAHistos(){
 	  	fOutputList->Add(fhAdcNoTime[iSide]);	  
 		fhAdcWithTime[iSide] = CreateHisto1D(Form("hAdcWithTime%s",side.Data()),Form("ADC (with Leading Time) %s",side.Data()),200,0,200,"ADC charge","Entries");
 	  	fOutputList->Add(fhAdcWithTime[iSide]);
-	  	fhTime[iSide] = CreateHisto1D(Form("htimepmt%s",side.Data()),Form("Time measured by TDC %s",side.Data()),400,-100,100,"Leading time (ns)","Entries");
+	  	fhTime[iSide] = CreateHisto1D(Form("htimepmt%s",side.Data()),Form("Time measured by TDC %s",side.Data()),1000,-100,100,"Leading time (ns)","Entries");
 	  	fOutputList->Add(fhTime[iSide]);
 	  	fhWidth[iSide] = CreateHisto1D(Form("hwidth%s",side.Data()),Form("Signal width measured by TDC %s",side.Data()),128,0,800,"Signal width (ns)","Entries");
 	  	fOutputList->Add(fhWidth[iSide]);
 	  	fhAdcWidth[iSide] = CreateHisto2D(Form("hadcwidth%s",side.Data()),Form("Time width vs ADC %s",side.Data()),200,0,1200,128,0,800,"ADC charge","Width (ns)");
 	  	fOutputList->Add(fhAdcWidth[iSide]);
-	  	fhAdcTime[iSide] = CreateHisto2D(Form("hAdcTime%s",side.Data()),Form("ADC vs Time %s",side.Data()),1000,-100,100,200,0,200,"Time (ns)","ADC charge");
+	  	fhAdcTime[iSide] = CreateHisto2D(Form("hAdcTime%s",side.Data()),Form("ADC vs Time %s",side.Data()),200,-100,100,200,0,200,"Time (ns)","ADC charge");
 	  	fOutputList->Add(fhAdcTime[iSide]);
 	}
 
   fhAdcPMTNoTime = CreateHisto2D("hadcpmtnotime","ADC vs PMT index (no leading time)",64,-0.5,63.5,200,0,200,"PMT index","ADC charge");
-  fhAdcPMTWithTime = CreateHisto2D("hadcpmtwithtime","ADC vs PMT index (with leading time)",64,-0.5,63.5,200,0,200,"PMT index","ADC charge");
+  fhAdcPMTWithTime = CreateHisto2D("hadcpmtwithtime","ADC vs PMT index (with leading time)",64,-0.5,63.5,200,0,2000,"PMT index","ADC charge");
 
-  fhTimePMT = CreateHisto2D("htimepmt","Time measured by TDC vs PMT index",64,-0.5,63.5,200,0,100,"PMT Index","Leading time (ns)");
+  fhTimePMT = CreateHisto2D("htimepmt","Time measured by TDC vs PMT index",64,-0.5,63.5,200,-50,50,"PMT Index","Leading time (ns)");
   fhWidthPMT = CreateHisto2D("hwidthpmt","Time width vs PMT index",64,-0.5,63.5,128,0,800,"PMT Index","Signal width (ns)");
 
-  fhTimeCorr = CreateHisto2D("htimecorr","Average time C side vs. A side",200,0,100,200,0,100,"Time V0A (ns)","Time V0C (ns");
+  fhTimeCorr = CreateHisto2D("htimecorr","Average time C side vs. A side",200,-50,50,200,-50,50,"Time V0A (ns)","Time V0C (ns");
 
   fhV0ampl  = CreateHisto1D("hV0ampl","V0 multiplicity in single channel (all V0 channels)",500,-0.5,499.5);
 
@@ -417,6 +417,7 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
 	Float_t sumEqMult[2] = {0.,0.};
 	for(int iCh = 0; iCh < 64; ++iCh){
 		if(fEsdV0->GetTime(iCh) < -1024.+ 1e-6) continue;
+		fhRecoMultPMT[iClass]->Fill(iCh,fEsdV0->GetMultiplicity(iCh));
 		Int_t side = iCh / 32 ;
 		sumEqMult[side] += fESD->GetVZEROEqMultiplicity(iCh);
 		fhEqualizedMult[iClass]->Fill(iCh,fESD->GetVZEROEqMultiplicity(iCh));
