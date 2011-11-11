@@ -143,6 +143,8 @@ void AliZDCReconstructor::Init()
     fBeamEnergy = 1380.;
   }
   
+  AliInfo(Form("\n   ZDC reconstruction mode %d (1 -> p-p, 2-> A-A)\n\n",fRecoMode));
+  
   fESDZDC = new AliESDZDC();
 
 }
@@ -413,26 +415,15 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
        // Not interested in o.o.t. signals (ADC modules 2, 3)
        //if(adcMod == 2 || adcMod == 3) continue;
-       if(((det==1 && quad==0) || (det==3))){
-         if(det == 1){
-	    if(adcMod==0 || adcMod==1){
-	     if(gain==0) adcZN1[quad] = rawData.GetADCValue();
-             else adcZN1lg[quad] = rawData.GetADCValue();
-	   }
-	   else if(adcMod==2 || adcMod==3){
-	     if(gain==0) adcZN1oot[quad] = rawData.GetADCValue();
-             else adcZN1ootlg[quad] = rawData.GetADCValue();
-	   }
+       //  **** Pb-Pb data taking 2011 -> subtracting only ZEM from correlation ****
+       if(det==3){
+	 if(adcMod==0 || adcMod==1){
+	   if(gain==0) adcZEM[quad-1] = rawData.GetADCValue();
+           else adcZEMlg[quad-1] = rawData.GetADCValue();
 	 }
-	 else if(det == 3){
-	   if(adcMod==0 || adcMod==1){
-	     if(gain==0) adcZEM[quad-1] = rawData.GetADCValue();
-             else adcZEMlg[quad-1] = rawData.GetADCValue();
-	   }
-	   else if(adcMod==2 || adcMod==3){ 
-	     if(gain==0) adcZEMoot[quad-1] = rawData.GetADCValue();
-             else adcZEMootlg[quad-1] = rawData.GetADCValue();
-	   }
+	 else if(adcMod==2 || adcMod==3){ 
+	   if(gain==0) adcZEMoot[quad-1] = rawData.GetADCValue();
+           else adcZEMootlg[quad-1] = rawData.GetADCValue();
 	 }
        }
        // When oot values are read the ADC modules 2, 3 can be skipped!!!
@@ -440,7 +431,7 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
        
        // *************************************************************************
        if(quad != 5){ // ZDCs (not reference PTMs)
-        if(det==1 && quad!=0){    
+        if(det==1){    
           pedindex = quad;
           if(gain == 0) tZN1Corr[quad]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex]); 
           else tZN1Corr[quad+5]  += (Float_t) (rawData.GetADCValue()-meanPed[pedindex+kNch]); 
@@ -617,9 +608,9 @@ void AliZDCReconstructor::Reconstruct(AliRawReader* rawReader, TTree* clustersTr
     sPMRef2[1] = pmReflg[0] - (corrCoeff1[23+kNch]*pmRefootlg[1]+corrCoeff0[23+kNch]);
   }
   if(fPedSubMode==0 && fRecoMode==2){
-    //  **** Pb-Pb data taking 2010 -> subtracting some ch. from correlation ****
-    tZN1Corr[0] = adcZN1[0] - (corrCoeff1[0]*adcZN1oot[0]+corrCoeff0[0]);
-    tZN1Corr[5] = adcZN1lg[0] - (corrCoeff1[kNch]*adcZN1ootlg[0]+corrCoeff0[kNch]);
+    //  **** Pb-Pb data taking 2011 -> subtracting some ch. from correlation ****
+    //tZN1Corr[0] = adcZN1[0] - (corrCoeff1[0]*adcZN1oot[0]+corrCoeff0[0]);
+    //tZN1Corr[5] = adcZN1lg[0] - (corrCoeff1[kNch]*adcZN1ootlg[0]+corrCoeff0[kNch]);
     // Ch. debug
     //printf(" adcZN1 %d  adcZN1oot %d tZN1Corr %1.2f \n", adcZN1[0],adcZN1oot[0],tZN1Corr[0]);
     //printf(" adcZN1lg %d  adcZN1ootlg %d tZN1Corrlg %1.2f \n", adcZN1lg[0],adcZN1ootlg[0],tZN1Corr[5]);
@@ -1372,7 +1363,7 @@ void AliZDCReconstructor::FillZDCintoESD(TTree *clustersTree, AliESDEvent* esd) 
         // Sep 2011: TDC ch. from 8 to 13 centered around 0 using OCDB 
 	if(jk>=8 && jk<=13) tdcCorrected[jk][lk] =  tdcCorrected[jk][lk] - tdcOffset[jk-8];
 	//Ch. debug
-	//if((jk>=8 && jk<=13) || jk==15) printf(" *** tdcOffset%d %f  tdcCorr%d %f ",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
+	//if(jk>=8 && jk<=13) printf(" *** tdcOffset%d %f  tdcCorr%d %f \n",jk,tdcOffset[jk-8],tdcCorrected[jk][lk]);
    
       }
     }
