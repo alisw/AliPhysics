@@ -81,7 +81,7 @@ void PlotPedestalsvsTime(Int_t year=2011, Int_t firstRun=141820,
     f->Close();
  }
 
- TFile *outfile=new TFile(Form("Calib%dVsTime.root",year),"recreate");
+ TFile *outfile=new TFile(Form("PedCalib%dVsTime.root",year),"recreate");
  outfile->cd();
  for(int i=0; i<kNchannels; i++) graph[i]->Write();
  outfile->Close();

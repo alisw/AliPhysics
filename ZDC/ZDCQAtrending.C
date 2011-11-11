@@ -47,7 +47,7 @@ void ZDCQAtrending(TString period,
   
   Bool_t useExternalList = kFALSE;
   Int_t runList[10000];
-  Int_t totRuns  =  0;
+  Int_t totRuns = 0;
   if(runListFile.Length()>0){
     if(!gSystem->Exec(Form("ls -l %s > /dev/null 2>&1",runListFile.Data()))){
       printf("Use Run List from %s  --- runs to be analyzed:\n",runListFile.Data());
@@ -55,14 +55,15 @@ void ZDCQAtrending(TString period,
       FILE* rfil = fopen(runListFile.Data(),"r");
       Int_t nrun;
       while(!feof(rfil)){
-	fscanf(rfil,"%d, ",&nrun);
+	int stat = fscanf(rfil,"%d, ",&nrun);
 	if(feof(rfil)) break;
 	runList[totRuns++] = nrun;
       }
       for(Int_t ir = 0; ir<totRuns; ir++){
 	printf("%d\n",runList[ir]);
       }
-    }else{
+    }
+    else{
       printf("File with run list does not exist\n");
     }
   }
@@ -120,21 +121,23 @@ void ZDCQAtrending(TString period,
   TString  path = Form("/alice/data/%d/%s/",year,period.Data());
   TGridResult *gr  =  gGrid->Query(path,fileName);
   Int_t nFiles  =  gr->GetEntries();
-  printf(" --->%d files found\n", nFiles);
-  if (nFiles < 1) return;
+  printf(" --->%d merged QAresults.root files found in %s\n", nFiles,path.Data());
+  if(nFiles < 1) return;
 
   Int_t nAnalyzedFiles = 0;
   if(nFiles > 1){
     for(Int_t iFil  =  0; iFil <nFiles ; iFil++) { 
       TString fileNameLong = Form("%s",gr->GetKey(iFil,"turl"));
       if(!fileNameLong.Contains(recoPass.Data())) continue;
-      if(!fileNameLong.Contains(qaTrain.Data())) continue;
-      if(fileNameLong.Contains("TRD") || fileNameLong.Contains("EMCAL")) continue;
+// Commented Sep. 2011
+//      if(!fileNameLong.Contains(qaTrain.Data())) continue;
+//      if(fileNameLong.Contains("TRD") || fileNameLong.Contains("EMCAL")) continue;
       TString runNumber = fileNameLong;
       runNumber.ReplaceAll(Form("alien:///alice/data/%d/%s/",year,period.Data()),"");
       runNumber.Remove(9,runNumber.Sizeof());
    
       Int_t iRun = atoi(runNumber.Data());
+      //printf("  runNumber: %s -> iRun %d\n",runNumber.Data(), iRun);
       if(useExternalList){
 	Bool_t keepRun = kFALSE;
 	for(Int_t ir = 0; ir<totRuns; ir++){
@@ -152,13 +155,20 @@ void ZDCQAtrending(TString period,
       if(iRun<firstRun) continue;
       if(iRun>lastRun) continue;    
 
+printf("  fileNameLog: %s\n",fileNameLong.Data());
       if(useOnlyMerged){
 	TString isMerged = fileNameLong;
-	isMerged.Remove(isMerged.Sizeof()-16); 
-	isMerged.Remove(0,isMerged.Sizeof()-5);
-	if(!isMerged.Contains("QA")) continue;
+	//
+	if(!isMerged.Contains(recoPass.Data())) continue;
+	if(isMerged.Contains("Stage")) continue;
+printf("  ->  isMerged: %s\n",isMerged.Data());
+	isMerged.Remove(0,isMerged.Sizeof()-20); 
+printf("  ->  isMerged: %s\n",isMerged.Data());
+	if(!isMerged.Contains(qaTrain) || !isMerged.Contains("QAresults.root")) continue;
+printf("isMerged %s\n",isMerged.Data());
+	
       }
-      printf("Open File %s  Run %d\n",fileNameLong.Data(),iRun);
+      printf("Open File %s  \n",fileNameLong.Data());
       
 
       TFile* f = TFile::Open(fileNameLong.Data());  
@@ -387,6 +397,7 @@ void MakePlots(TString ntupleFileName){
     htdcdiff->GetYaxis()->SetTitle("TDC Diff (ns)");
   }
 
+  
   TCanvas *c1 = new TCanvas("c1", "Mean value ZNs", 0, 0, 1200, 1000);
   c1->Divide(1,2);
   //
