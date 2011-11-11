@@ -82,6 +82,7 @@ public:
   TH1F *fhL2Triggers;    //! Triggers counting histo
   TH2F **fhOnlineCharge; //! Online Charge (send to EMCAL) histo
   TH2F **fhRecoMult;     //! Reconstructed Multiplicity V0A % V0C
+  TH2F **fhRecoMultPMT;     //! Reconstructed Multiplicity per PMT
   TH2F **fhV0vsSPDCentrality; //! Centrality V0 % SPD
   TH1F **fhTriggerBits;  //! 16 trigger bits
   TH1F **fhTotRecoMult;  //! Total Reconstructed Multiplicity V0A + V0C
