@@ -59,11 +59,11 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
     ff[i] = new TF1(Form("ff_%d",i),"1.-1./(1.+TMath::Exp(-(x-[0])/[1]))",0,100);
     ff[i]->SetLineColor(i%9+1);
     printf("%d\n",i);
-    if (nent[i] > 1000) {
+    if (nent[i] > 100) {
       Double_t par0 = hh[i]->GetBinCenter(hh[i]->FindLastBinAbove(0.9));
       printf("%f\n",par0);
       ff[i]->SetParameter(0,par0);
-      ff[i]->SetParameter(1,0.5);
+      ff[i]->SetParameter(1,0.3);
       hh[i]->Fit(ff[i],"R+");
       hh[i]->Fit(ff[i],"R+");
       hh[i]->Fit(ff[i],"R+");
@@ -157,6 +157,7 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   thr->Fit(fThr,"R");
   thr->Draw("AP");
 
+  new TCanvas;
   TH2F *hall = (TH2F*)list->FindObject("fV0Charge2dAll");
   h2->Draw("colz");
   TLine *line0 = new TLine(fThr->Eval(centrValue),fThr->Eval(centrValue)*task->GetRatio(),25000,fThr->Eval(centrValue)*task->GetRatio());

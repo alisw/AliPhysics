@@ -23,14 +23,16 @@ ClassImp(AliAnaVZEROTrigger)
 
 AliAnaVZEROTrigger::AliAnaVZEROTrigger() 
   : AliAnalysisTaskSE("AliAnaVZEROTrigger"), fESD(0), fOutputList(0),
-  fMinThr(812.),
-  fMaxThr(6988.),
-  fRatio(2.08),
-  fNThr(20),
+  fMinThr(400.),
+  fMaxThr(14000.),
+  fRatio(2.0),
+  fNThr(30),
   fMBTrigName("CPBI"),
+  fUsePhysSel(kFALSE),
   fV0Percent(0),
   fV0PercentAll(0),
   fZvtx(0),
+  fXYvtx(0),
   fV0Mult1d(0),
   fV0Charge2d(0),
   fV0Charge2dPercent(0),
@@ -52,7 +54,17 @@ AliAnaVZEROTrigger::AliAnaVZEROTrigger()
   fV0Percent63(0),
   fV0Percent63All(0),
   fV0MultAll(0),
-  fV0Mult63(0)
+  fV0Mult63(0),
+  fV0CentVsMult(0),
+  fV0CentVsCharge(0),
+  fV0CentVsTrCharge(0),
+  fV0TrChargeVsChargeA(0),
+  fV0TrChargeVsChargeC(0),
+  fAdcPmt(0),
+  fAdcPmt0(0),
+  fAdcPmt1(0),
+  fAdcPmt2(0),
+  fAdcPmt3(0)
 {
   // Constructor
   // Init default thr
@@ -72,14 +84,16 @@ AliAnaVZEROTrigger::AliAnaVZEROTrigger()
 //________________________________________________________________________
 AliAnaVZEROTrigger::AliAnaVZEROTrigger(const char *name) 
   : AliAnalysisTaskSE(name), fESD(0), fOutputList(0),
-  fMinThr(812.),
-  fMaxThr(6988.),
-  fRatio(2.08),
-  fNThr(20),
+  fMinThr(400.),
+  fMaxThr(14000.),
+  fRatio(2.0),
+  fNThr(30),
   fMBTrigName("CPBI"),
+  fUsePhysSel(kFALSE),
   fV0Percent(0),
   fV0PercentAll(0),
   fZvtx(0),
+  fXYvtx(0),
   fV0Mult1d(0),
   fV0Charge2d(0),
   fV0Charge2dPercent(0),
@@ -101,7 +115,17 @@ AliAnaVZEROTrigger::AliAnaVZEROTrigger(const char *name)
   fV0Percent63(0),
   fV0Percent63All(0),
   fV0MultAll(0),
-  fV0Mult63(0)
+  fV0Mult63(0),
+  fV0CentVsMult(0),
+  fV0CentVsCharge(0),
+  fV0CentVsTrCharge(0),
+  fV0TrChargeVsChargeA(0),
+  fV0TrChargeVsChargeC(0),
+  fAdcPmt(0),
+  fAdcPmt0(0),
+  fAdcPmt1(0),
+  fAdcPmt2(0),
+  fAdcPmt3(0)
 {
   // Constructor
   // Init default thr
@@ -156,6 +180,8 @@ void AliAnaVZEROTrigger::UserCreateOutputObjects()
   fOutputList->Add(fV0PercentAll);
   fZvtx    = new TH1F("fZvtx","",500,-20,20);
   fOutputList->Add(fZvtx);
+  fXYvtx    = new TH2F("fXYvtx","",250,-0.5,0.5,250,-0.5,0.5);
+  fOutputList->Add(fXYvtx);
   fV0Mult1d     = new TH1F("fV0Mult1d","Total v0 mult",500,0,25000);
   fOutputList->Add(fV0Mult1d);
 
@@ -212,6 +238,28 @@ void AliAnaVZEROTrigger::UserCreateOutputObjects()
   fV0Mult63 = new TH2F("fV0Mult63","",250,0,25000,250,0,25000);
   fOutputList->Add(fV0Mult63);
 
+  fV0CentVsMult = new TH2F("fV0CentVsMult","",250,0,25000,200,0,100);
+  fOutputList->Add(fV0CentVsMult);
+  fV0CentVsCharge = new TH2F("fV0CentVsCharge","",250,0,100000,200,0,100);
+  fOutputList->Add(fV0CentVsCharge); 
+  fV0CentVsTrCharge = new TH2F("fV0CentVsTrCharge","",250,0,50000,200,0,100);
+  fOutputList->Add(fV0CentVsTrCharge);
+  fV0TrChargeVsChargeA = new TH2F("fV0TrChargeVsChargeA","",250,0,75000,250,0,37500);
+  fOutputList->Add(fV0TrChargeVsChargeA);
+  fV0TrChargeVsChargeC = new TH2F("fV0TrChargeVsChargeC","",250,0,75000,250,0,37500);
+  fOutputList->Add(fV0TrChargeVsChargeC);
+
+  fAdcPmt = new TH2F("fAdcPmt","",64,-0.5,63.5,400,0,4000);
+  fOutputList->Add(fAdcPmt);
+  fAdcPmt0 = new TH2F("fAdcPmt0","",64,-0.5,63.5,400,0,4000);
+  fOutputList->Add(fAdcPmt0);
+  fAdcPmt1 = new TH2F("fAdcPmt1","",64,-0.5,63.5,400,0,4000);
+  fOutputList->Add(fAdcPmt1);
+  fAdcPmt2 = new TH2F("fAdcPmt2","",64,-0.5,63.5,400,0,4000);
+  fOutputList->Add(fAdcPmt2);
+  fAdcPmt3 = new TH2F("fAdcPmt3","",64,-0.5,63.5,400,0,4000);
+  fOutputList->Add(fAdcPmt3);
+
   PostData(1, fOutputList);
  }
 //________________________________________________________________________
@@ -255,7 +303,12 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
 
   // Phys sel
   Bool_t goodEvent = kTRUE;
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+  Bool_t isSelected;
+  if (fUsePhysSel)
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+  else
+    isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
+
   if (!isSelected) goodEvent = kFALSE;
 
   const AliESDVertex *primaryVtx = fESD->GetPrimaryVertex();
@@ -263,13 +316,48 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
   if (!primaryVtx->GetStatus()) goodEvent = kFALSE;
   Double_t tPrimaryVtxPosition[3];
   primaryVtx->GetXYZ(tPrimaryVtxPosition);
-  if (goodEvent) fZvtx->Fill(tPrimaryVtxPosition[2]);
+  if (goodEvent) {
+    fZvtx->Fill(tPrimaryVtxPosition[2]);
+    fXYvtx->Fill(tPrimaryVtxPosition[0],tPrimaryVtxPosition[1]);
+  }
   if (TMath::Abs(tPrimaryVtxPosition[2]) > 10.0) goodEvent = kFALSE;
 
+  if (goodEvent) {
+    for(Int_t i = 0; i < 64; ++i) {
+      fAdcPmt->Fill(i,esdV0->GetAdc(i));
+      if (tPrimaryVtxPosition[2]>5.0) fAdcPmt0->Fill(i,esdV0->GetAdc(i));
+      if (tPrimaryVtxPosition[2]>0.0 && tPrimaryVtxPosition[2]<5.0) fAdcPmt1->Fill(i,esdV0->GetAdc(i));
+      if (tPrimaryVtxPosition[2]>-5.0 && tPrimaryVtxPosition[2]<0.0) fAdcPmt2->Fill(i,esdV0->GetAdc(i));
+      if (tPrimaryVtxPosition[2]<-5.0) fAdcPmt3->Fill(i,esdV0->GetAdc(i));
+    }
+  }
+
+  UShort_t chargeA = esdV0->GetTriggerChargeA();
+  UShort_t chargeC = esdV0->GetTriggerChargeC();
+
+  Float_t offChargeA = 0;
+  Float_t offChargeC = 0;
+  for(Int_t i = 0; i < 64; ++i) {
+    if (i < 32) offChargeC += esdV0->GetAdc(i);
+    else offChargeA += esdV0->GetAdc(i);
+  }
+
+  if (goodEvent) {
+    fV0TrChargeVsChargeA->Fill(offChargeA,chargeA);
+    fV0TrChargeVsChargeC->Fill(offChargeC,chargeC);
+  }
+
+  Float_t percentile = 0;
   AliCentrality *centrality = fESD->GetCentrality();
-  if (centrality->GetQuality()) goodEvent = kFALSE;
-  Float_t percentile = centrality->GetCentralityPercentile("V0M");
-  if (percentile < 0) percentile = 0;
+  //  if (centrality->GetQuality()) goodEvent = kFALSE;
+  percentile = centrality->GetCentralityPercentile("V0M");
+  //  if (percentile < 0) percentile = 0;
+
+  if (goodEvent) {
+    fV0CentVsMult->Fill(esdV0->GetMTotV0A()+esdV0->GetMTotV0C(),percentile);
+    fV0CentVsCharge->Fill(offChargeA+offChargeC,percentile);
+    fV0CentVsTrCharge->Fill(chargeA+chargeC,percentile);
+  }
 
   fV0MultAll->Fill(esdV0->GetMTotV0A(),esdV0->GetMTotV0C());
   if ((nV0A+nV0C)>=63)
@@ -286,8 +374,6 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
   Float_t multV0 = esdV0->GetMTotV0A()+esdV0->GetMTotV0C();
   if (goodEvent) fV0Mult1d->Fill(multV0);
 
-  UShort_t chargeA = esdV0->GetTriggerChargeA();
-  UShort_t chargeC = esdV0->GetTriggerChargeC();
   fV0Charge2dAll->Fill(chargeA,chargeC);
   if (goodEvent) {
     fV0Charge2d->Fill(chargeA,chargeC);
