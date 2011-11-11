@@ -143,6 +143,8 @@ AliAnalysisTaskTOFqa::~AliAnalysisTaskTOFqa() {
   if (fESDpid) delete fESDpid;
   if (fVertex) delete fVertex;
   if (fTrackFilter) delete fTrackFilter;
+
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if (fHlist) {
     delete fHlist;
     fHlist = 0;

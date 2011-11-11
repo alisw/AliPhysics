@@ -39,6 +39,7 @@
 
 // --- AliRoot header files ---
 #include <AliAnalysisTaskCaloCellsQA.h>
+#include "AliAnalysisManager.h"
 #include <AliVEvent.h>
 #include <AliVCaloCells.h>
 #include <AliVCluster.h>
@@ -93,7 +94,7 @@ AliAnalysisTaskCaloCellsQA::AliAnalysisTaskCaloCellsQA(const char *name, Int_t n
 //________________________________________________________________
 AliAnalysisTaskCaloCellsQA::~AliAnalysisTaskCaloCellsQA()
 {
-  delete fCellsQA;
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fCellsQA;
   if (fBadCells) delete [] fBadCells;
 }
 
