@@ -67,7 +67,7 @@ AliT0AnalysisTaskQA::~AliT0AnalysisTaskQA()
 {
   // Destructor
   // printf("AliT0CalibOffsetChannels~AliT0CalibOffsetChannels() ");
-  delete fTzeroObject; // This deletes everything ...
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fTzeroObject; // This deletes everything ...
 }
 
 //------------------------------------------------------------------

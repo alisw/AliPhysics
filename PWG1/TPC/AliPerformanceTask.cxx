@@ -122,9 +122,11 @@ AliPerformanceTask::AliPerformanceTask(const char *name, const char */*title*/)
 //_____________________________________________________________________________
 AliPerformanceTask::~AliPerformanceTask()
 {
-  if (fOutput)     delete fOutput;    fOutput   = 0; 
-  if (fOutputSummary) delete fOutputSummary; fOutputSummary = 0;
-  if (fCompList)   delete fCompList;  fCompList = 0; 
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
+    if (fOutput)     delete fOutput;    fOutput   = 0; 
+    if (fOutputSummary) delete fOutputSummary; fOutputSummary = 0;
+    if (fCompList)   delete fCompList;  fCompList = 0; 
+  }
 }
 
 //_____________________________________________________________________________
