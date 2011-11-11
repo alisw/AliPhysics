@@ -22,8 +22,10 @@ void checkThr(const char *filename, const char *what="")
   hSemiCentAll = (TH1F*)list->FindObject(Form("fV0SemiCent%sAll",what));
 
   nentCent = hCent->GetEntries();
+  Double_t nCentEvts = (Double_t)hCent->Integral(hCent->FindBin(0.0),hCent->FindBin(91.0));
   nentCentall = hCentAll->GetEntries();
   nentSemiCent = hSemiCent->GetEntries();
+  Double_t nSemiCentEvts = (Double_t)hSemiCent->Integral(hSemiCent->FindBin(0.0),hSemiCent->FindBin(91.0));
   nentSemiCentall = hSemiCentAll->GetEntries();
 
   hCent->Sumw2();
@@ -35,7 +37,7 @@ void checkThr(const char *filename, const char *what="")
   ffCent->SetLineColor(kBlue);
   Double_t par0 = hCent->GetBinCenter(hCent->FindLastBinAbove(0.95));
   ffCent->SetParameter(0,par0);
-  ffCent->SetParameter(1,0.48);
+  ffCent->SetParameter(1,0.3);
   hCent->Fit(ffCent,"R+");
   hCent->Fit(ffCent,"R+");
   hCent->Fit(ffCent,"R+");
@@ -44,7 +46,7 @@ void checkThr(const char *filename, const char *what="")
   ffSemiCent->SetLineColor(kRed);
   par0 = hSemiCent->GetBinCenter(hSemiCent->FindLastBinAbove(0.95));
   ffSemiCent->SetParameter(0,par0);
-  ffSemiCent->SetParameter(1,0.7);
+  ffSemiCent->SetParameter(1,0.3);
   hSemiCent->Fit(ffSemiCent,"R+");
   hSemiCent->Fit(ffSemiCent,"R+");
   hSemiCent->Fit(ffSemiCent,"R+");
@@ -63,12 +65,12 @@ void checkThr(const char *filename, const char *what="")
 	 ffCent->Integral(0,10)/ffCent->Integral(0,100),
 	 ffCent->Integral(0,10)/ffCent->Integral(0,100)*nentCent/nentCentall,
 	 ffCent->GetX(0.99),
-	 300./(ffCent->Integral(0,10)/ffCent->Integral(0,100)*nentCent/nentCentall));
+	 30.*10./(ffCent->Integral(0,10)/ffCent->Integral(0,100)*nentCent/nentCentall));
   printf("Purity: Semi-Centr %.3f %.3f   Cuts ( 0.0-%.1f)%%   rate=%.1f Hz\n",
 	 ffSemiCent->Integral(0,50)/ffSemiCent->Integral(0,100),
 	 ffSemiCent->Integral(0,50)/ffSemiCent->Integral(0,100)*nentSemiCent/nentSemiCentall,
 	 ffSemiCent->GetX(0.99),
-	 30.*(50.)/(ffSemiCent->Integral(0,50)/ffSemiCent->Integral(0,100)*nentSemiCent/nentSemiCentall));
+	 30.*50./(ffSemiCent->Integral(0,50)/ffSemiCent->Integral(0,100)*nentSemiCent/nentSemiCentall));
 
   TH1F *hand = (TH1F*)list->FindObject("fV0Percent");
   TH1F *handall = (TH1F*)list->FindObject("fV0PercentAll");
