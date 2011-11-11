@@ -125,9 +125,9 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
            //Below the threshold "pThr", try a momentum dependent cos(PA) cut 
            const Double_t bend=0.03; // approximate Xi bending angle
            const Double_t qt=0.211;  // max Lambda pT in Omega decay
-           const Double_t cpaThr=TMath::Cos(TMath::ASin(qt/pThr) + bend);
+           const Double_t cpaThr=TMath::Cos(TMath::ATan(qt/pThr) + bend);
            Double_t 
-           cpaCut=(fCPAmin/cpaThr)*TMath::Cos(TMath::ASin(qt/pv0) + bend); 
+           cpaCut=(fCPAmin/cpaThr)*TMath::Cos(TMath::ATan(qt/pv0) + bend); 
            if (cpa < cpaCut) continue;
          } else
 	 if (cpa < fCPAmin) continue;
