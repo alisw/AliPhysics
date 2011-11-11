@@ -1039,20 +1039,20 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
   Double_t b=0., bA=0., bC=0.;
   
   if(fIsCalibrationMB == kFALSE){
-    // ******	Reconstruction parameters ------------------ 
-    if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
-    if(!fgRecoParam){  
-      AliError("  RecoParam object not retrieved correctly: not reconstructing event!!!");
-      return;
-    }
-    TH1D* hNpartDist = fgRecoParam->GethNpartDist();
-    TH1D*   hbDist = fgRecoParam->GethbDist();    
-    Float_t  fClkCenter = fgRecoParam->GetClkCenter();
-    if(!hNpartDist || !hbDist){  
-       AliError("Something wrong in Glauber MC histos got from AliZDCREcoParamPbPb: NO EVENT RECO FOR ZDC DATA!!!\n\n");
-       return;
-    }
-     
+   // ******   Reconstruction parameters ------------------ 
+   if(!fgRecoParam) fgRecoParam = const_cast<AliZDCRecoParam*>(GetRecoParam());
+   if(!fgRecoParam){  
+     AliError("  RecoParam object not retrieved correctly: not reconstructing ZDC event!!!");
+     return;
+   }
+   TH1D* hNpartDist = fgRecoParam->GethNpartDist();
+   TH1D*   hbDist = fgRecoParam->GethbDist();	 
+   Float_t  fClkCenter = fgRecoParam->GetClkCenter();
+   if(!hNpartDist || !hbDist){  
+      AliError("Something wrong in Glauber MC histos got from AliZDCREcoParamPbPb: NO EVENT RECO FOR ZDC DATA!!!\n\n");
+      //return;
+   }
+   else{  
     if(!fgMBCalibData) fgMBCalibData = const_cast<AliZDCMBCalib*>(GetMBCalibData()); 
     TH2F *hZDCvsZEM  = fgMBCalibData->GethZDCvsZEM();
     TH2F *hZDCCvsZEM = fgMBCalibData->GethZDCCvsZEM();
@@ -1260,7 +1260,7 @@ void AliZDCReconstructor::ReconstructEventPbPb(TTree *clustersTree,
     
     delete line; 
     delete lineC;  delete lineA;
-
+   }
   } // ONLY IF fIsCalibrationMB==kFALSE
   
   Bool_t energyFlag = kTRUE;  
