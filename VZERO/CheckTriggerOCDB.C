@@ -42,8 +42,8 @@ void CheckTriggerOCDB(Int_t run = 164744)
 	   calData->GetPedestal(pmNumber),fPed[pmNumber][0],fPedCut[pmNumber][0],
 	   calData->GetPedestal(pmNumber+64),fPed[pmNumber][1],fPedCut[pmNumber][1],
 	   (Float_t)fPed[pmNumber][0]-calData->GetPedestal(pmNumber),(Float_t)fPed[pmNumber][1]-calData->GetPedestal(pmNumber+64),
-	   ((Float_t)fPedCut[pmNumber][0]-(Float_t)fPed[pmNumber][0])/calData->GetSigma(pmNumber),
-	   ((Float_t)fPedCut[pmNumber][1]-(Float_t)fPed[pmNumber][1])/calData->GetSigma(pmNumber+64));
+	   calData->GetSigma(pmNumber)>1e-6 ? ((Float_t)fPedCut[pmNumber][0]-(Float_t)fPed[pmNumber][0])/calData->GetSigma(pmNumber):0,
+	   calData->GetSigma(pmNumber+64)>1e-6 ? ((Float_t)fPedCut[pmNumber][1]-(Float_t)fPed[pmNumber][1])/calData->GetSigma(pmNumber+64):0);
   }
    
 }
