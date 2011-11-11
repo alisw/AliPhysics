@@ -119,7 +119,19 @@ Int_t AliV0vertexer::Tracks2V0vertices(AliESDEvent *event) {
          if (r2 > fRmax*fRmax) continue;
 
 	 Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
+         const Double_t pThr=1.5;
+         Double_t pv0=vertex.P();
+         if (pv0<pThr) {
+           //Below the threshold "pThr", try a momentum dependent cos(PA) cut 
+           const Double_t bend=0.03; // approximate Xi bending angle
+           const Double_t qt=0.211;  // max Lambda pT in Xi decay
+           const Double_t cpaThr=TMath::Cos(TMath::ASin(qt/pThr) + bend);
+           Double_t 
+           cpaCut=(fCPAmin/cpaThr)*TMath::Cos(TMath::ASin(qt/pv0) + bend); 
+           if (cpa < cpaCut) continue;
+         } 
 	 if (cpa < fCPAmin) continue;
+
 	 vertex.SetDcaV0Daughters(dca);
          vertex.SetV0CosineOfPointingAngle(cpa);
          vertex.ChangeMassHypothesis(kK0Short);
