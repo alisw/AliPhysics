@@ -46,7 +46,7 @@ AddTOFAnalysisTaskCalibPass0()
   mgr->ConnectOutput(task, 1, outputc1);
 
   /* setup task */
-  task->SetEventSelectionFlag(kTRUE);
+  task->SetEventSelectionFlag(kFALSE);
   task->SetVertexSelectionFlag(kTRUE);
   task->SetVertexCut(25.0);
   /* setup TOF calib */
