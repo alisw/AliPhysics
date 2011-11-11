@@ -138,7 +138,7 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetTrackleterRemoveClustersFromOverlaps(kTRUE);
 
     // SDD configuration 
-    itsRecoParam->SetUseSDDCorrectionMaps(kFALSE); 
+    itsRecoParam->SetUseSDDCorrectionMaps(kTRUE); 
     itsRecoParam->SetUseSDDClusterSizeSelection(kTRUE);
     itsRecoParam->SetMinClusterChargeSDD(30.);
     itsRecoParam->SetUseUnfoldingInClusterFinderSDD(kFALSE);
