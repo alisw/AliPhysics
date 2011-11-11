@@ -21,6 +21,7 @@ class AliAnaVZEROTrigger : public AliAnalysisTaskSE {
 
   void Setup(const char *filename);
   void SetMBTrigName(const char *name = "CPBI") {fMBTrigName = name;}
+  void SetUsePhysSel(Bool_t usePhysSel) {fUsePhysSel = usePhysSel;}
 
   Float_t GetMinThr() const {return fMinThr;}
   Float_t GetMaxThr() const {return fMaxThr;}
@@ -45,10 +46,12 @@ class AliAnaVZEROTrigger : public AliAnalysisTaskSE {
   Float_t fSemiCentCuts[2]; // Semi-central cut extracted from the eff fit
 
   TString fMBTrigName; // MB trigger name (for evt sel)
+  Bool_t  fUsePhysSel; // Use or not phys sel
 
   TH1F *fV0Percent; //! V0 centrality percentile
   TH1F *fV0PercentAll; //! V0 centrality percentile (no evt sel)
-  TH1F *fZvtx; //! Z vetex distribution after phys sel
+  TH1F *fZvtx; //! Z vertex distribution after phys sel
+  TH2F *fXYvtx; //! XY vertex distribution after phys sel
   TH1F *fV0Mult1d; //! V0 multiplicity distribution
   TH2F *fV0Charge2d; //! V0 trigger charges distribution
   TH2F *fV0Charge2dPercent; //! V0 trigger charges distribution weighted by centrality
@@ -75,8 +78,20 @@ class AliAnaVZEROTrigger : public AliAnalysisTaskSE {
   TH1F *fV0Percent63; //! centrality percentile when >=63 cells are fired
   TH1F *fV0Percent63All; //! centrality percentile when >=63 cells are fired (no evt sel)
 
-  TH2F *fV0MultAll; //!
-  TH2F *fV0Mult63; //!
+  TH2F *fV0MultAll; //! total V0 multiplicity for all events
+  TH2F *fV0Mult63; //! total V0 multiplicity for events with at least 63 bb flags
+
+  TH2F *fV0CentVsMult; //! V0 centrality vs total V0 multiplicity
+  TH2F *fV0CentVsCharge; //! V0 centrality vs total V0 offline charge
+  TH2F *fV0CentVsTrCharge; //! V0 centrality vs total V0 online charge
+  TH2F *fV0TrChargeVsChargeA; //! V0 nline charge (A side) vs V0 offline charge (A side)
+  TH2F *fV0TrChargeVsChargeC; //! V0 nline charge (C side) vs V0 offline charge (C side)
+
+  TH2F *fAdcPmt; //! Charge per channel
+  TH2F *fAdcPmt0; //! Charge per channel
+  TH2F *fAdcPmt1; //! Charge per channel
+  TH2F *fAdcPmt2; //! Charge per channel
+  TH2F *fAdcPmt3; //! Charge per channel
 
   AliAnaVZEROTrigger(const AliAnaVZEROTrigger&); // not implemented
   AliAnaVZEROTrigger& operator=(const AliAnaVZEROTrigger&); // not implemented
