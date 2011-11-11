@@ -238,9 +238,9 @@ const AliHLTComponentDataType kAliHLTDataTypeInputTriggerCounters = AliHLTCompon
 const char kAliHLTOutputTriggerCountersDataTypeIDstring[8] = kAliHLTOutputTriggerCountersDataTypeID;
 const AliHLTComponentDataType kAliHLTDataTypeOutputTriggerCounters = AliHLTComponentDataTypeInitializer(kAliHLTOutputTriggerCountersDataTypeIDstring, kAliHLTDataOriginHLT);
 
-/** Common Data Header block type */
-const char kAliHLTCDHBlockDataTypeIDstring[8] = kAliHLTCDHBlockDataTypeID;
-const AliHLTComponentDataType kAliHLTDataTypeCDHBlock = AliHLTComponentDataTypeInitializer(kAliHLTCDHBlockDataTypeIDstring, kAliHLTDataOriginPrivate);
+/** Meta data block for the Common Data Header (CDH) and readout list forwarded by TCPDumpSubscriber. */
+const char kAliHLTMetaDataTypeIDstring[8] = kAliHLTMetaDataTypeID;
+const AliHLTComponentDataType kAliHLTDataTypeTriggerMetaBlock = AliHLTComponentDataTypeInitializer(kAliHLTMetaDataTypeIDstring, kAliHLTDataOriginPrivate);
 
 //////////////////////////////////////////////////////////////////////////
 //

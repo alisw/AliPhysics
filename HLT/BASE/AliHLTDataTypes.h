@@ -67,10 +67,11 @@
  *           Adding data block type for forwarded component table blocks
  *           Adding new event type for software triggers.
  *  15       Modifying data block types for trigger counter blocks.
- *  16       Adding data type for Common Data Header (CDH) block to be forwarded
- *           by the TCPDumpSubscriber.
+ *  16       Adding data type for the meta data block to be forwarded by the
+ *           TCPDumpSubscriber for the Common Data Header (CDH) and readout
+ *           list information.
  */
-#define ALIHLT_DATA_TYPES_VERSION 15
+#define ALIHLT_DATA_TYPES_VERSION 16
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -562,10 +563,10 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTOutputTriggerCountersDataTypeID     {'O','T','T','R','G','C','N','T'}
 
-/** Common Data Header block data type that TCPDumpSubscriber sends.
+/** Generic meta data block type ID.
  * @ingroup alihlt_component_datatypes
  */
-# define kAliHLTCDHBlockDataTypeID     {'C','D','H','B','L','O','C','K'}
+# define kAliHLTMetaDataTypeID                      {'M','E','T','A','D','A','T','A'}
 
 using namespace std;
 
@@ -1178,10 +1179,10 @@ extern "C" {
   extern const AliHLTComponentDataType kAliHLTDataTypeComponentFwdTable;
 
   /**
-   * Data type for Common Data Header block sent by TCPDumpSubscriber.
+   * Data type for the Common Data Header and readout list information sent by TCPDumpSubscriber.
    * @ingroup alihlt_component_datatypes
    */
-  extern const AliHLTComponentDataType kAliHLTDataTypeCDHBlock;     // {CDHBLOCK:PRIV}
+  extern const AliHLTComponentDataType kAliHLTDataTypeTriggerMetaBlock;     // {METADATA:PRIV}
 
   //////////////////////////////////////////////////////////////////////////
   //
