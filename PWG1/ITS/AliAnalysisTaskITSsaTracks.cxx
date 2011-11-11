@@ -77,8 +77,11 @@ AliAnalysisTaskITSsaTracks::AliAnalysisTaskITSsaTracks() : AliAnalysisTaskSE("IT
 //___________________________________________________________________________
 AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
   //
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  // RS: why do we delete all histos? they are owned by the output!!!
+  /*
   delete fHistNEvents;
-  for(Int_t iType=0; iType<kNtrackTypes; iType++){
+    for(Int_t iType=0; iType<kNtrackTypes; iType++){
     delete fHistPt[iType];
     delete fHistPtGood[iType];
     delete fHistPtFake[iType];
@@ -124,7 +127,7 @@ AliAnalysisTaskITSsaTracks::~AliAnalysisTaskITSsaTracks(){
     delete fHistMCInvPtResid[iSpec];
     delete fHistMCInvPtRelResid[iSpec];
   } 
-
+  */
   delete fHistMCPhiResid;
   delete fHistPhiResid;
   delete fNtupleTracks;
