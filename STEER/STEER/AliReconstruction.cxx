@@ -3116,7 +3116,7 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
       esdheader->SetL1TriggerInputs(input.GetL1Inputs());
       esdheader->SetL2TriggerInputs(input.GetL2Inputs());
       // IR
-      UInt_t orbit=input.GetOrbitID();
+      //      UInt_t orbit=input.GetOrbitID();
       for(Int_t i=0 ; i<input.GetNIRs() ; i++ ) {
 	esdheader->AddTriggerIR(input.GetIR(i));
       }
@@ -4078,7 +4078,7 @@ void AliReconstruction::Abort(const char *method, EAbort what)
   else if (fAbort == kAbortFile)
     mess = "AbortFile";
 
-  Info(mess, whyMess.Data());
+  Info(mess.Data(), "%s", whyMess.Data());
 }
 
 //______________________________________________________________________________
