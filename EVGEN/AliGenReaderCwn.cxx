@@ -46,7 +46,11 @@ AliGenReaderCwn::AliGenReaderCwn():
     fE(0.)
 {
 // Default constructor
+    Int_t i;
+    for (i = 0; i <  6; i++) fRhead[i] = 0.;
+    for (i = 0; i < 12; i++) fIhead[i] = 0;
 }
+
 
 AliGenReaderCwn::AliGenReaderCwn(const AliGenReaderCwn &reader):
     AliGenReader(reader),
@@ -63,6 +67,9 @@ AliGenReaderCwn::AliGenReaderCwn(const AliGenReaderCwn &reader):
     fE(0.)
 {
     // Copy constructor
+    Int_t i;
+    for (i = 0; i <  6; i++) fRhead[i] = 0.;
+    for (i = 0; i < 12; i++) fIhead[i] = 0;
     reader.Copy(*this);
 }
 

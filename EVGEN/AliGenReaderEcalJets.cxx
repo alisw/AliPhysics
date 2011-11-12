@@ -42,6 +42,27 @@ AliGenReaderEcalJets::AliGenReaderEcalJets():
     fTreeNtuple(0) 
 {
 // Default constructor
+    for (Int_t i = 0; i < 200; i++) {
+	if (i < 2) {
+	    fX[i]     = 0.;    
+	    fXtyp[i]  = 0; 
+	} else if (i < 10) {
+	    fJet[i]   = 0.;  
+	    fJeta[i]  = 0.; 
+	    fJphi[i]  = 0.; 
+	    fJset[i]  = 0.; 
+	    fJseta[i] = 0.;
+	    fJsphi[i] = 0.;
+	    fJpet[i]  = 0.; 
+	    fJpeta[i] = 0.;
+	    fJpphi[i] = 0.;
+	} else {
+	    fXpt[i]  = 0.;
+	    fXeta[i] = 0.;
+	    fXphi[i] = 0.;
+	    fXid[i]  = 0; 
+	}
+    }
 }
 
  AliGenReaderEcalJets::AliGenReaderEcalJets(const AliGenReaderEcalJets &reader)
@@ -55,6 +76,28 @@ AliGenReaderEcalJets::AliGenReaderEcalJets():
       fNpjet(0),
       fTreeNtuple(0) 
 {
+    for (Int_t i = 0; i < 200; i++) {
+	if (i < 2) {
+	    fX[i]     = 0.;    
+	    fXtyp[i]  = 0; 
+	} else if (i < 10) {
+	    fJet[i]   = 0.;  
+	    fJeta[i]  = 0.; 
+	    fJphi[i]  = 0.; 
+	    fJset[i]  = 0.; 
+	    fJseta[i] = 0.;
+	    fJsphi[i] = 0.;
+	    fJpet[i]  = 0.; 
+	    fJpeta[i] = 0.;
+	    fJpphi[i] = 0.;
+	} else {
+	    fXpt[i]  = 0.;
+	    fXeta[i] = 0.;
+	    fXphi[i] = 0.;
+	    fXid[i]  = 0; 
+	}
+    }
+
     // Copy Constructor
     reader.Copy(*this);
 }

@@ -147,6 +147,28 @@ AliGenReaderEMD::AliGenReaderEMD(const AliGenReaderEMD &reader):
     fEtaomegaCside(0)
 {
     // Copy Constructor
+    for(int i=0; i<70; i++){
+       fPxnAside[i] = fPynAside[i] = fPznAside[i] = 0.;
+       fPxnCside[i] = fPynCside[i] = fPznCside[i] = 0.;
+       if(i<50){
+         fPxpAside[i] = fPypAside[i] = fPzpAside[i] = 0.;
+      	 fPxpCside[i] = fPypCside[i] = fPzpCside[i] = 0.;
+         if(i<30){
+           fPxppAside[i] = fPyppAside[i] = fPzppAside[i] = 0.;
+      	   fPxppCside[i] = fPyppCside[i] = fPzppCside[i] = 0.;
+           fPxpmAside[i] = fPypmAside[i] = fPzpmAside[i] = 0.;
+      	   fPxpmCside[i] = fPypmCside[i] = fPzpmCside[i] = 0.;
+           fPxp0Aside[i] = fPyp0Aside[i] = fPzp0Aside[i] = 0.;
+      	   fPxp0Cside[i] = fPyp0Cside[i] = fPzp0Cside[i] = 0.;
+	   if(i<15){
+             fPxetaAside[i] = fPyetaAside[i] = fPzetaAside[i] = 0.;
+      	     fPxetaCside[i] = fPyetaCside[i] = fPzetaCside[i] = 0.;
+             fPxomegaAside[i] = fPyomegaAside[i] = fPzomegaAside[i] = 0.;
+      	     fPxomegaCside[i] = fPyomegaCside[i] = fPzomegaCside[i] = 0.;
+	   }
+	 }
+       }	
+    }
     reader.Copy(*this);
 }
   // -----------------------------------------------------------------------------------
