@@ -90,6 +90,8 @@ private:
   TH1F             *fhClusMaxL1J;      //! Maximum E Cluster per event distribution for L1J trigger
   TH1F             *fhClusMaxL1GOnly;  //! Maximum E Cluster per event distribution for L1G trigger and not L1J
   TH1F             *fhClusMaxL1JOnly;  //! Maximum E Cluster per event distribution for L1J trigger and not L1G
+  TH2F             *fhGPMaxVV0TT;      //!
+  TH2F             *fhJPMaxVV0TT;      //!
   
   // Histograms bins
   
