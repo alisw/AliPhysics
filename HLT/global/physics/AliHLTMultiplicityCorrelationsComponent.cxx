@@ -108,7 +108,7 @@ AliHLTComponentDataType AliHLTMultiplicityCorrelationsComponent::GetOutputDataTy
 // #################################################################################
 void AliHLTMultiplicityCorrelationsComponent::GetOutputDataSize( ULong_t& constBase, Double_t& inputMultiplier ) {
   // see header file for class documentation
-  constBase = 1000;
+  constBase = 100000;
   inputMultiplier = 0.5;
 }
 
