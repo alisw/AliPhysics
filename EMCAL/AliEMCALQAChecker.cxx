@@ -189,6 +189,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
   //Float_t kThreshold = 80. ; 
   Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
   Double_t nTot = fknSM * nTowersPerSM ;
+  TList *lstF = 0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 0.0 ; 
     if ( !AliQAv1::Instance()->IsEventSpecieSet(specie)) 
@@ -201,20 +202,35 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
       if(hdata->GetEntries()==0 || ratio->GetEntries()==0)
         continue;
       //adding the lines to distinguish different SMs
-      if ( hdata->GetListOfFunctions()->GetEntries() == 0 ){
-        hdata->GetListOfFunctions()->Add(fLineCol); 
-				for(Int_t iLine = 0; iLine < 4; iLine++) {
-					hdata->GetListOfFunctions()->Add(fLineRow[iLine]);
-				} 
-        //Now adding the text to for each SM
-        for(Int_t iSM = 0 ; iSM < fknSM ; iSM++){  //number of SMs loop start
-          hdata->GetListOfFunctions()->Add(fTextSM[iSM]); 
-	}
-      }   
-      if ( ratio->GetListOfFunctions()->GetEntries() == 0 ){ //adding the object at the beginning
-        ratio->GetListOfFunctions()->Add(fText) ;
+      lstF = hdata->GetListOfFunctions();
+      { // RS: clean list of functions
+	if (lstF) {
+	  TObject *stats = lstF->FindObject("stats"); lstF->Remove(stats);
+	  TObject *obj;
+	  while ((obj = lstF->First())) { while(lstF->Remove(obj)) { } delete obj; }
+	  if (stats) lstF->Add(stats);
+	} 
       }
-
+      lstF->Add(fLineCol->Clone()); 
+      for(Int_t iLine = 0; iLine < 4; iLine++) {
+	lstF->Add(fLineRow[iLine]->Clone());
+      } 
+      //Now adding the text to for each SM
+      for(Int_t iSM = 0 ; iSM < fknSM ; iSM++){  //number of SMs loop start
+	lstF->Add(fTextSM[iSM]->Clone()); 
+      }
+      //
+      lstF = ratio->GetListOfFunctions();
+      { // RS: clean list of functions
+	if (lstF) {
+	  TObject *stats = lstF->FindObject("stats"); lstF->Remove(stats);
+	  TObject *obj;
+	  while ((obj = lstF->First())) { while(lstF->Remove(obj)) { } delete obj; }
+	  if (stats) lstF->Add(stats);
+	} 
+      }
+      lstF->Add(fText->Clone()) ;
+      //
       //now check the ratio histogram
       Double_t binContent = 0. ;  
       Int_t NGoodTower = 0 ;
@@ -246,8 +262,8 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
         //hdata->Reset("ICE");
         //ratio->Reset("ICE");
       }//fText
-     } 
-    } //finish the checking
+    } 
+  } //finish the checking
 }
 
 //______________________________________________________________________________

@@ -533,7 +533,11 @@ void AliEMCALQADataMakerRec::InitRaws()
  TH1I *hS5 = new TH1I("hFrameR","Link between TRU and STU", 32, 0, 32);
  Add2RawsList(hS5, kSTUTRU, expert, !image, !saveCorr) ;
 
-
+ hS0->SetOption("COLZ");
+ hS1->SetOption("COLZ");
+ hS2->SetOption("COLZ");
+ hS3->SetOption("COLZ");
+ hS4->SetOption("COLZ");
 
   //
   ClonePerTrigClass(AliQAv1::kRAWS); // this should be the last line
