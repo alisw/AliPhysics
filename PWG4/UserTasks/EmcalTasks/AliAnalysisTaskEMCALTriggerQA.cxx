@@ -75,6 +75,8 @@ fhClusMaxL1G(0),
 fhClusMaxL1J(0),
 fhClusMaxL1GOnly(0),
 fhClusMaxL1JOnly(0),
+fhGPMaxVV0TT(0),
+fhJPMaxVV0TT(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
 fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
@@ -122,6 +124,8 @@ fhClusMaxL1G(0),
 fhClusMaxL1J(0),
 fhClusMaxL1GOnly(0),
 fhClusMaxL1JOnly(0),
+fhGPMaxVV0TT(0),
+fhJPMaxVV0TT(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
 fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
@@ -291,6 +295,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhTRUSTU    ->SetYTitle("channel");
   fhTRUSTU    ->SetZTitle("counts");
   
+  fhGPMaxVV0TT = new TH2F("fGPMaxVV0TT","",5000,0,50000,1000,0,1000);
+  fhJPMaxVV0TT = new TH2F("fJPMaxVV0TT","",5000,0,50000,1000,0,1000);
+
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);
@@ -324,6 +331,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   
   fOutputList->Add(fhFEESTU);
   fOutputList->Add(fhTRUSTU);
+
+  fOutputList->Add(fhGPMaxVV0TT);
+  fOutputList->Add(fhJPMaxVV0TT);
   
   PostData(1, fOutputList);  
   
@@ -479,7 +489,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
       Int_t ts = 0;
       trg.GetL1TimeSum(ts);
-      emcalTrigL1 [posY][posX] += ts;
+      emcalTrigL1 [posY][posX] = ts;
       totSTU += ts;
       
       //L1-Gamma
@@ -518,7 +528,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   //V0 analysis 
   AliESDVZERO* eventV0 = esdEvent->GetVZEROData(); 
 	
-  Float_t v0C = 0, v0A = 0;
+  Float_t v0C = 0, v0A = 0, v0TT = trg.GetL1V0(0)+trg.GetL1V0(1);
 	
   if (eventV0) 
   {
@@ -528,7 +538,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       v0A += eventV0->GetAdcV0A(i);
     }
   }
-  
+
   if (totSTU != 0) {
     fhV0STU->Fill(v0A+v0C,totSTU);
     if( v0A+v0C > fMaxV0Signal) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
@@ -537,6 +547,50 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
   //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
   
+  Int_t patchMax = 0;
+		
+  for (Int_t i = 0; i < 47; i++)
+    {
+      for (Int_t j = 0; j < 59; j++)
+	{				
+	  Int_t patchG = 0;
+	  
+	  for (Int_t k = 0; k < 2; k++) 
+	    {
+	      for (Int_t l = 0; l < 2; l++) 
+		{
+		  patchG += int(emcalTrigL1[i + k][j + l]);
+		}
+	    }
+	  
+	  if (patchG > patchMax) patchMax = patchG;
+	}
+    }
+  
+  fhGPMaxVV0TT->Fill(v0TT, patchMax);
+  
+  patchMax = 0;
+  
+  for (Int_t i = 0; i < 9; i++)
+    {
+      for (Int_t j = 0; j < 12; j++)
+	{
+	  Int_t patchJ = 0;
+	  
+	  for (Int_t k = 0; k < 16; k++)
+	    {
+	      for (Int_t l = 0; l < 16; l++)
+		{
+		  patchJ += int(emcalTrigL1[4*i + k][4*j + l]);
+		}
+	    }
+	  
+	  if (patchJ > patchMax) patchMax = patchJ;
+	}
+    }
+  
+  fhJPMaxVV0TT->Fill(v0TT, patchMax);
+
   //Matrix with signal per channel
   for (Int_t i = 0; i < fgkFALTRORows; i++) 
   {
