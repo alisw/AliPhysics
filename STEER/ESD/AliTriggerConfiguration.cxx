@@ -241,7 +241,8 @@ Bool_t AliTriggerConfiguration::AddPFProtection( AliTriggerPFProtection* pfp )
   // Add a trigger past-future protection object to
   // the list of the trigger past-future protections
   if (fPFProtections.GetEntries() < kNMaxPFProtections) {
-    if (pfp->CheckInteractions(fInteractions)) {
+    //if (pfp->CheckInteractions(fInteractions)) {
+    if (1) {
       fPFProtections.AddLast( pfp );
       return kTRUE;
     }
@@ -630,7 +631,7 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String());
 	 }
 	 else {
-           if (ntokens != 10) {
+           if (ntokens > 13) {
   	     AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
 	     return kFALSE;
            }
