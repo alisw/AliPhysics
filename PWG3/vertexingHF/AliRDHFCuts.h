@@ -174,6 +174,12 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetKeepSignalMC() {fKeepSignalMC=kTRUE; return;}
 
+  // Flag and pt-maximum to check if the candidate daughters fulfill the kFirst criteria
+  void SetSelectCandTrackSPDFirst( Bool_t flag, Double_t ptmax )
+  { fIsCandTrackSPDFirst=flag; fMaxPtCandTrackSPDFirst=ptmax; }
+  Bool_t IsSelectCandTrackSPDFirst() const { return fIsCandTrackSPDFirst; }
+  Double_t IsMaxCandTrackSPDFirst() const { return fMaxPtCandTrackSPDFirst; }
+
 
  protected:
 
@@ -227,8 +233,11 @@ class AliRDHFCuts : public AliAnalysisCuts
   Double_t fMinPtCand; // minimum pt of the candidate
   Double_t fMaxPtCand; // minimum pt of the candidate
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
+  Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
+  Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
 
-  ClassDef(AliRDHFCuts,19);  // base class for cuts on AOD reconstructed heavy-flavour decays
+
+  ClassDef(AliRDHFCuts,20);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
