@@ -1161,6 +1161,8 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     //
     // Merge alignment
     //
+    const Int_t kMinUpdates=10;
+    const Float_t kMaxOut=0.1;
     for (Int_t itype=0; itype<3; itype++){
       //
       //
@@ -1178,6 +1180,8 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
 	AliRelAlignerKalman *kalman1 = (AliRelAlignerKalman *)arr1->UncheckedAt(i);
 	AliRelAlignerKalman *kalman0 = (AliRelAlignerKalman *)arr0->UncheckedAt(i);
 	if (!kalman1)  continue;
+	if (kalman1->GetNUpdates()<kMinUpdates) continue;
+	if (kalman1->GetNOutliers()>(kalman1->GetNUpdates()*kMaxOut)) continue;
 	if (!kalman0) {arr0->AddAt(new AliRelAlignerKalman(*kalman1),i); continue;}
 	kalman0->SetRejectOutliers(kFALSE);
 	kalman0->Merge(kalman1);
