@@ -101,7 +101,7 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, char * name = "ca
   AliTPCcalibTimeGain *calibTimeGain = new AliTPCcalibTimeGain(name,"calibTimeGain", startTime.GetSec(), stopTime.GetSec(), 10*60);
   calibTimeGain->SetIsCosmic(isCosmic);
   calibTimeGain->SetUseCookAnalytical(kTRUE);
-  calibTimeGain->SetUseMax(kFALSE);
+  calibTimeGain->SetUseMax(kTRUE);
   calibTimeGain->SetDebugLevel(0);
   calibTimeGain->SetStreamLevel(0);
   calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
