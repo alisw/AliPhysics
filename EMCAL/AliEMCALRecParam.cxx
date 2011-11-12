@@ -33,37 +33,37 @@
 #include "AliEMCALRecParam.h"
 
 ClassImp(AliEMCALRecParam)
-  
+
 TObjArray* AliEMCALRecParam::fgkMaps =0; //ALTRO mappings 
 
 AliEMCALRecParam::AliEMCALRecParam() :
-  AliDetectorRecoParam(),
-  fClusteringThreshold(0.5),
-  fW0(4.5),
-  fMinECut(0.045), 
-  fUnfold(kFALSE), 
-  fLocMaxCut(0.03), 
-  fTimeCut(1.),// high value, accept all
-  fTimeMin(-1.),// small value, accept all
-  fTimeMax(1.),// high value, accept all//clustering
-  fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
-  fNRowDiff(1),
-  fNColDiff(1),
-  fMthCutEta(0.025), 
-  fMthCutPhi(0.05),
-  fStep(20),
-  fTrkCutPt(0.0),
-  fTrkCutNITS(0.0),
-  fTrkCutNTPC(50.0), //track matching
-  fHighLowGainFactor(16.0), 
-  fOrderParameter(2), 
-  fTau(2.35), 
-  fNoiseThreshold(3), 
-  fNPedSamples(5), 
-  fRemoveBadChannels(kFALSE),
-  fFittingAlgorithm(0), 
-  fUseFALTRO(kTRUE), 
-  fFitLEDEvents(kFALSE)//raw signal
+AliDetectorRecoParam(),
+fClusteringThreshold(0.1), 
+fW0(4.5),
+fMinECut(0.05), 
+fUnfold(kFALSE), 
+fLocMaxCut(0.03), 
+fTimeCut(1.),// high value, accept all
+fTimeMin(-1.),// small value, accept all
+fTimeMax(1.),// high value, accept all//clustering
+fClusterizerFlag(AliEMCALRecParam::kClusterizerv1),
+fNRowDiff(1),
+fNColDiff(1),
+fMthCutEta(0.025), 
+fMthCutPhi(0.05),
+fStep(20),
+fTrkCutPt(0.0),
+fTrkCutNITS(1.0),
+fTrkCutNTPC(20.0), //track matching
+fHighLowGainFactor(16.0), 
+fOrderParameter(2), 
+fTau(2.35), 
+fNoiseThreshold(3), 
+fNPedSamples(5), 
+fRemoveBadChannels(kFALSE),
+fFittingAlgorithm(0), 
+fUseFALTRO(kTRUE), 
+fFitLEDEvents(kFALSE)//raw signal
 {
   // default reco values
   
@@ -213,7 +213,7 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fPiZero[5][2] = -6.040360e-02;
   fPiZero[5][3] = -6.137459e-04;
   fPiZero[5][4] =  1.847328e-05;
-    
+  
   fHadronEnergyProb[0]= 0.;
   fHadronEnergyProb[1]= 0.;
   fHadronEnergyProb[2]=  6.188452e-02;
@@ -235,38 +235,38 @@ AliEMCALRecParam::AliEMCALRecParam() :
   fPar6[0] = 0.05452; 
   fPar6[1] = 0.0001228; 
   fPar6[2] = 0.001361; 
-
+  
 }
 
 //-----------------------------------------------------------------------------
 AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
-  AliDetectorRecoParam(),
-  fClusteringThreshold(rp.fClusteringThreshold),
-  fW0(rp.fW0),
-  fMinECut(rp.fMinECut), 
-  fUnfold(rp.fUnfold), 
-  fLocMaxCut(rp.fLocMaxCut), 
-  fTimeCut(rp.fTimeCut), 
-  fTimeMin(rp.fTimeMin),
-  fTimeMax(rp.fTimeMax),//clustering
-  fClusterizerFlag(rp.fClusterizerFlag),
-  fNRowDiff(rp.fNRowDiff),
-  fNColDiff(rp.fNColDiff),
-  fMthCutEta(rp.fMthCutEta), 
-  fMthCutPhi(rp.fMthCutPhi),
-  fStep(rp.fStep),
-  fTrkCutPt(rp.fTrkCutPt),
-  fTrkCutNITS(rp.fTrkCutNITS),
-  fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
-  fHighLowGainFactor(rp.fHighLowGainFactor), 
-  fOrderParameter(rp.fOrderParameter), 
-  fTau(rp.fTau), 
-  fNoiseThreshold(rp.fNoiseThreshold), 
-  fNPedSamples(rp.fNPedSamples), 	
-  fRemoveBadChannels(rp.fRemoveBadChannels),
-  fFittingAlgorithm(rp.fFittingAlgorithm),  
-  fUseFALTRO(rp.fUseFALTRO),
-  fFitLEDEvents(rp.fFitLEDEvents) //raw signal
+AliDetectorRecoParam(),
+fClusteringThreshold(rp.fClusteringThreshold),
+fW0(rp.fW0),
+fMinECut(rp.fMinECut), 
+fUnfold(rp.fUnfold), 
+fLocMaxCut(rp.fLocMaxCut), 
+fTimeCut(rp.fTimeCut), 
+fTimeMin(rp.fTimeMin),
+fTimeMax(rp.fTimeMax),//clustering
+fClusterizerFlag(rp.fClusterizerFlag),
+fNRowDiff(rp.fNRowDiff),
+fNColDiff(rp.fNColDiff),
+fMthCutEta(rp.fMthCutEta), 
+fMthCutPhi(rp.fMthCutPhi),
+fStep(rp.fStep),
+fTrkCutPt(rp.fTrkCutPt),
+fTrkCutNITS(rp.fTrkCutNITS),
+fTrkCutNTPC(rp.fTrkCutNTPC), // track matching
+fHighLowGainFactor(rp.fHighLowGainFactor), 
+fOrderParameter(rp.fOrderParameter), 
+fTau(rp.fTau), 
+fNoiseThreshold(rp.fNoiseThreshold), 
+fNPedSamples(rp.fNPedSamples), 	
+fRemoveBadChannels(rp.fRemoveBadChannels),
+fFittingAlgorithm(rp.fFittingAlgorithm),  
+fUseFALTRO(rp.fUseFALTRO),
+fFitLEDEvents(rp.fFitLEDEvents) //raw signal
 {
   //copy constructor
   
@@ -294,7 +294,7 @@ AliEMCALRecParam::AliEMCALRecParam(const AliEMCALRecParam& rp) :
     fPar5[i] = rp.fPar5[i];
     fPar6[i] = rp.fPar6[i];
   }
-
+  
 }
 
 //-----------------------------------------------------------------------------
@@ -334,11 +334,11 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
     Int_t i=0, j=0;
     for (i = 0; i < 6; i++) {
       for (j = 0; j < 6; j++) {
-	fGamma[i][j]       = rp.fGamma[i][j];
-	fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
-	fHadron[i][j]      = rp.fHadron[i][j];
-	fHadron1to10[i][j] = rp.fHadron1to10[i][j];
-	fPiZero[i][j]      = rp.fPiZero[i][j];
+        fGamma[i][j]       = rp.fGamma[i][j];
+        fGamma1to10[i][j]  = rp.fGamma1to10[i][j];
+        fHadron[i][j]      = rp.fHadron[i][j];
+        fHadron1to10[i][j] = rp.fHadron1to10[i][j];
+        fPiZero[i][j]      = rp.fPiZero[i][j];
       }
       fGammaEnergyProb[i]  = rp.fGammaEnergyProb[i];
       fPiZeroEnergyProb[i] = rp.fPiZeroEnergyProb[i];
@@ -352,7 +352,7 @@ AliEMCALRecParam& AliEMCALRecParam::operator = (const AliEMCALRecParam& rp)
       fPar5[i] = rp.fPar5[i];
       fPar6[i] = rp.fPar6[i];
     }
-
+    
   }    
   
   return *this;
@@ -437,7 +437,7 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   params->SetGamma(0,2,1.555996e-02);
   params->SetGamma(0,3,2.243525e-04);
   params->SetGamma(0,4,-2.560087e-06);
-
+  
   params->SetGamma(1,0,6.500216e+00);
   params->SetGamma(1,1,-2.564958e-01);
   params->SetGamma(1,2,1.967894e-01);
@@ -449,119 +449,119 @@ AliEMCALRecParam* AliEMCALRecParam::GetLowFluxParam()
   params->SetGamma(2,2,3.126839e-02);
   params->SetGamma(2,3,3.387532e-04);
   params->SetGamma(2,4,-4.089145e-06);
- 
+  
   params->SetGamma(3,0,0.);
   params->SetGamma(3,1,-2.696008e+00); 
   params->SetGamma(3,2, 6.920305e-01);
   params->SetGamma(3,3,-2.281122e-03);
   params->SetGamma(3,4,0.);
-
+  
   params->SetGamma(4,0,2.281564e-01); 
   params->SetGamma(4,1,-7.575040e-02);
   params->SetGamma(4,2,3.813423e-01);
   params->SetGamma(4,3,-1.243854e-04);
   params->SetGamma(4,4,1.232045e-06);
-
+  
   params->SetGamma(5,0,-3.290107e-01);
   params->SetGamma(5,1,3.707545e-02);
   params->SetGamma(5,2,2.917397e-03);
   params->SetGamma(5,3,4.695306e-05);
   params->SetGamma(5,4,-3.572981e-07);
-
+  
   params->SetHadron(0,0,9.482243e-01); 
   params->SetHadron(0,1,-2.780896e-01);
   params->SetHadron(0,2, 2.223507e-02);
   params->SetHadron(0,3,7.294263e-04);
   params->SetHadron(0,4,-5.665872e-06); 
-
+  
   params->SetHadron(1,0,0.);
   params->SetHadron(1,1,0.);
   params->SetHadron(1,2,2.483298e-01);
   params->SetHadron(1,3,0.);
   params->SetHadron(1,4,0.);
-
+  
   params->SetHadron(2,0,-5.601199e+00);
   params->SetHadron(2,1,2.097382e+00);
   params->SetHadron(2,2,-2.307965e-01);
   params->SetHadron(2,3,9.206871e-03);
   params->SetHadron(2,4,-8.887548e-05);
-
+  
   params->SetHadron(3,0,6.543101e+00);
   params->SetHadron(3,1,-2.305203e+00);
   params->SetHadron(3,2,2.761673e-01);
   params->SetHadron(3,3,-5.465855e-03);
   params->SetHadron(3,4,2.784329e-05);
-
+  
   params->SetHadron(4,0,-2.443530e+01);
   params->SetHadron(4,1,8.902578e+00);
   params->SetHadron(4,2,-5.265901e-01);
   params->SetHadron(4,3,2.549111e-02);
   params->SetHadron(4,4,-2.196801e-04);
-
+  
   params->SetHadron(5,0,2.102007e-01);
   params->SetHadron(5,1,-3.844418e-02);
   params->SetHadron(5,2,1.234682e-01);
   params->SetHadron(5,3,-3.866733e-03);
   params->SetHadron(5,4,3.362719e-05);
-
+  
   params->SetPiZero(0,0,5.07215e-01);
   params->SetPiZero(0,1,-5.35274e-01);
   params->SetPiZero(0,2,8.49925e-02);
   params->SetPiZero(0,3,-3.68740e-03);
   params->SetPiZero(0,4,5.48228e-05);
-
+  
   params->SetPiZero(1,0,4.590137e+02);
   params->SetPiZero(1,1,-7.079341e+01);
   params->SetPiZero(1,2,4.990735e+00);
   params->SetPiZero(1,3,-1.241302e-01);
   params->SetPiZero(1,4,1.065772e-03);
-
+  
   params->SetPiZero(2,0,1.376415e+02); 
   params->SetPiZero(2,1,-3.031577e+01);
   params->SetPiZero(2,2,2.474338e+00);
   params->SetPiZero(2,3,-6.903410e-02); 
   params->SetPiZero(2,4,6.244089e-04);
-
+  
   params->SetPiZero(3,0,0.);
   params->SetPiZero(3,1,1.145983e+00);
   params->SetPiZero(3,2,-2.476052e-01);
   params->SetPiZero(3,3,1.367373e-02);
   params->SetPiZero(3,4,0.);
-
+  
   params->SetPiZero(4,0,-2.09758e+02);
   params->SetPiZero(4,1,6.30080e+01);
   params->SetPiZero(4,2,-4.03890e+00);
   params->SetPiZero(4,3,1.08854e-01);
   params->SetPiZero(4,4,-9.36248e-04);
-
+  
   params->SetPiZero(5,0,-1.671477e+01);
   params->SetPiZero(5,1,2.995415e+00);
   params->SetPiZero(5,2,-6.040360e-02);
   params->SetPiZero(5,3,-6.137459e-04);
   params->SetPiZero(5,4,1.847328e-05);
-
- 
-//     params->SetHadronEnergyProb(0,0.);
-//     params->SetHadronEnergyProb(1,0.);
-//     params->SetHadronEnergyProb(2,1.);
-//     params->SetHadronEnergyProb(3,0.);
-//     params->SetHadronEnergyProb(4,0.);
- 
+  
+  
+  //     params->SetHadronEnergyProb(0,0.);
+  //     params->SetHadronEnergyProb(1,0.);
+  //     params->SetHadronEnergyProb(2,1.);
+  //     params->SetHadronEnergyProb(3,0.);
+  //     params->SetHadronEnergyProb(4,0.);
+  
   params->SetHadronEnergyProb(0, 4.767543e-02);
   params->SetHadronEnergyProb(1,-1.537523e+00);
   params->SetHadronEnergyProb(2,2.956727e-01);
   params->SetHadronEnergyProb(3,-3.051022e+01);
   params->SetHadronEnergyProb(4,-6.036931e-02);
-
-//   Int_t ii= 0;
-//   Int_t jj= 3;
-// 	AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
-//  			ii,jj, params->GetGamma(ii,jj), params->GetPiZero(ii,jj), params->GetHadron(ii,jj)));
-// 	cout << " Low Flux Parameters fGamma [2][2] = " << params->GetGamma(2,2) << endl;
-// 	cout << " Low Flux Parameters fHadron [2][2] = " << params->GetHadron(2,2) << endl;
-   
+  
+  //   Int_t ii= 0;
+  //   Int_t jj= 3;
+  // 	AliDebug(1,Form("PID parameters (%d, %d): fGamma=%.3f, fPi=%.3f, fHadron=%.3f",
+  //  			ii,jj, params->GetGamma(ii,jj), params->GetPiZero(ii,jj), params->GetHadron(ii,jj)));
+  // 	cout << " Low Flux Parameters fGamma [2][2] = " << params->GetGamma(2,2) << endl;
+  // 	cout << " Low Flux Parameters fHadron [2][2] = " << params->GetHadron(2,2) << endl;
+  
   return params;
-
+  
 }
 
 
@@ -590,14 +590,14 @@ void AliEMCALRecParam::Print(Option_t * opt) const
   if(!strcmp("",opt) || !strcmp("reco",opt)){
     AliInfo(Form("Clusterizer selected: %d", fClusterizerFlag));
     AliInfo(Form("Clusterization parameters :\n fClusteringThreshold=%.3f,\n fW0=%.3f,\n fMinECut=%.3f,\n fUnfold=%d,\n fLocMaxCut=%.3f,\n fTimeCut=%2.1f ns\n fTimeMin=%2.1f ns\n fTimeMax=%2.1f ns\n",
-		 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
+                 fClusteringThreshold,fW0,fMinECut,fUnfold,fLocMaxCut,fTimeCut*1.e9,fTimeMin*1e9,fTimeMax*1e9));
     
     AliInfo(Form("Track-matching cuts :\n dEta<%f, dPhi<%f, step=%f[cm], pT>%f, NITS>%f, NTPC>%f\n", 
-		 fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC));
-
+                 fMthCutEta, fMthCutPhi, fStep, fTrkCutPt, fTrkCutNITS,fTrkCutNTPC));
+    
     AliInfo(Form("Unfolding parameters, Shower shape function :\n")); 
     for(Int_t i = 0; i < 8; i++){
-	printf(" %f, ", fSSPars[i]);
+      printf(" %f, ", fSSPars[i]);
     }
     printf("\n Parameter 5 : ");
     for(Int_t i = 0; i < 3; i++){
@@ -614,7 +614,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("PID parameters, Gamma :\n"));
     for(Int_t i = 0; i < 6; i++){
       for(Int_t j = 0; j < 6; j++){
-	printf(" %f, ", fGamma[i][j]);
+        printf(" %f, ", fGamma[i][j]);
       }
       printf("\n");
     }
@@ -623,7 +623,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("PID parameters, Hadron :\n"));
     for(Int_t i = 0; i < 6; i++){
       for(Int_t j = 0; j < 6; j++){
-	printf(" %f, ", fHadron[i][j]);
+        printf(" %f, ", fHadron[i][j]);
       }
       printf("\n");
     }
@@ -633,7 +633,7 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     AliInfo(Form("PID parameters, Pi0zero :\n"));
     for(Int_t i = 0; i < 6; i++){
       for(Int_t j = 0; j < 6; j++){
-	printf(" %f, ", fPiZero[i][j]);
+        printf(" %f, ", fPiZero[i][j]);
       }
       printf("\n");
     }
@@ -641,12 +641,12 @@ void AliEMCALRecParam::Print(Option_t * opt) const
     printf("\n");
     
   }
-
+  
   if(!strcmp("",opt) || !strcmp("raw",opt)){
     AliInfo(Form("Raw signal parameters: \n gain factor=%f, order=%d, tau=%f, noise threshold=%d, nped samples=%d \n",
-		 fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
+                 fHighLowGainFactor,fOrderParameter,fTau,fNoiseThreshold,fNPedSamples));
     AliInfo(Form("Raw signal: remove bad channels? %d, \n \t with fitting algorithm %d, \n \t Use FALTRO %d, Fit LED events %d \n",
-		 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO, fFitLEDEvents));
+                 fRemoveBadChannels, fFittingAlgorithm, fUseFALTRO, fFitLEDEvents));
   }
 }
 

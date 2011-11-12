@@ -133,9 +133,9 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   // params->SetClusteringThreshold(0.5);
   // params->SetMinECut(0.45);
 
-  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
+  params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv2);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
-  params->SetMinECut(0.01);  //10 MeV    
+  params->SetMinECut(0.05);  //50 MeV    
    
   params->SetUnfold(kFALSE);
 
@@ -146,15 +146,10 @@ AliEMCALRecParam* GetHighMultiplicityParameters()
   params->SetTimeMax(825e-9);//825 ns
 
   //Track matching
-  params->SetTrkCutX(6.0);
-  params->SetTrkCutY(6.0);
-  params->SetTrkCutZ(6.0);
-  params->SetTrkCutR(10.0);
-  params->SetTrkCutAlphaMin(-50.0);
-  params->SetTrkCutAlphaMax( 50.0);
-  params->SetTrkCutNITS(3.0);
+
+  params->SetTrkCutNITS(1.0);
   params->SetTrkCutNTPC(20.0);
-  params->SetTrkCutAngle(10000.0);      // i.e. exclude this for the moment
+  params->SetExtrapolateStep(20.);
   
   //PID
 	
@@ -316,7 +311,7 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   //params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerNxN);
   params->SetClusterizerFlag(AliEMCALRecParam::kClusterizerv1);
   params->SetClusteringThreshold(0.1); // 100 MeV                                             
-  params->SetMinECut(0.01);  //10 MeV       	
+  params->SetMinECut(0.05);  //50 MeV       	
 
   params->SetUnfold(kFALSE);
 
@@ -326,6 +321,12 @@ AliEMCALRecParam* GetLowMultiplicityParameters()
   params->SetTimeMin(425e-9);//425 ns
   params->SetTimeMax(825e-9);//825 ns
 
+  // Track Matching
+  
+  params->SetTrkCutNITS(1.0);
+  params->SetTrkCutNTPC(20.0);
+  params->SetExtrapolateStep(20.);  
+  
   //PID parameters for pp  implemented 
   // as a first step, all array elements are initialized to 0.0
   Int_t i, j;
