@@ -109,7 +109,7 @@ int AliHLTTPCDataCompressionMonitorComponent::GetOutputDataTypes(AliHLTComponent
 void AliHLTTPCDataCompressionMonitorComponent::GetOutputDataSize( unsigned long& constBase, double& inputMultiplier )
 {
   /// inherited from AliHLTComponent: output data size estimator
-  constBase=100000;
+  constBase=10000000;
   inputMultiplier=1.0;
 }
 
