@@ -105,8 +105,13 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans()
 
 {
   //
+
   // Constructor
   //
+    for (Int_t i=0; i< 10; i++) {
+	fA[i] = 0;
+	fB[i] = 0;
+    }
 }
 
 //________________________________________________________________________
@@ -153,6 +158,10 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const char *name)
   //
   // Constructor
   //
+    for (Int_t i=0; i< 10; i++) {
+	fA[i] = 0;
+	fB[i] = 0;
+    }
   DefineOutput(1,  TList::Class());
 }
 
@@ -196,6 +205,10 @@ AliAnalysisTaskKMeans::AliAnalysisTaskKMeans(const AliAnalysisTaskKMeans &res)
       ,fCuts(0)
 {
     // Dummy copy constructor
+    for (Int_t i=0; i< 10; i++) {
+	fA[i] = 0;
+	fB[i] = 0;
+    }
 }
 
 AliAnalysisTaskKMeans& AliAnalysisTaskKMeans::operator=(const AliAnalysisTaskKMeans& /*trclass*/)
@@ -294,11 +307,11 @@ void AliAnalysisTaskKMeans::UserExec(Option_t *)
 {
   // Main loop
   // Called for each event
-    Double_t   phi [500];
-    Double_t   phiR[500];
-    Double_t    eta[500];
-    Double_t   etaR[500];
-    Double_t    pt [500];
+    Double_t   phi [500] = {0};
+    Double_t   phiR[500] = {0};
+    Double_t    eta[500] = {0};
+    Double_t   etaR[500] = {0};
+    Double_t    pt [500] = {0};
 
   if (!fInputEvent) {
     Printf("ERROR: fESD not available");
