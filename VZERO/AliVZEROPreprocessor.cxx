@@ -128,8 +128,11 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
             	                   Log(Form("Cannot open file %s",fileName.Data()));
 	    	  	           return 1;}
 		Float_t pedMean[128], pedSigma[128], adcMean[128], adcSigma[128] ;
-		for(Int_t j=0; j<128; j++)fscanf(file,"%f %f %f %f",
-			                  &pedMean[j], &pedSigma[j], &adcMean[j], &adcSigma[j]);
+		for(Int_t j=0; j<128; j++) {
+		  Int_t resScan = fscanf(file,"%f %f %f %f",
+					 &pedMean[j], &pedSigma[j], &adcMean[j], &adcSigma[j]);
+		  if (resScan != 4) Log(Form("Bad data in file %s !",fileName.Data()));
+		}
 		fclose(file);
 	    	
 		calibData->SetPedestal(pedMean);
@@ -220,7 +223,8 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
     Int_t tempCh;
     Float_t tempAlpha;
     for(Int_t j=0; j<64; ++j) {
-      fscanf(file2,"%d %f", &tempCh, &tempAlpha);
+      Int_t resScan = fscanf(file2,"%d %f", &tempCh, &tempAlpha);
+      if (resScan != 2) Log(Form("Bad data in file %s !",fileName.Data()));
       alpha[tempCh+1] = tempAlpha;
     }
     fclose(file2);
