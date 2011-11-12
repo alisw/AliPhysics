@@ -354,7 +354,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
      triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CPBI2-")                   )   fhNEvents->Fill(1.5);
+     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhNEvents->Fill(1.5);
   if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
   if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
@@ -366,7 +366,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") &&
        !triggerclasses.Contains("CPBI2EGA")              )   fhNEvents->Fill(6.5); }
   
-  //std::cout << "trigger = " << triggerclasses << std::endl;
+  std::cout << "trigger = " << triggerclasses << std::endl;
   
   //map for cells and patches
   
@@ -430,8 +430,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
       emcalCell[int(posY/2)][int(posX/2)] += amp; 
 
-      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) emcalCellL1G[int(posY/2)][int(posX/2)] += amp;
-      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
+      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA")) emcalCellL1G[int(posY/2)][int(posX/2)] += amp;
+      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE")) emcalCellL1J[int(posY/2)][int(posX/2)] += amp;
       
     }
   }
@@ -462,8 +462,8 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       Float_t ampL0 = 0.;
       trg.GetAmplitude(ampL0);
       emcalTrigL0[posY][posX] += ampL0;
-      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD")) emcalTrigL0L1G[posY][posX] += ampL0;
-      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD")) emcalTrigL0L1J[posY][posX] += ampL0;
+      if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA")) emcalTrigL0L1G[posY][posX] += ampL0;
+      if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE")) emcalTrigL0L1J[posY][posX] += ampL0;
       totTRU += ampL0;
       
       if (nTimes) 
@@ -622,7 +622,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
          triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
          triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
          triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-         triggerclasses.Contains("CPBI2-")                   )   fhClusMB     ->Fill(clus->E());
+         triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhClusMB     ->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
          triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusL0     ->Fill(clus->E());
       if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
@@ -640,7 +640,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
      triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CPBI2-")                   )   fhClusMaxMB     ->Fill(emax);
+     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhClusMaxMB     ->Fill(emax);
   if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusMaxL0     ->Fill(emax);
   if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
