@@ -49,6 +49,7 @@ public:
   void   SetV0TotalSignalHistogramsRange (Int_t nbins,  Float_t max) { fNBinsV0Signal    = nbins; fMaxV0Signal    = max ; }
   void   SetSTUFEERatioHistogramsRange   (Int_t nbins,  Float_t max) { fNBinsSTUFEERatio = nbins; fMaxSTUFEERatio = max ; }
   void   SetSTUTRURatioHistogramsRange   (Int_t nbins,  Float_t max) { fNBinsSTUTRURatio = nbins; fMaxSTUFEERatio = max ; }
+  void   SetClusterEHistogramsRange      (Int_t nbins,  Float_t max) { fNBinsClusterE    = nbins; fMaxClusterE    = max ; }
 
   
 private:
@@ -57,7 +58,7 @@ private:
   AliEMCALGeometry *fGeometry;       //  Access to EMCAL geometry utils
   TString           fGeoName;        //  Name of geometry used
   
-  AliEMCALRecoUtils *fRecoUtils;     // RecoUtils
+  AliEMCALRecoUtils *fRecoUtils;     //  RecoUtils
   
   TH1F             *fhNEvents;       //! Number of selected events
   TH2F             *fhFORAmp;        //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
@@ -83,12 +84,12 @@ private:
   TH1F             *fhClusL1J;       //! Clusters distribution for L1J trigger
   TH1F             *fhClusL1GOnly;   //! Clusters distribution for L1G trigger and not L1J
   TH1F             *fhClusL1JOnly;   //! Clusters distribution for L1J trigger and not L1G
-  TH1F             *fhClusMaxMB;        //! Maximum E Cluster per event distribution for MB trigger
-  TH1F             *fhClusMaxL0;        //! Maximum E Cluster per event distribution for L0 trigger	
-  TH1F             *fhClusMaxL1G;       //! Maximum E Cluster per event distribution for L1G trigger
-  TH1F             *fhClusMaxL1J;       //! Maximum E Cluster per event distribution for L1J trigger
-  TH1F             *fhClusMaxL1GOnly;   //! Maximum E Cluster per event distribution for L1G trigger and not L1J
-  TH1F             *fhClusMaxL1JOnly;   //! Maximum E Cluster per event distribution for L1J trigger and not L1G
+  TH1F             *fhClusMaxMB;       //! Maximum E Cluster per event distribution for MB trigger
+  TH1F             *fhClusMaxL0;       //! Maximum E Cluster per event distribution for L0 trigger	
+  TH1F             *fhClusMaxL1G;      //! Maximum E Cluster per event distribution for L1G trigger
+  TH1F             *fhClusMaxL1J;      //! Maximum E Cluster per event distribution for L1J trigger
+  TH1F             *fhClusMaxL1GOnly;  //! Maximum E Cluster per event distribution for L1G trigger and not L1J
+  TH1F             *fhClusMaxL1JOnly;  //! Maximum E Cluster per event distribution for L1J trigger and not L1G
   
   // Histograms bins
   
@@ -102,6 +103,8 @@ private:
   Float_t           fMaxSTUFEERatio   ; // Maximum value for STU/FEE ratios histograms
   Int_t             fNBinsSTUTRURatio ; // Number of bins for STU/TRU ratios histograms
   Float_t           fMaxSTUTRURatio   ; // Maximum value for STU/TRU ratios histograms
+  Int_t             fNBinsClusterE    ; // Number of bins for E cluster histograms
+  Float_t           fMaxClusterE      ; // Maximum value for E cluster histograms
   
   //Constants needed by the class: EMCAL 
   static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2; 
