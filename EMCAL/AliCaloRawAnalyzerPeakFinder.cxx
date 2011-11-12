@@ -287,6 +287,9 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
       
       FILE *fp  =  fopen(filename, "r");
       FILE *fpc =  fopen(filenameCoarse, "r");
+
+      int status = 0;
+      int statusc = 0;
       
       if( fp == 0 )
 	    {
@@ -299,17 +302,23 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsASCII()
       else
 	    {
 	      for(int m = 0; m < n ; m++ )
-        {
-          fscanf(fp,  "%lf\t", &fPFAmpVectors[i][j][m] );
-          fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
-        }
-	      fscanf(fp,   "\n" );
-	      fscanf(fpc,  "\n" );
+		{
+		  status = fscanf(fp,  "%lf\t", &fPFAmpVectors[i][j][m] );
+		  statusc = fscanf(fpc, "%lf\t", &fPFAmpVectorsCoarse[i][j][m] );
+		  if (!status) { AliFatal( Form( "could not read file: %s", filename ) ); }
+		  if (!statusc) { AliFatal( Form( "could not read file: %s", filenameCoarse ) ); }
+		}
+	      status = fscanf(fp,   "\n" );
+	      statusc = fscanf(fpc,  "\n" );
+	      if (status < 0) { AliFatal( Form( "could not read file: %s", filename ) ); }
+	      if (statusc < 0) { AliFatal( Form( "could not read file: %s", filenameCoarse ) ); }
 	      for(int m = 0; m < n ; m++ )
-        {
-          fscanf(fp, "%lf\t",   &fPFTofVectors[i][j][m]  );
-          fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
-        }
+		{
+		  status = fscanf(fp, "%lf\t",   &fPFTofVectors[i][j][m]  );
+		  statusc = fscanf(fpc, "%lf\t",  &fPFTofVectorsCoarse[i][j][m]  );  
+		  if (!status) { AliFatal( Form( "could not read file: %s", filename ) ); }
+		  if (!statusc) { AliFatal( Form( "could not read file: %s", filenameCoarse ) ); }
+		}
 	      
 	      fPeakFinderVectors->SetVector( i, j, fPFAmpVectors[i][j], fPFTofVectors[i][j],    
                                       fPFAmpVectorsCoarse[i][j], fPFTofVectorsCoarse[i][j] );   
