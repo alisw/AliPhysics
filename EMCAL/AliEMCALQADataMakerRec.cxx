@@ -525,7 +525,7 @@ void AliEMCALQADataMakerRec::InitRaws()
  Add2RawsList(hS2, kJL1, expert, image, !saveCorr) ;
 	
  TH2I *hS3 = new TH2I("hL1GV0", "L1 Gamma patch amplitude versus V0 signal", 500, 0, 50000, 1500, 0, 1500);
- Add2RawsList(hS3, kGL1V0, expert, !image, !saveCorr) ;
+ Add2RawsList(hS3, kGL1V0, expert, image, !saveCorr) ;
 	
  TH2I *hS4 = new TH2I("hL1JV0", "L1 Jet patch amplitude versus V0 signal", 500, 0, 50000, 1000, 0, 1000);
  Add2RawsList(hS4, kJL1V0, expert, !image, !saveCorr) ;
