@@ -631,20 +631,36 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String());
 	 }
 	 else {
-           if (ntokens > 13) {
-  	     AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
-	     return kFALSE;
-           }
-	   pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),
+           if (ntokens == 10){ 
+	    pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),
 					    ((TObjString*)tokens->At(1))->String(),
 					    ((TObjString*)tokens->At(2))->String(),
 					    ((TObjString*)tokens->At(3))->String());
-	   pfp->SetNa1(((TObjString*)tokens->At(4))->String().Atoi());
-	   pfp->SetNa2(((TObjString*)tokens->At(5))->String().Atoi());
-	   pfp->SetNb1(((TObjString*)tokens->At(6))->String().Atoi());
-	   pfp->SetNb2(((TObjString*)tokens->At(7))->String().Atoi());
-	   pfp->SetTa(((TObjString*)tokens->At(8))->String().Atoi());
-	   pfp->SetTb(((TObjString*)tokens->At(9))->String().Atoi());
+	    pfp->SetNa1(((TObjString*)tokens->At(4))->String().Atoi());
+	    pfp->SetNa2(((TObjString*)tokens->At(5))->String().Atoi());
+	    pfp->SetNb1(((TObjString*)tokens->At(6))->String().Atoi());
+	    pfp->SetNb2(((TObjString*)tokens->At(7))->String().Atoi());
+	    pfp->SetTa(((TObjString*)tokens->At(8))->String().Atoi());
+	    pfp->SetTb(((TObjString*)tokens->At(9))->String().Atoi());
+	  }else if(ntokens == 13){
+	    UInt_t pfdef[12];
+	    for(Int_t i=0;i<12;i++){
+	       TString ss(((TObjString*)tokens->At(i+1))->String());
+	       ss.Remove(0,2);
+	       UInt_t num=0;
+	       for(Int_t j=ss.Length()-1;j>=0;j--){
+	        UInt_t nn=ss[j];
+		if(nn<58)nn=nn-48; else nn=10+nn-97;
+		num=num+(1<<(ss.Length()-1-j)*4)*nn;
+	        //cout << ss[j] << " " << nn << " "  << num << endl;
+	       }
+	       pfdef[i]=num;
+	    }   
+	    pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),pfdef);
+	  }else{
+  	     AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
+	     return kFALSE;
+          }
 	 }
 	 AddPFProtection(pfp);
        }

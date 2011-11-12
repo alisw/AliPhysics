@@ -30,22 +30,10 @@
 class AliTriggerPFProtection : public TNamed {
 
 public:
-                          AliTriggerPFProtection() :
-			    TNamed(), 
-			    fINTa(), fINTb(),fINT(),
-			    fNa1(0),fNa2(0),fTa(0),
-			    fNb1(0),fNb2(0),fTb(0) {}
-                          AliTriggerPFProtection( TString & name) :
-			    TNamed(name, name), 
-			    fINTa(), fINTb(),fINT(),
-			    fNa1(0),fNa2(0),fTa(0),
-			    fNb1(0),fNb2(0),fTb(0) {}
-                          AliTriggerPFProtection( TString & name,
-                                                  TString & inta, TString & intb, TString & interaction ) :
-			    TNamed(name, name), 
-			    fINTa(inta), fINTb(intb),fINT(interaction),
-			    fNa1(0),fNa2(0),fTa(0),
-			    fNb1(0),fNb2(0),fTb(0) {}
+                          AliTriggerPFProtection();
+                          AliTriggerPFProtection( TString & name);
+                          AliTriggerPFProtection( TString & name,TString & inta, TString & intb, TString & interaction );
+			  AliTriggerPFProtection(TString& name, UInt_t* pfdef);  
                virtual   ~AliTriggerPFProtection() {}
 
   //  Setters
@@ -83,11 +71,12 @@ private:
                  UInt_t     fNb1;                 // mmax number of INTb   for  the event of type INT 
                  UInt_t     fNb2;                 // mmax number of INTb for the event of  type NOT INT
                  UInt_t     fTb;                  // mprotection interval for INTb
+		 UInt_t     pfdef[12];            // 12 words=3 levels * 4; pfcommon,pfblocka,pfblockb,pflut
 
 		AliTriggerPFProtection(const AliTriggerPFProtection & inp );
 		AliTriggerPFProtection& operator = (const AliTriggerPFProtection& inp);
 
-   ClassDef( AliTriggerPFProtection, 1 )  // Define a Trigger Past Future Protection 
+   ClassDef( AliTriggerPFProtection, 2 )  // Define a Trigger Past Future Protection 
 };
 
 
