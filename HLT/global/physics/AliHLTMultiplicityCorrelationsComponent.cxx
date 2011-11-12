@@ -719,7 +719,7 @@ void AliHLTMultiplicityCorrelationsComponent::CreateTriggerList() {
   // see header file for class documentation
 
   // -- loop over all trigger bits
-  for (Int_t idx = 0 ; idx < 49 ; ++idx) {
+  for (Int_t idx = 0 ; idx < 50 ; ++idx) {
 
     TString triggerName(fCTPData->Name(idx));
 
