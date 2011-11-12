@@ -87,6 +87,8 @@ void AliDAJetFinder::FindJets()
 	}while((fBeta<betaStop || nc<4) && nc<fNclustMax);
 
 	Int_t *xx=new Int_t[fNeff];
+	for (Int_t i = 0; i < fNeff; i++) xx[i] = 0;
+	
 	EndDetAnn(nk,xData,xx,dEtSum,vPx,vPy,mPyx,mY);
 	StoreJets(nk,xData,xx,mY);
 	delete [] xx;
@@ -274,7 +276,11 @@ void AliDAJetFinder::NumCl(Int_t &nc,Int_t &nk,TVectorD *vPy,  TMatrixD *mPyx,TM
 		Int_t *nSame = new Int_t[nk];
 		Int_t **iSame = new Int_t*[nk];
 		Int_t **cont = new Int_t*[nk];
-		for (Int_t iClust=0; iClust<nk; iClust++) cont[iClust]=new Int_t[nk],iSame[iClust]=new Int_t[nk];
+		for (Int_t iClust=0; iClust<nk; iClust++) {
+		    cont[iClust] =new Int_t[nk];
+		    iSame[iClust]=new Int_t[nk];
+		}
+		
 		for (Int_t iClust=0; iClust<nk; iClust++){
 			iSame[iClust][iClust]=1;
 			for (Int_t iClust1=iClust+1; iClust1<nk; iClust1++){
