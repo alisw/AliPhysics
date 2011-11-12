@@ -109,7 +109,7 @@ void AliACORDEQADataMakerRec::EndOfDetectorCycle(AliQAv1::TASKINDEX_t task, TObj
       	Double_t integralSL0 = 0;
       	Double_t integralAMU = 0;
 
-	if (itc==-1 && (integralAMU=h2->Integral()==0)||(integralSL0=h0->Integral()==0)) continue;
+	if ((itc==-1) && ( (integralAMU=h2->Integral()==0) || (integralSL0=h0->Integral()==0) ) ) continue;
 
 	Float_t maxSL0 = 1.1*h0->GetMaximum();
 	Float_t scaleSL0 = 0.;
