@@ -85,7 +85,9 @@ fIsSelectedCuts(0),
 fIsSelectedPID(0),
 fMinPtCand(-1.),
 fMaxPtCand(100000.),
-fKeepSignalMC(kFALSE)
+fKeepSignalMC(kFALSE),
+fIsCandTrackSPDFirst(kFALSE),
+fMaxPtCandTrackSPDFirst(0.)
 {
   //
   // Default Constructor
@@ -131,7 +133,9 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fIsSelectedPID(source.fIsSelectedPID),
   fMinPtCand(source.fMinPtCand),
   fMaxPtCand(source.fMaxPtCand),
-  fKeepSignalMC(source.fKeepSignalMC)
+  fKeepSignalMC(source.fKeepSignalMC),
+  fIsCandTrackSPDFirst(source.fIsCandTrackSPDFirst),
+  fMaxPtCandTrackSPDFirst(source.fMaxPtCandTrackSPDFirst)
 {
   //
   // Copy constructor
@@ -187,6 +191,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMinPtCand=source.fMinPtCand;
   fMaxPtCand=source.fMaxPtCand;
   fKeepSignalMC=source.fKeepSignalMC;
+  fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
+  fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
 
   if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
@@ -383,6 +389,9 @@ Bool_t AliRDHFCuts::AreDaughtersSelected(AliAODRecoDecayHF *d) const {
     //printf("charge %d\n",dgTrack->Charge());
     if(dgTrack->Charge()==0) continue; // it's not a track, but a V0
 
+    if(fIsCandTrackSPDFirst && d->Pt()<fMaxPtCandTrackSPDFirst)
+      { if(!dgTrack->HasPointOnITSLayer(0)) { retval = kFALSE; continue; } }
+
     if(!IsDaughterSelected(dgTrack,&vESD,fTrackCuts)) retval = kFALSE;
   }
   
@@ -570,6 +579,7 @@ void AliRDHFCuts::PrintAll() const {
     if(fUseCentrality==4) estimator = "SPD clusters outer"; 
     printf("Centrality class considered: %.1f-%.1f, estimated with %s",fMinCentrality,fMaxCentrality,estimator.Data());
   }
+  if(fIsCandTrackSPDFirst) printf("Check for candidates with pt < %2.2f, that daughters fullfill kFirst criteria\n",fMaxPtCandTrackSPDFirst);
 
   if(fVarNames){
     cout<<"Array of variables"<<endl;
