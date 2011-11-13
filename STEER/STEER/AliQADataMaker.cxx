@@ -502,13 +502,13 @@ TObjArray* AliQADataMaker::GetMatchingHistos(TObjArray ** list, Int_t index, TOb
 	int indCl = GetEventTrigClass(icl)->GetUniqueID();
 	//	AliInfo(Form("Ind %d at %d of %p of %p",index,indCl, arr, list[AliRecoParam::AConvert(fEventSpecie)]));
 	TH1* histo = dynamic_cast<TH1*>(arr->At(indCl));
-	dest->AddLast(histo);
+	if (histo) dest->AddLast(histo);
 	//	AliInfo(Form("EvCl%d IndTr%d add to %d IndH %d %p %s",icl,indCl,dest->LastIndex(),index,histo,histo ? histo->GetName():"XXX"));
       }
       // check if original histo was kept
       if (arr->TestBit(AliQAv1::GetOrigHistoKeptBit())) {
 	TH1* histo = dynamic_cast<TH1*>(arr->At(GetNTrigClasses()));
-	dest->AddLast(histo);
+	if (histo) dest->AddLast(histo);
 	//	AliInfo(Form("Def add to %d inex: %d %p %s",dest->LastIndex(),index,histo,histo ? histo->GetName():"XXX"));
       }
     }
@@ -527,7 +527,7 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x)
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x);
+    for (int ih=count;ih--;) if ((TH1*)arr->At(ih)) ((TH1*)arr->At(ih))->Fill(x);
   }
   return count;
 }
@@ -540,7 +540,7 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x, double 
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Fill(x,y);
+    for (int ih=count;ih--;) if ((TH1*)arr->At(ih)) ((TH1*)arr->At(ih))->Fill(x,y);
   }
   return count;
 }
@@ -553,7 +553,7 @@ Int_t AliQADataMaker::FillData(TObjArray ** list, Int_t index, double x, double 
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->Fill(x,y,z);
+    for (int ih=count;ih--;) if ((TH2*)arr->At(ih)) ((TH2*)arr->At(ih))->Fill(x,y,z);
   }
   return count;
 }
@@ -566,7 +566,7 @@ Int_t AliQADataMaker::SetDataBinContent(TObjArray ** list, Int_t index, int bin,
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(bin,w);
+    for (int ih=count;ih--;)  if ((TH2*)arr->At(ih)) ((TH2*)arr->At(ih))->SetBinContent(bin,w);
   }
   return count;
 }
@@ -579,7 +579,7 @@ Int_t AliQADataMaker::SetDataBinContent(TObjArray ** list, Int_t index, int binX
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinContent(binX,binY,w);
+    for (int ih=count;ih--;)  if ((TH2*)arr->At(ih)) ((TH2*)arr->At(ih))->SetBinContent(binX,binY,w);
   }
   return count;
 }
@@ -592,7 +592,7 @@ Int_t AliQADataMaker::SetDataBinError(TObjArray ** list, Int_t index, int bin, d
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(bin,err);
+    for (int ih=count;ih--;)  if ((TH2*)arr->At(ih)) ((TH2*)arr->At(ih))->SetBinError(bin,err);
   }
   return count;
 }
@@ -605,7 +605,7 @@ Int_t AliQADataMaker::SetDataBinError(TObjArray ** list, Int_t index, int binX, 
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH2*)arr->At(ih))->SetBinError(binX,binY,err);
+    for (int ih=count;ih--;)  if ((TH2*)arr->At(ih)) ((TH2*)arr->At(ih))->SetBinError(binX,binY,err);
   }
   return count;
 }
@@ -618,7 +618,7 @@ Int_t AliQADataMaker::ResetData(TObjArray ** list, Int_t index, Option_t* option
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->Reset(option);
+    for (int ih=count;ih--;)  if ((TH1*)arr->At(ih)) ((TH1*)arr->At(ih))->Reset(option);
   }
   return count;
 }
@@ -631,7 +631,7 @@ Int_t AliQADataMaker::ResetStatsData(TObjArray ** list, Int_t index)
   int count = 0;
   if (arr) {
     count = arr->GetEntriesFast();
-    for (int ih=count;ih--;) ((TH1*)arr->At(ih))->ResetStats();
+    for (int ih=count;ih--;) if ((TH1*)arr->At(ih))  ((TH1*)arr->At(ih))->ResetStats();
   }
   return count;
 }
