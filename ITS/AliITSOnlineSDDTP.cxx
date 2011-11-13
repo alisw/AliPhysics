@@ -102,12 +102,15 @@ void AliITSOnlineSDDTP::ReadBaselines(){
     }
     return;
   }
-  fscanf(basf,"%d\n",&fHighThreshold);
-  fscanf(basf,"%d\n",&fLowThreshold);
+  Int_t check = fscanf(basf,"%d\n",&fHighThreshold);
+  if(check<1)AliError("Error while reading file with baselines");
+  check = fscanf(basf,"%d\n",&fLowThreshold);
+  if(check<1)AliError("Error while reading file with baselines");
   Int_t n,ok,eqbase,offbase;
   Float_t base,rms,cmn,corrnoi;
   for(Int_t ian=0;ian<fgkNAnodes;ian++){
-    fscanf(basf,"%d %d %f %d %d %f %f %f\n",&n,&ok,&base,&eqbase,&offbase,&rms,&cmn,&corrnoi);
+    check = fscanf(basf,"%d %d %f %d %d %f %f %f\n",&n,&ok,&base,&eqbase,&offbase,&rms,&cmn,&corrnoi);
+    if(check<1)AliError("Error while reading file with baselines");
     fBaseline[ian]=base;
     fEqBaseline[ian]=eqbase;
     fOffsetBaseline[ian]=offbase;

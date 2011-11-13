@@ -302,7 +302,7 @@ void AliITSDDLModuleMapSDD::ReadDDLModuleMap(Char_t *ddlmapfile){
   Int_t mod;
   for(Int_t iddl=0;iddl<kDDLsNumber;iddl++){
     for(Int_t ichan=0; ichan<kModulesPerDDL; ichan++){
-      fscanf(fil,"%d",&mod);
+      if(fscanf(fil,"%d",&mod)<1)AliError(Form("Not able to read file %s ",ddlmapfile));
       fDDLModuleMap[iddl][ichan]=mod;
     }
   }
