@@ -128,7 +128,7 @@ fhGPMaxVV0TT(0),
 fhJPMaxVV0TT(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
-fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
+fNBinsV0Signal   (5000), fMaxV0Signal   (50000),
 fNBinsSTUFEERatio(2000), fMaxSTUFEERatio(20000),
 fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200),
 fNBinsClusterE   (500),  fMaxClusterE   (100)
@@ -295,9 +295,14 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhTRUSTU    ->SetYTitle("channel");
   fhTRUSTU    ->SetZTitle("counts");
   
-  fhGPMaxVV0TT = new TH2F("fGPMaxVV0TT","",5000,0,50000,1000,0,1000);
-  fhJPMaxVV0TT = new TH2F("fJPMaxVV0TT","",5000,0,50000,1000,0,1000);
-
+  fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
+  fhGPMaxVV0TT ->SetXTitle("V0 TT");
+  fhGPMaxVV0TT ->SetXTitle("Patch Max");
+  
+  fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
+  fhJPMaxVV0TT ->SetXTitle("V0 TT");
+  fhJPMaxVV0TT ->SetXTitle("Patch Max");
+  
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);

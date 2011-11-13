@@ -90,8 +90,8 @@ private:
   TH1F             *fhClusMaxL1J;      //! Maximum E Cluster per event distribution for L1J trigger
   TH1F             *fhClusMaxL1GOnly;  //! Maximum E Cluster per event distribution for L1G trigger and not L1J
   TH1F             *fhClusMaxL1JOnly;  //! Maximum E Cluster per event distribution for L1J trigger and not L1G
-  TH2F             *fhGPMaxVV0TT;      //!
-  TH2F             *fhJPMaxVV0TT;      //!
+  TH2F             *fhGPMaxVV0TT;      //! V0 signal vs maximum gamma L1 patch
+  TH2F             *fhJPMaxVV0TT;      //! V0 signal vs maximum jet L1 patch
   
   // Histograms bins
   
@@ -122,7 +122,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 5);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 6);   
 };
 
 #endif 
