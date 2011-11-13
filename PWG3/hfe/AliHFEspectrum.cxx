@@ -132,7 +132,7 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
   // If no inclusive spectrum, then take only efficiency map for beauty electron
   // and the appropriate correlation matrix
   //
-    Int_t kNdim;
+    Int_t kNdim = 3;
     if(fBeamType==0) kNdim=3;
     if(fBeamType==1) kNdim=4;
 
@@ -356,7 +356,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     return kFALSE;
   }
   
-  if((fStepTrue == -1) && (fStepMC == -1) && (fStepData == -1)) {
+  if((fStepTrue < 0) && (fStepMC < 0) && (fStepData < 0)) {
     AliInfo("You have to set the steps before: SetMCTruthStep, SetMCEffStep, SetStepToCorrect");
     return kFALSE;
   }
@@ -423,7 +423,7 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
   //////////
   if(fDebugLevel > 0.0) {
 
-    Int_t ptpr;
+    Int_t ptpr = 0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
   
@@ -463,10 +463,15 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
     ratiocorrected->SetStats(0);
     ratiocorrected->Draw();
 
-    TH1D unfoldingspectrac[fNCentralityBinAtTheEnd];
-    TGraphErrors unfoldingspectracn[fNCentralityBinAtTheEnd];
-    TH1D correctedspectrac[fNCentralityBinAtTheEnd];
-    TGraphErrors correctedspectracn[fNCentralityBinAtTheEnd];
+    //TH1D unfoldingspectrac[fNCentralityBinAtTheEnd];
+    //TGraphErrors unfoldingspectracn[fNCentralityBinAtTheEnd];
+    //TH1D correctedspectrac[fNCentralityBinAtTheEnd];
+    //TGraphErrors correctedspectracn[fNCentralityBinAtTheEnd];
+
+    TH1D *unfoldingspectrac = new TH1D[fNCentralityBinAtTheEnd];
+    TGraphErrors *unfoldingspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
+    TH1D *correctedspectrac = new TH1D[fNCentralityBinAtTheEnd];
+    TGraphErrors *correctedspectracn = new TGraphErrors[fNCentralityBinAtTheEnd];
 
     
 
@@ -639,6 +644,11 @@ Bool_t AliHFEspectrum::Correct(Bool_t subtractcontamination){
       }
       out->Close(); delete out;
     }
+
+    if (unfoldingspectrac) delete[] unfoldingspectrac;
+    if (unfoldingspectracn)  delete[] unfoldingspectracn;
+    if (correctedspectrac) delete[] correctedspectrac;
+    if (correctedspectracn) delete[] correctedspectracn;
 
   }
 
@@ -1208,7 +1218,7 @@ AliCFDataGrid* AliHFEspectrum::GetConversionBackground(){
   // calculate conversion background
   //
 
-  Double_t evtnorm[1];
+  Double_t evtnorm[1] = {0.0};
   if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
   printf("check event!!! %lf \n",evtnorm[0]);
 
@@ -1241,7 +1251,7 @@ AliCFDataGrid* AliHFEspectrum::GetNonHFEBackground(){
   // calculate non-HFE background
   //
 
-  Double_t evtnorm[1];
+  Double_t evtnorm[1] = {0.0};
   if(fNMCbgEvents) evtnorm[0]= double(fNEvents[0])/double(fNMCbgEvents);
   printf("check event!!! %lf \n",evtnorm[0]);
 
@@ -1854,7 +1864,7 @@ TGraphErrors *AliHFEspectrum::Normalize(THnSparse * const spectrum,Int_t i) cons
  
   if(fNEvents[i] > 0) {
 
-    Int_t ptpr;
+    Int_t ptpr = 0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
     
@@ -1877,7 +1887,7 @@ TGraphErrors *AliHFEspectrum::Normalize(AliCFDataGrid * const spectrum,Int_t i) 
   //
   if(fNEvents[i] > 0) {
 
-    Int_t ptpr;
+    Int_t ptpr=0;
     if(fBeamType==0) ptpr=0;
     if(fBeamType==1) ptpr=1;
     
