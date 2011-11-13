@@ -152,23 +152,23 @@ void AliAnalysisTaskVertexESD::UserCreateOutputObjects()
   fOutput->Add(fhSPDVertexX);
   fhSPDVertexY = new TH1F("fhSPDVertexY","SPDVertex y; y vertex [cm]; events",200,-1,1);
   fOutput->Add(fhSPDVertexY);
-  fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",200,-20,20);
+  fhSPDVertexZ = new TH1F("fhSPDVertexZ","SPDVertex z; z vertex [cm]; events",250,-25,25);
   fOutput->Add(fhSPDVertexZ);
   	
-  fhSPDVertexZonly = new TH1F("fhSPDVertexZonly","SPDVertexer z; z vertex [cm]; events",200,-20,20);
+  fhSPDVertexZonly = new TH1F("fhSPDVertexZonly","SPDVertexer z; z vertex [cm]; events",250,-25,25);
   fOutput->Add(fhSPDVertexZonly);	
 	
-  fhTRKVertexX = new TH1F("fhTRKVertexX","TRKVertex x; x vertex [cm]; events",200,-1,1);
+  fhTRKVertexX = new TH1F("fhTRKVertexX","TRKVertex x; x vertex [cm]; events",2000,-1,1);
   fOutput->Add(fhTRKVertexX);
-  fhTRKVertexY = new TH1F("fhTRKVertexY","TRKVertex y; y vertex [cm]; events",200,-1,1);
+  fhTRKVertexY = new TH1F("fhTRKVertexY","TRKVertex y; y vertex [cm]; events",2000,-1,1);
   fOutput->Add(fhTRKVertexY);
-  fhTRKVertexZ = new TH1F("fhTRKVertexZ","TRKVertex z; z vertex [cm]; events",200,-20,20);
+  fhTRKVertexZ = new TH1F("fhTRKVertexZ","TRKVertex z; z vertex [cm]; events",250,-25,25);
   fOutput->Add(fhTRKVertexZ);
   fhTPCVertexX = new TH1F("fhTPCVertexX","TPCVertex x; x vertex [cm]; events",200,-3,3);
   fOutput->Add(fhTPCVertexX);
   fhTPCVertexY = new TH1F("fhTPCVertexY","TPCVertex y; y vertex [cm]; events",200,-3,3);
   fOutput->Add(fhTPCVertexY);
-  fhTPCVertexZ = new TH1F("fhTPCVertexZ","TPCVertex z; z vertex [cm]; events",200,-20,20);
+  fhTPCVertexZ = new TH1F("fhTPCVertexZ","TPCVertex z; z vertex [cm]; events",250,-25,25);
   fOutput->Add(fhTPCVertexZ);
   
   
