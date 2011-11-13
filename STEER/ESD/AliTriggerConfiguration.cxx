@@ -650,16 +650,21 @@ Bool_t AliTriggerConfiguration::ProcessConfigurationLine(const char* line, Int_t
 	       UInt_t num=0;
 	       for(Int_t j=ss.Length()-1;j>=0;j--){
 	        UInt_t nn=ss[j];
-		if(nn<58)nn=nn-48; else nn=10+nn-97;
+		if(nn >= (UInt_t)'0' && nn <= (UInt_t)'9')nn=nn-(UInt_t)'0'; else 
+		if(nn >= (UInt_t)'A' && nn <= (UInt_t)'F')nn=10+nn-(UInt_t)'A'; else
+		if(nn >= (UInt_t)'a' && nn <= (UInt_t)'f')nn=10+nn-(UInt_t)'a'; else{
+  	     		AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
+	     		//return kFALSE;
+		}
 		num=num+(1<<(ss.Length()-1-j)*4)*nn;
-	        //cout << ss[j] << " " << nn << " "  << num << endl;
+	        //cout << ss[j] << " 2 " << nn << " "  << num << endl;
 	       }
 	       pfdef[i]=num;
 	    }   
 	    pfp = new AliTriggerPFProtection(((TObjString*)tokens->At(0))->String(),pfdef);
 	  }else{
   	     AliError(Form("Invalid trigger pfs syntax (%s)!",strLine.Data()));
-	     return kFALSE;
+	     //return kFALSE;
           }
 	 }
 	 AddPFProtection(pfp);

@@ -71,7 +71,7 @@ private:
                  UInt_t     fNb1;                 // mmax number of INTb   for  the event of type INT 
                  UInt_t     fNb2;                 // mmax number of INTb for the event of  type NOT INT
                  UInt_t     fTb;                  // mprotection interval for INTb
-		 UInt_t     pfdef[12];            // 12 words=3 levels * 4; pfcommon,pfblocka,pfblockb,pflut
+		 UInt_t     fPFdef[12];            // 12 words=3 levels * 4; pfcommon,pfblocka,pfblockb,pflut
 
 		AliTriggerPFProtection(const AliTriggerPFProtection & inp );
 		AliTriggerPFProtection& operator = (const AliTriggerPFProtection& inp);

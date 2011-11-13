@@ -51,7 +51,7 @@ fINTa(), fINTb(),fINT(),
 fNa1(0),fNa2(0),fTa(0),
 fNb1(0),fNb2(0),fTb(0) 
 {
-for(Int_t i=0;i<12;i++)pfdef[i]=0;
+for(Int_t i=0;i<12;i++)fPFdef[i]=0;
 }
 AliTriggerPFProtection::AliTriggerPFProtection( TString & name) :
 TNamed(name, name), 
@@ -59,7 +59,7 @@ fINTa(), fINTb(),fINT(),
 fNa1(0),fNa2(0),fTa(0),
 fNb1(0),fNb2(0),fTb(0)
 {
-for(Int_t i=0;i<12;i++)pfdef[i]=0;
+for(Int_t i=0;i<12;i++)fPFdef[i]=0;
 }
 AliTriggerPFProtection::AliTriggerPFProtection( TString & name,TString & inta, TString & intb, TString & interaction ) :
 TNamed(name, name), 
@@ -67,15 +67,15 @@ fINTa(inta), fINTb(intb),fINT(interaction),
 fNa1(0),fNa2(0),fTa(0),
 fNb1(0),fNb2(0),fTb(0)
 {
-for(Int_t i=0;i<12;i++)pfdef[i]=0;
+for(Int_t i=0;i<12;i++)fPFdef[i]=0;
 }
-AliTriggerPFProtection::AliTriggerPFProtection(TString& name,UInt_t* pfdefin)
+AliTriggerPFProtection::AliTriggerPFProtection(TString& name,UInt_t* pfdef)
 :TNamed(name,name),
 fINTa(), fINTb(),fINT(),
 fNa1(0),fNa2(0),fTa(0),
 fNb1(0),fNb2(0),fTb(0)
 {
-for(Int_t i=0;i<12;i++)pfdef[i]=pfdefin[i];
+for(Int_t i=0;i<12;i++)fPFdef[i]=pfdef[i];
 }
 //_____________________________________________________________________________
 void AliTriggerPFProtection::Print( const Option_t* ) const
@@ -89,8 +89,8 @@ void AliTriggerPFProtection::Print( const Option_t* ) const
   cout << "  Na1: " << fNa1 << " Na2: " << fNa2 << " Ta: " << fTa << endl;
   cout << "  Nb1: " << fNb1 << " Nb2: " << fNb2 << " Tb: " << fTb << endl;
   if(1){
-    cout << "pfdef: " << hex;
-    for(Int_t i=0;i<12;i++)cout << " 0x" << pfdef[i];
+    cout << "PFdef: " << hex;
+    for(Int_t i=0;i<12;i++)cout << " 0x" << fPFdef[i];
     cout << dec << endl;
   }
 }
