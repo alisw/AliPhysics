@@ -176,7 +176,8 @@ AliTRDcalibration::AliTRDcalibration(char* name)
 AliTRDcalibration::~AliTRDcalibration() 
 {
   // Default destructor
-
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  //
   if(fNbTRDTrack) delete fNbTRDTrack;
   if(fNbTRDTrackOffline) delete fNbTRDTrackOffline;
   if(fNbTRDTrackStandalone) delete fNbTRDTrackStandalone;

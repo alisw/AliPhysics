@@ -201,7 +201,7 @@ AliHMPIDTaskQA::~AliHMPIDTaskQA() {
   //destructor
   //
   Info("~AliHMPIDTaskQA","Calling Destructor");
-  if (fHmpHistList /*&& !AliAnalysisManager::GetAnalysisManager()->IsProofMode()*/) delete fHmpHistList;
+  if (fHmpHistList && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fHmpHistList;
 }
 
 //___________________________________________________________________________

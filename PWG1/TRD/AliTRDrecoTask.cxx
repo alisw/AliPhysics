@@ -31,6 +31,7 @@
 #include "AliAnalysisTask.h"
 #include "AliExternalTrackParam.h"
 
+#include "AliAnalysisManager.h"
 #include "info/AliTRDeventInfo.h"
 #include "AliTRDrecoTask.h"
 #include "AliTRDtrackV1.h"
@@ -105,7 +106,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fPlotFuncList = NULL;
   }
   
-  if(fContainer){
+  if(fContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
     fContainer = NULL;
