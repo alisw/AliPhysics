@@ -424,10 +424,10 @@ UInt_t AliITSPlaneEffSPD::GetKey(const UInt_t mod, const UInt_t chip, const Bool
   // get key given a basic block
 UInt_t key=99999;
 if(mod>=kNModule || chip>=kNChip)
-  {AliWarning("GetKey: you asked for a non existing block"); return 99999;}
+  {AliDebug(1,"GetKey: you asked for a non existing block"); return 99999;}
 key = mod*kNChip+chip;
 if(FO) { 
-  if(BCm4>= kNClockPhase) {AliWarning("GetKey: you have asked Fast OR and a non exisiting BC modulo 4"); return 99999;}
+  if(BCm4>= kNClockPhase) {AliDebug(1,"GetKey: you have asked Fast OR and a non exisiting BC modulo 4"); return 99999;}
   key += kNModule*kNChip*(BCm4+1);
 }
 return key;
@@ -441,7 +441,7 @@ UInt_t AliITSPlaneEffSPD::SwitchChipKeyNumbering(UInt_t key) const {
 // Implemented by valerio.altini@ba.infn.it
 
 if(key>=kNModule*kNChip*(kNClockPhase+1))
-  {AliWarning("SwitchChipKeyNumbering: you asked for a non existing key"); return 99999;}
+  {AliDebug(1,"SwitchChipKeyNumbering: you asked for a non existing key"); return 99999;}
 UInt_t mod=9999,chip=9999,phase=9999;
 GetModAndChipFromKey(key,mod,chip);
 if(mod<kNModuleLy1) chip = kNChip-(chip+1);
@@ -470,7 +470,7 @@ UInt_t AliITSPlaneEffSPD::GetBCm4FromKey(const UInt_t key) const {
 if(key>=kNModule*kNChip*(kNClockPhase+1))
   {AliError("GetBCm4FromKey: you asked for a non existing key"); return 999;}
 if(key<kNModule*kNChip) 
-  {AliWarning("GetBCm4FromKey: key is below 1200, why are you asking for FO related stuff"); return 999;}
+  {AliDebug(1,"GetBCm4FromKey: key is below 1200, why are you asking for FO related stuff"); return 999;}
 
 return key/(kNModule*kNChip) - 1 ;
 }
@@ -723,7 +723,7 @@ Bool_t AliITSPlaneEffSPD::GetBlockBoundaries(const UInt_t key, Float_t& xmn,Floa
 //  Return: kTRUE if computation was succesfully, kFALSE otherwise
 //
 if(key>=kNModule*kNChip)
-  {AliWarning("GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
+  {AliDebug(1,"GetBlockBoundaries: you asked for a non existing key"); return kFALSE;}
 UInt_t chip=GetChipFromKey(key);
 zmn=GetLocZFromCol(chip*kNCol);
 zmx=GetLocZFromCol((chip+1)*kNCol);

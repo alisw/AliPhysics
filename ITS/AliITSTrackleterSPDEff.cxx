@@ -412,7 +412,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
 
     found=FindChip(key, 0, vtx, fClustersLay2[iC2][0],fClustersLay2[iC2][1]);
     if (!found) {
-      AliWarning(Form("Reconstruct: cannot find chip prediction on inner layer for cluster %d on the outer layer",iC2)); 
+      AliDebug(1,Form("Reconstruct: cannot find chip prediction on inner layer for cluster %d on the outer layer",iC2)); 
       key=999999;
     }
     nfTraPred1+=(Int_t)found; // this for debugging purpose
@@ -456,7 +456,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
        Int_t lab3=(Int_t)fClustersLay1[iC1][5];
        // do it always as a function of the chip number used to built the prediction
        found=FindChip(key,0,vtx,fClustersLay1[iC1][0],fClustersLay1[iC1][1],fClustersLay1[iC1][2]);
-       if (!found) {AliWarning(
+       if (!found) {AliDebug(1,
          Form("Reconstruct MC: cannot find chip on inner layer for cluster %d",iC1)); }
        else {
          if((lab1 != -2  &&  PrimaryTrackChecker(lab1,pStack) ) ||
@@ -585,7 +585,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
 // Check that this cluster is still in the same chip (here you pass also Zvtx for better computation)
       found=FindChip(key,1,vtx,fClustersLay2[iC2WithBestDist][0],fClustersLay2[iC2WithBestDist][1],fClustersLay2[iC2WithBestDist][2]);
       if(!found){
-        AliWarning(
+        AliDebug(1,
          Form("Reconstruct: cannot find chip on outer layer for cluster %d",iC2WithBestDist));
         key=999999;
       }
@@ -664,7 +664,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
        Int_t lab3=(Int_t)fClustersLay2[iC2][5];
        // do it always as a function of the chip number used to built the prediction
        found=FindChip(key,1,vtx,fClustersLay2[iC2][0],fClustersLay2[iC2][1],fClustersLay2[iC2][2]);
-       if (!found) {AliWarning(
+       if (!found) {AliDebug(1,
          Form("Reconstruct MC: cannot find chip on outer layer for cluster %d",iC2)); }
        else {
          if((lab1 != -2  &&  PrimaryTrackChecker(lab1,pStack) ) ||
@@ -786,7 +786,7 @@ AliITSTrackleterSPDEff::Reconstruct(AliStack *pStack, TTree *tRef, Bool_t lbkg) 
 // Check that this cluster is still in the same chip (here you pass also Zvtx for better computation)
       found=FindChip(key,0,vtx,fClustersLay1[iC1WithBestDist][0],fClustersLay1[iC1WithBestDist][1],fClustersLay1[iC1WithBestDist][2]);
       if(!found){
-        AliWarning(
+        AliDebug(1,
          Form("Reconstruct: cannot find chip on inner layer for cluster %d",iC1WithBestDist));
         key=999999;
       }
