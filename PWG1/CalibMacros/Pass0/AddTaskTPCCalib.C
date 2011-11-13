@@ -207,7 +207,8 @@ void ConfigOCDB(Int_t run){
   if (!array){
     printf("TPC reco param not available");
   }
-  AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(0);
+  // 0 - Low Flux (pp), 1- High Flux (Pb-Pb)
+  AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(1);
 
   transform->SetCurrentRecoParam(tpcRecoParam);
   tpcRecoParam->SetUseGainCorrectionTime(0);
