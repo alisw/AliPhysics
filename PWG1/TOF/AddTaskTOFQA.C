@@ -1,8 +1,7 @@
 /*  created by fbellini@cern.ch on 14/09/2010 */
-/*  last modified by fbellini   on 08/03/2010 */
+/*  last modified by fbellini   on 11/11/2011 */
 
-//#include "AliAnalysisTaskTOFqa.h"
-AliAnalysisTaskSE * AddTaskTOFQA() 
+AliAnalysisTaskSE * AddTaskTOFQA(Bool_t flagEnableAdvancedCheck=kFALSE) 
 {
   // Task for checking TOF QA
  
@@ -13,24 +12,20 @@ AliAnalysisTaskSE * AddTaskTOFQA()
   }   
 
   // Check the analysis type using the event handlers connected to the analysis manager.
-  //==============================================================================
   if (!mgr->GetInputEventHandler()) {
     ::Error("AddTask", "This task requires an input event handler");
     return NULL;
   }
   TString inputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
-    
-    // Configure analysis
-    //===========================================================================
+  
   // Create the task
   AliAnalysisTaskTOFqa *task = new AliAnalysisTaskTOFqa("taskTOFqa");
+  task->EnableAdvancedCheck(flagEnableAdvancedCheck);
   //AliLog::SetClassDebugLevel("AliAnalysisTaskTOFqa",1);
   mgr->AddTask(task);
 
-  //--------------- set the filtering ------------
-  // Barrel Tracks
-
   /* cuts used for QA in 2010 p-p */
+  /*
   AliESDtrackCuts* esdTrackCutsLoose2010 = new AliESDtrackCuts("AliESDtrackCuts", "esdTrackCutsLoose2010");
   esdTrackCutsLoose2010->SetMinNClustersTPC(70); 
   esdTrackCutsLoose2010->SetMaxChi2PerClusterTPC(3.5); 
@@ -41,7 +36,7 @@ AliAnalysisTaskSE * AddTaskTOFQA()
   esdTrackCutsLoose2010->SetRequireSigmaToVertex(kTRUE); 
   esdTrackCutsLoose2010->SetAcceptKinkDaughters(kFALSE); 
   esdTrackCutsLoose2010->SetMaxNsigmaToVertex(4.0);
-
+  */
   /* standard cuts ITS-TPC 2010 */
   AliESDtrackCuts* esdTrackCutsStd2010 = new AliESDtrackCuts("AliESDtrackCuts", "Standard2010");
   // TPC  
@@ -68,11 +63,15 @@ AliAnalysisTaskSE * AddTaskTOFQA()
   AliAnalysisDataContainer *cGeneralTOFqa = mgr->CreateContainer("cGeneralTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
   AliAnalysisDataContainer *cTimeZeroTOFqa = mgr->CreateContainer("cTimeZeroTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
    AliAnalysisDataContainer *cPIDTOFqa = mgr->CreateContainer("cPIDTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+   AliAnalysisDataContainer *cPosTracksTOFqa = mgr->CreateContainer("cPosTracksTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+   AliAnalysisDataContainer *cNegTracksTOFqa = mgr->CreateContainer("cNegTracksTOFqa",TList::Class(),AliAnalysisManager::kOutputContainer,Form("%s:TOF_Performance",mgr->GetCommonFileName()));
+
   // Attach i/o
   mgr->ConnectInput(task, 0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, cGeneralTOFqa);
   mgr->ConnectOutput(task, 2, cTimeZeroTOFqa);
   mgr->ConnectOutput(task, 3, cPIDTOFqa);
-  
+  mgr->ConnectOutput(task, 4, cPosTracksTOFqa);
+  mgr->ConnectOutput(task, 5, cNegTracksTOFqa);
   return task;
 }
