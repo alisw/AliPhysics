@@ -90,23 +90,23 @@ public:
   TH2F **fhEqualizedMult; //! Equalized Multiplicity per channel
   TH2F **fhEqualizedMultSum; //! Equalized Multiplicity V0A % V0C
 
-  Int_t   fNBinTotMult; //! number of bin of histo fhTotRecoMult
-  Float_t fTotMultMax;  //! max of histo fhTotRecoMult
+  Int_t   fNBinTotMult; // number of bin of histo fhTotRecoMult
+  Float_t fTotMultMax;  // max of histo fhTotRecoMult
 
-  Int_t   fNBinMult;    //! number of bin of histo fhRecoMult
-  Float_t fV0AMultMax;  //! max VZERO-A of histo fhRecoMult
-  Float_t fV0CMultMax;  //! max VZERO-C of histo fhRecoMult
+  Int_t   fNBinMult;    // number of bin of histo fhRecoMult
+  Float_t fV0AMultMax;  // max VZERO-A of histo fhRecoMult
+  Float_t fV0CMultMax;  // max VZERO-C of histo fhRecoMult
  
-  Int_t   fNBinOnlineCharge;   //! number of bin of histo fhOnlineCharge
-  Float_t fV0AOnlineChargeMax; //! max VZERO-A of histo fhOnlineCharge
-  Float_t fV0COnlineChargeMax; //! max VZERO-C of histo fhOnlineCharge
+  Int_t   fNBinOnlineCharge;   // number of bin of histo fhOnlineCharge
+  Float_t fV0AOnlineChargeMax; // max VZERO-A of histo fhOnlineCharge
+  Float_t fV0COnlineChargeMax; // max VZERO-C of histo fhOnlineCharge
 
-  Int_t   fNBinEquaMult;     //! number of bin of histo fhEqualizedMult
-  Float_t fEquaMultMax;      //! max of histo fhEqualizedMult
+  Int_t   fNBinEquaMult;     // number of bin of histo fhEqualizedMult
+  Float_t fEquaMultMax;      // max of histo fhEqualizedMult
 
-  Int_t   fNBinSumsEqMult;     //! number of bin of histo fhEqualizedMultSum
-  Float_t fV0AEqMultMax;       //! max VZERO-A of histo fhEqualizedMultSum
-  Float_t fV0CEqMultMax;       //! max VZERO-C of histo fhEqualizedMultSum
+  Int_t   fNBinSumsEqMult;     // number of bin of histo fhEqualizedMultSum
+  Float_t fV0AEqMultMax;       // max VZERO-A of histo fhEqualizedMultSum
+  Float_t fV0CEqMultMax;       // max VZERO-C of histo fhEqualizedMultSum
 
   AliAnaVZEROPbPb(const AliAnaVZEROPbPb&); // not implemented
   AliAnaVZEROPbPb& operator=(const AliAnaVZEROPbPb&); // not implemented

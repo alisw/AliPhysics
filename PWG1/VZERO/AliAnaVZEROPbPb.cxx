@@ -54,10 +54,10 @@ fNBinOnlineCharge(100),
 fV0AOnlineChargeMax(20000),
 fV0COnlineChargeMax(30000),
 fNBinEquaMult(100),
-fEquaMultMax(50),
+fEquaMultMax(200.),
 fNBinSumsEqMult(100),
-fV0AEqMultMax(1000),
-fV0CEqMultMax(1000)
+fV0AEqMultMax(2000.),
+fV0CEqMultMax(2000.)
 
 {
   // Constructor
@@ -105,11 +105,11 @@ fV0CMultMax(30000),
 fNBinOnlineCharge(100),
 fV0AOnlineChargeMax(20000),
 fV0COnlineChargeMax(30000),
-fNBinEquaMult(100),
-fEquaMultMax(50),
+fNBinEquaMult(400),
+fEquaMultMax(1000),
 fNBinSumsEqMult(100),
-fV0AEqMultMax(1000),
-fV0CEqMultMax(1000)
+fV0AEqMultMax(4000.),
+fV0CEqMultMax(4000.)
 {
   // Constructor
   // Init arrays
