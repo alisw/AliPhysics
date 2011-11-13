@@ -231,7 +231,7 @@ UInt_t AliVZEROPreprocessor::Process(TMap* dcsAliasMap)
 
     // Check that everything was properly transmitted
     printf("Equalization factors (0->64): ");
-    for(Int_t j=0; j<64; ++j) printf("%.3f ",alpha[j+1]);
+    for(Int_t j=0; j<64; ++j) printf("%.5f ",alpha[j+1]);
     printf("\n");
 
     eqFactors->SetContent(alpha);

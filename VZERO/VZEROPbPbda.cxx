@@ -256,8 +256,8 @@ int main(int argc, char **argv) {
     for(int i = 0; i < 64; ++i) fMedian[i]->GetQuantiles(1,&beta[i],&q);
 
     for(Int_t i=0; i<64; i++) {
-      fprintf(fp," %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
-      printf(" %d %.3f\n",GetOfflineChannel(i), beta[i]*64.);				       
+      fprintf(fp," %d %.5f\n",GetOfflineChannel(i), beta[i]*64.);				       
+      printf(" %d %.5f\n",GetOfflineChannel(i), beta[i]*64.);				       
     }
 
     /* close local result file and FXS result file*/
