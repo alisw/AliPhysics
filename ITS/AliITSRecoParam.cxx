@@ -201,8 +201,8 @@ fCorrectLorentzAngleSSD(kTRUE),
 fTanLorentzAngleHolesSSD(0.016),  // tan(0.94 degrees)
 fTanLorentzAngleElectronsSSD(0.068), // tan(3.98 degrees)
 //
-fESDV0Params(NULL),
-fOptReco("All")
+fOptReco("All"),
+fESDV0Params(NULL)
 {
   //
   // constructor
