@@ -88,7 +88,7 @@
 #include "AliTRDrecoParam.h"
 #include "AliTRDpidUtil.h"
 #include "AliTRDinfoGen.h"
-
+#include "AliAnalysisManager.h"
 #include "info/AliTRDclusterInfo.h"
 #include "info/AliTRDeventInfo.h"
 
@@ -203,7 +203,7 @@ AliTRDresolution::~AliTRDresolution()
   //
   // Destructor
   //
-
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fProj){fProj->Delete(); delete fProj;}
   if(fCl){fCl->Delete(); delete fCl;}
   if(fMCcl){fMCcl->Delete(); delete fMCcl;}
