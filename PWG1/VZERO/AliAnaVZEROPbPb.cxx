@@ -409,8 +409,8 @@ void AliAnaVZEROPbPb::FillPerL2TriggerHistos(){
     AliCentrality *centrality = fESD->GetCentrality();
   	Float_t percentile = centrality->GetCentralityPercentile("V0M");
   	Float_t spdPercentile = centrality->GetCentralityPercentile("CL1");
-  	if (spdPercentile < 0) spdPercentile = 0;
-  	if (percentile < 0) percentile = 0;
+	//  	if (spdPercentile < 0) spdPercentile = 0;
+	//  	if (percentile < 0) percentile = 0;
 	fhCentrality[iClass]->Fill(percentile);
 	fhV0vsSPDCentrality[iClass]->Fill(spdPercentile,percentile);
 	
