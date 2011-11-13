@@ -51,6 +51,7 @@
 #include "Cal/AliTRDCalPIDNN.h"
 #include "AliTRDcheckPID.h"
 #include "AliTRDinfoGen.h"
+#include "AliAnalysisManager.h"
 #include "info/AliTRDtrackInfo.h"
 #include "info/AliTRDpidInfo.h"
 #include "info/AliTRDv0Info.h"
@@ -119,6 +120,7 @@ void AliTRDcheckPID::LocalInit()
 //________________________________________________________________________
 AliTRDcheckPID::~AliTRDcheckPID() 
 {
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fPID){fPID->Delete(); delete fPID;}
   if(fGraph){fGraph->Delete(); delete fGraph;}
   if(fUtil) delete fUtil;
@@ -130,7 +132,7 @@ void AliTRDcheckPID::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-
+  
   AliTRDrecoTask::UserCreateOutputObjects();
   fPID = new TObjArray();
   fPID->SetOwner(kTRUE);

@@ -192,7 +192,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
     delete fV0List;
     fV0List = NULL;
   }
-  if(fContainer){ 
+  if(fContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){ 
     fContainer->Delete(); 
     delete fContainer;
     fContainer = NULL;

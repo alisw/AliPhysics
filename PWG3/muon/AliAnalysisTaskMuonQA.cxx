@@ -113,8 +113,8 @@ AliAnalysisTaskMuonQA::~AliAnalysisTaskMuonQA()
     delete fListExpert;
     delete fTrackCounters;
     delete fEventCounters;
+    delete fListNorm;
   }
-  delete fListNorm;
   delete fTriggerClass;
   delete fSelectTriggerClass;
 }

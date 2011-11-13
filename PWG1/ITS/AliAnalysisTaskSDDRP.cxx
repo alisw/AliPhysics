@@ -99,7 +99,7 @@ AliAnalysisTaskSDDRP::AliAnalysisTaskSDDRP() : AliAnalysisTaskSE("SDD RecPoints"
 //___________________________________________________________________________
 AliAnalysisTaskSDDRP::~AliAnalysisTaskSDDRP(){
   //
-  if (fOutput) {
+  if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     delete fOutput;
     fOutput = 0;
   }
