@@ -581,101 +581,94 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       outputContainer->Add(fhPtHbpUeRightNeutral) ;
       
     }  
-    
-    //if data is MC, fill more histograms
-    if(IsDataMC()){
-      fh2phiLeadingParticle=new TH2F("fh2phiLeadingParticle","#phi resolustion for trigger particles",nptbins,ptmin,ptmax,100,-1,1);
-      fh2phiLeadingParticle->GetXaxis()->SetTitle("p_{T gen Leading} (GeV/c)");
-      fh2phiLeadingParticle->GetYaxis()->SetTitle("(#phi_{rec}-#phi_{gen})/#phi_{gen}");
-      
-      fhMCLeadingCount=new TH1F("MCLeadingTriggerCount","MCLeadingTriggerCount",nptbins,ptmin,ptmax);
-      fhMCLeadingCount->SetXTitle("p_{T trig}");
-      
-      fhMCEtaCharged  = new TH2F
-      ("MCEtaCharged","MC #eta_{h^{#pm}}  vs p_{T #pm}",
-       nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhMCEtaCharged->SetYTitle("#eta_{h^{#pm}} (rad)");
-      fhMCEtaCharged->SetXTitle("p_{T #pm} (GeV/c)");
-      
-      fhMCPhiCharged  = new TH2F
-      ("MCPhiCharged","#MC phi_{h^{#pm}}  vs p_{T #pm}",
-       200,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhMCPhiCharged->SetYTitle("MC #phi_{h^{#pm}} (rad)");
-      fhMCPhiCharged->SetXTitle("p_{T #pm} (GeV/c)");
-      
-      fhMCDeltaPhiDeltaEtaCharged  = new TH2F
-      ("MCDeltaPhiDeltaEtaCharged","#MC phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
-       140,-2.,5.,200,-2,2); 
-      fhMCDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
-      fhMCDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
-      
-      fhMCDeltaEtaCharged  = new TH2F
-      ("MCDeltaEtaCharged","MC #eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger} and p_{T assoc}",
-       nptbins,ptmin,ptmax,200,-2,2); 
-      fhMCDeltaEtaCharged->SetYTitle("#Delta #eta");
-      fhMCDeltaEtaCharged->SetXTitle("p_{T trigger} (GeV/c)");
-      
-      fhMCDeltaPhiCharged  = new TH2F
-      ("MCDeltaPhiCharged","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}",
-       nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhMCDeltaPhiCharged->SetYTitle("#Delta #phi");
-      fhMCDeltaPhiCharged->SetXTitle("p_{T trigger} (GeV/c)");
-      
-      fhMCDeltaPhiChargedPt  = new TH2F
-      ("MCDeltaPhiChargedPt","MC #phi_{trigger} - #phi_{#h^{#pm}} vs p_{T h^{#pm}}",
-       nptbins,ptmin,ptmax,140,-2.,5.);
-      fhMCDeltaPhiChargedPt->SetYTitle("#Delta #phi");
-      fhMCDeltaPhiChargedPt->SetXTitle("p_{T h^{#pm}} (GeV/c)");
-      
-      fhMCPtImbalanceCharged  = 
-      new TH2F("MCCorrelationCharged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T trigger}",
-               nptbins,ptmin,ptmax,200,0.,2.); 
-      fhMCPtImbalanceCharged->SetYTitle("z_{trigger h^{#pm}}");
-      fhMCPtImbalanceCharged->SetXTitle("p_{T trigger}");  
-      
-      fhMCPtHbpCharged  = 
-      new TH2F("MCHbpCharged","MC #xi = ln(1/x_{E}) with charged hadrons",
-               nptbins,ptmin,ptmax,200,0.,10.); 
-      fhMCPtHbpCharged->SetYTitle("ln(1/x_{E})");
-      fhMCPtHbpCharged->SetXTitle("p_{T trigger}");
-      
-      fhMCPtTrigPout  = 
-      new TH2F("MCPtTrigPout","AOD MC Pout with triggers",
-               nptbins,ptmin,ptmax,2*nptbins,-ptmax,ptmax); 
-      fhMCPtTrigPout->SetYTitle("p_{out} (GeV/c)");
-      fhMCPtTrigPout->SetXTitle("p_{T trigger} (GeV/c)"); 
-      
-      fhMCPtAssocDeltaPhi  = 
-      new TH2F("fhMCPtAssocDeltaPhi","AOD MC delta phi with associated charged hadrons",
-               nptbins,ptmin,ptmax,140,-2.,5.); 
-      fhMCPtAssocDeltaPhi->SetYTitle("#Delta #phi");
-      fhMCPtAssocDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)"); 
-      
-      outputContainer->Add(fh2phiLeadingParticle);
-      outputContainer->Add(fhMCLeadingCount);
-      outputContainer->Add(fhMCDeltaPhiDeltaEtaCharged);
-      outputContainer->Add(fhMCPhiCharged) ;
-      outputContainer->Add(fhMCEtaCharged) ;
-      outputContainer->Add(fhMCDeltaEtaCharged) ;
-      outputContainer->Add(fhMCDeltaPhiCharged) ; 
-      
-      outputContainer->Add(fhMCDeltaPhiChargedPt) ;
-      outputContainer->Add(fhMCPtImbalanceCharged) ;
-      outputContainer->Add(fhMCPtHbpCharged) ;
-      outputContainer->Add(fhMCPtTrigPout) ;
-      outputContainer->Add(fhMCPtAssocDeltaPhi) ;      
-    } //for MC histogram
-    
-    //Keep neutral meson selection histograms if requiered
-    //Setting done in AliNeutralMesonSelection
-    if(GetNeutralMesonSelection()){
-      TList * nmsHistos = GetNeutralMesonSelection()->GetCreateOutputObjects() ;
-      if(GetNeutralMesonSelection()->AreNeutralMesonSelectionHistosKept())
-        for(Int_t i = 0; i < nmsHistos->GetEntries(); i++) outputContainer->Add(nmsHistos->At(i)) ;
-      delete nmsHistos;
-    }
-    
+        
   }//Correlation with neutral hadrons
+  
+  //if data is MC, fill more histograms
+  if(IsDataMC()){
+    
+    fh2phiLeadingParticle=new TH2F("fh2phiLeadingParticle","#phi resolustion for trigger particles",nptbins,ptmin,ptmax,100,-1,1);
+    fh2phiLeadingParticle->GetXaxis()->SetTitle("p_{T gen Leading} (GeV/c)");
+    fh2phiLeadingParticle->GetYaxis()->SetTitle("(#phi_{rec}-#phi_{gen})/#phi_{gen}");
+    
+    fhMCLeadingCount=new TH1F("MCLeadingTriggerCount","MCLeadingTriggerCount",nptbins,ptmin,ptmax);
+    fhMCLeadingCount->SetXTitle("p_{T trig}");
+    
+    fhMCEtaCharged  = new TH2F
+    ("MCEtaCharged","MC #eta_{h^{#pm}}  vs p_{T #pm}",
+     nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+    fhMCEtaCharged->SetYTitle("#eta_{h^{#pm}} (rad)");
+    fhMCEtaCharged->SetXTitle("p_{T #pm} (GeV/c)");
+    
+    fhMCPhiCharged  = new TH2F
+    ("MCPhiCharged","#MC phi_{h^{#pm}}  vs p_{T #pm}",
+     200,ptmin,ptmax,nphibins,phimin,phimax); 
+    fhMCPhiCharged->SetYTitle("MC #phi_{h^{#pm}} (rad)");
+    fhMCPhiCharged->SetXTitle("p_{T #pm} (GeV/c)");
+    
+    fhMCDeltaPhiDeltaEtaCharged  = new TH2F
+    ("MCDeltaPhiDeltaEtaCharged","#MC phi_{trigger} - #phi_{h^{#pm}} vs #eta_{trigger} - #eta_{h^{#pm}}",
+     140,-2.,5.,200,-2,2); 
+    fhMCDeltaPhiDeltaEtaCharged->SetXTitle("#Delta #phi");
+    fhMCDeltaPhiDeltaEtaCharged->SetYTitle("#Delta #eta");    
+    
+    fhMCDeltaEtaCharged  = new TH2F
+    ("MCDeltaEtaCharged","MC #eta_{trigger} - #eta_{h^{#pm}} vs p_{T trigger} and p_{T assoc}",
+     nptbins,ptmin,ptmax,200,-2,2); 
+    fhMCDeltaEtaCharged->SetYTitle("#Delta #eta");
+    fhMCDeltaEtaCharged->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhMCDeltaPhiCharged  = new TH2F
+    ("MCDeltaPhiCharged","#phi_{trigger} - #phi_{h^{#pm}} vs p_{T trigger}",
+     nptbins,ptmin,ptmax,140,-2.,5.); 
+    fhMCDeltaPhiCharged->SetYTitle("#Delta #phi");
+    fhMCDeltaPhiCharged->SetXTitle("p_{T trigger} (GeV/c)");
+    
+    fhMCDeltaPhiChargedPt  = new TH2F
+    ("MCDeltaPhiChargedPt","MC #phi_{trigger} - #phi_{#h^{#pm}} vs p_{T h^{#pm}}",
+     nptbins,ptmin,ptmax,140,-2.,5.);
+    fhMCDeltaPhiChargedPt->SetYTitle("#Delta #phi");
+    fhMCDeltaPhiChargedPt->SetXTitle("p_{T h^{#pm}} (GeV/c)");
+    
+    fhMCPtImbalanceCharged  = 
+    new TH2F("MCCorrelationCharged","z_{trigger h^{#pm}} = p_{T h^{#pm}} / p_{T trigger}",
+             nptbins,ptmin,ptmax,200,0.,2.); 
+    fhMCPtImbalanceCharged->SetYTitle("z_{trigger h^{#pm}}");
+    fhMCPtImbalanceCharged->SetXTitle("p_{T trigger}");  
+    
+    fhMCPtHbpCharged  = 
+    new TH2F("MCHbpCharged","MC #xi = ln(1/x_{E}) with charged hadrons",
+             nptbins,ptmin,ptmax,200,0.,10.); 
+    fhMCPtHbpCharged->SetYTitle("ln(1/x_{E})");
+    fhMCPtHbpCharged->SetXTitle("p_{T trigger}");
+    
+    fhMCPtTrigPout  = 
+    new TH2F("MCPtTrigPout","AOD MC Pout with triggers",
+             nptbins,ptmin,ptmax,2*nptbins,-ptmax,ptmax); 
+    fhMCPtTrigPout->SetYTitle("p_{out} (GeV/c)");
+    fhMCPtTrigPout->SetXTitle("p_{T trigger} (GeV/c)"); 
+    
+    fhMCPtAssocDeltaPhi  = 
+    new TH2F("fhMCPtAssocDeltaPhi","AOD MC delta phi with associated charged hadrons",
+             nptbins,ptmin,ptmax,140,-2.,5.); 
+    fhMCPtAssocDeltaPhi->SetYTitle("#Delta #phi");
+    fhMCPtAssocDeltaPhi->SetXTitle("p_{T trigger} (GeV/c)"); 
+        
+    outputContainer->Add(fh2phiLeadingParticle);
+    outputContainer->Add(fhMCLeadingCount);
+    outputContainer->Add(fhMCDeltaPhiDeltaEtaCharged);
+    outputContainer->Add(fhMCPhiCharged) ;
+    outputContainer->Add(fhMCEtaCharged) ;
+    outputContainer->Add(fhMCDeltaEtaCharged) ;
+    outputContainer->Add(fhMCDeltaPhiCharged) ; 
+    
+    outputContainer->Add(fhMCDeltaPhiChargedPt) ;
+    outputContainer->Add(fhMCPtImbalanceCharged) ;
+    outputContainer->Add(fhMCPtHbpCharged) ;
+    outputContainer->Add(fhMCPtTrigPout) ;
+    outputContainer->Add(fhMCPtAssocDeltaPhi) ;      
+  } //for MC histogram
+  
   
   return outputContainer;
   
@@ -1517,7 +1510,6 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
             fhMCDeltaEtaCharged->Fill(ptprim,etaprim-mcTrackEta);
             fhMCDeltaPhiCharged->Fill(ptprim,mcdeltaPhi);
             fhMCPtAssocDeltaPhi->Fill(mcTrackPt, mcdeltaPhi);
-            //  fhDeltaPhiCharged->Fill(ptTrig, deltaPhi);
             fhMCDeltaPhiDeltaEtaCharged->Fill(mcdeltaPhi,etaprim-mcTrackEta);
             
             //delta phi cut for correlation
@@ -1603,13 +1595,14 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
               if(GetDebug()>0)  
                 printf("AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation() - Charged hadron: track Pt %f, track Phi %f, phi trigger %f. Cuts:  delta phi  %2.2f < %2.2f < %2.2f, pT min %2.2f \n",
                        mcTrackPt,mcTrackPhi, phiprim,fDeltaPhiMinCut, mcdeltaPhi, fDeltaPhiMaxCut, GetMinPt());              
+
               // Fill Histograms
+
               fhMCEtaCharged->Fill(mcTrackPt,mcTrackEta);
               fhMCPhiCharged->Fill(mcTrackPt,mcTrackPhi);
               fhMCDeltaEtaCharged->Fill(ptprim,etaprim-mcTrackEta);
               fhMCDeltaPhiCharged->Fill(ptprim,mcdeltaPhi);
               fhMCPtAssocDeltaPhi->Fill(mcTrackPt, mcdeltaPhi);
-              //  fhDeltaPhiCharged->Fill(ptTrig, deltaPhi);
               fhMCDeltaPhiDeltaEtaCharged->Fill(mcdeltaPhi,etaprim-mcTrackEta);
               
               //delta phi cut for correlation
