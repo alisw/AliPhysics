@@ -192,7 +192,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
     delete fV0List;
     fV0List = NULL;
   }
-  if(fContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){ 
+  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){ 
     fContainer->Delete(); 
     delete fContainer;
     fContainer = NULL;
@@ -409,7 +409,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
   // Author: Ionut Arsene <I.C.Arsene@gsi.de>
   Int_t centralityBin = -1;
   AliDebug(2, Form("  Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
-  if(TString(fESDev->GetESDRun()->GetBeamType()).Contains("Pb-Pb")){
+  TString beamtype = fESDev->GetESDRun()->GetBeamType();
+  if(beamtype.Contains("Pb-Pb") || beamtype.Contains("A-A")){
     centralityBin = 4;
     const AliMultiplicity *mult = fESDev->GetMultiplicity();
     Double_t zdcNeutronEnergy = fESDev->GetZDCN1Energy()+fESDev->GetZDCN2Energy();

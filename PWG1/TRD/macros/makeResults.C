@@ -79,10 +79,10 @@ void makeSummaryESD(const Char_t* filename="QAResults.root", Double_t* trendValu
 void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE, Bool_t dosummary = kTRUE)
 {
   if(kGRID){
-    if(!gSystem->Getenv("GSHELL_ROOT")){
-      Error("makeResults.C", "AliEn not initialized.");
-      return;
-    }
+    //if(!gSystem->Getenv("GSHELL_ROOT")){
+    //  Error("makeResults.C", "AliEn not initialized.");
+    //  return;
+    //}
     TGrid::Connect("alien://");
   }
 

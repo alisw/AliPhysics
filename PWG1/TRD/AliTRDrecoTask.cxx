@@ -106,7 +106,7 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fPlotFuncList = NULL;
   }
   
-  if(fContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
+  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
     fContainer = NULL;
