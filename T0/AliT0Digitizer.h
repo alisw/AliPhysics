@@ -50,7 +50,7 @@ private:
 
 
   AliT0Digitizer(const AliT0Digitizer&);
-  AliT0Digitizer& operator=(const AliT0Digitizer);
+  AliT0Digitizer& operator=(const AliT0Digitizer&);
 
     ClassDef(AliT0Digitizer,4)
 };    

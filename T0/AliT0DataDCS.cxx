@@ -234,7 +234,10 @@ AliT0DataDCS::AliT0DataDCS(const AliT0DataDCS & data):
 AliT0DataDCS& AliT0DataDCS:: operator=(const AliT0DataDCS & data) { 
 
 // assignment operator
-
+  if (this == &data)
+    return *this;
+  AliT0DataDCS::operator=(data);
+ 
   this->fRun=data.fRun;
   this->fStartTime=data.fStartTime;
   this->fEndTime=data.fEndTime;

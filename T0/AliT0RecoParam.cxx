@@ -57,7 +57,12 @@ AliT0RecoParam::AliT0RecoParam():
 
   fSatelliteThresholds[0] =  -15;
   fSatelliteThresholds[1] =  -1.5;
-
+  for (Int_t i=0; i<500; i++)  {
+    fLow[i] = 0.;
+    fHigh[i] = 10000.;
+    if( i<24) fBadChannels[i]=-1;
+  }
+ 
 }
 
 //_____________________________________________________________________________
@@ -84,6 +89,12 @@ AliT0RecoParam::AliT0RecoParam(const AliT0RecoParam &p):
  //copy constructor
   fSatelliteThresholds[0] = (p.fSatelliteThresholds[0]);
   fSatelliteThresholds[1] = (p.fSatelliteThresholds[1]);
+  for (Int_t i=0; i<500; i++)  {
+    fLow[i] = p.fLow[i];
+    fHigh[i] = p.fHigh[i];
+    if( i<24) fBadChannels[i] = p.fBadChannels[i];
+  }
+ 
 
 }
 //_____________________________________________________________________________
@@ -110,8 +121,13 @@ AliT0RecoParam& AliT0RecoParam:: operator=(const AliT0RecoParam &p)
   fSatelliteThresholds[0] = (p.fSatelliteThresholds[0]);
   fSatelliteThresholds[1] = (p.fSatelliteThresholds[1]);
   fEqualised = p.fEqualised;
-
-  return *this;
+  for (Int_t i=0; i<500; i++)  {
+    fLow[i] = p.fLow[i];
+    fHigh[i] = p.fHigh[i];
+    if( i<24) fBadChannels[i] = p.fBadChannels[i];
+  }
+ 
+ return *this;
 
 }
 //_____________________________________________________________________________

@@ -36,7 +36,8 @@ ClassImp(AliT0CalibSeasonTimeShift)
   AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift():TNamed()
 {
   //
-
+  for (Int_t i=0; i<4; i++)
+    fMeanPar[i] = fSigmaPar[i] = 0; 
 }
 
 //________________________________________________________________
@@ -47,7 +48,11 @@ AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const char* name):TNamed()
   TString namst = "Calib_";
   namst += name;
   SetName(namst.Data());
-  SetTitle(namst.Data());
+  SetTitle(namst.Data()); 
+  
+  for (Int_t i=0; i<4; i++)
+    fMeanPar[i] = fSigmaPar[i] = 0; 
+ 
 }
 
 //________________________________________________________________
@@ -57,6 +62,7 @@ AliT0CalibSeasonTimeShift::AliT0CalibSeasonTimeShift(const AliT0CalibSeasonTimeS
 // copy constructor
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
+  ((AliT0CalibSeasonTimeShift &) calibda).Copy(*this);
 
 
 }
@@ -67,6 +73,7 @@ AliT0CalibSeasonTimeShift &AliT0CalibSeasonTimeShift::operator =(const AliT0Cali
 // assignment operator
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
+  if (this != &calibda) ((AliT0CalibSeasonTimeShift &) calibda).Copy(*this);
  
   return *this;
 }

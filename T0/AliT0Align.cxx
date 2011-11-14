@@ -120,7 +120,8 @@ AliT0Align::AliT0Align(const AliT0Align &align) :
   //
   //  copy constructor - dummy
   //
-  fDebug = align.fDebug;
+  ((AliT0Align &) align).Copy(*this);
+
 }
 //__________________________________________________________________________
 AliT0Align & AliT0Align::operator =(const AliT0Align & align)
@@ -128,8 +129,9 @@ AliT0Align & AliT0Align::operator =(const AliT0Align & align)
   //
   // assignment operator - dummy
   //
-  fDebug=align.fDebug;
-  return (*this);
+  if (this != &align) ((AliT0Align &) align).Copy(*this);
+
+   return (*this);
 }
 
 //__________________________________________________________________________
