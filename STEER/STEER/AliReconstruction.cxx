@@ -1976,19 +1976,24 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	esdRunH->SetMeanIntensity(ib,it, fBeamInt[ib][it]); 
       }
     //
+    fesd->SetBeamEnergy(fGRPData->GetBeamEnergy());
+    fesd->SetBeamType(fGRPData->GetBeamType().Data());
+    fesd->SetBeamParticle(fGRPData->GetSingleBeamType(0).Atoi(),0);
+    fesd->SetBeamParticle(fGRPData->GetSingleBeamType(1).Atoi(),1);
+    fhltesd->SetBeamEnergy(fGRPData->GetBeamEnergy());
+    fhltesd->SetBeamType(fGRPData->GetBeamType().Data());
+    fhltesd->SetBeamParticle(fGRPData->GetSingleBeamType(0).Atoi(),0);
+    fhltesd->SetBeamParticle(fGRPData->GetSingleBeamType(1).Atoi(),1);
+    //
     AliMagF* fld = (AliMagF*)TGeoGlobalMagField::Instance()->GetField();
     if (fld) { // set info needed for field initialization
       fesd->SetCurrentL3(fld->GetCurrentSol());
       fesd->SetCurrentDip(fld->GetCurrentDip());
-      fesd->SetBeamEnergy(fld->GetBeamEnergy());
-      fesd->SetBeamType(fld->GetBeamTypeText());
       fesd->SetUniformBMap(fld->IsUniform());
       fesd->SetBInfoStored();
       //
       fhltesd->SetCurrentL3(fld->GetCurrentSol());
       fhltesd->SetCurrentDip(fld->GetCurrentDip());
-      fhltesd->SetBeamEnergy(fld->GetBeamEnergy());
-      fhltesd->SetBeamType(fld->GetBeamTypeText());
       fhltesd->SetUniformBMap(fld->IsUniform());
       fhltesd->SetBInfoStored();
     }

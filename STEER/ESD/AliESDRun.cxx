@@ -49,6 +49,7 @@ AliESDRun::AliESDRun() :
   
 {
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=0.;
+  fBeamParticle[0] = fBeamParticle[1] = 0;
   fDiamondCovXY[0]=fDiamondCovXY[2]=3.*3.;
   fDiamondCovXY[1]=0.;
   fTriggerClasses.SetOwner(kTRUE);
@@ -80,7 +81,7 @@ AliESDRun::AliESDRun(const AliESDRun &esd) :
   // Copy constructor
   for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
   for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
-
+  for (Int_t i=0; i<2; i++) fBeamParticle[i] = esd.fBeamParticle[i];
   for(Int_t i = 0; i < kNTriggerClasses; i++) {
     TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
     if (str) fTriggerClasses.AddAt(new TNamed(*str),i);
@@ -125,6 +126,7 @@ AliESDRun& AliESDRun::operator=(const AliESDRun &esd)
     fBeamEnergy = esd.fBeamEnergy;
     for (Int_t i=0; i<2; i++) fDiamondXY[i]=esd.fDiamondXY[i];
     for (Int_t i=0; i<3; i++) fDiamondCovXY[i]=esd.fDiamondCovXY[i];
+    for (Int_t i=0; i<2; i++) fBeamParticle[i] = esd.fBeamParticle[i];
     fTriggerClasses.Clear();
     for(Int_t i = 0; i < kNTriggerClasses; i++) {
       TNamed *str = (TNamed *)((esd.fTriggerClasses).At(i));
@@ -206,7 +208,9 @@ void AliESDRun::Print(const Option_t *) const
   // Print some data members
   printf("Mean vertex in RUN %d: X=%.4f Y=%.4f Z=%.4f cm\n",
 	 GetRunNumber(),GetDiamondX(),GetDiamondY(),GetDiamondZ());
-  printf("Beam Type: %s, Energy: %.1f GeV\n",fBeamType.IsNull() ? "N/A":fBeamType.Data(),fBeamEnergy);
+  printf("Beam Type: %s (%d/%d - %d/%d), Energy: %.1f GeV\n",fBeamType.IsNull() ? "N/A":GetBeamType(),
+	 GetBeamParticleA(0),GetBeamParticleZ(0),GetBeamParticleA(1),GetBeamParticleZ(1),
+	 fBeamEnergy);
   printf("Magnetic field in IP= %f T | Currents: L3:%+.1f Dipole:%+.1f %s\n",
 	 GetMagneticField(),fCurrentL3,fCurrentDip,TestBit(kUniformBMap) ? "(Uniform)":"");
   printf("Event from reconstruction version %d \n",fRecoVersion);

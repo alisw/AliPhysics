@@ -66,7 +66,12 @@ public:
   Float_t     GetCurrentL3()               const {return fCurrentL3;}
   Float_t     GetCurrentDip()              const {return fCurrentDip;}
   Float_t     GetBeamEnergy()              const {return IsBeamEnergyIsSqrtSHalfGeV() ? fBeamEnergy : fBeamEnergy/2;}
-  const char* GetBeamType()                const {return fBeamType.Data();}
+  const char* GetBeamType()                const {return (fBeamType=="Pb-Pb") ? "A-A":fBeamType.Data();}
+  void        SetBeamParticle(Int_t az, Int_t ibeam) {fBeamParticle[ibeam] = az;}
+  Int_t       GetBeamParticle(Int_t ibeam)  const {return fBeamParticle[ibeam];}
+  Int_t       GetBeamParticleA(Int_t ibeam) const {return fBeamParticle[ibeam]/1000;}
+  Int_t       GetBeamParticleZ(Int_t ibeam) const {return fBeamParticle[ibeam]%1000;}
+
   UInt_t      GetDetectorsInDAQ()         const {return fDetInDAQ; }
   UInt_t      GetDetectorsInReco()         const {return fDetInReco; }
  
@@ -121,6 +126,7 @@ private:
   UInt_t          fPeriodNumber;    // PeriodNumber
   Int_t           fRunNumber;       // Run Number
   Int_t           fRecoVersion;     // Version of reconstruction
+  Int_t           fBeamParticle[2]; // A*1000+Z for each beam particle
   TString         fBeamType;        // beam type from GRP
   TObjArray       fTriggerClasses;  // array of TNamed containing the names of the active trigger classes
   UInt_t          fDetInDAQ;        // Detector mask for detectors in datataking
@@ -131,7 +137,7 @@ private:
   Int_t           fCaloTriggerType[8]; // Calorimeter trigger type
   Float_t         fVZEROEqFactors[64]; // V0 channel equalization factors for event-plane reconstruction
 	
-  ClassDef(AliESDRun,12)
+  ClassDef(AliESDRun,13)
 };
 
 #endif 

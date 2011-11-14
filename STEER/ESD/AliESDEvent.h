@@ -153,6 +153,7 @@ public:
   void        SetCurrentDip(Float_t cur)          const  {if(fESDRun) fESDRun->SetCurrentDip(cur);}
   void        SetBeamEnergy(Float_t be)           const  {if(fESDRun) fESDRun->SetBeamEnergy(be);}
   void        SetBeamType(const char* bt)         const  {if(fESDRun) fESDRun->SetBeamType(bt);}
+  void        SetBeamParticle(Int_t az, Int_t ibeam)      {if(fESDRun) fESDRun->SetBeamParticle(az,ibeam);}
   void        SetUniformBMap(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kUniformBMap,val);}
   void        SetBInfoStored(Bool_t val=kTRUE)    const  {if(fESDRun) fESDRun->SetBit(AliESDRun::kBInfoStored,val);}
   //
@@ -160,6 +161,9 @@ public:
   Float_t     GetCurrentDip()                     const  {return fESDRun?fESDRun->GetCurrentDip():0;}
   Float_t     GetBeamEnergy()                     const  {return fESDRun?fESDRun->GetBeamEnergy():0;}
   const char* GetBeamType()                       const  {return fESDRun?fESDRun->GetBeamType():0;}
+  Int_t       GetBeamParticle(Int_t ibeam)        const  {return fESDRun?fESDRun->GetBeamParticle(ibeam):0;}
+  Int_t       GetBeamParticleA(Int_t ibeam)       const  {return fESDRun?fESDRun->GetBeamParticleA(ibeam):0;}
+  Int_t       GetBeamParticleZ(Int_t ibeam)       const  {return fESDRun?fESDRun->GetBeamParticleZ(ibeam):0;}
   Bool_t      IsUniformBMap()                     const  {return fESDRun?fESDRun->TestBit(AliESDRun::kUniformBMap):kFALSE;}
   //
   Bool_t      InitMagneticField()                 const  {return fESDRun?fESDRun->InitMagneticField():kFALSE;} 
