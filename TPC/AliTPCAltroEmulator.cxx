@@ -571,7 +571,7 @@ long long AliTPCAltroEmulator::Mask(long long in, Int_t left, Int_t right){
   long long retval;
   long long pattern;
   long long length = abs(left - right)+1;
-  pattern = ((1<<length)-1)<<right;
+  pattern = ((((long long)1)<<length)-1)<<right;
   retval = in&pattern;
   return retval;
 }
@@ -583,7 +583,7 @@ long long AliTPCAltroEmulator::Maskandshift(long long in, Int_t left, Int_t righ
   long long retval;
   long long pattern;
   long long length = abs(left - right)+1;
-  pattern = ((1<<length)-1);
+  pattern = ((((long long)1)<<length)-1);
   retval = (in>>right)&pattern;
   return retval;
 }
