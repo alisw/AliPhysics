@@ -25,10 +25,10 @@ class AliVParticle;
 
 class AliHFEpidObject{
   public:
-    typedef enum{ 
+    enum AnalysisType_t { 
       kESDanalysis,
       kAODanalysis
-    }AnalysisType_t;
+    };
     AliHFEpidObject():
       fkRecTrack(NULL), 
       fAnalysisType(kESDanalysis),
