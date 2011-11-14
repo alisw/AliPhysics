@@ -270,7 +270,7 @@ void PlotDriftSpeedSDDVsTime(Int_t year=2011, Int_t firstRun=142600,
 	if(iMod<84)iAverSpeedL3++;
 	else iAverSpeedL4++;
       }
-      if(statusInj1>0){ 
+      if(statusInj1>1){ 
 	iGoodInj++;
 	if(iMod<84)iGoodInjL3++;
 	else iGoodInjL4++;
