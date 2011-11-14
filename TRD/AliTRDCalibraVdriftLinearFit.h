@@ -48,6 +48,8 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray      *GetPArray()                    { return &fLinearFitterPArray;       };
   TObjArray      *GetEArray()                    { return &fLinearFitterEArray;       };
   TObjArray       GetHistoArray() const          { return fLinearFitterHistoArray;    };
+  void            SetRobustFit(Bool_t robustFit) { fRobustFit = robustFit;            };
+ 
 
  private:
    
@@ -57,8 +59,9 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray       fLinearFitterHistoArray;  // TObjArray of histo2D for debugging Linear Fitters
   TObjArray       fLinearFitterPArray;      // Array of result parameters from linear fitters for the detectors
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
+  Bool_t          fRobustFit;               // Robust fit or not
   
-  ClassDef(AliTRDCalibraVdriftLinearFit,2)  // Online Vdrift calibration
+  ClassDef(AliTRDCalibraVdriftLinearFit,3)  // Online Vdrift calibration
 
 };
 

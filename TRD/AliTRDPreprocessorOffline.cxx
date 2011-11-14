@@ -115,7 +115,9 @@ ClassImp(AliTRDPreprocessorOffline)
   fNoDataValidate(20),
   fRMSBadCalibratedGain(20.0),
   fRMSBadCalibratedVdrift(20.0),
-  fRMSBadCalibratedExB(50.0)
+  fRMSBadCalibratedExB(50.0),
+  fRobustFitDriftVelocity(kTRUE),
+  fRobustFitExbAlt(kFALSE)
 {
   //
   // default constructor
@@ -707,6 +709,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeVdriftLinearFit(){
   calibra->SetCalDetVdriftExB(fCalDetVdriftUsed,fCalDetExBUsed);
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   //printf("Fill PE Array\n");
+  fAliTRDCalibraVdriftLinearFit->SetRobustFit(fRobustFitDriftVelocity);
   fAliTRDCalibraVdriftLinearFit->FillPEArray();
   //printf("AliTRDCalibraFit\n");
   calibra->AnalyseLinearFitters(fAliTRDCalibraVdriftLinearFit);
@@ -801,6 +804,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeExbAltFit(){
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
   calibra->SetMinEntries(fMinStatsVdriftLinear); // If there is less than 1000 entries in the histo: no fit
   //printf("Fill PE Array\n");
+  fAliTRDCalibraExbAltFit->SetRobustFit(fRobustFitExbAlt);
   fAliTRDCalibraExbAltFit->FillPEArray();
   //printf("AliTRDCalibraFit\n");
   calibra->AnalyseExbAltFit(fAliTRDCalibraExbAltFit);

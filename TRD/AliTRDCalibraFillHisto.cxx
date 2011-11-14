@@ -837,7 +837,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   // Loop clusters
   //////////////////////////////////
 
-  Short_t sigArr[AliTRDfeeParam::GetNcol()];
+  Float_t sigArr[AliTRDfeeParam::GetNcol()];
   memset(sigArr, 0, AliTRDfeeParam::GetNcol()*sizeof(sigArr[0]));
   Int_t ncl=0, tbf=0, tbl=0;
 
@@ -851,7 +851,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
     for(int ip=-1, jp=2; jp<5; ip++, jp++){
       Int_t idx=col+ip;
       if(idx<0 || idx>=AliTRDfeeParam::GetNcol()) continue;
-      sigArr[idx]+=cl->GetSignals()[jp];
+      sigArr[idx]+=((Float_t)cl->GetSignals()[jp]);
     }
 
     if((fLimitChargeIntegration) && (!cl->IsInChamber())) continue;
@@ -880,7 +880,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   TVectorD pars;
   fLinearFitterTracklet->Eval();
   fLinearFitterTracklet->GetParameters(pars);
-  pointError  =  TMath::Sqrt(fLinearFitterTracklet->GetChisquare()/(nbli-2));
+  pointError  =  TMath::Sqrt(TMath::Abs(fLinearFitterTracklet->GetChisquare()/(nbli-2)));
   errorpar    =  fLinearFitterTracklet->GetParError(1)*pointError;
   dydt        = pars[1]; 
   //printf("chis %f, nbli %d, pointError %f, parError %f, errorpar %f\n",fLinearFitterTracklet->GetChisquare(),nbli,pointError,fLinearFitterTracklet->GetParError(1),errorpar);
@@ -891,7 +891,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   ///////////////////////////////////
 
   Float_t signalSum(0.);
-  Float_t mean = -1, rms = -1;
+  Float_t mean = 0.0, rms = 0.0;
   Float_t dydx = tracklet->GetYref(1), tilt = tracklet->GetTilt(); // ,dzdx = tracklet->GetZref(1); (identical to the previous definition!)
   Float_t dz = dzdx*(tbl-tbf)/10;
   if(ncl>10){
@@ -899,11 +899,12 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
       signalSum+=sigArr[ip]; 
       mean+=ip*sigArr[ip];
     } 
-    mean/=signalSum;
+    if(signalSum > 0.0) mean/=signalSum;
   
     for(Int_t ip = 0; ip<AliTRDfeeParam::GetNcol(); ip++) 
       rms+=sigArr[ip]*(ip-mean)*(ip-mean);
-    rms = TMath::Sqrt(rms/signalSum);
+    
+    if(signalSum > 0.0) rms = TMath::Sqrt(TMath::Abs(rms/signalSum));
     
     rms -= TMath::Abs(dz*tilt);
     dydx -= dzdx*tilt;

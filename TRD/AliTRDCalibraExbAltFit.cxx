@@ -48,7 +48,8 @@ AliTRDCalibraExbAltFit::AliTRDCalibraExbAltFit() : /*FOLD00*/
   fVersion(0),
   fFitterHistoArray(540),
   fFitterPArray(540),
-  fFitterEArray(540)
+  fFitterEArray(540),
+  fRobustFit(kFALSE)
 {
   //
   // default constructor
@@ -60,7 +61,8 @@ AliTRDCalibraExbAltFit::AliTRDCalibraExbAltFit(const AliTRDCalibraExbAltFit &ped
   fVersion(ped.fVersion),
   fFitterHistoArray(540),
   fFitterPArray(540),
-  fFitterEArray(540)
+  fFitterEArray(540),
+  fRobustFit(kFALSE)
 {
     //
     // copy constructor
@@ -86,7 +88,8 @@ AliTRDCalibraExbAltFit::AliTRDCalibraExbAltFit(const TObjArray &obja) : /*FOLD00
   fVersion(0),
   fFitterHistoArray(540),
   fFitterPArray(540),
-  fFitterEArray(540)
+  fFitterEArray(540),
+  fRobustFit(kFALSE)
 {
   //
   // constructor from a TObjArray
@@ -353,7 +356,9 @@ void AliTRDCalibraExbAltFit::FillPEArray()
 	TVectorD  pare = TVectorD(2);
 	TVectorD  *parE = new TVectorD(3);
 	//printf("Fit\n");
-	if((fitter.EvalRobust(0.8)==0)) {
+	//if((fitter.EvalRobust(0.8)==0)) {
+	//if((fitter.EvalRobust()==0)) {
+	if(((fRobustFit) && (fitter.EvalRobust(0.8)==0)) || ((!fRobustFit) && (fitter.Eval()==0))) {
 	  //if((fitter.Eval()==0)) {
 	  //printf("Take the param\n");
 	  fitter.GetParameters(*par);
@@ -383,5 +388,4 @@ void AliTRDCalibraExbAltFit::FillPEArray()
   delete [] arrayI;
    
 }
-
 

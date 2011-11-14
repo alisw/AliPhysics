@@ -49,7 +49,8 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
   fNameCalibUsed(""),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
-  fLinearFitterEArray(540)
+  fLinearFitterEArray(540),
+  fRobustFit(kTRUE)
 {
   //
   // default constructor
@@ -62,7 +63,8 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
   fNameCalibUsed(ped.fNameCalibUsed),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
-  fLinearFitterEArray(540)
+  fLinearFitterEArray(540),
+  fRobustFit(kTRUE)
 {
     //
     // copy constructor
@@ -89,7 +91,8 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja
   fNameCalibUsed(""),
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
-  fLinearFitterEArray(540)
+  fLinearFitterEArray(540),
+  fRobustFit(kTRUE)
 {
   //
   // constructor from a TObjArray
@@ -356,7 +359,7 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
 	TVectorD   pare = TVectorD(2);
 	TVectorD  *parE = new TVectorD(3);
 	//printf("Fit\n");
-	if((linearfitter.EvalRobust(0.8)==0)) {
+	if(((fRobustFit) && (linearfitter.EvalRobust(0.8)==0)) || ((!fRobustFit) && (linearfitter.Eval()==0))) {
 	  //if((linearfitter.Eval()==0)) {
 	  //printf("Take the param\n");
 	  linearfitter.GetParameters(*par);

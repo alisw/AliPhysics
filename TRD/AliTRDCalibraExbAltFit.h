@@ -46,6 +46,8 @@ class AliTRDCalibraExbAltFit : public TObject {
   TObjArray      *GetEArray()                    { return &fFitterEArray;       };
   TObjArray       GetHistoArray() const          { return fFitterHistoArray;    };
 
+  void            SetRobustFit(Bool_t robustFit) { fRobustFit = robustFit;            };
+
  private:
    
   Int_t           fVersion;                 // Version of the object
@@ -54,8 +56,10 @@ class AliTRDCalibraExbAltFit : public TObject {
   TObjArray       fFitterPArray;      // Array of result parameters from  fitters for the detectors
   TObjArray       fFitterEArray;      // Array of result errors from  fitters for the detectors
 
+  Bool_t          fRobustFit;         // Robust fit
+
   
-  ClassDef(AliTRDCalibraExbAltFit,1)  // Online ExB Calibration
+  ClassDef(AliTRDCalibraExbAltFit,2)  // Online ExB Calibration
 
 };
 

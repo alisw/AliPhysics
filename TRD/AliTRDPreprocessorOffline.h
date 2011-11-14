@@ -76,6 +76,9 @@ public:
   void     SetRMSBadCalibratedGain(Double_t rms)                     { fRMSBadCalibratedGain = rms;};
   void     SetRMSBadCalibratedVdrift(Double_t rms)                   { fRMSBadCalibratedVdrift = rms;};
   void     SetRMSBadCalibratedExB(Double_t rms)                      { fRMSBadCalibratedExB = rms;};
+  void     SetRobustFitDriftVelocity(Bool_t robustFitDriftVelocity)  { fRobustFitDriftVelocity = robustFitDriftVelocity;};
+  void     SetRobustFitExbAlt(Bool_t robustFitExbAlt)                { fRobustFitExbAlt = robustFitExbAlt;};
+
 
   Bool_t GetLinearFitForVdrift() const { return fMethodSecond;};
   TString GetNameList() const { return fNameList;}; 
@@ -227,6 +230,8 @@ public:
   Double_t fRMSBadCalibratedGain;         // value to decide when it is bad calibrated 
   Double_t fRMSBadCalibratedVdrift;       // value to decide when it is bad calibrated 
   Double_t fRMSBadCalibratedExB;          // value to decide when it is bad calibrated 
+  Bool_t   fRobustFitDriftVelocity;       // Robust fit for the drift velocity
+  Bool_t   fRobustFitExbAlt;              // Robust fit for the exb alt 
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;
@@ -237,7 +242,7 @@ public:
 private:
   AliTRDPreprocessorOffline& operator=(const AliTRDPreprocessorOffline&); // not implemented
   AliTRDPreprocessorOffline(const AliTRDPreprocessorOffline&); // not implemented
-  ClassDef(AliTRDPreprocessorOffline,2)
+  ClassDef(AliTRDPreprocessorOffline,3)
 };
 
 #endif
