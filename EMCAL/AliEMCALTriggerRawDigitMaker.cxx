@@ -471,9 +471,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			{
 				if (AliDebugLevel()) printf("| STU => Found L1 jet patch at (%2d , %2d)\n", x, y);
 				
-				Int_t ix = sizeL1jsubr[0] * (11 - y - sizeL1jpatch[0] + 1);
+				Int_t ix = sizeL1jsubr[0] * (11 - y - 4 + 1);
 
-				Int_t iy = sizeL1jsubr[1] * (15 - x - sizeL1jpatch[1] + 1);
+				Int_t iy = sizeL1jsubr[1] * (15 - x - 4 + 1);
 				
 				// FIXME: x = 0 || y = 0 (Olivier's CS) patches a lost?
 				
