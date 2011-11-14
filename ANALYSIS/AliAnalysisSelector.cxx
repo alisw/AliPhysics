@@ -156,7 +156,7 @@ Bool_t AliAnalysisSelector::Process(Long64_t entry)
       return kFALSE;
    } else {
       fAnalysis->ExecAnalysis();
-      if (returnCode<100000000) fAnalysis->CountEvent(1,1,0,0);
+      fAnalysis->CountEvent(1,1,0,0);
    }   
    if (fAnalysis->GetDebugLevel() > 1) {
       cout << "<-AliAnalysisSelector::Process()" << endl;
