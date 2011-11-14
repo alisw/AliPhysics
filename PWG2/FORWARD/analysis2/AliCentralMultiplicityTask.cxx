@@ -692,7 +692,7 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
   // Initialize 
   // 
   // Parameters:
-  //    sys    Collision system (1: pp, 2: PbPb)
+  //    sys    Collision system (1: pp, 2: PbPb, 3: pPb)
   //    sNN    Center of mass energy per nucleon pair [GeV]
   //    field  Magnetic field [kG]
   //
@@ -717,7 +717,7 @@ AliCentralMultiplicityTask::Manager::Init(UShort_t  sys,
     fIsInit = kTRUE;
     ::Info("Init", 
 	   "Central Manager initialised for %s, energy %dGeV, field %dkG",
-	   sys == 1 ? "pp" : sys == 2 ? "PbPb" : "unknown", sNN,field);
+	   sys == 1 ? "pp" : sys == 2 ? "PbPb" : sys == 3 ? "pPb" : "unknown", sNN,field);
   }  
 }
 //____________________________________________________________________
@@ -734,7 +734,7 @@ AliCentralMultiplicityTask::Manager::WriteFile(UShort_t what,
   // 
   // Parameters: 
   //   What     What to write 
-  //   sys      Collision system (1: pp, 2: PbPb)
+  //   sys      Collision system (1: pp, 2: PbPb, 3: pPb)
   //   sNN      Center of mass energy per nucleon (GeV)
   //   fld      Field (kG)
   //   obj      Object to write 
