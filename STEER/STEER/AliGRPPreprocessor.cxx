@@ -70,10 +70,10 @@ class AliShuttleInterface;
 #include "AliCTPTimeParams.h"
 #include "AliLHCClockPhase.h"
 
-const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
-
-
 ClassImp(AliGRPPreprocessor)
+
+
+const Double_t kFitFraction = -1.;                 // Fraction of DCS sensor fits required
 
 //_______________________________________________________________
 
