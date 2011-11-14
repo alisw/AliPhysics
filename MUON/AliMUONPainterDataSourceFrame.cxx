@@ -742,8 +742,7 @@ AliMUONPainterDataSourceFrame::CreateRawDataSource(const TString& uri)
       TObject* o = e->GetObject();
       if ( o->IsA() == TObjArray::Class() )
       {
-        TObjArray* a = static_cast<TObjArray*>(o);
-        TIter next(a);
+        TIter next(static_cast<TObjArray*>(o));
         AliMUONRecoParam* p;
         while ( ( p = static_cast<AliMUONRecoParam*>(next()) ))
         {
