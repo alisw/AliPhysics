@@ -596,6 +596,9 @@ void AliAnalysisHadEtCorrections::Report(){//Gives a report on the status of all
   case 2010:
     cout<<"p+p collisions at 7 TeV"<<endl;
     break;
+  case 20111:
+    cout<<"p+p collisions at 2.76 TeV"<<endl;
+    break;
   case 20100:
     cout<<"Pb+Pb collisions at 2.76 TeV"<<endl;
     break;
