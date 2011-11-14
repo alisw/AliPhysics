@@ -78,6 +78,8 @@ public:
   void     SetRMSBadCalibratedExB(Double_t rms)                      { fRMSBadCalibratedExB = rms;};
   void     SetRobustFitDriftVelocity(Bool_t robustFitDriftVelocity)  { fRobustFitDriftVelocity = robustFitDriftVelocity;};
   void     SetRobustFitExbAlt(Bool_t robustFitExbAlt)                { fRobustFitExbAlt = robustFitExbAlt;};
+  void     SetAlternativeDriftVelocityFit(Bool_t alt)                { fAlternativeVdrfitFit = alt;};
+  void     SetAlternativeExbAltFit(Bool_t alt)                       { fAlternativeExbAltFit = alt;};
 
 
   Bool_t GetLinearFitForVdrift() const { return fMethodSecond;};
@@ -232,6 +234,8 @@ public:
   Double_t fRMSBadCalibratedExB;          // value to decide when it is bad calibrated 
   Bool_t   fRobustFitDriftVelocity;       // Robust fit for the drift velocity
   Bool_t   fRobustFitExbAlt;              // Robust fit for the exb alt 
+  Bool_t   fAlternativeVdrfitFit;         // Alternative fitting method for vdrift calibration
+  Bool_t   fAlternativeExbAltFit;         // Alternative fitting method for the alternative exb calibarion method
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;

@@ -34,8 +34,13 @@
 #include <TAxis.h>
 #include <TLinearFitter.h>
 #include <TMath.h>
+#include <TStyle.h>
+#include <TCanvas.h>
 #include <TTreeStream.h>
-
+#include <TGraphErrors.h>
+#include <TDirectory.h>
+#include <TTreeStream.h>
+#include <TF1.h>
 
 //header file
 #include "AliTRDCalibraVdriftLinearFit.h"
@@ -50,7 +55,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit() : /*FOLD00*/
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
-  fRobustFit(kTRUE)
+  fRobustFit(kTRUE),
+  fDebugStreamer(0x0),
+  fDebugLevel(0),
+  fSeeDetector(0)
 {
   //
   // default constructor
@@ -64,7 +72,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const AliTRDCalibraVd
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
-  fRobustFit(kTRUE)
+  fRobustFit(kTRUE),
+  fDebugStreamer(0x0),
+  fDebugLevel(0),
+  fSeeDetector(0)
 {
     //
     // copy constructor
@@ -92,7 +103,10 @@ AliTRDCalibraVdriftLinearFit::AliTRDCalibraVdriftLinearFit(const TObjArray &obja
   fLinearFitterHistoArray(540),
   fLinearFitterPArray(540),
   fLinearFitterEArray(540),
-  fRobustFit(kTRUE)
+  fRobustFit(kTRUE),
+  fDebugStreamer(0x0),
+  fDebugLevel(0),
+  fSeeDetector(0)
 {
   //
   // constructor from a TObjArray
@@ -130,6 +144,8 @@ AliTRDCalibraVdriftLinearFit::~AliTRDCalibraVdriftLinearFit() /*FOLD00*/
   fLinearFitterHistoArray.Delete();
   fLinearFitterPArray.Delete();
   fLinearFitterEArray.Delete();
+
+  if ( fDebugStreamer ) delete fDebugStreamer;
 
 }
 //_____________________________________________________________________________
@@ -391,4 +407,96 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray()
    
 }
 
+//____________Functions fit Online CH2d________________________________________
+void AliTRDCalibraVdriftLinearFit::FillPEArray2()
+{
+  //
+  // Fill fFitterPArray and fFitterEArray from inside
+  //
 
+  // Loop over histos 
+  TF1 *f1 = new TF1("f1","[0]+[1]*x",-1,1);
+      
+  for(Int_t cb = 0; cb < 540; cb++){
+    //const TH2S *fitterhisto = (TH2S*)fLinearFitterHistoArray.UncheckedAt(cb);
+    TH2S *fitterhisto = (TH2S*)fLinearFitterHistoArray.UncheckedAt(cb);
+    //printf("Processing the detector cb %d we find %d\n",cb, (Bool_t) fitterhisto);    
+  
+    if ( fitterhisto != 0 ){
+      
+      Int_t nEntries=0;
+      TGraphErrors *gg=DrawMS(fitterhisto,nEntries);
+      // Number of points of the TGraphErrors
+      if(gg->GetN() < 20) {
+	if(gg) delete gg;
+	continue;	
+      }
+      //printf("det %d, number of points %d, nEntries %d\n",cb,gg->GetN(),nEntries);
+      gg->Fit(f1,"Q0");
+      
+      TVectorD  *par  = new TVectorD(2);
+      TVectorD  *parE = new TVectorD(3);
+      (*parE)[0] = 0.0;
+      (*parE)[1] = 0.0;
+      (*parE)[2] = (Double_t) nEntries;
+      (*par)[0] = f1->GetParameter(0);
+      (*par)[1] = f1->GetParameter(1);
+      fLinearFitterPArray.AddAt(par,cb);
+      fLinearFitterEArray.AddAt(parE,cb);
+            
+      if(fDebugLevel==0) {
+	if(gg) delete gg;
+      }
+      else {
+	if(cb==fSeeDetector) {
+	  gStyle->SetPalette(1);
+	  gStyle->SetOptStat(1111);
+	  gStyle->SetPadBorderMode(0);
+	  gStyle->SetCanvasColor(10);
+	  gStyle->SetPadLeftMargin(0.13);
+	  gStyle->SetPadRightMargin(0.01);
+	  TCanvas *stat = new TCanvas("stat","",50,50,600,800);
+	  stat->cd(1);
+	  fitterhisto->Draw("colz");
+	  gg->Draw("P");
+	  f1->Draw("same");
+	  break;
+	}
+      } 
+    }
+  }
+  if(fDebugLevel==0) delete f1;
+}
+
+//_________Helper function__________________________________________________
+TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &nEntries)
+{
+  TF1 fg("fg", "gaus", -10., 30.);
+  TGraphErrors *gp = new TGraphErrors();
+
+  TAxis *ax(h2->GetXaxis());
+  TAxis *ay(h2->GetYaxis());
+  TH1D *h1(NULL);
+  for(Int_t ipt(0), jpt(1), ig(0); ipt<ax->GetNbins(); ipt++, jpt++){
+    h1 = h2->ProjectionY("py", jpt, jpt);
+    fg.SetParameter(1, h1->GetMean());
+    //Float_t x(ax->GetBinCenter(jpt)); 
+    Int_t n=Int_t(h1->Integral(1, h1->GetNbinsX()));
+    nEntries+=n;
+    if(n < 15){
+      //Warning("drawMS()", Form("reject x[%d]=%f on n=%d", jpt, x, n));
+      continue;
+    }
+    h1->Fit(&fg, "WWQ0");
+    if(fg.GetNDF()<2){
+      //Warning("drawMS()", Form("reject x[%d]=%f on NDF=%d", jpt, x, fg.GetNDF()));
+      continue;
+    }
+    if(fg.GetParameter(1)+fg.GetParameter(2)/2>ay->GetXmax() || fg.GetParameter(1)-fg.GetParameter(2)/2<ay->GetXmin()) continue;
+    gp->SetPoint(ig, ax->GetBinCenter(jpt), fg.GetParameter(1));
+    gp->SetPointError(ig, 0, TMath::Sqrt(pow(fg.GetParError(1),2) + (1/pow(fg.GetParameter(0),2))));
+    ig++;
+  }
+  delete h1;
+  return gp;
+}

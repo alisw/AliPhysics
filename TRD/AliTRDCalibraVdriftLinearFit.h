@@ -18,8 +18,12 @@
 //class TVectorD;
 class TObjArray;
 class TH2S;
+class TH2;
 class TTreeSRedirector;
 class TString;
+class TGraphErrors;
+class TLinearFitter;
+class TTreeSRedirector;
 
 class AliTRDCalibraVdriftLinearFit : public TObject {
 
@@ -36,6 +40,7 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
 
   void            Update(Int_t detector, Float_t tnp, Float_t pars1);
   void            FillPEArray();
+  void            FillPEArray2();
   void            SetNameCalibUsed(const char*name)          { fNameCalibUsed = name;};
   const char*     GetNameCalibUsed() const                   { return fNameCalibUsed;};
   void            Add(const AliTRDCalibraVdriftLinearFit *ped);
@@ -49,10 +54,14 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray      *GetEArray()                    { return &fLinearFitterEArray;       };
   TObjArray       GetHistoArray() const          { return fLinearFitterHistoArray;    };
   void            SetRobustFit(Bool_t robustFit) { fRobustFit = robustFit;            };
- 
 
- private:
-   
+  // Debug
+  void     SetDebugLevel(Short_t level)          { fDebugLevel = level;               };
+  void     SetSeeDetector(Int_t seeDetector)     { fSeeDetector = seeDetector;        };
+
+private:
+  TGraphErrors   *DrawMS(const TH2 *const h2, Int_t &nEntries);
+
   Int_t           fVersion;                 // Version of the object
   TString         fNameCalibUsed;           // Info of the version, subversion, firstrun of the calib used
 
@@ -61,6 +70,11 @@ class AliTRDCalibraVdriftLinearFit : public TObject {
   TObjArray       fLinearFitterEArray;      // Array of result errors from linear fitters for the detectors
   Bool_t          fRobustFit;               // Robust fit or not
   
+ //For debugging
+  TTreeSRedirector *fDebugStreamer;         //!Debug streamer
+  Short_t           fDebugLevel;            // Flag for debugging
+  Int_t             fSeeDetector;           // Detector to see
+ 
   ClassDef(AliTRDCalibraVdriftLinearFit,3)  // Online Vdrift calibration
 
 };
