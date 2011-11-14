@@ -134,11 +134,11 @@ void AliAnalysisTaskPIDResponse::SetRecoInfo()
   
   //find pass from file name (UGLY, but not stored in ESD... )
   TString fileName(file->GetName());
-  if (fileName.Contains("/pass1") || fileName.Contains(".pass1") ) {
+  if (fileName.Contains("pass1") ) {
     fRecoPass=1;
-  } else if (fileName.Contains("/pass2")  || fileName.Contains(".pass2")) {
+  } else if (fileName.Contains("pass2") ) {
     fRecoPass=2;
-  } else if (fileName.Contains("/pass3")  || fileName.Contains(".pass3")) {
+  } else if (fileName.Contains("pass3") ) {
     fRecoPass=3;
   }
 
