@@ -3016,7 +3016,7 @@ TMatrixD* AliTPCcalibDButil::MakeStatRelKalman(TObjArray * const array, Float_t 
     if (!kalman) continue;
     if (TMath::Abs(kalman->GetTPCvdCorr()-1)>maxvd) continue;
     if (kalman->GetNUpdates()<minStat) continue;
-    if (kalman->GetNUpdates()/kalman->GetNTracks()<minFraction) continue;
+    if (Float_t(kalman->GetNUpdates())/Float_t(kalman->GetNTracks())<minFraction) continue;
     kalman->GetState(state);
     for (Int_t ipar=0; ipar<9; ipar++)
       (*valArray[ipar])[naccept]=state[ipar];

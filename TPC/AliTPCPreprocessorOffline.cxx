@@ -494,9 +494,9 @@ void AliTPCPreprocessorOffline::AddAlignmentGraphs(  TObjArray * vdriftArray, Al
   arrayTRD=timeDrift->GetAlignTRDTPC();
   arrayTOF=timeDrift->GetAlignTOFTPC();
 
-  if (arrayITS->GetEntries()>0) mstatITS= AliTPCcalibDButil::MakeStatRelKalman(arrayITS,0.9,50,fMaxVdriftCorr);
-  if (arrayTOF->GetEntries()>0) mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.9,1000,fMaxVdriftCorr);
-  if (arrayTRD->GetEntries()>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.9,50,fMaxVdriftCorr);
+  if (arrayITS->GetEntries()>0) mstatITS= AliTPCcalibDButil::MakeStatRelKalman(arrayITS,0.7,50,fMaxVdriftCorr);
+  if (arrayTOF->GetEntries()>0) mstatTOF= AliTPCcalibDButil::MakeStatRelKalman(arrayTOF,0.7,1000,fMaxVdriftCorr);
+  if (arrayTRD->GetEntries()>0) mstatTRD= AliTPCcalibDButil::MakeStatRelKalman(arrayTRD,0.7,50,fMaxVdriftCorr);
   //
   TObjArray * arrayITSP= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 0, 5.);
   TObjArray * arrayITSM= AliTPCcalibDButil::SmoothRelKalman(arrayITS,*mstatITS, 1, 5.);
