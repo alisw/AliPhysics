@@ -138,6 +138,7 @@
 #pragma link C++ class  AliTrackComparison+;
 #pragma link C++ class  AliTrackComparisonESD+;
 #pragma link C++ class  AliAnalysisTaskGlobalQA+;
+#pragma link C++ class  AliGlobalFBFqa+;
 
 
 #endif
