@@ -203,7 +203,7 @@ AliTRDresolution::~AliTRDresolution()
   //
   // Destructor
   //
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  if (AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fProj){fProj->Delete(); delete fProj;}
   if(fCl){fCl->Delete(); delete fCl;}
   if(fMCcl){fMCcl->Delete(); delete fMCcl;}
