@@ -297,11 +297,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   
   fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
   fhGPMaxVV0TT ->SetXTitle("V0 TT");
-  fhGPMaxVV0TT ->SetXTitle("Patch Max");
+  fhGPMaxVV0TT ->SetYTitle("Patch Max");
   
   fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
   fhJPMaxVV0TT ->SetXTitle("V0 TT");
-  fhJPMaxVV0TT ->SetXTitle("Patch Max");
+  fhJPMaxVV0TT ->SetYTitle("Patch Max");
   
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
