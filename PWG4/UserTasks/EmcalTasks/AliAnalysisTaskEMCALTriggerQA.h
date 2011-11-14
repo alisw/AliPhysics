@@ -6,7 +6,7 @@
 
 //-------------------------------------------------------------------------// 
 //  Fill histograms with basic QA information for EMCAL offline trigger    //
-//  Author: Nicola Arbor (LPSC-Grenoble)                                   //
+//  Author: Nicolas Arbor (LPSC-Grenoble), Rachid Guernane (LPSC-Grenoble) //
 //          Gustavo Conesa Balbastre  (LPSC-Grenoble)                      //
 //                                                                         //
 //-------------------------------------------------------------------------//
@@ -84,14 +84,14 @@ private:
   TH1F             *fhClusL1J;       //! Clusters distribution for L1J trigger
   TH1F             *fhClusL1GOnly;   //! Clusters distribution for L1G trigger and not L1J
   TH1F             *fhClusL1JOnly;   //! Clusters distribution for L1J trigger and not L1G
-  TH1F             *fhClusMaxMB;       //! Maximum E Cluster per event distribution for MB trigger
-  TH1F             *fhClusMaxL0;       //! Maximum E Cluster per event distribution for L0 trigger	
-  TH1F             *fhClusMaxL1G;      //! Maximum E Cluster per event distribution for L1G trigger
-  TH1F             *fhClusMaxL1J;      //! Maximum E Cluster per event distribution for L1J trigger
-  TH1F             *fhClusMaxL1GOnly;  //! Maximum E Cluster per event distribution for L1G trigger and not L1J
-  TH1F             *fhClusMaxL1JOnly;  //! Maximum E Cluster per event distribution for L1J trigger and not L1G
-  TH2F             *fhGPMaxVV0TT;      //! V0 signal vs maximum gamma L1 patch
-  TH2F             *fhJPMaxVV0TT;      //! V0 signal vs maximum jet L1 patch
+  TH1F             *fhClusMaxMB;      //! Maximum E Cluster per event distribution for MB trigger
+  TH1F             *fhClusMaxL0;      //! Maximum E Cluster per event distribution for L0 trigger	
+  TH1F             *fhClusMaxL1G;     //! Maximum E Cluster per event distribution for L1G trigger
+  TH1F             *fhClusMaxL1J;     //! Maximum E Cluster per event distribution for L1J trigger
+  TH1F             *fhClusMaxL1GOnly; //! Maximum E Cluster per event distribution for L1G trigger and not L1J
+  TH1F             *fhClusMaxL1JOnly; //! Maximum E Cluster per event distribution for L1J trigger and not L1G
+  TH2F             *fhGPMaxVV0TT;     //! V0 signal vs maximum gamma L1 patch
+  TH2F             *fhJPMaxVV0TT;     //! V0 signal vs maximum jet L1 patch
   
   // Histograms bins
   
