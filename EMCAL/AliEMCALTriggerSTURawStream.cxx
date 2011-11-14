@@ -163,16 +163,16 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 		case kPayLoadSizeOld:
 		case kPayLoadSizeOld + 1536:
 		{
-			fL1JetThreshold   = ((word32[0]>>16) & 0xFFF);
-			fL1GammaThreshold =  (word32[0]      & 0xFFF);
+			fL1JetThreshold   = ((word32[0]>>16) & 0xFFFF);
+			fL1GammaThreshold =  (word32[0]      & 0xFFFF);
 			
 			break;
 		}
 		case kPayLoadSizeNew:
 		case kPayLoadSizeNew + 1536:
 		{
-			fV0A = ((word32[0]>>16) & 0xFFF);
-			fV0C =  (word32[0]      & 0xFFF);
+			fV0A = ((word32[0]>>16) & 0xFFFF);
+			fV0C =  (word32[0]      & 0xFFFF);
 			
 			UInt_t sV0 = fV0A + fV0C;
 			
