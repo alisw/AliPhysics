@@ -715,7 +715,7 @@ Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads, Int_t &calib)
     det++;
   }
   
-  Double_t mean;
+  Double_t mean=0.0;
   if(!wghtPads) mean= meanALL;
   if(wghtPads) mean= meanWP;
   
@@ -775,7 +775,7 @@ Double_t AliTRDCalDet::CalcRMS(Bool_t wghtPads)
     det++;
   }
   
-  Double_t mean;
+  Double_t mean=0.0;
   if(!wghtPads) mean= meanALL;
   if(wghtPads) mean= meanWP;
   
