@@ -848,7 +848,7 @@ Bool_t AliPhysicsSelection::Initialize(const AliESDEvent* aEsd)
   
   AliInfo(Form("Initializing for beam type: %s", aEsd->GetESDRun()->GetBeamType()));
   fIsPP = kTRUE;
-  if (strcmp(aEsd->GetESDRun()->GetBeamType(), "Pb-Pb") == 0)
+  if (strcmp(aEsd->GetESDRun()->GetBeamType(), "A-A") == 0)
     fIsPP = kFALSE;
 
   return Initialize(aEsd->GetRunNumber());
