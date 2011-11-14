@@ -219,12 +219,15 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
 	FindMinMax(hist, hMin, hMax);
 	max = TMath::Max(max, hMax);
 	min = TMath::Min(min, hMin);
+	AliInfoF("Min/max of %40s: %f/%f, global -> %f/%f", 
+		 hist->GetName(), hMin, hMax, min, max);
       }
     }
     break ; 
   }
-  min = TMath::Max(1e-6, min);
-  max = TMath::Max(1.0,  max);
+  AliInfoF("Global min/max=%f/%f", min, max);
+  min = TMath::Max(1e-1, min);
+  max = TMath::Max(1e5,  max);
 
   // IF no images, go on. 
   if (nImages == 0) {
@@ -248,7 +251,7 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     if(!list[specie] || list[specie]->GetEntries() <= 0 || 
        nImages <= 0) continue;
 
-    // Form the title 
+   // Form the title 
     const Char_t * title = Form("QA_%s_%s_%s", GetName(), 
 				AliQAv1::GetTaskName(task).Data(), 
 				AliRecoParam::GetEventSpecieName(specie)); 
@@ -296,7 +299,9 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
     // Divide canvas 
     Int_t nx = int(nImages + .5) / 2;
     Int_t ny = 2;
+    // if (fDoScale) 
     fImage[specie]->Divide(nx, ny, 0, 0);
+    // else fImage[specie]->Divide(nx, ny);
     
     
     // Loop over histograms 
@@ -310,6 +315,10 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       // Go to sub-pad 
       TVirtualPad* pad = fImage[specie]->cd(++j);
       pad->SetRightMargin(0.01);
+      if (!fDoScale) { 
+	pad->SetLeftMargin(0.10);
+	pad->SetBottomMargin(0.10);
+      }
 
       // Check for log scale 
       Int_t logOpts = 0;
@@ -323,15 +332,20 @@ AliFMDQAChecker::MakeImage(TObjArray** list,
       if (name.Contains("readouterrors", TString::kIgnoreCase)) {
 	pad->SetRightMargin(0.15);
 	pad->SetBottomMargin(0.10);
-	pad->SetTopMargin(0.02);
+	// pad->SetTopMargin(0.02);
 	opt="COLZ";
       }
       else {
 	pad->SetGridx();
 	pad->SetGridy();
-	hist->SetMinimum(min);
-	hist->SetMaximum(max);
-
+	if (fDoScale) { 
+	  hist->SetMinimum(min);
+	  hist->SetMaximum(max);
+	}
+	else { 
+	  hist->SetMinimum();
+	  hist->SetMaximum();
+	}
       }
       // Draw (As a copy)
       hist->DrawCopy(opt);

@@ -34,7 +34,9 @@ public:
   QATest()
     : AliFMDInput("galice.root"),
       fMaker(0), 
-      fArray(0)
+      fArray(0),
+      fSpecie(AliRecoParam::kLowMult), 
+      fCycleLength(-1)
   {
     for (Int_t i = 0; i < AliQAv1::kNTASKINDEX; i++)  
       fTasks[i] = AliQAv1::kNULLTASKINDEX;
@@ -161,7 +163,7 @@ public:
    */
   virtual Bool_t ProcessHits()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeHits(fTreeH);
     return true;
   }
@@ -172,7 +174,7 @@ public:
    */
   virtual Bool_t ProcessDigits()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeDigits(fTreeD);
     return true;
   }
@@ -183,7 +185,7 @@ public:
    */
   virtual Bool_t ProcessSDigits()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeSDigits(fTreeS);
     return true;
   }
@@ -194,7 +196,7 @@ public:
    */
   virtual Bool_t ProcessRecPoints()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeRecPoints(fTreeR);
     return true;
   }
@@ -205,7 +207,7 @@ public:
    */
   virtual Bool_t ProcesssESDs()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeESDs(fESDEvent);
     return true;
   }
@@ -216,29 +218,31 @@ public:
    */
   virtual Bool_t ProcessRawDigits()
   {
-    fMaker->SetEventSpecie(AliRecoParam::kLowMult);
+    fMaker->SetEventSpecie(fSpecie);
     fMaker->MakeRaws(fReader);
     return true;
   }
-  /** 
-   * Called at the end of the job.  Runs the checkers
-   * 
-   * @return true on success 
-   */
-  virtual Bool_t Finish()
+  virtual Bool_t End()
   {
-    // --- End of cycle - this calls the checker ---------------------
-    Info("TestQA", "End of cycle");
+    Bool_t ret = AliFMDInput::End();
+    if (fCycleLength < 0) return ret;
+
+    if (!(fEventCount != 0 && (fEventCount % fCycleLength) == 0))
+      return ret;
+
+    // --- End of cycle - this calls the ecker ---------------------
+    Info("End", "End of cycle");
     for (Int_t i = 0; i < AliQAv1::kNTASKINDEX; i++) {
       if (fTasks[i] == AliQAv1::kNULLTASKINDEX) continue;
       fMaker->EndOfCycle(fTasks[i]);
     }
-  
+
     // --- Get the checker -------------------------------------------
-    Info("TestQA", "Running checker");
+    Info("End", "Running checker");
     AliQACheckerBase * checker = AliQAChecker::Instance()->
       GetDetQAChecker(AliQAv1::GetDetIndex("FMD"));
-
+    ((AliFMDQAChecker*)checker)->SetDoScale();
+    
     // --- Test: Remake plots ----------------------------------------
     for (unsigned int idx = 0; idx < AliQAv1::kNTASKINDEX; idx++) {
       // AliRecoParam::EventSpecie_t specie = AliRecoParam::ConvertIndex(es);
@@ -247,15 +251,28 @@ public:
       AliQAv1::TASKINDEX_t task = AliQAv1::TASKINDEX_t(idx); // AliQAv1::kRAWS;
       AliQAv1::MODE_t      mode = AliQAv1::kRECMODE;
       Int_t k = CalcSpeciesIndex(task);
-      Info("Init", "Array for task %d (%s) @ %d: %p", 
+      Info("End", "Array for task %d (%s) @ %d: %p", 
 	   task, AliQAv1::GetTaskName(task).Data(), k, fArray[k]);
       if (!fArray[k]) continue;
       fArray[k]->ls();
       checker->MakeImage(&(fArray[k]), task, mode);
     }
-    
-    
+    return ret;
+  }
+  /** 
+   * Called at the end of the job.  Runs the checkers
+   * 
+   * @return true on success 
+   */
+  virtual Bool_t Finish()
+  {
+    // --- Finish maker ----------------------------------------------
+    fMaker->Finish();
   
+    // --- Get the checker ------------------------------------------- 
+    AliQACheckerBase * checker = AliQAChecker::Instance()->
+      GetDetQAChecker(AliQAv1::GetDetIndex("FMD")); 
+
     // --- Get images from checker -----------------------------------
     AliQAv1* qa = AliQAv1::Instance();
     TObjArray* canvases = new TObjArray();
@@ -295,17 +312,19 @@ public:
 
     return true;
   }
+  void SetSpecie(AliRecoParam::EventSpecie_t s) { fSpecie = s; }
 protected:
-  AliQADataMaker*      fMaker; // Data maker 
-  AliQAv1::TASKINDEX_t fTasks[AliQAv1::kNTASKINDEX]; // Tasks to do
-  TObjArray**          fArray;
-
+  AliQADataMaker*             fMaker; // Data maker 
+  AliQAv1::TASKINDEX_t        fTasks[AliQAv1::kNTASKINDEX]; // Tasks to do
+  TObjArray**                 fArray;
+  AliRecoParam::EventSpecie_t fSpecie;
+  Int_t                       fCycleLength;
   ClassDef(QATest, 0); 
 };
 
 #else
 void
-RunQATest(const char* src, Int_t runno=0)
+RunQATest(const char* src, const char* specie="low", Int_t runno=0)
 {
   gROOT->LoadMacro("$ALICE_ROOT/FMD/scripts/Compile.C");
   gSystem->AddIncludePath("-DBUILD=1");
@@ -314,10 +333,11 @@ RunQATest(const char* src, Int_t runno=0)
   AliCDBManager* cdb = AliCDBManager::Instance();
   cdb->SetRun(runno);
   
-  QATest* qaTest = new QATest;
-  TString what(src);
-  Int_t   colon = what.Index(":");
-  TString type = "";
+  QATest*                     qaTest = new QATest;
+  TString                     what(src);
+  TString                     spec(specie);
+  Int_t                       colon = what.Index(":");
+  TString                     type = "";
   if (colon != TString::kNPOS) { 
     type = what(0, colon);
     what = what(colon+1, what.Length()-colon-1);
@@ -328,9 +348,16 @@ RunQATest(const char* src, Int_t runno=0)
     else if (what.Contains(".raw"))   type = "raw";
     else if (what.Contains(".root"))  type = "raw";
   }
-  Info("RunQATest", "type=%s, what=%s", type.Data(), what.Data());
-  type.ToLower();
+  Info("RunQATest", "type=%s, what=%s specie=%s", 
+       type.Data(), what.Data(), spec.Data());
 
+  spec.ToLower();
+  if      (spec.Contains("low"))    qaTest->SetSpecie(AliRecoParam::kLowMult);
+  else if (spec.Contains("high"))   qaTest->SetSpecie(AliRecoParam::kHighMult);
+  else if (spec.Contains("cosmic")) qaTest->SetSpecie(AliRecoParam::kCosmic);
+  else if (spec.Contains("calib"))  qaTest->SetSpecie(AliRecoParam::kCalib);
+
+  type.ToLower();
   if (type.CompareTo("esd") == 0) { 
     qaTest->AddLoad(AliFMDInput::kESD);
     qaTest->SetInputDir(what);
@@ -353,7 +380,7 @@ RunQATest(const char* src, Int_t runno=0)
     Error("RunQATest", "Unknown type='%s' in '%s'", type.Data(), src);
     return;
   }
-  qaTest->Run();
+  qaTest->Run(1000);
 }
 #endif
   

@@ -17,7 +17,8 @@ class AliFMDQAChecker : public AliQACheckerBase
 public:
   /** Constructor */
   AliFMDQAChecker() 
-    : AliQACheckerBase("FMD","FMD Quality Assurance Checker") 
+    : AliQACheckerBase("FMD","FMD Quality Assurance Checker") ,
+      fDoScale(false)
   {}          
   /** Destructor */
   virtual ~AliFMDQAChecker() {}
@@ -44,6 +45,7 @@ public:
   void  MakeImage(TObjArray** list, 
 		  AliQAv1::TASKINDEX_t task, 
 		  AliQAv1::MODE_t mode);
+  void SetDoScale(Bool_t on=true) { fDoScale = on; }
 
 protected:
   /** 
@@ -66,6 +68,7 @@ protected:
   Double_t CheckRec(AliRecoParam::EventSpecie_t specie, 
 		    TH1*                        hist) const;
 
+  Bool_t fDoScale;
   ClassDef(AliFMDQAChecker,0)  // Yves? what to do? 
 };
 
