@@ -15,6 +15,7 @@ class TVector2;
 class AliVTrack;
 class TObjArray;
 class TArrayF;
+class AliVEvent;
 
 class AliEventplane : public TNamed
 {
@@ -46,11 +47,12 @@ class AliEventplane : public TNamed
   TArrayF*  GetQContributionYArraysub1() { return fQContributionYsub1; }
   TArrayF*  GetQContributionXArraysub2() { return fQContributionXsub2; }
   TArrayF*  GetQContributionYArraysub2() { return fQContributionYsub2; }
-  Double_t  GetEventplane(const char *method);
+  Double_t  GetEventplane(const char *x, const AliVEvent *event = NULL, Int_t harmonic = 2) const;
   TVector2* GetQsub1();
   TVector2* GetQsub2();
   Double_t  GetQsubRes();
   Bool_t    IsEventInEventplaneClass(Double_t a, Double_t b, const char *method);
+  Double_t  CalculateVZEROEventPlane(const AliVEvent *event, Int_t firstRing, Int_t lastRing, Int_t harmonic) const;
 
   void Reset();
 
@@ -67,6 +69,6 @@ class AliEventplane : public TNamed
    TVector2* fQsub2;		 // Q-Vector of subevent 2
    Double_t fQsubRes;		 // Difference of EP angles of subevents
  
-  ClassDef(AliEventplane, 2)
+  ClassDef(AliEventplane, 3)
 };
 #endif //ALIEVENTPLANE_H
