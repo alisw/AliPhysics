@@ -11,7 +11,7 @@
 #include <TRandom3.h>
 #endif
 
-void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
+void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity(), Bool_t optSmear=kFALSE){
   ///////////////////////////////////////////////////////////////////////
   // Macro to generate and store the correction maps for SDD           //
   // Generates:                                                        //
@@ -44,7 +44,7 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
     Char_t name[20];
     sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
     Int_t nbinsan=1;
-    if(mod==10 || mod==240){
+    if(optSmear && (mod==10 || mod==240)){
       nbinsan=256;
       sprintf(name,"DriftTimeMap_%d_%d\n",mod,0);
       mapTime0 = new AliITSCorrMap2DSDD(name,nbinsan,72);
@@ -58,8 +58,14 @@ void StoreMapsSDD(Int_t firstRun=0,Int_t lastRun=AliCDBRunRange::Infinity()){
     }
     for(Int_t nan = 0;nan< nbinsan;nan++){
       for(Int_t nt = 0;nt<36*2;nt++){
-	mapTime0->SetCellContent(nan,nt,gran->Gaus(0,20));
-	mapTime1->SetCellContent(nan,nt,gran->Gaus(0,20));		     
+	Double_t cnt0=0.;
+	Double_t cnt1=0.;
+	if(optSmear){
+	  cnt0=gran->Gaus(0,20);
+	  cnt1=gran->Gaus(0,20);
+	}
+	mapTime0->SetCellContent(nan,nt,cnt0);
+	mapTime1->SetCellContent(nan,nt,cnt1);   
       }
     }
     tmap.Add(mapTime0);
