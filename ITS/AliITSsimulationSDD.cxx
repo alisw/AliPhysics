@@ -74,49 +74,7 @@ fScaleSize(0){
     SetCrosstalkFlag();
     SetDoFFT();
 }
-//______________________________________________________________________
-AliITSsimulationSDD::AliITSsimulationSDD(const AliITSsimulationSDD &source) :
-    AliITSsimulation(source),
-fITS(source.fITS),
-fHitMap2(source.fHitMap2),
-fHitSigMap2(source.fHitSigMap2),
-fHitNoiMap2(source.fHitNoiMap2),
-fElectronics(source.fElectronics),
-fInZR(source.fInZR),
-fInZI(source.fInZI),
-fOutZR(source.fOutZR),
-fOutZI(source.fOutZI),
-fAnodeFire(source.fAnodeFire),
-fHis(source.fHis),
-fFlag(source.fFlag),
-fCrosstalkFlag(source.fCrosstalkFlag),
-fDoFFT(source.fDoFFT),
-fNofMaps(source.fNofMaps),
-fMaxNofSamples(source.fMaxNofSamples),
-fScaleSize(source.fScaleSize){
-    // Copy constructor to satify Coding roules only.
 
-}
-//______________________________________________________________________
-AliITSsimulationSDD& AliITSsimulationSDD::operator=(const AliITSsimulationSDD &src){
-    // Assignment operator to satify Coding roules only.
-
-    if(this==&src) return *this;
-    Error("AliITSsimulationSDD","Not allowed to make a = with "
-          "AliITSsimulationSDD Using default creater instead");
-    return *this ;
-}
-/*
-//______________________________________________________________________
-AliITSsimulation& AliITSsimulationSDD::operator=(const AliITSsimulation &src){
-    // Assignment operator to satify Coding roules only.
-
-    if(this==&src) return *this;
-    Error("AliITSsimulationSSD","Not allowed to make a = with "
-          "AliITSsimulationSDD Using default creater instead");
-    return *this ;
-}
-*/
 //______________________________________________________________________
 AliITSsimulationSDD::AliITSsimulationSDD(AliITSDetTypeSim* dettyp):
 AliITSsimulation(dettyp),

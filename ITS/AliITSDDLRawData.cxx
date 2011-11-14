@@ -66,10 +66,10 @@ fSDDRawFormat(source.fSDDRawFormat){
 
 AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
   //Assigment operator
-  this->fIndex=source.fIndex;
-  this->fHalfStaveModule=source.fHalfStaveModule;
-  this->fVerbose=source.fVerbose;
-  this->fSDDRawFormat=source.fSDDRawFormat;
+  fIndex=source.fIndex;
+  fHalfStaveModule=source.fHalfStaveModule;
+  fVerbose=source.fVerbose;
+  fSDDRawFormat=source.fSDDRawFormat;
   return *this;
 }
 
@@ -648,7 +648,10 @@ Int_t AliITSDDLRawData::RawDataSDD(TBranch* branch, AliITSDDLModuleMapSDD* ddlsd
     for(Int_t ibit=0; ibit<5; ibit++) header.SetAttribute(ibit);
     for(Int_t ibit=5; ibit<8; ibit++) header.ResetAttribute(ibit);  
   }
-  UInt_t skippedword, carlosFooterWord,fifoFooterWord,jitterWord;
+  UInt_t skippedword=0; 
+  UInt_t carlosFooterWord=0;
+  UInt_t fifoFooterWord=0;
+  UInt_t jitterWord=0;
   Bool_t retcode;
   retcode = AliBitPacking::PackWord(0x3FFFFFFF,carlosFooterWord,0,31);
   retcode = AliBitPacking::PackWord(0x3F1F1F1F,fifoFooterWord,0,31);

@@ -404,6 +404,7 @@ TArrayI AliITSOnlineSPDfoAnalyzer::ChooseDACValues(Int_t hs, Int_t chip) const
   // is taken.
   
   TH1D *tmp[5];
+  for(Int_t jj=0;jj<5;jj++)tmp[jj]=NULL;
   if(fNdims > 5) printf("AliITSOnlineSPDfoAnalyzer::ChooseDACValues -> N. of dimensions are more than expected! Break! \n");
   TArrayI dacs(fNdims+1);
   

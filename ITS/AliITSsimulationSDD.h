@@ -31,11 +31,9 @@ class AliITSsimulationSDD : public AliITSsimulation {
     AliITSsimulationSDD(); // default constructor
     //Standard Constructor
     AliITSsimulationSDD(AliITSDetTypeSim* dettyp);
-    // Copy operator
-    AliITSsimulationSDD(const AliITSsimulationSDD &source);
+
     virtual ~AliITSsimulationSDD(); // Destructor
-    // = operator
-    AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);
+
     //    virtual AliITSsimulation& operator=(const AliITSsimulation &source);
     // Initilize variables for this simulation
     void Init();
@@ -114,6 +112,9 @@ class AliITSsimulationSDD : public AliITSsimulation {
     virtual void PrintStatus() const;
 
   private:
+    AliITSsimulationSDD(const AliITSsimulationSDD &source);
+    AliITSsimulationSDD& operator=(const AliITSsimulationSDD &source);
+
     // virtual void GetBaseline(Int_t mod);  // read baseline values from a file
     // Variables and pointers for local use only. Not Streamed out.
     AliITS         *fITS;          //! local pointer to ITS
