@@ -37,12 +37,18 @@ void AliITSQAchecks(TString option="grid",
 TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000167706/ESDs/pass1_HLT/QA90/QAresults.root"){
   // option:  "local" if filenamedata is the name of a local file
   //          "grid" if on alien
+  // nRun:    run number
+  // period:  LHC period (e.g. LHC11h)
+  // qaTrain: QA train specifier
+  // filenamedata: QAresults.root is by default the file name with the results
+  // filenameMC: file name for MC comparison. If the names begins with alien:
+  //             the file is accessed through alien, otherwise is taken as local
   // Select here what you want to display
   // the complete selection string is
   // "general ITSSA SPD SDD SSD vertex ITSTPC"
   // Contact:  Stefania Beole': beole@to.infn.it  
 
-/* $Id $ */
+/* $Id$ */
 
   TString selection("general ITSSA SPD SDD SSD vertex ITSTPC"); 
   gROOT->SetStyle("Plain");
