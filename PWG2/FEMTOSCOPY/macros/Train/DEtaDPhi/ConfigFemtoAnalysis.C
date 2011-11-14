@@ -59,7 +59,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   double ProtonMass = 0.938272013;
 	
 
-  int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0};
+  int runmults[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
   
   int runch[3] = {1, 1, 1};
@@ -87,7 +87,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
   Reader->SetFilterBit(7);
-  Reader->SetCentralityPreSelection(0.001, 710);
+  Reader->SetCentralityPreSelection(0.001, 910);
 
   AliFemtoManager* Manager = new AliFemtoManager();
   Manager->SetEventReader(Reader);
