@@ -159,7 +159,7 @@ class AliGRPObject : public TObject {
 	void ReadValuesFromMap(const TMap* map);	
 
 	void SetSingleBeamType(Int_t ibeamType, TString beamType)  {fSeparateBeamType[ibeamType] = beamType;}
-	TString   GetSingleBeamType(Int_t ibeamType) const {return fBeamType[ibeamType];}
+	TString   GetSingleBeamType(Int_t ibeamType) const {return fSeparateBeamType[ibeamType];}
 
 	void SetNFalseDataQualityFlag(Int_t nFalses) {fNFalseDataQualityFlag = nFalses;}
 	Int_t GetNFalseDataQualityFlag() const {return fNFalseDataQualityFlag;}
@@ -169,6 +169,9 @@ class AliGRPObject : public TObject {
 
 	Double_t GetStartFalseDataQualityFlag(Int_t iperiod) const;
 	Double_t GetEndFalseDataQualityFlag(Int_t iperiod) const;
+
+	void SetBeamTypeFromLHC(TString beamTypeFromLHC)  {fBeamTypeFromLHC = beamTypeFromLHC;}
+	TString   GetBeamTypeFromLHC() const {return fBeamTypeFromLHC;}
 
  private:
 
@@ -219,8 +222,9 @@ class AliGRPObject : public TObject {
 	Int_t fNFalseDataQualityFlag;    // number of times the data quality flag turned to FALSE
 	TArrayD* fFalseDataQualityFlag;  // array of starts (even positions) and ends (odd poistions) of the periods
 	                                 // when the data quality flag was FALSE
+	TString fBeamTypeFromLHC;        // string containing the information about the beam types AS SENT BY LHC (in the form "beam1-beam2")
 	
-	ClassDef(AliGRPObject,9)
+	ClassDef(AliGRPObject,10)
 
 };
 

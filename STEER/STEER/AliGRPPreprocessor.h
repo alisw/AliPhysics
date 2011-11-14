@@ -108,7 +108,8 @@ class AliGRPPreprocessor: public AliPreprocessor {
    Float_t ProcessEnergy(TObjArray* array, Double_t timeStart);
    AliLHCClockPhase* ProcessLHCClockPhase(TObjArray *beam1phase,TObjArray *beam2phase,
 					  Double_t timeEnd);
-
+   TString ParseBeamTypeString(TString beamType, Int_t iBeamType);
+   
  private:
  
   static const Int_t   fgknDAQLbPar;            //! number of DAQ lb parameters for PHYSICS runs

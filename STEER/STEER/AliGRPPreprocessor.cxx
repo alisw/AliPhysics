@@ -30,6 +30,7 @@
 #include <TObjArray.h>
 #include <TGraph.h>
 #include <TString.h>
+#include <TPRegexp.h>
 #include <TFile.h>
 
 #include <float.h>
@@ -981,7 +982,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		// BeamType1 and BeamType2 - in separete string
 		Log("*************BeamType, 1 and 2 ");
 		Int_t indexBeamTypeString = 6;  // index of the string with the alias of BeanType1 in the array fgkLHCDataPoints
-		TString combinedBeamType = "-";  // combined beam tyope, built from beam type 1 and beam type 2
+		TString combinedBeamType = "-";  // combined beam type, built from beam type 1 and beam type 2
+		TString combinedBeamTypeFromLHC = "-";  // combined beam type, built from beam type 1 and beam type 2 AS SENT FROM LHC
 		for (Int_t ibeamType = 0; ibeamType<2; ibeamType++){
 			beamArray = lhcReader.ReadSingleLHCDP(fileName.Data(),fgkLHCDataPoints[indexBeamTypeString+ibeamType]);
 			if (beamArray){			
@@ -1010,19 +1012,22 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 						AliDCSArray* beam = (AliDCSArray*)beamArray->At(indexBeam);
 						TObjString* beamString = beam->GetStringArray(0);
 						TString beamType = beamString->String();
-						AliInfo(Form("Beam Type (for %s) = %s", fgkLHCDataPoints[indexBeamTypeString+ibeamType], beamType.Data()));	
+						AliInfo(Form("Beam Type (for %s) = %s", fgkLHCDataPoints[indexBeamTypeString+ibeamType], beamType.Data()));
+						TString singleBeam = ParseBeamTypeString(beamType,ibeamType);
+						AliInfo(Form("Single Beam Type for beam %d set to %s", ibeamType, singleBeam.Data()));
+						grpobj->SetSingleBeamType(ibeamType, singleBeam);
 						if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
-							AliInfo(Form("Setting beam type %s to p", fgkLHCDataPoints[indexBeamTypeString+ibeamType]));
-							grpobj->SetSingleBeamType(ibeamType,"p");
-							if (ibeamType == 0) combinedBeamType.Prepend("p");
+							AliInfo(Form("Setting beam %d for combined beam type to p", ibeamType));
+							if (ibeamType == 0) combinedBeamType.Prepend("p"); 
 							else combinedBeamType.Append("p");
 						}
 						else { // if there is no PROTON beam, we suppose it is Pb, and we put A-A
-							AliInfo("Setting beam type to A");
-							grpobj->SetSingleBeamType(ibeamType,"A");
+							AliInfo(Form("Setting beam %d for combined beam type to A",ibeamType));
 							if (ibeamType == 0) combinedBeamType.Prepend("A");
 							else combinedBeamType.Append("A");
 						}
+						if (ibeamType == 0) combinedBeamTypeFromLHC.Prepend(beamType); 
+						else combinedBeamTypeFromLHC.Append(beamType);
 						/*
 						  else if (beamType.CompareTo("LEAD82",TString::kIgnoreCase) == 0){
 						  AliInfo("Setting beam type to Pb-Pb");
@@ -1060,6 +1065,8 @@ UInt_t AliGRPPreprocessor::ProcessLHCData(AliGRPObject *grpobj)
 		}
 		AliInfo(Form("Setting combined beam type to %s",combinedBeamType.Data()));
 		grpobj->SetBeamType(combinedBeamType);
+		AliInfo(Form("Setting combined beam type form LHC to %s",combinedBeamTypeFromLHC.Data()));
+		grpobj->SetBeamTypeFromLHC(combinedBeamTypeFromLHC);
 		
 		// Setting minTimeLHCValidity
 		if (flagBeamMode == kTRUE || flagMachineMode == kTRUE || flagBeam == kTRUE || flagBeamType[0] == kTRUE || flagBeamType[1] == kTRUE){ 
@@ -3111,3 +3118,50 @@ AliLHCClockPhase* AliGRPPreprocessor::ProcessLHCClockPhase(TObjArray *beam1phase
 
   return phaseObj;
 }
+//------------------------------------------------------------------------------------------------------
+TString AliGRPPreprocessor::ParseBeamTypeString(TString beamType, Int_t iBeamType)
+{
+	// Method to return the convention for the separate beam type
+	// in the form A*1000+Z
+	// e.g.: Pb82 --> 208000 + 82 = 208082
+	//       p --> 1000 + 1 = 1001
+
+	Int_t a = 0;
+	Int_t z = 0;
+	TString separateString("");
+	Log(Form("Setting Beam Type for beam %d to A*1000+Z",iBeamType));
+	if (beamType.CompareTo("PROTON",TString::kIgnoreCase) == 0){
+		Log(Form("Beam type %d is PROTON --> The single beam type will be set to 1001 (A = 1, Z = 1)",iBeamType));
+		separateString = "1001";
+		return separateString;
+	}
+	else { 
+		TPRegexp regexpA("\\D+");
+		TPRegexp regexpZ("\\d+");
+		TObjArray* arrayA = regexpA.MatchS(beamType);
+		TObjArray* arrayZ = regexpZ.MatchS(beamType);
+		if (arrayA->GetEntries() != 1 || arrayZ->GetEntries() != 1){
+			Log(Form("The beamType string for beam %d does not contain the necessary information! Returning the info as published by LHC (i.e. %s)",iBeamType, beamType.Data()));
+			return beamType;
+		}
+		else{
+			TString strA = ((TObjString*)(arrayA->At(0)))->String();
+			TString strZ = ((TObjString*)(arrayZ->At(0)))->String();
+			if (strA.CompareTo("LEAD",TString::kIgnoreCase) == 0 || strA.CompareTo("PB",TString::kIgnoreCase) == 0){
+				Log(Form("Beam %d is %s --> A = 208",iBeamType, strA.Data()));
+				a = 208;
+			}
+			else{
+				Log(Form("This beam was not foreseen so far, leaving A=0"));
+			}
+			z = strZ.Atoi();
+			Log(Form("Beam %d has Z = %d",iBeamType, z));
+			separateString = Form("%d",a*1000+z);
+			return separateString;
+		}					     
+	}
+	       
+	return separateString;
+
+}
+	    

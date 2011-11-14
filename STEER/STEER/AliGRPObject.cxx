@@ -113,7 +113,8 @@ AliGRPObject::AliGRPObject():
 	fQACloningRequest(0x0),
 	fMaxTimeLHCValidity(0),
 	fNFalseDataQualityFlag(0),
-	fFalseDataQualityFlag(0x0)
+	fFalseDataQualityFlag(0x0),
+	fBeamTypeFromLHC(fgkInvalidString)
 {
 
 	//
@@ -182,7 +183,8 @@ AliGRPObject::AliGRPObject(const AliGRPObject &obj):
 	fQACloningRequest(obj.fQACloningRequest),
 	fMaxTimeLHCValidity(obj.fMaxTimeLHCValidity),
 	fNFalseDataQualityFlag(obj.fNFalseDataQualityFlag),
-	fFalseDataQualityFlag(obj.fFalseDataQualityFlag)
+	fFalseDataQualityFlag(obj.fFalseDataQualityFlag),
+	fBeamTypeFromLHC(obj.fBeamTypeFromLHC)
 
 
 {
@@ -268,6 +270,7 @@ AliGRPObject& AliGRPObject:: operator=(const AliGRPObject & obj)
 
 	this->fNFalseDataQualityFlag = obj.fNFalseDataQualityFlag;
 	this->fFalseDataQualityFlag = obj.fFalseDataQualityFlag;
+	this->fBeamTypeFromLHC = obj.fBeamTypeFromLHC;
 
 	return *this;
 }
