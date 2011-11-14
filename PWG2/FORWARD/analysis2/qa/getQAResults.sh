@@ -19,13 +19,15 @@ Options:
 	-h,--help		      This help 
 	-v,--verbose                  Be verbose
 	-p,--production  IDENTIFIER   Production identifier [$prod]
-	-y,--year        YEAR         Year of production [$year]
 	-P,--pass 	 NUMBER	      Reconstruction pass number [$pass]
 	-Q,--pre-pass	 STRING	      Prefix to pass identifier [${prep}]
 	-R,--post-pass	 STRING       Postfix to pass identifier [$post]
+	-y,--year        YEAR         Year of production [$year]
 	-d,--destination DIRECTORY    Directory to store result in [$dest] 
 	-r,--run         NUMBER       Run number [$runn]
 	-q,--qa          NUMBER       QA number 
+	-f,--file	 NAME	      File to get [$file]
+	-T,--trending	              Get trending.root file 
 	-a,--archives		      Get ZIP archives 
 	-n,--no-action		      Run dry (do not copy files)
 
@@ -102,8 +104,9 @@ while test $# -gt 0 ; do
 	-r|--run)         runn=$2 ; shift ;; 
 	-q|--qa)          qano=$2 ; shift ;; 
 	-f|--file)        file=$2 ; shift ;; 
-	-n|--no-action)   noac=1  ;; 
+	-T|--trending)	  file=trending.root ; shift ;; 
 	-a|--archives)    arch=1  ;; 
+	-n|--no-action)   noac=1  ;; 
 	*) echo "$0: Unknown option $1" > /dev/stderr ; exit 2 ;; 
     esac
     shift
@@ -173,7 +176,7 @@ if test $qano -gt 0 ; then
 	path=`printf "%sQA%02d/" $path $qano` 
     else
 	if test "x$search" != "x" ; then search=${search}/ ; fi
-	search=${search}QA`printf %02d ${qano}`/ 
+	search=${search}QA`printf %02d ${qano}` 
     fi
 fi
 if test $arch -gt 0 ; then 
