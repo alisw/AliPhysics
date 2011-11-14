@@ -155,7 +155,7 @@ Bool_t AliZDCDigitizer::Init()
     fBeamEnergy = 0.;
   }
 
-  if((beamType.CompareTo("P-P")) == 0 || (beamType.CompareTo("p-p")) == 0 && !fIspASystem){
+  if(((beamType.CompareTo("P-P")) == 0) || ((beamType.CompareTo("p-p")) == 0) && (!fIspASystem)){
     // PTM gains rescaled to beam energy for p-p
     // New correction coefficients for PMT gains needed
     // to reproduce experimental spectra (from Grazia Jul 2010)
