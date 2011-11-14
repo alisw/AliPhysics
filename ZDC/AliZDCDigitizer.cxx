@@ -34,6 +34,7 @@
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliDigitizationInput.h"
 #include "AliRunLoader.h"
 #include "AliLoader.h"
@@ -148,14 +149,14 @@ Bool_t AliZDCDigitizer::Init()
   }
   
   fBeamEnergy = grpData->GetBeamEnergy();
-  printf("   beam energy = %f GeV\n", fBeamEnergy);
+  printf("\t  AliZDCDigitizer ->  beam energy = %f GeV\n", fBeamEnergy);
   if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
     AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
     fBeamEnergy = 0.;
   }
 
-  if(((beamType.CompareTo("P-P")) == 0) || ((beamType.CompareTo("p-p")) == 0) && (!fIspASystem)){
+  if((((beamType.CompareTo("P-P")) == 0) || ((beamType.CompareTo("p-p")) == 0)) && (!fIspASystem)){
     // PTM gains rescaled to beam energy for p-p
     // New correction coefficients for PMT gains needed
     // to reproduce experimental spectra (from Grazia Jul 2010)
@@ -169,7 +170,7 @@ Bool_t AliZDCDigitizer::Init()
       fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
       fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
       //
-      AliInfo(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      printf(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
     }
     else{ // for RELDIS simulation @ sqrt(s_{NN}) = 2.76 TeV
@@ -182,7 +183,7 @@ Bool_t AliZDCDigitizer::Init()
     	 fPMGain[4][j] = 100000./scalGainFactor; // ZPA	
        }
        //
-       AliInfo(Form("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+       printf(Form("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
     	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
     }
   }
@@ -200,7 +201,7 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
     }
-    AliInfo(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+    printf(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
   }
   
@@ -218,7 +219,7 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
     }
-    AliInfo(Form("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+    printf(Form("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
   }
     
@@ -331,36 +332,44 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     if(!header) continue;
     AliGenEventHeader* genHeader = header->GenEventHeader();
     if(!genHeader) continue;
-    if(!genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) continue;
+    AliGenHijingEventHeader *hijingHeader = 0;
+    if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (genHeader);
+    else if(genHeader->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
+      hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+    }
+    if(!hijingHeader) continue;
     
-    if(fSpectators2Track==kTRUE && fIspASystem==kFALSE){
-      impPar = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter(); 
-      specNProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
-      specPProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-      specNTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
-      specPTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-      /*printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
+    printf("fSpectators2Track %d  fIspASystem%d \n",fSpectators2Track,fIspASystem);
+    
+    if((fSpectators2Track==kTRUE) && (fIspASystem==kFALSE)){
+      impPar = hijingHeader->ImpactParameter(); 
+      specNProj = hijingHeader->ProjSpectatorsn();
+      specPProj = hijingHeader->ProjSpectatorsp();
+      specNTarg = hijingHeader->TargSpectatorsn();
+      specPTarg = hijingHeader->TargSpectatorsp();
+      printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
       " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
       " \t    TARG.:  #spectator n %d, #spectator p %d\n", 
-      impPar, specNProj, specPProj, specNTarg, specPTarg);*/
+      impPar, specNProj, specPProj, specNTarg, specPTarg);
     }
     
-  }
+  //}
 
   // Applying fragmentation algorithm and adding spectator signal
-  if(fSpectators2Track==kTRUE && impPar && fIspASystem==kFALSE) {
+  //if((fSpectators2Track==kTRUE) && impPar && (fIspASystem==kFALSE) {
     Int_t freeSpecNProj, freeSpecPProj;
     Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
     Int_t freeSpecNTarg, freeSpecPTarg;
     Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
     SpectatorSignal(1, freeSpecNProj, pm);
-//    printf("\t AliZDCDigitizer -> Adding signal for %d PROJ free spectator n",freeSpecNProj);
+    printf("\t AliZDCDigitizer -> Adding signal for %d PROJ free spectator n",freeSpecNProj);
     SpectatorSignal(2, freeSpecPProj, pm);
-//    printf(" and %d free spectator p\n",freeSpecPProj);
+    printf(" and %d free spectator p\n",freeSpecPProj);
     SpectatorSignal(3, freeSpecNTarg, pm);
-//    printf("\t AliZDCDigitizer -> Adding signal for %d TARG free spectator n",freeSpecNTarg);
+    printf("\t AliZDCDigitizer -> Adding signal for %d TARG free spectator n",freeSpecNTarg);
     SpectatorSignal(4, freeSpecPTarg, pm);
-//    printf(" and %d free spectator p\n\n",freeSpecPTarg);
+    printf(" and %d free spectator p\n\n",freeSpecPTarg);
   }
 
 
@@ -508,6 +517,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   TNtuple* zdcSignal=0x0;
   
   Float_t sqrtS = 2*fBeamEnergy;
+  if(fIspASystem) sqrtS = 2760.;
   //
   if(TMath::Abs(sqrtS-5500) < 100.){
     specSignalFile->cd("energy5500");

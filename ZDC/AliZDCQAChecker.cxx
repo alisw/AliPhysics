@@ -861,6 +861,6 @@ void AliZDCQAChecker::SetupHisto(const TObjArray& messages, TH1& histo, Float_t&
        delete obj;
     }
     if(stats) lst->Add(stats);
-  }   
   lst->Add(text);
+  }   
 }
