@@ -163,7 +163,7 @@ UInt_t AliT0Preprocessor::ProcessLaser()
       
       AliCDBMetaData metaData;
       metaData.SetBeamPeriod(0);
-      metaData.SetResponsible("Tomek&Michal");
+      metaData.SetResponsible("Alla");
       metaData.SetComment("Walk correction from laser runs.");
       if (writeok) resultLaser=Store("Calib","Slewing_Walk", laser, &metaData, 0, 1);
       else {

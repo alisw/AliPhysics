@@ -26,7 +26,7 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  AliT0CalibOffsetChannelsTask.cxx AliT0PreprocessorOffline.cxx)
+set ( SRCS  AliT0CalibOffsetChannelsTask.cxx AliT0PreprocessorOffline.cxx AliT0AnalysisTaskQA.cxx)
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 

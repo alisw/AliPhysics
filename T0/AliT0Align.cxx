@@ -198,13 +198,13 @@ Bool_t AliT0Align::LoadSurveyData()
      surveyedPoints[i][1]=currPoint->GetY();
    //  surveyedPoints[i]=currPoint->GetZ();
      if(fDebug)
-     Printf(Form("INFO: Point \"%s\" coordinates read.", pointNames[i].Data()));
+     Printf(Form("INFO: Point %s coordinates read.\n", pointNames[i].Data()));
    }
    else 
    {
      if(fDebug)
      {
-       Printf(Form("ERROR: Essential point missing: \"%s\"", pointNames[i].Data()));
+       Printf(Form("ERROR: Essential point missing: %s\n"", pointNames[i].Data()));
        return 1;
      }
    }  

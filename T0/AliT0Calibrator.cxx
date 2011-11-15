@@ -118,8 +118,8 @@ Int_t  AliT0Calibrator::WalkCorrection(Int_t refAmp,  Int_t ipmt, Int_t qt, Int_
 
   //   printf(" ipmt %i time before %i timeWalk %i , walk %i  qt %i fTimeDelayCFD[ipmt] %i timeEq %i \n ",
   //	 ipmt, time,timeWalk, walk, qt,fTimeDelayCFD[ipmt], timeEq );
-     AliDebug(2,Form(" fEqualized %i ipmt %i refAmp %i time before %i timeWalk %i , walk %i  qt %i timeEq %i \n ",
-		     fEqualized,   ipmt, refAmp, time,timeWalk, walk, qt, timeEq ));
+     AliDebug(2,Form(" fEqualized %i ipmt %i refAmp %i time before %i timeWalk %i , walk %i  qt %i timeEq %i, diff %i \n ",
+		     fEqualized,   ipmt, refAmp, time,timeWalk, walk, qt, timeEq , fTimeDelayCFD[ipmt]));
   
    return timeEq;
 }

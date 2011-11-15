@@ -10,5 +10,6 @@
  
 #pragma link C++ class AliT0PreprocessorOffline+;
 #pragma link C++ class AliT0CalibOffsetChannelsTask+;
+#pragma link C++ class AliT0AnalysisTaskQA+;
 
 #endif
