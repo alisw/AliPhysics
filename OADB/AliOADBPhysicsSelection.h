@@ -71,6 +71,8 @@ class AliOADBPhysicsSelection : public TNamed {
 
 protected:
   void CleanKey(TString & str) ;
+  const char* ExpandTriggerString(const char* className);
+  
  private :
   
   UInt_t fNtriggerBits; // Size of the arrays below. Initialized using NTRIGGERBITS
