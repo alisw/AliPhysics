@@ -97,7 +97,7 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
   const AliHLTUInt8_t*  GetRCUTrailer() const
   {
     if (fRCUTrailerSize<=0 || fpBuffer==NULL || fBufferSize<fRCUTrailerSize) return NULL;
-    return fpBuffer+fRCUTrailerSize;
+    return fpBuffer+(fBufferSize-fRCUTrailerSize);
   }
 
   // size of RCU trailer
