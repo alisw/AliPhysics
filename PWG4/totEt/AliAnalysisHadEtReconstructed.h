@@ -10,6 +10,7 @@
 #define ALIANALYSISHADETRECONSTRUCTED_H
 
 #include "AliAnalysisHadEt.h"
+//#include "PWG0/AliPWG0Helper.h"
 
 class AliVParticle;
 class AliAnalysisHadEtCorrections;
@@ -24,7 +25,8 @@ public:
     AliAnalysisHadEtReconstructed();
     virtual ~AliAnalysisHadEtReconstructed();
    
-    virtual Int_t AnalyseEvent(AliVEvent* event);
+    virtual Int_t AnalyseEvent(AliVEvent* event, Int_t eventtype);
+    virtual Int_t AnalyseEvent(AliVEvent* event){return AnalyseEvent(event,-1);}
 
     //the "Corrected" variables are only corrected for the track-by-track fCorrections
     Float_t GetCorrectedHadEtFullAcceptanceTPC() const {return fCorrHadEtFullAcceptanceTPC*fCorrectedHadEtFullAcceptanceTPC;}
