@@ -210,7 +210,7 @@ void AliRDHFCutsDstoKKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   }
   if(fVarsForOpt[6]){
     iter++;
-    vars[iter]=dd->GetSigmaVert();
+    vars[iter]=dd->GetSigmaVert(aod);
   }
   if(fVarsForOpt[7]){
     iter++;
@@ -536,10 +536,6 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
 
     // Cuts on candidate triplet
 
-    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]){
-      CleanOwnPrimaryVtx(d,aod,origownvtx);
-      return 0;
-    }
 
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]){
       CleanOwnPrimaryVtx(d,aod,origownvtx); 
@@ -566,6 +562,13 @@ Int_t AliRDHFCutsDstoKKpi::IsSelected(TObject* obj,Int_t selectionLevel, AliAODE
     }
 
    
+    //sec vert
+    Double_t sigmavert=d->GetSigmaVert(aod);
+    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]){
+      CleanOwnPrimaryVtx(d,aod,origownvtx);
+      return 0;
+    }
+
     if(okDsKKpi){
       Double_t cosPiKPhiRFKKpi=d->CosPiKPhiRFrameKKpi();
       Double_t kincutPiKPhiKKpi=TMath::Abs(cosPiKPhiRFKKpi*cosPiKPhiRFKKpi*cosPiKPhiRFKKpi);

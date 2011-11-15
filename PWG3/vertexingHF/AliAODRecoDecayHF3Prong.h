@@ -14,6 +14,7 @@
 
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
+#include "AliAODEvent.h"
 
 class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
 
@@ -34,7 +35,12 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   AliAODRecoDecayHF3Prong& operator=(const AliAODRecoDecayHF3Prong& source); 
   void GetDCAs(Double_t dca[3]) const 
     {for(Int_t i=0;i<3;i++) dca[i]=GetDCA(i);}
-  Double_t GetSigmaVert() const { return fSigmaVert; }
+  Double_t GetSigmaVert(AliAODEvent* aod=0x0) { 
+    if(fSigmaVert>0.00001) return fSigmaVert; 
+    if(aod) fSigmaVert=ComputeSigmaVert(aod);
+    return fSigmaVert;
+  }
+  Double_t ComputeSigmaVert(AliAODEvent* aod) const;
   Double_t GetDist12toPrim() const { return fDist12toPrim; }
   Double_t GetDist23toPrim() const { return fDist23toPrim; }
   void SetDist12toPrim(Double_t d) { fDist12toPrim=d; }
