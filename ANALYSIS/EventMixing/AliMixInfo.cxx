@@ -317,12 +317,12 @@ void AliMixInfo::DynamicExec(AliMixInfo *const mixInfo)
    Double_t numMix = hMix->GetBinContent(binX);
    Int_t hist2DValue = (Int_t) hSelected->GetBinContent(binX + 1, 1);
 
-   Int_t mixNum = 1;
+//    Int_t mixNum = 1;
    if (text) {
       if (mixInfo) {
          AliMixEventPool *evPool = (AliMixEventPool *) mixInfo->GetEventPool("mixEventPool");
          if (evPool) {
-            mixNum = evPool->GetMixNumber();
+//             mixNum = evPool->GetMixNumber();
             if (binX - 1 >= 0) {
                if (!evPool->SetCutValuesFromBinIndex(binX - 1)) return;
             }

@@ -128,8 +128,13 @@ Bool_t AliMixInputEventHandler::Notify(const char *path)
    // Notify(const char*path) is called for all mix input handlers
    //
    AliDebug(AliLog::kDebug + 5, Form("<- %s", path));
-   
-   Bool_t firstRun=(fMixIntupHandlerInfoTmp->GetChain()->GetEntries()<=0);
+
+   Bool_t doPrepareEntry=kTRUE;
+   TString anType = fAnalysisType;
+
+   // in case of local doPrepareEntry only first time
+   if (anType.CompareTo("proof")) doPrepareEntry = (fMixIntupHandlerInfoTmp->GetChain()->GetEntries()<=0);
+
    // adds current file
    fMixIntupHandlerInfoTmp->AddTreeToChain(path);
    Int_t lastIndex = fMixIntupHandlerInfoTmp->GetChain()->GetListOfFiles()->GetEntries();
@@ -138,7 +143,8 @@ Bool_t AliMixInputEventHandler::Notify(const char *path)
    for (Int_t i = 0; i < fInputHandlers.GetEntries(); i++) {
       AliDebug(AliLog::kDebug + 5, Form("fInputHandlers[%d]", i));
       mixIHI = new AliMixInputHandlerInfo(fMixIntupHandlerInfoTmp->GetName(), fMixIntupHandlerInfoTmp->GetTitle());
-      if (firstRun) mixIHI->PrepareEntry(che, -1, (AliInputEventHandler*)InputEventHandler(i), fAnalysisType);
+//       mixIHI->PrepareEntry(che, -1, (AliInputEventHandler *)InputEventHandler(i), fAnalysisType);
+      if (doPrepareEntry) mixIHI->PrepareEntry(che, -1, (AliInputEventHandler *)InputEventHandler(i), fAnalysisType);
       AliDebug(AliLog::kDebug + 5, Form("chain[%d]->GetEntries() = %lld", i, mixIHI->GetChain()->GetEntries()));
       fMixTrees.Add(mixIHI);
    }
@@ -239,9 +245,9 @@ Bool_t AliMixInputEventHandler::MixStd()
       mihi = (AliMixInputHandlerInfo *) fMixTrees.At(0);
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-	AliError("te is null. this is error. tell to developer (#1)");
+         AliError("te is null. this is error. tell to developer (#1)");
       } else {
-         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(0), fAnalysisType);
+         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler *)InputEventHandler(0), fAnalysisType);
          // runs UserExecMix for all tasks
          fNumberMixed++;
          UserExecMixAllTasks(fEntryCounter, 1, fEntryCounter, entryMixReal, fNumberMixed);
@@ -331,10 +337,10 @@ Bool_t AliMixInputEventHandler::MixBuffer()
       mihi = (AliMixInputHandlerInfo *) fMixTrees.At(counter);
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-	AliError("te is null. this is error. tell to developer (#1)");
+         AliError("te is null. this is error. tell to developer (#1)");
       } else {
          AliDebug(AliLog::kDebug + 3, Form("Preparing InputEventHandler(%d)", counter));
-         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(counter), fAnalysisType);
+         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler *)InputEventHandler(counter), fAnalysisType);
          // runs UserExecMix for all tasks
          UserExecMixAllTasks(fEntryCounter, idEntryList, fEntryCounter, entryMixReal, counter);
          fNumberMixed++;
@@ -440,9 +446,9 @@ Bool_t AliMixInputEventHandler::MixEventsMoreTimesWithOneEvent()
       entryMixReal = entryMix;
       TChainElement *te = fMixIntupHandlerInfoTmp->GetEntryInTree(entryMix);
       if (!te) {
-	AliError("te is null. this is error. tell to developer (#2)");
+         AliError("te is null. this is error. tell to developer (#2)");
       } else {
-         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler*)InputEventHandler(0), fAnalysisType);
+         mihi->PrepareEntry(te, entryMix, (AliInputEventHandler *)InputEventHandler(0), fAnalysisType);
          // runs UserExecMix for all tasks
          fNumberMixed++;
          UserExecMixAllTasks(fEntryCounter, idEntryList, currentMainEntry, entryMixReal, fNumberMixed);
@@ -480,7 +486,7 @@ Bool_t AliMixInputEventHandler::FinishEvent()
 }
 
 //_____________________________________________________________________________
-void AliMixInputEventHandler::AddInputEventHandler(AliVEventHandler*)
+void AliMixInputEventHandler::AddInputEventHandler(AliVEventHandler *)
 {
    //
    // AddInputEventHandler will not be used
@@ -498,15 +504,13 @@ void AliMixInputEventHandler::UserExecMixAllTasks(Long64_t entryCounter, Int_t i
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    AliAnalysisTaskSE *mixTask = 0;
    TObjArrayIter next(mgr->GetTasks());
-   while ((mixTask = (AliAnalysisTaskSE *) next())) {
-      if (dynamic_cast<AliAnalysisTaskSE *>(mixTask)) {
+   while ((mixTask = dynamic_cast<AliAnalysisTaskSE *>(next()))) {
          AliDebug(AliLog::kDebug, Form("%s %lld %d [%lld,%lld] %d", mixTask->GetName(), entryCounter, numMixed, entryMainReal, entryMixReal, idEntryList));
          fCurrentEntry = entryCounter;
          fCurrentEntryMain = entryMainReal;
          fCurrentEntryMix = entryMixReal;
          fCurrentBinIndex = idEntryList;
          if (entryMixReal >= 0) mixTask->UserExecMix("");
-      }
    }
 }
 
@@ -517,8 +521,8 @@ void AliMixInputEventHandler::SetMixNumber(const Int_t mixNum)
    // Sets mix number
    //
    if (fMixNumber > 1 && fBufferSize > 1) {
-     AliWarning("Sleeping 10 sec to show Warning Message ...");
-     AliWarning("=========================================================================================");
+      AliWarning("Sleeping 10 sec to show Warning Message ...");
+      AliWarning("=========================================================================================");
       AliWarning(Form("BufferSize(%d) higher > 1 and fMixNumber(%d) > 1, which is not supported", fBufferSize, mixNum));
       AliWarning("");
       AliWarning("\tBufferSize will be set to 1");

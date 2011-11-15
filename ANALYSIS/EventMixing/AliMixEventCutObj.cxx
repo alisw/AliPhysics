@@ -12,13 +12,14 @@
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
 #include "AliMultiplicity.h"
+#include "AliAODVertex.h"
 
 #include "AliMixEventCutObj.h"
 
 ClassImp(AliMixEventCutObj)
 
 //_________________________________________________________________________________________________
-AliMixEventCutObj::AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type, Float_t min, Float_t max, Float_t step, const char* opt) : TObject(),
+AliMixEventCutObj::AliMixEventCutObj(AliMixEventCutObj::EEPAxis_t type, Float_t min, Float_t max, Float_t step, const char *opt) : TObject(),
    fCutType((Int_t)type),
    fCutOpt(opt),
    fCutMin(min),
@@ -53,7 +54,7 @@ AliMixEventCutObj::AliMixEventCutObj(const AliMixEventCutObj &obj) : TObject(obj
 }
 
 //_________________________________________________________________________________________________
-AliMixEventCutObj& AliMixEventCutObj::operator=(const AliMixEventCutObj& obj)
+AliMixEventCutObj &AliMixEventCutObj::operator=(const AliMixEventCutObj &obj)
 {
    //
    // Assigned operator
@@ -155,7 +156,7 @@ Int_t AliMixEventCutObj::GetIndex(AliVEvent *ev)
 }
 
 //_________________________________________________________________________________________________
-Double_t AliMixEventCutObj::GetValue(AliVEvent* ev)
+Double_t AliMixEventCutObj::GetValue(AliVEvent *ev)
 {
    //
    // Returns value from event
@@ -171,7 +172,7 @@ Double_t AliMixEventCutObj::GetValue(AliVEvent* ev)
 }
 
 //_________________________________________________________________________________________________
-Double_t AliMixEventCutObj::GetValue(AliESDEvent* ev)
+Double_t AliMixEventCutObj::GetValue(AliESDEvent *ev)
 {
    //
    // Returns value from esd event
@@ -205,16 +206,22 @@ Double_t AliMixEventCutObj::GetValue(AliESDEvent* ev)
 }
 
 //_________________________________________________________________________________________________
-Double_t AliMixEventCutObj::GetValue(AliAODEvent* ev)
+Double_t AliMixEventCutObj::GetValue(AliAODEvent *ev)
 {
    //
    // Returns value from aod event
    //
+
+   AliAODVertex *v=0;
    switch (fCutType) {
       case kMultiplicity:
          return (Double_t) ev->GetNumberOfTracks();
       case kZVertex:
+         v = ev->GetVertex(0);
+         if (!v)  return -99999;
          return ev->GetVertex(0)->GetZ();
+         // if verttex is null return -9999
+         return -99999;
       case kNumberV0s:
          return ev->GetNumberOfV0s();
       case kCentrality:
@@ -222,7 +229,6 @@ Double_t AliMixEventCutObj::GetValue(AliAODEvent* ev)
          if (!c) AliFatal("aod->GetCentrality() is null");
          if (fCutOpt.IsNull()) AliFatal("fCutOpt is null");
          return c->GetCentralityPercentile(fCutOpt.Data());
-
    }
 
    AliFatal("Mixing Cut TYPE is not supported for AOD");
@@ -262,7 +268,7 @@ void AliMixEventCutObj::SetCurrentValueToIndex(Int_t index)
 }
 
 //_________________________________________________________________________________________________
-void AliMixEventCutObj::PrintValues(AliVEvent* main, AliVEvent* mix)
+void AliMixEventCutObj::PrintValues(AliVEvent *main, AliVEvent *mix)
 {
    //
    // Prints values of both events for current type
