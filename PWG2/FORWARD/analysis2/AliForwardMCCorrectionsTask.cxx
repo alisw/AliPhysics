@@ -140,6 +140,7 @@ AliForwardMCCorrectionsTask::operator=(const AliForwardMCCorrectionsTask& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this;
   fInspector         = o.fInspector;
   fTrackDensity      = o.fTrackDensity;
   fESDFMD            = o.fESDFMD;
@@ -565,6 +566,7 @@ AliForwardMCCorrectionsTask::VtxBin::VtxBin(const VtxBin& o)
 AliForwardMCCorrectionsTask::VtxBin&
 AliForwardMCCorrectionsTask::VtxBin::operator=(const VtxBin& o)
 {
+  if (&o == this) return *this;
   TNamed::operator=(o);
   fHists   = o.fHists;
   fPrimary = 0;

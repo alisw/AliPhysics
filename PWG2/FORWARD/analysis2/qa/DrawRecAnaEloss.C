@@ -104,7 +104,7 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
   // after->Scale(1. / ib);
   // presented->Scale(1. / ib);
   // used->Scale(1. / ib);
-  
+
   gPad->SetLogy();
   gPad->SetFillColor(0);
   before->SetTitle(Form("FMD%d%c",d,r));
@@ -134,13 +134,15 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
   TLine* l = new TLine;
   l->SetLineWidth(1);
   l->DrawLineNDC(x, y-0.9*ts, 1-gPad->GetRightMargin()-0.01, y-0.9*ts);
-  DrawText(ltx, x, y, "Change (merging)", Form("%5.1f%%", (100.*(ia-ib))/ib));
-  DrawText(ltx, x, y, "Change (input)",   Form("%5.1f%% (%5.1f%%)", 
-					       (100.*(ip-ia))/ia,
-					       (100.*(ip-ib))/ib));
-  DrawText(ltx, x, y, "Change (use)",     Form("%5.1f%% (%5.1f%%)", 
-					       (100.*(iu-ip))/ip,
-					       (100.*(iu-ib))/ib));
+  if (ib != 0 && ia != 0) {
+    DrawText(ltx, x, y, "Change (merging)", Form("%5.1f%%", (100.*(ia-ib))/ib));
+    DrawText(ltx, x, y, "Change (input)",   Form("%5.1f%% (%5.1f%%)", 
+						 (100.*(ip-ia))/ia,
+						 (100.*(ip-ib))/ib));
+    DrawText(ltx, x, y, "Change (use)",     Form("%5.1f%% (%5.1f%%)", 
+						 (100.*(iu-ip))/ip,
+						 (100.*(iu-ib))/ib));
+  }
   before->GetXaxis()->SetRangeUser(0, 4);
   gPad->cd();
 }
@@ -153,7 +155,8 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
  * @ingroup pwg2_forward_scripts_qa
  */
 void
-DrawRecAnaEloss(const char* filename="forward.root")
+DrawRecAnaEloss(const char* filename="forward.root",
+		const char* folder="ForwardResults")
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -172,9 +175,9 @@ DrawRecAnaEloss(const char* filename="forward.root")
     return;
   }
 
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get(folder));
   if (!forward) { 
-    Error("DrawRecAnaEloss", "List Forward not found in %s", filename);
+    Error("DrawRecAnaEloss", "List %s not found in %s", folder, filename);
     return;
   }
 
@@ -216,7 +219,7 @@ DrawRecAnaEloss(const char* filename="forward.root")
   TH2D* highCuts = static_cast<TH2D*>(sf->FindObject("highCuts"));
   if (highCuts) highCuts->Draw("colz");
   c->cd();
-  
+  c->SaveAs("recAnaELoss.png");
 }
 
   

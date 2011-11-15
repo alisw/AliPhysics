@@ -568,6 +568,7 @@ public:
      */
     RingHistos& operator=(const RingHistos& o) 
     {
+      if (&o == this) return *this;
       TObject::operator=(o);
       fDet  = o.fDet;
       fRing = o.fRing;

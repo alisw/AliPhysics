@@ -49,6 +49,7 @@ AliForwardMultiplicityBase::AliForwardMultiplicityBase(const char* name)
 AliForwardMultiplicityBase& 
 AliForwardMultiplicityBase::operator=(const AliForwardMultiplicityBase& o)
 {
+  if (&o == this) return *this;
   fEnableLowFlux = o.fEnableLowFlux;
   fFirstEvent    = o.fFirstEvent;
   fCorrManager   = o.fCorrManager;

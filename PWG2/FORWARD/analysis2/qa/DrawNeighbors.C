@@ -1,3 +1,18 @@
+#ifndef __CINT__
+# include <TH1.h>
+# include <TH2.h>
+# include <TList.h>
+# include <TFile.h>
+# include <TString.h>
+# include <TError.h>
+# include <TPad.h>
+# include <TCanvas.h>
+# include <TLine.h>
+# include <TLatex.h>
+# include <TStyle.h>
+#else
+class TList;
+#endif
 /** 
  * Draw the correlation of neighboring strips before/after merging 
  * 
@@ -65,7 +80,8 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
  * @ingroup pwg2_forward_scripts_qa
  */
 void
-DrawNeighbors(const char* filename="forward.root")
+DrawNeighbors(const char* filename="forward.root", 
+	      const char* folder="ForwardResults")
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -85,9 +101,9 @@ DrawNeighbors(const char* filename="forward.root")
     return;
   }
 
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get(folder));
   if (!forward) { 
-    Error("DrawNeighbors", "List Forward not found in %s", filename);
+    Error("DrawNeighbors", "List %s not found in %s", folder, filename);
     return;
   }
 
@@ -110,6 +126,7 @@ DrawNeighbors(const char* filename="forward.root")
   c->cd(6); DrawRingNeighbors(sf, 3, 'O');
   c->cd(4)->SetFillColor(0);
   c->cd();
+  c->SaveAs("neighbors.png");
 }
 
   

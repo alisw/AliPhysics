@@ -144,6 +144,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   // Return:
   //    Reference to this object
   //
+  if (&o == this) return *this; 
   TNamed::operator=(o);
   fHEventsTr         = o.fHEventsTr;
   fHEventsTrVtx      = o.fHEventsTrVtx;

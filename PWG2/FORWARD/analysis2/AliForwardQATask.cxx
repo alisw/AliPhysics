@@ -120,6 +120,7 @@ AliForwardQATask::operator=(const AliForwardQATask& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this;
   AliAnalysisTaskSE::operator=(o);
 
   fEnableLowFlux     = o.fEnableLowFlux;

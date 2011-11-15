@@ -9,6 +9,21 @@
  * @ingroup pwg2_forward_scripts_qa
  * 
  */
+#ifndef __CINT__
+# include <TH1.h>
+# include <TH2.h>
+# include <TList.h>
+# include <TFile.h>
+# include <TString.h>
+# include <TError.h>
+# include <TPad.h>
+# include <TCanvas.h>
+# include <TLine.h>
+# include <TLatex.h>
+# include <TStyle.h>
+#else
+class TList;
+#endif
 
 /** 
  * Draw the poisson @f$N_{ch}@f$ estimate against the @f$\Delta@f$
@@ -27,20 +42,22 @@
 Double_t
 DrawRingOccupancy(TList* p, UShort_t d, Char_t r)
 {
-  if (!p) return;
+  if (!p) return 0;
 
   TList* ring = static_cast<TList*>(p->FindObject(Form("FMD%d%c",d,r)));
   if (!ring) { 
     Error("DrawOccupancy", "List FMD%d%c not found in %s",d,r,p->GetName());
-    return;
+    return 0;
   }
   
   TH1* corr = static_cast<TH1*>(ring->FindObject("occupancy"));
   if (!corr) { 
     Error("DrawRingOccupancy", "Histogram occupancy not found in FMD%d%c",
 	  d, r);
-    return;
+    return 0;
   }
+  corr->Rebin(4);
+
   TPad* pad = static_cast<TPad*>(gPad);
   pad->SetGridy();
   pad->SetGridx();
@@ -79,8 +96,7 @@ DrawRingOccupancy(TList* p, UShort_t d, Char_t r)
  */
 void
 DrawOccupancy(const char* filename="forward.root", 
-		 Double_t xmax=-1,
-		 Double_t xmin=-1)
+	      const char* folder="ForwardResults")
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -100,9 +116,9 @@ DrawOccupancy(const char* filename="forward.root",
     return;
   }
 
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get(folder));
   if (!forward) { 
-    Error("DrawOccupancy", "List Forward not found in %s", filename);
+    Error("DrawOccupancy", "List %s not found in %s", folder, filename);
     return;
   }
 

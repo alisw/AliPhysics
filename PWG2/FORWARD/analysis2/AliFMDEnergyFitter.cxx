@@ -141,6 +141,7 @@ AliFMDEnergyFitter::operator=(const AliFMDEnergyFitter& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this; 
   TNamed::operator=(o);
 
   fLowCut        = o.fLowCut;
@@ -545,6 +546,7 @@ AliFMDEnergyFitter::RingHistos::operator=(const RingHistos& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fEDist) delete fEDist;

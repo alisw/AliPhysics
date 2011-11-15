@@ -32,6 +32,7 @@ AliFMDMultCuts::AliFMDMultCuts(const AliFMDMultCuts& o)
 AliFMDMultCuts&
 AliFMDMultCuts::operator=(const AliFMDMultCuts& o)
 {
+  if (&o == this) return *this; 
   fMPVFraction  = o.fMPVFraction;
   fNXi          = o.fNXi;
   fIncludeSigma = o.fIncludeSigma;

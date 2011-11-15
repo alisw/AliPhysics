@@ -161,6 +161,7 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this;
   TNamed::operator=(o);
 
   fCorrectAngles                = o.fCorrectAngles;
@@ -1163,6 +1164,7 @@ AliFMDSharingFilter::RingHistos::operator=(const RingHistos& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this;
   AliForwardUtil::RingHistos::operator=(o);
   fDet = o.fDet;
   fRing = o.fRing;

@@ -178,6 +178,7 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   // Return:
   //    Reference to this object
   //
+  if (&o == this) return *this; 
   TNamed::operator=(o);
 
   fDebug              = o.fDebug;
@@ -1075,6 +1076,7 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fEvsN)           delete fEvsN;
