@@ -47,6 +47,7 @@
 #include "AliTRDcalibDB.h"
 #include "AliTRDgeometry.h"
 #include "info/AliTRDpidInfo.h"
+#include "AliAnalysisManager.h"
 
 ClassImp(AliTRDpidRefMakerLQ)
 
@@ -78,6 +79,7 @@ AliTRDpidRefMakerLQ::~AliTRDpidRefMakerLQ()
   //
   // AliTRDCalPIDQRef destructor
   //
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fPDF){
     //fPDF->Write("PDF_LQ", TObject::kSingleKey);
     fPDF->Delete();
