@@ -639,7 +639,8 @@ void AliTRDCalibTask::UserExec(Option_t *)
   }
   
   //printf("Beam type %s\n",(const char*)type);
-  if (strstr(type,"A-A")) {
+  if (!strstr(type,"p-p")) {
+    //if (strstr(type,"A-A")) {
     //printf("Will check the number of good tracks %f %f %f\n",nGoodParticles,fMinNbTracks,fMaxNbTracks);
     if((nGoodParticles < fMinNbTracks) || (nGoodParticles > fMaxNbTracks)) {
       PostData(1, fListHist);
