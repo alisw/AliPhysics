@@ -123,6 +123,7 @@ AliPoissonCalculator::CleanUp()
 AliPoissonCalculator&
 AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
 {
+  if (&o == this) return *this;
   TNamed::operator=(o);
   fEtaLumping = o.fEtaLumping;
   fPhiLumping = o.fPhiLumping;

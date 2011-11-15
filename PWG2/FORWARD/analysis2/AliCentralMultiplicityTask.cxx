@@ -107,6 +107,7 @@ AliCentralMultiplicityTask::operator=(const AliCentralMultiplicityTask& o)
   // 
   // Assignment operator 
   //
+  if (&o == this) return *this; 
   fInspector         = o.fInspector;
   fData              = o.fData;
   fList              = o.fList;
@@ -570,6 +571,7 @@ AliCentralMultiplicityTask::Manager::operator=(const Manager& o)
   //
   // Assignment operator  
   // 
+  if (&o == this) return *this; 
   fAcceptancePath = o.fAcceptancePath;
   fSecMapPath     = o.fSecMapPath;
   fAcceptance     = o.fAcceptance;

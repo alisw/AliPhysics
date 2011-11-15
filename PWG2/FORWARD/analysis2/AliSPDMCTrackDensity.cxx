@@ -64,6 +64,7 @@ AliSPDMCTrackDensity&
 AliSPDMCTrackDensity::operator=(const AliSPDMCTrackDensity& o)
 {
   // Assignment operator 
+  if (&o == this) return *this;
   TNamed::operator=(o);
   fUseOnlyPrimary       = o.fUseOnlyPrimary;
   fMinR             = o.fMinR;

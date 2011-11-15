@@ -60,6 +60,7 @@ AliFMDMCCorrector::operator=(const AliFMDMCCorrector& o)
   // Return:
   //    Reference to this object
   //
+  if (&o == this) return *this; 
   AliFMDCorrector::operator=(o);
   fSecondaryForMC = o.fSecondaryForMC;
   return *this;

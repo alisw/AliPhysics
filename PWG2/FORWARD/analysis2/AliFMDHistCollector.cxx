@@ -95,6 +95,7 @@ AliFMDHistCollector::operator=(const AliFMDHistCollector& o)
   // Return:
   //    Reference to this object
   //
+  if (&o == this) return *this; 
   TNamed::operator=(o);
 
   fNCutBins       = o.fNCutBins;

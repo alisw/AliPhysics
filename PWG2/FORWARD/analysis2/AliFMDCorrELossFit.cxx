@@ -203,6 +203,7 @@ AliFMDCorrELossFit::ELossFit::operator=(const ELossFit& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this; 
   fN	   = o.fN;
   fNu	   = o.fNu;
   fChi2	   = o.fChi2;
@@ -606,6 +607,7 @@ AliFMDCorrELossFit::operator=(const AliFMDCorrELossFit& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this; 
   fRings = o.fRings;
   fLowCut = o.fLowCut;
   SetEtaAxis(o.fEtaAxis.GetNbins(), o.fEtaAxis.GetXmin(), o.fEtaAxis.GetXmax());

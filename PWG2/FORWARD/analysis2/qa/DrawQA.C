@@ -20,19 +20,28 @@ DrawQA(const char* file, bool full=false)
   gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
 			   "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
 			   gROOT->GetMacroPath()));
-  gROOT->LoadMacro("DrawBeforeAfter.C");
-  gROOT->LoadMacro("DrawELossPoisson.C");
-  gROOT->LoadMacro("DrawNeighbors.C");
-  gROOT->LoadMacro("DrawOccupancy.C");
-  gROOT->LoadMacro("DrawRecAnaEloss.C");
+  gROOT->LoadMacro("DrawBeforeAfter.C+g");
+  gROOT->LoadMacro("DrawELossPoisson.C+g");
+  gROOT->LoadMacro("DrawNeighbors.C+g");
+  gROOT->LoadMacro("DrawOccupancy.C+g");
+  gROOT->LoadMacro("DrawRecAnaEloss.C+g");
+  gROOT->LoadMacro("Draw123.C+g");
 
+  Info("DrawQA", "Drawing before-after");
   DrawBeforeAfter(file);
-  DrawELossPoisson(file);
+  Info("DrawQA", "Drawing singles, doubles, tripples");
+  Draw123(file);
+  Info("DrawQA", "Drawing Neighbors");
   DrawNeighbors(file);
-  DrawOccupancy(file);
+  Info("DrawQA", "Drawing raw and analysed energy loss");
   DrawRecAnaEloss(file);
+  Info("DrawQA", "Drawing poisson vs energy loss");
+  DrawELossPoisson(file);
+  Info("DrawQA", "Drawing Occupancies");
+  DrawOccupancy(file);
 
   if (!full) { 
+    Info("DrawQA", "Drawing fit results");
     gROOT->LoadMacro("DrawAnaELoss.C");
     DrawAnaELoss(file);
   }

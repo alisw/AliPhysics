@@ -57,6 +57,7 @@ AliForwardFlowTaskQC::AliForwardFlowTaskQC()
   // 
   // Default constructor
   //
+  for (Int_t n = 0; n <= 6; n++) fv[n] = kTRUE;
 }
 //_____________________________________________________________________
 AliForwardFlowTaskQC::AliForwardFlowTaskQC(const char* name) :

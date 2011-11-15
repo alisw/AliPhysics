@@ -99,6 +99,7 @@ AliFMDEnergyFitterTask::operator=(const AliFMDEnergyFitterTask& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this; 
   AliAnalysisTaskSE::operator=(o);
 
   fFirstEvent        = o.fFirstEvent;
