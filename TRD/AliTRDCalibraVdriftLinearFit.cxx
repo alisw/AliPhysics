@@ -492,7 +492,7 @@ TGraphErrors* AliTRDCalibraVdriftLinearFit::DrawMS(const TH2 *const h2, Int_t &n
       //Warning("drawMS()", Form("reject x[%d]=%f on NDF=%d", jpt, x, fg.GetNDF()));
       continue;
     }
-    if(fg.GetParameter(1)+fg.GetParameter(2)/2>ay->GetXmax() || fg.GetParameter(1)-fg.GetParameter(2)/2<ay->GetXmin()) continue;
+    if(((fg.GetParameter(1)+fg.GetParameter(2)/2)>ay->GetXmax()) || ((fg.GetParameter(1)-fg.GetParameter(2)/2)<ay->GetXmin()) || (TMath::Abs(fg.GetParameter(0))< 0.00001)) continue;
     gp->SetPoint(ig, ax->GetBinCenter(jpt), fg.GetParameter(1));
     gp->SetPointError(ig, 0, TMath::Sqrt(pow(fg.GetParError(1),2) + (1/pow(fg.GetParameter(0),2))));
     ig++;
