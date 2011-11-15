@@ -65,39 +65,11 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
   }else{
     TGrid::Connect("alien:");
     if(qaTrain.Contains("QA")){
-      path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/%s",year,period.Data(),nRun,qaTrain.Data());
+      path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/%s/",year,period.Data(),nRun,qaTrain.Data());
     } else {
-    path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/",year,period.Data(),nRun);
+      path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/",year,period.Data(),nRun);
     }
-    printf("search in path %s\n",path.Data());
-    if(!gGrid||!gGrid->IsConnected()) {
-      printf("gGrid not found! exit macro\n");
-      return;
-    }
-    TGridResult *gr = gGrid->Query(path,filenamedata);
-    Int_t nFiles = gr->GetEntries();
-    if (nFiles < 1){
-      printf("QA file for run %d not found\n",nRun);
-      return;
-    }
-    printf("================>%d files found\n", nFiles);
-  
-    Int_t theFile=0;
-    Int_t maxVer=0;
-    if (nFiles > 1){
-      for (Int_t iFil = 0; iFil <nFiles ; iFil++) { 
-	filenamedata=Form("%s",gr->GetKey(iFil,"turl"));
-	TString cutFilename=filenamedata.ReplaceAll("/QAresults.root","");
-	Int_t last=cutFilename.Sizeof()-3;
-	cutFilename.Remove(0,last);
-	Int_t qaver=atoi(cutFilename.Data());
-	if(qaver>maxVer){
-	  maxVer=qaver;
-	  theFile=iFil;
-	}
-      }
-    }
-    filenamedata=Form("%s",gr->GetKey(theFile,"turl"));
+    filenamedata = "alien://"+path+"QAresults.root";
     fildat=TFile::Open(filenamedata.Data());
   }
   if(option.Contains("local") && filenameMC.Contains("alien"))TGrid::Connect("alien:");
