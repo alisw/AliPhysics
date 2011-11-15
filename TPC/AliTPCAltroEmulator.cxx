@@ -1197,7 +1197,7 @@ Bool_t AliTPCAltroEmulator::ConvertRawFilesToDate(Int_t nevents) {
 			  ddlID,
 			  fDDLFolderName.Data(),
 			  ievent,
-			  AliDAQ::DdlFileName(iDet,iDDL))
+			  (char*)AliDAQ::DdlFileName(iDet,iDDL))
 		);
       }
     }
