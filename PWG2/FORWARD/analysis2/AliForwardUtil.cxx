@@ -25,8 +25,9 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
   // 
   // Parse a collision system spec given in a string.   Known values are 
   // 
-  //  - "pp", "p-p" which returns kPP 
-  //  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb 
+  //  - "ppb", "p-pb", "pa", "p-a"  which returns kPPb
+  //  - "pp", "p-p"                 which returns kPP 
+  //  - "PbPb", "Pb-Pb", "A-A",     which returns kPbPb 
   //  - Everything else gives kUnknown 
   // 
   // Parameters:
@@ -37,9 +38,12 @@ AliForwardUtil::ParseCollisionSystem(const char* sys)
   //
   TString s(sys);
   s.ToLower();
-  if (s.Contains("p-p")   || s.Contains("pp"))   return AliForwardUtil::kPP; 
-  if (s.Contains("pb-pb") || s.Contains("pbpb")) return AliForwardUtil::kPbPb;
-  if (s.Contains("a-a")   || s.Contains("aa"))   return AliForwardUtil::kPbPb;
+  // we do pA first to avoid pp catch on ppb string (AH)
+  if (s.Contains("p-pb")  || s.Contains("ppb"))   return AliForwardUtil::kPPb;
+  if (s.Contains("p-a")   || s.Contains("pa"))    return AliForwardUtil::kPPb;
+  if (s.Contains("p-p")   || s.Contains("pp"))    return AliForwardUtil::kPP; 
+  if (s.Contains("pb-pb") || s.Contains("pbpb"))  return AliForwardUtil::kPbPb;
+  if (s.Contains("a-a")   || s.Contains("aa"))    return AliForwardUtil::kPbPb;
   return AliForwardUtil::kUnknown;
 }
 //____________________________________________________________________
@@ -61,6 +65,7 @@ AliForwardUtil::CollisionSystemString(UShort_t sys)
   switch (sys) { 
   case AliForwardUtil::kPP:   return "pp";
   case AliForwardUtil::kPbPb: return "PbPb";
+  case AliForwardUtil::kPPb:  return "pPb";
   }
   return "unknown";
 }
@@ -85,6 +90,7 @@ AliForwardUtil::ParseCenterOfMassEnergy(UShort_t /* sys */, Float_t v)
   if (TMath::Abs(energy - 900.)   < 10)  return 900;
   if (TMath::Abs(energy - 2400.)  < 10)  return 2400;
   if (TMath::Abs(energy - 2750.)  < 20)  return 2750;
+  if (TMath::Abs(energy - 4400.)  < 10)  return 4400;
   if (TMath::Abs(energy - 5500.)  < 40)  return 5500;
   if (TMath::Abs(energy - 7000.)  < 10)  return 7000;
   if (TMath::Abs(energy - 10000.) < 10)  return 10000;

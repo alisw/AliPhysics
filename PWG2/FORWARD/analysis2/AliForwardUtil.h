@@ -56,14 +56,16 @@ public:
   enum ECollisionSystem {
     kUnknown, 
     kPP, 
-    kPbPb
+    kPbPb,
+    kPPb
   };
   //__________________________________________________________________
   /** 
    * Parse a collision system spec given in a string.   Known values are 
    * 
    *  - "pp", "p-p" which returns kPP 
-   *  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb 
+   *  - "PbPb", "Pb-Pb", "A-A", which returns kPbPb
+   *  - "pPb", "p-Pb", "pA", p-A" which returns kPPb
    *  - Everything else gives kUnknown 
    * 
    * @param sys Collision system spec 
@@ -77,6 +79,7 @@ public:
    * @param sys  Collision system 
    * - kPP -> "pp"
    * - kPbPb -> "PbPb" 
+   * - kPPb -> "pPb"
    * - anything else gives "unknown"
    * 
    * @return String representation of the collision system 
