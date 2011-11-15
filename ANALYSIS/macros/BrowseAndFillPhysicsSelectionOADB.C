@@ -23,8 +23,6 @@
 #endif
 
 
-//FIXME: defaults for 2.76 TeV
-
 void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   // Load stuff
@@ -67,7 +65,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   // DefaultPP
   AliOADBPhysicsSelection * oadbDefaultPP = new AliOADBPhysicsSelection("oadbDefaultPP");
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-I-NOPF-ALLNOTRD","B",0);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kINT7,"+CINT7-[I|B]-NOPF-ALLNOTRD","B",0);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-AC-NOPF-ALLNOTRD","AC",0);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kINT7,"+CINT7-E-NOPF-ALLNOTRD","E",0);  
   oadbDefaultPP->SetHardwareTrigger         ( 0,"V0A && V0C");					      
@@ -103,22 +101,18 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPP->SetHardwareTrigger         ( 5,"V0A && V0C");                                         
   oadbDefaultPP->SetOfflineTrigger          ( 5,"(V0A && V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
 
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-I-NOPF-ALLNOTRD","B",  6);
-  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-B-NOPF-ALLNOTRD","B",  6);
+  oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-[I|B]-NOPF-ALLNOTRD","B",  6);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kPHI7,"+CPHI7-AC-NOPF-ALLNOTRD","AC",6);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kPHI7,"+CPHI7-E-NOPF-ALLNOTRD","E",  6);
   oadbDefaultPP->SetHardwareTrigger         ( 6,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger          ( 6,"(V0A && V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");
   
-  /*
-  // PENDING VALIDATION https://savannah.cern.ch/bugs/?86829
   oadbDefaultPP->AddCollisionTriggerClass   ( AliVEvent::kDG5,"+CDG5-I-NOPF-ALLNOTRD","B",  7);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kDG5,"+CDG5-AC-NOPF-ALLNOTRD","AC",7);
   oadbDefaultPP->AddBGTriggerClass          ( AliVEvent::kDG5,"+CDG5-E-NOPF-ALLNOTRD","E",  7);
   // TODO TOF condition needs to be implemented (Savannah bug #87064)
   oadbDefaultPP->SetHardwareTrigger         ( 7,"!V0A && !V0C && SPDGFOL1 >= 2");
-  oadbDefaultPP->SetOfflineTrigger          ( 7,"!V0A && !V0C && !V0ABG && !V0CBG && && SPDGFOL1 >= 2 && !TPCLaserWarmUp");
-  */
+  oadbDefaultPP->SetOfflineTrigger          ( 7,"!V0A && !V0C && !V0ABG && !V0CBG && SPDGFOL1 >= 2 && !TPCLaserWarmUp");
 
   oadbContPS->AddDefaultObject(oadbDefaultPP);
 
@@ -126,26 +120,29 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection("oadbDefaultPbPb");
   
   Int_t triggerCount = 0;
-  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CPBI1-B-NOPF-ALLNOTRD,CPBI2_B1-B-NOPF-ALLNOTRD,CPBI2_B1-B-PF-ALLNOTRD","B",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI1-AC-NOPF-ALLNOTRD,CPBI2_B1-AC-NOPF-ALLNOTRD","AC",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI1-E-NOPF-ALLNOTRD,CPBI2_B1-E-NOPF-ALLNOTRD","E",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kMB,"+CPBI1-B-NOPF-ALLNOTRD,CPBI2_B1-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI[1|2_B1]-AC-NOPF-ALLNOTRD","AC",triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMB,"+CPBI[1|2_B1]-E-NOPF-ALLNOTRD","E",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
   oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
   triggerCount++;
   // Bug in early running, CVHN_R2-B-NOPF-ALLNOTRD needed explicitly up to run 167814 (to be moved to custom object as soon as all other things are fine)
-  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD","B",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-AC-NOPF-ALLNOTRD,CVHN-AC-NOPF-CENTNOTRD","AC",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-E-NOPF-ALLNOTRD,CVHN-E-NOPF-CENTNOTRD","E",triggerCount);
+  //   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD","AC",triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD","E",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C && Central");
   oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
   triggerCount++;
   // semicentral includes central ones (and might have different downscaling)
   // Bug in early running, CVHN_R2-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD needed explicitly up to run 167814 (to be moved to custom object as soon as all other things are fine)
-  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD,CVLN-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD,CVLN-B-PF-ALLNOTRD","B",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-AC-NOPF-ALLNOTRD,CVHN-AC-NOPF-CENTNOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
-  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-E-NOPF-ALLNOTRD,CVHN-E-NOPF-CENTNOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
+//   oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN-B-NOPF-ALLNOTRD,CVHN_R2-B-NOPF-ALLNOTRD,CVHN-B-NOPF-CENTNOTRD,CVHN-B-PF-ALLNOTRD,CVHN-B-PF-CENTNOTRD,CVLN-B-NOPF-ALLNOTRD,CVLN_B2-B-NOPF-ALLNOTRD,CVLN-B-PF-ALLNOTRD","B",triggerCount);
+  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kSemiCentral,"+CVHN[|_R2]-B-[NOPF|PF]-[ALL|CENT]NOTRD,CVLN[|_B2]-B-[NOPF|PF]-ALLNOTRD","B",triggerCount);
+  
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-AC-NOPF-[ALL|CENT]NOTRD,CVLN-AC-NOPF-ALLNOTRD","AC",triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kSemiCentral,"+CVHN-E-NOPF-[ALL|CENT]NOTRD,CVLN-E-NOPF-ALLNOTRD","E",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C && SemiCentral && !Central");
   oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
 
@@ -191,7 +188,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 
   // Trigger analysis defaults
   AliOADBTriggerAnalysis * oadbTrigAnalysis = new AliOADBTriggerAnalysis("Default");
-  oadbTrigAnalysis->SetZDCCorrParameters(0, 0, 4*0.6, 4*0.6);
+  oadbTrigAnalysis->SetZDCCorrParameters(0, 0, 4*0.7, 4*0.7);
   oadbContTriggerAnalysis->AddDefaultObject(oadbTrigAnalysis);  
 
   // ----- 2009 - 2010 -----
@@ -938,8 +935,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbLHC11d1->SetHardwareTrigger         ( 5,"V0A && V0C");                                         
   oadbLHC11d1->SetOfflineTrigger          ( 5,"(V0A && V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp");  
   
-  oadbLHC11d1->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-B-NOPF-ALLNOTRD","B",  6);
-  oadbLHC11d1->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-I-NOPF-ALLNOTRD","B",  6);
+  oadbLHC11d1->AddCollisionTriggerClass   ( AliVEvent::kPHI7,"+CPHI7-B-NOPF-ALLNOTRD,CPHI7-I-NOPF-ALLNOTRD","B",  6);
   oadbLHC11d1->AddBGTriggerClass          ( AliVEvent::kPHI7,"+CPHI7-AC-NOPF-ALLNOTRD","AC",6);
   oadbLHC11d1->AddBGTriggerClass          ( AliVEvent::kPHI7,"+CPHI7-E-NOPF-ALLNOTRD","E",  6);
   oadbLHC11d1->SetHardwareTrigger         ( 6,"V0A && V0C");

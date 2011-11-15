@@ -394,8 +394,10 @@ Bool_t AliPhysicsSelection::EvaluateTriggerLogic(const AliESDEvent* aEsd, AliTri
       //      if(fHistStatisticsTokens) 	      
     }
   }
-  
+
   TFormula formula("formula", trigger);
+  if (formula.Compile() > 0)
+    AliFatal(Form("Could not evaluate trigger logic %s (evaluated to %s)", triggerLogic, trigger.Data()));
   Bool_t result = formula.Eval(0);
   
   AliDebug(AliLog::kDebug, Form("%s --> %d", trigger.Data(), result));
