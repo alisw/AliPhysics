@@ -216,6 +216,7 @@ AliFMDGeometry::operator=(const AliFMDGeometry& other)
   // Return:
   //    reference to this.  
   //
+  if (&other == this) return *this; 
   fUseFMD1		= other.fUseFMD1; 
   fUseFMD2		= other.fUseFMD2; 
   fUseFMD3		= other.fUseFMD3; 

@@ -50,6 +50,7 @@ public:
       @return Reference to this object */
   AliFMDEdepHitPair& operator=(const AliFMDEdepHitPair& o) 
   { 
+    if (&o == this) return *this; 
     fEdep   = o.fEdep; 
     fN      = o.fN; 
     fNPrim  = o.fNPrim;

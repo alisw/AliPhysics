@@ -121,6 +121,12 @@ public:
   {}
   /** DTOR */
   virtual ~AliFMDObjIndex() {}
+  AliFMDObjIndex& operator=(const AliFMDObjIndex& o) 
+  {
+    if (&o == this) return *this;
+    AliFMDIndex::operator=(o);
+    return *this; 
+  }
   /** @return name */
   virtual const char* GetName() const { return AliFMDIndex::Name(); }
   /** sort compare for TCollection's

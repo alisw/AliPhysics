@@ -108,6 +108,7 @@ AliForwardMultiplicityTask::operator=(const AliForwardMultiplicityTask& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this;
   AliForwardMultiplicityBase::operator=(o);
 
   fHData             = o.fHData;

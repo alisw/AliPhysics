@@ -95,6 +95,7 @@ AliFMDCorrector::operator=(const AliFMDCorrector& o)
   // 
   // Parameters:
   //   o   Object to assign from 
+  if (&o == this) return *this; 
   TNamed::operator=(o);
 
   fDebug   = o.fDebug;
@@ -415,6 +416,7 @@ AliFMDCorrector::RingHistos::operator=(const RingHistos& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this; 
   AliForwardUtil::RingHistos::operator=(o);
   
   if (fDensity) delete fDensity;

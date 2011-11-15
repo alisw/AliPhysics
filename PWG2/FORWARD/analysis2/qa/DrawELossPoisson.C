@@ -9,6 +9,24 @@
  * @ingroup pwg2_forward_scripts_qa
  * 
  */
+#ifndef __CINT__
+# include <TH1.h>
+# include <TH2.h>
+# include <TList.h>
+# include <TFile.h>
+# include <TString.h>
+# include <TError.h>
+# include <TPad.h>
+# include <TCanvas.h>
+# include <TMath.h>
+# include <TF1.h>
+# include <TLine.h>
+# include <TLatex.h>
+# include <TLinearFitter.h>
+# include <TStyle.h>
+#else
+class TList;
+#endif
 
 /** 
  * Draw the poisson @f$N_{ch}@f$ estimate against the @f$\Delta@f$
@@ -28,19 +46,19 @@ Double_t
 DrawRingELossPoisson(TList* p, UShort_t d, Char_t r, 
 		     Double_t xmin, Double_t xmax)
 {
-  if (!p) return;
+  if (!p) return 0;
 
   TList* ring = static_cast<TList*>(p->FindObject(Form("FMD%d%c",d,r)));
   if (!ring) { 
     Error("DrawELossPoisson", "List FMD%d%c not found in %s",d,r,p->GetName());
-    return;
+    return 0;
   }
   
   TH2* corr = static_cast<TH2D*>(ring->FindObject("elossVsPoisson"));
   if (!corr) { 
     Error("DrawRingELossPoisson", "Histogram esdEloss not found in FMD%d%c",
 	  d, r);
-    return;
+    return 0;
   }
   TPad* pad = static_cast<TPad*>(gPad);
   pad->SetGridy();
@@ -56,11 +74,13 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
   corr->GetXaxis()->SetRangeUser(xmin,xmax);
   corr->GetYaxis()->SetRangeUser(xmin,xmax);
   corr->SetTitle(Form("FMD%d%c",d,r));
-  Info("", "Entries: %d, integral: %f", corr->GetEntries(), corr->Integral()); 
+  // Info("", "Entries: %d, integral: %f", 
+  //      int(corr->GetEntries()), corr->Integral()); 
   corr->Draw("colz");
+  if (corr->GetEntries() <= 0) return 0;
 
   // Calculate the linear regression 
-  Double_t dx    = (xmax-xmin);
+  // Double_t dx    = (xmax-xmin);
   Double_t rxy   = corr->GetCorrelationFactor();
   Double_t sx    = corr->GetRMS(1);
   Double_t sy    = corr->GetRMS(2);
@@ -73,6 +93,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
 #if 0
   Double_t beta  = rxy * sy / sx;
 #else
+  if (TMath::Abs(cxy) < 1e-6) return 0;
   Double_t beta  = ((sy2 - delta*sx2 + 
 		     TMath::Sqrt(TMath::Power(sy2-delta*sx2,2) + 
 				 4*delta*cxy*cxy))
@@ -92,8 +113,10 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
   l->Draw();
   // corr->GetXaxis()->SetRangeUser(0, 2);
 
+#if 0
   Info("", "FMD%d%c correlation coefficient: %9.5f%% "
        "line y = %f + %f * x", d, r, 100*rxy, alpha, beta);
+#endif
 
   Double_t x = pad->GetLeftMargin()+.01;
   Double_t y = 1-pad->GetTopMargin()-.01;
@@ -130,6 +153,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
     fitter->EvalRobust();
   else 
     fitter->Eval();
+#if 0
   for (Int_t i = 0; i < 2; i++) { 
     std::cout << i << "\t" 
 	      << fitter->GetParName(i) << "\t"
@@ -143,6 +167,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
 		   fitter->GetNumberFreeParameters() );
   std::cout << "chi2/ndf: " << chi2 << '/' << ndf 
 	    << '=' << chi2 / ndf << std::endl;
+#endif
 
   // corr->Scale(1. / corr->GetMaximum());
   pad->cd();
@@ -162,6 +187,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
  */
 void
 DrawELossPoisson(const char* filename="forward.root", 
+		 const char* folder="ForwardResults",
 		 Double_t xmax=-1,
 		 Double_t xmin=-1)
 {
@@ -183,9 +209,9 @@ DrawELossPoisson(const char* filename="forward.root",
     return;
   }
 
-  TList* forward = static_cast<TList*>(file->Get("Forward"));
+  TList* forward = static_cast<TList*>(file->Get(folder));
   if (!forward) { 
-    Error("DrawELossPoisson", "List Forward not found in %s", filename);
+    Error("DrawELossPoisson", "List %s not found in %s", folder, filename);
     return;
   }
 

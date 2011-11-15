@@ -108,6 +108,7 @@ AliFMDDetector&
 AliFMDDetector::operator=(const AliFMDDetector& other)
 {
   // Assignment operator
+  if (&other == this) return *this; 
   SetName(other.GetName());
   SetTitle(other.GetTitle());
   fId              = other.fId;

@@ -63,6 +63,7 @@ AliFMDMCTrackDensity&
 AliFMDMCTrackDensity::operator=(const AliFMDMCTrackDensity& o)
 {
   // Assignment operator 
+  if (&o == this) return *this; 
   TNamed::operator=(o);
   fUseOnlyPrimary       = o.fUseOnlyPrimary;
   fMaxConsequtiveStrips = o.fMaxConsequtiveStrips;

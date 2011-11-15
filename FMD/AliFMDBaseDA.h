@@ -55,6 +55,7 @@ public:
    * 
    */  
   ~AliFMDBaseDA() ;
+  AliFMDBaseDA& operator=(const AliFMDBaseDA&) { return *this; }
   /** 
    * Run this DA
    * 

@@ -231,6 +231,7 @@ AliFMDHitDigitizer::operator=(const AliFMDHitDigitizer& o)
    * @param o Object to assign from 
    * @return Reference to this 
    */
+  if (&o == this) return *this; 
   AliFMDBaseDigitizer::operator=(o);
   fHoldTime    = o.fHoldTime;
   fOutput      = o.fOutput;

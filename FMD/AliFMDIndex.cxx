@@ -95,6 +95,7 @@ AliFMDIndex&
 AliFMDIndex::operator=(const AliFMDIndex& o)
 {
   // Assignment operator 
+  if (&o == this) return *this; 
   fDetector = o.fDetector;
   fRing     = o.fRing;
   fSector   = o.fSector;

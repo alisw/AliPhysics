@@ -86,6 +86,7 @@ AliFMDUShortMap&
 AliFMDUShortMap::operator=(const AliFMDUShortMap& other) 
 {
   // Assignment operator
+  if (&other == this) return *this; 
   fMaxDetectors = other.fMaxDetectors;
   fMaxRings     = other.fMaxRings;
   fMaxSectors   = other.fMaxSectors;

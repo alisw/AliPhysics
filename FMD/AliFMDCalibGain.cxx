@@ -65,6 +65,7 @@ AliFMDCalibGain&
 AliFMDCalibGain::operator=(const AliFMDCalibGain& o)
 {
   // Assignment operator 
+  if (&o == this) return *this; 
   fValue     = o.fValue;
   fThreshold = o.fThreshold;
   return (*this);
@@ -103,6 +104,7 @@ namespace {
     {}
     MakeDead& operator=(const MakeDead& other) 
     { 
+      if (&other == this) return *this; 
       fDead   = other.fDead;
       fMin    = other.fMin;
       fMax    = other.fMax;

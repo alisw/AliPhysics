@@ -64,6 +64,7 @@ AliFMDCalibPedestal&
 AliFMDCalibPedestal::operator=(const AliFMDCalibPedestal& o)
 {
   // Assignment operator 
+  if (&o == this) return *this; 
   fValue = o.fValue;
   fWidth = o.fWidth;
   return (*this);
@@ -111,6 +112,7 @@ namespace {
     {}
     MakeDead& operator=(const MakeDead& other) 
     { 
+      if (&other == this) return *this; 
       fDead   = other.fDead;
       fMax    = other.fMax;
       fCount  = other.fCount;

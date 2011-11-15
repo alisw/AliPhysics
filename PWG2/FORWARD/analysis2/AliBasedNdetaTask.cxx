@@ -1229,6 +1229,7 @@ AliBasedNdetaTask::CentralityBin::operator=(const CentralityBin& o)
   // Return:
   //    Reference to this 
   //
+  if (&o == this) return *this; 
   SetName(o.GetName());
   SetTitle(o.GetTitle());
   fSums      = o.fSums;

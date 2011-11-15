@@ -285,6 +285,7 @@ AliFMDBaseDigitizer::operator=(const AliFMDBaseDigitizer& o)
   // Return:
   //    Reference to this object 
   //
+  if (&o == this) return *this; 
   AliDigitizer::operator=(o);
   fRunLoader      = o.fRunLoader;
   fEdep           = o.fEdep;
