@@ -75,7 +75,7 @@ AliAnalysisTaskParticleCorrelationM::~AliAnalysisTaskParticleCorrelationM()
 	
 //	printf("********** Delete Task\n");
 //  // Do not delete it here, already done somewhere else, need to understand where.
-//  if(fOutputContainer){
+//  if(fOutputContainer && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
 //    fOutputContainer->Clear() ; 
 //    delete fOutputContainer ;
 //  }

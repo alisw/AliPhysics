@@ -184,6 +184,8 @@ AliAnalysisTaskSEImpParRes::~AliAnalysisTaskSEImpParRes()
   //
   // default distructor  
   // 
+  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return; // RS
+  //
   if (fOutputitspureSARec)                      { delete fOutputitspureSARec; fOutputitspureSARec=0x0;}
   if (fOutputitspureSASkip)                   { delete fOutputitspureSASkip; fOutputitspureSASkip=0x0;}
   if (fOutputallPointRec)                        { delete fOutputallPointRec; fOutputallPointRec=0x0; }
