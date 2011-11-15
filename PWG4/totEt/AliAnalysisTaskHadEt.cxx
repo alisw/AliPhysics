@@ -23,6 +23,7 @@
 #include "AliAnalysisTaskHadEt.h"
 #include "AliAnalysisHadEtReconstructed.h"
 #include "AliAnalysisHadEtMonteCarlo.h"
+#include "AliPWG0Helper.h"
 
 #include <iostream>
 
@@ -109,6 +110,7 @@ void AliAnalysisTaskHadEt::UserCreateOutputObjects()
 //     fEsdtrackCutsITS->SetName("fEsdTrackCutsITS");
 //   }
   if(fRecAnalysis->DataSet()==2010 || fRecAnalysis->DataSet()==20111||fRecAnalysis->DataSet()==2009){
+    AliAnalysisTaskSE::	SelectCollisionCandidates(AliVEvent::kINT7 ) ;
     if(fRecAnalysis->DataSet()==2010)cout<<"Setting track cuts for the 2010 p+p collisions at 7 TeV"<<endl;
     else{
       if(fRecAnalysis->DataSet()==2009){cout<<"Setting track cuts for the 2010 p+p collisions at 900 GeV"<<endl;}
@@ -161,7 +163,7 @@ if (!fESDEvent) {
   Printf("ERROR: Could not retrieve event");
   return;
  }
-//cout<<"AliAnalysisHadEtReconstructed 90"<<endl;
+//cout<<"AliAnalysisTaskHadEt 165"<<endl;
 
 Int_t res = CheckPhysicsSelection(fESDEvent->GetRunNumber()); // Check if the physics selection is valid for this run
 
@@ -171,9 +173,10 @@ if(res == 0 && cent){
   
   //cout<<"New Event"<<endl;  
 
-  fRecAnalysis->AnalyseEvent(fESDEvent);
-
   AliMCEvent* mcEvent = MCEvent();
+  Int_t eventtype = (Int_t) AliPWG0Helper::GetEventProcessType(mcEvent->Header());
+  fRecAnalysis->AnalyseEvent(fESDEvent,eventtype);
+
 // if (!mcEvent) {
 //   Printf("ERROR: Could not retrieve MC event");
 //  }

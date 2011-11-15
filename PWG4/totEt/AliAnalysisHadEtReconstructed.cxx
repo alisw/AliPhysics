@@ -28,6 +28,7 @@
 #include "AliAnalysisHadEt.h"
 #include "AliCentrality.h"
 #include "AliLog.h"
+#include "AliPWG0Helper.h"
 
 using namespace std;
 
@@ -88,7 +89,7 @@ AliAnalysisHadEtReconstructed::~AliAnalysisHadEtReconstructed()
   delete fCorrections;
 }
 
-Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
+Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev, Int_t eventtype)
 { // analyse ESD event
   ResetEventValues();
   if(!ev){
@@ -297,6 +298,39 @@ Int_t AliAnalysisHadEtReconstructed::AnalyseEvent(AliVEvent* ev)
 	}
       }
     delete list;
+  }
+  Int_t nondiff = (Int_t) AliPWG0Helper::kND;
+  Int_t doublediff = (Int_t) AliPWG0Helper::kDD;
+  Int_t singlediff = (Int_t) AliPWG0Helper::kSD;
+  if(eventtype == nondiff && fGoodEvent){
+    FillHisto1D("RecoHadEtFullAcceptanceTPCND",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCND",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSND",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSND",GetCorrectedTotEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceTPCNoPIDND",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDND",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDND",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDND",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+  }
+  if(eventtype == doublediff){
+    FillHisto1D("RecoHadEtFullAcceptanceTPCDD",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCDD",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSDD",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSDD",GetCorrectedTotEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceTPCNoPIDDD",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDDD",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDDD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDDD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
+  }
+  if(eventtype == singlediff){
+    FillHisto1D("RecoHadEtFullAcceptanceTPCSD",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCSD",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSSD",GetCorrectedHadEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSSD",GetCorrectedTotEtFullAcceptanceITS(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceTPCNoPIDSD",GetCorrectedHadEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceTPCNoPIDSD",GetCorrectedTotEtFullAcceptanceTPCNoPID(),1.0);
+    FillHisto1D("RecoHadEtFullAcceptanceITSNoPIDSD",GetCorrectedHadEtFullAcceptanceITSNoPID(),1.0);
+    FillHisto1D("RecoTotEtFullAcceptanceITSNoPIDSD",GetCorrectedTotEtFullAcceptanceITSNoPID(),1.0);
   }
   if(GetCorrectedHadEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoHadEtFullAcceptanceTPC",GetCorrectedHadEtFullAcceptanceTPC(),1.0);
   if(GetCorrectedTotEtFullAcceptanceTPC()>0.0 && fGoodEvent)FillHisto1D("RecoTotEtFullAcceptanceTPC",GetCorrectedTotEtFullAcceptanceTPC(),1.0);
@@ -645,6 +679,19 @@ void AliAnalysisHadEtReconstructed::CreateHistograms(){//Creating histograms and
 	  snprintf(histotitle,200,"Reconstructed %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
 	  snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
 	  CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	  if(type==0){//full acceptance only
+	    snprintf(xtitle,50,"Reconstructed %s",etstring->Data());
+
+	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sND",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"Reconstructed non-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sDD",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"Reconstructed doubly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	    snprintf(histoname,200,"Reco%s%sAcceptance%s%sSD",et->Data(),acceptance->Data(),detector->Data(),partid->Data());
+	    snprintf(histotitle,200,"Reconstructed singly-diffractive events %s with %s acceptance for p_{T}>%s GeV/c%s",etstring->Data(),acceptance->Data(),ptstring->Data(),partidstring->Data());
+	    CreateHisto1D(histoname,histotitle,xtitle,ytitle->Data(),nbinsEt*2,minEt,maxEt);
+	  }
 	  if(fDataSet==20100 && type ==0 &&pid==1){//If this is Pb+Pb and full acceptance with pid
 	    Int_t width = 5;
 	    if(fNCentBins<21) width = 10;
