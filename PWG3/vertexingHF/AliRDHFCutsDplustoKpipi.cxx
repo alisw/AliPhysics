@@ -224,7 +224,7 @@ void AliRDHFCutsDplustoKpipi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *var
   }
   if(fVarsForOpt[6]){
     iter++;
-    vars[iter]=dd->GetSigmaVert();
+    vars[iter]=dd->GetSigmaVert(aod);
   }
   if(fVarsForOpt[7]){
     iter++;
@@ -398,8 +398,6 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
       if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
     }
 
-    //sec vert
-    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     //DCA
     for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
@@ -419,6 +417,10 @@ Int_t AliRDHFCutsDplustoKpipi::IsSelected(TObject* obj,Int_t selectionLevel, Ali
     if(d->NormalizedDecayLengthXY()*d->P()/pt<fCutsRD[GetGlobalIndex(12,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     if(d->CosPointingAngleXY()<fCutsRD[GetGlobalIndex(13,ptbin)]){CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
+
+    //sec vert
+    Double_t sigmavert=d->GetSigmaVert(aod);
+    if(sigmavert>fCutsRD[GetGlobalIndex(6,ptbin)]) {CleanOwnPrimaryVtx(d,aod,origownvtx); return 0;}
 
     // unset recalculated primary vertex when not needed any more
     CleanOwnPrimaryVtx(d,aod,origownvtx);

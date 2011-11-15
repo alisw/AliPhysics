@@ -138,7 +138,7 @@ AliRDHFCutsLctopKpi::~AliRDHFCutsLctopKpi() {
 }
 
 //---------------------------------------------------------------------------
-void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters) {
+void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,Int_t nvars,Int_t *pdgdaughters, AliAODEvent *aod) {
   // 
   // Fills in vars the values of the variables 
   //
@@ -193,7 +193,7 @@ void AliRDHFCutsLctopKpi::GetCutVarsForOpt(AliAODRecoDecayHF *d,Float_t *vars,In
   }
   if(fVarsForOpt[6]){
     iter++;
-    vars[iter]=dd->GetSigmaVert();
+    vars[iter]=dd->GetSigmaVert(aod);
   }
   if(fVarsForOpt[7]){
     iter++;
@@ -313,9 +313,8 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
       if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
     }
 
-    //sec vert
-    if(d->GetSigmaVert()>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
 
+    //sec vert
     if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
     if(d->DecayLength()>0.5) return 0;
     
@@ -323,6 +322,7 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
     Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
     if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
+    if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
     
     //DCA
     for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;

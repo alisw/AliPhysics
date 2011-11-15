@@ -26,6 +26,8 @@
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODTrack.h"
+#include "AliESDtrack.h"
+#include "AliVertexerTracks.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
@@ -374,3 +376,31 @@ const {
 
 }
 
+//----------------------------------------------------------------------
+Double_t AliAODRecoDecayHF3Prong::ComputeSigmaVert(AliAODEvent* aod) const{
+  // computes track dispersion around secondary vertex starting from tracks
+
+  AliVertexerTracks vertexer(aod->GetMagneticField());
+  Double_t pos[3],cov[6];
+  AliAODVertex* aodV=aod->GetPrimaryVertex();
+  aodV->GetXYZ(pos);
+  aodV->GetCovarianceMatrix(cov);
+  Double_t chi2=aodV->GetChi2();
+  Int_t nC=aodV->GetNContributors();
+  AliESDVertex vprim(pos,cov,chi2,nC);
+  vertexer.SetVtxStart(&vprim);
+  TObjArray threeTrackArray(3);
+
+  for(Int_t iDau=0; iDau<GetNDaughters(); iDau++){
+    AliVTrack* at=(AliVTrack*)GetDaughter(iDau);
+    threeTrackArray.AddAt(new AliESDtrack(at),iDau);
+  }
+
+  AliESDVertex* secVert=vertexer.VertexForSelectedESDTracks(&threeTrackArray,kFALSE,kTRUE,kFALSE);
+  Double_t disp=secVert->GetDispersion();
+  
+  threeTrackArray.Delete();
+  delete secVert;
+  return disp;
+  
+}
