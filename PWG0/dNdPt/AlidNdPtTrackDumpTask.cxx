@@ -90,7 +90,7 @@ AlidNdPtTrackDumpTask::AlidNdPtTrackDumpTask(const char *name)
 AlidNdPtTrackDumpTask::~AlidNdPtTrackDumpTask()
 {
   if(fOutput) delete fOutput;  fOutput =0; 
-  if(fOutputSummary) delete fOutputSummary;  fOutputSummary =0; 
+  //if(fOutputSummary) delete fOutputSummary;  fOutputSummary =0; 
   if(fTreeSRedirector) delete fTreeSRedirector;  fTreeSRedirector =0; 
 
   if(fdNdPtEventCuts) delete fdNdPtEventCuts; fdNdPtEventCuts=NULL; 
