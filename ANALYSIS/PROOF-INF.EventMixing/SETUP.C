@@ -1,6 +1,8 @@
 void SETUP()
 {
   // Load the ANALYSIS library
+
+   gSystem->SetDynamicPath(Form("%s:%s", gSystem->pwd(), gSystem->GetDynamicPath()));
    gSystem->Load("libEventMixing");
 
    // Set the include paths
