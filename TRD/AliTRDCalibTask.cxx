@@ -638,8 +638,9 @@ void AliTRDCalibTask::UserExec(Option_t *)
     //printf("centrality %f, centralityb %f\n",centrality,centralityb);
   }
   
-  if (strstr(type,"Pb-Pb")) {
-    //printf("Will check the number of good tracks\n");
+  //printf("Beam type %s\n",(const char*)type);
+  if (strstr(type,"A-A")) {
+    //printf("Will check the number of good tracks %f %f %f\n",nGoodParticles,fMinNbTracks,fMaxNbTracks);
     if((nGoodParticles < fMinNbTracks) || (nGoodParticles > fMaxNbTracks)) {
       PostData(1, fListHist);
       return;
