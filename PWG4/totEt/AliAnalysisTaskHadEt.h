@@ -16,7 +16,7 @@ class TH2F;
 class TList;
 
 #include "AliAnalysisTaskTransverseEnergy.h"
-
+class AliPWG0Helper;
 
 class AliAnalysisTaskHadEt : public AliAnalysisTaskTransverseEnergy {
 public:
