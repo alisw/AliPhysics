@@ -151,12 +151,12 @@ void AliPerformanceDEdx::Init()
    //Int_t binsQA[8]    = {300, 50, 50,  50, 50, 50, 80, nPBins};
    //Double_t xminQA[8] = {0, -4,-20,-250, -1, -2, 0, pMin};
    //Double_t xmaxQA[8] = {300, 4, 20, 250,  1,  2, 160, pMax};
-  Int_t binsQA[10]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 160,100};
+  Int_t binsQA[10]    = {300, 144, 50,  50, 50, 50, 80, nPBins, 80, 80};
   Double_t xminQA[10] = {0, -TMath::Pi(),-20,-250, -1, -2, 0, pMin, 0., 0.};
-  Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 1.};
+  Double_t xmaxQA[10] = {300, TMath::Pi(), 20, 250,  1,  2, 160, pMax ,160., 160.};
 
    //fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:alpha:y:z:snp:tgl:ncls:momentum",8,binsQA,xminQA,xmaxQA);
-   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:clsF",10,binsQA,xminQA,xmaxQA);
+   fDeDxHisto = new THnSparseF("fDeDxHisto","dedx:phi:y:z:snp:tgl:ncls:momentum:TPCSignalN:CrossedRows",10,binsQA,xminQA,xmaxQA);
    fDeDxHisto->SetBinEdges(7,binsP);
 
    fDeDxHisto->GetAxis(0)->SetTitle("dedx (a.u.)");
@@ -168,7 +168,7 @@ void AliPerformanceDEdx::Init()
    fDeDxHisto->GetAxis(6)->SetTitle("ncls");
    fDeDxHisto->GetAxis(7)->SetTitle("p (GeV/c)");
    fDeDxHisto->GetAxis(8)->SetTitle("number of cls used for dEdx");
-   fDeDxHisto->GetAxis(9)->SetTitle("number of cls found over findable");
+   fDeDxHisto->GetAxis(9)->SetTitle("Crossed rows in the TPC");
    //fDeDxHisto->Sumw2();
 
    // Init cuts
@@ -247,7 +247,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Float_t dedx = esdTrack->GetTPCsignal();
   Int_t ncls = esdTrack->GetTPCNcls();
   Int_t TPCSignalN = esdTrack->GetTPCsignalN();
-  Float_t nClsF = esdTrack->GetTPCClusterInfo(2,0);
+  Float_t nCrossedRows = esdTrack->GetTPCClusterInfo(2,1);
 
 
   Double_t pt = innerParam->Pt();
@@ -262,7 +262,7 @@ void AliPerformanceDEdx::ProcessInnerTPC(AliStack* const stack, AliESDtrack *con
   Double_t tgl = innerParam->GetTgl();
 
   //Double_t vDeDxHisto[8] = {dedx,alpha,y,z,snp,tgl,ncls,p};
-  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nClsF};
+  Double_t vDeDxHisto[10] = {dedx,phi,y,z,snp,tgl,ncls,p,TPCSignalN,nCrossedRows};
   fDeDxHisto->Fill(vDeDxHisto); 
 
   if(!stack) return;
@@ -433,6 +433,11 @@ void AliPerformanceDEdx::Analyse()
   for(Int_t i=1; i<10; i++) { 
     AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, i);
   }
+
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 6, 7);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 7, 8, 9);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 0, 8, 9);
+    AddProjection(aFolderObj, "dedx", fDeDxHisto, 6, 8, 9);
 
   // resolution histograms for mips
   //dedx:phi:y:z:snp:tgl:ncls:p
