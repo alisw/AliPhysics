@@ -2572,7 +2572,7 @@ void AliZDCv3::StepManager()
 	   AddHit(gAlice->GetMCApp()->GetCurrentTrackNumber(), vol, hits);
 	 }
        } 
-       else if((vol[0]==3)) {	// (3) ZEM fibres
+       else if(vol[0]==3) {	// (3) ZEM fibres
          if(ibe>fNbep) ibe=fNbep;
          out =  charge*charge*fTablep[ibeta][ialfa][ibe];
 	 gMC->TrackPosition(s[0],s[1],s[2]);
