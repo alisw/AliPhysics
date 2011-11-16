@@ -9,6 +9,7 @@ mergeLog="logMerge.txt"
 mergeOut=""
 terminateDir="${baseOutDir}/terminateRuns"
 outTaskName="QAresults.root"
+mergeFast=0
 
 execMerge=1
 execMergeAll=1
@@ -16,12 +17,13 @@ execTerminate=1
 execTrigQA=1
 execTrackQA=1
 isPrivateProd=0
-optList="mateko:pi:"
-inputTriggerList=""
+optList="mfateko:pi:"
+inputTriggerList="0x0"
 while getopts $optList option
 do
   case $option in
     m ) execMerge=0;;
+    f ) mergeFast=1;;
     a ) execMergeAll=0;;
     t ) execTerminate=0;;
     e ) execTrigQA=0;;
@@ -41,6 +43,7 @@ shift $(($OPTIND - 1))
 if [[ $# -ne 3 || "$EXIT" -eq 1 ]]; then
     echo "Usage: `basename $0` (-$optList) <runList.txt> <QAx> <alien:///alice/data/20XX/LHCXXy>"
     echo "       -m skip merging (default: run)"
+    echo "       -f merge fast, skip incomplete prod."
     echo "       -a skip final merging (default: run)"
     echo "       -t skip terminate (default: run)"
     echo "       -e skip run trigger efficiency QA (defult: run)"
@@ -62,7 +65,7 @@ function mergePerRun()
     alienBaseDir="$3"
     aliroot -b <<EOF &> $mergeLog
 .L $qaMacroDir/mergeGridFiles.C+
-completeProd("${runListName}","${prodDir}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MUON.TriggerEfficiencyMap");
+completeProd("${runListName}","${prodDir}","${alienBaseDir}","${outTaskName}",50,"MUON_QA MUON.TriggerEfficiencyMap",${mergeFast});
 .q
 EOF
 }
@@ -143,18 +146,19 @@ function runTrackQA() {
     lhcPeriod=`echo ${alienBaseDir%"/"} | awk -F "/" ' { print $NF } '`
     aliroot -b <<EOF &> logTrackQA.txt
 ${loadLibs}
-.x $qaMacroDir/PlotMuonQApp.C+("${terminateDir}",0x0,"${inputTriggerList}",${physSel},"${lhcPeriod}","${outTaskName}");
+.x $qaMacroDir/PlotMuonQA.C+("${terminateDir}",0x0,${inputTriggerList},${physSel},"${lhcPeriod}","${outTaskName}");
 .q
 EOF
     cd $baseOutDir
 }
 
 # Use absolute path for file inputTriggerList
-if [ "${inputTriggerList}" != "" ]; then
+if [ "${inputTriggerList}" != "0x0" ]; then
   inputTriggerDir=`dirname ${inputTriggerList}`
   if [ "${inputTriggerDir}"="." ]; then
     inputTriggerList="`pwd`/${inputTriggerList}"
   fi
+  inputTriggerList="\"${inputTriggerList}\""
 fi
 
 qaProdName="$2"
@@ -186,10 +190,13 @@ if [ $execTerminate -eq 1 ]; then
 fi
 
 if [ $execTrigQA -eq 1 ]; then
-    minRun=`echo ${mergeOut} | cut -d "_" -f 2`
-    maxRun=`echo ${mergeOut} | cut -d "_" -f 3 | cut -d "." -f 1`
-    trigOutSuffix=`echo ${qaProdName} | awk -F "/" '{ print $NF }'`
-    outName="trigEffQA_${minRun}_${maxRun}_${trigOutSuffix}.root"
+#    minRun=`echo ${mergeOut} | cut -d "_" -f 2`
+#    maxRun=`echo ${mergeOut} | cut -d "_" -f 3 | cut -d "." -f 1`
+#    trigOutSuffix=`echo ${qaProdName} | awk -F "/" '{ print $NF }'`
+    trigOutSuffix=`echo $3 | awk -F "/" '{ print $NF }'`
+#    outName="trigEffQA_${minRun}_${maxRun}_${trigOutSuffix}.root"
+    outName="trigEffQA_${trigOutSuffix}.root"
+
     runTrigQA "${mergeOut}" "${outName}"
 fi
 
