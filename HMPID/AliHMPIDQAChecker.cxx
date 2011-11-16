@@ -45,8 +45,8 @@ ClassImp(AliHMPIDQAChecker)
  //_________________________________________________________________
 AliHMPIDQAChecker::AliHMPIDQAChecker() : 
 AliQACheckerBase("HMPID","HMPID Quality Assurance Data Checker"), 
-fNoReference(kTRUE), 
-fQARefRec(NULL)
+fNoReference(kTRUE)
+//fQARefRec(NULL)
 {
     //ctor, fetches the reference data from OCDB 
   char * detOCDBDir = Form("HMPID/%s/%s", AliQAv1::GetRefOCDBDirName(), AliQAv1::GetRefDataDirName()) ; 
@@ -78,8 +78,7 @@ fQARefRec(NULL)
 //_________________________________________________________________
 AliHMPIDQAChecker::~AliHMPIDQAChecker() 
 {
-  fQARefRec->Delete() ; 
-  delete fQARefRec ; 
+  if(fQARefRec) { fQARefRec->Delete() ;   delete fQARefRec ; }
 }
 //_________________________________________________________________
 void AliHMPIDQAChecker::Check(Double_t *  check, AliQAv1::ALITASK_t index, TObjArray ** list, const AliDetectorRecoParam * /*recoParam*/) 
