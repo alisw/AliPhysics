@@ -57,7 +57,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   if(!kData.Contains("delta"))
     kInputDataType = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
   
-  Bool_t kUseKinematics = kFALSE; 
   if(kSimulation) { 
     kUseKinematics = (mgr->GetMCtruthEventHandler())?kTRUE:kFALSE; 
     if (!kUseKinematics && data=="AOD" && kInputDataType != "ESD") kUseKinematics = kTRUE; //AOD primary should be available ... 
