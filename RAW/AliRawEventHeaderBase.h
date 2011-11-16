@@ -115,6 +115,5 @@ private:
 #define END_EVENT_HEADER(AA,BB) \
 ClassDef(AliRawEventHeaderV##AA##_##BB,1) \
 }; \
-ClassImp(AliRawEventHeaderV##AA##_##BB)
 
 #endif
