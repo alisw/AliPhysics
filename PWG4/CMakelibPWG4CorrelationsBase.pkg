@@ -1,6 +1,6 @@
-# -*- mode: CMake -*- 
+# -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for ANALYSISalice                                                 #
+# Package File for PWG4Correlations                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -26,61 +26,17 @@
 # SHLIBS - Shared Libraries and objects for linking (Executables only)           #
 #--------------------------------------------------------------------------------#
 
-set ( SRCS  	
-    AliAnalysisTaskSE.cxx 
-    AliAnalysisTaskME.cxx 
-    AliAnalysisTaskESDfilter.cxx 
-    AliAnalysisTaskMCParticleFilter.cxx 
-    AliKineTrackCuts.cxx 
-    AliESDtrackCuts.cxx 
-    AliESDpidCuts.cxx 
-    AliESDv0Cuts.cxx 
-    AliEventPoolOTF.cxx 
-    AliEventPoolLoop.cxx 
-    AliEventPoolSparse.cxx 
-    AliAnalysisTaskTagCreator.cxx 
-    AliMultiEventInputHandler.cxx 
-    AliTriggerAnalysis.cxx 
-    AliPhysicsSelection.cxx 
-    AliBackgroundSelection.cxx 
-    AliPhysicsSelectionTask.cxx 
-    AliAnalysisFilter.cxx 
-    AliAnalysisCuts.cxx 
-    AliCollisionNormalization.cxx 
-    AliCollisionNormalizationTask.cxx 
-    AliCentralitySelectionTask.cxx 
-    AliEPSelectionTask.cxx 
-    AliAnalysisTaskStat.cxx 
-    AliMultiInputEventHandler.cxx 
-    AliESDv0KineCuts.cxx 
-    AliAnalysisTaskPIDResponse.cxx 
-    AliPIDResponseInputHandler.cxx 
-    AliHEPDataParser.cxx 
-    AliAnalysisTaskPIDqa.cxx 
-    AliAnalysisTaskBaseLine.cxx
-    AliEventPoolManager.cxx
+set ( SRCS  
+    CorrelationsBase/AliUEHistograms.cxx
+    CorrelationsBase/AliUEHist.cxx
+    CorrelationsBase/AliAnalyseLeadingTrackUE.cxx
+    CorrelationsBase/AliTHn.cxx 
     )
-
-if( ROOTHASALIEN STREQUAL "yes")
-	
-	set ( PACKCXXFLAGS  "${CXXFLAGS} -DWITHALIEN")
-
-endif( ROOTHASALIEN STREQUAL "yes")
-
-if( ROOTHASXML STREQUAL "yes")
-	
-	set ( PACKCXXFLAGS "${PACKCXXFLAGS}  ${CXXFLAGS} -DWITHXML")
-	set ( CINTFLAGS ${CINTFLAGS}  -DWITHXML)
-	set ( SRCS ${SRCS}  AliTagAnalysis.cxx AliXMLCollection.cxx AliAnalysisAlien.cxx)
-
-endif( ROOTHASXML STREQUAL "yes")
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  ANALYSISaliceLinkDef.h)
+set ( DHDR  PWG4CorrelationsBaseLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS/Aliengui STEER/AOD STEER/ESD STEER/STEERBase)
-
-set ( ELIBS "OADB" )
+set ( EINCLUDE ANALYSIS CORRFW PWG4/CorrelationsBase STEER/AOD STEER/ESD STEER/STEERBase)

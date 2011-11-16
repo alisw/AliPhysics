@@ -18,7 +18,7 @@
 // TObject. Pools are updated based on maintaining a minimum fixed
 // number of tracks. Multiplicity/centrality and z-vertex bins must be
 // passed in at initialization. For example of implementation, see
-// $ALICE_ROOT/PWG4/JetTasks/AliAnalysisTaskPhiCorrelations.cxx
+// $ALICE_ROOT/PWG4/Correlations/AliAnalysisTaskPhiCorrelations.cxx
 //
 // Authors: A. Adare and C. Loizides
 

@@ -46,19 +46,12 @@ set ( SRCS
     JetTasks/AliAnalysisTaskJetChem.cxx 
     JetTasks/AliAnalysisTaskFragmentationFunction.cxx 
     JetTasks/AliAnalysisTaskMinijet.cxx 
-    JetTasks/AliUEHist.cxx 
-    JetTasks/AliUEHistograms.cxx 
-    JetTasks/AliAnalyseLeadingTrackUE.cxx 
     JetTasks/AliAnalysisTaskLeadingTrackUE.cxx 
     JetTasks/AliAnalysisTaskQGSep.cxx 
     JetTasks/AliAnalysisTaskJetsTM.cxx 
     JetTasks/AliAnalysisTaskJetResponse.cxx 
     JetTasks/AliPWG4HighPtTrackQA.cxx 
-    JetTasks/AliEventPoolManager.cxx 
-    JetTasks/AliPhiCorrelationsQATask.cxx 
-    JetTasks/AliAnalysisTaskPhiCorrelations.cxx 
     JetTasks/AliAnalysisTaskJetResponseV2.cxx 
-    JetTasks/AliTHn.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )

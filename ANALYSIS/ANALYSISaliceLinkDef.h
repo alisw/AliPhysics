@@ -43,6 +43,9 @@
 #pragma link C++ class AliAnalysisTaskPIDqa+;
 #pragma link C++ class AliAnalysisTaskBaseLine+;
 
+#pragma link C++ class AliEventPool+;
+#pragma link C++ class AliEventPoolManager+;
+
 #ifdef WITHXML
 #pragma link C++ class AliTagAnalysis+;
 #pragma link C++ class AliXMLCollection+;

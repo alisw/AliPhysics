@@ -23,19 +23,16 @@
 #include <TTree.h>
 #include <TH2F.h>
 #include <TRandom.h>
-#include <TMCProcess.h>
 
 #include "AliAnalysisTaskPhiCorrelations.h"
 #include "AliAnalyseLeadingTrackUE.h"
 #include "AliUEHistograms.h"
 #include "AliUEHist.h"
 
-#include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
 #include "AliAODHandler.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
-#include "AliGenPythiaEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEventHandler.h"
