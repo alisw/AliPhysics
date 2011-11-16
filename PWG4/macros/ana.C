@@ -149,9 +149,11 @@ void ana(Int_t mode=mGRID)
   AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kMC); 
   
   // Centrality
-  // gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
-  // AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-  // taskCentrality->SetPass(2); // remember to set the pass you are processing!!!
+  if(kCollision=="PbPb"){
+    gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
+    AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
+    taskCentrality->SetPass(2); // remember to set the pass you are processing!!!
+  }
   
   // Simple event counting tasks
   AddTaskCounter("");   // All
@@ -184,8 +186,8 @@ void ana(Int_t mode=mGRID)
   Bool_t  bTrackMatch = kTRUE;
   Int_t   minEcell    = 50;  // 50  MeV (10 MeV used in reconstruction)
   Int_t   minEseed    = 100; // 100 MeV
-  Int_t   dTime       = 40;  // 40  ns difference in time of cells in cluster, open
-  Int_t   wTime       = 40;  // 40 ns time window of cells in cluster, open
+  Int_t   dTime       = 40;  // 40  ns difference in time of cells in cluster
+  Int_t   wTime       = 10000;  // open time window of cells in cluster, open
   TString clTrigger   = "";  // Do not select, do Min Bias and triggered
   
   //Analysis with clusterizer V1
@@ -698,6 +700,8 @@ void CheckEnvironmentVariables()
     
 #endif
     
+    TString sRun = "";
+    
     if (!(strcmp(gApplication->Argv(i),"--trigger")))
       sprintf(trigger,gApplication->Argv(i+1));
     
@@ -708,7 +712,7 @@ void CheckEnvironmentVariables()
       bBadChannel = atoi(gApplication->Argv(i+1));
     
     if (!(strcmp(gApplication->Argv(i),"--run"))){
-      TString sRun(gApplication->Argv(i+1));
+      sRun = gApplication->Argv(i+1);
       if(sRun.Contains("LHC10")) {
         kYear = 2010;
       }
