@@ -43,6 +43,8 @@
 #include "TMath.h"
 #include "TPaveText.h"
 #include "TVirtualPad.h"
+#include "TStyle.h"
+#include "TLatex.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMUONTrackerQAChecker)
@@ -194,14 +196,36 @@ namespace {
     
     histo.SetTitle(kFALSE);
     
-    TObject* title = histo.GetListOfFunctions()->FindObject("title");
-    if (title) title->Delete();
-
-    histo.GetListOfFunctions()->Add(text);
+    TList* lstF = histo.GetListOfFunctions();
+    TObject* title = lstF->FindObject("title");
+    if (title) delete lstF->Remove(title);
+    // 
+    lstF->Add(text);  
+    
   }
-  
-}
 
+  //___________________________________________________________________________  
+  void ShowTrueValue(TH1& hrostatusnorm, Int_t v)
+  {
+    // For a bar > 100% we put the text inside the bar (as TEXT45 option is putting above which
+    // would go offscreen)
+    
+    Int_t bin = hrostatusnorm.FindBin(1.0*v);
+    
+    Double_t value = hrostatusnorm.GetBinContent(bin);
+    
+    if ( value > 100.0 ) 
+    {
+      TLatex* l = new TLatex(hrostatusnorm.GetBinCenter(bin),50,Form("%g",value));
+      l->SetTextFont(gStyle->GetTextFont());
+      l->SetTextAlign(22);
+      l->SetTextAngle(45);
+      l->SetTextSize(0.02*hrostatusnorm.GetMarkerSize());
+      hrostatusnorm.GetListOfFunctions()->Add(l);
+    }
+  }
+
+}
 //__________________________________________________________________
 AliMUONTrackerQAChecker::AliMUONTrackerQAChecker() : AliMUONVQAChecker()
 {
@@ -425,7 +449,14 @@ AliMUONTrackerQAChecker::BeautifyOccupancyHistograms(TH1& hddl,
   line2->SetLineColor(1);
   line2->SetLineWidth(1);
   
-  hbp.GetListOfFunctions()->Delete();
+  TList* lstF = hbp.GetListOfFunctions();
+  if (lstF) {
+    TObject *stats = lstF->FindObject("stats");
+    lstF->Remove(stats);
+    TObject *obj;
+    while ((obj = lstF->First())) { while(lstF->Remove(obj)) { } delete obj; }
+    if (stats) lstF->Add(stats);
+  } 
   
   hbp.GetListOfFunctions()->Add(line1);
   hbp.GetListOfFunctions()->Add(line2);
@@ -597,6 +628,7 @@ AliMUONTrackerQAChecker::BeautifyReadoutHistograms(TH1& hrostatus,
     hrostatusnorm.Add(&hrostatus,100.0/neventsseen);
     hrostatusnorm.SetOption("TEXT45"); // note : cannot use HIST option, otherwise the associated function (i.e. the tpavetext) is not drawn...
     hrostatusnorm.SetMinimum(0.0);
+    hrostatusnorm.SetMaximum(100.0);
     
     Double_t tokenLost = hrostatusnorm.GetBinContent(hrostatusnorm.FindBin(1.0*AliMUONQAIndices::kTrackerRawNofTokenLostErrors));
     
@@ -622,12 +654,16 @@ AliMUONTrackerQAChecker::BeautifyReadoutHistograms(TH1& hrostatus,
     {
       messages.Add(new TObjString("Too many empty events !"));
       messages.Add(new TObjString(NOTIFYEXPERTMESSAGE));
-      rv = AliMUONVQAChecker::kFatal;
-      
-    }
+      rv = AliMUONVQAChecker::kFatal;      
+    }    
   }
    
   SetupHisto(neventsseen,neventsused,messages,hrostatusnorm,rv,"text45");
+  
+  ShowTrueValue(hrostatusnorm,AliMUONQAIndices::kTrackerRawNofTokenLostErrors);
+  ShowTrueValue(hrostatusnorm,AliMUONQAIndices::kTrackerRawNofParityErrors);
+  ShowTrueValue(hrostatusnorm,AliMUONQAIndices::kTrackerRawNofPaddingErrors);
+  ShowTrueValue(hrostatusnorm,AliMUONQAIndices::kTrackerRawNofGlitchErrors);
   
   return rv;
 }

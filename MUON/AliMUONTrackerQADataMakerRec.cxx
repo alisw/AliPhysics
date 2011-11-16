@@ -709,7 +709,7 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
 
   //
   if (!hparity || !htoken || !hpadding || !hrostatus || !hnevents) return;
-  
+    
   Int_t nevents = TMath::Nint(hnevents->GetBinContent(1));
   
   if ( !nevents ) 
@@ -721,6 +721,11 @@ void AliMUONTrackerQADataMakerRec::FillReadoutStatus(AliMUONLogger& log, AliMUON
     hrostatus->GetListOfFunctions()->Add(text);
     return;
   }
+  
+  hparity->Reset();
+  htoken->Reset();
+  hpadding->Reset();
+  hrostatus->Reset();
   
   /////////////////////////////////////////////////////////////////
   /// Start by counting the number of errors
