@@ -50,25 +50,6 @@
 ClassImp(AliMUONPainterMasterFrame)
 ///\endcond
 
-namespace
-{
-  UInt_t UniqueID(Int_t nx, Int_t ny)
-  {
-    return ny | (nx << 8);
-  }
-  
-  Int_t Nx(UInt_t uniqueID)
-  {
-    return ( uniqueID & 0xFF00 ) >> 8;
-  }
-
-  Int_t Ny(UInt_t uniqueID)
-  {
-    return uniqueID & 0xFF;
-  }
-
-}
-
 const Int_t AliMUONPainterMasterFrame::fgkBorderSize = 10;
 
 //_____________________________________________________________________________
