@@ -18,7 +18,7 @@
 #include "AliZDCChMap.h"
 
 class AliRawReader;
-class AliRawDataHeader;
+struct AliRawDataHeader;
 
 
 class AliZDCRawStream: public TObject {
