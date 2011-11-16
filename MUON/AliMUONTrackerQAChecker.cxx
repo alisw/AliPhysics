@@ -194,7 +194,7 @@ namespace {
     sopt += extraopt;
     histo.SetOption(sopt.Data());
     
-    histo.SetTitle(kFALSE);
+    histo.SetBit(TH1::kNoTitle); 
     
     TList* lstF = histo.GetListOfFunctions();
     TObject* title = lstF->FindObject("title");
