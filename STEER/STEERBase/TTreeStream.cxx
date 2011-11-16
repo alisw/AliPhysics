@@ -414,7 +414,7 @@ void TTreeStream::BuildTree(){
       snprintf(bname1,1000,"B%d",i);
     }
     else{
-      snprintf(bname1,1000,element->GetName());
+      snprintf(bname1,1000,"%s",element->GetName());
     }
     if (element->fClass){
       if (element->fClass->GetBaseClass("TClonesArray")){

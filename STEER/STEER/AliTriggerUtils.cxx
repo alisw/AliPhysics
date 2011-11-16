@@ -121,17 +121,17 @@ Bool_t AliTriggerUtils::CheckConfiguration( TString& configfile, AliTriggerConfi
      if( !(trclass->CheckClass( cfg )) ) check = kFALSE;
      else {
        if (trclass->IsActive(cfg->GetInputs(),cfg->GetFunctions())) {
-	 AliInfo( Form( "Trigger Class (%s) OK, class mask (0x%Lx)",
+	 AliInfo( Form( "Trigger Class (%s) OK, class mask (0x%llx)",
 			trclass->GetName(), trclass->GetMask( ) ) );
        }
        else {
-	 AliWarning( Form( "Trigger Class (%s) is NOT active, class mask (0x%Lx)",
+	 AliWarning( Form( "Trigger Class (%s) is NOT active, class mask (0x%llx)",
 			   trclass->GetName(), trclass->GetMask( ) ) );
        }
      }
      // check if condition mask is duplicated
      if( mask & trclass->GetMask() ) {
-       AliError( Form("Class (%s). The class mask (0x%Lx) is ambiguous. It was already defined",
+       AliError( Form("Class (%s). The class mask (0x%llx) is ambiguous. It was already defined",
 		      trclass->GetName(), trclass->GetMask()  ) );
        check = kFALSE;
      }

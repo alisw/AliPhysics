@@ -79,7 +79,7 @@ inline Int_t AliRefArray::GetReference(UInt_t from, UInt_t which) const
   if (ref<0) return which ? -1 : -(1+ref);             // just 1 reference
   int ref1 = ref;
   while(which && (ref1=(int)fRefInd[ref])) {ref=ref1;which--;} // search intil no references left
-  return which ? -1 : fRefBuff[ref]-1;
+  return which ? -1 : (Int_t) fRefBuff[ref]-1;
 }
 
 //____________________________________________________________________
