@@ -1662,7 +1662,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "Adam Kisiel track selection";
   }
 
-  // TPC+ITS refit
+  // TPC+ITS refit + SPD any
   // for cut studies
   if (cutMode == 151) 
   {
@@ -1681,7 +1681,7 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC+ITS refit required - for cut studies";
   }
 
-  // TPC+ITS
+  // TPC refit
   // for cut studies
   if (cutMode == 152) 
   {
@@ -1721,8 +1721,24 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC stand alone - for cut studies";
   }
 
+  // TPC+ITS refit 
+  // for cut studies
+  if (cutMode == 154) 
+  {
+    //
+    // TPC
+    //
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+    //
+    // ITS
+    //
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+    //esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+    //
 
-
+    TString tag = "TPC+ITS refit required - for cut studies";
+  }
 
 
 
