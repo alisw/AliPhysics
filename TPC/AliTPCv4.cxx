@@ -1270,7 +1270,8 @@ void AliTPCv4::StepManager()
 
     // Add this hit
 
-    if (fHitType&&2){
+    //if (fHitType&&2){
+    if(fHitType){
       gMC->TrackMomentum(p);
       Float_t momentum = TMath::Sqrt(p[0]*p[0]+p[1]*p[1]);
       Float_t precision =   (momentum>0.1) ? 0.002 :0.01;

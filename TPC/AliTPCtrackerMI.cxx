@@ -1611,7 +1611,8 @@ Int_t AliTPCtrackerMI::FollowToNext(AliTPCseed& t, Int_t nr) {
     if (tpcindex==-1) return 0; //track in dead zone
     if (tpcindex >= 0){     //
       cl = t.GetClusterPointer(nr);
-      if ( (cl==0) ) cl = GetClusterMI(tpcindex);
+      //if (cl==0) cl = GetClusterMI(tpcindex);
+      if (!cl) cl = GetClusterMI(tpcindex);
       t.SetCurrentClusterIndex1(tpcindex); 
     }
     if (cl){      
@@ -3430,7 +3431,7 @@ void AliTPCtrackerMI::MakeSeeds5(TObjArray * arr, Int_t sec, Int_t i1, Int_t i2,
       y3 = kcl->GetY(); 
       // apply angular cuts
       if (TMath::Abs(y1-y3)>dymax) continue;
-      x3 = x3; 
+      //x3 = x3; 
       z3 = kcl->GetZ();	
       if (TMath::Abs(z1-z3)>dzmax) continue;
       //
