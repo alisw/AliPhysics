@@ -108,49 +108,59 @@ AliTPCRF1D::AliTPCRF1D(Bool_t direct,Int_t np,Float_t step)
 
 AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
            :TObject(prf),
-	    fNRF(0),
-            fDSTEPM1(0.),
+	    fNRF(prf.fNRF),
+            fDSTEPM1(prf.fDSTEPM1),
             fcharge(0),
-            forigsigma(0.),
-            fpadWidth(3.5),
-            fkNorm(0.5),
-            fInteg(0.),
-            fGRF(0),
-            fSigma(0.),
-            fOffset(0.),
-            fDirect(kFALSE),
-            fPadDistance(0.)
+            forigsigma(prf.forigsigma),
+            fpadWidth(prf.fpadWidth),
+            fkNorm(prf.fkNorm),
+            fInteg(prf.fInteg),
+            fGRF(new TF1(*(prf.fGRF))),
+            fSigma(prf.fSigma),
+            fOffset(prf.fOffset),
+            fDirect(prf.fDirect),
+            fPadDistance(prf.fPadDistance)
 {
   
   //
-  memcpy(this, &prf, sizeof(prf)); 
-  fcharge = new Float_t[fNRF];
-  memcpy(fcharge,prf.fcharge, fNRF);
-  fGRF = new TF1(*(prf.fGRF));
-  //PH Change the name (add 0 to the end)
-  TString s(fGRF->GetName());
-  s+="0";
-  fGRF->SetName(s.Data());
   for(Int_t i=0;i<5;i++) {
     funParam[i]=0.;
     fType[i]=0;
   }
+  fcharge = new Float_t[fNRF];
+  memcpy(fcharge,prf.fcharge, fNRF*sizeof(Float_t));
+
+  //PH Change the name (add 0 to the end)
+  TString s(fGRF->GetName());
+  s+="0";
+  fGRF->SetName(s.Data());
 }
 
 AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)
 {
-  //  
-  if (fcharge) delete fcharge;
-  if (fGRF) delete fGRF;
-  memcpy(this, &prf, sizeof(prf)); 
-  fcharge = new Float_t[fNRF];
-  memcpy(fcharge,prf.fcharge, fNRF);
-  fGRF = new TF1(*(prf.fGRF));
+  if(this!=&prf) {
+    TObject::operator=(prf);
+    fNRF=prf.fNRF;
+    fDSTEPM1=prf.fDSTEPM1;
+    delete [] fcharge;
+    fcharge = new Float_t[fNRF];
+    memcpy(fcharge,prf.fcharge, fNRF*sizeof(Float_t));
+    forigsigma=prf.forigsigma;
+    fpadWidth=prf.fpadWidth;
+    fkNorm=prf.fkNorm;
+    fInteg=prf.fInteg;
+    delete fGRF;
+    fGRF=new TF1(*(prf.fGRF));
    //PH Change the name (add 0 to the end)
-  TString s(fGRF->GetName());
-  s+="0";
-  fGRF->SetName(s.Data());
-  return (*this);
+    TString s(fGRF->GetName());
+    s+="0";
+    fGRF->SetName(s.Data());
+    fSigma=prf.fSigma;
+    fOffset=prf.fOffset;
+    fDirect=prf.fDirect;
+    fPadDistance=prf.fPadDistance;
+  }
+  return *this;
 }
 
 
@@ -158,8 +168,8 @@ AliTPCRF1D & AliTPCRF1D::operator = (const AliTPCRF1D &prf)
 AliTPCRF1D::~AliTPCRF1D()
 {
   //
-  if (fcharge!=0) delete [] fcharge;
-  if (fGRF !=0 ) fGRF->Delete();
+  delete [] fcharge;
+  delete fGRF;
 }
 
 Float_t AliTPCRF1D::GetRF(Float_t xin)
