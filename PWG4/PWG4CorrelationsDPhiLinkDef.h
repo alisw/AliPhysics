@@ -7,5 +7,6 @@
 #pragma link C++ class AliAnalysisTaskPhiCorrelations+;
 #pragma link C++ class AliDPhiBasicParticle+;
 #pragma link C++ class AliPhiCorrelationsQATask+;
+#pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 
 #endif
