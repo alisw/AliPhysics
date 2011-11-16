@@ -73,11 +73,11 @@ AliACORDEAlign::AliACORDEAlign(/*Int_t reportloc,*/Int_t reportglob):
   Char_t path[50];
    fFileGlob = new Char_t[80];
    fUser = new Char_t[10];
-  snprintf(path,50,gSystem->Getenv("ALICE_ROOT")); 
+  snprintf(path,50,"%s",gSystem->Getenv("ALICE_ROOT")); 
   // 
   snprintf(fFileGlob,80,"%s/ACORDE/Survey_%d_ACORDE.txt",path,reportglob);
   //
- snprintf(fUser,10,gSystem->Getenv("alien_API_USER"));
+ snprintf(fUser,10,"%s",gSystem->Getenv("alien_API_USER"));
 
 }
 
@@ -466,7 +466,7 @@ void AliACORDEAlign::StoreAlignObj()
 
     
 
-    snprintf(fullname,80,filename);
+    snprintf(fullname,80,"%s",filename);
        
    
     TFile *f = new TFile(fullname,"RECREATE");
