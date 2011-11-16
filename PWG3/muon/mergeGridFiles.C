@@ -160,7 +160,7 @@ void ReadListFromFile(TString filename, TString& fileList, TString addPrefix)
 
 
 //___________________________________________________
-void completeProd(TString runListName="runList.txt", TString prodDir = "", TString baseDir="/alice/data/2010/LHC10h", TString outTaskFilename="QAresults.root", Int_t nFilesPerStep = 50, TString dirsToMerge = "MUON_QA MUON.TriggerEfficiencyMap", Bool_t overwriteExisting = kFALSE)
+void completeProd(TString runListName="runList.txt", TString prodDir = "", TString baseDir="/alice/data/2010/LHC10h", TString outTaskFilename="QAresults.root", Int_t nFilesPerStep = 50, TString dirsToMerge = "MUON_QA MUON.TriggerEfficiencyMap", Bool_t mergeFast = kFALSE, Bool_t overwriteExisting = kFALSE)
 {
   TString outFilename = "completeFileList.txt";
 
@@ -231,7 +231,9 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
     ofstream tmpFile(tmpFilename.Data());
     TString mergeFilename = "";
 
-    for ( Int_t ipattern=0; ipattern<2; ipattern++ ) {
+    Int_t nPatterns = ( mergeFast ) ? 1 : 2;
+    
+    for ( Int_t ipattern=0; ipattern<nPatterns; ipattern++ ) {
       TString command = ( prodDir.Contains("private") ) ? Form("find %s/ *%s/%s%s", baseDir.Data(), currRunString.Data(), filePattern[ipattern].Data(), outTaskFilename.Data()) : Form("find %s/*%s %s/%s%s", baseDir.Data(), currRunString.Data(), prodDir.Data(), filePattern[ipattern].Data(), outTaskFilename.Data());
 
       printf("%s\n", command.Data());
