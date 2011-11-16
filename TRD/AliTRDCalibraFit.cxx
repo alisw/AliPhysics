@@ -4063,7 +4063,7 @@ void AliTRDCalibraFit::FillFillCH(Int_t idect)
   //
 
   // End of one detector
-  if ((idect == (fCount-1))) {
+  if (idect == (fCount-1)) {
     FillVectorFit();
     // Reset
     for (Int_t k = 0; k < 2304; k++) {
@@ -4112,7 +4112,7 @@ void AliTRDCalibraFit::FillFillPH(Int_t idect,Double_t nentries)
   //
   
   // End of one detector
-    if ((idect == (fCount-1))) {
+    if (idect == (fCount-1)) {
       FillVectorFit();
       FillVectorFit2();
       // Reset
@@ -4173,7 +4173,7 @@ void AliTRDCalibraFit::FillFillPRF(Int_t idect)
   //
 
     // End of one detector
-    if ((idect == (fCount-1))) {
+    if (idect == (fCount-1)) {
       FillVectorFit();
       // Reset
       for (Int_t k = 0; k < 2304; k++) {
