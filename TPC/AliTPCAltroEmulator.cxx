@@ -1193,12 +1193,11 @@ Bool_t AliTPCAltroEmulator::ConvertRawFilesToDate(Int_t nevents) {
 	  fprintf(pipe, " LDC Id %d\n", ldcID);
 	  prevLDC = ldcID;
    	}
-	fprintf(pipe,Form("  Equipment Id %d Payload %s/raw%d/%s\n",
+	fprintf(pipe,"  Equipment Id %d Payload %s/raw%d/%s\n",
 			  ddlID,
 			  fDDLFolderName.Data(),
 			  ievent,
-			  (char*)AliDAQ::DdlFileName(iDet,iDDL))
-		);
+			  (char*)AliDAQ::DdlFileName(iDet,iDDL) );
       }
     }
   }
