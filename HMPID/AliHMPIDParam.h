@@ -86,7 +86,7 @@ public:
   //For optical properties
   static Double_t   EPhotMin()                       {return 5.5;}           //
   static Double_t   EPhotMax()                       {return 8.5;}           //Photon energy range,[eV]
-  static Double_t NIdxRad(Double_t eV,Double_t temp) {return TMath::Sqrt(1+0.554*(1239.84/eV)*(1239.84/eV)/((1239.84/eV)*(1239.84/eV)-5769)-0.0005*(temp-20));}
+  static Double_t NIdxRad(Double_t eV,Double_t temp) {return TMath::Sqrt(1+0.554*(1239.84/eV)*(1239.84/eV)/((1239.84/eV)*(1239.84/eV)-5769))-0.0005*(temp-20);}
   static Double_t NIdxWin(Double_t eV)               {return TMath::Sqrt(1+46.411/(10.666*10.666-eV*eV)+228.71/(18.125*18.125-eV*eV));}  
   static Double_t NMgF2Idx(Double_t eV)              {return 1.7744 - 2.866e-3*(1239.842609/eV) + 5.5564e-6*(1239.842609/eV)*(1239.842609/eV);}          // MgF2 idx of trasparency system
   static Double_t NIdxGap(Double_t eV)               {return 1+0.12489e-6/(2.62e-4 - eV*eV/1239.84/1239.84);}

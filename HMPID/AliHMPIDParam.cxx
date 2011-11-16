@@ -70,7 +70,7 @@ Int_t AliHMPIDParam::fgNSigmas  = 4;
 Int_t AliHMPIDParam::fgThreshold= 4;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-AliHMPIDParam::AliHMPIDParam(Bool_t noGeo=kFALSE):
+AliHMPIDParam::AliHMPIDParam(Bool_t noGeo):
   TNamed("HmpidParam","default version"),
   fX(0), fY(0), fRefIdx(1.28947),fPhotEMean(6.675),fTemp(25)                          //just set a refractive index for C6F14 at ephot=6.675 eV @ T=25 C
 {
