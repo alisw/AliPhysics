@@ -960,7 +960,7 @@ int AliHLTHOMERReader::TriggerTCPSource( DataSource& source, bool useTimeout, un
 	{
 	char tmpCmd[ 128 ];
 
-	int len = snprintf( tmpCmd, 128, "FIRST ORBIT EVENT 0x%Lu\n", (unsigned long long)fEventRequestAdvanceTime );
+	int len = snprintf( tmpCmd, 128, "FIRST ORBIT EVENT 0x%llu\n", (unsigned long long)fEventRequestAdvanceTime );
 	if ( len>128 || len<0 )
 	    {
 	    ret=EMSGSIZE;
