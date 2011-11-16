@@ -20,21 +20,24 @@ class AliCentralityBy1D : public TObject {
   AliCentralityBy1D();
   virtual ~AliCentralityBy1D();
 
-  void SetPercentileFile(TString outrootfilename);
-  void SetPercentileCrossSection(Float_t percentXsec);
-  void AddHisto(TString name);
-  void MakePercentiles(TString infilename);
+  void SetInputFile(TString filename)                 { fInrootfilename = filename;   }
+  void SetOutputFile(TString filename)                { fOutrootfilename = filename;  }
+
+  void SetPercentileCrossSection(Float_t xsec)        { fPercentXsec = xsec;  }
+  void SetMultLowBound(Float_t mult )                 { fMultLowBound = mult; }
+
+  void AddHisto(TString name) { fHistnames.push_back(name); }
+  void MakePercentiles();
 
  private:
+  TString fInrootfilename;          // input root file
+  TString fOutrootfilename;         // output root file
+  std::vector<TString> fHistnames;  // histogram names
   
-  TFile *inrootfile;
+  Float_t fPercentXsec;
+  Float_t fMultLowBound;
 
-  TString outrootfilename;
-  vector<TString> histnames;
-  Float_t percentXsec;
-
-  TH1D * MakePercentHisto(TString hdistributionName);
-  void  SaveHisto(TH1D *hist, TFile *outrootfile);
+  void  SaveHisto(TH1F *hist1, TH1F *hist2, TFile *outrootfile);
 
   ClassDef(AliCentralityBy1D, 1)  
 };

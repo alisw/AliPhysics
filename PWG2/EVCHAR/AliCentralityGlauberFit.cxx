@@ -158,7 +158,7 @@ void AliCentralityGlauberFit::MakeFits()
   for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
     hDATA  = (TH1F*) (inrootfile->Get(*hni)); 
     if (!hDATA) {
-      TList *list  = (TList*) (inrootfile->Get("coutput1")); 
+      TList *list  = (TList*) (inrootfile->Get("CentralityStat")); 
       hDATA  = (TH1F*) (list->FindObject(*hni));
     } 
     hDATA->Rebin(fRebinFactor);
@@ -590,8 +590,8 @@ TH1F *AliCentralityGlauberFit::MakeAncestor(Double_t alpha)
   for (Int_t i=0;i<nents;++i) {
     fGlauntuple->GetEntry(i % nents);
     Int_t n=0;
-    //if (fAncestor == 1)    n = (Int_t) (TMath::Power(fNpart,alpha));
-    if (fAncestor == 1)      n = (Int_t) (TMath::Power(fNcoll,alpha));
+    if (fAncestor == 1)    n = (Int_t) (TMath::Power(fNpart,alpha));
+    //if (fAncestor == 1)      n = (Int_t) (TMath::Power(fNcoll,alpha));
     else if (fAncestor == 2) n = (Int_t) (alpha * fNpart + (1-alpha) * fNcoll);
     else if (fAncestor == 3) n = (Int_t) ((1-alpha) * fNpart/2 + alpha * fNcoll);
     fhAncestor->Fill(n);

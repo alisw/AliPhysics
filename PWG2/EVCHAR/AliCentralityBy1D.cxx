@@ -22,7 +22,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <TNamed.h>
-#include <TH1D.h>
+#include <TH1F.h>
 #include <TString.h>
 #include <TFile.h>
 #include <TMath.h>
@@ -40,7 +40,11 @@ ClassImp(AliCentralityBy1D)
 //______________________________________________________________________________
 
 
-AliCentralityBy1D::AliCentralityBy1D() {
+AliCentralityBy1D::AliCentralityBy1D():
+  fInrootfilename(0),
+  fOutrootfilename(0),
+  fHistnames()
+{
   // standard constructor
 }
 
@@ -48,71 +52,55 @@ AliCentralityBy1D::~AliCentralityBy1D() {
   // destructor
 }
 
-void AliCentralityBy1D::AddHisto(TString name) {
-  histnames.push_back(name);
-}
-
-void AliCentralityBy1D::SetPercentileFile(TString filename) {
-  outrootfilename = filename;
-}
-
-void AliCentralityBy1D::SetPercentileCrossSection(Float_t xsec) {
-  percentXsec = xsec;
-}
-
-void AliCentralityBy1D::SetMultLowBound(Float_t mult) {
-  multLowBound = mult;
-}
-
-void AliCentralityBy1D::MakePercentiles(TString infilename) {
-  TH1D *thist;
-  
+void AliCentralityBy1D::MakePercentiles() {
+  TH1F *htemp;  
+  TFile *inrootfile;
   TFile *outrootfile;
-  
+
   // open inrootfile, outrootfile
-  inrootfile  = new TFile(infilename);
-  outrootfile = new TFile(outrootfilename,"RECREATE");
-  
-  // loop over all distribution names
-  
-  vector<TString>::const_iterator hni;
-  for(hni=histnames.begin(); hni!=histnames.end(); hni++) {
-    thist = MakePercentHisto(*hni);
-    TH1D *htemp  = (TH1D*) (inrootfile->Get(*hni)); 
-    SaveHisto(htemp,thist,outrootfile);
-    delete thist; //??
+  std::cout << "input file "  << fInrootfilename  << std::endl;
+  std::cout << "output file " << fOutrootfilename << std::endl;
+  inrootfile  = new TFile(fInrootfilename,"OPEN");
+  //outrootfile = new TFile(fOutrootfilename,"RECREATE");
+  outrootfile = new TFile(fOutrootfilename,"UPDATE");
+
+  // loop over all distribution names  
+   std::vector<TString>::const_iterator hni;
+   for(hni=fHistnames.begin(); hni!=fHistnames.end(); hni++) {
+     htemp  = (TH1F*) (inrootfile->Get(*hni)); 
+     if (!htemp) {
+       TList *list  = (TList*) (inrootfile->Get("CentralityStat")); 
+       htemp  = (TH1F*) (list->FindObject(*hni));
+     } 
+
+     TH1F *hpercent  = (TH1F*) htemp->Clone("hpercent");
+     TString name=htemp->GetName();   
+     name.Append("_percentile");
+     hpercent->SetNameTitle(name.Data(),name.Data());
+     hpercent->Reset();
+
+     int start_bin=htemp->FindBin(fMultLowBound);
+     for (int ibin=1; ibin<=htemp->GetNbinsX(); ibin++) {
+      
+       if (ibin>=start_bin)
+   	hpercent->SetBinContent(ibin, fPercentXsec *
+   				htemp->Integral(ibin,htemp->GetNbinsX())  / 
+   				htemp->Integral(start_bin,htemp->GetNbinsX()));
+       else
+   	hpercent->SetBinContent(ibin, 100);
+     }    
+
+     SaveHisto(htemp,hpercent,outrootfile);
+
   }
+  
   // close inrootfile, outrootfile
   inrootfile->Close();
   outrootfile->Close();
   
 }
 
-TH1D * AliCentralityBy1D::MakePercentHisto(TString hdistributionName) {
-  TH1D *htemp  = (TH1D*) (inrootfile->Get(hdistributionName)); 
-  // TList *list  = (TList*) (inrootfile->Get("chist")); 
-  // TH1D *htemp  = (TH1D*) (list->FindObject(hdistributionName)); 
-  TH1D *hpercent  = (TH1D*) htemp->Clone("hpercent");
-  hpercent->SetName(hdistributionName.Append("_percentile"));
-  hpercent->Reset();
-
-  int start_bin=htemp->FindBin(multLowBound);
-  for (int ibin=1; ibin<=htemp->GetNbinsX(); ibin++) {
-    
-    if (ibin>=start_bin)
-      hpercent->SetBinContent(ibin, percentXsec *
-			      htemp->Integral(ibin,htemp->GetNbinsX())  / 
-			      htemp->Integral(start_bin,htemp->GetNbinsX()));
-    else
-      hpercent->SetBinContent(ibin, 100);
-  }
-  
-  delete htemp;
-  return hpercent;
-  
-}
-
-void AliCentralityBy1D::SaveHisto(TH1D *hist1, TH1D *hist2, TFile *outrootfile) {
+void AliCentralityBy1D::SaveHisto(TH1F *hist1, TH1F *hist2, TFile *outrootfile) {
   outrootfile->cd();
   hist1->Write();
   hist2->Write();
