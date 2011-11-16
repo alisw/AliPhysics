@@ -7,6 +7,7 @@ class AliAODJet;
 class AliVEvent;
 class TString;
 class TArrayI;
+class TArrayF;
 class AliGenPythiaEventHeader;
 class TVector3;
 class AliGenEventHeader;

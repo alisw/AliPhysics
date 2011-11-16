@@ -32,7 +32,6 @@ set ( SRCS
     JetTasks/AliAnalyseUE.cxx 
     JetTasks/AliAnalysisTaskJetSpectrum.cxx 
     JetTasks/AliAnalysisTaskJetSpectrum2.cxx 
-    JetTasks/AliAnalysisHelperJetTasks.cxx 
     JetTasks/AliAnalysisTaskJetServices.cxx 
     JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx 
     JetTasks/AliJetSpectrumUnfolding.cxx 
@@ -46,7 +45,6 @@ set ( SRCS
     JetTasks/AliAnalysisTaskJetChem.cxx 
     JetTasks/AliAnalysisTaskFragmentationFunction.cxx 
     JetTasks/AliAnalysisTaskMinijet.cxx 
-    JetTasks/AliAnalysisTaskLeadingTrackUE.cxx 
     JetTasks/AliAnalysisTaskQGSep.cxx 
     JetTasks/AliAnalysisTaskJetsTM.cxx 
     JetTasks/AliAnalysisTaskJetResponse.cxx 
@@ -60,4 +58,4 @@ set ( DHDR  PWG4JetTasksLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS JETAN CORRFW PWG4/JetTasks STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS JETAN CORRFW PWG4/JetTasks PWG4/Base STEER/AOD STEER/ESD STEER/STEERBase)

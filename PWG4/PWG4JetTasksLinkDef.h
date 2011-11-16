@@ -11,7 +11,6 @@
 #pragma link C++ class AliAnalysisTaskJetSpectrum+;
 #pragma link C++ class AliAnalysisTaskJetSpectrum2+;
 #pragma link C++ class AliAnalysisTaskJFSystematics+;
-#pragma link C++ class AliAnalysisHelperJetTasks+;
 #pragma link C++ class AliAnalysisTaskJetCorrections+;
 #pragma link C++ class AliAnalysisTaskThreeJets+;
 #pragma link C++ class AliPWG4HighPtQATPConly+;
@@ -32,7 +31,6 @@
 #pragma link C++ class AliAnalysisTaskJetChem::AliFragFuncHistosInvMass+;
 #pragma link C++ class AliAnalysisTaskJetChem::AliFragFuncHistosPhiCorrInvMass+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
-#pragma link C++ class AliAnalysisTaskLeadingTrackUE+;
 #pragma link C++ class AliAnalysisTaskJetsTM+;
 #pragma link C++ class AliAnalysisTaskQGSep+;
 #pragma link C++ class AliAnalysisTaskJetResponse+;
