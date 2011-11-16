@@ -165,7 +165,7 @@ Bool_t AliRawReaderFile::CreateFileIndex()
   fDDLIndex=new TArrayC(0);
   if (!fDDLIndex) return kFALSE;
   TString entry;
-  while (entry = gSystem->GetDirEntry(fDirectory)) {
+  while ((entry = gSystem->GetDirEntry(fDirectory))) {
     const char* filename=entry.Data();
     if (!filename || entry.IsNull()) break;
     if (entry.BeginsWith("run")) {
