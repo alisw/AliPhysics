@@ -449,8 +449,9 @@ void AliITSupgrade::StepHistory()
   Float_t a,z,den,rad,abs; a=z=den=rad=abs=-1;
   Int_t mid=gMC->CurrentMaterial(a,z,den,rad,abs);
   AliDebug(10, Form("Step %i: mid=%i a=%7.2f z=%7.2f den=%9.4f rad=%9.2f abs=%9.2f\n\n",iStepN,mid,a,z,den,rad,abs));
-
+/*
   TArrayI proc;  gMC->StepProcesses(proc);
+
   AliInfo("Processes in this step:");
   for ( int i = 0 ; i < proc.GetSize(); i++)
     {
@@ -458,6 +459,7 @@ void AliITSupgrade::StepHistory()
     }
   printf("\n");
   AliInfo("End process list");
+*/
   iStepN++;
 }//StepHistory()
 //______________________________________________________
