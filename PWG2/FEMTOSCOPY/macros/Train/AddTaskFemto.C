@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *configMacroParameters="" )
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
 {
 // Creates a proton analysis task and adds it to the analysis manager.
   
@@ -55,7 +55,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *configMa
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();  
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("femtolist",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
