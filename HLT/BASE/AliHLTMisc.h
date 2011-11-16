@@ -23,7 +23,7 @@
 class AliCDBManager;
 class AliCDBEntry;
 class AliRawReader;
-class AliHLTComponentDataType;
+struct AliHLTComponentDataType;
 class AliHLTGlobalTriggerDecision;
 class TMap;
 
