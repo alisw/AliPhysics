@@ -170,8 +170,8 @@ Bool_t AliZDCDigitizer::Init()
       fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
       fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
       //
-      printf(Form("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
+      printf("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
     }
     else{ // for RELDIS simulation @ sqrt(s_{NN}) = 2.76 TeV
        Float_t scalGainFactor = 0.5;
@@ -183,8 +183,8 @@ Bool_t AliZDCDigitizer::Init()
     	 fPMGain[4][j] = 100000./scalGainFactor; // ZPA	
        }
        //
-       printf(Form("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-    	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
+       printf("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+    	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
     }
   }
   else if((beamType.CompareTo("A-A")) == 0 && !fIspASystem){
@@ -201,8 +201,8 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
     }
-    printf(Form("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
+    printf("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
   }
   
   if(fIspASystem){
@@ -219,8 +219,8 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
     }
-    printf(Form("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
+    printf("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
     
   // ADC Caen V965
