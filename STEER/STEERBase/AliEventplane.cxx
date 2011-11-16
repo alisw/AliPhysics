@@ -186,7 +186,7 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
       if(!vzeroData->BBTriggerV0C(iCh)) continue;
     }
     else {
-      if(!vzeroData->BBTriggerV0A(iCh)) continue;		      	  	
+      if(!vzeroData->BBTriggerV0A(iCh-32)) continue;		      	  	
     }
     Double_t phi = TMath::Pi()/8. + (iCh%8) * TMath::Pi()/4.;
 
