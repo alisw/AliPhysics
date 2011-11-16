@@ -33,6 +33,7 @@
 #include "TString.h"
 #include "TArrayI.h"
 #include "TArrayS.h"
+#include "TArrayF.h"
 
 #include "AliMCEvent.h"
 #include "AliLog.h"

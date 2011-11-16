@@ -1,6 +1,6 @@
 
 
-void ConfigTaskUE(AliAnalysisTaskUE * ueana );          // common config, extend with different cases
+void ConfigTaskUE(AliAnalysisTaskLeadingTrackUE * ueana );          // common config, extend with different cases
 
 AliAnalysisTaskLeadingTrackUE *AddTaskLeadingTrackUE(Int_t analysisMode = 0)
 {
