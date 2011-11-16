@@ -1,6 +1,6 @@
 # -*- mode: CMake -*-
 #--------------------------------------------------------------------------------#
-# Package File for PWG4JetTasks                                                  #
+# Package File for PWG4Correlations                                              #
 # Author : Johny Jose (johny.jose@cern.ch)                                       #
 # Variables Defined :                                                            #
 #                                                                                #
@@ -27,37 +27,16 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    JetTasks/AliAnalysisTaskUE.cxx 
-    JetTasks/AliHistogramsUE.cxx 
-    JetTasks/AliAnalyseUE.cxx 
-    JetTasks/AliAnalysisTaskJetSpectrum.cxx 
-    JetTasks/AliAnalysisTaskJetSpectrum2.cxx 
-    JetTasks/AliAnalysisHelperJetTasks.cxx 
-    JetTasks/AliAnalysisTaskJetServices.cxx 
-    JetTasks/AliAnalysisTaskPWG4PidDetEx.cxx 
-    JetTasks/AliJetSpectrumUnfolding.cxx 
-    JetTasks/AliAnalysisTaskJFSystematics.cxx 
-    JetTasks/AliAnalysisTaskJetCorrections.cxx 
-    JetTasks/AliAnalysisTaskThreeJets.cxx 
-    JetTasks/AliPWG4HighPtQATPConly.cxx 
-    JetTasks/AliPWG4HighPtQAMC.cxx 
-    JetTasks/AliPWG4HighPtSpectra.cxx 
-    JetTasks/AliPWG4CosmicCandidates.cxx 
-    JetTasks/AliAnalysisTaskJetChem.cxx 
-    JetTasks/AliAnalysisTaskFragmentationFunction.cxx 
-    JetTasks/AliAnalysisTaskMinijet.cxx 
-    JetTasks/AliAnalysisTaskLeadingTrackUE.cxx 
-    JetTasks/AliAnalysisTaskQGSep.cxx 
-    JetTasks/AliAnalysisTaskJetsTM.cxx 
-    JetTasks/AliAnalysisTaskJetResponse.cxx 
-    JetTasks/AliPWG4HighPtTrackQA.cxx 
-    JetTasks/AliAnalysisTaskJetResponseV2.cxx 
+    CorrelationsBase/AliUEHistograms.cxx
+    CorrelationsBase/AliUEHist.cxx
+    CorrelationsBase/AliAnalyseLeadingTrackUE.cxx
+    CorrelationsBase/AliTHn.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4JetTasksLinkDef.h)
+set ( DHDR  PWG4CorrelationsBaseLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS JETAN CORRFW PWG4/JetTasks STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS CORRFW PWG4/CorrelationsBase STEER/AOD STEER/ESD STEER/STEERBase)
