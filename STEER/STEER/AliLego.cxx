@@ -305,7 +305,7 @@ void AliLego::StepManager()
     // Normal Forward stepping
     //
 	if (fDebug) {
-      //	  printf("\n steps fwd %d %s %d %f", fStepsForward, vol, fErrorCondition, step);	  
+//	    printf("\n steps fwd %d %s %d %f", fStepsForward, vol, fErrorCondition, step);	  
       
       //
       // store volume if different from previous
@@ -332,9 +332,9 @@ void AliLego::StepManager()
 
 	
 	if (z < 1) return;
-	
+
 	// --- See if we have to stop now
-	if (TMath::Abs(pos[2]) > fGener->ZMax()  || 
+	if (TMath::Abs(pos[2]) > TMath::Abs(fGener->ZMax())  || 
 	    pos[0]*pos[0] +pos[1]*pos[1] > fGener->RadMax()*fGener->RadMax()) {
 	    if (!gMC->IsNewTrack()) {
 		// Not the first step, add past contribution
