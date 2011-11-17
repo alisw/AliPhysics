@@ -657,7 +657,7 @@ AliFMDGeometry::ExtractGeomInfo()
 		   fSectorOff, fModuleOff, fRingOff, fDetectorOff));
 }
 
-  
+#if 0  
 //____________________________________________________________________	
 static Int_t 
 CheckNodes(TGeoNode* node, const char* name, Int_t& lvl)
@@ -687,6 +687,8 @@ CheckNodes(TGeoNode* node, const char* name, Int_t& lvl)
   lvl--;
   return -1;
 }
+#endif
+
 //____________________________________________________________________	
 Int_t 
 FindNodeDepth(const char* name, const char* volname) 

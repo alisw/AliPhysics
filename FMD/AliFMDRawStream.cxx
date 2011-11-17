@@ -69,7 +69,7 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
       if(!next){
 	AliFMDDebug(15, ("Read word # %d (!next)", l));
 	addr = GetPrevHWAddress();
-	ddl  = (GetPrevDDLNumber() < 0 ? UINT_MAX: GetPrevDDLNumber());
+	ddl  = (GetPrevDDLNumber() < 0 ? UINT_MAX: UInt_t(GetPrevDDLNumber()));
 	len  = l+1; // Need to add one - l points to last valid index
 	last = signal;
 	break;
@@ -79,7 +79,7 @@ AliFMDRawStream::ReadChannel(UInt_t& ddl, UInt_t& addr,
 	AliFMDDebug(15, ("New hardware address, was 0x%x, now 0x%x", 
 			  GetPrevHWAddress(), GetHWAddress()));
 	addr = GetPrevHWAddress();
-	ddl  = (GetPrevDDLNumber() < 0 ? UINT_MAX : GetPrevDDLNumber());
+	ddl  = (GetPrevDDLNumber() < 0 ? UINT_MAX : UInt_t(GetPrevDDLNumber()));
 	len  = l+1; // Need to add one - l points to last valid index
 	last = signal;
 	break;
