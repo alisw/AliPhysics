@@ -568,8 +568,6 @@ const int kAliHLTComponentDataTypefIDsize=8;
  */
 # define kAliHLTMetaDataTypeID                      {'M','E','T','A','D','A','T','A'}
 
-using namespace std;
-
 extern "C" {
   //////////////////////////////////////////////////////////////////////////
   //
@@ -1426,6 +1424,8 @@ extern "C" {
   typedef int (*AliHLTExtFctGetOutputSize)( AliHLTComponentHandle, unsigned long*, double* );
 
 }
+
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////////
 //
