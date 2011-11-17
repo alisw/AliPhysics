@@ -43,7 +43,6 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
-#include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliPID.h"
 #include "AliLog.h"
@@ -367,7 +366,7 @@ void AliTOFT0maker::ApplyT0TOF(AliESDEvent *esd){
   //
 }
 //____________________________________________________________________________ 
-void  AliTOFT0maker::LoadChannelMap(char *filename){
+void  AliTOFT0maker::LoadChannelMap(const char *filename){
   // Load the histo with the channel off map
   TFile *f= new TFile(filename);
   if(!f){
