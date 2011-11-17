@@ -110,7 +110,7 @@ void AliEveEventBufferOffline::ConnectToSource() {
 ///_____________________________________________________________________
 void AliEveEventBufferOffline::WriteToFile(Int_t runnumber){
   //Inherited from AliEveEventBuffer
-  TFile * file = TFile::Open(Form("%d_0x%016LX_ESD.root", runnumber, GetEventId()), "RECREATE"); 
+  TFile * file = TFile::Open(Form("%d_0x%016llu_ESD.root", runnumber, GetEventId()), "RECREATE"); 
   fEventBuffer->At(fBIndex[kCurrent])->Write("blockList", TObject::kSingleKey);
   file->Close();
 }	     

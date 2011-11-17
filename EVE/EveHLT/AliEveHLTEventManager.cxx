@@ -157,7 +157,7 @@ Int_t AliEveHLTEventManager::ProcessEvent(AliESDEvent * event) {
   SetRunNumber(event->GetRunNumber());
   SetEventId(GetEventBuffer()->GetEventId());
   winTitle += Form("-- Run Number: %d", GetRunNumber()); 
-  winTitle += Form("-- Event ID : 0x%016LX ", GetEventId() );
+  winTitle += Form("-- Event ID : 0x%016llu", GetEventId() );
   GetEveManager()->GetBrowser()->SetWindowName(winTitle);
 
   if(!fHLTElement) {
@@ -362,9 +362,9 @@ void AliEveHLTEventManager::PrintScreens() {
   //Int_t width = 4000;
   //Int_t height = 2000;
 
-  fEveManager->GetDefaultGLViewer()->SavePictureScale(Form("run_%d_0x%016LX_3D.gif", fRunNumber, GetEventId()), scale);
-  fRhoZViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016LX_RhoZ.gif", fRunNumber, GetEventId()), scale);
-  fRPhiViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016LX_RPhi.gif", fRunNumber, GetEventId()), scale);
+  fEveManager->GetDefaultGLViewer()->SavePictureScale(Form("run_%d_0x%016llu_3D.gif", fRunNumber, GetEventId()), scale);
+  fRhoZViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016llu_RhoZ.gif", fRunNumber, GetEventId()), scale);
+  fRPhiViewer->GetGLViewer()->SavePictureScale(Form("run_%d_0x%016llu_RPhi.gif", fRunNumber, GetEventId()), scale);
   return;
 }
 
