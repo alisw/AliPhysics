@@ -42,6 +42,9 @@ public:
     return fCurrentParameter;
   }
 
+  /// clear the object and reset pointer references
+  virtual void Clear(Option_t * option ="");
+
 protected:
 private:
   /** copy constructor prohibited */
