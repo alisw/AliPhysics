@@ -172,7 +172,8 @@ GetListOfFiles(const char* input=".")
  * @ingroup pwg2_forward_qa_scripts
  */
 void
-RunQA(const char* input=".", Int_t runNo=-1, UShort_t what=0x3, Short_t max=-1)
+RunQA(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
+      UShort_t what=0x3)
 {
   gROOT->SetMacroPath(Form(".:$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
 			   "$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
@@ -185,7 +186,7 @@ RunQA(const char* input=".", Int_t runNo=-1, UShort_t what=0x3, Short_t max=-1)
 
   if (what & 0x1) {
     gROOT->LoadMacro("QATrender.C++g");
-    QATrender t(runNo > 0);
+    QATrender t(keep, runNo > 0);
 
     TList* l = 0;
     if (runNo < 0) l = GetListOfFiles(input);
@@ -203,10 +204,7 @@ RunQA(const char* input=".", Int_t runNo=-1, UShort_t what=0x3, Short_t max=-1)
     // l->ls();
     TIter next(l);
     TObjString* s = 0;
-    Int_t i = 1;
     while ((s = static_cast<TObjString*>(next()))) {
-      if (max > 0 && i > max) break;
-      i++;
       Info("Run", "Adding  file %s", s->GetName());
       t.AddFile(s->GetName());
     }

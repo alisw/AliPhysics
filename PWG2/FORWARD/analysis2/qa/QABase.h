@@ -52,6 +52,7 @@ struct QABase
       fOutput(0), 
       fStore(0),
       fTeX(0), 
+      fHtml(0),
       fTeXName(""),
       fToDelete(""),
       fCanvas(0), 
@@ -73,6 +74,7 @@ struct QABase
       fOutput(o.fOutput),
       fStore(o.fStore),
       fTeX(o.fTeX), 
+      fHtml(o.fHtml),
       fTeXName(o.fTeXName),
       fToDelete(o.fToDelete),
       fCanvas(o.fCanvas),
@@ -99,6 +101,7 @@ struct QABase
     if (fOutput) { delete fOutput; }
     if (fStore)  { delete fStore; }
     if (fTeX)    { fTeX->close(); fTeX = 0; }
+    if (fHtml)   { fHtml->close(); fHtml = 0; }
   }
   /** 
    * The name of the TTree output file
@@ -144,7 +147,8 @@ struct QABase
   void MakeCanvas(const char* title)
   {
     fTeX = new std::ofstream(Form("%s.tex", fTeXName.Data()));
-    
+    fHtml = new std::ofstream(Form("%s.html", fTeXName.Data()));
+
     *fTeX << "\\documentclass[landscape,a4paper,12pt]{article}\n"
 	  << "\\usepackage[margin=2cm,a4paper]{geometry}\n"
 	  << "\\usepackage{graphicx}\n"
@@ -154,6 +158,16 @@ struct QABase
 	  << "\\begin{document}\n"
       	  << "\\thispagestyle{empty}\n"
 	  << "\\maketitle" << std::endl;
+
+    *fHtml << "<html>\n"
+	   << " <head>\n"
+	   << "  <title>QA information - "  << title << "</title>\n"
+	   << "  <link rel='stylesheet' src='style.css'>\n" 
+	   << " </head>\n"
+	   << "<body>\n" 
+	   << " <h1>" << title << "</h1>\n"
+	   << " <table>" 
+	   << std::endl;
 
     gStyle->SetPalette(1);
     gStyle->SetOptFit(0);
@@ -201,6 +215,16 @@ struct QABase
 	  << "%% -----------------------------------------------------"
 	  << std::endl;
 
+    TString tit(title);
+    tit.ReplaceAll("#LT", "&lt;");
+    tit.ReplaceAll("#GT", "&gt;");
+    tit.ReplaceAll("#Delta", "&Delta;");
+    tit.ReplaceAll("#xi", "&xi;");
+    tit.ReplaceAll("#sigma", "&sigma;");
+    tit.ReplaceAll("#chi", "&chi;");
+    tit.ReplaceAll("#nu", "&nu;");
+    *fHtml << "<tr><td>" << tit << "</td>" << std::flush;
+
     // Put title on top 
     TLatex* topText = new TLatex(.5, .99, title);
     topText->SetTextAlign(23);
@@ -234,11 +258,41 @@ struct QABase
 	  << "\\includegraphics[keepaspectratio,height=\\textheight]{"
 	  << pngName << "}\n" 
 	  << "\\end{center}" << std::endl;
+    *fHtml << "<td><a href='" << pngName << ".html'>Plot</a></td></tr>" 
+	   << std::endl;
+
+    std::ofstream img(Form("%s.html", pngName));
+    img << "<html>\n"
+	<< " <head>\n"
+	<< "  <title>" << pngName << "</title>\n"
+	<< "  <link rel='stylesheet' src='style.css'>\n"
+	<< " </head>\n"
+	<< " <body>\n"
+	<< "  <h1>" << pngName << "</h1>\n"
+	<< "  <center>\n"
+	<< "    <img src='" << pngName << ".png'>\n"
+	<< "  </center>\n" << std::endl;
+    WriteImageFooter(img, pngName);
+    img << " </body>\n" 
+	<< "</html>" << std::endl;
+    img.close();
+    gSystem->Exec(Form("chmod g+rw %s.html", pngName));
+
     fToDelete.Append(Form(" %s.png", pngName));
     TDirectory* d = gDirectory;
     fStore->cd();
     fCanvas->Write();
     d->cd();
+  }
+  virtual void WriteImageFooter(std::ostream& o, const char* /*pngName*/)
+  {
+    TDatime now;
+    o << "<div class='back'>\n"
+      << "<a href='" << fTeXName << ".html'>Back</a>\n"
+      << "</div>\n"
+      << "<div style='border-top: thin solid gray'>\n"
+      << "  Last update: " << now.AsString() << "\n"
+      << "</div>" << std::endl;
   }
   /** 
    * Close the LaTeX and storage files. Runs PDFLaTeX on LaTeX
@@ -248,29 +302,53 @@ struct QABase
    */
   void Close(bool deletePNGs=true)
   {
+    const char* base = fTeXName.Data();
     if (fTeX) {
       *fTeX << "\\end{document}\n"
 	    << "%% EOF" << std::endl;
       fTeX->close();
       fTeX = 0;
       
-      const char* base = fTeXName.Data();
       gSystem->Exec(Form("pdflatex %s.tex > /dev/null 2>&1", base));
-      TString cmd(Form("rm -f %s.log %s.aux %s.tex %s", 
-		       base, base, base, 
-		       deletePNGs ? fToDelete.Data() : ""));
-      gSystem->Exec(cmd.Data());
-      gSystem->Exec(Form("chmod g+rw %s.pdf %s", base, 
-			 deletePNGs ? "" : fToDelete.Data()));
       Info("Close", "PDF file %s.pdf generated", base);
+    }
+    if (fHtml) {
+      TDatime now;
+      *fHtml << "</table>" << std::endl;
+      WriteFooter();
+      *fHtml << "</body></html>" << std::endl;
+      fHtml->close();
+      fHtml = 0;
+      gSystem->Exec(Form("chmod g+rw %s.html", fTeXName.Data()));
     }
     if (fStore) {
       fStore->Write();
       fStore->Close();
-      gSystem->Exec(Form("chmod g+rw %s.root", fTeXName.Data()));
+      gSystem->Exec(Form("chmod 664 %s.root", fTeXName.Data()));
     }
+    TString cmd(Form("rm -f %s.log %s.aux %s.tex %s", 
+		     base, base, base, 
+		     deletePNGs ? fToDelete.Data() : ""));
+    Info("Close", "deletePNGs=%s, command=%s", 
+	 deletePNGs ? "true" : "false", cmd.Data());
+    gSystem->Exec(cmd.Data());
+    gSystem->Exec(Form("chmod g+rw %s.pdf %s", base, 
+		       deletePNGs ? "" : fToDelete.Data()));
   }
-
+  virtual void WriteFooter() 
+  {
+    TDatime now;
+    *fHtml << "<ul>\n"
+	   << "  <li><a href='" << fTeXName << ".pdf'>PDF</a></li>\n"
+	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a></li>\n"
+	   << "</ul>\n"
+	   << "<div class='back'>\n"
+	   << "<a href='index.html'>Back</a>\n"
+	   << "</div>\n"
+	   << "<div style='border-top: thin solid gray'>\n"
+	   << "  Last update: " << now.AsString() << "\n"
+	   << "</div>" << std::endl;
+  }
   // --- Members -----------------------------------------------------
   QARing*        fFMD1i;	// Pointer to ring object
   QARing*        fFMD2i;	// Pointer to ring object
@@ -282,6 +360,7 @@ struct QABase
   TFile*         fOutput;	// Pointer to tree file 
   TFile*         fStore;	// Pointer to storage file
   std::ofstream* fTeX;		// pointer to LaTeX stream
+  std::ofstream* fHtml;		// pointer to HTML stream
   TString        fTeXName;	// Base name of LaTeX file 
   TString        fToDelete;	// List of files to possibly delete
   TCanvas*       fCanvas;	// Pointer to canvas object
