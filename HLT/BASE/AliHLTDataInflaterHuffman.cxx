@@ -46,6 +46,8 @@ AliHLTDataInflaterHuffman::AliHLTDataInflaterHuffman()
 AliHLTDataInflaterHuffman::~AliHLTDataInflaterHuffman()
 {
   // destructor
+  if (fHuffmanCoderList) delete fHuffmanCoderList;
+  fHuffmanCoderList=NULL;
 }
 
 int AliHLTDataInflaterHuffman::AddParameterDefinition(const char* name, unsigned bitLength)
@@ -143,4 +145,18 @@ bool AliHLTDataInflaterHuffman::NextValue(AliHLTUInt64_t& value, AliHLTUInt32_t&
   RewindBitPosition(inputLength);
 
   return true;
+}
+
+void AliHLTDataInflaterHuffman::Clear(Option_t * option)
+{
+  /// clear the object
+  fCurrentParameter=-1;
+
+  if (strcmp(option, "all")==0) {
+    fHuffmanCoders.clear();
+    if (fHuffmanCoderList) delete fHuffmanCoderList;
+    fHuffmanCoderList=NULL;
+  }
+
+  AliHLTDataInflater::Clear(option);
 }
