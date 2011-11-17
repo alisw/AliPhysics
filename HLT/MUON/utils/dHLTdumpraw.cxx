@@ -1107,7 +1107,7 @@ int DumpRawDataHeader(
 	cout << "          Status & error bits : 0x" << noshowbase << hex
 		<< setfill('0') << setw(4) << statusBits << setw(0) << setfill(fillChar)
 		<< dec << endl;
-	cout << "          [                        Reserved : " << ((statusBits >> 15) & 0x1) << " ]" << endl;
+	cout << "          [               Original data bit : " << ((statusBits >> 15) & 0x1) << " ]" << endl;
 	cout << "          [        Multi-event buffer error : " << ((statusBits >> 14) & 0x1) << " ]" << endl;
 	cout << "          [        Trigger L1 missing error : " << ((statusBits >> 13) & 0x1) << " ]" << endl;
 	cout << "          [           Trigger error (other) : " << ((statusBits >> 12) & 0x1) << " ]" << endl;
