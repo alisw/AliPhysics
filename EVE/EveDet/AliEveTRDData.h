@@ -73,7 +73,7 @@ class AliEveTRDClusters : public AliEveTRDHits
 public:
   AliEveTRDClusters();
 
-  void Load(Char_t *what="all") const; // *MENU*
+  void Load(const Char_t *what="all") const; // *MENU*
   void PointSelected(Int_t n);
   void Print(Option_t *o = "") const; // *MENU*
 
@@ -93,7 +93,7 @@ public:
   AliEveTRDTracklet(AliTRDseedV1 *trklt);
   ~AliEveTRDTracklet();
   AliEveTRDClusters* GetClusters() const {return fClusters;}
-  inline void        Load(Char_t *what="all") const; // *MENU*
+  inline void        Load(const Char_t *what="all") const; // *MENU*
   void               Print(Option_t *o="") const; // *MENU*
 
 private:
@@ -104,7 +104,7 @@ private:
 
   ClassDef(AliEveTRDTracklet, 0); // TRD tracklet visualisation
 };
-void AliEveTRDTracklet::Load(Char_t *what) const
+void AliEveTRDTracklet::Load(const Char_t *what) const
 {
   if(fClusters) fClusters->Load(what);
 }
@@ -132,7 +132,7 @@ public:
   virtual ~AliEveTRDTrack();
   //AliEveTRDTracklet*  GetTracklet(Int_t plane) const {return plane <6 && plane >= 0 ? fTracklet[plane] : NULL;}
   void    Print(Option_t *opt="a") const; // *MENU*
-  void    Load(Char_t *what="all") const; // *MENU*
+  void    Load(const Char_t *what="all") const; // *MENU*
   void    SetStatus(UChar_t s=0);         // *MENU*
   void    SetESDstatus(ULong_t stat) {fESDStatus = stat;} 
 private:

@@ -462,8 +462,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
   TFile* file = new TFile(Form("/tmp/TRD.TrackListMacroData_%s.root", gSystem->Getenv("USER")), "READ");
   if (!file)  
   {
-    Error("Draw histograms", Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", 
-                                  gSystem->Getenv("USER")));
+    Error("Draw histograms", "Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"",
+                                  gSystem->Getenv("USER"));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                  Form("Cannot open file \"/tmp/TRD.TrackListMacroData_%s.root\"", gSystem->Getenv("USER")),
                  kMBIconExclamation, kMBOk);
@@ -494,8 +494,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
       if (myHist != 0)  myHist->Draw();
       else
       {
-        Error("Draw histograms", Form("No histogram for histo macro \"%s\" found!", 
-                                      fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
+        Error("Draw histograms", "No histogram for histo macro \"%s\" found!",
+                                      fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName());
         new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                      Form("No histogram for histo macro \"%s\" found!", 
                           fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
@@ -506,8 +506,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
     }
     else
     {
-      Error("Draw histograms", Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
-                                    fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
+      Error("Draw histograms", "No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.",
+                                    fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName());
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                    Form("No data for histo macro \"%s\" found!\nMaybe no tracks have been selected.", 
                         fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
@@ -527,8 +527,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro1 = i;
         if (!(t = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no tracks have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
@@ -554,8 +554,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro2 = i;
         if (!(tFriend1 = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no tracks have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()),
@@ -587,8 +587,8 @@ void AliEveTRDTrackListEditor::DrawHistos()
         indexOfMacro3 = i;
         if (!(tFriend2 = (TTree*)file->Get(Form("TrackData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no tracks have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no tracks have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
@@ -752,7 +752,7 @@ void AliEveTRDTrackListEditor::InheritMacroList()
                                          new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
+      Error("AliEveTRDTrackListEditor::InheritMacroList", "Failed to inherit the macro \"%s\"!", key->GetName());
     }
   }
   
@@ -831,7 +831,7 @@ void AliEveTRDTrackListEditor::SaveMacroList(TMap* list)
                                              new TMacroData(macro->GetName(), macro->GetPath(), macro->GetType()));
     else
     {
-      Error("AliEveTRDTrackListEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
+      Error("AliEveTRDTrackListEditor::SaveMacroList", "Failed to inherit the macro \"%s\"!", key->GetName());
     }
   }
 }
@@ -1051,15 +1051,15 @@ void AliEveTRDTrackListEditor::UpdateMacroList()
       else
       {
         Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
-              Form("Macro \"%s/%s.C\" is neither a selection macro nor a process macro!",
-                   macro->GetPath(), macro->GetName()));                                        
+              "Macro \"%s/%s.C\" is neither a selection macro nor a process macro!",
+                   macro->GetPath(), macro->GetName());
       }
     }
     else
     {
       Error("AliEveTRDTrackListEditor::UpdateMacroList()", 
-              Form("Macro list is corrupted: Macro \"%s\" not found!", key->GetName()));            
-    }     
+              "Macro list is corrupted: Macro \"%s\" not found!", key->GetName());
+    }
   }
 
   ftlMacroList->SortByName(); 

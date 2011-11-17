@@ -316,7 +316,7 @@ Int_t AliEveListAnalyser::AddPrimSelectedObject(TEveElement* el)
  
   if (!el)
   {
-    Error("AliEveListAnalyser::AddPrimSelectedObject", "Zero pointer!\n");
+    Error("AliEveListAnalyser::AddPrimSelectedObject", "Zero pointer!");
 
     return ERROR;
   }
@@ -422,7 +422,7 @@ void AliEveListAnalyser::AddSecSelectedSingleObjectToList(Int_t pointId)
   TEvePointSet* ps = dynamic_cast<TEvePointSet*>((TQObject*) gTQSender);
   if (!ps)
   {
-    Error("AliEveListAnalyser::AddSecSelectedSingleObjectToList", "Zero pointer!\n");
+    Error("AliEveListAnalyser::AddSecSelectedSingleObjectToList", "Zero pointer!");
     return;
   }
 
@@ -526,8 +526,8 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
     cwd->cd();
   }
   if (!fDataTree){
-    Error("Apply process macros", Form("File \"/tmp/ListAnalyserMacroData_%s.root\" could not be accessed properly!", 
-          gSystem->Getenv("USER")));
+    Error("Apply process macros", "File \"/tmp/ListAnalyserMacroData_%s.root\" could not be accessed properly!",
+          gSystem->Getenv("USER"));
     return kFALSE;
   }
   
@@ -567,8 +567,8 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
     if (!macro){
       Error("Apply process macros", 
-        Form("Macro list is corrupted: Macro \"%s\" is not registered!", 
-        procIterator->At(i)->GetTitle()));
+        "Macro list is corrupted: Macro \"%s\" is not registered!",
+        procIterator->At(i)->GetTitle());
       continue;
     }
 
@@ -599,8 +599,8 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
       fDataFromMacroList->Add(new TObjString(macro->GetName()));
     } else {
       Error("Apply process macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!", 
-        macro->GetPath(), macro->GetName()));
+        "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!",
+        macro->GetPath(), macro->GetName());
       mProcType[i] = kUnknown;
     } 
   }  
@@ -618,8 +618,8 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
 
       if (!macro){
         Error("Apply process macros",
-          Form("Macro list is corrupted: Macro \"%s\" is not registered!",
-          selIterator->At(i)->GetTitle()));
+          "Macro list is corrupted: Macro \"%s\" is not registered!",
+          selIterator->At(i)->GetTitle());
         continue;
       }
 
@@ -647,8 +647,8 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
         selCmds[i] = macro->GetCmd();
       } else {
         Error("Apply process macros",
-          Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
-          macro->GetPath(), macro->GetName()));
+          "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
+          macro->GetPath(), macro->GetName());
         mSelType[i] = kUnknown;
       }
     }
@@ -785,7 +785,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
         Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
         
         if (results == 0) {
-          Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
+          Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
           continue;
         }
         for (Int_t resInd = 0; resInd < nResults; resInd++){
@@ -861,7 +861,7 @@ Bool_t AliEveListAnalyser::ApplyProcessMacros(const TList* selIterator, const TL
           Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
      
           if (results == 0) {
-            Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
+            Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
             continue;
           }
           for (Int_t resInd = 0; resInd < nResults; resInd++) {
@@ -948,7 +948,7 @@ void AliEveListAnalyser::ApplySOSelectionMacros(const TList* iterator)
 
     if (!macro){
       Error("Apply selection macros", 
-            Form("Macro list is corrupted: Macro \"%s\" is not registered!", iterator->At(i)->GetTitle()));
+            "Macro list is corrupted: Macro \"%s\" is not registered!", iterator->At(i)->GetTitle());
       continue;
     }
 
@@ -994,8 +994,8 @@ void AliEveListAnalyser::ApplySOSelectionMacros(const TList* iterator)
       continue;
     } else {
       Error("Apply selection macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
-        macro->GetPath(), macro->GetName()));
+        "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
+        macro->GetPath(), macro->GetName());
     } 
   }
 
@@ -1294,16 +1294,16 @@ void AliEveListAnalyser::RemoveSelectedMacros(const TList* iterator)
 
     if (entry == 0)
     {
-      Error("AliEveListAnalyser::RemoveSelectedMacros", Form("Macro \"%s\" not found in list!", 
-                                                                     iterator->At(i)->GetTitle()));
+      Error("AliEveListAnalyser::RemoveSelectedMacros", "Macro \"%s\" not found in list!",
+                                                                     iterator->At(i)->GetTitle());
       continue;
     }
     key = entry->Key();
 
     if (key == 0)   
     {
-      Error("AliEveListAnalyser::RemoveSelectedMacros", Form("Key for macro \"%s\" not found in list!", 
-                                                                     iterator->At(i)->GetTitle()));
+      Error("AliEveListAnalyser::RemoveSelectedMacros", "Key for macro \"%s\" not found in list!",
+                                                                     iterator->At(i)->GetTitle());
       continue;
     }
 
@@ -1318,8 +1318,8 @@ void AliEveListAnalyser::RemoveSelectedMacros(const TList* iterator)
     }
     else
     {
-      Error("AliEveListAnalyser::RemoveSelectedMacros", Form("Macro \"%s\" could not be removed from the list!", 
-                                                                     iterator->At(i)->GetTitle()));
+      Error("AliEveListAnalyser::RemoveSelectedMacros", "Macro \"%s\" could not be removed from the list!",
+                                                                     iterator->At(i)->GetTitle());
     }
   }
 }

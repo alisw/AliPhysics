@@ -340,7 +340,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
     cwd->cd();
   }
   if (!fDataTree){
-    Error("Apply process macros", Form("File \"/tmp/TRD.TrackListMacroData_%s.root\" could not be accessed properly!", gSystem->Getenv("USER")));
+    Error("Apply process macros", "File \"/tmp/TRD.TrackListMacroData_%s.root\" could not be accessed properly!", gSystem->Getenv("USER"));
     return kFALSE;
   }
   
@@ -381,8 +381,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
     if (!macro){
       Error("Apply process macros", 
-        Form("Macro list is corrupted: Macro \"%s\" is not registered!", 
-        procIterator->At(i)->GetTitle()));
+        "Macro list is corrupted: Macro \"%s\" is not registered!",
+        procIterator->At(i)->GetTitle());
       continue;
     }
 
@@ -409,8 +409,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
       fDataFromMacroList->Add(new TObjString(macro->GetName()));
     } else {
       Error("Apply process macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!", 
-        macro->GetPath(), macro->GetName()));
+        "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a process macro!",
+        macro->GetPath(), macro->GetName());
       mProcType[i] = kUnknown;
     } 
   }  
@@ -421,8 +421,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
 
     if (!macro){
       Error("Apply process macros", 
-        Form("Macro list is corrupted: Macro \"%s\" is not registered!", 
-        selIterator->At(i)->GetTitle()));
+        "Macro list is corrupted: Macro \"%s\" is not registered!",
+        selIterator->At(i)->GetTitle());
       continue;
     }
 
@@ -446,8 +446,8 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
       if(selCmds) selCmds[i] = macro->GetCmd();
     } else {
       Error("Apply process macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
-        macro->GetPath(), macro->GetName()));
+        "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
+        macro->GetPath(), macro->GetName());
       if(mSelType) mSelType[i] = kUnknown;
     } 
   }  
@@ -522,7 +522,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
         Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
         
         if (results == 0) {
-          Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
+          Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
           continue;
         }
         for (Int_t resInd = 0; resInd < nResults; resInd++){
@@ -572,7 +572,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
           Int_t nResults = (Int_t)gROOT->ProcessLineSync("n;");
      
           if (results == 0) {
-            Error("Apply macros", Form("Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle()));
+            Error("Apply macros", "Error reading data from macro \"%s\"", procIterator->At(i)->GetTitle());
             continue;
           }
           for (Int_t resInd = 0; resInd < nResults; resInd++) {
@@ -651,7 +651,7 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
 
     if (!macro){
       Error("Apply selection macros", 
-            Form("Macro list is corrupted: Macro \"%s\" is not registered!", iterator->At(i)->GetTitle()));
+            "Macro list is corrupted: Macro \"%s\" is not registered!", iterator->At(i)->GetTitle());
       continue;
     }
 
@@ -687,8 +687,8 @@ void AliEveTRDTrackList::ApplySTSelectionMacros(const TList* iterator)
       continue;
     } else {
       Error("Apply selection macros", 
-        Form("Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!", 
-        macro->GetPath(), macro->GetName()));
+        "Macro list corrupted: Macro \"%s/%s.C\" is not registered as a selection macro!",
+        macro->GetPath(), macro->GetName());
     } 
   }
 
@@ -822,16 +822,16 @@ void AliEveTRDTrackList::RemoveSelectedMacros(const TList* iterator)
 
     if (entry == 0)
     {
-      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Macro \"%s\" not found in list!", 
-                                                             iterator->At(i)->GetTitle()));
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", "Macro \"%s\" not found in list!",
+                                                             iterator->At(i)->GetTitle());
       continue;
     }
     key = entry->Key();
 
     if (key == 0)   
     {
-      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Key for macro \"%s\" not found in list!", 
-                                                             iterator->At(i)->GetTitle()));
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", "Key for macro \"%s\" not found in list!",
+                                                             iterator->At(i)->GetTitle());
       continue;
     }
 
@@ -846,8 +846,8 @@ void AliEveTRDTrackList::RemoveSelectedMacros(const TList* iterator)
     }
     else
     {
-      Error("AliEveTRDTrackList::RemoveSelectedMacros", Form("Macro \"%s\" could not be removed from the list!", 
-                                                             iterator->At(i)->GetTitle()));
+      Error("AliEveTRDTrackList::RemoveSelectedMacros", "Macro \"%s\" could not be removed from the list!",
+                                                             iterator->At(i)->GetTitle());
     }
   }
 }

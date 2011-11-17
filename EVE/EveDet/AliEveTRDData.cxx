@@ -228,7 +228,7 @@ void AliEveTRDClusters::Print(Option_t *o) const
 }
 
 //______________________________________________________________________________
-void AliEveTRDClusters::Load(Char_t *w) const
+void AliEveTRDClusters::Load(const Char_t *w) const
 {
   Int_t typ = -1;
   if(strcmp(w, "hit")==0) typ = 0;
@@ -581,7 +581,7 @@ void AliEveTRDTrack::SetStatus(UChar_t s)
 }
 
 //______________________________________________________________________________
-void AliEveTRDTrack::Load(Char_t *what) const
+void AliEveTRDTrack::Load(const Char_t *what) const
 {
 // Spread downwards to tracklets the command "what"
 

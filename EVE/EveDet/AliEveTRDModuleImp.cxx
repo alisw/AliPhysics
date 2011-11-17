@@ -369,7 +369,7 @@ void AliEveTRDChamber::LoadTracklets(TTree *trklTree)
   //
 
   if(!fGeo){
-    Error("LoadTracklets()", Form("Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet));
+    Error("LoadTracklets()", "Geometry not set for chamber %d. Please call first AliEveTRDChamber::SetGeometry().", fDet);
     return;
   }
 
