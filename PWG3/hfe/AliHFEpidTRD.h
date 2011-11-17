@@ -94,7 +94,6 @@ class AliHFEpidTRD : public AliHFEpidBase{
     void RenormalizeElPi(const Double_t * const likein, Double_t * const likeout) const;
 
   private:
-    static const Double_t fgkVerySmall = 1e-12;             // Check for 0
     AliOADBContainer *fOADBThresholds;                      // OADBContainer with thresholds
     Double_t fMinP;                                         // Minimum momentum above which TRD PID is applied
     Int_t    fNTracklets;                                   // Select cut for the number of tracklets
