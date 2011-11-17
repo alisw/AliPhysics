@@ -46,6 +46,7 @@ namespace {
       v[i] = p2[i] - p1[i];
   }
   
+#if 0
   //___________________________________________________________________
   void MultVector(Double_t (&v)[3], Double_t m)
   {
@@ -53,6 +54,7 @@ namespace {
     v[1] *= m;
     v[2] *= m;
   }
+#endif
   
   /*
     Using points name0, name1, name2 find two orthogonal vectors.
@@ -71,6 +73,7 @@ namespace {
     return TMath::Sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
   }
   
+#if 0
   //___________________________________________________________________
   Double_t Distance(const Double_t (&p1)[3], const Double_t (&p2)[3])
   {
@@ -80,6 +83,7 @@ namespace {
   }
   
   //______________________________________________________________________________
+#endif
   void CrossProduct(const Double_t (&v1)[3], const Double_t (&v2)[3], Double_t (&v3)[3])
   {
     v3[0] = v1[1] * v2[2] - v2[1] * v1[2];
