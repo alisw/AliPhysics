@@ -154,7 +154,7 @@ void AliACORDEQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TO
 						if ( (simpleFlag >= 0.25) && (simpleFlag < 0.70) ) test[specie] = 0.25; // ERROR
 						if ( (simpleFlag >= 0.0) && (simpleFlag < 0.25) )  test[specie] = -1.0; // FATAL
 					} else if (hdataName.Contains("HitsSL0_DQM")||hdataName.Contains("HitsAMU_DQM")){
-						if (flagAcoQA < 30) test[specie] = 0.75;
+						if (flagAcoQA < 100) test[specie] = 0.75;
 						else test[specie] = 0.3;
 					}
 
