@@ -107,7 +107,7 @@ Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
         foundOpt = kTRUE;
         break;
       }
-      if(!foundOpt) Warning("AliTRDpwg1Helper::ParseOptions()", Form("TRD task %s not implemented (yet).", s.Data()));
+      if(!foundOpt) Warning("AliTRDpwg1Helper::ParseOptions()", "TRD task %s not implemented (yet).", s.Data());
     }
   }
   // extra rules for calibration tasks
@@ -143,7 +143,7 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
     iline++;
   }
   Int_t nBatches=Int_t(TMath::Ceil(Double_t(iline)/nBatch));
-  Info("MergeProd()", Form("Merge %d files in %d batches.", iline, nBatches));
+  Info("MergeProd()", "Merge %d files in %d batches.", iline, nBatches);
 
   Int_t first(0);
   for(Int_t ibatch(0); ibatch<nBatches; ibatch++){
@@ -157,12 +157,12 @@ void AliTRDpwg1Helper::MergeProd(const Char_t *mark, const Char_t *files, const 
     Info("AliTRDpwg1Helper::MergeProd()", "Rename 1 merged file.");
     gSystem->Exec(Form("mv merge/%d_%d_%s %s", level, first, mark, mark));
   } else if(nBatches<=nBatch){
-    Info("AliTRDpwg1Helper::MergeProd()", Form("Merge %d files in 1 batch.", nBatches));
+    Info("AliTRDpwg1Helper::MergeProd()", "Merge %d files in 1 batch.", nBatches);
     if(!gSystem->Exec(Form("aliroot -b -q \'$ALICE_ROOT/PWG1/TRD/macros/mergeBatch.C(\"%s\", \"%s\", %d, 0, kFALSE)\'", mark, lMERGE, nBatches))) return;
     gSystem->Exec(Form("mv 0_%s %s", mark, mark));
   } else {
     level++;
-    Info("AliTRDpwg1Helper::MergeProd()", Form("Merge level %d.", level));
+    Info("AliTRDpwg1Helper::MergeProd()", "Merge level %d.", level);
     MergeProd(mark, lMERGE, nBatch, level);
   }
   gSystem->Exec(Form("rm -fv %s %s", lMERGE, lPURGE));
@@ -194,7 +194,7 @@ Int_t AliTRDpwg1Helper::MergeBatch(const Char_t *mark, const Char_t *files, cons
     if(kSVN){ // download SVN info for trending
       if(gSystem->Exec(Form("if [ ! -f svnInfo.log ]; then cp -v %s/svnInfo.log %s; fi", Dirname(filename.c_str()), gSystem->ExpandPathName("$PWD"))) == 0) kSVN=kFALSE;
     }
-    Info("AliTRDpwg1Helper::MergeBatch()", filename.c_str());
+    Info("AliTRDpwg1Helper::MergeBatch()", "%s", filename.c_str());
     if(!fFM.AddFile(filename.c_str())) return NULL;
     arr.Add(new TObjString(filename.c_str()));
     nbatch++;
