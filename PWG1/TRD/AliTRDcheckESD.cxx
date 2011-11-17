@@ -1596,8 +1596,6 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, Bool_t useIsol
   // 
   if(!fCfContainer) return;
   
-  trendValues = trendValues;
-  
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);
   lat->SetTextColor(2);
@@ -2851,8 +2849,6 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass, Double_t* trend
 Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* trendValues) {
 
   Bool_t isGoodForSaving=kFALSE;
-  
-  trendValues = trendValues;
   
   TLatex* lat=new TLatex();
   lat->SetTextSize(0.06);

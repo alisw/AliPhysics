@@ -43,7 +43,7 @@ private:
 
   TObjArray *fTriggerNames; // Container for Trigger names
   Int_t     *fBunches;      // List of bunches accepted for analysis
-  Int_t     fEventType;     // Event type
+  UInt_t    fEventType;     // Event type
   Int_t     fVertexN;       // Min number of contributors to Vertex
   Double_t  fVertexZ;       // Max Abs(z) of the reconstructed Vertex
 
