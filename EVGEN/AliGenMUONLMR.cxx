@@ -23,10 +23,10 @@ AliGenMUONLMR::AliGenMUONLMR () : AliGenMC(), fNMuMin(2), fGenSingleProc(-1), fC
   fScaleMult[kPionLMR] = 0; // set pion multiplicity to zero 
   fScaleMult[kKaonLMR] = 0; // set kaon multiplicity to zero
   Int_t pdg[7] = {211, 321, 221, 113, 223, 333, 331}; 
-  char* fptname[7] = {"fPtPion","fPtKaon","fPtEta","fPtRho","fPtOmega","fPtPhi","fPtEtaPrime"};
-  char* fyname[7] = {"fYPion","fYKaon","fYEta","fYRho","fYOmega","fYPhi","fYEtaPrime"}; 
-  char* fnname[7] = {"fMultPion","fMultKaon","fMultEta","fMultRho","fMultOmega","fMultPhi","fMultEtaPrime"};
-  char* fdname[2] = {"fDecPion","fDecKaon"};
+  const char* fptname[7] = {"fPtPion","fPtKaon","fPtEta","fPtRho","fPtOmega","fPtPhi","fPtEtaPrime"};
+  const char* fyname[7] = {"fYPion","fYKaon","fYEta","fYRho","fYOmega","fYPhi","fYEtaPrime"}; 
+  const char* fnname[7] = {"fMultPion","fMultKaon","fMultEta","fMultRho","fMultOmega","fMultPhi","fMultEtaPrime"};
+  const char* fdname[2] = {"fDecPion","fDecKaon"};
   Double_t ptparam[7][3] = { {1,0.427,2.52}, // pions from Pythia
 			     {1,0.58,2.57},  // kaons from Pythia
  			     {1,0.641,2.62},   // eta from Pythia
