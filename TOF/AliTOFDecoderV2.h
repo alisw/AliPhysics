@@ -101,7 +101,7 @@ class AliTOFTRMSummaryData;
 class AliTOFChainSummaryData;
 class AliTOFTDCHitBuffer;
 class AliTOFTDCErrorBuffer;
-class AliRawDataHeader;
+struct AliRawDataHeader;
 
 class AliTOFDecoderV2 : public TObject
 {

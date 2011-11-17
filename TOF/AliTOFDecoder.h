@@ -91,7 +91,7 @@
 //#include "AliTOFGeometry.h"
 
 class AliTOFHitDataBuffer;
-class AliRawDataHeader;
+struct AliRawDataHeader;
 
 class AliTOFDecoder : public TObject
 {
