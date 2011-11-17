@@ -6,6 +6,7 @@
  * @brief  A script to draw the Poisson vs Energy Loss correlation 
  * 
  *
+ * @deprecated Use QATrender instead 
  * @ingroup pwg2_forward_scripts_qa
  * 
  */
@@ -40,6 +41,7 @@ class TList;
  * 
  * @return The regression coefficient 
  *
+ * @deprecated Use QATrender instead 
  * @ingroup pwg2_forward_scripts_qa
  */
 Double_t
@@ -183,6 +185,7 @@ DrawRingELossPoisson(TList* p, UShort_t d, Char_t r,
  * @param xmax     Minimum X
  * @param xmin     Maximum X 
  *
+ * @deprecated Use QATrender instead 
  * @ingroup pwg2_forward_scripts_qa
  */
 void

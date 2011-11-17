@@ -1,12 +1,14 @@
 /**
+ * @file   DrawSteps.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:34:01 2011
+ * 
+ * @brief  
+ * 
  * 
  * @defgroup pwg2_forward_scripts_qa Quality Assurance scripts
- * 
- * 
  * @ingroup pwg2_forward_scripts
- * 
  */
-
 /** 
  * Get a stack 
  * 

@@ -6,17 +6,19 @@
  * @brief  Script to draw steps (deprecated version - use DrawSteps.C)
  * 
  * 
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 /** 
  * 
  * 
- * @param forward 
- * @param sub 
- * @param name 
+ * @param forward Forward folder
+ * @param sub     Sub-folder to get
+ * @param name    Name of stack
  * 
- * @return 
+ * @return Stack, or null
  *
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 THStack*
@@ -34,13 +36,14 @@ GetStack(const TList& forward,  const char* sub, const char* name)
 }
 
 /** 
+ * Rebin a histogram
  * 
+ * @param h      Histogram
+ * @param rebin  Rebinning factor
  * 
- * @param h 
- * @param rebin 
- * 
- * @return 
+ * @return Pointer to histogram
  *
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 TH1* 
@@ -53,13 +56,14 @@ Rebin(TH1* h, Int_t rebin)
 }
 
 /** 
+ * Take ratio of two histograms
  * 
+ * @param h1  Numerator
+ * @param h2  Denominator
  * 
- * @param h1 
- * @param h2 
- * 
- * @return 
+ * @return Newly allocated histogram containg ratio
  *
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 TH1*
@@ -77,14 +81,15 @@ Ratio(const TH1* h1, const TH1* h2)
   return copy;
 }
 /** 
+ * Take ratio of histograms in stacks
  * 
+ * @param r   Return stack of ratios
+ * @param h1  Numerators
+ * @param h2  Denominators
  * 
- * @param r 
- * @param h1 
- * @param h2 
- * 
- * @return 
+ * @return How many histograms in the return stack
  *
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 Int_t 
@@ -107,12 +112,13 @@ Ratio(THStack* r, const THStack* h1, const THStack* h2)
   return nH;
 }
 /** 
+ * Draw MC results
  * 
- * 
- * @param filename 
- * @param rebin 
- * @param ratios 
+ * @param filename  Input file name
+ * @param rebin     Rebinning factor
+ * @param ratios    Whether to show ratios
  *
+ * @deprecated Use DrawSteps.C instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -311,9 +317,6 @@ DrawMCResult(const char* filename="forward.root", Int_t rebin=1,
   
 
 }
-
-  
-  
  
 //
 // EOF

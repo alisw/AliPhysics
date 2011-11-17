@@ -3,9 +3,9 @@
  * @author Christian Holm Christensen <cholm@dalsgaard.hehi.nbi.dk>
  * @date   Thu Jul  7 10:24:58 2011
  * 
- * @brief  A script to draw the Poisson vs Energy Loss correlation 
- * 
+ * @brief  A script to draw the occupancy as given by Poisson method
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  * 
  */
@@ -26,17 +26,15 @@ class TList;
 #endif
 
 /** 
- * Draw the poisson @f$N_{ch}@f$ estimate against the @f$\Delta@f$
- * @f$N_{ch}@f$ estimate and do a regression line between the two 
+ * Draw the Poisson estimate of the occupancy in a given ring.
  * 
  * @param p            List 
  * @param d            Detector
  * @param r            Ring
- * @param xmin         Minimum
- * @param xmax         Maximum
  * 
- * @return The regression coefficient 
+ * @return The occupancy (in percent)
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 Double_t
@@ -84,14 +82,12 @@ DrawRingOccupancy(TList* p, UShort_t d, Char_t r)
 }
 
 /** 
- * Draw the correlation between the Poisson @f$N_{ch}@f$ estimate
- * and the @f$\Delta@f$ @f$N_{ch}@f$ estimate and do a regression
- * line between the two for each ring
+ * Draw the Poisson estimate of the occupancy
  * 
- * @param filename File to read
- * @param xmax     Minimum X
- * @param xmin     Maximum X 
- *
+ * @param filename Input file name 
+ * @param folder   Input folder name in file
+ * 
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void

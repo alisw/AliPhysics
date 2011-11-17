@@ -1,4 +1,14 @@
 #!/bin/bash
+#
+# @file   getQAResults.sh
+# @author Christian Holm Christensen <cholm@nbi.dk>
+# @date   Thu Nov 17 11:47:14 2011
+# 
+# @brief Retrieve trending.root/QAResults.root files from AliEn for a
+# given producton as specified by the command line options 
+# 
+# @ingroup pwg2_forward_qa_scripts
+#
 
 # --------------------------------------------------------------------
 verb=0
@@ -234,6 +244,7 @@ for i in $files ; do
     if test $noac -lt 1 && test ! -f $o ; then 
 	mess "alien_cp alien:${i} file:${o}"
 	alien_cp alien:${i} file:${o} > ${redir} 2>&1 
+	if test -f $o ; then chmod g+rw ${o} ; fi
     fi
     if test $noac -lt 1 && test $arch -lt 1  ; then check_file $o ; fi
     if test $noac -lt 1 && test $arch -gt 0 ; then 

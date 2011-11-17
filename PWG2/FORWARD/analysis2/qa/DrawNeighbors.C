@@ -1,3 +1,13 @@
+/**
+ * @file   DrawNeighbors.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:26:12 2011
+ * 
+ * @brief  Draw corrlation of neighboring strips
+ * 
+ * @deprecated Use QATrender instead
+ * @ingroup pwg2_forward_scripts_qa
+ */
 #ifndef __CINT__
 # include <TH1.h>
 # include <TH2.h>
@@ -20,6 +30,7 @@ class TList;
  * @param d  Detector
  * @param r  Ring
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -75,9 +86,11 @@ DrawRingNeighbors(TList* p, UShort_t d, Char_t r)
 /** 
  * Draw the correlation of neighboring strips before/after merging 
  * 
- * @param filename 
+ * @param filename Input file name 
+ * @param folder   Input folder name in file 
  *
  * @ingroup pwg2_forward_scripts_qa
+ * @deprecated Use QATrender instead
  */
 void
 DrawNeighbors(const char* filename="forward.root", 
@@ -128,9 +141,6 @@ DrawNeighbors(const char* filename="forward.root",
   c->cd();
   c->SaveAs("neighbors.png");
 }
-
-  
-  
  
 //
 // EOF

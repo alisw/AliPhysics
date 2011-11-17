@@ -1,3 +1,13 @@
+/**
+ * @file   DrawBeforeAfter.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:18:18 2011
+ * 
+ * @brief  Script to draw the before/after merging energy loss spectra 
+ * 
+ * @deprecated Use QATrender instead 
+ * @ingroup pwg2_forward_scripts_qa
+ */
 #ifndef __CINT__
 # include <TH1.h>
 # include <TH2.h>
@@ -17,10 +27,11 @@ class TList;
 /** 
  * Draw the before/after merging image for a single ring
  * 
- * @param p 
- * @param d 
- * @param r 
+ * @param p  Parent list
+ * @param d  Detector 
+ * @param r  Ring 
  *
+ * @deprecated Use QATrender instead 
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -54,8 +65,10 @@ DrawRingBeforeAfter(TList* p, UShort_t d, Char_t r)
 /** 
  * Draw the before/after sharing image for all rings 
  * 
- * @param filename 
+ * @param filename Input file name  
+ * @param folder   Input folder in file 
  *
+ * @deprecated Use QATrender instead 
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -114,10 +127,6 @@ DrawBeforeAfter(const char* filename="forward.root",
   c->cd();
   c->SaveAs("beforeAfter.png");
 }
-
-  
-  
- 
 //
 // EOF
 //

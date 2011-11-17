@@ -6,6 +6,7 @@
  * @brief  Draw energ-loss before/after merging and used in the
  * density calculations 
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 
@@ -27,12 +28,13 @@ class TLatex;
 /** 
  * Draw some text
  * 
- * @param l 
- * @param x 
- * @param y 
- * @param c1 
- * @param c2 
+ * @param l    LaTeX object
+ * @param x    x coordinate
+ * @param y    y coordinate (incremented on return)
+ * @param c1   First string
+ * @param c2   Second string 
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void 
@@ -51,6 +53,7 @@ DrawText(TLatex* l, Double_t x, Double_t& y, const char* c1, const char* c2)
  * @param d      Detector
  * @param r      Ring 
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -150,8 +153,10 @@ DrawRingRecAnaEloss(TList* p, TList* p2, Double_t lowCut, UShort_t d, Char_t r)
 /** 
  * Draw energy loss before/after merging 
  * 
- * @param filename 
+ * @param filename Input file name
+ * @param folder   Input folder name in file 
  *
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -221,9 +226,6 @@ DrawRecAnaEloss(const char* filename="forward.root",
   c->cd();
   c->SaveAs("recAnaELoss.png");
 }
-
-  
-  
  
 //
 // EOF

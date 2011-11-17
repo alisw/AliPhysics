@@ -1,5 +1,13 @@
 #!/bin/sh 
-
+#
+# @file   DrawQA.sh
+# @author Christian Holm Christensen <cholm@nbi.dk>
+# @date   Thu Nov 17 11:31:03 2011
+# 
+# @brief  Draw most QA stuff
+# 
+# @deprecated Use QATrender instead
+# @ingroup pwg2_forward_qa_scripts
 file=trending.root 
 
 # --- Help message ---------------------------------------------------
