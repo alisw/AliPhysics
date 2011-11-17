@@ -46,7 +46,8 @@
 ClassImp(AliTRDcheckTRK)
 
 Bool_t  AliTRDcheckTRK::fgKalmanUpdate = kTRUE;
-Bool_t  AliTRDcheckTRK::fgClRecalibrate = kFALSE;
+Bool_t  AliTRDcheckTRK::fgTrkltRefit   = kTRUE;
+Bool_t  AliTRDcheckTRK::fgClRecalibrate= kFALSE;
 Float_t AliTRDcheckTRK::fgKalmanStep = 2.;
 //__________________________________________________________________________
 AliTRDcheckTRK::AliTRDcheckTRK()
@@ -204,8 +205,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
   }
 
   AliTRDseedV1 *tr(NULL);
-  AliExternalTrackParam *trdin(NULL);
-  if(!(trdin = t.GetTrackIn())){
+  if(!t.GetTrackIn()){
     printf("E - AliTRDcheckTRK::PropagateKalman :: Track did not entered TRD fiducial volume.\n");
     return kFALSE;
   }
@@ -225,8 +225,7 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
   for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
     if(!(tr = t.GetTracklet(ily))) continue;
     Int_t det(tr->GetDetector());
-    //Float_t *calib = GetCalib(det);
-    if(fgClRecalibrate/* && calib[0]>0.*/){
+    if(fgClRecalibrate){
       AliTRDtransform trans(det);
       AliTRDcluster *c(NULL);
       Float_t exb, vd, t0, s2, dl, dt; tr->GetCalibParam(exb, vd, t0, s2, dl, dt);
@@ -237,7 +236,9 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
           break;
         }
       }
-      if(!tr->FitRobust()) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
+    }
+    if(fgTrkltRefit){
+      if(!tr->FitRobust(tt.Charge()>0.)) printf("W - AliTRDcheckTRK::PropagateKalman :: FitRobust() failed for Det[%03d]\n", det);
     }
     if(!AliTRDtrackerV1::PropagateToX(tt, tr->GetX0(), fgKalmanStep)) continue;
     if(!tt.GetTrackIn()) tt.SetTrackIn();
@@ -248,7 +249,6 @@ Bool_t AliTRDcheckTRK::PropagateKalman(AliTRDtrackV1 &t, AliExternalTrackParam *
                covTrklt[3];
       tr->GetCovAt(x, covTrklt);
       if(!((AliExternalTrackParam&)tt).Update(p, covTrklt)) continue;
-      //tr->Update(&tt);
       tt.SetTracklet(tr, 0);
       tt.SetNumberOfClusters();
       tt.UpdateChi2(((AliExternalTrackParam)tt).GetPredictedChi2(p, covTrklt));

@@ -36,6 +36,7 @@ public:
   static Float_t  GetKalmanStep()                      { return fgKalmanStep;}
   static Bool_t   HasClRecalibrate()                   { return fgClRecalibrate;}
   static Bool_t   HasKalmanUpdate()                    { return fgKalmanUpdate;}
+  static Bool_t   HasTrkltRefit()                      { return fgTrkltRefit;}
   virtual TObjArray*  Histos();
   TH1*            PlotTrack(const AliTRDtrackV1 *t=NULL);
   TH1*            DoRoads(const AliTRDtrackV1 *t=NULL);
@@ -43,6 +44,7 @@ public:
   static void     SetKalmanStep(Float_t step)          { fgKalmanStep=step;}
   static void     SetClRecalibrate(Bool_t set=kTRUE)   { fgClRecalibrate=set;}
   static void     SetKalmanUpdate(Bool_t set=kTRUE)    { fgKalmanUpdate=set;}
+  static void     SetTrkltRefit(Bool_t set=kTRUE)      { fgTrkltRefit=set;}
 
 private:
   AliTRDcheckTRK(const AliTRDcheckTRK&);
@@ -52,6 +54,7 @@ private:
 
   // kalman related settings
   static Bool_t  fgKalmanUpdate;  // update Kalman with TRD point
+  static Bool_t  fgTrkltRefit;    // refit tracklet
   static Bool_t  fgClRecalibrate; // recalibrate clusters and recalculate tracklet fit
   static Float_t fgKalmanStep;    // Kalman stepping
   Float_t        fPtBinCalib[kNptBins+1];  //! pt segmentation
