@@ -162,7 +162,7 @@ struct QABase
     *fHtml << "<html>\n"
 	   << " <head>\n"
 	   << "  <title>QA information - "  << title << "</title>\n"
-	   << "  <link rel='stylesheet' src='style.css'>\n" 
+	   << "  <link rel='stylesheet' href='style.css'>\n" 
 	   << " </head>\n"
 	   << "<body>\n" 
 	   << " <h1>" << title << "</h1>\n"
@@ -265,7 +265,7 @@ struct QABase
     img << "<html>\n"
 	<< " <head>\n"
 	<< "  <title>" << pngName << "</title>\n"
-	<< "  <link rel='stylesheet' src='style.css'>\n"
+	<< "  <link rel='stylesheet' href='style.css'>\n"
 	<< " </head>\n"
 	<< " <body>\n"
 	<< "  <h1>" << pngName << "</h1>\n"
@@ -290,7 +290,7 @@ struct QABase
     o << "<div class='back'>\n"
       << "<a href='" << fTeXName << ".html'>Back</a>\n"
       << "</div>\n"
-      << "<div style='border-top: thin solid gray'>\n"
+      << "<div class='change'>\n"
       << "  Last update: " << now.AsString() << "\n"
       << "</div>" << std::endl;
   }
@@ -345,7 +345,7 @@ struct QABase
 	   << "<div class='back'>\n"
 	   << "<a href='index.html'>Back</a>\n"
 	   << "</div>\n"
-	   << "<div style='border-top: thin solid gray'>\n"
+	   << "<div class='change'>\n"
 	   << "  Last update: " << now.AsString() << "\n"
 	   << "</div>" << std::endl;
   }
