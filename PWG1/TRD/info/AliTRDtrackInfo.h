@@ -17,7 +17,7 @@
 
 
 template <typename Value> class TVectorT;
-typedef struct TVectorT<Double_t> TVectorD;
+typedef class TVectorT<Double_t> TVectorD;
 class AliTRDseedV1;
 class AliTRDtrackV1;
 class AliTrackReference;
