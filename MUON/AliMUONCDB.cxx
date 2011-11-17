@@ -288,7 +288,7 @@ AliMUONRecoParam* AliMUONCDB::LoadRecoParam()
   
   AliInfoGeneral("AliMUONCDB", "Loading RecoParam from OCDB...");
   
-  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  if (!AliMUONCDB::CheckOCDB()) return 0x0;
   
   AliMUONRecoParam* recoParam = 0x0;
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Calib/RecoParam");
@@ -324,7 +324,7 @@ TClonesArray* AliMUONCDB::LoadAlignmentData()
   
   AliInfoGeneral("AliMUONCDB", "Loading Alignemnt from OCDB...");
   
-  if (!AliMUONCDB::CheckOCDB()) return kFALSE;
+  if (!AliMUONCDB::CheckOCDB()) return 0x0;
   
   TClonesArray* alignmentArray = 0x0;
   AliCDBEntry* entry = AliCDBManager::Instance()->Get("MUON/Align/Data");
