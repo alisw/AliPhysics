@@ -1591,7 +1591,7 @@ TH1F* AliTRDcheckESD::EfficiencyTRD(TH3* tpc3D, TH3* trd3D, Bool_t useAcceptance
 }
 
 //__________________________________________________________________________________________________
-void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
+void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* /*trendValues*/, Bool_t useIsolatedBC, Bool_t cutTOFbc) {
   //
   // Make the centrality summary figure from the CF container 
   // 
@@ -2847,7 +2847,7 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Int_t centralityClass, Double_t* trend
 
 
 //_________________________________________________________________
-Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* trendValues) {
+Bool_t AliTRDcheckESD::PlotCentSummary(Double_t* /*trendValues*/) {
 
   Bool_t isGoodForSaving=kFALSE;
   

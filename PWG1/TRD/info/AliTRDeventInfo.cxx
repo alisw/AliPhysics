@@ -73,8 +73,9 @@ AliTRDeventInfo& AliTRDeventInfo::operator=(const AliTRDeventInfo& info){
   // Operator=
   // Flat Copy
   //
-  this->fHeader = info.fHeader;
-  this->fRun = info.fRun;
+  if(this == &info) return *this;
+  fHeader     = info.fHeader;
+  fRun        = info.fRun;
   fCentrality = info.fCentrality;
   SetBit(kOwner, 0);
   return *this;
@@ -131,7 +132,7 @@ void AliTRDeventInfo::GetListOfIsolatedBunches(TH1D* hbc, Int_t bunchSpacing) {
   Bool_t isIsolated[kLHCbunches]; memset(isIsolated, 0, kLHCbunches*sizeof(Bool_t));
   for(Int_t bcBin(1); bcBin<=hbc->GetNbinsX(); bcBin++) {
     Int_t bc(TMath::Nint(hbc->GetBinCenter(bcBin)));
-    if(bc<0 || bc>kLHCbunches) continue; // outside LHC range
+    if(bc<0 || bc>=kLHCbunches) continue; // outside LHC range
     Double_t entries(hbc->GetBinContent(bcBin));
     if(entries<1.) continue;             // not filled
     
