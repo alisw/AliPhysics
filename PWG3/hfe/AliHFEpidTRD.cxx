@@ -330,6 +330,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track, Float_t truncati
   //
   const Int_t kNSlices = 48;
   const Int_t kSlicePerLayer = 7;
+  const Double_t kVerySmall = 1e-12;
   // Weight the slice to equalize the MPV of the dQ/dl-distribution per slice to the one in the first slice
   // Pions are used as reference for the equalization
   const Double_t kWeightSlice[8] = {1., 2.122, 1.8, 1.635, 1.595, 1.614, 1.16, 7.0};
@@ -340,7 +341,7 @@ Double_t AliHFEpidTRD::GetTRDSignalV1(const AliESDtrack *track, Float_t truncati
   for(Int_t idet = 0; idet < 6; idet++)
     for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0 ; islice < kSlicePerLayer; islice++){
       AliDebug(2, Form("Chamber[%d], Slice[%d]: TRDSlice = %f", idet, islice, track->GetTRDslice(idet, islice)));
-      if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
+      if(TMath::Abs(track->GetTRDslice(idet, islice)) < kVerySmall) continue;;
       trdSlices[icnt++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];
     }
   AliDebug(1, Form("Number of Slices: %d\n", icnt));
@@ -368,12 +369,13 @@ Double_t AliHFEpidTRD::GetTRDSignalV2(const AliESDtrack *track, Float_t truncati
   const Int_t kLayers = 6;
   const Int_t kSlicesLow = 6;
   const Int_t kSlicesHigh = 1;
+  const Double_t kVerySmall = 1e-12;
   Double_t trdSlicesLowTime[kLayers*kSlicesLow], trdSlicesRemaining[kLayers*(kSlicesHigh + kSlicesLow)];
   Int_t indices[kLayers*kSlicesLow];
   Int_t cntLowTime=0, cntRemaining = 0;
   for(Int_t idet = 0; idet < 6; idet++)
     for(Int_t islice = fTotalChargeInSlice0 ? 1 : 0; islice < kSlicesLow+kSlicesHigh; islice++){
-      if(TMath::Abs(track->GetTRDslice(idet, islice)) < fgkVerySmall) continue;;
+      if(TMath::Abs(track->GetTRDslice(idet, islice)) < kVerySmall) continue;;
       if(islice < kSlicesLow){
         AliDebug(3, Form("Part 1, Det[%d], Slice[%d], TRDSlice: %f", idet, islice, track->GetTRDslice(idet, islice)));
         trdSlicesLowTime[cntLowTime++] = track->GetTRDslice(idet, islice) * kWeightSlice[islice];

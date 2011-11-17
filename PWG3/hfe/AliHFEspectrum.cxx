@@ -254,10 +254,10 @@ Bool_t AliHFEspectrum::Init(const AliHFEcontainer *datahfecontainer, const AliHF
 // MC container: correlation matrix
   THnSparseF *mccorrelation = 0x0;
   if(fInclusiveSpectrum) {
-    if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
-    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
-    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
-    else if((fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1))) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 2)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+    else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD + 1)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
+    else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
+    else if(fStepMC==(AliHFEcuts::kNcutStepsMCTrack + AliHFEcuts::kStepHFEcutsTRD - 1)) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepbeforePID");
     else mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
     
     if(!mccorrelation) mccorrelation = mchfecontainer->GetCorrelationMatrix("correlationstepafterPID");
@@ -1651,7 +1651,7 @@ TList *AliHFEspectrum::Unfold(AliCFDataGrid* const bgsubpectrum){
     TGraphErrors* residualspectrumD = Normalize(residual);
     if(!residualspectrumD) {
       AliError("Number of Events not set for the normalization");
-      return kFALSE;
+      return NULL;
     }
     residualspectrumD->SetTitle("");
     residualspectrumD->GetYaxis()->SetTitleOffset(1.5);

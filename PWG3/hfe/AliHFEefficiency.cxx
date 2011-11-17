@@ -245,8 +245,8 @@ void AliHFEefficiency::Load(const char* filename){
   // Load results for post processing
   //
   TFile *input = TFile::Open(filename);
-  AliHFEcontainer *cin = dynamic_cast<AliHFEcontainer *>(input->Get("Efficiency"));
-  if(cin) fEfficiency = dynamic_cast<AliHFEcontainer *>(cin->Clone());
+  AliHFEcontainer *ctmp = dynamic_cast<AliHFEcontainer *>(input->Get("Efficiency"));
+  if(ctmp) fEfficiency = dynamic_cast<AliHFEcontainer *>(ctmp->Clone());
   input->Close();
   delete input;
 }

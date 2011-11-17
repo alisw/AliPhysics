@@ -146,7 +146,7 @@ class AliHFEelecbackground : public TObject {
     AliMCEvent*  fMCEvent;           //! MC event             
     Double_t fBz;                    // Magnetic field 
     const AliESDVertex *fkVertex;    //! Primary vertex
-    static const Double_t fgkMe= 0.0005109989;     //!  Mass of the electron
+    static const Double_t fgkMe;     //!  Mass of the electron
     Double_t fPtESD;                 //! pt of tagged electron
     Int_t fIndexTrack;               //! index track
     Int_t fPdg;                      //! pdg code track 
