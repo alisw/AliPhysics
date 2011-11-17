@@ -1,7 +1,17 @@
+/**
+ * @file   DrawCuts.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:20:22 2011
+ * 
+ * @brief  Draw the cuts used in the analysis
+ * 
+ * @ingroup pwg2_forward_scripts_qa
+ * 
+ */
 /** 
  * Draw cuts used in analysis
  * 
- * @param filename 
+ * @param filename Input file name 
  *
  * @ingroup pwg2_forward_scripts_qa
  */
@@ -20,44 +30,44 @@ DrawCuts(const char* filename="forward.root")
 
   TFile* file = TFile::Open(filename, "READ");
   if (!file) { 
-    Error("DrawMCResult", "failed to open %s", filename);
+    Error("DrawCuts", "failed to open %s", filename);
     return;
   }
 
   TList* forward = static_cast<TList*>(file->Get("Forward"));
   if (!forward) { 
-    Error("DrawMCResult", "List Forward not found in %s", filename);
+    Error("DrawCuts", "List Forward not found in %s", filename);
     return;
   }
 
   TList* dc = static_cast<TList*>(forward->FindObject("fmdDensityCalculator"));
   if (!dc) { 
-    Error("DrawMCResult", "List fmdDensityCalculator not found in Forward");
+    Error("DrawCuts", "List fmdDensityCalculator not found in Forward");
     return;
   }
   TList* sf = static_cast<TList*>(forward->FindObject("fmdSharingFilter"));
   if (!dc) { 
-    Error("DrawMCResult", "List fmdSharingFilter not found in Forward");
+    Error("DrawCuts", "List fmdSharingFilter not found in Forward");
     return;
   }
   TList* hc = static_cast<TList*>(forward->FindObject("fmdHistCollector"));
   if (!hc) { 
-    Error("DrawMCResult", "List fmdHistCollector not found in Forward");
+    Error("DrawCuts", "List fmdHistCollector not found in Forward");
     return;
   }
   TH2* hC = static_cast<TH2*>(sf->FindObject("highCuts"));
   if (!hC) { 
-    Error("DrawMCResults", "Histogram highCuts found in %s", sf->GetName());
+    Error("DrawCuts", "Histogram highCuts found in %s", sf->GetName());
     return;
   }
   TH2* lC = static_cast<TH2*>(dc->FindObject("lowCuts"));
   if (!lC) { 
-    Error("DrawMCResults", "Histogram lowCuts found in %s", dc->GetName());
+    Error("DrawCuts", "Histogram lowCuts found in %s", dc->GetName());
     return;
   }
   TH2* co = static_cast<TH2*>(hc->FindObject("coverage"));
   if (!co) { 
-    Error("DrawMCResults", "Histogram coverage found in %s", hc->GetName());
+    Error("DrawCuts", "Histogram coverage found in %s", hc->GetName());
     return;
   }
   TCanvas* c = new TCanvas("cuts", "Cuts used in the analysis", 900, 700);

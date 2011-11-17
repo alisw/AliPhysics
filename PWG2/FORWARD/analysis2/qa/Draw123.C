@@ -1,3 +1,14 @@
+/**
+ * @file   Draw123.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:07:15 2011
+ * 
+ * @brief  This scripts draws the energy loss distribution for single,
+ * double, and triple hits in the FMD as resolved by the sharing
+ * filter 
+ * 
+ * @ingroup pwg2_forward_scripts_qa
+ */
 #ifndef __CINT__
 # include <TH1.h>
 # include <TH2.h>
@@ -16,12 +27,14 @@ class TList;
 #endif
 
 /** 
- * Draw the before/after merging image for a single ring
+ * Draw the energy loss spectra of single, double, and triple hits in
+ * a particular ring 
  * 
- * @param p 
- * @param d 
- * @param r 
+ * @param p Parent list 
+ * @param d Detector 
+ * @param r Ring 
  *
+ * @deprecated Use the QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
@@ -66,15 +79,18 @@ DrawRing123(TList* p, UShort_t d, Char_t r)
 
 
 /** 
- * Draw the before/after sharing image for all rings 
+ * Draw the energy loss distribution of singles, doubles, and triples
+ * as given by the sharing filter 
  * 
- * @param filename 
+ * @param filename Input file name
+ * @param folder   Input folder (TList) in input file
  *
+ * @deprecated Use the QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 void
 Draw123(const char* filename="forward.root", 
-		const char* folder="ForwardResults")
+	const char* folder="ForwardResults")
 {
   gStyle->SetPalette(1);
   gStyle->SetOptFit(0);
@@ -128,9 +144,6 @@ Draw123(const char* filename="forward.root",
   c->cd();
   c->SaveAs("123.png");
 }
-
-  
-  
  
 //
 // EOF
