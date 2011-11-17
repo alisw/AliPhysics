@@ -14,12 +14,12 @@
 
 
 #include "TObject.h"
-#include "AliTOFT0v1.h"
 
 class TH1F;
 class AliESDEvent;
 
 class AliESDpid;
+class AliTOFT0v1;
 class AliTOFcalib;
 
 class AliTOFT0maker : public TObject {
@@ -53,8 +53,6 @@ public:
   void SetT0fill(Float_t t0fill){fT0fillExt=t0fill;};
   
   void WriteInESD(AliESDEvent *esd);
-
-  Int_t GetPileUpCandidate(){return fT0TOF->GetPileUpCandidate();};
 
  private:
   

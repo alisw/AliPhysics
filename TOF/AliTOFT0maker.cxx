@@ -43,6 +43,7 @@
 //                                                                         //
 /////////////////////////////////////////////////////////////////////////////
 
+#include "AliTOFT0v1.h"
 #include "AliTOFT0maker.h"
 #include "AliPID.h"
 #include "AliLog.h"
