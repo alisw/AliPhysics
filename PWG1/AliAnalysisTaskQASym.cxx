@@ -1155,8 +1155,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   if(vertexSPD){
     if(vertexSPD->GetNContributors()>0){
       fVertexX[1]->Fill(vertexSPD->GetX());
-      fVertexY[1]->Fill(vertexSPD->GetX());
-      fVertexZ[1]->Fill(vertexSPD->GetX());
+      fVertexY[1]->Fill(vertexSPD->GetY());
+      fVertexZ[1]->Fill(vertexSPD->GetZ());
     }
   }
 
@@ -1164,8 +1164,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   if(vertexTrack){
     if(vertexTrack->GetNContributors()>0){
       fVertexX[2]->Fill(vertexTrack->GetX());
-      fVertexY[2]->Fill(vertexTrack->GetX());
-      fVertexZ[2]->Fill(vertexTrack->GetX());
+      fVertexY[2]->Fill(vertexTrack->GetY());
+      fVertexZ[2]->Fill(vertexTrack->GetZ());
     }
   }
 
@@ -1173,8 +1173,8 @@ void AliAnalysisTaskQASym::UserExec(Option_t *)
   if(vertexTPC){
     if(vertexTPC->GetNContributors()>0){
       fVertexX[3]->Fill(vertexTPC->GetX());
-      fVertexY[3]->Fill(vertexTPC->GetX());
-      fVertexZ[3]->Fill(vertexTPC->GetX());
+      fVertexY[3]->Fill(vertexTPC->GetY());
+      fVertexZ[3]->Fill(vertexTPC->GetZ());
     }
   }
 
