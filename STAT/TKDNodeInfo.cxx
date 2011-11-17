@@ -87,6 +87,7 @@ TKDNodeInfo& TKDNodeInfo::operator=(const TKDNodeInfo & ref)
 {
 //	Info("operator==()", "...");
   
+  if(this == &ref) return *this;
   Int_t ndim = fNDim/3;
   if(fNDim != ref.fNDim){
     fNDim = ref.fNDim;
