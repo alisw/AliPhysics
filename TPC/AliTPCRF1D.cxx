@@ -127,7 +127,6 @@ AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
     funParam[i]=0.;
     fType[i]=0;
   }
-  delete [] fcharge;
   fcharge = new Float_t[fNRF];
   memcpy(fcharge,prf.fcharge, fNRF*sizeof(Float_t));
 
