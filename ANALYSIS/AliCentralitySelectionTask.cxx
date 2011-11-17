@@ -726,6 +726,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
   }
 
+
+  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB); 
+  if (isSelected) { // fill the QA histograms only for MB events!
   fHOutQuality->Fill(fQuality);
   fHOutVertex->Fill(zvtx);
 
@@ -775,6 +778,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     fHOutMultV0MvsCL1qual2->Fill(v0Corr,spdCorr);
     fHOutMultV0MvsTRKqual2->Fill(v0Corr,nTracks);
     fHOutMultTRKvsCL1qual2->Fill(nTracks,spdCorr);
+  }
   }
 
   PostData(1, fOutputList); 
