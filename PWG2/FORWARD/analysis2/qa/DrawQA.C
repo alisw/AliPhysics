@@ -5,6 +5,7 @@
  * 
  * @brief  Script to draw most QA stuff 
  * 
+ * @deprecated Use QATrender instead
  * @ingroup pwg2_forward_scripts_qa
  */
 /** 
@@ -12,6 +13,9 @@
  * 
  * @param file File to read 
  * @param full If true, assume output of analysis 
+ * 
+ * @deprecated Use QATrender instead
+ * @ingroup pwg2_forward_scripts_qa
  */
 void
 DrawQA(const char* file, bool full=false)
