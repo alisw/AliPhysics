@@ -3,6 +3,8 @@
 jobid=0
 top=.
 verb=0
+nodw=0
+notr=0
 
 export PATH=$PATH:$ALICE_ROOT/PWG2/FORWARD/analysis2/qa:../scripts
 
@@ -13,9 +15,11 @@ Usage: $0 -j JOBID [OPTIONS]
 
 Options:
 	-h.--help		   This help
-	-j,--jobid	JOBID	   Job id from MonALisa
-	-o,--output	DIRECTORY  Where to store the result
-	-v,--verbose		   Be verbose 
+	-j,--jobid	JOBID	   Job id from MonALisa       [$jobid]
+	-d,--nodownload            Do not download            [$nodw]
+	-t,--notrend               Do not make new trend tree [$notr]
+	-o,--output	DIRECTORY  Where to store the result  [$top]
+	-v,--verbose		   Be verbose                 [$verb]
 EOF
 } 
 
@@ -59,16 +63,19 @@ get_parts()
 get_opts() {
     wget -q http://alimonitor.cern.ch/prod/jobs.jsp?t=${jobid} -O job.html
     p=`grep "/catalogue/index.jsp?path" job.html | head -n 1 | sed -e 's,.*/alice/data/\([^<]*\)<.*,\1,' | tr '/' ' '` 
+    rm -f job.html 
     get_parts $p
 }
 
 # --- comamnd line ---------------------------------------------------
 while test $# -gt 0 ; do 
     case $1 in 
-	-h|--help)	usage 	; exit 0 ;;
-	-j|--jobid)	jobid=$2; shift  ;;
-	-o|--output)	top=$2 ; shift  ;; 
-	-v|--verbose)	verb=1   ;;
+	-h|--help)	  usage   ; exit 0 ;;
+	-j|--jobid)	  jobid=$2; shift  ;;
+	-o|--output)	  top=$2  ; shift  ;; 
+	-d|--no-download) nodw=1  ;;
+	-t|--no-trend)    notr=1  ;;
+	-v|--verbose)	  verb=1  ;;
 	*) echo "Unknown option $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift 
@@ -88,23 +95,111 @@ if test "x$opts" = "x" ; then
     exit 1
 fi
 
+# --- Display job setting --------------------------------------------
+cat <<EOF
+----------------------------------------------------------------------
+Job id:		  $jobid
+Top directory:	  $top
+Don't download:   $nodw
+Don't make tree:  $notr
+Download options: $opts
+Destination:      $dest
+----------------------------------------------------------------------
+EOF
+
+# --- Exit on errors -------------------------------------------------
 set -e 
 
 # --- Download the files ---------------------------------------------
-mess "Running getQAResults.sh $opts -d $top -n "
-getQAResults.sh $opts -d $top -T -v -v 
+if test $nodw -lt 1 ; then 
+    mess "Running getQAResults.sh $opts -d $top -n "
+    getQAResults.sh $opts -d $top -T -v -v 
+fi
 
 # --- Now run the QA code -------------------------------------------
 savdir=`pwd`
 cd $top/${dest} 
-root -l -b -q $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
-cd $savdir
+what=3
+if test $notr -gt 0 ; then what=2 ; fi
+scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
+mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"
+root -l -b -q ${scr}\(\".\",1,-1,$what\)
+idx=`ls trend_*_*.html 2>/dev/null` 
+for i in $idx ; do 
+    echo "making index.html point to $i"
+    ln -fs $i index.html  
+done 
+chmod g+rw  index.html
+if test -f $savdir/style.css ; then 
+    cp $savdir/style.css .
+fi
 
 cat <<EOF
 
 Finished running QA for jobid $jobid.  
 Output is stored in  $top/${dest} 
+
 EOF
+
+# --- Make index.html ------------------------------------------------
+cd ..
+period=`pwd`
+period=`basename $period`
+cat <<EOF > index.html
+<html>
+<head>
+<title>$period</title>
+<LINK REL="stylesheet" href="style.css">
+</head>
+<body>
+<h1>$period</h1>
+<ul>
+EOF
+for i in * ; do 
+    if test ! -d $i ; then continue ; fi 
+    echo "<li><a href='$i'>$i</a></li>" >> index.html 
+done
+cat <<EOF >> index.html
+</ul>
+<div class='back'><a href="../">Back</a></div>
+</body>
+</html>
+EOF
+chmod g+rw index.html 
+if test -f $savdir/style.css ; then 
+    cp $savdir/style.css .
+fi
+
+# --- Make index.html ------------------------------------------------
+cd ..
+cat <<EOF >index.html
+<html>
+<head>
+<title>QA for the FMD</title>
+<LINK REL="stylesheet" href="style.css">
+</head>
+<body>
+<h1>QA for the FMD</h1>
+<p>
+For more information, see <a href='https://twiki.cern.ch/twiki/bin/viewauth/ALICE/FMDQA'>TWiki pages</a>
+</p>
+<ul>
+EOF
+for i in * ; do 
+    if test ! -d $i ; then continue ; fi 
+    echo "<li><a href='$i'>$i</a></li>" >> index.html 
+done
+cat <<EOF >> index.html
+</ul>
+</body>
+</html>
+EOF
+chmod g+rw index.html 
+if test -f $savdir/style.css && test `pwd` != $savdir; then 
+    cp $savdir/style.css .
+fi
+
+cd $savdir
 
 # 
 # EOF

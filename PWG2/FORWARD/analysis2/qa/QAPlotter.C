@@ -439,7 +439,27 @@ struct QAPlotter : public QABase
       tl->Draw();
     }
   }
-
+  void WriteRuns(std::ostream& o)
+  {
+    o << "<div class='runs'>\n"
+      << "  Runs: ";
+    for (Int_t i = 0; i < fRuns.GetSize(); i++) {
+      o << "<a href='qa_" << Form("%09d", fRuns[i]) << ".html'>"
+	<< fRuns[i] << "</a> " << std::flush;
+    }
+    o << "\n"
+      << "</div>" << std::endl;
+  }
+  void WriteFooter()
+  {
+    WriteRuns(*fHtml);
+    QABase::WriteFooter();
+  }
+  void WriteImageFooter(std::ostream& o, const char* pngName)
+  {
+    WriteRuns(o);
+    QABase::WriteImageFooter(o, pngName);
+  }
   TGraph*       fNAccepted; // Graph of number of accepted events
   TGraphErrors* fVz;        // Graph of mean vertex
   UInt_t        fFirst;     // First run
