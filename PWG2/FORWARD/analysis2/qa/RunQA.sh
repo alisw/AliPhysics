@@ -113,7 +113,7 @@ set -e
 # --- Download the files ---------------------------------------------
 if test $nodw -lt 1 ; then 
     mess "Running getQAResults.sh $opts -d $top -n "
-    getQAResults.sh $opts -d $top -T -v -v 
+    getQAResults.sh $opts -d $top -T -v -v -i 
 fi
 
 # --- Now run the QA code -------------------------------------------
@@ -130,6 +130,7 @@ for i in $idx ; do
     ln -fs $i index.html  
 done 
 chmod g+rw  index.html
+chmod g+rw .
 if test -f $savdir/style.css ; then 
     cp $savdir/style.css .
 fi
@@ -170,8 +171,10 @@ Last update: $date
 </html>
 EOF
 chmod g+rw index.html 
+chmod g+rw .
 if test -f $savdir/style.css ; then 
     cp $savdir/style.css .
+    chmod g+rw style.css
 fi
 
 # --- Make index.html ------------------------------------------------
@@ -202,8 +205,10 @@ Last update: $date
 </html>
 EOF
 chmod g+rw index.html 
+chmod g+rw .
 if test -f $savdir/style.css && test `pwd` != $savdir; then 
     cp $savdir/style.css .
+    chmod g+rw style.css
 fi
 
 cd $savdir
