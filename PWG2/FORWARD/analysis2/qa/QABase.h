@@ -269,9 +269,9 @@ struct QABase
 	<< " </head>\n"
 	<< " <body>\n"
 	<< "  <h1>" << pngName << "</h1>\n"
-	<< "  <center>\n"
+	<< "  <div class='img'>\n"
 	<< "    <img src='" << pngName << ".png'>\n"
-	<< "  </center>\n" << std::endl;
+	<< "  </div>\n" << std::endl;
     WriteImageFooter(img, pngName);
     img << " </body>\n" 
 	<< "</html>" << std::endl;
