@@ -547,14 +547,15 @@ public:
   /** 
    * CTOR
    */
-  QATrender(Bool_t single=false) 
+  QATrender(Bool_t keep=false, Bool_t single=false) 
     : QABase(single), 
       fCurrentFile(0),
       fSharingFilter(0),
       fEventInspector(0),
       fDensityCalculator(0),
       fEnergyFitter(0),
-      fFiles(0)
+      fFiles(0), 
+      fKeep(keep)
   {
     fFMD1i = new Ring(1, 'I'); 
     fFMD2i = new Ring(2, 'I'); 
@@ -577,7 +578,8 @@ public:
       fEventInspector(o.fEventInspector),
       fDensityCalculator(o.fDensityCalculator),
       fEnergyFitter(o.fEnergyFitter),
-      fFiles(0)
+      fFiles(0), 
+      fKeep(o.fKeep)
   {} 
   /**
    * Assignment operator 
@@ -978,7 +980,9 @@ public:
       fDensityCalculator = 0;
       fEnergyFitter      = 0;
     }
-    Close(!fSingle);
+    bool keep = fKeep; 
+    if (fSingle) keep = true;
+    Close(!keep);
   }
   /** 
    * Get the ring corresponding to a pad 
@@ -1137,6 +1141,7 @@ public:
   TList*  fDensityCalculator;    // Density calculator list 
   TList*  fEnergyFitter;         // Energy fitter list 
   TList   fFiles;                // List of files to process 
+  Bool_t  fKeep;                 // Keep PNGs
 };
 //
 // EOF
