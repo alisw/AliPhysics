@@ -49,33 +49,6 @@
 
 ClassImp(AliMUONPreClusterFinderV3)
 
-namespace
-{
-  //___________________________________________________________________________
-  Bool_t
-  AreOverlapping(const AliMUONPad& pad, const AliMUONCluster& cluster)
-  {
-    /// Whether the pad overlaps with the cluster
-    
-    static Double_t precision = 1E-4; // cm
-    static TVector2 precisionAdjustment(precision,precision);//-precision,-precision);
-      for ( Int_t i = 0; i < cluster.Multiplicity(); ++i )
-      {
-        AliMUONPad* testPad = cluster.Pad(i);
-        // Note: we use negative precision numbers, meaning
-        // the area of the pads will be *increased* by these small numbers
-        // prior to check the overlap by the AreOverlapping method,
-        // so pads touching only by the corners will be considered as
-        // overlapping.    
-        if ( AliMUONPad::AreOverlapping(*testPad,pad,precisionAdjustment) )
-        {
-          return kTRUE;
-        }
-      }
-      return kFALSE;
-  }
-}
-
 //_____________________________________________________________________________
 AliMUONPreClusterFinderV3::AliMUONPreClusterFinderV3()
 : AliMUONVClusterFinder(),
