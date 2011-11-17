@@ -79,7 +79,7 @@ Bool_t AliSPDUtils::GetOfflineFromOfflineChipKey(UInt_t chipkey,UInt_t& module, 
   // converts offline chip key to offline chip coordinates (V. Altini)
   if (chipkey>=1200) {
     TString errMess = Form("%d is not a valid Chip Key number",chipkey);
-    printf(Form(" ERROR : %s\n",errMess.Data()));
+    printf(" ERROR : %s\n", errMess.Data());
     return 0;
   }
 
@@ -211,7 +211,7 @@ Bool_t AliSPDUtils::GetOnlineFromOfflineChipKey(UInt_t chipkey,UInt_t& eq, UInt_
   // online Eq, hs and chip from offline chipkey (V. Altini)
   if (chipkey>=1200) {
     TString errMess = Form("%d is not a valid Chip Key number",chipkey);
-    printf(Form("ERROR : %s \n",errMess.Data()));
+    printf("ERROR : %s \n", errMess.Data());
     return 0;
   }
 
