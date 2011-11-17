@@ -53,7 +53,7 @@ AliGenExtFile::AliGenExtFile()
 //  Constructor
 //
 //  Read all particles
-    fNpart  =- 1;
+    fNpart  = -1;
 }
 
 AliGenExtFile::AliGenExtFile(Int_t npart)
