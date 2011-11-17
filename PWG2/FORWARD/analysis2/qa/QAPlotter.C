@@ -442,7 +442,7 @@ struct QAPlotter : public QABase
   void WriteRuns(std::ostream& o)
   {
     o << "<div class='runs'>\n"
-      << "  Runs: ";
+      << "  Runs:<br> ";
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
       o << "<a href='qa_" << Form("%09d", fRuns[i]) << ".html'>"
 	<< fRuns[i] << "</a> " << std::flush;
