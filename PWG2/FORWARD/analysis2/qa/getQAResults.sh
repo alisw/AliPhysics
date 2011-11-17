@@ -40,6 +40,7 @@ Options:
 	-T,--trending	              Get trending.root file 
 	-a,--archives		      Get ZIP archives 
 	-n,--no-action		      Run dry (do not copy files)
+	-i,--no-check		      Do not check files [$docheck]
 
 If run number is set, get the parts of next-to-last merge of that run only.
 
@@ -47,8 +48,10 @@ EOF
 }
 
 # --------------------------------------------------------------------
+docheck=1
 check_file()
 {
+    if test $docheck -lt 1 ; then return 0; fi 
     inp=$1 
     scr=`mktemp -u Check_XXXXXXXX` 
     cat <<EOF > ${scr}.C  
@@ -117,6 +120,7 @@ while test $# -gt 0 ; do
 	-T|--trending)	  file=trending.root ; shift ;; 
 	-a|--archives)    arch=1  ;; 
 	-n|--no-action)   noac=1  ;; 
+	-i|--no-check)    docheck=0 ;; 
 	*) echo "$0: Unknown option $1" > /dev/stderr ; exit 2 ;; 
     esac
     shift
