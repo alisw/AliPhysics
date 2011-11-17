@@ -41,7 +41,7 @@ class AliFMDDndeta : public TObject
       fIsGenerated(),
       fPrimEvents(o.fPrimEvents),
       fEvents(o.fEvents),
-      fPrimdNdeta(fPrimdNdeta),
+      fPrimdNdeta(o.fPrimdNdeta),
       fDrawAll(kFALSE)
   {
     for (int i = 0; i < 5; i++) fAnalysisNames[i] = "";
