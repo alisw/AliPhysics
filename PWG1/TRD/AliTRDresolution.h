@@ -19,6 +19,10 @@
 #include "AliTRDrecoTask.h"
 #endif
 
+#ifndef Root_TNamed
+#include "TNamed.h"
+#endif
+
 class TAxis;
 class TH1;
 class TH2;
@@ -61,11 +65,11 @@ public:
     ,kNclasses        // total number of resolution classes
   };
   enum ETRDresolutionClassProjs {
-    kClNproj=48       // cluster projections
-    ,kTrkltNproj=258  // tracklet projections
-    ,kTrkInNproj=42   // trackIn projections
-    ,kTrkNproj=72     // track projections
-    ,kMCTrkInNproj=62 // trackIn projections
+    kClNproj=54       // cluster projections
+    ,kTrkltNproj=2580  // tracklet projections
+    ,kTrkInNproj=142   // trackIn projections
+    ,kTrkNproj=2500     // track projections
+    ,kMCTrkInNproj=162 // trackIn projections
   };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
@@ -140,13 +144,14 @@ public:
   void            Terminate(Option_t * opt);
   static Bool_t   UseTrack(const Int_t np, const AliTrackPoint *points, Float_t params[10]);
 
-private:
-  class AliTRDresolutionProjection{
+  class AliTRDresolutionProjection : public TNamed
+  {
     friend class AliTRDresolution;  // Friend class
   public:
     AliTRDresolutionProjection();
     virtual ~AliTRDresolutionProjection();
     AliTRDresolutionProjection& operator+=(const AliTRDresolutionProjection& other);
+    AliTRDresolutionProjection& operator=(const AliTRDresolutionProjection& other);
     void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
     void  Increment(Int_t bin[], Double_t v);
     TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0);
@@ -154,7 +159,6 @@ private:
     void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
   private:
     AliTRDresolutionProjection(const AliTRDresolutionProjection&);
-    AliTRDresolutionProjection& operator=(const AliTRDresolutionProjection&);
   protected:
     TH3  *fH;          // data container
     Int_t fAx[3];      // projection axes
@@ -162,7 +166,8 @@ private:
     Int_t *fRebinX;    //[fNrebin] rebinning of the X axis
     Int_t *fRebinY;    //[fNrebin] rebinning of the Y axis
     Float_t fRange[4]; //show range of the z processed
-  ClassDef(AliTRDresolutionProjection, 1)  // wrapper for a projection container THnSparse -> TH3
+
+    ClassDef(AliTRDresolutionProjection, 2)  // wrapper for a projection container THnSparse -> TH3
   };
 
   AliTRDresolution(const AliTRDresolution&);

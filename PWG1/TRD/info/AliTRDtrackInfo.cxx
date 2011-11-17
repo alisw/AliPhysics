@@ -240,6 +240,7 @@ AliTRDtrackInfo& AliTRDtrackInfo::operator=(const AliTRDtrackInfo &trdInfo)
   //
   // = Operator
   //
+  if(this == &trdInfo) return *this;
 
   fNClusters  = trdInfo.fNClusters;
   fESD = trdInfo.fESD;
@@ -271,6 +272,7 @@ AliTRDtrackInfo::AliMCinfo& AliTRDtrackInfo::AliMCinfo::operator=(const AliMCinf
   // Assignment operator
   //
 
+  if(this == &mc) return *this;
   fLabel      = mc.fLabel;
   fPDG        = mc.fPDG;
   fNTrackRefs = mc.fNTrackRefs;
@@ -296,13 +298,19 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   // Assignment operator
   //
 
+  if(this == &esd) return *this;
+  fHasV0       = esd.fHasV0;
   fId          = esd.fId;
-  fStatus      = esd.fStatus; 
-  fTRDpidQuality = esd.fTRDpidQuality;
+  fStatus      = esd.fStatus;
+  fKinkIndex   = esd.fKinkIndex;
+  fTPCncls     = esd.fTPCncls;
+  fTOFbc       = esd.fTOFbc;
+  fTRDpidQuality= esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
   fTRDslices   = NULL;
 
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
+  memcpy(fTRDv0pid, esd.fTRDv0pid, AliPID::kSPECIES*sizeof(Int_t));
 
   if(fTRDnSlices){
     fTRDslices = new Double32_t[fTRDnSlices];
@@ -523,7 +531,7 @@ Bool_t AliTRDtrackInfo::AliMCinfo::GetDirections(Float_t &x0, Float_t &y0, Float
   z0   =  tr[1]->Z()/* - dzdx*dx0*/;
   x0   =  tr[1]->LocalX();
   eta  =  -TMath::Log(TMath::Tan(0.5 * tr[1]->Theta()));
-  phi  =  tr[1]->PhiPos();
+  phi  =  TMath::ATan2(tr[1]->Y(), tr[1]->X());
   return kTRUE;
 }
 
