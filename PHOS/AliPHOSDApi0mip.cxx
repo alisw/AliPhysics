@@ -29,7 +29,7 @@
 #include "AliPHOSDApi0mip.h"
 ClassImp(AliPHOSDApi0mip)
 //----------------------------------------------------------------
-AliPHOSDApi0mip::AliPHOSDApi0mip(int module,int iterid,char* fopt) :
+AliPHOSDApi0mip::AliPHOSDApi0mip(int module,int iterid,const char* fopt) :
   TNamed(), fCreateTree(false), fCreateHist(false), fMod(0), fIterId(0),
   fTFile(0), fTTree(0), fEvent(0), fEventClustered(0), fTime(0),
   fH1Time(0), fH1DigitNum(0), fH1ClusterNum(0),

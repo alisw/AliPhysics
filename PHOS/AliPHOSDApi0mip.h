@@ -27,7 +27,7 @@
 
 class AliPHOSDApi0mip : public TNamed {
  public:
-  AliPHOSDApi0mip(int module,int iterid=0,char* fopt="RECREATE");
+  AliPHOSDApi0mip(int module,int iterid=0,const char* fopt="RECREATE");
   AliPHOSDApi0mip(const AliPHOSDApi0mip& da);
   AliPHOSDApi0mip& operator= (const AliPHOSDApi0mip&);
   ~AliPHOSDApi0mip();
