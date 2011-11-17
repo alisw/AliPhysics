@@ -1,9 +1,13 @@
 /**
- * Script to draw the energy loss fits from the output file of 
+ * @file   DrawAnaELoss.C
+ * @author Christian Holm Christensen <cholm@nbi.dk>
+ * @date   Thu Nov 17 11:16:45 2011
+ * 
+ * @brief  Script to draw the energy loss fits from the output file of 
  * AliFMDELossFitter(Task). 
  * 
- *
  * @ingroup pwg2_forward_scripts_corr
+ * 
  */
 #include <TFile.h>
 #include <THStack.h>
@@ -139,6 +143,13 @@ TCanvas* CheckCanvas()
 }
 
 //____________________________________________________________________
+/** 
+ * Clean stack for full ring histograms
+ *  
+ * @param stack Input stack
+ *
+ * @ingroup pwg2_forward_scripts_corr
+ */
 void CleanStack(THStack* stack)
 {
   TIter next(stack->GetHists());
@@ -147,11 +158,21 @@ void CleanStack(THStack* stack)
     TString name(o->GetName());
     if (name.Contains("_t_")) 
       stack->RecursiveRemove(o);
-  }
-}
+  }}
   
 
 //____________________________________________________________________
+/** 
+ * Add a stack to list 
+ * 
+ * @param stacks List to add to 
+ * @param list   Input list 
+ * @param name   Name of stack to add 
+ * 
+ * @return The found stack
+ *
+ * @ingroup pwg2_forward_scripts_corr
+ */
 THStack*
 AddToStack(TList* stacks, TList* list, const char* name)
 {
@@ -176,6 +197,8 @@ AddToStack(TList* stacks, TList* list, const char* name)
  * 
  * @param fname 
  * 
+ * @ingroup pwg2_forward_scripts_corr
+ *
  * @ingroup pwg2_forward_scripts_corr
  */
 void DrawSummary(const char* fname="forward_eloss.root", 
@@ -293,6 +316,8 @@ void DrawSummary(const char* fname="forward_eloss.root",
  * @param fname 
  * 
  * @ingroup pwg2_forward_scripts_corr
+ *
+ * @ingroup pwg2_forward_scripts_corr
  */
 void DrawRings(const char* fname="AnalysisResults.root")
 {
@@ -354,6 +379,8 @@ void DrawRings(const char* fname="AnalysisResults.root")
  * 
  * @param fname 
  * 
+ * @ingroup pwg2_forward_scripts_corr
+ *
  * @ingroup pwg2_forward_scripts_corr
  */
 void DrawEtaBins(const char* fname="AnalysisResults.root")
