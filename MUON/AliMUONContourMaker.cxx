@@ -48,21 +48,6 @@
 ClassImp(AliMUONContourMaker)
 /// \endcond
 
-namespace
-{
-  void PrintSegments(const TObjArray& array)
-  {
-    TIter next(&array);
-    AliMUONSegment* s;
-    Int_t i(0);
-    while ( ( s = static_cast<AliMUONSegment*>(next()) ) )
-    {
-      cout << Form("i=%d %s",i,s->AsString()) << endl;
-      ++i;
-    }
-  }
-}
-
 //_____________________________________________________________________________
 AliMUONContourMaker::AliMUONContourMaker() 
 {
