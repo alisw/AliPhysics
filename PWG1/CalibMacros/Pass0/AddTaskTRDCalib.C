@@ -37,6 +37,11 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   // The TRD calib Task
   /////////////////////////
   AliTRDCalibTask *calibTask = new AliTRDCalibTask();
+
+  // Disabling TRD CPAss0 as per https://savannah.cern.ch/bugs/?88813
+  //calibTask->SetMaxEvent(-1);
+  
+  calibTask->SetMaxNbTracks(600);
   calibTask->SetHisto2d(kTRUE);
   calibTask->SetVector2d(kFALSE);
   calibTask->SetVdriftLinear(kTRUE);
@@ -107,3 +112,4 @@ AliAnalysisTask  *AddTaskTRDCalib(Int_t runNumber)
   return calibTask;
 
 }
+
