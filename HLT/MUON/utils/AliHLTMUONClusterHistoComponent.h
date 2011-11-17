@@ -16,7 +16,7 @@
  * @class AliHLTMUONClusterHistoComponent
  * Component for ploting charge in clusters
  * 
- * Component ID: \b MUONQHisto <br>
+ * Component ID: \b MUONHisto <br>
  * Library: \b libAliHLTMUON.so <br>
  *
  * Mandatory arguments: <br>
