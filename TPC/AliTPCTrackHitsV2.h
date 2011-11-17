@@ -10,6 +10,7 @@
 //
 
 #include "TObject.h"
+#include "TClonesArray.h"
 
 class TClonesArray;
 class AliTPChit;
@@ -130,20 +131,54 @@ class AliTPCTrackHitsV2 : public TObject {
 public:
   AliTPCTrackHitsV2();
   ~AliTPCTrackHitsV2();
-  AliTPCTrackHitsV2(const AliTPCTrackHitsV2 &hit):  TObject(hit),
-  fArray(0),  
-  fSize(0),           
-  fPrecision(0.),  
-  fStep(0.),       
-  fMaxDistance(0),   
-  fNVolumes(0),        
-  fVolumes(0),   
-  fTempInfo(0), 
-  fCurrentHit(0),  
-  fHit(0) 
-    {hit.Copy(*this);}
+  AliTPCTrackHitsV2(const AliTPCTrackHitsV2 &hit):  TObject(hit), 
+  fArray(0), 
+  fSize(hit.fSize),           
+  fPrecision(hit.fPrecision),  
+  fStep(hit.fStep),       
+  fMaxDistance(hit.fMaxDistance),   
+  fNVolumes(hit.fNVolumes), 
+  fVolumes(0),         
+  fTempInfo(hit.fTempInfo), 
+  fCurrentHit(hit.fCurrentHit),  
+  fHit(hit.fHit) 
+    { //
+      //copy constructor
+      //
+        
+        fArray = hit.fArray;
+	//
+        delete [] fVolumes;
+        fVolumes = new Int_t[fNVolumes];
+        memcpy(fVolumes,hit.fVolumes,fNVolumes*sizeof(Int_t));
+    }
   AliTPCTrackHitsV2& operator = (const AliTPCTrackHitsV2 &hit)
-     {hit.Copy(*this); return (*this);}
+    {
+      if(this!=&hit){
+        TObject::operator=(hit);
+        fSize=hit.fSize;           
+        fPrecision=hit.fPrecision;  
+        fStep=hit.fStep;       
+        fMaxDistance=hit.fMaxDistance;   
+        fNVolumes=hit.fNVolumes;                   
+        fTempInfo=hit.fTempInfo; 
+        fCurrentHit=hit.fCurrentHit;  
+        fHit=hit.fHit;
+	//
+        //delete fArray;
+        fArray->Clear();
+        fArray=hit.fArray;  
+	//
+        delete [] fVolumes;
+        fVolumes = new Int_t[fNVolumes];
+        memcpy(fVolumes,hit.fVolumes,fNVolumes*sizeof(Int_t));
+	//
+      }
+     
+     return *this;
+    }
+
+
   void Clear(Option_t * /*option*/ ="");
   void AddHitKartez(Int_t volumeID, Int_t trackID, Double_t x, 
 		    Double_t y, Double_t z,Int_t q,Float_t time);

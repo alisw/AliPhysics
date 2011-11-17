@@ -121,12 +121,13 @@ AliTPCRF1D::AliTPCRF1D(const AliTPCRF1D &prf)
             fDirect(prf.fDirect),
             fPadDistance(prf.fPadDistance)
 {
-  
+  //
   //
   for(Int_t i=0;i<5;i++) {
     funParam[i]=0.;
     fType[i]=0;
   }
+  delete [] fcharge;
   fcharge = new Float_t[fNRF];
   memcpy(fcharge,prf.fcharge, fNRF*sizeof(Float_t));
 
