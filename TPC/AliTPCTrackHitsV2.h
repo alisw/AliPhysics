@@ -12,7 +12,7 @@
 #include "TObject.h"
 #include "TClonesArray.h"
 
-class TClonesArray;
+
 class AliTPChit;
 class AliTPCTempHitInfoV2;
 class AliTPCCurrentHitV2;
@@ -146,7 +146,7 @@ public:
       //copy constructor
       //
         
-        fArray = hit.fArray;
+      (*fArray) = (*hit.fArray);
 	//
         delete [] fVolumes;
         fVolumes = new Int_t[fNVolumes];
@@ -167,7 +167,7 @@ public:
 	//
         //delete fArray;
         fArray->Clear();
-        fArray=hit.fArray;  
+        (*fArray)=(*hit.fArray);  
 	//
         delete [] fVolumes;
         fVolumes = new Int_t[fNVolumes];
