@@ -327,10 +327,10 @@ void AliAnalysisTaskQASym::UserCreateOutputObjects()
   for(Int_t i=0;i<4;i++){
     fVertexX[i]   = new TH1F(Form("fVertexX%s",lable[i].Data()),
 			     Form("fVertexX%s",lable[i].Data()),
-			     100, -1., 1.);
+			     250, -1., 1.);
     fVertexY[i]   = new TH1F(Form("fVertexY%s",lable[i].Data()),
 			     Form("fVertexY%s",lable[i].Data()),
-			     100, -1., 1.);
+			     250, -1., 1.);
     if(i==1 || i==2){
       fVertexZ[i]   = new TH1F(Form("fVertexZ%s",lable[i].Data()),
 			       Form("fVertexZ%s",lable[i].Data()),
