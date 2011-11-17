@@ -182,12 +182,6 @@ Double_t AliEventplane::CalculateVZEROEventPlane(const AliVEvent *  event, Int_t
 
   Double_t qx=0., qy=0.;
   for(Int_t iCh = firstRing*8; iCh < (lastRing+1)*8; ++iCh) {
-    if(iCh<32) {
-      if(!vzeroData->BBTriggerV0C(iCh)) continue;
-    }
-    else {
-      if(!vzeroData->BBTriggerV0A(iCh-32)) continue;		      	  	
-    }
     Double_t phi = TMath::Pi()/8. + (iCh%8) * TMath::Pi()/4.;
 
     Double_t mult = event->GetVZEROEqMultiplicity(iCh);
