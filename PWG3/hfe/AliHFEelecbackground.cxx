@@ -59,6 +59,7 @@
 ClassImp(AliHFEelecbackground)
 
 Bool_t AliHFEelecbackground::fgUseMCPID = kFALSE;
+const Double_t AliHFEelecbackground::fgkMe= 0.0005109989;
 
 
 //___________________________________________________________________________________________
