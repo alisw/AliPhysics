@@ -380,6 +380,7 @@ Bool_t AliTRDtrackingChamber::GetSeedingLayer(AliTRDchamberTimeBin *&fakeLayer, 
           n++;
         }
       }
+      if(!n) continue;
       pos[0] = x/n;
       pos[1] = y/n;
       pos[2] = z/n;

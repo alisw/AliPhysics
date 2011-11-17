@@ -346,7 +346,7 @@ void AliTRDchamberTimeBin::BuildIndices(Int_t iter)
       return;
     }
   }
-  fX /= fN;
+  if(fN) fX /= fN;
 }
 
 //_____________________________________________________________________________
