@@ -143,6 +143,7 @@ EOF
 
 # --- Make index.html ------------------------------------------------
 cd ..
+date=`date`
 period=`pwd`
 period=`basename $period`
 cat <<EOF > index.html
@@ -162,6 +163,9 @@ done
 cat <<EOF >> index.html
 </ul>
 <div class='back'><a href="../">Back</a></div>
+<div class='change'>
+Last update: $date
+</div>
 </body>
 </html>
 EOF
@@ -191,6 +195,9 @@ for i in * ; do
 done
 cat <<EOF >> index.html
 </ul>
+<div class='change'>
+Last update: $date
+</div>
 </body>
 </html>
 EOF
