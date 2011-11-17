@@ -138,9 +138,10 @@ AliTRDcheckESD::AliTRDcheckESD(char* name):
 AliTRDcheckESD::~AliTRDcheckESD()
 {
 // Destructor
-  if(fHistos && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()){
-    //fHistos->Delete();
+  if(fHistos && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
+    if(fHistos->IsOwner()) fHistos->Delete();
     delete fHistos;
+    fHistos = NULL;
   }
   if(fResults){
     fResults->Delete();
