@@ -24,7 +24,7 @@
 #include <Riostream.h>
 #include <TMath.h>
 #include <TAxis.h>
-#include <TH1D.h>
+#include <TH2D.h>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 #include <TGraphErrors.h>
@@ -45,7 +45,10 @@ AliBalance::AliBalance() :
   bShuffle(kFALSE),
   fAnalysisLevel("ESD"),
   fAnalyzedEvents(0) ,
-  fCentralityId(0) {
+  fCentralityId(0) ,
+  fCentStart(0.),
+  fCentStop(0.)
+{
   // Default constructor
  
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
@@ -65,6 +68,9 @@ AliBalance::AliBalance() :
       fP2Stop[i]       = 2.0;
     }
     fP2Step[i] = TMath::Abs(fP2Start - fP2Stop) / (Double_t)fNumberOfBins[i];
+    fCentStart = 0.;
+    fCentStop  = 0.;
+
     fNn[i] = 0.0;
     fNp[i] = 0.0;
 
@@ -93,7 +99,9 @@ AliBalance::AliBalance(const AliBalance& balance):
   TObject(balance), bShuffle(balance.bShuffle), 
   fAnalysisLevel(balance.fAnalysisLevel),
   fAnalyzedEvents(balance.fAnalyzedEvents), 
-  fCentralityId(balance.fCentralityId) {
+  fCentralityId(balance.fCentralityId),
+  fCentStart(balance.fCentStart),
+  fCentStop(balance.fCentStop) {
   //copy constructor
   for(Int_t i = 0; i < ANALYSIS_TYPES; i++){
     fNn[i] = balance.fNn[i];
@@ -105,6 +113,8 @@ AliBalance::AliBalance(const AliBalance& balance):
     fP2Start[i]      = balance.fP2Start[i];
     fP2Stop[i]       = balance.fP2Stop[i];
     fP2Step[i]       = balance.fP2Step[i];
+    fCentStart       = balance.fCentStart;
+    fCentStop        = balance.fCentStop; 
 
     fHistP[i]        = balance.fHistP[i];
     fHistN[i]        = balance.fHistN[i];
@@ -180,32 +190,32 @@ void AliBalance::InitHistograms() {
     histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistP[iAnalysisType] = new TH1D(histName.Data(),"",100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
+    fHistP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
 
     histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistN[iAnalysisType] = new TH1D(histName.Data(),"",100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
+    fHistN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
   
     histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistPN[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistPN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistNP[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistNP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistPP[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistPP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; 
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
-    fHistNN[iAnalysisType] = new TH1D(histName.Data(),"",fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
+    fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
   }
 }
 
@@ -227,16 +237,12 @@ void AliBalance::PrintAnalysisSettings() {
 }
 
 //____________________________________________________________________//
-void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVector) {
+void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeVector) {
   // Calculates the balance function
   fAnalyzedEvents++;
   Int_t i = 0 , j = 0;
   Int_t iBin = 0;
   
-  AliVParticle* track = 0;
-  AliVParticle* track1 = 0;
-  AliVParticle* track2 = 0;
-
   // Initialize histograms if not done yet
   if(!fHistPN[0]){
     AliWarning("Histograms not yet initialized! --> Will be done now");
@@ -244,21 +250,15 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
     InitHistograms();
   }
 
-  //Printf("(AliBalance) Number of tracks: %d",gTrackArray->GetEntries());
-  Int_t gNtrack = gTrackArray->GetEntries();
-  for(i = 0; i < gNtrack; i++) {
-    if(fAnalysisLevel == "ESD")
-      track = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
-    else if(fAnalysisLevel == "AOD")
-      track = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
-    else if(fAnalysisLevel == "MC")
-      track = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
+  Int_t gNtrack = chargeVector[0]->size();
+  //Printf("(AliBalance) Number of tracks: %d",gNtrack);
 
-    if(track) {
-      Short_t charge          = chargeVector.at(i);
-      Double_t pseudorapidity = track->Eta();
-      Double_t rapidity       = track->Y();
-      Double_t phi            = track->Phi() * TMath::RadToDeg();
+  for(i = 0; i < gNtrack;i++){
+
+      Short_t charge          = chargeVector[0]->at(i);
+      Double_t rapidity       = chargeVector[1]->at(i);
+      Double_t pseudorapidity = chargeVector[2]->at(i);
+      Double_t phi            = chargeVector[3]->at(i);
       
       //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
       for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
@@ -266,11 +266,11 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
 	  if((pseudorapidity >= fP1Start[iAnalysisType]) && (pseudorapidity <= fP1Stop[iAnalysisType])) {
 	    if(charge > 0) {
 	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(pseudorapidity);
+	      fHistP[iAnalysisType]->Fill(fCentrality,pseudorapidity);
 	    }//charge > 0
 	    if(charge < 0) {
 	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(pseudorapidity);
+	      fHistN[iAnalysisType]->Fill(fCentrality,pseudorapidity);
 	    }//charge < 0
 	  }//p1 interval check
 	}//analysis type: eta
@@ -278,11 +278,11 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
 	  if((phi >= fP1Start[iAnalysisType]) && (phi <= fP1Stop[iAnalysisType])) {
 	    if(charge > 0) {
 	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(phi);
+	      fHistP[iAnalysisType]->Fill(fCentrality,phi);
 	    }//charge > 0
 	    if(charge < 0) {
 	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(phi);
+	      fHistN[iAnalysisType]->Fill(fCentrality,phi);
 	    }//charge < 0
 	  }//p1 interval check
 	}//analysis type: phi
@@ -290,18 +290,17 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
 	  if((rapidity >= fP1Start[iAnalysisType]) && (rapidity <= fP1Stop[iAnalysisType])) {
 	    if(charge > 0) {
 	      fNp[iAnalysisType] += 1.;
-	      fHistP[iAnalysisType]->Fill(rapidity);
+	      fHistP[iAnalysisType]->Fill(fCentrality,rapidity);
 	    }//charge > 0
 	    if(charge < 0) {
 	      fNn[iAnalysisType] += 1.;
-	      fHistN[iAnalysisType]->Fill(rapidity);
+	      fHistN[iAnalysisType]->Fill(fCentrality,rapidity);
 	    }//charge < 0
 	  }//p1 interval check
 	}//analysis type: y, qside, qout, qlong, qinv
       }//analysis type loop
-    }//track object valid
-    else continue;
   }
+
   //Printf("Np: %lf - Nn: %lf",fNp[0],fNn[0]);
 
   Double_t dy = 0., deta = 0.;
@@ -309,291 +308,266 @@ void AliBalance::CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVe
   Double_t dphi = 0.;
 
   Short_t charge1  = 0;
-  Double_t p1      = 0.;
-  Double_t pX1     = 0., pY1     = 0., pZ1     = 0.;
   Double_t eta1 = 0., rap1 = 0.;
+  Double_t px1 = 0., py1 = 0., pz1 = 0.;
+  Double_t pt1 = 0.;
   Double_t energy1 = 0.;
   Double_t phi1    = 0.;
 
   Short_t charge2  = 0;
-  Double_t p2      = 0.;
-  Double_t pX2     = 0., pY2     = 0., pZ2     = 0.;
   Double_t eta2 = 0., rap2 = 0.;
+  Double_t px2 = 0., py2 = 0., pz2 = 0.;
+  Double_t pt2 = 0.;
   Double_t energy2 = 0.;
   Double_t phi2    = 0.;
   //0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
   for(i = 1; i < gNtrack; i++) {
-    if(fAnalysisLevel == "ESD")
-      track1 = dynamic_cast<AliESDtrack *>(gTrackArray->At(i));
-    else if(fAnalysisLevel == "AOD")
-      track1 = dynamic_cast<AliAODTrack *>(gTrackArray->At(i));
-    else if(fAnalysisLevel == "MC")
-      track1 = dynamic_cast<AliMCParticle *>(gTrackArray->At(i));
 
-
-    if(track1) {
-      charge1 = chargeVector.at(i);;
-      p1      = track1->P();
-      pX1     = track1->Px();
-      pY1     = track1->Py();
-      pZ1     = track1->Pz();
-      energy1 = TMath::Sqrt(TMath::Power(track1->P(),2) +
-			    TMath::Power(track1->M(),2));
-      phi1    = track1->Phi() * TMath::RadToDeg();
-
-    }
-    else continue;
+      charge1 = chargeVector[0]->at(i);
+      rap1    = chargeVector[1]->at(i);
+      eta1    = chargeVector[2]->at(i);
+      phi1    = chargeVector[3]->at(i);
+      px1     = chargeVector[4]->at(i);
+      py1     = chargeVector[5]->at(i);
+      pz1     = chargeVector[6]->at(i);
+      pt1     = chargeVector[7]->at(i);
+      energy1 = chargeVector[8]->at(i);
     
     for(j = 0; j < i; j++) {
-      if(fAnalysisLevel == "ESD")
-	track2 = dynamic_cast<AliESDtrack *>(gTrackArray->At(j));
-      else if(fAnalysisLevel == "AOD")
-	track2 = dynamic_cast<AliAODTrack *>(gTrackArray->At(j));
-      else if(fAnalysisLevel == "MC")
-	track2 = dynamic_cast<AliMCParticle *>(gTrackArray->At(j));
-      
-      if(track2) {
-	charge2 = chargeVector.at(j);
-	p2      = track2->P();
-	pX2     = track2->Px();
-	pY2     = track2->Py();
-	pZ2     = track2->Pz();
-	energy2 = TMath::Sqrt(TMath::Power(track2->P(),2) +
-			      TMath::Power(track2->M(),2));
-	phi2    = track2->Phi() * TMath::RadToDeg();
-
+   
+      charge2 = chargeVector[0]->at(j);
+      rap2    = chargeVector[1]->at(j);
+      eta2    = chargeVector[2]->at(j);
+      phi2    = chargeVector[3]->at(j);
+      px2     = chargeVector[4]->at(j);
+      py2     = chargeVector[5]->at(j);
+      pz2     = chargeVector[6]->at(j);
+      pt2     = chargeVector[7]->at(i);
+      energy2 = chargeVector[8]->at(j);
+    
 	// filling the arrays
 
 	// RAPIDITY 
-	rap1 = 0.5*log((energy1 + pZ1)/(energy1 - pZ1)); 
-	rap2 = 0.5*log((energy2 + pZ2)/(energy2 - pZ2)); 
-	dy = TMath::Abs(rap1 - rap2);
+        dy = TMath::Abs(rap1 - rap2);
 
 	// Eta
-	eta1 = track1->Eta();
-	eta2 = track2->Eta();
 	deta = TMath::Abs(eta1 - eta2);
 
 	//qlong
 	Double_t eTot = energy1 + energy2;
-	Double_t pxTot = pX1 + pX2;
-	Double_t pyTot = pY1 + pY2;
-	Double_t pzTot = pZ1 + pZ2;
+	Double_t pxTot = px1 + px2;
+	Double_t pyTot = py1 + py2;
+	Double_t pzTot = pz1 + pz2;
 	Double_t q0Tot = energy1 - energy2;
-	Double_t qxTot = pX1 - pX2;
-	Double_t qyTot = pY1 - pY2;
-	Double_t qzTot = pZ1 - pZ2;
-	Double_t snn = TMath::Power(eTot,2) - TMath::Power(pxTot,2) - TMath::Power(pyTot,2) - TMath::Power(pzTot,2);
-	Double_t ptTot = TMath::Sqrt( TMath::Power(pxTot,2) + TMath::Power(pyTot,2));
+	Double_t qxTot = px1 - px2;
+	Double_t qyTot = py1 - py2;
+	Double_t qzTot = pz1 - pz2;
+
+	Double_t eTot2 = eTot*eTot;
+	Double_t pTot2 = pxTot*pxTot + pyTot*pyTot + pzTot*pzTot;
+	Double_t pzTot2 = pzTot*pzTot;
+
+	Double_t q0Tot2 = q0Tot*q0Tot;
+	Double_t qTot2  = qxTot*qxTot + qyTot*qyTot + qzTot*qzTot;
+
+	Double_t snn    = eTot2 - pTot2;
+	Double_t ptTot2 = pTot2 - pzTot2 ;
+	Double_t ptTot  = TMath::Sqrt( ptTot2 );
 	
-	qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + TMath::Power(ptTot,2));
+	qLong = TMath::Abs(eTot*qzTot - pzTot*q0Tot)/TMath::Sqrt(snn + ptTot2);
 	
 	//qout
-	qOut = TMath::Sqrt(snn/(snn + TMath::Power(ptTot,2))) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
+	qOut = TMath::Sqrt(snn/(snn + ptTot2)) * TMath::Abs(pxTot*qxTot + pyTot*qyTot)/ptTot;
 	
 	//qside
 	qSide = TMath::Abs(pxTot*qyTot - pyTot*qxTot)/ptTot;
 	
 	//qinv
-	qInv = TMath::Sqrt(TMath::Abs(-TMath::Power(q0Tot,2) +TMath::Power(qxTot,2) +TMath::Power(qyTot,2) +TMath::Power(qzTot,2)));
+	qInv = TMath::Sqrt(TMath::Abs(-q0Tot2 + qTot2 ));
 	
 	//phi
 	dphi = TMath::Abs(phi1 - phi2);
 
 	//0:y - 1:eta - 2:Qlong - 3:Qout - 4:Qside - 5:Qinv - 6:phi
-	for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
-	  if(iAnalysisType == kRapidity) {
-	    if((rap1 >= fP1Start[iAnalysisType]) && (rap1 <= fP1Stop[iAnalysisType]) && (rap2 >= fP1Start[iAnalysisType]) && (rap2 <= fP1Stop[iAnalysisType])) {
-	      if( dy > fP2Start[kRapidity] && dy < fP2Stop[kRapidity]){
-		iBin = Int_t((dy-fP2Start[kRapidity])/fP2Step[kRapidity]);
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kRapidity][iBin] += 1.;
-		    fHistPP[kRapidity]->Fill(dy);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kRapidity][iBin] += 1.;
-		    fHistNN[kRapidity]->Fill(dy);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kRapidity][iBin] += 1.;
-		    fHistPN[kRapidity]->Fill(dy);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kRapidity][iBin] += 1.;
-		    fHistPN[kRapidity]->Fill(dy);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//rapidity
-	  
-	  if(iAnalysisType == kEta) {
-	    if((eta1 >= fP1Start[iAnalysisType]) && (eta1 <= fP1Stop[iAnalysisType]) && (eta2 >= fP1Start[iAnalysisType]) && (eta2 <= fP1Stop[iAnalysisType])) {
-	      if( deta > fP2Start[kEta] && deta < fP2Stop[kEta]){
-		iBin = Int_t((deta-fP2Start[kEta])/fP2Step[kEta]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kEta][iBin] += 1.;
-		    fHistPP[kEta]->Fill(deta);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kEta][iBin] += 1.;
-		    fHistNN[kEta]->Fill(deta);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kEta][iBin] += 1.;
-		    fHistPN[kEta]->Fill(deta);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kEta][iBin] += 1.;
-		    fHistPN[kEta]->Fill(deta);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//pseudorapidity
-	  
-	  // Qlong, out, side, inv
-	  // Check the p1 intervall for rapidity here (like for single tracks above)
-	  if(iAnalysisType == kQlong) {
-	    if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
-	      if( qLong > fP2Start[kQlong] && qLong < fP2Stop[kQlong]){
-		iBin = Int_t((qLong-fP2Start[kQlong])/fP2Step[kQlong]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kQlong][iBin] += 1.;
-		    fHistPP[kQlong]->Fill(qLong);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kQlong][iBin] += 1.;
-		    fHistNN[kQlong]->Fill(qLong);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kQlong][iBin] += 1.;
-		    fHistPN[kQlong]->Fill(qLong);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kQlong][iBin] += 1.;
-		    fHistPN[kQlong]->Fill(qLong);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//qLong
-	  
-	  if(iAnalysisType == kQout) {
-	    if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
-	      if( qOut > fP2Start[kQout] && qOut < fP2Stop[kQout]){
-		iBin = Int_t((qOut-fP2Start[kQout])/fP2Step[kQout]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kQout][iBin] += 1.;
-		    fHistPP[kQout]->Fill(qOut);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kQout][iBin] += 1.;
-		    fHistNN[kQout]->Fill(qOut);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kQout][iBin] += 1.;
-		    fHistPN[kQout]->Fill(qOut);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kQout][iBin] += 1.;
-		    fHistPN[kQout]->Fill(qOut);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check	
-	  }//qOut
+	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
+
+	  // rapidity
+	  if( dy > fP2Start[kRapidity] && dy < fP2Stop[kRapidity]){
+	    iBin = Int_t((dy-fP2Start[kRapidity])/fP2Step[kRapidity]);
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kRapidity][iBin] += 1.;
+		fHistPP[kRapidity]->Fill(fCentrality,dy);
+	      }
+	      else if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kRapidity][iBin] += 1.;
+		fHistNN[kRapidity]->Fill(fCentrality,dy);
+	      }
+	      else if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kRapidity][iBin] += 1.;
+		fHistPN[kRapidity]->Fill(fCentrality,dy);
+	      }
+	      else if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kRapidity][iBin] += 1.;
+		    fHistPN[kRapidity]->Fill(fCentrality,dy);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
 	
-	  if(iAnalysisType == kQside) {
-	    if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
-	      if( qSide > fP2Start[kQside] && qSide < fP2Stop[kQside]){
-		iBin = Int_t((qSide-fP2Start[kQside])/fP2Step[kQside]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kQside][iBin] += 1.;
-		    fHistPP[kQside]->Fill(qSide);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kQside][iBin] += 1.;
-		    fHistNN[kQside]->Fill(qSide);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kQside][iBin] += 1.;
-		    fHistPN[kQside]->Fill(qSide);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kQside][iBin] += 1.;
-		    fHistPN[kQside]->Fill(qSide);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//qSide
+	// pseudorapidity
+	if((eta1 >= fP1Start[kEta]) && (eta1 <= fP1Stop[kEta]) && (eta2 >= fP1Start[kEta]) && (eta2 <= fP1Stop[kEta])) {
+	  if( deta > fP2Start[kEta] && deta < fP2Stop[kEta]){
+	    iBin = Int_t((deta-fP2Start[kEta])/fP2Step[kEta]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kEta][iBin] += 1.;
+		fHistPP[kEta]->Fill(fCentrality,deta);
+	      }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kEta][iBin] += 1.;
+	   	    fHistNN[kEta]->Fill(fCentrality,deta);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kEta][iBin] += 1.;
+		fHistPN[kEta]->Fill(fCentrality,deta);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kEta][iBin] += 1.;
+	   	    fHistPN[kEta]->Fill(fCentrality,deta);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
 	
-	  if(iAnalysisType == kQinv) {
-	    if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
-	      if( qInv > fP2Start[kQinv] && qInv < fP2Stop[kQinv]){
-		iBin = Int_t((qInv-fP2Start[kQinv])/fP2Step[kQinv]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kQinv][iBin] += 1.;
-		  fHistPP[kQinv]->Fill(qInv);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kQinv][iBin] += 1.;
-		    fHistNN[kQinv]->Fill(qInv);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kQinv][iBin] += 1.;
-		    fHistPN[kQinv]->Fill(qInv);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kQinv][iBin] += 1.;
-		    fHistPN[kQinv]->Fill(qInv);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//qInv
+	// Qlong, out, side, inv
+	// Check the p1 intervall for rapidity here (like for single tracks above)
+	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
+	  if( qLong > fP2Start[kQlong] && qLong < fP2Stop[kQlong]){
+	    iBin = Int_t((qLong-fP2Start[kQlong])/fP2Step[kQlong]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kQlong][iBin] += 1.;
+		fHistPP[kQlong]->Fill(fCentrality,qLong);
+	      }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kQlong][iBin] += 1.;
+		fHistNN[kQlong]->Fill(fCentrality,qLong);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kQlong][iBin] += 1.;
+		fHistPN[kQlong]->Fill(fCentrality,qLong);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kQlong][iBin] += 1.;
+		fHistPN[kQlong]->Fill(fCentrality,qLong);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
 	  
-	  // Phi
-	  if(iAnalysisType == kPhi) {
-	    if((phi1 >= fP1Start[iAnalysisType]) && (phi1 <= fP1Stop[iAnalysisType]) && (phi2 >= fP1Start[iAnalysisType]) && (phi2 <= fP1Stop[iAnalysisType])) {
-	      if( dphi > fP2Start[kPhi] && dphi < fP2Stop[kPhi]){
-		iBin = Int_t((dphi-fP2Start[kPhi])/fP2Step[kPhi]);	
-		if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
-		  if((charge1 > 0)&&(charge2 > 0)) {
-		    fNpp[kPhi][iBin] += 1.;
-		    fHistPP[kPhi]->Fill(dphi);
-		  }
-		  if((charge1 < 0)&&(charge2 < 0)) {
-		    fNnn[kPhi][iBin] += 1.;
-		    fHistNN[kPhi]->Fill(dphi);
-		  }
-		  if((charge1 > 0)&&(charge2 < 0)) {
-		    fNpn[kPhi][iBin] += 1.;
-		    fHistPN[kPhi]->Fill(dphi);
-		  }
-		  if((charge1 < 0)&&(charge2 > 0)) {
-		    fNpn[kPhi][iBin] += 1.;
-		    fHistPN[kPhi]->Fill(dphi);
-		  }
-		}//BF binning check
-	      }//p2 interval check
-	    }//p1 interval check
-	  }//phi
-	}//analysis type loop
-      }//track2 valid
-      else continue;
+	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
+	  if( qOut > fP2Start[kQout] && qOut < fP2Stop[kQout]){
+	    iBin = Int_t((qOut-fP2Start[kQout])/fP2Step[kQout]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kQout][iBin] += 1.;
+		fHistPP[kQout]->Fill(fCentrality,qOut);
+	  	  }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kQout][iBin] += 1.;
+		fHistNN[kQout]->Fill(fCentrality,qOut);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kQout][iBin] += 1.;
+		fHistPN[kQout]->Fill(fCentrality,qOut);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kQout][iBin] += 1.;
+		fHistPN[kQout]->Fill(fCentrality,qOut);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check	
+	
+	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
+	  if( qSide > fP2Start[kQside] && qSide < fP2Stop[kQside]){
+	    iBin = Int_t((qSide-fP2Start[kQside])/fP2Step[kQside]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kQside][iBin] += 1.;
+		fHistPP[kQside]->Fill(fCentrality,qSide);
+	      }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kQside][iBin] += 1.;
+		fHistNN[kQside]->Fill(fCentrality,qSide);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kQside][iBin] += 1.;
+		fHistPN[kQside]->Fill(fCentrality,qSide);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kQside][iBin] += 1.;
+		fHistPN[kQside]->Fill(fCentrality,qSide);
+		  	  }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
+	
+	if((rap1 >= fP1Start[kRapidity]) && (rap1 <= fP1Stop[kRapidity]) && (rap2 >= fP1Start[kRapidity]) && (rap2 <= fP1Stop[kRapidity])) {
+	  if( qInv > fP2Start[kQinv] && qInv < fP2Stop[kQinv]){
+	    iBin = Int_t((qInv-fP2Start[kQinv])/fP2Step[kQinv]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kQinv][iBin] += 1.;
+		fHistPP[kQinv]->Fill(fCentrality,qInv);
+	      }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kQinv][iBin] += 1.;
+		fHistNN[kQinv]->Fill(fCentrality,qInv);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kQinv][iBin] += 1.;
+		fHistPN[kQinv]->Fill(fCentrality,qInv);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kQinv][iBin] += 1.;
+		fHistPN[kQinv]->Fill(fCentrality,qInv);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
+	
+	// Phi
+	if((phi1 >= fP1Start[kPhi]) && (phi1 <= fP1Stop[kPhi]) && (phi2 >= fP1Start[kPhi]) && (phi2 <= fP1Stop[kPhi])) {
+	  if( dphi > fP2Start[kPhi] && dphi < fP2Stop[kPhi]){
+	    iBin = Int_t((dphi-fP2Start[kPhi])/fP2Step[kPhi]);	
+	    if(iBin >=0 && iBin < MAXIMUM_NUMBER_OF_STEPS){
+	      if((charge1 > 0)&&(charge2 > 0)) {
+		fNpp[kPhi][iBin] += 1.;
+		fHistPP[kPhi]->Fill(fCentrality,dphi);
+	      }
+	      if((charge1 < 0)&&(charge2 < 0)) {
+		fNnn[kPhi][iBin] += 1.;
+		fHistNN[kPhi]->Fill(fCentrality,dphi);
+	      }
+	      if((charge1 > 0)&&(charge2 < 0)) {
+		fNpn[kPhi][iBin] += 1.;
+		fHistPN[kPhi]->Fill(fCentrality,dphi);
+	      }
+	      if((charge1 < 0)&&(charge2 > 0)) {
+		fNpn[kPhi][iBin] += 1.;
+		fHistPN[kPhi]->Fill(fCentrality,dphi);
+	      }
+	    }//BF binning check
+	  }//p2 interval check
+	}//p1 interval check
     }//end of 2nd particle loop
   }//end of 1st particle loop
   //Printf("Number of analyzed events: %i",fAnalyzedEvents);
+  //Printf("DeltaEta NN[0] = %.0f, PP[0] = %.0f, NP[0] = %.0f, PN[0] = %.0f",fNnn[kEta][0],fNpp[kEta][0],fNnp[kEta][0],fNpn[kEta][0]);
 }  
-
 
 
 //____________________________________________________________________//
@@ -727,20 +701,27 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
 }
  
 //____________________________________________________________________//
-TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType) {
-  //Returns the BF histogram, extracted from the 6 TH1D objects 
+TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax) {
+  //Returns the BF histogram, extracted from the 6 TH2D objects 
   //(private members) of the AliBalance class.
   TString gAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
   TString histName = "gHistBalanceFunctionHistogram";
   histName += gAnalysisType[iAnalysisType];
 
-  SetInterval(iAnalysisType, fHistP[iAnalysisType]->GetXaxis()->GetXmin(),
-	      fHistP[iAnalysisType]->GetXaxis()->GetXmin(),
-	      fHistPP[iAnalysisType]->GetNbinsX(),
-	      fHistPP[iAnalysisType]->GetXaxis()->GetXmin(),
-	      fHistPP[iAnalysisType]->GetXaxis()->GetXmax());
+  SetInterval(iAnalysisType, fHistP[iAnalysisType]->GetYaxis()->GetXmin(),
+	      fHistP[iAnalysisType]->GetYaxis()->GetXmin(),
+	      fHistPP[iAnalysisType]->GetNbinsY(),
+	      fHistPP[iAnalysisType]->GetYaxis()->GetXmin(),
+	      fHistPP[iAnalysisType]->GetYaxis()->GetXmax());
 
-  TH1D *gHistBalanceFunctionHistogram = new TH1D(histName.Data(),"",fHistPP[iAnalysisType]->GetNbinsX(),fHistPP[iAnalysisType]->GetXaxis()->GetXmin(),fHistPP[iAnalysisType]->GetXaxis()->GetXmax());
+  // determine the projection thresholds
+  Int_t binMinX, binMinY, binMinZ;
+  Int_t binMaxX, binMaxY, binMaxZ;
+
+  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMin),binMinX,binMinY,binMinZ);
+  fHistPP[iAnalysisType]->GetBinXYZ(fHistPP[iAnalysisType]->FindBin(centrMax),binMaxX,binMaxY,binMaxZ);
+
+  TH1D *gHistBalanceFunctionHistogram = new TH1D(histName.Data(),"",fHistPP[iAnalysisType]->GetNbinsY(),fHistPP[iAnalysisType]->GetYaxis()->GetXmin(),fHistPP[iAnalysisType]->GetYaxis()->GetXmax());
   switch(iAnalysisType) {
   case kRapidity:
     gHistBalanceFunctionHistogram->GetXaxis()->SetTitle("#Delta y");
@@ -773,11 +754,13 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType) {
   default:
     break;
   }
-  
-  TH1D *hTemp1 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->Clone());
-  TH1D *hTemp2 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->Clone());
-  TH1D *hTemp3 = dynamic_cast<TH1D *>(fHistNN[iAnalysisType]->Clone());
-  TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->Clone());
+
+  TH1D *hTemp1 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp2 = dynamic_cast<TH1D *>(fHistPN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f_copy",fHistPN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp3 = dynamic_cast<TH1D *>(fHistNN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistNN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp4 = dynamic_cast<TH1D *>(fHistPP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistPP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp5 = dynamic_cast<TH1D *>(fHistN[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistN[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
+  TH1D *hTemp6 = dynamic_cast<TH1D *>(fHistP[iAnalysisType]->ProjectionY(Form("%s_Cent_%.0f_%.0f",fHistP[iAnalysisType]->GetName(),centrMin,centrMax),binMinX,binMaxX));
 
   if((hTemp1)&&(hTemp2)&&(hTemp3)&&(hTemp4)) {
     hTemp1->Sumw2();
@@ -785,9 +768,9 @@ TH1D *AliBalance::GetBalanceFunctionHistogram(Int_t iAnalysisType) {
     hTemp3->Sumw2();
     hTemp4->Sumw2();
     hTemp1->Add(hTemp3,-2.);
-    hTemp1->Scale(1./fHistN[iAnalysisType]->GetEntries());
+    hTemp1->Scale(1./hTemp5->GetEntries());
     hTemp2->Add(hTemp4,-2.);
-    hTemp2->Scale(1./fHistP[iAnalysisType]->GetEntries());
+    hTemp2->Scale(1./hTemp6->GetEntries());
     gHistBalanceFunctionHistogram->Add(hTemp1,hTemp2,1.,1.);
     gHistBalanceFunctionHistogram->Scale(0.5/fP2Step[iAnalysisType]);
   }
