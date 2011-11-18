@@ -6,7 +6,7 @@ const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,
 const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
 const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
-void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 1, Int_t fRebin = 1) {
+void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 1, Int_t fRebin = 1,TString centEst = "V0M",TString extraString = "") {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
   //i) Prints and draws the final BF output
   //ii) Plots the QA part of the analysis
@@ -19,14 +19,14 @@ void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResul
   gSystem->Load("libPWG2ebye.so");
 
   //Draw BF              
-  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin);
+  drawBF(bHistos,inFile, fStartBinBFWidth, fRebin,centEst,extraString);
 
   //Merge the output
   //mergeOutput("/alice/cern.ch/user/p/pchrist/Balance/pp/7TeV/LHC10b/output/");
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, TString centEst = "V0M") {
+void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, TString centEst = "V0M",TString extraString = "") {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 10;
@@ -109,7 +109,7 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 
     // ----------------------------------------------------
     // plot QA histograms
-    if(listName.Contains("QA")){     
+    if(listName.Contains("QA")&&listName.Contains(extraString.Data())){     
 
       cQA[iCanvas] = new TCanvas(listName,listName);
       cQA[iCanvas]->Divide(4,3);
@@ -215,7 +215,7 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 
     // ----------------------------------------------------
     // calculate and plot BF 
-    if(listName.Contains("BF_")){
+    if(listName.Contains("BF_")&&listName.Contains(extraString.Data())){
 
 
       for(Int_t a = 0; a < 7; a++){
@@ -284,7 +284,7 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 
     // ----------------------------------------------------
     // calculate and plot BF (shuffled)
-    if(listName.Contains("BFShuffled")){
+    if(listName.Contains("BFShuffled")&&listName.Contains(extraString.Data())){
 
       for(Int_t a = 0; a < 7; a++){
 
