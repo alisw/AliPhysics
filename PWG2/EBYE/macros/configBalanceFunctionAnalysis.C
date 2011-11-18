@@ -1,12 +1,15 @@
 //__________________________________________________//
 AliBalance *GetBalanceFunctionObject(const char* analysisLevel = "ESD", 
 				     const char* centralityName = 0x0,
+				     Double_t centrMin = 0.,
+				     Double_t centrMax = 100.,
 				     Bool_t bShuffle = kFALSE) {
   //Function to setup the AliBalance object and return it
   AliBalance *gBalance = new AliBalance();
   gBalance->SetAnalysisLevel(analysisLevel);
   gBalance->SetShuffle(bShuffle);
   if(centralityName) gBalance->SetCentralityIdentifier(centralityName);
+  gBalance->SetCentralityInterval(centrMin,centrMax);
 
   //Set all analyses separately
   //Rapidity

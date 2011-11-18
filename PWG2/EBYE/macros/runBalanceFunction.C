@@ -59,13 +59,13 @@ void runBalanceFunction(
     gSystem->Load("libAOD.so");
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libANALYSISalice.so");
-    //gSystem->Load("libPWG2ebye.so");
+    gSystem->Load("libPWG2ebye.so");
 
     // additional
 
     // compile standalone stuff
-    gROOT->LoadMacro("AliBalance.cxx++g");
-    gROOT->LoadMacro("AliAnalysisTaskBF.cxx++g");
+    //gROOT->LoadMacro("AliBalance.cxx++g");
+    //gROOT->LoadMacro("AliAnalysisTaskBF.cxx++g");
 
     // add aliroot indlude path
     //gROOT->ProcessLine(".include $PWD/.");
@@ -159,21 +159,6 @@ void runBalanceFunction(
     gROOT->LoadMacro("AddTaskBalanceCentralityTrain.C"); 
     AliAnalysisTaskBF *task = AddTaskBalanceCentralityTrain(0,100,0,"V0M",vZ[0],DCAxy[0],DCAz[0],ptMin[0],ptMax[0],etaMin[0],etaMax[0],-1,-1);
     
-    // //Add the BFG task (different centralities)
-    // for (Int_t i=binfirst; i<binlast+1; i++) {
-    //   Float_t lowCentralityBinEdge = centralityArray[i];
-    //   Float_t highCentralityBinEdge = centralityArray[i+1];
-      
-    //   // For systematic studies ( A train of centrality trains )
-    //   //for(Int_t j = 0; j < 1/*numberOfSyst*/; j++){
-    //   Int_t j = 0;
-    //   Printf("\nWagon for centrality bin %i: %.0f-%.0f (systematics %d)",i,lowCentralityBinEdge,highCentralityBinEdge,j);
-    //   AddTaskBalanceCentralityTrain(lowCentralityBinEdge,highCentralityBinEdge,0,"V0M",vZ[j],DCAxy[j],DCAz[j],ptMin[j],ptMax[j],etaMin[j],etaMax[j],-1,-1);
-    //   //}
-    // } 
-    
-        
-
     // enable debug printouts
     //mgr->SetDebugLevel(2);
     //mgr->SetUseProgressBar(1,100);

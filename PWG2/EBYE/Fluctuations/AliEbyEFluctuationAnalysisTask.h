@@ -16,7 +16,12 @@ const Int_t nCentralityBins = 20;
 
 class AliEbyEFluctuationAnalysisTask : public AliAnalysisTaskSE {
  public:
-  AliEbyEFluctuationAnalysisTask() : AliAnalysisTaskSE(), fESD(0), fOutputList(0), fHistEventStats(0), fHistCentrality(0), fHistNMultMC(0), fHistNPlusNMinusMC(0), fESDtrackCuts(0), fAnalysisType(0), fAnalysisMode(0), fCentralityEstimator("V0M"), fCentralityBins20(kFALSE), fVxMax(3.0),fVyMax(3.0), fVzMax(10.) {}
+  AliEbyEFluctuationAnalysisTask() : AliAnalysisTaskSE(), fESD(0), fOutputList(0), fHistEventStats(0), fHistCentrality(0), fHistNMultMC(0), fHistNPlusNMinusMC(0), fESDtrackCuts(0), fAnalysisType(0), fAnalysisMode(0), fCentralityEstimator("V0M"), fCentralityBins20(kFALSE), fVxMax(3.0),fVyMax(3.0), fVzMax(10.) {
+    for(Int_t iBin = 0; iBin < nCentralityBins; iBin++) {
+      fHistNMult[iBin] = NULL;
+      fHistNPlusNMinus[iBin] = NULL;
+    }
+  }
   AliEbyEFluctuationAnalysisTask(const char *name);
   virtual ~AliEbyEFluctuationAnalysisTask() {}
   

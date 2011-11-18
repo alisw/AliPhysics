@@ -1,7 +1,10 @@
 const TString gBFAnalysisType[7] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
-const Double_t cent[9]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
-const Double_t centE[9] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
+const Int_t nrOfCentralities = 9;
+const Double_t centralityArray[nrOfCentralities+1] = {0.,5.,10.,20.,30.,40.,50.,60.,70.,80.};  // in centrality percentile (0-5,5-10,10-20,20-30,...,70-80)
+//const Double_t centralityArray[nrOfCentralities+1] = {0.,1.,2.,3.,4.,6.,10.,20.,30.,80.};  // in centrality percentile (0-5,5-10,10-20,20-30,...,70-80)
+const Double_t cent[nrOfCentralities]  = {382.8,329.7,260.5,186.4,128.9,85.,52.8,30.,15.8};   // hard coded at the moment for centrality percentiles 
+const Double_t centE[nrOfCentralities] = {3.1,4.6,4.4,3.9,3.3,2.6,2.0,1.3,0.6};               // (0-5,5-10,10-20,20-30,...,70-80)
 
 void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root",Int_t fStartBinBFWidth = 1, Int_t fRebin = 1) {
   // Macro to read the output of the BF analysis:  MW: CHANGE THIS!!!!
@@ -23,7 +26,7 @@ void readBalanceFunction(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResul
 }
 
 //___________________________________________________________//
-void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1) {
+void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int_t fStartBinBFWidth = 1, Int_t fRebin = 1, TString centEst = "V0M") {
   //Function to draw the BF objects and write them into the output file
 
   Int_t maximumCanvases = 10;
@@ -56,8 +59,8 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
   TIter nextkey( dir->GetListOfKeys() );
   TKey *key;
 
-  AliBalance *bf[10][7];
-  AliBalance *bfs[10][7];
+  AliBalance *bf[7];
+  AliBalance *bfs[7];
   TH1D *gbf[10][7];
   TH1D *gbfs[10][7];
 
@@ -68,24 +71,34 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
     }
   }
 
-  TH1D *fHistP[7]; //N+
-  TH1D *fHistN[7]; //N-
-  TH1D *fHistPN[7]; //N+-
-  TH1D *fHistNP[7]; //N-+
-  TH1D *fHistPP[7]; //N++
-  TH1D *fHistNN[7]; //N--
+  TH2D *fHistP[7]; //N+
+  TH2D *fHistN[7]; //N-
+  TH2D *fHistPN[7]; //N+-
+  TH2D *fHistNP[7]; //N-+
+  TH2D *fHistPP[7]; //N++
+  TH2D *fHistNN[7]; //N--
 
-  TH1D *fHistPS[7]; //N+
-  TH1D *fHistNS[7]; //N-
-  TH1D *fHistPNS[7]; //N+-
-  TH1D *fHistNPS[7]; //N-+
-  TH1D *fHistPPS[7]; //N++
-  TH1D *fHistNNS[7]; //N--
+  TH2D *fHistPS[7]; //N+
+  TH2D *fHistNS[7]; //N-
+  TH2D *fHistPNS[7]; //N+-
+  TH2D *fHistNPS[7]; //N-+
+  TH2D *fHistPPS[7]; //N++
+  TH2D *fHistNNS[7]; //N--
 
   Double_t WM[10];     // weighted mean for eta (recalculated from fStartBin)
   Double_t WME[10];    // error
   Double_t WMS[10];     // weighted mean for eta (recalculated from fStartBin) (shuffled)
   Double_t WMSE[10];    // error (shuffled)
+
+  for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
+    
+    cBF[iCanvas] = new TCanvas(Form("cBF_%d",iCanvas),Form("cBF_%d",iCanvas));
+    cBF[iCanvas]->Divide(3,3);
+    
+    cBFS[iCanvas] = new TCanvas(Form("Shuffled_%d",iCanvas),Form("Shuffled_%d",iCanvas));
+    cBFS[iCanvas]->Divide(3,3);
+    
+  }
 
   while ( (key = (TKey*)nextkey())) {
 
@@ -98,8 +111,6 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
     // plot QA histograms
     if(listName.Contains("QA")){     
 
-      iCanvas ++;
-      if(iCanvas == 10) {cout<<"TOO MANY LISTS --> increase MAXIMUM"<<endl; return;}
       cQA[iCanvas] = new TCanvas(listName,listName);
       cQA[iCanvas]->Divide(4,3);
 
@@ -186,15 +197,15 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
       }
 
       // centrality estimator QA
-      cQAV0M->cd(iCanvas);
-      cQAV0M->cd(iCanvas)->SetLogz();
+      cQAV0M->cd(iCanvas+1);
+      cQAV0M->cd(iCanvas+1)->SetLogz();
       TH1F* histV0M = (TH1F*)list->FindObject("fHistV0M");
       if(histV0M){
 	histV0M->Draw("colz");
       }
 
-      cQARef->cd(iCanvas);
-      cQARef->cd(iCanvas)->SetLogz();
+      cQARef->cd(iCanvas+1);
+      cQARef->cd(iCanvas+1)->SetLogz();
       TH1F* histRef = (TH1F*)list->FindObject("fHistRefTracks");
       if(histRef){
 	histRef->Draw("colz");
@@ -205,58 +216,67 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
     // ----------------------------------------------------
     // calculate and plot BF 
     if(listName.Contains("BF_")){
-      cBF[iCanvas] = new TCanvas(listName,listName);
-      cBF[iCanvas]->Divide(3,3);
+
 
       for(Int_t a = 0; a < 7; a++){
 
 	cout<<"ANALYSE "<<gBFAnalysisType[a]<<endl;
 
 	// create the BF object
-	bf[iCanvas][a]  = new AliBalance();
+	bf[a]  = new AliBalance();
 
-	fHistP[a] = (TH1D*)list->FindObject(Form("fHistP%s",gBFAnalysisType[a].Data()));
-	fHistN[a] = (TH1D*)list->FindObject(Form("fHistN%s",gBFAnalysisType[a].Data()));
-	fHistPP[a] = (TH1D*)list->FindObject(Form("fHistPP%s",gBFAnalysisType[a].Data()));
-	fHistPN[a] = (TH1D*)list->FindObject(Form("fHistPN%s",gBFAnalysisType[a].Data()));
-	fHistNP[a] = (TH1D*)list->FindObject(Form("fHistNP%s",gBFAnalysisType[a].Data()));
-	fHistNN[a] = (TH1D*)list->FindObject(Form("fHistNN%s",gBFAnalysisType[a].Data()));
+	fHistP[a] = (TH2D*)list->FindObject(Form("fHistP%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistN[a] = (TH2D*)list->FindObject(Form("fHistN%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPP[a] = (TH2D*)list->FindObject(Form("fHistPP%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPN[a] = (TH2D*)list->FindObject(Form("fHistPN%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNP[a] = (TH2D*)list->FindObject(Form("fHistNP%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNN[a] = (TH2D*)list->FindObject(Form("fHistNN%s%s",gBFAnalysisType[a].Data(),centEst.Data()));
 
 	// rebin histograms (be careful with divider!)
-	fHistP[a]->Rebin(fRebin);
-	fHistN[a]->Rebin(fRebin);
-	fHistPP[a]->Rebin(fRebin);
-	fHistPN[a]->Rebin(fRebin);
-	fHistNP[a]->Rebin(fRebin);
-	fHistNN[a]->Rebin(fRebin);
+	fHistP[a]->RebinY(fRebin);
+	fHistN[a]->RebinY(fRebin);
+	fHistPP[a]->RebinY(fRebin);
+	fHistPN[a]->RebinY(fRebin);
+	fHistNP[a]->RebinY(fRebin);
+	fHistNN[a]->RebinY(fRebin);
+
+	fHistP[a]->SetName(Form("%s_%d",fHistP[a]->GetName(),iCanvas));
+	fHistN[a]->SetName(Form("%s_%d",fHistN[a]->GetName(),iCanvas));
+	fHistPP[a]->SetName(Form("%s_%d",fHistPP[a]->GetName(),iCanvas));
+	fHistPN[a]->SetName(Form("%s_%d",fHistPN[a]->GetName(),iCanvas));
+	fHistNP[a]->SetName(Form("%s_%d",fHistNP[a]->GetName(),iCanvas));
+	fHistNN[a]->SetName(Form("%s_%d",fHistNN[a]->GetName(),iCanvas));
 
 	// set histograms in AliBalance object
-	bf[iCanvas][a]->SetHistNp(a, fHistP[a]);
-	bf[iCanvas][a]->SetHistNn(a, fHistN[a]);
-	bf[iCanvas][a]->SetHistNpp(a, fHistPP[a]);
-	bf[iCanvas][a]->SetHistNpn(a, fHistPN[a]);
-	bf[iCanvas][a]->SetHistNnp(a, fHistNP[a]);
-	bf[iCanvas][a]->SetHistNnn(a, fHistNN[a]);
+	bf[a]->SetHistNp(a, fHistP[a]);
+	bf[a]->SetHistNn(a, fHistN[a]);
+	bf[a]->SetHistNpp(a, fHistPP[a]);
+	bf[a]->SetHistNpn(a, fHistPN[a]);
+	bf[a]->SetHistNnp(a, fHistNP[a]);
+	bf[a]->SetHistNnn(a, fHistNN[a]);
 
-	gbf[iCanvas][a] = bf[iCanvas][a]->GetBalanceFunctionHistogram(a);
-	gbf[iCanvas][a]->SetName(Form("%s_BF_%s",listName.Data(),gBFAnalysisType[a].Data()));
+  	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
 
-	cBF[iCanvas]->cd(a+1);
-	gbf[iCanvas][a]->SetMarkerStyle(20);
+	  gbf[iCanvas][a] = bf[a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1]);
+	  gbf[iCanvas][a]->SetName(Form("BF_%s_Cent_%.0f_%.0f",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1]));
 
-	if(!bHistos){
-	  gbf[iCanvas][a]->DrawCopy("AP");
-	  if(a==1) GetWeightedMean(gbf[iCanvas][a],fStartBinBFWidth,WM[iCanvas-1],WME[iCanvas-1]); // for eta recalculate width (from 0.1 only!)
-	}
-	else{
-	  fHistPN[a]->SetLineColor(2);
-	  fHistPN[a]->Draw();
-	  fHistPP[a]->SetLineColor(1);
-	  fHistPP[a]->Draw("same");
-	  fHistNP[a]->SetLineColor(4);
-	  fHistNP[a]->Draw("same");
-	  fHistNN[a]->SetLineColor(8);
-	  fHistNN[a]->Draw("same");
+	  cBF[iCanvas]->cd(a+1);
+	  gbf[iCanvas][a]->SetMarkerStyle(20);
+
+	  if(!bHistos){
+	    gbf[iCanvas][a]->DrawCopy("AP");
+	    if(a==1) GetWeightedMean(gbf[iCanvas][a],fStartBinBFWidth,WM[iCanvas],WME[iCanvas]); // for eta recalculate width (from 0.1 only!)
+	  }
+	  else{
+	    fHistPN[a]->SetLineColor(2);
+	    fHistPN[a]->ProjectionY(Form("pn%d",a))->DrawCopy();
+	    fHistPP[a]->SetLineColor(1);
+	    fHistPP[a]->ProjectionY(Form("pp%d",a))->DrawCopy("same");
+	    fHistNP[a]->SetLineColor(4);
+	    fHistNP[a]->ProjectionY(Form("np%d",a))->DrawCopy("same");
+	    fHistNN[a]->SetLineColor(8);
+	    fHistNN[a]->ProjectionY(Form("nn%d",a))->DrawCopy("same");
+	  }
 	}
       }
     }
@@ -265,55 +285,63 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
     // ----------------------------------------------------
     // calculate and plot BF (shuffled)
     if(listName.Contains("BFShuffled")){
-      cBFS[iCanvas] = new TCanvas(listName,listName);
-      cBFS[iCanvas]->Divide(3,3);
 
       for(Int_t a = 0; a < 7; a++){
 
 	// create the BF object
-	bfs[iCanvas][a]  = new AliBalance();
+	bfs[a]  = new AliBalance();
 
-	fHistPS[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistNS[a] = (TH1D*)list->FindObject(Form("fHistP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistPPS[a] = (TH1D*)list->FindObject(Form("fHistPP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistPNS[a] = (TH1D*)list->FindObject(Form("fHistPN%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistNPS[a] = (TH1D*)list->FindObject(Form("fHistNP%s_shuffle",gBFAnalysisType[a].Data()));
-	fHistNNS[a] = (TH1D*)list->FindObject(Form("fHistNN%s_shuffle",gBFAnalysisType[a].Data()));
+	fHistPS[a] = (TH2D*)list->FindObject(Form("fHistP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNS[a] = (TH2D*)list->FindObject(Form("fHistN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPPS[a] = (TH2D*)list->FindObject(Form("fHistPP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistPNS[a] = (TH2D*)list->FindObject(Form("fHistPN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNPS[a] = (TH2D*)list->FindObject(Form("fHistNP%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
+	fHistNNS[a] = (TH2D*)list->FindObject(Form("fHistNN%s%s_shuffle",gBFAnalysisType[a].Data(),centEst.Data()));
 
 	// rebin histograms (be careful with divider!)
-	fHistPS[a]->Rebin(fRebin);
-	fHistNS[a]->Rebin(fRebin);
-	fHistPPS[a]->Rebin(fRebin);
-	fHistPNS[a]->Rebin(fRebin);
-	fHistNPS[a]->Rebin(fRebin);
-	fHistNNS[a]->Rebin(fRebin);
+	fHistPS[a]->RebinY(fRebin);
+	fHistNS[a]->RebinY(fRebin);
+	fHistPPS[a]->RebinY(fRebin);
+	fHistPNS[a]->RebinY(fRebin);
+	fHistNPS[a]->RebinY(fRebin);
+	fHistNNS[a]->RebinY(fRebin);
+
+	fHistPS[a]->SetName(Form("%s_%d",fHistPS[a]->GetName(),iCanvas));
+	fHistNS[a]->SetName(Form("%s_%d",fHistNS[a]->GetName(),iCanvas));
+	fHistPPS[a]->SetName(Form("%s_%d",fHistPPS[a]->GetName(),iCanvas));
+	fHistPNS[a]->SetName(Form("%s_%d",fHistPNS[a]->GetName(),iCanvas));
+	fHistNPS[a]->SetName(Form("%s_%d",fHistNPS[a]->GetName(),iCanvas));
+	fHistNNS[a]->SetName(Form("%s_%d",fHistNNS[a]->GetName(),iCanvas));
 
 	// set histograms in AliBalance object
-	bfs[iCanvas][a]->SetHistNp(a, fHistPS[a]);
-	bfs[iCanvas][a]->SetHistNn(a, fHistNS[a]);
-	bfs[iCanvas][a]->SetHistNpp(a, fHistPPS[a]);
-	bfs[iCanvas][a]->SetHistNpn(a, fHistPNS[a]);
-	bfs[iCanvas][a]->SetHistNnp(a, fHistNPS[a]);
-	bfs[iCanvas][a]->SetHistNnn(a, fHistNNS[a]);
+	bfs[a]->SetHistNp(a, fHistPS[a]);
+	bfs[a]->SetHistNn(a, fHistNS[a]);
+	bfs[a]->SetHistNpp(a, fHistPPS[a]);
+	bfs[a]->SetHistNpn(a, fHistPNS[a]);
+	bfs[a]->SetHistNnp(a, fHistNPS[a]);
+	bfs[a]->SetHistNnn(a, fHistNNS[a]);
 
-	gbfs[iCanvas][a] = bfs[iCanvas][a]->GetBalanceFunctionHistogram(a);
-	gbfs[iCanvas][a]->SetName(Form("%s_BF_%s",listName.Data(),gBFAnalysisType[a].Data()));
-
-	cBFS[iCanvas]->cd(a+1);
-	gbfs[iCanvas][a]->SetMarkerStyle(20);
-	if(!bHistos){
-	  gbfs[iCanvas][a]->DrawCopy("AP");
-	  if(a==1) GetWeightedMean(gbfs[iCanvas][a],fStartBinBFWidth,WMS[iCanvas-1],WMSE[iCanvas-1]); // for eta recalculate width (from 0.1 only!)
-	}
-	else{
-	  fHistPNS[a]->SetLineColor(2);
-	  fHistPNS[a]->Draw();
-	  fHistPPS[a]->SetLineColor(1);
-	  fHistPPS[a]->Draw("same");
-	  fHistNPS[a]->SetLineColor(4);
-	  fHistNPS[a]->Draw("same");
-	  fHistNNS[a]->SetLineColor(8);
-	  fHistNNS[a]->Draw("same");
+	for(iCanvas = 0; iCanvas < nrOfCentralities; iCanvas++){
+	  
+	  gbfs[iCanvas][a] = bfs[a]->GetBalanceFunctionHistogram(a,centralityArray[iCanvas],centralityArray[iCanvas+1]);
+	  gbf[iCanvas][a]->SetName(Form("BFS_%s_Cent_%.0f_%.0f",gBFAnalysisType[a].Data(),centralityArray[iCanvas],centralityArray[iCanvas+1]));
+	  
+	  cBFS[iCanvas]->cd(a+1);
+	  gbfs[iCanvas][a]->SetMarkerStyle(20);
+	  if(!bHistos){
+	    gbfs[iCanvas][a]->DrawCopy("AP");
+	    if(a==1) GetWeightedMean(gbfs[iCanvas][a],fStartBinBFWidth,WMS[iCanvas],WMSE[iCanvas]); // for eta recalculate width (from 0.1 only!)
+	  }
+	  else{
+	    fHistPNS[a]->SetLineColor(2);
+	    fHistPNS[a]->ProjectionY(Form("pns%d",a))->DrawCopy();
+	    fHistPPS[a]->SetLineColor(1);
+	    fHistPPS[a]->ProjectionY(Form("pps%d",a))->DrawCopy("same");
+	    fHistNPS[a]->SetLineColor(4);
+	    fHistNPS[a]->ProjectionY(Form("nps%d",a))->DrawCopy("same");
+	    fHistNNS[a]->SetLineColor(8);
+	    fHistNNS[a]->ProjectionY(Form("nns%d",a))->DrawCopy("same");
+	  }
 	}
       }
     }
@@ -334,15 +362,35 @@ void drawBF(Bool_t bHistos = kTRUE, TString inFile = "AnalysisResults.root", Int
 
   TFile *fOut = TFile::Open(Form("Histograms_WMstart%d_rebin%d_%s", fStartBinBFWidth, fRebin,inFile.Data()),"RECREATE");
   fOut->cd();
-  for(Int_t i = 0; i <= iCanvas; i++){
-    for(Int_t a = 0; a < 7; a++){
+  for(Int_t a = 0; a < 7; a++){
+
+    if(fHistPN[a]){
+      (fHistPN[a]->ProjectionY(Form("hPN_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistPP[a]->ProjectionY(Form("hPP_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistNP[a]->ProjectionY(Form("hNP_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistNN[a]->ProjectionY(Form("hNN_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistP[a]->ProjectionY(Form("hP_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistN[a]->ProjectionY(Form("hN_%s",gBFAnalysisType[a].Data())))->Write();
+    }
+
+    if(fHistPNS[a]){
+      (fHistPNS[a]->ProjectionY(Form("hPNS_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistPPS[a]->ProjectionY(Form("hPPS_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistNPS[a]->ProjectionY(Form("hNPS_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistNNS[a]->ProjectionY(Form("hNNS_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistPS[a]->ProjectionY(Form("hPS_%s",gBFAnalysisType[a].Data())))->Write();
+      (fHistNS[a]->ProjectionY(Form("hNS_%s",gBFAnalysisType[a].Data())))->Write();
+    }
+
+    for(Int_t i = 0; i < iCanvas; i++){
+      
       if(gbf[i][a]){
 	gbf[i][a]->Write();
 	gbf[i][a]->Delete();
       }
       if(gbfs[i][a]){
 	gbfs[i][a]->Write();
-	gbfs[i][a]->Delete();	
+	gbfs[i][a]->Delete();
       }
     }
   }

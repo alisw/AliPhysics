@@ -19,8 +19,8 @@
 #define MAXIMUM_NUMBER_OF_STEPS	1024
 
 class TGraphErrors;
-class TObjArray;
 class TH1D;
+class TH2D;
 
 const TString gBFAnalysisType[ANALYSIS_TYPES] = {"y","eta","qlong","qout","qside","qinv","phi"};
 
@@ -48,6 +48,7 @@ class AliBalance : public TObject {
   void SetShuffle(Bool_t shuffle) {bShuffle = shuffle;}
   void SetInterval(Int_t iAnalysisType, Double_t p1Start, Double_t p1Stop,
 		   Int_t ibins, Double_t p2Start, Double_t p2Stop);
+  void SetCentralityInterval(Double_t cStart, Double_t cStop)  { fCentStart = cStart; fCentStop = cStop;};
   void SetNp(Int_t analysisType, Double_t NpSet)   { fNp[analysisType] = NpSet; }
   void SetNn(Int_t analysisType, Double_t NnSet)   { fNn[analysisType] = NnSet; }
   void SetNpp(Int_t analysisType, Int_t ibin, Double_t NppSet) { if(ibin > -1 && ibin < MAXIMUM_NUMBER_OF_STEPS) fNpp[analysisType][ibin] = NppSet; }
@@ -77,35 +78,35 @@ class AliBalance : public TObject {
   Double_t GetNnp(Int_t analysisType, Int_t p2) const { 
     return 1.0*fNnp[analysisType][p2]; }
 
-  void CalculateBalance(TObjArray *gTrackArray, vector<Int_t> chargeVector);
+  void CalculateBalance(Float_t fCentrality, vector<Double_t> **chargeVector);
   
   Double_t GetBalance(Int_t a, Int_t p2);
   Double_t GetError(Int_t a, Int_t p2);
 
-  TH1D *GetHistNp(Int_t iAnalysisType) { return fHistP[iAnalysisType];}
-  TH1D *GetHistNn(Int_t iAnalysisType) { return fHistN[iAnalysisType];}
-  TH1D *GetHistNpn(Int_t iAnalysisType) { return fHistPN[iAnalysisType];}
-  TH1D *GetHistNnp(Int_t iAnalysisType) { return fHistNP[iAnalysisType];}
-  TH1D *GetHistNpp(Int_t iAnalysisType) { return fHistPP[iAnalysisType];}
-  TH1D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
+  TH2D *GetHistNp(Int_t iAnalysisType) { return fHistP[iAnalysisType];}
+  TH2D *GetHistNn(Int_t iAnalysisType) { return fHistN[iAnalysisType];}
+  TH2D *GetHistNpn(Int_t iAnalysisType) { return fHistPN[iAnalysisType];}
+  TH2D *GetHistNnp(Int_t iAnalysisType) { return fHistNP[iAnalysisType];}
+  TH2D *GetHistNpp(Int_t iAnalysisType) { return fHistPP[iAnalysisType];}
+  TH2D *GetHistNnn(Int_t iAnalysisType) { return fHistNN[iAnalysisType];}
 
   void PrintAnalysisSettings();
   TGraphErrors *DrawBalance(Int_t fAnalysisType);
 
-  void SetHistNp(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNp(Int_t iAnalysisType, TH2D *gHist) { 
     fHistP[iAnalysisType] = gHist;}
-  void SetHistNn(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNn(Int_t iAnalysisType, TH2D *gHist) { 
     fHistN[iAnalysisType] = gHist;}
-  void SetHistNpn(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNpn(Int_t iAnalysisType, TH2D *gHist) { 
     fHistPN[iAnalysisType] = gHist;}
-  void SetHistNnp(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNnp(Int_t iAnalysisType, TH2D *gHist) { 
     fHistNP[iAnalysisType] = gHist;}
-  void SetHistNpp(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNpp(Int_t iAnalysisType, TH2D *gHist) { 
     fHistPP[iAnalysisType] = gHist;}
-  void SetHistNnn(Int_t iAnalysisType, TH1D *gHist) { 
+  void SetHistNnn(Int_t iAnalysisType, TH2D *gHist) { 
     fHistNN[iAnalysisType] = gHist;}
 
-  TH1D *GetBalanceFunctionHistogram(Int_t iAnalysisType);
+  TH1D *GetBalanceFunctionHistogram(Int_t iAnalysisType,Double_t centrMin, Double_t centrMax);
   void PrintResults(Int_t iAnalysisType, TH1D *gHist);
 
  private:
@@ -121,6 +122,9 @@ class AliBalance : public TObject {
   Double_t fP2Start[ANALYSIS_TYPES];
   Double_t fP2Stop[ANALYSIS_TYPES];
   Double_t fP2Step[ANALYSIS_TYPES]; 
+  Double_t fCentStart;
+  Double_t fCentStop;
+
  	
   Double_t fNnn[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(--)
   Double_t fNpp[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //N(++)
@@ -131,12 +135,12 @@ class AliBalance : public TObject {
   Double_t fB[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //BF matrix
   Double_t ferror[ANALYSIS_TYPES][MAXIMUM_NUMBER_OF_STEPS]; //error of the BF
   
-  TH1D *fHistP[ANALYSIS_TYPES]; //N+
-  TH1D *fHistN[ANALYSIS_TYPES]; //N-
-  TH1D *fHistPN[ANALYSIS_TYPES]; //N+-
-  TH1D *fHistNP[ANALYSIS_TYPES]; //N-+
-  TH1D *fHistPP[ANALYSIS_TYPES]; //N++
-  TH1D *fHistNN[ANALYSIS_TYPES]; //N--
+  TH2D *fHistP[ANALYSIS_TYPES]; //N+
+  TH2D *fHistN[ANALYSIS_TYPES]; //N-
+  TH2D *fHistPN[ANALYSIS_TYPES]; //N+-
+  TH2D *fHistNP[ANALYSIS_TYPES]; //N-+
+  TH2D *fHistPP[ANALYSIS_TYPES]; //N++
+  TH2D *fHistNN[ANALYSIS_TYPES]; //N--
 
   AliBalance & operator=(const AliBalance & ) {return *this;}
 
