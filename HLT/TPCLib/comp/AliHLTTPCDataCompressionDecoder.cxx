@@ -30,7 +30,10 @@
 ClassImp(AliHLTTPCDataCompressionDecoder)
 
 AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
-: fPadShift(0.), fVerbosity(0)
+  : fPadShift(0.)
+  , fVerbosity(0)
+  , fpDataInflaterPartition(NULL)
+  , fpDataInflaterTrack(NULL)
 {
   /// constructor
 }
@@ -38,6 +41,10 @@ AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
 AliHLTTPCDataCompressionDecoder::~AliHLTTPCDataCompressionDecoder()
 {
   ///destructor
+  if (fpDataInflaterPartition) delete fpDataInflaterPartition;
+  fpDataInflaterPartition=NULL;
+  if (fpDataInflaterTrack) delete fpDataInflaterTrack;
+  fpDataInflaterTrack=NULL;
 }
 
 AliHLTDataInflater* AliHLTTPCDataCompressionDecoder::CreateInflater(int deflater, int mode) const

@@ -54,8 +54,13 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
  protected:
  private:
+  AliHLTTPCDataCompressionDecoder(const AliHLTTPCDataCompressionDecoder&);
+  AliHLTTPCDataCompressionDecoder& operator=(const AliHLTTPCDataCompressionDecoder&);
+
   float fPadShift; //! pad shift
   int fVerbosity; //! verbosity level
+  AliHLTDataInflater* fpDataInflaterPartition; //! instance of inflater for partition clusters
+  AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
 };
@@ -82,15 +87,18 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, const
   default:
     return -EBADF;
   }
-  std::auto_ptr<AliHLTDataInflater> inflater(CreateInflater(deflaterMode, 1));
-  if (!inflater.get()) return -ENODEV;
+  if (!fpDataInflaterPartition)
+    fpDataInflaterPartition=CreateInflater(deflaterMode, 1);
+  else
+    fpDataInflaterPartition->Clear();
+  if (!fpDataInflaterPartition) return -ENODEV;
 
-  if ((iResult=inflater->InitBitDataInput(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
-					  size-sizeof(AliHLTTPCRawClusterData)))<0) {
+  if ((iResult=fpDataInflaterPartition->InitBitDataInput(reinterpret_cast<const AliHLTUInt8_t*>(clusterData->fClusters),
+						size-sizeof(AliHLTTPCRawClusterData)))<0) {
     return iResult;
   }
 
-  iResult=ReadRemainingClustersCompressed(c, inflater.get(), nCount, specification, formatVersion);
+  iResult=ReadRemainingClustersCompressed(c, fpDataInflaterPartition, nCount, specification, formatVersion);
 
   return iResult;
 }
@@ -222,8 +230,11 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackModelClustersCompressed(T& c, cons
     HLTError("unknown version %d", trackModelBlock->fVersion);
     return -EINVAL;
   }
-  std::auto_ptr<AliHLTDataInflater> pInflater(CreateInflater(trackModelBlock->fDeflaterMode, 2));
-  if (!pInflater.get()) {
+  if (!fpDataInflaterTrack)
+    fpDataInflaterTrack=CreateInflater(trackModelBlock->fDeflaterMode, 2);
+  else
+    fpDataInflaterTrack->Clear();
+  if (!fpDataInflaterTrack) {
     HLTError("failed to create the data inflater for mode %d", trackModelBlock->fDeflaterMode);
   }
   int nofTracks=trackModelBlock->fTrackCount;
@@ -269,19 +280,19 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackModelClustersCompressed(T& c, cons
       HLTError("to little data in buffer to read cluster block of size %d for track no %d", clusterBlockSize, trackno);
       return -ENODATA;
     }
-    if ((iResult=pInflater->InitBitDataInput(pData+dataOffset, clusterBlockSize))<0) {
+    if ((iResult=fpDataInflaterTrack->InitBitDataInput(pData+dataOffset, clusterBlockSize))<0) {
       return iResult;
     }
-    if ((iResult=ReadTrackClustersCompressed(c, pInflater.get(), &trackpoints))<0) {
+    if ((iResult=ReadTrackClustersCompressed(c, fpDataInflaterTrack, &trackpoints))<0) {
       HLTError("reading of associated clusters failed for track %d", trackno);
       return iResult;
     }
-    pInflater->Pad8Bits();
+    fpDataInflaterTrack->Pad8Bits();
     AliHLTUInt8_t bit=0;
-    if (pInflater->InputBit(bit)) {
+    if (fpDataInflaterTrack->InputBit(bit)) {
       HLTWarning("format error of compressed clusters, there is more data than expected");
     }
-    pInflater->CloseBitDataInput();
+    fpDataInflaterTrack->CloseBitDataInput();
     dataOffset+=clusterBlockSize;
   }
 
