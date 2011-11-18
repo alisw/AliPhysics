@@ -286,7 +286,7 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     delete fArrayDz;
     fArrayDz=NULL;
   }
-  for(Int_t i=0;i<5;i++){
+  for(Int_t i=0;i<10;i++){
     if(fCosmiMatchingHisto[i]){
       delete fCosmiMatchingHisto[i];
       fCosmiMatchingHisto[i]=NULL;
@@ -306,12 +306,8 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     fResHistoTPCvertex[i]=0;
   }
 
-  if (fTPCVertex[0]) {
-    for (Int_t i=0;i<12;i++)  delete fTPCVertex[i];
-  }
-  if (fTPCVertexCorrelation[0]) {
-    for (Int_t i=0;i<5;i++)  delete fTPCVertexCorrelation[i];
-  }
+  for (Int_t i=0;i<12;i++) if (fTPCVertex[i]) delete fTPCVertex[i];
+  for (Int_t i=0;i<5;i++)  if (fTPCVertexCorrelation[i]) delete fTPCVertexCorrelation[i];
 
   if (fAlignITSTPC){
     fAlignITSTPC->SetOwner(kTRUE);
@@ -325,6 +321,19 @@ AliTPCcalibTime::~AliTPCcalibTime(){
     delete fAlignTRDTPC;
     delete fAlignTOFTPC;
   }
+
+  if (fArrayLaserA) {
+    fArrayLaserA->SetOwner(); 
+    fArrayLaserA->Delete();
+    delete fArrayLaserA;
+  }
+
+  if (fArrayLaserA) {
+    fArrayLaserC->SetOwner(); 
+    fArrayLaserC->Delete();
+    delete fArrayLaserC;
+  }
+
 }
 
 // Bool_t AliTPCcalibTime::IsLaser(const AliESDEvent *const /*event*/) const{
@@ -1156,7 +1165,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
       }
       localHist->Add(addHist);
     }
-
+    delete iterator;
     for(Int_t i=0;i<10;i++) if (cal->GetCosmiMatchingHisto(i)) fCosmiMatchingHisto[i]->Add(cal->GetCosmiMatchingHisto(i));
     //
     // Merge alignment
@@ -1189,6 +1198,7 @@ Long64_t AliTPCcalibTime::Merge(TCollection *const li) {
     }
 
   }
+  delete iter;
   return 0;
 }
 

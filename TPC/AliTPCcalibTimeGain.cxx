@@ -549,7 +549,7 @@ Long64_t AliTPCcalibTimeGain::Merge(TCollection *li) {
     if (cal->GetHistDeDxTotal()) fHistDeDxTotal->Add(cal->GetHistDeDxTotal());
 
   }
-  
+  delete iter;
   return 0;
   
 }

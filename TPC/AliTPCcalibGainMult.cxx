@@ -226,6 +226,7 @@ AliTPCcalibGainMult::~AliTPCcalibGainMult(){
   delete fHistdEdxMax;
   delete fHistdEdxTot;
   delete fdEdxTree;
+  if (fBBParam) delete fBBParam;
 }
 
 
@@ -527,7 +528,7 @@ Long64_t AliTPCcalibGainMult::Merge(TCollection *li) {
     //}
     
   }
-  
+  delete iter;
   return 0;
   
 }
@@ -947,7 +948,7 @@ void AliTPCcalibGainMult::DumpTrack(AliESDtrack * track, AliESDfriendTrack *ftra
   //
   // Fill histograms
   //
-  if ((isKaon||isProton||isPion||isElectron||isMIP||isMuon&&(!isHighPt)) && dedxDef>0) {
+  if (((isKaon||isProton||isPion||isElectron||isMIP||isMuon)&&(!isHighPt)) && dedxDef>0) {
     //
     Int_t ncont = vertex->GetNContributors();
     for (Int_t ipad=0; ipad<3; ipad++){
