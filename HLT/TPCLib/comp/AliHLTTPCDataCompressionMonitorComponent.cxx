@@ -130,7 +130,13 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   /// inherited from AliHLTProcessor: data processing
   int iResult=0;
 
-  if (!IsDataEvent()) return 0;
+  AliHLTUInt32_t eventType=gkAliEventTypeUnknown;
+  if (!IsDataEvent(&eventType)) {
+    if (eventType==gkAliEventTypeEndOfRun && fPublishingMode!=kPublishOff) {
+      iResult=Publish(fPublishingMode);
+    }
+    return iResult;
+  }
 
   const AliHLTComponentBlockData* pDesc=NULL;
   unsigned rawDataSize=0;
@@ -157,7 +163,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
       AliHLTUInt8_t* pData=reinterpret_cast<AliHLTUInt8_t*>(pDesc->fPtr);
       pData+=sizeof(AliRawDataHeader);
       if (fpHWClusterDecoder->Init(pData, pDesc->fSize-sizeof(AliRawDataHeader))<0 ||
-	  (fpHWClusterDecoder->CheckVersion()<0 && (int)pDesc->fSize>fpHWClusterDecoder->GetRCUTrailerSize())) {
+	  (fpHWClusterDecoder->CheckVersion()<0 && (int)(pDesc->fSize-sizeof(AliRawDataHeader))>fpHWClusterDecoder->GetRCUTrailerSize())) {
 	HLTError("data block of type %s corrupted: can not decode format",
 		 AliHLTComponent::DataType2Text(pDesc->fDataType).c_str());
       } else {
@@ -250,7 +256,7 @@ int AliHLTTPCDataCompressionMonitorComponent::DoEvent( const AliHLTComponentEven
   }
 
   if ((fFlags&kHaveHWClusters)!=0 && (fFlags&kHaveRawData)!=0) {
-    if (rawDataSize!=rawEventSizeFromRCUtrailer) {
+    if (rawDataSize!=rawEventSizeFromRCUtrailer && rawEventSizeFromRCUtrailer>0) {
       HLTError("got different raw event size from raw data and rcu trailer: raw %d, rcu trailer %d", rawDataSize, rawEventSizeFromRCUtrailer);
     }
   }
