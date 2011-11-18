@@ -58,6 +58,7 @@
 #include "AliCDBId.h"
 #include "AliCDBMetaData.h"
 #include "AliTriggerConfiguration.h"
+#include "AliTriggerUtils.h"
 #include "AliSimulation.h"
 #include <TROOT.h>
 #include <TString.h>
@@ -67,7 +68,7 @@
 void UpdateCDBCTPConfig(Bool_t check = false) {
   
   // AliSimulation object must exist, as it is used via AliMC
-  // which is used in AliTriggerConfiguration::CheckConfiguration()
+  // which is used in AliTriggerUtils::CheckConfiguration()
   AliSimulation sim;
 
   AliCDBManager* cdb = AliCDBManager::Instance();
@@ -102,7 +103,8 @@ void UpdateCDBCTPConfig(Bool_t check = false) {
   }
 
   // check if Config.C is compatible with the trigger configuration requested
-  if (!trconfig->CheckConfiguration(cfgFile)) {
+  AliTriggerUtils tru;
+  if (!tru.CheckConfiguration(cfgFile,trconfig)) {
     Printf("CTP configuration is incompatible with the specified Config.C and AliRoot version! Exiting...");
     return;
   }
