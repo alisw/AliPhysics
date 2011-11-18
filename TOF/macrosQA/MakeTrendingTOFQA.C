@@ -617,67 +617,67 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 
 	TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,750,550);
 	hPeakDiffTimeVsRun->Draw();
-	cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun",plotDir.Data()));
+	cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,750,550);
 	hSpreadDiffTimeVsRun->Draw();
-	cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun",plotDir.Data()));
+	cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cAvTimeVsRun = new TCanvas("cAvTimeVsRun","cAvTimeVsRun", 50,50,750,550);
 	hAvTimeVsRun->Draw();
-	cAvTimeVsRun->Print(Form("%s/cAvTimeVsRun",plotDir.Data()));
+	cAvTimeVsRun->Print(Form("%s/cAvTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cPeakTimeVsRun = new TCanvas("cPeakTimeVsRun","cPeakTimeVsRun", 50,50,750,550);
 	hPeakTimeVsRun->Draw();
-	cPeakTimeVsRun->Print(Form("%s/cPeakTimeVsRun",plotDir.Data()));
+	cPeakTimeVsRun->Print(Form("%s/cPeakTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cSpreadTimeVsRun = new TCanvas("cSpreadTimeVsRun","cSpreadTimeVsRun", 50,50,750,550);
 	hSpreadTimeVsRun->Draw();
-	cSpreadTimeVsRun->Print(Form("%s/cSpreadTimeVsRun",plotDir.Data()));
+	cSpreadTimeVsRun->Print(Form("%s/cSpreadTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cAvRawTimeVsRun = new TCanvas("cAvRawTimeVsRun","cAvRawTimeVsRun", 50,50,750,550);
 	hAvRawTimeVsRun->Draw();
-	cAvRawTimeVsRun->Print(Form("%s/cAvRawTimeVsRun",plotDir.Data()));
+	cAvRawTimeVsRun->Print(Form("%s/cAvRawTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cPeakRawTimeVsRun = new TCanvas("cPeakRawTimeVsRun","cPeakRawTimeVsRun", 50,50,750,550);
 	hPeakRawTimeVsRun->Draw();
-	cPeakRawTimeVsRun->Print(Form("%s/cPeakRawTimeVsRun",plotDir.Data()));
+	cPeakRawTimeVsRun->Print(Form("%s/cPeakRawTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cSpreadRawTimeVsRun = new TCanvas("cSpreadRawTimeVsRun","cSpreadRawTimeVsRun", 50,50,750,550);
 	hSpreadRawTimeVsRun->Draw();
-	cSpreadRawTimeVsRun->Print(Form("%s/cSpreadRawTimeVsRun",plotDir.Data()));
+	cSpreadRawTimeVsRun->Print(Form("%s/cSpreadRawTimeVsRun.png",plotDir.Data()));
 
 	TCanvas* cAvTotVsRun = new TCanvas("cAvTotVsRun","cAvTotVsRun", 50,50,750,550);
 	hAvTotVsRun->Draw();
-	cAvTotVsRun->Print(Form("%s/cAvTotVsRun",plotDir.Data()));
+	cAvTotVsRun->Print(Form("%s/cAvTotVsRun.png",plotDir.Data()));
 
 	TCanvas* cPeakTotVsRun = new TCanvas("cPeakTotVsRun","cPeakTotVsRun", 50,50,750,550);
 	hPeakTotVsRun->Draw();
-	cPeakTotVsRun->Print(Form("%s/cPeakTotVsRun",plotDir.Data()));
+	cPeakTotVsRun->Print(Form("%s/cPeakTotVsRun.png",plotDir.Data()));
 
 	TCanvas* cSpreadTotVsRun = new TCanvas("cSpreadTotVsRun","cSpreadTotVsRun", 50,50,750,550);
 	hSpreadTotVsRun->Draw();
-	cSpreadTotVsRun->Print(Form("%s/cSpreadTotVsRun",plotDir.Data()));
+	cSpreadTotVsRun->Print(Form("%s/cSpreadTotVsRun.png",plotDir.Data()));
 
 	TCanvas* cNegTimeRatioVsRun = new TCanvas("cNegTimeRatioVsRun","cNegTimeRatioVsRun", 50,50,750,550);
 	hNegTimeRatioVsRun->Draw();
-	cNegTimeRatioVsRun->Print(Form("%s/cNegTimeRatioVsRun",plotDir.Data()));
+	cNegTimeRatioVsRun->Print(Form("%s/cNegTimeRatioVsRun.png",plotDir.Data()));
 
 	TCanvas* cOrphansRatioVsRun = new TCanvas("cOrphansRatioVsRun","cOrphansRatioVsRun", 50,50,750,550);
 	hOrphansRatioVsRun->Draw();
-	cOrphansRatioVsRun->Print(Form("%s/cOrphansRatioVsRun",plotDir.Data()));
+	cOrphansRatioVsRun->Print(Form("%s/cOrphansRatioVsRun.png",plotDir.Data()));
 
 	TCanvas* cMeanLVsRun = new TCanvas("cMeanLVsRun","cMeanLVsRun", 50,50,750,550);
 	hMeanLVsRun->Draw();
-	cMeanLVsRun->Print(Form("%s/cMeanLVsRun",plotDir.Data()));
+	cMeanLVsRun->Print(Form("%s/cMeanLVsRun.png",plotDir.Data()));
 
 	TCanvas* cNegLRatioVsRun = new TCanvas("cNegLRatioVsRun","cNegLRatioVsRun", 50,50,750,550);
 	hNegLRatioVsRun->Draw();
-	cNegLRatioVsRun->Print(Form("%s/cNegLRatioVsRun",plotDir.Data()));
+	cNegLRatioVsRun->Print(Form("%s/cNegLRatioVsRun.png",plotDir.Data()));
 
 	TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun", 50,50,750,550);
 	hMatchEffVsRun->Draw();
-	cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun",plotDir.Data()));
+	cMatchEffVsRun->Print(Form("%s/cMatchEffVsRun.png",plotDir.Data()));
 
 	TCanvas* cPeakT0AVsRun = new TCanvas("cPeakT0AVsRun","cPeakT0AVsRun", 50,50,750,550);
 	hPeakT0AVsRun->Draw();
