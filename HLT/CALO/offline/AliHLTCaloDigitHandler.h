@@ -25,7 +25,7 @@ class AliDigitNew;
 class AliHLTCaloGeometry;
 class TTree;
 class AliRunLoader;
-class AliHLTCaloDigitDataStruct;
+struct AliHLTCaloDigitDataStruct;
 class AliLoader;
 
 class AliHLTCaloDigitHandler : public AliHLTLogging, public AliHLTCaloConstantsHandler

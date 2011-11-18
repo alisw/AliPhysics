@@ -14,8 +14,8 @@
 #include "AliHLTCaloGlobalCoordinate.h"
 #include "AliHLTCaloRecPointDataStruct.h"
 
-class AliHLTCaloCoordinate;
-class AliHLTCaloGlobalCoordinate;
+struct AliHLTCaloCoordinate;
+struct AliHLTCaloGlobalCoordinate;
 
 class AliHLTCaloGeometry : public AliHLTCaloConstantsHandler, public AliHLTLogging
 {
