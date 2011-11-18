@@ -84,7 +84,9 @@ AliSimDigits & AliSimDigits::operator =(const AliSimDigits & param)
   //
   // assignment operator - dummy
   //
-  fTrIndex=param.fTrIndex;
+  if(this!=&param){
+    fTrIndex=param.fTrIndex;
+  }
   return (*this);
 }
 

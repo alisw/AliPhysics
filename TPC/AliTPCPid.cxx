@@ -72,7 +72,9 @@ AliTPCPid & AliTPCPid::operator =(const AliTPCPid & param)
   //
   // assignment operator - dummy
   //
-  fSigmin=param.fSigmin;
+  if(this!=&param){
+     fSigmin=param.fSigmin;
+  }
   return (*this);
 }
 //-----------------------------------------------------------

@@ -114,7 +114,9 @@ AliTPCAlign & AliTPCAlign::operator =(const AliTPCAlign & align)
   //
   // assignment operator - dummy
   //
-  fDebug=align.fDebug;
+  if(this!=&align){
+    fDebug=align.fDebug;
+  }
   return (*this);
 }
 
