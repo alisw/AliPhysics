@@ -146,8 +146,16 @@ struct QABase
    */
   void MakeCanvas(const char* title)
   {
-    fTeX = new std::ofstream(Form("%s.tex", fTeXName.Data()));
-    fHtml = new std::ofstream(Form("%s.html", fTeXName.Data()));
+    if (fCanvas) { 
+      delete fCanvas;
+      fCanvas = 0;
+    }
+    const char* base = fTeXName.Data();
+    gSystem->Exec(Form("rm -f %s.tex %s.html %s.root %s.pdf", 
+		       base, base, base, base));
+
+    fTeX = new std::ofstream(Form("%s.tex", base));
+    fHtml = new std::ofstream(Form("%s.html", base));
 
     *fTeX << "\\documentclass[landscape,a4paper,12pt]{article}\n"
 	  << "\\usepackage[margin=2cm,a4paper]{geometry}\n"
@@ -223,6 +231,9 @@ struct QABase
     tit.ReplaceAll("#sigma", "&sigma;");
     tit.ReplaceAll("#chi", "&chi;");
     tit.ReplaceAll("#nu", "&nu;");
+    tit.ReplaceAll("_{p}", "<sub>p</sub>");
+    tit.ReplaceAll("_{z}", "<sub>z</sub>");
+    tit.ReplaceAll("^{2}", "<sup>2</sup>");
     *fHtml << "<tr><td>" << tit << "</td>" << std::flush;
 
     // Put title on top 
@@ -253,6 +264,7 @@ struct QABase
    */
   void PrintCanvas(const char* pngName)
   {
+    gSystem->Exec(Form("rm -f %s.png %s.html", pngName, pngName));
     fCanvas->SaveAs(Form("%s.png", pngName));
     *fTeX << "\\begin{center}\n"
 	  << "\\includegraphics[keepaspectratio,height=\\textheight]{"
@@ -329,8 +341,6 @@ struct QABase
     TString cmd(Form("rm -f %s.log %s.aux %s.tex %s", 
 		     base, base, base, 
 		     deletePNGs ? fToDelete.Data() : ""));
-    Info("Close", "deletePNGs=%s, command=%s", 
-	 deletePNGs ? "true" : "false", cmd.Data());
     gSystem->Exec(cmd.Data());
     gSystem->Exec(Form("chmod g+rw %s.pdf %s", base, 
 		       deletePNGs ? "" : fToDelete.Data()));
