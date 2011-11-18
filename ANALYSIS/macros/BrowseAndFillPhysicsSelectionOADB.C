@@ -190,6 +190,12 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kMuonLikePB,"+CPBI1MLL-ACE-NOPF-MUON","ACE",triggerCount);
   oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");                                         
   oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
+
+  triggerCount++;
+  oadbDefaultPbPb->AddCollisionTriggerClass   ( AliVEvent::kPHOSPb,"+CPBI2PHS-B-NOPF-CENTNOTRD","B",  triggerCount);
+  oadbDefaultPbPb->AddBGTriggerClass          ( AliVEvent::kPHOSPb,"+CPBI2PHS-B-NOPF-CENTNOTRD","ACE",triggerCount);
+  oadbDefaultPbPb->SetHardwareTrigger         ( triggerCount,"V0A && V0C");
+  oadbDefaultPbPb->SetOfflineTrigger          ( triggerCount,"V0A && V0C && !V0ABG && !V0CBG && !TPCLaserWarmUp && ZDCTime");
   
   oadbContPS->AddDefaultObject(oadbDefaultPbPb);
 

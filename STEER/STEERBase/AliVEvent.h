@@ -50,6 +50,7 @@ public:
       kMUS7         = BIT(11), // Muon trigger: low pt, single muon, offline V0 selection, CINT7 suite
       kPHI1         = BIT(12), // PHOS trigger, CINT1 suite
       kPHI7         = BIT(13), // PHOS trigger, CINT7 suite
+      kPHOSPb       = BIT(13), // idem for PbPb
       kEMCEJE       = BIT(14), // EMCAL jet patch trigger
       kEMCEGA       = BIT(15), // EMCAL gamma trigger
       kCentral      = BIT(16), // PbPb central collision trigger
