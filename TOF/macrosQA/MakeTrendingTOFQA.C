@@ -555,30 +555,30 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 		hSpreadRawTimeVsRun->SetBinError(irun+1,spreadRawTimeErr);
 		hSpreadRawTimeVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
-		hAvTotVsRun->SetBinContent(irun,avTot);
+		hAvTotVsRun->SetBinContent(irun+1,avTot);
 		hAvTotVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
-		hPeakTotVsRun->SetBinContent(irun,peakTot);
+		hPeakTotVsRun->SetBinContent(irun+1,peakTot);
 		hPeakTotVsRun->SetBinError(irun+1,peakTotErr);
 		hPeakTotVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
-		hSpreadTotVsRun->SetBinContent(irun,spreadTot);
+		hSpreadTotVsRun->SetBinContent(irun+1,spreadTot);
 		hSpreadTotVsRun->SetBinError(irun+1,spreadTotErr);
 		hSpreadTotVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
     
-		hNegTimeRatioVsRun->SetBinContent(irun,negTimeRatio);
+		hNegTimeRatioVsRun->SetBinContent(irun+1,negTimeRatio);
 		hNegTimeRatioVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
     
-		hOrphansRatioVsRun->SetBinContent(irun,orphansRatio);
+		hOrphansRatioVsRun->SetBinContent(irun+1,orphansRatio);
 		hOrphansRatioVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
     
-		hMeanLVsRun->SetBinContent(irun,avL);
+		hMeanLVsRun->SetBinContent(irun+1,avL);
 		hMeanLVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
     
-		hNegLRatioVsRun->SetBinContent(irun,negLratio);
+		hNegLRatioVsRun->SetBinContent(irun+1,negLratio);
 		hNegLRatioVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
-		hMatchEffVsRun->SetBinContent(irun,matchEffLinFit1Gev);
+		hMatchEffVsRun->SetBinContent(irun+1,matchEffLinFit1Gev);
 		hMatchEffVsRun->SetBinError(irun+1,matchEffLinFit1GevErr);
 		hMatchEffVsRun->GetXaxis()->SetBinLabel(irun+1,runlabel);
 
