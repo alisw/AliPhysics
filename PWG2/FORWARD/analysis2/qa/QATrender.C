@@ -647,7 +647,7 @@ public:
     }
     
     if (!GetLists()) { 
-      Error("ProcessOne", "Failed to get lists from %s", filename);
+      // Error("ProcessOne", "Failed to get lists from %s", filename);
       return false;
     }
     

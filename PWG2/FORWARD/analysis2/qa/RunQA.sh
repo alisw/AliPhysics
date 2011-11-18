@@ -119,20 +119,35 @@ fi
 # --- Now run the QA code -------------------------------------------
 savdir=`pwd`
 cd $top/${dest} 
+
+idx=`ls trend_*_*.html 2>/dev/null` 
+rm -f index.html
+for i in $idx ; do 
+    if test -f $i ; then rm -f $i ; fi
+done 
+
 what=3
 if test $notr -gt 0 ; then what=2 ; fi
+
 scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
 mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"
 root -l -b -q ${scr}\(\".\",1,-1,$what\)
+
 idx=`ls trend_*_*.html 2>/dev/null` 
+rm -f index.html
 for i in $idx ; do 
     echo "making index.html point to $i"
-    ln -fs $i index.html  
+    cat $i | sed "s,index.html,../index.html," > index.html  
+    cp index.html $i 
 done 
+set +e
 chmod g+rw  index.html
-chmod g+rw .
+chmod g+rw .  > /dev/null 2>&1
+
 if test -f $savdir/style.css ; then 
+    rm -f style.css 
     cp $savdir/style.css .
+    chmod g+rw style.css
 fi
 
 cat <<EOF
@@ -147,6 +162,7 @@ cd ..
 date=`date`
 period=`pwd`
 period=`basename $period`
+rm -f index.html
 cat <<EOF > index.html
 <html>
 <head>
@@ -171,14 +187,16 @@ Last update: $date
 </html>
 EOF
 chmod g+rw index.html 
-chmod g+rw .
+chmod g+rw .  > /dev/null 2>&1
 if test -f $savdir/style.css ; then 
+    rm -f style.css
     cp $savdir/style.css .
     chmod g+rw style.css
 fi
 
 # --- Make index.html ------------------------------------------------
 cd ..
+rm -f index.html
 cat <<EOF >index.html
 <html>
 <head>
@@ -205,8 +223,9 @@ Last update: $date
 </html>
 EOF
 chmod g+rw index.html 
-chmod g+rw .
+chmod g+rw .  > /dev/null 2>&1
 if test -f $savdir/style.css && test `pwd` != $savdir; then 
+    rm -f style.css
     cp $savdir/style.css .
     chmod g+rw style.css
 fi

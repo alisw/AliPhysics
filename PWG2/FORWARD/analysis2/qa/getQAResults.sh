@@ -223,6 +223,7 @@ EOF
     
 # --------------------------------------------------------------------
 mkdir -p ${store}
+mess "Getting list of files from AliEn - can take minutes - be patient"
 mess "alien_find ${path} ${search}"
 files=`alien_find ${path} ${search} | grep -v "files found" 2> ${redir}` 
 j=0
