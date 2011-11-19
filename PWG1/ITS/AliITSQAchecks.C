@@ -14,7 +14,9 @@
 #include <TLegend.h>
 #include <TLegendEntry.h>
 #include <TLatex.h>
+#include <TString.h>
 #include <TStyle.h>
+#include <TSystem.h>
 #include <TROOT.h>
 #endif
 
@@ -32,6 +34,7 @@ TString GetRunNumber();
 
 //  the run number is available to all the functions. Its value is set by AliITSQAchecks
   Int_t gRunNumber = 0;
+  TString pdfFileNames="";
 
 
 //_______________________________________________________________________
@@ -83,11 +86,16 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
   TFile* filMC=TFile::Open(filenameMC.Data());
   TCanvas** clist;
   Int_t cnum;
-  TFile fout("Outfil.root","recreate");
+  char rn[10];
+  sprintf(rn,"%d",gRunNumber);
+  TString strRN(rn);
+  TString founame="Outfil"+strRN+".root";
+  TFile fout(founame,"recreate");
   if(selection.Contains("general")){
     PlotGeneral(fildat,clist,cnum); 
     printf("GENERAL - cnum = %d\n",cnum);
     SaveC(fout,clist,cnum);
+
   }
   if(selection.Contains("ITSSA")){
     PlotITSsa(fildat,clist,cnum); 
@@ -121,6 +129,12 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
   }
 
   fout.Close();
+
+  // merge the pdf files
+  TString command("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged");
+  command=command+strRN+".pdf "+pdfFileNames;
+  gSystem->Exec(command.Data());
+  printf(" Merging the pdf file:  %s \n",command.Data());
   
 }
 
@@ -184,6 +198,7 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
       hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
       ceffL->Update();
       ceffL->SaveAs("track_points_per_layer.pdf");
+      pdfFileNames+=" track_points_per_layer.pdf";
     }
   }
 }
@@ -279,6 +294,7 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   tratio->Draw();
   cITSsa1->Update();
   cITSsa1->SaveAs("ITSsa1.pdf");
+  pdfFileNames+=" ITSsa1.pdf";
   gStyle->SetPalette(1);
   hEtaPhiITSpureSA->SetStats(0);
   hEtaPhiITSpureSA->SetTitle("ITS pureSA");
@@ -310,6 +326,7 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   hEtaPhiTPCITS->GetYaxis()->SetTitle("Phi");
   //  c4->cd(4);
   cITSsa2->SaveAs("ITSsa2.pdf");  
+  pdfFileNames+=" ITSsa2.pdf";
 }
 
 //-----------------------------------------------------
@@ -555,6 +572,7 @@ void PlotSDD(TFile* fildat, TCanvas**& clist, Int_t& cnum){
  //  cpars->Update();
   ctim->Update();
   ctim->SaveAs("SDD.pdf");
+  pdfFileNames+=" SDD.pdf";
 } 
 
 //_______________________________________________________________________
@@ -708,6 +726,7 @@ if(!fHistQ) return;
   fHistCRmean->DrawCopy();
   c1SSD->Update();
   c1SSD->SaveAs("SSD.pdf");
+  pdfFileNames+=" SSD.pdf";
 }
 
 //_______________________________________________________________________
@@ -854,6 +873,7 @@ void VertexQAMacro(TFile *fildat, TCanvas **&clist, Int_t &cnum){
 		hntrksZvsSPDcls->Draw();	
    }	
 	TRK_SPD3D_Vtx->SaveAs("vertex.pdf");
+	pdfFileNames+=" vertex.pdf";
 	delete fx;
 	delete fy;
 	delete fz;
@@ -933,6 +953,7 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   //  fTitleMc.ReplaceAll(" ","");
   // tracklets->SaveAs(Form("trackletsPhiEtaMaps_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
   tracklets->SaveAs("SPDtracklets.pdf");
+  pdfFileNames+=" SPDtracklets.pdf";
 
   TH1D *trackMcPhi = trackMc->ProjectionY();
   trackMcPhi->SetTitle(Form("%s",h->GetTitle()));
@@ -1010,6 +1031,7 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   // frac->SaveAs(Form("relativeRatios_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
   tratio->Draw();  
   track->SaveAs("SPD_eta_phi.pdf");
+  pdfFileNames+=" SPD_eta_phi.pdf";
 }
 
 //_______________________________________________________________________
@@ -1202,6 +1224,7 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TCanvas**& clist,Int_t& cnum) {
   spdFrac0->Draw("p");
   spdFrac1->Draw("p");
   cITSTPCmatch->SaveAs("TPCITSmatching.pdf");
+  pdfFileNames+=" TPCITSmatching.pdf";
   return kTRUE;
 }
 
