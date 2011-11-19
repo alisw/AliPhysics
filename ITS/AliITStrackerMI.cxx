@@ -4788,6 +4788,7 @@ Int_t AliITStrackerMI::CheckDeadZone(AliITStrackMI *track,
     }
   }
 
+  if(zlocmin>zlocmax)return 0;
   Int_t nChipsInRoad = segm->GetChipsInLocalWindow(chipsInRoad,zlocmin,zlocmax,xlocmin,xlocmax);
   AliDebug(2,Form("lay %d nChipsInRoad %d",ilayer,nChipsInRoad));
   if (!nChipsInRoad) return 0;
