@@ -204,12 +204,12 @@ const AliESDVertex *vertex = fESD->GetPrimaryVertex();
 
    // Vertex in range 
    lVertexAceptable=(TMath::Abs(vertex->GetXv()) < fVxMax) && (TMath::Abs(vertex->GetYv()) < fVyMax); 
-   if(lVertexAceptable)
+   if(lVertexAceptable) {
      if(fVzMax>0)   //   fVzMax < 0 -> select Zv outside selected range
        { lVertexAceptable = (TMath::Abs(vertex->GetZv()) < fVzMax);}
      else
        { lVertexAceptable = (TMath::Abs(vertex->GetZv()) > -fVzMax);}
-   
+   }
    if((!lVertexAceptable) && fCheckForVtxPosition) 
      {if(fShowEventStats)Printf("Vertex out of range");
        fHistEventCutStats->Fill(3);
