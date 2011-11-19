@@ -290,10 +290,10 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
     if (ccEH) {
       TList *genHeaders = ccEH->GetHeaders();
       for (int imch=0; imch<genHeaders->GetEntries(); imch++) {
-	if(!pyH)dynamic_cast<AliGenPythiaEventHeader*>(genHeaders->At(imch));
-	if(!hiH)dynamic_cast<AliGenHijingEventHeader*>(genHeaders->At(imch));
+	if(!pyH)pyH = dynamic_cast<AliGenPythiaEventHeader*>(genHeaders->At(imch));
+	if(!hiH)hiH = dynamic_cast<AliGenHijingEventHeader*>(genHeaders->At(imch));
 	if(!colG)colG = dynamic_cast<AliCollisionGeometry *>(genHeaders->At(imch));
-	if(!dpmH)dynamic_cast<AliGenDPMjetEventHeader*>(genHeaders->At(imch));
+	if(!dpmH)dpmH = dynamic_cast<AliGenDPMjetEventHeader*>(genHeaders->At(imch));
       }
     }
   }

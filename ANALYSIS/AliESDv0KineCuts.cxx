@@ -881,18 +881,20 @@ Bool_t  AliESDv0KineCuts::GetHelixCenter(AliESDtrack * const track, Double_t b,I
       xpoint = - xpoint;
       ypoint = - ypoint;
     }
-
+    /* avoid self assignment
     if(charge < 0){
       xpoint =  xpoint;
       ypoint =  ypoint;
     }
+    */
   }
   if(b>0){
+    /* avoid self assignment
     if(charge > 0){
       xpoint =  xpoint;
       ypoint =  ypoint;
     }
-
+    */
     if(charge < 0){
       xpoint = - xpoint;
       ypoint = - ypoint;
