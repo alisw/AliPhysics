@@ -107,23 +107,7 @@ AliITSMapA2::~AliITSMapA2(){
 
     if (fHitMapD) delete[] fHitMapD;
 }
-//______________________________________________________________________
-AliITSMapA2::AliITSMapA2(const AliITSMapA2 &source) : AliITSMapA1(source),
-fHitMapD(source.fHitMapD),
-fMapThresholdD(source.fMapThresholdD),
-fScaleSizeX(source.fScaleSizeX),
-fScaleSizeZ(source.fScaleSizeZ){
-    //     Copy Constructor 
 
-}
-//______________________________________________________________________
-AliITSMapA2& AliITSMapA2::operator=(const AliITSMapA2 &source) {
-    //    Assignment operator
-  this->~AliITSMapA2();
-  new(this) AliITSMapA2(source);
-  return *this;
-
-}
 
 //______________________________________________________________________
 void AliITSMapA2::ClearMap(){

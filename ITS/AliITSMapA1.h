@@ -26,10 +26,6 @@ class AliITSMapA1 : public AliITSMap{
     // and a threshold value
     AliITSMapA1(AliITSsegmentation *seg, TObjArray *dig, Int_t thr);
     AliITSMapA1(AliITSsegmentation *seg, TObjArray *dig, TArrayI thr);
-    // Copy Operator
-    AliITSMapA1(const AliITSMapA1 &source);
-    // Assignment operator
-    AliITSMapA1& operator=(const AliITSMapA1 &source);
     // Distructor
     virtual ~AliITSMapA1();
     // Fill hits from list of digits into hit map
@@ -60,6 +56,10 @@ class AliITSMapA1 : public AliITSMap{
     void SetArray(TObjArray *obj);
 
  protected:
+    // Copy Constructor
+    AliITSMapA1(const AliITSMapA1 &source);
+    // Assignment operator
+    AliITSMapA1& operator=(const AliITSMapA1 &source);
     // Check index
     Int_t   CheckedIndex(Int_t iz, Int_t ix) const;
 

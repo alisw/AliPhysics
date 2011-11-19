@@ -126,28 +126,7 @@ AliITSMapA1::~AliITSMapA1(){
 
     if(fHitMap) delete[] fHitMap;
 }
-//_________________________________________________________________________
-AliITSMapA1& AliITSMapA1::operator=(const AliITSMapA1 &source) {
-    //    Assignment operator
 
-  this->~AliITSMapA1();
-  new(this) AliITSMapA1(source);
-  return *this;
-}
-//______________________________________________________________________
-AliITSMapA1::AliITSMapA1(const AliITSMapA1 &source) : AliITSMap(source),
-fSegmentation(source.fSegmentation),
-fNpx(source.fNpx),
-fNpz(source.fNpz),
-fObjects(source.fObjects),
-fNobjects(source.fNobjects),
-fMaxIndex(source.fMaxIndex),
-fMapThresholdArr(source.fMapThresholdArr),
-fHitMap(source.fHitMap),
-fMapThreshold(source.fMapThreshold){
-  //     Copy Constructor
-  
-}
 //______________________________________________________________________
 void AliITSMapA1::ClearMap(){
     //clear array

@@ -26,9 +26,6 @@ class AliITSMapA2 : public AliITSMapA1{
     // a threshold value
     AliITSMapA2(AliITSsegmentation *seg, TObjArray *hist,Double_t thresh);
     virtual ~AliITSMapA2(); // destructor
-    AliITSMapA2(const AliITSMapA2 &source); // copy constructor
-    // assignment operator
-    AliITSMapA2& operator=(const AliITSMapA2 &source);
     // fill pad signals into map 
     virtual void FillMap();
     // clear map
@@ -64,6 +61,9 @@ class AliITSMapA2 : public AliITSMapA1{
     virtual void AddSignal(Int_t iz, Int_t ix, Double_t sig);
 
  private:
+    AliITSMapA2(const AliITSMapA2 &source); // copy constructor
+    // assignment operator
+    AliITSMapA2& operator=(const AliITSMapA2 &source);
     void  FillMapFromHist(); // fills the map from a historgram
     void  FillHist(); // fills a histogram from the map
     void  ResetHist(); // resets the histogram
