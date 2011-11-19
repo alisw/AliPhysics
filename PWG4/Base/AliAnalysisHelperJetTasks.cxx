@@ -626,7 +626,7 @@ void  AliAnalysisHelperJetTasks::MergeOutputDirs(const char* cFiles,const char* 
   }
 }
 
-void  AliAnalysisHelperJetTasks::MergeOutput(char* cFiles, char* cDir, char *cList,char *cOutFile,Bool_t bUpdate){
+void  AliAnalysisHelperJetTasks::MergeOutput(const char* cFiles,const char* cDir,const char *cList,const char *cOutFile,Bool_t bUpdate){
 
   // This is used to merge the analysis-output from different 
   // data samples/pt_hard bins

@@ -74,7 +74,7 @@ class AliAnalysisHelperJetTasks : public TObject {
 
   static void MergeOutputDirs(const char* cFiles,const char* cPattern,const char *cOutFile,Bool_t bUpdate = false); // merges all directories containing the pattern
 
-  static void MergeOutput(char* cFiles, char* cDir = "",char *cList = "",char* cOutFile ="allpt.root",Bool_t bUpdate = false); // Merges the files in the input text file  needs the two histograms fh1PtHard_Trials, fh1Xsec and the name of the input list
+  static void MergeOutput(const char* cFiles,const char* cDir = "",const char *cList = "",const char* cOutFile ="allpt.root",Bool_t bUpdate = false); // Merges the files in the input text file  needs the two histograms fh1PtHard_Trials, fh1Xsec and the name of the input list
   static Bool_t PythiaInfoFromFile(const char* currFile,Float_t &fXsec,Float_t &fTrials);// get the cross section and the trails either from pyxsec.root or from pysec_hists.root
   static Bool_t PrintDirectorySize(const char* currFile,Int_t iDetail = -1); // print the size of the output on a given file
   static Bool_t GetEventShapes(TVector3 &n01,const TVector3 * pTrack, Int_t nTracks, Double_t * eventShapes);
