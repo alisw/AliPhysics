@@ -121,6 +121,9 @@ void AliGenHalo::Init()
 {
 // Initialisation
     fFile = fopen(fFileName,"r");
+    Int_t ir = 0;
+    
+    
     if (fFile) {
 	printf("\n File %s opened for reading, %p ! \n ",  fFileName.Data(), (void*)fFile);
     } else {
@@ -181,7 +184,9 @@ void AliGenHalo::Init()
 
 	for (i = 0; i < fGPASize; i++)
 	{
-	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    ir = fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    if (ir == 0) break;
+	    
 	    fG1[i] = p[fRunPeriod];
 	    
 	    if (i > 0) {
@@ -195,7 +200,9 @@ void AliGenHalo::Init()
 //
 	for (i = 0; i < fGPASize; i++)
 	{
-	    fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    ir = fscanf(file, "%f %f %f %f %f %f", &z, &p[0], &p[1], &p[2] , &p[3], &p[4]);
+	    if (ir == 0) break;
+
 	    fG2[i] = p[fRunPeriod];
 	    if (i > 0) {
 		fZ2[i] = fZ2[i-1] + z;
@@ -215,7 +222,8 @@ void AliGenHalo::Init()
     } else {
 	for (i = 0; i < fGPASize; i++) 
 	{
-	    fscanf(file, "%f %e %e %e %e %e", &z, &p[0], &p[1], &p[2], &p[3], &p[4]);
+	    ir = fscanf(file, "%f %e %e %e %e %e", &z, &p[0], &p[1], &p[2], &p[3], &p[4]);
+	    if (ir == 0) break;
 	    z /= 1000.;
 	    fG1[i] = p[4] * kCrossSection * kFlux;             // 1/m/s
 	    // 1/3 of nominal intensity at startup
