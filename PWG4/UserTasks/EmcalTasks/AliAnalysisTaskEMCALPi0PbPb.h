@@ -327,7 +327,7 @@ class AliStaCluster : public TObject
 {
  public:
   AliStaCluster() : TObject(), 
-                    fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), 
+                    fE(0), fR(0), fEta(0), fPhi(0), fN(0), fN1(0), fN3(0), fIdMax(-1), fSM(-1), fEmax(0), fE2max(0), fEcross(0),
                     fTmax(0), fDbc(-1), fDisp(-1), fM20(-1), fM02(-1), fEcc(-1), fSig(-1), fSigEtaEta(-1), fSigPhiPhi(-1),
                     fIsTrackM(0), fTrDz(0), fTrDr(-1), fTrEp(0), fTrDedx(0), fTrIso(0), fTrIso1(0), fTrIso2(0),  
                     fTrIsoD1(0), fTrIso1D1(0), fTrIso2D1(0), fTrIsoD3(0), fTrIso1D3(0), fTrIso2D3(0),
@@ -350,6 +350,7 @@ class AliStaCluster : public TObject
   Char_t        fSM;               //         super module number (from maximum cell)
   Double32_t    fEmax;             //[0,0,16] energy of maximum cell
   Double32_t    fE2max;            //[0,0,16] energy of second maximum cell
+  Double32_t    fEcross;           //[0,0,16] energy of the 4 adjacent cells around the seed
   Double32_t    fTmax;             //[0,0,16] time of maximum cell
   Double32_t    fDbc;              //[0,0,16] distance to nearest bad channel
   Double32_t    fDisp;             //[0,0,16] cluster dispersion, for shape analysis
@@ -392,7 +393,7 @@ class AliStaCluster : public TObject
   Short_t       fMcLabel;          //         index of closest MC particle
   Double32_t    fEmbE;             //[0,0,16] sum of energy of embedded (MC) cells in cluster
 
-  ClassDef(AliStaCluster,9) // Cluster class
+  ClassDef(AliStaCluster,10) // Cluster class
 };
 
 class AliStaTrigger : public TObject
