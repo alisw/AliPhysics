@@ -362,8 +362,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   //trigger configuration
   TString triggerclasses = esdEvent->GetFiredTriggerClasses();
   
-  if(triggerclasses=="") return;
+  Int_t eventType = ((AliVHeader*)InputEvent()->GetHeader())->GetEventType();
+  // physics events eventType=7, select only those
   
+  if(triggerclasses=="" || eventType != 7) return;
+    
   fhNEvents->Fill(0.5);
   if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
