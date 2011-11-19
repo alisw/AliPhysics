@@ -28,7 +28,6 @@
 #include <TROOT.h>
 #include "AliITS.h"
 #include "AliITSMapA2.h"
-#include "AliITSRawData.h"
 #include "AliITSdigitSPD.h"
 #include "AliITSetfSDD.h"
 #include "AliITSmodule.h"

@@ -67,10 +67,6 @@
 #pragma link C++ class  AliITSDCSAnalyzerSDD+;
 #pragma link C++ class  AliITSDCSDataSDD+;
 
-#pragma link C++ class  AliITSRawData+;
-// These streamers must be formatted according to the raw data fromat
-#pragma link C++ class  AliITSInStream+;
-#pragma link C++ class  AliITSOutStream+;
 //
 // Raw data
 #pragma link C++ class AliITSDDLRawData+;

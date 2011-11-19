@@ -82,7 +82,6 @@ set ( SRCS
     AliITSRawStreamSPD.cxx 
     AliITSEventHeader.cxx 
     AliITSRawStreamSSDv1.cxx 
-    AliITSRawData.cxx 
     AliITSgeomTGeo.cxx 
     AliITSPlaneEff.cxx 
     AliITSPlaneEffSPD.cxx 

@@ -38,8 +38,7 @@ set ( SRCS
     AliITSsimulationSDD.cxx 
     AliITSsimulationSSD.cxx 
     AliITSTableSSD.cxx 
-    AliITSetfSDD.cxx 
-    AliITSHuffman.cxx 
+    AliITSetfSDD.cxx  
     AliITSsDigitize.cxx 
     AliITSDigitizer.cxx 
     AliITSFOEfficiencySPD.cxx 
