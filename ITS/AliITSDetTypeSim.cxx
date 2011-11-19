@@ -183,41 +183,41 @@ AliITSDetTypeSim::~AliITSDetTypeSim(){
     fDigits=0;
 }
 //----------------------------------------------------------------------
-AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source),
-fSimulation(source.fSimulation),   // [NDet]
-fSegmentation(source.fSegmentation), // [NDet]
-fCalibration(source.fCalibration),     // [NMod]
-fSSDCalibration(source.fSSDCalibration),
-fSPDNoisy(source.fSPDNoisy),
-fSPDSparseDead(source.fSPDSparseDead),
-fNSDigits(source.fNSDigits),    //! number of SDigits
-fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
-fNDigits(source.fNDigits),     //! number of Digits
-fRunNumber(source.fRunNumber),   //! Run number (to access DB)
-fDigits(source.fDigits),       //! [NMod][NDigits]
-fSimuPar(source.fSimuPar),
-fDDLMapSDD(source.fDDLMapSDD),
-fRespSDD(source.fRespSDD),
-fAveGainSDD(source.fAveGainSDD),
-fkDigClassName(), // String with digit class name.
-fLoader(source.fLoader),      // local pointer to loader
-fFirstcall(source.fFirstcall),
-fFOGenerator(source.fFOGenerator),
-fTriggerConditions(source.fTriggerConditions) 
-{
-    // Copy Constructor for object AliITSDetTypeSim not allowed
-  for(Int_t i=0;i<fgkNdettypes;i++){
-    fkDigClassName[i] = source.fkDigClassName[i];
-  }
-}
-//----------------------------------------------------------------------
-AliITSDetTypeSim& AliITSDetTypeSim::operator=(const AliITSDetTypeSim &source){
-    // The = operator for object AliITSDetTypeSim
+// AliITSDetTypeSim::AliITSDetTypeSim(const AliITSDetTypeSim &source) : TObject(source),
+// fSimulation(source.fSimulation),   // [NDet]
+// fSegmentation(source.fSegmentation), // [NDet]
+// fCalibration(source.fCalibration),     // [NMod]
+// fSSDCalibration(source.fSSDCalibration),
+// fSPDNoisy(source.fSPDNoisy),
+// fSPDSparseDead(source.fSPDSparseDead),
+// fNSDigits(source.fNSDigits),    //! number of SDigits
+// fSDigits(*((TClonesArray*)source.fSDigits.Clone())),
+// fNDigits(source.fNDigits),     //! number of Digits
+// fRunNumber(source.fRunNumber),   //! Run number (to access DB)
+// fDigits(source.fDigits),       //! [NMod][NDigits]
+// fSimuPar(source.fSimuPar),
+// fDDLMapSDD(source.fDDLMapSDD),
+// fRespSDD(source.fRespSDD),
+// fAveGainSDD(source.fAveGainSDD),
+// fkDigClassName(), // String with digit class name.
+// fLoader(source.fLoader),      // local pointer to loader
+// fFirstcall(source.fFirstcall),
+// fFOGenerator(source.fFOGenerator),
+// fTriggerConditions(source.fTriggerConditions) 
+// {
+//     // Copy Constructor for object AliITSDetTypeSim not allowed
+//   for(Int_t i=0;i<fgkNdettypes;i++){
+//     fkDigClassName[i] = source.fkDigClassName[i];
+//   }
+// }
+// //----------------------------------------------------------------------
+// AliITSDetTypeSim& AliITSDetTypeSim::operator=(const AliITSDetTypeSim &source){
+//     // The = operator for object AliITSDetTypeSim
  
-  this->~AliITSDetTypeSim();
-  new(this) AliITSDetTypeSim(source);
-  return *this;
-}
+//   this->~AliITSDetTypeSim();
+//   new(this) AliITSDetTypeSim(source);
+//   return *this;
+// }
 
 //______________________________________________________________________
 void AliITSDetTypeSim::SetITSgeom(AliITSgeom *geom){

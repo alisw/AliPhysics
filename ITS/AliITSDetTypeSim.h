@@ -43,8 +43,6 @@ class AliITSDetTypeSim : public TObject {
   
     AliITSDetTypeSim();
     virtual ~AliITSDetTypeSim(); 
-    AliITSDetTypeSim(const AliITSDetTypeSim &source);
-    AliITSDetTypeSim& operator=(const AliITSDetTypeSim &source);
     AliITSgeom *GetITSgeom() const {
         if(fLoader)return ((AliITSLoader*)fLoader)->GetITSgeom();
 	else return 0;}
@@ -125,6 +123,8 @@ class AliITSDetTypeSim : public TObject {
     virtual Bool_t GetCalibration();
     
  private:
+    AliITSDetTypeSim(const AliITSDetTypeSim &source);
+    AliITSDetTypeSim& operator=(const AliITSDetTypeSim &source);
     void SetDefaultSegmentation(Int_t idet);  // creates def segm.
 
     //conversion of the old SSD calibration objects tothe new ones

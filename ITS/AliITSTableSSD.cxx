@@ -55,6 +55,7 @@ AliITSTableSSD& AliITSTableSSD::operator=(const AliITSTableSSD & source){
 
     if(this == &source) return *this;
     fDim=source.fDim;
+    if(fArray)delete [] fArray;
     fArray = new Int_t [fDim];
     fCurrUse[0]=(source.fCurrUse)[0];
     fCurrUse[1]=(source.fCurrUse)[1];
