@@ -28,6 +28,11 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TCanvas**& clist,Int_t& cnum);
 void SetDrawAtt(Int_t markerstyle,Int_t markercolor,Int_t markersize,Int_t linecolor,Int_t linewidth,TH1 *h1);
 Double_t LangausFun(Double_t *x, Double_t *par);
 void SaveC(TFile &fout, TCanvas**& clist, Int_t cnum);
+TString GetRunNumber();
+
+//  the run number is available to all the functions. Its value is set by AliITSQAchecks
+  Int_t gRunNumber = 0;
+
 
 //_______________________________________________________________________
 void AliITSQAchecks(TString option="grid",
@@ -49,6 +54,8 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
   // Contact:  Stefania Beole': beole@to.infn.it  
 
 /* $Id$ */
+
+  gRunNumber = nRun;
 
   TString selection("general ITSSA SPD SDD SSD vertex ITSTPC"); 
   gROOT->SetStyle("Plain");
@@ -155,7 +162,8 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
       hcllay->SetMinimum(0.);
       hcllay->SetMaximum(1.1);
       hcllay->SetMarkerStyle(23);
-      TCanvas* ceffL=new TCanvas("ceffL","General checks: PointPerLayer",1000,800);
+      TString ctitle=GetRunNumber()+"General checks: PointPerLayer";
+      TCanvas* ceffL=new TCanvas("ceffL",ctitle,1000,800);
       clist[0]=ceffL;
       // ceffL->Divide(1,2);
       // ceffL->cd(1);
@@ -166,6 +174,12 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
       tg->SetNDC();
       tg->SetTextColor(1);
       tg->Draw();
+      TString testo="Run "+GetRunNumber();
+      TLatex* tg2 = new TLatex(0.15,0.85,testo.Data());
+      tg2->SetTextSize(0.04);
+      tg2->SetNDC();
+      tg2->SetTextColor(2);
+      tg2->Draw();
       hcllay->GetXaxis()->SetTitle("Layer");
       hcllay->GetYaxis()->SetTitle("Fraction of tracks with point in layer");
       ceffL->Update();
@@ -214,7 +228,8 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   hRatio1->Divide(hPtITSsa);
   hRatio1->SetStats(0);
 
-  TCanvas* cITSsa1=new TCanvas("cITSsa1","ITS standalone: performance vs Pt",1200,1200);
+  TString ctitle=GetRunNumber()+"ITS standalone: performance vs Pt";
+  TCanvas* cITSsa1=new TCanvas("cITSsa1",ctitle,1200,1200);
   clist[0]=cITSsa1;
   cITSsa1->Divide(1,2);
   cITSsa1->cd(1);
@@ -271,7 +286,8 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   hEtaPhiITSsa->SetTitle("ITSsa tracks");
   hEtaPhiTPCITS->SetStats(0);
   hEtaPhiTPCITS->SetTitle("TPC+ITS tracks");
-  TCanvas* cITSsa2=new TCanvas("cITSsa2","Eta-phi distribution for ITSsa and TPC+ITS tracks",1200,800);
+  ctitle=GetRunNumber()+"Eta-phi distribution for ITSsa and TPC+ITS tracks";
+  TCanvas* cITSsa2=new TCanvas("cITSsa2",ctitle,1200,800);
   clist[1]=cITSsa2;
   //  cITSsa2->Divide(3,1); for ITSpuresa
   cITSsa2->Divide(2,1);
@@ -460,7 +476,8 @@ void PlotSDD(TFile* fildat, TCanvas**& clist, Int_t& cnum){
       printf("Bin %d - MPV=%.3f  \t SigmaLandau=%.3f  \t SigmaGaus=%.3f\n",it,mpv,sigl,sig);
     }
   }
-  TCanvas* ctim=new TCanvas("ctim","SDD: DriftTime - dE/dx",800,1000);
+  TString ctitle=GetRunNumber()+"SDD: DriftTime - dE/dx";
+  TCanvas* ctim=new TCanvas("ctim",ctitle,800,1000);
   clist[0]=ctim;
   ctim->Divide(1,2);
   ctim->cd(1);
@@ -648,8 +665,8 @@ if(!fHistQ) return;
 	}	
     }	
   
-
-  TCanvas *c1SSD = new TCanvas("c1SSD","SSD Calibration 1",1000,1000);
+    TString ctitle=GetRunNumber()+"SSD Calibration 1";
+  TCanvas *c1SSD = new TCanvas("c1SSD",ctitle,1000,1000);
   clist[0]=c1SSD;
   c1SSD->Divide(2,3);
   c1SSD->cd(1);
@@ -731,8 +748,9 @@ void VertexQAMacro(TFile *fildat, TCanvas **&clist, Int_t &cnum){
 		Printf("skipping the second part, no 2D histos available");
 		histoCorelation=kFALSE;	
 	}
-	
-	TCanvas *TRK_SPD3D_Vtx = new TCanvas("TRKandSPD3DVtx", "TRKandSPD3DxVtx",1000,1000);
+
+	TString ctitle=GetRunNumber()+"TRKandSPD3DxVtx";
+	TCanvas *TRK_SPD3D_Vtx = new TCanvas("TRKandSPD3DVtx",ctitle,1000,1000);
 	TRK_SPD3D_Vtx->Divide(3,2);
 	clist[0]=TRK_SPD3D_Vtx;
 	gStyle->SetOptFit(111);
@@ -897,7 +915,8 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   TH2F *trackMc = (TH2F*)fListMc->FindObject("hSPDphivsSPDeta");
     trackMc->SetTitle(Form("%s %s",trackMc->GetTitle(),fTitleMc.Data()));
 
-  TCanvas *tracklets = new TCanvas("tracklets","tracklets",1200,600);
+  TString ctitle = GetRunNumber()+"tracklets";
+  TCanvas *tracklets = new TCanvas("tracklets",ctitle,1200,600);
   clist[0]=tracklets;
   tracklets->Divide(2,1);
   tracklets->cd(1);
@@ -943,8 +962,8 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   phiFrac.Add(&mcPhi,-1);
   phiFrac.Divide(&mcPhi);
 
-
-  TCanvas *track = new TCanvas("track","tracklets and ratios vs eta and phi",1200,1200);
+  ctitle = GetRunNumber()+"tracklets and ratios vs eta and phi";
+  TCanvas *track = new TCanvas("track",ctitle,1200,1200);
   clist[1]=track;
   track->Divide(2,2);
   track->cd(1);
@@ -1000,7 +1019,8 @@ Bool_t PlotITSTPCMatchingEff(TFile *f, TCanvas**& clist,Int_t& cnum) {
   clist = new TCanvas*[1];
 
   //  clist = new TCanvas* [1];
-  TCanvas* cITSTPCmatch = new TCanvas("cITSTPCmatch","cITSTPCmatch",10,10,1200,600);
+  TString ctitle = GetRunNumber()+"ITS-TPC match";
+  TCanvas* cITSTPCmatch = new TCanvas("cITSTPCmatch",ctitle,10,10,1200,600);
   clist[0]=cITSTPCmatch;
   cITSTPCmatch->Divide(2,1);
   cITSTPCmatch->cd(1);
@@ -1192,4 +1212,13 @@ void SaveC(TFile &fout, TCanvas**& clist, Int_t cnum){
   for(Int_t i=0;i<cnum;i++)clist[i]->Write();
   delete[] clist;
   current->cd();
+}
+
+//_______________________________________________________________________
+TString GetRunNumber(){
+  // returns a string with the run number
+  char rn[10];
+  sprintf(rn,"%d  ",gRunNumber);
+  TString str(rn);
+  return str;
 }
