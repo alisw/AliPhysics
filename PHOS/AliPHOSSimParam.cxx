@@ -88,9 +88,9 @@ AliPHOSSimParam::AliPHOSSimParam(Int_t) :
   fEMCADCchannel      = 0.005 ;  // [GeV]
   fTOFa               = 0.5e-9 ; // [sec] constant term
   fTOFb               = 1.e-9 ;  // [sec/sqrt(GeV)]] stohastic term
-  fCellNonLineaityA   = 0.30 ;   //Amp of non-linearity of cell responce
+  fCellNonLineaityA   = 0.18 ;   //Amp of non-linearity of cell responce
   fCellNonLineaityB   = 0.109;   //Scale of non-linearity of cell responce
-  fCellNonLineaityC   = 0.955;   //Overall calibration
+  fCellNonLineaityC   = 0.976;   //Overall calibration
 
   fADCpedestalCpv     = 0.012 ;  // [aux units]
   fADCchanelCpv       = 0.0012;  // [aux units]    
