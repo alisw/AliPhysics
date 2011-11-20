@@ -95,7 +95,7 @@ AliAnalysisTaskPIDqa::~AliAnalysisTaskPIDqa()
   //
   // Destructor
   //
-  delete fListQA;
+  if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fListQA;
 }
 
 //______________________________________________________________________________
