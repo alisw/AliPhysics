@@ -401,6 +401,74 @@ void AliEMCALDigit::ShiftPrimary(Int_t shift){
   for(index =0; index <fNiparent; index++){
     fIparent[index] = fIparent[index] + shift * 10000000 ;}
 }
+
+
+//____________________________________________________________________________
+AliEMCALDigit& AliEMCALDigit::operator= (const AliEMCALDigit &digit)
+{
+  // assignment operator
+  
+  if(&digit == this) return *this;
+  
+  fAmpFloat    = digit.fAmpFloat;	
+  fNSamples    = digit.fNSamples;
+  fNSamplesHG  = digit.fNSamplesHG;
+  fNprimary    = digit.fNprimary;
+  fNMaxPrimary = digit.fNMaxPrimary;
+  fNiparent    = digit.fNiparent;
+  fNMaxiparent = digit.fNMaxiparent;
+  fMaxIter     = digit.fMaxIter;
+  fTime        = digit.fTime;
+  fTimeR       = digit.fTimeR; 
+  fChi2        = digit.fChi2; 
+  fNDF         = digit.fNDF;
+  fDigitType   = digit.fDigitType;
+  fAmpCalib    = digit.fAmpCalib;
+  fAmp         = digit.fAmp ;
+  fId          = digit.fId;
+  fIndexInList = digit.fIndexInList ; 
+  
+  // data members  
+  if (fSamples )   delete [] fSamples ;   fSamples   = NULL ;
+  if (fSamplesHG ) delete [] fSamplesHG ; fSamplesHG = NULL ;
+  if (fPrimary  )  delete [] fPrimary ;   fPrimary   = NULL ;
+  if (fDEPrimary)  delete [] fDEPrimary ; fDEPrimary = NULL ;
+  if (fIparent )   delete [] fIparent ;   fIparent   = NULL ;
+  if (fDEParent)   delete [] fDEParent ;  fDEParent  = NULL ;
+  
+  if (fNSamples){
+    fSamples     = new Int_t[fNSamples]; 
+    for (Int_t i=0; i < digit.fNSamples; i++) fSamples[i] = digit.fSamples[i];
+  }
+  
+  if (fNSamplesHG){
+    fSamplesHG   = new Int_t[fNSamplesHG]; 
+    for (Int_t i=0; i < digit.fNSamplesHG; i++) fSamplesHG[i] = digit.fSamplesHG[i];
+  }
+  
+  
+  if (fNMaxPrimary){
+    fPrimary   = new Int_t  [fNMaxPrimary] ;  
+    fDEPrimary = new Float_t[fNMaxPrimary] ;
+    for ( Int_t i = 0; i < fNMaxPrimary ; i++) {
+      fPrimary[i]   = digit.fPrimary[i] ;
+      fDEPrimary[i] = digit.fDEPrimary[i] ;
+    }
+  }
+  
+  if (fNMaxiparent){
+    fIparent  = new Int_t  [fNMaxiparent] ;
+    fDEParent = new Float_t[fNMaxiparent] ;
+    for (Int_t j = 0; j< fNMaxiparent ; j++) {
+      fIparent[j]  = digit.fIparent[j] ;
+      fDEParent[j] = digit.fDEParent[j] ;
+    }
+  }  
+  
+  return *this;
+  
+}  
+
 //____________________________________________________________________________
 Bool_t AliEMCALDigit::operator==(AliEMCALDigit const & digit) const 
 {

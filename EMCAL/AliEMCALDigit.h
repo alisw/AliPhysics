@@ -38,7 +38,8 @@ class AliEMCALDigit : public AliDigitNew {
   Bool_t operator==(const AliEMCALDigit &rValue) const;
   AliEMCALDigit operator+(const AliEMCALDigit &rValue) ;
   AliEMCALDigit operator*(Float_t factor) ; 
-  const AliEMCALDigit& operator = (const AliEMCALDigit &) {return *this;}
+  AliEMCALDigit& operator = (const AliEMCALDigit & digit) ;
+  
   enum  digitType{kUnknown=-1, kHG=0, kLG=1, kLGnoHG=2, kTrigger=3, kEmbedded = 4};
 
   void     Clear(const Option_t*) ;	

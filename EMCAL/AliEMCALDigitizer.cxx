@@ -779,8 +779,10 @@ void AliEMCALDigitizer::Digitize(Option_t *option)
   
   if(strstr(option,"tim")){
     gBenchmark->Stop("EMCALDigitizer");
-    AliInfo(Form("Digitize: took %f seconds for Digitizing %f seconds per event", 
-	 gBenchmark->GetCpuTime("EMCALDigitizer"), gBenchmark->GetCpuTime("EMCALDigitizer")/nEvents )) ;
+    Float_t cputime   = gBenchmark->GetCpuTime("EMCALDigitizer");
+    Float_t avcputime = cputime;
+    if(nEvents==0) avcputime = 0 ;
+    AliInfo(Form("Digitize: took %f seconds for Digitizing %f seconds per event", cputime, avcputime)) ;
   } 
 }
 

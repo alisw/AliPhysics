@@ -59,15 +59,12 @@ class AliEMCALTrigger : public AliTriggerDetector {
  public:   
 
   AliEMCALTrigger() ; //  ctor
-  AliEMCALTrigger(const AliEMCALTrigger & trig) ; // cpy ctor
   virtual ~AliEMCALTrigger(); //virtual dtor
 
 
   virtual void    CreateInputs(); //Define trigger inputs for Central Trigger Processor
   void            Print(const Option_t * opt ="") const ;  
   virtual void    Trigger();  //Make EMCAL trigger
-  //assignment operator for coding convention
-  const AliEMCALTrigger & operator = (const AliEMCALTrigger & ) {return *this;}
 
   //Getters
   Float_t  Get2x2MaxAmplitude()  const { return f2x2MaxAmp ; }
@@ -236,6 +233,9 @@ class AliEMCALTrigger : public AliTriggerDetector {
   TMatrixD  fAmpJetMax;          // 6 elements
   // VZER0 
   Double_t  fVZER0Mult;              // multiplicity (V0A+V0c)
+  
+  const AliEMCALTrigger & operator = (const AliEMCALTrigger & ) ;
+  AliEMCALTrigger(const AliEMCALTrigger & trig) ; // cpy ctor
   
   ClassDef(AliEMCALTrigger, 2)
 } ;

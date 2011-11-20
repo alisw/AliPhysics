@@ -127,58 +127,6 @@ AliEMCALTrigger::AliEMCALTrigger()
    //Print("") ; 
 }
 
-
-
-//____________________________________________________________________________
-AliEMCALTrigger::AliEMCALTrigger(const AliEMCALTrigger & trig) 
-  : AliTriggerDetector(trig),
-    fGeom(trig.fGeom),
-    f2x2MaxAmp(trig.f2x2MaxAmp), 
-    f2x2ModulePhi(trig.f2x2ModulePhi),  
-    f2x2ModuleEta(trig.f2x2ModuleEta),
-    f2x2SM(trig.f2x2SM),
-    fnxnMaxAmp(trig.fnxnMaxAmp), 
-    fnxnModulePhi(trig.fnxnModulePhi),  
-    fnxnModuleEta(trig.fnxnModuleEta),
-    fnxnSM(trig.fnxnSM),
-    fADCValuesHighnxn(trig.fADCValuesHighnxn),
-    fADCValuesLownxn(trig.fADCValuesLownxn),
-    fADCValuesHigh2x2(trig.fADCValuesHigh2x2),
-    fADCValuesLow2x2(trig.fADCValuesLow2x2),
-    fDigitsList(trig.fDigitsList),
-    fL0Threshold(trig.fL0Threshold),
-    fL1GammaLowPtThreshold(trig.fL1GammaLowPtThreshold),
-    fL1GammaMediumPtThreshold(trig.fL1GammaMediumPtThreshold), 
-    fL1GammaHighPtThreshold(trig.fL1GammaHighPtThreshold),
-    fPatchSize(trig.fPatchSize),
-    fIsolPatchSize(trig.fIsolPatchSize), 
-    f2x2AmpOutOfPatch(trig.f2x2AmpOutOfPatch), 
-    fnxnAmpOutOfPatch(trig.fnxnAmpOutOfPatch), 
-    f2x2AmpOutOfPatchThres(trig.f2x2AmpOutOfPatchThres),  
-    fnxnAmpOutOfPatchThres(trig.fnxnAmpOutOfPatchThres), 
-    fIs2x2Isol(trig.fIs2x2Isol),
-    fIsnxnIsol(trig.fIsnxnIsol),  
-    fSimulation(trig.fSimulation),
-    fIsolateInSuperModule(trig.fIsolateInSuperModule),
-    fTimeKey(trig.fTimeKey),
-    fAmpTrus(trig.fAmpTrus),
-    fTimeRtrus(trig.fTimeRtrus),
-    fAmpSMods(trig.fAmpSMods),
-    fTriggerPosition(trig.fTriggerPosition),
-    fTriggerAmplitudes(trig.fTriggerAmplitudes),
-    fNJetPatchPhi(trig.fNJetPatchPhi), 
-    fNJetPatchEta(trig.fNJetPatchEta), 
-    fNJetThreshold(trig.fNJetThreshold),
-    fL1JetThreshold(trig.fL1JetThreshold), 
-    fJetMaxAmp(trig.fJetMaxAmp),
-    fAmpJetMatrix(trig.fAmpJetMatrix),
-    fJetMatrixE(trig.fJetMatrixE),
-    fAmpJetMax(trig.fAmpJetMax),
-    fVZER0Mult(trig.fVZER0Mult)
-{
-  // cpy ctor
-}
-
 //____________________________________________________________________________
 AliEMCALTrigger::~AliEMCALTrigger() {
 	

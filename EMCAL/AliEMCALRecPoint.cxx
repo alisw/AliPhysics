@@ -161,36 +161,59 @@ AliEMCALRecPoint& AliEMCALRecPoint::operator= (const AliEMCALRecPoint &rp)
 
   if(&rp == this) return *this;
 
-  fGeomPtr = rp.fGeomPtr;
-  fAmp = rp.fAmp;
+  fGeomPtr     = rp.fGeomPtr;
+  fAmp         = rp.fAmp;
   fIndexInList = rp.fIndexInList;
-  fGlobPos = rp.fGlobPos;
-  fLocPos  = rp.fLocPos;
-  fMaxDigit = rp.fMaxDigit;
-  fMulDigit = rp.fMulDigit;
-  fMaxTrack = rp.fMaxTrack;
-  fMulTrack = rp.fMaxTrack;
+  fGlobPos     = rp.fGlobPos;
+  fLocPos      = rp.fLocPos;
+  fMaxDigit    = rp.fMaxDigit;
+  fMulDigit    = rp.fMulDigit;
+  fMaxTrack    = rp.fMaxTrack;
+  fMulTrack    = rp.fMulTrack;
+  
+  if(fDigitsList) delete [] fDigitsList;
+  fDigitsList = new Int_t[rp.fMaxDigit];
+  if(fTracksList) delete [] fTracksList;
+  fTracksList = new Int_t[rp.fMaxTrack];
   for(Int_t i = 0; i<fMaxDigit; i++) fDigitsList[i] = rp.fDigitsList[i];
   for(Int_t i = 0; i<fMaxTrack; i++) fTracksList[i] = rp.fTracksList[i];
+  
   fClusterType = rp.fClusterType;
   fCoreEnergy  = rp.fCoreEnergy; 
   fDispersion  = rp.fDispersion;
+  
+  
+  if(fEnergyList) delete [] fEnergyList;
+  fEnergyList = new Float_t[rp.fMaxDigit];
+  if(fAbsIdList) delete [] fAbsIdList;
+  fAbsIdList = new Int_t[rp.fMaxDigit];  
   for(Int_t i = 0; i<fMaxDigit; i++) {
     fEnergyList[i] = rp.fEnergyList[i];
     fAbsIdList[i]  = rp.fAbsIdList[i];
   }
-  fTime = rp.fTime;
-  fNExMax = rp.fNExMax;
+  
+  fTime       = rp.fTime;
+  fNExMax     = rp.fNExMax;
   fCoreRadius = rp.fCoreRadius;
+  
+  if(fDETracksList) delete [] fDETracksList;
+  fDETracksList = new Float_t[rp.fMaxTrack];
   for(Int_t i = 0; i < fMaxTrack; i++) fDETracksList[i] = rp.fDETracksList[i];
+
   fMulParent = rp.fMulParent;
   fMaxParent = rp.fMaxParent;
+  
+  if(fParentsList) delete [] fParentsList;
+  fParentsList = new Int_t[rp.fMaxParent];
+  if(fDEParentsList) delete [] fDEParentsList;
+  fDEParentsList = new Float_t[rp.fMaxParent];
   for(Int_t i = 0; i < fMaxParent; i++) {
-    fParentsList[i] = rp.fParentsList[i]; 
+    fParentsList[i]   = rp.fParentsList[i]; 
     fDEParentsList[i] = rp.fDEParentsList[i];
   }
+  
   fSuperModuleNumber = rp.fSuperModuleNumber;
-  fDigitIndMax = rp.fDigitIndMax;
+  fDigitIndMax       = rp.fDigitIndMax;
 
   fLambda[0] = rp.fLambda[0];
   fLambda[1] = rp.fLambda[1];
