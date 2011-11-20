@@ -27,8 +27,6 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    PartCorrDep/AliAnalysisTaskPHOSExample.cxx 
-    PartCorrDep/AliAnaExample.cxx 
     PartCorrDep/AliAnaParticleIsolation.cxx 
     PartCorrDep/AliAnaParticlePartonCorrelation.cxx 
     PartCorrDep/AliAnaParticleHadronCorrelation.cxx 
@@ -44,6 +42,7 @@ set ( SRCS
     PartCorrDep/AliAnalysisTaskTaggedPhotons.cxx 
     PartCorrDep/AliAnaOmegaToPi0Gamma.cxx 
     PartCorrDep/AliAnaPhotonConvInCalo.cxx 
+    PartCorrDep/AliAnaInsideClusterInvariantMass.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
