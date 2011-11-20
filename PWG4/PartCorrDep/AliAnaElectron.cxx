@@ -80,7 +80,8 @@ AliAnaElectron::AliAnaElectron() :
     fhNCellsE [index] = 0;    
     fhTimeE   [index] = 0;  
     fhMaxCellDiffClusterE[index] = 0;
-    fhE       [index] = 0;                        
+    fhE       [index] = 0;    
+    fhPt      [index] = 0;                        
     fhPhi     [index] = 0;                      
     fhEta     [index] = 0; 
     fhEtaPhi  [index] = 0;                   
