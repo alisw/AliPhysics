@@ -527,7 +527,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     if     ( nMax == 2 ) absId2 = absIdList[1];
     else if( nMax == 1 ){
       //Find second highest energy cell
-      Int_t enmax = 0 ;
+      Float_t enmax = 0 ;
       for(Int_t iDigit = 0 ; iDigit < cluster->GetNCells() ; iDigit++){
         Int_t absId = cluster->GetCellsAbsId()[iDigit];
         if( absId == absId1 ) continue ; 
@@ -671,6 +671,9 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
     else      icol2+=AliEMCALGeoParams::fgkEMCALCols;
   }
   
+  // just to avoid compilation warning
+  Int_t nTotCells = cells->GetNumberOfCells(); 
+  if(GetDebug() > 2)printf("N cells %d, e1 %f, e2 %f\n", nTotCells,e1, e2); 
 /// continue here  
   
 }
