@@ -80,6 +80,9 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fOutliersCut;        //! outliers cut (in n-sigma)
   Int_t    fQuality;            //! quality for centrality determination
 
+  Bool_t   fCVHN;               //! if the event is central trigger
+  Bool_t   fCVLN;               //! if the event is semicentral trigger
+
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentFMD;            // percentile centrality from FMD
   Float_t  fCentTRK;            // percentile centrality from tracks
@@ -103,6 +106,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TList   *fOutputList; // output list
   
   TH1F *fHOutCentV0M     ;    //control histogram for centrality
+  TH1F *fHOutCentV0M_CVHN;    //control histogram for centrality
+  TH1F *fHOutCentV0M_CVLN;    //control histogram for centrality
   TH1F *fHOutCentFMD     ;    //control histogram for centrality
   TH1F *fHOutCentTRK     ;    //control histogram for centrality
   TH1F *fHOutCentTKL     ;    //control histogram for centrality
@@ -153,7 +158,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;         //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 11); 
+  ClassDef(AliCentralitySelectionTask, 12); 
 };
 
 #endif

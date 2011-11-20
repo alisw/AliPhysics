@@ -106,6 +106,8 @@ AliAnalysisTaskSE(),
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
+  fCVHN(0),
+  fCVLN(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -126,6 +128,8 @@ AliAnalysisTaskSE(),
   fHtempZEMvsZDC(0),
   fOutputList(0),
   fHOutCentV0M     (0),
+  fHOutCentV0M_CVHN(0),
+  fHOutCentV0M_CVLN(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -202,7 +206,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fV0MSPDSigmaOutlierPar2(0),  
   fV0MTPCSigmaOutlierPar0(0),  
   fV0MTPCSigmaOutlierPar1(0),  
-  fV0MTPCSigmaOutlierPar2(0),    			   			   
+  fV0MTPCSigmaOutlierPar2(0),
   fV0MZDCOutlierPar0(0),	    
   fV0MZDCOutlierPar1(0),	    
   fV0MZDCEcalOutlierPar0(0),   
@@ -211,6 +215,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
+  fCVHN(0),
+  fCVLN(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -231,6 +237,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempZEMvsZDC(0),
   fOutputList(0),
   fHOutCentV0M     (0),
+  fHOutCentV0M_CVHN(0),
+  fHOutCentV0M_CVLN(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -317,7 +325,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fV0MSPDSigmaOutlierPar2(ana.fV0MSPDSigmaOutlierPar2),  
   fV0MTPCSigmaOutlierPar0(ana.fV0MTPCSigmaOutlierPar0),  
   fV0MTPCSigmaOutlierPar1(ana.fV0MTPCSigmaOutlierPar1),  
-  fV0MTPCSigmaOutlierPar2(ana.fV0MTPCSigmaOutlierPar2),    			   			   
+  fV0MTPCSigmaOutlierPar2(ana.fV0MTPCSigmaOutlierPar2), 
   fV0MZDCOutlierPar0(ana.fV0MZDCOutlierPar0),	    
   fV0MZDCOutlierPar1(ana.fV0MZDCOutlierPar1),	    
   fV0MZDCEcalOutlierPar0(ana.fV0MZDCEcalOutlierPar0),   
@@ -326,6 +334,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fZVCut(ana.fZVCut),
   fOutliersCut(ana.fOutliersCut),
   fQuality(ana.fQuality),
+  fCVHN(ana.fCVHN),
+  fCVLN(ana.fCVLN),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
   fCentTRK(ana.fCentTRK),
@@ -346,6 +356,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHtempZEMvsZDC(ana.fHtempZEMvsZDC),
   fOutputList(ana.fOutputList),
   fHOutCentV0M     (ana.fHOutCentV0M     ),
+  fHOutCentV0M_CVHN(ana.fHOutCentV0M_CVHN),
+  fHOutCentV0M_CVLN(ana.fHOutCentV0M_CVLN),
   fHOutCentFMD     (ana.fHOutCentFMD     ),
   fHOutCentTRK     (ana.fHOutCentTRK     ),
   fHOutCentTKL     (ana.fHOutCentTKL     ),
@@ -413,6 +425,8 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner();
   fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
+  fHOutCentV0M_CVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
+  fHOutCentV0M_CVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
   fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
   fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
   fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
@@ -465,6 +479,8 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
 
   fOutputList->Add(  fHOutCentV0M     );
+  fOutputList->Add(  fHOutCentV0M_CVHN);
+  fOutputList->Add(  fHOutCentV0M_CVLN);
   fOutputList->Add(  fHOutCentFMD     );
   fOutputList->Add(  fHOutCentTRK     );
   fOutputList->Add(  fHOutCentTKL     );
@@ -580,6 +596,15 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     multV0AOnline=esdV0->GetTriggerChargeA(); 
     multV0COnline=esdV0->GetTriggerChargeC(); 
 
+
+    // ***** Trigger info    
+    TString trigStr(esd->GetFiredTriggerClasses());
+    fCVHN=kFALSE;    fCVLN=kFALSE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN"))) 
+     fCVHN=kTRUE;
+    else if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")))
+     fCVLN=kTRUE;
+    
 
     // ***** Vertex Info
     const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
@@ -726,6 +751,10 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
   }
 
+  if (fCVHN)     
+  fHOutCentV0M_CVHN->Fill(fCentV0M);
+  if (fCVLN)     
+  fHOutCentV0M_CVLN->Fill(fCentV0M);
 
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB); 
   if (isSelected) { // fill the QA histograms only for MB events!
