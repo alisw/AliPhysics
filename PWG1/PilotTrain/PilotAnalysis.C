@@ -253,7 +253,7 @@ void AddAnalysisTasks()
 //  taskv0qa->SelectCollisionCandidates();
   }
   //
-  // TPC (Jacek Otwinowski & Michael Knichel)
+  // TPC (Jacek Otwinowski & Michael Knichel & Weilin Yu)
   //
   //
   // Optionally MC information can be used by setting the 1st argument to true
@@ -262,7 +262,10 @@ void AddAnalysisTasks()
   // Optionally highMult axis can be used by setting the 3st argument to true (for PbPb)
   if (doTPC) {
     gROOT->LoadMacro("$ALICE_ROOT/PWG1/TPC/macros/AddTaskPerformanceTPCdEdxQA.C");
-    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE);
+    // low multiplicity (pp) 
+    //AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kFALSE);
+    // high multiplicity (Pb-Pb)
+    AliPerformanceTask *tpcQA = AddTaskPerformanceTPCdEdxQA(kFALSE, kTRUE, kTRUE);
     tpcQA->SelectCollisionCandidates(kTriggerMask);
   }  
   //
