@@ -136,7 +136,7 @@ void AliEbyEFluctuationAnalysisTask::UserExec(Option_t *) {
 
       if((nCentrality < 0)||(nCentrality > 19)) return;
       
-      if(fAnalysisMode = "TPC") {
+      if(fAnalysisMode == "TPC") {
 	const AliESDVertex *vertex = fESD->GetPrimaryVertexTPC();
 	if(vertex) {
 	  if(vertex->GetNContributors() > 0) {
