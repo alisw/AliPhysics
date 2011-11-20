@@ -605,7 +605,8 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const In
   else if(clus->E() < 6 ) fhDeltaIEtaDeltaIPhiE2[matched]->Fill(dIeta,dIphi);
   else                    fhDeltaIEtaDeltaIPhiE6[matched]->Fill(dIeta,dIphi);
   
-  Float_t dIA    = 1.*(dIphi-dIeta)/(dIeta+dIphi);
+  Float_t dIA = 0;
+  if( dIeta+dIphi > 0 ) dIA = 1.*(dIphi-dIeta)/(dIeta+dIphi);
   fhDeltaIA[matched]->Fill(clus->E(),dIA);
   
   if(clus->E() > 0.5){
