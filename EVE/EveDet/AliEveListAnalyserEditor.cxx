@@ -548,8 +548,8 @@ void AliEveListAnalyserEditor::DrawHistos()
   TFile* file = new TFile(Form("/tmp/ListAnalyserMacroData_%s.root", gSystem->Getenv("USER")), "READ");
   if (!file)  
   {
-    Error("Draw histograms", Form("Cannot open file \"/tmp/ListAnalyserMacroData_%s.root\"", 
-                                  gSystem->Getenv("USER")));
+    Error("Draw histograms", "Cannot open file \"/tmp/ListAnalyserMacroData_%s.root\"",
+                                  gSystem->Getenv("USER"));
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                  Form("Cannot open file \"/tmp/ListAnalyserMacroData_%s.root\"", gSystem->Getenv("USER")),
                  kMBIconExclamation, kMBOk);
@@ -580,8 +580,8 @@ void AliEveListAnalyserEditor::DrawHistos()
       if (myHist != 0)  myHist->Draw();
       else
       {
-        Error("Draw histograms", Form("No histogram for histo macro \"%s\" found!", 
-                                      fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
+        Error("Draw histograms", "No histogram for histo macro \"%s\" found!",
+                                      fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName());
         new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                      Form("No histogram for histo macro \"%s\" found!", 
                           fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
@@ -592,8 +592,8 @@ void AliEveListAnalyserEditor::DrawHistos()
     }
     else
     {
-      Error("Draw histograms", Form("No data for histo macro \"%s\" found!\nMaybe no objects have been selected.", 
-                                    fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()));
+      Error("Draw histograms", "No data for histo macro \"%s\" found!\nMaybe no objects have been selected.",
+                                    fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName());
       new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                    Form("No data for histo macro \"%s\" found!\nMaybe no objects have been selected.", 
                         fM->fDataFromMacroList->At(indexOfHistoMacro)->GetName()), kMBIconExclamation, kMBOk);
@@ -613,8 +613,8 @@ void AliEveListAnalyserEditor::DrawHistos()
         indexOfMacro1 = i;
         if (!(t = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no objects have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
@@ -640,8 +640,8 @@ void AliEveListAnalyserEditor::DrawHistos()
         indexOfMacro2 = i;
         if (!(tFriend1 = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no objects have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()),
@@ -673,8 +673,8 @@ void AliEveListAnalyserEditor::DrawHistos()
         indexOfMacro3 = i;
         if (!(tFriend2 = (TTree*)file->Get(Form("ObjectData%d", i))))
         { 
-          Error("Draw histograms", Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
-                                        fM->fDataFromMacroList->At(i)->GetName()));
+          Error("Draw histograms", "No data for macro \"%s\" found!\nMaybe no objects have been selected.",
+                                        fM->fDataFromMacroList->At(i)->GetName());
           new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error - Draw histograms", 
                        Form("No data for macro \"%s\" found!\nMaybe no objects have been selected.", 
                             fM->fDataFromMacroList->At(i)->GetName()), kMBIconExclamation, kMBOk);
@@ -840,7 +840,7 @@ void AliEveListAnalyserEditor::InheritMacroList()
                                                                macro->GetObjectType(), macro->GetObjectType2()));
     else
     {
-      Error("AliEveListAnalyserEditor::InheritMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
+      Error("AliEveListAnalyserEditor::InheritMacroList", "Failed to inherit the macro \"%s\"!", key->GetName());
     }
   }
   
@@ -909,7 +909,7 @@ void AliEveListAnalyserEditor::SaveMacroList(TMap* list)
                                                                    macro->GetObjectType(), macro->GetObjectType2()));
     else
     {
-      Error("AliEveListAnalyserEditor::SaveMacroList", Form("Failed to inherit the macro \"%s\"!", key->GetName()));
+      Error("AliEveListAnalyserEditor::SaveMacroList", "Failed to inherit the macro \"%s\"!", key->GetName());
     }
   }
 }
@@ -1077,14 +1077,14 @@ void AliEveListAnalyserEditor::UpdateMacroList()
       else
       {
         Error("AliEveListAnalyserEditor::UpdateMacroList()", 
-              Form("Macro \"%s/%s.C\" is neither a selection macro nor a process macro!",
-                   macro->GetPath(), macro->GetName()));                                        
+              "Macro \"%s/%s.C\" is neither a selection macro nor a process macro!",
+                   macro->GetPath(), macro->GetName());
       }
     }
     else
     {
       Error("AliEveListAnalyserEditor::UpdateMacroList()", 
-              Form("Macro list is corrupted: Macro \"%s\" not found!", key->GetName()));            
+              "Macro list is corrupted: Macro \"%s\" not found!", key->GetName());
     }     
   }
 
@@ -1415,7 +1415,7 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   if(!gSystem->AccessPathName(Form("./%s.C", name)))
   {
     // If there is already a file with this name -> Error
-    Error("AliEveGeneralMacroWizard::Create", Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name));
+    Error("AliEveGeneralMacroWizard::Create", "A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name);
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  Form("A macro \"%s.C\" already exists in the current directory!\nPlease choose another name!", name), kMBIconExclamation, kMBOk);
     return;
@@ -1462,35 +1462,35 @@ void AliEveGeneralMacroWizard::Create(Int_t type)
   case AliEveListAnalyser::kSingleObjectSelect:
     // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object)\n"
     tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectSelect:
     // Use "Bool_t 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2)\n"
     tempStr->Append("Bool_t ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   case AliEveListAnalyser::kSingleObjectAnalyse:    
     // Use "void 'NAME'(const 'OBJECTTYPE' *object, Double_t*& r, Int_t& n)\n"
     tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, Double_t*& r, Int_t& n)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   case AliEveListAnalyser::kSingleObjectHisto:
     // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object)\n"
     tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectAnalyse:
     // Use "void 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2, Double_t*& r, Int_t& n)\n"
     tempStr->Append("void ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2, Double_t*& r, Int_t& n)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   case AliEveListAnalyser::kCorrelObjectHisto:
     // Use "TH1* 'NAME'(const 'OBJECTTYPE' *object, const 'OBJECTTYPE2' *object2)\n"
     tempStr->Append("TH1* ").Append(name).Append("(const ").Append(typeStr->Data()).Append(" *object, const ").Append(typeStr2->Data()).Append(" *object2)\n");
-    fprintf(fp, tempStr->Data());
+    fprintf(fp, "%s", tempStr->Data());
     break;
   default:
-    Error("AliEveGeneralMacroWizard::Create", Form("Unknown type[%d]", type));
+    Error("AliEveGeneralMacroWizard::Create", "Unknown type[%d]", type);
     new TGMsgBox(gClient->GetRoot(), GetMainFrame(), "Error", 
                  Form("Unknown type[%d]", type), kMBIconExclamation, kMBOk);
     fclose(fp);
