@@ -191,8 +191,10 @@ class AliHLTTPCHWCFData : public AliHLTLogging {
       : fData(pData), fVersion(version), fElementSize(elementSize) {}
     iterator(const iterator& i)
       : fData(i.fData), fVersion(i.fVersion), fElementSize(i.fElementSize) {}
-    iterator& operator=(const iterator& i)
-      { fData=i.fData; fVersion=i.fVersion; fElementSize=i.fElementSize; return *this;}
+    iterator& operator=(const iterator& i) {
+      if (this==&i) return *this;
+      fData=i.fData; fVersion=i.fVersion; fElementSize=i.fElementSize; return *this;
+    }
     ~iterator() {fData=NULL;}
 
     bool operator==(const iterator& i) const  {return (fData!=NULL) && (fData==i.fData);}

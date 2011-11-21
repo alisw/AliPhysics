@@ -145,6 +145,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       iterator(AliTPCclusterMIContainer* pData) : fClusterNo(-1), fData(pData), fCluster(NULL), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec), fRowOffset(0) {}
       iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fCluster(other.fCluster), fClusterId(other.fClusterId), fRowOffset(other.fRowOffset) {}
       iterator& operator=(const iterator& other) {
+	if (this==&other) return *this;
 	fClusterNo=other.fClusterNo; fData=other.fData; fCluster=other.fCluster, fClusterId=other.fClusterId; fRowOffset=other.fRowOffset; return *this;
       }
       ~iterator() {}

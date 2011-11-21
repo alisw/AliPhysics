@@ -149,8 +149,10 @@ class AliHLTTPCHWCFSpacePointContainer : public AliHLTSpacePointContainer
       : fDecoder(pDecoder), fGrid(pGrid), fId(id) {}
     AliHLTTPCHWCFSpacePointBlock(const AliHLTTPCHWCFSpacePointBlock& s) 
       : fDecoder(s.fDecoder), fGrid(s.fGrid), fId(s.fId) {}
-    AliHLTTPCHWCFSpacePointBlock& operator=(const AliHLTTPCHWCFSpacePointBlock& s) 
-    { fDecoder=s.fDecoder; fGrid=s.fGrid; fId=s.fId; return *this;}
+    AliHLTTPCHWCFSpacePointBlock& operator=(const AliHLTTPCHWCFSpacePointBlock& s) {
+      if (this==&s) return *this;
+      fDecoder=s.fDecoder; fGrid=s.fGrid; fId=s.fId; return *this;
+    }
     ~AliHLTTPCHWCFSpacePointBlock() {}
 
     int GetNofSpacepoints() const {return fDecoder?fDecoder->GetNumberOfClusters():0;}
