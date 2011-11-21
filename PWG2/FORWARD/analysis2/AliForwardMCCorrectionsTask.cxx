@@ -40,6 +40,7 @@ namespace {
   {
     return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
   }
+#if 0
   const char* GetHitsName(UShort_t d, Char_t r) 
   {
     return Form("hitsFMD%d%c", d, r);
@@ -54,6 +55,7 @@ namespace {
 		((r == 'I' || r == 'i') ? "Inner" : "Outer"), 
 		(trVtx ? "TrVtx" : "All"));
   }
+#endif
 }
 
 //====================================================================

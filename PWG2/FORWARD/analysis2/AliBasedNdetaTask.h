@@ -469,8 +469,9 @@ protected:
    * Calculations done per centrality 
    * 
    */
-  struct CentralityBin : public TNamed
+  class CentralityBin : public TNamed
   {
+  public:
     /** dN
      * Constructor 
      */

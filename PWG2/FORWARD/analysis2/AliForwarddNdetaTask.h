@@ -82,8 +82,9 @@ protected:
   AliBasedNdetaTask::CentralityBin* 
   MakeCentralityBin(const char* name, Short_t l, Short_t h) const;
 
-  struct CentralityBin : public AliBasedNdetaTask::CentralityBin 
+  class CentralityBin : public AliBasedNdetaTask::CentralityBin 
   {
+  public:
     /** 
      * Constructor 
      */
