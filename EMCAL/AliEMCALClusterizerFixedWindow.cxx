@@ -379,11 +379,15 @@ void AliEMCALClusterizerFixedWindow::MakeClusters()
     
   } // loop on phi shift
 	
+  if(fNumberOfECAClusters >= fRecPoints->GetSize()) 
+    fRecPoints->Expand(fNumberOfECAClusters+1);
+  
   Int_t iRecPoint = 0;
-  for (Int_t iCluster = 0; iCluster < nTotalClus; iCluster++){
+  for (Int_t iCluster = 0; iCluster < nTotalClus; iCluster++) {
     
-    if (fClustersArray[iCluster] == NULL) continue;
-		
+    if (fClustersArray[iCluster] == NULL) 
+      continue;
+
     (*fRecPoints)[iRecPoint] = new AliEMCALRecPoint("");
     AliEMCALRecPoint *recPoint = dynamic_cast<AliEMCALRecPoint*> (fRecPoints->At(iRecPoint));
 		
