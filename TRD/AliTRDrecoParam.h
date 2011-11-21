@@ -49,6 +49,7 @@ public:
   };
   AliTRDrecoParam();
   AliTRDrecoParam(const AliTRDrecoParam &rec);
+  const AliTRDrecoParam& operator=(const AliTRDrecoParam &rec);
   ~AliTRDrecoParam() { }
 
   Double_t GetChi2Y() const                 { return fkChi2Y;    }

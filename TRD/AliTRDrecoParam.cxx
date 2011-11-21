@@ -108,12 +108,12 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   ,fkMaxTheta(ref.fkMaxTheta)
   ,fkMaxPhi(ref.fkMaxPhi)
   ,fkRoad0y(ref.fkRoad0y)
-  ,fkRoad0z(ref.fkRoad0z) 
+  ,fkRoad0z(ref.fkRoad0z)
   ,fkRoad1y(ref.fkRoad1y)
-  ,fkRoad1z(ref.fkRoad1z)	
+  ,fkRoad1z(ref.fkRoad1z)
   ,fkRoad2y(ref.fkRoad2y)
   ,fkRoad2z(ref.fkRoad2z)
-  ,fkPtThreshold(ref.fkPtThreshold) 
+  ,fkPtThreshold(ref.fkPtThreshold)
   ,fkPlaneQualityThreshold(ref.fkPlaneQualityThreshold)
   ,fkRoadzMultiplicator(ref.fkRoadzMultiplicator)
   ,fkFindable(ref.fkFindable)
@@ -147,6 +147,58 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
   memcpy(fTCParams, ref.fTCParams, 8*sizeof(Double_t));
   memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
   memcpy(fStreamLevel, ref.fStreamLevel, kTRDreconstructionTasks * sizeof(Int_t));
+}
+
+//______________________________________________________________
+const AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
+{
+  //
+  // assignment operator
+  //
+
+  if(this == &ref) return *this;
+  AliDetectorRecoParam::operator=(ref);
+  fkdNchdy              = ref.fkdNchdy;
+  fkMaxTheta            = ref.fkMaxTheta;
+  fkMaxPhi              = ref.fkMaxPhi;
+  fkRoad0y              = ref.fkRoad0y;
+  fkRoad0z              = ref.fkRoad0z;
+  fkRoad1y              = ref.fkRoad1y;
+  fkRoad1z              = ref.fkRoad1z;
+  fkRoad2y              = ref.fkRoad2y;
+  fkRoad2z              = ref.fkRoad2z;
+  fkPtThreshold         = ref.fkPtThreshold;
+  fkPlaneQualityThreshold= ref.fkPlaneQualityThreshold;
+  fkRoadzMultiplicator  = ref.fkRoadzMultiplicator;
+  fkFindable            = ref.fkFindable;
+  fkChi2Z               = ref.fkChi2Z;
+  fkChi2Y               = ref.fkChi2Y;
+  fkChi2YSlope          = ref.fkChi2YSlope;
+  fkChi2ZSlope          = ref.fkChi2ZSlope;
+  fkChi2YCut            = ref.fkChi2YCut;
+  fkPhiSlope            = ref.fkPhiSlope;
+  fkNMeanClusters       = ref.fkNMeanClusters;
+  fkNSigmaClusters      = ref.fkNSigmaClusters;
+  fkNClusterNoise       = ref.fkNClusterNoise;
+  fkNMeanTracklets      = ref.fkNMeanTracklets;
+  fkTrackLikelihood     = ref.fkTrackLikelihood;
+  fNumberOfConfigs      = ref.fNumberOfConfigs;
+  fFlags                = ref.fFlags;
+  fRawStreamVersion     = ref.fRawStreamVersion;
+  fMinMaxCutSigma       = ref.fMinMaxCutSigma;
+  fMinLeftRightCutSigma = ref.fMinLeftRightCutSigma;
+  fClusMaxThresh        = ref.fClusMaxThresh;
+  fClusSigThresh        = ref.fClusSigThresh;
+  fTCnexp               = ref.fTCnexp;
+  fRecEveryNTB          = ref.fRecEveryNTB;
+  fNumberOfPresamples   = ref.fNumberOfPresamples;
+  fNumberOfPostsamples  = ref.fNumberOfPostsamples;
+
+  memcpy(fSysCovMatrix, ref.fSysCovMatrix, 5*sizeof(Double_t));
+  memcpy(fTCParams, ref.fTCParams, 8*sizeof(Double_t));
+  memcpy(fPIDThreshold, ref.fPIDThreshold, AliTRDCalPID::kNMom*sizeof(Double_t));
+  memcpy(fStreamLevel, ref.fStreamLevel, kTRDreconstructionTasks * sizeof(Int_t));
+  return *this;
 }
 
 //______________________________________________________________
