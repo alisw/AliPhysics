@@ -100,8 +100,9 @@ protected:
    * Class that holds data for a single centrality bin 
    * 
    */
-  struct CentralityBin : public AliBasedNdetaTask::CentralityBin 
+  class CentralityBin : public AliBasedNdetaTask::CentralityBin 
   {
+  public:
     /** 
      * Constructor 
      */
