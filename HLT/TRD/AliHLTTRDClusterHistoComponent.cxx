@@ -52,6 +52,7 @@ AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
   fClsAmp(NULL),
   fClsAmpDrift(NULL),
   fClsTB(NULL),
+  fClsAmpDriftDet(),
   fClsAmpDist(NULL),
   fSClsDist(NULL),
   fNScls(NULL),
@@ -62,7 +63,7 @@ AliHLTTRDClusterHistoComponent::AliHLTTRDClusterHistoComponent()
   // refer to README to build package
   // or
   // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
+  memset(fClsAmpDriftDet, 0, sizeof(fClsAmpDriftDet));
 }
 
 AliHLTTRDClusterHistoComponent::~AliHLTTRDClusterHistoComponent()
