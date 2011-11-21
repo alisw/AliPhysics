@@ -602,7 +602,7 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     fCVHN=kFALSE;    fCVLN=kFALSE;
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN"))) 
      fCVHN=kTRUE;
-    else if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")))
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")))
      fCVLN=kTRUE;
     
 
