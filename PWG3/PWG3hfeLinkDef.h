@@ -61,6 +61,7 @@
 #pragma link C++ class  AliAnalysisTaskDisplacedElectrons+;
 
 #pragma link C++ class  AliHFEOADBThresholdsTRD+;
+#pragma link C++ class  AliHFEOADBThresholdsTRD::AliHFEthresholdParamsTRD+;
 #pragma link C++ class  AliHFEbayesPIDqa+;
 #pragma link C++ class  AliHFEpidBayes+;
 
