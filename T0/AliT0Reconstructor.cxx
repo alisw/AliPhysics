@@ -144,7 +144,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
  
   Float_t c = 29.9792458; // cm/ns
   Float_t channelWidth = fParam->GetChannelWidth() ;  
-  Double32_t vertex = 9999999, meanVertex = 9999999 ;
+  Double32_t vertex = 9999999, meanVertex = 0 ;
   Double32_t timeDiff=999999, meanTime=999999, timeclock=999999;
   
   
@@ -193,16 +193,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
   Float_t time[24], adc[24], adcmip[24];
   for (Int_t ipmt=0; ipmt<24; ipmt++) {
     if(timeCFD->At(ipmt)>0 ) {
+      Float_t timefull = 0.001*( timeCFD->At(ipmt) - 511 - timeDelayCFD[ipmt])  * channelWidth;
+      frecpoints.SetTimeFull(ipmt, 0 ,timefull) ;
       if(( chargeQT1->At(ipmt) - chargeQT0->At(ipmt))>0)  
 	adc[ipmt] = chargeQT1->At(ipmt) - chargeQT0->At(ipmt);
       else
 	adc[ipmt] = 0;
       
       time[ipmt] = fCalib-> WalkCorrection(refAmp, ipmt, Int_t(adc[ipmt]),  timeCFD->At(ipmt)) ;
-      
+      time[ipmt] =   time[ipmt] - 511;   
       Double_t sl = Double_t(timeLED->At(ipmt) - timeCFD->At(ipmt));
       //    time[ipmt] = fCalib-> WalkCorrection( refAmp,ipmt, Int_t(sl),  timeCFD->At(ipmt) ) ;
-      AliDebug(5,Form(" ipmt %i QTC %i , time in chann %i (led-cfd) %i ",
+      AliDebug(5,Form(" ipmt %i QTC  %i , time in chann %i (led-cfd) %i ",
 		      ipmt, Int_t(adc[ipmt]) ,Int_t(time[ipmt]),Int_t( sl)));
       
       Double_t ampMip = 0;
@@ -219,7 +221,7 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
       
     }
     else {
-      time[ipmt] = 0;
+      time[ipmt] = -99999;
       adc[ipmt] = 0;
       adcmip[ipmt] = 0;
       
@@ -247,14 +249,14 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     }
   
   if( besttimeA < 999999 && besttimeA!=0) {
-    frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  - 12500.);
-    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c)  - 12500.);
+    frecpoints.SetTimeBestA((besttimeA_best * channelWidth  - fdZonA/c)  );
+    frecpoints.SetTime1stA((besttimeA * channelWidth  - fdZonA/c) );
     tr[1]=true;
   }
   
   if( besttimeC < 999999 && besttimeC!=0) {
-    frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c)  - 12500.);
-    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c)  - 12500.);
+    frecpoints.SetTimeBestC((besttimeC_best * channelWidth  - fdZonC/c) );
+    frecpoints.SetTime1stC((besttimeC * channelWidth  - fdZonC/c) );
     tr[2]=true;
   }
   
@@ -267,18 +269,18 @@ void AliT0Reconstructor::Reconstruct(TTree*digitsTree, TTree*clustersTree) const
     timeDiff = (besttimeA - besttimeC)*channelWidth;
     meanTime = channelWidth * (besttimeA_best + besttimeC_best)/2. ; 
     timeclock = channelWidth * (besttimeA + besttimeC)/2. ;
-    vertex = meanVertex - c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
+    vertex = meanVertex - 0.001* c*(timeDiff)/2.;// + (fdZonA - fdZonC)/2;
     tr[0]=true; 
   }
   frecpoints.SetVertex(vertex);
-  frecpoints.SetMeanTime(meanTime - 12500.);
-  frecpoints.SetT0clock(timeclock - 12500.);
+  frecpoints.SetMeanTime(meanTime );
+  frecpoints.SetT0clock(timeclock );
   frecpoints.SetT0Trig(tr);
   
- AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f shiftA %f shiftC %f ",
+ AliDebug(5,Form("fRecPoints:::  1stimeA %f , besttimeA %f 1sttimeC %f besttimeC %f vertex %f",
 		  frecpoints.Get1stTimeA(),  frecpoints.GetBestTimeA(),
 		  frecpoints.Get1stTimeC(),  frecpoints.GetBestTimeC(), 
-		  fTimeMeanShift[1],fTimeMeanShift[2] ) );
+		  vertex ) );
   
   AliDebug(5,Form("T0 triggers %d %d %d %d %d",tr[0],tr[1],tr[2],tr[3],tr[4]));
   
