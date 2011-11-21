@@ -44,6 +44,7 @@ AliHLTHuffmanNode::AliHLTHuffmanNode(const AliHLTHuffmanNode& other)
 
 AliHLTHuffmanNode& AliHLTHuffmanNode::operator =(const AliHLTHuffmanNode& other) {
         /// assignment operator
+        if (this==&other) return *this;
 	this->fValue = other.fValue;
 	this->fWeight = other.fWeight;
 	return *this;
@@ -369,6 +370,7 @@ void AliHLTHuffman::Print(Option_t* option) const {
 }
 
 AliHLTHuffman& AliHLTHuffman::operator =(const AliHLTHuffman& other) {
+        if (this==&other) return *this;
 	fMaxValue = other.fMaxValue;
 	fNodes = other.fNodes;
 	fHuffTopNode = NULL;

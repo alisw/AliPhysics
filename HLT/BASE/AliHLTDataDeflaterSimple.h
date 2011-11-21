@@ -60,6 +60,7 @@ public:
       , fValueCount(0), fBitCount(0) {}
 
     AliHLTDataDeflaterParameter& operator=(const AliHLTDataDeflaterParameter& src) {
+      if (this==&src) return *this;
       fName=src.fName; fFullBitLength=src.fFullBitLength; fReducedBitLength=src.fReducedBitLength;
       fMax=src.fMax; fMaxReduced=src.fMaxReduced;
       fMask=src.fMask; fMaskReduced=src.fMaskReduced;
