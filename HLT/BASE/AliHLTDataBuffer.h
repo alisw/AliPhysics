@@ -305,6 +305,7 @@ class AliHLTDataBuffer : public TObject, public AliHLTLogging
     AliHLTDataSegment& operator=(const AliHLTDataSegment& src)
     {
       // AliHLTDataSegment just stores external pointers and properties
+      if (this==&src) return *this;
       fDataType=src.fDataType;
       fPtr=src.fPtr;
       fSegmentOffset=src.fSegmentOffset;
