@@ -38,6 +38,9 @@ class AliHLTTPCInterMerger : public AliHLTTPCMerger {
   void MMerge();  //Loop over tracks from different subsectors
   
  private:
+  AliHLTTPCInterMerger(const AliHLTTPCInterMerger&);
+  AliHLTTPCInterMerger& operator=(const AliHLTTPCInterMerger&);
+
   Int_t fPatch;  // current patch
   Int_t fRowMin; // min row
   Int_t fRowMax; // max row
