@@ -236,6 +236,7 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackModelClustersCompressed(T& c, cons
     fpDataInflaterTrack->Clear();
   if (!fpDataInflaterTrack) {
     HLTError("failed to create the data inflater for mode %d", trackModelBlock->fDeflaterMode);
+    return -ENODEV;
   }
   int nofTracks=trackModelBlock->fTrackCount;
   dataOffset+=trackModelBlock->fGlobalParameterCnt*sizeof(trackModelBlock->fGlobalParameters);
