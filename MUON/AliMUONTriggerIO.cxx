@@ -283,7 +283,10 @@ AliMUONTriggerIO::ReadLocalLUT(AliMUONTriggerLut& lut,
   Bool_t trigx = kFALSE;
   
   // read two lut addresses at once, 32768/2=16384 times
-  fread(buffer,fgkLocalLutSize,1,flut);
+  if (fread(buffer,fgkLocalLutSize,1,flut) == 0) {
+    AliWarning("Error reading the LUT file");
+    return;
+  }
 
   // create the 32767 addresses for the 4-bits lpt and hpt half-bytes
   for (UShort_t ilut = 0; ilut < fgkLocalLutSize*2; ilut += 2) 
