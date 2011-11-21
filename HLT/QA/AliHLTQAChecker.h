@@ -20,7 +20,6 @@ class AliHLTQAChecker: public AliQACheckerBase {
   
  public:
   AliHLTQAChecker();
-  AliHLTQAChecker(const AliHLTQAChecker& src);
   virtual ~AliHLTQAChecker();
 
   virtual Double_t * Check(AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam); 
@@ -28,6 +27,8 @@ class AliHLTQAChecker: public AliQACheckerBase {
   void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;
 
 private:
+  AliHLTQAChecker(const AliHLTQAChecker& src);
+  AliHLTQAChecker& operator=(const AliHLTQAChecker& src);
   
   Double_t CheckRAW(Int_t specie, TObjArray* list);
   Double_t CheckREC(Int_t specie, TObjArray* list);

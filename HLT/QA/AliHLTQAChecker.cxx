@@ -31,11 +31,6 @@ AliHLTQAChecker::AliHLTQAChecker()
 {
 }
 
-AliHLTQAChecker::AliHLTQAChecker(const AliHLTQAChecker& src) 
-  : AliQACheckerBase(src.GetName(), src.GetTitle())
-{
-}
-
 AliHLTQAChecker::~AliHLTQAChecker()
 {
 }
