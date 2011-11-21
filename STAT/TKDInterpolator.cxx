@@ -76,7 +76,7 @@ Bool_t TKDInterpolator::SetNode(Int_t inode, const TKDNodeInfo &ref)
     return kFALSE;
   }
   if(inode >= GetNTNodes()){
-    Warning("TKDInterpolator::SetNode()", Form("Node array defined up to %d.", GetNTNodes()));
+    Warning("TKDInterpolator::SetNode()", "Node array defined up to %d.", GetNTNodes());
     return kFALSE;
   }
   TKDNodeInfo *node = (TKDNodeInfo*)(*fNodes)[inode];

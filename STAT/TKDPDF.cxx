@@ -48,14 +48,14 @@ TKDPDF::TKDPDF(TTree *t, const Char_t *var, const Char_t *cut, UInt_t bsize, Lon
   TObjArray *vars = TString(var).Tokenize(":");
   fNDim = vars->GetEntriesFast(); fNDimm = 2*fNDim;
   fNSize = fNDim;
-  if(fNDim > 6/*kDimMax*/) Warning("TKDPDF(TTree*, const Char_t, const Char_t, UInt_t)", Form("Variable number exceed maximum dimension %d. Results are unpredictable.", 6/*kDimMax*/));
+  if(fNDim > 6/*kDimMax*/) Warning("TKDPDF(TTree*, const Char_t, const Char_t, UInt_t)", "Variable number exceed maximum dimension %d. Results are unpredictable.", 6/*kDimMax*/);
   fBucketSize = bsize;
 
   Int_t np;
   Double_t *v;
   for(int idim=0; idim<fNDim; idim++){
     if(!(np = t->Draw(((TObjString*)(*vars)[idim])->GetName(), cut, "goff", nentries, firstentry))){
-      Warning("TKDPDF(TTree*, const Char_t, const Char_t, UInt_t)", Form("Can not access data for keys %s. Key defined on tree :", ((TObjString*)(*vars)[idim])->GetName() ));
+      Warning("TKDPDF(TTree*, const Char_t, const Char_t, UInt_t)", "Can not access data for keys %s. Key defined on tree :", ((TObjString*)(*vars)[idim])->GetName());
       TIterator *it = (t->GetListOfLeaves())->MakeIterator();
       TObject *o;
       while((o = (*it)())) printf("\t%s\n", o->GetName());
@@ -125,7 +125,7 @@ Bool_t TKDPDF::Build(Int_t)
   for(int idim=0; idim<fNDim; idim++){ 
     Float_t dx = bounds[2*idim+1]-bounds[2*idim];
     if(dx < 1.e-30){
-      Warning("TKDPDF::Build()", Form("Terminal bucket index[%d] too narrow on the %d dimension.", inode, idim));
+      Warning("TKDPDF::Build()", "Terminal bucket index[%d] too narrow on the %d dimension.", inode, idim);
       continue;
     }
     node->Val()[0] /= (bounds[2*idim+1] - bounds[2*idim]);
@@ -158,7 +158,7 @@ void TKDPDF::DrawNode(Int_t tnode, UInt_t ax1, UInt_t ax2)
 // but don't delete it. Abusing this function may cause memory leaks !
 
   if(tnode < 0 || tnode >= GetNTNodes()){
-    Warning("DrawNode()", Form("Terminal node %d outside defined range.", tnode));
+    Warning("DrawNode()", "Terminal node %d outside defined range.", tnode);
     return;
   }
 

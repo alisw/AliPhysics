@@ -51,7 +51,7 @@ Bool_t TKDInterpolatorBase::Build(Int_t n)
 {
   // allocate memory for data
   if(Int_t((1.+fAlpha)*fLambda) > n){ // check granularity
-    Error("TKDInterpolatorBase::Build()", Form("Minimum number of points [%d] needed for interpolation exceeds number of evaluation points [%d]. Please increase granularity.", Int_t((1.+fAlpha)*fLambda), n));
+    Error("TKDInterpolatorBase::Build()", "Minimum number of points [%d] needed for interpolation exceeds number of evaluation points [%d]. Please increase granularity.", Int_t((1.+fAlpha)*fLambda), n);
     return kFALSE;
   }
 
@@ -78,7 +78,7 @@ Bool_t TKDInterpolatorBase::Bootstrap()
   Int_t in = GetNTNodes(); TKDNodeInfo *n(NULL);
   while(in--){ 
     if(!(n=(TKDNodeInfo*)(*fNodes)[in])){
-      Error("TKDInterpolatorBase::Bootstrap()", Form("Node @ %d missing.", in));
+      Error("TKDInterpolatorBase::Bootstrap()", "Node @ %d missing.", in);
       return kFALSE;
     }
     n->Bootstrap();
@@ -209,7 +209,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
       fRefPoints[id] = new Float_t[GetNTNodes()];
       for(int in=0; in<GetNTNodes(); in++) fRefPoints[id][in] = ((TKDNodeInfo*)(*fNodes)[in])->Data()[id];
     }
-    Info("TKDInterpolatorBase::Eval()", Form("Build TKDTree(%d, %d, %d)", GetNTNodes(), fNSize, kNhelper));
+    Info("TKDInterpolatorBase::Eval()", "Build TKDTree(%d, %d, %d)", GetNTNodes(), fNSize, kNhelper);
     fKDhelper = new TKDTreeIF(GetNTNodes(), fNSize, kNhelper, fRefPoints);
     fKDhelper->Build();
     fKDhelper->MakeBoundariesExact();
@@ -234,10 +234,10 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
   Bool_t kDOWN = kFALSE;
   do{
     if(npoints){
-      Info("TKDInterpolatorBase::Eval()", Form("Interpolation failed. Trying to increase the number of interpolation points from %d to %d.", npoints, npoints_new));
+      Info("TKDInterpolatorBase::Eval()", "Interpolation failed. Trying to increase the number of interpolation points from %d to %d.", npoints, npoints_new);
     }
     if(npoints == npoints_new){
-      Error("TKDInterpolatorBase::Eval()", Form("Interpolation failed and number of interpolation points (%d) Can not be increased further.", npoints));
+      Error("TKDInterpolatorBase::Eval()", "Interpolation failed and number of interpolation points (%d) Can not be increased further.", npoints);
       result = 0.;
       error = 1.E10;
       // clean memory
@@ -245,7 +245,7 @@ Double_t TKDInterpolatorBase::Eval(const Double_t *point, Double_t &result, Doub
       return 0.;
     } else npoints = npoints_new;
     if(npoints > GetNTNodes()){
-      Warning("TKDInterpolatorBase::Eval()", Form("The number of interpolation points requested (%d) exceeds number of PDF values (%d). Downscale.", npoints, GetNTNodes()));
+      Warning("TKDInterpolatorBase::Eval()", "The number of interpolation points requested (%d) exceeds number of PDF values (%d). Downscale.", npoints, GetNTNodes());
       npoints = GetNTNodes();
       kDOWN = kTRUE;
     }
@@ -367,8 +367,8 @@ void TKDInterpolatorBase::SetAlpha(Float_t a)
   // check value
   if(Int_t((a+1.)*fLambda) > GetNTNodes()){
     fAlpha = TMath::Max(0.5, Float_t(GetNTNodes())/fLambda-1.);
-    Warning("TKDInterpolatorBase::SetAlpha()", Form("Interpolation neighborhood  exceeds number of evaluation points. Downscale alpha to %f", fAlpha));
-    printf("n[%d] nodes[%d]\n", Int_t((fAlpha+1.)*fLambda), GetNTNodes());
+    Warning("TKDInterpolatorBase::SetAlpha()", "Interpolation neighborhood  exceeds number of evaluation points. Downscale alpha to %f", fAlpha);
+    //printf("n[%d] nodes[%d]\n", Int_t((fAlpha+1.)*fLambda), GetNTNodes());
     return;
   }
   fAlpha = a;
