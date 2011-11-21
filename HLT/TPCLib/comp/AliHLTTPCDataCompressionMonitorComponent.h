@@ -184,6 +184,7 @@ public:
       iterator(AliDataContainer* pData) : fClusterNo(-1), fData(pData), fClusterId(fData?fData->GetClusterId(fClusterNo):kAliHLTVoidDataSpec), fSlice(-1), fPartition(-1) {}
       iterator(const iterator& other) : fClusterNo(other.fClusterNo), fData(other.fData), fClusterId(other.fClusterId), fSlice(other.fSlice), fPartition(other.fPartition) {}
       iterator& operator=(const iterator& other) {
+	if (this==&other) return *this;
 	fClusterNo=other.fClusterNo; fData=other.fData; fClusterId=other.fClusterId; fSlice=other.fSlice; fPartition=other.fPartition; return *this;
       }
       ~iterator() {}

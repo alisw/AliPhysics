@@ -869,7 +869,7 @@ void AliHLTTPCDataCompressionMonitorComponent::AliDataContainer::FillPad(float p
     fHistogram3DPointers[index]->Fill(fSector,pad,currentRow);
   
   AliTPCROC *roc=AliTPCROC::Instance();
-  Float_t pos[2]={0};
+  Float_t pos[3]={0.,0.,0.};
   roc->GetPositionGlobal(fSector, fSector>35?currentRow-63:currentRow, (int)pad, pos); 
   if (fSector<=17 || (fSector>=36&&fSector<=53))
     //Sectors 0 to 17 and 36 to 53 are on the A side, sectors 18 to 35 and 54 to 71 are on the C side. 
