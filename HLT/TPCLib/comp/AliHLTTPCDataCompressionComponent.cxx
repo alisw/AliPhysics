@@ -1106,6 +1106,7 @@ int AliHLTTPCDataCompressionComponent::CalculateDriftTimeTransformation(AliHLTTP
     meanT+=time;
     meanZ+=xyz[2];
   }
+  if (count==0) count=1;
   meanT/=count;
   meanZ/=count;
   float sumTZ=.0;
