@@ -494,15 +494,10 @@ TH1* AliHLTTTreeProcessor::CreateHistogram(const AliHLTHistogramDefinition& d)
   if(d.GetTitle().Length()){
   
     //removing underscore
-    size_t found;
-    string str=d.GetTitle().Data();
-    found=str.find_first_of("_");
-    if(!(d.GetExpression().CompareTo("Track_pt"))){
-      found=str.find_first_of("_",found+1);      
-    }
-    str[found]=' ';
-    char axis[100];
-    sprintf(axis,"%s",str.c_str());
+    TString axis=d.GetTitle().Data();
+    axis.ReplaceAll("_{T}", "underscore{T}");
+    axis.ReplaceAll("_", " ");
+    axis.ReplaceAll("underscore{T}", "_{T}");
   
     hist->SetXTitle(axis);
     hist->GetXaxis()->CenterTitle();
