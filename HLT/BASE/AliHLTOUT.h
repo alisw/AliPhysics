@@ -187,8 +187,10 @@ class AliHLTOUT {
       : fDataType(dt), fSpecification(spec), fIndex(index), fSelected(false), fProcessed(false), fpCollection(pCollection) {};
     AliHLTOUTBlockDescriptor(const AliHLTOUTBlockDescriptor& src)
       : fDataType(src.fDataType), fSpecification(src.fSpecification), fIndex(src.fIndex), fSelected(false), fProcessed(false), fpCollection(src.fpCollection) {}
-    AliHLTOUTBlockDescriptor& operator=(const AliHLTOUTBlockDescriptor& src)
-    { fDataType=src.fDataType; fSpecification=src.fSpecification; fIndex=src.fIndex; fSelected=false; fProcessed=false; fpCollection=src.fpCollection; return *this; }
+    AliHLTOUTBlockDescriptor& operator=(const AliHLTOUTBlockDescriptor& src) {
+      if (this==&src) return *this;
+      fDataType=src.fDataType; fSpecification=src.fSpecification; fIndex=src.fIndex; fSelected=false; fProcessed=false; fpCollection=src.fpCollection; return *this;
+    }
     ~AliHLTOUTBlockDescriptor() {}
 
     operator AliHLTComponentDataType() const {return fDataType;}

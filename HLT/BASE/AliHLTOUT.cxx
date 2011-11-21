@@ -481,6 +481,7 @@ AliHLTOUT::AliHLTOUTHandlerListEntry::~AliHLTOUTHandlerListEntry()
 AliHLTOUT::AliHLTOUTHandlerListEntry& AliHLTOUT::AliHLTOUTHandlerListEntry::operator=(const AliHLTOUTHandlerListEntry& src)
 {
   // see header file for class documentation
+  if (this==&src) return *this;  
   fpHandler=src.fpHandler;
   if (src.fpHandlerDesc)
     *fpHandlerDesc=*src.fpHandlerDesc;
