@@ -42,7 +42,6 @@ class  AliCaloRawAnalyzerPeakFinder : public AliCaloRawAnalyzer
   AliCaloRawAnalyzerPeakFinder();
   AliCaloRawAnalyzerPeakFinder( const AliCaloRawAnalyzerPeakFinder   & );
   AliCaloRawAnalyzerPeakFinder   & operator = ( const  AliCaloRawAnalyzerPeakFinder  & );
-  void     LoadVectorsASCII();
   void     LoadVectorsOCDB();
   void     CopyVectors(const AliCaloPeakFinderVectors *const pfvectors );
   void     ResetVectors();

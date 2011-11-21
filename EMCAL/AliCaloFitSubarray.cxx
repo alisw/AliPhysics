@@ -37,14 +37,6 @@ AliCaloFitSubarray::AliCaloFitSubarray(const Int_t bunchIndex,
 {
 }
 
-AliCaloFitSubarray::AliCaloFitSubarray(const AliCaloFitSubarray & fitS) :
-  fBunchIndex( fitS.fBunchIndex ),
-  fMaxRev( fitS.fMaxRev ), 
-  fFirst( fitS.fFirst ), 
-  fLast( fitS.fLast )   
-{
-}
-
 AliCaloFitSubarray::AliCaloFitSubarray(const Int_t init) : 
   fBunchIndex(init),
   fMaxRev(init), 
@@ -53,6 +45,13 @@ AliCaloFitSubarray::AliCaloFitSubarray(const Int_t init) :
 {
 }
 
+AliCaloFitSubarray::AliCaloFitSubarray(const AliCaloFitSubarray & fitS) :
+  fBunchIndex( fitS.fBunchIndex ),
+  fMaxRev( fitS.fMaxRev ), 
+  fFirst( fitS.fFirst ), 
+  fLast( fitS.fLast )   
+{
+}
 
 AliCaloFitSubarray::~AliCaloFitSubarray()
 {

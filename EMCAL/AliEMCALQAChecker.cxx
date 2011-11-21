@@ -112,6 +112,7 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 //__________________________________________________________________
 AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
 {
+  AliQACheckerBase(qac.GetName(), qac.GetTitle()); 
   fTextSM  = new TText*[fknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
   fText    = new TPaveText(0.2,0.7,0.8,0.9,"NDC") ;
@@ -209,7 +210,11 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  TObject *obj;
 	  while ((obj = lstF->First())) { while(lstF->Remove(obj)) { } delete obj; }
 	  if (stats) lstF->Add(stats);
-	} 
+	}
+	else {
+	  AliWarning(Form("Checker : empty list of data functions; returning"));
+	  return;
+	}
       }
       lstF->Add(fLineCol->Clone()); 
       for(Int_t iLine = 0; iLine < 4; iLine++) {
@@ -227,6 +232,10 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	  TObject *obj;
 	  while ((obj = lstF->First())) { while(lstF->Remove(obj)) { } delete obj; }
 	  if (stats) lstF->Add(stats);
+	}
+	else {
+	  AliWarning(Form("Checker : empty list of ratio functions; returning"));
+	  return;
 	} 
       }
       lstF->Add(fText->Clone()) ;
