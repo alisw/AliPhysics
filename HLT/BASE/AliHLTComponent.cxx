@@ -1747,6 +1747,10 @@ namespace
   public:
     AliHLTComponentStatisticsId(AliHLTUInt32_t id) : fId(id) {}
     AliHLTComponentStatisticsId(const AliHLTComponentStatisticsId& src) : fId(src.fId) {}
+    AliHLTComponentStatisticsId& operator=(const AliHLTComponentStatisticsId& src) {
+      if (this==&src) return *this;
+      fId=src.fId; return *this;
+    }
     bool operator==(const AliHLTComponentStatistics& a) const {return a.fId==fId;}
   private:
     AliHLTComponentStatisticsId();
@@ -1769,6 +1773,10 @@ namespace
   public:
     AliHLTComponentBlockDataSpecification(AliHLTUInt32_t specification) : fSpecification(specification) {}
     AliHLTComponentBlockDataSpecification(const AliHLTComponentBlockDataSpecification& src) : fSpecification(src.fSpecification) {}
+    AliHLTComponentBlockDataSpecification& operator=(const AliHLTComponentBlockDataSpecification& src) {
+      if (this==&src) return *this;
+      fSpecification=src.fSpecification; return *this;
+    }
     bool operator==(const AliHLTComponentBlockData& bd) const {return bd.fSpecification==fSpecification;}
   private:
     AliHLTComponentBlockDataSpecification();
@@ -2369,11 +2377,12 @@ AliHLTComponent::AliHLTStopwatchGuard::AliHLTStopwatchGuard(const AliHLTStopwatc
   //
 }
 
-AliHLTComponent::AliHLTStopwatchGuard& AliHLTComponent::AliHLTStopwatchGuard::operator=(const AliHLTStopwatchGuard&)
+AliHLTComponent::AliHLTStopwatchGuard& AliHLTComponent::AliHLTStopwatchGuard::operator=(const AliHLTStopwatchGuard& other)
 {
   //
   // assignment operator not for use
   //
+  if (this==&other) return *this;
   fpStopwatch=NULL;
   fpPrec=NULL;
   return *this;
