@@ -52,20 +52,23 @@
 #include "TMCProcess.h"
 
 // STEER includes
-#include "AliAODInputHandler.h"
+#include "AliInputEventHandler.h"
+#include "AliVVertex.h"
+#include "AliMultiplicity.h"
+#include "AliCentrality.h"
+
+//#include "AliAODInputHandler.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include "AliAODVertex.h"
+//#include "AliAODVertex.h"
 
+#include "AliMCEvent.h"
 #include "AliMCParticle.h"
 #include "AliStack.h"
 
-#include "AliESDInputHandler.h"
+//#include "AliESDInputHandler.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
-
-#include "AliMultiplicity.h"
-#include "AliCentrality.h"
 
 // ANALYSIS includes
 #include "AliAnalysisManager.h"
@@ -203,12 +206,11 @@ void AliAnalysisTaskSingleMu::FinishTaskOutput()
 
   // Add stat. info from physics selection
   // (usefull when running on AODs)
-  AliInputEventHandler* inputHandler = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   TString histoName = "";
-  if ( inputHandler ) {
+  if ( fInputHandler ) {
     for ( Int_t istat=0; istat<2; istat++ ) {
       TString statType = ( istat == 0 ) ? "ALL" : "BIN0";
-      TH2* hStat = dynamic_cast<TH2*>(inputHandler->GetStatistics(statType.Data()));
+      TH2* hStat = dynamic_cast<TH2*>(fInputHandler->GetStatistics(statType.Data()));
       if ( hStat ) {
         histoName = Form("%s_SingleMuon", hStat->GetName());
         TH2* cloneStat = static_cast<TH2*>(hStat->Clone(histoName.Data()));
@@ -253,8 +255,8 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
     fVarChar[ivar] = new Char_t [charWidth[ivar]];
   }
 
-  Int_t nPtBins = 60;
-  Double_t ptMin = 0., ptMax = 30.;
+  Int_t nPtBins = 60; //200; //60;
+  Double_t ptMin = 0., ptMax = 30.; //100.; //30.; // extend range for z
   TString ptName("Pt"), ptTitle("p_{t}"), ptUnits("GeV/c");
 
   Int_t nRapidityBins = 25;
@@ -298,8 +300,8 @@ void AliAnalysisTaskSingleMu::UserCreateOutputObjects()
   Double_t motherTypeMin = -0.5, motherTypeMax = (Double_t)kNtrackSources - 0.5;
   TString motherType("MotherType"), motherTypeTitle("motherType"), motherTypeUnits("");
 
-  Int_t nCentralityBins = 10;
-  Double_t centralityMin = 0., centralityMax = 100.;
+  Int_t nCentralityBins = 12;
+  Double_t centralityMin = -10., centralityMax = 110.;
   TString centralityName("Centrality"), centralityTitle("centrality"), centralityUnits("%");
 
   TString trigName[kNtrigCuts];
@@ -588,29 +590,18 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 
   Reset(kFALSE);
 
+  //
   // Global event info
+  //
   TString firedTrigClasses = ( esdEvent ) ? esdEvent->GetFiredTriggerClasses() : aodEvent->GetFiredTriggerClasses();
-  /*
-  if ( fMCEvent ) {
-    // Add the MB name (which is not there in simulation)
-    // CAVEAT: to be checked if we perform beam-gas simulations
-    if ( ! firedTrigClasses.Contains("CINT") && ! firedTrigClasses.Contains("MB") ) {
-    TString trigName = ((TObjString*)fTriggerClasses->At(0))->GetString();
-    firedTrigClasses.Prepend(Form("%s ", trigName.Data()));
-    }
-  }
-  */
+  fVarFloat[kVarCentrality] = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
 
-  Double_t centralityValue = InputEvent()->GetCentrality()->GetCentralityPercentile("V0M");
-  // Avoid filling overflow bin when centrality is exactly 100.
-  Double_t centralityForContainer = TMath::Min(centralityValue, 99.999);
+  AliVVertex* primaryVertex = ( esdEvent ) ? (AliVVertex*)esdEvent->GetPrimaryVertexSPD() : (AliVVertex*)aodEvent->GetPrimaryVertexSPD();
 
-  fVarFloat[kVarIPVz] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetZ() : aodEvent->GetPrimaryVertex()->GetZ();
-  fVarInt[kVarNVtxContrib] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetNContributors() : aodEvent->GetPrimaryVertex()->GetNContributors();
-  fVarInt[kVarNspdTracklets] = ( esdEvent ) ? esdEvent->GetMultiplicity()->GetNumberOfTracklets() : aodEvent->GetTracklets()->GetNumberOfTracklets();
-  fVarInt[kVarIsPileup] = ( esdEvent ) ? esdEvent->IsPileupFromSPD(3,0.8) : aodEvent->IsPileupFromSPD(3,0.8); // REMEMBER TO CHECK
-
-  fVarUInt[kVarRunNumber] = ( esdEvent ) ? esdEvent->GetRunNumber() : aodEvent->GetRunNumber();
+  fVarFloat[kVarIPVz] = primaryVertex->GetZ();
+  fVarInt[kVarNVtxContrib] = primaryVertex->GetNContributors();
+  fVarInt[kVarIsPileup] = ( esdEvent ) ? esdEvent->IsPileupFromSPDInMultBins() : aodEvent->IsPileupFromSPDInMultBins();
+  fVarUInt[kVarRunNumber] = InputEvent()->GetRunNumber();
 
   Int_t isGoodVtxBin = ( fVarInt[kVarNVtxContrib] >= fkNvtxContribCut );
   if ( isGoodVtxBin && fVarInt[kVarIsPileup] > 0 )
@@ -618,20 +609,22 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 
   if ( fillCurrentEventTree ){
     strncpy(fVarChar[kVarTrigMask], firedTrigClasses.Data(),255);
-    fVarFloat[kVarCentrality] = centralityValue;
-
-    fVarInt[kVarPassPhysicsSelection] = ( esdEvent ) ? ((AliESDInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected() : ((AliAODInputHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->IsEventSelected();
+    fVarInt[kVarPassPhysicsSelection] = fInputHandler->IsEventSelected();
 
     // Small workaround: in MC the bunch ID are not properly set and the timestamp is in seconds
     // So fill bunchCrossing with the read timestamp
     //    fill the orbit and period number with a timestamp created while reading the run
     TTimeStamp ts;
-    fVarUInt[kVarBunchCrossNumber] = ( fMCEvent ) ? (UInt_t)Entry() : esdEvent->GetBunchCrossNumber();
-    fVarUInt[kVarOrbitNumber] = ( fMCEvent ) ? ts.GetNanoSec() : esdEvent->GetOrbitNumber();
-    fVarUInt[kVarPeriodNumber] = ( fMCEvent ) ? ts.GetTime() : esdEvent->GetPeriodNumber();
+    fVarUInt[kVarBunchCrossNumber] = ( fMCEvent ) ? (UInt_t)Entry() : InputEvent()->GetBunchCrossNumber();
+    fVarUInt[kVarOrbitNumber] = ( fMCEvent ) ? (UInt_t)ts.GetNanoSec() : InputEvent()->GetOrbitNumber();
+    fVarUInt[kVarPeriodNumber] = ( fMCEvent ) ? ts.GetTime() : InputEvent()->GetPeriodNumber();
 
-    fVarFloat[kVarIPVx] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetX() : aodEvent->GetPrimaryVertex()->GetX();
-      fVarFloat[kVarIPVy] = ( esdEvent ) ? esdEvent->GetPrimaryVertex()->GetY() : aodEvent->GetPrimaryVertex()->GetY();
+    fVarFloat[kVarIPVx] = primaryVertex->GetX();
+    fVarFloat[kVarIPVy] = primaryVertex->GetY();
+    if ( esdEvent )
+      fVarInt[kVarNspdTracklets] = esdEvent->GetMultiplicity()->GetNumberOfTracklets();
+    else if ( aodEvent->GetTracklets() )
+      fVarInt[kVarNspdTracklets] = aodEvent->GetTracklets()->GetNumberOfTracklets();
   }
 
   firedTrigClasses.Append(" ANY");
@@ -645,7 +638,9 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
 
   fCFManager->SetRecEventInfo(InputEvent());
 
+  //
   // Pure Monte Carlo part
+  //
   if ( fMCEvent ) {
     fCFManager->SetMCEventInfo (fMCEvent);
     Int_t nMCtracks = fMCEvent->GetNumberOfTracks();
@@ -655,7 +650,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
       fVarFloatMC[kVarIPVzMC] = fMCEvent->Stack()->Particle(0)->Vz();
       containerInput[kHvarVz] = fVarFloatMC[kVarIPVzMC];
       containerInput[kHvarIsGoodVtx] = 1;
-      containerInput[kHvarCentrality] = centralityForContainer;
+      containerInput[kHvarCentrality] = fVarFloat[kVarCentrality];
       histoIndex = GetHistoIndex(kHistoCheckVzMC);
       ((TH2F*)fHistoListMC->At(histoIndex))->Fill(fVarFloat[kVarIPVz], fVarFloatMC[kVarIPVzMC]);
       if ( isGoodVtxBin >= 1 ) {
@@ -700,6 +695,9 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   } // is MC
 
 
+  //
+  // Reconstruction part
+  //
   Int_t trackLabel = -1;
   Bool_t isGhost = kFALSE;
   Int_t nGhosts = 0, nMuons = 0;
@@ -707,90 +705,45 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
   Int_t nTracks = ( esdEvent ) ? esdEvent->GetNumberOfMuonTracks() : aodEvent->GetNTracks();
 
   for (Int_t itrack = 0; itrack < nTracks; itrack++) {
-
-    // Get variables
     if ( esdEvent ){
-      // ESD only info
-
       track = esdEvent->GetMuonTrack(itrack);
       isGhost = ( ((AliESDMuonTrack*)track)->ContainTriggerData() && ! ((AliESDMuonTrack*)track)->ContainTrackerData() );
-
-      if ( fillCurrentEventTree ) {
-	if ( itrack > 0 ) Reset(kTRUE);
-	fVarFloat[kVarPxUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaXUncorrected()) : ((AliESDMuonTrack*)track)->PxUncorrected();
-	fVarFloat[kVarPyUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaYUncorrected()) : ((AliESDMuonTrack*)track)->PyUncorrected();
-	fVarFloat[kVarPzUncorrected] = ( isGhost ) ? -1 : ((AliESDMuonTrack*)track)->PzUncorrected();
-
-	fVarFloat[kVarPtUncorrected] = 
-	  TMath::Sqrt(fVarFloat[kVarPxUncorrected] * fVarFloat[kVarPxUncorrected] + 
-		      fVarFloat[kVarPyUncorrected] * fVarFloat[kVarPyUncorrected]);
-
-	fVarFloat[kVarXUncorrected] = ((AliESDMuonTrack*)track)->GetNonBendingCoorUncorrected();
-	fVarFloat[kVarYUncorrected] = ((AliESDMuonTrack*)track)->GetBendingCoorUncorrected();
-	fVarFloat[kVarZUncorrected] = ((AliESDMuonTrack*)track)->GetZUncorrected();
-
-	fVarInt[kVarLocalCircuit] = ((AliESDMuonTrack*)track)->LoCircuit();
-      }
-
-      if ( isGhost ) {
-	// If is ghost fill only a partial information
-	nGhosts++;
-	if ( fillCurrentEventTree ) {
-	  fVarInt[kVarIsMuon] = 0;
-	  fVarInt[kVarIsGhost] = nGhosts;
-	  fVarInt[kVarMatchTrig] = ((AliESDMuonTrack*)track)->GetMatchTrigger();
-	  fTreeSingleMu->Fill();
-	}
-	continue;
-      }
     }
     else {
       track = aodEvent->GetTrack(itrack);
       if ( ! ((AliAODTrack*)track)->IsMuonTrack() )
 	continue;
-    }
+    }    
 
-    // Information for tracks in tracker
-    nMuons++;
+    if ( isGhost ) {
+      ++nGhosts;
+      // Nothing to do for ghosts if the tree is not filled
+      if ( ! fillCurrentEventTree ) continue;
+    }
+    else ++nMuons;
 
     fVarFloat[kVarPt] = track->Pt();
-    //fVarFloat[kVarRapidity] = track->Y();
-    fVarFloat[kVarEta] = track->Eta();
-    fVarFloat[kVarXatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetNonBendingCoorAtDCA() : ((AliAODTrack*)track)->XAtDCA();
-    fVarFloat[kVarYatDCA] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetBendingCoorAtDCA() : ((AliAODTrack*)track)->YAtDCA();
+    //fVarFloat[kVarRapidity] = ( isGhost ) ? 0. : track->Y();
+    fVarFloat[kVarEta] = ( isGhost ) ? 0. : track->Eta();
+    fVarFloat[kVarXatDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->GetNonBendingCoorAtDCA() : ((AliAODTrack*)track)->XAtDCA();
+    fVarFloat[kVarYatDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->GetBendingCoorAtDCA() : ((AliAODTrack*)track)->YAtDCA();
     fVarFloat[kVarDCA] = 
       TMath::Sqrt( fVarFloat[kVarXatDCA] * fVarFloat[kVarXatDCA] +
 		   fVarFloat[kVarYatDCA] * fVarFloat[kVarYatDCA] );
-    fVarFloat[kVarCharge] = (Float_t)track->Charge();
-    fVarFloat[kVarRAtAbsEnd] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetRAtAbsorberEnd() : ((AliAODTrack*)track)->GetRAtAbsorberEnd();
-    fVarInt[kVarMatchTrig] = (esdEvent ) ? ((AliESDMuonTrack*)track)->GetMatchTrigger() : ((AliAODTrack*)track)->GetMatchTrigger();
-
-    if ( fillCurrentEventTree ){
-      fVarInt[kVarIsMuon] = nMuons;
-      fVarInt[kVarIsGhost] = 0;
-      //fVarFloat[kVarEta] = track->Eta();
-      fVarFloat[kVarRapidity] = track->Y();
-      fVarFloat[kVarPx] = track->Px();
-      fVarFloat[kVarPy] = track->Py();
-      fVarFloat[kVarPz] = track->Pz();
-      fVarFloat[kVarPxAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PxAtDCA() : ((AliAODTrack*)track)->PxAtDCA();
-      fVarFloat[kVarPyAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PyAtDCA() : ((AliAODTrack*)track)->PyAtDCA();
-      fVarFloat[kVarPzAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PzAtDCA() : ((AliAODTrack*)track)->PzAtDCA();
-      fVarFloat[kVarPtAtDCA] = TMath::Sqrt(fVarFloat[kVarPxAtDCA]*fVarFloat[kVarPxAtDCA] + fVarFloat[kVarPyAtDCA]*fVarFloat[kVarPyAtDCA]);
-    }
+    fVarFloat[kVarCharge] = ( isGhost ) ? 0. : (Float_t)track->Charge();
+    fVarFloat[kVarRAtAbsEnd] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->GetRAtAbsorberEnd() : ((AliAODTrack*)track)->GetRAtAbsorberEnd();
+    fVarInt[kVarMatchTrig] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->GetMatchTrigger() : ((AliAODTrack*)track)->GetMatchTrigger();
 
     fVarIntMC[kVarMotherType] = kUnknownPart;
 
     // Monte Carlo part
     if ( fMCEvent ) {
-
       trackLabel = track->GetLabel();
-
       if ( trackLabel >= 0 ) {
 	AliMCParticle* matchedMCTrack = (AliMCParticle*)fMCEvent->GetTrack(trackLabel);
 	fVarIntMC[kVarMotherType] = RecoTrackMother(matchedMCTrack);
 	fVarFloatMC[kVarPtMC] = matchedMCTrack->Pt();
-	FillTriggerHistos(kHistoPtResolutionMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt] - fVarFloatMC[kVarPtMC]);
+	if ( ! isGhost ) FillTriggerHistos(kHistoPtResolutionMC, fVarInt[kVarMatchTrig], fVarIntMC[kVarMotherType], fVarFloat[kVarPt] - fVarFloatMC[kVarPtMC]);
 	if ( fillCurrentEventTree ){
 	  fVarFloatMC[kVarPxMC] = matchedMCTrack->Px();
 	  fVarFloatMC[kVarPyMC] = matchedMCTrack->Py();
@@ -820,6 +773,44 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
       if ( fDebug >= 1 ) printf("AliAnalysisTaskSingleMu: Reco track. %s. Set mother %i\n", fDebugString.Data(), fVarIntMC[kVarMotherType]);
     } // if use MC
 
+    if ( fillCurrentEventTree ) {
+      fVarInt[kVarIsMuon] = ( isGhost ) ? 0 : nMuons;
+      fVarInt[kVarIsGhost] = ( isGhost ) ? nGhosts : 0;
+      //fVarFloat[kVarEta] = ( isGhost ) ? 0. : track->Eta();
+      fVarFloat[kVarRapidity] = ( isGhost ) ? 0.: track->Y();
+      fVarFloat[kVarPx] = track->Px();
+      fVarFloat[kVarPy] = track->Py();
+      fVarFloat[kVarPz] = track->Pz();
+      fVarFloat[kVarPxAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PxAtDCA() : ((AliAODTrack*)track)->PxAtDCA();
+      fVarFloat[kVarPyAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PyAtDCA() : ((AliAODTrack*)track)->PyAtDCA();
+      fVarFloat[kVarPzAtDCA] = ( esdEvent ) ? ((AliESDMuonTrack*)track)->PzAtDCA() : ((AliAODTrack*)track)->PzAtDCA();
+      fVarFloat[kVarPtAtDCA] = TMath::Sqrt(fVarFloat[kVarPxAtDCA]*fVarFloat[kVarPxAtDCA] + fVarFloat[kVarPyAtDCA]*fVarFloat[kVarPyAtDCA]);
+
+      // Information present only on ESD tracks
+      if ( esdEvent ) {
+        fVarFloat[kVarPxUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaXUncorrected()) : ((AliESDMuonTrack*)track)->PxUncorrected();
+        fVarFloat[kVarPyUncorrected] = ( isGhost ) ? -TMath::Tan(((AliESDMuonTrack*)track)->GetThetaYUncorrected()) : ((AliESDMuonTrack*)track)->PyUncorrected();
+        fVarFloat[kVarPzUncorrected] = ( isGhost ) ? -1 : ((AliESDMuonTrack*)track)->PzUncorrected();
+
+        fVarFloat[kVarPtUncorrected] = 
+          TMath::Sqrt(fVarFloat[kVarPxUncorrected] * fVarFloat[kVarPxUncorrected] + 
+                      fVarFloat[kVarPyUncorrected] * fVarFloat[kVarPyUncorrected]);
+
+        fVarFloat[kVarXUncorrected] = ((AliESDMuonTrack*)track)->GetNonBendingCoorUncorrected();
+        fVarFloat[kVarYUncorrected] = ((AliESDMuonTrack*)track)->GetBendingCoorUncorrected();
+        fVarFloat[kVarZUncorrected] = ((AliESDMuonTrack*)track)->GetZUncorrected();
+
+        fVarInt[kVarLocalCircuit] = ((AliESDMuonTrack*)track)->LoCircuit();
+      }
+
+      fTreeSingleMu->Fill();
+    }
+
+    if ( isGhost ) continue;
+    
+    //
+    // Fill container
+    //
     containerInput[kHvarPt]  = fVarFloat[kVarPt];
     //containerInput[kHvarY]   = fVarFloat[kVarRapidity];
     containerInput[kHvarEta]   = fVarFloat[kVarEta];
@@ -831,7 +822,7 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
     containerInput[kHvarMatchTrig] = (Double_t)fVarInt[kVarMatchTrig];
     containerInput[kHvarIsGoodVtx] = (Double_t)isGoodVtxBin;
     containerInput[kHvarMotherType] = (Double_t)fVarIntMC[kVarMotherType];
-    containerInput[kHvarCentrality] = centralityForContainer;
+    containerInput[kHvarCentrality] = fVarFloat[kVarCentrality];
     //containerInput[kHvarP] = track->P();
 
     histoIndex = GetHistoIndex(kHistoNmuonsPerRun);
@@ -844,10 +835,11 @@ void AliAnalysisTaskSingleMu::UserExec(Option_t * /*option*/)
       // if ( fCFManager->CheckParticleCuts(kStepAcceptance,track) ) fCFManager->GetParticleContainer()->Fill(containerInput,kStepAcceptance);
       ((TH2F*)fHistoList->At(histoIndex))->Fill(Form("%u",fVarUInt[kVarRunNumber]), containerInput[kHvarTrigClass], 1.);
     } // loop on trigger classes
-
-    if ( fillCurrentEventTree ) fTreeSingleMu->Fill();
   } // loop on tracks
 
+  //
+  // Complete global information 
+  //
   if ( fillCurrentEventTree && fKeepAll &&  ( ( nMuons + nGhosts ) == 0 ) ) {
     // Fill event also if there is not muon (when explicitely required)
     fTreeSingleMu->Fill();
