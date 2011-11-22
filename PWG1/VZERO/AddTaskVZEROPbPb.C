@@ -28,11 +28,11 @@ AliAnalysisTaskSE* AddTaskVZEROPbPb(Int_t runNumber)
    task->SetSumEquaMultRange(100,15000.,20000.);
 
    if(runNumber>166532)
-   		task->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVLNWU-,CVLN-");
+     task->SetClassesNames("CTRUE-,C0HWU-,CPBI2WU-,CPBI2-,CPBI2WU_B1-,CPBI2_B1-,CPBI1WU-,CPBI1-,CVHNWU-,CVHN-,CVHN_R2-,CVHNWU_R2-,CVLNWU-,CVLN-,CVLN_R1-,CVLN_B2-,CVLNWU_R1-,CVLNWU_B2-");
    else
-   		task->SetClassesNames("CTRUE-,CVLN-,CVHN-,CPBI1-,CPBI2-,C0HWU-");
+     task->SetClassesNames("CTRUE-,CVLN-,CVHN-,CPBI1-,CPBI2-,C0HWU-");
    
-	mgr->AddTask(task);
+   mgr->AddTask(task);
   
    AliAnalysisDataContainer *cout  = mgr->CreateContainer("PbPbVZEROHists",TList::Class(),
 							  AliAnalysisManager::kOutputContainer, Form("%s:VZERO_PbPb_Performance", 
