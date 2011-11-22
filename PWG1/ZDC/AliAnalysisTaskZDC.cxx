@@ -183,7 +183,7 @@ void AliAnalysisTaskZDC::UserCreateOutputObjects()
   
   fhTDCZNDiff = new TH1F("fhTDCZNDiff","TDC_{ZNC}-TDC_{ZNA}",60,-30.,30.);
   fhTDCZNDiff->GetXaxis()->SetTitle("TDC_{ZNC}-TDC_{ZNA} (ns)");
-  fOutput->Add(fhTDCZNDiff);      
+  fOutput->Add(fhTDCZNDiff);     
   
   fhZNCSpectrum = new TH1F("fhZNCSpectrum", "ZNC signal", 200,0., 140000.);
   fOutput->Add(fhZNCSpectrum);      
@@ -259,22 +259,6 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
       return;
    }
 
-    AliGenEventHeader* genHeader = mcEvent->GenEventHeader();
-    if(!genHeader){
-      printf("  Event generator header not available!!!\n");
-      return;
-    }
-
-    /*if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())){
-      Float_t bMC = ((AliGenHijingEventHeader*) genHeader)->ImpactParameter();
-      Int_t specNeutronProj = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsn();
-      Int_t specProtonProj  = ((AliGenHijingEventHeader*) genHeader)->ProjSpectatorsp();
-      Int_t specNeutronTarg = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsn();
-      Int_t specProtonTarg  = ((AliGenHijingEventHeader*) genHeader)->TargSpectatorsp();
-      Int_t npartTargMC = 208-(specNeutronTarg+specProtonTarg);
-      Int_t npartProjMC = 208-(specNeutronProj+specProtonProj);
-    }*/  
-
   }
   // ****************************************************
   
@@ -325,19 +309,19 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
   Float_t tdcC=999., tdcA=999;
   Float_t tdcSum=999., tdcDiff=999;
   if(esdZDC->GetZDCTDCData(10,0)>1e-4){
-    tdcC = esdZDC->GetZDCTDCCorrected(10,0)-esdZDC->GetZDCTDCCorrected(15,0);
+    tdcC = esdZDC->GetZDCTDCCorrected(10,0);
     if(esdZDC->GetZDCTDCData(12,0)>1e-4){
-      tdcA = esdZDC->GetZDCTDCCorrected(12,0)-esdZDC->GetZDCTDCCorrected(15,0);
+      tdcA = esdZDC->GetZDCTDCCorrected(12,0);
       tdcSum = tdcC+tdcA;
       tdcDiff = tdcC-tdcA;
     }
   }
   //for(Int_t i=0; i<4; i++){
     if(tdcSum!=999.){
-      fhTDCZNSum->Fill(tdcSum); 
+      //fhTDCZNSum->Fill(tdcSum); 
       fDebunch->Fill(tdcDiff, tdcSum);  
     }
-    if(tdcDiff!=999.)fhTDCZNDiff->Fill(tdcDiff); 
+    //if(tdcDiff!=999.)fhTDCZNDiff->Fill(tdcDiff); 
   //}
   
   PostData(1, fOutput);
