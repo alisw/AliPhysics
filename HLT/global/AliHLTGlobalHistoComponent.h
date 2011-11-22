@@ -83,7 +83,6 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
   class AliHLTGlobalHistoVariables {
   public:
     AliHLTGlobalHistoVariables()  : fCapacity(0), fArrays(), fCount(), fKeys() {}
-    AliHLTGlobalHistoVariables(const AliHLTGlobalHistoVariables& src)  : fCapacity(0), fArrays(), fCount(), fKeys() {}
     ~AliHLTGlobalHistoVariables() {Reset();}
 
     /// init the arrays
@@ -171,6 +170,9 @@ class AliHLTGlobalHistoComponent : public AliHLTTTreeProcessor
     char GetType() const {AliHLTGlobalHistoVariablesType type(T&); return type.GetType();}
 
   private:
+    AliHLTGlobalHistoVariables(const AliHLTGlobalHistoVariables& src);
+    AliHLTGlobalHistoVariables& operator=(const AliHLTGlobalHistoVariables& src);
+
     int FindKey(const char* key) const
     {
       map<string, int>::const_iterator element=fKeys.find(key);
