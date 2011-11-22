@@ -26,6 +26,7 @@ public:
   void SetMultiplicityRange(Int_t nbins, Float_t maxA, Float_t maxC);
   void SetSumEquaMultRange(Int_t nbins, Float_t maxA, Float_t maxC);
   void SetEquaMultRange(Int_t nbins, Float_t max);
+  void SetZVertexCut(Float_t cut){fZvtxCut = cut;};
 
   void CreateQAHistos();
   void CreateHistosPerL2Trigger();
@@ -108,10 +109,12 @@ public:
   Float_t fV0AEqMultMax;       // max VZERO-A of histo fhEqualizedMultSum
   Float_t fV0CEqMultMax;       // max VZERO-C of histo fhEqualizedMultSum
 
+  Float_t fZvtxCut;   // Z vertex cut
+
   AliAnaVZEROPbPb(const AliAnaVZEROPbPb&); // not implemented
   AliAnaVZEROPbPb& operator=(const AliAnaVZEROPbPb&); // not implemented
   
-  ClassDef(AliAnaVZEROPbPb, 2); 
+  ClassDef(AliAnaVZEROPbPb, 3); 
 };
 
 #endif
