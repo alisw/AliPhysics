@@ -27,20 +27,20 @@
 
 
 void PlotTDCcalibvsTime(Int_t year=2011, Int_t firstRun=166000, 
-		   Int_t lastRun=167000)
+		   Int_t lastRun=169000)
 {
 
 
   TGrid::Connect("alien:",0,0,"t");
-  gSystem->Exec(Form("gbbox find \"/alice/data/%d/OCDB/ZDC/Calib/TDCCalib/\" \"Run*.root\" > calibAlienFiles.txt",year));
-  FILE* listruns=fopen("calibAlienFiles.txt","r");
+  gSystem->Exec(Form("gbbox find \"/alice/data/%d/OCDB/ZDC/Calib/TDCCalib/\" \"Run*.root\" > TDCcalibAlienFiles.txt",year));
+  FILE* listruns=fopen("TDCcalibAlienFiles.txt","r");
   
   const int kNchannels=6;
   TGraphErrors* graph[6];
   for(Int_t i=0; i<kNchannels; i++){
      graph[i] = new TGraphErrors(0);
      char name[50], title[50];
-     sprintf(name,"graph%d",i); sprintf(title,"TDC calib. coeff. %d vs. run#",i);
+     sprintf(name,"graph%d",i); sprintf(title,"TDC.%d vs. run#",i);
      graph[i]->SetName("graph");  graph[i]->SetTitle("title");
   }
 
@@ -52,6 +52,7 @@ void PlotTDCcalibvsTime(Int_t year=2011, Int_t firstRun=166000,
     int st = fscanf(listruns,"%s\n",filnam);    
     Char_t directory[100];
     sprintf(directory,"/alice/data/%d",year);
+    printf(" Checking for %s\n",filnam);
     if(!strstr(filnam,directory)) continue;
     sscanf(filnam,"/alice/data/%d/OCDB/ZDC/Calib/TDCCalib/Run%d_%d_v%d_s%d.root",&year,&nrun,&nrun2,&nv,&ns);
     if(nrun<firstRun) continue;
@@ -63,7 +64,7 @@ void PlotTDCcalibvsTime(Int_t year=2011, Int_t firstRun=166000,
     AliZDCTDCCalib *calibdata = dynamic_cast<AliZDCTDCCalib*>  (entry->GetObject());
     
     for(int i=0; i<kNchannels; i++){
-         graph[i]->SetPoint(iPoint, (Double_t)nrun, calibdata->GetMeanTDC(i));
+        graph[i]->SetPoint(iPoint, (Double_t)nrun, calibdata->GetMeanTDC(i));
         graph[i]->SetPointError(iPoint, 0., calibdata->GetWidthTDC(i));
     }
     iPoint++;
@@ -96,13 +97,13 @@ void PlotTDCcalibvsTime(Int_t year=2011, Int_t firstRun=166000,
  gStyle->SetTitleOffset(1.1,"Y");  
  // *************************************************************
 
- TCanvas *cHadPeds = new TCanvas("cHadPeds","Hadronic ZDC pedestals",0,0,1200,800);
+ TCanvas *cHadPeds = new TCanvas("cHadPeds","TDC mean values",0,0,1000,800);
  cHadPeds->Divide(3,2);
  for(int ic=0; ic<6; ic++){
    // *** ZNC pedestals
    cHadPeds->cd(ic+1);
    //
-   TH1F *haxis1 = gPad->DrawFrame(firstRun-100, -100, lastRun+100, 0);
+   TH1F *haxis1 = gPad->DrawFrame(firstRun-100, -100, lastRun+100, -10);
    haxis1->GetXaxis()->SetNoExponent();
    haxis1->SetXTitle("RUN no.");
    if(ic==0) haxis1->SetYTitle("ZNC TDC calib");
@@ -115,10 +116,9 @@ void PlotTDCcalibvsTime(Int_t year=2011, Int_t firstRun=166000,
    graph[ic]->SetMarkerStyle(20);
    graph[ic]->SetMarkerColor(kAzure+ic);
    graph[ic]->Draw("P, SAME");
-   // 
  }
- cHadPeds->SaveAs("ZDCTDCvsTime1.gif");
- cHadPeds->SaveAs("ZDCTDCvsTime1.C");
+ cHadPeds->SaveAs("ZDCTDCvsTime.gif");
+ cHadPeds->SaveAs("ZDCTDCvsTime.C");
 
  
 }
