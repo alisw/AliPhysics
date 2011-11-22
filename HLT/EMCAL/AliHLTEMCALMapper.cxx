@@ -21,6 +21,7 @@
 #include "AliHLTEMCALMapper.h"
 #include "assert.h"
 #include "AliHLTCaloConstants.h"
+#include "TString.h"
 
 using EMCAL::NXCOLUMNSMOD;
 using EMCAL::NZROWSMOD;
@@ -56,7 +57,7 @@ AliHLTEMCALMapper::GetLocalCoord(const int channelId, Float_t* localCoord) const
 Bool_t 
 AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
 {
-  char *base =  getenv("ALICE_ROOT");
+  TString base(getenv("ALICE_ROOT"));
   int  nChannels = 0;
   int  maxaddr = 0; // keep as dummy for now
   int  tmpHwaddr = 0;
@@ -65,10 +66,10 @@ AliHLTEMCALMapper::InitAltroMapping(const unsigned long specification )
   int tmpGain = 0;
   int res = 0; 
   
-  if(base !=0)
+  if(!base.IsNull())
     {
-      snprintf(fFilepath,FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
-      snprintf(fFilepath, FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base,   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      snprintf(fFilepath,FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base.Data(),   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
+      snprintf(fFilepath, FILEPATHMAXLENGTH,"%s/EMCAL/mapping/%s", base.Data(),   DDL2RcuMapFileName( GetDDLFromSpec( specification ) ) ); 
 
       FILE *fp = fopen(fFilepath, "r");
       if(fp != 0)
