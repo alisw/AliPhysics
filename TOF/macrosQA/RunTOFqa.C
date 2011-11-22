@@ -77,8 +77,7 @@ void RunTOFqa(const char* plugin_mode="full") {
 
 	// Handler
 	AliESDInputHandler *esdHandler = new AliESDInputHandler();
-	esdHandler->SetReadFriends(kTRUE);
-	esdHandler->SetActiveBranches("ESDfriend");
+	esdHandler->SetReadFriends(kFALSE);
 	mgr->SetInputEventHandler(esdHandler);
 	mgr->SetDebugLevel(debug_level);
 	if(saveProofToAlien) mgr->SetSpecialOutputLocation(proofOutdir);
@@ -95,7 +94,12 @@ void RunTOFqa(const char* plugin_mode="full") {
 	// run the analysis
 	if (mgr->InitAnalysis()) {                                                                                                              
 		mgr->PrintStatus(); 
-		if (!strcmp(plugin_mode, "local")) mgr->StartAnalysis("local");
+		if (!strcmp(analysisMode.Data(), "local")) {
+			TChain* chain = new TChain("esdTree");
+			chain->AddFile("/Users/Chiara/SOFT/MyAnalysis/TOF/QA_PbPb/OnGrid/AliESDs.root");
+			Printf("The chain has %d entries",chain->GetEntries());
+			mgr->StartAnalysis("local",chain);
+		}
 		else mgr->StartAnalysis("grid");
 	}
   
@@ -126,15 +130,13 @@ AliAnalysisAlien* CreateAlienHandler(const char* plugin_mode)
 	// Set the run mode (can be "full", "test", "offline", "submit" or "terminate")
 	plugin->SetRunMode(plugin_mode);
 	plugin->SetUser("zampolli");
-	plugin->SetNtestFiles(3);
+	plugin->SetNtestFiles(1);
 	// Set versions of used packages
 	plugin->SetAPIVersion("V1.1x");
 	plugin->SetROOTVersion("v5-30-03-1");
 	plugin->SetAliROOTVersion("v5-02-08-AN");
 	plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");   
-	plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so \
-                              libEMCALUtils.so libPHOSUtils.so libPWG4PartCorrBase.so libPWG4PartCorrDep.so \
-                              libPWG3base.so libPWG3muon.so libPWG3muondep.so libPWG2forward2.so");
+	plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so");
 	// Declare input data to be processed.
 	plugin->SetGridDataDir(grid_datadir); // specify LHC period
 	plugin->SetDataPattern(data_pattern); // specify reco pass and AOD set
@@ -143,6 +145,8 @@ AliAnalysisAlien* CreateAlienHandler(const char* plugin_mode)
 		if (!runNumbers[i]) break;
 		plugin->AddRunNumber(runNumbers[i]);
 	}   
+	plugin->SetNrunsPerMaster(1);
+	plugin->SetOutputToRunNo(1);
    
 	plugin->SetGridWorkingDir("QATOF_1");
 	plugin->SetGridOutputDir("output"); // In this case will be $HOME/work/output
