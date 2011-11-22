@@ -48,7 +48,7 @@ class AliFastMuonTriggerEff : public AliFastResponse {
     virtual Int_t   SetBkgLevel(Float_t Bkg=0.);
     virtual Int_t   ForceBkgLevel(Float_t Bkg=0.);
     virtual Float_t GetBkgLevel() const {return fBkg;}
-    Int_t LoadTables(Char_t *namet);  // Load trigger response tables
+    Int_t LoadTables(const Char_t *namet);  // Load trigger response tables
     void SetInt() {fInt=1;}
     void UnsetInt() {fInt=0;}
     Int_t GetInt() const {return fInt;}

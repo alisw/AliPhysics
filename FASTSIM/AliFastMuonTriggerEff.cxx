@@ -202,7 +202,7 @@ Int_t AliFastMuonTriggerEff::ForceBkgLevel(Float_t Bkg)
     return 0;
 }
 
-Int_t AliFastMuonTriggerEff::LoadTables(Char_t *namet=""){
+Int_t AliFastMuonTriggerEff::LoadTables(const Char_t *namet){
   //
   // Load the trigger tables
   //
