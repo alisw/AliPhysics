@@ -13,7 +13,7 @@
 #include "AliAnalysisTaskSingleMu.h"
 #endif
 
-AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t applyPhysicsSelection=kTRUE, Int_t fillNtupleScaleDown=0, Bool_t keepAll=kFALSE){
+AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t applyPhysicsSelection=kTRUE, Int_t fillNtupleScaleDown=0, Bool_t keepAll=kFALSE, Bool_t separateSpecialOut=kFALSE){
 
    // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
@@ -56,8 +56,8 @@ AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t applyPhysicsSelection=
    AliAnalysisDataContainer *coutput5 = 0x0;
    if ( fillNtupleScaleDown > 0 ) {
      currName = ( applyPhysicsSelection ) ? "SingleMuonNtuple" : "SingleMuonNtupleNoPS";
-     coutput5 = mgr->CreateContainer(currName.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile);
-     //coutput5 = mgr->CreateContainer(currName.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,"SingleMuNtuple.root");
+     TString specialOutFilename = separateSpecialOut ? currName + ".root" : outputfile;
+     coutput5 = mgr->CreateContainer(currName.Data(),TTree::Class(),AliAnalysisManager::kOutputContainer,specialOutFilename);
      coutput5->SetSpecialOutput();
    }
 
@@ -68,7 +68,7 @@ AliAnalysisTaskSingleMu* AddTaskSingleMuonAnalysis(Bool_t applyPhysicsSelection=
    AliAnalysisTaskSingleMu *singleMuonAnalysisTask = new AliAnalysisTaskSingleMu(taskName.Data(), fillNtupleScaleDown, keepAll);
    mgr->AddTask(singleMuonAnalysisTask);
    if ( applyPhysicsSelection ) 
-     singleMuonAnalysisTask->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kMUON);
+     singleMuonAnalysisTask->SelectCollisionCandidates(AliVEvent::kAny);
    
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
