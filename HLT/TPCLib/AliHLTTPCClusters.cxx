@@ -67,6 +67,7 @@ AliHLTTPCClusters::AliHLTTPCClusters(const AliHLTTPCClusters& src) :
 AliHLTTPCClusters& AliHLTTPCClusters::operator=(const AliHLTTPCClusters& src)
 {
   // see header file for class documentation
+  if (this==&src) return *this;
   fTotalCharge=src.fTotalCharge;
   fPad = src.fPad;
   fTime = src.fTime;
