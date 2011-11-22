@@ -261,6 +261,7 @@ int AliHLTRawReaderPublisherComponent::GetEvent(const AliHLTComponentEventData& 
 	continue;
       }
       processedIds.push_back(id);
+      if (!IsSelected(id)) continue;
       if (readSize+offset<=capacity) {
 	memcpy(outputPtr+offset, pHeader, sizeof(AliRawDataHeader));
 	if (readSize>sizeof(AliRawDataHeader)) {

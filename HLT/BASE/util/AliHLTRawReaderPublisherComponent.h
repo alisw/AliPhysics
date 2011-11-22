@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTRAWREADERPUBLISHERCOMPONENT_H
 #define ALIHLTRAWREADERPUBLISHERCOMPONENT_H
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTRawReaderPublisherComponent.h
-    @author Matthias Richter
-    @date   
-    @brief  A general data publisher component for the AliRawReader.
-*/
+/// @file   AliHLTRawReaderPublisherComponent.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  A general data publisher component for the AliRawReader.
+///
 
 #include "AliHLTOfflineDataSource.h"
 
@@ -153,6 +153,8 @@ class AliHLTRawReaderPublisherComponent : public AliHLTOfflineDataSource {
 		vector<AliHLTComponentBlockData>& outputBlocks );
 
   using AliHLTOfflineDataSource::GetEvent;
+
+  virtual bool IsSelected(int /*equipmentId*/) const {return true;}
 
  protected:
   virtual int GetSpecificationFromEquipmentId(int id, AliHLTUInt32_t &specification) const;
