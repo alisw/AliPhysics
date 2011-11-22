@@ -437,12 +437,12 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	hAvTimeVsRun->SetMarkerColor(kBlue);
 	//   hAvTimeVsRun->GetYaxis()->SetRangeUser(0.0, 50.0);
 
-	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","hPeakTimeVsRun (gaussian fit);run;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
+	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","hPeakTimeVsRun (landau fit);run;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
 	hPeakTimeVsRun->SetDrawOption("E1");
 	hPeakTimeVsRun->SetMarkerStyle(20);
 	hPeakTimeVsRun->SetMarkerColor(kBlue);
    
-	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","hSpreadTimeVsRun (gaussian fit);run; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","hSpreadTimeVsRun (landau fit);run; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadTimeVsRun->SetDrawOption("E1");
 	hSpreadTimeVsRun->SetMarkerStyle(20);
 	hSpreadTimeVsRun->SetMarkerColor(kBlue);
@@ -453,12 +453,12 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	hAvRawTimeVsRun->SetMarkerStyle(21);
 	hAvRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","hPeakRawTimeVsRun (gaussian fit);run;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","hPeakRawTimeVsRun (landau fit);run;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hPeakRawTimeVsRun->SetDrawOption("E1");
 	hPeakRawTimeVsRun->SetMarkerStyle(21);
 	hPeakRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","hSpreadRawTimeVsRun (gaussian fit);run;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","hSpreadRawTimeVsRun (landau fit);run;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadRawTimeVsRun->SetDrawOption("E1");
 	hSpreadRawTimeVsRun->SetMarkerStyle(21);
 	hSpreadRawTimeVsRun->SetMarkerColor(kGreen);
@@ -485,7 +485,7 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	hMeanLVsRun->SetDrawOption("E");
 	TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","hNegLRatioVsRun;run; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
 	hNegLRatioVsRun->SetDrawOption("E");
-	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","hMatchEffVsRun;run;matching efficiency (pT>1.5 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","hMatchEffVsRun;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
 	hMatchEffVsRun->SetDrawOption("E");
 	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","hMatchEffVsRun;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);
 	hMatchEffVsRun1->SetDrawOption("E");
@@ -1360,8 +1360,9 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 	hSigmaPro->Write();
 	profSigmaPro->Write();
 
+	TH2F* hTOFmatchedDzVsStrip = (TH2F*)generalList->FindObject("hTOFmatchedDzVsStrip");
+
 	if (canvasE){
-		TH2F* hTOFmatchedDzVsStrip = (TH2F*)generalList->FindObject("hTOFmatchedDzVsStrip");
 		TCanvas* cProfile = new TCanvas("cProfile","cProfile",50,50,750,550);
 		gStyle->SetOptStat(0);
 		hTOFmatchedDzVsStrip->Draw("colz");
@@ -1384,6 +1385,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 		residuals->Print(Form("%s/Residuals.png",plotDir.Data()));
 		cProfile->Print(Form("%s/ProfileDZvsStripNumber.png",plotDir.Data()));
 	}
+	fout->cd();
+	hTOFmatchedDzVsStrip->Write();
 
 	return 0;
 }
