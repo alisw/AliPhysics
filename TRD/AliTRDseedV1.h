@@ -131,6 +131,7 @@ public:
   Float_t   GetdZdX() const          { return fZfit[1];}
   Int_t     GetdY() const            { return Int_t(GetY()/0.014);}
   Int_t     GetDetector() const      { return fDet;}
+  Int_t     GetChargeGaps(Float_t sz[kNtb], Float_t pos[kNtb], Int_t ntb[kNtb]) const;
   void      GetCalibParam(Float_t &exb, Float_t &vd, Float_t &t0, Float_t &s2, Float_t &dl, Float_t &dt) const    { 
               exb = fExB; vd = fVD; t0 = fT0; s2 = fS2PRF; dl = fDiffL; dt = fDiffT;}
   AliTRDcluster*  GetClusters(Int_t i) const               { return i<0 || i>=kNclusters ? NULL: fClusters[i];}

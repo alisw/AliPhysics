@@ -502,6 +502,42 @@ Float_t AliTRDseedV1::GetCharge(Bool_t useOutliers) const
 }
 
 //____________________________________________________________________
+Int_t AliTRDseedV1::GetChargeGaps(Float_t sz[kNtb], Float_t pos[kNtb], Int_t isz[kNtb]) const
+{
+// Find number, size and position of charge gaps (consecutive missing time bins).
+// Returns the number of gaps and fills their size in input array "sz" and position in array "pos"
+
+  Bool_t gap(kFALSE);
+  Int_t n(0);
+  Int_t ipos[kNtb]; memset(isz, 0, kNtb*sizeof(Int_t));memset(ipos, 0, kNtb*sizeof(Int_t));
+  for(int ic(0); ic<kNtb; ic++){
+    if(fClusters[ic] || fClusters[ic+kNtb]){
+      if(gap) n++;
+      continue;
+    }
+    gap = kTRUE;
+    isz[n]++;
+    ipos[n] = ic;
+  }
+  if(!n) return 0;
+
+  // write calibrated values
+  AliTRDcluster fake;
+  for(Int_t igap(0); igap<n; igap++){
+    sz[igap] = isz[igap]*fVD/AliTRDCommonParam::Instance()->GetSamplingFrequency();
+    fake.SetPadTime(ipos[igap]);
+    pos[igap] = fake.GetXloc(fT0, fVD);
+    if(isz[igap]>1){
+      fake.SetPadTime(ipos[igap]-isz[igap]+1);
+      pos[igap] += fake.GetXloc(fT0, fVD);
+      pos[igap] /= 2.;
+    }
+  }
+  return n;
+}
+
+
+//____________________________________________________________________
 Bool_t AliTRDseedV1::GetEstimatedCrossPoint(Float_t &x, Float_t &z) const
 {
 // Algorithm to estimate cross point in the x-z plane for pad row cross tracklets.
