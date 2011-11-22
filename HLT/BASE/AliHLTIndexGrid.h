@@ -199,7 +199,7 @@ class AliHLTIndexGrid {
   iterator(const iterator& i)
     : fData(i.fData) {}
     iterator& operator=(const iterator& i)
-      { fData=i.fData; return *this;}
+      { if (this!=&i) {fData=i.fData;} return *this;}
     ~iterator() {fData=NULL;}
 
     bool operator==(const iterator& i) const  {return (fData!=NULL) && (fData==i.fData);}
