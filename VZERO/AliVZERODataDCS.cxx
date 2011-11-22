@@ -48,6 +48,8 @@ AliVZERODataDCS::AliVZERODataDCS():
 	fEndTime(0),
 	fDaqStartTime(0),
 	fDaqEndTime(0),
+	fCtpStartTime(0),
+	fCtpEndTime(0),
     fGraphs("TGraph",kNGraphs),
 	fFEEParameters(NULL),
 	fIsProcessed(kFALSE)
@@ -63,13 +65,15 @@ AliVZERODataDCS::AliVZERODataDCS():
 }
 
 //_____________________________________________________________________________
-AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t daqStartTime, UInt_t daqEndTime):
+AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, UInt_t daqStartTime, UInt_t daqEndTime, UInt_t ctpStartTime, UInt_t ctpEndTime):
 	TObject(),
 	fRun(nRun),
 	fStartTime(startTime),
 	fEndTime(endTime),
 	fDaqStartTime(daqStartTime),
 	fDaqEndTime(daqEndTime),
+	fCtpStartTime(ctpStartTime),
+	fCtpEndTime(ctpEndTime),
 	fGraphs("TGraph",kNGraphs),
 	fFEEParameters(new TMap()),
 	fIsProcessed(kFALSE)
@@ -82,11 +86,14 @@ AliVZERODataDCS::AliVZERODataDCS(Int_t nRun, UInt_t startTime, UInt_t endTime, U
 	 fMeanHV[i]      = 100.0;
      fWidthHV[i]     = 0.0; 
 	}
-	AliInfo(Form("\n\tRun %d \n\tTime Created %s \n\tTime Completed %s \n\tDAQ start %s \n\tDAQ end %s  ", nRun,
+	AliInfo(Form("\n\tRun %d \n\tTime Created %s \n\tTime Completed %s \n\tDAQ start %s \n\tDAQ end %s \n\tCTP start %s \n\tCTP end %s   ", nRun,
 		TTimeStamp(startTime).AsString(),
 		TTimeStamp(endTime).AsString(),
 		TTimeStamp(daqStartTime).AsString(),
-		TTimeStamp(daqEndTime).AsString()));
+		TTimeStamp(daqEndTime).AsString(),
+		TTimeStamp(ctpStartTime).AsString(),
+		TTimeStamp(ctpEndTime).AsString()
+		));
 	
 	fFEEParameters->SetOwnerValue();
 	Init();
@@ -143,7 +150,7 @@ Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
 
     	while((aValue = (AliDCSValue*) iterarray.Next())) {
 			UInt_t currentTime = aValue->GetTimeStamp();
-			if(currentTime>fDaqEndTime) break;
+			if(currentTime>fCtpEndTime) break;
 
    			values[iValue] = aValue->GetFloat();
    			times[iValue] = (Double_t) (currentTime);
@@ -153,7 +160,7 @@ Bool_t AliVZERODataDCS::ProcessData(TMap& aliasMap){
 				if(variation > 0.01) fDeadChannel[GetOfflineChannel(iAlias)] = kTRUE;
 			}
 			fHv[iAlias]->Fill(values[iValue]);
-			printf("%s %f Dead=%d\n",fAliasNames[iAlias].Data(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
+			printf("%s : %s : %f Dead=%d\n",fAliasNames[iAlias].Data(),TTimeStamp(currentTime).AsString(),values[iValue],fDeadChannel[GetOfflineChannel(iAlias)]);
    			iValue++;
     	}      
     	CreateGraph(iAlias, aliasArr->GetEntries(), times, values); // fill graphs 

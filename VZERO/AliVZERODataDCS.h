@@ -24,7 +24,7 @@ public:
   enum {kHvMin=0, kHvMax=3000};
   
   AliVZERODataDCS();
-  AliVZERODataDCS(Int_t nRun, UInt_t timeCreated, UInt_t timeCompleted, UInt_t daqStart, UInt_t daqEnd);
+  AliVZERODataDCS(Int_t nRun, UInt_t timeCreated, UInt_t timeCompleted, UInt_t daqStart, UInt_t daqEnd, UInt_t ctpStart, UInt_t ctpEnd);
   ~AliVZERODataDCS();
   
   void SetRun(Int_t run) {fRun = run;}
@@ -77,6 +77,8 @@ private:
   Int_t fEndTime;   // end time (time completed)
   UInt_t fDaqStartTime; // DAQ start time
   UInt_t fDaqEndTime;   // DAQ end time
+  UInt_t fCtpStartTime; // CTP start time
+  UInt_t fCtpEndTime;   // CTP end time
   
   TString fAliasNames[kNAliases];        // aliases for DCS data
   TClonesArray fGraphs;		         // Array containing  graphics
@@ -88,7 +90,7 @@ private:
     
   Bool_t fIsProcessed;                   // bool to know processing status
   
-  ClassDef(AliVZERODataDCS, 6);
+  ClassDef(AliVZERODataDCS, 7);
 };
 
 #endif
