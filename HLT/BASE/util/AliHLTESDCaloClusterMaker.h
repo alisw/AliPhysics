@@ -1,3 +1,5 @@
+// -*- Mode: C++ -*-
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -56,20 +58,6 @@ class AliHLTESDCaloClusterMaker
   /** Destructor */
   virtual ~AliHLTESDCaloClusterMaker();
 
-  /** Copy constructor */  
-  AliHLTESDCaloClusterMaker(const AliHLTESDCaloClusterMaker &) : 
-    fClusterReaderPtr(0)
-    {
-      //Copy constructor not implemented
-    }
-  
-  /** Assignment */
-  AliHLTESDCaloClusterMaker & operator = (const AliHLTESDCaloClusterMaker)
-    {
-      //Assignment
-      return *this; 
-    }
-
   /**
    * Convert AliHLTCaloClusterDataStruct clusters and fill an ESDEvent object with 
    * AliESDCaloCluster clusters
@@ -78,6 +66,10 @@ class AliHLTESDCaloClusterMaker
   Int_t FillESD(AliESDEvent *esdPtr, const AliHLTCaloClusterHeaderStruct *clusterHeader);
 
  private: 
+  /** Copy constructor prohibited */  
+  AliHLTESDCaloClusterMaker(const AliHLTESDCaloClusterMaker &);
+  /** Assignment operator prohibited*/
+  AliHLTESDCaloClusterMaker & operator = (const AliHLTESDCaloClusterMaker);
 
   /* The cluster struct reader */
   AliHLTCaloClusterReader* fClusterReaderPtr; // !transient The reader
