@@ -109,6 +109,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutCentV0M     ;    //control histogram for centrality
   TH1F *fHOutCentV0M_CVHN;    //control histogram for centrality
   TH1F *fHOutCentV0M_CVLN;    //control histogram for centrality
+  TH1F *fHOutCentV0M_CVHNinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_CVLNinMB;    //control histogram for centrality
   TH1F *fHOutCentFMD     ;    //control histogram for centrality
   TH1F *fHOutCentTRK     ;    //control histogram for centrality
   TH1F *fHOutCentTKL     ;    //control histogram for centrality
