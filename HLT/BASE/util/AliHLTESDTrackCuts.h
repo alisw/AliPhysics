@@ -1,6 +1,6 @@
 //-*- Mode: C++ -*-
 
-// $Id: AliHLTESDTrackCuts.h  $
+// $Id$
 
 #ifndef ALIHLTESDTRACKCUTS_H
 #define ALIHLTESDTRACKCUTS_H
@@ -9,10 +9,10 @@
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-/** @file   AliHLTESDTrackCuts.h
-    @author Jochen Thaeder <jochen@thaeder.de>
-    @brief  ESD track cuts used in the analysis of HLT data
-*/
+/// @file   AliHLTESDTrackCuts.h
+/// @author Jochen Thaeder <jochen@thaeder.de>
+/// @brief  ESD track cuts used in the analysis of HLT data
+///
 
 // see below for class documentation
 // or

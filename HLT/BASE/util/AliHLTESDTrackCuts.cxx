@@ -1,5 +1,5 @@
 //-*- Mode: C++ -*-
-// $Id: AliHLTESDTrackCuts.cxx  $
+// $Id$
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
 //* ALICE Experiment at CERN, All rights reserved.                         *
@@ -16,20 +16,16 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTESDTrackCuts.cxx
-    @author Jochen Thaeder <jochen@thaeder.de>
-    @brief  ESD track cuts used in the analysis of HLT data
-*/
+/// @file   AliHLTESDTrackCuts.cxx
+/// @author Jochen Thaeder <jochen@thaeder.de>
+/// @brief  ESD track cuts used in the analysis of HLT data
+///
 
 // see header file for class documentation
 // or
 // refer to README to build package
 // or
 // visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
-
-#if __GNUC__>= 3
-   using namespace std;
-#endif
 
 #include "AliHLTESDTrackCuts.h"
 #include "AliESDtrack.h"
