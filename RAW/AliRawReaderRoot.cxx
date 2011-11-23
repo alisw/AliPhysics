@@ -30,6 +30,7 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TTreeIndex.h>
 #include "AliRawReaderRoot.h"
 #include "AliRawVEvent.h"
 #include "AliRawEventHeaderBase.h"
@@ -39,6 +40,8 @@
 
 
 ClassImp(AliRawReaderRoot)
+Bool_t AliRawReaderRoot::fgUseOrder = kFALSE;
+
 
 AliRawReaderRoot::AliRawReaderRoot() :
   fFile(NULL),
@@ -52,7 +55,8 @@ AliRawReaderRoot::AliRawReaderRoot() :
   fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fIndex(0x0)
 {
 // default constructor
 
@@ -70,7 +74,8 @@ AliRawReaderRoot::AliRawReaderRoot(const char* fileName, Int_t eventNumber) :
   fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fIndex(0x0)
 {
 // create an object to read digits from the given input file for the
 // event with the given number
@@ -119,7 +124,8 @@ AliRawReaderRoot::AliRawReaderRoot(AliRawVEvent* event) :
   fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fIndex(0x0)
 {
 // create an object to read digits from the given raw event
   if (!fEvent) fIsValid = kFALSE;
@@ -138,7 +144,8 @@ AliRawReaderRoot::AliRawReaderRoot(const AliRawReaderRoot& rawReader) :
   fEquipment(NULL),
   fRawData(NULL),
   fPosition(NULL),
-  fEnd(NULL)
+  fEnd(NULL),
+  fIndex(0x0)
 {
 // copy constructor
 
@@ -532,12 +539,20 @@ Bool_t AliRawReaderRoot::NextEvent()
 
   if (!fBranch) return kFALSE;
 
+  // check if it uses order or not
+  if (fgUseOrder && !fIndex) MakeIndex();
+
   do {
     delete fEvent;
     fEvent = NULL;
     fEventHeader = NULL;
     fBranch->SetAddress(&fEvent);
-    if (fBranch->GetEntry(fEventIndex+1) <= 0)
+    Int_t entryToGet = fEventIndex + 1;
+    if (fgUseOrder 
+	&& fIndex 
+	&& entryToGet<fBranch->GetEntries()
+	&& entryToGet>-1 ) entryToGet = fIndex[entryToGet];
+    if (fBranch->GetEntry(entryToGet) <= 0)
       return kFALSE;
     fEventHeader = fEvent->GetHeader();
     fEventIndex++;
@@ -569,11 +584,19 @@ Bool_t  AliRawReaderRoot::GotoEvent(Int_t event)
 
   if (!fBranch) return kFALSE;
 
+  // check if it uses order or not
+  if (fgUseOrder && !fIndex) MakeIndex();
+
   delete fEvent;
   fEvent = NULL;
   fEventHeader = NULL;
   fBranch->SetAddress(&fEvent);
-  if (fBranch->GetEntry(event) <= 0)
+  Int_t entryToGet = event;
+  if (fgUseOrder 
+      && fIndex 
+      && entryToGet<fBranch->GetEntries()
+      && entryToGet>-1 ) entryToGet = fIndex[entryToGet];
+  if (fBranch->GetEntry(entryToGet) <= 0)
     return kFALSE;
   fEventHeader = fEvent->GetHeader();
   fEventIndex = event;
@@ -688,4 +711,16 @@ AliRawReader* AliRawReaderRoot::CloneSingleEvent() const
     return new AliRawReaderRoot(gdcRootEvent);
   }
   return NULL;
+}
+
+void AliRawReaderRoot::MakeIndex() {
+  // Make index
+  if (fBranch) {
+    TTree * rawTree = fBranch->GetTree();
+    if (rawTree) {
+      rawTree->BuildIndex("-fEvtHdrs[0].fSize"); // Minus sign to get largest first
+      TTreeIndex * treeInd = (TTreeIndex*)rawTree->GetTreeIndex();
+      if (treeInd) fIndex = treeInd->GetIndex();
+    }
+  }
 }

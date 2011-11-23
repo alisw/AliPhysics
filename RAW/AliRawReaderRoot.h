@@ -66,6 +66,8 @@ class AliRawReaderRoot: public AliRawReader {
     virtual const AliRawVEvent* GetEvent() const {return fEvent;}
 
     virtual AliRawReader* CloneSingleEvent() const;
+    static Bool_t           GetUseOrder() {return fgUseOrder;}
+    static void             UseOrder() {fgUseOrder = kTRUE;}
 
   protected :
     TFile*           fFile;         // raw data root file
@@ -80,8 +82,11 @@ class AliRawReaderRoot: public AliRawReader {
     AliRawData*      fRawData;      // current raw data
     UChar_t*         fPosition;     // current position in the raw data
     UChar_t*         fEnd;          // end position of the current subevent
+    Long64_t*        fIndex;       // Index of the tree
+    static Bool_t    fgUseOrder;       // Flag to use or not sorting in decreased size order
 
     void SwapData(const void* inbuf, const void* outbuf, UInt_t size);
+    void MakeIndex();
 
 
     ClassDef(AliRawReaderRoot, 0) // class for reading raw digits from a root file
