@@ -589,7 +589,8 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
     
   //draw satellite
   for (int itr=-1;itr<GetNEventTrigClasses();itr++) { //RS loop over all active trigger classes, including the global one
-    int itrID = itr==-1 ? -1 : GetEventTrigClass(itr)->GetUniqueID();
+    //  int itrID = itr==-1 ? -1 : GetEventTrigClass(itr)->GetUniqueID();
+    int itrID = itr==-1 ? -1 : int( GetEventTrigClass(itr)->GetUniqueID());
     int nEvent = GetEvCountCycleRaws(itrID);
     // 
     //   if(type == 7) {	 // RS Do we need here event type check, specie should do the job
