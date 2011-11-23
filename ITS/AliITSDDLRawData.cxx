@@ -66,6 +66,7 @@ fSDDRawFormat(source.fSDDRawFormat){
 
 AliITSDDLRawData& AliITSDDLRawData::operator=(const AliITSDDLRawData &source){
   //Assigment operator
+  if(this==&source) return *this;
   fIndex=source.fIndex;
   fHalfStaveModule=source.fHalfStaveModule;
   fVerbose=source.fVerbose;
