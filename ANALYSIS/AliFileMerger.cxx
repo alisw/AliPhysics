@@ -66,8 +66,11 @@
 #include "Riostream.h"
 #include "AliSysInfo.h"
 #include "AliFileMerger.h"
+#include "AliLog.h"
 
 ClassImp(AliFileMerger)
+
+ProcInfo_t procInfo;//TMP
 
 ////////////////////////////////////////////////////////////////////////
 
@@ -75,6 +78,7 @@ AliFileMerger::AliFileMerger():
   TNamed(),
   fRejectMask(0),
   fAcceptMask(0),
+  fMaxFilesOpen(500),
   fNoTrees(kFALSE)
 {
   //
@@ -88,6 +92,7 @@ AliFileMerger::AliFileMerger(const char* name):
   TNamed(name,name),
   fRejectMask(0),
   fAcceptMask(0),
+  fMaxFilesOpen(500),
   fNoTrees(kFALSE)
 {
   //
@@ -101,8 +106,6 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
   //
   // Merge the files coming out of the calibration job
   // 
-  TString outputFile(outputFileName);
-  gSystem->ExpandPathName(outputFile);
   TString command;
   // looking for files to be merged in the output directory
   command = Form("find %s/ *%s", outputDir, pattern);
@@ -127,18 +130,75 @@ void AliFileMerger::IterAlien(const char* outputDir, const char* outputFileName,
     printf("looking for file %s\n",(objs->GetString()).Data());
     AddFile(&sourcelist, (objs->GetString()).Data());;
   }
-  printf("List of files to be merged:\n");
-  sourcelist.Print();
-  //  
+  //
+  IterList(&sourcelist, outputFileName, dontOverwrite);
+  delete res;
+}
+
+void AliFileMerger::IterList(const TList* namesList, const char* outputFileName, Bool_t dontOverwrite)
+{
+  // merge in steps or in one go
+  //
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
+  //
+  TString outputFile(outputFileName);
+  gSystem->ExpandPathName(outputFile);
+  //
+  int nFiles = namesList->GetEntries();
+  int maxSrcOpen = fMaxFilesOpen - 1;
+  TList filesList;
+  filesList.SetOwner(kTRUE);
+  //
+  TString tmpDest[2] = {outputFile,outputFile}; // names for tmp files
+  int npl = outputFile.Last('.');
+  if (npl<0) npl  = outputFile.Length();
+  for (int i=0;i<2;i++) tmpDest[i].Insert(npl,Form("_TMPMERGE%d_",i));
+  //
+  int nsteps = 0, currTmp = 0, start = 0;
+  for (int ifl=0;ifl<nFiles;ifl++) {
+    int st = ifl%maxSrcOpen;
+    if (st==0 && ifl) { // new chunk should be started, merge what was already accumulated
+      OpenNextChunks(namesList,&filesList,start,ifl-1);
+      start = ifl; // remember where to start next step
+      if (nsteps++) { // if not 1st one, merge the privous chunk with this one
+	filesList.AddFirst(TFile::Open(tmpDest[currTmp].Data()));
+	currTmp = (currTmp==0) ? 1:0;         // swap tmp files
+      }
+      // open temp target
+      TFile* targetTmp = TFile::Open( tmpDest[currTmp].Data(), "RECREATE");
+      if (!targetTmp || targetTmp->IsZombie()) {
+	printf("Error opening temporary file %s\n",tmpDest[currTmp].Data());
+	return;
+      }
+      MergeRootfile(targetTmp, &filesList);
+      targetTmp->Close();
+      delete targetTmp;
+      filesList.Clear(); // close all open files
+    }
+    // nothing to do until needed amount of files is accumulated
+  }
+  // merge last step
   TFile* target = TFile::Open( outputFile.Data(), (dontOverwrite ? "CREATE":"RECREATE") );
   if (!target || target->IsZombie()) {
     cerr << "Error opening target file (does " << outputFileName << " exist?)." << endl;
     cerr << "Use force = kTRUE to re-creation of output file." << endl;
     return;
-  }  
-  MergeRootfile( target, &sourcelist);
-  delete res;
+  }
+  OpenNextChunks(namesList,&filesList,start,nFiles-1);
+  // add result of previous merges
+  if (nsteps) filesList.AddFirst(TFile::Open(tmpDest[currTmp].Data()));
+  MergeRootfile( target, &filesList);
+  target->Close();
   delete target;
+  filesList.Clear();
+  // 
+  for (int i=0;i<2;i++) gSystem->Exec(Form("if [ -e %s ]; then \nrm %s\nfi",tmpDest[i].Data(),tmpDest[i].Data()));
+  //
+  printf("Merged %d files in %d steps\n",nFiles,++nsteps);
+  //  
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form("<< memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
 }
 
 void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName, Bool_t dontOverwrite){
@@ -163,20 +223,8 @@ void AliFileMerger::IterTXT( const char * fileList,  const char* outputFileName,
     AddFile(&sourcelist, objfile.Data());
   }
   //
-  printf("List of files to be merged:\n");
-  sourcelist.Print();
+  IterList(&sourcelist, outputFileName, dontOverwrite);
   //
-  TString outputFile(outputFileName);
-  gSystem->ExpandPathName(outputFile);
-  TFile* target = TFile::Open( outputFile.Data(), (dontOverwrite ? "CREATE":"RECREATE") );
-  if (!target || target->IsZombie()) {
-    cerr << "Error opening target file (does " << outputFileName << " exist?)." << endl;
-    cerr << "Use force = kTRUE to re-creation of output file." << endl;
-    return;
-  }
-
-  MergeRootfile( target, &sourcelist);
-  delete target;
 }
 
 void AliFileMerger::StoreResults(TObjArray * array, const char* outputFileName){
@@ -325,6 +373,10 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 {
   // Merge all objects in a directory
   // modified version of root's hadd.cxx
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
+
+
   Int_t counterF = -1;
   int status = 0;
   cout << "Target path: " << target->GetPath() << endl;
@@ -382,8 +434,8 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
       AliSysInfo::AddStamp(nameK.Data(),1,counterK++,counterF-1); 
       // read object from first source file
       //current_sourcedir->cd();
+
       TObject *obj = key->ReadObj();
-      //printf("keyname=%s, obj=%x\n",key->GetName(),obj);
       
       if ( obj->IsA()->InheritsFrom( TTree::Class() ) ) {
 	
@@ -450,7 +502,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	      hobj->ResetBit(kMustCleanup);
 	      listH.Add(hobj);
 	      Int_t error = 0;
-	      obj->Execute("Merge", listHargs.Data(), &error);
+	      obj->Execute("Merge", listHargs.Data(), &error); // RS Probleme here
 	      if (error) {
 		cerr << "Error calling Merge() on " << obj->GetName()
 		     << " with the corresponding object in " << nextsource->GetName() << endl;
@@ -536,11 +588,44 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
   // save modifications to target file
   target->SaveSelf(kTRUE);
   //
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form("<< memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
+
   return status;
 }
 
 //___________________________________________________________________________
-int AliFileMerger::AddFile(TList* sourcelist, std::string entry)
+int AliFileMerger::OpenNextChunks(const TList* namesList, TList* filesList, Int_t from, Int_t to)
+{
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form(">> memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
+
+  filesList->Clear();
+  int nEnt = namesList->GetEntries();
+  from = from<nEnt ? from : nEnt;
+  to   = to<nEnt ? to : nEnt;
+  int count = 0;
+  for (int i=from;i<=to;i++) {
+    TNamed* fnam = (TNamed*)namesList->At(i);
+    if (!fnam) continue;
+    TString fnamS(fnam->GetName());
+    gSystem->ExpandPathName(fnamS);
+    if (fnamS.BeginsWith("alien://") && !gGrid) TGrid::Connect("alien");
+    TFile* source = TFile::Open(fnam->GetName());
+    if( source==0 ) { printf("Failed to open file %s, will skip\n",fnam->GetName()); continue; }
+    filesList->Add(source);
+    printf("Opened file %s\n",fnam->GetName());
+    count++;
+  }
+  gSystem->GetProcInfo(&procInfo);
+  AliInfo(Form("<< memory usage %ld %ld", procInfo.fMemResident, procInfo.fMemVirtual));
+
+  return count;
+}
+
+
+//___________________________________________________________________________
+int AliFileMerger::AddFile(TList* namesList, std::string entry)
 {
   // add a new file to the list of files
   //  static int count(0);
@@ -557,17 +642,11 @@ int AliFileMerger::AddFile(TList* sourcelist, std::string entry)
     while( indirect_file ){
       std::string line;
       std::getline(indirect_file, line);
-      if( AddFile(sourcelist, line)!=0 )return 1;;
+      if( AddFile(namesList, line)!=0 ) return 1;;
     }
     return 0;
   }
   //  cout << "Source file " << (++count) << ": " << entry << endl;
-  
-  TFile* source = TFile::Open( entry.c_str());
-  if( source==0 ) {
-    cout << "Failed to open " << entry << " will skip" << endl;
-    return 0;
-  }
-  sourcelist->Add(source);
+  namesList->Add(new TNamed(entry,""));
   return 0;
 }
