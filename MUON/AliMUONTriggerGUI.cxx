@@ -1454,6 +1454,7 @@ void AliMUONTriggerGUI::InitBoards()
   
   // circuit number to board number in array
   Int_t cIdtobId[235];
+  for (Int_t i = 0; i < 235; i++) cIdtobId[i] = -1;
 
   AliMpDEIterator it;
   Int_t boardId = -1;

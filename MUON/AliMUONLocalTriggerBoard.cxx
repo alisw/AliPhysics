@@ -1177,6 +1177,9 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
 
    const Int_t kMaxfields = 2; char **fields = new char*[kMaxfields];
 
+   for (Int_t i = 0; i < kMaxfields; i++) 
+     fields[i] = new char[1];
+
    char s[100]; strncpy(s, GetName(), 99);
 
    Int_t numlines = 0;
@@ -1185,6 +1188,7 @@ Int_t AliMUONLocalTriggerBoard::GetI() const
         token != NULL;
         token = strtok(NULL, " "))
    {
+      delete [] fields[numlines];
       fields[numlines] = new char[strlen(token)+1];
       strcpy(fields[numlines++], token);
    }
