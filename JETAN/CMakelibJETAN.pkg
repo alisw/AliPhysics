@@ -35,7 +35,6 @@ set ( SRCS
     AliJetESDReader.cxx 
     AliUA1JetHeader.cxx 
     AliJetProductionData.cxx 
-    AliJetProductionDataPDC2004.cxx 
     AliUA1JetFinderV1.cxx 
     AliUA1JetFinderV2.cxx 
     AliUA1JetHeaderV1.cxx 
