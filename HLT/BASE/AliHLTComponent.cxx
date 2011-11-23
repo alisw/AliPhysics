@@ -25,10 +25,6 @@
 //          context
 
 
-#if __GNUC__>= 3
-using namespace std;
-#endif
-
 //#include "AliHLTStdIncludes.h"
 #include "AliHLTComponent.h"
 #include "AliHLTComponentHandler.h"

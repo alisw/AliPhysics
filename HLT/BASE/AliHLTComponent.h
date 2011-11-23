@@ -83,7 +83,7 @@ class TObjArray;
 class TMap;
 class TStopwatch;
 class TUUID;
-class AliRawDataHeader;
+struct AliRawDataHeader;
 class AliHLTComponent;
 class AliHLTMemoryFile;
 class AliHLTCTPData;
