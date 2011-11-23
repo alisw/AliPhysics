@@ -394,14 +394,11 @@ void AliFMDAnaParameters::PrintStatus(Bool_t showpaths) const
   }
   
   TString datastring;
-  switch(fRealData) {
-  case kTRUE:
-    datastring.Form("Nature"); break;
-  case kFALSE: 
-    datastring.Form("MC"); break;
-  default:
-    datastring.Form("Unknown"); break ;
-  }
+  
+  if(fRealData) 
+    datastring.Form("Nature");
+  else 
+    datastring.Form("MC"); 
   
   TString inelString;
   if(fInelGtZero) inelString = "INEL > 0";
