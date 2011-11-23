@@ -1598,7 +1598,7 @@ Bool_t AliITSRealignTracks::AlignLayerToSPDHalfBarrel(Int_t layer,Int_t updown,I
   TString layerstr[6]={"SPD1","SPD2","SDD1","SDD2","SSD1","SSD2"};  
   TArrayI *volIDsFit;
   Int_t layers[6]={0,0,0,0,0,0};
-  layers[layer]=1;
+  layers[layer-1]=1;
   Int_t size=AliGeomManager::LayerSize(layer);
   TArrayI *volIDs=GetLayersVolUID(layers);
 
@@ -1634,9 +1634,9 @@ Bool_t AliITSRealignTracks::AlignLayerToSector(Int_t layer,Int_t sector,Int_t it
   TString layerstr[6]={"SPD1","SPD2","SDD1","SDD2","SSD1","SSD2"};  
   TArrayI *volIDsFit;
   Int_t layers[6]={0,0,0,0,0,0};
-  layers[layer]=1;
+  layers[layer-1]=1;
   TArrayI *volIDs=GetLayersVolUID(layers);
-  Int_t size=AliGeomManager::LayerSize(layer);
+  Int_t size=AliGeomManager::LayerSize(layer); 
   
  
   volIDsFit=GetSPDSectorsVolids(sectors);   
