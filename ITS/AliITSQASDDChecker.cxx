@@ -74,14 +74,6 @@ fSubDetOffset(0),
 }          // ctor
 
 
-//__________________________________________________________________
-AliITSQASDDChecker& AliITSQASDDChecker::operator = (const AliITSQASDDChecker& qac ) 
-{
-  // Equal operator.
-  this->~AliITSQASDDChecker();
-  new(this) AliITSQASDDChecker(qac);
-  return *this;
-}
 
 AliITSQASDDChecker::~AliITSQASDDChecker() 
 {

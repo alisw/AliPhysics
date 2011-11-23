@@ -211,7 +211,8 @@ AliITSAlignMille2Module& AliITSAlignMille2Module::operator=(const AliITSAlignMil
   fDetType = m.fDetType;
   fVolumeID=m.fVolumeID;
   fNParTot  = m.fNParTot;
-  fNParFree = m.fNParFree;
+  fNParFree = m.fNParFree; 
+  fNProcPoints = m.fNProcPoints; 
   delete[] fParVals; fParVals = 0;
   delete[] fParErrs; fParErrs = 0;
   delete[] fParCstr; fParCstr = 0;
@@ -229,7 +230,7 @@ AliITSAlignMille2Module& AliITSAlignMille2Module::operator=(const AliITSAlignMil
   //
   fParOffs.Set(fNParTot);
   for (int i=0;i<fNParTot;i++) fParOffs[i] = m.fParOffs[i];
-  for (int i=3;i--;) fSigmaFactor[i] = m.fSigmaFactor[i];
+  for (int i=0;i<3;i++) fSigmaFactor[i] = m.fSigmaFactor[i];
   if (fMatrix) delete fMatrix;
   fMatrix=new TGeoHMatrix(*m.GetMatrix());
   fSensVolIndex = m.fSensVolIndex;

@@ -38,7 +38,6 @@ class AliITSQASDDChecker: public TObject{
 public:
 
   AliITSQASDDChecker();  // ctor
-  AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; //operator =
   virtual ~AliITSQASDDChecker(); // dtor
   virtual Double_t Check(AliQAv1::ALITASK_t index, const TObjArray * list, const AliDetectorRecoParam * recoParam);
   virtual void SetTaskOffset(Int_t taskoffset);
@@ -55,18 +54,8 @@ public:
 
  private:
   
-  AliITSQASDDChecker(const AliITSQASDDChecker& qac):TObject(),
-    fSubDetOffset(qac.fSubDetOffset),
-    fStepBitSDD(qac.fStepBitSDD),
-    fLowSDDValue(qac.fLowSDDValue),
-    fHighSDDValue(qac.fHighSDDValue),
-    fCalibration(qac.fCalibration),
-    fThresholdForRelativeOccupancy(qac.fThresholdForRelativeOccupancy),
-    fThresholdForRecToRawRatio(qac.fThresholdForRecToRawRatio),
-    fImage(qac.fImage),
-    fESforCheck(qac.fESforCheck) 
-      {;} // cpy ctor   
-
+  AliITSQASDDChecker(const AliITSQASDDChecker& qac); 
+  AliITSQASDDChecker& operator = (const AliITSQASDDChecker& qac) ; 
     Int_t fSubDetOffset;            // checking operation starting point
     Double_t *fStepBitSDD;          //step size for each QAbit(kINFO, kWARNING,kERROR,kFATAL)
     Float_t *fLowSDDValue;          //low value of each QA bit range 
