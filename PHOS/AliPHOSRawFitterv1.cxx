@@ -73,6 +73,7 @@ AliPHOSRawFitterv1::AliPHOSRawFitterv1():
 AliPHOSRawFitterv1::~AliPHOSRawFitterv1()
 {
   //Destructor.
+  //Destructor
   if(fSampleParamsLow){
     delete fSampleParamsLow ; 
     fSampleParamsLow=0 ;
@@ -89,7 +90,7 @@ AliPHOSRawFitterv1::~AliPHOSRawFitterv1()
 
 //-----------------------------------------------------------------------------
 AliPHOSRawFitterv1::AliPHOSRawFitterv1(const AliPHOSRawFitterv1 &phosFitter ):
-  AliPHOSRawFitterv0(phosFitter), 
+  AliPHOSRawFitterv0(phosFitter),
   fSampleParamsLow(0x0),
   fSampleParamsHigh(0x0),
   fToFit(0x0)
@@ -104,15 +105,16 @@ AliPHOSRawFitterv1::AliPHOSRawFitterv1(const AliPHOSRawFitterv1 &phosFitter ):
 AliPHOSRawFitterv1& AliPHOSRawFitterv1::operator = (const AliPHOSRawFitterv1 &phosFitter)
 {
   //Assignment operator.
-
-  fToFit = new TList() ;
-  if(fSampleParamsLow){
-    fSampleParamsLow = phosFitter.fSampleParamsLow ;
-    fSampleParamsHigh= phosFitter.fSampleParamsHigh ;
-  }
-  else{
-    fSampleParamsLow =new TArrayD(*(phosFitter.fSampleParamsLow)) ; 
-    fSampleParamsHigh=new TArrayD(*(phosFitter.fSampleParamsHigh)) ;
+  if(this != &phosFitter) {
+    fToFit = new TList() ;
+    if(fSampleParamsLow){
+      fSampleParamsLow = phosFitter.fSampleParamsLow ;
+      fSampleParamsHigh= phosFitter.fSampleParamsHigh ;
+    }
+    else{
+      fSampleParamsLow =new TArrayD(*(phosFitter.fSampleParamsLow)) ; 
+      fSampleParamsHigh=new TArrayD(*(phosFitter.fSampleParamsHigh)) ;
+    }
   }
   return *this;
 }
@@ -250,6 +252,7 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   gMinuit->mncler();                     // Reset Minuit's list of paramters
   gMinuit->SetPrintLevel(-1) ;           // No Printout
   gMinuit->SetFCN(AliPHOSRawFitterv1::UnfoldingChiSquare) ;  
+
   // To set the address of the minimization function 
   
   fToFit->Clear("nodelete") ;
@@ -286,7 +289,7 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   gMinuit->mnparm(0, "t0",  1.*tStart, 0.01, -500., 500., ierflg) ;
   if(ierflg != 0){
     //	  AliWarning(Form("Unable to set initial value for fit procedure : t0=%e\n",1.*tStart) ) ;
-    fEnergy =   0. ;
+   fEnergy =   0. ;
     fTime   =-999. ;
     fQuality= 999. ;
     return kTRUE ; //will scan further
@@ -367,6 +370,19 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   delete fTimes ;
   return kTRUE;
 }
+//-----------------------------------------------------------------------------
+Double_t AliPHOSRawFitterv1::Gamma2(Double_t dt,Double_t en,Double_t b,TArrayD * params){  //Function for fitting samples
+  //parameters:
+  //dt-time after start
+  //en-amplutude
+  //function parameters
+  
+  Double_t ped=params->At(4) ;
+  if(dt<0.)
+    return ped ; //pedestal
+  else
+    return ped+en*(TMath::Power(dt,params->At(0))*TMath::Exp(-dt*params->At(1))+b*dt*dt*TMath::Exp(-dt*params->At(3))) ;
+}
 //_____________________________________________________________________________
 void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, Double_t & fret, Double_t * x, Int_t iflag)
 {
@@ -388,7 +404,7 @@ void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, D
   Double_t n=params->At(0) ;
   Double_t alpha=params->At(1) ;
   Double_t beta=params->At(3) ;
-  Double_t ped=params->At(4) ;
+  //  Double_t ped=params->At(4) ;
 
   Double_t overflow=params->At(5) ;
   Int_t iBin = (Int_t) params->At(6) ;
@@ -403,20 +419,21 @@ void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, D
   for(Int_t i = iBin; i<nSamples ; i++) {
     Double_t dt=double(times->At(i))-t0 ;
     Double_t fsample = double(samples->At(i)) ;
-    if(fsample>=overflow)
-      continue ;
-    Double_t diff ;
+    Double_t diff=0. ;
     exp1*=dexp1 ;
     exp2*=dexp2 ;
+    if(fsample>=overflow)
+      continue ;    
     if(dt<=0.){
-      diff=fsample - ped ; 
+      diff=fsample ; 
       fret += diff*diff ;
       continue ;
     }
+    
     Double_t dtn=TMath::Power(dt,n) ;
     Double_t dtnE=dtn*exp1 ;
     Double_t dt2E=dt*dt*exp2 ;
-    Double_t fit=ped+en*(dtnE + b*dt2E) ;
+    Double_t fit=en*(dtnE + b*dt2E) ;
     diff = fsample - fit ;
     fret += diff*diff ;
     if(iflag == 2){  // calculate gradient
@@ -424,21 +441,9 @@ void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, D
       Grad[1] -= diff*(dtnE+b*dt2E) ;
       Grad[2] -= en*diff*dt2E ;
     }
+    
   }
   if(iflag == 2)
     for(Int_t iparam = 0 ; iparam < 3 ; iparam++)    
       Grad[iparam] *= 2. ; 
-}
-//-----------------------------------------------------------------------------
-Double_t AliPHOSRawFitterv1::Gamma2(Double_t dt,Double_t en,Double_t b,TArrayD * params){  //Function for fitting samples
-  //parameters:
-  //dt-time after start
-  //en-amplutude
-  //function parameters
-  
-  Double_t ped=params->At(4) ;
-  if(dt<0.)
-    return ped ; //pedestal
-  else
-    return ped+en*(TMath::Power(dt,params->At(0))*TMath::Exp(-dt*params->At(1))+b*dt*dt*TMath::Exp(-dt*params->At(3))) ;
 }
