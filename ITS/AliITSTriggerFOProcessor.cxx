@@ -303,7 +303,7 @@ Bool_t AliITSTriggerFOProcessor::ProcessFOSignalsCosmic(Short_t index, AliITSFOS
   // global or
   if (cosmicParam == 5) return (fFOOuter>0 || fFOInner>0);
 
-  Error("AliITSTriggerFOProcessor::ProcessFOSignalsCosmic",Form("'cosmic_algorithm_parameter' = %d not defined",cosmicParam));
+  Error("AliITSTriggerFOProcessor::ProcessFOSignalsCosmic","'cosmic_algorithm_parameter' = %d not defined",cosmicParam);
   return kFALSE;
 }
 
