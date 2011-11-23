@@ -64,8 +64,8 @@ fDistH(NULL)
   Reset();
 
   // Histograms initialization
-  const Float_t xLimit = 5.0, yLimit = 5.0, zLimit = 50.0;
-  const Float_t xDelta = 0.02, yDelta = 0.02, zDelta = 0.2;
+  const Float_t xLimit = 0.6, yLimit = 0.6, zLimit = 50.0;
+  const Float_t xDelta = 0.003, yDelta = 0.003, zDelta = 0.2;
   fVertexXY = new TH2F("VertexXY","Vertex Diamond (Y vs X)",
 		       2*(Int_t)(xLimit/xDelta),-xLimit,xLimit,
 		       2*(Int_t)(yLimit/yDelta),-yLimit,yLimit);
@@ -90,6 +90,24 @@ fDistH(NULL)
 //______________________________________________________________________
 void AliITSMeanVertexer::Reset(){
   // Reset averages 
+  static Int_t counter = 0;
+  if(fVertexXY){
+    counter++;
+    Double_t rangeX=fVertexXY->GetXaxis()->GetXmax()-fVertexXY->GetXaxis()->GetXmin();
+    Double_t rangeY=fVertexXY->GetYaxis()->GetXmax()-fVertexXY->GetYaxis()->GetXmin();
+    Int_t nx=fVertexXY->GetNbinsX();
+    Int_t ny=fVertexXY->GetNbinsY();
+    delete fVertexXY;
+    Double_t xmi=fWeighPos[0]-rangeX/2.;
+    Double_t xma=fWeighPos[0]+rangeX/2.;
+    Double_t ymi=fWeighPos[1]-rangeY/2.;
+    Double_t yma=fWeighPos[1]+rangeY/2.;
+    fVertexXY = new TH2F("VertexXY","Vertex Diamond (Y vs X)",nx,xmi,xma,ny,ymi,yma);
+    fVertexXY->SetXTitle("X , cm");
+    fVertexXY->SetYTitle("Y , cm");
+    fVertexXY->SetOption("colz");
+    fVertexXY->SetDirectory(0);
+  }
   for(Int_t i=0;i<3;i++){
     fWeighPosSum[i] = 0.;
     fWeighSigSum[i] = 0.;
@@ -101,7 +119,6 @@ void AliITSMeanVertexer::Reset(){
     for(Int_t j=0; j<3;j++)fAverPosSqSum[i][j] = 0.;
     fNoEventsContr=0;
     fTotContributors = 0.;
-    if(fVertexXY)fVertexXY->Reset();
     if(fVertexZ)fVertexZ->Reset();
   }
 }
