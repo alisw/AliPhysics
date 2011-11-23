@@ -38,7 +38,7 @@ namespace {
   {
     return Form("nEvents%s%s", (tr ? "Tr" : ""), (vtx ? "Vtx" : ""));
   }
-  const char* GetHitsName(UShort_t d, Char_t r) 
+  /*const char* GetHitsName(UShort_t d, Char_t r) 
   {
     return Form("hitsSPD%d%c", d, r);
   }
@@ -51,7 +51,8 @@ namespace {
     return Form("primaries%s%s", 
 		((r == 'I' || r == 'i') ? "Inner" : "Outer"), 
 		(trVtx ? "TrVtx" : "All"));
-  }
+		}
+  */
 }
 
 //====================================================================
