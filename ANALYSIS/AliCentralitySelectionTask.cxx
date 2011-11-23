@@ -108,6 +108,7 @@ AliAnalysisTaskSE(),
   fQuality(999),
   fCVHN(0),
   fCVLN(0),
+  fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -217,6 +218,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fQuality(999),
   fCVHN(0),
   fCVLN(0),
+  fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -336,6 +338,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fQuality(ana.fQuality),
   fCVHN(ana.fCVHN),
   fCVLN(ana.fCVLN),
+  fIsSelected(ana.fIsSelected),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
   fCentTRK(ana.fCentTRK),
@@ -598,12 +601,13 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
 
     // ***** Trigger info    
+    fIsSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
     TString trigStr(esd->GetFiredTriggerClasses());
     fCVHN=kFALSE;    fCVLN=kFALSE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN"))) 
-     fCVHN=kTRUE;
-    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")))
-     fCVLN=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN")) && (fIsSelected)) 
+      fCVHN=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
+      fCVLN=kTRUE;
     
 
     // ***** Vertex Info
