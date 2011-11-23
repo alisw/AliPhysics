@@ -209,40 +209,38 @@ AliAODTrack& AliAODTrack::operator=(const AliAODTrack& trk)
 
     trk.GetP(fMomentum);
     trk.GetPosition(fPosition);
-    trk.GetPID(fPID);
-
     SetXYAtDCA(trk.XAtDCA(), trk.YAtDCA());
     SetPxPyPzAtDCA(trk.PxAtDCA(), trk.PyAtDCA(), trk.PzAtDCA());
-    
-    fRAtAbsorberEnd = trk.fRAtAbsorberEnd;
-    
-    fChi2perNDF = trk.fChi2perNDF;
-    fChi2MatchTrigger = trk.fChi2MatchTrigger;
-
-    fFlags = trk.fFlags;
-    fLabel = trk.fLabel;    
-    
+    fRAtAbsorberEnd    = trk.fRAtAbsorberEnd;
+    fChi2perNDF        = trk.fChi2perNDF;
+    fChi2MatchTrigger  = trk.fChi2MatchTrigger;
+    trk.GetPID(fPID);
+    fFlags             = trk.fFlags;
+    fLabel             = trk.fLabel;    
     fITSMuonClusterMap = trk.fITSMuonClusterMap;
-    fFilterMap = trk.fFilterMap;
-
-    fID = trk.fID;
-
-    fCharge = trk.fCharge;
-    fType = trk.fType;
-
-    fCaloIndex = trk.fCaloIndex;
+    fFilterMap         = trk.fFilterMap;
+    fTPCClusterMap     = trk.fTPCClusterMap;
+    fTPCSharedMap      = trk.fTPCSharedMap;
+    fTPCnclsF          = trk.fTPCnclsF;
+    fID                = trk.fID;
+    fCharge            = trk.fCharge;
+    fType              = trk.fType;
+    fCaloIndex         = trk.fCaloIndex;
 
     delete fCovMatrix;
     if(trk.fCovMatrix) fCovMatrix=new AliAODRedCov<6>(*trk.fCovMatrix);
     else fCovMatrix=NULL;
-    fProdVertex = trk.fProdVertex;
 
+
+    fProdVertex        = trk.fProdVertex;
     SetUsedForVtxFit(trk.GetUsedForVtxFit());
     SetUsedForPrimVtxFit(trk.GetUsedForPrimVtxFit());
 
     delete fDetPid;
     if(trk.fDetPid) fDetPid=new AliAODPid(*trk.fDetPid);
     else fDetPid=NULL;
+
+
   }
 
   return *this;
