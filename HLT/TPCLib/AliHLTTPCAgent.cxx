@@ -26,10 +26,13 @@
 #include "AliHLTTPCDefinitions.h"
 #include "AliHLTOUT.h"
 #include "AliHLTOUTHandlerChain.h"
+#include "AliHLTMisc.h"
 #include "AliRunLoader.h"
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliTPCParam.h"
+#include "AliTPCRecoParam.h"
+#include "TObject.h"
 
 /** global instance for agent registration */
 AliHLTTPCAgent gAliHLTTPCAgent;
@@ -79,6 +82,7 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
 #include "AliHLTTPCDataCompressionComponent.h"
 #include "AliHLTTPCDataCompressionMonitorComponent.h"
+#include "AliHLTTPCDataCompressionFilterComponent.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCAgent)
@@ -207,6 +211,16 @@ int AliHLTTPCAgent::CreateConfigurations(AliHLTConfigurationHandler* handler,
     handler->CreateConfiguration("TPC-compression-monitoring-component", "TPCDataCompressorMonitor", "TPC-compression TPC-hwcfdata","-pushback-period=30");
     handler->CreateConfiguration("TPC-compression-monitoring", "ROOTFileWriter", "TPC-compression-monitoring-component","-concatenate-events -overwrite -datafile HLT.TPCDataCompression-statistics.root");
 
+    // special configuration to run the emulation automatically if the compressed clusters
+    // of a particular partition is missing. This configuration is announced for reconstruction
+    // of raw data if the HLT mode of the TPC reconstruction is enabled. Compression component
+    // always needs to run in mode 1. Even if the recorded data is mode 3 (optimized partition
+    // clusters), 2 (track model compression), or 4. The emulation can not be in mode 2 or 4,
+    // since the track model block can not be identified with a partition. Have to duplicate the
+    // configuration of the compression component
+    handler->CreateConfiguration("TPC-auto-compression-component", "TPCDataCompressor", compressorInput.Data(), "-mode 1");
+    handler->CreateConfiguration("TPC-auto-compression", "TPCDataCompressorFilter", "TPC-auto-compression-component","");
+
     // the esd converter configuration
     TString converterInput="TPC-globalmerger";
     if (!rawReader && runloader) {
@@ -313,6 +327,31 @@ const char* AliHLTTPCAgent::GetReconstructionChains(AliRawReader* /*rawReader*/,
     // 2010-10-26 TPC clusters not written to HLTOUT in order to make the simulation
     // closer to the real data 
     //return "TPC-clusters";
+  } else {
+    bool bAddEmulation=true; // add by default
+
+    // FIXME:
+    // tried to make the configuration optional depending on whether the
+    // TPC requires HLT clusters or not, bu the RecoParam OCDB object is a TObjArray
+    // and the event specie is not yet defined. Maybe it can be derived from
+    // the GRP. On the other hand, HLT data compression is expected to be the
+    // default mode from now on, so this block might be safely deleted after some
+    // time (today is 2011-11-18)
+    //
+    // AliTPCRecoParam* param=NULL;
+    // TObject* pObject=AliHLTMisc::Instance().ExtractObject(AliHLTMisc::Instance().LoadOCDBEntry("TPC/Calib/RecoParam"));
+    // if (pObject && (param=dynamic_cast<AliTPCRecoParam*>(pObject))!=NULL) {
+    //   bAddEmulation=param->GetUseHLTClusters()==3 || param->GetUseHLTClusters()==4;
+    //   HLTInfo("%s auto-compression for not existing TPC partitions, TPCRecoParam::GetUseHLTClusters %d",
+    // 	      bAddEmulation?"adding":"skipping",
+    // 	      param->GetUseHLTClusters());
+    // }
+    if (bAddEmulation) {
+      // 2011-11-23: not yet enabled
+      // testing required, furthermore a component publishing only the raw data for
+      // the missing links, to big impact to performance otherwise
+      //return "TPC-auto-compression";
+    }
   }
   return NULL;
 }
@@ -380,6 +419,7 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
   pHandler->AddComponent(new AliHLTTPCDataCompressionComponent);
   pHandler->AddComponent(new AliHLTTPCDataCompressionMonitorComponent);
+  pHandler->AddComponent(new AliHLTTPCDataCompressionFilterComponent);
   return 0;
 }
 
