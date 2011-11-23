@@ -23,7 +23,7 @@
 #include "AliHLTTPCRawCluster.h"
 
 class AliHLTTPCPad;
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 class AliHLTTPCClusters;
 class AliTPCTransform;
 class AliTPCParam;

@@ -7,16 +7,16 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCClusterConverterComponent.h
-    @author Kalliopi Kanaki
-    @date   
-    @brief  The TPC cluster format conversion component.
-*/
+/// @file   AliHLTTPCClusterConverterComponent.h
+/// @author Kalliopi Kanaki
+/// @date   
+/// @brief  The TPC cluster format conversion component.
+///
 
 #include "AliHLTProcessor.h"
 
-class AliHLTTPCSpacePointData;
-class AliHLTTPCTrackSegmentData;
+struct AliHLTTPCSpacePointData;
+struct AliHLTTPCTrackSegmentData;
 class TObjArray;
 
 /**

@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 // Original: AliHLTFileHandler.h,v 1.19 2004/06/11 16:06:33 loizides 
 
 #ifndef ALIHLTTPCFILEHANDLER_H
@@ -7,13 +7,13 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCFileHandler.h
-    @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
-            Matthias Richter
-    @date   
-    @brief  file input for the TPC tracking code before migration to the
-            HLT component framework
-*/
+/// @file   AliHLTTPCFileHandler.h
+/// @author U. Frankenfeld, A. Vestbo, C. Loizides, maintained by
+///         Matthias Richter
+/// @date   
+/// @brief  file input for the TPC tracking code before migration to the
+///         HLT component framework
+///
 
 #include "AliHLTTPCMemHandler.h"
 
@@ -27,9 +27,9 @@ class TObject;
 class TFile;
 class TTree;
 
-class AliHLTTPCSpacePointData;
-class AliHLTTPCDigitRowData;
-class AliHLTTPCTrackSegmentData;
+struct AliHLTTPCSpacePointData;
+struct AliHLTTPCDigitRowData;
+struct AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackArray;
 
 /**

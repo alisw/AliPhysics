@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 // Original: AliHLTConfMapPoint.h,v 1.8 2005/06/23 17:46:55 hristov 
 
 #ifndef ALIHLTTPCCONFMAPPOINT_H
@@ -8,15 +8,15 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCConfMapPoint.h
-    @author Anders Vestbo, maintained by Matthias Richter
-    @date   
-    @brief  Hit class for conformal mapper
-*/
+/// @file   AliHLTTPCConfMapPoint.h
+/// @author Anders Vestbo, maintained by Matthias Richter
+/// @date   
+/// @brief  Hit class for conformal mapper
+///
 
 #include "AliHLTTPCRootTypes.h"
 
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCVertex;
 

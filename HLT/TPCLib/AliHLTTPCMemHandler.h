@@ -1,4 +1,5 @@
-// @(#) $Id$
+// -*- Mode: C++ -*-
+// $Id$
 // Original: AliHLTMemHandler.h,v 1.30 2004/10/06 08:51:20 cvetan 
 #ifndef ALIHLTTPCMEMHANDLER_H
 #define ALIHLTTPCMEMHANDLER_H
@@ -13,10 +14,10 @@
 //  @brief  input interface base class for the TPC tracking code before
 //          migration to the HLT component framework
 
-class AliHLTTPCDigitData;
-class AliHLTTPCSpacePointData;
-class AliHLTTPCDigitRowData;
-class AliHLTTPCTrackSegmentData;
+struct AliHLTTPCDigitData;
+struct AliHLTTPCSpacePointData;
+struct AliHLTTPCDigitRowData;
+struct AliHLTTPCTrackSegmentData;
 class AliHLTTPCTrackArray;
 class AliHLTTPCRandomPointData;
 class AliHLTTPCRandomDigitData;

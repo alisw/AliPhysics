@@ -17,15 +17,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCPad.cxx
-    @author Matthias Richter, Kenneth Aamodt
-    @date   
-    @brief  Container Class for TPC Pads.
-*/
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTTPCPad.cxx
+/// @author Matthias Richter, Kenneth Aamodt
+/// @date   
+/// @brief  Container Class for TPC Pads.
+///
 
 #include <cerrno>
 #include "AliHLTTPCPad.h"

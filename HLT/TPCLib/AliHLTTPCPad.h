@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 
 #ifndef ALIHLTTPCPAD_H
 #define ALIHLTTPCPAD_H
@@ -7,11 +7,11 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCPad.h
-    @author Matthias Richter
-    @date   
-    @brief  Container Class for TPC Pads.
-*/
+/// @file   AliHLTTPCPad.h
+/// @author Matthias Richter
+/// @date   
+/// @brief  Container Class for TPC Pads.
+///
 
 #include "AliHLTLogging.h"
 #include "AliHLTTPCClusters.h"
@@ -19,7 +19,7 @@
 #include "TH1F.h"
 #include <vector>
 
-class AliHLTTPCDigitData;
+struct AliHLTTPCDigitData;
 
 typedef Int_t AliHLTTPCSignal_t;
 

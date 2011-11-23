@@ -1,5 +1,5 @@
 // -*- Mode: C++ -*-
-// @(#) $Id$
+// $Id$
 // Original: AliHLTTrackArray.h,v 1.7 2004/06/11 16:06:33 loizides 
 #ifndef ALIHLTTPCTRACKARRAY_H
 #define ALIHLTTPCTRACKARRAY_H
@@ -8,19 +8,19 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCTrackArray.h
-    @author Uli Frankenfeld, maintained by Matthias Richter
-    @date   
-    @brief  Array of AliHLTTPCTracks
-*/
+/// @file   AliHLTTPCTrackArray.h
+/// @author Uli Frankenfeld, maintained by Matthias Richter
+/// @date   
+/// @brief  Array of AliHLTTPCTracks
+///
 
 #include "AliHLTTPCRootTypes.h"
 
 class AliHLTTPCConfMapTrack;
 class AliHLTTPCTrack;
-class AliHLTTPCTrackSegmentData;
-class AliHLTTPCTrackSegmentDataV1;
-class AliHLTExternalTrackParam;
+struct AliHLTTPCTrackSegmentData;
+struct AliHLTTPCTrackSegmentDataV1;
+struct AliHLTExternalTrackParam;
 /**
  * @class AliHLTTPCTrackArray
  * Array of AliHLTTrack objects.

@@ -1,5 +1,5 @@
 // XEmacs -*-C++-*-
-// @(#) $Id$
+// $Id$
 // Original: AliHLTTrack.h,v 1.18 2005/03/31 04:48:58 cvetan 
 
 #ifndef ALIHLTTPCTRACK_H
@@ -9,16 +9,16 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCTrack.h
-    @author Anders Vestbo, Uli Frankenfeld, maintained by Matthias Richter
-    @date   
-    @brief  HLT TPC track base class (conformal mapping)
-*/
+/// @file   AliHLTTPCTrack.h
+/// @author Anders Vestbo, Uli Frankenfeld, maintained by Matthias Richter
+/// @date   
+/// @brief  HLT TPC track base class (conformal mapping)
+///
 
 #include "AliTPCtrack.h"
 
 class AliHLTTPCVertex;
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 
 /**
  * @class AliHLTTPCTrack

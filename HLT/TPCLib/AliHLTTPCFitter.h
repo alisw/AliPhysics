@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 // Original: AliHLTFitter.h,v 1.7 2004/07/05 09:02:18 loizides 
 
 #ifndef ALIHLTTPCFITTER_H
@@ -7,15 +7,15 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCFitter.h
-    @author Anders Vestbo, maintained by Matthias Richter
-    @date   
-    @brief  Fit class HLT for helix
-*/
+/// @file   AliHLTTPCFitter.h
+/// @author Anders Vestbo, maintained by Matthias Richter
+/// @date   
+/// @brief  Fit class HLT for helix
+///
 
 class AliHLTTPCTrack;
 class AliHLTTPCVertex;
-class AliHLTTPCSpacePointData;
+struct AliHLTTPCSpacePointData;
 
 /** 
  * @class AliHLTTPCFitter
