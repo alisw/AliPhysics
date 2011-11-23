@@ -141,7 +141,7 @@ void AliEveVSDCreator::CreateTrees()
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 
   try
@@ -152,7 +152,7 @@ void AliEveVSDCreator::CreateTrees()
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 
   try
@@ -163,7 +163,7 @@ void AliEveVSDCreator::CreateTrees()
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 
   try 
@@ -217,7 +217,7 @@ end_esd_processing:
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 
   return;
@@ -351,7 +351,7 @@ void AliEveVSDCreator::ConvertHits()
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 }
 
@@ -370,7 +370,7 @@ void AliEveVSDCreator::ConvertAnyHits(const TString& detector,
   TTree* treeh = fRunLoader->GetTreeH(detector, kFALSE);
   if (treeh == 0)
   {
-    Warning(kEH, Form("no hits for %s.", detector.Data()));
+    Warning(kEH, "no hits for %s.", detector.Data());
     return;
   }
 
@@ -433,7 +433,7 @@ void AliEveVSDCreator::ConvertTPCHits(Int_t det_id, Float_t minDistSqr)
   TTree* treeh = fRunLoader->GetTreeH("TPC", false);
   if (treeh == 0)
   {
-    Warning(kEH, Form("no hits for %s.", "TPC"));
+    Warning(kEH, "no hits for %s.", "TPC");
     return;
   }
 
@@ -511,7 +511,7 @@ void AliEveVSDCreator::ConvertClusters()
   }
   catch(TEveException& exc)
   {
-    Warning(kEH, exc);
+    Warning(kEH, "%s", exc.Data());
   }
 }
 
