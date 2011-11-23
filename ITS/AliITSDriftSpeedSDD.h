@@ -22,6 +22,7 @@ class AliITSDriftSpeedSDD : public TObject {
   AliITSDriftSpeedSDD();
   AliITSDriftSpeedSDD(Int_t ev, UInt_t timest, Int_t deg, Double_t *coeff);
   AliITSDriftSpeedSDD(const AliITSDriftSpeedSDD& drSpeed);
+  AliITSDriftSpeedSDD& operator=(const AliITSDriftSpeedSDD& drSpeed); 
   virtual ~AliITSDriftSpeedSDD(){};
 
   static Float_t DefaultDriftSpeed() {return fgkDriftSpeedDefault;}

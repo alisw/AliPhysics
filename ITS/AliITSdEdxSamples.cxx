@@ -78,6 +78,23 @@ AliITSdEdxSamples::AliITSdEdxSamples(const AliITSdEdxSamples& source) :
     fPAtSample[i]=source.GetMomentumAtSample(i);
   }
 }
+//_____________________________________________________________________________
+AliITSdEdxSamples& AliITSdEdxSamples::operator=(const AliITSdEdxSamples &source){
+  // Assignment operator
+ if(this==&source) return *this;
+  ((TObject *)this)->operator=(source);
+  fNSamples = source.fNSamples;
+  fClusterMap = source.fClusterMap;
+  fP = source.fP;
+  fParticleSpecie = source.fParticleSpecie;
+  fLayersForPid = source.fLayersForPid;
+  for(Int_t i=0; i<kMaxSamples; i++){
+    fdESamples[i]=source.GetdESample(i);
+    fdxSamples[i]=source.GetdxSample(i);
+    fPAtSample[i]=source.GetMomentumAtSample(i);
+  }
+}
+
 //______________________________________________________________________
 void AliITSdEdxSamples::SetdESamples(Int_t nSamples, Double_t* samples){
   // Set the samples

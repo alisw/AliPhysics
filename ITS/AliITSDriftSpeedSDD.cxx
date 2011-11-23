@@ -63,6 +63,17 @@ fPolDeg(drSpeed.fPolDeg)
   for(Int_t i=0; i<fgkMaxPolDeg+1; i++) fDriftSpeedParam[i]=drSpeed.GetDriftSpeedParameter(i);
   
 }
+//_____________________________________________________________________________
+AliITSDriftSpeedSDD& AliITSDriftSpeedSDD::operator=(const AliITSDriftSpeedSDD &drSpeed){
+  // Assignment operator
+ if(this==&drSpeed) return *this;
+  ((TObject *)this)->operator=(drSpeed);
+  fEvNum = drSpeed.fEvNum;
+  fTimestamp = drSpeed.fTimestamp;
+  fPolDeg = drSpeed.fPolDeg;
+  for(Int_t i=0; i<fgkMaxPolDeg+1; i++) fDriftSpeedParam[i]=drSpeed.GetDriftSpeedParameter(i);
+}
+
 //______________________________________________________________________
 void AliITSDriftSpeedSDD::PrintDriftSpeedParameters() const {
   // printout drift speed parametrization

@@ -42,7 +42,7 @@ class AliITStrackSA : public AliITStrackMI {
   enum {kMaxNumberOfClusters = 15};// Max. number of clusters
 
  protected: 
-  
+  AliITStrackSA& operator=(const AliITStrackSA& t); 
   void Init(Double_t alpha, Double_t radius,
 	    Double_t Ycoor, Double_t Zcoor, Double_t phi, 
 	    Double_t tanlambda, Double_t curv, Int_t lab);

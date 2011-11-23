@@ -22,6 +22,7 @@ class AliITSdEdxSamples : public TObject {
   AliITSdEdxSamples();
   AliITSdEdxSamples(Int_t nSamples, Double_t* esamples, Double_t* xsamples, Double_t mom, Int_t specie=0);
   AliITSdEdxSamples(const AliITSdEdxSamples& source);
+  AliITSdEdxSamples& operator=(const AliITSdEdxSamples& source); 
   virtual ~AliITSdEdxSamples(){};
 
   void SetdESamples(Int_t nSamples, Double_t* samples);
