@@ -104,8 +104,10 @@ void AliITSOnlineSDDBase::AddEvent(TH2F* hrawd){
       sumQ+=cbin*cbin;
       cnt++;
     }
-    sum[ian]/=(Float_t)cnt;
-    sumQ/=(Float_t)cnt;
+    if(cnt != 0){
+      sum[ian]/=(Float_t)cnt;
+      sumQ/=(Float_t)cnt;
+    }
     fSumBaseline[ian]+=sum[ian];
     fSumRawNoise[ian]+=sumQ;
   }

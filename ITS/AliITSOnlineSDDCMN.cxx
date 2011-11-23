@@ -153,7 +153,7 @@ void AliITSOnlineSDDCMN::AddEvent(TH2F* hrawd){
       sumQ+=cntdiff*cntdiff;
       cnt++;    
     }
-    fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/(Float_t)cnt);
+    if(cnt != 0)fSumCorrNoise[ian]+=TMath::Sqrt(sumQ/(Float_t)cnt);
   }
   delete hcorrd;
 }
