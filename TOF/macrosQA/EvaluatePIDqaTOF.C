@@ -1,4 +1,4 @@
-Double_t EvaluatePIDqaTOF(const char* gridDir, Int_t irun, Int_t color, TLegend* leg, TCanvas* cmatchAll, Option_t* opt="same"){
+Double_t EvaluatePIDqaTOF(const char* gridDir, Int_t irun, Int_t color, TLegend* leg, TCanvas* cmatchAll, Option_t* opt="same err"){
 
 	//
 	// macro to evaluate PID QA for TOF
@@ -10,7 +10,9 @@ Double_t EvaluatePIDqaTOF(const char* gridDir, Int_t irun, Int_t color, TLegend*
 	TList* list = (TList*)d->Get("PIDqa");
 	TList* listTOF = (TList*)list->FindObject("TOF");
 	TH1F* hT0MakerEff = (TH1F*)listTOF->FindObject("hT0MakerEff");
+	hT0MakerEff->Sumw2();
 	TH1F* hnTracksAt_TOF = (TH1F*)listTOF->FindObject("hnTracksAt_TOF");
+	hnTracksAt_TOF->Sumw2();
 	TH1F* efficiencyT0Maker = (TH1F*)hT0MakerEff->Clone("efficiencyT0Maker");
 	efficiencyT0Maker->Divide(hT0MakerEff, hnTracksAt_TOF, 1, 1, "b");
 	efficiencyT0Maker->SetLineColor(color);
@@ -59,7 +61,7 @@ void MakeTrendT0Tof(Int_t nruns, Int_t* runs, const char* gridDirBase, const cha
 		path+=pass;
 		Printf("path for run %d = %s",runs[irun],path.Data());		
 		Double_t eff = 0;
-		if (irun == 0) eff = EvaluatePIDqaTOF(path.Data(), runs[irun], colors[irun], leg, cmatchAll, "hist");
+		if (irun == 0) eff = EvaluatePIDqaTOF(path.Data(), runs[irun], colors[irun], leg, cmatchAll, "hist err");
 		else eff = EvaluatePIDqaTOF(path.Data(), runs[irun], colors[irun], leg, cmatchAll);
 		Printf("the average efficiency for run %d is %f", runs[irun], eff);
 	}
