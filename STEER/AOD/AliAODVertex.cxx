@@ -221,23 +221,25 @@ AliAODVertex& AliAODVertex::operator=(const AliAODVertex& vtx)
 
     //momentum
     for (int i = 0; i < 3; i++) 
-      fPosition[i] = vtx.fPosition[i];
+	fPosition[i] = vtx.fPosition[i];
     
     fChi2perNDF = vtx.fChi2perNDF;
-    fID = vtx.fID;
+    fID   = vtx.fID;
     fType = vtx.fType;
-
+    fBCID = vtx.fBCID;
+    
     //covariance matrix
     delete fCovMatrix;
     fCovMatrix = NULL;   
-    if (vtx.fCovMatrix) fCovMatrix=new AliAODRedCov<3>(*vtx.fCovMatrix);
+    if (vtx.fCovMatrix) fCovMatrix = new AliAODRedCov<3>(*vtx.fCovMatrix);
     
     //other stuff
-    fParent = vtx.fParent;
-    fDaughters = vtx.fDaughters;
-    fNprong    = vtx.fNprong;
-    fIprong    = vtx.fIprong;  
-
+    fNContributors = vtx.fNContributors;
+    fParent        = vtx.fParent;
+    fDaughters     = vtx.fDaughters;
+    fNprong        = vtx.fNprong;
+    fIprong        = vtx.fIprong;  
+    
     MakeProngs();
     for (int i = 0; i < fNprong; i++) {
 	fProngs[i] = vtx.fProngs[i];
