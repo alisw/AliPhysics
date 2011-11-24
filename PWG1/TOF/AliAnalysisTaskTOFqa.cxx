@@ -307,7 +307,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlist->AddLast(hTOFmatchedESDphi) ; 
 
   //9
-  TH1F* hESDprimaryTrackP = new TH1F("hESDprimaryTrackP", "All ESDs tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0., 5.0) ;  
+  TH1F* hESDprimaryTrackP = new TH1F("hESDprimaryTrackP", "All ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
   hESDprimaryTrackP->Sumw2();
   hESDprimaryTrackP->SetLineWidth(1);
   hESDprimaryTrackP->SetMarkerStyle(24);
@@ -420,7 +420,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlistTimeZero->AddLast(hT0best) ; 
 
    //TimeZero 8
-  TH1F* hT0fillRes = new TH1F("hT0fillRes", "Resolution of fillT0; #sigma_{bestT0} [ps];events", 250, 0.,250. ) ; 
+  TH1F* hT0fillRes = new TH1F("hT0fillRes", "Resolution of fillT0; #sigma_{fillT0} [ps];events", 250, 0.,250. ) ; 
   hT0fillRes->Sumw2() ;
   hT0fillRes->SetMarkerStyle(21);
   hT0fillRes->SetMarkerColor(kBlack);
@@ -439,21 +439,21 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   fHlistTimeZero->AddLast(hT0TOFRes) ; 
 
    //TimeZero 10
-  TH1F* hT0T0res = new TH1F("hT0T0res", "Resolution of timeZero from T0;#sigma_{T0T0}  [ps];events", 250, -0., 250. ) ; 
-  hT0T0res->Sumw2() ;
-  hT0T0res->SetMarkerStyle(21);
-  hT0T0res->SetMarkerColor(kGreen+1);
-  hT0T0res->SetLineColor(kGreen+1);
-  hT0T0res->SetFillColor(kGreen+1); 
-  fHlistTimeZero->AddLast(hT0T0res) ; 
+  TH1F* hT0T0Res = new TH1F("hT0T0Res", "Resolution of timeZero from T0;#sigma_{T0T0}  [ps];events", 250, -0., 250. ) ; 
+  hT0T0Res->Sumw2() ;
+  hT0T0Res->SetMarkerStyle(21);
+  hT0T0Res->SetMarkerColor(kGreen+1);
+  hT0T0Res->SetLineColor(kGreen+1);
+  hT0T0Res->SetFillColor(kGreen+1); 
+  fHlistTimeZero->AddLast(hT0T0Res) ; 
 
    //TimeZero 11
   TH1F* hT0bestRes = new TH1F("hT0bestRes", "Resolution of bestT0; #sigma_{bestT0} [ps];events", 250, 0.,250. ) ; 
   hT0bestRes->Sumw2() ;
-  hT0fillRes->SetMarkerStyle(21);
-  hT0fillRes->SetMarkerColor(kRed);
-  hT0fillRes->SetLineColor(kRed);
-  hT0fillRes->SetFillColor(kRed); 
+  hT0bestRes->SetMarkerStyle(21);
+  hT0bestRes->SetMarkerColor(kRed);
+  hT0bestRes->SetLineColor(kRed);
+  hT0bestRes->SetFillColor(kRed); 
   fHlistTimeZero->AddLast(hT0bestRes) ; 
 
   //timeZero 12
@@ -654,7 +654,7 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
       fHlistPID->AddLast(hTOFmatchedExpTimeProVsPNoTRDPos) ;
     
     //PID 28
-    TH2F* hTOFmatchedExpTimeProVsPTRDNeg = new TH2F("hTOFmatchedExpTimeProVsPTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+   TH2F* hTOFmatchedExpTimeProVsPTRDNeg = new TH2F("hTOFmatchedExpTimeProVsPTRDNeg", "ESDs t_{TOF}-t_{p,exp} (from tracking) Vs P (#phi_{outerTPC}#leq 30 || 150 #leq#phi_{outerTPC}#leq 230 || #phi_{outerTPC}#geq 310 ) ; p (GeV/c);t_{TOF}-t_{p,exp} [ps];Counts",500, 0.,5.,nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
     hTOFmatchedExpTimeProVsPTRDNeg->Sumw2() ;
     if (fEnableAdvancedCheck)
       fHlistPID->AddLast(hTOFmatchedExpTimeProVsPTRDNeg) ;
@@ -730,7 +730,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHpos->AddLast(hESDmatchedTrackPtPosNoTRDout);
 
   //7
-  TH1F* hESDprimaryTrackPPos = new TH1F("hESDprimaryTrackPPos", "All Pos ESDs tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0., 5.0) ;  
+  TH1F* hESDprimaryTrackPPos = new TH1F("hESDprimaryTrackPPos", "All Pos ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
   hESDprimaryTrackPPos->Sumw2();
   hESDprimaryTrackPPos->SetLineWidth(1);
   hESDprimaryTrackPPos->SetMarkerStyle(24);
@@ -967,7 +967,7 @@ fHpos->AddLast(hTOFmatchedESDetaPos) ;
   fHneg->AddLast(hESDmatchedTrackPtNegNoTRDout);
 
   //7
-  TH1F* hESDprimaryTrackPNeg = new TH1F("hESDprimaryTrackPNeg", "All Neg ESDs tracks p_{T} distribution (GeV/c); p_{T}(GeV/c);tracks", 500, 0., 5.0) ;  
+  TH1F* hESDprimaryTrackPNeg = new TH1F("hESDprimaryTrackPNeg", "All Neg ESDs tracks p distribution (GeV/c); p(GeV/c);tracks", 500, 0., 5.0) ;  
   hESDprimaryTrackPNeg->Sumw2();
   hESDprimaryTrackPNeg->SetLineWidth(1);
   hESDprimaryTrackPNeg->SetMarkerStyle(24);
@@ -1166,14 +1166,14 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     return;
   }
 
-  /* info from V0 detector QA */
+  // info from V0 detector QA 
   AliESDVZERO * vzero = fESD->GetVZEROData();
   Float_t V0Atime = vzero->GetV0ATime();
   Float_t V0Ctime = vzero->GetV0CTime(); 
-  ((TH2F*)fHlistTimeZero->At(14))->Fill((V0Atime-V0Ctime)*0.5,(V0Atime+V0Ctime)*0.5);
+  ((TH2F*)fHlistTimeZero->FindObject("hEventV0MeanVsVtx"))->Fill((V0Atime-V0Ctime)*0.5,(V0Atime+V0Ctime)*0.5);
 
   
-  /* info from T0 detector QA */
+  // info from T0 detector QA 
   for (Int_t j=0;j<3;j++){
     fT0[j]= (Float_t) fESD->GetT0TOF(j);//ps
     if (fT0[j]>90000.) fT0[j]=99999.;//fix old default values to the new one
@@ -1184,34 +1184,35 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
   
   if(TMath::Abs(fT0[1]) < t0cut && TMath::Abs(fT0[2]) < t0cut ) {
     //&& TMath::Abs(fT0[2]-fT0[1]) < 500)  //add this condition to check t0 used in tof response
-    ((TH1F*)fHlistTimeZero->At(3))->Fill((fT0[2]-fT0[1])*0.5);
-    ((TH1F*)fHlistTimeZero->At(0))->Fill(fT0[0]);  
-    ((TH2F*)fHlistTimeZero->At(13))->Fill((fT0[2]-fT0[1])*0.5,(fT0[2]+fT0[1])*0.5);
-
+    ((TH1F*)fHlistTimeZero->FindObject("hT0DetRes"))->Fill((fT0[2]-fT0[1])*0.5);
+    ((TH1F*)fHlistTimeZero->FindObject("hEventT0DetAND"))->Fill(fT0[0]);  
+    ((TH2F*)fHlistTimeZero->FindObject("hEventT0MeanVsVtx"))->Fill((fT0[2]-fT0[1])*0.5,(fT0[2]+fT0[1])*0.5);
   } 
   if(TMath::Abs(fT0[1]) < t0cut){
-    ((TH1F*)fHlistTimeZero->At(1))->Fill(fT0[1]);   
+    ((TH1F*)fHlistTimeZero->FindObject("hEventT0DetA"))->Fill(fT0[1]);   
   }
   if(TMath::Abs(fT0[2]) < t0cut){
-    ((TH1F*)fHlistTimeZero->At(2))->Fill(fT0[2]);
+	  ((TH1F*)fHlistTimeZero->FindObject("hEventT0DetC"))->Fill(fT0[2]);
   }
   
-  /*  event timeZero QA via AliESDpid::SetTOFResponse() */
+  //  event timeZero QA via AliESDpid::SetTOFResponse() 
   Double_t timeZero[4]={99999.,99999.,99999.,99999.};
   Double_t timeZeroRes[4]={99999.,99999.,99999.,99999.}; 
   
+  TString timeZeroHisto[4]={"hT0fill","hT0TOF","hT0T0","hT0best"};
+  TString timeZeroHistoRes[4]={"hT0fillRes","hT0TOFRes","hT0T0Res","hT0bestRes"};
   for (Int_t j=0;j<4;j++){
     fESDpid->SetTOFResponse(fESD, (AliESDpid::EStartTimeType_t) j);//(fill_t0, tof_t0, t0_t0, best_t0)
     timeZero[j]=fESDpid->GetTOFResponse().GetStartTime(10.); //timeZero for bin pT>10GeV/c
     timeZeroRes[j]=fESDpid->GetTOFResponse().GetStartTimeRes(10.); //timeZero for bin pT>10GeV/c
-    ((TH1D*)fHlistTimeZero->At(4+j))->Fill(timeZero[j]);
-    ((TH1D*)fHlistTimeZero->At(8+j))->Fill(timeZeroRes[j]);
+    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHisto[j].Data())))->Fill(timeZero[j]);
+    ((TH1D*)(fHlistTimeZero->FindObject(timeZeroHistoRes[j].Data())))->Fill(timeZeroRes[j]);
   }
 
   //re-set response tof_t0 for all other checks
   fESDpid->SetTOFResponse(fESD,AliESDpid::kTOF_T0);//(fill_t0, tof_t0, t0_t0, best_t0)
   
-  /* loop over ESD tracks */
+  // loop over ESD tracks 
   fNTOFtracks=0;
   // fNPrimaryTracks=0;
 
@@ -1223,7 +1224,14 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     }
 
     //primary tracks selection: kTPCrefit and std cuts
-    if(!fTrackFilter->IsSelected(track)) continue;
+    if (fTrackFilter){
+	    if(!fTrackFilter->IsSelected(track)) continue;
+    }
+    else{
+	    Printf("No track filter found, skipping the track loop");
+	    break;
+    }
+
     Double_t eta=track->Eta();
     if (TMath::Abs(eta)>0.8) continue; //cut for acceptance
 
@@ -1233,62 +1241,61 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
     Double_t pT = track->Pt();
     Double_t phi=track->Phi()*TMath::RadToDeg();
     track->GetIntegratedTimes(fTrkExpTimes);
+      
+    ((TH1F*)fHlist->FindObject("hESDprimaryTrackP"))->Fill(mom); 
+    ((TH1F*)fHlist->FindObject("hESDprimaryTrackPt"))->Fill(pT); 
+    if (pT>=0.5)
+      ((TH1F*)fHlist->FindObject("hTOFprimaryESDeta"))->Fill(eta);
+    ((TH1F*)fHlist->FindObject("hTOFprimaryESDphi"))->Fill(phi);
     
-    ((TH1F*)fHlist->At(9))->Fill(mom); 
-    ((TH1F*)fHlist->At(10))->Fill(pT); 
-    if (pT>=0.5) {
-      ((TH1F*)fHlist->At(11))->Fill(eta);
-      ((TH1F*)fHlist->At(12))->Fill(phi);
-    }
-    
-    //evaluate sign  
-    if (fEnableAdvancedCheck){
-      if (track->GetSign()>0){
-	((TH1F*)fHpos->At(7))->Fill(mom); 
-	((TH1F*)fHpos->At(8))->Fill(pT);	
-	if (pT>=0.5){
-	  ((TH1F*)fHpos->At(9))->Fill(eta);
-	  ((TH1F*)fHpos->At(10))->Fill(phi);
-	}
-	if ( (track->IsOn(AliESDtrack::kTRDout)) && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	  ((TH1F*)fHpos->At(11))->Fill(pT);
-	  if (pT>=0.5) {
-	    ((TH1F*)fHpos->At(13))->Fill(eta);
-	    ((TH1F*)fHpos->At(15))->Fill(phi);
-	  }
-	}
-	if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	  ((TH1F*)fHpos->At(12))->Fill(pT);
-	  if (pT>=0.5) {
-	    ((TH1F*)fHpos->At(14))->Fill(eta);
-	  ((TH1F*)fHpos->At(16))->Fill(phi);
-	  }
-	}
-      } //end positive 
-      else {
-	((TH1F*)fHneg->At(7))->Fill(mom); 
-	((TH1F*)fHneg->At(8))->Fill(pT); 
-	if (pT>=0.5){
-	  ((TH1F*)fHneg->At(9))->Fill(eta);
-	  ((TH1F*)fHneg->At(10))->Fill(phi);		
-	}
-	if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	  ((TH1F*)fHneg->At(11))->Fill(pT);
-	  if (pT>0.5) {
-	    ((TH1F*)fHneg->At(13))->Fill(eta);
-	    ((TH1F*)fHneg->At(15))->Fill(phi); 
-	  }
-	}
-	if  ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	  ((TH1F*)fHneg->At(12))->Fill(pT);
-	  if (pT>0.5){
-	    ((TH1F*)fHneg->At(14))->Fill(eta);
-	    ((TH1F*)fHneg->At(16))->Fill(phi);
-	  }
-	}
-      }//end negative
-    }//end flag advanced check
-    
+     //evaluate sign  
+     if (fEnableAdvancedCheck){
+       if (track->GetSign()>0){
+ 	((TH1F*)fHpos->FindObject("hESDprimaryTrackPPos"))->Fill(mom); 
+ 	((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPos"))->Fill(pT);	
+ 	if (pT>=0.5){
+ 	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDetaPos"))->Fill(eta);
+ 	  ((TH1F*)fHpos->FindObject("hTOFprimaryESDphiPos"))->Fill(phi);
+ 	}
+ 	if ( (track->IsOn(AliESDtrack::kTRDout)) && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosTRDout"))->Fill(pT);
+ 	  if (pT>=0.5) {
+ 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosTRDout"))->Fill(eta);
+ 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosTRDout"))->Fill(phi);
+ 	  }
+ 	}
+ 	if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosNoTRDout"))->Fill(pT);
+ 	  if (pT>=0.5) {
+ 	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosNoTRDout"))->Fill(eta);
+ 	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phi);
+ 	  }
+ 	}
+       } //end positive 
+       else {
+	       ((TH1F*)fHneg->FindObject("hESDprimaryTrackPNeg"))->Fill(mom); 
+ 	((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNeg"))->Fill(pT); 
+ 	if (pT>=0.5){
+ 	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDetaNeg"))->Fill(eta);
+ 	  ((TH1F*)fHneg->FindObject("hTOFprimaryESDphiNeg"))->Fill(phi);		
+ 	}
+ 	if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegTRDout"))->Fill(pT);
+ 	  if (pT>0.5) {
+ 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegTRDout"))->Fill(eta);
+ 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegTRDout"))->Fill(phi); 
+ 	  }
+ 	}
+ 	if  ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	  ((TH1F*)fHneg->FindObject("hESDprimaryTrackPtNegNoTRDout"))->Fill(pT);
+ 	  if (pT>0.5){
+ 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackEtaNegNoTRDout"))->Fill(eta);
+ 	    ((TH1F*)fHneg->FindObject("hESDprimaryTrackPhiNegNoTRDout"))->Fill(phi);
+ 	  }
+ 	}
+       }//end negative
+     }//end flag advanced check
+
     //matched tracks selection: kTOFout and kTIME
     if ( (track->IsOn(AliESDtrack::kTOFout)) &&
 	 (track->IsOn(AliESDtrack::kTIME)) &&
@@ -1303,70 +1310,70 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       
       if (pT>=0.3) fNTOFtracks++; //matched counter
       Double_t tof= tofTime*1E-3; // ns, average T0 fill subtracted, no info from T0detector 	 
-      ((TH1F*)fHlist->At(1))->Fill(tof); //ns
-      ((TH1F*)fHlist->At(2))->Fill(tofTimeRaw*1E-3); //ns
-      ((TH1F*)fHlist->At(3))->Fill(tofToT);
-      ((TH1F*)fHlist->At(4))->Fill(length);  
-      ((TH1F*)fHlist->At(5))->Fill(mom);
-      ((TH1F*)fHlist->At(6))->Fill(pT);
-      if (pT>=0.5){
-	((TH1F*)fHlist->At(7))->Fill(eta);
-	((TH1F*)fHlist->At(8))->Fill(phi);
-      }
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDtime"))->Fill(tof); //ns
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDrawTime"))->Fill(tofTimeRaw*1E-3); //ns
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDToT"))->Fill(tofToT);
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDtrkLength"))->Fill(length);  
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDP"))->Fill(mom);
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"))->Fill(pT);
+      if (pT>=0.5)
+	((TH1F*)fHlist->FindObject("hTOFmatchedESDeta"))->Fill(eta);
+      ((TH1F*)fHlist->FindObject("hTOFmatchedESDphi"))->Fill(phi);
       if (track->GetSign()>0)
-	((TH2F*)fHlist->At(13))->Fill(pT,track->GetTOFsignalDx());	
-      else 
-	((TH2F*)fHlist->At(14))->Fill(pT,track->GetTOFsignalDx());
-      
+	((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtPos"))->Fill(pT,track->GetTOFsignalDx());
+      else ((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtNeg"))->Fill(pT,track->GetTOFsignalDx());
+      ((TH2F*)fHlist->FindObject("hTOFmatchedDzVsStrip"))->Fill((Int_t)GetStripIndex(volId),track->GetTOFsignalDz());
+
       //evaluate sign
       if (fEnableAdvancedCheck){
-	if (track->GetSign()>0){
-	  ((TH1F*)fHpos->At(0))->Fill(length);  
-	  ((TH1F*)fHpos->At(1))->Fill(mom); 
-	  ((TH1F*)fHpos->At(2))->Fill(pT); 
-	  if (pT>=0.5){
-	    ((TH1F*)fHpos->At(3))->Fill(eta);
-	    ((TH1F*)fHpos->At(4))->Fill(phi);
-	  }	
-	  if ( (track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	    ((TH1F*)fHpos->At(5))->Fill(pT);
-	    if (pT>=0.5){
-	      ((TH1F*)fHpos->At(20))->Fill(eta);
-	      ((TH1F*)fHpos->At(22))->Fill(phi);
-	    }
-	  } 
-	  if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	    ((TH1F*)fHpos->At(6))->Fill(pT);
-	    if (pT>=0.5) {
-	      ((TH1F*)fHpos->At(21))->Fill(eta);
-	      ((TH1F*)fHpos->At(23))->Fill(phi);
-	    }
-	  }
-	}// END POSITIVE
-	else {	
-	  ((TH1F*)fHneg->At(0))->Fill(length);  
-	  ((TH1F*)fHneg->At(1))->Fill(mom); 
-	  ((TH1F*)fHneg->At(2))->Fill(pT); 
-	  if (pT>=0.5) {
-	    ((TH1F*)fHneg->At(3))->Fill(eta);
-	    ((TH1F*)fHneg->At(4))->Fill(phi);
-	  }	  
-	  if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	    ((TH1F*)fHneg->At(5))->Fill(pT);
-	    if (pT>=0.5) {
-	      ((TH1F*)fHneg->At(20))->Fill(eta);
-	      ((TH1F*)fHneg->At(22))->Fill(phi);	    
-	    }
-	  }
-	  if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
-	    ((TH1F*)fHneg->At(6))->Fill(pT);
-	    if (pT>=0.5) {
-	      ((TH1F*)fHneg->At(21))->Fill(eta);
-	      ((TH1F*)fHneg->At(23))->Fill(phi);
-	    }
-	  }	  
-	}//end negative
+        if (track->GetSign()>0){
+ 	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDtrkLengthPos"))->Fill(length);  
+ 	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPPos"))->Fill(mom); 
+ 	  ((TH1F*)fHpos->FindObject("hTOFmatchedESDPtPos"))->Fill(pT); 
+ 	  if (pT>=0.5){
+ 	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDetaPos"))->Fill(eta);
+ 	    ((TH1F*)fHpos->FindObject("hTOFmatchedESDphiPos"))->Fill(phi);
+ 	  }	
+ 	  if ( (track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosTRDout"))->Fill(pT);
+ 	    if (pT>=0.5){
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosTRDout"))->Fill(eta);
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosTRDout"))->Fill(phi);
+ 	    }
+ 	  } 
+ 	  if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+ 	    ((TH1F*)fHpos->FindObject("hESDmatchedTrackPtPosNoTRDout"))->Fill(pT);
+ 	    if (pT>=0.5) {
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackEtaPosNoTRDout"))->Fill(eta);
+ 	      ((TH1F*)fHpos->FindObject("hESDmatchedTrackPhiPosNoTRDout"))->Fill(phi);
+ 	    }
+ 	  }
+       }// END POSITIVE
+       else {	
+         ((TH1F*)fHneg->FindObject("hTOFmatchedESDtrkLengthNeg"))->Fill(length);  
+         ((TH1F*)fHneg->FindObject("hTOFmatchedESDPNeg"))->Fill(mom); 
+         ((TH1F*)fHneg->FindObject("hTOFmatchedESDPtNeg"))->Fill(pT); 
+         if (pT>=0.5) {
+           ((TH1F*)fHneg->FindObject("hTOFmatchedESDetaNeg"))->Fill(eta);
+           ((TH1F*)fHneg->FindObject("hTOFmatchedESDphiNeg"))->Fill(phi);
+         }	  
+         if ((track->IsOn(AliESDtrack::kTRDout))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+           ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegTRDout"))->Fill(pT);
+           if (pT>=0.5) {
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegTRDout"))->Fill(eta);
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegTRDout"))->Fill(phi);	    
+           }
+         }
+         if ((!(track->IsOn(AliESDtrack::kTRDout)))  && (track->IsOn(AliESDtrack::kTPCout)) ) {
+           ((TH1F*)fHneg->FindObject("hESDmatchedTrackPtNegNoTRDout"))->Fill(pT);
+           if (pT>=0.5) {
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackEtaNegNoTRDout"))->Fill(eta);
+             ((TH1F*)fHneg->FindObject("hESDmatchedTrackPhiNegNoTRDout"))->Fill(phi);
+           }
+         }	  
+       }//end negative
       }//end advanced check
+
       //basic PID performance check
       if (tof<=0) {
 	printf("WARNING: track with negative TOF time found! Skipping this track for PID checks\n");
@@ -1391,8 +1398,8 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       }else{ 
 	mass = mom*TMath::Sqrt(fact); 
       }
-      ((TH2F*)fHlistPID->At(0))->Fill(mom,beta);
-      ((TH1F*) fHlistPID->At(1))->Fill(mass);
+      ((TH2F*)fHlistPID->FindObject("hTOFmatchedESDpVsBeta"))->Fill(mom,beta);
+      ((TH1F*) fHlistPID->FindObject("hTOFmatchedMass"))->Fill(mass);
       
       //PID sigmas
       Bool_t isValidBeta[AliPID::kSPECIES]={0,0,0,0,0};
@@ -1407,29 +1414,29 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	  isValidBeta[specie]=kFALSE;
 	}
       }
-      //here
+      
       if (isValidBeta[AliPID::kPion]){
-	((TH2F*)fHlistPID->At(2))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
-	((TH1F*)fHlistPID->At(3))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
-	((TH2F*)fHlistPID->At(4))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
-	((TH1F*)fHlistPID->At(5))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
-	((TH2F*)fHlistPID->At(6))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
-	((TH2F*)fHlistPID->At(7))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
+	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsEta"))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimePi"))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsP"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePi"))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePiVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
+	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaPi"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
       }
       
       if (isValidBeta[AliPID::kKaon]){
-	((TH1F*)fHlistPID->At(8))->Fill(tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
-	((TH2F*)fHlistPID->At(9))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
-	((TH1F*)fHlistPID->At(10))->Fill(tofTime-fThExpTimes[AliPID::kKaon]);//ps
-	((TH2F*)fHlistPID->At(11))->Fill(mom,(tofTime-fThExpTimes[AliPID::kKaon]));
-	((TH2F*)fHlistPID->At(12))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
+	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimeKa"))->Fill(tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeKaVsP"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeKa"))->Fill(tofTime-fThExpTimes[AliPID::kKaon]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeKaVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kKaon]));
+	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaKa"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kKaon])/fSigmaSpecie[AliPID::kKaon]);
       }
       if (isValidBeta[AliPID::kProton]){
-	((TH1F*)fHlistPID->At(13))->Fill(tofTime-fTrkExpTimes[AliPID::kProton]);//3ps
-	((TH2F*)fHlistPID->At(14))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
-	((TH1F*)fHlistPID->At(15))->Fill(tofTime-fThExpTimes[AliPID::kProton]);//ps
-	((TH2F*)fHlistPID->At(16))->Fill(mom,(tofTime-fThExpTimes[AliPID::kProton]));
-	((TH2F*)fHlistPID->At(17))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
+	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimePro"))->Fill(tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsP"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePro"))->Fill(tofTime-fThExpTimes[AliPID::kProton]);//ps
+	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimeProVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kProton]));
+	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaPro"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kProton])/fSigmaSpecie[AliPID::kProton]);
       }
 
       if (fEnableAdvancedCheck && (pT<1.)) {
@@ -1442,11 +1449,11 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	
 	if (isValidBeta[AliPID::kProton]){
 	  if (track->GetSign()>0){
-	    ((TH2F*)fHpos->At(17))->Fill(phiTOF,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
-	    ((TH2F*)fHpos->At(18))->Fill(phi,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedExpTimeProVsPhiPos"))->Fill(phiTOF,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedExpTimeProVsPhiVertexPos"))->Fill(phi,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
 	  } else {
-	    ((TH2F*)fHneg->At(17))->Fill(phiTOF,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
-	    ((TH2F*)fHneg->At(18))->Fill(phi,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHneg->FindObject("hTOFmatchedExpTimeProVsPhiNeg"))->Fill(phiTOF,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHneg->FindObject("hTOFmatchedExpTimeProVsPhiVertexNeg"))->Fill(phi,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
 	  }
 	}
 	
@@ -1456,60 +1463,60 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	
 	if (track->GetSign()>0){
 	  if (isValidBeta[AliPID::kProton])
-	    ((TH2F*)fHpos->At(19))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedExpTimeProVsPhiTPCPos"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
 	  if (isValidBeta[AliPID::kPion])
-	    ((TH2F*)fHpos->At(24))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedExpTimePiVsPhiTPCPos"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	  if (isValidBeta[AliPID::kKaon])
-	    ((TH2F*)fHpos->At(25))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
+	    ((TH2F*)fHpos->FindObject("hTOFmatchedExpTimeKaVsPhiTPCPos"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
 	  
 	  if ((phiOuterTPC<=30) || ((phiOuterTPC>=150)&&(phiOuterTPC<=230)) || (phiOuterTPC>=310) ) { //TRD sectors
 	    if (isValidBeta[AliPID::kPion])
-	      ((TH2F*)fHlistPID->At(18))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsPTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
 	    if (isValidBeta[AliPID::kKaon])
-	      ((TH2F*)fHlistPID->At(22))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeKaVsPTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
 	    if (isValidBeta[AliPID::kProton])
-	      ((TH2F*)fHlistPID->At(26))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsPTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
 	  }
 	  if ( ((phiOuterTPC>=50)&&(phiOuterTPC<=130)) || ((phiOuterTPC>=250)&&(phiOuterTPC<=290)) ) {//no TRD sectors
 	    if (isValidBeta[AliPID::kPion])
-	      ((TH2F*)fHlistPID->At(19))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsPNoTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
 	    if (isValidBeta[AliPID::kKaon])
-	      ((TH2F*)fHlistPID->At(23))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeKaVsPNoTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
 	    if (isValidBeta[AliPID::kProton])
-	      ((TH2F*)fHlistPID->At(27))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsPNoTRDPos"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
 	  }
 	}else{
 	  if (isValidBeta[AliPID::kPion])
-	    ((TH2F*)fHneg->At(24))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kPion]);//ps
+	    ((TH2F*)fHneg->FindObject("hTOFmatchedExpTimePiVsPhiTPCNeg"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	  if (isValidBeta[AliPID::kKaon])
-	    ((TH2F*)fHneg->At(25))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
+	    ((TH2F*)fHneg->FindObject("hTOFmatchedExpTimeKaVsPhiTPCNeg"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kKaon]);//ps
 	  if (isValidBeta[AliPID::kProton])
-	    ((TH2F*)fHneg->At(19))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
+	    ((TH2F*)fHneg->FindObject("hTOFmatchedExpTimeProVsPhiTPCNeg"))->Fill(phiOuterTPC,tofTime-fTrkExpTimes[AliPID::kProton]);//ps
 	  
 	  if ((phiOuterTPC<=30) || ((phiOuterTPC>=150)&&(phiOuterTPC<=230)) || (phiOuterTPC>=310) ) { //TRD sectors
 	    if (isValidBeta[AliPID::kPion])
-	      ((TH2F*)fHlistPID->At(20))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsPTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
 	    if (isValidBeta[AliPID::kKaon])
-	      ((TH2F*)fHlistPID->At(24))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeKaVsPTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
 	    if (isValidBeta[AliPID::kProton])
-	      ((TH2F*)fHlistPID->At(28))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsPTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
 	  }
 	  if ( ((phiOuterTPC>=50)&&(phiOuterTPC<=130)) || ((phiOuterTPC>=250)&&(phiOuterTPC<=290)) ) {//no TRD sectors
 	    if (isValidBeta[AliPID::kPion])
-	      ((TH2F*)fHlistPID->At(21))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	      ((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsPNoTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
 	      if (isValidBeta[AliPID::kKaon])
-		((TH2F*)fHlistPID->At(25))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
+		((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeKaVsPNoTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kKaon]));
 	      if (isValidBeta[AliPID::kProton])
-		((TH2F*)fHlistPID->At(29))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
+		((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimeProVsPNoTRDNeg"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kProton]));
 	  }
 	}
 	
       }//end advanced checks && cut on pT for t-texp phi distrib      
     }//matched
   }//end loop on tracks
-  //here
-  ((TH1F*)fHlist->At(0))->Fill(fNTOFtracks) ;
-  ((TH2F*)fHlistTimeZero->At(12))->Fill(fNTOFtracks,timeZero[AliESDpid::kTOF_T0]);
+  
+  ((TH1F*)fHlist->FindObject("hTOFmatchedPerEvt"))->Fill(fNTOFtracks) ;
+  ((TH2F*)fHlistTimeZero->FindObject("hT0TOFvsNtrk"))->Fill(fNTOFtracks,timeZero[AliESDpid::kTOF_T0]);
   
   PostData(1, fHlist);
   PostData(2, fHlistTimeZero);
