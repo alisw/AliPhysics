@@ -1852,7 +1852,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
       vertexer->SetSkipTracks(nTrksToSkip,skipped);
       vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
       
-    } else if(fRmTrksFromPrimVtx) { 
+    } else if(fRmTrksFromPrimVtx && nTrks>0) { 
       // removing the prongs tracks
       
       TObjArray rmArray(nTrks);
