@@ -2,7 +2,7 @@
 
 include $(ROOTSYS)/test/Makefile.arch
 
-PACKAGE = PWG2
+PACKAGE = PWG2resonances
 
 default-target: lib$(PACKAGE).so 
 
