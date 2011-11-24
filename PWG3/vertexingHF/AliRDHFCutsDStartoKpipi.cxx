@@ -278,7 +278,7 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelected(TObject* obj,Int_t selectionLevel) {
   if(dd->HasBadDaughters()) return 0;
 
   AliAODTrack *b = (AliAODTrack*)d->GetBachelor();
-  if(fTrackCutsSoftPi->GetRequireTPCRefit()){
+  if(fTrackCutsSoftPi && fTrackCutsSoftPi->GetRequireTPCRefit()){
     if(!(b->TestFilterMask(BIT(4)))) return 0;
   }
   

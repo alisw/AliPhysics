@@ -721,7 +721,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   fHistNEvents->Fill(0); // count event
 
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
-  fRDCutsProduction->IsEventSelected(aod); // to have proper PID object settings
+  Bool_t isEvSelP=kTRUE;
+  isEvSelP=fRDCutsProduction->IsEventSelected(aod); // to have proper PID object settings
 
   Float_t centrality=aod->GetNTracks();//fRDCutsAnalysis->GetCentrality(aod);
   fHistCentrality[0]->Fill(centrality);

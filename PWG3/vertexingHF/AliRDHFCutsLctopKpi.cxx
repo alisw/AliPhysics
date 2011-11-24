@@ -98,7 +98,7 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   AliRDHFCuts(source),
   fPidObjprot(0),
   fPidObjpion(0),
-  fRecoKF(kFALSE),
+  fRecoKF(source.fRecoKF),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
 {
   //
@@ -722,7 +722,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
 //------------------
 Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const{
 
- Int_t nprongs=d->GetNProngs();
+ const Int_t nprongs=d->GetNProngs();
  Int_t iprongs[nprongs];
  for(Int_t i=0;i<nprongs;i++) iprongs[i]=i;
 
