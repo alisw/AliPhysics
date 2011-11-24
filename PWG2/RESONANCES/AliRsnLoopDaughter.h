@@ -27,6 +27,7 @@ public:
 
    void               SetTrueMC(Bool_t yn = kTRUE)   {fTrueMC = yn;}
    void               SetOnlyTrue(Bool_t yn = kTRUE) {fOnlyTrue = yn;}
+   void               SetMCRefInfo(Bool_t b = kTRUE) {fUseMCRef = b;}  
    void               SetListID(Int_t i)             {fListID = i;}
    void               SetDef(AliRsnDaughterDef *def) {fDef = def;}
    
@@ -40,13 +41,14 @@ protected:
 
    Bool_t             fTrueMC;     //  if this flag is TRUE, scan the MC for all true resonances from MC
    Bool_t             fOnlyTrue;   //  for selecting only true particles
+   Bool_t             fUseMCRef;   //  uses MC ref instead of REC
    Int_t              fListID;     //  index of entry list to use
    AliRsnDaughterDef *fDef;        //  definition for selection
    AliRsnDaughter     fDaughter;   //! daughter temporary member
 
 private:
 
-   ClassDef(AliRsnLoopDaughter, 3)
+   ClassDef(AliRsnLoopDaughter, 4)
 };
 
 #endif

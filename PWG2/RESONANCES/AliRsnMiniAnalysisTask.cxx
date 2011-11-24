@@ -15,6 +15,7 @@
 #include <TH1.h>
 #include <TList.h>
 #include <TTree.h>
+#include <TStopwatch.h>
 
 #include "AliLog.h"
 #include "AliEventplane.h"
@@ -35,6 +36,7 @@
 #include "AliRsnMiniParticle.h"
 
 #include "AliRsnMiniAnalysisTask.h"
+
 
 ClassImp(AliRsnMiniAnalysisTask)
 
@@ -104,7 +106,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& copy) :
+AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy) :
    AliAnalysisTaskSE(copy),
    fUseMC(copy.fUseMC),
    fEvNum(0),
@@ -136,7 +138,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask& cop
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalysisTask& copy)
+AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalysisTask &copy)
 {
 //
 // Assignment operator.
@@ -145,7 +147,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
 //
 
    AliAnalysisTaskSE::operator=(copy);
-   
+
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
@@ -161,7 +163,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fTriggerAna = copy.fTriggerAna;
    fESDtrackCuts = copy.fESDtrackCuts;
    fBigOutput = copy.fBigOutput;
-   
+
    return (*this);
 }
 
@@ -169,7 +171,7 @@ AliRsnMiniAnalysisTask& AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
 AliRsnMiniAnalysisTask::~AliRsnMiniAnalysisTask()
 {
 //
-// Destructor. 
+// Destructor.
 // Clean-up the output list, but not the histograms that are put inside
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
@@ -194,7 +196,7 @@ Int_t AliRsnMiniAnalysisTask::AddTrackCuts(AliRsnCutSet *cuts)
 //
 
    TObject *obj = fTrackCuts.FindObject(cuts->GetName());
-   
+
    if (obj) {
       AliInfo(Form("A cut set named '%s' already exists", cuts->GetName()));
       return fTrackCuts.IndexOf(obj);
@@ -214,14 +216,14 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
 
    // reset counter
    fEvNum = -1;
-   
+
    // message
    AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
 
    // initialize trigger analysis
    if (fTriggerAna) delete fTriggerAna;
    fTriggerAna = new AliTriggerAnalysis;
-   
+
    // initialize ESD quality cuts
    if (fESDtrackCuts) delete fESDtrackCuts;
    fESDtrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
@@ -230,7 +232,7 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    if (fBigOutput) OpenFile(1);
    fOutput = new TList();
    fOutput->SetOwner();
-   
+
    // initialize event statistics counter
    fHEventStat = new TH1F("hEventStat", "Event statistics", 4, 0.0, 4.0);
    fHEventStat->GetXaxis()->SetBinLabel(1, "CINT1B");
@@ -238,24 +240,24 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
    fOutput->Add(fHEventStat);
-   
+
    // create temporary tree for filtered events
    if (fMiniEvent) delete fMiniEvent;
    fEvBuffer = new TTree("EventBuffer", "Temporary buffer for mini events");
    fEvBuffer->Branch("events", "AliRsnMiniEvent", &fMiniEvent);
-   
+
    // create one histogram per each stored definition (event histograms)
    Int_t i, ndef = fHistograms.GetEntries();
    AliRsnMiniOutput *def = 0x0;
    for (i = 0; i < ndef; i++) {
-      def = (AliRsnMiniOutput*)fHistograms[i];
+      def = (AliRsnMiniOutput *)fHistograms[i];
       if (!def) continue;
       if (!def->Init(GetName(), fOutput)) {
          AliError(Form("Def '%s': failed initialization", def->GetName()));
          continue;
       }
    }
-   
+
    // post data for ALL output slots >0 here, to get at least an empty histogram
    PostData(1, fOutput);
 }
@@ -276,16 +278,16 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
-   
+
    // setup PID response
-   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager(); 
-	AliInputEventHandler *inputHandler = (AliInputEventHandler*)man->GetInputEventHandler(); 
-	fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
-   
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+   AliInputEventHandler *inputHandler = (AliInputEventHandler *)man->GetInputEventHandler();
+   fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
+
    // fill a mini-event from current
    // and skip this event if no tracks were accepted
    FillMiniEvent(check);
-   
+
    // fill MC based histograms on mothers,
    // which do need the original event
    if (fUseMC) {
@@ -294,7 +296,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
       else if (fRsnEvent.IsAOD() && fRsnEvent.GetAODList())
          FillTrueMotherAOD(fMiniEvent);
    }
-   
+
    // if the event is not empty, store it
    if (fMiniEvent->IsEmpty()) {
       AliDebugClass(2, Form("Rejecting empty event #%d", fEvNum));
@@ -304,7 +306,7 @@ void AliRsnMiniAnalysisTask::UserExec(Option_t *)
       fMiniEvent->ID() = id;
       fEvBuffer->Fill();
    }
-   
+
    // post data for computed stuff
    PostData(1, fOutput);
 }
@@ -321,24 +323,33 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
 
    // security code: reassign the buffer to the mini-event cursor
    fEvBuffer->SetBranchAddress("events", &fMiniEvent);
-   
+   TStopwatch timer;
    // prepare variables
    Int_t ievt, nEvents = (Int_t)fEvBuffer->GetEntries();
    Int_t idef, nDefs   = fHistograms.GetEntries();
    Int_t imix, iloop, ifill;
    AliRsnMiniOutput *def = 0x0;
    AliRsnMiniOutput::EComputation compType;
+
+   Int_t printNum = 0;
+   if (nEvents>1e5) printNum=nEvents/100;
+   if (nEvents>1e4) printNum=nEvents/10;
    
    // loop on events, and for each one fill all outputs
    // using the appropriate procedure depending on its type
    // only mother-related histograms are filled in UserExec,
    // since they require direct access to MC event
+   timer.Start();
    for (ievt = 0; ievt < nEvents; ievt++) {
       // get next entry
       fEvBuffer->GetEntry(ievt);
+      if (printNum&&(ievt%printNum==0)) {
+         AliInfo(Form("[%s] Std.Event %d/%d",GetName(), ievt,nEvents));
+         timer.Stop(); timer.Print();fflush(stdout); timer.Start(kFALSE);
+      }
       // fill
       for (idef = 0; idef < nDefs; idef++) {
-         def = (AliRsnMiniOutput*)fHistograms[idef];
+         def = (AliRsnMiniOutput *)fHistograms[idef];
          if (!def) continue;
          compType = def->GetComputation();
          // execute computation in the appropriate way
@@ -373,14 +384,14 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
          AliDebugClass(1, Form("Event %6d: def = '%15s' -- fills = %5d", ievt, def->GetName(), ifill));
       }
    }
-   
+
    // if no mixing is required, stop here and post the output
    if (fNMix < 1) {
       AliDebugClass(2, "Stopping here, since no mixing is required");
       PostData(1, fOutput);
       return;
    }
-   
+
    // initialize mixing counter
    Int_t    nmatched[nEvents];
    TString *smatched = new TString[nEvents];
@@ -389,8 +400,16 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       nmatched[ievt] = 0;
    }
    
+   
+   AliInfo(Form("[%s] Std.Event %d/%d",GetName(), nEvents,nEvents));
+   timer.Stop(); timer.Print(); timer.Start();fflush(stdout);
+
    // search for good matchings
    for (ievt = 0; ievt < nEvents; ievt++) {
+      if (printNum&&(ievt%printNum==0)) {
+         AliInfo(Form("[%s] EventMixing searching %d/%d",GetName(),ievt,nEvents));
+         timer.Stop(); timer.Print(); timer.Start(kFALSE); fflush(stdout);
+      }
       if (nmatched[ievt] >= fNMix) continue;
       fEvBuffer->GetEntry(ievt);
       AliRsnMiniEvent evMain(*fMiniEvent);
@@ -415,20 +434,27 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       AliDebugClass(1, Form("Matches for event %5d = %d [%s] (missing are declared above)", evMain.ID(), nmatched[ievt], smatched[ievt].Data()));
    }
    
+   AliInfo(Form("[%s] EventMixing searching %d/%d",GetName(),nEvents,nEvents));
+   timer.Stop(); timer.Print();fflush(stdout); timer.Start();
+
    // perform mixing
    TObjArray *list = 0x0;
    TObjString *os = 0x0;
    for (ievt = 0; ievt < nEvents; ievt++) {
+      if (printNum&&(ievt%printNum==0)) {
+         AliInfo(Form("[%s] EventMixing %d/%d",GetName(),ievt,nEvents));
+         timer.Stop(); timer.Print(); timer.Start(kFALSE); fflush(stdout);
+      }
       ifill = 0;
       fEvBuffer->GetEntry(ievt);
       AliRsnMiniEvent evMain(*fMiniEvent);
       list = smatched[ievt].Tokenize("|");
       TObjArrayIter next(list);
-      while ( (os = (TObjString*)next()) ) {
+      while ( (os = (TObjString *)next()) ) {
          imix = os->GetString().Atoi();
          fEvBuffer->GetEntry(imix);
          for (idef = 0; idef < nDefs; idef++) {
-            def = (AliRsnMiniOutput*)fHistograms[idef];
+            def = (AliRsnMiniOutput *)fHistograms[idef];
             if (!def) continue;
             if (!def->IsTrackPairMix()) continue;
             ifill += def->FillPair(&evMain, fMiniEvent, &fValues, kTRUE);
@@ -440,11 +466,14 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       }
       delete list;
    }
-   
+
    delete [] smatched;
-      
+
+   AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
+   timer.Stop();timer.Print();fflush(stdout);
+
    /*
-   OLD   
+   OLD
    ifill = 0;
    for (iloop = 1; iloop < nEvents; iloop++) {
       imix = ievt + iloop;
@@ -469,13 +498,13 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       // stop if mixed enough times
       if (fNMixed[ievt] >= fNMix) break;
    }
-   break;      
+   break;
    // print number of mixings done with each event
    for (ievt = 0; ievt < nEvents; ievt++) {
       AliDebugClass(2, Form("Event %6d: mixed %2d times", ievt, fNMixed[ievt]));
    }
    */
-   
+
    // post computed data
    PostData(1, fOutput);
 }
@@ -488,10 +517,10 @@ void AliRsnMiniAnalysisTask::Terminate(Option_t *)
 // Called once at the end of the query
 //
 
-   fOutput = dynamic_cast<TList*>(GetOutputData(1));
-   if (!fOutput) { 
-      AliError("Could not retrieve TList fOutput"); 
-      return; 
+   fOutput = dynamic_cast<TList *>(GetOutputData(1));
+   if (!fOutput) {
+      AliError("Could not retrieve TList fOutput");
+      return;
    }
 }
 
@@ -517,7 +546,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
 
    // string to sum messages
    TString msg("");
-   
+
    // check input type
    // exit points are provided in all cases an event is bad
    // if this block is passed, an event can be rejected only
@@ -529,7 +558,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       output = 'E';
       // ESD specific check: Physics Selection
       // --> if this is failed, the event is rejected
-      isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
       if (!isSelected) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
@@ -540,7 +569,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       fRsnEvent.SetRef(fInputEvent);
       // add MC if requested and available
       if (fUseMC) {
-         if (fMCEvent) 
+         if (fMCEvent)
             fRsnEvent.SetRefMC(fMCEvent);
          else {
             AliWarning("MC event requested but not available");
@@ -567,29 +596,29 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       fRsnEvent.SetRefMC(0x0);
       return 0;
    }
-   
+
    // fill counter of accepted events
    fHEventStat->Fill(0.1);
-   
+
    // check if it is V0AND
    // --> uses a cast to AliESDEvent even if the input is an AliAODEvent
-   Bool_t v0A = fTriggerAna->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0A);
-   Bool_t v0C = fTriggerAna->IsOfflineTriggerFired((AliESDEvent*)fInputEvent, AliTriggerAnalysis::kV0C);
+   Bool_t v0A = fTriggerAna->IsOfflineTriggerFired((AliESDEvent *)fInputEvent, AliTriggerAnalysis::kV0A);
+   Bool_t v0C = fTriggerAna->IsOfflineTriggerFired((AliESDEvent *)fInputEvent, AliTriggerAnalysis::kV0C);
    if (v0A && v0C) {
       msg += " -- VOAND = YES";
       fHEventStat->Fill(1.1);
    } else {
       msg += " -- VOAND = NO ";
    }
-   
+
    // check candle
    // --> requires at least one good quality track with Pt > 0.5 and |eta| <= 0.8
    Int_t iTrack, ntracksLoop = fInputEvent->GetNumberOfTracks();
    Bool_t candle = kFALSE;
-   for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {    
-      AliVTrack   *track = (AliVTrack*)fInputEvent->GetTrack(iTrack);
-      AliESDtrack *esdt  = dynamic_cast<AliESDtrack*>(track);
-      AliAODTrack *aodt  = dynamic_cast<AliAODTrack*>(track);
+   for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {
+      AliVTrack   *track = (AliVTrack *)fInputEvent->GetTrack(iTrack);
+      AliESDtrack *esdt  = dynamic_cast<AliESDtrack *>(track);
+      AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
       if (track->Pt() < 0.5) continue;
       if(TMath::Abs(track->Eta()) > 0.8) continue;
       if (esdt) if (!fESDtrackCuts->AcceptTrack(esdt)) continue;
@@ -598,12 +627,12 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       break;
    }
    if (candle) {
-      msg += " -- CANDLE = YES"; 
+      msg += " -- CANDLE = YES";
       fHEventStat->Fill(2.1);
    } else {
-      msg += " -- CANDLE = NO "; 
+      msg += " -- CANDLE = NO ";
    }
-   
+
    // if event cuts are defined, they are checked here
    // final decision on the event depends on this
    isSelected = kTRUE;
@@ -619,7 +648,7 @@ Char_t AliRsnMiniAnalysisTask::CheckCurrentEvent()
       msg += " -- Local cuts = NONE";
       isSelected = kTRUE;
    }
-   
+
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats: %s", msg.Data()));
    if (isSelected) {
@@ -645,7 +674,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
    fMiniEvent->Angle() = ComputeAngle();
    fMiniEvent->Mult()  = ComputeCentrality((evType == 'E'));
    AliDebugClass(2, Form("Event %d: type = %c -- vz = %f -- mult = %f -- angle = %f", fEvNum, evType, fMiniEvent->Vz(), fMiniEvent->Mult(), fMiniEvent->Angle()));
-   
+
    // loop on daughters and assign track-related values
    Int_t ic, ncuts = fTrackCuts.GetEntries();
    Int_t ip, npart = fRsnEvent.GetAbsoluteSum();
@@ -660,7 +689,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
       miniParticle.Index() = ip;
       // switch on the bits corresponding to passed cuts
       for (ic = 0; ic < ncuts; ic++) {
-         AliRsnCutSet *cuts = (AliRsnCutSet*)fTrackCuts[ic];
+         AliRsnCutSet *cuts = (AliRsnCutSet *)fTrackCuts[ic];
          if (cuts->IsSelected(&cursor)) miniParticle.SetCutBit(ic);
       }
       // if a track passes at least one track cut, it is added to the pool
@@ -671,7 +700,7 @@ void AliRsnMiniAnalysisTask::FillMiniEvent(Char_t evType)
          else nneu++;
       }
    }
-   
+
    // get number of accepted tracks
    AliDebugClass(1, Form("Event %6d: total = %5d, accepted = %4d (pos %4d, neg %4d, neu %4d)", fEvNum, npart, (Int_t)fMiniEvent->Particles().GetEntriesFast(), npos, nneg, nneu));
 }
@@ -684,15 +713,15 @@ Double_t AliRsnMiniAnalysisTask::ComputeAngle()
 //
 
    AliEventplane *plane = 0x0;
-   
+
    if (fInputEvent->InheritsFrom(AliESDEvent::Class()))
       plane = fInputEvent->GetEventplane();
    else if (fInputEvent->InheritsFrom(AliAODEvent::Class())) {
-      AliAODEvent *aodEvent = (AliAODEvent*)fInputEvent;
+      AliAODEvent *aodEvent = (AliAODEvent *)fInputEvent;
       plane = aodEvent->GetHeader()->GetEventplaneP();
    }
 
-   if (plane) 
+   if (plane)
       return plane->GetEventplane("Q");
    else {
       AliWarning("No event plane defined");
@@ -721,13 +750,13 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
          return fInputEvent->GetNumberOfTracks();
       else if (!fCentralityType.CompareTo("QUALITY"))
          if (isESD)
-            return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fInputEvent, kTRUE);
+            return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, kTRUE);
          else {
             Double_t count = 0.;
             Int_t iTrack, ntracksLoop = fInputEvent->GetNumberOfTracks();
-            for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {    
-               AliVTrack   *track = (AliVTrack*)fInputEvent->GetTrack(iTrack);
-               AliAODTrack *aodt  = dynamic_cast<AliAODTrack*>(track);
+            for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {
+               AliVTrack   *track = (AliVTrack *)fInputEvent->GetTrack(iTrack);
+               AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
                if (!aodt) continue;
                if (!aodt->TestFilterBit(5)) continue;
                count++;
@@ -736,7 +765,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeCentrality(Bool_t isESD)
          }
       else if (!fCentralityType.CompareTo("TRACKLETS")) {
          if (isESD) {
-            const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
+            const AliMultiplicity *mult = ((AliESDEvent *)fInputEvent)->GetMultiplicity();
             Float_t nClusters[6] = {0.0,0.0,0.0,0.0,0.0,0.0};
             for(Int_t ilay = 0; ilay < 6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
             return AliESDUtils::GetCorrSPD2(nClusters[1], fInputEvent->GetPrimaryVertex()->GetZ());
@@ -765,20 +794,20 @@ void AliRsnMiniAnalysisTask::FillTrueMotherESD(AliRsnMiniEvent *miniEvent)
    AliMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
-   
+
    for (id = 0; id < ndef; id++) {
-      def = (AliRsnMiniOutput*)fHistograms[id];
+      def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
       if (!def->IsMother()) continue;
       for (ip = 0; ip < npart; ip++) {
-         AliMCParticle *part = (AliMCParticle*)fMCEvent->GetTrack(ip);
+         AliMCParticle *part = (AliMCParticle *)fMCEvent->GetTrack(ip);
          if (part->Particle()->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->Particle()->GetNDaughters() < 2) continue;
          label1 = part->Particle()->GetDaughter(0);
          label2 = part->Particle()->GetDaughter(1);
-         daughter1 = (AliMCParticle*)fMCEvent->GetTrack(label1);
-         daughter2 = (AliMCParticle*)fMCEvent->GetTrack(label2);
+         daughter1 = (AliMCParticle *)fMCEvent->GetTrack(label1);
+         daughter2 = (AliMCParticle *)fMCEvent->GetTrack(label2);
          okMatch = kFALSE;
          if (TMath::Abs(daughter1->Particle()->GetPdgCode()) == def->GetPDG(0) && TMath::Abs(daughter2->Particle()->GetPdgCode()) == def->GetPDG(1)) {
             okMatch = kTRUE;
@@ -814,20 +843,20 @@ void AliRsnMiniAnalysisTask::FillTrueMotherAOD(AliRsnMiniEvent *miniEvent)
    AliAODMCParticle *daughter1, *daughter2;
    TLorentzVector p1, p2;
    AliRsnMiniOutput *def = 0x0;
-   
+
    for (id = 0; id < ndef; id++) {
-      def = (AliRsnMiniOutput*)fHistograms[id];
+      def = (AliRsnMiniOutput *)fHistograms[id];
       if (!def) continue;
       if (!def->IsMother()) continue;
       for (ip = 0; ip < npart; ip++) {
-         AliAODMCParticle *part = (AliAODMCParticle*)list->At(ip);
+         AliAODMCParticle *part = (AliAODMCParticle *)list->At(ip);
          if (part->GetPdgCode() != def->GetMotherPDG()) continue;
          // check that daughters match expected species
          if (part->GetNDaughters() < 2) continue;
          label1 = part->GetDaughter(0);
          label2 = part->GetDaughter(1);
-         daughter1 = (AliAODMCParticle*)list->At(label1);
-         daughter2 = (AliAODMCParticle*)list->At(label2);
+         daughter1 = (AliAODMCParticle *)list->At(label1);
+         daughter2 = (AliAODMCParticle *)list->At(label2);
          okMatch = kFALSE;
          if (TMath::Abs(daughter1->GetPdgCode()) == def->GetPDG(0) && TMath::Abs(daughter2->GetPdgCode()) == def->GetPDG(1)) {
             okMatch = kTRUE;
@@ -854,14 +883,14 @@ Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEv
 //
 // Check if two events are compatible.
 // If the mixing is continuous, this is true if differences in vz, mult and angle are smaller than
-// the specified values. 
+// the specified values.
 // If the mixing is binned, this is true if the events are in the same bin.
 //
 
    if (!event1 || !event2) return kFALSE;
    Int_t ivz1, ivz2, imult1, imult2, iangle1, iangle2;
    Double_t dv, dm, da;
-   
+
    if (fContinuousMix) {
       dv = TMath::Abs(event1->Vz()    - event2->Vz()   );
       dm = TMath::Abs(event1->Mult()  - event2->Mult() );
@@ -893,4 +922,4 @@ Bool_t AliRsnMiniAnalysisTask::EventsMatch(AliRsnMiniEvent *event1, AliRsnMiniEv
    }
 }
 
-      
+

@@ -24,6 +24,7 @@ AliRsnLoopDaughter::AliRsnLoopDaughter(const char *name, Int_t listID, AliRsnDau
    AliRsnLoop(name),
    fTrueMC(kFALSE),
    fOnlyTrue(kFALSE),
+   fUseMCRef(kFALSE),
    fListID(listID),
    fDef(def),
    fDaughter()
@@ -38,6 +39,7 @@ AliRsnLoopDaughter::AliRsnLoopDaughter(const AliRsnLoopDaughter& copy) :
    AliRsnLoop(copy),
    fTrueMC(copy.fTrueMC),
    fOnlyTrue(copy.fOnlyTrue),
+   fUseMCRef(copy.fUseMCRef),
    fListID(copy.fListID),
    fDef(copy.fDef),
    fDaughter(copy.fDaughter)
@@ -57,6 +59,7 @@ AliRsnLoopDaughter& AliRsnLoopDaughter::operator=(const AliRsnLoopDaughter& copy
    AliRsnLoop::operator=(copy);
    fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
+   fUseMCRef = copy.fUseMCRef;
    fListID = copy.fListID;
    fDaughter = copy.fDaughter;
    fDef = copy.fDef;
