@@ -38,14 +38,6 @@
 AliHLTTPCAgent gAliHLTTPCAgent;
 
 // component headers
-#include "AliHLTTPCCompModelInflaterComponent.h"
-#include "AliHLTTPCCompModelDeflaterComponent.h"
-#include "AliHLTTPCCompModelDeconverterComponent.h"
-#include "AliHLTTPCCompModelConverterComponent.h"
-#include "AliHLTTPCCompDumpComponent.h"
-//#include "AliHLTTPCCalibCEComponent.h"
-//#include "AliHLTTPCCalibPulserComponent.h"
-//#include "AliHLTTPCCalibPedestalComponent.h"
 #include "AliHLTTPCCAInputDataCompressorComponent.h"
 #include "AliHLTTPCCATrackerComponent.h"
 #include "AliHLTTPCCATrackerOutputConverter.h"
@@ -53,8 +45,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCCAGlobalMergerComponent.h"
 #include "AliHLTTPCdEdxComponent.h"
 #include "AliHLTTPCdEdxMonitoringComponent.h"
-#include "AliHLTTPCGlobalMergerComponent.h"
-#include "AliHLTTPCSliceTrackerComponent.h"
 #include "AliHLTTPCClusterFinderComponent.h"
 #include "AliHLTTPCRawDataUnpackerComponent.h"
 #include "AliHLTTPCDigitPublisherComponent.h"
@@ -67,16 +57,11 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCOfflineCalibrationComponent.h" // to be added to the calibration library agent
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCHistogramHandlerComponent.h"
-//#include "AliHLTTPCCalibTracksComponent.h"
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCTrackDumpComponent.h"
 #include "AliHLTTPCHWCFDataReverterComponent.h"
 #include "AliHLTTPCHWClusterTransformComponent.h"
 #include "AliHLTTPCCFComparisonComponent.h"
-// #include "AliHLTTPCCalibSeedMakerComponent.h"
-// #include "AliHLTTPCCalibTimeComponent.h"
-// #include "AliHLTTPCCalibTimeGainComponent.h"
-// #include "AliHLTTPCCalibrationComponent.h"
 #include "AliHLTTPCDataCheckerComponent.h"
 #include "AliHLTTPCHWCFEmulatorComponent.h"
 #include "AliHLTTPCHWCFConsistencyControlComponent.h"
@@ -371,23 +356,13 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   if (!pHandler) return -EINVAL;
 
-//   pHandler->AddComponent(new AliHLTTPCCalibCEComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibPulserComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibPedestalComponent);
-  pHandler->AddComponent(new AliHLTTPCCompModelInflaterComponent);
-  pHandler->AddComponent(new AliHLTTPCCompModelDeflaterComponent);
-  pHandler->AddComponent(new AliHLTTPCCompModelDeconverterComponent);
-  pHandler->AddComponent(new AliHLTTPCCompModelConverterComponent);
-  pHandler->AddComponent(new AliHLTTPCCompDumpComponent);
   pHandler->AddComponent(new AliHLTTPCCAInputDataCompressorComponent);
   pHandler->AddComponent(new AliHLTTPCCATrackerComponent);
   pHandler->AddComponent(new AliHLTTPCCATrackerOutputConverter);
   pHandler->AddComponent(new AliHLTTPCCAGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackMCMarkerComponent);
-  pHandler->AddComponent(new AliHLTTPCGlobalMergerComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxComponent);
   pHandler->AddComponent(new AliHLTTPCdEdxMonitoringComponent);
-  pHandler->AddComponent(new AliHLTTPCSliceTrackerComponent);
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderPacked));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderUnpacked));
   pHandler->AddComponent(new AliHLTTPCClusterFinderComponent(AliHLTTPCClusterFinderComponent::kClusterFinderDecoder));
@@ -404,16 +379,11 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCOfflineCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
   pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
-  //pHandler->AddComponent(new AliHLTTPCCalibTracksComponent);
   pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
   pHandler->AddComponent(new AliHLTTPCTrackDumpComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFDataReverterComponent);
   pHandler->AddComponent(new AliHLTTPCHWClusterTransformComponent);
   pHandler->AddComponent(new AliHLTTPCCFComparisonComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibSeedMakerComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibTimeComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibTimeGainComponent);
-//   pHandler->AddComponent(new AliHLTTPCCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCDataCheckerComponent);
   pHandler->AddComponent(new AliHLTTPCHWCFEmulatorComponent);
 //  pHandler->AddComponent(new AliHLTTPCHWCFConsistencyControlComponent);  //FIXME: Causes crash: https://savannah.cern.ch/bugs/?83677
