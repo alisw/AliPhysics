@@ -66,7 +66,8 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
       Double_t par0 = hh[i]->GetBinCenter(hh[i]->FindLastBinAbove(0.9));
       printf("%f\n",par0);
       ff[i]->SetParameter(0,par0);
-      ff[i]->SetParameter(1,0.3);
+      ff[i]->SetParameter(1,0.1);
+      //      ff[i]->SetParLimits(1,0.01,2.);
       hh[i]->Fit(ff[i],"R+");
       hh[i]->Fit(ff[i],"R+");
       hh[i]->Fit(ff[i],"R+");
@@ -94,8 +95,8 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
       hh[i]->Draw("e same");
     eff99[i] = ff[i]->GetX(0.99);
     eff05[i] = ff[i]->GetX(0.05)-eff99[i];
-    purity[i] = ff[i]->Integral(0,eff99[i])/ff[i]->Integral(0,100);
-    purity2[i] = purity[i]*nent[i]/nentall[i];
+    purity[i] = (ff[i]->Integral(0,100)>0) ? ff[i]->Integral(0,eff99[i])/ff[i]->Integral(0,100) : 0;
+    purity2[i] = (nentall[i]>0) ? purity[i]*nent[i]/nentall[i] : 0;
     //    printf("%d  %d %d\n",i,nent[i],nentall[i]);
   }
 
@@ -156,7 +157,7 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   }
   TGraph *thr = new TGraph(nb,eff99,thrA);
   thr->SetMarkerStyle(21);
-  TF1 *fThr = new TF1("fThr","[0]*x*x*x+[1]*x*x+[2]*x+[3]",1.5,50);
+  TF1 *fThr = new TF1("fThr","[0]*x*x*x*x+[1]*x*x*x+[2]*x*x+[3]*x+[4]",3.0,60);
   thr->Fit(fThr,"R");
   thr->Draw("AP");
 
@@ -167,7 +168,7 @@ void extractThr(const char *filename, const char *fparname, Float_t centrValue =
   }
   TGraph *grInt = new TGraph(nb,intThr,thrA);
   grInt->SetMarkerStyle(21);
-  TF1 *fIntThr = new TF1("fIntThr","[0]*x*x*x+[1]*x*x+[2]*x+[3]",1.5,50);
+  TF1 *fIntThr = new TF1("fIntThr","[0]*x*x*x*x+[1]*x*x*x+[2]*x*x+[3]*x+[4]",3.0,60);
   grInt->Fit(fIntThr,"R");
   grInt->Draw("AP");
 
