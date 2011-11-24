@@ -1618,18 +1618,20 @@ Bool_t AliHFEV0cuts::GetHelixCenter(AliESDtrack * const track, Double_t b,Int_t 
       xpoint = - xpoint;
       ypoint = - ypoint;
     }
-
+    /*
     if(charge < 0){
       xpoint =  xpoint;
       ypoint =  ypoint;
     }
+    */
   }
   if(b>0){
+    /*
     if(charge > 0){
       xpoint =  xpoint;
       ypoint =  ypoint;
     }
-
+    */
     if(charge < 0){
       xpoint = - xpoint;
       ypoint = - ypoint;
