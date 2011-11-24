@@ -59,3 +59,16 @@ AliMUONSt1SpecialMotif::~AliMUONSt1SpecialMotif()
 /// Destructor
 }
 
+//__________________________________________________________________________
+AliMUONSt1SpecialMotif& AliMUONSt1SpecialMotif::operator=(const AliMUONSt1SpecialMotif& src)
+{
+/// Assignment operator
+
+  // check assignment to self
+  if (this == &src) return *this;
+
+  fDelta = src.fDelta;
+  fRotAngle = src.fRotAngle;
+
+  return *this;
+}  
