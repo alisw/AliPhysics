@@ -102,6 +102,8 @@ ClassImp(AliAnalysisTaskSELambdac)
     fPIDResponse(0)
 {
   // Default constructor
+  Float_t ptlims[7]={0.,2.,4.,6.,8.,12.,24.};
+  SetPtBinLimit(7,ptlims);
 }
 
 //________________________________________________________________________
@@ -1384,10 +1386,11 @@ Bool_t AliAnalysisTaskSELambdac::VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *p
   if(TMath::Abs(pdgs[0])==211){
     ipRes[0]=0;ipRes[1]=1;
     pdgres[0]=pdgs[0];pdgres[1]=321;
-  }
-  if(TMath::Abs(pdgs[2])==211){
+  }else if(TMath::Abs(pdgs[2])==211){
     ipRes[0]=2;ipRes[1]=1;
     pdgres[0]=pdgs[2];pdgres[1]=321;
+  }else{
+    return kFALSE;
   }
   AliKFParticle *kappaStar=d->ApplyVertexingKF(ipRes,2,pdgres,kFALSE,field,mass);
 
