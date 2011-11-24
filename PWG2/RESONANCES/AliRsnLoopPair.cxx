@@ -33,6 +33,7 @@ AliRsnLoopPair::AliRsnLoopPair(const char *name, AliRsnPairDef *def, Bool_t isMi
    AliRsnLoop(name, isMixed),
    fTrueMC(kFALSE),
    fOnlyTrue(kFALSE),
+   fUseMCRef(kFALSE),
    fCheckDecay(kFALSE),
    fRangeY(1E20),
    fPairDef(def),
@@ -48,10 +49,11 @@ AliRsnLoopPair::AliRsnLoopPair(const char *name, AliRsnPairDef *def, Bool_t isMi
 }
 
 //_____________________________________________________________________________
-AliRsnLoopPair::AliRsnLoopPair(const AliRsnLoopPair& copy) :
+AliRsnLoopPair::AliRsnLoopPair(const AliRsnLoopPair &copy) :
    AliRsnLoop(copy),
    fTrueMC(copy.fTrueMC),
    fOnlyTrue(copy.fOnlyTrue),
+   fUseMCRef(copy.fUseMCRef),
    fCheckDecay(copy.fCheckDecay),
    fRangeY(copy.fRangeY),
    fPairDef(copy.fPairDef),
@@ -67,16 +69,17 @@ AliRsnLoopPair::AliRsnLoopPair(const AliRsnLoopPair& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnLoopPair& AliRsnLoopPair::operator=(const AliRsnLoopPair& copy)
+AliRsnLoopPair &AliRsnLoopPair::operator=(const AliRsnLoopPair &copy)
 {
 //
 // Assignment operator
 //
 
    AliRsnLoop::operator=(copy);
-   
+
    fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
+   fUseMCRef = copy.fUseMCRef;
    fCheckDecay = copy.fCheckDecay;
    fRangeY = copy.fRangeY;
    fPairDef = copy.fPairDef;
@@ -118,12 +121,13 @@ Bool_t AliRsnLoopPair::Init(const char *prefix, TList *list)
    fMother.SetDaughter(0, &fDaughter[0]);
    fMother.SetDaughter(1, &fDaughter[1]);
    AliInfo(Form("[%s] Initialization", GetName()));
-   
+
    TString name(prefix);
    name += '_';
    name += GetName();
-   if (IsMixed()) name.Prepend("mix_");
-   
+//    if (IsMixed()) name.Prepend("mix_");
+   if (IsMixed()) name.Append("_mix");
+
    return AliRsnLoop::Init(name.Data(), list);
 }
 
@@ -149,7 +153,7 @@ Int_t AliRsnLoopPair::DoLoop
       selMix = selMain;
    }
    fMother.SetRefEvent(evMain);
-   
+
    // check cuts
    if (!OkEvent(evMain)) {
       AliDebugClass(3, Form("[%s]: main event not accepted", GetName()));
@@ -159,35 +163,38 @@ Int_t AliRsnLoopPair::DoLoop
       AliDebugClass(3, Form("[%s]: mixed event not accepted", GetName()));
       return 0;
    }
-   
+
    // if it is required to loop over True MC, do this here and skip the rest of the method
    if (fTrueMC) return LoopTrueMC(evMain);
-   
+
    Int_t i0, i1, start, npairs = 0;
-   
+
    TEntryList *list0 = selMain->GetSelected(fListID[0], fPairDef->GetDef1().GetChargeC());
    TEntryList *list1 = selMix ->GetSelected(fListID[1], fPairDef->GetDef2().GetChargeC());
    if (!list0 || !list1) {
       AliError("Can't process NULL lists");
       return 0;
    }
-   AliDebugClass(3, Form("[%s]: list counts: %d, %d", GetName(), (Int_t)list0->GetN(), (Int_t)list1->GetN()));
+   AliDebugClass(3, Form("[%s]: list counts: %lld, %lld", GetName(), list0->GetN(), list1->GetN()));
    if (!list0->GetN() || !list1->GetN()) {
       AliDebugClass(3, Form("[%s]: at least one list is empty", GetName()));
       return 0;
    }
-   
+
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
-   
+   Long64_t iEntry1,iEntry2;
    for (i0 = 0; i0 < list0->GetN(); i0++) {
-      evMain->SetDaughter(fDaughter[0], (Int_t)list0->GetEntry(i0));
+      iEntry1 = list0->GetEntry(i0);
+      evMain->SetDaughter(fDaughter[0], iEntry1,fUseMCRef);
       fDaughter[0].FillP(fPairDef->GetDef1().GetMass());
       start = 0;
       if (!fIsMixed && list0 == list1) start = i0 + 1;
       for (i1 = start; i1 < list1->GetN(); i1++) {
-         AliDebugClass(4, Form("Checking entries pair: %d (%d) with %d (%d)", (Int_t)i0, (Int_t)list0->GetEntry(i0), (Int_t)i1, (Int_t)list1->GetEntry(i1)));
-         evMix->SetDaughter(fDaughter[1], (Int_t)list1->GetEntry(i1));
+         iEntry2 = list1->GetEntry(i1);
+	 if (iEntry1 == iEntry2) continue;
+         AliDebugClass(4, Form("Checking entries pair: %d (%lld) with %d (%lld)", i0, iEntry1, i1, iEntry2));
+         evMix->SetDaughter(fDaughter[1], iEntry2,fUseMCRef);
          fDaughter[1].FillP(fPairDef->GetDef2().GetMass());
          fMother.Sum(0) = fDaughter[0].Prec() + fDaughter[1].Prec();
          fMother.Sum(1) = fDaughter[0].Psim() + fDaughter[1].Psim();
@@ -214,7 +221,7 @@ Int_t AliRsnLoopPair::DoLoop
          }
          // fill outputs
          next.Reset();
-         while ( (out = (AliRsnListOutput*)next()) ) {
+         while ( (out = (AliRsnListOutput *)next()) ) {
             if (out->Fill(&fMother)) npairs++;
             else AliDebugClass(3, Form("[%s]: failed computation", GetName()));
          }
@@ -231,13 +238,13 @@ Bool_t AliRsnLoopPair::IsTrueMother()
 // Checks to see if the mother comes from a true resonance.
 // It is triggered by the 'SetOnlyTrue()' function
 //
-      
+
    // check #1:
    // daughters have same mother with the right PDG code
    Int_t commonPDG = fMother.CommonMother();
    if (commonPDG != fPairDef->GetMotherPDG()) return kFALSE;
    AliDebugClass(1, "Found a true mother");
-   
+
    // check #2:
    // checks if daughter have the right particle type
    // (activated by fCheckDecay)
@@ -248,7 +255,7 @@ Bool_t AliRsnLoopPair::IsTrueMother()
       if (!def2.MatchesPID(&fDaughter[1])) return kFALSE;
    }
    AliDebugClass(1, "Decay products match");
-   
+
    return kTRUE;
 }
 
@@ -290,17 +297,17 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t 
 
    AliMCEvent    *mc      = rsnEvent->GetRefMCESD();
    AliStack      *stack   = mc->Stack();
-   AliMCParticle *mother  = (AliMCParticle*)mc->GetTrack(ipart);
+   AliMCParticle *mother  = (AliMCParticle *)mc->GetTrack(ipart);
    TParticle     *motherP = mother->Particle();
    Int_t          ntracks = stack->GetNtrack();
-   
+
    // check PDG code and exit if it is wrong
    if (TMath::Abs(motherP->GetPdgCode()) != fPairDef->GetMotherPDG()) return kFALSE;
-   
+
    // check number of daughters and exit if it is not 2
    if (motherP->GetNDaughters() < 2) return kFALSE;
    //if (!stack->IsPhysicalPrimary(ipart)) return kFALSE;
-   
+
    /*
    // check distance from primary vertex
    TLorentzVector vprod;
@@ -310,9 +317,9 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t 
       return kFALSE;
    }
    */
-   
+
    // get the daughters and check their PDG code and charge:
-   // if they match one of the pair daughter definitions, 
+   // if they match one of the pair daughter definitions,
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
@@ -327,7 +334,7 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t 
          return kFALSE;
       }
       // get daughter and its PDG and charge
-      daughter = (AliMCParticle*)mc->GetTrack(index[i]);
+      daughter = (AliMCParticle *)mc->GetTrack(index[i]);
       pdg      = TMath::Abs(daughter->Particle()->GetPdgCode());
       charge   = (Short_t)(daughter->Particle()->GetPDG()->Charge() / 3);
       // check if it matches one definition
@@ -341,7 +348,7 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersESD(AliRsnEvent *rsnEvent, Int_t 
          fDaughter[1].SetLabel(index[i]);
       }
    }
-   
+
    // return success if both daughters were assigned
    if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
       return kTRUE;
@@ -365,16 +372,16 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t 
 //
 
    AliAODEvent      *aod     = rsnEvent->GetRefAOD();
-   TClonesArray     *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
-   AliAODMCParticle *mother  = (AliAODMCParticle*)listAOD->At(ipart);
-   
+   TClonesArray     *listAOD = (TClonesArray *)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+   AliAODMCParticle *mother  = (AliAODMCParticle *)listAOD->At(ipart);
+
    // check PDG code and exit if it is wrong
    if (TMath::Abs(mother->GetPdgCode()) != fPairDef->GetMotherPDG()) return kFALSE;
-   
+
    // check number of daughters and exit if it is not 2
    if (mother->GetNDaughters() < 2) return kFALSE;
    if (!mother->IsPrimary()) return kFALSE;
-   
+
    /*
    // check distance from primary vertex
    Double_t vprod[3] = {(Double_t)mother->Xv(), (Double_t)mother->Yv(), (Double_t)mother->Zv()};
@@ -384,9 +391,9 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t 
       return kFALSE;
    }
    */
-   
+
    // get the daughters and check their PDG code and charge:
-   // if they match one of the pair daughter definitions, 
+   // if they match one of the pair daughter definitions,
    // assign them as MC reference of the 'fDaughter' objects
    fDaughter[0].Reset();
    fDaughter[1].Reset();
@@ -402,7 +409,7 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t 
          return kFALSE;
       }
       // get daughter and its PDG and charge
-      daughter = (AliAODMCParticle*)listAOD->At(index[i]);
+      daughter = (AliAODMCParticle *)listAOD->At(index[i]);
       pdg      = TMath::Abs(daughter->GetPdgCode());
       charge   = (Short_t)(daughter->Charge() / 3);
       // check if it matches one definition
@@ -416,7 +423,7 @@ Bool_t AliRsnLoopPair::AssignMotherAndDaughtersAOD(AliRsnEvent *rsnEvent, Int_t 
          fDaughter[1].SetLabel(index[i]);
       }
    }
-   
+
    // return success if both daughters were assigned
    if (fDaughter[0].IsOK() && fDaughter[1].IsOK()) {
       return kTRUE;
@@ -439,14 +446,14 @@ Int_t AliRsnLoopPair::LoopTrueMC(AliRsnEvent *rsn)
       AliError("Need a MC to compute efficiency");
       return 0;
    }
-   
+
    // check event type:
    // must be ESD or AOD, and then use a bool to know in the rest
    if (!rsn->IsESD() && !rsn->IsAOD()) {
       AliError("Need to process ESD or AOD input");
       return 0;
    }
-   
+
    // retrieve the MC primary vertex position
    // and do some additional coherence checks
    //Double_t fVertex[3] = {0.0, 0.0, 0.0};
@@ -460,25 +467,25 @@ Int_t AliRsnLoopPair::LoopTrueMC(AliRsnEvent *rsn)
    } else {
       //for (i = 0; i < 3; i++) fVertex[i] = 0.0;
       AliAODEvent *aod = rsn->GetRefMCAOD();
-      TClonesArray *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+      TClonesArray *listAOD = (TClonesArray *)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
       if (listAOD) npart = listAOD->GetEntries();
       //AliAODMCHeader *mcH = static_cast<AliAODMCHeader*>(aod->FindListObject(AliAODMCHeader::StdBranchName()));
       //if (mcH) mcH->GetVertex(fVertex);
    }
-   
+
    // check number of particles
    if (!npart) {
       AliInfo("Empty event");
       return 0;
    }
-   
+
    // utility variables
    Int_t ipart, count = 0;
    AliRsnDaughter check;
-   
+
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
-   
+
    // loop over particles
    for (ipart = 0; ipart < npart; ipart++) {
       // check i-th particle
@@ -495,11 +502,12 @@ Int_t AliRsnLoopPair::LoopTrueMC(AliRsnEvent *rsn)
       }
       // fill outputs
       next.Reset();
-      while ( (out = (AliRsnListOutput*)next()) ) {
+      while ( (out = (AliRsnListOutput *)next()) ) {
          if (out->Fill(&fMother)) count++;
          else AliDebugClass(3, Form("[%s]: failed computation", GetName()));
       }
    }
-   
+
    return count;
 }
+

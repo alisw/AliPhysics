@@ -107,6 +107,9 @@ const char* AliRsnValueDaughter::GetTypeName() const
       case kITSsignal:   return "SingleTrackITSsignal";
       case kTPCsignal:   return "SingleTrackTPCsignal";
       case kTOFsignal:   return "SingleTrackTOFsignal";
+      case kTPCnsigmaPi: return "SingleTrackTPCnsigmaPion";
+      case kTPCnsigmaK:  return "SingleTrackTPCnsigmaKaon";
+      case kTPCnsigmaP:  return "SingleTrackTPCnsigmaProton";
       case kTOFnsigmaPi: return "SingleTrackTOFnsigmaPion";
       case kTOFnsigmaK:  return "SingleTrackTOFnsigmaKaon";
       case kTOFnsigmaP:  return "SingleTrackTOFnsigmaProton";
@@ -188,6 +191,36 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
       case kTOFsignal:
          if (track) {
             fComputedValue = track->GetTOFsignal();
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTPCnsigmaPi:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTPC(track, AliPID::kPion);
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTPCnsigmaK:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTPC(track, AliPID::kKaon);
+            return kTRUE;
+         } else {
+            AliWarning("Cannot get TOF signal for non-track object");
+            fComputedValue = 0.0;
+            return kFALSE;
+         }
+      case kTPCnsigmaP:
+         if (track) {
+            AliPIDResponse *pid = fEvent->GetPIDResponse();
+            fComputedValue = pid->NumberOfSigmasTPC(track, AliPID::kProton);
             return kTRUE;
          } else {
             AliWarning("Cannot get TOF signal for non-track object");
