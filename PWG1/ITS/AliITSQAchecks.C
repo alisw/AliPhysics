@@ -34,6 +34,7 @@ TString GetRunNumber();
 
 //  the run number is available to all the functions. Its value is set by AliITSQAchecks
   Int_t gRunNumber = 0;
+  Int_t gRunNumberMC = 0;
   TString pdfFileNames="";
 
 
@@ -42,15 +43,20 @@ void AliITSQAchecks(TString option="grid",
 			  Int_t nRun=167713,
 			  TString period="LHC11h",
 			  TString qaTrain="QA90",
-TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000167706/ESDs/pass1_HLT/QA90/QAresults.root"){
+		    TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000167706/ESDs/pass1_HLT/QA90/QAresults.root",Int_t nRunMC=0){
+  // THIS MACRO SHOULD BE COMPILED. IT DOES NOT WORK WITH THE INTERPRETER
   // option:  "local" if filenamedata is the name of a local file
   //          "grid" if on alien
   // nRun:    run number
   // period:  LHC period (e.g. LHC11h)
-  // qaTrain: QA train specifier
+  // qaTrain: QA train specifier  
+  //          Empty string if QAresults.root is in the ESDs/pass1_HLT directory 
   // filenamedata: QAresults.root is by default the file name with the results
   // filenameMC: file name for MC comparison. If the names begins with alien:
   //             the file is accessed through alien, otherwise is taken as local
+  // nRunMC:  run number for comparison. If filenamMC begings with "alien:" 
+  //          the run number is taken from the path. Otherwise, in case of a 
+  //          local filenameMC, the run number must be specified here
   // Select here what you want to display
   // the complete selection string is
   // "general ITSSA SPD SDD SSD vertex ITSTPC"
@@ -59,6 +65,15 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
 /* $Id$ */
 
   gRunNumber = nRun;
+  TString aux(filenameMC);
+  if(aux.BeginsWith("alien:")){
+    aux=aux.Remove(0,35);
+    aux=aux.Remove(6,aux.Length());  
+    gRunNumberMC = atoi(aux.Data());
+  }
+  else {
+    gRunNumber = nRunMC;
+  }
 
   TString selection("general ITSSA SPD SDD SSD vertex ITSTPC"); 
   gROOT->SetStyle("Plain");
@@ -141,21 +156,21 @@ TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2
 //_______________________________________________________________________
 void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   TDirectoryFile* df=(TDirectoryFile*)fildat->Get("SDD_Performance");
-    if(!df){
-      printf("SDD_Performance MISSING -> Exit\n");
-      return;
-    }
-    TList* l=(TList*)df->Get("coutputRP");
-    if(!df){
-      printf("coutputRP TList MISSING -> Exit\n");
-      return;
-    }
-    cnum=1; // number of canvases 
-    clist= new TCanvas* [1];//array of pointers to TCanvases
-    gROOT->SetStyle("Plain");
+  if(!df){
+    printf("SDD_Performance MISSING -> Exit\n");
+    return;
+  }
+  TList* l=(TList*)df->Get("coutputRP");
+  if(!df){
+    printf("coutputRP TList MISSING -> Exit\n");
+    return;
+  }
+  cnum=1; // number of canvases 
+  clist= new TCanvas* [1];//array of pointers to TCanvases
+  gROOT->SetStyle("Plain");
   gStyle->SetOptStat(1111);
   TH1F* hcllay=(TH1F*)l->FindObject("hCluInLay");
- TH1F* hev=(TH1F*)l->FindObject("hNEvents");
+  TH1F* hev=(TH1F*)l->FindObject("hNEvents");
   Int_t nTotEvents=hev->GetBinContent(2);
   Int_t nTrigEvents=hev->GetBinContent(3);
   Int_t nEvents=nTotEvents;
@@ -234,6 +249,8 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   TH2F* hEtaPhiTPCITS=(TH2F*)l->FindObject("hEtaPhiTPCITS");
   TH2F* hEtaPhiITSsa=(TH2F*)l->FindObject("hEtaPhiITSsa");
   TH2F* hEtaPhiITSpureSA=(TH2F*)l->FindObject("hEtaPhiITSpureSA");
+  TH1F* hChi2TPCITS=(TH1F*)l->FindObject("hChi2TPCITS");
+  TH1F* hChi2ITSsa=(TH1F*)l->FindObject("hChi2ITSsa");
 
   TH1F* hRatio=(TH1F*)hPtTPCITS->Clone("hRatio");
   TH1F* hRatio1=(TH1F*)hPtTPCITS->Clone("hRatio1");
@@ -246,7 +263,7 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
   TString ctitle=GetRunNumber()+"ITS standalone: performance vs Pt";
   TCanvas* cITSsa1=new TCanvas("cITSsa1",ctitle,1200,1200);
   clist[0]=cITSsa1;
-  cITSsa1->Divide(1,2);
+  cITSsa1->Divide(1,3);
   cITSsa1->cd(1);
   // hPtITSpureSA->Draw();
   // hPtITSpureSA->GetXaxis()->SetTitle("Pt (GeV/c)");
@@ -292,6 +309,30 @@ void PlotGeneral(TFile* fildat, TCanvas**& clist, Int_t& cnum){
    tratio->SetNDC();
    tratio->SetTextColor(1);
   tratio->Draw();
+  cITSsa1->cd(3);
+  hChi2ITSsa->Scale(1./hChi2ITSsa->GetEntries());
+  hChi2TPCITS->Scale(1./hChi2TPCITS->GetEntries());
+  hChi2TPCITS->SetLineColor(2);
+  hChi2TPCITS->Draw("");
+   TLatex* tchi=new TLatex(0.25,0.85,"chi2 vs Pt");
+   tchi->SetNDC();
+   tchi->SetTextColor(1);
+  tchi->Draw();
+  gPad->Update();
+  TPaveStats *stc2=(TPaveStats*)hChi2TPCITS->GetListOfFunctions()->FindObject("stats");
+  stc2->SetY1NDC(0.71);
+  stc2->SetY2NDC(0.9);
+  stc2->SetTextColor(2);
+  //  c2->Update();
+  hChi2ITSsa->SetLineColor(4);
+  hChi2ITSsa->Draw("sames");
+  gPad->Update();
+  TPaveStats *stc3=(TPaveStats*)hChi2ITSsa->GetListOfFunctions()->FindObject("stats");
+  stc3->SetY1NDC(0.51);
+  stc3->SetY2NDC(0.7);
+  stc3->SetTextColor(4);
+  leg->Draw();
+
   cITSsa1->Update();
   cITSsa1->SaveAs("ITSsa1.pdf");
   pdfFileNames+=" ITSsa1.pdf";
@@ -905,29 +946,21 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   TList *fListMc = (TList*)spdmc->Get("coutput1");
   Double_t nevtsMc = ((TH1I*)(fListMc->FindObject("hEventsProcessed")))->GetEntries();
   printf("   #events in %s : %f \n",fTitleMc.Data(),nevtsMc);
-  //printf("Available functions : \n - ratiomodules() \n - ratiochips() \n - mapsinner(isShowMaps) \n - phiTracklet() \n - phiTrackletsZ() \n - foEfficiency() \n");
-  // phi projection
+
   TH2F *trackData = (TH2F*)fListData->FindObject("hSPDphivsSPDeta");
   trackData->SetTitle(Form("%s %s",trackData->GetTitle(),fTitleData.Data()));
   TH1D *trackDataPhi = trackData->ProjectionY();
   if(!trackDataPhi) printf("NO 1 \n");
-  //trackDataPhi->SetTitle(Form("%s %s",trackDataPhi->GetTitle(),fTitleData.Data()));
+
   trackDataPhi->SetTitle("Tracklets vs Phi");
-  //rawDist->cd(1);
-  //trackDataPhi->SetLineColor(kRed);
-  //trackDataPhi->DrawCopy();
   TH1D *trackDataEta = trackData->ProjectionX();
   if(!trackDataEta) printf("NO 2 \n");
   trackDataEta->SetTitle("Tracklets vs eta");
-  //trackDataEta->SetTitle(Form("%s %s",trackDataEta->GetTitle(),fTitleData.Data()));
-  // rawDist->cd(2);
-  // trackDataEta->SetLineColor(kRed);
-  // trackDataEta->DrawCopy();
 
   TH1F etaData, phiData;
   trackDataEta->Copy(etaData);
   trackDataPhi->Copy(phiData);
-  //////???????
+
   TH1F etaFrac, phiFrac, mcEta, mcPhi;
   trackDataEta->Copy(etaFrac);
   trackDataPhi->Copy(phiFrac);
@@ -941,30 +974,19 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   tracklets->Divide(2,1);
   tracklets->cd(1);
   tracklets->cd(1)->SetRightMargin(0.15);
-  //trackData->SetTitle(Form("%s %s",trackData->GetTitle(),fTitleData.Data()));
-  trackData->SetTitle("Data 2011");
+  trackData->SetTitle(Form("Run %d",gRunNumber));
   trackData->DrawCopy("colz");
   tracklets->cd(2);
   tracklets->cd(2)->SetRightMargin(0.15);
-  //trackMc->SetTitle(Form("%s %s",trackMc->GetTitle(),fTitleMc.Data()));
-  trackMc->SetTitle("Data 2010");
+  trackMc->SetTitle(Form("Run %d",gRunNumberMC));
   TH1D *h = (TH1D*)trackMc->DrawCopy("colz");
-  //  fTitleData.ReplaceAll(" ","");
-  //  fTitleMc.ReplaceAll(" ","");
-  // tracklets->SaveAs(Form("trackletsPhiEtaMaps_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
   tracklets->SaveAs("SPDtracklets.pdf");
   pdfFileNames+=" SPDtracklets.pdf";
 
   TH1D *trackMcPhi = trackMc->ProjectionY();
   trackMcPhi->SetTitle(Form("%s",h->GetTitle()));
-  // rawDist->cd(3);
-  // trackMcPhi->DrawCopy();
   TH1D *trackMcEta = trackMc->ProjectionX();
   trackMcEta->SetTitle(Form("%s",h->GetTitle()));
-  // rawDist->cd(4);
-  // trackMcEta->DrawCopy();
-
-  //rawDist->SaveAs(Form("trackletsPhiEtaRaw_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
 
   TH1F etaMc, phiMc;
   trackMcEta->Copy(etaMc);
@@ -993,8 +1015,7 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   phiData.Scale(1./phiData.GetEntries());
   phiData.DrawCopy();
   phiMc.Scale(1./phiMc.GetEntries());
-  //  TLatex* tphi=new TLatex(0.6,0.85,"Red = data; Blue =MC");
-  TLatex* tphi=new TLatex(0.6,0.85,"Red = LHC11h; Blue = LHC10h");
+  TLatex* tphi=new TLatex(0.5,0.85,Form("Red = %d; Blue = %d",gRunNumber,gRunNumberMC));
   tphi->SetNDC();
   tphi->SetTextSize(0.04);
    tphi->SetTextColor(1);
@@ -1008,27 +1029,16 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   etaMc.Scale(1./etaMc.GetEntries());
   tphi->Draw();  
   etaMc.DrawCopy("same");
-  //  track->SaveAs(Form("trackletsPhiEtaNorm_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
 
-  //  TCanvas *frac = new TCanvas("frac","fractions",1200,600);
-  //frac->Divide(2,1);
-  //  frac->cd(1);
-  track->cd(3);
-  //  phiFrac.SetTitle(Form(" #Delta#varphi/#varphi_{%s}   %s - %s ",fTitleMc.Data(),fTitleData.Data(),fTitleMc.Data()));
   phiFrac.SetLineColor(1);
-  // TLatex* tratio=new TLatex(0.2,0.85,"Data/MC");
- TLatex* tratio=new TLatex(0.2,0.85,"Data 2011/ Data 2010");
+  TLatex* tratio=new TLatex(0.2,0.85,Form("Run %d / Run %d",gRunNumber,gRunNumberMC));
   tratio->SetNDC();
-  //  tratio->SetTextSize();
   tratio->SetTextColor(1);
   phiFrac.DrawCopy();
   tratio->Draw();  
   track->cd(4);
-  //  etaFrac.SetTitle(Form(" #Delta#eta/#eta_{%s}   %s - %s ",fTitleMc.Data(),fTitleData.Data(),fTitleMc.Data()));
   etaFrac.SetLineColor(1);
   etaFrac.DrawCopy();  
-  //  track->SaveAs(Form("trackletsPhiEtaNorm_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
-  // frac->SaveAs(Form("relativeRatios_%s_%s.png",fTitleData.Data(),fTitleMc.Data()));
   tratio->Draw();  
   track->SaveAs("SPD_eta_phi.pdf");
   pdfFileNames+=" SPD_eta_phi.pdf";
@@ -1245,3 +1255,4 @@ TString GetRunNumber(){
   TString str(rn);
   return str;
 }
+
