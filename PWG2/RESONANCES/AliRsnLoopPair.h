@@ -33,6 +33,7 @@ public:
    void           SetPairCuts(AliRsnCutSet *cuts)      {fPairCuts = cuts;}
    void           SetTrueMC(Bool_t yn = kTRUE)         {fTrueMC = yn;}
    void           SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
+   void           SetMCRefInfo(Bool_t b = kTRUE)       {fUseMCRef = b;}   
    void           SetCheckDecay(Bool_t check = kTRUE)  {fCheckDecay = check;}
    void           SetListID(Int_t i, Int_t val)        {if (i==0||i==1) fListID[i] = val;}
    void           SetRangeY(Double_t range)            {fRangeY = range;}
@@ -52,6 +53,7 @@ protected:
 
    Bool_t            fTrueMC;          //  if this flag is TRUE, scan the MC for all true resonances from MC
    Bool_t            fOnlyTrue;        //  select true pairs only?
+   Bool_t            fUseMCRef;        //  uses MC ref instead of REC
    Bool_t            fCheckDecay;      //  is the decay channel correct in a true pair?
    Int_t             fListID[2];       //  indexes of the two entry lists to be used
    Double_t          fRangeY;          //  range in rapidity (serves always)
@@ -63,7 +65,7 @@ protected:
 
 private:
 
-   ClassDef(AliRsnLoopPair, 3)
+   ClassDef(AliRsnLoopPair, 4)
 };
 
 #endif

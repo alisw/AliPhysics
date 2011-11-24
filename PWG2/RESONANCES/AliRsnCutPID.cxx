@@ -232,7 +232,7 @@ Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter * const daughter)
    // loop over all species listed in AliPID to find the match
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) {
-      if (AliPID::ParticleCode(i) == pdg) return i;
+      if (AliPID::ParticleCode(i) == TMath::Abs(pdg)) return i;
    }
 
    return AliPID::kUnknown;
