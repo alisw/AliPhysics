@@ -107,7 +107,9 @@ fnSeleTrksTotal(0)
 {
   // Default constructor
 
-  Double_t d02[2],d03[3],d04[4];
+  Double_t d02[2]={0.,0.};
+  Double_t d03[3]={0.,0.,0.};
+  Double_t d04[4]={0.,0.,0.,0.};
   fMassCalc2 = new AliAODRecoDecay(0x0,2,0,d02);
   fMassCalc3 = new AliAODRecoDecay(0x0,3,1,d03);
   fMassCalc4 = new AliAODRecoDecay(0x0,4,0,d04);
@@ -1845,6 +1847,7 @@ AliAODVertex* AliAnalysisVertexingHF::PrimaryVertex(const TObjArray *trkArray,
 	  }
 	}
       }
+      for(Int_t ijk=nTrksToSkip; ijk<1000; ijk++) skipped[ijk]=-1;
       //
       vertexer->SetSkipTracks(nTrksToSkip,skipped);
       vertexESD = (AliESDVertex*)vertexer->FindPrimaryVertex(event); 
@@ -2215,6 +2218,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     vprimary->GetCovarianceMatrix(cov);
     fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
     indices = new UShort_t[event->GetNumberOfTracks()];
+    for(Int_t ijk=0; ijk<event->GetNumberOfTracks(); ijk++) indices[ijk]=0;
     fAODMapSize = 100000;
     fAODMap = new Int_t[fAODMapSize];
   }
