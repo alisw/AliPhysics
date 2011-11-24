@@ -305,13 +305,13 @@ void AliAnaVZEROTrigger::UserExec(Option_t *)
   Bool_t goodEvent = kTRUE;
   Bool_t isSelected;
   if (fUsePhysSel)
-    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kAny);
+    isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
   else
     isSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
 
   if (!isSelected) goodEvent = kFALSE;
 
-  const AliESDVertex *primaryVtx = fESD->GetPrimaryVertex();
+  const AliESDVertex *primaryVtx = fESD->GetPrimaryVertexSPD();
   if (!primaryVtx) goodEvent = kFALSE;
   if (!primaryVtx->GetStatus()) goodEvent = kFALSE;
   Double_t tPrimaryVtxPosition[3];
