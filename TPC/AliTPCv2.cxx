@@ -1711,8 +1711,14 @@ void AliTPCv2::StepManager()
       nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
     }
     else {
-	  Float_t edep = gMC->Edep();
-	  if (edep > 0.) nel = (Int_t)((gMC->Edep()*1.5)/kwIon) + 1;      
+      static Double_t deForNextStep = 0.;
+      // Geant4 (the meaning of Edep as in Geant3) - wrong
+      //nel = (Int_t)(((gMC->Edep())-kpoti)/kwIon) + 1;
+
+      // Geant4 (the meaning of Edep as in Geant3) - NEW
+      Double_t eAvailable = gMC->Edep() + deForNextStep;
+      nel = (Int_t)(eAvailable/kwIon);
+      deForNextStep = eAvailable - nel*kwIon;
     }
     nel=TMath::Min(nel,300); // 300 electrons corresponds to 10 keV
     //
