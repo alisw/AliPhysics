@@ -97,6 +97,8 @@ AliMUONPairLight& AliMUONPairLight::operator=(const AliMUONPairLight& dimuCopy)
   fIsCorrelated = dimuCopy.fIsCorrelated; 
   fCauseOfCorrelation  = dimuCopy.fCauseOfCorrelation;
   fIsFeedDown = dimuCopy.fIsFeedDown;
+
+  return *this;
 }
 
 //====================================

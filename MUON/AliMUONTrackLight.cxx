@@ -176,6 +176,8 @@ AliMUONTrackLight& AliMUONTrackLight::operator=(const AliMUONTrackLight& muonCop
     fQuarkPDGCode[i] = muonCopy.fQuarkPDGCode[i]; 
     fQuarkPythiaLine[i] = muonCopy.fQuarkPythiaLine[i]; 
   }
+
+  return *this;
 }    
 
 //============================================
