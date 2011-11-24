@@ -36,6 +36,7 @@ public:
   AliMUONPairLight();
   AliMUONPairLight(AliMUONPairLight &dimuCopy);
   virtual ~AliMUONPairLight();
+  AliMUONPairLight& operator=(const AliMUONPairLight&);
   virtual void SetMuons(const AliMUONTrackLight& mu0, const AliMUONTrackLight& mu1);
   AliMUONTrackLight* GetMuon(Int_t index) ;   
   Int_t GetMuonMotherPDG(Int_t imuon, Int_t mother=0) ; 

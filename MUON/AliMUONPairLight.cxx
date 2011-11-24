@@ -82,6 +82,25 @@ AliMUONPairLight::~AliMUONPairLight(){
 
 //====================================
 
+AliMUONPairLight& AliMUONPairLight::operator=(const AliMUONPairLight& dimuCopy)
+{
+  // check assignment to self
+  if (this == &dimuCopy) return *this;
+
+  // base class assignment
+  TObject::operator=(dimuCopy);
+
+  // assignment operator
+  fMu0 = dimuCopy.fMu0;
+  fMu1 = dimuCopy.fMu1; 
+  fCreationProcess = dimuCopy.fCreationProcess;
+  fIsCorrelated = dimuCopy.fIsCorrelated; 
+  fCauseOfCorrelation  = dimuCopy.fCauseOfCorrelation;
+  fIsFeedDown = dimuCopy.fIsFeedDown;
+}
+
+//====================================
+
 Bool_t AliMUONPairLight::IsAResonance(){
   /// checks if muon pair comes from a resonance decay  
   if (!fIsCorrelated) return kFALSE;   //if muons not correlated, cannot be a resonance

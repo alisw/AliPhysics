@@ -146,6 +146,39 @@ AliMUONTrackLight::~AliMUONTrackLight()
 } 
 
 //============================================
+AliMUONTrackLight& AliMUONTrackLight::operator=(const AliMUONTrackLight& muonCopy)
+{
+  // check assignment to self
+  if (this == &muonCopy) return *this;
+
+  // base class assignment
+  TObject::operator=(muonCopy);
+
+  // assignment operator
+  fPrec = muonCopy.fPrec; 
+  fIsTriggered = muonCopy.fIsTriggered;
+  fCharge = muonCopy.fCharge; 
+  fChi2 = muonCopy.fChi2; 
+  fCentr = muonCopy.fCentr;
+  fPgen = muonCopy.fPgen; 
+  fTrackPythiaLine = muonCopy.fTrackPythiaLine;
+  fTrackPDGCode = muonCopy.fTrackPDGCode;
+  fOscillation = muonCopy.fOscillation; 
+  fNParents = muonCopy.fNParents;
+  fWeight = muonCopy.fWeight;
+  
+  for (Int_t i=0; i<3; i++) fXYZ[i]=muonCopy.fXYZ[i]; 
+  for (Int_t npar = 0; npar < fgkNParentsMax; npar++){
+    fParentPDGCode[npar] = muonCopy.fParentPDGCode[npar]; 
+    fParentPythiaLine[npar] = muonCopy.fParentPythiaLine[npar];
+  }
+  for (Int_t i = 0; i < 4; i++){
+    fQuarkPDGCode[i] = muonCopy.fQuarkPDGCode[i]; 
+    fQuarkPythiaLine[i] = muonCopy.fQuarkPythiaLine[i]; 
+  }
+}    
+
+//============================================
 
 void AliMUONTrackLight::FillFromAliMUONTrack(AliMUONTrack *trackReco,Double_t zvert){
   /// this method sets the muon reconstructed momentum according to the value given by AliMUONTrack

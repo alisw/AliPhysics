@@ -36,6 +36,7 @@ class AliMUONTrackLight : public TObject {
   AliMUONTrackLight(); 
   AliMUONTrackLight(AliESDMuonTrack* muonTrack); 
   AliMUONTrackLight(const AliMUONTrackLight &muonCopy);
+  AliMUONTrackLight& operator=(const AliMUONTrackLight&);
   virtual ~AliMUONTrackLight(); 
   
   /// Set 4-momentum of the generated particle
