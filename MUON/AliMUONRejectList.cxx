@@ -232,7 +232,10 @@ fChannels(0x0)
 AliMUONRejectList& AliMUONRejectList::operator=(const AliMUONRejectList& rl)
 {
   /// assignement operator
-  rl.CopyTo(*this);
+  if ( this != &rl ) 
+  {
+    rl.CopyTo(*this);
+  }  
   return *this;
 }
 

@@ -125,8 +125,8 @@ void AliMUONPolygon::Copy(TObject& obj) const
     y[i] = fY[i];
   }
   
-  delete rhs.fX;
-  delete rhs.fY;
+  delete [] rhs.fX;
+  delete [] rhs.fY;
   
   rhs.fX = x;
   rhs.fY = y;

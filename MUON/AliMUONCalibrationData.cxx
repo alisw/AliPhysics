@@ -615,7 +615,7 @@ AliMUONCalibrationData::CreateHV(Int_t runNumber,
     Int_t a(0),b(0),c(0),d(0),e(0),f(0),g(0),h(0),u(0),z(0);
     TIter next(messages);
     TObjString* msg;
-    char hvCase;
+    char hvCase('u');
     
     while ( ( msg = static_cast<TObjString*>(next()) ) )
     {
