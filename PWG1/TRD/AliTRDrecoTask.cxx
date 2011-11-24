@@ -26,12 +26,13 @@
 #include "TObjArray.h"
 #include "TDirectory.h"
 #include "TTreeStream.h"
+#include "TBox.h"
+#include "TVectorT.h"
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
 #include "AliExternalTrackParam.h"
 
-#include "AliAnalysisManager.h"
 #include "info/AliTRDeventInfo.h"
 #include "AliTRDrecoTask.h"
 #include "AliTRDtrackV1.h"
@@ -45,6 +46,7 @@ TTreeSRedirector* AliTRDrecoTask::fgDebugStream(NULL);
 AliTRDrecoTask::AliTRDrecoTask()
   : AliAnalysisTaskSE()
   ,fNRefFigures(0)
+  ,fDets(NULL)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
@@ -66,6 +68,7 @@ AliTRDrecoTask::AliTRDrecoTask()
 AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   : AliAnalysisTaskSE(name)
   ,fNRefFigures(0)
+  ,fDets(NULL)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
@@ -106,6 +109,12 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fPlotFuncList = NULL;
   }
   
+  if(fDets){
+    if(fDets->IsOwner()) fDets->Delete();
+    delete fDets;
+    fDets = NULL;
+  }
+
   if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     if(fContainer->IsOwner()) fContainer->Delete();
     delete fContainer;
@@ -243,6 +252,36 @@ Bool_t AliTRDrecoTask::Load(const Char_t *file, const Char_t *dir)
 }
 
 //________________________________________________________
+Bool_t AliTRDrecoTask::LoadDetectorMap(const Char_t *file, const Char_t *dir)
+{
+// Load detector map.
+
+  if(!TFile::Open(file)){
+    AliWarning(Form("Couldn't open file %s.", file));
+    return kFALSE;
+  }
+  if(!gFile->cd(dir)){
+    AliWarning(Form("Couldn't cd to %s in %s.", dir, file));
+    return kFALSE;
+  }
+  TObjArray *info = NULL;
+  if(!(info = (TObjArray*)gDirectory->Get("TRDinfoGen"))){
+    AliWarning("Missing TRDinfoGen container.");
+    return kFALSE;
+  }
+  TObjArray *dets = (TObjArray*)info->FindObject("Chambers");
+  if(!dets){
+    AliWarning("Missing detector map from TRDinfoGen results.");
+    info->ls();
+    return kFALSE;
+  }
+  fDets = (TObjArray*)dets->Clone("Chambers");
+  gFile->Close();
+  return kTRUE;
+}
+
+
+//________________________________________________________
 Bool_t AliTRDrecoTask::Save(TObjArray * const results){
   //
   // Store the output graphs in a ROOT file
@@ -273,6 +312,32 @@ Bool_t AliTRDrecoTask::PostProcess()
   AliWarning("Post processing of reference histograms not implemented.");
   return kTRUE;
 }
+
+//_______________________________________________________
+void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
+{
+// Draw chamber boundaries in eta/phi plots with misalignments
+// based on info collected by AliTRDinfoGen
+
+  if(!fDets){
+    AliWarning("Detector map and status not available.");
+    return;
+  }
+
+  TBox *gdet = new TBox();
+  gdet->SetLineWidth(kBlack);gdet->SetFillColor(kBlack);
+  Int_t style[] = {0, 3003};
+  for(Int_t idet(0); idet<540; idet++){
+    if(idet%6 != ly) continue;
+    TVectorF *det((TVectorF*)fDets->At(idet));
+    if(!det) continue;
+    AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3]));
+    Int_t iopt = Int_t((*det)[4]);
+    gdet->SetFillStyle(style[iopt]);
+    gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+  }
+}
+
 
 //_______________________________________________________
 void AliTRDrecoTask::MakeSummary()
