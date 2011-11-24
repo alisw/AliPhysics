@@ -31,6 +31,7 @@
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
+#include "AliAnalysisManager.h"
 #include "AliExternalTrackParam.h"
 
 #include "info/AliTRDeventInfo.h"
