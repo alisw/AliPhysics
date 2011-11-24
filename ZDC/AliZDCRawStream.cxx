@@ -436,11 +436,11 @@ Bool_t AliZDCRawStream::Next()
       if((fBuffer&0xff000001) == 0xff000001){ // ************** Mapping
         // DARC 1st datum @ fDataOffset+1 \ ZRC 1st valid datum @ fDataOffset=0
         if((fPosition==fDataOffset+1) || (fPosition==fDataOffset)){ 
-	   //printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
+	   printf("\n\n ------ AliZDCRawStream -> Reading mapping from StartOfData event ------\n");
 	   fCurrentCh=0; fCurrScCh=0; fCurrTDCCh=0;	
         }
 	else{
-	  //printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
+	  printf(" ------ AliZDCRawStream -> End of ZDC StartOfData event ------\n\n");
           fSODReading = kFALSE;
 	  return kFALSE;
 	}
@@ -698,7 +698,8 @@ Bool_t AliZDCRawStream::Next()
     else fADCModule = (Int_t) ((fBuffer & 0xf8000000)>>27);
     
     // ************************************ ADC MODULES ************************************
-    if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo){
+    if(fADCModule>=kFirstADCGeo && fADCModule<=kLastADCGeo && 
+       !fIsTriggerHistory && !fIsScHeaderRead && !fIsTriggerScaler){
       // *** ADC header
       if((fBuffer & 0x07000000) == 0x02000000){
         fIsADCHeader = kTRUE;
@@ -713,7 +714,7 @@ Bool_t AliZDCRawStream::Next()
         fADCValue = (fBuffer & 0xfff);  
     	//
 	//printf("  AliZDCRawStream -> ADC DATUM: mod. %d ch. %d gain %d value %d\n",
-	//  fADCModule,fADCChannel,fADCGain,fADCValue);
+	  //fADCModule,fADCChannel,fADCGain,fADCValue);
 	
 	// Checking if the channel map for the ADCs has been provided/read
 	if(fMapADC[0][0]==-1){
@@ -767,7 +768,7 @@ Bool_t AliZDCRawStream::Next()
       // *** ADC EOB
       else if((fBuffer & 0x07000000) == 0x04000000){
         fIsADCEOB = kTRUE;
-    	//printf("  AliZDCRawStream -> EOB --------------------------\n");
+    	//printf("  AliZDCRawStream -> ADC EOB --------------------------\n");
       }
     }//ADC module
     // ********************************* ADD ADC *********************************
@@ -791,7 +792,7 @@ Bool_t AliZDCRawStream::Next()
       // *** ADC EOB
       else if((fBuffer & 0x07000000) == 0x04000000){
         fIsADCEOB = kTRUE;
-    	//printf("  AliZDCRawStream -> EOB --------------------------\n");
+    	//printf("  AliZDCRawStream -> ADD ADC EOB --------------------------\n");
       }
     }
     // ********************************* TDC *********************************
@@ -804,7 +805,7 @@ Bool_t AliZDCRawStream::Next()
       if(fADCModule==kZDCTDCGeo){ // *** ZDC TDC
         fIsZDCTDCHeader = kTRUE;
         //Ch. debug
-        //printf("  AliZDCRawStream -> ZDC TDC: mod.%d\n",fADCModule);
+        //printf("  AliZDCRawStream -> ZDC TDC header: mod.%d\n",fADCModule);
       }
       else if(fADCModule==kADDTDCGeo){ // *** ADD TDC
         fIsADDTDCHeader = kTRUE;
