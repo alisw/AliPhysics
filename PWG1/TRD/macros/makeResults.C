@@ -39,9 +39,20 @@
 // The files which will be processed are the intersection between the
 // condition on the tasks and the files in the file list.
 //
+//
+// In compiled mode :
+// Don't forget to load first the libraries
+// gSystem->Load("libANALYSIS.so")
+// gSystem->Load("libANALYSISalice.so")
+// gSystem->Load("libTENDER.so");
+// gSystem->Load("libPWG1.so");
+// gSystem->Load("libCORRFW.so");
+// gSystem->Load("libNetx.so") ;
+// gSystem->Load("libRAliEn.so");
+
 // Authors:
-//   Alex Bercuci (A.Bercuci@gsi.de) 
-//   Markus Fasel (m.Fasel@gsi.de) 
+//   Alex Bercuci (A.Bercuci@gsi.de)
+//   Markus Fasel (m.Fasel@gsi.de)
 //
 
 #if ! defined (__CINT__) || defined (__MAKECINT__)
@@ -56,41 +67,41 @@
 #include <TString.h>
 #include <TROOT.h>
 #include <TStyle.h>
+#include <TSystem.h>
 #include <TGrid.h>
 #include <TGridResult.h>
 #include <TGridCollection.h>
 
 #include "AliLog.h"
 
+#include "PWG1/TRD/AliTRDpwg1Helper.h"
 #include "PWG1/TRD/AliTRDrecoTask.h"
 #include "PWG1/TRD/AliTRDcheckESD.h"
-
+#include "PWG1/TRD/AliTRDinfoGen.h"
 #endif
 
-Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWG1.so"};
+const Char_t *libs[] = {"libProofPlayer.so", "libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWG1.so"};
 // define setup
-TCanvas *c = 0x0;
+TCanvas *c(NULL);
 Bool_t mc(kFALSE), friends(kFALSE);
 Bool_t summary(kTRUE);
 
 void processTRD(TNamed* task, const Char_t *filename);
 void processESD(TNamed* task, const Char_t *filename);
-void makeSummaryESD(const Char_t* filename="QAResults.root", Double_t* trendValues=0x0, Bool_t useCF=kFALSE, Bool_t useIsolatedBC=kFALSE, Bool_t cutTOFbc=kFALSE, const Char_t* dir="TRD_Performance", Bool_t isGrid=kFALSE);
-void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char_t *cid = "", Bool_t kGRID=kFALSE, Bool_t dosummary = kTRUE)
+void processGEN(TNamed* task, const Char_t *filename);
+void makeSummaryESD(const Char_t* filename="QAresults.root", Double_t* trendValues=0x0, Bool_t useCF=kFALSE, Bool_t useIsolatedBC=kFALSE, Bool_t cutTOFbc=kFALSE, const Char_t* dir="TRD_Performance", Bool_t isGrid=kFALSE);
+void makeResults(const Char_t *opt = "ALL",
+                 const Char_t *files="QAresults.root",
+                 const Char_t *cid = "",
+                 Bool_t kGRID=kFALSE, Bool_t dosummary = kTRUE)
 {
-  if(kGRID){
-    //if(!gSystem->Getenv("GSHELL_ROOT")){
-    //  Error("makeResults.C", "AliEn not initialized.");
-    //  return;
-    //}
-    TGrid::Connect("alien://");
-  }
+  if(kGRID) TGrid::Connect("alien://");
 
   // Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;
-    Error("makeResults.C", Form("Failed to load %s.", libs[ilib]));
+    Error("makeResults.C", "Failed to load %s.", libs[ilib]);
     return;
   }
 
@@ -100,7 +111,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   TString outputFile;
-  if(!TString(files).EndsWith(".root")){ 
+  if(!TString(files).EndsWith(".root")){
     outputFile = Form("%s/QAResults.root", gSystem->ExpandPathName("$PWD"));
     AliTRDpwg1Helper::MergeProd("QAResults.root", files);
   } else {
@@ -125,7 +136,7 @@ void makeResults(Char_t *opt = "ALL", const Char_t *files="QAResults.root", Char
     else if(strcmp(task->IsA()->GetName(), "AliTRDcheckESD")==0) processESD(task, outputFile.Data());
     else if(strcmp(task->IsA()->GetName(), "AliTRDinfoGen")==0) processGEN(task, outputFile.Data());
     else{
-      Error("makeResults.C", Form("Handling of class task \"%s\" not implemented.", task->IsA()->GetName()));
+      Error("makeResults.C", "Handling of class task \"%s\" not implemented.", task->IsA()->GetName());
       delete task;
     }
   }
@@ -147,13 +158,13 @@ void processTRD(TNamed *otask, const Char_t *filename)
 
   //if(!task->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")))){
   if(!task->Load(filename)){
-    Error("makeResults.C", Form("Load data container for task %s failed.", task->GetName()));
+    Error("makeResults.C", "Load data container for task %s failed.", task->GetName());
     delete task;
     return;
   }
 
   if(!task->PostProcess()){
-    Error("makeResults.C", Form("Processing data container for task %s failed.", task->GetName()));
+    Error("makeResults.C", "Processing data container for task %s failed.", task->GetName());
     delete task;
     return;
   }
@@ -175,22 +186,22 @@ void processESD(TNamed *otask, const Char_t *filename)
 
   AliTRDcheckESD *esd = dynamic_cast<AliTRDcheckESD*>(otask);
   if(!esd){
-    Info("makeResults.C", Form("Processing of task %s failed.", otask->GetName()));
+    Info("makeResults.C", "Processing of task %s failed.", otask->GetName());
     delete otask;
     return;
   }
   //if(!esd->Load(Form("%s/AnalysisResults.root", gSystem->ExpandPathName("$PWD")), "TRD_Performance")){
   if(!esd->Load(filename, "TRD_Performance")){
-    Error("makeResults.C", Form("Load data container for task %s failed.", esd->GetName()));
+    Error("makeResults.C", "Load data container for task %s failed.", esd->GetName());
     delete esd;
     return;
   }
   esd->Terminate(NULL);
-  
+
   if(summary) esd->MakeSummary();
   else{
     for(Int_t ipic(0); ipic<esd->GetNRefFigures(); ipic++){
-      c->Clear(); 
+      c->Clear();
       if(!esd->GetRefFigure(ipic)) continue;
       c->SaveAs(Form("%s_Fig%02d.gif", esd->GetName(), ipic));
     }
@@ -206,13 +217,14 @@ void processGEN(TNamed *otask, const Char_t *filename)
   AliTRDinfoGen *info = dynamic_cast<AliTRDinfoGen*>(otask);
 
   if(!info->Load(filename, "TRD_Performance")){
-    Error("makeResults.C", Form("Load data container for task %s failed.", info->GetName()));
+    Error("makeResults.C", "Load data container for task %s failed.", info->GetName());
     delete info;
     return;
   }
-  if(!summary){
+  if(summary) Info("processGEN", "MakeSummary() not implemented yet");//info->MakeSummary();
+  else{
     for(Int_t ipic(0); ipic<info->GetNRefFigures(); ipic++){
-      c->Clear(); 
+      c->Clear();
       if(!info->GetRefFigure(ipic)) continue;
       c->SaveAs(Form("%s_Fig%02d.gif", info->GetName(), ipic));
     }
@@ -226,22 +238,16 @@ void makeSummaryESD(const Char_t* filename, Double_t* trendValues, Bool_t useCF,
   //
   //  Make the summary picture and get trending variables from the ESD task
   //
-  if(isGrid){
-    if(!gSystem->Getenv("GSHELL_ROOT")){
-      Error("makeResults.C", "AliEn not initialized.");
-      return;
-    }
-    TGrid::Connect("alien://");
-  }
-  
+  if(isGrid) TGrid::Connect("alien://");
+
   // Load Libraries in interactive mode
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;
-    Error("makeResults.C", Form("Failed to load %s.", libs[ilib]));
+    Error("makeResults.C", "Failed to load %s.", libs[ilib]);
     return;
   }
-  
+
   AliTRDcheckESD *esd=new AliTRDcheckESD();
   if(!esd->Load(filename,dir)) return;
   //esd->Terminate();
