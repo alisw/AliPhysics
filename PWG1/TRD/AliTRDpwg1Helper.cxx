@@ -65,7 +65,7 @@ Bool_t AliTRDpwg1Helper::DoTask(Int_t idx, Int_t map)
 }
 
 //______________________________________________________
-Int_t AliTRDpwg1Helper::ParseOptions(Char_t *trd)
+Int_t AliTRDpwg1Helper::ParseOptions(const Char_t *trd)
 {
 // Parse space separated options.
 // Possible options are:
@@ -250,14 +250,14 @@ Int_t AliTRDpwg1Helper::GetTaskIndex(const Char_t *name)
 }
 
 //______________________________________________________
-Bool_t AliTRDpwg1Helper::HasReadMCData(Char_t *opt)
+Bool_t AliTRDpwg1Helper::HasReadMCData(const Char_t *opt)
 {
 // Use MC data option
   return !(Bool_t)strstr(opt, "NOMC");
 }
 
 //____________________________________________
-Bool_t AliTRDpwg1Helper::HasReadFriendData(Char_t *opt)
+Bool_t AliTRDpwg1Helper::HasReadFriendData(const Char_t *opt)
 {
 // Use friends data option
   return !(Bool_t)strstr(opt, "NOFR");
