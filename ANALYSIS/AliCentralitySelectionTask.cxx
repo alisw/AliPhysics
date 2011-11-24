@@ -108,6 +108,8 @@ AliAnalysisTaskSE(),
   fQuality(999),
   fCVHN(0),
   fCVLN(0),
+  fCVHNbit(0),
+  fCVLNbit(0),
   fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
@@ -220,6 +222,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fQuality(999),
   fCVHN(0),
   fCVLN(0),
+  fCVHNbit(0),
+  fCVLNbit(0),
   fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
@@ -342,6 +346,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fQuality(ana.fQuality),
   fCVHN(ana.fCVHN),
   fCVLN(ana.fCVLN),
+  fCVHNbit(ana.fCVHNbit),
+  fCVLNbit(ana.fCVLNbit),
   fIsSelected(ana.fIsSelected),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
@@ -618,7 +624,12 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       fCVHN=kTRUE;
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
       fCVLN=kTRUE;
-    
+        fCVHNbit=kFALSE;    fCVLNbit=kFALSE;
+    if (esdV0->GetTriggerBits() & (1<<8)) 
+      fCVHNbit=kTRUE;
+    if (esdV0->GetTriggerBits() & (1<<6)) 
+      fCVLNbit=kTRUE;
+
 
     // ***** Vertex Info
     const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
@@ -778,9 +789,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   if (fQuality==0) {  
     fHOutCentV0M->Fill(fCentV0M);
 
-    if (fCVHN)     
+    if (fCVHNbit)     
       fHOutCentV0M_CVHNinMB->Fill(fCentV0M);
-    if (fCVLN)     
+    if (fCVLNbit)     
       fHOutCentV0M_CVLNinMB->Fill(fCentV0M);
 
     fHOutCentFMD->Fill(fCentFMD);

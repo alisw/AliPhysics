@@ -82,6 +82,8 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   Bool_t   fCVHN;               //! if the event is central trigger
   Bool_t   fCVLN;               //! if the event is semicentral trigger
+  Bool_t   fCVHNbit;               //! if the event is central trigger
+  Bool_t   fCVLNbit;               //! if the event is semicentral trigger
   Bool_t   fIsSelected;         //! V0BG rejection
 
   Float_t  fCentV0M;            // percentile centrality from V0
@@ -161,7 +163,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutQuality ;        //control histogram for quality
   TH1F *fHOutVertex ;         //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 13); 
+  ClassDef(AliCentralitySelectionTask, 14); 
 };
 
 #endif
