@@ -109,17 +109,7 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t index, Bool_t fromMC)
    if (!InputOK()) return;
    Bool_t inputESD = IsESD();
    
-   // if it is pure MC, the index tells what particle
-   // to be read in the stack of MC particles, otherwise
-   // it is converted into a real collection index
-   if (fromMC) {
-      out.SetLabel(index);
-      Bool_t ok = (inputESD ? SetMCInfoESD(out) : SetMCInfoAOD(out));
-      if (ok) {
-         out.SetGood();
-         out.SetRef(out.GetRefMC());
-      }
-   } else {
+
       Int_t trueIndex;
       AliRsnDaughter::ERefType type;
       if (!ConvertAbsoluteIndex(index, trueIndex, type)) {
@@ -128,7 +118,12 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t index, Bool_t fromMC)
       }
       switch (type) {
          case AliRsnDaughter::kTrack:
-            if (inputESD) SetDaughterESDtrack(out, trueIndex); else SetDaughterAODtrack(out, trueIndex);
+            if (inputESD) {
+	        SetDaughterESDtrack(out, trueIndex); 
+		
+	    } else {
+		SetDaughterAODtrack(out, trueIndex);
+	    }
             break;
          case AliRsnDaughter::kV0:
             if (inputESD) SetDaughterESDv0(out, trueIndex); else SetDaughterAODv0(out, trueIndex);
@@ -140,7 +135,11 @@ void AliRsnEvent::SetDaughter(AliRsnDaughter &out, Int_t index, Bool_t fromMC)
             AliError("Unrecognized daughter type");
             return;
       }
-   }
+
+   // if it is pure MC, the index tells what particle
+   // to be read in the stack of MC particles, otherwise
+   // it is converted into a real collection index
+   if (fromMC) out.SetRef(out.GetRefMC());
 }
 
 //_____________________________________________________________________________
