@@ -1,4 +1,4 @@
-Double_t EvaluatePIDqaTOF(const char* gridDir, Int_t irun, Int_t color, TLegend* leg, TCanvas* cmatchAll, Option_t* opt="same err"){
+Double_t EvaluatePIDqaTOF(const char* gridDir, Int_t irun, Int_t color, TLegend* leg, TCanvas* cmatchAll, Option_t* opt="hist same err"){
 
 	//
 	// macro to evaluate PID QA for TOF
