@@ -53,7 +53,7 @@ public:
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
-
+  void           MakeDetectorPlot(Int_t ly=0);
   Bool_t         IsHeavyIon() const      { return TestBit(kHeavyIon);};
   Bool_t         IsPP() const            { return !TestBit(kHeavyIon);};
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
@@ -63,6 +63,7 @@ public:
   virtual TObjArray* Histos()            { return fContainer;}
 
   virtual Bool_t Load(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD_Performance");
+  virtual Bool_t LoadDetectorMap(const Char_t *file = "AnalysisResults.root", const Char_t *dir = "TRD_Performance");
   virtual Bool_t Save(TObjArray * const res);
   virtual Bool_t PostProcess();
   virtual Bool_t PutTrendValue(const Char_t *name, Double_t val);
@@ -78,11 +79,12 @@ protected:
   void           InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
   Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
-  Char_t    fNameId[10];   // unique identifier of task particularity
-  UChar_t   fNRefFigures;  // no of reference figures reported by task
-  TObjArray *fContainer;   //! container to store results
-  AliTRDeventInfo *fEvent; //! Event Info
-  TObjArray *fTracks;      //! Array of tracks
+  Char_t                fNameId[10];       // unique identifier of task particularity
+  UChar_t               fNRefFigures;      // no of reference figures reported by task
+  TObjArray             *fDets;            //! container to store detector position and status
+  TObjArray             *fContainer;       //! container to store results
+  AliTRDeventInfo       *fEvent;           //! Event Info
+  TObjArray             *fTracks;          //! Array of tracks
   const AliTRDtrackV1   *fkTrack;          //! current track
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
@@ -100,7 +102,7 @@ private:
   static TList      *fgTrendPoint;          //! trend point
   static TTreeSRedirector *fgDebugStream;  //! Debug stream 
 
-  ClassDef(AliTRDrecoTask, 4) // base TRD reconstruction task
+  ClassDef(AliTRDrecoTask, 5) // base TRD reconstruction task
 };
 
 #endif

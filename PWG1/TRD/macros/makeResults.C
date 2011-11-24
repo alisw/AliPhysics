@@ -162,7 +162,7 @@ void processTRD(TNamed *otask, const Char_t *filename)
     delete task;
     return;
   }
-
+  task->LoadDetectorMap("$ALICE_ROOT/PWG1/TRD/macros/AnalysisResults.root");
   if(!task->PostProcess()){
     Error("makeResults.C", "Processing data container for task %s failed.", task->GetName());
     delete task;
