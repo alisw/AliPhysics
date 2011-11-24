@@ -53,11 +53,12 @@ fV0CMultMax(30000),
 fNBinOnlineCharge(100),
 fV0AOnlineChargeMax(20000),
 fV0COnlineChargeMax(30000),
-fNBinEquaMult(100),
-fEquaMultMax(200.),
+fNBinEquaMult(400),
+fEquaMultMax(1000),
 fNBinSumsEqMult(100),
-fV0AEqMultMax(2000.),
-fV0CEqMultMax(2000.)
+fV0AEqMultMax(4000.),
+fV0CEqMultMax(4000.),
+fZvtxCut(10.)
 
 {
   // Constructor
@@ -109,7 +110,8 @@ fNBinEquaMult(400),
 fEquaMultMax(1000),
 fNBinSumsEqMult(100),
 fV0AEqMultMax(4000.),
-fV0CEqMultMax(4000.)
+fV0CEqMultMax(4000.),
+fZvtxCut(10.)
 {
   // Constructor
   // Init arrays
@@ -210,7 +212,14 @@ void AliAnaVZEROPbPb::UserExec(Option_t *)
 
   FillQAHistos();
 
-  Bool_t isSelected = (fEsdV0->GetV0ADecision()==1) && (fEsdV0->GetV0CDecision()==1);
+  Bool_t isSelected = kFALSE;
+
+  const AliESDVertex *vtx = fESD->GetPrimaryVertexSPD();
+
+  if ((vtx != NULL) && (vtx->GetStatus()) && (TMath::Abs(vtx->GetZv())<fZvtxCut) && (fEsdV0->GetV0ADecision()==1) && (fEsdV0->GetV0CDecision()==1)){
+	isSelected = kTRUE;
+  }
+
   if (isSelected) FillPerL2TriggerHistos();
 
         
