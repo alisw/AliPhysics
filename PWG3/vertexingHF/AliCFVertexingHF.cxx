@@ -140,9 +140,9 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 
 	if (this!= &c){
 		TObject::operator=(c);
-		fmcArray = c.fmcArray;
-		fRecoCandidate = c.fRecoCandidate;
-		fmcPartCandidate = c.fmcPartCandidate;
+		fmcArray = new TClonesArray(*(c.fmcArray));
+		fRecoCandidate = new AliAODRecoDecayHF(*(c.fRecoCandidate));
+		fmcPartCandidate = new AliAODMCParticle(*(c.fmcPartCandidate));
 		fNDaughters = c.fNDaughters;
 		fNVar = c.fNVar;
 		fzPrimVertex = c.fzPrimVertex;
@@ -177,9 +177,6 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 //____________________________________________________
 AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
         TObject(c),
-	fmcArray(c.fmcArray),
-	fRecoCandidate(c.fRecoCandidate),
-	fmcPartCandidate(c.fmcPartCandidate),
 	fNDaughters(c.fNDaughters),
 	fNVar(c.fNVar),
 	fzPrimVertex(c.fzPrimVertex),
@@ -203,6 +200,9 @@ AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
 	//
 	//copy constructor
 	//
+  fmcArray = new TClonesArray(*(c.fmcArray));
+  fRecoCandidate = new AliAODRecoDecayHF(*(c.fRecoCandidate));
+  fmcPartCandidate = new AliAODMCParticle(*(c.fmcPartCandidate));
 	if (fProngs > 0){
 		fLabelArray = new Int_t[fProngs];
                 fPtAccCut = new Float_t[fProngs];
