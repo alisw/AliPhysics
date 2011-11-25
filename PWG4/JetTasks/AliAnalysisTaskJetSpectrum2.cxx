@@ -894,7 +894,7 @@ void AliAnalysisTaskJetSpectrum2::FillJetHistos(TList &jetsList,TList &particles
   for(int ij = 0;ij < nJets;ij++){
     AliAODJet *jet = (AliAODJet*)jetsList.At(ij);
     Float_t ptJet = jet->Pt();
-    if(ptJet<1.)jet->GetPtSubtracted(0);
+    if(ptJet<0.150)ptJet = jet->GetPtSubtracted(0);
     if(jet->Trigger()&fJetTriggerExcludeMask){
       fh1PtJetsInRej[iType]->Fill(ptJet);
       continue;
