@@ -264,6 +264,7 @@ int main(int argc, char **argv) {
       }// SOD event
       else if(eventT==PHYSICS_EVENT){ 
 
+        for(int ij=0; ij<6; ij++) tdcData[ij]=-999.;
 	rawStreamZDC->SetSODReading(kTRUE);
 
   	// ----- Setting ch. mapping -----
@@ -284,17 +285,14 @@ int main(int argc, char **argv) {
                else ihittdc=0;
                iprevtdc=itdc;
                if(ihittdc<1 && itdc!=15) tdcData[itdc-8] = 0.025*rawStreamZDC->GetZDCTDCDatum();
-	       //
-	       if(itdc==15 && ihittdc<1){
-	         tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
-       	         for(int ic=0; ic<6; ic++){
-		   if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
-		 }
-	       }
+	       if(itdc==15 && ihittdc<1) tdcL0 = 0.025*rawStreamZDC->GetZDCTDCDatum();
 	     }
 	  }
         }
 	
+       for(int ic=0; ic<6; ic++){
+         if(tdcData[ic]!=-999. && tdcL0!=-999.) hTDC[ic]->Fill(tdcData[ic]-tdcL0);
+       }
 	nphys++;
 	
       }//(if PHYSICS_EVENT) 
