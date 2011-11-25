@@ -88,6 +88,13 @@ AliPHOSRecParticle::AliPHOSRecParticle(const AliPHOSRecParticle & rp):
 }
 
 //____________________________________________________________________________
+AliPHOSRecParticle & AliPHOSRecParticle::operator = (const AliPHOSRecParticle &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+
+//____________________________________________________________________________
 Int_t AliPHOSRecParticle::GetNPrimaries() const  
 { 
   return -1;

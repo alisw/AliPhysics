@@ -50,6 +50,7 @@ public:
 private:
 
   AliPHOSv2(AliPHOSv2 & phos);
+  AliPHOSv2 & operator = (const AliPHOSv2 & /*phos*/);
 
   ClassDef(AliPHOSv2,1)  // Class AliPHOSv0 which allows to write ond disk al the information of the hits. 
 

@@ -46,7 +46,10 @@ class AliPHOSRecParticle : public AliPHOSFastRecParticle {
 
   typedef TClonesArray RecParticlesList ; 
   
- private:
+private:
+  AliPHOSRecParticle & operator = (const AliPHOSRecParticle & /*rp*/);
+
+private:
 
   Int_t fPHOSTrackSegment ; // pointer to the associated track segment in PHOS  
   Bool_t fDebug ; // to steer debug output

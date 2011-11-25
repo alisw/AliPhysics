@@ -67,6 +67,8 @@ public:
 
   typedef TClonesArray TrackSegmentsList ; 
  
+private:
+  AliPHOSTrackSegment & operator = (const AliPHOSTrackSegment & /*ts*/);
  private:
   
   Int_t fEmcRecPoint ;     // The EMC reconstructed point index in array stored in TreeR/PHOSEmcRP

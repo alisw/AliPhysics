@@ -66,6 +66,12 @@ Bool_t AliPHOSHit::operator==(AliPHOSHit const &rValue) const
 }
 
 //____________________________________________________________________________
+AliPHOSHit & AliPHOSHit::operator = (const AliPHOSHit &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+//____________________________________________________________________________
 AliPHOSHit AliPHOSHit::operator+(const AliPHOSHit &rValue)
 {
   // Add the energy of the hit

@@ -42,3 +42,9 @@ ClassImp(AliPHOSQAChecker)
 
 //__________________________________________________________________
 
+AliPHOSQAChecker & AliPHOSQAChecker::operator = (const AliPHOSQAChecker &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+

@@ -157,6 +157,13 @@ AliPHOSTrackSegment::AliPHOSTrackSegment( const AliPHOSTrackSegment & ts)
 
 
 //____________________________________________________________________________
+AliPHOSTrackSegment & AliPHOSTrackSegment::operator = (const AliPHOSTrackSegment &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+
+//____________________________________________________________________________
 void AliPHOSTrackSegment::Copy(TObject & obj) const
 {
   // Copy of a track segment into another track segment

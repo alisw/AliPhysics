@@ -57,7 +57,10 @@ class AliPHOSHit : public AliHit {
   AliPHOSHit operator + (const AliPHOSHit& rValue) ;
 
 
- private:
+private:
+  AliPHOSHit & operator = (const AliPHOSHit & /*hit*/);
+
+private:
 
   Int_t          fId ;        // Absolute Id number of PHOS Xtal or PPSD pad
   Float_t        fELOS ;      // Energy deposited

@@ -55,8 +55,6 @@ class AliPHOSDigit : public AliDigitNew {
 
 public:
 
-  AliPHOSDigit& operator=(const AliPHOSDigit) {
-    Fatal("operator = ", "not implemented") ; return *this ; } 
   Int_t     Compare(const TObject * obj) const ;  
   Int_t     GetNprimary()           const { return fNprimary ; }
   Int_t     GetPrimary(Int_t index) const ; 
@@ -77,7 +75,10 @@ public:
   void      SetALTROSamplesLG(Int_t nSamplesLG, Int_t *samplesLG);
   void      ShiftPrimary(Int_t shift); // shift to separate different TreeK in merging
 
- private:
+private:
+  AliPHOSDigit & operator = (const AliPHOSDigit & /*digit*/);
+
+private:
 
   Int_t       fNprimary ;  // Number of primaries
   Int_t *     fPrimary ;   //[fNprimary] Array of primaries      

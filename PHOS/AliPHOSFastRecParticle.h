@@ -39,6 +39,7 @@ class AliPHOSFastRecParticle : public TParticle {
   AliPHOSFastRecParticle(const AliPHOSFastRecParticle & rp) ;  // ctor
   AliPHOSFastRecParticle(const TParticle & p) ;  // ctor
   virtual ~AliPHOSFastRecParticle(){ } //dtor
+  AliPHOSFastRecParticle & operator = (const AliPHOSFastRecParticle & /*rp*/);
 
   virtual Int_t DistancetoPrimitive(Int_t px, Int_t py) ; 
   virtual void Draw(Option_t *option) ;  

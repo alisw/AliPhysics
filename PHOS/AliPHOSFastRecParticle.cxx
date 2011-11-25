@@ -128,6 +128,13 @@ AliPHOSFastRecParticle::AliPHOSFastRecParticle() :
 }
 
 //____________________________________________________________________________
+AliPHOSFastRecParticle & AliPHOSFastRecParticle::operator = (const AliPHOSFastRecParticle &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+
+}
+//____________________________________________________________________________
 Int_t AliPHOSFastRecParticle::DistancetoPrimitive(Int_t px, Int_t py)
 {
   //  Compute distance from point px,py to a AliPHOSFastRecParticle considered as a Tmarker

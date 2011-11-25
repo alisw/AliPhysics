@@ -58,6 +58,9 @@ public:
   void Print(const Option_t * = "")const;
 
 private:
+  AliPHOSImpact & operator = (const AliPHOSImpact & /*impact*/);
+
+private:
 
   Int_t          fPid ;       // type of the particle that initiates that hit 
   Int_t          fPrimary ;   // Primary particles at the origine of the hit

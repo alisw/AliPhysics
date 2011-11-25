@@ -158,6 +158,12 @@ AliPHOSDigit::AliPHOSDigit(const AliPHOSDigit & digit) :
 }
 
 //____________________________________________________________________________
+AliPHOSDigit & AliPHOSDigit::operator = (const AliPHOSDigit &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+//____________________________________________________________________________
 AliPHOSDigit::~AliPHOSDigit() 
 {
   // Delete array of primaries if any

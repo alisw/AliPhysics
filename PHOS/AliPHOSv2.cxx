@@ -66,6 +66,13 @@ AliPHOSv2::~AliPHOSv2()
 }
 
 //____________________________________________________________________________
+AliPHOSv2 & AliPHOSv2::operator = (const AliPHOSv2 &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+
+//____________________________________________________________________________
 void AliPHOSv2::AddHit(Int_t shunt, Int_t primary, Int_t Id, Float_t * hits)
 {
   // Add a hit to the hit list.

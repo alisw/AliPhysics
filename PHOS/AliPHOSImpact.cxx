@@ -84,6 +84,13 @@ AliPHOSImpact::AliPHOSImpact(Int_t shunt, Int_t primary, Int_t track, Int_t pid,
 }
 
 //____________________________________________________________________________
+AliPHOSImpact & AliPHOSImpact::operator = (const AliPHOSImpact &)
+{
+  Fatal("operator =", "not implemented");
+  return *this;
+}
+
+//____________________________________________________________________________
 void AliPHOSImpact::Print(const Option_t *)const
 {
   // Prints particle info

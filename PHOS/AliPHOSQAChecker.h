@@ -32,6 +32,7 @@ public:
   virtual ~AliPHOSQAChecker() {;} // dtor
 
 private:
+  AliPHOSQAChecker & operator = (const AliPHOSQAChecker & /*qac*/);
   
   ClassDef(AliPHOSQAChecker,1)  // description 
 
