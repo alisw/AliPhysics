@@ -59,6 +59,7 @@ public:
     ,kEvType
     ,kBC
     ,kTrigger
+    ,kChmb
     ,kNclasses
   };
   AliTRDinfoGen();
@@ -77,6 +78,7 @@ public:
   // temporary until check with AliAnalysisTaskSE collision selection mechanism
   Bool_t  IsInitOCDB() const {return TestBit(kOCDB);}
   Bool_t  IsCollision() const {return TestBit(kCollision);}
+  void    MakeSummary();
   static const AliTRDReconstructor* Reconstructor() {return fgReconstructor;}
   static AliTRDgeometry*      Geometry() {return fgGeo;}
   void    SetInitOCDB(Bool_t set=kTRUE) {SetBit(kOCDB, set);}
@@ -112,6 +114,7 @@ private:
   AliTRDinfoGen(const AliTRDinfoGen&);
   AliTRDinfoGen& operator=(const AliTRDinfoGen&);
   TTreeSRedirector* DebugStream();
+  void              MakeChambers();
 
   AliESDEvent      *fESDev;          //! ESD event
   AliMCEvent       *fMCev;           //! MC event
