@@ -88,6 +88,17 @@ AliAnalysisTaskSESignificance::AliAnalysisTaskSESignificance():
   // Default constructor
   SetPDGCodes();
   SetDsChannel(kPhi);
+
+  for(Int_t i=0;i<4;i++) fPDGdaughters[i]=0;
+  for(Int_t i=0;i<2;i++) {fPDGD0ToKpi[i]=0;fPDGDStarToD0pi[i]=0;}
+  for(Int_t i=0;i<kMaxCutVar;i++) fVars[i]=0.;
+  for(Int_t i=0;i<kMaxNHist;i++) {
+    fMassHist[i]=0;
+    fSigHist[i]=0;
+    fBkgHist[i]=0;
+    fRflHist[i]=0;
+  }
+
 }
 
 //________________________________________________________________________
