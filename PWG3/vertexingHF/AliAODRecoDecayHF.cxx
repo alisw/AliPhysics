@@ -149,8 +149,10 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
   if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
 
   if(source.GetNProngs()>0) {
-    fd0err = new Double_t[GetNProngs()];
-    memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
+    if(source.fd0err) {
+      fd0err = new Double_t[GetNProngs()];
+      memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
+    }
     if(source.fProngID) {
       fProngID = new UShort_t[GetNProngs()];
       memcpy(fProngID,source.fProngID,GetNProngs()*sizeof(UShort_t));
@@ -317,7 +319,7 @@ void AliAODRecoDecayHF::RecalculateImpPars(AliAODVertex *vtxAODNew,AliAODEvent* 
   Double_t dz[2],covdz[3];
   for(Int_t i=0; i<GetNDaughters(); i++) {
     AliAODTrack *t = (AliAODTrack*)GetDaughter(i);
-    AliExternalTrackParam etp; etp.CopyFromVTrack(t);
+    AliExternalTrackParam etp(t);
     if(etp.PropagateToDCA(vtxAODNew,aod->GetMagneticField(),3.,dz,covdz)) {
       fd0[i]    = dz[0];
       fd0err[i] = TMath::Sqrt(covdz[0]);
