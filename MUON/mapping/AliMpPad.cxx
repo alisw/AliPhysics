@@ -150,6 +150,7 @@ AliMpPad& AliMpPad::operator = (const AliMpPad& rhs)
   fDimensionY  = rhs.fDimensionY;
   fValidity = rhs.fValidity;
   
+  delete [] fLLocations;
   fLLocations = 0;
   fNofLocations = rhs.fNofLocations;
   if ( rhs.GetNofLocations() ) {
