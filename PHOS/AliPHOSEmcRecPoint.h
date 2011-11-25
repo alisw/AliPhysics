@@ -93,7 +93,10 @@ public:
   Float_t     GetDistanceToBadCrystal() const {return fDistToBadCrystal;}
   void        SetDistanceToBadCrystal(Float_t dist) {fDistToBadCrystal=dist;}
 
-  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  { return *this ; }
+  AliPHOSEmcRecPoint & operator = (const AliPHOSEmcRecPoint & /*rvalue*/)  {
+    Fatal("operator =", "not implemented");
+    return *this ;
+  }
 
  protected:
   virtual void  EvalLocalPosition(Float_t logWeight, TVector3 &vtx, TClonesArray * digits, TVector3 &vInc) ;// computes the position in the PHOS module 

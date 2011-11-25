@@ -106,9 +106,11 @@ AliPHOSRecPoint& AliPHOSRecPoint::operator= (const AliPHOSRecPoint &rp)
   fIndexInList = rp.fIndexInList; 
   fLocPos = rp.fLocPos;
 
+  if (rp.fMulDigit>0) fDigitsList = new Int_t[rp.fMulDigit];
   for(Int_t i=0; i<fMaxDigit; i++)
     fDigitsList[i] = rp.fDigitsList[i];
 
+  if (rp.fMulTrack>0) fTracksList = new Int_t[rp.fMulTrack];
   for(Int_t i=0; i<fMaxTrack; i++)
     fTracksList[i] = rp.fTracksList[i];
 
