@@ -1029,7 +1029,7 @@ void PlotSPD(TFile *fildat, TFile *filMC, TCanvas **&clist, Int_t &cnum){
   etaMc.Scale(1./etaMc.GetEntries());
   tphi->Draw();  
   etaMc.DrawCopy("same");
-
+  track->cd(3);
   phiFrac.SetLineColor(1);
   TLatex* tratio=new TLatex(0.2,0.85,Form("Run %d / Run %d",gRunNumber,gRunNumberMC));
   tratio->SetNDC();
