@@ -56,27 +56,27 @@ AliPWG4HighPtQAMC* AddTaskPWG4HighPtQAMC(char *prodType = "LHC10e14", Int_t trac
   }
   if(trackType==0 && cuts==1) {
     //Cuts global tracks with ITSrefit requirement and SPDrequirement for jet analysis
-    trackCuts = CreateTrackCutsPWG4(10001005);
+    trackCuts = CreateTrackCutsPWG4(10001006);
    }
   if(trackType==0 && cuts==2) {
     //Cuts global tracks with ITSrefit requirement but without SPD
-    trackCuts = CreateTrackCutsPWG4(10011005);
+    trackCuts = CreateTrackCutsPWG4(10011006);
   }
   if(trackType==7 && cuts==0) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10041005);
-    trackCutsReject = CreateTrackCutsPWG4(1005);
+    trackCuts = CreateTrackCutsPWG4(10041006);
+    trackCutsReject = CreateTrackCutsPWG4(1006);
     trackCutsReject->SetEtaRange(-0.9,0.9);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
   if(trackType==7 && cuts==1) {
     // tight global tracks
-    trackCuts = CreateTrackCutsPWG4(10011005);
+    trackCuts = CreateTrackCutsPWG4(10011006);
   }
   if(trackType==7 && cuts==2) {
     // no requirements on SPD and ITSrefit failed
-    trackCuts = CreateTrackCutsPWG4(10041005);       //no ITSrefit requirement filter 256
-    trackCutsReject = CreateTrackCutsPWG4(10001005); //ITSrefit requirement filter 16
+    trackCuts = CreateTrackCutsPWG4(10041006);       //no ITSrefit requirement filter 256
+    trackCutsReject = CreateTrackCutsPWG4(10001006); //ITSrefit requirement filter 16
     trackCutsReject->SetEtaRange(-0.9,0.9);
     trackCutsReject->SetPtRange(0.15, 1e10);
   }
