@@ -21,6 +21,7 @@
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTDataInflater.h"
+#include "AliHLTTPCHWClusterMerger.h"
 
 /**
  * @class AliHLTTPCDataCompressionDecoder
@@ -52,6 +53,8 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   void SetPadShift(float padShift) {fPadShift=padShift;}
   float PadShift() const {return fPadShift;}
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
+  void EnableClusterMerger() {if (!fpClusterMerger) fpClusterMerger=new AliHLTTPCHWClusterMerger;}
+
  protected:
  private:
   AliHLTTPCDataCompressionDecoder(const AliHLTTPCDataCompressionDecoder&);
@@ -61,6 +64,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   int fVerbosity; //! verbosity level
   AliHLTDataInflater* fpDataInflaterPartition; //! instance of inflater for partition clusters
   AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
+  AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
 };
@@ -120,6 +124,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 
   int parameterId=pInflater->NextParameter();
   if (parameterId<0) return parameterId;
+  int decodedClusterCnt=0;
   int outClusterCnt=0;
   AliHLTUInt64_t value=0;
   AliHLTUInt32_t length=0;
@@ -130,10 +135,15 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   AliHLTUInt8_t sign=0;
   bool bNextCluster=true;
   bool bReadSuccess=true;
-  while (outClusterCnt<nofClusters && bReadSuccess && pInflater->NextValue(value, length)) {
+  AliHLTTPCRawCluster rawCluster;
+  if (fpClusterMerger)
+    fpClusterMerger->Clear();
+
+  while (decodedClusterCnt<nofClusters && bReadSuccess && pInflater->NextValue(value, length)) {
     if (bNextCluster) {
       // switch to next cluster
       c.Next(slice, partition);
+      rawCluster.Clear();
       bNextCluster=false;
     }
     const AliHLTTPCDefinitions::AliClusterParameter& parameter
@@ -147,7 +157,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 
     switch (parameterId) {
     case AliHLTTPCDefinitions::kPadRow:
-      {c.SetPadRow(value+lastPadRow+rowOffset); lastPadRow+=value;break;}
+      {rawCluster.SetPadRow(value+lastPadRow); lastPadRow+=value;break;}
     case AliHLTTPCDefinitions::kPad: {
       if (formatVersion==1) {
 	bReadSuccess=bReadSuccess && pInflater->InputBit(isSinglePad);
@@ -164,7 +174,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       float pad=value;
       if (isSinglePad==0) pad/=parameter.fScale;
       else pad/=2; // for the sake of the 0.5 pad offset (see AliHLTTPCHWCFSpacePointContainer::WriteSorted for details)
-      c.SetPad(pad+PadShift());
+      rawCluster.SetPad(pad+PadShift());
       break;
     }
     case AliHLTTPCDefinitions::kTime: {
@@ -178,28 +188,43 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	lastTime64=value;
       }
       float time=value; time/=parameter.fScale;
-      c.SetTime(time);
+      rawCluster.SetTime(time);
       break;
     }
     case AliHLTTPCDefinitions::kSigmaY2:
-      {float sigmaY2=value; sigmaY2/=parameter.fScale; c.SetSigmaY2(sigmaY2); break;}
+      {float sigmaY2=value; sigmaY2/=parameter.fScale; rawCluster.SetSigmaY2(sigmaY2); break;}
     case AliHLTTPCDefinitions::kSigmaZ2:
-      {float sigmaZ2=value; sigmaZ2/=parameter.fScale; c.SetSigmaZ2(sigmaZ2); break;}
+      {float sigmaZ2=value; sigmaZ2/=parameter.fScale; rawCluster.SetSigmaZ2(sigmaZ2); break;}
     case AliHLTTPCDefinitions::kCharge:
-      {c.SetCharge(value); break;}
+      {rawCluster.SetCharge(value); break;}
     case AliHLTTPCDefinitions::kQMax:
-      {c.SetQMax(value); break;}
+      {rawCluster.SetQMax(value); break;}
     }
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
+      if (fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
+	  fpClusterMerger->AddCandidate(slice, partition, ~AliHLTUInt32_t(0), rawCluster);
+      } else {
+	// FIXME: afetr introcucing the temporary rawCluster, the
+	// interface can be changed to set all properties in one
+	// call
+      c.SetPadRow(rawCluster.GetPadRow()+rowOffset);
+      c.SetPad(rawCluster.GetPad());
+      c.SetTime(rawCluster.GetTime());
+      c.SetSigmaY2(rawCluster.GetSigmaY2());
+      c.SetSigmaZ2(rawCluster.GetSigmaZ2());
+      c.SetCharge(rawCluster.GetCharge());
+      c.SetQMax(rawCluster.GetQMax());
       bNextCluster=true;
       outClusterCnt++;
+      }
+      decodedClusterCnt++;
     }
     parameterId=pInflater->NextParameter();
     if (parameterId==AliHLTTPCDefinitions::kSigmaY2 && isSinglePad==1) {
       // skip sigmaY for single pad clusters in format version 1
       parameterId=pInflater->NextParameter();
       isSinglePad=0;
-      c.SetSigmaY2(0.);
+      rawCluster.SetSigmaY2(0.);
     }
   }
   pInflater->Pad8Bits();
@@ -208,13 +233,41 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     HLTWarning("format error of compressed clusters, there is more data than expected");
   }
   pInflater->CloseBitDataInput();
-  if (iResult>=0 && nofClusters!=outClusterCnt) {
+  int mergedClusterCnt=0;
+  if (fpClusterMerger) {
+    mergedClusterCnt=fpClusterMerger->Merge();
+    int remainingCnt=0;
+    if (mergedClusterCnt>=0) {
+      for (AliHLTTPCHWClusterMerger::iterator i=fpClusterMerger->begin();
+	   i!=fpClusterMerger->end(); i++) {
+	c.Next((*i).GetSlice(), (*i).GetPartition());
+	const AliHLTTPCRawCluster& mergedCluster=(*i).GetCluster();
+	// FIXME: afetr introcucing the temporary rawCluster, the
+	// interface can be changed to set all properties in one
+	// call
+	c.SetPadRow(mergedCluster.GetPadRow()+rowOffset);
+	c.SetPad(mergedCluster.GetPad());
+	c.SetTime(mergedCluster.GetTime());
+	c.SetSigmaY2(mergedCluster.GetSigmaY2());
+	c.SetSigmaZ2(mergedCluster.GetSigmaZ2());
+	c.SetCharge(mergedCluster.GetCharge());
+	c.SetQMax(mergedCluster.GetQMax());
+	outClusterCnt++;
+	remainingCnt++;
+      }
+    } else {
+      iResult=mergedClusterCnt;
+    }
+    HLTDebug("copied %d cluster(s) from merger, %d merged, specification 0x%08x", remainingCnt, mergedClusterCnt, specification);
+    fpClusterMerger->Clear();
+  }
+  if (iResult>=0 && nofClusters!=outClusterCnt+mergedClusterCnt) {
     // is this a Fatal?
-    HLTError("error reading compressed cluster format of block 0x%08x: expected %d, read only %d cluster(s)", specification, nofClusters, outClusterCnt);
+    HLTError("error reading compressed cluster format of block 0x%08x: expected %d, read %d cluster(s), merged %d cluster(s)", specification, nofClusters, outClusterCnt, mergedClusterCnt);
     return -EPROTO;
   }
   if (iResult<0) return iResult;
-  return nofClusters;
+  return outClusterCnt;
 }
 
 template<typename T>

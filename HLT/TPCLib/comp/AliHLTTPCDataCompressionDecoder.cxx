@@ -34,6 +34,7 @@ AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
   , fVerbosity(0)
   , fpDataInflaterPartition(NULL)
   , fpDataInflaterTrack(NULL)
+  , fpClusterMerger(NULL)
 {
   /// constructor
 }
@@ -45,6 +46,8 @@ AliHLTTPCDataCompressionDecoder::~AliHLTTPCDataCompressionDecoder()
   fpDataInflaterPartition=NULL;
   if (fpDataInflaterTrack) delete fpDataInflaterTrack;
   fpDataInflaterTrack=NULL;
+  if (fpClusterMerger) delete fpClusterMerger;
+  fpClusterMerger=NULL;
 }
 
 AliHLTDataInflater* AliHLTTPCDataCompressionDecoder::CreateInflater(int deflater, int mode) const
