@@ -55,6 +55,7 @@ AliAODMuonReplicator::AliAODMuonReplicator(const char* name, const char* title,
 fTrackCut(trackCut), fTracks(0x0), 
 fVertexCut(vertexCut), fVertices(0x0), 
 fDimuons(0x0),
+fVZERO(0x0),
 fList(0x0),
 fMCParticles(0x0),
 fMCHeader(0x0),
@@ -317,12 +318,15 @@ TList* AliAODMuonReplicator::GetList() const
     fDimuons = new TClonesArray("AliAODDimuon",2);
     fDimuons->SetName("dimuons");
     
+    fVZERO = new AliAODVZERO;
+    
     fList = new TList;
     fList->SetOwner(kTRUE);
     
     fList->Add(fTracks);
     fList->Add(fVertices);
     fList->Add(fDimuons);
+    fList->Add(fVZERO);
     
     if ( fMCMode > 0 )
     {
@@ -342,6 +346,8 @@ void AliAODMuonReplicator::ReplicateAndFilter(const AliAODEvent& source)
   // Replicate (and filter if filters are there) the relevant parts we're interested in AODEvent
   
   assert(fTracks!=0x0);
+  
+  *fVZERO = *(source.GetVZEROData());
   
   fTracks->Clear("C");
   TIter next(source.GetTracks());
