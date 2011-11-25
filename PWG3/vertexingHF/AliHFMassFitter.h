@@ -71,10 +71,10 @@ class AliHFMassFitter : public TNamed {
 
   void     PrintParTitles() const;
 
-  void     InitNtuParam(char *ntuname="ntupar"); // initialize TNtuple to store the parameters
+  void     InitNtuParam(TString ntuname="ntupar"); // initialize TNtuple to store the parameters
   void     FillNtuParam(); //Fill the TNtuple with the current parameters
   TNtuple* GetNtuParam() const {return fntuParam;} // return the TNtuple
-  TNtuple* NtuParamOneShot(char *ntuname="ntupar"); // the three functions above all together
+  TNtuple* NtuParamOneShot(TString ntuname="ntupar"); // the three functions above all together
   void     WriteHisto(TString path="./") const; // write the histogram
   void     WriteNtuple(TString path="./") const; // write the TNtuple
   void     WriteCanvas(TString userIDstring="",TString path="./",Double_t nsigma=3,Int_t writeFitInfo=1,Bool_t draw=kFALSE) const; //write the canvas in a root file
