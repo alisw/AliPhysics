@@ -31,6 +31,7 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     trackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     trackCuts->SetMaxChi2PerClusterITS(36);
     trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
 
     trackCuts->SetEtaRange(-0.9,0.9);
     trackCuts->SetPtRange(0.15, 1e10);
@@ -171,6 +172,37 @@ AliESDtrackCuts *CreateTrackCutsPWG4(Int_t cutMode) {
     trackCuts->SetPtRange(0.15, 1E+15.);
  
     tag = "Global tracks jet analysis with ITSrefit and NclsIter1=70, noSPD requirement, no upper pt cut";
+
+  }
+  if(stdCutMode == 1006) {
+
+    bStdCutsDefined = kTRUE;
+
+    // TPC  
+    TFormula *f1NClustersTPCLinearPtDep = new TFormula("f1NClustersTPCLinearPtDep","70.+30./20.*x");
+    trackCuts->SetMinNClustersTPCPtDep(f1NClustersTPCLinearPtDep,20.);
+    trackCuts->SetMinNClustersTPC(70);
+    trackCuts->SetMaxChi2PerClusterTPC(4);
+    trackCuts->SetRequireTPCStandAlone(kTRUE); //cut on NClustersTPC and chi2TPC Iter1
+    trackCuts->SetAcceptKinkDaughters(kFALSE);
+    trackCuts->SetRequireTPCRefit(kTRUE);
+    trackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    // ITS
+    trackCuts->SetRequireITSRefit(kTRUE);
+    //accept secondaries
+    trackCuts->SetMaxDCAToVertexXY(2.4);
+    trackCuts->SetMaxDCAToVertexZ(3.2);
+    trackCuts->SetDCAToVertex2D(kTRUE);
+    //reject fakes
+    trackCuts->SetMaxChi2PerClusterITS(36);
+    trackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+
+    trackCuts->SetRequireSigmaToVertex(kFALSE);
+
+    trackCuts->SetEtaRange(-0.9,0.9);
+    trackCuts->SetPtRange(0.15, 1E+15.);
+ 
+    tag = "Global tracks jet analysis with ITSrefit and NclsIter1=PtDep, noSPD requirement, no upper pt cut, golden chi2";
 
   }
 
