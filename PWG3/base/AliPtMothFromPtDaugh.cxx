@@ -1120,14 +1120,14 @@ Bool_t AliPtMothFromPtDaugh::EvaluatePtMoth()
   }
 
 //______________________________________________________________________________________
-void AliPtMothFromPtDaugh::WritePtMothHistoToFile(char *fileOutName)
+void AliPtMothFromPtDaugh::WritePtMothHistoToFile(TString fileOutName)
   {
    // Write pt and ptMin histograms of mothers in a file 
    // with name fileOutName. Default name is "Mothers.root".
-   AliError(Form("Write mothers histograms in the file %s \n",fileOutName));
+    AliError(Form("Write mothers histograms in the file %s \n",fileOutName.Data()));
    if(!fHistoPtMothers) {AliError("Cannot write pt-mothers histogram! It doesn't exists!"); return;}
    if(!fHistoPtMinMothers)  { AliError("Cannot write ptMin-mothers histogram! It doesn't exists!"); return;} 
-   TFile *outFile = TFile::Open(fileOutName,"RECREATE");
+   TFile *outFile = TFile::Open(fileOutName.Data(),"RECREATE");
    outFile->cd();
    fHistoPtMothers->Write();
    fHistoPtMinMothers->Write();

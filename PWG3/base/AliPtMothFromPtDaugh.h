@@ -19,6 +19,7 @@ class AliStack;
 class TParticle;
 class TArrayI;
 #include <TNamed.h>
+#include <TString.h>
 
 //________________________________________________________________
 class AliPtMothFromPtDaugh : public TNamed {
@@ -78,7 +79,7 @@ public:
  
   // main method to evaluate mothers spectra (for pt and ptMin)
    Bool_t EvaluatePtMoth();
-   void WritePtMothHistoToFile(char *fileOutName="Mothers.root");
+   void WritePtMothHistoToFile(TString fileOutName="Mothers.root");
 
   // return values of correction factors for pt-mothers ditribution
   Double_t GetW(Int_t i,Int_t j) const;

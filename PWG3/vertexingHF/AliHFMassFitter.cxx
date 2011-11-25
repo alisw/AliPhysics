@@ -391,12 +391,12 @@ void AliHFMassFitter::Reset() {
 
 //_________________________________________________________________________
 
-void AliHFMassFitter::InitNtuParam(char *ntuname) {
+void AliHFMassFitter::InitNtuParam(TString ntuname) {
 
   // Create ntuple to keep fit parameters
 
   fntuParam=0;
-  fntuParam=new TNtuple(ntuname,"Contains fit parameters","intbkg1:slope1:conc1:intGB:meanGB:sigmaGB:intbkg2:slope2:conc2:inttot:slope3:conc3:intsgn:meansgn:sigmasgn:intbkg1Err:slope1Err:conc1Err:intGBErr:meanGBErr:sigmaGBErr:intbkg2Err:slope2Err:conc2Err:inttotErr:slope3Err:conc3Err:intsgnErr:meansgnErr:sigmasgnErr");
+  fntuParam=new TNtuple(ntuname.Data(),"Contains fit parameters","intbkg1:slope1:conc1:intGB:meanGB:sigmaGB:intbkg2:slope2:conc2:inttot:slope3:conc3:intsgn:meansgn:sigmasgn:intbkg1Err:slope1Err:conc1Err:intGBErr:meanGBErr:sigmaGBErr:intbkg2Err:slope2Err:conc2Err:inttotErr:slope3Err:conc3Err:intsgnErr:meansgnErr:sigmasgnErr");
   
 }
 
@@ -516,10 +516,10 @@ void AliHFMassFitter::FillNtuParam() {
 
 //_________________________________________________________________________
 
-TNtuple* AliHFMassFitter::NtuParamOneShot(char *ntuname){
+TNtuple* AliHFMassFitter::NtuParamOneShot(TString ntuname){
   // Create, fill and return ntuple with fit parameters
 
-  InitNtuParam(ntuname);
+  InitNtuParam(ntuname.Data());
   FillNtuParam();
   return fntuParam;
 }
