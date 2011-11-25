@@ -70,9 +70,18 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   }
   else{
     printf("AliAnalysisTaskEMCALClusterize - Set time cuts for ESDs\n");
-    params->SetTimeCut(maxDeltaT*1.e-9);
-    params->SetTimeMin(-1*timeWindow*1.e-9);
-    params->SetTimeMax(timeWindow*1.e-9);
+    if(maxDeltaT > 1) params->SetTimeCut(maxDeltaT*1.e-9);
+    else            { params->SetTimeCut(250*1.e-9); printf("default maxDeltaT = 250 ns\n"); }// Same as in reco
+    
+    if(timeWindow > 1){
+      params->SetTimeMin(-1*timeWindow*1.e-9);
+      params->SetTimeMax(timeWindow*1.e-9);
+    }
+    else{ // same as in reco
+      params->SetTimeMin(425*1.e-9);
+      params->SetTimeMax(825*1.e-9);
+      printf("default time window 425 ns < T < 825 ns\n");
+    }
   }
 
   params->SetClusteringThreshold(minEseed/1.e3);                                          

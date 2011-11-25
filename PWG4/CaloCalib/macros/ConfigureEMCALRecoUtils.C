@@ -5,7 +5,10 @@ void ConfigureEMCALRecoUtils(
                              TGeoHMatrix* matrix[10],
                              TString path  = "",
                              Int_t   run   = 0, 
-                             TString pass  = "pass2"
+                             TString pass  = "pass2",
+                             Bool_t bRecalE= kTRUE,
+                             Bool_t bBad   = kTRUE,
+                             Bool_t bRecalT= kFALSE
                              )
 {  
 
@@ -14,13 +17,17 @@ void ConfigureEMCALRecoUtils(
   printf("**** Configure AliEMCALRecoUtils, LOAD AODB ***\n");
   printf("\t run %d, pass %s\n",run,pass.Data());
   
+  
   // Exotic cells removal
+  
   reco->SwitchOnRejectExoticCell() ;
   reco->SetExoticCellDiffTimeCut(10000); // Open  
   reco->SetExoticCellFractionCut(0.95);  // 1-Ecross/Ecell > 0.95 -> out
-  reco->SetExoticCellMinAmplitudeCut(2); // 2 GeV  
+  reco->SetExoticCellMinAmplitudeCut(0.75); // 750 MeV    
   
   gSystem->Load("libOADB");
+  
+  // Geometry settings, matrices
   
   // Instantiate EMCAL geometry for the first time
   
@@ -69,21 +76,19 @@ void ConfigureEMCALRecoUtils(
   reco->SetPositionAlgorithm(AliEMCALRecoUtils::kPosTowerGlobal);   
   
   
-  //----------------------------------------------
+  // *** Energy recalibration settings ***
   
-  Bool_t bRecal  = kTRUE;
-  Bool_t bBad    = kTRUE;
   if(pass == "pass3"){
-    bRecal = kFALSE;
+    bRecalE = kFALSE;
     bBad   = kFALSE;
   }
   
   if(bMC){
-    bRecal = kFALSE;
+    bRecalE = kFALSE;
   }
   
   //Recalibration factors
-  if(bRecal){
+  if(bRecalE){
     
     fileName="$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root";
     if(path!="") fileName=path+"EMCALRecalib.root";
@@ -125,7 +130,7 @@ void ConfigureEMCALRecoUtils(
     
   } else printf("AliEMCALRecoUtils ---Do NOT recalibrate\n");
 
-  // Remove EMCAL hot channels 
+  // *** Remove EMCAL hot channels *** 
   
   if(bBad){
     
@@ -177,37 +182,43 @@ void ConfigureEMCALRecoUtils(
     }
    */
  
+  // *** Time recalibration settings ***
   
-  reco->SwitchOnTimeRecalibration();
-  
-  //Waiting for OADB, meanwhile
-
-  TFile * ftime = 0;
-  //TString path ="./"; 
-  TString path = "alien:///alice/cern.ch/user/g/germain/RecalDB/Time";
-  //TGrid::Connect("alien://");
-  
-  if     (run > 140000 && run < 146500 )
-    ftime = TFile::Open(Form("%s/RefLHC11apass1-7TeV.root",path.Data()));
-  else if(run > 146500 && run <= 146860 )
-    ftime = TFile::Open(Form("%s/RefLHC11apass3-2.76TeV.root",path.Data()));
-  else if(run > 146860 && run < 156477 )
-    ftime = TFile::Open(Form("%s/RefLHC11cpass1-7TeV.root",path.Data()));
-  else if(run >= 156477)
-    ftime = TFile::Open(Form("%s/RefLHC11dpass1-7TeV.root",path.Data()));
-  else if(run <  140000 && run > 136850)
-    ftime = TFile::Open(Form("%s/RefLHC10hpass2PbPb2.76TeV.root",path.Data()));
-  else if(run < 136850)
-    ftime = TFile::Open(Form("%s/RefLHC10dpass2-7TeV.root",path.Data()));
-  else printf("Run %d, not considered for time calibration\n",run);
-  
-  if(ftime){
-    printf("AliEMCALRecoUtils - Time recalibration ON\n");
+  if(bRecalT){
     
-    for(Int_t i =0; i< 4; i++)  reco->SetEMCALChannelTimeRecalibrationFactors( i, (TH1F*) ftime->Get(Form("hAllTimeAvBC%d",i)));	
-  }
-  else printf("AliEMCALRecoUtils --- Time recalibration OFF\n");
-  
+    reco->SwitchOnTimeRecalibration();
+    
+    //Waiting for OADB, meanwhile
+    
+    TFile * ftime = 0;
+    TString path ="./"; 
+    //TString path = "alien:///alice/cern.ch/user/g/germain/RecalDB/Time";
+    //TGrid::Connect("alien://");
+    
+    if     (run > 140000 && run < 146500 )
+      ftime = TFile::Open(Form("%s/RefLHC11apass1-7TeV.root",path.Data()));
+    else if(run > 146500 && run <= 146860 )
+      ftime = TFile::Open(Form("%s/RefLHC11apass3-2.76TeV.root",path.Data()));
+    else if(run > 146860 && run < 156477 )
+      ftime = TFile::Open(Form("%s/RefLHC11cpass1-7TeV.root",path.Data()));
+    else if(run >= 156477)
+      ftime = TFile::Open(Form("%s/RefLHC11dpass1-7TeV.root",path.Data()));
+    else if(run <  140000 && run > 136850)
+      ftime = TFile::Open(Form("%s/RefLHC10hpass2PbPb2.76TeV.root",path.Data()));
+    else if(run < 136850)
+      ftime = TFile::Open(Form("%s/RefLHC10dpass2-7TeV.root",path.Data()));
+    else printf("Run %d, not considered for time calibration\n",run);
+    
+    if(ftime){
+      printf("AliEMCALRecoUtils - Time recalibration ON\n");
+      
+      for(Int_t i =0; i< 4; i++)  reco->SetEMCALChannelTimeRecalibrationFactors( i, (TH1F*) ftime->Get(Form("hAllTimeAvBC%d",i)));	
+    }
+    else printf("AliEMCALRecoUtils --- Time recalibration OFF\n");
+    
+  }    else printf("AliEMCALRecoUtils --- Time recalibration OFF 2\n");
+
+    
 }
 
 

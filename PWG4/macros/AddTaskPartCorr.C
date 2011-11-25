@@ -78,8 +78,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   maker->AddAnalysis(ConfigureQAAnalysis()    , n++);  
 
   // Isolation settings
-  Int_t partInCone = AliIsolationCut::kOnlyCharged;
-  Int_t thresType  = AliIsolationCut::kPtThresIC;
+  Int_t partInCone = AliIsolationCut::kNeutralAndCharged;//kOnlyCharged;
+  Int_t thresType  = AliIsolationCut::kSumPtFracIC;      // kPtThresIC;
   
   if(kClusterArray!=""){
     
@@ -223,8 +223,9 @@ AliCaloTrackReader * ConfigureReader()
   
   reader->SetEMCALClusterListName(kClusterArray);
   if(kClusterArray == "") {
-    printf("**************** Normal analysis **************** \n");
+    printf("**************** Standard EMCAL clusters branch analysis **************** \n");
     reader->SwitchOnClusterRecalculation();
+    // Check in ConfigureCaloUtils that the recalibration and bad map are ON 
   }
   else {
     printf("**************** Input for analysis is Clusterizer %s **************** \n", kClusterArray.Data());
@@ -311,6 +312,11 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   //EMCAL only settings
   AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
   
+  Bool_t bCalib = kTRUE;
+  Bool_t bBadMap= kTRUE;
+  cu->SwitchOnRecalibration();      // Check the reader if it is taken into account during filtering
+  cu->SwitchOnBadChannelsRemoval(); // Check the reader if it is taken into account during filtering
+  
   TGeoHMatrix* matrix[10];
   gROOT->LoadMacro("ConfigureEMCALRecoUtils.C");
   ConfigureEMCALRecoUtils(
@@ -319,8 +325,13 @@ AliCalorimeterUtils* ConfigureCaloUtils()
                           matrix,
                           "",//AODB path, default
                           kRunNumber, 
-                          kPass
+                          kPass,
+                          bCalib, 
+                          bBadMap
                           );   
+  printf("ConfigureCaloUtils() - Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+  printf("ConfigureCaloUtils() - BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+  
   
   if(kCollisions=="pp"  ) { // Do only for pp for the moment
     cu->SwitchOnCorrectClusterLinearity();
@@ -360,8 +371,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     anaphoton->SetNCellCut(1);// At least 2 cells
     anaphoton->SetMinPt(0.5); // avoid mip peak at E = 260 MeV
     anaphoton->SetMaxPt(1000); 
-    if(!kUseKinematics) anaphoton->SetTimeCut(-1000,1000);// Time window of [400-900] ns if time recalibration is off, 
-    // restrict to less than 100 ns when time calibration is on 
+    anaphoton->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
     anaphoton->SetMinDistanceToBadChannel(1, 2, 3); // For filtered AODs, new releases.
   }
   
@@ -634,6 +644,8 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   AliAnaCalorimeterQA *anaQA = new AliAnaCalorimeterQA();
   //anaQA->SetDebug(10); //10 for lots of messages
   anaQA->SetCalorimeter(kCalorimeter);
+  
+  anaQA->SetTimeCut(-1000,1000); // Open time cut
   
   anaQA->SwitchOffFiducialCut();
   anaQA->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
