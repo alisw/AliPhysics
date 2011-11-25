@@ -596,6 +596,9 @@ void AliPIDResponse::SetRecoInfo()
     fBeamType="PBPB";
   }
   else if (fRun>=139699&&fRun<=146860) { fLHCperiod="LHC11A"; fMCperiodTPC="LHC10F6A"; }
+  //TODO: periods 11B, 11C are not yet treated assume 11d for the moment
+  else if (fRun>=148531&&fRun<=155384) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
+  else if (fRun>=156477&&fRun<=159635) { fLHCperiod="LHC11D"; fMCperiodTPC="LHC10F6A"; }
   else if (fRun>=166529) {
     fLHCperiod="LHC11H";
     fMCperiodTPC="LHC11A10";
