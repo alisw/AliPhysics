@@ -1,5 +1,4 @@
 /**************************************************************************
-#/eliza17/alice/esdfiles/data/2011/LHC11a/000146805/ESDs/pass2_without_SDD/11000146805038.550/root_archive.zip#AliESDs.root
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
  * Author: The ALICE Off-line Project.                                    *
