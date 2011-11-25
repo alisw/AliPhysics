@@ -52,7 +52,7 @@ TString GetRunList(const char *runList, TObjArray *runs, TObjArray *runs2);
 Bool_t GetTriggerLists(const char *triggerList, TString listFromContainer, TObjArray *triggersB=0, TObjArray *triggersAC=0, TObjArray *triggersE=0);
 void SetCanvas(TCanvas *canvas, Int_t logy=1);
 
-TH1* ProcessHisto( AliCounterCollection* counter, TString variable, TString selection, TString hName="", TString xName="", TString yName="", Int_t color=1, Bool_t empty = kFALSE);
+TH1* ProcessHisto( AliCounterCollection* counter, TString variable, TString selection, TString hName="", TString xName="", TString yName="", Int_t color=1);
 TH2* ProcessHisto2D( AliCounterCollection* counter, TString hVariable, TString hVariable2, TString hSelection, TString hName);
 
 TCanvas *ProcessCanvasTriggerContent(TObjArray *array, TH1 **histo, TH1 **histo2, TString canvasName);
@@ -233,7 +233,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TH1 *hENoPS[centBinMax][10]={};
   
   if(triggersB->GetEntriesFast()>=10){
-    cout<<"Too many triggers"<<endl;
+    cout<<"Too many triggers = "<<triggersB->GetEntriesFast()<<endl;
     return;
   }
 	
@@ -248,55 +248,49 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     
       TString histoNameBase = "h_trig", histoName;
       histoNameBase+= i+1;
-      Bool_t empty = kFALSE;
-		
+ 		
       TString triggerName = ( (TObjString*) triggersB->At(i) )->GetString();
       if(triggerName.EqualTo(" ")) continue;
       // Histo trigger without Phys. Sel. 
       selection = selectionCent; selection += Form("trigger:%s/%s", triggerName.Data(), selectRuns.Data());		
-      cout<<selection<<endl;
+      // cout<<selection<<endl;
       histoName = histoNameBase;
       histoName += "BNoPS";
-      hBNoPS[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/o Phys. Sel.", colorInd[i],empty);
+      hBNoPS[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/o Phys. Sel.", colorInd[i]);
       // Histo trigger with Phys. Sel. 
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes", triggerName.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "BWithPS";
-      hBWithPS[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd[i],empty);
+      hBWithPS[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName, "", "Trigger content w/ Phys. Sel.", colorInd[i]);
       // Histo trigger : Phys. Sel.  is selected or not depending on the macro arguments
       selection = selectionCent; selection += Form("trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
       histoName = histoNameBase;
       histoName += "B";
-      hB[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName,empty);
+      hB[centBin][i] = (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
 		
       TString triggerNameAC = ( (TObjString*) triggersAC->At(i) )->GetString();
-      if(triggerNameAC.EqualTo(" ")) empty = kTRUE;
-      //if(empty == kTRUE) cout<< "test B="<<triggerName<<" AC="<<triggerNameAC<<" empty="<<empty<<endl;	
       // Histo trigger without Phys. Sel. AC
       histoName = histoNameBase;
       histoName += "ACNoPS";
       selection = selectionCent; selection += Form("trigger:%s/%s", triggerNameAC.Data(), selectRuns.Data());
-      hACNoPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName,empty);
+      hACNoPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
       // Histo trigger with Phys. Sel. AC
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes", triggerNameAC.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "ACWithPS";
-      hACWithPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName,empty);
+      hACWithPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
     
       TString triggerNameE = ( (TObjString*) triggersE->At(i) )->GetString();
-      if(triggerNameE.EqualTo(" ")) empty = kTRUE;
-      //if(empty == kTRUE) cout<< "test B="<<triggerName<<" E="<<triggerNameE<<" "<<empty<<endl;	
-
-      // Histo trigger without Phys. Sel. E
+			// Histo trigger without Phys. Sel. E
       selection = selectionCent; selection += Form("trigger:%s/%s", triggerNameE.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "ENoPS";
-      hENoPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName,empty);
+      hENoPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
       // Histo trigger with Phys. Sel. E
       selection = selectionCent; selection += Form("trigger:%s/%s/selected:yes", triggerNameE.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "EWithPS";
-      hEWithPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName,empty);
+      hEWithPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
 
       // Histo tracking : Phys. Sel.  is selected or not depending on the macro arguments
       selection = selectionCent; selection += Form("track:triggeronly/trigger:%s/%s/%s", triggerName.Data(), selectRuns.Data(), select.Data());
@@ -419,7 +413,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI") ) continue;
+      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN") ) continue;
 
       canvasName = "PhysSel_trigger";
       canvasName +=k;
@@ -450,7 +444,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI") ) continue;
+      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN")) continue;
 			
       canvasName = "CentralityCheck_trigger";
       canvasName +=k;
@@ -488,7 +482,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB, k, "INT") && !IsTrigger(triggersB, k, "MUS" ) && !IsTrigger(triggersB, k, "ANY") && !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI") ) continue;
+      if( !IsTrigger(triggersB, k, "INT") && !IsTrigger(triggersB, k, "MUS" ) && !IsTrigger(triggersB, k, "ANY") && !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN") ) continue;
 		
       canvasName = "RatioTrackTypes_cent";
       canvasName += centBin;
@@ -534,7 +528,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB")|| IsTrigger(triggersB, k, "CPBI")) ) continue;
+      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB")|| IsTrigger(triggersB, k, "CPBI") || IsTrigger(triggersB, k, "CVHN") || IsTrigger(triggersB, k, "CVLN") ) ) continue;
 
 			canvasName = "AsymMatched";
 			canvasName += centBin;
@@ -561,7 +555,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB")|| IsTrigger(triggersB, k, "CPBI")) ) continue;
+      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB") || IsTrigger(triggersB, k, "CPBI") || IsTrigger(triggersB, k, "CVHN") || IsTrigger(triggersB, k, "CVLN") ) ) continue;
 		
 			canvasName = "HighPtMuons";
 			canvasName += centBin;
@@ -747,6 +741,14 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	continue;
       }
       
+      run = objs->GetString();
+      run.ReplaceAll(Form("/%s",QAFileName), "");
+      run.ReplaceAll(alienBaseDir, "");
+      run.Remove(TString::kLeading, '/');
+      run.Remove(TString::kLeading, '0');
+      
+			if ( ! selectRuns.Contains(run.Data()) ) continue;      
+      
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
       if (!runFile || ! runFile->IsOpen()) {
@@ -764,7 +766,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
 	Error("PlotMuonQA","All objects not here !!! ===> Skipping...for %s",objs->GetName());		
 	continue;
       }
-      
+            
       TH1* hNClustersPerTrack = static_cast<TH1*>(general1->FindObject("hNClustersPerTrack"));
       TH1* hNChamberHitPerTrack = static_cast<TH1*>(general1->FindObject("hNChamberHitPerTrack"));
       TH1* hChi2 = static_cast<TH1*>(general1->FindObject("hChi2"));
@@ -868,11 +870,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       }
       
       // set labels
-      run = objs->GetString();
-      run.ReplaceAll(Form("/%s",QAFileName), "");
-      run.ReplaceAll(alienBaseDir, "");
-      run.Remove(TString::kLeading, '/');
-      run.Remove(TString::kLeading, '0');
       for ( Int_t ihisto=0; ihisto<2; ++ihisto ) {
         hTriggerCutVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin,run.Data());
         hTriggerCutWidthVsRun[ihisto]->GetXaxis()->SetBinLabel(ibin,run.Data());
@@ -1278,7 +1275,7 @@ TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TO
     hName = "ratioACNoPS";
     hName += ( (TObjString*) triggersAC->At(i) )->GetString();
     ratioACNoPS[i] = static_cast<TH1*> (hACNoPS[i]->Clone(hName));
-    ratioACNoPS[i]->Divide(hBNoPS[i]);
+    if ( ratioACNoPS[i]->GetEntries() > 0 ) ratioACNoPS[i]->Divide(hBNoPS[i]);
     ratioACNoPS[i]->SetLineWidth(0);
     ratioACNoPS[i]->SetLineStyle(2);
     ratioACNoPS[i]->SetMarkerStyle(24+i);
@@ -1290,7 +1287,7 @@ TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TO
     hName = "ratioENoPS";
     hName += ( (TObjString*) triggersE->At(i) )->GetString();
     ratioENoPS[i] = static_cast<TH1*> (hENoPS[i]->Clone(hName));
-    ratioENoPS[i]->Divide(hBNoPS[i]);
+		if ( ratioENoPS[i]->GetEntries() > 0 ) ratioENoPS[i]->Divide(hBNoPS[i]);
     ratioENoPS[i]->SetLineWidth(0);
     ratioENoPS[i]->SetLineStyle(3);
     ratioENoPS[i]->SetMarkerStyle(24+i);
@@ -1395,7 +1392,7 @@ TCanvas *ProcessCanvasPhysSelCutCentrality(TObjArray *triggersB, TObjArray *trig
     hName = "ratioACNoPS";
     hName += ( (TObjString*) triggersAC->At(k) )->GetString();
     ratioACNoPS[centBin] = static_cast<TH1*> (hACNoPSCent[centBin]->Clone(hName));
-    ratioACNoPS[centBin]->Divide(hBNoPSCent[centBin]);
+    if ( ratioACNoPS[centBin]->GetEntries() > 0 )  ratioACNoPS[centBin]->Divide(hBNoPSCent[centBin]);
     ratioACNoPS[centBin]->SetLineWidth(0);
     ratioACNoPS[centBin]->SetLineStyle(2);
     ratioACNoPS[centBin]->SetMarkerStyle(24+centBin);
@@ -1407,7 +1404,7 @@ TCanvas *ProcessCanvasPhysSelCutCentrality(TObjArray *triggersB, TObjArray *trig
     hName = "ratioENoPS";
     hName += ( (TObjString*) triggersE->At(k) )->GetString();
     ratioENoPS[centBin] = static_cast<TH1*> (hENoPSCent[centBin]->Clone(hName));
-    ratioENoPS[centBin]->Divide(hBNoPSCent[centBin]);
+    if ( ratioENoPS[centBin]->GetEntries() > 0 ) ratioENoPS[centBin]->Divide(hBNoPSCent[centBin]);
     ratioENoPS[centBin]->SetLineWidth(0);
     ratioENoPS[centBin]->SetLineStyle(3);
     ratioENoPS[centBin]->SetMarkerStyle(24+centBin);
@@ -1542,28 +1539,28 @@ TCanvas *ProcessCanvasTracksoverTrigger(TObjArray *triggersB, TH1 **hB, TH1 **hT
   hName = "hTrackerPer";
   hName += hNameBase;
   hTrackerPerB = static_cast<TH1*>(hTrackerB[indTrigger]->Clone(hName));
-  hTrackerPerB->Divide(hB[indTrigger]);
+  if ( hTrackerPerB->GetEntries() > 0 )  hTrackerPerB->Divide(hB[indTrigger]);
   hTrackerPerB->SetLineWidth(2);
   hTrackerPerB->SetLineColor(kRed);
 	 
   hName = "hTriggerPer";
   hName += hNameBase;
   hTriggerPerB = static_cast<TH1*>(hTriggerB[indTrigger]->Clone(hName));
-  hTriggerPerB->Divide(hB[indTrigger]);
+  if ( hTriggerPerB->GetEntries() > 0 ) hTriggerPerB->Divide(hB[indTrigger]);
   hTriggerPerB->SetLineWidth(2);
   hTriggerPerB->SetLineColor(kBlue);
 	 
   hName = "hMatchedPer";
   hName += hNameBase;
   hMatchedPerB = static_cast<TH1*>(hMatchedB[indTrigger]->Clone(hName));
-  hMatchedPerB->Divide(hB[indTrigger]);
+  if ( hMatchedPerB->GetEntries() > 0 ) hMatchedPerB->Divide(hB[indTrigger]);
   hMatchedPerB->SetLineWidth(2);
   hMatchedPerB->SetLineColor(kViolet);
 	 
   hName = "hAllTracksPer";
   hName += hNameBase;
   hAllTracksPerB = static_cast<TH1*>(hAllTracksB[indTrigger]->Clone(hName));
-  hAllTracksPerB->Divide(hB[indTrigger]);
+  if ( hAllTracksPerB->GetEntries() > 0 ) hAllTracksPerB->Divide(hB[indTrigger]);
   hAllTracksPerB->SetLineWidth(3);
   hAllTracksPerB->SetLineColor(kBlack);
   hAllTracksPerB->SetTitle(Form("Number of Tracks /%s for %s",hNameBase.Data(),legendHeader.Data()));
@@ -1800,13 +1797,15 @@ TCanvas *ProcessCanvasHighPtMuons(TObjArray *triggersB, TH1 **hB, TH1 **hMatched
 	
 }
 
-TH1* ProcessHisto( AliCounterCollection* counter, TString hVariable, TString hSelection, TString hName, TString xName, TString yName, Int_t color, Bool_t empty ){
+TH1* ProcessHisto( AliCounterCollection* counter, TString hVariable, TString hSelection, TString hName, TString xName, TString yName, Int_t color){
   
   
   TH1* h1 = 0x0;
   if( !counter ) return h1;
 
-  if ( empty==kFALSE ) h1 = (TH1*) counter->Draw(hVariable,hSelection);
+	//cout<<"ProcessHisto selection "<<hSelection<<endl;
+	
+  if ( !hSelection.Contains("trigger: /") && !hSelection.Contains("trigger:/") ) h1 = (TH1*) counter->Draw(hVariable,hSelection);
   if ( !h1 ) h1 = new TH1D(hName,"",10,0,10);
   else {
     h1->Sumw2();
@@ -1923,7 +1922,7 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
 	isBadTrig = kTRUE;
 	while ( ( trigName = static_cast<TObjString*>(nextTrigger()) ) ) {
 	  if ( currTrigName.Contains(trigName->GetString()) ){
-	    isBadTrig = kFALSE;
+			 isBadTrig = kFALSE;
 	  }
 	}
 	if ( isBadTrig == kTRUE ){ 
