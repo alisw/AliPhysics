@@ -56,7 +56,6 @@
 #include "AliLog.h"
 #include "AliESDpid.h"
 #include "AliESDPmdTrack.h"
-#include "AliVVZERO.h"
 #include "AliESDUtils.h" //TODO
 
 ClassImp(AliFlowTrackCuts)
@@ -469,8 +468,8 @@ Bool_t AliFlowTrackCuts::IsSelected(TObject* obj, Int_t id)
   if (tracklets) return PassesCuts(tracklets,id);
   AliESDPmdTrack* pmdtrack = dynamic_cast<AliESDPmdTrack*>(obj);
   if (pmdtrack) return PassesPMDcuts(pmdtrack);
-  AliVVZERO* vvzero = dynamic_cast<AliVVZERO*>(obj);
-  if (vvzero) return PassesV0cuts(vvzero,id);
+  AliVEvent* vvzero = dynamic_cast<AliVEvent*>(obj); // should be removed; left for protection only
+  if (vvzero) return PassesV0cuts(id);
   return kFALSE;  //default when passed wrong type of object
 }
 
@@ -1750,14 +1749,15 @@ TObject* AliFlowTrackCuts::GetInputObject(Int_t i)
       if (!esd) return NULL;
       return esd->GetPmdTrack(i);
     case kV0:
-      esd = dynamic_cast<AliESDEvent*>(fEvent);
-      if (!esd) //contributed by G.Ortona
-      {
-        AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
-        if(!aod)return NULL;
-        return aod->GetVZEROData();
-      }
-      return esd->GetVZEROData();
+      //esd = dynamic_cast<AliESDEvent*>(fEvent);
+      //if (!esd) //contributed by G.Ortona
+      //{
+      //  AliAODEvent* aod = dynamic_cast<AliAODEvent*>(fEvent);
+      //  if(!aod)return NULL;
+      //  return aod->GetVZEROData();
+      //}
+      //return esd->GetVZEROData();
+      return fEvent; // left only for compatibility
     default:
       if (!fEvent) return NULL;
       return fEvent->GetTrack(i);
@@ -3672,10 +3672,9 @@ Bool_t AliFlowTrackCuts::PassesPMDcuts(const AliESDPmdTrack* track )
 }
   
 //-----------------------------------------------------------------------
-Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
+Bool_t AliFlowTrackCuts::PassesV0cuts(Int_t id)
 {
   //check V0 cuts
-
   if (id<0) return kFALSE;
 
   //clean up from last iter
@@ -3683,12 +3682,14 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
   fMCparticle=NULL;
   fTrackLabel=-995;
 
-  // Additions by Carlos Perez cperez@cern.ch
   fTrackPhi = TMath::PiOver4()*(0.5+id%8);
+
   if(id<32)
     fTrackEta = -3.45+0.5*(id/8);
   else
     fTrackEta = +4.8-0.6*((id/8)-4);
+
+  fTrackWeight = fEvent->GetVZEROEqMultiplicity(id);
   
   if (fLinearizeVZEROresponse)
   {
@@ -3697,10 +3698,6 @@ Bool_t AliFlowTrackCuts::PassesV0cuts(const AliVVZERO* vzero, Int_t id)
     Float_t dummy=0.0;
     AliESDUtils::GetCorrV0((AliESDEvent*)fEvent,dummy,multV0);
     fTrackWeight = multV0[id];
-  }
-  else
-  {
-    fTrackWeight = vzero->GetMultiplicity(id);
   }
 
   Bool_t pass=kTRUE;
