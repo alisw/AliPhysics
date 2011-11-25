@@ -120,9 +120,7 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWG4Train(Bool_t useKineFilter=kTRUE,
 
    // standard cuts also used in R_AA analysis
    gROOT->LoadMacro("$ALICE_ROOT/PWG0/dNdPt/macros/CreatedNdPtTrackCuts.C");
-   AliESDtrackCuts* esdTrackCutsH2 = CreatedNdPtTrackCuts(200);
-   esdTrackCutsH2->SetMaxChi2PerClusterITS(36.);
-   esdTrackCutsH2->SetPtRange(0.15,1E10);
+   AliESDtrackCuts* esdTrackCutsH2 = CreateTrackCutsPWG4(1000);
 
    AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWG4(10041006);
 
