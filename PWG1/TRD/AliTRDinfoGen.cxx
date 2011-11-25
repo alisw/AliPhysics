@@ -35,8 +35,10 @@
 #include <TObjArray.h>
 #include <TObject.h>
 #include <TString.h>
+#include <TVectorT.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TCanvas.h>
 #include <TPad.h>
 #include <TFile.h>
 #include <TTree.h>
@@ -80,6 +82,7 @@
 #include "AliTRDrecoParam.h"
 #include "AliTRDcalibDB.h"
 #include "AliTRDtrackerV1.h"
+#include "AliTRDpadPlane.h"
 #include "AliTRDgeometry.h"
 #include "AliTRDtrackV1.h"
 #include "AliTRDseedV1.h"
@@ -192,7 +195,7 @@ AliTRDinfoGen::~AliTRDinfoGen()
     delete fV0List;
     fV0List = NULL;
   }
-  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){ 
+  if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     fContainer->Delete(); 
     delete fContainer;
     fContainer = NULL;
@@ -252,10 +255,13 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(3, "Cosmic");
   ax->SetBinLabel(4, "Calib");
   fContainer->AddAt(h, kEvType);
-  TH2I* h2=new TH2I("hBC", "Bunch Cross statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
+  TH2I* h2=new TH2I("hBC", "Bunch statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
   fContainer->AddAt(h2, kBC);
   h=new TH1I("hTriggers", "Triggers statistics;;Entries", 21, -0.5, 20.5);
   fContainer->AddAt(h, kTrigger);
+  TObjArray *chmb = new TObjArray(AliTRDgeometry::kNdet);
+  chmb->SetName("Chambers"); chmb->SetOwner();
+  fContainer->AddAt(chmb, kChmb);
   PostData(AliTRDpwg1Helper::kMonitor, fContainer);
 }
 
@@ -308,7 +314,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     AliCDBEntry* obj(NULL);
     AliCDBManager* ocdb = AliCDBManager::Instance();
     if(ocdb->IsDefaultStorageSet()){
-      AliInfo("OCDB :: initialized.");
+      AliInfo("OCDB :: initialized externally.");
     } else {
       AliInfo("OCDB :: initializing locally ...");
       // prepare OCDB access
@@ -335,6 +341,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
     // load misalignment
     fgGeo = new AliTRDgeometry;
     fgGeo->CreateClusterMatrixArray();
+    MakeChambers();
     // load reco param list from OCDB
     AliInfo("Initializing TRD reco params ...");
     fgReconstructor = new AliTRDReconstructor();
@@ -740,6 +747,110 @@ void AliTRDinfoGen::UserExec(Option_t *){
   PostData(AliTRDpwg1Helper::kTracksKink, fTracksKink);
   PostData(AliTRDpwg1Helper::kEventInfo, fEventInfo);
   PostData(AliTRDpwg1Helper::kV0List, fV0List);
+}
+
+
+//____________________________________________________________________
+void AliTRDinfoGen::MakeChambers()
+{
+// Build chamber position and status
+  if(!fContainer){
+    AliError("Missing container");
+    return;
+  }
+  AliTRDcalibDB *calib(AliTRDcalibDB::Instance());
+  if(!calib){
+    AliError("No access to calibration data");
+    return;
+  }
+
+  TObjArray *chmb((TObjArray*)fContainer->At(kChmb));
+  Double_t alpha(0.), cs(-2.), sn(0.);
+  TVectorF pos(5);
+  for(Int_t isec(0); isec<AliTRDgeometry::kNsector; isec++){
+    alpha = (0.5+isec)*AliTRDgeometry::GetAlpha();
+    cs    = TMath::Cos(alpha);
+    sn    = TMath::Sin(alpha);
+
+    for(Int_t istk(0); istk<AliTRDgeometry::kNstack; istk++){
+      for(Int_t ilyr(0); ilyr<AliTRDgeometry::kNlayer; ilyr++){
+        Int_t idet(AliTRDgeometry::GetDetector(ilyr, istk, isec));
+        TGeoHMatrix *matrix(fgGeo->GetClusterMatrix(idet));
+        if(!matrix){
+          AliDebug(2, Form("Missing matrix for %03d [%02d_%d_%d]", idet, isec, istk, ilyr));
+          continue;
+        }
+        AliDebug(2, Form("Read info for %03d [%02d_%d_%d]", idet, isec, istk, ilyr));
+        AliTRDpadPlane *pp(fgGeo->GetPadPlane(ilyr, istk));
+        Double_t zm(0.5 * (pp->GetRow0() + pp->GetRowEnd())),
+                 loc0[] = {AliTRDgeometry::AnodePos(), pp->GetCol0(), zm-pp->GetRow0()},
+                 loc1[] = {AliTRDgeometry::AnodePos(), pp->GetColEnd(), zm-pp->GetRowEnd()},
+                 glb[3];
+        matrix->LocalToMaster(loc0, glb);
+        Float_t phi = TMath::ATan2(glb[0]*sn + glb[1]*cs, glb[0]*cs - glb[1]*sn),
+                tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]),
+                eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+        pos[0] = eta; pos[1] = phi;
+        matrix->LocalToMaster(loc1, glb);
+        phi = TMath::ATan2(glb[0]*sn + glb[1]*cs, glb[0]*cs - glb[1]*sn);
+        tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]);
+        eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+        pos[2] = eta; pos[3] = phi;
+        pos[4] = calib->IsChamberGood(idet)?0.:1.;
+        chmb->AddAt(new TVectorF(pos), idet);
+      }
+    }
+  }
+}
+
+//____________________________________________________________________
+void AliTRDinfoGen::MakeSummary()
+{
+// Build summary plots
+  if(!fContainer){
+    AliError("Missing results");
+    return;
+  }
+  TH1 *h1(NULL); TVirtualPad *p(NULL); TCanvas *cOut(NULL);
+
+  const Int_t nx(2048), ny(750);
+  cOut = new TCanvas(GetName(), "Run Statistics", nx, ny);
+  cOut->Divide(3,1, 1.e-5, 1.e-5);
+  //=========
+  p=cOut->cd(1);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogy();
+  h1 = (TH1*)fContainer->At(kStatTrk);
+  h1->SetBarOffset(0.06); h1->SetBarWidth(0.88); h1->SetFillColor(3);
+  h1->Draw("bar1");
+  //=========
+  p=cOut->cd(2);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogy();
+  h1 = (TH1*)fContainer->At(kEvType);
+  h1->SetBarOffset(0.04); h1->SetBarWidth(0.92);h1->SetFillColor(6);
+  h1->Draw("bar1");
+  //=========
+  p=cOut->cd(3);p->SetRightMargin(0.025);p->SetTopMargin(0.01);p->SetLogz();
+  TH2 *h2((TH2*)fContainer->At(kBC));
+  h1 = h2->ProjectionX("_px");
+  Int_t n(0); Int_t bins[3500];
+  for(Int_t ib(1); ib<=3500; ib++){
+    if(h1->GetBinContent(ib) < 1) continue;
+    bins[n++] = ib;
+  }
+  delete h1;
+
+  TAxis *ay(h2->GetYaxis());
+  TH2 *hs = new TH2I("hBC_Summary", Form("%s;%s;%s", h2->GetTitle(), h2->GetXaxis()->GetTitle(), h2->GetYaxis()->GetTitle()),
+                     n, -0.5, n-0.5, ay->GetNbins(), ay->GetXmin(), ay->GetXmax());
+  hs->SetLineColor(kBlack);hs->SetLineWidth(1);
+  hs->SetMarkerColor(kRed);
+  TAxis *ax(hs->GetXaxis());
+  for(Int_t ib(0); ib<n; ib++){
+    ax->SetBinLabel(ib+1, Form("%d", bins[ib]));
+    for(Int_t iy(1); iy<=ay->GetNbins(); iy++){
+      hs->SetBinContent(ib+1, iy, h2->GetBinContent(bins[ib], iy));
+    }
+  }
+  hs->Draw("textbox");
+  cOut->SaveAs(Form("%s.gif", cOut->GetName()));
 }
 
 //____________________________________________________________________
