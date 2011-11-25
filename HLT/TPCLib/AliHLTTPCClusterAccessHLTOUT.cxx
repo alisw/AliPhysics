@@ -220,6 +220,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   iResult=-ENODATA;
   AliHLTTPCDataCompressionDecoder decoder;
   decoder.SetVerbosity(fVerbosity);
+  decoder.EnableClusterMerger();
   int nExtractedClusters=0;
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
        bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
