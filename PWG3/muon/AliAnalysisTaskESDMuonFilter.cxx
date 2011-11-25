@@ -191,7 +191,8 @@ void AliAnalysisTaskESDMuonFilter::AddFilteredAOD(const char* aodfilename, const
     ext->FilterBranch("tracks",murep);    
     ext->FilterBranch("vertices",murep);  
     ext->FilterBranch("dimuons",murep);
-
+    ext->FilterBranch("AliAODVZERO",murep);
+    
     if ( fMCMode > 0 ) 
     {
       // MC branches will be copied (if present), as they are, but only
