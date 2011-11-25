@@ -19,7 +19,7 @@
 
 #include "Rtypes.h"
 
-class AliHLTCaloClusterDataStruct;
+struct AliHLTCaloClusterDataStruct;
 class AliHLTCaloClusterHeaderStruct;
 class AliHLTCaloDigitDataStruct;
 /** 
