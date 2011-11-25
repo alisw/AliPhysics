@@ -92,6 +92,7 @@ AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra():
   //
   // Default ctor
   //
+  for(Int_t i=0;i<5;i++) fHistMassPtImpParTCDs[i]=0;
 }
 //___________________________________________________________________________
 AliAnalysisTaskSEDStarSpectra::AliAnalysisTaskSEDStarSpectra(const Char_t* name, AliRDHFCutsDStartoKpipi* cuts) :
