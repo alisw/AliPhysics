@@ -16,6 +16,7 @@
 #include <iostream>
 #include <iomanip>
 #include <memory>
+#include <cerrno>
 
 template <typename T, typename V>
 class AliHLTIndexGrid {
@@ -215,6 +216,8 @@ class AliHLTIndexGrid {
 
     const ValueType& Data() const {return *fData;}
     ValueType& Data() {return *fData;}
+
+    ValueType operator*() {return *fData;}
 
   protected:
   private:
