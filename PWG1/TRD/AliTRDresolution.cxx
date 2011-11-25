@@ -298,7 +298,8 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   }
 
   AliTRDgeometry *geo(AliTRDinfoGen::Geometry());
-  Double_t val[kNdim]; //Float_t exb, vd, t0, s2, dl, dt;
+  Double_t val[kNdim],
+           alpha(0.), cs(-2.), sn(0.); //Float_t exb, vd, t0, s2, dl, dt;
   TObjArray     *clInfoArr(NULL);
   AliTRDseedV1  *fTracklet(NULL);
   AliTRDcluster *c(NULL), *cc(NULL);
@@ -307,8 +308,14 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     if(!fTracklet->IsOK()) continue;
     //fTracklet->GetCalibParam(exb, vd, t0, s2, dl, dt);
     val[kBC]  = ily;
-    val[kPhi] = fPhi;
-    val[kEta] = fEta;
+    if(cs<-1.){
+      alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha();
+      cs    = TMath::Cos(alpha);
+      sn    = TMath::Sin(alpha);
+    }
+    val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
+    Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
+    val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
     val[kPt]  = TMath::ATan(fTracklet->GetYref(1))*TMath::RadToDeg();
     Float_t corr = 1./TMath::Sqrt(1.+fTracklet->GetYref(1)*fTracklet->GetYref(1)+fTracklet->GetZref(1)*fTracklet->GetZref(1));
     Int_t row0(-1);
@@ -422,12 +429,10 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
       alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha();
       cs    = TMath::Cos(alpha);
       sn    = TMath::Sin(alpha);
-      //printf("  Alpha[deg] = %f\n", alpha*TMath::RadToDeg());
     }
     val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
     Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());//fTracklet->GetTgl();
     val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
-    //printf("ly[%d] dPhi[deg]=%f dEta=%f\n", AliTRDgeometry::GetLayer(fTracklet->GetDetector()), (fPhi-val[kPhi])*TMath::RadToDeg(), fEta-val[kEta]);
 
     val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();// fSpecies;
     val[kPt]  = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fTracklet->GetMomentum());
@@ -569,9 +574,13 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
 
   Double_t val[kNdim+3];
   val[kBC]          = bc==0?0:(bc<0?-1.:1.);
-  val[kPhi]         = fPhi;
-  val[kEta]         = fEta;
-  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fkTrack->Charge();
+  Double_t alpha = (0.5+AliTRDgeometry::GetSector(fTracklet->GetDetector()))*AliTRDgeometry::GetAlpha(),
+           cs    = TMath::Cos(alpha),
+           sn    = TMath::Sin(alpha);
+  val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
+  Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
+  val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+  val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
   val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
   val[kYrez]        = dy;
   val[kZrez]        = dz;
@@ -2261,6 +2270,7 @@ TObjArray* AliTRDresolution::Histos()
     Int_t trinNbins[mdim];   memcpy(trinNbins, fgkNbins, kNdim*sizeof(Int_t));
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
+    trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1; trinMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trinMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
     trinTitle[kNdim]=StrDup("detector"); trinNbins[kNdim] = 540; trinMin[kNdim] = -0.5; trinMax[kNdim] = 539.5;
     trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
     trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
