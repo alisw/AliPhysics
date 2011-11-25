@@ -29,6 +29,7 @@ class AliMultiDimVector :  public TNamed{
  public:
   AliMultiDimVector();
   AliMultiDimVector(const AliMultiDimVector &mv);
+  AliMultiDimVector& operator=(const AliMultiDimVector &mv); 
   AliMultiDimVector(const char *name, const char *title, const Int_t nptbins, 
 		    const Float_t* ptlimits, const Int_t npars, const Int_t *nofcells, const Float_t *loosecuts, const Float_t *tightcuts, const TString *axisTitles);
   virtual ~AliMultiDimVector(){};
