@@ -43,6 +43,17 @@ fNTotCells(0),
 fIsIntegrated(0)
 {
   // default constructor
+
+  for(Int_t i=0; i<fgkMaxNVariables; i++) {
+    fNCutSteps[i]=0;
+    fMinLimits[i]=0;
+    fMaxLimits[i]=0;
+    fGreaterThan[i]=kTRUE;
+    fAxisTitles[i]="";
+  }
+  for(Int_t i=0; i<fgkMaxNPtBins+1; i++) {
+    fPtLimits[i]=0;
+  }
 }
 //___________________________________________________________________________
 AliMultiDimVector::AliMultiDimVector(const char *name,const char *title, const Int_t nptbins, const Float_t* ptlimits, const Int_t npars,  const Int_t *nofcells,const Float_t *loosecuts, const Float_t *tightcuts, const TString *axisTitles):TNamed(name,title),
@@ -52,6 +63,18 @@ fVett(0),
 fNTotCells(0),
 fIsIntegrated(0){
 // standard constructor
+
+  for(Int_t i=0; i<fgkMaxNVariables; i++) {
+    fNCutSteps[i]=0;
+    fMinLimits[i]=0;
+    fMaxLimits[i]=0;
+    fGreaterThan[i]=kTRUE;
+    fAxisTitles[i]="";
+  }
+  for(Int_t i=0; i<fgkMaxNPtBins+1; i++) {
+    fPtLimits[i]=0;
+  }
+
   ULong64_t ntot=1; 
   for(Int_t i=0;i<fNVariables;i++){
     ntot*=nofcells[i];
@@ -93,6 +116,58 @@ fNTotCells(mv.fNTotCells),
 fIsIntegrated(mv.fIsIntegrated)
 {
   // copy constructor
+
+  for(Int_t i=0; i<fgkMaxNVariables; i++) {
+    fNCutSteps[i]=0;
+    fMinLimits[i]=0;
+    fMaxLimits[i]=0;
+    fGreaterThan[i]=kTRUE;
+    fAxisTitles[i]="";
+  }
+  for(Int_t i=0; i<fgkMaxNPtBins+1; i++) {
+    fPtLimits[i]=0;
+  }
+
+
+  for(Int_t i=0;i<fNVariables;i++){
+    fNCutSteps[i]=mv.GetNCutSteps(i);
+    fMinLimits[i]=mv.GetMinLimit(i);
+    fMaxLimits[i]=mv.GetMaxLimit(i);
+    fGreaterThan[i]=mv.GetGreaterThan(i);
+    fAxisTitles[i]=mv.GetAxisTitle(i);
+  }
+  fVett.Set(fNTotCells); 
+  
+  for(Int_t ipt=0;ipt<fNPtBins+1;ipt++) fPtLimits[ipt]=mv.GetPtLimit(ipt);
+  for(ULong64_t i=0;i<fNTotCells;i++) fVett[i]=mv.GetElement(i);
+}
+//___________________________________________________________________________
+AliMultiDimVector &AliMultiDimVector::operator=(const AliMultiDimVector &mv)
+{
+  // assignment operator
+
+  if(&mv == this) return *this;
+
+  TNamed::operator=(mv);
+
+  fNVariables=mv.fNVariables;
+  fNPtBins=mv.fNPtBins;
+  fNTotCells=mv.fNTotCells;
+  fIsIntegrated=mv.fIsIntegrated;
+
+
+  for(Int_t i=0; i<fgkMaxNVariables; i++) {
+    fNCutSteps[i]=0;
+    fMinLimits[i]=0;
+    fMaxLimits[i]=0;
+    fGreaterThan[i]=kTRUE;
+    fAxisTitles[i]="";
+  }
+  for(Int_t i=0; i<fgkMaxNPtBins+1; i++) {
+    fPtLimits[i]=0;
+  }
+
+
   for(Int_t i=0;i<fNVariables;i++){
     fNCutSteps[i]=mv.GetNCutSteps(i);
     fMinLimits[i]=mv.GetMinLimit(i);
