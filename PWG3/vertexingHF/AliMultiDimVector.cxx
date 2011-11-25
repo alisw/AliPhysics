@@ -179,6 +179,8 @@ AliMultiDimVector &AliMultiDimVector::operator=(const AliMultiDimVector &mv)
   
   for(Int_t ipt=0;ipt<fNPtBins+1;ipt++) fPtLimits[ipt]=mv.GetPtLimit(ipt);
   for(ULong64_t i=0;i<fNTotCells;i++) fVett[i]=mv.GetElement(i);
+
+  return *this;
 }
 //___________________________________________________________________________
 void AliMultiDimVector::CopyStructure(const AliMultiDimVector* mv){
