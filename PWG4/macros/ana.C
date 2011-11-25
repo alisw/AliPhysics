@@ -164,12 +164,13 @@ void ana(Int_t mode=mGRID)
     AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
     AddTaskCounter("PHOS"); //  
   }
-  
-  gROOT->LoadMacro("AddTaskPartCorr.C"); // $ALICE_ROOT/PWG4/macros
-  
+    
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
     
+  gROOT->LoadMacro("AddTaskPartCorr.C");        // $ALICE_ROOT/PWG4/macros
+  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros
+  
   // ------
   // Tracks
   // ------  
@@ -182,12 +183,11 @@ void ana(Int_t mode=mGRID)
   // EMCAL
   // -----  
   
-  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros
   Bool_t  bTrackMatch = kTRUE;
   Int_t   minEcell    = 50;  // 50  MeV (10 MeV used in reconstruction)
   Int_t   minEseed    = 100; // 100 MeV
-  Int_t   dTime       = 40;  // 40  ns difference in time of cells in cluster
-  Int_t   wTime       = 10000;  // open time window of cells in cluster, open
+  Int_t   dTime       = 0;   // default, 250 ns
+  Int_t   wTime       = 0;   // default 425 < T < 825 ns
   TString clTrigger   = "";  // Do not select, do Min Bias and triggered
   
   //Analysis with clusterizer V1
@@ -411,35 +411,57 @@ void CheckInputData(const anaModes mode){
       sprintf(fileG, "%s/%s%d/galice.root", kInDir,kPattern,event) ; 
       sprintf(fileEm, "%s/%s%d/embededAOD.root", kInDir,kPattern,event) ; 
       
-      TFile * fAOD = 0 ; 
+      TFile * fESD = TFile::Open(fileE) ; 
+      TFile * fAOD = TFile::Open(fileA) ; 
+      
       //Check if file exists and add it, if not skip it
-      if ( TFile::Open(fileE))  {
+      if (fESD)  {
         kTreeName ="esdTree";
         kInputData = "ESD";
-        if(TFile::Open(fileG)) kMC=kTRUE;
-        else kMC = kFALSE;
+        TFile * fG = TFile::Open(fileG);
+        if(fG) { kMC = kTRUE; fG->Close();}
+        else     kMC = kFALSE;
+        
+        // Get run number
+        TTree* esdTree = (TTree*)fESD->Get("esdTree");
+        AliESDEvent* esd = new AliESDEvent();
+        esd->ReadFromTree(esdTree);
+        esdTree->GetEvent(0);
+        kRun = esd->GetRunNumber();
+        
         return;
       }
-      else if(fAOD=TFile::Open(fileA)){
+      else if(fAOD){
         kTreeName ="aodTree";
         kInputData = "AOD";
         if(((TTree*) fAOD->Get("aodTree"))->GetBranch("mcparticles")) kMC=kTRUE;
         else kMC = kFALSE;
+        
+        // Get run number
+        TTree* aodTree = (TTree*)fAOD->Get("aodTree");
+        AliAODEvent* aod = new AliAODEvent();
+        aod->ReadFromTree(esdTree);
+        aodTree->GetEvent(0);
+        kRun = aod->GetRunNumber();
         return;
       }
-      else if(fAOD=TFile::Open(fileEm)){
-        kTreeName ="aodTree";
+      else if(TFile::Open(fileEm)){
+        kTreeName  = "aodTree";
         kInputData = "AOD";
-        kMC=kTRUE;
+        kMC        = kTRUE;
+        
         return;
       }
       else if(TFile::Open(fileG)){
-        kTreeName ="TE";
+        kTreeName  = "TE";
         kInputData = "MC";
-        kMC=kTRUE;
+        kMC        = kTRUE;
         return;
       }
     }
+    
+    if(fESD) fESD->Close();
+    if(fAOD) fAOD->Close();
     
   }// local files analysis
   
@@ -579,7 +601,7 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       else if(kInputData.Contains("AOD")) datafile = "AliAOD.root" ;//////////
       else if(kInputData == "MC")  datafile = "galice.root" ;
       
-      //Loop on ESD files, add them to chain
+      //Loop on ESD/AOD/MC files, add them to chain
       Int_t event =0;
       Int_t skipped=0 ; 
       char file[120] ;
@@ -588,10 +610,10 @@ void CreateChain(const anaModes mode, TChain * chain, TChain * chainxs)
       for (event = 0 ; event < kFile ; event++) {
         sprintf(file, "%s/%s%d/%s", kInDir,kPattern,event,datafile.Data()) ; 
         sprintf(filexs, "%s/%s%d/%s", kInDir,kPattern,event,kXSFileName) ; 
-        TFile * fESD = 0 ; 
+        TFile * fData = 0 ; 
         //Check if file exists and add it, if not skip it
-        if ( fESD = TFile::Open(file)) {
-          if ( fESD->Get(kTreeName) ) { 
+        if ( fData = TFile::Open(file)) {
+          if ( fData->Get(kTreeName) ) { 
             printf("++++ Adding %s\n", file) ;
             chain->AddFile(file);
             chainxs->Add(filexs) ; 
