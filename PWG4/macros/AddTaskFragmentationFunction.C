@@ -53,22 +53,22 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
         // anti-kt jets
 	// Jet not background subtracted
         // only reconstructed 
-	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip02");
+	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip00");
         // charged MC tracks and jets
-	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass, "_Skip02");
+	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass, "_Skip00");
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip02");
+	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip00");
 
 	// Jet background subtracted
-	if(iFlag&(1<<23)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip02");
+	if(iFlag&(1<<23)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip00");
         // charged MC tracks and jets
-	if(iFlag&(1<<24)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,1,150.,eventClass, "_Skip02");
+	if(iFlag&(1<<24)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,1,150.,eventClass, "_Skip00");
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,1,150., eventClass, "_Skip02");
+	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,1,150., eventClass, "_Skip00");
 
-       if(iFlag&(1<<26)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip02");
+       if(iFlag&(1<<26)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip00");
 
-       if(iFlag&(1<<27)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,3,150.,eventClass, "_Skip02");	
+       if(iFlag&(1<<27)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,3,150.,eventClass, "_Skip00");	
 
       // SISCONE 
       if(iFlag&(1<<28)) ff = AddTaskFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,1,150.,eventClass);
