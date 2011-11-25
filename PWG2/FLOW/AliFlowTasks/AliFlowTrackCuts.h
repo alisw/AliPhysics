@@ -29,7 +29,6 @@ class AliMultiplicity;
 class AliAODTrack;
 class AliESDtrack;
 class AliESDPmdTrack;
-class AliVVZERO;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 
@@ -206,7 +205,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
   Bool_t PassesESDcuts(AliESDtrack* track);
   Bool_t PassesAODcuts(const AliAODTrack* track);
   Bool_t PassesPMDcuts(const AliESDPmdTrack* track);
-  Bool_t PassesV0cuts(const AliVVZERO* track, Int_t id);
+  Bool_t PassesV0cuts(Int_t id);
   Bool_t PassesCuts(const AliFlowTrackSimple* track);
   Bool_t PassesCuts(const AliMultiplicity* track, Int_t id);
   Bool_t PassesMCcuts();
@@ -321,7 +320,7 @@ class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
  
   static const Int_t fgkNumberOfV0tracks=64; //number of V0 channels
 
-  ClassDef(AliFlowTrackCuts,11)
+  ClassDef(AliFlowTrackCuts,12)
 };
 
 #endif
