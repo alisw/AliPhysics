@@ -144,6 +144,7 @@ set ( CLASS_HDRS
     HWCFemulator/AliHLTTPCHWCFSupport.h
     HWCFemulator/AliHLTTPCHWCFEmulatorComponent.h
     HWCFemulator/AliHLTTPCHWCFConsistencyControlComponent.h
+    HWCFemulator/AliHLTTPCHWClusterMerger.h
 )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
