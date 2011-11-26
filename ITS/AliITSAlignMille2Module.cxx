@@ -233,6 +233,10 @@ AliITSAlignMille2Module& AliITSAlignMille2Module::operator=(const AliITSAlignMil
   for (int i=0;i<3;i++) fSigmaFactor[i] = m.fSigmaFactor[i];
   if (fMatrix) delete fMatrix;
   fMatrix=new TGeoHMatrix(*m.GetMatrix());
+  if(fSensVolMatrix) delete fSensVolMatrix;
+  fSensVolMatrix = new TGeoHMatrix(*m.fSensVolMatrix);
+  if(fSensVolModifMatrix) delete fSensVolModifMatrix;
+  fSensVolModifMatrix = new TGeoHMatrix(*m.fSensVolModifMatrix);
   fSensVolIndex = m.fSensVolIndex;
   fSensVolVolumeID = m.fSensVolVolumeID;
   fParent = m.fParent;
