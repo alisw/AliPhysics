@@ -242,6 +242,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t GetTrackleterZetaWindowL1() const {return fTrackleterZetaWindowL1;}
   void    SetTrackleterZetaWindowL2(Float_t w=0.40) {fTrackleterZetaWindowL2=w; return;}
   Float_t GetTrackleterZetaWindowL2() const {return fTrackleterZetaWindowL2;}
+  void    SetTrackleterBuildCl2TrkRefs(Bool_t v=kTRUE) {fTrackleterBuildCl2TrkRefs = v;}
+  Bool_t  GetTrackleterBuildCl2TrkRefs() const { return fTrackleterBuildCl2TrkRefs;}
+  //
   void    SetUpdateOncePerEventPlaneEff(Bool_t use=kTRUE) {fUpdateOncePerEventPlaneEff=use; return;}
   Bool_t  GetUpdateOncePerEventPlaneEff() const {return fUpdateOncePerEventPlaneEff;}
   void    SetMinContVtxPlaneEff(Int_t n=3) {fMinContVtxPlaneEff=n; return;}
@@ -685,7 +688,9 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fTrackleterPhiRotationAngle;             // Angle to rotate cluster in the SPD inner layer for combinatorial reco only
   Float_t fTrackleterNStdDev;      // cut on the number of standard deviations
   Bool_t  fScaleDTBySin2T;         // scale Dtheta by 1/sin^2(theta)
-
+  //
+  Bool_t  fTrackleterBuildCl2TrkRefs;           // build cluster to track references in AliMultiplicity
+  //
   Bool_t fUseCosmicRunShiftsSSD; // SSD time shifts for cosmic run 2007/2008 (use for data taken up to 18 sept 2008)
 
 
@@ -739,7 +744,6 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fMultCutGammaSFromDecay;        // min path*P for gammas
   Float_t fMultCutK0SFromDecay;           // min path*P for K0s
   Float_t fMultCutMaxDCA;                 // max DCA for V0 at ESD vertex
-  //
   // Lorentz angle
   Bool_t fCorrectLorentzAngleSPD;         // flag to enable correction
   Float_t fTanLorentzAngleHolesSPD;       // angle for holes in SPD
@@ -757,7 +761,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   AliITSRecoParam(const AliITSRecoParam & param);
   AliITSRecoParam & operator=(const AliITSRecoParam &param);
 
-  ClassDef(AliITSRecoParam,49) // ITS reco parameters
+  ClassDef(AliITSRecoParam,50) // ITS reco parameters
 };
 
 #endif

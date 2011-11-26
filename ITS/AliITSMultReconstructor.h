@@ -89,6 +89,9 @@ public:
   //
   void SetHistOn(Bool_t b=kFALSE) {fHistOn=b;}
   void SaveHists();
+  //
+  void   SetBuildRefs(Bool_t v=kTRUE)                    {fBuildRefs = v;}
+  Bool_t GetBuildRefs()                          const   {return fBuildRefs;}
 
   AliITSDetTypeRec *GetDetTypeRec() const {return fDetTypeRec;}
   void SetDetTypeRec(AliITSDetTypeRec *ptr){fDetTypeRec = ptr;}
@@ -252,13 +255,14 @@ public:
   Bool_t        fCreateClustersCopy;   //  read and clone clusters directly from the tree
   Bool_t        fClustersLoaded;       // flag of clusters loaded
   Bool_t        fRecoDone;             // flag that reconstruction is done
+  Bool_t        fBuildRefs;            // build cluster to tracks references
   //
   AliITSsegmentationSPD fSPDSeg;       // SPD segmentation model
   //
   void LoadClusterArrays(TTree* tree, TTree* treeMix=0);
   void LoadClusterArrays(TTree* tree,int il);
 
-  ClassDef(AliITSMultReconstructor,10)
+  ClassDef(AliITSMultReconstructor,11)
 };
 
 //____________________________________________________________________

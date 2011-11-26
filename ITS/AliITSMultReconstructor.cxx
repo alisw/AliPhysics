@@ -155,6 +155,7 @@ fhphiClustersLay1(0),
   fCreateClustersCopy(0),
   fClustersLoaded(0),
   fRecoDone(0),
+  fBuildRefs(kTRUE),
   fSPDSeg()
 {
   // default c-tor
@@ -172,7 +173,7 @@ fhphiClustersLay1(0),
   
   SetHistOn();
 
-  if(AliITSReconstructor::GetRecoParam()) { 
+  if (AliITSReconstructor::GetRecoParam()) { 
     SetPhiWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiWindow());
     SetThetaWindow(AliITSReconstructor::GetRecoParam()->GetTrackleterThetaWindow());
     SetPhiShift(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiShift());
@@ -182,6 +183,7 @@ fhphiClustersLay1(0),
     SetPhiRotationAngle(AliITSReconstructor::GetRecoParam()->GetTrackleterPhiRotationAngle());
     SetNStdDev(AliITSReconstructor::GetRecoParam()->GetTrackleterNStdDevCut());
     SetScaleDThetaBySin2T(AliITSReconstructor::GetRecoParam()->GetTrackleterScaleDThetaBySin2T());
+    SetBuildRefs(AliITSReconstructor::GetRecoParam()->GetTrackleterBuildCl2TrkRefs());
     //
     SetCutPxDrSPDin(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDin());
     SetCutPxDrSPDout(AliITSReconstructor::GetRecoParam()->GetMultCutPxDrSPDout());
@@ -323,6 +325,7 @@ fBlackList(0),
 fCreateClustersCopy(0),
 fClustersLoaded(0),
 fRecoDone(0),
+fBuildRefs(kTRUE),
 fSPDSeg()
  {
   // Copy constructor :!!! RS ATTENTION: old c-tor reassigned the pointers instead of creating a new copy -> would crash on delete
@@ -366,7 +369,7 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
     delete[] fDetectorIndexClustersLay[i];
     delete[] fOverlapFlagClustersLay[i];
     delete   fClArr[i];
-    for (int j=0;j<2;j++) delete fUsedClusLay[i][j];
+    for (int j=0;j<2;j++) if (fUsedClusLay[i][j]) delete fUsedClusLay[i][j];
   }
   delete [] fTracklets;
   delete [] fSClusters;
@@ -525,7 +528,7 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
   }
   //
   fMult = new AliMultiplicity(fNTracklets,fNSingleCluster,fNFiredChips[0],fNFiredChips[1],fastOrFiredMap);
-  fMult->SetMultTrackRefs(kTRUE);
+  fMult->SetMultTrackRefs( fBuildRefs );
   // store some details of reco:
   fMult->SetScaleDThetaBySin2T(fScaleDTBySin2T);
   fMult->SetDPhiWindow2(fDPhiWindow2);
@@ -540,13 +543,17 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
   //
   UInt_t shared[100]; 
   AliRefArray *refs[2][2] = {{0,0},{0,0}};
-  for (int il=2;il--;) 
-    for (int it=2;it--;)  // tracklet_clusters->track references to stor
-      if (fStoreRefs[il][it]) refs[il][it] = new AliRefArray(fNTracklets,0);
+  if (fBuildRefs) {
+    for (int il=2;il--;) 
+      for (int it=2;it--;)  // tracklet_clusters->track references to stor
+	if (fStoreRefs[il][it]) refs[il][it] = new AliRefArray(fNTracklets,0);
+  }
   //
   for (int i=fNTracklets;i--;)  {
     float* tlInfo = fTracklets[i];
     fMult->SetTrackletData(i,tlInfo);
+    //
+    if (!fBuildRefs) continue; // do we need references?
     for (int itp=0;itp<2;itp++) {	
       for (int ilr=0;ilr<2;ilr++) {
 	if (!fStoreRefs[ilr][itp]) continue; // nothing to store
@@ -558,13 +565,15 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
       }
     }
   }
-  fMult->AttachTracklet2TrackRefs(refs[0][0],refs[0][1],refs[1][0],refs[1][1]); 
+  if (fBuildRefs) fMult->AttachTracklet2TrackRefs(refs[0][0],refs[0][1],refs[1][0],refs[1][1]); 
   //
   AliRefArray *refsc[2] = {0,0};
-  for (int it=2;it--;) if (fStoreRefs[0][it]) refsc[it] = new AliRefArray(fNClustersLay[0]);
+  if (fBuildRefs) for (int it=2;it--;) if (fStoreRefs[0][it]) refsc[it] = new AliRefArray(fNClustersLay[0]);
   for (int i=fNSingleCluster;i--;) {
     float* clInfo = fSClusters[i];
     fMult->SetSingleClusterData(i,clInfo); 
+    //
+    if (!fBuildRefs) continue; // do we need references?
     int clID = int(clInfo[kSCID]);
     for (int itp=0;itp<2;itp++) {
       if (!fStoreRefs[0][itp]) continue;
@@ -574,7 +583,7 @@ void AliITSMultReconstructor::CreateMultiplicityObject()
       else refsc[itp]->AddReferences(i,shared,nref);
     }
   }
-  fMult->AttachCluster2TrackRefs(refsc[0],refsc[1]); 
+  if (fBuildRefs) fMult->AttachCluster2TrackRefs(refsc[0],refsc[1]); 
   fMult->CompactBits();
   //
 }
@@ -690,9 +699,11 @@ void AliITSMultReconstructor::LoadClusterArrays(TTree* itsClusterTree, int il)
   if (fDetectorIndexClustersLay[il]) delete[] fDetectorIndexClustersLay[il]; 
   fDetectorIndexClustersLay[il] = detectorIndexClustersLay;
   //
-  for (int it=0;it<2;it++) {
-    if (fUsedClusLay[il][it]) delete fUsedClusLay[il][it];
-    fUsedClusLay[il][it] = new AliRefArray(nclLayer);
+  if (fBuildRefs) {
+    for (int it=0;it<2;it++) {
+      if (fUsedClusLay[il][it]) delete fUsedClusLay[il][it];
+      fUsedClusLay[il][it] = new AliRefArray(nclLayer);
+    }
   }
   //
   if (fClustersLay[il]) delete[] fClustersLay[il]; 
@@ -1065,7 +1076,7 @@ void AliITSMultReconstructor::ProcessESDTracks()
   // Flag the clusters used by ESD tracks
   // Flag primary tracks to be used for multiplicity counting 
   //
-  if (!fESDEvent) return;
+  if (!fESDEvent || !fBuildRefs) return;
   AliESDVertex* vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexTracks();
   if (!vtx || vtx->GetNContributors()<1) vtx = (AliESDVertex*)fESDEvent->GetPrimaryVertexSPD();
   if (!vtx || vtx->GetNContributors()<1) {

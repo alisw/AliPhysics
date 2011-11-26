@@ -155,6 +155,8 @@ fTrackleterZetaOverlapCut(0.05),
 fTrackleterPhiRotationAngle(0.0),
 fTrackleterNStdDev(1.5),
 fScaleDTBySin2T(kFALSE),
+fTrackleterBuildCl2TrkRefs(kTRUE),
+//
 fUseCosmicRunShiftsSSD(kFALSE),
 fSPDRemoveNoisyFlag(kTRUE),
 fSPDRemoveDeadFlag(kTRUE),
@@ -419,6 +421,7 @@ AliITSRecoParam *AliITSRecoParam::GetHighFluxParam()
   //
   // trackleter
   param->fTrackleterPhiWindow = 0.06;
+  param->fTrackleterBuildCl2TrkRefs = kFALSE;
   param->fScaleDTBySin2T = kTRUE;
   //
   param->fSelectBestMIP03 = kFALSE;//kTRUE;
@@ -528,7 +531,6 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->SetNLoopsSA(20);
   param->fMaxPhiSA = 0.07;
   param->fMaxLambdaSA = 0.04;
-
  
   param->GetESDV0Params()->SetMinRTgl0(0.5);
   param->GetESDV0Params()->SetMaxDist(1.5);
@@ -542,6 +544,9 @@ AliITSRecoParam *AliITSRecoParam::GetLowFluxParam()
   param->GetESDV0Params()->SetLikelihood01Cut(0.3);
   param->GetESDV0Params()->SetLikelihood1Cut(0.35);
   param->GetESDV0Params()->SetCombinedCut(0.4);
+
+  // trackleter
+  param->fTrackleterBuildCl2TrkRefs = kTRUE;
 
   // mult reco
   param->fMultCutPxDrSPDin = 0.1;
@@ -713,6 +718,9 @@ AliITSRecoParam *AliITSRecoParam::GetCosmicTestParam()
   param->fSigmaXDeadZoneHit2 = 0.004/12.;
   param->fSigmaZDeadZoneHit2 = 0.001/12.;
   param->fXPassDeadZoneHits = 0.018;
+
+  // trackleter
+  param->fTrackleterBuildCl2TrkRefs = kFALSE;
 
   return param;
 }
