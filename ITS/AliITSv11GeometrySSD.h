@@ -26,8 +26,6 @@ class TGeoVolumeAssembly;
 class AliITSv11GeometrySSD: public AliITSv11Geometry {
 public:
   AliITSv11GeometrySSD();
-  AliITSv11GeometrySSD(const AliITSv11GeometrySSD &source);
-  AliITSv11GeometrySSD& operator=(const AliITSv11GeometrySSD &source);
   virtual ~AliITSv11GeometrySSD(){};
   /////////////////////////////////////////////////////////////////////////
   // Public methods
@@ -59,6 +57,9 @@ public:
   void SSDCone(TGeoVolume* moth); // Setting SSD Cone;
   void SSDCables(TGeoVolume* moth); // Setting SSD Cables;
 private:
+  AliITSv11GeometrySSD(const AliITSv11GeometrySSD &source);
+  AliITSv11GeometrySSD& operator=(const AliITSv11GeometrySSD &source);
+
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6
   /////////////////////////////////////////////////////////////////////////////////

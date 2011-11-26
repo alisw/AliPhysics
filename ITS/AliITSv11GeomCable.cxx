@@ -50,6 +50,7 @@ AliITSv11GeomCable::AliITSv11GeomCable(): TNamed(),
 { 
   // constructor
   fPointArray.SetOwner();
+  for(Int_t i=0;i<fgkCableMaxNodeLevel;i++)fNodeInd[i]=0;
 }
 
 //________________________________________________________________________
@@ -61,33 +62,9 @@ AliITSv11GeomCable::AliITSv11GeomCable(const char* name): TNamed(name,""),
   fInitialNode(0) { 
   // constructor
   fPointArray.SetOwner(); 
+  for(Int_t i=0;i<fgkCableMaxNodeLevel;i++)fNodeInd[i]=0;
 }
 
-
-//________________________________________________________________________
-AliITSv11GeomCable::AliITSv11GeomCable(const AliITSv11GeomCable &s) :
-  TNamed(s.GetName(),s.GetTitle()),fDebug(s.fDebug),fPointArray(s.fPointArray),
-  fVolumeArray(s.fVolumeArray),fCurrentVol(s.fCurrentVol),fInitialNode(s.fInitialNode)
-{
-  //     Copy Constructor 
-  printf("Copy Constructor of AliITSv11GeomCable ???\n");  
-}
-
-//________________________________________________________________________
-AliITSv11GeomCable& AliITSv11GeomCable::operator=(const AliITSv11GeomCable &s) {
-  //     Assignment operator
-  // Not fully inplemented yet !!!
-  printf("Assignment operator of AliITSv11GeomCable not fully inplemented yet !!!\n");  
-
-  if(&s == this) return *this;
-  SetName(s.GetName());
-  SetTitle(s.GetTitle());
-  fDebug = s.fDebug;
-//   fPointArray = s.fPointArray;
-//   fVolumeArray = s.fVolumeArray;
-  fInitialNode = s.fInitialNode;
-  return *this;
-}
 
 //________________________________________________________________________
 AliITSv11GeomCable::~AliITSv11GeomCable() {

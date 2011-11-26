@@ -23,8 +23,6 @@ class AliITSv11GeomCable : public TNamed {
  public:
   AliITSv11GeomCable();
   AliITSv11GeomCable(const char* name);
-  AliITSv11GeomCable(const AliITSv11GeomCable &source);
-  AliITSv11GeomCable& operator=(const AliITSv11GeomCable &source);
 
   virtual ~AliITSv11GeomCable();
   void SetDebug(Int_t debug = 1) {fDebug = debug;};
@@ -48,6 +46,8 @@ class AliITSv11GeomCable : public TNamed {
   void ResetPoints();
 
  protected:
+  AliITSv11GeomCable(const AliITSv11GeomCable &source);
+  AliITSv11GeomCable& operator=(const AliITSv11GeomCable &source);
   bool     CheckDaughter(const TGeoNode* node, Int_t i = 0);
   void     ResetCheckDaughter();
   void     CopyFrom(Double_t *c, const Double_t *o) const;

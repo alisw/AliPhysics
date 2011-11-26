@@ -613,7 +613,9 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   ////////////////////////
   // Standard constructor
   ////////////////////////
-
+  for(Int_t i=0; i<fgkendladdermountingblocknumber; i++){
+    fendladdermountingblockcombitrans[i] = NULL;
+  }
   for (Int_t i=0; i < fgkcarbonfibersupportnumber; i++) {
     fcarbonfibersupport[i] = 0;
     fcarbonfibersupportmatrix[i] = 0;
@@ -679,93 +681,12 @@ AliITSv11GeometrySSD::AliITSv11GeometrySSD():
   for (Int_t i = 0; i < 2; i++) {
     fLay5LadderSupport[i] = 0;
     fLay6LadderSupport[i] = 0;
+    fcoolingtubematrix[i] = NULL;
+    fendladdersegment[i] = NULL;
+    fendladdersegmentmatrix[i] = NULL;
   }
 }
-/////////////////////////////////////////////////////////////////////////////////
-AliITSv11GeometrySSD::AliITSv11GeometrySSD(const AliITSv11GeometrySSD &s):
-  AliITSv11Geometry(s.GetDebug()),
-  fSSDChipMedium(s.fSSDChipMedium),
-  fSSDChipGlueMedium(s.fSSDChipGlueMedium),
-  fSSDStiffenerMedium(s.fSSDStiffenerMedium),
-  fSSDStiffenerConnectorMedium(s.fSSDStiffenerConnectorMedium),
-  fSSDStiffener0603CapacitorMedium(s.fSSDStiffener0603CapacitorMedium),
-  fSSDStiffener1812CapacitorMedium(s.fSSDStiffener1812CapacitorMedium),
-  fSSDStiffenerCapacitorCapMedium(s.fSSDStiffenerCapacitorCapMedium),
-  fSSDStiffenerHybridWireMedium(s.fSSDStiffenerHybridWireMedium),
-  fSSDKaptonFlexMedium(s.fSSDKaptonFlexMedium),
-  fSSDAlTraceFlexMedium(s.fSSDAlTraceFlexMedium),
-  fSSDAlTraceLadderCableMedium(s.fSSDAlTraceLadderCableMedium),
-  fSSDKaptonLadderCableMedium(s.fSSDKaptonLadderCableMedium),
-  fSSDKaptonChipCableMedium(s.fSSDKaptonChipCableMedium),
-  fSSDAlTraceChipCableMedium(s.fSSDAlTraceChipCableMedium),
-  fSSDAlCoolBlockMedium(s.fSSDAlCoolBlockMedium),
-  fSSDSensorMedium(s.fSSDSensorMedium),
-  fSSDSensorSupportMedium(s.fSSDSensorSupportMedium),
-  fSSDCarbonFiberMedium(s.fSSDCarbonFiberMedium),
-  fSSDTubeHolderMedium(s.fSSDTubeHolderMedium),
-  fSSDCoolingTubeWater(s.fSSDCoolingTubeWater),
-  fSSDCoolingTubePhynox(s.fSSDCoolingTubePhynox),
-  fSSDSupportRingAl(s.fSSDSupportRingAl),
-  fSSDMountingBlockMedium(s.fSSDMountingBlockMedium),
-  fSSDRohaCellCone(s.fSSDRohaCellCone),
-  fSSDAir(s.fSSDAir),
-  fSSDCopper(s.fSSDCopper),  
-  fSSDSn(s.fSSDSn),
-  fCreateMaterials(s.fCreateMaterials),
-  fTransformationMatrices(s.fTransformationMatrices),
-  fBasicObjects(s.fBasicObjects),
-  fcarbonfiberjunction(s.fcarbonfiberjunction),
-  fcoolingtubesupport(s.fcoolingtubesupport),
-  fhybridmatrix(s.fhybridmatrix),
-  fssdcoolingblocksystem(s.fssdcoolingblocksystem),
-  fcoolingblocksystematrix(s.fcoolingblocksystematrix),
-  fssdstiffenerflex(s.fssdstiffenerflex),
-  fssdendflex(s.fssdendflex),
-  fcoolingtube(s.fcoolingtube),
-  fendladdercoolingtubesupportmatrix(s.fendladdercoolingtubesupportmatrix),
-  fendladdermountingblock(s.fendladdermountingblock),
-  fendladdermountingblockclip(s.fendladdermountingblockclip),
-  fSSDSensor5(s.fSSDSensor5),
-  fSSDSensor6(s.fSSDSensor6),
-  fSSDLayer5(s.fSSDLayer5),	
-  fSSDLayer6(s.fSSDLayer6),
-  fMotherVol(s.fMotherVol),
-  fLay5LadderSupportRing(s.fLay5LadderSupportRing),
-  fLay6LadderSupportRing(s.fLay6LadderSupportRing),
-  fgkEndCapSupportSystem(s.fgkEndCapSupportSystem),
-  fSSDCone(s.fSSDCone),
-  fColorCarbonFiber(s.fColorCarbonFiber),
-  fColorRyton(s.fColorRyton),
-  fColorPhynox(s.fColorPhynox),
-  fColorSilicon(s.fColorSilicon),
-  fColorAl(s.fColorAl),
-  fColorNiSn(s.fColorNiSn),
-  fColorKapton(s.fColorKapton),
-  fColorPolyhamide(s.fColorPolyhamide),
-  fColorStiffener(s.fColorStiffener),
-  fColorEpoxy(s.fColorEpoxy),
-  fColorWater(s.fColorWater),
-  fColorG10(s.fColorG10)
-{
-  ////////////////////////
-  // Copy Constructor
-  ////////////////////////
-}
-/////////////////////////////////////////////////////////////////////////////////
-AliITSv11GeometrySSD& AliITSv11GeometrySSD::
-operator=(const AliITSv11GeometrySSD &s){
-  ////////////////////////
-  // Assignment operator
-  ////////////////////////
-  this->~AliITSv11GeometrySSD();
-  new(this) AliITSv11GeometrySSD(s); 
-  return *this;
-/*	
-  if(&s == this) return *this;
-  fMotherVol = s.fMotherVol;
-  return *this;
- */
-}
+
 ///////////////////////////////////////////////////////////////////////////////
 void AliITSv11GeometrySSD::CreateTransformationMatrices(){
   ///////////////////////////////////////////////////////////////////////  
