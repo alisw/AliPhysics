@@ -418,7 +418,9 @@ void AliDAJetFinder::StoreJets(Int_t nk, Double_t **xData, Int_t *xx, TMatrixD *
 	Double_t *xPhi = xData[1];
 	Int_t nEff = 0;
 	for (Int_t i=0; i<fNeff; i++) if (xEta[i]<dFidEtaMax && xEta[i]>dFidEtaMin) nEff++;
-	Double_t dMeanDist=TMath::Sqrt(2*dFiducialEta*pi/nEff);
+	Double_t dMeanDist=0.;
+	if (nEff > 0) 
+	    dMeanDist=TMath::Sqrt(2*dFiducialEta*pi/nEff);
 	Bool_t   *isJet = new Bool_t[nk];
 	Double_t *etNoBg= new Double_t[nk];
 	Double_t *dDeltaEta=new Double_t[nk];
