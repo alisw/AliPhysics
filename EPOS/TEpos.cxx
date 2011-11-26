@@ -75,9 +75,9 @@ TEpos::~TEpos() {
 	delete fIdConverter;
 }
 
-TEpos& TEpos::operator=(const TEpos&) {
+TEpos& TEpos::operator=(const TEpos& epos) {
   //operator=
-	if (!fIdConverter) {
+	if (!fIdConverter && (this != &epos)) {
 		fIdConverter = new AliGenEposIsajetToPdgConverter();
 	}
 	return *this;
