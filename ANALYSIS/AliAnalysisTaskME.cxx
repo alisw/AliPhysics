@@ -87,14 +87,16 @@ AliAnalysisTaskME::AliAnalysisTaskME(const AliAnalysisTaskME& obj):
 AliAnalysisTaskME& AliAnalysisTaskME::operator=(const AliAnalysisTaskME& other)
 {
 // Assignment
-    AliAnalysisTask::operator=(other);
-    fDebug           = other.fDebug;
-    fEntry           = other.fEntry;
-    fFreshBufferOnly = other.fFreshBufferOnly;
-    fInputHandler    = other.fInputHandler;
-    fOutputAOD       = other.fOutputAOD;
-    fTreeA           = other.fTreeA;    
-    fOfflineTriggerMask = other.fOfflineTriggerMask;
+    if (this != &other) {
+	AliAnalysisTask::operator=(other);
+	fDebug           = other.fDebug;
+	fEntry           = other.fEntry;
+	fFreshBufferOnly = other.fFreshBufferOnly;
+	fInputHandler    = other.fInputHandler;
+	fOutputAOD       = other.fOutputAOD;
+	fTreeA           = other.fTreeA;    
+	fOfflineTriggerMask = other.fOfflineTriggerMask;
+    }
     return *this;
 }
 
