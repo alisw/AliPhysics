@@ -42,6 +42,17 @@ AliIonPDGCodes::AliIonPDGCodes(const AliIonPDGCodes &/*PDGCodes*/)
   for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=0;
 }
 
+AliIonPDGCodes&  AliIonPDGCodes::operator=(const AliIonPDGCodes &pdg)
+{
+  for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=0;
+  if (this != &pdg) {
+      TObject::operator=(pdg);
+      fNIon = pdg.fNIon;
+        for(Int_t i=0; i<fNIon; i++) fPDGCode[i]=pdg.fPDGCode[i];
+  }
+  return *this;
+}
+
 //______________________________________________________________________________
 void AliIonPDGCodes::AddParticlesToPdgDataBase()
 {

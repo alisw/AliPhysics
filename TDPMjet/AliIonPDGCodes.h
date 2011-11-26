@@ -19,6 +19,7 @@ public:
   AliIonPDGCodes();
   virtual ~AliIonPDGCodes() {;}
   AliIonPDGCodes(const AliIonPDGCodes &PDGCodes);
+  AliIonPDGCodes& operator=(const AliIonPDGCodes& pdg);
   virtual void AddParticlesToPdgDataBase();
 //  virtual void MapPDGGEant3Codes();
   virtual void SetPDGCode(Int_t i, Int_t val) {fPDGCode[i]=val;}
