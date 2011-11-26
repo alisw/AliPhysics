@@ -150,30 +150,31 @@ AliJetUnitArray::AliJetUnitArray(const AliJetUnitArray& rUnit):
 AliJetUnitArray& AliJetUnitArray::operator=(const AliJetUnitArray& rhs)
 {
   // Assignment
-  fUnitEnergy = rhs.fUnitEnergy;
-  fUnitEta = rhs.fUnitEta;
-  fUnitPhi = rhs.fUnitPhi;
-  fUnitDeta = rhs.fUnitDeta;
-  fUnitDphi = rhs.fUnitDphi;
-  fUnitID = rhs.fUnitID;
-  fUnitTrackID = rhs.fUnitTrackID;
-  fUnitNum = rhs.fUnitNum;
-  fUnitClusterID = rhs.fUnitClusterID;
-  fUnitFlag = rhs.fUnitFlag;
-  fUnitCutFlag = rhs.fUnitCutFlag;
-  fUnitCutFlag2 = rhs.fUnitCutFlag2;
-  fUnitSignalFlag = rhs.fUnitSignalFlag;
-  fUnitDetectorFlag = rhs.fUnitDetectorFlag;
-  fUnitPx = rhs.fUnitPx;
-  fUnitPy = rhs.fUnitPy;
-  fUnitPz = rhs.fUnitPz;
-  fUnitMass = rhs.fUnitMass;
-  fVc = rhs.fVc;
-  fVn = rhs.fVn;
-  fUnitTrackRef = rhs.fUnitTrackRef;
-  fUnitCellRef = rhs.fUnitCellRef;
-  fUnitClusterRef = rhs.fUnitClusterRef;
-
+    if (this != &rhs) {
+	fUnitEnergy = rhs.fUnitEnergy;
+	fUnitEta = rhs.fUnitEta;
+	fUnitPhi = rhs.fUnitPhi;
+	fUnitDeta = rhs.fUnitDeta;
+	fUnitDphi = rhs.fUnitDphi;
+	fUnitID = rhs.fUnitID;
+	fUnitTrackID = rhs.fUnitTrackID;
+	fUnitNum = rhs.fUnitNum;
+	fUnitClusterID = rhs.fUnitClusterID;
+	fUnitFlag = rhs.fUnitFlag;
+	fUnitCutFlag = rhs.fUnitCutFlag;
+	fUnitCutFlag2 = rhs.fUnitCutFlag2;
+	fUnitSignalFlag = rhs.fUnitSignalFlag;
+	fUnitDetectorFlag = rhs.fUnitDetectorFlag;
+	fUnitPx = rhs.fUnitPx;
+	fUnitPy = rhs.fUnitPy;
+	fUnitPz = rhs.fUnitPz;
+	fUnitMass = rhs.fUnitMass;
+	fVc = rhs.fVc;
+	fVn = rhs.fVn;
+	fUnitTrackRef = rhs.fUnitTrackRef;
+	fUnitCellRef = rhs.fUnitCellRef;
+	fUnitClusterRef = rhs.fUnitClusterRef;
+    }
   return *this;
 
 }
