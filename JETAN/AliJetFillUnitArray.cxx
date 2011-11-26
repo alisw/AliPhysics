@@ -157,40 +157,41 @@ AliJetFillUnitArray& AliJetFillUnitArray::operator=(const AliJetFillUnitArray& r
     //
     // Assignment operator
     //
-    fNTracks          = rhs.fNTracks;
-    fNTracksCut       = rhs.fNTracksCut;
-    fOpt              = rhs.fOpt;
-    fDZ               = rhs.fDZ;
-    fDebug            = rhs.fDebug;
-    fReaderHeader     = rhs.fReaderHeader;
-    fMomentumArray    = rhs.fMomentumArray;
-    fUnitArray        = rhs.fUnitArray;
-    fRefArray         = rhs.fRefArray;
-    fRef              = rhs.fRef;
-    fSignalFlag       = rhs.fSignalFlag;
-    fCutFlag          = rhs.fCutFlag;  
-    fProcId           = rhs.fProcId;
-    fTPCGrid          = rhs.fTPCGrid;
-    fEMCalGrid        = rhs.fEMCalGrid;
-    fGeom             = rhs.fGeom;
-    fNphi             = rhs.fNphi;   
-    fNeta             = rhs.fNeta;  
-    fGrid             = rhs.fGrid;
-    fPhi2             = rhs.fPhi2; 
-    fEta2             = rhs.fEta2; 
-    fIndex            = rhs.fIndex;
-    fParams           = rhs.fParams;
-    fPhiMin           = rhs.fPhiMin;
-    fPhiMax           = rhs.fPhiMax;
-    fEtaMin           = rhs.fEtaMin;
-    fEtaMax           = rhs.fEtaMax;
-    fEtaBinInTPCAcc   = rhs.fEtaBinInTPCAcc;
-    fPhiBinInTPCAcc   = rhs.fPhiBinInTPCAcc;
-    fEtaBinInEMCalAcc = rhs.fEtaBinInEMCalAcc;
-    fPhiBinInEMCalAcc = rhs.fPhiBinInEMCalAcc;
-    fNbinPhi          = rhs.fNbinPhi;
-    return *this;
-    
+    if (this != &rhs) {
+	fNTracks          = rhs.fNTracks;
+	fNTracksCut       = rhs.fNTracksCut;
+	fOpt              = rhs.fOpt;
+	fDZ               = rhs.fDZ;
+	fDebug            = rhs.fDebug;
+	fReaderHeader     = rhs.fReaderHeader;
+	fMomentumArray    = rhs.fMomentumArray;
+	fUnitArray        = rhs.fUnitArray;
+	fRefArray         = rhs.fRefArray;
+	fRef              = rhs.fRef;
+	fSignalFlag       = rhs.fSignalFlag;
+	fCutFlag          = rhs.fCutFlag;  
+	fProcId           = rhs.fProcId;
+	fTPCGrid          = rhs.fTPCGrid;
+	fEMCalGrid        = rhs.fEMCalGrid;
+	fGeom             = rhs.fGeom;
+	fNphi             = rhs.fNphi;   
+	fNeta             = rhs.fNeta;  
+	fGrid             = rhs.fGrid;
+	fPhi2             = rhs.fPhi2; 
+	fEta2             = rhs.fEta2; 
+	fIndex            = rhs.fIndex;
+	fParams           = rhs.fParams;
+	fPhiMin           = rhs.fPhiMin;
+	fPhiMax           = rhs.fPhiMax;
+	fEtaMin           = rhs.fEtaMin;
+	fEtaMax           = rhs.fEtaMax;
+	fEtaBinInTPCAcc   = rhs.fEtaBinInTPCAcc;
+	fPhiBinInTPCAcc   = rhs.fPhiBinInTPCAcc;
+	fEtaBinInEMCalAcc = rhs.fEtaBinInEMCalAcc;
+	fPhiBinInEMCalAcc = rhs.fPhiBinInEMCalAcc;
+	fNbinPhi          = rhs.fNbinPhi;
+    }
+	return *this;
 }
 
 //_____________________________________________________________________________
