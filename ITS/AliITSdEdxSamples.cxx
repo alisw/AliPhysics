@@ -93,6 +93,7 @@ AliITSdEdxSamples& AliITSdEdxSamples::operator=(const AliITSdEdxSamples &source)
     fdxSamples[i]=source.GetdxSample(i);
     fPAtSample[i]=source.GetMomentumAtSample(i);
   }
+  return *this;
 }
 
 //______________________________________________________________________

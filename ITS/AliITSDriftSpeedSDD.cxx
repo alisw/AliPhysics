@@ -72,6 +72,7 @@ AliITSDriftSpeedSDD& AliITSDriftSpeedSDD::operator=(const AliITSDriftSpeedSDD &d
   fTimestamp = drSpeed.fTimestamp;
   fPolDeg = drSpeed.fPolDeg;
   for(Int_t i=0; i<fgkMaxPolDeg+1; i++) fDriftSpeedParam[i]=drSpeed.GetDriftSpeedParameter(i);
+  return *this;
 }
 
 //______________________________________________________________________
