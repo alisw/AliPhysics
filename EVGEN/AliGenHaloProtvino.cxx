@@ -270,7 +270,10 @@ void AliGenHaloProtvino::Generate()
 //
 // Mean time between interactions
 //
-  Float_t dT = fTimePerEvent/nInt;   // sec 
+
+  Float_t dT = 0.;   // sec 
+  if (nInt > 0) 
+      dT = fTimePerEvent/nInt;   
   Float_t t  = 0;                    // sec
   
 //
