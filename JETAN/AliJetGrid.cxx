@@ -169,39 +169,42 @@ AliJetGrid::AliJetGrid(const AliJetGrid& grid) :
 AliJetGrid& AliJetGrid::operator=(const AliJetGrid& other)
 {
   // Assignment
-  fGrid = other.fGrid;
-  fNphi = other.fNphi;        
-  fNeta = other.fNeta;      
-  fPhi    = 0;       
-  fEta    = 0;       
-  fIndex  = 0;     
-  fIndexI = other.fIndexI;    
-  fIndexJ = other.fIndexJ;    
-  fPhiMin = other.fPhiMin;    
-  fPhiMax = other.fPhiMax;    
-  fEtaMin = other.fEtaMin;    
-  fEtaMax = other.fEtaMax;    
-  fEtaBinInTPCAcc   = other.fEtaBinInTPCAcc;   
-  fPhiBinInTPCAcc   = other.fPhiBinInTPCAcc;   
-  fEtaBinInEMCalAcc = other.fEtaBinInEMCalAcc; 
-  fPhiBinInEMCalAcc = other.fPhiBinInEMCalAcc; 
-  fNbinEta = other.fNbinEta;
-  fNbinPhi = other.fNbinPhi;
-  fMaxPhi  = other.fMaxPhi;
-  fMinPhi  = other.fMinPhi;
-  fMaxEta  = other.fMaxEta;
-  fMinEta  = other.fMinEta;
-  fDebug   = other.fDebug;
-  fPhi = new TArrayD(fNphi+1);
-  for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = other.fPhi->At(i);
-  fEta = new TArrayD(fNeta+1);
-  for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = other.fEta->At(i);
+    if (this != &other) {
+	fGrid = other.fGrid;
+	fNphi = other.fNphi;        
+	fNeta = other.fNeta;      
+	fPhi    = 0;       
+	fEta    = 0;       
+	fIndex  = 0;     
+	fIndexI = other.fIndexI;    
+	fIndexJ = other.fIndexJ;    
+	fPhiMin = other.fPhiMin;    
+	fPhiMax = other.fPhiMax;    
+	fEtaMin = other.fEtaMin;    
+	fEtaMax = other.fEtaMax;    
+	fEtaBinInTPCAcc   = other.fEtaBinInTPCAcc;   
+	fPhiBinInTPCAcc   = other.fPhiBinInTPCAcc;   
+	fEtaBinInEMCalAcc = other.fEtaBinInEMCalAcc; 
+	fPhiBinInEMCalAcc = other.fPhiBinInEMCalAcc; 
+	fNbinEta = other.fNbinEta;
+	fNbinPhi = other.fNbinPhi;
+	fMaxPhi  = other.fMaxPhi;
+	fMinPhi  = other.fMinPhi;
+	fMaxEta  = other.fMaxEta;
+	fMinEta  = other.fMinEta;
+	fDebug   = other.fDebug;
+	fPhi = new TArrayD(fNphi+1);
+	for(Int_t i=0; i<fNphi+1; i++) (*fPhi)[i] = other.fPhi->At(i);
+	fEta = new TArrayD(fNeta+1);
+	for(Int_t i=0; i<fNeta+1; i++) (*fEta)[i] = other.fEta->At(i);
   
-  fIndex = new TMatrixD(fNphi+1,fNeta+1);
-  for(Int_t i=0; i<fNphi+1; i++) {
-    for(Int_t j=0; j<fNeta+1; j++) (*fIndex)(i,j)=(*other.fIndex)(i,j);
-  }
-  return *this;
+	fIndex = new TMatrixD(fNphi+1,fNeta+1);
+	for(Int_t i=0; i<fNphi+1; i++) {
+	    for(Int_t j=0; j<fNeta+1; j++) (*fIndex)(i,j)=(*other.fIndex)(i,j);
+	}
+    }
+    
+    return *this;
 }
 
 //__________________________________________________________
