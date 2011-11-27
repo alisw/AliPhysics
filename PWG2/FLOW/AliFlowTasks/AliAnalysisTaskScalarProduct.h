@@ -41,6 +41,8 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   
   void SetHarmonic(Int_t const harmonic) {this->fHarmonic = harmonic;};
   Int_t GetHarmonic() const {return this->fHarmonic;};   
+
+  void SetBehaveAsEP() { fNormalizationType = 0; }
   
   void SetTotalQvector(const char *tqv) {*this->fTotalQvector = tqv;}; 
 
@@ -61,7 +63,8 @@ class AliAnalysisTaskScalarProduct : public AliAnalysisTaskSE {
   Bool_t fApplyCorrectionForNUA; // apply automatic correction for non-uniform acceptance 
   
   Int_t fHarmonic;               // harmonic
-  
+  Int_t fNormalizationType;      // 0: EP mode || 1: SP mode (default)
+
   TString   *fTotalQvector;      // total Q-vector is: "QaQb" (means Qa+Qb), "Qa"  or "Qb"  
   
   ClassDef(AliAnalysisTaskScalarProduct, 1); // example of analysis
