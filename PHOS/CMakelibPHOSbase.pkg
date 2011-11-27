@@ -47,6 +47,7 @@ set ( SRCS
     AliPHOSRawFitterv1.cxx 
     AliPHOSRawFitterv2.cxx 
     AliPHOSRawFitterv3.cxx 
+    AliPHOSRawFitterv4.cxx 
     AliPHOSRawDigiProducer.cxx 
     AliPHOSEmcBadChannelsMap.cxx 
     AliPHOSSurvey.cxx 

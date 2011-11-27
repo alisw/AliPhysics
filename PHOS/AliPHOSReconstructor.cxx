@@ -52,6 +52,7 @@
 #include "AliPHOSRawFitterv1.h"
 #include "AliPHOSRawFitterv2.h"
 #include "AliPHOSRawFitterv3.h"
+#include "AliPHOSRawFitterv4.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
 
@@ -386,7 +387,7 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
   else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v3")==0) 
     fitter=new AliPHOSRawFitterv3();
   else
-    fitter=new AliPHOSRawFitterv0();
+    fitter=new AliPHOSRawFitterv4();
 
   fitter->SubtractPedestals(GetRecoParam()->EMCSubtractPedestals());
   fitter->SetAmpOffset     (GetRecoParam()->GetGlobalAltroOffset());

@@ -329,12 +329,12 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   
   gMinuit->mnexcm("MIGRAD", &p0, 0, ierflg) ;    // minimize 
   
-  Double_t err,t0err ;
-  Double_t t0,efit ;
+  Double_t err=0.,t0err=0. ;
+  Double_t t0=0.,efit=0. ;
   gMinuit->GetParameter(0,t0, t0err) ;
   gMinuit->GetParameter(1,efit, err) ;
   
-  Double_t bfit, berr ;
+  Double_t bfit=0., berr=0. ;
   gMinuit->GetParameter(2,bfit,berr) ;
   
   //Calculate total energy
@@ -352,7 +352,7 @@ Bool_t AliPHOSRawFitterv1::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
   }                                                                             
   
   //evaluate fit quality
-  Double_t fmin,fedm,errdef ;
+  Double_t fmin=0.,fedm=0.,errdef=0. ;
   Int_t npari,nparx,istat;
   gMinuit->mnstat(fmin,fedm,errdef,npari,nparx,istat) ;
   fQuality = fmin/sigLength ;
@@ -422,8 +422,8 @@ void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, D
     Double_t diff=0. ;
     exp1*=dexp1 ;
     exp2*=dexp2 ;
-    if(fsample>=overflow)
-      continue ;    
+//    if(fsample>=overflow)
+//      continue ;    
     if(dt<=0.){
       diff=fsample ; 
       fret += diff*diff ;
@@ -434,6 +434,9 @@ void AliPHOSRawFitterv1::UnfoldingChiSquare(Int_t & /*nPar*/, Double_t * Grad, D
     Double_t dtnE=dtn*exp1 ;
     Double_t dt2E=dt*dt*exp2 ;
     Double_t fit=en*(dtnE + b*dt2E) ;
+    if(fsample>=overflow && fit>=overflow)
+      continue ;    
+
     diff = fsample - fit ;
     fret += diff*diff ;
     if(iflag == 2){  // calculate gradient
