@@ -50,6 +50,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct(const char *name, Boo
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(2),
+  fNormalizationType(1),
   fTotalQvector(NULL) 
 {
   // Constructor
@@ -79,6 +80,7 @@ AliAnalysisTaskScalarProduct::AliAnalysisTaskScalarProduct() :
   fRelDiffMsub(1.0),
   fApplyCorrectionForNUA(kFALSE),
   fHarmonic(0),
+  fNormalizationType(1),
   fTotalQvector(NULL) 
   {
   // Constructor
@@ -111,7 +113,7 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   fSP = new AliFlowAnalysisWithScalarProduct();
 
   //set the allowed relative difference in the subevent multiplicities
-  fSP->SetRelDiffMsub(fRelDiffMsub); 
+  //fSP->SetRelDiffMsub(fRelDiffMsub); 
     
   //apply automatic correction for non-uniform acceptance:
   if (fApplyCorrectionForNUA) {
@@ -120,12 +122,12 @@ void AliAnalysisTaskScalarProduct::UserCreateOutputObjects()
   fSP->SetApplyCorrectionForNUA(fApplyCorrectionForNUA);
   // harmonic: 
   fSP->SetHarmonic(fHarmonic);
+  fSP->SetNormalizationType( fNormalizationType );
   // total Q-vector:
-  if(!(strcmp(fTotalQvector->Data(),"QaQb")==0)) // default is "QaQb" (means Qa+Qb)
-  {
-   fSP->SetTotalQvector(fTotalQvector->Data());
-  }  
-  
+  Int_t totalQ = 0;
+  if( fTotalQvector->Contains("Qa") ) totalQ += 1;
+  if( fTotalQvector->Contains("Qb") ) totalQ += 2;
+  fSP->SetTotalQvector( totalQ );
   //for using phi weights:
   if(fUsePhiWeights) {
     //pass the flag to the analysis class:
