@@ -40,7 +40,7 @@ ClassImp(AliRDHFCutsD0toKpi)
 //--------------------------------------------------------------------------
 AliRDHFCutsD0toKpi::AliRDHFCutsD0toKpi(const char* name) : 
 AliRDHFCuts(name),
-fUseSpecialCuts(kTRUE),
+fUseSpecialCuts(kFALSE),
 fLowPt(kTRUE),
 fDefaultPID(kFALSE),
 fUseKF(kFALSE),
