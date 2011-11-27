@@ -13,9 +13,10 @@
 
 //--- Root ---
 class TList;
-class TH1F;
 class TH2F;
+class TH2D;
 class AliEMCALGeometry;
+class TProfile2D;
 
 //--- AliRoot ---
 class AliEMCALRecoUtils;
@@ -37,9 +38,7 @@ public:
   void   UserExec(Option_t *option);   // function called for each event
   
   void   SetGeometryName(TString name)  { fGeoName = name ; } 
-  
-  void   Terminate(Option_t *option);
-  
+    
   AliEMCALRecoUtils* GetRecoUtils()     { return fRecoUtils ; }
   
   //Histogram setters
@@ -53,38 +52,38 @@ public:
 
   
 private:
-  TList            *fOutputList;     //! Output list
+  TList            *fOutputList;      //! Output list
   
-  AliEMCALGeometry *fGeometry;       //  Access to EMCAL geometry utils
-  TString           fGeoName;        //  Name of geometry used
+  AliEMCALGeometry *fGeometry;        //  Access to EMCAL geometry utils
+  TString           fGeoName;         //  Name of geometry used
   
-  AliEMCALRecoUtils *fRecoUtils;     //  RecoUtils
+  AliEMCALRecoUtils *fRecoUtils;      //  RecoUtils
   
-  TH1F             *fhNEvents;       //! Number of selected events
-  TH2F             *fhFORAmp;        //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
-  TH2F             *fhFORAmpL1G;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma trigger event
-  TH2F             *fhFORAmpL1J;     //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet trigger event
-  TH2F             *fhL0Amp;         //! FALTRO signal per Row and Column for FOR involves L0 patch
-  TH2F             *fhL0AmpL1G;      //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1G trigger event
-  TH2F             *fhL0AmpL1J;      //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1J trigger event
-  TH2F             *fhL1Amp;         //! STU signal per Row and Column for FOR involves L0 patch
-  TH2F             *fhL1GAmp;        //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
-  TH2F             *fhL1JAmp;        //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
-  TH2F             *fhL0Patch;       //! FOR with L0 patch associated
-  TH2F             *fhL1GPatch;      //! FOR with L1 Gamma patch associated
-  TH2F             *fhL1JPatch;      //! FOR with L1 Jet patch associated
-  TH2F             *fhFEESTU;        //! Correlation FEE vs STU
-  TH2F             *fhTRUSTU;        //! Correlation TRU vs STU
-  TH2I             *fhV0STU;         //! Total signal STU vs V0C+V0S
-  TH2I             *fhFullTRUSTU;    //! Total signal STU vs TRU
-  TH2I             *fhSTUChecks;     //! Checks STU/TRU link
-  TH1F             *fhClusMB;        //! Clusters distribution for MB trigger
-  TH1F             *fhClusL0;        //! Clusters distribution for L0 trigger	
-  TH1F             *fhClusL1G;       //! Clusters distribution for L1G trigger
-  TH1F             *fhClusL1J;       //! Clusters distribution for L1J trigger
-  TH1F             *fhClusL1GOnly;   //! Clusters distribution for L1G trigger and not L1J
-  TH1F             *fhClusL1JOnly;   //! Clusters distribution for L1J trigger and not L1G
+  TH1F             *fhNEvents;        //! Number of selected events
+  TH2F             *fhFORAmp;         //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column
+  TH2F             *fhFORAmpL1G;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Gamma trigger event
+  TH2F             *fhFORAmpL1J;      //! FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column, with L1 Jet trigger event
+  TH2F             *fhL0Amp;          //! FALTRO signal per Row and Column for FOR involves L0 patch
+  TH2F             *fhL0AmpL1G;       //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1G trigger event
+  TH2F             *fhL0AmpL1J;       //! FALTRO signal per Row and Column for FOR involves L0 patch, with L1J trigger event
+  TH2F             *fhL1Amp;          //! STU signal per Row and Column for FOR involves L0 patch
+  TH2F             *fhL1GAmp;         //! STU signal per Row and Column for FOR position of L1 Gamma patch (top-left)
+  TH2F             *fhL1JAmp;         //! STU signal per Row and Column for FOR position of L1 Jet patch (top-left)
+  TH2F             *fhL0Patch;        //! FOR with L0 patch associated
+  TH2F             *fhL1GPatch;       //! FOR with L1 Gamma patch associated
+  TH2F             *fhL1JPatch;       //! FOR with L1 Jet patch associated
+  TH2F             *fhFEESTU;         //! Correlation FEE vs STU
+  TH2F             *fhTRUSTU;         //! Correlation TRU vs STU
+  TH2I             *fhV0STU;          //! Total signal STU vs V0C+V0S
+  TH1F             *fhClusMB;         //! Clusters distribution for MB trigger
+  TH1F             *fhClusMBPure;     //! Clusters distribution for MB trigger
+  TH1F             *fhClusL0;         //! Clusters distribution for L0 trigger	
+  TH1F             *fhClusL1G;        //! Clusters distribution for L1G trigger
+  TH1F             *fhClusL1J;        //! Clusters distribution for L1J trigger
+  TH1F             *fhClusL1GOnly;    //! Clusters distribution for L1G trigger and not L1J
+  TH1F             *fhClusL1JOnly;    //! Clusters distribution for L1J trigger and not L1G
   TH1F             *fhClusMaxMB;      //! Maximum E Cluster per event distribution for MB trigger
+  TH1F             *fhClusMaxMBPure;  //! Maximum E Cluster per event distribution for MB trigger
   TH1F             *fhClusMaxL0;      //! Maximum E Cluster per event distribution for L0 trigger	
   TH1F             *fhClusMaxL1G;     //! Maximum E Cluster per event distribution for L1G trigger
   TH1F             *fhClusMaxL1J;     //! Maximum E Cluster per event distribution for L1J trigger
@@ -92,7 +91,14 @@ private:
   TH1F             *fhClusMaxL1JOnly; //! Maximum E Cluster per event distribution for L1J trigger and not L1G
   TH2F             *fhGPMaxVV0TT;     //! V0 signal vs maximum gamma L1 patch
   TH2F             *fhJPMaxVV0TT;     //! V0 signal vs maximum jet L1 patch
-  
+  TProfile2D       *fhFORMeanAmp;     //! Mean FastOR(FEE) signal per Row and Column
+  TProfile2D       *fhL0MeanAmp;      //! Mean FastOR(TRU) signal per Row and Column
+  TProfile2D       *fhL1MeanAmp;      //! Mean FastOR(STU) signal per Row and Column
+  TH1F             *fhV0MB;           //! V0 distribution for MB triggered event
+  TH1F             *fhV0L1G;          //! V0 distribution for L1G triggered event
+  TH1F             *fhV0L1J;          //! V0 distribution for L1J triggered event
+  TH2F             *fhL1GPatchMax;    //! FOR of max. amplitude patch with L1 Gamma patch associated
+  TH2F             *fhL1JPatchMax;    //! FOR of max. amplitude patch with L1 Jet patch associated
   // Histograms bins
   
   Int_t             fNBinsSTUSignal   ; // Number of bins for STU total signal histograms
@@ -122,7 +128,7 @@ private:
   
   AliAnalysisTaskEMCALTriggerQA& operator=(const AliAnalysisTaskEMCALTriggerQA&); //not implemented
   
-  ClassDef(AliAnalysisTaskEMCALTriggerQA, 6);   
+  ClassDef(AliAnalysisTaskEMCALTriggerQA, 8);   
 };
 
 #endif 
