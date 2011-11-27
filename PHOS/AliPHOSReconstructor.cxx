@@ -380,7 +380,9 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     mapping[i] = (AliAltroMapping*)maps->At(i);
   }
 
-  if      (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0) 
+  if      (strcmp(GetRecoParam()->EMCFitterVersion(),"v0")==0) 
+    fitter=new AliPHOSRawFitterv0();
+  else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v1")==0) 
     fitter=new AliPHOSRawFitterv1();
   else if (strcmp(GetRecoParam()->EMCFitterVersion(),"v2")==0) 
     fitter=new AliPHOSRawFitterv2();
