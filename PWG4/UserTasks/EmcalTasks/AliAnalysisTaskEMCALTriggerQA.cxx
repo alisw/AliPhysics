@@ -22,9 +22,9 @@
 
 
 #include <TList.h>
-#include <TH1F.h>
 #include <TH2F.h>
 #include <TF1.h>
+#include <TProfile2D.h> 
 
 #include "AliLog.h"
 #include "AliVCluster.h"
@@ -61,15 +61,15 @@ fhL1JPatch(0),
 fhFEESTU(0),
 fhTRUSTU(0),
 fhV0STU(0),
-fhFullTRUSTU(0),
-fhSTUChecks(0),
 fhClusMB(0),
+fhClusMBPure(0),
 fhClusL0(0),
 fhClusL1G(0),
 fhClusL1J(0),
 fhClusL1GOnly(0),
 fhClusL1JOnly(0),
 fhClusMaxMB(0),
+fhClusMaxMBPure(0),
 fhClusMaxL0(0),
 fhClusMaxL1G(0),
 fhClusMaxL1J(0),
@@ -77,11 +77,19 @@ fhClusMaxL1GOnly(0),
 fhClusMaxL1JOnly(0),
 fhGPMaxVV0TT(0),
 fhJPMaxVV0TT(0),
+fhFORMeanAmp(0),
+fhL0MeanAmp(0),
+fhL1MeanAmp(0),
+fhV0MB(0),
+fhV0L1G(0),
+fhV0L1J(0),
+fhL1GPatchMax(0),
+fhL1JPatchMax(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
-fNBinsV0Signal   (2000), fMaxV0Signal   (20000),
-fNBinsSTUFEERatio(2000), fMaxSTUFEERatio(20000),
-fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200),
+fNBinsV0Signal   (5000), fMaxV0Signal   (100000),
+fNBinsSTUFEERatio(1000), fMaxSTUFEERatio(100),
+fNBinsSTUTRURatio(1000), fMaxSTUTRURatio(100),
 fNBinsClusterE   (500),  fMaxClusterE   (100)
 
 {
@@ -110,15 +118,15 @@ fhL1JPatch(0),
 fhFEESTU(0),
 fhTRUSTU(0),
 fhV0STU(0),
-fhFullTRUSTU(0),
-fhSTUChecks(0),
 fhClusMB(0),
+fhClusMBPure(0),
 fhClusL0(0),
 fhClusL1G(0),
 fhClusL1J(0),
 fhClusL1GOnly(0),
 fhClusL1JOnly(0),
 fhClusMaxMB(0),
+fhClusMaxMBPure(0),
 fhClusMaxL0(0),
 fhClusMaxL1G(0),
 fhClusMaxL1J(0),
@@ -126,11 +134,19 @@ fhClusMaxL1GOnly(0),
 fhClusMaxL1JOnly(0),
 fhGPMaxVV0TT(0),
 fhJPMaxVV0TT(0),
+fhFORMeanAmp(0),
+fhL0MeanAmp(0),
+fhL1MeanAmp(0),
+fhV0MB(0),
+fhV0L1G(0),
+fhV0L1J(0),
+fhL1GPatchMax(0),
+fhL1JPatchMax(0),
 fNBinsSTUSignal  (2000), fMaxSTUSignal  (200000),
 fNBinsTRUSignal  (2000), fMaxTRUSignal  (200000),
-fNBinsV0Signal   (5000), fMaxV0Signal   (50000),
-fNBinsSTUFEERatio(2000), fMaxSTUFEERatio(20000),
-fNBinsSTUTRURatio(2000), fMaxSTUTRURatio(200),
+fNBinsV0Signal   (5000), fMaxV0Signal   (100000),
+fNBinsSTUFEERatio(1000), fMaxSTUFEERatio(100),
+fNBinsSTUTRURatio(1000), fMaxSTUTRURatio(100),
 fNBinsClusterE   (500),  fMaxClusterE   (100)
 {
   // Constructor
@@ -150,16 +166,21 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList  = new TList;
   fOutputList ->SetOwner(kTRUE);
   
-  fhNEvents    = new TH1F("hNEvents","Number of selected events",7,0,7);
+  fhNEvents    = new TH1F("hNEvents","Number of selected events",12,0,12);
   fhNEvents   ->SetYTitle("N events");
   fhNEvents   ->GetXaxis()->SetBinLabel(1 ,"All");
-  fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"INT");
+  fhNEvents   ->GetXaxis()->SetBinLabel(2 ,"MB");
   fhNEvents   ->GetXaxis()->SetBinLabel(3 ,"L0");
   fhNEvents   ->GetXaxis()->SetBinLabel(4 ,"L1-G");
   fhNEvents   ->GetXaxis()->SetBinLabel(5 ,"L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G - !L1-J");
-  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-J - !L1-G");
-  
+  fhNEvents   ->GetXaxis()->SetBinLabel(6 ,"L1-G & !L1-J");
+  fhNEvents   ->GetXaxis()->SetBinLabel(7 ,"L1-J & !L1-G");
+  fhNEvents   ->GetXaxis()->SetBinLabel(8 ,"L1-J & L1-G");  
+  fhNEvents   ->GetXaxis()->SetBinLabel(9 ,"MB & !L1 & !L0");
+  fhNEvents   ->GetXaxis()->SetBinLabel(10,"L0 & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(11,"L1-G & !MB");
+  fhNEvents   ->GetXaxis()->SetBinLabel(12,"L1-J & !MB");
+
   
   fhFORAmp     = new TH2F("hFORAmp", "FEE cells deposited energy, grouped like FastOR 2x2 per Row and Column",
                           fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
@@ -233,27 +254,20 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhL1JPatch  ->SetYTitle("Index #phi (rows)");
   fhL1JPatch  ->SetZTitle("counts");
   
-  fhFullTRUSTU = new TH2I("hFullTRUSTU","Total signal STU vs TRU",
-                          fNBinsTRUSignal,0,fMaxTRUSignal,fNBinsSTUSignal,0,fMaxSTUSignal);
-  fhFullTRUSTU->SetXTitle("Total signal TRU");
-  fhFullTRUSTU->SetYTitle("Total signal STU");
-  fhFullTRUSTU->SetZTitle("counts");
-  
   fhV0STU      = new TH2I("hV0STU","Total signal STU vs V0C+V0S",
                           fNBinsV0Signal,0,fMaxV0Signal,fNBinsSTUSignal,0,fMaxSTUSignal);
   fhV0STU     ->SetXTitle("Signal V0C+V0A");
   fhV0STU     ->SetYTitle("Total signal STU");
   fhV0STU     ->SetZTitle("counts");
   
-  fhSTUChecks  = new TH2I("hSTUChecks","Check FEE/STU link",2,0,2,15,0,15);
-  fhSTUChecks ->SetXTitle("Index #eta");
-  fhSTUChecks ->SetYTitle("Index #phi");
-  
   fhClusMB     = new TH1F("hClusMB","clusters distribution for MB trigger",fNBinsClusterE,0,fMaxClusterE);
   fhClusMB    ->SetXTitle("Energy (GeV)");
   
+  fhClusMBPure  = new TH1F("hClusMBPure","clusters distribution for MB trigger, no other EMCAL trigger on",fNBinsClusterE,0,fMaxClusterE);
+  fhClusMBPure ->SetXTitle("Energy (GeV)");
+  
   fhClusL0     = new TH1F("hClusL0","clusters distribution for L0 trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMB    ->SetXTitle("Energy (GeV)");
+  fhClusL0    ->SetXTitle("Energy (GeV)");
   
   fhClusL1G    = new TH1F("hClusL1G","clusters distribution for L1G trigger",fNBinsClusterE,0,fMaxClusterE);
   fhClusL1G   ->SetXTitle("Energy (GeV)");
@@ -270,8 +284,11 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhClusMaxMB  = new TH1F("hClusMaxMB","maximum energy cluster per event for MB trigger",fNBinsClusterE,0,fMaxClusterE);
   fhClusMaxMB ->SetXTitle("Energy (GeV)");
   
+  fhClusMaxMBPure  = new TH1F("hClusMaxMBPure","maximum energy cluster per event for MB trigger, no other EMCAL trigger on",fNBinsClusterE,0,fMaxClusterE);
+  fhClusMaxMBPure ->SetXTitle("Energy (GeV)");
+  
   fhClusMaxL0  = new TH1F("hClusMaxL0","maximum energy cluster per event for L0 trigger",fNBinsClusterE,0,fMaxClusterE);
-  fhClusMaxMB ->SetXTitle("Energy (GeV)");
+  fhClusMaxL0 ->SetXTitle("Energy (GeV)");
   
   fhClusMaxL1G = new TH1F("hClusMaxL1G","maximum energy cluster per event for L1G trigger",fNBinsClusterE,0,fMaxClusterE);
   fhClusMaxL1G->SetXTitle("Energy (GeV)");
@@ -295,14 +312,48 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fhTRUSTU    ->SetYTitle("channel");
   fhTRUSTU    ->SetZTitle("counts");
   
-  fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
-  fhGPMaxVV0TT ->SetXTitle("V0 TT");
+  fhGPMaxVV0TT = new TH2F("hGPMaxVV0TT","Maximum patch of L1-Gamma vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
+  fhGPMaxVV0TT ->SetXTitle("V0 from STU");
   fhGPMaxVV0TT ->SetYTitle("Patch Max");
   
-  fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
-  fhJPMaxVV0TT ->SetXTitle("V0 TT");
+  fhJPMaxVV0TT = new TH2F("hJPMaxVV0TT","Maximum patch of L1-Jet   vs V0 signal in STU",fNBinsV0Signal,0,fMaxV0Signal,1000,0,1000);
+  fhJPMaxVV0TT ->SetXTitle("V0 from STU");
   fhJPMaxVV0TT ->SetYTitle("Patch Max");
+
+  fhFORMeanAmp = new TProfile2D("hFORMeanAmp", "Mean FastOR(FEE) signal per Row and Column", fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhFORMeanAmp->SetXTitle("Index #eta");
+  fhFORMeanAmp->SetYTitle("Index #phi");
   
+  fhL0MeanAmp = new TProfile2D("hL0MeanAmp", "Mean FastOR(TRU) signal per Row and Column", fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL0MeanAmp->SetXTitle("Index #eta");
+  fhL0MeanAmp->SetYTitle("Index #phi");
+  
+  fhL1MeanAmp = new TProfile2D("hL1MeanAmp", "Mean FastOR(STU) signal per Row and Column", fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1MeanAmp->SetXTitle("Index #eta");
+  fhL1MeanAmp->SetYTitle("Index #phi");
+
+  fhV0MB = new TH1F("hV0MB","V0 distribution for MB triggered event",fNBinsV0Signal,0,fMaxV0Signal);
+  fhV0MB->SetXTitle("V0");
+
+  fhV0L1G = new TH1F("hV0L1G","V0 distribution for L1G triggered event",fNBinsV0Signal,0,fMaxV0Signal);
+  fhV0L1G->SetXTitle("V0");
+
+  fhV0L1J = new TH1F("hV0L1J","V0 distribution for L1J triggered event",fNBinsV0Signal,0,fMaxV0Signal);
+  fhV0L1J->SetXTitle("V0");
+
+  fhL1GPatchMax   = new TH2F("hL1GPatchMax","FOR of max amplitude patch with associated L1 Gamma Patch",
+                          fgkFALTROCols,0,fgkFALTROCols,fgkFALTRORows,0,fgkFALTRORows);
+  fhL1GPatchMax  ->SetXTitle("Index #eta (columnns)");
+  fhL1GPatchMax  ->SetYTitle("Index #phi (rows)");
+  fhL1GPatchMax  ->SetZTitle("counts");
+  
+  fhL1JPatchMax   = new TH2F("hL1JPatchMax","FOR of max amplitude patch with associated L1 Jet Patch",
+                          fgkFALTROCols/4,0,fgkFALTROCols,fgkFALTRORows/4,0,fgkFALTRORows);
+  fhL1JPatchMax  ->SetXTitle("Index #eta (columnns)");
+  fhL1JPatchMax  ->SetYTitle("Index #phi (rows)");
+  fhL1JPatchMax  ->SetZTitle("counts");
+  
+    
   fOutputList->Add(fhNEvents);
   fOutputList->Add(fhV0STU);
   fOutputList->Add(fhFORAmp);
@@ -317,10 +368,9 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhL0Patch);
   fOutputList->Add(fhL1GPatch);
   fOutputList->Add(fhL1JPatch);
-  fOutputList->Add(fhFullTRUSTU);
-  fOutputList->Add(fhSTUChecks);
   
   fOutputList->Add(fhClusMB);
+  fOutputList->Add(fhClusMBPure);
   fOutputList->Add(fhClusL0);
   fOutputList->Add(fhClusL1G);
   fOutputList->Add(fhClusL1J);
@@ -328,6 +378,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   fOutputList->Add(fhClusL1JOnly);
   
   fOutputList->Add(fhClusMaxMB);
+  fOutputList->Add(fhClusMaxMBPure);
   fOutputList->Add(fhClusMaxL0);
   fOutputList->Add(fhClusMaxL1G);
   fOutputList->Add(fhClusMaxL1J);
@@ -339,6 +390,18 @@ void AliAnalysisTaskEMCALTriggerQA::UserCreateOutputObjects()
   
   fOutputList->Add(fhGPMaxVV0TT);
   fOutputList->Add(fhJPMaxVV0TT);
+
+  fOutputList->Add(fhFORMeanAmp);
+  fOutputList->Add(fhL0MeanAmp);
+  fOutputList->Add(fhL1MeanAmp);
+
+  fOutputList->Add(fhV0MB );
+  fOutputList->Add(fhV0L1G);
+  fOutputList->Add(fhV0L1J);
+
+  fOutputList->Add(fhL1GPatchMax);
+  fOutputList->Add(fhL1JPatchMax);
+  
   
   PostData(1, fOutputList);  
   
@@ -366,24 +429,60 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   // physics events eventType=7, select only those
   
   if(triggerclasses=="" || eventType != 7) return;
-    
-  fhNEvents->Fill(0.5);
+  
+  // Check trigger
+  Bool_t bMB  = kFALSE;
+  Bool_t bL0  = kFALSE;
+  Bool_t bL1G = kFALSE;
+  Bool_t bL1J = kFALSE;
+  
   if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
      triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
      triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhNEvents->Fill(1.5);
-  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhNEvents->Fill(2.5);
-  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EGA")                 ) { fhNEvents->Fill(3.5);
-    if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") &&
-       !triggerclasses.Contains("CPBI2EJE")              )   fhNEvents->Fill(5.5); }
-  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EJE")                 ) { fhNEvents->Fill(4.5);
-    if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") &&
-       !triggerclasses.Contains("CPBI2EGA")              )   fhNEvents->Fill(6.5); }
+     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   bMB  = kTRUE;
   
+  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
+     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   bL0  = kTRUE;
+  
+  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CPBI2EGA")                 )   bL1G = kTRUE;
+  
+  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") ||
+     triggerclasses.Contains("CPBI2EJE")                 )   bL1J = kTRUE;
+  
+  // Fill event histo
+  fhNEvents->Fill(0.5); // All physics events
+  
+  if( bMB ) 
+  { 
+    fhNEvents->Fill(1.5);
+    if( !bL1G && !bL1J && !bL0 ) fhNEvents->Fill(8.5);
+  }
+  else 
+  {
+    if( bL0  ) fhNEvents->Fill( 9.5);
+    if( bL1G ) fhNEvents->Fill(10.5);
+    if( bL1J ) fhNEvents->Fill(11.5);
+  }
+
+  if( bL0  )  fhNEvents->Fill(2.5);
+  
+  if( bL1G ) 
+  {
+    fhNEvents->Fill(3.5);
+    if(!bL1J)  fhNEvents->Fill(5.5);
+  }
+  
+  if( bL1J ) 
+  {
+    fhNEvents->Fill(4.5);
+    if(!bL1G)  fhNEvents->Fill(6.5);
+  }
+  
+  if(bL1J && bL1G) fhNEvents->Fill(7.5);
+
+    
   //std::cout << "trigger = " << triggerclasses << std::endl;
   
   //map for cells and patches
@@ -479,7 +578,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
       Float_t ampL0 = 0.;
       trg.GetAmplitude(ampL0);
-      emcalTrigL0[posY][posX] += ampL0;
+      if (ampL0 > 0) emcalTrigL0[posY][posX] = ampL0;
       if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EGA")) emcalTrigL0L1G[posY][posX] += ampL0;
       if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") || triggerclasses.Contains("CPBI2EJE")) emcalTrigL0L1J[posY][posX] += ampL0;
       totTRU += ampL0;
@@ -497,17 +596,17 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       
       Int_t ts = 0;
       trg.GetL1TimeSum(ts);
-      emcalTrigL1 [posY][posX] = ts;
+      if (ts > 0) emcalTrigL1[posY][posX] = ts;
       totSTU += ts;
       
       //L1-Gamma
       if (bit >> 4 & 0x1) 
       {
         nL1Patch ++;
-        emcalPatchL1G[posY][posX] = 1.;
+        emcalPatchL1G[posY][posX] += 1.;
         fhL1GPatch->Fill(posX,posY);
         
-        emcalTrigL1G[posY][posX] += ts;
+        if (ts > 0) emcalTrigL1G[posY][posX] = ts;
         
         //printf("Gamma STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
       }
@@ -516,10 +615,10 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       if (bit >> 5 & 0x1) 
       {
         nL1Patch ++;
-        emcalPatchL1J[posY][posX] = 1.;
+        emcalPatchL1J[posY][posX] += 1.;
         fhL1JPatch->Fill(posX,posY);
         
-        emcalTrigL1J[posY][posX] += ts;
+        if (ts > 0) emcalTrigL1J[posY][posX] = ts;
         
         //printf("Jet STU patch %d, time sum %d, posX %d , posY %d\n",nL1Patch,ts,posX, posY);
         
@@ -530,9 +629,7 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
   
   if(totTRU > fMaxTRUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totTRU %f\n",totTRU);
   if(totSTU > fMaxSTUSignal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large totSTU %f\n",totSTU);
-  
-  if (totTRU != 0) fhFullTRUSTU->Fill(totTRU,totSTU);
-  
+ 
   //V0 analysis 
   AliESDVZERO* eventV0 = esdEvent->GetVZEROData(); 
 	
@@ -552,67 +649,97 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
     if( v0A+v0C > fMaxV0Signal && DebugLevel() > 0) printf("AliAnalysisTaskEMCALTriggerQA::UserExec() - Large v0A+v0C %f\n",v0A+v0C);
   }
   
+  if( bL1G ) fhV0L1G->Fill(v0A+v0C);                              ;
+  if( bL1J ) fhV0L1J->Fill(v0A+v0C);
+  if( bMB  ) fhV0MB ->Fill(v0A+v0C);
+  
   //if(nL0Patch!=0 || nL1Patch!=0) printf("total TRU %f, total STU %f, V0C+V0A %f; nL0 %d, nL1 %d \n",
   //       totTRU,totSTU,v0A+v0C,nL0Patch,nL1Patch);
   
+  //Maximum amplitude patch analysis
   Int_t patchMax = 0;
+  Int_t colMax = -1;
+  Int_t rowMax = -1;
+  Int_t col = 0;
+  Int_t row = 0;
   
   for (Int_t i = 0; i < 47; i++)
   {
     for (Int_t j = 0; j < 59; j++)
     {				
       Int_t patchG = 0;
+      col = i;
+      row = j;
       
       for (Int_t k = 0; k < 2; k++) 
 	    {
 	      for (Int_t l = 0; l < 2; l++) 
         {
-          patchG += int(emcalTrigL1[i + k][j + l]);
+          patchG += int(emcalTrigL1[j + l][i + k]);
         }
 	    }
       
-      if (patchG > patchMax) patchMax = patchG;
+      if (patchG > patchMax) 
+      {
+        patchMax = patchG;
+        colMax = col;
+        rowMax = row;
+      }
     }
   }
   
   fhGPMaxVV0TT->Fill(v0TT, patchMax);
+  if( bL1G ) fhL1GPatchMax->Fill(colMax,rowMax);
   
   patchMax = 0;
+  colMax = -1;
+  rowMax = -1;
   
   for (Int_t i = 0; i < 9; i++)
   {
     for (Int_t j = 0; j < 12; j++)
     {
       Int_t patchJ = 0;
+      col = i;
+      row = j;
       
       for (Int_t k = 0; k < 16; k++)
 	    {
 	      for (Int_t l = 0; l < 16; l++)
         {
-          patchJ += int(emcalTrigL1[4*i + k][4*j + l]);
+          patchJ += int(emcalTrigL1[4*j + l][4*i + k]);
         }
 	    }
       
-      if (patchJ > patchMax) patchMax = patchJ;
+      if (patchJ > patchMax) 
+      {
+        patchMax = patchJ;
+        colMax = 4*col;
+        rowMax = 4*row;
+      }
     }
   }
   
   fhJPMaxVV0TT->Fill(v0TT, patchMax);
+  if( bL1J ) fhL1JPatchMax->Fill(colMax,rowMax);
   
   //Matrix with signal per channel
   for (Int_t i = 0; i < fgkFALTRORows; i++) 
   {
     for (Int_t j = 0; j < fgkFALTROCols; j++) //check x,y direction for reading FOR ((0,0) = top left);
     {
-      fhFORAmp   ->Fill( j, i, emcalCell     [i][j]);
-      fhFORAmpL1G->Fill( j, i, emcalCellL1G  [i][j]);
-      fhFORAmpL1J->Fill( j, i, emcalCellL1J  [i][j]);
-      fhL0Amp    ->Fill( j, i, emcalTrigL0   [i][j]);
-      fhL0AmpL1G ->Fill( j, i, emcalTrigL0L1G[i][j]);
-      fhL0AmpL1J ->Fill( j, i, emcalTrigL0L1J[i][j]);
-      fhL1Amp    ->Fill( j, i, emcalTrigL1   [i][j]);
-      fhL1GAmp   ->Fill( j, i, emcalTrigL1G  [i][j]);
-      fhL1JAmp   ->Fill( j, i, emcalTrigL1J  [i][j]);
+      fhFORAmp    ->Fill( j, i, emcalCell     [i][j]);
+      fhFORAmpL1G ->Fill( j, i, emcalCellL1G  [i][j]);
+      fhFORAmpL1J ->Fill( j, i, emcalCellL1J  [i][j]);
+      fhL0Amp     ->Fill( j, i, emcalTrigL0   [i][j]);
+      fhL0AmpL1G  ->Fill( j, i, emcalTrigL0L1G[i][j]);
+      fhL0AmpL1J  ->Fill( j, i, emcalTrigL0L1J[i][j]);
+      fhL1Amp     ->Fill( j, i, emcalTrigL1   [i][j]);
+      fhL1GAmp    ->Fill( j, i, emcalTrigL1G  [i][j]);
+      fhL1JAmp    ->Fill( j, i, emcalTrigL1J  [i][j]);
+      fhFORMeanAmp->Fill( j, i, emcalCell     [i][j]);
+      fhL0MeanAmp ->Fill( j, i, emcalTrigL0   [i][j]);
+      fhL1MeanAmp ->Fill( j, i, emcalTrigL1   [i][j]);
     }
   }
   
@@ -678,77 +805,34 @@ void AliAnalysisTaskEMCALTriggerQA::UserExec(Option_t *)
       continue;
     }
     
-    if(clus->GetNCells() < 2) continue ; // Avoid 1 cell clusters, noisy.
+    if(clus->GetNCells() < 2) continue ; // Avoid 1 cell clusters, noisy, exotic.
     
     if(clus->E() > emax) emax = clus->E();
     
-    if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
-       triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
-       triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
-       triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-       triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhClusMB     ->Fill(clus->E());
-    if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-       triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusL0     ->Fill(clus->E());
-    if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
-       triggerclasses.Contains("CPBI2EGA")                 ) { fhClusL1G    ->Fill(clus->E());
-      if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") &&
-         !triggerclasses.Contains("CPBI2EJE")              )   fhClusL1GOnly->Fill(clus->E()); }
-    if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") ||
-       triggerclasses.Contains("CPBI2EJE")                 ) { fhClusL1J    ->Fill(clus->E());
-      if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") &&
-         !triggerclasses.Contains("CPBI2EGA")              )   fhClusL1JOnly->Fill(clus->E()); }
+    if( bMB  ) fhClusMB  ->Fill(clus->E());
+    if( bL0  ) fhClusL0  ->Fill(clus->E());
+    if( bL1G ) fhClusL1G ->Fill(clus->E());
+    if( bL1J ) fhClusL1J ->Fill(clus->E());
     
+    if( bL1G && !bL1J ) fhClusL1GOnly ->Fill(clus->E()); 
+    if( bL1J && !bL1G ) fhClusL1JOnly ->Fill(clus->E()); 
+    
+    if( bMB && !bL1G && !bL1J && !bL0  ) fhClusMBPure  ->Fill(clus->E());
+
   }
   
-  if(triggerclasses.Contains("CINT7-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CINT7-I-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CINT1-I-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CINT1-B-NOPF-ALLNOTRD") ||
-     triggerclasses.Contains("CPBI2_B1-B-NOPF-ALLNOTRD") )   fhClusMaxMB     ->Fill(emax);
-  if(triggerclasses.Contains("CEMC7-B-NOPF-ALLNOTRD") || 
-     triggerclasses.Contains("CEMC1-B-NOPF-ALLNOTRD")    )   fhClusMaxL0     ->Fill(emax);
-  if(triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EGA")                 ) { fhClusMaxL1G    ->Fill(emax);
-    if(!triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") &&
-       !triggerclasses.Contains("CPBI2EJE")              )   fhClusMaxL1GOnly->Fill(emax); }
-  if(triggerclasses.Contains("CEMC7EJE-B-NOPF-CENTNOTRD") ||
-     triggerclasses.Contains("CPBI2EJE")                 ) { fhClusMaxL1J    ->Fill(emax);
-    if(!triggerclasses.Contains("CEMC7EGA-B-NOPF-CENTNOTRD") &&
-       !triggerclasses.Contains("CPBI2EGA")              )   fhClusMaxL1JOnly->Fill(emax); }
+  // Maximum energy cluster per event histograms
+
+  if( bMB  ) fhClusMaxMB  ->Fill(emax);
+  if( bL0  ) fhClusMaxL0  ->Fill(emax);
+  if( bL1G ) fhClusMaxL1G ->Fill(emax);
+  if( bL1J ) fhClusMaxL1J ->Fill(emax);
+  
+  if( bL1G && !bL1J ) fhClusMaxL1GOnly->Fill(emax); 
+  if( bL1J && !bL1G ) fhClusMaxL1JOnly->Fill(emax); 
+  
+  if( bMB && !bL1G && !bL1J && !bL0  ) fhClusMaxMBPure  ->Fill(emax);
   
   PostData(1, fOutputList);  
-  
-}
-
-//_______________________________________________________
-void AliAnalysisTaskEMCALTriggerQA::Terminate(Option_t *)
-{
-  // Terminate analysis
-  // Do some plots
-  
-  Int_t checkSTU[30];
-  for (Int_t i = 0; i < 30; i++)
-  {
-    checkSTU[i] = 1 ; // Init array
-    TH1F* hTRUSTUChannel = (TH1F*) fhTRUSTU->ProjectionY(Form("hTRUSTUChannel%d",i),i,i);
-    //printf("AliAnalysisTaskEMCALTriggerQA::Terminate() - Channel %d TRUSTU Entries %d, Integral(10,20) %f ",
-    //      i, hTRUSTUChannel->GetEntries(), hTRUSTUChannel->Integral(10,20));
-    Int_t binMin = hTRUSTUChannel->FindBin(10);
-    Int_t binMax = hTRUSTUChannel->FindBin(20);
-    if     (hTRUSTUChannel->GetEntries() > 0 && 
-            hTRUSTUChannel->Integral(binMin,binMax)/hTRUSTUChannel->GetEntries() < 0.9) 
-      checkSTU[i] = 0;
-    else if(hTRUSTUChannel->GetEntries() <= 0)
-      checkSTU[i] = 0;
-    
-    //printf(" - %d\n",checkSTU[i]);
-    delete hTRUSTUChannel;
-  }
-  
-  for (Int_t i = 0; i < 30; i++)
-  {
-    if (i<15) fhSTUChecks->Fill(0.,i,checkSTU[i]);
-    else      fhSTUChecks->Fill(1.,i,checkSTU[i]);
-  }
   
 }
