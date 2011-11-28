@@ -30,8 +30,8 @@
 #include "AliHLTCaloMapper.h"
 #include "AliPHOSEMCAGeometry.h"
 
-class AliHLTCaloCoordinate;
-class AliHLTPHOSCoordinate;
+struct AliHLTCaloCoordinate;
+struct AliHLTPHOSCoordinate;
 
 class AliHLTPHOSMapper : public AliHLTCaloMapper
 {
@@ -78,7 +78,6 @@ class AliHLTPHOSMapper : public AliHLTCaloMapper
   
   //  fDDLSpecificationMap* fSpecificationMapPtr;
   //AliPHOSEMCAGeometry fPHOSGeometry;
-  static const Float_t fCellStep = 2.2;//2.*fPHOSGeometry.GetAirCellHalfSize()[0];
   
   Int_t fModuleId;
     int fDDLId;

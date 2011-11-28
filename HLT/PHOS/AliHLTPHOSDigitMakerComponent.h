@@ -37,7 +37,7 @@
 
 
 class AliHLTCaloDigitMaker;
-class AliHLTCaloDigitContainerDataStruct;
+struct AliHLTCaloDigitContainerDataStruct;
 class AliPHOSEmcBadChannelsMap;
 class AliPHOSEmcCalibData;
 /**
