@@ -63,7 +63,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 			c.GetSigmaZ2(),
 			c.GetCharge(),
 			c.GetQMax(),
-			id=~AliHLTUInt32_t(0)
+			id
 			);
   }
 
