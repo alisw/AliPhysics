@@ -22,8 +22,8 @@
 #endif
 
 TString pdfFileNames="";
-void MakePlot(TString ntupleFileName="TrendingITS.root");
-void PlotITSSA(TFile *fil,Int_t *myIndex);
+void MakePlot(Int_t run1=-1,Int_t run2=99999999,TString ntupleFileName="TrendingITS.root");
+void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot);
 void FillITSSAntuple(TFile* f,TNtuple* nt, Int_t nrun);
 void AliITSQAtrend(TString runListFile="LHC11hNo.txt",TString ntupleFileName="TrendingITS.root");
 
@@ -49,15 +49,23 @@ void AliITSQAtrend(TString runListFile="LHC11hNo.txt",TString ntupleFileName="Tr
 //   each time, according to the RAM of your computer. 
 //   The function AliITSQAtrend does not produce any plot.
 //
-//   Function MakePlot():
+//   Function MakePlot(run1,run2):
 //   it produces the plots. For each canvas a PDF file is created.
 //   A PDF file with all the canvases merged is also produced
+//   The first two argument define a range for the runs to be displayed
+//   These two arguments are optional: by default, all the runs
+//   found in the ntuples are displayed
 ////////////////////////////////////////////////////////////////
 
 /* $Id$ */
 
-void MakePlot(TString ntupleFileName){
-  //TrendingITS.root
+void MakePlot(Int_t run1,Int_t run2,TString ntupleFileName){
+  // Check run range
+  if(run1>=run2){
+    printf("******   ERROR: invalid run range %d - %d\n",run1,run2);
+    return;
+  }
+
   TFile* fil=new TFile(ntupleFileName.Data(),"read");
   if(!fil){
     printf("File with ntuple does not exist\n");
@@ -113,37 +121,53 @@ void MakePlot(TString ntupleFileName){
   ntsdd->SetBranchAddress("meandEdxLay4",&meandEdxLay4);
   ntsdd->SetBranchAddress("errmeandEdxLay4",&errmeandEdxLay4);
 
-  TH1F* histotrp3=new TH1F("histotrp3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histotrp4=new TH1F("histotrp4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histominTime=new TH1F("histominTime","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histomeanTime=new TH1F("histomeanTime","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histofracExtra=new TH1F("histofracExtra","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histodEdxTB0=new TH1F("histodEdxTB0","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histodEdxTB5=new TH1F("histodEdxTB5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histodEdxLay3=new TH1F("histodEdxLay3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histodEdxLay4=new TH1F("histodEdxLay4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu1=new TH1F("histoTrackClu1","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu2=new TH1F("histoTrackClu2","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu3=new TH1F("histoTrackClu3","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu4=new TH1F("histoTrackClu4","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu5=new TH1F("histoTrackClu5","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoTrackClu6=new TH1F("histoTrackClu6","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-
-  TH1F* histoNmodEffBelow95=new TH1F("histoNmodEffBelow95","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoNmodEffBelow80=new TH1F("histoNmodEffBelow80","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoNmodEffBelow60=new TH1F("histoNmodEffBelow60","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  TH1F* histoNmodEmpty=new TH1F("histoNmodEmpty","",(Int_t)ntsdd->GetEntries(),0.,ntsdd->GetEntries());
-  // Sort entries according to run number
+  // Sort entries according to run number in the chosen range
   // Same order is assumed for all the subsequent ntuples
   Int_t nr=ntsdd->GetEntries();
   Int_t *myIndex = new Int_t [nr];
   Int_t *noRuns = new Int_t [nr];
+  Int_t kRunsToPlot=0;
+  printf("Processing runs from %d up to %d\n",run1,run2);
   for(Int_t i=0; i<nr;i++){
     ntsdd->GetEvent(i);
-    noRuns[i]=nrun;
+    Int_t intrun = static_cast<Int_t>(nrun+0.01);
+    if(intrun>=run1 && intrun<=run2){
+      printf("Accepting run number %d in position %d\n",intrun,kRunsToPlot);
+      noRuns[i]=intrun;
+      kRunsToPlot++;
+    }
+    else {
+      noRuns[i]=run2+10;  
+      printf("Rejecting run number %d - out of range\n",intrun);
+    }
   }
   TMath::Sort(nr,noRuns,myIndex,kFALSE);
-  for(Int_t i=0; i<ntsdd->GetEntries();i++){
+  printf("Total number of runs accepted fot display %d\n",kRunsToPlot);
+  if(kRunsToPlot==0)return;
+  for(Int_t i=0;i<kRunsToPlot;i++)printf("Position %d ) Run: %d\n",i,noRuns[myIndex[i]]);
+
+  TH1F* histotrp3=new TH1F("histotrp3","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histotrp4=new TH1F("histotrp4","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histominTime=new TH1F("histominTime","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histomeanTime=new TH1F("histomeanTime","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histofracExtra=new TH1F("histofracExtra","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histodEdxTB0=new TH1F("histodEdxTB0","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histodEdxTB5=new TH1F("histodEdxTB5","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histodEdxLay3=new TH1F("histodEdxLay3","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histodEdxLay4=new TH1F("histodEdxLay4","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu1=new TH1F("histoTrackClu1","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu2=new TH1F("histoTrackClu2","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu3=new TH1F("histoTrackClu3","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu4=new TH1F("histoTrackClu4","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu5=new TH1F("histoTrackClu5","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoTrackClu6=new TH1F("histoTrackClu6","",kRunsToPlot,0.,kRunsToPlot);
+
+  TH1F* histoNmodEffBelow95=new TH1F("histoNmodEffBelow95","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoNmodEffBelow80=new TH1F("histoNmodEffBelow80","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoNmodEffBelow60=new TH1F("histoNmodEffBelow60","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoNmodEmpty=new TH1F("histoNmodEmpty","",kRunsToPlot,0.,kRunsToPlot);
+
+  for(Int_t i=0; i<kRunsToPlot;i++){
     ntsdd->GetEvent(myIndex[i]);
     histoTrackClu1->SetBinContent(i+1,fracTrackWithClu1);
     histoTrackClu1->SetBinError(i+1,errfracTrackWithClu1);
@@ -224,15 +248,15 @@ void MakePlot(TString ntupleFileName){
   ntssd->SetBranchAddress("errChargeratioL6",&errChargeratioL6);
   ntssd->SetBranchAddress("moduleOff",&moduleOff);
 
-  TH1F* histodEdxLay5=new TH1F("histodEdxLay5","",(Int_t)ntssd->GetEntries(),0.,ntssd->GetEntries());
-  TH1F* histodEdxLay6=new TH1F("histodEdxLay6","",(Int_t)ntssd->GetEntries(),0.,ntssd->GetEntries());
+  TH1F* histodEdxLay5=new TH1F("histodEdxLay5","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histodEdxLay6=new TH1F("histodEdxLay6","",kRunsToPlot,0.,kRunsToPlot);
 
-  TH1F* histoChargeRatioLay5=new TH1F("histoChargeRatioLay5","",(Int_t)ntssd->GetEntries(),0.,ntssd->GetEntries());
-  TH1F* histoChargeRatioLay6=new TH1F("histoChargeRatioLay6","",(Int_t)ntssd->GetEntries(),0.,ntssd->GetEntries());
+  TH1F* histoChargeRatioLay5=new TH1F("histoChargeRatioLay5","",kRunsToPlot,0.,kRunsToPlot);
+  TH1F* histoChargeRatioLay6=new TH1F("histoChargeRatioLay6","",kRunsToPlot,0.,kRunsToPlot);
  
-  TH1F* histoEmpty=new TH1F("histoEmpty","",(Int_t)ntssd->GetEntries(),0.,ntssd->GetEntries());
+  TH1F* histoEmpty=new TH1F("histoEmpty","",kRunsToPlot,0.,kRunsToPlot);
   
-  for(Int_t i=0; i<ntssd->GetEntries();i++){
+  for(Int_t i=0; i<kRunsToPlot;i++){
 
     ntssd->GetEvent(myIndex[i]);
 
@@ -371,150 +395,150 @@ void MakePlot(TString ntupleFileName){
   ntmatching->SetBranchAddress("errEffTOTPt10",&errEffTOTPt10);
 
 
-  TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",kRunsToPlot,0.,kRunsToPlot);
   hFracSPD1->SetLineColor(kGreen+2);
   hFracSPD1->SetMarkerColor(kGreen+2);
   hFracSPD1->SetMarkerStyle(20);
 
-  TH1F *hFracSPD2 = new TH1F("hFracSPD2","SPD outer; run number; Fraction of HSs",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hFracSPD2 = new TH1F("hFracSPD2","SPD outer; run number; Fraction of HSs",kRunsToPlot,0.,kRunsToPlot);
   hFracSPD2->SetLineColor(kYellow+2);
   hFracSPD2->SetMarkerColor(kYellow+2);
   hFracSPD2->SetMarkerStyle(20);
 
-  TH1F *hEffSPDPt02 = new TH1F("hEffSPDPt02","Efficiency - P_{T} = 0.2; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffSPDPt02 = new TH1F("hEffSPDPt02","Efficiency - P_{T} = 0.2; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffSPDPt02->SetLineWidth(2);
   hEffSPDPt02->SetLineColor(kAzure+1);
   hEffSPDPt02->SetMarkerColor(kAzure+1);
   hEffSPDPt02->SetMarkerStyle(20);
 
-  TH1F *hEffSPDPt1 = new TH1F("hEffSPDPt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffSPDPt1 = new TH1F("hEffSPDPt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffSPDPt1->SetLineWidth(2);
   hEffSPDPt1->SetLineColor(kAzure+1);
   hEffSPDPt1->SetMarkerColor(kAzure+1);
   hEffSPDPt1->SetMarkerStyle(20);
 
-  TH1F *hEffSPDPt10 = new TH1F("hEffSPDPt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffSPDPt10 = new TH1F("hEffSPDPt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffSPDPt10->SetLineWidth(2);
   hEffSPDPt10->SetLineColor(kAzure+1);
   hEffSPDPt10->SetMarkerColor(kAzure+1);
   hEffSPDPt10->SetMarkerStyle(20);
 
-  TH1F *hEffoneSPDPt02 = new TH1F("hEffoneSPDPt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffoneSPDPt02 = new TH1F("hEffoneSPDPt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffoneSPDPt02->SetLineWidth(2);
   hEffoneSPDPt02->SetLineColor(kGray);
   hEffoneSPDPt02->SetMarkerColor(kGray);
   hEffoneSPDPt02->SetMarkerStyle(20);
-  TH1F *hEffoneSPDPt1 = new TH1F("hEffoneSPDPt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffoneSPDPt1 = new TH1F("hEffoneSPDPt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffoneSPDPt1->SetLineWidth(2);
   hEffoneSPDPt1->SetLineColor(kGray);
   hEffoneSPDPt1->SetMarkerColor(kGray);
   hEffoneSPDPt1->SetMarkerStyle(20);
-  TH1F *hEffoneSPDPt10 = new TH1F("hEffoneSPDPt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffoneSPDPt10 = new TH1F("hEffoneSPDPt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffoneSPDPt10->SetLineWidth(2);
   hEffoneSPDPt10->SetLineColor(kGray);
   hEffoneSPDPt10->SetMarkerColor(kGray);
   hEffoneSPDPt10->SetMarkerStyle(20);
 
-  TH1F *hEff2Pt02 = new TH1F("hEff2Pt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff2Pt02 = new TH1F("hEff2Pt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff2Pt02->SetLineWidth(2);
   hEff2Pt02->SetLineColor(kViolet);
   hEff2Pt02->SetMarkerColor(kViolet);
   hEff2Pt02->SetMarkerStyle(20);
-  TH1F *hEff2Pt1 = new TH1F("hEff2Pt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff2Pt1 = new TH1F("hEff2Pt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff2Pt1->SetLineWidth(2);
   hEff2Pt1->SetLineColor(kViolet);
   hEff2Pt1->SetMarkerColor(kViolet);
   hEff2Pt1->SetMarkerStyle(20);
-  TH1F *hEff2Pt10 = new TH1F("hEff2Pt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff2Pt10 = new TH1F("hEff2Pt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff2Pt10->SetLineWidth(2);
   hEff2Pt10->SetLineColor(kViolet);
   hEff2Pt10->SetMarkerColor(kViolet);
   hEff2Pt10->SetMarkerStyle(20);
 
-  TH1F *hEff3Pt02 = new TH1F("hEff3Pt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff3Pt02 = new TH1F("hEff3Pt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff3Pt02->SetLineWidth(2);
   hEff3Pt02->SetLineColor(6);
   hEff3Pt02->SetMarkerColor(6);
   hEff3Pt02->SetMarkerStyle(20);
-  TH1F *hEff3Pt1 = new TH1F("hEff3Pt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff3Pt1 = new TH1F("hEff3Pt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff3Pt1->SetLineWidth(2);
   hEff3Pt1->SetLineColor(6);
   hEff3Pt1->SetMarkerColor(6);
   hEff3Pt1->SetMarkerStyle(20);
-  TH1F *hEff3Pt10 = new TH1F("hEff3Pt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff3Pt10 = new TH1F("hEff3Pt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff3Pt10->SetLineWidth(2);
   hEff3Pt10->SetLineColor(6);
   hEff3Pt10->SetMarkerColor(6);
   hEff3Pt10->SetMarkerStyle(20);
 
-  TH1F *hEff4Pt02 = new TH1F("hEff4Pt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff4Pt02 = new TH1F("hEff4Pt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff4Pt02->SetLineWidth(2);
   hEff4Pt02->SetLineColor(4);
   hEff4Pt02->SetMarkerColor(4);
   hEff4Pt02->SetMarkerStyle(20);
-  TH1F *hEff4Pt1 = new TH1F("hEff4Pt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff4Pt1 = new TH1F("hEff4Pt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff4Pt1->SetLineWidth(2);
   hEff4Pt1->SetLineColor(4);
   hEff4Pt1->SetMarkerColor(4);
   hEff4Pt1->SetMarkerStyle(20);
-  TH1F *hEff4Pt10 = new TH1F("hEff4Pt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff4Pt10 = new TH1F("hEff4Pt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff4Pt10->SetLineWidth(2);
   hEff4Pt10->SetLineColor(4);
   hEff4Pt10->SetMarkerColor(4);
   hEff4Pt10->SetMarkerStyle(20);
 
-  TH1F *hEff5Pt02 = new TH1F("hEff5Pt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff5Pt02 = new TH1F("hEff5Pt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff5Pt02->SetLineWidth(2);
   hEff5Pt02->SetLineColor(3);
   hEff5Pt02->SetMarkerColor(3);
   hEff5Pt02->SetMarkerStyle(20);
-  TH1F *hEff5Pt1 = new TH1F("hEff5Pt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff5Pt1 = new TH1F("hEff5Pt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff5Pt1->SetLineWidth(2);
   hEff5Pt1->SetLineColor(3);
   hEff5Pt1->SetMarkerColor(3);
   hEff5Pt1->SetMarkerStyle(20);
-  TH1F *hEff5Pt10 = new TH1F("hEff5Pt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff5Pt10 = new TH1F("hEff5Pt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff5Pt10->SetLineWidth(3);
   hEff5Pt10->SetLineColor(3);
   hEff5Pt10->SetMarkerColor(3);
   hEff5Pt10->SetMarkerStyle(20);
 
-  TH1F *hEff6Pt02 = new TH1F("hEff6Pt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff6Pt02 = new TH1F("hEff6Pt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff6Pt02->SetLineWidth(2);
   hEff6Pt02->SetLineColor(2);
   hEff6Pt02->SetMarkerColor(2);
   hEff6Pt02->SetMarkerStyle(20);
-  TH1F *hEff6Pt1 = new TH1F("hEff6Pt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff6Pt1 = new TH1F("hEff6Pt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff6Pt1->SetLineWidth(2);
   hEff6Pt1->SetLineColor(2);
   hEff6Pt1->SetMarkerColor(2);
   hEff6Pt1->SetMarkerStyle(20);
-  TH1F *hEff6Pt10 = new TH1F("hEff6Pt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEff6Pt10 = new TH1F("hEff6Pt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEff6Pt10->SetLineWidth(2);
   hEff6Pt10->SetLineColor(2);
   hEff6Pt10->SetMarkerColor(2);
   hEff6Pt10->SetMarkerStyle(20);
 
 
-  TH1F *hEffTOTPt02 = new TH1F("hEffTOTPt02","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffTOTPt02 = new TH1F("hEffTOTPt02","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffTOTPt02->SetLineWidth(2);
   hEffTOTPt02->SetLineColor(kBlue+2);
   hEffTOTPt02->SetMarkerColor(kBlue+2);
   hEffTOTPt02->SetMarkerStyle(20);
-  TH1F *hEffTOTPt1 = new TH1F("hEffTOTPt1","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffTOTPt1 = new TH1F("hEffTOTPt1","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffTOTPt1->SetLineWidth(2);
   hEffTOTPt1->SetLineColor(kBlue+2);
   hEffTOTPt1->SetMarkerColor(kBlue+2);
   hEffTOTPt1->SetMarkerStyle(20);
-  TH1F *hEffTOTPt10 = new TH1F("hEffTOTPt10","Efficiency; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
+  TH1F *hEffTOTPt10 = new TH1F("hEffTOTPt10","Efficiency; run number; TPC+ITS / TPC",kRunsToPlot,0.,kRunsToPlot);
   hEffTOTPt10->SetLineWidth(2);
   hEffTOTPt10->SetLineColor(kBlue+2);
   hEffTOTPt10->SetMarkerColor(kBlue+2);
   hEffTOTPt10->SetMarkerStyle(20);
 
-  Int_t nEntriesMatch=ntmatching->GetEntries();
+  //  Int_t nEntriesMatch=ntmatching->GetEntries();
   
-  for(Int_t i=0;i<nEntriesMatch;i++){
+  for(Int_t i=0;i<kRunsToPlot;i++){
    
     ntmatching->GetEvent(myIndex[i]);
     //    Int_t bin=nrunMatch;
@@ -657,46 +681,46 @@ void MakePlot(TString ntupleFileName){
   ntvertex->SetBranchAddress("errsigmaVz",&errsigmaVz);
 
 
-  TH1F *hVx = new TH1F("hVx","Track Vertex Vx Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+  TH1F *hVx = new TH1F("hVx","Track Vertex Vx Distribution",kRunsToPlot,0.,kRunsToPlot);
   hVx->SetLineWidth(2);
   hVx->SetLineColor(kBlue+2);
   hVx->SetMarkerColor(kBlue+2);
   hVx->SetMarkerStyle(20);
 
- TH1F *hVy = new TH1F("hVy","Track Vertex Vy Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+ TH1F *hVy = new TH1F("hVy","Track Vertex Vy Distribution",kRunsToPlot,0.,kRunsToPlot);
   hVy->SetLineWidth(2);
   hVy->SetLineColor(kBlue+2);
   hVy->SetMarkerColor(kBlue+2);
   hVy->SetMarkerStyle(20);
 
- TH1F *hVz = new TH1F("hVz","Track Vertex Vz Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+ TH1F *hVz = new TH1F("hVz","Track Vertex Vz Distribution",kRunsToPlot,0.,kRunsToPlot);
   hVz->SetLineWidth(2);
   hVz->SetLineColor(kBlue+2);
   hVz->SetMarkerColor(kBlue+2);
   hVz->SetMarkerStyle(20);
 
-  TH1F *hSigmaVx = new TH1F("hSigmaVx","Track Vertex SigmaVx Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+  TH1F *hSigmaVx = new TH1F("hSigmaVx","Track Vertex SigmaVx Distribution",kRunsToPlot,0.,kRunsToPlot);
   hSigmaVx->SetLineWidth(2);
   hSigmaVx->SetLineColor(kBlue+2);
   hSigmaVx->SetMarkerColor(kBlue+2);
   hSigmaVx->SetMarkerStyle(20);
 
- TH1F *hSigmaVy = new TH1F("hSigmaVy","Track Vertex SigmaVy Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+ TH1F *hSigmaVy = new TH1F("hSigmaVy","Track Vertex SigmaVy Distribution",kRunsToPlot,0.,kRunsToPlot);
   hSigmaVy->SetLineWidth(2);
   hSigmaVy->SetLineColor(kBlue+2);
   hSigmaVy->SetMarkerColor(kBlue+2);
   hSigmaVy->SetMarkerStyle(20);
 
- TH1F *hSigmaVz = new TH1F("hSigmaVz","Track Vertex SigmaVz Distribution",(Int_t)ntvertex->GetEntries(),0.,ntvertex->GetEntries());
+ TH1F *hSigmaVz = new TH1F("hSigmaVz","Track Vertex SigmaVz Distribution",kRunsToPlot,0.,kRunsToPlot);
   hSigmaVz->SetLineWidth(2);
   hSigmaVz->SetLineColor(kBlue+2);
   hSigmaVz->SetMarkerColor(kBlue+2);
   hSigmaVz->SetMarkerStyle(20);
 
 
-  Int_t nEntriesVertex=ntvertex->GetEntries();
+  //  Int_t nEntriesVertex=ntvertex->GetEntries();
   
-  for(Int_t i=0;i<nEntriesVertex;i++){
+  for(Int_t i=0;i<kRunsToPlot;i++){
 
     ntvertex->GetEvent(myIndex[i]);
     
@@ -1045,7 +1069,7 @@ void MakePlot(TString ntupleFileName){
   cpt02->Update();
 
   //-----------  ITS SA -----------
-  PlotITSSA(fil,myIndex);
+  PlotITSSA(fil,myIndex,kRunsToPlot);
  // merge the pdf files
   TString command("gs -q -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=merged");
   command=command+"ITS_trend.pdf "+pdfFileNames;
@@ -1055,8 +1079,8 @@ void MakePlot(TString ntupleFileName){
   delete [] noRuns;
 }
 
-
-void PlotITSSA(TFile *fil,Int_t *myIndex){
+//____________________________________________________________________________
+void PlotITSSA(TFile *fil,Int_t *myIndex,Int_t kRunsToPlot){
   Double_t Lowbin[3]={0.1,0.5,0.9};
   Double_t Upbin[3]={0.2,0.6,1};
   gROOT->SetStyle("Plain");
@@ -1064,10 +1088,10 @@ void PlotITSSA(TFile *fil,Int_t *myIndex){
   gStyle->SetOptStat(0);
   gStyle->SetFillColor(0);
   gStyle->SetTextFont(32);
-
+  
   TNtuple* nt = (TNtuple*)fil->Get("ntITSsa");
- Int_t nruns=nt->GetEntries();
-  printf("Events = %d\n",nruns);
+  Int_t nruns=nt->GetEntries();
+  printf("Events = %d - Runs to be processed %d\n",nruns,kRunsToPlot);
   Float_t ITSA[3];
   Float_t TPIT[3];
   Float_t RAT[3];
@@ -1082,16 +1106,16 @@ void PlotITSSA(TFile *fil,Int_t *myIndex){
   nt->SetBranchAddress("ratioPtBin0",&RAT[0]);
   nt->SetBranchAddress("ratioPtBin1",&RAT[1]);
   nt->SetBranchAddress("ratioPtBin2",&RAT[2]);
-  TH1F *h0=new TH1F("h0","h0",nruns,-0.5,nruns-0.5);
-  TH1F *h1=new TH1F("h1","h1",nruns,-0.5,nruns-0.5);
-  TH1F *h2=new TH1F("h2","h2",nruns,-0.5,nruns-0.5);
-  TH1F *h3=new TH1F("h3","h4",nruns,-0.5,nruns-0.5);
-  TH1F *h4=new TH1F("h4","h5",nruns,-0.5,nruns-0.5);
-  TH1F *h5=new TH1F("h5","h5",nruns,-0.5,nruns-0.5);
-  TH1F *h6=new TH1F("h6","h6",nruns,-0.5,nruns-0.5);
-  TH1F *h7=new TH1F("h7","h7",nruns,-0.5,nruns-0.5);
-  TH1F *h8=new TH1F("h8","h8",nruns,-0.5,nruns-0.5);
-  for(Int_t iev=0;iev<nruns;iev++){
+  TH1F *h0=new TH1F("h0","h0",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h1=new TH1F("h1","h1",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h2=new TH1F("h2","h2",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h3=new TH1F("h3","h4",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h4=new TH1F("h4","h5",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h5=new TH1F("h5","h5",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h6=new TH1F("h6","h6",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h7=new TH1F("h7","h7",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  TH1F *h8=new TH1F("h8","h8",kRunsToPlot,-0.5,kRunsToPlot-0.5);
+  for(Int_t iev=0;iev<kRunsToPlot;iev++){
     nt->GetEvent(myIndex[iev]);
     //cout<<"Numeri TPCITS "<<TPIT[0]<<" "<<TPIT[1]<<" "<<TPIT[2]<<endl;
     h0->Fill(iev,ITSA[0]);
@@ -1226,6 +1250,9 @@ c->BuildLegend(0.11,0.15,0.45,0.30);
 
 }
 
+
+
+//____________________________________________________________________________
 void AliITSQAtrend(TString runListFile,TString ntupleFileName){
 
   TGrid::Connect("alien://");
