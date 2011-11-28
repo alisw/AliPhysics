@@ -164,7 +164,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   //.......................................
   //Skip matched clusters with tracks
   if(fRejectTrackMatch){
-    if(IsTrackMatched(calo)) {
+    if(IsTrackMatched(calo,GetReader()->GetInputEvent())) {
       if(GetDebug() > 2) printf("\t Reject track-matched clusters\n");
       return kFALSE ;
     }
@@ -1458,6 +1458,8 @@ void AliAnaPhoton::Init()
     abort();
   }
   
+  if(GetReader()->GetDataType() == AliCaloTrackReader::kMC) GetCaloPID()->SwitchOnBayesian();
+  
 }
 
 //____________________________________________________________________________
@@ -1579,23 +1581,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //-------------------------------------
     //PID selection or bit setting
     //-------------------------------------
-    // MC
-    if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
-      //Get most probable PID, check PID weights (in MC this option is mandatory)
-      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
-      if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());	 
-      //If primary is not photon, skip it.
-      if(aodph.GetIdentifiedParticleType() != AliCaloPID::kPhoton) continue ;
-    }	
+    
     //...............................................
     // Data, PID check on
-    else if(IsCaloPIDOn()){
-      //Get most probable PID, 2 options check PID weights 
-      //or redo PID, recommended option for MCEal.		
-      if(!IsCaloPIDRecalculationOn())
-        aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
-      else
-        aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
+    if(IsCaloPIDOn()){
+      // Get most probable PID, 2 options check bayesian PID weights or redo PID
+      // By default, redo PID
+        
+      aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
@@ -1607,8 +1600,10 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     // Data, PID check off
     else{
       //Set PID bits for later selection (AliAnaPi0 for example)
-      //GetPDG already called in SetPIDBits.
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils());
+      //GetIdentifiedParticleType already called in SetPIDBits.
+      
+      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils(),GetReader()->GetInputEvent());
+      
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PID Bits set \n");		
     }
     
