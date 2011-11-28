@@ -82,6 +82,21 @@ AliFemtoModelCorrFctnDirectYlm& AliFemtoModelCorrFctnDirectYlm::operator=(const 
     fCYlmFake = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmFake->Clone());
   else fCYlmFake = 0;
 
+  if (aCorrFctn.fNumeratorTrue)
+    fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
+  else
+    fNumeratorTrue = 0;
+
+  if (aCorrFctn.fNumeratorFake)
+    fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
+  else
+    fNumeratorFake = 0;
+
+  if (aCorrFctn.fDenominator)
+    fDenominator = new TH1D(*aCorrFctn.fDenominator);
+  else
+    fDenominator = 0;
+
   return *this;
 }
 //_______________________
