@@ -571,7 +571,7 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
       fhTrackMatchedDEta->Fill(clE,dZ);
       fhTrackMatchedDPhi->Fill(clE,dR);
       if(clE > 0.5)fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
-      if(cluster->IsPHOS())printf("AliCaloPID::IsTrackMatched - %d dR %f , dZ %f \n",cluster->IsEMCAL(),dR, dZ);
+      //printf("AliCaloPID::IsTrackMatched - %d dR %f , dZ %f \n",cluster->IsEMCAL(),dR, dZ);
     }  
     
     if(cluster->IsPHOS()) {
