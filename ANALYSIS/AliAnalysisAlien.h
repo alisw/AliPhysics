@@ -108,7 +108,6 @@ public:
    Bool_t              LoadModules();
    Bool_t              GenerateTest(const char *name, const char *modname="");
    Bool_t              GenerateTrain(const char *name);
-   Bool_t              CheckFileCopy(const char *alienpath);
    virtual Bool_t      CreateDataset(const char *pattern);
    Bool_t              CopyLocalDataset(const char *griddir, const char *pattern, Int_t nfiles, const char *output="data.txt", const char *archivefile="", const char *outputdir="data");
    virtual Bool_t      CreateJDL();
@@ -164,6 +163,7 @@ protected:
    Bool_t              IsUsingTags() const {return TObject::TestBit(AliAnalysisGrid::kUseTags);}
    Bool_t              LoadModule(AliAnalysisTaskCfg *mod);
    Bool_t              CheckDependencies();
+   Bool_t              CheckFileCopy(const char *alienpath);
 
 private:
    TGridJDL        *fGridJDL;         //! JDL maker

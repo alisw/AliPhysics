@@ -809,6 +809,11 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
 {
 // Check if file copying is possible.
    if (fProductionMode) return kTRUE;
+   TString salienpath(alienpath);
+   if (salienpath.Contains(" ")) {
+      Error("CheckFileCopy", "path: <%s> contains blancs - FIX IT !",alienpath);
+      return kFALSE;
+   }   
    if (!Connect()) {
       Error("CheckFileCopy", "Not connected to AliEn. File copying cannot be tested.");
       return kFALSE;
@@ -828,7 +833,8 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       Error("CheckFileCopy", "Alien path %s does not seem to exist", alienpath);
       return kFALSE;
    }
-   TFile f("plugin_test_copy", "RECREATE");
+   TString stest = "plugin_test_copy";
+   TFile f(stest, "RECREATE");
    // User may not have write permissions to current directory 
    if (f.IsZombie()) {
       Error("CheckFileCopy", "Cannot create local test file. Do you have write access to current directory: <%s> ?",
@@ -836,19 +842,19 @@ Bool_t AliAnalysisAlien::CheckFileCopy(const char *alienpath)
       return kFALSE;
    }
    f.Close();
-   if (FileExists(Form("alien://%s/%s",alienpath, f.GetName()))) gGrid->Rm(Form("alien://%s/%s",alienpath, f.GetName()));
-   if (!TFile::Cp(f.GetName(), Form("alien://%s/%s",alienpath, f.GetName()))) {
+   if (FileExists(Form("alien://%s/%s",alienpath, stest.Data()))) gGrid->Rm(Form("alien://%s/%s",alienpath, stest.Data()));
+   if (!TFile::Cp(stest.Data(), Form("alien://%s/%s",alienpath, stest.Data()))) {
       Error("CheckFileCopy", "Cannot copy files to Alien destination: <%s> This may be temporary, or: \
            \n# 1. Make sure you have write permissions there. If this is the case: \
            \n# 2. Check the storage availability at: http://alimonitor.cern.ch/stats?page=SE/table \
            \n#    Do:           export alien_CLOSE_SE=\"working_disk_SE\" \
            \n#    To make this permanent put in in your .bashrc (in .alienshrc is not enough) \
            \n#    Redo token:   rm /tmp/x509up_u$UID then: alien-token-init <username>", alienpath);
-      gSystem->Unlink(f.GetName());
+      gSystem->Unlink(stest.Data());
       return kFALSE;
    }   
-   gSystem->Unlink(f.GetName());
-   gGrid->Rm(Form("%s%s",alienpath,f.GetName()));
+   gSystem->Unlink(stest.Data());
+   gGrid->Rm(Form("%s/%s",alienpath,stest.Data()));
    Info("CheckFileCopy", "### ...SUCCESS ###");
    return kTRUE;
 }   
