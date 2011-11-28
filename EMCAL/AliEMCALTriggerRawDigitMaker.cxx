@@ -441,7 +441,7 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				
 				vx = vx - sizeL1gsubr[0] * sizeL1gpatch[0] + 1;
 				
-				if (vx >= 0) 
+				if (vx >= 0 && vy < 63) 
 				{
 					if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx))
 					{
