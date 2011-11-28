@@ -60,6 +60,7 @@ public:
 
 		ConstIterator& operator = (const ConstIterator& iter)
 		{
+		        if (this==&iter) return *this;
 			fCurrent = iter.fCurrent;
 			return *this;
 		}
@@ -124,6 +125,7 @@ public:
 
 		Iterator& operator = (const Iterator& iter)
 		{
+		        if (this==&iter) return *this;
 			ConstIterator::operator = (iter);
 			fPrevious = iter.fPrevious;
 			return *this;
