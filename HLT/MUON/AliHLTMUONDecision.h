@@ -1,10 +1,11 @@
+// -*- Mode: C++ -*-
 #ifndef ALIHLTMUONDECISION_H
 #define ALIHLTMUONDECISION_H
 /* This file is property of and copyright by the ALICE HLT Project        *
  * ALICE Experiment at CERN, All rights reserved.                         *
  * See cxx source for full Copyright notice                               */
 
-// $Id: $
+// $Id$
 
 ///
 /// @file   AliHLTMUONDecision.h
@@ -82,8 +83,9 @@ public:
 		 * Asignment operators performs shallow copy of object since we
 		 * do not take ownership of the track object.
 		 */
-		const AliTrackDecision& operator = (const AliTrackDecision& obj)
+		AliTrackDecision& operator = (const AliTrackDecision& obj)
 		{
+		        if (this==&obj) return *this;
 			TObject::operator = (obj);
 			fTrack = obj.fTrack; fPt = obj.fPt;
 			fPassedLowCut = obj.fPassedLowCut; fPassedHighCut = obj.fPassedHighCut;
@@ -208,8 +210,9 @@ public:
 		 * Asignment operators performs shallow copy of object since we
 		 * do not take ownership of the track objects.
 		 */
-		const AliPairDecision& operator = (const AliPairDecision& obj)
+		AliPairDecision& operator = (const AliPairDecision& obj)
 		{
+		        if (this==&obj) return *this;
 			TObject::operator = (obj);
 			fTrackA = obj.fTrackA; fTrackB = obj.fTrackB; fMass = obj.fMass; fPassedLowCut = obj.fPassedLowCut;
 			fPassedHighCut = obj.fPassedHighCut; fUnlike = obj.fUnlike; fLowPtCount = obj.fLowPtCount; fHighPtCount = obj.fHighPtCount;
