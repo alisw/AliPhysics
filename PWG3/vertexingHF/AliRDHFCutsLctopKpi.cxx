@@ -724,7 +724,7 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
 Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const{
 
   const Int_t nprongs=d->GetNProngs();
-  if(nprongs==0) return kFALSE;
+  if(nprongs<=0) return kFALSE;
 
  Int_t iprongs[nprongs];
  for(Int_t i=0;i<nprongs;i++) iprongs[i]=i;
