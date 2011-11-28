@@ -17,6 +17,7 @@
 #include <iomanip>
 #include <memory>
 #include <cerrno>
+#include <cmath>
 
 template <typename T, typename V>
 class AliHLTIndexGrid {
