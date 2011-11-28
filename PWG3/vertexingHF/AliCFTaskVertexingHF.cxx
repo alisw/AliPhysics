@@ -1015,7 +1015,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	file_projection->Close();
 
 	for (Int_t ih = 0; ih<3; ih++) delete h[ih];
-	delete h;
+	delete [] h;
 
 	
 }
