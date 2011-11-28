@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 // Implementation of the AliKFParticleBase class
 // .
-// @author  S.Gorbunov, I.Kisel
+// @author  S.Gorbunov, I.Kisel, I.Kulakov, M.Zyzak
 // @version 1.0
 // @since   13.05.07
 // 
@@ -19,10 +19,12 @@
 #include "AliKFParticleBase.h"
 #include "TMath.h"
 
+#include <iostream>
 ClassImp(AliKFParticleBase)
 
 
-AliKFParticleBase::AliKFParticleBase() :fQ(0), fNDF(-3), fChi2(0), fSFromDecay(0), fAtProductionVertex(0), fIsLinearized(0)
+AliKFParticleBase::AliKFParticleBase() :fQ(0), fNDF(-3), fChi2(0), fSFromDecay(0), fAtProductionVertex(0), fIsLinearized(0),
+                                        fConstructMethod(2), SumDaughterMass(0), fMassHypo(-1)
 { 
   //* Constructor 
 
@@ -73,6 +75,9 @@ void AliKFParticleBase::Initialize( const Double_t Param[], const Double_t Cov[]
 	     + 2*(h0*h1*fC[13] + h0*h2*fC[18] + h1*h2*fC[19] ) );
   for( Int_t i=28; i<36; i++ ) fC[i] = 0;
   fC[35] = 1.;
+
+  SumDaughterMass = Mass;
+  fMassHypo = Mass;
 }
 
 void AliKFParticleBase::Initialize()
@@ -90,6 +95,8 @@ void AliKFParticleBase::Initialize()
   fAtProductionVertex = 0;
   fVtxGuess[0]=fVtxGuess[1]=fVtxGuess[2]=0.;
   fIsLinearized = 0;
+  SumDaughterMass = 0;
+  fMassHypo = -1;
 }
 
 void AliKFParticleBase::SetVtxGuess( Double_t x, Double_t y, Double_t z )
@@ -224,15 +231,38 @@ Int_t AliKFParticleBase::GetMass( Double_t &m, Double_t &error ) const
 		+2*( + fP[3]*fP[4]*fC[13] + fP[5]*(fP[3]*fC[18] + fP[4]*fC[19]) 
 		     - fP[6]*( fP[3]*fC[24] + fP[4]*fC[25] + fP[5]*fC[26] )   )
 		 ); 
-  Double_t m2 = TMath::Abs(fP[6]*fP[6] - fP[3]*fP[3] - fP[4]*fP[4] - fP[5]*fP[5]);
+//   Double_t m2 = TMath::Abs(fP[6]*fP[6] - fP[3]*fP[3] - fP[4]*fP[4] - fP[5]*fP[5]);
+//   m  = TMath::Sqrt(m2);
+//   if( m>1.e-10 ){
+//     if( s>=0 ){
+//       error = TMath::Sqrt(s)/m;
+//       return 0;
+//     }
+//   }
+//   error = 1.e20;
+//   return 1;
+  Double_t m2 = (fP[6]*fP[6] - fP[3]*fP[3] - fP[4]*fP[4] - fP[5]*fP[5]);
+
+  if(m2<0.)
+  {
+    error = 1.e20;
+    m = -TMath::Sqrt(-m2);
+    return 1;
+  }
+
   m  = TMath::Sqrt(m2);
-  if( m>1.e-10 ){
-    if( s>=0 ){
+  if( m>1.e-6 ){
+    if( s >= 0 ) {
       error = TMath::Sqrt(s)/m;
       return 0;
     }
   }
+  else {
+    error = 1.e20;
+    return 0;
+  }
   error = 1.e20;
+
   return 1;
 }
 
@@ -366,19 +396,35 @@ void AliKFParticleBase::GetMeasurement( const Double_t XYZ[], Double_t m[], Doub
   V[20]+= h[5]*h[5];
 }
 
-  
 void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
 {
-  //* Add daughter 
-
   if( fNDF<-1 ){ // first daughter -> just copy
     fNDF   = -1;
     fQ     =  Daughter.GetQ();
     for( Int_t i=0; i<7; i++) fP[i] = Daughter.fP[i];
     for( Int_t i=0; i<28; i++) fC[i] = Daughter.fC[i];
     fSFromDecay = 0;
+    fMassHypo = Daughter.fMassHypo;
+    SumDaughterMass = Daughter.SumDaughterMass;
     return;
   }
+
+  if(fConstructMethod == 0)
+    AddDaughterWithEnergyFit(Daughter);
+  else if(fConstructMethod == 1)
+    AddDaughterWithEnergyCalc(Daughter);
+  else if(fConstructMethod == 2)
+    AddDaughterWithEnergyFitMC(Daughter);
+
+  SumDaughterMass += Daughter.SumDaughterMass;
+  fMassHypo = -1;
+}
+
+void AliKFParticleBase::AddDaughterWithEnergyFit( const AliKFParticleBase &Daughter )
+{
+  //* Energy considered as an independent veriable, fitted independently from momentum, without any constraints on mass
+
+  //* Add daughter 
 
   TransportToDecayVertex();
 
@@ -427,7 +473,6 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       for( Int_t i=0; i<8; i++ ) m[i] = Daughter.fP[i];
       for( Int_t i=0; i<36; i++ ) mV[i] = Daughter.fC[i];
     }
- 
     //*
 
     Double_t mS[6];
@@ -435,17 +480,16 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       Double_t mSi[6] = { ffC[0]+mV[0], 
 			  ffC[1]+mV[1], ffC[2]+mV[2], 
 			  ffC[3]+mV[3], ffC[4]+mV[4], ffC[5]+mV[5] };
-     
+
       mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
       mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
       mS[2] = mSi[0]*mSi[5] - mSi[3]*mSi[3];
       mS[3] = mSi[1]*mSi[4] - mSi[2]*mSi[3];
       mS[4] = mSi[1]*mSi[3] - mSi[0]*mSi[4];
       mS[5] = mSi[0]*mSi[2] - mSi[1]*mSi[1];	 
-      
-      Double_t s = ( mSi[0]*mS[0] + mSi[1]*mS[1] + mSi[3]*mS[3] );      
 
-      s = ( s > 1.E-20 )  ?1./s :0;	  
+      Double_t s = ( mSi[0]*mS[0] + mSi[1]*mS[1] + mSi[3]*mS[3] );      
+      s = ( TMath::Abs(s) > 1.E-20 )  ?1./s :0;	  
       mS[0]*=s;
       mS[1]*=s;
       mS[2]*=s;
@@ -453,16 +497,14 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       mS[4]*=s;
       mS[5]*=s;
     }
-    
     //* Residual (measured - estimated)
-    
+
     Double_t zeta[3] = { m[0]-ffP[0], m[1]-ffP[1], m[2]-ffP[2] };    
 
-    
     //* CHt = CH' - D'
-    
+
     Double_t mCHt0[7], mCHt1[7], mCHt2[7];
-    
+
     mCHt0[0]=ffC[ 0] ;       mCHt1[0]=ffC[ 1] ;       mCHt2[0]=ffC[ 3] ;
     mCHt0[1]=ffC[ 1] ;       mCHt1[1]=ffC[ 2] ;       mCHt2[1]=ffC[ 4] ;
     mCHt0[2]=ffC[ 3] ;       mCHt1[2]=ffC[ 4] ;       mCHt2[2]=ffC[ 5] ;
@@ -532,6 +574,575 @@ void AliKFParticleBase::AddDaughter( const AliKFParticleBase &Daughter )
       +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
       +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];     
 
+  }
+}
+
+void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daughter )
+{
+  //* Energy considered as a dependent variable, calculated from the momentum and mass hypothesis
+
+  //* Add daughter 
+
+  TransportToDecayVertex();
+
+  Double_t b[3]; 
+  Int_t maxIter = 1;
+
+  if( !fIsLinearized ){
+    if( fNDF==-1 ){
+      Double_t ds, ds1;
+      GetDStoParticle(Daughter, ds, ds1);      
+      TransportToDS( ds );
+      Double_t m[8];
+      Double_t mCd[36];       
+      Daughter.Transport( ds1, m, mCd );    
+      fVtxGuess[0] = .5*( fP[0] + m[0] );
+      fVtxGuess[1] = .5*( fP[1] + m[1] );
+      fVtxGuess[2] = .5*( fP[2] + m[2] );
+    } else {
+      fVtxGuess[0] = fP[0];
+      fVtxGuess[1] = fP[1];
+      fVtxGuess[2] = fP[2]; 
+    }
+    maxIter = 3;
+  }
+
+  for( Int_t iter=0; iter<maxIter; iter++ ){
+
+    {
+      GetFieldValue( fVtxGuess, b );
+      const Double_t kCLight =  0.000299792458;
+      b[0]*=kCLight; b[1]*=kCLight; b[2]*=kCLight;
+    }
+
+    Double_t *ffP = fP, *ffC = fC, tmpP[8], tmpC[36];
+    if( fNDF==-1 ){            
+      GetMeasurement( fVtxGuess, tmpP, tmpC );
+      ffP = tmpP;
+      ffC = tmpC;
+    }
+
+    Double_t m[8], mV[36];
+
+    if( Daughter.fC[35]>0 ){
+      Daughter.GetMeasurement( fVtxGuess, m, mV );
+    } else {
+      for( Int_t i=0; i<8; i++ ) m[i] = Daughter.fP[i];
+      for( Int_t i=0; i<36; i++ ) mV[i] = Daughter.fC[i];
+    }
+
+    double Mass_mf2 = m[6]*m[6] - (m[3]*m[3] + m[4]*m[4] + m[5]*m[5]);
+    double Mass_rf2 = fP[6]*fP[6] - (fP[3]*fP[3] + fP[4]*fP[4] + fP[5]*fP[5]);
+
+    //*
+
+    Double_t mS[6];
+    {
+      Double_t mSi[6] = { ffC[0]+mV[0], 
+			  ffC[1]+mV[1], ffC[2]+mV[2], 
+			  ffC[3]+mV[3], ffC[4]+mV[4], ffC[5]+mV[5] };
+
+      mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
+      mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
+      mS[2] = mSi[0]*mSi[5] - mSi[3]*mSi[3];
+      mS[3] = mSi[1]*mSi[4] - mSi[2]*mSi[3];
+      mS[4] = mSi[1]*mSi[3] - mSi[0]*mSi[4];
+      mS[5] = mSi[0]*mSi[2] - mSi[1]*mSi[1];	 
+
+      Double_t s = ( mSi[0]*mS[0] + mSi[1]*mS[1] + mSi[3]*mS[3] );      
+
+      s = ( s > 1.E-20 )  ?1./s :0;	  
+      mS[0]*=s;
+      mS[1]*=s;
+      mS[2]*=s;
+      mS[3]*=s;
+      mS[4]*=s;
+      mS[5]*=s;
+    }
+
+    //* Residual (measured - estimated)
+
+    Double_t zeta[3] = { m[0]-ffP[0], m[1]-ffP[1], m[2]-ffP[2] };    
+
+    //* CHt = CH' - D'
+
+    Double_t mCHt0[6], mCHt1[6], mCHt2[6];
+
+    mCHt0[0]=ffC[ 0] ;       mCHt1[0]=ffC[ 1] ;       mCHt2[0]=ffC[ 3] ;
+    mCHt0[1]=ffC[ 1] ;       mCHt1[1]=ffC[ 2] ;       mCHt2[1]=ffC[ 4] ;
+    mCHt0[2]=ffC[ 3] ;       mCHt1[2]=ffC[ 4] ;       mCHt2[2]=ffC[ 5] ;
+    mCHt0[3]=ffC[ 6]-mV[ 6]; mCHt1[3]=ffC[ 7]-mV[ 7]; mCHt2[3]=ffC[ 8]-mV[ 8];
+    mCHt0[4]=ffC[10]-mV[10]; mCHt1[4]=ffC[11]-mV[11]; mCHt2[4]=ffC[12]-mV[12];
+    mCHt0[5]=ffC[15]-mV[15]; mCHt1[5]=ffC[16]-mV[16]; mCHt2[5]=ffC[17]-mV[17];
+
+    //* Kalman gain K = mCH'*S
+
+    Double_t k0[6], k1[6], k2[6];
+
+    for(Int_t i=0;i<6;++i){
+      k0[i] = mCHt0[i]*mS[0] + mCHt1[i]*mS[1] + mCHt2[i]*mS[3];
+      k1[i] = mCHt0[i]*mS[1] + mCHt1[i]*mS[2] + mCHt2[i]*mS[4];
+      k2[i] = mCHt0[i]*mS[3] + mCHt1[i]*mS[4] + mCHt2[i]*mS[5];
+    }
+
+   //* New estimation of the vertex position 
+
+    if( iter<maxIter-1 ){
+      for(Int_t i=0; i<3; ++i) 
+	fVtxGuess[i]= ffP[i] + k0[i]*zeta[0]+k1[i]*zeta[1]+k2[i]*zeta[2];
+      continue;
+    }
+
+   //* find mf and Vf - optimum value of the measurement and its covariance matrix
+    //* mVHt = V*H'
+    Double_t mVHt0[6], mVHt1[6], mVHt2[6];
+
+    mVHt0[0]= mV[ 0] ; mVHt1[0]= mV[ 1] ; mVHt2[0]= mV[ 3] ;
+    mVHt0[1]= mV[ 1] ; mVHt1[1]= mV[ 2] ; mVHt2[1]= mV[ 4] ;
+    mVHt0[2]= mV[ 3] ; mVHt1[2]= mV[ 4] ; mVHt2[2]= mV[ 5] ;
+    mVHt0[3]= mV[ 6] ; mVHt1[3]= mV[ 7] ; mVHt2[3]= mV[ 8] ;
+    mVHt0[4]= mV[10] ; mVHt1[4]= mV[11] ; mVHt2[4]= mV[12] ;
+    mVHt0[5]= mV[15] ; mVHt1[5]= mV[16] ; mVHt2[5]= mV[17] ;
+
+    //* Kalman gain Km = mCH'*S
+
+    Double_t km0[6], km1[6], km2[6];
+
+    for(Int_t i=0;i<6;++i){
+      km0[i] = mVHt0[i]*mS[0] + mVHt1[i]*mS[1] + mVHt2[i]*mS[3];
+      km1[i] = mVHt0[i]*mS[1] + mVHt1[i]*mS[2] + mVHt2[i]*mS[4];
+      km2[i] = mVHt0[i]*mS[3] + mVHt1[i]*mS[4] + mVHt2[i]*mS[5];
+    }
+
+    Double_t mf[7] = { m[0], m[1], m[2], m[3], m[4], m[5], m[6] };
+
+    for(Int_t i=0;i<6;++i) 
+      mf[i] = mf[i] - km0[i]*zeta[0] - km1[i]*zeta[1] - km2[i]*zeta[2];
+
+    Double_t E_mf = TMath::Sqrt( Mass_mf2 + (mf[3]*mf[3] + mf[4]*mf[4] + mf[5]*mf[5]) );
+
+    Double_t Vf[28];
+    for(Int_t iC=0; iC<28; iC++)
+      Vf[iC] = mV[iC];
+
+    //* hmf = d(E_mf)/d(mf)
+    Double_t hmf[7];
+    if( fabs(E_mf) < 1.e-10) hmf[3] = 0; else hmf[3] = mf[3]/E_mf;
+    if( fabs(E_mf) < 1.e-10) hmf[4] = 0; else hmf[4] = mf[4]/E_mf;
+    if( fabs(E_mf) < 1.e-10) hmf[5] = 0; else hmf[5] = mf[5]/E_mf;
+//    if( fabs(E_mf) < 1.e-10) hmf[6] = 0; else hmf[6] = mf[6]/E_mf;
+    hmf[6] = 0;
+
+    for(Int_t i=0, k=0;i<6;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+        Vf[k] = Vf[k] - (km0[i]*mVHt0[j] + km1[i]*mVHt1[j] + km2[i]*mVHt2[j] );
+      }
+    }
+    Double_t Vf24 = Vf[24], Vf25 = Vf[25], Vf26 = Vf[26];
+    Vf[21] = Vf[6 ]*hmf[3] + Vf[10]*hmf[4] + Vf[15]*hmf[5] + Vf[21]*hmf[6];
+    Vf[22] = Vf[7 ]*hmf[3] + Vf[11]*hmf[4] + Vf[16]*hmf[5] + Vf[22]*hmf[6];
+    Vf[23] = Vf[8 ]*hmf[3] + Vf[12]*hmf[4] + Vf[17]*hmf[5] + Vf[23]*hmf[6];
+    Vf[24] = Vf[9 ]*hmf[3] + Vf[13]*hmf[4] + Vf[18]*hmf[5] + Vf[24]*hmf[6];
+    Vf[25] = Vf[13]*hmf[3] + Vf[14]*hmf[4] + Vf[19]*hmf[5] + Vf[25]*hmf[6];
+    Vf[26] = Vf[18]*hmf[3] + Vf[19]*hmf[4] + Vf[20]*hmf[5] + Vf[26]*hmf[6];
+    Vf[27] = Vf[24]*hmf[3] + Vf[25]*hmf[4] + Vf[26]*hmf[5] + (Vf24*hmf[3] + Vf25*hmf[4] + Vf26*hmf[5] + Vf[27]*hmf[6])*hmf[6]; //here Vf[] are already modified
+
+    mf[6] = E_mf;
+
+    //* find rf and Cf - optimum value of the measurement and its covariance matrix
+
+    //* mCCHt = C*H'
+    Double_t mCCHt0[6], mCCHt1[6], mCCHt2[6];
+
+    mCCHt0[0]=ffC[ 0]; mCCHt1[0]=ffC[ 1]; mCCHt2[0]=ffC[ 3];
+    mCCHt0[1]=ffC[ 1]; mCCHt1[1]=ffC[ 2]; mCCHt2[1]=ffC[ 4];
+    mCCHt0[2]=ffC[ 3]; mCCHt1[2]=ffC[ 4]; mCCHt2[2]=ffC[ 5];
+    mCCHt0[3]=ffC[ 6]; mCCHt1[3]=ffC[ 7]; mCCHt2[3]=ffC[ 8];
+    mCCHt0[4]=ffC[10]; mCCHt1[4]=ffC[11]; mCCHt2[4]=ffC[12];
+    mCCHt0[5]=ffC[15]; mCCHt1[5]=ffC[16]; mCCHt2[5]=ffC[17];
+
+    //* Kalman gain Krf = mCH'*S
+
+    Double_t krf0[6], krf1[6], krf2[6];
+
+    for(Int_t i=0;i<6;++i){
+      krf0[i] = mCCHt0[i]*mS[0] + mCCHt1[i]*mS[1] + mCCHt2[i]*mS[3];
+      krf1[i] = mCCHt0[i]*mS[1] + mCCHt1[i]*mS[2] + mCCHt2[i]*mS[4];
+      krf2[i] = mCCHt0[i]*mS[3] + mCCHt1[i]*mS[4] + mCCHt2[i]*mS[5];
+    }
+    Double_t rf[7] = { ffP[0], ffP[1], ffP[2], ffP[3], ffP[4], ffP[5], ffP[6] };
+
+    for(Int_t i=0;i<6;++i) 
+      rf[i] = rf[i] + krf0[i]*zeta[0] + krf1[i]*zeta[1] + krf2[i]*zeta[2];
+
+    Double_t E_rf = TMath::Sqrt( Mass_rf2 + (rf[3]*rf[3] + rf[4]*rf[4] + rf[5]*rf[5]) );
+
+    Double_t Cf[28];
+    for(Int_t iC=0; iC<28; iC++)
+      Cf[iC] = ffC[iC];
+    //* hrf = d(Erf)/d(rf)
+    Double_t hrf[7];
+    if( fabs(E_rf) < 1.e-10) hrf[3] = 0; else hrf[3] = rf[3]/E_rf;
+    if( fabs(E_rf) < 1.e-10) hrf[4] = 0; else hrf[4] = rf[4]/E_rf;
+    if( fabs(E_rf) < 1.e-10) hrf[5] = 0; else hrf[5] = rf[5]/E_rf;
+//    if( fabs(E_rf) < 1.e-10) hrf[6] = 0; else hrf[6] = rf[6]/E_rf;
+    hrf[6] = 0;
+
+    for(Int_t i=0, k=0;i<6;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+        Cf[k] = Cf[k] - (krf0[i]*mCCHt0[j] + krf1[i]*mCCHt1[j] + krf2[i]*mCCHt2[j] );
+      }
+    }
+    Double_t Cf24 = Cf[24], Cf25 = Cf[25], Cf26 = Cf[26];
+    Cf[21] = Cf[6 ]*hrf[3] + Cf[10]*hrf[4] + Cf[15]*hrf[5] + Cf[21]*hrf[6];
+    Cf[22] = Cf[7 ]*hrf[3] + Cf[11]*hrf[4] + Cf[16]*hrf[5] + Cf[22]*hrf[6];
+    Cf[23] = Cf[8 ]*hrf[3] + Cf[12]*hrf[4] + Cf[17]*hrf[5] + Cf[23]*hrf[6];
+    Cf[24] = Cf[9 ]*hrf[3] + Cf[13]*hrf[4] + Cf[18]*hrf[5] + Cf[24]*hrf[6];
+    Cf[25] = Cf[13]*hrf[3] + Cf[14]*hrf[4] + Cf[19]*hrf[5] + Cf[25]*hrf[6];
+    Cf[26] = Cf[18]*hrf[3] + Cf[19]*hrf[4] + Cf[20]*hrf[5] + Cf[26]*hrf[6];
+    Cf[27] = Cf[24]*hrf[3] + Cf[25]*hrf[4] + Cf[26]*hrf[5] + (Cf24*hrf[3] + Cf25*hrf[4] + Cf26*hrf[5] + Cf[27]*hrf[6])*hrf[6]; //here Cf[] are already modified
+
+    for(Int_t iC=21; iC<28; iC++)
+    {
+      ffC[iC] = Cf[iC];
+      mV[iC]  = Vf[iC];
+    }
+
+    fP[6] = E_rf + E_mf;
+    rf[6] = E_rf;
+
+    //Double_t Dvv[3][3]; do not need this
+    Double_t Dvp[3][3];
+    Double_t Dpv[3][3];
+    Double_t Dpp[3][3];
+    Double_t De[7];
+
+    for(int i=0; i<3; i++)
+    {
+      for(int j=0; j<3; j++)
+      {
+        Dvp[i][j] = km0[i+3]*mCCHt0[j] + km1[i+3]*mCCHt1[j] + km2[i+3]*mCCHt2[j];
+        Dpv[i][j] = km0[i]*mCCHt0[j+3] + km1[i]*mCCHt1[j+3] + km2[i]*mCCHt2[j+3];
+        Dpp[i][j] = km0[i+3]*mCCHt0[j+3] + km1[i+3]*mCCHt1[j+3] + km2[i+3]*mCCHt2[j+3];
+      }
+    }
+
+    De[0] = hmf[3]*Dvp[0][0] + hmf[4]*Dvp[1][0] + hmf[5]*Dvp[2][0];
+    De[1] = hmf[3]*Dvp[0][1] + hmf[4]*Dvp[1][1] + hmf[5]*Dvp[2][1];
+    De[2] = hmf[3]*Dvp[0][2] + hmf[4]*Dvp[1][2] + hmf[5]*Dvp[2][2];
+    De[3] = hmf[3]*Dpp[0][0] + hmf[4]*Dpp[1][0] + hmf[5]*Dpp[2][0];
+    De[4] = hmf[3]*Dpp[0][1] + hmf[4]*Dpp[1][1] + hmf[5]*Dpp[2][1];
+    De[5] = hmf[3]*Dpp[0][2] + hmf[4]*Dpp[1][2] + hmf[5]*Dpp[2][2];
+    De[6] = 2*(De[3]*hrf[3] + De[4]*hrf[4] + De[5]*hrf[5]);
+
+    // last itearation -> update the particle
+
+    //* Add the daughter momentum to the particle momentum
+
+    ffP[ 3] += m[ 3];
+    ffP[ 4] += m[ 4];
+    ffP[ 5] += m[ 5];
+
+    ffC[ 9] += mV[ 9];
+    ffC[13] += mV[13];
+    ffC[14] += mV[14];
+    ffC[18] += mV[18];
+    ffC[19] += mV[19];
+    ffC[20] += mV[20];
+    ffC[24] += mV[24];
+    ffC[25] += mV[25];
+    ffC[26] += mV[26];
+    ffC[27] += mV[27];
+
+    ffC[21] += De[0];
+    ffC[22] += De[1];
+    ffC[23] += De[2];
+    ffC[24] += De[3];
+    ffC[25] += De[4];
+    ffC[26] += De[5];
+    ffC[27] += De[6];
+
+   //* New estimation of the vertex position r += K*zeta
+
+    for(Int_t i=0;i<6;++i) 
+      fP[i] = ffP[i] + k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
+
+    //* New covariance matrix C -= K*(mCH')'
+
+    for(Int_t i=0, k=0;i<6;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+	fC[k] = ffC[k] - (k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j] );
+      }
+    }
+
+    for(int i=21; i<28; i++) fC[i] = ffC[i];
+
+    //* Calculate Chi^2 
+
+    fNDF  += 2;
+    fQ    +=  Daughter.GetQ();
+    fSFromDecay = 0;    
+    fChi2 += (mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2])*zeta[0]
+      +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
+      +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];     
+  }
+}
+
+void AliKFParticleBase::AddDaughterWithEnergyFitMC( const AliKFParticleBase &Daughter )
+{
+  //* Energy considered as an independent variable, fitted independently from momentum, without any constraints on mass
+
+  //* Add daughter 
+
+  TransportToDecayVertex();
+
+  Double_t b[3]; 
+  Int_t maxIter = 1;
+
+  if( !fIsLinearized ){
+    if( fNDF==-1 ){
+      Double_t ds, ds1;
+      GetDStoParticle(Daughter, ds, ds1);      
+      TransportToDS( ds );
+      Double_t m[8];
+      Double_t mCd[36];       
+      Daughter.Transport( ds1, m, mCd );    
+      fVtxGuess[0] = .5*( fP[0] + m[0] );
+      fVtxGuess[1] = .5*( fP[1] + m[1] );
+      fVtxGuess[2] = .5*( fP[2] + m[2] );
+    } else {
+      fVtxGuess[0] = fP[0];
+      fVtxGuess[1] = fP[1];
+      fVtxGuess[2] = fP[2]; 
+    }
+    maxIter = 3;
+  }
+
+  for( Int_t iter=0; iter<maxIter; iter++ ){
+
+    {
+      GetFieldValue( fVtxGuess, b );
+      const Double_t kCLight =  0.000299792458;
+      b[0]*=kCLight; b[1]*=kCLight; b[2]*=kCLight;
+    }
+
+    Double_t *ffP = fP, *ffC = fC, tmpP[8], tmpC[36];
+    if( fNDF==-1 ){            
+      GetMeasurement( fVtxGuess, tmpP, tmpC );
+      ffP = tmpP;
+      ffC = tmpC;
+    }
+    Double_t m[8], mV[36];
+
+    if( Daughter.fC[35]>0 ){
+      Daughter.GetMeasurement( fVtxGuess, m, mV );
+    } else {
+      for( Int_t i=0; i<8; i++ ) m[i] = Daughter.fP[i];
+      for( Int_t i=0; i<36; i++ ) mV[i] = Daughter.fC[i];
+    }
+    //*
+
+    Double_t mS[6];
+    {
+      Double_t mSi[6] = { ffC[0]+mV[0], 
+			  ffC[1]+mV[1], ffC[2]+mV[2], 
+			  ffC[3]+mV[3], ffC[4]+mV[4], ffC[5]+mV[5] };
+     
+      mS[0] = mSi[2]*mSi[5] - mSi[4]*mSi[4];
+      mS[1] = mSi[3]*mSi[4] - mSi[1]*mSi[5];
+      mS[2] = mSi[0]*mSi[5] - mSi[3]*mSi[3];
+      mS[3] = mSi[1]*mSi[4] - mSi[2]*mSi[3];
+      mS[4] = mSi[1]*mSi[3] - mSi[0]*mSi[4];
+      mS[5] = mSi[0]*mSi[2] - mSi[1]*mSi[1];	 
+      
+      Double_t s = ( mSi[0]*mS[0] + mSi[1]*mS[1] + mSi[3]*mS[3] );      
+
+      s = ( s > 1.E-20 )  ?1./s :0;	  
+      mS[0]*=s;
+      mS[1]*=s;
+      mS[2]*=s;
+      mS[3]*=s;
+      mS[4]*=s;
+      mS[5]*=s;
+    }
+    //* Residual (measured - estimated)
+    
+    Double_t zeta[3] = { m[0]-ffP[0], m[1]-ffP[1], m[2]-ffP[2] };    
+
+    
+    //* CHt = CH'
+    
+    Double_t mCHt0[7], mCHt1[7], mCHt2[7];
+    
+    mCHt0[0]=ffC[ 0] ; mCHt1[0]=ffC[ 1] ; mCHt2[0]=ffC[ 3] ;
+    mCHt0[1]=ffC[ 1] ; mCHt1[1]=ffC[ 2] ; mCHt2[1]=ffC[ 4] ;
+    mCHt0[2]=ffC[ 3] ; mCHt1[2]=ffC[ 4] ; mCHt2[2]=ffC[ 5] ;
+    mCHt0[3]=ffC[ 6] ; mCHt1[3]=ffC[ 7] ; mCHt2[3]=ffC[ 8] ;
+    mCHt0[4]=ffC[10] ; mCHt1[4]=ffC[11] ; mCHt2[4]=ffC[12] ;
+    mCHt0[5]=ffC[15] ; mCHt1[5]=ffC[16] ; mCHt2[5]=ffC[17] ;
+    mCHt0[6]=ffC[21] ; mCHt1[6]=ffC[22] ; mCHt2[6]=ffC[23] ;
+  
+    //* Kalman gain K = mCH'*S
+    
+    Double_t k0[7], k1[7], k2[7];
+    
+    for(Int_t i=0;i<7;++i){
+      k0[i] = mCHt0[i]*mS[0] + mCHt1[i]*mS[1] + mCHt2[i]*mS[3];
+      k1[i] = mCHt0[i]*mS[1] + mCHt1[i]*mS[2] + mCHt2[i]*mS[4];
+      k2[i] = mCHt0[i]*mS[3] + mCHt1[i]*mS[4] + mCHt2[i]*mS[5];
+    }
+
+   //* New estimation of the vertex position 
+
+    if( iter<maxIter-1 ){
+      for(Int_t i=0; i<3; ++i) 
+	fVtxGuess[i]= ffP[i] + k0[i]*zeta[0]+k1[i]*zeta[1]+k2[i]*zeta[2];
+      continue;
+    }
+
+    // last itearation -> update the particle
+
+    //* VHt = VH'
+    
+    Double_t mVHt0[7], mVHt1[7], mVHt2[7];
+    
+    mVHt0[0]=mV[ 0] ; mVHt1[0]=mV[ 1] ; mVHt2[0]=mV[ 3] ;
+    mVHt0[1]=mV[ 1] ; mVHt1[1]=mV[ 2] ; mVHt2[1]=mV[ 4] ;
+    mVHt0[2]=mV[ 3] ; mVHt1[2]=mV[ 4] ; mVHt2[2]=mV[ 5] ;
+    mVHt0[3]=mV[ 6] ; mVHt1[3]=mV[ 7] ; mVHt2[3]=mV[ 8] ;
+    mVHt0[4]=mV[10] ; mVHt1[4]=mV[11] ; mVHt2[4]=mV[12] ;
+    mVHt0[5]=mV[15] ; mVHt1[5]=mV[16] ; mVHt2[5]=mV[17] ;
+    mVHt0[6]=mV[21] ; mVHt1[6]=mV[22] ; mVHt2[6]=mV[23] ;
+  
+    //* Kalman gain Km = mCH'*S
+    
+    Double_t km0[7], km1[7], km2[7];
+    
+    for(Int_t i=0;i<7;++i){
+      km0[i] = mVHt0[i]*mS[0] + mVHt1[i]*mS[1] + mVHt2[i]*mS[3];
+      km1[i] = mVHt0[i]*mS[1] + mVHt1[i]*mS[2] + mVHt2[i]*mS[4];
+      km2[i] = mVHt0[i]*mS[3] + mVHt1[i]*mS[4] + mVHt2[i]*mS[5];
+    }
+
+    for(Int_t i=0;i<7;++i) 
+      ffP[i] = ffP[i] + k0[i]*zeta[0] + k1[i]*zeta[1] + k2[i]*zeta[2];
+
+    for(Int_t i=0;i<7;++i) 
+      m[i] = m[i] - km0[i]*zeta[0] - km1[i]*zeta[1] - km2[i]*zeta[2];
+
+    for(Int_t i=0, k=0;i<7;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+	ffC[k] = ffC[k] - (k0[i]*mCHt0[j] + k1[i]*mCHt1[j] + k2[i]*mCHt2[j] );
+      }
+    }
+
+    for(Int_t i=0, k=0;i<7;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+	mV[k] = mV[k] - (km0[i]*mVHt0[j] + km1[i]*mVHt1[j] + km2[i]*mVHt2[j] );
+      }
+    }
+
+    Double_t Df[7][7];
+
+    for(Int_t i=0;i<7;++i){
+      for(Int_t j=0;j<7;++j){
+	Df[i][j] = (km0[i]*mCHt0[j] + km1[i]*mCHt1[j] + km2[i]*mCHt2[j] );
+      }
+    }
+
+    Double_t J1[7][7], J2[7][7];
+    for(Int_t iPar1=0; iPar1<7; iPar1++)
+    {
+      for(Int_t iPar2=0; iPar2<7; iPar2++)
+      {
+        J1[iPar1][iPar2] = 0;
+        J2[iPar1][iPar2] = 0;
+      }
+    }
+
+    Double_t mMassParticle  = ffP[6]*ffP[6] - (ffP[3]*ffP[3] + ffP[4]*ffP[4] + ffP[5]*ffP[5]);
+    Double_t mMassDaughter  = m[6]*m[6] - (m[3]*m[3] + m[4]*m[4] + m[5]*m[5]);
+    if(mMassParticle > 0) mMassParticle = TMath::Sqrt(mMassParticle);
+    if(mMassDaughter > 0) mMassDaughter = TMath::Sqrt(mMassDaughter);
+
+    if( fMassHypo > -0.5)
+      SetMassConstraint(ffP,ffC,J1,fMassHypo);
+    else if((mMassParticle < SumDaughterMass) || (ffP[6]<0) )
+      SetMassConstraint(ffP,ffC,J1,SumDaughterMass);
+
+    if(Daughter.fMassHypo > -0.5)
+      SetMassConstraint(m,mV,J2,Daughter.fMassHypo);
+    else if((mMassDaughter < Daughter.SumDaughterMass) || (m[6] < 0) )
+      SetMassConstraint(m,mV,J2,Daughter.SumDaughterMass);
+
+    Double_t DJ[7][7];
+
+    for(Int_t i=0; i<7; i++) {
+      for(Int_t j=0; j<7; j++) {
+        DJ[i][j] = 0;
+        for(Int_t k=0; k<7; k++) {
+          DJ[i][j] += Df[i][k]*J1[j][k];
+        }
+      }
+    }
+
+    for(Int_t i=0; i<7; ++i){
+      for(Int_t j=0; j<7; ++j){
+        Df[i][j]=0;
+        for(Int_t l=0; l<7; l++){
+          Df[i][j] += J2[i][l]*DJ[l][j];
+        }
+      }
+    }
+
+    //* Add the daughter momentum to the particle momentum
+
+    ffP[ 3] += m[ 3];
+    ffP[ 4] += m[ 4];
+    ffP[ 5] += m[ 5];
+    ffP[ 6] += m[ 6];
+
+    ffC[ 9] += mV[ 9];
+    ffC[13] += mV[13];
+    ffC[14] += mV[14];
+    ffC[18] += mV[18];
+    ffC[19] += mV[19];
+    ffC[20] += mV[20];
+    ffC[24] += mV[24];
+    ffC[25] += mV[25];
+    ffC[26] += mV[26];
+    ffC[27] += mV[27];
+
+    ffC[6 ] += Df[3][0]; ffC[7 ] += Df[3][1]; ffC[8 ] += Df[3][2];
+    ffC[10] += Df[4][0]; ffC[11] += Df[4][1]; ffC[12] += Df[4][2];
+    ffC[15] += Df[5][0]; ffC[16] += Df[5][1]; ffC[17] += Df[5][2];
+    ffC[21] += Df[6][0]; ffC[22] += Df[6][1]; ffC[23] += Df[6][2];
+
+    ffC[9 ] += Df[3][3] + Df[3][3];
+    ffC[13] += Df[4][3] + Df[3][4]; ffC[14] += Df[4][4] + Df[4][4];
+    ffC[18] += Df[5][3] + Df[3][5]; ffC[19] += Df[5][4] + Df[4][5]; ffC[20] += Df[5][5] + Df[5][5];
+    ffC[24] += Df[6][3] + Df[3][6]; ffC[25] += Df[6][4] + Df[4][6]; ffC[26] += Df[6][5] + Df[5][6]; ffC[27] += Df[6][6] + Df[6][6];
+
+   //* New estimation of the vertex position r += K*zeta
+
+    for(Int_t i=0;i<7;++i) 
+      fP[i] = ffP[i];
+
+    //* New covariance matrix C -= K*(mCH')'
+
+    for(Int_t i=0, k=0;i<7;++i){
+      for(Int_t j=0;j<=i;++j,++k){
+        fC[k] = ffC[k];
+      }
+    }
+    //* Calculate Chi^2 
+
+    fNDF  += 2;
+    fQ    +=  Daughter.GetQ();
+    fSFromDecay = 0;    
+    fChi2 += (mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2])*zeta[0]
+      +      (mS[1]*zeta[0] + mS[2]*zeta[1] + mS[4]*zeta[2])*zeta[1]
+      +      (mS[3]*zeta[0] + mS[4]*zeta[1] + mS[5]*zeta[2])*zeta[2];
   }
 }
 
@@ -686,11 +1297,115 @@ void AliKFParticleBase::SetProductionVertex( const AliKFParticleBase &Vtx )
   fSFromDecay = 0;
 }
 
+void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t J[7][7], Double_t Mass )
+{
+  const Double_t E2 = mP[6]*mP[6], p2 = mP[3]*mP[3]+mP[4]*mP[4]+mP[5]*mP[5], M2 = Mass*Mass;
 
+  const Double_t a = E2 - p2 + 2.*M2;
+  const Double_t b = -2.*(E2 + p2);
+  const Double_t c = E2 - p2 - M2;
+
+  Double_t Lambda = 0;
+  if(fabs(b) > 1.e-10) Lambda = -c / b;
+
+  Double_t D = 4.*E2*p2 - M2*(E2-p2-2.*M2);
+  if(D>=0 && fabs(a) > 1.e-10) Lambda = (E2 + p2 - sqrt(D))/a;
+
+  if(mP[6] < 0) //If energy < 0 we need a Lambda < 0
+    Lambda = -1000000.; //Empirical, a better solution should be found
+
+  Int_t iIter=0;
+  for(iIter=0; iIter<100; iIter++)
+  {
+    Double_t Lambda2 = Lambda*Lambda;
+    Double_t Lambda4 = Lambda2*Lambda2;
+
+    Double_t Lambda0 = Lambda;
+
+    Double_t f  = -M2 * Lambda4 + a*Lambda2 + b*Lambda + c;
+    Double_t df = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
+    if(fabs(df) < 1.e-10) break;
+    Lambda -= f/df;
+    if(fabs(Lambda0 - Lambda) < 1.e-8) break;
+  }
+
+  const Double_t LPi = 1./(1. + Lambda);
+  const Double_t LMi = 1./(1. - Lambda);
+  const Double_t LP2i = LPi*LPi;
+  const Double_t LM2i = LMi*LMi;
+
+  Double_t Lambda2 = Lambda*Lambda;
+
+  Double_t dfl  = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
+  Double_t dfx[4] = {0,0,0,0};
+  dfx[0] = -2.*(1. + Lambda)*(1. + Lambda)*mP[3];
+  dfx[1] = -2.*(1. + Lambda)*(1. + Lambda)*mP[4];
+  dfx[2] = -2.*(1. + Lambda)*(1. + Lambda)*mP[5];
+  dfx[3] = 2.*(1. - Lambda)*(1. - Lambda)*mP[6];
+  Double_t dlx[7] = {1,1,1,1,1,1,1};
+  if(fabs(dfl) > 1.e-10 )
+  {
+    for(int i=0; i<7; i++)
+      dlx[i] = -dfx[i] / dfl;
+  }
+
+  Double_t dxx[4] = {mP[3]*LM2i, mP[4]*LM2i, mP[5]*LM2i, -mP[6]*LP2i};
+
+  for(Int_t i=0; i<7; i++)
+    for(Int_t j=0; j<7; j++)
+      J[i][j]=0;
+  J[0][0] = 1.;
+  J[1][1] = 1.;
+  J[2][2] = 1.;
+
+  for(Int_t i=3; i<7; i++)
+    for(Int_t j=3; j<7; j++)
+      J[i][j] = dlx[j-3]*dxx[i-3];
+
+  for(Int_t i=3; i<6; i++)
+    J[i][i] += LMi;
+  J[6][6] += LPi;
+
+  Double_t CJ[7][7];
+
+  for(Int_t i=0; i<7; i++) {
+    for(Int_t j=0; j<7; j++) {
+      CJ[i][j] = 0;
+      for(Int_t k=0; k<7; k++) {
+        CJ[i][j] += mC[IJ(i,k)]*J[j][k];
+      }
+    }
+  }
+
+  for(Int_t i=0; i<7; ++i){
+    for(Int_t j=0; j<=i; ++j){
+      mC[IJ(i,j)]=0;
+      for(Int_t l=0; l<7; l++){
+        mC[IJ(i,j)] += J[i][l]*CJ[l][j];
+      }
+    }
+  }
+
+  mP[3] *= LMi;
+  mP[4] *= LMi;
+  mP[5] *= LMi;
+  mP[6] *= LPi;
+}
+
+void AliKFParticleBase::SetNonlinearMassConstraint( Double_t Mass )
+{
+  Double_t J[7][7];
+  SetMassConstraint( fP, fC, J, Mass );
+  fMassHypo = Mass;
+  SumDaughterMass = Mass;
+}
 
 void AliKFParticleBase::SetMassConstraint( Double_t Mass, Double_t SigmaMass )
 {  
   //* Set hard( SigmaMass=0 ) or soft (SigmaMass>0) mass constraint 
+
+  fMassHypo = Mass;
+  SumDaughterMass = Mass;
 
   Double_t m2 = Mass*Mass;            // measurement, weighted by Mass 
   Double_t s2 = m2*SigmaMass*SigmaMass; // sigma^2
@@ -796,11 +1511,12 @@ void AliKFParticleBase::Construct( const AliKFParticleBase* vDaughters[], Int_t 
     fP[5] = 0;
     fP[6] = 0;
     fP[7] = 0;
-   
+    SumDaughterMass = 0;
+
     for(Int_t i=0;i<6; ++i) fC[i]=constraintC[i];
     for(Int_t i=6;i<36;++i) fC[i]=0.;
     fC[35] = 1.;
-    
+
     fNDF  = IsConstrained ?0 :-3;
     fChi2 =  0.;
     fQ = 0;
@@ -2076,7 +2792,8 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
     fC[27]+= mC[27] + d0*mB[3][0] + d1*mB[3][1] + d2*mB[3][2];
   }
 
-  SetMassConstraint(0,0);  
+//  SetMassConstraint(0,0);
+  SetNonlinearMassConstraint(0);
 }
 
 Bool_t AliKFParticleBase::InvertSym3( const Double_t A[], Double_t Ai[] )
@@ -2090,7 +2807,7 @@ Bool_t AliKFParticleBase::InvertSym3( const Double_t A[], Double_t Ai[] )
   Ai[1] = a3*A[4] - a1*A[5];
   Ai[3] = a1*A[4] - a2*a3;
   Double_t det = (a0*Ai[0] + a1*Ai[1] + a3*Ai[3]);
-  if( det>1.e-20 ) det = 1./det;    
+  if( TMath::Abs(det)>1.e-20 ) det = 1./det;    
   else{ 
     det = 0;
     ret = 1;

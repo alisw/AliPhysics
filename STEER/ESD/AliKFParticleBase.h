@@ -1,7 +1,7 @@
 //---------------------------------------------------------------------------------
 // The AliKFParticleBase class
 // .
-// @author  S.Gorbunov, I.Kisel
+// @author  S.Gorbunov, I.Kisel, I.Kulakov, M.Zyzak
 // @version 1.0
 // @since   13.05.07
 // 
@@ -78,6 +78,17 @@ class AliKFParticleBase :public TObject {
   //* Set decay vertex parameters for linearisation 
 
   void SetVtxGuess( Double_t x, Double_t y, Double_t z );
+
+  //* Set consruction method
+
+  void SetConstructMethod(Int_t m) {fConstructMethod = m;}
+
+  //* Set and get mass hypothesis of the particle
+  void SetMassHypo(Double_t m) { fMassHypo = m;}
+  const Double_t& GetMassHypo() const { return fMassHypo; }
+
+  //* Returns the sum of masses of the daughters
+  const Double_t& GetSumDaughterMass() const {return SumDaughterMass;}
 
   //*
   //*  ACCESSORS
@@ -164,12 +175,17 @@ class AliKFParticleBase :public TObject {
 
   void AddDaughter( const AliKFParticleBase &Daughter );
 
+  void AddDaughterWithEnergyFit( const AliKFParticleBase &Daughter );
+  void AddDaughterWithEnergyCalc( const AliKFParticleBase &Daughter );
+  void AddDaughterWithEnergyFitMC( const AliKFParticleBase &Daughter ); //with mass constrained
+
   //* Set production vertex 
 
   void SetProductionVertex( const AliKFParticleBase &Vtx );
 
   //* Set mass constraint 
 
+  void SetNonlinearMassConstraint( Double_t Mass );
   void SetMassConstraint( Double_t Mass, Double_t SigmaMass = 0 );
   
   //* Set no decay length for resonances
@@ -264,6 +280,9 @@ class AliKFParticleBase :public TObject {
 
   void GetMeasurement( const Double_t XYZ[], Double_t m[], Double_t V[] ) const ;
 
+  //* Mass constraint function. is needed for the nonlinear mass constraint and a fit with mass constraint
+  void SetMassConstraint( Double_t *mP, Double_t *mC, Double_t J[7][7], Double_t Mass );
+
   Double_t fP[8];  //* Main particle parameters {X,Y,Z,Px,Py,Pz,E,S[=DecayLength/P]}
   Double_t fC[36]; //* Low-triangle covariance matrix of fP
   Int_t    fQ;     //* Particle charge 
@@ -279,6 +298,15 @@ class AliKFParticleBase :public TObject {
                           //* ( used for linearisation of equations )
 
   Bool_t fIsLinearized;   //* Flag shows that the guess is present
+
+  //* Determines the method for the particle construction. 
+  //* 0 - Energy considered as an independent veriable, fitted independently from momentum, without any constraints on mass
+  //* 1 - Energy considered as a dependent variable, calculated from the momentum and mass hypothesis
+  //* 2 - Energy considered as an independent variable, fitted independently from momentum, with constraints on mass of daughter particle
+  Int_t fConstructMethod;
+
+  Double_t SumDaughterMass;  //* sum of the daughter particles masses
+  Double_t fMassHypo;  //* sum of the daughter particles masses
 
   ClassDef( AliKFParticleBase, 1 );
 };
