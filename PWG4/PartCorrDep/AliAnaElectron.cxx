@@ -161,7 +161,7 @@ Bool_t  AliAnaElectron::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   
   //.......................................
   //Skip not matched clusters with tracks
-  if(!IsTrackMatched(calo)) {
+  if(!IsTrackMatched(calo, GetReader()->GetInputEvent())) {
       if(GetDebug() > 2) printf("\t Reject non track-matched clusters\n");
       return kFALSE ;
   }
@@ -988,30 +988,16 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     
     // Data, PID check on
     if(IsCaloPIDOn()){
-      //Get most probable PID, 2 options check PID weights 
-      //or redo PID, recommended option for EMCal.		
-      if(!IsCaloPIDRecalculationOn()){
-        if(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E())!=AliCaloPID::kPhoton) continue;
-      }
-      else{
-        if(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E())!=AliCaloPID::kPhoton) continue;
-      }
+      // Get most probable PID, 2 options check bayesian PID weights or redo PID
+      // By default, redo PID
     
+      if(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo)!=AliCaloPID::kPhoton) continue;
+      
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
       
     }
-    
-    //    //...............................................
-    //    // Data, PID check off
-    //    else{
-    //      //Set PID bits for later selection (AliAnaPi0 for example)
-    //      //GetPDG already called in SetPIDBits.
-    //      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodph, GetCaloUtils());
-    //      if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - PID Bits set \n");		
-    //    }
-    
+        
     if(GetDebug() > 1) printf("AliAnaElectron::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
-    
     
     //FIXME, this to MakeAnalysisFillHistograms ...
     Int_t absID             = 0; 

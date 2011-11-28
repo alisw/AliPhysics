@@ -970,24 +970,14 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
     
     //Check PID
     //PID selection or bit setting
-    if(GetReader()->GetDataType() == AliCaloTrackReader::kMC){
-      //Get most probable PID, check PID weights (in MC this option is mandatory)
-      aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
-      if(GetDebug() > 1) 
-        printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - FillAOD: PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
-      //If primary is not pi0, skip it.
-      if(aodpi0.GetIdentifiedParticleType() != AliCaloPID::kPi0) continue ;
-    }					
-    else if(IsCaloPIDOn()){
+    if(IsCaloPIDOn()){
       //Skip matched clusters with tracks
-      if(IsTrackMatched(calo)) continue ;
+      if(IsTrackMatched(calo, GetReader()->GetInputEvent())) continue ;
       
-      //Get most probable PID, 2 options check PID weights 
-      //or redo PID, recommended option for EMCal.		
-      if(!IsCaloPIDRecalculationOn())
-        aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,calo->GetPID(),mom.E()));//PID with weights
-      else
-        aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
+      // Get most probable PID, 2 options check bayesian PID weights or redo PID
+      // By default, redo PID
+     
+      aodpi0.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));//PID recalculated
       
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PDG of identified particle %d\n",aodpi0.GetIdentifiedParticleType());
       
@@ -996,9 +986,9 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
       
     }
     else{
-      //Set PID bits for later selection (AliAnaPi0 for example)
+      //Set PID bits for later selection 
       //GetPDG already called in SetPIDBits.
-      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0, GetCaloUtils());
+      GetCaloPID()->SetPIDBits(fCalorimeter,calo,&aodpi0, GetCaloUtils(), GetReader()->GetInputEvent());
       if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - PID Bits set \n");		
     }
     
