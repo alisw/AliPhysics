@@ -43,7 +43,7 @@ void AliITSQAchecks(TString option="grid",
 			  Int_t nRun=167713,
 			  TString period="LHC11h",
 			  TString qaTrain="QA90",
-		    TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000167706/ESDs/pass1_HLT/QA90/QAresults.root",Int_t nRunMC=0){
+		    TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000167985/ESDs/pass1_HLT/QAresults.root",Int_t nRunMC=0){
   // THIS MACRO SHOULD BE COMPILED. IT DOES NOT WORK WITH THE INTERPRETER
   // option:  "local" if filenamedata is the name of a local file
   //          "grid" if on alien
