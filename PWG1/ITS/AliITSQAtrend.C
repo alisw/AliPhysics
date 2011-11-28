@@ -372,13 +372,13 @@ void MakePlot(TString ntupleFileName){
 
 
   TH1F *hFracSPD1 = new TH1F("hFracSPD1","SPD inner; run number; Fraction of HSs",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
-  hFracSPD1->SetLineColor(3);
-  hFracSPD1->SetMarkerColor(3);
+  hFracSPD1->SetLineColor(kGreen+2);
+  hFracSPD1->SetMarkerColor(kGreen+2);
   hFracSPD1->SetMarkerStyle(20);
 
   TH1F *hFracSPD2 = new TH1F("hFracSPD2","SPD outer; run number; Fraction of HSs",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
-  hFracSPD2->SetLineColor(8);
-  hFracSPD2->SetMarkerColor(8);
+  hFracSPD2->SetLineColor(kYellow+2);
+  hFracSPD2->SetMarkerColor(kYellow+2);
   hFracSPD2->SetMarkerStyle(20);
 
   TH1F *hEffSPDPt02 = new TH1F("hEffSPDPt02","Efficiency - P_{T} = 0.2; run number; TPC+ITS / TPC",(Int_t)ntmatching->GetEntries(),0.,ntmatching->GetEntries());
@@ -520,9 +520,9 @@ void MakePlot(TString ntupleFileName){
     //    Int_t bin=nrunMatch;
 
     // fill histos
-        
-    hFracSPD1->SetBinContent(i,FracSPD1);
-    hFracSPD1->SetBinError(i,.01);
+    //    cout<<i<<") "<<"Index= "<<myIndex[i]<<" nrun= "<<nrunMatch<<", FracSPD1= "<<FracSPD1<<", FracSPD2"<<FracSPD2<<endl;        
+    hFracSPD1->SetBinContent(i+1,FracSPD1);
+    hFracSPD1->SetBinError(i+1,.01);
     hFracSPD1->GetXaxis()->SetBinLabel(i+1,Form("%d",(Int_t)nrunMatch));
 
     //    cout<<FracSPD1<<endl;
@@ -1028,7 +1028,7 @@ void MakePlot(TString ntupleFileName){
   //  TCanvas *cSPD = new TCanvas("cSPD","cSPD",0,0,1000,300);
   // cSPD->SetGridy();
   hFracSPD1->SetMaximum(1.2);
-  hFracSPD1->SetMaximum(0);
+  hFracSPD1->SetMinimum(0);
   hFracSPD1->Draw("p");
   hFracSPD2->Draw("same,p");
 
