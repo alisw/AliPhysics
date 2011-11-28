@@ -1859,6 +1859,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
   AliESDpid pid;
 
+  AliSysInfo::AddStamp(Form("StartEv_%d",iEvent), 0,0,iEvent);
+
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
     fRunLoader->SetEventNumber(iEvent);
     if (fRawReader)
@@ -1889,6 +1891,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     oldCPU=procInfo.fCpuUser+procInfo.fCpuSys;
   }
   AliInfo(Form("================================= Processing event %d of type %-10s ==================================", iEvent,fRecoParam.PrintEventSpecie()));
+
+  AliSysInfo::AddStamp(Form("StartReco_%d",iEvent), 0,0,iEvent);
 
   // Set the reco-params
   {
@@ -1922,6 +1926,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   if (fRunQA && IsInTasks(AliQAv1::kRAWS)) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     AliQAManager::QAManager()->RunOneEvent(fRawReader) ;  
+    AliSysInfo::AddStamp(Form("RawQA_%d",iEvent), 0,0,iEvent);
   }
     // local single event reconstruction
     if (!fRunLocalReconstruction.IsNull()) {
@@ -2006,11 +2011,14 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     // Fill raw-data error log into the ESD
     if (fRawReader) FillRawDataErrorLog(iEvent,fesd);
 
+    AliSysInfo::AddStamp(Form("FillHeadErrs_%d",iEvent), 0,0,iEvent);
+
     // vertex finder
     if (fRunVertexFinder) {
       if (!RunVertexFinder(fesd)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
+      AliSysInfo::AddStamp(Form("VtxFinder_%d",iEvent), 0,0,iEvent);
     }
 
     // For Plane Efficiency: run the SPD trackleter
@@ -2018,6 +2026,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (!RunSPDTrackleting(fesd)) {
         if (fStopOnError) {CleanUp(); return kFALSE;}
       }
+      AliSysInfo::AddStamp(Form("TrackletEff_%d",iEvent), 0,0,iEvent);
     }
 
     // Muon tracking
@@ -2027,6 +2036,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	  if (fStopOnError) {CleanUp(); return kFALSE;}
 	}
       }
+      AliSysInfo::AddStamp(Form("TrackingMUON_%d",iEvent), 0,0,iEvent);      
     }
 
     // barrel tracking
@@ -2102,7 +2112,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       track->RelateToVertexBxByBz(fesd->GetPrimaryVertexSPD(), b, kVeryBig);
 
     }
-
+    AliSysInfo::AddStamp(Form("RelToSPDVtx_%d",iEvent), 0,0,iEvent);      
     //
     // Improve the reconstructed primary vertex position using the tracks
     //
@@ -2155,6 +2165,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
           }
 	  delete pvtx; pvtx=NULL;
        }
+       AliSysInfo::AddStamp(Form("VtxTrk_%d",iEvent), 0,0,iEvent);      
 
        // TPC-only primary vertex
        ftVertexer->SetTPCMode();
@@ -2183,6 +2194,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
           }
 	  delete pvtx; pvtx=NULL;
        }
+       AliSysInfo::AddStamp(Form("VtxTPC_%d",iEvent), 0,0,iEvent);      
 
     }
     delete[] selectedIdx;
@@ -2202,6 +2214,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	 delete [] cutsV0vertexer; cutsV0vertexer = NULL; 
        }
        vtxer.Tracks2V0vertices(fesd);
+       AliSysInfo::AddStamp(Form("V0Finder_%d",iEvent), 0,0,iEvent); 
 
        if (fRunCascadeFinder) {
           // Cascade finding
@@ -2215,6 +2228,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	    delete [] cutsCascadeVertexer; cutsCascadeVertexer = NULL; 
 	  }
           cvtxer.V0sTracks2CascadeVertices(fesd);
+	  AliSysInfo::AddStamp(Form("CascadeFinder_%d",iEvent), 0,0,iEvent); 
        }
     }
 
@@ -2235,8 +2249,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        if (fStopOnError) {CleanUp(); return kFALSE;}
     }
 
+    AliSysInfo::AddStamp(Form("FillVaria_%d",iEvent), 0,0,iEvent); 
+
     // write ESD
-    if (fCleanESD) CleanESD(fesd);
+    if (fCleanESD) {
+      CleanESD(fesd);
+      AliSysInfo::AddStamp(Form("CleanESD_%d",iEvent), 0,0,iEvent); 
+    }
     // 
     // RS run updated trackleter: since we want to mark the clusters used by tracks and also mark the 
     // tracks interpreted as primary, this step should be done in the very end, when full 
@@ -2246,11 +2265,13 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       if (!RunMultFinder(fesd)) {
 	if (fStopOnError) {CleanUp(); return kFALSE;}
       }
+      AliSysInfo::AddStamp(Form("MultFinder_%d",iEvent), 0,0,iEvent); 
     }
 
   if (fRunQA && IsInTasks(AliQAv1::kESDS)) {
     AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     AliQAManager::QAManager()->RunOneEvent(fesd, fhltesd) ; 
+    AliSysInfo::AddStamp(Form("RunQA_%d",iEvent), 0,0,iEvent); 
   }
   if (fRunGlobalQA) {
     AliQADataMaker *qadm = AliQAManager::QAManager()->GetQADataMaker(AliQAv1::kGLOBAL);
@@ -2258,6 +2279,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
       qadm->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
     if (qadm && IsInTasks(AliQAv1::kESDS))
       qadm->Exec(AliQAv1::kESDS, fesd);
+    AliSysInfo::AddStamp(Form("RunGlobQA_%d",iEvent), 0,0,iEvent);     
   }
 
   // copy HLT decision from HLTesd to esd
@@ -2275,6 +2297,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fRecoHandler->BeginEvent(iEvent);
     fAnalysis->ExecAnalysis();
     fRecoHandler->FinishEvent();
+    AliSysInfo::AddStamp(Form("Analysis_%d",iEvent), 0,0,iEvent);     
   }  
   //
     if (fWriteESDfriend) 
@@ -2292,6 +2315,8 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 
     // write HLT ESD
     fhlttree->Fill();
+
+    AliSysInfo::AddStamp(Form("WriteESDs_%d",iEvent), 0,0,iEvent);     
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
@@ -2513,6 +2538,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
         reconstructor->Reconstruct(dummy, NULL);
       }
     }
+    AliSysInfo::AddStamp(Form("LRecHLT_%d",eventNr), -1,1,eventNr);
   }
 
   AliInfo(Form("kNDetectors = %d",kNDetectors));
@@ -2892,12 +2918,13 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
       AliError(Form("%s Clusters2Tracks failed", fgkDetectorName[iDet]));
       return kFALSE;
     }
+    AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
     // preliminary PID in TPC needed by the ITS tracker
     if (iDet == 1) {
       GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       PID.MakePID(esd,kTRUE);
+      AliSysInfo::AddStamp(Form("MakePID0%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     } 
-    AliSysInfo::AddStamp(Form("Tracking0%s_%d",fgkDetectorName[iDet],eventNr), iDet,3,eventNr);
   }
 
   // pass 2: ALL backwards
@@ -2933,11 +2960,13 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 	    if (qadm) qadm->InitRecPointsForTracker() ; 
 	  }
 	}
+	//	AliSysInfo::AddStamp(Form("QAInitResid%s_%d",fgkDetectorName[iDet],eventNr), iDet,0, eventNr);
       }
     if (fTracker[iDet]->PropagateBack(esd) != 0) {
       AliError(Form("%s backward propagation failed", fgkDetectorName[iDet]));
       //      return kFALSE;
     }
+    AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
 
     // unload clusters
     if (iDet > 3) {     // all except ITS, TPC, TRD and TOF
@@ -2949,8 +2978,9 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
       //GetReconstructor(1)->FillESD((TTree*)NULL, (TTree*)NULL, esd);
       //AliESDpid::MakePID(esd);
       PID.MakePID(esd,kTRUE);
+      AliSysInfo::AddStamp(Form("MakePID1%s_%d",fgkDetectorName[iDet],eventNr), iDet,4,eventNr);
     }
-    AliSysInfo::AddStamp(Form("Tracking1%s_%d",fgkDetectorName[iDet],eventNr), iDet,3, eventNr);
+
   }
   //stop filling residuals for the "outer" detectors
   if (fRunGlobalQA) AliTracker::SetFillResiduals(fRecoParam.GetEventSpecie(), kFALSE);     
@@ -2990,9 +3020,11 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
 
   // write space-points to the ESD in case alignment data output
   // is switched on
-  if (fWriteAlignmentData)
+  if (fWriteAlignmentData) {
     WriteAlignmentData(esd);
-
+    AliSysInfo::AddStamp(Form("WrtAlignData_%d",eventNr), 0,0, eventNr);
+  }
+  
   for (Int_t iDet = 3; iDet >= 0; iDet--) {
     if (!fTracker[iDet]) continue;
     // unload clusters
