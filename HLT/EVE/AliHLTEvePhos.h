@@ -1,13 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveCalo.h
-/// @author Svein Lindal
-/// @brief  PHOS Instance of Eve display processor
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEPHOS_H
 #define ALIHLTEVEPHOS_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEvePhos.h
+/// @author Svein Lindal
+/// @brief  PHOS Instance of Eve display processor
 
 #include "AliESDEvent.h"
 #include "AliHLTEveCalo.h"
@@ -30,7 +31,7 @@ private:
   /** copy constructor prohibited */
   AliHLTEvePhos(const AliHLTEvePhos&);
   /** assignment operator prohibited */
-  AliHLTEvePhos& operator = (const AliHLTEvePhos );
+  AliHLTEvePhos& operator = (const AliHLTEvePhos& );
 
   /** inherited from AliHLTEveCalo */
   void CreateElementList();

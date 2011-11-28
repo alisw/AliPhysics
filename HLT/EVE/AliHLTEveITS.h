@@ -1,14 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveCalo.h
-/// @author Svein Lindal
-/// @brief  ITS base class for the Eve display processors
-
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEITS_H
 #define ALIHLTEVEITS_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveITS.h
+/// @author Svein Lindal
+/// @brief  ITS base class for the Eve display processors
 
 #include "AliHLTEveBase.h"
 #include "TString.h"
@@ -59,7 +59,7 @@ private :
   /** copy constructor prohibited */
   AliHLTEveITS(const AliHLTEveITS&);
   /** assignment operator prohibited */
-  AliHLTEveITS& operator = (const AliHLTEveITS );
+  AliHLTEveITS& operator = (const AliHLTEveITS& );
 
   ClassDef(AliHLTEveITS, 0);
 };

@@ -1,13 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveCalo.h
-/// @author Svein Lindal
-/// @brief  EMCAL Instance of Eve display processor
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEEMCAL_H
 #define ALIHLTEVEEMCAL_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveEmcal.h
+/// @author Svein Lindal
+/// @brief  EMCAL Instance of Eve display processor
 
 #include "AliESDEvent.h"
 #include "AliHLTEveCalo.h"
@@ -31,7 +32,7 @@ private:
   /** copy constructor prohibited */
   AliHLTEveEmcal(const AliHLTEveEmcal&);
   /** assignment operator prohibited */
-  AliHLTEveEmcal& operator = (const AliHLTEveEmcal );
+  AliHLTEveEmcal& operator = (const AliHLTEveEmcal& );
 
   void AddClusters(Float_t * pos, Int_t module, Float_t energy);
 

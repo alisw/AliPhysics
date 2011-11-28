@@ -1,14 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveCalo.h
-/// @author Svein Lindal
-/// @brief  HLT Instance of Eve display processor
-// Author: Svein Lindal <slindal@fys.uio.no>
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEHLT_H
 #define ALIHLTEVEHLT_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveHLT.h
+/// @author Svein Lindal <slindal@fys.uio.no>
+/// @brief  HLT Instance of Eve display processor
 
 #include "AliHLTEveBase.h"
 class TEvePointSet;
@@ -51,7 +51,7 @@ private:
   /** copy constructor prohibited */
   AliHLTEveHLT(const AliHLTEveHLT&);
   /** assignment operator prohibited */
-  AliHLTEveHLT& operator = (const AliHLTEveHLT );
+  AliHLTEveHLT& operator = (const AliHLTEveHLT& );
 
   /*Create the pointset for the display */
   void CreateTrackList();

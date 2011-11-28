@@ -1,14 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
+//-*- Mode: C++ -*-
+// $Id$
+#ifndef ALIHLTEVECALO_H
+#define ALIHLTEVECALO_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
 
 /// @file   AliHLTEveCalo.h
 /// @author Svein Lindal
 /// @brief  Base class for the HLT eve calorimeter display elements
-
-
-#ifndef ALIHLTEVECALO_H
-#define ALIHLTEVECALO_H
 
 #include "AliHLTEveBase.h"
 #include "TString.h"

@@ -1,13 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveCalo.h
-/// @author Svein Lindal
-/// @brief  ISDD Instance of Eve display processor
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEISSD_H
 #define ALIHLTEVEISSD_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveISSD.h
+/// @author Svein Lindal
+/// @brief  SDD Instance of Eve display processor
 
 #include "AliHLTEveITS.h"
 class TEvePointSet;
@@ -34,7 +35,7 @@ private:
   /** copy constructor prohibited */
   AliHLTEveISSD(const AliHLTEveISSD&);
   /** assignment operator prohibited */
-  AliHLTEveISSD& operator = (const AliHLTEveISSD );
+  AliHLTEveISSD& operator = (const AliHLTEveISSD& );
   
   /** Inherited from AliHLTEveITS */
   void SetUpPointSet(TEvePointSet* ps);

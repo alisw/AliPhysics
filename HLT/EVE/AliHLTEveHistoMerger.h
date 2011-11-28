@@ -65,6 +65,7 @@ public:
     AliHLTGlobalHCCollection():fMergedObject(0),fInstances(),fNeedToMerge(0){}
     AliHLTGlobalHCCollection( const AliHLTGlobalHCCollection &x):fMergedObject(x.fMergedObject),fInstances(x.fInstances),fNeedToMerge(x.fNeedToMerge){}
     AliHLTGlobalHCCollection &operator=( const AliHLTGlobalHCCollection &x){
+      if (this==&x) return *this;
       fMergedObject = x.fMergedObject;
       fInstances = x.fInstances;   
       fNeedToMerge = x.fNeedToMerge;

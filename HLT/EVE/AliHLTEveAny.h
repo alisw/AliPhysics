@@ -1,7 +1,16 @@
-// Author: Svein Lindal <slindal@fys.uio.no>
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEANY_H
 #define ALIHLTEVEANY_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveAny.h
+/// @author Svein Lindal <slindal@fys.uio.no>
+/// @date   
+/// @brief  
+///
 
 #include "AliHLTEveBase.h"
 class AliHLTHOMERBlockDesc;

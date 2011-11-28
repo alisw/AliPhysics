@@ -1,13 +1,14 @@
-/* This file is property of and copyright by the ALICE HLT Project        *
- * ALICE Experiment at CERN, All rights reserved.                         *
- * See cxx source for full Copyright notice                               */
-
-/// @file   AliHLTEveBase.h
-/// @author Svein Lindal
-/// @brief  Base class for the HLT eve display elements
-
+//-*- Mode: C++ -*-
+// $Id$
 #ifndef ALIHLTEVEBASE_H
 #define ALIHLTEVEBASE_H
+//* This file is property of and copyright by the ALICE HLT Project        * 
+//* ALICE Experiment at CERN, All rights reserved.                         *
+//* See cxx source for full Copyright notice                               *
+
+/// @file   AliHLTEveBase.h
+/// @author Svein Lindal <slindal@fys.uio.no>
+/// @brief  Base class for the HLT eve display elements
 
 #include "Rtypes.h"
 #include "TString.h"
