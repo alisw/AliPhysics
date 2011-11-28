@@ -51,7 +51,7 @@
 
 class TH2F;
 class AliHLTCaloSharedMemoryInterfacev2; // added by PTH
-class AliHLTCaloChannelDataHeaderStruct;
+struct AliHLTCaloChannelDataHeaderStruct;
 class AliHLTCaloMapper;
 class AliHLTCaloCoordinate;
 class TString;
