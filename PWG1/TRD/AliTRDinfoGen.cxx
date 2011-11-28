@@ -796,7 +796,11 @@ void AliTRDinfoGen::MakeChambers()
         tgl = glb[2]/glb[0]/TMath::Sqrt(1.+glb[1]*glb[1]/glb[0]/glb[0]);
         eta = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
         pos[2] = eta; pos[3] = phi;
-        pos[4] = calib->IsChamberGood(idet)?0.:1.;
+        pos[4] = 0.;
+        if(calib->IsChamberGood(idet)){
+          if(calib->IsHalfChamberNoData(idet, 0)) pos[4] += 1.;
+          if(calib->IsHalfChamberNoData(idet, 1)) pos[4] += 2.;
+        } else pos[4] += 4.;
         chmb->AddAt(new TVectorF(pos), idet);
       }
     }

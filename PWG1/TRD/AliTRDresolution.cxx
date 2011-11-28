@@ -2744,8 +2744,21 @@ void AliTRDresolution::AliTRDresolutionProjection::Build(const Char_t *n, const 
 {
 // check and build (if neccessary) projection determined by axis "ix", "iy" and "iz"
   if(!aa[ix] || !aa[iy] || !aa[iz]) return;
-  SetNameTitle(n,t);
   TAxis *ax(aa[ix]), *ay(aa[iy]), *az(aa[iz]);
+  // check ax definiton to protect against older versions of the data
+  if(ax->GetNbins()<=0 || (ax->GetXmax()-ax->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ax->GetTitle(), ax->GetNbins(), ax->GetXmin(), ax->GetXmax()));
+    return;
+  }
+  if(ay->GetNbins()<=0 || (ay->GetXmax()-ay->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, ay->GetTitle(), ay->GetNbins(), ay->GetXmin(), ay->GetXmax()));
+    return;
+  }
+  if(az->GetNbins()<=0 || (az->GetXmax()-az->GetXmin())<=0.){
+    AliWarning(Form("Wrong definition of axis[%d] \"%s\"[%d](%f %f).", ix, az->GetTitle(), az->GetNbins(), az->GetXmin(), az->GetXmax()));
+    return;
+  }
+  SetNameTitle(n,t);
   fH = new TH3I(n, Form("%s;%s;%s;%s", t, ax->GetTitle(), ay->GetTitle(), az->GetTitle()),
     ax->GetNbins(), ax->GetXmin(), ax->GetXmax(),
     ay->GetNbins(), ay->GetXmin(), ay->GetXmax(),
