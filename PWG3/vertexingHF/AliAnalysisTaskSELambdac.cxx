@@ -104,6 +104,15 @@ ClassImp(AliAnalysisTaskSELambdac)
   // Default constructor
   Float_t ptlims[7]={0.,2.,4.,6.,8.,12.,24.};
   SetPtBinLimit(7,ptlims);
+  for(Int_t icut=0; icut<10; icut++) fCutsKF[icut]=0.;
+  for(Int_t j=0; j<3*kMaxPtBins; j++){
+    fMassHist[j]=0x0;
+    fMassHistTC[j]=0x0;
+    fMassHistLpi[j]=0x0;
+    fMassHistLpiTC[j]=0x0;
+    fMassHistKp[j]=0x0;
+    fMassHistKpTC[j]=0x0;
+  }
 }
 
 //________________________________________________________________________
@@ -149,9 +158,20 @@ AliAnalysisTaskSELambdac::AliAnalysisTaskSELambdac(const char *name,Bool_t fillN
   //fUtilPid(0),
   fPIDResponse(0)
 {
+  // Default constructor
+
   SetPtBinLimit(fRDCutsAnalysis->GetNPtBins()+1,
 		fRDCutsAnalysis->GetPtBinLimits());
-  // Default constructor
+
+  for(Int_t icut=0; icut<10; icut++) fCutsKF[icut]=0.;
+  for(Int_t j=0; j<3*kMaxPtBins; j++){
+    fMassHist[j]=0x0;
+    fMassHistTC[j]=0x0;
+    fMassHistLpi[j]=0x0;
+    fMassHistLpiTC[j]=0x0;
+    fMassHistKp[j]=0x0;
+    fMassHistKpTC[j]=0x0;
+  }
   // Output slot #1 writes into a TList container
   DefineOutput(1,TList::Class());  //My private output
   DefineOutput(2,TList::Class());
