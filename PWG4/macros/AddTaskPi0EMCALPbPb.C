@@ -130,10 +130,10 @@ AliCaloTrackReader * ConfigureReader(TString kData,TString kInputDataType, TStri
   //------------------------
   
   //Min cluster/track E
-  reader->SetEMCALPtMin(0.5); 
-  reader->SetEMCALPtMax(1000); 
-  reader->SetPHOSPtMin(0.3);
-  reader->SetPHOSPtMax(1000);
+  reader->SetEMCALEMin(0.5); 
+  reader->SetEMCALEMax(1000); 
+  reader->SetPHOSEMin(0.3);
+  reader->SetPHOSEMax(1000);
   reader->SetCTSPtMin(0.1);
   reader->SetCTSPtMax(1000);
   
@@ -141,7 +141,6 @@ AliCaloTrackReader * ConfigureReader(TString kData,TString kInputDataType, TStri
   
   // Tracks
   reader->SwitchOffCTS();
-  
   //gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
   //AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10011004); 
   //reader->SetTrackCuts(esdTrackCuts);
@@ -149,14 +148,14 @@ AliCaloTrackReader * ConfigureReader(TString kData,TString kInputDataType, TStri
   // Calorimeter
   
   reader->SetEMCALClusterListName(kClusterArray);
-//  if(kClusterArray == "") {
-//    //printf("**************** Normal analysis **************** \n");
-//    reader->SwitchOnClusterRecalculation(); // Bad map removal
-//  }
-//  else {
-//    printf("**************** Input for analysis is Clusterizer %s **************** \n", kClusterArray.Data());
-//    reader->SwitchOffClusterRecalculation();
-//  }  
+  if(kClusterArray == "") {
+    //printf("**************** Normal analysis **************** \n");
+    reader->SwitchOnClusterRecalculation(); // Bad map removal
+  }
+  else {
+    printf("**************** Input for analysis is Clusterizer %s **************** \n", kClusterArray.Data());
+    reader->SwitchOffClusterRecalculation();
+  }  
   
   if(kCalorimeter == "EMCAL") {
     reader->SwitchOnEMCALCells();  
@@ -238,9 +237,9 @@ AliCalorimeterUtils* ConfigureCaloUtils(Int_t kYears, TString kCollisions, TStri
     else             recou->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
   }
   
-  //recou->SwitchOnRejectExoticCell();
-  //if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
-  //else                    recou->SwitchOffRejectExoticCluster();
+  recou->SwitchOnRejectExoticCell();
+  if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
+  else                    recou->SwitchOffRejectExoticCluster();
   
   if(kPrint) cu->Print("");
   
@@ -253,8 +252,6 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString kData, TString kCalorimeter, Int_t
                                       Bool_t kSimulation, TString kTrig = "", Bool_t kPrint)
 {
   
-  printf("Photon kData %s, kCalorimeter %s, kYears %d, kCollisions %s, kClusterArray %s, kSimulation %d, kTrig %s, kPrint %d \n",
-         kData.Data(), kCalorimeter.Data(), kYears, kCollisions.Data(), kClusterArray.Data(), kSimulation, kTrig.Data(), kPrint);
   AliAnaPhoton *anaphoton = new AliAnaPhoton();
   anaphoton->SetDebug(-1); //10 for lots of messages
   
@@ -273,21 +270,43 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString kData, TString kCalorimeter, Int_t
     anaphoton->SetNCellCut(1);// At least 2 cells
     anaphoton->SetMinPt(0.5); // avoid mip peak at E = 260 MeV
     anaphoton->SetMaxPt(1000); 
-    anaphoton->SetTimeCut(-1000,1000);// Time window of [400-900] ns if time recalibration is off, 
-    // restrict to less than 100 ns when time calibration is on 
+    anaphoton->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
     anaphoton->SetMinDistanceToBadChannel(1, 2, 3); // For filtered AODs, new releases.
   }
   
   anaphoton->SwitchOnTrackMatchRejection() ;
   
   //PID cuts (shower shape)
-  
+  anaphoton->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = anaphoton->GetCaloPID();
-  anaphoton->SwitchOnCaloPID(); // if nothing else specified bayesian
-  anaphoton->SwitchOnCaloPIDRecalculation(); // off, get bayesian weights, on use simple cut
-  //caloPID->SetLambda0CutMax(0.30);
-  //caloPID->SetLambda0CutMin(0.10);
-  //anaphoton->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
+  //Not used in bayesian
+  
+  //EMCAL
+  caloPID->SetEMCALLambda0CutMax(0.30);
+  caloPID->SetEMCALLambda0CutMin(0.10);
+  
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.05);
+  // In case of official AODs when dX and dZ was not stored, open the cuts 
+  // and rely on having a match recorded. In case of reclusterization, try.
+  if(kData=="AOD" && kClusterArray==""){
+    caloPID->SetEMCALDEtaCut(2000);  
+    caloPID->SetEMCALDPhiCut(2000); 
+  }
+  
+  //PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+  if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+  
+  if(kCalorimeter=="PHOS"){
+    caloPID->SetHistoDEtaRangeAndNBins(-200, 200, 200); // dZ
+    caloPID->SetHistoDPhiRangeAndNBins(-200, 200, 200); // dX
+  }
+  
+  //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
+  
+  anaphoton->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
   // Input / output delta AOD settings
   
@@ -301,11 +320,11 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString kData, TString kCalorimeter, Int_t
   //Set Histograms name tag, bins and ranges
   
   anaphoton->AddToHistogramsName("AnaPhoton_");
-  SetHistoRangeAndNBins(anaphoton, kCalorimeter, kYears, kCollisions, kSimulation); // see method below
+  SetHistoRangeAndNBins(anaphoton); // see method below
   
   // Number of particle type MC histograms
-  //anaphoton->FillNOriginHistograms(8);
-  //anaphoton->FillNPrimaryHistograms(4);
+  anaphoton->FillNOriginHistograms(8);
+  anaphoton->FillNPrimaryHistograms(4);
   
   if(kPrint) anaphoton->Print("");
   
@@ -383,13 +402,13 @@ void SetHistoRangeAndNBins (AliAnaPartCorrBaseClass* ana, TString kCalorimeter,
   if(kCalorimeter=="EMCAL"){
     if(kYears==2010){
       ana->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 122*TMath::DegToRad(), 78) ;
-      //ana->SetHistoXRangeAndNBins(-230,90,120); // QA
-      //ana->SetHistoYRangeAndNBins(370,450,40);  // QA
+      ana->SetHistoXRangeAndNBins(-230,90,120); // QA
+      ana->SetHistoYRangeAndNBins(370,450,40);  // QA
     }
     else {           
       ana->SetHistoPhiRangeAndNBins(78*TMath::DegToRad(), 182*TMath::DegToRad(), 108) ;
-      //ana->SetHistoXRangeAndNBins(-600,90,200); // QA
-      //ana->SetHistoYRangeAndNBins(100,450,100); // QA
+      ana->SetHistoXRangeAndNBins(-600,90,200); // QA
+      ana->SetHistoYRangeAndNBins(100,450,100); // QA
     }
     
     ana->SetHistoEtaRangeAndNBins(-0.72, 0.72, 144) ;
@@ -400,31 +419,31 @@ void SetHistoRangeAndNBins (AliAnaPartCorrBaseClass* ana, TString kCalorimeter,
     
   }
   
-  //ana->SetHistoShowerShapeRangeAndNBins(0, 3, 300);
+  ana->SetHistoShowerShapeRangeAndNBins(0, 3, 300);
   
   // Invariant mass analysis
   ana->SetHistoMassRangeAndNBins(0., 1., 200) ;
   ana->SetHistoAsymmetryRangeAndNBins(0., 1. , 100) ;
   
   // check if time calibration is on
-  //ana->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
-  //ana->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
+  ana->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
+  ana->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
   // QA, electron, charged
-  //ana->SetHistoPOverERangeAndNBins(0,10.,100);
-  //ana->SetHistodEdxRangeAndNBins(0.,200.,200);
+  ana->SetHistoPOverERangeAndNBins(0,10.,100);
+  ana->SetHistodEdxRangeAndNBins(0.,200.,200);
   
   // QA
-  //ana->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
-  //ana->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
-  //ana->SetHistoRatioRangeAndNBins(0.,2.,100);
-  //ana->SetHistoVertexDistRangeAndNBins(0.,500.,500);
-  //ana->SetHistoNClusterCellRangeAndNBins(0,500,500);
-  //ana->SetHistoZRangeAndNBins(-400,400,200);
-  //ana->SetHistoRRangeAndNBins(400,450,25);
-  //ana->SetHistoV0SignalRangeAndNBins(0,5000,500);
-  //ana->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
-  //ana->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
+  ana->SetHistoFinePtRangeAndNBins(0, 10, 200) ; // bining for fhAmpId
+  ana->SetHistodRRangeAndNBins(0.,TMath::Pi(),150);
+  ana->SetHistoRatioRangeAndNBins(0.,2.,100);
+  ana->SetHistoVertexDistRangeAndNBins(0.,500.,500);
+  ana->SetHistoNClusterCellRangeAndNBins(0,500,500);
+  ana->SetHistoZRangeAndNBins(-400,400,200);
+  ana->SetHistoRRangeAndNBins(400,450,25);
+  ana->SetHistoV0SignalRangeAndNBins(0,5000,500);
+  ana->SetHistoV0MultiplicityRangeAndNBins(0,5000,500);
+  ana->SetHistoTrackMultiplicityRangeAndNBins(0,5000,500);
   
 }
 
