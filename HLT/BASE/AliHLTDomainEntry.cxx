@@ -215,6 +215,7 @@ AliHLTDomainEntry& AliHLTDomainEntry::operator = (const AliHLTDomainEntry& domai
 {
   // The copy operator performs a deep copy.
 
+  if (this==&domain) return *this;
   TObject::operator = (domain);
   fType = domain.fType;
   fUseSpec = domain.fUseSpec;
