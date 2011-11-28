@@ -80,6 +80,7 @@ AliTriggerAnalysis::AliTriggerAnalysis() :
   fHistFMDC(0),   
   fHistFMDSingle(0),
   fHistFMDSum(0),
+  fHistT0(0),
   fTriggerClasses(0),
   fMC(kFALSE),
   fEsdTrackCuts(0),
@@ -167,6 +168,12 @@ AliTriggerAnalysis::~AliTriggerAnalysis()
     fHistFMDSum = 0;
   }
 
+  if (fHistT0)
+  {
+    delete fHistT0;
+    fHistT0 = 0;
+  }
+
   if (fTriggerClasses)
   {
     fTriggerClasses->DeleteAll();
@@ -203,6 +210,7 @@ void AliTriggerAnalysis::EnableHistograms()
   fHistFMDC = new TH1F("fHistFMDC", "FMDC;combinations above threshold;events", 102, -1.5, 100.5);
   fHistFMDSingle = new TH1F("fHistFMDSingle", "FMD single;multiplicity value;counts", 1000, 0, 10);
   fHistFMDSum = new TH1F("fHistFMDSum", "FMD sum;multiplicity value;counts", 1000, 0, 10);
+  fHistT0 = new TH1F("fHistT0", "T0;time (ns);events", 100, -25, 25);
   
   fTriggerClasses = new TMap;
   fTriggerClasses->SetOwner();
@@ -396,6 +404,28 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliESDEvent* aEsd, Trigger trigg
     case kV0CBG:
     {
       if (V0Trigger(aEsd, kCSide, !offline) == kV0BG)
+        decision = 1;
+      break;
+    }
+    case kT0:
+    {
+      if (T0Trigger(aEsd, !offline) == kT0BB)
+        decision = 1;
+      break;
+    }
+    case kT0BG:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (T0Trigger(aEsd, !offline) == kT0DecBG)
+        decision = 1;
+      break;
+    }
+    case kT0Pileup:
+    {
+      if (!offline)
+        AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
+      if (T0Trigger(aEsd, !offline) == kT0DecPileup)
         decision = 1;
       break;
     }
@@ -858,6 +888,7 @@ void AliTriggerAnalysis::FillHistograms(const AliESDEvent* aEsd)
   
   V0Trigger(aEsd, kASide, kFALSE, kTRUE);
   V0Trigger(aEsd, kCSide, kFALSE, kTRUE);
+  T0Trigger(aEsd, kFALSE, kTRUE);
   ZDCTDCTrigger(aEsd,kASide,kFALSE,kFALSE,kTRUE);
   ZDCTimeTrigger(aEsd,kTRUE);
   IsSPDClusterVsTrackletBG(aEsd, kTRUE);
@@ -1442,7 +1473,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   TObject* obj;
 
   // collections of all histograms
-  const Int_t nHists = 13;
+  const Int_t nHists = 14;
   TList collections[nHists];
 
   Int_t count = 0;
@@ -1466,6 +1497,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
     collections[n++].Add(entry->fHistBitsSPD);
     collections[n++].Add(entry->fHistFiredBitsSPD);
     collections[n++].Add(entry->fHistSPDClsVsTrk);
+    collections[n++].Add(entry->fHistT0);
 
     // merge fTriggerClasses
     TIterator* iter2 = entry->fTriggerClasses->MakeIterator();
@@ -1511,6 +1543,7 @@ Long64_t AliTriggerAnalysis::Merge(TCollection* list)
   fHistBitsSPD->Merge(&collections[n++]);
   fHistFiredBitsSPD->Merge(&collections[n++]);
   fHistSPDClsVsTrk->Merge(&collections[n++]);
+  fHistT0->Merge(&collections[n++]);
   delete iter;
 
   return count+1;
@@ -1553,6 +1586,8 @@ void AliTriggerAnalysis::SaveHistograms() const
   else Printf("Cannot save fHistFMDSum");
   if (fSPDGFOEfficiency) fSPDGFOEfficiency->Write("fSPDGFOEfficiency");
   if (fHistSPDClsVsTrk) fHistSPDClsVsTrk->Write("fHistSPDClsVsTrk");
+  if (fHistT0) fHistT0->Write("fHistT0");
+
   //  else Printf("Cannot save fSPDGFOEfficiency");
   
   fTriggerClasses->Write("fTriggerClasses", TObject::kSingleKey);
@@ -1608,3 +1643,46 @@ void AliTriggerAnalysis::PrintTriggerClasses() const
 }
 
 
+//----------------------------------------------------------------------------------------------------
+AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* aEsd, Bool_t online, Bool_t fillHists) 
+{
+  // Returns the T0 TVDC trigger decision
+  //  
+  // argument 'online' is used as a switch between online and offline trigger algorithms
+  // in online mode return 0TVX 
+  // in offline mode in addition check pile-up and background :
+  // pile-up readed from ESD: check if TVDC (0TVX module name) has more 1 hit;
+  // backgroud flag readed from ESD : check in given time interval OrA and OrC were correct but TVDC not  
+  // 
+  // Based on an algorithm by Alla Maevskaya 
+
+  const AliESDTZERO* esdT0 = aEsd->GetESDTZERO();
+  if (!esdT0)
+  {
+    AliError("AliESDTZERO not available");
+    return kT0Invalid;
+  }
+  //????  AliDebug(2,Form("In T0Trigger: %f %f",esdV0->GetV0ATime(),esdV0->GetV0CTime()));
+  Float_t  tvdc[5] ;
+  for (Int_t ii=0; ii<5; ii++)
+    tvdc[ii] = esdT0->GetTVDC(ii);
+  Int_t trig=esdT0->GetT0Trig();
+  //  cout<<" T0 trig "<<trig<<endl;	
+
+  if(fillHists) fHistT0->Fill(tvdc[0]);
+    
+  if (online) {
+    if(trig&1) return  kT0BB;
+  }
+  else {
+  
+    if (tvdc[0]>-5 && tvdc[0]<5 && tvdc[0] != 0) return kT0BB; 
+    if (esdT0->GetPileupFlag()) return kT0DecPileup;
+    if (esdT0->GetBackgroundFlag()) return kT0DecBG;
+  }
+
+  if (fMC)
+    if( esdT0->GetT0zVertex()>-10 && esdT0->GetT0zVertex() < 10) return kT0BB; 
+ 
+  return kT0Empty;
+}

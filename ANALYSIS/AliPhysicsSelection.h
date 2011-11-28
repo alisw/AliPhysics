@@ -41,7 +41,7 @@ class AliPhysicsSelection : public AliAnalysisCuts
 public:
 
 public:
-  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatLaserCut,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C,kStatZDCA,kStatZDCC,kStatZDCAC,kStatZDCTime,kStatV0,kStatOffline,kStatBG,kStatAccepted, kStatAcceptedPileUp};
+  enum {kStatTriggerClass=1,kStatHWTrig,kStatV0ABG,kStatV0CBG,kStatMB1,kStatMB1Prime,kStatLaserCut,kStatFO1,kStatFO2,kStatFO2L1,kStatV0A,kStatV0C, kStatT0BB, kStatT0BG, kStatT0PileUp, kStatZDCA,kStatZDCC,kStatZDCAC,kStatZDCTime,kStatV0,kStatOffline,kStatBG, kStatAcceptedPileUp, kStatAccepted};
 
 #ifdef VERBOSE_STAT
   enum {kStatRowAllB=0, kStatRowAllAC, kStatRowAllE, kStatRowBG,kStatRowAcc,kStatRowBGFrac,kStatRowAccFrac,kStatRowErrGoodFrac,kStatRowGoodFrac,kStatRowErrGood,kStatRowGood}; // offset wrt fBGStatOffset

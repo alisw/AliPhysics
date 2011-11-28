@@ -504,6 +504,9 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
       Bool_t v0ABG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0ABG));
       Bool_t v0CBG = fSkipV0 ? 0 : triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kV0CBG));
       Bool_t v0BG = v0ABG || v0CBG;
+      Bool_t t0       = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0    ));
+      Bool_t t0BG     = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0BG    ));
+      Bool_t t0PileUp = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kT0Pileup));
 
       // fmd
       // Bool_t fmdA = triggerAnalysis->EvaluateTrigger(aEsd, (AliTriggerAnalysis::Trigger) (AliTriggerAnalysis::kOfflineFlag | AliTriggerAnalysis::kFMDA));
@@ -583,6 +586,14 @@ UInt_t AliPhysicsSelection::IsCollisionCandidate(const AliESDEvent* aEsd)
 	  fHistStatistics[iHistStat]->Fill(kStatV0ABG, i);
 	if (v0CBG)
 	  fHistStatistics[iHistStat]->Fill(kStatV0CBG, i);
+
+	// T0 stats
+	if(t0)
+	  fHistStatistics[iHistStat]->Fill(kStatT0BB,     i);
+	if(t0BG)
+	  fHistStatistics[iHistStat]->Fill(kStatT0BG,     i);
+	if(t0PileUp)
+	  fHistStatistics[iHistStat]->Fill(kStatT0PileUp, i);
 
 	// mb 1
 	if (mb1)
@@ -1087,7 +1098,7 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
 #else
   Int_t extrarows = fComputeBG != 0 ? 6 : 0;
 #endif
-  TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAcceptedPileUp, 0.5, kStatAcceptedPileUp+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
+  TH2F * h = new TH2F(Form("fHistStatistics%s",tag), Form("fHistStatistics - %s ;;",tag), kStatAccepted, 0.5, kStatAccepted+0.5, count+extrarows, -0.5, -0.5 + count+extrarows);
 
   h->GetXaxis()->SetBinLabel(kStatTriggerClass,  "Trigger class");
   h->GetXaxis()->SetBinLabel(kStatHWTrig,	 "Hardware trigger");
@@ -1096,6 +1107,9 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatFO2L1,         "FO (L1) >= 2");
   h->GetXaxis()->SetBinLabel(kStatV0A,	         "V0A");
   h->GetXaxis()->SetBinLabel(kStatV0C,	         "V0C");
+  h->GetXaxis()->SetBinLabel(kStatT0BB,	         "T0");
+  h->GetXaxis()->SetBinLabel(kStatT0BG,	         "T0BG");
+  h->GetXaxis()->SetBinLabel(kStatT0PileUp,      "T0 PileUp");
   h->GetXaxis()->SetBinLabel(kStatLaserCut,      "TPC Laser Wup Cut");
   h->GetXaxis()->SetBinLabel(kStatV0ABG,	 "V0A BG");
   h->GetXaxis()->SetBinLabel(kStatV0CBG,	 "V0C BG");
@@ -1110,8 +1124,8 @@ TH2F * AliPhysicsSelection::BookHistStatistics(const char * tag) {
   h->GetXaxis()->SetBinLabel(kStatOffline,	 "Offline Trigger");
   //h->GetXaxis()->SetBinLabel(kStatAny2Hits,	 "2 Hits & !V0 BG");
   h->GetXaxis()->SetBinLabel(kStatBG,	         "Background identification");
-  h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
   h->GetXaxis()->SetBinLabel(kStatAcceptedPileUp, "Pile up (in accepted)");
+  h->GetXaxis()->SetBinLabel(kStatAccepted,      "Accepted");
 
 
   Int_t n = 1;

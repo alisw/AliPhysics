@@ -28,10 +28,11 @@ class AliTriggerAnalysis : public TObject
     enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
 		   kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
 		   kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
-		   kCentral,kSemiCentral,
+		   kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup,
 		   kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
     enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
     enum V0Decision { kV0Invalid = -1, kV0Empty = 0, kV0BB, kV0BG, kV0Fake };
+    enum T0Decision { kT0Invalid = -1, kT0Empty = 0, kT0BB, kT0DecBG, kT0DecPileup };
     
     AliTriggerAnalysis();
     virtual ~AliTriggerAnalysis();
@@ -56,8 +57,9 @@ class AliTriggerAnalysis : public TObject
     // some "raw" trigger functions
     Int_t SPDFiredChips(const AliESDEvent* aEsd, Int_t origin, Bool_t fillHists = kFALSE, Int_t layer = 0);
     Bool_t SPDGFOTrigger(const AliESDEvent* aEsd, Int_t origin);
-  Bool_t IsSPDClusterVsTrackletBG(const AliESDEvent* esd, Bool_t fillHists = kFALSE);
+    Bool_t IsSPDClusterVsTrackletBG(const AliESDEvent* esd, Bool_t fillHists = kFALSE);
     V0Decision V0Trigger(const AliESDEvent* aEsd, AliceSide side, Bool_t online, Bool_t fillHists = kFALSE);
+    T0Decision T0Trigger(const AliESDEvent* aEsd, Bool_t online, Bool_t fillHists = kFALSE);
     Bool_t ZDCTrigger   (const AliESDEvent* aEsd, AliceSide side) const;
     Bool_t ZDCTDCTrigger(const AliESDEvent* aEsd, AliceSide side, Bool_t useZN=kTRUE, Bool_t useZP=kFALSE, Bool_t fillHists=kFALSE) const;
     Bool_t ZDCTimeTrigger(const AliESDEvent *aEsd, Bool_t fillHists=kFALSE) const;
@@ -151,7 +153,7 @@ class AliTriggerAnalysis : public TObject
     TH1F* fHistFMDC;           // histograms that histogram the criterion the cut is applied on: number of hit combination above threshold
     TH1F* fHistFMDSingle;      // histograms that histogram the criterion the cut is applied on: single mult value (more than one entry per event)
     TH1F* fHistFMDSum;         // histograms that histogram the criterion the cut is applied on: summed mult value (more than one entry per event)
-    
+    TH1F* fHistT0;             // histograms that histogram the criterion the cut is applied on: bb triggers
     TMap* fTriggerClasses;    // counts the active trigger classes (uses the full string)
     
     Bool_t fMC;              // flag if MC is analyzed
@@ -159,7 +161,7 @@ class AliTriggerAnalysis : public TObject
 
     Bool_t fTPCOnly;         // flag to set whether TPC only tracks have to be used for the offline trigger 
 
-    ClassDef(AliTriggerAnalysis, 17)
+    ClassDef(AliTriggerAnalysis, 18)
     
   private:
     AliTriggerAnalysis(const AliTriggerAnalysis&);
