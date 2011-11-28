@@ -127,6 +127,11 @@ AliAnalysisTaskGammaJet::AliAnalysisTaskGammaJet(const char *name) :
   fAnaIsolationArray = new TObjArray();
   fAnaIsolationArray->SetOwner(kTRUE);
 
+  fhTracksMissingPt[0] = NULL;
+  fhTracksMissingPt[1] = NULL;
+
+
+
 }
 
 //________________________________________________________________________
