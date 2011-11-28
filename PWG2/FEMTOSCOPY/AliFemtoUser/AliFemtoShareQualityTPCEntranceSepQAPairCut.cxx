@@ -55,6 +55,22 @@ AliFemtoShareQualityTPCEntranceSepQAPairCut::AliFemtoShareQualityTPCEntranceSepQ
 }
 
 //__________________
+AliFemtoShareQualityTPCEntranceSepQAPairCut& AliFemtoShareQualityTPCEntranceSepQAPairCut::operator=(const AliFemtoShareQualityTPCEntranceSepQAPairCut& aCut)
+{
+  // assignment operator
+  if (this == &aCut)
+    return *this;
+
+  fDTPCMin = aCut.fDTPCMin;
+  fDTPCMax = aCut.fDTPCMax;
+  fDTPCQASwitch = aCut.fDTPCQASwitch;
+  fDTPCQAExclusionZone[0] = aCut.fDTPCQAExclusionZone[0];
+  fDTPCQAExclusionZone[1] = aCut.fDTPCQAExclusionZone[1];
+
+  return *this;
+}
+
+//__________________
 AliFemtoShareQualityTPCEntranceSepQAPairCut::~AliFemtoShareQualityTPCEntranceSepQAPairCut(){
   /* no-op */
 }
