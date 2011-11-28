@@ -45,6 +45,7 @@
 #include "AliESDInputHandler.h"
 #include "AliESDZDC.h"
 #include "AliESDFMD.h"
+#include "AliESDTZERO.h"
 #include "AliESDVZERO.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDVertex.h"
@@ -110,6 +111,10 @@ AliAnalysisTaskSE(),
   fCVLN(0),
   fCVHNbit(0),
   fCVLNbit(0),
+  fCCENT(0),
+  fCSEMI(0),
+  fCCENTbit(0),
+  fCSEMIbit(0),
   fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
@@ -135,6 +140,10 @@ AliAnalysisTaskSE(),
   fHOutCentV0M_CVLN(0),
   fHOutCentV0M_CVHNinMB(0),
   fHOutCentV0M_CVLNinMB(0),
+  fHOutCentV0M_CCENT(0),
+  fHOutCentV0M_CSEMI(0),
+  fHOutCentV0M_CCENTinMB(0),
+  fHOutCentV0M_CSEMIinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -178,14 +187,15 @@ AliAnalysisTaskSE(),
   fHOutMultV0MvsTRKqual2(0),
   fHOutMultTRKvsCL1qual2(0),
   fHOutQuality(0),
-  fHOutVertex(0)
+  fHOutVertex(0),
+  fHOutVertexT0(0)
 {   
   // Default constructor
   AliInfo("Centrality Selection enabled.");
 
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO."
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO.,AliESDTZERO."
     ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }   
 
@@ -224,6 +234,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCVLN(0),
   fCVHNbit(0),
   fCVLNbit(0),
+  fCCENT(0),
+  fCSEMI(0),
+  fCCENTbit(0),
+  fCSEMIbit(0),
   fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
@@ -249,6 +263,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutCentV0M_CVLN(0),
   fHOutCentV0M_CVHNinMB(0),
   fHOutCentV0M_CVLNinMB(0),
+  fHOutCentV0M_CCENT(0),
+  fHOutCentV0M_CSEMI(0),
+  fHOutCentV0M_CCENTinMB(0),
+  fHOutCentV0M_CSEMIinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -292,14 +310,15 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutMultV0MvsTRKqual2(0),
   fHOutMultTRKvsCL1qual2(0),
   fHOutQuality(0),
-  fHOutVertex(0)
+  fHOutVertex(0),
+  fHOutVertexT0(0)
 {
   // Default constructor
   AliInfo("Centrality Selection enabled.");
   DefineOutput(1, TList::Class());
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
-  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO."
+  fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO.,AliESDTZERO."
     ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }
 
@@ -348,6 +367,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCVLN(ana.fCVLN),
   fCVHNbit(ana.fCVHNbit),
   fCVLNbit(ana.fCVLNbit),
+  fCCENT(ana.fCCENT),
+  fCSEMI(ana.fCSEMI),
+  fCCENTbit(ana.fCCENTbit),
+  fCSEMIbit(ana.fCSEMIbit),
   fIsSelected(ana.fIsSelected),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
@@ -373,6 +396,10 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutCentV0M_CVLN(ana.fHOutCentV0M_CVLN),
   fHOutCentV0M_CVHNinMB(ana.fHOutCentV0M_CVHNinMB),
   fHOutCentV0M_CVLNinMB(ana.fHOutCentV0M_CVLNinMB),
+  fHOutCentV0M_CCENT(ana.fHOutCentV0M_CCENT),
+  fHOutCentV0M_CSEMI(ana.fHOutCentV0M_CSEMI),
+  fHOutCentV0M_CCENTinMB(ana.fHOutCentV0M_CCENTinMB),
+  fHOutCentV0M_CSEMIinMB(ana.fHOutCentV0M_CSEMIinMB),
   fHOutCentFMD     (ana.fHOutCentFMD     ),
   fHOutCentTRK     (ana.fHOutCentTRK     ),
   fHOutCentTKL     (ana.fHOutCentTKL     ),
@@ -416,7 +443,8 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutMultV0MvsTRKqual2(ana.fHOutMultV0MvsTRKqual2),
   fHOutMultTRKvsCL1qual2(ana.fHOutMultTRKvsCL1qual2),
   fHOutQuality(ana.fHOutQuality),
-  fHOutVertex(ana.fHOutVertex)
+  fHOutVertex(ana.fHOutVertex),
+  fHOutVertexT0(ana.fHOutVertexT0)
 {
   // Copy Constructor	
 
@@ -444,6 +472,10 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutCentV0M_CVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
   fHOutCentV0M_CVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
   fHOutCentV0M_CVLNinMB= new TH1F("fHOutCentV0M_CVLNinMB","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
+  fHOutCentV0M_CCENT= new TH1F("fHOutCentV0M_CCENT","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+  fHOutCentV0M_CSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+  fHOutCentV0M_CCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+  fHOutCentV0M_CSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
   fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
   fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
   fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
@@ -494,12 +526,17 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
 
   fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 100,-0.5,99.5);
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
+  fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
 
   fOutputList->Add(  fHOutCentV0M     );
   fOutputList->Add(  fHOutCentV0M_CVHN);
   fOutputList->Add(  fHOutCentV0M_CVLN);
   fOutputList->Add(  fHOutCentV0M_CVHNinMB);
   fOutputList->Add(  fHOutCentV0M_CVLNinMB);
+  fOutputList->Add(  fHOutCentV0M_CCENT);
+  fOutputList->Add(  fHOutCentV0M_CSEMI);
+  fOutputList->Add(  fHOutCentV0M_CCENTinMB);
+  fOutputList->Add(  fHOutCentV0M_CSEMIinMB);
   fOutputList->Add(  fHOutCentFMD     );
   fOutputList->Add(  fHOutCentTRK     );
   fOutputList->Add(  fHOutCentTKL     );
@@ -544,7 +581,7 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutMultTRKvsCL1qual2);
   fOutputList->Add(  fHOutQuality );
   fOutputList->Add(  fHOutVertex );
-
+  fOutputList->Add(  fHOutVertexT0 );
 
   fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
 
@@ -585,6 +622,8 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   Float_t zvtx =0;                  // z-vertex SPD
   Int_t zvtxNcont =0;               // contributors to z-vertex SPD
 
+  Float_t zvtxT0 =0;                // z-vertex T0
+
 
   AliCentrality *esdCent = 0;
 
@@ -615,20 +654,42 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     multV0AOnline=esdV0->GetTriggerChargeA(); 
     multV0COnline=esdV0->GetTriggerChargeC(); 
 
+    // ***** T0 info    
+    const AliESDTZERO* esdT0 = esd->GetESDTZERO();
+    if (!esdT0)
+      {
+	AliError("AliESDTZERO not available");
+      }
+    Int_t trig=esdT0->GetT0Trig();
+    Bool_t kT0BB = kFALSE;    
+    if(trig&1) kT0BB=kTRUE;
+    zvtxT0=esdT0->GetT0zVertex();
+
 
     // ***** Trigger info    
     fIsSelected = ((esdV0->GetV0ADecision()==1) && (esdV0->GetV0CDecision()==1));
     TString trigStr(esd->GetFiredTriggerClasses());
-    fCVHN=kFALSE;    fCVLN=kFALSE;
+    
+    fCVHN=kFALSE; fCVLN=kFALSE; fCCENT=kFALSE; fCSEMI=kFALSE; 
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN")) && (fIsSelected)) 
       fCVHN=kTRUE;
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
       fCVLN=kTRUE;
-        fCVHNbit=kFALSE;    fCVLNbit=kFALSE;
-    if (esdV0->GetTriggerBits() & (1<<8)) 
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CCENT")) && (fIsSelected)) 
+      fCCENT=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CSEMI")) && (fIsSelected))
+      fCSEMI=kTRUE;
+
+    fCVHNbit=kFALSE;    fCVLNbit=kFALSE;       fCCENTbit=kFALSE;    fCSEMIbit=kFALSE; 
+   if (esdV0->GetTriggerBits() & (1<<8)) 
       fCVHNbit=kTRUE;
     if (esdV0->GetTriggerBits() & (1<<6)) 
       fCVLNbit=kTRUE;
+
+    if (kT0BB && fCVHNbit)
+      fCCENTbit=kTRUE;
+    if (kT0BB && fCVLNbit)
+      fCSEMIbit=kTRUE;
 
 
     // ***** Vertex Info
@@ -777,14 +838,20 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
   }
 
   if (fCVHN)     
-  fHOutCentV0M_CVHN->Fill(fCentV0M);
+    fHOutCentV0M_CVHN->Fill(fCentV0M);
   if (fCVLN)     
-  fHOutCentV0M_CVLN->Fill(fCentV0M);
+    fHOutCentV0M_CVLN->Fill(fCentV0M);
+  if (fCCENT)     
+    fHOutCentV0M_CCENT->Fill(fCentV0M);
+  if (fCSEMI)     
+    fHOutCentV0M_CSEMI->Fill(fCentV0M);
+
 
   Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB); 
   if (isSelected) { // fill the QA histograms only for MB events!
   fHOutQuality->Fill(fQuality);
   fHOutVertex->Fill(zvtx);
+  fHOutVertexT0->Fill(zvtxT0);
 
   if (fQuality==0) {  
     fHOutCentV0M->Fill(fCentV0M);
@@ -793,6 +860,11 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       fHOutCentV0M_CVHNinMB->Fill(fCentV0M);
     if (fCVLNbit)     
       fHOutCentV0M_CVLNinMB->Fill(fCentV0M);
+    if (fCCENTbit)     
+      fHOutCentV0M_CCENTinMB->Fill(fCentV0M);
+    if (fCSEMIbit)     
+      fHOutCentV0M_CSEMIinMB->Fill(fCentV0M);
+
 
     fHOutCentFMD->Fill(fCentFMD);
     fHOutCentTRK->Fill(fCentTRK);
