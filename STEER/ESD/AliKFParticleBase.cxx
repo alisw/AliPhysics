@@ -727,10 +727,10 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
 
     //* hmf = d(E_mf)/d(mf)
     Double_t hmf[7];
-    if( fabs(E_mf) < 1.e-10) hmf[3] = 0; else hmf[3] = mf[3]/E_mf;
-    if( fabs(E_mf) < 1.e-10) hmf[4] = 0; else hmf[4] = mf[4]/E_mf;
-    if( fabs(E_mf) < 1.e-10) hmf[5] = 0; else hmf[5] = mf[5]/E_mf;
-//    if( fabs(E_mf) < 1.e-10) hmf[6] = 0; else hmf[6] = mf[6]/E_mf;
+    if( TMath::Abs(E_mf) < 1.e-10) hmf[3] = 0; else hmf[3] = mf[3]/E_mf;
+    if( TMath::Abs(E_mf) < 1.e-10) hmf[4] = 0; else hmf[4] = mf[4]/E_mf;
+    if( TMath::Abs(E_mf) < 1.e-10) hmf[5] = 0; else hmf[5] = mf[5]/E_mf;
+//    if( TMath::Abs(E_mf) < 1.e-10) hmf[6] = 0; else hmf[6] = mf[6]/E_mf;
     hmf[6] = 0;
 
     for(Int_t i=0, k=0;i<6;++i){
@@ -782,10 +782,10 @@ void AliKFParticleBase::AddDaughterWithEnergyCalc( const AliKFParticleBase &Daug
       Cf[iC] = ffC[iC];
     //* hrf = d(Erf)/d(rf)
     Double_t hrf[7];
-    if( fabs(E_rf) < 1.e-10) hrf[3] = 0; else hrf[3] = rf[3]/E_rf;
-    if( fabs(E_rf) < 1.e-10) hrf[4] = 0; else hrf[4] = rf[4]/E_rf;
-    if( fabs(E_rf) < 1.e-10) hrf[5] = 0; else hrf[5] = rf[5]/E_rf;
-//    if( fabs(E_rf) < 1.e-10) hrf[6] = 0; else hrf[6] = rf[6]/E_rf;
+    if( TMath::Abs(E_rf) < 1.e-10) hrf[3] = 0; else hrf[3] = rf[3]/E_rf;
+    if( TMath::Abs(E_rf) < 1.e-10) hrf[4] = 0; else hrf[4] = rf[4]/E_rf;
+    if( TMath::Abs(E_rf) < 1.e-10) hrf[5] = 0; else hrf[5] = rf[5]/E_rf;
+//    if( TMath::Abs(E_rf) < 1.e-10) hrf[6] = 0; else hrf[6] = rf[6]/E_rf;
     hrf[6] = 0;
 
     for(Int_t i=0, k=0;i<6;++i){
@@ -1306,10 +1306,10 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
   const Double_t c = E2 - p2 - M2;
 
   Double_t Lambda = 0;
-  if(fabs(b) > 1.e-10) Lambda = -c / b;
+  if(TMath::Abs(b) > 1.e-10) Lambda = -c / b;
 
   Double_t D = 4.*E2*p2 - M2*(E2-p2-2.*M2);
-  if(D>=0 && fabs(a) > 1.e-10) Lambda = (E2 + p2 - sqrt(D))/a;
+  if(D>=0 && TMath::Abs(a) > 1.e-10) Lambda = (E2 + p2 - sqrt(D))/a;
 
   if(mP[6] < 0) //If energy < 0 we need a Lambda < 0
     Lambda = -1000000.; //Empirical, a better solution should be found
@@ -1324,9 +1324,9 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
 
     Double_t f  = -M2 * Lambda4 + a*Lambda2 + b*Lambda + c;
     Double_t df = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
-    if(fabs(df) < 1.e-10) break;
+    if(TMath::Abs(df) < 1.e-10) break;
     Lambda -= f/df;
-    if(fabs(Lambda0 - Lambda) < 1.e-8) break;
+    if(TMath::Abs(Lambda0 - Lambda) < 1.e-8) break;
   }
 
   const Double_t LPi = 1./(1. + Lambda);
@@ -1343,7 +1343,7 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
   dfx[2] = -2.*(1. + Lambda)*(1. + Lambda)*mP[5];
   dfx[3] = 2.*(1. - Lambda)*(1. - Lambda)*mP[6];
   Double_t dlx[7] = {1,1,1,1,1,1,1};
-  if(fabs(dfl) > 1.e-10 )
+  if(TMath::Abs(dfl) > 1.e-10 )
   {
     for(int i=0; i<7; i++)
       dlx[i] = -dfx[i] / dfl;
