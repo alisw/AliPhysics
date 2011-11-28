@@ -214,7 +214,9 @@ void AliAnalysisTaskParticleCorrelation::FinishTaskOutput(){
   TH2F *histStat = dynamic_cast<TH2F*>(inputH->GetStatistics()); 
   TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
   
-  if(histStat)fOutputContainer->Add(histStat); else printf("AliAnalysisTaskParticleCorrelation::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
+  if(histStat)fOutputContainer->Add(histStat); 
+  else if(DebugLevel()>0) 
+    printf("AliAnalysisTaskParticleCorrelation::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
   if(histBin0)fOutputContainer->Add(histBin0); 
   
 }

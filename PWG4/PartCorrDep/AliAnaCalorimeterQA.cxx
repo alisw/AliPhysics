@@ -599,7 +599,7 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const In
   }// fill cell-cluster histogram loop
   
   // Was cluster matched?
-  Bool_t matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils());
+  Bool_t matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(),GetReader()->GetInputEvent());
   
   if     (clus->E() < 2 ) fhDeltaIEtaDeltaIPhiE0[matched]->Fill(dIeta,dIphi);
   else if(clus->E() < 6 ) fhDeltaIEtaDeltaIPhiE2[matched]->Fill(dIeta,dIphi);
@@ -835,7 +835,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(TObjArray *caloClusters, AliVCal
     nCaloCellsPerCluster = clus->GetNCells();
     
     // Cluster mathed with track?
-    matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils());
+    matched = GetCaloPID()->IsTrackMatched(clus,GetCaloUtils(), GetReader()->GetInputEvent());
     
     // Get some time averages
     Double_t averTime[4] = {0.,0.,0.,0.};

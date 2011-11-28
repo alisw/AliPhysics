@@ -164,10 +164,6 @@ public:
   virtual void   SwitchOnCaloPID()                  { fCheckCaloPID = kTRUE; if(!fCaloPID)fCaloPID = new AliCaloPID();}
   virtual void   SwitchOffCaloPID()                 { fCheckCaloPID = kFALSE        ; }
   
-  virtual Bool_t IsCaloPIDRecalculationOn()   const { return fRecalculateCaloPID    ; }
-  virtual void   SwitchOnCaloPIDRecalculation()     { fRecalculateCaloPID  = kTRUE  ; }
-  virtual void   SwitchOffCaloPIDRecalculation()    { fRecalculateCaloPID  = kFALSE ; }
-  
   //Cluster energy/momentum cut
   virtual Float_t GetMaxPt()          const { return fMaxPt ; }
   virtual Float_t GetMinPt()          const { return fMinPt ; }
@@ -215,10 +211,12 @@ public:
   
   //Vertex methods
   virtual void      GetVertex(Double_t vertex[3]) const { GetReader()->GetVertex(vertex) ; } 
-  virtual void      GetVertex(Double_t vertex[3],const Int_t evtIndex) const { GetReader()->GetVertex(vertex,evtIndex)       ; } 
-  virtual Double_t* GetVertex(const Int_t evtIndex)             const { return GetReader()->GetVertex(evtIndex)              ; } 
+  virtual void      GetVertex(Double_t vertex[3], const Int_t evtIndex) const 
+  { GetReader()->GetVertex(vertex,evtIndex)                  ; } 
+  virtual Double_t* GetVertex(const Int_t evtIndex) const { return GetReader()->GetVertex(evtIndex) ; } 
   
-	virtual Bool_t    IsTrackMatched(const AliVCluster * cluster) const { return fCaloPID->IsTrackMatched(cluster, fCaloUtils) ; } 
+	virtual Bool_t    IsTrackMatched(AliVCluster * cluster, AliVEvent* event) const 
+  { return fCaloPID->IsTrackMatched(cluster, fCaloUtils, event)                    ; } 
   
   //MULTIPLICITY
   Int_t GetTrackMultiplicity()      const { return fReader->GetTrackMultiplicity() ; }

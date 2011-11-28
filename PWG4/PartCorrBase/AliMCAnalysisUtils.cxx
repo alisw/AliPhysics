@@ -241,7 +241,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
     Int_t mPdg     = TMath::Abs(mPdgSign);
     Int_t mStatus  = mom->GetStatusCode() ;
     Int_t iParent  = mom->GetFirstMother() ;
-    if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
+    if(fDebug > 0 && label < 8 && fMCGenerator!="") printf("AliMCAnalysisUtils::CheckOriginInStack() - Mother is parton %d\n",iParent);
     
     //GrandParent of the entity
     TParticle * parent = NULL;
@@ -516,7 +516,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
     Int_t mPdgSign = mom->GetPdgCode();
     Int_t mPdg     = TMath::Abs(mPdgSign);
     Int_t iParent  = mom->GetMother() ;
-    if(fDebug > 0 && label < 8 ) printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
+    if(fDebug > 0 && label < 8 && fMCGenerator!="") printf("AliMCAnalysisUtils::CheckOriginInAOD() - Mother is parton %d\n",iParent);
     
     //GrandParent
     AliAODMCParticle * parent = NULL ;

@@ -414,7 +414,7 @@ void AliAnalysisTaskCounter::FinishTaskOutput()
   
   if(histStat)
     fOutputContainer->Add(histStat);
-  else
+  else if(DebugLevel() > 1)
     printf("AliAnalysisTaskCounter::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
 
   if(histBin0)
