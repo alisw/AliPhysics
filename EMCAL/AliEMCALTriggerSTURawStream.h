@@ -57,6 +57,8 @@ private:
 	AliEMCALTriggerSTURawStream(const AliEMCALTriggerSTURawStream& rhs);
     AliEMCALTriggerSTURawStream& operator = (const AliEMCALTriggerSTURawStream& rhs);
 
+    UShort_t GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C);
+
     AliRawReader* fRawReader;   // object for reading the raw data
 
 	UInt_t              	             fL1JetThreshold;          // L1 Jet Threshold

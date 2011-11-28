@@ -34,7 +34,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 namespace
 {
 	const Int_t kPayLoadSizeOld     = 236;
-	const Int_t kPayLoadSizeNew     = 245;
+	const Int_t kPayLoadSizeNew     = 245;        
 }
 
 ClassImp(AliEMCALTriggerSTURawStream)
@@ -174,8 +174,6 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			fV0A = ((word32[0]>>16) & 0xFFFF);
 			fV0C =  (word32[0]      & 0xFFFF);
 			
-			UInt_t sV0 = fV0A + fV0C;
-			
 			fGA            = word32[1];
 			fGB            = word32[2];
 			fGC            = word32[3];
@@ -188,8 +186,8 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 			
 			jetSize += (fFwVersion >> 16);
 			
-			fL1JetThreshold   = fJA * sV0 * sV0 + fJB * sV0 + fJC;
-			fL1GammaThreshold = fGA * sV0 * sV0 + fGB * sV0 + fGC;		
+			fL1JetThreshold   = GetThreshold(fJA, fJB, fJC, fV0A, fV0C);
+			fL1GammaThreshold = GetThreshold(fGA, fGB, fGC, fV0A, fV0C); 
 			
 			offset = 9;
 			
@@ -449,4 +447,22 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 			cout << "\n";
 		}
 	}
+}
+
+//_____________________________________________________________________________
+UShort_t AliEMCALTriggerSTURawStream::GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C)
+{
+  ULong64_t V0sum = V0A + V0C;
+  
+  ULong64_t sqrV0 = V0sum * V0sum;					
+					
+  sqrV0 *= A;
+					
+  sqrV0 >>= 32;
+				
+  V0sum *= B;
+					
+  V0sum >>= 16;
+					
+  return (UShort_t)(sqrV0 + V0sum + C);
 }
