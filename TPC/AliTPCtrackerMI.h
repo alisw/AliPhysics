@@ -13,6 +13,7 @@
 //   Origin: 
 //-------------------------------------------------------
 
+#include <TArrayI.h>
 #include "AliTracker.h"
 #include "AliTPCreco.h"
 #include "AliTPCclusterMI.h"
@@ -103,7 +104,11 @@ public:
    Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c) const; 
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
-
+   //
+   void ResetSeedsPool();
+   void MarkSeedFree( TObject* seed );
+   TObject *&NextFreeSeed();
+   //
  public:
    void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
@@ -161,7 +166,7 @@ private:
    TObjArray * Tracking(Int_t seedtype, Int_t i1, Int_t i2, Float_t cuts[4], Float_t dy=-1, Int_t dsec=0);
    TObjArray * Tracking();
    TObjArray * TrackingSpecial();
-   void SumTracks(TObjArray *arr1,TObjArray *&arr2) const;
+   void SumTracks(TObjArray *arr1,TObjArray *&arr2);
    void PrepareForBackProlongation(const TObjArray *const arr, Float_t fac) const;
    void PrepareForProlongation(TObjArray *const arr, Float_t fac) const;
 
@@ -188,14 +193,19 @@ private:
    TObjArray *fSeeds;                  //array of track seeds
    Int_t fIteration;                   // indicate iteration - 0 - froward -1 back - 2forward - back->forward
    //   TObjArray * fTrackPointPool;        // ! pool with track points
-   //   TObjArray * fSeedPool;              //! pool with seeds
    Double_t fXRow[200];                // radius of the pad row
    Double_t fYMax[200];                // max y for given pad row
    Double_t fPadLength[200];                // max y for given pad row
    const AliTPCParam *fkParam;          //pointer to the parameters
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
-   ClassDef(AliTPCtrackerMI,2) 
+   //
+   TClonesArray* fSeedsPool;            //! pool of seeds
+   TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
+   Int_t fNFreeSeeds;                   //! number of seeds freed in the pool
+   Int_t fLastSeedID;                   //! id of the pool seed on which is returned by the NextFreeSeed method
+   //
+   ClassDef(AliTPCtrackerMI,3) 
 };
 
 

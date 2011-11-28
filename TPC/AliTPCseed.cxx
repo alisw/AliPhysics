@@ -69,7 +69,8 @@ AliTPCseed::AliTPCseed():
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
@@ -112,7 +113,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //---------------------
   // dummy copy constructor
@@ -167,7 +169,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   // Constructor from AliTPCtrack
@@ -221,7 +224,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   // Constructor
@@ -256,12 +260,14 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
 {
   //
   // assignment operator 
+  // don't touch pool ID
   //
   if(this!=&param){
     AliTPCtrack::operator=(param);
     fEsd =param.fEsd; 
-    for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i]; // this is not allocated by AliTPCSeed
     fClusterOwner = param.fClusterOwner;
+    if (!fClusterOwner) for(Int_t i = 0;i<160;++i)fClusterPointer[i] = param.fClusterPointer[i];
+    else                for(Int_t i = 0;i<160;++i)fClusterPointer[i] = new AliTPCclusterMI(*(param.fClusterPointer[i]));
     // leave out fPoint, they are also not copied in the copy ctor...
     // but deleted in the dtor... strange...
     fRow            = param.fRow;
@@ -390,8 +396,9 @@ void AliTPCseed::Reset(Bool_t all)
   */
 
   if (all){   
-    for (Int_t i=0;i<200;i++) SetClusterIndex2(i,-3);
-    for (Int_t i=0;i<160;i++) fClusterPointer[i]=0;
+    for (Int_t i=200;i--;) SetClusterIndex2(i,-3);
+    if (!fClusterOwner) for (Int_t i=160;i--;) fClusterPointer[i]=0;
+    else                for (Int_t i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i]=0;}
   }
 
 }
@@ -1690,4 +1697,12 @@ Float_t AliTPCseed::GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, I
   if(type==2)
     return ncl+nclBelowThr;
   return 0;
+}
+
+//_______________________________________________________________________
+void AliTPCseed::Clear(Option_t*)
+{
+  // formally seed may allocate memory for clusters (althought this should not happen for 
+  // the seeds in the pool). Hence we need this method for fwd. compatibility
+  if (fClusterOwner) for (int i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
 }

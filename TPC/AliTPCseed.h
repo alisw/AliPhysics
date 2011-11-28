@@ -39,6 +39,7 @@ class AliTPCseed : public AliTPCtrack {
      AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5], 
                 const Double_t cc[15], Int_t i);   
      AliTPCseed &operator = (const AliTPCseed & param);  
+     void Clear(Option_t* = "");
      static Int_t  RefitTrack(AliTPCseed* seed, AliExternalTrackParam * in, AliExternalTrackParam * out);
      Bool_t RefitTrack(AliTPCseed* seed, Bool_t out);
      Int_t Compare(const TObject *o) const;
@@ -145,7 +146,8 @@ class AliTPCseed : public AliTPCtrack {
   static   Double_t GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr);
   //
   Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1);
-  
+  void    SetPoolID(Int_t id) {fPoolID = id;}
+  Int_t   GetPoolID()  const {return fPoolID;}
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
@@ -186,7 +188,8 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
-     ClassDef(AliTPCseed,5)  
+     Int_t   fPoolID;              //! id in the pool
+     ClassDef(AliTPCseed,6)  
 };
 
 
