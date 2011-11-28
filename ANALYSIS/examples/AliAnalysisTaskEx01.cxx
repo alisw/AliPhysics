@@ -156,7 +156,6 @@ void AliAnalysisTaskEx01::UserExec(Option_t *)
         
         
     // Create pointer to reconstructed event
-    return;
     AliVEvent *event = InputEvent();
     if (!event) { Printf("ERROR: Could not retrieve event"); return; }
 
@@ -239,7 +238,6 @@ void AliAnalysisTaskEx01::Terminate(Option_t *)
 {
     // Draw result to screen, or perform fitting, normalizations
     // Called once at the end of the query
-    return;    
     fOutput = dynamic_cast<TList*> (GetOutputData(1));
     if(!fOutput) { Printf("ERROR: could not retrieve TList fOutput"); return; }
         

@@ -9,11 +9,11 @@ class AliAnalysisGrid;
 
 //______________________________________________________________________________
 void runEx01(
-         const char* runtype = "local", // local, proof or grid
-         const char *gridmode = "test", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
+         const char* runtype = "proof", // local, proof or grid
+         const char *gridmode = "full", // Set the run mode (can be "full", "test", "offline", "submit" or "terminate"). Full & Test work for proof
          const bool bMCtruth = 0, // 1 = MCEvent handler is on (MC truth), 0 = MCEvent handler is off (MC reconstructed/real data)
          const bool bMCphyssel = 0, // 1 = looking at MC truth or reconstructed, 0 = looking at real data
-         const Long64_t nentries = 50000000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
+         const Long64_t nentries = 2000, // for local and proof mode, ignored in grid mode. Set to 1234567890 for all events.
          const Long64_t firstentry = 0, // for local and proof mode, ignored in grid mode
          const char *proofdataset = "/alice/data/LHC10c_000120821_p1", // path to dataset on proof cluster, for proof analysis
          const char *proofcluster = "alice-caf.cern.ch", // which proof cluster to use in proof mode
@@ -52,10 +52,10 @@ void runEx01(
     AliAnalysisGrid *plugin = CreateAlienHandler(taskname, gridmode, proofcluster, proofdataset); 
     mgr->SetGridHandler(plugin);
     
-//    AliVEventHandler* iH = new AliESDInputHandler();
-    AliAODInputHandler* iH = new AliAODInputHandler();
+    AliVEventHandler* iH = new AliESDInputHandler();
+//    AliAODInputHandler* iH = new AliAODInputHandler();
 //    iH->SetInactiveBranches("tracks. vertices. v0s. cascades. jets. caloClusters. fmdClusters. pmdClusters. dimuons. AliAODZDC");
-    iH->SetInactiveBranches("*");
+//    iH->SetInactiveBranches("*");
 //    iH->SetCheckStatistics(kTRUE);
     mgr->SetInputEventHandler(iH);
         
@@ -145,7 +145,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     plugin->SetAliROOTVersion("v4-21-25-AN-1");
 
     // Declare input data to be processed.
-    plugin->SetCheckCopy(kFALSE);
+//    plugin->SetCheckCopy(kFALSE);
 
     // Method 1: Create automatically XML collections using alien 'find' command.
     // Define production directory LFN
@@ -249,7 +249,7 @@ AliAnalysisGrid* CreateAlienHandler(const char *taskname, const char *gridmode, 
     // May request ClearPackages (individual ClearPackage not supported)
     plugin->SetClearPackages(kFALSE);
     // Plugin test mode works only providing a file containing test file locations, used in "local" mode also
-    plugin->SetFileForTestMode("filesaod.txt"); // file should contain path name to a local directory containg *ESDs.root etc
+    plugin->SetFileForTestMode("files.txt"); // file should contain path name to a local directory containg *ESDs.root etc
     // Request connection to alien upon connection to grid
     plugin->SetProofConnectGrid(kFALSE);
     // Other PROOF specific parameters
