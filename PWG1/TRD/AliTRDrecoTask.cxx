@@ -334,8 +334,20 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
     if(!det) continue;
     AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3]));
     Int_t iopt = Int_t((*det)[4]);
-    gdet->SetFillStyle(style[iopt]);
-    gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+    if(iopt==4){
+      gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
+      gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+    } else {
+      gdet->SetFillStyle(style[0]);
+      gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+      if(iopt==1){
+        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlue);
+        gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], 0.5*((*det)[3]+(*det)[1]));
+      } else if(iopt==2){
+        gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
+        gdet->DrawBox((*det)[0], 0.5*((*det)[3]+(*det)[1]), (*det)[2], (*det)[3]);
+      } else if(iopt!=0) AliError(Form("Wrong chmb. status[%d] for det[%03d]", iopt, idet));
+    }
   }
 }
 
