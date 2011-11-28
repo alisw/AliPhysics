@@ -83,7 +83,7 @@ AliTPCAlign::AliTPCAlign(Int_t reportloc, Int_t reportglob) :
   fFileGlob = new Char_t[80];
   Char_t path[50];
   //sprintf(path,gSystem->Getenv("ALICE_ROOT")); 
-  snprintf(path,50,gSystem->Getenv("ALICE_ROOT"));
+  snprintf(path,50,"%s",gSystem->Getenv("ALICE_ROOT"));
   //
   //sprintf(fFileLoc,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
   snprintf(fFileLoc,80,"%s/TPC/Survey_%d_TPC.txt",path,reportloc);
@@ -156,11 +156,11 @@ Bool_t AliTPCAlign::LoadSurveyData(){
      surveyedPoints[i][1]=currPoint->GetY();
      surveyedPoints[i][2]=currPoint->GetZ();
      if(fDebug)
-     Printf(Form("INFO: Point \"%s\" coordinates read.", pointNames[i].Data()));
+     Printf("INFO: Point \"%s\" coordinates read.", pointNames[i].Data());
    }
    else {
      if(fDebug){
-    Printf(Form("ERROR: Essential point missing: \"%s\"", pointNames[i].Data()));
+    Printf("ERROR: Essential point missing: \"%s\"", pointNames[i].Data());
     return 1;
      }
    }  
@@ -185,11 +185,11 @@ Bool_t AliTPCAlign::LoadSurveyData(){
      idealPoints[i][1]=currPointL->GetZ();
      idealPoints[i][2]=currPointL->GetX();
           if(fDebug)
-     Printf(Form("INFO: Point \"%s\" coordinates read.", pointNamesL[i].Data()));
+     Printf("INFO: Point \"%s\" coordinates read.", pointNamesL[i].Data());
    }
    else{
      if(fDebug){
-    Printf(Form("ERROR: Essential point missing: \"%s\"", pointNamesL[i].Data()));
+    Printf("ERROR: Essential point missing: \"%s\"", pointNamesL[i].Data());
     return 1; }
    }
  }
