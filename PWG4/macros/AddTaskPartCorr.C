@@ -378,12 +378,35 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   anaphoton->SwitchOnTrackMatchRejection() ;
   
   //PID cuts (shower shape)
-  
+  anaphoton->SwitchOnCaloPID(); // do PID selection, unless specified in GetCaloPID, selection not based on bayesian
   AliCaloPID* caloPID = anaphoton->GetCaloPID();
-  anaphoton->SwitchOnCaloPID(); // if nothing else specified bayesian
-  anaphoton->SwitchOnCaloPIDRecalculation(); // off, get bayesian weights, on use simple cut
-  caloPID->SetLambda0CutMax(0.30);
-  caloPID->SetLambda0CutMin(0.10);
+  //Not used in bayesian
+  
+  //EMCAL
+  caloPID->SetEMCALLambda0CutMax(0.30);
+  caloPID->SetEMCALLambda0CutMin(0.10);
+  
+  caloPID->SetEMCALDEtaCut(0.025);
+  caloPID->SetEMCALDPhiCut(0.05);
+  // In case of official AODs when dX and dZ was not stored, open the cuts 
+  // and rely on having a match recorded. In case of reclusterization, try.
+  if(kData=="AOD" && kClusterArray==""){
+    caloPID->SetEMCALDEtaCut(2000);  
+    caloPID->SetEMCALDPhiCut(2000); 
+  }
+  
+  //PHOS
+  caloPID->SetPHOSDispersionCut(2.5);
+  caloPID->SetPHOSRCut(2.);
+  if(kData=="AOD") caloPID->SetPHOSRCut(2000.); // Open cut since dX, dZ not stored
+  
+  if(kCalorimeter=="PHOS"){
+    caloPID->SetHistoDEtaRangeAndNBins(-200, 200, 200); // dZ
+    caloPID->SetHistoDPhiRangeAndNBins(-200, 200, 200); // dX
+  }
+  
+  //caloPID->SetTOFCut(10000000); // Not used, only to set PID bits
+  
   anaphoton->SwitchOffFillShowerShapeHistograms();  // Filled before photon shower shape selection
   
   // Input / output delta AOD settings
@@ -407,7 +430,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(kPrint) anaphoton->Print("");
   
   return anaphoton;
-  
+
 }
 
 //_______________________________________________
