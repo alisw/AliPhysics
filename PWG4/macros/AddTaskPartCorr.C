@@ -216,7 +216,7 @@ AliCaloTrackReader * ConfigureReader()
   // Tracks
   reader->SwitchOnCTS();
   gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
-  AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10011004); 
+  AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10041004);   //no ITSrefit
   reader->SetTrackCuts(esdTrackCuts);
   
   // Calorimeter
@@ -297,9 +297,6 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   AliCalorimeterUtils *cu = new AliCalorimeterUtils;
   cu->SetDebug(-1);
   
-  if(kYears==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
-  else             cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");
-  
   // Remove clusters close to borders, at least max energy cell is 1 cell away 
   cu->SetNumberOfCellsFromEMCALBorder(1);
   cu->SetNumberOfCellsFromPHOSBorder(2);
@@ -309,39 +306,106 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   else            
     cu->SwitchOnRecalculateClusterTrackMatching();
   
-  //EMCAL only settings
-  AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+  cu->SwitchOnBadChannelsRemoval() ;
   
-  Bool_t bCalib = kTRUE;
-  Bool_t bBadMap= kTRUE;
-  cu->SwitchOnRecalibration();      // Check the reader if it is taken into account during filtering
-  cu->SwitchOnBadChannelsRemoval(); // Check the reader if it is taken into account during filtering
-  
-  TGeoHMatrix* matrix[10];
-  gROOT->LoadMacro("ConfigureEMCALRecoUtils.C");
-  ConfigureEMCALRecoUtils(
-                          recou,
-                          kSimulation, 
-                          matrix,
-                          "",//AODB path, default
-                          kRunNumber, 
-                          kPass,
-                          bCalib, 
-                          bBadMap
-                          );   
-  printf("ConfigureCaloUtils() - Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
-  printf("ConfigureCaloUtils() - BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
-  
-  
-  if(kCollisions=="pp"  ) { // Do only for pp for the moment
-    cu->SwitchOnCorrectClusterLinearity();
-    if(!kSimulation) recou->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
-    else             recou->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
-  }
-  
-  recou->SwitchOnRejectExoticCell();
-  if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
-  else                    recou->SwitchOffRejectExoticCluster();
+  //EMCAL settings
+  if(kCalorimeter=="EMCAL"){
+    
+    if(kYears==2010) cu->SetEMCALGeometryName("EMCAL_FIRSTYEARV1");
+    else             cu->SetEMCALGeometryName("EMCAL_COMPLETEV1");
+    
+    AliEMCALRecoUtils * recou = cu->GetEMCALRecoUtils();
+    
+    Bool_t bCalib = kTRUE;
+    Bool_t bBadMap= kTRUE;
+    cu->SwitchOnRecalibration();      // Check the reader if it is taken into account during filtering
+    
+    TGeoHMatrix* matrix[12];
+    gROOT->LoadMacro("ConfigureEMCALRecoUtils.C");
+    ConfigureEMCALRecoUtils(
+                            recou,
+                            kSimulation, 
+                            matrix,
+                            "",//AODB path, default
+                            kRunNumber, 
+                            kPass,
+                            bCalib, 
+                            bBadMap
+                            );   
+    
+    printf("ConfigureCaloUtils() - EMCAL Recalibration ON? %d %d\n",recou->IsRecalibrationOn(), cu->IsRecalibrationOn());
+    printf("ConfigureCaloUtils() - EMCAL BadMap        ON? %d %d\n",recou->IsBadChannelsRemovalSwitchedOn(), cu->IsBadChannelsRemovalSwitchedOn());
+    
+    //Alignment matrices
+    cu->SwitchOffLoadOwnEMCALGeometryMatrices();
+    /*
+     for (Int_t mod=0;mod<12;mod++)
+     {
+     //((TGeoHMatrix*) mobj->At(mod))->Print();
+     cu->SetEMCALGeometryMatrixInSM(matrix[mod],mod);
+     }
+     */
+    
+    // Non linearity
+    if(kCollisions=="pp"  ) { // Do only for pp for the moment
+      cu->SwitchOnCorrectClusterLinearity();
+      if(!kSimulation) recou->SetNonLinearityFunction(AliEMCALRecoUtils::kBeamTestCorrected);
+      else             recou->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
+    }
+    
+    recou->SwitchOnRejectExoticCell();
+    if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
+    else                    recou->SwitchOffRejectExoticCluster();
+    
+  }  
+  else { // PHOS settings 
+    
+    Int_t run2010 = kRunNumber;
+    //Use a fixed run number from year 2010 for 2011 runs, not available yet.
+    if(kRunNumber > 140000) run2010 = 139000;
+    
+    // Bad map
+    
+    AliOADBContainer badmapContainer(Form("phosBadMap"));
+    TString fileName="$ALICE_ROOT/OADB/PHOS/PHOSBadMaps.root";
+    //if(path!="") fileName=path+"PHOSBadMaps.root";
+    badmapContainer.InitFromFile((char*)fileName.Data(),"phosBadMap");
+    //Use a fixed run number from year 2010, this year not available yet.
+    TObjArray *maps = (TObjArray*)badmapContainer.GetObject(run2010,"phosBadMap");
+    if(!maps){
+      printf("Can not read Bad map for run %d. \n You may choose to use your map with ForceUsingBadMap()\n",run2010) ;    
+    }
+    else{
+      printf("Setting PHOS bad map with name %s \n",maps->GetName()) ;
+      for(Int_t mod=1; mod<5;mod++){
+        TH2I *hbmPH = cu->GetPHOSChannelStatusMap(mod);
+        
+        if(hbmPH) 
+          delete hbmPH ;        
+        hbmPH=(TH2I*)maps->At(mod);
+        
+        if(hbmPH) hbmPH->SetDirectory(0);
+        
+        cu->SetPHOSChannelStatusMap(mod-1,hbmPH);
+      }   
+    }
+    
+    //Alignment matrices
+    cu->SwitchOffLoadOwnPHOSGeometryMatrices();
+    /*
+     fileName="$ALICE_ROOT/OADB/PHOS/PHOSGeometry.root";
+     //if(path!="") fileName=path+"PHOSGeometry.root";
+     AliOADBContainer geomContainer("phosGeo");
+     geomContainer.InitFromFile((char*)fileName.Data(),"PHOSRotationMatrixes");
+     TObjArray *matrixes = (TObjArray*)geomContainer.GetObject(run2010,"PHOSRotationMatrixes");    
+     for (Int_t mod=0;mod<5;mod++)
+     {
+     printf("PHOS matrices mod %d, %p\n",mod,((TGeoHMatrix*)matrixes->At(mod)));
+     //((TGeoHMatrix*) mobj->At(mod))->Print();
+     cu->SetPHOSGeometryMatrixInSM(((TGeoHMatrix*)matrixes->At(mod)),mod);
+     }    
+     */
+  }// PHOS
   
   if(kPrint) cu->Print("");
   
@@ -372,6 +436,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     anaphoton->SetMinPt(0.5); // avoid mip peak at E = 260 MeV
     anaphoton->SetMaxPt(1000); 
     anaphoton->SetTimeCut(-1000,1000); // open cut, usual time window of [425-825] ns if time recalibration is off 
+    // restrict to less than 100 ns when time calibration is on 
     anaphoton->SetMinDistanceToBadChannel(1, 2, 3); // For filtered AODs, new releases.
   }
   
@@ -430,7 +495,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   if(kPrint) anaphoton->Print("");
   
   return anaphoton;
-
+  
 }
 
 //_______________________________________________
@@ -551,7 +616,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
     
     AliNeutralMesonSelection *nms = anapi0ebe->GetNeutralMesonSelection();
     nms->SetParticle(particle);
-    nms->SwitchOnAngleSelection();
+    nms->SwitchOffAngleSelection();
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);
     nms->SetHistoERangeAndNBins(0, 20, 100) ;
