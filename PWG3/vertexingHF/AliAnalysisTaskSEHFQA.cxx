@@ -259,6 +259,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->SetName(GetOutputSlot(2)->GetContainer()->GetName());
 
     //TOF pid
+    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",5,-0.5,4.5);
+    hTOFflags->SetMinimum(0.);
+    hTOFflags->GetXaxis()->SetBinLabel(1,"All Tracks");
+    hTOFflags->GetXaxis()->SetBinLabel(2,"kTOFout");
+    hTOFflags->GetXaxis()->SetBinLabel(3,"kTIME");
+    hTOFflags->GetXaxis()->SetBinLabel(4,"kTOFpid");
+    hTOFflags->GetXaxis()->SetBinLabel(5,"kTOFmismatch");
+
     TString hname="hTOFsig";
     TH1F* hTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
 
@@ -266,19 +274,19 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hTOFtime=new TH1F(hname.Data(),"Distribution of TOF time Kaon;TOF time(Kaon) [ps];Entries", 1000, 0.,50000.);
 
     hname="hTOFtimeKaonHyptime";
-    TH2F* hTOFtimeKaonHyptime=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
+    TH2F* hTOFtimeKaonHyptime=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
 
     hname="hTOFtimeKaonHyptimeAC";
-    TH2F* hTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",200,0.,4.,1000,-20000.,20000.);
+    TH2F* hTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
 
     hname="hTOFsigmaKSigPid";
-    TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",200,0.,4.,100,-5,5);
+    TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,200,-20,20);
 
     hname="hTOFsigmaPionSigPid";
-    TH2F* hTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",200,0.,4.,100,-5,5);
+    TH2F* hTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,200,-20,20);
 
     hname="hTOFsigmaProtonSigPid";
-    TH2F* hTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",200,0.,4.,100,-5,5);
+    TH2F* hTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,200,-20,20);
 
     hname="hTOFsigPid3sigPion";
     TH1F* hTOFsigPid3sigPion=new TH1F(hname.Data(),"TOF PID resolution (#pi) [ps]",500,0.,1000.);
@@ -295,20 +303,21 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hTPCsig=new TH1F(hname.Data(),"Distribution of TPC signal;TPC sig;Entries", 100, 35.,100.);
 
     hname="hTPCsigvsp";
-    TH2F* hTPCsigvsp=new TH2F(hname.Data(),"TPCsig vs p;TPC p[GeV/c];TPCsig",200,0.,4.,1000,35.,100.);
+    TH2F* hTPCsigvsp=new TH2F(hname.Data(),"TPCsig vs p;TPC p[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
  
     hname="hTPCsigvspAC";
-    TH2F* hTPCsigvspAC=new TH2F(hname.Data(),"TPCsig vs p;TPCp[GeV/c];TPCsig",200,0.,4.,1000,35.,100.);
+    TH2F* hTPCsigvspAC=new TH2F(hname.Data(),"TPCsig vs p;TPCp[GeV/c];TPCsig",500,0.,10.,1000,35.,100.);
 
     hname="hTPCsigmaK";
-    TH2F* hTPCsigmaK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",200,0.,4.,200,-5,5);
+    TH2F* hTPCsigmaK=new TH2F(hname.Data(),"TPC Sigma for K as a function of momentum;p[GeV/c];Sigma Kaon",500,0.,10.,400,-20,20);
 
     hname="hTPCsigmaPion";
-    TH2F* hTPCsigmaPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",200,0.,4.,200,-5,5);
+    TH2F* hTPCsigmaPion=new TH2F(hname.Data(),"TPC Sigma for #pi as a function of momentum;p[GeV/c];Sigma #pi",500,0.,10.,400,-20,20);
 
     hname="hTPCsigmaProton";
-    TH2F* hTPCsigmaProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",200,0.,4.,200,-5,5);
+    TH2F* hTPCsigmaProton=new TH2F(hname.Data(),"TPC Sigma for proton as a function of momentum;p[GeV/c];Sigma Proton",500,0.,10.,400,-20,20);
 
+    fOutputPID->Add(hTOFflags);
     fOutputPID->Add(hTOFsig);
     fOutputPID->Add(hTPCsig);
     fOutputPID->Add(hTOFtime);
@@ -794,6 +803,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	pid->GetTOFpidResolution(tofRes);
 
 	//check TOF
+	TH1F* htmpfl=((TH1F*)fOutputPID->FindObject("hTOFflags"));
+	htmpfl->Fill(0.);
+	if (track->GetStatus()&AliESDtrack::kTOFout) htmpfl->Fill(1.);
+	if (track->GetStatus()&AliESDtrack::kTIME) htmpfl->Fill(2.);
+	if (track->GetStatus()&AliESDtrack::kTOFpid) htmpfl->Fill(3.);
+	if (track->GetStatus()&AliESDtrack::kTOFmismatch) htmpfl->Fill(4.);
+
 	if(pidHF && pidHF->CheckStatus(track,"TOF")){
 	  ((TH1F*)fOutputPID->FindObject("hTOFtime"))->Fill(times[AliPID::kProton]);
 	  ((TH2F*)fOutputPID->FindObject("hTOFtimeKaonHyptime"))->Fill(track->P(),pid->GetTOFsignal()-times[3]); //3 is kaon
