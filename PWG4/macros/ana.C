@@ -10,9 +10,10 @@
 //  Author : Gustavo Conesa Balbastre (INFN-LNF)
 //
 //-------------------------------------------------
-enum anaModes {mLocal=0, mGRID=3};
+enum anaModes {mLocal=0, mGRID=3,mPlugin=4};
 //mLocal    = 0: Analyze locally files in your computer
 //mGRID     = 3: Analyze files on GRID
+//mPlugin   = 4: Analyze files on GRID with Plugin
 
 //---------------------------------------------------------------------------
 //Settings to read locally several files, only for "mLocal" mode
@@ -91,6 +92,17 @@ void ana(Int_t mode=mGRID)
   
   AliLog::SetGlobalLogLevel(AliLog::kError);//Minimum prints on screen
   
+  //------------------------------------------
+  //  Alien handler part
+  //------------------------------------------
+  AliAnalysisGrid *alienHandler=0x0;
+  if(mode==mPlugin){
+    // Create and configure the alien handler plugin
+    gROOT->LoadMacro("CreateAlienHandler.C");
+    alienHandler = CreateAlienHandler();
+    if (!alienHandler) return;
+  }  
+  
   //--------------------------------------
   // Make the analysis manager
   //-------------------------------------
@@ -98,6 +110,11 @@ void ana(Int_t mode=mGRID)
   //AliAnalysisManager::SetUseProgressBar(kTRUE);
   //mgr->SetSkipTerminate(kTRUE);
   //mgr->SetNSysInfo(1);
+  
+  if(mode==mPlugin){
+    // Connect plugin to the analysis manager
+    mgr->SetGridHandler(alienHandler);
+  }
   
   // MC handler
   if((kMC || kInputData == "MC") && !kInputData.Contains("AOD")){
@@ -175,9 +192,12 @@ void ana(Int_t mode=mGRID)
   // Tracks
   // ------  
   
-  // QA analysis to compare after clusterization and track isolation-correlation analysis
-  AliAnalysisTaskParticleCorrelation *ana  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-                                                                 kYear,kRun,kCollision,"EMC7","");
+  // Track isolation-correlation analysis and EMCAL QA analysis
+  AliAnalysisTaskParticleCorrelation *anamb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                               kYear,kRun,kCollision,"INT7","");   // PHOS trigger
+  
+  AliAnalysisTaskParticleCorrelation *anatr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+                                                               kYear,kRun,kCollision,"EMC7","");  
   
   // -----
   // EMCAL
@@ -239,28 +259,28 @@ void ana(Int_t mode=mGRID)
   // -----
   // PHOS
   // -----
-  /*
+  
    //Add here PHOS tender or whatever is needed
    
    if(!kMC)
    {
    
    AliAnalysisTaskParticleCorrelation *anav1tr = AddTaskPartCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
-   kYear,kRun,kCollision,"PHOS",""); // Change to PHOS trigger
+                                                                 kYear,kRun,kCollision,"PHOS",""); // PHOS trigger
    
    
    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-   kYear,kRun,kCollision,"INT7","");
+                                                                 kYear,kRun,kCollision,"INT7","");
    
    }
    else 
    {// No trigger
    
    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
-   kYear,kRun,kCollision,"","");
+                                                                 kYear,kRun,kCollision,"","");
    
    }
-   */  
+     
   
   
   //-----------------------
@@ -268,9 +288,15 @@ void ana(Int_t mode=mGRID)
   //-----------------------    
   mgr->InitAnalysis();
   mgr->PrintStatus();
-  mgr->StartAnalysis("local",chain);
+  if(mode==mPlugin){
+    mgr->StartAnalysis("grid");
+    cout <<" Analysis sent to GRID sucessfully "<< endl ;
+  }
+  else{
+    mgr->StartAnalysis("local",chain);
+    cout <<" Analysis ended sucessfully "<< endl ;
+  }
   
-  cout <<" Analysis ended sucessfully "<< endl ;
   
   
 }
@@ -328,6 +354,15 @@ void  LoadLibraries()
   //SetupPar("PWG4PartCorrBase");
   //SetupPar("PWG4PartCorrDep");
   //SetupPar("PWG4CaloCalib");
+  
+  //gSystem->Load("libJETAN");
+  //gSystem->Load("FASTJETAN");
+  //gSystem->Load("PWG4JetTasks");
+  
+  // needed for plugin?
+  gSystem->AddIncludePath("-I$ALICE_ROOT");
+  gSystem->AddIncludePath("-I./");     
+  
 }
 
 void SetupPar(char* pararchivename)
