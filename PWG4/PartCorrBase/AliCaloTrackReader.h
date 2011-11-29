@@ -21,23 +21,24 @@ class TObjArray ;
 class TTree ;
 
 //--- ANALYSIS system ---
-#include "AliVCaloCells.h"
-class AliStack ; 
-class AliHeader ; 
-class AliGenEventHeader ; 
-#include "AliVEvent.h"
+class AliVCaloCells;
+class AliStack; 
+class AliHeader; 
+class AliGenEventHeader; 
+class AliVEvent;
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
 class AliAODMCHeader;
-#include "AliESDtrackCuts.h"
+class AliESDtrackCuts;
 class AliCentrality;
 class AliTriggerAnalysis;
 class AliEventplane;
 
-// --- PartCorr
-#include "AliCalorimeterUtils.h"
+// --- PartCorr / EMCAL ---
+#include "AliEMCALRecoUtils.h"
 #include "AliFiducialCut.h"
+class AliCalorimeterUtils;
 
 class AliCaloTrackReader : public TObject {
 
@@ -178,7 +179,7 @@ public:
   Int_t            GetV0Multiplicity(Int_t i)        const { return fV0Mul[i]              ; }
   
   void             SetEMCALClusterListName(TString &name)  { fEMCALClustersListName = name ; }
-  TString          GetEMCALClusterListName()               { return fEMCALClustersListName ; }
+  TString          GetEMCALClusterListName()         const { return fEMCALClustersListName ; }
 
   // Arrayes with clusters/track/cells access method
   virtual TObjArray*     GetCTSTracks()              const { return fCTSTracks             ; }
@@ -193,11 +194,11 @@ public:
   
   void             AcceptFastClusterEvents()               { fAcceptFastCluster     = kTRUE  ; } 
   void             RejectFastClusterEvents()               { fAcceptFastCluster     = kFALSE ; }  
-  Bool_t           IsFastClusterAccepted()                 { return fAcceptFastCluster       ; }   
+  Bool_t           IsFastClusterAccepted()           const { return fAcceptFastCluster       ; }   
   
   void             SwitchOnLEDEventsRemoval()              { fRemoveLEDEvents       = kTRUE  ; }
   void             SwitchOffLEDEventsRemoval()             { fRemoveLEDEvents       = kFALSE ; } 
-  Bool_t           IsLEDEventRemoved()                     { return fRemoveLEDEvents         ; }   
+  Bool_t           IsLEDEventRemoved()               const { return fRemoveLEDEvents         ; }   
 
   void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
@@ -223,8 +224,8 @@ public:
   void             SetTrackFilterMask(ULong_t bit)         { fTrackFilterMask = bit    ; }		
   
   AliESDtrackCuts* GetTrackCuts()                    const { return fESDtrackCuts      ; }
-  void             SetTrackCuts(AliESDtrackCuts * cuts)    { if(fESDtrackCuts) delete fESDtrackCuts ;
-                                                             fESDtrackCuts = cuts      ; }		  
+  void             SetTrackCuts(AliESDtrackCuts * cuts)    ;
+  
   Int_t            GetTrackMultiplicity()            const { return fTrackMult         ; }
   Float_t          GetTrackMultiplicityEtaCut()      const { return fTrackMultEtaCut   ; }
   void             SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut = eta    ; }		

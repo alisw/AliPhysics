@@ -52,6 +52,10 @@
 #include "AliMixedEvent.h"
 #include "AliAODMCParticle.h"
 
+// --- Detectors --- 
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeometry.h"
+
 ClassImp(AliAnaPi0)
 
 //________________________________________________________________________________________________________________________________________________  
@@ -109,7 +113,6 @@ AliAnaPi0::~AliAnaPi0() {
       }
     }
     delete[] fEventsList; 
-    fEventsList=0 ;
   }
 	
 }

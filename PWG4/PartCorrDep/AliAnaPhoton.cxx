@@ -45,6 +45,9 @@
 #include "AliAODMCParticle.h"
 #include "AliMixedEvent.h"
 
+// --- Detectors --- 
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeometry.h"
 
 ClassImp(AliAnaPhoton)
   
@@ -279,117 +282,117 @@ void AliAnaPhoton::FillAcceptanceHistograms(){
           
           //Fill histograms
           
-          fhYPrimMC[mcPPhoton]->Fill(photonPt, photonY) ;
+          fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
           if(TMath::Abs(photonY) < 1.0)
           {
-            fhEPrimMC  [mcPPhoton]->Fill(photonE ) ;
-            fhPtPrimMC [mcPPhoton]->Fill(photonPt) ;
-            fhPhiPrimMC[mcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMC[mcPPhoton]  ->Fill(photonE , photonEta) ;
+            fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
+            fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
+            fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMC[kmcPPhoton]  ->Fill(photonE , photonEta) ;
           }
           if(inacceptance){
-            fhEPrimMCAcc[mcPPhoton]  ->Fill(photonE ) ;
-            fhPtPrimMCAcc[mcPPhoton] ->Fill(photonPt) ;
-            fhPhiPrimMCAcc[mcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMCAcc[mcPPhoton]  ->Fill(photonE , photonY) ;
+            fhEPrimMCAcc[kmcPPhoton]  ->Fill(photonE ) ;
+            fhPtPrimMCAcc[kmcPPhoton] ->Fill(photonPt) ;
+            fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMCAcc[kmcPPhoton]  ->Fill(photonE , photonY) ;
           }//Accepted
           
           //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[mcPPrompt])
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[kmcPPrompt])
           {
-            fhYPrimMC[mcPPrompt]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPPrompt]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPPrompt]->Fill(photonE ) ;
-              fhPtPrimMC [mcPPrompt]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPPrompt]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPPrompt]  ->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPPrompt]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPPrompt]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPPrompt]  ->Fill(photonE , photonEta) ;
             }   
             if(inacceptance){
-              fhEPrimMCAcc[mcPPrompt]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPPrompt] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPPrompt]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPPrompt]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPPrompt]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPPrompt] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPPrompt]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[mcPFragmentation])
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[kmcPFragmentation])
           {
-            fhYPrimMC[mcPFragmentation]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPFragmentation]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPFragmentation]->Fill(photonE ) ;
-              fhPtPrimMC [mcPFragmentation]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPFragmentation]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPFragmentation]  ->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPFragmentation]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPFragmentation]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPFragmentation]  ->Fill(photonE , photonEta) ;
             }  
             if(inacceptance){
-              fhEPrimMCAcc[mcPFragmentation]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPFragmentation] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPFragmentation]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPFragmentation]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPFragmentation]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPFragmentation] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPFragmentation]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[mcPISR])
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[kmcPISR])
           {
-            fhYPrimMC[mcPISR]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPISR]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPISR]->Fill(photonE ) ;
-              fhPtPrimMC [mcPISR]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPISR]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPISR]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPISR]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPISR]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPISR]->Fill(photonE , photonEta) ;
             }            
             if(inacceptance){
-              fhEPrimMCAcc[mcPISR]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPISR] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPISR]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPISR]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPISR]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPISR] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPISR]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[mcPPi0Decay])
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[kmcPPi0Decay])
           {
-            fhYPrimMC[mcPPi0Decay]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPPi0Decay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPPi0Decay]->Fill(photonE ) ;
-              fhPtPrimMC [mcPPi0Decay]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPPi0Decay]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPPi0Decay]  ->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPPi0Decay]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPPi0Decay]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPPi0Decay]  ->Fill(photonE , photonEta) ;
             }     
             if(inacceptance){
-              fhEPrimMCAcc[mcPPi0Decay]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPPi0Decay] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPPi0Decay]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPPi0Decay]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPPi0Decay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPPi0Decay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPPi0Decay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
           else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) && fhEPrimMC[mcPOtherDecay])
+                    GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay)) && fhEPrimMC[kmcPOtherDecay])
           {
-            fhYPrimMC[mcPOtherDecay]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPOtherDecay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPOtherDecay]->Fill(photonE ) ;
-              fhPtPrimMC [mcPOtherDecay]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPOtherDecay]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPOtherDecay]  ->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPOtherDecay]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPOtherDecay]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPOtherDecay]  ->Fill(photonE , photonEta) ;
             } 
             if(inacceptance){
-              fhEPrimMCAcc[mcPOtherDecay]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPOtherDecay] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPOtherDecay]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPOtherDecay]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPOtherDecay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPOtherDecay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPOtherDecay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(fhEPrimMC[mcPOther])
+          else if(fhEPrimMC[kmcPOther])
           {
-            fhYPrimMC[mcPOther]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPOther]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPOther]->Fill(photonE ) ;
-              fhPtPrimMC [mcPOther]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPOther]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPOther]  ->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPOther]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPOther]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPOther]  ->Fill(photonE , photonEta) ;
             }
             if(inacceptance){
-              fhEPrimMCAcc[mcPOther]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPOther] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPOther]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPOther]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPOther]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPOther] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPOther]  ->Fill(photonE , photonY) ;
             }//Accepted
           }//Other origin
         }// Primary photon 
@@ -480,124 +483,124 @@ void AliAnaPhoton::FillAcceptanceHistograms(){
           
           //Fill histograms
           
-          fhYPrimMC[mcPPhoton]->Fill(photonPt, photonY) ;
+          fhYPrimMC[kmcPPhoton]->Fill(photonPt, photonY) ;
           if(TMath::Abs(photonY) < 1.0)
           {
-            fhEPrimMC  [mcPPhoton]->Fill(photonE ) ;
-            fhPtPrimMC [mcPPhoton]->Fill(photonPt) ;
-            fhPhiPrimMC[mcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMC[mcPPhoton]->Fill(photonE , photonEta) ;
+            fhEPrimMC  [kmcPPhoton]->Fill(photonE ) ;
+            fhPtPrimMC [kmcPPhoton]->Fill(photonPt) ;
+            fhPhiPrimMC[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMC[kmcPPhoton]->Fill(photonE , photonEta) ;
           }
           if(inacceptance){
-            fhEPrimMCAcc[mcPPhoton]  ->Fill(photonE ) ;
-            fhPtPrimMCAcc[mcPPhoton] ->Fill(photonPt) ;
-            fhPhiPrimMCAcc[mcPPhoton]->Fill(photonE , photonPhi) ;
-            fhYPrimMCAcc[mcPPhoton]  ->Fill(photonE , photonY) ;
+            fhEPrimMCAcc[kmcPPhoton]  ->Fill(photonE ) ;
+            fhPtPrimMCAcc[kmcPPhoton] ->Fill(photonPt) ;
+            fhPhiPrimMCAcc[kmcPPhoton]->Fill(photonE , photonPhi) ;
+            fhYPrimMCAcc[kmcPPhoton]  ->Fill(photonE , photonY) ;
           }//Accepted
           
           
           //Origin of photon
-          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[mcPPrompt])
+          if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhEPrimMC[kmcPPrompt])
           {
-            fhYPrimMC[mcPPrompt]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPPrompt]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPPrompt]->Fill(photonE ) ;
-              fhPtPrimMC [mcPPrompt]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPPrompt]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPPrompt]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPPrompt]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPPrompt]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPPrompt]->Fill(photonE , photonEta) ;
             }   
             if(inacceptance){
-              fhEPrimMCAcc[mcPPrompt]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPPrompt] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPPrompt]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPPrompt]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPPrompt]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPPrompt] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPPrompt]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPPrompt]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[mcPFragmentation] )
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation) && fhEPrimMC[kmcPFragmentation] )
           {
-            fhYPrimMC[mcPFragmentation]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPFragmentation]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPFragmentation]->Fill(photonE ) ;
-              fhPtPrimMC [mcPFragmentation]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPFragmentation]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPFragmentation]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPFragmentation]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPFragmentation]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPFragmentation]->Fill(photonE , photonEta) ;
             }  
             if(inacceptance){
-              fhEPrimMCAcc[mcPFragmentation]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPFragmentation] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPFragmentation]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPFragmentation]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPFragmentation]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPFragmentation] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPFragmentation]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPFragmentation]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[mcPISR])
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR) && fhEPrimMC[kmcPISR])
           {
-            fhYPrimMC[mcPISR]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPISR]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPISR]->Fill(photonE ) ;
-              fhPtPrimMC [mcPISR]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPISR]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPISR]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPISR]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPISR]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPISR]->Fill(photonE , photonEta) ;
             }            
             if(inacceptance){
-              fhEPrimMCAcc[mcPISR]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPISR] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPISR]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPISR]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPISR]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPISR] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPISR]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPISR]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[mcPPi0Decay])
+          else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay)&& fhEPrimMC[kmcPPi0Decay])
           {
-            fhYPrimMC[mcPPi0Decay]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPPi0Decay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPPi0Decay]->Fill(photonE ) ;
-              fhPtPrimMC [mcPPi0Decay]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPPi0Decay]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPPi0Decay]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPPi0Decay]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPPi0Decay]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPPi0Decay]->Fill(photonE , photonEta) ;
             }     
             if(inacceptance){
-              fhEPrimMCAcc[mcPPi0Decay]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPPi0Decay] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPPi0Decay]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPPi0Decay]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPPi0Decay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPPi0Decay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPPi0Decay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPPi0Decay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
           else if((GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhEPrimMC[mcPOtherDecay])
+                   GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhEPrimMC[kmcPOtherDecay])
           {
-            fhYPrimMC[mcPOtherDecay]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPOtherDecay]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPOtherDecay]->Fill(photonE ) ;
-              fhPtPrimMC [mcPOtherDecay]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPOtherDecay]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPOtherDecay]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPOtherDecay]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPOtherDecay]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPOtherDecay]->Fill(photonE , photonEta) ;
             } 
             if(inacceptance){
-              fhEPrimMCAcc[mcPOtherDecay]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPOtherDecay] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPOtherDecay]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPOtherDecay]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPOtherDecay]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPOtherDecay] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPOtherDecay]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPOtherDecay]  ->Fill(photonE , photonY) ;
             }//Accepted
           }
-          else if(fhEPrimMC[mcPOther])
+          else if(fhEPrimMC[kmcPOther])
           {
-            fhYPrimMC[mcPOther]->Fill(photonPt, photonY) ;
+            fhYPrimMC[kmcPOther]->Fill(photonPt, photonY) ;
             if(TMath::Abs(photonY) < 1.0){
-              fhEPrimMC  [mcPOther]->Fill(photonE ) ;
-              fhPtPrimMC [mcPOther]->Fill(photonPt) ;
-              fhPhiPrimMC[mcPOther]->Fill(photonE , photonPhi) ;
-              fhYPrimMC[mcPOther]->Fill(photonE , photonEta) ;
+              fhEPrimMC  [kmcPOther]->Fill(photonE ) ;
+              fhPtPrimMC [kmcPOther]->Fill(photonPt) ;
+              fhPhiPrimMC[kmcPOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMC[kmcPOther]->Fill(photonE , photonEta) ;
             }
             if(inacceptance){
-              fhEPrimMCAcc[mcPOther]  ->Fill(photonE ) ;
-              fhPtPrimMCAcc[mcPOther] ->Fill(photonPt) ;
-              fhPhiPrimMCAcc[mcPOther]->Fill(photonE , photonPhi) ;
-              fhYPrimMCAcc[mcPOther]  ->Fill(photonE , photonY) ;
+              fhEPrimMCAcc[kmcPOther]  ->Fill(photonE ) ;
+              fhPtPrimMCAcc[kmcPOther] ->Fill(photonPt) ;
+              fhPhiPrimMCAcc[kmcPOther]->Fill(photonE , photonPhi) ;
+              fhYPrimMCAcc[kmcPOther]  ->Fill(photonE , photonY) ;
             }//Accepted
           }//Other origin
         }// Primary photon 
       }//loop on primaries	
       
-    }//mc array exists and data is MC
+    }//kmc array exists and data is MC
   }	// read AOD MC
 }
 
@@ -698,23 +701,23 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)){
-      fhMCELambda0[mcssPhoton]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssPhoton]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssPhoton] ->Fill(energy, disp);
-      fhMCNCellsE[mcssPhoton]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssPhoton]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssPhoton]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssPhoton]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssPhoton] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssPhoton]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssPhoton]->Fill(energy,maxCellFraction);
       
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssPhoton]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssPhoton] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssPhoton]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssPhoton] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssPhoton]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssPhoton] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssPhoton]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssPhoton] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssPhoton]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssPhoton] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssPhoton]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssPhoton] ->Fill(ncells,  maxCellFraction);
       }
       
       if(!GetReader()->IsEmbeddedClusterSelectionOn()){
@@ -767,65 +770,65 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       
     }//photon   no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron)){
-      fhMCELambda0[mcssElectron]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssElectron]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssElectron] ->Fill(energy, disp);
-      fhMCNCellsE[mcssElectron]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssElectron]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssElectron]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssElectron]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssElectron] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssElectron]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssElectron]->Fill(energy,maxCellFraction);
 
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssElectron]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssElectron] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssElectron]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssElectron] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssElectron]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssElectron] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssElectron]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssElectron] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssElectron]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssElectron] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssElectron]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssElectron] ->Fill(ncells,  maxCellFraction);
       }
     }//electron
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) && 
               GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) ){
-      fhMCELambda0[mcssConversion]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssConversion]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssConversion] ->Fill(energy, disp);
-      fhMCNCellsE[mcssConversion]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssConversion]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssConversion]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssConversion]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssConversion] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssConversion]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssConversion]->Fill(energy,maxCellFraction);
 
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssConversion]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssConversion] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssConversion]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssConversion] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssConversion]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssConversion] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssConversion]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssConversion] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssConversion]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssConversion] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssConversion]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssConversion] ->Fill(ncells,  maxCellFraction);
       }      
       
     }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  ){
-      fhMCELambda0[mcssPi0]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssPi0]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssPi0] ->Fill(energy, disp);
-      fhMCNCellsE[mcssPi0]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssPi0]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssPi0]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssPi0]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssPi0] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssPi0]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssPi0]->Fill(energy,maxCellFraction);
 
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssPi0]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssPi0] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssPi0]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssPi0] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssPi0]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssPi0] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssPi0]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssPi0] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssPi0]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssPi0] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssPi0]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssPi0] ->Fill(ncells,  maxCellFraction);
       }      
       
       //Fill histograms to check shape of embedded clusters
@@ -851,44 +854,44 @@ void  AliAnaPhoton::FillShowerShapeHistograms(AliVCluster* cluster, const Int_t 
       
     }//pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  ){
-      fhMCELambda0[mcssEta]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssEta]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssEta] ->Fill(energy, disp);
-      fhMCNCellsE[mcssEta]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssEta]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssEta]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssEta]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssEta] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssEta]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssEta]->Fill(energy,maxCellFraction);
 
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssEta]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssEta] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssEta]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssEta] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssEta]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssEta] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssEta]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssEta] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssEta]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssEta] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssEta]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssEta] ->Fill(ncells,  maxCellFraction);
       }
       
     }//eta    
     else {
-      fhMCELambda0[mcssOther]    ->Fill(energy, lambda0);
-      fhMCELambda1[mcssOther]    ->Fill(energy, lambda1);
-      fhMCEDispersion[mcssOther] ->Fill(energy, disp);
-      fhMCNCellsE[mcssOther]     ->Fill(energy, ncells);
-      fhMCMaxCellDiffClusterE[mcssOther]->Fill(energy,maxCellFraction);
+      fhMCELambda0[kmcssOther]    ->Fill(energy, lambda0);
+      fhMCELambda1[kmcssOther]    ->Fill(energy, lambda1);
+      fhMCEDispersion[kmcssOther] ->Fill(energy, disp);
+      fhMCNCellsE[kmcssOther]     ->Fill(energy, ncells);
+      fhMCMaxCellDiffClusterE[kmcssOther]->Fill(energy,maxCellFraction);
 
       if     (energy < 2.){
-        fhMCLambda0vsClusterMaxCellDiffE0[mcssOther]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE0[mcssOther] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE0[kmcssOther]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE0[kmcssOther] ->Fill(ncells,  maxCellFraction);
       }
       else if(energy < 6.){
-        fhMCLambda0vsClusterMaxCellDiffE2[mcssOther]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE2[mcssOther] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE2[kmcssOther]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE2[kmcssOther] ->Fill(ncells,  maxCellFraction);
       }
       else{
-        fhMCLambda0vsClusterMaxCellDiffE6[mcssOther]->Fill(lambda0, maxCellFraction);
-        fhMCNCellsvsClusterMaxCellDiffE6[mcssOther] ->Fill(ncells,  maxCellFraction);
+        fhMCLambda0vsClusterMaxCellDiffE6[kmcssOther]->Fill(lambda0, maxCellFraction);
+        fhMCNCellsvsClusterMaxCellDiffE6[kmcssOther] ->Fill(ncells,  maxCellFraction);
       }            
       
     }//other particles 
@@ -1772,172 +1775,172 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
       
       Int_t tag =ph->GetTag();
       
-      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[mcPhoton])
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[kmcPhoton])
       {
-        fhMCE  [mcPhoton] ->Fill(ecluster);
-        fhMCPt [mcPhoton] ->Fill(ptcluster);
-        fhMCPhi[mcPhoton] ->Fill(ecluster,phicluster);
-        fhMCEta[mcPhoton] ->Fill(ecluster,etacluster);
+        fhMCE  [kmcPhoton] ->Fill(ecluster);
+        fhMCPt [kmcPhoton] ->Fill(ptcluster);
+        fhMCPhi[kmcPhoton] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcPhoton] ->Fill(ecluster,etacluster);
         
-        fhMC2E[mcPhoton]     ->Fill(ecluster, eprim);
-        fhMC2Pt[mcPhoton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcPhoton] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[mcPhoton]->Fill(ptcluster,ptprim-ptcluster);     
+        fhMC2E[kmcPhoton]     ->Fill(ecluster, eprim);
+        fhMC2Pt[kmcPhoton]    ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE[kmcPhoton] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcPhoton]->Fill(ptcluster,ptprim-ptcluster);     
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[mcConversion])
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[kmcConversion])
         {
-          fhMCE  [mcConversion] ->Fill(ecluster);
-          fhMCPt [mcConversion] ->Fill(ptcluster);
-          fhMCPhi[mcConversion] ->Fill(ecluster,phicluster);
-          fhMCEta[mcConversion] ->Fill(ecluster,etacluster);
+          fhMCE  [kmcConversion] ->Fill(ecluster);
+          fhMCPt [kmcConversion] ->Fill(ptcluster);
+          fhMCPhi[kmcConversion] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcConversion] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcConversion]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcConversion]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcConversion] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcConversion]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcConversion]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcConversion]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcConversion] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcConversion]->Fill(ptcluster,ptprim-ptcluster);     
         }			
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[mcPrompt]){
-          fhMCE  [mcPrompt] ->Fill(ecluster);
-          fhMCPt [mcPrompt] ->Fill(ptcluster);
-          fhMCPhi[mcPrompt] ->Fill(ecluster,phicluster);
-          fhMCEta[mcPrompt] ->Fill(ecluster,etacluster);      
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPrompt) && fhMCE[kmcPrompt]){
+          fhMCE  [kmcPrompt] ->Fill(ecluster);
+          fhMCPt [kmcPrompt] ->Fill(ptcluster);
+          fhMCPhi[kmcPrompt] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcPrompt] ->Fill(ecluster,etacluster);      
           
-          fhMC2E[mcPrompt]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcPrompt]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPrompt] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcPrompt]->Fill(ptcluster,ptprim-ptcluster);     
-          
-        }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)&& fhMCE[mcFragmentation])
-        {
-          fhMCE  [mcFragmentation] ->Fill(ecluster);
-          fhMCPt [mcFragmentation] ->Fill(ptcluster);
-          fhMCPhi[mcFragmentation] ->Fill(ecluster,phicluster);
-          fhMCEta[mcFragmentation] ->Fill(ecluster,etacluster);
-          
-          fhMC2E[mcFragmentation]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcFragmentation]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcFragmentation] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcFragmentation]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcPrompt]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcPrompt]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcPrompt] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcPrompt]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)&& fhMCE[mcISR])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCFragmentation)&& fhMCE[kmcFragmentation])
         {
-          fhMCE  [mcISR] ->Fill(ecluster);
-          fhMCPt [mcISR] ->Fill(ptcluster);
-          fhMCPhi[mcISR] ->Fill(ecluster,phicluster);
-          fhMCEta[mcISR] ->Fill(ecluster,etacluster);    
+          fhMCE  [kmcFragmentation] ->Fill(ecluster);
+          fhMCPt [kmcFragmentation] ->Fill(ptcluster);
+          fhMCPhi[kmcFragmentation] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcFragmentation] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcISR]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcISR]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcISR] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcISR]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcFragmentation]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcFragmentation]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcFragmentation] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcFragmentation]->Fill(ptcluster,ptprim-ptcluster);     
+          
+        }
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCISR)&& fhMCE[kmcISR])
+        {
+          fhMCE  [kmcISR] ->Fill(ecluster);
+          fhMCPt [kmcISR] ->Fill(ptcluster);
+          fhMCPhi[kmcISR] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcISR] ->Fill(ecluster,etacluster);    
+          
+          fhMC2E[kmcISR]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcISR]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcISR] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcISR]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
-                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[mcPi0Decay])
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[kmcPi0Decay])
         {
-          fhMCE  [mcPi0Decay] ->Fill(ecluster);
-          fhMCPt [mcPi0Decay] ->Fill(ptcluster);
-          fhMCPhi[mcPi0Decay] ->Fill(ecluster,phicluster);
-          fhMCEta[mcPi0Decay] ->Fill(ecluster,etacluster);
+          fhMCE  [kmcPi0Decay] ->Fill(ecluster);
+          fhMCPt [kmcPi0Decay] ->Fill(ptcluster);
+          fhMCPhi[kmcPi0Decay] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcPi0Decay] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcPi0Decay]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcPi0Decay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPi0Decay] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcPi0Decay]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcPi0Decay]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcPi0Decay]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcPi0Decay] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcPi0Decay]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
         else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[mcOtherDecay])
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[kmcOtherDecay])
         {
-          fhMCE  [mcOtherDecay] ->Fill(ecluster);
-          fhMCPt [mcOtherDecay] ->Fill(ptcluster);
-          fhMCPhi[mcOtherDecay] ->Fill(ecluster,phicluster);
-          fhMCEta[mcOtherDecay] ->Fill(ecluster,etacluster);
+          fhMCE  [kmcOtherDecay] ->Fill(ecluster);
+          fhMCPt [kmcOtherDecay] ->Fill(ptcluster);
+          fhMCPhi[kmcOtherDecay] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcOtherDecay] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcOtherDecay]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcOtherDecay]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcOtherDecay] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcOtherDecay]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcOtherDecay]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcOtherDecay]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcOtherDecay] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcOtherDecay]->Fill(ptcluster,ptprim-ptcluster);     
           
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [mcPi0])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [kmcPi0])
         {
-          fhMCE  [mcPi0] ->Fill(ecluster);
-          fhMCPt [mcPi0] ->Fill(ptcluster);
-          fhMCPhi[mcPi0] ->Fill(ecluster,phicluster);
-          fhMCEta[mcPi0] ->Fill(ecluster,etacluster);
+          fhMCE  [kmcPi0] ->Fill(ecluster);
+          fhMCPt [kmcPi0] ->Fill(ptcluster);
+          fhMCPhi[kmcPi0] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcPi0] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcPi0]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcPi0]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcPi0] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcPi0]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcPi0]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcPi0]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcPi0] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcPi0]->Fill(ptcluster,ptprim-ptcluster);     
           
         } 
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[mcEta])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[kmcEta])
         {
-          fhMCE  [mcEta] ->Fill(ecluster);
-          fhMCPt [mcEta] ->Fill(ptcluster);
-          fhMCPhi[mcEta] ->Fill(ecluster,phicluster);
-          fhMCEta[mcEta] ->Fill(ecluster,etacluster);
+          fhMCE  [kmcEta] ->Fill(ecluster);
+          fhMCPt [kmcEta] ->Fill(ptcluster);
+          fhMCPhi[kmcEta] ->Fill(ecluster,phicluster);
+          fhMCEta[kmcEta] ->Fill(ecluster,etacluster);
           
-          fhMC2E[mcEta]     ->Fill(ecluster, eprim);
-          fhMC2Pt[mcEta]    ->Fill(ptcluster, ptprim);     
-          fhMCDeltaE[mcEta] ->Fill(ecluster,eprim-ecluster);
-          fhMCDeltaPt[mcEta]->Fill(ptcluster,ptprim-ptcluster);     
+          fhMC2E[kmcEta]     ->Fill(ecluster, eprim);
+          fhMC2Pt[kmcEta]    ->Fill(ptcluster, ptprim);     
+          fhMCDeltaE[kmcEta] ->Fill(ecluster,eprim-ecluster);
+          fhMCDeltaPt[kmcEta]->Fill(ptcluster,ptprim-ptcluster);     
           
         }      
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[mcAntiNeutron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[kmcAntiNeutron])
       {
-        fhMCE  [mcAntiNeutron] ->Fill(ecluster);
-        fhMCPt [mcAntiNeutron] ->Fill(ptcluster);
-        fhMCPhi[mcAntiNeutron] ->Fill(ecluster,phicluster);
-        fhMCEta[mcAntiNeutron] ->Fill(ecluster,etacluster);
+        fhMCE  [kmcAntiNeutron] ->Fill(ecluster);
+        fhMCPt [kmcAntiNeutron] ->Fill(ptcluster);
+        fhMCPhi[kmcAntiNeutron] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcAntiNeutron] ->Fill(ecluster,etacluster);
         
-        fhMC2E[mcAntiNeutron]     ->Fill(ecluster, eprim);
-        fhMC2Pt[mcAntiNeutron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[mcAntiNeutron]->Fill(ptcluster,ptprim-ptcluster);     
+        fhMC2E[kmcAntiNeutron]     ->Fill(ecluster, eprim);
+        fhMC2Pt[kmcAntiNeutron]    ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE[kmcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcAntiNeutron]->Fill(ptcluster,ptprim-ptcluster);     
         
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[mcAntiProton])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[kmcAntiProton])
       {
-        fhMCE  [mcAntiProton] ->Fill(ecluster);
-        fhMCPt [mcAntiProton] ->Fill(ptcluster);
-        fhMCPhi[mcAntiProton] ->Fill(ecluster,phicluster);
-        fhMCEta[mcAntiProton] ->Fill(ecluster,etacluster);
+        fhMCE  [kmcAntiProton] ->Fill(ecluster);
+        fhMCPt [kmcAntiProton] ->Fill(ptcluster);
+        fhMCPhi[kmcAntiProton] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcAntiProton] ->Fill(ecluster,etacluster);
         
-        fhMC2E[mcAntiProton]     ->Fill(ecluster, eprim);
-        fhMC2Pt[mcAntiProton]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcAntiProton] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[mcAntiProton]->Fill(ecluster,ptprim-ptcluster);     
+        fhMC2E[kmcAntiProton]     ->Fill(ecluster, eprim);
+        fhMC2Pt[kmcAntiProton]    ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE[kmcAntiProton] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcAntiProton]->Fill(ecluster,ptprim-ptcluster);     
         
       } 
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[mcElectron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[kmcElectron])
       {
-        fhMCE  [mcElectron] ->Fill(ecluster);
-        fhMCPt [mcElectron] ->Fill(ptcluster);
-        fhMCPhi[mcElectron] ->Fill(ecluster,phicluster);
-        fhMCEta[mcElectron] ->Fill(ecluster,etacluster);
+        fhMCE  [kmcElectron] ->Fill(ecluster);
+        fhMCPt [kmcElectron] ->Fill(ptcluster);
+        fhMCPhi[kmcElectron] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcElectron] ->Fill(ecluster,etacluster);
         
-        fhMC2E[mcElectron]     ->Fill(ecluster, eprim);
-        fhMC2Pt[mcElectron]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcElectron] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[mcElectron]->Fill(ecluster,ptprim-ptcluster);             
+        fhMC2E[kmcElectron]     ->Fill(ecluster, eprim);
+        fhMC2Pt[kmcElectron]    ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE[kmcElectron] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcElectron]->Fill(ecluster,ptprim-ptcluster);             
       }     
-      else if( fhMCE[mcOther]){
-        fhMCE  [mcOther] ->Fill(ecluster);
-        fhMCPt [mcOther] ->Fill(ptcluster);
-        fhMCPhi[mcOther] ->Fill(ecluster,phicluster);
-        fhMCEta[mcOther] ->Fill(ecluster,etacluster);
+      else if( fhMCE[kmcOther]){
+        fhMCE  [kmcOther] ->Fill(ecluster);
+        fhMCPt [kmcOther] ->Fill(ptcluster);
+        fhMCPhi[kmcOther] ->Fill(ecluster,phicluster);
+        fhMCEta[kmcOther] ->Fill(ecluster,etacluster);
         
-        fhMC2E[mcOther]     ->Fill(ecluster, eprim);
-        fhMC2Pt[mcOther]    ->Fill(ptcluster, ptprim);     
-        fhMCDeltaE[mcOther] ->Fill(ecluster,eprim-ecluster);
-        fhMCDeltaPt[mcOther]->Fill(ecluster,ptprim-ptcluster);     
+        fhMC2E[kmcOther]     ->Fill(ecluster, eprim);
+        fhMC2Pt[kmcOther]    ->Fill(ptcluster, ptprim);     
+        fhMCDeltaE[kmcOther] ->Fill(ecluster,eprim-ecluster);
+        fhMCDeltaPt[kmcOther]->Fill(ecluster,ptprim-ptcluster);     
         
         //		 printf(" AliAnaPhoton::MakeAnalysisFillHistograms() - Label %d, pT %2.3f Unknown, bits set: ",
         //					ph->GetLabel(),ph->Pt());

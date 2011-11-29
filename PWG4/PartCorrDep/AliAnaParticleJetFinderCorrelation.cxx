@@ -179,10 +179,9 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 
 }
 
-//____________________________________________________________________________
+//_______________________________________________________
 void AliAnaParticleJetFinderCorrelation::InitParameters()
 {
-  
   //Initialize the parameters of the analysis.
   SetInputAODName("PWG4Particle");
   AddToHistogramsName("AnaJetFinderCorr_");
@@ -196,10 +195,12 @@ void AliAnaParticleJetFinderCorrelation::InitParameters()
   fUseJetRefTracks   = kFALSE ;
   fMakeCorrelationInHistoMaker = kFALSE ;
   fSelectIsolated = kFALSE;
-  }
+  
+}
 
-//__________________________________________________________________
-Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle, AliAODEvent *event) const 
+//__________________________________________________________________________________
+Int_t  AliAnaParticleJetFinderCorrelation::SelectJet(AliAODPWG4Particle * particle, 
+                                                     const AliAODEvent *event) const 
 {
   //Returns the index of the jet that is opposite to the particle
   

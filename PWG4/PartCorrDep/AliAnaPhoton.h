@@ -30,11 +30,6 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
  public: 
   AliAnaPhoton() ;              // default ctor
   virtual ~AliAnaPhoton() { ; } // virtual dtor
- private:
-  AliAnaPhoton(const AliAnaPhoton & g) ;               // cpy ctor
-  AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
-
- public:
 	
   //---------------------------------------
   // General analysis frame methods
@@ -95,17 +90,17 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
     if(n > 7)  fNPrimaryHistograms = 7; }
 
   // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcTypes    { mcPhoton = 0,        mcPi0Decay = 1,       mcOtherDecay = 2,  
-                    mcPi0 = 3,           mcEta = 4,            mcElectron = 5,       
-                    mcConversion = 6,    mcOther = 7,          mcAntiNeutron = 8,    
-                    mcAntiProton = 9,    mcPrompt = 10,        mcFragmentation = 11, 
-                    mcISR = 12,          mcString = 13                               };  
+  enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
+                    kmcPi0 = 3,           kmcEta = 4,            kmcElectron = 5,       
+                    kmcConversion = 6,    kmcOther = 7,          kmcAntiNeutron = 8,    
+                    kmcAntiProton = 9,    kmcPrompt = 10,        kmcFragmentation = 11, 
+                    kmcISR = 12,          kmcString = 13                               };  
 
-  enum mcPTypes   { mcPPhoton = 0,       mcPPi0Decay = 1,       mcPOtherDecay = 2,  mcPOther = 3,
-                    mcPPrompt = 4,       mcPFragmentation = 5,  mcPISR = 6           };  
+  enum mcPTypes   { kmcPPhoton = 0,       kmcPPi0Decay = 1,       kmcPOtherDecay = 2,  kmcPOther = 3,
+                    kmcPPrompt = 4,       kmcPFragmentation = 5,  kmcPISR = 6           };  
   
-  enum mcssTypes  { mcssPhoton = 0,      mcssOther = 1,       mcssPi0 = 2,         
-                    mcssEta = 3,         mcssConversion = 4,  mcssElectron = 5       };  
+  enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,         
+                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
   
   private:
  
@@ -215,7 +210,10 @@ class AliAnaPhoton : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0MostlyBkg ;          //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
   TH2F * fhEmbedPi0ELambda0FullBkg ;            //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   
-   ClassDef(AliAnaPhoton,19)
+  AliAnaPhoton(const AliAnaPhoton & g) ;               // cpy ctor
+  AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
+  
+  ClassDef(AliAnaPhoton,19)
 
 } ;
  

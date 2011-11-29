@@ -23,28 +23,22 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   AliAnalysisTaskCounter(const char *name);  
   virtual ~AliAnalysisTaskCounter() ;
   
- private:  
-  AliAnalysisTaskCounter(const AliAnalysisTaskCounter&); // not implemented  
-  AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
-  
- public: 
-  
   virtual void UserCreateOutputObjects();  
   virtual void UserExec(Option_t *option);  
   virtual void FinishTaskOutput();  
   
-  void SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }  
-  void SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }  
+  void    SetTrackMultiplicityEtaCut(Float_t eta) { fTrackMultEtaCut   = eta    ; }  
+  void    SetZVertexCut(Float_t vcut)             { fZVertexCut        = vcut   ; }  
 
-  void SwitchOnCaloFilterPatch()               { fCaloFilterPatch   = kTRUE  ; } 
-  void SwitchOffCaloFilterPatch()              { fCaloFilterPatch   = kFALSE ; }  
-  Bool_t IsCaloFilterPatchOn()                 { return fCaloFilterPatch     ; }   
+  void    SwitchOnCaloFilterPatch()               { fCaloFilterPatch   = kTRUE  ; } 
+  void    SwitchOffCaloFilterPatch()              { fCaloFilterPatch   = kFALSE ; }  
+  Bool_t  IsCaloFilterPatchOn()            const  { return fCaloFilterPatch     ; }   
   
-  void AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; } 
-  void RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }  
-  Bool_t IsFastClusterAccepted()               { return fAcceptFastCluster   ; }   
+  void    AcceptFastCluster()                     { fAcceptFastCluster = kTRUE  ; } 
+  void    RejectFastCluster()                     { fAcceptFastCluster = kFALSE ; }  
+  Bool_t  IsFastClusterAccepted()       const     { return fAcceptFastCluster   ; }   
   
-  Bool_t CheckForPrimaryVertex() ;
+  Bool_t  CheckForPrimaryVertex() ;
    
  private: 
   Bool_t               fAcceptFastCluster; // Accept events from fast cluster, exclude thiese events for LHC11a
@@ -64,6 +58,9 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   TH1F *  fhYGoodVertex;  //! Y Vertex good distribution
   TH1F *  fhZGoodVertex;  //! Z Vertex good distribution  
 
+  AliAnalysisTaskCounter(const AliAnalysisTaskCounter&); // not implemented  
+  AliAnalysisTaskCounter& operator=(const AliAnalysisTaskCounter&); // not implemented
+  
   ClassDef(AliAnalysisTaskCounter, 1);
 
 };

@@ -29,14 +29,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
  public: 
   AliAnaPi0EbE() ; // default ctor
   virtual ~AliAnaPi0EbE() { ; } //virtual dtor
- private:
-  AliAnaPi0EbE(const AliAnaPi0EbE & g) ; // cpy ctor
-  AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ;//cpy assignment
-
- public:  
-	
-  //General
-  
+	  
   TObjString *   GetAnalysisCuts();
   
   TList      *   GetCreateOutputObjects();
@@ -64,10 +57,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void           MakeShowerShapeIdentification() ;
   
   void           RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
-    
-  void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
-  void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
-  
+      
   //Setters Getters
   
   //Analysis types
@@ -84,13 +74,16 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   void           SetMinDistanceToBadChannel(Float_t m1, Float_t m2, Float_t m3) {
                   fMinDist = m1; fMinDist2 = m2; fMinDist3 = m3                               ; }
 
+  void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
+  void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
+  
   //For histograms
-  enum mcTypes   { mcPhoton = 0, mcConversion = 1, mcPi0    = 2,  
-                   mcEta    = 3, mcElectron   = 4, mcHadron = 5 };
+  enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
+                   kmcEta    = 3, kmcElectron   = 4, kmcHadron = 5 };
 
  private:
   
-  anaTypes       fAnaType; //Select analysis type
+  anaTypes       fAnaType;                 // Select analysis type
   
   //Only for pi0 SS identification case, kSSCalo
   TString        fCalorimeter ;            // Calorimeter where the gamma is searched;
@@ -142,8 +135,11 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   TH2F         * fhECellClusterLogRatio;   //! log (e cell / e cluster)  vs e cluster for selected photons
   TH2F         * fhEMaxCellClusterRatio;   //! e max cell / e cluster vs e cluster for selected photons
   TH2F         * fhEMaxCellClusterLogRatio;//! log (e max cell / e cluster) vs e cluster for selected photons
-  TH2F         * fhLambda0ForW0[14];        //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
+  TH2F         * fhLambda0ForW0[14];       //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
   //TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
+  
+  AliAnaPi0EbE(const AliAnaPi0EbE & g) ;               // cpy ctor
+  AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
   ClassDef(AliAnaPi0EbE,10)
 } ;

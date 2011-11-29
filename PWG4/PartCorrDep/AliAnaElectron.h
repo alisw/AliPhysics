@@ -35,14 +35,6 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   AliAnaElectron() ;                                       // default ctor
   
   virtual ~AliAnaElectron() { ; }                          // virtual dtor
-  
- private:
-  
-  AliAnaElectron(const AliAnaElectron & g) ;               // cpy ctor
-  
-  AliAnaElectron & operator = (const AliAnaElectron & g) ; // cpy assignment
-
- public:
 	
   //---------------------------------------
   // General analysis frame methods
@@ -110,13 +102,13 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
     if(n > 10) fNOriginHistograms = 10; }
 
   // For histograms in arrays, index in the array, corresponding to a particle
-  enum mcTypes    { mcPhoton = 0,        mcPi0Decay = 1,       mcOtherDecay = 2,  
-                    mcPi0 = 3,           mcEta = 4,            mcElectron = 5,       
-                    mcConversion = 6,    mcOther = 7,          mcAntiNeutron = 8,    
-                    mcAntiProton = 9                                                 };    
+  enum mcTypes    { kmcPhoton = 0,        kmcPi0Decay = 1,       kmcOtherDecay = 2,  
+                    kmcPi0 = 3,           kmcEta = 4,            kmcElectron = 5,       
+                    kmcConversion = 6,    kmcOther = 7,          kmcAntiNeutron = 8,    
+                    kmcAntiProton = 9                                                 };    
   
-  enum mcssTypes  { mcssPhoton = 0,      mcssOther = 1,       mcssPi0 = 2,         
-                    mcssEta = 3,         mcssConversion = 4,  mcssElectron = 5       };  
+  enum mcssTypes  { kmcssPhoton = 0,      kmcssOther = 1,       kmcssPi0 = 2,         
+                    kmcssEta = 3,         kmcssConversion = 4,  kmcssElectron = 5       };  
   
   private:
  
@@ -206,7 +198,10 @@ class AliAnaElectron : public AliAnaPartCorrBaseClass {
   TH2F * fhEmbedElectronELambda0MostlyBkg ;     //!  Lambda0 vs E for embedded electrons with 50%<fraction<10% 
   TH2F * fhEmbedElectronELambda0FullBkg ;       //!  Lambda0 vs E for embedded electrons with less than 10% of the cluster energy
   
-   ClassDef(AliAnaElectron,2)
+  AliAnaElectron(const AliAnaElectron & g) ;               // cpy ctor  
+  AliAnaElectron & operator = (const AliAnaElectron & g) ; // cpy assignment
+  
+  ClassDef(AliAnaElectron,2)
 
 } ;
  

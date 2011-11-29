@@ -24,11 +24,6 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
  public: 
   AliAnaChargedParticles() ; // default ctor
   virtual ~AliAnaChargedParticles() { ; } //virtual dtor
- private:  
-  AliAnaChargedParticles(const AliAnaChargedParticles & g) ; // cpy ctor
-  AliAnaChargedParticles & operator = (const AliAnaChargedParticles & g) ;//cpy assignment
-
- public:
 
   TList * GetCreateOutputObjects();
   
@@ -79,6 +74,9 @@ class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
   TH1F * fhPtUnknown;   //! pT distribution
   TH2F * fhPhiUnknown;  //! phi distribution vs pT
   TH2F * fhEtaUnknown;  //! eta distribution vs pT
+  
+  AliAnaChargedParticles(const AliAnaChargedParticles & g) ; // cpy ctor
+  AliAnaChargedParticles & operator = (const AliAnaChargedParticles & g) ;//cpy assignment
   
   ClassDef(AliAnaChargedParticles,3)
 

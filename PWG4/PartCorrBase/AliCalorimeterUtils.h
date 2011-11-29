@@ -24,8 +24,8 @@ class AliVEvent;
 class AliAODPWG4Particle;
 class AliVCluster;
 class AliVCaloCells;
-#include "AliPHOSGeoUtils.h"
-#include "AliEMCALGeometry.h"
+class AliPHOSGeoUtils;
+class AliEMCALGeometry;
 #include "AliEMCALRecoUtils.h"
 
 class AliCalorimeterUtils : public TObject {
@@ -33,11 +33,6 @@ class AliCalorimeterUtils : public TObject {
  public:   
   AliCalorimeterUtils() ; // ctor
   virtual ~AliCalorimeterUtils() ;//virtual dtor
- private:
-  AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
-  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & g) ;//cpy assignment
-
- public:
   
   virtual void  InitParameters();
   virtual void  Print(const Option_t * opt)          const ;
@@ -47,7 +42,7 @@ class AliCalorimeterUtils : public TObject {
 	
   //virtual void Init();
 	
-  Int_t         GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & fraction) const ;
+  Int_t         GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, Float_t & fraction) const ;
   
   //Calorimeters Geometry Methods
   AliEMCALGeometry * GetEMCALGeometry()              const { return fEMCALGeo             ; }
@@ -248,6 +243,9 @@ class AliCalorimeterUtils : public TObject {
   Float_t            fCutZ;                  //  dZ cut on matching (EMCAL/PHOS)
   Float_t            fCutEta;                //  dEta cut on matching (EMCAL)
   Float_t            fCutPhi;                //  dPhi cut on matching (EMCAL)
+  
+  AliCalorimeterUtils(const AliCalorimeterUtils & g) ; // cpy ctor
+  AliCalorimeterUtils & operator = (const AliCalorimeterUtils & g) ;//cpy assignment
   
   ClassDef(AliCalorimeterUtils,7)
 } ;
