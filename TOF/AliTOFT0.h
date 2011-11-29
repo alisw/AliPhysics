@@ -24,15 +24,8 @@ public:
   AliTOFT0() ;          // ctor
   AliTOFT0(char* headerFile, Int_t nEvents=0) ; 
   AliTOFT0(const AliTOFT0 & tzero);
-//////                  {( (AliTOFT0 &)tzero ).Copy(*this) ;} 
   virtual ~AliTOFT0() ; // dtor
-  /*
-  AliTOFT0 & operator = (const AliTOFT0 & rvalue)  {
-    // assignement operator requested by coding convention but not needed
-    abort() ;
-    return *this ; 
-  }
-  */
+  AliTOFT0 & operator = (const AliTOFT0 & tzero);
   const char*   GetTZeroFile() const {return fT0File.Data();}  
   virtual void  Exec(Option_t *option); 
   void          SetNEvents(Int_t nEvents) {fNevents = nEvents;}

@@ -22,6 +22,7 @@ public:
   AliTOFhitT0(Int_t shunt, Int_t track, Int_t * const vol,
             Float_t * const hits);
   AliTOFhitT0(const AliTOFhitT0 & hit) ;
+  AliTOFhitT0& operator = (const AliTOFhitT0& hit);
   virtual ~AliTOFhitT0() {}
   // getters for AliTOFhitT0 object
   Int_t   GetSector() const {return fSector;}

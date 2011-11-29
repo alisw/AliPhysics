@@ -174,6 +174,21 @@ AliTOFT0::AliTOFT0(const AliTOFT0 & tzero):
 }
 
 //____________________________________________________________________________ 
+AliTOFT0& AliTOFT0::operator = (const AliTOFT0 & tzero)
+{
+  if (this==&tzero) return *this;
+
+  fNevents=tzero.fNevents;
+  fTimeResolution=tzero.fTimeResolution;
+  fLowerMomBound=tzero.fLowerMomBound;
+  fUpperMomBound=tzero.fUpperMomBound;
+  fT0File=tzero.fT0File;
+  fHeadersFile=tzero.fHeadersFile;
+  return *this;
+
+}
+
+//____________________________________________________________________________ 
   AliTOFT0::~AliTOFT0()
 {
   // dtor
@@ -552,7 +567,9 @@ Bool_t AliTOFT0::operator==( AliTOFT0 const &tzero )const
   // Equal operator
   // 
 
-  if( (fTimeResolution==tzero.fTimeResolution)&&(fLowerMomBound==tzero.fLowerMomBound)&&(fUpperMomBound==tzero.fUpperMomBound))
+  if( (fTimeResolution==tzero.fTimeResolution)&&
+      (fLowerMomBound==tzero.fLowerMomBound)&&
+      (fUpperMomBound==tzero.fUpperMomBound))
     return kTRUE ;
   else
     return kFALSE ;

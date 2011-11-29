@@ -84,5 +84,11 @@ void AliTOFQAChecker::Check(Double_t * test, AliQAv1::ALITASK_t /*index*/,
   }
 }  
 
+//------------------------------------------------------
+AliTOFQAChecker& AliTOFQAChecker::operator = (const AliTOFQAChecker& qac)
+{
 
+  if (this==&qac) return *this;
+  return *this;
 
+}

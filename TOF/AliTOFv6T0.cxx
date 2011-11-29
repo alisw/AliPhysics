@@ -420,7 +420,7 @@ void AliTOFv6T0::CreateModules(Float_t xtof,  Float_t ytof, Float_t zlenA,
 
   Int_t *idtmed = fIdtmed->GetArray()-499;
 
-  Int_t idrotm[8];
+  Int_t idrotm[8]; for (Int_t ii=0; ii<8; ii++) idrotm[ii]=0;
 
   // Definition of the of fibre glass modules (FTOA, FTOB and FTOC)
   Float_t  par[3];
@@ -895,7 +895,7 @@ void AliTOFv6T0::MakeModulesInBTOFvolumes(Float_t ytof, Float_t zlenA) const
 
   const Int_t kSize=16;
 
-  Int_t idrotm[1];
+  Int_t idrotm[1]={0};
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
   AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,270.);
@@ -939,7 +939,7 @@ void AliTOFv6T0::MakeCoversInBTOFvolumes() const
 
   const Int_t kSize=16;
 
-  Int_t idrotm[1];
+  Int_t idrotm[1]={0};
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
   AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,270.);
@@ -975,7 +975,7 @@ void AliTOFv6T0::MakeBackInBTOFvolumes(Float_t ytof) const
 
   const Int_t kSize=16;
 
-  Int_t idrotm[1];
+  Int_t idrotm[1]={0};
 
   //AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,-90.);
   AliMatrix(idrotm[0], 90.,  0., 0., 0., 90.,270.);
@@ -1145,7 +1145,7 @@ void AliTOFv6T0::MakeStripsInModules(Float_t ytof, Float_t zlenA) const
 			      fTOFGeometry->NStripB(),
 			      fTOFGeometry->NStripC()};
 
-  Int_t idrotm[91];
+  Int_t idrotm[91]; for (Int_t ii=0; ii<91; ii++) idrotm[ii]=0;
 
   Int_t totalStrip = 0;
   Float_t xpos, zpos, ypos, ang;
@@ -1190,7 +1190,7 @@ void AliTOFv6T0::CreateBackZone(Float_t xtof, Float_t ytof, Float_t zlenA) const
 
   Int_t *idtmed = fIdtmed->GetArray()-499;
 
-  Int_t idrotm[1];
+  Int_t idrotm[1]={0};
 
   // Definition of the air card containers (FAIA, FAIC and FAIB)
 
@@ -1529,7 +1529,7 @@ void AliTOFv6T0::MakeSuperModuleCooling(Float_t xtof, Float_t ytof, Float_t zlen
 
   Int_t *idtmed = fIdtmed->GetArray()-499;
 
-  Int_t idrotm[1];
+  Int_t idrotm[1]={0};
 
   // cooling tube volume definition
   Float_t tubepar[3] = {0., 0.4, xtof*0.5 - fgkCBLw - fgkSawThickness};
@@ -1724,7 +1724,7 @@ void AliTOFv6T0::MakeSuperModuleServices(Float_t xtof, Float_t ytof, Float_t zle
 
   Int_t *idtmed = fIdtmed->GetArray()-499;
 
-  Int_t idrotm[3];
+  Int_t idrotm[3]={0,0,0};
 
   Float_t tubepar[3] = {0., 0.4, xtof*0.5 - fgkCBLw - fgkSawThickness};
   Float_t al1[3] = {fgkAl1parameters[0], fgkAl1parameters[1], fgkAl1parameters[2]};
@@ -1901,7 +1901,7 @@ void AliTOFv6T0::MakeReadoutCrates(Float_t ytof) const
 
   Int_t *idtmed = fIdtmed->GetArray()-499;
 
-  Int_t idrotm[18];
+  Int_t idrotm[18]; for (Int_t ii=0; ii<18; ii++) idrotm[ii]=0;
 
   // volume definition
   Float_t serpar[3] = {29.*0.5, 121.*0.5, 90.*0.5};

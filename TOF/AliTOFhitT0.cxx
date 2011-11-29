@@ -101,6 +101,32 @@ AliTOFhitT0::AliTOFhitT0(const AliTOFhitT0 & hit):
 }
  
 //______________________________________________________________________________
+AliTOFhitT0& AliTOFhitT0::operator = (const AliTOFhitT0& hit) {
+
+  if (this == &hit)
+    return *this;
+
+  fSector=hit.fSector;
+  fPlate=hit.fPlate;
+  fStrip=hit.fStrip;
+  fPadx=hit.fPadx;
+  fPadz=hit.fPadz;
+  fPx=hit.fPx;
+  fPy=hit.fPy;
+  fPz=hit.fPz;
+  fPmom=hit.fPmom;
+  fTof=hit.fTof;
+  fLenTof=hit.fLenTof;
+  fDx=hit.fDx;
+  fDy=hit.fDy;
+  fDz=hit.fDz;
+  fIncA=hit.fIncA;
+  fEdep=hit.fEdep;
+  fTrack = hit.fTrack;
+  return *this;
+
+}
+//______________________________________________________________________________
 AliTOFhitT0::AliTOFhitT0(Int_t shunt, Int_t track, Int_t * const vol,
                      Float_t * const hits):
   AliHit(shunt, track),

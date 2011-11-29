@@ -79,8 +79,8 @@ ClassImp(AliTOFhit)
 }
 
 //____________________________________________________________________________
-AliTOFhit::AliTOFhit(const AliTOFhit & hit)
-  : AliHit(hit),
+AliTOFhit::AliTOFhit(const AliTOFhit & hit):
+  AliHit(hit),
   fSector(hit.fSector),
   fPlate(hit.fPlate),
   fStrip(hit.fStrip),
@@ -104,9 +104,36 @@ AliTOFhit::AliTOFhit(const AliTOFhit & hit)
 }
  
 //______________________________________________________________________________
+AliTOFhit& AliTOFhit::operator = (const AliTOFhit& hit) {
+
+  if (this == &hit)
+    return *this;
+
+  TObject::operator=(hit);
+  fSector=hit.fSector;
+  fPlate=hit.fPlate;
+  fStrip=hit.fStrip;
+  fPadx=hit.fPadx;
+  fPadz=hit.fPadz;
+  fPx=hit.fPx;
+  fPy=hit.fPy;
+  fPz=hit.fPz;
+  fPmom=hit.fPmom;
+  fTof=hit.fTof;
+  fDx=hit.fDx;
+  fDy=hit.fDy;
+  fDz=hit.fDz;
+  fIncA=hit.fIncA;
+  fEdep=hit.fEdep;
+  fTrack = hit.fTrack;
+  return *this;
+
+}
+
+//______________________________________________________________________________
 AliTOFhit::AliTOFhit(Int_t shunt, Int_t track, Int_t * const vol,
-                     Float_t * const hits)
-  :AliHit(shunt, track),
+                     Float_t * const hits) :
+  AliHit(shunt, track),
   fSector(-1),
   fPlate(-1),
   fStrip(-1),

@@ -86,21 +86,27 @@ AliTOFHitMap::AliTOFHitMap(TClonesArray *dig):
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & /*hitMap*/)
-  :TObject(),
-  fNSector(-1),
-  fNplate(-1),
-  fNstrip(-1),
-  fNpx(-1),
-  fNpz(-1),
-  fSDigits(0x0),
-  fMaxIndex(-1),
+AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & hitMap) :
+  TObject(hitMap),
+  fNSector(hitMap.fNSector),
+  fNplate(hitMap.fNplate),
+  fNstrip(hitMap.fNstrip),
+  fNpx(hitMap.fNpx),
+  fNpz(hitMap.fNpz),
+  fSDigits(hitMap.fSDigits),
+  fMaxIndex(hitMap.fMaxIndex),
   fHitMap(0x0)
 {
 //
 // Dummy copy constructor
 //
-  ;
+
+  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
+  fHitMap = new Int_t[fMaxIndex];
+  for (Int_t i=0; i<fMaxIndex; i++)
+    fHitMap[i]=hitMap.fHitMap[i];
+
+
 }
 
  
@@ -204,8 +210,19 @@ FlagType AliTOFHitMap::TestHit(Int_t *vol) const
 }
 
 ////////////////////////////////////////////////////////////////////////
-AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & /*rhs*/) 
+AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & hitMap) 
 {
-// Dummy assignment operator
-    return *this;
+  // Dummy assignment operator
+  if (this == &hitMap) return *this;
+
+  fNSector=hitMap.fNSector;
+  fNplate=hitMap.fNplate;
+  fNstrip=hitMap.fNstrip;
+  fNpx=hitMap.fNpx;
+  fNpz=hitMap.fNpz;
+  fSDigits=hitMap.fSDigits;
+  fMaxIndex=hitMap.fMaxIndex;
+  fHitMap=hitMap.fHitMap;
+  return *this;
+
 }
