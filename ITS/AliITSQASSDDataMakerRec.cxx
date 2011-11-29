@@ -31,6 +31,7 @@
 // --- Standard library ---
 
 // --- AliRoot header files ---
+#include "AliITSQADataMakerRec.h"
 #include "AliITSQASSDDataMakerRec.h"
 #include "AliQADataMakerRec.h"
 #include "AliLog.h"
@@ -1654,7 +1655,7 @@ Int_t AliITSQASSDDataMakerRec::MakeRecPoints(TTree *clustersTree)
 }
 
 //____________________________________________________________________________ 
-Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie) {
+Int_t AliITSQASSDDataMakerRec::GetOffset(AliQAv1::TASKINDEX_t task,Int_t specie) const {
   // Returns offset number according to the specified task 
   Int_t offset=0;
   if( task == AliQAv1::kRAWS ) {

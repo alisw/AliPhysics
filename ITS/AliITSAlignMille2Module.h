@@ -173,7 +173,6 @@ protected:
   AliITSAlignMille2Module* fParent;               // optional parent pointer
   TObjArray      fChildren;                       // array of optional children
   //
-  static AliAlignObjParams fgTempAlignObj;        // temp.alignment object used as a buffer               
   static const Float_t fgkDummyConstraint;        // dummy (lose) contraint on parameter
   //
   ClassDef(AliITSAlignMille2Module, 0)

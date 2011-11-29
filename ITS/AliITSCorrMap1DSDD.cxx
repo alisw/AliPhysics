@@ -25,6 +25,7 @@
 #include "TH1F.h"
 #include "AliITSCorrMapSDD.h"
 #include "AliITSCorrMap1DSDD.h"
+#include "AliLog.h"
 
 ClassImp(AliITSCorrMap1DSDD)
 //______________________________________________________________________

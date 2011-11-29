@@ -42,7 +42,7 @@ ClassImp(AliITSAlignMille2Module)
 
 #define CORHW_
 
-AliAlignObjParams AliITSAlignMille2Module::fgTempAlignObj;
+
 const Float_t AliITSAlignMille2Module::fgkDummyConstraint = 1e-2;//1.E3;
     
 //-------------------------------------------------------------
@@ -400,11 +400,12 @@ TGeoHMatrix *AliITSAlignMille2Module::GetSensitiveVolumeModifiedMatrix(UShort_t 
   ang[1]=delta[4]; // theta (Y)
   ang[2]=delta[5]; // phi   (Z)
   //
-  fgTempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
-  fgTempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
+  static AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
+  tempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
   TGeoHMatrix hm;
-  fgTempAlignObj.GetMatrix(hm);
+  tempAlignObj.GetMatrix(hm);
   //printf("\n0: delta matrix\n");hm.Print();
 
   // 1) start setting fSensVolModif = fSensVol
@@ -441,11 +442,12 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
   ang[1]=deltalocal[4]; // theta (Y)
   ang[2]=deltalocal[5]; // phi   (Z)
   //
-  fgTempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
-  fgTempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
+  static AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
+  tempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
   //
-  return GetSensitiveVolumeMisalignment(voluid,&fgTempAlignObj);
+  return GetSensitiveVolumeMisalignment(voluid,&tempAlignObj);
 }
 
 //-------------------------------------------------------------
@@ -508,10 +510,11 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
   // << RS
 
   // reset align object (may not be needed...)
-  fgTempAlignObj.SetVolUID(0);
-  fgTempAlignObj.SetSymName("");
-  fgTempAlignObj.SetTranslation(0,0,0);
-  fgTempAlignObj.SetRotation(0,0,0);
+  static AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetVolUID(0);
+  tempAlignObj.SetSymName("");
+  tempAlignObj.SetTranslation(0,0,0);
+  tempAlignObj.SetRotation(0,0,0);
   //
   // >> RS
 #ifdef CORHW_
@@ -525,11 +528,11 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeMisalignment(UShor
   }
 #endif
   // << RS
-  if (!fgTempAlignObj.SetMatrix(*fSensVolModifMatrix)) return NULL;
-  fgTempAlignObj.SetVolUID(voluid);
-  fgTempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
+  if (!tempAlignObj.SetMatrix(*fSensVolModifMatrix)) return NULL;
+  tempAlignObj.SetVolUID(voluid);
+  tempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
   //
-  return &fgTempAlignObj;
+  return &tempAlignObj;
 }
 
 // >> RS
@@ -553,10 +556,11 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
   ang[2]=deltalocal[5]; // phi   (Z)
 
   // reset align object (may not be needed...)
-  fgTempAlignObj.SetVolUID(0);
-  fgTempAlignObj.SetSymName("");
-  fgTempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
-  fgTempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
+  static AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetVolUID(0);
+  tempAlignObj.SetSymName("");
+  tempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
+  tempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
 
   // Gsv = Gg * Gg-1 * Gsv   -> Lsv,g = Gg-1 * Gsv
@@ -567,7 +571,7 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
 
   // prepare the Delta matrix Dg
   TGeoHMatrix dg;
-  fgTempAlignObj.GetMatrix(dg);
+  tempAlignObj.GetMatrix(dg);
   //dg.Print();
 
   // 1) start setting fSensVolModif = Gsv
@@ -593,10 +597,10 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
   //printf("\n5: modif=finale\n");fSensVolModifMatrix->Print();
 
   // reset align object (may not be needed...)
-  fgTempAlignObj.SetVolUID(0);
-  fgTempAlignObj.SetSymName("");
-  fgTempAlignObj.SetTranslation(0,0,0);
-  fgTempAlignObj.SetRotation(0,0,0);
+  tempAlignObj.SetVolUID(0);
+  tempAlignObj.SetSymName("");
+  tempAlignObj.SetTranslation(0,0,0);
+  tempAlignObj.SetRotation(0,0,0);
 
 #ifdef CORHW_
   // correction for SPD y-shift
@@ -608,14 +612,14 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeTotalMisalignment(
     fSensVolModifMatrix->Multiply( &deltay.Inverse() );
   }
 #endif
-  if (!fgTempAlignObj.SetMatrix(*fSensVolModifMatrix)) return NULL;
-  fgTempAlignObj.SetVolUID(voluid);
-  fgTempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
+  if (!tempAlignObj.SetMatrix(*fSensVolModifMatrix)) return NULL;
+  tempAlignObj.SetVolUID(voluid);
+  tempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
 
   
-  //fgTempAlignObj.Print("");
+  //tempAlignObj.Print("");
 
-  return &fgTempAlignObj;
+  return &tempAlignObj;
 }
 //-------------------------------------------------------------
 
@@ -638,11 +642,12 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeGlobalMisalignment
   ang[2]=deltalocal[5]; // phi   (Z)
 
   // reset align object (may not be needed...)
-  fgTempAlignObj.SetTranslation(0,0,0);
-  fgTempAlignObj.SetRotation(0,0,0);
+  static AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(0,0,0);
+  tempAlignObj.SetRotation(0,0,0);
 
-  fgTempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
-  fgTempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
+  tempAlignObj.SetRotation(ang[0],ang[1],ang[2]);
+  tempAlignObj.SetTranslation(tr[0],tr[1],tr[2]);
   AliDebug(3,Form("Delta angles: psi=%f  theta=%f   phi=%f",ang[0],ang[1],ang[2]));
 
   // Gsv = Gg * Gg-1 * Gsv   -> Lsv,g = Gg-1 * Gsv
@@ -653,24 +658,24 @@ AliAlignObjParams *AliITSAlignMille2Module::GetSensitiveVolumeGlobalMisalignment
 
   // prepare the Delta matrix Dg
   TGeoHMatrix dg;
-  fgTempAlignObj.GetMatrix(dg);
+  tempAlignObj.GetMatrix(dg);
   //dg.Print();
 
   dg.MultiplyLeft( fMatrix );
   dg.Multiply( &fMatrix->Inverse() );
 
   // reset align object (may not be needed...)
-  fgTempAlignObj.SetTranslation(0,0,0);
-  fgTempAlignObj.SetRotation(0,0,0);
+  tempAlignObj.SetTranslation(0,0,0);
+  tempAlignObj.SetRotation(0,0,0);
 
-  fgTempAlignObj.SetVolUID(voluid);
-  fgTempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
+  tempAlignObj.SetVolUID(voluid);
+  tempAlignObj.SetSymName(AliGeomManager::SymName(voluid));
 
-  if (!fgTempAlignObj.SetMatrix(dg)) return NULL;
+  if (!tempAlignObj.SetMatrix(dg)) return NULL;
   
-  //fgTempAlignObj.Print("");
+  //tempAlignObj.Print("");
 
-  return &fgTempAlignObj;
+  return &tempAlignObj;
 }
 // << RS
 
@@ -836,8 +841,9 @@ void AliITSAlignMille2Module::GetSensVolGlobalParams(UShort_t volid,Double_t *t,
   // return global parameters of the sensor volid
   for (int i=3;i--;) t[i] = r[i] = 0.;
   if (SensVolMatrix(volid,fSensVolMatrix)) return;  
-  fgTempAlignObj.SetMatrix(*fSensVolMatrix);
-  fgTempAlignObj.GetPars(t,r);
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetMatrix(*fSensVolMatrix);
+  tempAlignObj.GetPars(t,r);
 }
 
 //-------------------------------------------------------------
@@ -847,8 +853,9 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,Double_t *t, 
   for (int i=3;i--;) t[i] = r[i] = 0.;
   if (SensVolMatrix(volid,fSensVolMatrix)) return;  
   fSensVolMatrix->MultiplyLeft( &fMatrix->Inverse() );
-  fgTempAlignObj.SetMatrix(*fSensVolMatrix);
-  fgTempAlignObj.GetPars(t,r);
+  AliAlignObjParams tempAlignObj;  
+  tempAlignObj.SetMatrix(*fSensVolMatrix);
+  tempAlignObj.GetPars(t,r);
 }
 
 //-------------------------------------------------------------
@@ -857,13 +864,14 @@ void AliITSAlignMille2Module::GetSensVolGlobalParams(UShort_t volid,const Double
   // return global parameters of the sensor volid modified by the localDelta params
   for (int i=3;i--;) t[i] = r[i] = 0.;
   if (SensVolMatrix(volid,fSensVolMatrix)) return;  
-  fgTempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
-  fgTempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
+  tempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
   //
-  fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);      // obtain local delta
+  tempAlignObj.GetMatrix(*fSensVolModifMatrix);      // obtain local delta
   fSensVolModifMatrix->MultiplyLeft( fSensVolMatrix ); // obtain global delta
-  fgTempAlignObj.SetMatrix(*fSensVolModifMatrix);
-  fgTempAlignObj.GetPars(t,r);                         // obtain global params
+  tempAlignObj.SetMatrix(*fSensVolModifMatrix);
+  tempAlignObj.GetPars(t,r);                         // obtain global params
 }
 
 //-------------------------------------------------------------
@@ -872,14 +880,15 @@ void AliITSAlignMille2Module::GetSensVolLocalParams(UShort_t volid,const Double_
   // return parameters of the sensor volid (modified by the localDelta params) in the current volume
   for (int i=3;i--;) t[i] = r[i] = 0.;
   if (SensVolMatrix(volid,fSensVolMatrix)) return;  
-  fgTempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
-  fgTempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
+  tempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
   //
-  fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);      // obtain local delta
+  tempAlignObj.GetMatrix(*fSensVolModifMatrix);      // obtain local delta
   fSensVolModifMatrix->MultiplyLeft( fSensVolMatrix ); // obtain global delta
   fSensVolModifMatrix->MultiplyLeft( &fMatrix->Inverse() ); // obtain delta in current volume
-  fgTempAlignObj.SetMatrix(*fSensVolModifMatrix);
-  fgTempAlignObj.GetPars(t,r);                         // obtain params
+  tempAlignObj.SetMatrix(*fSensVolModifMatrix);
+  tempAlignObj.GetPars(t,r);                         // obtain params
 }
 
 //-------------------------------------------------------------
@@ -905,6 +914,7 @@ void AliITSAlignMille2Module::GetGeomParamsGlo(Double_t *pars)
   // DeltaGlobal = (ModifParents)*DeltaLocal*(ModifParents)^-1 
   //
   *fSensVolMatrix = *fMatrix;   // current global matrix
+  AliAlignObjParams tempAlignObj;
   AliITSAlignMille2Module* parent = GetParent();
   while (parent) {
     if (parent->GeomParamsGlobal()) {
@@ -914,21 +924,21 @@ void AliITSAlignMille2Module::GetGeomParamsGlo(Double_t *pars)
     }
     fSensVolMatrix->MultiplyLeft( &parent->GetMatrix()->Inverse() ); // Local Matrix
     Float_t *parpar = parent->GetParVals();
-    fgTempAlignObj.SetTranslation(parpar[0],parpar[1],parpar[2]);
-    fgTempAlignObj.SetRotation(parpar[3],parpar[4],parpar[5]);
-    fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);
+    tempAlignObj.SetTranslation(parpar[0],parpar[1],parpar[2]);
+    tempAlignObj.SetRotation(parpar[3],parpar[4],parpar[5]);
+    tempAlignObj.GetMatrix(*fSensVolModifMatrix);
     fSensVolMatrix->MultiplyLeft(fSensVolModifMatrix);
     fSensVolMatrix->MultiplyLeft(parent->GetMatrix());  // global matrix after parents modifications
     parent = parent->GetParent();
   }
   //
-  fgTempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
-  fgTempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
-  fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);  // local delta matrix
+  tempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
+  tempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
+  tempAlignObj.GetMatrix(*fSensVolModifMatrix);  // local delta matrix
   fSensVolModifMatrix->Multiply( &fSensVolMatrix->Inverse() );
   fSensVolModifMatrix->MultiplyLeft( fSensVolMatrix );
-  fgTempAlignObj.SetMatrix( *fSensVolModifMatrix );  // global delta matrix
-  fgTempAlignObj.GetPars(pars,pars+3);
+  tempAlignObj.SetMatrix( *fSensVolModifMatrix );  // global delta matrix
+  tempAlignObj.GetPars(pars,pars+3);
   //
 }
 
@@ -948,9 +958,10 @@ void AliITSAlignMille2Module::GetGeomParamsLoc(Double_t *pars)
   //  DeltaLocal = (DeltaParents*GlobalMat)^-1*DeltaGlobal*(DeltaParents*GlobalMat)
   //
   AliITSAlignMille2Module* parent = GetParent();
-  fgTempAlignObj.SetTranslation(0.,0.,0.);
-  fgTempAlignObj.SetRotation(0.,0.,0.);
-  fgTempAlignObj.GetMatrix(*fSensVolMatrix); // get no-shift matrix
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(0.,0.,0.);
+  tempAlignObj.SetRotation(0.,0.,0.);
+  tempAlignObj.GetMatrix(*fSensVolMatrix); // get no-shift matrix
   //
   while (parent) { // accumulate the product of parents global modifications
     if (!parent->GeomParamsGlobal()) {
@@ -959,22 +970,22 @@ void AliITSAlignMille2Module::GetGeomParamsLoc(Double_t *pars)
       return;
     }
     Float_t *parpar = parent->GetParVals();
-    fgTempAlignObj.SetTranslation(parpar[0],parpar[1],parpar[2]);
-    fgTempAlignObj.SetRotation(parpar[3],parpar[4],parpar[5]);
-    fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);
+    tempAlignObj.SetTranslation(parpar[0],parpar[1],parpar[2]);
+    tempAlignObj.SetRotation(parpar[3],parpar[4],parpar[5]);
+    tempAlignObj.GetMatrix(*fSensVolModifMatrix);
     fSensVolMatrix->Multiply(fSensVolModifMatrix); 
     parent = parent->GetParent();
   }
   // global matrix after parents modifications
   fSensVolMatrix->Multiply(fMatrix);
   //
-  fgTempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
-  fgTempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
-  fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);  // global delta matrix
+  tempAlignObj.SetTranslation(fParVals[0],fParVals[1],fParVals[2]);
+  tempAlignObj.SetRotation(fParVals[3],fParVals[4],fParVals[5]);
+  tempAlignObj.GetMatrix(*fSensVolModifMatrix);  // global delta matrix
   fSensVolModifMatrix->MultiplyLeft( &fSensVolMatrix->Inverse() );
   fSensVolModifMatrix->Multiply( fSensVolMatrix );
-  fgTempAlignObj.SetMatrix( *fSensVolModifMatrix );  // local delta matrix
-  fgTempAlignObj.GetPars(pars,pars+3);
+  tempAlignObj.SetMatrix( *fSensVolModifMatrix );  // local delta matrix
+  tempAlignObj.GetPars(pars,pars+3);
   //
 }
 
@@ -1178,32 +1189,35 @@ void AliITSAlignMille2Module::CalcDerivCurLoc(Int_t sensVol,Int_t paridx,Double_
 void AliITSAlignMille2Module::GetGlobalParams(Double_t *t, Double_t *r)
 {
   // global parameters of the module
-  fgTempAlignObj.SetMatrix( *fMatrix );
-  fgTempAlignObj.GetPars(t,r);
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetMatrix( *fMatrix );
+  tempAlignObj.GetPars(t,r);
 }
 
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::GetGlobalParams(const Double_t* loct, const Double_t* locr, Double_t *t, Double_t *r)
 {
   // global parameters of the module after the modification by local loct,locr
-  fgTempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
-  fgTempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
-  fgTempAlignObj.GetMatrix(*fSensVolModifMatrix);  
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(loct[0],loct[1],loct[2]);
+  tempAlignObj.SetRotation(locr[0],locr[1],locr[2]);
+  tempAlignObj.GetMatrix(*fSensVolModifMatrix);  
   *fSensVolMatrix = *fMatrix;
   fSensVolMatrix->Multiply(fSensVolModifMatrix);
-  fgTempAlignObj.SetMatrix(*fSensVolMatrix);
-  fgTempAlignObj.GetPars(t,r);
+  tempAlignObj.SetMatrix(*fSensVolMatrix);
+  tempAlignObj.GetPars(t,r);
 }
 
 //-------------------------------------------------------------
 void AliITSAlignMille2Module::GetLocalParams(const Double_t* glot, const Double_t* glor, Double_t *t, Double_t *r)
 {
   // obtain local delta parameters from global delta params
-  fgTempAlignObj.SetTranslation(glot[0],glot[1],glot[2]);
-  fgTempAlignObj.SetRotation(glor[0],glor[1],glor[2]);
-  fgTempAlignObj.GetMatrix(*fSensVolMatrix);  
+  AliAlignObjParams tempAlignObj;
+  tempAlignObj.SetTranslation(glot[0],glot[1],glot[2]);
+  tempAlignObj.SetRotation(glor[0],glor[1],glor[2]);
+  tempAlignObj.GetMatrix(*fSensVolMatrix);  
   fSensVolMatrix->Multiply( fMatrix );
   fSensVolMatrix->MultiplyLeft( &fMatrix->Inverse() );
-  fgTempAlignObj.SetMatrix(*fSensVolMatrix);
-  fgTempAlignObj.GetPars(t,r);
+  tempAlignObj.SetMatrix(*fSensVolMatrix);
+  tempAlignObj.GetPars(t,r);
 }

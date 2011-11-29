@@ -4906,19 +4906,19 @@ Bool_t AliITStrackerMI::IsOKForPlaneEff(const AliITStrackMI* track, const Int_t 
   AliITStrackMI tmp(*track);
 
 // require a minimal number of cluster in other layers and eventually clusters in closest layers 
-  Int_t ncl_out=0; Int_t ncl_in=0;
+  Int_t nclout=0; Int_t nclin=0;
   for(Int_t lay=AliITSgeomTGeo::kNLayers-1;lay>ilayer;lay--) { // count n. of cluster in outermost layers
  AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-   // if (tmp.GetClIndex(lay)>=0) ncl_out++;
-if(index[lay]>=0)ncl_out++;
+   // if (tmp.GetClIndex(lay)>=0) nclout++;
+if(index[lay]>=0)nclout++;
   }
   for(Int_t lay=ilayer-1; lay>=0;lay--) { // count n. of cluster in innermost layers
     AliDebug(2,Form("trak=%d  lay=%d  ; index=%d ESD label= %d",tmp.GetLabel(),lay,
                     tmp.GetClIndex(lay),((AliESDtrack*)tmp.GetESDtrack())->GetLabel())) ;
-   if (index[lay]>=0) ncl_in++; 
+   if (index[lay]>=0) nclin++; 
   }
-  Int_t ncl=ncl_out+ncl_in;
+  Int_t ncl=nclout+nclin;
   Bool_t nextout = kFALSE;
   if(ilayer==AliITSgeomTGeo::kNLayers-1) nextout=kTRUE; // you are already on the outermost layer
   else nextout = ((tmp.GetClIndex(ilayer+1)>=0)? kTRUE : kFALSE );
@@ -4926,7 +4926,7 @@ if(index[lay]>=0)ncl_out++;
   if(ilayer==0) nextin=kTRUE; // you are already on the innermost layer
   else nextin = ((index[ilayer-1]>=0)? kTRUE : kFALSE );
   // maximum number of missing clusters allowed in outermost layers
-  if(ncl_out<AliITSgeomTGeo::kNLayers-(ilayer+1)-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersOutPlaneEff()) 
+  if(nclout<AliITSgeomTGeo::kNLayers-(ilayer+1)-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersOutPlaneEff()) 
      return kFALSE; 
   // maximum number of missing clusters allowed (both in innermost and in outermost layers)
   if(ncl<AliITSgeomTGeo::kNLayers-1-AliITSReconstructor::GetRecoParam()->GetMaxMissingClustersPlaneEff()) 
@@ -5131,7 +5131,7 @@ void AliITStrackerMI::UseTrackForPlaneEff(const AliITStrackMI* track, Int_t ilay
     Int_t cltype[2]={-999,-999};
                                                           // and the module
 
-Float_t AngleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute angle") between the track and the mormal to the module (see below)
+    Float_t angleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute angle") between the track and the mormal to the module (see below)
 
     tr[0]=locx;
     tr[1]=locz;
@@ -5201,17 +5201,17 @@ Float_t AngleModTrack[3]={99999.,99999.,99999.}; // angles (phi, z and "absolute
     if((phiNorm-phiPt)>TMath::Pi()) anglet*=-1.;
     anglet *= 180./TMath::Pi();
 
-     AngleModTrack[2]=(Float_t) angle;
-     AngleModTrack[0]=(Float_t) anglet;
+     angleModTrack[2]=(Float_t) angle;
+     angleModTrack[0]=(Float_t) anglet;
      // now the "angle in z" (much easier, i.e. the angle between the z axis and the track momentum + 90)
-    AngleModTrack[1]=TMath::ACos(tgl/TMath::Sqrt(tgl*tgl+1.));
-    AngleModTrack[1]-=TMath::Pi()/2.; // range of angle is -pi/2 , pi/2
-    AngleModTrack[1]*=180./TMath::Pi(); // in degree
+    angleModTrack[1]=TMath::ACos(tgl/TMath::Sqrt(tgl*tgl+1.));
+    angleModTrack[1]-=TMath::Pi()/2.; // range of angle is -pi/2 , pi/2
+    angleModTrack[1]*=180./TMath::Pi(); // in degree
 
-    fPlaneEff->FillHistos(key,found,tr,clu,cltype,AngleModTrack);
+    fPlaneEff->FillHistos(key,found,tr,clu,cltype,angleModTrack);
 
     // For FO efficiency studies of SPD 
-    if(ilayer<2 && !fSPDChipIntPlaneEff[key]) fPlaneEff->FillHistos(keyFO,foundFO,tr,clu,cltype,AngleModTrack);
+    if(ilayer<2 && !fSPDChipIntPlaneEff[key]) fPlaneEff->FillHistos(keyFO,foundFO,tr,clu,cltype,angleModTrack);
   }
   if(ilayer<2) fSPDChipIntPlaneEff[key]=kTRUE;
 return;

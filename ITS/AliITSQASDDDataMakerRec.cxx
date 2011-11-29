@@ -49,6 +49,7 @@
 #include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSQADataMakerRec.h"
 
 class TGaxis;
 class TF1;
@@ -1013,12 +1014,12 @@ Int_t AliITSQASDDDataMakerRec::InitRecPoints()
 	fSDDhRecPointsTask++;
 
         hMax = 0.3;	
-	TH1F *R2RL3 = new TH1F("SDDL3_Rec2Raw","L3 RecPoints to Raws ratio",150,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RecPointsList(R2RL3,fSDDhRecPointsTask+offsRP, expert, !image); // 23
+	TH1F *r2RL3 = new TH1F("SDDL3_Rec2Raw","L3 RecPoints to Raws ratio",150,0.,hMax);
+	rv = fAliITSQADataMakerRec->Add2RecPointsList(r2RL3,fSDDhRecPointsTask+offsRP, expert, !image); // 23
 	fSDDhRecPointsTask++;
 	
-	TH1F *R2RL4 = new TH1F("SDDL4_Rec2Raw","L4 RecPoints to Raws ratio",150,0.,hMax);
-	rv = fAliITSQADataMakerRec->Add2RecPointsList(R2RL4,fSDDhRecPointsTask+offsRP, expert, !image); // 24
+	TH1F *r2RL4 = new TH1F("SDDL4_Rec2Raw","L4 RecPoints to Raws ratio",150,0.,hMax);
+	rv = fAliITSQADataMakerRec->Add2RecPointsList(r2RL4,fSDDhRecPointsTask+offsRP, expert, !image); // 24
 	fSDDhRecPointsTask++;
 
 	TH1F *dedxL3 = new TH1F("SDDL3_dedx","L3 dE/dX",100,0.,1.);

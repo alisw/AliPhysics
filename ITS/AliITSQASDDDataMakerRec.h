@@ -14,11 +14,12 @@
 /* $Id$ */
 
 #include "AliQAv1.h"
-#include "AliITSQADataMakerRec.h"
 
+class AliITSQADataMakerRec;
 class AliITSCalibrationSDD;
 class TObjArray;
 class AliITSDDLModuleMapSDD;
+class AliRawReader;
 
 class AliITSQASDDDataMakerRec: public TObject {
 

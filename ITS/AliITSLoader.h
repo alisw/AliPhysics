@@ -110,6 +110,13 @@ class AliITSLoader: public AliLoader{
     // readout from file can be forced if force=kTRUE
     AliITSgeom* GetITSgeom(Bool_t force=kFALSE); 
     void SetITSgeom(AliITSgeom* g);
+    //
+    static const TString& GetDefaultRawClustersContainerName();
+    static const TString& GetDefaultBackTracksContainerName();
+    static const TString& GetDefaultVerticesContainerName();
+    static const TString& GetDefaultV0ContainerName();
+    static const TString& GetDefaultCascadeContainerName();
+    //
   protected:
 
     AliITSLoader(const AliITSLoader &ob); // copy constructor
@@ -132,12 +139,6 @@ class AliITSLoader: public AliLoader{
     Int_t          PostCascades(){
         return GetCascadeDataLoader()->GetBaseLoader(0)->Post();}
 
-    // DATA
-    static const TString fgkDefaultRawClustersContainerName;  //default for Raw Clusters container name
-    static const TString fgkDefaultBackTracksContainerName;   //default for Back propag. tracks container name
-    static const TString fgkDefaultVerticesContainerName;     //default for primary vertices container name
-    static const TString fgkDefaultV0ContainerName;           //default for V0 container name
-    static const TString fgkDefaultCascadeContainerName;      //default fo cascade container name
     AliITSgeom *fGeom;     //! pointer to the ITS geometry class
 
 

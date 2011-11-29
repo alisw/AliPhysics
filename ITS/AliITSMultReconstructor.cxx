@@ -369,7 +369,7 @@ AliITSMultReconstructor::~AliITSMultReconstructor(){
     delete[] fDetectorIndexClustersLay[i];
     delete[] fOverlapFlagClustersLay[i];
     delete   fClArr[i];
-    for (int j=0;j<2;j++) if (fUsedClusLay[i][j]) delete fUsedClusLay[i][j];
+    for (int j=0;j<2;j++) delete fUsedClusLay[i][j];
   }
   delete [] fTracklets;
   delete [] fSClusters;

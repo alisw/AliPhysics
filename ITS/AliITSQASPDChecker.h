@@ -16,9 +16,9 @@
 #include "AliQAv1.h"
 #include "TPaveText.h"
 #include "AliQAChecker.h"
-#include"AliQACheckerBase.h"
 #include"AliQAManager.h"
 
+class AliQACheckerBase;
 class TCanvas;
 
 class AliITSQASPDChecker: public TObject {

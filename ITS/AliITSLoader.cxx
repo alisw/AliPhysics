@@ -33,12 +33,6 @@
 // raw clusters, primary vertices
 // V0 and cascade
 // and tracks propagated to the origin
-//////////////////////////////////////////////////////////////////////////
-const TString AliITSLoader::fgkDefaultRawClustersContainerName = "TreeC";
-const TString AliITSLoader::fgkDefaultBackTracksContainerName = "TreeB";
-const TString AliITSLoader::fgkDefaultVerticesContainerName = "Vertex";
-const TString AliITSLoader::fgkDefaultV0ContainerName = "V0";
-const TString AliITSLoader::fgkDefaultCascadeContainerName = "Cascade";
 ClassImp(AliITSLoader)
 
 /**********************************************************************/
@@ -52,34 +46,34 @@ AliLoader(name,topfoldername),
 fGeom(0){
   //Constructor   
     AliDataLoader* rawClustersDataLoader = new AliDataLoader(
-        fDetectorName + ".RawCl.root",fgkDefaultRawClustersContainerName,
+        fDetectorName + ".RawCl.root",GetDefaultRawClustersContainerName(),
         "Raw Clusters");
     fDataLoaders->Add(rawClustersDataLoader);
     rawClustersDataLoader->SetEventFolder(fEventFolder);
     rawClustersDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* backTracksDataLoader =  new AliDataLoader(
-        fDetectorName + ".BackTracks.root",fgkDefaultBackTracksContainerName,
+        fDetectorName + ".BackTracks.root",GetDefaultBackTracksContainerName(),
         "Back Propagated Tracks");
     fDataLoaders->Add(backTracksDataLoader);
     backTracksDataLoader->SetEventFolder(fEventFolder);
     backTracksDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* vertexDataLoader = new AliDataLoader(
-        fDetectorName + ".Vertex.root",fgkDefaultVerticesContainerName,
+        fDetectorName + ".Vertex.root",GetDefaultVerticesContainerName(),
         "Primary Vertices","O");
     fDataLoaders->Add(vertexDataLoader);
     vertexDataLoader->SetEventFolder(fEventFolder);
     vertexDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* v0DataLoader = new AliDataLoader(
-        fDetectorName + ".V0s.root",fgkDefaultV0ContainerName,"V0 Vertices");
+        fDetectorName + ".V0s.root",GetDefaultV0ContainerName(),"V0 Vertices");
     fDataLoaders->Add(v0DataLoader);
     v0DataLoader->SetEventFolder(fEventFolder);
     v0DataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* cascadeDataLoader = new AliDataLoader(
-        fDetectorName + ".Cascades.root",fgkDefaultCascadeContainerName,
+        fDetectorName + ".Cascades.root",GetDefaultCascadeContainerName(),
         "Cascades");
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
@@ -91,34 +85,34 @@ AliITSLoader::AliITSLoader(const Char_t *name,TFolder *topfolder):
 fGeom(0){
   //ctor  
     AliDataLoader*  rawClustersDataLoader = new AliDataLoader(
-        fDetectorName + ".RawCl.root",fgkDefaultRawClustersContainerName,
+        fDetectorName + ".RawCl.root",GetDefaultRawClustersContainerName(),
         "Raw Clusters"); 
     fDataLoaders->Add(rawClustersDataLoader);
     rawClustersDataLoader->SetEventFolder(fEventFolder);
     rawClustersDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader*  backTracksDataLoader =  new AliDataLoader(
-        fDetectorName + ".BackTracks.root",fgkDefaultBackTracksContainerName,
+        fDetectorName + ".BackTracks.root",GetDefaultBackTracksContainerName(),
         "Back Propagated Tracks");
     fDataLoaders->Add(backTracksDataLoader);
     backTracksDataLoader->SetEventFolder(fEventFolder);
     backTracksDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* vertexDataLoader = new AliDataLoader(
-        fDetectorName + ".Vertex.root",fgkDefaultVerticesContainerName,
+        fDetectorName + ".Vertex.root",GetDefaultVerticesContainerName(),
         "Primary Vertices","O");
     fDataLoaders->Add(vertexDataLoader);
     vertexDataLoader->SetEventFolder(fEventFolder);
     vertexDataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* v0DataLoader = new AliDataLoader(
-        fDetectorName + ".V0.root",fgkDefaultV0ContainerName,"V0 Vertices");
+        fDetectorName + ".V0.root",GetDefaultV0ContainerName(),"V0 Vertices");
     fDataLoaders->Add(v0DataLoader);
     v0DataLoader->SetEventFolder(fEventFolder);
     v0DataLoader->SetFolder(GetDetectorDataFolder());
 
     AliDataLoader* cascadeDataLoader = new AliDataLoader(
-        fDetectorName + ".Cascade.root",fgkDefaultCascadeContainerName,
+        fDetectorName + ".Cascade.root",GetDefaultCascadeContainerName(),
         "Cascades");
     fDataLoaders->Add(cascadeDataLoader);
     cascadeDataLoader->SetEventFolder(fEventFolder);
@@ -357,4 +351,34 @@ void AliITSLoader::SetITSgeom(AliITSgeom *geom){
 	fGeom=0;
     }// end if
     fGeom=geom;
+}
+
+const TString& AliITSLoader::GetDefaultRawClustersContainerName() {
+  //default for Raw Clusters container name
+  static const TString kDefaultRawClustersContainerName = "TreeC";  
+  return kDefaultRawClustersContainerName;
+}
+
+const TString& AliITSLoader::GetDefaultBackTracksContainerName() {
+ //default for Back propag. tracks container name
+  static const TString kDefaultBackTracksContainerName = "TreeB";   
+  return kDefaultBackTracksContainerName;
+}
+
+const TString& AliITSLoader::GetDefaultVerticesContainerName() {
+  //default for primary vertices container name
+  static const TString kDefaultVerticesContainerName = "Vertex";     
+  return kDefaultVerticesContainerName;
+}
+
+const TString& AliITSLoader::GetDefaultV0ContainerName() {
+  //default for V0 container name
+  static const TString kDefaultV0ContainerName = "V0";
+  return kDefaultV0ContainerName;
+}
+
+const TString& AliITSLoader::GetDefaultCascadeContainerName() {
+  //default fo cascade container name
+  static const TString kDefaultCascadeContainerName = "Cascade";
+  return kDefaultCascadeContainerName;
 }

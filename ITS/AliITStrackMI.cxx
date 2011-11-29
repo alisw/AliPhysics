@@ -26,6 +26,7 @@
 
 #include <TMath.h>
 
+#include "AliITSRecoParam.h"
 #include "AliCluster.h"
 #include "AliESDtrack.h"
 #include "AliITSgeomTGeo.h"

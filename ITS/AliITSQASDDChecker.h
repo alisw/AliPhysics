@@ -45,7 +45,7 @@ public:
   virtual Double_t *GetStepBit(){return fStepBitSDD;};
   virtual void SetSDDLimits(const Float_t *lowvalue, const Float_t * highvalue);
   void SetEventSpecieForCheck(Int_t esforcheck=0){ fESforCheck=esforcheck;}
-  Int_t GetEventSpecieForCheck(){return  fESforCheck;}
+  Int_t GetEventSpecieForCheck() const {return  fESforCheck;}
 
   virtual Bool_t   MakeSDDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode) ; 
   Bool_t MakeSDDRawsImage(TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode );//{AliInfo("The method for raw image has been called\n");}

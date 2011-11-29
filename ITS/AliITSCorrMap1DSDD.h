@@ -15,7 +15,6 @@
 
 #include "AliITSsegmentationSDD.h"
 #include<TNamed.h>
-#include "AliLog.h"
 class TH1F;
 
 class AliITSCorrMap1DSDD : public AliITSCorrMapSDD {

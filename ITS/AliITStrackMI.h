@@ -28,7 +28,6 @@
 
 #include <AliKalmanTrack.h>
 
-#include "AliITSRecoParam.h"
 #include "AliITStrackV2.h"
 
 class AliESDtrack;

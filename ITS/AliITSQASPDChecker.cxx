@@ -28,6 +28,7 @@
 #include "TCanvas.h"
 
 // --- AliRoot header files ---
+#include"AliQACheckerBase.h"
 #include "AliITSQASPDChecker.h"
 #include "AliITSQADataMakerRec.h"
 #include "AliLog.h"
