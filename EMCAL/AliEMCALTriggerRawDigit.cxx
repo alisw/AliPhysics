@@ -47,21 +47,24 @@ fNL0Times(0),
 fL0Times(),
 fL1TimeSum(-1)
 {
-	//
+	// Ctor
+	
 	for (Int_t i = 0; i < 10; i++) fL0Times[i] = -1;
 }
 
 //____________________________________________________________________________
 AliEMCALTriggerRawDigit::~AliEMCALTriggerRawDigit() 
 {
-	//
+	// Dtor
+	
 	//delete [] fL0Times;
 }
 
 //____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
 {
-	//
+	// Set L0 times
+	
 	for (Int_t j = 0; j < fNL0Times; j++)
 	{
 		if (i == fL0Times[j]) 
@@ -87,7 +90,8 @@ Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
 //____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 {
-	//
+	// Get L0 times
+	
 	if (i < 0 || i > fNL0Times)
 	{
 		AliError("Bad index!");
@@ -102,7 +106,8 @@ Bool_t AliEMCALTriggerRawDigit::GetL0Time(const Int_t i, Int_t& time) const
 //____________________________________________________________________________
 Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
 {
-	//
+	// Get L0 times
+	
 	for (Int_t i = 0; i < fNL0Times; i++) times[i] = fL0Times[i];
 	
 	return kTRUE;
@@ -111,7 +116,7 @@ Bool_t AliEMCALTriggerRawDigit::GetL0Times(Int_t times[]) const
 //____________________________________________________________________________
 Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
 {
-	//
+	// Get L0 time sum
 	
 	Int_t value = 0;
 	
@@ -129,7 +134,8 @@ Int_t AliEMCALTriggerRawDigit::GetL0TimeSum(const Int_t time) const
 //____________________________________________________________________________
 Int_t AliEMCALTriggerRawDigit::GetTriggerBit(const TriggerType_t type, const Int_t mode) const
 {
-	//
+	// Get trigger bit
+	
 	Int_t shift = kTriggerTypeEnd * mode;
 	Int_t mask  = 1 << type;
 	
@@ -139,7 +145,8 @@ Int_t AliEMCALTriggerRawDigit::GetTriggerBit(const TriggerType_t type, const Int
 //____________________________________________________________________________
 void AliEMCALTriggerRawDigit::Print(const Option_t* /*opt*/) const
 {
-	//
+	// Dump
+	
 	printf("===\n| Digit id: %4d / %d Time Samples: \n",fId,fNSamples);
 	for (Int_t i=0; i < fNSamples; i++) 
 	{

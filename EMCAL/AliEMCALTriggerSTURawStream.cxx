@@ -450,19 +450,20 @@ void AliEMCALTriggerSTURawStream::DumpPayLoad(const Option_t *option) const
 }
 
 //_____________________________________________________________________________
-UShort_t AliEMCALTriggerSTURawStream::GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C)
+UShort_t AliEMCALTriggerSTURawStream::GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C) const
 {
-  ULong64_t V0sum = V0A + V0C;
+	// Get threshold 
+  ULong64_t v0sum = V0A + V0C;
   
-  ULong64_t sqrV0 = V0sum * V0sum;					
+  ULong64_t sqrV0 = v0sum * v0sum;					
 					
   sqrV0 *= A;
 					
   sqrV0 >>= 32;
 				
-  V0sum *= B;
+  v0sum *= B;
 					
-  V0sum >>= 16;
+  v0sum >>= 16;
 					
-  return (UShort_t)(sqrV0 + V0sum + C);
+  return (UShort_t)(sqrV0 + v0sum + C);
 }

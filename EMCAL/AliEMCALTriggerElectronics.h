@@ -16,11 +16,11 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 
 class AliRawReader;
 class AliEMCALTriggerDCSConfig;
-class TTree;
 class AliEMCALTriggerData;
 class AliEMCALTriggerSTU;
 class AliESDVZERO;
 class AliEMCALTriggerTRU;
+class TTree;
 
 class AliEMCALTriggerElectronics : public TObject 
 {

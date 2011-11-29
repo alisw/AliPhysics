@@ -233,7 +233,7 @@ void AliEMCALTriggerDCSConfigDB::Invalidate()
 const AliEMCALTriggerDCSConfig* AliEMCALTriggerDCSConfigDB::GetTriggerDCSConfig()
 {
 	//
-	//
+	// Get DCS config
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
 	
@@ -250,7 +250,7 @@ const AliEMCALTriggerDCSConfig* AliEMCALTriggerDCSConfigDB::GetTriggerDCSConfig(
 void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ssg[], Int_t spg[], Int_t ssj[], Int_t spj[])
 {
 	//
-	//
+	// Get STU segmentation
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
   if(dcsConf){
@@ -289,7 +289,8 @@ void AliEMCALTriggerDCSConfigDB::GetSTUSegmentation(Int_t ssg[], Int_t spg[], In
 //_____________________________________________________________________________
 Int_t AliEMCALTriggerDCSConfigDB::GetTRUSegmentation(Int_t iTRU)
 {
-	//
+	// Get TRU segmentation
+	
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
   if(dcsConf){	
     AliEMCALTriggerTRUDCSConfig* truConf = dcsConf->GetTRUDCSConfig(iTRU);
@@ -310,7 +311,7 @@ Int_t AliEMCALTriggerDCSConfigDB::GetTRUSegmentation(Int_t iTRU)
 Int_t AliEMCALTriggerDCSConfigDB::GetTRUGTHRL0(Int_t iTRU)
 {
 	//
-	//
+	// Get TRU L0 threshold
 	//
 	const AliEMCALTriggerDCSConfig* dcsConf = dynamic_cast<const AliEMCALTriggerDCSConfig*>(GetCachedCDBObject(kIDTriggerConfig));
   if(dcsConf){	

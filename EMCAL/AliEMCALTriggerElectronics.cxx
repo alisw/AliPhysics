@@ -38,7 +38,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliEMCALTriggerPatch.h"
 
 #include <TVector2.h>
-#include <TClonesArray.h>
 
 namespace
 {
@@ -52,6 +51,8 @@ AliEMCALTriggerElectronics::AliEMCALTriggerElectronics(const AliEMCALTriggerDCSC
 fTRU(new TClonesArray("AliEMCALTriggerTRU",32)),
 fSTU(0x0)
 {
+	// Ctor
+	
 	TVector2 rSize;
 	
 	rSize.Set( 24.,  4. );
@@ -80,7 +81,8 @@ fSTU(0x0)
 //________________
 AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 {
-	//
+	// Dtor
+	
 	fTRU->Delete();
  	delete fSTU;
 }
@@ -88,7 +90,8 @@ AliEMCALTriggerElectronics::~AliEMCALTriggerElectronics()
 //__________________
 void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_t V0M[], AliEMCALTriggerData* data)
 {
-	//
+	// Digits to trigger
+	
 	AliEMCALGeometry* geom = 0x0;
 	
 	AliRunLoader *rl = AliRunLoader::Instance();
@@ -361,7 +364,8 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 //__________________
 void AliEMCALTriggerElectronics::Reset()
 {
-	//
+	// Reset
+	
 	TIter NextTRU(fTRU);
 	while ( AliEMCALTriggerTRU *TRU = (AliEMCALTriggerTRU*)NextTRU() ) TRU->Reset();
 	

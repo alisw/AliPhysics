@@ -45,7 +45,8 @@ ClassImp(AliEMCALTriggerTRU)
 AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard(),
 fDCSConfig(0x0)
 {
-	//
+	// Ctor
+	
 	for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
 }
 
@@ -54,7 +55,8 @@ AliEMCALTriggerTRU::AliEMCALTriggerTRU(AliEMCALTriggerTRUDCSConfig* dcsConf, con
 AliEMCALTriggerBoard(rSize),
 fDCSConfig(dcsConf)
 {
-	//
+	// Ctor
+	
 	for (Int_t i=0;i<96;i++) for (Int_t j=0;j<256;j++) fADC[i][j] = 0;
 
 	TVector2 size;
@@ -92,13 +94,14 @@ fDCSConfig(dcsConf)
 //________________
 AliEMCALTriggerTRU::~AliEMCALTriggerTRU()
 {
-	//
+	// Dtor
 }
 
 //________________
 void AliEMCALTriggerTRU::ShowFastOR(Int_t iTimeWindow, Int_t iChannel)
 {
-	//
+	// Dump
+	
 	Int_t iChanF, iChanL;
 	
 	if (iChannel != -1) iChanF = iChanL = iChannel;
@@ -369,7 +372,8 @@ void AliEMCALTriggerTRU::SaveRegionADC(Int_t iTRU, Int_t iEvent)
 //________________
 void AliEMCALTriggerTRU::Reset()
 {
-	//
+	// Reset
+	
 	fPatches->Delete();
 	
 	ZeroRegion();

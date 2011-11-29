@@ -40,7 +40,7 @@ fMap(0x0),
 fRegionSize(0x0),
 fSubRegionSize(0x0),
 fPatchSize(0x0),
-fPatches( new TClonesArray("AliEMCALTriggerPatch",10) )
+fPatches(0x0)
 {
 	
 }	
@@ -54,6 +54,8 @@ fSubRegionSize( new TVector2() ),
 fPatchSize(     new TVector2() ),
 fPatches( new TClonesArray("AliEMCALTriggerPatch",10) )
 {
+	// Ctor
+	
   fRegion = (int**)malloc( (int)fRegionSize->X() * sizeof( int* ) );  
   
   if (!fRegion) printf("Error: malloc could not allocate %d bytes for fRegion\n",
@@ -91,6 +93,8 @@ fPatches( new TClonesArray("AliEMCALTriggerPatch",10) )
 //_______________
 AliEMCALTriggerBoard::~AliEMCALTriggerBoard()
 {
+	// Dtor
+	
    for (Int_t i=0;i<fRegionSize->X();i++) 
    {
       if (fRegion[i]) {free(fRegion[i]); fRegion[i] = 0;}
@@ -122,7 +126,8 @@ void AliEMCALTriggerBoard::ZeroRegion()
 //_______________
 void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t type, Int_t thres, Int_t time)
 {
-	//
+	// Sliding window
+	
 	Int_t ipatch = 0;
 	
 	for (Int_t i=0; i<=int(fRegionSize->X()-fPatchSize->X()*fSubRegionSize->X()); i+=int(fSubRegionSize->X()))
@@ -155,7 +160,8 @@ void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t type, Int_t thres, Int_t 
 //__________
 void AliEMCALTriggerBoard::Scan()
 {
-	//
+	// Dump
+	
 	cout << "     ";
 	for (Int_t i=0; i<int(fRegionSize->X()); i++) printf("%8d ",i);
 	cout << "\n";

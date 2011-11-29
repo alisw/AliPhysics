@@ -64,9 +64,9 @@ private:
     AliEMCALTriggerData(const AliEMCALTriggerData& rhs);            // NOT implemented
 	AliEMCALTriggerData& operator=(const AliEMCALTriggerData& rhs); // NOT implemented
 	
-	Int_t                      fMode;          //
+	Int_t                      fMode;           // Simulation/Raw
 	
-	Int_t               fL0Trigger[2][32];      //
+	Int_t               fL0Trigger[2][32];      // Triggering TRU
 	
 	TClonesArray*       fL0Patches[2];          // array of patches  
 	
@@ -77,14 +77,14 @@ private:
 	
 	Int_t                fL1Region[2][48][64];  // STU FastOR
 
-	Int_t        fL1GammaThreshold;             //
-	Int_t          fL1JetThreshold;             //	
+	Int_t        fL1GammaThreshold;             // L1-g threshold
+	Int_t          fL1JetThreshold;             // L1-j threshold
 	
-	Int_t                    fL1V0[2];          //
-	Int_t             fL1FrameMask;             //
-	Int_t           fL1TriggerType[8];          //
+	Int_t                    fL1V0[2];          // V0 charges
+	Int_t             fL1FrameMask;             // Frame mask
+	Int_t           fL1TriggerType[8];          // Trigger type
 	
-	Int_t           fL1DataDecoded;
+	Int_t           fL1DataDecoded;             // Raw data decoded
 	
 	ClassDef(AliEMCALTriggerData,2)
 };

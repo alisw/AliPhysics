@@ -11,7 +11,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #ifndef ROOT_TObject
 #  include "TObject.h"
 #endif
-
 #include "TVector2.h"
 
 class TArrayI;
@@ -43,10 +42,10 @@ private:
 	
 	AliEMCALTriggerPatch& operator=(const AliEMCALTriggerPatch& other); // Not implemented
 	
-	TVector2*         fPosition;
-	Int_t             fSum;
-	Int_t             fTime;
-	Int_t             fPeaks;
+	TVector2*         fPosition; // Position
+	Int_t             fSum;      // Amplitude
+	Int_t             fTime;     // Time
+	Int_t             fPeaks;    // Peaks (L0 only)
 	
 	ClassDef(AliEMCALTriggerPatch,1)
 };

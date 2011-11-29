@@ -45,11 +45,11 @@ private:
 	AliEMCALTriggerRawDigit(const AliEMCALTriggerRawDigit &cd);            // Not implemented
 	AliEMCALTriggerRawDigit &operator=(const AliEMCALTriggerRawDigit &cd); // Not implemented
 
-	Int_t   fTriggerBits;
-	Int_t   fNL0Times;
-	Int_t   fL0Times[10];
+	Int_t   fTriggerBits; // Trigger bits
+	Int_t   fNL0Times;    // N L0 times
+	Int_t   fL0Times[10]; // L0 times
 	
-	Int_t   fL1TimeSum;
+	Int_t   fL1TimeSum;   // L1 time sum
 	
 	ClassDef(AliEMCALTriggerRawDigit,1)
 };

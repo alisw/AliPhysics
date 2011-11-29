@@ -34,23 +34,23 @@ public:
 	virtual void PostProcess();
 	virtual void Reset();
 	
+protected:
+	
+	AliEMCALGeometry*            fGeometry;      // Geometry
+	AliRawReader*                fRawReader;     // Raw reader
+	AliCaloRawStreamV3*          fCaloRawStream; // Calo raw stream
+	AliEMCALTriggerSTURawStream* fSTURawStream;  // STU raw stream
+	TClonesArray*                fRawDigits;     // Raw digits
+	AliCaloRawAnalyzerFakeALTRO* fRawAnalyzer;   // Raw analyzer
+	AliEMCALTriggerDCSConfigDB*  fDCSConfig;     // DCS config
+	AliEMCALTriggerData*         fTriggerData;   // Trigger data
+	
+	Int_t						 fRawDigitIndex[3072]; // Raw digit indexes
+
 private:
 	
     AliEMCALTriggerRawDigitMaker(const AliEMCALTriggerRawDigitMaker& rhs);            // NOT implemented
-	AliEMCALTriggerRawDigitMaker& operator=(const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented
-	
-protected:
-	
-	AliEMCALGeometry*            fGeometry;
-	AliRawReader*                fRawReader;
-	AliCaloRawStreamV3*          fCaloRawStream;
-	AliEMCALTriggerSTURawStream* fSTURawStream;
-	TClonesArray*                fRawDigits;
-	AliCaloRawAnalyzerFakeALTRO* fRawAnalyzer;
-	AliEMCALTriggerDCSConfigDB*  fDCSConfig;
-	AliEMCALTriggerData*         fTriggerData;
-	
-	Int_t						 fRawDigitIndex[3072];
+	AliEMCALTriggerRawDigitMaker& operator=(const AliEMCALTriggerRawDigitMaker& rhs); // NOT implemented	
 	
 	ClassDef(AliEMCALTriggerRawDigitMaker,1)
 };

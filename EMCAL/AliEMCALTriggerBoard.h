@@ -10,7 +10,6 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "AliEMCALTriggerTypes.h"
-
 #include "TVector2.h"
 
 class TClonesArray;
@@ -49,11 +48,6 @@ public:
 	virtual Int_t**    Map() {return    fMap;}
 	virtual void       Map(Int_t arr[][64], const TVector2& Size) {for (Int_t i = 0; i < Size.X(); i++) for (Int_t j = 0; j < Size.Y(); j++) arr[i][j] = fMap[i][j];}
 
-private:
-	
-    AliEMCALTriggerBoard(const AliEMCALTriggerBoard& rhs);            // NOT implemented
-	AliEMCALTriggerBoard& operator=(const AliEMCALTriggerBoard& rhs); // NOT implemented
-	
 protected:
 	
 	Int_t**       fRegion;        //! 
@@ -62,6 +56,11 @@ protected:
 	TVector2*     fSubRegionSize; //! in FastOR unit
 	TVector2*     fPatchSize;     //! in subregion unit
 	TClonesArray* fPatches;       //!
+	
+private:
+	
+    AliEMCALTriggerBoard(const AliEMCALTriggerBoard& rhs);            // NOT implemented
+	AliEMCALTriggerBoard& operator=(const AliEMCALTriggerBoard& rhs); // NOT implemented
 	
 	ClassDef(AliEMCALTriggerBoard,1)
 };

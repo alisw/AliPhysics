@@ -44,7 +44,8 @@ fL1FrameMask(0),
 fL1TriggerType(),
 fL1DataDecoded(0)
 {  
-	//
+	// Ctor
+	
 	for (Int_t i = 0; i < 2; i++)
 	{
 		       fL0Patches[i] = new TClonesArray("AliEMCALTriggerPatch");
@@ -62,7 +63,8 @@ fL1DataDecoded(0)
 //_____________
 AliEMCALTriggerData::~AliEMCALTriggerData()
 {
-	//
+	// Dtor
+	
 	for (Int_t i = 0; i < 2; i++)
 	{
 		if (     fL0Patches[i])      fL0Patches[i]->Delete();
@@ -74,7 +76,8 @@ AliEMCALTriggerData::~AliEMCALTriggerData()
 //_____________
 void AliEMCALTriggerData::SetL0Region(Int_t i, const Int_t**& region)
 {
-	//
+	// L0 region
+	
 	if (i < 0 || i > 31) 
 	{
 		AliError("Bad index!");
@@ -88,7 +91,8 @@ void AliEMCALTriggerData::SetL0Region(Int_t i, const Int_t**& region)
 //_____________
 void AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i, TClonesArray& patches) const
 {
-	//
+	// List of patches
+	
 	if (i < 0 || i > 1) 
 	{
 		AliError("Bad index!");
@@ -115,7 +119,8 @@ void AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i, TClonesArray& 
 //_____________
 TClonesArray* AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i) const
 {
-	//
+	// List of patches
+	
 	if (i < 0 || i > 1) 
 	{
 		AliError("Bad index!");
@@ -144,7 +149,8 @@ TClonesArray* AliEMCALTriggerData::GetPatches(TriggerType_t type, Int_t i) const
 //_____________
 void AliEMCALTriggerData::SetPatches(TriggerType_t type, Int_t i, const TClonesArray& patches)
 {
-	//
+	// Set list of patches
+	
 	if (i < 0 || i > 1) 
 	{
 		AliError("Bad index!");
@@ -193,7 +199,8 @@ void AliEMCALTriggerData::SetPatches(TriggerType_t type, Int_t i, const TClonesA
 //_____________
 void AliEMCALTriggerData::SetL1Region(Int_t i, Int_t**& region)
 {
-	//
+	// Set L1 region
+	
 	if (i < 0 || i > 1) 
 	{
 		AliError("Bad index!");
@@ -207,7 +214,8 @@ void AliEMCALTriggerData::SetL1Region(Int_t i, Int_t**& region)
 //_____________
 void AliEMCALTriggerData::GetL1Region(Int_t i, Int_t arr[][64]) const 
 { 
-	//
+	// Get L1 region
+	
 	if (i < 0 || i > 1) 
 	{
 		AliError("Bad index!");
@@ -221,7 +229,8 @@ void AliEMCALTriggerData::GetL1Region(Int_t i, Int_t arr[][64]) const
 //_____________
 void AliEMCALTriggerData::Scan() const
 {
-	//
+	// Dump
+	
 	TIterator* nP;
 
 	printf("L0:\n");
@@ -252,7 +261,8 @@ void AliEMCALTriggerData::Scan() const
 //_____________
 void AliEMCALTriggerData::Reset()
 {
-	//
+	// Reset
+	
 	for (Int_t i = 0; i < 2; i++)
 	{
 		if (     fL0Patches[i])      fL0Patches[i]->Delete();

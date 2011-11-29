@@ -29,7 +29,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 ClassImp(AliEMCALTriggerDCSConfig)
 
 //_____________________________________________________________________________
-AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
+AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig(const char *name) : TObject()
 ,fTRUArr(new TClonesArray("AliEMCALTriggerTRUDCSConfig",32))
 ,fSTUObj(new AliEMCALTriggerSTUDCSConfig())
 {
@@ -42,8 +42,9 @@ AliEMCALTriggerDCSConfig::AliEMCALTriggerDCSConfig() : TObject()
 AliEMCALTriggerDCSConfig::~AliEMCALTriggerDCSConfig()
 {
 	//
+	// Dtor
 	//
-	//
+	
 	delete fTRUArr; fTRUArr = 0x0;
 	delete fSTUObj; fSTUObj = 0x0;
 }

@@ -43,10 +43,10 @@ protected:
 
 private:
 	
-		  Int_t   fGammaTh;
-		  Int_t   fJetTh;
+		  Int_t   fGammaTh; // Gamma threshold
+		  Int_t   fJetTh;   // Jet threshold
 	
-	AliEMCALTriggerSTUDCSConfig* fDCSConfig;
+	AliEMCALTriggerSTUDCSConfig* fDCSConfig; // DCS config
 
 	ClassDef(AliEMCALTriggerSTU,1)
 };

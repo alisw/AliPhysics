@@ -23,6 +23,7 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "AliEMCALTriggerSTUDCSConfig.h"
+#include "TVector2.h"
 
 ClassImp(AliEMCALTriggerSTUDCSConfig)
   
@@ -46,7 +47,8 @@ AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject()
 //_____________________________________________________________________________
 void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TVector2& v3, TVector2& v4) const
 {
-	//
+	// Get Segmentation
+	
 	switch (fFw)
 	{
 		case 2223:

@@ -33,7 +33,7 @@ private:
 	                    AliEMCALTriggerTRU(const AliEMCALTriggerTRU& rhs);
 	         AliEMCALTriggerTRU& operator=(const AliEMCALTriggerTRU& rhs);
 	
-	AliEMCALTriggerTRUDCSConfig* fDCSConfig;
+	AliEMCALTriggerTRUDCSConfig* fDCSConfig; // DCS config
 
 	Int_t         fADC[96][256]; //! FIXME: Check the maximum number of samples
 	

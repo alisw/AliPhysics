@@ -97,7 +97,8 @@ AliEMCALTriggerRawDigitMaker::~AliEMCALTriggerRawDigitMaker()
 //_______________
 void AliEMCALTriggerRawDigitMaker::SetIO(AliRawReader* reader, AliCaloRawStreamV3& in, AliEMCALTriggerSTURawStream& inSTU, TClonesArray* digits, AliEMCALTriggerData* data)
 {
-	//
+	// Connect I/O
+	
 	fRawReader     = reader;
 	fCaloRawStream = &in;
 	fRawDigits     = digits;
@@ -108,7 +109,8 @@ void AliEMCALTriggerRawDigitMaker::SetIO(AliRawReader* reader, AliCaloRawStreamV
 //_______________
 void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunchlist)
 {
-	//
+	// Add bunch list
+	
 	Int_t    hwAdd   = fCaloRawStream->GetHWAddress();
 	UShort_t iRCU    = fCaloRawStream->GetDDLNumber() % 2; // 0/1
 	UShort_t iBranch = ( hwAdd >> 11 ) & 0x1;              // 0/1
@@ -277,7 +279,8 @@ void AliEMCALTriggerRawDigitMaker::Add(const std::vector<AliCaloBunchInfo> &bunc
 //_______________
 void AliEMCALTriggerRawDigitMaker::PostProcess()
 {	
-	//
+	// Post process digits
+	
         AliDebug(2,"Start post processing the raw digit maker");
 	Int_t idx;
 	
@@ -290,26 +293,26 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	fRawReader->Reset();
 	fRawReader->Select("EMCAL",44);	
 
-	Bool_t STUin = kFALSE;
+	Bool_t isSTUin = kFALSE;
 	
 	Int_t nSubEv = fRawReader->GetEvent()->GetNSubEvents();
 	
 	for ( Int_t iSubEv=0; iSubEv<nSubEv; iSubEv++)
 	{
-		AliRawVEvent *SubEv = ((AliRawEvent*)fRawReader->GetEvent())->GetSubEvent(iSubEv);
-		if ( !SubEv ) continue;
+		AliRawVEvent *subEv = ((AliRawEvent*)fRawReader->GetEvent())->GetSubEvent(iSubEv);
+		if ( !subEv ) continue;
 		
-		for (Int_t iEquip = 0; iEquip < SubEv->GetNEquipments(); iEquip++)
+		for (Int_t iEquip = 0; iEquip < subEv->GetNEquipments(); iEquip++)
 		{
-			Int_t eqId = SubEv->GetEquipment(iEquip)->GetEquipmentHeader()->GetId();
+			Int_t eqId = subEv->GetEquipment(iEquip)->GetEquipmentHeader()->GetId();
 			
-			if (eqId == kSTUEqId) STUin = kTRUE;
+			if (eqId == kSTUEqId) isSTUin = kTRUE;
 		}
 	}
 	
 	fRawReader->Reset();
 	
-	if (STUin && fSTURawStream && fSTURawStream->ReadPayLoad())
+	if (isSTUin && fSTURawStream && fSTURawStream->ReadPayLoad())
 	{
 		fTriggerData->SetL1DataDecoded(1);
 		
@@ -506,7 +509,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 //_______________
 void AliEMCALTriggerRawDigitMaker::Reset()
 {
-	//	
+	// Reset
+	
 	for (Int_t i = 0; i < 3072; i++) fRawDigitIndex[i] = -1;
 }
 

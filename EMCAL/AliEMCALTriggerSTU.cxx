@@ -49,7 +49,7 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU() : AliEMCALTriggerBoard()
 ,fJetTh(0)
 ,fDCSConfig(0x0)
 {
-	//
+	// Ctor
 }
 
 //_______________
@@ -58,26 +58,28 @@ AliEMCALTriggerSTU::AliEMCALTriggerSTU(AliEMCALTriggerSTUDCSConfig *dcsConf, con
 ,fJetTh(0)
 ,fDCSConfig(dcsConf)
 {
-	//
+	// Ctor
 }
 
 //_______________
 AliEMCALTriggerSTU::~AliEMCALTriggerSTU()
 {
-	//
+	// Dtor
 }
 
 //_______________
 Int_t AliEMCALTriggerSTU::GetRawData() const
 {
-	//
+	// Get raw data
+	
 	return fDCSConfig->GetRawData();
 }
 
 //_______________
 void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVector2* rSize )
 {
-	//
+	// Build
+	
 	str.ToLower();
 	
 	Int_t ix = (iTRU % 2) ? 24 : 0;
@@ -108,7 +110,8 @@ void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVect
 //_______________
 void AliEMCALTriggerSTU::L1(TriggerType_t type)
 {
-	//
+	// L1
+	
 	TVector2 s1, s2, s3, s4;
 	fDCSConfig->GetSegmentation(s1, s2, s3, s4);
 	
@@ -134,7 +137,8 @@ void AliEMCALTriggerSTU::L1(TriggerType_t type)
 //________________
 void AliEMCALTriggerSTU::PrintADC( TriggerType_t type, TVector2& pos, TVector2& idx )
 {
-	//
+	// Dump
+	
 	Int_t ix = (Int_t) (( pos.X() + fPatchSize->X() ) * fSubRegionSize->X());
 	
 	Int_t iy = (Int_t) (( pos.Y() + fPatchSize->Y() ) * fSubRegionSize->Y());
@@ -213,6 +217,8 @@ void AliEMCALTriggerSTU::PrintADC( TriggerType_t type, TVector2& pos, TVector2& 
 //___________
 void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 {
+	// Patch generator
+	
 	ZeroRegion();
 	
 	Int_t vTRU[32][24][4] ;//= {0};
@@ -283,7 +289,8 @@ void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 //___________
 void AliEMCALTriggerSTU::ComputeThFromV0(const Int_t M[])
 {
-	//
+	// Compute threshold from V0
+	
 	if (!(M[0] + M[1])) AliWarning("V0A + V0C is null!"); // 0/1: V0C/V0A
 
 	
@@ -295,6 +302,8 @@ void AliEMCALTriggerSTU::ComputeThFromV0(const Int_t M[])
 //___________
 void AliEMCALTriggerSTU::SetThreshold(TriggerType_t type, Int_t v)
 {
+	// Set threshold
+	
 	switch (type)
 	{
 		case kL1Gamma:
@@ -333,5 +342,7 @@ Int_t AliEMCALTriggerSTU::GetThreshold(TriggerType_t type)
 //__________
 void AliEMCALTriggerSTU::Reset()
 {
+	// Reset
+	
 	fPatches->Delete();
 }

@@ -57,7 +57,7 @@ private:
 	AliEMCALTriggerSTURawStream(const AliEMCALTriggerSTURawStream& rhs);
     AliEMCALTriggerSTURawStream& operator = (const AliEMCALTriggerSTURawStream& rhs);
 
-    UShort_t GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C);
+    UShort_t GetThreshold(Short_t A, Short_t B, Short_t C, UShort_t V0A, UShort_t V0C) const;
 
     AliRawReader* fRawReader;   // object for reading the raw data
 

@@ -11,7 +11,8 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 */
 
 #include "TObject.h"
-#include "TVector2.h"
+
+class TVector2;
 
 class AliEMCALTriggerSTUDCSConfig : public TObject 
 {
@@ -49,15 +50,15 @@ protected:
 
 private:
 	
-  Int_t   fGA;         //
-  Int_t   fGB;         //
-  Int_t   fGC;         //
-  Int_t   fJA;         //
-  Int_t   fJB;         //
-  Int_t   fJC;         //
-  Int_t   fGetRawData; //
-  Int_t   fRegion;     //
-  Int_t   fFw;         //
+  Int_t   fGA;         // GA
+  Int_t   fGB;         // GB
+  Int_t   fGC;         // GC
+  Int_t   fJA;         // JA
+  Int_t   fJB;         // JB
+  Int_t   fJC;         // JC
+  Int_t   fGetRawData; // GetRawData
+  Int_t   fRegion;     // Region
+  Int_t   fFw;         // Fw
   
   ClassDef(AliEMCALTriggerSTUDCSConfig,1) //
 };
