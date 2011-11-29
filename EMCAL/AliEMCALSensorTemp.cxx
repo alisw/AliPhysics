@@ -89,7 +89,8 @@ TClonesArray * AliEMCALSensorTemp::ReadList(const char *fname,
 //______________________________________________________________________________________________
 
 TClonesArray * AliEMCALSensorTemp::ReadTree(TTree *tree, 
-                                          const TString& amandaString) {
+                                          const TString& amandaString) 
+{ // read selected info from TTree
   
   Int_t nentries = tree->GetEntries();
   Int_t sensor=0;

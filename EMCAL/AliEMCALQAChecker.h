@@ -65,28 +65,28 @@ public:
 
 protected:
 		
-	virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,  const AliDetectorRecoParam * /*recoParam*/) ;
-	//virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
+  virtual void Check( Double_t * test, AliQAv1::ALITASK_t index, TObjArray ** list,  const AliDetectorRecoParam * /*recoParam*/) ;
+  //virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;	
 	
   void CheckRaws(Double_t* test, TObjArray ** list);
-  void CheckRecPoints(Double_t* /*test*/, TObjArray** /*list*/){;}
-  void CheckESD(Double_t* /*test*/, TObjArray** /*list*/){;}
-	TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
-	Double_t MarkHisto(TH1& histo, Double_t value) const;
+  void CheckRecPoints(Double_t* /*test*/, TObjArray** /*list*/) const {;}
+  void CheckESD(Double_t* /*test*/, TObjArray** /*list*/) const {;}
+  TH1* GetHisto(TObjArray* list, const char* hname, Int_t specie) const;
+  Double_t MarkHisto(TH1& histo, Double_t value) const;
 	
 	
 private:
 	//TH1F * htemp; //a tempory histrogram for getting the mean and sigma
 	//Double_t fMean; //mean value 
 	//Double_t fWidth; //sigma of the distribution
-  static const Int_t fknSM = 10;    //! number of current SM
+  static const Int_t fgknSM = 10;    //! number of current SM
 //  TLine **     fLine       ; //! line to distinguish the different SM
 //  TLine **     fHref       ; //! Line marking the average value for each SM
   TText **    fTextSM        ; //! Text info for each SM
   TLine *     fLineCol       ; //! line to distinguish the different SM side: A side and C side
   TLine *     fLineRow[4]       ; //! line to distinguish the different SM sectors (0-4) 
   TPaveText * fText          ;  //! Information text for the quality of each SM
-  ClassDef(AliEMCALQAChecker,3)  // description 
+  ClassDef(AliEMCALQAChecker,4)  // description 
 
 };
 

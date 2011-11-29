@@ -1,5 +1,5 @@
-#ifndef ALIEMCALQADataMakerRec_H
-#define ALIEMCALQADataMakerRec_H
+#ifndef ALIEMCALQADATAMAKERREC_H
+#define ALIEMCALQADATAMAKERREC_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
@@ -135,7 +135,7 @@ public:
   virtual void   MakeDigits(TTree * digTree) ; 
   virtual void   MakeRecPoints(TTree * recpoTree) ; 
   virtual void   MakeRaws(AliRawReader* rawReader) ;
-	void					 MakeRawsSTU(AliRawReader* rawReader);
+  virtual void	 MakeRawsSTU(AliRawReader* rawReader);
   virtual void   StartOfDetectorCycle() ; 
 
 private:
@@ -175,4 +175,4 @@ private:
 
 };
 
-#endif // AliEMCALQADataMakerRec_H
+#endif // AliEMCALQADATAMAKERREC_H

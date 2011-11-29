@@ -47,8 +47,8 @@ public:
   // Event processing methods:
   Bool_t ProcessEvent(AliRawReader *rawReader);
   Bool_t ProcessEvent(AliCaloRawStreamV3 *in, UInt_t Timestamp); // added header for time info
-  Bool_t CheckFractionAboveAmp(const int *AmpVal, int resultArray[]); // check fraction of signals to check for LED events
-  Bool_t CheckLEDRefAboveAmp(const int *AmpVal, int resultArray[]); // check if LED Ref is also above cut
+  Bool_t CheckFractionAboveAmp(const int *AmpVal, int resultArray[]) const; // check fraction of signals to check for LED events
+  Bool_t CheckLEDRefAboveAmp(const int *AmpVal, int resultArray[]) const; // check if LED Ref is also above cut
 
   // Mapping handling
   AliCaloAltroMapping **GetAltroMapping() const { return fMapping; };
@@ -75,7 +75,7 @@ public:
   int GetNLowGain(int towId) const { return fNLowGain[towId];};	//!
 
   // also for LED reference
-  int GetNRef(const int imod, const int istripMod, const int igain) //!
+  int GetNRef(const int imod, const int istripMod, const int igain) const //!
     { int refId = GetRefNum(imod, istripMod, igain); return fNRef[refId];}; //!
   int GetNRef(int refId) const { return fNRef[refId];}; //!
 

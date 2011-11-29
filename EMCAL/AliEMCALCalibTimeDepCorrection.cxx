@@ -370,7 +370,7 @@ AliEMCALCalibTimeDepCorrection::~AliEMCALCalibTimeDepCorrection()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibTimeDepCorrection * AliEMCALCalibTimeDepCorrection::GetSuperModuleCalibTimeDepCorrectionNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleCalibTimeDepCorrection * t = (AliEMCALSuperModuleCalibTimeDepCorrection*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

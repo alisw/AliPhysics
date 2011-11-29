@@ -37,9 +37,9 @@ public:
   static const int fgkEMCALTRURows   = 4;
   static const int fgkEMCALTRUCols   = 24;
 
-	//STU numbers
-	static const int fgkEMCALSTUCols = 48;
-	static const int fgkEMCALSTURows = 64;
+  //STU numbers
+  static const int fgkEMCALSTUCols = 48; // STU columns
+  static const int fgkEMCALSTURows = 64; // STU rows
   
   // RAW/AliCaloAltroMapping provides the correspondence information between
   // an electronics HWAddress (Branch<<1 | FEC<<7 | ALTRO<<4 | Channel) 

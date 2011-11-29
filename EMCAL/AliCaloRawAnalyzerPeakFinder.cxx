@@ -269,8 +269,7 @@ AliCaloRawAnalyzerPeakFinder::LoadVectorsOCDB()
 
 void   
 AliCaloRawAnalyzerPeakFinder::WriteRootFile() const
-{
-  // Utility function to write Peak-Finder vectors to an root file
+{ // Utility function to write Peak-Finder vectors to an root file
   // The output is used to create an OCDB entry.
   fPeakFinderVectors->PrintVectors();
   TFile *f = new TFile("peakfindervectors2.root",  "recreate" );
@@ -282,7 +281,7 @@ AliCaloRawAnalyzerPeakFinder::WriteRootFile() const
 
 void 
 AliCaloRawAnalyzerPeakFinder::PrintVectors()
-{
+{ // Utility function to write Peak-Finder vectors 
   for(int i=0; i < 20; i++)
     {
       for( int j = 0; j < PF::MAXSTART; j ++ )

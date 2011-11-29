@@ -1120,150 +1120,137 @@ void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globC
   // output global row/collumn position (0,0 = SMA0, phi = 0, |eta| = max)
   globRow = mrow + drow + trow;
   globColumn = mcol + tcol;
-	return;
+  return;
 
 }
 //____________________________________________________________________________ 
-void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader){
-
-	AliEMCALTriggerSTURawStream* inSTU = new AliEMCALTriggerSTURawStream(rawReader);
+void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
+{ // STU specifics
+  AliEMCALTriggerSTURawStream* inSTU = new AliEMCALTriggerSTURawStream(rawReader);
 	
-	rawReader->Reset();
-	rawReader->Select("EMCAL", 44);
+  rawReader->Reset();
+  rawReader->Select("EMCAL", 44);
 
-	
-	//L1 segmentation
-	Int_t sizeL1gsubr = 1;
-	Int_t sizeL1gpatch = 2; 
-	Int_t sizeL1jsubr = 4; 
+  //L1 segmentation
+  Int_t sizeL1gsubr = 1;
+  Int_t sizeL1gpatch = 2; 
+  Int_t sizeL1jsubr = 4; 
 
-     Int_t EMCALtrig[AliEMCALGeoParams::fgkEMCALSTUCols][AliEMCALGeoParams::fgkEMCALSTURows];
-
-		memset(EMCALtrig, 0, sizeof(int) * AliEMCALGeoParams::fgkEMCALSTUCols * AliEMCALGeoParams::fgkEMCALSTURows);
+  Int_t iEMCALtrig[AliEMCALGeoParams::fgkEMCALSTUCols][AliEMCALGeoParams::fgkEMCALSTURows];
+  memset(iEMCALtrig, 0, sizeof(int) * AliEMCALGeoParams::fgkEMCALSTUCols * AliEMCALGeoParams::fgkEMCALSTURows);
 		
+  if (inSTU->ReadPayLoad()) 
+    {
+      //Fw version (use in case of change in L1 jet 
+      Int_t fw = inSTU->GetFwVersion();
+      Int_t sizeL1jpatch = 2+(fw >> 16);
 
-	
-		
-     if (inSTU->ReadPayLoad()) 
+      //To check link
+      Int_t mask = inSTU->GetFrameReceived();
+
+      for (int i = 0; i < 32; i++)
 	{
-			
-	  //Fw version (use in case of change in L1 jet 
-	  Int_t fw = inSTU->GetFwVersion();
-	  Int_t sizeL1jpatch = 2+(fw >> 16);
-
-	  //To check link
-	
-	  Int_t mask = inSTU->GetFrameReceived();
-
-
-	  for (int i = 0; i < 32; i++)
-	    {
-              if ((mask >> i) & 0x1) FillRawsData(kSTUTRU, i);
-	    }
-
-
-	  //V0 signal in STU
-	  Int_t V0Sig = inSTU->GetV0A()+inSTU->GetV0C();
-			
-	  //FastOR amplitude receive from TRU
-	  for (Int_t i = 0; i < 32; i++)
-	    {
-	      UInt_t adc[96];
-	      for (Int_t j = 0; j < 96; j++) adc[j] = 0;
-				
-	      inSTU->GetADC(i, adc);
-				
-	      Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i);
-				
-	      for (Int_t j = 0; j < 96; j++)
-		{
-		  Int_t idx;
-		  fGeom->GetAbsFastORIndexFromTRU(iTRU, j, idx);
-				
-		  Int_t px, py;
-		  fGeom->GetPositionInEMCALFromAbsFastORIndex(idx, px, py);
-					
-		  EMCALtrig[px][py] = adc[j];
-		}
-	    }
-			
-	  //L1 Gamma patches
-	  Int_t iTRU_STU, x, y;
-	  for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(); i++)
-	    {
-	      if (inSTU->GetL1GammaPatch(i, iTRU_STU, x, y)) // col (0..23), row (0..3)
-		{
-		  Int_t iTRU;
-		  iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRU_STU);
-					
-		  Int_t etaG = 23-x, phiG = y + 4 * int(iTRU/2); //position in EMCal
-					
-		  if (iTRU%2) etaG += 24; //C-side
-					
-		  etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
-				
-		  //Position of patch L1G (bottom-left FastOR of the patch)
-			FillRawsData(kGL1, etaG, phiG);
-					
-		  //loop to sum amplitude of FOR in the gamma patch
-		  Int_t L1G_PatchAmp = 0;
-		  for (Int_t L1Gx = 0; L1Gx < sizeL1gpatch; L1Gx ++)
-		    {
-		      for (Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
-			{
-			  if (etaG+L1Gx < 48 && phiG+L1Gy < 64) L1G_PatchAmp += EMCALtrig[etaG+L1Gx][phiG+L1Gy];
-			  //cout << EMCALtrig[etaG+L1Gx][phiG+L1Gy] << endl;
-			}
-		    }
-			
-		  //if (L1G_PatchAmp > 500) cout << "L1G amp =" << L1G_PatchAmp << endl;
-			FillRawsData(kGL1V0, V0Sig, L1G_PatchAmp);
-					
-		}
-	    }
-		
-			
-	  //L1 Jet patches
-	  for (Int_t i = 0; i < inSTU->GetNL1JetPatch(); i++)
-	    {
-	      if (inSTU->GetL1JetPatch(i, x, y)) // col (0,15), row (0,11)
-		{
-				
-		  Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1);
-		  Int_t phiJ = sizeL1jsubr * (15-x-sizeL1jpatch + 1);
-					
-		  //position of patch L1J (FOR bottom-left)
-			FillRawsData(kJL1, etaJ, phiJ);
-					
-		  //loop the sum aplitude of FOR in the jet patch
-		  Int_t L1J_PatchAmp = 0;
-		  for (Int_t L1Jx = 0; L1Jx < sizeL1jpatch*4; L1Jx ++)
-		    {
-		      for (Int_t L1Jy = 0; L1Jy < sizeL1jpatch*4; L1Jy ++)
-			{
-			  if (etaJ+L1Jx < 48 && phiJ+L1Jy < 64) L1J_PatchAmp += EMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
-			}
-		    }
-		
-		  //cout << "L1J amp =" << L1J_PatchAmp << endl;
-			FillRawsData(kJL1V0, V0Sig, L1J_PatchAmp);
-					
-		}
-	    }
-
+	  if ((mask >> i) & 0x1) FillRawsData(kSTUTRU, i);
 	}
-		
-     //Fill FOR amplitude histo
-     for (Int_t i = 0; i < 48; i++)
+
+      //V0 signal in STU
+      Int_t iV0Sig = inSTU->GetV0A()+inSTU->GetV0C();
+      
+      //FastOR amplitude receive from TRU
+      for (Int_t i = 0; i < 32; i++)
 	{
-	  for (Int_t j = 0; j < 60; j++)
+	  UInt_t adc[96];
+	  for (Int_t j = 0; j < 96; j++) adc[j] = 0;
+	  
+	  inSTU->GetADC(i, adc);
+	  
+	  Int_t iTRU = fGeom->GetTRUIndexFromSTUIndex(i);
+				
+	  for (Int_t j = 0; j < 96; j++)
 	    {
-	      if (EMCALtrig[i][j] != 0) FillRawsData(kAmpL1, i, j, EMCALtrig[i][j]);
+	      Int_t idx;
+	      fGeom->GetAbsFastORIndexFromTRU(iTRU, j, idx);
+				
+	      Int_t px, py;
+	      fGeom->GetPositionInEMCALFromAbsFastORIndex(idx, px, py);
+					
+	      iEMCALtrig[px][py] = adc[j];
+	    }
+	}
+			
+      //L1 Gamma patches
+      Int_t iTRUSTU, x, y;
+      for (Int_t i = 0; i < inSTU->GetNL1GammaPatch(); i++)
+	{
+	  if (inSTU->GetL1GammaPatch(i, iTRUSTU, x, y)) // col (0..23), row (0..3)
+	    {
+	      Int_t iTRU;
+	      iTRU = fGeom->GetTRUIndexFromSTUIndex(iTRUSTU);
+	      
+	      Int_t etaG = 23-x, phiG = y + 4 * int(iTRU/2); //position in EMCal
+	      if (iTRU%2) etaG += 24; //C-side
+					
+	      etaG = etaG - sizeL1gsubr * sizeL1gpatch + 1;
+				
+	      //Position of patch L1G (bottom-left FastOR of the patch)
+	      FillRawsData(kGL1, etaG, phiG);
+					
+	      //loop to sum amplitude of FOR in the gamma patch
+	      Int_t L1GPatchAmp = 0;
+	      for (Int_t L1Gx = 0; L1Gx < sizeL1gpatch; L1Gx ++)
+		{
+		  for (Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
+		    {
+		      if (etaG+L1Gx < 48 && phiG+L1Gy < 64) L1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
+		      //cout << iEMCALtrig[etaG+L1Gx][phiG+L1Gy] << endl;
+		    }
+		}
+	      
+	      //if (L1GPatchAmp > 500) cout << "L1G amp =" << L1GPatchAmp << endl;
+	      FillRawsData(kGL1V0, iV0Sig, L1GPatchAmp);
+	      
 	    }
 	}
 		
-	delete inSTU;
-	return;
+      //L1 Jet patches
+      for (Int_t i = 0; i < inSTU->GetNL1JetPatch(); i++)
+	{
+	  if (inSTU->GetL1JetPatch(i, x, y)) // col (0,15), row (0,11)
+	    {
+	      
+	      Int_t etaJ = sizeL1jsubr * (11-y-sizeL1jpatch + 1);
+	      Int_t phiJ = sizeL1jsubr * (15-x-sizeL1jpatch + 1);
+	      
+	      //position of patch L1J (FOR bottom-left)
+	      FillRawsData(kJL1, etaJ, phiJ);
+					
+	      //loop the sum aplitude of FOR in the jet patch
+	      Int_t L1JPatchAmp = 0;
+	      for (Int_t L1Jx = 0; L1Jx < sizeL1jpatch*4; L1Jx ++)
+		{
+		  for (Int_t L1Jy = 0; L1Jy < sizeL1jpatch*4; L1Jy ++)
+		    {
+		      if (etaJ+L1Jx < 48 && phiJ+L1Jy < 64) L1JPatchAmp += iEMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
+		    }
+		}
+		
+	      //cout << "L1J amp =" << L1JPatchAmp << endl;
+	      FillRawsData(kJL1V0, iV0Sig, L1JPatchAmp);
+	    }
+	}
+    }
+		
+  //Fill FOR amplitude histo
+  for (Int_t i = 0; i < 48; i++)
+    {
+      for (Int_t j = 0; j < 60; j++)
+	{
+	  if (iEMCALtrig[i][j] != 0) FillRawsData(kAmpL1, i, j, iEMCALtrig[i][j]);
+	}
+    }
+  
+  delete inSTU;
+  return;
 }
 
 

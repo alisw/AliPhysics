@@ -439,7 +439,7 @@ AliEMCALCalibReference::~AliEMCALCalibReference()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibReference * AliEMCALCalibReference::GetSuperModuleCalibReferenceNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleCalibReference * t = (AliEMCALSuperModuleCalibReference*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

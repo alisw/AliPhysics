@@ -247,7 +247,7 @@ void AliCaloCalibSignal::Zero()
 
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal, 
-						 int resultArray[])
+						 int resultArray[]) const
 { // check fraction of towers, per column, that are above amplitude cut
   Bool_t returnCode = false;
     
@@ -283,7 +283,7 @@ Bool_t AliCaloCalibSignal::CheckFractionAboveAmp(const int *iAmpVal,
 
 //_____________________________________________________________________
 Bool_t AliCaloCalibSignal::CheckLEDRefAboveAmp(const int *iAmpVal, 
-					       int resultArray[])
+					       int resultArray[]) const
 { // check which LEDRef/Mon strips are above amplitude cut
   Bool_t returnCode = false;
     

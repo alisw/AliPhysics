@@ -51,7 +51,7 @@ class  AliCaloRawAnalyzerComparison
 
   void IntiHistograms( std::vector <AliCaloRawAnalyzer*> analyzers, AliCaloRawAnalyzer* ref );
 
-  TH1D *fAmpHistograms[NANALYZERS][NZCOLSSMOD][NXROWSSMOD];
+  TH1D *fAmpHistograms[NANALYZERS][NZCOLSSMOD][NXROWSSMOD]; // amplitude histos
 
   TH2D *fAmplitudeVsEvent[NANALYZERS];  // Amplitude vs envent number
   TH2D *fTofVsEvent[NANALYZERS];        // Tof vs event number

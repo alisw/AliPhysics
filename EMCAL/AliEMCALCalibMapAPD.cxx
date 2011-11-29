@@ -334,7 +334,7 @@ AliEMCALCalibMapAPD::~AliEMCALCalibMapAPD()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibMapAPD * AliEMCALCalibMapAPD::GetSuperModuleCalibMapAPDNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleCalibMapAPD * t = (AliEMCALSuperModuleCalibMapAPD*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

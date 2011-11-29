@@ -284,7 +284,7 @@ AliEMCALBiasAPD::~AliEMCALBiasAPD()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleBiasAPD * AliEMCALBiasAPD::GetSuperModuleBiasAPDNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleBiasAPD * t = (AliEMCALSuperModuleBiasAPD*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

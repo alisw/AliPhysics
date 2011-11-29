@@ -333,7 +333,7 @@ AliEMCALCalibAbs::~AliEMCALCalibAbs()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibAbs * AliEMCALCalibAbs::GetSuperModuleCalibAbsNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleCalibAbs * t = (AliEMCALSuperModuleCalibAbs*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

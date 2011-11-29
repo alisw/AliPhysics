@@ -38,8 +38,8 @@ class AliEMCALSuperModuleCalibTimeDepCorrection : public TObject {
     { return &fCorrection[icol][irow]; };
 
  private:
-  Int_t fSuperModuleNum;
-  TArrayF fCorrection[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; 
+  Int_t fSuperModuleNum; // SM id
+  TArrayF fCorrection[AliEMCALGeoParams::fgkEMCALCols][AliEMCALGeoParams::fgkEMCALRows]; // values
 
   ClassDef(AliEMCALSuperModuleCalibTimeDepCorrection, 2) // help class
 };

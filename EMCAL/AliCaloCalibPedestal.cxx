@@ -361,9 +361,8 @@ AliCaloCalibPedestal& AliCaloCalibPedestal::operator = (AliCaloCalibPedestal &so
 
 //_____________________________________________________________________
 void AliCaloCalibPedestal::Reset()
-{
+{   // Reset all arrays/histograms
   ValidateProfiles(); // make sure histos/profiles exist
-  // Reset all arrays/histograms
   for (int i = 0; i < fModules; i++) {
     GetPedProfileLowGain(i)->Reset();
     GetPedProfileHighGain(i)->Reset();
@@ -756,7 +755,7 @@ Bool_t AliCaloCalibPedestal::LoadReferenceCalib(TString fileName, TString object
 
 //_____________________________________________________________________
 Bool_t AliCaloCalibPedestal::SetReference(AliCaloCalibPedestal *ref)
-{
+{ // set reference object
   if (fReference) delete fReference;//Delete the reference object, if it already exists
   fReference = 0;
   
@@ -891,8 +890,7 @@ void AliCaloCalibPedestal::ValidateComparisonProfiles()
 
 //_____________________________________________________________________
 void AliCaloCalibPedestal::ComputeDiffAndRatio()
-{
-  // calculate differences and ratios relative to a reference
+{ // calculate differences and ratios relative to a reference
   ValidateProfiles(); // make sure histos/profiles exist
   ValidateComparisonProfiles();//Make sure the comparison histos exist
  

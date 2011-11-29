@@ -308,7 +308,7 @@ AliEMCALCalibTempCoeff::~AliEMCALCalibTempCoeff()
 
 //____________________________________________________________________________
 AliEMCALSuperModuleCalibTempCoeff * AliEMCALCalibTempCoeff::GetSuperModuleCalibTempCoeffNum(Int_t supModIndex)const
-{
+{ // getter via index
   for (int i=0; i<fNSuperModule; i++) {
     AliEMCALSuperModuleCalibTempCoeff * t = (AliEMCALSuperModuleCalibTempCoeff*) fSuperModuleData[i];
     if (t->GetSuperModuleNum() == supModIndex) {

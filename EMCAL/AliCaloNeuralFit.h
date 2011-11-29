@@ -23,7 +23,7 @@ public:
    AliCaloNeuralFit(): fInput0(0.0), fInput1(0.0), fInput2(0.0), fInput3(0.0), fInput4(0.0) {}
    ~AliCaloNeuralFit() {}
    Double_t Value(int index, Double_t in0, Double_t in1, Double_t in2, Double_t in3, Double_t in4);
-   Double_t Value(int index, Double_t* input) { return Value(index, input[0], input[1], input[2], input[3], input[4]); }
+   Double_t Value(int index, const Double_t* input) { return Value(index, input[0], input[1], input[2], input[3], input[4]); }
 private:
    Double_t fInput0;   // neural network input neuron #1
    Double_t fInput1;   // neural network input neuron #2

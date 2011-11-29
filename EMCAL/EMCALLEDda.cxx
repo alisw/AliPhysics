@@ -59,7 +59,7 @@ extern "C" {
   Arguments: list of DATE raw data files
 */
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) { // Main routine, EMC signal detector algorithm 
 
   AliLog::SetClassDebugLevel("AliCaloRawStreamV3",-5);
   AliLog::SetClassDebugLevel("AliRawReaderDate",-5);

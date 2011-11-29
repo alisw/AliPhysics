@@ -54,7 +54,7 @@ ClassImp(AliEMCALQAChecker)
 //__________________________________________________________________
 AliEMCALQAChecker::AliEMCALQAChecker() : 
 AliQACheckerBase("EMCAL","EMCAL Quality Assurance Data Maker"),
-fTextSM(new TText*[fknSM]),
+fTextSM(new TText*[fgknSM]),
 fLineCol(new TLine(47.5,-0.5,47.5,119.5)),
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
@@ -96,12 +96,12 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
 //__________________________________________________________________
 AliEMCALQAChecker::AliEMCALQAChecker(const AliEMCALQAChecker& qac) : 
 AliQACheckerBase(qac.GetName(), qac.GetTitle()), 
-fTextSM(new TText*[fknSM]) ,
+fTextSM(new TText*[fgknSM]) ,
 fLineCol(static_cast<TLine*>(qac.fLineCol->Clone())) , 
 fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 {
    // copy ctor 
-  for (Int_t sm = 0 ; sm < fknSM ; sm++){
+  for (Int_t sm = 0 ; sm < fgknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
 	for(Int_t i = 0 ; i < 4 ; i++) {
@@ -113,10 +113,10 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
 {
   AliQACheckerBase(qac.GetName(), qac.GetTitle()); 
-  fTextSM  = new TText*[fknSM] ;
+  fTextSM  = new TText*[fgknSM] ;
   fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
   fText    = new TPaveText(0.2,0.7,0.8,0.9,"NDC") ;
-  for (Int_t sm = 0 ; sm < fknSM ; sm++){
+  for (Int_t sm = 0 ; sm < fgknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
 	for(Int_t i = 0; i < 4; i++) {
@@ -189,7 +189,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
    				
   //Float_t kThreshold = 80. ; 
   Int_t nTowersPerSM = 24*48; // number of towers in a SuperModule; 24x48
-  Double_t nTot = fknSM * nTowersPerSM ;
+  Double_t nTot = fgknSM * nTowersPerSM ;
   TList *lstF = 0;
   for (Int_t specie = 0 ; specie < AliRecoParam::kNSpecies ; specie++) {
     test[specie] = 0.0 ; 
@@ -221,7 +221,7 @@ void AliEMCALQAChecker::CheckRaws(Double_t * test, TObjArray ** list)
 	lstF->Add(fLineRow[iLine]->Clone());
       } 
       //Now adding the text to for each SM
-      for(Int_t iSM = 0 ; iSM < fknSM ; iSM++){  //number of SMs loop start
+      for(Int_t iSM = 0 ; iSM < fgknSM ; iSM++){  //number of SMs loop start
 	lstF->Add(fTextSM[iSM]->Clone()); 
       }
       //
