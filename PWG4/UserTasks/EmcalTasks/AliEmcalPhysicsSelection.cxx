@@ -1,4 +1,8 @@
-/* $Id$ */
+// $Id$
+//
+// Emcal physics selection class
+//
+//
 
 #include "AliEmcalPhysicsSelection.h"
 #include "AliESDEvent.h"
