@@ -63,11 +63,11 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     AliAnalysisTaskJetSpectrum(const AliAnalysisTaskJetSpectrum&);
     AliAnalysisTaskJetSpectrum& operator=(const AliAnalysisTaskJetSpectrum&);
     
-    static const Float_t fgkJetNpartCut[kMaxCorrelation];
+    static const Float_t fgkJetNpartCut[kMaxCorrelation]; // n Part cut
 
 
-    AliJetHeader *fJetHeaderRec;
-    AliJetHeader *fJetHeaderGen;
+    AliJetHeader *fJetHeaderRec; // store jet header for rec
+    AliJetHeader *fJetHeaderGen; // store jet header for rec
     AliAODEvent  *fAOD; // where we take the jets from can be input or output AOD
 
     TString       fBranchRec;  // AOD branch name for reconstructed
@@ -85,8 +85,8 @@ class AliAnalysisTaskJetSpectrum : public AliAnalysisTaskSE
     TH1F*         fh1PtHard;  // Pt har of the event...       
     TH1F*         fh1PtHardNoW;  // Pt har of the event...       
     TH1F*         fh1PtHardTrials;  // Number of trials 
-    TH1F*         fh1NGenJets;
-    TH1F*         fh1NRecJets;
+    TH1F*         fh1NGenJets; // Number of gen jets
+    TH1F*         fh1NRecJets; // Number of  rev jets
     TH1F*         fh1E[kMaxJets];       // Jet Energy       
     TH1F*         fh1PtRecIn[kMaxJets];       // Jet pt for all      
     TH1F*         fh1PtRecOut[kMaxJets];      // Jet pt with corellated generated jet    
