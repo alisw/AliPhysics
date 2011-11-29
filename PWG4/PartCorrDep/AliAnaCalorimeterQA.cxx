@@ -357,14 +357,13 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       
       //Check if the cell is a bad channel
       if(GetCaloUtils()->IsBadChannelsRemovalSwitchedOn()){
-        if(fCalorimeter=="EMCAL"){
+        if(fCalorimeter=="EMCAL")
+        {
           if(GetCaloUtils()->GetEMCALChannelStatus(nModule,icol,irow)) continue;
         }
-        else {
-          if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow)) {
-            printf("PHOS bad channel\n");
-            continue;
-          }
+        else 
+        {
+          if(GetCaloUtils()->GetPHOSChannelStatus(nModule,icol,irow) ) continue;
         }
       } // use bad channel map
       
