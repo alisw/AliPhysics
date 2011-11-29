@@ -115,12 +115,11 @@ private:
   Float_t           fMaxClusterE      ; // Maximum value for E cluster histograms
   
   //Constants needed by the class: EMCAL 
-  static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2; 
-  // total number of fake altro rows    in EMCAL
+  static const int  fgkFALTRORows = AliEMCALGeoParams::fgkEMCALRows*(AliEMCALGeoParams::fgkEMCALModules-7)/2;   // total number 
+  // of fake altro rows    in EMCAL
   // (ALTRO channels in one SM times 5 SM divided by 2 per FALTRO)
   
-  static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALCols;                                          
-  // total number of fake altro columns in EMCAL 
+  static const int  fgkFALTROCols = AliEMCALGeoParams::fgkEMCALCols; // total number of fake altro columns in EMCAL 
   // (ALTRO channels in one SM times 2 SM divided by 2 per FALTRO)
   
   
