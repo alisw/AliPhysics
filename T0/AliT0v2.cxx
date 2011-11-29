@@ -151,8 +151,9 @@ void AliT0v2::CreateMaterials()
    Int_t isxfld   = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Integ();
    Float_t sxmgmx = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->Max();
    
-   Float_t a, z, d, radl, absl, buf[1];
-   Int_t nbuf;
+   Double_t a, z, d, radl, absl;
+   TArrayT par;
+   
 
 // Scintillator CH
    Float_t 	ascin[2] = {1.01, 12.01};
@@ -193,11 +194,11 @@ void AliT0v2::CreateMaterials()
    
    AliMixture (3, "Al2O3   $", aal2o3, zal2o3, denscer, -2, wal2o3);
    AliMixture (4, "PMT glass   $", aglass, zglass, dglass, -2, wglass);
-   char namate[21]="";
-   gMC->Gfmate ((*fIdmate)[3], namate, a, z, d, radl, absl, buf, nbuf);
+   TString namate;
+   gMC->GetMaterial((*fIdmate)[3], namate, a, z, d, radl, absl, par);
    acer[0] = a;
    zcer[0] = z;
-   gMC->Gfmate ((*fIdmate)[4], namate, a, z, d, radl, absl, buf, nbuf);
+   gMC->GetMaterial((*fIdmate)[4], namate, a, z, d, radl, absl, par);
    acer[1] = a;
    zcer[1] = z;
    

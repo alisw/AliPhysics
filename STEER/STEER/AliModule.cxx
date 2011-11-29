@@ -171,7 +171,7 @@ void AliModule::AliMaterial(Int_t imat, const char* name, Float_t a,
     (*fIdmate)[imat]=kmat;
   }
 }
-  
+
 //_______________________________________________________________________
 void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a, 
                                Float_t &z, Float_t &dens, Float_t &radl,
@@ -191,12 +191,20 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
   // nwbuf       number of user words
   //
 
-  Float_t buf[10];
-  Int_t nwbuf, kmat;
-  kmat=(*fIdmate)[imat];
-  gMC->Gfmate(kmat, name, a, z, dens, radl, absl, buf, nwbuf);
+  Int_t kmat=(*fIdmate)[imat];
+  TString sname;
+  TArrayD par;
+  Double_t da, dz, ddens, dradl, dabsl;
+  gMC->GetMaterial(kmat, sname, da, dz, ddens, dradl, dabsl, par);
+
+  const char* chname = sname.Data();
+  strcpy(name, chname);
+  a = da;
+  z = dz;
+  dens = ddens;
+  radl = dradl;
+  absl = dabsl;
 }
-  
 
 //_______________________________________________________________________
 void AliModule::AliMixture(Int_t imat, const char *name, Float_t *a,
