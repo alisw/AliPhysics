@@ -42,31 +42,25 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
 	// reconstruction efficiency: pointing with rec jet axis into gen tracks 
 	if(iFlag&(1<<5)) ff = AddTaskFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODb", "AODMC2b", filterMask, 0.4,0,1000., eventClass);
 
-        // kt jets
-        // only reconstructed 
-	if(iFlag&(1<<10)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip00");
-        // charged MC tracks and jets
-	if(iFlag&(1<<11)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTKT", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass,"_Skip00");
-        // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<12)) ff = AddTaskFragmentationFunction("clustersAOD_KT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTKT", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip00");
 
-        // anti-kt jets
-	// Jet not background subtracted
-        // only reconstructed 
-	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "", "", "", filterMask, 0.4,0,150., eventClass, "_Skip00");
-        // charged MC tracks and jets
-	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,0,150.,eventClass, "_Skip00");
-        // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "jeteventbackground_clustersAOD_KT", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,0,150.,eventClass, "_Skip00");
 
+     	// Jet background subtracted
+	// anti-kt, pt cut 1 GeV
+	if(iFlag&(1<<20)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,1000.,eventClass, "_Skip00");
+	// anti-kt, pt cut 2 GeV
+	if(iFlag&(1<<21)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,2000.,eventClass, "_Skip00");
+	// anti-kt, pt cut 150 MeV
+	if(iFlag&(1<<22)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.2,2,150.,eventClass, "_Skip00");
+
+	
 	// Jet background subtracted
-	if(iFlag&(1<<23)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip00");
+	if(iFlag&(1<<23)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip00");
         // charged MC tracks and jets
-	if(iFlag&(1<<24)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,1,150.,eventClass, "_Skip00");
+	if(iFlag&(1<<24)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,2,150.,eventClass, "_Skip00");
         // charged MC tracks and jets with acceptance cuts
-	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,1,150., eventClass, "_Skip00");
+	if(iFlag&(1<<25)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,2,150., eventClass, "_Skip00");
 
-       if(iFlag&(1<<26)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip00");
+       if(iFlag&(1<<26)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip00");
 
        if(iFlag&(1<<27)) ff = AddTaskFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,3,150.,eventClass, "_Skip00");	
 
@@ -227,20 +221,26 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
   
    // Set default parameters 
    // Cut selection 
-   task->SetTrackCuts();       // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
+   
+   if((int)PtTrackMin == 2000)      task->SetTrackCuts(2.0, -0.9, 0.9, 0., 2*TMath::Pi());
+   else if((int)PtTrackMin == 1000) task->SetTrackCuts(1.0, -0.9, 0.9, 0., 2*TMath::Pi());
+   else                             task->SetTrackCuts();  // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
+
+
    task->SetJetCuts();         // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
    task->SetDiJetCuts();       // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
    task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
-   task->SetFFRadius();        // default: R = 0.4
+   if(radius <= 0.2) task->SetFFRadius(0.2); // R = 0.2   
+   else              task->SetFFRadius();    // default: R = 0.4
    task->SetFFBckgRadius();    // default: R = 0.7
    task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
-   task->SetIJMode(0);          // default: ijMode = 1
+   task->SetIJMode(0);         // default: ijMode = 1
    task->SetQAMode();          // default: qaMode = 3
    task->SetFFMode();          // default: ffMode = 1
    task->SetDJMode(0);          // default: djMode = 1
    task->SetEffMode(0);         // default: effMode = 1
    task->SetPhiCorrMode(0);     // default: phiCorrMode = 1
-   task->SetHighPtThreshold(); // default: pt > 5 Gev
+   task->SetHighPtThreshold();  // default: pt > 5 Gev
    task->UseRecEffRecJetPtBins(); // efficiency in bins of rec/gen jet pt - default: kTRUE  
 
    task->SetBckgMode(1);        // default: bgMode = 1 
@@ -248,7 +248,8 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetBranchRecBackClusters(Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00",filterMask));
 
    // Define histo bins
-   task->SetFFHistoBins();
+   task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7.,22,  0.,  1.1);
+
    task->SetQAJetHistoBins();
    task->SetQATrackHistoBins();
    task->SetIJHistoBins();
