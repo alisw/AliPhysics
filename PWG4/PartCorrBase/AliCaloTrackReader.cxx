@@ -28,7 +28,7 @@
 // --- ROOT system ---
 #include <TFile.h>
 
-//---- ANALYSIS system ----
+// ---- ANALYSIS system ----
 #include "AliMCEvent.h"
 #include "AliAODMCHeader.h"
 #include "AliGenPythiaEventHeader.h"
@@ -41,9 +41,14 @@
 #include "AliESDtrackCuts.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
+#include "AliVCaloCells.h"
 
-//---- PartCorr/EMCAL ---
-#include "AliEMCALRecoUtils.h"
+// ---- Detectors ----
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeometry.h"
+
+// ---- PartCorr ---
+#include "AliCalorimeterUtils.h"
 #include "AliCaloTrackReader.h"
 
 ClassImp(AliCaloTrackReader)
@@ -991,8 +996,9 @@ void AliCaloTrackReader::FillInputVZERO(){
 }
 
 
-//____________________________________________________________________________
-Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const {
+//___________________________________________________________________
+Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const 
+{
   // Check if it is a cluster from EMCAL. For old AODs cluster type has
   // different number and need to patch here
     
@@ -1008,8 +1014,9 @@ Bool_t AliCaloTrackReader::IsEMCALCluster(AliVCluster* cluster) const {
 
 }
 
-//____________________________________________________________________________
-Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const {
+//___________________________________________________________________
+Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const 
+{
   //Check if it is a cluster from PHOS.For old AODs cluster type has
   // different number and need to patch here
   
@@ -1026,8 +1033,9 @@ Bool_t AliCaloTrackReader::IsPHOSCluster(AliVCluster * cluster) const {
   
 }
 
-//____________________________________________________________________________
-Bool_t AliCaloTrackReader::CheckForPrimaryVertex(){
+//________________________________________________
+Bool_t AliCaloTrackReader::CheckForPrimaryVertex()
+{
   //Check if the vertex was well reconstructed, copy from V0Reader of conversion group
   //Only for ESDs ...
   
@@ -1055,5 +1063,14 @@ Bool_t AliCaloTrackReader::CheckForPrimaryVertex(){
   
 }
 
+//____________________________________________________________
+void  AliCaloTrackReader::SetTrackCuts(AliESDtrackCuts * cuts) 
+{ 
+  // Set Track cuts
+  
+  if(fESDtrackCuts) delete fESDtrackCuts ;
+  
+  fESDtrackCuts = cuts ; 
 
+}		  
 

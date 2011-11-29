@@ -29,13 +29,9 @@ class AliAODPWG4ParticleCorrelation ;
 class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
  public: 
+  
   AliAnaParticleHadronCorrelation() ; // default ctor
   virtual ~AliAnaParticleHadronCorrelation() {;} //virtual dtor
- private:  
-  AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
-  AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
-
- public:
   
   // General methods
   
@@ -53,9 +49,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
   // Main analysis methods
   
-  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, TObjArray* pl, const Bool_t bFillHisto) ;
+  Bool_t       MakeChargedCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
   
-  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, TObjArray* pl, const Bool_t bFillHisto) ;
+  Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
   
   void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle);
   
@@ -208,6 +204,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F *       fhMCPtTrigPout ;                //! add explanation
   TH2F *       fhMCPtAssocDeltaPhi  ;          //! Pout =associated pt*sin(delta phi) distribution
 
+  AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
+  AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
 	
   ClassDef(AliAnaParticleHadronCorrelation,8)
 } ;

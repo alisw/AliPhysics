@@ -27,12 +27,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaPartCorrBaseClass {
  public: 
   AliAnaInsideClusterInvariantMass() ; // default ctor
   virtual ~AliAnaInsideClusterInvariantMass() { ; } //virtual dtor
- private:
-  AliAnaInsideClusterInvariantMass(const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
-  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ;//cpy assignment
 
- public:  
-	
   Bool_t       AreNeighbours(const Int_t absId1, const Int_t absId2) const ;  
   
   TObjString * GetAnalysisCuts();
@@ -58,14 +53,14 @@ class AliAnaInsideClusterInvariantMass : public AliAnaPartCorrBaseClass {
 
   void         SetMinNCells(Float_t cut)     { fMinNCells   = cut  ; }
 
-  void         SplitEnergy(const Int_t absId1, const Int_t absId2, AliVCaloCells* cells,
+  void         SplitEnergy(const Int_t absId1, const Int_t absId2, const AliVCaloCells* cells,
                            Float_t & e1, Float_t & e2 );
   
   void         Print(const Option_t * opt) const;
 
   //For histograms
-  enum mcTypes { mcPhoton = 1, mcConversion = 2, mcPi0    = 3,  
-                 mcEta    = 4, mcElectron   = 5, mcHadron = 6 };
+  enum mcTypes { kmcPhoton = 1, kmcConversion = 2, kmcPi0    = 3,  
+                 kmcEta    = 4, kmcElectron   = 5, kmcHadron = 6 };
 
  private:
   
@@ -96,6 +91,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaPartCorrBaseClass {
 
   TH2F       * fhInvMassAllCells[7] ; //! Inv mass of all cells
 
+  AliAnaInsideClusterInvariantMass(const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
+  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ;//cpy assignment
   
   ClassDef(AliAnaInsideClusterInvariantMass,1)
   

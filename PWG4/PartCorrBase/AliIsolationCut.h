@@ -27,13 +27,9 @@ class AliCaloTrackReader ;
 class AliIsolationCut : public TObject {
   
  public: 
-  AliIsolationCut() ; // default ctor
-  virtual ~AliIsolationCut() {;} //virtual dtalr
- private:
-  AliIsolationCut(const AliIsolationCut & g) ; // cpy ctor
-  AliIsolationCut & operator = (const AliIsolationCut & g) ;//cpy assignment
-
- public: 
+  
+  AliIsolationCut() ;            // default ctor
+  virtual ~AliIsolationCut() {;} // virtual dtor
  
   // Enums 
   
@@ -47,7 +43,7 @@ class AliIsolationCut : public TObject {
   
   TString    GetICParametersList() ; 
   
-  void       MakeIsolationCut(TObjArray * const plCTS, TObjArray * const plNe, AliCaloTrackReader * const reader, 
+  void       MakeIsolationCut(const TObjArray * plCTS, const TObjArray * plNe, const AliCaloTrackReader * reader, 
                               const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  * pCandidate, const TString &aodObjArrayName,
                               Int_t &n, Int_t & nfrac, Float_t &ptsum, Bool_t & isolated) const ;  
   
@@ -83,7 +79,10 @@ class AliIsolationCut : public TObject {
                                // kSumPtFracIC:   Cone pt sum , fraction of cone sum, method
   Int_t      fPartInCone;      // Type of particles inside cone:
                                // kNeutralAndCharged, kOnlyNeutral, kOnlyCharged
-	                         
+
+  AliIsolationCut(const AliIsolationCut & g) ;               // cpy ctor
+  AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
+  
   ClassDef(AliIsolationCut,3)
 } ;
 

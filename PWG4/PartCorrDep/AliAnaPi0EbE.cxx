@@ -130,67 +130,67 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
   if(IsDataMC()) {
     //Photon1
     if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  ){
-      fhEMCLambda0[mcPi0]    ->Fill(e, l0);
-      fhEMCLambda1[mcPi0]    ->Fill(e, l1);
-      fhEMCDispersion[mcPi0] ->Fill(e, disp);
+      fhEMCLambda0[kmcPi0]    ->Fill(e, l0);
+      fhEMCLambda1[kmcPi0]    ->Fill(e, l1);
+      fhEMCDispersion[kmcPi0] ->Fill(e, disp);
       
-      fhEMCFracMaxCell[mcPi0]->Fill(e,maxCellFraction);  
+      fhEMCFracMaxCell[kmcPi0]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcPi0]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcPi0]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcPi0]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcPi0]->Fill(e, l0  );  
       
     }//pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ){
-      fhEMCLambda0[mcEta]    ->Fill(e, l0);
-      fhEMCLambda1[mcEta]    ->Fill(e, l1);
-      fhEMCDispersion[mcEta] ->Fill(e, disp);
-      fhEMCFracMaxCell[mcEta]->Fill(e,maxCellFraction);  
+      fhEMCLambda0[kmcEta]    ->Fill(e, l0);
+      fhEMCLambda1[kmcEta]    ->Fill(e, l1);
+      fhEMCDispersion[kmcEta] ->Fill(e, disp);
+      fhEMCFracMaxCell[kmcEta]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcEta]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcEta]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcEta]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcEta]->Fill(e, l0  );  
     }//eta          
     else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) &&
               GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) ){
-      fhEMCLambda0[mcConversion]    ->Fill(e, l0);
-      fhEMCLambda1[mcConversion]    ->Fill(e, l1);
-      fhEMCDispersion[mcConversion] ->Fill(e, disp);
-      fhEMCFracMaxCell[mcConversion]->Fill(e,maxCellFraction);  
+      fhEMCLambda0[kmcConversion]    ->Fill(e, l0);
+      fhEMCLambda1[kmcConversion]    ->Fill(e, l1);
+      fhEMCDispersion[kmcConversion] ->Fill(e, disp);
+      fhEMCFracMaxCell[kmcConversion]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcConversion]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcConversion]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcConversion]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcConversion]->Fill(e, l0  );  
     }//conversion photon
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) ){
-      fhEMCLambda0[mcPhoton]    ->Fill(e, l0);
-      fhEMCLambda1[mcPhoton]    ->Fill(e, l1);
-      fhEMCDispersion[mcPhoton] ->Fill(e, disp);
-      fhEMCFracMaxCell[mcPhoton]->Fill(e,maxCellFraction);  
+      fhEMCLambda0[kmcPhoton]    ->Fill(e, l0);
+      fhEMCLambda1[kmcPhoton]    ->Fill(e, l1);
+      fhEMCDispersion[kmcPhoton] ->Fill(e, disp);
+      fhEMCFracMaxCell[kmcPhoton]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcPhoton]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcPhoton]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcPhoton]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcPhoton]->Fill(e, l0  );  
     }//photon   no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)){
-      fhEMCLambda0[mcElectron]    ->Fill(e, l0);
-      fhEMCLambda1[mcElectron]    ->Fill(e, l1);
-      fhEMCDispersion[mcElectron] ->Fill(e, disp);
-      fhEMCFracMaxCell[mcElectron]->Fill(e,maxCellFraction);  
+      fhEMCLambda0[kmcElectron]    ->Fill(e, l0);
+      fhEMCLambda1[kmcElectron]    ->Fill(e, l1);
+      fhEMCDispersion[kmcElectron] ->Fill(e, disp);
+      fhEMCFracMaxCell[kmcElectron]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcElectron]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcElectron]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcElectron]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcElectron]->Fill(e, l0  );  
     }//electron
     else {
-      fhEMCLambda0[mcHadron]    ->Fill(e, l0);
-      fhEMCLambda1[mcHadron]    ->Fill(e, l1);
-      fhEMCDispersion[mcHadron] ->Fill(e, disp);
-      fhEMCFracMaxCell[mcHadron]->Fill(e,maxCellFraction);  
+      fhEMCLambda0[kmcHadron]    ->Fill(e, l0);
+      fhEMCLambda1[kmcHadron]    ->Fill(e, l1);
+      fhEMCDispersion[kmcHadron] ->Fill(e, disp);
+      fhEMCFracMaxCell[kmcHadron]->Fill(e,maxCellFraction);  
       if(fCalorimeter=="EMCAL" && nSM < 6) 
-        fhEMCLambda0NoTRD[mcHadron]->Fill(e, l0  );
+        fhEMCLambda0NoTRD[kmcHadron]->Fill(e, l0  );
       if(maxCellFraction < 0.5) 
-        fhEMCLambda0FracMaxCellCut[mcHadron]->Fill(e, l0  );  
+        fhEMCLambda0FracMaxCellCut[kmcHadron]->Fill(e, l0  );  
     }//other particles 
   }//MC
 }

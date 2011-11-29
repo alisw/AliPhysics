@@ -277,13 +277,13 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0) &&
        !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)){
-      fhMCELambda0[pidIndex][mcssPhoton]    ->Fill(energy, lambda0);
+      fhMCELambda0[pidIndex][kmcssPhoton]    ->Fill(energy, lambda0);
 
             
     }//photon   no conversion
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron && 
               !GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion))){
-      fhMCELambda0[pidIndex][mcssElectron]    ->Fill(energy, lambda0);
+      fhMCELambda0[pidIndex][kmcssElectron]    ->Fill(energy, lambda0);
        
       if(!GetReader()->IsEmbeddedClusterSelectionOn()){
         //Check particle overlaps in cluster
@@ -335,17 +335,17 @@ void  AliAnaElectron::FillShowerShapeHistograms(AliVCluster* cluster, const Int_
     }//electron
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCElectron) && 
                GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCConversion) ){
-      fhMCELambda0[pidIndex][mcssConversion]    ->Fill(energy, lambda0);      
+      fhMCELambda0[pidIndex][kmcssConversion]    ->Fill(energy, lambda0);      
     }//conversion photon
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPi0)  ){
-      fhMCELambda0[pidIndex][mcssPi0]    ->Fill(energy, lambda0);      
+      fhMCELambda0[pidIndex][kmcssPi0]    ->Fill(energy, lambda0);      
     }//pi0
     else if  ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCEta)  ){
-      fhMCELambda0[pidIndex][mcssEta]    ->Fill(energy, lambda0);
+      fhMCELambda0[pidIndex][kmcssEta]    ->Fill(energy, lambda0);
       
     }//eta    
     else {
-      fhMCELambda0[pidIndex][mcssOther]    ->Fill(energy, lambda0);      
+      fhMCELambda0[pidIndex][kmcssOther]    ->Fill(energy, lambda0);      
     }//other particles 
     
   }//MC data
@@ -932,7 +932,6 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     //PID selection via dEdx
     //-------------------------------------
     
-    Int_t pid  = AliCaloPID::kChargedHadron;
     AliVTrack *track = 0;
     if(!strcmp("AliESDCaloCluster",Form("%s",calo->ClassName()))){
       Int_t iESDtrack = calo->GetTrackMatchedIndex();
@@ -952,6 +951,8 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     Float_t dEdx = track->GetTPCsignal();
     fhdEdxvsE->Fill(calo->E(), dEdx);
     fhdEdxvsP->Fill(track->P(),dEdx);
+    
+    Int_t pid  = AliCaloPID::kChargedHadron;
     
     if( dEdx < fdEdxMax && dEdx > fdEdxMin) {
       
@@ -1151,113 +1152,113 @@ void  AliAnaElectron::MakeAnalysisFillHistograms()
       
       Int_t tag =ph->GetTag();
       
-      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[pidIndex][mcPhoton])
+      if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && fhMCE[pidIndex][kmcPhoton])
       {
-        fhMCE  [pidIndex][mcPhoton] ->Fill(ecluster);
-        fhMCPt [pidIndex][mcPhoton] ->Fill(ptcluster);
-        fhMCPhi[pidIndex][mcPhoton] ->Fill(ecluster,phicluster);
-        fhMCEta[pidIndex][mcPhoton] ->Fill(ecluster,etacluster);
+        fhMCE  [pidIndex][kmcPhoton] ->Fill(ecluster);
+        fhMCPt [pidIndex][kmcPhoton] ->Fill(ptcluster);
+        fhMCPhi[pidIndex][kmcPhoton] ->Fill(ecluster,phicluster);
+        fhMCEta[pidIndex][kmcPhoton] ->Fill(ecluster,etacluster);
         
-        fhMC2E[pidIndex][mcPhoton]     ->Fill(ecluster, eprim); 
-        fhMCDeltaE[pidIndex][mcPhoton] ->Fill(ecluster,eprim-ecluster);
+        fhMC2E[pidIndex][kmcPhoton]     ->Fill(ecluster, eprim); 
+        fhMCDeltaE[pidIndex][kmcPhoton] ->Fill(ecluster,eprim-ecluster);
         
-        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[pidIndex][mcConversion])
+        if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion) && fhMCE[pidIndex][kmcConversion])
         {
-          fhMCE  [pidIndex][mcConversion] ->Fill(ecluster);
-          fhMCPt [pidIndex][mcConversion] ->Fill(ptcluster);
-          fhMCPhi[pidIndex][mcConversion] ->Fill(ecluster,phicluster);
-          fhMCEta[pidIndex][mcConversion] ->Fill(ecluster,etacluster);
+          fhMCE  [pidIndex][kmcConversion] ->Fill(ecluster);
+          fhMCPt [pidIndex][kmcConversion] ->Fill(ptcluster);
+          fhMCPhi[pidIndex][kmcConversion] ->Fill(ecluster,phicluster);
+          fhMCEta[pidIndex][kmcConversion] ->Fill(ecluster,etacluster);
           
-          fhMC2E[pidIndex][mcConversion]     ->Fill(ecluster, eprim);
-          fhMCDeltaE[pidIndex][mcConversion] ->Fill(ecluster,eprim-ecluster);
+          fhMC2E[pidIndex][kmcConversion]     ->Fill(ecluster, eprim);
+          fhMCDeltaE[pidIndex][kmcConversion] ->Fill(ecluster,eprim-ecluster);
           
         }			        
         else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) && 
-                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[pidIndex][mcPi0Decay])
+                !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE[pidIndex][kmcPi0Decay])
         {
-          fhMCE  [pidIndex][mcPi0Decay] ->Fill(ecluster);
-          fhMCPt [pidIndex][mcPi0Decay] ->Fill(ptcluster);
-          fhMCPhi[pidIndex][mcPi0Decay] ->Fill(ecluster,phicluster);
-          fhMCEta[pidIndex][mcPi0Decay] ->Fill(ecluster,etacluster);
+          fhMCE  [pidIndex][kmcPi0Decay] ->Fill(ecluster);
+          fhMCPt [pidIndex][kmcPi0Decay] ->Fill(ptcluster);
+          fhMCPhi[pidIndex][kmcPi0Decay] ->Fill(ecluster,phicluster);
+          fhMCEta[pidIndex][kmcPi0Decay] ->Fill(ecluster,etacluster);
           
-          fhMC2E[pidIndex][mcPi0Decay]     ->Fill(ecluster, eprim);
-          fhMCDeltaE[pidIndex][mcPi0Decay] ->Fill(ecluster,eprim-ecluster);
+          fhMC2E[pidIndex][kmcPi0Decay]     ->Fill(ecluster, eprim);
+          fhMCDeltaE[pidIndex][kmcPi0Decay] ->Fill(ecluster,eprim-ecluster);
         }
         else if( (GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) || 
-                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[pidIndex][mcOtherDecay])
+                  GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) ) && fhMCE[pidIndex][kmcOtherDecay])
         {
-          fhMCE  [pidIndex][mcOtherDecay] ->Fill(ecluster);
-          fhMCPt [pidIndex][mcOtherDecay] ->Fill(ptcluster);
-          fhMCPhi[pidIndex][mcOtherDecay] ->Fill(ecluster,phicluster);
-          fhMCEta[pidIndex][mcOtherDecay] ->Fill(ecluster,etacluster);
+          fhMCE  [pidIndex][kmcOtherDecay] ->Fill(ecluster);
+          fhMCPt [pidIndex][kmcOtherDecay] ->Fill(ptcluster);
+          fhMCPhi[pidIndex][kmcOtherDecay] ->Fill(ecluster,phicluster);
+          fhMCEta[pidIndex][kmcOtherDecay] ->Fill(ecluster,etacluster);
           
-          fhMC2E[pidIndex][mcOtherDecay]     ->Fill(ecluster, eprim);
-          fhMCDeltaE[pidIndex][mcOtherDecay] ->Fill(ecluster,eprim-ecluster);          
+          fhMC2E[pidIndex][kmcOtherDecay]     ->Fill(ecluster, eprim);
+          fhMCDeltaE[pidIndex][kmcOtherDecay] ->Fill(ecluster,eprim-ecluster);          
         }
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [pidIndex][mcPi0])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0) && fhMCE  [pidIndex][kmcPi0])
         {
-          fhMCE  [pidIndex][mcPi0] ->Fill(ecluster);
-          fhMCPt [pidIndex][mcPi0] ->Fill(ptcluster);
-          fhMCPhi[pidIndex][mcPi0] ->Fill(ecluster,phicluster);
-          fhMCEta[pidIndex][mcPi0] ->Fill(ecluster,etacluster);
+          fhMCE  [pidIndex][kmcPi0] ->Fill(ecluster);
+          fhMCPt [pidIndex][kmcPi0] ->Fill(ptcluster);
+          fhMCPhi[pidIndex][kmcPi0] ->Fill(ecluster,phicluster);
+          fhMCEta[pidIndex][kmcPi0] ->Fill(ecluster,etacluster);
           
-          fhMC2E[pidIndex][mcPi0]     ->Fill(ecluster, eprim);
-          fhMCDeltaE[pidIndex][mcPi0] ->Fill(ecluster,eprim-ecluster);
+          fhMC2E[pidIndex][kmcPi0]     ->Fill(ecluster, eprim);
+          fhMCDeltaE[pidIndex][kmcPi0] ->Fill(ecluster,eprim-ecluster);
           
         } 
-        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[pidIndex][mcEta])
+        else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta) && fhMCE[pidIndex][kmcEta])
         {
-          fhMCE  [pidIndex][mcEta] ->Fill(ecluster);
-          fhMCPt [pidIndex][mcEta] ->Fill(ptcluster);
-          fhMCPhi[pidIndex][mcEta] ->Fill(ecluster,phicluster);
-          fhMCEta[pidIndex][mcEta] ->Fill(ecluster,etacluster);
+          fhMCE  [pidIndex][kmcEta] ->Fill(ecluster);
+          fhMCPt [pidIndex][kmcEta] ->Fill(ptcluster);
+          fhMCPhi[pidIndex][kmcEta] ->Fill(ecluster,phicluster);
+          fhMCEta[pidIndex][kmcEta] ->Fill(ecluster,etacluster);
           
-          fhMC2E[pidIndex][mcEta]     ->Fill(ecluster, eprim);
-          fhMCDeltaE[pidIndex][mcEta] ->Fill(ecluster,eprim-ecluster);
+          fhMC2E[pidIndex][kmcEta]     ->Fill(ecluster, eprim);
+          fhMCDeltaE[pidIndex][kmcEta] ->Fill(ecluster,eprim-ecluster);
           
         }      
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[pidIndex][mcAntiNeutron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiNeutron) && fhMCE[pidIndex][kmcAntiNeutron])
       {
-        fhMCE  [pidIndex][mcAntiNeutron] ->Fill(ecluster);
-        fhMCPt [pidIndex][mcAntiNeutron] ->Fill(ptcluster);
-        fhMCPhi[pidIndex][mcAntiNeutron] ->Fill(ecluster,phicluster);
-        fhMCEta[pidIndex][mcAntiNeutron] ->Fill(ecluster,etacluster);
+        fhMCE  [pidIndex][kmcAntiNeutron] ->Fill(ecluster);
+        fhMCPt [pidIndex][kmcAntiNeutron] ->Fill(ptcluster);
+        fhMCPhi[pidIndex][kmcAntiNeutron] ->Fill(ecluster,phicluster);
+        fhMCEta[pidIndex][kmcAntiNeutron] ->Fill(ecluster,etacluster);
         
-        fhMC2E[pidIndex][mcAntiNeutron]     ->Fill(ecluster, eprim);
-        fhMCDeltaE[pidIndex][mcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
+        fhMC2E[pidIndex][kmcAntiNeutron]     ->Fill(ecluster, eprim);
+        fhMCDeltaE[pidIndex][kmcAntiNeutron] ->Fill(ecluster,eprim-ecluster);
         
       }
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[pidIndex][mcAntiProton])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCAntiProton) && fhMCE[pidIndex][kmcAntiProton])
       {
-        fhMCE  [pidIndex][mcAntiProton] ->Fill(ecluster);
-        fhMCPt [pidIndex][mcAntiProton] ->Fill(ptcluster);
-        fhMCPhi[pidIndex][mcAntiProton] ->Fill(ecluster,phicluster);
-        fhMCEta[pidIndex][mcAntiProton] ->Fill(ecluster,etacluster);
+        fhMCE  [pidIndex][kmcAntiProton] ->Fill(ecluster);
+        fhMCPt [pidIndex][kmcAntiProton] ->Fill(ptcluster);
+        fhMCPhi[pidIndex][kmcAntiProton] ->Fill(ecluster,phicluster);
+        fhMCEta[pidIndex][kmcAntiProton] ->Fill(ecluster,etacluster);
 
-        fhMC2E[pidIndex][mcAntiProton]     ->Fill(ecluster, eprim);
-        fhMCDeltaE[pidIndex][mcAntiProton] ->Fill(ecluster,eprim-ecluster);
+        fhMC2E[pidIndex][kmcAntiProton]     ->Fill(ecluster, eprim);
+        fhMCDeltaE[pidIndex][kmcAntiProton] ->Fill(ecluster,eprim-ecluster);
         
       } 
-      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[pidIndex][mcElectron])
+      else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron) && fhMCE[pidIndex][kmcElectron])
       {
-        fhMCE  [pidIndex][mcElectron] ->Fill(ecluster);
-        fhMCPt [pidIndex][mcElectron] ->Fill(ptcluster);
-        fhMCPhi[pidIndex][mcElectron] ->Fill(ecluster,phicluster);
-        fhMCEta[pidIndex][mcElectron] ->Fill(ecluster,etacluster);
+        fhMCE  [pidIndex][kmcElectron] ->Fill(ecluster);
+        fhMCPt [pidIndex][kmcElectron] ->Fill(ptcluster);
+        fhMCPhi[pidIndex][kmcElectron] ->Fill(ecluster,phicluster);
+        fhMCEta[pidIndex][kmcElectron] ->Fill(ecluster,etacluster);
         
-        fhMC2E[pidIndex][mcElectron]     ->Fill(ecluster, eprim);
-        fhMCDeltaE[pidIndex][mcElectron] ->Fill(ecluster,eprim-ecluster);
+        fhMC2E[pidIndex][kmcElectron]     ->Fill(ecluster, eprim);
+        fhMCDeltaE[pidIndex][kmcElectron] ->Fill(ecluster,eprim-ecluster);
         
       }     
-      else if( fhMCE[pidIndex][mcOther]){
-        fhMCE  [pidIndex][mcOther] ->Fill(ecluster);
-        fhMCPt [pidIndex][mcOther] ->Fill(ptcluster);
-        fhMCPhi[pidIndex][mcOther] ->Fill(ecluster,phicluster);
-        fhMCEta[pidIndex][mcOther] ->Fill(ecluster,etacluster);
+      else if( fhMCE[pidIndex][kmcOther]){
+        fhMCE  [pidIndex][kmcOther] ->Fill(ecluster);
+        fhMCPt [pidIndex][kmcOther] ->Fill(ptcluster);
+        fhMCPhi[pidIndex][kmcOther] ->Fill(ecluster,phicluster);
+        fhMCEta[pidIndex][kmcOther] ->Fill(ecluster,etacluster);
         
-        fhMC2E[pidIndex][mcOther]     ->Fill(ecluster, eprim);
-        fhMCDeltaE[pidIndex][mcOther] ->Fill(ecluster,eprim-ecluster);
+        fhMC2E[pidIndex][kmcOther]     ->Fill(ecluster, eprim);
+        fhMCDeltaE[pidIndex][kmcOther] ->Fill(ecluster,eprim-ecluster);
         
       }
       

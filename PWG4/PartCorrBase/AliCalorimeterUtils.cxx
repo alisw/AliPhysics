@@ -26,7 +26,7 @@
 // --- ROOT system ---
 #include "TGeoManager.h"
 
-//---- ANALYSIS system ----
+// --- ANALYSIS system ---
 #include "AliCalorimeterUtils.h"
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
@@ -35,6 +35,10 @@
 #include "AliVCluster.h"
 #include "AliVCaloCells.h"
 #include "AliMixedEvent.h"
+
+// --- Detector ---
+#include "AliEMCALGeometry.h"
+#include "AliPHOSGeoUtils.h"
 
 ClassImp(AliCalorimeterUtils)
   
@@ -254,7 +258,8 @@ Bool_t AliCalorimeterUtils::ClusterContainsBadChannel(TString calorimeter,UShort
 			icol = relId[3];
 			imod = relId[0]-1;
 			if(fPHOSBadChannelMap->GetEntries() <= imod)continue;
-			if(GetPHOSChannelStatus(imod, icol, irow)) return kTRUE;
+      //printf("PHOS bad channels imod %d, icol %d, irow %d\n",imod, irow, icol);
+			if(GetPHOSChannelStatus(imod, irow, icol)) return kTRUE;
 		}
 		else return kFALSE;
 		
@@ -273,8 +278,9 @@ void AliCalorimeterUtils::CorrectClusterEnergy(AliVCluster *clus)
 
 }
 
-//___________________________________________________________________________________________________________________
-Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* clu, Float_t & clusterFraction) const 
+//________________________________________________________________________________________
+Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, const AliVCluster* clu, 
+                                             Float_t & clusterFraction) const 
 {
   
   //For a given CaloCluster gets the absId of the cell 
@@ -307,7 +313,7 @@ Int_t  AliCalorimeterUtils::GetMaxEnergyCell(AliVCaloCells* cells, AliVCluster* 
     
     if(IsRecalibrationOn()) {
       if(calo=="EMCAL") recalFactor = GetEMCALChannelRecalibrationFactor(iSupMod,ieta,iphi);
-      else              recalFactor = GetPHOSChannelRecalibrationFactor(iSupMod,ieta,iphi);
+      else              recalFactor = GetPHOSChannelRecalibrationFactor (iSupMod,iphi,ieta);
     }
     
     eCell  = cells->GetCellAmplitude(cellAbsId)*fraction*recalFactor;
@@ -500,7 +506,7 @@ void AliCalorimeterUtils::InitPHOSBadChannelStatusMap()
   TH1::AddDirectory(kFALSE);
   
   fPHOSBadChannelMap = new TObjArray(5);	
-  for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOSBadChannelMap_Mod%d",i),Form("PHOSBadChannelMap_Mod%d",i), 56, 0, 56, 64, 0, 64));
+  for (int i = 0; i < 5; i++)fPHOSBadChannelMap->Add(new TH2I(Form("PHOS_BadMap_mod%d",i),Form("PHOS_BadMap_mod%d",i), 64, 0, 64, 56, 0, 56));
   
   fPHOSBadChannelMap->SetOwner(kTRUE);
   fPHOSBadChannelMap->Compress();
@@ -519,12 +525,12 @@ void AliCalorimeterUtils::InitPHOSRecalibrationFactors()
 	TH1::AddDirectory(kFALSE);
   
 	fPHOSRecalibrationFactors = new TObjArray(5);
-	for (int i = 0; i < 5; i++)fPHOSRecalibrationFactors->Add(new TH2F(Form("PHOSRecalFactors_Mod%d",i),Form("PHOSRecalFactors_Mod%d",i), 56, 0, 56, 64, 0, 64));
+	for (int i = 0; i < 5; i++)fPHOSRecalibrationFactors->Add(new TH2F(Form("PHOSRecalFactors_Mod%d",i),Form("PHOSRecalFactors_Mod%d",i), 64, 0, 64, 56, 0, 56));
 	//Init the histograms with 1
 	for (Int_t m = 0; m < 5; m++) {
 		for (Int_t i = 0; i < 56; i++) {
 			for (Int_t j = 0; j < 64; j++) {
-				SetPHOSChannelRecalibrationFactor(m,i,j,1.);
+				SetPHOSChannelRecalibrationFactor(m,j,i,1.);
 			}
 		}
 	}
@@ -633,7 +639,7 @@ Float_t AliCalorimeterUtils::RecalibrateClusterEnergy(AliVCluster * cluster,
       frac =  fraction[icell];
       if(frac < 1e-3) frac = 1; //in case of EMCAL, this is set as 0, not used.
       module = GetModuleNumberCellIndexes(absId,calo,icol,irow,iRCU);
-      if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,icol,irow);
+      if(cluster->IsPHOS()) factor = GetPHOSChannelRecalibrationFactor (module,irow,icol);
       else                  factor = GetEMCALChannelRecalibrationFactor(module,icol,irow);
       if(fDebug>2)
         printf("AliCalorimeterUtils::RecalibrateClusterEnergy() - recalibrate cell: %s, module %d, col %d, row %d, cell fraction %f, recalibration factor %f, cell energy %f\n", 
@@ -661,7 +667,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
   //Get the EMCAL transformation geometry matrices from ESD 
   if(!fEMCALGeoMatrixSet && fEMCALGeo){
     if(fLoadEMCALMatrices){
-      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined geometry matrices\n");
+      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined EMCAL geometry matrices\n");
       for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
         if(fEMCALMatrix[mod]){
           if(fDebug > 1) 
@@ -683,6 +689,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
             fEMCALGeo->SetMisalMatrix(((AliESDEvent*)inputEvent)->GetEMCALMatrix(mod),mod) ;
           }
         }// loop over super modules	
+        
         fEMCALGeoMatrixSet = kTRUE;//At least one, so good
         
       }//ESD as input
@@ -695,19 +702,21 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
       fEMCALGeoMatrixSet = kTRUE;
     }
   }//EMCAL geo && no geoManager
-	
+  
 	//Get the PHOS transformation geometry matrices from ESD 
   if(!fPHOSGeoMatrixSet && fPHOSGeo){
+
     if(fLoadPHOSMatrices){
-      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined geometry matrices\n");
-      for(Int_t mod=0; mod < 5; mod++){
+      printf("AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load user defined PHOS geometry matrices\n");
+      for(Int_t mod = 0 ; mod < 5 ; mod++){
         if(fPHOSMatrix[mod]){
-          if(fDebug > 1) 
+          if(fDebug > 1 ) 
             fPHOSMatrix[mod]->Print();
-          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod) ;  
+          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod+1) ;  
         }
       }//SM loop
       fPHOSGeoMatrixSet = kTRUE;//At least one, so good
+
     }//Load matrices
     else if (!gGeoManager) { 
       if(fDebug > 1) 
@@ -730,6 +739,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
       fPHOSGeoMatrixSet = kTRUE;
     }
 	}//PHOS geo	and  geoManager was not set
+  
 }
 
 //__________________________________________________________________________________________

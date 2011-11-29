@@ -26,11 +26,7 @@ class AliNeutralMesonSelection : public TObject {
  public: 
   AliNeutralMesonSelection() ; // default ctor
   virtual ~AliNeutralMesonSelection() { ; } //virtual dtor  
- private:
-  AliNeutralMesonSelection(const AliNeutralMesonSelection & g) ; // cpy ctor
-  AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ;//cpy assignment
-  
- public:
+
   // General
 
   TList *  GetCreateOutputObjects();
@@ -158,7 +154,10 @@ class AliNeutralMesonSelection : public TObject {
   
   Int_t    fHistoNIMBins ;                // Number of bins in Invariant Mass axis
   Float_t  fHistoIMMax ;                  // Maximum value of Invariant Mass histogram range
-  Float_t  fHistoIMMin ;                  // Minimum value of Invariant Mass histogram range
+  Float_t  fHistoIMMin ;                  // Minimum value of Invariant Mass histogram range  
+  
+  AliNeutralMesonSelection(const AliNeutralMesonSelection & g) ;               // cpy ctor
+  AliNeutralMesonSelection & operator = (const AliNeutralMesonSelection & g) ; // cpy assignment
   
   ClassDef(AliNeutralMesonSelection,6)
     

@@ -22,76 +22,78 @@ class TH2F;
 class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
        
  public:   
-  AliAnaParticleJetFinderCorrelation() ; // default ctor
-  virtual ~AliAnaParticleJetFinderCorrelation() {;} //virtual dtor
- private:
-  AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & g) ; // cpy ctor
-  AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ;//cpy assignment
+  AliAnaParticleJetFinderCorrelation() ;            // default ctor
+  virtual ~AliAnaParticleJetFinderCorrelation() {;} // virtual dtor
 
- public:
+  // General methods
+  
+  void     InitParameters();
+  
+  TList *  GetCreateOutputObjects();
 
-  TList * GetCreateOutputObjects();
+  void     MakeAnalysisFillAOD() ;
   
-  Bool_t OnlyIsolated() const {return fSelectIsolated ; }
-  void SelectIsolated(Bool_t select) {fSelectIsolated = select ; }
+  void     MakeAnalysisFillHistograms() ;
   
-  void InitParameters();
+  Int_t    SelectJet(AliAODPWG4Particle * particle, const AliAODEvent * event) const ;
+
+  void     Print(const Option_t * opt)           const;
   
-  void Print(const Option_t * opt) const;
+  // Settings
   
-  Float_t  GetConeSize()          const { return fConeSize ; }
-  Float_t  GetPtThresholdInCone() const { return fPtThresholdInCone ; }	   
-  Double_t GetDeltaPhiMaxCut()    const { return fDeltaPhiMaxCut ; }
-  Double_t GetDeltaPhiMinCut()    const { return fDeltaPhiMinCut ; }
-  Double_t GetRatioMaxCut()       const { return fRatioMaxCut ; }
-  Double_t GetRatioMinCut()       const { return fRatioMinCut ; }  	   
-  Bool_t   AreJetRefTracks()      const { return fUseJetRefTracks ; }
-  Bool_t   IsCorrelationMadeInHistoMaker() const {return fMakeCorrelationInHistoMaker ;} 
+  Bool_t   OnlyIsolated()                        const { return fSelectIsolated              ; }
+  void     SelectIsolated(Bool_t select)               { fSelectIsolated = select            ; }
   
-  void SetConeSize(Float_t cone) {fConeSize = cone; }
-  void SetPtThresholdInCone(Float_t pt){fPtThresholdInCone = pt; };	   
-  void SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
-  {fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin;}
-  void SetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
-  {fRatioMaxCut =ratiomax;  fRatioMinCut = ratiomin ; }
-  void UseJetRefTracks(Bool_t use) {fUseJetRefTracks = use ; }	
-  void SetMakeCorrelationInHistoMaker(Bool_t make) {fMakeCorrelationInHistoMaker = make ;}	
+  Float_t  GetConeSize()                         const { return fConeSize                    ; }
+  Float_t  GetPtThresholdInCone()                const { return fPtThresholdInCone           ; }	   
+  Double_t GetDeltaPhiMaxCut()                   const { return fDeltaPhiMaxCut              ; }
+  Double_t GetDeltaPhiMinCut()                   const { return fDeltaPhiMinCut              ; }
+  Double_t GetRatioMaxCut()                      const { return fRatioMaxCut                 ; }
+  Double_t GetRatioMinCut()                      const { return fRatioMinCut                 ; }  	   
+  Bool_t   AreJetRefTracks()                     const { return fUseJetRefTracks             ; }
+  Bool_t   IsCorrelationMadeInHistoMaker()       const { return fMakeCorrelationInHistoMaker ; } 
   
- private:
-  
-  Int_t SelectJet(AliAODPWG4Particle * particle, AliAODEvent * event) const ;
-  
-  void MakeAnalysisFillAOD() ;
-  void MakeAnalysisFillHistograms() ;
-  
- private:
-  
+  void     SetConeSize(Float_t cone)                   { fConeSize = cone                    ; }
+  void     SetPtThresholdInCone(Float_t pt)            { fPtThresholdInCone = pt             ; }	   
+  void     SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
+            { fDeltaPhiMaxCut =phimax;  fDeltaPhiMinCut =phimin                              ; }
+  void     SetRatioCutRange(Double_t ratiomin, Double_t ratiomax)
+            { fRatioMaxCut =ratiomax;  fRatioMinCut = ratiomin                               ; }
+  void     UseJetRefTracks(Bool_t use)                 { fUseJetRefTracks = use              ; }	
+  void     SetMakeCorrelationInHistoMaker(Bool_t make) { fMakeCorrelationInHistoMaker = make ; }	
+    
+private:
+
   //selection parameters  
-  Double_t   fDeltaPhiMaxCut ; //! Minimum Delta Phi Gamma-Leading
-  Double_t   fDeltaPhiMinCut ; //!  Maximum Delta Phi Gamma-Leading
-  Double_t   fRatioMaxCut ; //! Jet/ particle Ratio cut maximum
-  Double_t   fRatioMinCut ; //! Jet/particle Ratio cut minimum
+  Double_t   fDeltaPhiMaxCut ;    //! Minimum Delta Phi Gamma-Leading
+  Double_t   fDeltaPhiMinCut ;    //!  Maximum Delta Phi Gamma-Leading
+  Double_t   fRatioMaxCut ;       //! Jet/ particle Ratio cut maximum
+  Double_t   fRatioMinCut ;       //! Jet/particle Ratio cut minimum
   
   Double_t   fConeSize  ;         //! Jet cone size 
   Double_t   fPtThresholdInCone ; //! Jet pT threshold in jet cone
-  Bool_t     fUseJetRefTracks ; //! Use track references from JETAN not the AOD tracks
+  Bool_t     fUseJetRefTracks ;   //! Use track references from JETAN not the AOD tracks
   Bool_t	   fMakeCorrelationInHistoMaker ; //!Make particle-jet correlation in histogram maker
-  Bool_t     fSelectIsolated ;      // Select only trigger particles isolated
+  Bool_t     fSelectIsolated ;    // Select only trigger particles isolated
   
-  TH2F * fhDeltaEta; //! Difference of jet eta and trigger particle eta as function of trigger particle pT
-  TH2F * fhDeltaPhi;  //! Difference of jet phi and trigger particle phi as function of trigger particle pT
-  TH2F * fhDeltaPt; //! Difference of jet pT and trigger particle pT as function of trigger particle pT
-  TH2F * fhPtRatio; //! Ratio of jet pT and trigger particle pT as function of trigger particle pT
-  TH2F * fhPt; //! jet pT vs trigger particle pT 
+  // Histograms
+  TH2F *     fhDeltaEta;          //! Difference of jet eta and trigger particle eta as function of trigger particle pT
+  TH2F *     fhDeltaPhi;          //! Difference of jet phi and trigger particle phi as function of trigger particle pT
+  TH2F *     fhDeltaPt;           //! Difference of jet pT and trigger particle pT as function of trigger particle pT
+  TH2F *     fhPtRatio;           //! Ratio of jet pT and trigger particle pT as function of trigger particle pT
+  TH2F *     fhPt;                //! jet pT vs trigger particle pT 
   
-  TH2F * fhFFz ; //! Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
-  TH2F * fhFFxi; //! Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
-  TH2F * fhFFpt; //! Jet particle pt distribution in cone
-  TH2F * fhNTracksInCone   ; //! jet multiplicity in cone
+  TH2F *     fhFFz ;              //! Accepted reconstructed jet fragmentation function, z=ptjet/pttrig
+  TH2F *     fhFFxi;              //! Accepted reconstructed jet fragmentation function, xsi = ln(pttrig/ptjet)
+  TH2F *     fhFFpt;              //! Jet particle pt distribution in cone
+  TH2F *     fhNTracksInCone;     //! jet multiplicity in cone
+  
+  AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & g) ;               // cpy ctor
+  AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ; // cpy assignment
   
   ClassDef(AliAnaParticleJetFinderCorrelation,2)
+  
  } ;
-
 
 #endif //ALIANAPARTICLEJETFINDERCORRELATION_H
 

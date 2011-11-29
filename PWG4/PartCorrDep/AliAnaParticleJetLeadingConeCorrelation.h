@@ -32,11 +32,6 @@ class AliAnaParticleJetLeadingConeCorrelation : public AliAnaPartCorrBaseClass {
 public: 
   AliAnaParticleJetLeadingConeCorrelation() ; // default ctor
   virtual ~AliAnaParticleJetLeadingConeCorrelation() ; //virtual dtor
- private:
-  AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & g) ; // cpy ctor
-  AliAnaParticleJetLeadingConeCorrelation & operator = (const AliAnaParticleJetLeadingConeCorrelation & g) ;//cpy assignment
-
- public:
 
   TList * GetCreateOutputObjects();
 
@@ -252,6 +247,8 @@ public:
   TH2F * fhBkgFFpts[5][5]; //! Background particle pt distribution in cone
   TH2F * fhBkgNTracksInCones[5][5]; //! Background multiplicity in cone
   
+  AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & g) ; // cpy ctor
+  AliAnaParticleJetLeadingConeCorrelation & operator = (const AliAnaParticleJetLeadingConeCorrelation & g) ;//cpy assignment
   
   ClassDef(AliAnaParticleJetLeadingConeCorrelation,1)
  } ;

@@ -39,7 +39,7 @@ class TH2F ;
 //--- AliRoot system ---
 class AliVCluster;
 class AliAODPWG4Particle;
-#include "AliEMCALPIDUtils.h"
+class AliEMCALPIDUtils;
 class AliCalorimeterUtils;
 class AliVEvent;
 
@@ -51,13 +51,7 @@ class AliCaloPID : public TObject {
   AliCaloPID(const Int_t particleFlux) ; // ctor, to be used when recalculating bayesian PID
   AliCaloPID(const TNamed * emcalpid) ; // ctor, to be used when recalculating bayesian PID and need different parameters
   virtual ~AliCaloPID() ;//virtual dtor
-  
-private:
-  AliCaloPID & operator = (const AliCaloPID & g) ;//cpy assignment
-  AliCaloPID(const AliCaloPID & g) ; // cpy ctor
-
-public:
-	
+  	
   enum PidType {
     kPhoton         = 22,
     kPi0            = 111,
@@ -116,9 +110,7 @@ public:
   void    SwitchOnBayesianRecalculation()      { fRecalculateBayesian = kTRUE ; fUseBayesianWeights  = kTRUE ;} // EMCAL
   void    SwitchOffBayesianRecalculation()     { fRecalculateBayesian = kFALSE; } // EMCAL
   
-  AliEMCALPIDUtils * GetEMCALPIDUtils() {
-    if(!fEMCALPIDUtils) fEMCALPIDUtils = new AliEMCALPIDUtils; 
-    return fEMCALPIDUtils                                                     ; }
+  AliEMCALPIDUtils * GetEMCALPIDUtils() ; 
   
   //Weight getters
   Float_t GetEMCALPhotonWeight()         const { return fEMCALPhotonWeight    ; }
@@ -252,6 +244,9 @@ private:
   TH2F     *fhTrackMatchedDEta     ;            //! Eta distance between track and cluster vs cluster E
   TH2F     *fhTrackMatchedDPhi     ;            //! Phi distance between track and cluster vs cluster E
   TH2F     *fhTrackMatchedDEtaDPhi ;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
+  AliCaloPID & operator = (const AliCaloPID & g) ; // cpy assignment
+  AliCaloPID(const AliCaloPID & g) ;               // cpy ctor
   
   ClassDef(AliCaloPID,10)
 } ;

@@ -24,13 +24,7 @@ public:
 	
   AliCaloTrackAODReader() ; // ctor
   virtual ~AliCaloTrackAODReader() {;} //virtual dtor
-  
-private:
-  AliCaloTrackAODReader(const AliCaloTrackAODReader & ) ; // cpy ctor
-  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
-   
-public: 
-
+     
   AliCentrality* GetCentrality() const ;  
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
@@ -41,6 +35,9 @@ public:
 private:
   
   AliVEvent *fOrgInputEvent; //! Original input event, not from filtering
+  
+  AliCaloTrackAODReader(const AliCaloTrackAODReader & ) ; // cpy ctor
+  AliCaloTrackAODReader & operator = (const AliCaloTrackAODReader & g) ;//cpy assignment
   
   ClassDef(AliCaloTrackAODReader,6)
 } ;

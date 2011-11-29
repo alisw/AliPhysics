@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskParticleCorrelationM_H
-#define AliAnalysisTaskParticleCorrelationM_H
+#ifndef ALIANALYSISTASKPARTICLECORRELATIONM_H
+#define ALIANALYSISTASKPARTICLECORRELATIONM_H
  
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -56,4 +56,4 @@ class AliAnalysisTaskParticleCorrelationM : public AliAnalysisTaskME
   ClassDef(AliAnalysisTaskParticleCorrelationM, 3); // Analysis task for standard gamma correlation analysis
 };
 
-#endif //AliAnalysisTaskParticleCorrelationM_H
+#endif //ALIANALYSISTASKPARTICLECORRELATIONM_H

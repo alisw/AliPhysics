@@ -31,12 +31,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
  public:   
   AliAnaPi0() ; // default ctor
   virtual ~AliAnaPi0() ;//virtual dtor
- private:
-  AliAnaPi0(const AliAnaPi0 & g) ; // cpy ctor
-  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
   
- public:
-
   //-------------------------------
   // General analysis frame methods
   //-------------------------------
@@ -298,7 +293,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
 
-
+  AliAnaPi0(const AliAnaPi0 & g) ; // cpy ctor
+  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
   
   ClassDef(AliAnaPi0,21)
 } ;
