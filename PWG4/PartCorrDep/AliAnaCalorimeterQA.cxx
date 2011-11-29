@@ -51,6 +51,10 @@
 #include "AliAODPid.h"
 #include "AliExternalTrackParam.h"
 
+// --- Detectors --- 
+#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeometry.h"
+
 ClassImp(AliAnaCalorimeterQA)
 
 //________________________________________
@@ -198,8 +202,8 @@ fhMCEle1pOverER02(0),                  fhMCChHad1pOverER02(0),                 f
   InitParameters();
 }
 
-//_______________________________________________________________________________________________________________
-void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, TObjArray *caloClusters, AliVCaloCells * cells, 
+//_____________________________________________________________________________________________________________________
+void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArray *caloClusters, AliVCaloCells * cells, 
                                                const Int_t absIdMax, const Double_t maxCellFraction,
                                                const Double_t tmax,  Double_t timeAverages[2]
                                                )
@@ -643,8 +647,8 @@ void AliAnaCalorimeterQA::ClusterAsymmetryHistograms(AliVCluster* clus, const In
   
 }
 
-//___________________________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,TObjArray *caloClusters, AliVCaloCells * cells, 
+//_________________________________________________________________________________________________________________
+void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *caloClusters, AliVCaloCells * cells, 
                                             const Int_t absIdMax, const Double_t maxCellFraction,
                                             const Double_t tmax,  Double_t timeAverages[2])
 {
@@ -1111,62 +1115,62 @@ Bool_t AliAnaCalorimeterQA::ClusterMCHistograms(const TLorentzVector mom, const 
   
   //Overlapped pi0 (or eta, there will be very few)
   if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPi0)){
-    fhRecoMCE  [mcPi0][matched]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPi0][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPi0][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcPi0][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcPi0][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcPi0][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcPi0][(matched)]->Fill(e,etaMC-eta);
+    fhRecoMCE  [kmcPi0][matched]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcPi0][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcPi0][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcPi0][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcPi0][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcPi0][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcPi0][(matched)]->Fill(e,etaMC-eta);
   }//Overlapped pizero decay
   else     if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCEta)){
-    fhRecoMCE  [mcEta][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcEta][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcEta][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcEta][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcEta][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcEta][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcEta][(matched)]->Fill(e,etaMC-eta);
+    fhRecoMCE  [kmcEta][(matched)]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcEta][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcEta][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcEta][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcEta][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcEta][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcEta][(matched)]->Fill(e,etaMC-eta);
   }//Overlapped eta decay
   else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPhoton)){
-    fhRecoMCE  [mcPhoton][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcPhoton][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcPhoton][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcPhoton][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcPhoton][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcPhoton][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcPhoton][(matched)]->Fill(e,etaMC-eta);      
+    fhRecoMCE  [kmcPhoton][(matched)]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcPhoton][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcPhoton][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcPhoton][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcPhoton][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcPhoton][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcPhoton][(matched)]->Fill(e,etaMC-eta);      
   }//photon
   else if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCElectron)){
-    fhRecoMCE  [mcElectron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcElectron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcElectron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcElectron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcElectron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcElectron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcElectron][(matched)]->Fill(e,etaMC-eta);
+    fhRecoMCE  [kmcElectron][(matched)]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcElectron][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcElectron][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcElectron][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcElectron][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcElectron][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcElectron][(matched)]->Fill(e,etaMC-eta);
     fhEMVxyz   ->Fill(vxMC,vyMC);//,vz);
     fhEMR      ->Fill(e,rVMC);
   }
   else if(charge == 0){
-    fhRecoMCE  [mcNeHadron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcNeHadron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcNeHadron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcNeHadron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcNeHadron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcNeHadron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcNeHadron][(matched)]->Fill(e,etaMC-eta);      
+    fhRecoMCE  [kmcNeHadron][(matched)]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcNeHadron][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcNeHadron][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcNeHadron][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcNeHadron][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcNeHadron][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcNeHadron][(matched)]->Fill(e,etaMC-eta);      
     fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
     fhHaR        ->Fill(e,rVMC);
   }
   else if(charge!=0){
-    fhRecoMCE  [mcChHadron][(matched)]     ->Fill(e,eMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[mcChHadron][(matched)]->Fill(eta,etaMC);	
-    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[mcChHadron][(matched)]->Fill(phi,phiMC);
-    if(eMC > 0) fhRecoMCRatioE  [mcChHadron][(matched)]->Fill(e,e/eMC);
-    fhRecoMCDeltaE  [mcChHadron][(matched)]->Fill(e,eMC-e);
-    fhRecoMCDeltaPhi[mcChHadron][(matched)]->Fill(e,phiMC-phi);
-    fhRecoMCDeltaEta[mcChHadron][(matched)]->Fill(e,etaMC-eta);     
+    fhRecoMCE  [kmcChHadron][(matched)]     ->Fill(e,eMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCEta[kmcChHadron][(matched)]->Fill(eta,etaMC);	
+    if(e > 0.5 && eMC > 0.5) fhRecoMCPhi[kmcChHadron][(matched)]->Fill(phi,phiMC);
+    if(eMC > 0) fhRecoMCRatioE  [kmcChHadron][(matched)]->Fill(e,e/eMC);
+    fhRecoMCDeltaE  [kmcChHadron][(matched)]->Fill(e,eMC-e);
+    fhRecoMCDeltaPhi[kmcChHadron][(matched)]->Fill(e,phiMC-phi);
+    fhRecoMCDeltaEta[kmcChHadron][(matched)]->Fill(e,etaMC-eta);     
     fhHaVxyz     ->Fill(vxMC,vyMC);//,vz);
     fhHaR        ->Fill(e,rVMC);
   }
@@ -2501,9 +2505,9 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
   
 }
 
-//_____________________________________________________________________________________________
+//__________________________________________________________________________________________________
 void AliAnaCalorimeterQA::InvariantMassHistograms(const Int_t iclus,   const TLorentzVector mom, 
-                                                  const Int_t nModule, TObjArray* caloClusters, 
+                                                  const Int_t nModule, const TObjArray* caloClusters, 
                                                   AliVCaloCells * cells) 
 {
   // Fill Invariant mass histograms
@@ -2768,35 +2772,35 @@ void AliAnaCalorimeterQA::MCHistograms(const TLorentzVector mom, const Int_t pdg
   }	  
   
   if (pdg==22) {
-    fhGenMCE[mcPhoton]    ->Fill(eMC);
-    if(eMC > 0.5) fhGenMCEtaPhi[mcPhoton]->Fill(etaMC,phiMC);
+    fhGenMCE[kmcPhoton]    ->Fill(eMC);
+    if(eMC > 0.5) fhGenMCEtaPhi[kmcPhoton]->Fill(etaMC,phiMC);
     if(in){
-      fhGenMCAccE[mcPhoton]    ->Fill(eMC);
-      if(eMC > 0.5) fhGenMCAccEtaPhi[mcPhoton]->Fill(etaMC,phiMC);	
+      fhGenMCAccE[kmcPhoton]    ->Fill(eMC);
+      if(eMC > 0.5) fhGenMCAccEtaPhi[kmcPhoton]->Fill(etaMC,phiMC);	
     }
   }
   else if (pdg==111) {
-    fhGenMCE[mcPi0]    ->Fill(eMC);
-    if(eMC > 0.5) fhGenMCEtaPhi[mcPi0]->Fill(etaMC,phiMC);
+    fhGenMCE[kmcPi0]    ->Fill(eMC);
+    if(eMC > 0.5) fhGenMCEtaPhi[kmcPi0]->Fill(etaMC,phiMC);
     if(in){
-      fhGenMCAccE[mcPi0]    ->Fill(eMC);
-      if(eMC > 0.5) fhGenMCAccEtaPhi[mcPi0]->Fill(etaMC,phiMC);	
+      fhGenMCAccE[kmcPi0]    ->Fill(eMC);
+      if(eMC > 0.5) fhGenMCAccEtaPhi[kmcPi0]->Fill(etaMC,phiMC);	
     }
   }
   else if (pdg==221) {
-    fhGenMCE[mcEta]    ->Fill(eMC);
-    if(eMC > 0.5) fhGenMCEtaPhi[mcEta]->Fill(etaMC,phiMC);
+    fhGenMCE[kmcEta]    ->Fill(eMC);
+    if(eMC > 0.5) fhGenMCEtaPhi[kmcEta]->Fill(etaMC,phiMC);
     if(in){
-      fhGenMCAccE[mcEta]    ->Fill(eMC);
-      if(eMC > 0.5) fhGenMCAccEtaPhi[mcEta]->Fill(etaMC,phiMC);	
+      fhGenMCAccE[kmcEta]    ->Fill(eMC);
+      if(eMC > 0.5) fhGenMCAccEtaPhi[kmcEta]->Fill(etaMC,phiMC);	
     }    
   }
   else if (TMath::Abs(pdg)==11) {
-    fhGenMCE[mcElectron]    ->Fill(eMC);
-    if(eMC > 0.5) fhGenMCEtaPhi[mcElectron]->Fill(etaMC,phiMC);
+    fhGenMCE[kmcElectron]    ->Fill(eMC);
+    if(eMC > 0.5) fhGenMCEtaPhi[kmcElectron]->Fill(etaMC,phiMC);
     if(in){
-      fhGenMCAccE[mcElectron]    ->Fill(eMC);
-      if(eMC > 0.5) fhGenMCAccEtaPhi[mcElectron]->Fill(etaMC,phiMC);	
+      fhGenMCAccE[kmcElectron]    ->Fill(eMC);
+      if(eMC > 0.5) fhGenMCAccEtaPhi[kmcElectron]->Fill(etaMC,phiMC);	
     }
   }	
 }

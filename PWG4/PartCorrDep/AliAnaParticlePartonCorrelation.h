@@ -17,39 +17,39 @@ class TH2F ;
 
 class AliAnaParticlePartonCorrelation : public AliAnaPartCorrBaseClass {
        
- public:
+public:
+  
   AliAnaParticlePartonCorrelation() ; // default ctor
   virtual ~AliAnaParticlePartonCorrelation() {;} //virtual dtor              
- private:
-  AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) ; // cpy ctor
-  AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ;//cpy assignment
-
- public:
-
-       TList * GetCreateOutputObjects();
-       
-       void InitParameters();
-       
-       void Print(const Option_t * opt) const;
-       
-       void MakeAnalysisFillAOD()  ;
-       
-       void MakeAnalysisFillHistograms() ; 
-       
-  private:
-       
-       TH2F * fhDeltaEtaNearParton; //! Difference of parton eta and prompt trigger particle eta
-       TH2F * fhDeltaPhiNearParton; //! Difference of parton phi and prompt trigger particle phi
-       TH2F * fhDeltaPtNearParton; //! Difference of parton pT and prompt trigger particle pT
-       TH2F * fhPtRatNearParton; //! Ratio of parton pT and prompt trigger particle pT
-       
-       TH2F * fhDeltaEtaAwayParton; //! Difference of parton eta and prompt trigger particle eta
-       TH2F * fhDeltaPhiAwayParton; //! Difference of parton phi and prompt trigger particle phi
-       TH2F * fhDeltaPtAwayParton; //! Difference of parton pT and prompt trigger particle pT
-       TH2F * fhPtRatAwayParton; //! Ratio of parton pT and prompt trigger particle pT
-
-       ClassDef(AliAnaParticlePartonCorrelation,1)
- } ;
+  
+  TList * GetCreateOutputObjects();
+  
+  void InitParameters();
+    
+  void MakeAnalysisFillAOD()  ;
+  
+  void MakeAnalysisFillHistograms() ; 
+  
+  void Print(const Option_t * opt) const;
+  
+private:
+  
+  TH2F * fhDeltaEtaNearParton; //! Difference of parton eta and prompt trigger particle eta
+  TH2F * fhDeltaPhiNearParton; //! Difference of parton phi and prompt trigger particle phi
+  TH2F * fhDeltaPtNearParton;  //! Difference of parton pT and prompt trigger particle pT
+  TH2F * fhPtRatNearParton;    //! Ratio of parton pT and prompt trigger particle pT
+  
+  TH2F * fhDeltaEtaAwayParton; //! Difference of parton eta and prompt trigger particle eta
+  TH2F * fhDeltaPhiAwayParton; //! Difference of parton phi and prompt trigger particle phi
+  TH2F * fhDeltaPtAwayParton;  //! Difference of parton pT and prompt trigger particle pT
+  TH2F * fhPtRatAwayParton;    //! Ratio of parton pT and prompt trigger particle pT
+  
+  AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) ;               // cpy ctor
+  AliAnaParticlePartonCorrelation & operator = (const AliAnaParticlePartonCorrelation & g) ; // cpy assignment
+  
+  ClassDef(AliAnaParticlePartonCorrelation,1)
+  
+} ;
 
 
 #endif //ALIANAPARTICLEPARTONCORRELATION_H

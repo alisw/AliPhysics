@@ -41,15 +41,18 @@
 
 ClassImp(AliMCAnalysisUtils)
 
-//________________________________________________
-  AliMCAnalysisUtils::AliMCAnalysisUtils() : 
-    TObject(), fCurrentEvent(-1), fDebug(-1), 
-    fJetsList(new TList), fMCGenerator("PYTHIA")
+//________________________________________
+AliMCAnalysisUtils::AliMCAnalysisUtils() : 
+TObject(), 
+fCurrentEvent(-1), 
+fDebug(-1), 
+fJetsList(new TList), 
+fMCGenerator("PYTHIA")
 {
   //Ctor
 }
 
-//____________________________________________________________________________
+//_______________________________________
 AliMCAnalysisUtils::~AliMCAnalysisUtils() 
 {
   // Remove all pointers.
@@ -60,9 +63,11 @@ AliMCAnalysisUtils::~AliMCAnalysisUtils()
   }     
 }
 
-//_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, AliCaloTrackReader* reader, 
-                                              Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & prodVertex) 
+//_____________________________________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t index2, 
+                                              const AliCaloTrackReader* reader, 
+                                              Int_t & ancPDG, Int_t & ancStatus, 
+                                              TLorentzVector & momentum, TVector3 & prodVertex) 
 {
   //Check the first common ancestor of 2 clusters, given the most likely labels of the primaries generating such clusters.
   Int_t label1[100];
@@ -167,8 +172,11 @@ Int_t AliMCAnalysisUtils::CheckCommonAncestor(const Int_t index1, const Int_t in
   return ancLabel;
 }
 
-//_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, AliCaloTrackReader* reader, const Int_t input = 0) 
+//_____________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, 
+                                      const Int_t nlabels, 
+                                      const AliCaloTrackReader* reader, 
+                                      const Int_t input = 0) 
 {
   //Play with the montecarlo particles if available
   Int_t tag = 0;
@@ -189,8 +197,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t * label, const Int_t nlabels, 
   return tag ;
 }
 
-//_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* reader, const Int_t input = 0) 
+//_____________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, 
+                                      const AliCaloTrackReader* reader, 
+                                      const Int_t input = 0) 
 {
   //Play with the montecarlo particles if available
   Int_t tag = 0;
@@ -213,8 +223,10 @@ Int_t AliMCAnalysisUtils::CheckOrigin(const Int_t label, AliCaloTrackReader* rea
   return tag ;
 }	
 
-//_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack* stack) 
+//_________________________________________________________________
+Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, 
+                                             const Int_t nlabels, 
+                                             AliStack* stack) 
 {
   // Play with the MC stack if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInAOD but different input.
@@ -495,7 +507,9 @@ Int_t AliMCAnalysisUtils::CheckOriginInStack(const Int_t *labels, const Int_t nl
 
 
 //_________________________________________________________________________
-Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlabels, TClonesArray *mcparticles) 
+Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, 
+                                           const Int_t nlabels, 
+                                           const TClonesArray *mcparticles) 
 {
   // Play with the MCParticles in AOD if available. Tag particles depending on their origin.
   // Do same things as in CheckOriginInStack but different input.
@@ -593,7 +607,7 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
     }  
     
     //printf("Final mother mPDG %d\n",mPdg);
-
+    
     // conversion into electrons/photons checked  
     
     //first check for typical charged particles
@@ -724,8 +738,11 @@ Int_t AliMCAnalysisUtils::CheckOriginInAOD(const Int_t *labels, const Int_t nlab
 }
 
 //_________________________________________________________________________
-void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, 
-                                                    AliStack *stack, Int_t &tag)
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, 
+                                                    const Int_t nlabels, 
+                                                    const Int_t mesonIndex, 
+                                                    AliStack *stack, 
+                                                    Int_t &tag)
 {
   //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in stack
   
@@ -804,12 +821,12 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const I
       if(fDebug > 3) printf("\t \t parent index %d\n",tmpindex);
       daught   = stack->Particle(tmpindex);
       if      (iPhoton0 == tmpindex) {
-	okPhoton0 = kTRUE;
-	break;
+        okPhoton0 = kTRUE;
+        break;
       }
       else if (iPhoton1 == tmpindex) {
-	okPhoton1 = kTRUE;
-	break;
+        okPhoton1 = kTRUE;
+        break;
       }
       tmpindex = daught->GetFirstMother();
     }//While to check if pi0/eta daughter was one of these contributors to the cluster
@@ -830,9 +847,12 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const I
   
 }	
 
-//_________________________________________________________________________
-void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, 
-                                                    TClonesArray *mcparticles, Int_t &tag)
+//__________________________________________________________________________________
+void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels,
+                                                    const Int_t nlabels, 
+                                                    const Int_t mesonIndex, 
+                                                    const TClonesArray *mcparticles, 
+                                                    Int_t & tag )
 {
   //Check if cluster is formed from the contribution of 2 decay photons from pi0 or eta. Input in AODMCParticles
   
@@ -842,7 +862,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const I
              labels[0],mcparticles->GetEntriesFast(), nlabels);
     return;
   }
-    
+  
   AliAODMCParticle * meson = (AliAODMCParticle *) mcparticles->At(mesonIndex);
   Int_t mesonPdg = meson->GetPdgCode();
   if(mesonPdg != 111 && mesonPdg != 221) {
@@ -949,7 +969,7 @@ void AliMCAnalysisUtils::CheckOverlapped2GammaDecay(const Int_t *labels, const I
 }
 
 //_________________________________________________________________________
-TList * AliMCAnalysisUtils::GetJets(AliCaloTrackReader * const reader)
+TList * AliMCAnalysisUtils::GetJets(const AliCaloTrackReader * reader)
 {
   //Return list of jets (TParticles) and index of most likely parton that originated it.
   AliStack * stack = reader->GetStack();
@@ -1097,7 +1117,7 @@ TList * AliMCAnalysisUtils::GetJets(AliCaloTrackReader * const reader)
 }
 
 
-//________________________________________________________________
+//________________________________________________________
 void AliMCAnalysisUtils::Print(const Option_t * opt) const
 {
   //Print some relevant parameters set for the analysis

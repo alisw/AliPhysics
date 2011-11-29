@@ -46,13 +46,16 @@
 #include <TString.h>
 #include <TList.h>
 
-//---- ANALYSIS system ----
+// ---- ANALYSIS system ----
 #include "AliCaloPID.h"
 #include "AliVCluster.h"
 #include "AliVTrack.h"
 #include "AliAODPWG4Particle.h"
 #include "AliCalorimeterUtils.h"
 #include "AliVEvent.h"
+
+// ---- Detector ----
+#include "AliEMCALPIDUtils.h"
 
 ClassImp(AliCaloPID)
 
@@ -249,6 +252,17 @@ void AliCaloPID::InitParameters()
   fPHOSDispersionCut = 2.5;
   
 }
+
+//______________________________________________
+AliEMCALPIDUtils *AliCaloPID::GetEMCALPIDUtils() 
+{
+  // return pointer to AliEMCALPIDUtils, create it if needed
+  
+  if(!fEMCALPIDUtils) fEMCALPIDUtils = new AliEMCALPIDUtils ; 
+  return fEMCALPIDUtils ; 
+  
+}
+
 
 //______________________________________________________________________
 Int_t AliCaloPID::GetIdentifiedParticleType(const TString calo,

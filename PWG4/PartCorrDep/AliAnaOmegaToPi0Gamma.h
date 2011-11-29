@@ -24,12 +24,7 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   AliAnaOmegaToPi0Gamma() ; // default ctor
   AliAnaOmegaToPi0Gamma(const char *name) ; // default ctor
   virtual ~AliAnaOmegaToPi0Gamma() ;//virtual dtor
-
-  private:
-  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) ; // cpy ctor
-  AliAnaOmegaToPi0Gamma & operator = (const AliAnaOmegaToPi0Gamma & ex) ;//cpy assignment
-
-  public: 
+  
   TList * GetCreateOutputObjects(); 
   void Print(const Option_t * opt) const;
   
@@ -37,11 +32,9 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   void MakeAnalysisFillHistograms();
   void Terminate(TList * outList);
 
-  TString GetInputAODPhotonName() const {return fInputAODGammaName;}
-  void SetInputAODPhotonName(TString & name) { fInputAODGammaName = name; }
-  Bool_t IsBadRun(Int_t /*iRun*/) const {return kFALSE;} //Tests if this run bad according to private list
-
-  void SetNEventsMixed(Int_t nevents) { fNmaxMixEv=nevents;} //events to be mixed
+  TString GetInputAODPhotonName()  const { return fInputAODGammaName;}
+  void    SetInputAODPhotonName(TString & name) { fInputAODGammaName = name; }
+  Bool_t  IsBadRun(Int_t /*iRun*/) const { return kFALSE;} //Tests if this run bad according to private list
 
   void SetNCentBin(Int_t nbin){fNCentBin = nbin;}
   void SetNPID(Int_t pid) {fNpid=pid;} //N pid cut 
@@ -65,7 +58,6 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   Int_t fNRpBin;                 //Number of reaction plane cut
   Int_t fNBadChDistBin;          //Number of bad channel dist cut
   Int_t fNpid;                   //Number of PID cut
-  Int_t fNmaxMixEv;              //buffer size events to be mixed
 
   Double_t *fVtxZCut;            //![fNVtxZBin] vtertx z cut
   Double_t *fCent;               //![fNCentBin] centrality cut
@@ -75,13 +67,13 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   Double_t fPi0MassWindow;       //pi0 mass windows
   Double_t fPi0OverOmegaPtCut;   //pi0 Pt over omega pt cut
   Double_t fGammaOverOmegaPtCut; //gamma pt over omega pt cut
-  Double_t fEOverlapCluster;    //the pt when the two photons overlapped
+  Double_t fEOverlapCluster;     //the pt when the two photons overlapped
 
   TH2F * fhEtalon;               //an etalon of 3D histograms
-  TH2F **fRealOmega0;             //real omega IVM(asy, pt, m), with Asy_pi0<1 
-  TH2F **fMixAOmega0;             //mixA omega IVM(asy, pt, m) 
-  TH2F **fMixBOmega0;             //mixB omega IVM(asy, pt, m) 
-  TH2F **fMixCOmega0;             //mixC omega IVM(asy, pt, m) 
+  TH2F **fRealOmega0;            //real omega IVM(asy, pt, m), with Asy_pi0<1 
+  TH2F **fMixAOmega0;            //mixA omega IVM(asy, pt, m) 
+  TH2F **fMixBOmega0;            //mixB omega IVM(asy, pt, m) 
+  TH2F **fMixCOmega0;            //mixC omega IVM(asy, pt, m) 
   TH2F **fRealOmega1;            //real omega IVM(asy, pt, m), with Asy_pi0<0.7
   TH2F **fMixAOmega1;            //mixA omega IVM(asy, pt, m)
   TH2F **fMixBOmega1;            //mixB omega IVM(asy, pt, m)
@@ -91,10 +83,13 @@ class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
   TH2F **fMixBOmega2;            //mixB omega IVM(asy, pt, m)
   TH2F **fMixCOmega2;            //mixC omega IVM(asy, pt, m)
 
-  TH2F **fhFakeOmega;     //high pt clusters assumed as pi0 + another gamma 
+  TH2F **fhFakeOmega;            //high pt clusters assumed as pi0 + another gamma 
 
   TH1F *fhOmegaPriPt;            //MC primary omega pt in 2pi and |y|<0.5
-
+  
+  AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) ;              // cpy ctor
+  AliAnaOmegaToPi0Gamma & operator = (const AliAnaOmegaToPi0Gamma & ex) ;// cpy assignment
+  
   ClassDef(AliAnaOmegaToPi0Gamma,2)
 
 } ;

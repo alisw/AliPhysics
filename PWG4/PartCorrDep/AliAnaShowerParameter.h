@@ -31,8 +31,6 @@ class AliAnaShowerParameter : public AliAnaPartCorrBaseClass {
 public: 
 
   AliAnaShowerParameter() ; // default ctor
-  AliAnaShowerParameter(const AliAnaShowerParameter & g) ; // cpy ctor
-  AliAnaShowerParameter & operator = (const AliAnaShowerParameter & g) ;//cpy assignment
   virtual ~AliAnaShowerParameter() ; //virtual dtor
   
   TList *  GetCreateOutputObjects();
@@ -60,25 +58,28 @@ public:
 	
   private:
  
-  TString fCalorimeter ; // Calorimeter where the gamma is searched;
-  Float_t fNCellsCutMin ;
-  Float_t fNCellsCutMax ;
-  Float_t fLambdaCut ;
-  Double_t fTimeCutMin  ;    // Remove clusters/cells with time smaller than this value, in ns
-  Double_t fTimeCutMax  ;    // Remove clusters/cells with time larger than this value, in ns
+  TString fCalorimeter ;    // Calorimeter where the gamma is searched;
+  Float_t fNCellsCutMin ;   // N cells cut min
+  Float_t fNCellsCutMax ;   // N cells cut max
+  Float_t fLambdaCut ;      // l0 cut 
+  Double_t fTimeCutMin  ;   // Remove clusters/cells with time smaller than this value, in ns
+  Double_t fTimeCutMax  ;   // Remove clusters/cells with time larger than this value, in ns
 
   //Histograms   
-  TH1F * fhNClusters  ; 
-  TH2F * fhNCellCluster;
-  TH3F * fhEtaPhiPtCluster   ; 
-  TH2F * fhLambdaPtCluster  ; 
+  TH1F * fhNClusters  ;     //! cluster
+  TH2F * fhNCellCluster;    //! cells per cluster
+  TH3F * fhEtaPhiPtCluster; //! eta vs phi vs pt
+  TH2F * fhLambdaPtCluster; //! l0 vs pt
 
   //MC
-  TH2F * fhLambdaPtPhoton ;    
-  TH2F * fhLambdaPtPi0 ;    
-  TH2F * fhLambdaPtPion ; 
-  TH1D * fhPtTruthPi0 ;
+  TH2F * fhLambdaPtPhoton ; //! l0 vs pt mc photon   
+  TH2F * fhLambdaPtPi0 ;    //! l0 vs pt mc pi0 
+  TH2F * fhLambdaPtPion ;   //! l0 vs pt mc pi charged
+  TH1D * fhPtTruthPi0 ;     //! pi0 pt mc
 
+  AliAnaShowerParameter(const AliAnaShowerParameter & g) ;               // cpy ctor
+  AliAnaShowerParameter & operator = (const AliAnaShowerParameter & g) ; // cpy assignment
+  
    ClassDef(AliAnaShowerParameter,1)
 
 } ;

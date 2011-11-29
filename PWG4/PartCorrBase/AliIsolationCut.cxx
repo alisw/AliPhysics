@@ -30,7 +30,6 @@
   
   
 // --- ROOT system --- 
-//#include <Riostream.h>
 #include <TLorentzVector.h>
 #include <TObjArray.h>
 
@@ -44,20 +43,25 @@
 
 ClassImp(AliIsolationCut)
   
-//____________________________________________________________________________
-  AliIsolationCut::AliIsolationCut() : 
-    TObject(),
-    fConeSize(0.),fPtThreshold(0.), fSumPtThreshold(0.), fPtFraction(0.), fICMethod(0),fPartInCone(0)
- 
+//____________________________________
+AliIsolationCut::AliIsolationCut() : 
+TObject(),
+fConeSize(0.),
+fPtThreshold(0.), 
+fSumPtThreshold(0.), 
+fPtFraction(0.), 
+fICMethod(0),
+fPartInCone(0)
+
 {
   //default ctor
   
   //Initialize parameters
   InitParameters();
-
+  
 }
 
-//____________________________________________________________________________
+//____________________________________________
 TString AliIsolationCut::GetICParametersList()
 {
   //Put data member values in string to keep in output container
@@ -96,11 +100,17 @@ void AliIsolationCut::InitParameters()
   
 }
 
-//__________________________________________________________________
-void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * const plNe, AliCaloTrackReader * const reader, 
-					const Bool_t bFillAOD, AliAODPWG4ParticleCorrelation  *pCandidate, 
-					const TString & aodArrayRefName,
-					Int_t & n, Int_t & nfrac, Float_t &coneptsum,  Bool_t  &isolated) const
+//________________________________________________________________________________
+void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS, 
+                                        const TObjArray * plNe, 
+                                        const AliCaloTrackReader * reader, 
+                                        const Bool_t bFillAOD, 
+                                        AliAODPWG4ParticleCorrelation  *pCandidate, 
+                                        const TString & aodArrayRefName,
+                                        Int_t & n, 
+                                        Int_t & nfrac, 
+                                        Float_t &coneptsum,  
+                                        Bool_t  &isolated) const
 {  
   //Search in cone around a candidate particle if it is isolated 
   Float_t phiC  = pCandidate->Phi() ;
@@ -277,7 +287,7 @@ void  AliIsolationCut::MakeIsolationCut(TObjArray * const plCTS,  TObjArray * co
   
 }
 
-//__________________________________________________________________
+//_____________________________________________________
 void AliIsolationCut::Print(const Option_t * opt) const
 {
   
@@ -287,11 +297,11 @@ void AliIsolationCut::Print(const Option_t * opt) const
   
   printf("**** Print %s %s **** \n", GetName(), GetTitle() ) ;
   
-  printf("IC method          =     %d\n", fICMethod) ; 
-  printf("Cone Size          =     %1.2f\n", fConeSize) ; 
+  printf("IC method          =     %d\n",    fICMethod   ) ; 
+  printf("Cone Size          =     %1.2f\n", fConeSize   ) ; 
   printf("pT threshold       =     %2.1f\n", fPtThreshold) ;
-  printf("pT fraction        =     %3.1f\n", fPtFraction) ;
-  printf("particle type in cone =  %d\n",fPartInCone);
+  printf("pT fraction        =     %3.1f\n", fPtFraction ) ;
+  printf("particle type in cone =  %d\n",    fPartInCone ) ;
   printf("    \n") ;
   
 } 

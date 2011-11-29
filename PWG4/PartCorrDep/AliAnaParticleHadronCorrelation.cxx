@@ -887,9 +887,9 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
 }
 
-//_________________________________________________________________________________________________________
+//___________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle, 
-                                                                TObjArray* pl, const Bool_t bFillHisto)
+                                                                const TObjArray* pl, const Bool_t bFillHisto)
 {  
   // Charged Hadron Correlation Analysis
   if(GetDebug() > 1)printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Make trigger particle - charged hadron correlation \n");
@@ -1183,7 +1183,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
 
 //________________________________________________________________________________________________________________
 Bool_t  AliAnaParticleHadronCorrelation::MakeNeutralCorrelation(AliAODPWG4ParticleCorrelation * const aodParticle, 
-                                                                TObjArray* pi0list, const Bool_t bFillHisto)  
+                                                                const TObjArray* pi0list, const Bool_t bFillHisto)  
 {  
   // Neutral Pion Correlation Analysis
   if(GetDebug() > 1) printf("AliAnaParticleHadronCorrelation::MakeNeutralCorrelation() - Make trigger particle - pi0 correlation, %d pi0's \n",pi0list->GetEntriesFast());
@@ -1483,7 +1483,10 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
             //Select only hadrons in pt range
             if(mcTrackPt < GetMinPt() || mcTrackPt > GetMaxPt()) continue ;
             //remove trigger itself for correlation when use charged triggers 
-            if(label==iParticle && mcTrackPt==ptprim && mcTrackPhi==phiprim && mcTrackEta==etaprim) 
+            if(label==iParticle && 
+               TMath::Abs(mcTrackPt -ptprim ) < 1e-6 && 
+               TMath::Abs(mcTrackPhi-phiprim) < 1e-6 && 
+               TMath::Abs(mcTrackEta-etaprim) < 1e-6) 
               continue ;                  
             //jumped out this event if near side associated partile pt larger than trigger
             if( mcTrackPt> ptprim && TMath::Abs(mcTrackPhi-phiprim)<TMath::PiOver2()) 
@@ -1575,9 +1578,13 @@ void  AliAnaParticleHadronCorrelation::MakeMCChargedCorrelation(AliAODPWG4Partic
               if(mcTrackPhi < 0) mcTrackPhi+=TMath::TwoPi();              
               //Select only hadrons in pt range
               if(mcTrackPt < GetMinPt() || mcTrackPt > GetMaxPt()) continue ;
+              
               //remove trigger itself for correlation when use charged triggers 
-              if(label==i && mcTrackPt==ptprim && mcTrackPhi==phiprim && mcTrackEta==etaprim) 
-                continue ;                  
+              if(label==i && 
+                 TMath::Abs(mcTrackPt -ptprim ) < 1e-6 && 
+                 TMath::Abs(mcTrackPhi-phiprim) < 1e-6 && 
+                 TMath::Abs(mcTrackEta-etaprim) < 1e-6) continue ;  
+              
               //jumped out this event if near side associated partile pt larger than trigger
               if( mcTrackPt> ptprim && TMath::Abs(mcTrackPhi-phiprim)<TMath::PiOver2()) 
                 return ;

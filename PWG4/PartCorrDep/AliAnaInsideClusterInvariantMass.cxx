@@ -30,7 +30,6 @@
 #include <TClonesArray.h>
 #include <TObjString.h>
 #include <TH3F.h>
-//#include "Riostream.h"
 
 // --- Analysis system --- 
 #include "AliAnaInsideClusterInvariantMass.h" 
@@ -43,6 +42,10 @@
 #include "AliAODEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliEMCALGeoParams.h"
+
+// --- Detectors --- 
+//#include "AliPHOSGeoUtils.h"
+#include "AliEMCALGeometry.h"
 
 ClassImp(AliAnaInsideClusterInvariantMass)
   
@@ -456,8 +459,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     if (nMax <= 0) {
       printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found!");
-      delete absIdList ;
-      delete maxEList  ;
+      delete [] absIdList ;
+      delete [] maxEList  ;
       return;
     }
     
@@ -475,14 +478,14 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
       Int_t tag	= GetMCAnalysisUtils()->CheckOrigin(cluster->GetLabels(),cluster->GetNLabels(), GetReader(), 0);
             
-      if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = mcPi0;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )      mcindex = mcEta;
+      if      ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)  )      mcindex = kmcPi0;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  )      mcindex = kmcEta;
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
-               !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = mcPhoton;
+               !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcPhoton;
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton) && 
-                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = mcConversion;
-      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = mcElectron;
-      else                                                                                mcindex = mcHadron;
+                GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)) mcindex = kmcConversion;
+      else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron))   mcindex = kmcElectron;
+      else                                                                                mcindex = kmcHadron;
       
 /*      printf("AliAnaInsideClusterInvariantMass::FillAnalysisMakeHistograms() - tag %d, photon %d, prompt %d, frag %d, isr %d, pi0 decay %d, eta decay %d, other decay %d \n conv %d, pi0 %d, hadron %d, electron %d, unk %d, muon %d,pion %d, proton %d, neutron %d, kaon %d, antiproton %d, antineutron %d, bad %d\n",tag,
              GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton),
@@ -612,8 +615,8 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
     }//Work with MC truth first
   
-    delete absIdList ;
-    delete maxEList  ;
+    delete [] absIdList ;
+    delete [] maxEList  ;
 
   }//loop
   
@@ -654,8 +657,9 @@ void AliAnaInsideClusterInvariantMass::RecalibrateCellAmplitude(Float_t & amp, c
   }
 }
 
-//____________________________________________________________________________________________
-void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int_t absId2, AliVCaloCells* cells,
+//________________________________________________________________________________________
+void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int_t absId2,
+                                                   const AliVCaloCells* cells,
                                                    Float_t & e1, Float_t & e2 )
 {
   

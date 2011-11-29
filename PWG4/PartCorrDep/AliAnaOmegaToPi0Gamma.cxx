@@ -45,7 +45,7 @@ ClassImp(AliAnaOmegaToPi0Gamma)
 AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaPartCorrBaseClass(),
 fInputAODPi0(0), fInputAODGammaName(""),
 fEventsList(0x0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
-fNmaxMixEv(0), fVtxZCut(0), fCent(0), fRp(0), 
+fVtxZCut(0), fCent(0), fRp(0), 
 fPi0Mass(0),fPi0MassWindow(0),fPi0OverOmegaPtCut(0),
 fGammaOverOmegaPtCut(0), fEOverlapCluster(0),
 fhEtalon(0),
@@ -61,79 +61,6 @@ fhOmegaPriPt(0)
  //Default Ctor
  InitParameters();
 }
-/*
-//______________________________________________________________________________
-AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma(const AliAnaOmegaToPi0Gamma & ex) : AliAnaPartCorrBaseClass(ex),
-fInputAODPi0(new TClonesArray (*ex.fInputAODPi0)),
-fInputAODGammaName(ex.fInputAODGammaName),
-fEventsList(0x0), 
-fNVtxZBin(ex.fNVtxZBin), fNCentBin(ex.fNCentBin), fNRpBin(ex.fNRpBin),
-fNBadChDistBin(ex.fNBadChDistBin),fNpid(ex.fNpid),
-fNmaxMixEv(ex.fNmaxMixEv),
-fVtxZCut(ex.fVtxZCut), fCent(ex.fCent), fRp(ex.fRp), 
-fPi0Mass(ex.fPi0Mass),
-fPi0MassWindow(ex.fPi0MassWindow),
-fPi0OverOmegaPtCut(ex.fPi0OverOmegaPtCut),
-fGammaOverOmegaPtCut(ex.fGammaOverOmegaPtCut),
-fhEtalon(ex.fhEtalon),
-fRealOmega0(ex.fRealOmega0), fMixAOmega0(ex.fMixAOmega0),
-fMixBOmega0(ex.fMixBOmega0), fMixCOmega0(ex.fMixCOmega0),
-fRealOmega1(ex.fRealOmega1), fMixAOmega1(ex.fMixAOmega1),
-fMixBOmega1(ex.fMixBOmega1), fMixCOmega1(ex.fMixCOmega1),
-fRealOmega2(ex.fRealOmega2), fMixAOmega2(ex.fMixAOmega2),
-fMixBOmega2(ex.fMixBOmega2), fMixCOmega2(ex.fMixCOmega2),
-fhOmegaPriPt(ex.fhOmegaPriPt)
-{
- // cpy ctor
- //Do not need it
-}
-*/
-/*
-//______________________________________________________________________________
-AliAnaOmegaToPi0Gamma & AliAnaOmegaToPi0Gamma::operator = (const AliAnaOmegaToPi0Gamma & ex)
-{
- // assignment operator
-  
- if(this == &ex)return *this;
-   ((AliAnaPartCorrBaseClass *)this)->operator=(ex);
-   fInputAODPi0 = new TClonesArray(*ex.fInputAODPi0);
-   fInputAODGammaName = ex.fInputAODGammaName;
-   fEventsList = ex.fEventsList;
-
-   fNVtxZBin=ex.fNVtxZBin;
-   fNCentBin=ex.fNCentBin;
-   fNRpBin=ex.fNRpBin;
-   fNBadChDistBin=ex.fNBadChDistBin;
-   fNpid=ex.fNpid;
-   fNmaxMixEv =ex.fNmaxMixEv;
-
-   fVtxZCut=ex.fVtxZCut;
-   fCent=ex.fCent;
-   fRp=ex.fRp;
-
-   fPi0Mass=ex.fPi0Mass;
-   fPi0MassWindow=ex.fPi0MassWindow;
-   fPi0OverOmegaPtCut=ex.fPi0OverOmegaPtCut;
-   fGammaOverOmegaPtCut=ex.fGammaOverOmegaPtCut;
-
-   fhEtalon=ex.fhEtalon;
-   fRealOmega0=ex.fRealOmega0;
-   fMixAOmega0=ex.fMixAOmega0;
-   fMixBOmega0=ex.fMixBOmega0;
-   fMixCOmega0=ex.fMixCOmega0;
-   fRealOmega1=ex.fRealOmega1;
-   fMixAOmega1=ex.fMixAOmega1;
-   fMixBOmega1=ex.fMixBOmega1;
-   fMixCOmega1=ex.fMixCOmega1;
-   fRealOmega2=ex.fRealOmega2;
-   fMixAOmega2=ex.fMixAOmega2;
-   fMixBOmega2=ex.fMixBOmega2;
-   fMixCOmega2=ex.fMixCOmega2;
-   fhOmegaPriPt=ex.fhOmegaPriPt;
-  return *this;
-	
-}
-*/
 
 //______________________________________________________________________________
 AliAnaOmegaToPi0Gamma::~AliAnaOmegaToPi0Gamma() {
@@ -175,7 +102,6 @@ void AliAnaOmegaToPi0Gamma::InitParameters()
  fNRpBin=1;                 
  fNBadChDistBin=3;          
  fNpid=1;                   
- fNmaxMixEv=8;              
  
  fPi0Mass=0.1348;             
  fPi0MassWindow=0.015;       
@@ -379,7 +305,6 @@ void AliAnaOmegaToPi0Gamma::Print(const Option_t * /*opt*/) const
   printf("Cuts at AOD particle level:\n");
   printf("Number of PID:                        %d \n", fNpid);
   printf("Number of DistToBadChannel cuts:      %d\n", fNBadChDistBin);
-  printf("number of events buffer to be mixed:  %d\n",fNmaxMixEv);
 } 
 
 //______________________________________________________________________________
@@ -740,7 +665,7 @@ void AliAnaOmegaToPi0Gamma::MakeAnalysisFillHistograms()
   if(currentEvent->GetEntriesFast()>0){
     fEventsList[curEventBin]->AddFirst(currentEvent) ;
     currentEvent=0 ; 
-    if(fEventsList[curEventBin]->GetSize()>=fNmaxMixEv) {
+    if(fEventsList[curEventBin]->GetSize()>=GetNMaxEvMix()) {
       TClonesArray * tmp = (TClonesArray*) (fEventsList[curEventBin]->Last()) ;
       fEventsList[curEventBin]->RemoveLast() ;
       delete tmp ;

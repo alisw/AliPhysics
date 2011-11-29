@@ -31,12 +31,6 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   AliAnaParticleIsolation() ; // default ctor
   virtual ~AliAnaParticleIsolation() { ; } //virtual dtor
 
- private:
-  AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ; // cpy ctor
-  AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;//cpy assignment
-
- public:
-
   // Main general methods
     
   TObjString * GetAnalysisCuts();
@@ -185,6 +179,9 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
+  
+  AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ;              // cpy ctor
+  AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;// cpy assignment
   
   ClassDef(AliAnaParticleIsolation,4)
 } ;

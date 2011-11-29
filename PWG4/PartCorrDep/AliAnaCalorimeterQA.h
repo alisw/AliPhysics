@@ -29,12 +29,7 @@ class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
 public: 
   AliAnaCalorimeterQA() ; // default ctor	
   virtual ~AliAnaCalorimeterQA() {;} //virtual dtor
-private:
-  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
-  AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
-  
-public:
-  
+    
   // General methods
   
   TObjString * GetAnalysisCuts();
@@ -51,8 +46,8 @@ public:
     
   // Main methods
   
-  void         BadClusterHistograms(AliVCluster* clus, TObjArray *caloClusters, AliVCaloCells * cells, 
-                                    const Int_t absIdMax,       const Double_t maxCellFraction, const Double_t tmax,
+  void         BadClusterHistograms(AliVCluster* clus,    const TObjArray *caloClusters,  AliVCaloCells * cells, 
+                                    const Int_t absIdMax, const Double_t maxCellFraction, const Double_t tmax,
                                     Double_t timeAverages[2]);  
     
   void         CalculateAverageTime(AliVCluster *clus, AliVCaloCells *cells, Double_t timeAverages[2]);
@@ -63,8 +58,8 @@ public:
     
   void         ClusterAsymmetryHistograms(AliVCluster* clus, const Int_t absIdMax);
   
-  void         ClusterHistograms(AliVCluster* cluster, TObjArray *caloClusters, AliVCaloCells * cells, 
-                                 const Int_t absIdMax,       const Double_t maxCellFraction, const Double_t tmax,
+  void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
+                                 const Int_t absIdMax, const Double_t maxCellFraction, const Double_t tmax,
                                  Double_t timeAverages[2]);
   
   void         ClusterLoopHistograms(TObjArray * clusters, AliVCaloCells * cells);
@@ -80,7 +75,7 @@ public:
   Float_t      GetECross(const Int_t absId, AliVCaloCells* cells);
   
   void         InvariantMassHistograms(const Int_t iclus, const TLorentzVector mom, const Int_t nModule,
-                                       TObjArray* caloClusters, AliVCaloCells * cells);
+                                       const TObjArray* caloClusters, AliVCaloCells * cells);
 
   Bool_t       IsGoodCluster(const Int_t absIdMax, AliVCaloCells *cells);
   
@@ -328,7 +323,7 @@ public:
   
   //Pure MC
 
-  enum mcTypes {mcPhoton = 0, mcPi0 = 1, mcEta = 2, mcElectron = 3, mcNeHadron = 4, mcChHadron = 5 };
+  enum mcTypes {kmcPhoton = 0, kmcPi0 = 1, kmcEta = 2, kmcElectron = 3, kmcNeHadron = 4, kmcChHadron = 5 };
   
   TH2F *   fhRecoMCE[6][2]  ;                 //! E   generated particle vs reconstructed E
   TH2F *   fhRecoMCPhi[6][2] ;                //! phi generated particle vs reconstructed phi
@@ -371,6 +366,9 @@ public:
   TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
+  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
+  AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
+  
   ClassDef(AliAnaCalorimeterQA,21)
 } ;
 
