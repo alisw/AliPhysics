@@ -125,7 +125,7 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
     vertex[0] = esd->GetVertex()->GetX();
     vertex[1] = esd->GetVertex()->GetY();
     vertex[2] = esd->GetVertex()->GetZ();
-    cout << "Vertex " << vertex[0] << vertex[1] << vertex [2] << endl;
+    //cout << "Vertex " << vertex[0] << vertex[1] << vertex [2] << endl;
     //TLorentzVector gamma;
     
     // -- add VZERO
@@ -152,16 +152,16 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
 
       const AliESDVertex *vtxTPC = esd->GetPrimaryVertexTPC();
       if (!vtxTPC) continue;
-      cout << "Got primary vertex " << endl;
+      //cout << "Got primary vertex " << endl;
 
       AliESDtrack *esdtrack = esd->GetTrack(i);
       if (!esdtrack) continue;
       tracks->Add(esdtrack);
-      cout << "Got esd track " << endl;
+      //cout << "Got esd track " << endl;
 
       AliESDtrack *tpctrack = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esd),esdtrack->GetID());
       if (!tpctrack) continue;
-      cout << "Got tpc track " << endl;
+      //cout << "Got tpc track " << endl;
 
       AliExternalTrackParam exParam;
       Bool_t relate = tpctrack->RelateToVertexTPC(vtxTPC,esd->GetMagneticField(),kVeryBig,&exParam);
@@ -171,11 +171,11 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
       }
 
       tpctrack->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
-      cout << "Set param to tpctrack " << endl;
+      //cout << "Set param to tpctrack " << endl;
 
       fFastJetWrapper->AddInputVector(tpctrack->Px(),tpctrack->Py(),tpctrack->Pz(),tpctrack->P());
       if ( fMakeStats ) scalars.Add("TracksPt","TPC tracks pT", tpctrack->Pt());
-      cout << "Added track with P: " << tpctrack->P() << endl;
+      //cout << "Added track with P: " << tpctrack->P() << endl;
     }
 
 
@@ -225,7 +225,7 @@ Int_t AliHLTTriggerFastJet::DoTrigger() {
    	AliESDtrack *track = esd->GetTrack(trackindex);
    	if (!track) continue;
    	fFastJetWrapper->AddInputVector(track->Px(),track->Py(),track->Pz(),cluster->E());
-   	cout << "Added cluster with E: " << cluster->E() << endl;
+   	//cout << "Added cluster with E: " << cluster->E() << endl;
 	if ( fMakeStats ) {
 	  scalars.Add("ClusterEn" , "Clusters Energy", cluster->E());
 	  scalars.Add("ClusterEta", "Clusters Eta"   , track->Eta());
