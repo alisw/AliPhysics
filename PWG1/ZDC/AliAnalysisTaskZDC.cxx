@@ -317,11 +317,9 @@ void AliAnalysisTaskZDC::UserExec(Option_t */*option*/)
     }
   }
   //for(Int_t i=0; i<4; i++){
-    if(tdcSum!=999.){
-      //fhTDCZNSum->Fill(tdcSum); 
-      fDebunch->Fill(tdcDiff, tdcSum);  
-    }
-    //if(tdcDiff!=999.)fhTDCZNDiff->Fill(tdcDiff); 
+    if(tdcSum!=999.) fhTDCZNSum->Fill(tdcSum); 
+    if(tdcDiff!=999.)fhTDCZNDiff->Fill(tdcDiff); 
+    if(tdcSum!=999. && tdcDiff!=999.)  fDebunch->Fill(tdcDiff, tdcSum);  
   //}
   
   PostData(1, fOutput);
