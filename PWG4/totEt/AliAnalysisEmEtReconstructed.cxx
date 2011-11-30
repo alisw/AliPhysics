@@ -161,6 +161,7 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
 
   if(!fGeoUt){
     fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1");//new AliEMCALGeometry("EMCAL_FIRSTYEAR","EMCAL");
+    //fGeoUt = AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1");
     AliInfo("Creating new AliEMCALGeometry");
   }
   //fGeoUt = new AliEMCALGeometry("EMCAL_COMPLETE1","EMCAL");
@@ -187,9 +188,11 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
   Float_t pos[3] = {0};
   TVector3 caloPos(0,0,0);
   TVector3 trackPos(0,0,0);
-  Double_t res=0, maxPid=-99;
+  Double_t res=0, delta_eta=0, delta_phi=0, maxPid=-99;
   Double_t xCluster[4]={0}, xCharged[7]={0};
-		
+	
+  AliESDtrack *track = 0;
+    
   // loop the clusters
   for (int iCluster = 0; iCluster < nCluster; iCluster++ ) 
     {		
@@ -200,8 +203,21 @@ Int_t AliAnalysisEmEtReconstructed::AnalyseEvent(AliVEvent* ev)
       caloPos.SetXYZ(pos[0],pos[1],pos[2]);
 		
       // look for track that matches calo cluster  
-      AliESDtrack *track = FindMatch(caloCluster, res);
-		
+      //track = FindMatch(caloCluster, res); // Marcelo's matching	
+
+      // *********************
+      // tender's matching
+      delta_eta = caloCluster->GetTrackDz(); 
+      delta_phi = caloCluster->GetTrackDx(); 
+
+      if (caloCluster->GetTrackMatchedIndex() > 0) // tender's matching
+          track = fESD->GetTrack(caloCluster->GetTrackMatchedIndex());
+        
+      //if (track)
+      //   if ( !fEsdtrackCutsITSTPC->IsSelected(track) )
+      //       track = 0;
+      // *********************
+        
       // Retrieve track PID
       if (track)
 	maxPid = GetTrackPID(track);
