@@ -40,6 +40,7 @@ protected:
   virtual void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const ;
   
 private:
+  AliVZEROQAChecker &operator=(const AliVZEROQAChecker& qac); // assignment operator
   
   ClassDef(AliVZEROQAChecker,1)  // description 
 
