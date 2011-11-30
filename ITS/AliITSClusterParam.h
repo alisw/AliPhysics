@@ -21,7 +21,6 @@ class AliITSRecPoint;
 class AliITSClusterParam : public TObject {
  public:
   static AliITSClusterParam* Instance();
-  AliITSClusterParam(){}
   virtual           ~AliITSClusterParam(){;}
   virtual void	Print(Option_t* option = "") const;
   void SetInstance(AliITSClusterParam *param){fgInstance = param;}
@@ -42,7 +41,10 @@ class AliITSClusterParam : public TObject {
 
   //void FitData(TTree * tree);
   //
- protected:
+ private:
+  AliITSClusterParam(){}
+  AliITSClusterParam(const AliITSClusterParam &source); // copy constructor. Not to be used!
+  AliITSClusterParam& operator=(const AliITSClusterParam &source); // = operator. Not to be used!
   static AliITSClusterParam*   fgInstance; //! Instance of this class (singleton implementation)
   static Int_t GetErrorOrigRecPoint(const AliITSRecPoint*cl,
 				    Float_t &erry,Float_t &errz,Float_t &covyz);
