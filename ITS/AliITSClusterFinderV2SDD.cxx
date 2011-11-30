@@ -462,7 +462,7 @@ void AliITSClusterFinderV2SDD::FindClustersSDD(AliITSRawStream* input)
 }
 
 //______________________________________________________________________
-Bool_t AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid, AliBin* bins, AliITSCalibrationSDD* cal) const {
+Bool_t AliITSClusterFinderV2SDD::NoiseSuppress(Int_t k, Int_t sid, AliBin* bins, const AliITSCalibrationSDD* cal) const {
   // applies zero suppression using the measured noise of each anode
   // threshold values from ALICE-INT-1999-28 V10
   // returns kTRUE if the digit should eb noise suppressed, kFALSE if it should be kept

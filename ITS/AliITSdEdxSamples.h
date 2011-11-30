@@ -80,8 +80,7 @@ class AliITSdEdxSamples : public TObject {
     else return 0.;
   }
   Double_t GetdEdxSample(Int_t i) const { // keV/100um
-    if(i<fNSamples && fdxSamples[i]>0.) 
-      return fdESamples[i]/(fdxSamples[i]*100.);
+    if(i<fNSamples && fdxSamples[i]>0.) return fdESamples[i]/(fdxSamples[i]*100.);
     else return 0.;
   }
 
@@ -113,7 +112,7 @@ class AliITSdEdxSamples : public TObject {
 
   Double_t GetTruncatedMean(Double_t frac=0.5, Double_t mindedx=0.) const;
   Double_t GetWeightedMean(Double_t mindedx=0.) const;
-  void     GetConditionalProbabilities(AliITSPidParams* pars, Double_t condprob[AliPID::kSPECIES], Double_t mindedx=0.) const;
+  void     GetConditionalProbabilities(const AliITSPidParams* pars, Double_t condprob[AliPID::kSPECIES], Double_t mindedx=0.) const;
 
 
  protected:

@@ -23,6 +23,7 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 
+
 class AliITSdEdxAnalyzer : public TObject {
 
  public:
@@ -40,7 +41,7 @@ class AliITSdEdxAnalyzer : public TObject {
   void SetMIPdEdx(Float_t val){fMIP=val;}
   void SetTPCMinimumPIDProb(Float_t min){fTPCpidCut=min;}
 
-  void ReadEvent(AliESDEvent* ev, AliStack* stack=0);
+  void ReadEvent(const AliESDEvent* ev, AliStack* stack=0);
 
 
   Double_t BetheBloch(TParticle* part) const{
@@ -93,9 +94,7 @@ class AliITSdEdxAnalyzer : public TObject {
     return -1;
   }
   Int_t GetSpecieBin(Int_t absPdgCode) const {
-    for(Int_t iS=0; iS<kNParticles; iS++){
-      if(absPdgCode==fgkPdgCode[iS]) return iS;
-    }
+    for(Int_t iS=0; iS<kNParticles; iS++) if(absPdgCode==fgkPdgCode[iS]) return iS;
     return -1;
   }
 

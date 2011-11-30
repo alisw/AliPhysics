@@ -63,6 +63,7 @@ fSPDChannelStatus(0),
 fSDDChannelStatus(0),
 fSSDChannelStatus(0)
 {
+  // contruct starting from CDB
   AliCDBEntry* spdEntryD = cdb->Get("ITS/Calib/SPDDead");
   if (!spdEntryD) AliFatal("Cannot get CDB entry for SPDDead");
   TObjArray* deadArrSPD = (TObjArray*)spdEntryD->GetObject();
@@ -103,6 +104,7 @@ fSPDChannelStatus(0),
 fSDDChannelStatus(0),
 fSSDChannelStatus(0)
 {
+  // contruct starting from det type rec
   UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
   fSPDChannelStatus=new TBits(nSPDchan);
   

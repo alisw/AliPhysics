@@ -109,7 +109,7 @@ void  AliITSOnlineSDDCMN::ValidateAnodes(){
 }
 
 //______________________________________________________________________
-TH2F* AliITSOnlineSDDCMN::GetCleanEvent(TH2F* hrawd) const {
+TH2F* AliITSOnlineSDDCMN::GetCleanEvent(const TH2F* hrawd) const {
   // Fills an histogram with counts corrected for common mode noise
 
   TH2F* hcorrd=new TH2F("hcorrd","",hrawd->GetNbinsX(),hrawd->GetXaxis()->GetXmin(),hrawd->GetXaxis()->GetXmax(),hrawd->GetNbinsY(),hrawd->GetYaxis()->GetXmin(),hrawd->GetYaxis()->GetXmax());

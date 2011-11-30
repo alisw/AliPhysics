@@ -26,6 +26,8 @@
 #include <TFile.h>
 #include <TParticlePDG.h>
 #include <TDatabasePDG.h>
+#include "AliStack.h"
+#include "AliLog.h"
 #include "AliITSdEdxAnalyzer.h"
 #include "AliExternalTrackParam.h"
 //#include "AliITSpidESD.h"
@@ -89,7 +91,7 @@ void AliITSdEdxAnalyzer::SetMomentumBins(const Int_t npbins, const Float_t pmin,
 }
 //______________________________________________________________________
 void AliITSdEdxAnalyzer::DeleteHistos(){
-  //
+  // deletes the hitograms
   if(fHistodEdx){
     for(Int_t i=0; i<GetNHistos();i++) delete fHistodEdx[i];
     delete [] fHistodEdx;
@@ -108,7 +110,7 @@ void AliITSdEdxAnalyzer::DeleteHistos(){
 }
 //______________________________________________________________________
 void AliITSdEdxAnalyzer::BookHistos(){
-  //
+  // defines the output histograms 
   fHistodEdx=new TH1F*[GetNHistos()];
   fHistoDeltadEdx=new TH1F*[GetNHistos()];
   for(Int_t iSpecie=0; iSpecie<kNParticles; iSpecie++){
@@ -143,6 +145,7 @@ void AliITSdEdxAnalyzer::BookHistos(){
 }
 //______________________________________________________________________
 void AliITSdEdxAnalyzer:: WriteHistos(TString filename) const {
+  // stores output histogrma to file
   TFile *outfile=new TFile(filename.Data(),"recreate");
   outfile->cd();
   for(Int_t i=0; i<GetNHistos();i++){ 
@@ -154,7 +157,7 @@ void AliITSdEdxAnalyzer:: WriteHistos(TString filename) const {
   delete outfile;
 }
 //______________________________________________________________________
-void AliITSdEdxAnalyzer::ReadEvent(AliESDEvent* esd, AliStack* stack){
+void AliITSdEdxAnalyzer::ReadEvent(const AliESDEvent* esd, AliStack* stack){
   // Fill histos 
   // if stack is !=0 MC truth is used to define particle specie
   // else TPC pid is used to define particle specie
@@ -200,7 +203,7 @@ void AliITSdEdxAnalyzer::ReadEvent(AliESDEvent* esd, AliStack* stack){
 }
 //______________________________________________________________________
 Int_t AliITSdEdxAnalyzer::GetPaticleIdFromTPC(const AliESDtrack* track) const {
-  //
+  // Returns the particle specie as identified by TPC
   Double_t tpcpid[AliPID::kSPECIES];
   track->GetTPCpid(tpcpid);
   Int_t maxPos=-1;
@@ -221,7 +224,7 @@ Int_t AliITSdEdxAnalyzer::GetPaticleIdFromTPC(const AliESDtrack* track) const {
 }
 //______________________________________________________________________
 Double_t AliITSdEdxAnalyzer::BetheBloch(const Float_t p, const Float_t m) const {
-  //
+  // Computes expected dE/dx value for given particle specie and momentum
   static AliITSPIDResponse pidResponse;
   Double_t dedxbb=0.;
   if(fBBmodel==0){

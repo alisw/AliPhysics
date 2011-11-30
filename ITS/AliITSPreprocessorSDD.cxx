@@ -25,6 +25,7 @@
 
 #include "AliITSPreprocessorSDD.h"
 #include "AliITSCalibrationSDD.h"
+#include "AliITSDriftSpeedSDD.h"
 #include "AliITSDriftSpeedArraySDD.h"
 #include "AliITSDCSAnalyzerSDD.h"
 #include "AliShuttleInterface.h"
@@ -409,7 +410,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 Double_t* AliITSPreprocessorSDD::RescaleDriftSpeedModule(TList* theList,
 							 Int_t iBadMod, 
 							 Int_t iBadSide,
-							 AliITSDriftSpeedSDD* refSpeed)
+							 const AliITSDriftSpeedSDD* refSpeed)
   const
 {
   // Rescale driftSpeed for a drift region starting from values of golden module

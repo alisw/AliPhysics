@@ -218,7 +218,7 @@ Double_t AliITSdEdxSamples::GetWeightedMean(Double_t mindedx) const {
 
 }
 //______________________________________________________________________
-void  AliITSdEdxSamples::GetConditionalProbabilities(AliITSPidParams* pars, Double_t condprob[AliPID::kSPECIES], Double_t mindedx) const {
+void  AliITSdEdxSamples::GetConditionalProbabilities(const AliITSPidParams* pars, Double_t condprob[AliPID::kSPECIES], Double_t mindedx) const {
   // compute conditional probablilities
   const Int_t nPart = 3;
   Double_t itsProb[nPart] = {1,1,1}; // p, K, pi
