@@ -342,8 +342,8 @@ if (res->GetEntries() ==0) {
 		hMultA->SetBinContent(nEntries,hV0A->GetMean());
 		hMultC->SetBinContent(nEntries,hV0C->GetMean());
 
-		hAdcA->SetBinContent(nEntries,hAdcWithTimeA->GetMean());
-		hAdcC->SetBinContent(nEntries,hAdcWithTimeC->GetMean());
+		//		hAdcA->SetBinContent(nEntries,hAdcWithTimeA->GetMean());
+		//		hAdcC->SetBinContent(nEntries,hAdcWithTimeC->GetMean());
 
 //-------------
 	TCanvas * cOut = new TCanvas("cOut",Form("Run %d",runNumber));
