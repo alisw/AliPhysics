@@ -2316,8 +2316,8 @@ void AliAnalysisTaskITSTrackingCheck::UserExec(Option_t *)
       { delete trackTPC; trackTPC=0; continue; }
 
     // impact parameter to VertexTracks
-    Float_t d0z0[2],covd0z0[3];
-    Double_t d0z0TPC[2],covd0z0TPC[3];
+    Float_t d0z0[2]={0,0},covd0z0[3]={0,0,0};
+    Double_t d0z0TPC[2]={0,0},covd0z0TPC[3]={0,0,0};
     if(useTRKvtx) {
       if(!track->RelateToVertex(vertexESD,fESD->GetMagneticField(),kVeryBig)) { delete trackTPC; trackTPC=0; continue; }
     } else { 
