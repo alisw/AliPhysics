@@ -116,6 +116,7 @@ AliRDHFCutsD0toKpi &AliRDHFCutsD0toKpi::operator=(const AliRDHFCutsD0toKpi &sour
   fUseSpecialCuts=source.fUseSpecialCuts;
   fLowPt=source.fLowPt;
   fDefaultPID=source.fDefaultPID;
+  fUseKF=source.fUseKF;
   fPtLowPID=source.fPtLowPID;
 
   return *this;
