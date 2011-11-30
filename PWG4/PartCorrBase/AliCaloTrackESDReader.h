@@ -24,9 +24,7 @@ class AliCaloTrackESDReader : public AliCaloTrackReader {
   virtual ~AliCaloTrackESDReader() {;} //virtual dtor
 
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
-	
-  TString GetFiredTriggerClasses() ;
-    
+	    
   ClassDef(AliCaloTrackESDReader,1)
 } ;
 
