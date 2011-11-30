@@ -126,7 +126,7 @@ fpSDigits(0)
   
 //    SetDetectors(); // default to fOpt="All". This variable not written out.
 //PH    SetMarkerColor(kRed);
-  for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
+  for (int i=fgkNTYPES;i--;) fkRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::AliITS(const Char_t *title):
@@ -167,7 +167,7 @@ AliITS::AliITS(const Char_t *title):
     //PH  SetMarkerColor(kRed);
     if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
     fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
-    for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
+    for (int i=fgkNTYPES;i--;) fkRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::AliITS(const char *name, const char *title):
@@ -204,7 +204,7 @@ AliITS::AliITS(const char *name, const char *title):
   //PH  SetMarkerColor(kRed);
   if(!fLoader) MakeLoader(AliConfig::GetDefaultEventFolderName());
   fDetTypeSim->SetLoader((AliITSLoader*)fLoader);
-  for (int i=fgkNTYPES;i--;) fRawID2ClusID[i] = 0;
+  for (int i=fgkNTYPES;i--;) fkRawID2ClusID[i] = 0;
 }
 //______________________________________________________________________
 AliITS::~AliITS(){
@@ -1251,7 +1251,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   Double_t thr, sigma; 
 
   Int_t countRW = -1; // RS counter for raw -> cluster ID's (used in embedding)
-  const TArrayI* rawID2clusID = fRawID2ClusID[kSPD];
+  const TArrayI* rawID2clusID = fkRawID2ClusID[kSPD];
   AliITSRawStreamSPD inputSPD(rawReader);
   while(1){
     Bool_t next  = inputSPD.Next();
@@ -1288,7 +1288,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   Int_t firstSSD=AliITSgeomTGeo::GetModuleIndex(5,1,1);
   //
   countRW = -1; // RS
-  rawID2clusID = fRawID2ClusID[kSDD];
+  rawID2clusID = fkRawID2ClusID[kSDD];
   AliITSRawStream* inputSDD=AliITSRawStreamSDD::CreateRawStreamSDD(rawReader);
   for(Int_t iMod=firstSDD; iMod<firstSSD; iMod++){
     AliITSCalibrationSDD* cal = (AliITSCalibrationSDD*)fDetTypeSim->GetCalibrationModel(iMod);
@@ -1335,7 +1335,7 @@ Bool_t AliITS::Raw2SDigits(AliRawReader* rawReader)
   npx = segSSD->Npx();
   AliITSRawStreamSSD inputSSD(rawReader);
   countRW = -1;
-  rawID2clusID = fRawID2ClusID[kSSD];
+  rawID2clusID = fkRawID2ClusID[kSSD];
   while(1){
     Bool_t next  = inputSSD.Next();
     if (!next) break;

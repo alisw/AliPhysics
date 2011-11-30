@@ -145,13 +145,13 @@ class AliITS : public AliDetector {
     //===================== Raw Data IO ================================
     // Write digits into raw data format
     virtual void   Digits2Raw();
-    virtual Bool_t Raw2SDigits(AliRawReader*);
+    virtual Bool_t Raw2SDigits(AliRawReader*  rawReader);
     
     //===================== FO signals ================================
     // Write FO signals in UserInfo of SDigits/Digits tree
     void WriteFOSignals();
-    void     SetRawID2ClusID(const TArrayI* arr, Int_t iDet) { if (iDet>-1&&iDet<fgkNTYPES) fRawID2ClusID[iDet] = arr;}
-    const TArrayI* GetRawID2ClusID(Int_t iDet) const {return (iDet>-1&&iDet<fgkNTYPES) ? fRawID2ClusID[iDet]:0;}
+    void     SetRawID2ClusID(const TArrayI* arr, Int_t iDet) { if (iDet>-1&&iDet<fgkNTYPES) fkRawID2ClusID[iDet] = arr;}
+    const TArrayI* GetRawID2ClusID(Int_t iDet) const {return (iDet>-1&&iDet<fgkNTYPES) ? fkRawID2ClusID[iDet]:0;}
 
  protected:
     static const Int_t fgkNTYPES=3; //number of detector types
@@ -167,7 +167,7 @@ class AliITS : public AliDetector {
     AliITSSimuParam* fSimuParam; //simulation parameters
     TClonesArray** fModA;      //! Used by Raw2SDigits (one TC per module)
     TClonesArray* fpSDigits;   //! Branch address to build SD from raw data 
-    const TArrayI* fRawID2ClusID[fgkNTYPES]; //! optional array for SDigit->Cluster assingment in Raw2SDigit (for embedding)
+    const TArrayI* fkRawID2ClusID[fgkNTYPES]; //! optional array for SDigit->Cluster assingment in Raw2SDigit (for embedding)
  private:
     AliITS(const AliITS &source); // copy constructor. Not to be used!
     AliITS& operator=(const AliITS &source); // = operator. Not to be used!
