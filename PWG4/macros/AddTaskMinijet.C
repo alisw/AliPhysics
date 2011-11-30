@@ -6,14 +6,17 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
 				       Float_t ptTrigMin   =   0.7,
 				       Float_t ptAssocMin  =   0.4,
 				       Float_t maxVtxZ     =   10.,
-				       Int_t   filterBit   =   128,
+				       Int_t   filterBit   =    96,
 				       Int_t   debugLevel  =     0,
 				       Float_t maxEta      =   0.9,
 				       Float_t ptMin       =   0.2,
-				       Float_t ptMax       =  50.0)
+				       Float_t ptMax       =  50.0,
+				       Bool_t  checkSDD    = false,
+				       Int_t   checkOption =     1,
+				       Bool_t  onlyPrim    = false)
 {
   
-  // Get the pointer to the existing analysis manager via the static access method.
+  // Get the pointer to the existing analysis manager via the static access method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) mgr = new AliAnalysisManager("Analysis train");
 
@@ -36,7 +39,11 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
   taskMB->SetTriggerMask(AliVEvent::kMB);
   // taskMB->SelectCollisionCandidates(AliVEvent::kMB);//MB  //now inside task
   taskMB->SetFilterBit(filterBit); // used only in AOD case
+  taskMB->SetCheckSDD(checkSDD, checkOption);
   taskMB->SetDebugLevel(debugLevel);
+
+  //use this only for correction map plots -> Split contmaintion and rec efficiency
+  taskMB->SetAnalyseOnlyPrimaries(onlyPrim);
  
   if(!format.CompareTo("esd")){
     taskMB->SetCuts(esdTrackCutsTPC);
@@ -54,12 +61,13 @@ AliAnalysisTaskMinijet* AddTaskMinijet(Int_t runNumber     =    -1,
     taskHM->SetUseMC(useMC, mcOnly);
     taskHM->SetTriggerPtCut(ptTrigMin);
     taskHM->SetAssociatePtCut(ptAssocMin);
-    taskMB->SetMaxEta(maxEta);
-    taskMB->SetPtRange(ptMin, ptMax);
+    taskHM->SetMaxEta(maxEta);
+    taskHM->SetPtRange(ptMin, ptMax);
     taskHM->SetMaxVertexZ(maxVtxZ);
     taskHM->SetTriggerMask(AliVEvent::kHighMult);
     //taskHM->SelectCollisionCandidates(AliVEvent::kHighMult); // now inside task
-    taskMB->SetFilterBit(filterBit); // used only in AOD case
+    taskHM->SetFilterBit(filterBit); // used only in AOD case
+    taskHM->SetCheckSDD(checkSDD, checkOption);
     taskHM->SetDebugLevel(debugLevel);
 
     if(!format.CompareTo("esd")){
