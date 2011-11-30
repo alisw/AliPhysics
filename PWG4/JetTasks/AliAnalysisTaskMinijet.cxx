@@ -67,6 +67,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fEtaCutSeed(0.9),
       fSelectParticles(1),
       fSelectParticlesAssoc(1),
+      fCheckSDD(true),
+      fSelOption(1),
       fESDEvent(0),
       fAODEvent(0),
       fNMcPrimAccept(0),
@@ -178,7 +180,7 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   }
 
   fChargedPi0  = new TH2F("fChargedPi0", "fChargedPi0", 200, -0.5, 199.5, 200, -0.5, 199.5);
-  fVertexCheck = new TH1F("fVertexCheck", "fVertexCheck", 4, -0.5, 3.5);
+  fVertexCheck = new TH1F("fVertexCheck", "fVertexCheck", 100, -0.5, 99.5);
     
 
   //----------------------
@@ -186,13 +188,13 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   Double_t ptMin = 0.0, ptMax = 100.;
   Int_t nPtBins = 39; 
   Double_t binsPt[]  = {0.0, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 
-    			0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 
-    			10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
+     			0.9, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 7.0, 8.0, 9.0, 
+     			10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0, 100.0};
   
-  //  Int_t nPtBins = 100;
-  //   Double_t ptMin = 1.e-2, ptMax = 100.;
-  //   Double_t *binsPt = 0;
-  //   binsPt = CreateLogAxis(nPtBins,ptMin,ptMax);
+  //Int_t nPtBinsAll = 100;
+  //Double_t ptMinAll = 1.e-2, ptMaxAll = 100.;
+  //Double_t *binsPtAll = 0;
+  //binsPtAll = (Double_t*)CreateLogAxis(nPtBinsAll,ptMinAll,ptMaxAll);
   
   
   Double_t ptMin2 = 0.0, ptMax2 = 100.;
@@ -466,10 +468,43 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
  
   if(!fAODEvent && !fESDEvent)return;
 
-  //=================== AOD ===============
+  // SDD check for LHC11a
+  if (fCheckSDD) { 
 
- 
+    //ESD
+    if(fESDEvent){
+      if(fSelOption==0){
+	const AliMultiplicity *mul = fESDEvent->GetMultiplicity();
+	Int_t nClu3 = mul->GetNumberOfITSClusters(2);
+	Int_t nClu4 = mul->GetNumberOfITSClusters(3);
+	if(nClu3==0 &&  nClu4==0) return;
+      }
+      else if (fSelOption==1){
+	TString trcl = fESDEvent->GetFiredTriggerClasses().Data();
+	if (!(trcl.Contains("CINT1-B-NOPF-ALLNOTRD"))) return;
+      }
+    }
 
+    //AOD
+    if(fAODEvent){
+      if(fSelOption==0){
+	Bool_t useEvent = false;
+	Int_t nTracks = fAODEvent->GetNTracks();
+	for(Int_t itrack=0; itrack<nTracks; itrack++) {
+	  AliAODTrack * track = fAODEvent->GetTrack(itrack);
+	  if(TESTBIT(track->GetITSClusterMap(),2) || TESTBIT(track->GetITSClusterMap(),3) ){
+	    useEvent=true;
+	    break;
+	  }
+	}
+	if (!useEvent) return;
+      }
+      else if(fSelOption==1){
+	TString trcl = fAODEvent->GetFiredTriggerClasses().Data();
+	if (!(trcl.Contains("CINT1-B-NOPF-ALLNOTRD"))) return;
+      }
+    }
+  }
 
   //reset values
   fNMcPrimAccept=0;// number of accepted primaries
@@ -482,7 +517,7 @@ void AliAnalysisTaskMinijet::UserExec(Option_t *)
 			(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))
 		       ->IsEventSelected() &  fTriggerType); 
 
-    
+  
   if(fDebug){
     Printf("IsSelected = %d", isSelected);
     Printf("CheckEvent(true)= %d", CheckEvent(true));
@@ -1126,7 +1161,7 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
       nAcceptedTracks++;
 
       //save track properties in vector
-      if(vtrack->GetLabel()<0){ //fake tracks
+      if(vtrack->GetLabel()<0){ //fake tracks before "label<0", but crash in AOD079 // what is the meaning of label 0
 	// 	Printf("Fake track");
 	// 	continue;
 	ptArray.push_back(track->Pt());
@@ -1136,13 +1171,14 @@ Int_t AliAnalysisTaskMinijet::ReadEventAODRecMcProp( vector<Float_t> &ptArray,  
       }
       else{//mc properties
 	AliAODMCParticle *partOfTrack = (AliAODMCParticle*)mcArray->At(vtrack->GetLabel());
-	
-	ptArray.push_back(partOfTrack->Pt());
-	etaArray.push_back(partOfTrack->Eta());
-	phiArray.push_back(partOfTrack->Phi());
-	chargeArray.push_back(vtrack->Charge());//partOfTrack?
+	if(!partOfTrack) Printf("label=%d", vtrack->GetLabel());
+	if(partOfTrack){
+	  ptArray.push_back(partOfTrack->Pt());
+	  etaArray.push_back(partOfTrack->Eta());
+	  phiArray.push_back(partOfTrack->Phi());
+	  chargeArray.push_back(vtrack->Charge());//partOfTrack?
+	}
       }
-
     }
   }
   //need to check this option for MC
@@ -1658,6 +1694,7 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       //rec vertex
       const AliESDVertex*	vertexESDg   = fESDEvent->GetPrimaryVertex(); // uses track or SPD vertexer
       if(!vertexESDg) return false;
+      fVertexCheck->Fill(vertexESDg->GetNContributors());
       if(vertexESDg->GetNContributors()<=0)return false;
       Float_t fVzg= vertexESDg->GetZ();
       if(TMath::Abs(fVzg)>fVertexZCut) return false;
@@ -1668,7 +1705,7 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       if(vtxSPD->GetNContributors()<=0)return false;
       Float_t fVzSPD= vtxSPD->GetZ();
       if(TMath::Abs(fVzSPD)>fVertexZCut) return false;
-
+      
     }
     return true;
   }
@@ -1701,9 +1738,10 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       
       AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
       if(!vertex) return false;
+      fVertexCheck->Fill(vertex->GetNContributors());
       if(vertex->GetNContributors()<=0) return false;
       Double_t vzAOD=vertex->GetZ();
-      if(TMath::Abs(vzAOD)<1e-9) return false;
+      // if(TMath::Abs(vzAOD)<1e-9) return false;
       if(TMath::Abs(vzAOD)>fVertexZCut) return false;
        
       AliAODVertex*	vertexSPD= (AliAODVertex*)fAODEvent->GetPrimaryVertexSPD();

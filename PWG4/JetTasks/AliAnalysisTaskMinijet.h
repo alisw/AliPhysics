@@ -39,6 +39,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   void         SetMaxEtaSeed(Float_t etaCutSeed)                     {fEtaCutSeed = etaCutSeed;}
   void         SetSelectParticles(Int_t selectParticles)             {fSelectParticles = selectParticles;}
   void         SetSelectParticlesAssoc(Int_t selectParticlesAssoc)   {fSelectParticlesAssoc = selectParticlesAssoc;}
+  void         SetCheckSDD (Bool_t checkSDD, Int_t selOption)        {fCheckSDD = checkSDD; fSelOption = selOption;}
 
 
  private:
@@ -94,6 +95,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Float_t      fEtaCutSeed;                 // eta acceptance cut for seed
   Int_t        fSelectParticles;            // only in cas of MC: use also neutral particles or not 
   Int_t        fSelectParticlesAssoc;       // only in cas of MC: use also neutral particles or not 
+  Bool_t       fCheckSDD;                   // check if SDD was in read out partition (needed for LHC11a)
+  Int_t        fSelOption;                  // 0 = use hit in SDD for event selection, 1 = use trigger for event selection
 
   AliESDEvent *fESDEvent;                   //! esd event
   AliAODEvent *fAODEvent;                   //! aod event
@@ -104,7 +107,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   Float_t      fVzEvent;                    // global variable for rec vertex position
   Double_t     fMeanPtRec;                  // global variable for rec mean pt
   Double_t     fLeadingPtRec;               // global variable for rec mean pt
-  
+
   TList	     *fHists;                       // output list
   TH1F       *fStep;                        // how many events have passed which correction step
   TH1F       *fHistPt;                      // Pt spectrum ESD
@@ -158,7 +161,7 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TProfile   * fPNch07Tracklet[6];           // nCharged with pT>fTriggerPtCut vs nTracklet
 
   TH1F       * fDPhiEventAxis[6];           // delta phi of associate tracks to event axis
-  
+ 
   AliAnalysisTaskMinijet(const AliAnalysisTaskMinijet&); // not implemented
   AliAnalysisTaskMinijet& operator=(const AliAnalysisTaskMinijet&); // not implemented
   
