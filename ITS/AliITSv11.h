@@ -36,7 +36,7 @@ class AliITSv11 : public AliITS {
  public:
     AliITSv11();
     AliITSv11(const char *title);
-    AliITSv11(const char *name, const char *title);
+    AliITSv11(const char *name, const char *title, const Float_t rho=1.0);
     virtual       ~AliITSv11() ;
 
     virtual void   AddAlignableVolumes() const;
@@ -80,13 +80,15 @@ class AliITSv11 : public AliITS {
     Int_t  fMinorVersion;     // Minor version number
     Int_t  fIDMother;         //! ITS Mother Volume id.
 
+    Float_t fRhoIncrMatBud;      //  Density increase factor (for material budget studies)
+
     AliITSInitGeometry fInitGeom;   //! Get access to decoding and AliITSgeom init functions
     AliITSv11GeometrySPD     *fSPDgeom; //! SPD Geometry
     AliITSv11GeometrySDD     *fSDDgeom; //! SDD Geometry
     AliITSv11GeometrySSD     *fSSDgeom; //! SSD Geometry
     AliITSv11GeometrySupport *fSupgeom; //! Support Geometry
 
-    ClassDef(AliITSv11,1)  // ITS version 11 
+    ClassDef(AliITSv11,2)  // ITS version 11 
 };
  
 #endif
