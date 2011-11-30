@@ -177,6 +177,9 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 //____________________________________________________
 AliCFVertexingHF::AliCFVertexingHF(const AliCFVertexingHF &c) :
         TObject(c),
+	fmcArray(0),
+	fRecoCandidate(0),
+	fmcPartCandidate(0),
 	fNDaughters(c.fNDaughters),
 	fNVar(c.fNVar),
 	fzPrimVertex(c.fzPrimVertex),
