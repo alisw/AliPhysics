@@ -395,17 +395,17 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
       }      
 
       // Remove exotic cells
-      fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
-      
-      if(fCalorimeter=="EMCAL" && GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
+      if(fCalorimeter=="EMCAL") {
+        fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
+        if(GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
+      }
       
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
       fhAmpMod   ->Fill(amp,nModule);
       
-      
       if ((fCalorimeter=="EMCAL" && amp > fEMCALCellAmpMin) ||
-          (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin))   {
+          (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin )   ) {
         
         nCellsInModule[nModule]++ ;
         
@@ -2074,12 +2074,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhTimeAmp);
     
   }
-  
-  fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
-                                      nptbins,ptmin,ptmax, 400,-1,1.); 
-  fhCellECross->SetXTitle("E_{cell} (GeV) ");
-  fhCellECross->SetYTitle("1- E_{cross}/E_{cell}");
-  outputContainer->Add(fhCellECross);    
+  if(fCalorimeter=="EMCAL"){
+    fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
+                              nptbins,ptmin,ptmax, 400,-1,1.); 
+    fhCellECross->SetXTitle("E_{cell} (GeV) ");
+    fhCellECross->SetYTitle("1- E_{cross}/E_{cell}");
+    outputContainer->Add(fhCellECross);    
+  }
   
   if(fCorrelate){
     //PHOS vs EMCAL

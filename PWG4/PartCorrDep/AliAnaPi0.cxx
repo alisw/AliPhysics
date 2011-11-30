@@ -67,10 +67,11 @@ fMultiCutAna(kFALSE),        fMultiCutAnaSim(kFALSE),
 fNPtCuts(0),                 fNAsymCuts(0),                fNCellNCuts(0),               fNPIDBits(0),  
 fMakeInvPtPlots(kFALSE),     fSameSM(kFALSE),              fFillSMCombinations(kFALSE),  fCheckConversion(kFALSE),
 fUseTrackMultBins(kFALSE),   fUsePhotonMultBins(kFALSE),   fUseAverCellEBins(kFALSE),    fUseAverClusterEBins(kFALSE),
-fUseAverClusterEDenBins(0),  fFillBadDistHisto(kFALSE),
+fUseAverClusterEDenBins(0),  fFillBadDistHisto(kFALSE),    fFillSSCombinations(kFALSE),  
+fFillAngleHisto(kFALSE),     fFillAsymmetryHisto(kFALSE),
+//Histograms
 fhAverTotECluster(0),        fhAverTotECell(0),            fhAverTotECellvsCluster(0),
 fhEDensityCluster(0),        fhEDensityCell(0),            fhEDensityCellvsCluster(0),
-//Histograms
 fhReMod(0x0),                fhReSameSideEMCALMod(0x0),    fhReSameSectorEMCALMod(0x0),  fhReDiffPHOSMod(0x0), 
 fhMiMod(0x0),                fhMiSameSideEMCALMod(0x0),    fhMiSameSectorEMCALMod(0x0),  fhMiDiffPHOSMod(0x0),
 fhReConv(0x0),               fhMiConv(0x0),                fhReConv2(0x0),  fhMiConv2(0x0),
@@ -464,20 +465,22 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  fhRePtAsym = new TH2F("hRePtAsym","Asymmetry vs pt, for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
-  fhRePtAsym->SetXTitle("p_{T} (GeV/c)");
-  fhRePtAsym->SetYTitle("Asymmetry");
-  outputContainer->Add(fhRePtAsym);
-  
-  fhRePtAsymPi0 = new TH2F("hRePtAsymPi0","Asymmetry vs pt, for pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
-  fhRePtAsymPi0->SetXTitle("p_{T} (GeV/c)");
-  fhRePtAsymPi0->SetYTitle("Asymmetry");
-  outputContainer->Add(fhRePtAsymPi0);
-  
-  fhRePtAsymEta = new TH2F("hRePtAsymEta","Asymmetry vs pt, for pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
-  fhRePtAsymEta->SetXTitle("p_{T} (GeV/c)");
-  fhRePtAsymEta->SetYTitle("Asymmetry");
-  outputContainer->Add(fhRePtAsymEta);
+  if(fFillAsymmetryHisto){
+    fhRePtAsym = new TH2F("hRePtAsym","Asymmetry vs pt, for pairs",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsym->SetXTitle("p_{T} (GeV/c)");
+    fhRePtAsym->SetYTitle("Asymmetry");
+    outputContainer->Add(fhRePtAsym);
+    
+    fhRePtAsymPi0 = new TH2F("hRePtAsymPi0","Asymmetry vs pt, for pairs close to #pi^{0} mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsymPi0->SetXTitle("p_{T} (GeV/c)");
+    fhRePtAsymPi0->SetYTitle("Asymmetry");
+    outputContainer->Add(fhRePtAsymPi0);
+    
+    fhRePtAsymEta = new TH2F("hRePtAsymEta","Asymmetry vs pt, for pairs close to #eta mass",nptbins,ptmin,ptmax,nasymbins,asymmin,asymmax) ;
+    fhRePtAsymEta->SetXTitle("p_{T} (GeV/c)");
+    fhRePtAsymEta->SetYTitle("Asymmetry");
+    outputContainer->Add(fhRePtAsymEta);
+  }
   
   if(fMultiCutAna){
     
@@ -547,25 +550,29 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }// multi cuts analysis
   
-  fhReSS[0] = new TH2F("hRe_SS_Tight"," 0.01 < #lambda_{0}^{2} < 0.4",
-                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
-  fhReSS[0]->SetXTitle("p_{T} (GeV/c)");
-  fhReSS[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-  outputContainer->Add(fhReSS[0]) ;
-  
-  
-  fhReSS[1] = new TH2F("hRe_SS_Loose"," #lambda_{0}^{2} > 0.4",
-                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
-  fhReSS[1]->SetXTitle("p_{T} (GeV/c)");
-  fhReSS[1]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-  outputContainer->Add(fhReSS[1]) ;
-  
-  
-  fhReSS[2] = new TH2F("hRe_SS_Both"," cluster_{1} #lambda_{0}^{2} > 0.4; cluster_{2} 0.01 < #lambda_{0}^{2} < 0.4",
-                       nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
-  fhReSS[2]->SetXTitle("p_{T} (GeV/c)");
-  fhReSS[2]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
-  outputContainer->Add(fhReSS[2]) ;
+  if(fFillSSCombinations)
+  {
+    
+    fhReSS[0] = new TH2F("hRe_SS_Tight"," 0.01 < #lambda_{0}^{2} < 0.4",
+                         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReSS[0]->SetXTitle("p_{T} (GeV/c)");
+    fhReSS[0]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReSS[0]) ;
+    
+    
+    fhReSS[1] = new TH2F("hRe_SS_Loose"," #lambda_{0}^{2} > 0.4",
+                         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReSS[1]->SetXTitle("p_{T} (GeV/c)");
+    fhReSS[1]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReSS[1]) ;
+    
+    
+    fhReSS[2] = new TH2F("hRe_SS_Both"," cluster_{1} #lambda_{0}^{2} > 0.4; cluster_{2} 0.01 < #lambda_{0}^{2} < 0.4",
+                         nptbins,ptmin,ptmax,nmassbins,massmin,massmax);
+    fhReSS[2]->SetXTitle("p_{T} (GeV/c)");
+    fhReSS[2]->SetYTitle("m_{#gamma,#gamma} (GeV/c^{2})");
+    outputContainer->Add(fhReSS[2]) ;
+  }
   
   fhEvents=new TH3F("hEvents","Number of events",GetNCentrBin(),0.,1.*GetNCentrBin(),
                     GetNZvertBin(),0.,1.*GetNZvertBin(),GetNRPBin(),0.,1.*GetNRPBin()) ;
@@ -599,33 +606,35 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     }
   }
   
-  fhRealOpeningAngle  = new TH2F
-  ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,300,0,TMath::Pi()); 
-  fhRealOpeningAngle->SetYTitle("#theta(rad)");
-  fhRealOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-  outputContainer->Add(fhRealOpeningAngle) ;
-  
-  fhRealCosOpeningAngle  = new TH2F
-  ("hRealCosOpeningAngle","Cosinus of angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,1); 
-  fhRealCosOpeningAngle->SetYTitle("cos (#theta) ");
-  fhRealCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-  outputContainer->Add(fhRealCosOpeningAngle) ;
-	
-  if(fDoOwnMix){
+  if(fFillAngleHisto){
+    fhRealOpeningAngle  = new TH2F
+    ("hRealOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,300,0,TMath::Pi()); 
+    fhRealOpeningAngle->SetYTitle("#theta(rad)");
+    fhRealOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+    outputContainer->Add(fhRealOpeningAngle) ;
     
-    fhMixedOpeningAngle  = new TH2F
-    ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,300,0,TMath::Pi()); 
-    fhMixedOpeningAngle->SetYTitle("#theta(rad)");
-    fhMixedOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-    outputContainer->Add(fhMixedOpeningAngle) ;
+    fhRealCosOpeningAngle  = new TH2F
+    ("hRealCosOpeningAngle","Cosinus of angle between all #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,1); 
+    fhRealCosOpeningAngle->SetYTitle("cos (#theta) ");
+    fhRealCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+    outputContainer->Add(fhRealCosOpeningAngle) ;
     
-    fhMixedCosOpeningAngle  = new TH2F
-    ("hMixedCosOpeningAngle","Cosinus of angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,100,0,1); 
-    fhMixedCosOpeningAngle->SetYTitle("cos (#theta) ");
-    fhMixedCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-    outputContainer->Add(fhMixedCosOpeningAngle) ;
-    
-  }
+    if(fDoOwnMix){
+      
+      fhMixedOpeningAngle  = new TH2F
+      ("hMixedOpeningAngle","Angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,300,0,TMath::Pi()); 
+      fhMixedOpeningAngle->SetYTitle("#theta(rad)");
+      fhMixedOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhMixedOpeningAngle) ;
+      
+      fhMixedCosOpeningAngle  = new TH2F
+      ("hMixedCosOpeningAngle","Cosinus of angle between all #gamma pair vs E_{#pi^{0}}, Mixed pairs",nptbins,ptmin,ptmax,100,0,1); 
+      fhMixedCosOpeningAngle->SetYTitle("cos (#theta) ");
+      fhMixedCosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhMixedCosOpeningAngle) ;
+      
+    }
+  } 
   
   //Histograms filled only if MC data is requested 	
   if(IsDataMC()){
@@ -765,18 +774,19 @@ TList * AliAnaPi0::GetCreateOutputObjects()
     
     outputContainer->Add(fhMCEtaPtOrigin) ;
     
-    
-    fhPrimPi0OpeningAngle  = new TH2F
-    ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
-    fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
-    fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-    outputContainer->Add(fhPrimPi0OpeningAngle) ;
-    
-    fhPrimPi0CosOpeningAngle  = new TH2F
-    ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1); 
-    fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
-    fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
-    outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
+    if(fFillAngleHisto){
+      fhPrimPi0OpeningAngle  = new TH2F
+      ("hPrimPi0OpeningAngle","Angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,0,0.5); 
+      fhPrimPi0OpeningAngle->SetYTitle("#theta(rad)");
+      fhPrimPi0OpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhPrimPi0OpeningAngle) ;
+      
+      fhPrimPi0CosOpeningAngle  = new TH2F
+      ("hPrimPi0CosOpeningAngle","Cosinus of angle between all primary #gamma pair vs E_{#pi^{0}}",nptbins,ptmin,ptmax,100,-1,1); 
+      fhPrimPi0CosOpeningAngle->SetYTitle("cos (#theta) ");
+      fhPrimPi0CosOpeningAngle->SetXTitle("E_{ #pi^{0}} (GeV)");
+      outputContainer->Add(fhPrimPi0CosOpeningAngle) ;
+    }
     
     for(Int_t i = 0; i<13; i++){
       fhMCOrgMass[i] = new TH2F(Form("hMCOrgMass_%d",i),Form("mass vs pt, origin %d",i),nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
@@ -1133,9 +1143,11 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
-                  Double_t angle  = lv1.Angle(lv2.Vect());
-                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
-                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  if(fFillAngleHisto){
+                    Double_t angle  = lv1.Angle(lv2.Vect());
+                    fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
+                    fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  }
                 }
                 else if(pdg==221){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
@@ -1274,9 +1286,11 @@ void AliAnaPi0::FillAcceptanceHistograms(){
                   fhPrimPi0AccPt ->Fill(pi0Pt) ;
                   fhPrimPi0AccPhi->Fill(pi0Pt, phi) ;
                   fhPrimPi0AccY  ->Fill(pi0Pt, pi0Y) ;
-                  Double_t angle  = lv1.Angle(lv2.Vect());
-                  fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
-                  fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  if(fFillAngleHisto){
+                    Double_t angle  = lv1.Angle(lv2.Vect());
+                    fhPrimPi0OpeningAngle   ->Fill(pi0Pt,angle);
+                    fhPrimPi0CosOpeningAngle->Fill(pi0Pt,TMath::Cos(angle));
+                  }
                 }
                 else if(pdg==221){
                   fhPrimEtaAccPt ->Fill(pi0Pt) ;
@@ -1872,12 +1886,15 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }
         
         // Fill shower shape cut histograms
-        if     ( l01 > 0.01 && l01 < 0.4  && 
-                 l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt,m); // Tight
-        else if( l01 > 0.4  && l02 > 0.4 )               fhReSS[1]->Fill(pt,m); // Loose
-        else if( l01 > 0.01 && l01 < 0.4  && l02 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
-        else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
-
+        if(fFillSSCombinations)
+        {
+          if     ( l01 > 0.01 && l01 < 0.4  && 
+                   l02 > 0.01 && l02 < 0.4 )               fhReSS[0]->Fill(pt,m); // Tight
+          else if( l01 > 0.4  && l02 > 0.4 )               fhReSS[1]->Fill(pt,m); // Loose
+          else if( l01 > 0.01 && l01 < 0.4  && l02 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
+          else if( l02 > 0.01 && l02 < 0.4  && l01 > 0.4 ) fhReSS[2]->Fill(pt,m); // Both
+        }
+        
         //Fill histograms for different bad channel distance, centrality, assymmetry cut and pid bit
         for(Int_t ipid=0; ipid<fNPIDBits; ipid++){
           if((p1->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton)) && (p2->IsPIDOK(fPIDBits[ipid],AliCaloPID::kPhoton))){ 
@@ -1903,13 +1920,17 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
         }// pid bit loop
         
         //Fill histograms with opening angle
-        fhRealOpeningAngle   ->Fill(pt,angle);
-        fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle));
+        if(fFillAngleHisto){
+          fhRealOpeningAngle   ->Fill(pt,angle);
+          fhRealCosOpeningAngle->Fill(pt,TMath::Cos(angle));
+        }
         
         //Fill histograms with pair assymmetry
-        fhRePtAsym->Fill(pt,a);
-        if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt,a);
-        if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a);
+        if(fFillAsymmetryHisto){
+          fhRePtAsym->Fill(pt,a);
+          if(m > 0.10 && m < 0.17) fhRePtAsymPi0->Fill(pt,a);
+          if(m > 0.45 && m < 0.65) fhRePtAsymEta->Fill(pt,a);
+        }
         
         //-------------------------------------------------------
         //Get the number of cells needed for multi cut analysis.
@@ -2147,8 +2168,11 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
             } // Multi cut ana
             
             //Fill histograms with opening angle
-            fhMixedOpeningAngle   ->Fill(pt,angle);
-            fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle));          
+            if(fFillAngleHisto){
+              fhMixedOpeningAngle   ->Fill(pt,angle);
+              fhMixedCosOpeningAngle->Fill(pt,TMath::Cos(angle));
+            }
+            
           }//ok
         }// second cluster loop
       }//first cluster loop
