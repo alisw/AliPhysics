@@ -29,9 +29,7 @@ public:
   void SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) ; 
   
   AliVEvent* GetOriginalInputEvent() const { return fOrgInputEvent; }
-  
-  TString GetFiredTriggerClasses() {return ((AliAODEvent*)GetInputEvent())->GetFiredTriggerClasses();}
-  
+    
 private:
   
   AliVEvent *fOrgInputEvent; //! Original input event, not from filtering

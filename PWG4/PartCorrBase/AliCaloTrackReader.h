@@ -202,7 +202,7 @@ public:
 
   void             SetFiredTriggerClassName(TString name ) { fFiredTriggerClassName = name   ; }
   TString          GetFiredTriggerClassName()        const { return fFiredTriggerClassName   ; }
-  virtual TString  GetFiredTriggerClasses()                { return ""                       ; } // look the ESD/AOD reader 
+  TString          GetFiredTriggerClasses() ;               
   
   void             SwitchOnEventSelection()                { fDoEventSelection      = kTRUE  ; }
   void             SwitchOffEventSelection()               { fDoEventSelection      = kFALSE ; }
