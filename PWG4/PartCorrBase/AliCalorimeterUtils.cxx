@@ -712,7 +712,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
         if(fPHOSMatrix[mod]){
           if(fDebug > 1 ) 
             fPHOSMatrix[mod]->Print();
-          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod+1) ;  
+          fPHOSGeo->SetMisalMatrix(fPHOSMatrix[mod],mod) ;  
         }
       }//SM loop
       fPHOSGeoMatrixSet = kTRUE;//At least one, so good
@@ -722,7 +722,7 @@ void AliCalorimeterUtils::SetGeometryTransformationMatrices(AliVEvent* inputEven
       if(fDebug > 1) 
         printf(" AliCalorimeterUtils::SetGeometryTransformationMatrices() - Load PHOS misalignment matrices. \n");
 			if(!strcmp(inputEvent->GetName(),"AliESDEvent"))  {
-				for(Int_t mod=0; mod < 5; mod++){ 
+				for(Int_t mod = 0; mod < 5; mod++){ 
 					if( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod)) {
 						//printf("PHOS: mod %d, matrix %p\n",mod, ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod));
 						fPHOSGeo->SetMisalMatrix( ((AliESDEvent*)inputEvent)->GetPHOSMatrix(mod),mod) ;

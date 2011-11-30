@@ -265,8 +265,10 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
   
 }
 
-//___________________________________________________________________________________________________________
-void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus, AliVCaloCells* cells,  Double_t timeAverages[2])
+//______________________________________________________________________
+void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus, 
+                                               AliVCaloCells* cells,  
+                                               Double_t timeAverages[2])
 {
   // Calculate time averages and weights
   
@@ -292,34 +294,36 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus, AliVCaloCells*
   } // energy loop       
   
   // Calculate average time of cells in cluster and weighted average
-  Double_t aTime = 0; 
-  Double_t wTime = 0;
-  Float_t  wTot  = 0;
-  Double_t time  = 0;
-  for (Int_t ipos = 0; ipos < clus->GetNCells(); ipos++) {
-    Int_t id       = clus->GetCellsAbsId()[ipos];
+  Double_t aTime  = 0; 
+  Double_t wTime  = 0;
+  Float_t  wTot   = 0;
+  Double_t time   = 0;
+  Int_t    id     =-1;
+  Double_t w      = 0;
+  Int_t    ncells = clus->GetNCells();
+  for (Int_t ipos = 0; ipos < ncells; ipos++) {
     
-    amp = cells->GetCellAmplitude(id);
-    time  = cells->GetCellTime(id);
+    id   = clus ->GetCellsAbsId()[ipos];
+    amp  = cells->GetCellAmplitude(id);
+    time = cells->GetCellTime(id);
     
     //Recalibrate energy and time
     RecalibrateCellAmplitude(amp, id);    
     RecalibrateCellTime     (time,id);
     
-    Double_t w    = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cells->GetCellAmplitude(id),energy);
+    w      = GetCaloUtils()->GetEMCALRecoUtils()->GetCellWeight(cells->GetCellAmplitude(id),energy);
     aTime += time*1e9;
     wTime += time*1e9 * w;
     wTot  += w;
     
   }        
+  if(ncells > 0) aTime /= ncells;
+  else           aTime  = 0;
   
-  aTime  /= clus->GetNCells();
+  if(wTot   > 0) wTime /= wTot;
   
-  if(wTot>0){
-    wTime      /= wTot;
-  }
-  
-  timeAverages[0] = aTime;        timeAverages[1] = wTime; 
+  timeAverages[0] = aTime;        
+  timeAverages[1] = wTime; 
   
 }
 
