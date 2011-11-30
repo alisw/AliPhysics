@@ -26,9 +26,6 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-// --- ROOT system ---
-//#include "Riostream.h"
-
 //---- ANALYSIS system ----
 #include "AliCaloTrackESDReader.h" 
 #include "AliAODEvent.h"
@@ -39,7 +36,7 @@
 
 ClassImp(AliCaloTrackESDReader)
 
-//____________________________________________________________________________
+//______________________________________________
 AliCaloTrackESDReader::AliCaloTrackESDReader() : 
 AliCaloTrackReader()
 {
@@ -52,12 +49,15 @@ AliCaloTrackReader()
 
 }
 
-//____________________________________________________________________________
-void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* aod, AliMCEvent* mc) {
+//_________________________________________________________________
+void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, 
+                                                  AliAODEvent* aod, 
+                                                  AliMCEvent* mc) 
+{
   // Connect the data pointers
   
   Bool_t tesd = kFALSE ; 
-
+  
   if ( strcmp(esd->GetName(), "AliMixedEvent") == 0 ) {
     AliMultiEventInputHandler* multiEH = dynamic_cast<AliMultiEventInputHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if(multiEH){
@@ -83,3 +83,6 @@ void AliCaloTrackESDReader::SetInputOutputMCEvent(AliVEvent* esd, AliAODEvent* a
   SetMC(mc);
   
 }
+
+
+
