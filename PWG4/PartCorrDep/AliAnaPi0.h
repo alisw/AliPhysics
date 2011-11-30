@@ -88,6 +88,9 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void         SetAngleCut(Float_t a)           { fAngleCut            = a      ; }
   void         SetAngleMaxCut(Float_t a)        { fAngleMaxCut         = a      ; }
 
+  void         SwitchOnFillAngleHisto()         { fFillAngleHisto      = kTRUE  ; }
+  void         SwitchOffFillAngleHisto()        { fFillAngleHisto      = kFALSE ; }
+  
   //-------------------------------
   // Use mixing code of this class
   //-------------------------------
@@ -127,6 +130,13 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   void         SetAsymCutsAt(Int_t p,Float_t v) { if(p < 10)fAsymCuts[p] = v    ; }
   void         SetNCellCutsAt(Int_t p,Int_t v)  { if(p < 10)fCellNCuts[p]= v    ; }
   void         SetPIDBitsAt  (Int_t p,Int_t v)  { if(p < 10)fPIDBits[p]  = v    ; }
+  
+  void         SwitchOnFillSSCombinations()     { fFillSSCombinations  = kTRUE  ; }
+  void         SwitchOffFillSSCombinations()    { fFillSSCombinations  = kFALSE ; }
+  
+  void         SwitchOnFillAsymmetryHisto()     { fFillAsymmetryHisto  = kTRUE  ; }
+  void         SwitchOffFillAsymmetryHisto()    { fFillAsymmetryHisto  = kFALSE ; }
+
   
   //MC analysis related methods
     
@@ -179,7 +189,10 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   Bool_t   fUseAverClusterEBins;       // Use cluster average energy and not centrality bins
   Bool_t   fUseAverClusterEDenBins;    // Use cluster average energy density and not centrality bins
   Bool_t   fFillBadDistHisto;          // Do plots for different distances to bad channels
-  
+  Bool_t   fFillSSCombinations;        // Do invariant mass for different combination of shower shape clusters
+  Bool_t   fFillAngleHisto;            // Fill histograms with pair opening angle
+  Bool_t   fFillAsymmetryHisto;        // Fill histograms with asymmetry vs pt
+
   //Histograms
   
   //Event characterization
@@ -190,27 +203,27 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH1F *   fhEDensityCell;             //! Deposited energy in event per cell vs cluster
   TH2F *   fhEDensityCellvsCluster;    //! Deposited energy in event per cell vs cluster
 
-  TH2F **  fhReMod ;                  //![fNModules]   REAL  two-photon invariant mass distribution for different calorimeter modules.
-  TH2F **  fhReSameSideEMCALMod ;     //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
-  TH2F **  fhReSameSectorEMCALMod ;   //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
-  TH2F **  fhReDiffPHOSMod ;          //![fNModules]   REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
-  TH2F **  fhMiMod ;                  //![fNModules]   MIXED two-photon invariant mass distribution for different calorimeter modules.
-  TH2F **  fhMiSameSideEMCALMod ;     //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
-  TH2F **  fhMiSameSectorEMCALMod ;   //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
-  TH2F **  fhMiDiffPHOSMod ;          //![fNModules-1] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhReMod ;                   //![fNModules]   REAL  two-photon invariant mass distribution for different calorimeter modules.
+  TH2F **  fhReSameSideEMCALMod ;      //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhReSameSectorEMCALMod ;    //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhReDiffPHOSMod ;           //![fNModules]   REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhMiMod ;                   //![fNModules]   MIXED two-photon invariant mass distribution for different calorimeter modules.
+  TH2F **  fhMiSameSideEMCALMod ;      //![fNModules-2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhMiSameSectorEMCALMod ;    //![fNModules/2] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
+  TH2F **  fhMiDiffPHOSMod ;           //![fNModules-1] REAL  two-photon invariant mass distribution for different clusters in different calorimeter modules.
   
   // Pairs with at least one cluster tagged as conversion
-  TH2F *   fhReConv ;                 //! REAL  two-photon invariant mass distribution one of the pair was 2 clusters with small mass 
-  TH2F *   fhMiConv ;                 //! MIXED two-photon invariant mass distribution one of the pair was 2 clusters with small mass
-  TH2F *   fhReConv2 ;                //! REAL  two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass 
-  TH2F *   fhMiConv2 ;                //! MIXED two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass
+  TH2F *   fhReConv ;                  //! REAL  two-photon invariant mass distribution one of the pair was 2 clusters with small mass 
+  TH2F *   fhMiConv ;                  //! MIXED two-photon invariant mass distribution one of the pair was 2 clusters with small mass
+  TH2F *   fhReConv2 ;                 //! REAL  two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass 
+  TH2F *   fhMiConv2 ;                 //! MIXED two-photon invariant mass distribution both pair photons recombined from 2 clusters with small mass
 
-  TH2F **  fhRe1 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2F **  fhMi1 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2F **  fhRe2 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2F **  fhMi2 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
-  TH2F **  fhRe3 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
-  TH2F **  fhMi3 ;                    //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2F **  fhRe1 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2F **  fhMi1 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2F **  fhRe2 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2F **  fhMi2 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
+  TH2F **  fhRe3 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry 
+  TH2F **  fhMi3 ;                     //![GetNCentrBin()*fNPIDBits*fNAsymCuts] MIXED two-photon invariant mass distribution for different centralities and Asymmetry
 
   //Histograms weighted by inverse pT
   TH2F **  fhReInvPt1 ;                //![GetNCentrBin()*fNPIDBits*fNAsymCuts] REAL  two-photon invariant mass distribution for different centralities and Asymmetry, inverse pT
@@ -296,7 +309,7 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   AliAnaPi0(const AliAnaPi0 & g) ; // cpy ctor
   AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
   
-  ClassDef(AliAnaPi0,21)
+  ClassDef(AliAnaPi0,22)
 } ;
 
 

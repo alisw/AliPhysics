@@ -29,8 +29,6 @@
 #include <TList.h>
 #include <TClonesArray.h>
 #include <TObjString.h>
-#include <TH3F.h>
-//#include "Riostream.h"
 
 // --- Analysis system --- 
 #include "AliAnaPi0EbE.h" 
@@ -54,7 +52,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     fMinDist(0.),fMinDist2(0.),   fMinDist3(0.),	              fFillWeightHistograms(kFALSE),
     fInputAODGammaConvName(""),
     //Histograms
-    fhPtPi0(0),                   fhEPi0(0),                    fhEEtaPhiPi0(0),
+    fhPtPi0(0),                   fhEPi0(0),                    
+    fhEEtaPi0(0),                 fhEPhiPi0(0),                 fhEtaPhiPi0(0),
     //Shower shape histos
     fhEDispersion(0),             fhELambda0(0),                fhELambda1(0), 
     fhELambda0NoTRD(0),           fhELambda0FracMaxCellCut(0),  
@@ -327,12 +326,23 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEPi0->SetXTitle("E  #pi^{0}(GeV)");
   outputContainer->Add(fhEPi0) ; 
   
-  fhEEtaPhiPi0  = new TH3F
-  ("hEEtaPhiPi0","Selected #pi^{0} pairs: E vs #eta vs #phi",nptbins,ptmin,ptmax,netabins,etamin,etamax, nphibins,phimin,phimax); 
-  fhEEtaPhiPi0->SetZTitle("#phi");
-  fhEEtaPhiPi0->SetYTitle("#eta");
-  fhEEtaPhiPi0->SetXTitle("E (GeV)");
-  outputContainer->Add(fhEEtaPhiPi0) ; 
+  fhEPhiPi0  = new TH2F
+  ("hEPhiPi0","Selected #pi^{0} pairs: E vs  #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+  fhEPhiPi0->SetYTitle("#phi #pi^{0}(GeV)");
+  fhEPhiPi0->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  outputContainer->Add(fhEPhiPi0) ; 
+  
+  fhEEtaPi0  = new TH2F
+  ("hEEtaPi0","Selected #pi^{0} pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+  fhEEtaPi0->SetYTitle("#eta #pi^{0}(GeV)");
+  fhEEtaPi0->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  outputContainer->Add(fhEEtaPi0) ; 
+  
+  fhEtaPhiPi0  = new TH2F
+  ("hEtaPhiPi0","Selected #pi^{0} pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhiPi0->SetYTitle("#phi #pi^{0}(GeV)");
+  fhEtaPhiPi0->SetXTitle("#eta #pi^{0}(GeV)");
+  outputContainer->Add(fhEtaPhiPi0) ; 
   
   ////////
   
@@ -1045,8 +1055,11 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     
     fhPtPi0      ->Fill(pt);
     fhEPi0       ->Fill(ener);
-    fhEEtaPhiPi0 ->Fill(ener,eta,phi);
     
+    fhEEtaPi0   ->Fill(ener,eta);
+    fhEPhiPi0   ->Fill(ener,phi);
+    fhEtaPhiPi0 ->Fill(eta,phi);
+
     if(IsDataMC()){
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
          GetReader()->GetDataType() != AliCaloTrackReader::kMC){
