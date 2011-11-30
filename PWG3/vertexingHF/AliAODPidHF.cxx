@@ -98,12 +98,12 @@ AliAODPidHF::~AliAODPidHF()
 AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   AliAODPid(pid),
   fnNSigma(pid.fnNSigma),
-  fnSigma(pid.fnSigma),
+  fnSigma(0),
   fTOFSigma(pid.fTOFSigma),
   fnPriors(pid.fnPriors),
-  fPriors(pid.fPriors),
+  fPriors(0),
   fnPLimit(pid.fnPLimit),
-  fPLimit(pid.fPLimit),
+  fPLimit(0),
   fAsym(pid.fAsym),
   fTPC(pid.fTPC),
   fTOF(pid.fTOF),
@@ -123,15 +123,27 @@ AliAODPidHF::AliAODPidHF(const AliAODPidHF& pid) :
   fOldPid(pid.fOldPid),
   fPtThresholdTPC(pid.fPtThresholdTPC),
   fPidResponse(pid.fPidResponse),
-  fPidCombined(pid.fPidCombined)  
-  {
+  fPidCombined(pid.fPidCombined)
+{
   
-  for(Int_t i=0;i<5;i++){
+  fnSigma = new Double_t[fnNSigma];
+  for(Int_t i=0;i<fnNSigma;i++){
+    fnSigma[i]=pid.fnSigma[i];
+  }
+  fPriors = new Double_t[fnPriors];
+  for(Int_t i=0;i<fnPriors;i++){
     fPriors[i]=pid.fPriors[i];
   }
-  
+  fPLimit = new Double_t[fnPLimit];
+  for(Int_t i=0;i<fnPLimit;i++){
+    fPLimit[i]=pid.fPLimit[i];
   }
 
+    
+  //fPidResponse = new AliPIDResponse(*(pid.fPidResponse));
+  //fPidCombined = new AliPIDCombined(*(pid.fPidCombined));  
+    
+}
 //----------------------
 Int_t AliAODPidHF::RawSignalPID(AliAODTrack *track, TString detector) const{
 // raw PID for single detectors, returns the particle type with smaller sigma
@@ -506,8 +518,8 @@ Bool_t AliAODPidHF::CheckStatus(AliAODTrack *track,TString detectors) const{
 
  if(detectors.Contains("TRD")){
   if ((track->GetStatus()&AliESDtrack::kTRDout )==0)   return kFALSE;
-  UChar_t ntracklets = track->GetTRDntrackletsPID();
-  if(ntracklets<4) return kFALSE;
+  //UChar_t ntracklets = track->GetTRDntrackletsPID();
+  //if(ntracklets<4) return kFALSE;
  }
 
  return kTRUE;
