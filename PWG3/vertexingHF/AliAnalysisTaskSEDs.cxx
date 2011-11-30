@@ -97,7 +97,27 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   Int_t nptbins=fAnalysisCuts->GetNPtBins();
   Float_t *ptlim=fAnalysisCuts->GetPtBinLimits();
   SetPtBins(nptbins,ptlim);
- 
+  
+  for(Int_t i=0;i<4*fNPtBins;i++){
+    
+    if(fMassHist[i]) fMassHist[i]=0;
+    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
+    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
+    if(fCosPHist[i]) fCosPHist[i]=0;
+    if(fDLenHist[i]) fDLenHist[i]=0;
+    if(fSumd02Hist[i]) fSumd02Hist[i]=0;
+    if(fSigVertHist[i]) fSigVertHist[i]=0;
+    if(fPtMaxHist[i]) fPtMaxHist[i]=0;
+    if(fDCAHist[i]) fDCAHist[i]=0;
+    if(fPtProng0Hist[i]) fPtProng0Hist[i]=0;
+    if(fPtProng1Hist[i]) fPtProng1Hist[i]=0;
+    if(fPtProng2Hist[i]) fPtProng2Hist[i]=0;
+    if(fDalitz[i]) fDalitz[i]=0;
+    if(fDalitzPhi[i]) fDalitzPhi[i]=0;
+    if(fDalitzK0st[i]) fDalitzK0st[i]=0;
+
+  }
+  
   DefineOutput(1,TList::Class());  //My private output
 
   DefineOutput(2,TList::Class());
@@ -382,7 +402,7 @@ void AliAnalysisTaskSEDs::UserCreateOutputObjects()
   if(fFillNtuple>0){
     OpenFile(4); // 4 is the slot number of the ntuple
     
-    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK"); 
+    fNtupleDs = new TNtuple("fNtupleDs","Ds","labDs:retcode:pdgcode0:Pt0:Pt1:Pt2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMassKKpi:InvMasspiKK:sigvert:d00:d01:d02:dca:d0square:InvMassPhiKKpi:InvMassPhipiKK:InvMassK0starKKpi:InvMassK0starpiKK:cosinePiDsFrameKKpi:cosinePiDsFramepiKK:cosineKPhiFrameKKpi:cosineKPhiFramepiKK"); 
     
   }
   
@@ -676,7 +696,7 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
    
     }
     
-    Float_t tmp[26];
+    Float_t tmp[28];
     if(fFillNtuple>0){
       
       if ((fFillNtuple==1 && (isPhiKKpi || isPhipiKK)) || (fFillNtuple==2 && (isK0starKKpi || isK0starpiKK)) || (fFillNtuple==3 && (isKKpi || ispiKK))){
@@ -703,10 +723,12 @@ void AliAnalysisTaskSEDs::UserExec(Option_t */*option*/)
 	tmp[19]=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
 	tmp[20]=d->InvMass2Prongs(0,1,321,321);
 	tmp[21]=d->InvMass2Prongs(1,2,321,321);
-	tmp[22]=d->CosPiDsLabFrameKKpi();	   
-	tmp[23]=d->CosPiDsLabFramepiKK();	
-	tmp[24]=d->CosPiKPhiRFrameKKpi();	   
-	tmp[25]=d->CosPiKPhiRFramepiKK();	
+	tmp[22]=d->InvMass2Prongs(1,2,321,211);
+	tmp[23]=d->InvMass2Prongs(0,1,211,321);
+	tmp[24]=d->CosPiDsLabFrameKKpi();	   
+	tmp[25]=d->CosPiDsLabFramepiKK();	
+	tmp[26]=d->CosPiKPhiRFrameKKpi();	   
+	tmp[27]=d->CosPiKPhiRFramepiKK();	
 	
  	
 	fNtupleDs->Fill(tmp);
