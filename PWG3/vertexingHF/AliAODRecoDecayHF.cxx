@@ -278,7 +278,7 @@ AliAODVertex* AliAODRecoDecayHF::RemoveDaughtersFromPrimaryVtx(AliAODEvent *aod)
     delete diamond; diamond=NULL;
   }
 
-  Int_t skipped[10];
+  Int_t skipped[10]; for(Int_t i=0;i<10;i++) skipped[i]=-1;
   Int_t nTrksToSkip=0,id;
   AliAODTrack *t = 0;
   for(Int_t i=0; i<ndg; i++) {
