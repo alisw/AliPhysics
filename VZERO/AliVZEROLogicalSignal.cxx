@@ -81,6 +81,7 @@ AliVZEROLogicalSignal& AliVZEROLogicalSignal::operator =
 (const AliVZEROLogicalSignal& signal)
 {
 	// Operator =
+        if(&signal == this) return *this;
 	fStart = signal.fStart;
 	fStop  = signal.fStop;
 	return *this;
