@@ -51,20 +51,14 @@ AliCaloTrackAODReader::AliCaloTrackAODReader() :
  
 }
 
-//____________________________________________________________________________
-//void AliCaloTrackAODReader::GetSecondInputAODVertex(Double_t  v[3]) const {
-//	//Return vertex position of second AOD input
-//	
-//	fSecondInputAODEvent->GetPrimaryVertex()->GetXYZ(v);
-//
-//}
 
-//____________________________________________________________________________
-AliCentrality* AliCaloTrackAODReader::GetCentrality() const {
+//_________________________________________________________
+AliCentrality* AliCaloTrackAODReader::GetCentrality() const 
+{
   // recover centrality object.
   AliAODEvent* event    = dynamic_cast<AliAODEvent*> (fInputEvent);
   AliAODEvent* orgevent = dynamic_cast<AliAODEvent*> (fOrgInputEvent);
-
+  
   if(event && !fSelectEmbeddedClusters) {
     //Normal AOD event
     return event->GetHeader()->GetCentralityP() ;
@@ -79,14 +73,16 @@ AliCentrality* AliCaloTrackAODReader::GetCentrality() const {
   }
 }
 
-
-//____________________________________________________________________________
-void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent* aod, AliMCEvent* mc) {
+//_________________________________________________________________
+void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, 
+                                                  AliAODEvent* aod, 
+                                                  AliMCEvent* mc) 
+{
   // Connect the data pointers
   // If input is AOD, do analysis with input, if not, do analysis with the output aod.
-
+  
   //printf("AODInputHandler %p, MergeEvents %d \n",aodIH, aodIH->GetMergeEvents());
-
+  
   Bool_t tesd = kFALSE ; 
   Bool_t taod = kTRUE ; 
   if ( strcmp(input->GetName(), "AliMixedEvent") == 0 ) {
@@ -109,7 +105,7 @@ void AliCaloTrackAODReader::SetInputOutputMCEvent(AliVEvent* input, AliAODEvent*
     taod = kTRUE ; 
   }
   
-
+  
   if(tesd)   {
     SetInputEvent(aod);
     SetOutputEvent(aod);

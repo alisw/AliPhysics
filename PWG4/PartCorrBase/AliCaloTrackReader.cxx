@@ -186,6 +186,20 @@ AliStack* AliCaloTrackReader::GetStack() const
   }
 }
 
+//__________________________________________________
+TString AliCaloTrackReader::GetFiredTriggerClasses() 
+{ 
+  // List of triggered classes in a TString
+
+  AliESDEvent* esdevent = dynamic_cast<AliESDEvent*> (GetInputEvent());
+  AliAODEvent* aodevent = dynamic_cast<AliAODEvent*> (GetInputEvent());
+    
+  if     (esdevent) return esdevent->GetFiredTriggerClasses();
+  else if(aodevent) return aodevent->GetFiredTriggerClasses();
+  else              return ""; // Mixed Event, MC event, does not have this trigger info
+
+}
+
 //______________________________________________
 AliHeader* AliCaloTrackReader::GetHeader() const 
 {
