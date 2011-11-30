@@ -323,6 +323,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetDiamond(diamxy,diamcov);
   header->SetDiamondZ(esd.GetDiamondZ(),esd.GetSigma2DiamondZ());
   
+  // VZERO channel equalization factors for event-plane reconstruction
+  header->SetVZEROEqFactors(esd.GetVZEROEqFactors());
+
   return header;
 }
 
