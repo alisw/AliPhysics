@@ -26,7 +26,7 @@ class AliVCaloCells;
 class AliStack; 
 class AliHeader; 
 class AliGenEventHeader; 
-#include "AliVEvent.h";
+#include "AliVEvent.h"
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
