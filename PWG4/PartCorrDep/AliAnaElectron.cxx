@@ -970,9 +970,7 @@ void  AliAnaElectron::MakeAnalysisFillAOD()
     aodph.SetIdentifiedParticleType(pid);    
     
     Int_t pidIndex = 0;// Electron
-    if     (pid == AliCaloPID::kElectron)      pidIndex = 0;
-    else if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
-    else                                       continue    ;
+    if(pid == AliCaloPID::kChargedHadron) pidIndex = 1;
     
     //---------------------------------
     //Fill some shower shape histograms
