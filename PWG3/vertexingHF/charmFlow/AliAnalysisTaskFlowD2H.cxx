@@ -326,7 +326,7 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(const AliAODEvent *theAOD,
     if( (dst->Pt()<fFlowPts[0]) || (dst->Pt()>fFlowPts[1]) ) continue;
     AliAODRecoDecayHF2Prong *d0cand = (AliAODRecoDecayHF2Prong*)dst->Get2Prong();
     nIDs[0] = ((AliAODTrack*)d0cand->GetDaughter(0))->GetID();
-    nIDs[1] = ((AliAODTrack*)docand->GetDaughter(1))->GetID();
+    nIDs[1] = ((AliAODTrack*)d0cand->GetDaughter(1))->GetID();
     nIDs[2] = ((AliAODTrack*)dst->GetBachelor() )->GetID();
     // Candidates Insertion (done in filling method: faster)
     if(nLevel)
