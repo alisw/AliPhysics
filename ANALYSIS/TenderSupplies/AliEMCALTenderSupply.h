@@ -26,8 +26,7 @@ class TFile;
 class TString;
 class AliEMCALClusterizer;
 class AliEMCALAfterBurnerUF;
-
-#include "AliEMCALRecParam.h"
+class AliEMCALRecParam;
 
 class AliEMCALTenderSupply: public AliTenderSupply {
   

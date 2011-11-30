@@ -50,6 +50,7 @@
 #include "AliEMCALClusterizerv1.h"
 #include "AliEMCALClusterizerv2.h"
 #include "AliEMCALDigit.h"
+#include "AliEMCALRecParam.h"
 
 ClassImp(AliEMCALTenderSupply)
 
@@ -432,12 +433,19 @@ Bool_t AliEMCALTenderSupply::InitMisalignMatrix()
   }
  }
 
+  if(!mobj){
+    AliFatal("Geometry matrix array not found");
+    return kFALSE;
+  }
+  
  for(Int_t mod=0; mod < (fEMCALGeo->GetEMCGeometry())->GetNumberOfSuperModules(); mod++){
    fEMCALMatrix[mod] = (TGeoHMatrix*) mobj->At(mod);
    fEMCALGeo->SetMisalMatrix(fEMCALMatrix[mod],mod); 
    fEMCALMatrix[mod]->Print();
  }
+  
   return kTRUE;
+  
 }
 
 //_____________________________________________________
@@ -465,22 +473,28 @@ Int_t AliEMCALTenderSupply::InitBadChannels()
   AliOADBContainer *contBC=new AliOADBContainer("");
   if(fBasePath!=""){ //if fBasePath specified in the ->SetBasePath()
     if (fDebugLevel>0) AliInfo(Form("Loading Bad Channels OADB from given path %s",fBasePath.Data()));
+    
     TFile *fbad=new TFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"read");
-    if(fbad->IsZombie()){
-      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s, aborting",fBasePath.Data()));
+    if(!fbad || fbad->IsZombie()){
+      AliFatal(Form("EMCALBadChannels.root was not found in the path provided: %s",fBasePath.Data()));
       return 0;
     }  
+    
     if(fbad) delete fbad;
+    
     contBC->InitFromFile(Form("%s/EMCALBadChannels.root",fBasePath.Data()),"AliEMCALBadChannels");    
   }
     else { // Else choose the one in the $ALICE_ROOT directory
       if (fDebugLevel>0) AliInfo("Loading Bad Channels OADB from $ALICE_ROOT/OADB/EMCAL");
+      
       TFile *fbad=new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","read");
-      if(fbad->IsZombie()){
-	AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root was not found, aborting");
-	return 0;
+      if(!fbad || fbad->IsZombie()){
+        AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root was not found");
+        return 0;
       }  
+      
       if(fbad) delete fbad;
+      
       contBC->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALBadChannels.root","AliEMCALBadChannels"); 
     }
   
@@ -535,22 +549,28 @@ Int_t AliEMCALTenderSupply::InitRecalib()
   AliOADBContainer *contRF=new AliOADBContainer("");
   if(fBasePath!="") { //if fBasePath specified in the ->SetBasePath()
     if (fDebugLevel>0)	AliInfo(Form("Loading Recalib OADB from given path %s",fBasePath.Data()));
+    
     TFile *fRecalib= new TFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"read");
-    if (fRecalib->IsZombie()) {
-      AliFatal(Form("EMCALRecalib.root not found in %s, aborting",fBasePath.Data()));
+    if (!fRecalib || fRecalib->IsZombie()) {
+      AliFatal(Form("EMCALRecalib.root not found in %s",fBasePath.Data()));
       return 0;
     }
+    
     if(fRecalib) delete fRecalib;
+    
     contRF->InitFromFile(Form("%s/EMCALRecalib.root",fBasePath.Data()),"AliEMCALRecalib");
   }
     else{ // Else choose the one in the $ALICE_ROOT directory
       if (fDebugLevel>0)	AliInfo("Loading Recalib OADB from $ALICE_ROOT/OADB/EMCAL");
+      
       TFile *fRecalib= new TFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","read");
-      if (fRecalib->IsZombie()) {
-	AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found, aborting");
-	return 0;
+      if (!fRecalib || fRecalib->IsZombie()) {
+        AliFatal("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root was not found");
+        return 0;
       }
+      
       if(fRecalib) delete fRecalib;
+      
       contRF->InitFromFile("$ALICE_ROOT/OADB/EMCAL/EMCALRecalib.root","AliEMCALRecalib");     
     }
 
@@ -762,7 +782,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
   for(Int_t i=0, nout=clus->GetEntriesFast(); i < ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
     
-    Int_t ncells_true = 0;
+    Int_t ncellsTrue = 0;
     const Int_t ncells = recpoint->GetMultiplicity();
     UShort_t   absIds[ncells];  
     Double32_t ratios[ncells];
@@ -770,14 +790,14 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     Float_t *elist = recpoint->GetEnergiesList();
     for (Int_t c = 0; c < ncells; ++c) {
       AliEMCALDigit *digit = static_cast<AliEMCALDigit*>(fDigitsArr->At(dlist[c]));
-      absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = elist[c]/digit->GetAmplitude();
-      if (ratios[ncells_true] < 0.001) 
+      absIds[ncellsTrue] = digit->GetId();
+      ratios[ncellsTrue] = elist[c]/digit->GetAmplitude();
+      if (ratios[ncellsTrue] < 0.001) 
         continue;
-      ++ncells_true;
+      ++ncellsTrue;
     }
     
-    if (ncells_true < 1) {
+    if (ncellsTrue < 1) {
       AliWarning("Skipping cluster with no cells");
       continue;
     }
@@ -793,7 +813,7 @@ void AliEMCALTenderSupply::RecPoints2Clusters(TClonesArray *clus)
     c->SetType(AliVCluster::kEMCALClusterv1);
     c->SetE(recpoint->GetEnergy());
     c->SetPosition(g);
-    c->SetNCells(ncells_true);
+    c->SetNCells(ncellsTrue);
     c->SetDispersion(recpoint->GetDispersion());
     c->SetEmcCpvDistance(-1);            //not yet implemented
     c->SetChi2(-1);                      //not yet implemented
