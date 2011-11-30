@@ -139,6 +139,10 @@ AliRDHFCutsDplustoKpipi &AliRDHFCutsDplustoKpipi::operator=(const AliRDHFCutsDpl
 
   AliRDHFCuts::operator=(source);
 
+  fUseStrongPid=source.fUseStrongPid;
+  fMaxPtStrongPid=source.fMaxPtStrongPid;
+  fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
+
   return *this;
 }
 //
