@@ -118,6 +118,8 @@ AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &s
   AliRDHFCuts::operator=(source);
   SetPidprot(source.GetPidprot());
   SetPidpion(source.GetPidpion());
+  fRecoKF=source.fRecoKF;
+  fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
 
   return *this;
 }
