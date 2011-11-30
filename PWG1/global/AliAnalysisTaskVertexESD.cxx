@@ -897,6 +897,7 @@ AliESDVertex* AliAnalysisTaskVertexESD::ReconstructPrimaryVertexITSTPC(Bool_t co
     Int_t iskip=0;
     Int_t *skip = new Int_t[evt->GetNumberOfTracks()];
     for(Int_t itr=0;itr<evt->GetNumberOfTracks(); itr++) {
+      skip[itr]=-1; // this is only to initialize all the elements
       AliESDtrack* track = evt->GetTrack(itr);
       if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
 	skip[iskip++]=itr;
