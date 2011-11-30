@@ -380,11 +380,15 @@ void AliCaloTrackMCReader::Print(const Option_t * opt) const
 }
 
 //____________________________________________________________________________
-void AliCaloTrackMCReader::MakePi0Decay(TLorentzVector &p0, TLorentzVector &p1, 
-				TLorentzVector &p2) const {//, Double_t &angle) {
+void AliCaloTrackMCReader::MakePi0Decay(const TLorentzVector p0, 
+                                        TLorentzVector &p1, 
+                                        TLorentzVector &p2) const 
+//, Double_t &angle)
+{ 
   // Perform isotropic decay pi0 -> 2 photons
   // p0 is pi0 4-momentum (inut)
   // p1 and p2 are photon 4-momenta (output)
+  
   //  cout<<"Boost vector"<<endl;
   Double_t mPi0 = TDatabasePDG::Instance()->GetParticle(111)->Mass();
   TVector3 b = p0.BoostVector();

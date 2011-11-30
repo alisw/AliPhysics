@@ -46,6 +46,7 @@
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
 #include "AliEMCALGeometry.h"
+#include "AliEMCALRecoUtils.h"
 
 // ---- PartCorr ---
 #include "AliCalorimeterUtils.h"
@@ -62,8 +63,8 @@ fFiducialCut(0x0),           fCheckFidCut(kFALSE),
 fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(7),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
 fCTSPtMax(1000),             fEMCALPtMax(1000),               fPHOSPtMax(1000), 
-fAODBranchList(new TList ),
-fCTSTracks(new TObjArray()), fEMCALClusters(new TObjArray()), fPHOSClusters(new TObjArray()),
+fAODBranchList(0x0),
+fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
 fInputEvent(0x0),            fOutputEvent(0x0),fMC(0x0),
 fFillCTS(0),                 fFillEMCAL(0),                   fFillPHOS(0),
@@ -80,13 +81,13 @@ fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(k
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
 fAcceptFastCluster(kTRUE),   fRemoveLEDEvents(kFALSE), 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
-fTriggerAnalysis (new AliTriggerAnalysis), 
+fTriggerAnalysis (0x0), 
 fCentralityClass("V0M"),     fCentralityOpt(10),
 fEventPlaneMethod("Q")
 
 {
   //Ctor
-  
+
   //Initialize parameters
   InitParameters();
 }
@@ -327,6 +328,14 @@ void AliCaloTrackReader::InitParameters()
   
   //Centrality
   fCentralityBin[0]=fCentralityBin[1]=-1;
+  
+  // Allocate memory (not sure this is the right place)
+  fCTSTracks       = new TObjArray();
+  fEMCALClusters   = new TObjArray();
+  fPHOSClusters    = new TObjArray(); 
+  fTriggerAnalysis = new AliTriggerAnalysis;
+  fAODBranchList   = new TList ;
+
   
 }
 

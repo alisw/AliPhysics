@@ -19,13 +19,14 @@
 #include <TString.h>
 class TObjArray ; 
 class TTree ;
+class TArrayI ;
 
 //--- ANALYSIS system ---
 class AliVCaloCells;
 class AliStack; 
 class AliHeader; 
 class AliGenEventHeader; 
-class AliVEvent;
+#include "AliVEvent.h";
 class AliAODEvent;
 class AliMCEvent;
 class AliMixedEvent;
@@ -34,22 +35,19 @@ class AliESDtrackCuts;
 class AliCentrality;
 class AliTriggerAnalysis;
 class AliEventplane;
+class AliVCluster;
 
 // --- PartCorr / EMCAL ---
-#include "AliEMCALRecoUtils.h"
+class AliEMCALRecoUtils;
 #include "AliFiducialCut.h"
 class AliCalorimeterUtils;
 
 class AliCaloTrackReader : public TObject {
 
 public: 
-  AliCaloTrackReader() ; // ctor
-  virtual ~AliCaloTrackReader() ;//virtual dtor
-private:
-  AliCaloTrackReader(const AliCaloTrackReader & g) ; // cpy ctor
-  AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ;//cpy assignment
-
-public:
+  
+  AliCaloTrackReader() ;          // ctor
+  virtual ~AliCaloTrackReader() ; // virtual dtor
   
   //--------------------------------
   // General methods
@@ -413,7 +411,11 @@ public:
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
+  AliCaloTrackReader(const AliCaloTrackReader & g) ;               // cpy ctor
+  AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ; // cpy assignment
+  
   ClassDef(AliCaloTrackReader,34)
+  
 } ;
 
 

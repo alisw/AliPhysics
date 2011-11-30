@@ -25,16 +25,13 @@
 //*-- Author: Gustavo Conesa (LNF-INFN) 
 //////////////////////////////////////////////////////////////////////////////
 
-
-// --- ROOT system ---
-//#include "Riostream.h"
-
 //---- ANALYSIS system ----
 #include "AliCaloTrackAODReader.h" 
 #include "AliAODInputHandler.h"
 #include "AliMultiEventInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
+#include "AliAODEvent.h"
 
 ClassImp(AliCaloTrackAODReader)
 

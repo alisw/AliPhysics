@@ -32,7 +32,7 @@
 #include "AliMultiEventInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMixedEvent.h"
-
+#include "AliESDEvent.h"
 
 ClassImp(AliCaloTrackESDReader)
 
