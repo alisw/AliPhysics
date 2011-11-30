@@ -15,7 +15,8 @@
 
 #include "AliAnalysisTaskSE.h"
 
-#include "AliAODEvent.h"
+class AliAODEvent;
+
 #include "AliCaloTrackReader.h" 
 
 class AliCaloTrackAODReader : public AliCaloTrackReader {

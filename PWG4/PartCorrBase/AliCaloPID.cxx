@@ -626,14 +626,13 @@ Float_t AliCaloPID::TestPHOSDispersion(const Double_t pt, const Double_t l1, con
   Double_t l2Sigma = 6.48260e-02+7.60261e+10/(1.+1.53012e+11*pt+5.01265e+05*pt*pt)+9.00000e-03*pt;
   Double_t l1Sigma = 4.44719e-04+6.99839e-01/(1.+1.22497e+00*pt+6.78604e-07*pt*pt)+9.00000e-03*pt;
   Double_t c       =-0.35-0.550*TMath::Exp(-0.390730*pt) ;
-  Double_t R2      = 0.5*  (l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
+  Double_t r2      = 0.5*  (l1-l1Mean)*(l1-l1Mean)/l1Sigma/l1Sigma + 
                      0.5*  (l2-l2Mean)*(l2-l2Mean)/l2Sigma/l2Sigma +
                      0.5*c*(l1-l1Mean)*(l2-l2Mean)/l1Sigma/l2Sigma ;
   
-  if(fDebug > 0) printf("AliCaloPID::TestPHOSDispersion() - PHOS SS R %f < %f?\n", TMath::Sqrt(R2), fPHOSDispersionCut);
+  if(fDebug > 0) printf("AliCaloPID::TestPHOSDispersion() - PHOS SS R %f < %f?\n", TMath::Sqrt(r2), fPHOSDispersionCut);
   
-  return TMath::Sqrt(R2) ; 
-  
+  return TMath::Sqrt(r2) ; 
   
 }
 

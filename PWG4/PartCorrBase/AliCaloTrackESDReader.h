@@ -13,7 +13,8 @@
 //
 //*-- Author: Gustavo Conesa (INFN-LNF)
 
-#include "AliESDEvent.h"
+class AliESDEvent;
+
 #include "AliCaloTrackReader.h" 
 
 class AliCaloTrackESDReader : public AliCaloTrackReader {

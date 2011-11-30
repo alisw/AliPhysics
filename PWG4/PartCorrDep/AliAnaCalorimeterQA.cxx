@@ -317,11 +317,13 @@ void AliAnaCalorimeterQA::CalculateAverageTime(AliVCluster *clus,
     wTot  += w;
     
   }        
+  
   if(ncells > 0) aTime /= ncells;
   else           aTime  = 0;
   
   if(wTot   > 0) wTime /= wTot;
-  
+  else           wTime  = 0;
+
   timeAverages[0] = aTime;        
   timeAverages[1] = wTime; 
   
@@ -783,8 +785,9 @@ void AliAnaCalorimeterQA::ClusterHistograms(AliVCluster* clus,const TObjArray *c
   
 }
 
-//_____________________________________________________________________________________________
-void AliAnaCalorimeterQA::ClusterLoopHistograms(TObjArray *caloClusters, AliVCaloCells* cells)
+//____________________________________________________________________________
+void AliAnaCalorimeterQA::ClusterLoopHistograms(const TObjArray *caloClusters, 
+                                                AliVCaloCells* cells)
 {
   // Fill clusters related histograms
   
@@ -812,7 +815,7 @@ void AliAnaCalorimeterQA::ClusterLoopHistograms(TObjArray *caloClusters, AliVCal
     
     if(GetDebug() > 0) 
       printf("AliAnaCalorimeterQA::MakeAnalysisFillHistograms() - cluster: %d/%d, data %d \n",
-                              iclus+1,nCaloClusters,GetReader()->GetDataType());
+             iclus+1,nCaloClusters,GetReader()->GetDataType());
     
     AliVCluster* clus =  (AliVCluster*)caloClusters->At(iclus);
     

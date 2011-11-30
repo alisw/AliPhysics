@@ -62,7 +62,7 @@ public:
                                  const Int_t absIdMax, const Double_t maxCellFraction, const Double_t tmax,
                                  Double_t timeAverages[2]);
   
-  void         ClusterLoopHistograms(TObjArray * clusters, AliVCaloCells * cells);
+  void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
   Bool_t       ClusterMCHistograms(const TLorentzVector mom,const Bool_t matched,
                                    const Int_t * labels, const Int_t nLabels, Int_t & pdg );

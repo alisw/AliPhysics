@@ -222,7 +222,7 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   // Access MC information in stack if requested, check that it exists.	
   AliStack * stack = 0x0;
   TClonesArray * mcparticles0 = 0x0;
-  Int_t NClusters = 0 ;
+  Int_t nClusters = 0 ;
   TLorentzVector momCluster ;
   
   //Check if the stack is available when analysing MC data.
@@ -249,12 +249,12 @@ void  AliAnaShowerParameter::MakeAnalysisFillHistograms()
   
   TClonesArray *  clustArray = 0x0 ; 
   clustArray = GetAODCaloClusters() ;
-  NClusters = clustArray->GetEntriesFast() ;    
-  fhNClusters->Fill(NClusters) ;
+  nClusters = clustArray->GetEntriesFast() ;    
+  fhNClusters->Fill(nClusters) ;
   
-  if(GetDebug() > 0) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - aod branch entries %d\n", NClusters);
+  if(GetDebug() > 0) printf("AliAnaShowerParameter::MakeAnalysisFillHistograms() - aod branch entries %d\n", nClusters);
   
-  for(Int_t iCluster = 0 ; iCluster < NClusters ; iCluster++){    
+  for(Int_t iCluster = 0 ; iCluster < nClusters ; iCluster++){    
     Int_t input = 0 ;
     
     AliAODCaloCluster * caloCluster =  (AliAODCaloCluster*) (clustArray->At(iCluster)) ;
