@@ -219,6 +219,7 @@ AliTRDsimTR &AliTRDsimTR::operator=(const AliTRDsimTR &s)
   //
 
   if (this != &s) ((AliTRDsimTR &) s).Copy(*this);
+  this->Init();
 
   return *this;
 

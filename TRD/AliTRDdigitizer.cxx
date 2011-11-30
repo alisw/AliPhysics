@@ -618,6 +618,7 @@ Bool_t AliTRDdigitizer::MakeDigits()
 
   Float_t **hits = new Float_t*[kNdet];
   Int_t    *nhit = new Int_t[kNdet];
+  memset(nhit,0,kNdet*sizeof(Int_t));
 
   AliTRDarraySignal *signals = 0x0;
 
@@ -722,11 +723,10 @@ Bool_t AliTRDdigitizer::SortHits(Float_t **hits, Int_t *nhit)
   Int_t    nhitTrk  = 0;
 
   Int_t   *lhit     = new Int_t[kNdet];
+  memset(lhit,0,kNdet*sizeof(Int_t));
 
   for (Int_t det = 0; det < kNdet; det++) {
-    lhit[det] = 0;
-    nhit[det] = 0;
-    hits[det] = 0;
+    hits[det] = 0x0;
   }
 
   AliLoader *gimme = fRunLoader->GetLoader("TRDLoader");
