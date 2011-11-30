@@ -158,7 +158,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse,2);  //PID response handling
+  ClassDef(AliPIDResponse,3);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {
