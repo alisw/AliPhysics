@@ -62,7 +62,7 @@ ClassImp(AliAnalysisTaskFlowD2H)
 //_____________________________________________________________________________
 AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H() :
   AliAnalysisTaskSE(), fCutsRP(NULL), fCutsPOI(NULL), fSource(0),
-  fDebug(kFALSE), fHList(NULL), fAnaCuts(NULL)
+  fDebugV2(kFALSE), fHList(NULL), fAnaCuts(NULL)
 {
 // Default constructor
   for(int i=0; i!=2; ++i)
@@ -85,7 +85,7 @@ AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,
     AliFlowTrackCuts *cutsRPs, AliRDHFCuts *cutsPOIs, Int_t specie) :
   AliAnalysisTaskSE(name), fCutsRP(cutsRPs), 
   fCutsPOI(cutsPOIs), fSource(specie),
-  fDebug(kFALSE), fHList(NULL), fAnaCuts(NULL)
+  fDebugV2(kFALSE), fHList(NULL), fAnaCuts(NULL)
 {
 // Standard constructor
   for(int i=0; i!=2; ++i)
@@ -112,16 +112,16 @@ AliAnalysisTaskFlowD2H::AliAnalysisTaskFlowD2H(const char *name,
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskFlowD2H::~AliAnalysisTaskFlowD2H()
-{
+AliAnalysisTaskFlowD2H::~AliAnalysisTaskFlowD2H(){
+  // delete objects
   if(fHList)
     delete fHList;
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskFlowD2H::UserCreateOutputObjects()
-{
-  if(fDebug)
+void AliAnalysisTaskFlowD2H::UserCreateOutputObjects(){
+  // Define output objects + parameters
+  if(fDebugV2)
     printf("DEBUGGER: Creating output\n");
   fHList = new TList();
   fHList->SetOwner();
@@ -152,6 +152,7 @@ void AliAnalysisTaskFlowD2H::UserCreateOutputObjects()
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowD2H::AddHistograms()
 {
+  // Create histograms
   TList *tEvents = new TList();
     tEvents->SetName("Events");
     tEvents->SetOwner();
@@ -186,15 +187,17 @@ void AliAnalysisTaskFlowD2H::AddHistograms()
       tCandidates->Add(fMass[i]);
     }
     fHList->Add(tCandidates);
-  if (fDebug) printf("DEBUGGER: Created histos for DMeson %d\n", fSource );
+  if (fDebugV2) printf("DEBUGGER: Created histos for DMeson %d\n", fSource );
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowD2H::NotifyRun()
 {
+  // Do nothing
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
 {
+  // Do analysis + fIll histograms
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
   if(!fAOD)
@@ -205,7 +208,7 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
   if(fCutsPOI->IsEventSelectedInCentrality(fAOD)>0) return;
   fEvent[1]->Fill( fCutsPOI->GetCentrality(fAOD), iMulti );
 
-  if (fDebug) printf("Event selected\n");
+  if (fDebugV2) printf("Event selected\n");
   fCutsRP->SetEvent(fAOD,MCEvent());
   AliFlowTrackCuts* dummy = new AliFlowTrackCuts("null_cuts");
   dummy->SetParamType(AliFlowTrackCuts::kGlobal);
@@ -221,7 +224,7 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
                                      fFlowEta[2], fFlowEta[3] );
   }
   delete dummy;
-  if (fDebug) printf(" ᶫFlowEvent has %d RPs\n", flowEvent[0]->NumberOfTracks() );
+  if (fDebugV2) printf(" ᶫFlowEvent has %d RPs\n", flowEvent[0]->NumberOfTracks() );
 
   switch (fSource) {
     case (AliRDHFCuts::kD0toKpiCuts):
@@ -241,6 +244,7 @@ void AliAnalysisTaskFlowD2H::UserExec(Option_t *)
 void AliAnalysisTaskFlowD2H::FillD0toKpi(AliAODEvent *theAOD, 
                                          AliFlowEvent *theMB[5] )
 {
+  // Fill D0->Kpi histos
   TList *listHF = (TList*) theAOD->GetList();
   if(!listHF) return;
   TClonesArray *listDzero = (TClonesArray*) listHF->FindObject("D0toKpi");
@@ -248,35 +252,35 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(AliAODEvent *theAOD,
   int nEntries = listDzero->GetEntriesFast();
   if( !nEntries ) return;
   AliRDHFCutsD0toKpi *fCutsD0toKpi = (AliRDHFCutsD0toKpi*) fCutsPOI;
-  if (fDebug) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
+  if (fDebugV2) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
   const Int_t ndght=2;
   Int_t nIDs[ndght];
   for( int iEntry=0; iEntry!=nEntries; ++iEntry ) {
-    AliAODRecoDecayHF2Prong *D0 = (AliAODRecoDecayHF2Prong*) listDzero->UncheckedAt( iEntry );
-    if( !D0 ) continue;
-    if( !D0->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts) ) continue;
-    if( !fCutsD0toKpi->IsInFiducialAcceptance(D0->Pt(),D0->Y(421)) )continue;
-    int topCut  = fCutsD0toKpi->IsSelected( D0, AliRDHFCuts::kAll, theAOD );
+    AliAODRecoDecayHF2Prong *d0cand = (AliAODRecoDecayHF2Prong*) listDzero->UncheckedAt( iEntry );
+    if( !d0cand ) continue;
+    if( !d0cand->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts) ) continue;
+    if( !fCutsD0toKpi->IsInFiducialAcceptance(d0cand->Pt(),d0cand->Y(421)) )continue;
+    int topCut  = fCutsD0toKpi->IsSelected( d0cand, AliRDHFCuts::kAll, theAOD );
     int nLevel=topCut>0?1:0;
-    if( (D0->Eta()<fPOIEta[0])||(D0->Eta()>fPOIEta[1]) )
+    if( (d0cand->Eta()<fPOIEta[0])||(d0cand->Eta()>fPOIEta[1]) )
       nLevel=0;
-    Double_t MassD0=topCut>1?D0->InvMassD0bar():D0->InvMassD0();
+    Double_t massD0=topCut>1?d0cand->InvMassD0bar():d0cand->InvMassD0();
     for(int h=0; h!=nLevel+1; ++h)
-      fMass[h]->Fill(MassD0,D0->Pt());
-    if( (D0->Pt()<fFlowPts[0]) || (D0->Pt()>fFlowPts[1]) ) continue;
+      fMass[h]->Fill(massD0,d0cand->Pt());
+    if( (d0cand->Pt()<fFlowPts[0]) || (d0cand->Pt()>fFlowPts[1]) ) continue;
     AliAODTrack* iT;
     for(Int_t i=0; i!=ndght; ++i) {
-      iT = (AliAODTrack*)D0->GetDaughter(i);
+      iT = (AliAODTrack*)d0cand->GetDaughter(i);
       nIDs[i] = iT->GetID();
     }
     // Candidates Insertion (done in filling method: faster)
     if(nLevel)
       for(Int_t r=0; r!=5; ++r)
-        if( (MassD0>=fFlowBands[0][r]) && (MassD0<fFlowBands[1][r]) ) {
+        if( (massD0>=fFlowBands[0][r]) && (massD0<fFlowBands[1][r]) ) {
           AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
-                                 MakeTrack(MassD0, D0->Pt(), D0->Phi(),
-                                           D0->Eta(), ndght, nIDs);
-          if(fDebug) printf("   ᶫInjecting D0 candidate on band %d \n", r);
+                                 MakeTrack(massD0, d0cand->Pt(), d0cand->Phi(),
+                                           d0cand->Eta(), ndght, nIDs);
+          if(fDebugV2) printf("   ᶫInjecting D0 candidate on band %d \n", r);
           for(Int_t iDau=0; iDau!=ndght; ++iDau)
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
@@ -284,7 +288,7 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(AliAODEvent *theAOD,
               if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
-                if(fDebug) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
+                if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
               }
             }
           theMB[r]->AddTrack(sTrack);
@@ -293,9 +297,10 @@ void AliAnalysisTaskFlowD2H::FillD0toKpi(AliAODEvent *theAOD,
   }
 }
 //______________________________________________________________________________
-void AliAnalysisTaskFlowD2H::FillDStartoKpipi(AliAODEvent *theAOD, 
+void AliAnalysisTaskFlowD2H::FillDStartoKpipi(const AliAODEvent *theAOD, 
                                               AliFlowEvent *theMB[5] )
 {
+  // Fills D* histos
   TList *listHF = (TList*) theAOD->GetList();
   if(!listHF) return;
   TClonesArray *listDstar = (TClonesArray*) listHF->FindObject("Dstar");
@@ -303,34 +308,34 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(AliAODEvent *theAOD,
   int nEntries = listDstar->GetEntriesFast();
   if( !nEntries ) return;
   AliRDHFCutsDStartoKpipi *fCutsDStartoKpipi = (AliRDHFCutsDStartoKpipi*) fCutsPOI;
-  if (fDebug) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
+  if (fDebugV2) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
   const Int_t ndght=3;
   Int_t nIDs[ndght];
   for( int iEntry=0; iEntry!=nEntries; ++iEntry ) {
-    AliAODRecoCascadeHF *DS = (AliAODRecoCascadeHF*) listDstar->UncheckedAt( iEntry );
-    if( !DS ) continue;
-    if( !DS->HasSelectionBit(AliRDHFCuts::kDstarCuts) ) continue;
-    if( !fCutsDStartoKpipi->IsInFiducialAcceptance(DS->Pt(),DS->YDstar()) )continue;
-    int topCut = fCutsDStartoKpipi->IsSelected( DS, AliRDHFCuts::kAll );
+    AliAODRecoCascadeHF *dst = (AliAODRecoCascadeHF*) listDstar->UncheckedAt( iEntry );
+    if( !dst ) continue;
+    if( !dst->HasSelectionBit(AliRDHFCuts::kDstarCuts) ) continue;
+    if( !fCutsDStartoKpipi->IsInFiducialAcceptance(dst->Pt(),dst->YDstar()) )continue;
+    int topCut = fCutsDStartoKpipi->IsSelected( dst, AliRDHFCuts::kAll );
     int nLevel=topCut>0?1:0;
-    if( (DS->Eta()<fPOIEta[0])||(DS->Eta()>fPOIEta[1]) )
+    if( (dst->Eta()<fPOIEta[0])||(dst->Eta()>fPOIEta[1]) )
       nLevel=0;
-    Double_t MassDS=DS->DeltaInvMass();
+    Double_t massDS=dst->DeltaInvMass();
     for(int h=0; h!=nLevel+1; ++h)
-      fMass[h]->Fill(MassDS,DS->Pt());
-    if( (DS->Pt()<fFlowPts[0]) || (DS->Pt()>fFlowPts[1]) ) continue;
-    AliAODRecoDecayHF2Prong *D0 = (AliAODRecoDecayHF2Prong*)DS->Get2Prong();
-    nIDs[0] = ((AliAODTrack*)D0->GetDaughter(0))->GetID();
-    nIDs[1] = ((AliAODTrack*)D0->GetDaughter(1))->GetID();
-    nIDs[2] = ((AliAODTrack*)DS->GetBachelor() )->GetID();
+      fMass[h]->Fill(massDS,dst->Pt());
+    if( (dst->Pt()<fFlowPts[0]) || (dst->Pt()>fFlowPts[1]) ) continue;
+    AliAODRecoDecayHF2Prong *d0cand = (AliAODRecoDecayHF2Prong*)dst->Get2Prong();
+    nIDs[0] = ((AliAODTrack*)d0cand->GetDaughter(0))->GetID();
+    nIDs[1] = ((AliAODTrack*)docand->GetDaughter(1))->GetID();
+    nIDs[2] = ((AliAODTrack*)dst->GetBachelor() )->GetID();
     // Candidates Insertion (done in filling method: faster)
     if(nLevel)
       for(Int_t r=0; r!=5; ++r)
-        if( (MassDS>=fFlowBands[0][r]) && (MassDS<fFlowBands[1][r]) ) {
+        if( (massDS>=fFlowBands[0][r]) && (massDS<fFlowBands[1][r]) ) {
           AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
-                                 MakeTrack(MassDS, DS->Pt(), DS->Phi(),
-                                           DS->Eta(), ndght, nIDs);
-          if(fDebug) printf("   ᶫInjecting DStar candidate on band %d \n", r);
+                                 MakeTrack(massDS, dst->Pt(), dst->Phi(),
+                                           dst->Eta(), ndght, nIDs);
+          if(fDebugV2) printf("   ᶫInjecting DStar candidate on band %d \n", r);
           for(Int_t iDau=0; iDau!=ndght; ++iDau)
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
@@ -338,7 +343,7 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(AliAODEvent *theAOD,
               if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
-                if(fDebug) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
+                if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
               }
             }
           theMB[r]->AddTrack(sTrack);
@@ -347,9 +352,10 @@ void AliAnalysisTaskFlowD2H::FillDStartoKpipi(AliAODEvent *theAOD,
   }
 }
 //______________________________________________________________________________
-void AliAnalysisTaskFlowD2H::FillDplustoKpipi(AliAODEvent *theAOD, 
+void AliAnalysisTaskFlowD2H::FillDplustoKpipi(const AliAODEvent *theAOD, 
                                               AliFlowEvent *theMB[5] )
 {
+  // Fill D+ histos
   TList *listHF = (TList*) theAOD->GetList();
   if(!listHF) return;
   TClonesArray *listDplus = (TClonesArray*) listHF->FindObject("Charm3Prong");
@@ -357,33 +363,33 @@ void AliAnalysisTaskFlowD2H::FillDplustoKpipi(AliAODEvent *theAOD,
   int nEntries = listDplus->GetEntriesFast();
   if( !nEntries ) return;
   AliRDHFCutsDplustoKpipi *fCutsDStartoKpipi = (AliRDHFCutsDplustoKpipi*) fCutsPOI;
-  if (fDebug) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
+  if (fDebugV2) printf("  ᶫ%d candidates found. Looping...\n", nEntries);
   const Int_t ndght=3;
   Int_t nIDs[ndght];
   for( int iEntry=0; iEntry!=nEntries; ++iEntry ) {
-    AliAODRecoDecayHF3Prong *Dp = (AliAODRecoDecayHF3Prong*) listDplus->UncheckedAt( iEntry );
-    if( !Dp ) continue;
-    if( !Dp->HasSelectionBit(AliRDHFCuts::kDplusCuts) ) continue;
-    if( !fCutsDStartoKpipi->IsInFiducialAcceptance(Dp->Pt(),Dp->YDplus()) )continue;
-    int topCut = fCutsDStartoKpipi->IsSelected( Dp, AliRDHFCuts::kAll );
+    AliAODRecoDecayHF3Prong *dplu = (AliAODRecoDecayHF3Prong*) listDplus->UncheckedAt( iEntry );
+    if( !dplu ) continue;
+    if( !dplu->HasSelectionBit(AliRDHFCuts::kDplusCuts) ) continue;
+    if( !fCutsDStartoKpipi->IsInFiducialAcceptance(dplu->Pt(),dplu->YDplus()) )continue;
+    int topCut = fCutsDStartoKpipi->IsSelected( dplu, AliRDHFCuts::kAll );
     int nLevel=topCut>0?1:0;
-    if( (Dp->Eta()<fPOIEta[0])||(Dp->Eta()>fPOIEta[1]) )
+    if( (dplu->Eta()<fPOIEta[0])||(dplu->Eta()>fPOIEta[1]) )
       nLevel=0;
-    Double_t MassDp=Dp->InvMassDplus();
+    Double_t massDp=dplu->InvMassDplus();
     for(int h=0; h!=nLevel+1; ++h)
-      fMass[h]->Fill(MassDp,Dp->Pt());
-    if( (Dp->Pt()<fFlowPts[0]) || (Dp->Pt()>fFlowPts[1]) ) continue;
-    nIDs[0] = ((AliAODTrack*)Dp->GetDaughter(0))->GetID();
-    nIDs[1] = ((AliAODTrack*)Dp->GetDaughter(1))->GetID();
-    nIDs[2] = ((AliAODTrack*)Dp->GetDaughter(2))->GetID();
+      fMass[h]->Fill(massDp,dplu->Pt());
+    if( (dplu->Pt()<fFlowPts[0]) || (dplu->Pt()>fFlowPts[1]) ) continue;
+    nIDs[0] = ((AliAODTrack*)dplu->GetDaughter(0))->GetID();
+    nIDs[1] = ((AliAODTrack*)dplu->GetDaughter(1))->GetID();
+    nIDs[2] = ((AliAODTrack*)dplu->GetDaughter(2))->GetID();
     // Candidates Insertion (done in filling method: faster)
     if(nLevel)
       for(Int_t r=0; r!=5; ++r)
-        if( (MassDp>=fFlowBands[0][r]) && (MassDp<fFlowBands[1][r]) ) {
+        if( (massDp>=fFlowBands[0][r]) && (massDp<fFlowBands[1][r]) ) {
           AliFlowCandidateTrack *sTrack = (AliFlowCandidateTrack*)
-                                 MakeTrack(MassDp, Dp->Pt(), Dp->Phi(),
-                                           Dp->Eta(), ndght, nIDs);
-          if(fDebug) printf("   ᶫInjecting DStar candidate on band %d \n", r);
+                                 MakeTrack(massDp, dplu->Pt(), dplu->Phi(),
+                                           dplu->Eta(), ndght, nIDs);
+          if(fDebugV2) printf("   ᶫInjecting DStar candidate on band %d \n", r);
           for(Int_t iDau=0; iDau!=ndght; ++iDau)
             for(Int_t iRPs=0; iRPs!=theMB[r]->NumberOfTracks(); ++iRPs) {
               AliFlowTrack *iRP = (AliFlowTrack*) (theMB[r]->GetTrack(iRPs));
@@ -391,7 +397,7 @@ void AliAnalysisTaskFlowD2H::FillDplustoKpipi(AliAODEvent *theAOD,
               if( fabs(sTrack->GetIDDaughter(iDau)) == fabs(iRP->GetID()) ) {
                 sTrack->SetDaughter(iDau,iRP);
                 iRP->SetForRPSelection(kFALSE);
-                if(fDebug) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
+                if(fDebugV2) printf("    ᶫdaughter%d with fID %d was removed from this RP set\n", iDau, sTrack->GetIDDaughter(iDau));
               }
             }
           theMB[r]->AddTrack(sTrack);
@@ -402,7 +408,8 @@ void AliAnalysisTaskFlowD2H::FillDplustoKpipi(AliAODEvent *theAOD,
 //______________________________________________________________________________
 AliFlowCandidateTrack* AliAnalysisTaskFlowD2H::MakeTrack( Double_t mass, 
                           Double_t pt, Double_t phi, Double_t eta, 
-                          Int_t nDau, Int_t *iID ) {
+                          Int_t nDau, const Int_t *iID ) {
+  // create track for flow tasks
   AliFlowCandidateTrack *sTrack = new AliFlowCandidateTrack();
   sTrack->SetMass(mass);
   sTrack->SetPt(pt);
@@ -417,6 +424,6 @@ AliFlowCandidateTrack* AliAnalysisTaskFlowD2H::MakeTrack( Double_t mass,
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowD2H::Terminate(Option_t *)
 {
-
+  // Close the analysis, empty for now
 }
 

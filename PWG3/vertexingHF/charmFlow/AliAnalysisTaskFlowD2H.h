@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id$ */
 
-#ifndef AliAnalysisTaskFlowD2H_H
-#define AliAnalysisTaskFlowD2H_H
+#ifndef ALIANALYSISTASKFLOWD2H_H
+#define ALIANALYSISTASKFLOWD2H_H
 
 #include "AliAnalysisTaskSE.h"
 
@@ -34,7 +34,7 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     AliAnalysisTaskFlowD2H();
     AliAnalysisTaskFlowD2H( const Char_t *name, AliFlowTrackCuts *cutsRPs, 
                             AliRDHFCuts *cutsPOIs, Int_t specie );
-    void SetDebug() {fDebug = true;}
+    void SetDebug() {fDebugV2 = true;}
     void SetPOIEtaRange( Double_t minEta, Double_t maxEta )
                           { fPOIEta[0] = minEta; fPOIEta[1] = maxEta; }
     void SetFlowEtaRangeAB( Double_t minA, Double_t maxA, Double_t minB, Double_t maxB )
@@ -57,19 +57,19 @@ class AliAnalysisTaskFlowD2H : public AliAnalysisTaskSE {
     void AddHistograms();
     void FillD0toKpi(      AliAODEvent *aod, AliFlowEvent *mb[5]);
     void FillD0toKpipipi(  AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillDStartoKpipi( AliAODEvent *aod, AliFlowEvent *mb[5]);
-    void FillDplustoKpipi( AliAODEvent *aod, AliFlowEvent *mb[5]);
+    void FillDStartoKpipi( const AliAODEvent *aod, AliFlowEvent *mb[5]);
+    void FillDplustoKpipi( const AliAODEvent *aod, AliFlowEvent *mb[5]);
     void FillDstoKKpi(     AliAODEvent *aod, AliFlowEvent *mb[5]);
     void FillJpsitoee(     AliAODEvent *aod, AliFlowEvent *mb[5]);
     void FillLctoV0(       AliAODEvent *aod, AliFlowEvent *mb[5]);
     void FillLctopKpi(     AliAODEvent *aod, AliFlowEvent *mb[5]);
     AliFlowCandidateTrack* MakeTrack( Double_t mass, Double_t pt,
                                       Double_t phi, Double_t eta,
-                                      Int_t nDaughters, Int_t *iID );
+                                      Int_t nDaughters, const Int_t *iID );
     AliFlowTrackCuts *fCutsRP;  // cuts for RPs
     AliRDHFCuts      *fCutsPOI; // cuts for POIs
     Int_t  fSource;             // AliRDHFCuts::ESele
-    Bool_t fDebug;              // fully talkative task
+    Bool_t fDebugV2;              // fully talkative task
     TList *fHList;    // List for histos
     TProfile *fAnaCuts; // store analysis related cuts
     TH2D  *fEvent[2]; // Events histogram
