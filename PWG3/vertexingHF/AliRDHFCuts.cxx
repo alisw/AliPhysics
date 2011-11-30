@@ -168,6 +168,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fTriggerMask=source.fTriggerMask;
   fTriggerClass=source.fTriggerClass;
   fnPtBins=source.fnPtBins;
+  fnPtBinLimits=source.fnPtBinLimits;
   fnVars=source.fnVars;
   fGlobalIndex=source.fGlobalIndex;
   fnVarsForOpt=source.fnVarsForOpt;
