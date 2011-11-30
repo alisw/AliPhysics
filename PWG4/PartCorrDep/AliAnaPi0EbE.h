@@ -17,7 +17,6 @@
 
 
 // --- ROOT system ---
-class TH3F ; 
 class TList ;
 class TObjString;
 
@@ -100,8 +99,10 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   
   TH1F         * fhPtPi0  ;                //! Number of identified  pi0 vs pT
   TH1F         * fhEPi0   ;                //! Number of identified  pi0 vs E
-  TH3F         * fhEEtaPhiPi0  ;           //! E vs eta phi of identified  pi0 
-  
+  TH2F         * fhEEtaPi0  ;              //! E vs eta of identified  pi0 
+  TH2F         * fhEPhiPi0  ;              //! E vs phi of identified  pi0 
+  TH2F         * fhEtaPhiPi0  ;            //! eta vs phi of identified  pi0 
+
   TH2F         * fhEDispersion ;           //! E vs disp of selected cluster
   TH2F         * fhELambda0 ;              //! E vs lambda0 of selected cluster 
   TH2F         * fhELambda1 ;              //! E vs lambda1 of selected cluster 
@@ -141,7 +142,7 @@ class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
   AliAnaPi0EbE(const AliAnaPi0EbE & g) ;               // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
-  ClassDef(AliAnaPi0EbE,10)
+  ClassDef(AliAnaPi0EbE,11)
 } ;
 
 
