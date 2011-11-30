@@ -131,6 +131,8 @@ AliRDHFCutsDstoKKpi &AliRDHFCutsDstoKKpi::operator=(const AliRDHFCutsDstoKKpi &s
 
   AliRDHFCuts::operator=(source);
 
+  fPidOption=source.fPidOption;
+
   return *this;
 }
 
