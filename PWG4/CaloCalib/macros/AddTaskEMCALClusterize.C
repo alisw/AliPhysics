@@ -128,6 +128,8 @@ AliAnalysisTaskEMCALClusterize* AddTaskEMCALClusterize(
   
   //Alignment matrices
   
+  clusterize->SetImportGeometryFromFile(kTRUE); // import geometry.root file
+  
   for (Int_t mod=0;mod<10;mod++)
   {
     //((TGeoHMatrix*) mobj->At(mod))->Print();
