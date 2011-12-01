@@ -54,8 +54,11 @@ public:
   //--------------------------------
 
   virtual void    Init();
+    
   virtual void    InitParameters();
+  
   virtual void    Print(const Option_t * opt) const;
+  
   virtual void    ResetLists();
 
   virtual Int_t   GetDebug()                         const { return fDebug                 ; }
@@ -277,6 +280,11 @@ public:
   
   virtual Double_t GetBField()                       const { return fInputEvent->GetMagneticField()  ; } 
   
+  void    SetImportGeometryFromFile(Bool_t import, 
+                                    TString path = ".")    { 
+                                                             fImportGeometryFromFile = import    ; 
+                                                             fImportGeometryFilePath = path      ; }      
+  
   //------------------------------------------------
   // MC analysis specific methods
   //-------------------------------------------------
@@ -411,10 +419,13 @@ public:
   Int_t            fCentralityBin[2];    // Minimum and maximum value of the centrality for the analysis
   TString          fEventPlaneMethod;    // Name of event plane method, by default "Q"
   
+  Bool_t           fImportGeometryFromFile; // Import geometry settings in geometry.root file
+  TString          fImportGeometryFilePath; // path fo geometry.root file
+
   AliCaloTrackReader(const AliCaloTrackReader & g) ;               // cpy ctor
   AliCaloTrackReader & operator = (const AliCaloTrackReader & g) ; // cpy assignment
   
-  ClassDef(AliCaloTrackReader,34)
+  ClassDef(AliCaloTrackReader,35)
   
 } ;
 

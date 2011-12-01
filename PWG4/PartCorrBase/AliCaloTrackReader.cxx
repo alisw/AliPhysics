@@ -27,6 +27,8 @@
 
 // --- ROOT system ---
 #include <TFile.h>
+#include <TGeoManager.h>
+#include <TGeoGlobalMagField.h>
 
 // ---- ANALYSIS system ----
 #include "AliMCEvent.h"
@@ -42,6 +44,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliESDVZERO.h"
 #include "AliVCaloCells.h"
+#include "AliMagF.h"
 
 // ---- Detectors ----
 #include "AliPHOSGeoUtils.h"
@@ -60,9 +63,9 @@ AliCaloTrackReader::AliCaloTrackReader() :
 TObject(),                   fEventNumber(-1), //fCurrentFileName(""),
 fDataType(0),                fDebug(0), 
 fFiducialCut(0x0),           fCheckFidCut(kFALSE), 
-fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(7),
+fComparePtHardAndJetPt(0),   fPtHardAndJetPtFactor(0),
 fCTSPtMin(0),                fEMCALPtMin(0),                  fPHOSPtMin(0), 
-fCTSPtMax(1000),             fEMCALPtMax(1000),               fPHOSPtMax(1000), 
+fCTSPtMax(0),                fEMCALPtMax(0),                  fPHOSPtMax(0), 
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),             fPHOSClusters(0x0),
 fEMCALCells(0x0),            fPHOSCells(0x0),
@@ -73,17 +76,16 @@ fRecalculateClusters(kFALSE),fSelectEmbeddedClusters(kFALSE),
 fTrackStatus(0),             fTrackFilterMask(0),             fESDtrackCuts(0), 
 fTrackMult(0),               fTrackMultEtaCut(0.8),
 fReadStack(kFALSE),          fReadAODMCParticles(kFALSE), 
-fDeltaAODFileName("deltaAODPartCorr.root"),
-fFiredTriggerClassName(""),  fAnaLED(kFALSE),
+fDeltaAODFileName(""),       fFiredTriggerClassName(""),      fAnaLED(kFALSE),
 fTaskName(""),               fCaloUtils(0x0), 
-fMixedEvent(NULL),           fNMixedEvent(1),                 fVertex(NULL), 
+fMixedEvent(NULL),           fNMixedEvent(0),                 fVertex(NULL), 
 fWriteOutputDeltaAOD(kFALSE),fOldAOD(kFALSE),                 fCaloFilterPatch(kFALSE),
 fEMCALClustersListName(""),  fZvtxCut(0.),                    
-fAcceptFastCluster(kTRUE),   fRemoveLEDEvents(kFALSE), 
+fAcceptFastCluster(kFALSE),  fRemoveLEDEvents(kFALSE), 
 fDoEventSelection(kFALSE),   fDoV0ANDEventSelection(kFALSE),  fUseEventsWithPrimaryVertex(kFALSE),
 fTriggerAnalysis (0x0), 
-fCentralityClass("V0M"),     fCentralityOpt(10),
-fEventPlaneMethod("Q")
+fCentralityClass(""),        fCentralityOpt(0),
+fEventPlaneMethod(""),       fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 
 {
   //Ctor
@@ -279,13 +281,21 @@ AliAODMCHeader* AliCaloTrackReader::GetAODMCHeader(Int_t input) const
 void AliCaloTrackReader::Init()
 {
   //Init reader. Method to be called in AliAnaPartCorrMaker
-  
+
+  //printf(" AliCaloTrackReader::Init() %p \n",gGeoManager);
+
   if(fReadStack && fReadAODMCParticles){
     printf("AliCaloTrackReader::Init() - Cannot access stack and mcparticles at the same time, change them \n");
-    fReadStack = kFALSE;
+    fReadStack          = kFALSE;
     fReadAODMCParticles = kFALSE;
   }
   
+  // Init geometry, I do not like much to do it like this ...
+  if(fImportGeometryFromFile && !gGeoManager) {
+    printf("AliCaloTrackReader::Init() - Import geometry.root file\n");
+    TGeoManager::Import(Form("%s/geometry.root", fImportGeometryFilePath.Data())) ; // default need file "geometry.root" in local dir!!!!
+  }
+
 }
 
 //_______________________________________
@@ -312,11 +322,13 @@ void AliCaloTrackReader::InitParameters()
   fDeltaAODFileName      = "deltaAODPartCorr.root";
   fFiredTriggerClassName = "";
   
-  fAnaLED = kFALSE;
+  fAcceptFastCluster = kTRUE;
+  fAnaLED            = kFALSE;
   
   //We want tracks fitted in the detectors:
   //fTrackStatus=AliESDtrack::kTPCrefit;
-  //fTrackStatus|=AliESDtrack::kITSrefit;  
+  //fTrackStatus|=AliESDtrack::kITSrefit; 
+  fTrackStatus     = 0;
   fTrackFilterMask = 128; //For AODs, but what is the difference between fTrackStatus and fTrackFilterMask?
   
   fESDtrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts(); //initialize with TPC only tracks 
@@ -326,9 +338,17 @@ void AliCaloTrackReader::InitParameters()
   
   fZvtxCut   = 10.;
   
-  //Centrality
-  fCentralityBin[0]=fCentralityBin[1]=-1;
+  fNMixedEvent = 1;
   
+  fPtHardAndJetPtFactor = 7;
+  
+  //Centrality
+  fCentralityClass  = "V0M";
+  fCentralityOpt    = 10;
+  fCentralityBin[0] = fCentralityBin[1]=-1;
+  
+  fEventPlaneMethod = "Q";
+
   // Allocate memory (not sure this is the right place)
   fCTSTracks       = new TObjArray();
   fEMCALClusters   = new TObjArray();
@@ -336,6 +356,8 @@ void AliCaloTrackReader::InitParameters()
   fTriggerAnalysis = new AliTriggerAnalysis;
   fAODBranchList   = new TList ;
 
+  fImportGeometryFromFile = kFALSE;
+  fImportGeometryFilePath = ".";
   
 }
 
@@ -383,7 +405,7 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
                                           const char * /*currentFileName*/) 
 {
   //Fill the event counter and input lists that are needed, called by the analysis maker.
-  
+    
   fEventNumber = iEntry;
   //fCurrentFileName = TString(currentFileName);
   if(!fInputEvent) {
@@ -406,7 +428,6 @@ Bool_t AliCaloTrackReader::FillInputEvent(const Int_t iEntry,
   // If clusterzer NxN or V2 it does not help
   //-------------------------------------------------------------------------------------
   if(fRemoveLEDEvents){
-    
     
     //printf("Event %d\n",GetEventNumber());
     for (Int_t i = 0; i < fInputEvent->GetNumberOfCaloClusters(); i++)
