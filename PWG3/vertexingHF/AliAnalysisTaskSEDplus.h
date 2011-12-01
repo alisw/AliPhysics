@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKDPLUS_H
-#define ALIANALYSISTASKDPLUS_H
+#ifndef ALIANALYSISTASKSEDPLUS_H
+#define ALIANALYSISTASKSEDPLUS_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -65,7 +65,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetNBinsHistos();
   
   void LSAnalysis(TClonesArray *arrayOppositeSign,TClonesArray *arrayLikeSign,AliAODEvent *aod,AliAODVertex *vtx1, Int_t nDplusOS);
-  Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+  Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
   void CreateLikeSignHistos();
   void CreateImpactParameterHistos();
 
@@ -85,7 +85,7 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Int_t GetSignalHistoIndex(Int_t iPtBin) const { return iPtBin*3+1;}
   Int_t GetBackgroundHistoIndex(Int_t iPtBin) const { return iPtBin*3+2;}
   Int_t GetLSHistoIndex(Int_t iPtBin)const { return iPtBin*5;}
-  Float_t GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp) const;
+  Float_t GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
 
   enum {kMaxPtBins=20};
 

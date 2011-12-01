@@ -18,14 +18,12 @@
 /* $Id$ */ 
 
 #include <TH2F.h>
-#include "TROOT.h"
-#include "TSystem.h"
 #include <THnSparse.h>
 
 #include "AliAnalysisTaskSE.h"
-#include "AliAODEvent.h"
-#include "AliRDHFCutsDStartoKpipi.h"
-#include "AliNormalizationCounter.h"
+
+class AliRDHFCutsDStartoKpipi;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE 
 {
@@ -50,7 +48,7 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
     // histos
   void   FillSpectrum(AliAODRecoCascadeHF *part, Int_t isDStar, AliRDHFCutsDStartoKpipi *cuts, Int_t isSel, TList *listout);
   void     DefineHistograms();
-  Int_t CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
+  Int_t CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const;
   void CreateImpactParameterHistos();
 
   // set analysis type
@@ -64,9 +62,9 @@ class AliAnalysisTaskSEDStarSpectra : public AliAnalysisTaskSE
   Bool_t   GetRareSearch() const {return fDoSearch;}
   //impact par study
   void SetDoImpactParameterHistos(Bool_t doImp=kTRUE){fDoImpParDstar=doImp;}
-  Bool_t GetDoImpactParameterHistos(){return fDoImpParDstar;}
+  Bool_t GetDoImpactParameterHistos() const {return fDoImpParDstar;}
 
-  Float_t GetTrueImpactParameterD0(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp) const;
+  Float_t GetTrueImpactParameterD0(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const;
 
  private:
   
