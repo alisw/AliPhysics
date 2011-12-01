@@ -174,6 +174,12 @@ public:
    * @param use Use it or not 
    */
   void SetUseFirstPhysicsVtx(Bool_t use) {fUseFirstPhysicsVertex = use; }
+ /** 
+   * Use the first physics vtx code.   
+   * 
+   * @param use Use it or not 
+   */
+  void SetUseV0AndForNSD(Bool_t use) {fUseV0AND = use; }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -292,8 +298,9 @@ protected:
   UShort_t fCollisionSystem; //  Collision system
   Int_t    fDebug;        //  Debug level 
   TAxis*   fCentAxis;     // Centrality axis used in histograms
-  TAxis    fVtxAxis;
+  TAxis    fVtxAxis;      //Vtx Axis 
   Bool_t   fUseFirstPhysicsVertex; //Use the vtx code from p+p first physics
+  Bool_t   fUseV0AND;     //Use the vtx code from p+p first physics
   ClassDef(AliFMDEventInspector,3); // Inspect the event 
 };
 
