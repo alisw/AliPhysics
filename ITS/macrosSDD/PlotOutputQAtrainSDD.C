@@ -604,6 +604,8 @@ void PlotOutputQAtrainSDD(TString option="local",
       hSigTim[it]->GetXaxis()->SetTitle(Form("dE/dx, time interval %d",it+1));
       hSigTim[it]->GetYaxis()->SetTitle("Events");
       Float_t mpv=lfun->GetParameter(1);
+      Float_t maxf=lfun->GetMaximumX(70.,90.);
+      printf("mpv=%f   maxfunc=%f\n",mpv,maxf);
       Float_t empv=lfun->GetParError(1);
       Float_t sig=lfun->GetParameter(3);
       Float_t esig=lfun->GetParError(3);
@@ -629,8 +631,8 @@ void PlotOutputQAtrainSDD(TString option="local",
   gPad->SetTickx();
   gPad->SetTicky();
   gmpv->SetMarkerStyle(20);
-  //  gmpv->SetMinimum(0);
-  //  gmpv->SetMaximum(120);
+  gmpv->SetMinimum(70);
+  gmpv->SetMaximum(90);
   gmpv->GetXaxis()->SetLimits(-0.2,6.8);
   gmpv->Draw("AP");
   //  gmpv->GetXaxis()->SetTitle("Drift Time interval number");
@@ -645,6 +647,8 @@ void PlotOutputQAtrainSDD(TString option="local",
   gPad->SetTicky();
   gsigl->SetMarkerStyle(20);
   gsigl->GetXaxis()->SetLimits(-0.2,6.8);
+  gsigl->SetMinimum(7.);
+  gsigl->SetMaximum(11.);
   gsigl->Draw("AP");
   //  gsigl->GetXaxis()->SetTitle("Drift Time interval number");
   gsigl->GetYaxis()->SetTitle("#sigma_{Landau} (keV)");
@@ -658,6 +662,8 @@ void PlotOutputQAtrainSDD(TString option="local",
   gPad->SetTicky();
   gsigg->SetMarkerStyle(20);
   gsigg->GetXaxis()->SetLimits(-0.2,6.8);
+  gsigg->SetMinimum(3.);
+  gsigg->SetMaximum(7.);
   gsigg->Draw("AP");
   gsigg->GetXaxis()->SetTitle("Drift Time interval number");
   gsigg->GetYaxis()->SetTitle("#sigma_{Gauss} (keV)");
