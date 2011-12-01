@@ -86,6 +86,7 @@ class AliTRDcalibDB : public TObject {
   Int_t                               GetNumberOfTimeBinsDCS();
   void                                GetFilterType(TString &filterType);
   void                                GetGlobalConfiguration(TString &config);
+  void                                GetGlobalConfigurationVersion(TString &version);
 
   Int_t                               GetOnlineGainTableID();
 

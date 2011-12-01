@@ -564,7 +564,6 @@ const AliTRDCalDet *AliTRDcalibDB::GetExBDet()
 	AliTRDCalDet *calDetExB = new AliTRDCalDet("lorentz angle tan","lorentz angle tan (detector value)");
 	for(Int_t k = 0; k < 540; k++){
 	  calDetExB->SetValue(k,AliTRDCommonParam::Instance()->GetOmegaTau(calChambervdrift->GetValue(k)));
-	  //printf("vdrift %f and exb %f\n",calChambervdrift->GetValue(k),calDetExB->GetValue(k));
 	}
 	return calDetExB;
       }
@@ -1071,6 +1070,54 @@ void AliTRDcalibDB::GetGlobalConfiguration(TString &config)
       return;
     } 
     config = calDCSv2->GetGlobalConfigName();
+
+  } 
+  else {
+
+    AliError("NO DCS/DCSv2 OCDB entry found!");
+
+  }
+
+}
+
+//_____________________________________________________________________________
+void AliTRDcalibDB::GetGlobalConfigurationVersion(TString &version)
+{
+  //
+  // Get Version of Configuration from the DCS
+  //
+
+  const TObjArray *dcsArr = dynamic_cast<const TObjArray *>(GetCachedCDBObject(kIDDCS));
+  if(!dcsArr){
+    version = "";
+    return;
+  }
+
+  Int_t esor   = 0; // Take SOR
+  Int_t calver = 0; // Check CalDCS version
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCS"))   calver = 1;
+  if (!strcmp(dcsArr->At(0)->ClassName(),"AliTRDCalDCSv2")) calver = 2;
+
+  if      (calver == 1) {
+
+    // DCS object
+    const AliTRDCalDCS   *calDCS   = dynamic_cast<const AliTRDCalDCS *>(dcsArr->At(esor));
+    if(!calDCS){
+      version = "";
+      return;
+    } 
+    version = calDCS->GetGlobalConfigVersion();
+
+  } 
+  else if (calver == 2) {
+
+    // DCSv2 object
+    const AliTRDCalDCSv2 *calDCSv2 = dynamic_cast<const AliTRDCalDCSv2 *>(dcsArr->At(esor));
+    if(!calDCSv2){
+      version = "";
+      return;
+    } 
+    version = calDCSv2->GetGlobalConfigVersion();
 
   } 
   else {
