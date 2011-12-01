@@ -42,6 +42,8 @@ class AliHFEbayesPIDqa : public AliHFEdetPIDqa{
     AliHFEbayesPIDqa(const AliHFEbayesPIDqa &c);
     AliHFEbayesPIDqa &operator=(const AliHFEbayesPIDqa &o);
     ~AliHFEbayesPIDqa();
+    void Copy(TObject &o) const;
+    virtual Long64_t Merge(TCollection *col);
   
     virtual void Initialize();
     virtual void ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa::EStep_t step);
@@ -50,13 +52,9 @@ class AliHFEbayesPIDqa : public AliHFEdetPIDqa{
     AliHFEcollection *GetHistograms() const { return fHistos; }
 
   protected:
-      void CreateProbabilityHistograms();
       void CreateDetectorSignalHistograms();
       Double_t CalcTOFMass(const AliHFEpidObject *track);
 private:
-    static const Int_t       fgkNBinsProb[5];         // number of bins
-    static const Double_t    fgkMinBinsProb[5];       // bin minimum
-    static const Double_t    fgkMaxBinsProb[5];       // bin maximum
 //    AliHFEpidBayes *fBAYESpid;        // HFE PID for TRD
     AliHFEcollection *fHistos;        // Container for Histograms
 

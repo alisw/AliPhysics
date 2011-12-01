@@ -83,6 +83,7 @@ AliHFEtrdPIDqaV1 &AliHFEtrdPIDqaV1::operator=(const AliHFEtrdPIDqaV1 &o){
   //
   // Make assignment
   //
+  if(this == &o) return *this;
   AliHFEdetPIDqa::operator=(o);
   fHistos = o.fHistos;
   

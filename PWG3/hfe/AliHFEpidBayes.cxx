@@ -168,16 +168,16 @@ Int_t AliHFEpidBayes::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
     if((fDetMask==fDetMaskDefault)||(fDetMask==fDetMaskDefaultandTRD))
     {
 	Double_t probTPC[AliPID::kSPECIES]={0.};
-	usedTPC = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTPC,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTPC);
+	usedTPC = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTPC,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTPC) == AliPIDResponse::kDetPidOk;
 	Double_t probTOF[AliPID::kSPECIES]={0.};
-	usedTOF = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTOF,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTOF);
+	usedTOF = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTOF,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTOF) == AliPIDResponse::kDetPidOk;
 	if((usedTOF==1)&&(usedTPC==1)) used=1;
         else used=0;
 
 	if(fDetMask==fDetMaskDefaultandTRD)
 	{
 	    Double_t probTRD[AliPID::kSPECIES]={0.};
-	    usedTRD = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTRD,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTRD);
+	    usedTRD = fkPIDResponse->ComputePIDProbability(AliPIDResponse::kDetTRD,(AliVTrack*)track->GetRecTrack(),AliPID::kSPECIES,probTRD) == AliPIDResponse::kDetPidOk;
 	    if((usedTOF==1)&&(usedTPC==1)&&(usedTRD==1)) used=1;
 	    else used=0;
 	} 
