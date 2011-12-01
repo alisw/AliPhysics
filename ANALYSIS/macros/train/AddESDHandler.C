@@ -1,4 +1,4 @@
-AliVEventHandler* AddESDHandler()
+AliESDInputHandler* AddESDHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 

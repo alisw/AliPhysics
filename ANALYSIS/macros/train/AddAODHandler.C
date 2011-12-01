@@ -1,4 +1,4 @@
-AliVEventHandler* AddAODHandler()
+AliAODInputHandler* AddAODHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 

@@ -1,4 +1,4 @@
-AliVEventHandler* AddAODOutputHandler()
+AliAODHandler* AddAODOutputHandler()
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 

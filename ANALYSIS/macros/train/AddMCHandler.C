@@ -1,4 +1,4 @@
-AliVEventHandler* AddMCHandler(Bool_t readTrackRef = kFALSE)
+AliMCEventHandler* AddMCHandler(Bool_t readTrackRef = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) 
