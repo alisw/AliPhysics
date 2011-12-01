@@ -170,6 +170,8 @@ AliTOFDecoderV2 &
 AliTOFDecoderV2::operator = (const AliTOFDecoderV2 &source)
 {
   //operator =
+  if (this == &source) return *this;
+  TObject::operator=(source);
   fRawReader = source.fRawReader;
   fVerbose = source.fVerbose;
   fLogErrors = source.fLogErrors;

@@ -111,7 +111,7 @@ AliTOFDigitMap & AliTOFDigitMap::operator=(const AliTOFDigitMap & digitMap)
   for (Int_t i=0; i<fMaxIndex; i++)
     for (Int_t j=0; j<kMaxDigitsPerPad; j++)
       fDigitMap[i][j]=digitMap.fDigitMap[i][j];
-
+  return *this;
 }
 
  

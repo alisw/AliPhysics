@@ -282,6 +282,7 @@ AliTOFRunParams::Average(Float_t *data, Int_t first, Int_t last)
     value += data[i];
     npt++;
   }
+  if (npt <= 0) return 0.;
   value /= npt;
   return value;
 

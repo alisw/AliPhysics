@@ -66,6 +66,8 @@ AliTOFTDCHit &
 AliTOFTDCHit::operator = (const AliTOFTDCHit &source)
 {
   /* operator = */
+  if (this == &source) return *this;
+  TObject::operator=(source);
   fHitTime = source.fHitTime;
   fTOTWidth = source.fTOTWidth;
   fChan = source.fChan;

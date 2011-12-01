@@ -54,6 +54,8 @@ AliTOFTDCError &
 AliTOFTDCError::operator = (const AliTOFTDCError &source)
 {
   /* operator = */
+  if (this == &source) return *this;
+  TObject::operator=(source);
   fErrorFlags = source.fErrorFlags;
   fTDCID = source.fTDCID;
   return *this;
