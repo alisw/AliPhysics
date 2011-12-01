@@ -33,6 +33,8 @@ AliAODCaloCluster::AliAODCaloCluster() :
   fM20(0.),
   fM02(0.),
   fEmcCpvDistance(-999.),
+  fTrackDx(-999),
+  fTrackDz(-999),
   fNExMax(0), 
   fTOF(0.),
   fTracksMatched(),
@@ -59,6 +61,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fM20(0.),
   fM02(0.),
   fEmcCpvDistance(-999.),
+  fTrackDx(-999),
+  fTrackDz(-999),
   fNExMax(0),
   fTOF(0.),
   fTracksMatched(),
@@ -85,6 +89,8 @@ AliAODCaloCluster::AliAODCaloCluster(Int_t id,
   fM20(0.),
   fM02(0.),
   fEmcCpvDistance(-999.),
+  fTrackDx(-999),
+  fTrackDz(-999),
   fNExMax(0),
   fTOF(0.),
   fTracksMatched(),
@@ -121,6 +127,8 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
   fM20(clus.fM20),
   fM02(clus.fM02),
   fEmcCpvDistance(clus.fEmcCpvDistance),
+  fTrackDx(clus.fTrackDx),
+  fTrackDz(clus.fTrackDz),
   fNExMax(clus.fNExMax),
   fTOF(clus.fTOF),
   fTracksMatched(clus.fTracksMatched),
@@ -135,13 +143,13 @@ AliAODCaloCluster::AliAODCaloCluster(const AliAODCaloCluster& clus) :
     if(clus.fCellsAbsId){
       fCellsAbsId = new UShort_t[clus.fNCells];
       for (Int_t i=0; i<clus.fNCells; i++)
-	fCellsAbsId[i]=clus.fCellsAbsId[i];
+        fCellsAbsId[i]=clus.fCellsAbsId[i];
     }
     
     if(clus.fCellsAmpFraction){
       fCellsAmpFraction = new Double32_t[clus.fNCells];
       for (Int_t i=0; i<clus.fNCells; i++)
-	fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
+        fCellsAmpFraction[i]=clus.fCellsAmpFraction[i];
     }
     
   }
@@ -161,6 +169,8 @@ AliAODCaloCluster& AliAODCaloCluster::operator=(const AliAODCaloCluster& clus)
     fM20 = clus.fM20;
     fM02 = clus.fM02;
     fEmcCpvDistance = clus.fEmcCpvDistance;
+    fTrackDx=clus.fTrackDx;
+    fTrackDz=clus.fTrackDz;
     fNExMax = clus.fNExMax;
     fTOF = clus.fTOF;
     fTracksMatched = clus.fTracksMatched;
