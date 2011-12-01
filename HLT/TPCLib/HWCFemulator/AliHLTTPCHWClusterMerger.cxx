@@ -23,6 +23,8 @@
 //  @brief  Merger class for HLT TPC Hardware clusters
 //          Handles merging of branch border clusters
 
+#include <algorithm>
+
 #include "AliHLTTPCHWClusterMerger.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
