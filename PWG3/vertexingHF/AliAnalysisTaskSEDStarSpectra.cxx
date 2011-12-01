@@ -60,9 +60,9 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliESDtrack.h"
 #include "AliAODMCParticle.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskSEDStarSpectra.h"
 #include "AliNormalizationCounter.h"
+#include "AliAODEvent.h"
+#include "AliAnalysisTaskSEDStarSpectra.h"
 
 ClassImp(AliAnalysisTaskSEDStarSpectra)
 
@@ -300,11 +300,11 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	Int_t checkOrigin = CheckOrigin(mcArray,partDSt);
        	if(checkOrigin==5) isPrimary=kFALSE;
 	AliAODMCParticle *dg0 = (AliAODMCParticle*)mcArray->At(partDSt->GetDaughter(0));
-	AliAODMCParticle *dg0_1 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
+	AliAODMCParticle *dg01 = (AliAODMCParticle*)mcArray->At(dg0->GetDaughter(0));
 	truePt=dg0->Pt();
-	xDecay=dg0_1->Xv();	  
-	yDecay=dg0_1->Yv();	  
-	zDecay=dg0_1->Zv();
+	xDecay=dg01->Xv();	  
+	yDecay=dg01->Yv();	  
+	zDecay=dg01->Zv();
 	pdgCode=TMath::Abs(partDSt->GetPdgCode());
 	if(!isPrimary){
 	  trueImpParXY=GetTrueImpactParameterD0(mcHeader,mcArray,dg0)*1000.;
@@ -453,8 +453,8 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 
     // rare D search ------ 
     if(fDoSearch){
-      TLorentzVector LorentzTrack1(0,0,0,0); // lorentz 4 vector
-      TLorentzVector LorentzTrack2(0,0,0,0); // lorentz 4 vector
+      TLorentzVector lorentzTrack1(0,0,0,0); // lorentz 4 vector
+      TLorentzVector lorentzTrack2(0,0,0,0); // lorentz 4 vector
       
       for (Int_t i=0; i<aodEvent->GetNTracks(); i++){ 
 	
@@ -467,11 +467,11 @@ void AliAnalysisTaskSEDStarSpectra::UserExec(Option_t *)
 	//build the D1 mass
 	Double_t mass = TDatabasePDG::Instance()->GetParticle(211)->Mass();
 
-	LorentzTrack1.SetPxPyPzE( dstarD0pi->Px(),dstarD0pi->Py(), dstarD0pi->Pz(), dstarD0pi->E(413) );
-	LorentzTrack2.SetPxPyPzE( aodTrack->Px(),aodTrack->Py(), aodTrack->Pz(),aodTrack->E(mass) );
+	lorentzTrack1.SetPxPyPzE( dstarD0pi->Px(),dstarD0pi->Py(), dstarD0pi->Pz(), dstarD0pi->E(413) );
+	lorentzTrack2.SetPxPyPzE( aodTrack->Px(),aodTrack->Py(), aodTrack->Pz(),aodTrack->E(mass) );
 	
 	//D1 mass
-	Double_t d1mass = ((LorentzTrack1+LorentzTrack2).M());
+	Double_t d1mass = ((lorentzTrack1+lorentzTrack2).M());
 	//mass difference - at 0.4117 and 0.4566
 	fDeltaMassD1->Fill(d1mass-dstarD0pi->InvMassDstarKpipi());
       }
@@ -564,6 +564,7 @@ void AliAnalysisTaskSEDStarSpectra::UserCreateOutputObjects() {
 }
 //___________________________________ hiostograms _______________________________________
 void  AliAnalysisTaskSEDStarSpectra::DefineHistograms(){
+  // Create histograms
 
   fCEvents = new TH1F("fCEvents","conter",11,0,11);
   fCEvents->SetStats(kTRUE);
@@ -1072,7 +1073,7 @@ void AliAnalysisTaskSEDStarSpectra::WrongSignForDStar(AliAODRecoCascadeHF *part,
   }
 }
 //-------------------------------------------------------------------------------
-Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
+Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const {		
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
@@ -1105,7 +1106,7 @@ Int_t AliAnalysisTaskSEDStarSpectra::CheckOrigin(TClonesArray* arrayMC, AliAODMC
   else return 4;
 }
 //-------------------------------------------------------------------------------------
-Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp) const {
+Float_t AliAnalysisTaskSEDStarSpectra::GetTrueImpactParameterD0(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const {
   // true impact parameter calculation
 
   Double_t vtxTrue[3];
