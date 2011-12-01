@@ -79,38 +79,42 @@ AliTOFDigitMap::AliTOFDigitMap(const AliTOFDigitMap & digitMap):
   fMaxIndex(-1),
   fDigitMap(0x0)
 {
-//
-// dummy copy constructor
-//
-  
+  //
+  // Copy constructor
+  //
   fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
   fDigitMap = new Int_t*[fMaxIndex];
-  for (Int_t i=0; i<fMaxIndex; i++) fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
-  for (Int_t i=0; i<fMaxIndex; i++)
+  for (Int_t i=0; i<fMaxIndex; i++) {
+    fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
     for (Int_t j=0; j<kMaxDigitsPerPad; j++)
       fDigitMap[i][j]=digitMap.fDigitMap[i][j];
-
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////
 AliTOFDigitMap & AliTOFDigitMap::operator=(const AliTOFDigitMap & digitMap)
 {
-//
-// dummy copy const
-//
-
-  if (this == &digitMap) return *this;
-  fNSector=digitMap.fNSector;
-  fNplate=digitMap.fNplate;
-  fNstrip=digitMap.fNstrip;
-  fNpx=digitMap.fNpx;
-  fNpz=digitMap.fNpz;
-  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
-  fDigitMap = new Int_t*[fMaxIndex];
-  for (Int_t i=0; i<fMaxIndex; i++) fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
-  for (Int_t i=0; i<fMaxIndex; i++)
-    for (Int_t j=0; j<kMaxDigitsPerPad; j++)
-      fDigitMap[i][j]=digitMap.fDigitMap[i][j];
+  //
+  // Assignment operator
+  //
+  
+  if (this != &digitMap) {
+    TObject::operator=(digitMap);
+    fNSector=digitMap.fNSector;
+    fNplate=digitMap.fNplate;
+    fNstrip=digitMap.fNstrip;
+    fNpx=digitMap.fNpx;
+    fNpz=digitMap.fNpz;
+    fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
+    for (Int_t i=0; i<fMaxIndex; ++i) delete [] fDigitMap[i];
+    delete [] fDigitMap;
+    fDigitMap = new Int_t*[fMaxIndex];
+    for (Int_t i=0; i<fMaxIndex; i++) {
+      fDigitMap[i] = new Int_t[kMaxDigitsPerPad];
+      for (Int_t j=0; j<kMaxDigitsPerPad; j++)
+	fDigitMap[i][j]=digitMap.fDigitMap[i][j];
+    }
+  }
   return *this;
 }
 
