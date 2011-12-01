@@ -1229,13 +1229,13 @@ Int_t AliAnalysisTaskSELambdac::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClo
         if(GetLambdacDaugh(motherPart,arrayMC)){lambdacLab[i]=motherLabel;continue;}
       }
       if(motherPdg==313 || motherPdg==2224 || motherPdg==3124){
-	Int_t GmotherLabel=motherPart->GetMother();
-	if(GmotherLabel<0) return 0;
-	AliAODMCParticle *GmotherPart = (AliAODMCParticle*)arrayMC->At(GmotherLabel);
-	if(!GmotherPart) continue;
-	Int_t GmotherPdg = TMath::Abs(GmotherPart->GetPdgCode());
-	if(GmotherPdg==4122) {
-	  if(GetLambdacDaugh(GmotherPart,arrayMC)) {lambdacLab[i]=GmotherLabel;continue;}
+	Int_t granMotherLabel=motherPart->GetMother();
+	if(granMotherLabel<0) return 0;
+	AliAODMCParticle *granMotherPart = (AliAODMCParticle*)arrayMC->At(granMotherLabel);
+	if(!granMotherPart) continue;
+	Int_t granMotherPdg = TMath::Abs(granMotherPart->GetPdgCode());
+	if(granMotherPdg==4122) {
+	  if(GetLambdacDaugh(granMotherPart,arrayMC)) {lambdacLab[i]=granMotherLabel;continue;}
 	}
       }
     }
@@ -1250,9 +1250,9 @@ Bool_t AliAnalysisTaskSELambdac::GetLambdacDaugh(AliAODMCParticle *part,TClonesA
   // check if the particle is a lambdac and if its decay mode is the correct one 
   Int_t numberOfLambdac=0;
   if(TMath::Abs(part->GetPdgCode())!=4122) return kFALSE;
-  Int_t daugh_tmp[2];
-  daugh_tmp[0]=part->GetDaughter(0);
-  daugh_tmp[1]=part->GetDaughter(1);
+  Int_t daughTmp[2];
+  daughTmp[0]=part->GetDaughter(0);
+  daughTmp[1]=part->GetDaughter(1);
   Int_t nDaugh = (Int_t)part->GetNDaughters();
   if(nDaugh<2) return kFALSE;
   if(nDaugh>3) return kFALSE;
@@ -2449,6 +2449,7 @@ void AliAnalysisTaskSELambdac::FillAPrioriConcentrations(AliAODRecoDecayHF3Prong
 							    AliAODEvent* aod,
 							    TClonesArray *arrMC)
 {
+  // FillAPrioriConcentrations
 
   cuts->SetUsePID(kFALSE); //Annalisa
   Int_t isSelected3ProngByLc=cuts->IsSelected(part,AliRDHFCuts::kCandidate,aod);
@@ -2541,7 +2542,7 @@ Bool_t AliAnalysisTaskSELambdac::Is3ProngFromPDG(AliAODRecoDecayHF3Prong *d,
 }
 
 //-----------------------
-Bool_t AliAnalysisTaskSELambdac::IsTrackFromPDG(AliAODTrack *daugh,
+Bool_t AliAnalysisTaskSELambdac::IsTrackFromPDG(const AliAODTrack *daugh,
 						   TClonesArray *arrayMC,
 						   Int_t pdgToBeCompared)
 {
@@ -2608,9 +2609,9 @@ Bool_t AliAnalysisTaskSELambdac::IsThereAGeneratedLc(TClonesArray *arrayMC)
 
 }
 //_________________________________
-///////////////estimate primaries
-Int_t AliAnalysisTaskSELambdac::NumberPrimaries(AliAODEvent *aods)
+Int_t AliAnalysisTaskSELambdac::NumberPrimaries(const AliAODEvent *aods)
 {
+// estimate primaries
   Int_t counter=0;
 
   
@@ -2634,6 +2635,7 @@ void AliAnalysisTaskSELambdac::MultiplicityStudies(AliAODRecoDecayHF3Prong *part
 						      Bool_t &flag1,Bool_t &flag2,Bool_t &flag3,
 						      Bool_t &flag4, Bool_t &flag5, Bool_t &flag6)
 {
+  // Multiplicity studies
 
   TString fillthis="";
 

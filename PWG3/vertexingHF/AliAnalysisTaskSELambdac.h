@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKLAMBDAC_H
-#define ALIANALYSISTASKLAMBDAC_H
+#ifndef ALIANALYSISTASKSELAMBDAC_H
+#define ALIANALYSISTASKSELAMBDAC_H
 
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
@@ -67,9 +67,9 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, AliRDHFCutsLctopKpi *cuts);
   void FillVarHists(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, AliRDHFCutsLctopKpi *cuts, /*TList *listout,*/ AliAODEvent *aod);
   Bool_t Is3ProngFromPDG(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, Int_t pdgToBeCompared=4);
-  Bool_t IsTrackFromPDG(AliAODTrack *daugh, TClonesArray *arrayMC, Int_t pdgToBeCompared);
+  Bool_t IsTrackFromPDG(const AliAODTrack *daugh, TClonesArray *arrayMC, Int_t pdgToBeCompared);
   Bool_t IsThereAGeneratedLc(TClonesArray *arrayMC);
-  Int_t NumberPrimaries(AliAODEvent *aods);
+  Int_t NumberPrimaries(const AliAODEvent *aods);
   // Implementation of interface methods
   virtual void UserCreateOutputObjects();
   virtual void Init();
@@ -133,13 +133,13 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Bool_t fUseKF;      //flag to cut with KF vertexer
   Bool_t fAnalysis;      //apply analysis cuts
   AliAnalysisVertexingHF *fVHF;  // Vertexer heavy flavour (used to pass the cuts)
-  Bool_t fFillVarHists;
-  Bool_t fMultiplicityHists;
-  Bool_t fPriorsHists;
-  TH1F *fNentries;
-  TList *fOutputMC;
-  TList *fAPriori;
-  TList *fMultiplicity;
+  Bool_t fFillVarHists;  // flag for creation and fill of histograms with vars
+  Bool_t fMultiplicityHists;  // flag for activation of multiplcity histos
+  Bool_t fPriorsHists;  // flag for histos with priors
+  TH1F *fNentries;      // histo with number of entries
+  TList *fOutputMC;     // output1
+  TList *fAPriori;      // output2
+  TList *fMultiplicity; // output3
   //AliAODpidUtil* fUtilPid;
   AliPIDResponse *fPIDResponse;     //! PID response object
 

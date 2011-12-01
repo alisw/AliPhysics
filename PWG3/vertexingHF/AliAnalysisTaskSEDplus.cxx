@@ -1318,7 +1318,7 @@ void AliAnalysisTaskSEDplus::Terminate(Option_t */*option*/)
   return;
 }
 //_________________________________________________________________________________________________
-Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
+Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, const AliAODMCParticle *mcPartCandidate) const {		
   //
   // checking whether the mother of the particles come from a charm or a bottom quark
   //
@@ -1351,7 +1351,7 @@ Int_t AliAnalysisTaskSEDplus::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticl
   else return 4;
 }
 //_________________________________________________________________________________________________
-Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partDp) const {
+Float_t AliAnalysisTaskSEDplus::GetTrueImpactParameter(const AliAODMCHeader *mcHeader, TClonesArray* arrayMC, const AliAODMCParticle *partDp) const {
   // true impact parameter calculation
 
   Double_t vtxTrue[3];
