@@ -27,7 +27,8 @@ class TH2F;
 class AliVCluster;
 class AliVCaloCells;
 class AliVEvent;
-#include "AliESDEvent.h"
+class AliESDEvent;
+#include "AliLog.h"
 
 // EMCAL includes
 class AliEMCALGeometry;
@@ -43,6 +44,9 @@ public:
   AliEMCALRecoUtils(const AliEMCALRecoUtils&); 
   AliEMCALRecoUtils& operator=(const AliEMCALRecoUtils&); 
   virtual ~AliEMCALRecoUtils() ;  
+  
+  void     InitParameters();
+  
   void     Print(const Option_t*) const;
 
   //enums
@@ -64,7 +68,7 @@ public:
   
   Float_t  GetDepth(const Float_t eCluster, const Int_t iParticle, const Int_t iSM) const ; 
   
-  void     GetMaxEnergyCell(AliEMCALGeometry *geom, AliVCaloCells* cells, AliVCluster* clu, 
+  void     GetMaxEnergyCell(const AliEMCALGeometry *geom, AliVCaloCells* cells, const AliVCluster* clu, 
                             Int_t & absId,  Int_t& iSupMod, Int_t& ieta, Int_t& iphi, Bool_t &shared);
   
   Float_t  GetMisalTransShift(const Int_t i)       const { if(i < 15 ) { return fMisalTransShift[i] ; }
@@ -122,7 +126,7 @@ public:
   // MC clusters energy smearing
   //-----------------------------------------------------
   
-  Float_t  SmearClusterEnergy(AliVCluster* clu) ;
+  Float_t  SmearClusterEnergy(const AliVCluster* clu) ;
   void     SwitchOnClusterEnergySmearing()               { fSmearClusterEnergy = kTRUE         ; }
   void     SwitchOffClusterEnergySmearing()              { fSmearClusterEnergy = kFALSE        ; }
   Bool_t   IsClusterEnergySmeared()                const { return fSmearClusterEnergy          ; }   
@@ -134,7 +138,7 @@ public:
   Bool_t   AcceptCalibrateCell(const Int_t absId, const Int_t bc,
                                Float_t & amp, Double_t & time, AliVCaloCells* cells) ; // Energy and Time
   void     RecalibrateCells(AliVCaloCells * cells, Int_t bc) ; // Energy and Time
-  void     RecalibrateClusterEnergy(AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=-1) ; // Energy and time
+  void     RecalibrateClusterEnergy(const AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=-1) ; // Energy and time
 
   // Energy recalibration
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
@@ -163,7 +167,7 @@ public:
   void     SetRunDependentCorrections(Int_t runnumber);
       
   // Time Recalibration  
-  void     RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & time);
+  void     RecalibrateCellTime(const Int_t absId, const Int_t bc, Double_t & time) const;
   
   Bool_t   IsTimeRecalibrationOn()                 const { return fTimeRecalibration   ; }
   void     SwitchOffTimeRecalibration()                  { fTimeRecalibration = kFALSE ; }
@@ -224,7 +228,7 @@ public:
   void     SetEMCALChannelStatusMap(TObjArray *map)      { fEMCALBadChannelMap = map                  ; }
   void     SetEMCALChannelStatusMap(Int_t iSM , TH2I* h) { fEMCALBadChannelMap->AddAt(h,iSM)          ; }
 
-  Bool_t   ClusterContainsBadChannel(AliEMCALGeometry* geom, UShort_t* cellList, const Int_t nCells);
+  Bool_t   ClusterContainsBadChannel(const AliEMCALGeometry* geom, const UShort_t* cellList, const Int_t nCells);
  
   //-----------------------------------------------------
   // Recalculate other cluster parameters
@@ -245,10 +249,14 @@ public:
   Int_t    FindMatchedClusterInEvent(AliESDtrack *track, AliVEvent *event, AliEMCALGeometry *geom, Float_t &dEta, Float_t &dPhi);
   Int_t    FindMatchedClusterInClusterArr(AliExternalTrackParam *emcalParam, AliExternalTrackParam *trkParam, TObjArray * clusterArr, Float_t &dEta, Float_t &dPhi);
   
-  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, Double_t mass, Double_t step, Float_t &eta, Float_t &phi);
-  static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, Float_t *clsPos, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
-  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
-  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, Float_t &tmpEta, Float_t &tmpPhi);
+  static Bool_t ExtrapolateTrackToEMCalSurface(AliExternalTrackParam *trkParam, Double_t emcalR, 
+                                               Double_t mass, Double_t step, Float_t &eta, Float_t &phi);
+  static Bool_t ExtrapolateTrackToPosition(AliExternalTrackParam *trkParam, const Float_t *clsPos, 
+                                           Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+  static Bool_t ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
+                                           Double_t mass, Double_t step, Float_t &tmpEta, Float_t &tmpPhi);
+  Bool_t        ExtrapolateTrackToCluster (AliExternalTrackParam *trkParam, AliVCluster *cluster, 
+                                           Float_t &tmpEta, Float_t &tmpPhi);
 
   UInt_t   FindMatchedPosForCluster(Int_t clsIndex) const;
   UInt_t   FindMatchedPosForTrack(Int_t trkIndex)   const;
@@ -261,9 +269,9 @@ public:
   Bool_t   IsClusterMatched(Int_t clsIndex)         const;
   Bool_t   IsTrackMatched(Int_t trkIndex)           const;
 
-  void     SetClusterMatchedToTrack (AliESDEvent *event);
+  void     SetClusterMatchedToTrack (const AliESDEvent *event);
   
-  void     SetTracksMatchedToCluster(AliESDEvent *event);  
+  void     SetTracksMatchedToCluster(const AliESDEvent *event);  
 
   void     SwitchOnCutEtaPhiSum()                     { fCutEtaPhiSum      = kTRUE    ; 
                                                         fCutEtaPhiSeparate = kFALSE   ; }
