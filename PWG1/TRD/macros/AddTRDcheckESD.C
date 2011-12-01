@@ -31,8 +31,8 @@ AliESDtrackCuts* SetupESDcuts() {
   esdCuts->SetEtaRange(-0.9, +0.9);
   esdCuts->SetRequireTPCRefit(kTRUE);
   esdCuts->SetAcceptKinkDaughters(kFALSE);
-  esdCuts->SetMaxDCAToVertexXY(40.);
-  esdCuts->SetMaxDCAToVertexZ(15.);
+  esdCuts->SetMaxDCAToVertexXY(1.);
+  esdCuts->SetMaxDCAToVertexZ(3.);
   esdCuts->SetMinNClustersTPC(70);
   return esdCuts;
 }
