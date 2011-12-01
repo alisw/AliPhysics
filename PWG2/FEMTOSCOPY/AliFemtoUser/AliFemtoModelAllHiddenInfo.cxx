@@ -34,59 +34,47 @@ AliFemtoModelAllHiddenInfo::AliFemtoModelAllHiddenInfo() :
 //_____________________________________________
 AliFemtoModelAllHiddenInfo::AliFemtoModelAllHiddenInfo(const AliFemtoModelAllHiddenInfo &aInfo) :
   AliFemtoModelHiddenInfo(aInfo),
-  fTrueMomentumMother(0),
-  fEmissionPointMother(0),
-  fPDGPidMother(0),
-  fTrueMomentumChild1(0),
-  fTrueMomentumChild2(0),
-  fPDGPidChild1(0),
-  fPDGPidChild2(0)
+  fTrueMomentumMother(new AliFemtoLorentzVector(*(aInfo.fTrueMomentumMother))),
+  fEmissionPointMother(new AliFemtoLorentzVector(*(aInfo.fEmissionPointMother))),
+  fPDGPidMother(aInfo.fPDGPidMother),
+  fTrueMomentumChild1(new AliFemtoLorentzVector(*(aInfo.fTrueMomentumChild1))),
+  fTrueMomentumChild2(new AliFemtoLorentzVector(*(aInfo.fTrueMomentumChild2))),
+  fPDGPidChild1(aInfo.fPDGPidChild1),
+  fPDGPidChild2(aInfo.fPDGPidChild2)
 {
+  //
   // Copy constructor
-  if (aInfo.GetTrueMomentumMother())
-    SetTrueMomentumMother(aInfo.GetTrueMomentumMother());
-  if (aInfo.GetEmissionPointMother())
-    SetEmissionPointMother(aInfo.GetEmissionPointMother());
-  fPDGPidMother = aInfo.GetPDGPidMother();
-  if (aInfo.GetTrueMomentumChild1())
-    SetTrueMomentumChild1(aInfo.GetTrueMomentumChild1());
-  if (aInfo.GetTrueMomentumChild2())
-    SetTrueMomentumChild2(aInfo.GetTrueMomentumChild2());
-  fPDGPidChild1 = aInfo.GetPDGPidChild1();
-  fPDGPidChild2 = aInfo.GetPDGPidChild2();
+  //
 }
 //_____________________________________________
 AliFemtoModelAllHiddenInfo::~AliFemtoModelAllHiddenInfo()
 {
   // Destructor
-  if (fTrueMomentumMother)  delete fTrueMomentumMother;
-  if (fEmissionPointMother) delete fEmissionPointMother;
-  if (fTrueMomentumChild1) delete fTrueMomentumChild1;
-  if (fTrueMomentumChild2) delete fTrueMomentumChild2;
+  delete fTrueMomentumMother;
+  delete fEmissionPointMother;
+  delete fTrueMomentumChild1;
+  delete fTrueMomentumChild2;
 }
 //_____________________________________________
 AliFemtoModelAllHiddenInfo& AliFemtoModelAllHiddenInfo::operator=(const AliFemtoModelAllHiddenInfo& aInfo)
 {
+  //
   // assignment operator
-  if (this == &aInfo)
-    return *this;
-
-  if (aInfo.GetTrueMomentumMother())
-    SetTrueMomentumMother(aInfo.GetTrueMomentumMother());
-  else SetTrueMomentumMother(0);
-  if (aInfo.GetEmissionPointMother())
-    SetEmissionPointMother(aInfo.GetEmissionPointMother());
-  else SetEmissionPointMother(0);
-  fPDGPidMother = aInfo.GetPDGPidMother();
-  if (aInfo.GetTrueMomentumChild1())
-    SetTrueMomentumChild1(aInfo.GetTrueMomentumChild1());
-  else SetTrueMomentumChild1(0);
-  if (aInfo.GetTrueMomentumChild2())
-    SetTrueMomentumChild2(aInfo.GetTrueMomentumChild2());
-  else SetTrueMomentumChild2(0);
-  fPDGPidChild1 = aInfo.GetPDGPidChild1();
-  fPDGPidChild2 = aInfo.GetPDGPidChild2();
-
+  //
+  if (this != &aInfo) {
+    AliFemtoModelHiddenInfo::operator=(aInfo);
+    delete fTrueMomentumMother;
+    fTrueMomentumMother = new AliFemtoLorentzVector(*(aInfo.fTrueMomentumMother));
+    delete fEmissionPointMother;
+    fEmissionPointMother = new AliFemtoLorentzVector(*(aInfo.fEmissionPointMother));
+    fPDGPidMother = aInfo.fPDGPidMother;
+    delete fTrueMomentumChild1;
+    fTrueMomentumChild1 = new AliFemtoLorentzVector(*(aInfo.fTrueMomentumChild1));
+    delete fTrueMomentumChild2;
+    fTrueMomentumChild2 = new AliFemtoLorentzVector(*(aInfo.fTrueMomentumChild2));
+    fPDGPidChild1 = aInfo.fPDGPidChild1;      
+    fPDGPidChild2 = aInfo.fPDGPidChild2;   
+  }
   return *this;
 }
 //
