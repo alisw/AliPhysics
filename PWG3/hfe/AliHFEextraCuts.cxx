@@ -58,6 +58,7 @@ AliHFEextraCuts::AliHFEextraCuts(const Char_t *name, const Char_t *title):
   fMinNClustersTPC(0),
   fClusterRatioTPC(0.),
   fMinTrackletsTRD(0),
+  fTRDtrackletsExact(0),
   fPixelITS(0),
   fTPCclusterDef(0),
   fTPCclusterRatioDef(0),
@@ -82,6 +83,7 @@ AliHFEextraCuts::AliHFEextraCuts(const AliHFEextraCuts &c):
   fMinNClustersTPC(c.fMinNClustersTPC),
   fClusterRatioTPC(c.fClusterRatioTPC),
   fMinTrackletsTRD(c.fMinTrackletsTRD),
+  fTRDtrackletsExact(c.fTRDtrackletsExact),
   fPixelITS(c.fPixelITS),
   fTPCclusterDef(c.fTPCclusterDef),
   fTPCclusterRatioDef(c.fTPCclusterRatioDef),
@@ -116,6 +118,7 @@ AliHFEextraCuts &AliHFEextraCuts::operator=(const AliHFEextraCuts &c){
     fClusterRatioTPC = c.fClusterRatioTPC;
     fMinNClustersTPC = c.fMinNClustersTPC;
     fMinTrackletsTRD = c.fMinTrackletsTRD;
+    fTRDtrackletsExact = c.fTRDtrackletsExact;
     fPixelITS = c.fPixelITS;
     fTPCclusterDef = c.fTPCclusterDef;
     fTPCclusterRatioDef = c.fTPCclusterRatioDef;
@@ -243,8 +246,13 @@ Bool_t AliHFEextraCuts::CheckRecCuts(AliVTrack *track){
   }
   if(TESTBIT(fRequirements, kMinTrackletsTRD)){
     // cut on minimum number of TRD tracklets
-    AliDebug(1, Form("Min TRD cut: [%d|%d]\n", fMinTrackletsTRD, trdTracklets));
-    if(trdTracklets >= fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
+    AliDebug(1, Form("Min TRD cut: [%d|%d], Require exact number [%s]\n", fMinTrackletsTRD, trdTracklets, fTRDtrackletsExact ? "Yes" : "No"));
+    if(fTRDtrackletsExact){
+      if(trdTracklets == fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
+    }else{
+      if(trdTracklets >= fMinTrackletsTRD) SETBIT(survivedCut, kMinTrackletsTRD);
+      //printf("Min number of tracklets %d\n",fMinTrackletsTRD);
+    }
   }
   if(TESTBIT(fRequirements, kMinNClustersTPC)){
     // cut on minimum number of TRD tracklets
@@ -386,11 +394,13 @@ void AliHFEextraCuts::FillQAhistosRec(AliVTrack *track, UInt_t when){
   }
   // Fill histogram with the status bits
   TH1 *hStatusBits = dynamic_cast<TH1 *>(fQAlist->At(6 + when * fgkNQAhistos));
-  hStatusBits->Fill(0);  // Fill first bin with all tracks
-  if(track->GetStatus() && AliESDtrack::kTOFpid) hStatusBits->Fill(1);
-  if(!(track->GetStatus() && AliESDtrack::kTOFmismatch)) hStatusBits->Fill(2);
-  if(track->GetStatus() && AliESDtrack::kEMCALmatch) hStatusBits->Fill(3);
-  if(GetTPCCountSharedMapBitsAboveThreshold(track)==0) hStatusBits->Fill(4);
+  if(hStatusBits) {
+    hStatusBits->Fill(0);  // Fill first bin with all tracks
+    if(track->GetStatus() && AliESDtrack::kTOFpid) hStatusBits->Fill(1);
+    if(!(track->GetStatus() && AliESDtrack::kTOFmismatch)) hStatusBits->Fill(2);
+    if(track->GetStatus() && AliESDtrack::kEMCALmatch) hStatusBits->Fill(3);
+    if(GetTPCCountSharedMapBitsAboveThreshold(track)==0) hStatusBits->Fill(4);
+  }
   if((htmp = dynamic_cast<TH1F *>(fQAlist->At(7 + when * fgkNQAhistos)))) htmp->Fill(GetTPCnclusdEdx(track));
 }
 
@@ -685,6 +695,10 @@ void AliHFEextraCuts::GetHFEImpactParameters(AliVTrack *track, Double_t &dcaxy, 
   Float_t covF[3]={-999.,-999.,-999.};
   
   AliESDEvent *esdevent = dynamic_cast<AliESDEvent *>(fEvent);
+  if(!esdevent) {
+    AliDebug(1, "No esd event available\n");
+    return;
+  }
   const AliVVertex *vtxESDSkip = esdevent->GetPrimaryVertex();
   if( vtxESDSkip->GetNContributors() < 30){ // if vertex contributor is smaller than 30, recalculate the primary vertex
    // recalculate primary vertex for peri. and pp

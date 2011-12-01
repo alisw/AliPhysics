@@ -523,6 +523,10 @@ AliHFEvarManager::AliHFEvariable& AliHFEvarManager::AliHFEvariable::operator=(co
     fNBins = ref.fNBins;
     fMax = ref.fMax;
     fMin = ref.fMin;
+    if(ref.fBinning){
+      fBinning = new Double_t[ref.fNBins + 1];
+      memcpy(fBinning, ref.fBinning, sizeof(Double_t) * (ref.fNBins + 1));
+    } else fBinning = NULL;
     fIsLogarithmic = ref.fIsLogarithmic;
   }
   return *this;

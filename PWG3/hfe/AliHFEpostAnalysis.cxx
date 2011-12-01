@@ -71,6 +71,7 @@ AliHFEpostAnalysis& AliHFEpostAnalysis::operator=(const AliHFEpostAnalysis &ref)
   //
   // Assignment Operator
   //
+  if(this == &ref) return *this;
   TObject::operator=(ref);
   fResults = ref.fResults;
   fAnalysisObjects = ref.fAnalysisObjects;

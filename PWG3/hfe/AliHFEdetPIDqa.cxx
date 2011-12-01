@@ -68,6 +68,7 @@ AliHFEdetPIDqa &AliHFEdetPIDqa::operator=(const AliHFEdetPIDqa &o){
   //
   // Make assignment
   //
+  if(this == &o) return *this;
   TNamed::operator=(o);
 
   fQAmanager = o.fQAmanager;
