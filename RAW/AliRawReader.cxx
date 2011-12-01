@@ -143,6 +143,7 @@ AliRawReader::AliRawReader(const AliRawReader& rawReader) :
 AliRawReader& AliRawReader::operator = (const AliRawReader& rawReader)
 {
 // assignment operator
+  if(&rawReader == this) return *this;
   fEquipmentIdsIn = rawReader.fEquipmentIdsIn;
   fEquipmentIdsOut = rawReader.fEquipmentIdsOut;
 

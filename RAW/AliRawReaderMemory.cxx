@@ -298,6 +298,7 @@ AliRawReaderMemory::AliRRMBuffer::AliRRMBuffer(const AliRRMBuffer& src)
 AliRawReaderMemory::AliRRMBuffer& AliRawReaderMemory::AliRRMBuffer::operator=(const AliRRMBuffer& src)
 {
   // assignment op
+  if(&src == this) return *this;
   fBuffer=src.fBuffer;
   fBufferSize=src.fBufferSize;
   fEquipmentId=src.fEquipmentId;
