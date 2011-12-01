@@ -162,7 +162,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     if(statusInj0>1) iGoodInj++;
     else if(statusInj0==1) iRescaledSpeed++;
     else iAverSpeed++;
-    if(statusInj1>0) iGoodInj++;
+    if(statusInj1>1) iGoodInj++;
     else if(statusInj1==1) iRescaledSpeed++;
     else iAverSpeed++;
 
@@ -220,7 +220,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     Float_t pd0=0;
     if(vdrift0){ 
       vel0=vdrift0->GetDriftSpeedAtAnode(128);
-     pd0=vdrift0->GetDegreeofPoly();
+      pd0=vdrift0->GetDegreeofPoly();
     }
     Float_t vel1=0;
     Float_t pd1=0;
@@ -270,7 +270,7 @@ void ShowDriftSpeedSDD(Char_t filnam[150]="$ALICE_ROOT/ITS/Calib/DriftSpeedSDD/R
     c0->Print(psnm2.Data());
   }
   printf("Number of half-modules with drift speed from injectors               = %d\n",iGoodInj);
-  printf("Number of half-modules with drift speed rewscaled from golden module = %d\n",iRescaledSpeed);
+  printf("Number of half-modules with drift speed rescaled from golden module = %d\n",iRescaledSpeed);
   printf("Number of half-modules with average drift speed                      = %d\n",iAverSpeed);
 
   gStyle->SetPalette(59);
