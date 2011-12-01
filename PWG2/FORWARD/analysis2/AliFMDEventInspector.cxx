@@ -54,7 +54,8 @@ AliFMDEventInspector::AliFMDEventInspector()
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(true)
+    fUseFirstPhysicsVertex(true),
+    fUseV0AND(false)
 {
   // 
   // Constructor 
@@ -82,7 +83,8 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(10,-10,10),
-    fUseFirstPhysicsVertex(true)
+    fUseFirstPhysicsVertex(true),
+    fUseV0AND(false)
 {
   // 
   // Constructor 
@@ -113,7 +115,8 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fDebug(0),
     fCentAxis(0),
     fVtxAxis(o.fVtxAxis),
-    fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex)
+    fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex),
+    fUseV0AND(o.fUseV0AND)
 {
   // 
   // Copy constructor 
@@ -166,6 +169,7 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
 	       o.fVtxAxis.GetXmax());
   
   fUseFirstPhysicsVertex = o.fUseFirstPhysicsVertex;
+  fUseV0AND              = o.fUseV0AND;
   
   if (fList) { 
     fList->SetName(GetName());
@@ -607,9 +611,15 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   
   // Analyse some trigger stuff 
   AliTriggerAnalysis ta;
-  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
-    triggers |= AliAODForwardMult::kNSD;
- 
+  if(fUseV0AND) {
+    if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND)) 
+      triggers |= AliAODForwardMult::kNSD;
+  }
+  else {
+    if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
+      triggers |= AliAODForwardMult::kNSD;
+  }
+  
   // Check for multiple vertices (pile-up) with at least 3
   // contributors and at least 0.8cm from the primary vertex
   Bool_t pileup = kFALSE;
