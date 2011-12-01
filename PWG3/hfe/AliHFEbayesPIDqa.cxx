@@ -46,41 +46,6 @@
 
 ClassImp(AliHFEbayesPIDqa)
 
-//----------------------------------------------------------------
-// Definition of common binning
-const Int_t kNdim = 5;
-const Int_t kPIDbins = AliPID::kSPECIES + 1;
-const Int_t kProbbins = 100;
-const Int_t kSteps = 2;
-const Int_t kCentralityBins = 11;
-const Double_t kMinPID = -1;
-const Double_t kMinP = 0.;
-const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
-const Double_t kMaxP = 20.;
-
-const Int_t AliHFEbayesPIDqa::fgkNBinsProb[kNdim] = {
-    kPIDbins,                     // species
-    1000,                       // p-bins
-    kProbbins,                    // probability
-    kSteps,                       // step
-    kCentralityBins               // centrality
-};
-const Double_t AliHFEbayesPIDqa::fgkMinBinsProb[kNdim] = {
-    -1.,                          // species
-    0.,                           // p-bins
-    0.,                           // probability
-    0.,                           // step
-    0.                            // centrality
-};
-const Double_t AliHFEbayesPIDqa::fgkMaxBinsProb[kNdim] = {
-    (Double_t)AliPID::kSPECIES,   // species
-    20.,                          // p-bins
-    1.,                           // probability
-    2.,                           // step
-    11.                           // centrality
-};
-//----------------------------------------------------------------
-
 //_________________________________________________________
 AliHFEbayesPIDqa::AliHFEbayesPIDqa():
     AliHFEdetPIDqa()
@@ -116,9 +81,10 @@ AliHFEbayesPIDqa &AliHFEbayesPIDqa::operator=(const AliHFEbayesPIDqa &o){
   //
   // Make assignment
   //
-  AliHFEdetPIDqa::operator=(o);
-  fHistos = o.fHistos;
-  
+  if(this != &o){
+    AliHFEdetPIDqa::operator=(o);
+    fHistos = o.fHistos;
+  }
   return *this;
 }
 
@@ -130,7 +96,43 @@ AliHFEbayesPIDqa::~AliHFEbayesPIDqa(){
   //
   if(fHistos) delete fHistos;
 }
+//_________________________________________________________
+void AliHFEbayesPIDqa::Copy(TObject &o) const {
+  //
+  // Make copy
+  //
+  AliHFEbayesPIDqa &target = dynamic_cast<AliHFEbayesPIDqa &>(o);
+  if(target.fHistos){
+    delete target.fHistos;
+    target.fHistos = NULL;
+  }
+  if(fHistos) target.fHistos = new AliHFEcollection(*fHistos);
 
+}
+
+//_________________________________________________________
+Long64_t AliHFEbayesPIDqa::Merge(TCollection *coll){
+  //
+  // Merge with other objects
+  //
+  if(!coll) return 0;
+  if(coll->IsEmpty()) return 1;
+
+  TIter it(coll);
+  AliHFEbayesPIDqa *refQA = NULL;
+  TObject *o = NULL;
+  Long64_t count = 0;
+  TList listHistos;
+  while((o = it())){
+    refQA = dynamic_cast<AliHFEbayesPIDqa *>(o);
+    if(!refQA) continue;
+
+    listHistos.Add(refQA->fHistos);
+    count++; 
+  }
+  fHistos->Merge(&listHistos);
+  return count + 1;
+}
 //_________________________________________________________
 void AliHFEbayesPIDqa::Initialize(){
   //
@@ -139,46 +141,36 @@ void AliHFEbayesPIDqa::Initialize(){
 
   fHistos = new AliHFEcollection("BAYESqahistos", "Collection of Bayes QA histograms");
 
-  CreateProbabilityHistograms();
   CreateDetectorSignalHistograms();
 
 //  fBAYESpid = new AliHFEpidBayes("QAbayesPID");
 
 }
 
-//__________________________________________________________________
-void AliHFEbayesPIDqa::CreateProbabilityHistograms(){
-  //
-  // Create Histogram for Probability Studies
-  //
-
-  fHistos->CreateTHnSparse("combprob", "Comb prob; species; p [GeV/c]; Comb prob; Selection Step; Centrality", kNdim, fgkNBinsProb, fgkMinBinsProb, fgkMaxBinsProb);
-
-
-}
 
 void AliHFEbayesPIDqa::CreateDetectorSignalHistograms(){
   //
   // Create Histogram for Probability Studies
-  //
-    Int_t kPbins = fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
-    Int_t kSigmaBins = fQAmanager->HasHighResolutionHistos() ? 1400 : 240;
-    Int_t nBinsSigma[kNdim] = {kPIDbins, kPbins, kSigmaBins, kSteps, kCentralityBins};
-    Double_t minSigma[kNdim] = {kMinPID, kMinP, -12., 0., 0.};
-    Double_t maxSigma[kNdim] = {kMaxPID, kMaxP, 12., 2., 11.};
-    fHistos->CreateTHnSparse("tpcsigma", "TPC sigma; species; p [GeV/c]; TPC sigma; Selection Step; Centrality", kNdim, nBinsSigma, minSigma,maxSigma);
-    fHistos->CreateTHnSparse("tofsigma", "TOF sigma; species; p [GeV/c]; TOF sigma; Selection Step; Centrality", kNdim, nBinsSigma, minSigma,maxSigma);
+    //
 
-    Int_t trdLikelihoodBins = fQAmanager->HasHighResolutionHistos() ? 200 : 100;
-    Int_t nBinsTRDlike[5] = {kPIDbins, kPbins, trdLikelihoodBins, kSteps, kCentralityBins};
-    Double_t minTRDlike[5] = {kMinPID, kMinP, 0., 0., 0.};
-    Double_t maxTRDlike[5] = {kMaxPID, kMaxP, 1., 2., 11.};
-    fHistos->CreateTHnSparse("trdlikeli", "TRD Likelihood Distribution; species; p [GeV/c]; TRD electron Likelihood; selection step", 5, nBinsTRDlike, minTRDlike, maxTRDlike);
+    Int_t kPbins = 1000;  //fQAmanager->HasHighResolutionHistos() ? 1000 : 100;
+    Int_t kSigmaBins = 300; //fQAmanager->HasHighResolutionHistos() ? 600 : 150;
+    Int_t trdLikelihoodBins = 100; // fQAmanager->HasHighResolutionHistos() ? 200 : 100;
+    const Int_t kPIDbins = AliPID::kSPECIES + 1;
+    const Int_t kProbbins = 100;
+    const Int_t kSteps = 2;
+    const Int_t kCentralityBins = 11;
+    const Double_t kMinPID = -1;
+    const Double_t kMinP = 0.;
+    const Double_t kMaxPID = (Double_t)AliPID::kSPECIES;
+    const Double_t kMaxP = 10.;
 
-    Int_t nBinsContr[6] = {kPIDbins, kPbins, kProbbins, kSigmaBins, kSigmaBins, trdLikelihoodBins};
-    Double_t minContr[6] = {kMinPID, kMinP, 0,  -12., -12., 0.};
-    Double_t maxContr[6] = {kMaxPID, kMaxP, 1,   12.,  12., 1.};
-    fHistos->CreateTHnSparse("control", "Control; species; p [GeV/c]; Comb prob; TPC sigma; TOF sigma; TRD electron Likelihood", 6, nBinsContr, minContr,maxContr);
+    Int_t nBinsContr[8] =  {kPIDbins, kPbins, kProbbins, kSigmaBins, kSigmaBins, trdLikelihoodBins, kSteps, kCentralityBins};
+    Double_t minContr[8] = {kMinPID, kMinP, 0,  -10., -7., 0., 0., 0.};
+    Double_t maxContr[8] = {kMaxPID, kMaxP, 1,    5.,   8., 1., 2., 11.};
+    fHistos->CreateTHnSparse("control", "Control; species; p [GeV/c]; Comb prob; TPC sigma; TOF sigma; TRD electron Likelihood; selection step; centrality", 8, nBinsContr, minContr,maxContr);
+
+
 
     Int_t nBinsTOFmass[5] = {kPIDbins, kPbins, 150, kSteps, kCentralityBins};
     Double_t minTOFmass[5] = {kMinPID, kMinP, 0., 0., 0.};
@@ -201,45 +193,50 @@ void AliHFEbayesPIDqa::ProcessTrack(const AliHFEpidObject *track, AliHFEdetPIDqa
   Double_t probComb[AliPID::kSPECIES]={0.};
   AliHFEpidBayes *bayespid = dynamic_cast<AliHFEpidBayes *>(fQAmanager->GetDetectorPID(AliHFEpid::kBAYESpid));
   const AliPIDResponse *pidResponseBayes = bayespid ? bayespid->GetPIDResponse() : NULL;
+  if(!pidResponseBayes){
+    AliError("No PID Response available");
+    return;
+  }
   bayespid->CalcCombProb(track,pidResponseBayes, probComb);
 
-  Double_t contentSignal[5];
+  Double_t contentSignal[8];
   contentSignal[0] = species;
   contentSignal[1] = track->GetRecTrack()->P();
   contentSignal[2] = probComb[AliPID::kElectron];
 //  contentSignal[2] = contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : 0.;
-  contentSignal[3] = step;
-  contentSignal[4] = centrality;
-  fHistos->Fill("combprob", contentSignal);
-
-  Double_t contentContr[6];
-  contentContr[0]=contentSignal[0];
-  contentContr[1]=contentSignal[1];
-  contentContr[2]=contentSignal[2];
 
   AliHFEpidTOF *tofpid = dynamic_cast<AliHFEpidTOF *>(fQAmanager->GetDetectorPID(AliHFEpid::kTOFpid));
   const AliPIDResponse *pidResponseTOF = tofpid ? tofpid->GetPIDResponse() : NULL;
-  contentSignal[2] = pidResponseTOF ? pidResponseTOF->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron): -10.;
-  fHistos->Fill("tofsigma", contentSignal);
-  contentContr[3]=contentSignal[2];
+  if(!pidResponseTOF){
+    AliError("No PID response available");
+    return;
+  }
+  contentSignal[4] = pidResponseTOF ? pidResponseTOF->NumberOfSigmasTOF(track->GetRecTrack(), AliPID::kElectron): -10.;
 
   AliHFEpidTPC *tpcpid = dynamic_cast<AliHFEpidTPC *>(fQAmanager->GetDetectorPID(AliHFEpid::kTPCpid));
   const AliPIDResponse *pidResponse = tpcpid ? tpcpid->GetPIDResponse() : NULL;
-  contentSignal[2] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -10.;
-  fHistos->Fill("tpcsigma", contentSignal);
-  contentContr[4]=contentSignal[2];
-
+  if(!pidResponse){
+    AliError("No PID response available");
+    return;
+  }
+  contentSignal[3] = pidResponse ? pidResponse->NumberOfSigmasTPC(track->GetRecTrack(), AliPID::kElectron) : -10.;
 
   AliHFEpidTRD *trdpid = dynamic_cast<AliHFEpidTRD *>(fQAmanager->GetDetectorPID(AliHFEpid::kTRDpid));
-  contentSignal[2] = trdpid ? trdpid->GetElectronLikelihood(static_cast<const AliVTrack*>(track->GetRecTrack()), anatype) : -10;
-  fHistos->Fill("trdlikeli", contentSignal);
+  contentSignal[5] = trdpid ? trdpid->GetElectronLikelihood(static_cast<const AliVTrack*>(track->GetRecTrack()), anatype) : -10;
 
-  contentContr[5]=contentSignal[2];
-  fHistos->Fill("control", contentContr);
+  contentSignal[6] = step;
+  contentSignal[7] = centrality;
+  fHistos->Fill("control", contentSignal);
+
+  Double_t contentFill[5];
+  contentFill[0]=contentSignal[0];
+  contentFill[1]=contentSignal[1];
+  contentFill[3]=contentSignal[6];
+  contentFill[4]=contentSignal[7];
 
   Double_t masscalcfromtof=CalcTOFMass(track);
-  contentSignal[2]=masscalcfromtof;
-  fHistos->Fill("tofmass", contentSignal);
+  contentFill[2]=masscalcfromtof;
+  fHistos->Fill("tofmass", contentFill);
 }
 
 Double_t AliHFEbayesPIDqa::CalcTOFMass(const AliHFEpidObject *track){

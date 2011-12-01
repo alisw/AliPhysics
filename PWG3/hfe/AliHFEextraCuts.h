@@ -67,7 +67,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     inline void SetMinImpactParamZ(Double_t impactParam);
     inline void SetMaxImpactParamZ(Double_t impactParam);
     inline void SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t issigmacut);
-    inline void SetMinTrackletsTRD(Int_t minTracklets);
+    inline void SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact = kFALSE);
     inline void SetMinNClustersTPC(Int_t minclusters, ETPCclusterDef_t def);
     void SetTOFPID(Bool_t tofPid) { tofPid ? SETBIT(fRequirements, kTOFPID) : CLRBIT(fRequirements, kTOFPID); }
     void SetTOFMISMATCH(Bool_t tofMismatch) { tofMismatch ? SETBIT(fRequirements, kTOFmismatch) : CLRBIT(fRequirements, kTOFmismatch); }
@@ -140,6 +140,7 @@ class AliHFEextraCuts : public AliCFCutBase{
     UInt_t fMinNClustersTPC;          // Minimum TPC clusters cut
     Float_t fClusterRatioTPC;		      // Ratio of findable vs. found clusters in TPC
     UChar_t fMinTrackletsTRD;		      // Min. Number of Tracklets inside TRD
+    Bool_t  fTRDtrackletsExact;       // Require exact number of tracklets
     UChar_t fPixelITS;                // Cut on ITS Pixels
     UChar_t fTPCclusterDef;           // TPC cluster definition Bitmap
     UChar_t fTPCclusterRatioDef;      // TPC cluster ratio definition Bitmap
@@ -200,9 +201,10 @@ void AliHFEextraCuts::SetMinHFEImpactParamR(Float_t ipcutParam[4], Bool_t isSigm
 }
 
 //__________________________________________________________
-void AliHFEextraCuts::SetMinTrackletsTRD(Int_t minTracklets){
+void AliHFEextraCuts::SetMinTrackletsTRD(Int_t minTracklets, Bool_t exact){
   SETBIT(fRequirements, kMinTrackletsTRD);
   fMinTrackletsTRD = minTracklets;
+  fTRDtrackletsExact = exact;
 }
 
 //__________________________________________________________

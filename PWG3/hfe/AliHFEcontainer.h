@@ -72,6 +72,7 @@ class AliHFEcontainer : public TNamed{
     void MakeLinearBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
     void MakeLogarithmicBinning(UInt_t var, UInt_t nBins, Double_t begin, Double_t end);
     void MakeUserDefinedBinning(UInt_t var, UInt_t nBins, const Double_t *binning);
+    void Sumw2(const char *contname) const;
 
     virtual void Print(const Option_t * opt = NULL) const;
 

@@ -32,6 +32,7 @@
 #include <TString.h>
 
 #include "AliCFContainer.h"
+#include "AliCFGridSparse.h"
 #include "AliHFEcontainer.h"
 #include "AliHFEtools.h"
 
@@ -132,6 +133,7 @@ AliHFEcontainer &AliHFEcontainer::operator=(const AliHFEcontainer &ref){
   // Assignment operator
   // Cleanup old object, create a new one with new containers inside
   //
+  if(this == &ref) return *this;
   this->~AliHFEcontainer(); // cleanup old object before creating the new onwe
   TNamed::operator=(ref);
   fContainers = new THashList();
@@ -443,6 +445,18 @@ Int_t AliHFEcontainer::GetNumberOfCFContainers() const{
   // Get the number of entries
   //
   return fContainers->GetEntries();
+}
+
+//__________________________________________________________________
+void AliHFEcontainer::Sumw2(const char *contname) const {
+  // 
+  // Set sums of weights for all steps of a given container
+  //
+  AliCFContainer *cont = GetCFContainer(contname);
+  if(cont){
+    for(Int_t istep = 0; istep < cont->GetNStep(); istep++)
+      cont->GetGrid(istep)->SumW2();
+  }
 }
 
 //__________________________________________________________________

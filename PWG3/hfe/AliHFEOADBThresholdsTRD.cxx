@@ -140,11 +140,13 @@ AliHFEOADBThresholdsTRD::AliHFEthresholdParamsTRD &AliHFEOADBThresholdsTRD::AliH
   //
   // Assignment operator
   //
-  TObject::operator=(ref);
+  if(this != &ref){
+    TObject::operator=(ref);
 
-  fNTracklets = ref.fNTracklets;
-  fEfficiency = ref.fEfficiency;
-  memcpy(fParams, ref.fParams, sizeof(Double_t) * 4);
+    fNTracklets = ref.fNTracklets;
+    fEfficiency = ref.fEfficiency;
+    memcpy(fParams, ref.fParams, sizeof(Double_t) * 4);
+  }
   return *this;
 }
         
