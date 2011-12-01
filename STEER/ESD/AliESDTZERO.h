@@ -50,10 +50,10 @@ public:
   void SetT0amplitude(Double32_t amp[24]) {
     for (Int_t i=0; i<24; i++) fT0amplitude[i] = amp[i];
   }
-  Float_t GetTimeFull(Int_t ch, Int_t hit) {return fTimeFull[ch][hit];}
-  Float_t GetOrA(Int_t hit) {return fOrA[hit];}
-  Float_t GetOrC(Int_t hit) {return fOrC[hit];}
-  Float_t GetTVDC(Int_t hit) const {return fTVDC[hit];}
+  Float_t GetTimeFull(Int_t ch, Int_t hit)  const {return fTimeFull[ch][hit];}
+  Float_t GetOrA(Int_t hit) const {return fOrA[hit];}
+   Float_t GetOrC(Int_t hit) const {return fOrC[hit];}
+   Float_t GetTVDC(Int_t hit) const {return fTVDC[hit];}
   
   void SetTimeFull(Int_t ch, Int_t hit, Float_t time) {fTimeFull[ch][hit] = time;}
   void SetOrA (Int_t hit, Float_t time) { fOrA[hit] = time ;}
@@ -62,19 +62,19 @@ public:
   
   void SetMultC(Float_t mult) {fMultC = mult;}
   void SetMultA(Float_t mult) {fMultA = mult;}
-  Float_t GetMultC()       const {return fMultC;}
-  Float_t GetMultA()       const {return fMultA;}
+   Float_t GetMultC()       const {return fMultC;}
+   Float_t GetMultA()       const {return fMultA;}
 
   void SetBackgroundFlag(Bool_t back = false) {fBackground = back;}
   void SetPileupFlag(Bool_t back = false) {fPileup  = back;}
   void SetSatelliteFlag(Bool_t sat = false) { fSattelite = sat;}
  
-  Bool_t GetBackgroundFlag() const {return fBackground;}
-  Bool_t GetPileupFlag()  const {return fPileup;}
-  Bool_t GetSatellite() {return fSattelite;}
+  Bool_t GetBackgroundFlag()  const {return fBackground;}
+   Bool_t GetPileupFlag() const {return fPileup;}
+  Bool_t GetSatellite() const {return fSattelite;}
 
   void SetPileupTime (Int_t hit, Float_t time) { fPileupTime[hit] = time;}
-  Float_t GetPileupTime(Int_t hit) {return fPileupTime[hit];}
+  Float_t GetPileupTime(Int_t hit) const  {return fPileupTime[hit];}
 
 
   void    Reset();
