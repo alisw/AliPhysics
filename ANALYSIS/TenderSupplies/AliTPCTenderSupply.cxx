@@ -27,12 +27,14 @@
 #include <TFile.h>
 #include <TString.h>
 #include <TPRegexp.h>
+#include <TGraphErrors.h>
 
 #include <AliDCSSensor.h>
 #include <AliGRPObject.h>
 #include <AliESDpid.h>
 #include <AliLog.h>
 #include <AliESDEvent.h>
+#include <AliExternalTrackParam.h>
 #include <AliESDtrack.h>
 #include <AliESDInputHandler.h>
 #include <AliAnalysisManager.h>
@@ -54,12 +56,23 @@ AliTenderSupply(),
 fESDpid(0x0),
 fGainNew(0x0),
 fGainOld(0x0),
+fGainAttachment(0x0),
+fIsMC(kFALSE),
 fGainCorrection(kTRUE),
+fAttachmentCorrection(kFALSE),
 fPcorrection(kFALSE),
+fMultiCorrection(kFALSE),
 fArrPidResponseMaster(0x0),
+fMultiCorrMean(0x0),
+fMultiCorrSigma(0x0),
+fSpecificStorages(0x0),
 fDebugLevel(0),
 fMip(50),
-fGRP(0x0)
+fGRP(0x0),
+fBeamType("PP"),
+fLHCperiod(),
+fMCperiod(),
+fRecoPass(0)
 {
   //
   // default ctor
@@ -72,12 +85,23 @@ AliTenderSupply(name,tender),
 fESDpid(0x0),
 fGainNew(0x0),
 fGainOld(0x0),
+fGainAttachment(0x0),
+fIsMC(kFALSE),
 fGainCorrection(kTRUE),
+fAttachmentCorrection(kFALSE),
 fPcorrection(kFALSE),
+fMultiCorrection(kFALSE),
 fArrPidResponseMaster(0x0),
+fMultiCorrMean(0x0),
+fMultiCorrSigma(0x0),
+fSpecificStorages(0x0),
 fDebugLevel(0),
 fMip(50),
-fGRP(0x0)
+fGRP(0x0),
+fBeamType("PP"),
+fLHCperiod(),
+fMCperiod(),
+fRecoPass(0)
 {
   //
   // named ctor
@@ -90,60 +114,38 @@ void AliTPCTenderSupply::Init()
   //
   // Initialise TPC tender
   //
-
+  
   AliLog::SetClassDebugLevel("AliTPCTenderSupply",10);
   AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
   //
   // Setup PID object
   //
+  fIsMC=mgr->GetMCtruthEventHandler();
   
   // Check if another detector already created the esd pid object
   // if not we create it and set it to the ESD input handler
   fESDpid=fTender->GetESDhandler()->GetESDpid();
   if (!fESDpid) {
-    fESDpid=new AliESDpid;
+    fESDpid=new AliESDpid(fIsMC);
     fTender->GetESDhandler()->SetESDpid(fESDpid);
+  } 
+  
+  //setup specific storages
+  if (fSpecificStorages){
+    TNamed *storage;
+    TIter nextStorage(fSpecificStorages);;
+    while ( (storage=(TNamed*)nextStorage()) ){
+      fTender->GetCDBManager()->SetSpecificStorage(storage->GetName(),storage->GetTitle());
+      AliInfo(Form("Setting specific storage: %s (%s)",storage->GetName(), storage->GetTitle()));
+    }
   }
-  
-  //
-  //set bethe bloch parameters depending on whether we have MC or real data
-  //
-  // for the moment we set the values hardwired. In future they should be stored either in
-  // the OCDB or an equivalent calibration data base
-  //
-  Double_t alephParameters[5];
-  // simulation
-  alephParameters[0] = 2.15898e+00/50.;
-  alephParameters[1] = 1.75295e+01;
-  alephParameters[2] = 3.40030e-09;
-  alephParameters[3] = 1.96178e+00;
-  alephParameters[4] = 3.91720e+00;
-  
-    // assume data if there is no mc handler
-  if (!mgr->GetMCtruthEventHandler()){
-    alephParameters[0] = 0.0283086/0.97;
-    //alephParameters[0] = 0.0283086;
-    alephParameters[1] = 2.63394e+01;
-    alephParameters[2] = 5.04114e-11;
-    alephParameters[3] = 2.12543e+00;
-    alephParameters[4] = 4.88663e+00;
-    //temporary solution
-    //fESDpid->GetTPCResponse().SetMip(fMip);
-    if (fDebugLevel>0) AliInfo(Form("Use Data parametrisation, Mip set to: %.3f\n",fMip));
-    //fESDpid->GetTPCResponse().SetMip(49.2);
-  } else {
+
+  if (fIsMC){
     //force no gain and P correction in MC
     fGainCorrection=kFALSE;
     fPcorrection=kFALSE;
-    if (fDebugLevel>0) AliInfo("Use MC parametrisation\n");
+    fAttachmentCorrection=kFALSE;
   }
-  
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(
-    alephParameters[0],alephParameters[1],alephParameters[2],
-    alephParameters[3],alephParameters[4]);
-  
-  //set detector resolution parametrisation
-  fESDpid->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
 }
 
 //_____________________________________________________
@@ -158,7 +160,11 @@ void AliTPCTenderSupply::ProcessEvent()
   
   //load gain correction if run has changed
   if (fTender->RunChanged()){
-    if (fDebugLevel>0) AliInfo(Form("Run Changed (%d)\n",fTender->GetRun()));
+    SetBeamType();
+    SetRecoInfo();
+    if ( fBeamType == "PBPB" ) fMultiCorrection=kTRUE;
+
+    if (fDebugLevel>0) AliInfo(Form("Run Changed (%d)",fTender->GetRun()));
     SetParametrisation();
     if (fGainCorrection) SetSplines();
   }
@@ -166,20 +172,98 @@ void AliTPCTenderSupply::ProcessEvent()
   //
   // get gain correction factor
   //
-  Double_t corrFactor = 1;
-  if (fGainCorrection) corrFactor=GetGainCorrection();
+  Double_t corrFactor = GetGainCorrection();
+  Double_t corrAttachSlope = 0;
+  Double_t corrGainMultiplicityPbPb=1;
+  if (fAttachmentCorrection && fGainAttachment) corrAttachSlope = fGainAttachment->Eval(event->GetTimeStamp());
+  if (fMultiCorrection&&fMultiCorrMean) corrGainMultiplicityPbPb = fMultiCorrMean->Eval(GetTPCMultiplicityBin());
   
   //
   // - correct TPC signals
   // - recalculate PID probabilities for TPC
-  //
+  // - correct TPC signal multiplicity dependence
+
   Int_t ntracks=event->GetNumberOfTracks();
   for(Int_t itrack = 0; itrack < ntracks; itrack++){
     AliESDtrack *track=event->GetTrack(itrack);
-    if (fGainCorrection)
-      track->SetTPCsignal(track->GetTPCsignal()*corrFactor,track->GetTPCsignalSigma(),track->GetTPCsignalN());
+    const AliExternalTrackParam *inner=track->GetInnerParam();
+    
+    // skip tracks without TPC information
+    if (!inner) continue;
+
+    //calculate total gain correction factor given by
+    // o gain calibration factor
+    // o attachment correction
+    // o multiplicity correction in PbPb
+    Float_t meanDrift= 250. - 0.5*TMath::Abs(2*inner->GetZ() + (247-83)*inner->GetTgl());
+    Double_t corrGainTotal=corrFactor*(1 + corrAttachSlope*180.)/(1 + corrAttachSlope*meanDrift)/corrGainMultiplicityPbPb;
+
+    // apply gain correction
+    track->SetTPCsignal(track->GetTPCsignal()*corrGainTotal ,track->GetTPCsignalSigma(), track->GetTPCsignalN());
+
+    // recalculate pid probabilities
     fESDpid->MakeTPCPID(track);
   }
+}
+
+//_____________________________________________________
+Double_t AliTPCTenderSupply::GetTPCMultiplicityBin()
+{
+  //
+  // Get TPC multiplicity in bins of 150
+  //
+
+  AliESDEvent *event=fTender->GetEvent();
+  const AliESDVertex* vertexTPC = event->GetPrimaryVertexTPC();
+  Double_t tpcMulti=0.;
+  if(vertexTPC){
+    Double_t vertexContribTPC=vertexTPC->GetNContributors();
+    tpcMulti=vertexContribTPC/150.;
+    if (tpcMulti>20.) tpcMulti=20.;
+  }
+  return tpcMulti;
+}
+
+//_____________________________________________________
+Double_t AliTPCTenderSupply::GetMultiplicityCorrectionMean(Double_t tpcMulti)
+{
+  //
+  // calculate correction factor for dEdx mean
+  //
+  Double_t meancorrection;
+  if (fIsMC)
+  {
+    // MC data
+    meancorrection=1.00054 + (0.00189566)*tpcMulti + (2.07777e-05)*tpcMulti*tpcMulti;
+  }
+  else
+  {
+    // real data
+    meancorrection=0.999509 + (-0.00271488)*tpcMulti + (-2.98873e-06)*tpcMulti*tpcMulti;
+  }
+  
+  return meancorrection;
+  
+}
+
+//_____________________________________________________
+Double_t AliTPCTenderSupply::GetMultiplicityCorrectionSigma(Double_t tpcMulti)
+{
+  //
+  // calculate correction factor for dEdx sigma
+  //
+  Double_t sigmacorrection;
+  if (fIsMC)
+  {
+    // MC data
+    sigmacorrection=0.95972 + 0.0103721*tpcMulti;
+  }
+  else
+  {
+  // real data
+    sigmacorrection=1.01817 + 0.0143673*tpcMulti;
+  }
+  return sigmacorrection;
   
 }
 
@@ -203,7 +287,7 @@ void AliTPCTenderSupply::SetSplines()
   } else {
     fGRP = (AliGRPObject*)entryGRP->GetObject();
   }
-  if (fDebugLevel>1) AliInfo(Form("GRP entry used: %s\n",entryGRP->GetId().ToString().Data()));
+  if (fDebugLevel>1) AliInfo(Form("GRP entry used: %s",entryGRP->GetId().ToString().Data()));
   
   fGainNew=0x0;
   fGainOld=0x0;
@@ -213,6 +297,7 @@ void AliTPCTenderSupply::SetSplines()
 //   TTree *tree=((TChain*)fTender->GetInputData(0))->GetTree();
   AliAnalysisManager*mgr = AliAnalysisManager::GetAnalysisManager();
   AliAnalysisTaskSE *task = (AliAnalysisTaskSE*)mgr->GetTasks()->First();
+  if (!task) return;
   TTree *tree=((TChain*)task->GetInputData(0))->GetTree();
   if (!tree) {
     AliError("Tree not found in ESDhandler");
@@ -244,7 +329,7 @@ void AliTPCTenderSupply::SetSplines()
       return;
     }
     
-    if (fDebugLevel>1) AliInfo(Form("Used old Gain entry: %s\n",entry->GetId().ToString().Data()));
+    if (fDebugLevel>1) AliInfo(Form("Used old Gain entry: %s",entry->GetId().ToString().Data()));
     
     TObjArray *arr=(TObjArray *)entry->GetObject();
     if (!arr) {
@@ -266,15 +351,26 @@ void AliTPCTenderSupply::SetSplines()
   //
   //new gain correction
   //
-  AliCDBEntry *entryNew=fTender->GetCDBManager()->Get("TPC/Calib/TimeGain",fTender->GetRun());
+
+  // This is in principle sill needed for the 2009 data and the 2010 b+c pass1 data
+  //   however not supported any longer.
+  // For the LHC10c pass2 there is an exception and we still load the splines, but a defined version
+  // In case the attachment correction should be check again, this part of the code needs to be changed
+  //   in order to load the gain entry again
+  Bool_t special10cPass2=fLHCperiod=="LHC10C" && fRecoPass==2;
+              
+  AliCDBEntry *entryNew=0x0;
+  if (special10cPass2) {
+    entryNew=fTender->GetCDBManager()->Get("TPC/Calib/TimeGain",fTender->GetRun(),8);
+  }
   if (!entryNew) {
     AliError("No new gain calibration entry found");
     return;
   }
-  if (fDebugLevel>1) AliInfo(Form("Used new Gain entry: %s\n",entryNew->GetId().ToString().Data()));
+  if (fDebugLevel>1) AliInfo(Form("Used new Gain entry: %s",entryNew->GetId().ToString().Data()));
   
   if (entryNew->GetId().GetLastRun()==AliCDBRunRange::Infinity()){
-    if (fDebugLevel>0) AliInfo("Use P correction\n");
+    if (fDebugLevel>0) AliInfo("Use P correction");
     fPcorrection=kTRUE;
   }
   
@@ -284,7 +380,8 @@ void AliTPCTenderSupply::SetSplines()
     return;
   }
   
-  fGainNew = (AliSplineFit*)arrSplines->At(0);
+  fGainNew        = (AliSplineFit*)arrSplines->At(0);
+  fGainAttachment = (TGraphErrors*)arrSplines->FindObject("TGRAPHERRORS_MEAN_ATTACHMENT_BEAM_ALL");
   
   if (!fGainNew) AliError("No recent spline fit object found");
 }
@@ -297,21 +394,27 @@ Double_t AliTPCTenderSupply::GetGainCorrection()
   //
   AliESDEvent *event=fTender->GetEvent();
   UInt_t time=event->GetTimeStamp();
-
+  
   Double_t gain=1;
   
   
   if (fGainOld){
     //TODO TODO TODO
-    //first correction for the eval
+    //first correction for the eval const problem
     // needs to be removed when the fix is in AliROOT and
     // the production was done with EvalGraphConst
+    // This should be the case from V4-20-Rev11 on
     //TODO TODO TODO
-    if (fTender->GetRun()<=138154||fTender->GetRun()==138197){
+    if ( fLHCperiod.Contains("LHC09") ||
+         ((fLHCperiod=="LHC10B" || fLHCperiod=="LHC10C" || fLHCperiod=="LHC10D") && fRecoPass==2) ||
+         (fLHCperiod=="LHC10E" && fRecoPass==1) ||
+         (fLHCperiod=="LHC10H" && fRecoPass==1)
+         ) {
       Double_t valDefault = fGainOld->Eval(time);
       Double_t valConst   = AliTPCcalibDButil::EvalGraphConst(fGainOld, time);
       gain = valDefault/valConst;
     }
+    
     if (fGainNew){
       gain *= AliTPCcalibDButil::EvalGraphConst(fGainOld,time)/AliTPCcalibDButil::EvalGraphConst(fGainNew,time);
     }
@@ -331,178 +434,123 @@ Double_t AliTPCTenderSupply::GetGainCorrection()
 }
 
 //_____________________________________________________
-void AliTPCTenderSupply::SetParametrisation()
+void AliTPCTenderSupply::SetBeamType()
 {
   //
-  // Change BB parametrisation for current run
+  // Set the beam type
   //
 
-  //Get CDB Entry with pid response parametrisations
-  AliCDBEntry *pidCDB=fTender->GetCDBManager()->Get("TPC/Calib/PidResponse",fTender->GetRun());
-  if (pidCDB){
-    fArrPidResponseMaster=(TObjArray*)pidCDB->GetObject();
-  }
+  fBeamType=fTender->GetEvent()->GetBeamType();
+  if (fBeamType.IsNull()||fBeamType.Contains("No Beam")) fBeamType="p-p";
+  fBeamType.ToUpper();
+  fBeamType.ReplaceAll("-","");
+}
 
+//_____________________________________________________
+void AliTPCTenderSupply::SetRecoInfo()
+{
+  //
+  // Set reconstruction information
+  //
+
+  //reset information
+  fRecoPass=0;
+  fLHCperiod="";
+  fMCperiod="";
+  
   //Get the current file to check the reconstruction pass (UGLY, but not stored in ESD... )
   AliESDInputHandler *esdIH = dynamic_cast<AliESDInputHandler*> (fTender->GetESDhandler());
   if (!esdIH) return;
   TTree *tree= (TTree*)esdIH->GetTree();
-  TFile *file= (TFile*) tree->GetCurrentFile();
+  TFile *file= (TFile*)tree->GetCurrentFile();
+  TString fileName(file->GetName());
+  
   if (!file) {
-    AliError("File not found, not changing parametrisation");
+    AliError("Current file not found, cannot set reconstruction information");
     return;
   }
-
+  
   Int_t run=fTender->GetRun();
-  AliAnalysisManager *mgr=AliAnalysisManager::GetAnalysisManager();
-  Double_t alephParameters[5]={0,0,0,0,0};
-
+  
+  
+  TPRegexp reg(".*(LHC11[a-z]+[0-9]+[a-z]*)/.*");
   //find the period by run number (UGLY, but not stored in ESD... )
-  TString period;
-  if (run>=114737&&run<=117223) period="LHC10B";
-  else if (run>=118503&&run<=121040) period="LHC10C";
-  else if (run>=122195&&run<=126437) period="LHC10D";
-  else if (run>=127719&&run<=130850) period="LHC10E";
-  else if (run>=133004&&run<=135029) period="LHC10F";
-  else if (run>=135654&&run<=136377) period="LHC10G";
-  else if (run>=136851&&run<=139517) period="LHC10H";
-  else if (run>=139699) period="LHC11A";
+  if (run>=114737&&run<=117223)      { fLHCperiod="LHC10B"; fMCperiod="LHC10D1";  }
+  else if (run>=118503&&run<=121040) { fLHCperiod="LHC10C"; fMCperiod="LHC10D1";  }
+  else if (run>=122195&&run<=126437) { fLHCperiod="LHC10D"; fMCperiod="LHC10F6A"; }
+  else if (run>=127719&&run<=130850) { fLHCperiod="LHC10E"; fMCperiod="LHC10F6A"; }
+  else if (run>=133004&&run<=135029) { fLHCperiod="LHC10F"; fMCperiod="LHC10F6A"; }
+  else if (run>=135654&&run<=136377) { fLHCperiod="LHC10G"; fMCperiod="LHC10F6A"; }
+  else if (run>=136851&&run<=139517) { 
+    fLHCperiod="LHC10H"; 
+    fMCperiod="LHC10H8";  
+    if (reg.MatchB(fileName)) fMCperiod="LHC11A10";
+  }
+  else if ( (run>=144871 && run <=146459 ) || ( run >=146686 && run<= 146860) ) {
+   // low energy: 146686 - 146860
+    fLHCperiod="LHC11A"; fMCperiod="LHC10F6A";
+  }
+  else if ( run>=148541  ){
+    fLHCperiod="LHC11B"; fMCperiod="LHC10F6A";
+  }
+  
+  //exception new pp MC productions from 2011
+  if (fBeamType=="PP" && reg.MatchB(fileName)) fMCperiod="LHC11B2";
   
   //find pass from file name (UGLY, but not stored in ESD... )
-  TString fileName(file->GetName());
-  Int_t pass=0;
   if (fileName.Contains("/pass1")) {
-    pass=1;
+    fRecoPass=1;
   } else if (fileName.Contains("/pass2")) {
-    pass=2;
-  }
-
-  //beam type
-  TString beamtype=fTender->GetEvent()->GetBeamType();
-  if (beamtype.IsNull()||beamtype.Contains("No Beam")) beamtype="p-p";
-  beamtype.ToUpper();
-  beamtype.ReplaceAll("-","");
-  
-  //
-  // Set default parametrisations for data and MC
-  //
-  Bool_t isMC=mgr->GetMCtruthEventHandler();
-  if (isMC){
-    //MC data
-    alephParameters[0] = 2.15898e+00/50.;
-    alephParameters[1] = 1.75295e+01;
-    alephParameters[2] = 3.40030e-09;
-    alephParameters[3] = 1.96178e+00;
-    alephParameters[4] = 3.91720e+00;
-    
-  } else {
-    //data parametrisation
-
-    
-    //use defaut data parametrisation in case no other will be selected
-    alephParameters[0] = 0.0283086/0.97;
-    alephParameters[1] = 2.63394e+01;
-    alephParameters[2] = 5.04114e-11;
-    alephParameters[3] = 2.12543e+00;
-    alephParameters[4] = 4.88663e+00;
-
-    fESDpid->GetTPCResponse().SetSigma(3.79301e-03, 2.21280e+04);
-    
-    if (pass==1){
-      
-    } else if (pass==2){
-      //find period
-      if (run>=114737&&run<=117223){
-        //LHC10b
-      } else if (run>=118503&&run<=121040) {
-        //LHC10c
-      } else if (run>=122195){
-        //LHC10d +
-        // last run in LHC10d: &&run<126437
-        alephParameters[0] = 1.63246/50.;
-        alephParameters[1] = 2.20028e+01;
-        alephParameters[2] = TMath::Exp(-2.48879e+01);
-        alephParameters[3] = 2.39804e+00;
-        alephParameters[4] = 5.12090e+00;
-      
-        //
-        fESDpid->GetTPCResponse().SetSigma(2.30176e-02, 5.60422e+02);
-      }
-    }
-    
-    if ( beamtype == "PBPB" ){
-      AliInfo("BETHE-BLOCH parametrization for PbPb !!!!!!!!!!!!!!!!!!!!!!\n");
-
-      alephParameters[0] = 1.25202/50.;   //was 1.79571/55.;
-      alephParameters[1] = 2.74992e+01;   //was 22.0028;
-      alephParameters[2] = TMath::Exp(-3.31517e+01);  //was1.55354e-11;
-      alephParameters[3] = 2.46246;       //was 2.39804; 
-      alephParameters[4] = 6.78938;       //was 5.1209;
-    }
+    fRecoPass=2;
+  } else if (fileName.Contains("/pass3")) {
+    fRecoPass=3;
   }
   
-  fESDpid->GetTPCResponse().SetBetheBlochParameters(
-    alephParameters[0],alephParameters[1],alephParameters[2],
-    alephParameters[3],alephParameters[4]);
+}
+
+//_____________________________________________________
+void AliTPCTenderSupply::SetParametrisation()
+{
+  //
+  // Change PbPb multiplicity gain correction factor
+  //
+  
+  if (fLHCperiod.IsNull()) {
+    AliError("No period set, not changing parametrisation");
+    return;
+  }
+  
+  //Get CDB Entry with pid response parametrisations
+  AliCDBEntry *pidCDB=fTender->GetCDBManager()->Get("TPC/Calib/PidResponse",fTender->GetRun());
+  if (!fArrPidResponseMaster && pidCDB){
+    fArrPidResponseMaster=dynamic_cast<TObjArray*>(pidCDB->GetObject());
+    AliInfo(Form("Using pid response objects: %s",pidCDB->GetId().ToString().Data()));
+  }
 
   //data type
   TString datatype="DATA";
-  //in case of mc pass is per default 1
-  if (isMC) {
+  TString period=fLHCperiod;
+  //in case of mc fRecoPass is per default 1
+  if (fIsMC) {
     datatype="MC";
-    pass=1;
+    fRecoPass=1;
+    period=fMCperiod;
   }
 
-  //
-  //set the new parametrisation
-  //
+  // Set PbPb correction
+  fMultiCorrMean=(TF1*)fArrPidResponseMaster->FindObject(Form("TF1_%s_ALL_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),fRecoPass,fBeamType.Data()));
 
-  if (fArrPidResponseMaster){
-    TObject *grAll=0x0;
-    //for MC don't use period information
-    if (isMC) period="[A-Z0-9]*";
-    //pattern for the default entry (valid for all particles)
-    TPRegexp reg(Form("TSPLINE3_%s_([A-Z]*)_%s_PASS%d_%s_MEAN",datatype.Data(),period.Data(),pass,beamtype.Data()));
-    
-    //loop over entries and filter them
-    for (Int_t iresp=0; iresp<fArrPidResponseMaster->GetEntriesFast();++iresp){
-      TObject *responseFunction=fArrPidResponseMaster->At(iresp);
-      TString responseName=responseFunction->GetName();
-      
-      if (!reg.MatchB(responseName)) continue;
-      
-      TObjArray *arr=reg.MatchS(responseName);
-      TString particleName=arr->At(1)->GetName();
-      delete arr;
-      if (particleName.IsNull()) continue;
-      if (particleName=="ALL") grAll=responseFunction;
-      else {
-        //find particle id
-        for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec){
-          TString particle=AliPID::ParticleName(ispec);
-          particle.ToUpper();
-          if ( particle == particleName ){
-            //test if there is already a function set. If yes, cleanup
-            TObject *old=const_cast<TObject*>(fESDpid->GetTPCResponse().GetResponseFunction((AliPID::EParticleType)ispec));
-            if (old) delete old;
-            fESDpid->GetTPCResponse().SetResponseFunction((AliPID::EParticleType)ispec,responseFunction);
-            fESDpid->GetTPCResponse().SetUseDatabase(kTRUE);
-            AliInfo(Form("Adding graph: %d - %s\n",ispec,responseFunction->GetName()));
-            break;
-          }
-        }
-      }
-    }
+  if (fMultiCorrMean) AliInfo(Form("Setting multiplicity correction function: %s",fMultiCorrMean->GetName()));
+  
+}
 
-    //set default response function to all particles which don't have a specific one
-    if (grAll){
-      for (Int_t ispec=0; ispec<AliPID::kSPECIES; ++ispec){
-        if (!fESDpid->GetTPCResponse().GetResponseFunction((AliPID::EParticleType)ispec)){
-          fESDpid->GetTPCResponse().SetResponseFunction((AliPID::EParticleType)ispec,grAll);
-          AliInfo(Form("Adding graph: %d - %s\n",ispec,grAll->GetName()));
-        }
-      }
-    }
-  }
+//____________________________________________________________
+void AliTPCTenderSupply::AddSpecificStorage(const char* cdbPath, const char* storage)
+{
+  //
+  // Add a specific storage to be set up in Init
+  //
+  if (!fSpecificStorages) fSpecificStorages=new TObjArray;
+  fSpecificStorages->Add(new TNamed(cdbPath, storage));
 }
 

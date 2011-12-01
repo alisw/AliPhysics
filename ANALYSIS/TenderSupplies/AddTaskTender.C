@@ -17,13 +17,17 @@ AliAnalysisTask *AddTaskTender(Bool_t useV0=kFALSE){
   AliTender *tender=new AliTender("AnalysisTender");
   tender->SetCheckEventSelection(checkEvtSelection);
   tender->SetDefaultCDBStorage("raw://");
-  mgr->AddTask(tender);
   if (checkEvtSelection) {
-     if (mgr->GetTasks()->First() != (TObject*)tender) {
-        ::Error("When setting the tender to check the event selection, it has to be the first wagon ! Aborting.");
+    if (mgr->GetTasks()->First() != (TObject*)tender ) {
+      TString firstName(mgr->GetTasks()->First()->GetName());
+      Bool_t isSecond=(mgr->GetTasks()->At(1) == (TObject*)tender);
+      if (! (firstName=="PIDResponseTask" && isSecond )){
+        ::Error("When setting the tender to check the event selection, it has to be the first wagon, or the first after the Physics selection ! Aborting.");
         return NULL;
-     }
-  }   
+      }
+    }
+  }
+  mgr->AddTask(tender);
   
   //========= Attach VZERO supply ======
 
