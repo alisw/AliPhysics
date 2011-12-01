@@ -65,10 +65,10 @@ public:
     ,kNclasses        // total number of resolution classes
   };
   enum ETRDresolutionClassProjs {
-    kClNproj=54       // cluster projections
+    kClNproj=60        // cluster projections
     ,kTrkltNproj=2580  // tracklet projections
     ,kTrkInNproj=142   // trackIn projections
-    ,kTrkNproj=2500     // track projections
+    ,kTrkNproj=2500    // track projections
     ,kMCTrkInNproj=162 // trackIn projections
   };
   enum ETRDresolutionProjs {
@@ -131,7 +131,6 @@ public:
 
   static Bool_t   Process(TH2* const h2, TGraphErrors **g, Int_t stat=100);
   void            SetDyRange(Float_t dy) {fDyRange = dy;}
-//  void    SetSegmentationLevel(Int_t l=0);
   void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
@@ -177,7 +176,7 @@ public:
   TObjArray*  BuildMonitorContainerCluster(const char* name, Bool_t expand=kFALSE, Float_t range=-1.);
   TObjArray*  BuildMonitorContainerTracklet(const char* name, Bool_t expand=kFALSE);
   TObjArray*  BuildMonitorContainerTrack(const char* name);
-  void        DrawSigma(TH2 *h2, Float_t scale=1, Float_t m=0., Float_t M=-1.,  const Char_t *t=NULL);
+  void        DrawSigma(TH2 *h2, const Char_t *t, Float_t m=0., Float_t M=-1., Float_t scale=1);
   void        GetLandauMpvFwhm(TF1 * const f, Float_t &mpv, Float_t &xm, Float_t &xM);
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
