@@ -504,8 +504,10 @@ template<class X>
 inline AliFmThreeVector<T>&
 AliFmThreeVector<T>::operator=(const AliFmThreeVector<X>& v)
 {
+  if(this != &v) {
     mX1 = v.x();  mX2 = v.y();  mX3 = v.z();
-    return *this;
+  }
+  return *this;
 }
 
 template<class T>
