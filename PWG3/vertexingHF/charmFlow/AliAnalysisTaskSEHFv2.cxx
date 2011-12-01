@@ -126,7 +126,7 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
   fMaxCentr(80),
   fEtaGap(kFALSE)
 {
-
+  // standard constructor
   Int_t pdg=421;
   switch(fDecChannel){
   case 0:
@@ -183,38 +183,20 @@ AliAnalysisTaskSEHFv2::AliAnalysisTaskSEHFv2(const char *name,AliRDHFCuts *rdCut
 AliAnalysisTaskSEHFv2::~AliAnalysisTaskSEHFv2()
 {
   // Destructor
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
-  }
+  delete fOutput;
+  delete fhEventsInfo;
+  delete fRDCuts;
+  delete fParHist;
 
-  if(fhEventsInfo){
-    delete fhEventsInfo;
-    fhEventsInfo=0;
-  }
-
-  if(fRDCuts) {
-    delete fRDCuts;
-    fRDCuts= 0;
-  } 
-
-  if(fParHist) {
-    delete fParHist;
-    fParHist= 0;
-  } 
   for(Int_t i=0;i<6;i++){
-    if(fHistvzero[i]) {
-      delete fHistvzero[i];
-      fHistvzero[i]=0x0;
-    }
-  } 
-  if(fAfterBurner){
-    delete fAfterBurner;
-    fAfterBurner=0;  
+    delete fHistvzero[i];
   }
+
+  delete fAfterBurner;
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFv2::SetVZEROParHist(TH2D** histPar){
+  // Set the histograms for VZERO EP parameters
   for(Int_t i=0;i<6;i++)fHistvzero[i]=(TH2D*)histPar[i]->Clone();
   for(Int_t i=0;i<6;i++){
     if(!fHistvzero[i]){
@@ -228,6 +210,7 @@ void  AliAnalysisTaskSEHFv2::SetVZEROParHist(TH2D** histPar){
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFv2::SetMassLimits(Float_t range, Int_t pdg){
+  // Set limits for mass spectra plots
   Float_t mass=0;
   Int_t abspdg=TMath::Abs(pdg);
   mass=TDatabasePDG::Instance()->GetParticle(abspdg)->Mass();
@@ -236,6 +219,7 @@ void  AliAnalysisTaskSEHFv2::SetMassLimits(Float_t range, Int_t pdg){
 }
 //_________________________________________________________________
 void  AliAnalysisTaskSEHFv2::SetMassLimits(Float_t lowlimit, Float_t uplimit){
+  // Set limits for mass spectra plots
   if(uplimit>lowlimit)
     {
       fUpmasslimit = uplimit;
@@ -669,7 +653,7 @@ void AliAnalysisTaskSEHFv2::CalculateInvMasses(AliAODRecoDecayHF* d,Float_t*& ma
 //Methods to fill the istograms with MC information, one for each candidate
 //NB: the implementation for each candidate is responsibility of the corresponding developer
 
-void AliAnalysisTaskSEHFv2::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi,Float_t* masses,Int_t isSel,Int_t icentr){
+void AliAnalysisTaskSEHFv2::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr){
   //D+ channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -709,7 +693,7 @@ void AliAnalysisTaskSEHFv2::FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 }
 
 
-void AliAnalysisTaskSEHFv2::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi,Float_t* masses,Int_t isSel,Int_t icentr){
+void AliAnalysisTaskSEHFv2::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr){
 
   //D0->Kpi channel
 
@@ -793,7 +777,7 @@ void AliAnalysisTaskSEHFv2::FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,
   }
 }
 
-void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, Float_t* masses,Int_t isSel,Int_t icentr){
+void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin,Float_t deltaphi, const Float_t* masses,Int_t isSel,Int_t icentr){
   //D* channel
   if(!isSel){
     if(fDebug>3)AliWarning("Candidate not selected\n");
@@ -831,7 +815,7 @@ void AliAnalysisTaskSEHFv2::FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC
 
 
 //________________________________________________________________________
-Int_t AliAnalysisTaskSEHFv2::GetPhiBin(Float_t deltaphi){
+Int_t AliAnalysisTaskSEHFv2::GetPhiBin(Float_t deltaphi) const{
 
   //give the bin corresponding to the value of deltaphi according to the binning requested in the constructor
   Int_t phibin=0;
@@ -856,6 +840,7 @@ Int_t AliAnalysisTaskSEHFv2::GetPhiBin(Float_t deltaphi){
 // }
 //________________________________________________________________________
 Float_t AliAnalysisTaskSEHFv2::GetPhi0Pi(Float_t phi){
+  // Sets the phi angle in the range 0-pi
   Float_t result=phi;
   while(result<0){
     result=result+TMath::Pi();
@@ -867,7 +852,7 @@ Float_t AliAnalysisTaskSEHFv2::GetPhi0Pi(Float_t phi){
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl,TVector2* qsub1,TVector2* qsub2){
+Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, const TVector2* q,AliEventplane *pl, const TVector2* qsub1, const TVector2* qsub2){
   // remove autocorrelations 
  
   TArrayF* qx = 0x0;
@@ -962,6 +947,7 @@ Float_t AliAnalysisTaskSEHFv2::GetEventPlaneForCandidate(AliAODRecoDecayHF* d, T
 }
 //________________________________________________________________________
 Float_t AliAnalysisTaskSEHFv2::GetEventPlaneFromV0(AliAODEvent *aodEvent){
+  // Compute event plane for VZERO
 
   Int_t centr=fRDCuts->GetCentrality(aodEvent);
   centr=centr-centr%10;
