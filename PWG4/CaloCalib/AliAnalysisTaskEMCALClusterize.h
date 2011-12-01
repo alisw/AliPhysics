@@ -62,6 +62,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   void           SwitchOffLoadOwnGeometryMatrices()             { fLoadGeomMatrices = kFALSE   ; } 
   void           SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fGeomMatrix[i]    = m        ; }
 
+  void           SetImportGeometryFromFile(Bool_t  im, 
+                                           TString pa = ".")    { 
+                                                                  fImportGeometryFromFile = im ; 
+                                                                  fImportGeometryFilePath = pa ; }    
+  
   //AOD methods
   void           SetAODBranchName(TString &name)                { fOutputAODBranchName = name  ; }
   void           FillAODFile(Bool_t yesno)                      { fFillAODFile         = yesno ; }
@@ -152,7 +157,11 @@ class AliAnalysisTaskEMCALClusterize : public AliAnalysisTaskSE {
   Bool_t                 fRemoveLEDEvents;         // Remove LED events, use only for LHC11a 
   Bool_t                 fRemoveExoticEvents;      // Remove exotic events
   
-  ClassDef(AliAnalysisTaskEMCALClusterize, 16);
+  Bool_t                 fImportGeometryFromFile;  // Import geometry settings in geometry.root file
+  TString                fImportGeometryFilePath;  // path fo geometry.root file
+
+  
+  ClassDef(AliAnalysisTaskEMCALClusterize, 17);
 
 };
 
