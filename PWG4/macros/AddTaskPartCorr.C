@@ -81,8 +81,16 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   Int_t partInCone = AliIsolationCut::kNeutralAndCharged;//kOnlyCharged;
   Int_t thresType  = AliIsolationCut::kSumPtFracIC;      // kPtThresIC;
   
-  if(kClusterArray!=""){
-    
+  if(kClusterArray==""  && kCalorimeter!="PHOS")
+  {
+    //Trigger on tracks, do only once, tracks do not depend on clusterizer
+    maker->AddAnalysis(ConfigureChargedAnalysis(), n++);                                // track selection
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType), n++); // track isolation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kFALSE), n++);       // track-track correlation
+    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
+  }  
+  else
+  {
     maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
     maker->AddAnalysis(ConfigurePi0Analysis()   , n++); // Pi0 invariant mass analysis
     maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay
@@ -99,14 +107,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE) , n++); // Isolated pi0 hadron correlation
   }
-  else  
-  {
-    //Trigger on tracks, do only once, tracks do not depend on clusterizer
-    maker->AddAnalysis(ConfigureChargedAnalysis(), n++);                                // track selection
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType), n++); // track isolation
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kFALSE), n++);       // track-track correlation
-    maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
-  }  
+  
   
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -283,6 +284,8 @@ AliCaloTrackReader * ConfigureReader()
     // Event plane (only used in AliAnaPi0 for the moment)
     reader->SetEventPlaneMethod("Q");
   }
+  
+  reader->SetImportGeometryFromFile(kTRUE);
   
   if(kPrint) reader->Print("");
   
@@ -735,23 +738,34 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   
   anaQA->SetTimeCut(-1000,1000); // Open time cut
   
+  if(kCalorimeter=="EMCAL" && kClusterArray=="")
+    anaQA->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
+  else 
+    anaQA->SwitchOffCorrelation();  
+  
   anaQA->SwitchOffFiducialCut();
-  anaQA->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
   anaQA->SwitchOffFillAllTH3Histogram();
   anaQA->SwitchOffFillAllPositionHistogram();
+  anaQA->SwitchOffFillAllPositionHistogram2();
   
-  anaQA->SwitchOnStudyBadClusters() ;
+  anaQA->SwitchOffStudyBadClusters() ; // On only for EMCAL
   anaQA->SwitchOffStudyClustersAsymmetry();
   anaQA->SwitchOffStudyWeight();
   anaQA->SwitchOffFillAllTrackMatchingHistogram();
   
-  if(kCalorimeter=="EMCAL"){
+  if(kCalorimeter=="EMCAL")
+  {
     if(kYears==2010)  
       anaQA->SetNumberOfModules(4); 
     else{           
       anaQA->SetNumberOfModules(10); 
     }
-  } 
+  }
+  else 
+  {//PHOS
+    anaQA->SetNumberOfModules(3); 
+  }
+  
   anaQA->AddToHistogramsName("QA_"); //Begining of histograms name
   SetHistoRangeAndNBins(anaQA); // see method below
   
