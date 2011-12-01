@@ -37,28 +37,6 @@ void ConfigureEMCALRecoUtils(
 
   Int_t nSM = geom->GetNumberOfSuperModules();
 
-  // Geometry settings and field
-    
-  TGeoManager::Import("geometry.root") ; //need file "geometry.root" in local dir!!!!
-  
-  // Put the automatic initialization like in tender somewhere in the clusterizer or reader!!!
-  if(run > 140000 && run < 160000) 
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG)); // for (--)
-  else if(run > 160000)             
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",  1.,  1., AliMagF::k5kG)); // for (++)
-  else if (run < 140000 && run > 138280)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",  1.,  1., AliMagF::k5kG)); // for (++)
-  else if (run < 138280 && run > 122000)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG)); // for (--)
-  else if(run > 119100 && run < 122000)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",  1.,  1., AliMagF::k5kG)); // for (++)
-  else if(run < 119100 && run > 11900)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",  0.,  0., AliMagF::k5kG)); // for (0)
-  else if(run < 119000 && run > 115800)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps",  1.,  1., AliMagF::k5kG)); // for (++)
-  else if(run < 115800)
-    TGeoGlobalMagField::Instance()->SetField(new AliMagF("Maps","Maps", -1., -1., AliMagF::k5kG)); // for (--)
-
   // Alignment matrices
 
   TString fileName="$ALICE_ROOT/OADB/EMCAL/EMCALlocal2master.root";
