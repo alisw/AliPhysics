@@ -83,8 +83,8 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize(const char *name)
 , fCellMatchdEta(),       fCellMatchdPhi()
 , fMaxEvent(1000000000),  fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),    fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
-, fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE)
-
+, fRemoveLEDEvents(kFALSE),        fRemoveExoticEvents(kFALSE)
+, fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   //ctor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -125,6 +125,7 @@ AliAnalysisTaskEMCALClusterize::AliAnalysisTaskEMCALClusterize()
 , fMaxEvent(1000000000),    fDoTrackMatching(kFALSE)
 , fSelectCell(kFALSE),      fSelectCellMinE(0.005),     fSelectCellMinFrac(0.001)
 , fRemoveLEDEvents(kFALSE), fRemoveExoticEvents(kFALSE)
+, fImportGeometryFromFile(kFALSE), fImportGeometryFilePath("")
 {
   // Constructor
   for(Int_t i = 0; i < 10;    i++)  fGeomMatrix[i] =  0;
@@ -240,7 +241,7 @@ Bool_t AliAnalysisTaskEMCALClusterize::AccessOCDB()
   return kTRUE;
 }
 
-//_______________________________________________________________________
+//_____________________________________________________
 void AliAnalysisTaskEMCALClusterize::CheckAndGetEvent()
 {
   // Get the input event, it can depend in embedded events what you want to get
@@ -679,6 +680,12 @@ void AliAnalysisTaskEMCALClusterize::Init()
     fOutputAODBranchName = clus->fOutputAODBranchName;
     for(Int_t i = 0; i < 10; i++) fGeomMatrix[i] = clus->fGeomMatrix[i] ;
     
+  }
+  
+  // Init geometry, I do not like much to do it like this ...
+  if(fImportGeometryFromFile && !gGeoManager) {
+    printf("AliAnalysisTaskEMCALClusterize::Init() - Import geometry.root file\n");
+    TGeoManager::Import(Form("%s/geometry.root", fImportGeometryFilePath.Data())) ; // default need file "geometry.root" in local dir!!!!
   }
   
 }  
