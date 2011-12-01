@@ -232,9 +232,51 @@ AliTRDSimParam &AliTRDSimParam::operator=(const AliTRDSimParam &p)
   // Assignment operator
   //
 
-  if (this != &p) {
-    ((AliTRDSimParam &) p).Copy(*this);
+  if (this == &p) {
+    return *this;
   }
+
+  fGasGain          = p.fGasGain;
+  fNoise            = p.fNoise;
+  fChipGain         = p.fChipGain;
+  fADCoutRange      = p.fADCoutRange;
+  fADCinRange       = p.fADCinRange;
+  fADCbaseline      = p.fADCbaseline;
+  fDiffusionOn      = p.fDiffusionOn;
+  fElAttachOn       = p.fElAttachOn;
+  fElAttachProp     = p.fElAttachProp;
+  fTRFOn            = p.fTRFOn;
+  fTRFsmp           = 0;
+  fTRFbin           = p.fTRFbin;
+  fTRFlo            = p.fTRFlo;
+  fTRFhi            = p.fTRFhi;
+  fTRFwid           = p.fTRFwid;
+  fCTOn             = p.fCTOn;
+  fCTsmp            = 0;
+  fPadCoupling      = p.fPadCoupling;
+  fTimeCoupling     = p.fTimeCoupling;
+  fTimeStructOn     = p.fTimeStructOn;
+  fPRFOn            = p.fPRFOn;
+  fNTimeBins        = p.fNTimeBins;
+  fNTBoverwriteOCDB = p.fNTBoverwriteOCDB;
+
+  Int_t iBin = 0;
+
+  if (fTRFsmp) {
+    delete[] fTRFsmp;
+  }
+  fTRFsmp = new Float_t[fTRFbin];
+  for (iBin = 0; iBin < fTRFbin; iBin++) {
+    fTRFsmp[iBin] = ((AliTRDSimParam &) p).fTRFsmp[iBin];
+  }                                                                             
+
+  if (fCTsmp) {
+    delete[] fCTsmp;
+  }
+  fCTsmp  = new Float_t[fTRFbin];
+  for (iBin = 0; iBin < fTRFbin; iBin++) {
+    fCTsmp[iBin]  = ((AliTRDSimParam &) p).fCTsmp[iBin];
+  }                                                                             
 
   return *this;
 

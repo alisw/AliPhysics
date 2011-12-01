@@ -189,11 +189,17 @@ AliTRDpadPlane &AliTRDpadPlane::operator=(const AliTRDpadPlane &p)
 
   Int_t iBin = 0;
 
+  if (fPadRow) {
+    delete [] fPadRow;
+  }
   fPadRow = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     fPadRow[iBin] = ((AliTRDpadPlane &) p).fPadRow[iBin];
   }                                                                             
 
+  if (fPadCol) {
+    delete [] fPadCol;
+  }
   fPadCol = new Double_t[fNrows];
   for (iBin = 0; iBin < fNrows; iBin++) {
     fPadCol[iBin] = ((AliTRDpadPlane &) p).fPadCol[iBin];
