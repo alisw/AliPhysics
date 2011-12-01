@@ -544,6 +544,11 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
 {
 // Load a given module.
    if (mod->IsLoaded()) return kTRUE;
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+      Error("LoadModule", "No analysis manager created yet. Use CreateAnalysisManager first.");
+      return kFALSE;
+   }   
    Int_t ndeps = mod->GetNdeps();
    TString depname;
    for (Int_t j=0; j<ndeps; j++) {
@@ -565,6 +570,15 @@ Bool_t AliAnalysisAlien::LoadModule(AliAnalysisTaskCfg *mod)
       Error("LoadModule", "Cannot load all libraries for module %s", mod->GetName());
       return kFALSE;
    }
+   // Check if a custom file name was requested
+   if (strlen(mod->GetOutputFileName())) mgr->SetCommonFileName(mod->GetOutputFileName());
+
+   // Check if a custom terminate file name was requested
+   if (strlen(mod->GetTerminateFileName())) {
+      if (!fTerminateFiles.IsNull()) fTerminateFiles += ",";
+      fTerminateFiles += mod->GetTerminateFileName();
+   }   
+
    // Execute the macro
    if (mod->ExecuteMacro()<0) {
       Error("LoadModule", "Executing the macro %s with arguments: %s for module %s returned a negative value",

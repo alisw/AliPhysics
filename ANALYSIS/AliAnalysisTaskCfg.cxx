@@ -54,6 +54,8 @@
 #Module.DataTypes    ESD, AOD, MC
 #Module.MacroName    $ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C
 #Module.MacroArgs    0, AliVEvent::kAnyINT, AliVEvent::kHighMult, AliVEvent::kEMC7, AliVEvent::kMUU7
+#Module.OutputFile   
+#Module.TerminateFile
 #Module.StartConfig  
 __R_ADDTASK__->SelectCollisionCandidates();
 #Module.EndConfig
@@ -81,6 +83,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg()
                     fLibs(),
                     fDeps(),
                     fDataTypes(),
+                    fOutputFile(),
+                    fTerminateFile(),
                     fMacro(0),
                     fConfigDeps(0),
                     fRAddTask(0)
@@ -96,6 +100,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const char *name)
                     fLibs(),
                     fDeps(),
                     fDataTypes(),
+                    fOutputFile(),
+                    fTerminateFile(),
                     fMacro(0),
                     fConfigDeps(0),
                     fRAddTask(0)
@@ -112,6 +118,8 @@ AliAnalysisTaskCfg::AliAnalysisTaskCfg(const AliAnalysisTaskCfg &other)
                     fLibs(other.fLibs),
                     fDeps(other.fDeps),
                     fDataTypes(other.fDataTypes),
+                    fOutputFile(other.fOutputFile),
+                    fTerminateFile(other.fTerminateFile),
                     fMacro(0),
                     fConfigDeps(0),
                     fRAddTask(0)
@@ -140,6 +148,8 @@ AliAnalysisTaskCfg& AliAnalysisTaskCfg::operator=(const AliAnalysisTaskCfg &othe
    fLibs      = other.fLibs;
    fDeps      = other.fDeps;
    fDataTypes = other.fDataTypes;
+   fOutputFile = other.fOutputFile;
+   fTerminateFile = other.fTerminateFile;
    if (other.fMacro) fMacro = new TMacro(*other.fMacro);
    if (other.fConfigDeps) fConfigDeps = new TMacro(*other.fConfigDeps);
    fRAddTask  = other.fRAddTask;
@@ -433,6 +443,8 @@ void AliAnalysisTaskCfg::SaveAs(const char *filename, Option_t *option) const
    out << "#Module.Libs " << fLibs << endl;
    out << "#Module.Deps " << fDeps << endl;
    out << "#Module.DataTypes " << fDataTypes << endl;
+   out << "#Module.OutputFile " << fOutputFile << endl;
+   out << "#Module.TerminateFile " << fTerminateFile << endl;
    out << "#Module.MacroName " << fMacroName << endl;
    out << "#Module.MacroArgs " << fMacroArgs << endl;
    if (fConfigDeps) {
@@ -500,6 +512,14 @@ TObjArray *AliAnalysisTaskCfg::ExtractModulesFrom(const char *filename)
          // Data types
          decode = AliAnalysisTaskCfg::DecodeValue(line);
          cfg->SetDataTypes(decode);
+      } else if (cfg && line.BeginsWith("#Module.OutputFile")) {
+         // Desired output file name (via SetCommonOutput)
+         decode = AliAnalysisTaskCfg::DecodeValue(line);
+         cfg->SetOutputFileName(decode);
+      } else if (cfg && line.BeginsWith("#Module.TerminateFile")) {
+         // Custom file name produced in Terminate if any
+         decode = AliAnalysisTaskCfg::DecodeValue(line);
+         cfg->SetTerminateFileName(decode);
       } else if (cfg && line.BeginsWith("#Module.MacroName")) {
          // Name of the add task macro (including path)
          decode = AliAnalysisTaskCfg::DecodeValue(line);

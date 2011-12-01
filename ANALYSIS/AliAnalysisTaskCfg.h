@@ -29,6 +29,8 @@ protected:
   TString                   fLibs;          // List of custom libs needed to run the task (comma separated)
   TString                   fDeps;          // List of tasks this module depends on
   TString                   fDataTypes;     // List of supported data types (ESD, AOD, MC)
+  TString                   fOutputFile;    // Desired output file name (via SetCommonFileName)
+  TString                   fTerminateFile; // Custom output file written in Terminate
   TMacro                   *fMacro;         // Embedded AddTask macro
   TMacro                   *fConfigDeps;    // Macro used to configure the dependecies
                                             // (utility tasks or input handlers). The data type is passed as argument.
@@ -76,6 +78,12 @@ public:
   const char               *GetDataTypes() const {return fDataTypes;}
   Bool_t                    SupportsData(const char *type) const;
   void                      SetDataTypes(const char *types);
+  
+  // Output files
+  const char               *GetOutputFileName() const {return fOutputFile;}
+  const char               *GetTerminateFileName() const {return fTerminateFile;}
+  void                      SetOutputFileName(const char *name) {fOutputFile = name;}
+  void                      SetTerminateFileName(const char *name) {fTerminateFile = name;}
 
   // Extra utilities  
   Bool_t                    CheckLoadLibraries() const;
@@ -86,6 +94,6 @@ public:
   void                      SaveAs(const char *filename, Option_t *option = "") const;
   static TObjArray         *ExtractModulesFrom(const char *filename);
     
-  ClassDef(AliAnalysisTaskCfg,1)  // Class describing how to run a analysis task
+  ClassDef(AliAnalysisTaskCfg,2)  // Class describing how to run a analysis task
 };
 #endif
