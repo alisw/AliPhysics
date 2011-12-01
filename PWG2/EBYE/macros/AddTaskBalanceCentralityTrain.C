@@ -21,6 +21,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
 						 Double_t etaMax=0.8,
 						 Double_t maxTPCchi2 = -1, 
 						 Int_t minNClustersTPC = -1,
+						 Int_t AODfilterBit = 128,
 						 TString fileNameBase="AnalysisResults") {
 
   // Creates a balance function analysis task and adds it to the analysis manager.
@@ -43,6 +44,15 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   centralityName+=Form("%.1f",etaMin);
   centralityName+="-";
   centralityName+=Form("%.1f",etaMax);
+  centralityName+="_Chi";
+  centralityName+=Form("%.1f",maxTPCchi2);
+  centralityName+="_nClus";
+  centralityName+=Form("%d",minNClustersTPC);
+  centralityName+="_Bit";
+  centralityName+=Form("%d",AODfilterBit);
+
+
+
 
   TString outputFileName(fileNameBase);
   outputFileName.Append(".root");
@@ -100,7 +110,7 @@ AliAnalysisTaskBF *AddTaskBalanceCentralityTrain(Double_t centrMin=0.,
   }
   else if(analysisType == "AOD") {
     // pt and eta cut (pt_min, pt_max, eta_min, eta_max)
-    taskBF->SetAODtrackCutBit(128);
+    taskBF->SetAODtrackCutBit(AODfilterBit);
     taskBF->SetKinematicsCutsAOD(ptMin,ptMax,etaMin,etaMax);
 
     // set extra DCA cuts (-1 no extra cut)
