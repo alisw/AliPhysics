@@ -56,7 +56,7 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}
   Float_t GetLowerMassLimit()const {return fLowmasslimit;}
   Int_t GetNMassBins()const {return fNMassBins;}
-  Int_t GetPhiBin(Float_t deltaphi);
+  Int_t GetPhiBin(Float_t deltaphi) const;
   //Float_t GetPhi02Pi(Float_t phi);
   Float_t GetPhi0Pi(Float_t phi);
   AliHFAfterBurner *GetAfterBurner()const {return fAfterBurner;}
@@ -73,10 +73,10 @@ class AliAnalysisTaskSEHFv2 : public AliAnalysisTaskSE
 
   void CalculateInvMasses(AliAODRecoDecayHF* d,Float_t* &masses,Int_t& nmasses);
 
-  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses,Int_t isSel,Int_t icentr);
-  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses, Int_t isSel,Int_t icentr);
-  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi,Float_t* masses,Int_t isSel,Int_t icentr);
-  Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, TVector2* q,AliEventplane *pl,TVector2* qsub1,TVector2* qsub2);
+  void FillDplus(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr);
+  void FillD02p(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses, Int_t isSel,Int_t icentr);
+  void FillDstar(AliAODRecoDecayHF* d,TClonesArray *arrayMC,Int_t ptbin, Float_t dphi, const Float_t* masses,Int_t isSel,Int_t icentr);
+  Float_t GetEventPlaneForCandidate(AliAODRecoDecayHF* d, const TVector2* q,AliEventplane *pl,const TVector2* qsub1,const TVector2* qsub2);
   Float_t GetEventPlaneFromV0(AliAODEvent *aodEvent);
 
 
