@@ -1676,9 +1676,9 @@ AliTriggerAnalysis::T0Decision AliTriggerAnalysis::T0Trigger(const AliESDEvent* 
   }
   else {
   
-    if (tvdc[0]>-5 && tvdc[0]<5 && tvdc[0] != 0) return kT0BB; 
     if (esdT0->GetPileupFlag()) return kT0DecPileup;
     if (esdT0->GetBackgroundFlag()) return kT0DecBG;
+    if (tvdc[0]>-5 && tvdc[0]<5 && tvdc[0] != 0) return kT0BB; 
   }
 
   if (fMC)
