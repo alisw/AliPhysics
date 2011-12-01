@@ -520,7 +520,11 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
       
     }  
     
-    if( l0 < fM02Cut) continue;    
+    if( l0 < fM02Cut) {
+      delete [] absIdList ;
+      delete [] maxEList  ;
+      continue;    
+    }
         
     // Get the 2 max indeces and do inv mass
     
@@ -547,7 +551,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
         Float_t enj = cells->GetCellAmplitude(absId);
         RecalibrateCellAmplitude(enj,absId); 
         
-        if(enj<0.3) continue;
+        if(enj < 0.3) continue;
         
         TLorentzVector cellMomj = GetCellMomentum(absId, cells);
         
