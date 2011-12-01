@@ -450,9 +450,11 @@ template<class X>
 AliFemtoLorentzVector<T>&
 AliFemtoLorentzVector<T>::operator=(const AliFemtoLorentzVector<X>& vec)
 {
+  if(this != &vec) {
     fThreeVector = vec.vect();
     fX4 = vec.t();
-    return *this;
+  }
+  return *this;
 }
 
 template<class T>
