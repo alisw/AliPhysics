@@ -62,6 +62,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void PrintTask(Option_t *option="all", Int_t indent=0) const;
   
   void DisableVZERO() { fIsVZEROEnabled = kFALSE; }
+  void DisableTZERO() { fIsTZEROEnabled = kFALSE; }
   void DisableZDC()   { fIsZDCEnabled   = kFALSE; }
   void DisableCascades() { fAreCascadesEnabled = kFALSE; }
   void DisableV0s() { fAreV0sEnabled = kFALSE; }
@@ -94,6 +95,7 @@ private:
   void ConvertTPCOnlyTracks(const AliESDEvent& esd);
   void ConvertGlobalConstrainedTracks(const AliESDEvent& esd);
   void ConvertVZERO(const AliESDEvent& esd);
+  void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
   
   TClonesArray& Tracks();
@@ -134,6 +136,7 @@ private:
   Bool_t fWriteHybridGCOnly;// write only the complent tracks not all global constrained
 
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
+  Bool_t fIsTZEROEnabled; // whether or not to fill the tzero branch (true by default)
   Bool_t fIsZDCEnabled; // whether or not to fill the zdc branch (true by default)
   Bool_t fAreCascadesEnabled; // whether or not to fill the cascades branch (true by default)
   Bool_t fAreV0sEnabled; // whether or not to fill the v0 branch (true by default)
@@ -149,7 +152,7 @@ private:
   Int_t fTimeZeroType;  //  time zero type 
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
   
-  ClassDef(AliAnalysisTaskESDfilter, 11); // Analysis task for standard ESD filtering
+  ClassDef(AliAnalysisTaskESDfilter, 12); // Analysis task for standard ESD filtering
 };
  
 #endif

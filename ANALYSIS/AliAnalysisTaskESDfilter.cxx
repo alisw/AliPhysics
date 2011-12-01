@@ -87,6 +87,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
   fHybridFilterMaskGCG(0),
   fWriteHybridGCOnly(kFALSE),
     fIsVZEROEnabled(kTRUE),
+    fIsTZEROEnabled(kTRUE),
     fIsZDCEnabled(kTRUE),
     fAreCascadesEnabled(kTRUE),
     fAreV0sEnabled(kTRUE),
@@ -137,6 +138,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
   fHybridFilterMaskGCG(0),
   fWriteHybridGCOnly(kFALSE),
     fIsVZEROEnabled(kTRUE),
+    fIsTZEROEnabled(kTRUE),
     fIsZDCEnabled(kTRUE),
     fAreCascadesEnabled(kTRUE),
     fAreV0sEnabled(kTRUE),
@@ -323,9 +325,6 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetDiamond(diamxy,diamcov);
   header->SetDiamondZ(esd.GetDiamondZ(),esd.GetSigma2DiamondZ());
   
-  // VZERO channel equalization factors for event-plane reconstruction
-  header->SetVZEROEqFactors(esd.GetVZEROEqFactors());
-
   return header;
 }
 
@@ -1393,8 +1392,6 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
-
-    caloCluster->SetTrackDistance(cluster->GetTrackDx(), cluster->GetTrackDz());
     
     TArrayI* matchedT = 	cluster->GetTracksMatched();
     if (fNumberOfTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
@@ -1732,6 +1729,24 @@ void AliAnalysisTaskESDfilter::ConvertVZERO(const AliESDEvent& esd)
 }
 
 //______________________________________________________________________________
+void AliAnalysisTaskESDfilter::ConvertTZERO(const AliESDEvent& esd)
+{
+  // Convert TZERO data
+  const AliESDTZERO* esdTzero = esd.GetESDTZERO(); 
+  AliAODTZERO* aodTzero = AODEvent()->GetTZEROData();
+
+  for (Int_t icase=0; icase<3; icase++){ 
+    aodTzero->SetT0TOF(    icase, esdTzero->GetT0TOF(icase));
+    aodTzero->SetT0TOFbest(icase, esdTzero->GetT0TOFbest(icase)); 
+  }
+  aodTzero->SetBackgroundFlag(esdTzero->GetBackgroundFlag());
+  aodTzero->SetPileupFlag(esdTzero->GetPileupFlag());
+  aodTzero->SetSatelliteFlag(esdTzero->GetSatellite()); 
+
+}
+
+
+//______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertZDC(const AliESDEvent& esd)
 {
   // Convert ZDC data
@@ -1787,6 +1802,7 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   AliAODHeader* header = ConvertHeader(*esd);
 
   if ( fIsVZEROEnabled ) ConvertVZERO(*esd);
+  if ( fIsTZEROEnabled ) ConvertTZERO(*esd);
   
   // Fetch Stack for debuggging if available 
   fMChandler=0x0;
