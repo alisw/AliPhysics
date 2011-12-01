@@ -14,7 +14,6 @@
 //          Handles merging of branch border clusters
 
 #include "AliHLTTPCRawCluster.h"
-#include "AliHLTIndexGrid.h"
 #include "AliHLTLogging.h"
 #include <vector>
 #include "TObject.h"
@@ -32,13 +31,15 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   /// destructor
   ~AliHLTTPCHWClusterMerger();
 
+  void Init();
+
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   /// check if a cluster is a candidate for merging
   template<typename T> 
-  bool CheckCandidate(int slice, int partition, const T& c) const {
-    return CheckCandidate(slice, partition, c.GetPadRow(), c.GetPad(), c.GetTime());
+  bool CheckCandidate(int slice, int partition, const T& c) {
+    return CheckCandidate(slice, partition, c.GetPadRow(), c.GetPad(), c.GetTime(), c.GetSigmaY2() );
   }
 
   /// check if a cluster is a candidate for merging
@@ -46,7 +47,8 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 		      int partition,
 		      int partitionrow, // local row in partition
 		      float pad,
-		      float time) const;
+		      float time,
+		      float sigmaPad2) ;
 
   /// cache cluster for later merging
   template<typename T> 
@@ -89,15 +91,22 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  /// helper class to store relevant data for a cluster at border
+  struct AliBorderRecord {
+    AliHLTInt64_t fClusterRecordID;
+    AliHLTUInt32_t fTimeBin;    
+  };
+ 
+  
   /// helper class to store relevant data for a cluster candidate
   class AliClusterRecord {
   public:
     AliClusterRecord()
-      : fSlice(-1), fPartition(-1), fId(~AliHLTUInt32_t(0)), fCluster() {}
-    AliClusterRecord(int slice, int partition, AliHLTUInt32_t id, AliHLTTPCRawCluster cluster)
-      : fSlice(slice), fPartition(partition), fId(id), fCluster(cluster) {}
+      : fSlice(-1), fPartition(-1), fBorder(-1), fMergedFlag(0), fId(~AliHLTUInt32_t(0)), fCluster() {}
+    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, AliHLTTPCRawCluster cluster)
+      : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster) {}
     AliClusterRecord(const AliClusterRecord& other)
-      : fSlice(other.fSlice), fPartition(other.fPartition), fId(other.fId), fCluster(other.fCluster) {}
+      : fSlice(other.fSlice), fPartition(other.fPartition), fBorder(other.fBorder), fMergedFlag(other.fMergedFlag), fId(other.fId), fCluster(other.fCluster) {}
     AliClusterRecord& operator=(const AliClusterRecord& other) {
       if (this==&other) return *this;
       this->~AliClusterRecord();
@@ -105,29 +114,27 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
       return *this;
     }
 
-    ~AliClusterRecord() {}
-
-    void Clear() {
-      fSlice=-1; fPartition=-1; fId=~AliHLTUInt32_t(0);
-      fCluster.~AliHLTTPCRawCluster();
-      new (&fCluster) AliHLTTPCRawCluster;
-    }
-
+    ~AliClusterRecord() {}    
+    
     AliClusterRecord& operator=(const AliHLTTPCRawCluster& c) {
       fCluster=c;
       return *this;
     }
 
-
+    bool GetMergedFlag() const { return fMergedFlag; }
     int GetSlice() const {return fSlice;}
+    int GetBorder() const {return fBorder;}
     int GetPartition() const {return fPartition;}
     AliHLTUInt32_t GetId() const {return fId;}
     operator AliHLTTPCRawCluster() const {return fCluster;}
     const AliHLTTPCRawCluster& GetCluster() const {return fCluster;}
-
+    void SetMergedFlag(bool v ){ fMergedFlag = v;}
+    AliHLTTPCRawCluster &Cluster(){ return fCluster; }
   private:
     int fSlice; //!
     int fPartition; //!
+    int fBorder; //!
+    bool fMergedFlag; //!
     AliHLTUInt32_t fId; //!
     AliHLTTPCRawCluster fCluster; //!
   };
@@ -153,12 +160,8 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     iterator& operator++() {
       if (!fArray || fIter==fArray->end()) return *this;
       while ((++fIter)!=fArray->end()) {
-	if (fIter->GetCluster().GetCharge()!=0 ||
-	    fIter->GetCluster().GetQMax()!=0) {
-	  break;
-	} else {
-	  continue;
-	}
+	// cout<<"Read flag: "<<fIter->GetMergedFlag()<<endl;
+	if (!fIter->GetMergedFlag() ) break;	
       }	     
       return *this;
     }
@@ -166,10 +169,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
       if (!fArray) return *this;
       while (fIter!=fArray->begin()) {
 	--fIter;
-	if (fIter->GetCluster().GetCharge()!=0 ||
-	    fIter->GetCluster().GetQMax()!=0) {
-	  break;
-	}
+	if (!fIter->GetMergedFlag()) break;	
       }
       return *this;
     }
@@ -180,7 +180,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 
     iterator& operator+=(int step) {
       if (!fArray) return *this;
-      while ((++fIter)!=fArray->end() && step-->0) {}
+      while ((fIter)!=fArray->end() && step-->0) {++fIter;}
       return *this;
     }
 
@@ -205,14 +205,11 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   iterator& begin() {
     fIter.~iterator();
     new (&fIter) iterator(&fClusters);
-    fEnd=fIter; fEnd+=fClusters.size();
-    while (fIter!=fEnd &&
-	   (*fIter).GetCluster().GetCharge()==0 &&
-	   (*fIter).GetCluster().GetQMax()==0) {
-      // skip empty (merged) clusters
+    fEnd=fIter;  fEnd+=fClusters.size();    
+    // skip empty (merged) clusters
+    while (fIter!=fEnd && (*fIter).GetMergedFlag() ) {
       fIter++;
     }
-
     return fIter;
   }
 
@@ -224,9 +221,6 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  /// index grid with coordinates slice, slicerow and time for position of cluster in array
-  typedef AliHLTIndexGrid<int, AliHLTUInt32_t> AliSortedClusters;
-
  protected:
 
  private:
@@ -236,13 +230,28 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   AliHLTTPCHWClusterMerger& operator=(const AliHLTTPCHWClusterMerger&);
 
   int FillIndex();
+  static bool CompareTime( const AliBorderRecord &b1, const AliBorderRecord &b2){
+    return b1.fTimeBin > b2.fTimeBin;
+  }
+ 
+
+  AliHLTInt16_t *fMapping;//!
+  int fNRows;//!
+  int fNRowPads;//!
+  int fNBorders;//!
+  AliHLTFloat32_t *fBorders; //!
+  int *fBorderNClusters; //!
+  int *fBorderFirstCluster; //!
+  AliBorderRecord *fBorderClusters;
+  int fBorderNClustersTotal; //!
 
   vector<AliClusterRecord> fClusters; //! array of candidates
   vector<AliHLTUInt32_t> fRemovedClusterIds; //! array of removed clusters by id
-  AliSortedClusters fIndex; //! cluster index in slice, row and time
   iterator fIter; //!
   iterator fEnd; //!
-
+  static const int fkMergeWidth = 3;
+  static const int fkNSlices = 36;
+  static const int fkMergeTimeWindow = 2;
   ClassDef(AliHLTTPCHWClusterMerger, 0)
 };
 

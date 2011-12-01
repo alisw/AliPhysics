@@ -26,18 +26,24 @@
 #include "AliHLTTPCHWClusterMerger.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCSpacePointData.h"
+#include "AliHLTTPCHWCFSupport.h"
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCHWClusterMerger)
 
-const int gkIndexGridTimeStep=10;
 AliHLTTPCHWClusterMerger::AliHLTTPCHWClusterMerger()
   : AliHLTLogging()
+  , fMapping(0)
+  , fNRows(0)
+  , fNRowPads(0)
+  , fNBorders(0)
+  , fBorders(0)
+  , fBorderNClusters(0)
+  , fBorderFirstCluster(0)
+  , fBorderClusters(0)
+  , fBorderNClustersTotal(0)
   , fClusters()
   , fRemovedClusterIds()
-  , fIndex(AliHLTTPCTransform::GetNSlice(), 1,
-	   AliHLTTPCTransform::GetNRows(), 1,
-	   AliHLTTPCTransform::GetNTimeBins(), gkIndexGridTimeStep)
   , fIter()
   , fEnd()
 {
@@ -52,18 +58,144 @@ AliHLTTPCHWClusterMerger::AliHLTTPCHWClusterMerger()
 AliHLTTPCHWClusterMerger::~AliHLTTPCHWClusterMerger()
 {
   // destructor
+  delete[] fMapping;
+  delete [] fBorders;
+  delete[] fBorderNClusters;
+  delete[] fBorderFirstCluster;
+  delete[] fBorderClusters;
 }
 
-bool AliHLTTPCHWClusterMerger::CheckCandidate(int /*slice*/, int partition, int partitionrow, float pad, float /*time*/) const
+void AliHLTTPCHWClusterMerger::Init()
+{
+  // initialisation
+  
+  delete[] fMapping;
+  delete[] fBorders;
+  delete[] fBorderNClusters;
+  delete[] fBorderFirstCluster;
+  delete[] fBorderClusters;
+  fMapping = 0;
+  fBorders = 0;
+  fBorderNClusters = 0;
+  fBorderFirstCluster = 0;
+  fBorderClusters = 0;
+  fBorderNClustersTotal = 0;
+  fNRows = AliHLTTPCTransform::GetNRows();
+  fNRowPads = 0;  
+  fNBorders = 0;
+  for( int i=0; i<fNRows; i++ ){
+    int nPads = AliHLTTPCTransform::GetNPads(i);	
+    if( fNRowPads<nPads ) fNRowPads = nPads;
+  }
+  int nPadsTotal = fNRows*fNRowPads;
+  fMapping = new AliHLTInt16_t [nPadsTotal];
+
+  if( !fMapping ){
+    HLTError("Can not allocate memory: %d bytes", nPadsTotal*sizeof(AliHLTInt16_t));
+    return;
+  }
+  for( int i=0; i<nPadsTotal; i++ ){
+    fMapping[i] = -1;
+  }
+
+  AliHLTTPCHWCFSupport support; 
+
+  for( int iPart=0; iPart<6; iPart++ ){
+    const AliHLTUInt32_t *m = support.GetMapping(0,iPart);
+    int nHWAddress=m[0];
+    for( int iHW=0; iHW<nHWAddress; iHW++ ){
+      AliHLTUInt32_t configWord = m[iHW+1];
+      int row = (configWord>>8) & 0x3F;
+      int pad =  configWord & 0xFF;
+      bool border = (configWord>>14) & 0x1;
+      if( !border ) continue;
+      row+=AliHLTTPCTransform::GetFirstRow(iPart);
+      if( row>fNRows ) continue;
+      if( pad>=AliHLTTPCTransform::GetNPads(iPart) ) continue;
+      fMapping[row*fNRowPads + pad] = -2;
+    }
+  }
+
+  std::vector<AliHLTFloat32_t> vBorders;
+  for( int row=0; row<fNRows; row++ ){
+    for( int pad=0; pad<fNRowPads-1; pad++ ){
+      AliHLTInt16_t *m = fMapping + row*fNRowPads;
+      if( m[pad]==-2 && m[pad+1]==-2 ){	
+	m[pad] = fNBorders;	
+	for( int i=1; i<fkMergeWidth; i++ ){	  
+	  if( pad-i<0 || m[pad-i]!=-1 ) break;
+	  m[pad-i] = fNBorders;
+	}
+	m[pad+1] = fNBorders+1;
+	for( int i=1; i<fkMergeWidth; i++ ){	  
+	  if( pad+1+i>=fNRowPads || m[pad+1+i]!=-1 ) break;
+	  m[pad+1+i] = fNBorders+1;	
+	}	
+	fNBorders+=2;
+	vBorders.push_back(pad+1.);
+	vBorders.push_back(pad+1.);
+      }
+    }
+  }  
+  /*
+  cout<<"Borders:"<<endl;
+  for( int row=0; row<fNRows; row++ ){
+    for( int pad=0; pad<fNRowPads; pad++ ){
+      AliHLTInt16_t *m = fMapping + row*fNRowPads;
+      if( m[pad]>=0 ) {
+	cout<<row<<" "<<pad<<" "<<m[pad]%2<<endl;
+      }
+    }
+  }
+  */
+  fBorders = new AliHLTFloat32_t [fNBorders];
+  if( !fBorders ){
+    HLTError("Can not allocate memory: %d bytes", fNBorders*sizeof(AliHLTFloat32_t));
+    fNBorders = 0;
+    return;
+  }
+  for( int i=0; i<fNBorders; i++ ){
+    fBorders[i] = vBorders[i];
+  }
+  fBorderNClusters = new int[fkNSlices*fNBorders];
+  if( !fBorderNClusters ){
+    HLTError("Can not allocate memory: %d bytes", fkNSlices*fNBorders*sizeof(int));    
+    return;
+  }
+
+  fBorderFirstCluster = new int[fkNSlices*fNBorders];
+  if( !fBorderFirstCluster ){
+    HLTError("Can not allocate memory: %d bytes", fkNSlices*fNBorders*sizeof(int));    
+    return;
+  }
+
+  for( int i=0; i<fkNSlices*fNBorders; i++){
+    fBorderNClusters[i] = 0;  
+    fBorderFirstCluster[i] = 0;  
+  }
+}
+
+bool AliHLTTPCHWClusterMerger::CheckCandidate(int /*slice*/, int partition, int partitionrow, float pad, float /*time*/, float sigmaPad2
+) 
 {
   /// check cluster if it is a candidate for merging
   int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+  // cout<<"pad "<<pad<<" sigma2 "<<sigmaPad2<<endl;
 
-  // FIXME: implement the logic here
-  if (TMath::Abs(pad-AliHLTTPCTransform::GetNPads(slicerow)/2)<2) {
-    return true;
+  if( !fMapping ) Init();
+  if( !fMapping ) return 0;
+  if( slicerow <0 || slicerow>= fNRows ) return 0;
+  int iPad = (int) pad;
+  if( iPad<0 || iPad>=fNRowPads ) return 0;
+  int atBorder = fMapping[partitionrow*fNRowPads+iPad];
+  if( atBorder<0 ) return 0;
+  float dPad = pad - fBorders[atBorder];
+  if( sigmaPad2>1.e-4 ){
+    if( dPad*dPad > 12.*sigmaPad2 ) return 0;
+  } else {
+    if( fabs(dPad)>1. ) return 0;
   }
-  return false;
+  return 1;
 }
 
 int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
@@ -79,7 +211,11 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   )
 {
   /// add a candidate for merging and register in the index grid
-  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+    
+  int iBorder = -1;
+  int iPad = (int) pad;
+  if( !fMapping ) Init();
+
   if (id!=~AliHLTUInt32_t(0)) {
     if (slice<0) {
       slice=AliHLTTPCSpacePointData::GetSlice(id);
@@ -92,92 +228,67 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
       HLTError("cluster id 0x%08x is not consistent with specified partition %d", id, partition);
     }
   }
-  fClusters.push_back(AliClusterRecord(slice, partition, id,
+  if( slice<0 || slice>=fkNSlices ){
+    HLTError("cluster id 0x%08x has wrong slice number %d", id, slice);    
+  }
+  if( partition<0 || partition>=6 ){
+    HLTError("cluster id 0x%08x has wrong partition number %d", id, partition);
+  }
+  
+  if( slice>=0 && slice<fkNSlices && partition>=0 && partition<6 && fMapping && iPad>=0 && iPad < fNRowPads ){
+    iBorder = fMapping[partitionrow*fNRowPads+iPad];
+    if( iBorder>=0 ){
+      float dPad = pad - fBorders[iBorder];
+      if( sigmaY2>1.e-4 ){
+	if( dPad*dPad > 12.*sigmaY2 ) iBorder = -1;
+      } else {
+	if( fabs(dPad)>1. ) iBorder = -1;
+      }    
+    }
+    if( iBorder>=0 ) iBorder = slice*fkNSlices + iBorder;
+  }
+
+  fClusters.push_back(AliClusterRecord(slice, partition, iBorder, 0, id,
 				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax)));
-  fIndex.CountSpacePoint(slice, slicerow, (int)time);
 
+  if( iBorder>=0 ){
+    fBorderNClusters[iBorder]++;
+    fBorderNClustersTotal++;
+  }
   return fClusters.size();
-}
-
-int AliHLTTPCHWClusterMerger::Merge()
-{
-  /// merge clusters
-  /// first all candidates are filled into the index grid, looping over all clusters
-  /// in the grid automatically results in time ordered clusters per row (ordering with
-  /// respect to cells, within a cell two clusters can be reversed)
-  int iResult=0;
-  int count=0;
-  if ((iResult=FillIndex())<0) {
-    return iResult;
-  }
-
-  vector<int> cellClusters;
-  for (AliSortedClusters::iterator& cli=fIndex.begin();
-       cli!=fIndex.end(); cli++) {
-    if (cellClusters.size()==0) {
-      // no partner for merging, put this one on the stack and continue
-      cellClusters.push_back(*cli);
-      continue;
-    }
-    AliHLTTPCRawCluster c1=fClusters[*cli].GetCluster();
-    int slicerow1=c1.GetPadRow()+AliHLTTPCTransform::GetFirstRow(fClusters[*cli].GetPartition());
-    vector<int>::iterator partner=cellClusters.begin();
-    bool bMerged=false;
-    while (partner!=cellClusters.end()) {
-      AliHLTTPCRawCluster c2=fClusters[*partner].GetCluster();
-      int slicerow2=c2.GetPadRow()+AliHLTTPCTransform::GetFirstRow(fClusters[*partner].GetPartition());
-      if ((fClusters[*partner].GetSlice()!=fClusters[*cli].GetSlice()) ||
-	  (slicerow2!=slicerow1) ||
-	  (c2.GetTime()+gkIndexGridTimeStep<c1.GetTime())) {
-	// already out of range to be a partner for merging
-	// remove and go to next
-	partner=cellClusters.erase(partner);
-	continue;
-      }
-
-      // check if two clusters need to be merged
-      // FIXME: implement correct logic
-      // - clusters on different sides of the branch border
-      // - pad difference within limit
-      // - time difference within limit (specify limit, studies needed)
-      // - cluster shape using charge, qmax and sigma
-      // - single pad cluster on either one or the other side or on both
-      if (false && // the condition below was just for testing
-	  TMath::Abs(c2.GetPad()-c1.GetPad())<2 &&
-	  TMath::Abs(c2.GetTime()-c1.GetTime())<2) {
-	// merge c1 and c2 into c1
-        // FIXME: implement merging
-
-	// store c1
-	fClusters[*cli]=c1;
-
-	// wipe c2
-	fRemovedClusterIds.push_back(fClusters[*partner].GetId());
-	HLTDebug("merging %d into %d", *partner, *cli);
-	fClusters[*partner].Clear();
-	cellClusters.erase(partner);
-	bMerged=true;
-	count++;
-	break;
-      }
-      partner++;
-    }
-    if (!bMerged) {
-      // did not find any partner, put on stack
-      cellClusters.push_back(*cli);
-    }
-  }
-  if (iResult<0) return iResult;
-  return count;
 }
 
 int AliHLTTPCHWClusterMerger::FillIndex()
 {
   /// loop over cached raw clusters and fill index
-  for (AliHLTUInt32_t pos=0; pos<fClusters.size(); pos++) {
-    int slicerow=fClusters[pos].GetCluster().GetPadRow()+AliHLTTPCTransform::GetFirstRow(fClusters[pos].GetPartition());
-    fIndex.AddSpacePoint(pos, fClusters[pos].GetSlice(), slicerow, (int)fClusters[pos].GetCluster().GetTime());
+
+  delete[] fBorderClusters;
+  fBorderClusters = 0;
+  fBorderClusters = new AliBorderRecord[fBorderNClustersTotal];
+  
+  fBorderFirstCluster[0] = 0;
+  for(int i=1; i<fkNSlices*fNBorders; i++ ){
+    fBorderFirstCluster[i] = fBorderFirstCluster[i-1] + fBorderNClusters[i-1];
+    fBorderNClusters[i-1] = 0;
   }
+  fBorderNClusters[fkNSlices*fNBorders-1]=0;
+  for (AliHLTUInt32_t pos=0; pos<fClusters.size(); pos++) {
+    int iBorder = fClusters[pos].GetBorder();
+    if( iBorder<0 ) continue;
+    AliBorderRecord &b = fBorderClusters[fBorderFirstCluster[iBorder]+fBorderNClusters[iBorder]];
+    b.fClusterRecordID = pos;
+    b.fTimeBin = (int)fClusters[pos].GetCluster().GetTime();
+    fBorderNClusters[iBorder]++;
+  }
+  /*
+  cout<<"Border clusters: "<<endl;
+  for( int iSlice=0; iSlice<fkNSlices; iSlice++){
+    for( int ib = 0; ib<fNBorders; ib++ ){
+      int ind = iSlice*fNBorders+ib;
+      cout<<iSlice<<" "<<ib<<" :"<<fBorderFirstCluster[ind]<<", "<<fBorderNClusters[ind]<<endl;    
+    }
+  }
+  */
   return 0;
 }
 
@@ -186,5 +297,111 @@ void AliHLTTPCHWClusterMerger::Clear()
   /// cleanup
   fClusters.clear();
   fRemovedClusterIds.clear();
-  fIndex.Clear();
+  
+  delete[] fBorderClusters;
+  fBorderClusters = 0;
+  for( int i=0; i<fkNSlices*fNBorders; i++){
+    fBorderNClusters[i] = 0;  
+    fBorderFirstCluster[i] = 0; 
+  }
+  fBorderNClustersTotal = 0;
 }
+
+
+int AliHLTTPCHWClusterMerger::Merge()
+{
+  /// merge clusters
+  /// first all candidates are filled into the index grid, looping over all clusters
+  /// in the grid automatically results in time ordered clusters per row (ordering with
+  /// respect to cells, within a cell two clusters can be reversed)
+  
+  if( !fMapping ) Init();
+  if( !fMapping ) return 0;
+  //static int sLeft = 0, sRight = 0, sMerged = 0;
+  int iResult=0;
+  int count=0;
+  if ((iResult=FillIndex())<0) {
+    return iResult;
+  }
+  // sort 
+  for( int i=0; i<fkNSlices*fNBorders; i++){
+    std::sort(fBorderClusters+fBorderFirstCluster[i],fBorderClusters+fBorderFirstCluster[i]+fBorderNClusters[i], CompareTime);
+  }
+
+  for( int iBorder=0; iBorder<fkNSlices*fNBorders; iBorder+=2){
+    AliBorderRecord *border1 = fBorderClusters+fBorderFirstCluster[iBorder];
+    AliBorderRecord *border2 = fBorderClusters+fBorderFirstCluster[iBorder+1];
+    int n1 = fBorderNClusters[iBorder];
+    int n2 = fBorderNClusters[iBorder+1];
+    /*
+sLeft+=n1;
+    sRight+=n2;
+    bool prn = (n1>0) && (n2>0);
+    if( prn ){
+      cout<<"Border "<<iBorder/2<<", left: "<<n1<<" clusters :"<<endl;
+      for( int ib=0; ib<n1; ib++ ){
+	cout<<ib<<": "<<border1[ib].fTimeBin<<endl;
+      }
+      cout<<"Border "<<iBorder/2<<", right: "<<n2<<" clusters :"<<endl;
+      for( int ib=0; ib<n2; ib++ ){
+	cout<<ib<<": "<<border2[ib].fTimeBin<<endl;
+      }
+    }
+    */
+    int ib1 = 0;
+    for( int ib2 = 0; (ib1<n1) && (ib2<n2); ib2++ ){
+      // search first cluster at border1 to merge
+      
+      while( ib1<n1 && border1[ib1].fTimeBin>border2[ib2].fTimeBin+fkMergeTimeWindow ){
+	ib1++;
+      }
+      
+      if( ib1>= n1 ) break;
+      if( border1[ib1].fTimeBin < border2[ib2].fTimeBin-fkMergeTimeWindow) continue;
+
+      // merge c2->c1 
+      //if( prn ) cout<<"merge "<<ib2<<"->"<<ib1<<endl;
+      AliClusterRecord &c1 = fClusters[border1[ib1].fClusterRecordID];
+      AliClusterRecord &c2 = fClusters[border2[ib2].fClusterRecordID];
+      
+      float w1 = c1.Cluster().fCharge;
+      float w2 = c2.Cluster().fCharge;
+      if( w1<=0 ) w1 = 1;
+      if( w2<=0 ) w2 = 1;
+      float w = 1./(w1+w2);
+      w1*=w;
+      w2*=w;
+      
+      c1.Cluster().fCharge += c2.Cluster().fCharge;
+      c1.Cluster().fQMax += c2.Cluster().fQMax;
+      
+      c1.Cluster().fSigmaY2 = 
+	w1*c1.Cluster().fSigmaY2 + w2*c2.Cluster().fSigmaY2
+	+ (c1.Cluster().fPad - c2.Cluster().fPad)*(c1.Cluster().fPad - c2.Cluster().fPad)*w1*w2;
+      
+      c1.Cluster().fSigmaZ2 = 
+	w1*c1.Cluster().fSigmaZ2 + w2*c2.Cluster().fSigmaZ2
+	+ (c1.Cluster().fTime - c2.Cluster().fTime)*(c1.Cluster().fTime - c2.Cluster().fTime)*w1*w2;
+      
+      c1.Cluster().fPad  = w1*c1.Cluster().fPad + w2*c2.Cluster().fPad;
+      c1.Cluster().fTime = w1*c1.Cluster().fTime + w2*c2.Cluster().fTime;
+      
+      
+      // wipe c2
+      fRemovedClusterIds.push_back(c2.GetId());
+      HLTDebug("merging %d into %d", border2[ib2].fClusterRecordID, border1[ib1].fClusterRecordID);
+      //cout<<"Set merged flag at position "<<border2[ib2].fClusterRecordID<<endl;
+      c2.SetMergedFlag(1);
+       count++;
+      // do not merge c1 anymore
+      ib1++;    
+    }    
+  } // iBorder
+  
+  //cout<<"Merged "<<count<<" clusters "<<" out of "<<fClusters.size()<<endl;
+  //sMerged+= count;
+  // cout<<"L "<<sLeft<<" r "<<sRight<<" m "<<sMerged<<endl;
+  if (iResult<0) return iResult;
+  return count;
+}
+
