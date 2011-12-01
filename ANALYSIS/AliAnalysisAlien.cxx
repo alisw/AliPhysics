@@ -1030,6 +1030,7 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
 {
 // Copy data from the given grid directory according a pattern and make a local
 // dataset.
+// archivefile (optional) results in that the archive containing the file <pattern> is copied. archivefile can contain a list of files (semicolon-separated) which are all copied
    if (!Connect()) {
       Error("CopyLocalDataset", "Cannot copy local dataset with no grid connection");
       return kFALSE;
@@ -1047,6 +1048,16 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
       return kFALSE;
    }
    printf("... found %d files. Copying locally ...\n", nfound);
+   
+   // archives
+   TObjArray* additionalArchives = 0;
+   if (strlen(archivefile) > 0 && TString(archivefile).Contains(";")) {
+      additionalArchives = TString(archivefile).Tokenize(";");
+      archivefile = additionalArchives->At(0)->GetName();
+      additionalArchives->RemoveAt(0);
+      additionalArchives->Compress();
+   }
+   
    // Copy files locally
    ofstream out;
    out.open(output, ios::out);
@@ -1074,12 +1085,26 @@ Bool_t AliAnalysisAlien::CopyLocalDataset(const char *griddir, const char *patte
 	targetFileName = archivefile;
       }
       if (TFile::Cp(source, Form("file:./%s/%s", dirname.Data(), targetFileName.Data()))) {
-         if (strlen(archivefile) > 0) targetFileName = Form("%s#%s", targetFileName.Data(), gSystem->BaseName(turl.Data()));
-         out << cdir << Form("/%s/%s/%s", outputdir, dirname.Data(), targetFileName.Data()) << endl;
+	 Bool_t success = kTRUE;
+	 if (additionalArchives)
+	    for (Int_t j=0; j<additionalArchives->GetEntriesFast(); j++)
+	    {
+	       TString target;
+	       target.Form("./%s/%s", dirname.Data(), additionalArchives->At(j)->GetName());
+	       gSystem->MakeDirectory(gSystem->DirName(target));
+	       success &= TFile::Cp(Form("%s/%s", gSystem->DirName(source.Data()), additionalArchives->At(j)->GetName()), Form("file:%s", target.Data()));
+	    }
+
+	 if (success) {
+	    if (strlen(archivefile) > 0) targetFileName = Form("%s#%s", targetFileName.Data(), gSystem->BaseName(turl.Data()));
+	    out << cdir << Form("/%s/%s/%s", outputdir, dirname.Data(), targetFileName.Data()) << endl;
+	 }
       }
    }
    gSystem->ChangeDirectory(cdir);
    delete res;
+   if (additionalArchives)
+     delete additionalArchives;
    return kTRUE;
 }   
 
