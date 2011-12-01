@@ -569,6 +569,7 @@ void AliRDHFCuts::PrintAll() const {
   printf("Min SPD mult %d\n",fMinSPDMultiplicity);
   printf("Use PID %d\n",(Int_t)fUsePID);
   printf("Remove daughters from vtx %d\n",(Int_t)fRemoveDaughtersFromPrimary);
+  printf("Physics selection: %s\n",fUsePhysicsSelection ? "Yes" : "No");
   printf("Pileup rejection: %s\n",(fOptPileup > 0) ? "Yes" : "No");
   if(fOptPileup==1) printf(" -- Reject pileup event");
   if(fOptPileup==2) printf(" -- Reject tracks from pileup vtx");
