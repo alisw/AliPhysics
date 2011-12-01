@@ -407,12 +407,12 @@ Bool_t AliPHOSTenderSupply::IsGoodChannel(Int_t mod, Int_t ix, Int_t iz)
 {
   //Check if this channel belogs to the good ones
   
-  if(mod>5 || mod<1){
-    AliError(Form("No bad map for PHOS module %d ",mod)) ;
+  if(mod>4 || mod<1){
+//    AliError(Form("No bad map for PHOS module %d ",mod)) ;
     return kTRUE ;
   }
   if(!fPHOSBadMap[mod]){
-     AliError(Form("No Bad map for PHOS module %d",mod)) ;
+//     AliError(Form("No Bad map for PHOS module %d",mod)) ;
      return kTRUE ;
   }
   if(fPHOSBadMap[mod]->GetBinContent(ix,iz)>0)
@@ -431,7 +431,7 @@ void AliPHOSTenderSupply::ForceUsingBadMap(const char * filename){
   gROOT->cd() ;
   char key[55] ;
   for(Int_t mod=1;mod<4; mod++){
-    sprintf(key,"PHOS_BadMap_mod%d",mod) ;
+    snprintf(key,55,"PHOS_BadMap_mod%d",mod) ;
     TH2I * h = (TH2I*)fbm->Get(key) ;
     if(h)
        fPHOSBadMap[mod] = new TH2I(*h) ;
@@ -452,5 +452,3 @@ void AliPHOSTenderSupply::ForceUsingCalibration(const char * filename){
   fc->Close() ;
   fUsePrivateCalib=kTRUE; 
 }
-
-
