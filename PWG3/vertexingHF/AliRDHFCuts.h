@@ -153,6 +153,7 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetFixRefs(Bool_t fix=kTRUE) {fFixRefs=fix; return;}
   void SetUsePhysicsSelection(Bool_t use=kTRUE){fUsePhysicsSelection=use; return;}
+  Bool_t GetUsePhysicsSelection() const { return fUsePhysicsSelection; }
 
 
 
