@@ -436,7 +436,12 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
       //current_sourcedir->cd();
 
       TObject *obj = key->ReadObj();
-      
+      if (!obj) {
+	cout << "Failed to get the object with key " << key->GetName() << " from " << 
+	  current_sourcedir->GetFile()->GetName() << "/" << current_sourcedir->GetName() << endl;
+	continue;
+      }
+
       if ( obj->IsA()->InheritsFrom( TTree::Class() ) ) {
 	
 	// loop over all source files create a chain of Trees "globChain"
@@ -499,6 +504,12 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	    TKey *key2 = (TKey*)gDirectory->GetListOfKeys()->FindObject(key->GetName());
 	    if (key2) {
 	      TObject *hobj = key2->ReadObj();
+	      if (!hobj) {
+		cout << "Failed to get the object with key " << key2->GetName() << " from " << 
+		  ndir->GetFile()->GetName() << "/" << ndir->GetName() << endl;
+		continue;
+	      }
+	      //
 	      hobj->ResetBit(kMustCleanup);
 	      listH.Add(hobj);
 	      Int_t error = 0;
