@@ -27,6 +27,7 @@ class  AliCaloFitSubarray
   explicit AliCaloFitSubarray(const Int_t init);
 
   AliCaloFitSubarray(const AliCaloFitSubarray &fitSubarray);
+  AliCaloFitSubarray& operator = (const AliCaloFitSubarray& source) ;
 
   virtual  ~AliCaloFitSubarray();
 

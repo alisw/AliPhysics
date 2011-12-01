@@ -111,19 +111,12 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
 }   
 //__________________________________________________________________
 AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac) 
-{
-  AliQACheckerBase(qac.GetName(), qac.GetTitle()); 
-  fTextSM  = new TText*[fgknSM] ;
-  fLineCol = static_cast<TLine*>(qac.fLineCol->Clone()) ; 
-  fText    = new TPaveText(0.2,0.7,0.8,0.9,"NDC") ;
-  for (Int_t sm = 0 ; sm < fgknSM ; sm++){
-    fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
-  }
-	for(Int_t i = 0; i < 4; i++) {
+{ // assignment operator; use copy ctor
+  if (&qac == this) return *this;
 
-		fLineRow[i] = static_cast<TLine*>(qac.fLineRow[i]->Clone()) ; 
-	}
-  return *this ;
+  this->~AliEMCALQAChecker();
+  new (this) AliEMCALQAChecker(qac);
+  return *this;
 }
 
 //______________________________________________________________________________

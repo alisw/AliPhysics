@@ -53,6 +53,15 @@ AliCaloFitSubarray::AliCaloFitSubarray(const AliCaloFitSubarray & fitS) :
 {
 }
 
+//_____________________________________________________________________
+AliCaloFitSubarray& AliCaloFitSubarray::operator = (const AliCaloFitSubarray &source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
+
+  new (this) AliCaloFitSubarray(source);
+  return *this;
+}
+
 AliCaloFitSubarray::~AliCaloFitSubarray()
 {
 }

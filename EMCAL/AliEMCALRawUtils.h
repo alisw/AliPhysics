@@ -79,7 +79,7 @@ private:
   Float_t fTimeMax;                     // maximum threshold for the time of the signal
   Bool_t  fUseFALTRO;			// use FALTRO and pass it to the digits
   AliCaloRawAnalyzer *fRawAnalyzer;     // e.g. for sample selection for fits
-  AliEMCALTriggerRawDigitMaker* fTriggerRawDigitMaker;	
+  AliEMCALTriggerRawDigitMaker* fTriggerRawDigitMaker;	// trigger raw digit info
  
   ClassDef(AliEMCALRawUtils,7)          // utilities for raw signal fitting
 

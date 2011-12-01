@@ -70,7 +70,7 @@ AliEMCALRawUtils::AliEMCALRawUtils( Algo::fitAlgorithm fitAlgo) : fNoiseThreshol
 								  fUseFALTRO(kTRUE),
 								  fRawAnalyzer(0),
 								  fTriggerRawDigitMaker(0x0)
-{
+{ // ctor; set up fit algo etc
   SetFittingAlgorithm(fitAlgo);
   const TObjArray* maps = AliEMCALRecParam::GetMappings();
   if(!maps) AliFatal("Cannot retrieve ALTRO mappings!!");
@@ -342,7 +342,7 @@ void AliEMCALRawUtils::Raw2Digits(AliRawReader* reader,TClonesArray *digitsArr, 
 
 
 void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr) 
-{
+{ // rm entries with LGnoHG (unphysical), out of time window, and too bad chi2
   AliEMCALDigit *digit = 0;
   Int_t n = 0;
   Int_t nDigits = digitsArr->GetEntriesFast();
@@ -372,7 +372,7 @@ void AliEMCALRawUtils::TrimDigits(TClonesArray *digitsArr)
 
 
 void AliEMCALRawUtils::SetFittingAlgorithm(Int_t fitAlgo)              
-{
+{ // select which fitting algo should be used
   delete fRawAnalyzer; // delete doesn't do anything if the pointer is 0x0
   fRawAnalyzer = AliCaloRawAnalyzerFactory::CreateAnalyzer( fitAlgo );
   fRawAnalyzer->SetNsampleCut(5); // requirement for fits to be done, for the new methods

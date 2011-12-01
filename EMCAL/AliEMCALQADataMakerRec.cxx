@@ -1080,8 +1080,8 @@ void AliEMCALQADataMakerRec::ConvertProfile2H(TProfile * p, TH2 * histo)
   }
 } 
 //____________________________________________________________________________ 
-void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column )
-{
+void AliEMCALQADataMakerRec::GetTruChannelPosition( Int_t &globRow, Int_t &globColumn, Int_t module, Int_t ddl, Int_t branch, Int_t column ) const
+{ // from local to global indices
   Int_t mrow;
   Int_t mcol;
   Int_t trow;
@@ -1196,18 +1196,18 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	      FillRawsData(kGL1, etaG, phiG);
 					
 	      //loop to sum amplitude of FOR in the gamma patch
-	      Int_t L1GPatchAmp = 0;
+	      Int_t iL1GPatchAmp = 0;
 	      for (Int_t L1Gx = 0; L1Gx < sizeL1gpatch; L1Gx ++)
 		{
 		  for (Int_t L1Gy = 0; L1Gy < sizeL1gpatch; L1Gy ++)
 		    {
-		      if (etaG+L1Gx < 48 && phiG+L1Gy < 64) L1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
+		      if (etaG+L1Gx < 48 && phiG+L1Gy < 64) iL1GPatchAmp += iEMCALtrig[etaG+L1Gx][phiG+L1Gy];
 		      //cout << iEMCALtrig[etaG+L1Gx][phiG+L1Gy] << endl;
 		    }
 		}
 	      
-	      //if (L1GPatchAmp > 500) cout << "L1G amp =" << L1GPatchAmp << endl;
-	      FillRawsData(kGL1V0, iV0Sig, L1GPatchAmp);
+	      //if (iL1GPatchAmp > 500) cout << "L1G amp =" << iL1GPatchAmp << endl;
+	      FillRawsData(kGL1V0, iV0Sig, iL1GPatchAmp);
 	      
 	    }
 	}
@@ -1225,17 +1225,17 @@ void AliEMCALQADataMakerRec::MakeRawsSTU(AliRawReader* rawReader)
 	      FillRawsData(kJL1, etaJ, phiJ);
 					
 	      //loop the sum aplitude of FOR in the jet patch
-	      Int_t L1JPatchAmp = 0;
+	      Int_t iL1JPatchAmp = 0;
 	      for (Int_t L1Jx = 0; L1Jx < sizeL1jpatch*4; L1Jx ++)
 		{
 		  for (Int_t L1Jy = 0; L1Jy < sizeL1jpatch*4; L1Jy ++)
 		    {
-		      if (etaJ+L1Jx < 48 && phiJ+L1Jy < 64) L1JPatchAmp += iEMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
+		      if (etaJ+L1Jx < 48 && phiJ+L1Jy < 64) iL1JPatchAmp += iEMCALtrig[etaJ+L1Jx][phiJ+L1Jy];
 		    }
 		}
 		
-	      //cout << "L1J amp =" << L1JPatchAmp << endl;
-	      FillRawsData(kJL1V0, iV0Sig, L1JPatchAmp);
+	      //cout << "L1J amp =" << iL1JPatchAmp << endl;
+	      FillRawsData(kJL1V0, iV0Sig, iL1JPatchAmp);
 	    }
 	}
     }
