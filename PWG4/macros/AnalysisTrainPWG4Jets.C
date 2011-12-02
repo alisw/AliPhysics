@@ -911,7 +911,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
      taskjetServ->SetPhysicsSelectionFlag(iPhysicsSelectionFlag); // 
      taskjetServ->SetNonStdFile(kDeltaAODJetName.Data());
      taskjetServ->SetTrackEtaWindow(fTrackEtaWindow);
-       taskjetServ->SetZVertexCut(fVertexWindow);
+     taskjetServ->SetZVertexCut(fVertexWindow);
      taskjetServ->SetFilterMask(kHighPtFilterMask);
 
      if(kIsPbPb)taskjetServ->SetCollisionType(AliAnalysisTaskJetServices::kPbPb);
