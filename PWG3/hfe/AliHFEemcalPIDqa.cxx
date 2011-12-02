@@ -157,11 +157,11 @@ void AliHFEemcalPIDqa::Initialize(){
   const Double_t kTPCSigMim = 40.;
   const Double_t kTPCSigMax = 140.;
 
-  // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, Centrality)
-  Int_t nBins[6] = {AliPID::kSPECIES + 1, 500, 500, 400, kCentralityBins, 2};
-  Double_t min[6] = {-1, kMinP, kMinP, kTPCSigMim,  0, 0.};
-  Double_t max[6] = {AliPID::kSPECIES, kMaxP, kMaxP, kTPCSigMax,  11., 2.};
-  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; Centrality; PID Step", 6, nBins, min, max);
+  // 1st histogram: TPC dEdx with/without EMCAL (p, pT, TPC Signal, phi, eta,  Sig,  e/p,  Centrality, select)
+  Int_t nBins[10] = {AliPID::kSPECIES + 1, 500, 500,          400, 630,   200,   400,  300, kCentralityBins, 2};
+  Double_t min[10] = {-1,               kMinP, kMinP,  kTPCSigMim,  0.,  -1.0,  -4.0,    0,               0, 0.};
+  Double_t max[10] = {AliPID::kSPECIES, kMaxP, kMaxP,  kTPCSigMax, 6.3,   1.0,   4.0,  3.0,             11., 2.};
+  fHistos->CreateTHnSparse("EMCAL_TPCdedx", "EMCAL signal; species; p [GeV/c]; pT [GeV/c] ; TPC signal [a.u.]; phi ; eta ; nSig ; E/p ; Centrality; PID Step; ", 10, nBins, min, max);
 
   //2nd histogram: EMCAL signal - E/p 
   Int_t nBins2[7] = {AliPID::kSPECIES + 1, 500, 500, 500, 125, 400, 2};
@@ -197,13 +197,9 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   AliDebug(2, Form("nSigmatpc = %f\n",nSigmatpc));
   //
 
-  Double_t contentSignal[6];
-  contentSignal[0] = species;
-  contentSignal[1] = track->GetRecTrack()->P();
-  contentSignal[2] = track->GetRecTrack()->Pt();
-  contentSignal[3] = esdtrack->GetTPCsignal(); //?
-  contentSignal[4] = centrality;
-  contentSignal[5] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
+
+
+  //printf("phi %f, eta %f\n;",phi,eta);
 
   // Get E/p
   TVector3 emcsignal = MomentumEnergyMatchV2(esdtrack);
@@ -215,7 +211,23 @@ void AliHFEemcalPIDqa::ProcessTrack(const AliHFEpidObject *track,AliHFEdetPIDqa:
   contentSignal2[3] = emcsignal(0);//e over p
   contentSignal2[4] = emcsignal(1);//residual
   contentSignal2[5] = nSigmatpc;
-  contentSignal2[6] = contentSignal[5];
+  contentSignal2[6] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
+
+  // QA array
+  Double_t contentSignal[10];
+  contentSignal[0] = species;
+  contentSignal[1] = track->GetRecTrack()->P();
+  contentSignal[2] = track->GetRecTrack()->Pt();
+  contentSignal[3] = esdtrack->GetTPCsignal(); //?
+  double phi  = track->GetRecTrack()->Phi();
+  double eta  = track->GetRecTrack()->Eta();
+  contentSignal[4] = phi;
+  contentSignal[5] = eta;
+  contentSignal[6] = nSigmatpc;
+  contentSignal[7] = emcsignal(0);
+  contentSignal[8] = centrality;
+  contentSignal[9] = step == AliHFEdetPIDqa::kBeforePID ? 0. : 1.;
+
 
   //printf("ProcessTrack ; Print Content %g; %g; %g; %g \n",contentSignal[0],contentSignal[1],contentSignal[2],contentSignal[3]); 
   fHistos->Fill("EMCAL_TPCdedx", contentSignal);

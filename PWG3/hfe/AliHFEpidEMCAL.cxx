@@ -137,7 +137,7 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
   if(!(trk->GetStatus() & AliESDtrack::kEMCALmatch)) return 0;
   AliDebug(2, "Track Has EMCAL PID");
   
-  //if(pidqa) 
+  if(pidqa) 
   pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kBeforePID);
   // not QA for EMCal, will be added (s.s Feb. 11)
 
@@ -171,7 +171,7 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
   if(eop>feopMimCut && eop<feopMaxCut){
     pdg = 11;
     //printf("eop cuts ; %g; %g ; %g\n",feopMimCut,feopMaxCut,eop);
-    //if(pidqa) 
+    if(pidqa) 
     pidqa->ProcessTrack(track, AliHFEpid::kEMCALpid, AliHFEdetPIDqa::kAfterPID);
   }
   else
@@ -195,9 +195,9 @@ Double_t AliHFEpidEMCAL::CalEopCutMax(const AliVParticle *const track, Int_t fla
   double Pt = esdtrack->Pt();
 
   if(flageop<0.5)
-    {
-     double meanP[3] = {0.991,1.0819,0.235}; 
-     double sigP[3] = {6.52e-02,2.04e-01,3.34e-01}; 
+    { //<--- new para for updated non-liniarity
+     double meanP[3] = {1.056,1.169,0.1339}; 
+     double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
      maxCut = mean+3.0*sig; 
@@ -223,8 +223,8 @@ Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t fla
   if(flageop<0.5) // real
      { 
       //printf("real"); 
-     double meanP[3] = {0.991,1.0819,0.235}; 
-     double sigP[3] = {6.52e-02,2.04e-01,3.34e-01}; 
+     double meanP[3] = {1.056,1.169,0.1339}; 
+     double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
      double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
      double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
      mimCut = mean-2.0*sig;
