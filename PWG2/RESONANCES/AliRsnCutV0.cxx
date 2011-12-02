@@ -73,15 +73,17 @@ AliRsnCutV0& AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
 // Just copy all data member values.
 //
 
-
-   fHypothesis = copy.fHypothesis;
-   fMass = copy.fMass;
-   fTolerance = copy.fTolerance;
-   fMaxDCAVertex = copy.fMaxDCAVertex;
-   fMinCosPointAngle = copy.fMinCosPointAngle;
-   fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
-   fESDtrackCuts = copy.fESDtrackCuts;
-
+  if (this == &copy)
+    return *this;
+  
+  fHypothesis = copy.fHypothesis;
+  fMass = copy.fMass;
+  fTolerance = copy.fTolerance;
+  fMaxDCAVertex = copy.fMaxDCAVertex;
+  fMinCosPointAngle = copy.fMinCosPointAngle;
+  fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
+  fESDtrackCuts = copy.fESDtrackCuts;
+  
    return (*this);
 }
 

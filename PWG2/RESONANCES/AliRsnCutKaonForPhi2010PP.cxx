@@ -71,7 +71,8 @@ AliRsnCutKaonForPhi2010PP& AliRsnCutKaonForPhi2010PP::operator=(const AliRsnCutK
 //
 
    AliRsnCut::operator=(copy);
-   
+   if (this == &copy)
+     return *this;
    fNSigmaTPCLow = copy.fNSigmaTPCLow;
    fNSigmaTPCHigh = copy.fNSigmaTPCHigh;
    fLimitTPC = copy.fLimitTPC;

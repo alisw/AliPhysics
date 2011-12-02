@@ -94,7 +94,9 @@ AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
 // Don't duplicate memory occupancy for pointer
 //
 
-   AliRsnTarget::operator=(copy);
+  AliRsnTarget::operator=(copy);
+   if (this == &copy)
+     return *this;
 
    fMinI      = copy.fMinI;
    fMaxI      = copy.fMaxI;

@@ -145,7 +145,8 @@ AliRsnValueStd& AliRsnValueStd::operator=(const AliRsnValueStd& copy)
 //
 
    AliRsnValue::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fSupportObject = copy.fSupportObject;
    fValueType = copy.fValueType;
 

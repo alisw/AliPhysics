@@ -68,10 +68,13 @@ AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
 // Does not duplicate memory allocation.
 //
 
-   AliRsnCut::operator=(copy);
-   fValue = copy.fValue;
-
-   return (*this);
+  AliRsnCut::operator=(copy);
+  if (this == &copy)
+    return *this;
+  
+  fValue = copy.fValue;
+  
+  return (*this);
 }
 
 //_________________________________________________________________________________________________

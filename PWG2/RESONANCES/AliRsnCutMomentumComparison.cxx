@@ -51,6 +51,8 @@ AliRsnCutMomentumComparison& AliRsnCutMomentumComparison::operator=(const AliRsn
 //
 
    AliRsnCut::operator=(copy);
+   if (this == &copy)
+     return *this;
    fMode = copy.fMode;
    
    return (*this);

@@ -69,6 +69,8 @@ AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
 //
 // Assign operator
 //
+  if (this == &copy)
+    return *this;
 
    SetName(cut.GetName());
    SetTitle(cut.GetTitle());

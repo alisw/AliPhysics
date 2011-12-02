@@ -83,7 +83,8 @@ AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy
 //
 
    AliRsnCut::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fSpecies = copy.fSpecies;
    fDetector = copy.fDetector;
    fRejectUnmatched = copy.fRejectUnmatched;

@@ -93,7 +93,9 @@ AliRsnCutTrackQuality& AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQual
 // Just copy all data member values.
 //
 
-
+  if (this == &copy)
+    return *this;
+  
    fFlagsOn = copy.fFlagsOn;
    fFlagsOff = copy.fFlagsOff;
    fRejectKinkDaughters = copy.fRejectKinkDaughters;
