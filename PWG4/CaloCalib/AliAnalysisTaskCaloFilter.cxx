@@ -344,7 +344,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       }//Load matrices from Data 
       
       //Recover time dependent corrections, put then in recalibration histograms. Do it once
-      fEMCALRecoUtils->SetTimeDependentCorrections(InputEvent()->GetRunNumber());
+      fEMCALRecoUtils->SetRunDependentCorrections(InputEvent()->GetRunNumber());
 
     }//first event
     
@@ -429,7 +429,7 @@ void AliAnalysisTaskCaloFilter::UserExec(Option_t */*option*/)
       //        continue;
       //      }
 
-      if(fEMCALRecoUtils->IsRejectExoticCluster() && fEMCALRecoUtils->IsExoticCluster(cluster)) continue;	
+      if(fEMCALRecoUtils->IsRejectExoticCluster() && fEMCALRecoUtils->IsExoticCluster(cluster,event->GetEMCALCells(),event->GetBunchCrossNumber())) continue;	
 
       fEMCALRecoUtils->GetMatchedResiduals(cluster->GetID(),dR,dZ);
       cluster->SetTrackDistance(dR,dZ);
