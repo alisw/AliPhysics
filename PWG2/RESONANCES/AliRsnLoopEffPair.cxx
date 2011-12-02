@@ -53,6 +53,8 @@ AliRsnLoopEffPair& AliRsnLoopEffPair::operator=(const AliRsnLoopEffPair& copy)
 //
 
    AliRsnLoopEff::operator=(copy);
+   if (this == &copy)
+     return *this;
    fDef = copy.fDef;
 
    return (*this);

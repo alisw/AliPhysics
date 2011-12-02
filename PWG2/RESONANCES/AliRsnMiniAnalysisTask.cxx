@@ -147,7 +147,8 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
 //
 
    AliAnalysisTaskSE::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;

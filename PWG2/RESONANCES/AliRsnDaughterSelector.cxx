@@ -54,7 +54,8 @@ AliRsnDaughterSelector& AliRsnDaughterSelector::operator=(const AliRsnDaughterSe
    AliDebug(AliLog::kDebug + 10, "<-");
 
    TNamed::operator=(copy);
-   
+   if (this == &copy)
+     return *this;
    fCutSetsN = copy.fCutSetsN;
    fCutSetsC = copy.fCutSetsC;
    fEntryListsN = copy.fEntryListsN;

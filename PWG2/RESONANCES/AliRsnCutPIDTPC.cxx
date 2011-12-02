@@ -71,6 +71,8 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
 //
 
    AliRsnCut::operator=(copy);
+   if (this == &copy)
+    return *this;
 
    fRejectOutside = copy.fRejectOutside;
    fMomMin        = copy.fMomMin;

@@ -51,6 +51,8 @@ AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 // Pointers are NOT duplicated, since they don't come from a 'new'
 // statement, but from just referencing something in the data source.
 //
+  if (this == &copy)
+    return *this;
 
    fOK         = copy.fOK;
    fLabel      = copy.fLabel;

@@ -77,8 +77,9 @@ AliRsnMiniValue& AliRsnMiniValue::operator=(const AliRsnMiniValue& copy)
 // Assignment operator.
 // Works like copy constructor.
 //
-
    TNamed::operator=(copy);
+   if (this == &copy)
+     return *this;
    fType = copy.fType;
    fUseMCInfo = copy.fUseMCInfo;
 

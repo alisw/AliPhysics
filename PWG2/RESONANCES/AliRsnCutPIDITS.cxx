@@ -69,6 +69,8 @@ AliRsnCutPIDITS& AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS& copy)
 //
 
    AliRsnCut::operator=(copy);
+  if (this == &copy)
+    return *this;
 
    fIsMC          = copy.fIsMC;
    fRejectOutside = copy.fRejectOutside;

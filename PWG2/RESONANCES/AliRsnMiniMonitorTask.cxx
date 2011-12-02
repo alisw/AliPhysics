@@ -110,9 +110,9 @@ AliRsnMiniMonitorTask& AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorT
 // Implemented as requested by C++ standards.
 // Can be used in PROOF and by plugins.
 //
-
    AliAnalysisTaskSE::operator=(copy);
-   
+   if (this == &copy)
+     return *this;
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;

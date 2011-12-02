@@ -87,7 +87,9 @@ AliRsnCutSet& AliRsnCutSet::operator=(const AliRsnCutSet & copy)
 //
 
    AliRsnTarget::operator=(copy);
-
+   if (this == &copy)
+     return *this;
+   
    fCuts = copy.fCuts;
    fNumOfCuts = copy.fNumOfCuts;
    fCutScheme = copy.fCutScheme;
