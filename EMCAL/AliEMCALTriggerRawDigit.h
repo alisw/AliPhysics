@@ -11,6 +11,7 @@
 
 #include "AliEMCALRawDigit.h" 
 #include "AliEMCALTriggerTypes.h" 
+#include "AliLog.h"
 
 class AliEMCALTriggerRawDigit : public AliEMCALRawDigit 
 {
@@ -35,7 +36,7 @@ public:
 	
 	Int_t   GetL0TimeSum(const Int_t time) const;
 	
-	void    SetL1TimeSum(Int_t ts) {fL1TimeSum = ts;}
+	void    SetL1TimeSum(Int_t ts) {if (fL1TimeSum >= 0) AliWarning("You're overwriting digit time sum! Please check"); fL1TimeSum = ts;}
 	Int_t   GetL1TimeSum(        ) const {return fL1TimeSum;}
 	
 	virtual void Print(const Option_t* opt) const;

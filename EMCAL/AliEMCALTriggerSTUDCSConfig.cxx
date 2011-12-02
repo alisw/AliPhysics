@@ -35,9 +35,9 @@ AliEMCALTriggerSTUDCSConfig::AliEMCALTriggerSTUDCSConfig() : TObject()
   ,fJA(0)
   ,fJB(1)
   ,fJC(0)
-  ,fGetRawData(0)
+  ,fGetRawData(1)
   ,fRegion(0xFFFFFFFF)
-  ,fFw(2223)
+  ,fFw(0x2A012)
 {
   //
   // AliEMCALTriggerSTUDCSConfig default constructor
@@ -49,14 +49,11 @@ void AliEMCALTriggerSTUDCSConfig::GetSegmentation(TVector2& v1, TVector2& v2, TV
 {
 	// Get Segmentation
 	
-	switch (fFw)
-	{
-		case 2223:
-			v1.Set(1., 1.);
-			v2.Set(2., 2.);
-			v3.Set(4., 4.);
-			v4.Set(2., 2.);
-			break;
-	}
+	v1.Set(1., 1.);
+	v2.Set(2., 2.);
+	v3.Set(4., 4.);
+	
+	Double_t js = 2 + (fFw >> 16);
+	v4.Set(js, js);
 }
 

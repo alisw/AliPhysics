@@ -25,7 +25,6 @@
 #include <TMath.h>
 
 #include "AliEMCALTriggerRawDigit.h"
-#include "AliLog.h"
 
 ClassImp(AliEMCALTriggerRawDigit)
 
@@ -69,7 +68,7 @@ Bool_t AliEMCALTriggerRawDigit::SetL0Time(const Int_t i)
 	{
 		if (i == fL0Times[j]) 
 		{
-			AliWarning("L0 time already there! Won't add it twice");
+			AliDebug(1,Form("Digit id %d: L0 time %d already there! Won't add it twice",fId,i));
 			return kFALSE;
 		}
 	}

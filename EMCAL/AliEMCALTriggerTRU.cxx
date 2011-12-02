@@ -43,7 +43,8 @@ ClassImp(AliEMCALTriggerTRU)
 
 //________________
 AliEMCALTriggerTRU::AliEMCALTriggerTRU() : AliEMCALTriggerBoard(),
-fDCSConfig(0x0)
+fDCSConfig(0x0),
+fL0Time(0)
 {
 	// Ctor
 	
@@ -53,7 +54,8 @@ fDCSConfig(0x0)
 //________________
 AliEMCALTriggerTRU::AliEMCALTriggerTRU(AliEMCALTriggerTRUDCSConfig* dcsConf, const TVector2& rSize, Int_t mapType) : 
 AliEMCALTriggerBoard(rSize),
-fDCSConfig(dcsConf)
+fDCSConfig(dcsConf),
+fL0Time(0)
 {
 	// Ctor
 	
@@ -131,9 +133,7 @@ void AliEMCALTriggerTRU::ShowFastOR(Int_t iTimeWindow, Int_t iChannel)
 //________________
 Int_t AliEMCALTriggerTRU::L0()
 {
-	// Mimick the TRU L0 'virtual' since not yet released algo
-	
-	// L0 issuing condition is: (2 up & 1 down) AND (time sum > thres)
+	// L0 issuing condition is: (2 up & 1 down) AND (patch sum > thres)
 	// fill a matrix to support sliding window
 	// compute the time sum for all the FastOR of a given TRU
 	// and then move the space window
@@ -294,7 +294,7 @@ Int_t AliEMCALTriggerTRU::L0()
 			{
 				fPatches->RemoveAt( j );
 				fPatches->Compress();
-			}				
+			}
 		}
 		
 		//Delete, avoid leak
@@ -308,6 +308,8 @@ Int_t AliEMCALTriggerTRU::L0()
 			ZeroRegion();
 		else                             // Stop the algo when at least one patch is found ( thres & max )
 		{
+			fL0Time = i;
+			
 			for (Int_t xx = 0; xx < fRegionSize->X(); xx++) 
 			{
 				for (Int_t yy = 0; yy < fRegionSize->Y(); yy++) 
@@ -346,6 +348,29 @@ void AliEMCALTriggerTRU::SetADC( Int_t channel, Int_t bin, Int_t sig )
   else{ 
     fADC[channel][bin] = sig;
   }
+}
+
+//________________
+void AliEMCALTriggerTRU::GetL0Region(const int time, Int_t arr[][4])
+{
+	Int_t r0 = time + fDCSConfig->GetRLBKSTU();
+	
+	if (r0 < 0) 
+	{
+		AliError(Form("TRU buffer not accessible! time: %d rollback: %d", time, fDCSConfig->GetRLBKSTU()));
+		return;
+	}
+	
+	for (Int_t i = 0; i < fRegionSize->X(); i++) 
+	{
+		for (Int_t j = 0; j < fRegionSize->Y(); j++) 
+		{
+			for (Int_t k = r0; k < r0 + kTimeWindowSize; k++)
+			{
+				arr[i][j] += fADC[fMap[i][j]][k];
+			}
+		}
+	}
 }
 
 //________________

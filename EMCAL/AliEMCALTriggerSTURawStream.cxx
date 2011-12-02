@@ -142,7 +142,7 @@ Bool_t AliEMCALTriggerSTURawStream::ReadPayLoad()
 		
 		word32[iword++] = w32;
 	}
-	
+ 
 	if (iword != kPayLoadSizeOld && iword != kPayLoadSizeNew && iword != (kPayLoadSizeOld + 1536) && iword != (kPayLoadSizeNew + 1536))
 	{
 		AliError(Form("STU payload (eqId: %d, eqSize: %d) doesn't match expected size! %d word32",

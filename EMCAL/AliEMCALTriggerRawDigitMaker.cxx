@@ -32,6 +32,9 @@ Author: R. GUERNANE LPSC Grenoble CNRS/IN2P3
 #include "AliCaloBunchInfo.h"
 #include "AliRawReader.h"
 #include "AliEMCALTriggerDCSConfigDB.h"
+#include "AliEMCALTriggerDCSConfig.h"
+#include "AliEMCALTriggerTRUDCSConfig.h"
+#include "AliEMCALTriggerSTUDCSConfig.h"
 #include "AliEMCALTriggerData.h"
 #include "AliEMCALTriggerPatch.h"
 #include "AliLog.h"
@@ -286,9 +289,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 	
 	AliEMCALTriggerRawDigit* dig = 0x0;
 	
-	Int_t sizeL1gsubr[2], sizeL1gpatch[2], sizeL1jsubr[2], sizeL1jpatch[2];
+	TVector2 sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch;
 	
-	fDCSConfig->GetSTUSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
+	fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->GetSegmentation(sizeL1gsubr, sizeL1gpatch, sizeL1jsubr, sizeL1jpatch);
 	
 	fRawReader->Reset();
 	fRawReader->Select("EMCAL",44);	
@@ -332,10 +335,22 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			fSTURawStream->GetRegionEnable(), 
 			fSTURawStream->GetFwVersion()
 		};		
+
+		// Modify DCS config from STU payload content
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetGA(type[0]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetGB(type[1]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetGC(type[2]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJA(type[3]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJB(type[4]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetJC(type[5]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetFw(type[7]);
+		fDCSConfig->GetTriggerDCSConfig()->GetSTUDCSConfig()->SetRawData(fSTURawStream->GetRawData());
 		
 		fTriggerData->SetL1FrameMask(fSTURawStream->GetFrameReceived());
 		fTriggerData->SetL1V0(v0);
 		fTriggerData->SetL1TriggerType(type);
+		
+		fTriggerData->SetL1RawData(fSTURawStream->GetRawData());
 		
 		Int_t iTRU, x, y;
 
@@ -350,20 +365,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				UInt_t adc[96]; for (Int_t j = 0; j < 96; j++) adc[j] = 0;
 				
 				fSTURawStream->GetADC(i, adc);
-				/*
-				ofstream outfile(Form("data_TRU%d.txt",i),ios_base::trunc);
-				
-				for (Int_t j = 0; j < 96; j++) 
-				{
-					outfile << adc[j] << endl;
-				}
-				
-				outfile.close();
-				*/
+
 				for (Int_t j = 0; j < 96; j++)
 				{
-					//if (adc[j] < 5) continue;
-					
 					if (AliDebugLevel()) printf("| STU => TRU# %2d raw data: ADC# %2d: %d\n", iTRU, j, adc[j]);
 					
 					fGeometry->GetAbsFastORIndexFromTRU(iTRU, j, idx);
@@ -394,13 +398,16 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 		for (Int_t i = 0; i < fSTURawStream->GetNL0GammaPatch(); i++)
 		{
 			fSTURawStream->GetL0GammaPatch(i, iTRU, x);
-			
+
 			iTRU = fGeometry->GetTRUIndexFromSTUIndex(iTRU);
 			
+			const Int_t sizePatchL0 = 
+			((AliEMCALTriggerTRUDCSConfig*)fDCSConfig->GetTriggerDCSConfig()->GetTRUArr()->At(fGeometry->GetOnlineIndexFromTRUIndex(iTRU)))->GetSegmentation() 
+			* 
+			((AliEMCALTriggerTRUDCSConfig*)fDCSConfig->GetTriggerDCSConfig()->GetTRUArr()->At(fGeometry->GetOnlineIndexFromTRUIndex(iTRU)))->GetSegmentation();
+			
 			if (AliDebugLevel()) printf("| STU => Found L0 patch id: %2d in TRU# %2d\n", x, iTRU);
-			
-			const Int_t sizePatchL0 = fDCSConfig->GetTRUSegmentation(iTRU) * fDCSConfig->GetTRUSegmentation(iTRU);
-			
+						
 			Int_t idFastOR[4];
 			for (Int_t j = 0; j < 4; j++) idFastOR[j] = -1;
 			
@@ -442,8 +449,8 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 				
 				if (iTRU % 2) vx += 24; // C side
 				
-				vx = vx - sizeL1gsubr[0] * sizeL1gpatch[0] + 1;
-				
+				vx = vx - int(sizeL1gsubr.X()) * int(sizeL1gpatch.X()) + 1;
+
 				if (vx >= 0 && vy < 63) 
 				{
 					if (fGeometry->GetAbsFastORIndexFromPositionInEMCAL(vx, vy, idx))
@@ -474,9 +481,9 @@ void AliEMCALTriggerRawDigitMaker::PostProcess()
 			{
 				if (AliDebugLevel()) printf("| STU => Found L1 jet patch at (%2d , %2d)\n", x, y);
 				
-				Int_t ix = sizeL1jsubr[0] * (11 - y - 4 + 1);
-
-				Int_t iy = sizeL1jsubr[1] * (15 - x - 4 + 1);
+				Int_t ix = int(sizeL1jsubr.X()) * (11 - y - int(sizeL1jpatch.X()) + 1);
+				
+				Int_t iy = int(sizeL1jsubr.Y()) * (15 - x - int(sizeL1jpatch.Y()) + 1);
 				
 				// FIXME: x = 0 || y = 0 (Olivier's CS) patches a lost?
 				

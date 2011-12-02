@@ -37,7 +37,8 @@ public:
 	virtual void SetL1TriggerType(   Int_t* v) {for (int i = 0; i < 8; i++) fL1TriggerType[i] = v[i];}
 
 	virtual void SetL1DataDecoded(   Int_t  v) {   fL1DataDecoded = v;} 
-	
+	virtual void SetL1RawData(       Int_t  v) {       fL1RawData = v;}
+
 	virtual void          GetL0Trigger(  Int_t i, Int_t j, Int_t& k  ) const {   k = fL0Trigger[i][j];}
 	virtual Int_t         GetL0Trigger(  Int_t i, Int_t j            ) const {return fL0Trigger[i][j];}
 	
@@ -53,7 +54,8 @@ public:
 	virtual void          GetL1TriggerType(   Int_t  v[]) const {for (int i = 0; i < 8; i++) v[i] = fL1TriggerType[i];}
 	
 	virtual Int_t         GetL1DataDecoded(             ) const {return fL1DataDecoded;}
-	
+	virtual Int_t             GetL1RawData(             ) const {return     fL1RawData;}
+
 	virtual Int_t         GetMode() const {return fMode;}
 	
 	virtual void          Scan() const;
@@ -85,7 +87,8 @@ private:
 	Int_t           fL1TriggerType[8];          // Trigger type
 	
 	Int_t           fL1DataDecoded;             // Raw data decoded
-	
+	Int_t               fL1RawData;             // Raw data
+
 	ClassDef(AliEMCALTriggerData,2)
 };
 

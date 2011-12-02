@@ -21,7 +21,7 @@ class AliEMCALTriggerDCSConfig : public TObject
 {
 public:
 	
-	         AliEMCALTriggerDCSConfig(const char *name = "");
+	         AliEMCALTriggerDCSConfig();
 	virtual ~AliEMCALTriggerDCSConfig();
 	
 	void                         SetTRUArr(TClonesArray* const ta)             { fTRUArr    = ta; }

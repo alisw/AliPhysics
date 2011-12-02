@@ -27,15 +27,16 @@ public:
 	virtual void  L1(TriggerType_t type);
 	virtual void  PatchGenerator(const TClonesArray* lpos, Int_t val);
 	
-	virtual void  ComputeThFromV0(const Int_t M[]);
+	virtual void  ComputeThFromV0(TriggerType_t type, const Int_t M[]);
 	
 	virtual void  SetThreshold(TriggerType_t type, Int_t v);
 	
 	virtual Int_t GetThreshold(TriggerType_t type);
-	virtual Int_t GetRawData() const;
 
 	virtual void  Reset();
 	
+	virtual AliEMCALTriggerSTUDCSConfig* GetDCSConfig() const {return fDCSConfig;}
+
 protected:
 	
 				  AliEMCALTriggerSTU(const AliEMCALTriggerSTU& rhs);

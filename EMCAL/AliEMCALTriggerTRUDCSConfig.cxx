@@ -32,6 +32,7 @@ AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
 ,fL0SEL(0)
 ,fL0COSM(0)
 ,fGTHRL0(0)
+,fRLBKSTU(0)
 {
 	//
 	// AliEMCALTriggerTRUDCSConfig default constructor
@@ -39,4 +40,13 @@ AliEMCALTriggerTRUDCSConfig::AliEMCALTriggerTRUDCSConfig() : TObject()
 	for (Int_t i=0;i<6;i++) fMaskReg[i] = 0;
 }
 
+//_____________________________________________________________________________
+Int_t AliEMCALTriggerTRUDCSConfig::GetSegmentation()
+{
+	//
+	if (fL0SEL & 0x0001)
+		return 2;
+	else
+		return 1;
+}
 

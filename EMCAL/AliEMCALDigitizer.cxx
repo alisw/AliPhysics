@@ -863,7 +863,7 @@ void AliEMCALDigitizer::Digits2FastOR(TClonesArray* digitsTMP, TClonesArray* dig
         if (digit)
         {
           Int_t     id = digit->GetId();
-          Float_t time = digit->GetTime();
+          Float_t time = 50.e-9;
           
           Double_t depositedEnergy = 0.;
           for (Int_t j = 1; j <= digit->GetNprimary(); j++) depositedEnergy += digit->GetDEPrimary(j);

@@ -42,7 +42,8 @@ fL1JetThreshold(0),
 fL1V0(),
 fL1FrameMask(0),
 fL1TriggerType(),
-fL1DataDecoded(0)
+fL1DataDecoded(0),
+fL1RawData(0)
 {  
 	// Ctor
 	

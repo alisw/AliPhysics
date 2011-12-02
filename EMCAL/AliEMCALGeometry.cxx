@@ -1409,6 +1409,68 @@ void AliEMCALGeometry::BuildFastOR2DMap()
 }
 
 //________________________________________________________________________________________________
+Bool_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const
+{
+	//Trigger mapping method, from STU index get TRU index 
+	
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+		return kFALSE;
+	}
+
+	idx = ((id % 6) < 3) ? 6 * int(id / 6) + 2 * (id % 3) : 6 * int(id / 6) + 2 * (2 - (id % 3)) + 1;
+
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Int_t AliEMCALGeometry::GetTRUIndexFromOnlineIndex(const Int_t id) const
+{
+	//Trigger mapping method, from STU index get TRU index 
+	
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+	}
+	
+	Int_t idx = (id > 15) ? 2 * (31 - id) : 2 * (15 - id) + 1;
+	
+	return idx;
+}
+
+//________________________________________________________________________________________________
+Bool_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const
+{
+	//Trigger mapping method, from STU index get TRU index 
+	
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+		return kFALSE;
+	}
+	
+	idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+	
+	return kTRUE;
+}
+
+//________________________________________________________________________________________________
+Int_t AliEMCALGeometry::GetOnlineIndexFromTRUIndex(const Int_t id) const
+{
+	//Trigger mapping method, from STU index get TRU index 
+	
+	if (id > 31 || id < 0) 
+	{
+		AliError(Form("TRU index out of range: %d",id));
+	}
+	
+	Int_t idx = (id % 2) ? int((6 - (id % 6)) / 2) + 3 * (int(id / 6) + 1) : 3 * int(id / 6) + int(id / 2);
+	
+	return idx;
+}
+
+//________________________________________________________________________________________________
 Bool_t AliEMCALGeometry::GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const
 {
   //Trigger mapping method, from L0 index get FastOR index 
@@ -1510,8 +1572,6 @@ void AliEMCALGeometry::GetModulePhiEtaIndexInSModuleFromTRUIndex(Int_t itru, Int
    
   iphiSM = fEMCGeometry->GetNModulesInTRUPhi()*row + iphitru  ;
   ietaSM = fEMCGeometry->GetNModulesInTRUEta()*col + ietatru  ; 
-  //printf(" GetModulePhiEtaIndexInSModuleFromTRUIndex : itru %2i iphitru %2i ietatru %2i iphiSM %2i ietaSM %2i \n", 
-  // itru, iphitru, ietatru, iphiSM, ietaSM);
 }
 
 //__________________________________________________________________________________________________________________

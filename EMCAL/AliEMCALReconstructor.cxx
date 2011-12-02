@@ -354,15 +354,12 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   
   if (esdV0) 
     {
-      for (Int_t i = 0; i < 32; i++)
-	{
-	  v0M[0] += (Int_t)esdV0->GetAdcV0C(i);
-	  v0M[1] += (Int_t)esdV0->GetAdcV0A(i);
-	}
+		v0M[0] = esdV0->GetTriggerChargeC();
+		v0M[1] = esdV0->GetTriggerChargeA();
     }
   else
     {
-      AliWarning("Cannot retrieve V0 ESD! Run w/ null V0 charges");
+      AliWarning("No V0 ESD! Run trigger processor w/ null V0 charges");
     }
   
   if (fgTriggerDigits) fgTriggerDigits->Clear();
@@ -379,7 +376,7 @@ void AliEMCALReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   branchtrg->GetEntry(0);
   
   // Note: fgTriggerProcessor reset done at the end of this method
-//   fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
+  fgTriggerProcessor->Digits2Trigger(fgTriggerDigits, v0M, fTriggerData);
   
   // Fill ESD
   AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("EMCAL");

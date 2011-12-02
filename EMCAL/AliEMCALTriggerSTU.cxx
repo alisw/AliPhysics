@@ -68,14 +68,6 @@ AliEMCALTriggerSTU::~AliEMCALTriggerSTU()
 }
 
 //_______________
-Int_t AliEMCALTriggerSTU::GetRawData() const
-{
-	// Get raw data
-	
-	return fDCSConfig->GetRawData();
-}
-
-//_______________
 void AliEMCALTriggerSTU::Build( TString& str, Int_t iTRU, Int_t** M, const TVector2* rSize )
 {
 	// Build
@@ -287,16 +279,41 @@ void AliEMCALTriggerSTU::PatchGenerator(const TClonesArray* lpos, Int_t val)
 }
 
 //___________
-void AliEMCALTriggerSTU::ComputeThFromV0(const Int_t M[])
+void AliEMCALTriggerSTU::ComputeThFromV0(TriggerType_t type, const Int_t M[])
 {
 	// Compute threshold from V0
 	
-	if (!(M[0] + M[1])) AliWarning("V0A + V0C is null!"); // 0/1: V0C/V0A
-
+	Short_t P[3] = {0};
 	
-	fGammaTh = fDCSConfig->GetGA()*(M[0] + M[1])*(M[0] + M[1]) + fDCSConfig->GetGB()*(M[0] + M[1]) + fDCSConfig->GetGC();
+	switch (type)
+	{
+		case kL1Gamma:
+			P[0] = fDCSConfig->GetGA();
+			P[1] = fDCSConfig->GetGB();
+			P[2] = fDCSConfig->GetGC();			
+			break;
+		case kL1Jet:
+			P[0] = fDCSConfig->GetJA();
+			P[1] = fDCSConfig->GetJB();
+			P[2] = fDCSConfig->GetJC();			
+			break;
+		default:
+			AliError("AliEMCALTriggerSTU::ComputeThFromV0(): Undefined trigger type, pls check!");
+			return;
+	}
 	
-	fJetTh   = fDCSConfig->GetJA()*(M[0] + M[1])*(M[0] + M[1]) + fDCSConfig->GetJB()*(M[0] + M[1]) + fDCSConfig->GetJC();	
+	ULong64_t v0sum = M[0] + M[1];
+	
+	ULong64_t sqrV0 = v0sum * v0sum;
+	
+	sqrV0 *= P[0];	
+	sqrV0 >>= 32;
+	
+	v0sum *= P[1];
+	
+	v0sum >>= 16;
+	
+	SetThreshold(type, (UShort_t)(sqrV0 + v0sum + P[2]));
 }
 
 //___________

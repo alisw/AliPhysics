@@ -41,6 +41,8 @@ set ( SRCS
 
 string(REPLACE ".cxx" ".h" HDRS  "${SRCS}")
 
+set ( HDRS ${HDRS} AliEMCALTriggerTRUDCSConfig.h AliEMCALTriggerData.h AliEMCALTriggerSTUDCSConfig.h )
+
 set ( DHDR EMCALsimLinkDef.h)
 
 set ( EINCLUDE RAW VZERO STEER/STEER STEER/STEERBase)

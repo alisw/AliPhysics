@@ -256,6 +256,10 @@ public:
   Bool_t          GetCellIndexFromFastORIndex(const Int_t id, Int_t idx[4]) const;
   Bool_t              GetTRUIndexFromSTUIndex(const Int_t id, Int_t& idx) const;
   Int_t               GetTRUIndexFromSTUIndex(const Int_t id) const;
+  Bool_t           GetTRUIndexFromOnlineIndex(const Int_t id, Int_t& idx) const;
+  Int_t            GetTRUIndexFromOnlineIndex(const Int_t id) const;
+  Bool_t           GetOnlineIndexFromTRUIndex(const Int_t id, Int_t& idx) const;
+  Int_t            GetOnlineIndexFromTRUIndex(const Int_t id) const;
   Bool_t            GetFastORIndexFromL0Index(const Int_t iTRU, const Int_t id, Int_t idx[], const Int_t size) const;
 	
   ///////////////////

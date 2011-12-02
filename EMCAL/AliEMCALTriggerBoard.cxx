@@ -146,8 +146,6 @@ void AliEMCALTriggerBoard::SlidingWindow(TriggerType_t type, Int_t thres, Int_t 
 				}
 			}
 
-			if ( type == kL1Jet ) sum /= 4; // truncate patch sum for jet case
-
 			if ( sum > thres ) 
 			{
 				new((*fPatches)[fPatches->GetLast()+1]) 
