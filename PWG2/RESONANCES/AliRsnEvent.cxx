@@ -71,7 +71,7 @@ AliRsnEvent& AliRsnEvent::operator= (const AliRsnEvent & event)
 // Works in the same way as the copy constructor.
 //
    TObject::operator=(event);
-  if (this == &copy)
+  if (this == &event)
     return *this;
    fRef             = event.fRef;
    fRefMC           = event.fRefMC;
