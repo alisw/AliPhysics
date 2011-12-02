@@ -49,6 +49,16 @@ AliTRDqaEnergyDeposit::AliTRDqaEnergyDeposit()
   // Default constructor
   //
 
+  for (Int_t i = 0; i < 2; i++) {
+    fSignalPtSum[i] = 0x0;
+  }
+
+  for (Int_t j = 0; j < 2*5; j++) {
+    fSignalPtType[j] = 0x0;
+    fSignalPtPure[j] = 0x0;
+    fProb[j]         = 0x0;
+  }
+
 }
 
 //______________________________________________________________________________
@@ -62,6 +72,16 @@ AliTRDqaEnergyDeposit:: AliTRDqaEnergyDeposit(const AliTRDqaEnergyDeposit & /*tr
   //
   // Copy constructor
   //
+
+  for (Int_t i = 0; i < 2; i++) {
+    fSignalPtSum[i] = 0x0;
+  }
+
+  for (Int_t j = 0; j < 2*5; j++) {
+    fSignalPtType[j] = 0x0;
+    fSignalPtPure[j] = 0x0;
+    fProb[j]         = 0x0;
+  }
 
 }
 
@@ -80,6 +100,16 @@ AliTRDqaEnergyDeposit::AliTRDqaEnergyDeposit(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+
+  for (Int_t i = 0; i < 2; i++) {
+    fSignalPtSum[i] = 0x0;
+  }
+
+  for (Int_t j = 0; j < 2*5; j++) {
+    fSignalPtType[j] = 0x0;
+    fSignalPtPure[j] = 0x0;
+    fProb[j]         = 0x0;
+  }
 
 }
 

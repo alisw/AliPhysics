@@ -1163,7 +1163,10 @@ Float_t AliTRDtrackerV1::FitTiltedRiemanConstraint(AliTRDseedV1 *tracklets, Doub
   Double_t b = fitter->GetParameter(1);
   Double_t curvature = a/TMath::Sqrt(b*b + 1);
 
-  Float_t chi2track = fitter->GetChisquare()/Double_t(nPoints);
+  Float_t chi2track = 0.0;
+  if (nPoints > 0) {
+    chi2track = fitter->GetChisquare()/Double_t(nPoints);
+  }
   for(Int_t ip = 0; ip < AliTRDtrackerV1::kNPlanes; ip++)
     tracklets[ip].SetC(curvature, 1);
 
@@ -3158,7 +3161,9 @@ Bool_t AliTRDtrackerV1::ImproveSeedQuality(AliTRDtrackingChamber **stack, AliTRD
     lQuality[jLayer] = bseed[jLayer].GetQuality(kTRUE);
     quality    += lQuality[jLayer];
   }
-  quality /= rLayers;
+  if (rLayers > 0) {
+    quality /= rLayers;
+  }
   AliDebug(2, Form("Start N[%d] Q[%f] chi2[%f]", rLayers, quality, chi2));
 
   for (Int_t iter = 0; iter < 4; iter++) {

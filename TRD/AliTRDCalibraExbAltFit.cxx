@@ -417,6 +417,7 @@ void AliTRDCalibraExbAltFit::FillPEArray2()
       
       Int_t nEntries=0;
       TGraphErrors *gg=DrawMS(fitterhisto,nEntries);
+      if (!gg) continue;
       // printf("N: %i\n",gg->GetN());
       // printf("entries: %i\n",nEntries);
 

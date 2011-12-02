@@ -579,7 +579,9 @@ TH2F *AliTRDCalPad::MakeHisto2DCh(Int_t ch, const AliTRDCalDet *calDet, Int_t ty
 	      nb++;	    
 	    }
 	  }
-	  value = value/nb;
+          if (nb > 0) {
+	    value = value/nb;
+	  }
 	  if(typedet == 0) his->SetBinContent(binx,biny,value*factor);
 	  else his->SetBinContent(binx,biny,value+factor);
 	}

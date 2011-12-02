@@ -426,6 +426,7 @@ void AliTRDCalibraVdriftLinearFit::FillPEArray2()
       
       Int_t nEntries=0;
       TGraphErrors *gg=DrawMS(fitterhisto,nEntries);
+      if (!gg) continue;
       // Number of points of the TGraphErrors
       if(gg->GetN() < 20) {
 	if(gg) delete gg;

@@ -112,16 +112,24 @@ AliTRDCalibViewer::AliTRDCalibViewer(const char* fileName, const char* treeName)
 }
 
 //_____________________________________________________________________________
-AliTRDCalibViewer& AliTRDCalibViewer::operator=(const AliTRDCalibViewer& param) {
+AliTRDCalibViewer& AliTRDCalibViewer::operator=(const AliTRDCalibViewer& param) 
+{
   //
   // assignment operator
   //
+
+  if (this == &param) {
+    return *this;
+  }
+
   fTree = param.fTree;
   fTreeMustBeDeleted = param.fTreeMustBeDeleted;
   fListOfObjectsToBeDeleted = param.fListOfObjectsToBeDeleted;
   fAbbreviation = param.fAbbreviation;
   fAppendString = param.fAppendString;
+
   return(*this);
+
 }
 
 //_____________________________________________________________________________

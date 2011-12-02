@@ -50,10 +50,30 @@ AliTRDqaJPsi::AliTRDqaJPsi()
   // default dummy constructor
   //
 
-  for (Int_t i = 0; i < 1000; i++) {
-    fSM[i] = 0;
+  for (Int_t k = 0; k < fgknSteps; k++) {
+    fStatus[k]      = 0x0;
+    fAngleSM[k]     = 0x0;
+    fInvMass[k]     = 0x0;
+    fInvMassVec[k]  = 0x0;
+    fInvMassDiff[k] = 0x0;
+    fPtAngle[k]     = 0x0;
   }
- 
+
+  for (Int_t l = 0; l < 2*fgknSteps; l++) {
+    fnTracks[l]     = 0x0;
+    fPt[l]          = 0x0;
+    fPID[l]         = 0x0;
+  }
+
+  for (Int_t i = 0; i < 1000; i++) {
+    fSM[i]          = 0;
+    fTracks[i]      = 0x0;
+    fVec[i]         = 0x0;
+    for (Int_t j = 0; j < fgknSteps; j++) {
+      fInSample[i][j] = 0;
+    }
+  }
+
 }
 
 //______________________________________________________________________________
@@ -68,8 +88,28 @@ AliTRDqaJPsi:: AliTRDqaJPsi(const AliTRDqaJPsi & /*trd*/)
   // Copy constructor
   //
 
+  for (Int_t k = 0; k < fgknSteps; k++) {
+    fStatus[k]      = 0x0;
+    fAngleSM[k]     = 0x0;
+    fInvMass[k]     = 0x0;
+    fInvMassVec[k]  = 0x0;
+    fInvMassDiff[k] = 0x0;
+    fPtAngle[k]     = 0x0;
+  }
+
+  for (Int_t l = 0; l < 2*fgknSteps; l++) {
+    fnTracks[l]     = 0x0;
+    fPt[l]          = 0x0;
+    fPID[l]         = 0x0;
+  }
+
   for (Int_t i = 0; i < 1000; i++) {
-    fSM[i] = 0;
+    fSM[i]          = 0;
+    fTracks[i]      = 0x0;
+    fVec[i]         = 0x0;
+    for (Int_t j = 0; j < fgknSteps; j++) {
+      fInSample[i][j] = 0;
+    }
   }
 
 }
@@ -88,8 +128,29 @@ AliTRDqaJPsi::AliTRDqaJPsi(const char *name)
   DefineInput(0, TChain::Class());
   // Output slot #0 writes into a TH1 container
   DefineOutput(0,  TObjArray::Class()) ; 
+
+  for (Int_t k = 0; k < fgknSteps; k++) {
+    fStatus[k]      = 0x0;
+    fAngleSM[k]     = 0x0;
+    fInvMass[k]     = 0x0;
+    fInvMassVec[k]  = 0x0;
+    fInvMassDiff[k] = 0x0;
+    fPtAngle[k]     = 0x0;
+  }
+
+  for (Int_t l = 0; l < 2*fgknSteps; l++) {
+    fnTracks[l]     = 0x0;
+    fPt[l]          = 0x0;
+    fPID[l]         = 0x0;
+  }
+
   for (Int_t i = 0; i < 1000; i++) {
-    fSM[i] = 0;
+    fSM[i]          = 0;
+    fTracks[i]      = 0x0;
+    fVec[i]         = 0x0;
+    for (Int_t j = 0; j < fgknSteps; j++) {
+      fInSample[i][j] = 0;
+    }
   }
 
 }
