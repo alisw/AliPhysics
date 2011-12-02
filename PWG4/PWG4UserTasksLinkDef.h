@@ -14,4 +14,7 @@
 #pragma link C++ class AliCaloCellsQA+;
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
 
+// EmcalTasks
+#pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
+
 #endif
