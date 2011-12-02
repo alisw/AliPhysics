@@ -32,6 +32,7 @@
 #pragma link C++ class AliAnalysisTaskJetChem::AliFragFuncHistosPhiCorrInvMass+;
 #pragma link C++ class AliAnalysisTaskMinijet+;
 #pragma link C++ class AliAnalysisTaskJetsTM+;
+#pragma link C++ class AliAnalysisTaskJetCore+;
 #pragma link C++ class AliAnalysisTaskQGSep+;
 #pragma link C++ class AliAnalysisTaskJetResponse+;
 #pragma link C++ class AliAnalysisTaskJetResponseV2;

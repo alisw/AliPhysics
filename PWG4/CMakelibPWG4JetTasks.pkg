@@ -45,7 +45,8 @@ set ( SRCS
     JetTasks/AliAnalysisTaskJetChem.cxx 
     JetTasks/AliAnalysisTaskFragmentationFunction.cxx 
     JetTasks/AliAnalysisTaskMinijet.cxx 
-    JetTasks/AliAnalysisTaskQGSep.cxx 
+    JetTasks/AliAnalysisTaskQGSep.cxx     
+    JetTasks/AliAnalysisTaskJetCore.cxx 	
     JetTasks/AliAnalysisTaskJetsTM.cxx 
     JetTasks/AliAnalysisTaskJetResponse.cxx 
     JetTasks/AliPWG4HighPtTrackQA.cxx 
