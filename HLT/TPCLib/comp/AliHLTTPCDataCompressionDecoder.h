@@ -142,7 +142,6 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
   while (decodedClusterCnt<nofClusters && bReadSuccess && pInflater->NextValue(value, length)) {
     if (bNextCluster) {
       // switch to next cluster
-      c.Next(slice, partition);
       rawCluster.Clear();
       bNextCluster=false;
     }
@@ -203,10 +202,11 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
       if (fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
 	  fpClusterMerger->AddCandidate(slice, partition, ~AliHLTUInt32_t(0), rawCluster);
-      } else {
+     } else {
 	// FIXME: afetr introcucing the temporary rawCluster, the
 	// interface can be changed to set all properties in one
 	// call
+      c.Next(slice, partition);
       c.SetPadRow(rawCluster.GetPadRow()+rowOffset);
       c.SetPad(rawCluster.GetPad());
       c.SetTime(rawCluster.GetTime());
@@ -214,9 +214,9 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       c.SetSigmaZ2(rawCluster.GetSigmaZ2());
       c.SetCharge(rawCluster.GetCharge());
       c.SetQMax(rawCluster.GetQMax());
-      bNextCluster=true;
       outClusterCnt++;
       }
+      bNextCluster=true;
       decodedClusterCnt++;
     }
     parameterId=pInflater->NextParameter();
