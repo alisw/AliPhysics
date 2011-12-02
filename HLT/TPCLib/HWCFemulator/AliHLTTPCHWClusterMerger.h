@@ -14,6 +14,7 @@
 //          Handles merging of branch border clusters
 
 #include "AliHLTTPCRawCluster.h"
+#include "AliHLTTPCClusterMCData.h"
 #include "AliHLTLogging.h"
 #include <vector>
 #include "TObject.h"
@@ -69,6 +70,27 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 			);
   }
 
+  // cache cluster for later merging
+  template<typename T> 
+  int AddCandidate(int slice,
+		   int partition,
+		   AliHLTUInt32_t id,
+		   const T& c,
+		   const AliHLTTPCClusterMCLabel &mc) {
+    return AddCandidate(slice,
+			partition,
+			c.GetPadRow(),
+			c.GetPad(),
+			c.GetTime(),
+			c.GetSigmaY2(),
+			c.GetSigmaZ2(),
+			c.GetCharge(),
+			c.GetQMax(),
+			id,
+			mc
+			);
+  }
+
   /// cache cluster for later merging
   int AddCandidate(int slice,
 		   int partition,
@@ -79,7 +101,8 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 		   float sigmaZ2,
 		   unsigned short charge,
 		   unsigned short qmax,
-		   AliHLTUInt32_t id=~AliHLTUInt32_t(0)
+		   AliHLTUInt32_t id=~AliHLTUInt32_t(0),
+		   const AliHLTTPCClusterMCLabel &mc=AliHLTTPCClusterMCLabel()
 		   );
 
   /// merge clusters
@@ -102,11 +125,14 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   class AliClusterRecord {
   public:
     AliClusterRecord()
-      : fSlice(-1), fPartition(-1), fBorder(-1), fMergedFlag(0), fId(~AliHLTUInt32_t(0)), fCluster() {}
-    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, AliHLTTPCRawCluster cluster)
-      : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster) {}
+      : fSlice(-1), fPartition(-1), fBorder(-1), fMergedFlag(0), fId(~AliHLTUInt32_t(0)), fCluster(), fMC() {}
+    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster)
+      : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster), fMC() {}
+    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster, const AliHLTTPCClusterMCLabel &mc)
+      : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster), fMC(mc) {}
+
     AliClusterRecord(const AliClusterRecord& other)
-      : fSlice(other.fSlice), fPartition(other.fPartition), fBorder(other.fBorder), fMergedFlag(other.fMergedFlag), fId(other.fId), fCluster(other.fCluster) {}
+      : fSlice(other.fSlice), fPartition(other.fPartition), fBorder(other.fBorder), fMergedFlag(other.fMergedFlag), fId(other.fId), fCluster(other.fCluster), fMC(other.fMC) {}
     AliClusterRecord& operator=(const AliClusterRecord& other) {
       if (this==&other) return *this;
       this->~AliClusterRecord();
@@ -128,8 +154,10 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     AliHLTUInt32_t GetId() const {return fId;}
     operator AliHLTTPCRawCluster() const {return fCluster;}
     const AliHLTTPCRawCluster& GetCluster() const {return fCluster;}
+    const AliHLTTPCClusterMCLabel& GetMCLabel() const {return fMC;}
     void SetMergedFlag(bool v ){ fMergedFlag = v;}
     AliHLTTPCRawCluster &Cluster(){ return fCluster; }
+    AliHLTTPCClusterMCLabel& MCLabel(){ return fMC; }
   private:
     int fSlice; //!
     int fPartition; //!
@@ -137,6 +165,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     bool fMergedFlag; //!
     AliHLTUInt32_t fId; //!
     AliHLTTPCRawCluster fCluster; //!
+    AliHLTTPCClusterMCLabel fMC; //!
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -234,6 +263,12 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     return b1.fTimeBin > b2.fTimeBin;
   }
  
+  static bool CompareMCWeights(const AliHLTTPCClusterMCWeight &a, const AliHLTTPCClusterMCWeight &b){
+    return a.fWeight > b.fWeight;
+  }
+  static bool CompareMCLabels(const AliHLTTPCClusterMCWeight &a, const AliHLTTPCClusterMCWeight &b){
+    return a.fMCID < b.fMCID;
+  }
 
   AliHLTInt16_t *fMapping;//!
   int fNRows;//!

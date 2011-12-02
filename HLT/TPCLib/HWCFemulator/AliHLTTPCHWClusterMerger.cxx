@@ -209,7 +209,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   float sigmaZ2,
 					   unsigned short charge,
 					   unsigned short qmax,
-					   AliHLTUInt32_t id
+					   AliHLTUInt32_t id,
+					   const AliHLTTPCClusterMCLabel &mc 
 					   )
 {
   /// add a candidate for merging and register in the index grid
@@ -251,7 +252,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   }
 
   fClusters.push_back(AliClusterRecord(slice, partition, iBorder, 0, id,
-				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax)));
+				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax), mc ));
 
   if( iBorder>=0 ){
     fBorderNClusters[iBorder]++;
@@ -388,7 +389,31 @@ sLeft+=n1;
       c1.Cluster().fPad  = w1*c1.Cluster().fPad + w2*c2.Cluster().fPad;
       c1.Cluster().fTime = w1*c1.Cluster().fTime + w2*c2.Cluster().fTime;
       
+      // merge MC labels
       
+      AliHLTTPCClusterMCWeight labels[6] = {
+	c1.GetMCLabel().fClusterID[0],
+	c1.GetMCLabel().fClusterID[1],
+	c1.GetMCLabel().fClusterID[2],
+	c2.GetMCLabel().fClusterID[0],
+	c2.GetMCLabel().fClusterID[1],
+	c2.GetMCLabel().fClusterID[2]
+      };
+
+      sort(labels, labels+6, CompareMCLabels);
+      for( unsigned int i=1; i<6; i++ ){
+	if(labels[i-1].fMCID==labels[i].fMCID ){
+	  labels[i].fWeight+=labels[i-1].fWeight;
+	  labels[i-1].fWeight = 0;
+	}
+      }
+
+      sort(labels, labels+6, CompareMCWeights );
+    
+      for( unsigned int i=0; i<3 && i<6; i++ ){
+	c1.MCLabel().fClusterID[i] = labels[i];
+      }
+
       // wipe c2
       fRemovedClusterIds.push_back(c2.GetId());
       HLTDebug("merging %d into %d", border2[ib2].fClusterRecordID, border1[ib1].fClusterRecordID);
