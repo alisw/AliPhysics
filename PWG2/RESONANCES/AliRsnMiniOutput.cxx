@@ -185,27 +185,28 @@ AliRsnMiniOutput& AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
 //
 // Assignment operator
 //
-
-   fOutputType = copy.fOutputType;
-   fComputation = copy.fComputation;
-   fMotherPDG = copy.fMotherPDG;
-   fMotherMass = copy.fMotherMass;
-   fPairCuts = copy.fPairCuts;
-   fOutputID = copy.fOutputID;
-   fAxes = copy.fAxes;
-   fComputed = copy.fComputed;
-   fList = copy.fList;
-
-   Int_t i;
-   for (i = 0; i < 2; i++) {
-      fCutID[i] = copy.fCutID[i];
-      fDaughter[i] = copy.fDaughter[i];
-      fCharge[i] = copy.fCharge[i];
-   }
-   
-   fSel1.Set(0);
-   fSel2.Set(0);
-   
+  if (this == &copy)
+    return *this;
+  fOutputType = copy.fOutputType;
+  fComputation = copy.fComputation;
+  fMotherPDG = copy.fMotherPDG;
+  fMotherMass = copy.fMotherMass;
+  fPairCuts = copy.fPairCuts;
+  fOutputID = copy.fOutputID;
+  fAxes = copy.fAxes;
+  fComputed = copy.fComputed;
+  fList = copy.fList;
+  
+  Int_t i;
+  for (i = 0; i < 2; i++) {
+    fCutID[i] = copy.fCutID[i];
+    fDaughter[i] = copy.fDaughter[i];
+    fCharge[i] = copy.fCharge[i];
+  }
+  
+  fSel1.Set(0);
+  fSel2.Set(0);
+  
    return (*this);
 }
 

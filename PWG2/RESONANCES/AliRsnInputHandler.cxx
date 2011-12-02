@@ -53,6 +53,8 @@ AliRsnInputHandler& AliRsnInputHandler::operator=(const AliRsnInputHandler &copy
 //
 // Default constructor.
 //
+  if (this == &copy)
+    return *this;
    fRsnEventCuts = copy.fRsnEventCuts;
    return *this;
 }

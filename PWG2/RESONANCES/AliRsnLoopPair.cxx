@@ -76,7 +76,8 @@ AliRsnLoopPair &AliRsnLoopPair::operator=(const AliRsnLoopPair &copy)
 //
 
    AliRsnLoop::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
    fUseMCRef = copy.fUseMCRef;

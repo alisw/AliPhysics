@@ -86,8 +86,10 @@ AliRsnValueDaughter& AliRsnValueDaughter::operator=(const AliRsnValueDaughter& c
 //
 
    AliRsnValue::operator=(copy);
+   if (this == &copy)
+     return *this;
    fType = copy.fType;
-
+   
    return (*this);
 }
 

@@ -104,6 +104,8 @@ AliRsnMiniMonitor& AliRsnMiniMonitor::operator=(const AliRsnMiniMonitor& copy)
 //
    
    TNamed::operator=(copy); 
+   if (this == &copy)
+     return *this;
    fType = copy.fType; 
    fCutID = copy.fCutID; 
    fCharge = copy.fCharge;

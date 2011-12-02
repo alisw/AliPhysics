@@ -87,7 +87,8 @@ AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
 //
 
    AliRsnTarget::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fUseMCInfo = copy.fUseMCInfo;
    fComputedValue = copy.fComputedValue;
    fBinArray = copy.fBinArray;

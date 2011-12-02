@@ -72,6 +72,8 @@ AliRsnCutKaonForPhi2010& AliRsnCutKaonForPhi2010::operator=(const AliRsnCutKaonF
 //
 
    AliRsnCut::operator=(copy);
+   if (this == &copy)
+     return *this;
    fMode = copy.fMode;
    fCutTPC = copy.fCutTPC;
    fCutTOF = copy.fCutTOF;

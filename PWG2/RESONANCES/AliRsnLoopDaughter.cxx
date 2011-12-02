@@ -57,6 +57,8 @@ AliRsnLoopDaughter& AliRsnLoopDaughter::operator=(const AliRsnLoopDaughter& copy
 //
 
    AliRsnLoop::operator=(copy);
+   if (this == &copy)
+     return *this;
    fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
    fUseMCRef = copy.fUseMCRef;

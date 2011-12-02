@@ -83,10 +83,12 @@ AliRsnValueEvent& AliRsnValueEvent::operator=(const AliRsnValueEvent& copy)
 // Works like copy constructor.
 //
 
-   AliRsnValue::operator=(copy);
-   fType = copy.fType;
-
-   return (*this);
+  AliRsnValue::operator=(copy);
+  if (this == &copy)
+    return *this;
+  fType = copy.fType;
+  
+  return (*this);
 }
 
 //_____________________________________________________________________________

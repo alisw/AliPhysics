@@ -79,17 +79,18 @@ const AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy
 // they are anyway reset.
 //
 
-   TNamed::operator=(copy);
-
-   fSkipFailed = copy.fSkipFailed;
-   fType = copy.fType;
-   fSteps = copy.fSteps;
-   fValues = copy.fValues;
-   fNValues = copy.fNValues;
-   fList = copy.fList;
-   fIndex = copy.fIndex;
-   fArray = copy.fArray;
-
+  TNamed::operator=(copy);
+  if (this == &copy)
+    return *this;
+  fSkipFailed = copy.fSkipFailed;
+  fType = copy.fType;
+  fSteps = copy.fSteps;
+  fValues = copy.fValues;
+  fNValues = copy.fNValues;
+  fList = copy.fList;
+  fIndex = copy.fIndex;
+  fArray = copy.fArray;
+  
    Reset();
 
    return (*this);

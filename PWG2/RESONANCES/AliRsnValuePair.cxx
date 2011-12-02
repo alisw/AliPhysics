@@ -85,6 +85,8 @@ AliRsnValuePair& AliRsnValuePair::operator=(const AliRsnValuePair& copy)
 //
 
    AliRsnValue::operator=(copy);
+   if (this == &copy)
+     return *this;
    fType = copy.fType;
 
    return (*this);

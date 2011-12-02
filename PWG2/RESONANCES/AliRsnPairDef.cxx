@@ -99,11 +99,12 @@ const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 //
 // Assignment operator with standard behavior.
 //
-
-   fMotherMass = copy.fMotherMass;
-   fMotherPDG = copy.fMotherPDG;
-   fDef1 = copy.fDef1;
-   fDef2 = copy.fDef2;
-
+  if (this == &copy)
+    return *this;
+  fMotherMass = copy.fMotherMass;
+  fMotherPDG = copy.fMotherPDG;
+  fDef1 = copy.fDef1;
+  fDef2 = copy.fDef2;
+  
    return (*this);
 }

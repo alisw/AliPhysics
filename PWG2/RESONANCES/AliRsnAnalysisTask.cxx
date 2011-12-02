@@ -72,6 +72,8 @@ AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy
 // Can be used in PROOF and by plugins.
 //
    AliAnalysisTaskSE::operator=(copy);
+   if (this == &copy)
+     return *this;
    fRsnObjects = copy.fRsnObjects;
    fInputEHMain = copy.fInputEHMain;
    fInputEHMix = copy.fInputEHMix;

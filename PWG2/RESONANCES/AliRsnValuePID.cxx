@@ -115,7 +115,8 @@ AliRsnValuePID& AliRsnValuePID::operator=(const AliRsnValuePID& copy)
 //
 
    AliRsnValue::operator=(copy);
-   
+   if (this == &copy)
+     return *this;
    fValuePID = copy.fValuePID;
    fSpecies = copy.fSpecies;
    fPID = copy.fPID;

@@ -56,7 +56,8 @@ AliRsnLoopEff& AliRsnLoopEff::operator=(const AliRsnLoopEff& copy)
 //
 
    AliRsnLoop::operator=(copy);
-
+   if (this == &copy)
+     return *this;
    fAddSteps = copy.fAddSteps;
    fSteps = copy.fSteps;
    fOutput = copy.fOutput;

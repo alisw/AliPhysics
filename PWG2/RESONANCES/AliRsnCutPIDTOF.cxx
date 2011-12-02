@@ -67,6 +67,8 @@ AliRsnCutPIDTOF& AliRsnCutPIDTOF::operator=(const AliRsnCutPIDTOF& copy)
 // To set the reference PID type, calls the SetRefType method,
 // which sets the mass accordingly and coherently.
 //
+  if (this == &copy)
+    return *this;
 
    fRejectUnmatched = copy.fRejectUnmatched;
    fESDpid          = copy.fESDpid;

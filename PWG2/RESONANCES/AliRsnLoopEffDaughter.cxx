@@ -47,8 +47,10 @@ AliRsnLoopEffDaughter& AliRsnLoopEffDaughter::operator=(const AliRsnLoopEffDaugh
 //
 
    AliRsnLoopEff::operator=(copy);
+   if (this == &copy)
+     return *this;
    fDef = copy.fDef;
-
+   
    return (*this);
 }
 

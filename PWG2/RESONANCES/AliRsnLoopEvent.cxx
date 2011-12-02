@@ -39,9 +39,8 @@ AliRsnLoopEvent& AliRsnLoopEvent::operator=(const AliRsnLoopEvent& copy)
 // Assignment operator
 //
 
-   AliRsnLoop::operator=(copy);
-
-   return (*this);
+  AliRsnLoop::operator=(copy);
+  return (*this);
 }
 
 //_____________________________________________________________________________

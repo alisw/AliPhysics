@@ -104,7 +104,9 @@ const AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &c
 //
 // Assignment operator has standard behavior.
 //
-
+  if (this == &copy)
+    return *this;
+  
    fMass = copy.fMass;
    fCharge = copy.fCharge;
    fPID = copy.fPID;

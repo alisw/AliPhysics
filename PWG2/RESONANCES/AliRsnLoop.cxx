@@ -47,11 +47,12 @@ AliRsnLoop& AliRsnLoop::operator=(const AliRsnLoop& copy)
 //
 // Assignment operator
 //
-
-   fIsMixed = copy.fIsMixed;
-   fEventCuts = copy.fEventCuts;
-   fOutputs = copy.fOutputs;
-   return (*this);
+  if (this == &copy)
+    return *this;
+  fIsMixed = copy.fIsMixed;
+  fEventCuts = copy.fEventCuts;
+  fOutputs = copy.fOutputs;
+  return (*this);
 }
 
 //_____________________________________________________________________________
