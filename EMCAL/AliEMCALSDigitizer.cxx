@@ -131,6 +131,14 @@ AliEMCALSDigitizer::AliEMCALSDigitizer(const AliEMCALSDigitizer & sd)
   //cpy ctor 
 }
 
+//_____________________________________________________________________
+AliEMCALSDigitizer& AliEMCALSDigitizer::operator = (const AliEMCALSDigitizer& source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
+
+  new (this) AliEMCALSDigitizer(source);
+  return *this;
+}
 
 //____________________________________________________________________________ 
 AliEMCALSDigitizer::~AliEMCALSDigitizer() {
@@ -463,7 +471,6 @@ Bool_t AliEMCALSDigitizer::operator==( AliEMCALSDigitizer const &sd )const
   else
     return kFALSE ;
 }
-
 //__________________________________________________________________
 void AliEMCALSDigitizer::PrintSDigits(Option_t * option)
 {

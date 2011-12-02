@@ -114,7 +114,6 @@ AliEMCALQAChecker& AliEMCALQAChecker::operator = (const AliEMCALQAChecker &qac)
 { // assignment operator; use copy ctor
   if (&qac == this) return *this;
 
-  this->~AliEMCALQAChecker();
   new (this) AliEMCALQAChecker(qac);
   return *this;
 }

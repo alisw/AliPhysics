@@ -24,6 +24,7 @@ class AliEMCALHit : public AliHit {
 public:
   AliEMCALHit(); // default ctor
   AliEMCALHit(const AliEMCALHit & hit);
+  AliEMCALHit& operator = (const AliEMCALHit& source) ;
   AliEMCALHit(Int_t shunt, Int_t primary, Int_t tracknumber, Int_t iparent, Float_t ienergy, Int_t id, Float_t *hits,Float_t *p);
   virtual ~AliEMCALHit(void) {}// dtor
   //returns the energy loss for this hit

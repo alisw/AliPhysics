@@ -742,7 +742,14 @@ AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch(const AliEMCALMatch& copy)
 {
   //copy ctor
 }
+//_____________________________________________________________________
+AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch& AliEMCALReconstructor::AliEMCALMatch::AliEMCALMatch::operator = (const AliEMCALMatch &source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
 
+  new (this) AliEMCALMatch(source);
+  return *this;
+}
 //
 //==================================================================================
 //

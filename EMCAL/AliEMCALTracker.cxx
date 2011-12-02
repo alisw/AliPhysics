@@ -111,28 +111,12 @@ AliEMCALTracker::AliEMCALTracker(const AliEMCALTracker& copy)
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& copy)
-{
-  //
-  // Assignment operator.
-  // Besides copying all parameters, duplicates all collections.	
-  //
+AliEMCALTracker& AliEMCALTracker::operator=(const AliEMCALTracker& source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
 
-  fCutPt  = copy.fCutPt;
-  fClusterWindow = copy.fClusterWindow;
-  fCutEta = copy.fCutEta;
-  fCutPhi = copy.fCutPhi;	
-  fStep = copy.fStep;
-  fTrackCorrMode = copy.fTrackCorrMode;
-
-  fCutNITS = copy.fCutNITS;
-  fCutNTPC = copy.fCutNTPC;
-  
-  fTracks = (TObjArray*)copy.fTracks->Clone();
-  fClusters = (TObjArray*)copy.fClusters->Clone();
-  fGeom = copy.fGeom;
-  
-  return (*this);
+  new (this) AliEMCALTracker(source);
+  return *this;
 }
 //
 //------------------------------------------------------------------------------

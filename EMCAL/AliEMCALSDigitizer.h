@@ -34,6 +34,7 @@ public:
   AliEMCALSDigitizer() ;          // ctor
   AliEMCALSDigitizer(const char * alirunFileName, const char * eventFolderName = AliConfig::GetDefaultEventFolderName()) ; 
   AliEMCALSDigitizer(const AliEMCALSDigitizer & sd) ;
+  AliEMCALSDigitizer& operator = (const AliEMCALSDigitizer& source) ;
   virtual ~AliEMCALSDigitizer(); // dtor
 
   Float_t       Digitize(Float_t energy)const; //convert energy in GeV to int amplitude
@@ -47,7 +48,6 @@ public:
   void          SetEventRange(Int_t first=0, Int_t last=-1) {fFirstEvent=first; fLastEvent=last; }
 
   Bool_t operator == (const AliEMCALSDigitizer & sd) const ;
-  const AliEMCALSDigitizer & operator = (const AliEMCALSDigitizer & /*sd*/) {return *this ;}
 
   virtual void Browse(TBrowser* b);
 

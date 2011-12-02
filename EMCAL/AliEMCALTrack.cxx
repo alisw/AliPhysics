@@ -113,21 +113,12 @@ AliEMCALTrack::AliEMCALTrack(const AliEMCALTrack& t)
 //
 //------------------------------------------------------------------------------
 //
-AliEMCALTrack& AliEMCALTrack::operator=(const AliEMCALTrack &t)
-{
-	//
-	// Assignment operator
-	// Works like copy constructor
-	//
-	
-	fClusterIndex = t.fClusterIndex;
-	fClusterDist = t.fClusterDist;
-	
-	fMass = t.fMass;
-	
-	fSeedIndex = t.fSeedIndex;
-	fSeedLabel = t.fSeedLabel;
-	return *this;
+AliEMCALTrack& AliEMCALTrack::operator=(const AliEMCALTrack &source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
+
+  new (this) AliEMCALTrack(source);
+  return *this;
 }
 //
 //------------------------------------------------------------------------------

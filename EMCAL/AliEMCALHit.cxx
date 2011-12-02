@@ -64,7 +64,14 @@ AliEMCALHit::AliEMCALHit(const AliEMCALHit & hit)
 {
     // copy ctor
 }
+//_____________________________________________________________________
+AliEMCALHit& AliEMCALHit::operator = (const AliEMCALHit &source)
+{ // assignment operator; use copy ctor
+  if (&source == this) return *this;
 
+  new (this) AliEMCALHit(source);
+  return *this;
+}
 //______________________________________________________________________
 AliEMCALHit::AliEMCALHit(Int_t shunt, Int_t primary, Int_t track,Int_t iparent, Float_t ienergy, Int_t id,
 			 Float_t *hits,Float_t *p)

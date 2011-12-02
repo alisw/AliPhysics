@@ -73,6 +73,7 @@ class AliEMCALReconstructor : public AliReconstructor {
   public:
     AliEMCALMatch();
     AliEMCALMatch(const AliEMCALMatch& copy);
+    AliEMCALMatch& operator = (const AliEMCALMatch& source) ;
     virtual ~AliEMCALMatch() { }
     //----------------------------------------------------------------------------
     Int_t     Compare(const TObject *obj) const;
