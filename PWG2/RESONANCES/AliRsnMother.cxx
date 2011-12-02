@@ -62,7 +62,7 @@ AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
 // Assignment operator.
 // Does not duplicate pointers.
 //
-  if (this == &copy)
+  if (this == &obj)
     return *this;
   
   fSum = obj.fSum;
