@@ -66,6 +66,7 @@ TCanvas *ProcessCanvasRatioTrackB(TObjArray *triggersB, TH1 **hB, TH1 **hTracker
 TCanvas *ProcessCanvasAsymMatched(TObjArray *triggersB, TH1 **hPosMatchedB, TH1 **hNegMatchedB, TH1 **hAllMatchedB, Int_t indTrigger, TString canvasName,TString legendHeader="");
 TCanvas *ProcessCanvasHighPtMuons(TObjArray *triggersB, TH1 **hB, TH1 **hMatchedLowPtB, TH1 **hAllMatchedHightPtB, Int_t indTrigger, TString canvasName,TString legendHeader="");
 Bool_t IsTrigger(TObjArray *array, Int_t index, TString name);
+Bool_t IsTriggerSelectedForMuonPhysics(TObjArray *array, Int_t index);
 Bool_t IsHeavyIonCollision(AliCounterCollection *eventCounters);
 
 //--------------------------------------------------------------------------
@@ -188,6 +189,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TString CanvasName = "cAll";
   TCanvas *cAll = new TCanvas(CanvasName.Data(),CanvasName.Data());
   cAll->SetLeftMargin(0.18);
+	cAll->SetRightMargin(0.18);
+	cAll->SetLogz(1);
   cAll->cd();
   //TH2* hAll = (TH2*) ProcessHisto2D(eventCounters, "trigger", "run", Form("run:any/%s",select.Data()) , "");
   TH2* hAll = (TH2*) ProcessHisto2D(eventCounters, "trigger", "run", "run:any" , "");
@@ -200,7 +203,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     hAll->GetYaxis()->SetBinLabel(ibin, newLabel.Data());
     delete labelArray;
   }
-  hAll->Draw("TEXT");
+  hAll->Draw("COLZ");
 
 	
   //declare a default canvas c1 
@@ -219,8 +222,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
   TString centLegendName[centBinMax] ={"All collisions","[0-80%] from V0 amplitude","low mult. [60-80%] from V0 amplitude","high mult. [0-10%] from V0 amplitude"};
   TString centLegendNameShort[centBinMax] ={"All","[0-80%]","[60-80%]","[0-10%]"};
   TString selectionCent;
-	
-	
+		
   TH1* hBNoPS[centBinMax][10]={}; 
   TH1* hBWithPS[centBinMax][10]={};
   TH1* hB[centBinMax][10]={};
@@ -236,9 +238,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
     cout<<"Too many triggers = "<<triggersB->GetEntriesFast()<<endl;
     return;
   }
-	
-
-	
+		
   //loop on centrality
   for(centBin = 0; centBin < centBinMaxLoop; centBin++){
     selectionCent = centBinName[centBin];
@@ -281,7 +281,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       hACWithPS[centBin][i] =  (TH1*) ProcessHisto(eventCounters, "run", selection, histoName);
     
       TString triggerNameE = ( (TObjString*) triggersE->At(i) )->GetString();
-			// Histo trigger without Phys. Sel. E
+      // Histo trigger without Phys. Sel. E
       selection = selectionCent; selection += Form("trigger:%s/%s", triggerNameE.Data(), selectRuns.Data());
       histoName = histoNameBase;
       histoName += "ENoPS";
@@ -354,7 +354,6 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       NumOfEWithPS[centBin][i] = hEWithPS[centBin][i]->Integral();
     }
   }
-
   centBin = 0;
 	
   cout<<"//==================================================================================="<<endl;
@@ -413,7 +412,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN") ) continue;
+      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 
       canvasName = "PhysSel_trigger";
       canvasName +=k;
@@ -444,8 +443,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN")) continue;
-			
+      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
+ 			
       canvasName = "CentralityCheck_trigger";
       canvasName +=k;
 			
@@ -482,8 +481,8 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !IsTrigger(triggersB, k, "INT") && !IsTrigger(triggersB, k, "MUS" ) && !IsTrigger(triggersB, k, "ANY") && !IsTrigger(triggersB,k,"CMB")&&!IsTrigger(triggersB, k, "CPBI")&&!IsTrigger(triggersB, k, "CVHN")&&!IsTrigger(triggersB, k, "CVLN") ) continue;
-		
+      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
+ 		
       canvasName = "RatioTrackTypes_cent";
       canvasName += centBin;
       canvasName +="trigger";
@@ -528,13 +527,13 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB")|| IsTrigger(triggersB, k, "CPBI") || IsTrigger(triggersB, k, "CVHN") || IsTrigger(triggersB, k, "CVLN") ) ) continue;
-
-			canvasName = "AsymMatched";
-			canvasName += centBin;
-			canvasName +="trigger";
-			canvasName +=k;
-			cAsymMatched[centBin][k]= ProcessCanvasAsymMatched(triggersB, hPosMatchedB[centBin], hNegMatchedB[centBin], hAllMatchedB[centBin], k, canvasName,legendHeader);
+      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
+ 
+      canvasName = "AsymMatched";
+      canvasName += centBin;
+      canvasName +="trigger";
+      canvasName +=k;
+      cAsymMatched[centBin][k]= ProcessCanvasAsymMatched(triggersB, hPosMatchedB[centBin], hNegMatchedB[centBin], hAllMatchedB[centBin], k, canvasName,legendHeader);
       cAsymMatched[centBin][k]->Draw();
       cAsymMatched[centBin][k]->Print(OutFileNamePDF.Data());
       cAsymMatched[centBin][k]->Write();
@@ -555,12 +554,12 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       //skip sum of all triggers
       if(k == (triggersB->GetEntriesFast()-1)) continue;
       //skip some triggers
-      if( !(IsTrigger(triggersB, k, "INT") || IsTrigger(triggersB, k, "MUS" ) || IsTrigger(triggersB,k,"CMB") || IsTrigger(triggersB, k, "CPBI") || IsTrigger(triggersB, k, "CVHN") || IsTrigger(triggersB, k, "CVLN") ) ) continue;
+      if ( !IsTriggerSelectedForMuonPhysics(triggersB,k) ) continue;
 		
-			canvasName = "HighPtMuons";
-			canvasName += centBin;
-			canvasName +="trigger";
-			canvasName +=k;
+      canvasName = "HighPtMuons";
+      canvasName += centBin;
+      canvasName +="trigger";
+      canvasName +=k;
 			
       cHighPtMuons[centBin][k]= ProcessCanvasHighPtMuons(triggersB, hB[centBin], hMatchedLowPtB[centBin], hMatchedHighPtB[centBin], k, canvasName,legendHeader);
       cHighPtMuons[centBin][k]->Draw();
@@ -747,7 +746,7 @@ void PlotMuonQA(const char* baseDir, const char* runList = 0x0, const char * tri
       run.Remove(TString::kLeading, '/');
       run.Remove(TString::kLeading, '0');
       
-			if ( ! selectRuns.Contains(run.Data()) ) continue;      
+      if ( ! selectRuns.Contains(run.Data()) ) continue;      
       
       // open the outfile for this run
       TFile *runFile = TFile::Open(objs->GetString());
@@ -1128,6 +1127,16 @@ Bool_t IsTrigger(TObjArray *array, Int_t index, TString name){
   return process;
 }
 
+Bool_t IsTriggerSelectedForMuonPhysics(TObjArray *triggersB, Int_t k){
+	
+  if ( !triggersB ) return kFALSE;
+  Bool_t selected;
+  selected =  (IsTrigger(triggersB,k,"CMB") || IsTrigger(triggersB, k, "CPBI") || IsTrigger(triggersB, k, "CVHN") || IsTrigger(triggersB, k, "CVLN") || IsTrigger(triggersB, k, "CCENT") || IsTrigger(triggersB, k, "CSEMI") );
+	
+  return selected;
+}
+
+
 Bool_t IsHeavyIonCollision(AliCounterCollection *eventCounters){
 	
   if(!eventCounters) return kFALSE;
@@ -1199,7 +1208,7 @@ TCanvas *ProcessCanvasRelativeTriggerContent(TObjArray *triggersB, TH1 **histo, 
 	
   TString hName, hTriggerName;
   Int_t indAllTrig = triggersB->GetEntriesFast()-1;
-  cout<<indAllTrig<<endl;
+
   for(Int_t i = 0; i < triggersB->GetEntriesFast()-1; i++){
     hName = "ratio";
     hName += ( (TObjString*) triggersB->At(i) )->GetString();
@@ -1287,7 +1296,7 @@ TCanvas *ProcessCanvasPhysSelCut(TObjArray *triggersB, TObjArray *triggersAC, TO
     hName = "ratioENoPS";
     hName += ( (TObjString*) triggersE->At(i) )->GetString();
     ratioENoPS[i] = static_cast<TH1*> (hENoPS[i]->Clone(hName));
-		if ( ratioENoPS[i]->GetEntries() > 0 ) ratioENoPS[i]->Divide(hBNoPS[i]);
+    if ( ratioENoPS[i]->GetEntries() > 0 ) ratioENoPS[i]->Divide(hBNoPS[i]);
     ratioENoPS[i]->SetLineWidth(0);
     ratioENoPS[i]->SetLineStyle(3);
     ratioENoPS[i]->SetMarkerStyle(24+i);
@@ -1803,7 +1812,7 @@ TH1* ProcessHisto( AliCounterCollection* counter, TString hVariable, TString hSe
   TH1* h1 = 0x0;
   if( !counter ) return h1;
 
-	//cout<<"ProcessHisto selection "<<hSelection<<endl;
+  //cout<<"ProcessHisto selection "<<hSelection<<endl;
 	
   if ( !hSelection.Contains("trigger: /") && !hSelection.Contains("trigger:/") ) h1 = (TH1*) counter->Draw(hVariable,hSelection);
   if ( !h1 ) h1 = new TH1D(hName,"",10,0,10);
@@ -1922,7 +1931,7 @@ Bool_t GetTriggerLists(const char* triggerList, TString listFromContainer, TObjA
 	isBadTrig = kTRUE;
 	while ( ( trigName = static_cast<TObjString*>(nextTrigger()) ) ) {
 	  if ( currTrigName.Contains(trigName->GetString()) ){
-			 isBadTrig = kFALSE;
+	    isBadTrig = kFALSE;
 	  }
 	}
 	if ( isBadTrig == kTRUE ){ 
@@ -1986,7 +1995,7 @@ TString GetRunList(const char *runList, TObjArray *runs, TObjArray *runs2){
     if(runs2) runs2->AddLast(new TObjString("*"));
   }
   
-	printf("selected runs from runlist %s: %s\n",runList, selectRuns.Data());
+  printf("selected runs from runlist %s: %s\n",runList, selectRuns.Data());
 	
   return selectRuns;
 }
