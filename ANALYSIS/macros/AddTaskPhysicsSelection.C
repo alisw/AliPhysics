@@ -40,7 +40,5 @@ AliPhysicsSelectionTask* AddTaskPhysicsSelection(Bool_t mCAnalysisFlag = kFALSE,
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
 
-  mgr->RegisterExtraFile("event_stat.root");
-
   return task;
 }   
