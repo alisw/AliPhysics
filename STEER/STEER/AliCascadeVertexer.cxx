@@ -153,7 +153,7 @@ Int_t AliCascadeVertexer::V0sTracks2CascadeVertices(AliESDEvent *event) {
          if (btrk->GetSign()<0) continue;  // bachelor's charge 
           
 	 AliESDv0 *pv0=&v0;
-         AliESDtrack bt(*btrk), *pbt=&bt;
+         AliExternalTrackParam bt(*btrk), *pbt=&bt;
 
          Double_t dca=PropagateToDCA(pv0,pbt,b);
          if (dca > fDCAmax) continue;
