@@ -24,6 +24,8 @@ class AliMUONTriggerTrack;
 class AliMUONGeometryTransformer;
 class AliMUONTriggerCircuit;
 class AliMUONLocalTrigger;
+class AliMUONCalibrationData;
+class AliMUONTriggerElectronics;
 
 class AliMUONRecoCheck : public TObject 
 {
@@ -92,6 +94,9 @@ private:
   void MakeTriggerableTracks();
 	
   Bool_t InitCircuit();
+  Bool_t InitTriggerResponse();
+  Bool_t InitCalibrationData();
+  Bool_t InitGeometryTransformer();
 
 private:
   AliMCEventHandler* fMCEventHandler; ///< to access MC truth information
@@ -109,6 +114,8 @@ private:
 	
   AliMUONGeometryTransformer* fGeometryTransformer; ///< geometry transformer
   AliMUONTriggerCircuit* fTriggerCircuit; ///< trigger circuit
+  AliMUONCalibrationData* fCalibrationData; //!< Used to load Local, Regional and Global masks
+  AliMUONTriggerElectronics* fTriggerElectronics; ///< object to re-compute the trigger info
   
   Bool_t fESDEventOwner;         ///< using constructor from the analysis task
 

@@ -43,6 +43,8 @@
 #include "AliMUONTrackParam.h"
 #include "AliMUONTriggerTrack.h"
 #include "AliMUONVTriggerTrackStore.h"
+#include "AliMUONTriggerStoreV1.h"
+#include "AliMUONLocalTrigger.h"
 #include "AliMCEventHandler.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
@@ -50,8 +52,14 @@
 #include "AliLog.h"
 #include "AliESDEvent.h"
 #include "AliESDMuonTrack.h"
+#include "AliMUONDigitStoreV2S.h"
+#include "AliMUONDigit.h"
+#include "AliMpVSegmentation.h"
+#include "AliMpSegmentation.h"
+#include "AliMpPad.h"
 
 #include "AliGeomManager.h"
+#include "AliCDBManager.h"
 #include "AliMpCDB.h"
 #include "AliMpDDLStore.h"
 #include "AliMUONCDB.h"
@@ -59,6 +67,9 @@
 #include "AliMUONTriggerCircuit.h"
 #include "AliMUONVTrackReconstructor.h"
 #include "AliMUONVTriggerStore.h"
+#include "AliMUONCalibrationData.h"
+#include "AliMUONTriggerElectronics.h"
+
 
 #include "TGeoManager.h"
 
@@ -89,6 +100,8 @@ fRecoTrackStore(0x0),
 fRecoTriggerTrackStore(0x0),
 fGeometryTransformer(0x0),
 fTriggerCircuit(0x0),
+fCalibrationData(0x0),
+fTriggerElectronics(0x0),
 fESDEventOwner(kTRUE)
 {
   /// Normal ctor
@@ -129,6 +142,8 @@ fRecoTrackStore(0x0),
 fRecoTriggerTrackStore(0x0),
 fGeometryTransformer(0x0),
 fTriggerCircuit(0x0),
+fCalibrationData(0x0),
+fTriggerElectronics(0x0),
 fESDEventOwner(kFALSE)
 {
   /// Normal ctor
@@ -152,6 +167,8 @@ AliMUONRecoCheck::~AliMUONRecoCheck()
   ResetStores();
   delete fGeometryTransformer;
   delete fTriggerCircuit;
+  delete fTriggerElectronics;
+  delete fCalibrationData;
 }
 
 //_____________________________________________________________________________
@@ -170,17 +187,8 @@ Bool_t AliMUONRecoCheck::InitCircuit()
 {
 
   if ( fTriggerCircuit ) return kTRUE;
-
-  if ( !AliMUONCDB::CheckOCDB() ) return kFALSE;
-
-  if ( !AliGeomManager::GetGeometry() )
-    AliGeomManager::LoadGeometry();
-
-  if ( !AliMpDDLStore::Instance(false) )
-    AliMpCDB::LoadDDLStore();
-	
-  fGeometryTransformer = new AliMUONGeometryTransformer();
-  fGeometryTransformer->LoadGeometryData();
+  
+  if ( ! InitGeometryTransformer() ) return kFALSE;
   
   fTriggerCircuit = new AliMUONTriggerCircuit(fGeometryTransformer);
 
@@ -390,10 +398,11 @@ void AliMUONRecoCheck::MakeTriggeredTracks()
     if (esdTrack->ContainTriggerData()) AliMUONESDInterface::Add(*esdTrack, *tmpTriggerStore);
   }
 	
-  if ( ! InitCircuit() ) return;
+  if ( InitCircuit() ) {
   
-  AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
-  tracker->EventReconstructTrigger(*fTriggerCircuit, *tmpTriggerStore, *fRecoTriggerTrackStore);
+    AliMUONVTrackReconstructor* tracker = AliMUONESDInterface::GetTracker();
+    tracker->EventReconstructTrigger(*fTriggerCircuit, *tmpTriggerStore, *fRecoTriggerTrackStore);
+  }
   
   delete tmpTriggerStore;
 }
@@ -540,7 +549,7 @@ void AliMUONRecoCheck::MakeTriggerableTracks()
  if (!(fRecoTriggerRefStore = AliMUONESDInterface::NewTriggerTrackStore()))
    return;
 
-  Double_t x, y, z, slopeX, slopeY, pZ;
+  Double_t x, y, z, slopeX, slopeY, pZ, xLoc, yLoc, zLoc;
   TParticle* particle;
   TClonesArray* trackRefs;
   Int_t nTrackRef = fMCEventHandler->MCEvent()->GetNumberOfTracks();
@@ -553,6 +562,7 @@ void AliMUONRecoCheck::MakeTriggerableTracks()
     if (nHits < 1) continue;
 				
     AliMUONTriggerTrack track;
+    AliMUONDigitStoreV2S digitStore;
     Int_t hitsOnTrigger = 0;
     Int_t currCh = -1;
 		
@@ -567,13 +577,39 @@ void AliMUONRecoCheck::MakeTriggerableTracks()
       Int_t detElemId = trackReference->UserId();
       Int_t chamberId = detElemId / 100 - 1;
       if (chamberId < AliMUONConstants::NTrackingCh() || chamberId >= AliMUONConstants::NCh() ) continue;
-			
-			
+
+      // Get track parameters of current hit
+      x = trackReference->X();
+      y = trackReference->Y();
+      z = trackReference->Z();
+      
+      if ( InitTriggerResponse() ) {
+        fGeometryTransformer->Global2Local(detElemId, x, y, z, xLoc, yLoc, zLoc);
+      
+        Int_t nboard = 0;
+        for ( Int_t cath = AliMp::kCath0; cath <= AliMp::kCath1; ++cath )
+        {
+          const AliMpVSegmentation* seg 
+          = AliMpSegmentation::Instance()
+          ->GetMpSegmentation(detElemId,AliMp::GetCathodType(cath));
+        
+          AliMpPad pad = seg->PadByPosition(xLoc,yLoc,kFALSE);
+          Int_t ix = pad.GetIx();
+          Int_t iy = pad.GetIy();
+        
+          if ( !pad.IsValid() ) continue;
+        
+          if ( cath == AliMp::kCath0 ) nboard = pad.GetLocalBoardId(0);
+        
+          AliMUONDigit* digit = new AliMUONDigit(detElemId,nboard,
+                                                 pad.GetLocalBoardChannel(0),cath);
+          digit->SetPadXY(ix,iy);
+          digit->SetCharge(1.);
+          digitStore.Add(*digit,AliMUONVDigitStore::kDeny);
+        }
+      }
+    
       if ( hitsOnTrigger == 0 ) {
-        // Get track parameters of current hit
-        x = trackReference->X();
-        y = trackReference->Y();
-        z = trackReference->Z();
         pZ = trackReference->Pz();
         slopeX = ( pZ == 0. ) ? 99999. : trackReference->Px() / pZ;
         slopeY = ( pZ == 0. ) ? 99999. : trackReference->Py() / pZ;
@@ -591,12 +627,32 @@ void AliMUONRecoCheck::MakeTriggerableTracks()
       }
 
     } // loop on hits
-		
-    if ( hitsOnTrigger >= 3 ){
-      // store the track
-      track.SetUniqueID(iTrackRef);
-      fRecoTriggerRefStore->Add(track);
+    
+    if ( hitsOnTrigger < 3 ) continue;
+
+    // Check if the track passes the trigger algorithm
+    if ( InitTriggerResponse() ) {
+      AliMUONTriggerStoreV1 triggerStore;
+      fTriggerElectronics->Digits2Trigger(digitStore,triggerStore);
+    
+      TIter next(triggerStore.CreateIterator());
+      AliMUONLocalTrigger* locTrg(0x0);
+    
+      Int_t ptCutLevel = 0;
+    
+      while ( ( locTrg = static_cast<AliMUONLocalTrigger*>(next()) ) )
+      {
+        if ( locTrg->IsTrigX() && locTrg->IsTrigY() ) 
+        {
+          ptCutLevel = TMath::Max(ptCutLevel, 1);
+          if ( locTrg->LoHpt() ) ptCutLevel = TMath::Max(ptCutLevel, 3);
+          else if ( locTrg->LoLpt() ) ptCutLevel = TMath::Max(ptCutLevel, 2);
+        } // board is fired 
+      } // end of loop on Local Trigger
+      track.SetPtCutLevel(ptCutLevel);
     }
+    track.SetUniqueID(iTrackRef);
+    fRecoTriggerRefStore->Add(track);
   }
 }
 
@@ -796,7 +852,6 @@ AliMUONTriggerTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTriggerTrack &
   TIter next(triggerTrackStore.CreateIterator());
   AliMUONTriggerTrack* track2;
   while ( ( track2 = static_cast<AliMUONTriggerTrack*>(next()) ) ) {
-      
     // check compatibility
     if (track.Match(*track2, sigmaCut)) {
       matchedTrack = track2;
@@ -806,5 +861,58 @@ AliMUONTriggerTrack* AliMUONRecoCheck::FindCompatibleTrack(AliMUONTriggerTrack &
   
   return matchedTrack;
   
+}
+
+
+//____________________________________________________________________________ 
+Bool_t AliMUONRecoCheck::InitTriggerResponse()
+{
+  /// Initialize trigger electronics
+  /// for building of triggerable tracks from MC
+  
+  if ( fTriggerElectronics ) return kTRUE;
+  
+  if ( ! InitGeometryTransformer() ) return kFALSE;
+  
+  if ( ! InitCalibrationData() ) return kFALSE;
+  
+  fTriggerElectronics = new AliMUONTriggerElectronics(fCalibrationData);
+  
+  return kTRUE;
+}
+
+
+//____________________________________________________________________________ 
+Bool_t AliMUONRecoCheck::InitCalibrationData()
+{
+  /// Initialize calibration data
+  if ( ! fCalibrationData ) {
+    if ( !AliMUONCDB::CheckOCDB() ) return kFALSE;
+    fCalibrationData = new AliMUONCalibrationData(AliCDBManager::Instance()->GetRun());
+  }
+  return kTRUE;
+}
+
+
+//____________________________________________________________________________ 
+Bool_t AliMUONRecoCheck::InitGeometryTransformer()
+{
+  /// Return calibration data
+  /// (create it if necessary)
+  if ( ! fGeometryTransformer ) {
+    
+    if ( !AliMUONCDB::CheckOCDB() ) return kFALSE;
+    
+    if ( !AliGeomManager::GetGeometry() )
+      AliGeomManager::LoadGeometry();
+    
+    if ( !AliMpDDLStore::Instance(false) )
+      AliMpCDB::LoadDDLStore();
+    
+    fGeometryTransformer = new AliMUONGeometryTransformer();
+    fGeometryTransformer->LoadGeometryData();
+  }
+  
+  return kTRUE;
 }
 

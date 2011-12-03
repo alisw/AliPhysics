@@ -26,7 +26,7 @@ class AliMUONTriggerTrack : public TObject
     AliMUONTriggerTrack& operator=(const AliMUONTriggerTrack& AliMUONTriggerTrack); // assignment operator
     AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, Float_t z21,
 			Float_t slopeX, Float_t slopeY,
-			Int_t iloTrg, Long_t theGTPattern, UShort_t hitsPatternInTrigCh=0); 
+			Int_t iloTrg, Long_t theGTPattern, Int_t ptCutLevel=1); 
     
     // getters
     
@@ -71,10 +71,16 @@ class AliMUONTriggerTrack : public TObject
     /// Return Global trigger pattern  (do not work with static statement) 
     UChar_t GetGTPattern() const {return fGTPattern;}
 
-    /// set word telling which trigger chambers where hit by track
-    UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
-    /// set word telling which trigger chambers where hit by track
+    /// Set word telling which trigger chambers where hit by track
     void     SetHitsPatternInTrigCh(UShort_t hitsPatternInTrigCh) {fHitsPatternInTrigCh = hitsPatternInTrigCh;}
+    /// Get word telling which trigger chambers where hit by track
+    UShort_t GetHitsPatternInTrigCh() const {return fHitsPatternInTrigCh;}
+  
+    /// Set pt cut level
+    void  SetPtCutLevel(Int_t ptCutLevel) { fPtCutLevel = ptCutLevel;}
+    /// Get pt cut level
+    Int_t GetPtCutLevel() const {return fPtCutLevel;}
+
     
     virtual void Print(Option_t* opt="FULL") const;
 
@@ -94,10 +100,11 @@ protected:
   Float_t fSlopeY; ///< track slope in Y
   Int_t   floTrgNum; ///< local trigger number
   UChar_t fGTPattern; ///< Global trigger pattern  (do not work with static statement)
+  Int_t   fPtCutLevel;  ///< Trigger pt cut level as in ESDs (1->Apt; 2->Lpt; 3->Hpt)
   UShort_t fHitsPatternInTrigCh; ///< Word containing info on the hits left in trigger chambers
   mutable TMatrixD *fCovariances; ///< Covariance matrix of track parameters 
 
-  ClassDef(AliMUONTriggerTrack, 6) // Reconstructed trigger track in ALICE dimuon spectrometer
+  ClassDef(AliMUONTriggerTrack, 7) // Reconstructed trigger track in ALICE dimuon spectrometer
     };
 	
 #endif

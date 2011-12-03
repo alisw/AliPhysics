@@ -45,6 +45,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
     fSlopeY(0),
     floTrgNum(0),
     fGTPattern(0),
+    fPtCutLevel(0),
     fHitsPatternInTrigCh(0),
     fCovariances(0x0)
 {
@@ -52,7 +53,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack()
       AliDebug(5,Form("this=%p",this));
 }
 //__________________________________________________________________________
-AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, Float_t z21, Float_t slopeX, Float_t slopeY, Int_t loTrgNum, Long_t theGTPattern, UShort_t hitsPatternInTrigCh)
+AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, Float_t z21, Float_t slopeX, Float_t slopeY, Int_t loTrgNum, Long_t theGTPattern, Int_t ptCutLevel)
     : TObject(),
       fx11(x11),
       fy11(y11),
@@ -62,7 +63,8 @@ AliMUONTriggerTrack::AliMUONTriggerTrack(Float_t x11, Float_t y11, Float_t z11, 
       fSlopeY(slopeY),
       floTrgNum(loTrgNum),
       fGTPattern(theGTPattern),
-      fHitsPatternInTrigCh(hitsPatternInTrigCh),
+      fPtCutLevel(ptCutLevel),
+      fHitsPatternInTrigCh(0),
       fCovariances(0x0)
 {
 /// ctor from local trigger output
@@ -93,6 +95,7 @@ AliMUONTriggerTrack::AliMUONTriggerTrack (const AliMUONTriggerTrack& theMUONTrig
       fSlopeY(theMUONTriggerTrack.fSlopeY),
       floTrgNum(theMUONTriggerTrack.floTrgNum),
       fGTPattern(theMUONTriggerTrack.fGTPattern),
+      fPtCutLevel(theMUONTriggerTrack.fPtCutLevel),
       fHitsPatternInTrigCh(theMUONTriggerTrack.fHitsPatternInTrigCh),
       fCovariances(0x0)
 {
