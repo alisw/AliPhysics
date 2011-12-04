@@ -1,3 +1,9 @@
+//-*- Mode: C++ -*-
+// $Id$
+//
+// 2010 Svein Lindal <slindal@fys.uio.no>                        *
+//         for The ALICE HLT Project.                                    *
+// Offline Buffer
 #if __GNUC__>= 3
    using namespace std;
 #endif

@@ -1,3 +1,9 @@
+//-*- Mode: C++ -*-
+// $Id$
+// Main authors: Matevz Tadel & Alja Mrak-Tadel: 2006, 2007              *
+// Author: 2010 Svein Lindal <slindal@fys.uio.no>                        *
+//         for The ALICE HLT Project.                                    *
+
 #if __GNUC__>= 3
    using namespace std;
 #endif
@@ -60,6 +66,8 @@ TObject * AliEveEventBufferHomer::GetEventFromSource() {
 
 ///___________________________________________________________________________
 void AliEveEventBufferHomer::AddToBuffer(TObject * event) {
+  //Add object to buffer
+
   cout << "AliEveEventBufferHomer::Add to buffer"<<endl;
   if(!event) {
     cout << "event is NULL pointer, return" << endl;
@@ -113,7 +121,7 @@ void AliEveEventBufferHomer::Initialize() {
 
 ///______________________________________________________________________
 void AliEveEventBufferHomer::ConnectToSource () {
-
+  //Connect to Source
   fHomer->SetRetryCount(200, 15);
   fHomer->ReConnectHOMER();
 }

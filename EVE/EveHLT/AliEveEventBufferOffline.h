@@ -55,11 +55,11 @@ private:
   ///Inherited from AliEveEventBuffer
   TObject * GetEventFromSource();
 
-  TFile * fFile;
-  Int_t fNEntries;
-  Int_t fEventNo;
-  AliESDEvent * fEvent;
-  TTree * fTree;
+  TFile * fFile;  //File poineter
+  Int_t fNEntries; //Number of entries
+  Int_t fEventNo; //Event number
+  AliESDEvent * fEvent; //Event pointer
+  TTree * fTree; //TTree pointer
 
   ClassDef(AliEveEventBufferOffline, 0); 
 };

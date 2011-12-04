@@ -66,9 +66,9 @@ private:
 
   ///Inherited form AliEveEventBuffer
   void AddToBuffer(TObject * event);
-  AliEveHOMERManager * fHomer;
-  Int_t fEventNo;
-  TList * fAsyncList;
+  AliEveHOMERManager * fHomer; //Pointer to homer manager
+  Int_t fEventNo; //Event number
+  TList * fAsyncList; //Async event list
 
 
 
