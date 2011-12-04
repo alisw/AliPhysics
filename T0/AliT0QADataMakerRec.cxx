@@ -43,6 +43,8 @@
 #include "AliT0RecoParam.h"
 #include "THnSparse.h"
 
+#include "TFitResultPtr.h"
+
 #include "Riostream.h"
 ClassImp(AliT0QADataMakerRec)
            
@@ -217,11 +219,11 @@ void AliT0QADataMakerRec::InitRaws()
   TH1F* fhRawTrigger = new TH1F("hRawTrigger"," triggers;Trigger ;Counts",6,0,6);
   for (Int_t itr=0; itr<6; itr++) fhRawTrigger->Fill(triggers[itr], 0); // RS Modified to allow cloning (no fNumTriggers member anymore)
   Add2RawsList(fhRawTrigger ,169, !expert, image, !saveCorr);
-  TH1F* fhRawMean = new TH1F("hRawMean","online mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
-  Add2RawsList( fhRawMean,170, expert, !image, !saveCorr);
+  TH1F* fhRawMean = new TH1F("hRawMean","online timer mean signal, physics event;",Int_t((high[170]-low[170])/4),low[170],high[170]);
+  Add2RawsList( fhRawMean,170, expert, !image, !saveCorr); //FK
 
-  TH1F* fhRawVertex = new TH1F("hRawVertex","online vertex signal; counts",Int_t((high[171]-low[171])/4),low[171],high[171]);
-  Add2RawsList( fhRawVertex,171, expert, image, !saveCorr);
+  TH1F* fhRawVertex = new TH1F("hRawVertex","online 0TVX vertex signal; counts",Int_t((high[171]-low[171])/4),low[171],high[171]);
+  Add2RawsList( fhRawVertex,171, expert, image, !saveCorr);//FK
 
   TH1F* fhRawORA = new TH1F("hRawORA","online OR A; counts",Int_t((high[172]-low[172])/4),low[172],high[172]);
   Add2RawsList( fhRawORA,172, expert, !image, !saveCorr);
@@ -294,36 +296,36 @@ void AliT0QADataMakerRec::InitRaws()
   Add2RawsList(fhHitsOrC ,216, expert, !image, !saveCorr);
   
   
-  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A",10000,-5000,5000);
-  Add2RawsList( fhOrCminOrA,219, expert, !image, !saveCorr);
+  TH1F* fhOrCminOrA= new TH1F("fhOrCminOrA","T0_OR C - T0_OR A [cm]",10000,-5000,5000);
+  Add2RawsList( fhOrCminOrA,219, !expert, image, !saveCorr); //FK
 
-  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on",10000,-5000,5000);
-  Add2RawsList( fhOrCminOrATvdcOn,217, expert, !image, !saveCorr);
+  TH1F* fhOrCminOrATvdcOn= new TH1F("fhOrCminOrATvdcOn","T0_OR C - T0_OR A TVDC on [cm]",10000,-5000,5000);
+  Add2RawsList( fhOrCminOrATvdcOn,217, !expert, image, !saveCorr);//FK
   
 
-  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off",10000,-5000,5000);
-  Add2RawsList( fhOrCminOrATvdcOff,218, expert, !image, !saveCorr);
+  TH1F* fhOrCminOrATvdcOff= new TH1F("fhOrCminOrATvdcOff","T0_OR C - T0_OR A TVDC off [cm]",10000,-5000,5000);
+  Add2RawsList( fhOrCminOrATvdcOff,218, !expert, image, !saveCorr);//FK
 
    //satellite  & beam background
   TH2F* fhBeam = new TH2F("fhBeam", " Mean vs Vertex ", 120, -30, 30, 120, -30, 30);
   fhBeam->SetOption("COLZ");
-  fhBeam->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-  fhBeam->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+  fhBeam->GetXaxis()->SetTitle("(T0C-T0A)/2, ns");
+  fhBeam->GetYaxis()->SetTitle("(T0C+T0A)/2, ns");
   Add2RawsList( fhBeam,220, !expert, image, !saveCorr);
-   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on ",50, -5, 5, 50, -5, 5) ;
+   TH2F* fhBeamTVDCon = new TH2F("fhBeamTVDCon", " Mean vs Vertex TVDC on from best",50, -5, 5, 50, -5, 5);//FK
    fhBeamTVDCon->SetOption("COLZ");
-   fhBeamTVDCon->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-   fhBeamTVDCon->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+   fhBeamTVDCon->GetXaxis()->SetTitle("(T0C-T0A)/2, ns best");
+   fhBeamTVDCon->GetYaxis()->SetTitle("(T0C+T0A)/2, ns");
    Add2RawsList( fhBeamTVDCon,221, expert, image, !saveCorr);
-   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off", 120, -30, 30, 120, -30, 30);
-   fhBeamTVDCoff->GetXaxis()->SetTitle("(T0C-T0A/2, ns");
-   fhBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A/2, ns");
+   TH2F* fhBeamTVDCoff = new TH2F("fhBeamTVDCoff", " Mean vs Vertex TVDC off from 1st", 120, -30, 30, 120, -30, 30);//FK
+   fhBeamTVDCoff->GetXaxis()->SetTitle("(T0C-T0A)/2, ns 1st");
+   fhBeamTVDCoff->GetYaxis()->SetTitle("(T0C+T0A)/2, ns");
    fhBeamTVDCoff->SetOption("COLZ");
    Add2RawsList( fhBeamTVDCoff,222, expert, image, !saveCorr);
-   TH1F* fhMean = new TH1F("fhMean", " (T0A+T0C)/2, ps ", 200, -2000, 2000);
-   Add2RawsList( fhMean,223, !expert, image, !saveCorr);
+   TH1F* fhMeanBest = new TH1F("fhMeanBest", " (T0A+T0C)/2, ps ", 200, -2000, 2000);
+   Add2RawsList( fhMeanBest,223, !expert, image, !saveCorr);
    //vertex 1st 
-   TH1F* fhVertex1st = new TH1F("fhVertex1st", " (T0A-T0C)/2, ps 1st particle", 200, -2000, 2000);
+   TH1F* fhVertex1st = new TH1F("fhVertex1st", " (T0A-T0C)/2, ps 1st particle", 500, -10000, 10000);//FK
    Add2RawsList( fhVertex1st ,225, !expert, image, !saveCorr);
    TH1F* fhVertexBest = new TH1F("fhVertexBest", " (T0A-T0C)/2, ps , best particle", 200, -2000, 2000);
    Add2RawsList( fhVertexBest ,226, !expert, image, !saveCorr);
@@ -603,8 +605,14 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	double   meanEstimate  =  hik->GetBinCenter( maxBin);
 	TF1* fit= new TF1("fit","gaus", meanEstimate - 40, meanEstimate + 40);
 	fit->SetParameters (hik->GetBinContent(maxBin), meanEstimate, 80);
-	hik->Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);
-	fMeans[ik]= (Int_t) fit->GetParameter(1);
+        TFitResultPtr r = hik->Fit("fit","RQ","Q",  meanEstimate-40,  meanEstimate+40);//FK
+        Int_t fitStatus = r; 
+        if(fitStatus == 0){
+  	  fMeans[ik]= (Int_t) fit->GetParameter(1);//FK  fit converged
+        }else{
+          if(hik->Integral()>0)
+            fMeans[ik] = (Int_t) hik->GetBinCenter(maxBin); //FK//Error while fitting
+        }  
 	hik->GetXaxis()->SetRangeUser(0, 30000);
 	fit->Delete();
       }
@@ -645,13 +653,14 @@ void AliT0QADataMakerRec::MakeRaws( AliRawReader* rawReader)
 	Float_t ver = 24.4 * Float_t( besttimeC-besttimeA)/2.;
 	if (h220) h220->Fill(0.001*ver, 0.001*(t0));
 	if(allData[50][0] > 0)  if (h221) h221->Fill(0.001*ver, 0.001*(t0));
-	if(allData[50][0] <= 0) if (h222) h222->Fill(0.001*ver, 0.001*(t0));
+	//FK// if(allData[50][0] <= 0) if (h222) h222->Fill(0.001*ver, 0.001*(t0));
 	if (h223) h223->Fill(t0);
 	if (h226) h226->Fill(ver);
       }	  
       if(time1stA<99999 &&time1stC< 99999) {
 	Float_t t01st =  24.4 * (Float_t( time1stA + time1stC)/2. );
 	Float_t ver1st = 24.4 * Float_t( time1stC - time1stA)/2.;
+        if(allData[50][0] <= 0) if (h222) h222->Fill(0.001*ver1st, 0.001*(t01st));//FK// TVDC off  first
 	if (h225) h225->Fill(ver1st);
 	if (h227) h227->Fill(t01st);
       }	  
