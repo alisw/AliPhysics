@@ -19,6 +19,16 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
 {
  public:
 
+ enum EPIDStrategy {
+  kNSigma,
+  kCombined
+ };
+ enum ECutsStrategy {
+  kStandard,
+  kKF
+ };
+
+
   AliRDHFCutsLctopKpi(const char* name="CutsLctopKpi");
   
   virtual ~AliRDHFCutsLctopKpi();
@@ -44,11 +54,27 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual void SetStandardCutsPP2010();
   virtual void SetStandardCutsPbPb2010();
 
-  void SetRecoKF() {fRecoKF=kTRUE;}
-  Bool_t GetRecoKF() {return fRecoKF;}
 
   AliAODPidHF* GetPidpion() const {return fPidObjpion;}
   AliAODPidHF* GetPidprot() const {return fPidObjprot;}
+  void SetPIDStrategy(EPIDStrategy pidStrategy) {
+   fPIDStrategy=pidStrategy;
+  }
+  EPIDStrategy GetPIDStrategy() const {
+   return fPIDStrategy;
+  }
+  void SetCutsStrategy(ECutsStrategy cutsStrategy) {
+   fCutsStrategy=cutsStrategy;
+  }
+  ECutsStrategy GetCutsStrategy() const {
+   return fCutsStrategy;
+  }
+  void SetPIDThreshold(AliPID::EParticleType species,Double_t threshold) {
+   fPIDThreshold[static_cast<Int_t>(species)]=threshold;
+  }
+ Double_t GetPIDThreshold(AliPID::EParticleType species) const {
+  return fPIDThreshold[static_cast<Int_t>(species)];
+ }
 
 
   using AliRDHFCuts::IsSelected;
@@ -59,6 +85,8 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
   Int_t CombinePIDCuts (Int_t returnvalue, Int_t returnvaluePID) const;
+
+  virtual Bool_t IsInFiducialAcceptance(Double_t pt,Double_t y) const;
   
   Float_t GetMassCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(0,iPtBin)] : 1.e6);}
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(11,iPtBin)] : 1.e6);}
@@ -70,14 +98,18 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
     return fUseImpParProdCorrCut;
   }
 
-  Bool_t ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const;
+  AliKFParticle* ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const;
  protected:
   AliAODPidHF *fPidObjprot;
   AliAODPidHF *fPidObjpion;
-  Bool_t fRecoKF;
   Bool_t fUseImpParProdCorrCut; //switch for cut on d0p*d0K vs. d0K*d0pi 
 
-  ClassDef(AliRDHFCutsLctopKpi,4);  // class for cuts on AOD reconstructed Lc->pKpi
+private:
+  EPIDStrategy fPIDStrategy;
+  Double_t fPIDThreshold[AliPID::kSPECIES];
+  ECutsStrategy fCutsStrategy;
+
+  ClassDef(AliRDHFCutsLctopKpi,5);  // class for cuts on AOD reconstructed Lc->pKpi
 };
 
 #endif

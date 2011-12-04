@@ -40,8 +40,9 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const char* name) :
 AliRDHFCuts(name),
 fPidObjprot(0),
 fPidObjpion(0),
-fRecoKF(kFALSE),
-fUseImpParProdCorrCut(kFALSE)
+fUseImpParProdCorrCut(kFALSE),
+fPIDStrategy(kNSigma),
+fCutsStrategy(kStandard)
 {
   //
   // Default Constructor
@@ -92,20 +93,25 @@ fUseImpParProdCorrCut(kFALSE)
   SetVarsForOpt(4,forOpt);
   Float_t limits[2]={0,999999999.};
   SetPtBins(2,limits);
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
+      fPIDThreshold[ispecies]=0.;
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   AliRDHFCuts(source),
   fPidObjprot(0),
   fPidObjpion(0),
-  fRecoKF(source.fRecoKF),
-  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut)
+  fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
+  fPIDStrategy(source.fPIDStrategy),
+  fCutsStrategy(source.fCutsStrategy)
 {
   //
   // Copy constructor
   //
   if(source.fPidObjprot) SetPidprot(source.fPidObjprot);
   if(source.fPidObjpion) SetPidpion(source.fPidObjpion);
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
+      fPIDThreshold[ispecies]=source.fPIDThreshold[ispecies];
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &source)
@@ -118,8 +124,10 @@ AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &s
   AliRDHFCuts::operator=(source);
   SetPidprot(source.GetPidprot());
   SetPidpion(source.GetPidpion());
-  fRecoKF=source.fRecoKF;
-  fUseImpParProdCorrCut=source.fUseImpParProdCorrCut;
+  fPIDStrategy=source.fPIDStrategy;
+  fCutsStrategy=source.fCutsStrategy;
+  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
+      fPIDThreshold[ispecies]=source.fPIDThreshold[ispecies];
 
   return *this;
 }
@@ -261,6 +269,22 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
 
   if(d->HasBadDaughters()) return 0;
 
+  if(selectionLevel==AliRDHFCuts::kAll ||
+     selectionLevel==AliRDHFCuts::kCandidate|| 
+     selectionLevel==AliRDHFCuts::kPID) {
+     switch (fPIDStrategy) {
+      case kNSigma:
+       returnvaluePID = IsSelectedPID(d);
+    
+      break;
+      case kCombined:
+       returnvaluePID = IsSelectedCombinedPID(d);
+      break;
+     }
+     fIsSelectedPID=returnvaluePID;
+  }
+  //  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedCombinedPID(d);   // to test!!
+  if(returnvaluePID==0) return 0;
 
   // selection on candidate
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -282,32 +306,13 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(TMath::Abs(mLcpiKp-mLcPDG)>fCutsRD[GetGlobalIndex(0,ptbin)]) okLcpiKp = 0;
     if(!okLcpKpi && !okLcpiKp) return 0;
 
+  switch (fCutsStrategy) {
+
+    case kStandard:
     if(TMath::Abs(d->PtProng(1)) < fCutsRD[GetGlobalIndex(1,ptbin)] || TMath::Abs(d->Getd0Prong(1))<fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;//Kaon
     if((TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(12,ptbin)])) okLcpKpi=0;
     if((TMath::Abs(d->PtProng(2)) < fCutsRD[GetGlobalIndex(2,ptbin)]) || (TMath::Abs(d->PtProng(0)) < fCutsRD[GetGlobalIndex(12,ptbin)]))okLcpiKp=0;
     if(!okLcpKpi && !okLcpiKp) return 0;
-
-    
-    if(fRecoKF){
-     Int_t valueTmp=3;
-     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
-     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
-     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
-
-     Int_t valueTotTmp=CombinePIDCuts(valueTmp,returnvaluePID);
-     Int_t pdgs[3]={2212,321,211};
-     if(valueTotTmp>=2) {
-      pdgs[0]=211;
-      pdgs[2]=2212;
-     }
-     if(!d->GetOwnPrimaryVtx()){
-      AliAODVertex *vtx1 = (AliAODVertex*)aod->GetPrimaryVertex(); 
-      d->SetOwnPrimaryVtx(vtx1);
-     }
-     Double_t field=aod->GetMagneticField(); 
-     Bool_t outKF=ReconstructKF(d,pdgs,field);
-     if(!outKF) return 0;
-    }
     //2track cuts
     if(d->GetDist12toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]|| d->GetDist23toPrim()<fCutsRD[GetGlobalIndex(5,ptbin)]) return 0;
     if(d->GetDist12toPrim()>1.) return 0;
@@ -315,36 +320,50 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     if(fUseImpParProdCorrCut){
       if(d->Getd0Prong(0)*d->Getd0Prong(1)<0. && d->Getd0Prong(2)*d->Getd0Prong(1)<0.) return 0;
     }
-
-
     //sec vert
     if(d->DecayLength()<fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
     if(d->DecayLength()>0.5) return 0;
+
+  //  Double_t sumd0s=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
+  //  if(sumd0s<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
+    if((d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2))<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
     
     if(TMath::Abs(d->PtProng(0))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(1))<fCutsRD[GetGlobalIndex(8,ptbin)] && TMath::Abs(d->PtProng(2))<fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
     if(d->CosPointingAngle()< fCutsRD[GetGlobalIndex(9,ptbin)]) return 0;
-    Double_t sum2=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-    if(sum2<fCutsRD[GetGlobalIndex(10,ptbin)]) return 0;
     if(d->GetSigmaVert(aod)>fCutsRD[GetGlobalIndex(6,ptbin)]) return 0;
     
     //DCA
     for(Int_t i=0;i<3;i++) if(d->GetDCA(i)>fCutsRD[GetGlobalIndex(11,ptbin)]) return 0;
 
+    break;
+
+   case kKF:
+    Int_t pdgs[3]={0,321,0};
+    Bool_t constraint=kFALSE;
+    if(fCutsRD[GetGlobalIndex(1,ptbin)]>0.) constraint=kTRUE;
+    Double_t field=aod->GetMagneticField();
+    if (returnvaluePID==1 || returnvaluePID==3){
+
+     pdgs[0]=2122;pdgs[2]=211;
+     AliKFParticle *Lc1=ReconstructKF(d,pdgs,field,constraint);
+     if(!Lc1) okLcpKpi=0;
+     if(Lc1->GetChi2()/Lc1->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)]) okLcpKpi=0;
+    } else if(returnvaluePID>=2){
+
+     pdgs[0]=211;pdgs[2]=2212;
+     AliKFParticle *Lc2=ReconstructKF(d,pdgs,field,constraint);
+     if(!Lc2) okLcpiKp=0;
+     if(Lc2->GetChi2()/Lc2->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)])okLcpiKp=0; 
+    }
+    break;
+
+   }
 
     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
     if(okLcpKpi && okLcpiKp) returnvalue=3; //cuts passed as both pKpi and piKp
    
   }
-
-  if(selectionLevel==AliRDHFCuts::kAll ||
-     selectionLevel==AliRDHFCuts::kCandidate|| 
-     selectionLevel==AliRDHFCuts::kPID) {
-     returnvaluePID = IsSelectedPID(d);
-     fIsSelectedPID=returnvaluePID;
-     }
-  //  if(fUsePID || selectionLevel==AliRDHFCuts::kPID) returnvaluePID = IsSelectedCombinedPID(d);   // to test!!
-  if(returnvaluePID==0) return 0;
 
   // selection on daughter tracks 
   if(selectionLevel==AliRDHFCuts::kAll || 
@@ -430,14 +449,12 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
 
   //  Printf(" -------- IsSelectedCombinedPID --------------");
 
-    if(!obj) {return 3;}
+    
+    if(!fUsePID || !obj) {return 3;}
     Int_t okLcpKpi=0,okLcpiKp=0;
     Int_t returnvalue=0;
     Bool_t isPeriodd=fPidHF->GetOnePad();
     Bool_t isMC=fPidHF->GetMC();
-    Bool_t isKaon = kFALSE;
-    Bool_t isPion = kFALSE;
-    Bool_t isProton = kFALSE;
 
     if(isPeriodd) {
 	    fPidObjprot->SetOnePad(kTRUE);
@@ -448,37 +465,32 @@ Int_t AliRDHFCutsLctopKpi::IsSelectedCombinedPID(AliAODRecoDecayHF* obj) {
 	    fPidObjpion->SetMC(kTRUE);
     }
 
-    Double_t probComb[AliPID::kSPECIES]={0.};  // array to store the info for the combined ITS|TPC|TOF probabilities
-    fPidHF->GetPidCombined()->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);  // the mask could become a member of the cut object
-
-    for(Int_t i=0;i<3;i++){
-	    AliAODTrack *track=(AliAODTrack*)obj->GetDaughter(i);
-	    if(!track) return 0;
-	    // identify kaon
-	    /*UInt_t detUsed =*/ fPidHF->GetPidCombined()->ComputeProbabilities(track, fPidHF->GetPidResponse(), probComb); // for the moment we don't check detUsed...
-	    //	    Printf("[%d] %x %f %f %f %f %f",i,detUsed,probComb[0],probComb[1],probComb[2],probComb[3],probComb[4]);
-	    if(i==1) {
-		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[3]) {  // the probability to be a Kaon is the highest
-		      isKaon=kTRUE;
-		      //		      if ( probComb[3] > 0.8 ) isKaon=kTRUE;
-		      //		      else return 0;
-		    }
-		    else return 0; // prong at position 1 is not a Kaon, returning 0		    
-	    }
-	    else {
+    AliVTrack *track0=dynamic_cast<AliVTrack*>(obj->GetDaughter(0));
+    AliVTrack *track1=dynamic_cast<AliVTrack*>(obj->GetDaughter(1));
+    AliVTrack *track2=dynamic_cast<AliVTrack*>(obj->GetDaughter(2));
+    if (!track0 || !track1 || !track2) return 0;
+    Double_t prob0[AliPID::kSPECIES];
+    Double_t prob1[AliPID::kSPECIES];
+    Double_t prob2[AliPID::kSPECIES];
+    fPidHF->GetPidCombined()->ComputeProbabilities(track0,fPidHF->GetPidResponse(),prob0);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track1,fPidHF->GetPidResponse(),prob1);
+    fPidHF->GetPidCombined()->ComputeProbabilities(track2,fPidHF->GetPidResponse(),prob2);
+    if(fPIDThreshold[AliPID::kPion]>0. && fPIDThreshold[AliPID::kKaon]>0. && fPIDThreshold[AliPID::kProton]>0.){
+    okLcpiKp=  (prob0[AliPID::kPion  ]>fPIDThreshold[AliPID::kPion  ])
+             &&(prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ])
+             &&(prob2[AliPID::kProton]>fPIDThreshold[AliPID::kProton]);
+    okLcpKpi=  (prob0[AliPID::kProton]>fPIDThreshold[AliPID::kProton])
+             &&(prob1[AliPID::kKaon  ]>fPIDThreshold[AliPID::kKaon  ])
+             &&(prob2[AliPID::kPion  ]>fPIDThreshold[AliPID::kPion  ]);
+   }else{ 
 		    //pion or proton
 		    
-		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[4]) {  // the probability to be a proton is the highest
-			    isProton=kTRUE;
-			    if (isPion) okLcpiKp = 1;  // the pion was already identified, so here we must be at i == 2 --> Lc --> pi K p (K already found)
-		    }
-		    if(TMath::MaxElement(AliPID::kSPECIES,probComb) == probComb[2]) {  // the probability to be a pion is the highest
-			    isPion=kTRUE;
-			    if (isProton) okLcpKpi = 1;  // the proton was already identified, so here we must be at i == 2 --> Lc --> p K pi (K already found)
-		    }
 		    
+    if(TMath::MaxElement(AliPID::kSPECIES,prob1) == prob1[AliPID::kKaon]){
+    if(TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kPion]) okLcpKpi = 1;  
+    if(TMath::MaxElement(AliPID::kSPECIES,prob2) == prob2[AliPID::kProton] && TMath::MaxElement(AliPID::kSPECIES,prob0) == prob0[AliPID::kPion]) okLcpiKp = 1; 
 	    }
-    }
+	   }
     
     if(okLcpKpi) returnvalue=1; //cuts passed as Lc->pKpi
     if(okLcpiKp) returnvalue=2; //cuts passed as Lc->piKp
@@ -723,18 +735,16 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
  return;
 }
 //------------------
-Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const{
+AliKFParticle* AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const{
 
-  const Int_t nprongs=d->GetNProngs();
-  if(nprongs<=0) return kFALSE;
-
+ const Int_t nprongs=d->GetNProngs();
  Int_t iprongs[nprongs];
  for(Int_t i=0;i<nprongs;i++) iprongs[i]=i;
 
  Double_t mass[2]={0.,0.};
 
- AliKFParticle *decay=d->ApplyVertexingKF(iprongs,nprongs,pdgs,kTRUE,field,mass);
- if(!decay) return kTRUE;
+ AliKFParticle *decay=d->ApplyVertexingKF(iprongs,nprongs,pdgs,constraint,field,mass);
+ if(!decay) return 0x0;
  AliESDVertex *vertexESD = new AliESDVertex(decay->Parameters(),
                                             decay->CovarianceMatrix(),
 					    decay->GetChi2(),
@@ -746,6 +756,30 @@ Bool_t AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs
  delete vertexESD; vertexESD=NULL;
  AliAODVertex *vertexAOD = new AliAODVertex(pos,cov,chi2perNDF,0x0,-1,AliAODVertex::kUndef,nprongs);
  d->SetSecondaryVtx(vertexAOD);
- return kTRUE;
+ return decay;
+}
+
+//-----------------
+
+Bool_t AliRDHFCutsLctopKpi::IsInFiducialAcceptance(Double_t pt, Double_t y) const
+{
+  //
+  //  // Checking if Dplus is in fiducial acceptance region 
+  //    //
+  //
+  if(pt > 5.) {
+    // applying cut for pt > 5 GeV
+   AliDebug(2,Form("pt of D+ = %f (> 5), cutting at |y| < 0.8",pt));
+   if (TMath::Abs(y) > 0.8) return kFALSE;
+  
+  } else {
+   // appliying smooth cut for pt < 5 GeV
+   Double_t maxFiducialY = -0.2/15*pt*pt+1.9/15*pt+0.5;
+   Double_t minFiducialY = 0.2/15*pt*pt-1.9/15*pt-0.5;
+  AliDebug(2,Form("pt of D+ = %f (< 5), cutting  according to the fiducial zone [%f, %f]\n",pt,minFiducialY,maxFiducialY));
+  if (y < minFiducialY || y > maxFiducialY) return kFALSE;
+ }
+  //
+  return kTRUE;
 }
 
