@@ -125,10 +125,10 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   class AliClusterRecord {
   public:
     AliClusterRecord()
-      : fSlice(-1), fPartition(-1), fBorder(-1), fMergedFlag(0), fId(~AliHLTUInt32_t(0)), fCluster(), fMC() {}
-    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster)
+      : fSlice(-1), fPartition(-1), fBorder(-1), fMergedFlag(-1), fId(~AliHLTUInt32_t(0)), fCluster(), fMC() {}
+    AliClusterRecord(int slice, int partition, int border,int merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster)
       : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster), fMC() {}
-    AliClusterRecord(int slice, int partition, int border,bool merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster, const AliHLTTPCClusterMCLabel &mc)
+    AliClusterRecord(int slice, int partition, int border,int merged, AliHLTUInt32_t id, const AliHLTTPCRawCluster &cluster, const AliHLTTPCClusterMCLabel &mc)
       : fSlice(slice), fPartition(partition), fBorder(border), fMergedFlag(merged), fId(id), fCluster(cluster), fMC(mc) {}
 
     AliClusterRecord(const AliClusterRecord& other)
@@ -147,7 +147,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
       return *this;
     }
 
-    bool GetMergedFlag() const { return fMergedFlag; }
+    int IsMergedTo() const { return fMergedFlag; }
     int GetSlice() const {return fSlice;}
     int GetBorder() const {return fBorder;}
     int GetPartition() const {return fPartition;}
@@ -155,14 +155,14 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     operator AliHLTTPCRawCluster() const {return fCluster;}
     const AliHLTTPCRawCluster& GetCluster() const {return fCluster;}
     const AliHLTTPCClusterMCLabel& GetMCLabel() const {return fMC;}
-    void SetMergedFlag(bool v ){ fMergedFlag = v;}
+    void SetMergedTo( int ind ){ fMergedFlag = ind;}
     AliHLTTPCRawCluster &Cluster(){ return fCluster; }
     AliHLTTPCClusterMCLabel& MCLabel(){ return fMC; }
   private:
     int fSlice; //!
     int fPartition; //!
     int fBorder; //!
-    bool fMergedFlag; //!
+    int fMergedFlag; //!
     AliHLTUInt32_t fId; //!
     AliHLTTPCRawCluster fCluster; //!
     AliHLTTPCClusterMCLabel fMC; //!
@@ -189,8 +189,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     iterator& operator++() {
       if (!fArray || fIter==fArray->end()) return *this;
       while ((++fIter)!=fArray->end()) {
-	// cout<<"Read flag: "<<fIter->GetMergedFlag()<<endl;
-	if (!fIter->GetMergedFlag() ) break;	
+	if ( fIter->IsMergedTo()<0 ) break;	
       }	     
       return *this;
     }
@@ -198,7 +197,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
       if (!fArray) return *this;
       while (fIter!=fArray->begin()) {
 	--fIter;
-	if (!fIter->GetMergedFlag()) break;	
+	if ( fIter->IsMergedTo()<0 ) break;	
       }
       return *this;
     }
@@ -236,7 +235,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
     new (&fIter) iterator(&fClusters);
     fEnd=fIter;  fEnd+=fClusters.size();    
     // skip empty (merged) clusters
-    while (fIter!=fEnd && (*fIter).GetMergedFlag() ) {
+    while (fIter!=fEnd && ( (*fIter).IsMergedTo()>=0) ) {
       fIter++;
     }
     return fIter;
@@ -246,6 +245,13 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   iterator& end() {
     return fEnd;
   }
+
+  const vector<AliHLTTPCHWClusterMerger::AliClusterRecord> &GetRecords(){ return fClusters; }
+  static const int GetNSlices(){ return fkNSlices; }
+  int GetNBorders() const { return fNBorders; }
+  int GetBorderNClusters( int ib ) const { return fBorderNClusters[ib]; }
+  int GetBorderFirstCluster( int ib ) const { return fBorderFirstCluster[ib]; }
+  const AliHLTTPCHWClusterMerger::AliBorderRecord *GetBorderClusters() const { return fBorderClusters;}
 
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -286,7 +292,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   iterator fEnd; //!
   static const int fkMergeWidth = 3;
   static const int fkNSlices = 36;
-  static const int fkMergeTimeWindow = 2;
+  static const int fkMergeTimeWindow = 3;
   ClassDef(AliHLTTPCHWClusterMerger, 0)
 };
 

@@ -138,8 +138,11 @@ void AliHLTTPCHWClusterMerger::Init()
 	vBorders.push_back(pad+1.);
       }
     }
-  }  
-  /*
+  } 
+
+  //cout<<" NBorders = "<<fNBorders/2<<endl;
+
+  /*  
   cout<<"Borders:"<<endl;
   for( int row=0; row<fNRows; row++ ){
     for( int pad=0; pad<fNRowPads; pad++ ){
@@ -150,6 +153,7 @@ void AliHLTTPCHWClusterMerger::Init()
     }
   }
   */
+
   fBorders = new AliHLTFloat32_t [fNBorders];
   if( !fBorders ){
     HLTError("Can not allocate memory: %d bytes", fNBorders*sizeof(AliHLTFloat32_t));
@@ -182,14 +186,13 @@ bool AliHLTTPCHWClusterMerger::CheckCandidate(int /*slice*/, int partition, int 
 {
   /// check cluster if it is a candidate for merging
   int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
-  // cout<<"pad "<<pad<<" sigma2 "<<sigmaPad2<<endl;
-
+  
   if( !fMapping ) Init();
   if( !fMapping ) return 0;
   if( slicerow <0 || slicerow>= fNRows ) return 0;
   int iPad = (int) pad;
   if( iPad<0 || iPad>=fNRowPads ) return 0;
-  int atBorder = fMapping[partitionrow*fNRowPads+iPad];
+  int atBorder = fMapping[slicerow*fNRowPads+iPad];    
   if( atBorder<0 ) return 0;
   float dPad = pad - fBorders[atBorder];
   if( sigmaPad2>1.e-4 ){
@@ -218,7 +221,9 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   int iBorder = -1;
   int iPad = (int) pad;
   if( !fMapping ) Init();
-
+ 
+  int slicerow=partitionrow+AliHLTTPCTransform::GetFirstRow(partition);
+ 
   if (id!=~AliHLTUInt32_t(0)) {
     if (slice<0) {
       slice=AliHLTTPCSpacePointData::GetSlice(id);
@@ -231,15 +236,18 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
       HLTError("cluster id 0x%08x is not consistent with specified partition %d", id, partition);
     }
   }
+
   if( slice<0 || slice>=fkNSlices ){
     HLTError("cluster id 0x%08x has wrong slice number %d", id, slice);    
   }
+  
   if( partition<0 || partition>=6 ){
     HLTError("cluster id 0x%08x has wrong partition number %d", id, partition);
   }
   
-  if( slice>=0 && slice<fkNSlices && partition>=0 && partition<6 && fMapping && iPad>=0 && iPad < fNRowPads ){
-    iBorder = fMapping[partitionrow*fNRowPads+iPad];
+  if( slice>=0 && slice<fkNSlices && slicerow>=0 && slicerow <fNRows && fMapping && iPad>=0 && iPad < fNRowPads ){
+    iBorder = fMapping[slicerow*fNRowPads+iPad];
+    
     if( iBorder>=0 ){
       float dPad = pad - fBorders[iBorder];
       if( sigmaY2>1.e-4 ){
@@ -248,17 +256,17 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 	if( fabs(dPad)>1. ) iBorder = -1;
       }    
     }
-    if( iBorder>=0 ) iBorder = slice*fkNSlices + iBorder;
+    if( iBorder>=0 ) iBorder = slice*fNBorders + iBorder;
   }
 
-  fClusters.push_back(AliClusterRecord(slice, partition, iBorder, 0, id,
+  fClusters.push_back(AliClusterRecord(slice, partition, iBorder, -1, id,
 				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax), mc ));
 
   if( iBorder>=0 ){
     fBorderNClusters[iBorder]++;
     fBorderNClustersTotal++;
   }
-  return fClusters.size();
+  return fClusters.size()-1;
 }
 
 int AliHLTTPCHWClusterMerger::FillIndex()
@@ -289,6 +297,13 @@ int AliHLTTPCHWClusterMerger::FillIndex()
     for( int ib = 0; ib<fNBorders; ib++ ){
       int ind = iSlice*fNBorders+ib;
       cout<<iSlice<<" "<<ib<<" :"<<fBorderFirstCluster[ind]<<", "<<fBorderNClusters[ind]<<endl;    
+    }
+  }
+  */
+  /*
+  for( int ib=1; ib<fkNSlices*fNBorders; ib++ ){
+    if( fBorderFirstCluster[ib] != fBorderFirstCluster[ib-1]+fBorderNClusters[ib-1] ){
+      cout<<"Something wrong with cluster borders !!! "<<endl;
     }
   }
   */
@@ -418,8 +433,8 @@ sLeft+=n1;
       fRemovedClusterIds.push_back(c2.GetId());
       HLTDebug("merging %d into %d", border2[ib2].fClusterRecordID, border1[ib1].fClusterRecordID);
       //cout<<"Set merged flag at position "<<border2[ib2].fClusterRecordID<<endl;
-      c2.SetMergedFlag(1);
-       count++;
+      c2.SetMergedTo(border1[ib1].fClusterRecordID);      
+      count++;
       // do not merge c1 anymore
       ib1++;    
     }    
