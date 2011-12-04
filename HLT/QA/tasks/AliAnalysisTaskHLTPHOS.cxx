@@ -116,8 +116,8 @@ void AliAnalysisTaskHLTPHOS::CreateSpecificStuff(TList * fOutputList){
 }
 
 
-void AliAnalysisTaskHLTPHOS::DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {
-
+void AliAnalysisTaskHLTPHOS::DoSpecificStuff(const AliESDEvent * evESD, const AliESDEvent * evHLTESD) {
+  //Do PHOS specific tests
 
   Double_t b = evESD->GetMagneticField();
   

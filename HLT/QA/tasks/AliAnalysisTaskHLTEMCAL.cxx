@@ -60,15 +60,18 @@ AliAnalysisTaskHLTEMCAL::AliAnalysisTaskHLTEMCAL(const char *name) : AliAnalysis
   // Constructor
 }
 
-void AliAnalysisTaskHLTEMCAL::CreateSpecificStuff(TList * fOutputList){
+void AliAnalysisTaskHLTEMCAL::CreateSpecificStuff(const TList * fOutputList){
+  //Create stuff specific to EMCAL class.
   if(fOutputList)
     return;
   else
+	fOutputList = new TList();
     return;
 }
 
 
-void AliAnalysisTaskHLTEMCAL::DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) {
+void AliAnalysisTaskHLTEMCAL::DoSpecificStuff(const AliESDEvent * evESD, const AliESDEvent * evHLTESD) const {
+  //Do EMCAL specific tests
   if(evESD || evHLTESD) 
     return;
   else

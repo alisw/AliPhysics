@@ -41,7 +41,7 @@ private:
   AliAnalysisTaskHLTEMCAL& operator=(const AliAnalysisTaskHLTEMCAL&); 
   
   void CreateSpecificStuff(TList * fOutputList);
-  void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD);
+  void DoSpecificStuff(AliESDEvent * evESD, AliESDEvent * evHLTESD) const;
   
   Int_t GetClusters(AliESDEvent * event, TRefArray * clusters);
   Bool_t IsThisDetector(AliESDCaloCluster * cluster);

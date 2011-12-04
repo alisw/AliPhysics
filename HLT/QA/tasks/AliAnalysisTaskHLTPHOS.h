@@ -40,14 +40,14 @@ private:
   TH2F *fHistOfflTrk2PHOSTrig; //!
   TH2F *fHistOfflTrk2PHOSNoTrig; //!
 
-  static const Float_t fgkPhiMin[5];
-  static const Float_t fgkPhiMax[5];
-  static const Float_t fgkEtaMin;
-  static const Float_t fgkEtaMax;
-  static const Float_t fgkNormX[5];
-  static const Float_t fgkNormY[5];
-  static const Float_t fgkInitPosX[5];
-  static const Float_t fgkInitPosY[5];
+  static const Float_t fgkPhiMin[5]; //Comment
+  static const Float_t fgkPhiMax[5]; //Comment
+  static const Float_t fgkEtaMin; //Comment
+  static const Float_t fgkEtaMax; //Comment
+  static const Float_t fgkNormX[5]; //Comment
+  static const Float_t fgkNormY[5]; //Comment
+  static const Float_t fgkInitPosX[5]; //Comment
+  static const Float_t fgkInitPosY[5]; //Comment
 
   /** copy constructor */
   AliAnalysisTaskHLTPHOS(const AliAnalysisTaskHLTPHOS&); 
