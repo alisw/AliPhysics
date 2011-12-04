@@ -75,8 +75,11 @@ AliMUON2DMap&
 AliMUON2DMap::operator=(const AliMUON2DMap& other)
 {
 /// Assignment operator
-  *fMap = *other.fMap;
-  fOptimizeForDEManu = other.fOptimizeForDEManu;
+  if ( this != &other )
+  {
+    *fMap = *other.fMap;
+    fOptimizeForDEManu = other.fOptimizeForDEManu;
+  }
   return *this;
 }
 

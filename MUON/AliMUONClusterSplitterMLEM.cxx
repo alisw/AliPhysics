@@ -233,7 +233,11 @@ AliMUONClusterSplitterMLEM::Fcn1(const AliMUONCluster& cluster,
     delta /= pad->Charge(); 
     chi2 += delta;
   } // for (Int_t j=0;
-  if (iflag == 0) qAver = qTot / npads;
+  if (iflag == 0 && npads) qAver = qTot / npads;
+  if (!npads)
+  {
+    AliError(Form("Got npads=0. Please check"));
+  }
   f = chi2 / qAver;
 }
 

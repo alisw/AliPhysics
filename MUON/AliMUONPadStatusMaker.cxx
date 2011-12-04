@@ -756,6 +756,12 @@ AliMUONPadStatusMaker::Report(UInt_t mask)
     }
   }
   
+  if (!nPads) 
+  {
+    AliError("Got no pad from the iterator ?! That's not normal. Please check !");
+    return;
+  }
+  
   TString msg;
   Int_t ntimes;
   

@@ -69,10 +69,13 @@ AliMUONClusterStoreV2::AliMUONClusterStoreV2(const AliMUONClusterStoreV2& store)
 AliMUONClusterStoreV2& AliMUONClusterStoreV2::operator=(const AliMUONClusterStoreV2& store)
 {
   /// Assignment operator
-  fClusters = new TClonesArray(*(store.fClusters));
-  fMap = 0x0;
-  fMapped = kFALSE;
-  if (store.fMapped) ReMap();
+  if ( this != &store )
+  {
+    fClusters = new TClonesArray(*(store.fClusters));
+    fMap = 0x0;
+    fMapped = kFALSE;
+    if (store.fMapped) ReMap();
+  }
   return *this;
 }
 

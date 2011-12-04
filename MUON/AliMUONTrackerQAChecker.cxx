@@ -238,13 +238,6 @@ AliMUONTrackerQAChecker::~AliMUONTrackerQAChecker()
 	/// dtor
 }
 
-//__________________________________________________________________
-AliMUONTrackerQAChecker::AliMUONTrackerQAChecker(const AliMUONTrackerQAChecker& qac) : 
-    AliMUONVQAChecker(qac) 
-{
-	/// copy ctor 
-}   
-
 //______________________________________________________________________________
 AliMUONVQAChecker::ECheckCode*
 AliMUONTrackerQAChecker::CheckRecPoints(TObjArray ** list, const AliMUONRecoParam* /*recoParam*/)

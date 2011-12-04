@@ -19,7 +19,6 @@ class AliMUONTrackerQAChecker: public AliMUONVQAChecker {
 
 public:
   AliMUONTrackerQAChecker();
-  AliMUONTrackerQAChecker(const AliMUONTrackerQAChecker& qac);
   virtual ~AliMUONTrackerQAChecker();
 
   virtual AliMUONVQAChecker::ECheckCode* CheckRaws(TObjArray** list, const AliMUONRecoParam* recoParam);
