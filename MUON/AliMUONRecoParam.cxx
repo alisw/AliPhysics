@@ -588,7 +588,7 @@ AliMUONRecoParam::SetDefaultLimits()
 	fHVSt345Limits[0]=1500; // kept for backward compatibility only
 	fHVSt345Limits[1]=2000; // kept for backward compatibility only
   
-  SetHVLimit(-1,1600); // this one is the real HV limit used now
+  SetHVLimit(-1,1590); // this one is the real HV limit used now
   
 	fPedMeanLimits[0] = 20;
 	fPedMeanLimits[1] = 1024;
@@ -653,6 +653,9 @@ AliMUONRecoParam::Create(const char* settings)
   ///      Calibration
   /// "pprealsim"
   ///      LowFlux (modified to reconstruct realistic p-p simulation)
+  ///      Calibration
+  /// "pbpbreal"
+  ///      HighFlux (modified to reconstruct real Pb-Pb data)
   ///      Calibration
   
   AliMUONRecoParam* param(0x0);
@@ -724,8 +727,8 @@ AliMUONRecoParam::Create(const char* settings)
     param->SetSigmaCutForTrigger(4.);
     param->ImproveTracks(kTRUE, 4.);
     param->SetPedMeanLimits(20, 700);
-    param->SetManuOccupancyLimits(-1.,0.01);
-    param->SetBuspatchOccupancyLimits(-1.,0.01);  
+    param->SetManuOccupancyLimits(-1.,0.03);
+    param->SetBuspatchOccupancyLimits(-1.,0.1); // 10 % (this cut not used for the reco anyway)
     param->SetFractionOfBuspatchOutsideOccupancyLimit(0.05); // 5 %
     param->SetEventSizeLimits(100., 150.);
     
