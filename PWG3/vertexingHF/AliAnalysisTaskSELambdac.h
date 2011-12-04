@@ -29,6 +29,7 @@
 #include "TClonesArray.h"
 //#include "AliAODpidUtil.h"
 #include "AliPIDResponse.h"
+#include "AliNormalizationCounter.h"
 
 class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
 {
@@ -58,13 +59,13 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   Double_t GetPtBinLimit(Int_t ibin) const ;
   Bool_t IspiKpMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t IspKpiMC(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
-  Int_t IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
-  Int_t IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field) const ;
+  void IspiKpResonant(AliAODRecoDecayHF3Prong *d,Double_t field,Int_t *resNumber) const ;
+  void IspKpiResonant(AliAODRecoDecayHF3Prong *d,Double_t field,Int_t *resNumber) const ;
   Bool_t VertexingKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field) const ;
   Int_t MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const ;
   Bool_t GetLambdacDaugh(AliAODMCParticle *part, TClonesArray *arrayMC) const ;
 
-  void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, AliRDHFCutsLctopKpi *cuts);
+  void FillMassHists(AliAODEvent *aod,AliAODRecoDecayHF3Prong *part, TClonesArray *arrayMC, AliRDHFCutsLctopKpi *cuts,Int_t *nSelectedloose,Int_t *nSelectedtight);
   void FillVarHists(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, AliRDHFCutsLctopKpi *cuts, /*TList *listout,*/ AliAODEvent *aod);
   Bool_t Is3ProngFromPDG(AliAODRecoDecayHF3Prong *part, TClonesArray *arrMC, Int_t pdgToBeCompared=4);
   Bool_t IsTrackFromPDG(const AliAODTrack *daugh, TClonesArray *arrayMC, Int_t pdgToBeCompared);
@@ -104,22 +105,34 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TH1F    *fhMassPtGreater3KpTC; //!hist. for No. of events
   TH1F    *fhMassPtGreater3Lpi; //!hist. for No. of events
   TH1F    *fhMassPtGreater3LpiTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3Dk; //!hist. for No. of events
+  TH1F    *fhMassPtGreater3DkTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater33Pr; //!hist. for No. of events
+  TH1F    *fhMassPtGreater33PrTC; //!hist. for No. of events
   TH1F    *fhMassPtGreater2; //!hist. for No. of events
   TH1F    *fhMassPtGreater2TC; //!hist. for No. of events
   TH1F    *fhMassPtGreater2Kp; //!hist. for No. of events
   TH1F    *fhMassPtGreater2KpTC; //!hist. for No. of events
   TH1F    *fhMassPtGreater2Lpi; //!hist. for No. of events
   TH1F    *fhMassPtGreater2LpiTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2Dk; //!hist. for No. of events
+  TH1F    *fhMassPtGreater2DkTC; //!hist. for No. of events
+  TH1F    *fhMassPtGreater23Pr; //!hist. for No. of events
+  TH1F    *fhMassPtGreater23PrTC; //!hist. for No. of events
   TH1F *fMassHist[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHistTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistLpi[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHistLpiTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TH1F *fMassHistKp[3*kMaxPtBins]; //!hist. for inv mass (LC)
   TH1F *fMassHistKpTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHistDk[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F *fMassHistDkTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
+  TH1F *fMassHist3Pr[3*kMaxPtBins]; //!hist. for inv mass (LC)
+  TH1F *fMassHist3PrTC[3*kMaxPtBins]; //!hist. for inv mass (TC)
   TNtuple *fNtupleLambdac; //! output ntuple
   Float_t fUpmasslimit;  //upper inv mass limit for histos
   Float_t fLowmasslimit; //lower inv mass limit for histos
-  Float_t fCutsKF[10]; //cuts with KF vertexer
+  Float_t fCutsKF[2]; //cuts with KF vertexer
   Int_t fNPtBins; //number of bins in Pt for histograms
   AliRDHFCutsLctopKpi *fRDCutsAnalysis; //Cuts for Analysis
   AliRDHFCutsLctopKpi *fRDCutsProduction; //Production Cuts
@@ -142,8 +155,9 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   TList *fMultiplicity; // output3
   //AliAODpidUtil* fUtilPid;
   AliPIDResponse *fPIDResponse;     //! PID response object
+  AliNormalizationCounter *fCounter;//!AliNormalizationCounter on output slot 7
 
-  ClassDef(AliAnalysisTaskSELambdac,5); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
+  ClassDef(AliAnalysisTaskSELambdac,6); // AliAnalysisTaskSE for the invariant mass analysis of heavy-flavour decay candidates (Lambdac)
 };
 
 #endif
