@@ -33,12 +33,12 @@ ClassImp(AliAnaConvCorrPionJet)
 
 //________________________________________________________________________________
 AliAnaConvCorrPionJet::AliAnaConvCorrPionJet() :
-AliAnaConvCorrBase("photonJet") {
+AliAnaConvCorrBase("PionJet", "Pion Jet") {
   //consctructor
 }
 //________________________________________________________________________________
 AliAnaConvCorrPionJet::AliAnaConvCorrPionJet(TString name) :
-AliAnaConvCorrBase(name) {
+  AliAnaConvCorrBase(name, "Pion Jet") {
   //consctructor
 }
 
@@ -51,7 +51,7 @@ AliAnaConvCorrPionJet::~AliAnaConvCorrPionJet() {
 ///_______________________________________________________________________________
 void AliAnaConvCorrPionJet::CorrelateWithHadrons(const AliAODConversionParticle * const pion, const TClonesArray * const jets, const Bool_t isolated) {
 
-  FillTriggerCounters(pion->Pt(), isolated);
+  FillTriggerCounters(pion, isolated);
 
   //See header file for documentation
   if (jets) {
@@ -59,7 +59,7 @@ void AliAnaConvCorrPionJet::CorrelateWithHadrons(const AliAODConversionParticle 
     for(int ij = 0; ij < jets->GetEntriesFast(); ij++) {
       AliAODJet * jet = dynamic_cast<AliAODJet*>(jets->At(ij));
       if(jet) {
-	FillHistograms(pion->Pt(), jet->Pt(), GetDPhi(pion->Phi() - jet->Phi()), pion->Eta() - jet->Eta(), isolated);
+		//FillHistograms(pion->Pt(), jet->Pt(), GetDPhi(pion->Phi() - jet->Phi()), pion->Eta() - jet->Eta(), isolated);
       }
     }
   }

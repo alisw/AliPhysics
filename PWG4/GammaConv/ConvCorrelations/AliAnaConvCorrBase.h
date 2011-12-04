@@ -13,6 +13,7 @@
 #include "TMath.h"
 #include "TList.h"
 #include "TH1.h"
+#include <THnSparse.h>
 
 class TH1F;
 class TH3F;
@@ -22,15 +23,14 @@ class TClonesArray;
 class TNtuple;
 class TString;
 
-
-class AliAnaConvCorrBase : public TObject {
+class AliAnaConvCorrBase : public TNamed {
 
 public:
 
   
 
   //Constructor / desctructor
-  AliAnaConvCorrBase(TString name); 
+  AliAnaConvCorrBase(TString name, TString title); 
   virtual ~AliAnaConvCorrBase();
   
   //Set and get min pt for triggers
@@ -53,9 +53,7 @@ public:
   //Add histogram to list
   void AddHistogram(TH1 * histogram) { fHistograms->Add(dynamic_cast<TObject*>(histogram));}
 
-  //Set and get number of bins in phi direction
-  void SetNPhiBins(Int_t bins) { fNPhiBins = bins; }
-  Int_t GetNPhiBins() const { return fNPhiBins;}
+  void AddAxis(TAxis * axis) { fAxesList.Add(axis); }
 
   ///Get the distance in phi between trigger particle and correlated particle
   Float_t GetDPhi(Float_t dPhi) { 
@@ -63,39 +61,50 @@ public:
     else return ( (dPhi>0)? dPhi - TMath::TwoPi() : dPhi + TMath::TwoPi() ); 
   }
 
-
-  TArrayD * GetTriggerBins() const { return fPtBins; }
-
-  //Print statistics for histograms
   void PrintStatistics();
+
+  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Bool_t isolated);
+  virtual void FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t leading);
+
+  TAxis& GetAxistPt()  { return fAxistPt;   }
+  TAxis& GetAxiscPt()  { return fAxiscPt;   }
+  TAxis& GetAxisdEta() { return fAxisdEta;  }
+  TAxis& GetAxisdPhi() { return fAxisdPhi;  }
+  TList& GetAxisList() { return fAxesList;  }
+
 
 
 protected:
 
   //Fill histograms
-  void FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated);
+  //void FillHistograms(Float_t tPt, Float_t cPt, Float_t dPhi, Float_t dEta, Bool_t isolated);
   //Fill trigger counter histograms
-  void FillTriggerCounters(Float_t tPt, Bool_t isolated);
-
- private:
-  
-  TString fName; //name of analysis
-  TList * fHistograms; //List of histograms
-
-  Int_t fNPhiBins;  //Nbins in phi direction
-  TArrayD * fdPhiBins; //!transient phi bin array
-  TArrayD * fPtBins; //!Array of trigger bins
-  
-
-  TH3F * fHdPhi[2]; //dPhi pt histogram
+  //virtual void FillTriggerCounters(Float_t tPt, Bool_t isolated) = NULL;
+  THnSparseF * CreateSparse(TString name, TString title, TList * axes);
   TH1F * fHNTriggers[2]; //Histograms containing number of triggers in various bins
 
+private:
+
+  void SetUpDefaultBins();
+  
+  //TString fName; //name of analysis
+  TList * fHistograms; //List of histograms
+  TList fAxesList;  //List over axes to be used in sparse
+
+  TAxis fAxistPt; //Pt axis
+  TAxis fAxiscPt; //correlated particle pt axis
+  TAxis fAxisdEta; //delta eta axis
+  TAxis fAxisdPhi; //delta phi axis
+  
+  THnSparseF * fSparse; //Sparse
 
   //Default constructor prohibited
   AliAnaConvCorrBase(); //not implemented
   AliAnaConvCorrBase(const AliAnaConvCorrBase&); // not implemented
   AliAnaConvCorrBase& operator=(const AliAnaConvCorrBase&); // not implemented
-  ClassDef(AliAnaConvCorrBase, 3); // example of analysis
+
+  ClassDef(AliAnaConvCorrBase, 4); // example of analysis
+
 };
 
 #endif

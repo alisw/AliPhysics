@@ -171,6 +171,28 @@ void AliAnaConvIsolation::CreateHistograms()
 
 }
 
+//________________________________________________________________________
+Bool_t AliAnaConvIsolation::IsLeading(AliAODConversionParticle * particle, const TObjArray * tracks, const TObjArray * aodParticles) {
+  //Check if particle is highest pt particle in cone
+  for(Int_t ip = 0; ip < aodParticles->GetEntriesFast(); ip++) {
+	AliAODConversionParticle * oparticle = static_cast<AliAODConversionParticle*>(aodParticles->UncheckedAt(ip));
+	if(oparticle == particle) continue;
+	if(oparticle->Pt() > particle->Pt() && 
+	   IsInCone(particle->Eta() - oparticle->Eta(), 
+				particle->Phi() - oparticle->Phi(), 
+				fConeSize) ) {
+	  return kFALSE;
+	}
+  }
+
+ for(Int_t it = 0; it < tracks->GetEntriesFast(); it++) {
+	AliAODTrack * track = static_cast<AliAODTrack*>(tracks->UncheckedAt(it));
+	if(track->Pt() > particle->Pt()  && 
+	   IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), fConeSize) ) return kFALSE;
+  }
+
+  return kTRUE;
+}
 
 //_________________________________________________________________________
 Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionPhoton * particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading) {

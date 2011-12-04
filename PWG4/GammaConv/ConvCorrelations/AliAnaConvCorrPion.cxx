@@ -19,12 +19,15 @@
 
 
 
+#include "TH2D.h"
 #include "AliAnaConvCorrPion.h"
-#include "AliAODTrack.h"
+//#include "AliAODTrack.h"
 #include "TClonesArray.h"
-#include "AliAODConversionPhoton.h"
-#include "THnSparse.h"
-#include "TH2F.h"
+#include "AliAODConversionParticle.h"
+//#include "AliAODConversionMother.h"
+//#include "AliAODConversionPhoton.h"
+//#include "THnSparse.h"
+//#include "TH2F.h"
 
 #include <iostream>
 
@@ -34,21 +37,21 @@ ClassImp(AliAnaConvCorrPion)
 
 //________________________________________________________________________________
 AliAnaConvCorrPion::AliAnaConvCorrPion() :
-AliAnaConvCorrBase("pion_hadron_corr"), 
-  fhdPhiVsInvMassPi0(NULL), 
-  fhdPhiVsInvMassEta(NULL), 
-  fhPtVsInvMass(NULL)
+AliAnaConvCorrBase("pion_hadron_corr", "Pion dPhi"),
+  hTriggerPtvsMass(NULL),
+  fAxisM()
 {
   //consctructor
+  InitMassAxis();
 }
 //________________________________________________________________________________
-AliAnaConvCorrPion::AliAnaConvCorrPion(TString name) :
-  AliAnaConvCorrBase(name),
-  fhdPhiVsInvMassPi0(NULL), 
-  fhdPhiVsInvMassEta(NULL), 
-  fhPtVsInvMass(NULL)
+AliAnaConvCorrPion::AliAnaConvCorrPion(TString name, TString title = "Pion Corr") :
+  AliAnaConvCorrBase(name, title),
+  hTriggerPtvsMass(NULL),
+  fAxisM()
 {
   //consctructor
+  InitMassAxis();
 }
 
 
@@ -57,72 +60,45 @@ AliAnaConvCorrPion::~AliAnaConvCorrPion() {
   //destructor
 }
 
+void AliAnaConvCorrPion::InitMassAxis() {
+  Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
+  fAxisM.Set(6, mbins);
+  fAxisM.SetNameTitle("InvMass", "invariant mass");
+  GetAxisList().AddAt(&fAxisM, 4);
+}
+
 ///________________________________________________________________________________
 void AliAnaConvCorrPion::CreateHistograms() {
   //Create histograms
   CreateBaseHistograms();
-
-  const Int_t dim = 4;
-  Int_t bins[dim] = {200, 200, 32, 14}; 
-  Double_t min[dim] = {0, 0, -TMath::PiOver2(), 0.1};
-  Double_t max[dim] = {100, 100, 3*TMath::PiOver2(), 0.17};
-
-  fhdPhiVsInvMassPi0 = new THnSparseF("fhdPhiVsInvMassPi0", "fhdPhiVsInvMassPi0", dim, bins, min, max);
-
-  min[3] = 450;
-  max[3] = 650;
-  bins[3] = 20;
-  fhdPhiVsInvMassEta = new THnSparseF("fhdPhiVsInvMassEta", "fhdPhiVsInvMassEta", dim, bins, min, max);
-  fhPtVsInvMass = new TH2F("fhPtVsInvMass", "Pt Vs inv mass", GetTriggerBins()->GetSize() -1, GetTriggerBins()->GetArray(), 400, 0, 1);
-
-  GetHistograms()->Add(fhPtVsInvMass);
-  GetHistograms()->Add(fhdPhiVsInvMassPi0);
-  GetHistograms()->Add(fhdPhiVsInvMassEta);
-
+  hTriggerPtvsMass = new TH2D("hTriggerPtvsMass", "Pt vs Mass", 400, 0, .400, GetAxistPt().GetNbins(), GetAxistPt().GetXbins()->GetArray());
+  GetHistograms()->Add(hTriggerPtvsMass);
 }
 
+
 ///________________________________________________________________________________
-void AliAnaConvCorrPion::GetTrackLabels(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels) {
-  ///Get the track labels of the electrons reconstructed as gamma forming the pion
-
-  for(Int_t i = 0; i< 2; i++) {
-    AliAODConversionPhoton * gamma = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetTrackLabel(i)));
-
-    if(gamma) { 
-      for(Int_t j = 0; j< 2; j++) {
-	cout << "index " << i + j + ((i>=j)?1:0) << " " << gamma->GetTrackLabel(j) << endl;
-	trackLabels[ i*2+ j] = gamma->GetTrackLabel(j);
-      }
-    }
-  }
+void AliAnaConvCorrPion::FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t isolated) {
+  //Fill histograms counting triggers
+  fHNTriggers[isolated]->Fill(particle->Pt());
+  hTriggerPtvsMass->Fill(particle->M(), particle->Pt());
 }
- 
 
-///________________________________________________________________________________
-void AliAnaConvCorrPion::CorrelateWithHadrons(AliAODConversionPhoton * pion, const TClonesArray * tracks,  const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn) {
-  //See header file for documentation
+//________________________________________________________________________________
+// void AliAnaConvCorrPion::Process(TClonesArray * pions, TClonesArray * photons, TClonesArray * tracks) {
 
-  fhPtVsInvMass->Fill(pion->Pt(), pion->M());
-  FillTriggerCounters(pion->Pt(), isolated);
-  
-  if (tracks) {
-    for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
-      AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(ij));
-      if(track) {
-				
-				if(nSpawn && spawn) {;}
+//   for(Int_t ip = 0; ip < pions->GetEntriesFast(); ip++) {
 
-	//if(pion->IsMySpawn(track->GetID(), nSpawn, spawn)) continue;
+// 	AliAODConversionParticle * pion = static_cast<AliAODConversionParticle*>(pions->UncheckedAt(ip));
 	
-	//	if (track->Pt() < GetCorrelatedPt() ) continue;
-	Double_t x[4] = {pion->Pt(), track->Pt(), GetDPhi(pion->Phi() - track->Phi()), TMath::Abs(pion->M()) };
-	if(  (pion->M() > 0.1) &&  (pion->M() < 0.17) ){
-	  fhdPhiVsInvMassPi0->Fill(x); 
-	} else if ((pion->M() > 0.5) &&  (pion->M() < 0.6 ) ) {
-	  fhdPhiVsInvMassEta->Fill(x); 
-	}
-	FillHistograms(pion->Pt(), track->Pt(), GetDPhi(pion->Phi() - track->Phi()), pion->Eta() - track->Eta(), isolated);
-      }
-    }
-  }
-}
+// 	Int_t tIDs[4] = {-1, -1, -1, -1};
+// 	AliAODConversionParticle * photon1 = static_cast<AliAODConversionParticle*>(photons->UncheckedAt(pion->GetLabel(0)));
+// 	tIDs[0] =  photon1->GetLabel(0);
+// 	tIDs[1] =  photon1->GetLabel(1);
+// 	AliAODConversionParticle * photon2 = static_cast<AliAODConversionParticle*>(photons->UncheckedAt(pion->GetLabel(1)));
+// 	tIDs[2] =  photon2->GetLabel(0);
+// 	tIDs[3] =  photon2->GetLabel(1);
+	
+// 	CorrelateWithTracks(static_cast<AliAODConversionParticle*>(pion), tracks, tIDs, kFALSE);
+//   }
+// }
+

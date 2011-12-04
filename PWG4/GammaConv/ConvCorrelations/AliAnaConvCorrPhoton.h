@@ -19,22 +19,24 @@ class AliAnaConvCorrPhoton : public AliAnaConvCorrBase {
 public:
 
   AliAnaConvCorrPhoton(); 
-  AliAnaConvCorrPhoton(TString name); 
+  AliAnaConvCorrPhoton(TString name, TString title); 
   virtual ~AliAnaConvCorrPhoton();
 
   ///Correlation photon with tracks
-  virtual void CorrelateWithHadrons(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle);
+  //virtual void CorrelateWithHadrons(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle);
 
   //Process particles identified as pion / eta decay 
   void SkipDecayParticles() { fSkipDecayParticles = kTRUE; }
   void DoDecayParticles() { fSkipDecayParticles = kFALSE; }
   void DoDecayOnly() { fSkipDecayParticles = kFALSE; fDecayOnly = kTRUE; }
 
+  void Process(TClonesArray * photons, TClonesArray * tracks, Bool_t isolated);
+
  private:
 
   
   Bool_t fSkipDecayParticles; //Process particles identified as pion / eta decay particles
-  Bool_t fDecayOnly;
+  Bool_t fDecayOnly;  //Only process gamma from decay pion
 
   AliAnaConvCorrPhoton(const AliAnaConvCorrPhoton&); // not implemented
   AliAnaConvCorrPhoton& operator=(const AliAnaConvCorrPhoton&); // not implemented
