@@ -348,6 +348,9 @@ int main(int argc, char **argv)
   
   fout.close();
   
+  /* store the result file on FXS */  
+  if (daqDA_FES_storeFile(OUTPUT_FILE,"OCCUPANCY")) return -9;
+    
 #ifdef ALI_AMORE
   
   if ( numberOfUsedEvents ) // do not update the AMORE pool with an empty object...
@@ -361,18 +364,17 @@ int main(int argc, char **argv)
     
     TObjString occupancyAsString(str.str().c_str());
     
+    cout << "will send to amore" << endl;
+    
     Int_t status = amoreDA.Send("Occupancy",&occupancyAsString);
     if ( status )
     {
       cerr << "ERROR : Failed to write occupancies in the AMORE database : " << status << endl;
     } 
   }
-
-#endif
   
-  /* store the result file on FXS */  
-  if (daqDA_FES_storeFile(OUTPUT_FILE,"OCCUPANCY")) return -9;
-
+#endif
+    
   timers.Stop();
   printf("\nExecution time : R:%7.2fs C:%7.2fs\n", timers.RealTime(), timers.CpuTime());
 
