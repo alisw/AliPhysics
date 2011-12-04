@@ -26,6 +26,7 @@
 #include "AliCDBEntry.h"
 #include "AliLog.h"
 #include "AliMpCDB.h"
+#include "AliMpDEManager.h"
 #include "AliMUONCDB.h"
 #include "AliMUONCalibrationData.h"
 #include "AliMUONPadStatusMaker.h"
@@ -133,10 +134,12 @@ Int_t GetBadChannels(Int_t runNumber,
                      Int_t& nbadgain,
                      Int_t& nbadocc,
                      Int_t& nmissing,
-                     Int_t& nreco)
+                     Int_t& nreco,
+                     Int_t chamber=-1)
 {
   if (!AliCDBManager::Instance()->IsDefaultStorageSet())
   {
+//    AliCDBManager::Instance()->SetDefaultStorage("alien://folder=/alice/data/2011/OCDB?cacheFold=/local/cdb");
     AliCDBManager::Instance()->SetDefaultStorage("raw://");
   }
   
@@ -186,6 +189,9 @@ Int_t GetBadChannels(Int_t runNumber,
   while ( it.Next(detElemId,manuId) )
   {
     AliMpDetElement* de = AliMpDDLStore::Instance()->GetDetElement(detElemId);
+    
+    if ( chamber >= 0 && AliMpDEManager::GetChamberId(detElemId) != chamber ) continue;
+    
     for ( Int_t manuChannel = 0; manuChannel < AliMpConstants::ManuNofChannels(); ++manuChannel )
     {
       if ( de->IsConnectedChannel(manuId,manuChannel) )
@@ -232,10 +238,16 @@ Int_t GetBadChannels(Int_t runNumber,
     }
   }
   
-  if (ntotal!=NTOTALNUMBEROFPADS)
+  if ( chamber<0 && ntotal!=NTOTALNUMBEROFPADS)
   {
     cerr << Form("ERROR ! NOT THE EXPECTED NUMBER OF CHANNELS (%d vs 1064008) FOR RUN %09d",
                  ntotal,runNumber) << endl;
+  }
+  else
+  {
+    cout << Form("Chamber %d - %d channels",chamber,ntotal) << endl;
+    cout << Form("nbadped %5d nbadhv %5d nbadgain %5d nbadocc %5d nmissing %5d nreco %5d",
+                 nbadped,nbadhv,nbadgain,nbadocc,nmissing,nreco) << endl;
   }
   
   AliCDBManager::Instance()->ClearCache(); 
@@ -336,8 +348,10 @@ void DrawEvolution(const char* file, bool normalized=true)
 
   DrawPeriod(158084,159606,0,ymax,"11d");
 
-  DrawPeriod(160677,162000,0,ymax,"11e");
+  DrawPeriod(160677,162717,0,ymax,"11e");
 
+  DrawPeriod(167703,170207,0,ymax,"11h");
+             
   Draw(f,"nbad",l,normalized);
   Draw(f,"nbadped",l,normalized);
   Draw(f,"nbadocc",l,normalized);
