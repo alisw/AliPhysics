@@ -11,7 +11,6 @@
 #pragma link C++ class AliGammaConversionBGHandler+;
 #pragma link C++ class AliAnalysisTaskGammaConvDalitz+;
 #pragma link C++ class AliAnalysisTaskGCPartToPWG4Part+;
-#pragma link C++ class AliAnalysisTaskGammaJet+;
 
 #pragma link C++ class AliAnaConvIsolation+;
 #pragma link C++ class AliAnaConvCorrBase++;

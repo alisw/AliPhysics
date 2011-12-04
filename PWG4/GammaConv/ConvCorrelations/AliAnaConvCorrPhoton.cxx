@@ -32,50 +32,37 @@ ClassImp(AliAnaConvCorrPhoton)
 
 //________________________________________________________________________
 AliAnaConvCorrPhoton::AliAnaConvCorrPhoton() :
-AliAnaConvCorrBase("photon_hadron_corr"), 
+AliAnaConvCorrBase("photon_hadron_corr", "Photon corr"), 
   fSkipDecayParticles(kFALSE),
   fDecayOnly(kFALSE)
 {
   //consctructor
 }
 //________________________________________________________________________
-AliAnaConvCorrPhoton::AliAnaConvCorrPhoton(TString name) :
-AliAnaConvCorrBase(name), 
+AliAnaConvCorrPhoton::AliAnaConvCorrPhoton(TString name, TString title = "Photon corr") :
+AliAnaConvCorrBase(name, title),
 fSkipDecayParticles(kFALSE),
 fDecayOnly(kFALSE)
 {
   //consctructor
 }
 
-
 //________________________________________________________________________________
 AliAnaConvCorrPhoton::~AliAnaConvCorrPhoton() {
   //destructor
 }
 
-///__________________________________________________________________________
-void AliAnaConvCorrPhoton::CorrelateWithHadrons(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks, const Bool_t isolated, const Bool_t decayParticle) {
-  //See header file for documentation
+//________________________________________________________________________________
+void AliAnaConvCorrPhoton::Process(TClonesArray * photons, TClonesArray * tracks, Bool_t isolated = kFALSE) {
+  //Process list of photons and correlate w tracks
+  for(Int_t ig = 0; ig < photons->GetEntriesFast(); ig++) {
 
+	AliAODConversionParticle * photon = static_cast<AliAODConversionParticle*>(photons->UncheckedAt(ig));
 
-  if( decayParticle && fSkipDecayParticles ) return;
-  else if ( fDecayOnly && !decayParticle ) return;
-
-  FillTriggerCounters(photon->Pt(), isolated);
-
-  if (tracks) {
-      
-    for(int ij = 0; ij < tracks->GetEntriesFast(); ij++) {
-      AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(ij));
-      if(track) {
-	
-	if ( (track->GetID() == photon->GetTrackLabel(0)) || track->GetID() == photon->GetTrackLabel(1) )   continue;
-	
-	//if (track->Pt() < GetCorrelatedPt() ) continue;
-	
-	FillHistograms(photon->Pt(), track->Pt(), GetDPhi(photon->Phi() - track->Phi()), photon->Eta() - track->Eta(), isolated);
-	
-      }
-    }
+	Int_t tIDs[4] = {-1, -1, -1, -1};
+	tIDs[0] =  photon->GetLabel(0);
+	tIDs[1] =  photon->GetLabel(1);
+	CorrelateWithTracks(photon, tracks, tIDs, isolated);
+		
   }
 }

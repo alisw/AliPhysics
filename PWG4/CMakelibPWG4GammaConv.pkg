@@ -39,7 +39,6 @@ set ( SRCS  GammaConv/AliV0Reader.cxx
     GammaConv/AliAODConversionMother.cxx
     GammaConv/AliKFConversionPhoton.cxx
     GammaConv/AliKFConversionMother.cxx
-    GammaConv/ConvCorrelations/AliAnalysisTaskGammaJet.cxx 
     GammaConv/ConvCorrelations/AliAnaConvIsolation.cxx 
     GammaConv/ConvCorrelations/AliAnaConvCorrBase.cxx 
     GammaConv/ConvCorrelations/AliAnaConvCorrPion.cxx 

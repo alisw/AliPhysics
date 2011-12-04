@@ -11,9 +11,10 @@
 #define ALIANACONVCORRPION_CXX
 
 #include "AliAnaConvCorrBase.h"
-#include "THnSparse.h"
+class TH2D;
+//#include "THnSparse.h"
 
-class AliAODConversionPhoton;
+//class AliAODConversionPhoton;
 class TClonesArray;
 
 class AliAnaConvCorrPion : public AliAnaConvCorrBase {
@@ -21,26 +22,36 @@ class AliAnaConvCorrPion : public AliAnaConvCorrBase {
 public:
 
   AliAnaConvCorrPion(); 
-  AliAnaConvCorrPion(TString name);
+  AliAnaConvCorrPion(TString name, TString title);
   virtual ~AliAnaConvCorrPion();
 
+  TAxis& GetAxisM() { return fAxisM; }
+
+
   //Correlate pions with charged tracks
-  virtual void CorrelateWithHadrons(AliAODConversionPhoton * pion, const TClonesArray * tracks, const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn );
+  //virtual void CorrelateWithHadrons(AliAODConversionPhoton * pion, const TClonesArray * tracks, const Bool_t isolated, const Int_t nSpawn, const Int_t * const spawn );
 
   void CreateHistograms();
+
+  //void Process(TClonesArray * pions, TClonesArray * photons, TClonesArray * tracks);
+  
+
+  void FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t isolated);
   
  private:
 
+  void InitMassAxis();
   //Get array of track labels of the 4 decay electrons (2gamma * 2 electrons)
-  void GetTrackLabels(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels);
+  //void GetTrackLabels(const AliAODConversionPhoton * pion, const TClonesArray * photons, Int_t* trackLabels);
 
-  THnSparseF * fhdPhiVsInvMassPi0; //!
-  THnSparseF * fhdPhiVsInvMassEta; //!
-  TH2F * fhPtVsInvMass;
+  //TH2F * fhPtVsInvMass;
+
+  TH2D * hTriggerPtvsMass; //Histograms containing number of triggers in various bins
+  TAxis fAxisM;  //Mass axis
 
   AliAnaConvCorrPion(const AliAnaConvCorrPion&); // not implemented
   AliAnaConvCorrPion& operator=(const AliAnaConvCorrPion&); // not implemented
-  ClassDef(AliAnaConvCorrPion, 1); // example of analysis
+  ClassDef(AliAnaConvCorrPion, 2); //
 
 };
 

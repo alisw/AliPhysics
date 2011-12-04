@@ -10,14 +10,19 @@
 #ifndef ALIANACONVISOLATION_CXX
 #define ALIANACONVISOLATION_CXX
 
+#include <iostream>
 #include "TObject.h"
 #include "Rtypes.h"
 #include "TF1.h"
+#include <TMath.h>
 class TH2F;
 class TH1F;
 class AliAODConversionPhoton;
+class AliAODConversionParticle;
 class TClonesArray;
 class TList;
+
+using namespace std;
 
 class AliAnaConvIsolation : public TObject {
 
@@ -32,8 +37,8 @@ public:
 
 
   ///Set And get cone size
-  void SetConeSize(Float_t cs) {fConeSize = cs;}
-  Float_t GetConeSize() const {return fConeSize;}
+  void SetConeSize(Float_t cs) {fConeSize = cs*cs;}
+  Float_t GetConeSize() const {return TMath::Sqrt(fConeSize);}
 
 
   //Set and get max pt threshold
@@ -64,6 +69,9 @@ public:
     fCurveFunction = curve;
   }
 
+  Bool_t IsLeading(AliAODConversionParticle  * particle, const TObjArray * tracks, const TObjArray * aodParticles);
+
+
   //Fill histograms
   void FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks);
 
@@ -74,12 +82,13 @@ public:
   Bool_t IsIsolated( const AliAODConversionPhoton * const particle, const TClonesArray * const tracks, Bool_t &leading);
   Bool_t IsIsolated( AliAODConversionPhoton * const particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading );
 
- private:
-
   //Is eta - phi distance smaller than conesize ?
-  Bool_t IsInCone(Float_t dEta, Float_t dPhi, Float_t coneSize) const {
-    return ( (dEta*dEta + dPhi*dPhi) < coneSize*coneSize);
+  Bool_t IsInCone(Float_t dEta, Float_t dPhi, const Float_t coneSize) const {
+	dPhi = (TMath::Abs(dPhi) < TMath::Pi()) ? dPhi : TMath::TwoPi() - TMath::Abs(dPhi); 
+    return ( (dEta*dEta + dPhi*dPhi) < coneSize);
   }
+
+ private:
 
   ///Evaluate whether particle is isolated according to criterie
   Bool_t EvaluateIsolationCriteria(Float_t ptSum, Float_t pt) const;
