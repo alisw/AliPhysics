@@ -35,7 +35,7 @@ ClassImp(AliAnaConvCorrPhotonJet)
 
 //________________________________________________________________________________
 AliAnaConvCorrPhotonJet::AliAnaConvCorrPhotonJet() :
-AliAnaConvCorrBase("photonJet"),
+AliAnaConvCorrBase("photonJet", "Photon Jet"),
   fhPtFracGamma(NULL), 
   fhPtFracPion(NULL)
 {
@@ -43,7 +43,7 @@ AliAnaConvCorrBase("photonJet"),
 }
 //________________________________________________________________________________
 AliAnaConvCorrPhotonJet::AliAnaConvCorrPhotonJet(TString name) :
-  AliAnaConvCorrBase(name), 
+  AliAnaConvCorrBase(name, "Photon Jet"),
   fhPtFracGamma(NULL), 
   fhPtFracPion(NULL)
 {
@@ -68,8 +68,8 @@ void AliAnaConvCorrPhotonJet::CreateHistograms() {
 }
 
 void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesArray * const photons, const  TClonesArray *const pions ) const{
-  
-  Int_t trackIDs[4] = {-9, -9, -9, -9};
+  //See header file for documetation
+  Int_t trackIDs[4];
 
   for(Int_t i = 0; i < photons->GetEntriesFast(); i++) {
     AliAODConversionParticle * photon = dynamic_cast<AliAODConversionParticle*>(photons->At(i));
@@ -102,6 +102,7 @@ void AliAnaConvCorrPhotonJet::DoJetAnalysisGamma(AliAODJet * jet, const TClonesA
 
 //________________________________________________________________________________
 Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, Int_t nTracks, Int_t * trackIds) const {
+  //See header file for documetation
 
   Int_t mTracks = 0;
   TRefArray * refTracks = jet->GetRefTracks();
@@ -123,6 +124,7 @@ Bool_t AliAnaConvCorrPhotonJet::IsParticleInJet(AliAODJet * jet, Int_t nTracks, 
 
 //________________________________________________________________________________
 Double_t AliAnaConvCorrPhotonJet::ExtractFromJet(AliAODJet * jet, const AliAODConversionParticle * const particle) const {
+  //See header file for documetation
   
   Float_t jetPt = jet->Pt();
   cout << "Jet pt before and after: " << jetPt << "    ";
@@ -150,14 +152,14 @@ Double_t AliAnaConvCorrPhotonJet::ExtractFromJet(AliAODJet * jet, const AliAODCo
 
 ///_______________________________________________________________________________
 void AliAnaConvCorrPhotonJet::CorrelateWithHadrons(const AliAODConversionParticle * const photon, const TClonesArray * const jets, const Bool_t isolated) {
-  FillTriggerCounters(photon->Pt(), isolated);
+  FillTriggerCounters(photon, isolated);
   //See header file for documentation
   if (jets) {
     for(int ij = 0; ij < jets->GetEntriesFast(); ij++) {
       AliAODJet * jet = dynamic_cast<AliAODJet*>(jets->At(ij));
       if(jet) {
-	Double_t jetPt = ExtractFromJet(jet, photon);
-	FillHistograms(photon->Pt(), jetPt, GetDPhi(photon->Phi() - jet->Phi()), photon->Eta() - jet->Eta(), isolated);
+		//Double_t jetPt = ExtractFromJet(jet, photon);
+		//FillHistograms(photon->Pt(), jetPt, GetDPhi(photon->Phi() - jet->Phi()), photon->Eta() - jet->Eta(), isolated);
       }
     }
   }
