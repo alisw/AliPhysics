@@ -1,4 +1,4 @@
-AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", Bool_t rmBadCells = kFALSE, Int_t run = 0){
+AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", Bool_t rmBadCells = kTRUE, Int_t run = 0){
   
   
   // Get the pointer to the existing analysis manager via the static access method.
@@ -57,8 +57,12 @@ AliAnalysisTaskEMCALTriggerQA * AddTaskEMCALTriggerQA(TString outputFile = "", B
 
   AliAnalysisDataContainer *cinput1 = mgr->GetCommonInputContainer();
 
-  AliAnalysisDataContainer *coutput = 
-  mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:EMCALQATrigger",outputFile.Data()));
+  AliAnalysisDataContainer *coutput = 0;
+  if(outputFile.Length()==0)
+    coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  Form("%s:EMCALQATrigger",outputFile.Data()));
+  else
+    coutput = mgr->CreateContainer("EMCALQATrigger", TList::Class(), AliAnalysisManager::kOutputContainer,  outputFile.Data());
+
   mgr->AddTask(qatrigger);
   mgr->ConnectInput  (qatrigger, 0, cinput1);
   mgr->ConnectOutput (qatrigger, 1, coutput);
