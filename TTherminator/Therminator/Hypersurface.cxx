@@ -165,6 +165,16 @@ Hypersurface::Hypersurface(const Hypersurface &aSurf)
   
 }
 
+Hypersurface& Hypersurface::operator=(const Hypersurface &aSurf)
+{
+  if (this != &aSurf) {
+    i = aSurf.i;
+    Hypersurface("./");
+  }
+  
+  return *this;
+}
+
 Hypersurface::~Hypersurface(void) {
   for(i=0;i<Np;i++) {
     delete[] aArr[i];

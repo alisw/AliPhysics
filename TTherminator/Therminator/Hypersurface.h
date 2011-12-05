@@ -36,6 +36,7 @@ class Hypersurface {
     Hypersurface(const char *dirname);
     Hypersurface(void);
     Hypersurface(const Hypersurface &aSurf);
+    Hypersurface& operator=(const Hypersurface &aSurf);
     // destructor
     ~Hypersurface(void);
     // variables
