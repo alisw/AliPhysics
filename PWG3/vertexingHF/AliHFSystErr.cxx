@@ -564,7 +564,7 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",20,0,20);
-  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.03); // 3% (1% per track)
+  for(Int_t i=1;i<=20;i++) fTrackingEff->SetBinContent(i,0.12); // 12% (4% per track)
 
 
   // Raw yield extraction
