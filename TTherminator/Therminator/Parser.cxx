@@ -299,7 +299,7 @@ void Parser::ReadInput()
       if(str[0] == 's' && str[1] == 'e' && str[2] == '[')
 	{
 	  // Reading in the decay channels
-	  char *tLBrackert, *tFirstComma, *tSecondComma, *tThirdComma, *tRBracket;
+	  char *tLBrackert=NULL, *tFirstComma=NULL, *tSecondComma=NULL, *tThirdComma=NULL, *tRBracket=NULL;
 	  
 	  tLBrackert = strchr(str,'[');
 	  tFirstComma = strchr(str,',');
@@ -307,7 +307,7 @@ void Parser::ReadInput()
 	  tThirdComma = strchr(tSecondComma+1,',');
 	  tRBracket = strchr(tThirdComma,']');
 
-	  if (!(tLBrackert && tFirstComma && tSecondComma && tThirdComma && tRBracket))
+	  if (!((tLBrackert != NULL) && (tFirstComma != NULL) && (tSecondComma != NULL) && ( tThirdComma != NULL) && (tRBracket!= NULL)))
 	    PRINT_DEBUG_1("Malformed line!: " << str);
 	  
 	  char *tFather = new char[tFirstComma-tLBrackert];
