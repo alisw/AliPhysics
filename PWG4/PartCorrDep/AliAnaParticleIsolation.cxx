@@ -699,7 +699,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillAOD()
     
   //After cuts, study isolation
   n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-  GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,GetReader(), kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
+  GetIsolationCut()->MakeIsolationCut(GetCTSTracks(),pl,
+                                      GetReader(), GetCaloPID(),
+                                      kTRUE, aodinput, GetAODObjArrayName(), n,nfrac,coneptsum, isolated);
   aodinput->SetIsolated(isolated);
   
   if(GetDebug() > 1) {
@@ -753,7 +755,9 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     else if(fReMakeIC){
       //In case a more strict IC is needed in the produced AOD
       n=0; nfrac = 0; isolated = kFALSE; coneptsum = 0;
-      GetIsolationCut()->MakeIsolationCut(reftracks, refclusters, GetReader(), kFALSE, aod, "", n,nfrac,coneptsum, isolated);
+      GetIsolationCut()->MakeIsolationCut(reftracks,   refclusters, 
+                                          GetReader(), GetCaloPID(),
+                                          kFALSE, aod, "", n,nfrac,coneptsum, isolated);
       fhConeSumPt->Fill(pt,coneptsum);    
       if(GetDebug() > 0) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Energy Sum in Isolation Cone %2.2f\n", coneptsum);    
     }
@@ -939,7 +943,8 @@ void  AliAnaParticleIsolation::MakeSeveralICAnalysis(AliAODPWG4ParticleCorrelati
       GetIsolationCut()->SetPtThreshold(fPtThresholds[ipt]);
       GetIsolationCut()->MakeIsolationCut(ph->GetObjArray(GetAODObjArrayName()+"Tracks"), 
                                           ph->GetObjArray(GetAODObjArrayName()+"Clusters"),
-                                          GetReader(), kFALSE, ph, "",n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
+                                          GetReader(), GetCaloPID(),
+                                          kFALSE, ph, "",n[icone][ipt],nfrac[icone][ipt],coneptsum, isolated);
       
       //Normal ptThreshold cut
       if(n[icone][ipt] == 0) {
