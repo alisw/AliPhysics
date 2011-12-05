@@ -45,6 +45,7 @@ class TTherminator: public TGenerator {
  public:
   TTherminator();
   TTherminator(const TTherminator & therm);
+  TTherminator& operator=(const TTherminator & therm);
   virtual ~TTherminator();
   
   virtual void        ReadParameters();

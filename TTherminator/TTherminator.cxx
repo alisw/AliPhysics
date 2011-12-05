@@ -59,11 +59,23 @@ TTherminator::TTherminator(const TTherminator & therm) :
   TGenerator(therm),
   fCalka(0),
   fEvent(0),
-  fPartDB(0)
+  fPartDB(new ParticleDB())
 {
   // Copy constructor
-  fPartDB = new ParticleDB();
+  //  fPartDB = new ParticleDB();
 }
+TTherminator& TTherminator::operator=(const TTherminator & therm)
+{
+  if (this != &therm) {
+    fCalka = therm.fCalka;
+    fEvent = therm.fEvent;
+    delete fPartDB;
+    fPartDB = new ParticleDB();
+  }
+
+  return *this;
+}
+
 TTherminator::~TTherminator()
 {
   // Destructor
