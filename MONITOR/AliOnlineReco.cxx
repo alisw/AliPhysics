@@ -89,7 +89,7 @@ AliOnlineReco::AliOnlineReco() :
   fAutoRunTimer = new TTimer(autoRunDelay * 1000l);
   fAutoRunTimer->Connect("Timeout()", "AliOnlineReco", this, "AutoRunTimerTimeout()");
 
-  // Signal handlers
+  // OS Signal handlers
   // ROOT's TSignalHAndler works not SIGCHLD ...
   AliChildProcTerminator::Instance()->Connect("ChildProcTerm(Int_t,Int_t)", "AliOnlineReco", this, "ChildProcTerm(Int_t,Int_t)");
 }
@@ -170,64 +170,66 @@ void AliOnlineReco::StartAliEve(mIntInt_i& mi)
       gCINTMutex = 0;
 
       struct sigaction sac;
-      sac.sa_handler = 0;
+      memset(&sac, 0, sizeof(sac));
+      sac.sa_handler = NULL;
+      sac.sa_restorer= NULL;
       sigemptyset(&sac.sa_mask);
       sac.sa_flags = 0;
-      sigaction(SIGCHLD, &sac, 0);
-
+      sigaction(SIGCHLD, &sac, NULL);
+  
       int s;
       if (fTestMode)
       {
-	s = execlp("alitestproc", "alitestproc", TString::Format("%d", run).Data(), (char*) 0);
+        s = execlp("alitestproc", "alitestproc", TString::Format("%d", run).Data(), (char*) 0);
       }
       else
       {
-	Int_t procPID = gSystem->GetPid();
-	TString logFile = Form("%s/reco/log/run%d_%d.log",
-			       gSystem->Getenv("ONLINERECO_BASE_DIR"),
-			       run,
-			       (Int_t)procPID);
-	Info("DoStart","Reconstruction log will be written to %s",logFile.Data());
-	gSystem->RedirectOutput(logFile.Data());
+        Int_t procPID = gSystem->GetPid();
+        TString logFile = Form("%s/reco/log/run%d_%d.log",
+             gSystem->Getenv("ONLINERECO_BASE_DIR"),
+             run,
+            (Int_t)procPID);
+        Info("DoStart","Reconstruction log will be written to %s",logFile.Data());
+        gSystem->RedirectOutput(logFile.Data());
 
-	gSystem->cd(Form("%s/reco",gSystem->Getenv("ONLINERECO_BASE_DIR")));
+        gSystem->cd(Form("%s/reco",gSystem->Getenv("ONLINERECO_BASE_DIR")));
 
-	TString gdcs;
-	if (RetrieveGRP(run,gdcs) <= 0 || gdcs.IsNull()) 
-	  gSystem->Exit(1);
+        TString gdcs;
+        if (RetrieveGRP(run,gdcs) <= 0 || gdcs.IsNull()) 
+          gSystem->Exit(1);
 
-	gSystem->Setenv("DATE_RUN_NUMBER", Form("%d", run));
-	// Setting CDB
-// 	AliCDBManager * man = AliCDBManager::Instance();
-// 	man->SetDefaultStorage("local:///local/cdb");
-// 	man->SetSpecificStorage("GRP/GRP/Data",
-// 			      Form("local://%s",gSystem->pwd()));
-// 	man->SetSpecificStorage("GRP/CTP/Config",
-// 			      Form("local://%s",gSystem->pwd()));
-// 	man->SetSpecificStorage("ACORDE/Align/Data",
-// 				"local://$ALICE_ROOT/OCDB");
+        gSystem->Setenv("DATE_RUN_NUMBER", Form("%d", run));
+        // Setting CDB
+        // 	AliCDBManager * man = AliCDBManager::Instance();
+        // 	man->SetDefaultStorage("local:///local/cdb");
+        // 	man->SetSpecificStorage("GRP/GRP/Data",
+        // 			      Form("local://%s",gSystem->pwd()));
+        // 	man->SetSpecificStorage("GRP/CTP/Config",
+        // 			      Form("local://%s",gSystem->pwd()));
+        // 	man->SetSpecificStorage("ACORDE/Align/Data",
+        // 				"local://$ALICE_ROOT/OCDB");
 
-	gSystem->mkdir(Form("run%d_%d", run, (Int_t)procPID));
-	gSystem->cd(Form("run%d_%d", run, (Int_t)procPID));
+        gSystem->mkdir(Form("run%d_%d", run, (Int_t)procPID));
+        gSystem->cd(Form("run%d_%d", run, (Int_t)procPID));
 
-	TString recMacroPath(gSystem->Getenv("ONLINERECO_MACRO"));
-	if (recMacroPath.IsNull()) {
-	  recMacroPath = "$ALICE_ROOT/MONITOR/rec.C";
-	}
+        TString recMacroPath(gSystem->Getenv("ONLINERECO_MACRO"));
+        if (recMacroPath.IsNull()) {
+          recMacroPath = "$ALICE_ROOT/MONITOR/rec.C";
+        }
 
-	s = execlp("alieve",
-		   "alieve",
-		   "-q",
-		   Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath.Data())),
-		   (char*) 0);
+        s = execlp("alieve",
+             "alieve",
+             "-q",
+             Form("%s(\"mem://@*:\")", gSystem->ExpandPathName(recMacroPath.Data())),
+             (char*) 0);
 
-	gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,(Int_t)procPID));
+        gSystem->Exec(Form("rm -rf %s/reco/run%d_%d",gSystem->Getenv("ONLINERECO_BASE_DIR"),run,(Int_t)procPID));
       }
 
       if (s == -1)
       {
-	perror("execlp failed - this will not end well");
-	gSystem->Exit(1);
+        perror("execlp failed - this will not end well");
+        gSystem->Exit(1);
       }
     }
   }
@@ -361,7 +363,7 @@ void AliOnlineReco::EndOfRun(Int_t run)
 void AliOnlineReco::ChildProcTerm(Int_t pid, Int_t status)
 {
   // Slot called on termination of child process.
-
+ 
   printf("child process termination pid=%d, status=%d...\n", pid, status);
 
   mIntInt_i i = FindMapEntryByPid(pid);
@@ -501,10 +503,10 @@ Int_t AliOnlineReco::RetrieveGRP(UInt_t run, TString &gdc)
   }
 
   Int_t ret=AliGRPPreprocessor::ReceivePromptRecoParameters(run, dbHost.Data(),
-							dbPort.Atoi(), dbName.Data(),
-							user.Data(), password.Data(),
-							Form("local://%s",gSystem->pwd()),
-							gdc);
+            dbPort.Atoi(), dbName.Data(),
+            user.Data(), password.Data(),
+            Form("local://%s",gSystem->pwd()),
+            gdc);
 
   if(ret>0) Info("RetrieveGRP","Last run of the same type is: %d",ret);
   else if(ret==0) Warning("RetrieveGRP","No previous run of the same type found");
