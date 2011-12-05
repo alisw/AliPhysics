@@ -40,6 +40,7 @@
 #include "AliVCluster.h"
 #include "AliCaloTrackReader.h"
 #include "AliMixedEvent.h"
+#include "AliCaloPID.h"
 
 ClassImp(AliIsolationCut)
   
@@ -104,6 +105,7 @@ void AliIsolationCut::InitParameters()
 void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS, 
                                         const TObjArray * plNe, 
                                         const AliCaloTrackReader * reader, 
+                                        const AliCaloPID * pid, 
                                         const Bool_t bFillAOD, 
                                         AliAODPWG4ParticleCorrelation  *pCandidate, 
                                         const TString & aodArrayRefName,
@@ -132,6 +134,7 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
   TObjArray * reftracks   = 0x0;
   Int_t ntrackrefs   = 0;
   Int_t nclusterrefs = 0;
+  
   //Check charged particles in cone.
   if(plCTS && (fPartInCone==kOnlyCharged || fPartInCone==kNeutralAndCharged)){
     TVector3 p3;
@@ -200,11 +203,14 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       }
       
       //Do not count the candidate (photon or pi0) or the daughters of the candidate
-      if(calo->GetID() == pCandidate->GetCaloLabel(0) || calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      //Skip matched clusters with tracks
+      if(calo->GetID() == pCandidate->GetCaloLabel(0) || 
+         calo->GetID() == pCandidate->GetCaloLabel(1)) continue ;      
       
-      if(calo->GetNTracksMatched() > 0) continue ; 
-      
-      calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;//Assume that come from vertex in straight line
+      //Skip matched clusters with tracks
+      if( pid->IsTrackMatched(calo,reader->GetCaloUtils(),reader->GetInputEvent()) ) continue ;
+    
+      //Assume that come from vertex in straight line
+      calo->GetMomentum(mom,reader->GetVertex(evtIndex)) ;
       
       pt   = mom.Pt();
       eta  = mom.Eta();
@@ -212,8 +218,9 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       if(phi<0) phi+=TMath::TwoPi();
       //only loop the particle at the same side of candidate
       
-      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
       //if at the same side has particle larger than candidate, then candidate can not be the leading, skip such events
+      if(TMath::Abs(phi-phiC)>TMath::PiOver2()) continue ;
+      
       if(pt > ptC){
         n         = -1;
         nfrac     = -1;
