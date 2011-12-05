@@ -56,7 +56,6 @@ set ( SRCS
     AliITSv11GeometrySDD.cxx 
     AliITSv11GeometrySSD.cxx 
     AliITSv11GeometrySPD.cxx 
-    AliITSv11Hybrid.cxx 
     AliITSv11GeometrySupport.cxx 
     AliITSQADataMakerSim.cxx 
     AliITSQASPDDataMakerSim.cxx 
