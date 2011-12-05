@@ -17,6 +17,7 @@ public:
 
   AliFemtoVertexMultAnalysis(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9);
   AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);  // copy constructor
+  AliFemtoVertexMultAnalysis& operator=(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis);    
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoVertexMultAnalysis();
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
