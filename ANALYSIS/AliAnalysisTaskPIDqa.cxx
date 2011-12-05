@@ -39,6 +39,10 @@
 #include <AliTOFPIDResponse.h>
 
 #include <AliESDEvent.h>
+#include <AliAODEvent.h>
+#include <AliESDv0.h>
+#include <AliAODv0.h>
+#include <AliESDv0KineCuts.h>
 
 #include "AliAnalysisTaskPIDqa.h"
 
@@ -49,6 +53,11 @@ ClassImp(AliAnalysisTaskPIDqa)
 AliAnalysisTaskPIDqa::AliAnalysisTaskPIDqa():
 AliAnalysisTaskSE(),
 fPIDResponse(0x0),
+fV0cuts(0x0),
+fV0electrons(0x0),
+fV0pions(0x0),
+fV0kaons(0x0),
+fV0protons(0x0),
 fListQA(0x0),
 fListQAits(0x0),
 fListQAitsSA(0x0),
@@ -59,7 +68,8 @@ fListQAtof(0x0),
 fListQAemcal(0x0),
 fListQAhmpid(0x0),
 fListQAtofhmpid(0x0),
-fListQAtpctof(0x0)
+fListQAtpctof(0x0),
+fListQAV0(0x0)
 {
   //
   // Dummy constructor
@@ -70,6 +80,11 @@ fListQAtpctof(0x0)
 AliAnalysisTaskPIDqa::AliAnalysisTaskPIDqa(const char* name):
 AliAnalysisTaskSE(name),
 fPIDResponse(0x0),
+fV0cuts(0x0),
+fV0electrons(0x0),
+fV0pions(0x0),
+fV0kaons(0x0),
+fV0protons(0x0),
 fListQA(0x0),
 fListQAits(0x0),
 fListQAitsSA(0x0),
@@ -80,7 +95,8 @@ fListQAtof(0x0),
 fListQAemcal(0x0),
 fListQAhmpid(0x0),
 fListQAtofhmpid(0x0),
-fListQAtpctof(0x0)
+fListQAtpctof(0x0),
+fListQAV0(0x0)
 {
   //
   // Default constructor
@@ -95,6 +111,13 @@ AliAnalysisTaskPIDqa::~AliAnalysisTaskPIDqa()
   //
   // Destructor
   //
+
+  delete fV0cuts;
+  delete fV0electrons;
+  delete fV0pions;
+  delete fV0kaons;
+  delete fV0protons;
+
   if (!AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fListQA;
 }
 
@@ -116,6 +139,15 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fPIDResponse=inputHandler->GetPIDResponse();
   if (!fPIDResponse) AliError("PIDResponse object was not created");
   
+  // V0 Kine cuts 
+  fV0cuts = new AliESDv0KineCuts;
+ 
+  // V0 PID Obj arrays
+  fV0electrons = new TObjArray;
+  fV0pions     = new TObjArray;
+  fV0kaons     = new TObjArray;
+  fV0protons   = new TObjArray;
+
   //
   fListQA=new TList;
   fListQA->SetOwner();
@@ -160,6 +192,10 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQAtofhmpid->SetOwner();
   fListQAtofhmpid->SetName("TOF_HMPID");
   
+  fListQAV0=new TList;
+  fListQAV0->SetOwner();
+  fListQAV0->SetName("V0decay");
+  
   fListQA->Add(fListQAits);
   fListQA->Add(fListQAitsSA);
   fListQA->Add(fListQAitsPureSA);
@@ -170,6 +206,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   fListQA->Add(fListQAhmpid);
   fListQA->Add(fListQAtpctof);
   fListQA->Add(fListQAtofhmpid);
+  fListQA->Add(fListQAV0);
 
   SetupITSqa();
   SetupTPCqa();
@@ -179,6 +216,7 @@ void AliAnalysisTaskPIDqa::UserCreateOutputObjects()
   SetupHMPIDqa();
   SetupTPCTOFqa();
   SetupTOFHMPIDqa();
+  SetupV0qa();
   
   PostData(1,fListQA);
 }
@@ -194,6 +232,8 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
   AliVEvent *event=InputEvent();
   if (!event||!fPIDResponse) return;
 
+  // Start with the V0 task (only possible for ESDs?)
+  FillV0PIDlist();
   
   FillITSqa();
   FillTPCqa();
@@ -206,9 +246,107 @@ void AliAnalysisTaskPIDqa::UserExec(Option_t */*option*/)
   FillTPCTOFqa();
   FillTOFHMPIDqa();
   
+  // Clear the V0 PID arrays
+  ClearV0PIDlist();
+
+
+  
   PostData(1,fListQA);
 }
 
+//______________________________________________________________________________
+void  AliAnalysisTaskPIDqa::FillV0PIDlist(){
+
+  //
+  // Fill the PID object arrays holding the pointers to identified particle tracks
+  //
+
+  // Dynamic cast to ESD events (DO NOTHING for AOD events)
+  AliESDEvent *event = dynamic_cast<AliESDEvent *>(InputEvent());
+  if ( !event )  return;
+  
+  if(TString(event->GetBeamType())=="Pb-Pb" || TString(event->GetBeamType())=="A-A"){
+    fV0cuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPbPb); 
+  }
+  else{
+    fV0cuts->SetMode(AliESDv0KineCuts::kPurity,AliESDv0KineCuts::kPP); 
+  }
+
+  // V0 selection
+  // set event
+  fV0cuts->SetEvent(event);
+
+  // loop over V0 particles
+  for(Int_t iv0=0; iv0<event->GetNumberOfV0s();iv0++){
+
+    AliESDv0 *v0 = (AliESDv0 *) event->GetV0(iv0);
+ 
+    if(!v0) continue;
+    if(v0->GetOnFlyStatus()) continue; 
+  
+    // Get the particle selection 
+    Bool_t foundV0 = kFALSE;
+    Int_t pdgV0, pdgP, pdgN;
+
+    foundV0 = fV0cuts->ProcessV0(v0, pdgV0, pdgP, pdgN);
+    if(!foundV0) continue;
+    
+    Int_t iTrackP = v0->GetPindex();  // positive track
+    Int_t iTrackN = v0->GetNindex();  // negative track
+
+    // v0 Armenteros plot (QA)
+    Float_t armVar[2] = {0.0,0.0};
+    fV0cuts->Armenteros(v0, armVar);
+
+    TH2 *h=(TH2*)fListQAV0->At(0);
+    if (!h) continue;
+    h->Fill(armVar[0],armVar[1]);
+
+    // fill the Object arrays
+    // positive particles
+    if( pdgP == -11){
+      fV0electrons->Add((AliVTrack*)event->GetTrack(iTrackP));
+    }
+    else if( pdgP == 211){
+      fV0pions->Add((AliVTrack*)event->GetTrack(iTrackP));
+    }
+    else if( pdgP == 321){
+      fV0kaons->Add((AliVTrack*)event->GetTrack(iTrackP));
+    }
+    else if( pdgP == 2212){
+      fV0protons->Add((AliVTrack*)event->GetTrack(iTrackP));
+    }
+
+    // negative particles
+    if( pdgN == 11){
+      fV0electrons->Add((AliVTrack*)event->GetTrack(iTrackN));
+    }
+    else if( pdgN == -211){
+      fV0pions->Add((AliVTrack*)event->GetTrack(iTrackN));
+    }
+    else if( pdgN == -321){
+      fV0kaons->Add((AliVTrack*)event->GetTrack(iTrackN));
+    }
+    else if( pdgN == -2212){
+      fV0protons->Add((AliVTrack*)event->GetTrack(iTrackN));
+    }
+  
+
+  }
+}
+//______________________________________________________________________________
+void  AliAnalysisTaskPIDqa::ClearV0PIDlist(){
+
+  //
+  // Clear the PID object arrays
+  //
+
+  fV0electrons->Clear();
+  fV0pions->Clear();
+  fV0kaons->Clear();
+  fV0protons->Clear();
+
+}
 //______________________________________________________________________________
 void AliAnalysisTaskPIDqa::FillITSqa()
 {
@@ -461,9 +599,6 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     //
     ULong_t status=track->GetStatus();
     // not that nice. status bits not in virtual interface
-    // TPC refit + ITS refit +
-    // TOF out + TOFpid +
-    // kTIME
     if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
 
     Double_t pt=track->Pt();
@@ -474,8 +609,22 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
     Double_t nSigma=fPIDResponse->NumberOfSigmasEMCAL(track, (AliPID::EParticleType)0);
     h->Fill(pt,nSigma);
     
-    //EMCAL signal (E/p vs. pT)
-    h=(TH2*)fListQAemcal->At(1);
+  }
+
+   //EMCAL signal (E/p vs. pT) for electrons from V0
+  for(Int_t itrack = 0; itrack < fV0electrons->GetEntries(); itrack++){
+    AliVTrack *track=(AliVTrack*)fV0electrons->At(itrack);
+
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
+
+    Double_t pt=track->Pt();
+
+    TH2 *h=(TH2*)fListQAemcal->At(1);
     if (h) {
 
       Int_t nMatchClus = track->GetEMCALcluster();
@@ -501,6 +650,90 @@ void AliAnalysisTaskPIDqa::FillEMCALqa()
       }
     }
   }
+
+   //EMCAL signal (E/p vs. pT) for pions from V0
+  for(Int_t itrack = 0; itrack < fV0pions->GetEntries(); itrack++){
+    AliVTrack *track=(AliVTrack*)fV0pions->At(itrack);
+
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
+
+    Double_t pt=track->Pt();
+
+    TH2 *h=(TH2*)fListQAemcal->At(2);
+    if (h) {
+
+      Int_t nMatchClus = track->GetEMCALcluster();
+      Double_t mom     = track->P();
+      Double_t eop     = -1.;
+
+      if(nMatchClus > -1){
+    
+        AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
+
+        if(matchedClus){
+
+          // matched cluster is EMCAL
+          if(matchedClus->IsEMCAL()){
+
+            Double_t fClsE       = matchedClus->E();
+            eop                  = fClsE/mom;
+
+            h->Fill(pt,eop);
+
+          }
+        }
+      }
+    }
+  }
+
+   //EMCAL signal (E/p vs. pT) for protons from V0
+  for(Int_t itrack = 0; itrack < fV0protons->GetEntries(); itrack++){
+    AliVTrack *track=(AliVTrack*)fV0protons->At(itrack);
+
+    //
+    //basic track cuts
+    //
+    ULong_t status=track->GetStatus();
+    // not that nice. status bits not in virtual interface
+    if (!( (status & AliVTrack::kEMCALmatch) == AliVTrack::kEMCALmatch) ) continue;
+
+    Double_t pt=track->Pt();
+
+    TH2 *hP=(TH2*)fListQAemcal->At(3);
+    TH2 *hAP=(TH2*)fListQAemcal->At(4);
+    if (hP && hAP) {
+
+      Int_t nMatchClus = track->GetEMCALcluster();
+      Double_t mom     = track->P();
+      Int_t charge     = track->Charge();	      
+      Double_t eop     = -1.;
+
+      if(nMatchClus > -1){
+    
+        AliVCluster *matchedClus = (AliVCluster*)event->GetCaloCluster(nMatchClus);
+
+        if(matchedClus){
+
+          // matched cluster is EMCAL
+          if(matchedClus->IsEMCAL()){
+
+            Double_t fClsE       = matchedClus->E();
+            eop                  = fClsE/mom;
+
+            if(charge > 0)      hP->Fill(pt,eop);
+            else if(charge < 0) hAP->Fill(pt,eop);
+
+          }
+        }
+      }
+    }
+  }
+
 }
 
 
@@ -856,11 +1089,30 @@ void AliAnalysisTaskPIDqa::SetupEMCALqa()
 			     200,-10,10);
   fListQAemcal->Add(hNsigmaPt);  
   
-  TH2F *hSigPt = new TH2F("hSigPt_EMCAL",
-                        "EMCAL signal (E/p) vs. p_{T};p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
+
+  TH2F *hSigPtEle = new TH2F("hSigPt_EMCAL_Ele",
+                        "EMCAL signal (E/p) vs. p_{T} for electrons;p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
                         vX->GetNrows()-1,vX->GetMatrixArray(),
                         200,0,2);
-  fListQAemcal->Add(hSigPt);
+  fListQAemcal->Add(hSigPtEle);
+
+  TH2F *hSigPtPions = new TH2F("hSigPt_EMCAL_Pions",
+                        "EMCAL signal (E/p) vs. p_{T} for pions;p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
+                        vX->GetNrows()-1,vX->GetMatrixArray(),
+                        200,0,2);
+  fListQAemcal->Add(hSigPtPions);
+
+  TH2F *hSigPtProtons = new TH2F("hSigPt_EMCAL_Protons",
+                        "EMCAL signal (E/p) vs. p_{T} for protons;p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
+                        vX->GetNrows()-1,vX->GetMatrixArray(),
+                        200,0,2);
+  fListQAemcal->Add(hSigPtProtons);
+
+  TH2F *hSigPtAntiProtons = new TH2F("hSigPt_EMCAL_Antiprotons",
+                        "EMCAL signal (E/p) vs. p_{T} for antiprotons;p_{T} [GeV]; EMCAL signal (E/p) [arb. units]",
+                        vX->GetNrows()-1,vX->GetMatrixArray(),
+                        200,0,2);
+  fListQAemcal->Add(hSigPtAntiProtons);
 
   delete vX;  
 }
@@ -933,6 +1185,17 @@ void AliAnalysisTaskPIDqa::SetupTPCTOFqa()
   }
 
   delete vX;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskPIDqa::SetupV0qa()
+{
+  //
+  // Create the qa objects for V0 Kine cuts
+  //
+  
+  TH2F *hArmenteros  = new TH2F("hArmenteros",  "Armenteros plot",200,-1.,1.,200,0.,0.4);
+  fListQAV0->Add(hArmenteros);
+ 
 }
 
 //______________________________________________________________________________

@@ -52,7 +52,9 @@ class AliESDv0KineCuts : public TObject{
   // user can select an operation modes [see .cxx for details]
   void   SetMode(Int_t mode, Int_t type);
   void   SetMode(Int_t mode, const char* type);
-
+  void	 UseExternalVertex(Bool_t use_external=kTRUE);
+  AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const;
+  void      SetCuts();                          // setup cuts for selected fMode and fType, see source file for details
   //
   // setter functions for V0 cut values
   // for default values see the constructor
@@ -144,9 +146,6 @@ class AliESDv0KineCuts : public TObject{
   void Copy(TObject &ref) const;
 
  private:
-
-  AliKFParticle *CreateMotherParticle(const AliVTrack* const pdaughter, const AliVTrack* const ndaughter, Int_t pspec, Int_t nspec) const;
-  void      SetCuts();                          // setup cuts for selected fMode and fType, see source file for details
   Bool_t    GammaEffCuts(AliESDv0 * const v0);  // set of cuts optimized for high gamma efficiency
 
  private:
@@ -182,7 +181,8 @@ class AliESDv0KineCuts : public TObject{
   Float_t               fLcutDCA[2];       // DCA between the daughter tracks [min, max]
   Float_t               fLcutVertexR[2];   // radius of the decay point [min, max]
   Float_t               fLcutInvMass[2];   // invariant mass window
-  
+  Bool_t		fUseExternalVertex; // Is kTRUE if Vertex is set via SetPrimaryVertex()
+  Bool_t		fDeleteVertex;	    // Is kTRUE if Vertex has been created in SetEvent() function
   
   ClassDef(AliESDv0KineCuts, 0);
 

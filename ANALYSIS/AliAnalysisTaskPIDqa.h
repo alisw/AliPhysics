@@ -23,6 +23,7 @@
 class AliPIDResponse;
 class TList;
 class AliVEvent;
+class AliESDv0KineCuts;
 
 class AliAnalysisTaskPIDqa : public AliAnalysisTaskSE {
   
@@ -39,6 +40,13 @@ public:
   
 private: 
   AliPIDResponse *fPIDResponse;             //! PID response Handler
+  AliESDv0KineCuts *fV0cuts;                //! ESD V0 cuts
+
+  TObjArray *fV0electrons;                  //! array with pointer to identified particles from V0 decays (electrons)
+  TObjArray *fV0pions;                      //! array with pointer to identified particles from V0 decays (pions)
+  TObjArray *fV0kaons;                      //! array with pointer to identified particles from V0 decays (kaons)
+  TObjArray *fV0protons;                    //! array with pointer to identified particles from V0 decays (ptotons)
+
   TList                 *fListQA;           //! list with all QA histograms
   TList                 *fListQAits;        //! List with ITS QA histograms
   TList                 *fListQAitsSA;      //! List with ITS SA QA histograms
@@ -50,6 +58,7 @@ private:
   TList                 *fListQAhmpid;      //! List with EMCAL QA histograms
   TList                 *fListQAtofhmpid;   //! List with EMCAL QA histograms
   TList                 *fListQAtpctof;     //! List with combined PID from TPC + TOF
+  TList                 *fListQAV0;         //! List with V0 kine cuts QA histograms
 
   
   void ExecNewRun();
@@ -63,7 +72,11 @@ private:
   void SetupHMPIDqa();
   void SetupTOFHMPIDqa();
   void SetupTPCTOFqa();
+  void SetupV0qa();
 
+  //
+  void FillV0PIDlist();
+  void ClearV0PIDlist();
   //
   void FillITSqa();
   void FillTPCqa();

@@ -54,6 +54,8 @@ AliESDv0KineCuts::AliESDv0KineCuts() :
   , fGcutInvMass(0.05)
   , fK0cutChi2NDF(10)
   , fLcutChi2NDF(10)
+  , fUseExternalVertex(kFALSE)
+  , fDeleteVertex(kFALSE)
 {
   //
   // Default constructor
@@ -124,6 +126,8 @@ AliESDv0KineCuts::AliESDv0KineCuts(const AliESDv0KineCuts &ref):
   , fGcutInvMass(0.05)
   , fK0cutChi2NDF(10)
   , fLcutChi2NDF(10)
+  , fUseExternalVertex(kFALSE)
+  , fDeleteVertex(kFALSE)
 {
   //
   // Copy operator
@@ -156,7 +160,8 @@ void AliESDv0KineCuts::Copy(TObject &ref) const {
   target.fTPCchi2perCls = fTPCchi2perCls;
   target.fTPCclsRatio = fTPCclsRatio;
   target.fNoKinks = fNoKinks;
-
+  target.fUseExternalVertex = fUseExternalVertex;  //added december 2nd 2011
+  target.fDeleteVertex = fDeleteVertex;  //added december 2nd 2011
 
   // default gamma cuts values
   target.fGcutChi2NDF = fGcutChi2NDF;
@@ -949,6 +954,17 @@ void  AliESDv0KineCuts::SetEvent(AliESDEvent* const event){
     AliErrorClass("Invalid input event pointer");
     return;
   }
+if (fUseExternalVertex) return;
+else{
+	if(fPrimaryVertex && fDeleteVertex){
+		delete 	fPrimaryVertex;
+		fPrimaryVertex=0x0;
+		}
+	fPrimaryVertex = new AliKFVertex(*(event->GetPrimaryVertex()));
+	fDeleteVertex=kTRUE;
+	}
+
+
 
 }
 //____________________________________________________________________
@@ -963,13 +979,43 @@ void  AliESDv0KineCuts::SetEvent(AliVEvent* const event){
     return;
   }
 
+if (fUseExternalVertex) return;
+else{
+	if(fPrimaryVertex && fDeleteVertex){
+		delete 	fPrimaryVertex;
+		fPrimaryVertex=0x0;
+		}
+	fPrimaryVertex = new AliKFVertex(*(event->GetPrimaryVertex()));
+	fDeleteVertex=kTRUE;
 }
+
+}
+
+
+//________________________________________________________________
+void	 AliESDv0KineCuts::UseExternalVertex(Bool_t use_external){
+	//
+	// Reenable primary Vertex from ESD event
+	//
+	if (use_external) fUseExternalVertex =kTRUE;
+	else fUseExternalVertex =kFALSE;
+}
+
+
+
+
 //________________________________________________________________
 void AliESDv0KineCuts::SetPrimaryVertex(AliKFVertex* const v){
   //
   // set the primary vertex of the event
   //
-  fPrimaryVertex = v;
+  	if(fPrimaryVertex && fDeleteVertex){   
+		delete 	fPrimaryVertex;
+		fPrimaryVertex =0x0;
+		fDeleteVertex = kFALSE;
+		}  
+  fUseExternalVertex=kTRUE; 
+  fPrimaryVertex = v; // set primary Vertex
   if(!fPrimaryVertex){
     AliErrorClass("Failed to initialize the primary vertex");
     return;
