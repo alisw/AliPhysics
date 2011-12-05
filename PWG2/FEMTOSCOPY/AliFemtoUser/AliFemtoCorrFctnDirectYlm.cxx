@@ -297,6 +297,7 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   fMaxJM = (fMaxL+1)*(fMaxL+1);
 
   // Fill in factorials table
+  if (factorials) free (factorials);
   factorials = (double *) malloc(sizeof(double) * (4 * (fMaxL + 1)));
   for (int iter=1; iter<4*(fMaxL+1); iter++)
     {
@@ -307,6 +308,12 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   int el = 0;
   int em = 0;
   int il = 0;
+  
+  if (fels) free (fels);
+  if (fems) free (fems);
+  if (felsi) free (felsi);
+  if (femsi) free (femsi);
+
   fels = (double *) malloc(sizeof(double) * (fMaxJM));
   fems = (double *) malloc(sizeof(double) * (fMaxJM));
   felsi = (int *) malloc(sizeof(int) * (fMaxJM));
@@ -326,6 +333,11 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   }
   while (el <= fMaxL);
   
+  if (fnumsreal) free (fnumsreal);
+  if (fnumsimag) free (fnumsimag);  
+  if (fdensreal) free (fdensreal);   
+  if (fdensimag) free (fdensimag);   
+
   fnumsreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
   fnumsimag = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
   fdensreal = (TH1D **) malloc(sizeof(TH1D *) * fMaxJM);
@@ -359,9 +371,15 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   else
     fbinctd = 0;
 
+  if (fYlmBuffer) free (fYlmBuffer);
+
   fYlmBuffer = (complex<double> *) malloc(sizeof(complex<double>) * fMaxJM);
   
   // Covariance matrices
+
+  if (fcovmnum) free (fcovmnum);
+  if (fcovmden) free (fcovmden);  
+
   fcovmnum = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
   fcovmden = (double *) malloc(sizeof(double) * fMaxJM * fMaxJM * 4 * ibin);
 
@@ -383,7 +401,7 @@ AliFemtoCorrFctnDirectYlm& AliFemtoCorrFctnDirectYlm::operator=(const AliFemtoCo
   fSside = aCorrFctn.fSside;
   fSlong = aCorrFctn.fSlong;
 
-  if (aCorrFctn.fPairCut)
+  if (aCorrFctn.fPairCut) 
     fPairCut = aCorrFctn.fPairCut;
 
   fUseLCMS = aCorrFctn.fUseLCMS;
