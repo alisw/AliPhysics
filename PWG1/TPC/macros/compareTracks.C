@@ -18,11 +18,10 @@
   //      see function IsDownscaled();
   //
   //  Visualization part is currently work in progress
-  //  - TO
-
-  // author:
-  // dumping part :  marian.ivanov@cern.ch
-  //
+  //  
+  // Responsible:
+  // dumping part:         marian.ivanov@cern.ch
+  // visualization part:   
   // 
   Example usage:
   aliroot -b -q $ALICE_ROOT/TPC/macros/compareTracks.C+
@@ -70,7 +69,7 @@ TTree * chainOFFHLT0=0;
 TTree * chainHLTOFF=0;
 TTree * chainHLTOFF0=0;
 
-void compareTracks(const char * flist="compare.list", Double_t downscale=10000){
+void compareTracks(const char * flist="compare.list", Double_t downscale=20000){
   //
   // Compare HLT and OFFLINE esd files 
   // Input: 
@@ -280,6 +279,8 @@ void CompareEvents(AliESDEvent *evoff, AliESDEvent *evhlt, TTreeSRedirector *pcs
 
 Bool_t IsSelected(AliESDtrack *track){
   //
+  // modified by:
+  // philipp.luettig@cern.ch
   // 
   //
   if (track->IsOn(0x40)==0) return kFALSE;                // Refit
@@ -304,13 +305,22 @@ Bool_t AreTracksCloseFast(AliESDtrack *track1, AliESDtrack *track2, AliESDEvent 
   // 
   // Fast comparison uning track param close to the prim vertex and at the inner wall of the TPC
   //
-  // 1. Fast cut on the invariant variable P3 and P4
+  // 1. Fast cut on the invariant (under rotation) variable P3 and P4 (means pz/pt and 1/pt)
   // 2. Slower cuts - parameters at the entrance of the TPC (tracks to be propagated)
   //
   // In case the tracks are relativelaly close -the inner2 parameters are created
   //                                           -track 2 propagated and rotated to the same position as the track1 
+  // 
   const Double_t absCut[5] ={5,10, 0.02,0.02,1};   // abs cut values  
   const Double_t pullCut[5]={6,100,6,   100,6};    // pull cut values
+  //   *              "External" track parametrisation class                       *
+  //   *                                                                           *
+  //   *      external param0:   local Y-coordinate of a track (cm)                *
+  //   *      external param1:   local Z-coordinate of a track (cm)                *
+  //   *      external param2:   local sine of the track momentum azimuthal angle  *
+  //   *      external param3:   tangent of the track momentum dip angle           *
+  //   *      external param4:   1/pt (1/(GeV/c))                                  *
+
   //
   // 
   const Double_t kTglCut=0.1;    
@@ -377,6 +387,8 @@ void MakeChain(){
   chainOFFHLT0=toolkit.MakeChainRandom("dumpHLTOFFLINE.list","offhlt0",0,100);
   chainHLTOFF=toolkit.MakeChainRandom("dumpHLTOFFLINE.list","hltoff",0,100);
   chainHLTOFF0=toolkit.MakeChainRandom("dumpHLTOFFLINE.list","hltoff0",0,100);
+
+ 
 }
 
 void DrawDiffPt(){
@@ -384,12 +396,16 @@ void DrawDiffPt(){
   // Draw difference between the HLT and offline tracks
   //
   TCut cut="sqrt(chi2)<10&&ncl21off>120";
+  TCut cutNoiseEvent = "abs(nHLT/nOFF-1)<0.2";   //mainly laser events
   //
   // 1. check the edge effect 1/pt resolution TPC only pull
-  chainOFFHLT->Draw("(track1.fIp.fP[4]-track2.fIp.fP[4])/sqrt(max(track1.fIp.fC[14],track2.fIp.fC[14])):sign(inner2.fP[4])*inner2.fP[0]/inner2.fX>>hisTPC(50,-0.18,0.18,100,-6,6)",cut+"abs(track1.fP[4])<0.25","colz",200000);
+  // ...
+  chainOFFHLT->Draw("(track1.fIp.fP[4]-track2.fIp.fP[4])/sqrt(max(track1.fIp.fC[14],track2.fIp.fC[14])):sign(inner2.fP[4])*inner2.fP[0]/inner2.fX>>hisTPCEdge(50,-0.18,0.18,100,-6,6)",cut+"abs(track1.fP[4])<0.25","colz",200000);
   /*
-    hisTPC->FitSlicesY();
-    hisTPC_2->Draw();
+    hisTPCEdge->FitSlicesY();
+    hisTPCEdge_2->GetXaxis()->SetTitle("q*ly/lx");
+    hisTPCEdge_2->GetYaxis()->SetTitle("#Delta_{1/pt}/#sigma_{1/pt}");
+    hisTPCEdge_2->Draw();
   */
   // 2. check the edge effect 1/pt resolution combined 
   chainOFFHLT->Draw("(track1.fP[4]-track2.fP[4])/sqrt(max(track1.fC[14],track2.fC[14])):sign(inner2.fP[4])*inner2.fP[0]/inner2.fX>>hisCombEdge(50,-0.18,0.18,100,-6,6)",cut+"abs(track1.fP[4])<0.25","colz",200000);
@@ -400,7 +416,9 @@ void DrawDiffPt(){
   // 3. Combined momentum resolution as function of the inverse moment
   chainOFFHLT->Draw("(track1.fIp.fP[4]-track2.fIp.fP[4])/sqrt(max(track1.fIp.fC[14],track2.fIp.fC[14])):abs(track1.fP[4])>>hisTPCP4(20,-0.0,1,100,-6,6)",cut+"abs(track1.fP[4])<1","colz",200000);
   /*
-    hisTPCP4->FitSlicesY();
+    hisTPCP4->FitSlicesY();  
+    hisTPCP4_2->GetXaxis()->SetTitle("1/p_{t} (1/GeV))");
+    hisTPCP4_2->GetYaxis()->SetTitle("#Delta_{1/pt}/#sigma_{1/pt}");
     hisTPCP4_2->Draw();
   */
   // 4. Combined momentum resolution as function of the inverse moment
@@ -411,7 +429,39 @@ void DrawDiffPt(){
   */
 
 }
+//
+void DrawDiffEff(){
+  //
+  //
+  //
+  TCut cutEff = "abs(track.fIp.fP[4])<5&&abs(track.fIp.fP[1])<90";
+  TCut cutNoiseEvent = "abs(nHLT/nOFF-1)<0.2"; // HLT cluster finder more sensitive to the noise
+  //
+  // 
+  //
+  chainOFFHLT0->Draw("counter==0:(nOFF+nHLT)/2.>>effOccuOFFHLT(20,0,8000)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1&&ncl21>120","prof",50000);
+  chainHLTOFF0->Draw("counter==0:(nOFF+nHLT)/2.>>effOccuHLTOFF(20,0,8000)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1&&ncl21>120","prof",50000);
 
+ chainOFFHLT0->Draw("counter==0:track.fTPCncls>>effNCLOFFHLT(40,0,160)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1","prof",50000);
+ chainHLTOFF0->Draw("counter==0:track.fTPCncls>>effNCLHLTOFF(40,0,160)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1","prof",50000);
+ /*
+   effNCLOFFHLT->SetMarkerStyle(25);
+   effNCLHLTOFF->SetMarkerStyle(25);
+   effNCLOFFHLT->SetMarkerColor(2);
+   effNCLHLTOFF->SetMarkerColor(4);
+   effNCLOFFHLT->Draw();
+   effNCLHLTOFF->Draw("same");
+  */
+
+
+  chainHLTOFF0->Draw("counter==0:sign(track.fIp.fP[4])*track.fIp.fP[0]/track.fIp.fX>>profTPCEdge(50,-0.18,0.18)",cutNoiseEvent+cutEff+"abs(track.fP[4])<0.25","prof",50000);
+
+  chainOFFHLT0->Draw("counter==0:sign(track.fIp.fP[4])*track.fIp.fP[0]/track.fIp.fX>>profTPCEdge(50,-0.18,0.18)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1","prof",50000);
+
+  chainOFFHLT0->Draw("track.fTPCncls:sign(track.fIp.fP[4])*track.fIp.fP[0]/track.fIp.fX>>profTPCEdge(50,-0.18,0.18)",cutNoiseEvent+cutEff+"abs(track.fP[4])<1","prof",50000);
+
+
+}
 
 /*
   This is  shell script real example  to submit jobs for the track comparison: 
