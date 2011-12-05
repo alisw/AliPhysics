@@ -1,3 +1,11 @@
+/*
+  Class to perform Combined Bayesian PID 
+  using TPC and TOF response
+
+  - TOF non gaussian effect are included
+  - TOF mismatch is included in the Bayesian probabilities
+
+*/
 #include "AliFlowBayesianPID.h"
 
 #include "TDatabasePDG.h"
@@ -12,53 +20,53 @@
 
 ClassImp(AliFlowBayesianPID)
   
-TH2D* AliFlowBayesianPID::hPriors[fNspecies] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
-TSpline3* AliFlowBayesianPID::fMism = NULL; // function for mismatch
-AliTOFGeometry* AliFlowBayesianPID::fTofGeo = NULL; // TOF geometry needed to reproduce mismatch shape
+TH2D* AliFlowBayesianPID::fghPriors[fgkNspecies] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL}; // histo with priors (hardcoded)
+TSpline3* AliFlowBayesianPID::fgMism = NULL; // function for mismatch
+AliTOFGeometry* AliFlowBayesianPID::fgTofGeo = NULL; // TOF geometry needed to reproduce mismatch shape
 
 //________________________________________________________________________
 AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid) 
-  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fIsMC(0), fTOFres(84.0), fTOFResponse(NULL), fTPCResponse(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100)
+  :      AliPIDResponse(), fPIDesd(NULL), fDB(TDatabasePDG::Instance()), fNewTrackParam(0), fTOFresolution(84.0), fTOFResponseF(NULL), fTPCResponseF(NULL), fTOFmaker(NULL),fWTofMism(0.0), fProbTofMism(0.0), fZ(0) ,fMassTOF(0), fBBdata(NULL),fCurrCentrality(100)
 {
   // Constructor
   Bool_t redopriors = kFALSE;
-  if(! hPriors[0]){
-    hPriors[0] = new TH2D("hPriorsEl","Priors as a function of Centrality [e];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[0]){
+    fghPriors[0] = new TH2D("fghPriorsEl","Priors as a function of Centrality [e];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[1]){
-    hPriors[1] = new TH2D("hPriorsMu","Priors as a function of Centrality [#mu];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[1]){
+    fghPriors[1] = new TH2D("fghPriorsMu","Priors as a function of Centrality [#mu];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[2]){
-    hPriors[2] = new TH2D("hPriorsPi","Priors as a function of Centrality [#pi];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[2]){
+    fghPriors[2] = new TH2D("fghPriorsPi","Priors as a function of Centrality [#pi];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[3]){
-	hPriors[3] = new TH2D("hPriorsKa","Priors as a function of Centrality [K];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[3]){
+	fghPriors[3] = new TH2D("fghPriorsKa","Priors as a function of Centrality [K];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
 	redopriors = kTRUE;
   }
-  if(! hPriors[4]){
-    hPriors[4] = new TH2D("hPriorsPr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[4]){
+    fghPriors[4] = new TH2D("fghPriorsPr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[5]){
-    hPriors[5] = new TH2D("hPriorsDe","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[5]){
+    fghPriors[5] = new TH2D("fghPriorsDe","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[6]){
-    hPriors[6] = new TH2D("hPriorsTr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[6]){
+    fghPriors[6] = new TH2D("fghPriorsTr","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
-  if(! hPriors[7]){
-    hPriors[7] = new TH2D("hPriorsHe","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
+  if(! fghPriors[7]){
+    fghPriors[7] = new TH2D("fghPriorsHe","Priors as a function of Centrality [p];centrality;p_{t} (GeV/c)",12,-10,110,80,0,20);
     redopriors = kTRUE;
   }
 
   if(redopriors) SetPriors();
 
-  if(!fMism) fMism = GetMismatch();
-  if(! fTofGeo) fTofGeo = new AliTOFGeometry();
+  if(!fgMism) fgMism = GetMismatch();
+  if(! fgTofGeo) fgTofGeo = new AliTOFGeometry();
 
   if(! esdpid)
     fPIDesd = new AliESDpid();
@@ -86,27 +94,27 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
   fMass[7] = (fDB->GetParticle(2212)->Mass()+fDB->GetParticle(2112)->Mass()*2)*0.5; // p mass
   
   // TOF response
-  fTOFResponse = new TF1("fTOFprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
-  fTOFResponse->SetParameter(0,1);
-  fTOFResponse->SetParameter(1,-0.1);
-  fTOFResponse->SetParameter(2,1);
-  fTOFResponse->SetParameter(3,1.1);
-  fTOFResponse->SetParameter(0,1./fTOFResponse->Integral(-7,7));
-  fTOFResponse->SetLineColor(2);
+  fTOFResponseF = new TF1("fTOFprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
+  fTOFResponseF->SetParameter(0,1);
+  fTOFResponseF->SetParameter(1,-0.1);
+  fTOFResponseF->SetParameter(2,1);
+  fTOFResponseF->SetParameter(3,1.1);
+  fTOFResponseF->SetParameter(0,1./fTOFResponseF->Integral(-7,7));
+  fTOFResponseF->SetLineColor(2);
 
   // TPC response
-  fTPCResponse = new TF1("fTPCprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
-  fTPCResponse->SetParameter(0,1);
-  fTPCResponse->SetParameter(1,0);
-  fTPCResponse->SetParameter(2,1);
-  fTPCResponse->SetParameter(3,1.8);
-  fTPCResponse->SetParameter(0,1./fTPCResponse->Integral(-7,7));
-  fTPCResponse->SetLineColor(4);
+  fTPCResponseF = new TF1("fTPCprob","[0]*TMath::Exp(-(x-[1])*(x-[1])/2/[2]/[2])* (x < [1]+[3]*[2]) + (x > [1]+[3]*[2])*[0]*TMath::Exp(-(x-[1]-[3]*[2]*0.5)*[3]/[2])",-7,7);
+  fTPCResponseF->SetParameter(0,1);
+  fTPCResponseF->SetParameter(1,0);
+  fTPCResponseF->SetParameter(2,1);
+  fTPCResponseF->SetParameter(3,1.8);
+  fTPCResponseF->SetParameter(0,1./fTPCResponseF->Integral(-7,7));
+  fTPCResponseF->SetLineColor(4);
 
   fBBdata = new TF1("fBBdata", "[0] * AliExternalTrackParam::BetheBlochAleph(x, [1], [2], [3], [4], [5])",0.1, 4000.);
 
   // initialize the mask
-  for(Int_t i=0;i < fNdetectors;i++){
+  for(Int_t i=0;i < fgkNdetectors;i++){
     fMaskAND[i] = 0; // no dets required
     fMaskOR[i] = 1; // all dets if available
     fMaskCurrent[i] = 0; // current mask
@@ -114,13 +122,15 @@ AliFlowBayesianPID::AliFlowBayesianPID(AliESDpid *esdpid)
 }
 //________________________________________________________________________
 AliFlowBayesianPID::~AliFlowBayesianPID(){
-  if(fTOFResponse) delete fTOFResponse; 
-  if(fTPCResponse) delete fTPCResponse;
+  // destrucctor that removes all the PID external (non static) objects
+  if(fTOFResponseF) delete fTOFResponseF; 
+  if(fTPCResponseF) delete fTPCResponseF;
   if(fTOFmaker) delete fTOFmaker;
   if(fBBdata) delete fBBdata;
 }
 //________________________________________________________________________
 void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,EStartTimeType_t flagStart,Bool_t recomputeT0TOF){
+  // Set the detector responses (including also TPC dE/dx paramterization vs. centrality)
   if(!esd){
     printf("AliFlowBayesianPID::SetDetResponse -> Error -> No valid esd event");
     return;
@@ -135,98 +145,98 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fCurrCentrality = centrality;
 
   // retune BB
-  Double_t AlephParameters[5];
+  Double_t alephParameters[5];
   Float_t mip = 51;
   
   if(centrality < 0){
-    AlephParameters[0] = 5.36613e-02;
-    AlephParameters[1] = 1.44343e+01;
-    AlephParameters[2] = 6.93875e-07;
-    AlephParameters[3] = 2.17858e+00;
-    AlephParameters[4] = 2.57153e+00;
+    alephParameters[0] = 5.36613e-02;
+    alephParameters[1] = 1.44343e+01;
+    alephParameters[2] = 6.93875e-07;
+    alephParameters[3] = 2.17858e+00;
+    alephParameters[4] = 2.57153e+00;
   }
   else if(centrality < 10){
     mip = 53.549869;
-    AlephParameters[0] = 0.073740;
-    AlephParameters[1] = 10.205724;
-    AlephParameters[2] = 0.000009;
-    AlephParameters[3] = 2.292470;
-    AlephParameters[4] = 2.029191;
+    alephParameters[0] = 0.073740;
+    alephParameters[1] = 10.205724;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.292470;
+    alephParameters[4] = 2.029191;
   }
   else if(centrality < 20){
     mip = 53.549979;
-    AlephParameters[0] = 0.074808;
-    AlephParameters[1] = 10.002850;
-    AlephParameters[2] = 0.000009;
-    AlephParameters[3] = 2.353473;
-    AlephParameters[4] = 2.070397;
+    alephParameters[0] = 0.074808;
+    alephParameters[1] = 10.002850;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.353473;
+    alephParameters[4] = 2.070397;
   }
   else if(centrality < 30){
     mip = 53.550000;
-    AlephParameters[0] = 0.076092;
-    AlephParameters[1] = 9.911953;
-    AlephParameters[2] = 0.000009;
-    AlephParameters[3] = 2.316073;
-    AlephParameters[4] = 2.026312;
+    alephParameters[0] = 0.076092;
+    alephParameters[1] = 9.911953;
+    alephParameters[2] = 0.000009;
+    alephParameters[3] = 2.316073;
+    alephParameters[4] = 2.026312;
   }
   else if(centrality < 40){
     mip = 53.549172;
-    AlephParameters[0] = 0.082482;
-    AlephParameters[1] = 9.027005;
-    AlephParameters[2] = 0.000013;
-    AlephParameters[3] = 2.420034;
-    AlephParameters[4] = 1.963044;
+    alephParameters[0] = 0.082482;
+    alephParameters[1] = 9.027005;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.420034;
+    alephParameters[4] = 1.963044;
   }
   else if(centrality < 50){
     mip = 53.549823;
-    AlephParameters[0] = 0.082570;
-    AlephParameters[1] = 9.003131;
-    AlephParameters[2] = 0.000013;
-    AlephParameters[3] = 2.442916;
-    AlephParameters[4] = 1.976435;
+    alephParameters[0] = 0.082570;
+    alephParameters[1] = 9.003131;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.442916;
+    alephParameters[4] = 1.976435;
   }
   else if(centrality < 60){
     mip = 53.521724;
-    AlephParameters[0] = 0.082672;
-    AlephParameters[1] = 8.974422;
-    AlephParameters[2] = 0.000013;
-    AlephParameters[3] = 2.462914;
-    AlephParameters[4] = 1.986885;
+    alephParameters[0] = 0.082672;
+    alephParameters[1] = 8.974422;
+    alephParameters[2] = 0.000013;
+    alephParameters[3] = 2.462914;
+    alephParameters[4] = 1.986885;
   }
   else if(centrality < 70){
-    AlephParameters[0] = 8.29615e-02;
-    AlephParameters[1] = 9.41909e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.44894e+00;
-    AlephParameters[4] = 2.06676e+00;
+    alephParameters[0] = 8.29615e-02;
+    alephParameters[1] = 9.41909e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.44894e+00;
+    alephParameters[4] = 2.06676e+00;
   }
   else if(centrality < 80){
-    AlephParameters[0] = 8.31397e-02;
-    AlephParameters[1] = 9.41126e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.44848e+00;
-    AlephParameters[4] = 2.06326e+00;
+    alephParameters[0] = 8.31397e-02;
+    alephParameters[1] = 9.41126e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.44848e+00;
+    alephParameters[4] = 2.06326e+00;
   }
   else{
-    AlephParameters[0] = 8.38910e-02;
-    AlephParameters[1] = 9.30736e+00;
-    AlephParameters[2] = 1.40230e-05;
-    AlephParameters[3] = 2.45844e+00;
-    AlephParameters[4] = 2.07334e+00;
+    alephParameters[0] = 8.38910e-02;
+    alephParameters[1] = 9.30736e+00;
+    alephParameters[2] = 1.40230e-05;
+    alephParameters[3] = 2.45844e+00;
+    alephParameters[4] = 2.07334e+00;
   }
   
-  fPIDesd->GetTPCResponse().SetBetheBlochParameters(AlephParameters[0],AlephParameters[1],AlephParameters[2],AlephParameters[3],AlephParameters[4]);
+  fPIDesd->GetTPCResponse().SetBetheBlochParameters(alephParameters[0],alephParameters[1],alephParameters[2],alephParameters[3],alephParameters[4]);
   fPIDesd->GetTPCResponse().SetMip(mip);
   
   fBBdata->SetParameter(0, mip);
-  fBBdata->SetParameter(1, AlephParameters[0]);
-  fBBdata->SetParameter(2, AlephParameters[1]);
-  fBBdata->SetParameter(3, AlephParameters[2]);
-  fBBdata->SetParameter(4, AlephParameters[3]);
-  fBBdata->SetParameter(5, AlephParameters[4]);
+  fBBdata->SetParameter(1, alephParameters[0]);
+  fBBdata->SetParameter(2, alephParameters[1]);
+  fBBdata->SetParameter(3, alephParameters[2]);
+  fBBdata->SetParameter(4, alephParameters[3]);
+  fBBdata->SetParameter(5, alephParameters[4]);
 
   if(recomputeT0TOF){
-    fTOFmaker->SetTimeResolution(fTOFres);     
+    fTOFmaker->SetTimeResolution(fTOFresolution);     
     fTOFmaker->ComputeT0TOF(esd);
     fTOFmaker->WriteInESD(esd);
   }
@@ -243,7 +253,8 @@ void AliFlowBayesianPID::SetDetResponse(AliESDEvent *esd,Float_t centrality,ESta
   fPIDesd->MakePID(esd,kFALSE);
 }
 //________________________________________________________________________
-Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS){
+Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS) const{
+  // tuned dE/dx (vs. eta and centrality)
   Double_t ptpc[3];
   t->GetInnerPxPyPz(ptpc);
   Float_t momtpc=TMath::Sqrt(ptpc[0]*ptpc[0] + ptpc[1]*ptpc[1] + ptpc[2]*ptpc[2]);
@@ -281,6 +292,7 @@ Float_t AliFlowBayesianPID::GetExpDeDx(const AliESDtrack *t,Int_t iS){
 }
 //________________________________________________________________________
 void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
+  // compute Detector weights for Bayesian probablities
   Float_t centr = fCurrCentrality;
 
   Float_t pt = t->Pt();
@@ -292,7 +304,7 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
   // TPC
   Float_t dedx = t->GetTPCsignal();
   if(t->GetStatus() & AliESDtrack::kTPCout && dedx > 40 && fMaskOR[0]){ // if TPC PID available    
-    for(Int_t iS=0;iS<fNspecies;iS++){
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
       Float_t dedxExp=GetExpDeDx(t,iS);
 
       Float_t resolutionTPC = 1;
@@ -315,12 +327,12 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
       else if(centr < 70) resolutionTPC *= 0.88;
       else resolutionTPC *= 0.83;
       
-      fWeights[0][iS] = fTPCResponse->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
+      fWeights[0][iS] = fTPCResponseF->Eval((dedx - dedxExp)/resolutionTPC)/resolutionTPC;
     }
     fMaskCurrent[0] = kTRUE;
   }
   else{
-    for(Int_t iS=0;iS<fNspecies;iS++) fWeights[0][iS] = 1;
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[0][iS] = 1;
     fMaskCurrent[0] = kFALSE;
   }
 
@@ -337,15 +349,15 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
     Int_t det[5];
     Float_t length, timeextra, pos[3];
     /* compute length and expected time */
-    fTofGeo->GetVolumeIndices(t->GetTOFCalChannel(), det);
-    fTofGeo->GetPosPar(det, pos);
+    fgTofGeo->GetVolumeIndices(t->GetTOFCalChannel(), det);
+    fgTofGeo->GetPosPar(det, pos);
     length = 0.;
     for (Int_t i = 0; i < 3; i++) length += pos[i] * pos[i];
     length = TMath::Sqrt(length);
     timeextra = length * 33.3564095198152043;
     Float_t dz =t->GetTOFsignalDz();
     Float_t dx =t->GetTOFsignalDx();
-    Float_t mismweight = TMath::Max(fMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)*(0.75 + 0.23 * (1.3*dx*dx + 0.7*dz*dz))); // mismatch probabilities
+    Float_t mismweight = TMath::Max(fgMism->Eval(timeTOF - timeextra),0.0000001) * ((0.5 + 0.05/pt/pt/pt)*(0.75 + 0.23 * (1.3*dx*dx + 0.7*dz*dz))); // mismatch probabilities
     fWTofMism = mismfrac*mismweight;
 
     Double_t inttimes[8];
@@ -354,60 +366,61 @@ void AliFlowBayesianPID::ComputeWeights(const AliESDtrack *t){
     inttimes[6] = inttimes[0] / p * fMass[6] * TMath::Sqrt(1+p*p/fMass[6]/fMass[6]);
     inttimes[7] = inttimes[0] / p * fMass[7] * TMath::Sqrt(1+p*p/fMass[7]/fMass[7]);
 
-    for(Int_t iS=0;iS<fNspecies;iS++){
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
       Float_t expsigma = fPIDesd->GetTOFResponse().GetExpectedSigma(p, inttimes[iS], fMass[iS]);
       Float_t delta = timeTOF - inttimes[iS];
       if (TMath::Abs(delta) > 5*expsigma) {
 	fWeights[1][iS] = mismfrac*mismweight;
       } else
-	fWeights[1][iS] = fTOFResponse->Eval(delta/expsigma)/expsigma + mismfrac*mismweight;
+	fWeights[1][iS] = fTOFResponseF->Eval(delta/expsigma)/expsigma + mismfrac*mismweight;
     }
     fMaskCurrent[1] = kTRUE;
   }
   else{
-    for(Int_t iS=0;iS<fNspecies;iS++) fWeights[1][iS] = 1;    
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[1][iS] = 1;    
     fMaskCurrent[1] = kFALSE;
   }
 
   for(Int_t j=0;j < 2;j++){
     Float_t rcc = 0;
-    for(Int_t iS=0;iS<fNspecies;iS++) rcc += fWeights[j][iS];
+    for(Int_t iS=0;iS<fgkNspecies;iS++) rcc += fWeights[j][iS];
     if(rcc <=0 ) rcc = 1;
-    for(Int_t iS=0;iS<fNspecies;iS++) fWeights[j][iS] /= rcc;
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fWeights[j][iS] /= rcc;
 
     if(j==1) fWTofMism /= rcc;
   }  
 }
 //________________________________________________________________________
 void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsolete*/){
+  // compute Bayesian probablities
   ComputeWeights(t);
-  Float_t priors[fNspecies];
+  Float_t priors[fgkNspecies];
   fProbTofMism = 0;
 
   Float_t centr = fCurrCentrality;
 
-  for(Int_t iS=0;iS<fNspecies;iS++) priors[iS] = hPriors[iS]->GetBinContent(hPriors[iS]->GetXaxis()->FindBin(centr),hPriors[iS]->GetYaxis()->FindBin(t->Pt()));
+  for(Int_t iS=0;iS<fgkNspecies;iS++) priors[iS] = fghPriors[iS]->GetBinContent(fghPriors[iS]->GetXaxis()->FindBin(centr),fghPriors[iS]->GetYaxis()->FindBin(t->Pt()));
 
 
   if((!fMaskAND[0] || fMaskCurrent[0]) && (!fMaskAND[1] || fMaskCurrent[1])){
     Float_t rcc = 0;
-    for(Int_t iS=0;iS<fNspecies;iS++){
+    for(Int_t iS=0;iS<fgkNspecies;iS++){
       rcc += fWeights[0][iS]*fWeights[1][iS]*priors[iS];
       fProbTofMism += fWeights[0][iS]*fWTofMism*priors[iS]; 
     }
     if(rcc > 0){
-      for(Int_t iS=0;iS<fNspecies;iS++){
+      for(Int_t iS=0;iS<fgkNspecies;iS++){
 	fProb[iS] = fWeights[0][iS]*fWeights[1][iS]*priors[iS]/rcc;
       }
       fProbTofMism /=rcc;
     }
     else{
-      for(Int_t iS=0;iS<fNspecies;iS++) fProb[iS] = 0;
+      for(Int_t iS=0;iS<fgkNspecies;iS++) fProb[iS] = 0;
       fProbTofMism = 0;
     }
   }
   else{
-    for(Int_t iS=0;iS<fNspecies;iS++) fProb[iS] = 0;
+    for(Int_t iS=0;iS<fgkNspecies;iS++) fProb[iS] = 0;
     fProbTofMism = 0;   
   }
   
@@ -443,6 +456,7 @@ void AliFlowBayesianPID::ComputeProb(const AliESDtrack *t, Float_t /*centrObsole
 
 //________________________________________________________________________
 void AliFlowBayesianPID::SetPriors(){
+  // set default TOF priors
   Float_t fBinLimitPID[18];
   fBinLimitPID[0] = 0.300000;
   fBinLimitPID[1] = 0.400000;
@@ -1473,8 +1487,8 @@ void AliFlowBayesianPID::SetPriors(){
     }
   }
 
-  for(Int_t k1=1;k1 <=hPriors[0]->GetNbinsX();k1++){ // loop on centrality bins
-    for(Int_t k2=1;k2 <=hPriors[0]->GetNbinsY();k2++){ // loop on pt
+  for(Int_t k1=1;k1 <=fghPriors[0]->GetNbinsX();k1++){ // loop on centrality bins
+    for(Int_t k2=1;k2 <=fghPriors[0]->GetNbinsY();k2++){ // loop on pt
       Float_t y = 0.125 + (k2-1)*0.25;
       
       Int_t ipt = 0;
@@ -1494,23 +1508,24 @@ void AliFlowBayesianPID::SetPriors(){
 
       for(Int_t j=0;j<5;j++){ // loop over species
 	if(j==4 && y > 3){
-	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]*(1-weight) + 0.2*weight);    
+	  fghPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]*(1-weight) + 0.2*weight);    
 	}
 	else
-	  hPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]);    
+	  fghPriors[j]->SetBinContent(k1,k2,fC[icentr][ipt][j]);    
       } // end loop over species
 
       Float_t deutFact =  20*(icentr*icentr*0.1+1);
-      hPriors[5]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact);
-      hPriors[6]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact);
-      hPriors[7]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact/deutFact);      
+      fghPriors[5]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact);
+      fghPriors[6]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact);
+      fghPriors[7]->SetBinContent(k1,k2,(fC[icentr][TMath::Max(ipt-5,0)][4]*(1-weight) + 0.2*weight)/deutFact/deutFact/deutFact);      
     } // end loop on pt
   } // end loop on centrality bins
   
 }
 //________________________________________________________________________
 TSpline3 *AliFlowBayesianPID::GetMismatch(){
-  if(fMism) return fMism;
+  // set TOF mismatch time distribution (probability density)
+  if(fgMism) return fgMism;
 
   Double_t x[5000],y[5000];
   // values for spline
