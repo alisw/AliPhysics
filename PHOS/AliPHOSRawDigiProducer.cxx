@@ -260,9 +260,11 @@ void AliPHOSRawDigiProducer::MakeDigits(TClonesArray *digits, TClonesArray *tmpD
 //CalibrateT moved to Clusterizer
 //      time = CalibrateT(time,relId,!caloFlag) ;
       // subtract RCU L1 phase (L1Phase is in seconds) w.r.t. L0:
-      time -= fRawStream->GetL1Phase();
-
-
+      //Very strange behaviour of electronics, but cross-checkes several times...
+      if( fRawStream->GetL1Phase()<55.*1.e-9 ) //for phase=0,25,50
+        time -= fRawStream->GetL1Phase();
+      else //for phase 75
+        time += 25.*1.e-9 ;
       
       if(energy <= 0.) 
 	continue;
