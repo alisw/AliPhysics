@@ -158,6 +158,12 @@ Hypersurface::Hypersurface(void) {
   Hypersurface("./");
 }
 
+Hypersurface::Hypersurface(const Hypersurface &aSurf)
+{
+  i = aSurf.i;
+  Hypersurface("./");
+  
+}
 
 Hypersurface::~Hypersurface(void) {
   for(i=0;i<Np;i++) {
