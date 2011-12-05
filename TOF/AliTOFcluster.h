@@ -26,6 +26,7 @@ class AliTOFcluster : public AliCluster3D {
 		Int_t *lab, Int_t * const ind, Int_t *par, 
 		Bool_t status, Int_t idx); // ctor
   AliTOFcluster(const AliTOFcluster & cluster); // copy ctor
+  AliTOFcluster& operator = (const AliTOFcluster& cls);
   virtual ~AliTOFcluster(); // dtor
 
   // Getters and Setters

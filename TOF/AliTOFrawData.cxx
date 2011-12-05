@@ -146,21 +146,25 @@ AliTOFrawData::AliTOFrawData(const AliTOFrawData& r) :
 AliTOFrawData& AliTOFrawData::operator=(const AliTOFrawData& r)
 {
 
-  // dummy assignment operator
+  // Assignment operator
 
-  this->fACQflag    = r.fACQflag;
-  this->fPSbit      = r.fPSbit;
-  this->fTRM        = r.fTRM;
-  this->fTRMchain   = r.fTRMchain;
-  this->fTDC        = r.fTDC;
-  this->fTDCchannel = r.fTDCchannel;
-  this->fLeading    = r.fLeading;
-  this->fTrailing   = r.fTrailing;
-  this->fToT        = r.fToT;
-  this->fTime       = r.fTime;
-  this->fError      = r.fError;
-  this->fDeltaBC      = r.fDeltaBC;
-  this->fL0L1Latency      = r.fL0L1Latency;
+  if (this == &r)
+    return *this;
+
+  TObject::operator=(r);
+  fACQflag    = r.fACQflag;
+  fPSbit      = r.fPSbit;
+  fTRM        = r.fTRM;
+  fTRMchain   = r.fTRMchain;
+  fTDC        = r.fTDC;
+  fTDCchannel = r.fTDCchannel;
+  fLeading    = r.fLeading;
+  fTrailing   = r.fTrailing;
+  fToT        = r.fToT;
+  fTime       = r.fTime;
+  fError      = r.fError;
+  fDeltaBC    = r.fDeltaBC;
+  fL0L1Latency= r.fL0L1Latency;
   return *this;
 
 }

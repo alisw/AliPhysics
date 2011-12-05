@@ -106,7 +106,6 @@ AliTOFHitMap::AliTOFHitMap(const AliTOFHitMap & hitMap) :
   for (Int_t i=0; i<fMaxIndex; i++)
     fHitMap[i]=hitMap.fHitMap[i];
 
-
 }
 
  
@@ -212,17 +211,31 @@ FlagType AliTOFHitMap::TestHit(Int_t *vol) const
 ////////////////////////////////////////////////////////////////////////
 AliTOFHitMap & AliTOFHitMap::operator = (const AliTOFHitMap & hitMap) 
 {
-  // Dummy assignment operator
-  if (this == &hitMap) return *this;
+  // Assignment operator
 
+  if (this == &hitMap)
+    return *this;
+
+  TObject::operator=(hitMap);
   fNSector=hitMap.fNSector;
   fNplate=hitMap.fNplate;
   fNstrip=hitMap.fNstrip;
   fNpx=hitMap.fNpx;
   fNpz=hitMap.fNpz;
-  fSDigits=hitMap.fSDigits;
-  fMaxIndex=hitMap.fMaxIndex;
-  fHitMap=hitMap.fHitMap;
+
+  fSDigits=hitMap.fSDigits; // coverity: to be solved
+  /*
+  fSDigits = new TClonesArray("AliTOFSDigit");
+  for (Int_t ii=0; ii<hitMap.fSDigits->GetEntriesFast(); ii++)
+    fSDigits->AddLast(hitMap.fSDigits->UncheckedAt(ii));
+  */
+  //fSDigits = TClonesArray(&hitMap.fSDigits);
+
+  fMaxIndex=fNSector*fNplate*fNstrip*fNpx*fNpz;
+  fHitMap = new Int_t[fMaxIndex];
+  for (Int_t i=0; i<fMaxIndex; i++)
+    fHitMap[i]=hitMap.fHitMap[i];
+
   return *this;
 
 }

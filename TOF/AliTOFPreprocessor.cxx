@@ -169,8 +169,6 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap *dcsAliasMap)
 
   // processing DCS
 
-  fData->SetFDRFlag(fFDRFlag);
-  
   if (!dcsAliasMap){
     Log("No DCS map found: TOF exiting from Shuttle");
     if (fData){
@@ -181,7 +179,9 @@ UInt_t AliTOFPreprocessor::ProcessDCSDataPoints(TMap *dcsAliasMap)
   }
   else {
 
-  // The processing of the DCS input data is forwarded to AliTOFDataDCS
+    fData->SetFDRFlag(fFDRFlag);
+  
+    // The processing of the DCS input data is forwarded to AliTOFDataDCS
     resultDCSMap=fData->ProcessData(*dcsAliasMap);
     if(!resultDCSMap){
       Log("Some problems occurred while processing DCS data, TOF exiting from Shuttle");
@@ -236,8 +236,6 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
 
   // processing DCS HV and LV data points
 
-  fHVLVmaps->SetFDRFlag(fFDRFlag);
-  
   if (!dcsAliasMap){
     Log("No DCS map found: TOF exiting from Shuttle");
     if (fHVLVmaps){
@@ -248,6 +246,8 @@ UInt_t AliTOFPreprocessor::ProcessHVandLVdps(TMap *dcsAliasMap)
   }
   else {
 
+    fHVLVmaps->SetFDRFlag(fFDRFlag);
+  
     // The processing of the DCS input data is forwarded to AliTOFDataDCS
     //if (0) { // AdC
     resultDCSMap = fHVLVmaps->ProcessData(*dcsAliasMap);

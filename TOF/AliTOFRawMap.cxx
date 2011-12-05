@@ -100,7 +100,7 @@ AliTOFRawMap::AliTOFRawMap(const AliTOFRawMap & rawMap) :
 AliTOFRawMap & AliTOFRawMap::operator=(const AliTOFRawMap & rawMap)
 {
 //
-// Dummy copy constructor
+// Assignment operator
 //
 
   if (this == &rawMap)
@@ -110,7 +110,16 @@ AliTOFRawMap & AliTOFRawMap::operator=(const AliTOFRawMap & rawMap)
   fNtrmChain=rawMap.fNtrmChain;
   fNtdc=rawMap.fNtdc;
   fNtdcChannel=rawMap.fNtdcChannel;
-  fRawData=rawMap.fRawData;
+
+  fRawData=rawMap.fRawData; // coverity: to be solved
+
+  /*
+  fRawData = new TClonesArray("AliTOFrawData");
+  for (Int_t ii=0; ii<rawMap.fRawMap->GetEntriesFast(); ii++)
+    fRawMap->AddLast(rawMap.fRawMap->UncheckedAt(ii));
+  */
+  //fRawData = TClonesArray(&rawMap.fRawMap);
+
   fMaxIndex=fNtrm*fNtrmChain*fNtdc*fNtdcChannel;
   fRawMap = new Int_t[fMaxIndex];
   for (Int_t i=0; i<fMaxIndex; i++)
