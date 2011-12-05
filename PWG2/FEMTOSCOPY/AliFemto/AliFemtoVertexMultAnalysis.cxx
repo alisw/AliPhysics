@@ -179,6 +179,68 @@ AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultA
   cout << " AliFemtoVertexMultAnalysis::AliFemtoVertexMultAnalysis(const AliFemtoVertexMultAnalysis& a) - analysis copied " << endl;
 
 }
+AliFemtoVertexMultAnalysis& AliFemtoVertexMultAnalysis::operator=(const AliFemtoVertexMultAnalysis& TheOriginalAnalysis)
+{
+  if (this != &TheOriginalAnalysis) {
+    AliFemtoVertexMultAnalysis::operator=(TheOriginalAnalysis);
+    fVertexZBins = TheOriginalAnalysis.fVertexZBins; 
+    fMultBins = TheOriginalAnalysis.fMultBins;
+
+    fEventCut          = 0;
+    fFirstParticleCut  = 0;
+    fSecondParticleCut = 0;
+    fPairCut           = 0;
+    if (fCorrFctnCollection) delete fCorrFctnCollection;
+    fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+    fVertexZ[0] = TheOriginalAnalysis.fVertexZ[0]; 
+    fVertexZ[1] = TheOriginalAnalysis.fVertexZ[1];
+    fUnderFlowVertexZ = 0; 
+    fOverFlowVertexZ = 0; 
+    fMult[0] = TheOriginalAnalysis.fMult[0]; 
+    fMult[1] = TheOriginalAnalysis.fMult[1];
+    fUnderFlowMult = 0; 
+    fOverFlowMult = 0; 
+    if (fMixingBuffer) delete fMixingBuffer;
+    if (fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
+										       fMultBins,fMult[0],fMult[1]);
+
+    // find the right event cut
+    fEventCut = TheOriginalAnalysis.fEventCut->Clone();
+    // find the right first particle cut
+    fFirstParticleCut = TheOriginalAnalysis.fFirstParticleCut->Clone();
+    // find the right second particle cut
+    if (TheOriginalAnalysis.fFirstParticleCut==TheOriginalAnalysis.fSecondParticleCut) 
+      SetSecondParticleCut(fFirstParticleCut); // identical particle hbt
+    else
+      fSecondParticleCut = TheOriginalAnalysis.fSecondParticleCut->Clone();
+
+    fPairCut = TheOriginalAnalysis.fPairCut->Clone();
+  
+    if ( fEventCut ) {
+      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
+    }
+    if ( fFirstParticleCut ) {
+      SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
+    }
+    if ( fSecondParticleCut ) {
+      SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
+    }  if ( fPairCut ) {
+      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
+      
+    }
+
+    AliFemtoCorrFctnIterator iter;
+    for (iter=TheOriginalAnalysis.fCorrFctnCollection->begin(); iter!=TheOriginalAnalysis.fCorrFctnCollection->end();iter++){
+      AliFemtoCorrFctn* fctn = (*iter)->Clone();
+      if (fctn) AddCorrFctn(fctn);
+    }
+    
+    fNumEventsToMix = TheOriginalAnalysis.fNumEventsToMix;
+  }
+
+  return *this;
+}
 //____________________________
 AliFemtoVertexMultAnalysis::~AliFemtoVertexMultAnalysis(){
   // now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself
