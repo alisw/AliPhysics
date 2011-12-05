@@ -314,7 +314,7 @@ public:
 
 // HMPID methodes +++++++++++++++++++++++++++++++++ (kir)
   void    SetHMPIDsignal(Double_t theta) {fHMPIDsignal=theta;}
-  Double_t GetHMPIDsignal() const {return fHMPIDsignal - (Int_t)fHMPIDsignal;}
+  Double_t GetHMPIDsignal() const {if(fHMPIDsignal>0) return fHMPIDsignal - (Int_t)fHMPIDsignal; else return fHMPIDsignal;}
   Double_t GetHMPIDoccupancy() const {return (Int_t)fHMPIDsignal/10.0;}
   void    SetHMPIDpid(const Double_t *p);
   void    GetHMPIDpid(Double_t *p) const;  
