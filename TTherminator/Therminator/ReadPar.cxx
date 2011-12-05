@@ -43,6 +43,12 @@ ReadPar::ReadPar(const char *aFName)
   readFile(aFName);
 }
 
+ReadPar::ReadPar(const ReadPar &aPar)
+{
+  fname = strdup(aPar.fname);
+  readFile(fname);
+}
+
 ReadPar::~ReadPar()
 {
   if (fname)
