@@ -247,7 +247,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
   }
 
   const vector<AliHLTTPCHWClusterMerger::AliClusterRecord> &GetRecords(){ return fClusters; }
-  static const int GetNSlices(){ return fkNSlices; }
+  static int GetNSlices(){ return fkNSlices; }
   int GetNBorders() const { return fNBorders; }
   int GetBorderNClusters( int ib ) const { return fBorderNClusters[ib]; }
   int GetBorderFirstCluster( int ib ) const { return fBorderFirstCluster[ib]; }
