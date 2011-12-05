@@ -31,9 +31,17 @@ AliChildProcTerminator::AliChildProcTerminator()
 {
   struct sigaction sac;
   sac.sa_handler = sig_handler;
-  sac.sa_restorer= NULL;
   sigemptyset(&sac.sa_mask);
   sac.sa_flags = 0;
+  
+  // The sa_restorer field is Not POSIX and obsolete.
+  // This is for compilation on other systems
+#if defined(__linux) && \
+    (defined(__i386__) || defined(__x86_64__)) && \
+     defined(__GNUC__)
+  sac.sa_restorer= NULL;
+#endif
+  
   sigaction(SIGCHLD, &sac, 0);
 }
 
