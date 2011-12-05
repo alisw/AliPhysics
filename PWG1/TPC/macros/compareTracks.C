@@ -69,43 +69,46 @@ TTree * chainOFFHLT0=0;
 TTree * chainHLTOFF=0;
 TTree * chainHLTOFF0=0;
 
-void compareTracks(const char * flist="compare.list", Double_t downscale=20000){
-  //
-  // Compare HLT and OFFLINE esd files 
-  // Input: 
-  //   flist - the ascii files with the filename - ESD form the offline
-  //         - hlt path constructed  from the offline ESD file repalcing the OFFLINE with HLT
-  //
-  gptdownscale=downscale;
-  TTreeSRedirector *pcstream = new TTreeSRedirector("dump.root");
-  ifstream in;
-  //  in.open(fileIn);
-  in.open(flist);
+void compareTracks(const char * flistOFF="compareOFF.list", const char * flistHLT="compareHLT.list", Double_t downscale=10000){
+    //
+    // Compare HLT and OFFLINE esd files 
+    // Input: 
+    //   flist - the ascii files with the filename - ESD form the offline
+    //         - hlt path constructed  from the offline ESD file repalcing the OFFLINE with HLT
+    //
+    gptdownscale=downscale;
+    TTreeSRedirector *pcstream = new TTreeSRedirector("dump.root");
+    ifstream inOFF;
+    inOFF.open(flistOFF);
+    ifstream inHLT;
+    inHLT.open(flistHLT);
 
-  // Read the input list of files and add them to the chain
-  TString currentFileOff;
-  TString currentFileHlt;
-  {  while(in.good()) {   
-      in >> currentFileOff;
-      currentFileHlt=currentFileOff;
-      currentFileHlt.ReplaceAll("/OFFLINE/","/HLT/");
-      printf("%s\n",currentFileHlt.Data());
-      TFile *fOff = TFile::Open(currentFileOff.Data(),"READ");
-      TFile *fHlt = TFile::Open(currentFileHlt.Data(),"READ");
-      if ( fOff && fHlt){
-	CompareFile(pcstream, fOff, fHlt);
-      }
-      delete fOff;
-      delete fHlt;
+
+    // Read the input list of files and add them to the chain
+    TString currentFileOff;
+    TString currentFileHlt;
+    {  while( (inOFF.good()) && (inHLT.good())) {
+		        inOFF >> currentFileOff;
+			inHLT >> currentFileHlt;
+	                //currentFileHlt=currentFileOff;
+	                //currentFileHlt.ReplaceAll("/OFFLINE/","/HLT/");
+	                printf("%s\n%s\n\n",currentFileOff.Data(), currentFileHlt.Data());
+	                TFile *fOff = TFile::Open(currentFileOff.Data(),"READ");
+		        TFile *fHlt = TFile::Open(currentFileHlt.Data(),"READ");
+	                if ( fOff && fHlt){
+		           CompareFile(pcstream, fOff, fHlt);
+		        }
+		      delete fOff;
+		      delete fHlt;
     }}
-  delete pcstream; 
-  /* 
-     TTreeSRedirector *pcstream = new TTreeSRedirector("dump.root");
-     TFile *fOff = TFile::Open("/lustre/alice/mknichel/cpass1/2011-12-13_0154/OFFLINE/167693/11000167693001.11/AliESDs.root","READ");
-     TFile *fHLT = TFile::Open("/lustre/alice/mknichel/cpass1/2011-12-13_0154/HLT/167693/11000167693001.11/AliESDs.root","READ");
-     CompareFile(pcstream, fOff, fHLT);
-     delete pcstream;
-  */
+    delete pcstream;
+		        /* 
+			 *      TTreeSRedirector *pcstream = new TTreeSRedirector("dump.root");
+			 *           TFile *fOff = TFile::Open("/lustre/alice/mknichel/cpass1/2011-12-13_0154/OFFLINE/167693/11000167693001.11/AliESDs.root","READ");
+			 *                TFile *fHLT = TFile::Open("/lustre/alice/mknichel/cpass1/2011-12-13_0154/HLT/167693/11000167693001.11/AliESDs.root","READ");
+			 *                     CompareFile(pcstream, fOff, fHLT);
+			 *                          delete pcstream;
+			 *                            */
 }
 
 void CompareFile(TTreeSRedirector *pcstream,  TFile *fOff, TFile *fHLT){
