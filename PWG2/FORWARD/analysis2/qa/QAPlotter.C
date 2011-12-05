@@ -390,14 +390,31 @@ struct QAPlotter : public QABase
     mg->GetListOfGraphs();
     TGraph* g = 0;
 
+    // Get the runs we have here 
+    TArrayI runs(fRuns.GetSize());
+    Int_t   j = 0;
     while ((g = static_cast<TGraph*>(next()))) { 
       l->AddEntry(g, g->GetTitle(), "lp");
+      Double_t* xs = g->GetX();
+      Int_t     n  = g->GetN();
+      for (Int_t i = 0; i < n; i++) {
+	if (FindRun(runs, Int_t(xs[i]) >= 0)) continue;
+	runs.SetAt(xs[i], j++);
+      }
     }
     l->Draw();
 
-    AddRuns(mg->GetHistogram(), title);
+    
+
+    AddRuns(mg->GetHistogram(), title, &runs);
 
     PrintCanvas(mg->GetName());
+  }
+  Int_t FindRun(const TArrayI& runs, Int_t run) 
+  {
+    Int_t idx = TMath::BinarySearch(runs.GetSize(), runs.fArray, run);
+    if (idx >= runs.GetSize(); runs[idx] != run) return -1;
+    return idx;
   }
   /** 
    * Add run labels at appropriate places on the plot
@@ -405,24 +422,30 @@ struct QAPlotter : public QABase
    * @param h      Frame histogram
    * @param title  Title 
    */
-  void AddRuns(TH1* h, const char* title)
+  void AddRuns(TH1* h, const char* title, TArrayI* runs=0)
   {
     h->GetXaxis()->SetNoExponent();
     h->GetXaxis()->SetTitleOffset(1.9);
     h->SetYTitle(title);
     h->SetXTitle("Run #");
 
+    Int_t    x1  = h->GetXaxis()->GetXmin();
+    Int_t    x2  = h->GetXaxis()->GetXmax();
     Double_t max = h->GetMaximum();
     Double_t min = h->GetMinimum();
     Int_t    lx  = -1;
-    Int_t    tx  = (fLast - fFirst) / 15;
+    Int_t    tx  = (x2 - x1) / 15;
     Double_t dy  = (max-min) / 30;
     Double_t y   = min + dy;
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
       Int_t x = fRuns[i];
-      if (x < h->GetXaxis()->GetXmin() || 
-	  x > h->GetXaxis()->GetXmax()) 
-	continue;
+
+      // Skip runs out of range 
+      if (x < x1 || x > x2) continue;
+
+      // Skip runs not in the graphs 
+      if (runs && FindRun(*runs, x) < 0) continue; 
+
       if (TMath::Abs(x - lx) < tx) y += dy;
       else                         y =  min + dy;
       lx = x;
