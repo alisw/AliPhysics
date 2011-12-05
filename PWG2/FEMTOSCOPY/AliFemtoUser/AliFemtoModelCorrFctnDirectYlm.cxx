@@ -45,14 +45,14 @@ AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const char *title
 //_______________________
 AliFemtoModelCorrFctnDirectYlm::AliFemtoModelCorrFctnDirectYlm(const AliFemtoModelCorrFctnDirectYlm& aCorrFctn):
   AliFemtoModelCorrFctn(aCorrFctn),
-  fCYlmTrue(0),
-  fCYlmFake(0),
+  fCYlmTrue(new AliFemtoCorrFctnDirectYlm(*(aCorrFctn.fCYlmTrue))),
+  fCYlmFake(new AliFemtoCorrFctnDirectYlm(*(aCorrFctn.fCYlmFake))),
   fUseLCMS(0)
 {
   // copy constructor
   fUseLCMS = aCorrFctn.fUseLCMS;
-  fCYlmTrue = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmTrue->Clone());
-  fCYlmFake = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmFake->Clone());
+//   fCYlmTrue = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmTrue->Clone());
+//   fCYlmFake = dynamic_cast<AliFemtoCorrFctnDirectYlm*>(aCorrFctn.fCYlmFake->Clone());
 }
 //_______________________
 AliFemtoModelCorrFctnDirectYlm::~AliFemtoModelCorrFctnDirectYlm()
