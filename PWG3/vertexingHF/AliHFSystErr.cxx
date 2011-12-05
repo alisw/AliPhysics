@@ -512,12 +512,12 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb020() {
   for(Int_t i=1;i<=20;i++) fRawYield->SetBinContent(i,.10);  //5 to 10%
   // fRawYield->SetBinContent(5,0.23);
   //fRawYield->SetBinContent(6,0.23);
-  fRawYield->SetBinContent(7,0.23);
-  fRawYield->SetBinContent(8,0.23);
-  fRawYield->SetBinContent(9,0.13);
-  fRawYield->SetBinContent(10,0.13);
-  fRawYield->SetBinContent(11,0.13);
-  fRawYield->SetBinContent(12,0.13);
+  fRawYield->SetBinContent(7,0.20);
+  fRawYield->SetBinContent(8,0.20);
+  fRawYield->SetBinContent(9,0.15);
+  fRawYield->SetBinContent(10,0.15);
+  fRawYield->SetBinContent(11,0.15);
+  fRawYield->SetBinContent(12,0.15);
 
   // Cuts efficiency (from cuts variation)
   fCutsEff = new TH1F("fCutsEff","fCutsEff",20,0,20);
@@ -573,11 +573,11 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
   fRawYield->SetBinContent(2,1);
   fRawYield->SetBinContent(3,1);
   fRawYield->SetBinContent(4,1.);
-  fRawYield->SetBinContent(5,4./23.);
-  fRawYield->SetBinContent(6,4./23.);
-  fRawYield->SetBinContent(7,5./20.);
-  fRawYield->SetBinContent(8,5./20.);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,1./16.);
+  fRawYield->SetBinContent(5,0.05);
+  fRawYield->SetBinContent(6,0.05);
+  fRawYield->SetBinContent(7,0.15);
+  fRawYield->SetBinContent(8,0.15);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);
   for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,1);  //5 to 10%
 
   // Cuts efficiency (from cuts variation)
