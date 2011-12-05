@@ -49,6 +49,17 @@ ReadPar::ReadPar(const ReadPar &aPar)
   readFile(fname);
 }
 
+ReadPar& ReadPar::operator=(const ReadPar& aPar)
+{
+  if (this != &aPar) {
+    delete fname;
+    fname = strdup(aPar.fname);
+    readFile(fname);
+  }
+  
+  return *this;
+}
+
 ReadPar::~ReadPar()
 {
   if (fname)

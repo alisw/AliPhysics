@@ -58,6 +58,7 @@ class ReadPar
   ReadPar(); // Default constructor
   ReadPar(const char *aFName);
   ReadPar(const ReadPar &aPar);
+  ReadPar& operator=(const ReadPar& aPar);
   ~ReadPar();
   
   int readFile(const char *aFName) throw(int); 
