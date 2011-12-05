@@ -414,7 +414,7 @@ Config()
   }
   if (useSHIL)   AliSHIL   *SHIL   = new AliSHILv3("SHIL", "Shielding v3");
   if (usePIPE)   AliPIPE   *PIPE   = new AliPIPEv3("PIPE", "Beam Pipe");
-  if (useITS)    AliITS    *ITS    = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+  if (useITS)    AliITS    *ITS    = new AliITSv11("ITS","ITS v11");
   if (useTPC)    AliTPC    *TPC    = new AliTPCv2("TPC", "Default");
   if (useTOF)    AliTOF    *TOF    = new AliTOFv6T0("TOF", "normal TOF");
   if (useHMPID)  AliHMPID  *HMPID  = new AliHMPIDv1("HMPID", "normal HMPID");

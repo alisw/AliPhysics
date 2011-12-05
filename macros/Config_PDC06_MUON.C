@@ -182,7 +182,7 @@ void Config(char directory[100]="", char option[6]="trg1mu")
   AliSHIL *SHIL = new AliSHILv3("SHIL", "Shielding Version 3");
   //=================== ITS parameters =============================
   if(iITS) {
-      AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+      AliITS *ITS  = new AliITSv11("ITS","ITS v11");
   }
  //=================== ZDC parameters =============================
   if(iZDC) {

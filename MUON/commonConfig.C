@@ -118,7 +118,7 @@ void commonConfig(const char* directory="",
     MUON->SetDigitizerWithNoise(0);
 		MUON->SetConvertTrigger(true);
     
-    new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+    new AliITSv11("ITS","ITS v11");
     
   }
 

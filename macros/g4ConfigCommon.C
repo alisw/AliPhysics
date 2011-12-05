@@ -193,7 +193,7 @@ void ConfigCommon(Bool_t setRootGeometry = kTRUE)
     {
         //=================== ITS parameters ============================
 
-	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+	AliITS *ITS  = new AliITSv11("ITS","ITS v11");
     }
 
     if (iTPC)

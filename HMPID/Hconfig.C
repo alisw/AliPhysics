@@ -453,7 +453,7 @@ void HmpConfig::WriteDet(FILE *pF)
 //CORE detectors                  
   if(fDetBG->GetButton(kPIPE )->GetState()) fprintf(pF,"\n  new AliPIPEv3(\"PIPE\",\"Beam Pipe\");\n");
   if(fDetBG->GetButton(kSHILD)->GetState()) fprintf(pF,"\n  new AliSHILv3(\"SHIL\",\"Shielding Version 2\");\n");  
-  if(fDetBG->GetButton(kITS  )->GetState()) fprintf(pF,"\n  new AliITSv11Hybrid(\"ITS\",\"ITS v11Hybrid\");\n");
+  if(fDetBG->GetButton(kITS  )->GetState()) fprintf(pF,"\n  new AliITSv11(\"ITS\",\"ITS v11\");\n");
   
   if(fDetBG->GetButton(kTPC  )->GetState())  fprintf(pF,"\n  new AliTPCv2(\"TPC\",\"Default\");\n");
   if(fDetBG->GetButton(kFRAME)->GetState())  fprintf(pF,"\n  AliFRAMEv2 *pFrame=new AliFRAMEv2(\"FRAME\",\"Space Frame\"); pFrame->SetHoles(1);\n");

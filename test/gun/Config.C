@@ -29,7 +29,7 @@
 #include "STRUCT/AliFRAMEv2.h"
 #include "STRUCT/AliSHILv3.h"
 #include "STRUCT/AliPIPEv3.h"
-#include "ITS/AliITSv11Hybrid.h"
+#include "ITS/AliITSv11.h"
 #include "TPC/AliTPCv2.h"
 #include "TOF/AliTOFv6T0.h"
 #include "HMPID/AliHMPIDv3.h"
@@ -470,7 +470,7 @@ void Config()
     {
         //=================== ITS parameters ============================
 
-	AliITS *ITS  = new AliITSv11Hybrid("ITS","ITS v11Hybrid");
+	AliITS *ITS  = new AliITSv11("ITS","ITS v11");
     }
 
     if (iTPC)

@@ -43,7 +43,7 @@
 #include "AliGenParam.h"
 #include "AliGenScan.h"
 #include "AliHALLv3.h"
-#include "AliITSv11Hybrid.h"
+#include "AliITSv11.h"
 #include "AliMAG.h"
 #include "AliMagF.h"
 #include "AliMUONv1.h"
@@ -280,11 +280,11 @@ void Config(const char* directory="",
     MUON->SetDigitizerWithNoise(0);
 		MUON->SetConvertTrigger(true);
     
-    new AliITSv11Hybrid("ITS","ITS v11Hybrid");    
+    new AliITSv11("ITS","ITS v11");    
   }
   else if (forRealistic)
   {
-    new AliITSv11Hybrid("ITS","ITS v11Hybrid");        
+    new AliITSv11("ITS","ITS v11");        
   }
   
   // Use non-high performance raw data decoder 
