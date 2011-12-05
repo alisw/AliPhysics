@@ -65,6 +65,31 @@ ParticleType::ParticleType(const ParticleType& aParticleType)
   mTable = new DecayTable(*(aParticleType.GetTable()));
 }
 
+ParticleType& ParticleType::operator=(const ParticleType& aParticleType)
+{
+  if (this != &aParticleType) {
+    mName = aParticleType.GetName();
+    mNumber = aParticleType.GetNumber();
+    mMass = aParticleType.GetMass();
+    mStrangeness = aParticleType.GetStrangeness();
+    mBarionN=aParticleType.GetBarionN();
+    mCharmN=aParticleType.GetCharmN();
+    mSpin=aParticleType.GetSpin();
+    mI=aParticleType.GetI();
+    mI3=aParticleType.GetI3();
+    mGamma=aParticleType.GetGamma();
+    mDecayChannelCount2=aParticleType.GetDecayChannelCount2();
+    mDecayChannelCount3=aParticleType.GetDecayChannelCount3();
+    mPDGCode = aParticleType.GetPDGCode();
+    mFMax = aParticleType.GetFMax();
+    delete mTable;
+    mTable = new DecayTable(*(aParticleType.GetTable()));
+  }
+
+  return *this;
+}
+
+
 ParticleType::~ParticleType()
 {
   if (mTable)

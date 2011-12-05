@@ -56,6 +56,7 @@ class ParticleType
  public:
   ParticleType();	//constructor
   ParticleType(const ParticleType& aParticleType);	//copying constructor
+  ParticleType& operator=(const ParticleType& aParticleType);	//copying constructor
   ~ParticleType();	//destructor
 
   int    GetNumber() const;
