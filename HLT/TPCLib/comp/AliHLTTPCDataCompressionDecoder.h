@@ -22,6 +22,7 @@
 #include "AliHLTTPCTrackGeometry.h"
 #include "AliHLTDataInflater.h"
 #include "AliHLTTPCHWClusterMerger.h"
+#include <vector>
 
 /**
  * @class AliHLTTPCDataCompressionDecoder
@@ -55,6 +56,21 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   void SetVerbosity(int verbosity) {fVerbosity=verbosity;}
   void EnableClusterMerger() {if (!fpClusterMerger) fpClusterMerger=new AliHLTTPCHWClusterMerger;}
 
+  int InitPartitionClusterDecoding(AliHLTUInt32_t specification);
+  int InitTrackModelClusterClusterDecoding();
+  int AddClusterMCData(const AliHLTComponentBlockData* pDesc);
+  int AddClusterIds(const AliHLTComponentBlockData* pDesc);
+  AliHLTUInt32_t GetClusterId(int clusterNo) const;
+  const AliHLTTPCClusterMCLabel* GetMCLabel(AliHLTUInt32_t clusterId) const;
+
+  void Clear(const char* option);
+
+  struct AliClusterIdBlock {
+    AliClusterIdBlock() : fIds(NULL), fSize(0) {}
+    AliHLTUInt32_t* fIds; //!
+    AliHLTUInt32_t  fSize; //!
+  };
+
  protected:
  private:
   AliHLTTPCDataCompressionDecoder(const AliHLTTPCDataCompressionDecoder&);
@@ -65,6 +81,11 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   AliHLTDataInflater* fpDataInflaterPartition; //! instance of inflater for partition clusters
   AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
   AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
+
+  vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
+  AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
+  AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
+  vector<const AliHLTTPCClusterMCData*> fClusterMCData; //! references to MC data blocks
 
   ClassDef(AliHLTTPCDataCompressionDecoder, 0)
 };
@@ -114,6 +135,9 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 
   int iResult=0;
   if (!pInflater) return -EINVAL;
+
+  if ((iResult= InitPartitionClusterDecoding(specification))<0)
+    return iResult;
 
   AliHLTUInt8_t slice = AliHLTTPCDefinitions::GetMinSliceNr(specification);
   AliHLTUInt8_t partition = AliHLTTPCDefinitions::GetMinPatchNr(specification);
@@ -200,12 +224,11 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       {rawCluster.SetQMax(value); break;}
     }
     if (parameterId>=AliHLTTPCDefinitions::kLast) {
+      AliHLTUInt32_t id=GetClusterId(decodedClusterCnt);
+      const AliHLTTPCClusterMCLabel* pMC=GetMCLabel(id);
       if (fpClusterMerger && fpClusterMerger->CheckCandidate(slice, partition, rawCluster)) {
-	  fpClusterMerger->AddCandidate(slice, partition, ~AliHLTUInt32_t(0), rawCluster);
-     } else {
-	// FIXME: afetr introcucing the temporary rawCluster, the
-	// interface can be changed to set all properties in one
-	// call
+	fpClusterMerger->AddCandidate(slice, partition, id, rawCluster, pMC);
+      } else {
       c.Next(slice, partition);
       c.SetPadRow(rawCluster.GetPadRow()+rowOffset);
       c.SetPad(rawCluster.GetPad());
@@ -214,6 +237,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
       c.SetSigmaZ2(rawCluster.GetSigmaZ2());
       c.SetCharge(rawCluster.GetCharge());
       c.SetQMax(rawCluster.GetQMax());
+      if (pMC) c.SetMC(pMC);
       outClusterCnt++;
       }
       bNextCluster=true;
@@ -242,9 +266,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	   i!=fpClusterMerger->end(); i++) {
 	c.Next((*i).GetSlice(), (*i).GetPartition());
 	const AliHLTTPCRawCluster& mergedCluster=(*i).GetCluster();
-	// FIXME: afetr introcucing the temporary rawCluster, the
-	// interface can be changed to set all properties in one
-	// call
+	const AliHLTTPCClusterMCLabel& mc=(*i).MCLabel();
 	c.SetPadRow(mergedCluster.GetPadRow()+rowOffset);
 	c.SetPad(mergedCluster.GetPad());
 	c.SetTime(mergedCluster.GetTime());
@@ -252,6 +274,7 @@ int AliHLTTPCDataCompressionDecoder::ReadRemainingClustersCompressed(T& c, AliHL
 	c.SetSigmaZ2(mergedCluster.GetSigmaZ2());
 	c.SetCharge(mergedCluster.GetCharge());
 	c.SetQMax(mergedCluster.GetQMax());
+	c.SetMC(&mc);
 	outClusterCnt++;
 	remainingCnt++;
       }
@@ -360,6 +383,9 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 
   int iResult=0;
   if (!pInflater || !pTrackPoints) return -EINVAL;
+
+  if ((iResult= InitTrackModelClusterClusterDecoding())<0)
+    return iResult;
 
   const vector<AliHLTTrackGeometry::AliHLTTrackPoint>& rawTrackPoints=pTrackPoints->GetRawPoints();
   vector<AliHLTTrackGeometry::AliHLTTrackPoint>::const_iterator currentTrackPoint=rawTrackPoints.begin();
