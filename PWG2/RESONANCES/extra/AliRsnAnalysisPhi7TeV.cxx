@@ -126,7 +126,8 @@ AliRsnAnalysisPhi7TeV& AliRsnAnalysisPhi7TeV::operator=(const AliRsnAnalysisPhi7
 //
 // Assignment operator
 //
-
+  if (this == &copy)
+    return *this;
    fIsMC = copy.fIsMC;
    fAddTPC = copy.fAddTPC;
    fAddITS = copy.fAddITS;

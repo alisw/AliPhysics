@@ -30,7 +30,7 @@ public:
    AliRsnTarget() : fTargetType(kTargetTypes), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
    AliRsnTarget(const char *name, ETargetType type = kTargetTypes) : TNamed(name, ""), fTargetType(type), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
    AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
-   AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); fTargetType = copy.fTargetType; return (*this); }
+   AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); if (this==&copy) return *this; fTargetType = copy.fTargetType; return (*this); }
    virtual ~AliRsnTarget() { /*nothing*/ }
 
    Bool_t           IsAllNull() const                      {return (!fDaughter && !fMother && !fEvent);}

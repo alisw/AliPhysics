@@ -85,8 +85,9 @@ AliRsnAnalysisPhi900GeV& AliRsnAnalysisPhi900GeV::operator=(const AliRsnAnalysis
 //
 // Assignment operator
 //
-
-   fUseMC = copy.fUseMC;
+  if (this == &copy)
+    return *this;
+  fUseMC = copy.fUseMC;
 
    fDCAr = copy.fDCAr;
    fDCAz = copy.fDCAz;

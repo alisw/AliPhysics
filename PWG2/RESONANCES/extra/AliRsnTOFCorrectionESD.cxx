@@ -64,7 +64,8 @@ AliRsnTOFCorrectionESD& AliRsnTOFCorrectionESD::operator=(const AliRsnTOFCorrect
 //
 // Assignment operator
 //
-
+  if (this == &copy)
+    return *this;
    fOwnESDpid = copy.fOwnESDpid;
    fESDpid    = copy.fESDpid;
 
