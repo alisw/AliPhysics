@@ -402,13 +402,14 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     fhETime->SetYTitle(" t (ns)");
     outputContainer->Add(fhETime);    
     
+  }// Invariant mass analysis in calorimeters and calorimeter + conversion photons
+  
+  if(fAnaType == kIMCalo){
     fhEPairDiffTime = new TH2F("hEPairDiffTime","cluster pair time difference vs E",nptbins,ptmin,ptmax, tdbins,tdmin,tdmax);
     fhEPairDiffTime->SetXTitle("E_{pair} (GeV)");
     fhEPairDiffTime->SetYTitle("#Delta t (ns)");
     outputContainer->Add(fhEPairDiffTime);
-    
-    
-  }// Invariant mass analysis in calorimeters only
+  }
   
   if(fFillWeightHistograms){
     
@@ -771,7 +772,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
   
 }
 
-//__________________________________________________________________
+//__________________________________________________
 void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS() 
 {
   //Do analysis and fill aods
@@ -914,7 +915,7 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
 }
 
 
-//__________________________________________________________________
+//_________________________________________________
 void  AliAnaPi0EbE::MakeShowerShapeIdentification() 
 {
   //Search for pi0 in fCalorimeter with shower shape analysis 
@@ -1026,7 +1027,7 @@ void  AliAnaPi0EbE::MakeShowerShapeIdentification()
   if(GetDebug() > 1) printf("AliAnaPi0EbE::MakeShowerShapeIdentification() - End fill AODs \n");  
   
 }
-//__________________________________________________________________
+//______________________________________________
 void  AliAnaPi0EbE::MakeAnalysisFillHistograms() 
 {
   //Do analysis and fill histograms
