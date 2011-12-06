@@ -157,6 +157,10 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
       void SetSigmaZ2(float sigmaZ2)   {if (fCluster) fCluster->SetSigmaZ2(sigmaZ2);}
       void SetCharge(unsigned charge)  {if (fCluster) fCluster->SetQ(charge);}
       void SetQMax(unsigned qmax)      {if (fCluster) fCluster->SetMax(qmax);}
+      void SetMC(const AliHLTTPCClusterMCLabel* pMC) {
+	if (!fCluster || !pMC) return;
+	for (int k=0; k<3; k++) fCluster->SetLabel(pMC->fClusterID[k].fMCID, k);
+      }
 
       // switch to next cluster
       iterator& Next(int slice, int partition);
