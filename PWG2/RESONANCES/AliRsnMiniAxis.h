@@ -22,7 +22,7 @@ public:
    AliRsnMiniAxis(Int_t valID, Double_t min, Double_t max, Double_t step) : fValueID(valID), fBins(0) {Set(min, max, step);}
    AliRsnMiniAxis(Int_t valID, Int_t nbins, Double_t *bins)               : fValueID(valID), fBins(0) {Set(nbins, bins);}
    AliRsnMiniAxis(const AliRsnMiniAxis& copy) : TObject(copy), fValueID(copy.fValueID), fBins(copy.fBins) { }
-   AliRsnMiniAxis& operator=(const AliRsnMiniAxis& copy) {fValueID = copy.fValueID; fBins = copy.fBins; return (*this);}
+  AliRsnMiniAxis& operator=(const AliRsnMiniAxis& copy) {if (this==&copy) return *this; fValueID = copy.fValueID; fBins = copy.fBins; return (*this);}
    
    void      SetValueID(Int_t id)     {fValueID = id;}
    Int_t     GetValueID() const       {return fValueID;}
