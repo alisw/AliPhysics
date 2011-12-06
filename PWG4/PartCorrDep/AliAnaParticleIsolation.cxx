@@ -247,13 +247,13 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     outputContainer->Add(fhPtNoIso) ;
     
     fhPtDecayIso  = new TH1F("hPtDecayIso","Number of isolated #pi^{0} decay particles",nptbins,ptmin,ptmax); 
-    fhPtNoIso->SetYTitle("N");
-    fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
+    fhPtDecayIso->SetYTitle("N");
+    fhPtDecayIso->SetXTitle("p_{T}(GeV/c)");
     outputContainer->Add(fhPtDecayIso) ;
     
     fhPtDecayNoIso  = new TH1F("hPtDecayNoIso","Number of not isolated leading pi0 decay particles",nptbins,ptmin,ptmax); 
-    fhPtNoIso->SetYTitle("N");
-    fhPtNoIso->SetXTitle("p_{T}(GeV/c)");
+    fhPtDecayNoIso->SetYTitle("N");
+    fhPtDecayNoIso->SetXTitle("p_{T}(GeV/c)");
     outputContainer->Add(fhPtDecayNoIso) ;
     
     if(IsDataMC()){
