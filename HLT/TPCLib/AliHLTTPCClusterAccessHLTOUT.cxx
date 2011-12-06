@@ -179,6 +179,10 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     return -EACCES;
   }
 
+  AliHLTTPCDataCompressionDecoder decoder;
+  decoder.SetVerbosity(fVerbosity);
+  decoder.EnableClusterMerger();
+
   bool bNextBlock=false;
   bool bHaveLabels=false;
   bool bHaveIds=false;
@@ -197,7 +201,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     }
     if (desc.fDataType==AliHLTTPCDefinitions::AliHLTDataTypeClusterMCInfo()) {
       // add mc information
-      if ((iResult=fClusters->AddClusterMCData(&desc))<0) {
+      if ((iResult=decoder.AddClusterMCData(&desc))<0) {
 	return iResult;
       }
       bHaveLabels=true;
@@ -205,7 +209,7 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     if (desc.fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
 	desc.fDataType==AliHLTTPCDefinitions::ClusterIdTracksDataType()) {
       // add cluster ids
-      if ((iResult=fClusters->AddClusterIds(&desc))<0) {
+      if ((iResult=decoder.AddClusterIds(&desc))<0) {
 	return iResult;
       }
       bHaveIds=true;
@@ -218,9 +222,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
 
   // read data
   iResult=-ENODATA;
-  AliHLTTPCDataCompressionDecoder decoder;
-  decoder.SetVerbosity(fVerbosity);
-  decoder.EnableClusterMerger();
   int nExtractedClusters=0;
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
        bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
