@@ -16,6 +16,7 @@
 #include "AliHLTTPCRawCluster.h"
 #include "TString.h"
 
+struct AliHLTTPCClusterMCLabel;
 class AliHLTTPCHWCFData;
 class AliHLTDataInflater;
 class AliHLTTPCTrackGeometry;
@@ -196,6 +197,7 @@ public:
       void SetSigmaZ2(float sigmaZ2)      {if (fData) fData->FillSigmaZ2(sigmaZ2, fClusterId);}
       void SetCharge(unsigned charge)     {if (fData) fData->FillCharge(charge, fClusterId);}
       void SetQMax(unsigned qmax)         {if (fData) {fData->FillQMax(qmax, fClusterId);fData->Fill(fSlice, fPartition, fClusterId);}}
+      void SetMC(const AliHLTTPCClusterMCLabel* /*pMC*/) {/* nop */}
 
       // switch to next cluster
       iterator& Next(int slice, int partition) {
