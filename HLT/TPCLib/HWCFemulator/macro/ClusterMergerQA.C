@@ -194,7 +194,7 @@ Int_t runTest(const char *recPointsName )
 	  if( !merger.CheckCandidate(slice, patch, rawCluster) ) continue;
 	  
 	  
-	  int id = merger.AddCandidate(slice, patch, ~AliHLTUInt32_t(0), rawCluster, mc);
+	  int id = merger.AddCandidate(slice, patch, ~AliHLTUInt32_t(0), rawCluster, &mc);
 	  if( id>=0 ){
 	    nAccepted++;
 	    vClusters.push_back(*cl);

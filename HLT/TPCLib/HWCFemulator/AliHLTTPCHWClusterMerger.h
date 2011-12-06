@@ -76,7 +76,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 		   int partition,
 		   AliHLTUInt32_t id,
 		   const T& c,
-		   const AliHLTTPCClusterMCLabel &mc) {
+		   const AliHLTTPCClusterMCLabel *mc) {
     return AddCandidate(slice,
 			partition,
 			c.GetPadRow(),
@@ -102,7 +102,7 @@ class AliHLTTPCHWClusterMerger : public AliHLTLogging
 		   unsigned short charge,
 		   unsigned short qmax,
 		   AliHLTUInt32_t id=~AliHLTUInt32_t(0),
-		   const AliHLTTPCClusterMCLabel &mc=AliHLTTPCClusterMCLabel()
+		   const AliHLTTPCClusterMCLabel *mc=NULL
 		   );
 
   /// merge clusters

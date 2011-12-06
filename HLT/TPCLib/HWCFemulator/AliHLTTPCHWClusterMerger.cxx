@@ -213,7 +213,7 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
 					   unsigned short charge,
 					   unsigned short qmax,
 					   AliHLTUInt32_t id,
-					   const AliHLTTPCClusterMCLabel &mc 
+					   const AliHLTTPCClusterMCLabel *mc 
 					   )
 {
   /// add a candidate for merging and register in the index grid
@@ -260,7 +260,8 @@ int AliHLTTPCHWClusterMerger::AddCandidate(int slice,
   }
 
   fClusters.push_back(AliClusterRecord(slice, partition, iBorder, -1, id,
-				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax), mc ));
+				       AliHLTTPCRawCluster(partitionrow, pad, time, sigmaY2, sigmaZ2, charge, qmax),
+				       mc!=NULL?*mc:AliHLTTPCClusterMCLabel() ));
 
   if( iBorder>=0 ){
     fBorderNClusters[iBorder]++;
