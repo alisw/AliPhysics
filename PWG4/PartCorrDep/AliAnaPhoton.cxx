@@ -1477,8 +1477,8 @@ void AliAnaPhoton::InitParameters()
   fMinDist2    = 4.;
   fMinDist3    = 5.;
 	
-  fTimeCutMin  = -1;
-  fTimeCutMax  = 9999999;
+  fTimeCutMin  =-1000000;
+  fTimeCutMax  = 1000000;
   fNCellsCut   = 0;
 	
   fRejectTrackMatch       = kTRUE ;
