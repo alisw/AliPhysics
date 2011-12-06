@@ -209,7 +209,10 @@ void AliAnaCalorimeterQA::BadClusterHistograms(AliVCluster* clus, const TObjArra
                                                )
 {
   //Bad cluster histograms
-  if(clus->E() > 5) printf("AliAnaCalorimeterQA::BadClusterHistograms() - Bad cluster E %f, n cells %d, max cell absId %d, maxCellFrac %f\n",clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
+  if(clus->E() > 5) 
+    printf("AliAnaCalorimeterQA::BadClusterHistograms() - Event %d - Calorimeter %s \n \t  E %f, n cells %d, max cell absId %d, maxCellFrac %f\n",
+           GetReader()->GetEventNumber(), fCalorimeter.Data(), 
+           clus->E(),clus->GetNCells(),absIdMax,maxCellFraction);
     
   fhBadClusterEnergy     ->Fill(clus->E());
   Double_t tof = clus->GetTOF()*1.e9;
@@ -394,11 +397,13 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
         }
       }      
 
-      // Remove exotic cells
-      if(fCalorimeter=="EMCAL") {
-        fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
-        if(GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
-      }
+      //E cross for exotic cells
+      fhCellECross->Fill(amp,1-GetECross(id,cells)/amp);
+      
+      // Remove exotic cells, defined only for EMCAL
+      if(fCalorimeter=="EMCAL" && 
+         GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(id, cells, bc)) continue;
+      
       
       fhAmplitude->Fill(amp);
       fhAmpId    ->Fill(amp,id);
@@ -408,7 +413,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           (fCalorimeter=="PHOS"  && amp > fPHOSCellAmpMin )   ) {
         
         nCellsInModule[nModule]++ ;
-        
+
         Int_t icols = icol;
         Int_t irows = irow;
         if(fCalorimeter=="EMCAL"){
@@ -416,9 +421,9 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
           irows = irow + fNMaxRows * Int_t(nModule / 2);
         }
         else {
-          irows = irow + fNMaxRows * fNModules;
+          irows = irow + fNMaxRows * nModule;
         }
-        
+                
         fhGridCells ->Fill(icols,irows);
         fhGridCellsE->Fill(icols,irows,amp);
         
@@ -1580,7 +1585,7 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhClusterMaxCellECross->SetYTitle("1- E_{cross}/E_{cell max}");
   outputContainer->Add(fhClusterMaxCellECross);    
   
-  if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster() && fStudyBadClusters){
+  if(fStudyBadClusters){
     
     fhBadClusterEnergy  = new TH1F ("hBadClusterEnergy","Bad cluster energy", nptbins,ptmin,ptmax); 
     fhBadClusterEnergy->SetXTitle("E_{cluster} (GeV) ");
@@ -2074,13 +2079,13 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
     outputContainer->Add(fhTimeAmp);
     
   }
-  if(fCalorimeter=="EMCAL"){
-    fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
-                              nptbins,ptmin,ptmax, 400,-1,1.); 
-    fhCellECross->SetXTitle("E_{cell} (GeV) ");
-    fhCellECross->SetYTitle("1- E_{cross}/E_{cell}");
-    outputContainer->Add(fhCellECross);    
-  }
+  
+  fhCellECross  = new TH2F ("hCellECross","1 - Energy in cross around cell /  cell energy",
+                            nptbins,ptmin,ptmax, 400,-1,1.); 
+  fhCellECross->SetXTitle("E_{cell} (GeV) ");
+  fhCellECross->SetYTitle("1- E_{cross}/E_{cell}");
+  outputContainer->Add(fhCellECross);    
+  
   
   if(fCorrelate){
     //PHOS vs EMCAL
@@ -2456,59 +2461,81 @@ Float_t AliAnaCalorimeterQA::GetECross(const Int_t absID, AliVCaloCells* cells)
 {
   // Get energy in cross axis around maximum cell, for EMCAL only
   
-  if(fCalorimeter!="EMCAL") return 0;
+  Int_t icol =-1, irow=-1,iRCU = -1;   
+  Int_t imod = GetModuleNumberCellIndexes(absID, fCalorimeter, icol, irow, iRCU);
   
-  Int_t imod = -1, iphi =-1, ieta=-1,iTower = -1, iIphi = -1, iIeta = -1; 
-  GetCaloUtils()->GetEMCALGeometry()->GetCellIndex(absID,imod,iTower,iIphi,iIeta); 
-  GetCaloUtils()->GetEMCALGeometry()->GetCellPhiEtaIndexInSModule(imod,iTower,iIphi, iIeta,iphi,ieta);	
-  
-  //Get close cells index, energy and time, not in corners
-  Int_t absID1 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, iphi+1, ieta);
-  Int_t absID2 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, iphi-1, ieta);
-  Int_t absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta+1);
-  Int_t absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, iphi, ieta-1);
-  
-  Float_t  ecell = 0, ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
-  Double_t tcell = 0, tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
-  
-  //Recalibrate cell energy if needed
-  ecell = cells->GetCellAmplitude(absID);
-  RecalibrateCellAmplitude(ecell,absID);
-  tcell = cells->GetCellTime(absID);
-  RecalibrateCellTime(tcell,absID);
-  
-  if(absID1 >0 ){
-    ecell1 = cells->GetCellAmplitude(absID1);
-    RecalibrateCellAmplitude(ecell1,absID1);
-    tcell1 = cells->GetCellTime(absID1);
-    RecalibrateCellTime(tcell1,absID1);
+  if(fCalorimeter=="EMCAL"){
+    //Get close cells index, energy and time, not in corners
+    Int_t absID1 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow+1, icol);
+    Int_t absID2 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow-1, icol);
+    Int_t absID3 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol+1);
+    Int_t absID4 = GetCaloUtils()->GetEMCALGeometry()-> GetAbsCellIdFromCellIndexes(imod, irow, icol-1);
+    
+    //Recalibrate cell energy if needed
+    //Float_t  ecell = cells->GetCellAmplitude(absID);
+    //RecalibrateCellAmplitude(ecell,absID);
+    Double_t tcell = cells->GetCellTime(absID);
+    RecalibrateCellTime(tcell,absID);
+    
+    Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+    Double_t tcell1  = 0, tcell2  = 0, tcell3  = 0, tcell4  = 0;
+    
+    if(absID1 >0 ){
+      ecell1 = cells->GetCellAmplitude(absID1);
+      RecalibrateCellAmplitude(ecell1,absID1);
+      tcell1 = cells->GetCellTime(absID1);
+      RecalibrateCellTime(tcell1,absID1);
+    }
+    if(absID2 >0 ){
+      ecell2 = cells->GetCellAmplitude(absID2);
+      RecalibrateCellAmplitude(ecell2,absID2);
+      tcell2 = cells->GetCellTime(absID2);
+      RecalibrateCellTime(tcell2,absID2);
+    }
+    if(absID3 >0 ){
+      ecell3 = cells->GetCellAmplitude(absID3);
+      RecalibrateCellAmplitude(ecell3,absID3);
+      tcell3 = cells->GetCellTime(absID3);
+      RecalibrateCellTime(tcell3,absID3);
+    }
+    if(absID4 >0 ){
+      ecell4 = cells->GetCellAmplitude(absID4);
+      RecalibrateCellAmplitude(ecell4,absID4);
+      tcell4 = cells->GetCellTime(absID4);
+      RecalibrateCellTime(tcell4,absID4);
+    }
+    
+    if(TMath::Abs(tcell-tcell1)*1.e9 > 50) ecell1 = 0 ;
+    if(TMath::Abs(tcell-tcell2)*1.e9 > 50) ecell2 = 0 ;
+    if(TMath::Abs(tcell-tcell3)*1.e9 > 50) ecell3 = 0 ;
+    if(TMath::Abs(tcell-tcell4)*1.e9 > 50) ecell4 = 0 ;
+    
+    return ecell1+ecell2+ecell3+ecell4;
   }
-  if(absID2 >0 ){
-    ecell2 = cells->GetCellAmplitude(absID2);
-    RecalibrateCellAmplitude(ecell2,absID2);
-    tcell2 = cells->GetCellTime(absID2);
-    RecalibrateCellTime(tcell2,absID2);
+  else { //PHOS
+    
+    Int_t absId1 = -1, absId2 = -1, absId3 = -1, absId4 = -1;
+    
+    Int_t relId1[] = { imod+1, 0, irow+1, icol   };
+    Int_t relId2[] = { imod+1, 0, irow-1, icol   };
+    Int_t relId3[] = { imod+1, 0, irow  , icol+1 };
+    Int_t relId4[] = { imod+1, 0, irow  , icol-1 };
+    
+    GetCaloUtils()->GetPHOSGeometry()->RelToAbsNumbering(relId1, absId1);
+    GetCaloUtils()->GetPHOSGeometry()->RelToAbsNumbering(relId2, absId2);
+    GetCaloUtils()->GetPHOSGeometry()->RelToAbsNumbering(relId3, absId3);
+    GetCaloUtils()->GetPHOSGeometry()->RelToAbsNumbering(relId4, absId4);
+    
+    Float_t  ecell1  = 0, ecell2  = 0, ecell3  = 0, ecell4  = 0;
+    
+    if(absId1 > 0 ) ecell1 = cells->GetCellAmplitude(absId1);
+    if(absId2 > 0 ) ecell2 = cells->GetCellAmplitude(absId2);
+    if(absId3 > 0 ) ecell3 = cells->GetCellAmplitude(absId3);
+    if(absId4 > 0 ) ecell4 = cells->GetCellAmplitude(absId4);
+    
+    return ecell1+ecell2+ecell3+ecell4;
+    
   }
-  if(absID3 >0 ){
-    ecell3 = cells->GetCellAmplitude(absID3);
-    RecalibrateCellAmplitude(ecell3,absID3);
-    tcell3 = cells->GetCellTime(absID3);
-    RecalibrateCellTime(tcell3,absID3);
-  }
-  if(absID4 >0 ){
-    ecell4 = cells->GetCellAmplitude(absID4);
-    RecalibrateCellAmplitude(ecell4,absID4);
-    tcell4 = cells->GetCellTime(absID4);
-    RecalibrateCellTime(tcell4,absID4);
-  }
-  
-  if(TMath::Abs(tcell-tcell1)*1.e9 > 50) ecell1 = 0 ;
-  if(TMath::Abs(tcell-tcell2)*1.e9 > 50) ecell2 = 0 ;
-  if(TMath::Abs(tcell-tcell3)*1.e9 > 50) ecell3 = 0 ;
-  if(TMath::Abs(tcell-tcell4)*1.e9 > 50) ecell4 = 0 ;
-  
-  return ecell1+ecell2+ecell3+ecell4;
-  
   
 }
 
@@ -2599,13 +2626,20 @@ Bool_t AliAnaCalorimeterQA::IsGoodCluster(const Int_t absIdMax, AliVCaloCells* c
 {
   //Identify cluster as exotic or not
   
-  if(fCalorimeter=="EMCAL" && !GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster() && fStudyBadClusters){
+  if(!fStudyBadClusters) return kTRUE;
     
-    return !( GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(absIdMax,cells,(GetReader()->GetInputEvent())->GetBunchCrossNumber()) );
-    
+  if(fCalorimeter=="EMCAL") {
+    if(!GetCaloUtils()->GetEMCALRecoUtils()->IsRejectExoticCluster())
+      return !( GetCaloUtils()->GetEMCALRecoUtils()->IsExoticCell(absIdMax,cells,(GetReader()->GetInputEvent())->GetBunchCrossNumber()) );
+    else 
+      return kTRUE;
   }
-  
-  return kTRUE;
+  else // PHOS
+  {
+    if(1-GetECross(absIdMax,cells)/cells->GetCellAmplitude(absIdMax) > 0.95) return kFALSE;
+    else                                                                     return kTRUE;
+  }
+
 }
 
 //_________________________________________________________

@@ -1710,12 +1710,14 @@ void  AliAnaPhoton::MakeAnalysisFillHistograms()
     
     Int_t iclus = -1;
     AliVCluster *cluster = FindCluster(clusters,ph->GetCaloLabel(0),iclus); 
-    absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
-    
-    // Control histograms
-    fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
-    fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
-    fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
+    if(cluster){
+      absID = GetCaloUtils()->GetMaxEnergyCell(cells, cluster,maxCellFraction);
+      
+      // Control histograms
+      fhMaxCellDiffClusterE->Fill(ph->E(),maxCellFraction);
+      fhNCellsE            ->Fill(ph->E(),cluster->GetNCells());
+      fhTimeE              ->Fill(ph->E(),cluster->GetTOF()*1.e9);
+    }
     
     //.......................................
     //Play with the MC data if available
