@@ -78,8 +78,8 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   maker->AddAnalysis(ConfigureQAAnalysis()    , n++);  
 
   // Isolation settings
-  Int_t partInCone = AliIsolationCut::kNeutralAndCharged;//kOnlyCharged;
-  Int_t thresType  = AliIsolationCut::kSumPtFracIC;      // kPtThresIC;
+  Int_t partInCone = AliIsolationCut::kNeutralAndCharged; // kOnlyCharged;
+  Int_t thresType  = AliIsolationCut::kSumPtFracIC;       // kPtThresIC;
   
   if(kClusterArray==""  && kCalorimeter!="PHOS")
   {
@@ -96,18 +96,19 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
     maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCalo), n++); // Pi0 event by event selection, and photon tagging from decay
     maker->AddAnalysis(ConfigurePi0EbEAnalysis("Eta", AliAnaPi0EbE::kIMCalo), n++); // Eta event by event selection, and photon tagging from decay
     
-    //maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCaloTracks), n++); // Pi0 (calo+conversion) event by event selection, 
-    // and photon tagging from decay, need to execute at the same time conversions analysis
-    
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Photon",partInCone,thresType), n++); // Photon isolation
-    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",   partInCone,thresType), n++); // Pi0 isolation
-    
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation
+    maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType), n++); // Pi0 isolation
+        
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kFALSE), n++); // Gamma hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE) , n++); // Isolated gamma hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE) , n++); // Isolated pi0 hadron correlation
+    
+    //maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCaloTracks), n++); // Pi0 (calo+conversion) event by event selection, 
+    // and photon tagging from decay, need to execute at the same time conversions analysis
+    //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0Conv",partInCone,thresType), n++); // Pi0 (Calo+Conv) isolation
+    
   }
-  
   
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
@@ -216,9 +217,14 @@ AliCaloTrackReader * ConfigureReader()
   
   // Tracks
   reader->SwitchOnCTS();
-  gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
-  AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10041004);   //no ITSrefit
-  reader->SetTrackCuts(esdTrackCuts);
+  if(kInputDataType=="ESD"){
+    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/CreateTrackCutsPWG4.C"); 
+    AliESDtrackCuts * esdTrackCuts = CreateTrackCutsPWG4(10041004);   //no ITSrefit
+    reader->SetTrackCuts(esdTrackCuts);
+  }
+  else if(kInputDataType=="AOD"){
+    reader->SetTrackFilterMask(128); // Filter bit, not mask
+  }
   
   // Calorimeter
   
@@ -356,9 +362,8 @@ AliCalorimeterUtils* ConfigureCaloUtils()
       else             recou->SetNonLinearityFunction(AliEMCALRecoUtils::kPi0MC);
     }
     
-    recou->SwitchOnRejectExoticCell();
-    if(kClusterArray == "") recou->SwitchOnRejectExoticCluster();
-    else                    recou->SwitchOffRejectExoticCluster();
+    recou->SwitchOnRejectExoticCell();     // on for QA cells
+    recou->SwitchOffRejectExoticCluster(); // Done in clusterizer
     
   }  
   else { // PHOS settings 
@@ -433,7 +438,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     anaphoton->SetNCellCut(2);// At least 2 cells
     anaphoton->SetMinPt(0.3);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
-    anaphoton->SetTimeCut(-2000,2000); // open cut, usual time window of [425-825] ns if time recalibration is off 
+    anaphoton->SetTimeCut(-2000,2000); // open cut
   }
   else {//EMCAL
     anaphoton->SetNCellCut(1);// At least 2 cells
@@ -693,7 +698,8 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   AliAnaParticleHadronCorrelation *anacorrhadron = new AliAnaParticleHadronCorrelation();
   anacorrhadron->SetDebug(-1);
   
-  anacorrhadron->SetPtCutRange(5,200);
+  anacorrhadron->SetMinimumTriggerPt(5);
+  anacorrhadron->SetAssociatedPtRange(0.2,200); 
   
   // Input / output delta AOD settings
   
@@ -739,10 +745,24 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   
   anaQA->SetTimeCut(-1000,1000); // Open time cut
   
-  if(kCalorimeter=="EMCAL" && kClusterArray=="")
+  // Study inter detector correlation (PHOS, EMCAL, Tracks, V0)
+  if(kCalorimeter=="PHOS" && kTrig=="PHOS"){
     anaQA->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
-  else 
-    anaQA->SwitchOffCorrelation();  
+  }
+  if(kCalorimeter=="EMCAL" && kClusterArray==""){
+    anaQA->SwitchOnCorrelation(); // make sure you switch in the reader PHOS and EMCAL cells and clusters if option is ON
+  }
+  else {
+    anaQA->SwitchOffCorrelation();
+  }
+  
+  // Study exotic clusters PHOS and EMCAL
+  if(kClusterArray==""){
+    anaQA->SwitchOnStudyBadClusters() ; 
+  }
+  else {
+    anaQA->SwitchOffStudyBadClusters() ;
+  }
   
   anaQA->SwitchOffFiducialCut();
   anaQA->SwitchOffFillAllTH3Histogram();
