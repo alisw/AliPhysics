@@ -236,6 +236,10 @@ struct QABase
     tit.ReplaceAll("^{2}", "<sup>2</sup>");
     *fHtml << "<tr><td>" << tit << "</td>" << std::flush;
 
+    PutCanvasTitle(title);
+  }
+  void PutCanvasTitle(const char* title)
+  {
     // Put title on top 
     TLatex* topText = new TLatex(.5, .99, title);
     topText->SetTextAlign(23);

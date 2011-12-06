@@ -5,6 +5,7 @@ top=.
 verb=0
 nodw=0
 notr=0
+norn=0
 
 export PATH=$PATH:$ALICE_ROOT/PWG2/FORWARD/analysis2/qa:../scripts
 
@@ -15,11 +16,13 @@ Usage: $0 -j JOBID [OPTIONS]
 
 Options:
 	-h.--help		   This help
-	-j,--jobid	JOBID	   Job id from MonALisa       [$jobid]
-	-d,--nodownload            Do not download            [$nodw]
-	-t,--notrend               Do not make new trend tree [$notr]
-	-o,--output	DIRECTORY  Where to store the result  [$top]
-	-v,--verbose		   Be verbose                 [$verb]
+	-j,--jobid	JOBID	   Job id from MonALisa                [$jobid]
+	-d,--nodownload            Do not download                     [$nodw]
+	-t,--notrend               Do not make new trend tree          [$notr]
+	-r,--no-run                Do not make per-run info            [$norn]
+	-o,--output	DIRECTORY  Where to store the result           [$top]
+	-v,--verbose		   Be verbose                          [$verb]
+	-s,--skip-lines NUMBER	   Number of lines to skip in job list [$skip]
 EOF
 } 
 
@@ -60,9 +63,10 @@ get_parts()
 }
 
 # --- Get the options ------------------------------------------------
+skip=1
 get_opts() {
     wget -q http://alimonitor.cern.ch/prod/jobs.jsp?t=${jobid} -O job.html
-    p=`grep "/catalogue/index.jsp?path" job.html | head -n 1 | sed -e 's,.*/alice/data/\([^<]*\)<.*,\1,' | tr '/' ' '` 
+    p=`grep "/catalogue/index.jsp?path" job.html | head -n $skip | tail -n 1 | sed -e 's,.*/alice/data/\([^<]*\)<.*,\1,' | tr '/' ' '` 
     rm -f job.html 
     get_parts $p
 }
@@ -75,7 +79,9 @@ while test $# -gt 0 ; do
 	-o|--output)	  top=$2  ; shift  ;; 
 	-d|--no-download) nodw=1  ;;
 	-t|--no-trend)    notr=1  ;;
+	-r|--no-run)      norn=1  ;; 
 	-v|--verbose)	  verb=1  ;;
+	-s|--skip-lines)  skip=$2 ; shift ;; 
 	*) echo "Unknown option $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift 
@@ -104,30 +110,47 @@ Don't download:   $nodw
 Don't make tree:  $notr
 Download options: $opts
 Destination:      $dest
+Skip lines:	  $skip
 ----------------------------------------------------------------------
 EOF
-
-# --- Exit on errors -------------------------------------------------
-set -e 
 
 # --- Download the files ---------------------------------------------
 if test $nodw -lt 1 ; then 
     mess "Running getQAResults.sh $opts -d $top -n "
     getQAResults.sh $opts -d $top -T -v -v -i 
+    set +e
+else 
+    mess "Not downloading"
 fi
 
+handle_err()
+{
+    echo "Got an error"
+}
+
+# --- Exit on errors -------------------------------------------------
+trap handle_err ERR
+set -e 
+
 # --- Now run the QA code -------------------------------------------
+mess "Now running code"
 savdir=`pwd`
+mess "Change directory to $top/dest"
 cd $top/${dest} 
 
-idx=`ls trend_*_*.html 2>/dev/null` 
+mess "List of trend_<x>.html files"
+set +e
+idx=`ls trend_*_*.html 2>/dev/null`
+set -e 
+mess "Removing indeces"  
 rm -f index.html
 for i in $idx ; do 
     if test -f $i ; then rm -f $i ; fi
 done 
 
 what=3
-if test $notr -gt 0 ; then what=2 ; fi
+if test $notr -gt 0 ; then let what=$what^0x2 ; fi
+if test $norn -gt 0 ; then let what=$what^0x1 ; fi
 
 scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
 mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"

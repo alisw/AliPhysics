@@ -19,7 +19,9 @@
 # include <TLegend.h>
 # include <TCanvas.h>
 # include <TLine.h>
+# include <TArrow.h>
 # include <TArrayI.h>
+# include <TMath.h>
 #else 
 class QABase;
 class QARing;
@@ -114,12 +116,19 @@ struct QAPlotter : public QABase
       g->SetName(Form("FMD%d%c_%s", fD, fR, name));
       // g->SetTitle(Form("FMD%d%c %s", fD, fR, 
       // !title || title[0] == '\0' ? name : title));
+      Int_t marker = 20+(fD-1) + (fR == 'I' ? 0 : 4);
       g->SetTitle(Form("FMD%d%c", fD, fR));
       g->SetLineColor(c);
       g->SetFillColor(c);
       g->SetMarkerColor(c);
-      g->SetMarkerStyle(20);
+      g->SetMarkerStyle(marker);
       g->SetLineWidth(2);
+      switch (marker) { 
+      case 20: g->SetMarkerSize(1.2); break;
+      case 21: g->SetMarkerSize(1.2); break;
+      case 22: g->SetMarkerSize(1.3); break;
+      case 26: g->SetMarkerSize(1.1); break;
+      }
     }
     /** 
      * Update a graph from a RingQuantity 
@@ -256,6 +265,7 @@ struct QAPlotter : public QABase
 
     CanvasTitle("# of accepted events");
     fNAccepted->Draw("apl");
+    PutCanvasTitle("# of accepted events");
     AddRuns(fNAccepted->GetHistogram(), "# of accepted events");
 
     TLine* l = new TLine(fFirst, 100, fLast, 100);
@@ -266,6 +276,7 @@ struct QAPlotter : public QABase
 
     CanvasTitle("#LTv_{z}#GT");
     fVz->Draw("apl");
+    PutCanvasTitle("Mean z coordinate of interaction point");
     AddRuns(fVz->GetHistogram(), "#LTv_{z}#GT");
     PrintCanvas("vz");
 
@@ -297,7 +308,7 @@ struct QAPlotter : public QABase
     AddToMulti(fFMD3i,chi2, c, delta, xi, sigma, low, singles, loss, beta, occ);
     AddToMulti(fFMD3o,chi2, c, delta, xi, sigma, low, singles, loss, beta, occ);
 
-    PlotMulti(chi2, 	"#LT#chi^{2}/#nu#GT from #Delta fits");
+    PlotMulti(chi2, 	"#LT#chi^{2}/#nu#GT from #Delta fits", true);
     PlotMulti(c, 	"#LTc#GT from #Delta fits");
     PlotMulti(delta, 	"#LT#Delta_{p}#GT from #Delta fits");
     PlotMulti(xi, 	"#LT#xi#GT from #Delta fits");
@@ -305,7 +316,7 @@ struct QAPlotter : public QABase
     PlotMulti(low, 	"Bins with too low statistics");
     PlotMulti(singles, 	"Fraction of single hits");
     PlotMulti(loss,     "% of hits 'lost' due to merging+cuts");
-    PlotMulti(occ,      "#LTOccupancy#GT [%]");
+    PlotMulti(occ,      "#LTOccupancy#GT [%]", true);
     PlotMulti(beta, 	"Correlation of methods");
 
     fStore->cd();
@@ -367,53 +378,73 @@ struct QAPlotter : public QABase
    * @param mg     Multi graph
    * @param title  Title
    */
-  void PlotMulti(TMultiGraph* mg, const char* title)
+  void PlotMulti(TMultiGraph* mg, const char* title, Bool_t logy=false)
   {
     CanvasTitle(title);
     // fCanvas->SetBottomMargin(.15);
     fCanvas->SetLeftMargin(.08);
-    fCanvas->SetTopMargin(.06);
+    fCanvas->SetTopMargin(.1);
+    fCanvas->SetLogy(logy);
+    // fCanvas->SetRightMargin(.2);
     mg->Draw("apl");
     
-    Double_t max = mg->GetHistogram()->GetMaximum();
-    Double_t min = mg->GetHistogram()->GetMinimum();
-    if (mg->GetHistogram()->GetMinimum() == 0) {
+    TH1*     h   = mg->GetHistogram();
+    Double_t max = h->GetMaximum();
+    Double_t min = h->GetMinimum();
+    if (h->GetMinimum() == 0) {
       min = min - .1*(max-min);
-      mg->GetHistogram()->SetMinimum(min);
+      h->SetMinimum(min);
     }
+    Int_t    x1  = h->GetXaxis()->GetXmin();
+    Int_t    x2  = h->GetXaxis()->GetXmax();
     
-    TLegend* l = new TLegend(.6, .16, .97, .5);
+    TLegend* l = new TLegend(.1, .91, .97, .95);
+    l->SetNColumns(5);
     l->SetFillColor(0);
     l->SetFillStyle(0);
     l->SetBorderSize(0);
+    l->SetTextFont(42);
     TIter next(mg->GetListOfGraphs());
     mg->GetListOfGraphs();
     TGraph* g = 0;
 
     // Get the runs we have here 
     TArrayI runs(fRuns.GetSize());
+    runs.Reset(INT_MAX);
     Int_t   j = 0;
     while ((g = static_cast<TGraph*>(next()))) { 
       l->AddEntry(g, g->GetTitle(), "lp");
       Double_t* xs = g->GetX();
       Int_t     n  = g->GetN();
       for (Int_t i = 0; i < n; i++) {
-	if (FindRun(runs, Int_t(xs[i]) >= 0)) continue;
+	if (FindRun(runs, Int_t(xs[i])) >= 0) continue;
 	runs.SetAt(xs[i], j++);
       }
+      Double_t ymean = g->GetMean(2);
+      Double_t xh    = x2 - .03 * Double_t(x2-x1); 
+      TLine* lm = new TLine(x1, ymean, xh, ymean);
+      lm->SetLineColor(g->GetLineColor());
+      lm->SetLineStyle(2);
+      lm->SetLineWidth(1);
+      lm->Draw();
+      TLatex* al = new TLatex(xh, ymean, g->GetTitle());
+      al->SetTextColor(g->GetLineColor());
+      al->SetTextFont(42);
+      al->SetTextSize(.02);
+      al->SetTextAlign(12);
+      al->Draw();
     }
     l->Draw();
 
-    
-
-    AddRuns(mg->GetHistogram(), title, &runs);
+    AddRuns(h, title, &runs);
 
     PrintCanvas(mg->GetName());
   }
   Int_t FindRun(const TArrayI& runs, Int_t run) 
   {
+    std::sort(&(runs.fArray[0]), &(runs.fArray[runs.GetSize()]));
     Int_t idx = TMath::BinarySearch(runs.GetSize(), runs.fArray, run);
-    if (idx >= runs.GetSize(); runs[idx] != run) return -1;
+    if (idx >= runs.GetSize() || idx < 0 || runs[idx] != run) return -1;
     return idx;
   }
   /** 
@@ -425,40 +456,60 @@ struct QAPlotter : public QABase
   void AddRuns(TH1* h, const char* title, TArrayI* runs=0)
   {
     h->GetXaxis()->SetNoExponent();
-    h->GetXaxis()->SetTitleOffset(1.9);
+    // h->GetXaxis()->SetTitleOffset(1);
     h->SetYTitle(title);
     h->SetXTitle("Run #");
 
-    Int_t    x1  = h->GetXaxis()->GetXmin();
-    Int_t    x2  = h->GetXaxis()->GetXmax();
-    Double_t max = h->GetMaximum();
-    Double_t min = h->GetMinimum();
-    Int_t    lx  = -1;
-    Int_t    tx  = (x2 - x1) / 15;
-    Double_t dy  = (max-min) / 30;
-    Double_t y   = min + dy;
+    Int_t    r1  = h->GetXaxis()->GetXmin();
+    Int_t    r2  = h->GetXaxis()->GetXmax();
+    Double_t lx  = 0;
+    Double_t tx  = .045; // (r2 - r1) / 18;
+    Double_t wx  = 1 - fCanvas->GetLeftMargin() - fCanvas->GetRightMargin();
+    Double_t dy  = .025;
+    Double_t y   = fCanvas->GetBottomMargin()+dy;
     for (Int_t i = 0; i < fRuns.GetSize(); i++) {
-      Int_t x = fRuns[i];
+      Int_t    r = fRuns[i];
+      Double_t x = fCanvas->GetLeftMargin() + wx*Double_t(r-r1)/(r2-r1);
 
       // Skip runs out of range 
-      if (x < x1 || x > x2) continue;
+      if (r < r1 || r > r2) continue;
 
       // Skip runs not in the graphs 
-      if (runs && FindRun(*runs, x) < 0) continue; 
+      if (runs) {
+	if (FindRun(*runs, r) < 0) { 
+	  continue;
+	}
+      }
+	  
 
       if (TMath::Abs(x - lx) < tx) y += dy;
-      else                         y =  min + dy;
-      lx = x;
+      else                         y =  fCanvas->GetBottomMargin() + dy;
 
-      TLatex* ll = new TLatex(x, y, Form("%d", int(x)));
+
+      // Info(h->GetName(), "%6d (x,y)=(%12f,%12f) |lx-x|=|%f-x|=%f", 
+      //      r, x, y, lx, TMath::Abs(lx-x));
+      lx = x;
+      
+      Double_t* xa = fNAccepted->GetX();
+      Int_t     na = fNAccepted->GetN();
+      Int_t idx = TMath::BinarySearch(na, xa, Double_t(r));
+      Color_t color = kBlue+3;
+      if (idx >= 0  && idx < na  && r == xa[idx] && 
+	  fNAccepted->GetY()[idx] < 10000) 
+	color = kRed+3;
+
+      TLatex* ll = new TLatex(x, y, Form("%d", r));
+      ll->SetNDC();
       ll->SetTextAlign(21);
       ll->SetTextSize(0.02);
-      ll->SetTextColor(kBlue+3);
+      ll->SetTextColor(color);
+      ll->SetTextFont(42);
       // ll->SetTextAngle(90);
       ll->Draw();
-      TLine* tl = new TLine(x, y, x, max);
-      tl->SetLineStyle(2);
-      tl->SetLineColor(kBlue+3);
+      TLine* tl = new TLine(x, y, x, 1-fCanvas->GetTopMargin());
+      tl->SetBit(TLine::kLineNDC);
+      tl->SetLineStyle(3);
+      tl->SetLineColor(color);
       tl->Draw();
     }
   }
