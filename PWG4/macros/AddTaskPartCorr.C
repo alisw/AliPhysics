@@ -433,6 +433,7 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
     anaphoton->SetNCellCut(2);// At least 2 cells
     anaphoton->SetMinPt(0.3);
     anaphoton->SetMinDistanceToBadChannel(2, 4, 5);
+    anaphoton->SetTimeCut(-2000,2000); // open cut, usual time window of [425-825] ns if time recalibration is off 
   }
   else {//EMCAL
     anaphoton->SetNCellCut(1);// At least 2 cells
