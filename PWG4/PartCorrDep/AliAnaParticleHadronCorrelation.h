@@ -53,18 +53,30 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   
   Bool_t       MakeNeutralCorrelation  (AliAODPWG4ParticleCorrelation * aodParticle, const TObjArray* pl, const Bool_t bFillHisto) ;
   
-  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation *aodParticle);
+  void         MakeMCChargedCorrelation(AliAODPWG4ParticleCorrelation * aodParticle);
   
   
   // Parameter setter and getter
   
+  Float_t      GetMinimumTriggerPt()     const { return fMinTriggerPt     ; }
+  
+  Float_t      GetMaximumAssociatedPt()  const { return fMaxAssocPt       ; }
+  Float_t      GetMinimumAssociatedPt()  const { return fMinAssocPt       ; }
+  
   Double_t     GetDeltaPhiMaxCut()       const { return fDeltaPhiMaxCut   ; }
   Double_t     GetDeltaPhiMinCut()       const { return fDeltaPhiMinCut   ; }
+  
   Double_t     GetUeDeltaPhiMaxCut()     const { return fUeDeltaPhiMaxCut ; }
   Double_t     GetUeDeltaPhiMinCut()     const { return fUeDeltaPhiMinCut ; }
   
+  void         SetMinimumTriggerPt(Float_t min){  fMinTriggerPt = min     ; }
+  
+  void         SetAssociatedPtRange(Float_t min, Float_t max)
+    { fMaxAssocPt   = max ;          fMinAssocPt  = min          ; }
+  
   void         SetDeltaPhiCutRange(Double_t phimin, Double_t phimax)
     { fDeltaPhiMaxCut   = phimax ;   fDeltaPhiMinCut   = phimin   ; }
+  
   void         SetUeDeltaPhiCutRange(Double_t uephimin, Double_t uephimax)
     { fUeDeltaPhiMaxCut = uephimax;  fUeDeltaPhiMinCut = uephimin ; }
   
@@ -96,7 +108,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   void         SetAssocPtBinLimit(Int_t ibin, Float_t pt) ;
                 
  private:
-  
+  Float_t      fMinTriggerPt ;                 // Minimum trigger hadron pt
+  Float_t      fMaxAssocPt ;                   // Maximum associated hadron pt
+  Float_t      fMinAssocPt ;                   // Minimum associated hadron pt
   Double_t     fDeltaPhiMaxCut ;               // Minimum Delta Phi Gamma-Hadron
   Double_t     fDeltaPhiMinCut ;               // Maximum Delta Phi Gamma-Hadron
   Bool_t       fSelectIsolated ;               // Select only trigger particles isolated
@@ -158,7 +172,9 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins] Trigger pT vs dPhi Brad (?) for different associated pt bins
+  TH2F *       fhDeltaPhiBrad;                 //! Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs xE for different associated pt bins
+  TH2F *       fhXE ;                          //! Trigger pT vs xE for different associated pt bins
   
   //trigger-neutral histograms
   TH2F *       fhDeltaPhiDeltaEtaNeutral ;     //! differences of eta and phi between trigger and neutral hadrons (pi0)
@@ -207,7 +223,7 @@ class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
   AliAnaParticleHadronCorrelation(const AliAnaParticleHadronCorrelation & ph) ; // cpy ctor
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;//cpy assignment
 	
-  ClassDef(AliAnaParticleHadronCorrelation,8)
+  ClassDef(AliAnaParticleHadronCorrelation,9)
 } ;
  
 
