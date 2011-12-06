@@ -120,6 +120,32 @@ AliTOFcluster::AliTOFcluster(const AliTOFcluster & cluster):
 }
 //-------------------------------------------------------------------------
 
+AliTOFcluster & AliTOFcluster::operator = (const AliTOFcluster & cluster)
+{
+
+  if (this == &cluster)
+    return *this;
+
+  TObject::operator=(cluster);
+  fIdx=cluster.fIdx;
+  fQuality=cluster.fQuality;
+  fR=cluster.fR;
+  fPhi=cluster.fPhi;
+  fTDC=cluster.fTDC;
+  fToT=cluster.fToT;
+  fADC=cluster.fADC;
+  fTdcND=cluster.fTdcND;
+  fTdcRAW=cluster.fTdcRAW;
+  fStatus=cluster.fStatus;
+  fDeltaBC=cluster.fDeltaBC;
+  fL0L1Latency=cluster.fL0L1Latency;
+  for (Int_t ii=0; ii<5; ii++)
+    fdetIndex[ii] = cluster.fdetIndex[ii];
+  return *this;
+
+}
+//-------------------------------------------------------------------------
+
 AliTOFcluster::~AliTOFcluster() {
 
   //
