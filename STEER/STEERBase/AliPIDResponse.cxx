@@ -40,6 +40,8 @@
 
 #include "AliPIDResponse.h"
 
+#include "AliCentrality.h"
+
 ClassImp(AliPIDResponse);
 
 AliPIDResponse::AliPIDResponse(Bool_t isMC/*=kFALSE*/) :
@@ -69,7 +71,8 @@ fTRDPIDReference(0x0),
 fTOFTimeZeroType(kBest_T0),
 fTOFres(100.),
 fEMCALPIDParams(0x0),
-fCurrentEvent(0x0)
+fCurrentEvent(0x0),
+fCurrCentrality(0.0)
 {
   //
   // default ctor
@@ -120,7 +123,8 @@ fTRDPIDReference(0x0),
 fTOFTimeZeroType(AliPIDResponse::kBest_T0),
 fTOFres(100.),
 fEMCALPIDParams(0x0),
-fCurrentEvent(0x0)
+fCurrentEvent(0x0),
+fCurrCentrality(0.0)
 {
   //
   // copy ctor
@@ -523,7 +527,15 @@ void AliPIDResponse::InitialiseEvent(AliVEvent *event, Int_t pass)
   
   //TOF resolution
   SetTOFResponse(event, (AliPIDResponse::EStartTimeType_t)fTOFTimeZeroType);
-  
+
+  // Get and set centrality
+  AliCentrality *centrality = event->GetCentrality();
+  if(centrality){
+    fCurrCentrality = centrality->GetCentralityPercentile("V0M");
+  }
+  else{
+    fCurrCentrality = -1;
+  }
 }
 
 //______________________________________________________________________________

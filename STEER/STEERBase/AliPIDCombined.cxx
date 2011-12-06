@@ -32,12 +32,23 @@
 
 #include "AliPIDCombined.h"
 
+#include "TMath.h"
+#include "TFile.h"
+
+#include "AliOADBContainer.h"
+
+// initialize static members
+TH2F* AliPIDCombined::fDefaultPriorsTPC[5];
+
+ClassImp(AliPIDCombined);
+
 AliPIDCombined::AliPIDCombined():
 	TNamed("CombinedPID","CombinedPID"),
 	fDetectorMask(0),
 	fRejectMismatchMask(0x7F),
 	fEnablePriors(kTRUE),
-	fSelectedSpecies(AliPID::kSPECIES)
+	fSelectedSpecies(AliPID::kSPECIES),
+	fUseDefaultTPCPriors(kFALSE)
 {	
   //
   // default constructor
@@ -52,7 +63,8 @@ AliPIDCombined::AliPIDCombined(const TString& name,const TString& title):
 	fDetectorMask(0),
 	fRejectMismatchMask(0x7F),
 	fEnablePriors(kTRUE),
-	fSelectedSpecies(AliPID::kSPECIES)
+	fSelectedSpecies(AliPID::kSPECIES),
+	fUseDefaultTPCPriors(kFALSE)
 {
   //
   // default constructor with name and title
@@ -162,7 +174,26 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	  p[i] = pITS[i]*pTPC[i]*pTRD[i]*pTOF[i]*pHMPID[i]*pEMCAL[i]*pPHOS[i];
 	}
 	Double_t priors[fSelectedSpecies];
-	if (fEnablePriors) GetPriors(track,priors);
+	if (fEnablePriors){
+	  GetPriors(track,priors,response->GetCurrentCentrality());
+	  
+	  // apply tof matching efficiency to priors if TOF joined PID for this track
+	  if(fUseDefaultTPCPriors && (usedMask & AliPIDResponse::kDetTOF)){
+	    Double_t pt=TMath::Abs(track->Pt());
+	    Float_t kaonTOFfactor = 0.1;
+	    if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
+	    Float_t protonTOFfactor = 0.1;
+	    if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
+	    
+	    if(track->Charge() < 0){ // for negative tracks
+	      kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
+	      protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
+	    }
+	    
+	    p[3] *= kaonTOFfactor;
+	    p[4] *= protonTOFfactor;
+	  }
+	}
 	else { for (Int_t i=0;i<fSelectedSpecies;i++) priors[i]=1.;}
 	ComputeBayesProbabilities(bayesProbabilities,p,priors);
 	return usedMask;
@@ -170,13 +201,26 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 
 
 //-------------------------------------------------------------------------------------------------
-void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p) const {
+void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p,Float_t centrality) const {
 	
 	//
 	// get priors from distributions
 	//
 	
 	Double_t pt=TMath::Abs(track->Pt());
+
+        if(fUseDefaultTPCPriors){ // use default priors if requested
+	  Float_t usedCentr = centrality+5*(centrality>0);
+	  if(usedCentr < -0.99) usedCentr = -0.99;
+	  else if(usedCentr > 99) usedCentr = 99;
+	  if(pt > 9.99) pt = 9.99;
+	  else if(pt < 0.01)  pt = 0.01;
+	  
+	  for(Int_t i=0;i<5;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
+
+	  return;
+	}
+	
 	Double_t sumPriors = 0;
 	for (Int_t i=0;i<fSelectedSpecies;++i){
 		if (fPriorsDistributions[i]){
@@ -195,7 +239,61 @@ void AliPIDCombined::GetPriors(const AliVTrack *track, Double_t* p) const {
 	}
 	return;
 }
+//-------------------------------------------------------------------------------------------------
+void AliPIDCombined::GetPriors(const AliVTrack *track,Double_t* p,const AliPIDResponse *response,UInt_t detUsed) const{
+	
+	//
+	// get priors from distributions
+	//
+        Double_t pt=TMath::Abs(track->Pt());
+	
+        if(fUseDefaultTPCPriors){ // use default priors if requested
+	  Float_t usedCentr = response->GetCurrentCentrality()+5*(response->GetCurrentCentrality()>0);
+	  if(usedCentr < -0.99) usedCentr = -0.99;
+	  else if(usedCentr > 99) usedCentr = 99;
+	  if(pt > 9.99) pt = 9.99;
+	  else if(pt < 0.01)  pt = 0.01;
+	  
+	  for(Int_t i=0;i<5;i++) p[i] = fDefaultPriorsTPC[i]->Interpolate(usedCentr,pt);
 
+	  // Extra factor if TOF matching was required
+	  if(detUsed & AliPIDResponse::kDetTOF){
+	    Float_t kaonTOFfactor = 0.1;
+	    if(pt > 0.35) kaonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,4.19618E-07)/5.68017E-01)*TMath::Power(pt,-1.50705);
+	    Float_t protonTOFfactor = 0.1;
+	    if(pt > 0.4) protonTOFfactor = 1 - TMath::Exp(-TMath::Power(pt,3.30978)/8.57396E-02)*TMath::Power(pt,-4.42661E-01);
+	    
+	    if(track->Charge() < 0){ // for negative tracks
+	      kaonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,4.87912E-07)/3.26431E-01)*TMath::Power(pt,-1.22893);
+	      protonTOFfactor *= 1 - TMath::Exp(-TMath::Power(pt,2.00575E-07)/4.95605E-01)*TMath::Power(pt,-6.71305E-01);
+	    }
+	    
+	    p[3] *= kaonTOFfactor;
+	    p[4] *= protonTOFfactor;
+	  }
+
+	  return;
+	}
+
+
+	Double_t sumPriors = 0;
+	for (Int_t i=0;i<fSelectedSpecies;++i){
+		if (fPriorsDistributions[i]){
+			p[i]=fPriorsDistributions[i]->Interpolate(pt);
+		}
+		else {
+			p[i]=0.;
+		}
+		sumPriors+=p[i];		
+	}
+
+	// normalizing priors
+	if (sumPriors == 0) return;
+	for (Int_t i=0;i<fSelectedSpecies;++i){
+	   p[i]=p[i]/sumPriors;
+	}
+	return;
+}
 //-------------------------------------------------------------------------------------------------	
 void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Double_t* probDensity, const Double_t* prior) const {
 
@@ -208,6 +306,7 @@ void AliPIDCombined::ComputeBayesProbabilities(Double_t* probabilities, const Do
     sum += probDensity[i] * prior[i];
   }
   if (sum <= 0) {
+
     AliError("Invalid probability densities or priors");
     for (Int_t i = 0; i < fSelectedSpecies; i++) probabilities[i] = -1;
     return;
@@ -235,5 +334,25 @@ void AliPIDCombined::SetCombinedStatus(AliPIDResponse::EDetPidStatus status, UIn
 
 }
 
-ClassImp(AliPIDCombined);
+//----------------------------------------------------------------------------------------
+void AliPIDCombined::SetDefaultTPCPriors(){
+  fEnablePriors=kTRUE;
+  fUseDefaultTPCPriors = kTRUE;
 
+  TString oadbfilename("$ALICE_ROOT/OADB/COMMON/PID/data/");
+  oadbfilename += "/PIDdefaultPriors.root";
+  TFile * foadb = TFile::Open(oadbfilename.Data());
+  if(!foadb->IsOpen()) AliFatal(Form("Cannot open OADB file %s", oadbfilename.Data()));
+  
+  AliOADBContainer * priorsContainer = (AliOADBContainer*) foadb->Get("priorsTPC");
+  if (!priorsContainer) AliFatal("Cannot fetch OADB container for Priors");
+  
+  const char *namespecies[5] = {"El","Mu","Pi","Ka","Pr"};
+  char name[100];
+
+  for(Int_t i=0;i < 5;i++){
+    sprintf(name,"hDefault%sPriors",namespecies[i]);
+    fDefaultPriorsTPC[i] = (TH2F*) priorsContainer->GetDefaultObject(name);
+    if (!fDefaultPriorsTPC[i]) AliFatal(Form("Cannot find priors for %s", namespecies[i]));
+  }
+}

@@ -18,6 +18,7 @@
 #include <AliPID.h>
 #include <AliPIDResponse.h>
 #include <TH1F.h>
+#include <TH2F.h>
 
 //class TH1;
 class AliPIDResponse;
@@ -37,13 +38,17 @@ public:
   void SetPriorDistribution(AliPID::EParticleType type,TH1F *prior);
   //  const TH1* GetPriorDistribution(AliPID::EParticleType type) const {return (TH1*)fPriorsDistributions[type];}
   TH1* GetPriorDistribution(AliPID::EParticleType type)  const {return (TH1*)fPriorsDistributions[type];}
+  
+  void GetPriors(const AliVTrack *track,Double_t* p,const AliPIDResponse *response,UInt_t detUsed) const;
+  
+  void SetDefaultTPCPriors();
 	
   UInt_t ComputeProbabilities(const AliVTrack *track, const AliPIDResponse *response, Double_t* bayesProbabilities) const;
   void SetSelectedSpecies(Int_t selectedSpecies) {fSelectedSpecies = selectedSpecies;}
   Int_t GetSelectedSpecies() const {return fSelectedSpecies;}
 
 protected:
-  void GetPriors(const AliVTrack *track,Double_t* priors) const;
+  void GetPriors(const AliVTrack *track,Double_t* priors,Float_t centrality=-1) const;
   void ComputeBayesProbabilities(Double_t* bayesProbabilities,const Double_t* probDensity, const Double_t* priors) const;
   void SetCombinedStatus(const AliPIDResponse::EDetPidStatus status,UInt_t *mask, const AliPIDResponse::EDetCode bit, Double_t* p) const;
 
@@ -56,8 +61,10 @@ private:
   Bool_t fEnablePriors;      // Enable bayesian PID (if kFALSE priors set flat)
   Int_t fSelectedSpecies;    // Number of selected species to study
   TH1F *fPriorsDistributions[AliPID::kSPECIES+AliPID::kSPECIESLN]; // priors
+  Bool_t fUseDefaultTPCPriors; // switch to use Defaul TPC Priors
+  static TH2F *fDefaultPriorsTPC[5]; // Default priors for TPC tracks
 
-  ClassDef(AliPIDCombined,1);
+  ClassDef(AliPIDCombined,2);
 };
 
 #endif

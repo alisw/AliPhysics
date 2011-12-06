@@ -80,6 +80,7 @@ public:
   void SetTRDslicesForPID(UInt_t slice1, UInt_t slice2) {fTRDslicesForPID[0]=slice1;fTRDslicesForPID[1]=slice2;}
   
   void SetOADBPath(const char* path) {fOADBPath=path;}
+  const char *GetOADBPath() const {return fOADBPath.Data();}
   void InitialiseEvent(AliVEvent *event, Int_t pass);
   void SetCurrentFile(const char* file) { fCurrentFile=file; }
 
@@ -88,9 +89,13 @@ public:
   // User settings for the MC period and reco pass
   void SetMCperiod(const char *mcPeriod) {fMCperiodUser=mcPeriod;}
   void SetRecoPass(Int_t recoPass)       {fRecoPassUser=recoPass;}
-  
+
+  // event info
+  Float_t GetCurrentCentrality() const {return fCurrCentrality;};
+
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
+
   
 protected:
   AliITSPIDResponse fITSResponse;    //PID response function of the ITS
@@ -130,6 +135,8 @@ private:
   TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
 
   AliVEvent *fCurrentEvent;            //! event currently being processed
+
+  Float_t fCurrCentrality;             //! current centrality
   
   void ExecNewRun();
   
@@ -158,7 +165,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse,3);  //PID response handling
+  ClassDef(AliPIDResponse,4);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {
