@@ -48,7 +48,7 @@ private:
 
   const TObjArray *fkPIDParams;               // PID Params
 
-  const TVectorD* GetParams(Int_t nParticle, Float_t fPt) const; 
+  const TVectorD* GetParams(Int_t nParticle, Float_t fPt, Int_t charge) const; 
 
   ClassDef(AliEMCALPIDResponse, 1)
 };

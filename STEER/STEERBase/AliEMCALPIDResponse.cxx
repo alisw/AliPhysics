@@ -120,7 +120,7 @@ Double_t AliEMCALPIDResponse::GetExpectedNorm( Float_t pt, AliPID::EParticleType
   }
 
   // Get the parameters for this particle type and pt
-  const TVectorD *params = GetParams(n, pt);
+  const TVectorD *params = GetParams(n, pt, charge);
 
   // IF not in momentum range, NULL is returned --> return default value
   if(!params) return norm;
@@ -149,7 +149,7 @@ Double_t  AliEMCALPIDResponse::GetNumberOfSigmas( Float_t pt,  Float_t eop, AliP
   }
 
   // Get the parameters for this particle type and pt
-  const TVectorD *params = GetParams(n, pt);
+  const TVectorD *params = GetParams(n, pt, charge);
 
   // IF not in momentum range, NULL is returned --> return default value
   if(!params) return nsigma;
@@ -207,7 +207,7 @@ Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, I
     AliPID::EParticleType type = AliPID::EParticleType(species);
 
     // Get the parameters for this particle type and pt
-    const TVectorD *params = GetParams(species, pt);
+    const TVectorD *params = GetParams(species, pt, charge);
     
     // IF not in momentum range, NULL is returned --> return default value
     if(!params) return proba;
@@ -256,7 +256,7 @@ Double_t AliEMCALPIDResponse::ComputeEMCALProbability(Float_t pt, Float_t eop, I
 
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-const TVectorD* AliEMCALPIDResponse::GetParams(Int_t nParticle, Float_t fPt) const {
+const TVectorD* AliEMCALPIDResponse::GetParams(Int_t nParticle, Float_t fPt, Int_t charge) const {
   //
   // returns the PID parameters (mean, sigma, probabilities for Hadrons) for a certain particle and pt
   //
@@ -271,10 +271,11 @@ const TVectorD* AliEMCALPIDResponse::GetParams(Int_t nParticle, Float_t fPt) con
   //
 
   if(nParticle > AliPID::kSPECIES || nParticle <0) return NULL;
+  if(nParticle == AliPID::kProton && charge == -1) nParticle = AliPID::kSPECIES; // special case for antiprotons
 
   TObjArray * particlePar = dynamic_cast<TObjArray *>(fkPIDParams->At(nParticle));
   if(!particlePar) return NULL;
-  
+
   TIter parIter(particlePar);
   const TVectorD *parameters = NULL;
   Double_t momMin = 0.;

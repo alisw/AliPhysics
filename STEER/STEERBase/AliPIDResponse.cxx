@@ -851,14 +851,14 @@ void AliPIDResponse::SetEMCALPidResponseMaster()
 
     if(!fEMCALPIDParams){
       AliError(Form("EMCAL Params not found in run %d pass %d", fRun, fRecoPass));
-      AliInfo("Will take the standard LHC11a pass2 instead ...");
+      AliInfo("Will take the standard LHC11d instead ...");
 
-      fEMCALPIDParamsRun = dynamic_cast<TObjArray *>(contParams.GetObject(144871));
-      if(fEMCALPIDParamsRun)  fEMCALPIDParamsPass = dynamic_cast<TObjArray *>(fEMCALPIDParamsRun->FindObject(Form("pass%d",2)));
+      fEMCALPIDParamsRun = dynamic_cast<TObjArray *>(contParams.GetObject(156477));
+      if(fEMCALPIDParamsRun)  fEMCALPIDParamsPass = dynamic_cast<TObjArray *>(fEMCALPIDParamsRun->FindObject(Form("pass%d",1)));
       if(fEMCALPIDParamsPass) fEMCALPIDParams     = dynamic_cast<TObjArray *>(fEMCALPIDParamsPass->FindObject(Form("EMCALPIDParams_Particles")));
 
       if(!fEMCALPIDParams){
-	AliError(Form("DEFAULT EMCAL Params (LHC11a pass2) not found in file %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));	
+	AliError(Form("DEFAULT EMCAL Params (LHC11d) not found in file %s/COMMON/PID/data/EMCALPIDParams.root", fOADBPath.Data()));	
       }
     }
   }
