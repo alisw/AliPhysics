@@ -40,6 +40,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   void SetPass(Int_t pass)                 {fPass = pass;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
   void DontUseCleaning()                   {fUseCleaning=kFALSE;}
+  void SetFillHistos()                     {fFillHistos=kTRUE;}
 
  private:
 
@@ -55,6 +56,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Int_t    fCurrentRun;         // current run number
   Bool_t   fUseScaling;         // flag to use scaling 
   Bool_t   fUseCleaning;        // flag to use cleaning  
+  Bool_t   fFillHistos;         // flag to fill the QA histos
   Float_t  fV0MScaleFactor;     // scale factor V0M
   Float_t  fSPDScaleFactor;     // scale factor SPD
   Float_t  fTPCScaleFactor;     // scale factor TPC
@@ -80,6 +82,17 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Float_t  fOutliersCut;        //! outliers cut (in n-sigma)
   Int_t    fQuality;            //! quality for centrality determination
 
+  Bool_t   fIsSelected;         //! V0BG rejection
+
+  Bool_t   fMSL;                //! 
+  Bool_t   fMSH;                //! 
+  Bool_t   fMUL;                //! 
+  Bool_t   fMLL;                //! 
+
+  Bool_t   fEJE;                //! 
+  Bool_t   fEGA;                //! 
+  Bool_t   fPHS;                //! 
+
   Bool_t   fCVHN;               //! if the event is central trigger
   Bool_t   fCVLN;               //! if the event is semicentral trigger
   Bool_t   fCVHNbit;               //! if the event is central trigger
@@ -88,7 +101,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   Bool_t   fCSEMI;              //! if the event is semicentral trigger
   Bool_t   fCCENTbit;           //! if the event is central trigger
   Bool_t   fCSEMIbit;           //! if the event is semicentral trigger
-  Bool_t   fIsSelected;         //! V0BG rejection
 
   Float_t  fCentV0M;            // percentile centrality from V0
   Float_t  fCentFMD;            // percentile centrality from FMD
@@ -121,6 +133,20 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutCentV0M_CSEMI;    //control histogram for centrality
   TH1F *fHOutCentV0M_CCENTinMB;    //control histogram for centrality
   TH1F *fHOutCentV0M_CSEMIinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MSL;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MSH;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MUL;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MLL;    //control histogram for centrality
+  TH1F *fHOutCentV0M_EJE;    //control histogram for centrality
+  TH1F *fHOutCentV0M_EGA;    //control histogram for centrality
+  TH1F *fHOutCentV0M_PHS;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MSLinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MSHinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MULinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_MLLinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_EJEinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_EGAinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0M_PHSinMB;    //control histogram for centrality
   TH1F *fHOutCentFMD     ;    //control histogram for centrality
   TH1F *fHOutCentTRK     ;    //control histogram for centrality
   TH1F *fHOutCentTKL     ;    //control histogram for centrality
@@ -172,7 +198,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;         //control histogram for vertex
   TH1F *fHOutVertexT0 ;         //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 15); 
+  ClassDef(AliCentralitySelectionTask, 16); 
 };
 
 #endif

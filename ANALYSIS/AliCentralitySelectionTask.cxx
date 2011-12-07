@@ -85,6 +85,7 @@ AliAnalysisTaskSE(),
   fCurrentRun(-1),
   fUseScaling(0),
   fUseCleaning(0),
+  fFillHistos(0),
   fV0MScaleFactor(0),
   fSPDScaleFactor(0),
   fTPCScaleFactor(0),
@@ -107,6 +108,14 @@ AliAnalysisTaskSE(),
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
+  fIsSelected(0),
+  fMSL(0),
+  fMSH(0),
+  fMUL(0),
+  fMLL(0),
+  fEJE(0),
+  fEGA(0),
+  fPHS(0),
   fCVHN(0),
   fCVLN(0),
   fCVHNbit(0),
@@ -115,7 +124,6 @@ AliAnalysisTaskSE(),
   fCSEMI(0),
   fCCENTbit(0),
   fCSEMIbit(0),
-  fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -144,6 +152,20 @@ AliAnalysisTaskSE(),
   fHOutCentV0M_CSEMI(0),
   fHOutCentV0M_CCENTinMB(0),
   fHOutCentV0M_CSEMIinMB(0),
+  fHOutCentV0M_MSL(0),
+  fHOutCentV0M_MSH(0),
+  fHOutCentV0M_MUL(0),
+  fHOutCentV0M_MLL(0),
+  fHOutCentV0M_EJE(0),
+  fHOutCentV0M_EGA(0),
+  fHOutCentV0M_PHS(0),
+  fHOutCentV0M_MSLinMB(0),
+  fHOutCentV0M_MSHinMB(0),
+  fHOutCentV0M_MULinMB(0),
+  fHOutCentV0M_MLLinMB(0),
+  fHOutCentV0M_EJEinMB(0),
+  fHOutCentV0M_EGAinMB(0),
+  fHOutCentV0M_PHSinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -195,6 +217,7 @@ AliAnalysisTaskSE(),
 
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
+  fFillHistos=kFALSE;
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO.,AliESDTZERO."
     ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }   
@@ -208,6 +231,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCurrentRun(-1),
   fUseScaling(0),
   fUseCleaning(0),
+  fFillHistos(0),
   fV0MScaleFactor(0),
   fSPDScaleFactor(0),
   fTPCScaleFactor(0),
@@ -230,6 +254,14 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fZVCut(10),
   fOutliersCut(5),
   fQuality(999),
+  fIsSelected(0),
+  fMSL(0),
+  fMSH(0),
+  fMUL(0),
+  fMLL(0),
+  fEJE(0),
+  fEGA(0),
+  fPHS(0),
   fCVHN(0),
   fCVLN(0),
   fCVHNbit(0),
@@ -238,7 +270,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fCSEMI(0),
   fCCENTbit(0),
   fCSEMIbit(0),
-  fIsSelected(0),
   fCentV0M(0),
   fCentFMD(0),
   fCentTRK(0),
@@ -267,6 +298,20 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHOutCentV0M_CSEMI(0),
   fHOutCentV0M_CCENTinMB(0),
   fHOutCentV0M_CSEMIinMB(0),
+  fHOutCentV0M_MSL(0),
+  fHOutCentV0M_MSH(0),
+  fHOutCentV0M_MUL(0),
+  fHOutCentV0M_MLL(0),
+  fHOutCentV0M_EJE(0),
+  fHOutCentV0M_EGA(0),
+  fHOutCentV0M_PHS(0),
+  fHOutCentV0M_MSLinMB(0),
+  fHOutCentV0M_MSHinMB(0),
+  fHOutCentV0M_MULinMB(0),
+  fHOutCentV0M_MLLinMB(0),
+  fHOutCentV0M_EJEinMB(0),
+  fHOutCentV0M_EGAinMB(0),
+  fHOutCentV0M_PHSinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -318,6 +363,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   DefineOutput(1, TList::Class());
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
+  fFillHistos=kFALSE;
   fBranchNames="ESD:AliESDRun.,AliESDHeader.,AliESDZDC.,AliESDFMD.,AliESDVZERO.,AliESDTZERO."
     ",SPDVertex.,TPCVertex.,PrimaryVertex.,AliMultiplicity.,Tracks ";
 }
@@ -341,6 +387,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCurrentRun(ana.fCurrentRun),
   fUseScaling(ana.fUseScaling),
   fUseCleaning(ana.fUseCleaning),
+  fFillHistos(ana.fFillHistos),
   fV0MScaleFactor(ana.fV0MScaleFactor),
   fSPDScaleFactor(ana.fSPDScaleFactor),
   fTPCScaleFactor(ana.fTPCScaleFactor),
@@ -363,6 +410,14 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fZVCut(ana.fZVCut),
   fOutliersCut(ana.fOutliersCut),
   fQuality(ana.fQuality),
+  fIsSelected(ana.fIsSelected),
+  fMSL(ana.fMSL),
+  fMSH(ana.fMSH),
+  fMUL(ana.fMUL),
+  fMLL(ana.fMLL),
+  fEJE(ana.fEJE),
+  fEGA(ana.fEGA),
+  fPHS(ana.fPHS),
   fCVHN(ana.fCVHN),
   fCVLN(ana.fCVLN),
   fCVHNbit(ana.fCVHNbit),
@@ -371,7 +426,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fCSEMI(ana.fCSEMI),
   fCCENTbit(ana.fCCENTbit),
   fCSEMIbit(ana.fCSEMIbit),
-  fIsSelected(ana.fIsSelected),
   fCentV0M(ana.fCentV0M),
   fCentFMD(ana.fCentFMD),
   fCentTRK(ana.fCentTRK),
@@ -400,6 +454,20 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHOutCentV0M_CSEMI(ana.fHOutCentV0M_CSEMI),
   fHOutCentV0M_CCENTinMB(ana.fHOutCentV0M_CCENTinMB),
   fHOutCentV0M_CSEMIinMB(ana.fHOutCentV0M_CSEMIinMB),
+  fHOutCentV0M_MSL(ana.fHOutCentV0M_MSL),
+  fHOutCentV0M_MSH(ana.fHOutCentV0M_MSH),
+  fHOutCentV0M_MUL(ana.fHOutCentV0M_MUL),
+  fHOutCentV0M_MLL(ana.fHOutCentV0M_MLL),
+  fHOutCentV0M_EJE(ana.fHOutCentV0M_EJE),
+  fHOutCentV0M_EGA(ana.fHOutCentV0M_EGA),
+  fHOutCentV0M_PHS(ana.fHOutCentV0M_PHS),
+  fHOutCentV0M_MSLinMB(ana.fHOutCentV0M_MSLinMB),
+  fHOutCentV0M_MSHinMB(ana.fHOutCentV0M_MSHinMB),
+  fHOutCentV0M_MULinMB(ana.fHOutCentV0M_MULinMB),
+  fHOutCentV0M_MLLinMB(ana.fHOutCentV0M_MLLinMB),
+  fHOutCentV0M_EJEinMB(ana.fHOutCentV0M_EJEinMB),
+  fHOutCentV0M_EGAinMB(ana.fHOutCentV0M_EGAinMB),
+  fHOutCentV0M_PHSinMB(ana.fHOutCentV0M_PHSinMB),
   fHOutCentFMD     (ana.fHOutCentFMD     ),
   fHOutCentTRK     (ana.fHOutCentTRK     ),
   fHOutCentTKL     (ana.fHOutCentTKL     ),
@@ -465,17 +533,32 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   if(fDebug>1) printf("AnalysisCentralitySelectionTask::UserCreateOutputObjects() \n");
   AliLog::SetClassDebugLevel("AliCentralitySelectionTask", AliLog::kInfo);
 
-  fOutputList = new TList();
-  fOutputList->SetOwner();
-  fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
-  fHOutCentV0M_CVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
-  fHOutCentV0M_CVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
-  fHOutCentV0M_CVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
-  fHOutCentV0M_CVLNinMB= new TH1F("fHOutCentV0M_CVLNinMB","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
-  fHOutCentV0M_CCENT= new TH1F("fHOutCentV0M_CCENT","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
-  fHOutCentV0M_CSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
-  fHOutCentV0M_CCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
-  fHOutCentV0M_CSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+  if (fFillHistos) {    
+    fOutputList = new TList();
+    fOutputList->SetOwner();
+    fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
+    fHOutCentV0M_CVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
+    fHOutCentV0M_CVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
+    fHOutCentV0M_CVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
+    fHOutCentV0M_CVLNinMB= new TH1F("fHOutCentV0M_CVLNinMB","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
+    fHOutCentV0M_CCENT= new TH1F("fHOutCentV0M_CCENT","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+    fHOutCentV0M_CSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+    fHOutCentV0M_CCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+    fHOutCentV0M_CSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+  fHOutCentV0M_MSL= new TH1F("fHOutCentV0M_MSL","fHOutCentV0M_MSL; Centrality V0",505,0,101);
+  fHOutCentV0M_MSH= new TH1F("fHOutCentV0M_MSH","fHOutCentV0M_MSH; Centrality V0",505,0,101);
+  fHOutCentV0M_MUL= new TH1F("fHOutCentV0M_MUL","fHOutCentV0M_MUL; Centrality V0",505,0,101);
+  fHOutCentV0M_MLL= new TH1F("fHOutCentV0M_MLL","fHOutCentV0M_MLL; Centrality V0",505,0,101);
+  fHOutCentV0M_EJE= new TH1F("fHOutCentV0M_EJE","fHOutCentV0M_EJE; Centrality V0",505,0,101);
+  fHOutCentV0M_EGA= new TH1F("fHOutCentV0M_EGA","fHOutCentV0M_EGA; Centrality V0",505,0,101);
+  fHOutCentV0M_PHS= new TH1F("fHOutCentV0M_PHS","fHOutCentV0M_PHS; Centrality V0",505,0,101);
+  fHOutCentV0M_MSLinMB= new TH1F("fHOutCentV0M_MSLinMB","fHOutCentV0M_MSLinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_MSHinMB= new TH1F("fHOutCentV0M_MSHinMB","fHOutCentV0M_MSHinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_MULinMB= new TH1F("fHOutCentV0M_MULinMB","fHOutCentV0M_MULinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_MLLinMB= new TH1F("fHOutCentV0M_MLLinMB","fHOutCentV0M_MLLinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_EJEinMB= new TH1F("fHOutCentV0M_EJEinMB","fHOutCentV0M_EJEinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_EGAinMB= new TH1F("fHOutCentV0M_EGAinMB","fHOutCentV0M_EGAinMB; Centrality V0",505,0,101);
+  fHOutCentV0M_PHSinMB= new TH1F("fHOutCentV0M_PHSinMB","fHOutCentV0M_PHSinMB; Centrality V0",505,0,101);
   fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
   fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
   fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
@@ -509,25 +592,25 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fHOutMultV0MvsV0O = new TH2F("fHOutMultV0MvsV0O","fHOutMultV0MvsV0O; Multiplicity V0; Multiplicity V0 Online",500,0,30000,500,0,30000);
   fHOutMultV0OvsCL1 = new TH2F("fHOutMultV0OvsCL1","fHOutMultV0OvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,30000,700,0,7000);
   fHOutMultV0OvsTRK = new TH2F("fHOutMultV0OvsTRK","fHOutMultV0OvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,30000,400,0,4000);
-
+  
   fHOutCentV0Mqual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
   fHOutCentTRKqual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
   fHOutCentCL1qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
   fHOutMultV0MvsCL1qual1 = new TH2F("fHOutMultV0MvsCL1_qual1","fHOutMultV0MvsCL1_qual1; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
   fHOutMultV0MvsTRKqual1 = new TH2F("fHOutMultV0MvsTRK_qual1","fHOutMultV0MvsTRK_qual1; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
   fHOutMultTRKvsCL1qual1 = new TH2F("fHOutMultTRKvsCL1_qual1","fHOutMultTRKvsCL1_qual1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
-
+  
   fHOutCentV0Mqual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
   fHOutCentTRKqual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
   fHOutCentCL1qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
   fHOutMultV0MvsCL1qual2 = new TH2F("fHOutMultV0MvsCL1_qual2","fHOutMultV0MvsCL1_qual2; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
   fHOutMultV0MvsTRKqual2 = new TH2F("fHOutMultV0MvsTRK_qual2","fHOutMultV0MvsTRK_qual2; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
   fHOutMultTRKvsCL1qual2 = new TH2F("fHOutMultTRKvsCL1_qual2","fHOutMultTRKvsCL1_qual2; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
-
+  
   fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 100,-0.5,99.5);
   fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
   fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
-
+  
   fOutputList->Add(  fHOutCentV0M     );
   fOutputList->Add(  fHOutCentV0M_CVHN);
   fOutputList->Add(  fHOutCentV0M_CVLN);
@@ -537,6 +620,20 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutCentV0M_CSEMI);
   fOutputList->Add(  fHOutCentV0M_CCENTinMB);
   fOutputList->Add(  fHOutCentV0M_CSEMIinMB);
+  fOutputList->Add(  fHOutCentV0M_MSL    );
+  fOutputList->Add(  fHOutCentV0M_MSH    );
+  fOutputList->Add(  fHOutCentV0M_MUL    );
+  fOutputList->Add(  fHOutCentV0M_MLL    );
+  fOutputList->Add(  fHOutCentV0M_EJE    );
+  fOutputList->Add(  fHOutCentV0M_EGA    );
+  fOutputList->Add(  fHOutCentV0M_PHS   );
+  fOutputList->Add(  fHOutCentV0M_MSLinMB);
+  fOutputList->Add(  fHOutCentV0M_MSHinMB);
+  fOutputList->Add(  fHOutCentV0M_MULinMB);
+  fOutputList->Add(  fHOutCentV0M_MLLinMB);
+  fOutputList->Add(  fHOutCentV0M_EJEinMB);
+  fOutputList->Add(  fHOutCentV0M_EGAinMB);
+  fOutputList->Add(  fHOutCentV0M_PHSinMB);
   fOutputList->Add(  fHOutCentFMD     );
   fOutputList->Add(  fHOutCentTRK     );
   fOutputList->Add(  fHOutCentTKL     );
@@ -582,11 +679,12 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
   fOutputList->Add(  fHOutQuality );
   fOutputList->Add(  fHOutVertex );
   fOutputList->Add(  fHOutVertexT0 );
-
-  fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-
+  
   PostData(1, fOutputList); 
-
+  }
+  
+  fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
+  
   if (fPass==0) AliFatal("Which pass are you analyzing? You should set it via taskCentrality->SetPass(N)");
 }
 
@@ -671,6 +769,9 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     TString trigStr(esd->GetFiredTriggerClasses());
     
     fCVHN=kFALSE; fCVLN=kFALSE; fCCENT=kFALSE; fCSEMI=kFALSE; 
+    fMSL=kFALSE;  fMSH=kFALSE;  fMUL=kFALSE;   fMLL=kFALSE;
+    fEJE=kFALSE;  fEGA=kFALSE;  fPHS=kFALSE;
+
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVHN")) && (fIsSelected)) 
       fCVHN=kTRUE;
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CVLN")) && (fIsSelected))
@@ -679,19 +780,34 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       fCCENT=kTRUE;
     if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CSEMI")) && (fIsSelected))
       fCSEMI=kTRUE;
+    
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSL")) && (fIsSelected))
+      fMSL=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MSH")) && (fIsSelected))
+      fMSH=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MUL")) && (fIsSelected))
+      fMUL=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1MLL")) && (fIsSelected))
+      fMLL=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EJE")) && (fIsSelected))
+      fEJE=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1EGA")) && (fIsSelected))
+      fEGA=kTRUE;
+    if ( (trigStr.Contains("-B-")) &&  (trigStr.Contains("CPBI1PHS")) && (fIsSelected))
+      fPHS=kTRUE;
 
     fCVHNbit=kFALSE;    fCVLNbit=kFALSE;       fCCENTbit=kFALSE;    fCSEMIbit=kFALSE; 
-   if (esdV0->GetTriggerBits() & (1<<8)) 
+    if (esdV0->GetTriggerBits() & (1<<8)) 
       fCVHNbit=kTRUE;
     if (esdV0->GetTriggerBits() & (1<<6)) 
       fCVLNbit=kTRUE;
-
+    
     if (kT0BB && fCVHNbit)
       fCCENTbit=kTRUE;
     if (kT0BB && fCVLNbit)
       fCSEMIbit=kTRUE;
 
-
+    
     // ***** Vertex Info
     const AliESDVertex* vtxESD = esd->GetPrimaryVertexSPD();
     zvtx        = vtxESD->GetZ(); 
@@ -837,83 +953,89 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
     esdCent->SetCentralityZEMvsZDC(fCentZEMvsZDC);
   }
 
-  if (fCVHN)     
-    fHOutCentV0M_CVHN->Fill(fCentV0M);
-  if (fCVLN)     
-    fHOutCentV0M_CVLN->Fill(fCentV0M);
-  if (fCCENT)     
-    fHOutCentV0M_CCENT->Fill(fCentV0M);
-  if (fCSEMI)     
-    fHOutCentV0M_CSEMI->Fill(fCentV0M);
+  // filling QA histograms
+  if (fFillHistos) {    
+    if (fCVHN)   fHOutCentV0M_CVHN->Fill(fCentV0M);
+    if (fCVLN)   fHOutCentV0M_CVLN->Fill(fCentV0M);
+    if (fCCENT)  fHOutCentV0M_CCENT->Fill(fCentV0M);
+    if (fCSEMI)  fHOutCentV0M_CSEMI->Fill(fCentV0M);
+    if (fMSL) fHOutCentV0M_MSL->Fill(fCentV0M);
+    if (fMSH) fHOutCentV0M_MSH->Fill(fCentV0M);
+    if (fMUL) fHOutCentV0M_MUL->Fill(fCentV0M);
+    if (fMLL) fHOutCentV0M_MLL->Fill(fCentV0M);
+    if (fEJE) fHOutCentV0M_EJE->Fill(fCentV0M);
+    if (fEGA) fHOutCentV0M_EGA->Fill(fCentV0M);
+    if (fPHS) fHOutCentV0M_PHS->Fill(fCentV0M);
 
-
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB); 
-  if (isSelected) { // fill the QA histograms only for MB events!
-  fHOutQuality->Fill(fQuality);
-  fHOutVertex->Fill(zvtx);
-  fHOutVertexT0->Fill(zvtxT0);
-
-  if (fQuality==0) {  
-    fHOutCentV0M->Fill(fCentV0M);
-
-    if (fCVHNbit)     
-      fHOutCentV0M_CVHNinMB->Fill(fCentV0M);
-    if (fCVLNbit)     
-      fHOutCentV0M_CVLNinMB->Fill(fCentV0M);
-    if (fCCENTbit)     
-      fHOutCentV0M_CCENTinMB->Fill(fCentV0M);
-    if (fCSEMIbit)     
-      fHOutCentV0M_CSEMIinMB->Fill(fCentV0M);
-
-
-    fHOutCentFMD->Fill(fCentFMD);
-    fHOutCentTRK->Fill(fCentTRK);
-    fHOutCentTKL->Fill(fCentTKL);
-    fHOutCentCL0->Fill(fCentCL0);
-    fHOutCentCL1->Fill(fCentCL1);
-    fHOutCentV0MvsFMD->Fill(fCentV0MvsFMD);
-    fHOutCentTKLvsV0M->Fill(fCentTKLvsV0M);
-    fHOutCentZEMvsZDC->Fill(fCentZEMvsZDC);
-    fHOutCentV0MvsCentCL1->Fill(fCentV0M,fCentCL1);
-    fHOutCentV0MvsCentTRK->Fill(fCentV0M,fCentTRK);
-    fHOutCentTRKvsCentCL1->Fill(fCentTRK,fCentCL1);
-    fHOutCentV0MvsCentZDC->Fill(fCentV0M,fCentZEMvsZDC);
-    fHOutMultV0M->Fill(multV0A+multV0C);
-    fHOutMultV0O->Fill(multV0AOnline+multV0COnline);
-    fHOutMultFMD->Fill(multFMDA+multFMDC);
-    fHOutMultTRK->Fill(nTracks);
-    fHOutMultTKL->Fill(nTracklets);
-    fHOutMultCL0->Fill(nClusters[0]);
-    fHOutMultCL1->Fill(spdCorr);
-    fHOutMultV0MvsZDN->Fill(v0Corr,(zncEnergy+znaEnergy));
-    fHOutMultZEMvsZDN->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy));
-    fHOutMultV0MvsZDC->Fill(v0Corr,(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
-    fHOutMultZEMvsZDC->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
-    fHOutMultZEMvsZDCw->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy),fCentV0M);
-    fHOutMultV0MvsCL1->Fill(v0Corr,spdCorr);
-    fHOutMultV0MvsTRK->Fill(v0Corr,nTracks);
-    fHOutMultTRKvsCL1->Fill(nTracks,spdCorr);
-    fHOutMultV0MvsV0O->Fill(v0Corr,(multV0AOnline+multV0COnline));
-    fHOutMultV0OvsCL1->Fill((multV0AOnline+multV0COnline),spdCorr);
-    fHOutMultV0OvsTRK->Fill((multV0AOnline+multV0COnline),nTracks);
-  } else if (fQuality%2 == 0) {
-    fHOutCentV0Mqual1->Fill(fCentV0M);
-    fHOutCentTRKqual1->Fill(fCentTRK);
-    fHOutCentCL1qual1->Fill(fCentCL1);
-    fHOutMultV0MvsCL1qual1->Fill(v0Corr,spdCorr);
-    fHOutMultV0MvsTRKqual1->Fill(v0Corr,nTracks);
-    fHOutMultTRKvsCL1qual1->Fill(nTracks,spdCorr);
-  } else {
-    fHOutCentV0Mqual2->Fill(fCentV0M);
-    fHOutCentTRKqual2->Fill(fCentTRK);
-    fHOutCentCL1qual2->Fill(fCentCL1);
-    fHOutMultV0MvsCL1qual2->Fill(v0Corr,spdCorr);
-    fHOutMultV0MvsTRKqual2->Fill(v0Corr,nTracks);
-    fHOutMultTRKvsCL1qual2->Fill(nTracks,spdCorr);
+    if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) { // fill the QA histograms only for MB events!
+      fHOutQuality->Fill(fQuality);
+      fHOutVertex->Fill(zvtx);
+      fHOutVertexT0->Fill(zvtxT0);
+      
+      if (fQuality==0) {  
+	fHOutCentV0M->Fill(fCentV0M);
+	
+	if (fCVHNbit)  fHOutCentV0M_CVHNinMB->Fill(fCentV0M);
+	if (fCVLNbit)  fHOutCentV0M_CVLNinMB->Fill(fCentV0M);
+	if (fCCENTbit) fHOutCentV0M_CCENTinMB->Fill(fCentV0M);
+	if (fCSEMIbit) fHOutCentV0M_CSEMIinMB->Fill(fCentV0M);
+	if (fMSL) fHOutCentV0M_MSLinMB->Fill(fCentV0M);
+	if (fMSH) fHOutCentV0M_MSHinMB->Fill(fCentV0M);
+	if (fMUL) fHOutCentV0M_MULinMB->Fill(fCentV0M);
+	if (fMLL) fHOutCentV0M_MLLinMB->Fill(fCentV0M);
+	if (fEJE) fHOutCentV0M_EJEinMB->Fill(fCentV0M);
+	if (fEGA) fHOutCentV0M_EGAinMB->Fill(fCentV0M);
+	if (fPHS) fHOutCentV0M_PHSinMB->Fill(fCentV0M);
+       
+	
+	fHOutCentFMD->Fill(fCentFMD);
+	fHOutCentTRK->Fill(fCentTRK);
+	fHOutCentTKL->Fill(fCentTKL);
+	fHOutCentCL0->Fill(fCentCL0);
+	fHOutCentCL1->Fill(fCentCL1);
+	fHOutCentV0MvsFMD->Fill(fCentV0MvsFMD);
+	fHOutCentTKLvsV0M->Fill(fCentTKLvsV0M);
+	fHOutCentZEMvsZDC->Fill(fCentZEMvsZDC);
+	fHOutCentV0MvsCentCL1->Fill(fCentV0M,fCentCL1);
+	fHOutCentV0MvsCentTRK->Fill(fCentV0M,fCentTRK);
+	fHOutCentTRKvsCentCL1->Fill(fCentTRK,fCentCL1);
+	fHOutCentV0MvsCentZDC->Fill(fCentV0M,fCentZEMvsZDC);
+	fHOutMultV0M->Fill(multV0A+multV0C);
+	fHOutMultV0O->Fill(multV0AOnline+multV0COnline);
+	fHOutMultFMD->Fill(multFMDA+multFMDC);
+	fHOutMultTRK->Fill(nTracks);
+	fHOutMultTKL->Fill(nTracklets);
+	fHOutMultCL0->Fill(nClusters[0]);
+	fHOutMultCL1->Fill(spdCorr);
+	fHOutMultV0MvsZDN->Fill(v0Corr,(zncEnergy+znaEnergy));
+	fHOutMultZEMvsZDN->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy));
+	fHOutMultV0MvsZDC->Fill(v0Corr,(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
+	fHOutMultZEMvsZDC->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy));
+	fHOutMultZEMvsZDCw->Fill((zem1Energy+zem2Energy),(zncEnergy+znaEnergy+zpcEnergy+zpaEnergy),fCentV0M);
+	fHOutMultV0MvsCL1->Fill(v0Corr,spdCorr);
+	fHOutMultV0MvsTRK->Fill(v0Corr,nTracks);
+	fHOutMultTRKvsCL1->Fill(nTracks,spdCorr);
+	fHOutMultV0MvsV0O->Fill(v0Corr,(multV0AOnline+multV0COnline));
+	fHOutMultV0OvsCL1->Fill((multV0AOnline+multV0COnline),spdCorr);
+	fHOutMultV0OvsTRK->Fill((multV0AOnline+multV0COnline),nTracks);
+      } else if (fQuality%2 == 0) {
+	fHOutCentV0Mqual1->Fill(fCentV0M);
+	fHOutCentTRKqual1->Fill(fCentTRK);
+	fHOutCentCL1qual1->Fill(fCentCL1);
+	fHOutMultV0MvsCL1qual1->Fill(v0Corr,spdCorr);
+	fHOutMultV0MvsTRKqual1->Fill(v0Corr,nTracks);
+	fHOutMultTRKvsCL1qual1->Fill(nTracks,spdCorr);
+      } else {
+	fHOutCentV0Mqual2->Fill(fCentV0M);
+	fHOutCentTRKqual2->Fill(fCentTRK);
+	fHOutCentCL1qual2->Fill(fCentCL1);
+	fHOutMultV0MvsCL1qual2->Fill(v0Corr,spdCorr);
+	fHOutMultV0MvsTRKqual2->Fill(v0Corr,nTracks);
+	fHOutMultTRKvsCL1qual2->Fill(nTracks,spdCorr);
+      }
+    }
+    PostData(1, fOutputList); 
   }
-  }
-
-  PostData(1, fOutputList); 
 }
 //________________________________________________________________________
 void AliCentralitySelectionTask::Terminate(Option_t */*option*/)

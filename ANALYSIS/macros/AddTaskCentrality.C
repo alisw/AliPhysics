@@ -19,6 +19,7 @@ AliCentralitySelectionTask *AddTaskCentrality(Int_t passNumber = 2)
   }
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
   centralityTask->SetPass(passNumber);
+  centralityTask->SetFillHistos();
   centralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(centralityTask);
   
