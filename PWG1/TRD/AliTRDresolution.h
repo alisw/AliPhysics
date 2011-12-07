@@ -66,7 +66,7 @@ public:
   };
   enum ETRDresolutionClassProjs {
     kClNproj=60        // cluster projections
-    ,kTrkltNproj=2580  // tracklet projections
+    ,kTrkltNproj=8000  // tracklet projections
     ,kTrkInNproj=142   // trackIn projections
     ,kTrkNproj=2500    // track projections
     ,kMCTrkInNproj=162 // trackIn projections
