@@ -54,7 +54,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsD0toKpi->SetUsePhysicsSelection(kFALSE);
   cutsD0toKpi->SetMaxVtxZ(1.e6);
   cutsD0toKpi->SetTriggerClass("");
-  Float_t cutsArrayD0toKpi[11]={0.2,999999.,1.1,0.,0.,999999.,999999.,0.,0.5,-1,0.};
+  Float_t cutsArrayD0toKpi[11]={0.4,999999.,1.1,0.,0.,999999.,999999.,0.,0.5,-1,0.};
   cutsD0toKpi->SetPtBins(nptbins,ptlimits);
   cutsD0toKpi->SetCuts(11,cutsArrayD0toKpi);
   cutsD0toKpi->AddTrackCuts(esdTrackCuts);
@@ -67,7 +67,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   AliRDHFCutsDplustoKpipi *cutsDplustoKpipi = new AliRDHFCutsDplustoKpipi("CutsDplustoKpipi");
   cutsDplustoKpipi->SetStandardCutsPbPb2010();
   cutsDplustoKpipi->SetUsePID(kFALSE);
-  Float_t cutsArrayDplustoKpipi[14]={0.2,0.3,0.3,0.,0.,0.01,0.06,0.05,1.,0.85,0.,10000000000.,0.,0.};
+  Float_t cutsArrayDplustoKpipi[14]={0.25,0.3,0.3,0.,0.,0.01,0.06,0.05,1.,0.85,0.,10000000000.,0.,0.};
   cutsDplustoKpipi->SetPtBins(nptbins,ptlimits);
   cutsDplustoKpipi->SetCuts(14,cutsArrayDplustoKpipi);
   cutsDplustoKpipi->AddTrackCuts(esdTrackCuts);
