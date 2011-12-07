@@ -48,7 +48,7 @@ public:
 
    AliRsnListOutput(const char *name = "", EOut type = kHistoDefault);
    AliRsnListOutput(const AliRsnListOutput &copy);
-   const AliRsnListOutput& operator=(const AliRsnListOutput &copy);
+   AliRsnListOutput& operator=(const AliRsnListOutput &copy);
    virtual ~AliRsnListOutput();
 
    EOut            GetType() const         {return  fType;}

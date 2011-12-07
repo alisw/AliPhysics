@@ -32,7 +32,7 @@ public:
    AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t charge = 0);
    AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t charge = 0);
    AliRsnDaughterDef(const AliRsnDaughterDef &copy);
-   const AliRsnDaughterDef& operator= (const AliRsnDaughterDef &copy);
+   AliRsnDaughterDef& operator= (const AliRsnDaughterDef &copy);
    virtual ~AliRsnDaughterDef() { }
 
    AliRsnDaughter::ESpecies GetPID()          const {return fPID;}

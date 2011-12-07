@@ -20,7 +20,7 @@ public:
    AliRsnPairDef(EPARTYPE type1, Char_t ch1, EPARTYPE type2, Char_t ch2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
    AliRsnPairDef(AliRsnDaughter::ESpecies type1, Char_t ch1, AliRsnDaughter::ESpecies type2, Char_t ch2, Int_t motherPDG = 0, Double_t motherMass = 0.0);
    AliRsnPairDef(const AliRsnPairDef &copy);
-   const AliRsnPairDef& operator= (const AliRsnPairDef &copy);
+   AliRsnPairDef& operator= (const AliRsnPairDef &copy);
    virtual ~AliRsnPairDef() { }
 
    virtual const char*	    GetName()       const {return Form("%s_%s", fDef1.GetName(), fDef2.GetName());}

@@ -94,7 +94,7 @@ AliRsnPairDef::AliRsnPairDef(const AliRsnPairDef &copy) :
 }
 
 //_____________________________________________________________________________
-const AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
+AliRsnPairDef& AliRsnPairDef::operator=(const AliRsnPairDef &copy)
 {
 //
 // Assignment operator with standard behavior.
