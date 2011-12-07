@@ -1,5 +1,12 @@
-#ifndef ALIANALYSISTASKEFFICIENCYPRIMARIES_CXX
-#define ALIANALYSISTASKEFFICIENCYPRIMARIES_CXX
+/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
+/* See cxx source for full Copyright notice */
+
+// AliAnalysisTaskQAflow: some simple QA
+//
+// author: Mikolaj Krzewicki (mikolaj.krzewicki@cern.ch)
+
+#ifndef ALIANALYSISTASKQAFLOW_H
+#define ALIANALYSISTASKQAFLOW_H
 
 class TObjArray;
 class TNtuple;

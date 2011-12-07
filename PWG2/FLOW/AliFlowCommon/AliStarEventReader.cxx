@@ -68,14 +68,14 @@ Bool_t AliStarEventReader::GetNextEvent( )
   //gets next event
   static TFile*    nextFile    = NULL ;
   static TNtuple*  ntData      = NULL ;
-  static Int_t     DoOnce      = 0 ;
-  static Long64_t  NextEntry   = 0 ;
+  static Int_t     doOnce      = 0 ;
+  static Long64_t  nextEntry   = 0 ;
   static Long64_t  entries     = 0 ;
-  static Long64_t  FileCounter = 0 ;
+  static Long64_t  fileCounter = 0 ;
 
-  if ( DoOnce == 0 )
+  if ( doOnce == 0 )
   {
-    DoOnce = 1     ;
+    doOnce = 1     ;
     nextFile = (TFile*)  fFileList->First() ;
     if ( nextFile == 0 ) return false      ;
     ntData        = (TNtuple*) ( nextFile->Get("NTtracks") ) ;
@@ -86,30 +86,30 @@ Bool_t AliStarEventReader::GetNextEvent( )
       cout << "Error in reading Ntuple file: no. columns != 15" << endl ;
       return false ;
     }
-    FileCounter++ ;
-    cout << "Start New File " << FileCounter << endl ;
+    fileCounter++ ;
+    cout << "Start New File " << fileCounter << endl ;
   }
 
   while ( nextFile )
   {
-    while ( NextEntry < entries )
+    while ( nextEntry < entries )
     {
       Float_t* header = NULL;
       Int_t numberOfParticles =  0 ;                   // Number of particle tracks in the next event
-      Long64_t HeaderEntry    =  0 ;                   // Store position of Header and Set Flag in case of EOF or error
-      Long64_t SkipEvent      =  0 ;                   // Flag in case of wrong number of tracks in this event
+      Long64_t headerEntry    =  0 ;                   // Store position of Header and Set Flag in case of EOF or error
+      Long64_t skipEvent      =  0 ;                   // Flag in case of wrong number of tracks in this event
 
       fEvent->Reset();           //reset the event
 
       // Search for the first "Event" record
 
-      for ( Long64_t j = NextEntry ; j < entries ; j++ )
+      for ( Long64_t j = nextEntry ; j < entries ; j++ )
       {
         Long64_t BytesRead = ntData->GetEntry(j) ;
         if ( BytesRead < 60 )
         {
           cout << "Warning: error in file or EOF " <<  endl ;
-          HeaderEntry = -1 ;
+          headerEntry = -1 ;
           break ;
         }
         header = ntData->GetArgs() ;
@@ -119,23 +119,23 @@ Bool_t AliStarEventReader::GetNextEvent( )
           fEvent->SetParams(header);  //set the event params
 
           numberOfParticles = (int) header[9]  ;   // # of particles passing track cuts, thus in ntuple
-          HeaderEntry = j ;
+          headerEntry = j ;
           break ;
         }
         cout << "Warning: no header entries found in this file" << endl ;
-        HeaderEntry = -1 ;
+        headerEntry = -1 ;
       }
 
-      if ( HeaderEntry == -1 ) break ;                 // Break out of main loop if I/O error
+      if ( headerEntry == -1 ) break ;                 // Break out of main loop if I/O error
 
       // Get subsequent "track" data
-      for ( Long64_t j = HeaderEntry + 1 ; j < HeaderEntry + 1 + numberOfParticles  ; j++ )
+      for ( Long64_t j = headerEntry + 1 ; j < headerEntry + 1 + numberOfParticles  ; j++ )
       {
         Long64_t BytesRead = ntData->GetEntry(j) ;
         if ( BytesRead < 60 )
         {
           cout << "Warning: error in file sequence or EOF" << endl ;
-          NextEntry = -1 ;
+          nextEntry = -1 ;
           break ;
         }
         header = ntData->GetArgs() ;
@@ -158,21 +158,21 @@ Bool_t AliStarEventReader::GetNextEvent( )
              (int) header[13] == -1 && (int) header[14] == -1 )
         {
           cout << "Warning: Header in the wrong place, skipping event" << endl ;
-          SkipEvent = 1 ;
-          NextEntry = j ;          // Skip event and freeze NextEntry counter
+          skipEvent = 1 ;
+          nextEntry = j ;          // Skip event and freeze nextEntry counter
           break ;
         }
 
         fEvent->AddTrack( new AliStarTrack(header) );    //add the new track
 
-        NextEntry = j+1 ;
+        nextEntry = j+1 ;
       }
-      if ( NextEntry == -1 ) break ;      // Bad record in file, go to next file in fFileList
-      if ( SkipEvent ==  1 ) continue ;   // Bad event, go to next event in this file
+      if ( nextEntry == -1 ) break ;      // Bad record in file, go to next file in fFileList
+      if ( skipEvent ==  1 ) continue ;   // Bad event, go to next event in this file
       return true ;                       // Success: Event read OK, note unusual location for a successful return
     }
 
-    NextEntry = 0 ; // this entry goes before nextFile
+    nextEntry = 0 ; // this entry goes before nextFile
     nextFile = (TFile*) fFileList->After(nextFile) ;
     if ( nextFile == 0 ) break ;
     if (ntData) delete ntData;
@@ -184,8 +184,8 @@ Bool_t AliStarEventReader::GetNextEvent( )
       cout << "Error in reading Ntuple file: no. columns != 15" << endl ;
       break ;
     }
-    FileCounter++ ;
-    cout << "Start New File " << FileCounter << endl ;
+    fileCounter++ ;
+    cout << "Start New File " << fileCounter << endl ;
   }
 
   return false ;  // Failure: Error or EOF
@@ -209,7 +209,7 @@ Bool_t AliStarEventReader::MakeFileListFromDir ( const char* inputFileDirectory 
 {
   //get the files to process
   Int_t  Count        = 0 ;
-  static Int_t DoOnce = 0 ;
+  static Int_t doOnce = 0 ;
   fFileList =  new TList() ;
   void*   directory = gSystem->OpenDirectory(inputFileDirectory) ;
   const char* entry = gSystem->GetDirEntry(directory) ;
@@ -231,10 +231,10 @@ Bool_t AliStarEventReader::MakeFileListFromDir ( const char* inputFileDirectory 
       if( !fileName.EndsWith("/") ) fileName += "/" ;
       fileName += entry;
       fFileList->Add ( TFile::Open(fileName) ) ;
-      if ( DoOnce == 0 )
+      if ( doOnce == 0 )
       {
         cout << "Add: " << fileName << endl ;
-        DoOnce = 1 ;
+        doOnce = 1 ;
       }
       Count ++ ;
     }

@@ -12,12 +12,12 @@
 #include <TMatrix.h>
 #include <TList.h>
 #include "AliFlowTrackSimpleCuts.h"
+#include "AliFlowTrackSimple.h"
 #include "AliESDtrackCuts.h"
 #include "TMCProcess.h"
 #include "AliESDtrack.h"
 #include "AliPID.h"
 #include "AliESDpid.h"
-#include "AliFlowBayesianPID.h"
 
 class TBrowser;
 class AliVParticle;
@@ -29,6 +29,7 @@ class AliMultiplicity;
 class AliAODTrack;
 class AliESDtrack;
 class AliESDPmdTrack;
+class AliFlowBayesianPID;
 
 class AliFlowTrackCuts : public AliFlowTrackSimpleCuts {
 

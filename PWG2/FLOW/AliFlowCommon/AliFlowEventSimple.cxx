@@ -467,6 +467,7 @@ void AliFlowEventSimple::Print(Option_t *option) const
 //-----------------------------------------------------------------------
 void AliFlowEventSimple::Browse(TBrowser *b)
 {
+  //browse in TBrowser
   if (!b) return;
   if (!fNumberOfTracksWrap)
   {
@@ -710,7 +711,7 @@ void AliFlowEventSimple::AddV2( TF1* ptDepV2 )
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
+void AliFlowEventSimple::TagRP( const AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as reference particles (RPs)
   for (Int_t i=0; i<fNumberOfTracks; i++)
@@ -732,7 +733,7 @@ void AliFlowEventSimple::TagRP( AliFlowTrackSimpleCuts* cuts )
 }
 
 //_____________________________________________________________________________
-void AliFlowEventSimple::TagPOI( AliFlowTrackSimpleCuts* cuts )
+void AliFlowEventSimple::TagPOI( const AliFlowTrackSimpleCuts* cuts )
 {
   //tag tracks as particles of interest (POIs)
   for (Int_t i=0; i<fNumberOfTracks; i++)

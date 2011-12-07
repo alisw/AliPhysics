@@ -15,10 +15,6 @@
 
 class AliStarTrack : public TObject {
 
- private:
-  static const Int_t fgkNparams = 15; //number of params
-  Float_t fParams[fgkNparams]; //params
-
  public:
   AliStarTrack();
   AliStarTrack( const Float_t* params );
@@ -66,6 +62,10 @@ class AliStarTrack : public TObject {
   void SetNSigK( const Float_t p)  { fParams[13]=p;}
   void SetNSigProton( const Float_t p)  { fParams[14]=p;}
   void SetParams( const Float_t* params );
+
+ private:
+  static const Int_t fgkNparams = 15; //number of params
+  Float_t fParams[fgkNparams]; //params
 
   ClassDef(AliStarTrack,1)         // Base class
 

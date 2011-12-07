@@ -16,11 +16,6 @@ class AliStarTrack;
 
 class AliStarEvent : public TObject {
 
- private:
-  static const Int_t fgkNparams = 10; //number of params
-  Float_t fParams[fgkNparams]; //params
-  TObjArray* fTracks; //track collection
-
  public:
   AliStarEvent();
   AliStarEvent( Int_t n );
@@ -57,6 +52,11 @@ class AliStarEvent : public TObject {
   void SetNumberOfPrimaryTracks( const Int_t p )  { fParams[8]=(Float_t)p;}
   void SetNumberOfTracks( const Int_t p )  { fParams[9]=(Float_t)p;}
   void SetParams( const Float_t* params );
+
+ private:
+  static const Int_t fgkNparams = 10; //number of params
+  Float_t fParams[fgkNparams]; //params
+  TObjArray* fTracks; //track collection
 
   ClassDef(AliStarEvent,1)         // Base class
 
