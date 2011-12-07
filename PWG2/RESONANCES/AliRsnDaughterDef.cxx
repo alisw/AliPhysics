@@ -99,7 +99,7 @@ AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
 }
 
 //_____________________________________________________________________________
-const AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &copy)
+AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &copy)
 {
 //
 // Assignment operator has standard behavior.
