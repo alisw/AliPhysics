@@ -118,8 +118,6 @@ public:
 
    void  RemoveUsed2(TObjArray * arr, Float_t factor1, Float_t factor2, Int_t minimal);
 
-   void  StopNotActive(const TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
-   void  StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const;
    Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster);
 
 private:

@@ -2653,59 +2653,6 @@ void AliTPCtrackerMI::SignClusters(const TObjArray * arr, Float_t fnumber, Float
 }
 
 
-void  AliTPCtrackerMI::StopNotActive(const TObjArray * arr, Int_t row0, Float_t th0, Float_t th1, Float_t th2) const
-{
-  // stop not active tracks
-  // take th1 as threshold for number of founded to number of foundable on last 10 active rows
-  // take th2 as threshold for number of founded to number of foundable on last 20 active rows 
-  Int_t nseed = arr->GetEntriesFast();  
-  //
-  for (Int_t i=0; i<nseed; i++) {
-    AliTPCseed *pt=(AliTPCseed*)arr->UncheckedAt(i);    
-    if (!pt) {
-      continue;
-    }
-    if (!(pt->IsActive())) continue;
-    StopNotActive(pt,row0,th0, th1,th2);
-  }
-}
-
-
-
-void  AliTPCtrackerMI::StopNotActive(AliTPCseed * seed, Int_t row0, Float_t th0, Float_t th1,
- Float_t th2) const
-{
-  // stop not active tracks
-  // take th1 as threshold for number of founded to number of foundable on last 10 active rows
-  // take th2 as threshold for number of founded to number of foundable on last 20 active rows 
-  Int_t sumgood1  = 0;
-  Int_t sumgood2  = 0;
-  Int_t foundable = 0;
-  Int_t maxindex = seed->GetLastPoint();  //last foundable row
-  if (seed->GetNFoundable()*th0 > seed->GetNumberOfClusters()) {
-    seed->Desactivate(10) ;
-    return;
-  }
-
-  for (Int_t i=row0; i<maxindex; i++){
-    Int_t index = seed->GetClusterIndex2(i);
-    if (index!=-1) foundable++;
-    //if (!c) continue;
-    if (foundable<=30) sumgood1++;
-    if (foundable<=50) {
-      sumgood2++;
-    }
-    else{ 
-      break;
-    }        
-  }
-  if (foundable>=30.){ 
-     if (sumgood1<(th1*30.)) seed->Desactivate(10);
-  }
-  if (foundable>=50)
-    if (sumgood2<(th2*50.)) seed->Desactivate(10);
-}
-
 
 Int_t AliTPCtrackerMI::RefitInward(AliESDEvent *event)
 {
