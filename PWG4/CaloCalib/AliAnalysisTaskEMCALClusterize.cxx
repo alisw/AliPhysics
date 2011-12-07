@@ -332,17 +332,20 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     if(clus->IsEMCAL()){   
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
+      //printf("Org cluster E %f, Time  %e, Id = ", clus->E(), clus->GetTOF() );
       if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t icell=0; icell < clus->GetNCells(); icell++ ){
         fCellLabels[index[icell]]       = label;
         fCellSecondLabels[index[icell]] = label2;
-        fCellTime[icell]                = clus->GetTOF();    
-        fCellMatchdEta[icell]           = clus->GetTrackDz();
-        fCellMatchdPhi[icell]           = clus->GetTrackDx();
+        fCellTime[index[icell]]         = clus->GetTOF();    
+        fCellMatchdEta[index[icell]]    = clus->GetTrackDz();
+        fCellMatchdPhi[index[icell]]    = clus->GetTrackDx();
+        //printf(" %d,", index[icell] );
       }
       nClustersOrg++;
     }
+     // printf("\n");
   } 
   
   // Transform CaloCells into Digits
@@ -370,6 +373,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
     // In case of AOD analysis cell time is 0, approximate replacing by time of the cluster the digit belongs.
     if (time*1e9 < 1.) { 
       time = fCellTime[id];
+      //printf("cell %d time cluster %e\n",id, time);
       fRecoUtils->RecalibrateCellTime(id,bc,time);
     }
     
@@ -450,7 +454,7 @@ void AliAnalysisTaskEMCALClusterize::ClusterizeCells()
   
 }
 
-//_____________________________________________________________________
+//_____________________________________________________
 void AliAnalysisTaskEMCALClusterize::ClusterUnfolding()
 {
   // Take the event clusters and unfold them
@@ -1104,7 +1108,10 @@ void AliAnalysisTaskEMCALClusterize::UserExec(Option_t *)
       newCluster->SetTrackDistance(fCellMatchdPhi[absId0],fCellMatchdEta[absId0]);
     }
 
-    
+    //printf("New cluster E %f, Time  %e, Id = ", newCluster->E(), newCluster->GetTOF() );
+    //for(Int_t icell=0; icell < newCluster->GetNCells(); icell++ ) printf(" %d,", newCluster->GetCellsAbsId() [icell] );
+    //printf("\n");
+
     //In case of new bad channels, recalculate distance to bad channels
     if(fRecoUtils->IsBadChannelsRemovalSwitchedOn())
       fRecoUtils->RecalculateClusterDistanceToBadChannel(fGeom, fEvent->GetEMCALCells(), newCluster);
