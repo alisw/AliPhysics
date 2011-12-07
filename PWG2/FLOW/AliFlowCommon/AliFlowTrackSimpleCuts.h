@@ -12,14 +12,14 @@
 #define ALIFLOWTRACKSIMPLECUTS_H
 
 #include "TNamed.h"
-#include "AliFlowTrackSimple.h"  //needed as include
 
+class AliFlowTrackSimple;
 class TParticle;
 
 class AliFlowTrackSimpleCuts : public TNamed {
 
  public:
-  AliFlowTrackSimpleCuts();
+  AliFlowTrackSimpleCuts(const char* name="");
   //AliFlowTrackSimpleCuts(const AliFlowTrackSimpleCuts& someCuts);
   //AliFlowTrackSimpleCuts& operator=(const AliFlowTrackSimpleCuts& someCuts);
   virtual  ~AliFlowTrackSimpleCuts() {}
@@ -51,19 +51,19 @@ class AliFlowTrackSimpleCuts : public TNamed {
   virtual Bool_t IsSelected(TObject* obj, Int_t id=-1);
 
  protected:
-  Bool_t   fCutPt;
-  Double_t fPtMax;
-  Double_t fPtMin;
-  Bool_t   fCutEta;
-  Double_t fEtaMax;
-  Double_t fEtaMin;
-  Bool_t   fCutPhi;
-  Double_t fPhiMax;
-  Double_t fPhiMin;
-  Bool_t   fCutPID;
-  Int_t    fPID;
-  Bool_t   fCutCharge;
-  Int_t    fCharge;
+  Bool_t   fCutPt; //cut on pt?
+  Double_t fPtMax; //max pt
+  Double_t fPtMin; //min pt
+  Bool_t   fCutEta; //cut on eta?
+  Double_t fEtaMax; //max eta
+  Double_t fEtaMin; //min eta
+  Bool_t   fCutPhi; //cut on phi?
+  Double_t fPhiMax; //max phi
+  Double_t fPhiMin; //min phi
+  Bool_t   fCutPID; //cut on pid?
+  Int_t    fPID;    //pid
+  Bool_t   fCutCharge; //cut on charge?
+  Int_t    fCharge;    //charge
 
   ClassDef(AliFlowTrackSimpleCuts,1)
 };

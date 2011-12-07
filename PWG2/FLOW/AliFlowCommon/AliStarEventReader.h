@@ -18,13 +18,6 @@ class AliStarEvent;
 
 class AliStarEventReader : public TObject {
 
- private:
-  TList *fFileList ;  //file list 
-  AliStarEvent* fEvent;   //encapsulated star event
-
-  AliStarEventReader& operator=( const AliStarEventReader& event ); //not implemented
-  AliStarEventReader(const AliStarEventReader& event); //not implemented
-
  public:
 
   AliStarEventReader();
@@ -37,6 +30,13 @@ class AliStarEventReader : public TObject {
   virtual Bool_t  MakeFileListFromFile( const char* inputFileName );
 
   const AliStarEvent* GetEvent() const {return fEvent;}
+
+ private:
+  TList *fFileList ;  //file list 
+  AliStarEvent* fEvent;   //encapsulated star event
+
+  AliStarEventReader& operator=( const AliStarEventReader& event ); //not implemented
+  AliStarEventReader(const AliStarEventReader& event); //not implemented
 
   ClassDef(AliStarEventReader,1)         // Base class
 };

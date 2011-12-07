@@ -57,6 +57,7 @@
 #include "AliESDpid.h"
 #include "AliESDPmdTrack.h"
 #include "AliESDUtils.h" //TODO
+#include "AliFlowBayesianPID.h"
 
 ClassImp(AliFlowTrackCuts)
 
@@ -134,15 +135,11 @@ AliFlowTrackCuts::AliFlowTrackCuts():
 {
   //io constructor 
   SetPriors(); //init arrays
-
-  // New PID procedure (Bayesian Combined PID)
-  fBayesianResponse = new AliFlowBayesianPID();
-  fBayesianResponse->SetNewTrackParam();
 }
 
 //-----------------------------------------------------------------------
 AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
-  AliFlowTrackSimpleCuts(),
+  AliFlowTrackSimpleCuts(name),
   fAliESDtrackCuts(NULL),
   fQA(NULL),
   fCutMC(kFALSE),
@@ -213,7 +210,6 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fCurrCentr(0.0)
 {
   //constructor 
-  SetName(name);
   SetTitle("AliFlowTrackCuts");
   fESDpid.GetTPCResponse().SetBetheBlochParameters( 0.0283086,
                                                     2.63394e+01,
@@ -2478,9 +2474,9 @@ Bool_t AliFlowTrackCuts::PassesNucleiSelection(const AliESDtrack* track)
 // end part added by Natasha
 //-----------------------------------------------------------------------
 void AliFlowTrackCuts::SetPriors(Float_t centrCur){
+ //set priors for the bayesian pid selection
   fCurrCentr = centrCur;
 
- //set priors for the bayesian pid selection
   fBinLimitPID[0] = 0.300000;
   fBinLimitPID[1] = 0.400000;
   fBinLimitPID[2] = 0.500000;

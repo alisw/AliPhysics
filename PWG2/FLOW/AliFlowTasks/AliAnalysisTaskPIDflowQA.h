@@ -123,23 +123,22 @@ private:
   AliFlowTrackCuts* fCutsTPCbayesianKaons; //!
   AliFlowTrackCuts* fCutsTPCbayesianProtons; //!
 
-  AliFlowTrackCuts* fCutsMCelectrons;
-  AliFlowTrackCuts* fCutsMCpions;
-  AliFlowTrackCuts* fCutsMCkaons;
-  AliFlowTrackCuts* fCutsMCprotons;
-  AliFlowTrackCuts* fCutsMCprimaryelectrons;
-  AliFlowTrackCuts* fCutsMCprimarypions;
-  AliFlowTrackCuts* fCutsMCprimarykaons;
-  AliFlowTrackCuts* fCutsMCprimaryprotons;
+  AliFlowTrackCuts* fCutsMCelectrons; //!
+  AliFlowTrackCuts* fCutsMCpions;  //!
+  AliFlowTrackCuts* fCutsMCkaons;  //!
+  AliFlowTrackCuts* fCutsMCprotons; //!
+  AliFlowTrackCuts* fCutsMCprimaryelectrons; //!
+  AliFlowTrackCuts* fCutsMCprimarypions; //!
+  AliFlowTrackCuts* fCutsMCprimarykaons; //!
+  AliFlowTrackCuts* fCutsMCprimaryprotons; //!
 
   TList* fOutputList;//!output list
 	
   AliAnalysisTaskPIDflowQA(const  AliAnalysisTaskPIDflowQA&); // not implemented
   AliAnalysisTaskPIDflowQA& operator=(const  AliAnalysisTaskPIDflowQA&); // not implemented
  
-  void pidITS(AliESDtrack* t, Int_t pdgcode);
-  void pidTPC(AliESDtrack* t, Int_t pdgcode);
-  void pidTOF(AliESDtrack* t, Int_t pdgcode);
+  void PidTPC(AliESDtrack* t, Int_t pdgcode);
+  void PidTOF(AliESDtrack* t, Int_t pdgcode);
     
   ClassDef( AliAnalysisTaskPIDflowQA, 4); // example of analysis
 };

@@ -127,13 +127,13 @@ Int_t AliStarTrack::PID() const
   // be about 2/3 of nHitsMin.  This is because some clusters do not form good dEdx hits due to track
   // merging, etc., and so nHitsDedx is always less than nHitsFit.  A rule of thumb says ~2/3 ratio.
 
-  Int_t ID = 0 ;
+  Int_t pid = 0 ;
 
   const Int_t   nHitDedxMin =    15  ;       // 10 to 20 is typical.  nHitDedxMin is often chosen to be about 2/3 of nHitMin.
   const Float_t nSigmaPID   =    2.0 ;       // Number of Sigma cut to apply to PID bands
 
   // Test on Number of dE/dx hits required, return 0 if not enough hits
-  if ( GetNHitsDedx() <  nHitDedxMin ) return ID;
+  if ( GetNHitsDedx() <  nHitDedxMin ) return pid;
 
   // Begin PID
 
@@ -141,20 +141,20 @@ Int_t AliStarTrack::PID() const
   {
     if ( TMath::Abs( GetNSigK()  ) <= nSigmaPID )
     {
-      ID = 321  ;
+      pid = 321  ;
     }
     if ( TMath::Abs( GetNSigProton()  ) <= nSigmaPID )
     {
-      ID = 2212 ;
+      pid = 2212 ;
     }
     if ( TMath::Abs( GetNSigPi()  ) <= nSigmaPID )
     {
-      ID = 211  ;
+      pid = 211  ;
     }
   }
 
   // Pion is the default in case of ambiguity because it is most abundent. Don't re-arrange order, above.
 
-  return ID ;
+  return pid ;
 }
 

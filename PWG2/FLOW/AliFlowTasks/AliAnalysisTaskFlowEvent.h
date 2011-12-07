@@ -8,8 +8,8 @@
 * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-#ifndef AliAnalysisTaskFlowEvent_H
-#define AliAnalysisTaskFlowEvent_H
+#ifndef ALIANALYSISTASKFLOWEVENT_H
+#define ALIANALYSISTASKFLOWEVENT_H
 
 #include "AliFlowTrackSimple.h"
 
@@ -65,12 +65,12 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   AliFlowTrackCuts* GetCutsPOI() const {return fCutsPOI;} //to be reimplemented
 
   void          SetCFManager1(AliCFManager* cfmgr) {this->fCFManager1 = cfmgr; } 
-  AliCFManager* GetCFManager1()           {return this->fCFManager1; }
+  AliCFManager* GetCFManager1() const {return this->fCFManager1; }
   void          SetCFManager2(AliCFManager* cfmgr) {this->fCFManager2 = cfmgr; } 
-  AliCFManager* GetCFManager2()           {return this->fCFManager2; }
-  TList*        GetQAList()              {return fQAList; }
+  AliCFManager* GetCFManager2() const       {return this->fCFManager2; }
+  TList*        GetQAList()      const      {return fQAList; }
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
-  Bool_t        GetQAOn()                 {return fQAon; }
+  Bool_t        GetQAOn()   const         {return fQAon; }
 
   // setters for common constants
   void SetNbinsMult( Int_t i ) { fNbinsMult = i; }

@@ -118,7 +118,7 @@ public:
   const TBits* GetFlowBits() const {return &fFlowBits;}
 
   void  SetID(Int_t i) {fID=i;}
-  Int_t GetID() {return fID;}
+  Int_t GetID() const {return fID;}
 
  private:
   AliFlowTrackSimple(Double_t phi, Double_t eta, Double_t pt, Double_t weight, Int_t charge);
