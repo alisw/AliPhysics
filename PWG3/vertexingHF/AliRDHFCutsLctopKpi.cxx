@@ -344,16 +344,22 @@ Int_t AliRDHFCutsLctopKpi::IsSelected(TObject* obj,Int_t selectionLevel,AliAODEv
     Double_t field=aod->GetMagneticField();
     if (returnvaluePID==1 || returnvaluePID==3){
 
-     pdgs[0]=2122;pdgs[2]=211;
-     AliKFParticle *Lc1=ReconstructKF(d,pdgs,field,constraint);
-     if(!Lc1) okLcpKpi=0;
-     if(Lc1->GetChi2()/Lc1->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)]) okLcpKpi=0;
+      pdgs[0]=2122;pdgs[2]=211;
+      AliKFParticle *lc1=ReconstructKF(d,pdgs,field,constraint);
+      if(!lc1){
+	okLcpKpi=0;
+      }else{
+	if(lc1->GetChi2()/lc1->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)]) okLcpKpi=0;
+      }
     } else if(returnvaluePID>=2){
 
-     pdgs[0]=211;pdgs[2]=2212;
-     AliKFParticle *Lc2=ReconstructKF(d,pdgs,field,constraint);
-     if(!Lc2) okLcpiKp=0;
-     if(Lc2->GetChi2()/Lc2->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)])okLcpiKp=0; 
+      pdgs[0]=211;pdgs[2]=2212;
+      AliKFParticle *lc2=ReconstructKF(d,pdgs,field,constraint);
+      if(!lc2){ 
+	okLcpiKp=0;
+      }else{
+	if(lc2->GetChi2()/lc2->GetNDF()>fCutsRD[GetGlobalIndex(2,ptbin)])okLcpiKp=0; 
+      }
     }
     break;
 
@@ -738,6 +744,8 @@ void AliRDHFCutsLctopKpi::SetStandardCutsPbPb2010() {
 AliKFParticle* AliRDHFCutsLctopKpi::ReconstructKF(AliAODRecoDecayHF3Prong *d,Int_t *pdgs,Double_t field,Bool_t constraint) const{
 
  const Int_t nprongs=d->GetNProngs();
+ if(nprongs==0) return 0x0;
+
  Int_t iprongs[nprongs];
  for(Int_t i=0;i<nprongs;i++) iprongs[i]=i;
 

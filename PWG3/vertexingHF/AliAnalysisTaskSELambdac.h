@@ -43,7 +43,7 @@ class AliAnalysisTaskSELambdac : public AliAnalysisTaskSE
   void SetMCPid(){fMCPid=kTRUE;fReadMC=kTRUE;fRealPid=kFALSE;fResPid=kFALSE;return;}
   void SetRealPid(){fRealPid=kTRUE;fMCPid=kFALSE;return;}
   void SetResonantPid(){fResPid=kTRUE;fRealPid=kTRUE;fMCPid=kFALSE;return;}
-  void SetCutsKF(Float_t cutsKF[10]){for(Int_t i=0;i<10;i++){fCutsKF[i]=cutsKF[i];}return;}
+  void SetCutsKF(Float_t cutsKF[2]){for(Int_t i=0;i<2;i++){fCutsKF[i]=cutsKF[i];}return;}
   void SetUseKF(Bool_t useKF=kTRUE){fUseKF=useKF;}
   void SetAnalysis(Bool_t analysis=kTRUE){fAnalysis=analysis;}
   void SetMassLimits(Float_t range);
