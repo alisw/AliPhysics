@@ -380,9 +380,11 @@ Int_t AliTPCtrackerMI::AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluste
   }
 
   if (fUseHLTClusters == 3 || fUseHLTClusters == 4) {
-    if(!AliTPCReconstructor::GetRecoParam()->GetUseHLTOnePadCluster()) {
-      if (TMath::Abs(cluster->GetSigmaY2()) < kAlmost0)
-	return 2;
+    if (fIteration==2){
+      if(!AliTPCReconstructor::GetRecoParam()->GetUseHLTOnePadCluster()) {
+	if (TMath::Abs(cluster->GetSigmaY2()) < kAlmost0)
+	  return 2;
+      }
     }
   }
 
