@@ -70,7 +70,7 @@ AliRsnListOutput::AliRsnListOutput(const AliRsnListOutput &copy) :
 }
 
 //________________________________________________________________________________________
-const AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy)
+AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy)
 {
 //
 // Assignment operator.
