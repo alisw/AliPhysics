@@ -114,7 +114,10 @@ void Extractv2from2Dhistos(){
   TFile* filcuts=new TFile(filcutsname.Data());
   TDirectoryFile* dfcuts=(TDirectoryFile*)filcuts->Get("PWG3_D2H_HFv2");
   Bool_t binOK=DefinePtBins(dfcuts);
-  if(!binOK) return;
+  if(!binOK){
+    printf("ERROR: mismatch in pt binning\n");
+    return;
+  }
 
   TFile* fil=new TFile(filname.Data());
   TDirectoryFile* df=(TDirectoryFile*)fil->Get("PWG3_D2H_HFv2");
@@ -683,25 +686,28 @@ void LoadMassHistos(TList* lst, TH2F** hMassDphi){
 }
 
 Bool_t DefinePtBins(TDirectoryFile* df){
-  AliRDHFCutsD0toKpi *d0cuts=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
+  AliRDHFCuts *d0cuts;//=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
+  if(mesonPDG==421)d0cuts=(AliRDHFCutsD0toKpi*)df->Get("D0toKpiCuts");
+  if(mesonPDG==411)d0cuts=(AliRDHFCutsDplustoKpipi*)df->Get("AnalysisCuts");
   Int_t nPtBinsCuts=d0cuts->GetNPtBins();
   printf("Number of pt bins for cut object = %d\n",nPtBinsCuts);
   Float_t *ptlimsCuts=d0cuts->GetPtBinLimits();
-  for(Int_t iPt=0; iPt<nPtBinsCuts; iPt++) printf(" %d %f \n",iPt,ptlimsCuts[iPt]);
+  for(Int_t iPt=0; iPt<nPtBinsCuts; iPt++) printf(" %d %f-%f\n",iPt,ptlimsCuts[iPt],ptlimsCuts[iPt+1]);
   for(Int_t iPtCuts=0; iPtCuts<nPtBinsCuts; iPtCuts++){
     for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){  
       if(TMath::Abs(ptlimsCuts[iPtCuts]-ptlims[iFinalPtBin])<0.0001){ 
 	minPtBin[iFinalPtBin]=iPtCuts;
-	if(iFinalPtBin>0) maxPtBin[iFinalPtBin-1]=iPtCuts;
+	if(iFinalPtBin>0) maxPtBin[iFinalPtBin-1]=iPtCuts-1;
       }
     }
-    if(TMath::Abs(ptlimsCuts[iPtCuts]-ptlims[nFinalPtBins])<0.0001) maxPtBin[nFinalPtBins-1]=iPtCuts;
- }
-
+    if(TMath::Abs(ptlimsCuts[iPtCuts]-ptlims[nFinalPtBins])<0.0001) maxPtBin[nFinalPtBins-1]=iPtCuts-1;
+  }
+  if(TMath::Abs(ptlims[nFinalPtBins]-ptlimsCuts[nPtBinsCuts])<0.0001) maxPtBin[nFinalPtBins-1]=nPtBinsCuts-1;
   for(Int_t iFinalPtBin=0; iFinalPtBin<nFinalPtBins; iFinalPtBin++){
     printf("Pt bins to be merged: %d %d\n",minPtBin[iFinalPtBin],maxPtBin[iFinalPtBin]);
     if(minPtBin[iFinalPtBin]<0 || maxPtBin[iFinalPtBin]<0) return kFALSE;
   }
+
   return kTRUE;
 }
 
