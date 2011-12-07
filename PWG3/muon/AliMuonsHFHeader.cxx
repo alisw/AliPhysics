@@ -84,6 +84,8 @@ AliMuonsHFHeader& AliMuonsHFHeader::operator=(const AliMuonsHFHeader &src)
   // assignment constructor
   //
 
+  if(&src==this) return *this;
+
   fSelMask           = src.fSelMask;
   fIsMB              = src.fIsMB;
   fIsMU              = src.fIsMU;
