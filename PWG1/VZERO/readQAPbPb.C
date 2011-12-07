@@ -1,3 +1,27 @@
+#if !defined(__CINT__) || defined(__MAKECINT__)
+  #include <TError.h>
+  #include <TROOT.h>
+  #include <TKey.h>
+  #include <TH2.h>
+  #include <TF1.h>
+  #include <TFile.h>
+  #include <TCanvas.h>
+  #include <TPad.h>
+  #include <TStyle.h>
+  #include <TGrid.h>
+  #include <TGridResult.h>
+  #include <TEnv.h>
+  #include <TLegend.h>
+  #include <TMath.h>
+  #include <TSpectrum.h>
+
+  #include "AliCDBManager.h"
+  #include "AliCDBEntry.h"
+  #include "AliGRPObject.h"
+  #include "AliTriggerInput.h"
+  #include "AliTriggerConfiguration.h"
+#endif
+
 void readQAPbPb(const char * period ="LHC11h", char * files = "list.txt"){
 	gStyle->SetPalette(1);
 	 TGrid::Connect("alien://");
@@ -24,7 +48,7 @@ Int_t nValid =0;
 
 FILE * fin = fopen(files,"r");
 Int_t runNumber, nfiles=0;
-while(EOF!=fscanf(fin,"%d, ",&runNumber)){
+while(EOF!=fscanf(fin,"%d\n",&runNumber)){
 	valid.Set(nfiles+1);
 	runs.Set(nfiles+1);
 	valid.SetAt(kTRUE,nfiles);
@@ -102,8 +126,12 @@ for(int ifile = nfiles-1; ifile >= 0; ifile--){
 
 	if(!valid.At(ifile)) continue;
 	runNumber = runs.At(ifile);
-	
-   	if(runNumber>168171){
+
+	if(runNumber>=169683) {
+		trigMB   = "CPBI2_B1";
+		trigCVLN = "CSEMI_R1";
+		trigCVHN = "CCENT_R2";
+	} else if(runNumber>168171){
 		trigMB   = "CPBI2_B1";
 		trigCVLN = "CVLN_R1";
 		trigCVHN = "CVHN_R2";
@@ -161,7 +189,7 @@ if (res->GetEntries() ==0) {
 
 	
    	TString filename = res->GetKey(0, "turl");
-   	TObjArray* tmp = filename.Tokenize("/");
+	//   	TObjArray* tmp = filename.Tokenize("/");
 	if(filename == "") continue;
    	TFile *fQA = TFile::Open(filename.Data());
    	if (!fQA) {
@@ -180,7 +208,7 @@ if (res->GetEntries() ==0) {
 	TH1F *htimepmtC = (TH1F*)list->FindObject("htimepmtV0C");
 	TH1F *hwidthA = (TH1F*)list->FindObject("hwidthV0A");
 	TH1F *hwidthC = (TH1F*)list->FindObject("hwidthV0C");
-	TH1F *hV0ampl = (TH1F*)list->FindObject("hV0ampl");
+	//	TH1F *hV0ampl = (TH1F*)list->FindObject("hV0ampl");
 	TH2F *htimepmt = (TH2F*)list->FindObject("htimepmt");	
 	TH2F *hwidthpmt = (TH2F*)list->FindObject("hwidthpmt");	
 	TH2F *hadcwidthA = (TH2F*)list->FindObject("hadcwidthV0A");	
@@ -225,7 +253,7 @@ if (res->GetEntries() ==0) {
         hPMTEdges[i]->GetXaxis()->SetBinLabel(nEntries+1,Form("%d",runNumber));
     }
 	
-	if(hAdcWithTimeA->GetEntries()==0) {
+	if(hAdcWithTimeA->GetEntries()==0) {
 		delete fQA;	
 		nEntries++;		
 		continue;
@@ -324,12 +352,12 @@ if (res->GetEntries() ==0) {
 		nPeaksFound = s.Search(htimepmtA); peaks = s.GetPositionX(); max = -25.;
 		for(int i=0;i<nPeaksFound;i++) if(peaks[i]>max) max = peaks[i];	
 		htimepmtA->Fit("gaus","","",max-1.,max+1.);
-		hTimeA->Fill(nEntries,gaus->GetParameter(1)-shiftA);
+		hTimeA->Fill(nEntries,htimepmtA->GetFunction("gaus")->GetParameter(1)-shiftA);
 
 		nPeaksFound = s.Search(htimepmtC); peaks = s.GetPositionX(); max = -25.;
 		for(int i=0;i<nPeaksFound;i++) if(peaks[i]>max) max = peaks[i];	
 		htimepmtC->Fit("gaus","","",max-1.,max+1.);
-		hTimeC->Fill(nEntries,gaus->GetParameter(1));
+		hTimeC->Fill(nEntries,htimepmtC->GetFunction("gaus")->GetParameter(1));
 
 		if(BB) {
 			hBB_BG->SetBinContent(nEntries,(BGA+BGC)/BB);
@@ -367,6 +395,7 @@ if (res->GetEntries() ==0) {
 //-------------
 
 	cOut->Clear();
+	cOut->Divide(2,2);
 	cOut->cd(1); cOut->GetPad(1)->SetLogy();
 	htimepmtA->GetXaxis()->SetRangeUser(-25.,25.); htimepmtA->Draw();
 
@@ -385,6 +414,7 @@ if (res->GetEntries() ==0) {
 //-------------
 
 	cOut->Clear();
+	cOut->Divide(2,2);
 	cOut->cd(1); cOut->GetPad(1)->SetLogy(0);cOut->GetPad(1)->SetLogz();
 	htimepmt->Draw("colz");
 
@@ -404,6 +434,7 @@ if (res->GetEntries() ==0) {
 //-------------
 
 	cOut->Clear();
+	cOut->Divide(2,2);
 	cOut->cd(1); cOut->GetPad(1)->SetLogy(0);cOut->GetPad(1)->SetLogz();
 	hAdcTimeA->Draw("colz");
 
@@ -420,6 +451,7 @@ if (res->GetEntries() ==0) {
 //-------------
 
 	cOut->Clear();
+	cOut->Divide(2,2);
 	cOut->cd(1);  cOut->GetPad(1)->SetLogy(1);cOut->GetPad(1)->SetLogz(0);
 	hV0A->GetXaxis()->SetRangeUser(0.,33.);hV0A->Draw();
 
@@ -473,7 +505,7 @@ if (res->GetEntries() ==0) {
 			nEntries++;
 
 		}
-		delete res;
+//		delete res;
 
 gStyle->SetOptStat(0);
 hTimeA->SetMarkerStyle(20);
