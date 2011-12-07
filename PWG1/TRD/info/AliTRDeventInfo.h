@@ -33,22 +33,29 @@ public:
   AliESDHeader* GetEventHeader() const                 { return fHeader; }
   AliESDRun*    GetRunInfo() const                     { return fRun; }
   Int_t         GetCentrality() const                  { return fCentrality; }
+  static Int_t  GetCentralityBin(Float_t cenPer);
+  Int_t         GetMultiplicity() const                { return fMult; }
+  static Int_t  GetMultiplicityBin(Int_t n);
   UShort_t      GetBunchFill() const;
   static void   GetListOfIsolatedBunches(TH1D *hbc, Int_t bunchSpacing=10);
   Bool_t        IsOwner() const                        { return TestBit(kOwner); }
   void          SetEventHeader(AliESDHeader *evHeader) { fHeader = evHeader; }
   void          SetRunInfo(AliESDRun *evRun)           { fRun = evRun; }
-  void          SetCentrality(Int_t centrality)        { fCentrality = centrality; }
+  void          SetCentrality(Float_t cent)            { fCentrality = cent>=0.?GetCentralityBin(cent):-1;}
+  void          SetMultiplicity(Int_t n)               { fMult = n>=0?GetMultiplicityBin(n):-1;}
   void          SetOwner();
 
 private:
   enum{
     kOwner = BIT(14)
   };
+  static Int_t const   fgkMultBin[kCentralityClasses]; // multiplicity bins
+  static Float_t const fgkCentBin[kCentralityClasses]; // centrality bins
   AliESDHeader* fHeader;      //! The ESD Header
   AliESDRun*    fRun;         //! The ESD Run Info
-  Int_t         fCentrality;  //! Centrality class
+  Int_t         fCentrality;  //! Centrality class based on AliCentrality
+  Int_t         fMult;        //! Centrality class based on AliMultiplicity
 
-  ClassDef(AliTRDeventInfo, 1) // Event info  relevant for TRD analysis
+  ClassDef(AliTRDeventInfo, 2) // Event info  relevant for TRD analysis
 };
 #endif

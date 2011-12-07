@@ -16,13 +16,19 @@
 #include "AliTRDeventInfo.h"
 
 ClassImp(AliTRDeventInfo)
-
+Int_t const AliTRDeventInfo::fgkMultBin[AliTRDeventInfo::kCentralityClasses] = {
+  700, 1400, 2100, 2800, 3500
+};
+Float_t const AliTRDeventInfo::fgkCentBin[AliTRDeventInfo::kCentralityClasses] = {
+  0.1, 0.2, 0.5, 0.8, 1.
+};
 //____________________________________________________________________
 AliTRDeventInfo::AliTRDeventInfo():
   TObject()
-  ,fHeader(0x0)
-  ,fRun(0x0)
+  ,fHeader(NULL)
+  ,fRun(NULL)
   ,fCentrality(-1)
+  ,fMult(-1)
 {
   //
   // Default Constructor
@@ -36,6 +42,7 @@ AliTRDeventInfo::AliTRDeventInfo(AliESDHeader *header, AliESDRun *run):
   ,fHeader(header)
   ,fRun(run)
   ,fCentrality(-1)
+  ,fMult(-1)
 {
   //
   // Constructor with Arguments
@@ -59,6 +66,7 @@ AliTRDeventInfo::AliTRDeventInfo(const AliTRDeventInfo &info):
   ,fHeader(info.fHeader)
   ,fRun(info.fRun)
   ,fCentrality(info.fCentrality)
+  ,fMult(info.fMult)
 {
   //
   // Copy Constructor
@@ -77,6 +85,7 @@ AliTRDeventInfo& AliTRDeventInfo::operator=(const AliTRDeventInfo& info){
   fHeader     = info.fHeader;
   fRun        = info.fRun;
   fCentrality = info.fCentrality;
+  fMult       = info.fMult;
   SetBit(kOwner, 0);
   return *this;
 }
@@ -100,8 +109,8 @@ void AliTRDeventInfo::Delete(const Option_t *){
     if(fHeader) delete fHeader;
     if(fRun) delete fRun;
   };
-  fHeader = 0x0;
-  fRun = 0x0;
+  fHeader = NULL;
+  fRun = NULL;
 }
 
 //____________________________________________________________________
@@ -119,6 +128,26 @@ UShort_t  AliTRDeventInfo::GetBunchFill() const
 {
   // wrapper
   return fHeader->GetBunchCrossNumber();
+}
+
+//____________________________________________________________________
+Int_t  AliTRDeventInfo::GetCentralityBin(Float_t cenPer)
+{
+// calculate centrality bin
+  for(Int_t icen(0); icen<kCentralityClasses; icen++){
+    if(cenPer<fgkCentBin[icen]) return icen;
+  }
+  return -1;
+}
+
+//____________________________________________________________________
+Int_t  AliTRDeventInfo::GetMultiplicityBin(Int_t n)
+{
+// calculate centrality bin
+  for(Int_t im(0); im<kCentralityClasses; im++){
+    if(n<fgkMultBin[im]) return kCentralityClasses-im-1;
+  }
+  return 0;
 }
 
 //____________________________________________________________________
