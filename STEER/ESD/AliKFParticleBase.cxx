@@ -2248,7 +2248,7 @@ Double_t AliKFParticleBase::GetDeviationFromParticle( const AliKFParticleBase &p
 
 
 void AliKFParticleBase::SubtractFromVertex(  AliKFParticleBase &Vtx ) const
-{    
+{
   //* Subtract the particle from the vertex  
 
   Double_t fld[3];  
@@ -2794,6 +2794,100 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
 
 //  SetMassConstraint(0,0);
   SetNonlinearMassConstraint(0);
+}
+
+void AliKFParticleBase::GetArmenterosPodolanski(AliKFParticleBase& positive, AliKFParticleBase& negative, Double_t QtAlfa[2] )
+{
+  Double_t alpha = 0., qt = 0.;
+  Double_t spx = positive.GetPx() + negative.GetPx();
+  Double_t spy = positive.GetPy() + negative.GetPy();
+  Double_t spz = positive.GetPz() + negative.GetPz();
+  Double_t sp  = sqrt(spx*spx + spy*spy + spz*spz);
+  if( sp == 0.0) return;
+  Double_t pn, pp, pln, plp;
+
+  pn = TMath::Sqrt(negative.GetPx()*negative.GetPx() + negative.GetPy()*negative.GetPy() + negative.GetPz()*negative.GetPz());
+  pp = TMath::Sqrt(positive.GetPx()*positive.GetPx() + positive.GetPy()*positive.GetPy() + positive.GetPz()*positive.GetPz());
+  pln  = (negative.GetPx()*spx+negative.GetPy()*spy+negative.GetPz()*spz)/sp;
+  plp  = (positive.GetPx()*spx+positive.GetPy()*spy+positive.GetPz()*spz)/sp;
+
+  if( pn == 0.0) return;
+  Double_t ptm  = (1.-((pln/pn)*(pln/pn)));
+  qt= (ptm>=0.)?  pn*sqrt(ptm) :0;
+  alpha = (plp-pln)/(plp+pln);
+
+  QtAlfa[0] = qt;
+  QtAlfa[1] = alpha;
+}
+
+void AliKFParticleBase::RotateXY(Double_t angle, Double_t Vtx[3])
+{
+  // Rotates the KFParticle object around OZ axis, OZ axis is set by the vertex position
+  // Double_t angle - angle of rotation in XY plane in [rad]
+  // Double_t Vtx[3] - position of the vertex in [cm]
+  // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
+  Double_t dx = Vtx[0] - GetX();
+  Double_t dy = Vtx[1] - GetY();
+  Double_t dz = Vtx[2] - GetZ();
+
+  X() = X() - dx;
+  Y() = Y() - dy;
+  Z() = Z() - dz;
+
+  // Rotate the kf particle
+  Double_t c = TMath::Cos(angle);
+  Double_t s = TMath::Sin(angle);
+
+  Double_t mA[8][ 8];
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++){
+      mA[i][j] = 0;
+    }
+  }
+  for( int i=0; i<8; i++ ){
+    mA[i][i] = 1;
+  }
+  mA[0][0] =  c;  mA[0][1] = s;
+  mA[1][0] = -s;  mA[1][1] = c;
+  mA[3][3] =  c;  mA[3][4] = s;
+  mA[4][3] = -s;  mA[4][4] = c;
+
+  Double_t mAC[8][8];
+  Double_t mAp[8];
+
+  for( Int_t i=0; i<8; i++ ){
+    mAp[i] = 0;
+    for( Int_t k=0; k<8; k++){
+      mAp[i]+=mA[i][k] * fP[k];
+    }
+  }
+
+  for( Int_t i=0; i<8; i++){
+    fP[i] = mAp[i];
+  }
+
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<8; j++ ){
+      mAC[i][j] = 0;
+      for( Int_t k=0; k<8; k++ ){
+        mAC[i][j]+= mA[i][k] * GetCovariance(k,j);
+      }
+    }
+  }
+
+  for( Int_t i=0; i<8; i++ ){
+    for( Int_t j=0; j<=i; j++ ){
+      Double_t xx = 0;
+      for( Int_t k=0; k<8; k++){
+        xx+= mAC[i][k]*mA[j][k];
+      }
+      Covariance(i,j) = xx;
+    }
+  }
+
+  X() = GetX() + dx;
+  Y() = GetY() + dy;
+  Z() = GetZ() + dz;
 }
 
 Bool_t AliKFParticleBase::InvertSym3( const Double_t A[], Double_t Ai[] )

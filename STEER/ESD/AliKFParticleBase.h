@@ -259,6 +259,12 @@ class AliKFParticleBase :public TObject {
   void ConstructGammaBz( const AliKFParticleBase &daughter1,
 			 const AliKFParticleBase &daughter2, double Bz  );
 
+  //* return parameters for the Armenteros-Podolanski plot
+  static void GetArmenterosPodolanski(AliKFParticleBase& positive, AliKFParticleBase& negative, Double_t QtAlfa[2] );
+
+  //* Rotates the KFParticle object around OZ axis, OZ axis is set by the vertex position
+  void RotateXY(Double_t angle, Double_t Vtx[3]);
+
  protected:
 
   static Int_t IJ( Int_t i, Int_t j ){ 
