@@ -538,6 +538,7 @@ void  AliAnalysisTaskPIDflowQA::UserCreateOutputObjects()
 //________________________________________________________________________
 void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
 {
+  //user exec
   fESD = dynamic_cast<AliESDEvent*> (InputEvent());
   if (!fESD) return;
 
@@ -624,8 +625,8 @@ void  AliAnalysisTaskPIDflowQA::UserExec(Option_t *)
     fPvsPt->Fill(p,pt);
     fMeanPvsP->Fill(p,p);
 
-    pidTPC(trackESD,pdgcode);
-    pidTOF(trackESD,pdgcode);
+    PidTPC(trackESD,pdgcode);
+    PidTOF(trackESD,pdgcode);
   }
 
   //for (Int_t imc=0; imc<(mcEvent!=NULL)?mcEvent->GetNumberOfTracks():0;imc++)
@@ -683,7 +684,7 @@ void  AliAnalysisTaskPIDflowQA::Terminate(Option_t *)
 
 
 //________________________________________________________________________
-void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t)
+void AliAnalysisTaskPIDflowQA::PidTPC(AliESDtrack* t, Int_t)
 {
   //do TPC pid
   const AliExternalTrackParam* innerParam = t->GetInnerParam();
@@ -718,7 +719,7 @@ void AliAnalysisTaskPIDflowQA::pidTPC(AliESDtrack* t, Int_t)
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskPIDflowQA::pidTOF(AliESDtrack* track, Int_t)
+void AliAnalysisTaskPIDflowQA::PidTOF(AliESDtrack* track, Int_t)
 {
   //do TOF pid
   Bool_t goodtrack = (track) &&
@@ -825,6 +826,7 @@ Float_t AliAnalysisTaskPIDflowQA::Beta(Float_t m, Float_t p)
 //---------------------------------------------------------------//
 Bool_t AliAnalysisTaskPIDflowQA::TPCTOFagree(const AliESDtrack *track)
 {
+  //check agreement between TOF and TPC pid
   Bool_t status = kFALSE;
   
   Float_t mass[5] = {5.10998909999999971e-04,1.05658000000000002e-01,1.39570000000000000e-01,4.93676999999999977e-01,9.38271999999999995e-01};

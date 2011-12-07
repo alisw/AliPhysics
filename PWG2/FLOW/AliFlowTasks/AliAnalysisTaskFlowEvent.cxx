@@ -387,12 +387,12 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       fFlowEvent = new AliFlowEvent(myESD,myTracklets,fCFManager2);
     }
     else if (fRPType == "FMD"){
-      TList* FMDdata = dynamic_cast<TList*>(GetInputData(availableINslot++));
-      if(!FMDdata) {
-        cout<<" No FMDdata "<<endl;
+      TList* dataFMD = dynamic_cast<TList*>(GetInputData(availableINslot++));
+      if(!dataFMD) {
+        cout<<" No dataFMD "<<endl;
         return;
       }
-      TH2F* histFMD = dynamic_cast<TH2F*>(FMDdata->FindObject("dNdetadphiHistogramTrVtx"));
+      TH2F* histFMD = dynamic_cast<TH2F*>(dataFMD->FindObject("dNdetadphiHistogramTrVtx"));
       if (!histFMD) {
         cout<< "No histFMD"<<endl;
         return;
@@ -469,13 +469,13 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
 
   //inject candidates
   if(fLoadCandidates) {
-    TObjArray* Candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
-    //if(Candidates->GetEntriesFast()) 
-      //printf("I received %d candidates\n",Candidates->GetEntriesFast());
-    if (Candidates)
+    TObjArray* candidates = dynamic_cast<TObjArray*>(GetInputData(availableINslot++));
+    //if(candidates->GetEntriesFast()) 
+      //printf("I received %d candidates\n",candidates->GetEntriesFast());
+    if (candidates)
     {
-      for(int iCand=0; iCand!=Candidates->GetEntriesFast(); ++iCand ) {
-        AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(Candidates->At(iCand));
+      for(int iCand=0; iCand!=candidates->GetEntriesFast(); ++iCand ) {
+        AliFlowCandidateTrack *cand = dynamic_cast<AliFlowCandidateTrack*>(candidates->At(iCand));
         if (!cand) continue;
         cand->SetForPOISelection(kTRUE);
         cand->SetForRPSelection(kFALSE);

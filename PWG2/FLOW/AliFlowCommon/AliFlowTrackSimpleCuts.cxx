@@ -33,8 +33,8 @@
 ClassImp(AliFlowTrackSimpleCuts)
 
 //-----------------------------------------------------------------------
-AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts():
-  TNamed(),
+AliFlowTrackSimpleCuts::AliFlowTrackSimpleCuts(const char* name):
+  TNamed(name,name),
   fCutPt(kFALSE),
   fPtMax(FLT_MAX),
   fPtMin(-FLT_MAX),

@@ -168,50 +168,50 @@ Int_t AliStarEvent::CalculateCentrality( Int_t referenceMultiplicity ) const
   // The refMult quoted in the Centrality bins array is the lower limit on refMult
 
 
-  Int_t   CentralityBins  [] = { 14 , 31 , 57 , 96 , 150 , 222 , 319 , 441 , 520 , 1000 } ;  // Run4 200 GeV
-  Int_t   MiddleBinID     [] = {  0 ,  1 ,  2 ,  3 ,   4 ,   5 ,   6 ,   7 ,   8 ,    9 } ;  // ID Number
-  //Info  MiddleBinPercent[] = { 85., 75., 65., 55.,  45.,  35.,  25.,  15., 7.5 ,  2.5 } ;  // Percent
+  Int_t   centralityBins  [] = { 14 , 31 , 57 , 96 , 150 , 222 , 319 , 441 , 520 , 1000 } ;  // Run4 200 GeV
+  Int_t   middleBinID     [] = {  0 ,  1 ,  2 ,  3 ,   4 ,   5 ,   6 ,   7 ,   8 ,    9 } ;  // ID Number
+  //Info  middleBinPercent[] = { 85., 75., 65., 55.,  45.,  35.,  25.,  15., 7.5 ,  2.5 } ;  // Percent
   Int_t   myCentrality  ;
 
-  if      ( referenceMultiplicity < CentralityBins[0] )
+  if      ( referenceMultiplicity < centralityBins[0] )
   {
-    myCentrality = MiddleBinID[0] ;
+    myCentrality = middleBinID[0] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[1] )
+  else if ( referenceMultiplicity < centralityBins[1] )
   {
-    myCentrality = MiddleBinID[1] ;
+    myCentrality = middleBinID[1] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[2] )
+  else if ( referenceMultiplicity < centralityBins[2] )
   {
-    myCentrality = MiddleBinID[2] ;
+    myCentrality = middleBinID[2] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[3] )
+  else if ( referenceMultiplicity < centralityBins[3] )
   {
-    myCentrality = MiddleBinID[3] ;
+    myCentrality = middleBinID[3] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[4] )
+  else if ( referenceMultiplicity < centralityBins[4] )
   {
-    myCentrality = MiddleBinID[4] ;
+    myCentrality = middleBinID[4] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[5] )
+  else if ( referenceMultiplicity < centralityBins[5] )
   {
-    myCentrality = MiddleBinID[5] ;
+    myCentrality = middleBinID[5] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[6] )
+  else if ( referenceMultiplicity < centralityBins[6] )
   {
-    myCentrality = MiddleBinID[6] ;
+    myCentrality = middleBinID[6] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[7] )
+  else if ( referenceMultiplicity < centralityBins[7] )
   {
-    myCentrality = MiddleBinID[7] ;
+    myCentrality = middleBinID[7] ;
   }
-  else if ( referenceMultiplicity < CentralityBins[8] )
+  else if ( referenceMultiplicity < centralityBins[8] )
   {
-    myCentrality = MiddleBinID[8] ;
+    myCentrality = middleBinID[8] ;
   }
   else
   {
-    myCentrality = MiddleBinID[9] ;
+    myCentrality = middleBinID[9] ;
   }
 
   return myCentrality ;

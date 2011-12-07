@@ -115,6 +115,7 @@ AliFlowTrackSimple* AliFlowTrackSimple::Clone(const char* /*option*/) const
 //-----------------------------------------------------------------------
 AliFlowTrackSimple& AliFlowTrackSimple::operator=(const AliFlowTrackSimple& aTrack)
 {
+  //assignment
   fEta = aTrack.fEta;
   fPt = aTrack.fPt;
   fPhi = aTrack.fPhi;
