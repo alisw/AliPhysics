@@ -211,6 +211,8 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   
   fListOfHistos->Add(new TH2F("trackletsVsV0Cent", ";L1 clusters;v0 centrality", 100, -0.5, 9999.5, 101, 0, 101));
   fListOfHistos->Add(new TH2F("processIDs", ";#Delta#phi;process id", 100, -0.5 * TMath::Pi(), 1.5 * TMath::Pi(), kPNoProcess + 1, -0.5, kPNoProcess + 0.5));
+  fListOfHistos->Add(new TH1F("eventStat", ";;events", 4, -0.5, 3.5));
+  fListOfHistos->Add(new TH1F("mixedDist", ";tracks;events", 200, 0, fMixingTracks * 1.5));
   
   PostData(0,fListOfHistos);
   
@@ -218,17 +220,16 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   AddSettingsTree();
 
   // event mixing
-  //  Int_t trackDepth = 100; // Require e.g. 20 5-track events, or 2 50-track events
   Int_t trackDepth = fMixingTracks; 
   Int_t poolsize   = 1000;  // Maximum number of events, ignored in the present implemented of AliEventPool
-  
+   
   Int_t nCentralityBins  = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(1);
   Double_t* centralityBins = (Double_t*) fHistos->GetUEHist(2)->GetEventHist()->GetAxis(1, 0)->GetXbins()->GetArray();
   
   Int_t nZvtxBins  = 7;
   Double_t vertexBins[] = { -7, -5, -3, -1, 1, 3, 5, 7 };
   Double_t* zvtxbin = vertexBins;
-  
+
   if (fHistos->GetUEHist(2)->GetEventHist()->GetNVar() > 2)
   {
     nZvtxBins = fHistos->GetUEHist(2)->GetEventHist()->GetNBins(2);
@@ -236,7 +237,6 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   }
 
   fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBins, centralityBins, nZvtxBins, zvtxbin);
-//   fPoolMgr->SetDebug(1);
 }
 
 //____________________________________________________________________
@@ -478,6 +478,8 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
  
   if ( fDebug > 3 ) AliInfo( " Processing event in Data mode ..." );
 
+  ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(0);
+
   // skip not selected events here (the AOD is not updated for those)
   if (!fInputHandler)
     return;
@@ -566,7 +568,10 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
   
   // Fill containers at STEP 6 (reconstructed)
   if (centrality >= 0)
+  {
     fHistos->FillCorrelations(centrality, zVtx, AliUEHist::kCFStepReconstructed, tracks, 0, weight);
+    ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(1);
+  }
 
   // Two-track effect study
   if (fTwoTrackEfficiencyStudy)
@@ -615,6 +620,11 @@ void  AliAnalysisTaskPhiCorrelations::AnalyseDataMode()
       
       Int_t nMix = pool->GetCurrentNEvents();
 //       cout << "nMix = " << nMix << " tracks in pool = " << pool->NTracksInPool() << endl;
+      
+      ((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(2);
+      ((TH1F*) fListOfHistos->FindObject("mixedDist"))->Fill(pool->NTracksInPool());
+      if (pool->IsReady())
+	((TH1F*) fListOfHistos->FindObject("eventStat"))->Fill(3);
     
       // Fill mixed-event histos here  
       for (Int_t jMix=0; jMix<nMix; jMix++) 

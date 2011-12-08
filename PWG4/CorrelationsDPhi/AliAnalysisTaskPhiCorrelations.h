@@ -22,10 +22,7 @@
 // in this case the class should be in the train after the jet-finder
 //
 //    Authors:
-//    Arian Abrahantes Quintana 
 //    Jan Fiete Grosse-Oetringhaus
-//    Ernesto Lopez Torres
-//    Sara Vallero
 // 
 ////////////////////////////////////////////////////////////////////////
 
