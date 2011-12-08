@@ -498,11 +498,11 @@ TObjArray *AliTRDcheckDET::Histos(){
   arr->SetOwner(kTRUE);  arr->SetName("<PH>");
   fContainer->AddAt(arr, kPH);
   if(!(h3 = (TH3F *)gROOT->FindObject("hPHx"))){
-    h3 = new TH3F("hPHx", "<PH>(x);x[mm];Centrality;Charge[a.u.]", 31, -0.08, 4.88, 100, 0, 1024, AliTRDeventInfo::kCentralityClasses + 1, -1.5, AliTRDeventInfo::kCentralityClasses - 0.5);
+    h3 = new TH3F("hPHx", "<PH>(x);x[mm];Charge[a.u.];Centrality", 31, -0.08, 4.88, 100, 0, 1024, AliTRDeventInfo::kCentralityClasses + 1, -1.5, AliTRDeventInfo::kCentralityClasses - 0.5);
   } else h3->Reset();
   arr->AddAt(h3, 0);
   if(!(h3 = (TH3F *)gROOT->FindObject("hPHt"))){
-    h3 = new TH3F("hPHt", "<PH>(t);time[100ns];Centrality;Charge[a.u.]", 31, -0.5, 30.5, 100, 0, 1024, AliTRDeventInfo::kCentralityClasses + 1, -1.5, AliTRDeventInfo::kCentralityClasses - 0.5);
+    h3 = new TH3F("hPHt", "<PH>(t);time[100ns];Charge[a.u.];Centrality", 31, -0.5, 30.5, 100, 0, 1024, AliTRDeventInfo::kCentralityClasses + 1, -1.5, AliTRDeventInfo::kCentralityClasses - 0.5);
   } else h3->Reset();
   arr->AddAt(h3, 1);
 
@@ -1703,6 +1703,9 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
 	TH1 *hPhtCent[AliTRDeventInfo::kCentralityClasses];
 	TH2 *hPtmp;
 	Int_t nHistsCentrality = 0;
+  TArrayD ptbinning(hPht->GetNbinsX()+1);
+  for(Int_t ibin = 1; ibin <=hPht->GetNbinsX(); ibin++) ptbinning[ibin-1] = hPht->GetXaxis()->GetBinLowEdge(ibin);
+  ptbinning[hPht->GetNbinsX()] = hPht->GetXaxis()->GetBinUpEdge(hPht->GetNbinsX());
 	for(Int_t icent = 0; icent < AliTRDeventInfo::kCentralityClasses; icent++){
 		hPht->GetZaxis()->SetRange(icent+2,icent+2);
 		hPtmp = dynamic_cast<TH2*>(hPht->Project3D("yx"));
@@ -1710,7 +1713,7 @@ Bool_t AliTRDcheckDET::MakePlotPulseHeight(){
 			hPhtCent[icent] = NULL;
 			continue;
 		}
-		hPhtCent[icent] = new TH1F(Form("hPhtCent_%d", icent), "Average Ph vs Time", hPtmp->GetNbinsX(), hPtmp->GetXaxis()->GetXbins()->GetArray());
+		hPhtCent[icent] = new TH1F(Form("hPhtCent_%d", icent), "Average Ph vs Time", hPtmp->GetNbinsX(), ptbinning.GetArray());
 		for(Int_t it = 1; it <= hPtmp->GetNbinsX(); it++){
 			htmp = hPtmp->ProjectionY("htmp", it, it);
 			hPhtCent[icent]->SetBinContent(it, htmp->GetMean());
