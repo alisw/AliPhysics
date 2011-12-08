@@ -13,6 +13,7 @@ class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 
 class TH1D;
+class TH1F;
 class TH2D;
 class TProfile;
 #include  "TList.h"
@@ -83,16 +84,16 @@ class AliFlowAnalysisWithScalarProduct {
    TProfile*  fHistProNUAq;      // NUA related qq
 
    //QAHists
-   TProfile* fHistProQNorm;
-   TProfile* fHistProQaQb;
-   TProfile* fHistProQaQbM;
-   TH2D* fHistMaMb;
-   TH2D* fHistQNormQaQbNorm;
-   TH2D* fHistQaNormMa;
-   TH2D* fHistQbNormMb;
-   TH1D* fResolution;
-   TH1D* fHistQaQb;
-   TH1D* fHistQaQbCos;
+   TProfile* fHistProQNorm; // QNorm
+   TProfile* fHistProQaQb; // QaQb
+   TProfile* fHistProQaQbM; // QaQb/MaMb
+   TH2D* fHistMaMb;         // MaMb
+   TH2D* fHistQNormQaQbNorm; // QNorm vs QaQbNorm
+   TH2D* fHistQaNormMa; // QaNorm Ma
+   TH2D* fHistQbNormMb; // QbNorm Mb
+   TH1D* fResolution; // Resolution
+   TH1D* fHistQaQb; // QaQb
+   TH1D* fHistQaQbCos; // QaQbCos
 
    AliFlowCommonHist*        fCommonHists;    // control histograms
    AliFlowCommonHist*        fCommonHistsuQ;  // control histograms
