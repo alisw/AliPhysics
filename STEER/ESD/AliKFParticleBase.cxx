@@ -2825,14 +2825,11 @@ void AliKFParticleBase::RotateXY(Double_t angle, Double_t Vtx[3])
   // Rotates the KFParticle object around OZ axis, OZ axis is set by the vertex position
   // Double_t angle - angle of rotation in XY plane in [rad]
   // Double_t Vtx[3] - position of the vertex in [cm]
-  // Before rotate needs to be moved to position 0,0,0, ; move back after rotation
-  Double_t dx = Vtx[0] - GetX();
-  Double_t dy = Vtx[1] - GetY();
-  Double_t dz = Vtx[2] - GetZ();
 
-  X() = X() - dx;
-  Y() = Y() - dy;
-  Z() = Z() - dz;
+  // Before rotation the center of the coordinat system should be moved to the vertex position; move back after rotation
+  X() = X() - Vtx[0];
+  Y() = Y() - Vtx[1];
+  Z() = Z() - Vtx[2];
 
   // Rotate the kf particle
   Double_t c = TMath::Cos(angle);
@@ -2885,9 +2882,9 @@ void AliKFParticleBase::RotateXY(Double_t angle, Double_t Vtx[3])
     }
   }
 
-  X() = GetX() + dx;
-  Y() = GetY() + dy;
-  Z() = GetZ() + dz;
+  X() = GetX() + Vtx[0];
+  Y() = GetY() + Vtx[1];
+  Z() = GetZ() + Vtx[2];
 }
 
 Bool_t AliKFParticleBase::InvertSym3( const Double_t A[], Double_t Ai[] )
