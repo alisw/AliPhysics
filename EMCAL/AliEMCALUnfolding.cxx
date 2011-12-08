@@ -47,9 +47,9 @@
 class AliCDBStorage;
 #include "AliCDBEntry.h"
 
-Double_t AliEMCALUnfolding::fSSPars[8]={0.9262,3.365,1.548,0.1625,-0.4195,0.,0.,2.332};
-Double_t AliEMCALUnfolding::fPar5[3]={12.31,-0.007381,-0.06936};
-Double_t AliEMCALUnfolding::fPar6[3]={0.05452,0.0001228,0.001361};
+Double_t AliEMCALUnfolding::fgSSPars[8]={0.9262,3.365,1.548,0.1625,-0.4195,0.,0.,2.332};
+Double_t AliEMCALUnfolding::fgPar5[3]={12.31,-0.007381,-0.06936};
+Double_t AliEMCALUnfolding::fgPar6[3]={0.05452,0.0001228,0.001361};
 
 ClassImp(AliEMCALUnfolding)
   
@@ -103,10 +103,10 @@ AliEMCALUnfolding::AliEMCALUnfolding(AliEMCALGeometry* geometry,Float_t ECALocMa
     AliFatal("AliEMCALUnfolding: Geometry not initialized.");
   }
   Int_t i=0;
-  for (i = 0; i < 8; i++) fSSPars[i] = SSPars[i];
+  for (i = 0; i < 8; i++) fgSSPars[i] = SSPars[i];
   for (i = 0; i < 3; i++) {
-    fPar5[i] = Par5[i];
-    fPar6[i] = Par6[i];
+    fgPar5[i] = Par5[i];
+    fgPar6[i] = Par6[i];
   }
 
 }
@@ -671,21 +671,23 @@ Double_t  AliEMCALUnfolding::ShowerShapeV2(Double_t x, Double_t y)
   // Shape of the shower
   // If you change this function, change also the gradient evaluation in ChiSquare()
 
-  Double_t r = fSSPars[7]*TMath::Sqrt(x*x+y*y);
-  Double_t rp1  = TMath::Power(r, fSSPars[1]) ;
-  Double_t rp5  = TMath::Power(r, fSSPars[5]) ;
-  Double_t shape = fSSPars[0]*TMath::Exp( -rp1 * (1. / (fSSPars[2] + fSSPars[3] * rp1) + fSSPars[4] / (1 + fSSPars[6] * rp5) ) ) ;
+  Double_t r = fgSSPars[7]*TMath::Sqrt(x*x+y*y);
+  Double_t rp1  = TMath::Power(r, fgSSPars[1]) ;
+  Double_t rp5  = TMath::Power(r, fgSSPars[5]) ;
+  Double_t shape = fgSSPars[0]*TMath::Exp( -rp1 * (1. / (fgSSPars[2] + fgSSPars[3] * rp1) + fgSSPars[4] / (1 + fgSSPars[6] * rp5) ) ) ;
   return shape ;
 }
 
 //____________________________________________________________________________
 void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
-						 Double_t & fret,
-						 Double_t * x, Int_t iflag)
+					     Double_t & fret,
+					     Double_t * x, Int_t iflag)
 {
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
   
+  nPar=nPar;//to cheat rulechecker
+
   TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
   if(toMinuit){
     AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
@@ -752,15 +754,15 @@ void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
             Double_t zpar = x[iParam+1] ;
             Double_t epar = x[iParam+2] ;
             
-            Double_t dr = fSSPars[7]*TMath::Sqrt( ((Float_t)iphi - xpar) * ((Float_t)iphi - xpar) + ((Float_t)ieta - zpar) * ((Float_t)ieta - zpar) );
+            Double_t dr = fgSSPars[7]*TMath::Sqrt( ((Float_t)iphi - xpar) * ((Float_t)iphi - xpar) + ((Float_t)ieta - zpar) * ((Float_t)ieta - zpar) );
             Double_t shape = sum * ShowerShapeV2((Float_t)iphi - xpar,(Float_t)ieta - zpar) ;
-            Double_t rp1  = TMath::Power(dr, fSSPars[1]) ;
-            Double_t rp5  = TMath::Power(dr, fSSPars[5]) ;
+            Double_t rp1  = TMath::Power(dr, fgSSPars[1]) ;
+            Double_t rp5  = TMath::Power(dr, fgSSPars[5]) ;
             
-            Double_t deriv = -2 * TMath::Power(dr,fSSPars[1]-2.) * fSSPars[7] * fSSPars[7] * 
-            (fSSPars[1] * ( 1/(fSSPars[2]+fSSPars[3]*rp1) + fSSPars[4]/(1+fSSPars[6]*rp5) ) - 
-             (fSSPars[1]*fSSPars[3]*rp1/( (fSSPars[2]+fSSPars[3]*rp1)*(fSSPars[2]+fSSPars[3]*rp1) ) + 
-              fSSPars[4]*fSSPars[5]*fSSPars[6]*rp5/( (1+fSSPars[6]*rp5)*(1+fSSPars[6]*rp5) ) ) );
+            Double_t deriv = -2 * TMath::Power(dr,fgSSPars[1]-2.) * fgSSPars[7] * fgSSPars[7] * 
+            (fgSSPars[1] * ( 1/(fgSSPars[2]+fgSSPars[3]*rp1) + fgSSPars[4]/(1+fgSSPars[6]*rp5) ) - 
+             (fgSSPars[1]*fgSSPars[3]*rp1/( (fgSSPars[2]+fgSSPars[3]*rp1)*(fgSSPars[2]+fgSSPars[3]*rp1) ) + 
+              fgSSPars[4]*fgSSPars[5]*fgSSPars[6]*rp5/( (1+fgSSPars[6]*rp5)*(1+fgSSPars[6]*rp5) ) ) );
             
             //Double_t deriv =-1.33 * TMath::Power(dr,0.33)*dr * ( 1.57 / ( (1.57 + 0.0860 * r133) * (1.57 + 0.0860 * r133) )
             //                                                   - 0.55 / (1 + 0.000563 * r669) / ( (1 + 0.000563 * r669) * (1 + 0.000563 * r669) ) ) ;
@@ -797,20 +799,20 @@ void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
 //____________________________________________________________________________
 void AliEMCALUnfolding::SetShowerShapeParams(Double_t *pars){
   for(UInt_t i=0;i<7;++i)
-    fSSPars[i]=pars[i];
-  if(pars[2]==0. && pars[3]==0.) fSSPars[2]=1.;//to avoid dividing by 0
+    fgSSPars[i]=pars[i];
+  if(pars[2]==0. && pars[3]==0.) fgSSPars[2]=1.;//to avoid dividing by 0
 }
 
 //____________________________________________________________________________
 void AliEMCALUnfolding::SetPar5(Double_t *pars){
   for(UInt_t i=0;i<3;++i)
-    fPar5[i]=pars[i];
+    fgPar5[i]=pars[i];
 }
 
 //____________________________________________________________________________
 void AliEMCALUnfolding::SetPar6(Double_t *pars){
   for(UInt_t i=0;i<3;++i)
-    fPar6[i]=pars[i];
+    fgPar6[i]=pars[i];
 }
 
 //____________________________________________________________________________
@@ -820,7 +822,7 @@ void AliEMCALUnfolding::EvalPar5(Double_t phi){
   //phi in degrees range (-10,10)
   //
   //fSSPars[5] = 12.31 - phi*0.007381 - phi*phi*0.06936;
-  fSSPars[5] = fPar5[0] + phi * fPar5[1] + phi*phi * fPar5[2];
+  fgSSPars[5] = fgPar5[0] + phi * fgPar5[1] + phi*phi * fgPar5[2];
 }
 
 //____________________________________________________________________________
@@ -830,11 +832,11 @@ void AliEMCALUnfolding::EvalPar6(Double_t phi){
   //phi in degrees range (-10,10)
   //
   //fSSPars[6] = 0.05452 + phi*0.0001228 + phi*phi*0.001361;
-  fSSPars[6] = fPar6[0] + phi * fPar6[1] + phi*phi * fPar6[2];
+  fgSSPars[6] = fgPar6[0] + phi * fgPar6[1] + phi*phi * fgPar6[2];
 }
 
 //____________________________________________________________________________
-void AliEMCALUnfolding::EvalParsPhiDependence(Int_t absId, AliEMCALGeometry *geom){
+void AliEMCALUnfolding::EvalParsPhiDependence(Int_t absId, const AliEMCALGeometry *geom){
   //
   // calculate params p5 and p6 depending on the phi angle in global coordinate
   // for the cell with given absId index

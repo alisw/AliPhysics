@@ -22,23 +22,18 @@ class AliEMCALGeometry;
 class AliEMCALUnfolding;
 class AliVCaloCells;
 
-class AliEMCALAfterBurnerUF {
+class AliEMCALAfterBurnerUF{
 
   public:
     AliEMCALAfterBurnerUF();
     AliEMCALAfterBurnerUF(Float_t logWeight, Float_t locMaxCut, Float_t minEcut);
     virtual ~AliEMCALAfterBurnerUF();
 
-  private:
-    AliEMCALAfterBurnerUF(const AliEMCALAfterBurnerUF & uf) ; // cpy ctor not needed, put here to avoid compilation warning 
-    AliEMCALAfterBurnerUF & operator = (const AliEMCALAfterBurnerUF & uf) ;//cpy assignment, put here to avoid compilation warning 
-  
-  public:
     virtual void Clear();
     virtual void Init();
     virtual void RecPoints2Clusters(TObjArray *clusArray);
     virtual void UnfoldClusters(TObjArray *clusArray, AliVCaloCells *cellsEMCAL);  // does the job
-  
+
     // getters and setters
     virtual AliEMCALUnfolding *GetClusterUnfoldingInstance() { return fClusterUnfolding; }
 
@@ -51,6 +46,12 @@ class AliEMCALAfterBurnerUF {
     TClonesArray      *fDigitsArr;     //->   cell <=> digit
 
     AliEMCALUnfolding *fClusterUnfolding;  // unfolding class instance
+
+  private:
+    AliEMCALAfterBurnerUF(const AliEMCALAfterBurnerUF & uf) ; // cpy ctor not needed, put here to avoid compilation warning 
+    AliEMCALAfterBurnerUF & operator = (const AliEMCALAfterBurnerUF & uf) ;//cpy assignment, put here to avoid compilation warning 
+  
+
 
     ClassDef(AliEMCALAfterBurnerUF,2)
 } ;

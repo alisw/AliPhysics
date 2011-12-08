@@ -147,6 +147,10 @@ void AliEMCALAfterBurnerUF::Init()
 //------------------------------------------------------------------------
 AliEMCALAfterBurnerUF::~AliEMCALAfterBurnerUF()
 {
+  //
+  // destructor
+  //
+
   if (fClusterUnfolding) delete fClusterUnfolding;
 
   if (fRecPoints) {
@@ -181,7 +185,7 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
     AliEMCALRecPoint *recPoint = (AliEMCALRecPoint*) fRecPoints->At(i);
 
     const Int_t ncells = recPoint->GetMultiplicity();
-    Int_t ncells_true = 0;
+    Int_t ncellsTrue = 0;
 
     // cells and their amplitude fractions
     UShort_t absIds[ncells];  // NOTE: unfolding must not give recPoints with no cells!
@@ -190,13 +194,13 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
     for (Int_t c = 0; c < ncells; c++) {
       AliEMCALDigit *digit = (AliEMCALDigit*) fDigitsArr->At(recPoint->GetDigitsList()[c]);
 
-      absIds[ncells_true] = digit->GetId();
-      ratios[ncells_true] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
+      absIds[ncellsTrue] = digit->GetId();
+      ratios[ncellsTrue] = recPoint->GetEnergiesList()[c]/digit->GetAmplitude();
 
-      if (ratios[ncells_true] > 0.001) ncells_true++;
+      if (ratios[ncellsTrue] > 0.001) ncellsTrue++;
     }
 
-    if (ncells_true < 1) {
+    if (ncellsTrue < 1) {
       Warning("AliEMCALAfterBurnerUF::RecPoints2Clusters", "skipping cluster with no cells");
       continue;
     }
@@ -214,7 +218,7 @@ void AliEMCALAfterBurnerUF::RecPoints2Clusters(TObjArray *clusArray)
     clus->SetType(AliVCluster::kEMCALClusterv1);
     clus->SetE(recPoint->GetEnergy());
     clus->SetPosition(g);
-    clus->SetNCells(ncells_true);
+    clus->SetNCells(ncellsTrue);
     clus->SetCellsAbsId(absIds);
     clus->SetCellsAmplitudeFraction(ratios);
     // TODO: time not stored
