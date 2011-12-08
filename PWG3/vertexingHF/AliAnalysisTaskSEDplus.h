@@ -51,7 +51,6 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   void SetUseStrangeness(Bool_t uses=kTRUE){fUseStrangeness=uses;}
   void SetMassLimits(Float_t range);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);
-  void SetPtBinLimit(Int_t n, Float_t *limitarray);
   void SetBinWidth(Float_t w);
   void SetUseBit(Bool_t dols=kTRUE){fUseBit=dols;}
 
@@ -60,7 +59,6 @@ class AliAnalysisTaskSEDplus : public AliAnalysisTaskSE
   Float_t GetUpperMassLimit(){return fUpmasslimit;}
   Float_t GetLowerMassLimit(){return fLowmasslimit;}
   Int_t GetNBinsPt(){return fNPtBins;}
-  Double_t GetPtBinLimit(Int_t ibin);
   Float_t GetBinWidth(){return fBinWidth;}
   Int_t GetNBinsHistos();
   
