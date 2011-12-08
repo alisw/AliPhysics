@@ -22,6 +22,7 @@
 #include "TProfile.h"
 #include "TVector2.h"
 #include "TH1D.h"
+#include "TH1F.h"
 #include "TH2D.h"
 
 #include "AliFlowCommonConstants.h"
@@ -121,15 +122,15 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   QARelated->SetName("QA");
   QARelated->SetOwner();
 
-  fCommonHists = new AliFlowCommonHist("AliFlowCommonHistSP");
+  fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP");
   (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
   fHistList->Add(fCommonHists);
 
-  fCommonHistsuQ = new AliFlowCommonHist("AliFlowCommonHistmuQ");
+  fCommonHistsuQ = new AliFlowCommonHist("AliFlowCommonHist_uQ");
   (fCommonHistsuQ->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
   fHistList->Add(fCommonHistsuQ);
 
-  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResultsSP","",fHarmonic);
+  fCommonHistsRes = new AliFlowCommonHistResults("AliFlowCommonHistResults_SP","",fHarmonic);
   fHistList->Add(fCommonHistsRes);
 
   fHistProConfig = new TProfile("FlowPro_Flags_SP","Flow_Flags_SP",4,0.5,4.5,"s");
@@ -147,7 +148,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   fHistProQaQbNorm->SetYTitle("<QaQb/Na/Nb>");
   errorRelated->Add(fHistProQaQbNorm);
 
-  fHistProNUAq = new TProfile("FlowProNUAq_SP","FlowProNUAq_SP", 6, 0.5, 6.5,"s");
+  fHistProNUAq = new TProfile("FlowPro_NUAq_SP","FlowPro_NUAq_SP", 6, 0.5, 6.5,"s");
   fHistProNUAq->GetXaxis()->SetBinLabel( 1,"<<sin(#Phi_{a})>>");
   fHistProNUAq->GetXaxis()->SetBinLabel( 2,"<<cos(#Phi_{a})>>");
   fHistProNUAq->GetXaxis()->SetBinLabel( 3,"<<sin(#Phi_{b})>>");
@@ -175,7 +176,7 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   dMax[1]   = AliFlowCommonConstants::GetMaster()->GetEtaMax();
   for(Int_t iPOI=0; iPOI!=2; ++iPOI) for(Int_t iSpace=0; iSpace!=2; ++iSpace) {
     // uQ
-    fHistProUQ[iPOI][iSpace] = new TProfile( Form( "FlowPro_UQ%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ),
+    fHistProUQ[iPOI][iSpace] = new TProfile( Form( "FlowPro_UQ_%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ),
                                        Form( "FlowPro_UQ%s%s_SP", sEta[iSpace].Data(), sPOI[iPOI].Data() ),
                                        iNbins[iSpace], dMin[iSpace], dMax[iSpace], "s");
     fHistProUQ[iPOI][iSpace]->SetXTitle(sTitle[iSpace].Data());
@@ -476,7 +477,7 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
 
   fHistProQaQbNorm = (TProfile*) error->FindObject("FlowPro_QaQbNorm_SP");
   if(!fHistProQaQbNorm) printf("Error loading fHistProQaQbNorm\n");
-  fHistProNUAq = (TProfile*) nua->FindObject("FlowProNUAq_SP");
+  fHistProNUAq = (TProfile*) nua->FindObject("FlowPro_NUAq_SP");
   if(!fHistProNUAq) printf("Error loading fHistProNUAq\n");
   fHistSumOfWeights = (TH1D*) error->FindObject("Flow_SumOfWeights_SP");
   if(!fHistSumOfWeights) printf("Error loading fHistSumOfWeights\n");
@@ -524,7 +525,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("*************************************\n");
   printf("*************************************\n");
   printf("      Integrated flow from           \n");
-  printf("           Event plane               \n\n");
+  printf("         Scalar Product              \n\n");
+  if(!fNormalizationType)
+    printf("          (BehaveAsEP)               \n\n");
   
   //Calculate reference flow
   //----------------------------------
@@ -536,8 +539,6 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   if( dQaQb < 0 )
     return;
   Double_t dSpreadQaQb = fHistProQaQbNorm->GetBinError(1);
-  if(!fNormalizationType)
-    printf("An estimate of the event plane resolution is: %f\n", sqrt(2*dQaQb) );
 
   //NUA qq:
   Double_t dImQa = fHistProNUAq->GetBinContent(1);
@@ -552,8 +553,10 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("ResSub = %f\n", dV );
   printf("fTotalQvector %d \n",fTotalQvector);
   if(!fNormalizationType) {
-    if(fTotalQvector>2)
+    if(fTotalQvector>2) {
       dV = computeResolution( TMath::Sqrt2()*findXi(dV,1e-6) );
+      printf("An estimate of the event plane resolution is: %f\n", dV );
+    }
   }
   printf("ResTot = %f\n", dV );
   //statistical error of dQaQb: 
