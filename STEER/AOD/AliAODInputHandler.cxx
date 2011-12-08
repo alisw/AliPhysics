@@ -153,6 +153,7 @@ Bool_t AliAODInputHandler::Notify(const char* path)
   TTree *ttree = fTree->GetTree();
   if (!ttree) ttree = fTree;
   TString statFname(ttree->GetCurrentFile()->GetName());
+  AliInfo(Form("Moving to file %s", statFname.Data()));
   Int_t indarchive = statFname.Index("#");
   if (indarchive<0) {
      statFname = gSystem->DirName(statFname);
