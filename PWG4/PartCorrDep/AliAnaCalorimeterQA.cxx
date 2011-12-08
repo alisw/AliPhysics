@@ -2187,10 +2187,12 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhAmpMod->SetYTitle("Module");
   outputContainer->Add(fhAmpMod);
   
-  fhTimeMod  = new TH2F ("hTime_Mod","Cell time in each present Module",ntimebins,timemin,timemax,fNModules,0,fNModules); 
-  fhTimeMod->SetXTitle("t (ns)");
-  fhTimeMod->SetYTitle("Module");
-  outputContainer->Add(fhTimeMod);
+  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) {
+    fhTimeMod  = new TH2F ("hTime_Mod","Cell time in each present Module",ntimebins,timemin,timemax,fNModules,0,fNModules); 
+    fhTimeMod->SetXTitle("t (ns)");
+    fhTimeMod->SetYTitle("Module");
+    outputContainer->Add(fhTimeMod);
+  }
   
   fhNClustersMod  = new TH2F ("hNClusters_Mod","# clusters vs Module", nclbins,nclmin,nclmax,fNModules,0,fNModules); 
   fhNClustersMod->SetXTitle("number of clusters");
@@ -2224,17 +2226,19 @@ TList * AliAnaCalorimeterQA::GetCreateOutputObjects()
   fhGridCellsE->SetXTitle("column (eta direction)");
   outputContainer->Add(fhGridCellsE);
   
-  fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells", 
-                               colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
-  fhGridCellsTime->SetYTitle("row (phi direction)");
-  fhGridCellsTime->SetXTitle("column (eta direction)");
-  outputContainer->Add(fhGridCellsTime);  
+  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD){ 
+    fhGridCellsTime  = new TH2F ("hGridCellsTime","Accumulated time in grid of cells", 
+                                 colmaxs+2,-1.5,colmaxs+0.5, rowmaxs+2,-1.5,rowmaxs+0.5); 
+    fhGridCellsTime->SetYTitle("row (phi direction)");
+    fhGridCellsTime->SetXTitle("column (eta direction)");
+    outputContainer->Add(fhGridCellsTime);  
+  }
   
   fhNCellsPerClusterMod  = new TH2F*[fNModules];
   fhNCellsPerClusterModNoCut = new TH2F*[fNModules];
-  fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
   fhIMMod                = new TH2F*[fNModules];
-  
+  if(GetReader()->GetDataType()==AliCaloTrackReader::kESD) fhTimeAmpPerRCU        = new TH2F*[fNModules*fNRCU];
+
   for(Int_t imod = 0; imod < fNModules; imod++){
     
     fhNCellsPerClusterMod[imod]  = new TH2F (Form("hNCellsPerCluster_Mod%d",imod),
