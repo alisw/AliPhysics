@@ -870,12 +870,14 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
   
   // calculate balance function
-  fBalance->CalculateBalance(fCentrality,chargeVector);
+  if(fUseMultiplicity) fBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVector);
+  else                 fBalance->CalculateBalance(fCentrality,chargeVector);
 
   if(fRunShuffling) {
     // shuffle charges
     random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
-    fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle);
+    if(fUseMultiplicity) fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle);
+    else                 fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle);
   }
 }      
 
