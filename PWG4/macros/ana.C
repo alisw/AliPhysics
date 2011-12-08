@@ -537,7 +537,7 @@ void CheckInputData(const anaModes mode)
         // Get run number
         TTree* aodTree = (TTree*)fAOD->Get("aodTree");
         AliAODEvent* aod = new AliAODEvent();
-        aod->ReadFromTree(esdTree);
+        aod->ReadFromTree(aodTree);
         aodTree->GetEvent(0);
         kRun = aod->GetRunNumber();
         return;

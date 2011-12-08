@@ -109,9 +109,11 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   
   //Histograms  
   
+  TH1F *   fhEIso ;                               //! Number of isolated particles
   TH1F *   fhPtIso ;                              //! Number of isolated particles
   TH2F *   fhPhiIso ;                             //! Phi of isolated particles
   TH2F *   fhEtaIso ;                             //! eta of isolated particles
+  TH2F *   fhEtaPhiIso ;                          //! eta vs phi of isolated particles
   TH1F *   fhPtNoIso ;                            //! Number of not isolated leading particles
   TH1F *   fhPtDecayIso ;                         //! Number of isolated Pi0 decay particles (invariant mass tag)
   TH1F *   fhPtDecayNoIso ;                       //! Number of not isolated Pi0 decay leading particles (invariant mass tag)
@@ -171,6 +173,9 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   TH1F *   fhPtNoIsoPrompt;                       //! Number of not isolated leading prompt gamma 
   TH1F *   fhPtIsoMCPhoton;                       //! Number of isolated leading gamma 
   TH1F *   fhPtNoIsoMCPhoton;                     //! Number of not isolated leading gamma 
+  TH1F *   fhPtNoIsoConversion;                   //! Number of not isolated leading conversion gamma 
+  TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
+  TH1F *   fhPtNoIsoUnknown;                      //! Number of not isolated leading hadrons 
 
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
@@ -183,7 +188,7 @@ class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
   AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ;              // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;// cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,4)
+  ClassDef(AliAnaParticleIsolation,5)
 } ;
 
 
