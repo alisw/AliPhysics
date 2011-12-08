@@ -48,7 +48,18 @@ class AliRDHFCuts : public AliAnalysisCuts
   void SetMaxVtxRdChi2(Float_t chi2=1e6) {fMaxVtxRedChi2=chi2;}  
   void SetMaxVtxZ(Float_t z=1e6) {fMaxVtxZ=z;}  
   void SetMinSPDMultiplicity(Int_t mult=0) {fMinSPDMultiplicity=mult;}  
-  void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;} 
+
+  void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
+  void SetUseAnyTrigger(){fTriggerMask=AliVEvent::kAny;}
+  void SetUseMBTrigger(){fTriggerMask|=AliVEvent::kMB;}
+  void SetUseMBTriggerOnly(){fTriggerMask=AliVEvent::kMB;}
+  void SetUseCentralTrigger(){fTriggerMask|=AliVEvent::kCentral;}
+  void SetUseCentralTriggerOnly(){fTriggerMask=AliVEvent::kCentral;}
+  void SetUseSemiCentralTrigger(){fTriggerMask|=AliVEvent::kSemiCentral;}
+  void SetUseSemiCentralTriggerOnly(){fTriggerMask=AliVEvent::kSemiCentral;}
+  void SetUseEMCALTrigger(){fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);}
+  void SetUseEMCALTriggerOnly(){fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);}
+
   void SetTriggerClass(TString trclass) {fTriggerClass=trclass;} 
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
   void SetGlobalIndex(){fGlobalIndex=fnVars*fnPtBins;}
@@ -236,7 +247,6 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t  fKeepSignalMC; // IsSelected returns always kTRUE for MC signal
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
-
 
   ClassDef(AliRDHFCuts,20);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };

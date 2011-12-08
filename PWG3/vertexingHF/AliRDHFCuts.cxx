@@ -53,7 +53,7 @@ fMinVtxContr(1),
 fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
-fTriggerMask(0),
+fTriggerMask(AliVEvent::kAnyINT),
 fTriggerClass("CINT1"),
 fTrackCuts(0),
 fnPtBins(1),
@@ -308,7 +308,7 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
 
   // physics selection requirements
   if(fUsePhysicsSelection){
-    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+    Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & fTriggerMask);
     if(!isSelected) {
       if(accept) fWhyRejection=7;
       fEvRejectionBits+=1<<kPhysicsSelection;
