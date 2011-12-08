@@ -42,6 +42,7 @@
 #pragma link C++ class AliHEPDataParser+;
 #pragma link C++ class AliAnalysisTaskPIDqa+;
 #pragma link C++ class AliAnalysisTaskBaseLine+;
+#pragma link C++ class AliAnalysisTaskPIDCombined+;
 
 #pragma link C++ class AliEventPool+;
 #pragma link C++ class AliEventPoolManager+;

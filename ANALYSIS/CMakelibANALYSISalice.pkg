@@ -59,6 +59,7 @@ set ( SRCS
     AliAnalysisTaskPIDqa.cxx 
     AliAnalysisTaskBaseLine.cxx
     AliEventPoolManager.cxx
+    AliAnalysisTaskPIDCombined.cxx	
     )
 
 if( ROOTHASALIEN STREQUAL "yes")
