@@ -108,10 +108,10 @@ class AliITSCalibrationSSD : public AliITSCalibration {
     Int_t   fNPar;            // Number of detector param 
     Double_t *fDetPar;         //[fNPar] Array of parameters
 
-    AliITSNoiseSSDv2 *fNoise;
-    AliITSPedestalSSDv2 *fPedestal;
-    AliITSGainSSDv2 *fGain;
-    AliITSBadChannelsSSDv2 *fBadChannels;
+    AliITSNoiseSSDv2 *fNoise; // pointer to noise calib object    
+    AliITSPedestalSSDv2 *fPedestal; // pointer to pedestal calib object
+    AliITSGainSSDv2 *fGain; // pointer to gain calib object
+    AliITSBadChannelsSSDv2 *fBadChannels; // pointer to bad channels calib object
 
     Bool_t   fIsBad;                         // module is dead or alive ?
     Bool_t   fIsChipBad[fgkChipsPerModule];  // chip is dead or alive ?

@@ -184,6 +184,7 @@ AliITSQASSDDataMakerRec::~AliITSQASSDDataMakerRec() {
 //____________________________________________________________________________ 
 void AliITSQASSDDataMakerRec::StartOfDetectorCycle()
 {
+  // start of detector cycle
 
   if(fAliITSQADataMakerRec->ListExists(AliQAv1::kRAWS)==kFALSE)return;
 

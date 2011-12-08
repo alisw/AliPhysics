@@ -28,7 +28,7 @@ class AliITSNoiseSSD : public TObject {
     Float_t GetNoiseN(Int_t n) {return fNoisN.At(n); }
 
     void SetMod(UShort_t mod) {fMod = mod;}
-    UShort_t GetMod() { return fMod;}
+    UShort_t GetMod() const { return fMod;}
 
 protected:
 

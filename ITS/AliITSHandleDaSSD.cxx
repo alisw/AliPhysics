@@ -28,7 +28,7 @@
 #include <new>
 #include <Riostream.h> 
 #include "AliITSHandleDaSSD.h"
-#include <math.h>
+//#include <math.h>
 #include <limits.h>
 #include "event.h"
 #include "TFile.h"
@@ -707,7 +707,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedestal(const AliITSModuleDaSSD *const modul
       if (SignalOutOfRange(signal[ev])) ovev += 1;
       else nsum += pow((signal[ev] - strip->GetPedestal()), 2);
     } 
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  sqrt(nsum / (Double_t)(n));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  TMath::Sqrt(nsum / (Double_t)(n));
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoise(static_cast<Float_t>(noise));
 //************* pedestal second pass ****************
@@ -748,7 +748,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoise(const AliITSModuleDaSSD *const module)
       if (SignalOutOfRange(signal[ev])) ovev += 1;
       else nsum += pow((signal[ev] - strip->GetPedestal()), 2);
     } 
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  static_cast<Float_t>(sqrt(nsum / (Float_t)(n)));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  static_cast<Float_t>(TMath::Sqrt(nsum / (Float_t)(n)));
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoise(noise);
   }
@@ -784,7 +784,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoiseCM(AliITSModuleDaSSD *const module)
       if (SignalOutOfRange(signal[ev])) ovev += 1;
       else nsum += pow((signal[ev] - strip->GetPedestal() - module->GetCM(chipind, ev)), 2);
     } 
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = static_cast<Float_t>(sqrt(nsum / (Double_t)(n)));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = static_cast<Float_t>(TMath::Sqrt(nsum / (Double_t)(n)));
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoiseCM(noise);
   }
@@ -835,7 +835,7 @@ Bool_t AliITSHandleDaSSD::CalculateCM(AliITSModuleDaSSD *const module)
         if ((SignalOutOfRange(signal[ev])) || (strip->GetPedestal() == AliITSChannelDaSSD::GetUndefinedValue())) ovstr += 1;
         else cmsigma += pow((cm0 - (signal[ev] - strip->GetPedestal())), 2);
       }
-      if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsigma = sqrt(cmsigma / (Float_t)(n));
+      if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr)) cmsigma = TMath::Sqrt(cmsigma / (Float_t)(n));
       else { module->SetCM(0.0f, chipind, ev); continue; }
    // calculate cm with threshold
       Double_t cmsum = 0.0L;
@@ -1525,7 +1525,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedNoiseW(const AliITSModuleDaSSD *const modu
     if (strip->GetEventsNumber() == ovev) pedestal = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetPedestal(static_cast<Float_t>(pedestal));
     if ((n = strip->GetEventsNumber() - ovev - 1) > 0) 
-      strip->SetNoise( static_cast<Float_t>(sqrt(noise / static_cast<Double_t>(n))) );
+      strip->SetNoise( static_cast<Float_t>(TMath::Sqrt(noise / static_cast<Double_t>(n))) );
     else {
       strip->SetNoise(AliITSChannelDaSSD::GetUndefinedValue());
       continue;
@@ -1547,7 +1547,7 @@ Bool_t AliITSHandleDaSSD::CalculatePedNoiseW(const AliITSModuleDaSSD *const modu
           noise = s0;
         }
     }      
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = sqrt(noise / static_cast<Double_t>(n));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = TMath::Sqrt(noise / static_cast<Double_t>(n));
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoise(static_cast<Float_t>(noise));
     if (strip->GetEventsNumber() == ovev) pedestal = AliITSChannelDaSSD::GetUndefinedValue();
@@ -1591,7 +1591,7 @@ Bool_t AliITSHandleDaSSD::CalculateCMW(AliITSModuleDaSSD *const module)
           cmsigma = cms1;
         } }
       }
-      if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr - 1) > 0) cmsigma = sqrt(cmsigma / static_cast<Double_t>(n));
+      if ((n = AliITSModuleDaSSD::GetStripsPerChip() - ovstr - 1) > 0) cmsigma = TMath::Sqrt(cmsigma / static_cast<Double_t>(n));
       else {
         AliWarning(Form("AliITSHandleDaSSD: Too little number of strips have a signal for module:chip:event : [%d]:[%d]:[%ld]\n",
                    module->GetModuleId(), chipind, ev));
@@ -1657,7 +1657,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoiseCMW(AliITSModuleDaSSD *const module)
           noise = s0;
         }
     }
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = sqrt(noise / static_cast<Double_t>(n));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise = TMath::Sqrt(noise / static_cast<Double_t>(n));
     else  {
 	  strip->SetNoiseCM(AliITSChannelDaSSD::GetUndefinedValue());
 	  continue;
@@ -1671,7 +1671,7 @@ Bool_t AliITSHandleDaSSD::CalculateNoiseCMW(AliITSModuleDaSSD *const module)
           || TMath::Abs(signal[ev] - pedestal) > (fPedestalThresholdFactor * noise)) ovev += 1;
       else nsum += pow((signal[ev] - strip->GetPedestal() - module->GetCM(chipind, ev)), 2);
     } 
-    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  sqrt(nsum / static_cast<Double_t>(n));
+    if ((n = strip->GetEventsNumber() - ovev - 1) > 0) noise =  TMath::Sqrt(nsum / static_cast<Double_t>(n));
     else  noise = AliITSChannelDaSSD::GetUndefinedValue();
     strip->SetNoiseCM(static_cast<Float_t>(noise));
   }

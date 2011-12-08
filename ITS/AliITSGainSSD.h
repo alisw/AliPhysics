@@ -9,6 +9,7 @@
 // Date: 23/08/2007
 //                                          //
 //////////////////////////////////////////////
+
 class AliITSGainSSD : public TObject {
 
  public:
@@ -26,7 +27,7 @@ class AliITSGainSSD : public TObject {
     Float_t GetGainN(Int_t n) {return fGainN.At(n); }
 
     void SetMod(UShort_t mod) {fMod = mod;}
-    UShort_t GetMod() { return fMod;}
+    UShort_t GetMod() const { return fMod;}
 
 protected:
 

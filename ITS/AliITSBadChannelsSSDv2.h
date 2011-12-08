@@ -21,24 +21,24 @@ class AliITSBadChannelsSSDv2 : public TObject {
     void AddBadChannelP(Int_t module, Int_t strip, Char_t value) { 
       fBadChannels[module*2*fgkDefaultNStripsSSD+strip] = value;
     }       
-    Char_t GetBadChannelP(Int_t module, Int_t strip) {
+    Char_t GetBadChannelP(Int_t module, Int_t strip) const {
       return fBadChannels[module*2*fgkDefaultNStripsSSD+strip]; 
     }
 
     void AddBadChannelN(Int_t module, Int_t strip, Char_t value) { 
       fBadChannels[module*2*fgkDefaultNStripsSSD+fgkDefaultNStripsSSD+strip] = value;
     }       
-    Char_t GetBadChannelN(Int_t module, Int_t strip) {
+    Char_t GetBadChannelN(Int_t module, Int_t strip) const  {
       return fBadChannels[module*2*fgkDefaultNStripsSSD+fgkDefaultNStripsSSD+strip]; 
     }
 
  protected:
 
-    static const Int_t fgkDefaultNModulesSSD = 1698;
-    static const Int_t fgkDefaultNStripsSSD = 768;
+    static const Int_t fgkDefaultNModulesSSD = 1698; // # of default SSD modules
+    static const Int_t fgkDefaultNStripsSSD = 768;  // # of default SSD strips
     //static const Int_t fgkDefaultNModulesSSD; // Total numbers of SSD modules
    //   static const Int_t fgkDefaultNStripsSSD; // Total numbers of SSD modules
-   Char_t fBadChannels[2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD];
+    Char_t fBadChannels[2*fgkDefaultNModulesSSD*fgkDefaultNStripsSSD]; // tot # of default SSD strips
     //   Char_t *fBadChannels; 
 
  private:
