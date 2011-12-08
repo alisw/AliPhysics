@@ -41,7 +41,7 @@ class AliTRDtrackletWord : public AliTRDtrackletBase {
   Float_t GetX() const { return fgGeo->GetTime0((fHCId%12)/2); }
   Float_t GetY() const { return (GetYbin() * 160e-4); }
   Float_t GetZ() const { return fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(GetZbin()) -
-      fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowSize(GetZbin()); }
+      fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowSize(GetZbin())  * .5; }
   Float_t GetLocalZ() const { return GetZ() - fgGeo->GetPadPlane((fHCId % 12) / 2, (fHCId/12) % 5)->GetRowPos(8); }
 
   UInt_t GetTrackletWord() const { return fTrackletWord; }
