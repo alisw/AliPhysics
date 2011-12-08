@@ -24,6 +24,7 @@
 #include "AliTRDtrapConfigHandler.h"
 
 #include <iostream>
+#include <sstream>
 #include <iomanip>
 
 #include "AliLog.h"
@@ -36,6 +37,10 @@
 #include "TGeoMatrix.h"
 #include "TGraph.h"
 
+#include "Cal/AliTRDCalOnlineGainTable.h"
+#include "Cal/AliTRDCalOnlineGainTableROC.h"
+#include "Cal/AliTRDCalOnlineGainTableMCM.h"
+
 using namespace std;
 
 ClassImp(AliTRDtrapConfigHandler)
@@ -43,6 +48,7 @@ ClassImp(AliTRDtrapConfigHandler)
 AliTRDtrapConfigHandler::AliTRDtrapConfigHandler() :
      ltuParam()
      , fRestrictiveMask((0x3ffff << 11) | (0x1f << 6) | 0x3f)
+     , fGtbl()
 {
 
 }
@@ -211,19 +217,24 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
    }
 
    UInt_t cmd;
-   Int_t extali, addr, data;
+   Int_t extali, addr, data, cmdno;
 
    // reset restrictive mask
    fRestrictiveMask = (0x3ffff << 11) | (0x1f << 6) | 0x3f;
+   char linebuffer[512];
+   istringstream line;
 
-   while(infile.good()) {
+   while(infile.getline(linebuffer, 512) && infile.good()) {
+      line.clear();
+      line.str(linebuffer);
       cmd=999;
       extali=-1;
       addr=-1;
       data=-1;
-      infile >> std::skipws >> cmd >> addr >> data >> extali;
+      line >> std::skipws >> cmd >> addr >> data >> extali;  // the lines read from config file can contain additional columns.
+      // Therefore the detour via istringstream
 
-      if(cmd!=999 && extali!=-1 && addr != -1 && data!= -1 && extali!=-1) {
+      if(cmd!=999 && addr != -1 && data!= -1 && extali!=-1) {
 
 	 if(cmd==fgkScsnCmdWrite) {
 	    for(Int_t det=0; det<AliTRDgeometry::Ndet(); det++) {
@@ -314,6 +325,14 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
 
 
    return kTRUE;
+}
+
+
+
+Int_t AliTRDtrapConfigHandler::SetGaintable(AliTRDCalOnlineGainTable const &gtbl)
+{
+   fGtbl=gtbl;
+   return 0;
 }
 
 
@@ -467,7 +486,10 @@ void AliTRDtrapConfigHandler::ConfigurePIDcorr(Int_t det)
    for (Int_t r=0; r<nRobs; r++) {
       for(Int_t m=0; m<16; m++) {
 	 Int_t dest =  1<<10 | r<<7 | m;
-	 ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1);
+	 if(fGtbl.GetGainTableROC(det) && fGtbl.GetGainTableROC(det)->GetGainTableMCM(r, m))
+	    ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1, fGtbl.GetGainTableROC(det)->GetGainTableMCM(r, m)->GetMCMGain());
+	 else
+	    ltuParam.GetCorrectionFactors(det, r, m, 9, cor0, cor1);
 	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor0, cor0);
 	 AliTRDtrapConfig::Instance()->AddValues(det, fgkScsnCmdWrite, dest, addrLUTcor1, cor1);
     }

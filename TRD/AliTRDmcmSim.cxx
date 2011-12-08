@@ -549,17 +549,18 @@ void AliTRDmcmSim::SetData(AliTRDarrayADC* const adcArray, AliTRDdigitsManager *
           continue;
 
         fDict[iDict] = newDict;
-        fDict[iDict]->Expand();
+	if(fDict[iDict]->GetDim() != 0)
+	  fDict[iDict]->Expand();
       }
       else {
         fDict[iDict] = newDict;
-        if (fDict[iDict])
+        if (fDict[iDict] && (fDict[iDict]->GetDim() != 0) )
           fDict[iDict]->Expand();
-        }
+      }
 
       // If there is no data, set dictionary to zero to avoid crashes
       if (fDict[iDict]->GetDim() == 0)  {
-        AliError(Form("Dictionary %i of det. %i has dim. 0", iDict, fDetector));
+	 // AliError(Form("Dictionary %i of det. %i has dim. 0", iDict, fDetector));
         fDict[iDict] = 0x0;
       }
     }
@@ -935,10 +936,14 @@ UShort_t AliTRDmcmSim::FilterGainNextSample(Int_t adc, UShort_t value)
   UShort_t    fgta = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTA, fDetector, fRobPos, fMcmPos); // 20;
   UShort_t    fgtb = fTrapConfig->GetTrapReg(AliTRDtrapConfig::kFGTB, fDetector, fRobPos, fMcmPos); // 2060;
 
+  UInt_t fgfExtended = 0x700 + fgf;      // The corr factor which is finally applied has to be extended by 0x700 (hex) or 0.875 (dec)
+                                         // because fgf=0 correspons to 0.875 and fgf=511 correspons to 1.125 - 2^(-11)
+                                         // (see TRAP User Manual for details)
+
   UInt_t corr; // corrected value
 
   value &= 0xFFF;
-  corr = (value * fgf) >> 11;
+  corr = (value * fgfExtended) >> 11;
   corr = corr > 0xfff ? 0xfff : corr;
   corr = AddUintClipping(corr, fga, 12);
 

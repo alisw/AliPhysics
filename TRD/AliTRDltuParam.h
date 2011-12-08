@@ -22,6 +22,7 @@ class AliTRDltuParam : public TObject
   void SetScaleQ1(Int_t data)   { fScaleQ1 = data; }
   void SetLengthCorrectionEnable(Int_t data) { fPidTracklengthCorr = Bool_t (data); }
   void SetTiltCorrectionEnable(Int_t data)   { fTiltCorr = Bool_t (data); }
+  void SetPIDgainCorrectionEnable(Bool_t data)   { fPidGainCorr = data; }
 
   // set values directly
   void SetRawPtMin(Float_t data)     { fPtMin = data; }
@@ -32,13 +33,14 @@ class AliTRDltuParam : public TObject
   void SetRawScaleQ1(Int_t data)     { fScaleQ1 = data; }
   void SetRawLengthCorrectionEnable(Bool_t data) { fPidTracklengthCorr = data; }
   void SetRawTiltCorrectionEnable(Bool_t data)   { fTiltCorr = data; }
+  void SetRawPIDgainCorrectionEnable(Bool_t data)   { fPidGainCorr = data; }
 
   // retrieve the calculated information
   // which is written to the TRAPs
   Int_t GetDyCorrection(Int_t det, Int_t rob, Int_t mcm) const;
   void  GetDyRange(Int_t det, Int_t rob, Int_t mcm, Int_t ch, Int_t &dyMinInt, Int_t &dyMaxInt) const;
   void  GetCorrectionFactors(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
-			     UInt_t &cor0, UInt_t &cor1) const;
+			     UInt_t &cor0, UInt_t &cor1, Float_t gain = 1.) const;
   Int_t GetNtimebins() const;
 
   Float_t GetX(Int_t det, Int_t rob, Int_t mcm) const;
@@ -75,6 +77,7 @@ class AliTRDltuParam : public TObject
   UInt_t  fScaleQ1;		// scale factor for accumulated charge Q1
   Bool_t  fPidTracklengthCorr;	// enable tracklet length correction
   Bool_t  fTiltCorr;		// enable tilt correction
+  Bool_t  fPidGainCorr;         // enable MCM gain correction factor for PID
 
   ClassDef(AliTRDltuParam, 1);
 };

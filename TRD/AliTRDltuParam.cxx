@@ -39,7 +39,8 @@ AliTRDltuParam::AliTRDltuParam() :
   fScaleQ0(0),
   fScaleQ1(0),
   fPidTracklengthCorr(kFALSE),
-  fTiltCorr(kFALSE)
+  fTiltCorr(kFALSE),
+  fPidGainCorr(kFALSE)
 {
 
 }
@@ -122,15 +123,18 @@ Float_t AliTRDltuParam::GetElongation(Int_t det, Int_t rob, Int_t mcm, Int_t ch)
 }
 
 void AliTRDltuParam::GetCorrectionFactors(Int_t det, Int_t rob, Int_t mcm, Int_t ch,
-					  UInt_t &cor0, UInt_t &cor1) const
+					  UInt_t &cor0, UInt_t &cor1, Float_t gain) const
 {
+  if (fPidGainCorr==kFALSE)
+    gain=1;
+
   if (fPidTracklengthCorr == kTRUE ) {
-    cor0 = Int_t ((1.0*fScaleQ0* (1./GetElongation(det, rob, mcm, ch)) ));
-    cor1 = Int_t ((1.0*fScaleQ1* (1./GetElongation(det, rob, mcm, ch)) ));
+    cor0 = UInt_t ((1.0*fScaleQ0* (1./GetElongation(det, rob, mcm, ch))) / gain );
+    cor1 = UInt_t ((1.0*fScaleQ1* (1./GetElongation(det, rob, mcm, ch))) / gain );
   }
   else {
-    cor0 = fScaleQ0;
-    cor1 = fScaleQ1;
+    cor0 = UInt_t (fScaleQ0 / gain);
+    cor1 = UInt_t ( fScaleQ1 / gain);
   }
 }
 

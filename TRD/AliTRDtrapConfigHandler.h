@@ -12,6 +12,7 @@
 
 #include <TObject.h>
 #include "AliTRDltuParam.h"
+#include "AliTRDCalOnlineGainTable.h"
 
 class AliTRDtrapConfig;
 
@@ -23,6 +24,7 @@ class AliTRDtrapConfigHandler : public TObject {
   void ResetMCMs();                                           // Reset all trap registers and DMEM of the MCMs
   Int_t LoadConfig();                                         // load a default configuration suitable for simulation
   Int_t LoadConfig(TString filename);                         // load a TRAP configuration from a file
+  Int_t SetGaintable(AliTRDCalOnlineGainTable const &gtbl);   // Set a gain table to correct Q0 and Q1 for PID
 
   void ProcessLTUparam(Int_t dest, Int_t addr, UInt_t data);  // Process the LTU parameters
   void PrintGeoTest();                                        // Prints some information about the geometry. Only for debugging
@@ -65,6 +67,8 @@ class AliTRDtrapConfigHandler : public TObject {
   AliTRDltuParam     ltuParam;             // ltuParam class for the actual calculation of the parameters
 
   UInt_t fRestrictiveMask;                 // mask to restrict subsequent commands to specified chambers
+
+  AliTRDCalOnlineGainTable fGtbl;          // gain table
 
   ClassDef(AliTRDtrapConfigHandler,0)
 };
