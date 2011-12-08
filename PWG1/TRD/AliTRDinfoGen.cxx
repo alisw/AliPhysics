@@ -67,6 +67,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliMCParticle.h"
 #include "AliMultiplicity.h"
+#include "AliCentrality.h"
 #include "AliPID.h"
 #include "AliStack.h"
 #include "AliTrackReference.h"
@@ -255,7 +256,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   ax->SetBinLabel(3, "Cosmic");
   ax->SetBinLabel(4, "Calib");
   fContainer->AddAt(h, kEvType);
-  TH2I* h2=new TH2I("hBC", "Bunch statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
+  TH2I* h2=new TH2I("hBCtrack", "Track Statistics;Fill Bunch;TOF BC;Entries", 3500, -0.5, 3499.5, 31, -10.5, 20.5);
   fContainer->AddAt(h2, kBC);
   h=new TH1I("hTriggers", "Triggers statistics;;Entries", 21, -0.5, 20.5);
   fContainer->AddAt(h, kTrigger);
@@ -414,23 +415,18 @@ void AliTRDinfoGen::UserExec(Option_t *){
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   // Determine centrality
   // Author: Ionut Arsene <I.C.Arsene@gsi.de>
-  Int_t centralityBin = -1;
   AliDebug(2, Form("  Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
   TString beamtype = fESDev->GetESDRun()->GetBeamType();
   if(beamtype.Contains("Pb-Pb") || beamtype.Contains("A-A")){
-    centralityBin = 4;
     const AliMultiplicity *mult = fESDev->GetMultiplicity();
-    Double_t zdcNeutronEnergy = fESDev->GetZDCN1Energy()+fESDev->GetZDCN2Energy();
-    Double_t itsNTracklets = mult->GetNumberOfTracklets();
-    Double_t centralitySlopes[6] = {0.0, 4.0, 8.0, 20.0, 50.0, 1000000.};
-    AliDebug(1, Form("zdcNeutronEnergy: %f, itsNTracklets: %f\n", zdcNeutronEnergy, itsNTracklets));
-    for(Int_t iCent=1; iCent<=5; ++iCent) {
-      if(zdcNeutronEnergy>centralitySlopes[iCent-1]*itsNTracklets && zdcNeutronEnergy<centralitySlopes[iCent]*itsNTracklets)
-        centralityBin=iCent - 1;
-    }
-    AliDebug(2, Form("  Centrality Class: %d", centralityBin));
+    fEventInfo->SetMultiplicity(mult?mult->GetNumberOfTracklets():0);
+    const AliCentrality *cent = fESDev->GetCentrality();
+    // centrality for different options V0 = "V0M", ITS = "TKL" etc
+    fEventInfo->SetCentrality(cent?cent->GetCentralityPercentile("TKL"):-1.);
+  } else {
+    fEventInfo->SetMultiplicity(0);
+    fEventInfo->SetCentrality(-1.);
   }
-  fEventInfo->SetCentrality(centralityBin);
   UShort_t evBC(fESDev->GetBunchCrossNumber());
 
   Bool_t *trackMap(NULL);
@@ -482,11 +478,9 @@ void AliTRDinfoGen::UserExec(Option_t *){
     new(fTrackInfo) AliTRDtrackInfo();
     esdTrack = fESDev->GetTrack(itrk);
     AliDebug(3, Form("\n%3d ITS[%d] TPC[%d] TRD[%d] TOF-BC[%d]\n", itrk, esdTrack->GetNcls(0), esdTrack->GetNcls(1), esdTrack->GetNcls(2), esdTrack->GetTOFBunchCrossing()));
-
     if(esdTrack->GetStatus()&AliESDtrack::kTPCout) nTPC++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDout) nTRDout++;
     if(esdTrack->GetStatus()&AliESDtrack::kTRDin) nTRDin++;
-
     // look at external track param
     const AliExternalTrackParam *op = esdTrack->GetOuterParam();
     Double_t xyz[3];
@@ -798,9 +792,9 @@ void AliTRDinfoGen::MakeChambers()
         pos[2] = eta; pos[3] = phi;
         pos[4] = 0.;
         if(calib->IsChamberGood(idet)){
-          if(calib->IsHalfChamberNoData(idet, 0)) pos[4] += 1.;
-          if(calib->IsHalfChamberNoData(idet, 1)) pos[4] += 2.;
-        } else pos[4] += 4.;
+          if(calib->IsHalfChamberNoData(idet, 0)) pos[4] += 2.;
+          if(calib->IsHalfChamberNoData(idet, 1)) pos[4] += 3.;
+        } else pos[4] = 1.;
         chmb->AddAt(new TVectorF(pos), idet);
       }
     }
