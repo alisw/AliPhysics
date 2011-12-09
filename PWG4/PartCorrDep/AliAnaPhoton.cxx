@@ -44,6 +44,7 @@
 #include "AliVCluster.h"
 #include "AliAODMCParticle.h"
 #include "AliMixedEvent.h"
+#include "AliAODEvent.h"
 
 // --- Detectors --- 
 #include "AliPHOSGeoUtils.h"
@@ -127,6 +128,8 @@ AliAnaPhoton::AliAnaPhoton() :
     fhMCNCellsvsClusterMaxCellDiffE6 [i] = 0;
   }
   
+  for(Int_t i = 0; i < 5; i++) fhClusterCuts[i] = 0;
+  
   //Initialize parameters
   InitParameters();
 
@@ -139,23 +142,28 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   if(GetDebug() > 2) 
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; Before selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(),
-           mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           calo->E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+    
+  fhClusterCuts[1]->Fill(calo->E());
   
   //.......................................
   //If too small or big energy, skip it
-  if(mom.E() < GetMinEnergy() || mom.E() > GetMaxEnergy() ) return kFALSE ; 
+  if(calo->E() < GetMinEnergy() || calo->E() > GetMaxEnergy() ) return kFALSE ; 
   if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
-  
+  fhClusterCuts[2]->Fill(calo->E());
+
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
   if(tof < fTimeCutMin || tof > fTimeCutMax) return kFALSE;
   if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
-  
+  fhClusterCuts[3]->Fill(calo->E());
+
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
   if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
-  
+  fhClusterCuts[4]->Fill(calo->E());
+
   //.......................................
   //Check acceptance selection
   if(IsFiducialCutOn()){
@@ -163,7 +171,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     if(! in ) return kFALSE ;
   }
   if(GetDebug() > 2) printf("Fiducial cut passed \n");
-  
+  fhClusterCuts[5]->Fill(calo->E());
+
   //.......................................
   //Skip matched clusters with tracks
   if(fRejectTrackMatch){
@@ -174,7 +183,8 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     else  
       if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
   }// reject matched clusters
-  
+  fhClusterCuts[6]->Fill(calo->E());
+
   //.......................................
   //Check Distance to Bad channel, set bit.
   Double_t distBad=calo->GetDistanceToBadChannel() ; //Distance to bad channel
@@ -183,11 +193,13 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     return kFALSE ;
   }
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
+  
+  fhClusterCuts[7]->Fill(calo->E());
 
   if(GetDebug() > 0) 
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(), 
-           mom.E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
+           calo->E(), mom.Pt(),calo->E(),mom.Phi()*TMath::RadToDeg(),mom.Eta());
   
   //All checks passed, cluster selected
   return kTRUE;
@@ -948,6 +960,17 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t nbins    = GetHistoNClusterCellBins(); Int_t   nmax    = GetHistoNClusterCellMax(); Int_t   nmin    = GetHistoNClusterCellMin(); 
   Int_t ntimebins= GetHistoTimeBins();         Float_t timemax = GetHistoTimeMax();         Float_t timemin = GetHistoTimeMin();       
 
+  TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
+  for (Int_t i = 0; i < 9 ;  i++) 
+  {
+    fhClusterCuts[i] = new TH1F(Form("hCut_%d_%s", i, cut[i].Data()),
+                                Form("Number of clusters that pass cuts <= %d, %s", i, cut[i].Data()),
+                                nptbins,ptmin,ptmax); 
+    fhClusterCuts[i]->SetYTitle("dN/dE ");
+    fhClusterCuts[i]->SetXTitle("E (GeV)");
+    outputContainer->Add(fhClusterCuts[i]) ;   
+  }
+  
   fhNCellsE  = new TH2F ("hNCellsE","# of cells in cluster vs E of clusters", nptbins,ptmin,ptmax, nbins,nmin,nmax); 
   fhNCellsE->SetXTitle("E (GeV)");
   fhNCellsE->SetYTitle("# of cells in cluster");
@@ -1506,6 +1529,27 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     return;
   }
   
+  // Loop on raw clusters before filtering in the reader and fill control histogram
+  if((GetReader()->GetEMCALClusterListName()!="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS"){
+    for(Int_t iclus = 0; iclus < GetReader()->GetInputEvent()->GetNumberOfCaloClusters(); iclus++ ){
+      AliVCluster * clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
+      if     (fCalorimeter == "PHOS"  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() ) fhClusterCuts[0]->Fill(clus->E());
+      else if(fCalorimeter == "EMCAL" && clus->IsEMCAL() && clus->E() > GetReader()->GetEMCALPtMin()) fhClusterCuts[0]->Fill(clus->E());
+    }
+  }
+  else { // reclusterized
+    TClonesArray * clusterList = 0;
+    if(GetReader()->GetOutputEvent())
+      dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
+    if(clusterList){
+      Int_t nclusters = clusterList->GetEntriesFast();
+      for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
+        AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));        
+        if(clus)fhClusterCuts[0]->Fill(clus->E());
+    }
+  }
+  }
+  
   //Init arrays, variables, get number of clusters
   TLorentzVector mom, mom2 ;
   Int_t nCaloClusters = pl->GetEntriesFast();
@@ -1611,7 +1655,9 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
-        
+      
+    fhClusterCuts[8]->Fill(calo->E());
+
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
