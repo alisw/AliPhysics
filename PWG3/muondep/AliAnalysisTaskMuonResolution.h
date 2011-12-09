@@ -13,7 +13,6 @@
 #include <TString.h>
 #include <TMatrixD.h>
 #include <TF1.h>
-#include "AliMUONConstants.h"
 #include "AliAnalysisTaskSE.h"
 
 class TH1;
@@ -234,7 +233,7 @@ private:
 inline void AliAnalysisTaskMuonResolution::SetStartingResolution(Int_t chId, Double_t valNB, Double_t valB)
 {
   /// set chamber non-bending and bending resolutions
-  if (chId < 0 || chId >= AliMUONConstants::NTrackingCh()) return;
+  if (chId < 0 || chId >= 10) return;
   fClusterResNB[chId] = valNB;
   fClusterResB[chId] = valB;
 }
@@ -243,7 +242,7 @@ inline void AliAnalysisTaskMuonResolution::SetStartingResolution(Int_t chId, Dou
 inline void AliAnalysisTaskMuonResolution::SetStartingResolution(Double_t valNB[10], Double_t valB[10])
 {
   /// set chambers non-bending and bending resolutions
-  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+  for (Int_t i = 0; i < 10; i++) {
     fClusterResNB[i] = valNB[i];
     fClusterResB[i] = valB[i];
   }
@@ -253,7 +252,7 @@ inline void AliAnalysisTaskMuonResolution::SetStartingResolution(Double_t valNB[
 inline void AliAnalysisTaskMuonResolution::GetStartingResolution(Double_t valNB[10], Double_t valB[10]) const
 {
   /// set chambers non-bending and bending resolutions
-  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+  for (Int_t i = 0; i < 10; i++) {
     valNB[i] = fClusterResNB[i];
     valB[i] = fClusterResB[i];
   }
@@ -276,7 +275,7 @@ inline void AliAnalysisTaskMuonResolution::FitResiduals(Bool_t flag)
 {
   /// set gaussian function to fit the residual distribution to extract the mean and the dispersion.
   /// if not set: take the mean and the RMS of the distribution
-  if (fGaus) delete fGaus;
+  delete fGaus;
   if (flag) fGaus = new TF1("fGaus","gaus");
   else fGaus = NULL;
 }

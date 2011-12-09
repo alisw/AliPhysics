@@ -807,7 +807,6 @@ TList* AliAnalysisTaskMuonQA::BuildListOfSelectedTriggerCases(TString& FiredTrig
       list->AddLast(new TObjString(Form("trigger:%s",trigClasseName->GetName())));
     }
     delete obj;
-    if(trigClasseName) delete trigClasseName;
   }
   
   // add case other if no specific trigger was found

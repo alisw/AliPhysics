@@ -108,6 +108,12 @@ fClusterList(0x0)
   //
   /// Default Constructor.
   //
+  fPRange[0] = 0.;
+  fPRange[1] = 0.;
+  fClusterMaxRes[0] = 0.;
+  fClusterMaxRes[1] = 0.;
+  for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
+  for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
 }
 
 
@@ -143,6 +149,8 @@ fClusterList(0x0)
   fPRange[1] = 300.;
   fClusterMaxRes[0] = 0.;
   fClusterMaxRes[1] = 0.;
+  for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
+  for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
   
   DefineOutput(1, AliCFContainer::Class());
   DefineOutput(2, TObjArray::Class());
