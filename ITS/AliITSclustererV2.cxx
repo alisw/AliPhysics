@@ -2,6 +2,9 @@
 //            Implementation of the ITS clusterer V2 class
 //
 //          Origin: Iouri Belikov, CERN, Jouri.Belikov@cern.ch
+// This class is no longer used for ITS recosntruction:
+// it has been replaced by the AliITSClusterFinderV2SXD classes
+// It is still used as mother class by HLT reconstruction
 //-------------------------------------------------------------------------
 
 
@@ -1491,9 +1494,9 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
   Int_t smax = digits->GetEntriesFast();
   if (smax==0) return;
   
-  const Int_t MAX=1000;
+  const Int_t mMAX=1000;
   Int_t np=0, nn=0; 
-  Ali1Dcluster pos[MAX], neg[MAX];
+  Ali1Dcluster pos[mMAX], neg[mMAX];
   Float_t y=0., q=0., qmax=0.; 
   Int_t lab[4]={-2,-2,-2,-2};
   
@@ -1528,7 +1531,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
 	   c[*n].SetY(y/q-0.3*nd);
 	   c[*n].SetQ(0.5*q);
 	   (*n)++;
-	   if (*n==MAX) {
+	   if (*n==mMAX) {
 	     Error("FindClustersSSD","Too many 1D clusters !");
               return;
 	   }
@@ -1536,7 +1539,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
 	   c[*n].SetQ(0.5*q);
 	   c[*n].SetNd(nd);
 	   (*n)++;
-	   if (*n==MAX) {
+	   if (*n==mMAX) {
 	     Error("FindClustersSSD","Too many 1D clusters !");
               return;
 	   }
@@ -1552,7 +1555,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
 	   c[*n].SetY(y/q-0.25*nd);
 	   c[*n].SetQ(0.5*q);
 	   (*n)++;
-	   if (*n==MAX) {
+	   if (*n==mMAX) {
 	     Error("FindClustersSSD","Too many 1D clusters !");
 	     return;
 	   }
@@ -1562,7 +1565,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
 	   c[*n].SetLabels(milab);
 	 }	 
          (*n)++;
-         if (*n==MAX) {
+         if (*n==mMAX) {
           Error("FindClustersSSD","Too many 1D clusters !");
           return;
          }
@@ -1598,7 +1601,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
      c[*n].SetY(y/q-0.25*nd);
      c[*n].SetQ(0.5*q);
      (*n)++;
-     if (*n==MAX) {
+     if (*n==mMAX) {
         Error("FindClustersSSD","Too many 1D clusters !");
         return;
      }
@@ -1608,7 +1611,7 @@ FindClustersSSD(const TClonesArray *alldigits, TClonesArray *clusters) {
      c[*n].SetLabels(lab);
   }
   (*n)++;
-  if (*n==MAX) {
+  if (*n==mMAX) {
      Error("FindClustersSSD","Too many 1D clusters !");
      return;
   }
@@ -1623,8 +1626,8 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
   // Actual SSD cluster finder for raw data
   //------------------------------------------------------------
   Int_t nClustersSSD = 0;
-  const Int_t MAX = 1000;
-  Ali1Dcluster clusters1D[2][MAX];
+  const Int_t mMAX = 1000;
+  Ali1Dcluster clusters1D[2][mMAX];
   Int_t nClusters[2] = {0, 0};
   Int_t lab[3]={-2,-2,-2};
   Float_t q = 0.;
@@ -1645,7 +1648,7 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
     if ((!next || (input->GetModuleID() != prevModule)||
 	 (strip-prevStrip > 1) || (flag != prevFlag)) &&
 	(nDigits > 0)) {
-      if (nClusters[prevFlag] == MAX) {
+      if (nClusters[prevFlag] == mMAX) {
 	Error("FindClustersSSD", "Too many 1D clusters !");
 	return;
       }
@@ -1659,7 +1662,7 @@ void AliITSclustererV2::FindClustersSSD(AliITSRawStream* input,
       if (nDigits > 4&&nDigits < 25) {
 	cluster.SetY(y/q - 0.25*nDigits);
         cluster.SetQ(0.5*q);
-	if (nClusters[prevFlag] == MAX) {
+	if (nClusters[prevFlag] == mMAX) {
 	  Error("FindClustersSSD", "Too many 1D clusters !");
 	  return;
 	}

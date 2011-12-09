@@ -36,13 +36,7 @@ public:
 
   void RecPoints2Clusters(const TClonesArray *p, Int_t idx, TClonesArray *c);
 
-private:
   class Ali1Dcluster {
-  private:
-    Float_t fY; //cluster position
-    Float_t fQ; //cluster charge
-    Int_t fNd;  //number of digits
-    Int_t fLab[3]; //track label
   public:
     void SetY(Float_t y) {fY=y;}
     void SetQ(Float_t q) {fQ=q;}
@@ -52,6 +46,11 @@ private:
     Float_t GetQ() const {return fQ;}
     Int_t GetNd()const {return fNd;}
     Int_t GetLabel(Int_t lab) const { return fLab[lab]; }
+  private:
+    Float_t fY; //cluster position
+    Float_t fQ; //cluster charge
+    Int_t fNd;  //number of digits
+    Int_t fLab[3]; //track label
   };
   class AliBin {
   public:
