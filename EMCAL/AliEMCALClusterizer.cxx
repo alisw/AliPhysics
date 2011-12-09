@@ -176,6 +176,7 @@ void AliEMCALClusterizer::DeleteRecPoints()
       AliDebug(2, "Deleting fRecPoints.");
       fRecPoints->Delete();
       delete fRecPoints;
+      fRecPoints = 0;
     }
 }
 
@@ -188,6 +189,7 @@ void AliEMCALClusterizer::DeleteDigits()
       AliDebug(2, "Deleting fDigitsArr.");
       fDigitsArr->Clear("C");
       delete fDigitsArr;
+      fDigitsArr = 0;
     }
 }
 
