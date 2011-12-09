@@ -47,6 +47,7 @@
 
 // MUON includes
 #include "AliMUONCDB.h"
+#include "AliMUONConstants.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONVTrackReconstructor.h"
@@ -111,6 +112,11 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution() :
   fSelectTriggerClass(NULL)
 {
   /// Default constructor
+  
+  for (Int_t i = 0; i < 10; i++) SetStartingResolution(i, -1., -1.);
+  for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
+  for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
+  
 }
 
 //________________________________________________________________________
@@ -150,8 +156,9 @@ AliAnalysisTaskMuonResolution::AliAnalysisTaskMuonResolution(const char *name) :
 {
   /// Constructor
   
-  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) SetStartingResolution(i, -1., -1.);
-  
+  for (Int_t i = 0; i < 10; i++) SetStartingResolution(i, -1., -1.);
+  for (Int_t i = 0; i < 1100; i++) fDEIndices[i] = 0;
+  for (Int_t i = 0; i < 200; i++) fDEIds[i] = 0;
   FitResiduals();
   
   // Output slot #1 writes into a TObjArray container

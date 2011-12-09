@@ -17,6 +17,8 @@
 
 class TObjArray;
 class AliCounterCollection;
+class AliMUONVTrackStore;
+class AliMUONTrack;
 
 class AliAnalysisTaskMuonFakes : public AliAnalysisTaskSE {
 public:

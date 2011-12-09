@@ -33,6 +33,7 @@
 
 // MUON includes
 #include "AliMUONCDB.h"
+#include "AliMUONConstants.h"
 #include "AliMUONRecoParam.h"
 #include "AliMUONESDInterface.h"
 #include "AliMUONRefitter.h"
@@ -63,6 +64,7 @@ fESDInterface(NULL),
 fRefitter(NULL)
 {
   /// Default constructor
+  for (Int_t i = 0; i < 10; i++) ResetClusterResolution(i, -1., -1.);
 }
 
 //________________________________________________________________________
@@ -81,7 +83,7 @@ fESDInterface(NULL),
 fRefitter(NULL)
 {
   /// Constructor
-  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) ResetClusterResolution(i, -1., -1.);
+  for (Int_t i = 0; i < 10; i++) ResetClusterResolution(i, -1., -1.);
 }
 
 //________________________________________________________________________
