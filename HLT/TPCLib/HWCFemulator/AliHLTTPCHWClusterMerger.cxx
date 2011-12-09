@@ -392,7 +392,7 @@ sLeft+=n1;
       w2*=w;
       
       c1.Cluster().fCharge += c2.Cluster().fCharge;
-      c1.Cluster().fQMax += c2.Cluster().fQMax;
+      if( c1.Cluster().fQMax < c2.Cluster().fQMax ) c1.Cluster().fQMax = c2.Cluster().fQMax;
       
       c1.Cluster().fSigmaY2 = 
 	w1*c1.Cluster().fSigmaY2 + w2*c2.Cluster().fSigmaY2
@@ -426,7 +426,7 @@ sLeft+=n1;
 
       sort(labels, labels+6, CompareMCWeights );
     
-      for( unsigned int i=0; i<3 && i<6; i++ ){
+      for( unsigned int i=0; i<3; i++ ){
 	c1.MCLabel().fClusterID[i] = labels[i];
       }
 
