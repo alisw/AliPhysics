@@ -515,7 +515,7 @@ void AliAnalysisTaskMuonFakes::UserExec(Option_t *)
       
       // fill histograms
       if ((!fMatchTrig || trigger) && (!fApplyAccCut || inAcc)) {
-	((TH1F*)fList->UncheckedAt(kFractionOfMatchedClusters))->Fill(((Float_t) nMatchClusters) / ((Float_t) nClusters));
+	if (nClusters > 0) ((TH1F*)fList->UncheckedAt(kFractionOfMatchedClusters))->Fill(((Float_t) nMatchClusters) / ((Float_t) nClusters));
 	((TH1F*)fList->UncheckedAt(kNumberOfClustersMC))->Fill(matchedTrackRef->GetNClusters());
 	((TH1F*)fList->UncheckedAt(kNumberOfClustersM))->Fill(nClusters);
 	((TH1F*)fList->UncheckedAt(kNumberOfChamberHitM))->Fill(nChamberHit);

@@ -11,7 +11,6 @@
 //Author: Philippe Pillot - SUBATECH Nantes
 
 #include <TString.h>
-#include "AliMUONConstants.h"
 #include "AliAnalysisTaskSE.h"
 
 class AliMUONVCluster;
@@ -82,7 +81,7 @@ private:
 inline void AliAnalysisTaskMuonRefit::ResetClusterResolution(Int_t chId, Double_t valNB, Double_t valB)
 {
   /// set chamber non-bending and bending resolutions
-  if (chId < 0 || chId >= AliMUONConstants::NTrackingCh()) return;
+  if (chId < 0 || chId >= 10) return;
   fClusterResNB[chId] = valNB;
   fClusterResB[chId] = valB;
 }
@@ -91,7 +90,7 @@ inline void AliAnalysisTaskMuonRefit::ResetClusterResolution(Int_t chId, Double_
 inline void AliAnalysisTaskMuonRefit::ResetClusterResolution(Double_t valNB[10], Double_t valB[10])
 {
   /// set chambers non-bending and bending resolutions
-  for (Int_t i = 0; i < AliMUONConstants::NTrackingCh(); i++) {
+  for (Int_t i = 0; i < 10; i++) {
     fClusterResNB[i] = valNB[i];
     fClusterResB[i] = valB[i];
   }
