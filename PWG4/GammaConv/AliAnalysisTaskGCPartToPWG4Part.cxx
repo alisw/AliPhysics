@@ -51,6 +51,8 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part()
 //________________________________________________________________________________
 AliAnalysisTaskGCPartToPWG4Part::~AliAnalysisTaskGCPartToPWG4Part() {
 
+  // dtor
+  
   if(fAODPWG4Photons)
     delete fAODPWG4Photons;
   fAODPWG4Photons = NULL;
@@ -76,6 +78,7 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
   fDebugLevel(0)
 {
   // Constructor
+  
   DefineInput(0, TChain::Class());
   // Output slot #0 id reserved by the base class for AOD
 
@@ -88,6 +91,9 @@ AliAnalysisTaskGCPartToPWG4Part::AliAnalysisTaskGCPartToPWG4Part(const char *nam
 
 //________________________________________________________________________
 void AliAnalysisTaskGCPartToPWG4Part::UserCreateOutputObjects() {
+  
+  // Create branches
+  
   fAODPWG4Photons = new TClonesArray("AliAODPWG4ParticleCorrelation", 0);
   fAODPWG4Photons->SetName("PhotonsCTS");
   AddAODBranch("TClonesArray", &fAODPWG4Photons);
@@ -101,6 +107,7 @@ void AliAnalysisTaskGCPartToPWG4Part::UserCreateOutputObjects() {
 //________________________________________________________________________
 void AliAnalysisTaskGCPartToPWG4Part::UserExec(Option_t *) 
 {
+  // Main
   
   //AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillAOD(kTRUE);
 
@@ -118,32 +125,24 @@ void AliAnalysisTaskGCPartToPWG4Part::UserExec(Option_t *)
         
 }
 
+//____________________________________________________________________________________
+void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * aodEvent )
+{
 
-
-
-//___________________________________________________________________________________________
-void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * const aodEvent ) {
+  // Main method to put conversion photons/pi0 to AliAODPWG4Particle
   
-  TClonesArray * tracks = aodEvent->GetTracks();
-  if(!tracks) {
-    cout << "No tracks!!!"<<endl;
-    return;
-  }
-
-
   TClonesArray * convGamma = GetConversionGammas(aodEvent);
   if(!convGamma) {
-    AliError(Form("No branch by name %s found in file %s", fAODBranchName.Data(), fDeltaAODFileName.Data()));
+    AliError(Form("No gamma branch by name %s found in file %s", fAODBranchName.Data(), fDeltaAODFileName.Data()));
     return;
   }
-
 
   //TClonesArray * arrayMC = dynamic_cast<TClonesArray*>(aodEvent->GetList()->FindObject(AliAODMCParticle::StdBranchName()));  
   for (Int_t iPhot = 0; iPhot < convGamma->GetEntriesFast(); iPhot++) {
 
     AliAODPWG4ParticleCorrelation * photon = NULL;
     AliAODConversionPhoton * convParticle = dynamic_cast<AliAODConversionPhoton*>(convGamma->At(iPhot));
-    if (convParticle && BothTracksPresent(convParticle, tracks)) {
+    if (convParticle && BothTracksPresent(convParticle)) {
       photon = AddToAOD(convParticle, fAODPWG4Photons, "ConvGamma");
       
     } else {
@@ -156,17 +155,17 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
 
   }
 
-
+/*
   TClonesArray * pions = GetPions(aodEvent);
   if(!pions) {
-    AliError(Form("No branch by name %s found in file %s", fAODBranchName.Data(), fDeltaAODFileName.Data()));
+    AliError(Form("No pi0 branch by name %s found in file %s", fAODBranchName.Data(), fDeltaAODFileName.Data()));
     return;
   }
 
   for (Int_t iPhot = 0; iPhot < pions->GetEntriesFast(); iPhot++) {
     AliAODPWG4ParticleCorrelation * pion = NULL;
     AliAODConversionPhoton * convParticle = dynamic_cast<AliAODConversionPhoton*>(pions->At(iPhot));
-    if (convParticle && BothGammaPresent(convParticle, convGamma, tracks)) {
+    if (convParticle && BothGammaPresent(convParticle, convGamma)) {
       pion = AddPionToAOD(convParticle, fAODPWG4Pi0, "ConvGamma");
       
     } else {
@@ -177,17 +176,13 @@ void AliAnalysisTaskGCPartToPWG4Part::ProcessConvGamma( const AliAODEvent * cons
       printf("Added conversion pion number %d, pt: %f \n", iPhot, pion->Pt());
     }
   }
-
-  
-
+*/
 }
 
-
-
-
-
-///__________________________________________________________________________________
+//__________________________________________________________________________________
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliAODConversionPhoton * aodO, TClonesArray * branch, TString detector) {
+  // Add photon to AOD
+  
   new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(aodO->Px(), aodO->Py(), aodO->Pz(), aodO->E());
   AliAODPWG4ParticleCorrelation * photon = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
   if(photon) {
@@ -203,6 +198,8 @@ AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddToAOD(AliAOD
 
 ///__________________________________________________________________________________
 AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddPionToAOD(AliAODConversionPhoton * pion, TClonesArray * branch, TString detector) {
+  // Add pions to AOD
+  
   new((*branch)[branch->GetEntriesFast()]) AliAODPWG4ParticleCorrelation(pion->Px(), pion->Py(), pion->Pz(), pion->E());
   AliAODPWG4ParticleCorrelation * pwg4Pion = dynamic_cast<AliAODPWG4ParticleCorrelation*>(branch->Last());
   if(pwg4Pion) {
@@ -220,9 +217,7 @@ AliAODPWG4ParticleCorrelation * AliAnalysisTaskGCPartToPWG4Part::AddPionToAOD(Al
   }
   
 }
-
-
-
+  
 
 //_____________________________________________________________________
 void AliAnalysisTaskGCPartToPWG4Part::Terminate(Option_t *) {
@@ -230,6 +225,7 @@ void AliAnalysisTaskGCPartToPWG4Part::Terminate(Option_t *) {
   // Called once at the end of the query
 }
 
+  
 //_____________________________________________________________________
 AliAODEvent * AliAnalysisTaskGCPartToPWG4Part::GetAODEvent() {
   //Get the AOD event from whereever it might be
@@ -268,14 +264,19 @@ TClonesArray * AliAnalysisTaskGCPartToPWG4Part::GetAODBranch(const AliAODEvent *
   return NULL;
 
 }
+  
+  
 //_____________________________________________________________________
 TClonesArray * AliAnalysisTaskGCPartToPWG4Part::GetConversionGammas(const AliAODEvent * aodEvent) const {
+  // Returns photon branch
   return GetAODBranch(aodEvent, Form("%s_gamma", fGammaCutString.Data()));
  
 }
+  
 
 //_____________________________________________________________________
 TClonesArray * AliAnalysisTaskGCPartToPWG4Part::GetPions(const AliAODEvent * aodEvent) const {
+    // returns pions branch
     return GetAODBranch(aodEvent, Form("%s_Pi0", fPionCutString.Data()));
  
 }
@@ -289,14 +290,16 @@ void AliAnalysisTaskGCPartToPWG4Part::CleanUp() {
 
 
 //______________________________________________________________________________________________
-Bool_t AliAnalysisTaskGCPartToPWG4Part::BothTracksPresent(const AliAODConversionPhoton * const photon, const TClonesArray * const tracks)  const {
-
-  AliAODTrack * track1 = NULL;
-  AliAODTrack * track2 = NULL;
-  for(Int_t i = 0; i < tracks->GetEntriesFast(); i++) {
-    AliAODTrack * track = dynamic_cast<AliAODTrack*>(tracks->At(i));
+Bool_t AliAnalysisTaskGCPartToPWG4Part::BothTracksPresent(const AliAODConversionPhoton * photon) 
+{
+  // Check presence of electron pair 
+  AliVTrack * track1 = NULL;
+  AliVTrack * track2 = NULL;
+  Int_t ntracks = InputEvent()->GetNumberOfTracks();
+  for(Int_t i = 0; i < ntracks; i++) {
+    AliVTrack * track = (AliVTrack*)InputEvent()->GetTrack(i);
     if(track) {
-      if(track->GetID() == photon->GetLabel1()) track1 = track;
+      if      (track->GetID() == photon->GetLabel1()) track1 = track;
       else if (track->GetID() == photon->GetLabel2()) track2 = track;
       if(track1 && track2) break;
     }
@@ -305,20 +308,22 @@ Bool_t AliAnalysisTaskGCPartToPWG4Part::BothTracksPresent(const AliAODConversion
   if(track1 && track2) {
     return kTRUE;
   }
-  cout << "Could not get both tracks!!! labels "  << photon->GetLabel1() << " " << photon->GetLabel2()  <<endl;
+  cout << "AliAnalysisTaskGCPartToPWG4Part::BothTracksPresen() - Could not get both tracks!!! labels "  << photon->GetLabel1() << " " << photon->GetLabel2()  <<endl;
   return kFALSE;
   
-
 }
 
-//______________________________________________________________________________________________
-Bool_t AliAnalysisTaskGCPartToPWG4Part::BothGammaPresent(const AliAODConversionPhoton * const pion, const TClonesArray * const photons, const TClonesArray * const tracks)  const {
-
+  
+//___________________________________________________________________________________________
+Bool_t AliAnalysisTaskGCPartToPWG4Part::BothGammaPresent(const AliAODConversionPhoton * pion, 
+                                                         const TClonesArray * photons) 
+{
+  // Check presence of gamma
   AliAODConversionPhoton * photon1 = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetLabel1()));
   AliAODConversionPhoton * photon2 = dynamic_cast<AliAODConversionPhoton*>(photons->At(pion->GetLabel2()));
 
   if(photon1 && photon2) {
-    if( BothTracksPresent(photon1, tracks) &&  BothTracksPresent(photon1, tracks)) {
+    if( BothTracksPresent(photon1) &&  BothTracksPresent(photon2)) {
       return kTRUE;
     }
   } else {
@@ -327,3 +332,4 @@ Bool_t AliAnalysisTaskGCPartToPWG4Part::BothGammaPresent(const AliAODConversionP
   
   return kFALSE;
 }
+
