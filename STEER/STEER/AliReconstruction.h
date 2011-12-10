@@ -190,7 +190,12 @@ public:
   // A method to declare defined trigger classes even if they are not
   // present in the run, needed for proper event selection based on trigger
   void        DeclareTriggerClasses(const char *trClasses) {fDeclTriggerClasses = trClasses;}
-
+  //
+  //
+  Bool_t       HasEnoughResources(int ev);
+  void         SetStopOnResourcesExcess(int vRSS=3000,int vVMEM=4000);
+  //
+  //
 protected:
   virtual Bool_t ProcessEvent(void* event);
   void           InitRun(const char* input);
@@ -377,7 +382,13 @@ private:
   AliAnalysisManager  *fAnalysis;      //! Analysis manager
   AliRecoInputHandler *fRecoHandler;   //! Input handler adapted for reconstruction
   TString              fDeclTriggerClasses; // Declared defined trigger classes
-  ClassDef(AliReconstruction, 42)      // class for running the reconstruction
+  //
+  Bool_t               fStopped;        //  flag that reco is stopped due to the limited resources 
+  Int_t                fMaxRSS;         //  max RSS memory, MB
+  Int_t                fMaxVMEM;        //  max VMEM memory, MB
+  static const char*   fgkStopEvFName;  //  filename for stop.event stamp
+  //
+  ClassDef(AliReconstruction, 43)      // class for running the reconstruction
 };
 
 #endif

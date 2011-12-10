@@ -202,9 +202,12 @@
 #include "AliLHCData.h"
 #include "ARVersion.h"
 #include <RVersion.h>
+#include <unistd.h>
+#include <sys/resource.h>
 ClassImp(AliReconstruction)
 
 //_____________________________________________________________________________
+const char* AliReconstruction::fgkStopEvFName = "_stopEvent_";
 const char* AliReconstruction::fgkDetectorName[AliReconstruction::kNDetectors] = {"ITS", "TPC", "TRD", "TOF", "PHOS", "HMPID", "EMCAL", "MUON", "FMD", "ZDC", "PMD", "T0", "VZERO", "ACORDE"
 // #ifdef MFT_UPGRADE
 //                                                                                   , "MFT"
@@ -316,7 +319,10 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fAnalysisMacro(),
   fAnalysis(0),
   fRecoHandler(0),
-  fDeclTriggerClasses("")
+  fDeclTriggerClasses(""),
+  fStopped(kFALSE),
+  fMaxRSS(0),
+  fMaxVMEM(0)
 {
 // create reconstruction object with default parameters
   gGeoManager = NULL;
@@ -439,7 +445,10 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fAnalysisMacro(rec.fAnalysisMacro),
   fAnalysis(0),
   fRecoHandler(0),
-  fDeclTriggerClasses(rec.fDeclTriggerClasses)
+  fDeclTriggerClasses(rec.fDeclTriggerClasses),
+  fStopped(kFALSE),
+  fMaxRSS(0),
+  fMaxVMEM(0)
 {
 // copy constructor
 
@@ -1409,6 +1418,9 @@ Bool_t AliReconstruction::Run(const char* input)
     Int_t iEvent = 0;
     while ((iEvent < fRunLoader->GetNumberOfEvents()) ||
 	   (fRawReader && fRawReader->NextEvent())) {
+      //
+      // check if process has enough resources 
+      if (!HasEnoughResources(iEvent)) break;
       if (!ProcessEvent(iEvent)) {
         Abort("ProcessEvent",TSelector::kAbortFile);
         return kFALSE;
@@ -1829,6 +1841,8 @@ Bool_t AliReconstruction::Process(Long64_t entry)
   currTree->SetBranchAddress("rawevent",&event);
   currTree->GetEntry(entry);
   fRawReader = new AliRawReaderRoot(event);
+  // check if process has enough resources 
+  if (!HasEnoughResources(entry)) return kFALSE;
   fStatus = ProcessEvent(fRunLoader->GetNumberOfEvents());
   delete fRawReader;
   fRawReader = NULL;
@@ -2088,7 +2102,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     const Double_t kRadius  = 2.8; //something less than the beam pipe radius
 
     TObjArray trkArray;
-    UShort_t *selectedIdx=new UShort_t[ntracks];
+    UShort_t selectedIdx[ntracks];
 
     for (Int_t itrack=0; itrack<ntracks; itrack++){
       const Double_t kMaxStep = 1;   //max step over the material
@@ -2205,8 +2219,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        AliSysInfo::AddStamp(Form("VtxTPC_%d",iEvent), 0,0,iEvent);      
 
     }
-    delete[] selectedIdx;
-
+    
     if(fDiamondProfile && fDiamondProfile->GetXRes()<kRadius) fesd->SetDiamond(fDiamondProfile);
     else fesd->SetDiamond(fDiamondProfileSPD);
 
@@ -2216,10 +2229,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
        // get cuts for V0vertexer from AliGRPRecoParam
        if (grpRecoParam) {
 	 Int_t nCutsV0vertexer = grpRecoParam->GetVertexerV0NCuts();
-	 Double_t *cutsV0vertexer = new Double_t[nCutsV0vertexer];
+	 Double_t cutsV0vertexer[nCutsV0vertexer];
 	 grpRecoParam->GetVertexerV0Cuts(cutsV0vertexer);
 	 vtxer.SetCuts(cutsV0vertexer);
-	 delete [] cutsV0vertexer; cutsV0vertexer = NULL; 
        }
        vtxer.Tracks2V0vertices(fesd);
        AliSysInfo::AddStamp(Form("V0Finder_%d",iEvent), 0,0,iEvent); 
@@ -2230,10 +2242,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	  // get cuts for CascadeVertexer from AliGRPRecoParam
 	  if (grpRecoParam) {
 	    Int_t nCutsCascadeVertexer = grpRecoParam->GetVertexerCascadeNCuts();
-	    Double_t *cutsCascadeVertexer = new Double_t[nCutsCascadeVertexer];
+	    Double_t cutsCascadeVertexer[nCutsCascadeVertexer];
 	    grpRecoParam->GetVertexerCascadeCuts(cutsCascadeVertexer);
 	    cvtxer.SetCuts(cutsCascadeVertexer);
-	    delete [] cutsCascadeVertexer; cutsCascadeVertexer = NULL; 
 	  }
           cvtxer.V0sTracks2CascadeVertices(fesd);
 	  AliSysInfo::AddStamp(Form("CascadeFinder_%d",iEvent), 0,0,iEvent); 
@@ -2308,23 +2319,28 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("Analysis_%d",iEvent), 0,0,iEvent);     
   }  
   //
-    if (fWriteESDfriend) 
-      fesd->GetESDfriend(fesdf);
-
-    ftree->Fill();
-    if (fWriteESDfriend) {
-      WriteESDfriend();
-    }
-    // Auto-save the ESD tree in case of prompt reco @P2
-    if (fRawReader && fRawReader->UseAutoSaveESD()) {
-      ftree->AutoSave("SaveSelf");
-      if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
-    }
-
+  if (fWriteESDfriend) {
+    fesd->GetESDfriend(fesdf);
+    AliSysInfo::AddStamp(Form("CreateFriend_%d",iEvent), 0,0,iEvent);     
+  
+  }
+  //
+  ftree->Fill();
+  AliSysInfo::AddStamp(Form("ESDFill_%d",iEvent), 0,0,iEvent);     
+  //
+  if (fWriteESDfriend) {
+    WriteESDfriend();
+    AliSysInfo::AddStamp(Form("WriteFriend_%d",iEvent), 0,0,iEvent);     
+  }
+  //
+  //
+  // Auto-save the ESD tree in case of prompt reco @P2
+  if (fRawReader && fRawReader->UseAutoSaveESD()) {
+    ftree->AutoSave("SaveSelf");
+    if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
+  }
     // write HLT ESD
     fhlttree->Fill();
-
-    AliSysInfo::AddStamp(Form("WriteESDs_%d",iEvent), 0,0,iEvent);     
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
@@ -4361,4 +4377,66 @@ void AliReconstruction::DeleteRecPoints(const TString& detectors)
   }
   AliSysInfo::AddStamp(Form("DelRecPoints_%d",iEvent), 0,0,iEvent);
   iEvent++;
+}
+
+//_________________________________________________________________
+void AliReconstruction::SetStopOnResourcesExcess(Int_t vRSS,Int_t vVMEM)
+{
+  // require checking the resources left and stopping on excess
+  // if 0  : no check is done
+  // if >0 : stop reconstruction if exceeds this value
+  // if <0 : use as margin to system limits
+  //
+  const int kKB2MB = 1024;
+  const int kInfMem = 9999999;
+  //
+  struct rlimit r;
+  int pgSize = getpagesize();
+  //
+  if (vRSS>0) {
+    fMaxRSS = vRSS;
+    AliInfo(Form("Setting max. RSS usage to user value %d MB",fMaxRSS));
+  }
+  else if (vRSS<0) {
+    getrlimit(RLIMIT_RSS,&r);
+    fMaxRSS = r.rlim_max==RLIM_INFINITY ? kInfMem : int(r.rlim_max*pgSize/kKB2MB/kKB2MB) + vRSS;
+    AliInfo(Form("Setting max. RSS usage to system hard limit %d%s MB (%d margin)",fMaxRSS,r.rlim_max==RLIM_INFINITY ? "(inf)":"",-vRSS));
+  }
+  else {AliInfo("No check on RSS memory usage will be applied");}
+  //
+  if (vVMEM>0) {
+    fMaxVMEM = vVMEM;
+    AliInfo(Form("Setting max. VMEM usage to user value %d MB",fMaxVMEM));
+  }
+  else if (vVMEM<0) {
+    getrlimit(RLIMIT_AS,&r);
+    fMaxVMEM = r.rlim_max==RLIM_INFINITY ? kInfMem : int(r.rlim_max*pgSize/kKB2MB/kKB2MB) + vVMEM;
+    AliInfo(Form("Setting max. VMEM usage to system hard limit %d%s MB (%d margin)",fMaxVMEM,r.rlim_max==RLIM_INFINITY ? "(inf)":"",-vVMEM));
+  }
+  else {AliInfo("No check on RSS memory usage will be applied");}
+  //  
+}
+
+//_________________________________________________________________
+Bool_t AliReconstruction::HasEnoughResources(int ev)
+{
+  // check if process consumed more than allowed resources
+  const int kKB2MB = 1024;
+  Bool_t res = kTRUE;
+  if (!fMaxRSS && !fMaxVMEM) return res;
+  //
+  ProcInfo_t procInfo;
+  gSystem->GetProcInfo(&procInfo);
+  if (procInfo.fMemResident/kKB2MB > fMaxRSS)  res = kFALSE;
+  if (procInfo.fMemVirtual/kKB2MB  > fMaxVMEM) res = kFALSE;  
+  //
+  if (!res) {
+    AliInfo(Form("Job exceeded allowed limits: RSS:%d (%d) VMEM:%d (%d), will stop",
+		 int(procInfo.fMemResident/kKB2MB),fMaxRSS,
+		 int(procInfo.fMemVirtual/kKB2MB) ,fMaxVMEM));
+    //
+    gSystem->Exec(Form("if [ -e %s ]; then\nrm %s\nfi\necho %d > %s",fgkStopEvFName,fgkStopEvFName,ev,fgkStopEvFName));
+    fStopped = kTRUE;
+  }
+  return res;
 }
