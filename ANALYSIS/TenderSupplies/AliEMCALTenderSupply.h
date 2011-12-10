@@ -36,7 +36,7 @@ public:
   virtual ~AliEMCALTenderSupply();
 
   enum NonlinearityFunctions{kPi0MC=0,kPi0GammaGamma=1,kPi0GammaConversion=2,kNoCorrection=3,kBeamTest=4,kBeamTestCorrected=5};
-  enum MisalignSettngs{kdefault=0,kSurveybyS=1, kSurveybyM=2};
+  enum MisalignSettings{kdefault=0,kSurveybyS=1,kSurveybyM=2};
 
   virtual void Init();
   virtual void ProcessEvent();
@@ -100,14 +100,19 @@ public:
   void     SetGeometryMatrixInSM(TGeoHMatrix* m, Int_t i) { fEMCALMatrix[i]    = m           ;}
   
   AliEMCALRecParam   *GetRecParam() const                 { return fRecParam                 ;} 
+  void                SetRecParam(AliEMCALRecParam *p)    { fRecParam = p                    ;}
  
   AliEMCALRecoUtils  *GetRecoUtils() const                { return fEMCALRecoUtils           ;}
-
-  void     SetOCDBPath(const char *path)                  { fOCDBpath = path                 ;}
 
   //Will update cell list by removing bad channels and recalibration + reclusterize	
   void     SwitchOnUpdateCell()                           { fUpdateCell = kTRUE              ;} 
   void     SwitchOffUpdateCell()                          { fUpdateCell = kFALSE             ;}	
+
+  void     SwitchOnUpdateCellOnly()                       { fDoUpdateOnly = kTRUE            ;} 
+  void     SwitchOffUpdateCellOnly()                      { fDoUpdateOnly = kFALSE           ;}	
+
+  void     SwitchOnTrackMatch()                           { fDoTrackMatch = kTRUE            ;} 
+  void     SwitchOffTrackMatch()                          { fDoTrackMatch = kFALSE           ;}	
  
 private:
 
@@ -165,8 +170,8 @@ private:
   Bool_t                 fGeomMatrixSet;          //  set geometry matrices only once, for the first event.         
   Bool_t                 fLoadGeomMatrices;       //  matrices set from configuration, not get from geometry.root or from ESDs/AODs
   AliEMCALRecParam      *fRecParam;               //  reconstruction parameters container
-  Bool_t                 fRecParamSet;            //  Flag if rec param already set
-  TString                fOCDBpath;               //  path with OCDB location
+  Bool_t                 fDoTrackMatch;           //  do track matching
+  Bool_t                 fDoUpdateOnly;           //  do only update of cells
   AliEMCALAfterBurnerUF *fUnfolder;               //! unfolding procedure
   TClonesArray          *fDigitsArr;              //! digits array
   TObjArray             *fClusterArr;             //! recpoints array
@@ -175,8 +180,7 @@ private:
   AliEMCALTenderSupply(const AliEMCALTenderSupply&c);
   AliEMCALTenderSupply& operator= (const AliEMCALTenderSupply&c);
   
-  ClassDef(AliEMCALTenderSupply, 7); // EMCAL tender task
+  ClassDef(AliEMCALTenderSupply, 8); // EMCAL tender task
 };
 
 #endif
-
