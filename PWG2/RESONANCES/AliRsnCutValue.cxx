@@ -50,7 +50,7 @@ AliRsnCutValue::AliRsnCutValue
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
+AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue &copy) :
    AliRsnCut(copy),
    fValue(copy.fValue)
 {
@@ -61,20 +61,20 @@ AliRsnCutValue::AliRsnCutValue(const AliRsnCutValue& copy) :
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutValue& AliRsnCutValue::operator=(const AliRsnCutValue& copy)
+AliRsnCutValue &AliRsnCutValue::operator=(const AliRsnCutValue &copy)
 {
 //
 // Assignment operator.
 // Does not duplicate memory allocation.
 //
 
-  AliRsnCut::operator=(copy);
-  if (this == &copy)
-    return *this;
-  
-  fValue = copy.fValue;
-  
-  return (*this);
+   AliRsnCut::operator=(copy);
+   if (this == &copy)
+      return *this;
+
+   fValue = copy.fValue;
+
+   return (*this);
 }
 
 //_________________________________________________________________________________________________
@@ -87,7 +87,7 @@ Bool_t AliRsnCutValue::IsSelected(TObject *object)
 
    // skip cut if value is not initialized
    if (!fValue) return kTRUE;
-   
+
    // match target types
    SetTargetType(fValue->GetTargetType());
 

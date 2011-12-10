@@ -86,16 +86,16 @@ AliRsnCutTrackQuality::AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy) 
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutTrackQuality& AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQuality &copy)
+AliRsnCutTrackQuality &AliRsnCutTrackQuality::operator=(const AliRsnCutTrackQuality &copy)
 {
 //
 // Assignment operator.
 // Just copy all data member values.
 //
 
-  if (this == &copy)
-    return *this;
-  
+   if (this == &copy)
+      return *this;
+
    fFlagsOn = copy.fFlagsOn;
    fFlagsOff = copy.fFlagsOff;
    fRejectKinkDaughters = copy.fRejectKinkDaughters;
@@ -255,7 +255,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
    if (fAODTestFilterBit >= 0) {
       UInt_t bit = 1 << fAODTestFilterBit;
       AliDebugClass(2, Form("Required a test filter bit for AOD check: %u (result: %s)", bit, (track->TestFilterBit(bit) ? "accept" : "reject")));
-      if (!track->TestFilterBit(bit)) 
+      if (!track->TestFilterBit(bit))
          return kFALSE;
       else {
          if (track->Pt() < fPt[0] || track->Pt() > fPt[1]) return kFALSE;
@@ -263,7 +263,7 @@ Bool_t AliRsnCutTrackQuality::CheckAOD(AliAODTrack *track)
          return kTRUE;
       }
    }
-   
+
    // try to retrieve the reference AOD event
    AliAODEvent *aodEvent = 0x0;
    if (fEvent) aodEvent = fEvent->GetRefAOD();

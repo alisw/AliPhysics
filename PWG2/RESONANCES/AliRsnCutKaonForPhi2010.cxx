@@ -1,6 +1,6 @@
 //
 // This cut implements all the checks done to accept a track as a Kaon
-// for the PbPb analysis using 2010 runs. 
+// for the PbPb analysis using 2010 runs.
 // It is based on standard cuts on track quality and nsigma cuts
 // with respect to the TPC and TOF signals for the PID.
 //
@@ -65,7 +65,7 @@ AliRsnCutKaonForPhi2010::AliRsnCutKaonForPhi2010(const AliRsnCutKaonForPhi2010 &
 }
 
 //__________________________________________________________________________________________________
-AliRsnCutKaonForPhi2010& AliRsnCutKaonForPhi2010::operator=(const AliRsnCutKaonForPhi2010 &copy)
+AliRsnCutKaonForPhi2010 &AliRsnCutKaonForPhi2010::operator=(const AliRsnCutKaonForPhi2010 &copy)
 {
 //
 // Assignment operator
@@ -73,14 +73,14 @@ AliRsnCutKaonForPhi2010& AliRsnCutKaonForPhi2010::operator=(const AliRsnCutKaonF
 
    AliRsnCut::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fMode = copy.fMode;
    fCutTPC = copy.fCutTPC;
    fCutTOF = copy.fCutTOF;
    fTOFthreshold = copy.fTOFthreshold;
    fMyPID = copy.fMyPID;
    fCutQuality = copy.fCutQuality;
-   
+
    return *this;
 }
 
@@ -91,7 +91,7 @@ void AliRsnCutKaonForPhi2010::InitMyPID(Bool_t isMC, Bool_t isESD)
 // Initialize manual PID object
 //
 
-   if (isESD) 
+   if (isESD)
       fMyPID = new AliESDpid(isMC);
    else
       fMyPID = new AliAODpidUtil(isMC);
@@ -106,31 +106,31 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
 
    // coherence check
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check track
    AliVTrack *track = fDaughter->Ref2Vtrack();
    if (!track) {
       if (!fDaughter->GetRef()) AliWarning("NULL ref");
       return kFALSE;
    }
-   
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-   
+
    // check quality and reject always bad quality tracks
    if (!fCutQuality.IsSelected(obj)) {
       AliDebugClass(1, Form("[%s] Track quality is bad", GetName()));
       return kFALSE;
    }
-   
+
    // initialize check variables
    Bool_t   accept = kFALSE;
    Bool_t   isTOF  = MatchTOF(track);
    Double_t nsTPC  = 1E20;
    Double_t nsTOF  = 1E20;
-   
+
    // if PID is required, compute it check initialization of PID object
    if (fMode >= kOnlyTPC && fMode <= kDefaultPID) {
       AliPIDResponse *pid = fEvent->GetPIDResponse();
@@ -139,14 +139,14 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
          return kFALSE;
       }
       // TPC PID
-      if (fMyPID) 
+      if (fMyPID)
          nsTPC = TMath::Abs(fMyPID->NumberOfSigmasTPC(track, AliPID::kKaon));
       else
          nsTPC = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
       // TOF PID
       nsTOF = TMath::Abs(pid->NumberOfSigmasTOF(track, AliPID::kKaon));
    }
-   
+
    // decide cut result depending on mode
    switch (fMode) {
       case kQuality:
@@ -201,7 +201,7 @@ Bool_t AliRsnCutKaonForPhi2010::IsSelected(TObject *obj)
          AliDebugClass(1, Form("[%s] Wrong mode", GetName()));
          accept = kFALSE;
    }
-   
+
    AliDebugClass(1, Form("[%s] Track %s", GetName(), (accept ? "accepted" : "rejected")));
    return accept;
 }

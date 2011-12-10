@@ -8,7 +8,7 @@
 // -- properties of resonance (mass, PDG code if needed)
 // -- properties of daughters (assigned mass, charges)
 // -- definition of output histogram
-// 
+//
 
 #include "AliRsnDaughter.h"
 #include "AliRsnMiniParticle.h"
@@ -33,7 +33,7 @@ public:
       kHistogramSparse,
       kTypes
    };
-   
+
    enum EComputation {
       kEventOnly,
       kTrackPair,
@@ -44,13 +44,13 @@ public:
       kMother,
       kComputations
    };
-   
+
    AliRsnMiniOutput();
    AliRsnMiniOutput(const char *name, EOutputType type, EComputation src = kTrackPair);
    AliRsnMiniOutput(const char *name, const char *outType, const char *compType);
    AliRsnMiniOutput(const AliRsnMiniOutput &copy);
-   AliRsnMiniOutput& operator=(const AliRsnMiniOutput &copy);
-   
+   AliRsnMiniOutput &operator=(const AliRsnMiniOutput &copy);
+
    Bool_t          IsEventOnly()        const {return (fComputation == kEventOnly);}
    Bool_t          IsTrackPair()        const {return (fComputation == kTrackPair);}
    Bool_t          IsTrackPairMix()     const {return (fComputation == kTrackPairMix);}
@@ -62,7 +62,7 @@ public:
    Bool_t          IsSameDaughter()     const {return (fDaughter[0] == fDaughter[1]);}
    //Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameCut());}
    Bool_t          IsSymmetric()        const {return (IsLikeSign() && IsSameDaughter());}
-                                        
+
    EOutputType     GetOutputType()      const {return fOutputType;}
    EComputation    GetComputation()     const {return fComputation;}
    Int_t           GetCutID(Int_t i)    const {if (i <= 0) return fCutID [0]; else return fCutID [1];}
@@ -72,7 +72,7 @@ public:
    Int_t           GetCharge(Int_t i)   const {if (i <= 0) return fCharge[0]; else return fCharge[1];}
    Int_t           GetMotherPDG()       const {return fMotherPDG;}
    Double_t        GetMotherMass()      const {return fMotherMass;}
-                   
+
    void            SetOutputType(EOutputType type)    {fOutputType = type;}
    void            SetComputation(EComputation src)   {fComputation = src;}
    void            SetCutID(Int_t i, Int_t   value)   {if (i <= 0) fCutID [0] = value; else fCutID [1] = value;}
@@ -81,19 +81,19 @@ public:
    void            SetMotherPDG(Int_t pdg)            {fMotherPDG = pdg;}
    void            SetMotherMass(Double_t mass)       {fMotherMass = mass;}
    void            SetPairCuts(AliRsnCutSet *set)     {fPairCuts = set;}
-                   
+
    void            AddAxis(Int_t id, Int_t nbins, Double_t min, Double_t max);
    void            AddAxis(Int_t id, Double_t min, Double_t max, Double_t step);
    void            AddAxis(Int_t id, Int_t nbins, Double_t *values);
-   AliRsnMiniAxis* GetAxis(Int_t i)  {if (i >= 0 && i < fAxes.GetEntries()) return (AliRsnMiniAxis*)fAxes[i]; return 0x0;}
-   Double_t*       GetAllComputed()  {return fComputed.GetArray();}
-   
-   AliRsnMiniPair& Pair() {return fPair;}
+   AliRsnMiniAxis *GetAxis(Int_t i)  {if (i >= 0 && i < fAxes.GetEntries()) return (AliRsnMiniAxis *)fAxes[i]; return 0x0;}
+   Double_t       *GetAllComputed()  {return fComputed.GetArray();}
+
+   AliRsnMiniPair &Pair() {return fPair;}
    Bool_t          Init(const char *prefix, TList *list);
    Bool_t          FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent *event, TClonesArray *valueList);
    Bool_t          FillEvent(AliRsnMiniEvent *event, TClonesArray *valueList);
    Int_t           FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst = kTRUE);
-                  
+
 private:
 
    void   CreateHistogram(const char *name);
@@ -109,7 +109,7 @@ private:
    Int_t            fMotherPDG;        //  PDG code of resonance
    Double_t         fMotherMass;       //  nominal resonance mass
    AliRsnCutSet    *fPairCuts;         //  cuts on the pair
-                           
+
    Int_t            fOutputID;         //  index of output object in container list
    TClonesArray     fAxes;             //  definitions for the axes of each value
    TArrayD          fComputed;         //! temporary container for all computed values
@@ -117,7 +117,7 @@ private:
    TList           *fList;             //! pointer to the TList containing the output
    TArrayI          fSel1;             //! list of selected particles for definition 1
    TArrayI          fSel2;             //! list of selected particles for definition 2
-   
+
    ClassDef(AliRsnMiniOutput,1)  // AliRsnMiniOutput class
 };
 

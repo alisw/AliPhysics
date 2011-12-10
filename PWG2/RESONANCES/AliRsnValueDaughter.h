@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Values which depend on 4-momentum of the daughters.
@@ -33,13 +33,13 @@ public:
    };
 
    AliRsnValueDaughter(const char *name = "valDaughter", EType type = kTypes);
-   AliRsnValueDaughter(const AliRsnValueDaughter& copy);
-   AliRsnValueDaughter& operator=(const AliRsnValueDaughter& copy);
+   AliRsnValueDaughter(const AliRsnValueDaughter &copy);
+   AliRsnValueDaughter &operator=(const AliRsnValueDaughter &copy);
    virtual ~AliRsnValueDaughter() { }
 
    void             SetType(EType type)  {fType = type;}
    EType            GetType()     const  {return fType;}
-   const char*      GetTypeName() const;
+   const char      *GetTypeName() const;
 
    virtual Bool_t   Eval(TObject *object);
 

@@ -44,7 +44,7 @@ inline Bool_t AliRsnCutPrimaryVertex::CheckVertex(AliVVertex *vertex)
 // least one contributor
 //
 
-   if (!vertex) return kFALSE; 
+   if (!vertex) return kFALSE;
    if (vertex->GetNContributors() < 1) return kFALSE;
    return kTRUE;
 }

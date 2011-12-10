@@ -46,7 +46,7 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDTPC::AliRsnCutPIDTPC
-(const AliRsnCutPIDTPC& copy) :
+(const AliRsnCutPIDTPC &copy) :
    AliRsnCut(copy),
    fRejectOutside(copy.fRejectOutside),
    fMomMin(copy.fMomMin),
@@ -64,7 +64,7 @@ AliRsnCutPIDTPC::AliRsnCutPIDTPC
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
+AliRsnCutPIDTPC &AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC &copy)
 {
 //
 // Assignment operator
@@ -72,7 +72,7 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
 
    AliRsnCut::operator=(copy);
    if (this == &copy)
-    return *this;
+      return *this;
 
    fRejectOutside = copy.fRejectOutside;
    fMomMin        = copy.fMomMin;
@@ -80,7 +80,7 @@ AliRsnCutPIDTPC& AliRsnCutPIDTPC::operator=(const AliRsnCutPIDTPC& copy)
    fRefType       = copy.fRefType;
    fESDpid        = copy.fESDpid;
    fAODpid        = copy.fAODpid;
-   
+
    Int_t i;
    for (i = 0; i < 5; i++) fBB[i] = copy.fBB[i];
 

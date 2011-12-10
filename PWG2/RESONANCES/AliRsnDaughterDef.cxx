@@ -9,11 +9,11 @@
 //     -- defines the mass to be assigned to this object, for any purpose
 //        (e.g.: to compute its 4-momentum to be used for a resonance mass)
 //
-//  -- track charge, which can be '+', '-', '0', 
+//  -- track charge, which can be '+', '-', '0',
 //     -- any other char leaves this undefined (use only in daughter monitor loops)
 //     -- when doing resonance analysis, or when RSN Input handler needs to be used,
 //        this must always be defined
-//     
+//
 //  -- object type (track/V0/cascade)
 //     -- could be needed to select tracks when particle species is not specified
 //     -- works only in single daughter loops
@@ -99,14 +99,14 @@ AliRsnDaughterDef::AliRsnDaughterDef(const AliRsnDaughterDef &copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnDaughterDef& AliRsnDaughterDef::operator=(const AliRsnDaughterDef &copy)
+AliRsnDaughterDef &AliRsnDaughterDef::operator=(const AliRsnDaughterDef &copy)
 {
 //
 // Assignment operator has standard behavior.
 //
-  if (this == &copy)
-    return *this;
-  
+   if (this == &copy)
+      return *this;
+
    fMass = copy.fMass;
    fCharge = copy.fCharge;
    fPID = copy.fPID;

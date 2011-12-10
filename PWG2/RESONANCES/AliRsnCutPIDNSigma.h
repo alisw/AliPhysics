@@ -31,53 +31,53 @@ public:
       kTOF,
       kDetectors
    };
-   
+
    //
    // This allows to define several intervals
    //
    class AliRsnPIDRange : public TObject {
    public:
-      
+
       AliRsnPIDRange(Double_t nsigma, Double_t pmin, Double_t pmax)
          : fPMin(pmin), fPMax(pmax), fNSigmaCut(nsigma) { }
-         
-      Double_t& PMin()      {return fPMin;}
-      Double_t& PMax()      {return fPMax;}
-      Double_t& NSigmaCut() {return fNSigmaCut;}
-      
+
+      Double_t &PMin()      {return fPMin;}
+      Double_t &PMax()      {return fPMax;}
+      Double_t &NSigmaCut() {return fNSigmaCut;}
+
       Bool_t IsInRange(Double_t mom)  {return (mom >= fPMin && mom <= fPMax);}
       Bool_t CutPass(Double_t nsigma) {return (nsigma <= fNSigmaCut);}
-      
+
    private:
-   
+
       Double_t fPMin;      // lower bound of momentum range
       Double_t fPMax;      // upper bound of momentum range
       Double_t fNSigmaCut; // cut in number of sigmas
-      
+
       ClassDef(AliRsnCutPIDNSigma::AliRsnPIDRange,1)
    };
 
    AliRsnCutPIDNSigma();
    AliRsnCutPIDNSigma(const char *name, AliPID::EParticleType species, EDetector det);
-   AliRsnCutPIDNSigma(const AliRsnCutPIDNSigma& copy);
-   AliRsnCutPIDNSigma& operator=(const AliRsnCutPIDNSigma& copy);
+   AliRsnCutPIDNSigma(const AliRsnCutPIDNSigma &copy);
+   AliRsnCutPIDNSigma &operator=(const AliRsnCutPIDNSigma &copy);
    virtual ~AliRsnCutPIDNSigma() { }
 
    void             SetSpecies(AliPID::EParticleType type)        {fSpecies = type;}
    void             SetDetector(EDetector det)                    {fDetector = det;}
    void             SetRejectUnmatched(Bool_t yn = kTRUE)         {fRejectUnmatched = yn;}
-   
+
    AliPIDResponse  *MyPID()                                       {return fMyPID;}
    void             InitMyPID(Bool_t isMC, Bool_t isESD);
-   
+
    void             SinglePIDRange(Double_t nsigma);
    void             AddPIDRange(Double_t nsigma, Double_t pmin = 0.0, Double_t pmax = 1E20);
-   
+
    Bool_t           MatchITS(const AliVTrack *vtrack) const;
    Bool_t           MatchTPC(const AliVTrack *vtrack) const;
    Bool_t           MatchTOF(const AliVTrack *vtrack) const;
    Bool_t           MatchDetector(const AliVTrack *vtrack) const;
-   
+
    virtual Bool_t   IsSelected(TObject *object);
    virtual void     Print(const Option_t *option = "") const;
 
@@ -113,7 +113,7 @@ inline Bool_t AliRsnCutPIDNSigma::MatchTPC(const AliVTrack *vtrack) const
 //
 
    if ((vtrack->GetStatus() & AliESDtrack::kTPCin) == 0) return kFALSE;
-   
+
    return kTRUE;
 }
 
@@ -151,7 +151,7 @@ inline void AliRsnCutPIDNSigma::AddPIDRange(Double_t nsigma, Double_t pmin, Doub
 //
 
    Int_t n = fRanges.GetEntries();
-   
+
    new (fRanges[n]) AliRsnPIDRange(nsigma, pmin, pmax);
 }
 
@@ -162,7 +162,7 @@ inline void AliRsnCutPIDNSigma::SinglePIDRange(Double_t nsigma)
 //
 
    fRanges.Delete();
-   
+
    new (fRanges[0]) AliRsnPIDRange(nsigma, 0.0, 1E20);
 }
 

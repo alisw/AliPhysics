@@ -26,7 +26,7 @@ ClassImp(AliRsnCutPIDNSigma::AliRsnPIDRange)
 ClassImp(AliRsnCutPIDNSigma)
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() : 
+AliRsnCutPIDNSigma::AliRsnCutPIDNSigma() :
    AliRsnCut("cut", AliRsnTarget::kDaughter),
    fSpecies(AliPID::kUnknown),
    fDetector(kDetectors),
@@ -60,7 +60,7 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
-(const AliRsnCutPIDNSigma& copy) :
+(const AliRsnCutPIDNSigma &copy) :
    AliRsnCut(copy),
    fSpecies(copy.fSpecies),
    fDetector(copy.fDetector),
@@ -76,7 +76,7 @@ AliRsnCutPIDNSigma::AliRsnCutPIDNSigma
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy)
+AliRsnCutPIDNSigma &AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma &copy)
 {
 //
 // Assignment operator
@@ -84,7 +84,7 @@ AliRsnCutPIDNSigma& AliRsnCutPIDNSigma::operator=(const AliRsnCutPIDNSigma& copy
 
    AliRsnCut::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fSpecies = copy.fSpecies;
    fDetector = copy.fDetector;
    fRejectUnmatched = copy.fRejectUnmatched;
@@ -101,7 +101,7 @@ void AliRsnCutPIDNSigma::InitMyPID(Bool_t isMC, Bool_t isESD)
 // Initialize manual PID object
 //
 
-   if (isESD) 
+   if (isESD)
       fMyPID = new AliESDpid(isMC);
    else
       fMyPID = new AliAODpidUtil(isMC);
@@ -118,13 +118,13 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
 
    // coherence check
    if (!TargetOK(object)) return kFALSE;
-   
+
    // check initialization of PID object
    // if manual PID is used, use that, otherwise get from source event
    AliPIDResponse *pid = 0x0;
-   if (fMyPID) 
-      pid = fMyPID; 
-   else 
+   if (fMyPID)
+      pid = fMyPID;
+   else
       pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
@@ -138,7 +138,7 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
       AliDebugClass(2, "Referenced daughter is not a track");
       return kFALSE;
    }
-   
+
    // check matching, if required
    // a) if detector is not matched and matching is required, reject the track
    // b) if detector is not matched and matching is not required, accept blindly the track
@@ -147,10 +147,10 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
       AliDebugClass(2, Form("Detector not matched. fRejectUnmatched = %s --> track is %s", (fRejectUnmatched ? "true" : "false"), (fRejectUnmatched ? "rejected" : "accepted")));
       return (!fRejectUnmatched);
    }
-   
+
    // get reference momentum
    fTrackMom = (fDetector == kTPC) ? vtrack->GetTPCmomentum() : vtrack->P();
-   
+
    // get number of sigmas
    switch (fDetector) {
       case kITS:
@@ -166,13 +166,13 @@ Bool_t AliRsnCutPIDNSigma::IsSelected(TObject *object)
          AliError("Bad detector chosen. Rejecting track");
          return kFALSE;
    }
-   
+
    // loop on all ranges, and use the one which contains this momentum
    // if none is found, the cut is not passed
    Bool_t accept = kFALSE;
    Int_t  i, goodRange = -1, nRanges = fRanges.GetEntriesFast();
    for (i = 0; i < nRanges; i++) {
-      AliRsnPIDRange *range = (AliRsnPIDRange*)fRanges[i];
+      AliRsnPIDRange *range = (AliRsnPIDRange *)fRanges[i];
       if (!range) continue;
       if (!range->IsInRange(fTrackMom)) continue;
       else {
@@ -199,12 +199,12 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
 //
 
    Char_t mom[200], det[100], match[200];
-      
+
    if (fRejectUnmatched)
       snprintf(match, 200, "Unmatched tracks are rejected");
    else
       snprintf(match, 200, "No check on track matching");
-      
+
    switch (fDetector) {
       case kITS: snprintf(det, 3, "ITS"); break;
       case kTPC: snprintf(det, 3, "TPC"); break;
@@ -215,5 +215,5 @@ void AliRsnCutPIDNSigma::Print(const Option_t *) const
    AliInfo(Form("Cut name          : %s", GetName()));
    AliInfo(Form("--> PID detector  : %s", det));
    AliInfo(Form("--> match criteria: %s", match));
-   AliInfo(Form("--> momentum range: %s", mom));   
+   AliInfo(Form("--> momentum range: %s", mom));
 }

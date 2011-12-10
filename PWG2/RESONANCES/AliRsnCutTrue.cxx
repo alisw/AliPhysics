@@ -41,7 +41,7 @@ AliRsnCutTrue::AliRsnCutTrue(const AliRsnCutTrue &copy) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnCutTrue& AliRsnCutTrue::operator=(const AliRsnCutTrue &copy)
+AliRsnCutTrue &AliRsnCutTrue::operator=(const AliRsnCutTrue &copy)
 {
 //
 // Assignment operator
@@ -62,17 +62,17 @@ Bool_t AliRsnCutTrue::IsSelected(TObject *obj)
 
    // convert target
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check if MC is present
    if (!fDaughter->GetRefMC()) {
       AliError("Cannot check cut 'AliRsnCutTrue' without MC information");
       return kFALSE;
    }
-   
+
    // compare PDG
    fCutValueI = fDaughter->GetPDGAbs();
    return OkValueI();
 }
 
-   
-   
+
+

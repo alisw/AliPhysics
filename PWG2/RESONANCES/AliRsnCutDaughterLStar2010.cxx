@@ -47,29 +47,29 @@ Bool_t AliRsnCutDaughterLStar2010::IsSelected(TObject *obj)
 
    // coherence check
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check track
    AliVTrack *track = fDaughter->Ref2Vtrack();
    if (!track) {
       if (!fDaughter->GetRef()) AliWarning("NULL ref");
       return kFALSE;
    }
-   
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-   
+
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
-   
+
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
       return kFALSE;
    }
-   
+
    // check if TOF is matched
    // and computes all values used in the PID cut
    Bool_t   isTOF  = MatchTOF(track);
@@ -79,7 +79,7 @@ Bool_t AliRsnCutDaughterLStar2010::IsSelected(TObject *obj)
    Double_t nsTOF  = TMath::Abs(pid->NumberOfSigmasTOF(track, fPID));
    Double_t maxTPC = 1E20;
    Double_t maxTOF = 1E20;
-   
+
    // applies the cut differently depending on the PID and the momentum
    if (isTOF) {
       // TPC: 5sigma cut for all
@@ -88,14 +88,14 @@ Bool_t AliRsnCutDaughterLStar2010::IsSelected(TObject *obj)
       if (p < 1.5) maxTOF = 3.0; else maxTOF = 2.0;
       return (nsTOF <= maxTOF);
    } else {
-      // TPC: 
+      // TPC:
       // below 350 MeV: 5sigma
       // between 350 and 500 MeV: 3sigma
       // pions above 500 MeV: 2sigma
       // kaons between 500 and 700 MeV: 2sigma
       // kaons above 700 MeV: rejected
       // protons above 1200 MeV: rejected
-     if (pTPC <= 0.35) 
+      if (pTPC <= 0.35)
          maxTPC = 5.0;
       else if (pTPC <= 0.5)
          maxTPC = 3.0;

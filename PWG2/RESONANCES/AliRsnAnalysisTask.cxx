@@ -48,7 +48,7 @@ AliRsnAnalysisTask::AliRsnAnalysisTask(const char *name) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnAnalysisTask::AliRsnAnalysisTask(const AliRsnAnalysisTask& copy) :
+AliRsnAnalysisTask::AliRsnAnalysisTask(const AliRsnAnalysisTask &copy) :
    AliAnalysisTaskSE(copy),
    fOutput(0),
    fRsnObjects(copy.fRsnObjects),
@@ -64,7 +64,7 @@ AliRsnAnalysisTask::AliRsnAnalysisTask(const AliRsnAnalysisTask& copy) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy)
+AliRsnAnalysisTask &AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask &copy)
 {
 //
 // Assignment operator.
@@ -73,12 +73,12 @@ AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy
 //
    AliAnalysisTaskSE::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fRsnObjects = copy.fRsnObjects;
    fInputEHMain = copy.fInputEHMain;
    fInputEHMix = copy.fInputEHMix;
    fBigOutput = copy.fBigOutput;
-   
+
    return (*this);
 }
 
@@ -86,7 +86,7 @@ AliRsnAnalysisTask& AliRsnAnalysisTask::operator=(const AliRsnAnalysisTask& copy
 AliRsnAnalysisTask::~AliRsnAnalysisTask()
 {
 //
-// Destructor. 
+// Destructor.
 // Clean-up the output list, but not the histograms that are put inside
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
@@ -121,13 +121,30 @@ void AliRsnAnalysisTask::UserCreateOutputObjects()
    if (fBigOutput) OpenFile(1);
    fOutput = new TList();
    fOutput->SetOwner();
-   
+
    // loop on computators and initialize all their outputs
    TObjArrayIter next(&fRsnObjects);
-   AliRsnLoop *obj = 0x0;
-   while ( (obj = (AliRsnLoop*)next()) ) {
-      obj->Init(GetName(), fOutput);
+   AliRsnLoop *objLoop = 0x0;
+   while ( (objLoop = (AliRsnLoop *)next()) ) {
+      objLoop->Init(GetName(), fOutput);
    }
+
+   if (fInputEHMain) {
+      TObjArrayIter nextIH(fInputEHMain->InputEventHandlers());
+      TObject *obj = 0x0;
+      while ( (obj = nextIH()) ) {
+         if (obj->IsA() == AliRsnInputHandler::Class()) {
+            AliRsnInputHandler *rsnIH = (AliRsnInputHandler *) obj;
+            AliRsnDaughterSelector *s = rsnIH->GetSelector();
+            TClonesArray *c = s->GetCutSetC();
+            for (Int_t is = 0; is < c->GetEntries(); is++) {
+               AliRsnCutSet *cuts = (AliRsnCutSet *)c->At(is);
+               cuts->Init(fOutput);
+            }
+         }
+      }
+   }
+
 
    // post data for ALL output slots >0 here, to get at least an empty histogram
    PostData(1, fOutput);
@@ -150,28 +167,28 @@ void AliRsnAnalysisTask::UserExec(Option_t *)
       TObject *obj = 0x0;
       while ( (obj = next()) ) {
          if (obj->IsA() == AliRsnInputHandler::Class()) {
-            rsnIH = (AliRsnInputHandler*)obj;
+            rsnIH = (AliRsnInputHandler *)obj;
             //AliInfo(Form("Found object '%s' which is RSN input handler", obj->GetName()));
             evMain = rsnIH->GetRsnEvent();
             break;
          }
       }
    }
-   
+
    if (!evMain) return;
 
    TObjArrayIter next(&fRsnObjects);
    AliRsnLoop *obj = 0x0;
-   while ( (obj = (AliRsnLoop*)next()) ) {
+   while ( (obj = (AliRsnLoop *)next()) ) {
       if (obj->IsMixed()) continue;
       obj->DoLoop(evMain, rsnIH->GetSelector());
    }
-   
+
    PostData(1, fOutput);
 }
 
 //__________________________________________________________________________________________________
-void AliRsnAnalysisTask::UserExecMix(Option_t*)
+void AliRsnAnalysisTask::UserExecMix(Option_t *)
 {
 //
 // Main loop for event-mixing computations
@@ -189,7 +206,7 @@ void AliRsnAnalysisTask::UserExecMix(Option_t*)
       TObject *obj = 0x0;
       while ( (obj = next()) ) {
          if (obj->IsA() == AliRsnInputHandler::Class()) {
-            rsnIH = (AliRsnInputHandler*)obj;
+            rsnIH = (AliRsnInputHandler *)obj;
             //AliInfo(Form("Found object '%s' which is RSN input handler", obj->GetName()));
             evMain = rsnIH->GetRsnEvent();
             id = fInputEHMain->InputEventHandlers()->IndexOf(obj);
@@ -197,26 +214,26 @@ void AliRsnAnalysisTask::UserExecMix(Option_t*)
          }
       }
    }
-   
+
    if (!evMain) return;
 
    // gets first input handler form mixing buffer
-   AliMultiInputEventHandler *ihMultiMix = dynamic_cast<AliMultiInputEventHandler*>(fInputEHMix->InputEventHandler(0));
+   AliMultiInputEventHandler *ihMultiMix = dynamic_cast<AliMultiInputEventHandler *>(fInputEHMix->InputEventHandler(0));
    if (ihMultiMix) {
-      rsnMixIH = dynamic_cast<AliRsnInputHandler*>(ihMultiMix->InputEventHandler(id));
+      rsnMixIH = dynamic_cast<AliRsnInputHandler *>(ihMultiMix->InputEventHandler(id));
       if (rsnMixIH) {
          evMix = rsnMixIH->GetRsnEvent();
          if (!evMix) return;
 
          TObjArrayIter next(&fRsnObjects);
          AliRsnLoop *obj = 0x0;
-         while ( (obj = (AliRsnLoop*)next()) ) {
+         while ( (obj = (AliRsnLoop *)next()) ) {
             if (!obj->IsMixed()) continue;
             obj->DoLoop(evMain, rsnIH->GetSelector(), evMix, rsnMixIH->GetSelector());
          }
       }
    }
-   
+
    PostData(1, fOutput);
 }
 
@@ -228,7 +245,7 @@ void AliRsnAnalysisTask::Terminate(Option_t *)
 // Called once at the end of the query
 //
 
-   fOutput = dynamic_cast<TList*>(GetOutputData(1));
+   fOutput = dynamic_cast<TList *>(GetOutputData(1));
    if (!fOutput) { AliError("Could not retrieve TList fOutput"); return; }
 }
 

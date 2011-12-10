@@ -66,24 +66,24 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutV0& AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
+AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
 {
 //
 // Assignment operator.
 // Just copy all data member values.
 //
 
-  if (this == &copy)
-    return *this;
-  
-  fHypothesis = copy.fHypothesis;
-  fMass = copy.fMass;
-  fTolerance = copy.fTolerance;
-  fMaxDCAVertex = copy.fMaxDCAVertex;
-  fMinCosPointAngle = copy.fMinCosPointAngle;
-  fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
-  fESDtrackCuts = copy.fESDtrackCuts;
-  
+   if (this == &copy)
+      return *this;
+
+   fHypothesis = copy.fHypothesis;
+   fMass = copy.fMass;
+   fTolerance = copy.fTolerance;
+   fMaxDCAVertex = copy.fMaxDCAVertex;
+   fMinCosPointAngle = copy.fMinCosPointAngle;
+   fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
+   fESDtrackCuts = copy.fESDtrackCuts;
+
    return (*this);
 }
 
@@ -98,12 +98,12 @@ Bool_t AliRsnCutV0::IsSelected(TObject *object)
 
    // coherence check
    if (!TargetOK(object)) return kFALSE;
-   
+
    // check cast
    AliESDv0 *v0esd = fDaughter->Ref2ESDv0();
    AliAODv0 *v0aod = fDaughter->Ref2AODv0();
    //cout << fDaughter->GetRef()->ClassName() << ' ' << v0esd << ' ' << v0aod << endl;
-   
+
    // operate depending on cast
    if (v0esd) {
       return CheckESD(v0esd);
@@ -129,20 +129,20 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       AliDebugClass(1, "Rejecting V0 in 'on fly' status");
       return kFALSE; // if kTRUE, then this V0 is recontructed
    }
-   
+
    // retrieve pointer to owner event
    AliESDEvent *lESDEvent = fEvent->GetRefESD();
    Double_t xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
    Double_t yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
    Double_t zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
    AliDebugClass(2, Form("Primary vertex: %f %f %f", xPrimaryVertex, yPrimaryVertex, zPrimaryVertex));
-   
+
    // retrieve the V0 daughters
    UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0->GetPindex());
    UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0->GetNindex());
    AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
    AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-   
+
    // check quality cuts
    if (fESDtrackCuts) {
       AliDebugClass(2, "Checking quality cuts");
@@ -155,20 +155,20 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
          return kFALSE;
       }
    }
-   
+
    // filter like-sign V0
    //if ((TMath::Abs(pTrack->GetSign()) - TMath::Abs(nTrack->GetSign()) ) < 0.1) {
    //   AliDebugClass(2, "Failed like-sign V0 check");
    //   return kFALSE;
    //}
-   
+
    // check compatibility with expected species hypothesis
    v0->ChangeMassHypothesis(fHypothesis);
    if ((TMath::Abs(v0->GetEffMass() - fMass)) > fTolerance) {
       AliDebugClass(2, "V0 is not in the expected inv mass range");
       return kFALSE;
    }
-   
+
    // topological checks
    if (TMath::Abs(v0->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > fMaxDCAVertex) {
       AliDebugClass(2, "Failed check on DCA to primary vertes");
@@ -182,10 +182,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       AliDebugClass(2, "Failed check on DCA between daughters");
       return kFALSE;
    }
-   
+
    // if we reach this point, all checks were successful
    AliDebugClass(2, "Good V0 (hallelujah)");
-   return kTRUE;   
+   return kTRUE;
 }
 
 //_________________________________________________________________________________________________
@@ -198,7 +198,7 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *)
 //
 
    AliWarning("Cuts is not yet implemented for AOD");
-   
+
    return kTRUE;
 }
 

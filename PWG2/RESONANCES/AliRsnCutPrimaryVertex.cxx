@@ -47,8 +47,8 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
    if (!TargetOK(object)) return kFALSE;
 
    // retrieve ESD event
-   AliESDEvent *esd = dynamic_cast<AliESDEvent*>(fEvent->GetRef());
-   AliAODEvent *aod = dynamic_cast<AliAODEvent*>(fEvent->GetRef());
+   AliESDEvent *esd = dynamic_cast<AliESDEvent *>(fEvent->GetRef());
+   AliAODEvent *aod = dynamic_cast<AliAODEvent *>(fEvent->GetRef());
 
    if (esd) {
       // pile-up check
@@ -99,7 +99,7 @@ Bool_t AliRsnCutPrimaryVertex::IsSelected(TObject *object)
          return kFALSE;
       }
       // now check primary vertex
-      aodv = (AliAODVertex*)aod->GetPrimaryVertex();
+      aodv = (AliAODVertex *)aod->GetPrimaryVertex();
       if (CheckVertex(aodv)) {
          AliDebugClass(1, "Vertex TRK is OK");
          fCutValueD = aodv->GetZ();

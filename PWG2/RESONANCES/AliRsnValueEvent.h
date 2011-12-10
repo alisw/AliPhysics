@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Values which depend on 4-momentum of the pair.
@@ -25,17 +25,17 @@ public:
       kCentralityV0,    // event centrality (V0 method)
       kCentralityTrack, // event centrality (tracks method)
       kCentralityCL1,   // event centrality (CL1 method)
-      kTypes            
+      kTypes
    };
 
    AliRsnValueEvent(const char *name = "valEvent", EType type = kTypes);
-   AliRsnValueEvent(const AliRsnValueEvent& copy);
-   AliRsnValueEvent& operator=(const AliRsnValueEvent& copy);
+   AliRsnValueEvent(const AliRsnValueEvent &copy);
+   AliRsnValueEvent &operator=(const AliRsnValueEvent &copy);
    virtual ~AliRsnValueEvent() { }
 
    void             SetType(EType type)  {fType = type;}
    EType            GetType()     const  {return fType;}
-   const char*      GetTypeName() const;
+   const char      *GetTypeName() const;
 
    virtual Bool_t   Eval(TObject *object);
 

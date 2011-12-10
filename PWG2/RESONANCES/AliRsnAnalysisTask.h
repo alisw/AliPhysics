@@ -18,21 +18,21 @@ public:
 
    AliRsnAnalysisTask();
    AliRsnAnalysisTask(const char *name);
-   AliRsnAnalysisTask(const AliRsnAnalysisTask&);
-   AliRsnAnalysisTask& operator=(const AliRsnAnalysisTask&);
+   AliRsnAnalysisTask(const AliRsnAnalysisTask &);
+   AliRsnAnalysisTask &operator=(const AliRsnAnalysisTask &);
    virtual ~AliRsnAnalysisTask();
 
    virtual void     UserCreateOutputObjects();
    virtual void     UserExec(Option_t *option);
-   virtual void     UserExecMix(Option_t*);
+   virtual void     UserExecMix(Option_t *);
    virtual void     Terminate(Option_t *);
-   
+
    void             AddLoop(AliRsnLoop *object);
    void             InitInputHandlers();
 
    void             UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
    Bool_t           IsBigOutput() { return fBigOutput; }
-   
+
 private:
 
    TList                      *fOutput;        //  output list

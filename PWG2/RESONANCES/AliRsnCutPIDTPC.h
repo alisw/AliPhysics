@@ -28,12 +28,12 @@ public:
                    Double_t nSigmaMax     =  3.,
                    Bool_t   rejectOutside = kTRUE);
 
-   AliRsnCutPIDTPC(const AliRsnCutPIDTPC& copy);
-   AliRsnCutPIDTPC& operator=(const AliRsnCutPIDTPC& copy);
+   AliRsnCutPIDTPC(const AliRsnCutPIDTPC &copy);
+   AliRsnCutPIDTPC &operator=(const AliRsnCutPIDTPC &copy);
    virtual ~AliRsnCutPIDTPC() { }
 
-   AliESDpid*       ESDpid()  {return fESDpid;}
-   AliAODpidUtil*   AODpid()  {return fAODpid;}
+   AliESDpid       *ESDpid()  {return fESDpid;}
+   AliAODpidUtil   *AODpid()  {return fAODpid;}
 
    void             SetRejectOutside(Bool_t yn = kTRUE)           {fRejectOutside = yn;}
    void             SetMomentumRange(Double_t min, Double_t max)  {fMomMin = min; fMomMax = max;}
@@ -54,7 +54,7 @@ private:
    AliESDpid      *fESDpid;         //! ESD PID object
    AliAODpidUtil  *fAODpid;         //! AOD PID object
    Double_t        fBB[5];          //  Bethe-Bloch parameters
-   
+
 
    ClassDef(AliRsnCutPIDTPC, 1)
 };

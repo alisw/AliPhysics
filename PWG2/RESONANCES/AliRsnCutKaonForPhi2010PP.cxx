@@ -1,6 +1,6 @@
 //
 // This cut implements all the checks done to accept a track as a Kaon
-// for the pp analysis using 2010 runs. 
+// for the pp analysis using 2010 runs.
 // It is based on standard cuts on track quality and nsigma cuts
 // with respect to the TPC and TOF signals for the PID.
 //
@@ -64,7 +64,7 @@ AliRsnCutKaonForPhi2010PP::AliRsnCutKaonForPhi2010PP(const AliRsnCutKaonForPhi20
 }
 
 //__________________________________________________________________________________________________
-AliRsnCutKaonForPhi2010PP& AliRsnCutKaonForPhi2010PP::operator=(const AliRsnCutKaonForPhi2010PP &copy)
+AliRsnCutKaonForPhi2010PP &AliRsnCutKaonForPhi2010PP::operator=(const AliRsnCutKaonForPhi2010PP &copy)
 {
 //
 // Assignment operator
@@ -72,14 +72,14 @@ AliRsnCutKaonForPhi2010PP& AliRsnCutKaonForPhi2010PP::operator=(const AliRsnCutK
 
    AliRsnCut::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fNSigmaTPCLow = copy.fNSigmaTPCLow;
    fNSigmaTPCHigh = copy.fNSigmaTPCHigh;
    fLimitTPC = copy.fLimitTPC;
    fNSigmaTOF = copy.fNSigmaTOF;
    fMyPID = copy.fMyPID;
    fCutQuality = copy.fCutQuality;
-   
+
    return *this;
 }
 
@@ -90,7 +90,7 @@ void AliRsnCutKaonForPhi2010PP::InitMyPID(Bool_t isMC, Bool_t isESD)
 // Initialize manual PID object
 //
 
-   if (isESD) 
+   if (isESD)
       fMyPID = new AliESDpid(isMC);
    else
       fMyPID = new AliAODpidUtil(isMC);
@@ -105,44 +105,44 @@ Bool_t AliRsnCutKaonForPhi2010PP::IsSelected(TObject *obj)
 
    // coherence check
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check track
-   AliVTrack *track = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   AliVTrack *track = dynamic_cast<AliVTrack *>(fDaughter->GetRef());
    if (!track) return kFALSE;
-   
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-   
+
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
-   
+
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
       return kFALSE;
    }
-   
+
    // PID TPC :
    // depends on momentum
    // and if local PID object is initialized, it is used instead of that got from manager
    Double_t mom = track->GetTPCmomentum();
    mom = TMath::Abs(mom);
-   if (mom < fLimitTPC) 
+   if (mom < fLimitTPC)
       SetRangeD(0.0, fNSigmaTPCLow);
    else
       SetRangeD(0.0, fNSigmaTPCHigh);
-   if (fMyPID) 
+   if (fMyPID)
       fCutValueD = TMath::Abs(fMyPID->NumberOfSigmasTPC(track, AliPID::kKaon));
    else
       fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kKaon));
    if (!OkRangeD()) return kFALSE;
-   
+
    // if TOF is not matched, end here
    // otherwise check TOF
-   if (!MatchTOF(track)) 
+   if (!MatchTOF(track))
       return kTRUE;
    else {
       SetRangeD(0.0, fNSigmaTOF);

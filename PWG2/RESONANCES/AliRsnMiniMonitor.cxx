@@ -56,11 +56,11 @@ ClassImp(AliRsnMiniMonitor)
 
 //__________________________________________________________________________________________________
 AliRsnMiniMonitor::AliRsnMiniMonitor() :
-   TNamed(), 
-   fType(kTypes), 
-   fCutID(-1), 
+   TNamed(),
+   fType(kTypes),
+   fCutID(-1),
    fCharge(0),
-   fListID(-1), 
+   fListID(-1),
    fList(0x0)
 {
 //
@@ -70,49 +70,49 @@ AliRsnMiniMonitor::AliRsnMiniMonitor() :
 
 //__________________________________________________________________________________________________
 AliRsnMiniMonitor::AliRsnMiniMonitor(const char *name, EType type, Int_t cutID) :
-   TNamed(name, ""), 
-   fType(type), 
-   fCutID(cutID), 
+   TNamed(name, ""),
+   fType(type),
+   fCutID(cutID),
    fCharge(0),
-   fListID(-1), 
+   fListID(-1),
    fList(0x0)
 {
 //
 // Default constructor
 //
 }
-   
+
 //__________________________________________________________________________________________________
-AliRsnMiniMonitor::AliRsnMiniMonitor(const AliRsnMiniMonitor& copy) :
-   TNamed(copy), 
-   fType(copy.fType), 
-   fCutID(copy.fCutID), 
+AliRsnMiniMonitor::AliRsnMiniMonitor(const AliRsnMiniMonitor &copy) :
+   TNamed(copy),
+   fType(copy.fType),
+   fCutID(copy.fCutID),
    fCharge(copy.fCharge),
-   fListID(copy.fListID), 
+   fListID(copy.fListID),
    fList(copy.fList)
 {
 //
 // Copy constructor
 //
 }
-   
+
 //__________________________________________________________________________________________________
-AliRsnMiniMonitor& AliRsnMiniMonitor::operator=(const AliRsnMiniMonitor& copy) 
+AliRsnMiniMonitor &AliRsnMiniMonitor::operator=(const AliRsnMiniMonitor &copy)
 {
 //
 // Assignment operator
 //
-   
-   TNamed::operator=(copy); 
+
+   TNamed::operator=(copy);
    if (this == &copy)
-     return *this;
-   fType = copy.fType; 
-   fCutID = copy.fCutID; 
+      return *this;
+   fType = copy.fType;
+   fCutID = copy.fCutID;
    fCharge = copy.fCharge;
-   fListID = copy.fListID; 
-   fList = copy.fList; 
-   
-   return (*this); 
+   fListID = copy.fListID;
+   fList = copy.fList;
+
+   return (*this);
 }
 
 //__________________________________________________________________________________________________
@@ -126,14 +126,14 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
    TString sname(name);
    sname += '_';
    sname += GetName();
-   
+
    // check list
    fList = list;
    if (!list) {
       AliError("No list!");
       return kFALSE;
    }
-   
+
    // reset histogram
    TH1 *histogram = 0x0;
 
@@ -143,7 +143,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
          sname += fCutID;
          histogram = new TH1F(sname.Data(), "", 100, 0.0, 10.0);
          break;
-      case kdEdxTPCvsP: 
+      case kdEdxTPCvsP:
          sname += "_TPCsignal";
          histogram = new TH2F(sname.Data(), "", 500, 0.0, 5.0, 1000, 0.0, 1000.0);
          break;
@@ -162,7 +162,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
          AliError("Wrong enum type");
          return kFALSE;
    }
-   
+
    // add to list
    if (histogram && fList) {
       histogram->Sumw2();
@@ -171,7 +171,7 @@ Bool_t AliRsnMiniMonitor::Init(const char *name, TList *list)
       AliInfo(Form("Histogram '%s' added to list in slot #%d", histogram->GetName(), fListID));
       return kTRUE;
    }
-   
+
    return kFALSE;
 }
 
@@ -195,11 +195,11 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
 
    Double_t valueX, valueY;
    AliVTrack *vtrack = track->Ref2Vtrack();
-   
+
    AliPIDResponse *pid = event->GetPIDResponse();
 
    switch (fType) {
-      case kTrackPt: 
+      case kTrackPt:
          if (!vtrack) {
             AliWarning("Required vtrack for this value");
             return kFALSE;
@@ -208,16 +208,16 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          if (fCharge == '-' && vtrack->Charge() >= 0) return kFALSE;
          if (fCharge == '0' && vtrack->Charge() != 0) return kFALSE;
          valueX = vtrack->Pt();
-         ((TH1F*)obj)->Fill(valueX);
+         ((TH1F *)obj)->Fill(valueX);
          return kTRUE;
-      case kdEdxTPCvsP: 
+      case kdEdxTPCvsP:
          if (!vtrack) {
             AliWarning("Required vtrack for this value");
             return kFALSE;
          }
          valueX = vtrack->GetTPCmomentum();
          valueY = vtrack->GetTPCsignal();
-         ((TH2F*)obj)->Fill(valueX, valueY);
+         ((TH2F *)obj)->Fill(valueX, valueY);
          return kTRUE;
       case ktimeTOFvsPPion:
          if (!vtrack) {
@@ -228,7 +228,7 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          //valueY = vtrack->GetTOFsignal();
          valueY = 1E20;
          if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kPion);
-         ((TH2F*)obj)->Fill(valueX, valueY);
+         ((TH2F *)obj)->Fill(valueX, valueY);
          return kTRUE;
       case ktimeTOFvsPKaon:
          if (!vtrack) {
@@ -239,7 +239,7 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          //valueY = vtrack->GetTOFsignal();
          valueY = 1E20;
          if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kKaon);
-         ((TH2F*)obj)->Fill(valueX, valueY);
+         ((TH2F *)obj)->Fill(valueX, valueY);
          return kTRUE;
       case ktimeTOFvsPProton:
          if (!vtrack) {
@@ -250,7 +250,7 @@ Bool_t AliRsnMiniMonitor::Fill(AliRsnDaughter *track, AliRsnEvent *event)
          //valueY = vtrack->GetTOFsignal();
          valueY = 1E20;
          if (pid) valueY = pid->NumberOfSigmasTOF(vtrack, AliPID::kProton);
-         ((TH2F*)obj)->Fill(valueX, valueY);
+         ((TH2F *)obj)->Fill(valueX, valueY);
          return kTRUE;
       default:
          AliError("Invalid value type");

@@ -17,12 +17,12 @@ public:
 
    AliRsnLoopEff(const char *name = "default", Int_t nSteps = 0, Double_t maxDistPV = 1E-2);
    AliRsnLoopEff(const AliRsnLoopEff &copy);
-   AliRsnLoopEff& operator=(const AliRsnLoopEff &copy);
+   AliRsnLoopEff &operator=(const AliRsnLoopEff &copy);
    ~AliRsnLoopEff();
 
-   AliRsnListOutput* GetOutput()          {return fOutput;}
+   AliRsnListOutput *GetOutput()          {return fOutput;}
    void              CreateOutput();
-   void              AddStep(TObject *set);                     
+   void              AddStep(TObject *set);
    void              SetMaxDistanceFromPV(Double_t value) {fMaxDistPV = value;}
    virtual void      AddOutput(TObject *) {AliWarning("In loops for efficiency it is not allowed to add outputs externally");}
    virtual Bool_t    Init(const char *prefix, TList *list);

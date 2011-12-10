@@ -35,7 +35,8 @@
 
 class AliCFContainer;
 class AliRsnValue;
-
+class AliRsnDaughter;
+class AliRsnEvent;
 class AliRsnListOutput : public TNamed {
 
 public:
@@ -48,14 +49,14 @@ public:
 
    AliRsnListOutput(const char *name = "", EOut type = kHistoDefault);
    AliRsnListOutput(const AliRsnListOutput &copy);
-   AliRsnListOutput& operator=(const AliRsnListOutput &copy);
+   AliRsnListOutput &operator=(const AliRsnListOutput &copy);
    virtual ~AliRsnListOutput();
 
    EOut            GetType() const         {return  fType;}
    Int_t           GetSteps() const        {return  fSteps;}
-   TObjArray*      GetValues()             {return &fValues;}
+   TObjArray      *GetValues()             {return &fValues;}
    Int_t           GetNValues()            {return (fNValues = fValues.GetEntries());}
-   AliRsnValue*    GetValue(Int_t i) const {return (AliRsnValue*)fValues[i];}
+   AliRsnValue    *GetValue(Int_t i) const {return (AliRsnValue *)fValues[i];}
    Int_t           GetIndex() const        {return  fIndex;}
    void            SetType(EOut type)      {fType = type;}
    void            SetSteps(Int_t n)       {fSteps = n;}
@@ -66,12 +67,13 @@ public:
    virtual void    Reset();
    virtual Bool_t  Init(const char *prefix, TList *list);
    virtual Bool_t  Fill(TObject *target, Int_t step = 0);
+   virtual Bool_t  Fill(AliRsnEvent *ev,AliRsnDaughter *d);
 
 private:
 
-   TH1*            CreateHistogram(const char *name);
-   THnSparseF*     CreateHistogramSparse(const char *name);
-   AliCFContainer* CreateCFContainer(const char *name);
+   TH1            *CreateHistogram(const char *name);
+   THnSparseF     *CreateHistogramSparse(const char *name);
+   AliCFContainer *CreateCFContainer(const char *name);
 
    Bool_t           fSkipFailed;    //  tell to skip fills when one computation fails
    EOut             fType;          //  output format among allowed ones
@@ -80,7 +82,7 @@ private:
    Int_t            fNValues;       //! number of values (internal use)
    TList           *fList;          //! list containing the output
    Int_t            fIndex;         //  index of object in the list
-   
+
    TArrayD          fArray;         //! temp array of computed values
 
    ClassDef(AliRsnListOutput, 1)    //  AliRsnListOutput class

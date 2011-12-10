@@ -27,12 +27,12 @@ public:
 
    AliRsnCutValue();
    AliRsnCutValue(const char *name, Double_t min, Double_t max);
-   AliRsnCutValue(const AliRsnCutValue& copy);
-   AliRsnCutValue& operator=(const AliRsnCutValue& copy);
+   AliRsnCutValue(const AliRsnCutValue &copy);
+   AliRsnCutValue &operator=(const AliRsnCutValue &copy);
    virtual ~AliRsnCutValue() { }
 
    Double_t       GetComputedValue()              {if (fValue) return fValue->GetComputedValue(); return -1E20;}
-   AliRsnValue*   GetValueObj()                   {return fValue;}
+   AliRsnValue   *GetValueObj()                   {return fValue;}
    void           SetValueObj(AliRsnValue *value) {fValue = value; SetTargetType(value->GetTargetType());}
 
    virtual Bool_t IsSelected(TObject *object);

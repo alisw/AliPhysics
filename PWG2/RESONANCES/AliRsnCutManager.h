@@ -32,15 +32,15 @@ class AliRsnCutManager : public TNamed {
 public:
 
    AliRsnCutManager();
-   AliRsnCutManager(const char *name, const char* title = "");
+   AliRsnCutManager(const char *name, const char *title = "");
    AliRsnCutManager(const AliRsnCutManager &cut);
-   AliRsnCutManager& operator=(const AliRsnCutManager& cut);
+   AliRsnCutManager &operator=(const AliRsnCutManager &cut);
    ~AliRsnCutManager();
 
-   AliRsnCutSet*  GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
-   AliRsnCutSet*  GetDaughter1Cuts()      {return &fDaughterCuts1;}
-   AliRsnCutSet*  GetDaughter2Cuts()      {return &fDaughterCuts2;}
-   AliRsnCutSet*  GetMotherCuts()         {return &fMotherCuts;}
+   AliRsnCutSet  *GetCommonDaughterCuts() {return &fDaughterCutsCommon;}
+   AliRsnCutSet  *GetDaughter1Cuts()      {return &fDaughterCuts1;}
+   AliRsnCutSet  *GetDaughter2Cuts()      {return &fDaughterCuts2;}
+   AliRsnCutSet  *GetMotherCuts()         {return &fMotherCuts;}
 
    Bool_t         IsSelected(TObject *object);
    Bool_t         PassCommonDaughterCuts(AliRsnDaughter *daughter) {return fDaughterCutsCommon.IsSelected(daughter);}
@@ -67,9 +67,9 @@ inline Bool_t AliRsnCutManager::IsSelected(TObject *object)
 //
 
    if (object->InheritsFrom(AliRsnDaughter::Class())) {
-      return PassCommonDaughterCuts((AliRsnDaughter*)object);
+      return PassCommonDaughterCuts((AliRsnDaughter *)object);
    } else if (object->InheritsFrom(AliRsnMother::Class())) {
-      AliRsnMother *mother = (AliRsnMother*)object;
+      AliRsnMother *mother = (AliRsnMother *)object;
       if (!PassCommonDaughterCuts(mother->GetDaughter(0))) return kFALSE;
       if (!PassCommonDaughterCuts(mother->GetDaughter(1))) return kFALSE;
       if (!PassDaughter1Cuts(mother->GetDaughter(0))) return kFALSE;

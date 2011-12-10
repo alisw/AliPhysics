@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Values which depend on 4-momentum of the pair.
@@ -38,36 +38,36 @@ public:
    };
 
    AliRsnMiniValue(EType type = kTypes, Bool_t useMC = kFALSE);
-   AliRsnMiniValue(const AliRsnMiniValue& copy);
-   AliRsnMiniValue& operator=(const AliRsnMiniValue& copy);
+   AliRsnMiniValue(const AliRsnMiniValue &copy);
+   AliRsnMiniValue &operator=(const AliRsnMiniValue &copy);
    virtual ~AliRsnMiniValue() { }
 
    void               SetType(EType type)   {fType = type;}
    EType              GetType()      const  {return fType;}
-   const char*        GetTypeName()  const  {return TypeName(fType);}
+   const char        *GetTypeName()  const  {return TypeName(fType);}
    Bool_t             IsEventValue() const  {return (fType < kEventCuts);}
-   
+
    Float_t            Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event = 0x0);
-   
-   static const char* TypeName(EType type);
-   static const char* ValueName(EType type, Bool_t useMC);
+
+   static const char *TypeName(EType type);
+   static const char *ValueName(EType type, Bool_t useMC);
 
 protected:
 
    EType            fType;            //  type from enumeration
    Bool_t           fUseMCInfo;       //  switch to use rec/sim momentum
-                                       
+
    ClassDef(AliRsnMiniValue, 1)       //  AliRsnMiniValue class
 };
 
-inline const char* AliRsnMiniValue::ValueName(EType type, Bool_t useMC)
+inline const char *AliRsnMiniValue::ValueName(EType type, Bool_t useMC)
 {
 //
 // Define a criterion to name these object.
 // They are not managed by the user, since each object is a singleton
 //
 
-   if (useMC) 
+   if (useMC)
       return Form("MC_%s", TypeName(type));
    else
       return TypeName(type);
