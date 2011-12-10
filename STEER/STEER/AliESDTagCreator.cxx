@@ -663,12 +663,12 @@ void AliESDTagCreator::CreateESDTags(Int_t fFirstEvent, Int_t fLastEvent, AliGRP
   AliESDEvent *esd = new AliESDEvent();
   esd->ReadFromTree(b);
 
-  b->GetEntry(fFirstEvent);
+  b->GetEntry(0);
   Int_t iInitRunNumber = esd->GetRunNumber();
   
   Int_t iNumberOfEvents = (Int_t)b->GetEntries();
   if ((fLastEvent == -1) || ((Int_t) b->GetEntries() < fLastEvent))
-    lastEvent = (Int_t)b->GetEntries();
+    lastEvent = fFirstEvent  + (Int_t)b->GetEntries() - 1;
   else lastEvent = fLastEvent;
 
   char fileName[256];
