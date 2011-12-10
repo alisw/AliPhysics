@@ -187,6 +187,7 @@ void AliAnalysisTaskESDfilter::Init()
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
 {
+// Print selection task information
   AliInfo("");
   
   AliAnalysisTaskSE::PrintTask(option,indent);
@@ -252,6 +253,8 @@ TClonesArray& AliAnalysisTaskESDfilter::Vertices()
 //______________________________________________________________________________
 AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
 {
+// Convert header information
+
   AliCodeTimerAuto("",0);
   
   AliAODHeader* header = AODEvent()->GetHeader();
@@ -1331,6 +1334,7 @@ void AliAnalysisTaskESDfilter::ConvertTracks(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertPmdClusters(const AliESDEvent& esd)
 {
+// Convert PMD Clusters 
   AliCodeTimerAuto("",0);
   Int_t jPmdClusters=0;
   // Access to the AOD container of PMD clusters
@@ -1351,6 +1355,7 @@ void AliAnalysisTaskESDfilter::ConvertPmdClusters(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
 {
+// Convert Calorimeter Clusters
   AliCodeTimerAuto("",0);
   
   // Access to the AOD container of clusters
@@ -1410,6 +1415,7 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
 {
+// Convert EMCAL Cells
   AliCodeTimerAuto("",0);
   // fill EMCAL cell info
   if (esd.GetEMCALCells()) { // protection against missing ESD information
@@ -1429,6 +1435,7 @@ void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertPHOSCells(const AliESDEvent& esd)
 {
+// Convert PHOS Cells
   AliCodeTimerAuto("",0);
   // fill PHOS cell info
   if (esd.GetPHOSCells()) { // protection against missing ESD information
