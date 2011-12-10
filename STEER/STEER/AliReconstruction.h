@@ -81,6 +81,8 @@ public:
     SetRunLocalReconstruction(detectors); 
     SetRunTracking(detectors);
     SetFillESD(detectors);};
+  void           SetDeleteRecPoints(const char* dets) {fDeleteRecPoints = dets;}
+  void           SetDeleteDigits(const char* dets)    {fDeleteDigits = dets;}
   void           SetUseTrackingErrorsForAlignment(const char* detectors) 
     {fUseTrackingErrorsForAlignment = detectors;};
   void           SetLoadAlignFromCDB(Bool_t load)  {fLoadAlignFromCDB = load;};
@@ -222,6 +224,8 @@ private:
   Bool_t         FillTriggerESD(AliESDEvent*& esd);
   Bool_t         FillTriggerScalers(AliESDEvent*& esd);
   Bool_t         FillRawEventHeaderESD(AliESDEvent*& esd);
+  void           DeleteRecPoints(const TString& detectors);
+  void           DeleteDigits(const TString& detectors);
 
   Bool_t         IsSelected(TString detName, TString& detectors) const;
   Bool_t         InitRunLoader();
@@ -275,6 +279,8 @@ private:
   TString        fRunLocalReconstruction; // run the local reconstruction for these detectors
   TString        fRunTracking;        // run the tracking for these detectors
   TString        fFillESD;            // fill ESD for these detectors
+  TString        fDeleteRecPoints;    // delete recpoints after each event
+  TString        fDeleteDigits;       // delete digits after each event
   TString        fLoadCDB;            // prefetch CDB entries and init reco-params for these detectors
   TString        fUseTrackingErrorsForAlignment; // for these detectors
   TString        fGAliceFileName;     // name of the galice file

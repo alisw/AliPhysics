@@ -237,6 +237,8 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fRunLocalReconstruction("ALL"),
   fRunTracking("ALL"),
   fFillESD("ALL"),
+  fDeleteRecPoints(""),
+  fDeleteDigits(""),
   fLoadCDB(""),
   fUseTrackingErrorsForAlignment(""),
   fGAliceFileName(gAliceFilename),
@@ -358,6 +360,8 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fRunLocalReconstruction(rec.fRunLocalReconstruction),
   fRunTracking(rec.fRunTracking),
   fFillESD(rec.fFillESD),
+  fDeleteRecPoints(""),
+  fDeleteDigits(""),
   fLoadCDB(rec.fLoadCDB),
   fUseTrackingErrorsForAlignment(rec.fUseTrackingErrorsForAlignment),
   fGAliceFileName(rec.fGAliceFileName),
@@ -495,6 +499,8 @@ AliReconstruction& AliReconstruction::operator = (const AliReconstruction& rec)
   fRunLocalReconstruction        = rec.fRunLocalReconstruction;
   fRunTracking                   = rec.fRunTracking;
   fFillESD                       = rec.fFillESD;
+  fDeleteRecPoints               = rec.fDeleteRecPoints;
+  fDeleteDigits                  = rec.fDeleteDigits;
   fLoadCDB                       = rec.fLoadCDB;
   fUseTrackingErrorsForAlignment = rec.fUseTrackingErrorsForAlignment;
   fGAliceFileName                = rec.fGAliceFileName;
@@ -1099,6 +1105,8 @@ Bool_t AliReconstruction::InitGRP() {
     fRunTracking = MatchDetectorList(fRunTracking,detMask);
     fFillESD = MatchDetectorList(fFillESD,detMask);
     fQADetectors = MatchDetectorList(fQADetectors,detMask);
+    fDeleteRecPoints = MatchDetectorList(fDeleteRecPoints,detMask);
+    fDeleteDigits    = MatchDetectorList(fDeleteDigits,detMask);
     fLoadCDB.Form("%s %s %s %s",
 		  fRunLocalReconstruction.Data(),
 		  fRunTracking.Data(),
@@ -2353,7 +2361,10 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   if (fRunQA || fRunGlobalQA) 
     AliQAManager::QAManager()->Increment() ; 
 
-    return kTRUE;
+  DeleteRecPoints(fDeleteRecPoints);
+  DeleteDigits(fDeleteDigits);
+  //
+  return kTRUE;
 }
 
 //_____________________________________________________________________________
@@ -4314,6 +4325,40 @@ void AliReconstruction::WriteESDfriend() {
     new (fesdf) AliESDfriend(); // Reset...
     fesdf->SetSkipBit(kTRUE);
   }
-  
+  //
   ftreeF->Fill();
+}
+
+//_________________________________________________________________
+void AliReconstruction::DeleteDigits(const TString& detectors)
+{
+  // delete requested digit files produced at current event
+  static int iEvent = 0;
+  if (detectors.IsNull()) return;
+  TString detStr = detectors;
+  AliInfo(Form("Deleting Digits: %s",detectors.Data()));
+
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    gSystem->Exec(Form("if [ -e %s.Digits.root ]; then\nrm %s.Digits.root\nfi",
+		       fgkDetectorName[iDet],fgkDetectorName[iDet]));
+  }
+  AliSysInfo::AddStamp(Form("DelDigits_%d",iEvent), 0,0,iEvent);
+  iEvent++;
+}
+
+//_________________________________________________________________
+void AliReconstruction::DeleteRecPoints(const TString& detectors)
+{
+  // delete requested recpoint files produced at current event
+  static int iEvent = 0;
+  if (detectors.IsNull()) return;
+  TString detStr = detectors;
+  AliInfo(Form("Deleting Recpoints: %s",detectors.Data()));
+  //
+  for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
+    gSystem->Exec(Form("if [ -e %s.RecPoints.root ]; then\nrm %s.RecPoints.root\nfi",
+		       fgkDetectorName[iDet],fgkDetectorName[iDet]));
+  }
+  AliSysInfo::AddStamp(Form("DelRecPoints_%d",iEvent), 0,0,iEvent);
+  iEvent++;
 }
