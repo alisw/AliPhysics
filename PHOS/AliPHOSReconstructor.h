@@ -59,6 +59,7 @@ class AliRawReader;
 class AliPHOSRecoParam;
 class AliPHOSGeometry;
 class AliPHOSCalibData ;
+class AliPHOSTriggerParameters;
 
 // --- Standard library ---
 
@@ -91,7 +92,9 @@ public:
   static const AliPHOSRecoParam* GetRecoParam() {
     return dynamic_cast<const AliPHOSRecoParam*>(AliReconstructor::GetRecoParam(4)); }
   static Float_t CorrectNonlinearity(Float_t oldEnergy) ;
-
+  
+  void readTRUParameters(AliPHOSTriggerParameters* parameters) const;
+  
 private:
   AliPHOSReconstructor(const AliPHOSReconstructor & rec); // Not implemented
   AliPHOSReconstructor & operator = (const AliPHOSReconstructor &); // Not implemented
@@ -105,8 +108,9 @@ private:
   static TClonesArray      *fgDigitsArray;   //! Array of PHOS digits
   static TObjArray         *fgEMCRecPoints;  //! Array of EMC rec.points
   static AliPHOSCalibData * fgCalibData ;    //! Calibration database if aval.
+  static TClonesArray      *fgTriggerDigits; //! Array of PHOS trigger digits
 
-  ClassDef(AliPHOSReconstructor,9)  // PHOS Reconstruction class
+  ClassDef(AliPHOSReconstructor,10)  // PHOS Reconstruction class
 
 }; 
 

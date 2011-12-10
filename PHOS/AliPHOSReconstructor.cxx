@@ -55,6 +55,9 @@
 #include "AliPHOSRawFitterv4.h"
 #include "AliPHOSRawDigiProducer.h"
 #include "AliPHOSPulseGenerator.h"
+#include "AliPHOSTriggerRawDigit.h"
+#include "AliPHOSTriggerRawDigiProducer.h"
+#include "AliPHOSTriggerParameters.h"
 
 ClassImp(AliPHOSReconstructor)
 
@@ -62,7 +65,7 @@ Bool_t AliPHOSReconstructor::fgDebug = kFALSE ;
 TClonesArray*     AliPHOSReconstructor::fgDigitsArray = 0;   // Array of PHOS digits
 TObjArray*        AliPHOSReconstructor::fgEMCRecPoints = 0;   // Array of EMC rec.points
 AliPHOSCalibData * AliPHOSReconstructor::fgCalibData  = 0 ;
-
+TClonesArray*     AliPHOSReconstructor::fgTriggerDigits = 0;   // Array of PHOS trigger digits
 
 //____________________________________________________________________________
 AliPHOSReconstructor::AliPHOSReconstructor() :
@@ -78,7 +81,9 @@ AliPHOSReconstructor::AliPHOSReconstructor() :
   fgEMCRecPoints = new TObjArray(100) ;
   if (!fgCalibData)
     fgCalibData = new AliPHOSCalibData(-1); //use AliCDBManager's run number
-
+  
+  fgTriggerDigits  = new TClonesArray("AliPHOSTriggerRawDigit",100);
+  
   AliInfo(Form("PHOS bad channel map contains %d bad channel(s).\n",
                fgCalibData->GetNumOfEmcBadChannels()));
  
@@ -95,6 +100,7 @@ AliPHOSReconstructor::~AliPHOSReconstructor()
   delete fTmpDigLG;
   delete fgDigitsArray;
   delete fgEMCRecPoints;
+  delete fgTriggerDigits;
 } 
 
 //____________________________________________________________________________
@@ -164,6 +170,38 @@ void AliPHOSReconstructor::FillESD(TTree* digitsTree, TTree* clustersTree,
   emcbranch->SetAddress(&fgEMCRecPoints);
   emcbranch->GetEntry(0);
 
+
+  // Trigger
+
+  TBranch *tbranch = digitsTree->GetBranch("TPHOS");
+  if (!tbranch) { 
+    AliError("can't get the branch with the PHOS trigger digits !");
+    return;
+  }
+
+  tbranch->SetAddress(&fgTriggerDigits);
+  tbranch->GetEntry(0);
+
+  AliESDCaloTrigger* trgESD = esd->GetCaloTrigger("PHOS");
+  
+  if (trgESD) {
+    trgESD->Allocate(fgTriggerDigits->GetEntriesFast());
+
+    for (Int_t i = 0; i < fgTriggerDigits->GetEntriesFast(); i++) {
+      AliPHOSTriggerRawDigit* tdig = (AliPHOSTriggerRawDigit*)fgTriggerDigits->At(i);
+
+      Int_t mod,modX,modZ;
+      tdig->GetModXZ(mod,modX,modZ);
+
+      const Int_t relId[4] = {5-mod,0,modX+1,modZ+1};
+      Int_t absId;
+      
+      fGeom->RelToAbsNumbering(relId,absId);
+      trgESD->Add(mod,absId,tdig->GetAmp(),0.,(Int_t*)NULL,0,0,0);
+    }
+  }
+ 
+  
 //   //#########Calculate trigger and set trigger info###########
 
 //   AliPHOSTrigger tr ;
@@ -409,6 +447,21 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   delete fitter ;
 
+  TClonesArray *tdigits = new TClonesArray("AliPHOSTriggerRawDigit",1);
+  tdigits->SetName("TDIGITS");
+  digitsTree->Branch("TPHOS", &tdigits, bufsize);  
+
+  rawReader->Reset();
+  AliPHOSTriggerRawDigiProducer tdp(rawReader);
+
+  AliPHOSTriggerParameters* parameters = new AliPHOSTriggerParameters();
+  readTRUParameters(parameters);
+  
+  tdp.SetTriggerParameters(parameters);
+  tdp.ProcessEvent(tdigits);
+  
+  delete parameters;
+  
   if (AliLog::GetGlobalDebugLevel() == 1) {
     Int_t modMax=-111;
     Int_t colMax=-111;
@@ -431,10 +484,14 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
     AliDebug(1,Form("Digit with max. energy:  modMax %d colMax %d rowMax %d  eMax %f\n\n",
 		    modMax,colMax,rowMax,eMax));
   }
-
+  
   digitsTree->Fill();
+  
   digits->Delete();
   delete digits;
+  
+  tdigits->Delete();
+  delete tdigits;
 }
 //==================================================================================
 Float_t AliPHOSReconstructor::Calibrate(Float_t amp, Int_t absId)const{
@@ -532,4 +589,98 @@ Float_t AliPHOSReconstructor::CorrectNonlinearity(Float_t en){
   }
   return en ;
 }
+
+void AliPHOSReconstructor::readTRUParameters(AliPHOSTriggerParameters* parameters) const
+{
+  //Read trigger parameters.
+
+  TString path(gSystem->Getenv("ALICE_ROOT"));
+  path += "/PHOS/macros/Trigger/OCDB/";
+  
+  for (Int_t mod = 2; mod < 5; ++mod) { // module
+    for (Int_t tru = 0; tru < 4; tru++) { // tru row
+      for (Int_t branch = 0; branch < 2; branch++) { // branch
+	
+	// Open the Appropriate pedestal file
+	TString fileName = path;
+	fileName += "pedestal_m";
+	fileName = fileName += mod;
+	fileName+="_r";
+	fileName+=tru;
+	fileName+="_b";
+	fileName+=branch;
+	fileName+=".dat";
+	std::ifstream instream;
+	instream.open(fileName.Data());
+	
+	// Read pedestals from file
+	if( ! instream.is_open() )
+	  Printf("E-TRUPedestals: could not open %s", fileName.Data());
+	else
+	  {
+	    Int_t ped[112];
+	    
+	    char ch_s[35];
+	    char *ch_s_p = ch_s;
+	    //Int_t nlines = 0;
+	    
+	    Int_t t_ped_0 =0;
+	    Int_t t_ped_1 =0;
+	    Int_t t_ped_2 =0;
+	    
+	    for(Int_t n=0; n<112; n++)
+	      {
+		instream.getline(ch_s_p,36);
+		if (ch_s_p[23]<='9' && ch_s_p[23]>='0')
+		  {
+		    t_ped_0 = ch_s_p[23]-'0';
+		  }
+		else if (ch_s_p[23]>='A' && ch_s_p[23]<='Z')
+		  {
+		    t_ped_0 = ch_s_p[23]-'A'+10;
+		    
+		  }
+		  
+		if (ch_s_p[22]<='9' && ch_s_p[22]>='0')
+		  {
+		    t_ped_1 = ch_s_p[22]-'0';
+		  }
+		else if (ch_s_p[22]<='Z' && ch_s_p[22]>='A')
+		  {
+		    t_ped_1 = ch_s_p[22]-'A'+10;
+		  }
+		
+		if (ch_s_p[21]<='9' && ch_s_p[21]>='0')
+		  {
+		    t_ped_2 = ch_s_p[21]-'0';
+		  }
+		else if (ch_s_p[21]<='Z' && ch_s_p[21]>='A')
+		  {
+		    t_ped_2 = ch_s_p[21]-'A'+10;
+		  }
+		
+		ped[n]=t_ped_2*256+t_ped_1*16+t_ped_0;
+		
+		
+	      }
+	    for (Int_t xrow = 0; xrow < 8; xrow++){
+	      for (Int_t zcol = 0; zcol < 14; zcol++){
+		Int_t pedestal = ped[zcol*8+xrow];
+		
+		if( pedestal < 612 && pedestal > 412 ) // resonable
+		  parameters->SetTRUPedestal(pedestal, mod, tru, branch, xrow, zcol);
+		else // unresonable
+		  continue;
+	      }
+	    }
+	  } // Ends read of pedestals from branch from file.
+	instream.close();
+      }// end branch
+    }// end tru
+    
+  }// end for mod
+}
+
+
+
 

@@ -21,6 +21,10 @@
 #pragma link C++ class AliPHOSEsdCluster+;
 #pragma link C++ class AliPHOSAodCluster+;
 #pragma link C++ class AliPHOSQADataMakerRec+;
+#pragma link C++ class AliPHOSTriggerRawReader+;
+#pragma link C++ class AliPHOSTRURawReader+;
+#pragma link C++ class AliPHOSTriggerRawDigiProducer+;
+#pragma link C++ class AliPHOSTriggerRawDigit+;
 
 #pragma link C++ class AliPHOSReconstructor+;
 #endif

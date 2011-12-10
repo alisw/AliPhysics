@@ -46,6 +46,10 @@ set ( SRCS
     AliPHOSAodCluster.cxx 
     AliPHOSQADataMakerRec.cxx 
     AliPHOSReconstructor.cxx
+    AliPHOSTriggerRawReader.cxx
+    AliPHOSTRURawReader.cxx
+    AliPHOSTriggerRawDigiProducer.cxx
+    AliPHOSTriggerRawDigit.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
