@@ -1,5 +1,5 @@
-#ifndef ALI_ITS_ONLINECALIBRATIONSPDHANDLER_H
-#define ALI_ITS_ONLINECALIBRATIONSPDHANDLER_H
+#ifndef ALIITSONLINECALIBRATIONSPDHANDLER_H
+#define ALIITSONLINECALIBRATIONSPDHANDLER_H
 
 //////////////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                                   //
@@ -74,8 +74,8 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  ReadSparseDeadFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadNoisyFromDB(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
   Bool_t  ReadDeadFromDBasNoisy(Int_t runNr, const Char_t *storage="default", Bool_t treeSerial=kFALSE);
-  Bool_t  ReadDeadFromCalibObj(TObjArray* calObj);
-  Bool_t  ReadNoisyFromCalibObj(TObjArray* calObj);
+  Bool_t  ReadDeadFromCalibObj(const TObjArray* calObj);
+  Bool_t  ReadNoisyFromCalibObj(const TObjArray* calObj);
   Bool_t  WriteToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WriteDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
   Bool_t  WriteSparseDeadToDB(Int_t runNrStart, Int_t runNrEnd, const Char_t *storage="default");
@@ -224,17 +224,17 @@ class AliITSOnlineCalibrationSPDhandler {
   Bool_t  IsNoisyChip(UInt_t eq, UInt_t hs, UInt_t chip) const; 
 
   UInt_t  AddSilentFrom(AliITSOnlineCalibrationSPDhandler* other);
-  UInt_t  AddDeadFrom(AliITSOnlineCalibrationSPDhandler* other);
-  UInt_t  AddNoisyFrom(AliITSOnlineCalibrationSPDhandler* other);
+  UInt_t  AddDeadFrom(const AliITSOnlineCalibrationSPDhandler* other);
+  UInt_t  AddNoisyFrom(const AliITSOnlineCalibrationSPDhandler* other);
 
   UInt_t  GetNrDiff(AliITSOnlineCalibrationSPDhandler* other) const;
   UInt_t  GetNrSilentDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  UInt_t  GetNrDeadDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  UInt_t  GetNrNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  AliITSOnlineCalibrationSPDhandler* GetDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  AliITSOnlineCalibrationSPDhandler* GetSilentDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  AliITSOnlineCalibrationSPDhandler* GetDeadDiff(AliITSOnlineCalibrationSPDhandler* other) const;
-  AliITSOnlineCalibrationSPDhandler* GetNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const;
+  UInt_t  GetNrDeadDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
+  UInt_t  GetNrNoisyDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
+  AliITSOnlineCalibrationSPDhandler* GetDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
+  AliITSOnlineCalibrationSPDhandler* GetSilentDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
+  AliITSOnlineCalibrationSPDhandler* GetDeadDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
+  AliITSOnlineCalibrationSPDhandler* GetNoisyDiff(const AliITSOnlineCalibrationSPDhandler* other) const;
   AliITSTriggerConditions * GetTriggerConditions() const {return fTriggerConditions;}
 
   void PrintDiffInDead(AliITSOnlineCalibrationSPDhandler *other) const;

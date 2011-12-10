@@ -868,7 +868,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromDBasNoisy(Int_t runNr, con
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromCalibObj(TObjArray* calObj) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromCalibObj(const TObjArray* calObj) {
   // reads dead pixels from calib object
   for (UInt_t module=0; module<240; module++) {
     AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*)calObj->At(module);
@@ -889,7 +889,7 @@ Bool_t AliITSOnlineCalibrationSPDhandler::ReadDeadFromCalibObj(TObjArray* calObj
   return kTRUE;
 }
 //____________________________________________________________________________________________
-Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromCalibObj(TObjArray* calObj) {
+Bool_t AliITSOnlineCalibrationSPDhandler::ReadNoisyFromCalibObj(const TObjArray* calObj) {
   // reads noisy pixels from calib object
   for (UInt_t module=0; module<240; module++) {
     AliITSCalibrationSPD* calibSPD = (AliITSCalibrationSPD*)calObj->At(module);
@@ -2427,7 +2427,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::AddSilentFrom(AliITSOnlineCalibrationS
   return GetNrSilent() - tmpdead;
 }
 //____________________________________________________________________________________________
-UInt_t AliITSOnlineCalibrationSPDhandler::AddDeadFrom(AliITSOnlineCalibrationSPDhandler* other) {
+UInt_t AliITSOnlineCalibrationSPDhandler::AddDeadFrom(const AliITSOnlineCalibrationSPDhandler* other) {
   // returns number of new dead pixels in this' list
   UInt_t returnval=0;
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -2445,7 +2445,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::AddDeadFrom(AliITSOnlineCalibrationSPD
   return returnval;
 }
 //____________________________________________________________________________________________
-UInt_t AliITSOnlineCalibrationSPDhandler::AddNoisyFrom(AliITSOnlineCalibrationSPDhandler* other) {
+UInt_t AliITSOnlineCalibrationSPDhandler::AddNoisyFrom(const AliITSOnlineCalibrationSPDhandler* other) {
   // returns number of new noisy pixels in this' list
   UInt_t returnval=0;
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -2497,7 +2497,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrSilentDiff(AliITSOnlineCalibratio
   return returnval;
 }
 //____________________________________________________________________________________________
-UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns nr of dead in this' lists and not in other's lists
   UInt_t returnval=0;
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -2516,7 +2516,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrDeadDiff(AliITSOnlineCalibrationS
   return returnval;
 }
 //____________________________________________________________________________________________
-UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns nr of noisy in this' lists and not in other's lists
   UInt_t returnval=0;
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -2535,7 +2535,7 @@ UInt_t AliITSOnlineCalibrationSPDhandler::GetNrNoisyDiff(AliITSOnlineCalibration
   return returnval;
 }
 //____________________________________________________________________________________________
-AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns handler with active/dead/noisy in this' lists, removing those that are in other's lists
   AliITSOnlineCalibrationSPDhandler* newHandler = new AliITSOnlineCalibrationSPDhandler();
 
@@ -2601,7 +2601,7 @@ AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDiff(Al
   return newHandler;
 }
 //____________________________________________________________________________________________
-AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetSilentDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetSilentDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns handler with active/dead in this' lists, removing those that are in other's lists
   AliITSOnlineCalibrationSPDhandler* newHandler = new AliITSOnlineCalibrationSPDhandler();
 
@@ -2653,7 +2653,7 @@ AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetSilentD
   return newHandler;
 }
 //____________________________________________________________________________________________
-AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDeadDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDeadDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns handler with dead in this' lists, except for those in other's lists
   AliITSOnlineCalibrationSPDhandler* newHandler = new AliITSOnlineCalibrationSPDhandler();
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {
@@ -2672,7 +2672,7 @@ AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetDeadDif
   return newHandler;
 }
 //____________________________________________________________________________________________
-AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetNoisyDiff(AliITSOnlineCalibrationSPDhandler* other) const {
+AliITSOnlineCalibrationSPDhandler* AliITSOnlineCalibrationSPDhandler::GetNoisyDiff(const AliITSOnlineCalibrationSPDhandler* other) const {
   // returns handler with noisy in this' lists, except for those in other's lists
   AliITSOnlineCalibrationSPDhandler* newHandler = new AliITSOnlineCalibrationSPDhandler();
   for (UInt_t gloChip=0; gloChip<1200; gloChip++) {

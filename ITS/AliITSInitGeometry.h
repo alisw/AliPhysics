@@ -14,7 +14,8 @@ $Id$
 
 #include <TObject.h>
 #include <TString.h>
-#include "AliITSgeom.h"
+
+class AliITSgeom;
 
 typedef enum {
   kvDefault=0,kv11=11,kv11Hybrid=110

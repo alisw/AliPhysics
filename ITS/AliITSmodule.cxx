@@ -119,8 +119,8 @@ Int_t AliITSmodule::AddHit(AliITShit* hit,Int_t t,Int_t h) {
     return fNhitsM;
 }
 //___________________________________________________________________________
-Double_t AliITSmodule::PathLength(AliITShit *itsHit1,
-				  AliITShit *itsHit2) {
+Double_t AliITSmodule::PathLength(const AliITShit *itsHit1,
+				  const AliITShit *itsHit2) {
   // path lenght
    Float_t  x1g,y1g,z1g;   
    Float_t  x2g,y2g,z2g;

@@ -218,7 +218,13 @@ class AliITSMisAligner : public AliMisAligner{
 	Double_t fSDDLadderShift2[6]; // for ladder second SDD layer
 
 	// Choice between uniform (kTRUE) or gaussian (kFALSE) distribution in the smearing
-	Bool_t fUnifSPDSector, fUnifSPDHS, fUnifSDDLadder, fUnifSSDLadder, fUnifSPDLadder, fUnifSDDModule, fUnifSSDModule;
+	Bool_t fUnifSPDSector;  // kTRUE if uniform smearing SPD sector
+	Bool_t  fUnifSPDHS; // kTRUE if uniform smearing SPD HS
+	Bool_t fUnifSDDLadder; // kTRUE if uniform smearing SDD ladder
+	Bool_t fUnifSSDLadder; // kTRUE if uniform smearing SSD ladder
+	Bool_t fUnifSPDLadder; // kTRUE if uniform smearing SPD ladder
+	Bool_t fUnifSDDModule; // kTRUE if uniform smearing SDD module
+	Bool_t fUnifSSDModule; // kTRUE if uniform smearing SSD module
 
 	ClassDef(AliITSMisAligner,0)   //ITS MisAligner
 };

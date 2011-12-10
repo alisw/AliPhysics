@@ -141,7 +141,7 @@ AliITSgeom* AliITSInitGeometry::CreateAliITSgeom(){
   TDatime datetime;
   TGeoVolume *itsV = gGeoManager->GetVolume("ITSV");
   if(!itsV){
-    Error("CreateAliITSgeom","Can't find ITS volume ITSV, aborting");
+    AliError("Can't find ITS volume ITSV, exiting - nothing done!");
     return 0;
   }// end if
   const Char_t *title = itsV->GetTitle();

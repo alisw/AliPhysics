@@ -1,14 +1,17 @@
 #ifndef ALIITSNOISESSD_H
 #define ALIITSNOISESSD_H
  
-#include "TObjArray.h"
 #include "TArrayF.h"
+#include "TObject.h"
 
 //////////////////////////////////////////////
 // Author: Enrico Fragiacomo
 // Date: 23/08/2007
 //                                          //
 //////////////////////////////////////////////
+
+class TObjArray;
+
 class AliITSNoiseSSD : public TObject {
 
  public:

@@ -1,5 +1,5 @@
-#ifndef ALI_ITS_ONLINECALIBRATIONSPD_H
-#define ALI_ITS_ONLINECALIBRATIONSPD_H
+#ifndef ALIITSONLINECALIBRATIONSPD_H
+#define ALIITSONLINECALIBRATIONSPD_H
 
 ///////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                            //

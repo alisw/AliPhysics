@@ -21,7 +21,6 @@
 
 const Int_t AliITSMeanVertexer::fgkMaxNumOfEvents = 10000;
 ClassImp(AliITSMeanVertexer)
-
 ///////////////////////////////////////////////////////////////////////
 //                                                                   //
 // Class to compute vertex position using SPD local reconstruction   //
@@ -32,9 +31,7 @@ ClassImp(AliITSMeanVertexer)
 // Usage:                                                            //
 // Class used by the ITSSPDVertexDiamondda.cxx detector algorithm    //
 ///////////////////////////////////////////////////////////////////////
-
 /* $Id$ */
-
 //______________________________________________________________________
 AliITSMeanVertexer::AliITSMeanVertexer(Bool_t mode):TObject(),
 fDetTypeRec(NULL),

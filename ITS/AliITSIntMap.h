@@ -1,5 +1,5 @@
-#ifndef ALI_ITS_INTMAP_H
-#define ALI_ITS_INTMAP_H
+#ifndef ALIITSINTMAP_H
+#define ALIITSINTMAP_H
 
 //////////////////////////////////////////////////////////////////////
 // Author: Henrik Tydesjo                                           //
