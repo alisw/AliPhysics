@@ -16,6 +16,7 @@
 #include <TObjArray.h>
 
 #include "AliRsnTarget.h"
+#include "AliRsnListOutput.h"
 
 class AliRsnCut;
 class AliRsnDaughter;
@@ -29,10 +30,11 @@ public:
    AliRsnCutSet();
    AliRsnCutSet(const char *name, RSNTARGET target);
    AliRsnCutSet(const AliRsnCutSet &copy);
-   AliRsnCutSet& operator=(const AliRsnCutSet& copy);
+   AliRsnCutSet &operator=(const AliRsnCutSet &copy);
    ~AliRsnCutSet();
 
-   void      AddCut(AliRsnCut* cut);
+   void      AddCut(AliRsnCut *cut);
+   Bool_t    Init(TList *list);
 
    void      ShowCuts() const;
    Int_t     GetIndexByCutName(TString s);
@@ -55,19 +57,23 @@ public:
 
    TObjArray *GetCuts() { return &fCuts; }
 
+   void AddMonitor(AliRsnListOutput *mon);
+   TObjArray *GetMonitorOutput() { return fMonitors; }
+   void SetMonitorOutput(TObjArray *monitors) { fMonitors = monitors; }
+
 private:
 
-   TObjArray     fCuts;                  // array of cuts
-   Int_t         fNumOfCuts;             // number of cuts
-   TString       fCutScheme;             // cut scheme
-   TString       fCutSchemeIndexed;      // cut scheme indexed
+   TObjArray         fCuts;                  // array of cuts
+   Int_t             fNumOfCuts;             // number of cuts
+   TString           fCutScheme;             // cut scheme
+   TString           fCutSchemeIndexed;      // cut scheme indexed
 
-   Bool_t       *fBoolValues;            //[fNumOfCuts]
-   Bool_t        fIsScheme;              // is scheme
+   Bool_t           *fBoolValues;            //[fNumOfCuts]
+   Bool_t            fIsScheme;              // is scheme
 
-   AliRsnExpression  *fExpression;       // pointer to AliRsnExpression
-
-   ClassDef(AliRsnCutSet, 1)   // ROOT dictionary
+   AliRsnExpression *fExpression;            // pointer to AliRsnExpression
+   TObjArray        *fMonitors;              // array of monitor object
+   ClassDef(AliRsnCutSet, 2)   // ROOT dictionary
 };
 
 #endif

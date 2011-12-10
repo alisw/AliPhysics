@@ -66,7 +66,7 @@ AliRsnValue::AliRsnValue(const char *name, AliRsnTarget::ETargetType type) :
 }
 
 //_____________________________________________________________________________
-AliRsnValue::AliRsnValue(const AliRsnValue& copy) :
+AliRsnValue::AliRsnValue(const AliRsnValue &copy) :
    AliRsnTarget(copy),
    fUseMCInfo(copy.fUseMCInfo),
    fComputedValue(copy.fComputedValue),
@@ -79,7 +79,7 @@ AliRsnValue::AliRsnValue(const AliRsnValue& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
+AliRsnValue &AliRsnValue::operator=(const AliRsnValue &copy)
 {
 //
 // Assignment operator.
@@ -88,7 +88,7 @@ AliRsnValue& AliRsnValue::operator=(const AliRsnValue& copy)
 
    AliRsnTarget::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fUseMCInfo = copy.fUseMCInfo;
    fComputedValue = copy.fComputedValue;
    fBinArray = copy.fBinArray;

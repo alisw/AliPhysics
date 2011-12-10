@@ -56,24 +56,24 @@ AliRsnMother::AliRsnMother(const AliRsnMother &obj) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMother& AliRsnMother::operator=(const AliRsnMother &obj)
+AliRsnMother &AliRsnMother::operator=(const AliRsnMother &obj)
 {
 //
 // Assignment operator.
 // Does not duplicate pointers.
 //
-  if (this == &obj)
-    return *this;
-  
-  fSum = obj.fSum;
-  fRef = obj.fRef;
-  fSumMC = obj.fSumMC;
-  fRefMC = obj.fRefMC;
-  fRefEvent = obj.fRefEvent;
-  fDaughter[0] = obj.fDaughter[0];
-  fDaughter[1] = obj.fDaughter[1];
-  
-  return (*this);
+   if (this == &obj)
+      return *this;
+
+   fSum = obj.fSum;
+   fRef = obj.fRef;
+   fSumMC = obj.fSumMC;
+   fRefMC = obj.fRefMC;
+   fRefEvent = obj.fRefEvent;
+   fDaughter[0] = obj.fDaughter[0];
+   fDaughter[1] = obj.fDaughter[1];
+
+   return (*this);
 }
 
 //__________________________________________________________________________________________________
@@ -107,21 +107,21 @@ Int_t AliRsnMother::CommonMother() const
 // If the mother label is the same, the function returns the PDG code of mother,
 // otherwise it returns 0.
 // The two arguments passed by reference contain the GEANT labels of the mother
-// of the two particles to which the two daughters point. This is for being able 
+// of the two particles to which the two daughters point. This is for being able
 // to check if they are really coming from a resonance (indexes >= 0) or not.
 //
 
    Int_t m1  = fDaughter[0]->GetMother();
    Int_t m2  = fDaughter[1]->GetMother();
    Int_t out = 0;
-   
+
    // a true mother makes sense only if both mothers
    // are not-negative and equal
    if (m1 >= 0 && m2 >= 0 && m1 == m2) {
       out = TMath::Abs(fDaughter[0]->GetMotherPDG());
       AliDebugClass(1, Form("Mothers are: %d %d --> EQUAL (PDG = %d)", m1, m2, out));
-   } 
-   
+   }
+
    return out;
 }
 
@@ -140,25 +140,25 @@ Double_t AliRsnMother::AngleToLeading(Bool_t &success)
       success = kFALSE;
       return -99.0;
    }
-   
+
    Int_t id1 = fDaughter[0]->GetID();
    Int_t id2 = fDaughter[1]->GetID();
    Int_t idL = fRefEvent->GetLeadingIndex();
-   
+
    if (id1 == idL || id2 == idL) {
       success = kFALSE;
       return -99.0;
    }
-   
+
    AliRsnDaughter leading = fRefEvent->GetDaughter(idL, kFALSE);
    AliVParticle  *ref     = leading.GetRef();
    Double_t       angle   = ref->Phi() - fSum.Phi();
-   
+
    //return angle w.r.t. leading particle in the range -pi/2, 3/2pi
    while (angle >= 1.5 * TMath::Pi()) angle -= 2 * TMath::Pi();
    while (angle < -0.5 * TMath::Pi()) angle += 2 * TMath::Pi();
    success = kTRUE;
-   
+
    return angle;
 }
 
@@ -177,7 +177,7 @@ void AliRsnMother::ComputeSum(Double_t mass0, Double_t mass1, Double_t motherMas
    // sum
    fSum   = fDaughter[0]->Prec() + fDaughter[1]->Prec();
    fSumMC = fDaughter[0]->Psim() + fDaughter[1]->Psim();
-   
+
    // reference
    fRef.SetXYZM(fSum.X(), fSum.Y(), fSum.Z(), motherMass);
    fRefMC.SetXYZM(fSumMC.X(), fSumMC.Y(), fSumMC.Z(), motherMass);

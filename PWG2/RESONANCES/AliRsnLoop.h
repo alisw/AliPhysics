@@ -3,9 +3,9 @@
 
 //
 // Base class to implement any computation within the RSN package.
-// It contains only an array of output objects which must derive 
+// It contains only an array of output objects which must derive
 // from AliRsnOutput.
-// Its core functions ar Init() and DoLoop() which must be 
+// Its core functions ar Init() and DoLoop() which must be
 // overloaded by any class which inherits from this.
 //
 
@@ -32,15 +32,15 @@ public:
 
    AliRsnLoop(const char *name = "default", Bool_t isMixed = kFALSE);
    AliRsnLoop(const AliRsnLoop &copy);
-   AliRsnLoop& operator=(const AliRsnLoop &copy);
+   AliRsnLoop &operator=(const AliRsnLoop &copy);
    ~AliRsnLoop();
-   
+
    void           SetMixed(Bool_t yn = kTRUE)     {fIsMixed = yn;}
    void           SetEventCuts(AliRsnCutSet *set) {fEventCuts = set;}
    Bool_t         IsMixed() const                 {return fIsMixed;}
-   AliRsnCutSet*  GetEventCuts()                  {return fEventCuts;}
+   AliRsnCutSet  *GetEventCuts()                  {return fEventCuts;}
    Bool_t         OkEvent(AliRsnEvent *rsn);
-   
+
    virtual void   AddOutput(TObject *output);
    virtual void   Print(Option_t *option = "") const;
    virtual Bool_t Init(const char *prefix, TList *list);

@@ -6,9 +6,9 @@
 //  need to be accessed from ESD or AOD objects, usually in different ways.
 //  When MC is available, AliRsnDaughter matches each reconstructed object with
 //  its corresponding MC particle.
-//  
+//
 //  Currently, this interface can point to all kinds of single-particle object
-//  which one can have in the reconstructed event: charged tracks, V0s and 
+//  which one can have in the reconstructed event: charged tracks, V0s and
 //  cascades. It is care of the user to treat each of them in the correct way,
 //  regarding cuts, functions to be computed, etc.
 //
@@ -44,15 +44,15 @@ AliRsnDaughter::AliRsnDaughter(const AliRsnDaughter &copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnDaughter& AliRsnDaughter::operator=(const AliRsnDaughter &copy)
+AliRsnDaughter &AliRsnDaughter::operator=(const AliRsnDaughter &copy)
 {
 //
 // Assignment operator.
 // Pointers are NOT duplicated, since they don't come from a 'new'
 // statement, but from just referencing something in the data source.
 //
-  if (this == &copy)
-    return *this;
+   if (this == &copy)
+      return *this;
 
    fOK         = copy.fOK;
    fLabel      = copy.fLabel;
@@ -80,7 +80,7 @@ void AliRsnDaughter::Reset()
    fLabel     = -1;
    fMotherPDG =  0;
    fRsnID     = -1;
-   
+
    fPsim.SetXYZT(0.0, 0.0, 0.0, 0.0);
    fPrec.SetXYZT(0.0, 0.0, 0.0, 0.0);
 
@@ -97,9 +97,9 @@ Int_t AliRsnDaughter::GetPDG()
 //
 
    if (Match(fRefMC, AliMCParticle::Class()))
-      return ((AliMCParticle*)fRefMC)->Particle()->GetPdgCode();
+      return ((AliMCParticle *)fRefMC)->Particle()->GetPdgCode();
    else if (Match(fRefMC, AliAODMCParticle::Class()))
-      return ((AliAODMCParticle*)fRefMC)->GetPdgCode();
+      return ((AliAODMCParticle *)fRefMC)->GetPdgCode();
    else {
       AliWarning("Cannot retrieve PDG");
       return 0;
@@ -138,17 +138,17 @@ Int_t AliRsnDaughter::GetMother()
    if (!fRefMC) return -1;
 
    if (fRefMC->InheritsFrom(AliMCParticle::Class())) {
-      AliMCParticle *mc = (AliMCParticle*)fRefMC;
+      AliMCParticle *mc = (AliMCParticle *)fRefMC;
       return mc->Particle()->GetFirstMother();
    } else if (fRefMC->InheritsFrom(AliAODMCParticle::Class())) {
-      AliAODMCParticle *mc = (AliAODMCParticle*)fRefMC;
+      AliAODMCParticle *mc = (AliAODMCParticle *)fRefMC;
       return mc->GetMother();
    }
    else
       return -1;
 }
-   
-   
+
+
 
 //______________________________________________________________________________
 void AliRsnDaughter::Print(Option_t *) const
@@ -165,7 +165,7 @@ void AliRsnDaughter::Print(Option_t *) const
 }
 
 //______________________________________________________________________________
-const char* AliRsnDaughter::SpeciesName(ESpecies species)
+const char *AliRsnDaughter::SpeciesName(ESpecies species)
 {
 //
 // Return a string with the short name of the particle
@@ -215,7 +215,7 @@ Double_t AliRsnDaughter::SpeciesMass(ESpecies species)
 
    TDatabasePDG *db = TDatabasePDG::Instance();
    TParticlePDG *part = 0x0;
-   
+
    Int_t pdg = SpeciesPDG(species);
    if (pdg) {
       part = db->GetParticle(pdg);

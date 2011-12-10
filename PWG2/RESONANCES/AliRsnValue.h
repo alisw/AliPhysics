@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Collection of all values which can be computed within the package
@@ -18,12 +18,12 @@ class AliRsnValue : public AliRsnTarget {
 public:
 
    AliRsnValue(const char *name = "", AliRsnTarget::ETargetType type = AliRsnTarget::kTargetTypes);
-   AliRsnValue(const AliRsnValue& copy);
-   AliRsnValue& operator=(const AliRsnValue& copy);
+   AliRsnValue(const AliRsnValue &copy);
+   AliRsnValue &operator=(const AliRsnValue &copy);
    virtual ~AliRsnValue() { }
 
-   TArrayD&        GetArray()               {return fBinArray;}
-   const Double_t* GetArrayValues() const   {return fBinArray.GetArray();}
+   TArrayD        &GetArray()               {return fBinArray;}
+   const Double_t *GetArrayValues() const   {return fBinArray.GetArray();}
    Double_t        GetComputedValue() const {return fComputedValue;}
 
    void            SetUseMCInfo(Bool_t yn = kTRUE) {fUseMCInfo = yn;}

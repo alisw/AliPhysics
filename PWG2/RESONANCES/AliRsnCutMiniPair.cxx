@@ -30,12 +30,12 @@ Bool_t AliRsnCutMiniPair::IsSelected(TObject *obj)
 // Global check
 //
 
-   AliRsnMiniPair *pair = dynamic_cast<AliRsnMiniPair*>(obj);
+   AliRsnMiniPair *pair = dynamic_cast<AliRsnMiniPair *>(obj);
    if (!pair) {
       AliError("This cut applies only to mini-pairs");
       return kFALSE;
    }
-   
+
    switch (fType) {
       case kRapidityRange:
          fCutValueD = pair->Y(0);

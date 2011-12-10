@@ -48,29 +48,29 @@ Bool_t AliRsnCutDaughterKStar2010PP::IsSelected(TObject *obj)
 
    // coherence check
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check track
-   AliVTrack *track = dynamic_cast<AliVTrack*>(fDaughter->GetRef());
+   AliVTrack *track = dynamic_cast<AliVTrack *>(fDaughter->GetRef());
    if (!track) return kFALSE;
-   
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-   
+
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
-   
+
    // if no PID is required, accept
    if (fNoPID) return kTRUE;
-   
+
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
       return kFALSE;
    }
-   
+
    // check if TOF is matched
    // and computes all values used in the PID cut
    Bool_t   isTOF  = MatchTOF(track);
@@ -80,7 +80,7 @@ Bool_t AliRsnCutDaughterKStar2010PP::IsSelected(TObject *obj)
    Double_t nsTOF  = isTOF ? TMath::Abs(pid->NumberOfSigmasTOF(track, fPID)) : 1E20;
    Double_t maxTPC = 1E20;
    Double_t maxTOF = 1E20;
-   
+
    // applies the cut differently depending on the PID and the momentum
    if (isTOF) {
       // TPC: 5sigma cut for all
@@ -89,18 +89,18 @@ Bool_t AliRsnCutDaughterKStar2010PP::IsSelected(TObject *obj)
       if (p < 1.5) maxTOF = 3.0; else maxTOF = 2.0;
       return (nsTOF <= maxTOF);
    } else {
-      // TPC: 
+      // TPC:
       // all   below   350         MeV: 5sigma
       // all   between 350 and 500 MeV: 3sigma
       // pions above   500         MeV: 2sigma
       // kaons between 500 and 700 MeV: 2sigma
       // kaons above   700         MeV: rejected
-      if (pTPC <= 0.35) 
+      if (pTPC <= 0.35)
          maxTPC = 5.0;
       else if (pTPC > 0.35 && pTPC <= 0.5)
          maxTPC = 3.0;
-      else {  
-         if (fPID == AliPID::kPion) 
+      else {
+         if (fPID == AliPID::kPion)
             maxTPC = 2.0;
          else if (fPID == AliPID::kKaon) {
             if (pTPC <= 0.7)

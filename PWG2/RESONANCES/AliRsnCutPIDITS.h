@@ -34,12 +34,12 @@ public:
                    Double_t    nSigmaMax     =  3.,
                    Bool_t      rejectOutside = kTRUE);
 
-   AliRsnCutPIDITS(const AliRsnCutPIDITS& copy);
-   AliRsnCutPIDITS& operator=(const AliRsnCutPIDITS& copy);
+   AliRsnCutPIDITS(const AliRsnCutPIDITS &copy);
+   AliRsnCutPIDITS &operator=(const AliRsnCutPIDITS &copy);
    virtual ~AliRsnCutPIDITS() { }
 
-   AliESDpid*       ESDpid()  {return fESDpid;}
-   AliAODpidUtil*   AODpid()  {return fAODpid;}
+   AliESDpid       *ESDpid()  {return fESDpid;}
+   AliAODpidUtil   *AODpid()  {return fAODpid;}
 
    void             SetMC(Bool_t mc = kTRUE)                      {fIsMC = mc;}
    void             SetRejectOutside(Bool_t yn = kTRUE)           {fRejectOutside = yn;}

@@ -5,7 +5,7 @@
 // -- properties of resonance (mass, PDG code if needed)
 // -- properties of daughters (assigned mass, charges)
 // -- definition of output histogram
-// 
+//
 
 #include "Riostream.h"
 
@@ -103,8 +103,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 // Output:
 //    -- "HIST"    --> common histogram (up to 3 dimensions)
 //    -- "SPARSE"  --> sparse histogram
-//                 
-// Computation:    
+//
+// Computation:
 //    -- "EVENT"   --> event-only computations
 //    -- "PAIR"    --> track pair computations (default)
 //    -- "MIX"     --> event mixing (like track pair, but different events)
@@ -115,7 +115,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 //
 
    TString input;
-   
+
    // understand output type
    input = outType;
    input.ToUpper();
@@ -125,7 +125,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fOutputType = kHistogramSparse;
    else
       AliWarning(Form("String '%s' does not define a meaningful output type", outType));
-      
+
    // understand computation type
    input = compType;
    input.ToUpper();
@@ -145,7 +145,7 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fComputation = kMother;
    else
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
-   
+
    fCutID[0] = fCutID[1] = -1;
    fDaughter[0] = fDaughter[1] = AliRsnDaughter::kUnknown;
    fCharge[0] = fCharge[1] = 0;
@@ -180,33 +180,33 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniOutput& AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
+AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
 {
 //
 // Assignment operator
 //
-  if (this == &copy)
-    return *this;
-  fOutputType = copy.fOutputType;
-  fComputation = copy.fComputation;
-  fMotherPDG = copy.fMotherPDG;
-  fMotherMass = copy.fMotherMass;
-  fPairCuts = copy.fPairCuts;
-  fOutputID = copy.fOutputID;
-  fAxes = copy.fAxes;
-  fComputed = copy.fComputed;
-  fList = copy.fList;
-  
-  Int_t i;
-  for (i = 0; i < 2; i++) {
-    fCutID[i] = copy.fCutID[i];
-    fDaughter[i] = copy.fDaughter[i];
-    fCharge[i] = copy.fCharge[i];
-  }
-  
-  fSel1.Set(0);
-  fSel2.Set(0);
-  
+   if (this == &copy)
+      return *this;
+   fOutputType = copy.fOutputType;
+   fComputation = copy.fComputation;
+   fMotherPDG = copy.fMotherPDG;
+   fMotherMass = copy.fMotherMass;
+   fPairCuts = copy.fPairCuts;
+   fOutputID = copy.fOutputID;
+   fAxes = copy.fAxes;
+   fComputed = copy.fComputed;
+   fList = copy.fList;
+
+   Int_t i;
+   for (i = 0; i < 2; i++) {
+      fCutID[i] = copy.fCutID[i];
+      fDaughter[i] = copy.fDaughter[i];
+      fCharge[i] = copy.fCharge[i];
+   }
+
+   fSel1.Set(0);
+   fSel2.Set(0);
+
    return (*this);
 }
 
@@ -218,7 +218,7 @@ void AliRsnMiniOutput::AddAxis(Int_t i, Int_t nbins, Double_t min, Double_t max)
 // Create a new axis reference
 //
 
-   Int_t size = fAxes.GetEntries();   
+   Int_t size = fAxes.GetEntries();
    new (fAxes[size]) AliRsnMiniAxis(i, nbins, min, max);
 }
 
@@ -229,7 +229,7 @@ void AliRsnMiniOutput::AddAxis(Int_t i, Double_t min, Double_t max, Double_t ste
 // Create a new axis reference
 //
 
-   Int_t size = fAxes.GetEntries();   
+   Int_t size = fAxes.GetEntries();
    new (fAxes[size]) AliRsnMiniAxis(i, min, max, step);
 }
 
@@ -240,7 +240,7 @@ void AliRsnMiniOutput::AddAxis(Int_t i, Int_t nbins, Double_t *values)
 // Create a new axis reference
 //
 
-   Int_t size = fAxes.GetEntries();   
+   Int_t size = fAxes.GetEntries();
    new (fAxes[size]) AliRsnMiniAxis(i, nbins, values);
 }
 
@@ -255,7 +255,7 @@ Bool_t AliRsnMiniOutput::Init(const char *prefix, TList *list)
       AliError("Required an output list");
       return kFALSE;
    }
-   
+
    fList = list;
    Int_t size = fAxes.GetEntries();
    if (size < 1) {
@@ -295,10 +295,10 @@ void AliRsnMiniOutput::CreateHistogram(const char *name)
 
    // we expect to have maximum 3 axes in this case
    AliRsnMiniAxis *xAxis = 0x0, *yAxis = 0x0, *zAxis = 0x0;
-   if (size >= 1) xAxis = (AliRsnMiniAxis*)fAxes[0];
-   if (size >= 2) yAxis = (AliRsnMiniAxis*)fAxes[1];
-   if (size >= 3) zAxis = (AliRsnMiniAxis*)fAxes[2];
-   
+   if (size >= 1) xAxis = (AliRsnMiniAxis *)fAxes[0];
+   if (size >= 2) yAxis = (AliRsnMiniAxis *)fAxes[1];
+   if (size >= 3) zAxis = (AliRsnMiniAxis *)fAxes[2];
+
    // create histogram depending on the number of axes
    TH1 *h1 = 0x0;
    if (xAxis && yAxis && zAxis) {
@@ -311,7 +311,7 @@ void AliRsnMiniOutput::CreateHistogram(const char *name)
       AliError("No axis was initialized");
       return;
    }
-   
+
    // switch the correct computation of errors
    if (h1 && fList) {
       h1->Sumw2();
@@ -330,13 +330,13 @@ void AliRsnMiniOutput::CreateHistogramSparse(const char *name)
 
    Int_t size = fAxes.GetEntries();
    AliInfo(Form("Sparse histogram name = '%s', with %d axes", name, size));
-   
+
    // retrieve binnings and sizes of all axes
    // since the check for null values is done in Init(),
    // we assume that here they must all be well defined
    Int_t i, *nbins = new Int_t[size];
    for (i = 0; i < size; i++) {
-      AliRsnMiniAxis *axis = (AliRsnMiniAxis*)fAxes[i];
+      AliRsnMiniAxis *axis = (AliRsnMiniAxis *)fAxes[i];
       nbins[i] = axis->NBins();
    }
 
@@ -345,13 +345,13 @@ void AliRsnMiniOutput::CreateHistogramSparse(const char *name)
 
    // update the various axes using the definitions given in the array of axes here
    for (i = 0; i < size; i++) {
-      AliRsnMiniAxis *axis = (AliRsnMiniAxis*)fAxes[i];
+      AliRsnMiniAxis *axis = (AliRsnMiniAxis *)fAxes[i];
       h1->GetAxis(i)->Set(nbins[i], axis->BinArray());
    }
 
    // clear heap
    delete [] nbins;
-   
+
    // add to list
    if (h1 && fList) {
       h1->Sumw2();
@@ -391,10 +391,10 @@ Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent 
       AliError("This method can be called only for mother-based computations");
       return kFALSE;
    }
-   
+
    // copy passed pair info
    fPair = (*pair);
-   
+
    // check pair against cuts
    if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
 
@@ -425,17 +425,17 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       AliError(Form("[%s] This method can be called only for pair-based computations", GetName()));
       return kFALSE;
    }
-   
+
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *p1, *p2;
-   
+
    // it is necessary to know if criteria for the two daughters are the same
    // and if the two events are the same or not (mixing)
    //Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
-   
+
    TString selList1  = "";
    TString selList2  = "";
    Int_t   n1 = event1->CountParticles(fSel1, fCharge[0], fCutID[0]);
@@ -448,7 +448,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
       AliDebugClass(1, "No pairs to mix");
       return 0;
    }
-   
+
    // external loop
    for (i1 = 0; i1 < n1; i1++) {
       p1 = event1->GetParticle(fSel1[i1]);
@@ -498,11 +498,11 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
          }
          // get computed values & fill histogram
          nadded++;
-         if (refFirst) ComputeValues(event1, valueList); else ComputeValues(event2, valueList); 
+         if (refFirst) ComputeValues(event1, valueList); else ComputeValues(event2, valueList);
          FillHistogram();
       } // end internal loop
    } // end external loop
-   
+
    AliDebugClass(1, Form("Pairs added in total = %4d", nadded));
    return nadded;
 }
@@ -520,10 +520,10 @@ void AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *value
    if (fComputed.GetSize() != size) fComputed.Set(size);
 
    Int_t i, ival, nval = valueList->GetEntries();
-   
+
    for (i = 0; i < size; i++) {
       fComputed[i] = 1E20;
-      AliRsnMiniAxis *axis = (AliRsnMiniAxis*)fAxes[i];
+      AliRsnMiniAxis *axis = (AliRsnMiniAxis *)fAxes[i];
       if (!axis) {
          AliError("Null axis");
          continue;
@@ -533,11 +533,11 @@ void AliRsnMiniOutput::ComputeValues(AliRsnMiniEvent *event, TClonesArray *value
          AliError(Form("Required value #%d, while maximum is %d", ival, nval));
          continue;
       }
-      AliRsnMiniValue *val = (AliRsnMiniValue*)valueList->At(ival);
+      AliRsnMiniValue *val = (AliRsnMiniValue *)valueList->At(ival);
       if (!val) {
          AliError(Form("Value in position #%d is NULL", ival));
          continue;
-      } 
+      }
       // if none of the above exit points is taken, compute value
       fComputed[i] = val->Eval(&fPair, event);
    }
@@ -560,13 +560,13 @@ void AliRsnMiniOutput::FillHistogram()
    TObject *obj = fList->At(fOutputID);
 
    if (obj->InheritsFrom(TH1F::Class())) {
-      ((TH1F*)obj)->Fill(fComputed[0]);
+      ((TH1F *)obj)->Fill(fComputed[0]);
    } else if (obj->InheritsFrom(TH2F::Class())) {
-      ((TH2F*)obj)->Fill(fComputed[0], fComputed[1]);
+      ((TH2F *)obj)->Fill(fComputed[0], fComputed[1]);
    } else if (obj->InheritsFrom(TH3F::Class())) {
-      ((TH3F*)obj)->Fill(fComputed[0], fComputed[1], fComputed[2]);
+      ((TH3F *)obj)->Fill(fComputed[0], fComputed[1], fComputed[2]);
    } else if (obj->InheritsFrom(THnSparseF::Class())) {
-      ((THnSparseF*)obj)->Fill(fComputed.GetArray());
+      ((THnSparseF *)obj)->Fill(fComputed.GetArray());
    } else {
       AliError("No output initialized");
    }

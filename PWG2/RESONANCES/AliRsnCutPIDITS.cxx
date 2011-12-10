@@ -46,7 +46,7 @@ AliRsnCutPIDITS::AliRsnCutPIDITS
 
 //_________________________________________________________________________________________________
 AliRsnCutPIDITS::AliRsnCutPIDITS
-(const AliRsnCutPIDITS& copy) :
+(const AliRsnCutPIDITS &copy) :
    AliRsnCut(copy),
    fIsMC(copy.fIsMC),
    fRejectOutside(copy.fRejectOutside),
@@ -62,15 +62,15 @@ AliRsnCutPIDITS::AliRsnCutPIDITS
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDITS& AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS& copy)
+AliRsnCutPIDITS &AliRsnCutPIDITS::operator=(const AliRsnCutPIDITS &copy)
 {
 //
 // Assignment operator
 //
 
    AliRsnCut::operator=(copy);
-  if (this == &copy)
-    return *this;
+   if (this == &copy)
+      return *this;
 
    fIsMC          = copy.fIsMC;
    fRejectOutside = copy.fRejectOutside;

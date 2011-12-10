@@ -68,7 +68,7 @@ AliRsnValueDaughter::AliRsnValueDaughter(const char *name, EType type) :
 }
 
 //_____________________________________________________________________________
-AliRsnValueDaughter::AliRsnValueDaughter(const AliRsnValueDaughter& copy) :
+AliRsnValueDaughter::AliRsnValueDaughter(const AliRsnValueDaughter &copy) :
    AliRsnValue(copy),
    fType(copy.fType)
 {
@@ -78,7 +78,7 @@ AliRsnValueDaughter::AliRsnValueDaughter(const AliRsnValueDaughter& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnValueDaughter& AliRsnValueDaughter::operator=(const AliRsnValueDaughter& copy)
+AliRsnValueDaughter &AliRsnValueDaughter::operator=(const AliRsnValueDaughter &copy)
 {
 //
 // Assignment operator.
@@ -87,14 +87,14 @@ AliRsnValueDaughter& AliRsnValueDaughter::operator=(const AliRsnValueDaughter& c
 
    AliRsnValue::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fType = copy.fType;
-   
+
    return (*this);
 }
 
 //_____________________________________________________________________________
-const char* AliRsnValueDaughter::GetTypeName() const
+const char *AliRsnValueDaughter::GetTypeName() const
 {
 //
 // This method returns a string to give a name to each possible
@@ -129,8 +129,8 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
 // The output of the function tells if computing was successful,
 // and the values must be taken with GetValue().
 //
-   
-   // coherence check, which also casts object 
+
+   // coherence check, which also casts object
    // to AliRsnTarget data members and returns kFALSE
    // in case the object is NULL
    if (!TargetOK(object)) return kFALSE;
@@ -147,7 +147,7 @@ Bool_t AliRsnValueDaughter::Eval(TObject *object)
       AliError("No DATA");
       return kFALSE;
    }
-   
+
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem

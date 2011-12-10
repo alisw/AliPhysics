@@ -29,10 +29,10 @@ AliRsnExpression::AliRsnExpression(TString exp) :
    fOperator(0)
 {
    // Default constructor
-   TObjArray* tokens = Tokenize(exp);
+   TObjArray *tokens = Tokenize(exp);
 
    Int_t i = -1;
-   AliRsnExpression* e = Expression(*tokens, i);
+   AliRsnExpression *e = Expression(*tokens, i);
    // Copy !!!
    fArg1 = e->fArg1; e->fArg1 = 0;
    fArg2 = e->fArg2; e->fArg2 = 0;
@@ -49,7 +49,7 @@ AliRsnExpression::~AliRsnExpression()
    if (fArg2) delete fArg2;
 }
 
-AliRsnExpression::AliRsnExpression(const AliRsnExpression & exp) : TObject(exp),
+AliRsnExpression::AliRsnExpression(const AliRsnExpression &exp) : TObject(exp),
    fVname(exp.fVname),
    fArg1(exp.fArg1),
    fArg2(exp.fArg2),
@@ -57,7 +57,7 @@ AliRsnExpression::AliRsnExpression(const AliRsnExpression & exp) : TObject(exp),
 {}
 
 //______________________________________________________________________________
-AliRsnExpression& AliRsnExpression::operator= (const AliRsnExpression& e)
+AliRsnExpression &AliRsnExpression::operator= (const AliRsnExpression &e)
 {
    // AliRsnExpression assignment operator.
 
@@ -72,7 +72,7 @@ AliRsnExpression& AliRsnExpression::operator= (const AliRsnExpression& e)
 }
 
 //______________________________________________________________________________
-AliRsnExpression::AliRsnExpression(int op, AliRsnExpression* a, AliRsnExpression* b) :
+AliRsnExpression::AliRsnExpression(int op, AliRsnExpression *a, AliRsnExpression *b) :
    TObject(),
    fVname(""),
    fArg1(a),
@@ -83,7 +83,7 @@ AliRsnExpression::AliRsnExpression(int op, AliRsnExpression* a, AliRsnExpression
 }
 
 //______________________________________________________________________________
-AliRsnExpression::AliRsnExpression(int op, AliRsnExpression* a) :
+AliRsnExpression::AliRsnExpression(int op, AliRsnExpression *a) :
    TObject(),
    fVname(""),
    fArg1(0),
@@ -154,7 +154,7 @@ TString AliRsnExpression::Unparse() const
 }
 
 //______________________________________________________________________________
-TObjArray* AliRsnExpression::Tokenize(TString str) const
+TObjArray *AliRsnExpression::Tokenize(TString str) const
 {
    // tokenize the expression
 
@@ -165,35 +165,35 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
       str1.Append(str[i]);
    }
    // get variable tokens
-   TObjArray* valtok = str1.Tokenize("!&|()");
+   TObjArray *valtok = str1.Tokenize("!&|()");
    // put all variables together
    Int_t nvt = valtok->GetEntriesFast();
    TString sumval;
    for (Int_t i = 0; i < nvt; i++) {
-      TObjString* val = (TObjString*) valtok->At(i);
+      TObjString *val = (TObjString *) valtok->At(i);
       sumval.Append(val->String());
    }
    // get the operator tokens
-   TObjArray* optok = str1.Tokenize(sumval.Data());
+   TObjArray *optok = str1.Tokenize(sumval.Data());
    // put all operator in one string
    TString operators;
    Int_t nopt = optok->GetEntriesFast();
    for (Int_t i = 0; i < nopt; i++) {
-      TObjString* val1 = (TObjString*) optok->At(i);
+      TObjString *val1 = (TObjString *) optok->At(i);
       operators.Append(val1->String());
    }
    // add more room to be safe
-   TObjString* blank = new TObjString(" ");
+   TObjString *blank = new TObjString(" ");
    operators.Append(" ");
    valtok->AddLast(blank);
    // Now put var. and oper. together
-   TObjArray* tokens = new TObjArray(valtok->GetEntriesFast() + operators.Length());
+   TObjArray *tokens = new TObjArray(valtok->GetEntriesFast() + operators.Length());
    int io = 0, iv = 0;
    int index = 0;
    while (1) {
       TString so = operators[io];
       int indexO = str1.Index(so, index);
-      TString val2 = ((TObjString*) valtok->At(iv))->String();
+      TString val2 = ((TObjString *) valtok->At(iv))->String();
       int indexV = str1.Index(val2, index);
       if ((indexO < indexV || indexV < 0) && indexO >= 0) {
          tokens->AddLast(new TObjString(so));
@@ -225,19 +225,19 @@ TObjArray* AliRsnExpression::Tokenize(TString str) const
 
 
 //______________________________________________________________________________
-AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
+AliRsnExpression *AliRsnExpression::Element(TObjArray &st, Int_t &i)
 {
    // create an element
 
-   AliRsnExpression* result = 0;
+   AliRsnExpression *result = 0;
 
    Int_t nt = st.GetEntriesFast();
    TString token = "@";
-   TObjString* valt;
+   TObjString *valt;
    // next token
    if (i < nt - 1) {
       i++;
-      valt = (TObjString*) st.At(i);
+      valt = (TObjString *) st.At(i);
       token = valt->String();
    }
    // token type
@@ -253,7 +253,7 @@ AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
          // next token
          if (i < nt - 1) {
             i++;
-            valt = (TObjString*) st.At(i);
+            valt = (TObjString *) st.At(i);
             token = valt->String();
          }
          if (token[0] != ')') {
@@ -273,17 +273,17 @@ AliRsnExpression* AliRsnExpression::Element(TObjArray &st, Int_t &i)
 }
 
 //______________________________________________________________________________
-AliRsnExpression* AliRsnExpression::Primary(TObjArray &st, Int_t &i)
+AliRsnExpression *AliRsnExpression::Primary(TObjArray &st, Int_t &i)
 {
    // create a primary
 
    Int_t nt = st.GetEntriesFast();
    TString token = "@";
-   TObjString* valt;
+   TObjString *valt;
    // next token
    if (i < nt - 1) {
       i++;
-      valt = (TObjString*) st.At(i);
+      valt = (TObjString *) st.At(i);
       token = valt->String();
    }
 
@@ -297,14 +297,14 @@ AliRsnExpression* AliRsnExpression::Primary(TObjArray &st, Int_t &i)
 }
 
 //______________________________________________________________________________
-AliRsnExpression* AliRsnExpression::Expression(TObjArray &st, Int_t &i)
+AliRsnExpression *AliRsnExpression::Expression(TObjArray &st, Int_t &i)
 {
    // create an expression
 
-   AliRsnExpression* result = 0;
+   AliRsnExpression *result = 0;
    Bool_t done = kFALSE;
    TString token;
-   TObjString* valt;
+   TObjString *valt;
 
    static int stack = 0;
    stack++;
@@ -316,7 +316,7 @@ AliRsnExpression* AliRsnExpression::Expression(TObjArray &st, Int_t &i)
       // next token
       if (i < nt - 1) i++;
       else break;
-      valt = (TObjString*) st.At(i);
+      valt = (TObjString *) st.At(i);
       token = valt->String();
       switch (token[0]) {
          case '&' :

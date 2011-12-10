@@ -32,10 +32,10 @@ public:
    AliRsnMiniAnalysisTask();
    AliRsnMiniAnalysisTask(const char *name, Bool_t isMC = kFALSE);
    AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &copy);
-   AliRsnMiniAnalysisTask& operator=(const AliRsnMiniAnalysisTask &copy);
+   AliRsnMiniAnalysisTask &operator=(const AliRsnMiniAnalysisTask &copy);
    virtual ~AliRsnMiniAnalysisTask();
 
-   void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}                     
+   void                UseMC(Bool_t yn = kTRUE)           {fUseMC = yn;}
    void                UseCentrality(const char *type)    {fUseCentrality = kTRUE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseMultiplicity(const char *type)  {fUseCentrality = kFALSE; fCentralityType = type; fCentralityType.ToUpper();}
    void                UseContinuousMix()                 {fContinuousMix = kTRUE;}
@@ -45,20 +45,21 @@ public:
    void                SetMaxDiffVz   (Double_t val)      {fMaxDiffVz    = val;}
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
+   void                SetMixPrintRefresh(Int_t n)        {fMixPrintRefresh = n;}
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
-   
+
    virtual void        UserCreateOutputObjects();
-   virtual void        UserExec(Option_t*);
-   virtual void        Terminate(Option_t*);
+   virtual void        UserExec(Option_t *);
+   virtual void        Terminate(Option_t *);
    virtual void        FinishTaskOutput();
-   
+
    Int_t               ValueID(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE);
-   Int_t               CreateValue(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE); 
+   Int_t               CreateValue(AliRsnMiniValue::EType type, Bool_t useMC = kFALSE);
    AliRsnMiniOutput   *CreateOutput(const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src);
    AliRsnMiniOutput   *CreateOutput(const char *name, const char *outType, const char *compType);
-  
+
 private:
 
    Char_t   CheckCurrentEvent();
@@ -74,18 +75,18 @@ private:
    Int_t                fEvNum;           //! absolute event counter
    Bool_t               fUseCentrality;   //  if true, use centrality for event, otherwise use multiplicity
    TString              fCentralityType;  //  definition used to choose what centrality or multiplicity to use
-                       
+
    Bool_t               fContinuousMix;   //  mixing --> technique chosen (continuous or binned)
    Int_t                fNMix;            //  mixing --> required number of mixes
    Double_t             fMaxDiffMult;     //  mixing --> max difference in multiplicity
    Double_t             fMaxDiffVz;       //  mixing --> max difference in Vz of prim vert
    Double_t             fMaxDiffAngle;    //  mixing --> max difference in reaction plane angle
-                       
+
    TList               *fOutput;          //  output list
    TClonesArray         fHistograms;      //  list of histogram definitions
    TClonesArray         fValues;          //  list of values to be computed
    TH1F                *fHEventStat;      //  histogram of event statistics
-                       
+
    AliRsnCutSet        *fEventCuts;       //  cuts on events
    TObjArray            fTrackCuts;       //  list of single track cuts
    AliRsnEvent          fRsnEvent;        //! interface object to the event
@@ -94,8 +95,9 @@ private:
    AliESDtrackCuts     *fESDtrackCuts;    //! quality cut for ESD tracks
    AliRsnMiniEvent     *fMiniEvent;       //! mini-event cursor
    Bool_t               fBigOutput;       // flag if open file for output list
+   Int_t                fMixPrintRefresh; // how often info in mixing part is printed
 
-   ClassDef(AliRsnMiniAnalysisTask, 2);   // AliRsnMiniAnalysisTask
+   ClassDef(AliRsnMiniAnalysisTask, 3);   // AliRsnMiniAnalysisTask
 };
 
 inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bool_t useMC)
@@ -114,7 +116,7 @@ inline Int_t AliRsnMiniAnalysisTask::CreateValue(AliRsnMiniValue::EType type, Bo
       AliInfo(Form("Creating value '%s' in slot #%d", AliRsnMiniValue::ValueName(type, useMC), valID));
       new (fValues[valID]) AliRsnMiniValue(type, useMC);
    }
-   
+
    return valID;
 }
 
@@ -126,13 +128,13 @@ inline Int_t AliRsnMiniAnalysisTask::ValueID(AliRsnMiniValue::EType type, Bool_t
 
    const char *name = AliRsnMiniValue::ValueName(type, useMC);
    TObject *obj = fValues.FindObject(name);
-   if (obj) 
-      return fValues.IndexOf(obj); 
+   if (obj)
+      return fValues.IndexOf(obj);
    else
       return -1;
 }
 
-inline AliRsnMiniOutput* AliRsnMiniAnalysisTask::CreateOutput
+inline AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput
 (const char *name, AliRsnMiniOutput::EOutputType type, AliRsnMiniOutput::EComputation src)
 {
 //
@@ -140,13 +142,13 @@ inline AliRsnMiniOutput* AliRsnMiniAnalysisTask::CreateOutput
 // which is then returned to the user for its configuration
 //
 
-   Int_t n = fHistograms.GetEntries(); 
+   Int_t n = fHistograms.GetEntries();
    AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, type, src);
-   
+
    return newDef;
 }
 
-inline AliRsnMiniOutput* AliRsnMiniAnalysisTask::CreateOutput
+inline AliRsnMiniOutput *AliRsnMiniAnalysisTask::CreateOutput
 (const char *name, const char *outType, const char *compType)
 {
 //
@@ -154,9 +156,9 @@ inline AliRsnMiniOutput* AliRsnMiniAnalysisTask::CreateOutput
 // which is then returned to the user for its configuration
 //
 
-   Int_t n = fHistograms.GetEntries(); 
+   Int_t n = fHistograms.GetEntries();
    AliRsnMiniOutput *newDef = new (fHistograms[n]) AliRsnMiniOutput(name, outType, compType);
-   
+
    return newDef;
 }
 #endif

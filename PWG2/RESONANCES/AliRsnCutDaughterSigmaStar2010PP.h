@@ -18,7 +18,7 @@ public:
 
    AliRsnCutDaughterSigmaStar2010PP(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
    virtual ~AliRsnCutDaughterSigmaStar2010PP() { }
-   
+
    void                   SetPID(AliPID::EParticleType type) {fPID = type;}
    AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
    Bool_t                 MatchTOF(const AliVTrack *vtrack);

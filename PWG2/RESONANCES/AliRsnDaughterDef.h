@@ -12,15 +12,15 @@
 //     -- defines the mass to be assigned to this object, for any purpose
 //        (e.g.: to compute its 4-momentum to be used for a resonance mass)
 //
-//  -- track charge, which can be '+', '-', '0', 
+//  -- track charge, which can be '+', '-', '0',
 //     -- any other char leaves this undefined (use only in daughter monitor loops)
 //     -- when doing resonance analysis, or when RSN Input handler needs to be used,
 //        this must always be defined
-//     
+//
 //  -- object type (track/V0/cascade)
 //     -- could be needed to select tracks when particle species is not specified
 //     -- works only in single daughter loops
-//     
+//
 
 #include "AliRsnDaughter.h"
 
@@ -32,7 +32,7 @@ public:
    AliRsnDaughterDef(AliRsnDaughter::ESpecies type, Char_t charge = 0);
    AliRsnDaughterDef(AliRsnDaughter::ERefType refType, Char_t charge = 0);
    AliRsnDaughterDef(const AliRsnDaughterDef &copy);
-   AliRsnDaughterDef& operator= (const AliRsnDaughterDef &copy);
+   AliRsnDaughterDef &operator= (const AliRsnDaughterDef &copy);
    virtual ~AliRsnDaughterDef() { }
 
    AliRsnDaughter::ESpecies GetPID()          const {return fPID;}
@@ -40,13 +40,13 @@ public:
    Char_t                   GetChargeC()      const {return fCharge;}
    Short_t                  GetChargeS()      const {if (fCharge == '+') return 1; else if (fCharge == '-') return -1; else return 0;}
    AliRsnDaughter::ERefType GetRefType()      const {return fRefType;}
-   virtual const char*      GetName()         const {return Form("%s%c", AliRsnDaughter::SpeciesName(fPID), fCharge);}
+   virtual const char      *GetName()         const {return Form("%s%c", AliRsnDaughter::SpeciesName(fPID), fCharge);}
    Bool_t                   IsChargeDefined() const {return (fCharge == '+' || fCharge == '-' || fCharge == '0');}
-   
+
    void SetPID(AliRsnDaughter::ESpecies pid)      {fPID = pid; fRefType = AliRsnDaughter::RefType(pid); fMass = AliRsnDaughter::SpeciesMass(pid);}
    void SetCharge(Char_t charge)                  {fCharge = charge;}
    void SetRefType(AliRsnDaughter::ERefType type) {fRefType = type;}
-   
+
    Bool_t MatchesPID(AliRsnDaughter *daughter);
    Bool_t MatchesCharge(AliRsnDaughter *daughter)  const;
    Bool_t MatchesRefType(AliRsnDaughter *daughter) const;
@@ -69,7 +69,7 @@ private:
 inline Bool_t AliRsnDaughterDef::MatchesPID(AliRsnDaughter *daughter)
 {
 //
-// Checks if the passed daughter true particle type 
+// Checks if the passed daughter true particle type
 // matches the species defined in fPID data member,
 // by comparing the corresponding PDG codes of both in absolute value.
 // Returns kTRUE when the two codes match, and kFALSE when:
@@ -84,10 +84,10 @@ inline Bool_t AliRsnDaughterDef::MatchesPID(AliRsnDaughter *daughter)
       AliError("The passed argument has NULL MC pointer: cannot check PDG matching with this DaughterDef");
       return kFALSE;
    }
-   
+
    return MatchesPDG(daughter->GetPDGAbs());
 }
- 
+
 //__________________________________________________________________________________________________
 inline Bool_t AliRsnDaughterDef::MatchesCharge(AliRsnDaughter *daughter) const
 {
@@ -115,8 +115,8 @@ inline Bool_t AliRsnDaughterDef::MatchesRefType(AliRsnDaughter *daughter) const
 //
 
    AliRsnDaughter::ERefType type = daughter->RefType();
-   
-   if (fRefType != AliRsnDaughter::kNoType) 
+
+   if (fRefType != AliRsnDaughter::kNoType)
       return (type == fRefType);
    else
       return kTRUE;

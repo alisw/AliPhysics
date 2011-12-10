@@ -25,19 +25,19 @@ void AliRsnMiniEvent::AddParticle(AliRsnMiniParticle copy)
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniParticle* AliRsnMiniEvent::GetParticle(Int_t i)
+AliRsnMiniParticle *AliRsnMiniEvent::GetParticle(Int_t i)
 {
 //
 // Return the leading particle
 //
 
    if (i < 0 || i > fParticles.GetEntriesFast()) return 0x0;
-   
-   return (AliRsnMiniParticle*)fParticles[i];
+
+   return (AliRsnMiniParticle *)fParticles[i];
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniParticle* AliRsnMiniEvent::LeadingParticle()
+AliRsnMiniParticle *AliRsnMiniEvent::LeadingParticle()
 {
 //
 // Return the leading particle
@@ -45,8 +45,8 @@ AliRsnMiniParticle* AliRsnMiniEvent::LeadingParticle()
 
    if (fLeading < 0) return 0x0;
    if (fLeading >= fParticles.GetEntriesFast()) return 0x0;
-   
-   return (AliRsnMiniParticle*)fParticles[fLeading];
+
+   return (AliRsnMiniParticle *)fParticles[fLeading];
 }
 
 //__________________________________________________________________________________________________
@@ -61,11 +61,11 @@ Int_t AliRsnMiniEvent::CountParticles(TArrayI &found, Char_t charge, Int_t cutID
    Int_t i, npart = fParticles.GetEntriesFast();
    Int_t    count = 0;
    AliRsnMiniParticle *part = 0x0;
-   
+
    found.Set(npart);
-   
+
    for (i = 0; i < npart; i++) {
-      part = (AliRsnMiniParticle*)fParticles[i];
+      part = (AliRsnMiniParticle *)fParticles[i];
       if (charge == '+' || charge == '-' || charge == '0') {
          if (part->Charge() != charge) continue;
       }
@@ -75,7 +75,7 @@ Int_t AliRsnMiniEvent::CountParticles(TArrayI &found, Char_t charge, Int_t cutID
       found[count] = i;
       count++;
    }
-   
+
    found.Set(count);
    return count;
 }

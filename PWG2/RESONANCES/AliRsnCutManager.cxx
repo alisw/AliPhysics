@@ -64,13 +64,13 @@ AliRsnCutManager::AliRsnCutManager(const AliRsnCutManager &cut) :
 }
 
 //_____________________________________________________________________________
-AliRsnCutManager& AliRsnCutManager::operator=(const AliRsnCutManager &cut)
+AliRsnCutManager &AliRsnCutManager::operator=(const AliRsnCutManager &cut)
 {
 //
 // Assign operator
 //
-  if (this == &cut)
-    return *this;
+   if (this == &cut)
+      return *this;
 
    SetName(cut.GetName());
    SetTitle(cut.GetTitle());

@@ -24,8 +24,8 @@ class AliRsnCutTrackQuality : public AliRsnCut {
 public:
 
    AliRsnCutTrackQuality(const char *name = "AliRsncutTrackQuality");
-   AliRsnCutTrackQuality(const AliRsnCutTrackQuality& copy);
-   AliRsnCutTrackQuality& operator=(const AliRsnCutTrackQuality& copy);
+   AliRsnCutTrackQuality(const AliRsnCutTrackQuality &copy);
+   AliRsnCutTrackQuality &operator=(const AliRsnCutTrackQuality &copy);
    virtual ~AliRsnCutTrackQuality() { }
 
    void      DisableAll();
@@ -48,9 +48,9 @@ public:
    void      SetTPCmaxChi2(Double_t value)             {fTPCmaxChi2 = value;}
 
    void      SetRejectKinkDaughters(Bool_t yn = kTRUE) {fRejectKinkDaughters = yn;}
-   
+
    void      SetAODTestFilterBit(Int_t value)          {fAODTestFilterBit = value;}
-   
+
    void      SetDefaults2010();
 
    virtual Bool_t IsSelected(TObject *obj);
@@ -60,7 +60,7 @@ protected:
 
    Bool_t      CheckESD(AliESDtrack *track);
    Bool_t      CheckAOD(AliAODTrack *track);
-   const char* Binary(UInt_t number);
+   const char *Binary(UInt_t number);
 
    ULong_t    fFlagsOn;                // status flags which must be ON (used AliESDtrack ones, connected with '|')
    ULong_t    fFlagsOff;               // status flags which must be OFF (used AliESDtrack ones, connected with '|')
@@ -88,20 +88,20 @@ protected:
 };
 
 //__________________________________________________________________________________________________
-inline const char * AliRsnCutTrackQuality::Binary(UInt_t number)
+inline const char *AliRsnCutTrackQuality::Binary(UInt_t number)
 {
 //
 // Convert an integer in binary
 //
 
-    static char b[50];
-    b[0] = '\0';
+   static char b[50];
+   b[0] = '\0';
 
-    UInt_t z;
-    for (z = 512; z > 0; z >>= 1)
-        strncat(b, ((number & z) == z) ? "1" : "0", 1);
+   UInt_t z;
+   for (z = 512; z > 0; z >>= 1)
+      strncat(b, ((number & z) == z) ? "1" : "0", 1);
 
-    return b;
+   return b;
 }
 
 //__________________________________________________________________________________________________

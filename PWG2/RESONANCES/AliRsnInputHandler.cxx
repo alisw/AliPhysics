@@ -48,13 +48,13 @@ AliRsnInputHandler::AliRsnInputHandler(const AliRsnInputHandler &copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnInputHandler& AliRsnInputHandler::operator=(const AliRsnInputHandler &copy)
+AliRsnInputHandler &AliRsnInputHandler::operator=(const AliRsnInputHandler &copy)
 {
 //
 // Default constructor.
 //
-  if (this == &copy)
-    return *this;
+   if (this == &copy)
+      return *this;
    fRsnEventCuts = copy.fRsnEventCuts;
    return *this;
 }
@@ -125,7 +125,7 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
    if (fParentHandler) {
       TString tmp = "";
       AliInputEventHandler *ih = 0;
-      AliMultiInputEventHandler *multiIH = dynamic_cast<AliMultiInputEventHandler*>(fParentHandler);
+      AliMultiInputEventHandler *multiIH = dynamic_cast<AliMultiInputEventHandler *>(fParentHandler);
       if (multiIH) {
          ih = multiIH->GetFirstInputEventHandler();
          if (ih) {
@@ -137,7 +137,7 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
                if (mcH) fRsnEvent->SetRefMC(mcH->MCEvent());
             } else if (fRsnEvent->GetRefAOD()) {
                AliAODEvent *aod = fRsnEvent->GetRefAOD();
-               TClonesArray *listAOD = (TClonesArray*)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
+               TClonesArray *listAOD = (TClonesArray *)(aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()));
                if (listAOD) fRsnEvent->SetRefMC(fRsnEvent->GetRefAOD());
             }
             if (fParentHandler->ParentHandler()) tmp = "MIX";
@@ -146,7 +146,7 @@ Bool_t AliRsnInputHandler::BeginEvent(Long64_t entry)
 
             //fRsnPIDManager.ApplyCuts(fRsnEvent);
             fRsnSelector.Reset();
-            
+
             // reject event if needed
             if (fRsnEventCuts) if (!fRsnEventCuts->IsSelected(fRsnEvent)) return kTRUE;
             fRsnSelector.ScanEvent(fRsnEvent);

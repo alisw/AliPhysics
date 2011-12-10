@@ -77,7 +77,7 @@ AliRsnLoopPair &AliRsnLoopPair::operator=(const AliRsnLoopPair &copy)
 
    AliRsnLoop::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fTrueMC = copy.fTrueMC;
    fOnlyTrue = copy.fOnlyTrue;
    fUseMCRef = copy.fUseMCRef;
@@ -193,7 +193,7 @@ Int_t AliRsnLoopPair::DoLoop
       if (!fIsMixed && list0 == list1) start = i0 + 1;
       for (i1 = start; i1 < list1->GetN(); i1++) {
          iEntry2 = list1->GetEntry(i1);
-	 if (iEntry1 == iEntry2) continue;
+         if (iEntry1 == iEntry2) continue;
          AliDebugClass(4, Form("Checking entries pair: %d (%lld) with %d (%lld)", i0, iEntry1, i1, iEntry2));
          evMix->SetDaughter(fDaughter[1], iEntry2,fUseMCRef);
          fDaughter[1].FillP(fPairDef->GetDef2().GetMass());

@@ -24,8 +24,8 @@ public:
    };
 
    AliRsnCutMomentumComparison(const char *name = "cutMomComparison", EMode mode = kFirstLargerPt);
-   AliRsnCutMomentumComparison(const AliRsnCutMomentumComparison& copy);
-   AliRsnCutMomentumComparison& operator=(const AliRsnCutMomentumComparison& copy);
+   AliRsnCutMomentumComparison(const AliRsnCutMomentumComparison &copy);
+   AliRsnCutMomentumComparison &operator=(const AliRsnCutMomentumComparison &copy);
    virtual ~AliRsnCutMomentumComparison() {;};
 
    virtual Bool_t IsSelected(TObject *object);

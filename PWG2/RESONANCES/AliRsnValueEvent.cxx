@@ -66,7 +66,7 @@ AliRsnValueEvent::AliRsnValueEvent(const char *name, EType type) :
 }
 
 //_____________________________________________________________________________
-AliRsnValueEvent::AliRsnValueEvent(const AliRsnValueEvent& copy) :
+AliRsnValueEvent::AliRsnValueEvent(const AliRsnValueEvent &copy) :
    AliRsnValue(copy),
    fType(copy.fType)
 {
@@ -76,23 +76,23 @@ AliRsnValueEvent::AliRsnValueEvent(const AliRsnValueEvent& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnValueEvent& AliRsnValueEvent::operator=(const AliRsnValueEvent& copy)
+AliRsnValueEvent &AliRsnValueEvent::operator=(const AliRsnValueEvent &copy)
 {
 //
 // Assignment operator.
 // Works like copy constructor.
 //
 
-  AliRsnValue::operator=(copy);
-  if (this == &copy)
-    return *this;
-  fType = copy.fType;
-  
-  return (*this);
+   AliRsnValue::operator=(copy);
+   if (this == &copy)
+      return *this;
+   fType = copy.fType;
+
+   return (*this);
 }
 
 //_____________________________________________________________________________
-const char* AliRsnValueEvent::GetTypeName() const
+const char *AliRsnValueEvent::GetTypeName() const
 {
 //
 // This method returns a string to give a name to each possible
@@ -121,8 +121,8 @@ Bool_t AliRsnValueEvent::Eval(TObject *object)
 // In this implementation, fills the member 4-vectors with data
 // coming from the object passed as argument, and then returns the value
 //
-   
-   // coherence check, which also casts object 
+
+   // coherence check, which also casts object
    // to AliRsnTarget data members and returns kFALSE
    // in case the object is NULL
    if (!TargetOK(object)) return kFALSE;
@@ -130,10 +130,10 @@ Bool_t AliRsnValueEvent::Eval(TObject *object)
       AliWarning("NULL ref");
       return kFALSE;
    }
-   
+
    // declare support variables
    AliCentrality *centrality = fEvent->GetRef()->GetCentrality();
-   
+
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem
@@ -146,11 +146,11 @@ Bool_t AliRsnValueEvent::Eval(TObject *object)
       case kMultMC:
          fComputedValue = -999.0;
          if (fEvent->GetRefMC()) {
-            if (fEvent->IsESD()) 
+            if (fEvent->IsESD())
                fComputedValue = (Double_t)fEvent->GetRefMC()->GetNumberOfTracks();
             else {
-               AliAODEvent *aod = (AliAODEvent*)fEvent->GetRefMC();
-               TClonesArray *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+               AliAODEvent *aod = (AliAODEvent *)fEvent->GetRefMC();
+               TClonesArray *mcArray = (TClonesArray *)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
                if (mcArray) fComputedValue = (Double_t)mcArray->GetEntries();
             }
          }
@@ -176,7 +176,7 @@ Bool_t AliRsnValueEvent::Eval(TObject *object)
             return kFALSE;
          }
          return (fComputedValue >= 0);
-      case kLeadingPt: 
+      case kLeadingPt:
          if (fEvent->GetLeadingIndex() >= 0) {
             AliRsnDaughter leadingPart;
             fEvent->SetLeadingParticle(leadingPart);
