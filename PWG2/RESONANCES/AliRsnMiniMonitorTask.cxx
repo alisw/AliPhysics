@@ -82,7 +82,7 @@ AliRsnMiniMonitorTask::AliRsnMiniMonitorTask(const char *name, Bool_t useMC) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniMonitorTask::AliRsnMiniMonitorTask(const AliRsnMiniMonitorTask& copy) :
+AliRsnMiniMonitorTask::AliRsnMiniMonitorTask(const AliRsnMiniMonitorTask &copy) :
    AliAnalysisTaskSE(copy),
    fUseMC(copy.fUseMC),
    fEvNum(0),
@@ -103,7 +103,7 @@ AliRsnMiniMonitorTask::AliRsnMiniMonitorTask(const AliRsnMiniMonitorTask& copy) 
 }
 
 //__________________________________________________________________________________________________
-AliRsnMiniMonitorTask& AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorTask& copy)
+AliRsnMiniMonitorTask &AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorTask &copy)
 {
 //
 // Assignment operator.
@@ -112,7 +112,7 @@ AliRsnMiniMonitorTask& AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorT
 //
    AliAnalysisTaskSE::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
@@ -120,7 +120,7 @@ AliRsnMiniMonitorTask& AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorT
    fEventCuts = copy.fEventCuts;
    fTrackCuts = copy.fTrackCuts;
    fBigOutput = copy.fBigOutput;
-   
+
    return (*this);
 }
 
@@ -128,7 +128,7 @@ AliRsnMiniMonitorTask& AliRsnMiniMonitorTask::operator=(const AliRsnMiniMonitorT
 AliRsnMiniMonitorTask::~AliRsnMiniMonitorTask()
 {
 //
-// Destructor. 
+// Destructor.
 // Clean-up the output list, but not the histograms that are put inside
 // (the list is owner and will clean-up these histograms). Protect in PROOF case.
 //
@@ -152,7 +152,7 @@ Int_t AliRsnMiniMonitorTask::AddTrackCuts(AliRsnCutSet *cuts)
 //
 
    TObject *obj = fTrackCuts.FindObject(cuts->GetName());
-   
+
    if (obj) {
       AliInfo(Form("A cut set named '%s' already exists", cuts->GetName()));
       return fTrackCuts.IndexOf(obj);
@@ -172,27 +172,27 @@ void AliRsnMiniMonitorTask::UserCreateOutputObjects()
 
    // reset counter
    fEvNum = 0;
-   
+
    // message
    AliInfo(Form("Selected event characterization: %s (%s)", (fUseCentrality ? "centrality" : "multiplicity"), fCentralityType.Data()));
-   
+
    // create list and set it as owner of its content (MANDATORY)
    if (fBigOutput) OpenFile(1);
    fOutput = new TList();
    fOutput->SetOwner();
-   
+
    // create one histogram per each stored definition (event histograms)
    Int_t i, ndef = fHistograms.GetEntries();
    AliRsnMiniMonitor *def = 0x0;
    for (i = 0; i < ndef; i++) {
-      def = (AliRsnMiniMonitor*)fHistograms[i];
+      def = (AliRsnMiniMonitor *)fHistograms[i];
       if (!def) continue;
       if (!def->Init(GetName(), fOutput)) {
          AliError(Form("Def '%s': failed initialization", def->GetName()));
          continue;
       }
    }
-   
+
    // post data for ALL output slots >0 here, to get at least an empty histogram
    PostData(1, fOutput);
 }
@@ -209,16 +209,16 @@ void AliRsnMiniMonitorTask::UserExec(Option_t *)
 
    // event counter
    fEvNum++;
-   
+
    // check current event
    Char_t check = CheckCurrentEvent();
    if (!check) return;
-   
+
    // setup PID response
-   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager(); 
-	AliInputEventHandler *inputHandler = (AliInputEventHandler*)man->GetInputEventHandler(); 
-	fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
-   
+   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+   AliInputEventHandler *inputHandler = (AliInputEventHandler *)man->GetInputEventHandler();
+   fRsnEvent.SetPIDResponse(inputHandler->GetPIDResponse());
+
    // loop on monitors and fill them
    Int_t it, icut, nTracks = fRsnEvent.GetAbsoluteSum(), nCuts = fTrackCuts.GetEntriesFast();
    AliRsnDaughter cursor;
@@ -228,10 +228,10 @@ void AliRsnMiniMonitorTask::UserExec(Option_t *)
    for (it = 0; it < nTracks; it++) {
       fRsnEvent.SetDaughter(cursor, it, fUseMC);
       next.Reset();
-      while ( (mon = (AliRsnMiniMonitor*)next()) ) {
+      while ( (mon = (AliRsnMiniMonitor *)next()) ) {
          icut = mon->GetCutID();
          if (icut >= 0 && icut < nCuts) {
-            cut = (AliRsnCutSet*)fTrackCuts[icut];
+            cut = (AliRsnCutSet *)fTrackCuts[icut];
             if (!cut) {
                AliError("Cut not found");
                continue;
@@ -241,7 +241,7 @@ void AliRsnMiniMonitorTask::UserExec(Option_t *)
          mon->Fill(&cursor, &fRsnEvent);
       }
    }
-      
+
    // post data for computed stuff
    PostData(1, fOutput);
 }
@@ -254,10 +254,10 @@ void AliRsnMiniMonitorTask::Terminate(Option_t *)
 // Called once at the end of the query
 //
 
-   fOutput = dynamic_cast<TList*>(GetOutputData(1));
-   if (!fOutput) { 
-      AliError("Could not retrieve TList fOutput"); 
-      return; 
+   fOutput = dynamic_cast<TList *>(GetOutputData(1));
+   if (!fOutput) {
+      AliError("Could not retrieve TList fOutput");
+      return;
    }
 }
 
@@ -283,7 +283,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
 
    // string to sum messages
    TString msg("");
-   
+
    // check input type
    // exit points are provided in all cases an event is bad
    // if this block is passed, an event can be rejected only
@@ -295,7 +295,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
       output = 'E';
       // ESD specific check: Physics Selection
       // --> if this is failed, the event is rejected
-      isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+      isSelected = (((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
       if (!isSelected) {
          AliDebugClass(2, "Event does not pass physics selections");
          fRsnEvent.SetRef(0x0);
@@ -306,7 +306,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
       fRsnEvent.SetRef(fInputEvent);
       // add MC if requested and available
       if (fUseMC) {
-         if (fMCEvent) 
+         if (fMCEvent)
             fRsnEvent.SetRefMC(fMCEvent);
          else {
             AliWarning("MC event requested but not available");
@@ -333,7 +333,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
       fRsnEvent.SetRefMC(0x0);
       return 0;
    }
-   
+
    // if event cuts are defined, they are checked here
    // final decision on the event depends on this
    isSelected = kTRUE;
@@ -349,7 +349,7 @@ Char_t AliRsnMiniMonitorTask::CheckCurrentEvent()
       msg += " -- Local cuts = NONE";
       isSelected = kTRUE;
    }
-   
+
    // if the above exit point is not taken, the event is accepted
    AliDebugClass(2, Form("Stats for event %d: %s", fEvNum, msg.Data()));
    if (isSelected) {
@@ -380,13 +380,13 @@ Double_t AliRsnMiniMonitorTask::ComputeCentrality(Bool_t isESD)
          return fInputEvent->GetNumberOfTracks();
       else if (!fCentralityType.CompareTo("QUALITY"))
          if (isESD)
-            return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent*)fInputEvent, kTRUE);
+            return AliESDtrackCuts::GetReferenceMultiplicity((AliESDEvent *)fInputEvent, kTRUE);
          else {
             Double_t count = 0.;
             Int_t iTrack, ntracksLoop = fInputEvent->GetNumberOfTracks();
-            for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {    
-               AliVTrack   *track = (AliVTrack*)fInputEvent->GetTrack(iTrack);
-               AliAODTrack *aodt  = dynamic_cast<AliAODTrack*>(track);
+            for (iTrack = 0; iTrack < ntracksLoop; iTrack++) {
+               AliVTrack   *track = (AliVTrack *)fInputEvent->GetTrack(iTrack);
+               AliAODTrack *aodt  = dynamic_cast<AliAODTrack *>(track);
                if (!aodt) continue;
                if (!aodt->TestFilterBit(5)) continue;
                count++;
@@ -395,7 +395,7 @@ Double_t AliRsnMiniMonitorTask::ComputeCentrality(Bool_t isESD)
          }
       else if (!fCentralityType.CompareTo("TRACKLETS")) {
          if (isESD) {
-            const AliMultiplicity *mult = ((AliESDEvent*)fInputEvent)->GetMultiplicity();
+            const AliMultiplicity *mult = ((AliESDEvent *)fInputEvent)->GetMultiplicity();
             Float_t nClusters[6] = {0.0,0.0,0.0,0.0,0.0,0.0};
             for(Int_t ilay = 0; ilay < 6; ilay++) nClusters[ilay] = (Float_t)mult->GetNumberOfITSClusters(ilay);
             return AliESDUtils::GetCorrSPD2(nClusters[1], fInputEvent->GetPrimaryVertex()->GetZ());

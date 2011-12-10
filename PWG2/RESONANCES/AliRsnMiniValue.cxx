@@ -60,7 +60,7 @@ AliRsnMiniValue::AliRsnMiniValue(EType type, Bool_t useMC) :
 }
 
 //_____________________________________________________________________________
-AliRsnMiniValue::AliRsnMiniValue(const AliRsnMiniValue& copy) :
+AliRsnMiniValue::AliRsnMiniValue(const AliRsnMiniValue &copy) :
    TNamed(copy),
    fType(copy.fType),
    fUseMCInfo(copy.fUseMCInfo)
@@ -71,7 +71,7 @@ AliRsnMiniValue::AliRsnMiniValue(const AliRsnMiniValue& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnMiniValue& AliRsnMiniValue::operator=(const AliRsnMiniValue& copy)
+AliRsnMiniValue &AliRsnMiniValue::operator=(const AliRsnMiniValue &copy)
 {
 //
 // Assignment operator.
@@ -79,7 +79,7 @@ AliRsnMiniValue& AliRsnMiniValue::operator=(const AliRsnMiniValue& copy)
 //
    TNamed::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fType = copy.fType;
    fUseMCInfo = copy.fUseMCInfo;
 
@@ -87,7 +87,7 @@ AliRsnMiniValue& AliRsnMiniValue::operator=(const AliRsnMiniValue& copy)
 }
 
 //_____________________________________________________________________________
-const char* AliRsnMiniValue::TypeName(EType type)
+const char *AliRsnMiniValue::TypeName(EType type)
 {
 //
 // This method returns a string to give a name to each possible
@@ -128,14 +128,14 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
       AliError("Null pair passed!");
       return 1E20;
    }
-   
+
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem
    // (not initialized support object, wrong values, risk of floating point errors)
    // the method returng kFALSE and sets the computed value to a meaningless number
    switch (fType) {
-      // ---- event values -------------------------------------------------------------------------
+         // ---- event values -------------------------------------------------------------------------
       case kVz:
          return event->Vz();
       case kMult:
@@ -144,8 +144,8 @@ Float_t AliRsnMiniValue::Eval(AliRsnMiniPair *pair, AliRsnMiniEvent *event)
          return event->Angle();
       case kLeadingPt:
          return 0.0;
-      // ---- pair values --------------------------------------------------------------------------
-      case kPt: 
+         // ---- pair values --------------------------------------------------------------------------
+      case kPt:
          return pair->Pt(fUseMCInfo);
       case kInvMass:
          return pair->InvMass(fUseMCInfo);

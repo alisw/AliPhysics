@@ -18,9 +18,9 @@ public:
 
    AliRsnCutDaughterKStar2010PP(const char *name = "", AliPID::EParticleType pid = AliPID::kPion);
    virtual ~AliRsnCutDaughterKStar2010PP() { }
-   
+
    void                   SetNoPID(Bool_t yn = kTRUE)        {fNoPID = yn;}
-   
+
    void                   SetPID(AliPID::EParticleType type) {fPID = type;}
    AliRsnCutTrackQuality *CutQuality()                       {return &fCutQuality;}
    Bool_t                 MatchTOF(const AliVTrack *vtrack);
@@ -29,7 +29,7 @@ public:
 private:
 
    Bool_t                fNoPID;            // flag to switch off PID check
-   
+
    AliPID::EParticleType fPID;              // PID for track
    AliRsnCutTrackQuality fCutQuality;       // track quality cut
 

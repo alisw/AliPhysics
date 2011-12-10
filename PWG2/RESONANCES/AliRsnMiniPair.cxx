@@ -16,13 +16,13 @@ void AliRsnMiniPair::Fill
    p2->Set4Vector(fP2[0], m2, kFALSE);
    p1->Set4Vector(fP1[1], m1, kTRUE );
    p2->Set4Vector(fP2[1], m2, kTRUE );
-   
+
    fMother = -1;
    if (p1->Mother() == p2->Mother()) {
       fMother = p1->Mother();
       fMotherPDG = p1->MotherPDG();
    }
-   
+
    Int_t i;
    for (i = 0; i < 2; i++) {
       fSum[i] = fP1[i] + fP2[i];
@@ -36,7 +36,7 @@ Double_t AliRsnMiniPair::CosThetaStar(Bool_t useMC)
 //
 // Return cosine of angle of one daughter to the resonance momentum in its rest frame
 //
-   
+
    TLorentzVector &mother    = fSum[ID(useMC)];
    TLorentzVector &daughter0 = fP1[ID(useMC)];
    TLorentzVector &daughter1 = fP2[ID(useMC)];

@@ -18,22 +18,22 @@ public:
 
    AliRsnLoopPair(const char *name = "default", AliRsnPairDef *def = 0, Bool_t isMixed = kFALSE);
    AliRsnLoopPair(const AliRsnLoopPair &copy);
-   AliRsnLoopPair& operator=(const AliRsnLoopPair &copy);
+   AliRsnLoopPair &operator=(const AliRsnLoopPair &copy);
    ~AliRsnLoopPair();
 
    // getters
    Bool_t         IsTrueMC()     const {return fTrueMC;}
    Bool_t         IsOnlyTrue()   const {return fOnlyTrue;}
    Bool_t         IsCheckDecay() const {return fCheckDecay;}
-   AliRsnPairDef* GetPairDef()         {return fPairDef;}
-   AliRsnCutSet*  GetPairCuts()        {return fPairCuts;}
-   AliRsnMother*  GetMother()          {return &fMother;}
+   AliRsnPairDef *GetPairDef()         {return fPairDef;}
+   AliRsnCutSet  *GetPairCuts()        {return fPairCuts;}
+   AliRsnMother  *GetMother()          {return &fMother;}
 
    // setters (not for all members)
    void           SetPairCuts(AliRsnCutSet *cuts)      {fPairCuts = cuts;}
    void           SetTrueMC(Bool_t yn = kTRUE)         {fTrueMC = yn;}
    void           SetOnlyTrue(Bool_t onlyTrue = kTRUE) {fOnlyTrue = onlyTrue;}
-   void           SetMCRefInfo(Bool_t b = kTRUE)       {fUseMCRef = b;}   
+   void           SetMCRefInfo(Bool_t b = kTRUE)       {fUseMCRef = b;}
    void           SetCheckDecay(Bool_t check = kTRUE)  {fCheckDecay = check;}
    void           SetListID(Int_t i, Int_t val)        {if (i==0||i==1) fListID[i] = val;}
    void           SetRangeY(Double_t range)            {fRangeY = range;}

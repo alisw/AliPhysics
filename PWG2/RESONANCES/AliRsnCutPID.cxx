@@ -168,7 +168,7 @@ Bool_t AliRsnCutPID::ComputeWeights(AliRsnDaughter *daughter)
 }
 
 //_________________________________________________________________________________________________
-Int_t AliRsnCutPID::RealisticPID(AliRsnDaughter * const daughter, Double_t &prob)
+Int_t AliRsnCutPID::RealisticPID(AliRsnDaughter *const daughter, Double_t &prob)
 {
 //
 // Combines the weights collected from chosen detectors with the priors
@@ -214,7 +214,7 @@ Int_t AliRsnCutPID::RealisticPID(AliRsnDaughter * const daughter, Double_t &prob
 }
 
 //_________________________________________________________________________________________________
-Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter * const daughter)
+Int_t AliRsnCutPID::PerfectPID(AliRsnDaughter *const daughter)
 {
 //
 // If MC is present, retrieve the particle corresponding to the used track

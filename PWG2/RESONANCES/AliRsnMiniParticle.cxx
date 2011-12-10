@@ -1,6 +1,6 @@
 //
 // This object is used as lightweight temporary container
-// of all information needed from any input object and 
+// of all information needed from any input object and
 // useful for resonance analysis.
 // Lists of such objects are stored in a buffer, in order
 // to allow an event mixing.
@@ -32,14 +32,14 @@ void AliRsnMiniParticle::CopyDaughter(AliRsnDaughter *daughter)
       fCharge = '-';
    else
       fCharge = '0';
-   
+
    // rec info
    if (daughter->GetRef()) {
       fPrec[0] = daughter->GetRef()->Px();
       fPrec[1] = daughter->GetRef()->Py();
       fPrec[2] = daughter->GetRef()->Pz();
    }
-   
+
    // MC info
    if (daughter->GetRefMC()) {
       fPsim[0] = daughter->GetRefMC()->Px();

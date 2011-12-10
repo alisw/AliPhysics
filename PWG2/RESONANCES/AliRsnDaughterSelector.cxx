@@ -11,7 +11,7 @@
 ClassImp(AliRsnDaughterSelector)
 
 //__________________________________________________________________________________________________
-AliRsnDaughterSelector::AliRsnDaughterSelector(const char *name, const char *title) : 
+AliRsnDaughterSelector::AliRsnDaughterSelector(const char *name, const char *title) :
    TNamed(name, title),
    fCutSetsN("AliRsnCutSet", 0),
    fCutSetsC("AliRsnCutSet", 0),
@@ -28,7 +28,7 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const char *name, const char *tit
 }
 
 //__________________________________________________________________________________________________
-AliRsnDaughterSelector::AliRsnDaughterSelector(const AliRsnDaughterSelector& copy) : 
+AliRsnDaughterSelector::AliRsnDaughterSelector(const AliRsnDaughterSelector &copy) :
    TNamed(copy),
    fCutSetsN(copy.fCutSetsN),
    fCutSetsC(copy.fCutSetsC),
@@ -45,7 +45,7 @@ AliRsnDaughterSelector::AliRsnDaughterSelector(const AliRsnDaughterSelector& cop
 }
 
 //__________________________________________________________________________________________________
-AliRsnDaughterSelector& AliRsnDaughterSelector::operator=(const AliRsnDaughterSelector& copy)
+AliRsnDaughterSelector &AliRsnDaughterSelector::operator=(const AliRsnDaughterSelector &copy)
 {
 //
 // Copy constructor.
@@ -55,7 +55,7 @@ AliRsnDaughterSelector& AliRsnDaughterSelector::operator=(const AliRsnDaughterSe
 
    TNamed::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fCutSetsN = copy.fCutSetsN;
    fCutSetsC = copy.fCutSetsC;
    fEntryListsN = copy.fEntryListsN;
@@ -63,7 +63,7 @@ AliRsnDaughterSelector& AliRsnDaughterSelector::operator=(const AliRsnDaughterSe
    fEntryListsM = copy.fEntryListsM;
 
    AliDebug(AliLog::kDebug + 10, "->");
-   
+
    return (*this);
 }
 
@@ -75,44 +75,44 @@ AliRsnDaughterSelector::~AliRsnDaughterSelector()
 //
 
    AliDebug(AliLog::kDebug + 10, "<-");
-   
+
    fCutSetsN.Delete();
    fCutSetsC.Delete();
    fEntryListsN.Delete();
    fEntryListsP.Delete();
    fEntryListsM.Delete();
-   
+
    AliDebug(AliLog::kDebug + 10, "->");
 }
 
 //__________________________________________________________________________________________________
-void AliRsnDaughterSelector::Print(Option_t* option) const
+void AliRsnDaughterSelector::Print(Option_t *option) const
 {
 //
 // Override TObject::Print()
 //
 
    TNamed::Print(option);
-   
+
    Int_t i, nSets;
    AliRsnCutSet *set = 0x0;
    TEntryList *list = 0x0;
-   
+
    // neutral
    nSets = fCutSetsN.GetEntries();
    for (i = 0; i < nSets; i++) {
-      set = (AliRsnCutSet*)fCutSetsN[i];
-      list = (TEntryList*)fEntryListsN[i];
+      set = (AliRsnCutSet *)fCutSetsN[i];
+      list = (TEntryList *)fEntryListsN[i];
       AliInfo(Form("Neutral entry list for cut set '%s' has %d entries", set->GetName(), (Int_t)list->GetN()));
    }
-   
+
    // charged
    nSets = fCutSetsC.GetEntries();
    for (i = 0; i < nSets; i++) {
-      set = (AliRsnCutSet*)fCutSetsC[i];
-      list = (TEntryList*)fEntryListsP[i];
+      set = (AliRsnCutSet *)fCutSetsC[i];
+      list = (TEntryList *)fEntryListsP[i];
       AliInfo(Form("Positive entry list for cut set '%s' has %d entries", set->GetName(), (Int_t)list->GetN()));
-      list = (TEntryList*)fEntryListsM[i];
+      list = (TEntryList *)fEntryListsM[i];
       AliInfo(Form("Negative entry list for cut set '%s' has %d entries", set->GetName(), (Int_t)list->GetN()));
    }
 }
@@ -125,24 +125,24 @@ void AliRsnDaughterSelector::Init()
 // of the corresponding arrays of cut sets.
 // If they are not empty, they are cleared.
 //
-   
+
    Int_t i, nSets;
-   
+
    // neutral
    nSets = fCutSetsN.GetEntries();
    if (!fEntryListsN.IsEmpty()) fEntryListsN.Delete();
    for (i = 0; i < nSets; i++) {
-      AliRsnCutSet *set = (AliRsnCutSet*)fCutSetsN[i];
+      AliRsnCutSet *set = (AliRsnCutSet *)fCutSetsN[i];
       new (fEntryListsN[i]) TEntryList;
       AliInfo(Form("Adding 1 entry list for neutrals --> cut set '%s' [scheme = '%s']", set->GetName(), set->GetCutScheme().Data()));
    }
-   
+
    // charged
    nSets = fCutSetsC.GetEntries();
    if (!fEntryListsP.IsEmpty()) fEntryListsP.Delete();
    if (!fEntryListsM.IsEmpty()) fEntryListsM.Delete();
    for (i = 0; i < nSets; i++) {
-      AliRsnCutSet *set = (AliRsnCutSet*)fCutSetsC[i];
+      AliRsnCutSet *set = (AliRsnCutSet *)fCutSetsC[i];
       new (fEntryListsP[i]) TEntryList;
       new (fEntryListsM[i]) TEntryList;
       AliInfo(Form("Adding 2 entry lists for charged --> cut set '%s' [scheme = '%s']", set->GetName(), set->GetCutScheme().Data()));
@@ -154,20 +154,20 @@ void AliRsnDaughterSelector::Reset()
 {
    TEntryList *el;
    Int_t i, nSets;
-   
+
    // N
    nSets = fCutSetsN.GetEntries();
    for (i = 0; i < nSets; i++) {
-      el = (TEntryList*)fEntryListsN.At(i);
+      el = (TEntryList *)fEntryListsN.At(i);
       el->Reset();
    }
-   
+
    // charged
    nSets = fCutSetsC.GetEntries();
    for (i = 0; i < nSets; i++) {
-      el = (TEntryList*)fEntryListsP.At(i);
+      el = (TEntryList *)fEntryListsP.At(i);
       el->Reset();
-      el = (TEntryList*)fEntryListsM.At(i);
+      el = (TEntryList *)fEntryListsM.At(i);
       el->Reset();
    }
 }
@@ -180,7 +180,7 @@ Int_t AliRsnDaughterSelector::Add(AliRsnCutSet *cuts, Bool_t charged)
 //
 
    Int_t n = 0;
-   
+
    if (!charged) {
       n = fCutSetsN.GetEntries();
       new (fCutSetsN[n]) AliRsnCutSet(*cuts);
@@ -188,7 +188,7 @@ Int_t AliRsnDaughterSelector::Add(AliRsnCutSet *cuts, Bool_t charged)
       n = fCutSetsC.GetEntries();
       new (fCutSetsC[n]) AliRsnCutSet(*cuts);
    }
-   
+
    return n;
 }
 
@@ -200,50 +200,50 @@ Int_t AliRsnDaughterSelector::GetID(const char *name, Bool_t charged)
 //
 
    AliRsnCutSet *cuts;
-   
+
    if (!charged) {
-      cuts = (AliRsnCutSet*)fCutSetsN.FindObject(name);
+      cuts = (AliRsnCutSet *)fCutSetsN.FindObject(name);
       if (cuts) return fCutSetsN.IndexOf(cuts);
    } else {
-      cuts = (AliRsnCutSet*)fCutSetsC.FindObject(name);
+      cuts = (AliRsnCutSet *)fCutSetsC.FindObject(name);
       if (cuts) return fCutSetsC.IndexOf(cuts);
    }
-   
+
    return -1;
 }
 
 //__________________________________________________________________________________________________
-TEntryList* AliRsnDaughterSelector::GetSelected(Int_t i, Char_t charge)
+TEntryList *AliRsnDaughterSelector::GetSelected(Int_t i, Char_t charge)
 {
 //
 // Retrieve a given entry list (needs charge specified as a char)
 //
 
    if (charge == '+')
-      return (TEntryList*)fEntryListsP.At(i);
+      return (TEntryList *)fEntryListsP.At(i);
    else if (charge == '-')
-      return (TEntryList*)fEntryListsM.At(i);
+      return (TEntryList *)fEntryListsM.At(i);
    else
-      return (TEntryList*)fEntryListsN.At(i);
+      return (TEntryList *)fEntryListsN.At(i);
 }
 
 //__________________________________________________________________________________________________
-TEntryList* AliRsnDaughterSelector::GetSelected(Int_t i, Short_t charge)
+TEntryList *AliRsnDaughterSelector::GetSelected(Int_t i, Short_t charge)
 {
 //
 // Retrieve a given entry list passing charge as short
 //
 
    if (charge > 0)
-      return (TEntryList*)fEntryListsP.At(i);
+      return (TEntryList *)fEntryListsP.At(i);
    else if (charge < 0)
-      return (TEntryList*)fEntryListsM.At(i);
+      return (TEntryList *)fEntryListsM.At(i);
    else
-      return (TEntryList*)fEntryListsN.At(i);
+      return (TEntryList *)fEntryListsN.At(i);
 }
 
 //__________________________________________________________________________________________________
-void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
+void AliRsnDaughterSelector::ScanEvent(AliRsnEvent *ev)
 {
 //
 // Loop over event and fill all entry lists
@@ -253,7 +253,7 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
    Int_t nSel, nTot = ev->GetAbsoluteSum();
    AliRsnDaughter check;
    TClonesArray *cutsArray = 0x0, *entryArray = 0x0;
-   
+
    for (id = 0; id < nTot; id++) {
       ev->SetDaughter(check, id);
       // some checks
@@ -279,13 +279,13 @@ void AliRsnDaughterSelector::ScanEvent(AliRsnEvent* ev)
       // check with all cuts in that charge
       nSel = cutsArray->GetEntries();
       for (is = 0; is < nSel; is++) {
-         AliRsnCutSet *cuts = (AliRsnCutSet*)cutsArray->At(is);
+         AliRsnCutSet *cuts = (AliRsnCutSet *)cutsArray->At(is);
          if (cuts->IsSelected(&check)) {
-            TEntryList *el = (TEntryList*)entryArray->At(is);
+            TEntryList *el = (TEntryList *)entryArray->At(is);
             el->Enter(id);
          }
       }
    }
-   
+
    //Print();
 }

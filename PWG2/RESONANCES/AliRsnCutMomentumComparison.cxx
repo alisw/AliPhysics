@@ -34,7 +34,7 @@ AliRsnCutMomentumComparison::AliRsnCutMomentumComparison(const char *name, EMode
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutMomentumComparison::AliRsnCutMomentumComparison(const AliRsnCutMomentumComparison& copy) :
+AliRsnCutMomentumComparison::AliRsnCutMomentumComparison(const AliRsnCutMomentumComparison &copy) :
    AliRsnCut(copy),
    fMode(copy.fMode)
 {
@@ -44,7 +44,7 @@ AliRsnCutMomentumComparison::AliRsnCutMomentumComparison(const AliRsnCutMomentum
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutMomentumComparison& AliRsnCutMomentumComparison::operator=(const AliRsnCutMomentumComparison& copy)
+AliRsnCutMomentumComparison &AliRsnCutMomentumComparison::operator=(const AliRsnCutMomentumComparison &copy)
 {
 //
 // Assignment operator
@@ -52,9 +52,9 @@ AliRsnCutMomentumComparison& AliRsnCutMomentumComparison::operator=(const AliRsn
 
    AliRsnCut::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fMode = copy.fMode;
-   
+
    return (*this);
 }
 
@@ -73,7 +73,7 @@ Bool_t AliRsnCutMomentumComparison::IsSelected(TObject *object)
    Double_t p2  = fMother->GetDaughter(1)->GetRef()->P();
    Double_t pt1 = fMother->GetDaughter(0)->GetRef()->Pt();
    Double_t pt2 = fMother->GetDaughter(1)->GetRef()->Pt();
-   
+
    switch (fMode)
    {
       case kFirstLargerP  : return (p1 > p2);

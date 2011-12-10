@@ -3,7 +3,7 @@
 
 //
 // This cut implements all the checks done to accept a track as a Kaon
-// for the PbPb analysis using 2010 runs. 
+// for the PbPb analysis using 2010 runs.
 // It is based on standard cuts on track quality and nsigma cuts
 // with respect to the TPC and TOF signals for the PID.
 //
@@ -26,20 +26,20 @@ public:
 
    AliRsnCutKaonForPhi2010(const char *name = "", Double_t nSigmaTPC = 3.0, Double_t nSigmaTOF = 3.0, Double_t tofLimit = 0.8);
    AliRsnCutKaonForPhi2010(const AliRsnCutKaonForPhi2010 &copy);
-   AliRsnCutKaonForPhi2010& operator=(const AliRsnCutKaonForPhi2010 &copy);
+   AliRsnCutKaonForPhi2010 &operator=(const AliRsnCutKaonForPhi2010 &copy);
    virtual ~AliRsnCutKaonForPhi2010() { }
-   
+
    virtual Bool_t IsSelected(TObject *obj);
-   
+
    AliRsnCutTrackQuality *CutQuality()            {return &fCutQuality;}
    Double_t               GetTOFthreshold() const {return fTOFthreshold;}
    AliPIDResponse        *MyPID()                 {return fMyPID;}
-   
+
    void   SetMode(ECutMode mode)            {fMode = mode;}
    void   SetCutTPC(Double_t cut)           {fCutTPC = cut;}
    void   SetCutTOF(Double_t cut)           {fCutTOF = cut;}
    void   SetTOFthreshold(Double_t value)   {fTOFthreshold = value;}
-   
+
    void   InitMyPID(Bool_t isMC, Bool_t isESD);
    Bool_t MatchTOF(const AliVTrack *vtrack);
 

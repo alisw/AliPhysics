@@ -34,7 +34,7 @@ AliRsnLoopEff::AliRsnLoopEff(const char *name, Int_t nSteps, Double_t maxDist) :
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEff::AliRsnLoopEff(const AliRsnLoopEff& copy) :
+AliRsnLoopEff::AliRsnLoopEff(const AliRsnLoopEff &copy) :
    AliRsnLoop(copy),
    fAddSteps(copy.fAddSteps),
    fSteps(copy.fSteps),
@@ -49,7 +49,7 @@ AliRsnLoopEff::AliRsnLoopEff(const AliRsnLoopEff& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEff& AliRsnLoopEff::operator=(const AliRsnLoopEff& copy)
+AliRsnLoopEff &AliRsnLoopEff::operator=(const AliRsnLoopEff &copy)
 {
 //
 // Assignment operator
@@ -57,7 +57,7 @@ AliRsnLoopEff& AliRsnLoopEff::operator=(const AliRsnLoopEff& copy)
 
    AliRsnLoop::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fAddSteps = copy.fAddSteps;
    fSteps = copy.fSteps;
    fOutput = copy.fOutput;
@@ -108,16 +108,16 @@ Bool_t AliRsnLoopEff::Init(const char *prefix, TList *list)
       AliInfo("Clearing container of this efficiency loop.");
       fOutputs.Delete();
    }
-   
+
    Int_t nSteps = (Int_t)fSteps.GetEntries();
    nSteps += fAddSteps;
 
    fOutput->SetSteps(nSteps);
    fOutput->SetSkipFailed(kFALSE);
    AliRsnLoop::AddOutput(fOutput);
-   
+
    if (AliRsnLoop::Init(Form("%s_%s", prefix, GetName()), list)) {
-      fOutput = (AliRsnListOutput*)fOutputs[0];
+      fOutput = (AliRsnListOutput *)fOutputs[0];
       return kTRUE;
    } else {
       fOutput = 0x0;
@@ -142,7 +142,7 @@ Int_t AliRsnLoopEff::FindTrack(Int_t label, const AliVEvent *event)
       if (TMath::Abs(track->GetLabel()) != label) continue;
       return i;
    }
-   
+
    return -1;
 }
 
@@ -155,15 +155,15 @@ Int_t AliRsnLoopEff::GetMatchedDaughter(Int_t label, AliRsnEvent *event)
 //
 
    if (!event) return -1;
-   
+
    AliRsnDaughter out;
-   
+
    Int_t i, imax = event->GetAbsoluteSum();
    for (i = 0; i < imax; i++) {
       event->SetDaughter(out, i);
       if (out.IsOK() && out.GetLabel() == label) return i;
    }
-   
+
    return -1;
 }
 
@@ -179,8 +179,8 @@ Double_t AliRsnLoopEff::DistanceFromPV(Double_t x, Double_t y, Double_t z)
    x -= fVertex[0];
    y -= fVertex[1];
    z -= fVertex[2];
-   
+
    return TMath::Sqrt(x*x + y*y + z*z);
 }
 
-   
+

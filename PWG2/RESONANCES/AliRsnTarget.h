@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  General class for cut/computation target objects (daughter/pair/event).
@@ -29,22 +29,22 @@ public:
 
    AliRsnTarget() : fTargetType(kTargetTypes), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
    AliRsnTarget(const char *name, ETargetType type = kTargetTypes) : TNamed(name, ""), fTargetType(type), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
-   AliRsnTarget(const AliRsnTarget& copy) : TNamed(copy), fTargetType(copy.fTargetType), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
-   AliRsnTarget& operator=(const AliRsnTarget& copy) { TNamed::operator=(copy); if (this==&copy) return *this; fTargetType = copy.fTargetType; return (*this); }
+   AliRsnTarget(const AliRsnTarget &copy) : TNamed(copy), fTargetType(copy.fTargetType), fDaughter(0x0), fMother(0x0), fEvent(0x0) { /*nothing*/ }
+   AliRsnTarget &operator=(const AliRsnTarget &copy) { TNamed::operator=(copy); if (this==&copy) return *this; fTargetType = copy.fTargetType; return (*this); }
    virtual ~AliRsnTarget() { /*nothing*/ }
 
    Bool_t           IsAllNull() const                      {return (!fDaughter && !fMother && !fEvent);}
    Bool_t           IsTarget(ETargetType targetType) const {return (fTargetType == targetType);}
    Bool_t           TargetOK(TObject *object);
-   
+
    void             SetTargetType(ETargetType type)        {fTargetType = type;}
    ETargetType      GetTargetType() const                  {return fTargetType;}
-   Char_t           GetTargetTypeChar() const;            
-   const char*      GetTargetTypeName() const;            
-                                                         
-   AliRsnDaughter*  GetTargetDaughter()                    {return fDaughter;}
-   AliRsnMother*    GetTargetMother()                      {return fMother;}
-   AliRsnEvent*     GetTargetEvent()                       {return fEvent;}
+   Char_t           GetTargetTypeChar() const;
+   const char      *GetTargetTypeName() const;
+
+   AliRsnDaughter  *GetTargetDaughter()                    {return fDaughter;}
+   AliRsnMother    *GetTargetMother()                      {return fMother;}
+   AliRsnEvent     *GetTargetEvent()                       {return fEvent;}
 
 protected:
 

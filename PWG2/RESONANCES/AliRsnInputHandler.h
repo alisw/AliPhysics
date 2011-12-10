@@ -20,7 +20,7 @@ class AliRsnInputHandler : public AliInputEventHandler {
 
 public:
    AliRsnInputHandler(const char *name = "rsnInputHandler");
-   AliRsnInputHandler(const AliRsnInputHandler& handler);
+   AliRsnInputHandler(const AliRsnInputHandler &handler);
    AliRsnInputHandler &operator=(const AliRsnInputHandler &handler);
    virtual ~AliRsnInputHandler();
 

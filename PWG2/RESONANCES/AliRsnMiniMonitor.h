@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Monitors
@@ -29,20 +29,20 @@ public:
 
    AliRsnMiniMonitor();
    AliRsnMiniMonitor(const char *name, EType type, Int_t cutID);
-   AliRsnMiniMonitor(const AliRsnMiniMonitor& copy);
-   AliRsnMiniMonitor& operator=(const AliRsnMiniMonitor& copy);
+   AliRsnMiniMonitor(const AliRsnMiniMonitor &copy);
+   AliRsnMiniMonitor &operator=(const AliRsnMiniMonitor &copy);
    virtual ~AliRsnMiniMonitor() { }
 
    EType              GetType()   {return fType;}
    Int_t              GetCutID()  {return fCutID;}
    Char_t             GetCharge() {return fCharge;}
    Int_t              GetListID() {return fListID;}
-   
+
    void               SetType(EType type)  {fType = type;}
    void               SetCutID(Int_t id)   {fCutID = id;}
    void               SetCharge(Char_t ch) {fCharge = ch;}
 
-   static const char* Label(EType type); 
+   static const char *Label(EType type);
    Bool_t             Init(const char *name, TList *list);
    Bool_t             Fill(AliRsnDaughter *track, AliRsnEvent *event);
 
@@ -53,11 +53,11 @@ protected:
    Char_t     fCharge;   //  charge to be used
    Int_t      fListID;   //  histogram ID in the list
    TList     *fList;     //! global output list
-                                       
+
    ClassDef(AliRsnMiniMonitor, 1)  //  AliRsnMiniMonitor class
 };
 
-inline const char* AliRsnMiniMonitor::Label(EType type)
+inline const char *AliRsnMiniMonitor::Label(EType type)
 {
    switch (type) {
       case kdEdxTPCvsP      : return "TPCsignal";

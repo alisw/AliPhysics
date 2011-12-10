@@ -26,12 +26,12 @@ public:
                    Double_t    nSigmaMax       =  3.,
                    Bool_t      rejectUnmatched = kFALSE);
 
-   AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy);
-   AliRsnCutPIDTOF& operator=(const AliRsnCutPIDTOF& copy);
+   AliRsnCutPIDTOF(const AliRsnCutPIDTOF &copy);
+   AliRsnCutPIDTOF &operator=(const AliRsnCutPIDTOF &copy);
    virtual ~AliRsnCutPIDTOF() { }
 
-   AliESDpid*      ESDpid()  {return fESDpid;}
-   AliAODpidUtil*  AODpid()  {return fAODpid;}
+   AliESDpid      *ESDpid()  {return fESDpid;}
+   AliAODpidUtil  *AODpid()  {return fAODpid;}
 
    void            SetRejectUnmatched(Bool_t yn = kTRUE)      {fRejectUnmatched = yn;}
    void            SetNSigmaRange(Double_t min, Double_t max) {fMinD = min; fMaxD = max;}
@@ -72,7 +72,7 @@ inline Bool_t AliRsnCutPIDTOF::IsMatched(AliVTrack *vtrack)
    if (!isTOFout || !isTIME) return kFALSE;
 
    // do an additional check on integrated length for ESD tracks
-   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack*>(vtrack);
+   AliESDtrack *esdTrack = dynamic_cast<AliESDtrack *>(vtrack);
    if (esdTrack) if (esdTrack->GetIntegratedLength() < 350.) return kFALSE;
 
    // if we are here, flags are OK and length also

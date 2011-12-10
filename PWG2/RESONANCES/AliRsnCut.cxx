@@ -70,7 +70,7 @@ AliRsnCut::AliRsnCut
 }
 
 //______________________________________________________________________________
-AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
+AliRsnCut::AliRsnCut(const AliRsnCut &copy) :
    AliRsnTarget(copy),
    fMinI(copy.fMinI),
    fMaxI(copy.fMaxI),
@@ -87,16 +87,16 @@ AliRsnCut::AliRsnCut(const AliRsnCut& copy) :
 }
 
 //______________________________________________________________________________
-AliRsnCut& AliRsnCut::operator=(const AliRsnCut& copy)
+AliRsnCut &AliRsnCut::operator=(const AliRsnCut &copy)
 {
 //
 // Assignment operator.
 // Don't duplicate memory occupancy for pointer
 //
 
-  AliRsnTarget::operator=(copy);
+   AliRsnTarget::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
 
    fMinI      = copy.fMinI;
    fMaxI      = copy.fMaxI;
@@ -210,7 +210,7 @@ Bool_t AliRsnCut::OkRangeD()
 }
 
 //______________________________________________________________________________
-void AliRsnCut::Print(Option_t*) const
+void AliRsnCut::Print(Option_t *) const
 {
 //
 // Override TObject::Print() method,

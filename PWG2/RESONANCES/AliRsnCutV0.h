@@ -14,10 +14,10 @@ class AliRsnCutV0 : public AliRsnCut {
 public:
 
    AliRsnCutV0(const char *name = "AliRsnCutV0", Int_t hypothesis = kLambda0);
-   AliRsnCutV0(const AliRsnCutV0& copy);
-   AliRsnCutV0& operator=(const AliRsnCutV0& copy);
+   AliRsnCutV0(const AliRsnCutV0 &copy);
+   AliRsnCutV0 &operator=(const AliRsnCutV0 &copy);
    virtual ~AliRsnCutV0() { }
-   
+
    void           SetESDtrackCuts(AliESDtrackCuts *cuts)   {fESDtrackCuts = cuts;}
    void           SetHypothesis(Int_t code);
    void           SetTolerance(Double_t value)             {fTolerance = value;}
@@ -32,7 +32,7 @@ protected:
 
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
-   
+
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Double_t         fMass;             // mass corresponding to hypothesis
    Double_t         fTolerance;        // tolerance in the difference between computed and expected mass
@@ -56,7 +56,7 @@ inline void AliRsnCutV0::SetHypothesis(Int_t code)
 //
 
    fHypothesis = code;
-   
+
    switch (fHypothesis) {
       case kLambda0:
       case kLambda0Bar:

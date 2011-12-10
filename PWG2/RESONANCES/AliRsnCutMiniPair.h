@@ -24,7 +24,7 @@ public:
 
    AliRsnCutMiniPair(const char *name = "cut", EType type = kTypes);
    virtual ~AliRsnCutMiniPair() { }
-   
+
    virtual Bool_t IsSelected(TObject *obj);
 
 private:

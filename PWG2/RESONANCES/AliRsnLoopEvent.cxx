@@ -24,7 +24,7 @@ AliRsnLoopEvent::AliRsnLoopEvent(const char *name) :
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEvent::AliRsnLoopEvent(const AliRsnLoopEvent& copy) :
+AliRsnLoopEvent::AliRsnLoopEvent(const AliRsnLoopEvent &copy) :
    AliRsnLoop(copy)
 {
 //
@@ -33,14 +33,14 @@ AliRsnLoopEvent::AliRsnLoopEvent(const AliRsnLoopEvent& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEvent& AliRsnLoopEvent::operator=(const AliRsnLoopEvent& copy)
+AliRsnLoopEvent &AliRsnLoopEvent::operator=(const AliRsnLoopEvent &copy)
 {
 //
 // Assignment operator
 //
 
-  AliRsnLoop::operator=(copy);
-  return (*this);
+   AliRsnLoop::operator=(copy);
+   return (*this);
 }
 
 //_____________________________________________________________________________
@@ -84,13 +84,13 @@ Int_t AliRsnLoopEvent::DoLoop
 
    TObjArrayIter next(&fOutputs);
    AliRsnListOutput *out = 0x0;
-   
+
    // check cuts
    if (!OkEvent(evMain)) return 0;
-   
-   while ( (out = (AliRsnListOutput*)next()) ) {
+
+   while ( (out = (AliRsnListOutput *)next()) ) {
       out->Fill(evMain);
    }
-   
+
    return 1;
 }

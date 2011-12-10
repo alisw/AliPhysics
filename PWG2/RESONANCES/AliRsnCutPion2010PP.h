@@ -17,9 +17,9 @@ public:
 
    AliRsnCutPion2010PP(const char *name = "");
    virtual ~AliRsnCutPion2010PP() { }
-   
+
    virtual Bool_t IsSelected(TObject *obj);
-   
+
    AliRsnCutTrackQuality *CutQuality() {return &fCutQuality;}
 
 private:

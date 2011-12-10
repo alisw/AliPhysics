@@ -42,7 +42,7 @@ AliRsnCutPIDTOF::AliRsnCutPIDTOF
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDTOF::AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy) :
+AliRsnCutPIDTOF::AliRsnCutPIDTOF(const AliRsnCutPIDTOF &copy) :
    AliRsnCut(copy),
    fRejectUnmatched(copy.fRejectUnmatched),
    fRefType(AliPID::kUnknown),
@@ -60,15 +60,15 @@ AliRsnCutPIDTOF::AliRsnCutPIDTOF(const AliRsnCutPIDTOF& copy) :
 }
 
 //_________________________________________________________________________________________________
-AliRsnCutPIDTOF& AliRsnCutPIDTOF::operator=(const AliRsnCutPIDTOF& copy)
+AliRsnCutPIDTOF &AliRsnCutPIDTOF::operator=(const AliRsnCutPIDTOF &copy)
 {
 //
 // Assignment operator.
 // To set the reference PID type, calls the SetRefType method,
 // which sets the mass accordingly and coherently.
 //
-  if (this == &copy)
-    return *this;
+   if (this == &copy)
+      return *this;
 
    fRejectUnmatched = copy.fRejectUnmatched;
    fESDpid          = copy.fESDpid;

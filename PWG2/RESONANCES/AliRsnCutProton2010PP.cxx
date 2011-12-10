@@ -50,45 +50,45 @@ Bool_t AliRsnCutProton2010PP::IsSelected(TObject *obj)
 
    // coherence check
    if (!TargetOK(obj)) return kFALSE;
-   
+
    // check track
    AliVTrack *track = fDaughter->Ref2Vtrack();
    if (!track) {
       if (!fDaughter->GetRef()) AliWarning("NULL ref");
       return kFALSE;
    }
-   
+
    // check flags
    if ((track->GetStatus() & AliESDtrack::kTPCin   ) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kTPCrefit) == 0) return kFALSE;
    if ((track->GetStatus() & AliESDtrack::kITSrefit) == 0) return kFALSE;
-   
+
    // quality
    if (!fCutQuality.IsSelected(obj)) return kFALSE;
-   
+
    // check initialization of PID object
    AliPIDResponse *pid = fEvent->GetPIDResponse();
    if (!pid) {
       AliFatal("NULL PID response");
       return kFALSE;
    }
-   
+
    // PID ITS :
    // depends on momentum
    //SetRangeD(0.0, 4.0);
    //fCutValueD = TMath::Abs(pid->NumberOfSigmasITS(track, AliPID::kProton));
    //if (!OkRangeD()) return kFALSE;
-   
+
    // PID TPC :
    // depends on momentum
    SetRangeD(0.0, 3.0);
    if (track->GetTPCmomentum() < 0.350) SetRangeD(0.0, 5.0);
    fCutValueD = TMath::Abs(pid->NumberOfSigmasTPC(track, AliPID::kProton));
    if (!OkRangeD()) return kFALSE;
-   
+
    // if TOF is not matched, end here
    // otherwise check TOF
-   if (!MatchTOF(track)) 
+   if (!MatchTOF(track))
       return kTRUE;
    else {
       //SetRangeD(0.0, 3.0);

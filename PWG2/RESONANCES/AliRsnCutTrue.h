@@ -14,17 +14,17 @@
 #include "AliRsnCut.h"
 
 class AliRsnCutTrue : public AliRsnCut {
-   
+
 public:
 
    AliRsnCutTrue(const char *name, Int_t pdg);
    AliRsnCutTrue(const char *name, AliRsnDaughter::ESpecies species);
-   AliRsnCutTrue(const AliRsnCutTrue& copy);
-   AliRsnCutTrue& operator=(const AliRsnCutTrue &copy);
+   AliRsnCutTrue(const AliRsnCutTrue &copy);
+   AliRsnCutTrue &operator=(const AliRsnCutTrue &copy);
    virtual ~AliRsnCutTrue() { }
-   
+
    virtual Bool_t IsSelected(TObject *obj);
-   
+
 private:
 
    ClassDef(AliRsnCutTrue,1)    // AliRsnCutTrue class

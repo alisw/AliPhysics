@@ -63,7 +63,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
-   fBigOutput(kFALSE)
+   fBigOutput(kFALSE),
+   fMixPrintRefresh(-1)
 {
 //
 // Dummy constructor ALWAYS needed for I/O.
@@ -93,7 +94,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC) :
    fTriggerAna(0x0),
    fESDtrackCuts(0x0),
    fMiniEvent(0x0),
-   fBigOutput(kFALSE)
+   fBigOutput(kFALSE),
+   fMixPrintRefresh(-1)
 {
 //
 // Default constructor.
@@ -128,7 +130,8 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fTriggerAna(copy.fTriggerAna),
    fESDtrackCuts(copy.fESDtrackCuts),
    fMiniEvent(0x0),
-   fBigOutput(copy.fBigOutput)
+   fBigOutput(copy.fBigOutput),
+   fMixPrintRefresh(copy.fMixPrintRefresh)
 {
 //
 // Copy constructor.
@@ -148,7 +151,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
 
    AliAnalysisTaskSE::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fUseMC = copy.fUseMC;
    fUseCentrality = copy.fUseCentrality;
    fCentralityType = copy.fCentralityType;
@@ -164,7 +167,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fTriggerAna = copy.fTriggerAna;
    fESDtrackCuts = copy.fESDtrackCuts;
    fBigOutput = copy.fBigOutput;
-
+   fMixPrintRefresh = copy.fMixPrintRefresh;
    return (*this);
 }
 
@@ -241,6 +244,12 @@ void AliRsnMiniAnalysisTask::UserCreateOutputObjects()
    fHEventStat->GetXaxis()->SetBinLabel(3, "Candle");
    fHEventStat->GetXaxis()->SetBinLabel(4, "Accepted");
    fOutput->Add(fHEventStat);
+
+   TIter next(&fTrackCuts);
+   AliRsnCutSet *cs;
+   while ((cs = (AliRsnCutSet *) next())) {
+      cs->Init(fOutput);
+   }
 
    // create temporary tree for filtered events
    if (fMiniEvent) delete fMiniEvent;
@@ -332,10 +341,13 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    AliRsnMiniOutput *def = 0x0;
    AliRsnMiniOutput::EComputation compType;
 
-   Int_t printNum = 0;
-   if (nEvents>1e5) printNum=nEvents/100;
-   if (nEvents>1e4) printNum=nEvents/10;
-   
+   Int_t printNum = fMixPrintRefresh;
+   if (printNum < 0) {
+      if (nEvents>1e5) printNum=nEvents/100;
+      else if (nEvents>1e4) printNum=nEvents/10;
+      else printNum = 0;
+   }
+
    // loop on events, and for each one fill all outputs
    // using the appropriate procedure depending on its type
    // only mother-related histograms are filled in UserExec,
@@ -346,7 +358,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       fEvBuffer->GetEntry(ievt);
       if (printNum&&(ievt%printNum==0)) {
          AliInfo(Form("[%s] Std.Event %d/%d",GetName(), ievt,nEvents));
-         timer.Stop(); timer.Print();fflush(stdout); timer.Start(kFALSE);
+         timer.Stop(); timer.Print(); fflush(stdout); timer.Start(kFALSE);
       }
       // fill
       for (idef = 0; idef < nDefs; idef++) {
@@ -400,10 +412,10 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       smatched[ievt] = "|";
       nmatched[ievt] = 0;
    }
-   
-   
+
+
    AliInfo(Form("[%s] Std.Event %d/%d",GetName(), nEvents,nEvents));
-   timer.Stop(); timer.Print(); timer.Start();fflush(stdout);
+   timer.Stop(); timer.Print(); timer.Start(); fflush(stdout);
 
    // search for good matchings
    for (ievt = 0; ievt < nEvents; ievt++) {
@@ -434,9 +446,9 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
       }
       AliDebugClass(1, Form("Matches for event %5d = %d [%s] (missing are declared above)", evMain.ID(), nmatched[ievt], smatched[ievt].Data()));
    }
-   
+
    AliInfo(Form("[%s] EventMixing searching %d/%d",GetName(),nEvents,nEvents));
-   timer.Stop(); timer.Print();fflush(stdout); timer.Start();
+   timer.Stop(); timer.Print(); fflush(stdout); timer.Start();
 
    // perform mixing
    TObjArray *list = 0x0;
@@ -471,7 +483,7 @@ void AliRsnMiniAnalysisTask::FinishTaskOutput()
    delete [] smatched;
 
    AliInfo(Form("[%s] EventMixing %d/%d",GetName(),nEvents,nEvents));
-   timer.Stop();timer.Print();fflush(stdout);
+   timer.Stop(); timer.Print(); fflush(stdout);
 
    /*
    OLD

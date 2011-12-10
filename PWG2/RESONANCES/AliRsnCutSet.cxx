@@ -25,7 +25,8 @@ AliRsnCutSet::AliRsnCutSet() :
    fCutSchemeIndexed(""),
    fBoolValues(0),
    fIsScheme(kFALSE),
-   fExpression(0)
+   fExpression(0),
+   fMonitors(0)
 {
 //
 // Constructor without name (not recommended)
@@ -44,7 +45,8 @@ AliRsnCutSet::AliRsnCutSet(const char *name, RSNTARGET target) :
    fCutSchemeIndexed(""),
    fBoolValues(0),
    fIsScheme(kFALSE),
-   fExpression(0)
+   fExpression(0),
+   fMonitors(0)
 {
 //
 // Constructor with argument name (recommended)
@@ -56,7 +58,7 @@ AliRsnCutSet::AliRsnCutSet(const char *name, RSNTARGET target) :
 }
 
 //_____________________________________________________________________________
-AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
+AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet &copy) :
    AliRsnTarget(copy),
    fCuts(copy.fCuts),
    fNumOfCuts(copy.fNumOfCuts),
@@ -64,7 +66,8 @@ AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
    fCutSchemeIndexed(copy.fCutSchemeIndexed),
    fBoolValues(0),
    fIsScheme(copy.fIsScheme),
-   fExpression(copy.fExpression)
+   fExpression(copy.fExpression),
+   fMonitors(copy.fMonitors)
 {
 //
 // Copy constructor
@@ -80,7 +83,7 @@ AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet & copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnCutSet& AliRsnCutSet::operator=(const AliRsnCutSet & copy)
+AliRsnCutSet &AliRsnCutSet::operator=(const AliRsnCutSet &copy)
 {
 //
 // Assignment operator.
@@ -88,14 +91,15 @@ AliRsnCutSet& AliRsnCutSet::operator=(const AliRsnCutSet & copy)
 
    AliRsnTarget::operator=(copy);
    if (this == &copy)
-     return *this;
-   
+      return *this;
+
    fCuts = copy.fCuts;
    fNumOfCuts = copy.fNumOfCuts;
    fCutScheme = copy.fCutScheme;
    fCutSchemeIndexed = copy.fCutSchemeIndexed;
    fIsScheme = copy.fIsScheme;
    fExpression = copy.fExpression;
+   fMonitors = copy.fMonitors;
 
    if (fBoolValues) delete [] fBoolValues;
 
@@ -119,6 +123,7 @@ AliRsnCutSet::~AliRsnCutSet()
 
    delete fExpression;
    delete [] fBoolValues;
+   delete fMonitors;
 }
 
 //_____________________________________________________________________________
@@ -164,7 +169,7 @@ void AliRsnCutSet::ShowCuts() const
    AliRsnCut *cut;
 
    for (Int_t i = 0; i < fCuts.GetEntriesFast() ; i++) {
-      cut = (AliRsnCut*)fCuts.At(i);
+      cut = (AliRsnCut *)fCuts.At(i);
       cut->Print();
    }
 }
@@ -183,11 +188,23 @@ Bool_t AliRsnCutSet::IsSelected(TObject *object)
    Bool_t boolReturn = kTRUE;
    AliRsnCut *cut;
    for (i = 0; i < fNumOfCuts; i++) {
-      cut = (AliRsnCut*)fCuts.At(i);
+      cut = (AliRsnCut *)fCuts.At(i);
       fBoolValues[i] = cut->IsSelected(object);
    }
 
    if (fIsScheme) boolReturn = Passed();
+
+   // fill monitoring info
+   if (boolReturn && fMonitors) {
+      if (TargetOK(object)) {
+         TIter next(fMonitors);
+         AliRsnListOutput *mo;
+         while ((mo = (AliRsnListOutput *) next())) {
+            mo->Fill(fEvent,fDaughter);
+         }
+      }
+   }
+
    return boolReturn;
 }
 
@@ -232,7 +249,7 @@ Int_t AliRsnCutSet::GetIndexByCutName(TString s)
    AliRsnCut *cut;
 
    for (i = 0; i < fCuts.GetEntriesFast(); i++) {
-      cut = (AliRsnCut*) fCuts.At(i);
+      cut = (AliRsnCut *) fCuts.At(i);
       if (!s.CompareTo(cut->GetName())) return i;
    }
 
@@ -268,7 +285,7 @@ Bool_t AliRsnCutSet::IsValidScheme()
    TString str(fCutScheme);
    AliRsnCut *cut;
    for (Int_t i = 0; i < fNumOfCuts; i++) {
-      cut = (AliRsnCut*)fCuts.At(i);
+      cut = (AliRsnCut *)fCuts.At(i);
       str.ReplaceAll(cut->GetName(), "");
    }
    str.ReplaceAll("&", "");
@@ -337,7 +354,7 @@ void AliRsnCutSet::PrintSetInfo()
    AliInfo("====== Cuts ======");
    AliRsnCut *cut;
    for (i = 0; i < fCuts.GetEntriesFast(); i++) {
-      cut = (AliRsnCut*) fCuts.At(i);
+      cut = (AliRsnCut *) fCuts.At(i);
       if (cut) AliInfo(Form("%d %d", i, fBoolValues[i]));
    }
    AliInfo("========== END Rsn Cut Mgr info ==============");
@@ -357,9 +374,30 @@ TString AliRsnCutSet::GetCutSchemeIndexed()
    AliDebug(AliLog::kDebug, Form("Num of cuts %d", fCuts.GetEntriesFast()));
    AliRsnCut *cut;
    for (i = 0; i < fCuts.GetEntriesFast(); i++) {
-      cut = (AliRsnCut*) fCuts.At(i);
+      cut = (AliRsnCut *) fCuts.At(i);
       str.ReplaceAll(cut->GetName(), Form("%d", i));
    }
    AliDebug(AliLog::kDebug, "->");
    return str;
 }
+
+Bool_t AliRsnCutSet::Init(TList *list)
+{
+   if (!fMonitors) return kTRUE;
+
+   TIter next(fMonitors);
+   AliRsnListOutput *mo;
+   while ((mo = (AliRsnListOutput *) next())) {
+      mo->Init(GetName(),list);
+   }
+
+
+   return kTRUE;
+}
+
+void AliRsnCutSet::AddMonitor(AliRsnListOutput *mon)
+{
+   if (!fMonitors) fMonitors = new TObjArray();
+   fMonitors->Add(mon);
+}
+

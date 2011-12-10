@@ -67,7 +67,7 @@ AliRsnValuePair::AliRsnValuePair(const char *name, EType type) :
 }
 
 //_____________________________________________________________________________
-AliRsnValuePair::AliRsnValuePair(const AliRsnValuePair& copy) :
+AliRsnValuePair::AliRsnValuePair(const AliRsnValuePair &copy) :
    AliRsnValue(copy),
    fType(copy.fType)
 {
@@ -77,7 +77,7 @@ AliRsnValuePair::AliRsnValuePair(const AliRsnValuePair& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnValuePair& AliRsnValuePair::operator=(const AliRsnValuePair& copy)
+AliRsnValuePair &AliRsnValuePair::operator=(const AliRsnValuePair &copy)
 {
 //
 // Assignment operator.
@@ -86,14 +86,14 @@ AliRsnValuePair& AliRsnValuePair::operator=(const AliRsnValuePair& copy)
 
    AliRsnValue::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fType = copy.fType;
 
    return (*this);
 }
 
 //_____________________________________________________________________________
-const char* AliRsnValuePair::GetTypeName() const
+const char *AliRsnValuePair::GetTypeName() const
 {
 //
 // This method returns a string to give a name to each possible
@@ -125,20 +125,20 @@ Bool_t AliRsnValuePair::Eval(TObject *object)
 // coming from the object passed as argument, and then returns the value
 //
 
-   // coherence check, which also casts object 
+   // coherence check, which also casts object
    // to AliRsnTarget data members and returns kFALSE
    // in case the object is NULL
    if (!TargetOK(object)) return kFALSE;
-   
+
    // set a reference to the mother momentum
    TLorentzVector &sum   = fMother->Sum(fUseMCInfo);
    TLorentzVector &ref   = fMother->Ref(fUseMCInfo);
    TLorentzVector &p1    = fMother->GetDaughter(0)->P(fUseMCInfo);
    TLorentzVector &p2    = fMother->GetDaughter(1)->P(fUseMCInfo);
-   
+
    // utility variables
    Bool_t success;
-   
+
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem

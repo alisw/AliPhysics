@@ -20,14 +20,19 @@
 //
 
 #include <Riostream.h>
+#include <TList.h>
+#include <TCollection.h>
 
 #include "AliLog.h"
 #include "AliCFContainer.h"
 
 #include "AliRsnValue.h"
+#include "AliRsnValueDaughter.h"
+#include "AliRsnValueEvent.h"
 #include "AliRsnLoop.h"
 
 #include "AliRsnListOutput.h"
+
 
 ClassImp(AliRsnListOutput)
 
@@ -70,7 +75,7 @@ AliRsnListOutput::AliRsnListOutput(const AliRsnListOutput &copy) :
 }
 
 //________________________________________________________________________________________
-AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy)
+AliRsnListOutput &AliRsnListOutput::operator=(const AliRsnListOutput &copy)
 {
 //
 // Assignment operator.
@@ -79,18 +84,18 @@ AliRsnListOutput& AliRsnListOutput::operator=(const AliRsnListOutput& copy)
 // they are anyway reset.
 //
 
-  TNamed::operator=(copy);
-  if (this == &copy)
-    return *this;
-  fSkipFailed = copy.fSkipFailed;
-  fType = copy.fType;
-  fSteps = copy.fSteps;
-  fValues = copy.fValues;
-  fNValues = copy.fNValues;
-  fList = copy.fList;
-  fIndex = copy.fIndex;
-  fArray = copy.fArray;
-  
+   TNamed::operator=(copy);
+   if (this == &copy)
+      return *this;
+   fSkipFailed = copy.fSkipFailed;
+   fType = copy.fType;
+   fSteps = copy.fSteps;
+   fValues = copy.fValues;
+   fNValues = copy.fNValues;
+   fList = copy.fList;
+   fIndex = copy.fIndex;
+   fArray = copy.fArray;
+
    Reset();
 
    return (*this);
@@ -155,7 +160,7 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
       AliInfo(Form("NValues = %d > 3 --> cannot use a normal histogram, need to use a sparse", fNValues));
       fType = kHistoSparse;
    }
-   
+
    // resize the output array
    fArray.Set(fNValues);
 
@@ -171,7 +176,7 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
       name += '_';
       name += val->GetName();
    }
-   
+
    // allowed objects
    TObject *object = 0x0;
 
@@ -193,7 +198,7 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
       default:
          AliWarning("Wrong type output or initialization failure");
    }
-   
+
    if (object) {
       //AliInfo(Form("[%s]: initializing output '%s' (obj name = '%s') with %d values and format %d [%s]", GetName(), name.Data(), object->GetName(), fNValues, fType, object->ClassName()));
       fList = list;
@@ -206,7 +211,7 @@ Bool_t AliRsnListOutput::Init(const char *prefix, TList *list)
 }
 
 //________________________________________________________________________________________
-TH1* AliRsnListOutput::CreateHistogram(const char *name)
+TH1 *AliRsnListOutput::CreateHistogram(const char *name)
 {
 //
 // Initialize the 'default' TH1 output object.
@@ -225,7 +230,7 @@ TH1* AliRsnListOutput::CreateHistogram(const char *name)
       nbins[i] = GetValue(i)->GetArray().GetSize() - 1;
       array[i] = GetValue(i)->GetArray();
    }
-   
+
    TH1 *hist = 0x0;
 
    // create histogram depending on the number of axes
@@ -249,7 +254,7 @@ TH1* AliRsnListOutput::CreateHistogram(const char *name)
 }
 
 //________________________________________________________________________________________
-THnSparseF* AliRsnListOutput::CreateHistogramSparse(const char *name)
+THnSparseF *AliRsnListOutput::CreateHistogramSparse(const char *name)
 {
 //
 // Initialize the THnSparse output object.
@@ -283,7 +288,7 @@ THnSparseF* AliRsnListOutput::CreateHistogramSparse(const char *name)
 }
 
 //________________________________________________________________________________________
-AliCFContainer* AliRsnListOutput::CreateCFContainer(const char *name)
+AliCFContainer *AliRsnListOutput::CreateCFContainer(const char *name)
 {
 //
 // Initialize the AliCFContainer output object.
@@ -340,7 +345,7 @@ Bool_t AliRsnListOutput::Fill(TObject *target, Int_t step)
       fArray[i] = (Double_t)val->GetComputedValue();
    }
    if (!globalOK && fSkipFailed) return kFALSE;
-   
+
    // retrieve object
    if (!fList || fIndex < 0) {
       AliError("List not initialized");
@@ -351,30 +356,92 @@ Bool_t AliRsnListOutput::Fill(TObject *target, Int_t step)
       AliError("Null pointer");
       return kFALSE;
    }
-   
+
    // check
    //AliInfo(Form("[%s] Object index, name, type = %d, %s (%s)", GetName(), fIndex, obj->GetName(), obj->ClassName()));
 
    // fill output
    if (obj->IsA() == TH1F::Class()) {
-      TH1F *h = (TH1F*)obj;
+      TH1F *h = (TH1F *)obj;
       h->Fill(fArray[0]);
       return kTRUE;
    } else if (obj->IsA() == TH2F::Class()) {
-      TH2F *h = (TH2F*)obj;
+      TH2F *h = (TH2F *)obj;
       h->Fill(fArray[0], fArray[1]);
       return kTRUE;
    } else if (obj->IsA() == TH3F::Class()) {
-      TH3F *h = (TH3F*)obj;
+      TH3F *h = (TH3F *)obj;
       h->Fill(fArray[0], fArray[1], fArray[2]);
       return kTRUE;
    } else if (obj->InheritsFrom(THnSparse::Class())) {
-      THnSparseF *h = (THnSparseF*)obj;
+      THnSparseF *h = (THnSparseF *)obj;
       h->Fill(fArray.GetArray());
       return kTRUE;
    } else if (obj->InheritsFrom(AliCFContainer::Class())) {
-      AliCFContainer *c = (AliCFContainer*)obj;
+      AliCFContainer *c = (AliCFContainer *)obj;
       c->Fill(fArray.GetArray(), step);
+      return kTRUE;
+   } else {
+      AliError(Form("Not handled class '%s'", obj->ClassName()));
+      return kFALSE;
+   }
+}
+
+//________________________________________________________________________________________
+Bool_t AliRsnListOutput::Fill(AliRsnEvent *ev, AliRsnDaughter *d)
+{
+//
+// Uses the passed argument to compute all values.
+// If all computations were successful, fill the output
+// Return value is the AND of all computation successes.
+//
+
+   // retrieve object
+   if (!fList || fIndex < 0) {
+      AliError("List not initialized");
+      return kFALSE;
+   }
+   TObject *obj = fList->At(fIndex);
+   if (!obj) {
+      AliError("Null pointer");
+      return kFALSE;
+   }
+
+
+   TIter next(&fValues);
+   AliRsnValue *val;
+   Int_t i=0;
+   Bool_t globalOK = kTRUE;
+   Double_t values[fValues.GetEntries()];
+   while ((val = (AliRsnValue *)next())) {
+      if (val->InheritsFrom(AliRsnValueDaughter::Class())) {
+         if (!d && fSkipFailed) return kFALSE;
+         globalOK = globalOK && val->Eval(d);
+      } else if (val->InheritsFrom(AliRsnValueEvent::Class())) {
+         if (!ev && fSkipFailed) return kFALSE;
+         globalOK = globalOK && val->Eval(ev);
+      }
+      values[i] = (Double_t)val->GetComputedValue();
+      if (!globalOK && fSkipFailed) return kFALSE;
+      i++;
+   }
+
+   // fill output
+   if (obj->IsA() == TH1F::Class()) {
+      TH1F *h = (TH1F *)obj;
+      h->Fill(values[0]);
+      return kTRUE;
+   } else if (obj->IsA() == TH2F::Class()) {
+      TH2F *h = (TH2F *)obj;
+      h->Fill(values[0], values[1]);
+      return kTRUE;
+   } else if (obj->IsA() == TH3F::Class()) {
+      TH3F *h = (TH3F *)obj;
+      h->Fill(values[0], values[1], values[2]);
+      return kTRUE;
+   } else if (obj->InheritsFrom(THnSparse::Class())) {
+      THnSparseF *h = (THnSparseF *)obj;
+      h->Fill(values);
       return kTRUE;
    } else {
       AliError(Form("Not handled class '%s'", obj->ClassName()));
