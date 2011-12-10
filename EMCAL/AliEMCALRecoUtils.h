@@ -139,6 +139,7 @@ public:
                                Float_t & amp, Double_t & time, AliVCaloCells* cells) ; // Energy and Time
   void     RecalibrateCells(AliVCaloCells * cells, Int_t bc) ; // Energy and Time
   void     RecalibrateClusterEnergy(const AliEMCALGeometry* geom, AliVCluster* cluster, AliVCaloCells * cells, const Int_t bc=-1) ; // Energy and time
+  void     ResetCellsCalibrated()                        { fCellsRecalibrated = kFALSE; }
 
   // Energy recalibration
   Bool_t   IsRecalibrationOn()                     const { return fRecalibration ; }
