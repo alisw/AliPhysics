@@ -32,6 +32,7 @@ class AliRunTag : public TObject {
   virtual ~AliRunTag();
   AliRunTag(const AliRunTag& qa) ;   
   AliRunTag& operator = (const AliRunTag& tag) ;
+  Bool_t Add(const AliRunTag* tag) ;
   //____________________________________________________//
   void SetRunId(Int_t Pid) {fAliceRunId = Pid;}
   void SetMagneticField(Float_t Pmag) {fAliceMagneticField = Pmag;}
@@ -117,7 +118,7 @@ class AliRunTag : public TObject {
   Bool_t *   GetEventSpecies() const {return fEventSpecies;}	
   Int_t      GetESLength() const { return fESLength ; }
   Int_t      GetFileId(const char *guid);
-  
+  Int_t      GetNumFiles() const {return fNumFiles;}
   TString    GetActiveTriggerClasses() const {return fActiveTriggerClasses; }
 
   //____________________________________________________//

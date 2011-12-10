@@ -170,7 +170,6 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
     fAliceCalibrationVersion  = tag.fAliceCalibrationVersion ; 
     fAliceDataType            = tag.fAliceDataType ; 
     //    fNumEvents                = tag.fNumEvents ;
-    fNumFiles                 = tag.fNumFiles;
     fBeamTriggers             = tag.fBeamTriggers;
     fCollisionTriggers	      = tag.fCollisionTriggers;
     fEmptyTriggers	      = tag.fEmptyTriggers;
@@ -204,13 +203,55 @@ AliRunTag& AliRunTag::operator = (const AliRunTag& tag) {
       fEventSpecies = new Bool_t[fESLength] ; 
       memcpy(fEventSpecies, tag.fEventSpecies, fESLength*sizeof(Bool_t)) ;
     }
-    for (int ifl=0; ifl<fNumFiles; ifl++) {
+    for (int ifl=0; ifl<tag.fNumFiles; ifl++) {
       AddFileTag(new AliFileTag(*tag.GetFileTag(ifl)));
     }
 //     for (int ifile=0; ifile<tag.GetFileTags()->GetEntries(); ifile++)
 //       AddFileTag(*((AliFileTag *) tag.GetFileTags()->At(ifile)));
   }
   return *this ; 
+}
+
+//___________________________________________________________________________
+Bool_t AliRunTag::Add(const AliRunTag* tag) 
+{
+  // merge two pieces
+  if (fAliceRunId==-1) { // empty
+    *this = *tag;
+    return kTRUE;
+  }
+  if (fAliceRunId != tag->fAliceRunId) {    
+    AliWarning(Form("Run IDs are different: %d %d",fAliceRunId,tag->fAliceRunId)); 
+    return kFALSE;
+  }
+  // real merging
+  fBeamTriggers       += tag->fBeamTriggers;
+  fCollisionTriggers  += tag->fCollisionTriggers;
+  fEmptyTriggers      += tag->fEmptyTriggers;
+  fASideTriggers      += tag->fASideTriggers;
+  fCSideTriggers      += tag->fCSideTriggers;
+  fHMTriggers         += tag->fHMTriggers;
+  fMuonTriggers       += tag->fMuonTriggers;
+  AliFileTag* eftag = 0;
+  //
+  for (int i=0;i<tag->fNumFiles;i++) {
+    AliFileTag* tftag = (AliFileTag*)tag->GetFileTag(i);
+    if (fNumFiles>0) eftag = (AliFileTag*)GetFileTag(fNumFiles-1);
+    else { 
+      eftag = new AliFileTag(); 
+      eftag->SetMD5("");
+      eftag->SetTURL("");
+      eftag->SetSize(0);
+      AddFileTag(eftag);
+    }
+    int nev = tftag->GetNEvents();
+    for (int j=0;j<nev;j++) {
+      AliEventTag* tge = (AliEventTag*)tftag->GetEventTag(j);
+      if (tge) eftag->AddEventTag(*tge);
+    }
+  }
+  
+  return kTRUE; 
 }
 
 //___________________________________________________________________________
