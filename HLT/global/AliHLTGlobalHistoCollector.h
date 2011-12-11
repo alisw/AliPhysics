@@ -65,10 +65,12 @@ public:
     AliHLTGlobalHCCollection():fMergedObject(0),fHLTDataType(kAliHLTVoidDataType),fInstances(),fNeedToMerge(0){}
     AliHLTGlobalHCCollection( const AliHLTGlobalHCCollection &x):fMergedObject(x.fMergedObject),fHLTDataType(x.fHLTDataType),fInstances(x.fInstances),fNeedToMerge(x.fNeedToMerge){}
     AliHLTGlobalHCCollection &operator=( const AliHLTGlobalHCCollection &x){
-      fMergedObject = x.fMergedObject;
-      fHLTDataType = x.fHLTDataType;
-      fInstances = x.fInstances;   
-      fNeedToMerge = x.fNeedToMerge;
+      if( &x!=this ){
+	fMergedObject = x.fMergedObject;
+	fHLTDataType = x.fHLTDataType;
+	fInstances = x.fInstances;   
+	fNeedToMerge = x.fNeedToMerge;
+      }
       return *this;
     }
 
