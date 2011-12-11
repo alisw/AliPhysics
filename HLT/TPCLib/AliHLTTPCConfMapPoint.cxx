@@ -145,6 +145,8 @@ AliHLTTPCConfMapPoint::AliHLTTPCConfMapPoint(const AliHLTTPCConfMapPoint& src)
 
 AliHLTTPCConfMapPoint& AliHLTTPCConfMapPoint::operator=(const AliHLTTPCConfMapPoint& src)
 {
+  if( &src ==this ) return *this;
+
   fHitNumber=src.fHitNumber;
   fTrackNumber=src.fTrackNumber;
   fNextHitNumber=src.fNextHitNumber;
