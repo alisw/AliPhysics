@@ -75,6 +75,7 @@ AliHLTITSTrack &AliHLTITSTrack::operator=(const AliHLTITSTrack& t)
   //------------------------------------------------------------------
   //Copy constructor
   //------------------------------------------------------------------
+  if( &t==this ) return *this;
   *(AliKalmanTrack*)this = t;  
   fExpQ = t.fExpQ;
   fTPCtrackId = t.fTPCtrackId;
