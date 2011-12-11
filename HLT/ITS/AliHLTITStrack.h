@@ -29,6 +29,9 @@ public:
 
   Int_t Compare(const TObject *o) const;
 
+private:
+  AliHLTITStrack& operator=(const AliHLTITStrack& t);
+public:
   ClassDef(AliHLTITStrack,2)   //HLT ITS reconstructed track
 };
 
