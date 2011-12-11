@@ -453,14 +453,11 @@ void  AliPHOSReconstructor::ConvertDigits(AliRawReader* rawReader, TTree* digits
 
   rawReader->Reset();
   AliPHOSTriggerRawDigiProducer tdp(rawReader);
-
-  AliPHOSTriggerParameters* parameters = new AliPHOSTriggerParameters();
-  readTRUParameters(parameters);
+  
+  AliPHOSTriggerParameters* parameters = (AliPHOSTriggerParameters*)AliPHOSRecoParam::GetTriggerParameters();
   
   tdp.SetTriggerParameters(parameters);
   tdp.ProcessEvent(tdigits);
-  
-  delete parameters;
   
   if (AliLog::GetGlobalDebugLevel() == 1) {
     Int_t modMax=-111;

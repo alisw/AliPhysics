@@ -78,6 +78,7 @@ public:
 
   static AliPHOSRecoParam* GetDefaultParameters();
   static const  TObjArray* GetMappings();
+  static const  TObject*   GetTriggerParameters();
 
 protected:
 
@@ -108,8 +109,9 @@ protected:
   Bool_t  fCPVUnfold;              // CPV: true if overlapped clusters should be unfolded
 
   static TObjArray* fgkMaps;       // ALTRO mappings for RCU0..RCU3
+  static TObject* fgkTrigParams;   // PHOS trigger parameters
 
-  ClassDef(AliPHOSRecoParam,11)
+  ClassDef(AliPHOSRecoParam,12)
 };
 
 #endif

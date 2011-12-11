@@ -28,6 +28,7 @@
 ClassImp(AliPHOSRecoParam)
 
 TObjArray* AliPHOSRecoParam::fgkMaps =0; //ALTRO mappings
+TObject*   AliPHOSRecoParam::fgkTrigParams =0; // Trigger parameters
 
 //-----------------------------------------------------------------------------
 AliPHOSRecoParam::AliPHOSRecoParam() :
@@ -218,4 +219,25 @@ void AliPHOSRecoParam::SetNonlinearityCorrectionVersion(const char * ver){
   AliError(Form("Non known correction version: %s, still using default \n",ver)) ;
 
 
+}
+
+//-----------------------------------------------------------------------------
+const TObject* AliPHOSRecoParam::GetTriggerParameters()
+{
+  //Returns trigger parameters.
+
+  //Quick check as follows:
+  //  root [0] AliCDBManager::Instance()->SetDefaultStorage("local://$ALICE_ROOT/OCDB");
+  //  root [1] AliCDBManager::Instance()->SetRun(158171);
+  //  root [2] TObject* parameters = AliPHOSRecoParam::GetTriggerParameters();
+  //  root [3] parameters->Print();
+  
+  if(fgkTrigParams) return fgkTrigParams;
+  
+  AliCDBEntry* entry = AliCDBManager::Instance()->Get("PHOS/Trigger/Parameters");
+  if(entry)
+    fgkTrigParams = entry->GetObject();
+  
+  return fgkTrigParams;
+  
 }
