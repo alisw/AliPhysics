@@ -51,6 +51,7 @@ class AliIsolationCut : public TObject {
   
   void       Print(const Option_t * opt) const ;
   
+  Float_t    Radius(const Float_t etaCandidate, const Float_t phiCandidate, const Float_t eta, const Float_t phi) const ; 
   
   // Parameter setters and getters
   
@@ -85,7 +86,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut(const AliIsolationCut & g) ;               // cpy ctor
   AliIsolationCut & operator = (const AliIsolationCut & g) ; // cpy assignment
   
-  ClassDef(AliIsolationCut,3)
+  ClassDef(AliIsolationCut,4)
 } ;
 
 

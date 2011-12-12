@@ -87,7 +87,7 @@ TString AliIsolationCut::GetICParametersList()
   return parList; 
 }
 
-//____________________________________________________________________________
+//____________________________________
 void AliIsolationCut::InitParameters()
 {
   //Initialize the parameters of the analysis.
@@ -164,8 +164,10 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
         }
         return ;
       }
+      
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
-      rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
+
+      rad = Radius(etaC, phiC, eta, phi);
       
       if(rad < fConeSize){
         if(bFillAOD) {
@@ -240,7 +242,9 @@ void  AliIsolationCut::MakeIsolationCut(const TObjArray * plCTS,
       }
       
       //Check if there is any particle inside cone with pt larger than  fPtThreshold
-      rad = TMath::Sqrt((eta-etaC)*(eta-etaC)+ (phi-phiC)*(phi-phiC));
+
+      rad = Radius(etaC, phiC, eta, phi);
+      
       if(rad < fConeSize){
         if(bFillAOD) {
           nclusterrefs++;
@@ -312,3 +316,22 @@ void AliIsolationCut::Print(const Option_t * opt) const
   printf("    \n") ;
   
 } 
+
+//___________________________________________________________________________
+Float_t AliIsolationCut::Radius(const Float_t etaC, const Float_t phiC, 
+                                const Float_t eta , const Float_t phi) const
+{
+  // Calculate the distance to trigger from any particle
+
+  Float_t dEta = etaC-eta;
+  Float_t dPhi = phiC-phi;
+  
+  if(TMath::Abs(dPhi) >= TMath::Pi()) 
+    dPhi = TMath::TwoPi()-TMath::Abs(dPhi);
+  
+  return TMath::Sqrt( dEta*dEta + dPhi*dPhi );
+  
+}
+
+
+
