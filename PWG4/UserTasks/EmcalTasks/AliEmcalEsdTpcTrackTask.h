@@ -32,7 +32,7 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   AliEmcalEsdTpcTrackTask(const AliEmcalEsdTpcTrackTask&);            // not implemented
   AliEmcalEsdTpcTrackTask &operator=(const AliEmcalEsdTpcTrackTask&); // not implemented
 
-  ClassDef(AliEmcalEsdTpcTrackTask, 1); //
+  ClassDef(AliEmcalEsdTpcTrackTask, 1); // Class to constrain TPC tracks to SPD vertex
 };
 
 #endif
