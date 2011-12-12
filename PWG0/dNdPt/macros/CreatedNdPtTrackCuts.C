@@ -1740,7 +1740,25 @@ AliESDtrackCuts* CreatedNdPtTrackCuts(Int_t cutMode=1, Bool_t fieldOn = kTRUE, B
     TString tag = "TPC+ITS refit required - for cut studies";
   }
 
+  // TPC+ITS refit  + TPC DCA rough cuts
+  // for cut studies
+  if (cutMode == 155) 
+  {
+    //
+    // TPC
+    //
+    maxDCAtoVertexXY = 5.0; // cm
+    maxDCAtoVertexZ  = 5.0; // cm
 
+    esdTrackCuts->SetRequireTPCRefit(kTRUE);
+    esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+    esdTrackCuts->SetDCAToVertex2D(kTRUE);
+    esdTrackCuts->SetMaxDCAToVertexXY(maxDCAtoVertexXY);
+    esdTrackCuts->SetMaxDCAToVertexZ(maxDCAtoVertexZ);
+
+    // ITS
+    esdTrackCuts->SetRequireITSRefit(kTRUE);
+  }
 
   // cuts for data without field
   if (!fieldOn)
