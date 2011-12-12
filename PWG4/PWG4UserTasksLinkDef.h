@@ -21,17 +21,19 @@
 #pragma link C++ class AliAnalysisTaskCaloCellsQA+;
 
 // EmcalTasks
-#pragma link C++ class AliEmcalPhysicsSelection+;
-#pragma link C++ class AliEmcalPhysicsSelectionTask+;
-#pragma link C++ class AliEmcalEsdTpcTrackTask+;
-#pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
 #pragma link C++ class AliAnalysisTaskEMCALClusterizeFast+;
 #pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
+#pragma link C++ class AliAnalysisTaskEMCALPi0PbPb+;
+#pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
+#pragma link C++ class AliEmcalEsdTpcTrackTask+;
+#pragma link C++ class AliEmcalPhysicsSelection+;
+#pragma link C++ class AliEmcalPhysicsSelectionTask+;
+#pragma link C++ class AliEmcalSetupTask+;
+#pragma link C++ class AliEmcalTrackPropagatorTask+;
 #pragma link C++ class AliStaHeader+;
 #pragma link C++ class AliStaCluster+;
 #pragma link C++ class AliStaVertex+;
 #pragma link C++ class AliStaTrigger+;
 #pragma link C++ class AliStaPart+;
-#pragma link C++ class AliAnalysisTaskEMCALTriggerQA+;
 
 #endif
