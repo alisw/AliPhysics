@@ -877,17 +877,21 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
       track->SetTRDslice(*dedx, ip, js+1);
     }
     p = fTracklet[ip]->GetMomentum(&sp); 
+    spd = sp; track->SetTRDmomentum(p, ip, &spd);
     // store global quality per tracklet instead of momentum error
     // 26.09.11 A.Bercuci
     // first implementation store no. of time bins filled in tracklet (5bits  see "y" bits) and
     // no. of double clusters in case of pad row cross (4bits see "x" bits)
     // bit map for tracklet quality xxxxyyyyy
     // 27.10.11 A.Bercuci
-    // add chamber status bit "z" bit 
+    // add chamber status bit "z" bit
     // bit map for tracklet quality zxxxxyyyyy
+    // 12.11.11 A.Bercuci
+    // fit tracklet quality into the field fTRDTimeBin [Char_t]
+    // bit map for tracklet quality zxxyyyyy
     Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0);
-    spd = Double_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5) | (fTracklet[ip]->IsChmbGood()<<9));
-    track->SetTRDmomentum(p, ip, &spd);
+    Char_t trackletQ = Char_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5) | (fTracklet[ip]->IsChmbGood()<<7));
+    track->SetTRDTimBin(trackletQ, ip);
     track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
   }
   // store PID probabilities
