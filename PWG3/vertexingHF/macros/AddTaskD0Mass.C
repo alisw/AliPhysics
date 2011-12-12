@@ -1,4 +1,10 @@
-AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,Bool_t filldistr=kFALSE,Bool_t cutOnDistr=kFALSE,Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,TString finname="D0toKpiCuts.root")
+AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t readMC=kFALSE,
+				       Bool_t filldistr=kFALSE,Bool_t cutOnDistr=kFALSE,
+				       Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,
+				       Float_t minC=0, Float_t maxC=0,
+				       TString finDirname="Loose",
+				       TString finname="D0toKpiCuts.root",TString finObjname="D0toKpiCuts", Bool_t flagAOD049=kFALSE,
+				       Bool_t FillMassPt=false, Bool_t FillImpPar=false)
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -16,7 +22,7 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   if(flag==0){
@@ -50,6 +56,14 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(cutOnDistr) out5name+="C"; 
     if(flagD0D0bar==1)out5name+="D0";
     if(flagD0D0bar==2)out5name+="D0bar";
+
+    // mass, pt, imp param distr
+    out6name="coutputmassD0MassPt";
+    if(cutOnDistr) out6name+="C"; 
+    if(flagD0D0bar==1)out6name+="D0";
+    if(flagD0D0bar==2)out6name+="D0bar";
+
+    out7name ="coutputVarTree";
 
     inname="cinputmassD0_0";
     if(cutOnDistr) inname+="C"; 
@@ -87,6 +101,15 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
     if(flagD0D0bar==1)inname+="D0";
     if(flagD0D0bar==2)inname+="D0bar";
   }
+  filename += finDirname.Data();
+  out1name += finDirname.Data();
+  out2name += finDirname.Data();
+  out3name += finDirname.Data(); 
+  out4name += finDirname.Data(); 
+  out5name += finDirname.Data(); 
+  out6name += finDirname.Data();
+  out7name += finDirname.Data();
+  inname += finDirname.Data();
 
    //setting my cut values
 
@@ -111,22 +134,40 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliRDHFCutsD0toKpi* RDHFD0toKpi=new AliRDHFCutsD0toKpi();
   if(stdcuts) {
     if(system==0) RDHFD0toKpi->SetStandardCutsPP2010();
-    else RDHFD0toKpi->SetStandardCutsPbPb2010();
+    else {
+      RDHFD0toKpi->SetStandardCutsPbPb2010();
+      if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+	RDHFD0toKpi->SetMinCentrality(minC);
+	RDHFD0toKpi->SetMaxCentrality(maxC);
+      }
+      if(flagAOD049)RDHFD0toKpi->SetUseAOD049(kTRUE);
+      RDHFD0toKpi->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    }
   }
-  else   RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get("D0toKpiCuts");
-  RDHFD0toKpi->SetName(Form("D0toKpiCuts%d",flag));
-
-  if(!RDHFD0toKpi){
-    cout<<"Specific AliRDHFCuts not found"<<endl;
-    return;
+  else   {
+    RDHFD0toKpi = (AliRDHFCutsD0toKpi*)filecuts->Get(finObjname.Data());
+    if(!RDHFD0toKpi){
+      cout<<"Specific AliRDHFCuts not found"<<endl;
+      return;
+    }
+    if(flagAOD049)RDHFD0toKpi->SetUseAOD049(kTRUE);
+    if(minC!=0 && maxC!=0) { //if centrality 0 and 0 leave the values in the cut object
+      RDHFD0toKpi->SetMinCentrality(minC);
+      RDHFD0toKpi->SetMaxCentrality(maxC);
+    } 
   }
+  //  RDHFD0toKpi->SetName(Form("D0toKpiCuts%d",flag));
 
-  TString centr=Form("%.0f%.0f",RDHFD0toKpi->GetMinCentrality(),RDHFD0toKpi->GetMaxCentrality());
+  TString centr="";
+  if(minC!=0 && maxC!=0) centr = Form("%.0f%.0f",minC,maxC);
+  else centr = Form("%.0f%.0f",RDHFD0toKpi->GetMinCentrality(),RDHFD0toKpi->GetMaxCentrality());
   out1name+=centr;
   out2name+=centr;
   out3name+=centr;
   out4name+=centr;
   out5name+=centr;
+  out6name+=centr;
+  out7name+=centr;
   inname+=centr;
 
   // Aanalysis task    
@@ -142,7 +183,14 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   massD0Task->SetFillOnlyD0D0bar(flagD0D0bar);
   massD0Task->SetSystem(system); //0=pp, 1=PbPb
   massD0Task->SetFillVarHists(filldistr); // default is FALSE if System=PbPb
- 
+
+  massD0Task->SetFillPtHistos(FillMassPt);
+  massD0Task->SetFillImpactParameterHistos(FillImpPar);
+  
+  //  massD0Task->SetRejectSDDClusters(kTRUE);
+
+  //   massD0Task->SetWriteVariableTree(kTRUE);
+
   mgr->AddTask(massD0Task);
   
   //
@@ -155,6 +203,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   AliAnalysisDataContainer *coutputmassD03 = mgr->CreateContainer(out3name,TH1F::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //nev
   AliAnalysisDataContainer *coutputmassD04 = mgr->CreateContainer(out4name,AliRDHFCutsD0toKpi::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //cuts
   AliAnalysisDataContainer *coutputmassD05 = mgr->CreateContainer(out5name,AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //counter
+  AliAnalysisDataContainer *coutputmassD06 = mgr->CreateContainer(out6name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
+  AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
   
   mgr->ConnectInput(massD0Task,0,mgr->GetCommonInputContainer());
 
@@ -163,6 +213,8 @@ AliAnalysisTaskSED0Mass *AddTaskD0Mass(Int_t flag=0/*0 = D0,1 = LS*/,Bool_t read
   mgr->ConnectOutput(massD0Task,3,coutputmassD03);
   mgr->ConnectOutput(massD0Task,4,coutputmassD04);
   mgr->ConnectOutput(massD0Task,5,coutputmassD05);
+  mgr->ConnectOutput(massD0Task,6,coutputmassD06);
+  mgr->ConnectOutput(massD0Task,7,coutputmassD07);
 
 
   return massD0Task;
