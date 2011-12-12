@@ -266,15 +266,24 @@ void AliEveTRDChamber::LoadClusters(TObjArray *clusters)
   }
   fRecPoints->Reset();
 
+  // get rotation parameters
+  Int_t sec = AliTRDgeometry::GetSector(GetID());
+  Float_t alpha((0.5+sec)*AliTRDgeometry::GetAlpha()),
+          cphi(TMath::Cos(alpha)),
+          sphi(TMath::Sin(alpha));
   Float_t q;
   Float_t g[3]; //global coordinates
-  AliTRDcluster *c=0x0;
+  AliTRDcluster *c(NULL);
   Int_t nc = clusters->GetEntriesFast();
   for(int iclus=0; iclus<nc; iclus++){
-    c = (AliTRDcluster*)clusters->UncheckedAt(iclus);
-    c->GetGlobalXYZ(g); 
+    if(!(c = (AliTRDcluster*)clusters->UncheckedAt(iclus))) continue;
     q = c->GetQ();
-    Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
+    // Temorary fix related to bug http://savannah.cern.ch/bugs/?89730
+    // c->GetGlobalXYZ(g);
+    g[0] = c->GetX() * cphi - c->GetY() * sphi;
+    g[1] = c->GetX() * sphi + c->GetY() * cphi;
+    g[2] = c->GetZ();
+    Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);
     fRecPoints->SetPointId(id, new AliTRDcluster(*c));
   }
   fRecPoints->StampObjProps();
@@ -296,15 +305,24 @@ void AliEveTRDChamber::LoadClusters(AliTRDtrackingChamber *tc)
   }
   fRecPoints->Reset();
 
+  // get rotation parameters
+  Int_t sec = AliTRDgeometry::GetSector(fDet);
+  Float_t alpha((0.5+sec)*AliTRDgeometry::GetAlpha()),
+          cphi(TMath::Cos(alpha)),
+          sphi(TMath::Sin(alpha));
   Float_t g[3]; //global coordinates
-  const AliTRDchamberTimeBin *tb = 0x0;
+  const AliTRDchamberTimeBin *tb(NULL);
   for(int itb=0; itb<AliTRDseedV1::kNtb; itb++){
     tb = tc->GetTB(itb);
     if(!(Int_t(*tb))) continue;
-    const AliTRDcluster *c= 0x0; Int_t ic = 0;
+    const AliTRDcluster *c(NULL); Int_t ic = 0;
     while((c=tb->GetCluster(ic))){
-      c->GetGlobalXYZ(g); 
-      Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);    
+      // Temorary fix related to bug http://savannah.cern.ch/bugs/?89730
+      // c->GetGlobalXYZ(g);
+      g[0] = c->GetX() * cphi - c->GetY() * sphi;
+      g[1] = c->GetX() * sphi + c->GetY() * cphi;
+      g[2] = c->GetZ();
+      Int_t id = fRecPoints->SetNextPoint(g[0], g[1], g[2]);
       fRecPoints->SetPointId(id, new AliTRDcluster(*c));
       ic++;
     }

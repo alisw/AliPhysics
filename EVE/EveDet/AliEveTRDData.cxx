@@ -313,6 +313,11 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
     AliInfo(Form("gGeo[%p] Closed[%c]", (void*)gGeoManager, gGeoManager->IsClosed()?'y':'n'));
   }
   SetUserData(trklt);
+  // init tracklet line
+  Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());
+  Float_t alpha((0.5+sec)*AliTRDgeometry::GetAlpha()),
+          cphi(TMath::Cos(alpha)),
+          sphi(TMath::Sin(alpha));
   Float_t dx;
   Float_t x0   = trklt->GetX0();
   Float_t y0   = trklt->GetYref(0);
@@ -331,7 +336,20 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
     // backup yc - for testing purposes
     Float_t yc = c->GetY(); 
     c->SetY(yc-tilt*(c->GetZ()-zt));
-    c->GetGlobalXYZ(g); 
+    
+    // Ben: Temporary(?) fix -> Issue with wrongly set flag "fIsMisaligned" of AliCluster
+    // Changes can be undone ofter the issue with the flag has been solved
+    //c->GetGlobalXYZ(g);
+    
+    // The following code for the trasformation local-to-global is just adapted from
+    // AliTRDgeometry::RotateBack(...)
+  
+    // tracking to global coordinates transformation
+    Float_t loc[3] = { c->GetX(), c->GetY(), c->GetZ() }; 
+    g[0] = loc[0] * cphi - loc[1] * sphi;
+    g[1] = loc[0] * sphi + loc[1] * cphi;
+    g[2] = loc[2];
+    // Ben: End of fix
     Int_t id = fClusters->SetNextPoint(g[0], g[1], g[2]);
     c->SetY(yc);
     fClusters->SetPointId(id, new AliTRDcluster(*c));
@@ -346,15 +364,11 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   SetLineColor(kRed);
   //SetOwnIds(kTRUE);
   
-  // init tracklet line
-  Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());
-  Double_t alpha = AliTRDgeometry::GetAlpha() * (sec<9 ? sec + .5 : sec - 17.5); 
-
   //trklt->Fit(kTRUE);
   y0   = trklt->GetYfit(0);
   dydx = trklt->GetYfit(1);
-  Double_t xg =  x0 * TMath::Cos(alpha) - y0 * TMath::Sin(alpha); 
-  Double_t yg = x0 * TMath::Sin(alpha) + y0 * TMath::Cos(alpha);
+  Double_t xg(x0 * cphi - y0 * sphi),
+           yg(x0 * sphi + y0 * cphi);
   SetPoint(0, xg, yg, z0); 
   //SetPoint(0, x0, y0, z0);
 
@@ -363,8 +377,8 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   x0 -= dx; 
   y0 -= dydx*dx,
   z0 -= dzdx*dx; 
-  xg = x0 * TMath::Cos(alpha) - y0 * TMath::Sin(alpha); 
-  yg = x0 * TMath::Sin(alpha) + y0 * TMath::Cos(alpha);
+  xg = x0 * cphi - y0 * sphi;
+  yg = x0 * sphi + y0 * cphi;
   SetPoint(1, xg, yg, z0);
   //SetPoint(1, x0, y0, z0);
 }
