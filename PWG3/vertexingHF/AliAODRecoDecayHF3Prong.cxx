@@ -377,7 +377,7 @@ const {
 }
 
 //----------------------------------------------------------------------
-Double_t AliAODRecoDecayHF3Prong::ComputeSigmaVert(AliAODEvent* aod) const{
+Double_t AliAODRecoDecayHF3Prong::ComputeSigmaVert(const AliAODEvent* aod) const{
   // computes track dispersion around secondary vertex starting from tracks
 
   AliVertexerTracks vertexer(aod->GetMagneticField());

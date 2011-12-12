@@ -40,7 +40,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
     if(aod) fSigmaVert=ComputeSigmaVert(aod);
     return fSigmaVert;
   }
-  Double_t ComputeSigmaVert(AliAODEvent* aod) const;
+  Double_t ComputeSigmaVert(const AliAODEvent* aod) const;
   Double_t GetDist12toPrim() const { return fDist12toPrim; }
   Double_t GetDist23toPrim() const { return fDist23toPrim; }
   void SetDist12toPrim(Double_t d) { fDist12toPrim=d; }

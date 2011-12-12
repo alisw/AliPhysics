@@ -65,7 +65,7 @@ class AliAnalysisTaskSED0Mass : public AliAnalysisTaskSE
   Bool_t GetFillPtHistos() const {return fFillPtHist;}
   Bool_t GetFillImpactParameterHistos() const {return fFillImpParHist;}
   Int_t  GetSystem() const {return fSys;}
-  Bool_t GetRejectSDDClusters() { return fIsRejectSDDClusters; }
+  Bool_t GetRejectSDDClusters() const { return fIsRejectSDDClusters; }
   Bool_t GetWriteVariableTree() const {return fWriteVariableTree;}
 
  private:
