@@ -42,10 +42,19 @@ AliRefArray::AliRefArray(UInt_t nelem,UInt_t depth) :
  
 //____________________________________________________________________
 AliRefArray::AliRefArray(const AliRefArray& src) :
-  TObject(),fNElems(0),fRefSize(0),fElems(0),fRefInd(0),fRefBuff(0)
+  TObject(src),
+  fNElems(src.fNElems),
+  fRefSize(src.fRefSize),
+  fElems(new Int_t[fNElems]),
+  fRefInd(new UInt_t[fRefSize]),
+  fRefBuff(new UInt_t[fRefSize])
 {
-  // create a copy with useful info (skip unused slots)
-  (*this) = src;
+  //
+  // create a copy 
+  //
+  memcpy(fElems,src.fElems,fNElems*sizeof(Int_t));
+  memcpy(fRefInd,src.fRefInd,fRefSize*sizeof(UInt_t));
+  memcpy(fRefBuff,src.fRefBuff,fRefSize*sizeof(UInt_t));
 }
  
 //____________________________________________________________________
@@ -82,9 +91,9 @@ AliRefArray& AliRefArray::operator=(const AliRefArray& src)
 AliRefArray::~AliRefArray() 
 {
   // destructor
-  delete[] fElems;   fElems = 0;
-  delete[] fRefBuff; fRefBuff = 0;
-  delete[] fRefInd;  fRefInd = 0;
+  delete[] fElems;
+  delete[] fRefBuff;
+  delete[] fRefInd;
 }
 
 //____________________________________________________________________

@@ -78,8 +78,8 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
   fN(res.fN),
   fLast(res.fLast),
   fAlignObj(0),
-  fVolArray(0),
-  fTrackArray(0),
+  fVolArray(new AliTrackPointArray*[fN]),
+  fTrackArray(new AliTrackPointArray*[fN]),
   fChi2(res.fChi2),
   fNdf(res.fNdf),
   fMinNPoints(res.fMinNPoints),
@@ -87,28 +87,23 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
 {
   // Copy constructor
   // By default the created copy owns the track point arrays
-  if (res.fAlignObj)
-    fAlignObj = (AliAlignObj *)res.fAlignObj->Clone();
 
-  if (fN > 0) {
-    fVolArray = new AliTrackPointArray*[fN];
-    fTrackArray = new AliTrackPointArray*[fN];
-    for (Int_t itrack = 0; itrack < fN; itrack++)
+  if(res.fAlignObj) fAlignObj = (AliAlignObj *)res.fAlignObj->Clone();
+
+  memset(fVolArray,0,sizeof(AliTrackPointArray*)*fN);
+  memset(fTrackArray,0,sizeof(AliTrackPointArray*)*fN);
+
+  for (Int_t itrack = 0; itrack < fN; itrack++)
       {
 	if (res.fVolArray[itrack])
 	  fVolArray[itrack] = new AliTrackPointArray(*res.fVolArray[itrack]);
-	else
-	  fVolArray = 0x0;
 	if (res.fTrackArray[itrack])
 	  fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
-	else
-	  fTrackArray = 0x0;
       }
-  }
-  for(Int_t i=0;i<6;i++) { 
-    fBFixed[i]=res.fBFixed[i];
-    fFixed[i]=res.fFixed[i];
-  }
+
+  memcpy(fBFixed,res.fBFixed,sizeof(Float_t)*6);
+  memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
+
 }
 
 //_____________________________________________________________________________

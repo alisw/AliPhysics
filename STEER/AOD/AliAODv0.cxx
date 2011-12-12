@@ -104,8 +104,8 @@ AliAODv0& AliAODv0::operator=(const AliAODv0& rAliAODv0){
   //--------------------------------------------------------------------
   if(this!=&rAliAODv0) {
     AliAODRecoDecay::operator=(rAliAODv0);
-    this->fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
-    this->fOnFlyStatus        = rAliAODv0.fOnFlyStatus;
+    fDcaV0ToPrimVertex  = rAliAODv0.fDcaV0ToPrimVertex ;
+    fOnFlyStatus        = rAliAODv0.fOnFlyStatus;
   }
   return *this;
 }

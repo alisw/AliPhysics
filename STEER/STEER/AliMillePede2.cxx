@@ -1063,6 +1063,7 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     int defout = dup(1);
     if (defout<0) {
       AliInfo("Failed on dup");
+      close(defout);
       return gkFailed;
     }
     int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
@@ -1078,10 +1079,10 @@ Int_t AliMillePede2::SolveGlobalMatEq()
       //
       dup2(defout,1);
       close(slvDump);
-      close(defout);
       printf("#Dumped failed matrix and RHS to %s\n",faildump);
     }
     else AliInfo("Failed on file open for matrix dumping");
+    close(defout);
     return gkFailed;
   }
   for (int i=fNGloSize;i--;) fVecBGlo[i] = sol[i];

@@ -79,22 +79,23 @@ AliRecPoint::AliRecPoint(const char * ):
 //_______________________________________________________________________
 AliRecPoint::AliRecPoint(const AliRecPoint& recp):
   TObject(recp),
-  fAmp(0),
-  fGeom(0),
+  fAmp(recp.fAmp),
+  fGeom(recp.fGeom),
   fIndexInList(-1), // to be set when the point is already stored
-  fLocPos(0,0,0),
-  fLocPosM(0),
-  fMaxDigit(100),
-  fMulDigit(0),
-  fMaxTrack(5),
-  fMulTrack(0),
-  fDigitsList(0),
-  fTracksList(0)
+  fLocPos(recp.fLocPos),
+  fLocPosM(new TMatrixF(*(recp.fLocPosM))),
+  fMaxDigit(recp.fMaxDigit),
+  fMulDigit(recp.fMulDigit),
+  fMaxTrack(recp.fMaxTrack),
+  fMulTrack(recp.fMulTrack),
+  fDigitsList(new Int_t[fMulDigit]),
+  fTracksList(new Int_t[fMulTrack])
 {
   //
   // Copy constructor
   //
-  recp.Copy(*this);
+  memcpy(fDigitsList,recp.fDigitsList,sizeof(Int_t)*fMulDigit);
+  memcpy(fTracksList,recp.fTracksList,sizeof(Int_t)*fMulTrack);
 }
 
 //_______________________________________________________________________

@@ -129,6 +129,7 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	UInt_t usedMask=0;
 	AliPIDResponse::EDetPidStatus status=AliPIDResponse::kDetNoSignal;
 	Double_t p[fSelectedSpecies];
+	memset(p,0,sizeof(Double_t)*fSelectedSpecies);
 
 	// getting probability distributions for selected detectors only
 	if (fDetectorMask & AliPIDResponse::kDetITS) {
@@ -174,6 +175,7 @@ UInt_t AliPIDCombined::ComputeProbabilities(const AliVTrack *track, const AliPID
 	  p[i] = pITS[i]*pTPC[i]*pTRD[i]*pTOF[i]*pHMPID[i]*pEMCAL[i]*pPHOS[i];
 	}
 	Double_t priors[fSelectedSpecies];
+	memset(priors,0,fSelectedSpecies*sizeof(Double_t));
 	if (fEnablePriors){
 	  GetPriors(track,priors,response->GetCurrentCentrality());
 	  
@@ -351,7 +353,7 @@ void AliPIDCombined::SetDefaultTPCPriors(){
   char name[100];
 
   for(Int_t i=0;i < 5;i++){
-    sprintf(name,"hDefault%sPriors",namespecies[i]);
+    snprintf(name,99,"hDefault%sPriors",namespecies[i]);
     fDefaultPriorsTPC[i] = (TH2F*) priorsContainer->GetDefaultObject(name);
     if (!fDefaultPriorsTPC[i]) AliFatal(Form("Cannot find priors for %s", namespecies[i]));
   }
