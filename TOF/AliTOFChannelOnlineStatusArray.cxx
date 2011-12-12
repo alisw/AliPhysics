@@ -60,10 +60,16 @@ AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(Int_t size):
 AliTOFChannelOnlineStatusArray::AliTOFChannelOnlineStatusArray(const AliTOFChannelOnlineStatusArray & source):
       TObject(),
       fSize(source.fSize),
-      fArray(source.fArray),
-      fLatencyWindow(source.fLatencyWindow)
+      fArray(0x0),
+      fLatencyWindow(0x0)
 { 
 	// copy constructor
+	fArray = new UChar_t[fSize];
+	fLatencyWindow = new Int_t[fSize];
+	for (Int_t ich = 0; ich<fSize; ich ++){
+		fArray[ich] = source.fArray[ich];
+		fLatencyWindow[ich] = source.fLatencyWindow[ich];
+	}
 }
 //________________________________________________________________
 AliTOFChannelOnlineStatusArray &AliTOFChannelOnlineStatusArray::operator=(const AliTOFChannelOnlineStatusArray & source) 
@@ -75,8 +81,12 @@ AliTOFChannelOnlineStatusArray &AliTOFChannelOnlineStatusArray::operator=(const 
 
   TObject::operator=(source);
   fSize= source.fSize;
-  fArray= source.fArray;
-  fLatencyWindow= source.fLatencyWindow;
+  fArray = new UChar_t[fSize];
+  fLatencyWindow = new Int_t[fSize];
+  for (Int_t ich = 0; ich<fSize; ich ++){
+	  fArray[ich] = source.fArray[ich];
+	  fLatencyWindow[ich] = source.fLatencyWindow[ich];
+  }
   return *this;
 }
 //________________________________________________________________

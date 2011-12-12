@@ -1162,7 +1162,9 @@ Int_t AliTOFcalib::Calibrate(Int_t ichmin, Int_t ichmax, Option_t *optionSave, O
     }
   }
   nusefulbins = FindBins(hToT,&binsProfile[0]);
-  meantime/=ntracksTotal;
+  if (ntracksTotal != 0){
+	  meantime/=ntracksTotal;
+  }
   AliDebug(2, Form("meantime = %f",meantime));
   
   for (Int_t j=1;j<=nusefulbins;j++) {

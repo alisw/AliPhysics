@@ -54,9 +54,13 @@ AliTOFChannelOnlineArray::AliTOFChannelOnlineArray(Int_t size):
 AliTOFChannelOnlineArray::AliTOFChannelOnlineArray(const AliTOFChannelOnlineArray & source):
   TObject(source),
   fSize(source.fSize),
-  fArray(source.fArray)
+  fArray(0x0)
 { 
 	// copy constructor
+	fArray = new Float_t[fSize];
+	for (Int_t ich = 0; ich<fSize; ich ++){
+		fArray[ich] = source.fArray[ich];
+	}
 }
 //________________________________________________________________
 AliTOFChannelOnlineArray &AliTOFChannelOnlineArray::operator=(const AliTOFChannelOnlineArray & source) 
@@ -68,7 +72,10 @@ AliTOFChannelOnlineArray &AliTOFChannelOnlineArray::operator=(const AliTOFChanne
   
   TObject::operator=(source);
   fSize= source.fSize;
-  fArray= source.fArray;
+  fArray = new Float_t[fSize];
+  for (Int_t ich = 0; ich<fSize; ich ++){
+	  fArray[ich] = source.fArray[ich];
+  }
   return *this;
 }
 //________________________________________________________________
