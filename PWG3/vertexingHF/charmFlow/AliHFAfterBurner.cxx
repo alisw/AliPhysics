@@ -86,10 +86,11 @@ AliHFAfterBurner &AliHFAfterBurner::operator=(const AliHFAfterBurner &source)
 }
 //______________________________________________________________________________
 AliHFAfterBurner::~AliHFAfterBurner(){
-
+  // destructor
 }
 //______________________________________________________________________________
 Double_t AliHFAfterBurner::GetNewAngle(AliAODRecoDecayHF *d,TClonesArray *mcArray){
+  // modify the phi angle of teh tracks
   Int_t lab=-1;
   Int_t *pdgdaughters;
   Int_t pdgmother=0;
@@ -159,6 +160,7 @@ Double_t AliHFAfterBurner::GetNewAngle(AliAODRecoDecayHF *d,TClonesArray *mcArra
 }
 //______________________________________________________________________________
 Double_t AliHFAfterBurner::GetPhi(Double_t phi,Float_t v2){
+  // modifies the phi angle to after-burn the given v2
   Double_t evplane = fEventPlane;
   if(fUseNewton){
     return NewtonMethodv2(phi,v2);
@@ -168,6 +170,7 @@ Double_t AliHFAfterBurner::GetPhi(Double_t phi,Float_t v2){
 }
 //______________________________________________________________________________
 Double_t AliHFAfterBurner::NewtonMethodv2(Double_t phi,Double_t v2,Double_t phi0){
+  // modifies the phi angle to after-burn the given v2 using newton method
   Double_t eventplane = fEventPlane;
   Double_t phi1 = phi-(phi+v2*TMath::Sin(2.*(phi-eventplane))-phi0)/(1.+2.*v2*TMath::Cos(2.*(phi-eventplane)));
   if(TMath::Abs(phi/phi1-1.)<fPrecisionNewton){
@@ -178,6 +181,7 @@ Double_t AliHFAfterBurner::NewtonMethodv2(Double_t phi,Double_t v2,Double_t phi0
 }
 //______________________________________________________________________________
 void AliHFAfterBurner::SetMCv2(Float_t v2sig,Float_t v2bkg){
+  // SetMCv2
   if(v2sig>=0)fSigv2=v2sig;
   if(v2bkg>=0)fBkgv2=v2bkg;
 }
@@ -208,6 +212,7 @@ Int_t AliHFAfterBurner::CheckOrigin(const AliAODMCParticle* mcPart,TClonesArray 
 }
 //________________________________________________________________________
 Float_t AliHFAfterBurner::GetPhi02Pi(Float_t phi){
+  // get phi angle in the range 0 - 2*pi
   Float_t result=phi;
   while(result<0){
     result=result+2.*TMath::Pi();
@@ -219,6 +224,7 @@ Float_t AliHFAfterBurner::GetPhi02Pi(Float_t phi){
 }
 //________________________________________________________________________
 void AliHFAfterBurner::SetDecChannel(Int_t decch){
+  // set the decay channel
   if(decch>2){
     AliWarning("Invalid decay channel");
     return;
