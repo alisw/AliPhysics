@@ -24,8 +24,9 @@ class AliTPCQAChecker: public AliQACheckerBase {
  public:
  AliTPCQAChecker() : AliQACheckerBase("TPC","TPC Quality Assurance Checker"), fDebug(0) {;}          // ctor
  AliTPCQAChecker(const AliTPCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()), fDebug(qac.GetDebugLevel()) {;} // cpy ctor   
+  AliTPCQAChecker& operator = (const AliTPCQAChecker &checker); // assignment
   virtual ~AliTPCQAChecker() {;} // dtor
-
+  
   virtual void Check(Double_t *  test, AliQAv1::ALITASK_t, TObjArray **, const AliDetectorRecoParam * recoParam); 
   void Init(const AliQAv1::DETECTORINDEX_t det); 
   void SetQA(AliQAv1::ALITASK_t index, Double_t * value) const;

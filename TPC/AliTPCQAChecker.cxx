@@ -34,6 +34,16 @@
 
 ClassImp(AliTPCQAChecker)
 
+
+//__________________________________________________________________
+AliTPCQAChecker& AliTPCQAChecker::operator = (const AliTPCQAChecker &checker)
+{
+  // Equal operator.
+  this->~AliTPCQAChecker();
+  new(this) AliTPCQAChecker(checker);
+  return *this;  
+}
+
 //__________________________________________________________________
 void
 AliTPCQAChecker::Check(Double_t * rv, AliQAv1::ALITASK_t index, TObjArray ** list, 
