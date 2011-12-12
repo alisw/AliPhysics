@@ -28,6 +28,8 @@
 #include <TDatabasePDG.h>
 #include "AliStack.h"
 #include "AliLog.h"
+#include "AliESDEvent.h"
+#include "AliStack.h"
 #include "AliITSdEdxAnalyzer.h"
 #include "AliExternalTrackParam.h"
 //#include "AliITSpidESD.h"

@@ -26,6 +26,7 @@
 //                                                                      //
 //////////////////////////////////////////////////////////////////////////
 
+#include <TString.h>
 #include "AliITSChannelStatus.h"
 #include "AliITSCalibrationSPD.h"
 #include "AliITSCalibrationSDD.h"
@@ -48,13 +49,19 @@ fSDDChannelStatus(0),
 fSSDChannelStatus(0)
 {
   // default constructor 
-  UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
-  fSPDChannelStatus=new TBits(nSPDchan);
-  UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
-  fSDDChannelStatus=new TBits(nSDDchan);
-  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
-  fSSDChannelStatus=new TBits(nSSDchan);
-  InitDefaults();
+}
+//______________________________________________________________________
+AliITSChannelStatus::AliITSChannelStatus(TString config):
+TObject(),
+fSPDChannelStatus(0),
+fSDDChannelStatus(0),
+fSSDChannelStatus(0)
+{
+  // construt starting from an option passed via a TString
+  CreateArrays();
+  if(config.Contains("Ideal") || config.Contains("Default")){
+    InitDefaults();
+  }
 }
 //______________________________________________________________________
 AliITSChannelStatus::AliITSChannelStatus(AliCDBManager *cdb):
@@ -89,12 +96,7 @@ fSSDChannelStatus(0)
   TObjArray* calArrSSD = (TObjArray*)ssdEntry->GetObject();
   if (!calArrSSD) AliFatal("No object found in CalibSSD file");
 
-  UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
-  fSPDChannelStatus=new TBits(nSPDchan);
-  UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
-  fSDDChannelStatus=new TBits(nSDDchan);
-  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
-  fSSDChannelStatus=new TBits(nSSDchan);
+  CreateArrays();
   InitFromOCDB(deadArrSPD,deadSparseArrSPD,noisArrSPD,calArrSDD,calArrSSD);
 }
 //______________________________________________________________________
@@ -105,14 +107,7 @@ fSDDChannelStatus(0),
 fSSDChannelStatus(0)
 {
   // contruct starting from det type rec
-  UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
-  fSPDChannelStatus=new TBits(nSPDchan);
-  
-  UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
-  fSDDChannelStatus=new TBits(nSDDchan);
-
-  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
-  fSSDChannelStatus=new TBits(nSSDchan);
+  CreateArrays();
   
   // SPD modules
   for(Int_t imod=0; imod<kSPDModules; imod++){
@@ -176,6 +171,20 @@ fSSDChannelStatus(0)
   }
 }
 //______________________________________________________________________
+void  AliITSChannelStatus::CreateArrays(){
+  // creates the TBit arrays
+
+  UInt_t nSPDchan=kSPDModules*kSPDNpxPerModule*kSPDNpzPerModule;
+  fSPDChannelStatus=new TBits(nSPDchan);
+
+  UInt_t nSDDchan=kSDDModules*kSDDAnodesPerModule;
+  fSDDChannelStatus=new TBits(nSDDchan);
+
+  UInt_t nSSDchan=kSSDModules*kSSDStripsPerModule;
+  fSSDChannelStatus=new TBits(nSSDchan);
+
+}
+//______________________________________________________________________
 void  AliITSChannelStatus::InitDefaults(){
   // fill bitmaps setting all channels as good
   for(Int_t imod=0; imod<kSPDModules; imod++){
@@ -200,7 +209,7 @@ void  AliITSChannelStatus::InitDefaults(){
   }
 }
 //______________________________________________________________________
-void AliITSChannelStatus::InitFromOCDB(TObjArray* deadArrSPD, TObjArray* /* deadSparseArrSPD */, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray *calArrSSD){
+void AliITSChannelStatus::InitFromOCDB(const TObjArray* deadArrSPD, const TObjArray* /* deadSparseArrSPD */, const TObjArray* noisArrSPD, const TObjArray* calArrSDD, const TObjArray *calArrSSD){
 // fills bitmaps from arrays of AliITSCalibrationSXD objects
 
   // SPD modules

@@ -21,10 +21,13 @@
 #include "AliCDBManager.h"
 #include "AliITSDetTypeRec.h"
 
+class TString;
+
 class AliITSChannelStatus : public TObject {
 
  public:
   AliITSChannelStatus();
+  AliITSChannelStatus(TString config);
   AliITSChannelStatus(AliCDBManager *cdb);
   AliITSChannelStatus(const AliITSDetTypeRec *dtrec);
   AliITSChannelStatus(const AliITSChannelStatus& cstatus);
@@ -43,8 +46,9 @@ class AliITSChannelStatus : public TObject {
   Int_t GetNSSDChannels()const {return fSSDChannelStatus->GetNbits();}
   
  protected:
+  void CreateArrays();
   void InitDefaults();
-  void InitFromOCDB(TObjArray* deadArrSPD, TObjArray* /* deadSparseArrSPD */, TObjArray* noisArrSPD, TObjArray* calArrSDD, TObjArray* noisArrSSD);
+  void InitFromOCDB(const TObjArray* deadArrSPD, const TObjArray* /* deadSparseArrSPD */, const TObjArray* noisArrSPD, const TObjArray* calArrSDD, const TObjArray* noisArrSSD);
   Bool_t CheckBounds(Int_t imod, Int_t iz, Int_t ix=0) const;
   Bool_t GetSPDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& ixmin, Int_t& ixmax)  const;
   Bool_t GetSDDLimits(Float_t zlocmin, Float_t zlocmax, Float_t xlocmin, Float_t xlocmax, Int_t& izmin, Int_t& izmax, Int_t& izmin2, Int_t& izmax2) const;

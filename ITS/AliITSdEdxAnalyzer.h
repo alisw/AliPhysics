@@ -19,10 +19,10 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TGraph.h>
-#include "AliStack.h"
-#include "AliLog.h"
-#include "AliESDEvent.h"
 
+class AliESDEvent;
+class AliStack;
+class AliLog;
 
 class AliITSdEdxAnalyzer : public TObject {
 

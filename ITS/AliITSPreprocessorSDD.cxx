@@ -18,11 +18,15 @@
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Implementation of the class for SDD preprocessing             //
+// Run Types treated:                                            // 
+// PULSER, INJECTOR -> Store OCDB parameters                     //
+// ALL RUNS -> Store DCS reference data                          //
 // Origin: E.Crescio, Torino, crescio@to.infn.it                 //
 //         F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "AliITSDDLModuleMapSDD.h"
 #include "AliITSPreprocessorSDD.h"
 #include "AliITSCalibrationSDD.h"
 #include "AliITSDriftSpeedSDD.h"
@@ -407,7 +411,7 @@ UInt_t AliITSPreprocessorSDD::ProcessInjector(AliITSDDLModuleMapSDD* ddlmap){
 }
 
 //______________________________________________________________________
-Double_t* AliITSPreprocessorSDD::RescaleDriftSpeedModule(TList* theList,
+Double_t* AliITSPreprocessorSDD::RescaleDriftSpeedModule(const TList* theList,
 							 Int_t iBadMod, 
 							 Int_t iBadSide,
 							 const AliITSDriftSpeedSDD* refSpeed)
