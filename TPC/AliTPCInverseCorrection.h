@@ -45,7 +45,7 @@ public:
 private:
   AliTPCCorrection *fCorrection; // The correction to be inverted.
 
-  AliTPCInverseCorrection & operator = (const AliTPCInverseCorrection);
+  AliTPCInverseCorrection & operator = (const AliTPCInverseCorrection &);  // dummy assignment operator
   AliTPCInverseCorrection(const AliTPCInverseCorrection&); //dummy copy contructor
 
   ClassDef(AliTPCInverseCorrection,1);

@@ -73,7 +73,7 @@ private:
 
   AliMagF *fBField;       // pointer to magnetic field
 
-  AliTPCExBBShape & operator =(const AliTPCExBBShape);
+  AliTPCExBBShape & operator =(const AliTPCExBBShape &); // dummy assignment operator
   AliTPCExBBShape(const AliTPCExBBShape&); //dummy copy contructor
 
   ClassDef(AliTPCExBBShape,2);

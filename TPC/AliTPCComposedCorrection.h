@@ -62,7 +62,7 @@ private:
   TCollection *fCorrections; // The corrections this one is composed of.
   CompositionType fMode;     // The way to apply the corrections (see general class documentation)
   TVectorD        *fWeights;  // optional vector with weights - used for fit benchmarking
-  AliTPCComposedCorrection & operator = (const AliTPCComposedCorrection);
+  AliTPCComposedCorrection & operator = (const AliTPCComposedCorrection &); // dummy assignment operator
   AliTPCComposedCorrection(const AliTPCComposedCorrection&); //dummy copy contructor
 
   ClassDef(AliTPCComposedCorrection,2);
