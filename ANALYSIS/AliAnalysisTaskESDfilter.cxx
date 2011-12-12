@@ -995,6 +995,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
   Double_t pos[3] = { 0. };      
   Double_t covTr[21]={0.};
   Double_t pid[10]={0.};  
+
+
   Double_t p[3] = { 0. };
 
   Double_t pDCA[3] = { 0. }; // momentum at DCA
@@ -1004,7 +1006,8 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 
 
   AliAODTrack* aodTrack(0x0);
-  
+  AliAODPid* detpid(0x0);
+
   // account for change in pT after the constraint
   Float_t ptMax = 1E10;
   Float_t ptMin = 0;
@@ -1078,7 +1081,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 
     track->GetXYZ(pos);
     track->GetCovarianceXYZPxPyPz(covTr);
-    track->GetESDpid(pid);
+    esdTrack->GetESDpid(pid);// original PID
 
     if(fMChandler)fMChandler->SelectParticle(esdTrack->GetLabel());
     aodTrack = new(Tracks()[fNumberOfTracks++]) AliAODTrack((track->GetID()+1)*-1,
@@ -1100,14 +1103,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
     aodTrack->SetTPCClusterMap(track->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (track->GetTPCSharedMap());
     aodTrack->SetIsTPCConstrained(kTRUE);    
-    Float_t ndf = track->GetTPCNcls()+1 - 5 ;
-    if(ndf>0){
-      aodTrack->SetChi2perNDF(track->GetConstrainedChi2TPC());
-    }
-    else{
-      aodTrack->SetChi2perNDF(-1);
-    }
-
+    aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack)); // original track
     // set the DCA values to the AOD track
     aodTrack->SetPxPyPzAtDCA(pDCA[0],pDCA[1],pDCA[2]);
     aodTrack->SetXYAtDCA(rDCA[0],rDCA[1]);
@@ -1115,6 +1111,10 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 
     aodTrack->SetFlags(track->GetStatus());
     aodTrack->SetTPCPointsF(track->GetTPCNclsF());
+
+    // do not duplicate PID information 
+    //    aodTrack->ConvertAliPIDtoAODPID();
+    //    SetAODPID(esdTrack,aodTrack,detpid);
 
     delete track;
   } // end of loop on tracks
@@ -1165,6 +1165,7 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
 
 
   AliAODTrack* aodTrack(0x0);
+  AliAODPid* detpid(0x0);
   const AliESDVertex *vtx = esd.GetPrimaryVertex();
 
   // account for change in pT after the constraint
@@ -1241,13 +1242,8 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
     aodTrack->SetIsGlobalConstrained(kTRUE);    
     aodTrack->SetTPCClusterMap(esdTrack->GetTPCClusterMap());
     aodTrack->SetTPCSharedMap (esdTrack->GetTPCSharedMap());
-    Float_t ndf = esdTrack->GetTPCNcls()+1 - 5 ;
-    if(ndf>0){
-      aodTrack->SetChi2perNDF(esdTrack->GetConstrainedChi2TPC());
-    }
-    else{
-      aodTrack->SetChi2perNDF(-1);
-    }
+    aodTrack->SetChi2perNDF(Chi2perNDF(esdTrack));
+
 
     // set the DCA values to the AOD track
     aodTrack->SetPxPyPzAtDCA(pDCA[0],pDCA[1],pDCA[2]);
@@ -1256,6 +1252,12 @@ void AliAnalysisTaskESDfilter::ConvertGlobalConstrainedTracks(const AliESDEvent&
 
     aodTrack->SetFlags(esdTrack->GetStatus());
     aodTrack->SetTPCPointsF(esdTrack->GetTPCNclsF());
+
+    if(isHybridGC){
+      // only copy AOD information for hybrid, no duplicate information
+      aodTrack->ConvertAliPIDtoAODPID();
+      SetAODPID(esdTrack,aodTrack,detpid);
+    }
   } // end of loop on tracks
   
 }
