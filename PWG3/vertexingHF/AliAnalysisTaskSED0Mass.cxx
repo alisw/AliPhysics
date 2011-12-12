@@ -29,6 +29,7 @@
 #include <TClonesArray.h>
 #include <TCanvas.h>
 #include <TNtuple.h>
+#include <TTree.h>
 #include <TList.h>
 #include <TH1F.h>
 #include <TH2F.h>
@@ -59,6 +60,7 @@ ClassImp(AliAnalysisTaskSED0Mass)
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass():
 AliAnalysisTaskSE(),
   fOutputMass(0),
+  fOutputMassPt(0),
   fDistr(0),
   fNentries(0), 
   fCuts(0),
@@ -74,15 +76,22 @@ AliAnalysisTaskSE(),
   fIsSelectedCandidate(0),
   fFillVarHists(kTRUE),
   fSys(0),
-  fIsRejectSDDClusters(0)
+  fIsRejectSDDClusters(0),
+  fFillPtHist(kTRUE),
+  fFillImpParHist(kFALSE),
+  fWriteVariableTree(kFALSE),
+  fVariablesTree(0),
+  fCandidateVariables()
 {
   // Default constructor
+
 }
 
 //________________________________________________________________________
 AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0toKpi* cuts):
   AliAnalysisTaskSE(name),
-  fOutputMass(0), 
+  fOutputMass(0),
+  fOutputMassPt(0),
   fDistr(0),
   fNentries(0),
   fCuts(0),
@@ -98,7 +107,12 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fIsSelectedCandidate(0),
   fFillVarHists(kTRUE),
   fSys(0),
-  fIsRejectSDDClusters(0)
+  fIsRejectSDDClusters(0),
+  fFillPtHist(kTRUE),
+  fFillImpParHist(kFALSE),
+  fWriteVariableTree(kFALSE),
+  fVariablesTree(0),
+  fCandidateVariables()
 {
   // Default constructor
 
@@ -109,13 +123,17 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   // Output slot #1 writes into a TList container (mass with cuts)
   DefineOutput(1,TList::Class());  //My private output
   // Output slot #2 writes into a TList container (distributions)
-  if(fFillVarHists) DefineOutput(2,TList::Class());  //My private output
+  DefineOutput(2,TList::Class());  //My private output
   // Output slot #3 writes into a TH1F container (number of events)
   DefineOutput(3,TH1F::Class());  //My private output
   // Output slot #4 writes into a TList container (cuts)
   DefineOutput(4,AliRDHFCutsD0toKpi::Class());  //My private output
   // Output slot #5 writes Normalization Counter 
   DefineOutput(5,AliNormalizationCounter::Class());
+  // Output slot #6 stores the mass vs pt and impact parameter distributions
+  DefineOutput(6,TList::Class());  //My private output
+  // Output slot #7 keeps a tree of the candidate variables after track selection
+  DefineOutput(7,TTree::Class());  //My private outpu
 }
 
 //________________________________________________________________________
@@ -125,6 +143,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fOutputMass;
     fOutputMass = 0;
   }
+  if (fOutputMassPt) {
+    delete fOutputMassPt;
+    fOutputMassPt = 0;
+  }
   if (fDistr) {
     delete fDistr;
     fDistr = 0;
@@ -133,6 +155,9 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
     delete fCuts;
     fCuts = 0;
   }
+  for(Int_t i=0; i<5; i++){
+    if(fHistMassPtImpParTC[i]) delete fHistMassPtImpParTC[i];
+  }
   if (fNentries){
     delete fNentries;
     fNentries = 0;
@@ -140,6 +165,10 @@ AliAnalysisTaskSED0Mass::~AliAnalysisTaskSED0Mass()
   if(fCounter){
     delete fCounter;
     fCounter=0;
+  }
+  if(fVariablesTree){
+    delete fVariablesTree;
+    fVariablesTree = 0;
   }
  
 }  
@@ -175,11 +204,17 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fOutputMass->SetOwner();
   fOutputMass->SetName("listMass");
 
+  fOutputMassPt = new TList();
+  fOutputMassPt->SetOwner();
+  fOutputMassPt->SetName("listMassPt");
+
   fDistr = new TList();
   fDistr->SetOwner();
   fDistr->SetName("distributionslist");
 
   TString nameMass=" ",nameSgn27=" ",nameSgn=" ", nameBkg=" ", nameRfl=" ",nameMassNocutsS =" ",nameMassNocutsB =" ", namedistr=" ";
+  TString nameMassPt="", nameSgnPt="", nameBkgPt="", nameRflPt="";
+  Int_t nbins2dPt=60; Float_t binInPt=0., binFinPt=30.;
 
   for(Int_t i=0;i<fCuts->GetNPtBins();i++){
 
@@ -614,9 +649,49 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
     fOutputMass->Add(hnegpair);
   }
 
+
+  // 2D Pt distributions and impact parameter histograms
+  if(fFillPtHist) {
+
+    nameMassPt="histMassPt";
+    nameSgnPt="histSgnPt";
+    nameBkgPt="histBkgPt";
+    nameRflPt="histRflPt";
+
+    //MC signal
+    if(fReadMC){
+      TH2F* tmpStPt = new TH2F(nameSgnPt.Data(), "D^{0} invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.16484,nbins2dPt,binInPt,binFinPt);
+      TH2F *tmpSlPt=(TH2F*)tmpStPt->Clone();
+      tmpStPt->Sumw2();
+      tmpSlPt->Sumw2();
+      
+      //Reflection: histo filled with D0MassV1 which pass the cut (also) as D0bar and with D0bar which pass (also) the cut as D0
+      TH2F* tmpRtPt = new TH2F(nameRflPt.Data(), "Reflected signal invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+      TH2F* tmpBtPt = new TH2F(nameBkgPt.Data(), "Background invariant mass - MC; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+      tmpBtPt->Sumw2();
+      tmpRtPt->Sumw2();
+      
+      fOutputMassPt->Add(tmpStPt);
+      fOutputMassPt->Add(tmpRtPt);
+      fOutputMassPt->Add(tmpBtPt);
+
+      //       cout<<endl<<endl<<"***************************************"<<endl;
+      //       cout << " created and added to the list "<< nameSgnPt.Data() <<" "<< tmpStPt <<
+      // 	", "<<nameRflPt.Data() <<" " << tmpRtPt<<", "<<nameBkgPt.Data()<< " " << tmpBtPt <<endl;
+      //       cout<<"***************************************"<<endl<<endl;
+    }
+
+    TH2F* tmpMtPt = new TH2F(nameMassPt.Data(),"D^{0} invariant mass; M [GeV]; Entries; Pt[GeV/c]",200,1.5648,2.1648,nbins2dPt,binInPt,binFinPt);
+    tmpMtPt->Sumw2();      
+
+    fOutputMassPt->Add(tmpMtPt);
+  }
+
+  if(fFillImpParHist) CreateImpactParameterHistos();
+
   const char* nameoutput=GetOutputSlot(3)->GetContainer()->GetName();
 
-  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 17,-0.5,16.5);
+  fNentries=new TH1F(nameoutput, "Integral(1,2) = number of AODs *** Integral(2,3) = number of candidates selected with cuts *** Integral(3,4) = number of D0 selected with cuts *** Integral(4,5) = events with good vertex ***  Integral(5,6) = pt out of bounds", 18,-0.5,17.5);
 
   fNentries->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fNentries->GetXaxis()->SetBinLabel(2,"nCandSel(Cuts)");
@@ -640,16 +715,38 @@ void AliAnalysisTaskSED0Mass::UserCreateOutputObjects()
   fNentries->GetXaxis()->SetBinLabel(15,"N. of 0SMH");
   if(fSys==1) fNentries->GetXaxis()->SetBinLabel(16,"Nev in centr");
   if(fIsRejectSDDClusters) fNentries->GetXaxis()->SetBinLabel(17,"SDD-Cls Rej");
+  fNentries->GetXaxis()->SetBinLabel(18,"Phys.Sel.Rej");
   fNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   fCounter = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
   fCounter->Init();
 
+  //
+  // Output slot 7 : tree of the candidate variables after track selection
+  //
+  nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
+  fVariablesTree = new TTree(nameoutput,"Candidates variables tree");
+  Int_t nVar = 15;
+  fCandidateVariables = new Double_t [nVar];
+  TString * fCandidateVariableNames = new TString[nVar];
+  fCandidateVariableNames[0]="massD0"; fCandidateVariableNames[1]="massD0bar"; fCandidateVariableNames[2]="pt";
+  fCandidateVariableNames[3]="dca"; fCandidateVariableNames[4]="costhsD0"; fCandidateVariableNames[5]="costhsD0bar";
+  fCandidateVariableNames[6]="ptk"; fCandidateVariableNames[7]="ptpi";
+  fCandidateVariableNames[8]="d0k"; fCandidateVariableNames[9]="d0pi"; fCandidateVariableNames[10]="d0xd0";
+  fCandidateVariableNames[11]="costhp"; fCandidateVariableNames[12]="costhpxy"; 
+  fCandidateVariableNames[13]="lxy";  fCandidateVariableNames[14]="specialcuts";
+  for(Int_t ivar=0; ivar<nVar; ivar++){
+    fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/d",fCandidateVariableNames[ivar].Data()));
+  }
+
   // Post the data
   PostData(1,fOutputMass);
-  if(fFillVarHists) PostData(2,fDistr);
+  PostData(2,fDistr);
   PostData(3,fNentries);
   PostData(5,fCounter);  
+  PostData(6,fOutputMassPt);
+  PostData(7,fVariablesTree);
+
   return;
 }
 
@@ -751,6 +848,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     if(fCuts->GetWhyRejection()==1) // rejected for pileup
       fNentries->Fill(13);
     if(fSys==1 && (fCuts->GetWhyRejection()==2 || fCuts->GetWhyRejection()==3)) fNentries->Fill(15);
+    if(fCuts->GetWhyRejection()==7) fNentries->Fill(17);
     return;
   }
 
@@ -794,7 +892,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
     AliAODRecoDecayHF2Prong *d = (AliAODRecoDecayHF2Prong*)inputArray->UncheckedAt(iD0toKpi);
  
     if(d->GetSelectionMap()) if(!d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)){
-	fNentries->Fill(2);	
+	fNentries->Fill(2);
 	continue; //skip the D0 from Dstar
       }
 
@@ -813,7 +911,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
       }
       Int_t ptbin=fCuts->PtBin(d->Pt());
       if(ptbin==-1) {fNentries->Fill(4); continue;} //out of bounds
-      fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kCandidate,aod); //selected
+      fIsSelectedCandidate=fCuts->IsSelected(d,AliRDHFCuts::kAll,aod); //selected
       if(fFillVarHists) {
 	//if(!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate)) {
 	fDaughterTracks.AddAt((AliAODTrack*)d->GetDaughter(0),0);
@@ -829,7 +927,7 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
 	FillVarHists(aod,d,mcArray,fCuts,fDistr);
       }
 
-      FillMassHists(d,mcArray,fCuts,fOutputMass);
+      FillMassHists(d,mcArray,mcHeader,fCuts,fOutputMass);
     }
   
     fDaughterTracks.Clear();
@@ -839,9 +937,12 @@ void AliAnalysisTaskSED0Mass::UserExec(Option_t */*option*/)
   fCounter->StoreCandidates(aod,nSelectedtight,kFALSE);  
   // Post the data
   PostData(1,fOutputMass);
-  if(fFillVarHists) PostData(2,fDistr);
+  PostData(2,fDistr);
   PostData(3,fNentries);
   PostData(5,fCounter);
+  PostData(6,fOutputMassPt);
+  PostData(7,fVariablesTree);
+
   return;
 }
 
@@ -882,9 +983,10 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
 
   Double_t invmasscut=0.03;
 
-  TString fillthispi="",fillthisK="",fillthis="";
+  TString fillthispi="",fillthisK="",fillthis="", fillthispt="";
 
   Int_t ptbin=cuts->PtBin(part->Pt());
+  Double_t pt = part->Pt();
 
   Double_t dz1[2],dz2[2],covar1[3],covar2[3];//,d0xd0proper,errd0xd0proper;
   dz1[0]=-99; dz2[0]=-99;
@@ -981,14 +1083,18 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     //no mass cut ditributions: mass
     fillthis="hMassS_";
     fillthis+=ptbin;
+    fillthispt="histSgnPt";
       
     if ((fReadMC && ((AliAODMCParticle*)arrMC->At(lab))->GetPdgCode() == 421)
 	|| (!fReadMC && (isSelectedPID==1 || isSelectedPID==3))){//D0
       ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
+      if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0,pt);
     }
     else { //D0bar
-      if(fReadMC || (!fReadMC && isSelectedPID > 1))
+      if(fReadMC || (!fReadMC && isSelectedPID > 1)){
 	((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
+	if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0bar,pt);
+      }
     }
 
     //apply cut on invariant mass on the pair
@@ -1141,9 +1247,16 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
     //no mass cut distributions: mass, ptbis
     fillthis="hMassB_";
     fillthis+=ptbin;
+    fillthispt="histBkgPt";
 
-    if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
-    if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
+    if (!fCutOnDistr || (fCutOnDistr && (fIsSelectedCandidate==1 || fIsSelectedCandidate==3))) {
+      ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0);
+      if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0,pt);
+    }
+    if (!fCutOnDistr || (fCutOnDistr && fIsSelectedCandidate>1)) {
+      ((TH1F*)listout->FindObject(fillthis))->Fill(minvD0bar);
+      if(fFillPtHist && fReadMC) ((TH2F*)fOutputMassPt->FindObject(fillthispt))->Fill(minvD0bar,pt);
+    }
     if(fSys==0){
       fillthis="hptB1prongnoMcut_";
       fillthis+=ptbin;
@@ -1367,9 +1480,9 @@ void AliAnalysisTaskSED0Mass::FillVarHists(AliAODEvent* aod,AliAODRecoDecayHF2Pr
   
   return;
 }
-//____________________________________________________________________________
 
-void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliRDHFCutsD0toKpi* cuts, TList *listout){
+//____________________________________________________________________________
+void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClonesArray *arrMC, AliAODMCHeader *mcHeader, AliRDHFCutsD0toKpi* cuts, TList *listout){
   //
   // function used in UserExec to fill mass histograms:
   //
@@ -1378,6 +1491,28 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   Double_t mPDG=TDatabasePDG::Instance()->GetParticle(421)->Mass();
 
   //cout<<"is selected = "<<fIsSelectedCandidate<<endl;
+
+  // Fill candidate variable Tree (track selection, no candidate selection)
+  if( fWriteVariableTree && !part->HasBadDaughters()
+      && fCuts->AreDaughtersSelected(part) && fCuts->IsSelectedPID(part) ){
+    fCandidateVariables[0] = part->InvMassD0();
+    fCandidateVariables[1] = part->InvMassD0bar();
+    fCandidateVariables[2] = part->Pt();
+    fCandidateVariables[3] = part->GetDCA();
+    Double_t ctsD0=0. ,ctsD0bar=0.; part->CosThetaStarD0(ctsD0,ctsD0bar);
+    fCandidateVariables[4] = ctsD0;
+    fCandidateVariables[5] = ctsD0bar;
+    fCandidateVariables[6] = part->Pt2Prong(0);
+    fCandidateVariables[7] = part->Pt2Prong(1);
+    fCandidateVariables[8] = part->Getd0Prong(0);
+    fCandidateVariables[9] = part->Getd0Prong(1);
+    fCandidateVariables[10] = part->Prodd0d0();
+    fCandidateVariables[11] = part->CosPointingAngle();
+    fCandidateVariables[12] = part->CosPointingAngleXY();
+    fCandidateVariables[13] = part->NormalizedDecayLengthXY();
+    fCandidateVariables[14] = fCuts->IsSelectedSpecialCuts(part);
+    fVariablesTree->Fill();
+  }
 
   //cout<<"check cuts = "<<endl;
   //cuts->PrintAll();
@@ -1393,6 +1528,13 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   Double_t invmassD0 = part->InvMassD0(), invmassD0bar = part->InvMassD0bar();
   //printf("SELECTED\n");
   Int_t ptbin=cuts->PtBin(part->Pt());
+  Double_t pt = part->Pt();
+  
+  Double_t impparXY=part->ImpParXY()*10000.;
+  Double_t trueImpParXY=0.;
+  Double_t arrayForSparse[3]={invmassD0,pt,impparXY};
+  Double_t arrayForSparseTrue[3]={invmassD0,pt,trueImpParXY};
+
 
   // AliAODTrack *prong=(AliAODTrack*)fDaughterTracks.UncheckedAt(0);
   // if(!prong) {
@@ -1420,9 +1562,10 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   //   }
   // }
  
-  TString fillthis="";
+  TString fillthis="", fillthispt="", fillthismasspt="";
   Int_t pdgDgD0toKpi[2]={321,211};
   Int_t labD0=-1;
+  Bool_t isPrimary=kTRUE;
   if (fReadMC) labD0 = part->MatchToMC(421,arrMC,2,pdgDgD0toKpi); //return MC particle label if the array corresponds to a D0, -1 if not (cf. AliAODRecoDecay.cxx)
 
   //count candidates selected by cuts
@@ -1431,6 +1574,9 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
   if (fReadMC && labD0>=0) fNentries->Fill(2);
 
   if ((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2) { //D0
+
+    arrayForSparse[0]=invmassD0; arrayForSparse[2]=impparXY;
+
     if(fReadMC){
       if(labD0>=0) {
 	if(fArray==1) cout<<"LS signal ERROR"<<endl;
@@ -1438,11 +1584,30 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
 	//	cout<<"pdg = "<<pdgD0<<endl;
+
+	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+	if(!isPrimary)
+	  trueImpParXY=GetTrueImpactParameter(mcHeader,arrMC,partD0)*10000.;
+	arrayForSparseTrue[0]=invmassD0; arrayForSparseTrue[2]=trueImpParXY;
+
 	if (pdgD0==421){ //D0
 	  //	  cout<<"Fill S with D0"<<endl;
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+
+	  if(fFillPtHist){ 
+	    fillthismasspt="histSgnPt";
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	  }
+	  if(fFillImpParHist){ 
+	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
+	    else {
+	      fHistMassPtImpParTC[2]->Fill(arrayForSparse);
+	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
+	    }
+	  }
+
 	  if(fSys==0){
 	    if(TMath::Abs(invmassD0 - mPDG) < 0.027 && fFillVarHists){
 	      fillthis="histSgn27_";
@@ -1454,11 +1619,26 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+
+	  if(fFillPtHist){ 
+	    fillthismasspt="histRflPt";
+	    //	    cout << " Filling "<<fillthismasspt<<" D0bar"<<endl;	    
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	  }
+
 	}
       } else {//background
 	fillthis="histBkg_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+
+	if(fFillPtHist){ 
+	  fillthismasspt="histBkgPt";
+	  //	  cout << " Filling "<<fillthismasspt<<" D0bar"<<endl;
+	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+	}
+	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse);
+
       }
 
     }else{
@@ -1468,16 +1648,36 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 
       //      printf("Fill mass with D0");
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0);
+
+      if(fFillPtHist){ 
+	fillthismasspt="histMassPt";
+	//	cout<<"Filling "<<fillthismasspt<<endl;
+	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0,pt);
+      }
+      if(fFillImpParHist) {
+	//	cout << "Filling fHistMassPtImpParTC[0]"<<endl;
+	fHistMassPtImpParTC[0]->Fill(arrayForSparse);
+      }
+
     }
      
   }
   if (fIsSelectedCandidate>1 && (fFillOnlyD0D0bar==0 || fFillOnlyD0D0bar==2)) { //D0bar
+
+    arrayForSparse[0]=invmassD0bar; arrayForSparse[2]=impparXY;
+
     if(fReadMC){
       if(labD0>=0) {
 	if(fArray==1) cout<<"LS signal ERROR"<<endl;
 	AliAODMCParticle *partD0 = (AliAODMCParticle*)arrMC->At(labD0);
 	Int_t pdgD0 = partD0->GetPdgCode();
 	//	cout<<" pdg = "<<pdgD0<<endl;
+
+	if(CheckOrigin(arrMC,partD0)==5) isPrimary=kFALSE;
+	if(!isPrimary)
+	  trueImpParXY=GetTrueImpactParameter(mcHeader,arrMC,partD0)*10000.;
+	arrayForSparseTrue[0]=invmassD0bar; arrayForSparseTrue[2]=trueImpParXY;
+
 	if (pdgD0==-421){ //D0bar
 	  fillthis="histSgn_";
 	  fillthis+=ptbin;
@@ -1488,22 +1688,55 @@ void AliAnalysisTaskSED0Mass::FillMassHists(AliAODRecoDecayHF2Prong *part, TClon
 	  //   ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
 	  // }
 
+	  if(fFillPtHist){ 
+	    fillthismasspt="histSgnPt";
+	    //	    cout<<" Filling "<< fillthismasspt << endl;
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	  }
+	  if(fFillImpParHist){ 
+	    //	    cout << " Filling impact parameter thnsparse"<<endl;
+	    if(isPrimary) fHistMassPtImpParTC[1]->Fill(arrayForSparse);
+	    else {
+	      fHistMassPtImpParTC[2]->Fill(arrayForSparse);
+	      fHistMassPtImpParTC[3]->Fill(arrayForSparseTrue);
+	    }
+	  }
 	  
 	} else{
 	  fillthis="histRfl_";
 	  fillthis+=ptbin;
 	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+	  if(fFillPtHist){ 
+	    fillthismasspt="histRflPt";
+	    //	    cout << " Filling "<<fillthismasspt<<endl;
+	    ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	  }
 	}
       } else {//background or LS
 	fillthis="histBkg_";
 	fillthis+=ptbin;
 	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassD0bar);
+
+	if(fFillPtHist){ 
+	  fillthismasspt="histBkgPt";
+	  //	  cout<<" Filling "<< fillthismasspt << endl;
+	  ((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+	}
+	if(fFillImpParHist) fHistMassPtImpParTC[4]->Fill(arrayForSparse);
+
       }
     }else{
       fillthis="histMass_";
       fillthis+=ptbin;
       //      printf("Fill mass with D0bar");
       ((TH1F*)listout->FindObject(fillthis))->Fill(invmassD0bar);
+
+      if(fFillPtHist){ 
+	fillthismasspt="histMassPt";
+	//	cout<<" Filling "<< fillthismasspt << endl;
+	((TH2F*)(fOutputMassPt->FindObject(fillthismasspt)))->Fill(invmassD0bar,pt);
+      }
+      if(fFillImpParHist) fHistMassPtImpParTC[0]->Fill(arrayForSparse);
 
     }
   }
@@ -1574,6 +1807,12 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
     printf("ERROR: fOutputMass not available\n");
     return;
   }
+  fOutputMassPt = dynamic_cast<TList*> (GetOutputData(6));
+  if ((fFillPtHist || fFillImpParHist) && !fOutputMassPt) {
+    printf("ERROR: fOutputMass not available\n");
+    return;
+  }
+
   if(fFillVarHists){
     fDistr = dynamic_cast<TList*> (GetOutputData(2));
     if (!fDistr) {
@@ -1670,3 +1909,115 @@ void AliAnalysisTaskSED0Mass::Terminate(Option_t */*option*/)
   return;
 }
 
+
+//________________________________________________________________________
+void AliAnalysisTaskSED0Mass::CreateImpactParameterHistos(){
+  // Histos for impact paramter study
+
+  Int_t nmassbins=200; 
+  Double_t fLowmasslimit=1.5648, fUpmasslimit=2.1648;
+  Int_t fNImpParBins=400;
+  Double_t fLowerImpPar=-2000., fHigherImpPar=2000.;
+  Int_t nbins[3]={nmassbins,200,fNImpParBins};
+  Double_t xmin[3]={fLowmasslimit,0.,fLowerImpPar};
+  Double_t xmax[3]={fUpmasslimit,20.,fHigherImpPar};
+  
+
+  fHistMassPtImpParTC[0]=new THnSparseF("hMassPtImpParAll",
+					"Mass vs. pt vs.imppar - All",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[1]=new THnSparseF("hMassPtImpParPrompt",
+					"Mass vs. pt vs.imppar - promptD",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[2]=new THnSparseF("hMassPtImpParBfeed",
+					"Mass vs. pt vs.imppar - DfromB",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[3]=new THnSparseF("hMassPtImpParTrueBfeed",
+					"Mass vs. pt vs.true imppar -DfromB",
+					3,nbins,xmin,xmax);
+  fHistMassPtImpParTC[4]=new THnSparseF("hMassPtImpParBkg",
+				        "Mass vs. pt vs.imppar - backgr.",
+					3,nbins,xmin,xmax);
+
+  for(Int_t i=0; i<5;i++){
+    fOutputMassPt->Add(fHistMassPtImpParTC[i]);
+  }
+}
+
+//_________________________________________________________________________________________________
+Float_t AliAnalysisTaskSED0Mass::GetTrueImpactParameter(AliAODMCHeader *mcHeader, TClonesArray* arrayMC, AliAODMCParticle *partD0) const {
+  // true impact parameter calculation
+
+  printf(" AliAnalysisTaskSED0MassV1::GetTrueImpactParameter() \n");
+
+  Double_t vtxTrue[3];
+  mcHeader->GetVertex(vtxTrue);
+  Double_t origD[3];
+  partD0->XvYvZv(origD);
+  Short_t charge=partD0->Charge();
+  Double_t pXdauTrue[2],pYdauTrue[2],pZdauTrue[2];
+  for(Int_t iDau=0; iDau<2; iDau++){
+    pXdauTrue[iDau]=0.;
+    pYdauTrue[iDau]=0.;
+    pZdauTrue[iDau]=0.;
+  }
+
+  //  Int_t nDau=partD0->GetNDaughters();
+  Int_t labelFirstDau = partD0->GetDaughter(0); 
+
+  for(Int_t iDau=0; iDau<2; iDau++){
+    Int_t ind = labelFirstDau+iDau;
+    AliAODMCParticle* part = dynamic_cast<AliAODMCParticle*>(arrayMC->At(ind));
+    if(!part) continue;
+    Int_t pdgCode = TMath::Abs( part->GetPdgCode() );
+    if(!part){
+      AliError("Daughter particle not found in MC array");
+      return 99999.;
+    } 
+    if(pdgCode==211 || pdgCode==321){
+      pXdauTrue[iDau]=part->Px();
+      pYdauTrue[iDau]=part->Py();
+      pZdauTrue[iDau]=part->Pz();
+    }
+  }
+  
+  Double_t d0dummy[2]={0.,0.};
+  AliAODRecoDecayHF aodDzeroMC(vtxTrue,origD,2,charge,pXdauTrue,pYdauTrue,pZdauTrue,d0dummy);
+  return aodDzeroMC.ImpParXY();
+
+}
+
+//_________________________________________________________________________________________________
+Int_t AliAnalysisTaskSED0Mass::CheckOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const {		
+  //
+  // checking whether the mother of the particles come from a charm or a bottom quark
+  //
+  printf(" AliAnalysisTaskSED0MassV1::CheckOrigin() \n");
+	
+  Int_t pdgGranma = 0;
+  Int_t mother = 0;
+  mother = mcPartCandidate->GetMother();
+  Int_t istep = 0;
+  Int_t abspdgGranma =0;
+  Bool_t isFromB=kFALSE;
+  Bool_t isQuarkFound=kFALSE;
+  while (mother >0 ){
+    istep++;
+    AliAODMCParticle* mcGranma = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mother));
+    if (mcGranma){
+      pdgGranma = mcGranma->GetPdgCode();
+      abspdgGranma = TMath::Abs(pdgGranma);
+      if ((abspdgGranma > 500 && abspdgGranma < 600) || (abspdgGranma > 5000 && abspdgGranma < 6000)){
+	isFromB=kTRUE;
+      }
+      if(abspdgGranma==4 || abspdgGranma==5) isQuarkFound=kTRUE;
+      mother = mcGranma->GetMother();
+    }else{
+      AliError("Failed casting the mother particle!");
+      break;
+    }
+  }
+  
+  if(isFromB) return 5;
+  else return 4;
+}
