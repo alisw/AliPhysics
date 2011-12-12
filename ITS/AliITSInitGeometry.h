@@ -18,7 +18,7 @@ $Id$
 class AliITSgeom;
 
 typedef enum {
-  kvDefault=0,kv11=11,kv11Hybrid=110
+  kvDefault=0,kv11=11
 } AliITSVersion_t;
 
 class TArrayD;
@@ -91,19 +91,8 @@ class AliITSInitGeometry : public TObject{
 			   Int_t cpn2)const;
     // Given module number, find copy numbers.
     void RecodeDetectorv11(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-			   Int_t &cpn2);
-    // Decode module number into old layer, ladder, and detector numbers
-    void DecodeDetectorv11Hybrid(Int_t &mod,Int_t lay,Int_t cpn0,Int_t cpn1,
-                                 Int_t cpn2)const;
-    // find module number by layer, and copy numbers
-    void RecodeDetectorv11Hybrid(Int_t mod,Int_t &cpn0,Int_t &cpn1,
-                                    Int_t &cpn2);
-    // Given module number, find copy numbers.
-    void DecodeDetectorLayersv11Hybrid(Int_t mod,Int_t &lay,Int_t &lad,
-                                    Int_t &det);
-		   
+			   Int_t &cpn2);		   
     // Virtual MC code 
-    Bool_t InitAliITSgeomV11Hybrid(AliITSgeom *geom);
     Bool_t InitAliITSgeomV11(AliITSgeom *geom);
     Bool_t GetTransformation(const TString &volumePath,TGeoHMatrix &mat);
     Bool_t GetShape(const TString &volumePath,TString &shapeType,TArrayD &par);
