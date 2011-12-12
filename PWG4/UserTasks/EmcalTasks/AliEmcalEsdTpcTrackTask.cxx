@@ -1,6 +1,6 @@
 // $Id$
 //
-// Task to constrain TPC tracks to vertex
+// Task to constrain TPC tracks to SPD vertex.
 //
 //
 
@@ -22,7 +22,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() :
   fEsdEv(0),
   fTracks(0)
 {
-  // Constructor
+  // Constructor.
 }
 
 //________________________________________________________________________
@@ -33,8 +33,8 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) :
   fEsdEv(0),
   fTracks(0)
 {
-  // Constructor
-  fBranchNames = "ESD:SPDVertex.,Tracks";
+  // Constructor.
+  fBranchNames = "ESD:AliESDHeader.,AliESDRun.,SPDVertex.,Tracks";
 }
 
 //________________________________________________________________________
@@ -48,7 +48,7 @@ AliEmcalEsdTpcTrackTask::~AliEmcalEsdTpcTrackTask()
 //________________________________________________________________________
 void AliEmcalEsdTpcTrackTask::UserCreateOutputObjects()
 {
-  // Create histograms
+  // Create histograms.
 
   fTracks = new TClonesArray("AliESDtrack");
   fTracks->SetName(fTracksName);
@@ -84,14 +84,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
   am->LoadBranch("AliESDRun.");
   am->LoadBranch("AliESDHeader.");
   if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-    const AliESDRun *erun = fEsdEv->GetESDRun();
-    AliMagF *field = AliMagF::CreateFieldMap(erun->GetCurrentL3(),
-                                             erun->GetCurrentDip(),
-                                             AliMagF::kConvLHC,
-                                             kFALSE,
-                                             erun->GetBeamEnergy(),
-                                             erun->GetBeamType());
-    TGeoGlobalMagField::Instance()->SetField(field);
+    fEsdEv->InitMagneticField();
   }
 
   am->LoadBranch("SPDVertex.");
