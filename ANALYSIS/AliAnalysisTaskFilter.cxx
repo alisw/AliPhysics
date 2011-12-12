@@ -111,14 +111,16 @@ AliAnalysisTaskFilter& AliAnalysisTaskFilter::operator=(const AliAnalysisTaskFil
 	// Assignment
 	//
 
-	AliAnalysisTask::operator=(other);
-	fDebug        = other.fDebug;
-	fEntry        = other.fEntry;
-	fInputEvent   = other.fInputEvent;
-	fInputHandler = other.fInputHandler;
-	fOutputESDfriend = other.fOutputESDfriend;
-	fTreeEF        = other.fTreeEF;    
-	fInputESDfriend = other.fInputESDfriend;
+	if (&other != this) {
+		AliAnalysisTask::operator=(other);
+		fDebug        = other.fDebug;
+		fEntry        = other.fEntry;
+		fInputEvent   = other.fInputEvent;
+		fInputHandler = other.fInputHandler;
+		fOutputESDfriend = other.fOutputESDfriend;
+		fTreeEF        = other.fTreeEF;    
+		fInputESDfriend = other.fInputESDfriend;
+	}
 	return *this;
 }
 

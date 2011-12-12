@@ -59,9 +59,11 @@ AliAnalysisFilter::AliAnalysisFilter(const AliAnalysisFilter& obj):
 AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
 {
 // Assignment
-    TNamed::operator=(other);
-    fCuts = other.fCuts;
-    return *this;
+   if (&other != this) {
+	   TNamed::operator=(other);
+	   fCuts = other.fCuts;
+   }
+   return *this;
    }
    
 UInt_t AliAnalysisFilter::IsSelected(TObject* obj)
