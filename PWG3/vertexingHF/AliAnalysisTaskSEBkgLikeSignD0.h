@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskSEBkgLikeSignD0_H
-#define AliAnalysisTaskSEBkgLikeSignD0_H
+#ifndef ALIANALYSISTASKSEBKGLIKESIGND0_H
+#define ALIANALYSISTASKSEBKGLIKESIGND0_H
 
 /* Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */

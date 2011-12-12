@@ -1,5 +1,5 @@
-#ifndef AliAODHFUtil_H
-#define AliAODHFUtil_H
+#ifndef ALIAODHFUTIL_H
+#define ALIAODHFUTIL_H
 
 /* Copyright(c) 1998-2011, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
