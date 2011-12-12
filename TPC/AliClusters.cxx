@@ -90,6 +90,7 @@ AliClusters & AliClusters::operator =(const AliClusters & param)
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
   fNclusters=param.fNclusters;
   return (*this);
 }

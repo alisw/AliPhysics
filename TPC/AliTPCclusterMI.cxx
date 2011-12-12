@@ -76,6 +76,7 @@ AliTPCclusterMI & AliTPCclusterMI::operator = (const AliTPCclusterMI & cluster)
   // assignment operator
   // 
   //  AliInfo("Asignment operator\n");
+  if (this == &cluster) return (*this);
 
   (AliCluster&)(*this) = (AliCluster&)cluster;
   fQ    = cluster.fQ;

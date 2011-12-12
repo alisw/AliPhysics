@@ -103,6 +103,7 @@ AliTPCCalROC & AliTPCCalROC::operator =(const AliTPCCalROC & param)
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
   fData=param.fData;
   return (*this);
 }

@@ -85,6 +85,8 @@ AliTPCParamSR & AliTPCParamSR::operator =(const AliTPCParamSR & param)
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
+
   fZLength=param.fZLength;
   return (*this);
 }

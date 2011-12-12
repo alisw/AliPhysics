@@ -314,7 +314,7 @@ AliTPCclusterKr &AliTPCclusterKr::operator = (const AliTPCclusterKr & param)
 
 
   // 
-
+  if (this == &param) return (*this);
 
   (AliCluster&)(*this) = (AliCluster&)param;
 

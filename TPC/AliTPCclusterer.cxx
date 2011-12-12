@@ -50,7 +50,9 @@ AliTPCclusterer & AliTPCclusterer::operator =(const AliTPCclusterer & param)
   //
   // assignment operator - dummy
   //
-    fPar = param.fPar;
+  if (this == &param) return (*this);
+
+  fPar = param.fPar;
   return (*this);
 }
 //____________________________________________________

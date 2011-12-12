@@ -95,7 +95,9 @@ AliDigits::AliDigits(const AliDigits& digits)
 
 AliDigits & AliDigits::operator =(const AliDigits & digits)
 {
- //assignment operator
+  //assignment operator
+  if (this == &digits) return (*this); 
+
   fNrows = digits.fNrows;
   fNcols = digits.fNcols;
   if (fElements) delete fElements;

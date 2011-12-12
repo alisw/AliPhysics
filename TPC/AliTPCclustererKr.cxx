@@ -339,6 +339,8 @@ AliTPCclustererKr & AliTPCclustererKr::operator = (const AliTPCclustererKr & par
   //
   // assignment operator
   //
+  if (this == &param) return (*this);
+  
   fParam = param.fParam;
   fRecoParam = param.fRecoParam;
   fRawData = param.fRawData;

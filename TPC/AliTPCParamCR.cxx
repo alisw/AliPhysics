@@ -74,7 +74,9 @@ AliTPCParamCR & AliTPCParamCR::operator =(const AliTPCParamCR & param)
   //
   // assignment operator - dummy
   //
-   fFacSigma= param.fFacSigma;
+  if (this == &param) return (*this);
+
+  fFacSigma= param.fFacSigma;
   return (*this); 
 }
 AliTPCParamCR::~AliTPCParamCR()

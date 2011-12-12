@@ -145,6 +145,8 @@ AliTPCLaserTracks & AliTPCLaserTracks::operator=(const AliTPCLaserTracks & param
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
+
   fPhi=param.fPhi;
   return (*this);
 }

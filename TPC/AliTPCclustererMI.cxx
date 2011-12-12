@@ -215,6 +215,8 @@ AliTPCclustererMI & AliTPCclustererMI::operator =(const AliTPCclustererMI & para
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
+
   fMaxBin=param.fMaxBin;
   return (*this);
 }

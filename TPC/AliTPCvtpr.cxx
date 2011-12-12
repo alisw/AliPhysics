@@ -93,6 +93,8 @@ AliTPCvtpr::~AliTPCvtpr()
 
 AliTPCvtpr & AliTPCvtpr::operator = (const AliTPCvtpr & param)
 {
+  if (this == &param) return (*this);
+
   fAdc  = param.fAdc;
   fTime = param.fTime;
   fPad  = param.fPad;

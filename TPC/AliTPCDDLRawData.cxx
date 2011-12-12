@@ -47,6 +47,7 @@ AliTPCDDLRawData::AliTPCDDLRawData(const AliTPCDDLRawData &source):
 
 AliTPCDDLRawData& AliTPCDDLRawData::operator=(const AliTPCDDLRawData &source){
   //Assigment operator
+  if (this == &source) return (*this);
   fVerbose=source.fVerbose;
   return *this;
 }

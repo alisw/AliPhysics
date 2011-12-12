@@ -55,6 +55,8 @@ AliTPCFast & AliTPCFast::operator =(const AliTPCFast & param)
   //
   // assignment operator - dummy
   //
+  if (this == &param) return (*this);
+
   fParam=param.fParam;
   return (*this);
 }

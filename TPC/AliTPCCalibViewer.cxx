@@ -160,6 +160,8 @@ AliTPCCalibViewer & AliTPCCalibViewer::operator =(const AliTPCCalibViewer & para
    // assignment operator - dummy
    // not yet working!!!
    //
+  if (this == &param) return (*this);
+
    fTree = param.fTree;
    fTreeMustBeDeleted = param.fTreeMustBeDeleted;
    //fFile = new TFile(*(param.fFile));

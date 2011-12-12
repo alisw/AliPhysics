@@ -396,6 +396,8 @@ AliTPCROC & AliTPCROC::operator =(const AliTPCROC & roc)
   //
   // assignment operator - dummy
   //
+  if (this == &roc) return (*this);
+
   fZLength = roc.fZLength;
   return (*this);
 }

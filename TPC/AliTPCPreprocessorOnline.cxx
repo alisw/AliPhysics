@@ -104,6 +104,8 @@ AliTPCPreprocessorOnline & AliTPCPreprocessorOnline::operator =(const AliTPCPrep
    // assignment operator - dummy
    // not yet working!!!
    //
+  if (this == &param) return (*this);
+
    fMap = param.fMap;
    std::cout << "AliTPCPreprocessorOnline's assignment operator called, NOT WORKING!!!" << std::endl;
    return (*this);

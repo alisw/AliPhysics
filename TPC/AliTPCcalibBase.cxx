@@ -140,6 +140,8 @@ AliTPCcalibBase &AliTPCcalibBase::operator=(const AliTPCcalibBase&calib){
   //
   // operator=
   //
+  if (this == &calib) return (*this);
+
   ((TNamed *)this)->operator=(calib);
   fDebugStreamer=0;
   fStreamLevel=calib.fStreamLevel;

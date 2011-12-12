@@ -60,7 +60,8 @@ AliDigitsArray & AliDigitsArray::operator =(const AliDigitsArray & param)
 {
   //
   // dummy
-  //
+  // 
+ if (this == &param) return (*this); 
  fParam = param.fParam;
  return (*this);
 }
