@@ -378,8 +378,30 @@ AliMUONTriggerIO::ReadLUT(const char* lutFileToRead, AliMUONTriggerLut& lut)
     ReadLocalLUT(lut,fRegionalTrigger.LocalBoardId(i),flut);
   }
   
+  // 
+  // 1st/2nd cut code   pt cut [GeV/c]
+  //
+  // 0                 0.5 (a.k.a. Apt)
+  // 1                 1.0 (a.k.a. Lpt)
+  // 2                 1.7 (a.k.a. Hpt)
+  // 3                 4.2 (a.k.a. infinity)
+  // 4                 free
+  // .
+  // .
+  // .
+  //15                 default (for backward compatibility)
+
+  UChar_t lutCode = 0xFF;
+
+  if (!fread(&lutCode,1,1,flut)) {
+    AliWarning("No LUT info in the file (old version)");
+  }
+  AliInfo(Form("LUT code: 0x%02x",lutCode));
+
   fclose(flut);
-  
+
+  lut.SetLutCode(lutCode);
+
   return kTRUE;
   
 }

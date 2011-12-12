@@ -316,7 +316,50 @@ Int_t AliMUONTriggerLut::GetMask(Int_t ystrip) const
     return (Int_t)(1<<ystrip);
 }
 
+//----------------------------------------------------------------------
+void AliMUONTriggerLut::SetLutCode(const UChar_t lutCode) 
+{
+/// Set the LUT code for the pair of cuts
+/// see AliMUONTriggerIO::ReadLUT for the definitions
+  
+  if (!fMap) {
+    AliWarning("Nothing registered in the map ?... ");
+    return;
+  }
+  TH3* h = static_cast<TH3*>(fMap->GetValue("LptPlus"));
+  h->SetTitle(Form("LptPlus 0x%02x",lutCode));
+
+}
 
 
 
+//----------------------------------------------------------------------
+void AliMUONTriggerLut::PrintLutCode() 
+{
+/// Print out the LUT code for the pair of cuts
+/// see AliMUONTriggerIO::ReadLUT for the definitions
 
+  TString lutCode = fLptPlus->GetTitle();
+  lutCode.Remove(0,8);
+  if (lutCode.Length() == 0) {
+    AliInfo("No code stored (older version).");
+  } else {
+    AliInfo(lutCode.Data());
+
+    AliInfo("---------------------------------");
+    AliInfo("1st/2nd cut code   pt cut [GeV/c]");
+    AliInfo("                                 ");
+    AliInfo(" 0                 0.5 (a.k.a. Apt)");
+    AliInfo(" 1                 1.0 (a.k.a. Lpt)");
+    AliInfo(" 2                 1.7 (a.k.a. Hpt)");
+    AliInfo(" 3                 4.2 (a.k.a. infinity)");
+    AliInfo(" 4                 free");
+    AliInfo(" .");
+    AliInfo(" .");
+    AliInfo(" .");
+    AliInfo("15 default (for backward compatibility)");
+    AliInfo("---------------------------------------");
+
+  }
+
+}

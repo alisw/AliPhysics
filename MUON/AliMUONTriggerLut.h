@@ -34,6 +34,10 @@ class AliMUONTriggerLut : public TNamed
   void SetContent(const char* hname, Int_t icirc, UChar_t istripX, 
                   UChar_t idev, Short_t value); 
 
+  void SetLutCode(const UChar_t lutCode);
+
+  void PrintLutCode();
+  
  private:
   
     /// Not implemented copy constructor
@@ -48,7 +52,7 @@ class AliMUONTriggerLut : public TNamed
   Int_t GetMask(Int_t ystrip) const;
 
   void RegisterHistos();
-  
+
 private:
   TH3 *fLptPlus; ///< 3-d histogram with 234x32x31 bins Low pt Plus  
   TH3 *fLptMinu; ///< 3-d histogram with 234x32x31 bins Low pt Minus
