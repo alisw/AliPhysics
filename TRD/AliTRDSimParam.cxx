@@ -236,6 +236,8 @@ AliTRDSimParam &AliTRDSimParam::operator=(const AliTRDSimParam &p)
     return *this;
   }
 
+  Init();
+
   fGasGain          = p.fGasGain;
   fNoise            = p.fNoise;
   fChipGain         = p.fChipGain;
