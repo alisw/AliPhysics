@@ -42,8 +42,8 @@ class AliHFAfterBurner : public TObject
   void SetEventPlane();
   void SetEventPlaneMethod(Int_t method);
 
-  Bool_t GetIsSignal(){return fSignal;}
-  Double_t GetEventPlane(){return fEventPlane;}
+  Bool_t GetIsSignal() const {return fSignal;}
+  Double_t GetEventPlane() const {return fEventPlane;}
  private:
   AliHFAfterBurner(const AliHFAfterBurner &source);
   AliHFAfterBurner& operator=(const AliHFAfterBurner& source); 
