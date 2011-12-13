@@ -491,14 +491,14 @@ void AliESDEvent::ResetStdContent()
   if(fEMCALTrigger)fEMCALTrigger->DeAllocate(); 
   if(fSPDPileupVertices)fSPDPileupVertices->Delete();
   if(fTrkPileupVertices)fTrkPileupVertices->Delete();
-  if(fTracks)fTracks->Delete();
+  if(fTracks) fTracks->Clear("C"); // Delete();
   if(fMuonTracks)fMuonTracks->Delete();
   if(fPmdTracks)fPmdTracks->Delete();
   if(fTrdTracks)fTrdTracks->Delete();
   if(fTrdTracklets)fTrdTracklets->Delete();
-  if(fV0s)fV0s->Delete();
-  if(fCascades)fCascades->Delete();
-  if(fKinks)fKinks->Delete();
+  if(fV0s)fV0s->Clear();  // not dynamic // Delete();
+  if(fCascades)fCascades->Clear(); // not dynamic // Delete();
+  if(fKinks)fKinks->Clear(); // not dynamyc //Delete();
   if(fCaloClusters)fCaloClusters->Delete();
   if(fPHOSCells)fPHOSCells->DeleteContainer();
   if(fEMCALCells)fEMCALCells->DeleteContainer();
@@ -758,17 +758,16 @@ Bool_t  AliESDEvent::RemoveTrack(Int_t rm) const {
     }
   }
 
-
-
-  //Replace the removed track with the last track 
+  // Replace the removed track with the last track 
   TClonesArray &a=*fTracks;
   delete a.RemoveAt(rm);
 
   if (rm==last) return kTRUE;
 
+  // RS: Attention: semi-shalow copy is used: the new track will steal the dynamic content of old one
   AliESDtrack *t=GetTrack(last);
   t->SetID(rm);
-  new (a[rm]) AliESDtrack(*t);
+  new (a[rm]) AliESDtrack(t, kTRUE); // detach dynamic content of the source
   delete a.RemoveAt(last);
 
 
@@ -1154,6 +1153,15 @@ void AliESDEvent::SetACORDEData(AliESDACORDE * obj)
     *fESDACORDE = *obj;
 }
 
+void AliESDEvent::DetachFriends() const
+{
+  // clean friend track pointers of ESDtracks
+  Int_t ntrk=GetNumberOfTracks();
+  for (Int_t i=0; i<ntrk; i++) {
+    AliESDtrack *t=GetTrack(i);
+    t->ReleaseESDfriendTrackGently();
+  }
+}
 
 void AliESDEvent::GetESDfriend(AliESDfriend *ev) const 
 {
@@ -1166,11 +1174,9 @@ void AliESDEvent::GetESDfriend(AliESDfriend *ev) const
 
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
-    const AliESDfriendTrack *f=t->GetFriendTrack();
-    ev->AddTrack(f);
-
-    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
-
+    AliESDfriendTrack *f = (AliESDfriendTrack*)t->GetFriendTrack();
+    ev->AddTrackShallow(f);
+    t->ReleaseESDfriendTrackGently();// Not to have two copies of "friendTrack"
   }
 
   AliESDfriend *fr = (AliESDfriend*)(const_cast<AliESDEvent*>(this)->FindListObject("AliESDfriend"));
@@ -1354,7 +1360,7 @@ void AliESDEvent::WriteToTree(TTree* tree) const {
   TString branchname;
   TIter next(fESDObjects);
   const Int_t kSplitlevel = 99; // default value in TTree::Branch()
-  const Int_t kBufsize = 32000; // default value in TTree::Branch()
+  const Int_t kBufsize = 32000/4; // default value in TTree::Branch()
   TObject *obj = 0;
 
   while ((obj = next())) {

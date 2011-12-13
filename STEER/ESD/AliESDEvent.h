@@ -262,7 +262,7 @@ public:
 
   void SetESDfriend(const AliESDfriend *f) const;
   void GetESDfriend(AliESDfriend *f) const;
-
+  void DetachFriends() const;
 
 
   void SetPrimaryVertexTPC(const AliESDVertex *vertex); 

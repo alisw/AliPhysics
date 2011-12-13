@@ -84,7 +84,7 @@ public:
   ~AliTRDseedV1();
   AliTRDseedV1(const AliTRDseedV1 &ref);
   AliTRDseedV1& operator=(const AliTRDseedV1 &ref);
-
+  void      Clear(Option_t *o="");
   Bool_t    AttachClusters(AliTRDtrackingChamber *const chamber, Bool_t tilt = kFALSE, Bool_t ChgPlus=kTRUE, Int_t ev=-1);
   void      Bootstrap(const AliTRDReconstructor *rec);
   void      Calibrate();

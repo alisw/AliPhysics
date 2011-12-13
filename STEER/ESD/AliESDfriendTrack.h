@@ -11,6 +11,7 @@
 #include <TClonesArray.h>
 #include <AliExternalTrackParam.h>
 
+class AliPoolsSet;
 class AliTrackPointArray;
 class AliKalmanTrack;
 class TObjArrray;
@@ -24,6 +25,7 @@ public:
   };
   AliESDfriendTrack();
   AliESDfriendTrack(const AliESDfriendTrack &t);
+  AliESDfriendTrack(AliESDfriendTrack *t, Bool_t detach);
   virtual ~AliESDfriendTrack();
 
   void Set1P(Float_t p) {f1P=p;}
@@ -64,7 +66,12 @@ public:
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}
-
+  //
+  virtual void Clear(Option_t* opt="");
+  //
+  static void               SetPools(AliPoolsSet* p) {fgPools = p;}
+  static AliPoolsSet*       GetPools()               {return fgPools;}
+  //
 protected:
   Float_t f1P;                     // 1/P (1/(GeV/c))
   Int_t fnMaxITScluster; // Max number of ITS clusters
@@ -83,11 +90,13 @@ protected:
   AliExternalTrackParam * fTPCOut; // tpc outer parameters
   AliExternalTrackParam * fITSOut; // its outer parameters
   AliExternalTrackParam * fTRDIn;  // trd inner parameters
-
+  //
+  static AliPoolsSet* fgPools; // set of pools
+  //
 private:
   AliESDfriendTrack &operator=(const AliESDfriendTrack & /* t */) {return *this;}
 
-  ClassDef(AliESDfriendTrack,6) //ESD friend track
+  ClassDef(AliESDfriendTrack,7) //ESD friend track
 };
 
 #endif

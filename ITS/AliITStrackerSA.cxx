@@ -27,7 +27,7 @@
 #include <TBranch.h>
 #include <TObjArray.h>
 #include <TTree.h>
-
+#include "AliSysInfo.h" // memory snapshots
 #include "AliESDEvent.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
@@ -40,6 +40,8 @@
 #include "AliITSReconstructor.h"
 #include "AliLog.h"
 #include "AliRun.h"
+#include "AliClonesPool.h"
+#include "AliPoolsSet.h"
 
 ClassImp(AliITStrackerSA)
 
@@ -128,9 +130,12 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
 // is done in the ITS only. In the standard reconstruction chain this option
 // can be set via AliReconstruction::SetOption("ITS","onlyITS")
   Int_t rc=0;
-
+  if (fPools && !fPools->GetPoolTrITS()) fPools->SetPool(new AliClonesPool("AliITStrackMI",5000), AliPoolsSet::kPoolTrITS);
+  //
+  static int eventNr = 0;
   if(!fITSStandAlone){
     rc=AliITStrackerMI::Clusters2Tracks(event);
+    AliSysInfo::AddStamp(Form("TracMI_%d",eventNr), -1,1,-1);
   }
   else {
     AliDebug(1,"Stand Alone flag set: doing tracking in ITS alone\n");
@@ -145,6 +150,7 @@ Int_t AliITStrackerSA::Clusters2Tracks(AliESDEvent *event){
       rc=FindTracks(event,kTRUE);
     }
   }
+  eventNr++;
   return rc;
 }
 
@@ -201,6 +207,7 @@ void AliITStrackerSA::ResetForFinding(){
 Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
 
 // Track finder using the ESD object
+  static int eventNr = 0;
 
   AliDebug(2,Form(" field is %f",event->GetMagneticField()));
   AliDebug(2,Form("SKIPPING %d %d %d %d %d %d",ForceSkippingOfLayer(0),ForceSkippingOfLayer(1),ForceSkippingOfLayer(2),ForceSkippingOfLayer(3),ForceSkippingOfLayer(4),ForceSkippingOfLayer(5)));
@@ -450,6 +457,8 @@ Int_t AliITStrackerSA::FindTracks(AliESDEvent* event, Bool_t useAllClusters){
   
   if(!useAllClusters) AliInfo(Form("Number of found tracks: %d",event->GetNumberOfTracks()));
   ResetForFinding();
+  AliSysInfo::AddStamp(Form("TracSA_%d",eventNr), useAllClusters ? 1:0,1,-1);
+  eventNr++;
   return 0;
 
 }

@@ -58,6 +58,8 @@
 #include "AliITSV0Finder.h"
 #include "AliITStrackerMI.h"
 #include "AliMathBase.h"
+#include "AliClonesPool.h"
+#include "AliPoolsSet.h"
 
 
 ClassImp(AliITStrackerMI)
@@ -542,7 +544,8 @@ Int_t AliITStrackerMI::Clusters2Tracks(AliESDEvent *event) {
 
   fTrackingPhase="Clusters2Tracks";
   //
-  // RS
+  if (fPools && !fPools->GetPoolTrITS()) fPools->SetPool(new AliClonesPool("AliITStrackMI",5000), AliPoolsSet::kPoolTrITS);
+  //
   fSelectBestMIP03  = kFALSE;//AliITSReconstructor::GetRecoParam()->GetSelectBestMIP03();
   fFlagFakes        = AliITSReconstructor::GetRecoParam()->GetFlagFakes();
   fUseImproveKalman = AliITSReconstructor::GetRecoParam()->GetUseImproveKalman();
@@ -4207,12 +4210,21 @@ void AliITStrackerMI::UpdateESDtrack(AliITStrackMI* track, ULong_t flags) const
   //
   track->UpdateESDtrack(flags);
   AliITStrackMI * oldtrack = (AliITStrackMI*)(track->GetESDtrack()->GetITStrack());
-  if (oldtrack) delete oldtrack; 
-  track->GetESDtrack()->SetITStrack(new AliITStrackMI(*track));
-  // if (TMath::Abs(track->GetDnorm(1))<0.000000001){
-  //   printf("Problem\n");
-  // }
+  AliClonesPool* poolITS =  fPools ? fPools->GetPoolTrITS() : 0;
+  if (oldtrack) {
+    if (!poolITS) delete oldtrack; 
+    else poolITS->MarkSlotFree(oldtrack);
+  }
+  AliITStrackMI* trc = 0;
+  if (!poolITS) trc = new AliITStrackMI(*track);
+  else {
+    trc = new ( poolITS->NextFreeSlot() ) AliITStrackMI(*track);
+    poolITS->RegisterClone( trc );
+  }
+  track->GetESDtrack()->SetITStrack(trc);
+  //
 }
+
 //------------------------------------------------------------------------
 Int_t AliITStrackerMI::GetNearestLayer(const Double_t *xr) const{
   //

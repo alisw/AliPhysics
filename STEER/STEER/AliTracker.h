@@ -24,6 +24,7 @@ class AliExternalTrackParam;
 class AliTrackPoint;
 class AliKalmanTrack;
 class AliEventInfo;
+class AliPoolsSet;
 
 class AliTracker : public AliTrackerBase {
 public:
@@ -57,7 +58,10 @@ public:
 
   void                SetEventInfo(AliEventInfo *evInfo) {fEventInfo = evInfo;}
   const AliEventInfo* GetEventInfo() const {return fEventInfo;}
-
+  //
+  AliPoolsSet*        GetPools()               const {return fPools;}
+  void                SetPools(AliPoolsSet* p)       {fPools = p;}
+  //
 protected:
   AliTracker(const AliTracker &atr);
 private:
@@ -67,6 +71,9 @@ private:
 
   static AliRecoParam::EventSpecie_t fEventSpecie ; //! event specie, see AliRecoParam
   AliEventInfo*                      fEventInfo;    //! pointer to the event info object
+
+ protected:
+  AliPoolsSet* fPools;                             //! source of pools
   
   ClassDef(AliTracker,6) //abstract tracker
 };

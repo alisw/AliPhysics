@@ -30,7 +30,7 @@ class TTree;
 class AliESDkink;
 class TTreeSRedirector;
 class AliTrackPoint;
-
+class AliClonesPool;
 
 
 class AliTPCtrackerMI : public AliTracker {
@@ -104,10 +104,6 @@ public:
    Double_t F3n(Double_t x1,Double_t y1, Double_t x2,Double_t y2, Double_t z1,Double_t z2, 
                 Double_t c) const; 
    Bool_t GetProlongation(Double_t x1, Double_t x2, Double_t x[5], Double_t &y, Double_t &z) const;
-   //
-   void ResetSeedsPool();
-   void MarkSeedFree( TObject* seed );
-   TObject *&NextFreeSeed();
    //
  public:
    void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
@@ -198,10 +194,9 @@ private:
    TTreeSRedirector *fDebugStreamer;     //!debug streamer
    Int_t  fUseHLTClusters;              // use HLT clusters instead of offline clusters
    //
-   TClonesArray* fSeedsPool;            //! pool of seeds
-   TArrayI fFreeSeedsID;                //! array of ID's of freed seeds
-   Int_t fNFreeSeeds;                   //! number of seeds freed in the pool
-   Int_t fLastSeedID;                   //! id of the pool seed on which is returned by the NextFreeSeed method
+   AliClonesPool* fSeedsPool;            //! pool of seeds. Note: Owned by reconstruction pools (if exist)
+   AliClonesPool* fKinksPool;            //! pool of kinks. Note: Owned by reconstruction pools (if exist)
+
    //
    ClassDef(AliTPCtrackerMI,3) 
 };

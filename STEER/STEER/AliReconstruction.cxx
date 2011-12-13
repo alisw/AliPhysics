@@ -200,6 +200,9 @@
 #include "AliESDHLTDecision.h"
 #include "AliTriggerInput.h"
 #include "AliLHCData.h"
+#include "AliPoolN.h"
+#include "AliClonesPool.h"
+#include "AliPoolsSet.h"
 #include "ARVersion.h"
 #include <RVersion.h>
 #include <unistd.h>
@@ -320,6 +323,7 @@ AliReconstruction::AliReconstruction(const char* gAliceFilename) :
   fAnalysis(0),
   fRecoHandler(0),
   fDeclTriggerClasses(""),
+  fPools(0),
   fStopped(kFALSE),
   fMaxRSS(0),
   fMaxVMEM(0)
@@ -446,6 +450,7 @@ AliReconstruction::AliReconstruction(const AliReconstruction& rec) :
   fAnalysis(0),
   fRecoHandler(0),
   fDeclTriggerClasses(rec.fDeclTriggerClasses),
+  fPools(0),
   fStopped(kFALSE),
   fMaxRSS(0),
   fMaxVMEM(0)
@@ -644,7 +649,6 @@ AliReconstruction::~AliReconstruction()
     delete fAlignObjArray;
   }
   fSpecCDBUri.Delete();
-
   AliCodeTimer::Instance()->Print();
 }
 
@@ -1740,24 +1744,28 @@ void AliReconstruction::SlaveBegin(TTree*)
   }
 
   ftree = new TTree("esdTree", "Tree with ESD objects");
+  ftree->SetAutoFlush(1);
   fesd = new AliESDEvent();
   fesd->CreateStdContent();
   // add a so far non-std object to the ESD, this will
   // become part of the std content
   fesd->AddObject(new AliESDHLTDecision);
-
+ 
+  const Int_t kBufsize = 32000/4; // default value in TTree::Branch()
   fesd->WriteToTree(ftree);
   if (fWriteESDfriend) {
     ffileF = TFile::Open("AliESDfriends.root", "RECREATE");
     ftreeF = new TTree("esdFriendTree", "Tree with ESD Friend objects");
+    ftreeF->SetAutoFlush(1);
     fesdf  = new AliESDfriend();
-    ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf);
+    ftreeF->Branch("ESDfriend.","AliESDfriend", &fesdf, kBufsize);
     fesd->AddObject(fesdf);
     ffile->cd();
   }
   ftree->GetUserInfo()->Add(fesd);
 
   fhlttree = new TTree("HLTesdTree", "Tree with HLT ESD objects");
+  fhlttree->SetAutoFlush(1);
   fhltesd = new AliESDEvent();
   fhltesd->CreateStdContent();
   // read the ESD template from CDB
@@ -1880,7 +1888,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   AliCodeTimerAuto("",0);
 
   AliESDpid pid;
-
+  
   AliSysInfo::AddStamp(Form("StartEv_%d",iEvent), 0,0,iEvent);
 
   if (iEvent >= fRunLoader->GetNumberOfEvents()) {
@@ -1897,8 +1905,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
   if ((iEvent < fFirstEvent) || ((fLastEvent >= 0) && (iEvent > fLastEvent))) {
     return kTRUE;
   }
-
-
+  //
+  InitPools();   // make sure the pools are ready
+  //
   fRunLoader->GetEvent(iEvent);
 
   // Fill Event-info object
@@ -2310,6 +2319,7 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     pHLTSrc->Copy(*pHLTTgt);
   }
   //
+  fPools->Print(); // RS:tmp
   // Perform analysis of this event if requested
   // RS: Should be done before WriteESDfriend, since the latter may clean the esdfriend
   if (fAnalysis) {
@@ -2319,28 +2329,26 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     AliSysInfo::AddStamp(Form("Analysis_%d",iEvent), 0,0,iEvent);     
   }  
   //
-  if (fWriteESDfriend) {
-    fesd->GetESDfriend(fesdf);
-    AliSysInfo::AddStamp(Form("CreateFriend_%d",iEvent), 0,0,iEvent);     
-  
-  }
-  //
-  ftree->Fill();
-  AliSysInfo::AddStamp(Form("ESDFill_%d",iEvent), 0,0,iEvent);     
-  //
+  // RS there is no point in filling the esdFriend object if it is not going to be written
   if (fWriteESDfriend) {
     WriteESDfriend();
     AliSysInfo::AddStamp(Form("WriteFriend_%d",iEvent), 0,0,iEvent);     
   }
   //
+  ftree->Fill();
   //
-  // Auto-save the ESD tree in case of prompt reco @P2
-  if (fRawReader && fRawReader->UseAutoSaveESD()) {
-    ftree->AutoSave("SaveSelf");
-    if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
+  AliSysInfo::AddStamp(Form("ESDFill_%d",iEvent), 0,0,iEvent);     
+  if (fWriteESDfriend) {
+    // Auto-save the ESD tree in case of prompt reco @P2
+    if (fRawReader && fRawReader->UseAutoSaveESD()) {
+      ftree->AutoSave("SaveSelf");
+      if (fWriteESDfriend) ftreeF->AutoSave("SaveSelf");
+    }
   }
     // write HLT ESD
     fhlttree->Fill();
+
+    AliSysInfo::AddStamp(Form("WriteESDs_%d",iEvent), 0,0,iEvent);     
 
     // call AliEVE
     if (fRunAliEVE) RunAliEVE();
@@ -2348,8 +2356,9 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
     fesd->Reset();
     fhltesd->Reset();
     if (fWriteESDfriend) {
-      fesdf->~AliESDfriend();
-      new (fesdf) AliESDfriend(); // Reset...
+      fesdf->Clear();
+      //      fesdf->~AliESDfriend();
+      //      new (fesdf) AliESDfriend(); // Reset...
     }
  
     gSystem->GetProcInfo(&procInfo);
@@ -2376,10 +2385,11 @@ Bool_t AliReconstruction::ProcessEvent(Int_t iEvent)
 	
   if (fRunQA || fRunGlobalQA) 
     AliQAManager::QAManager()->Increment() ; 
-
+  //
+  fPools->Print();
+  fPools->ResetPools();
   DeleteRecPoints(fDeleteRecPoints);
   DeleteDigits(fDeleteDigits);
-  //
   return kTRUE;
 }
 
@@ -2526,7 +2536,8 @@ void AliReconstruction::Terminate()
   // In case of empty events the tags will contain dummy values
   AliCodeTimerAuto("",0);
 
-  // Do not call the ESD tag creator in case of PROOF-based reconstruction
+  // 
+  // or for the files stopped due to the limited resources
   if (!fInput) {
     AliESDTagCreator *esdtagCreator = new AliESDTagCreator();
     esdtagCreator->CreateESDTags(fFirstEvent,fLastEvent,fGRPData, AliQAv1::Instance()->GetQA(), AliQAv1::Instance()->GetEventSpecies(), AliQAv1::kNDET, AliRecoParam::kNSpecies);
@@ -2593,6 +2604,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
       reconstructor->ConvertDigits(fRawReader, digitsTree);
       loader->WriteDigits("OVERWRITE");
       loader->UnloadDigits();
+      AliSysInfo::AddStamp(Form("LRecRW2Root%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
     }
     // local reconstruction
     AliInfo(Form("running reconstruction for %s", fgkDetectorName[iDet]));
@@ -2606,6 +2618,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
     TTree* clustersTree = loader->TreeR();
     if (fRawReader && !reconstructor->HasDigitConversion()) {
       reconstructor->Reconstruct(fRawReader, clustersTree);
+      AliSysInfo::AddStamp(Form("LRecRec%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
     } 
     else {
       AliDebug(1, "Loading Digits");
@@ -2624,6 +2637,7 @@ Bool_t AliReconstruction::RunLocalEventReconstruction(const TString& detectors)
           AliQAManager::QAManager()->SetEventSpecie(fRecoParam.GetEventSpecie()) ;
           AliQAManager::QAManager()->RunOneEventInOneDetector(iDet, digitsTree) ; 
         }
+	AliSysInfo::AddStamp(Form("LRecD2C%s_%d",fgkDetectorName[iDet],eventNr), iDet,1,eventNr);
       }
       loader->UnloadDigits();
     }
@@ -2875,6 +2889,7 @@ Bool_t AliReconstruction::RunMuonTracking(AliESDEvent*& esd)
     AliWarning(Form("couldn't create a tracker for %s", detName.Data()));
     return kFALSE;
   }
+  tracker->SetPools(fPools);
      
   // read RecPoints
   fLoader[iDet]->LoadRecPoints("read");  
@@ -2914,6 +2929,7 @@ Bool_t AliReconstruction::RunTracking(AliESDEvent*& esd,AliESDpid &PID)
   for (Int_t iDet = 0; iDet < kNDetectors; iDet++) {
     if (!fTracker[iDet]) continue;
     fTracker[iDet]->SetEventInfo(&fEventInfo);
+    fTracker[iDet]->SetPools(fPools);
   }
 
   //Fill the ESD with the T0 info (will be used by the TOF) 
@@ -3523,6 +3539,17 @@ void AliReconstruction::CleanUp()
     fTracker[iDet] = NULL;
   }
 */
+  if (fPools)  {
+    if (fesd)    fesd->Reset();
+    if (fhltesd) fhltesd->Reset();
+    if (fesdf)   fesdf->Clear();
+    fPools->ResetPools();
+    AliTrackPointArray::SetPool(0);
+    AliESDtrack::SetPools(0);
+    AliESDfriendTrack::SetPools(0);
+    delete fPools; fPools = 0;
+  }
+  //
 
   delete fRunInfo;
   fRunInfo = NULL;
@@ -3551,12 +3578,14 @@ void AliReconstruction::CleanUp()
   //  AliQAManager::Destroy() ;
   delete fAnalysis; 
   fAnalysis = NULL;
+  //
 }
 
 void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
 {
   // Write space-points which are then used in the alignment procedures
   // For the moment only ITS, TPC, TRD and TOF
+  AliClonesPool* poolTPA = fPools ? fPools->GetPoolTrPoints() : 0;
 
   Int_t ntracks = esd->GetNumberOfTracks();
   for (Int_t itrack = 0; itrack < ntracks; itrack++)
@@ -3575,7 +3604,9 @@ void AliReconstruction::WriteAlignmentData(AliESDEvent* esd)
       }
 
       if (nsp) {
-	AliTrackPointArray *sp = new AliTrackPointArray(nsp);
+	AliTrackPointArray *sp = 0;
+	if (poolTPA) {sp = new(poolTPA->NextFreeSlot()) AliTrackPointArray(nsp); poolTPA->RegisterClone(sp);}
+	else          sp = new AliTrackPointArray(nsp); 
 	track->SetTrackPointArray(sp);
 	Int_t isptrack = 0;
 	for (Int_t iDet = 5; iDet >= 0; iDet--) {
@@ -4296,7 +4327,9 @@ void AliReconstruction::WriteESDfriend() {
   // 1. Store all Cosmic or Calibration events within the required fraction
   // 2. Sample "high Pt" events within the remaining fraction after step 1.
   // 3. Sample randomly events if we still have remaining slot
-
+  //
+  static int iEvent = 0;
+  //
   fNall++;
   Bool_t isSelected = kFALSE;
   //
@@ -4335,14 +4368,41 @@ void AliReconstruction::WriteESDfriend() {
       isSelected = kTRUE;
     }
   }
-  
+  //
   if (!isSelected) {
-    fesdf->~AliESDfriend();
-    new (fesdf) AliESDfriend(); // Reset...
+    fesdf->Clear();
     fesdf->SetSkipBit(kTRUE);
+    fesd->DetachFriends();   // remove friend tracks
   }
+  else fesd->GetESDfriend(fesdf); // move friend tracks to AliESDfriens object
+  //
+  AliSysInfo::AddStamp(Form("WriteFriend%d_%d",isSelected,iEvent), 0,0,iEvent); 
   //
   ftreeF->Fill();
+  AliSysInfo::AddStamp(Form("WriteFrFill%d_%d",isSelected,iEvent), 0,0,iEvent); 
+  //
+  iEvent++;
+}
+
+//___________________________________________________________________
+void AliReconstruction::InitPools()
+{
+  // create general purpose pools
+  if (!fPools) {
+    fPools = new AliPoolsSet();
+    fPools->InitPools(); // this will initialize only obligatory pools
+    //
+    if (fWriteAlignmentData) {
+      AliClonesPool* pta = new AliClonesPool("AliTrackPointArray",5000);
+      fPools->SetPool(pta,AliPoolsSet::kPoolTrPoints);
+    }
+    AliTrackPointArray::SetPool(fPools->GetPoolN());
+    AliESDtrack::SetPools(fPools);
+    AliESDfriendTrack::SetPools(fPools);    
+  }
+  //
+  fPools->ResetPools();
+  //
 }
 
 //_________________________________________________________________

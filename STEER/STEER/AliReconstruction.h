@@ -48,6 +48,7 @@ class AliTriggerRunScalers;
 class AliCTPTimeParams;
 class AliAnalysisManager;
 class AliRecoInputHandler;
+class AliPoolsSet;
 
 #include "AliQAv1.h"
 #include "AliEventInfo.h"
@@ -128,7 +129,6 @@ public:
   void           SetAlignObjArray(TObjArray *array)
                    {fAlignObjArray = array;
 		   fLoadAlignFromCDB = kFALSE;}
-
   virtual Int_t  Version() const {return 2;}
   virtual void   Begin(TTree*);
   virtual void   SlaveBegin(TTree*);
@@ -192,6 +192,8 @@ public:
   void        DeclareTriggerClasses(const char *trClasses) {fDeclTriggerClasses = trClasses;}
   //
   //
+  AliPoolsSet* GetPools()  const {return fPools;}
+  void         InitPools(); 
   Bool_t       HasEnoughResources(int ev);
   void         SetStopOnResourcesExcess(int vRSS=3000,int vVMEM=4000);
   //
@@ -382,6 +384,8 @@ private:
   AliAnalysisManager  *fAnalysis;      //! Analysis manager
   AliRecoInputHandler *fRecoHandler;   //! Input handler adapted for reconstruction
   TString              fDeclTriggerClasses; // Declared defined trigger classes
+  //
+  AliPoolsSet*         fPools;          //! reconstruction pools
   //
   Bool_t               fStopped;        //  flag that reco is stopped due to the limited resources 
   Int_t                fMaxRSS;         //  max RSS memory, MB

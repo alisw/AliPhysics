@@ -128,8 +128,11 @@
 #include "TPolyMarker3D.h"
 #include "AliTrackerBase.h"
 #include "AliTPCdEdxInfo.h"
+#include "AliPoolsSet.h"
 
 ClassImp(AliESDtrack)
+
+AliPoolsSet* AliESDtrack::fgPools = 0;
 
 void SetPIDValues(Double_t * dest, const Double_t * src, Int_t n) {
   // This function copies "n" PID weights from "scr" to "dest"
@@ -240,11 +243,14 @@ AliESDtrack::AliESDtrack() :
   //
   // The default ESD constructor 
   //
-  if (!OnlineMode()) fFriendTrack=new AliESDfriendTrack();
-
-  Int_t i;
-  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
+  if (!OnlineMode()) {    
+    AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+    if (poolFr) { fFriendTrack = new(poolFr->NextFreeSlot()) AliESDfriendTrack(); poolFr->RegisterClone(fFriendTrack);}
+    else          fFriendTrack = new AliESDfriendTrack();
+  }
+  //
+  for (int i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
+  for (int i=AliPID::kSPECIES;i--;) {
     fTrackTime[i]=0.;
     fR[i]=0.;
     fITSr[i]=0.;
@@ -254,16 +260,14 @@ AliESDtrack::AliESDtrack() :
     fHMPIDr[i]=0.;
   }
   
-  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
-  for (i=0; i<3; i++)   { fV0Indexes[i]=0;}
-  for (i=0;i<kTRDnPlanes;i++) {
-    fTRDTimBin[i]=0;
-  }
-  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
-  for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
-  for (i=0;i<10;i++) {fTOFInfo[i]=0;}
-  for (i=0;i<12;i++) {fITSModule[i]=-1;}
+  for (int i=3;i--;) fKinkIndexes[i]=0;
+  for (int i=3;i--;) fV0Indexes[i]=0;
+  for (int i=kTRDnPlanes;i--;) fTRDTimBin[i]=0;
+  for (int i=4;i--;) {fITSdEdxSamples[i]=0.;}
+  for (int i=4;i--;) {fTPCPoints[i]=0;}
+  for (int i=3;i--;) {fTOFLabel[i]=-1;}
+  for (int i=10;i--;) {fTOFInfo[i]=0;}
+  for (int i=12;i--;) {fITSModule[i]=-1;}
 }
 
 bool AliESDtrack::fgkOnlineMode=false;
@@ -351,43 +355,189 @@ AliESDtrack::AliESDtrack(const AliESDtrack& track):
   //copy constructor
   //
   for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track.fTrackTime[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i]=track.fTrackTime[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++)  fR[i]=track.fR[i];
-  //
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=track.fITSr[i]; 
-  //
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=track.fTPCr[i]; 
-  for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=track.fITSdEdxSamples[i];}
-  for (Int_t i=0;i<4;i++) {fTPCPoints[i]=track.fTPCPoints[i];}
-  for (Int_t i=0; i<3;i++)   { fKinkIndexes[i]=track.fKinkIndexes[i];}
-  for (Int_t i=0; i<3;i++)   { fV0Indexes[i]=track.fV0Indexes[i];}
-  //
-  for (Int_t i=0;i<kTRDnPlanes;i++) {
-    fTRDTimBin[i]=track.fTRDTimBin[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) {
+    fTrackTime[i]=track.fTrackTime[i];
+    fR[i]=track.fR[i];
+    fITSr[i]=track.fITSr[i]; 
+    fTPCr[i]=track.fTPCr[i]; 
   }
-
+  for (Int_t i=4;i--;) fITSdEdxSamples[i]=track.fITSdEdxSamples[i];
+  for (Int_t i=4;i--;) fTPCPoints[i]=track.fTPCPoints[i];
+  for (Int_t i=3;i--;) fKinkIndexes[i]=track.fKinkIndexes[i];
+  for (Int_t i=3;i--;) fV0Indexes[i]=track.fV0Indexes[i];
+  //
+  for (Int_t i=kTRDnPlanes;i--;) fTRDTimBin[i]=track.fTRDTimBin[i];
+  AliPoolN* poolN = fgPools ? fgPools->GetPoolN() : 0;
   if (fTRDnSlices) {
-    fTRDslices=new Double32_t[fTRDnSlices];
-    for (Int_t i=0; i<fTRDnSlices; i++) fTRDslices[i]=track.fTRDslices[i];
+    if (poolN) fTRDslices = poolN->BookD32(fTRDnSlices,&fTRDslices);
+    else       fTRDslices = new Double32_t[fTRDnSlices];
+    for (Int_t i=fTRDnSlices;i--;) fTRDslices[i] = track.fTRDslices[i];
   }
+  //
+  for (Int_t i=AliPID::kSPECIES;i--;) {
+    fTRDr[i]=track.fTRDr[i]; 
+    fTOFr[i]=track.fTOFr[i];
+    fHMPIDr[i]=track.fHMPIDr[i];
+  }
+  for (Int_t i=3;i--;) fTOFLabel[i]=track.fTOFLabel[i];
+  for (Int_t i=10;i--;) fTOFInfo[i]=track.fTOFInfo[i];
+  for (Int_t i=12;i--;) fITSModule[i]=track.fITSModule[i];
 
 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i]=track.fTRDr[i]; 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i]=track.fTOFr[i];
-  for (Int_t i=0;i<3;i++) fTOFLabel[i]=track.fTOFLabel[i];
-  for (Int_t i=0;i<10;i++) fTOFInfo[i]=track.fTOFInfo[i];
-  for (Int_t i=0;i<12;i++) fITSModule[i]=track.fITSModule[i];
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i]=track.fHMPIDr[i];
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
+  if (poolETP) {
+    if (track.fCp) {fCp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*track.fCp); poolETP->RegisterClone(fCp);}
+    if (track.fIp) {fIp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*track.fIp); poolETP->RegisterClone(fIp);}
+    if (track.fOp) {fOp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*track.fOp); poolETP->RegisterClone(fOp);}
+    if (track.fHMPIDp)   {fHMPIDp   = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*track.fHMPIDp);   poolETP->RegisterClone(fHMPIDp);}
+    if (track.fTPCInner) {fTPCInner = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*track.fTPCInner); poolETP->RegisterClone(fTPCInner);}     
+  }
+  else {
+    if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
+    if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
+    if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
+    if (track.fHMPIDp) fHMPIDp=new AliExternalTrackParam(*track.fHMPIDp);
+    if (track.fTPCInner) fTPCInner=new AliExternalTrackParam(*track.fTPCInner);
+  }
+  //
+  if (track.fTPCdEdxInfo) {
+    AliClonesPool* pooldEdx = fgPools ? fgPools->GetPoolTPCdEdx() : 0;
+    if (pooldEdx) {fTPCdEdxInfo = new(pooldEdx->NextFreeSlot()) AliTPCdEdxInfo(*track.fTPCdEdxInfo); pooldEdx->RegisterClone(fTPCdEdxInfo);}
+    else           fTPCdEdxInfo = new AliTPCdEdxInfo(*track.fTPCdEdxInfo);
+  }
+  //
+  if (track.fFriendTrack) {
+    AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+    if (poolFr) {fFriendTrack = new(poolFr->NextFreeSlot()) AliESDfriendTrack(*(track.fFriendTrack)); poolFr->RegisterClone(fFriendTrack);}
+    else         fFriendTrack = new AliESDfriendTrack(*(track.fFriendTrack));
+  }
+}
 
-  if (track.fCp) fCp=new AliExternalTrackParam(*track.fCp);
-  if (track.fIp) fIp=new AliExternalTrackParam(*track.fIp);
-  if (track.fTPCInner) fTPCInner=new AliExternalTrackParam(*track.fTPCInner);
-  if (track.fOp) fOp=new AliExternalTrackParam(*track.fOp);
-  if (track.fHMPIDp) fHMPIDp=new AliExternalTrackParam(*track.fHMPIDp);
-  if (track.fTPCdEdxInfo) fTPCdEdxInfo = new AliTPCdEdxInfo(*track.fTPCdEdxInfo);
+//_______________________________________________________________________
+AliESDtrack::AliESDtrack(AliESDtrack* track, Bool_t detach) :
+  AliExternalTrackParam(*track),
+  fCp(0),
+  fIp(0),
+  fTPCInner(0),
+  fOp(0),
+  fHMPIDp(0),  
+  fFriendTrack(0),
+  fTPCFitMap(track->fTPCFitMap),
+  fTPCClusterMap(track->fTPCClusterMap),
+  fTPCSharedMap(track->fTPCSharedMap),
+  fFlags(track->fFlags),
+  fID(track->fID),
+  fLabel(track->fLabel),
+  fITSLabel(track->fITSLabel),
+  fTPCLabel(track->fTPCLabel),
+  fTRDLabel(track->fTRDLabel),
+  fTOFCalChannel(track->fTOFCalChannel),
+  fTOFindex(track->fTOFindex),
+  fHMPIDqn(track->fHMPIDqn),
+  fHMPIDcluIdx(track->fHMPIDcluIdx),
+  fCaloIndex(track->fCaloIndex),
+  fHMPIDtrkTheta(track->fHMPIDtrkTheta),
+  fHMPIDtrkPhi(track->fHMPIDtrkPhi),
+  fHMPIDsignal(track->fHMPIDsignal),
+  fTrackLength(track->fTrackLength),
+  fdTPC(track->fdTPC),fzTPC(track->fzTPC),
+  fCddTPC(track->fCddTPC),fCdzTPC(track->fCdzTPC),fCzzTPC(track->fCzzTPC),
+  fCchi2TPC(track->fCchi2TPC),
+  fD(track->fD),fZ(track->fZ),
+  fCdd(track->fCdd),fCdz(track->fCdz),fCzz(track->fCzz),
+  fCchi2(track->fCchi2),
+  fITSchi2(track->fITSchi2),
+  fTPCchi2(track->fTPCchi2),
+  fTPCchi2Iter1(track->fTPCchi2Iter1),
+  fTRDchi2(track->fTRDchi2),
+  fTOFchi2(track->fTOFchi2),
+  fHMPIDchi2(track->fHMPIDchi2),
+  fGlobalChi2(track->fGlobalChi2),
+  fITSsignal(track->fITSsignal),
+  fTPCsignal(track->fTPCsignal),
+  fTPCsignalS(track->fTPCsignalS),
+  fTPCdEdxInfo(0),
+  fTRDsignal(track->fTRDsignal),
+  fTRDQuality(track->fTRDQuality),
+  fTRDBudget(track->fTRDBudget),
+  fTOFsignal(track->fTOFsignal),
+  fTOFsignalToT(track->fTOFsignalToT),
+  fTOFsignalRaw(track->fTOFsignalRaw),
+  fTOFsignalDz(track->fTOFsignalDz),
+  fTOFsignalDx(track->fTOFsignalDx),
+  fTOFdeltaBC(track->fTOFdeltaBC),
+  fTOFl0l1(track->fTOFl0l1),
+  fCaloDx(track->fCaloDx),
+  fCaloDz(track->fCaloDz),
+  fHMPIDtrkX(track->fHMPIDtrkX),
+  fHMPIDtrkY(track->fHMPIDtrkY),
+  fHMPIDmipX(track->fHMPIDmipX),
+  fHMPIDmipY(track->fHMPIDmipY),
+  fTPCncls(track->fTPCncls),
+  fTPCnclsF(track->fTPCnclsF),
+  fTPCsignalN(track->fTPCsignalN),
+  fTPCnclsIter1(track->fTPCnclsIter1),
+  fTPCnclsFIter1(track->fTPCnclsIter1),
+  fITSncls(track->fITSncls),
+  fITSClusterMap(track->fITSClusterMap),
+  fITSSharedMap(track->fITSSharedMap),
+  fTRDncls(track->fTRDncls),
+  fTRDncls0(track->fTRDncls0),
+  fTRDntracklets(track->fTRDntracklets),
+  fTRDnSlices(track->fTRDnSlices),
+  fTRDslices(0x0),
+  fVertexID(track->fVertexID),
+  fESDEvent(track->fESDEvent),
+  fCacheNCrossedRows(track->fCacheNCrossedRows),
+  fCacheChi2TPCConstrainedVsGlobal(track->fCacheChi2TPCConstrainedVsGlobal),
+  fCacheChi2TPCConstrainedVsGlobalVertex(track->fCacheChi2TPCConstrainedVsGlobalVertex)
+{
+  //
+  //semi-shallow copy constructor with transfer of most of pointers of the source. When detach is true, the dynamic content of 
+  //of source is set to 0 w/o deletion 
+  //
+  for (Int_t i=kNITSchi2Std;i--;) fITSchi2Std[i] = track->fTrackTime[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) {
+    fTrackTime[i]=track->fTrackTime[i];
+    fR[i]=track->fR[i];
+    fITSr[i]=track->fITSr[i]; 
+    fTPCr[i]=track->fTPCr[i]; 
+  }
+  for (Int_t i=4;i--;) fITSdEdxSamples[i]=track->fITSdEdxSamples[i];
+  for (Int_t i=4;i--;) fTPCPoints[i]=track->fTPCPoints[i];
+  for (Int_t i=3;i--;) fKinkIndexes[i]=track->fKinkIndexes[i];
+  for (Int_t i=3;i--;) fV0Indexes[i]=track->fV0Indexes[i];
+  //
+  for (Int_t i=kTRDnPlanes;i--;) fTRDTimBin[i]=track->fTRDTimBin[i];
+  if (fTRDnSlices) fTRDslices = track->fTRDslices;
+  //
+  for (Int_t i=AliPID::kSPECIES;i--;) {
+    fTRDr[i]=track->fTRDr[i]; 
+    fTOFr[i]=track->fTOFr[i];
+    fHMPIDr[i]=track->fHMPIDr[i];
+  }
+  for (Int_t i=3;i--;) fTOFLabel[i]=track->fTOFLabel[i];
+  for (Int_t i=10;i--;) fTOFInfo[i]=track->fTOFInfo[i];
+  for (Int_t i=12;i--;) fITSModule[i]=track->fITSModule[i];
 
-  
-  if (track.fFriendTrack) fFriendTrack=new AliESDfriendTrack(*(track.fFriendTrack));
+  if (track->fCp) fCp = track->fCp;
+  if (track->fIp) fIp = track->fIp;
+  if (track->fOp) fOp = track->fOp;
+  if (track->fTPCInner) fTPCInner = track->fTPCInner;
+  if (track->fHMPIDp) fHMPIDp = track->fHMPIDp;
+  //
+  if (track->fTPCdEdxInfo) fTPCdEdxInfo = track->fTPCdEdxInfo;
+  //
+  if (track->fFriendTrack) fFriendTrack = track->fFriendTrack;
+  //
+  if (detach) {
+    track->fTRDslices = 0; 
+    track->fTRDnSlices = 0;
+    track->fCp = track->fIp = track->fTPCInner = track->fOp = track->fHMPIDp = 0;
+    track->fTPCdEdxInfo = 0;
+    track->fFriendTrack = 0;
+  }
+  //
 }
 
 //_______________________________________________________________________
@@ -482,9 +632,8 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   }
 
   // Reset all the arrays
-  Int_t i;
-  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
+  for (int i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
+  for (int i=AliPID::kSPECIES;i--;) {
     fTrackTime[i]=0.;
     fR[i]=0.;
     fITSr[i]=0.;
@@ -494,16 +643,15 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
     fHMPIDr[i]=0.;
   }
   
-  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
-  for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0;i<kTRDnPlanes;i++) {
-    fTRDTimBin[i]=0;
-  }
-  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
-  for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
-  for (i=0;i<10;i++) {fTOFInfo[i]=0;}
-  for (i=0;i<12;i++) {fITSModule[i]=-1;}
+  for (int i=3;i--;)   fKinkIndexes[i]=0;
+  for (int i=3;i--;)   fV0Indexes[i]=-1;
+  for (int i=kTRDnPlanes;i--;) fTRDTimBin[i]=0;
+  
+  for (int i=4;i--;) {fITSdEdxSamples[i]=0.;}
+  for (int i=4;i--;) {fTPCPoints[i]=0;}
+  for (int i=3;i--;) {fTOFLabel[i]=-1;}
+  for (int i=10;i--;) {fTOFInfo[i]=0;}
+  for (int i=12;i--;) {fITSModule[i]=-1;}
 
   // Set the ID
   SetID(track->GetID());
@@ -513,19 +661,14 @@ AliESDtrack::AliESDtrack(const AliVTrack *track) :
   fITSSharedMap=0;
 
   fITSncls=0;
-  for(i=0; i<6; i++) {
-    if(HasPointOnITSLayer(i)) fITSncls++;
-  }
-
+  for(int i=6;i--;) if(HasPointOnITSLayer(i)) fITSncls++;
+  //
   // Set TPC ncls 
   fTPCncls=track->GetTPCNcls();
-
-
+  //
   // Set the combined PID
   const Double_t *pid = track->PID();
-  if(pid){
-    for (i=0; i<AliPID::kSPECIES; i++) fR[i]=pid[i];
-  }
+  if(pid) for (int i=AliPID::kSPECIES;i--;) fR[i]=pid[i];
   // AliESD track label
   SetLabel(track->GetLabel());
   // Set the status
@@ -616,9 +759,8 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   //
 
   // Reset all the arrays
-  Int_t i;
-  for (i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
-  for (i=0; i<AliPID::kSPECIES; i++) {
+  for (int i=kNITSchi2Std;i--;) fITSchi2Std[i] = 0;
+  for (int i=AliPID::kSPECIES;i--;) {
     fTrackTime[i]=0.;
     fR[i]=0.;
     fITSr[i]=0.;
@@ -628,16 +770,14 @@ AliESDtrack::AliESDtrack(TParticle * part) :
     fHMPIDr[i]=0.;
   }
   
-  for (i=0; i<3; i++)   { fKinkIndexes[i]=0;}
-  for (i=0; i<3; i++)   { fV0Indexes[i]=-1;}
-  for (i=0;i<kTRDnPlanes;i++) {
-    fTRDTimBin[i]=0;
-  }
-  for (i=0;i<4;i++) {fITSdEdxSamples[i]=0.;}
-  for (i=0;i<4;i++) {fTPCPoints[i]=0;}
-  for (i=0;i<3;i++) {fTOFLabel[i]=-1;}
-  for (i=0;i<10;i++) {fTOFInfo[i]=0;}
-  for (i=0;i<12;i++) {fITSModule[i]=-1;}
+  for (int i=3;i--;) fKinkIndexes[i]=0;
+  for (int i=3;i--;) fV0Indexes[i]=-1;
+  for (int i=kTRDnPlanes;i--;) fTRDTimBin[i]=0;
+  for (int i=4;i--;)  fITSdEdxSamples[i]=0.;
+  for (int i=4;i--;)  fTPCPoints[i]=0;
+  for (int i=3;i--;)  fTOFLabel[i]=-1;
+  for (int i=10;i--;) fTOFInfo[i]=0;
+  for (int i=12;i--;) fITSModule[i]=-1;
 
   // Calculate the AliExternalTrackParam content
 
@@ -657,7 +797,7 @@ AliESDtrack::AliESDtrack(TParticle * part) :
   alpha *= TMath::Pi();
 
   // Covariance matrix: no errors, the parameters are exact
-  for (i=0; i<15; i++) covar[i]=0.;
+  for (int i=15;i--;) covar[i]=0.;
 
   // Get the vertex of origin and the momentum
   TVector3 ver(part->Vx(),part->Vy(),part->Vz());
@@ -729,104 +869,150 @@ AliESDtrack::AliESDtrack(TParticle * part) :
 }
 
 //_______________________________________________________________________
+void AliESDtrack::Clear(Option_t* )
+{ 
+  //
+  // clean dynamical part
+  //
+  //printf("Delete track\n");
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
+  fTPCFitMap.Clear();
+  fTPCClusterMap.Clear();
+  fTPCSharedMap.Clear();
+  if (poolETP) {
+    if (fIp) poolETP->MarkSlotFree(fIp);
+    if (fOp) poolETP->MarkSlotFree(fOp);
+    if (fCp) poolETP->MarkSlotFree(fCp);
+    if (fTPCInner) poolETP->MarkSlotFree(fTPCInner);
+    if (fHMPIDp)   poolETP->MarkSlotFree(fHMPIDp);
+  }
+  else {
+    delete fIp; 
+    delete fTPCInner; 
+    delete fOp;
+    delete fHMPIDp;
+    delete fCp; 
+  }
+  fIp = fOp = fCp = fTPCInner = fHMPIDp = 0;
+  //
+  if (fFriendTrack) {
+    AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+    if (poolFr) poolFr->MarkSlotFree(fFriendTrack);
+    else        delete fFriendTrack;
+    fFriendTrack = 0;
+  }
+  if (fTPCdEdxInfo) {
+    AliClonesPool* pooldEdx = fgPools ? fgPools->GetPoolTPCdEdx() : 0;
+    if (pooldEdx) pooldEdx->MarkSlotFree(fTPCdEdxInfo);
+    else          delete fTPCdEdxInfo;
+    fTPCdEdxInfo = 0;
+  }
+  if(fTRDnSlices) {
+    AliPoolN* poolN = fgPools ? fgPools->GetPoolN() : 0;
+    if (poolN) poolN->FreeSlot(&fTRDslices); 
+    else delete[] fTRDslices;
+    fTRDslices = 0;
+  }
+  AliExternalTrackParam::Clear();
+}
+
+//_______________________________________________________________________
 AliESDtrack::~AliESDtrack(){ 
   //
   // This is destructor according Coding Conventrions 
   //
   //printf("Delete track\n");
-  delete fIp; 
-  delete fTPCInner; 
-  delete fOp;
-  delete fHMPIDp;
-  delete fCp; 
-  if (fFriendTrack) delete fFriendTrack;
-  if (fTPCdEdxInfo) delete fTPCdEdxInfo;
-  fFriendTrack=NULL;
-  if(fTRDnSlices)
-    delete[] fTRDslices;
+  Clear();
 }
 
-AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
-  
+//_______________________________________________________________________
+AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
+{
 
   if(&source == this) return *this;
   AliExternalTrackParam::operator=(source);
 
-  
-  if(source.fCp){
-    // we have the trackparam: assign or copy construct
-    if(fCp)*fCp = *source.fCp;
-    else fCp = new AliExternalTrackParam(*source.fCp);
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
+  if (source.fCp) { // we have the trackparam: assign or copy construct
+    if (fCp) *fCp = *source.fCp;
+    else {
+      if (poolETP) {fCp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*source.fCp); poolETP->RegisterClone(fCp);}
+      else fCp = new AliExternalTrackParam(*source.fCp);
+    }
   }
-  else{
-    // no track param delete the old one
-    if(fCp)delete fCp;
-    fCp = 0;
+  else { // no track param delete the old one
+    if (fCp) poolETP ? poolETP->MarkSlotFree(fCp) : delete fCp;  fCp = 0;
   }
-
-  if(source.fIp){
-    // we have the trackparam: assign or copy construct
-    if(fIp)*fIp = *source.fIp;
-    else fIp = new AliExternalTrackParam(*source.fIp);
+  //
+  if (source.fIp) { // we have the trackparam: assign or copy construct
+    if (fIp) *fIp = *source.fIp;
+    else {
+      if (poolETP) {fIp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*source.fIp); poolETP->RegisterClone(fIp);}
+      else fIp = new AliExternalTrackParam(*source.fIp);
+    }
   }
-  else{
-    // no track param delete the old one
-    if(fIp)delete fIp;
-    fIp = 0;
+  else { // no track param delete the old one
+    if (fIp)  poolETP ? poolETP->MarkSlotFree(fIp) : delete fIp; fIp = 0;
   }
-
-
-  if(source.fTPCInner){
-    // we have the trackparam: assign or copy construct
-    if(fTPCInner) *fTPCInner = *source.fTPCInner;
-    else fTPCInner = new AliExternalTrackParam(*source.fTPCInner);
+  //
+  if (source.fTPCInner) { // we have the trackparam: assign or copy construct
+    if (fTPCInner)  *fTPCInner = *source.fTPCInner;
+    else {
+      if (poolETP) {fTPCInner = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*source.fTPCInner);poolETP->RegisterClone(fTPCInner);}
+      else fTPCInner = new AliExternalTrackParam(*source.fTPCInner);
+    }
   }
-  else{
-    // no track param delete the old one
-    if(fTPCInner)delete fTPCInner;
-    fTPCInner = 0;
+  else { // no track param delete the old one
+    if (fTPCInner) poolETP ? poolETP->MarkSlotFree(fTPCInner) : delete fTPCInner; fTPCInner = 0;
   }
-
-  if(source.fTPCdEdxInfo) {
-    if(fTPCdEdxInfo) *fTPCdEdxInfo = *source.fTPCdEdxInfo;
-    fTPCdEdxInfo = new AliTPCdEdxInfo(*source.fTPCdEdxInfo);
+  //
+  if (source.fOp) { // we have the trackparam: assign or copy construct
+    if (fOp) *fOp = *source.fOp;
+    else {
+      if (poolETP) {fOp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*source.fOp); poolETP->RegisterClone(fOp);}
+      else fOp = new AliExternalTrackParam(*source.fOp);
+    }
   }
-
-  if(source.fOp){
-    // we have the trackparam: assign or copy construct
-    if(fOp) *fOp = *source.fOp;
-    else fOp = new AliExternalTrackParam(*source.fOp);
+  else { // no track param delete the old one
+    if (fOp) poolETP ? poolETP->MarkSlotFree(fOp) : delete fOp; fOp = 0;
   }
-  else{
-    // no track param delete the old one
-    if(fOp)delete fOp;
-    fOp = 0;
+  //
+  if (source.fHMPIDp) { // we have the trackparam: assign or copy construct
+    if (fHMPIDp) *fHMPIDp = *source.fHMPIDp;
+    else {
+      if (poolETP) {fHMPIDp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*source.fHMPIDp); poolETP->RegisterClone(fHMPIDp);}
+      else fHMPIDp = new AliExternalTrackParam(*source.fHMPIDp);
+    }
   }
-
-  
-  if(source.fHMPIDp){
-    // we have the trackparam: assign or copy construct
-    if(fHMPIDp) *fHMPIDp = *source.fHMPIDp;
-    else fHMPIDp = new AliExternalTrackParam(*source.fHMPIDp);
+  else { // no track param delete the old one
+    if (fHMPIDp) poolETP ? poolETP->MarkSlotFree(fHMPIDp) : delete fHMPIDp; fHMPIDp = 0;
   }
-  else{
-    // no track param delete the old one
-    if(fHMPIDp)delete fHMPIDp;
-    fHMPIDp = 0;
+  //
+  AliClonesPool* pooldEdx = fgPools ? fgPools->GetPoolTPCdEdx() : 0;
+  if (source.fTPCdEdxInfo) {
+    if (fTPCdEdxInfo) *fTPCdEdxInfo = *source.fTPCdEdxInfo;
+    else {
+      if (pooldEdx) {fTPCdEdxInfo = new(pooldEdx->NextFreeSlot()) AliTPCdEdxInfo(*source.fTPCdEdxInfo);	pooldEdx->RegisterClone(fTPCdEdxInfo);}
+      else fTPCdEdxInfo = new AliTPCdEdxInfo(*source.fTPCdEdxInfo);
+    }
   }
-
+  else { // no dedx info, delete the old one
+    if (fTPCdEdxInfo) pooldEdx ? pooldEdx->MarkSlotFree(fTPCdEdxInfo) : delete fTPCdEdxInfo; fTPCdEdxInfo = 0;
+  }
+  //
   // copy also the friend track 
   // use copy constructor
-  if(source.fFriendTrack){
-    // we have the trackparam: assign or copy construct
-    delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*source.fFriendTrack);
+  AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+  if (fFriendTrack) poolFr ? poolFr->MarkSlotFree(fFriendTrack) : delete fFriendTrack; fFriendTrack= 0;
+  if (source.fFriendTrack) { // we have the trackparam: assign or copy construct
+    if (poolFr) {
+      fFriendTrack = new(poolFr->NextFreeSlot()) AliESDfriendTrack(*source.fFriendTrack);
+      poolFr->RegisterClone(fFriendTrack);
+    }
+    else fFriendTrack = new AliESDfriendTrack(*source.fFriendTrack);
   }
-  else{
-    // no track param delete the old one
-    delete fFriendTrack; fFriendTrack= 0;
-  }
-
-  fTPCFitMap = source.fTPCFitMap; 
+  //
+  fTPCFitMap     = source.fTPCFitMap; 
   fTPCClusterMap = source.fTPCClusterMap; 
   fTPCSharedMap  = source.fTPCSharedMap;  
   // the simple stuff
@@ -834,26 +1020,22 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fID       = source.fID;             
   fLabel    = source.fLabel;
   fITSLabel = source.fITSLabel;
-  for(int i = 0; i< 12;++i){
-    fITSModule[i] = source.fITSModule[i];
-  }
+  for(int i=12;i--;)  fITSModule[i] = source.fITSModule[i];
   fTPCLabel = source.fTPCLabel; 
   fTRDLabel = source.fTRDLabel;
-  for(int i = 0; i< 3;++i){
-    fTOFLabel[i] = source.fTOFLabel[i];    
-  }
+  for(int i=3;i--;)  fTOFLabel[i] = source.fTOFLabel[i];    
   fTOFCalChannel = source.fTOFCalChannel;
   fTOFindex      = source.fTOFindex;
   fHMPIDqn       = source.fHMPIDqn;
   fHMPIDcluIdx   = source.fHMPIDcluIdx; 
   fCaloIndex    = source.fCaloIndex;
   for (int i=kNITSchi2Std;i--;) fITSchi2Std[i] = source.fITSchi2Std[i];
-  for(int i = 0; i< 3;++i){
+  for(int i=3;i--;) {
     fKinkIndexes[i] = source.fKinkIndexes[i]; 
     fV0Indexes[i]   = source.fV0Indexes[i]; 
   }
-
-  for(int i = 0; i< AliPID::kSPECIES;++i){
+  //
+  for(int i=AliPID::kSPECIES;i--;) {
     fR[i]     = source.fR[i];
     fITSr[i]  = source.fITSr[i];
     fTPCr[i]  = source.fTPCr[i];
@@ -862,12 +1044,11 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
     fHMPIDr[i] = source.fHMPIDr[i];
     fTrackTime[i] = source.fTrackTime[i];  
   }
-
+  //
   fHMPIDtrkTheta = source.fHMPIDtrkTheta;
   fHMPIDtrkPhi   = source.fHMPIDtrkPhi;
   fHMPIDsignal   = source.fHMPIDsignal; 
-
-  
+  //
   fTrackLength   = source. fTrackLength;
   fdTPC  = source.fdTPC; 
   fzTPC  = source.fzTPC; 
@@ -875,45 +1056,45 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fCdzTPC = source.fCdzTPC;
   fCzzTPC = source.fCzzTPC;
   fCchi2TPC = source.fCchi2TPC;
-
+  //
   fD  = source.fD; 
   fZ  = source.fZ; 
   fCdd = source.fCdd;
   fCdz = source.fCdz;
   fCzz = source.fCzz;
   fCchi2     = source.fCchi2;
-
+  //
   fITSchi2   = source.fITSchi2;             
   fTPCchi2   = source.fTPCchi2;            
   fTPCchi2Iter1   = source.fTPCchi2Iter1;            
   fTRDchi2   = source.fTRDchi2;      
   fTOFchi2   = source.fTOFchi2;      
   fHMPIDchi2 = source.fHMPIDchi2;      
-
+  //
   fGlobalChi2 = source.fGlobalChi2;      
-
+  //
   fITSsignal  = source.fITSsignal;     
-  for (Int_t i=0;i<4;i++) {fITSdEdxSamples[i]=source.fITSdEdxSamples[i];}
+  for (Int_t i=4;i--;) fITSdEdxSamples[i]=source.fITSdEdxSamples[i];
   fTPCsignal  = source.fTPCsignal;     
   fTPCsignalS = source.fTPCsignalS;    
-  for(int i = 0; i< 4;++i){
-    fTPCPoints[i] = source.fTPCPoints[i];  
-  }
+  for(int i=4;i--;) fTPCPoints[i] = source.fTPCPoints[i];  
   fTRDsignal = source.fTRDsignal;
-
-  for(int i = 0;i < kTRDnPlanes;++i){
-    fTRDTimBin[i] = source.fTRDTimBin[i];   
-  }
-
-  if(fTRDnSlices)
-    delete[] fTRDslices;
-  fTRDslices=0;
-  fTRDnSlices=source.fTRDnSlices;
+  for(int i=kTRDnPlanes;i--;) fTRDTimBin[i] = source.fTRDTimBin[i];   
+  //
+  AliPoolN* poolN = fgPools ? fgPools->GetPoolN() : 0;
   if (fTRDnSlices) {
-    fTRDslices=new Double32_t[fTRDnSlices];
-    for(int j = 0;j < fTRDnSlices;++j) fTRDslices[j] = source.fTRDslices[j];
+    if (poolN) poolN->FreeSlot(&fTRDslices); 
+    else delete[] fTRDslices;
+    fTRDslices = 0;
   }
-
+  fTRDnSlices = source.fTRDnSlices;
+  if (fTRDnSlices) {
+    if (poolN) fTRDslices = poolN->BookD32(fTRDnSlices,&fTRDslices);
+    else       fTRDslices = new Double32_t[fTRDnSlices];
+    fTRDslices = new Double32_t[fTRDnSlices];
+    for(int j=fTRDnSlices;j--;) fTRDslices[j] = source.fTRDslices[j];
+  }
+  //
   fTRDQuality =   source.fTRDQuality;     
   fTRDBudget  =   source.fTRDBudget;      
   fTOFsignal  =   source.fTOFsignal;     
@@ -923,11 +1104,9 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   fTOFsignalDx  = source.fTOFsignalDx;      
   fTOFdeltaBC   = source.fTOFdeltaBC;
   fTOFl0l1      = source.fTOFl0l1;
- 
-  for(int i = 0;i<10;++i){
-    fTOFInfo[i] = source.fTOFInfo[i];    
-  }
-
+  //
+  for(int i=10;i--;) fTOFInfo[i] = source.fTOFInfo[i];
+  //
   fHMPIDtrkX = source.fHMPIDtrkX; 
   fHMPIDtrkY = source.fHMPIDtrkY; 
   fHMPIDmipX = source.fHMPIDmipX;
@@ -949,8 +1128,6 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source){
   return *this;
 }
 
-
-
 void AliESDtrack::Copy(TObject &obj) const {
   
   // this overwrites the virtual TOBject::Copy()
@@ -964,13 +1141,15 @@ void AliESDtrack::Copy(TObject &obj) const {
 
 }
 
-
-
 void AliESDtrack::AddCalibObject(TObject * object){
   //
   // add calib object to the list
   //
-  if (!fFriendTrack) fFriendTrack  = new AliESDfriendTrack;
+  if (!fFriendTrack) {
+    AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+    if (poolFr) { fFriendTrack = new(poolFr->NextFreeSlot()) AliESDfriendTrack(); poolFr->RegisterClone(fFriendTrack);}
+    else          fFriendTrack = new AliESDfriendTrack();
+  }
   if (!fFriendTrack) return;
   fFriendTrack->AddCalibObject(object);
 }
@@ -990,8 +1169,6 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   // into the passed ESDtrack object. For consistency fTPCInner is also filled
   // again
 
-
-
   // For data produced before r26675
   // RelateToVertexTPC was not properly called during reco
   // so you'll have to call it again, before FillTPCOnlyTrack
@@ -1001,7 +1178,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   //  track->RelateToVertexTPC(esd->GetPrimaryVertexTPC(),esd->GetMagneticField(),kVeryBig);
   
 
-  if(!fTPCInner)return kFALSE;
+  if (!fTPCInner) return kFALSE;
 
   // fill the TPC track params to the global track parameters
   track.Set(fTPCInner->GetX(),fTPCInner->GetAlpha(),fTPCInner->GetParameter(),fTPCInner->GetCovariance());
@@ -1010,14 +1187,21 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fCdd = fCddTPC;
   track.fCdz = fCdzTPC;
   track.fCzz = fCzzTPC;
-
+  //
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
   // copy the inner params
-  if(track.fIp) *track.fIp = *fIp;
-  else track.fIp = new AliExternalTrackParam(*fIp);
-
+  if (track.fIp) *track.fIp = *fIp;
+  else { 
+    if (poolETP) {track.fIp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*fIp); poolETP->RegisterClone(track.fIp);}
+    else          track.fIp = new AliExternalTrackParam(*fIp);
+  }
+  //
   // copy the TPCinner parameters
-  if(track.fTPCInner) *track.fTPCInner = *fTPCInner;
-  else track.fTPCInner = new AliExternalTrackParam(*fTPCInner);
+  if (track.fTPCInner) *track.fTPCInner = *fTPCInner;
+  else {
+    if (poolETP) {track.fTPCInner = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*fTPCInner); poolETP->RegisterClone(track.fTPCInner);}
+    else          track.fTPCInner = new AliExternalTrackParam(*fTPCInner);
+  }
   track.fdTPC   = fdTPC;
   track.fzTPC   = fzTPC;
   track.fCddTPC = fCddTPC;
@@ -1035,7 +1219,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCchi2Iter1 = fTPCchi2Iter1; 
   track.fTPCsignal = fTPCsignal;
   track.fTPCsignalS = fTPCsignalS;
-  for(int i = 0;i<4;++i)track.fTPCPoints[i] = fTPCPoints[i];
+  for(int i=4;i--;) track.fTPCPoints[i] = fTPCPoints[i];
 
   track.fTPCncls    = fTPCncls;     
   track.fTPCnclsF   = fTPCnclsF;     
@@ -1044,7 +1228,7 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCnclsFIter1   = fTPCnclsFIter1;     
 
   // PID 
-  for(int i=0;i<AliPID::kSPECIES;++i){
+  for(int i=AliPID::kSPECIES;i--;){
     track.fTPCr[i] = fTPCr[i];
     // combined PID is TPC only!
     track.fR[i] = fTPCr[i];
@@ -1052,18 +1236,17 @@ Bool_t AliESDtrack::FillTPCOnlyTrack(AliESDtrack &track){
   track.fTPCFitMap = fTPCFitMap;
   track.fTPCClusterMap = fTPCClusterMap;
   track.fTPCSharedMap = fTPCSharedMap;
-
-
+  //
   // reset the flags
   track.fFlags = kTPCin;
   track.fID    = fID;
 
   track.fFlags |= fFlags & kTPCpid; //copy the TPCpid status flag
  
-  for (Int_t i=0;i<3;i++) track.fKinkIndexes[i] = fKinkIndexes[i];
+  for (Int_t i=3;i--;) track.fKinkIndexes[i] = fKinkIndexes[i];
   
   return kTRUE;
-    
+  //  
 }
 
 //_______________________________________________________________________
@@ -1078,28 +1261,28 @@ void AliESDtrack::MakeMiniESDtrack(){
   
   fTrackLength = 0;
 
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTrackTime[i] = 0;
-
+  for (Int_t i=AliPID::kSPECIES;i--;) fTrackTime[i] = 0;
+  //
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
   // Reset track parameters constrained to the primary vertex
-  delete fCp;fCp = 0;
-
+  if (fCp) poolETP ? poolETP->MarkSlotFree(fCp) : delete fCp;  fCp = 0;
   // Reset track parameters at the inner wall of TPC
-  delete fIp;fIp = 0;
-  delete fTPCInner;fTPCInner=0;
+  if (fIp)  poolETP ? poolETP->MarkSlotFree(fIp) : delete fIp; fIp = 0;
+  // Reset track TPC inner params
+  if (fTPCInner) poolETP ? poolETP->MarkSlotFree(fTPCInner) : delete fTPCInner; fTPCInner = 0;
   // Reset track parameters at the inner wall of the TRD
-  delete fOp;fOp = 0;
+  if (fOp) poolETP ? poolETP->MarkSlotFree(fOp) : delete fOp; fOp = 0;
   // Reset track parameters at the HMPID
-  delete fHMPIDp;fHMPIDp = 0;
-
-
+  if (fHMPIDp) poolETP ? poolETP->MarkSlotFree(fHMPIDp) : delete fHMPIDp; fHMPIDp = 0;
+  //
   // Reset ITS track related information
   fITSchi2 = 0;
   fITSncls = 0;       
   fITSClusterMap=0;
   fITSSharedMap=0;
   fITSsignal = 0;     
-  for (Int_t i=0;i<4;i++) fITSdEdxSamples[i] = 0.;
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fITSr[i]=0; 
+  for (Int_t i=4;i--;) fITSdEdxSamples[i] = 0.;
+  for (Int_t i=AliPID::kSPECIES;i--;) fITSr[i]=0; 
   fITSLabel = 0;       
 
   // Reset TPC related track information
@@ -1115,27 +1298,28 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTPCsignal= 0;      
   fTPCsignalS= 0;      
   fTPCsignalN= 0;      
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTPCr[i]=0; 
+  for (Int_t i=AliPID::kSPECIES;i--;) fTPCr[i]=0; 
   fTPCLabel=0;       
-  for (Int_t i=0;i<4;i++) fTPCPoints[i] = 0;
-  for (Int_t i=0; i<3;i++)   fKinkIndexes[i] = 0;
-  for (Int_t i=0; i<3;i++)   fV0Indexes[i] = 0;
+  for (Int_t i=4;i--;)   fTPCPoints[i] = 0;
+  for (Int_t i=3;i--;)   fKinkIndexes[i] = 0;
+  for (Int_t i=3;i--;)   fV0Indexes[i] = 0;
 
   // Reset TRD related track information
   fTRDchi2 = 0;        
   fTRDncls = 0;       
   fTRDncls0 = 0;       
   fTRDsignal = 0;      
-  for (Int_t i=0;i<kTRDnPlanes;i++) {
-    fTRDTimBin[i]  = 0;
-  }
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
+  for (Int_t i=kTRDnPlanes;i--;) fTRDTimBin[i]  = 0;
+  for (Int_t i=AliPID::kSPECIES;i--;) fTRDr[i] = 0; 
   fTRDLabel = 0;       
   fTRDQuality  = 0;
   fTRDntracklets = 0;
-  if(fTRDnSlices)
-    delete[] fTRDslices;
-  fTRDslices=0x0;
+  if(fTRDnSlices) {
+    AliPoolN* poolN = fgPools ? fgPools->GetPoolN() : 0;
+    if (poolN) poolN->FreeSlot(&fTRDslices); 
+    else delete[] fTRDslices;
+    fTRDslices = 0;
+  }
   fTRDnSlices=0;
   fTRDBudget  = 0;
 
@@ -1150,16 +1334,16 @@ void AliESDtrack::MakeMiniESDtrack(){
   fTOFsignalDx = 999;
   fTOFdeltaBC = 999;
   fTOFl0l1 = 999;
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fTOFr[i] = 0;
-  for (Int_t i=0;i<3;i++) fTOFLabel[i] = -1;
-  for (Int_t i=0;i<10;i++) fTOFInfo[i] = 0;
+  for (Int_t i=AliPID::kSPECIES;i--;) fTOFr[i] = 0;
+  for (Int_t i=3;i--;) fTOFLabel[i] = -1;
+  for (Int_t i=10;i--;) fTOFInfo[i] = 0;
 
   // Reset HMPID related track information
   fHMPIDchi2 = 0;     
   fHMPIDqn = 0;     
   fHMPIDcluIdx = -1;     
   fHMPIDsignal = 0;     
-  for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
+  for (Int_t i=AliPID::kSPECIES;i--;) fHMPIDr[i] = 0;
   fHMPIDtrkTheta = 0;     
   fHMPIDtrkPhi = 0;      
   fHMPIDtrkX = 0;     
@@ -1172,22 +1356,24 @@ void AliESDtrack::MakeMiniESDtrack(){
   fGlobalChi2 = 0;
 
   fVertexID = -2; // an orphan track
-
-  delete fFriendTrack; fFriendTrack = 0;
+  //
+  AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+  poolFr ?  poolFr->MarkSlotFree(fFriendTrack) : delete fFriendTrack; fFriendTrack = 0;
+  //
 } 
 
 //_______________________________________________________________________
 Int_t AliESDtrack::GetPID() const 
 {
   // Returns the particle most probable id
-  Int_t i;
-  for (i=0; i<AliPID::kSPECIES-1; i++) if (fR[i] != fR[i+1]) break;
+  int i;
+  for (i=0;i<AliPID::kSPECIES-1;i++) if (fR[i] != fR[i+1]) break;
   //
   if (i == AliPID::kSPECIES-1) return AliPID::kPion;  // If all the probabilities are equal, return the pion mass
   //
   Float_t max=0.;
   Int_t k=-1;
-  for (i=0; i<AliPID::kSPECIES; i++) if (fR[i]>max) {k=i; max=fR[i];}
+  for (i=0;i<AliPID::kSPECIES;i++) if (fR[i]>max) {k=i; max=fR[i];}
   //
   if (k==0) { // dE/dx "crossing points" in the TPC
     Double_t p=GetP();
@@ -1286,113 +1472,113 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
 
   if (t->IsStartedTimeIntegral()) {
     SetStatus(kTIME);
-    Double_t times[10];t->GetIntegratedTimes(times); SetIntegratedTimes(times);
+    Double_t times[10]; t->GetIntegratedTimes(times); SetIntegratedTimes(times);
     SetIntegratedLength(t->GetIntegratedLength());
   }
 
   Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
   if (fFriendTrack) {
-  if (flags==kITSout) fFriendTrack->SetITSOut(*t);
-  if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
-  if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
+    if (flags==kITSout) fFriendTrack->SetITSOut(*t);
+    if (flags==kTPCout) fFriendTrack->SetTPCOut(*t);
+    if (flags==kTRDrefit) fFriendTrack->SetTRDIn(*t);
   }
-  
+  AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
+  //
   switch (flags) {
-    
+    //
   case kITSin: 
     fITSchi2Std[0] = t->GetChi2();
     //
   case kITSout: 
     fITSchi2Std[1] = t->GetChi2();
-  case kITSrefit:
-    {
+  case kITSrefit: 
     fITSchi2Std[2] = t->GetChi2();
     fITSClusterMap=0;
     fITSncls=t->GetNumberOfClusters();
     if (fFriendTrack) {
-    Int_t* indexITS = new Int_t[AliESDfriendTrack::kMaxITScluster];
-    for (Int_t i=0;i<AliESDfriendTrack::kMaxITScluster;i++) {
+      Int_t indexITS[AliESDfriendTrack::kMaxITScluster];
+      for (Int_t i=AliESDfriendTrack::kMaxITScluster;i--;) {
 	indexITS[i]=t->GetClusterIndex(i);
-
 	if (i<fITSncls) {
 	  Int_t l=(indexITS[i] & 0xf0000000) >> 28;
-           SETBIT(fITSClusterMap,l);                 
+	  SETBIT(fITSClusterMap,l);                 
         }
+      }
+      fFriendTrack->SetITSIndices(indexITS,AliESDfriendTrack::kMaxITScluster);
     }
-    fFriendTrack->SetITSIndices(indexITS,AliESDfriendTrack::kMaxITScluster);
-    delete [] indexITS;
-    }
-
+    //
     fITSchi2=t->GetChi2();
     fITSsignal=t->GetPIDsignal();
     fITSLabel = t->GetLabel();
     // keep in fOp the parameters outside ITS for ITS stand-alone tracks 
     if (flags==kITSout) { 
-      if (!fOp) fOp=new AliExternalTrackParam(*t);
-      else 
-        fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
-    }   
+      if (!fOp) {
+	if (poolETP) {fOp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fOp);}
+	else          fOp = new AliExternalTrackParam(*t);
+      }
+      else            fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     }
     break;
-    
+    //  
   case kTPCin: case kTPCrefit:
-    {
     fTPCLabel = t->GetLabel();
     if (flags==kTPCin)  {
-      fTPCInner=new AliExternalTrackParam(*t); 
-      fTPCnclsIter1=t->GetNumberOfClusters();    
-      fTPCchi2Iter1=t->GetChi2();
+      if (poolETP) { fTPCInner = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fTPCInner);}
+      else           fTPCInner = new AliExternalTrackParam(*t);
+      fTPCnclsIter1 = t->GetNumberOfClusters();    
+      fTPCchi2Iter1 = t->GetChi2();
     }
-    if (!fIp) fIp=new AliExternalTrackParam(*t);
-    else 
-      fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    if (!fIp) {
+      if (poolETP) { fIp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fIp);}
+      else           fIp = new AliExternalTrackParam(*t);
     }
+    else             fIp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    //
     // Intentionally no break statement; need to set general TPC variables as well
   case kTPCout:
-    {
     if (flags & kTPCout){
-      if (!fOp) fOp=new AliExternalTrackParam(*t);
-      else 
-        fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+      if (!fOp) {
+	if (poolETP) { fOp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fOp);}
+	else           fOp = new AliExternalTrackParam(*t);
+      }
+      else             fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     }
     fTPCncls=t->GetNumberOfClusters();    
     fTPCchi2=t->GetChi2();
     
     if (fFriendTrack) {  // Copy cluster indices
-      Int_t* indexTPC = new Int_t[AliESDfriendTrack::kMaxTPCcluster];
-      for (Int_t i=0;i<AliESDfriendTrack::kMaxTPCcluster;i++)         
-	indexTPC[i]=t->GetClusterIndex(i);
+      Int_t indexTPC[AliESDfriendTrack::kMaxTPCcluster];
+      for (Int_t i=AliESDfriendTrack::kMaxTPCcluster;i--;) indexTPC[i]=t->GetClusterIndex(i);
       fFriendTrack->SetTPCIndices(indexTPC,AliESDfriendTrack::kMaxTPCcluster);
-      delete [] indexTPC;
     }
     fTPCsignal=t->GetPIDsignal();
-    }
     break;
-
+    //
   case kTRDin: case kTRDrefit:
     break;
   case kTRDout:
-    {
     fTRDLabel = t->GetLabel(); 
     fTRDchi2  = t->GetChi2();
     fTRDncls  = t->GetNumberOfClusters();
     if (fFriendTrack) {
-      Int_t* indexTRD = new Int_t[AliESDfriendTrack::kMaxTRDcluster];
-      for (Int_t i=0;i<AliESDfriendTrack::kMaxTRDcluster;i++) indexTRD[i]=-2;
-      for (Int_t i=0;i<6;i++) indexTRD[i]=t->GetTrackletIndex(i);
+      Int_t indexTRD[AliESDfriendTrack::kMaxTRDcluster];
+      for (Int_t i=AliESDfriendTrack::kMaxTRDcluster;i--;) indexTRD[i] = -2;
+      for (Int_t i=6;i--;)                                 indexTRD[i] = t->GetTrackletIndex(i);
       fFriendTrack->SetTRDIndices(indexTRD,AliESDfriendTrack::kMaxTRDcluster);
-      delete [] indexTRD;
     }    
-    
+    //
     fTRDsignal=t->GetPIDsignal();
-    }
     break;
+    //
   case kTRDbackup:
-    if (!fOp) fOp=new AliExternalTrackParam(*t);
-    else 
-      fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    if (!fOp) {
+      if (poolETP) {fOp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fOp);}
+      else          fOp = new AliExternalTrackParam(*t);
+    }
+    else            fOp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     fTRDncls0 = t->GetNumberOfClusters(); 
     break;
+    //
   case kTOFin: 
     break;
   case kTOFout: 
@@ -1400,15 +1586,19 @@ Bool_t AliESDtrack::UpdateTrackParams(const AliKalmanTrack *t, ULong_t flags){
   case kTRDStop:
     break;
   case kHMPIDout:
-  if (!fHMPIDp) fHMPIDp=new AliExternalTrackParam(*t);
-    else 
-      fHMPIDp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
+    if (!fHMPIDp) {
+      if (poolETP) {fHMPIDp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*t); poolETP->RegisterClone(fHMPIDp);}
+      else          fHMPIDp = new AliExternalTrackParam(*t);
+      fHMPIDp=new AliExternalTrackParam(*t);
+    }
+    else            fHMPIDp->Set(t->GetX(),t->GetAlpha(),t->GetParameter(),t->GetCovariance());
     break;
+    //
   default: 
     AliError("Wrong flag !");
     return kFALSE;
   }
-
+  //
   return rc;
 }
 
@@ -1418,7 +1608,7 @@ void AliESDtrack::GetExternalParameters(Double_t &x, Double_t p[5]) const {
   // This function returns external representation of the track parameters
   //---------------------------------------------------------------------
   x=GetX();
-  for (Int_t i=0; i<5; i++) p[i]=GetParameter()[i];
+  for (Int_t i=5;i--;) p[i]=GetParameter()[i];
 }
 
 //_______________________________________________________________________
@@ -1426,7 +1616,7 @@ void AliESDtrack::GetExternalCovariance(Double_t cov[15]) const {
   //---------------------------------------------------------------------
   // This function returns external representation of the cov. matrix
   //---------------------------------------------------------------------
-  for (Int_t i=0; i<15; i++) cov[i]=AliExternalTrackParam::GetCovariance()[i];
+  for (Int_t i=15;i--;) cov[i]=AliExternalTrackParam::GetCovariance()[i];
 }
 
 //_______________________________________________________________________
@@ -1438,7 +1628,7 @@ Bool_t AliESDtrack::GetConstrainedExternalParameters
   if (!fCp) return kFALSE;
   alpha=fCp->GetAlpha();
   x=fCp->GetX();
-  for (Int_t i=0; i<5; i++) p[i]=fCp->GetParameter()[i];
+  for (Int_t i=5;i--;) p[i]=fCp->GetParameter()[i];
   return kTRUE;
 }
 
@@ -1449,7 +1639,7 @@ AliESDtrack::GetConstrainedExternalCovariance(Double_t c[15]) const {
   // This function returns the constrained external cov. matrix
   //---------------------------------------------------------------------
   if (!fCp) return kFALSE;
-  for (Int_t i=0; i<15; i++) c[i]=fCp->GetCovariance()[i];
+  for (Int_t i=15;i--;) c[i]=fCp->GetCovariance()[i];
   return kTRUE;
 }
 
@@ -1463,7 +1653,7 @@ AliESDtrack::GetInnerExternalParameters
   if (!fIp) return kFALSE;
   alpha=fIp->GetAlpha();
   x=fIp->GetX();
-  for (Int_t i=0; i<5; i++) p[i]=fIp->GetParameter()[i];
+  for (Int_t i=5;i--;) p[i]=fIp->GetParameter()[i];
   return kTRUE;
 }
 
@@ -1474,7 +1664,7 @@ AliESDtrack::GetInnerExternalCovariance(Double_t cov[15]) const {
  // at the inner layer of TPC
  //---------------------------------------------------------------------
   if (!fIp) return kFALSE;
-  for (Int_t i=0; i<15; i++) cov[i]=fIp->GetCovariance()[i];
+  for (Int_t i=15;i--;) cov[i]=fIp->GetCovariance()[i];
   return kTRUE;
 }
 
@@ -1484,6 +1674,7 @@ AliESDtrack::SetOuterParam(const AliExternalTrackParam *p, ULong_t flags) {
   // This is a direct setter for the outer track parameters
   //
   SetStatus(flags);
+  
   if (fOp) delete fOp;
   fOp=new AliExternalTrackParam(*p);
 }
@@ -1494,8 +1685,12 @@ AliESDtrack::SetOuterHmpParam(const AliExternalTrackParam *p, ULong_t flags) {
   // This is a direct setter for the outer track parameters
   //
   SetStatus(flags);
-  if (fHMPIDp) delete fHMPIDp;
-  fHMPIDp=new AliExternalTrackParam(*p);
+  if (fHMPIDp) *fHMPIDp = *p;
+  else {
+    AliClonesPool* poolETP = fgPools ? fgPools->GetPoolExtTrPar() : 0;
+    if (poolETP) {fHMPIDp = new(poolETP->NextFreeSlot()) AliExternalTrackParam(*p); poolETP->RegisterClone(fHMPIDp);}
+    else fHMPIDp = new AliExternalTrackParam(*p);
+  }
 }
 
 Bool_t 
@@ -1508,7 +1703,7 @@ AliESDtrack::GetOuterExternalParameters
   if (!fOp) return kFALSE;
   alpha=fOp->GetAlpha();
   x=fOp->GetX();
-  for (Int_t i=0; i<5; i++) p[i]=fOp->GetParameter()[i];
+  for (Int_t i=5;i--;) p[i]=fOp->GetParameter()[i];
   return kTRUE;
 }
 
@@ -1522,7 +1717,7 @@ AliESDtrack::GetOuterHmpExternalParameters
   if (!fHMPIDp) return kFALSE;
   alpha=fHMPIDp->GetAlpha();
   x=fHMPIDp->GetX();
-  for (Int_t i=0; i<5; i++) p[i]=fHMPIDp->GetParameter()[i];
+  for (Int_t i=5;i--;) p[i]=fHMPIDp->GetParameter()[i];
   return kTRUE;
 }
 
@@ -1533,7 +1728,7 @@ AliESDtrack::GetOuterExternalCovariance(Double_t cov[15]) const {
  // at the inner layer of TRD
  //---------------------------------------------------------------------
   if (!fOp) return kFALSE;
-  for (Int_t i=0; i<15; i++) cov[i]=fOp->GetCovariance()[i];
+  for (Int_t i=15;i--;) cov[i]=fOp->GetCovariance()[i];
   return kTRUE;
 }
 
@@ -1544,7 +1739,7 @@ AliESDtrack::GetOuterHmpExternalCovariance(Double_t cov[15]) const {
  // at the inner layer of TRD
  //---------------------------------------------------------------------
   if (!fHMPIDp) return kFALSE;
-  for (Int_t i=0; i<15; i++) cov[i]=fHMPIDp->GetCovariance()[i];
+  for (Int_t i=15;i--;) cov[i]=fHMPIDp->GetCovariance()[i];
   return kTRUE;
 }
 
@@ -1624,13 +1819,13 @@ Int_t AliESDtrack::GetClusters(Int_t idet, Int_t *idx) const
 //_______________________________________________________________________
 void AliESDtrack::GetIntegratedTimes(Double_t *times) const {
   // Returns the array with integrated times for each particle hypothesis
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) times[i]=fTrackTime[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) times[i]=fTrackTime[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetIntegratedTimes(const Double_t *times) {
   // Sets the array with integrated times for each particle hypotesis
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) fTrackTime[i]=times[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) fTrackTime[i]=times[i];
 }
 
 //_______________________________________________________________________
@@ -1643,7 +1838,7 @@ void AliESDtrack::SetITSpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetITSpid(Double_t *p) const {
   // Gets the probability of each particle type (in ITS)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fITSr[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fITSr[i];
 }
 
 //_______________________________________________________________________
@@ -1653,7 +1848,7 @@ Char_t AliESDtrack::GetITSclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   if (idx && fFriendTrack) {
     Int_t *index=fFriendTrack->GetITSindices();
-    for (Int_t i=0; i<AliESDfriendTrack::kMaxITScluster; i++) {
+    for (Int_t i=AliESDfriendTrack::kMaxITScluster;i--;) {
       if ( (i>=fITSncls) && (i<6) ) idx[i]=-1;
       else {
 	if (index) {
@@ -1732,10 +1927,10 @@ UShort_t AliESDtrack::GetTPCclusters(Int_t *idx) const {
     Int_t *index=fFriendTrack->GetTPCindices();
 
     if (index){
-      for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=index[i];
+      for (Int_t i=AliESDfriendTrack::kMaxTPCcluster;i--;) idx[i]=index[i];
     }
     else {
-      for (Int_t i=0; i<AliESDfriendTrack::kMaxTPCcluster; i++) idx[i]=-2;
+      for (Int_t i=AliESDfriendTrack::kMaxTPCcluster;i--;) idx[i]=-2;
     }
   }
   return fTPCncls;
@@ -1777,7 +1972,7 @@ Float_t AliESDtrack::GetTPCClusterInfo(Int_t nNeighbours/*=3*/, Int_t type/*=0*/
   
   Int_t upperBound=fTPCClusterMap.GetNbits();
   if (upperBound>row1) upperBound=row1;
-  for (Int_t i=row0; i<upperBound; ++i){
+  for (Int_t i=row0;i<upperBound; ++i){
     //look to current row
     if (fTPCClusterMap[i]) {
       last=i;
@@ -1842,7 +2037,7 @@ void AliESDtrack::SetTPCpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTPCpid(Double_t *p) const {
   // Gets the probability of each particle type (in TPC)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTPCr[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fTPCr[i];
 }
 
 //_______________________________________________________________________
@@ -1852,13 +2047,8 @@ UChar_t AliESDtrack::GetTRDclusters(Int_t *idx) const {
   //---------------------------------------------------------------------
   if (idx && fFriendTrack) {
     Int_t *index=fFriendTrack->GetTRDindices();
-
-    if (index) {
-      for (Int_t i=0; i<AliESDfriendTrack::kMaxTRDcluster; i++) idx[i]=index[i];
-    }
-    else {
-      for (Int_t i=0; i<AliESDfriendTrack::kMaxTRDcluster; i++) idx[i]=-2;
-    }
+    if (index) for (Int_t i=AliESDfriendTrack::kMaxTRDcluster;i--;) idx[i]=index[i];
+    else       for (Int_t i=AliESDfriendTrack::kMaxTRDcluster;i--;) idx[i]=-2;
   }
   return fTRDncls;
 }
@@ -1879,7 +2069,7 @@ UChar_t AliESDtrack::GetTRDtracklets(Int_t *idx) const {
   if (!idx) return GetTRDntracklets();
   Int_t *index=fFriendTrack->GetTRDindices();
   Int_t n = 0;
-  for (Int_t i=0; i<kTRDnPlanes; i++){ 
+  for (Int_t i=0;i<kTRDnPlanes;i++){ 
     if (index){
       if(index[i]>=0) n++;
       idx[i]=index[i];
@@ -1899,7 +2089,7 @@ void AliESDtrack::SetTRDpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetTRDpid(Double_t *p) const {
   // Gets the probability of each particle type (in TRD)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTRDr[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fTRDr[i];
 }
 
 //_______________________________________________________________________
@@ -1968,7 +2158,7 @@ Double_t  AliESDtrack::GetTRDslice(Int_t plane, Int_t slice) const {
 
   // return average of the dEdx measurements
   Double_t q=0.; Double32_t *s = &fTRDslices[plane*ns];
-  for (Int_t i=0; i<ns; i++, s++) if((*s)>0.) q+=(*s);
+  for (Int_t i=0;i<ns;i++, s++) if((*s)>0.) q+=(*s);
   return q/ns;
 }
 
@@ -1976,13 +2166,14 @@ Double_t  AliESDtrack::GetTRDslice(Int_t plane, Int_t slice) const {
 void  AliESDtrack::SetNumberOfTRDslices(Int_t n) {
   //Sets the number of slices used for PID 
   if (fTRDnSlices) return;
-
   fTRDnSlices=n;
-  fTRDslices=new Double32_t[fTRDnSlices];
-  
+  AliPoolN* poolN = fgPools ? fgPools->GetPoolN() : 0;
+  if (poolN) fTRDslices = poolN->BookD32(fTRDnSlices,&fTRDslices);
+  else       fTRDslices = new Double32_t[fTRDnSlices];
+  //
   // set-up correctly the allocated memory
   memset(fTRDslices, 0, n*sizeof(Double32_t));
-  for (Int_t i=GetNumberOfTRDslices(); i--;) fTRDslices[i]=-1.;
+  for (Int_t i=GetNumberOfTRDslices();i--;) fTRDslices[i]=-1.;
 }
 
 //____________________________________________________
@@ -2037,31 +2228,31 @@ void AliESDtrack::SetTOFpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::SetTOFLabel(const Int_t *p) {  
   // Sets  (in TOF)
-  for (Int_t i=0; i<3; i++) fTOFLabel[i]=p[i];
+  for (Int_t i=3;i--;) fTOFLabel[i]=p[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFpid(Double_t *p) const {
   // Gets probabilities of each particle type (in TOF)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fTOFr[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fTOFr[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFLabel(Int_t *p) const {
   // Gets (in TOF)
-  for (Int_t i=0; i<3; i++) p[i]=fTOFLabel[i];
+  for (Int_t i=3;i--;) p[i]=fTOFLabel[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetTOFInfo(Float_t *info) const {
   // Gets (in TOF)
-  for (Int_t i=0; i<10; i++) info[i]=fTOFInfo[i];
+  for (Int_t i=10;i--;) info[i]=fTOFInfo[i];
 }
 
 //_______________________________________________________________________
 void AliESDtrack::SetTOFInfo(Float_t*info) {
   // Gets (in TOF)
-  for (Int_t i=0; i<10; i++) fTOFInfo[i]=info[i];
+  for (Int_t i=10;i--;) fTOFInfo[i]=info[i];
 }
 
 
@@ -2074,18 +2265,21 @@ void AliESDtrack::SetHMPIDpid(const Double_t *p) {
 }
 
 //_______________________________________________________________________
-void  AliESDtrack::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo){ 
-  if(fTPCdEdxInfo) delete fTPCdEdxInfo;
+void  AliESDtrack::SetTPCdEdxInfo(AliTPCdEdxInfo * dEdxInfo)
+{ 
+  // add TPC dedx info
+  if (fTPCdEdxInfo) {
+    AliClonesPool* pooldEdx = fgPools ? fgPools->GetPoolTPCdEdx() : 0;
+    pooldEdx ? pooldEdx->MarkSlotFree(fTPCdEdxInfo) : delete fTPCdEdxInfo;
+  }
   fTPCdEdxInfo = dEdxInfo; 
 }
 
 //_______________________________________________________________________
 void AliESDtrack::GetHMPIDpid(Double_t *p) const {
   // Gets probabilities of each particle type (in HMPID)
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fHMPIDr[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fHMPIDr[i];
 }
-
-
 
 //_______________________________________________________________________
 void AliESDtrack::SetESDpid(const Double_t *p) {  
@@ -2097,7 +2291,7 @@ void AliESDtrack::SetESDpid(const Double_t *p) {
 //_______________________________________________________________________
 void AliESDtrack::GetESDpid(Double_t *p) const {
   // Gets probability of each particle type for the ESD track
-  for (Int_t i=0; i<AliPID::kSPECIES; i++) p[i]=fR[i];
+  for (Int_t i=AliPID::kSPECIES;i--;) p[i]=fR[i];
 }
 
 //_______________________________________________________________________
@@ -2365,7 +2559,7 @@ void AliESDtrack::FillPolymarker(TPolyMarker3D *pol, Float_t magF, Float_t minR,
   //
   Double_t mpos[3]={0,0,0};
   Int_t entries=arrayRef.GetEntries();
-  for (Int_t i=0;i<entries;i++){
+  for (Int_t i=entries;i--;){
     Double_t pos[3];
     ((AliExternalTrackParam*)arrayRef.At(i))->GetXYZ(pos);
     mpos[0]+=pos[0]/entries;
@@ -2412,7 +2606,7 @@ void AliESDtrack::SetITSdEdxSamples(const Double_t s[4]) {
   // Store the dE/dx samples measured by the two SSD and two SDD layers.
   // These samples are corrected for the track segment length. 
   //
-  for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=s[i];
+  for (Int_t i=4;i--;) fITSdEdxSamples[i]=s[i];
 }
 
 //_______________________________________________________________________
@@ -2421,7 +2615,7 @@ void AliESDtrack::GetITSdEdxSamples(Double_t *s) const {
   // Get the dE/dx samples measured by the two SSD and two SDD layers.  
   // These samples are corrected for the track segment length.
   //
-  for (Int_t i=0; i<4; i++) s[i]=fITSdEdxSamples[i];
+  for (Int_t i=4;i--;) s[i]=fITSdEdxSamples[i];
 }
 
 
@@ -2468,33 +2662,25 @@ Double_t AliESDtrack::GetChi2TPCConstrainedVsGlobal(const AliESDVertex* vtx) con
   }
   
   // clone for constraining
-  AliExternalTrackParam* tpcInnerC = new AliExternalTrackParam(*fTPCInner);
-  if (!tpcInnerC) { 
-    AliWarning("Clone of TPCInnerParam failed.");
-    return fCacheChi2TPCConstrainedVsGlobal;  
-  }
+  AliExternalTrackParam tpcInnerC(*fTPCInner);
   
   // transform to the track reference frame 
-  Bool_t isOK = tpcInnerC->Rotate(GetAlpha());
-  isOK &= tpcInnerC->PropagateTo(GetX(), b[2]);
+  Bool_t isOK = tpcInnerC.Rotate(GetAlpha());
+  isOK &= tpcInnerC.PropagateTo(GetX(), b[2]);
   if (!isOK) { 
-    delete tpcInnerC;
-    tpcInnerC = 0; 
     AliWarning("Rotation/Propagation of track failed.") ; 
     return fCacheChi2TPCConstrainedVsGlobal;    
   }  
 
   // constrain TPCinner 
-  isOK = tpcInnerC->ConstrainToVertex(vtx, b);
+  isOK = tpcInnerC.ConstrainToVertex(vtx, b);
   
   // transform to the track reference frame 
-  isOK &= tpcInnerC->Rotate(GetAlpha());
-  isOK &= tpcInnerC->PropagateTo(GetX(), b[2]);
+  isOK &= tpcInnerC.Rotate(GetAlpha());
+  isOK &= tpcInnerC.PropagateTo(GetX(), b[2]);
 
   if (!isOK) {
     AliWarning("ConstrainTPCInner failed.") ;
-    delete tpcInnerC;
-    tpcInnerC = 0; 
     return fCacheChi2TPCConstrainedVsGlobal;  
   }
   
@@ -2505,23 +2691,33 @@ Double_t AliESDtrack::GetChi2TPCConstrainedVsGlobal(const AliESDVertex* vtx) con
   TMatrixD delta(1,5);
   TMatrixD covarM(5,5);
 
-  for (Int_t ipar=0; ipar<5; ipar++) {
-    deltaT(ipar,0) = tpcInnerC->GetParameter()[ipar] - GetParameter()[ipar];
-    delta(0,ipar) = tpcInnerC->GetParameter()[ipar] - GetParameter()[ipar];
+  for (Int_t ipar=0;ipar<5;ipar++) {
+    deltaT(ipar,0) = tpcInnerC.GetParameter()[ipar] - GetParameter()[ipar];
+    delta(0,ipar) = tpcInnerC.GetParameter()[ipar] - GetParameter()[ipar];
 
     for (Int_t jpar=0; jpar<5; jpar++) {
       Int_t index = GetIndex(ipar,jpar);
-      covarM(ipar,jpar) = GetCovariance()[index]+tpcInnerC->GetCovariance()[index];
+      covarM(ipar,jpar) = GetCovariance()[index]+tpcInnerC.GetCovariance()[index];
     }
   }
   // chi2 distance TPC constrained and TPC+ITS
   TMatrixD covarMInv = covarM.Invert();
   TMatrixD mat2 = covarMInv*deltaT;
   TMatrixD chi2 = delta*mat2; 
-  
-  delete tpcInnerC; 
-  tpcInnerC = 0;
-  
+  //  
   fCacheChi2TPCConstrainedVsGlobal = chi2(0,0);
   return fCacheChi2TPCConstrainedVsGlobal;
+}
+
+void AliESDtrack::ReleaseESDfriendTrackGently()
+{
+  // remove friend track
+  if (!fFriendTrack) return;
+  AliClonesPool* poolFr = fgPools->GetPoolTrFriend();
+  poolFr ? poolFr->MarkSlotFree(fFriendTrack) : delete fFriendTrack;  
+  fFriendTrack=0; 
+}
+
+void AliESDtrack::PrintTmp()
+{
 }
