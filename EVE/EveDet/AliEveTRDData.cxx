@@ -250,42 +250,41 @@ void AliEveTRDClusters::Load(const Char_t *w) const
   if(!c) return;
 
   Int_t det = c->GetDetector();
-  AliEveTRDLoader *loader = NULL;
+  AliEveTRDLoader *loader(NULL);
   switch(typ){
-  case 0:  
-    loader = new AliEveTRDLoader("Hits");
-    if(!loader->Open("TRD.Hits.root")){ 
-      delete loader;
-      return;
-    }
-    loader->SetDataType(AliEveTRDLoader::kTRDHits);
-    break;
-  case 1:
-    loader = new AliEveTRDLoader("Digits");
-    if(!loader->Open("TRD.Digits.root")){ 
-      delete loader;
-      return;
-    }
-    loader->SetDataType(AliEveTRDLoader::kTRDDigits);
-    break;
-  case 2:
-    loader = new AliEveTRDLoader("Clusters");
-    if(!loader->Open("TRD.RecPoints.root")){ 
-      delete loader;
-      return;
-    }
-    loader->SetDataType(AliEveTRDLoader::kTRDClusters);
-    break;
   case 3:
     loader = new AliEveTRDLoaderSim("MC");
-    if(!loader->Open("galice.root")){ 
-      delete loader;
-      return;
+    if(!loader->Open("galice.root")) delete loader;
+    else{
+      loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+      break;
     }
-    loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
-    break;
+  case 0:  
+    loader = new AliEveTRDLoader("Hits");
+    if(!loader->Open("TRD.Hits.root")) delete loader;
+    else{
+      loader->SetDataType(AliEveTRDLoader::kTRDHits);
+      if(typ!=3) break;
+    }
+  case 1:
+    if(!loader) loader = new AliEveTRDLoader("Digits");
+    if(!loader->Open("TRD.Digits.root")){
+      if(typ==1) delete loader;
+    } else {
+      loader->SetDataType(AliEveTRDLoader::kTRDDigits);
+      if(typ!=3) break;
+    }
+  case 2:
+    if(!loader) loader = new AliEveTRDLoader("Clusters");
+    if(!loader->Open("TRD.RecPoints.root")){
+      if(typ ==2) delete loader;
+    } else {
+      loader->SetDataType(AliEveTRDLoader::kTRDClusters);
+      break;
+    }
   default: return;
   }
+  if(!loader) return;
 
   loader->AddChambers(AliTRDgeometry::GetSector(det),AliTRDgeometry::GetStack(det), AliTRDgeometry::GetLayer(det));
   // load first event

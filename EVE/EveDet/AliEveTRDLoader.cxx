@@ -141,31 +141,45 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
 
   Unload();
 
-  TTree *t = 0x0;
-  TFile *f = TFile::Open(Form("%s/%s", fDir.Data(), fFilename.Data()));
-  if(! f->cd(Form("Event%d", ev))){
-    AliError(Form("Couldn't find event %d in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
+  TTree *t(NULL); TFile *f(NULL);
+  if(!(f = TFile::Open(Form("%s/%s", fDir.Data(), fFilename.Data())))){
+    AliWarning(Form("File not found \"%s/%s\".", fDir.Data(), fFilename.Data()));
+    return kFALSE;
+  }
+  if(!f->cd(Form("Event%d", ev))){
+    AliError(Form("Event[%d] not found in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
     f->Close(); //delete f;
     return kFALSE;
   }
 
   if(fDataType&kTRDHits){
-    t = (TTree*)gDirectory->Get("TreeH");
-    if(!t) return kFALSE;
+    if(!(t = (TTree*)gDirectory->Get("TreeH"))){
+      AliError(Form("Tree[TreeH] not found for Event[%d].", ev));
+      return kFALSE;
+    }
     if(!LoadHits(t)) return kFALSE;
-  } else if(fDataType&kTRDDigits){
-    t = (TTree*)gDirectory->Get("TreeD");
-    if(!t) return kFALSE;
+  }
+  if(fDataType&kTRDDigits){
+    if(!(t = (TTree*)gDirectory->Get("TreeD"))){
+      AliError(Form("Tree[TreeD] not found for Event[%d].", ev));
+      return kFALSE;
+    }
     if(!LoadDigits(t)) return kFALSE;
-  } else if(fDataType&kTRDClusters){
-    t = (TTree*)gDirectory->Get("TreeR");
-    if(!t) return kFALSE;
+  }
+  if(fDataType&kTRDClusters){
+    if(!(t = (TTree*)gDirectory->Get("TreeR"))){
+      AliError(Form("Tree[TreeR] not found for Event[%d].", ev));
+      return kFALSE;
+    }
     if(!LoadClusters(t)) return kFALSE;
-  } else if(fDataType&kTRDTracklets){
-    t = (TTree*)gDirectory->Get("tracklets");
-    if(!t) return kFALSE;
+  }
+  if(fDataType&kTRDTracklets){
+    if(!(t = (TTree*)gDirectory->Get("tracklets"))){
+      AliError(Form("Tree[tracklets] not found for Event[%d].", ev));
+      return kFALSE;
+    }
     if(!LoadTracklets(t)) return kFALSE;
-  } else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
+  }// else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
 
   f->Close(); //delete f;
 
@@ -222,13 +236,12 @@ Bool_t AliEveTRDLoader::LoadClusters(TTree *tC)
   TObjArray *clusters = new TObjArray();
   tC->SetBranchAddress("TRDcluster", &clusters);
 
-  AliEveTRDChamber *chmb = 0x0;
-  AliTRDcluster *c=0x0;
-  for(int idet=0; idet<540; idet++){
+  AliEveTRDChamber *chmb(NULL);
+  AliTRDcluster *c(NULL);
+  for(int idet=0; idet<AliTRDgeometry::kNdet; idet++){
     tC->GetEntry(idet);
     if(!clusters->GetEntriesFast()) continue;
-    c = (AliTRDcluster*)clusters->UncheckedAt(0);
-    if(!c) continue;
+    if(!(c = (AliTRDcluster*)clusters->UncheckedAt(0))) continue;
     if((chmb = GetChamber(c->GetDetector()))) chmb->LoadClusters(clusters);
   }
   return kTRUE;
@@ -247,7 +260,7 @@ Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
   AliEveTRDChamber *chmb;
   AliTRDdigitsManager dm;
   dm.ReadDigits(tD);
-  for(int idet=0; idet<540; idet++){
+  for(int idet=0; idet<AliTRDgeometry::kNdet; idet++){
     if(!(chmb=GetChamber(idet))) continue;
     //  digits = dm.GetDigits(idet);
     //  if(!digits) continue;
