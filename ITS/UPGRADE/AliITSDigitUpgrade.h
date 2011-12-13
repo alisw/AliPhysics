@@ -60,8 +60,8 @@ class AliITSDigitUpgrade: public AliDigit {
   Int_t    GetzPixelNumber() const {return fPixId%100000;}
   Int_t    GetNTracksIdMC() const {return fNTracksIdMC;}
   Int_t*   GetTracks() {return fTrackIdMC; }
-  Int_t    GetTrackID(Int_t ipart)  {if(ipart<0 || ipart>=kMaxLab) return -1; else return fTrackIdMC[ipart];}
-  Float_t  GetSignalID(Int_t ipart) {if(ipart<0 || ipart>=kMaxLab) return -1; else return fSignalID[ipart];}
+  Int_t    GetTrackID(Int_t ipart) const  {if(ipart<0 || ipart>=kMaxLab) return -1; else return fTrackIdMC[ipart];}
+  Float_t  GetSignalID(Int_t ipart) const {if(ipart<0 || ipart>=kMaxLab) return -1; else return fSignalID[ipart];}
     
   void GetPosition(Int_t ilayer, Int_t nx, Int_t nz, Double_t &xloc, Double_t &zloc);
     
@@ -71,14 +71,14 @@ class AliITSDigitUpgrade: public AliDigit {
    
  protected:
     
-  ULong_t fPixId;
+  ULong_t fPixId;    // ID number of the fired pixel in a module
   Float_t fSignal;   // Signal as Eloss in the medium
-  Int_t fNLayer;     
-  Int_t fModule;     
-  Double_t fNelectrons; 
-  Int_t fNTracksIdMC;
+  Int_t fNLayer;     // Layer 
+  Int_t fModule;     // Module in the layer
+  Double_t fNelectrons; // released charge due to E loss
+  Int_t fNTracksIdMC;  // Number of MC particles which produced the Digit
   Int_t fTrackIdMC[kMaxLab];  // MC track labels 
-  Float_t fSignalID[kMaxLab];
+  Float_t fSignalID[kMaxLab]; // E loss
   
 
  private:

@@ -24,9 +24,9 @@ public :
   void SetNTracksIdMC(Int_t nLabels) {fNTracksIdMC = nLabels;}
   void AddTrackID(Int_t tid); 
 
-  Int_t GetModule(){return fModule;}
+  Int_t GetModule() const {return fModule;}
   Int_t GetNTracksIdMC() const {return fNTracksIdMC;}
-  Int_t GetTrackID(Int_t ipart) {if(ipart<0 || ipart >=kMaxLab) return -1; else return fTrackIdMC[ipart];}
+  Int_t GetTrackID(Int_t ipart) const {if(ipart<0 || ipart >=kMaxLab) return -1; else return fTrackIdMC[ipart];}
 
   enum {kMaxLab=24}; // maximum number of MC labels associated to the cluster
   void CleanLabels() {SetNTracksIdMC(0); for(Int_t i=0; i<kMaxLab ; i++) fTrackIdMC[i]=-3; }
@@ -35,7 +35,7 @@ public :
 
  protected:
 
-  Int_t fModule;
+  Int_t fModule;         // segmentation element within the same layer
   Int_t fNTracksIdMC;     // total number of associated MC labels (could be more than 3!)
   Int_t fTrackIdMC[kMaxLab];  // MC track labels 
 

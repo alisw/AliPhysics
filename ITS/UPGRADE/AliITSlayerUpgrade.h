@@ -5,9 +5,9 @@
 
 /* $Id$ */
 #include <TObject.h>
-#include "AliITStrackerMI.h"
 #include "AliITSRecPoint.h"
 #include "AliITSRecoParam.h"
+
  class AliITSlayerUpgrade : public TObject {
 
   public:

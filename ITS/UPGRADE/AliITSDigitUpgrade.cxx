@@ -21,21 +21,22 @@
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
-// Class defining the digit object
-// for ITS upgrade
-// Inherits from AliDigit
+// Class defining the digit object                               //
+// for ITS upgrade                                               //
+// Inherits from AliDigit                                        //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
 ClassImp(AliITSDigitUpgrade)
 //______________________________________________________________________
-  AliITSDigitUpgrade::AliITSDigitUpgrade():AliDigit(),
-					   fPixId(9999),
-					   fSignal(0),
-					   fNLayer(0),
-					   fModule(0),
-					   fNelectrons(0),
-					   fNTracksIdMC(0)
+  AliITSDigitUpgrade::AliITSDigitUpgrade():
+    AliDigit(),
+    fPixId(9999),
+    fSignal(0),
+    fNLayer(0),
+    fModule(0),
+    fNelectrons(0),
+    fNTracksIdMC(0)
 {
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
@@ -43,13 +44,14 @@ ClassImp(AliITSDigitUpgrade)
   }
 } //default creator
 //_______________________________________________________________________
-AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits): AliDigit(digits),
-						       fPixId(9999), 
-						       fSignal(0),
-						       fNLayer(0),
-						       fModule(0), 
-						       fNelectrons(0),
-						       fNTracksIdMC(0)
+AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits): 
+  AliDigit(digits),
+  fPixId(9999), 
+  fSignal(0),
+  fNLayer(0),
+  fModule(0), 
+  fNelectrons(0),
+  fNTracksIdMC(0)
 {
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
@@ -57,13 +59,14 @@ AliITSDigitUpgrade::AliITSDigitUpgrade(Int_t *digits): AliDigit(digits),
   }
 } //default creator
 //____________________________________________________________________________________________________
-AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss): AliDigit(),
-								      fPixId(pixid), 
-								      fSignal(eloss),
-								      fNLayer(0), 
-								      fModule(0),
-								      fNelectrons(0),
-								      fNTracksIdMC(0)
+AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss): 
+  AliDigit(),
+  fPixId(pixid), 
+  fSignal(eloss),
+  fNLayer(0), 
+  fModule(0),
+  fNelectrons(0),
+  fNTracksIdMC(0)
 {
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=-1;
@@ -71,13 +74,14 @@ AliITSDigitUpgrade::AliITSDigitUpgrade(ULong_t pixid, Float_t eloss): AliDigit()
   }
 } //standard creator digits only
 //____________________________________________________________________________________________________
-AliITSDigitUpgrade::AliITSDigitUpgrade(const AliITSDigitUpgrade &d):AliDigit(d),
-								    fPixId(d.fPixId),
-								    fSignal(d.fSignal),
-								    fNLayer(d.fNLayer), 
-								    fModule(d.fModule), 
-								    fNelectrons(d.fNelectrons),
-								    fNTracksIdMC(d.fNTracksIdMC)
+AliITSDigitUpgrade::AliITSDigitUpgrade(const AliITSDigitUpgrade &d):
+  AliDigit(d),
+  fPixId(d.fPixId),
+  fSignal(d.fSignal),
+  fNLayer(d.fNLayer), 
+  fModule(d.fModule), 
+  fNelectrons(d.fNelectrons),
+  fNTracksIdMC(d.fNTracksIdMC)
 {
   for(Int_t i=0; i<kMaxLab ; i++) {
     fTrackIdMC[i]=d.fTrackIdMC[i];
@@ -101,6 +105,10 @@ void AliITSDigitUpgrade::AddTrackID(Int_t tid) {
 
 //____________________________________________________________________________________________________
 void  AliITSDigitUpgrade::GetPosition(Int_t ilayer, Int_t nx, Int_t nz, Double_t &xloc, Double_t &zloc){
+  //
+  // Determines the local coordinates of the center of the pixel (a digit is a pixel)
+  //
+
   AliITSsegmentationUpgrade *s =new AliITSsegmentationUpgrade();
   if(s->GetCellSizeX(ilayer)!=0) xloc= (nx)*(s->GetCellSizeX(ilayer))+0.5*(s->GetCellSizeX(ilayer));
   else AliError("Upgrade segmentation not initalized");
@@ -112,7 +120,10 @@ void  AliITSDigitUpgrade::GetPosition(Int_t ilayer, Int_t nx, Int_t nz, Double_t
 }
 //____________________________________________________________________________________________________
 void AliITSDigitUpgrade::PrintInfo(){
+  //
   //Standard output format for this class
+  //
+
   Double_t xz[2]={-1,-1};
   GetPosition(fNLayer,GetxPixelNumber(),GetzPixelNumber(),xz[0],xz[1]);
    
