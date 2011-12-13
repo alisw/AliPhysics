@@ -956,6 +956,10 @@ Bool_t AliITSInitGeometry::ReadVersionString(const Char_t *str,Int_t length,
     if(n<35) return kFALSE; // not enough space for numbers
     m = sscanf(str,"Major Version= %d  Minor Version= %d Revision: %9s "
                "Date: %10s %8s",&i,&min,cvsRevision,cvsDate,cvsTime);
+
+    // v11Hybrid geometry is treated as a v11 geometry
+    if(i == 110)i=11;
+
     ok = m==5;
     if(!ok) return !ok;
     m = sscanf(cvsDate,"%d/%d/%d",&year,&month,&day);
