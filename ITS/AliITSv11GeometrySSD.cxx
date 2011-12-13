@@ -42,8 +42,8 @@
 /////////////////////////////////////////////////////////////////////////////////
 // Names of the Sensitive Volumes of Layer 5 and Layer 6
 /////////////////////////////////////////////////////////////////////////////////
-const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName5 = "ITSssdSensitivL5";
-const char* AliITSv11GeometrySSD::fgSSDsensitiveVolName6 = "ITSssdSensitivL6";
+const char* AliITSv11GeometrySSD::fgkSSDsensitiveVolName5 = "ITSssdSensitivL5";
+const char* AliITSv11GeometrySSD::fgkSSDsensitiveVolName6 = "ITSssdSensitivL6";
 /////////////////////////////////////////////////////////////////////////////////
 //Parameters for SSD Geometry
 /////////////////////////////////////////////////////////////////////////////////
@@ -1789,9 +1789,9 @@ void AliITSv11GeometrySSD::SetSSDSensor(){
                                                 0.5*fgkSSDSensorHeight,
                                                 0.5*ssdsensitivelength);
   TGeoVolume* ssdsensorsensitiveLay5 = 
-	new TGeoVolume(fgSSDsensitiveVolName5,ssdsensorsensitiveshape,fSSDSensorMedium);
+	new TGeoVolume(fgkSSDsensitiveVolName5,ssdsensorsensitiveshape,fSSDSensorMedium);
   TGeoVolume* ssdsensorsensitiveLay6 = 
-	new TGeoVolume(fgSSDsensitiveVolName6,ssdsensorsensitiveshape,fSSDSensorMedium);
+	new TGeoVolume(fgkSSDsensitiveVolName6,ssdsensorsensitiveshape,fSSDSensorMedium);
   ssdsensorsensitiveLay5->SetLineColor(fColorSilicon);
   ssdsensorsensitiveLay6->SetLineColor(fColorSilicon);
   TGeoBBox* ssdsensorinsensitiveshape[2];
@@ -2057,9 +2057,9 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
   ///////////////////////////////////////
   TVector3** vertexposition = new TVector3*[kvertexnumber];
 
-  Double_t Router = fgkCoolingTubeSupportRmin/CosD(phi/nedges);  //  Recalc inner radius so that tube fits inside  
-  vertexposition[0] = new TVector3(Router*CosD(angle),
-								   Router*SinD(angle));
+  Double_t router = fgkCoolingTubeSupportRmin/CosD(phi/nedges);  //  Recalc inner radius so that tube fits inside  
+  vertexposition[0] = new TVector3(router*CosD(angle),
+								   router*SinD(angle));
   vertexposition[1] = new TVector3(fgkCoolingTubeSupportRmax*CosD(angle),
 								   fgkCoolingTubeSupportRmax*SinD(angle));
   vertexposition[2] = new TVector3(vertexposition[1]->X(),
@@ -2071,8 +2071,8 @@ TGeoVolume* AliITSv11GeometrySSD::GetCoolingTubeSupport(Int_t nedges){
 
   for(Int_t i=0; i<nedges; i++)
 	vertexposition[i+5] = 
-		new TVector3(Router*CosD(psi+i*(2.*phi/nedges)),
-			     Router*SinD(psi+i*(2.*phi/nedges)));
+		new TVector3(router*CosD(psi+i*(2.*phi/nedges)),
+			     router*SinD(psi+i*(2.*phi/nedges)));
   ///////////////////////////////////////////////////////////////////////
   // TGeoXTru Volume definition for Cooling Tube Support Arc Part
   ///////////////////////////////////////////////////////////////////////
@@ -8125,7 +8125,7 @@ TVector3* AliITSv11GeometrySSD::GetReflection(const TVector3* vector,const Doubl
   return reflectedvector;
 }
 ////////////////////////////////////////////////////////////////////////////////
-TGeoHMatrix* AliITSv11GeometrySSD::AddTranslationToHMatrix(TGeoHMatrix* ct,
+TGeoHMatrix* AliITSv11GeometrySSD::AddTranslationToHMatrix(const TGeoHMatrix* ct,
                                                        Double_t dx,
                                                        Double_t dy,
                                                        Double_t dz) const{

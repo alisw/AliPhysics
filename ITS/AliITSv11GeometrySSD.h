@@ -32,9 +32,9 @@ public:
   /////////////////////////////////////////////////////////////////////////
   void CreateMaterials();	  // Method setting the materials 
   TGeoMedium* GetMedium(const char* mediumName);   // It returns the Medium
-  const char*   GetSenstiveVolumeName5() const {return fgSSDsensitiveVolName5;};
+  const char*   GetSenstiveVolumeName5() const {return fgkSSDsensitiveVolName5;};
   // it returns the Sensitive Volume of Layer 5
-  const char*   GetSenstiveVolumeName6() const {return fgSSDsensitiveVolName6;};
+  const char*   GetSenstiveVolumeName6() const {return fgkSSDsensitiveVolName6;};
   // it returns the Sensitive Volume of Layer 6
   TGeoVolumeAssembly* GetLadderSegment(Int_t i) const {return fladdersegment[i];}; // Get Ladder Segment
   TGeoVolumeAssembly* GetEndLadderSegment(Int_t i) const {return fendladdersegment[i];}; // Get End Ladder Segment 
@@ -63,8 +63,8 @@ private:
   /////////////////////////////////////////////////////////////////////////////////
   // Names of the Sensitive Volumes of Layer 5 and Layer 6
   /////////////////////////////////////////////////////////////////////////////////
-  static const char* fgSSDsensitiveVolName5;       // sens. vol. name for lay. 5
-  static const char* fgSSDsensitiveVolName6;       // sens. vol. name for lay. 6
+  static const char* fgkSSDsensitiveVolName5;       // sens. vol. name for lay. 5
+  static const char* fgkSSDsensitiveVolName6;       // sens. vol. name for lay. 6
   /////////////////////////////////////////////////////////////////////////////////
   // Variable for Vertical Disalignement of Modules
   /////////////////////////////////////////////////////////////////////////////////
@@ -467,7 +467,7 @@ private:
   TVector3* GetReflection(const TVector3* vector,const Double_t* param) const; 
 										// Given an axis specified by param,
 										// it gives the reflection of the point respect to the axis
-  TGeoHMatrix* AddTranslationToHMatrix(TGeoHMatrix* ct,Double_t dx,Double_t dy,
+  TGeoHMatrix* AddTranslationToHMatrix(const TGeoHMatrix* ct,Double_t dx,Double_t dy,
                                                        Double_t dz) const;
 										// add (dx,dy,dz) translation to a initial TGeoCombiTrans
   /////////////////////////////////////////////////////////////////////////

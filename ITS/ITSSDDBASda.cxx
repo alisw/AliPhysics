@@ -64,7 +64,7 @@ extern "C" {
       Arguments: list of DATE raw data files
 */
 int main(int argc, char **argv) {
-
+  // main - Arguments: list of DATE raw data files
   int status = 0;
 
   // line added to solve IO problems

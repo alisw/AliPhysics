@@ -65,8 +65,7 @@ fSmear(0)
 //______________________________________________________________________
 AliITSVertexerFast::~AliITSVertexerFast(){
   // Destructor
-  if(fSmear)delete [] fSmear;
-  fSmear = 0;
+  delete [] fSmear;
 }
 
 //______________________________________________________________________

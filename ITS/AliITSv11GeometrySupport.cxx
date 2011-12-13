@@ -4951,7 +4951,7 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
 //______________________________________________________________________
 void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
-						  TGeoManager *mgr){
+					     const TGeoManager *mgr){
 //
 // Creates the SDD cable trays which are outside the ITS support cones
 // but still inside the TPC on Side A

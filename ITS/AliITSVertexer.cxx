@@ -1,6 +1,7 @@
 #include "AliLog.h"
 #include "AliMultiplicity.h"
 #include "AliITSgeomTGeo.h"
+#include "AliITSDetTypeRec.h"
 #include "AliITSVertexer.h"
 #include "AliITSLoader.h"
 #include "AliITSMultReconstructor.h"
@@ -44,12 +45,8 @@ fLastEvent(-1)
 //______________________________________________________________________
 AliITSVertexer::~AliITSVertexer() {
   // Destructor
-  if(fLadders) delete [] fLadders;
-  if (fNoVertices > 0){
-    delete []fVertArray;
-    fVertArray = NULL;
-    fNoVertices = 0;
-  }
+  delete [] fLadders;
+  delete []fVertArray;
 }
 
 //______________________________________________________________________

@@ -62,7 +62,7 @@ class AliITSv11GeometrySupport : public AliITSv11Geometry {
     void  TraySupportsSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     void SPDCableTraysSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     void SPDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
-    void SDDCableTraysSideA(TGeoVolume *moth, TGeoManager *mgr=gGeoManager);
+    void SDDCableTraysSideA(TGeoVolume *moth, const TGeoManager *mgr=gGeoManager);
     void SDDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     void SSDCableTraysSideA(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);
     void SSDCableTraysSideC(TGeoVolume *moth,const TGeoManager *mgr=gGeoManager);

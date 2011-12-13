@@ -2,17 +2,25 @@
 #define ALIITSVERTEXER_H
 
 #include<AliVertexer.h>
-#include "AliITSDetTypeRec.h"
+//#include "AliITSDetTypeRec.h"
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
 // Base class for primary vertex reconstruction  for ITS         //
+// Daughter classes:                                             //
+// AliITSVertexer3D                                              //
+// AliITSVertexer3DTapan                                         //
+// AliITSVertexerCosmics                                         //
+// AliITSVertexerFast                                            //
+// AliITSVertexerFixed                                           //
+// AliITSVertexerZ                                               //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
 /* $Id$ */
 
 class TString;
+class AliITSDetTypeRec;
 
 class AliITSVertexer : public AliVertexer {
 

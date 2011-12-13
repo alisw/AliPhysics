@@ -22,6 +22,7 @@ class AliITSVertexer3D : public AliITSVertexer {
  public:
 
   AliITSVertexer3D();
+  AliITSVertexer3D(TRootIOCtor* );
   virtual ~AliITSVertexer3D();
   virtual AliESDVertex* FindVertexForCurrentEvent(TTree *itsClusterTree);
   void FindVertex3DIterative();

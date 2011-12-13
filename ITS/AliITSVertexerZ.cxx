@@ -398,7 +398,9 @@ void AliITSVertexerZ::VertexZFinder(TTree *itsClusterTree){
 }
 
 //_____________________________________________________________________
-Int_t AliITSVertexerZ::FindSecondPeak(TH1F* h, Int_t binmin,Int_t binmax, Float_t& secPeakPos){  
+Int_t AliITSVertexerZ::FindSecondPeak(TH1F* h, Int_t binmin,Int_t binmax, Float_t& secPeakPos){ 
+  // Resets bin contents between binmin and binmax and then search 
+  // for a second peak position 
   for(Int_t i=binmin-1;i<=binmax+1;i++){
     h->SetBinContent(i,0.);
   }

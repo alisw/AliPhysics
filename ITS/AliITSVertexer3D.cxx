@@ -103,6 +103,47 @@ AliITSVertexer3D::AliITSVertexer3D():
 }
 
 //______________________________________________________________________
+AliITSVertexer3D::AliITSVertexer3D(TRootIOCtor*):
+  AliITSVertexer(),
+  fLines("AliStrLine",1000),
+  fVert3D(),
+  fCoarseDiffPhiCut(0.),
+  fFineDiffPhiCut(0.),
+  fCutOnPairs(0.),
+  fCoarseMaxRCut(0.),
+  fMaxRCut(0.),
+  fMaxRCut2(0.),
+  fZCutDiamond(0.),
+  fMaxZCut(0.),
+  fDCAcut(0.),
+  fDiffPhiMax(0.),
+  fMeanPSelTrk(0.),
+  fMeanPtSelTrk(0.),
+  fUsedCluster(kMaxCluPerMod*kNSPDMod),
+  fZHisto(0),
+  fDCAforPileup(0.),
+  fDiffPhiforPileup(0.),
+  fBinSizeR(0.),
+  fBinSizeZ(0.),
+  fPileupAlgo(0),
+  fMaxNumOfCl(fgkMaxNumOfClDefault),
+  fMaxNumOfClForRebin(fgkMaxNumOfClRebinDefault),
+  fMaxNumOfClForDownScale(fgkMaxNumOfClDownscaleDefault),
+  fNRecPLay1(0),
+  fNRecPLay2(0),
+  f3DBinSize(fgk3DBinSizeDefault),
+  fDoDownScale(kFALSE),
+  fGenerForDownScale(0),
+  f3DPeak(),
+  fHighMultAlgo(1),
+  fSwitchAlgorithm(kFALSE)
+{
+  // I/O constructor
+
+
+}
+
+//______________________________________________________________________
 AliITSVertexer3D::~AliITSVertexer3D() {
   // Destructor
   fLines.Clear("C");
@@ -112,7 +153,7 @@ AliITSVertexer3D::~AliITSVertexer3D() {
 
 //______________________________________________________________________
 void AliITSVertexer3D::ResetVert3D(){
-  //
+  // Reset the fVert3D object and reset the used clusters
   ResetVertex();
   fVert3D.SetXv(0.);
   fVert3D.SetYv(0.);
@@ -177,7 +218,7 @@ AliESDVertex* AliITSVertexer3D::FindVertexForCurrentEvent(TTree *itsClusterTree)
 
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
- 
+  // Instantiates the fCurrentVertex object. calle by FindVertexForCurrenEvent
   Double_t vRadius=TMath::Sqrt(fVert3D.GetXv()*fVert3D.GetXv()+fVert3D.GetYv()*fVert3D.GetYv());
   if(vRadius<GetPipeRadius() && fVert3D.GetNContributors()>0){
     Double_t position[3]={fVert3D.GetXv(),fVert3D.GetYv(),fVert3D.GetZv()};
@@ -206,7 +247,7 @@ void AliITSVertexer3D::FindVertex3D(TTree *itsClusterTree){
 
 //______________________________________________________________________
 void AliITSVertexer3D::FindVertex3DIterative(){
-  //
+  // find vertex if fPileupAlgo == 2
 
   Int_t nLines=fLines.GetEntriesFast();
   Int_t maxPoints=nLines*(nLines-1)/2;
