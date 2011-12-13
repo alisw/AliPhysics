@@ -65,7 +65,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 
 
   // Dimensions of the Central shield
-  const Double_t kHalfLengthCentral  = 400.*fgkmm;
+  const Double_t kHalfLengthCentral  = 399.9*fgkmm;
   const Double_t kThicknessCentral   = 0.4*fgkmm;
   const Double_t kInnerRadiusCentral = 8.1475*fgkcm;
   const Double_t kOuterRadiusCentral = 9.9255*fgkcm;
@@ -105,6 +105,7 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 
   // Local variables
   Double_t x, y;
+  Double_t zpos;
   Double_t xshld[24], yshld[24];
   Double_t xair[24] , yair[24];
   Double_t xomega[48], yomega[48];
@@ -440,51 +441,49 @@ void AliITSv11GeometrySupport::SPDCone(TGeoVolume *moth,const TGeoManager *mgr)
 
 
   // Add all volumes in the assembly
-  vM->AddNode(centralshield,1,0);
-  vM->AddNode(centralshield,2,new TGeoRotation("",180,0,0));
+  const Double_t kLittleZTrans = 0.1*fgkmm;
+  vM->AddNode(centralshield,1,new TGeoTranslation(0,0,-kLittleZTrans));
+  vM->AddNode(centralshield,2,new TGeoCombiTrans( 0,0,-kLittleZTrans,
+				  new TGeoRotation("",180,0,0)));
 
+  zpos = kHalfLengthCentral+kHalfLengthEndCap;
   vM->AddNode(endcapshield,1,
-	      new TGeoTranslation(0,0, kHalfLengthCentral+kHalfLengthEndCap));
+	      new TGeoTranslation(0,0, zpos-kLittleZTrans));
   vM->AddNode(endcapshield,2,
-	      new TGeoTranslation(0,0,-kHalfLengthCentral-kHalfLengthEndCap));
+	      new TGeoTranslation(0,0,-zpos-kLittleZTrans));
   vM->AddNode(endcapshield,3,new TGeoCombiTrans(
-              0, 0, kHalfLengthCentral+kHalfLengthEndCap,
-	      new TGeoRotation("",180,0,0)     ) );
+              0, 0, zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
   vM->AddNode(endcapshield,4,new TGeoCombiTrans(
-              0, 0,-kHalfLengthCentral-kHalfLengthEndCap,
-	      new TGeoRotation("",180,0,0)     ) );
+              0, 0,-zpos-kLittleZTrans, new TGeoRotation("",180,0,0) ) );
 
+  zpos = kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone;
   for (Int_t i=0; i<10; i++) {
     Double_t thetaC12 = kTheta*TMath::RadToDeg();
     vM->AddNode(vC1,2*i+1, new TGeoCombiTrans(
-               0, 0,  kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone,
+               0, 0,  zpos-kLittleZTrans,
 	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
     vM->AddNode(vC1,2*i+2, new TGeoCombiTrans(
-               0, 0, -kHalfLengthCentral-2*kHalfLengthEndCap-kHalfLengthCone,
+               0, 0, -zpos-kLittleZTrans,
 	       new TGeoRotation("",0,180,i*thetaC12)   ) );
     vM->AddNode(vC2,2*i+1, new TGeoCombiTrans(
-               0, 0,  kHalfLengthCentral+2*kHalfLengthEndCap+kHalfLengthCone,
+               0, 0,  zpos-kLittleZTrans,
 	       new TGeoRotation("",0,  0,i*thetaC12)   ) );
     vM->AddNode(vC2,2*i+2, new TGeoCombiTrans(
-               0, 0, -kHalfLengthCentral-2*kHalfLengthEndCap-kHalfLengthCone,
+               0, 0, -zpos-kLittleZTrans,
 	       new TGeoRotation("",0,180,i*thetaC12)   ) );
   }
 
-  vM->AddNode(ring,1,new TGeoTranslation(0, 0,
-	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
-             +kHalfLengthRing));
-  vM->AddNode(ring,2,new TGeoTranslation(0, 0,
-	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
-             -kHalfLengthRing));
+  zpos = kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
+       + kHalfLengthRing;
+  vM->AddNode(ring,1,new TGeoTranslation(0, 0, zpos-kLittleZTrans));
+  vM->AddNode(ring,2,new TGeoTranslation(0, 0,-zpos-kLittleZTrans));
 
   for (Int_t i=0; i<4; i++) {
     Double_t thetaW = kThetaWing*(2*i+1) - angleWideWing/2.;
-    vM->AddNode(wing,2*i+1,new TGeoCombiTrans(0, 0,
-	      kHalfLengthCentral+2*kHalfLengthEndCap+2*kHalfLengthCone
-             +kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
-    vM->AddNode(wing,2*i+2,new TGeoCombiTrans(0, 0,
-	     -kHalfLengthCentral-2*kHalfLengthEndCap-2*kHalfLengthCone
-             -kHalfLengthRing, new TGeoRotation("",thetaW,0,0)  ));
+    vM->AddNode(wing,2*i+1,new TGeoCombiTrans(0, 0, zpos-kLittleZTrans,
+			       new TGeoRotation("",thetaW,0,0) ) );
+    vM->AddNode(wing,2*i+2,new TGeoCombiTrans(0, 0,-zpos-kLittleZTrans,
+			       new TGeoRotation("",thetaW,0,0) ) );
   }
 
   // Some debugging if requested
@@ -1754,7 +1753,7 @@ void AliITSv11GeometrySupport::SSDCone(TGeoVolume *moth,const TGeoManager *mgr)
 // of the carbon fiber cylinder was increased from 0.6 to 0.625mm
 
   // Dimensions of the Central cylinder and flanges
-  const Double_t kCylinderHalfLength   = (1144.0/2) *fgkmm;
+  const Double_t kCylinderHalfLength   = (1143.6/2) *fgkmm;
   const Double_t kCylinderOuterRadius  = ( 595.0/2) *fgkmm;
   const Double_t kCylinderThickness    =       0.625*fgkmm;
   const Double_t kFoamHalfLength       = (1020.0/2) *fgkmm;
@@ -3756,12 +3755,12 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALSERV$");
-  TGeoMedium *medIn    = mgr->GetMedium("ITS_INOXSERV$");
+  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medIn    = mgr->GetMedium("ITS_INOX$");
   TGeoMedium *medFreon = mgr->GetMedium("ITS_GASEOUS FREON$");
-  TGeoMedium *medFibs  = mgr->GetMedium("ITS_SDD OPTICFIBSERV$");//!TO BE CHECKED!
-  TGeoMedium *medCu    = mgr->GetMedium("ITS_CUSERV$");
-  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medFibs  = mgr->GetMedium("ITS_SDD OPTICFIB$");//!TO BE CHECKED!
+  TGeoMedium *medCu    = mgr->GetMedium("ITS_COPPER$");
+  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURETHANE$");
   TGeoMedium *medMeg   = mgr->GetMedium("ITS_MEGOLON$");
 
   TGeoVolume *forwTrayABase = new TGeoVolume("ITSsuppSPDSideAForwTrayABase",
@@ -4073,33 +4072,33 @@ void AliITSv11GeometrySupport::SPDCableTraysSideA(TGeoVolume *moth,
 		      new TGeoCombiTrans( xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
 
-  xloc = 2*optFibsForw->GetZ(1) + lowCablesForwCu->GetZ(1) +
-	 coolTubeForw->GetRmax();
+  xloc = lowCablesForwCu->GetZ(1) + coolTubeForw->GetRmax();
   yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY();
   cableTrayAForw->AddNode(forwLowCabsCu, 1,
-		      new TGeoCombiTrans( xloc, yloc, 0,
+		      new TGeoCombiTrans(-xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
   cableTrayAForw->AddNode(forwLowCabsPUR, 1,
-		      new TGeoCombiTrans( xloc, yloc, 0,
+		      new TGeoCombiTrans(-xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
 
-  xloc = 2*optFibsForw->GetZ(1) + 2*lowCablesForwCu->GetZ(1) +
+  xloc = 2*lowCablesForwCu->GetZ(1) +
 	 hiCablesForwCu->GetZ(1) + coolTubeForw->GetRmax();
   yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY();
   cableTrayAForw->AddNode(forwHiCabsCu, 1,
-		      new TGeoCombiTrans( xloc, yloc, 0,
+		      new TGeoCombiTrans(-xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
   cableTrayAForw->AddNode(forwHiCabsPUR, 1,
-		      new TGeoCombiTrans( xloc, yloc, 0,
+		      new TGeoCombiTrans(-xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
 
-  xloc = coaxCablesForwCu->GetZ(1) + coolTubeForw->GetRmax();
+  xloc = 2*optFibsForw->GetZ(1) + coaxCablesForwCu->GetZ(1) +
+	 coolTubeForw->GetRmax();
   yloc = 2*kForwardTrayThick + 2*forwTrayWall->GetDY();
   cableTrayAForw->AddNode(forwCoaxCu, 1,
-		      new TGeoCombiTrans(-xloc, yloc, 0,
+		      new TGeoCombiTrans( xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
   cableTrayAForw->AddNode(forwCoaxMeg, 1,
-		      new TGeoCombiTrans(-xloc, yloc, 0,
+		      new TGeoCombiTrans( xloc, yloc, 0,
 					 new TGeoRotation("",-90.,90.,90.)));
 
   // To simplify following placement in MARS, origin is on top
@@ -4681,12 +4680,12 @@ void AliITSv11GeometrySupport::SPDCableTraysSideC(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl   = mgr->GetMedium("ITS_ALSERV$");
-  TGeoMedium *medIn   = mgr->GetMedium("ITS_INOXSERV$");
+  TGeoMedium *medAl   = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medIn   = mgr->GetMedium("ITS_INOX$");
   TGeoMedium *medFr   = mgr->GetMedium("ITS_Freon$");
-  TGeoMedium *medFibs = mgr->GetMedium("ITS_SDD OPTICFIBSERV$");//!!TO BE CHECKED!!
-  TGeoMedium *medCu   = mgr->GetMedium("ITS_CUSERV$");
-  TGeoMedium *medPUR  = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medFibs = mgr->GetMedium("ITS_SDD OPTICFIB$");//!!TO BE CHECKED!!
+  TGeoMedium *medCu   = mgr->GetMedium("ITS_COPPER$");
+  TGeoMedium *medPUR  = mgr->GetMedium("ITS_POLYURETHANE$");
   TGeoMedium *medMeg  = mgr->GetMedium("ITS_MEGOLON$");
 
   TGeoVolume *traySideCHorFace  = new TGeoVolume("ITSsuppSPDTraySideCHor",
@@ -5369,20 +5368,20 @@ void AliITSv11GeometrySupport::SDDCableTraysSideA(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl     = mgr->GetMedium("ITS_ALSERV$");
+  TGeoMedium *medAl     = mgr->GetMedium("ITS_ALUMINUM$");
   TGeoMedium *medAntic  = mgr->GetMedium("ITS_ANTICORODAL$");
   TGeoMedium *medPOM    = mgr->GetMedium("ITS_POLYOXYMETHYLENE$");
-  TGeoMedium *medSteel  = mgr->GetMedium("ITS_INOXSERV$");
-  TGeoMedium *medWater  = mgr->GetMedium("ITS_WATERSERV$");
-  TGeoMedium *medPUR    = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medSteel  = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medWater  = mgr->GetMedium("ITS_WATER$");
+  TGeoMedium *medPUR    = mgr->GetMedium("ITS_POLYURETHANE$");
   TGeoMedium *medAir    = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medPBT    = mgr->GetMedium("ITS_PBT$");
-  TGeoMedium *medOptFib = mgr->GetMedium("ITS_SDD OPTICFIBSERV$");
-  TGeoMedium *medCu     = mgr->GetMedium("ITS_CUSERV$");
-  TGeoMedium *medKapton = mgr->GetMedium("ITS_SDDKAPTONSERV$");
+  TGeoMedium *medOptFib = mgr->GetMedium("ITS_SDD OPTICFIB$");
+  TGeoMedium *medCu     = mgr->GetMedium("ITS_COPPER$");
+  TGeoMedium *medKapton = mgr->GetMedium("ITS_SDDKAPTON (POLYCH2)$");
   TGeoMedium *medPOLYAX = mgr->GetMedium("ITS_POLYAX$");
   TGeoMedium *medPPS    = mgr->GetMedium("ITS_PPS$");
-  TGeoMedium *medEpoxy  = mgr->GetMedium("ITS_EPOXYSERV$");
+  TGeoMedium *medEpoxy  = mgr->GetMedium("ITS_EPOXY$");
 
   TGeoVolume *forwardTrayCover = new TGeoVolume("ITSsuppSDDSideAForwTrayCover",
 						forwardCover, medAl);
@@ -6197,18 +6196,18 @@ void AliITSv11GeometrySupport::SDDCableTraysSideC(TGeoVolume *moth,
 
   // We have all shapes: now create the real volumes
   TGeoMedium *medPOM    = mgr->GetMedium("ITS_POLYOXYMETHYLENE$");
-  TGeoMedium *medSteel  = mgr->GetMedium("ITS_INOXSERV$");
-  TGeoMedium *medWater  = mgr->GetMedium("ITS_WATERSERV$");
-  TGeoMedium *medAl     = mgr->GetMedium("ITS_ALSERV$");
-  TGeoMedium *medCu     = mgr->GetMedium("ITS_CUSERV$");
-  TGeoMedium *medPUR    = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medSteel  = mgr->GetMedium("ITS_INOX$");
+  TGeoMedium *medWater  = mgr->GetMedium("ITS_WATER$");
+  TGeoMedium *medAl     = mgr->GetMedium("ITS_ALUMINUM$");
+  TGeoMedium *medCu     = mgr->GetMedium("ITS_COPPER$");
+  TGeoMedium *medPUR    = mgr->GetMedium("ITS_POLYURETHANE$");
   TGeoMedium *medPOLYAX = mgr->GetMedium("ITS_POLYAX$");
-  TGeoMedium *medKapton = mgr->GetMedium("ITS_SDDKAPTONSERV$");
+  TGeoMedium *medKapton = mgr->GetMedium("ITS_SDDKAPTON (POLYCH2)$");
   TGeoMedium *medAir    = mgr->GetMedium("ITS_AIR$");
   TGeoMedium *medPBT    = mgr->GetMedium("ITS_PBT$");
-  TGeoMedium *medOptFib = mgr->GetMedium("ITS_SDD OPTICFIBSERV$");
+  TGeoMedium *medOptFib = mgr->GetMedium("ITS_SDD OPTICFIB$");
   TGeoMedium *medPPS    = mgr->GetMedium("ITS_PPS$");
-  TGeoMedium *medEpoxy  = mgr->GetMedium("ITS_EPOXYSERV$");
+  TGeoMedium *medEpoxy  = mgr->GetMedium("ITS_EPOXY$");
 
   TGeoVolume *pomCoolManif = new TGeoVolume("ITSsuppSDDSideCCoolManifPOM",
 					    coolManifPOM, medPOM);
@@ -6818,12 +6817,12 @@ void AliITSv11GeometrySupport::SSDCableTraysSideA(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALSERV$");
+  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALUMINUM$");
   TGeoMedium *medAntic = mgr->GetMedium("ITS_ANTICORODAL$");
-  TGeoMedium *medCu    = mgr->GetMedium("ITS_CUSERV$");
+  TGeoMedium *medCu    = mgr->GetMedium("ITS_COPPER$");
   TGeoMedium *medFEP   = mgr->GetMedium("ITS_SSD FEP$");
-  TGeoMedium *medH2O   = mgr->GetMedium("ITS_WATERSERV$");
-  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medH2O   = mgr->GetMedium("ITS_WATER$");
+  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURETHANE$");
 
   TGeoVolume *forwTrayFirst = new TGeoVolume("ITSsuppSSDSideAForwTrayFirst",
 					     forwTrayPart1, medAl);
@@ -7234,10 +7233,10 @@ void AliITSv11GeometrySupport::SSDCableTraysSideC(TGeoVolume *moth,
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medCu    = mgr->GetMedium("ITS_CUSERV$");
+  TGeoMedium *medCu    = mgr->GetMedium("ITS_COPPER$");
   TGeoMedium *medFEP   = mgr->GetMedium("ITS_SSD FEP$");
-  TGeoMedium *medH2O   = mgr->GetMedium("ITS_WATERSERV$");
-  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURESERV$");
+  TGeoMedium *medH2O   = mgr->GetMedium("ITS_WATER$");
+  TGeoMedium *medPUR   = mgr->GetMedium("ITS_POLYURETHANE$");
 
   TGeoVolume *copperCable = new TGeoVolume("ITSsuppSSDSideCCableCu",
 					   copper, medCu);
@@ -7425,7 +7424,7 @@ void AliITSv11GeometrySupport::CreateSDDForwardTraySideA(TGeoVolumeAssembly *tra
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALSERV$");
+  TGeoMedium *medAl    = mgr->GetMedium("ITS_ALUMINUM$");
 
   TGeoVolume *forwTrayBase = new TGeoVolume("ITSsuppSDDSideAForwTrayBase",
 					    trayBase, medAl);
@@ -8122,7 +8121,7 @@ TGeoVolumeAssembly* AliITSv11GeometrySupport::CreateSDDSSDTraysSideC(
 
 
   // We have all shapes: now create the real volumes
-  TGeoMedium *medAl      = mgr->GetMedium("ITS_ALSERV$");
+  TGeoMedium *medAl      = mgr->GetMedium("ITS_ALUMINUM$");
 
   TGeoVolume *traySideCLowerFace  = new TGeoVolume("ITSsuppTraySideCLower",
 						   sideCLowerFace, medAl);
