@@ -228,50 +228,49 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
   if (this == &aAna)
     return *this;
 
+  if (fCorrFctnCollection) delete fCorrFctnCollection;
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+  if (fMixingBuffer) delete fMixingBuffer;
   fMixingBuffer = new AliFemtoPicoEventCollection;
 
   // find the right event cut
+  if (fEventCut) delete fEventCut;
   fEventCut = aAna.fEventCut->Clone();
   // find the right first particle cut
+  if (fFirstParticleCut) delete fFirstParticleCut;
   fFirstParticleCut = aAna.fFirstParticleCut->Clone();
   // find the right second particle cut
+  if (fSecondParticleCut) delete fSecondParticleCut;
   if (aAna.fFirstParticleCut==aAna.fSecondParticleCut) 
     SetSecondParticleCut(fFirstParticleCut); // identical particle hbt
   else
     fSecondParticleCut = aAna.fSecondParticleCut->Clone();
 
+  if (fPairCut) delete fPairCut;
   fPairCut = aAna.fPairCut->Clone();
   
   if ( fEventCut ) {
-      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - event cut set " << endl;
+    SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
   }
   if ( fFirstParticleCut ) {
-      SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - first particle cut set " << endl;
+    SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
   }
   if ( fSecondParticleCut ) {
-      SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - second particle cut set " << endl;
-  }  if ( fPairCut ) {
-      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
-      cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - pair cut set " << endl;
+    SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
+  }  
+  if ( fPairCut ) {
+    SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
   }
 
   AliFemtoCorrFctnIterator iter;
   for (iter=aAna.fCorrFctnCollection->begin(); iter!=aAna.fCorrFctnCollection->end();iter++){
-    cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - looking for correlation functions " << endl;
     AliFemtoCorrFctn* fctn = (*iter)->Clone();
     if (fctn) AddCorrFctn(fctn);
-    else cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - correlation function not found " << endl;
   }
 
   fNumEventsToMix = aAna.fNumEventsToMix;
 
   fMinSizePartCollection = aAna.fMinSizePartCollection;  // minimum # particles in ParticleCollection
-
-  cout << " AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a) - analysis copied " << endl;
 
   return *this;
 }
