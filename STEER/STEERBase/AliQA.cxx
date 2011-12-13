@@ -110,17 +110,23 @@ AliQA::AliQA(const AliQA& qa) :
   fTask(qa.fTask)
 { 
   // cpy ctor
-  for (Int_t index = 0 ; index < fNdet ; index++) 
-	fQA[index] = qa.fQA[index] ; 
+  memcpy(fQA, qa.fQA, sizeof(ULong_t)*fNdet);
 }
 
 //_____________________________________________________________________________
 AliQA& AliQA::operator = (const AliQA& qa)
 {
-// assignment operator
-
-  this->~AliQA();
-  new(this) AliQA(qa);
+  //
+  // Assignment operator
+  if(this != &qa) {
+    TNamed::operator=(qa);
+    fNdet = qa.fNdet;
+    delete [] fQA;
+    fQA = new ULong_t[fNdet];
+    memcpy(fQA, qa.fQA, sizeof(ULong_t)*fNdet);
+    fDet = qa.fDet;
+    fTask = qa.fTask;
+  }
   return *this;
 }
 
