@@ -75,11 +75,11 @@ AliFemtoModelCorrFctnDirectYlm& AliFemtoModelCorrFctnDirectYlm::operator=(const 
   fUseLCMS = aCorrFctn.fUseLCMS;
 
   if (aCorrFctn.fCYlmTrue)
-    fCYlmTrue = new TH1D(*aCorrFctn.fCYlmTrue);
+    fCYlmTrue = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmTrue);
   else fCYlmTrue = 0;
 
   if (aCorrFctn.fCYlmFake)
-    fCYlmFake = new TH1D(*aCorrFctn.fCYlmFake);
+    fCYlmFake = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmFake);
   else fCYlmFake = 0;
 
   if (aCorrFctn.fNumeratorTrue)
