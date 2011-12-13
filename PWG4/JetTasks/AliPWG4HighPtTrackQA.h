@@ -67,8 +67,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   void DoAnalysisAOD();
   void FillHistograms();
 
-  void FillSystematicCutHist(AliESDtrack *track);
-
   //Setters
   void SetDataType(DataType d)             {fDataType = d;}
   void SetIsPbPb(Bool_t cs)                {fIsPbPb = cs;}
@@ -86,6 +84,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   Float_t GetPtMax()           {return fPtMax;}
   Float_t GetTPCClusterInfo(AliAODTrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
+  Float_t GetTPCClusterInfoFitMap(AliESDtrack *tr,Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   Int_t   GetTrackLengthTPC(AliESDtrack *track);
   Int_t   GetTrackLengthTPC(AliAODTrack *track);
   Float_t GetGoldenChi2(AliESDtrack *origtrack);
@@ -120,6 +119,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Int_t fCentClass;               // Select only events from predefined centrality class
 
   /*
+    QA variables stored in TArrayF *fVariables
   0: pt
   1: phi
   2: eta
@@ -133,7 +133,20 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   10: chi2PerClusterTPC
   11: #crossed rows
   12: (#crossed rows)/(#findable clusters)
+  13: SigmaY2
+  14: SigmaZ2
+  15: SigmaSnp2
+  16: SigmaTgl2
+  17: Sigma1Pt2
+  18: NClustersTPCIter1
+  19: TPCChi2Iter1
+  20: NClustersTPCShared
+  21: Chi2Gold (TPC constrained vs global)
+  22: Chi2GGC (global constrained vs global)
+  23: NCrossed rows from fit map
+  24: (#crossed rows)/(#findable clusters) from fit map
   */
+
   Int_t fNVariables;             // Number of variables
   TArrayF *fVariables;           // QA variables
 
@@ -162,6 +175,7 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtDCAZ;                               //! Pt vs DCAZ
   TH2F *fPtNClustersTPC;                       //! Pt vs nClustersTPC
   TH2F *fPtNClustersTPCIter1;                  //! Pt vs nClustersTPCIter1
+  TH3F *fPtNClustersTPCIter1Phi;               //! Pt vs nClustersTPCIter1 vs Phi
   TH2F *fPtNClustersTPCShared;                 //! Pt vs nClustersTPCShared
   TH2F *fPtNClustersTPCSharedFrac;             //! Pt vs nClustersTPCSharedFrac
   TH2F *fPtNPointITS;                          //! Pt vs nPointITS
@@ -179,6 +193,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
+  TH2F *fPtNCrossedRowsFit;                    //! Pt vs NCrossedRows from NClusterFitMap
+  TH2F *fPtNCrossedRowsNClusFFit;              //! Pt vs NCrossedRows/NClusF from NClusterFitMap
 
   TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
   TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track
@@ -202,8 +218,6 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
 
   TProfile *fProfPtSigma1Pt;                   //! pT vs sigma(1/Pt)
   TProfile *fProfPtPtSigma1Pt;                 //! pT vs pT*sigma(1/Pt)
-
-  TH1F *fSystTrackCuts;                        //! Bookkeeping for track cuts
 
   TList *fHistList; //! List of Histograms
   

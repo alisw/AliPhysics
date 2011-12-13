@@ -42,7 +42,7 @@ AliPWG4HighPtSpectra* AddTaskPWG4HighPtSpectra(char *prodType = "LHC10e14", Bool
 {
 
   /*
-    trackType: 0 = global
+   trackType: 0 = global
                1 = TPC stand alone
                2 = TPC stand alone constrained to SPD vertex
     cuts:      0 (global) = standard ITSTPC2010 a la RAA analysis
