@@ -2576,7 +2576,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     const Double_t kCollThickness   =  10.0  *fgkmm;
     const Double_t kCollTubeThick   =   1.0  *fgkmm;
     const Double_t kCollTubeRadius  =   7.0  *fgkmm;
-    const Double_t kCollTubeLength  = 190.0  *fgkmm;
+    const Double_t kCollTubeLength  = 205.0  *fgkmm;
 
     const Double_t kOptFibDiamet    =   4.5  *fgkmm;
 
@@ -2586,7 +2586,10 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     Int_t kPurple = 6; // Purple (Root does not define it)
 
     TGeoVolumeAssembly* container[5];
-    container[0] = new TGeoVolumeAssembly("ITSSPDConeModule");
+    if (sideC)
+    container[0] = new TGeoVolumeAssembly("ITSSPDConeModuleC");
+    else
+    container[0] = new TGeoVolumeAssembly("ITSSPDConeModuleA");
     container[1] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideA");
     container[2] = new TGeoVolumeAssembly("ITSSPDCoolingModuleSideC");
     container[3] = new TGeoVolumeAssembly("ITSSPDPatchPanelModule");
@@ -2661,7 +2664,7 @@ TList* AliITSv11GeometrySPD::CreateConeModule(Bool_t sideC, const Double_t angro
     volCollTube->SetLineColor(kAzure);
 
     // The cooling tube on the cone as a Ctub
-    Double_t tubeLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave;
+    Double_t tubeLength = shCable->GetX(5) - shCable->GetX(0) + kYtoHalfStave -0.85;
     TGeoCtub *shTube = new TGeoCtub(0, kConeTubeRmax, 0.5*tubeLength, 0, 360,
 				    0, SinD(angrot/2), -CosD(angrot/2),
 				    0,              0,              1);
@@ -2887,7 +2890,7 @@ void AliITSv11GeometrySPD::CreateCones(TGeoVolume *moth) const
     const Int_t kNumberOfModules    =  10;
 
     const Double_t kInnerRadius     =  80.775*fgkmm;
-    const Double_t kZTrans          = 452.000*fgkmm;
+    const Double_t kZTrans          = 451.800*fgkmm;
     const Double_t kAlphaRot        =  46.500*fgkDegree;
     const Double_t kAlphaSpaceCool  =   9.200*fgkDegree;
 
