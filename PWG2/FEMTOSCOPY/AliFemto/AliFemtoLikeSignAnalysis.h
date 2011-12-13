@@ -29,6 +29,7 @@ public:
 
   AliFemtoLikeSignAnalysis(unsigned int bins=20, double min=-100., double max=100.);
   AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysis& OriginalAnalysis);  // copy constructor
+  AliFemtoLikeSignAnalysis& operator=(const AliFemtoLikeSignAnalysis& OriginalAnalysis);  
   virtual ~AliFemtoLikeSignAnalysis();
 
   virtual void ProcessEvent(const AliFemtoEvent* TheEventToBeProcessed);
