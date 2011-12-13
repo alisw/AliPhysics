@@ -56,6 +56,23 @@ AliFemtoLikeSignAnalysis::AliFemtoLikeSignAnalysis(const AliFemtoLikeSignAnalysi
   if (fMixingBuffer) delete fMixingBuffer;
   fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
  }
+AliFemtoLikeSignAnalysis& AliFemtoLikeSignAnalysis::operator=(const AliFemtoLikeSignAnalysis& OriginalAnalysis)
+{
+  if (this != &OriginalAnalysis) {
+    fVertexBins = OriginalAnalysis.fVertexBins; 
+    fVertexZ[0] = OriginalAnalysis.fVertexZ[0]; 
+    fVertexZ[1] = OriginalAnalysis.fVertexZ[1];
+    fUnderFlow = 0; 
+    fOverFlow = 0; 
+    if (fMixingBuffer) delete fMixingBuffer;
+    if (fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
+  }
+
+  return *this;
+
+}
+
 //____________________________ 
 AliFemtoLikeSignAnalysis::~AliFemtoLikeSignAnalysis(){
   // destructor
