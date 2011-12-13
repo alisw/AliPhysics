@@ -289,11 +289,43 @@ AliFemtoEvent& AliFemtoEvent::operator=(const AliFemtoEvent& aEvent)
   fTriggerCluster=aEvent.fTriggerCluster;
   fReactionPlaneAngle=aEvent.fReactionPlaneAngle;
   fEP=aEvent.fEP;
-  // create collections
+  if (fTrackCollection) {
+    for (AliFemtoTrackIterator iter=fTrackCollection->begin();iter!=fTrackCollection->end();iter++){
+      delete *iter;
+    }
+    fTrackCollection->clear();
+    delete fTrackCollection;
+  }
   fTrackCollection = new AliFemtoTrackCollection;
+
+  if (fV0Collection) {
+    for (AliFemtoV0Iterator tV0iter=fV0Collection->begin();tV0iter!=fV0Collection->end();tV0iter++){
+      delete *tV0iter;
+    }//added by M Chojnacki To avodid memory leak 
+    fV0Collection->clear();
+    delete fV0Collection;
+  }
+
   fV0Collection = new AliFemtoV0Collection;
+
+  if (fXiCollection) {
+    for (AliFemtoXiIterator tXiIter=fXiCollection->begin();tXiIter!=fXiCollection->end();tXiIter++){
+      delete *tXiIter;
+    }
+    fXiCollection->clear();
+    delete fXiCollection;
+  }
   fXiCollection = new AliFemtoXiCollection;
+  
+  if (fKinkCollection) {
+    for (AliFemtoKinkIterator kinkIter=fKinkCollection->begin();kinkIter!=fKinkCollection->end();kinkIter++){
+      delete *kinkIter;
+    }
+    fKinkCollection->clear();
+    delete fKinkCollection;
+  }
   fKinkCollection = new AliFemtoKinkCollection;
+
   // copy track collection  
   for ( AliFemtoTrackIterator tIter=aEvent.fTrackCollection->begin(); tIter!=aEvent.fTrackCollection->end(); tIter++) {
     AliFemtoTrack* trackCopy = new AliFemtoTrack(**tIter);
