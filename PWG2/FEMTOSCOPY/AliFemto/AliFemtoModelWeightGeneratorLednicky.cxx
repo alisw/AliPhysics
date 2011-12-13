@@ -239,10 +239,12 @@ AliFemtoModelWeightGeneratorLednicky& AliFemtoModelWeightGeneratorLednicky::oper
   fLL = aWeight.fLL;
   fNuclChargeSign = aWeight.fNuclChargeSign;
   fSwap = aWeight.fSwap;
-  fLLName = aWeight.fLLName; 
+  //  fLLName = aWeight.fLLName; 
   fNumProcessPair = aWeight.fNumProcessPair;
   fNumbNonId = aWeight.fNumbNonId;
+  if (fLLName) free(fLLName);
   fLLName=new char*[fLLMax+1];
+  if (fNumProcessPair) free(fNumProcessPair);
   fNumProcessPair=new int[fLLMax+1];
   int i;
   for (i=1;i<=fLLMax;i++) {fLLName[i]=new char[40];fNumProcessPair[i]=0;}
