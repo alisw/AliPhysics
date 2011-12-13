@@ -1006,7 +1006,7 @@ void AliAnalysisTaskESDfilter::ConvertTPCOnlyTracks(const AliESDEvent& esd)
 
 
   AliAODTrack* aodTrack(0x0);
-  AliAODPid* detpid(0x0);
+  //  AliAODPid* detpid(0x0);
 
   // account for change in pT after the constraint
   Float_t ptMax = 1E10;
