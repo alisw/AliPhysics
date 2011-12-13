@@ -131,6 +131,70 @@ AliFemtoAnalysisReactionPlane::AliFemtoAnalysisReactionPlane(const AliFemtoAnaly
   cout << " AliFemtoAnalysisReactionPlane::AliFemtoAnalysisReactionPlane(const AliFemtoAnalysisReactionPlane& a) - analysis copied " << endl;
 
 }
+AliFemtoAnalysisReactionPlane& AliFemtoAnalysisReactionPlane::operator=(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis)
+{
+  if (this != &TheOriginalAnalysis) {
+
+    //AliFemtoAnalysisReactionPlane();
+    fVertexZ[0] = TheOriginalAnalysis.fVertexZ[0]; 
+    fVertexZ[1] = TheOriginalAnalysis.fVertexZ[1];
+    fUnderFlowVertexZ = 0; 
+    fOverFlowVertexZ = 0; 
+    fMult[0] = TheOriginalAnalysis.fMult[0]; 
+    fMult[1] = TheOriginalAnalysis.fMult[1];
+    fUnderFlowMult = 0; 
+    fOverFlowMult = 0; 
+    if (fMixingBuffer) delete fMixingBuffer;
+    fVertexZBins = TheOriginalAnalysis.fVertexZBins;
+    fMultBins = TheOriginalAnalysis.fMultBins;
+    fRPBins = TheOriginalAnalysis.fRPBins;
+    fCurrentRP = 0;
+    
+    if (fEventCut) delete fEventCut;
+    fEventCut = TheOriginalAnalysis.fEventCut->Clone();
+    
+    if (fFirstParticleCut) delete fFirstParticleCut;
+    fFirstParticleCut = TheOriginalAnalysis.fFirstParticleCut->Clone();
+    
+    if (fSecondParticleCut) delete fSecondParticleCut;
+    if (TheOriginalAnalysis.fFirstParticleCut==TheOriginalAnalysis.fSecondParticleCut) 
+      SetSecondParticleCut(fFirstParticleCut); // identical particle hbt
+    else
+      fSecondParticleCut = TheOriginalAnalysis.fSecondParticleCut->Clone();
+    
+    if (fPairCut) delete fPairCut;
+    fPairCut = TheOriginalAnalysis.fPairCut->Clone();
+    
+    if ( fEventCut ) {
+      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
+    }
+    if ( fFirstParticleCut ) {
+      SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
+    }
+    if ( fSecondParticleCut ) {
+      SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
+    }  if ( fPairCut ) {
+      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
+    }
+    
+    if (fPicoEventCollectionVectorHideAway) delete fPicoEventCollectionVectorHideAway;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexZBins,fVertexZ[0],fVertexZ[1],
+										       fMultBins,fMult[0],fMult[1],
+										       fRPBins,0.0,TMath::Pi());
+    
+    AliFemtoCorrFctnIterator iter;
+    for (iter=TheOriginalAnalysis.fCorrFctnCollection->begin(); iter!=TheOriginalAnalysis.fCorrFctnCollection->end();iter++){
+      AliFemtoCorrFctn* fctn = (*iter)->Clone();
+      if (fctn) AddCorrFctn(fctn);
+    }
+    
+    fNumEventsToMix = TheOriginalAnalysis.fNumEventsToMix;
+
+  }
+
+  return *this;
+}
+
 //____________________________
 AliFemtoAnalysisReactionPlane::~AliFemtoAnalysisReactionPlane(){
   // now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself

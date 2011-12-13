@@ -17,6 +17,7 @@ public:
 
   AliFemtoAnalysisReactionPlane(unsigned int binsVertex=10, double minVertex=-100., double maxVertex=+100., unsigned int binsMult=10, double minMult=-1.e9, double maxMult=+1.e9, unsigned short binsRP=10);
   AliFemtoAnalysisReactionPlane(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis);  // copy constructor
+  AliFemtoAnalysisReactionPlane& operator=(const AliFemtoAnalysisReactionPlane& TheOriginalAnalysis); 
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoAnalysisReactionPlane();
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
