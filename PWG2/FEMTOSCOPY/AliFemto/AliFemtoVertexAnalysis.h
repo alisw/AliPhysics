@@ -22,6 +22,7 @@ public:
 
   AliFemtoVertexAnalysis(unsigned int bins=10, double min=-100., double max=+100.);
   AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& OriginalAnalysis);  // copy constructor
+  AliFemtoVertexAnalysis& operator=(const AliFemtoVertexAnalysis& OriginalAnalysis);  
   virtual void ProcessEvent(const AliFemtoEvent* ProcessThisEvent);
   virtual ~AliFemtoVertexAnalysis();
   virtual AliFemtoString Report();       //! returns reports of all cuts applied and correlation functions being done
