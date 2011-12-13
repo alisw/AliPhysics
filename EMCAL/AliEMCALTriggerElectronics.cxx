@@ -175,15 +175,19 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 			AliEMCALTriggerTRU *iTRU = static_cast<AliEMCALTriggerTRU*>(fTRU->At(i));
 
 			Int_t reg[24][4];
-			iTRU->GetL0Region(timeL0min, reg);
+			for (int j = 0; j < 24; j++) for (int k = 0; k < 4; k++) reg[j][k] = 0;
 					
+			iTRU->GetL0Region(timeL0min, reg);
+			
 			for (int j = 0; j < iTRU->RegionSize()->X(); j++)
 			{
 				for (int k = 0; k < iTRU->RegionSize()->Y(); k++)
 				{
-					if (geom->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
-									 &&
-									 geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
+					if (reg[j][k]
+							&& 
+							geom->GetAbsFastORIndexFromPositionInTRU(i, j, k, id)
+							&&
+							geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py))
 					{
 						pos = posMap[px][py];
 									
@@ -224,7 +228,7 @@ void AliEMCALTriggerElectronics::Digits2Trigger(TClonesArray* digits, const Int_
 								geom->GetPositionInEMCALFromAbsFastORIndex(id, px, py)) p->SetPosition(px, py);
 				
 				Int_t peaks = p->Peaks();
-			
+				
 				Int_t sizeX = (Int_t) ((iTRU->PatchSize())->X() * (iTRU->SubRegionSize())->X());
 				Int_t sizeY = (Int_t) ((iTRU->PatchSize())->Y() * (iTRU->SubRegionSize())->Y());
 					
