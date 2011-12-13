@@ -38,12 +38,15 @@ AliFemtoModelGlobalHiddenInfo& AliFemtoModelGlobalHiddenInfo::operator=(const Al
   if (this == &aInfo)
     return *this;
 
+  if (fTrueMomentum) delete fTrueMomentum;
   if (aInfo.GetTrueMomentum())
     SetTrueMomentum(aInfo.GetTrueMomentum());
   else SetTrueMomentum(0);
+  if (fEmissionPoint) delete fEmissionPoint;
   if (aInfo.GetEmissionPoint())
     SetEmissionPoint(aInfo.GetEmissionPoint());
   else SetEmissionPoint(0);
+  if (fGlobalEmissionPoint) delete fGlobalEmissionPoint;
   if (aInfo.GetGlobalEmissionPoint())
     SetGlobalEmissionPoint(*aInfo.GetGlobalEmissionPoint());
   else fGlobalEmissionPoint = 0;
