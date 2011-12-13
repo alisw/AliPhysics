@@ -11,6 +11,7 @@ class AliPHOSTRURawReader;
 
 /*
  *  Class for reading the Trigger Data Stream from Raw.
+ *  Author: Henrik Qvigstad (henrik.qvigstad@cern.ch)
  */
 class AliPHOSTriggerRawReader : public TObject
 {
@@ -23,6 +24,10 @@ class AliPHOSTriggerRawReader : public TObject
   void ReadFromStream(AliCaloRawStreamV3* );
   void Reset();
   
+ private:
+  AliPHOSTriggerRawReader(const AliPHOSTriggerRawReader&); // not implemented
+  AliPHOSTriggerRawReader& operator= (const AliPHOSTriggerRawReader&); // not implemented
+
  private:
   // constants
   const static Int_t kNMods = 5; // n. mods
