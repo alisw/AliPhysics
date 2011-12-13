@@ -28,18 +28,6 @@
 //
 //========================================================================
 
-//========================================================================
-//  !!!WARNING!!!
-//  This version allows to change the density (!) of the materials
-//  the ITS forward services are made of.
-//  By default the density is unchanged (enhancement factor = 1)
-//  To change it, put the enhancement factor in the AliITSv11 constructor
-//  (i.e in Config.C) as the third parameter : for example, to enhance the
-//  density by 10% use
-//      AliITS *ITS  = new AliITSv11("ITS","ITS v11",1.1);
-//
-//========================================================================
-
 
 // $Log$
 // Revision 1.1  2011/06/10 14:48:24  masera
@@ -86,7 +74,6 @@ AliITSv11::AliITSv11():
   fMajorVersion(IsVersion()),
   fMinorVersion(-1),
   fIDMother(0),
-  fRhoIncrMatBud(1),
   fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
   fSPDgeom(0),
   fSDDgeom(0),
@@ -109,7 +96,6 @@ AliITSv11::AliITSv11(const char *title)
     fMajorVersion(IsVersion()),
     fMinorVersion(1),
     fIDMother(0),
-    fRhoIncrMatBud(1),
     fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
     fSPDgeom(0),
     fSDDgeom(0),
@@ -150,13 +136,12 @@ AliITSv11::AliITSv11(const char *title)
 }
 
 //______________________________________________________________________
-AliITSv11::AliITSv11(const char *name, const char *title, const Float_t rho) 
+AliITSv11::AliITSv11(const char *name, const char *title) 
   : AliITS("ITS", title),
     fByThick(kTRUE),
     fMajorVersion(IsVersion()),
     fMinorVersion(1),
     fIDMother(0),
-    fRhoIncrMatBud(rho),
     fInitGeom((AliITSVersion_t)fMajorVersion,fMinorVersion),
     fSPDgeom(0),
     fSDDgeom(0),
@@ -172,9 +157,6 @@ AliITSv11::AliITSv11(const char *name, const char *title, const Float_t rho)
     // Return:
     //   none.
   Int_t i;
-
-  if (rho != 1.)
-    AliWarning(Form("Using non-standard forward material enhancement factor %f !",rho));
   
   fSPDgeom = new AliITSv11GeometrySPD();
   fSDDgeom = new AliITSv11GeometrySDD(0);
@@ -999,16 +981,11 @@ void AliITSv11::CreateMaterials()
     AliMixture(12, "Water$",aWater,zWater,dWater,2,wWater);
     AliMedium(12,"WATER$",12,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(24, "WaterServ$",aWater,zWater,dWater*fRhoIncrMatBud,2,wWater);
-    AliMedium(24,"WATERSERV$",24,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMixture(13,"Freon$",afre,zfre,densfre*fRhoIncrMatBud,-2,wfre);
+    AliMixture(13,"Freon$",afre,zfre,densfre,-2,wfre);
     AliMedium(13,"Freon$",13,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(14,"COPPER$",0.63546E+02,0.29000E+02,0.89600E+01,0.14300E+01,0.99900E+03);
     AliMedium(14,"COPPER$",14,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-    AliMaterial(29,"CUSERV$",0.63546E+02,0.29000E+02,0.89600E+01*fRhoIncrMatBud,0.14300E+01,0.99900E+03);
-    AliMedium(29,"CUSERV$",29,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
     AliMixture(15,"CERAMICS$",acer,zcer,denscer,5,wcer);
     AliMedium(15,"CERAMICS$",15,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
@@ -1036,7 +1013,7 @@ void AliITSv11::CreateMaterials()
     AliMixture(37,"ALCU12$",aAlCu12,zAlCu12,dAlCu12,2,wAlCu12);
     AliMedium(37,"ALCU12$",37,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(38,"MEGOLON$",aMegolon,zMegolon,dMegolon*fRhoIncrMatBud,-2,wMegolon);
+    AliMixture(38,"MEGOLON$",aMegolon,zMegolon,dMegolon,-2,wMegolon);
     AliMedium(38,"MEGOLON$",38,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(39,"RYTON$",aRyton,zRyton,dRyton,14,wRyton);
@@ -1054,13 +1031,13 @@ void AliITSv11::CreateMaterials()
     AliMixture(43,"SDD X7R weld$",aX7Rweld,zX7Rweld,dX7Rweld,2,wX7Rweld);
     AliMedium(43,"SDD X7R weld$",43,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(44,"PPS$",aPPS,zPPS,dPPS*fRhoIncrMatBud,-3,wPPS);
+    AliMixture(44,"PPS$",aPPS,zPPS,dPPS,-3,wPPS);
     AliMedium(44,"PPS$",44,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(45,"POLYAX$",aPOLYAX,zPOLYAX,dPOLYAX*fRhoIncrMatBud,-4,wPOLYAX);
+    AliMixture(45,"POLYAX$",aPOLYAX,zPOLYAX,dPOLYAX,-4,wPOLYAX);
     AliMedium(45,"POLYAX$",45,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(46,"PBT$",aPBT,zPBT,dPBT*fRhoIncrMatBud,-3,wPBT);
+    AliMixture(46,"PBT$",aPBT,zPBT,dPBT,-3,wPBT);
     AliMedium(46,"PBT$",46,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(47,"PVC$",aPVC,zPVC,dPVC,-3,wPVC);
@@ -1113,14 +1090,11 @@ void AliITSv11::CreateMaterials()
     AliMedium(56,"SPD KAPTON(POLYCH2)$",56,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     // Gaseous Freon has same chemical composition but air density at 1.7 atm
-    AliMixture(59,"GASEOUS FREON$",afre,zfre,1.7*dAir*fRhoIncrMatBud,-2,wfre);
+    AliMixture(59,"GASEOUS FREON$",afre,zfre,1.7*dAir,-2,wfre);
     AliMedium(59,"GASEOUS FREON$",59,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(61,"EPOXY$",aEpoxy,zEpoxy,dEpoxy,-3,wEpoxy);
     AliMedium(61,"EPOXY$",61,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMixture(22,"EPOXYSERV$",aEpoxy,zEpoxy,dEpoxy*fRhoIncrMatBud,-3,wEpoxy);
-    AliMedium(22,"EPOXYSERV$",22,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMaterial(62,"SILICON$",0.28086E+02,0.14000E+02,0.23300E+01,0.93600E+01,0.99900E+03);
     AliMedium(62,"SILICON$",62,0,ifield,fieldm,tmaxfdSi,stemaxSi,deemaxSi,epsilSi,stminSi);
@@ -1131,14 +1105,8 @@ void AliITSv11::CreateMaterials()
     AliMaterial(64,"ALUMINUM$",0.26982E+02,0.13000E+02,0.26989E+01,0.89000E+01,0.99900E+03);
     AliMedium(64,"ALUMINUM$",64,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMaterial(32,"ALSERV$",0.26982E+02,0.13000E+02,0.26989E+01*fRhoIncrMatBud,0.89000E+01,0.99900E+03);
-    AliMedium(32,"ALSERV$",32,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
     AliMixture(65,"INOX$",aINOX,zINOX,dINOX,9,wINOX);
     AliMedium(65,"INOX$",65,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMixture(31,"INOXSERV$",aINOX,zINOX,dINOX*fRhoIncrMatBud,9,wINOX);
-    AliMedium(31,"INOXSERV$",31,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     AliMixture(66,"NiSn$",aNiSn,zNiSn,dNiSn,2,wNiSn);
     AliMedium(66,"NiSn$",66,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
@@ -1154,9 +1122,6 @@ void AliITSv11::CreateMaterials()
   
     AliMixture(70, "SDDKAPTON (POLYCH2)", aKapton, zKapton, dKapton, 4, wKapton);
     AliMedium(70,"SDDKAPTON (POLYCH2)$",70,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMixture(23, "SDDKAPTONSERV", aKapton, zKapton, dKapton*fRhoIncrMatBud, 4, wKapton);
-    AliMedium(23,"SDDKAPTONSERV$",23,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
      AliMaterial(71,"ITS SANDW A$",0.12011E+02,0.60000E+01,0.2115E+00,0.17479E+03,0.99900E+03);
     AliMedium(71,"ITS SANDW A$",71,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
@@ -1399,10 +1364,7 @@ void AliITSv11::CreateMaterials()
     AliMixture(98,"SDD OPTICFIB$",aoptfib,zoptfib,doptfib,-2,woptfib);
     AliMedium(98,"SDD OPTICFIB$",98,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
-    AliMixture(30,"SDD OPTICFIBSERV$",aoptfib,zoptfib,doptfib*fRhoIncrMatBud,-2,woptfib);
-    AliMedium(30,"SDD OPTICFIBSERV$",30,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
-
-    AliMixture(95,"SSD FEP$",aFEP,zFEP,dFEP*fRhoIncrMatBud,-2,wFEP);
+    AliMixture(95,"SSD FEP$",aFEP,zFEP,dFEP,-2,wFEP);
     AliMedium(95,"SSD FEP$",95,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
     // Mean material for low-voltage cables on SPD trays Side A
@@ -1468,11 +1430,6 @@ void AliITSv11::CreateMaterials()
     AliMedium(67,"POLYURETHANE$",67,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
 
-    den = 1.158910*fRhoIncrMatBud;
-    AliMixture(28,"POLYURESERV$",aA,zZ,den,+4,wW);
-    AliMedium(28,"POLYURESERV$",28,0,ifield,fieldm,tmaxfd,stemax,
-	      deemax,epsil,stmin);
-
     //  POM (Polyoxymethylene = (CH2O)n ) - 02 May 10
     zZ[2] =  8.0; aA[2] =  15.9994; // Oxigen
 
@@ -1489,7 +1446,7 @@ void AliITSv11::CreateMaterials()
     wW[10] = 0.000000;//Ni
     wW[11] = 0.000000;//Ca
 
-    den = 1.4200*fRhoIncrMatBud;
+    den = 1.4200;
     AliMixture(57,"POLYOXYMETHYLENE$",aA,zZ,den,+3,wW);
     AliMedium(57,"POLYOXYMETHYLENE$",57,0,ifield,fieldm,tmaxfd,stemax,
 	      deemax,epsil,stmin);
@@ -1521,7 +1478,7 @@ void AliITSv11::CreateMaterials()
       totFrac += wW[j];
     wW[0] = 1. - totFrac;//Al - the remainder
 
-    den = 2.69*fRhoIncrMatBud;
+    den = 2.69;
     AliMixture(93,"ANTICORODAL$",aA,zZ,den,+9,wW);
     AliMedium(93,"ANTICORODAL$",93,0,ifield,fieldm,tmaxfd,stemax,deemax,epsil,stmin);
 
