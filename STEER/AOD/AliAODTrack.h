@@ -124,7 +124,7 @@ class AliAODTrack : public AliVTrack {
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return fChi2perNDF; }
-  UShort_t GetTPCNcls()  const { return fTPCClusterMap.CountBits();}
+  UShort_t GetTPCNcls()  const { return fTPCFitMap.CountBits();}
   
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;
@@ -235,11 +235,13 @@ class AliAODTrack : public AliVTrack {
   UInt_t  GetFilterMap() const {return fFilterMap;}
 
   const TBits& GetTPCClusterMap() const {return fTPCClusterMap;}
+  const TBits& GetTPCFitMap() const {return fTPCFitMap;}
   Float_t GetTPCClusterInfo(Int_t nNeighbours=3, Int_t type=0, Int_t row0=0, Int_t row1=159) const;
   
   const TBits& GetTPCSharedMap() const {return fTPCSharedMap;}
   void    SetTPCClusterMap(const TBits amap) {fTPCClusterMap = amap;}
   void    SetTPCSharedMap(const TBits amap) {fTPCSharedMap = amap;}
+  void    SetTPCFitMap(const TBits amap) {fTPCFitMap = amap;}
   void    SetTPCPointsF(UShort_t  findable){fTPCnclsF = findable;}
 
   UShort_t GetTPCNclsF() const { return fTPCnclsF;}
@@ -366,8 +368,10 @@ class AliAODTrack : public AliVTrack {
                                     // (ITS: bit 1-8, muon trigger: bit 9-16, muon tracker: bit 17-26, muon match trigger: bit 31-32) 
   UInt_t        fFilterMap;         // filter information, one bit per set of cuts
 
+  TBits         fTPCFitMap;      // Map of clusters, one bit per padrow; if has a cluster on given padrow which is used in the fit   
   TBits         fTPCClusterMap;     // Map of clusters, one bit per padrow; 1 if has a cluster on given padrow
   TBits         fTPCSharedMap;      // Map of clusters, one bit per padrow; 1 if has a shared cluster on given padrow
+
   UShort_t      fTPCnclsF;          // findable clusters
 
   Short_t       fID;                // unique track ID, points back to the ESD track
@@ -382,7 +386,7 @@ class AliAODTrack : public AliVTrack {
   AliAODPid    *fDetPid;            // more detailed or detector specific pid information
   TRef          fProdVertex;        // vertex of origin
 
-  ClassDef(AliAODTrack, 14);
+  ClassDef(AliAODTrack, 15);
 };
 
 inline Bool_t  AliAODTrack::IsPrimaryCandidate() const
