@@ -159,6 +159,69 @@ AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) 
   cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - analysis copied " << endl;
 
 }
+
+AliFemtoVertexAnalysis& AliFemtoVertexAnalysis::operator=(const AliFemtoVertexAnalysis& OriginalAnalysis)
+{
+  if (this != &OriginalAnalysis) {
+    //AliFemtoVertexAnalysis();
+    fEventCut          = 0;
+    fFirstParticleCut  = 0;
+    fSecondParticleCut = 0;
+    fPairCut           = 0;
+    fCorrFctnCollection= 0;
+    fCorrFctnCollection = new AliFemtoCorrFctnCollection;
+    fVertexBins = OriginalAnalysis.fVertexBins; 
+    fVertexZ[0] = OriginalAnalysis.fVertexZ[0]; 
+    fVertexZ[1] = OriginalAnalysis.fVertexZ[1];
+    fUnderFlow = 0; 
+    fOverFlow = 0; 
+    if (fMixingBuffer) delete fMixingBuffer;
+    fPicoEventCollectionVectorHideAway = new AliFemtoPicoEventCollectionVectorHideAway(fVertexBins,fVertexZ[0],fVertexZ[1]);
+    
+    // find the right event cut
+    fEventCut = OriginalAnalysis.fEventCut->Clone();
+    // find the right first particle cut
+    fFirstParticleCut = OriginalAnalysis.fFirstParticleCut->Clone();
+    // find the right second particle cut
+    if (OriginalAnalysis.fFirstParticleCut==OriginalAnalysis.fSecondParticleCut) 
+      SetSecondParticleCut(fFirstParticleCut); // identical particle hbt
+    else
+      fSecondParticleCut = OriginalAnalysis.fSecondParticleCut->Clone();
+    
+    fPairCut = OriginalAnalysis.fPairCut->Clone();
+    
+    if ( fEventCut ) {
+      SetEventCut(fEventCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - event cut set " << endl;
+    }
+    if ( fFirstParticleCut ) {
+      SetFirstParticleCut(fFirstParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - first particle cut set " << endl;
+    }
+    if ( fSecondParticleCut ) {
+      SetSecondParticleCut(fSecondParticleCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - second particle cut set " << endl;
+    }  if ( fPairCut ) {
+      SetPairCut(fPairCut); // this will set the myAnalysis pointer inside the cut
+      cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - pair cut set " << endl;
+    }
+    
+    AliFemtoCorrFctnIterator iter;
+    for (iter=OriginalAnalysis.fCorrFctnCollection->begin(); iter!=OriginalAnalysis.fCorrFctnCollection->end();iter++){
+      cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - looking for correlation functions " << endl;
+      AliFemtoCorrFctn* fctn = (*iter)->Clone();
+      if (fctn) AddCorrFctn(fctn);
+      else cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - correlation function not found " << endl;
+    }
+    
+    fNumEventsToMix = OriginalAnalysis.fNumEventsToMix;
+    
+    cout << " AliFemtoVertexAnalysis::AliFemtoVertexAnalysis(const AliFemtoVertexAnalysis& a) - analysis copied " << endl;
+  }
+
+  return *this;
+}
+
 //____________________________
 AliFemtoVertexAnalysis::~AliFemtoVertexAnalysis(){
   // now delete every PicoEvent in the EventMixingBuffer and then the Buffer itself
