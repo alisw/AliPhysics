@@ -85,6 +85,8 @@ protected:
   TObjArray             *fContainer;       //! container to store results
   AliTRDeventInfo       *fEvent;           //! Event Info
   TObjArray             *fTracks;          //! Array of tracks
+  TObjArray             *fClusters;        //! Array of clusters
+  const TObjArray       *fkClusters;       //! current detector clusters array
   const AliTRDtrackV1   *fkTrack;          //! current track
   const AliTRDtrackInfo::AliMCinfo  *fkMC; //! MC info
   const AliTRDtrackInfo::AliESDinfo *fkESD;//! ESD info
@@ -97,10 +99,11 @@ private:
   AliTRDrecoTask(const AliTRDrecoTask&);
   AliTRDrecoTask& operator=(const AliTRDrecoTask&);
 
-  TList             *fPlotFuncList;//! plot functors list
-  Bool_t            fRunTerminate;  // Switch for Terminate Function
-  static TList      *fgTrendPoint;          //! trend point
-  static TTreeSRedirector *fgDebugStream;  //! Debug stream 
+  TList             *fPlotFuncList;        //! track functors list
+  TList             *fDetFuncList;         //! detector functors list
+  Bool_t            fRunTerminate;         // Switch for Terminate Function
+  static TList      *fgTrendPoint;         //! trend point
+  static TTreeSRedirector *fgDebugStream;  //! Debug stream
 
   ClassDef(AliTRDrecoTask, 5) // base TRD reconstruction task
 };

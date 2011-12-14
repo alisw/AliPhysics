@@ -13,7 +13,7 @@
 
 void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContainer **ci)
 {
-  Info("AddTRDresolution", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName()));
+  Info("AddTRDresolution", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\" [3]=\"%s\" [4]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName(), ci[3]->GetName(), ci[4]->GetName()));
   AliAnalysisDataContainer *evInfoContainer = ci[3];
 
   //AliLog::SetClassDebugLevel("AliTRDrecoTask", 2);
@@ -25,14 +25,12 @@ void AddTRDresolution(AliAnalysisManager *mgr, Int_t map, AliAnalysisDataContain
     res->SetMCdata(mgr->GetMCtruthEventHandler());
     res->SetPostProcess(kFALSE);
     //res->SetDebugLevel(3);
-    //if(itq==0) res->SetSegmentationLevel(AliTRDresolution::kDetector);
-    // use these settings if you know what you are doing !
-    //res->SetTrackRefit(); 
     res->SetPtThreshold(0.2);
     res->SetNameId(suffix[itq]);
     mgr->ConnectInput(res, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container 
     mgr->ConnectInput(res, 1, ci[itq]);                        // conect track info container
     mgr->ConnectInput(res, 2, evInfoContainer);                // conect event info container
+    mgr->ConnectInput(res, 3, ci[4]);                          // conect clusters container
     mgr->ConnectOutput(res,1, mgr->CreateContainer(res->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance", mgr->GetCommonFileName())));
   
     // Create output containers for calibration tasks
