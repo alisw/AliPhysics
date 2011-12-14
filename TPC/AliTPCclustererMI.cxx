@@ -165,61 +165,7 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
     fAllNSigBins[iRow]=0;
   }
 }
-//______________________________________________________________
-AliTPCclustererMI::AliTPCclustererMI(const AliTPCclustererMI &param)
-              :TObject(param),
-  fBins(0),
-  fSigBins(0),
-  fNSigBins(0),
-  fLoop(0),
-  fMaxBin(0),
-  fMaxTime(0),
-  fMaxPad(0),
-  fSector(-1),
-  fRow(-1),
-  fSign(0),
-  fRx(0),
-  fPadWidth(0),
-  fPadLength(0),
-  fZWidth(0),
-  fPedSubtraction(kFALSE),
-  fEventHeader(0),
-  fTimeStamp(0),
-  fEventType(0),
-  fInput(0),
-  fOutput(0),
-  fOutputArray(0),
-  fOutputClonesArray(0),
-  fRowCl(0),
-  fRowDig(0),
-  fParam(0),
-  fNcluster(0),
-  fNclusters(0),
-  fDebugStreamer(0),
-  fRecoParam(0),
-  fBDumpSignal(kFALSE),
-  fBClonesArray(kFALSE),
-  fUseHLTClusters(4),
-  fAllBins(NULL),
-  fAllSigBins(NULL),
-  fAllNSigBins(NULL)
-{
-  //
-  // dummy
-  //
-  fMaxBin = param.fMaxBin;
-}
-//______________________________________________________________
-AliTPCclustererMI & AliTPCclustererMI::operator =(const AliTPCclustererMI & param)
-{
-  //
-  // assignment operator - dummy
-  //
-  if (this == &param) return (*this);
 
-  fMaxBin=param.fMaxBin;
-  return (*this);
-}
 //______________________________________________________________
 AliTPCclustererMI::~AliTPCclustererMI(){
   //

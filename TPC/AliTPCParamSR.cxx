@@ -65,31 +65,6 @@ AliTPCParamSR::AliTPCParamSR()
   SetDefault();
   Update();
 }
-AliTPCParamSR::AliTPCParamSR(const AliTPCParamSR &param)
-              :AliTPCParam(),
-	       fInnerPRF(0),
-	       fOuter1PRF(0),
-	       fOuter2PRF(0),
-	       fTimeRF(0),
-	       fFacSigmaPadRow(0),
-	       fFacSigmaPad(0),
-	       fFacSigmaTime(0)
-{
-  //
-  //  copy constructor - dummy
-  //
-  fFacSigmaPadRow = param.fFacSigmaPadRow;
-}
-AliTPCParamSR & AliTPCParamSR::operator =(const AliTPCParamSR & param)
-{
-  //
-  // assignment operator - dummy
-  //
-  if (this == &param) return (*this);
-
-  fZLength=param.fZLength;
-  return (*this);
-}
 
 AliTPCParamSR::~AliTPCParamSR()
 {
@@ -569,7 +544,9 @@ Int_t  AliTPCParamSR::CalcResponseFast(Float_t* xyz, Int_t * index, Int_t row, F
     if ( (apadrow<0) || (apadrow>=2*kpadrn)) 
       continue;
     // pad angular correction
-    Float_t angle = kTanMax*2.*(cpad+0.5)/Float_t(npads);
+    Float_t angle = 0.;
+    if (npads != 0)
+      angle = kTanMax*2.*(cpad+0.5)/Float_t(npads);
     Float_t dpadangle =0;
     if (index[1]<fNInnerSector){
       dpadangle = angle*dpadrow*fInnerPadPitchLength/fInnerPadPitchWidth;

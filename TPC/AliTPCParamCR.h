@@ -16,8 +16,6 @@ class AliTPCPRF2D;
 class AliTPCParamCR : public AliTPCParam {
 public:
   AliTPCParamCR();
-  AliTPCParamCR(const AliTPCParamCR &param); // copy constructor
-  AliTPCParamCR &operator = (const AliTPCParamCR & param); //assignment operator
   virtual ~AliTPCParamCR();
   Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t dummy=0);
   //calculate bin response as function of the input position -x 
@@ -51,6 +49,11 @@ protected:
   AliTPCPRF2D * fOuter2PRF;  
   AliTPCRF1D  * fTimeRF;           //!time response function object
   Float_t       fFacSigma;         //factor-how many sigma of response I accept
+
+private:
+  AliTPCParamCR(const AliTPCParamCR &param); // copy constructor
+  AliTPCParamCR &operator = (const AliTPCParamCR & param); //assignment operator
+
   ClassDef(AliTPCParamCR,2)  //parameter  object for set:TPC
 };
 

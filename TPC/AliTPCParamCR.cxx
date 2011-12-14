@@ -56,29 +56,7 @@ AliTPCParamCR::AliTPCParamCR()
   SetDefault();
   Update();
 }
-AliTPCParamCR::AliTPCParamCR(const AliTPCParamCR &param)
-              :AliTPCParam(),
-	       fInnerPRF(0),
-	       fOuter1PRF(0),
-	       fOuter2PRF(0),
-               fTimeRF(0),
-	       fFacSigma(0.)
-{
-  //
-  // copy constructor - dummy
-  //
-  fFacSigma= param.fFacSigma;
-}
-AliTPCParamCR & AliTPCParamCR::operator =(const AliTPCParamCR & param)
-{
-  //
-  // assignment operator - dummy
-  //
-  if (this == &param) return (*this);
 
-  fFacSigma= param.fFacSigma;
-  return (*this); 
-}
 AliTPCParamCR::~AliTPCParamCR()
 {
   //

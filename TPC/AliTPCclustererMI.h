@@ -34,8 +34,6 @@ class AliTPCCalROC;
 class AliTPCclustererMI : public TObject{
 public:
   AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoParam * recoParam = 0);
-  AliTPCclustererMI(const AliTPCclustererMI &param); // copy constructor
-  AliTPCclustererMI &operator = (const AliTPCclustererMI & param); //assignment
   virtual ~AliTPCclustererMI();
   virtual void Digits2Clusters();
   virtual void Digits2ClustersOld(AliRawReader* rawReader);
@@ -51,6 +49,9 @@ public:
   void SetUseHLTClusters(Int_t useHLTClusters) {fUseHLTClusters = useHLTClusters;} // set usage from HLT clusters from rec.C options
 
 private:
+  AliTPCclustererMI(const AliTPCclustererMI &param); // copy constructor
+  AliTPCclustererMI &operator = (const AliTPCclustererMI & param); //assignment
+
   Bool_t IsMaximum(Float_t k, Int_t max, const Float_t *bins) const; 
   void MakeCluster2(Int_t k,Int_t max,Float_t *bins,UInt_t m,
    AliTPCclusterMI &c);  

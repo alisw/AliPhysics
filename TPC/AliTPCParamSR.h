@@ -16,8 +16,6 @@ class AliTPCPRF2D;
 class AliTPCParamSR : public AliTPCParam {
 public:
   AliTPCParamSR();
-  AliTPCParamSR(const AliTPCParamSR &param); // copy constructor
-  AliTPCParamSR &operator = (const AliTPCParamSR & param); //assignment operator
   virtual ~AliTPCParamSR();
 
   Int_t  CalcResponse(Float_t* x, Int_t * index, Int_t row);
@@ -75,6 +73,11 @@ protected:
   Float_t      fFacSigmaPadRow;    //factor-how many sigma of response I accept
   Float_t      fFacSigmaPad;       //factor-how many sigma of response I accept
   Float_t      fFacSigmaTime;      //factor-how many sigma of response I accept
+
+private:
+  AliTPCParamSR(const AliTPCParamSR &param); // copy constructor
+  AliTPCParamSR &operator = (const AliTPCParamSR & param); //assignment operator
+
   ClassDef(AliTPCParamSR,2)  //parameter  object for set:TPC
 };
 

@@ -23,8 +23,6 @@ public:
     AliTPCLaserTracks();
     AliTPCLaserTracks(Int_t npoints);
     virtual ~AliTPCLaserTracks();
-    AliTPCLaserTracks(const AliTPCLaserTracks &param); // copy constructor
-    AliTPCLaserTracks &operator = (const AliTPCLaserTracks & param);
 
     Int_t GetId()    const {return fId;     }
     Int_t GetSide()  const {return fSide;   }
@@ -88,6 +86,10 @@ protected:
     void InitPoints();
 
     Double_t FindBeamLength(TVector3 vS, TVector3 vP);
+
+private:
+    AliTPCLaserTracks(const AliTPCLaserTracks &param); // copy constructor
+    AliTPCLaserTracks &operator = (const AliTPCLaserTracks & param);
 
     ClassDef(AliTPCLaserTracks,1)
 };
