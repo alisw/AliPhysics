@@ -39,5 +39,7 @@
 #pragma link C++ class AliAnalysisMuMu+;
 #pragma link C++ class AliAnalysisMuMuFromAOD+;
 #pragma link C++ class AliAnalysisMuMuFromESD+;
+#pragma link C++ class AliMuonTrackCuts+;
+#pragma link C++ class AliMuonPairCuts+;
 #endif
 
