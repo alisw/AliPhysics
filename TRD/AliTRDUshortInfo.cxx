@@ -39,6 +39,7 @@ AliTRDUshortInfo::AliTRDUshortInfo()
   //
 
 }
+
 //_____________________________________________________________________________
 AliTRDUshortInfo::AliTRDUshortInfo(Int_t n)
   :TObject()
@@ -53,7 +54,9 @@ AliTRDUshortInfo::AliTRDUshortInfo(Int_t n)
   for(Int_t k = 0; k < fSize; k++){
     fData[k] = 0;
   }
+
 }
+
 //_____________________________________________________________________________
 AliTRDUshortInfo::AliTRDUshortInfo(const AliTRDUshortInfo &c)
   :TObject(c)
@@ -72,6 +75,7 @@ AliTRDUshortInfo::AliTRDUshortInfo(const AliTRDUshortInfo &c)
   }
 
 }
+
 //_____________________________________________________________________________
 AliTRDUshortInfo::~AliTRDUshortInfo()
 {
@@ -85,6 +89,7 @@ AliTRDUshortInfo::~AliTRDUshortInfo()
   }
 
 }
+
 //_____________________________________________________________________________
 AliTRDUshortInfo &AliTRDUshortInfo::operator=(const AliTRDUshortInfo &c)
 {
@@ -92,10 +97,24 @@ AliTRDUshortInfo &AliTRDUshortInfo::operator=(const AliTRDUshortInfo &c)
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDUshortInfo &) c).Copy(*this);
+  if (this == &c) {
+    return *this;
+  }
+
+  fSize = c.fSize;
+
+  if (fData) {
+    delete [] fData;
+  }
+  fData = new UShort_t[fSize];
+  for (Int_t iBin = 0; iBin < fSize; iBin++) {
+    fData[iBin] = c.fData[iBin];
+  }
+
   return *this;
 
 }
+
 //_____________________________________________________________________________
 void AliTRDUshortInfo::Copy(TObject &c) const
 {
@@ -116,6 +135,7 @@ void AliTRDUshortInfo::Copy(TObject &c) const
   TObject::Copy(c);
 
 }
+
 //_____________________________________________________________________________
 void AliTRDUshortInfo::SetSize(Int_t n)
 {

@@ -186,7 +186,24 @@ AliTRDCalROC &AliTRDCalROC::operator=(const AliTRDCalROC &c)
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDCalROC &) c).Copy(*this);
+  if (this == &c) {
+    return *this;
+  }
+
+  fPla       = c.fPla;
+  fCha       = c.fCha;
+  fNrows     = c.fNrows;
+  fNcols     = c.fNcols;
+  fNchannels = c.fNchannels;
+
+  if (fData) {
+    delete [] fData;
+  }
+  fData = new UShort_t[fNchannels];
+  for (Int_t iBin = 0; iBin < fNchannels; iBin++) {
+    fData[iBin] = ((AliTRDCalROC &) c).fData[iBin];
+  }
+
   return *this;
 
 }

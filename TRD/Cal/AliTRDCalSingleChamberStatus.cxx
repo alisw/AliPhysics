@@ -174,7 +174,24 @@ AliTRDCalSingleChamberStatus &AliTRDCalSingleChamberStatus::operator=(const AliT
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDCalSingleChamberStatus &) c).Copy(*this);
+  if (this == &c) {
+    return *this;
+  }
+
+  fPla       = c.fPla;
+  fCha       = c.fCha;
+  fNrows     = c.fNrows;
+  fNcols     = c.fNcols;
+  fNchannels = c.fNchannels;
+
+  if (fData) {
+    delete [] fData;
+  }
+  fData = new Char_t[fNchannels];
+  for (Int_t iBin = 0; iBin < fNchannels; iBin++) {
+    fData[iBin] = ((AliTRDCalSingleChamberStatus &) c).fData[iBin];
+  }
+
   return *this;
 
 }

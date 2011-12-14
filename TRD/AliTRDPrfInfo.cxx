@@ -54,12 +54,14 @@ AliTRDPrfInfo::AliTRDPrfInfo(Int_t n)
   for(Int_t k = 0; k < fSize; k++){
     fData[k] = 0;
   }
+
 }
+
 //_____________________________________________________________________________
 AliTRDPrfInfo::AliTRDPrfInfo(const AliTRDPrfInfo &c)
   :TObject(c)
   ,fSize(c.fSize)
-   ,fData(0)
+  ,fData(0)
 {
   //
   // AliTRDPrfInfo copy constructor
@@ -73,6 +75,7 @@ AliTRDPrfInfo::AliTRDPrfInfo(const AliTRDPrfInfo &c)
   }
 
 }
+
 //_____________________________________________________________________________
 AliTRDPrfInfo::~AliTRDPrfInfo()
 {
@@ -86,6 +89,7 @@ AliTRDPrfInfo::~AliTRDPrfInfo()
   }
 
 }
+
 //_____________________________________________________________________________
 AliTRDPrfInfo &AliTRDPrfInfo::operator=(const AliTRDPrfInfo &c)
 {
@@ -93,7 +97,20 @@ AliTRDPrfInfo &AliTRDPrfInfo::operator=(const AliTRDPrfInfo &c)
   // Assignment operator
   //
 
-  if (this != &c) ((AliTRDPrfInfo &) c).Copy(*this);
+  if (this == &c) {
+    return *this;
+  }
+
+  fSize = c.fSize;
+
+  if (fData) {
+    delete [] fData;
+  }
+  fData = new UChar_t[fSize];
+  for (Int_t iBin = 0; iBin < fSize; iBin++) {
+    fData[iBin] = ((AliTRDPrfInfo &) c).fData[iBin];
+  }
+
   return *this;
 
 }
@@ -118,6 +135,7 @@ void AliTRDPrfInfo::Copy(TObject &c) const
   TObject::Copy(c);
 
 }
+
 //_____________________________________________________________________________
 void AliTRDPrfInfo::SetSize(Int_t n)
 {
@@ -125,7 +143,7 @@ void AliTRDPrfInfo::SetSize(Int_t n)
   // Set the size
   //
 
-  if(fData) delete [] fData;
+  if (fData) delete [] fData;
   fData = new UChar_t[n];
 
   fSize = n;

@@ -183,7 +183,39 @@ AliTRDSignalIndex& AliTRDSignalIndex::operator = (const AliTRDSignalIndex& a)
   // Assignment operator
   //
 
-  if (this != &a) ((AliTRDSignalIndex &) a).Copy(*this);
+  if (this == &a) {
+    return *this;
+  }
+
+  fDet           = a.fDet;
+  fLayer         = a.fLayer;
+  fStack         = a.fStack;
+  fSM            = a.fSM;
+  fMaxLimit      = a.fMaxLimit;
+  fPositionRC    = a.fPositionRC;
+  fCountRC       = a.fCountRC;
+  fSortedWasInit = a.fSortedWasInit;
+  fCurrRow       = a.fCurrRow;
+  fCurrCol       = a.fCurrCol;
+  fCurrTbin      = a.fCurrTbin;
+  fNrows         = a.fNrows;
+  fNcols         = a.fNcols;
+  fNtbins        = a.fNtbins;
+
+  if (fBoolIndex) {
+    delete [] fBoolIndex;
+  }
+  fBoolIndex = new Bool_t[fMaxLimit];
+  memcpy(fBoolIndex, fBoolIndex, fMaxLimit*sizeof(Bool_t));
+
+  if (fSortedIndex) {
+    delete [] fSortedIndex;
+  }
+  fSortedIndex = new RowCol[fMaxLimit+1];
+  memcpy(fSortedIndex, fSortedIndex, (fMaxLimit+1)*sizeof(RowCol));
+
+  ResetCounters();
+
   return *this;
 
 }
