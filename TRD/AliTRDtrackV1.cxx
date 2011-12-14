@@ -876,7 +876,7 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     for (Int_t js = 0; js < AliTRDPIDResponse::kNslicesNN; js++, dedx++){
       track->SetTRDslice(*dedx, ip, js+1);
     }
-    p = fTracklet[ip]->GetMomentum(&sp); 
+    p = fTracklet[ip]->GetMomentum(&sp);
     spd = sp; track->SetTRDmomentum(p, ip, &spd);
     // store global quality per tracklet instead of momentum error
     // 26.09.11 A.Bercuci
@@ -889,7 +889,11 @@ void AliTRDtrackV1::UpdateESDtrack(AliESDtrack *track)
     // 12.11.11 A.Bercuci
     // fit tracklet quality into the field fTRDTimeBin [Char_t]
     // bit map for tracklet quality zxxyyyyy
-    Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0);
+    // The information should be retrieved by the following functions of AliESDtrack for each TRD layer
+    // GetTRDtrkltOccupancy(layer) -> no of TB filled in tracklet
+    // GetTRDtrkltClCross(layer)   -> no of TB filled in crossing pad rows
+    // IsTRDtrkltChmbGood(layer)   -> status of the chamber from which the tracklet is found
+    Int_t nCross(fTracklet[ip]->IsRowCross()?fTracklet[ip]->GetTBcross():0); if(nCross>3) nCross = 3;
     Char_t trackletQ = Char_t(fTracklet[ip]->GetTBoccupancy() | (nCross<<5) | (fTracklet[ip]->IsChmbGood()<<7));
     track->SetTRDTimBin(trackletQ, ip);
     track->SetTRDslice(fTracklet[ip]->GetdQdl(), ip, 0); // Set Summed dEdx into the first slice
