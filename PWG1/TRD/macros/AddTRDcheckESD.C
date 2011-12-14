@@ -27,7 +27,7 @@ void AddTRDcheckESD(AliAnalysisManager *mgr)
 AliESDtrackCuts* SetupESDcuts() {
   // Setup ESD cuts for the TPC reference tracks
   AliESDtrackCuts* esdCuts = new AliESDtrackCuts;
-  esdCuts->SetPtRange(0.2, 100.0);
+  esdCuts->SetPtRange(0.5, 100.0);
   esdCuts->SetEtaRange(-0.9, +0.9);
   esdCuts->SetRequireTPCRefit(kTRUE);
   esdCuts->SetAcceptKinkDaughters(kFALSE);
