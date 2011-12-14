@@ -18,10 +18,10 @@
 
 #include <TObject.h>
 #include <TBits.h>
-#include "AliCDBManager.h"
-#include "AliITSDetTypeRec.h"
 
 class TString;
+class AliCDBManager;
+class AliITSDetTypeRec;
 
 class AliITSChannelStatus : public TObject {
 

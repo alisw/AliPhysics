@@ -12,6 +12,7 @@
 #define AliITSDDLRAWDATA_H
 
 class TTree;
+class TBranch;
 class AliITSDDLModuleMapSDD;
 class AliITSFOSignalsSPD;
 

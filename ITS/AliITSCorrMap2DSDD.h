@@ -13,10 +13,10 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#include "AliITSsegmentationSDD.h"
 #include<TNamed.h>
 class TH1F;
 class TH2F;
+class AliITSsegmentationSDD;
 
 class AliITSCorrMap2DSDD : public AliITSCorrMapSDD {
 

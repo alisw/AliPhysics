@@ -51,8 +51,8 @@
 #include "AliITSv11GeomCableFlat.h"
 #include "AliITSv11GeomCableRound.h"
 
-const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName3 = "ITSsddSensitivL3";
-const char*    AliITSv11GeometrySDD::fgSDDsensitiveVolName4 = "ITSsddSensitivL4";
+const char*    AliITSv11GeometrySDD::fgkSDDsensitiveVolName3 = "ITSsddSensitivL3";
+const char*    AliITSv11GeometrySDD::fgkSDDsensitiveVolName4 = "ITSsddSensitivL4";
 const Double_t AliITSv11GeometrySDD::fgkSegmentLength     = 37.21*2*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderWidth       = 50.0*fgkmm;
 const Double_t AliITSv11GeometrySDD::fgkLadderHeight      = 30.0*fgkmm;
@@ -3702,23 +3702,23 @@ TGeoVolumeAssembly* AliITSv11GeometrySDD::CreateCarlosCard(Int_t iLay) {
   Double_t screw1z = ( aaa*sin(TMath::DegToRad()*fgkCarlosSuppAngle) + 
 		       bbb*cos(TMath::DegToRad()*fgkCarlosSuppAngle) )-0.07;
 
-  TGeoRotation *CarlosSuppRot = (TGeoRotation *)fCommonTr[0];	
+  TGeoRotation *carlosSuppRot = (TGeoRotation *)fCommonTr[0];	
 
   TGeoCombiTrans* lScrewTr1 = new TGeoCombiTrans((fgkCarlosSuppX1+
 			      fgkCarlosSuppX2+fgkCarlosSuppX3)/2,
-			      screw1y,screw1z, CarlosSuppRot);
+			      screw1y,screw1z, carlosSuppRot);
 
   TGeoCombiTrans* lScrewTr2 = new TGeoCombiTrans((fgkCarlosSuppX1+
 			      fgkCarlosSuppX2+fgkCarlosSuppX3)/2,
-		       	      screw1z,screw1y, CarlosSuppRot);
+		       	      screw1z,screw1y, carlosSuppRot);
 
   TGeoCombiTrans *lScrewTr3 = new TGeoCombiTrans(-(fgkCarlosSuppX1+
 			      fgkCarlosSuppX2+fgkCarlosSuppX3)/2,
-			      screw1y,screw1z, CarlosSuppRot);
+			      screw1y,screw1z, carlosSuppRot);
 
   TGeoCombiTrans *lScrewTr4 = new TGeoCombiTrans(-(fgkCarlosSuppX1+
 			      fgkCarlosSuppX2+fgkCarlosSuppX3)/2,
-			      screw1z,screw1y, CarlosSuppRot);
+			      screw1z,screw1y, carlosSuppRot);
 
   assemblySupCarlos->AddNode(fCommonVol[0], 1, lScrewTr1);
   assemblySupCarlos->AddNode(fCommonVol[0], 2, lScrewTr2);
@@ -5084,7 +5084,7 @@ void AliITSv11GeometrySDD::CreateSDDsensor() {
     wafer3->SetLineColor(fColorSilicon);
     TGeoBBox *sensBox3 = new TGeoBBox("ITSsddSensorSensBox3",
 		        fgkWaferWidthSens/2, fgkWaferThickSens/2, fgkWaferLengthSens/2);
-    TGeoVolume *sensVol3 = new TGeoVolume(fgSDDsensitiveVolName3,sensBox3, siliconSDDsens);
+    TGeoVolume *sensVol3 = new TGeoVolume(fgkSDDsensitiveVolName3,sensBox3, siliconSDDsens);
     sensVol3->SetLineColor(fColorSilicon+5);
     wafer3->AddNode(sensVol3, 1, 0);
     fSDDsensor3->AddNode(wafer3, 1, 0);
@@ -5093,7 +5093,7 @@ void AliITSv11GeometrySDD::CreateSDDsensor() {
     wafer4->SetLineColor(fColorSilicon);
     TGeoBBox *sensBox4 = new TGeoBBox("ITSsddSensorSensBox4",
 		        fgkWaferWidthSens/2, fgkWaferThickSens/2, fgkWaferLengthSens/2);
-    TGeoVolume *sensVol4 = new TGeoVolume(fgSDDsensitiveVolName4,sensBox4, siliconSDDsens);
+    TGeoVolume *sensVol4 = new TGeoVolume(fgkSDDsensitiveVolName4,sensBox4, siliconSDDsens);
     sensVol4->SetLineColor(fColorSilicon+5);
     wafer4->AddNode(sensVol4, 1, 0);
     fSDDsensor4->AddNode(wafer4, 1, 0);

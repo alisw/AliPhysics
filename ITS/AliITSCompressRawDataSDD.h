@@ -8,7 +8,6 @@
 
 #include<TObject.h>
 #include<TString.h>
-#include"AliRawReader.h"
 
 ///////////////////////////////////////////////////////////////////
 //                                                               //
@@ -17,6 +16,8 @@
 // Origin: F.Prino, Torino, prino@to.infn.it                     //
 //                                                               //
 ///////////////////////////////////////////////////////////////////
+
+class AliRawReader;
 
 class AliITSCompressRawDataSDD : public TObject {
 

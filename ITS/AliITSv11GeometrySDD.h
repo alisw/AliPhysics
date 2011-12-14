@@ -68,8 +68,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   virtual void  SetParameters();
   TGeoVolume*   GetMotherVolume() const { return fMotherVol;};
-  const char*   GetSenstiveVolumeName3() const {return fgSDDsensitiveVolName3;};
-  const char*   GetSenstiveVolumeName4() const {return fgSDDsensitiveVolName4;};
+  const char*   GetSenstiveVolumeName3() const {return fgkSDDsensitiveVolName3;};
+  const char*   GetSenstiveVolumeName4() const {return fgkSDDsensitiveVolName4;};
   Int_t         GetLay3NLadders() const;
   Int_t         GetLay4NLadders() const;
 
@@ -175,8 +175,8 @@ class AliITSv11GeometrySDD : public AliITSv11Geometry {
 
   //--------------------------------------  parameters for the SDD geometry
 
-  static const char* fgSDDsensitiveVolName3;      // sens. vol. name for lay. 3
-  static const char* fgSDDsensitiveVolName4;      // sens. vol. name for lay. 4
+  static const char* fgkSDDsensitiveVolName3;      // sens. vol. name for lay. 3
+  static const char* fgkSDDsensitiveVolName4;      // sens. vol. name for lay. 4
 
   static const Int_t    fgkLay3Nladd;             // 14
   static const Int_t    fgkLay3Ndet;              //  6

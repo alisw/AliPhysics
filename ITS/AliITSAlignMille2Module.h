@@ -117,7 +117,7 @@ public:
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const AliAlignObjParams *a); 
   AliAlignObjParams *GetSensitiveVolumeMisalignment(UShort_t voluid, const Double_t *deltalocal); 
   //
-  void         GetGlobalParams(Double_t *t, Double_t *r);
+  void         GetGlobalParams(Double_t *t, Double_t *r) const;
   void         GetGlobalParams(const Double_t *loct, const Double_t *locr,Double_t *t, Double_t *r);
   void         GetLocalParams(const Double_t *loct, const Double_t *locr,Double_t *t, Double_t *r);
   //

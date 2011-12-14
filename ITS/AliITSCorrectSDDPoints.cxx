@@ -22,12 +22,14 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "TObjArray.h"
 #include "TString.h"
 #include "TFile.h"
 #include "AliLog.h"
 #include "AliCDBEntry.h"
 #include "AliITSCorrMapSDD.h"
 #include "AliITSCorrectSDDPoints.h"
+#include "AliITSsegmentationSDD.h"
 
 ClassImp(AliITSCorrectSDDPoints)
 
@@ -79,7 +81,7 @@ AliITSCorrectSDDPoints::~AliITSCorrectSDDPoints(){
 }
 
 //______________________________________________________________________
-void AliITSCorrectSDDPoints::SetCorrectionMaps(TObjArray *arr)
+void AliITSCorrectSDDPoints::SetCorrectionMaps(const TObjArray *arr)
 {
   // replace the maps
   delete fArrayOfMaps;

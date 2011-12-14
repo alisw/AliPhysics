@@ -34,6 +34,8 @@
 #include "AliITSsegmentationSPD.h"
 #include "AliITSsegmentationSDD.h"
 #include "AliITSsegmentationSSD.h"
+#include "AliITSDetTypeRec.h"
+#include "AliCDBManager.h"
 #include "AliCDBEntry.h"
 #include "TMath.h"
 #include "AliLog.h"

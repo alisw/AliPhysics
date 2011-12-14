@@ -25,7 +25,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "AliITSCorrMapSDD.h"
-#include "AliLog.h"
+#include "AliITSsegmentationSDD.h"
 
 const Int_t AliITSCorrMapSDD::fgkNAnodePtsDefault = 1;
 const Int_t AliITSCorrMapSDD::fgkNDriftPtsDefault = 72;

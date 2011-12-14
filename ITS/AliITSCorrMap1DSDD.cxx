@@ -26,6 +26,7 @@
 #include "AliITSCorrMapSDD.h"
 #include "AliITSCorrMap1DSDD.h"
 #include "AliLog.h"
+#include "AliITSsegmentationSDD.h"
 
 ClassImp(AliITSCorrMap1DSDD)
 //______________________________________________________________________

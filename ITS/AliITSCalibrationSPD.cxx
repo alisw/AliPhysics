@@ -12,8 +12,9 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-
+#include "TArrayI.h"
 #include "AliITSCalibrationSPD.h"
+
 ///////////////////////////////////////////////////////////////////////////
 //  Calibration class for set:ITS                   
 //  Specific subdetector implementation for         
@@ -222,38 +223,38 @@ void AliITSCalibrationSPD::SetNrBad(UInt_t /*nr*/) {
   AliError("This method should not be used anymore. Use SetNrBadSingle instead!!!");
 }
 //______________________________________________________________________
-void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
+void AliITSCalibrationSPD::Streamer(TBuffer &ruub) {
   // Stream an object of class AliITSCalibrationSPD.
-  UInt_t R__s, R__c;
-  if (R__b.IsReading()) {
-    Version_t R__v = R__b.ReadVersion(&R__s, &R__c); if (R__v) { }
-    AliITSCalibration::Streamer(R__b);
-    if (R__v >= 8) {
-      R__b >> fNrBad;
-      fBadChannels.Streamer(R__b);
-      R__b.ReadStaticArray((bool*)fBadChip);
+  UInt_t ruus, ruuc;
+  if (ruub.IsReading()) {
+    Version_t ruuv = ruub.ReadVersion(&ruus, &ruuc); if (ruuv) { }
+    AliITSCalibration::Streamer(ruub);
+    if (ruuv >= 8) {
+      ruub >> fNrBad;
+      fBadChannels.Streamer(ruub);
+      ruub.ReadStaticArray((bool*)fBadChip);
     }
     else {
       Double_t dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> dummy;
-      R__b >> fNrBad;
-      if (R__v == 7) {
-	fBadChannels.Streamer(R__b);
-	R__b.ReadStaticArray((bool*)fBadChip);
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> dummy;
+      ruub >> fNrBad;
+      if (ruuv == 7) {
+	fBadChannels.Streamer(ruub);
+	ruub.ReadStaticArray((bool*)fBadChip);
       }
       else {
-	if (R__v == 6) {
-	  fBadChannels.Streamer(R__b);
+	if (ruuv == 6) {
+	  fBadChannels.Streamer(ruub);
 	}
 	else {
 	  TArrayI fBadChannelsV1;
-	  fBadChannelsV1.Streamer(R__b);
+	  fBadChannelsV1.Streamer(ruub);
 	  fBadChannels.Set(fNrBad*2);
 	  for (UInt_t i=0; i<fNrBad*2; i++) {
 	    fBadChannels[i] = fBadChannelsV1[i];
@@ -264,14 +265,14 @@ void AliITSCalibrationSPD::Streamer(TBuffer &R__b) {
 	}
       }
     }
-    R__b.CheckByteCount(R__s, R__c, AliITSCalibrationSPD::IsA());
+    ruub.CheckByteCount(ruus, ruuc, AliITSCalibrationSPD::IsA());
   }
   else {
-    R__c = R__b.WriteVersion(AliITSCalibrationSPD::IsA(), kTRUE);
-    AliITSCalibration::Streamer(R__b);
-    R__b << fNrBad;
-    fBadChannels.Streamer(R__b);
-    R__b.WriteArray(fBadChip, 5);
-    R__b.SetByteCount(R__c, kTRUE);
+    ruuc = ruub.WriteVersion(AliITSCalibrationSPD::IsA(), kTRUE);
+    AliITSCalibration::Streamer(ruub);
+    ruub << fNrBad;
+    fBadChannels.Streamer(ruub);
+    ruub.WriteArray(fBadChip, 5);
+    ruub.SetByteCount(ruuc, kTRUE);
   }
 }

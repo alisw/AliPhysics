@@ -13,15 +13,18 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#include "AliITSsegmentationSDD.h"
-#include "TObjArray.h"
+//#include "AliITSsegmentationSDD.h"
+//#include "TObjArray.h"
+
+class AliITSsegmentationSDD;
+class TObjArray;
 
 class AliITSCorrectSDDPoints : public TObject {
  public:
   AliITSCorrectSDDPoints();
   AliITSCorrectSDDPoints(TObjArray* maps);
   AliITSCorrectSDDPoints(TString filname);
-  void    SetCorrectionMaps(TObjArray *arr);
+  void    SetCorrectionMaps(const TObjArray *arr);
   ~AliITSCorrectSDDPoints();
   Float_t GetCorrection(Int_t modId, Float_t zloc, Float_t xloc) const;
   Float_t GetCorrectedXloc(Int_t modId, Float_t zloc, Float_t xloc) const{
@@ -31,9 +34,9 @@ class AliITSCorrectSDDPoints : public TObject {
  private:
   AliITSCorrectSDDPoints(const AliITSCorrectSDDPoints& csdd);
   AliITSCorrectSDDPoints& operator=(const AliITSCorrectSDDPoints& csdd);
- protected:
+
   TObjArray* fArrayOfMaps;                 // 520 AliITSCorrMapSDD objects
   AliITSsegmentationSDD* fSegmentationSDD; // SDD segmentation
-  ClassDef(AliITSCorrectSDDPoints,0);
+  ClassDef(AliITSCorrectSDDPoints,0)
 };
 #endif

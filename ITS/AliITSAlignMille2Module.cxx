@@ -1186,7 +1186,7 @@ void AliITSAlignMille2Module::CalcDerivCurLoc(Int_t sensVol,Int_t paridx,Double_
 
 
 //-------------------------------------------------------------
-void AliITSAlignMille2Module::GetGlobalParams(Double_t *t, Double_t *r)
+void AliITSAlignMille2Module::GetGlobalParams(Double_t *t, Double_t *r) const
 {
   // global parameters of the module
   AliAlignObjParams tempAlignObj;
