@@ -982,8 +982,33 @@ public:
     }
     bool keep = fKeep; 
     if (fSingle) keep = true;
+
     Close(!keep);
   }
+  /** 
+   * Write full job footer 
+   * 
+   */
+  virtual void WriteLinks() 
+  {
+    const char* lbUrl = "https://alice-logbook.cern.ch/logbook/date_online.php";
+    const char* crUrl = "http://alimonitor.cern.ch/configuration/index.jsp";
+    const char* rpUrl = "http://alimonitor.cern.ch/runview/?run=";
+    QABase::WriteLinks();
+    *fHtml << "<h3>External links</h3>\n"
+	   << "<ul>\n"
+	   << "  <li><a target='_blank' href='" << lbUrl 
+	   << "?p_cont=rund&p_run=" <<  fGlobal->runNo
+	   << "&p_tab=dqm&p_dqmagent=FMDQAshifter'>DQM plots</a>"
+	   << " (restricted)</li>\n" 
+	   << "  <li><a target='_blank' href='" << crUrl 
+	   << "?raw_run=" << fGlobal->runNo
+	   << "'>Condition Table</a></li>\n"
+	   << "  <li><a target='_blank' href='" << rpUrl << fGlobal->runNo 
+	   << "'>Processing Details</a></li>\n"
+	   << "</ul>" << std::endl;
+  }
+
   /** 
    * Get the ring corresponding to a pad 
    * 
