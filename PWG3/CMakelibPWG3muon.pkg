@@ -59,6 +59,8 @@ set ( SRCS
     muon/AliAODMuonReplicator.cxx 
     muon/AliAnalysisTaskMuonCollisionMultiplicity.cxx 
     muon/AliCFMuonResUpsilon.cxx 
+    muon/AliMuonTrackCuts.cxx 
+    muon/AliMuonPairCuts.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
