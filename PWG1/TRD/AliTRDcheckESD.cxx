@@ -513,13 +513,6 @@ void AliTRDcheckESD::UserExec(Option_t *){
   TH1 *h(NULL);
   
   Double_t values[kNTrdCfVariables];      // array where the CF container variables are stored
-  Double_t* valuesMatchingPhiEtaCF = new Double_t[fMatchingPhiEtaCF->GetNVar()];
-  Double_t* valuesMatchingPtCF = new Double_t[fMatchingPtCF->GetNVar()];
-  Double_t* valuesBCCF = new Double_t[fBunchCrossingsCF->GetNVar()];
-  Double_t* valuesCentCF = new Double_t[fCentralityCF->GetNVar()];
-  Double_t* valuesQtotCF = new Double_t[fQtotCF->GetNVar()];
-  Double_t* valuesPHCF = new Double_t[fPulseHeightCF->GetNVar()];
-  Double_t* valuesExpertCF = (fExpertCF ? new Double_t[fExpertCF->GetNVar()] : 0x0);
   values[kEventVtxZ] = fESD->GetPrimaryVertex()->GetZv();
   values[kEventBC] = fESD->GetBunchCrossNumber();
   
@@ -534,7 +527,15 @@ void AliTRDcheckESD::UserExec(Option_t *){
   }
   values[kEventMult] = itsNTracklets;
   if(centralityClass == 0) return;
-      
+  
+  Double_t* valuesMatchingPhiEtaCF = new Double_t[fMatchingPhiEtaCF->GetNVar()];
+  Double_t* valuesMatchingPtCF = new Double_t[fMatchingPtCF->GetNVar()];
+  Double_t* valuesBCCF = new Double_t[fBunchCrossingsCF->GetNVar()];
+  Double_t* valuesCentCF = new Double_t[fCentralityCF->GetNVar()];
+  Double_t* valuesQtotCF = new Double_t[fQtotCF->GetNVar()];
+  Double_t* valuesPHCF = new Double_t[fPulseHeightCF->GetNVar()];
+  Double_t* valuesExpertCF = (fExpertCF ? new Double_t[fExpertCF->GetNVar()] : 0x0);
+  
   AliESDtrack *esdTrack(NULL);
   for(Int_t itrk = 0; itrk < fESD->GetNumberOfTracks(); itrk++){
     esdTrack = fESD->GetTrack(itrk);
@@ -779,13 +780,15 @@ void AliTRDcheckESD::UserExec(Option_t *){
     }
   }  // end loop over tracks
   
-  delete valuesMatchingPhiEtaCF;
-  delete valuesMatchingPtCF;
-  delete valuesBCCF;
-  delete valuesCentCF;
-  delete valuesQtotCF;
-  delete valuesPHCF;
-  if(valuesExpertCF) delete valuesExpertCF;
+  
+  
+  delete [] valuesMatchingPhiEtaCF;
+  delete [] valuesMatchingPtCF;
+  delete [] valuesBCCF;
+  delete [] valuesCentCF;
+  delete [] valuesQtotCF;
+  delete [] valuesPHCF;
+  if(valuesExpertCF) delete [] valuesExpertCF;
   
   PostData(1, fHistos);
 }
@@ -1325,15 +1328,15 @@ AliCFContainer* AliTRDcheckESD::CreateCFContainer(const Char_t* name, const Char
   nbinsCf[kTrackTrdTracklets] =    7;
   nbinsCf[kTrackTrdClusters]  =  200;
   for(Int_t i=0;i<6;++i) nbinsCf[kTrackQtot+i] = 100;
-  for(Int_t i=0;i<8;++i) nbinsCf[kTrackPHslice+i] = 300;
-  Double_t evVtxLims[2]      = {-10.,+10.};
+  for(Int_t i=0;i<8;++i) nbinsCf[kTrackPHslice+i] = 400;
+  //Double_t evVtxLims[2]      = {-10.,+10.};
   Double_t evMultLims[6]     = {0.0, 700., 1400., 2100., 2800., 3500.};
-  Double_t evTriggerLims[2]  = {0.5, 0.5+Float_t(kNMaxAssignedTriggers)};
+  //Double_t evTriggerLims[2]  = {0.5, 0.5+Float_t(kNMaxAssignedTriggers)};
   Double_t evBCLims[2]       = {-0.5, +3499.5};
-  Double_t trkTOFBClims[3]   = {-0.5, 0.5, 5.5};
-  Double_t trkDCAxyLims[10]  = {-10.0,  -6.0, -3.0,  -2.0,  -1.0,   
-                                 +1.0, +2.0,  +3.0,  +6.0, +10.0};    
-  Double_t trkDCAzLims[2]    = {-15.0, +15.0};    
+  //Double_t trkTOFBClims[3]   = {-0.5, 0.5, 5.5};
+  //Double_t trkDCAxyLims[10]  = {-10.0,  -6.0, -3.0,  -2.0,  -1.0,   
+  //                               +1.0, +2.0,  +3.0,  +6.0, +10.0};    
+  //Double_t trkDCAzLims[2]    = {-15.0, +15.0};    
   Double_t trkChargeLims[2]  = {-1.5, +1.5};
   Double_t trkPhiLims[2]     = {-1.001*TMath::Pi(), +1.001*TMath::Pi()};
   Double_t trkEtaLims[2]     = {-0.9, +0.9};
@@ -2072,6 +2075,9 @@ void AliTRDcheckESD::PlotCentSummaryFromCF(Double_t* trendValues, const Char_t* 
   // 
   if(!fMatchingPtCF) return;
   AliCFContainer* cf = 0x0;    
+  triggerName = triggerName;
+  useIsolatedBC = useIsolatedBC;
+  cutTOFbc = cutTOFbc;
   
   trendValues = trendValues;
   
@@ -2259,6 +2265,9 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   //
   if(!fMatchingPhiEtaCF || !fMatchingPtCF || !fCentralityCF || !fBunchCrossingsCF) return;
   AliCFContainer* cf = 0x0;  
+  triggerName = triggerName;
+  useIsolatedBC = useIsolatedBC;
+  cutTOFbc = cutTOFbc;
   
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.06);
@@ -2308,14 +2317,16 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   rangeEtaPhi->Draw();
   
-  TH2D* hTRDeffPos = (TH2D*)hTRDrefPos->Clone("hTRDeffPos");
-  hTRDeffPos->Reset();
-  hTRDeffPos->SetStats(kFALSE);
-  hTRDeffPos->Divide(hTRDrefPos, hTPCrefPos);
-  hTRDeffPos->SetMaximum(1.0);
-  hTRDeffPos->Draw("samecolz");
-  lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for positive tracks");
-  DrawTRDGrid();
+  TH2D* hTRDeffPos = (hTRDrefPos ? (TH2D*)hTRDrefPos->Clone("hTRDeffPos") : 0x0);
+  if(hTRDeffPos) {
+    hTRDeffPos->Reset();
+    hTRDeffPos->SetStats(kFALSE);
+    hTRDeffPos->Divide(hTRDrefPos, hTPCrefPos);
+    hTRDeffPos->SetMaximum(1.0);
+    hTRDeffPos->Draw("samecolz");
+    lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for positive tracks");
+    DrawTRDGrid();
+  }
   
   //----------------------------------------------
   // eta-phi efficiency for negative TRD tracks
@@ -2325,14 +2336,16 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   rangeEtaPhi->Draw();
   
-  TH2D* hTRDeffNeg = (TH2D*)hTRDrefNeg->Clone("hTRDeffNeg");
-  hTRDeffNeg->Reset();
-  hTRDeffNeg->SetStats(kFALSE);
-  hTRDeffNeg->Divide(hTRDrefNeg, hTPCrefNeg);
-  hTRDeffNeg->SetMaximum(1.0);
-  hTRDeffNeg->Draw("samecolz");
-  lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for negative tracks");
-  DrawTRDGrid();  
+  TH2D* hTRDeffNeg = (hTRDrefNeg ? (TH2D*)hTRDrefNeg->Clone("hTRDeffNeg") : 0x0);
+  if(hTRDeffNeg) {
+    hTRDeffNeg->Reset();
+    hTRDeffNeg->SetStats(kFALSE);
+    hTRDeffNeg->Divide(hTRDrefNeg, hTPCrefNeg);
+    hTRDeffNeg->SetMaximum(1.0);
+    hTRDeffNeg->Draw("samecolz");
+    lat->DrawLatex(-0.9, 3.6, "TPC-TRD matching for negative tracks");
+    DrawTRDGrid();  
+  }
   
   //----------------------------------------------
   // eta-phi TRD-TOF matching efficiency for positive tracks
@@ -2342,14 +2355,16 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   rangeEtaPhi->Draw();
   
-  TH2D* hTOFeffPos = (TH2D*)hTOFrefPos->Clone("hTOFeffPos");
-  hTOFeffPos->Reset();
-  hTOFeffPos->SetStats(kFALSE);
-  hTOFeffPos->Divide(hTOFrefPos, hTRDrefPos);
-  hTOFeffPos->SetMaximum(1.0);
-  hTOFeffPos->Draw("samecolz");
-  lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for positive tracks");
-  DrawTRDGrid();
+  TH2D* hTOFeffPos = (hTOFrefPos ? (TH2D*)hTOFrefPos->Clone("hTOFeffPos") : 0x0);
+  if(hTOFeffPos) {
+    hTOFeffPos->Reset();
+    hTOFeffPos->SetStats(kFALSE);
+    hTOFeffPos->Divide(hTOFrefPos, hTRDrefPos);
+    hTOFeffPos->SetMaximum(1.0);
+    hTOFeffPos->Draw("samecolz");
+    lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for positive tracks");
+    DrawTRDGrid();
+  }
   
   //----------------------------------------------
   // eta-phi TRD-TOF matching efficiency for negative tracks
@@ -2359,14 +2374,16 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   pad->SetGridx(kFALSE); pad->SetGridy(kFALSE);
   rangeEtaPhi->Draw();
   
-  TH2D* hTOFeffNeg = (TH2D*)hTOFrefNeg->Clone("hTOFeffNeg");
-  hTOFeffNeg->Reset();
-  hTOFeffNeg->SetStats(kFALSE);
-  hTOFeffNeg->Divide(hTOFrefNeg, hTRDrefNeg);
-  hTOFeffNeg->SetMaximum(1.0);
-  hTOFeffNeg->Draw("samecolz");
-  lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for negative tracks");
-  DrawTRDGrid();
+  TH2D* hTOFeffNeg = (hTOFrefNeg ? (TH2D*)hTOFrefNeg->Clone("hTOFeffNeg") : 0x0);
+  if(hTOFeffNeg) {
+    hTOFeffNeg->Reset();
+    hTOFeffNeg->SetStats(kFALSE);
+    hTOFeffNeg->Divide(hTOFrefNeg, hTRDrefNeg);
+    hTOFeffNeg->SetMaximum(1.0);
+    hTOFeffNeg->Draw("samecolz");
+    lat->DrawLatex(-0.9, 3.6, "TRD-TOF matching for negative tracks");
+    DrawTRDGrid();
+  }
   
   if(hTRDrefPos) delete hTRDrefPos; if(hTPCrefPos) delete hTPCrefPos; if(hTOFrefPos) delete hTOFrefPos;
   if(hTRDrefNeg) delete hTRDrefNeg; if(hTPCrefNeg) delete hTPCrefNeg; if(hTOFrefNeg) delete hTOFrefNeg;
@@ -2403,30 +2420,34 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   cf->SetRangeUser(cf->GetVar("charge"), -1.0, +1.0);  
   
   TF1* funcConst = new TF1("constFunc", "[0]", 1.0, 3.0);
-  if(trendValues && hTRDEffPtPosAll) 
-    if(hTRDEffPtPosAll->Integral()>0.1) {
+  if(trendValues) {
+    if(hTRDEffPtPosAll && hTRDEffPtPosAll->Integral()>0.1) {
       hTRDEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[0] = funcConst->GetParameter(0);
       trendValues[1] = funcConst->GetParError(0);
     }
-  if(trendValues && hTRDEffPtNegAll) 
-    if(hTRDEffPtNegAll->Integral()>0.1) {
+  }
+  if(trendValues) { 
+    if(hTRDEffPtNegAll && hTRDEffPtNegAll->Integral()>0.1) {
       hTRDEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[2] = funcConst->GetParameter(0);
       trendValues[3] = funcConst->GetParError(0);
     }
-  if(trendValues && hTOFEffPtPosAll) 
-    if(hTOFEffPtPosAll->Integral()>0.1) {
+  }
+  if(trendValues) { 
+    if(hTOFEffPtPosAll && hTOFEffPtPosAll->Integral()>0.1) {
       hTOFEffPtPosAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[4] = funcConst->GetParameter(0);
       trendValues[5] = funcConst->GetParError(0);
     }
-  if(trendValues && hTOFEffPtNegAll) 
-    if(hTOFEffPtNegAll->Integral()>0.1) {
+  }
+  if(trendValues) { 
+    if(hTOFEffPtNegAll && hTOFEffPtNegAll->Integral()>0.1) {
       hTOFEffPtNegAll->Fit(funcConst, "Q0ME", "goff", 1.0, 3.0);
       trendValues[6] = funcConst->GetParameter(0);
       trendValues[7] = funcConst->GetParError(0);
     }
+  }
   
   //---------------------------------------------------------
   // TPC-TRD matching efficiency vs pt
@@ -2552,9 +2573,11 @@ void AliTRDcheckESD::PlotTrackingSummaryFromCF(Double_t* trendValues, const Char
   
   cf = fCentralityCF;
   TH2D* hNclsVsP = (TH2D*)cf->Project(0, cf->GetVar("P"), cf->GetVar("clusters"));
-  hNclsVsP->SetStats(kFALSE);
-  hNclsVsP->Draw("samecolz");
-      
+  if(hNclsVsP) {
+    hNclsVsP->SetStats(kFALSE);
+    hNclsVsP->Draw("samecolz");
+  }    
+  
   if(trendValues && hNclsVsP && hNclsVsP->GetEntries()>10) {
     TProfile* hNclsVsPprof = hNclsVsP->ProfileX("hNclsVsPprof");
     hNclsVsPprof->Fit(funcConst, "QME0", "goff", 1.0, 3.0);
@@ -2609,7 +2632,10 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* t
   if(!fQtotCF || !fPulseHeightCF || !fCentralityCF) return;
   
   AliCFContainer* cf = 0x0;
-    
+  triggerName = triggerName;
+  useIsolatedBC = useIsolatedBC;
+  cutTOFbc = cutTOFbc;  
+  
   TLatex *lat=new TLatex();
   lat->SetTextSize(0.07);
   lat->SetTextColor(2);
@@ -2647,7 +2673,7 @@ void AliTRDcheckESD::PlotPidSummaryFromCF(Double_t* trendValues, const Char_t* t
     if(hProf2D) {
       hProf2D->SetStats(kFALSE);
       hProf2D->SetMinimum(0.);
-      hProf2D->SetMaximum(5.);
+      hProf2D->SetMaximum(4.);
       hProf2D->Draw("samecolz");
     }
     lat->DrawLatex(-0.9, 3.6, Form("TRD <Q_{tot}> Layer %d", iLayer));
