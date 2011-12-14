@@ -67,6 +67,7 @@ public:
   void     SetMinStatsGain(Int_t minStatsGain)                       { fMinStatsGain = minStatsGain; }  
   void     SetMinStatsPRF(Int_t minStatsPRF)                         { fMinStatsPRF = minStatsPRF; }  
   void     SetMinStatsChamberStatus(Int_t minStatsChamberStatus)     { fMinStatsChamberStatus = minStatsChamberStatus; }
+	void     SetSingleMinStatsChamberStatus(Int_t minSingleStatsChamberStatus) { fMinSingleStatsChamberStatus = minSingleStatsChamberStatus; }
   void     SetLimitValidateNoData(Int_t nodatavalidate)              { fNoDataValidate = nodatavalidate; };
   void     SetLimitValidateBadCalib(Int_t badcalibvalidate)          { fBadCalibValidate = badcalibvalidate; };
   void     SetBackCorrectGain(Bool_t backCorrectGain)                { fBackCorrectGain = backCorrectGain; }
@@ -219,6 +220,7 @@ public:
   Int_t    fMinStatsGain;                 // MinStats Gain
   Int_t    fMinStatsPRF;                  // MinStats PRF
   Int_t    fMinStatsChamberStatus;        // MinStats ChamberStatus
+	Double_t fMinSingleStatsChamberStatus;  // MinStats per chamber in % of mean (ChamberStatus)
   Bool_t   fBackCorrectGain;              // Back correction afterwards gain  
   Bool_t   fBackCorrectVdrift;            // Back correction afterwards vdrift
   Bool_t   fNotEnoughStatisticsForTheGain;// Take the chamber per chamber distribution from the default distribution

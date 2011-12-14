@@ -105,6 +105,7 @@ ClassImp(AliTRDPreprocessorOffline)
   fMinStatsGain(800),
   fMinStatsPRF(600),
   fMinStatsChamberStatus(20),
+  fMinSingleStatsChamberStatus(0.05),
   fBackCorrectGain(kFALSE),  
   fBackCorrectVdrift(kTRUE),
   fNotEnoughStatisticsForTheGain(kFALSE),
@@ -894,7 +895,7 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeChamberStatus()
   // set up AliTRDCalibChamberStatus
   AliTRDCalibChamberStatus *ChamberStatus = new AliTRDCalibChamberStatus();
   ChamberStatus->SetSparseI(fSparse);
-  ChamberStatus->AnalyseHisto(fMinStatsChamberStatus);
+  ChamberStatus->AnalyseHisto(fMinStatsChamberStatus, fMinSingleStatsChamberStatus);
   // get AliTRDCalChamberStatus
   AliTRDCalChamberStatus *CalChamberStatus = ChamberStatus->GetCalChamberStatus();
 

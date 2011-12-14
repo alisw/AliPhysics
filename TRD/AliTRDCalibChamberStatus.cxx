@@ -410,7 +410,7 @@ Bool_t AliTRDCalibChamberStatus::TestEventHisto(Int_t nevent) /*FOLD00*/
 
 }
 //_____________________________________________________________________
-void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
+void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit, Double_t chamberlimit) /*FOLD00*/
 {
   //
   //  Create the AliTRDCalChamberStatus according to the fHnSparseI
@@ -429,7 +429,7 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
     mean+=fHnSparseI->GetBinContent(bin,coord2);
   }
   if(fHnSparseI->GetNbins() > 0.0) mean/=fHnSparseI->GetNbins();
-  //printf(" mean tracklets per halfchamber %f \n",mean);
+  //printf(" mean tracklets per halfchamber %.3e \n",mean);
   if((fCounterEventNotEmpty < limit) && (mean < limit)) {
     // Say all good
     for (Int_t idet=0; idet<540; idet++) {
@@ -449,12 +449,15 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
   Int_t coord[4];
   for(Int_t bin = 0; bin < fHnSparseI->GetNbins(); bin++) {
     
-    //Double_t content = fHnSparseI->GetBinContent(bin,coord);
-    fHnSparseI->GetBinContent(bin,coord);
-    // layer, stack, sector
+    Double_t content = fHnSparseI->GetBinContent(bin,coord);
+    
+		// layer, stack, sector
     Int_t detector = AliTRDgeometry::GetDetector(coord[1]-1,coord[2]-1,coord[0]-1);
-    //
-    //printf("Number of entries for detector %d: %f\n",detector,content);
+    
+		if(content<chamberlimit*mean) {
+			//printf("Number of entries for detector %03d-%s: %.3e -> %.3f \n",detector,(coord[3]-1==0?"A":"B"),content,content/mean);			
+			continue;
+		}
     //
     // Check which halfchamber side corresponds to the bin number (0=A, 1=B)
     // Change the status accordingly
@@ -470,8 +473,6 @@ void AliTRDCalibChamberStatus::AnalyseHisto(Int_t limit) /*FOLD00*/
       //fCalChamberStatus->UnsetStatusBit(detector,AliTRDCalChamberStatus::kNoData); 
     }
   }
-
-  //printf("test2\n");
 
   // printf
   //for (Int_t idet=0; idet<540; idet++) {

@@ -42,7 +42,7 @@ public:
   void ProcessEvent(AliRawReader    *rawReader, Int_t nevents_physics);
     
   void Init();
-  void AnalyseHisto(Int_t limit=200);
+  void AnalyseHisto(Int_t limit=200, Double_t chamberlimit=0.05);
   void CheckEORStatus(AliTRDCalDCSv2 *calDCS);
 
   void Add(AliTRDCalibChamberStatus *calibChamberStatus);
