@@ -819,9 +819,9 @@ void AliAnalysisTaskPIDqa::FillTOFHMPIDqa()
     Double_t nSigmaTOF[3]; 
     TH1F *h[3];
     
-    for (Int_t ispecie=2; ispecie<AliPID::kSPECIES; ++ispecie){
+    for (Int_t ispecie=2; ispecie<5; ++ispecie){
       //TOF nSigma
-      nSigmaTOF[ispecie]=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
+      nSigmaTOF[ispecie-2]=fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)ispecie);
       h[ispecie-2] = (TH1F*)fListQAtofhmpid->At(ispecie-2);}
       
     if(TMath::Abs(nSigmaTOF[0])<2)                                                              h[0]->Fill(mom,ckovAngle);

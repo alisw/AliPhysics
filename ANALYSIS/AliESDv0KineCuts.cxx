@@ -960,7 +960,7 @@ else{
 		delete 	fPrimaryVertex;
 		fPrimaryVertex=0x0;
 		}
-	fPrimaryVertex = new AliKFVertex(*(event->GetPrimaryVertex()));
+	fPrimaryVertex = new AliKFVertex(*(fEvent->GetPrimaryVertex()));
 	fDeleteVertex=kTRUE;
 	}
 

@@ -463,12 +463,12 @@ void AliTPCTenderSupply::SetRecoInfo()
   if (!esdIH) return;
   TTree *tree= (TTree*)esdIH->GetTree();
   TFile *file= (TFile*)tree->GetCurrentFile();
-  TString fileName(file->GetName());
-  
   if (!file) {
     AliError("Current file not found, cannot set reconstruction information");
     return;
   }
+  
+  TString fileName(file->GetName());
   
   Int_t run=fTender->GetRun();
   
@@ -527,6 +527,10 @@ void AliTPCTenderSupply::SetParametrisation()
     AliInfo(Form("Using pid response objects: %s",pidCDB->GetId().ToString().Data()));
   }
 
+  if (!fArrPidResponseMaster){
+    AliError("No valid PidResponse master found in OCDB");
+    return;
+  }
   //data type
   TString datatype="DATA";
   TString period=fLHCperiod;
