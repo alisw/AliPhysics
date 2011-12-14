@@ -51,6 +51,8 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
+  ,fClusters(NULL)
+  ,fkClusters(NULL)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
@@ -59,6 +61,7 @@ AliTRDrecoTask::AliTRDrecoTask()
   ,fPhi(0.)
   ,fEta(0.)
   ,fPlotFuncList(NULL)
+  ,fDetFuncList(NULL)
   ,fRunTerminate(kFALSE)
 {
 // Default constructor
@@ -73,6 +76,8 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fContainer(NULL)
   ,fEvent(NULL)
   ,fTracks(NULL)
+  ,fClusters(NULL)
+  ,fkClusters(NULL)
   ,fkTrack(NULL)
   ,fkMC(NULL)
   ,fkESD(NULL)
@@ -81,6 +86,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   ,fPhi(0.)
   ,fEta(0.)
   ,fPlotFuncList(NULL)
+  ,fDetFuncList(NULL)
   ,fRunTerminate(kFALSE)
 {
 // Constructor for all derived performance tasks
@@ -89,6 +95,7 @@ AliTRDrecoTask::AliTRDrecoTask(const char *name, const char *title)
   snprintf(fNameId, 10, "no name");
   DefineInput (1, TObjArray::Class()); // track list
   DefineInput (2, AliTRDeventInfo::Class()); // event info object
+  DefineInput (3, TObjArray::Class()); // cluster list object
   DefineOutput(1, TObjArray::Class()); // histogram list
 }
 
@@ -108,6 +115,11 @@ AliTRDrecoTask::~AliTRDrecoTask()
     fPlotFuncList->Delete();
     delete fPlotFuncList;
     fPlotFuncList = NULL;
+  }
+  if(fDetFuncList){
+    fDetFuncList->Delete();
+    delete fDetFuncList;
+    fDetFuncList = NULL;
   }
   
   if(fDets){
@@ -151,11 +163,12 @@ void AliTRDrecoTask::UserExec(Option_t *)
 {
 // Loop over Plot functors published by particular tasks
 
-  fTracks = dynamic_cast<TObjArray *>(GetInputData(1));
-  fEvent  = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
+  fTracks   = dynamic_cast<TObjArray *>(GetInputData(1));
+  fEvent    = dynamic_cast<AliTRDeventInfo *>(GetInputData(2));
+  fClusters = dynamic_cast<TObjArray*>(GetInputData(3));
 
   if(!fPlotFuncList){
-    AliWarning("No functor list defined for the reference plots");
+    AliWarning("No track functor list defined for the task");
     return;
   }
   if(!fTracks) return;
@@ -189,6 +202,20 @@ void AliTRDrecoTask::UserExec(Option_t *)
       plot->Execute(this);
     }
   }
+  if(!fClusters) return;
+  if(!fDetFuncList){
+    AliDebug(1, "No detector functor list defined for the task");
+    return;
+  }
+  TIter detIter(fDetFuncList);
+  for(Int_t idet(0); idet<AliTRDgeometry::kNdet; idet++){
+    if(!(fkClusters = (TObjArray*)fClusters->At(idet))) continue;
+    TMethodCall *det(NULL);
+    detIter.Reset();
+    while((det=dynamic_cast<TMethodCall*>(detIter()))){
+      det->Execute(this);
+    }
+  }
 }
 
 //_______________________________________________________
@@ -218,14 +245,19 @@ void AliTRDrecoTask::InitFunctorList()
 
   TClass *c = this->IsA();
   if(fPlotFuncList) fPlotFuncList->Clear();
+  if(fDetFuncList) fDetFuncList->Clear();
 
-  TMethod *m = NULL;
+  TMethod *m(NULL);
   TIter methIter(c->GetListOfMethods());
   while((m=dynamic_cast<TMethod*>(methIter()))){
     TString name(m->GetName());
-    if(!name.BeginsWith("Plot")) continue;
-    if(!fPlotFuncList) fPlotFuncList = new TList();
-    fPlotFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
+    if(name.BeginsWith("Plot")){
+      if(!fPlotFuncList) fPlotFuncList = new TList();
+      fPlotFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
+    } else if(name.BeginsWith("Det")){
+      if(!fDetFuncList) fDetFuncList = new TList();
+      fDetFuncList->AddLast(new TMethodCall(c, (const char*)name, ""));
+    }
   }
 }
 
@@ -332,8 +364,8 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
     if(idet%6 != ly) continue;
     TVectorF *det((TVectorF*)fDets->At(idet));
     if(!det) continue;
-    AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3]));
     Int_t iopt = Int_t((*det)[4]);
+    AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f] opt[%d]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3], iopt));
     if(iopt==1){
       gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
       gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);

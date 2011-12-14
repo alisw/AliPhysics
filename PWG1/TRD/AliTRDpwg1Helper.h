@@ -17,7 +17,8 @@ public:
     ,kTracksBarrel
     ,kTracksSA
     ,kTracksKink
-    ,kV0List 
+    ,kV0List
+    ,kClusters
     ,kMonitor
     ,kNOutSlots
   };

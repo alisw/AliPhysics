@@ -53,7 +53,8 @@ public:
     ,kNSlots     = 4
   };
   enum ETRDresolutionClass {
-    kCluster=0        // cluster - track
+     kDetector=0      // cluster - detector
+    ,kCluster         // cluster - track
     ,kTracklet        // tracklet - track residuals/pulls
     ,kTrackIn         // tracklet - track residuals/pulls at lower TRD entrance
     ,kMCcluster       // cluster-mc resolution/pulls
@@ -65,7 +66,8 @@ public:
     ,kNclasses        // total number of resolution classes
   };
   enum ETRDresolutionClassProjs {
-    kClNproj=60        // cluster projections
+    kDetNproj=60       // detector projections
+    ,kClNproj=60       // cluster projections
     ,kTrkltNproj=8000  // tracklet projections
     ,kTrkInNproj=142   // trackIn projections
     ,kTrkNproj=2500    // track projections
@@ -83,7 +85,8 @@ public:
     ,kNdim  // no of dimensions in the THnSparse
   };
   enum ETRDresolutionSize {
-     kNdimCl      = 4
+     kNdimDet     = 4
+    ,kNdimCl      = 4
     ,kNdimTrklt   = 4
     ,kNdimTrkIn   = 7
     ,kNbunchCross = 3  // no of classes for bunch crossing
@@ -123,6 +126,7 @@ public:
   Bool_t          UseExchangeContainers() const         { return TestBit(kXchange);}
   Bool_t          PostProcess();
 
+  TH1*            DetCluster(const TObjArray *cl=NULL);
   TH1*            PlotCluster(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTracklet(const AliTRDtrackV1 *t=NULL);
   TH1*            PlotTrackIn(const AliTRDtrackV1 *t=NULL);
@@ -181,6 +185,7 @@ public:
   void        GetRange(TH2 *h2, Char_t mod, Float_t *range);
 
 protected:
+  Bool_t      MakeProjectionDetector();
   Bool_t      MakeProjectionCluster(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTracklet(Bool_t mc=kFALSE);
   Bool_t      MakeProjectionTrackIn(Bool_t mc=kFALSE);

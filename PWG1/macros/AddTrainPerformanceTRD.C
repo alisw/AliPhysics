@@ -108,6 +108,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwg1Helper::kTracksSA];
       ce[2]=ci[AliTRDpwg1Helper::kTracksKink];
       ce[3]=ci[AliTRDpwg1Helper::kEventInfo];
+      ce[4]=ci[AliTRDpwg1Helper::kClusters];
       AddTRDcheckDET(mgr, bitmap, ce);
       break;
     case AliTRDpwg1Helper::kEfficiency:
@@ -116,6 +117,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwg1Helper::kTracksSA];
       ce[2]=ci[AliTRDpwg1Helper::kTracksKink];
       ce[3]=ci[AliTRDpwg1Helper::kEventInfo];
+      ce[4]=ci[AliTRDpwg1Helper::kClusters];
       AddTRDefficiency(mgr, bitmap, ce);
       break;
     case AliTRDpwg1Helper::kResolution:
@@ -124,6 +126,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       ce[1]=ci[AliTRDpwg1Helper::kTracksSA];
       ce[2]=ci[AliTRDpwg1Helper::kTracksKink];
       ce[3]=ci[AliTRDpwg1Helper::kEventInfo];
+      ce[4]=ci[AliTRDpwg1Helper::kClusters];
       AddTRDresolution(mgr, bitmap, ce); 
       break;
     case AliTRDpwg1Helper::kCheckPID:
@@ -137,6 +140,7 @@ Bool_t AddTrainPerformanceTRD(Char_t *trd="ALL", const Char_t *addMacroPath = "$
       // map slots
       ce[0]=ci[AliTRDpwg1Helper::kTracksBarrel];
       ce[1]=ci[AliTRDpwg1Helper::kEventInfo];
+      ce[2]=ci[AliTRDpwg1Helper::kClusters];
       AddTRDcheckTRK(mgr, 0, ce);
       break;
     case AliTRDpwg1Helper::kV0Monitor:

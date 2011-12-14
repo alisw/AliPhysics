@@ -56,6 +56,7 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliESDInputHandler.h"
+#include "AliESDInputHandlerRP.h"
 #include "AliMCEventHandler.h"
 
 #include "AliESDfriend.h"
@@ -124,6 +125,7 @@ AliTRDinfoGen::AliTRDinfoGen()
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fClusters(NULL)
   ,fContainer(NULL)
   ,fRecos(NULL)
   ,fDebugStream(NULL)
@@ -150,6 +152,7 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   ,fTracksSA(NULL)
   ,fTracksKink(NULL)
   ,fV0List(NULL)
+  ,fClusters(NULL)
   ,fContainer(NULL)
   ,fRecos(NULL)
   ,fDebugStream(NULL)
@@ -159,11 +162,12 @@ AliTRDinfoGen::AliTRDinfoGen(char* name)
   //
   SetTitle("MC-REC TRD-track list generator");
   DefineOutput(AliTRDpwg1Helper::kTracksBarrel, TObjArray::Class());
-  DefineOutput(AliTRDpwg1Helper::kTracksSA, TObjArray::Class());
-  DefineOutput(AliTRDpwg1Helper::kTracksKink, TObjArray::Class());
-  DefineOutput(AliTRDpwg1Helper::kEventInfo, AliTRDeventInfo::Class());
-  DefineOutput(AliTRDpwg1Helper::kV0List, TObjArray::Class());
-  DefineOutput(AliTRDpwg1Helper::kMonitor, TObjArray::Class()); // histogram list
+  DefineOutput(AliTRDpwg1Helper::kTracksSA,     TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kTracksKink,   TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kEventInfo,    AliTRDeventInfo::Class());
+  DefineOutput(AliTRDpwg1Helper::kV0List,       TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kClusters,     TObjArray::Class());
+  DefineOutput(AliTRDpwg1Helper::kMonitor,      TObjArray::Class()); // histogram list
 }
 
 //____________________________________________________________________
@@ -179,11 +183,11 @@ AliTRDinfoGen::~AliTRDinfoGen()
   if(fTrackInfo) delete fTrackInfo; fTrackInfo = NULL;
   if(fEventInfo) delete fEventInfo; fEventInfo = NULL;
   if(fV0Info) delete fV0Info; fV0Info = NULL;
-  if(fTracksBarrel){ 
+  if(fTracksBarrel){
     fTracksBarrel->Delete(); delete fTracksBarrel;
     fTracksBarrel = NULL;
   }
-  if(fTracksSA){ 
+  if(fTracksSA){
     fTracksSA->Delete(); delete fTracksSA;
     fTracksSA = NULL;
   }
@@ -195,6 +199,10 @@ AliTRDinfoGen::~AliTRDinfoGen()
     fV0List->Delete(); 
     delete fV0List;
     fV0List = NULL;
+  }
+  if(fClusters){
+    fClusters->Delete(); delete fClusters;
+    fClusters = NULL;
   }
   if(fContainer && !(AliAnalysisManager::GetAnalysisManager() && AliAnalysisManager::GetAnalysisManager()->IsProofMode())){
     fContainer->Delete(); 
@@ -229,6 +237,7 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   fTracksSA = new TObjArray(20); fTracksSA->SetOwner(kTRUE);
   fTracksKink = new TObjArray(20); fTracksKink->SetOwner(kTRUE);
   fV0List = new TObjArray(10); fV0List->SetOwner(kTRUE);
+  fClusters = new TObjArray(AliTRDgeometry::kNdet); fClusters->SetOwner(kTRUE);
 
   // define general monitor
   fContainer = new TObjArray(kNclasses); fContainer->SetOwner(kTRUE);
@@ -263,7 +272,14 @@ void AliTRDinfoGen::UserCreateOutputObjects()
   TObjArray *chmb = new TObjArray(AliTRDgeometry::kNdet);
   chmb->SetName("Chambers"); chmb->SetOwner();
   fContainer->AddAt(chmb, kChmb);
-  PostData(AliTRDpwg1Helper::kMonitor, fContainer);
+
+  PostData(AliTRDpwg1Helper::kTracksBarrel, fTracksBarrel);
+  PostData(AliTRDpwg1Helper::kTracksSA,     fTracksSA);
+  PostData(AliTRDpwg1Helper::kTracksKink,   fTracksKink);
+  PostData(AliTRDpwg1Helper::kEventInfo,    fEventInfo);
+  PostData(AliTRDpwg1Helper::kV0List,       fV0List);
+  PostData(AliTRDpwg1Helper::kClusters,     fClusters);
+  PostData(AliTRDpwg1Helper::kMonitor,      fContainer);
 }
 
 //____________________________________________________________________
@@ -302,6 +318,7 @@ void AliTRDinfoGen::UserExec(Option_t *){
   fTracksSA->Delete();
   fTracksKink->Delete();
   fV0List->Delete();
+  fClusters->Delete();
   fEventInfo->Delete("");
 
   fESDev = dynamic_cast<AliESDEvent*>(InputEvent());
@@ -567,9 +584,8 @@ void AliTRDinfoGen::UserExec(Option_t *){
       break;
     }
 
-    // read REC info
+    // read track REC info
     esdFriendTrack = (fESDfriend->GetNumberOfTracks() > itrk) ? fESDfriend->GetTrack(itrk): NULL;
-
     if(esdFriendTrack){
       fTrackInfo->SetTPCoutParam(esdFriendTrack->GetTPCOut());
       Int_t icalib = 0;
@@ -651,6 +667,29 @@ void AliTRDinfoGen::UserExec(Option_t *){
     }
     fTrackInfo->Delete("");
   }
+  // read clusters REC info
+  TTree * treeR = (dynamic_cast<AliESDInputHandlerRP*>(fInputHandler))->GetTreeR("TRD");
+  if(treeR) {
+    TObjArray *recPoints(NULL);
+    if((treeR->GetBranch("TRDcluster"))){
+      treeR->SetBranchAddress("TRDcluster", &recPoints);
+      for(Int_t idet(0); idet<treeR->GetEntries(); idet++){
+        treeR->GetEntry(idet);
+        if(!recPoints->GetEntries()){
+          AliDebug(1, Form("Missing entry %d from TreeR", idet));
+          continue;
+        }
+        AliTRDcluster *c = (AliTRDcluster*)(*recPoints)[0];
+        if(!c){
+          AliDebug(1, Form("Missing first cluster in entry %d from TreeR", idet));
+          continue;
+        }
+        fClusters->AddAt(recPoints->Clone(Form("%03d", c->GetDetector())), c->GetDetector());
+      }
+    } else AliDebug(3, "No TRDcluster branch");
+  } else AliDebug(3, "No RecPoints");
+
+
 
   // LOOP 2 - over MC tracks which are passing TRD where the track is not reconstructed
   if(HasMCdata()){
@@ -735,12 +774,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   h->Fill(Float_t(kKinkMC), nKinkMC);
   h->Fill(Float_t(kBarrelFriend), nBarrelFriend);
   h->Fill(Float_t(kSAFriend), nSAFriend);
-
-  PostData(AliTRDpwg1Helper::kTracksBarrel, fTracksBarrel);
-  PostData(AliTRDpwg1Helper::kTracksSA, fTracksSA);
-  PostData(AliTRDpwg1Helper::kTracksKink, fTracksKink);
-  PostData(AliTRDpwg1Helper::kEventInfo, fEventInfo);
-  PostData(AliTRDpwg1Helper::kV0List, fV0List);
 }
 
 
