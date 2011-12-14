@@ -60,12 +60,14 @@ AliHMPIDRecoParam& AliHMPIDRecoParam::operator=(const AliHMPIDRecoParam &p)
 //
 // assign. operator
 //
-  AliDetectorRecoParam::operator=(p);
-  this->fHmpRecoMode= p.fHmpRecoMode;
-  this->fHmpFixedDistCut=p.fHmpFixedDistCut;
-  for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) this->fHmpUserCut[iCh] = p.fHmpUserCut[iCh];   
-  this->fHmpTrackMatchingDist=p.fHmpTrackMatchingDist;
-  for(Int_t iPol=0;iPol<5;iPol++) this->fHmpTrackMatchingDistParas[iPol]=p.fHmpTrackMatchingDistParas[iPol];
+  if(this!=&p){
+    AliDetectorRecoParam::operator=(p);
+    this->fHmpRecoMode= p.fHmpRecoMode;
+    this->fHmpFixedDistCut=p.fHmpFixedDistCut;
+    for(Int_t iCh=AliHMPIDParam::kMinCh;iCh<=AliHMPIDParam::kMaxCh;iCh++) this->fHmpUserCut[iCh] = p.fHmpUserCut[iCh];   
+    this->fHmpTrackMatchingDist=p.fHmpTrackMatchingDist;
+    for(Int_t iPol=0;iPol<5;iPol++) this->fHmpTrackMatchingDistParas[iPol]=p.fHmpTrackMatchingDistParas[iPol];
+  }
   return *this;
 }
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

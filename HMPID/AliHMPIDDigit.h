@@ -23,11 +23,45 @@ class AliHMPIDDigit :public AliDigit //TObject-AliDigit-AliHMPIDDigit
 public:
     
 //ctor&dtor    
-  AliHMPIDDigit(                          ):AliDigit( ),fPad(AliHMPIDParam::Abs(-1,-1,-1,-1)),fQ(-1)  {}                         //default ctor
-  AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):AliDigit(t),fPad(pad             ),fQ(q )  {if(fQ>4095)fQ=4095;}                     //digit ctor
-  AliHMPIDDigit(Int_t pad,Int_t q         ):AliDigit( ),fPad(pad             ),fQ(q )  {if(fQ>4095)fQ=4095;}                     //digit ctor
-  AliHMPIDDigit(const AliHMPIDDigit &d    ):AliDigit(d),fPad(d.fPad),fQ(d.fQ)          {}                                        //copy ctor
-  virtual ~AliHMPIDDigit()                                                             {}                         //dtor   
+AliHMPIDDigit():
+    AliDigit( ),
+    fPad(AliHMPIDParam::Abs(-1,-1,-1,-1)),
+    fQ(-1)  
+    {}                                       //default ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDDigit(Int_t pad,Int_t q,Int_t *t):
+  AliDigit(t),
+  fPad(pad),
+  fQ(q)  
+  {if(fQ>4095) fQ=4095;}                     //digit ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+AliHMPIDDigit(Int_t pad,Int_t q):
+  AliDigit( ),
+  fPad(pad),
+  fQ(q )  
+  {if(fQ>4095) fQ=4095;}                     //digit ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDDigit& operator=(const AliHMPIDDigit& d)
+{
+  //
+  // Assignment operator
+  //
+  if(this!=&d){
+    AliDigit::operator=(d); 
+    fPad = d.fPad; 
+    fQ   = d.fQ;
+  }
+  return *this;                           
+}                                            
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+AliHMPIDDigit(const AliHMPIDDigit &d):
+  AliDigit(d),
+  fPad(d.fPad),
+  fQ(d.fQ)         
+  {}                                        //copy ctor
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  
+virtual ~AliHMPIDDigit()  {}                //dtor
+   
 //framework part    
          Bool_t  IsSortable  (                               )const{return kTRUE;}                                                     //provision to use TObject::Sort() 
   inline Int_t   Compare     (const TObject *pObj            )const;                                                                   //provision to use TObject::Sort()

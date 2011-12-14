@@ -255,9 +255,10 @@ Bool_t AliHMPIDReconHTA::FindShape(Double_t &thTrkRec,Double_t &phiTrkRec,Double
     dMean2+=dist[indphi[i]]*dist[indphi[i]];
     np++;
   }
-  
-  dMean  /=(Double_t)np;
-  dMean2 /=(Double_t)np;
+ 
+  if(np>0){    
+   dMean  /=(Double_t)np;
+   dMean2 /=(Double_t)np;}
   Double_t rms = TMath::Sqrt(dMean2 - dMean*dMean);
   
   for(Int_t i=0;i<fNClu;i++) {
@@ -755,8 +756,10 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
   
   //_____calc. met min quadr using effective distance _________________________________________________
   
-  coeff2ord = xy-xrotsumm*yrotsumm/np;    
-  coeff1ord = yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
+  if(np>0){ 
+    coeff2ord = xy-xrotsumm*yrotsumm/np;    
+    coeff1ord = yrotsumm*yrotsumm/np - xrotsumm*xrotsumm/np - yy + xx;
+  }
   coeff0ord = -coeff2ord;
   
   AliDebug(1,Form(" a = %f b = %f c = %f",coeff2ord,coeff1ord,coeff0ord));
@@ -767,8 +770,9 @@ Double_t AliHMPIDReconHTA::FindSimmPhi()
   
   r2(coeff,m1,m2);
   
-  n1=(yrotsumm-m1*xrotsumm)/np;                         
-  n2=(yrotsumm-m2*xrotsumm)/np;
+  if(np>0){ 
+    n1=(yrotsumm-m1*xrotsumm)/np;                         
+    n2=(yrotsumm-m2*xrotsumm)/np;}
   // 2 solutions.................
   
   // negative angles solved...
