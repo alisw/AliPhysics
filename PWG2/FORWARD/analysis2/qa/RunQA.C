@@ -184,8 +184,9 @@ RunQA(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
 
   if (runNo > 0) what = 0x1; // Only do first pass
 
+  gROOT->LoadMacro("QATrender.C+g");
+  gROOT->LoadMacro("QAPlotter.C+g");
   if (what & 0x1) {
-    gROOT->LoadMacro("QATrender.C+g");
     QATrender t(keep, runNo > 0);
 
     TList* l = 0;
@@ -211,7 +212,6 @@ RunQA(const char* input=".", Bool_t keep=true, Int_t runNo=-1,
     t.Run();
   }
   if (what & 0x2) {
-    gROOT->LoadMacro("QAPlotter.C+g");
     QAPlotter p;
     p.Run();
   }

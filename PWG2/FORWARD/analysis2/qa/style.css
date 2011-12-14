@@ -1,0 +1,73 @@
+/*
+ * Cascading style sheet for QA pages 
+ */
+body { 
+    font-family: sans 
+}
+
+a:link { text-decoration:none;
+	 color: blue; 
+	 font-weight: bold;
+       }
+a:visited { text-decoration:none;
+	    color: blue; 
+	    font-weight: bold;
+	  }
+a:hover { text-decoration: none; 
+	  color: magenta; 
+	  font-weight: bold;
+	}
+h1 { border: thin solid gray; 
+     width: 100%; 
+     background-color: lightblue;
+   }
+
+div.change { border: thin solid gray; 
+	     text-size: smaller; 
+	     font-style: italic;
+	     background-color: lightblue;
+	     bottom: 100%;
+	   }
+div.jobid { font-size: smal; 
+	    background-color: lightcyan;
+	    border: solid thin lightgray;
+	    position: fixed;
+	    z-index: 3;
+	    opacity: .8;
+	    top: 1em; 
+	    right: 100px; 
+	    font-size: small; 
+	    width: 80px; }
+	   
+div.back { font-size: smal; 
+	   background-color: lightcyan;
+	   border: solid thin lightgray;
+	   position: fixed;
+	   z-index: 3;
+	   opacity: .8;
+	   top: 1em; 
+	   right: 10px; 
+	   font-size: small; 
+	   width: 80px; }
+
+div.runs { position: fixed; 
+	   background-color: lightcyan;
+	   border: solid thin lightgray;
+	   z-index: 2;
+	   opacity: .8;
+	   top: 3em; 
+	   right: 1em; 
+	   font-size: small; 
+	   width: 200px; }
+div.img {  }
+img { height: 80%; }
+td { padding-right: 1em; 
+     padding-left: 1em; }
+tr:nth-child(odd)    { background-color:lightcyan; }
+tr:nth-child(even)    { background-color:white; }
+table:first-child { border-top: thin solid lightgray; }
+table:last-child { border-bottom: thin solid lightgray; }
+
+/*
+ * EOF
+ */

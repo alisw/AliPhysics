@@ -331,6 +331,7 @@ struct QABase
     if (fHtml) {
       TDatime now;
       *fHtml << "</table>" << std::endl;
+      WriteLinks();
       WriteFooter();
       *fHtml << "</body></html>" << std::endl;
       fHtml->close();
@@ -349,14 +350,22 @@ struct QABase
     gSystem->Exec(Form("chmod g+rw %s.pdf %s", base, 
 		       deletePNGs ? "" : fToDelete.Data()));
   }
+  virtual void WriteLinks() 
+  {
+    *fHtml << "<h3>Collection of plots</h3>\n" 
+	   << "<ul>\n"
+	   << "  <li><a href='" << fTeXName << ".pdf'>PDF</a></li>\n"
+	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a></li>\n"
+	   << "</ul>" << std::endl;
+  }
+  /** 
+   * Write full job footer 
+   * 
+   */
   virtual void WriteFooter() 
   {
     TDatime now;
-    *fHtml << "<ul>\n"
-	   << "  <li><a href='" << fTeXName << ".pdf'>PDF</a></li>\n"
-	   << "  <li><a href='" << fTeXName << ".root'>ROOT</a></li>\n"
-	   << "</ul>\n"
-	   << "<div class='back'>\n"
+    *fHtml << "<div class='back'>\n"
 	   << "<a href='index.html'>Back</a>\n"
 	   << "</div>\n"
 	   << "<div class='change'>\n"
