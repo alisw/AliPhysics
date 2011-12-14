@@ -6,11 +6,23 @@ verb=0
 nodw=0
 notr=0
 norn=0
+last="unknown"
+lock=
+
 
 export PATH=$PATH:$ALICE_ROOT/PWG2/FORWARD/analysis2/qa:../scripts
 
-usage()
+# --- Handle exit ----------------------------------------------------
+handle_exit()
 {
+    echo "Removing $lock"
+    rm -f $lock
+}
+trap handle_exit EXIT 
+
+# --- Usage information ----------------------------------------------
+usage()
+{ 
 cat <<EOF
 Usage: $0 -j JOBID [OPTIONS]
 
@@ -24,13 +36,15 @@ Options:
 	-v,--verbose		   Be verbose                          [$verb]
 	-s,--skip-lines NUMBER	   Number of lines to skip in job list [$skip]
 EOF
-} 
+}     
 
+# --- Messages -------------------------------------------------------
 mess()
 {
     if test $verb -lt 1 ; then return ; fi 
+    last="$@"
     echo $@
-}
+} 
 
 # --- Get parts of the passed path -----------------------------------
 get_parts()
@@ -64,12 +78,34 @@ get_parts()
 
 # --- Get the options ------------------------------------------------
 skip=1
-get_opts() {
-    wget -q http://alimonitor.cern.ch/prod/jobs.jsp?t=${jobid} -O job.html
+jobUrl="http://alimonitor.cern.ch/prod/jobs.jsp?t="
+get_opts() { 
+    wget -q ${jobUrl}${jobid} -O job.html
     p=`grep "/catalogue/index.jsp?path" job.html | head -n $skip | tail -n 1 | sed -e 's,.*/alice/data/\([^<]*\)<.*,\1,' | tr '/' ' '` 
     rm -f job.html 
+
     get_parts $p
+} 
+
+# --- Trapping errors ------------------------------------------------
+handle_err()
+{
+    echo "Got an error: $last"
+    exit 1
+} 
+enable_trap ()
+{
+    echo "Enabling trapping errors"
+    trap handle_err ERR 
+    trap -p ERR
 }
+disable_trap ()
+{
+    echo "Disabling trapping errors"
+    trap - ERR
+    trap -p ERR
+}
+
 
 # --- comamnd line ---------------------------------------------------
 while test $# -gt 0 ; do 
@@ -93,11 +129,11 @@ if test $jobid -lt 1 ; then
     exit 1
 fi
 
-# --- Extract options ------------------------------------------------
+# --- Extract options -----------------------------------------------
 get_opts $jobid
-mess "Options for getQAresults: $opts, destingation: $dest" 
 if test "x$opts" = "x" ; then 
     echo "No options found" 
+    rm -f $lock
     exit 1
 fi
 
@@ -114,34 +150,45 @@ Skip lines:	  $skip
 ----------------------------------------------------------------------
 EOF
 
+# --- Lock -----------------------------------------------------------
+lock=${top}/${dest}/.lock
+if test -f $lock ; then 
+    echo "Another QA process is already running:" > /dev/stderr 
+    echo "Content of ${top}/${dest}/.lock:" > /dev/stderr 
+    cat $lock > /dev/stderr 
+    trap - EXIT
+    exit 1
+fi
+
+now=`date`
+cat <<EOF > $lock
+Process: $$ 
+User:    $USER 
+Start:   $now 
+EOF
+
+
 # --- Download the files ---------------------------------------------
 if test $nodw -lt 1 ; then 
     mess "Running getQAResults.sh $opts -d $top -n "
     getQAResults.sh $opts -d $top -T -v -v -i 
-    set +e
 else 
     mess "Not downloading"
 fi
 
-handle_err()
-{
-    echo "Got an error"
-}
-
-# --- Exit on errors -------------------------------------------------
-trap handle_err ERR
-set -e 
-
 # --- Now run the QA code -------------------------------------------
+
 mess "Now running code"
+enable_trap
 savdir=`pwd`
-mess "Change directory to $top/dest"
+mess "Change directory to $top/$dest"
 cd $top/${dest} 
 
+disable_trap
+trap - ERR
+trap -p ERR 
 mess "List of trend_<x>.html files"
-set +e
 idx=`ls trend_*_*.html 2>/dev/null`
-set -e 
 mess "Removing indeces"  
 rm -f index.html
 for i in $idx ; do 
@@ -154,22 +201,39 @@ if test $norn -gt 0 ; then let what=$what^0x1 ; fi
 
 scr=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunQA.C
 mess "Running root -l -b -q ${scr}\(\".\",1,-1,$what\)"
+
+enable_trap
 root -l -b -q ${scr}\(\".\",1,-1,$what\)
+trap - ERR
+disable_trap
 
 idx=`ls trend_*_*.html 2>/dev/null` 
 rm -f index.html
 for i in $idx ; do 
     echo "making index.html point to $i"
-    cat $i | sed "s,index.html,../index.html," > index.html  
+    cat $i | \
+	sed -e "s,index.html,../index.html," \
+	    -e "s,!--JOBID--,a target='_blank' href='${jobUrl}${jobid}'>Job</a," \
+	> index.html  
     cp index.html $i 
 done 
-set +e
+if test ! -f index.html ; then 
+    echo "No index file found" 
+    exit 1
+fi
 chmod g+rw  index.html
 chmod g+rw .  > /dev/null 2>&1
 
-if test -f $savdir/style.css ; then 
+style= 
+if test -f $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/style.css ; then 
+    style=$ALICE_ROOT/PWG2/FORWARD/analysis2/qa/style.css
+elif test -f $savdir/style.css ; then 
+    style=$savdir/style.css 
+fi 
+   
+if test x$style != x ; then 
     rm -f style.css 
-    cp $savdir/style.css .
+    cp $style .
     chmod g+rw style.css
 fi
 
@@ -202,18 +266,23 @@ for i in * ; do
 done
 cat <<EOF >> index.html
 </ul>
-<div class='back'><a href="../">Back</a></div>
+<div class='jobid'>
+   
+</div>
+<div class='back'>
+  <a href="../">Back</a>
+</div>
 <div class='change'>
-Last update: $date
+  Last update: $date
 </div>
 </body>
 </html>
 EOF
 chmod g+rw index.html 
 chmod g+rw .  > /dev/null 2>&1
-if test -f $savdir/style.css ; then 
+if test x$style != x ; then 
     rm -f style.css
-    cp $savdir/style.css .
+    cp $style .
     chmod g+rw style.css
 fi
 
@@ -247,13 +316,14 @@ Last update: $date
 EOF
 chmod g+rw index.html 
 chmod g+rw .  > /dev/null 2>&1
-if test -f $savdir/style.css && test `pwd` != $savdir; then 
+if test x$style != x ; then 
     rm -f style.css
-    cp $savdir/style.css .
+    cp $style . 
     chmod g+rw style.css
 fi
 
 cd $savdir
+rm -f $lock
 
 # 
 # EOF
