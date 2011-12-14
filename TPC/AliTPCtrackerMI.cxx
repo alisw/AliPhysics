@@ -1204,15 +1204,13 @@ Int_t  AliTPCtrackerMI::LoadClusters(const TObjArray *arr)
     }
     if (left ==0){
       tpcrow->SetN1(clrow->GetArray()->GetEntriesFast());
-      tpcrow->SetClusters1(new AliTPCclusterMI[tpcrow->GetN1()]);
       for (Int_t j=0;j<tpcrow->GetN1();++j) 
 	tpcrow->SetCluster1(j, *(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
     }
     if (left ==1){
       tpcrow->SetN2(clrow->GetArray()->GetEntriesFast());
-      tpcrow->SetClusters2(new AliTPCclusterMI[tpcrow->GetN2()]);
       for (Int_t j=0;j<tpcrow->GetN2();++j) 
-	tpcrow->SetCluster2(j,*(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
+	tpcrow->SetCluster2(j, *(AliTPCclusterMI*)(clrow->GetArray()->At(j)));
     }
     clrow->GetArray()->Clear("C");
   }
@@ -1285,7 +1283,7 @@ Int_t  AliTPCtrackerMI::LoadClusters()
 {
   //
   // load clusters to the memory
-  AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
+  static AliTPCClustersRow *clrow= new AliTPCClustersRow("AliTPCclusterMI");
   //
   //  TTree * tree = fClustersArray.GetTree();
 
@@ -1318,19 +1316,17 @@ Int_t  AliTPCtrackerMI::LoadClusters()
     }
     if (left ==0){
       tpcrow->SetN1(clrow->GetArray()->GetEntriesFast());
-      tpcrow->SetClusters1(new AliTPCclusterMI[tpcrow->GetN1()]);
       for (Int_t k=0;k<tpcrow->GetN1();++k) 
 	tpcrow->SetCluster1(k, *(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
     }
     if (left ==1){
       tpcrow->SetN2(clrow->GetArray()->GetEntriesFast());
-      tpcrow->SetClusters2(new AliTPCclusterMI[tpcrow->GetN2()]);
       for (Int_t k=0;k<tpcrow->GetN2();++k) 
-	tpcrow->SetCluster2(k,*(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
+	tpcrow->SetCluster2(k, *(AliTPCclusterMI*)(clrow->GetArray()->At(k)));
     }
   }
   //
-  delete clrow;
+  clrow->Clear("C");
   LoadOuterSectors();
   LoadInnerSectors();
   return 0;
@@ -1563,7 +1559,7 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
   Int_t ncl=(index&0x00007fff)>>00;
 
   const AliTPCtrackerRow * tpcrow=0;
-  AliTPCclusterMI * clrow =0;
+  TClonesArray * clrow =0;
 
   if (sec<0 || sec>=fkNIS*4) {
     AliWarning(Form("Wrong sector %d",sec));
@@ -1601,7 +1597,7 @@ AliTPCclusterMI *AliTPCtrackerMI::GetClusterMI(Int_t index) const {
     }
   }
 
-  return &(clrow[ncl]);      
+  return (AliTPCclusterMI*)clrow->At(ncl);
   
 }
 
@@ -2401,23 +2397,25 @@ void AliTPCtrackerMI::DumpClusters(Int_t iter, TObjArray *trackArray)
 
   for (Int_t sec=0;sec<fkNIS;sec++){
     for (Int_t row=0;row<fInnerSec->GetNRows();row++){
-      AliTPCclusterMI *cl = fInnerSec[sec][row].GetClusters1();
+      TClonesArray *cla = fInnerSec[sec][row].GetClusters1();
       for (Int_t icl =0;icl< fInnerSec[sec][row].GetN1();icl++){    
-	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
+	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
 	  "iter="<<iter<<
-	  "cl.="<<&cl[icl]<<      
+	  "cl.="<<cl<<      
 	  "gx0="<<gx[0]<<
 	  "gx1="<<gx[1]<<
 	  "gx2="<<gx[2]<<
 	  "\n";
       }
-      cl = fInnerSec[sec][row].GetClusters2();
+      cla = fInnerSec[sec][row].GetClusters2();
       for (Int_t icl =0;icl< fInnerSec[sec][row].GetN2();icl++){
-	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	AliTPCclusterMI* cl = (AliTPCclusterMI*)cla->At(icl);
+	Float_t gx[3];	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
 	  "iter="<<iter<<
-	  "cl.="<<&cl[icl]<<
+	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
 	  "gx1="<<gx[1]<<
 	  "gx2="<<gx[2]<<
@@ -2428,23 +2426,27 @@ void AliTPCtrackerMI::DumpClusters(Int_t iter, TObjArray *trackArray)
   
   for (Int_t sec=0;sec<fkNOS;sec++){
     for (Int_t row=0;row<fOuterSec->GetNRows();row++){
-      AliTPCclusterMI *cl = fOuterSec[sec][row].GetClusters1();
+      TClonesArray *cla = fOuterSec[sec][row].GetClusters1();
       for (Int_t icl =0;icl< fOuterSec[sec][row].GetN1();icl++){
-	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	Float_t gx[3];	
+	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
 	  "iter="<<iter<<
-	  "cl.="<<&cl[icl]<<
+	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
 	  "gx1="<<gx[1]<<
 	  "gx2="<<gx[2]<<
 	  "\n";      
       }
-      cl = fOuterSec[sec][row].GetClusters2();
+      cla = fOuterSec[sec][row].GetClusters2();
       for (Int_t icl =0;icl< fOuterSec[sec][row].GetN2();icl++){
-	Float_t gx[3];	cl[icl].GetGlobalXYZ(gx);
+	Float_t gx[3];	
+	AliTPCclusterMI* cl = (AliTPCclusterMI*) cla->At(icl);
+	cl->GetGlobalXYZ(gx);
 	(*fDebugStreamer)<<"clDump"<< 
 	  "iter="<<iter<<
-	  "cl.="<<&cl[icl]<<
+	  "cl.="<<cl<<
 	  "gx0="<<gx[0]<<
 	  "gx1="<<gx[1]<<
 	  "gx2="<<gx[2]<<
@@ -2462,27 +2464,27 @@ void AliTPCtrackerMI::UnsignClusters()
   
   for (Int_t sec=0;sec<fkNIS;sec++){
     for (Int_t row=0;row<fInnerSec->GetNRows();row++){
-      AliTPCclusterMI *cl = fInnerSec[sec][row].GetClusters1();
+      TClonesArray *cla = fInnerSec[sec][row].GetClusters1();
       for (Int_t icl =0;icl< fInnerSec[sec][row].GetN1();icl++)
 	//	if (cl[icl].IsUsed(10)) 	
-	cl[icl].Use(-1);
-      cl = fInnerSec[sec][row].GetClusters2();
+	((AliTPCclusterMI*) cla->At(icl))->Use(-1);
+      cla = fInnerSec[sec][row].GetClusters2();
       for (Int_t icl =0;icl< fInnerSec[sec][row].GetN2();icl++)
 	//if (cl[icl].IsUsed(10)) 	
-	  cl[icl].Use(-1);      
+	((AliTPCclusterMI*) cla->At(icl))->Use(-1);
     }
   }
   
   for (Int_t sec=0;sec<fkNOS;sec++){
     for (Int_t row=0;row<fOuterSec->GetNRows();row++){
-      AliTPCclusterMI *cl = fOuterSec[sec][row].GetClusters1();
+      TClonesArray *cla = fOuterSec[sec][row].GetClusters1();
       for (Int_t icl =0;icl< fOuterSec[sec][row].GetN1();icl++)
 	//if (cl[icl].IsUsed(10)) 	
-	  cl[icl].Use(-1);
-      cl = fOuterSec[sec][row].GetClusters2();
+	((AliTPCclusterMI*) cla->At(icl))->Use(-1);
+      cla = fOuterSec[sec][row].GetClusters2();
       for (Int_t icl =0;icl< fOuterSec[sec][row].GetN2();icl++)
 	//if (cl[icl].IsUsed(10)) 	
-	cl[icl].Use(-1);      
+	((AliTPCclusterMI*) cla->At(icl))->Use(-1);
     }
   }
   
@@ -4777,7 +4779,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   fKinksPool->Clear();
   //  TObjArray *v0s= new TObjArray(10000);
   Int_t nentries = array->GetEntriesFast();
-  AliHelix helixes[nentries];
+  AliHelix *helixes = new AliHelix[nentries];
   Int_t    sign[nentries];
   Int_t    nclusters[nentries];
   Float_t  alpha[nentries];
@@ -5473,6 +5475,7 @@ void  AliTPCtrackerMI::FindKinks(TObjArray * array, AliESDEvent *esd)
   }
   fKinksPool->Clear();
   //
+  delete[] helixes;
   AliInfo(Form("Ncandidates=\t%d\t%d\t%d\t%d\n",esd->GetNumberOfKinks(),ncandidates,ntracks,nall));
   timer.Print();
 }

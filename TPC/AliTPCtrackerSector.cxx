@@ -67,12 +67,8 @@ AliTPCtrackerRow::AliTPCtrackerRow():
 
 AliTPCtrackerRow::~AliTPCtrackerRow(){
   //
-  for (Int_t i = 0; i < fN1; i++)
-    fClusters1[i].~AliTPCclusterMI();
-  delete [] fClusters1;
-  for (Int_t i = 0; i < fN2; i++)
-    fClusters2[i].~AliTPCclusterMI();
-  delete [] fClusters2;
+  delete fClusters1;
+  delete fClusters2;
 }
 
 
@@ -104,12 +100,8 @@ void AliTPCtrackerRow::ResetClusters() {
    //
    // reset clusters
    // MvL: Need to call destructors for AliTPCclusterMI, to delete fInfo
-   for (Int_t i = 0; i < fN1; i++)
-     fClusters1[i].~AliTPCclusterMI();
-   delete [] fClusters1;  fClusters1=0;
-   for (Int_t i = 0; i < fN2; i++)
-     fClusters2[i].~AliTPCclusterMI();
-   delete [] fClusters2;  fClusters2=0;
+  if (fClusters1) fClusters1->Clear("C");
+  if (fClusters2) fClusters2->Clear("C");
 
    fN  = 0; 
    fN1 = 0;
@@ -229,6 +221,26 @@ Int_t  AliTPCtrackerSector::GetRowNumber(Double_t x) const
   }
 }
 
+
+void AliTPCtrackerRow::SetCluster1(Int_t i, const AliTPCclusterMI &cl)
+{
+  // attach cluster
+  if (!fClusters1) fClusters1 = new TClonesArray("AliTPCclusterMI",1000);
+  if (i<=fClusters1->GetLast() && fClusters1->UncheckedAt(i)) fClusters1->RemoveAt(i);
+  new( (*fClusters1)[fClusters1->GetEntriesFast()] ) AliTPCclusterMI(cl);
+  //
+}
+
+void AliTPCtrackerRow::SetCluster2(Int_t i, const AliTPCclusterMI &cl)
+{
+  // attach cluster
+  if (!fClusters2) fClusters2 = new TClonesArray("AliTPCclusterMI",1000);
+  if (i<=fClusters2->GetLast() && fClusters2->UncheckedAt(i)) fClusters2->RemoveAt(i);
+  new( (*fClusters2)[fClusters2->GetEntriesFast()] ) AliTPCclusterMI(cl);
+  //
+}
+
+
 //_________________________________________________________________________
 void AliTPCtrackerSector::Setup(const AliTPCParam *par, Int_t f) {
   //-----------------------------------------------------------------------
@@ -290,7 +302,6 @@ void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const A
   if (left ==0){
     tpcrow = fRow+row;
     if(!tpcrow->GetClusters1()) {
-       tpcrow->SetClusters1(new AliTPCclusterMI[size]); 
        tpcrow->SetN1(0);
     }
     if(size < kMaxClusterPerRow) {
@@ -303,7 +314,6 @@ void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const A
   if (left ==1){
     tpcrow = fRow+row;
     if(!tpcrow->GetClusters2()) { 
-      tpcrow->SetClusters2(new AliTPCclusterMI[size]); 
       tpcrow->SetN2(0);
     }
     if(size < kMaxClusterPerRow)  { 
@@ -314,6 +324,4 @@ void AliTPCtrackerSector::InsertCluster(AliTPCclusterMI *cl, Int_t size, const A
     }
   }
 }
-
-
 

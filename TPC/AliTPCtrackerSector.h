@@ -43,14 +43,12 @@ public:
   void SetN1(Int_t n) {fN1=n;}
   Int_t GetN2() const {return fN2;}
   void SetN2(Int_t n) {fN2=n;}
-  AliTPCclusterMI* GetClusters1() const {return fClusters1;}
-  AliTPCclusterMI* GetClusters2() const {return fClusters2;}
-  void SetClusters1(AliTPCclusterMI* cl) {fClusters1=cl;}
-  void SetClusters2(AliTPCclusterMI* cl) {fClusters2=cl;}
-  void SetCluster1(Int_t i, const AliTPCclusterMI &cl) {fClusters1[i]=cl;}
-  void SetCluster2(Int_t i, const AliTPCclusterMI &cl) {fClusters2[i]=cl;}
-  AliTPCclusterMI* GetCluster1(Int_t i) const {return &fClusters1[i];}
-  AliTPCclusterMI* GetCluster2(Int_t i) const {return &fClusters2[i];}
+  TClonesArray* GetClusters1() const {return fClusters1;}
+  TClonesArray* GetClusters2() const {return fClusters2;}
+  void SetCluster1(Int_t i, const AliTPCclusterMI &cl);
+  void SetCluster2(Int_t i, const AliTPCclusterMI &cl);
+  AliTPCclusterMI* GetCluster1(Int_t i) const {return (AliTPCclusterMI*) fClusters1->At(i);}
+  AliTPCclusterMI* GetCluster2(Int_t i) const {return (AliTPCclusterMI*) fClusters2->At(i);}
   Short_t GetFastCluster(Int_t i) const {return fFastCluster[i];}
   void SetFastCluster(Int_t i, Short_t cl);
   Int_t IncrementN1() { return ++fN1;}
@@ -60,9 +58,9 @@ private:
   AliTPCtrackerRow & operator=(const AliTPCtrackerRow & );
   AliTPCtrackerRow(const AliTPCtrackerRow& /*r*/);           //dummy copy constructor
   Float_t fDeadZone;  // the width of the dead zone
-  AliTPCclusterMI *fClusters1; //array with clusters 1
+  TClonesArray *fClusters1; //array with clusters 1
   Int_t fN1;  //number of clusters on left side
-  AliTPCclusterMI *fClusters2; //array with clusters 2
+  TClonesArray *fClusters2; //array with clusters 2
   Int_t fN2; // number of clusters on right side of the TPC
   Short_t fFastCluster[510];   //index of the nearest cluster at given position
   Int_t fN;                                          //number of clusters 
