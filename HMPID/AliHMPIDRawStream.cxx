@@ -181,7 +181,15 @@ Bool_t AliHMPIDRawStream::Next()
   do {
     if (!fRawReader->ReadNextData(fData)) return kFALSE;
   } while (fRawReader->GetDataSize() == 0);
+ 
+  Int_t runNumber = fRawReader->GetRunNumber();
   
+  Int_t ddlArray[] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13}; 
+
+  // next line: fix for link chamber2 cables inversion for period LHC11d, LHC11e, LHC11f and LHC11h. 
+  
+  if(runNumber>=156620 && runNumber<=170593) {ddlArray[4] = 5; ddlArray[5] = 4;}  
+  else {ddlArray[4] = 4; ddlArray[5] = 5;}
      
   /*
   Event type is selected as in $ALICE_ROOT/RAW/event.h  
@@ -205,7 +213,7 @@ Bool_t AliHMPIDRawStream::Next()
   fPosition = 0;
   Bool_t status=kFALSE;
   fRawDataSize=0;        
-  fDDLNumber = fRawReader->GetDDLID();
+  fDDLNumber = ddlArray[fRawReader->GetDDLID()];
   
   if(fDDLNumber<0) {
     AliWarning(Form("fDDLNumber not a acceptable value %i",fDDLNumber));
