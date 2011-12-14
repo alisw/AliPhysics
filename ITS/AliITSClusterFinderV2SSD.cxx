@@ -34,7 +34,6 @@
 #include "AliITSRecPoint.h"
 #include "AliITSRecPointContainer.h"
 #include "AliITSgeomTGeo.h"
-#include "AliITSDetTypeRec.h"
 #include "AliRawReader.h"
 #include "AliITSRawStreamSSD.h"
 #include <TClonesArray.h>
@@ -87,13 +86,13 @@ ClassImp(AliITSClusterFinderV2SSD)
       AliError("Cannot get magnetic field from TGeoGlobalMagField");
     }
     else {
-      Float_t Bfield = field->SolenoidField();
+      Float_t bField = field->SolenoidField();
       // NB: spatial shift has opposite sign for lay 5 and 6, but strip numbering also changes direction, so no sign-change 
       // Shift due to ExB on drift N-side, units: strip width 
-      fLorentzShiftP = -repa->GetTanLorentzAngleElectronsSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
+      fLorentzShiftP = -repa->GetTanLorentzAngleElectronsSSD() * 150.e-4/95.e-4 * bField / 5.0;
       // Shift due to ExB on drift P-side, units: strip width 
-      fLorentzShiftN = -repa->GetTanLorentzAngleHolesSSD() * 150.e-4/95.e-4 * Bfield / 5.0;
-      AliDebug(1,Form("Bfield %f Lorentz Shift P-side %f N-side %f",Bfield,fLorentzShiftN,fLorentzShiftP));
+      fLorentzShiftN = -repa->GetTanLorentzAngleHolesSSD() * 150.e-4/95.e-4 * bField / 5.0;
+      AliDebug(1,Form("bField %f Lorentz Shift P-side %f N-side %f",bField,fLorentzShiftN,fLorentzShiftP));
     }
   }
 }
@@ -717,7 +716,7 @@ void AliITSClusterFinderV2SSD::FindClustersSSD(AliITSRawStreamSSD* input)
 void AliITSClusterFinderV2SSD::
 FindClustersSSD(const Ali1Dcluster* neg, Int_t nn, 
 		const Ali1Dcluster* pos, Int_t np,
-		TClonesArray *clusters) {
+		const TClonesArray *clusters) {
   //------------------------------------------------------------
   // Actual SSD cluster finder
   //------------------------------------------------------------

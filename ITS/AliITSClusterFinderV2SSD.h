@@ -36,11 +36,11 @@ public:
   void FindClustersSSD(TClonesArray *digits);
   void FindClustersSSD(const Ali1Dcluster* neg, Int_t nn, 
 		       const Ali1Dcluster* pos, Int_t np,
-		       TClonesArray *clusters=0x0);
+		       const TClonesArray *clusters=0x0);
 
   void FindClustersSSD(AliITSRawStreamSSD* input);
   virtual AliITSCalibrationSSD* GetResp(Int_t mod)const{
-    return (AliITSCalibrationSSD*) fDetTypeRec->GetCalibrationModel(mod);}
+    return (AliITSCalibrationSSD*) GetDetTypeRec()->GetCalibrationModel(mod);}
 
   Int_t fLastSSD1;        //index of the last SSD1 detector   
   Float_t  fLorentzShiftP; // Shift due to ExB on drift N-side @ actual B field, layer 5, units: strip width 
