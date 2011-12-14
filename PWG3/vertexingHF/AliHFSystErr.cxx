@@ -572,12 +572,12 @@ void AliHFSystErr::InitDplustoKpipi2010PbPb4080() {
   fRawYield->SetBinContent(1,1);
   fRawYield->SetBinContent(2,1);
   fRawYield->SetBinContent(3,1);
-  fRawYield->SetBinContent(4,1.);
+  fRawYield->SetBinContent(4,0.15);
   fRawYield->SetBinContent(5,0.05);
   fRawYield->SetBinContent(6,0.05);
   fRawYield->SetBinContent(7,0.15);
   fRawYield->SetBinContent(8,0.15);
-  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.05);
+  for(Int_t i=9;i<=12;i++) fRawYield->SetBinContent(i,0.15);
   for(Int_t i=13;i<=20;i++) fRawYield->SetBinContent(i,1);  //5 to 10%
 
   // Cuts efficiency (from cuts variation)
