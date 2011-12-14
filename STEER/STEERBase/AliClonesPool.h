@@ -24,7 +24,7 @@ class AliClonesPool: public TClonesArray
   void PrintSummary(const Option_t* opt="") const;
   //
  protected:
-  Int_t GetCloneID(TObject* obj) const {return fCastToTrack ? ((AliVParticle*)obj)->GetPoolID() : (obj->GetUniqueID()-1);}
+  Int_t GetCloneID(TObject* obj) const {return fCastToTrack ? ((AliVParticle*)obj)->GetPoolID() : (int(obj->GetUniqueID())-1);}
 
  protected:
   TArrayI fFreeID;              // array of ID's of free slots
