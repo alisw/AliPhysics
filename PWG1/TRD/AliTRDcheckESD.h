@@ -168,7 +168,7 @@ public:
   // configure the expert CF container
   void          AddExpertCFVar(AliTRDcheckESD::ETrdCfVariables var, Int_t nbins, Double_t lowLim, Double_t highLim);
   void          AddExpertCFVar(AliTRDcheckESD::ETrdCfVariables var, const Char_t* bins);
-  void          EnableExpertCFStep(Int_t step) {fExpertCFEnabledSteps[step] = (step>=0 && step<3 ? kTRUE : kFALSE);}
+  void          EnableExpertCFStep(Int_t step) {if(step>=0 && step<3) fExpertCFEnabledSteps[step] = kTRUE;}
   
 private:
   static const Float_t fgkxTPC; // end radial position of TPC
@@ -240,7 +240,6 @@ private:
   Int_t            fPulseHeightCFVars[kNTrdCfVariables];
   
   AliAnalysisCuts* fReferenceTrackFilter;     // reference track filter
-  //TObjArray*       fCfList;                   // list with per trigger CF containers
   Bool_t           fPhysSelTriggersEnabled;   // flag wheter physics selection triggers were enabled
   TString          fUserEnabledTriggers;      // list of user enabled triggers
   Int_t            fNAssignedTriggers;        // number of assigned triggers
@@ -257,6 +256,6 @@ private:
   
   static const Float_t fgkQs;      // scale for the total charge
 
-  ClassDef(AliTRDcheckESD, 8)          // user oriented TRD analysis based on ESD-MC data
+  ClassDef(AliTRDcheckESD, 9)          // user oriented TRD analysis based on ESD-MC data
 };
 #endif
