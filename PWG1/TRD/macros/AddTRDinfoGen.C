@@ -46,6 +46,7 @@ void AddTRDinfoGen(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContai
   co[AliTRDpwg1Helper::kTracksSA] = mgr->CreateContainer("tracksSA", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwg1Helper::kTracksKink] = mgr->CreateContainer("tracksKink", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   co[AliTRDpwg1Helper::kV0List] = mgr->CreateContainer("v0List", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
+  co[AliTRDpwg1Helper::kClusters] = mgr->CreateContainer("clusters", TObjArray::Class(), AliAnalysisManager::kExchangeContainer);
   for(Int_t ios(1);ios<AliTRDpwg1Helper::kNOutSlots-1;ios++) mgr->ConnectOutput(info, ios, co[ios]);
   
   // add last monitor container

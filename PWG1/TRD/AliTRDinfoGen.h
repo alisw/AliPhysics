@@ -57,6 +57,7 @@ public:
   enum AliTRDinfoGenClasses{
      kStatTrk = 0
     ,kEvType
+//    ,kBCtrack
     ,kBC
     ,kTrigger
     ,kChmb
@@ -116,6 +117,7 @@ private:
   TTreeSRedirector* DebugStream();
   void              MakeChambers();
 
+//  UShort_t          fBF;             //! Bunch Fill of previous event
   AliESDEvent      *fESDev;          //! ESD event
   AliMCEvent       *fMCev;           //! MC event
   // event/track cuts OO - to be used
@@ -130,6 +132,7 @@ private:
   TObjArray        *fTracksSA;       //! Array of stand alone tracks
   TObjArray        *fTracksKink;     //! Array of kink tracks
   TObjArray        *fV0List;         //! V0 container
+  TObjArray        *fClusters;       //! Clusters container
   TObjArray        *fContainer;      //! container to store results
   TObjArray        *fRecos;          //! array of reco params
   TTreeSRedirector *fDebugStream;    //! debug stream

@@ -11,7 +11,7 @@
 
 void AddTRDcheckTRK(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataContainer **ci/*, AliAnalysisDataContainer **co*/)
 {
-  Info("AddTRDcheckTRK", Form("[0]=\"%s\" [1]=\"%s\"", ci[0]->GetName(), ci[1]->GetName()));
+  Info("AddTRDcheckTRK", Form("[0]=\"%s\" [1]=\"%s\" [2]=\"%s\"", ci[0]->GetName(), ci[1]->GetName(), ci[2]->GetName()));
 
   //AliLog::SetClassDebugLevel("AliTRDcheckTRK", 3);
   // global settings for tracking
@@ -50,6 +50,7 @@ void AddTRDcheckTRK(AliAnalysisManager *mgr, Int_t /*map*/, AliAnalysisDataConta
   mgr->ConnectInput( trk, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container
   mgr->ConnectInput( trk, 1, ci[0]);                          // connect barrel tracks container
   mgr->ConnectInput( trk, 2, ci[1]);                          // connect event info container
+  mgr->ConnectInput( trk, 3, ci[2]);                          // connect clusters container
 
   mgr->ConnectOutput(trk, 1, mgr->CreateContainer(trk->GetName(), TObjArray::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TRD_Performance",mgr->GetCommonFileName())));
 }
