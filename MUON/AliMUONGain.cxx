@@ -718,22 +718,30 @@ void AliMUONGain::MakeGainStore(TString shuttleFile)
        << " and " << goodA2Min << "<a2<" << goodA2Max << ") " << endl;
   cout << " Nb of uncalibrated channel = " << nBadChannel << " (" << noFitChannel << " unfitted)" << endl;
 
-  Double_t meanA1         = sumA1/(nGoodChannel);
-  Double_t meanProbChi2   = sumProbChi2/(nGoodChannel);
-  Double_t meanA2         = sumA2/(nGoodChannel);
-  Double_t meanProbChi2P2 = sumProbChi2P2/(nGoodChannel);
+  if(nGoodChannel)
+    {
+      Double_t meanA1         = sumA1/(nGoodChannel);
+      Double_t meanProbChi2   = sumProbChi2/(nGoodChannel);
+      Double_t meanA2         = sumA2/(nGoodChannel);
+      Double_t meanProbChi2P2 = sumProbChi2P2/(nGoodChannel);
 
-  Double_t capaManu = 0.2; // pF
-  (*fFilcout) << "\n linear fit   : <a1> = " << meanA1 << "\t  <gain>  = " <<  1./(meanA1*capaManu) 
-	      << " mV/fC (capa= " << capaManu << " pF)" << endl;
-  (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2 << endl;
-  (*fFilcout) << "\n parabolic fit: <a2> = " << meanA2  << endl;
-  (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" << endl;
+      Double_t capaManu = 0.2; // pF
+      (*fFilcout) << "\n linear fit   : <a1> = " << meanA1 << "\t  <gain>  = " <<  1./(meanA1*capaManu) 
+		  << " mV/fC (capa= " << capaManu << " pF)" << endl;
+      (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2 << endl;
+      (*fFilcout) << "\n parabolic fit: <a2> = " << meanA2  << endl;
+      (*fFilcout) <<   "        Prob(chi2)>  = " <<  meanProbChi2P2 << "\n" << endl;
 
-  cout << "\n  <gain>  = " <<  1./(meanA1*capaManu) 
-       << " mV/fC (capa= " << capaManu << " pF)" 
-       <<  "  Prob(chi2)>  = " <<  meanProbChi2 << endl;
-  
+      cout << "\n  <gain>  = " <<  1./(meanA1*capaManu) 
+	   << " mV/fC (capa= " << capaManu << " pF)" 
+	   <<  "  Prob(chi2)>  = " <<  meanProbChi2 << endl;
+    }
+  else 
+    {
+      (*fFilcout) << "\n !!!!!  BIG PROBLEM:  Nb of calibrated channel = "   << nGoodChannel << " !!!!! \n" << endl;
+      cout        << "\n !!!!!  BIG PROBLEM:  Nb of calibrated channel = "   << nGoodChannel << " !!!!! \n" << endl;
+    }
+ 
   pfilew.close();
 
   if(fPlotLevel>0){tg->Write();histoFile->Close();}
