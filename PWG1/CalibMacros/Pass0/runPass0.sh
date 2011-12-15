@@ -19,6 +19,12 @@
 # $1 = raw input filename
 runnum=`echo $1 | cut -d "/" -f 6`
 
+if [ -f Run0_999999999_v3_s0.root ]; then
+    mkdir -p TPC/Calib/Correction
+    mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
+fi
+
+
 #Local setting
 #entries=$2
 #runnum=$3
@@ -41,4 +47,3 @@ mv syswatch.log syswatch_rec.log
 echo ">>>>>>> Running AliRoot to make calibration..."
 aliroot -l -b -q  runCalibTrain.C\(\"$runnum\"\)   2>&1 | tee calib.log
 mv syswatch.log syswatch_calib.log
-
