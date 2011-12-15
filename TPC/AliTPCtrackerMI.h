@@ -31,6 +31,8 @@ class AliESDkink;
 class TTreeSRedirector;
 class AliTrackPoint;
 class AliClonesPool;
+class AliDCSSensorArray;
+class AliDCSSensor;
 
 
 class AliTPCtrackerMI : public AliTracker {
@@ -45,6 +47,7 @@ public:
   virtual Int_t LoadClusters (TTree * const tree);
   virtual Int_t LoadClusters (const TObjArray * arr); // another input
   virtual Int_t LoadClusters (const TClonesArray * arr); // another input
+  virtual Int_t PostProcess(AliESDEvent *esd); 
   Int_t  LoadClusters();
   void   UnloadClusters();
   Int_t LoadInnerSectors();
@@ -115,6 +118,8 @@ public:
    void  RemoveUsed2(TObjArray * arr, Float_t factor1, Float_t factor2, Int_t minimal);
 
    Int_t AcceptCluster(AliTPCseed * seed, AliTPCclusterMI * cluster);
+
+   Bool_t IsTPCHVDipEvent(AliESDEvent const *esdEvent);
 
 private:
   Bool_t IsFindable(AliTPCseed & t);

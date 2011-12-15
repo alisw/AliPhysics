@@ -144,7 +144,9 @@
 #include "AliTPCdEdxInfo.h"
 #include "AliClonesPool.h"
 #include "AliPoolsSet.h"
-
+#include "AliDCSSensorArray.h"
+#include "AliDCSSensor.h"
+#include "AliDAQ.h"
 //
 
 ClassImp(AliTPCtrackerMI)
@@ -2874,6 +2876,29 @@ Int_t AliTPCtrackerMI::PropagateBack(AliESDEvent *event)
   Info("PropagateBack","Number of back propagated tracks %d",ntracks);
   fEvent =0;
   
+  return 0;
+}
+
+
+Int_t AliTPCtrackerMI::PostProcess(AliESDEvent *event)
+{
+  //
+  // Post process events 
+  //
+  if (!event) return 0;
+
+  //
+  // Set TPC event status
+  // 
+
+  // event affected by HV dip
+  // reset TPC status
+  if(IsTPCHVDipEvent(event)) { 
+    event->ResetDetectorStatus(AliDAQ::kTPC);
+  }
+ 
+  //printf("Status %d \n", event->IsDetectorOn(AliDAQ::kTPC));
+
   return 0;
 }
 
@@ -6929,3 +6954,50 @@ void AliTPCtrackerMI::AddCovarianceAdd(AliTPCseed * seed){
   seed->AddCovariance(covar);
 }
 
+//_____________________________________________________________________________
+Bool_t  AliTPCtrackerMI::IsTPCHVDipEvent(AliESDEvent const *esdEvent) {
+//
+// check events affected by TPC HV dip
+//
+if(!esdEvent) return kFALSE;
+
+// Init TPC OCDB
+if(!AliTPCcalibDB::Instance()) return kFALSE;
+AliTPCcalibDB::Instance()->SetRun(esdEvent->GetRunNumber());
+
+// Get HV TPC chamber sensors and calculate the median
+AliDCSSensorArray *voltageArray= AliTPCcalibDB::Instance()->GetVoltageSensors(esdEvent->GetRunNumber());
+if(!voltageArray) return kFALSE;
+
+TString sensorName="";
+Double_t kTPCHVdip = 2.0; // allow for 2V dip as compared to median from given sensor
+
+
+  for(Int_t sector=0; sector<72; sector++)
+  {
+    Char_t sideName='A';
+    if ((sector/18)%2==1) sideName='C';
+    if (sector<36){
+      //IROC
+      sensorName=Form("TPC_ANODE_I_%c%02d_VMEAS",sideName,sector%18);
+    } else {
+      //OROC
+      sensorName=Form("TPC_ANODE_O_%c%02d_0_VMEAS",sideName,sector%18);
+    }
+    
+    AliDCSSensor* sensor = voltageArray->GetSensor(sensorName.Data());
+    if(!sensor) continue;
+    TGraph *graph = sensor->GetGraph();
+    if(!graph) continue;
+    Double_t median = TMath::Median(graph->GetN(), graph->GetY());
+    if(median == 0) continue;
+
+    //printf("chamber %d, sensor %s, HV %f, median %f\n", sector, sensorName.Data(), sensor->GetValue(esdEvent->GetTimeStamp()), median);
+    
+    if(TMath::Abs(sensor->GetValue(esdEvent->GetTimeStamp())-median)>kTPCHVdip) {
+      return kTRUE; 
+    }
+  } 
+ 
+  return kFALSE; 
+} 
