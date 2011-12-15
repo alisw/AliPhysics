@@ -113,10 +113,10 @@ void MakeITSRecoParam_2010(AliRecoParam::EventSpecie_t default=AliRecoParam::kLo
     itsRecoParam->SetImproveWithVertex(kTRUE);
     // Misalignment syst errors decided at ITS meeting 25.03.2010
     // additional error due to misal (B off)
-    itsRecoParam->SetClusterMisalErrorY(0.0010,0.0010,0.0300,0.0300,0.0020,0.0020); // [cm]
+    itsRecoParam->SetClusterMisalErrorY(0.0010,0.0010,0.0100,0.0100,0.0020,0.0020); // [cm]
     itsRecoParam->SetClusterMisalErrorZ(0.0100,0.0100,0.0100,0.0100,0.0500,0.0500); // [cm]
     // additional error due to misal (B on)
-    itsRecoParam->SetClusterMisalErrorYBOn(0.0010,0.0030,0.0500,0.0500,0.0020,0.0020); // [cm]
+    itsRecoParam->SetClusterMisalErrorYBOn(0.0010,0.0030,0.0100,0.0100,0.0020,0.0020); // [cm]
     itsRecoParam->SetClusterMisalErrorZBOn(0.0050,0.0050,0.0050,0.0050,0.1000,0.1000); // [cm]
     //----
 
