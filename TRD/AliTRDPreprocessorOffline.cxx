@@ -120,7 +120,11 @@ ClassImp(AliTRDPreprocessorOffline)
   fRobustFitDriftVelocity(kTRUE),
   fRobustFitExbAlt(kFALSE),
   fAlternativeVdrfitFit(kFALSE),
-  fAlternativeExbAltFit(kFALSE)
+  fAlternativeExbAltFit(kFALSE),
+  fMethodeGain(0),
+  fOutliersFitChargeLow(0.03),
+  fOutliersFitChargeHigh(0.7),
+  fBeginFitCharge(3.5)
 {
   //
   // default constructor
@@ -576,6 +580,10 @@ Bool_t AliTRDPreprocessorOffline::AnalyzeGain(){
   //
 
   AliTRDCalibraFit *calibra = AliTRDCalibraFit::Instance();
+  calibra->ChooseMethod(fMethodeGain);
+  calibra->SetBeginFitCharge(fBeginFitCharge);
+  calibra->SetFitOutliersChargeLow(fOutliersFitChargeLow);
+  calibra->SetFitOutliersChargeHigh(fOutliersFitChargeHigh);
   calibra->SetMinEntries(fMinStatsGain); // If there is less than 1000 entries in the histo: no fit
   calibra->AnalyseCH(fCH2d);
 

@@ -55,9 +55,6 @@ class AliTRDCalibraFit : public TObject {
   AliTRDCalibraFit(const AliTRDCalibraFit &c);
   AliTRDCalibraFit &operator=(const AliTRDCalibraFit &) { return *this; }
 
-  // Function for integration range of the charge 
-  void     RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const;
-
   // ExB calibration
   void     SetCalDetVdriftExB(AliTRDCalDet *calDetVdriftUsed,AliTRDCalDet *calDetExBUsed) {fCalDetVdriftUsed = calDetVdriftUsed; fCalDetExBUsed = calDetExBUsed;};
   
@@ -121,6 +118,8 @@ class AliTRDCalibraFit : public TObject {
   // Fit
   void     ChooseMethod(Short_t method)                              { fMethod = method;               }
   void     SetBeginFitCharge(Float_t beginFitCharge);   
+  void     SetFitOutliersChargeLow(Float_t fitOutliersChargeLow)     { fOutliersFitChargeLow = fitOutliersChargeLow; }
+  void     SetFitOutliersChargeHigh(Float_t fitOutliersChargeHigh)   { fOutliersFitChargeHigh = fitOutliersChargeHigh; }
   void     SetPeriodeFitPH(Int_t periodeFitPH);   
   void     SetTakeTheMaxPH()                                         { fTakeTheMaxPH   = kTRUE;        }
   void     SetT0Shift0(Float_t t0Shift0); 
@@ -131,6 +130,8 @@ class AliTRDCalibraFit : public TObject {
   void     SetRebin(Short_t rebin);
   
   Int_t    GetPeriodeFitPH() const                                   { return fFitPHPeriode;           }
+  Float_t  GetFitOutliersChargeLow() const                           { return fOutliersFitChargeLow;   }
+  Float_t  GetFitOutliersChargeHigh() const                          { return fOutliersFitChargeHigh;  }
   Bool_t   GetTakeTheMaxPH() const                                   { return fTakeTheMaxPH;           }
   Float_t  GetT0Shift0() const                                       { return fT0Shift0;               }
   Float_t  GetT0Shift1() const                                       { return fT0Shift1;               }
@@ -208,6 +209,8 @@ class AliTRDCalibraFit : public TObject {
        // Fit
        Short_t      fMethod;                // Method
        Float_t      fBeginFitCharge;        // The fit begins at mean/fBeginFitCharge for the gain calibration
+       Float_t      fOutliersFitChargeLow;  // The fit ends at fOutliersFitCharge procent number of entries
+       Float_t      fOutliersFitChargeHigh; // The fit ends at fOutliersFitCharge procent number of entries
        Int_t        fFitPHPeriode;          // Periode of the fit PH
        Bool_t       fTakeTheMaxPH;          // Take the Max for the T0 determination
        Float_t      fT0Shift0;              // T0 Shift with the maximum positive slope
@@ -326,8 +329,10 @@ class AliTRDCalibraFit : public TObject {
        void     SetCalROC(Int_t i);
        
        // Fit methods
-       void     FitBisCH(TH1 *projch, Double_t mean);
-       void     FitCH(TH1 *projch, Double_t mean);
+       void     FitBisCHEx(TH1 *projch, Double_t mean, Double_t nentries);
+       void     FitBisCH(TH1 *projch, Double_t mean, Double_t nentries);
+       void     FitCH(TH1 *projch, Double_t mean, Double_t nentries);
+       void     FitLandau(TH1 *projch, Double_t mean, Double_t nentries);
        void     FitMeanW(TH1 *projch, Double_t nentries);
        void     FitMeanWSm(TH1 *projch, Float_t sumAll);
        void     FitMean(TH1 *projch, Double_t nentries, Double_t mean);
@@ -357,11 +362,15 @@ class AliTRDCalibraFit : public TObject {
        static  Double_t AsymmGauss(const Double_t *x, const Double_t *par);
        static  Double_t FuncLandauGaus(const Double_t *x, const Double_t *par);
        static  Double_t LanGauFun(const Double_t *x, const Double_t *par);
+       static  Double_t LanGauFunEx(const Double_t *x, const Double_t *par);
        TF1     *LanGauFit(TH1 *his, const Double_t *fitrange, const Double_t *startvalues
 			  , const Double_t *parlimitslo, const Double_t *parlimitshi, Double_t *fitparams
 			  , Double_t *fiterrors, Double_t *chiSqr, Int_t *ndf) const;
-       Int_t    LanGauPro(const Double_t *params, Double_t &maxx, Double_t &fwhm);
-       static  Double_t GausConstant(const Double_t *x, const Double_t *par); 
+       TF1     *LanGauFitEx(TH1 *his, const Double_t *fitrange, const Double_t *startvalues
+			    , const Double_t *parlimitslo, const Double_t *parlimitshi
+			    , Double_t *fitparams, Double_t *fiterrors
+			    , Double_t *chiSqr, Int_t *ndf) const;
+     
        
        // This is a singleton, contructor is private!
        AliTRDCalibraFit();

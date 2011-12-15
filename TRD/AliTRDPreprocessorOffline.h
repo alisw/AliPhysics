@@ -81,6 +81,11 @@ public:
   void     SetRobustFitExbAlt(Bool_t robustFitExbAlt)                { fRobustFitExbAlt = robustFitExbAlt;};
   void     SetAlternativeDriftVelocityFit(Bool_t alt)                { fAlternativeVdrfitFit = alt;};
   void     SetAlternativeExbAltFit(Bool_t alt)                       { fAlternativeExbAltFit = alt;};
+  void     SetMethodeFitGain(Int_t methodeFitGain)                   { fMethodeGain = methodeFitGain;};
+  void     SetOutliersFitChargeLow(Float_t outliersFitChargeLow)     { fOutliersFitChargeLow = outliersFitChargeLow; }
+  void     SetOutliersFitChargeHigh(Float_t outliersFitChargeHigh)   { fOutliersFitChargeHigh = outliersFitChargeHigh; }
+  void     SetBeginFitCharge(Float_t beginFitCharge)                 { fBeginFitCharge = beginFitCharge;};
+
 
 
   Bool_t GetLinearFitForVdrift() const { return fMethodSecond;};
@@ -238,6 +243,10 @@ public:
   Bool_t   fRobustFitExbAlt;              // Robust fit for the exb alt 
   Bool_t   fAlternativeVdrfitFit;         // Alternative fitting method for vdrift calibration
   Bool_t   fAlternativeExbAltFit;         // Alternative fitting method for the alternative exb calibarion method
+  Int_t    fMethodeGain;                  // Methode Gain Fit
+  Float_t  fOutliersFitChargeLow;         // The fit starts at fOutliersFitChargeLow procent number of entries
+  Float_t  fOutliersFitChargeHigh;        // The fit starts at fOutliersFitChargeHigh procent number of entries
+  Float_t  fBeginFitCharge;               // Fit Begin Charge starts at mean/fBeginFitCharge
 
   Int_t GetSubVersion(TString name) const;
   Int_t GetVersion(TString name) const;

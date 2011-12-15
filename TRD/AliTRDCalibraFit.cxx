@@ -64,6 +64,7 @@
 #include <TVectorD.h>
 #include <TROOT.h>
 #include <TString.h>
+#include <TLine.h>
 
 #include "AliLog.h"
 #include "AliMathBase.h"
@@ -129,6 +130,8 @@ AliTRDCalibraFit::AliTRDCalibraFit()
   ,fNumberOfBinsExpected(0)
   ,fMethod(0)
   ,fBeginFitCharge(3.5)
+  ,fOutliersFitChargeLow(0.03)
+  ,fOutliersFitChargeHigh(0.80)
   ,fFitPHPeriode(1)
   ,fTakeTheMaxPH(kTRUE)
   ,fT0Shift0(0.124797)
@@ -191,6 +194,8 @@ AliTRDCalibraFit::AliTRDCalibraFit(const AliTRDCalibraFit &c)
 ,fNumberOfBinsExpected(c.fNumberOfBinsExpected)
 ,fMethod(c.fMethod)
 ,fBeginFitCharge(c.fBeginFitCharge)
+,fOutliersFitChargeLow(c.fOutliersFitChargeLow)
+,fOutliersFitChargeHigh(c.fOutliersFitChargeHigh)
 ,fFitPHPeriode(c.fFitPHPeriode)
 ,fTakeTheMaxPH(c.fTakeTheMaxPH)
 ,fT0Shift0(c.fT0Shift0)
@@ -343,28 +348,6 @@ void AliTRDCalibraFit::DestroyDebugStreamer()
   fDebugStreamer = 0x0;
  
 }
-//__________________________________________________________________________________
-void AliTRDCalibraFit::RangeChargeIntegration(Float_t vdrift, Float_t t0, Int_t &begin, Int_t &peak, Int_t &end) const
-{
-  //
-  // From the drift velocity and t0
-  // return the position of the peak and maximum negative slope
-  //
-  
-  const Float_t kDrWidth = AliTRDgeometry::DrThick();    // drift region
-  Double_t widbins = 0.1;                                // 0.1 mus
-
-  //peak and maxnegslope in mus
-  Double_t begind = t0*widbins + fT0Shift0;
-  Double_t peakd  = t0*widbins + fT0Shift1;
-  Double_t maxnegslope = (kDrWidth + vdrift*peakd)/vdrift; 
-
-  // peak and maxnegslope in timebin
-  begin = TMath::Nint(begind*widbins);
-  peak  = TMath::Nint(peakd*widbins);
-  end   = TMath::Nint(maxnegslope*widbins); 
-
-}
 //____________Functions fit Online CH2d________________________________________
 Bool_t AliTRDCalibraFit::AnalyseCH(const TH2I *ch)
 {
@@ -436,8 +419,10 @@ Bool_t AliTRDCalibraFit::AnalyseCH(const TH2I *ch)
       {
       case 0: FitMeanW((TH1 *) projch, nentries); break;
       case 1: FitMean((TH1 *) projch, nentries, mean); break;
-      case 2: FitCH((TH1 *) projch, mean); break;
-      case 3: FitBisCH((TH1 *) projch, mean); break;
+      case 2: FitLandau((TH1 *) projch, mean, nentries); break;
+      case 3: FitCH((TH1 *) projch, mean, nentries); break;
+      case 4: FitBisCH((TH1 *) projch, mean, nentries); break;
+      case 5: FitBisCHEx((TH1 *) projch, mean, nentries); break;
       default: return kFALSE;
       }
     // Fill Infos Fit
@@ -533,8 +518,10 @@ Bool_t AliTRDCalibraFit::AnalyseCH(AliTRDCalibraVector *calvect)
       {
       case 0: FitMeanW((TH1 *) projch, nentries); break;
       case 1: FitMean((TH1 *) projch, nentries, mean); break;
-      case 2: FitCH((TH1 *) projch, mean); break;
-      case 3: FitBisCH((TH1 *) projch, mean); break;
+      case 2: FitLandau((TH1 *) projch, mean, nentries); break;
+      case 3: FitCH((TH1 *) projch, mean, nentries); break;
+      case 4: FitBisCH((TH1 *) projch, mean, nentries); break;
+      case 5: FitBisCHEx((TH1 *) projch, mean, nentries); break;
       default: return kFALSE;
       }
     // Fill Infos Fit
@@ -592,8 +579,10 @@ Double_t AliTRDCalibraFit::AnalyseCHAllTogether(const TH2I *ch)
     {
     case 0: FitMeanW((TH1 *) projch, nentries); break;
     case 1: FitMean((TH1 *) projch, nentries, mean); break;
-    case 2: FitCH((TH1 *) projch, mean); break;
-    case 3: FitBisCH((TH1 *) projch, mean); break;
+    case 2: FitLandau((TH1 *) projch, mean, nentries); break;
+    case 3: FitCH((TH1 *) projch, mean, nentries); break;
+    case 4: FitBisCH((TH1 *) projch, mean, nentries); break;
+    case 5: FitBisCHEx((TH1 *) projch, mean, nentries); break;
     default: return -100.0;
     }
   delete fDebugStreamer;
@@ -5871,7 +5860,15 @@ void AliTRDCalibraFit::FitMeanW(TH1 *projch, Double_t nentries)
   Int_t sumCurrent = 0;
   for(Int_t k = 0; k <nybins; k++){
     Double_t fraction = Float_t(sumCurrent)/Float_t(sumAll);
-    if (fraction>0.95) break;
+    if (fraction<fOutliersFitChargeLow) {
+      sumCurrent += (Int_t) projch->GetBinContent(k+1);
+      //printf("Take only after bin %d\n",k);
+      continue;
+    }
+    if (fraction>fOutliersFitChargeHigh) {
+      //printf("Break by the bin %d\n",k);
+      break;
+    }
     Double_t weight = a + b*fraction + c*fraction*fraction + d *fraction*fraction*fraction+
       e*fraction*fraction*fraction*fraction;
     sumw += weight*projch->GetBinContent(k+1)*projch->GetBinCenter(k+1);
@@ -5885,6 +5882,8 @@ void AliTRDCalibraFit::FitMeanW(TH1 *projch, Double_t nentries)
     TCanvas *cpmeanw = new TCanvas("cpmeanw","cpmeanw",50,50,600,800);
     cpmeanw->cd();
     projch->Draw();
+    TLine *line = new TLine(fCurrentCoef[0],0.0,fCurrentCoef[0],20000.0);
+    line->Draw("same");
   }
   fNumberFitSuccess++;
   CalculChargeCoefMean(kTRUE);
@@ -5938,14 +5937,87 @@ void AliTRDCalibraFit::FitMeanWSm(TH1 *projch, Float_t sumAll)
     TCanvas *cpmeanw = new TCanvas("cpmeanw","cpmeanw",50,50,600,800);
     cpmeanw->cd();
     projch->Draw();
+    TLine *line = new TLine(fCurrentCoef[0],0.0,fCurrentCoef[0],20000.0);
+    line->Draw("same");
   }
   fNumberFitSuccess++;
 }
 //_____________________________________________________________________________
-void AliTRDCalibraFit::FitCH(TH1 *projch, Double_t mean)
+void AliTRDCalibraFit::FitLandau(TH1 *projch, Double_t mean, Double_t nentries)
 {
   //
   // Fit methode for the gain factor
+  //
+
+  
+  //Calcul Range of the fit 
+  Double_t lastvalue = 0.0;
+  Float_t sumAll   = (Float_t) nentries;
+  Int_t sumCurrent = 0;
+  //printf("There are %d bins\n",nybins);
+  for(Int_t k = 0; k <projch->GetNbinsX(); k++){
+    Double_t fraction = Float_t(sumCurrent)/Float_t(sumAll);
+    if (fraction>fOutliersFitChargeHigh) {
+      lastvalue = projch->GetBinCenter(k+1); 
+      //printf("Break by %f\n",lastvalue);
+      break;
+    }
+    sumCurrent += (Int_t) projch->GetBinContent(k+1);
+  }
+  //
+ 
+  fCurrentCoef[0]  = 0.0;
+  fCurrentCoefE    = 0.0;
+  Double_t chisqrl = 0.0;
+  
+  projch->Fit("landau","WWQ+",""
+             ,(Double_t) mean/fBeginFitCharge
+             ,lastvalue);
+  chisqrl = projch->GetFunction("landau")->GetChisquare();
+ 
+  if (fDebugLevel == 1) {
+    TCanvas *cp = new TCanvas("cp","cp",50,50,600,800);
+    cp->cd();
+    projch->Draw();
+    TLine *line = new TLine( projch->GetFunction("landau")->GetParameter(1),0.0,projch->GetFunction("landau")->GetParameter(1),20000.0);
+    line->Draw("same");
+  }
+  
+  if ((projch->GetFunction("landau")->GetParameter(1) > 0) && (projch->GetFunction("landau")->GetParError(1) < (0.05*projch->GetFunction("landau")->GetParameter(1)))) {
+    fNumberFitSuccess++;
+    CalculChargeCoefMean(kTRUE);
+    fCurrentCoef[0]  = projch->GetFunction("landau")->GetParameter(1);
+    fCurrentCoefE    = projch->GetFunction("landau")->GetParError(1);
+  }
+  else {
+    CalculChargeCoefMean(kFALSE);
+    fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
+  }
+   
+  
+
+}
+//_____________________________________________________________________________
+void AliTRDCalibraFit::FitCH(TH1 *projch, Double_t mean, Double_t nentries)
+{
+  //
+  // Fit methode for the gain factor
+  //
+
+  //Calcul Range of the fit 
+  Double_t lastvalue = 0.0;
+  Float_t sumAll   = (Float_t) nentries;
+  Int_t sumCurrent = 0;
+  //printf("There are %d bins\n",nybins);
+  for(Int_t k = 0; k <projch->GetNbinsX(); k++){
+    Double_t fraction = Float_t(sumCurrent)/Float_t(sumAll);
+    if (fraction>fOutliersFitChargeHigh) {
+      lastvalue = projch->GetBinCenter(k+1); 
+      //printf("Break by %f\n",lastvalue);
+      break;
+    }
+    sumCurrent += (Int_t) projch->GetBinContent(k+1);
+  }
   //
  
   fCurrentCoef[0]  = 0.0;
@@ -5953,43 +6025,44 @@ void AliTRDCalibraFit::FitCH(TH1 *projch, Double_t mean)
   Double_t chisqrl = 0.0;
   Double_t chisqrg = 0.0;
   Double_t chisqr  = 0.0;
-  TF1 *fLandauGaus = new TF1("fLandauGaus",FuncLandauGaus,0,300,5);
+  TF1 *fLandauGaus = new TF1("fLandauGaus",FuncLandauGaus,(Double_t) mean/fBeginFitCharge,lastvalue,5);
 
-  projch->Fit("landau","0",""
+  projch->Fit("landau","WWQ0",""
              ,(Double_t) mean/fBeginFitCharge
-             ,projch->GetBinCenter(projch->GetNbinsX()));
+             ,lastvalue);
   Double_t l3P0         = projch->GetFunction("landau")->GetParameter(0);
   Double_t l3P1         = projch->GetFunction("landau")->GetParameter(1);
   Double_t l3P2         = projch->GetFunction("landau")->GetParameter(2);
   chisqrl = projch->GetFunction("landau")->GetChisquare();
     
-  projch->Fit("gaus","0",""
+  projch->Fit("gaus","WWQ0",""
 	      ,(Double_t) mean/fBeginFitCharge
-	      ,projch->GetBinCenter(projch->GetNbinsX()));
+	      ,lastvalue);
   Double_t g3P0         = projch->GetFunction("gaus")->GetParameter(0);
   Double_t g3P2         = projch->GetFunction("gaus")->GetParameter(2);
   chisqrg = projch->GetFunction("gaus")->GetChisquare();
         
   fLandauGaus->SetParameters(l3P0,l3P1,l3P2,g3P0,g3P2);
   if (fDebugLevel != 1) {
-    projch->Fit("fLandauGaus","0",""
+    projch->Fit("fLandauGaus","WWQ0",""
 		,(Double_t) mean/fBeginFitCharge
-		,projch->GetBinCenter(projch->GetNbinsX()));
+		,lastvalue);
     chisqr = projch->GetFunction("fLandauGaus")->GetChisquare();
   } 
   else  {
     TCanvas *cp = new TCanvas("cp","cp",50,50,600,800);
     cp->cd();
-    projch->Fit("fLandauGaus","+",""
+    projch->Fit("fLandauGaus","WWQ+",""
 		,(Double_t) mean/fBeginFitCharge
-		,projch->GetBinCenter(projch->GetNbinsX()));
+		,lastvalue);
     chisqr = projch->GetFunction("fLandauGaus")->GetChisquare();
     projch->Draw();
     fLandauGaus->Draw("same");
+    TLine *line = new TLine(projch->GetFunction("fLandauGaus")->GetParameter(1),0.0,projch->GetFunction("fLandauGaus")->GetParameter(1),20000.0);
+    line->Draw("same");
   }
   
   if ((projch->GetFunction("fLandauGaus")->GetParameter(1) > 0) && (projch->GetFunction("fLandauGaus")->GetParError(1) < (0.05*projch->GetFunction("fLandauGaus")->GetParameter(1))) && (chisqr < chisqrl) && (chisqr < chisqrg)) {
-    //if ((projch->GetFunction("fLandauGaus")->GetParameter(1) > 0) && (chisqr < chisqrl) && (chisqr < chisqrg)) {
     fNumberFitSuccess++;
     CalculChargeCoefMean(kTRUE);
     fCurrentCoef[0]  = projch->GetFunction("fLandauGaus")->GetParameter(1);
@@ -6006,25 +6079,40 @@ void AliTRDCalibraFit::FitCH(TH1 *projch, Double_t mean)
 
 }
 //_____________________________________________________________________________
-void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
+void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean, Double_t nentries)
 {
   //
   // Fit methode for the gain factor more time consuming
   //
 
+  //Calcul Range of the fit 
+  Double_t lastvalue = 0.0;
+  Float_t sumAll   = (Float_t) nentries;
+  Int_t sumCurrent = 0;
+  //printf("There are %d bins\n",nybins);
+  for(Int_t k = 0; k <projch->GetNbinsX(); k++){
+    Double_t fraction = Float_t(sumCurrent)/Float_t(sumAll);
+    if (fraction>fOutliersFitChargeHigh) {
+      lastvalue = projch->GetBinCenter(k+1); 
+      //printf("Break by %f\n",lastvalue);
+      break;
+    }
+    sumCurrent += (Int_t) projch->GetBinContent(k+1);
+  }
+  //
 
   //Some parameters to initialise
   Double_t widthLandau, widthGaus, mPV, integral;
   Double_t chisquarel = 0.0;
   Double_t chisquareg = 0.0;
-  projch->Fit("landau","0M+",""
-	      ,(Double_t) mean/6
-	      ,projch->GetBinCenter(projch->GetNbinsX()));
+  projch->Fit("landau","WWQ0M+",""
+	      ,(Double_t) mean/fBeginFitCharge
+	      ,lastvalue);
   widthLandau  = projch->GetFunction("landau")->GetParameter(2);
   chisquarel = projch->GetFunction("landau")->GetChisquare();
-  projch->Fit("gaus","0M+",""
-	      ,(Double_t) mean/6
-	      ,projch->GetBinCenter(projch->GetNbinsX()));
+  projch->Fit("gaus","WWQ0M+",""
+	      ,(Double_t) mean/fBeginFitCharge
+	      ,lastvalue);
   widthGaus    = projch->GetFunction("gaus")->GetParameter(2);
   chisquareg = projch->GetFunction("gaus")->GetChisquare();
     
@@ -6033,15 +6121,13 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
   
   // Setting fit range and start values
   Double_t fr[2];
-  //Double_t sv[4] = { l3P2, fChargeCoef[1], projch->Integral("width"), fG3P2 };
-  //Double_t sv[4]   = { fL3P2, fChargeCoef[1], fL3P0, fG3P2 };
   Double_t sv[4]   = { widthLandau, mPV, integral, widthGaus};
   Double_t pllo[4] = { 0.001, 0.001, projch->Integral()/3, 0.001};
   Double_t plhi[4] = { 300.0, 300.0, 30*projch->Integral(), 300.0};
   Double_t fp[4]   = { 1.0, 1.0, 1.0, 1.0 };
   Double_t fpe[4]  = { 1.0, 1.0, 1.0, 1.0 };
-  fr[0]            = 0.3 * mean;
-  fr[1]            = 3.0 * mean;
+  fr[0]            = mean/fBeginFitCharge;
+  fr[1]            = lastvalue;
   fCurrentCoef[0]  = 0.0;
   fCurrentCoefE    = 0.0;
 
@@ -6052,9 +6138,9 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
                                 ,&fp[0],&fpe[0]
                                 ,&chisqr,&ndf);
     
-  Double_t projchPeak;
-  Double_t projchFWHM;
-  LanGauPro(fp,projchPeak,projchFWHM);
+  //Double_t projchPeak;
+  //Double_t projchFWHM;
+  //LanGauPro(fp,projchPeak,projchFWHM);
 
   if ((fp[1] > 0) && ((fpe[1] < (0.05*fp[1])) && (chisqr < chisquarel) && (chisqr < chisquareg))) {
     //if ((fp[1] > 0) && ((chisqr < chisquarel) && (chisqr < chisquareg))) {
@@ -6074,6 +6160,110 @@ void AliTRDCalibraFit::FitBisCH(TH1* projch, Double_t mean)
     cpy->cd();
     projch->Draw();
     fitsnr->Draw("same");
+    TLine *line = new TLine(fp[1],0.0,fp[1],20000.0);
+    line->Draw("same");
+  }
+  else {
+    delete fitsnr;
+  }
+} 
+//_____________________________________________________________________________
+void AliTRDCalibraFit::FitBisCHEx(TH1* projch, Double_t mean, Double_t nentries)
+{
+  //
+  // Fit methode for the gain factor more time consuming
+  //
+
+  //Calcul Range of the fit 
+  Double_t lastvalue = 0.0;
+  Float_t sumAll   = (Float_t) nentries;
+  Int_t sumCurrent = 0;
+  //printf("There are %d bins\n",nybins);
+  for(Int_t k = 0; k <projch->GetNbinsX(); k++){
+    Double_t fraction = Float_t(sumCurrent)/Float_t(sumAll);
+    if (fraction>fOutliersFitChargeHigh) {
+      lastvalue = projch->GetBinCenter(k+1); 
+      //printf("Break by %f\n",lastvalue);
+      break;
+    }
+    sumCurrent += (Int_t) projch->GetBinContent(k+1);
+  }
+  //
+
+
+  //Some parameters to initialise
+  Double_t widthLandau, widthGaus, mPV, integral;
+  Double_t chisquarel = 0.0;
+  Double_t chisquareg = 0.0;
+  projch->Fit("landau","WWQM+",""
+	      ,(Double_t) mean/fBeginFitCharge
+	      ,lastvalue);
+  widthLandau  = projch->GetFunction("landau")->GetParameter(2);
+  chisquarel = projch->GetFunction("landau")->GetChisquare();
+  projch->Fit("gaus","WWQM+",""
+	      ,(Double_t) mean/fBeginFitCharge
+	      ,lastvalue);
+  widthGaus    = projch->GetFunction("gaus")->GetParameter(2);
+  chisquareg = projch->GetFunction("gaus")->GetChisquare();
+    
+  mPV = (projch->GetFunction("landau")->GetParameter(1))/2;
+  integral = (projch->GetFunction("gaus")->Integral(0.3*mean,3*mean)+projch->GetFunction("landau")->Integral(0.3*mean,3*mean))/2;
+  
+  // Setting fit range and start values
+  Double_t fr[2];
+  //Double_t sv[4] = { l3P2, fChargeCoef[1], projch->Integral("width"), fG3P2 };
+  //Double_t sv[4]   = { fL3P2, fChargeCoef[1], fL3P0, fG3P2 };
+  Double_t sv[5]   = { widthLandau, mPV, integral, widthGaus, 0.0};
+  Double_t pllo[5] = { 0.001, 0.001, projch->Integral()/3, 0.001, 0.0};
+  Double_t plhi[5] = { 300.0, 300.0, 30*projch->Integral(), 300.0, 2.0};
+  Double_t fp[5]   = { 1.0, 1.0, 1.0, 1.0, 1.0};
+  Double_t fpe[5]  = { 1.0, 1.0, 1.0, 1.0, 1.0};
+  //
+  //fr[0]            = 0.3 * mean;
+  //fr[1]            = 3.0 * mean;
+  //
+  fr[0]            = mean/fBeginFitCharge;
+  fr[1]            = lastvalue;
+  
+  fCurrentCoef[0]  = 0.0;
+  fCurrentCoefE    = 0.0;
+
+  Double_t chisqr;
+  Int_t    ndf;
+  
+  TF1 *fitsnr = 0x0;
+  
+  if((mPV > 0.0) && (projch->GetFunction("gaus")->GetParameter(1) > 0.0)) {
+    fitsnr = LanGauFitEx(projch,&fr[0],&sv[0]
+			 ,&pllo[0],&plhi[0]
+			 ,&fp[0],&fpe[0]
+			 ,&chisqr,&ndf);
+  }  
+
+  //Double_t projchPeak;
+  //Double_t projchFWHM;
+  //LanGauProEx(fp,projchPeak,projchFWHM);
+
+  if ((fp[1] > 0) && ((fpe[1] < (0.05*fp[1])) && (chisqr < chisquarel) && (chisqr < chisquareg))) {
+    //if ((fp[1] > 0) && ((chisqr < chisquarel) && (chisqr < chisquareg))) {
+    fNumberFitSuccess++;
+    CalculChargeCoefMean(kTRUE);
+    fCurrentCoef[0]  = fp[1];
+    fCurrentCoefE = fpe[1];
+    //chargeCoefE2 = chisqr;
+  } 
+  else {
+    CalculChargeCoefMean(kFALSE);
+    fCurrentCoef[0] = -TMath::Abs(fCurrentCoef[1]);
+  }
+  if (fDebugLevel == 1) {
+    AliInfo(Form("fChargeCoef[0]: %f",(Float_t) fCurrentCoef[0]));
+    TCanvas *cpy = new TCanvas("cpy","cpy",50,50,600,800);
+    cpy->cd();
+    projch->Draw();
+    if(fitsnr) fitsnr->Draw("same");
+    TLine *line = new TLine(fp[1],0.0,fp[1],20000.0);
+    line->Draw("same");
   }
   else {
     delete fitsnr;
@@ -6466,14 +6656,14 @@ Double_t AliTRDCalibraFit::LanGauFun(const Double_t *x, const Double_t *par)
   Double_t sc       =   5.0;             // Convolution extends to +-sc Gaussian sigmas
   
   // Variables
-  Double_t xx;
-  Double_t mpc;
-  Double_t fland;
+  Double_t xx = 0.0;
+  Double_t mpc = 0.0;
+  Double_t fland = 0.0;
   Double_t sum = 0.0;
-  Double_t xlow;
-  Double_t xupp;
-  Double_t step;
-  Double_t i;
+  Double_t xlow = 0.0;
+  Double_t xupp = 0.0;
+  Double_t step = 0.0;
+  Double_t i = 0.0;
   
   // MP shift correction
   mpc = par[1] - mpshift * par[0]; 
@@ -6488,16 +6678,80 @@ Double_t AliTRDCalibraFit::LanGauFun(const Double_t *x, const Double_t *par)
   for (i = 1.0; i <= np/2; i++) {
 
     xx    = xlow + (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+    if(par[0] > 0.0) fland = TMath::Landau(xx,mpc,par[0]) / par[0];
     sum  += fland * TMath::Gaus(x[0],xx,par[3]);
     
     xx    = xupp - (i-.5) * step;
-    fland = TMath::Landau(xx,mpc,par[0]) / par[0];
+    if(par[0] > 0.0) fland = TMath::Landau(xx,mpc,par[0]) / par[0];
     sum  += fland * TMath::Gaus(x[0],xx,par[3]);
 
   }
 
-  return (par[2] * step * sum * invsq2pi / par[3]);
+  if(par[3] > 0.0) return (par[2] * step * sum * invsq2pi / par[3]);
+  else return 0.0;
+
+}
+//_____________________________________________________________________________
+Double_t AliTRDCalibraFit::LanGauFunEx(const Double_t *x, const Double_t *par) 
+{
+  //
+  // Function for the fit
+  //
+  // Fit parameters:
+  // par[0]=Width (scale) parameter of Landau density
+  // par[1]=Most Probable (MP, location) parameter of Landau density
+  // par[2]=Total area (integral -inf to inf, normalization constant)
+  // par[3]=Width (sigma) of convoluted Gaussian function
+  // par[4]=Exponential Slope Parameter
+  //
+  // In the Landau distribution (represented by the CERNLIB approximation), 
+  // the maximum is located at x=-0.22278298 with the location parameter=0.
+  // This shift is corrected within this function, so that the actual
+  // maximum is identical to the MP parameter.
+  //  
+
+  // Numeric constants
+  Double_t invsq2pi = 0.3989422804014;   // (2 pi)^(-1/2)
+  Double_t mpshift  = -0.22278298;       // Landau maximum location
+  
+  // Control constants
+  Double_t np       = 100.0;             // Number of convolution steps
+  Double_t sc       =   5.0;             // Convolution extends to +-sc Gaussian sigmas
+  
+  // Variables
+  Double_t xx= 0.0;
+  Double_t mpc= 0.0;
+  Double_t fland = 0.0;
+  Double_t sum = 0.0;
+  Double_t xlow= 0.0;
+  Double_t xupp= 0.0;
+  Double_t step= 0.0;
+  Double_t i= 0.0;
+  
+  // MP shift correction
+  mpc = par[1] - mpshift * par[0]; 
+
+  // Range of convolution integral
+  xlow = x[0] - sc * par[3];
+  xupp = x[0] + sc * par[3];
+  
+  step = (xupp - xlow) / np;
+
+  // Convolution integral of Landau and Gaussian by sum
+  for (i = 1.0; i <= np/2; i++) {
+
+    xx    = xlow + (i-.5) * step;
+    if(par[0] > 0.0) fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];
+    sum  += fland * TMath::Gaus(x[0],xx,par[3]);
+    
+    xx    = xupp - (i-.5) * step;
+    if(par[0] > 0.0) fland = TMath::Landau(xx,mpc,par[0])*TMath::Exp(-par[4]*xx) / par[0];
+    sum  += fland * TMath::Gaus(x[0],xx,par[3]);
+
+  }
+
+  if(par[3] > 0.0) return (par[2] * step * sum * invsq2pi / par[3]);
+  else return 0.0;
 
 }
 //_____________________________________________________________________________
@@ -6526,7 +6780,7 @@ TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, const Double_t *fitrange, const Doubl
     ffit->SetParLimits(i,parlimitslo[i],parlimitshi[i]);
   }
   
-  his->Fit(funname,"RB0");                   // Fit within specified range, use ParLimits, do not plot
+  his->Fit(funname,"WWQRB0");                   // Fit within specified range, use ParLimits, do not plot
   
   ffit->GetParameters(fitparams);            // Obtain fit parameters
   for (i = 0; i < 4; i++) {
@@ -6538,115 +6792,45 @@ TF1 *AliTRDCalibraFit::LanGauFit(TH1 *his, const Double_t *fitrange, const Doubl
   return (ffit);                             // Return fit function
    
 }
-
 //_____________________________________________________________________________
-Int_t AliTRDCalibraFit::LanGauPro(const Double_t *params, Double_t &maxx, Double_t &fwhm) 
+TF1 *AliTRDCalibraFit::LanGauFitEx(TH1 *his, const Double_t *fitrange, const Double_t *startvalues
+                                      , const Double_t *parlimitslo, const Double_t *parlimitshi
+                                      , Double_t *fitparams, Double_t *fiterrors
+                                      , Double_t *chiSqr, Int_t *ndf) const
 {
   //
   // Function for the fit
   //
-
-  Double_t p;
-  Double_t x;
-  Double_t fy;
-  Double_t fxr;
-  Double_t fxl;
-  Double_t step;
-  Double_t l;
-  Double_t lold;
-
-  Int_t    i        = 0;
-  Int_t    maxcalls = 10000;
   
-  // Search for maximum
-  p    = params[1] - 0.1 * params[0];
-  step = 0.05 * params[0];
-  lold = -2.0;
-  l    = -1.0;
+  Int_t i;
+  Char_t funname[100];
   
-  while ((l != lold) && (i < maxcalls)) {
-    i++;
-    lold = l;
-    x    = p + step;
-    l    = LanGauFun(&x,params);
-    if (l < lold) {
-      step = -step / 10.0;
-    }
-    p += step;
+  TF1 *ffitold = (TF1 *) gROOT->GetListOfFunctions()->FindObject(funname);
+  if (ffitold) {
+    delete ffitold;
+  }  
+
+  TF1 *ffit    = new TF1(funname,LanGauFunEx,fitrange[0],fitrange[1],5);
+  ffit->SetParameters(startvalues);
+  ffit->SetParNames("Width","MP","Area","GSigma","Ex");
+  
+  for (i = 0; i < 5; i++) {
+    ffit->SetParLimits(i,parlimitslo[i],parlimitshi[i]);
   }
   
-  if (i == maxcalls) {
-    return (-1);
+  his->Fit(funname,"WWQRB0");                   // Fit within specified range, use ParLimits, do not plot
+  
+  ffit->GetParameters(fitparams);            // Obtain fit parameters
+  for (i = 0; i < 5; i++) {
+    fiterrors[i] = ffit->GetParError(i);     // Obtain fit parameter errors
   }
-  maxx = x;
-  fy = l / 2.0;
+  chiSqr[0] = ffit->GetChisquare();          // Obtain chi^2
+  ndf[0]    = ffit->GetNDF();                // Obtain ndf
 
-  // Search for right x location of fy  
-  p    = maxx + params[0];
-  step = params[0];
-  lold = -2.0;
-  l    = -1e300;
-  i    = 0;
-  
-  while ( (l != lold) && (i < maxcalls) ) {
-    i++;
-    
-    lold = l;
-    x = p + step;
-    l = TMath::Abs(LanGauFun(&x,params) - fy);
-    
-    if (l > lold)
-      step = -step/10;
- 
-    p += step;
-  }
-  
-  if (i == maxcalls)
-    return (-2);
-  
-  fxr = x;
-  
-  
-  // Search for left x location of fy
-  
-  p = maxx - 0.5 * params[0];
-  step = -params[0];
-  lold = -2.0;
-  l    = -1.0e300;
-  i    = 0;
-  
-  while ((l != lold) && (i < maxcalls)) {
-    i++;
-    lold = l;
-    x    = p + step;
-    l    = TMath::Abs(LanGauFun(&x,params) - fy);
-    if (l > lold) {
-      step = -step / 10.0;
-    }
-    p += step;
-  }
-  
-  if (i == maxcalls) {
-    return (-3);
-  }
-
-  fxl  = x;
-  fwhm = fxr - fxl;
-
-  return (0);
+  return (ffit);                             // Return fit function
+   
 }
-//_____________________________________________________________________________
-Double_t AliTRDCalibraFit::GausConstant(const Double_t *x, const Double_t *par)
-{
-  //
-  // Gaus with identical mean
-  //
 
-  Double_t gauss   = par[0] * TMath::Gaus(x[0],0.0,par[1])+par[2];
- 
-  return gauss;
-
-}
 
 
 
