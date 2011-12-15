@@ -23,7 +23,7 @@ class AliAnalysisFilter : public TNamed
     AliAnalysisFilter(const char* name, const char* title = "AnalysisFilter");
     AliAnalysisFilter(const AliAnalysisFilter& obj);
     AliAnalysisFilter& operator=(const AliAnalysisFilter& other);
-    virtual ~AliAnalysisFilter() {;}
+    virtual ~AliAnalysisFilter();
     virtual UInt_t IsSelected(TObject* obj);
     virtual UInt_t IsSelected(TList* obj);
     virtual Bool_t IsSelected(char* name);

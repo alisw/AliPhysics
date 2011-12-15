@@ -199,6 +199,7 @@ Bool_t AliAODInputHandler::FinishEvent()
 {
   // Finish event
   if (fMixingHandler) fMixingHandler->FinishEvent();
+  if (fEvent) fEvent->Reset();
   return kTRUE;
 }
 

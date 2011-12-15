@@ -55,6 +55,12 @@ AliAnalysisFilter::AliAnalysisFilter(const AliAnalysisFilter& obj):
     fCuts = obj.fCuts;
 }
 
+AliAnalysisFilter::~AliAnalysisFilter()
+{
+// Destructor
+   if (fCuts) fCuts->Delete("slow");
+   delete fCuts;
+}   
 
 AliAnalysisFilter& AliAnalysisFilter::operator=(const AliAnalysisFilter& other)
 {
