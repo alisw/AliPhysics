@@ -124,7 +124,12 @@ class AliAODTrack : public AliVTrack {
   virtual Bool_t   XvYvZv(Double_t x[3]) const { x[0] = Xv(); x[1] = Yv(); x[2] = Zv(); return kTRUE; }
 
   Double_t Chi2perNDF()  const { return fChi2perNDF; }
-  UShort_t GetTPCNcls()  const { return fTPCFitMap.CountBits();}
+  UShort_t GetTPCNcls()  const { 
+    UShort_t cl = 0;
+    cl = fTPCFitMap.CountBits();
+    if(cl==0)return fTPCClusterMap.CountBits();// backward compatibility
+    return cl;
+  }
   
   virtual Double_t M() const { return M(GetMostProbablePID()); }
   Double_t M(AODTrkPID_t pid) const;

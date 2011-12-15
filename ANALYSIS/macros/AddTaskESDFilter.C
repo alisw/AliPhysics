@@ -88,17 +88,17 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    electronID->SetTPCnSigmaCut(AliPID::kElectron, 3.);
 
    // standard cuts with very loose DCA
-   AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kFALSE); 
+   AliESDtrackCuts* esdTrackCutsH = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
    esdTrackCutsH->SetMaxDCAToVertexXY(2.4);
    esdTrackCutsH->SetMaxDCAToVertexZ(3.2);
    esdTrackCutsH->SetDCAToVertex2D(kTRUE);
 
    // standard cuts with tight DCA cut
-   AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+   AliESDtrackCuts* esdTrackCutsH2 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 
    // standard cuts with tight DCA but with requiring the first SDD cluster instead of an SPD cluster
    // tracks selected by this cut are exclusive to those selected by the previous cut
-   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(); 
+   AliESDtrackCuts* esdTrackCutsH3 = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(); 
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
    esdTrackCutsH3->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
  
@@ -107,27 +107,50 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
    esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
 
+   // Extra cuts for hybrids
+   // first the global tracks we want to take
+   AliESDtrackCuts* esdTrackCutsHTG = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE); 
+   esdTrackCutsHTG->SetName("Global Hybrid tracks, loose DCA");
+   esdTrackCutsHTG->SetMaxDCAToVertexXY(2.4);
+   esdTrackCutsHTG->SetMaxDCAToVertexZ(3.2);
+   esdTrackCutsHTG->SetDCAToVertex2D(kTRUE);
+   esdTrackCutsHTG->SetMaxChi2TPCConstrainedGlobal(36);
+   
+   // Than the complementary tracks which will be stored as global
+   // constraint, complement is done in the ESDFilter task
+   AliESDtrackCuts* esdTrackCutsHTGC = new AliESDtrackCuts(*esdTrackCutsHTG);
+   esdTrackCutsHTGC->SetName("Global Constraint Hybrid tracks, loose DCA no it requirement");
+   esdTrackCutsHTGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
+   //   esdTrackCutsHTGC->SetRequireITSRefit(kFALSE)
+
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
-   // 1
+   // 1, 1<<0
    trackFilter->AddCuts(esdTrackCutsL);
-   // 2
+   // 2, 1<<1
    trackFilter->AddCuts(esdTrackCutsITSsa);
-   // 4
+   // 4, 1<<2
    trackFilter->AddCuts(itsStrong);
    itsStrong->SetFilterMask(1);        // AND with Standard track cuts 
-   // 8
+   // 8, 1<<3
    trackFilter->AddCuts(electronID);
    electronID->SetFilterMask(4);       // AND with Pixel Cuts
-   // 16
+   // 16, 1<<4
    trackFilter->AddCuts(esdTrackCutsH);
-   // 32
+   // 32, 1<<5
    trackFilter->AddCuts(esdTrackCutsH2);
-   // 64
+   // 64, 1<<6
    trackFilter->AddCuts(esdTrackCutsH3);
    // 128 , 1 << 7
    trackFilter->AddCuts(esdTrackCutsTPCOnly);
    if(enableTPCOnlyAODTracks)esdfilter->SetTPCOnlyFilterMask(128);
+   // 256, 1 << 8 Global Hybrids
+   trackFilter->AddCuts(esdTrackCutsHTG);
+   esdfilter->SetHybridFilterMaskGlobalConstrainedGlobal((1<<8)); // these normal global tracks will be marked as hybrid    
+   // 512, 1<< 9 GlobalConstraint Hybrids
+   trackFilter->AddCuts(esdTrackCutsHTGC);
+   esdfilter->SetGlobalConstrainedFilterMask(1<<9); // these tracks are written out as global constrained tracks 
+   esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE); // write only the complement
 
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
