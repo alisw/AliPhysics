@@ -474,6 +474,10 @@ public:
   virtual Int_t        EventIndexForPHOSCell(Int_t)    const {return 0;}
   virtual Int_t        EventIndexForEMCALCell(Int_t)   const {return 0;} 
   
+  void SetDetectorStatus(ULong_t detMask) {fDetectorStatus|=detMask;}
+  void ResetDetectorStatus(ULong_t detMask) {fDetectorStatus&=~detMask;}
+  ULong_t GetDetectorStatus() const {return fDetectorStatus;}
+  Bool_t IsDetectorOn(ULong_t detMask) const {return (fDetectorStatus&detMask)>0;}
 
 protected:
   AliESDEvent(const AliESDEvent&);
@@ -526,7 +530,10 @@ protected:
                              //  and T0spread as written in OCDB
   AliCentrality *fCentrality; //! Centrality for AA collision
   AliEventplane *fEventplane; //! Event plane for AA collision
-  ClassDef(AliESDEvent,16)  //ESDEvent class 
+
+  ULong_t fDetectorStatus; // set detector event status bit for good event selection
+
+  ClassDef(AliESDEvent,17)  //ESDEvent class 
 };
 #endif 
 

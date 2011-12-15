@@ -152,7 +152,8 @@ AliESDEvent::AliESDEvent():
   fUseOwnList(kFALSE),
   fTOFHeader(0),
   fCentrality(0),
-  fEventplane(0)
+  fEventplane(0),
+  fDetectorStatus(0xFFFFFFFF)
   #ifdef MFT_UPGRADE
 //  , fESDMFT(0)
   #endif
@@ -196,7 +197,8 @@ AliESDEvent::AliESDEvent(const AliESDEvent& esd):
   fUseOwnList(esd.fUseOwnList),
   fTOFHeader(new AliTOFHeader(*esd.fTOFHeader)),
   fCentrality(new AliCentrality(*esd.fCentrality)),
-  fEventplane(new AliEventplane(*esd.fEventplane))
+  fEventplane(new AliEventplane(*esd.fEventplane)),
+  fDetectorStatus(esd.fDetectorStatus)
   #ifdef MFT_UPGRADE
 //  , fESDMFT(new AliESDMFT(*esd.fESDMFT))
   #endif
@@ -333,6 +335,8 @@ AliESDEvent & AliESDEvent::operator=(const AliESDEvent& source) {
 
   fConnected  = source.fConnected;
   fUseOwnList = source.fUseOwnList;
+  
+  fDetectorStatus = source.fDetectorStatus;
 
   return *this;
 }
