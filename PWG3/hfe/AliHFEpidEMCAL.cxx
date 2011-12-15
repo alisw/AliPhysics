@@ -24,6 +24,7 @@
 //
 //
 #include <TMath.h>
+#include <TRandom3.h>
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 
@@ -189,25 +190,27 @@ Int_t AliHFEpidEMCAL::IsSelected(const AliHFEpidObject *track, AliHFEpidQAmanage
 //__________________________________________________________________________
 Double_t AliHFEpidEMCAL::CalEopCutMax(const AliVParticle *const track, Int_t flageop) const
 {
+ // max nSig cuts for 10d
+
   double maxCut = 0.0;
   const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
   if(esdtrack==NULL)return maxCut;
-  double Pt = esdtrack->Pt();
+  double pt = esdtrack->Pt();
 
   if(flageop<0.5)
     { //<--- new para for updated non-liniarity
      double meanP[3] = {1.056,1.169,0.1339}; 
      double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
-     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
-     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
+     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
+     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      maxCut = mean+3.0*sig; 
     }
   else
     {
      double meanP[3] = {0.99,1.299,0.35}; 
      double sigP[3] = {4.11e-02,1.588e-01,2.664e-01}; 
-     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
-     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
+     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
+     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      maxCut = mean+3.0*sig; 
     }
      return maxCut;
@@ -215,18 +218,19 @@ Double_t AliHFEpidEMCAL::CalEopCutMax(const AliVParticle *const track, Int_t fla
 
 Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t flageop) const
 {
+ // mim nsig cuts for 10d
   double mimCut = 0.0;
   const AliESDtrack *esdtrack = dynamic_cast<const AliESDtrack *>(track);
   if(esdtrack==NULL)return mimCut;
-  double Pt = esdtrack->Pt();
+  double pt = esdtrack->Pt();
 
   if(flageop<0.5) // real
      { 
       //printf("real"); 
      double meanP[3] = {1.056,1.169,0.1339}; 
      double sigP[3] = {3.37e-05,1.298e-04,1.403e-04}; 
-     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
-     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
+     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
+     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      mimCut = mean-2.0*sig;
     }
    else // MC
@@ -234,8 +238,8 @@ Double_t AliHFEpidEMCAL::CalEopCutMim(const AliVParticle *const track, Int_t fla
       //printf("MC"); 
      double meanP[3] = {0.99,1.299,0.35}; 
      double sigP[3] = {4.11e-02,1.588e-01,2.664e-01}; 
-     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*Pt); 
-     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*Pt); 
+     double mean = meanP[0]*tanh(meanP[1]+meanP[2]*pt); 
+     double sig = sigP[0]/tanh(sigP[1]+sigP[2]*pt); 
      mimCut = mean-2.0*sig;
     }
      return mimCut;
@@ -259,6 +263,16 @@ Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) 
 
        matchclsE = cluster->E();
   
+   //printf("energy org  %f \n",matchclsE);
+   //printf("Label %d \n",esdtrack->GetLabel());
+   if(esdtrack->GetLabel()>-1)
+     {
+            double energyMC = cluster->E();
+	    TRandom3 *smear = new TRandom3(icl); 
+	    matchclsE = smear->Gaus(energyMC,0.07 * TMath::Sqrt(energyMC));
+     } 
+
+   //printf("energy af  %f \n",matchclsE);
 
    if(matchclsE<9999.0) feop = matchclsE/esdtrack->P();
 
