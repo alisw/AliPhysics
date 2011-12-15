@@ -24,7 +24,6 @@
 //
 //
 #include <TMath.h>
-#include <TRandom3.h>
 #include "AliESDInputHandler.h"
 #include "AliESDpid.h"
 
@@ -262,17 +261,6 @@ Double_t AliHFEpidEMCAL::MomentumEnergyMatchV2(const AliVParticle *const track) 
    if(!cluster->IsEMCAL()) {return feop;}
 
        matchclsE = cluster->E();
-  
-   //printf("energy org  %f \n",matchclsE);
-   //printf("Label %d \n",esdtrack->GetLabel());
-   if(esdtrack->GetLabel()>-1)
-     {
-            double energyMC = cluster->E();
-	    TRandom3 *smear = new TRandom3(icl); 
-	    matchclsE = smear->Gaus(energyMC,0.07 * TMath::Sqrt(energyMC));
-     } 
-
-   //printf("energy af  %f \n",matchclsE);
 
    if(matchclsE<9999.0) feop = matchclsE/esdtrack->P();
 
