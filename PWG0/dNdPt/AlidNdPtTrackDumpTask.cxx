@@ -25,6 +25,7 @@
 #include "TList.h"
 #include "TFile.h"
 #include "TMatrixD.h"
+#include "TRandom.h"
 
 #include "AliHeader.h"  
 #include "AliGenEventHeader.h"  
@@ -285,6 +286,7 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
   // check event cuts
   if(isEventOK && isEventTriggered)
   {
+    TRandom random;
 
     for (Int_t iTrack = 0; iTrack < esdEvent->GetNumberOfTracks(); iTrack++)
     {
@@ -293,6 +295,9 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       if(track->Charge()==0) continue;
       if(!esdTrackCuts->AcceptTrack(track)) continue;
       if(!accCuts->AcceptTrack(track)) continue;
+
+      // downscale low-pT tracks
+      if(TMath::Exp(2*track->Pt())<1000*random.Rndm()) continue;
 
       // Dump to the tree 
       // vertex
@@ -606,15 +611,17 @@ void AlidNdPtTrackDumpTask::Process(AliESDEvent *const esdEvent, AliMCEvent * co
       Int_t mult = vtxESD->GetNContributors();
       Double_t bz = esdEvent->GetMagneticField();
       Double_t runNumber = esdEvent->GetRunNumber();
+      Double_t evtTimeStamp = esdEvent->GetTimeStamp();
 
       //
       if(!fTreeSRedirector) return;
       (*fTreeSRedirector)<<"dNdPtTree"<<
         "runNumber="<<runNumber<<
+        "evtTimeStamp="<<evtTimeStamp<<
         "Bz="<<bz<<
-        "vertX="<<vert[0]<<
-        "vertY="<<vert[1]<<
-        "vertZ="<<vert[2]<<
+	"vertX="<<vert[0]<<
+	"vertY="<<vert[1]<<
+	"vertZ="<<vert[2]<<
         "mult="<<mult<<
         "esdTrack.="<<track<<
         "extTPCInnerC.="<<tpcInnerC<<
