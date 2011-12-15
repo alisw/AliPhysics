@@ -22,6 +22,7 @@ AliEmcalSetupTask::AliEmcalSetupTask() :
   AliAnalysisTaskSE(),
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
+  fGeoPath("."),
   fEsdEv(0),
   fIsInit(kFALSE)
 {
@@ -33,6 +34,7 @@ AliEmcalSetupTask::AliEmcalSetupTask(const char *name) :
   AliAnalysisTaskSE(name),
   fOcdbPath(),
   fOadbPath("$ALICE_ROOT/OADB/EMCAL"),
+  fGeoPath("."),
   fEsdEv(0),
   fIsInit(kFALSE)
 {
@@ -93,11 +95,11 @@ void AliEmcalSetupTask::UserExec(Option_t *)
 
   TGeoManager *geo = AliGeomManager::GetGeometry();
   if (!geo) {
-    TString fname("geometry_2010.root");
+    TString fname(Form("%s/geometry_2010.root", fGeoPath.Data()));
     if (!is2010)
-      fname = "geometry_2011.root";
+      fname = Form("%s/geometry_2011.root", fGeoPath.Data());
     if (gSystem->AccessPathName(fname)!=0)
-      fname = "geometry.root";
+      fname = Form("%s/geometry.root", fGeoPath.Data());
     if (gSystem->AccessPathName(fname)==0) {
       AliInfo(Form("Loading geometry from %s", fname.Data()));
       AliGeomManager::LoadGeometry(fname);
