@@ -17,6 +17,7 @@ void ConfigCalibTrain(Int_t run, const char *ocdb="raw://"){
   printf("setting run to %d\n",run);
   AliCDBManager::Instance()->SetDefaultStorage(ocdb);
   AliCDBManager::Instance()->SetRun(run); 
+  AliCDBManager::Instance()->InitFromSnapshot("OCDB.root");
 
   // magnetic field
   if ( !TGeoGlobalMagField::Instance()->GetField() ) {
