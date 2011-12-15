@@ -271,7 +271,7 @@ void AliEveTRDTrackList::AddStandardContent()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
 
-  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so"};
+  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWG1.so"};
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;
@@ -279,35 +279,28 @@ void AliEveTRDTrackList::AddStandardContent()
     return;
   }
 
-  const Char_t *fgkTRDPWG1taskClassName[AliTRDpwg1Helper::kNTRDQATASKS] = {
-    "AliTRDcheckESD"
-    ,"AliTRDinfoGen"
-    ,"AliTRDcheckDET"
-    ,"AliTRDefficiency"
-    ,"AliTRDresolution"
-    ,"AliTRDcheckPID"
-    ,"AliTRDv0Monitor"
-  };
+  const Char_t *taskClassName[] = {"AliTRDcheckDET", "AliTRDresolution"};
   AliTRDrecoTask *task(NULL);
   TList *fPlots(NULL);
-  for(Int_t it=2; it<AliTRDpwg1Helper::kNTRDQATASKS; it++){
-    TClass c(fgkTRDPWG1taskClassName[it]);
+  for(Int_t it=0; it<2; it++){
+    TClass c(taskClassName[it]);
     task = (AliTRDrecoTask*)c.New();
+    task->InitFunctorList();
     task->SetMCdata(kFALSE);
     if(!(fPlots = task->GetPlotFunctors())){
-      //AliWarning(Form("No Plot functors defined for task \"%s\"", fgkTRDtaskClassName[it]));
+      AliWarning(Form("No Track functors defined for task \"%s\"", taskClassName[it]));
       delete task;
       continue;
     }
     if(!(task->Histos())){
-      //AliWarning(Form("No Ref Histograms defined for task \"%s\"", fgkTRDtaskClassName[it]));
+      AliWarning(Form("No Ref Histograms defined for task \"%s\"", taskClassName[it]));
       delete task;
       continue;
     }
 
     // export task to CINT and add functions
-    gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", fgkTRDPWG1taskClassName[it], task->GetName(), fgkTRDPWG1taskClassName[it], (void*)task));
-    TIter iter(fPlots); TMethodCall *m = 0x0;
+    gROOT->ProcessLine(Form("%s* %s = (%s*)%p;", taskClassName[it], task->GetName(), taskClassName[it], (void*)task));
+    TIter iter(fPlots); TMethodCall *m(NULL);
     while((m = dynamic_cast<TMethodCall*>(iter()))){
       AddMacroFast("", Form("%s->%s", task->GetName(), m->GetMethodName()), kSingleTrackHisto);
     }
@@ -354,7 +347,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
   fHistoDataSelected = 0;
 
 
-  TMacroData* macro = 0;
+  TMacroData* macro(NULL);
 
   TString* procCmds = new TString[procIterator->GetEntries()];
   AliEveTRDTrackListMacroType* mProcType = new AliEveTRDTrackListMacroType[procIterator->GetEntries()];
@@ -476,7 +469,7 @@ Bool_t AliEveTRDTrackList::ApplyProcessMacros(const TList* selIterator, const TL
       // Single track histo
       if (mProcType[i] == kSingleTrackHisto){
         if(histos) histos[histoIndex++] = (TH1*)gROOT->ProcessLineSync(procCmds[i]);
-       // Correlated tracks histo
+        // Correlated tracks histo
       } else if (mProcType[i] == kCorrelTrackHisto) {
         // Loop over all pairs behind the current one - together with the other loop this will be a loop
         // over all pairs. We have a pair of tracks, if and only if both tracks of the pair are selected (Rnr-state)

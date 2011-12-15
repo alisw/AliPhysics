@@ -234,13 +234,15 @@ void AliEveTRDClusters::Load(const Char_t *w) const
   if(strcmp(w, "hit")==0) typ = 0;
   else if(strcmp(w, "dig")==0) typ = 1;
   else if(strcmp(w, "cls")==0) typ = 2;
-  else if(strcmp(w, "all")==0) typ = 3;
+  else if(strcmp(w, "tlt")==0) typ = 3;
+  else if(strcmp(w, "all")==0) typ = 4;
   else{
     AliInfo("The following arguments are accepted:");
     AliInfo("   \"hit\" : loading of MC hits");
     AliInfo("   \"dig\" : loading of digits");
     AliInfo("   \"cls\" : loading of reconstructed clusters");
-    AliInfo("   \"all\" : loading of MC hits+digits+clusters");
+    AliInfo("   \"tlt\" : loading of online tracklets");
+    AliInfo("   \"all\" : loading everything available");
     return;
   }
 
@@ -252,34 +254,38 @@ void AliEveTRDClusters::Load(const Char_t *w) const
   Int_t det = c->GetDetector();
   AliEveTRDLoader *loader(NULL);
   switch(typ){
-  case 3:
+  case 4:
     loader = new AliEveTRDLoaderSim("MC");
-    if(!loader->Open("galice.root")) delete loader;
+    if(!loader->Open("galice.root")){delete loader; loader=NULL;}
     else{
       loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
       break;
     }
   case 0:  
     loader = new AliEveTRDLoader("Hits");
-    if(!loader->Open("TRD.Hits.root")) delete loader;
+    if(!loader->Open("TRD.Hits.root")){delete loader; loader=NULL;}
     else{
-      loader->SetDataType(AliEveTRDLoader::kTRDHits);
-      if(typ!=3) break;
+      if(typ!=4) break;
     }
   case 1:
     if(!loader) loader = new AliEveTRDLoader("Digits");
     if(!loader->Open("TRD.Digits.root")){
-      if(typ==1) delete loader;
+      if(typ==1){delete loader; loader=NULL;}
     } else {
-      loader->SetDataType(AliEveTRDLoader::kTRDDigits);
-      if(typ!=3) break;
+      if(typ!=4) break;
     }
   case 2:
     if(!loader) loader = new AliEveTRDLoader("Clusters");
     if(!loader->Open("TRD.RecPoints.root")){
-      if(typ ==2) delete loader;
+      if(typ ==2){delete loader; loader=NULL;}
     } else {
-      loader->SetDataType(AliEveTRDLoader::kTRDClusters);
+      if(typ!=4) break;
+    }
+  case 3:
+    if(!loader) loader = new AliEveTRDLoader("Tracklets");
+    if(!loader->Open("TRD.Tracklets.root")){
+      if(typ ==3) {delete loader; loader=NULL;}
+    } else {
       break;
     }
   default: return;
@@ -288,8 +294,7 @@ void AliEveTRDClusters::Load(const Char_t *w) const
 
   loader->AddChambers(AliTRDgeometry::GetSector(det),AliTRDgeometry::GetStack(det), AliTRDgeometry::GetLayer(det));
   // load first event
-  loader->GoToEvent(AliEveEventManager::GetCurrent()->GetEventId());
-  
+  if(!loader->GoToEvent(AliEveEventManager::GetCurrent()->GetEventId())) AliWarning(Form("No data loaded for event %d", AliEveEventManager::GetCurrent()->GetEventId()));
   // register loader with alieve
   gEve->AddElement(loader->GetChamber(det), *(BeginParents()));
   //loader->SpawnEditor();
@@ -307,10 +312,7 @@ AliEveTRDTracklet::AliEveTRDTracklet(AliTRDseedV1 *trklt):TEveLine()
   // Constructor.
   SetName("tracklet");
   
-  if(!gGeoManager){ 
-    AliEveEventManager::AssertGeometry();
-    AliInfo(Form("gGeo[%p] Closed[%c]", (void*)gGeoManager, gGeoManager->IsClosed()?'y':'n'));
-  }
+  if(!gGeoManager) AliEveEventManager::AssertGeometry();
   SetUserData(trklt);
   // init tracklet line
   Int_t sec = AliTRDgeometry::GetSector(trklt->GetDetector());

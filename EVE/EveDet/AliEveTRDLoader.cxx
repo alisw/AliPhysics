@@ -141,51 +141,48 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
 
   Unload();
 
+  Int_t ndt(0);
+  const Char_t *tn[] = {"TreeH", "TreeD", "TreeR", "tracklets"};
+  const Char_t *fn[] = {"Hits", "Digits", "RecPoints", "Tracklets"};
   TTree *t(NULL); TFile *f(NULL);
-  if(!(f = TFile::Open(Form("%s/%s", fDir.Data(), fFilename.Data())))){
-    AliWarning(Form("File not found \"%s/%s\".", fDir.Data(), fFilename.Data()));
-    return kFALSE;
-  }
-  if(!f->cd(Form("Event%d", ev))){
-    AliError(Form("Event[%d] not found in file \"%s/%s\".", ev, fDir.Data(), fFilename.Data()));
+  for(Int_t idt(0); idt<4; idt++){
+    if(idt==0 && !(fDataType&kTRDHits)) continue;
+    else if(idt==1 && !(fDataType&kTRDDigits)) continue;
+    else if(idt==2 && !(fDataType&kTRDClusters)) continue;
+    else if(idt==3 && !(fDataType&kTRDTracklets)) continue;
+
+    if(!(f = TFile::Open(Form("%s/TRD.%s.root", fDir.Data(), fn[idt])))){
+      AliWarning(Form("File not found \"%s/TRD.%s.root\".", fDir.Data(), fn[idt]));
+      continue;
+    }
+    if(!f->cd(Form("Event%d", ev))){
+      AliError(Form("Event[%d] not found in file \"%s/TRD.%s.root\".", ev, fDir.Data(), fn[idt]));
+      f->Close(); //delete f;
+      continue;
+    }
+
+    if(!(t = (TTree*)gDirectory->Get(tn[idt]))) AliError(Form("Tree[%s] not found for Event[%d].", tn[idt], ev));
+    else{
+      switch(idt){
+      case 0:
+        if(LoadHits(t)) ndt++;
+        break;
+      case 1:
+        if(LoadDigits(t)) ndt++;
+        break;
+      case 2:
+        if(LoadClusters(t)) ndt++;
+        break;
+      case 3:
+        if(LoadTracklets(t)) ndt++;
+        break;
+      }
+    }
     f->Close(); //delete f;
-    return kFALSE;
   }
-
-  if(fDataType&kTRDHits){
-    if(!(t = (TTree*)gDirectory->Get("TreeH"))){
-      AliError(Form("Tree[TreeH] not found for Event[%d].", ev));
-      return kFALSE;
-    }
-    if(!LoadHits(t)) return kFALSE;
-  }
-  if(fDataType&kTRDDigits){
-    if(!(t = (TTree*)gDirectory->Get("TreeD"))){
-      AliError(Form("Tree[TreeD] not found for Event[%d].", ev));
-      return kFALSE;
-    }
-    if(!LoadDigits(t)) return kFALSE;
-  }
-  if(fDataType&kTRDClusters){
-    if(!(t = (TTree*)gDirectory->Get("TreeR"))){
-      AliError(Form("Tree[TreeR] not found for Event[%d].", ev));
-      return kFALSE;
-    }
-    if(!LoadClusters(t)) return kFALSE;
-  }
-  if(fDataType&kTRDTracklets){
-    if(!(t = (TTree*)gDirectory->Get("tracklets"))){
-      AliError(Form("Tree[tracklets] not found for Event[%d].", ev));
-      return kFALSE;
-    }
-    if(!LoadTracklets(t)) return kFALSE;
-  }// else AliWarning("Please select first the type of data that you want to monitor and then hit the \"Load\" button.");
-
-  f->Close(); //delete f;
-
   gEve->Redraw3D();
 
-  return kTRUE;
+  return Bool_t(ndt);
 }
 
 
@@ -197,7 +194,7 @@ Bool_t AliEveTRDLoader::LoadHits(TTree *tH)
   AliInfo("Loading ...");
   if(!fChildren.size()) return kFALSE;
 
-  AliEveTRDChamber *chmb = 0x0;
+  AliEveTRDChamber *chmb(NULL);
   TClonesArray *hits = new TClonesArray("AliTRDhit", 100);
   tH->SetBranchAddress("TRD", &hits);
   Int_t idx, nhits;
@@ -211,7 +208,7 @@ Bool_t AliEveTRDLoader::LoadHits(TTree *tH)
       chmb = GetChamber(det);
       if(chmb) chmb->LoadHits(hits, idx);
       else{
-        AliTRDhit *hit = 0x0;
+        AliTRDhit *hit(NULL);
         while(idx < nhits){
           hit = (AliTRDhit*)hits->UncheckedAt(idx);
           if(hit->GetDetector() != det) break;
@@ -233,7 +230,7 @@ Bool_t AliEveTRDLoader::LoadClusters(TTree *tC)
   AliInfo("Loading ...");
   if(!fChildren.size()) return kFALSE;
 
-  TObjArray *clusters = new TObjArray();
+  TObjArray *clusters(NULL);
   tC->SetBranchAddress("TRDcluster", &clusters);
 
   AliEveTRDChamber *chmb(NULL);
@@ -257,14 +254,11 @@ Bool_t AliEveTRDLoader::LoadDigits(TTree *tD)
 
   if(!fChildren.size()) return kFALSE;
 
-  AliEveTRDChamber *chmb;
+  AliEveTRDChamber *chmb(NULL);
   AliTRDdigitsManager dm;
   dm.ReadDigits(tD);
   for(int idet=0; idet<AliTRDgeometry::kNdet; idet++){
     if(!(chmb=GetChamber(idet))) continue;
-    //  digits = dm.GetDigits(idet);
-    //  if(!digits) continue;
-    //  chmb->LoadDigits(digits);
     chmb->LoadDigits(&dm);
   }
   return kTRUE;
@@ -280,9 +274,9 @@ Bool_t AliEveTRDLoader::LoadTracklets(TTree *trklTree)
   if(!fChildren.size()) return kFALSE;
 
 
-  AliEveTRDChamber *chmb = 0x0;
+  AliEveTRDChamber *chmb(NULL);
 
-  for(int idet=0; idet<540; idet++){
+  for(int idet=0; idet<AliTRDgeometry::kNdet; idet++){
     if((chmb = GetChamber(idet)))
       chmb->LoadTracklets(trklTree);
   }
@@ -298,43 +292,36 @@ Bool_t AliEveTRDLoader::Open(const char *filename, const char *dir)
 
   fFilename = filename;
   fDir = dir;
-  Int_t count = 0;
-  count += fDataType&kTRDHits;
-  count += fDataType&kTRDDigits;
-  count += fDataType&kTRDClusters;
-  count += fDataType&kTRDTracklets;
-
   TObjArray *so = fFilename.Tokenize(".");
 
   if(((TObjString*)(*so)[0])->GetString().CompareTo("TRD") != 0){
-    AliError("Filename didn't fulfill naming conventions. No TRD data will be loaded.");
+    AliError(Form("Filename %s do not fulfill AliRoot naming conventions.", filename));
     return kFALSE;
   }
-
+  if(gSystem->AccessPathName(Form("%s/%s", dir, filename))){
+    AliError(Form("Missing file %s/%s", dir, filename));
+    return kFALSE;
+  }
   if(((TObjString*)(*so)[1])->GetString().CompareTo("Hits") == 0){
-    if(count && !(fDataType&kTRDHits)){ 
-      AliWarning("Data type set to HITS according to file name. Previous settings will be overwritten.");
-      fDataType = 0; 
+    if(!(fDataType&kTRDHits)){
+      AliInfo("Data type set to HITS according to file name.");
+      fDataType|=kTRDHits;
     }
-    fDataType|=kTRDHits;
   } else   if(((TObjString*)(*so)[1])->GetString().CompareTo("Digits") == 0){
-    if(count && !(fDataType&kTRDDigits)){ 
-      AliWarning("Data type set to DIGITS according to file name. Previous settings will be overwritten.");
-      fDataType = 0; 
+    if(!(fDataType&kTRDDigits)){
+      AliInfo("Data type set to DIGITS according to file name.");
+      fDataType|=kTRDDigits;
     }
-    fDataType|=kTRDDigits;
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("RecPoints") == 0){
-    if(count && !(fDataType&kTRDClusters)){ 
-      AliWarning("Data type set to CLUSTERS according to file name. Previous settings will be overwritten.");
-      fDataType = 0; 
+    if(!(fDataType&kTRDClusters)){
+      AliInfo("Data type set to CLUSTERS according to file name.");
+      fDataType|=kTRDClusters;
     }
-    fDataType|=kTRDClusters;  
   } else if(((TObjString*)(*so)[1])->GetString().CompareTo("Tracklets") == 0){
-    if(count && !(fDataType&kTRDTracklets)){ 
-      AliWarning("Data type set to TRACKLETS according to file name. Previous settings will be overwritten.");
-      fDataType = 0; 
+    if(!(fDataType&kTRDTracklets)){
+      AliInfo("Data type set to TRACKLETS according to file name.");
+      fDataType|=kTRDTracklets;
     }
-    fDataType|=kTRDTracklets; 
   } else {
     AliError("Filename didn't fulfill naming conventions. No data will be loaded.");
     return kFALSE;
