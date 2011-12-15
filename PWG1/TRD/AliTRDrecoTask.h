@@ -27,9 +27,9 @@ class TList;
 class TObjArray;
 class TTreeSRedirector;
 class AliTRDtrackV1;
-
 class AliTRDrecoTask : public AliAnalysisTaskSE 
 {
+friend class AliEveTRDTrackList;
 public:
   enum AliTRDrecoSteeringBits{
     kMCdata       = BIT(18)
@@ -76,7 +76,7 @@ public:
 
 protected:
   static TTreeSRedirector* DebugStream() { return fgDebugStream;}
-  void           InitFunctorList();
+  virtual void   InitFunctorList();
   void           Adjust(TF1 *f, TH1 * const h);
   Bool_t         HasFunctorList() const { return fPlotFuncList != NULL; }
   Char_t                fNameId[10];       // unique identifier of task particularity

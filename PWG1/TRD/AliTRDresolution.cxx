@@ -334,11 +334,11 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
     AliDebug(4, "No Track defined.");
     return NULL;
   }
-  if(TMath::Abs(fkESD->GetTOFbc()) > 1){
+  if(fkESD && TMath::Abs(fkESD->GetTOFbc()) > 1){
     AliDebug(4, Form("Track with BC_index[%d] not used.", fkESD->GetTOFbc()));
     return NULL;
   }
-  if(fPt<fPtThreshold){
+  if(fkESD && fPt<fPtThreshold){
     AliDebug(4, Form("Track with pt[%6.4f] under threshold.", fPt));
     return NULL;
   }
@@ -436,7 +436,11 @@ TH1* AliTRDresolution::PlotCluster(const AliTRDtrackV1 *track)
   }
   if(clInfoArr) delete clInfoArr;
 
-  return NULL;//H->Projection(kEta, kPhi);
+  if(!track) return NULL;
+  // special care for EVE usage
+  TH1 *h(NULL);
+  if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+  return H->Projection(kYrez);
 }
 
 
@@ -456,7 +460,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     AliDebug(4, "No Track defined.");
     return NULL;
   }
-  if(TMath::Abs(fkESD->GetTOFbc())>1){
+  if(fkESD && TMath::Abs(fkESD->GetTOFbc())>1){
     AliDebug(4, Form("Track with BC_index[%d] not used.", fkESD->GetTOFbc()));
     //return NULL;
   }
@@ -505,7 +509,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
       val[kZrez] = TMath::ATan((fTracklet->GetYref(1) - exb)/(1+fTracklet->GetYref(1)*exb));
     }*/
     val[kNdim] = fTracklet->GetdQdl()*2.e-3;
-    val[kNdim+1] = fEvent->GetMultiplicity();
+    val[kNdim+1] = fEvent?fEvent->GetMultiplicity():0;
     val[kNdim+2] = 1.e2*fTracklet->GetTBoccupancy()/AliTRDseedV1::kNtb;
     Int_t n = fTracklet->GetChargeGaps(sz, pos, ntbGap);
     val[kNdim+3] = 0.; for(Int_t igap(0); igap<n; igap++) val[kNdim+3] += sz[igap];
@@ -557,7 +561,11 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
         << "\n";
     }
   }
-  return NULL;//H->Projection(kEta, kPhi);
+  if(!track) return NULL;
+  // special care for EVE usage
+  TH1 *h(NULL);
+  if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+  return H->Projection(kYrez);
 }
 
 
@@ -580,6 +588,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
     return NULL;
   }
   //fkTrack->Print();
+  TH1 *h(NULL); // EVE projection
   // check container
   THnSparseI *H=(THnSparseI*)fContainer->At(kTrackIn);
   if(!H){
@@ -596,21 +605,30 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   AliTRDseedV1 *fTracklet(fkTrack->GetTracklet(0));
   if(!fTracklet){
     AliDebug(3, "No Tracklet in ly[0]. Skip track.");
-    return NULL;
+    if(!track) return NULL;
+    // special care for EVE usage
+    if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+    return H->Projection(kYrez);
   }
   if(!fTracklet->IsOK() || !fTracklet->IsChmbGood()){
     AliDebug(3, "Tracklet or Chamber not OK. Skip track.");
-    return NULL;
+    if(!track) return NULL;
+    // special care for EVE usage
+    if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+    return H->Projection(kYrez);
   }
   // check radial position
   Double_t x = tin->GetX();
   if(TMath::Abs(x-fTracklet->GetX())>1.e-3){
     AliDebug(1, Form("Tracklet did not match Track. dx[cm]=%+4.1f", x-fTracklet->GetX()));
-    return NULL;
+    if(!track) return NULL;
+    // special care for EVE usage
+    if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+    return H->Projection(kYrez);
   }
   //printf("USE y[%+f] dydx[%+f]\n", fTracklet->GetYfit(0), fTracklet->GetYfit(1));
 
-  Int_t bc(fkESD->GetTOFbc()/2);
+  Int_t bc(fkESD?fkESD->GetTOFbc()/2:0);
   const Double_t *parR(tin->GetParameter());
   Double_t dyt(fTracklet->GetYfit(0)-parR[0]), dzt(fTracklet->GetZfit(0)-parR[1]),
             phit(fTracklet->GetYfit(1)),
@@ -639,7 +657,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kPrez]        = dphi*TMath::RadToDeg();
   val[kNdim]        = fTracklet->GetDetector();
   val[kNdim+1]      = dx;
-  val[kNdim+2]      = fEvent->GetBunchFill();
+  val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
   H->Fill(val);
   if(DebugLevel()>=3){
     (*DebugStream()) << "trackIn"
@@ -648,7 +666,10 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
       << "\n";
   }
 
-  return NULL; // H->Projection(kEta, kPhi);
+  if(!track) return NULL;
+  // special care for EVE usage
+    if((h = (TH1*)gDirectory->Get(Form("%s_proj_%d", H->GetName(), kYrez)))) delete h;
+    return H->Projection(kYrez);
 }
 
 /*
