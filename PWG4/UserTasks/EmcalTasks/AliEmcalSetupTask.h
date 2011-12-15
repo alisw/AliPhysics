@@ -17,12 +17,14 @@ class AliEmcalSetupTask : public AliAnalysisTaskSE {
   virtual ~AliEmcalSetupTask();
 
   void UserExec(Option_t *option);
+  void SetGeoPath(const char *n)  { fGeoPath  = n; }
   void SetOadbPath(const char *n) { fOadbPath = n; }
   void SetOcdbPath(const char *n) { fOcdbPath = n; }
 
  protected:
   TString            fOcdbPath;        // path to ocdb (def=none)
   TString            fOadbPath;        // path to oadb
+  TString            fGeoPath;         // path to geometry
   AliESDEvent       *fEsdEv;           //!esd event
   Bool_t             fIsInit;          //!=true then already initialized 
 
