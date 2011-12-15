@@ -3,7 +3,7 @@
 # Script to merge objects coming out of the calibration train:
 # Arguments:
 #    1 - directory on which to look for the files to be merged 
-#    2 - run number
+#    2 - pattern
 #    3 - OCDB output path
 
 # example:
@@ -11,8 +11,13 @@
 
 #ALIEN setting
 # $1 = directory where to perform the find 
-# $2 = run number
+# $2 = pattern
 # $3 = OCDB path
+
+if [ -f Run0_999999999_v3_s0.root ]; then
+    mkdir -p TPC/Calib/Correction
+    mv Run0_999999999_v3_s0.root TPC/Calib/Correction/
+fi
 
 echo ">>>>>>> Running AliRoot to merge calib objects found in $1 with pattern AliESDfriends_v1.root"
 aliroot -l -b -q merge.C\(\"$1\",\"AliESDfriends_v1.root\"\) 2>&1 | tee merge.log
