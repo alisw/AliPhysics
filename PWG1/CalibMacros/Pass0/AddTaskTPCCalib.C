@@ -160,8 +160,8 @@ void AddCalibTime(TObject* task){
   calibTime->SetStreamLevel(0);
   calibTime->SetTriggerMask(-1,-1,kFALSE);        //accept everything 
 
-  // max 200 tracks per event
-  calibTime->SetCutTracks(200);
+  // max 600 tracks per event
+  calibTime->SetCutTracks(600);
 
   myTask->AddJob(calibTime);
 }
