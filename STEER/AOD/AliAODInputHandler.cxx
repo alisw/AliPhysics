@@ -41,8 +41,8 @@ static Option_t *gAODDataType = "AOD";
 AliAODInputHandler::AliAODInputHandler() :
     AliInputEventHandler(),
     fEvent(0),
-    fMCEvent(new AliMCEvent()),
-    fFriends(new TList()),
+    fMCEvent(0),
+    fFriends(0),
     fAODpidUtil(0x0),
     fMergeEvents(kFALSE),
     fMergeTracks(kTRUE), 
