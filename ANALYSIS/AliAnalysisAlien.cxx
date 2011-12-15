@@ -622,7 +622,7 @@ Bool_t AliAnalysisAlien::GenerateTrain(const char *name)
    TString execCommand = fExecutableCommand;
    SetAnalysisMacro(Form("%s.C", name));
    SetExecutable(Form("%s.sh", name));
-   SetExecutableCommand("aliroot -b -q ");
+//   SetExecutableCommand("aliroot -b -q ");
    SetValidationScript(Form("%s_validation.sh", name));
    StartAnalysis();
    SetProductionMode(productionMode);
@@ -660,7 +660,7 @@ Bool_t AliAnalysisAlien::GenerateTest(const char *name, const char *modname)
    TString execCommand = fExecutableCommand;
    SetAnalysisMacro(Form("%s.C", name));
    SetExecutable(Form("%s.sh", name));
-   SetExecutableCommand("aliroot -b -q ");
+//   SetExecutableCommand("aliroot -b -q ");
    SetValidationScript(Form("%s_validation.sh", name));
    WriteAnalysisFile();   
    WriteAnalysisMacro();
