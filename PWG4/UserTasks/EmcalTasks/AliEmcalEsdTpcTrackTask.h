@@ -19,11 +19,13 @@ class AliEmcalEsdTpcTrackTask : public AliAnalysisTaskSE {
   void UserCreateOutputObjects();
   void UserExec(Option_t *option);
    
-  void SetTrackCuts(AliESDtrackCuts *cuts) { fEsdTrackCuts = cuts; }
-  void SetTracksName(const char *name)     { fTracksName   = name; }
+  void SetTrackCuts(AliESDtrackCuts *cuts)       { fEsdTrackCuts     = cuts; }
+  void SetHybridTrackCuts(AliESDtrackCuts *cuts) { fHybridTrackCuts  = cuts; }
+  void SetTracksName(const char *name)           { fTracksName       = name; }
 
  protected:
   AliESDtrackCuts   *fEsdTrackCuts;      // esd track cuts
+  AliESDtrackCuts   *fHybridTrackCuts;   // hybrid track cuts
   TString            fTracksName;        // name of tracks 
   AliESDEvent       *fEsdEv;             //!esd event
   TClonesArray      *fTracks;            //!track array
