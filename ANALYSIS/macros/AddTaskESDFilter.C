@@ -123,6 +123,9 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    esdTrackCutsHTGC->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kOff);
    //   esdTrackCutsHTGC->SetRequireITSRefit(kFALSE)
 
+   // standard cuts with tight DCA cut, using cluster cut instead of crossed rows (a la 2010 default)
+   AliESDtrackCuts* esdTrackCutsH2Cluster = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0);
+
    // Compose the filter
    AliAnalysisFilter* trackFilter = new AliAnalysisFilter("trackFilter");
    // 1, 1<<0
@@ -151,6 +154,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    trackFilter->AddCuts(esdTrackCutsHTGC);
    esdfilter->SetGlobalConstrainedFilterMask(1<<9); // these tracks are written out as global constrained tracks 
    esdfilter->SetWriteHybridGlobalConstrainedOnly(kTRUE); // write only the complement
+   // 1024, 1<< 10
+   trackFilter->AddCuts(esdTrackCutsH2Cluster);
 
    // Filter with cuts on V0s
    AliESDv0Cuts*   esdV0Cuts = new AliESDv0Cuts("Standard V0 Cuts pp", "ESD V0 Cuts");
