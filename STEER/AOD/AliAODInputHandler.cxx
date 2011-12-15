@@ -88,14 +88,8 @@ AliAODInputHandler::~AliAODInputHandler()
 {
 // Destructor
   fFriends->Delete();
-  if (fHistStatistics[0]) {
-    delete fHistStatistics[0];
-    fHistStatistics[0] = 0;
-  }
-  if (fHistStatistics[1]) {
-    delete fHistStatistics[1];
-    fHistStatistics[1] = 0;
-  }
+  delete fHistStatistics[0];
+  delete fHistStatistics[1];
   delete fAODpidUtil;
 }
 
