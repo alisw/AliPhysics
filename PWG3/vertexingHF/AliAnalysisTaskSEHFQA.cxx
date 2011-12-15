@@ -259,13 +259,14 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputPID->SetName(GetOutputSlot(2)->GetContainer()->GetName());
 
     //TOF pid
-    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",5,-0.5,4.5);
+    TH1F* hTOFflags=new TH1F("hTOFflags","TOF flags",6,-0.5,5.5);
     hTOFflags->SetMinimum(0.);
     hTOFflags->GetXaxis()->SetBinLabel(1,"All Tracks");
-    hTOFflags->GetXaxis()->SetBinLabel(2,"kTOFout");
-    hTOFflags->GetXaxis()->SetBinLabel(3,"kTIME");
-    hTOFflags->GetXaxis()->SetBinLabel(4,"kTOFpid");
-    hTOFflags->GetXaxis()->SetBinLabel(5,"kTOFmismatch");
+    hTOFflags->GetXaxis()->SetBinLabel(2,"kTPCout");
+    hTOFflags->GetXaxis()->SetBinLabel(3,"kTOFout");
+    hTOFflags->GetXaxis()->SetBinLabel(4,"kTIME");
+    hTOFflags->GetXaxis()->SetBinLabel(5,"kTOFpid");
+    hTOFflags->GetXaxis()->SetBinLabel(6,"kTOFmismatch");
 
     TString hname="hTOFsig";
     TH1F* hTOFsig=new TH1F(hname.Data(),"Distribution of TOF signal;TOF time [ps];Entries", 100, -2.e3,40.e3);
@@ -280,13 +281,13 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH2F* hTOFtimeKaonHyptimeAC=new TH2F(hname.Data(),"TOFtime - timeHypothesisForKaon;p[GeV/c];TOFtime - timeHypothesisForKaon [ps]",500,0.,10.,1000,-20000.,20000.);
 
     hname="hTOFsigmaKSigPid";
-    TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,200,-20,20);
+    TH2F* hTOFsigmaKSigPid=new TH2F(hname.Data(),"(TOFsignal-timeK)/tofSigPid;p[GeV/c];(TOFsignal-timeK)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigmaPionSigPid";
-    TH2F* hTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,200,-20,20);
+    TH2F* hTOFsigmaPionSigPid=new TH2F(hname.Data(),"(TOFsignal-time#pi)/tofSigPid;p[GeV/c];(TOFsignal-time#pi)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigmaProtonSigPid";
-    TH2F* hTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,200,-20,20);
+    TH2F* hTOFsigmaProtonSigPid=new TH2F(hname.Data(),"(TOFsignal-timep)/tofSigPid;p[GeV/c];(TOFsignal-time p)/tofSigPid",500,0.,10.,400,-20,20);
 
     hname="hTOFsigPid3sigPion";
     TH1F* hTOFsigPid3sigPion=new TH1F(hname.Data(),"TOF PID resolution (#pi) [ps]",500,0.,1000.);
@@ -439,6 +440,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hname="hMultvsPercentile";
     TH2F* hMultvsPercentile=new TH2F(hname.Data(),"Multiplicity vs Percentile;multiplicity;percentile",10000,-0.5,9999.5,12,-10.,110);
 
+
     fOutputCheckCentrality->Add(hNtrackletsIn);
     fOutputCheckCentrality->Add(hNtrackletsOut);
     fOutputCheckCentrality->Add(hMultIn);
@@ -471,8 +473,51 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
 
     TH1F* hzvtx=new TH1F("hzvtx", "Distribution of z_{VTX};z_{VTX} [cm];Entries",100,-20,20);
 
+
+    TH2F* hTrigCent=new TH2F("hTrigCent","Centrality vs. Trigger types",11,-0.5,10.5,12,-10,110);
+    hTrigCent->GetXaxis()->SetBinLabel(1,"All");
+    hTrigCent->GetXaxis()->SetBinLabel(2,"kMB");
+    hTrigCent->GetXaxis()->SetBinLabel(3,"kINT7");
+    hTrigCent->GetXaxis()->SetBinLabel(4,"kCINT5");
+    hTrigCent->GetXaxis()->SetBinLabel(5,"kCent");
+    hTrigCent->GetXaxis()->SetBinLabel(6,"kSemiCent");
+    hTrigCent->GetXaxis()->SetBinLabel(7,"kEMC1+7");
+    hTrigCent->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
+    hTrigCent->GetXaxis()->SetBinLabel(9,"Muons");
+    hTrigCent->GetXaxis()->SetBinLabel(10,"PHOS");
+    hTrigCent->GetXaxis()->SetBinLabel(11,"Others");
+
+    TH2F* hTrigMul=new TH2F("hTrigMul","Multiplicity vs. Trigger types",11,-0.5,10.5,100,0.,10000.);
+    hTrigMul->GetXaxis()->SetBinLabel(1,"All");
+    hTrigMul->GetXaxis()->SetBinLabel(2,"kMB");
+    hTrigMul->GetXaxis()->SetBinLabel(3,"kINT7");
+    hTrigMul->GetXaxis()->SetBinLabel(4,"kCINT5");
+    hTrigMul->GetXaxis()->SetBinLabel(5,"kCent");
+    hTrigMul->GetXaxis()->SetBinLabel(6,"kSemiCent");
+    hTrigMul->GetXaxis()->SetBinLabel(7,"kEMC1+7");
+    hTrigMul->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
+    hTrigMul->GetXaxis()->SetBinLabel(9,"Muons");
+    hTrigMul->GetXaxis()->SetBinLabel(10,"PHOS");
+    hTrigMul->GetXaxis()->SetBinLabel(11,"Others");
+
+    TH2F* hTrigCentSel=new TH2F("hTrigCentSel","Trigger types",11,-0.5,10.5,12,-10,110);
+    hTrigCentSel->GetXaxis()->SetBinLabel(1,"All");
+    hTrigCentSel->GetXaxis()->SetBinLabel(2,"kMB");
+    hTrigCentSel->GetXaxis()->SetBinLabel(3,"kINT7");
+    hTrigCentSel->GetXaxis()->SetBinLabel(4,"kCINT5");
+    hTrigCentSel->GetXaxis()->SetBinLabel(5,"kCent");
+    hTrigCentSel->GetXaxis()->SetBinLabel(6,"kSemiCent");
+    hTrigCentSel->GetXaxis()->SetBinLabel(7,"kEMC1+7");
+    hTrigCentSel->GetXaxis()->SetBinLabel(8,"kEMCJET+GAMMA");
+    hTrigCentSel->GetXaxis()->SetBinLabel(9,"Muons");
+    hTrigCentSel->GetXaxis()->SetBinLabel(10,"PHOS");
+    hTrigCentSel->GetXaxis()->SetBinLabel(11,"Others");
+
     fOutputEvSelection->Add(evselection);
     fOutputEvSelection->Add(hzvtx);
+    fOutputEvSelection->Add(hTrigCent);
+    fOutputEvSelection->Add(hTrigMul);
+    fOutputEvSelection->Add(hTrigCentSel);
   }
 //  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 //  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -685,6 +730,59 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       return;
     }
   }
+
+  
+  UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  Double_t centrality=fCuts->GetCentrality(aod);
+  Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
+  TH2F* hTrigC=(TH2F*)fOutputEvSelection->FindObject("hTrigCent");
+  TH2F* hTrigM=(TH2F*)fOutputEvSelection->FindObject("hTrigMul");
+
+  hTrigC->Fill(0.,centrality);
+  hTrigM->Fill(0.,multiplicity);
+  
+  if(evSelMask & AliVEvent::kMB){
+    hTrigC->Fill(1.,centrality);
+    hTrigM->Fill(1.,multiplicity);
+  }
+  if(evSelMask & AliVEvent::kINT7){ 
+    hTrigC->Fill(2.,centrality);
+    hTrigM->Fill(2.,multiplicity);
+  }
+  if(evSelMask & AliVEvent::kCINT5){ 
+    hTrigC->Fill(3.,centrality);
+    hTrigM->Fill(3.,multiplicity);
+  }
+  if(evSelMask & AliVEvent::kCentral){
+    hTrigC->Fill(4.,centrality);
+    hTrigM->Fill(4.,multiplicity);
+  }
+  if(evSelMask & AliVEvent::kSemiCentral){ 
+    hTrigC->Fill(5.,centrality);
+    hTrigM->Fill(5.,multiplicity);
+  }
+  if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)){
+    hTrigC->Fill(6.,centrality);
+    hTrigM->Fill(6.,multiplicity);
+  }
+  if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)){
+    hTrigC->Fill(7.,centrality);
+    hTrigM->Fill(7.,multiplicity);
+  }
+  if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
+    hTrigC->Fill(8.,centrality);
+    hTrigM->Fill(8.,multiplicity);
+  }
+  if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
+    hTrigC->Fill(9.,centrality);
+    hTrigM->Fill(9.,multiplicity);
+  }
+  if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+    hTrigC->Fill(10.,centrality);
+    hTrigM->Fill(10.,multiplicity);
+  }
+  
+
   // fix for temporary bug in ESDfilter 
   // the AODs with null vertex pointer didn't pass the PhysSel
   if(!aod->GetPrimaryVertex() || TMath::Abs(aod->GetMagneticField())<0.001) {
@@ -707,6 +805,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 
   Int_t runNumber = aod->GetRunNumber();
 
+
+
   Bool_t evSelbyCentrality=kTRUE,evSelected=kTRUE,evSelByVertex=kTRUE,evselByPileup=kFALSE;
   //select event
   if(!fCuts->IsEventSelected(aod)) {
@@ -717,7 +817,22 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     if(fCuts->GetWhyRejection()==5) fNEntries->Fill(5);//tmp
     if(fCuts->GetWhyRejection()==6 && fOnOff[3]) ((AliCounterCollection*)fOutputEvSelection->FindObject("evselection"))->Count(Form("evnonsel:zvtx/Run:%d",runNumber));
   }
+  if(evSelected){
+    TH2F* hTrigS=(TH2F*)fOutputEvSelection->FindObject("hTrigCentSel");
+    hTrigS->Fill(0.,centrality);
 
+    if(evSelMask & AliVEvent::kMB) hTrigS->Fill(1.,centrality);
+    if(evSelMask & AliVEvent::kINT7) hTrigS->Fill(2.,centrality);
+    if(evSelMask & AliVEvent::kCINT5) hTrigS->Fill(3.,centrality);
+    if(evSelMask & AliVEvent::kCentral) hTrigS->Fill(4.,centrality);
+    if(evSelMask & AliVEvent::kSemiCentral) hTrigS->Fill(5.,centrality);
+    if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)) hTrigS->Fill(6.,centrality);
+    if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)) hTrigS->Fill(7.,centrality);
+    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))) hTrigS->Fill(8.,centrality);
+    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)) hTrigS->Fill(9.,centrality);
+    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)) hTrigS->Fill(10.,centrality);
+  }
+  
   if(evSelected || (!evSelected && !evSelbyCentrality && evSelByVertex && !evselByPileup)){ //events selected or not selected because of vtx or pileup
     if(fOnOff[2] && fCuts->GetUseCentrality()){
 
@@ -805,10 +920,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	//check TOF
 	TH1F* htmpfl=((TH1F*)fOutputPID->FindObject("hTOFflags"));
 	htmpfl->Fill(0.);
-	if (track->GetStatus()&AliESDtrack::kTOFout) htmpfl->Fill(1.);
-	if (track->GetStatus()&AliESDtrack::kTIME) htmpfl->Fill(2.);
-	if (track->GetStatus()&AliESDtrack::kTOFpid) htmpfl->Fill(3.);
-	if (track->GetStatus()&AliESDtrack::kTOFmismatch) htmpfl->Fill(4.);
+	if (track->GetStatus()&AliESDtrack::kTPCout) htmpfl->Fill(1.);
+	if (track->GetStatus()&AliESDtrack::kTOFout) htmpfl->Fill(2.);
+	if (track->GetStatus()&AliESDtrack::kTIME) htmpfl->Fill(3.);
+	if (track->GetStatus()&AliESDtrack::kTOFpid) htmpfl->Fill(4.);
+	if (track->GetStatus()&AliESDtrack::kTOFmismatch) htmpfl->Fill(5.);
 
 	if(pidHF && pidHF->CheckStatus(track,"TOF")){
 	  ((TH1F*)fOutputPID->FindObject("hTOFtime"))->Fill(times[AliPID::kProton]);
