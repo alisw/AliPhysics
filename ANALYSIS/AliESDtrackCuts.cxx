@@ -743,6 +743,49 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
 }
 
 //____________________________________________________________________
+AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrimaries, Int_t clusterCut)
+{
+  // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2011 data  
+  // if clusterCut = 1, the cut on the number of clusters is replaced by
+  // a cut on the number of crossed rows and on the ration crossed
+  // rows/findable clusters
+
+  AliInfoClass("Creating track cuts for ITS+TPC (2011 definition).");
+  
+  AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
+
+  // TPC  
+  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(70);
+  else if (clusterCut == 1) {
+    esdTrackCuts->SetMinNCrossedRowsTPC(70);
+    esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  }
+  else {
+    AliWarningClass(Form("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut));
+    esdTrackCuts->SetMinNClustersTPC(70);
+  }
+  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
+  esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
+  esdTrackCuts->SetRequireTPCRefit(kTRUE);
+  // ITS
+  esdTrackCuts->SetRequireITSRefit(kTRUE);
+  esdTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+					 AliESDtrackCuts::kAny);
+  if(selPrimaries) {
+    // 7*(0.0015+0.0050/pt^1.1)
+    esdTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+    esdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+  }
+  esdTrackCuts->SetMaxDCAToVertexZ(2);
+  esdTrackCuts->SetDCAToVertex2D(kFALSE);
+  esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
+  
+  esdTrackCuts->SetMaxChi2PerClusterITS(36);
+
+  return esdTrackCuts;
+}
+
+//____________________________________________________________________
 AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries,Int_t clusterCut)
 {
   // creates an AliESDtrackCuts object and fills it with standard values for ITS-TPC cuts for pp 2010 data  

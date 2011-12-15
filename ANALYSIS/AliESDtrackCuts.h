@@ -66,6 +66,7 @@ public:
   static AliESDtrackCuts* GetStandardTPCOnlyTrackCuts();
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2009(Bool_t selPrimaries=kTRUE);
   static AliESDtrackCuts* GetStandardITSTPCTrackCuts2010(Bool_t selPrimaries=kTRUE, Int_t clusterCut=0);
+  static AliESDtrackCuts* GetStandardITSTPCTrackCuts2011(Bool_t selPrimaries=kTRUE, Int_t clusterCut=1);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2009(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCuts2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
   static AliESDtrackCuts* GetStandardITSSATrackCutsPbPb2010(Bool_t selPrimaries=kTRUE, Bool_t useForPid=kTRUE);
