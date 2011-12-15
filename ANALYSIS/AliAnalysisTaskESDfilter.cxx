@@ -328,6 +328,9 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
   header->SetDiamond(diamxy,diamcov);
   header->SetDiamondZ(esd.GetDiamondZ(),esd.GetSigma2DiamondZ());
   
+  // VZERO channel equalization factors for event-plane reconstruction 	 
+  header->SetVZEROEqFactors(esd.GetVZEROEqFactors());
+
   return header;
 }
 
@@ -1407,6 +1410,8 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
     caloCluster->SetNCells(cluster->GetNCells());
     caloCluster->SetCellsAbsId(cluster->GetCellsAbsId());
     caloCluster->SetCellsAmplitudeFraction(cluster->GetCellsAmplitudeFraction());
+
+    caloCluster->SetTrackDistance(cluster->GetTrackDx(), cluster->GetTrackDz());
     
     TArrayI* matchedT = 	cluster->GetTracksMatched();
     if (fNumberOfTracks>0 && matchedT && cluster->GetTrackMatchedIndex() >= 0) {	
