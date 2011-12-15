@@ -66,5 +66,6 @@
 #pragma link C++ class  AliHFEpidBayes+;
 
 #pragma link C++ class  AliHFEpidObject+;
+#pragma link C++ class  AliAnalysisTaskElecHadronCorrel+;
 
 #endif

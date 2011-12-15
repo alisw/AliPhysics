@@ -44,6 +44,7 @@ class AliHFEpidEMCAL : public AliHFEpidBase{
     AliPID        *fPID;           //! PID Object
     Float_t    feopMim;         // EMCAL eop mim. cut
     Float_t    feopMax;         // EMCAL eop max. cut
+    //TRandom3   fRandom;
 
     ClassDef(AliHFEpidEMCAL, 1)
 };
