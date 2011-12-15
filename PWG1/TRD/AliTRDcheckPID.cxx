@@ -120,7 +120,8 @@ void AliTRDcheckPID::LocalInit()
 //________________________________________________________________________
 AliTRDcheckPID::~AliTRDcheckPID() 
 {
-  if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
+  AliAnalysisManager* amg = AliAnalysisManager::GetAnalysisManager();
+  if (amg && amg->IsProofMode()) return;
   if(fPID){fPID->Delete(); delete fPID;}
   if(fGraph){fGraph->Delete(); delete fGraph;}
   if(fUtil) delete fUtil;
