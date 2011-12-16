@@ -85,6 +85,14 @@ ifneq ($(PWG2forward_INCLUDE),)
      endif
 endif
 
+ifneq ($(OADB_INCLUDE), )
+  ALICEINC += -I../$(OADB_INCLUDE)
+else
+  ifneq ($(ALICE_ROOT),)
+    ALICEINC += -I$(ALICE_ROOT)/OADB
+  endif
+endif
+
 # only if no par file was loaded before
 ifeq ($(ALICEINC),-I.)
   ifneq ($(ALICE_ROOT),)
