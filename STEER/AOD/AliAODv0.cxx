@@ -29,31 +29,6 @@ ClassImp(AliAODv0)
     fDcaV0ToPrimVertex(999),
     fOnFlyStatus(kFALSE)
 {
-  //--------------------------------------------------------------------
-  // Default constructor
-  //--------------------------------------------------------------------
-  fCharge  = 0;
-  fNProngs = 2;
-  fNDCA    = 1;
-  fNPID    = 0; // used to be 2!
-
-  fDCA = new Double_t[fNDCA];
-  fDCA[0] = 999;
-
-  fPx = new Double_t[GetNProngs()];
-  fPy = new Double_t[GetNProngs()];
-  fPz = new Double_t[GetNProngs()];
-  fPx[0] = 999;
-  fPy[0] = 999;
-  fPz[0] = 999;
-
-  fPx[1] = 999;
-  fPy[1] = 999;
-  fPz[1] = 999;
-
-  fd0 = new Double_t[GetNProngs()];
-  fd0[0] = 999;
-  fd0[1] = 999;
 }
 
 AliAODv0::AliAODv0(AliAODVertex* rAODVertex, Double_t rDcaV0Daughters, Double_t rDcaV0ToPrimVertex,

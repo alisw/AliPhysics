@@ -35,10 +35,9 @@ ClassImp(AliAODPWG4ParticleCorrelation)
    AliAODPWG4Particle(), fIsolated(kFALSE),
    fLeadingParticle(kTRUE),
    fLeadingDetector(""), fLeading(), fCorrJet(),  fCorrBkg(), fRefJet(0),
-   fListOfObjArrays(new TList)
+   fListOfObjArrays(0)
 {
   // constructor
-  fListOfObjArrays->SetOwner(kTRUE);
 }
 
 //______________________________________________________________________________
