@@ -355,77 +355,78 @@ AliFemtoParticle::AliFemtoParticle(const AliFemtoXi* const hbtXi, const double& 
 AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
 {
   // assignment operator
-  if (this == &aParticle)
-    return *this;
+  if (this != &aParticle) {
 
-  if (fTrack) delete fTrack;
-  if (aParticle.fTrack)
-    fTrack = new AliFemtoTrack(*aParticle.fTrack);
-  if (fV0) delete fV0;
-  if (aParticle.fV0)
-    fV0    = new AliFemtoV0(*aParticle.fV0);
-  if (fKink) delete fKink;
-  if (aParticle.fKink)
-    fKink  = new AliFemtoKink(*aParticle.fKink);
-  if (fXi) delete fXi;
-  if (aParticle.fXi)
-    fXi    = new AliFemtoXi(*aParticle.fXi);
-  fFourMomentum = aParticle.fFourMomentum;
-  fHelix = aParticle.fHelix;
+    if (fTrack) delete fTrack;
+    if (aParticle.fTrack)
+      fTrack = new AliFemtoTrack(*aParticle.fTrack);
+    if (fV0) delete fV0;
+    if (aParticle.fV0)
+      fV0    = new AliFemtoV0(*aParticle.fV0);
+    if (fKink) delete fKink;
+    if (aParticle.fKink)
+      fKink  = new AliFemtoKink(*aParticle.fKink);
+    if (fXi) delete fXi;
+    if (aParticle.fXi)
+      fXi    = new AliFemtoXi(*aParticle.fXi);
+    fFourMomentum = aParticle.fFourMomentum;
+    fHelix = aParticle.fHelix;
+    
+    //   for (int iter=0; iter<11; iter++)
+    //     fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
 
-//   for (int iter=0; iter<11; iter++)
-//     fNominalPosSample[iter] = aParticle.fNominalPosSample[iter];
-
-//   if (fTpcV0NegPosSample) delete fTpcV0NegPosSample;
-//   if (aParticle.fTpcV0NegPosSample) {
-//     fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
-//     for (int iter=0; iter<11; iter++)
-//       fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
-//   }
-
-//   if (fV0NegZ) delete fV0NegZ;
-//   if (aParticle.fV0NegZ) {
-//     fV0NegZ = (float *) malloc(sizeof(float) * 45);
-//     for (int iter=0; iter<11; iter++)
-//       fV0NegZ[iter] = aParticle.fV0NegZ[iter];
-//   }
-//   if (fV0NegU) delete fV0NegU;
-//   if (aParticle.fV0NegU) {
-//     fV0NegU = (float *) malloc(sizeof(float) * 45);
-//     for (int iter=0; iter<11; iter++)
-//       fV0NegU[iter] = aParticle.fV0NegU[iter];
-//   }
-//   if (fV0NegSect) delete fV0NegSect;
-//   if (aParticle.fV0NegSect) {
-//     fV0NegSect = (int *) malloc(sizeof(int) * 45);
-//     for (int iter=0; iter<11; iter++)
-//       fV0NegSect[iter] = aParticle.fV0NegSect[iter];
-//   }
-
-  fPrimaryVertex = aParticle.fPrimaryVertex;
-  fSecondaryVertex = aParticle.fSecondaryVertex;
-  CalculatePurity();
-  if (fHiddenInfo) delete fHiddenInfo;
-  if(aParticle.fHiddenInfo){
-    fHiddenInfo= aParticle.fHiddenInfo->Clone();
+    //   if (fTpcV0NegPosSample) delete fTpcV0NegPosSample;
+    //   if (aParticle.fTpcV0NegPosSample) {
+    //     fTpcV0NegPosSample = (AliFemtoThreeVector *) malloc(sizeof(AliFemtoThreeVector) * 11);
+    //     for (int iter=0; iter<11; iter++)
+    //       fTpcV0NegPosSample[iter] = aParticle.fTpcV0NegPosSample[iter];
+    //   }
+    
+    //   if (fV0NegZ) delete fV0NegZ;
+    //   if (aParticle.fV0NegZ) {
+    //     fV0NegZ = (float *) malloc(sizeof(float) * 45);
+    //     for (int iter=0; iter<11; iter++)
+    //       fV0NegZ[iter] = aParticle.fV0NegZ[iter];
+    //   }
+    //   if (fV0NegU) delete fV0NegU;
+    //   if (aParticle.fV0NegU) {
+    //     fV0NegU = (float *) malloc(sizeof(float) * 45);
+    //     for (int iter=0; iter<11; iter++)
+    //       fV0NegU[iter] = aParticle.fV0NegU[iter];
+    //   }
+    //   if (fV0NegSect) delete fV0NegSect;
+    //   if (aParticle.fV0NegSect) {
+    //     fV0NegSect = (int *) malloc(sizeof(int) * 45);
+    //     for (int iter=0; iter<11; iter++)
+    //       fV0NegSect[iter] = aParticle.fV0NegSect[iter];
+    //   }
+    
+    fPrimaryVertex = aParticle.fPrimaryVertex;
+    fSecondaryVertex = aParticle.fSecondaryVertex;
+    CalculatePurity();
+    if (fHiddenInfo) delete fHiddenInfo;
+    if(aParticle.fHiddenInfo){
+      fHiddenInfo= aParticle.fHiddenInfo->Clone();
+    }
+    
+    //   fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
+    //   fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
+    
+    if (fHiddenInfo) delete fHiddenInfo;
+    if (aParticle.fHiddenInfo) 
+      fHiddenInfo = aParticle.HiddenInfo()->Clone();
+    
+    for (int iter=0; iter<6; iter++)
+      fPurity[iter] = aParticle.fPurity[iter];
+    
+    fHelixV0Pos = aParticle.fHelixV0Pos;
+    fTpcV0PosEntrancePoint = aParticle.fTpcV0PosEntrancePoint;
+    fTpcV0PosExitPoint     = aParticle.fTpcV0PosExitPoint;
+    fHelixV0Neg = aParticle.fHelixV0Neg;
+    fTpcV0NegEntrancePoint = aParticle.fTpcV0NegEntrancePoint;
+    fTpcV0NegExitPoint     = aParticle.fTpcV0NegExitPoint;
+    
   }
-  
-//   fNominalTpcEntrancePoint = aParticle.fNominalTpcEntrancePoint;
-//   fNominalTpcExitPoint     = aParticle.fNominalTpcExitPoint;
- 
-  if (fHiddenInfo) delete fHiddenInfo;
-  if (aParticle.fHiddenInfo) 
-    fHiddenInfo = aParticle.HiddenInfo()->Clone();
-  
-  for (int iter=0; iter<6; iter++)
-    fPurity[iter] = aParticle.fPurity[iter];
-  
-  fHelixV0Pos = aParticle.fHelixV0Pos;
-  fTpcV0PosEntrancePoint = aParticle.fTpcV0PosEntrancePoint;
-  fTpcV0PosExitPoint     = aParticle.fTpcV0PosExitPoint;
-  fHelixV0Neg = aParticle.fHelixV0Neg;
-  fTpcV0NegEntrancePoint = aParticle.fTpcV0NegEntrancePoint;
-  fTpcV0NegExitPoint     = aParticle.fTpcV0NegExitPoint;
 
   return *this;
 }
