@@ -2721,3 +2721,15 @@ void AliESDtrack::ReleaseESDfriendTrackGently()
 void AliESDtrack::PrintTmp()
 {
 }
+
+void AliESDtrack::SetFriendTrack(const AliESDfriendTrack *t)
+{
+  //attach fr. track
+  if (fFriendTrack) {
+    AliClonesPool* poolFr = fgPools ? fgPools->GetPoolTrFriend() : 0;
+    if (poolFr) poolFr->MarkSlotFree(fFriendTrack);
+    else        delete fFriendTrack;
+    fFriendTrack = 0;
+  }
+  if (t) fFriendTrack=new AliESDfriendTrack(*t);
+}

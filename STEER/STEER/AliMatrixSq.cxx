@@ -17,7 +17,13 @@ using namespace std;
 
 ClassImp(AliMatrixSq)
 
-
+AliMatrixSq & AliMatrixSq::operator=(const AliMatrixSq &src)
+{
+  // = operator
+  if (this == &src) return *this;
+  TMatrixDBase::operator=(src);
+  fSymmetric = src.fSymmetric; 
+}
 
 //___________________________________________________________
 void AliMatrixSq::MultiplyByVec(const Double_t *vecIn,Double_t *vecOut) const

@@ -261,7 +261,7 @@ void AliMagF::InitMachineField(BeamType_t btype, Double_t benergy)
   //
   double rigScale = benergy/7000.;   // scale according to ratio of E/Enominal
   // for ions assume PbPb (with energy provided per nucleon) and account for A/Z
-  if (btype == kBeamTypeAA || kBeamTypepA || kBeamTypeAp) rigScale *= 208./82.;
+  if (btype==kBeamTypeAA || btype==kBeamTypepA || btype==kBeamTypeAp) rigScale *= 208./82.;
   //
   fQuadGradient = 22.0002*rigScale;
   fDipoleField  = 37.8781*rigScale;

@@ -290,7 +290,7 @@ void AliTrackPointArray::Sort(Bool_t down)
     GetPoint(p1,i);       // and remember where point i was moved
     AddPoint(i,&p);
     AddPoint(index[i],&p1);
-    for (int j=i;j<=fNPoints;j++) {if (index[j]==i) index[j]=index[i]; break;}
+    for (int j=i;j<fNPoints;j++) if (index[j]==i) {index[j]=index[i]; break;}
   }
   fSorted=kTRUE;
 }

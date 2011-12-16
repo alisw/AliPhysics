@@ -15,6 +15,7 @@ class AliMatrixSq : public TMatrixDBase {
   AliMatrixSq(): fSymmetric(kFALSE) {}
   AliMatrixSq(const AliMatrixSq &src) : TMatrixDBase(src), fSymmetric(src.fSymmetric) {}
   virtual ~AliMatrixSq() {}
+  AliMatrixSq& operator=(const AliMatrixSq &src);
   virtual Int_t   GetSize()                            const {return fNcols;}
   virtual Float_t GetDensity()                         const     = 0;
   //

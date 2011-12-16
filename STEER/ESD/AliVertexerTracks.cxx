@@ -881,7 +881,7 @@ AliESDVertex* AliVertexerTracks::RemoveTracksFromVertex(AliESDVertex *inVtx,
   for(Int_t k=0; k<inVtx->GetNIndices(); k++) {
     Bool_t copyindex=kTRUE;
     for(Int_t l=0; l<ntrks; l++) {
-      if(inindices[k]==id[l]) copyindex=kFALSE;
+      if(inindices[k]==id[l]) {copyindex=kFALSE; break;}
     }
     if(copyindex) {
       outindices[j] = inindices[k]; j++;

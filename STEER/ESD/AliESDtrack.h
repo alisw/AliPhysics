@@ -55,9 +55,7 @@ public:
   virtual ~AliESDtrack();
   virtual void Copy(TObject &obj) const;
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
-  void SetFriendTrack(const AliESDfriendTrack *t) {
-    delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
-  }
+  void SetFriendTrack(const AliESDfriendTrack *t);
   void ReleaseESDfriendTrackGently();
   //  void ReleaseESDfriendTrack() {delete fFriendTrack; fFriendTrack=0;}
   void AddCalibObject(TObject * object);     // add calib object to the list
