@@ -66,6 +66,14 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetEventInspector().SetLowFluxCut(1000); 
   // Set the maximum error on v_z [cm]
   task->GetEventInspector().SetMaxVzErr(0.2);
+  // Least number of constributors to 2nd pile-up vertex
+  task->GetEventInspector().SetMinPileupContributors(3);
+  // Least distance from primary to 2nd pile-up vertex (cm)
+  task->GetEventInspector().SetMinPileupDistance(.8);
+  // V0-AND triggered events flagged as NSD 
+  task->GetEventInspector().SetUseV0AndForNSD(false);
+  // Use primary vertex selection from 1st physics WG
+  task->GetEventInspector().SetUseFirstPhysicsVertex(false);
 
   // --- Sharing filter ----------------------------------------------
   // Set the low cut used for sharing - overrides settings in eloss fits
@@ -76,7 +84,11 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetSharingFilter().SetUseAngleCorrectedSignals(true);
   // Disable use of angle corrected signals in the algorithm 
   task->GetSharingFilter().SetZeroSharedHitsBelowThreshold(false);
-  // Enable use of angle corrected signals in the algorithm 
+  // Whether to use simple merging algorithm
+  task->GetSharingFilter().SetUseSimpleSharing(false);
+  // Whether to allow for 3 strip hits 
+  task->GetSharingFilter().SetAllow3Strips(true);
+  // Do not cut fixed/hard on multiplicity 
   task->GetSharingFilter().GetHCuts().SetMultCuts(-1);
   // Set the number of xi's (width of landau peak) to stop at 
   task->GetSharingFilter().GetHCuts().SetNXi(nXi);
@@ -91,9 +103,12 @@ ForwardAODConfig(AliForwardMultiplicityBase* task)
   task->GetDensityCalculator().SetMaxParticles(10);
   // Wet whether to use poisson statistics to estimate N_ch
   task->GetDensityCalculator().SetUsePoisson(true);
+  // Set to use the running average in Poisson 
+  task->GetDensityCalculator().SetUseRunningAverage(false);
   // Set whether or not to include sigma in cut
   task->GetDensityCalculator().SetCuts(cDensity);
-  
+  // Set lumping (nEta,nPhi)
+  task->GetDensityCalculator().SetLumping(32,4);
   // Set whether or not to use the phi acceptance
   //   AliFMDDensityCalculator::kPhiNoCorrect
   //   AliFMDDensityCalculator::kPhiCorrectNch

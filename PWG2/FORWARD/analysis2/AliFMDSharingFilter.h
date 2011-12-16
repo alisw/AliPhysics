@@ -96,17 +96,6 @@ public:
    */
   void Init();
   /** 
-   * Set the low cut used for sharing 
-   * 
-   * @param lowCut Low cut
-   */
-  void SetLowCut(Double_t lowCut=0) { fLCuts.SetMultCuts(lowCut); }
-  /** 
-   * Reset the low cut for sharing to use the fit range lower cut 
-   * 
-   */
-  void UnsetLowCut() { fLCuts.SetMultCuts(0); }
-  /** 
    * Set the debug level.  The higher the value the more output 
    * 
    * @param dbg Debug level 
@@ -144,20 +133,6 @@ public:
    */
   void SetAllow3Strips(Bool_t use) { fThreeStripSharing = use; }
   /** 
-   * Set the number of landau width to subtract from the most probably
-   * value to get the high cut for the merging algorithm.
-   * 
-   * @param n Number of @f$ \xi@f$ 
-   */
-  void SetNXi(Double_t n) { fHCuts.SetNXi(n); /* fNXi = n; */ }
-  /** 
-   * Whether to include sigma in the number subtracted from the MPV to
-   * get the high cut
-   * 
-   * @param u If true, then high cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
-   */
-  void SetIncludeSigma(Bool_t u) { fHCuts.SetIncludeSigma(u); /*fIncludeSigma = u;*/ }
-  /** 
    * Filter the input AliESDFMD object
    * 
    * @param input     Input 
@@ -169,13 +144,6 @@ public:
   Bool_t Filter(const AliESDFMD& input, 
 		Bool_t           lowFlux, 
 		AliESDFMD&       output);
-  /** 
-   * 
-   * Set the fraction of MPV
-   * 
-   * @param cut Fraction of MPV
-   */
-  void SetFractionOfMPV(Double_t cut) { fHCuts.SetMPVFraction(cut); }
   /** 
    * Scale the histograms to the total number of events 
    * 
@@ -397,8 +365,6 @@ protected:
   TList    fRingHistos;    // List of histogram containers
   // Double_t fLowCut;        // Low cut on sharing
   Bool_t   fCorrectAngles; // Whether to work on angle corrected signals
-  Double_t fNXi;           // Number of xi's from Delta to stop merging
-  Bool_t   fIncludeSigma;  // Whether to include sigma in cut 
   TH2*     fSummed;        // Operations histogram 
   TH2*     fHighCuts;      // High cuts used
   TH2*     fLowCuts;       // High cuts used
@@ -409,7 +375,7 @@ protected:
   AliFMDMultCuts fHCuts;    //Cuts object for high cuts
   Bool_t   fUseSimpleMerging; //enable simple sharing by HHD
   Bool_t   fThreeStripSharing; //In case of simple sharing allow 3 strips
-  ClassDef(AliFMDSharingFilter,3); //
+  ClassDef(AliFMDSharingFilter,4); //
 };
 
 #endif
