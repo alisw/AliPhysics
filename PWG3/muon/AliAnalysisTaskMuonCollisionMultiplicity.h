@@ -35,10 +35,8 @@ class AliAnalysisTaskMuonCollisionMultiplicity : public AliAnalysisTaskSE
   virtual void FinishTaskOutput();
   
   
-  Double_t GetZCut()              {return fZCut;};
-  Double_t GetEtaCut()            {return fEtaCut;};
-  void SetZCut(Double_t zCut)     {fZCut = zCut;};
-  void SetEtaCut(Double_t etaCut) {fEtaCut = etaCut;};
+  Double_t GetEtaCut()            {return fEtaCut;};        // Get the eta cut for the multiplicity estimation
+  void SetEtaCut(Double_t etaCut) {fEtaCut = etaCut;};      // Set the eta cut for the multiplicity estimation
   
  private:
   
@@ -47,7 +45,6 @@ class AliAnalysisTaskMuonCollisionMultiplicity : public AliAnalysisTaskSE
   AliAODEvent *fAOD;                  //!< AOD Event
   AliESDEvent *fESD;                  //!< ESD Event
 
-  Double_t fZCut;                    //< Cut on the |z| of the primary vertex
   Double_t fEtaCut;                  //< Cut on the eta cut of the SPD tracklets
 
   Int_t fTrackletMultiplicity;       //< SPD tracklets multiplicity in the current event
