@@ -310,9 +310,11 @@ void Parser::ReadInput()
 	  if (!tThirdComma) exit(0);
 	  tRBracket = strchr(tThirdComma,']');
 
-	  if (!((tLBrackert != NULL) && (tFirstComma != NULL) && (tSecondComma != NULL) && ( tThirdComma != NULL) && (tRBracket!= NULL)))
+	  if (!((tLBrackert != NULL) && (tFirstComma != NULL) && (tSecondComma != NULL) && ( tThirdComma != NULL) && (tRBracket!= NULL))) {
 	    PRINT_DEBUG_1("Malformed line!: " << str);
-	  
+	    exit(0);
+	  }
+
 	  char *tFather = new char[tFirstComma-tLBrackert];
 	  strncpy(tFather, tLBrackert+1,   tFirstComma-tLBrackert-1);
 	  char *tDaughter1 = new char[tSecondComma-tFirstComma];
