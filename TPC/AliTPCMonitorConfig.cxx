@@ -129,7 +129,7 @@ AliTPCMonitorConfig::AliTPCMonitorConfig(const AliTPCMonitorConfig &config) :
   fMainYSize(config.fMainYSize),
   fBorderXSize(config.fBorderXSize),
   fBorderYSize(config.fBorderYSize),
-  fButtonXSize(config.fBorderXSize),
+  fButtonXSize(config.fButtonXSize),
   fButtonYSize(config.fButtonYSize),
   fButtonFirstX1(config.fButtonFirstX1),
   fButtonFirstX2(config.fButtonFirstX2),
@@ -161,7 +161,10 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
     fSector=config.fSector;
     fSectorLast=config.fSectorLast;
     fSectorLastDisplayed=config.fSectorLastDisplayed;
+    fSectorArr= new Int_t[36];
+    fFileLast= config.fFileLast;
     fFileLastSet=config.fFileLastSet;
+    fFileCurrent=config.fFileCurrent;
     fEventNext=config.fEventNext;
     fEventNextID=config.fEventNextID;
     fEventProcessed=config.fEventProcessed;
@@ -180,11 +183,15 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
     fMainXSize=config.fMainXSize;
     fMainYSize=config.fMainYSize;
     fBorderXSize=config.fBorderXSize;
+    fBorderYSize=config.fBorderYSize;
+    fButtonXSize=config.fButtonXSize;
     fButtonYSize=config.fButtonYSize;
     fButtonFirstX1=config.fButtonFirstX1;
     fButtonFirstX2=config.fButtonFirstX2;
     fButtonFirstY=config.fButtonFirstY;
     fWrite10Bit=config.fWrite10Bit;
+    fComponents= new Float_t[10];
+    fSamplingFreq=config.fSamplingFreq;
     fPedestals=config.fPedestals;
     fNumOfChannels=config.fNumOfChannels;
     fTimeBins=config.fTimeBins;
@@ -192,11 +199,9 @@ AliTPCMonitorConfig &AliTPCMonitorConfig::operator =(const AliTPCMonitorConfig& 
     fFitPulse=config.fFitPulse; 
     fProcOneSector=config.fProcOneSector;
 
-    fFileLast             = config.fFileLast;
-    fFileCurrent          = config.fFileCurrent;
     
-    fSectorArr            = new Int_t[36];    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
-    fComponents           = new Float_t[10];  for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
+    for(Int_t i =0; i<36; i++) { fSectorArr[i]  =  0;}
+    for(Int_t i =0; i<10;i++)  { fComponents[i] =0.0;}
     
       
   }

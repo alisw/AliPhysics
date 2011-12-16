@@ -47,8 +47,10 @@
 #include "AliTPCMonitorMappingHandler.h"
 #include "TH1.h"
 #include "TLegend.h"
+#include <TMath.h>
 #include "AliLog.h"
 #include <Riostream.h>
+#include <string>
 
 ClassImp(AliTPCMonitorMappingHandler)
 
@@ -267,22 +269,38 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
 
 
   Short_t*  mappingRow; 
-  char readcarry[255];
+//   char readcarry[255];
   Int_t version = -1;
   Int_t actPos  = 0;
   Int_t oldPos  = 0;
 
   ifstream *in = new ifstream();
   in->open(mapfile);
-  *in >> readcarry;
-  version = atoi(readcarry);
+
+  if (!in->is_open()) return;
+
+//   int numLines = 0;
+//   while ( std::getline(*in, std::string()) )
+//     ++numLines;
+//  in->seekg(0,ios::beg);
   
-  *in >> readcarry;
-  fnumofChannels = atoi(readcarry);
-  *in >> readcarry;
-  fmaxHWAdress = atoi(readcarry);
+//   *in >> readcarry;
+//   version = atoi(readcarry);
+  *in >> version;
+//   --numLines;
+//   *in >> readcarry;
+//   fnumofChannels = atoi(readcarry);
+  *in >> fnumofChannels;
+//   --numLines;
+  
+//   *in >> readcarry;
+//   fmaxHWAdress = atoi(readcarry);
+  *in >> fmaxHWAdress;
   fsizeofArray = fmaxHWAdress;
-	
+//   --numLines;
+  
+//   fnumofChannels=TMath::Min(fnumofChannels,numLines);
+  
   Short_t *fmappingEmptyRow = new Short_t[11];
   for(Int_t i = 0; i < 11 ; i++) {
     fmappingEmptyRow[i] = 0;
@@ -291,8 +309,9 @@ void AliTPCMonitorMappingHandler::ReadMapping(char* mapfile)
   for(Int_t i = 0; i < fnumofChannels ; i++) {
     mappingRow = new Short_t[11];
     for(Int_t j = 0 ; j < 11 ; j++) {
-      *in >> readcarry;
-      mappingRow[j] = atoi(readcarry);
+//       *in >> readcarry;
+//       mappingRow[j] = atoi(readcarry);
+      *in >> mappingRow[j];
     }
     actPos = mappingRow[0];
     fmapping[actPos] = mappingRow;
