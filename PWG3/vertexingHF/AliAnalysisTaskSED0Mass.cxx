@@ -84,6 +84,7 @@ AliAnalysisTaskSE(),
   fCandidateVariables()
 {
   // Default constructor
+  for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
 
 }
 
@@ -119,6 +120,7 @@ AliAnalysisTaskSED0Mass::AliAnalysisTaskSED0Mass(const char *name,AliRDHFCutsD0t
   fNPtBins=cuts->GetNPtBins();
     
   fCuts=cuts;
+  for(Int_t ih=0; ih<5; ih++) fHistMassPtImpParTC[ih]=0x0;
 
   // Output slot #1 writes into a TList container (mass with cuts)
   DefineOutput(1,TList::Class());  //My private output
