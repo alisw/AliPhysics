@@ -27,6 +27,7 @@
 #include "AliAODJet.h"
 #include "AliAODCaloCells.h"
 #include "AliAODCaloCluster.h"
+#include "AliAODCaloTrigger.h"
 #include "AliAODPmdCluster.h"
 #include "AliAODFmdCluster.h"
 #include "AliAODDimuon.h"
@@ -55,6 +56,8 @@ class AliAODEvent : public AliVEvent {
 		       kAODEmcalCells,
 		       kAODPhosCells,
 		       kAODCaloClusters,
+	           kAODEMCALTrigger,
+	           kAODPHOSTrigger,
 		       kAODFmdClusters,
 		       kAODPmdClusters,
 		       kAODDimuons,
@@ -175,7 +178,13 @@ class AliAODEvent : public AliVEvent {
   AliAODCaloCluster *GetCaloCluster(Int_t nCluster) const { return (AliAODCaloCluster*)fCaloClusters->UncheckedAt(nCluster); }
   Int_t         AddCaloCluster(const AliAODCaloCluster* clus)
   {new((*fCaloClusters)[fCaloClusters->GetEntriesFast()]) AliAODCaloCluster(*clus); return fCaloClusters->GetEntriesFast()-1;}
-
+  AliAODCaloTrigger *GetCaloTrigger(TString calo) const 
+  { 	  
+     if (calo.Contains("EMCAL")) return fEMCALTrigger;
+     else
+     return fPHOSTrigger; 
+  }	
+	
   Int_t GetEMCALClusters(TRefArray *clusters) const;
   Int_t GetPHOSClusters(TRefArray *clusters) const;
 
@@ -286,6 +295,8 @@ class AliAODEvent : public AliVEvent {
   AliAODCaloCells *fEmcalCells;   //! EMCAL calorimenter cells
   AliAODCaloCells *fPhosCells;    //! PHOS calorimenter cells
   TClonesArray    *fCaloClusters; //! calorimeter clusters
+  AliAODCaloTrigger *fEMCALTrigger; //! EMCAL Trigger information
+  AliAODCaloTrigger *fPHOSTrigger;  //! PHOS Trigger information
   TClonesArray    *fFmdClusters;  //! FMDclusters
   TClonesArray    *fPmdClusters;  //! PMDclusters
   TClonesArray    *fDimuons;      //! dimuons

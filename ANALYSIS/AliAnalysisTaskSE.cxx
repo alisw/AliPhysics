@@ -35,6 +35,7 @@
 #include "AliAODHeader.h"
 #include "AliAODTracklets.h"
 #include "AliAODCaloCells.h"
+#include "AliAODCaloTrigger.h"
 #include "AliAODMCParticle.h"
 #include "AliVEvent.h"
 #include "AliAODHandler.h"
@@ -64,6 +65,8 @@ TClonesArray*    AliAnalysisTaskSE::fgAODMCParticles    = NULL;
 AliAODTracklets* AliAnalysisTaskSE::fgAODTracklets      = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODEmcalCells     = NULL;
 AliAODCaloCells* AliAnalysisTaskSE::fgAODPhosCells      = NULL;
+AliAODCaloTrigger* AliAnalysisTaskSE::fgAODEMCALTrigger = NULL;
+AliAODCaloTrigger* AliAnalysisTaskSE::fgAODPHOSTrigger  = NULL;
 TClonesArray*    AliAnalysisTaskSE::fgAODDimuons        = NULL;
 
 AliAnalysisTaskSE::AliAnalysisTaskSE():
@@ -268,7 +271,18 @@ void AliAnalysisTaskSE::CreateOutputObjects()
 
 		fgAODPhosCells = new AliAODCaloCells("phosCells","phosCells",AliVCaloCells::kPHOSCell);
 		handler->AddBranch("AliAODCaloCells", &fgAODPhosCells);
-		
+		}
+	    if ((handler->NeedsCaloTriggerBranchReplication() || merging) && !(fgAODEMCALTrigger))	  
+	    {   
+		if (fDebug > 1) AliInfo("Replicating EMCAL Calo Trigger branches\n");
+		fgAODEMCALTrigger = new AliAODCaloTrigger("emcalTrigger","emcalTrigger");
+		handler->AddBranch("AliAODCaloTrigger", &fgAODEMCALTrigger);
+		}
+		if ((handler->NeedsCaloTriggerBranchReplication() || merging) && !(fgAODPHOSTrigger))	  
+		{   
+		if (fDebug > 1) AliInfo("Replicating PHOS Calo Trigger branches\n");
+		fgAODPHOSTrigger = new AliAODCaloTrigger("phosTrigger","phosTrigger");
+		handler->AddBranch("AliAODCaloTrigger", &fgAODPHOSTrigger);
 	    }
 	    if ((handler->NeedsMCParticlesBranchReplication() || merging) && !(fgAODMCParticles))	  
 	    {   
@@ -562,7 +576,70 @@ void AliAnalysisTaskSE::Exec(Option_t* option)
 			fgAODPhosCells->Sort();
 		    }
 		} // Merge PHOS Cells
+		
+		if (aodH->GetMergeEMCALTrigger()) 
+		{
+			Int_t   EMCALts[48][64], px, py, ts;
+			Float_t EMCALfo[48][64], am;
 			
+			for (Int_t i = 0; i < 48; i++) for (Int_t j = 0; j < 64; j++) 
+			{
+				EMCALts[i][j] = 0;
+				EMCALfo[i][j] = 0.;
+			}
+			
+			AliAODCaloTrigger& trg0 = *(aod->GetCaloTrigger("EMCAL"));
+			
+			trg0.Reset();
+			while (trg0.Next())
+			{
+				trg0.GetPosition(px, py);
+				
+				if (px > -1 && py > -1) 
+				{
+					trg0.GetL1TimeSum(ts);
+					if (ts > -1) EMCALts[px][py] += ts;
+					
+					trg0.GetAmplitude(am);
+					if (am > -1) EMCALfo[px][py] += am;
+				}
+			}
+			
+			AliAODCaloTrigger& trg1 = *((aodH->GetEventToMerge())->GetCaloTrigger("EMCAL"));
+			
+			trg1.Reset();
+			while (trg1.Next())
+			{
+				trg1.GetPosition(px, py);
+				
+				if (px > -1 && py > -1) 
+				{
+					trg1.GetL1TimeSum(ts);
+					if (ts > -1) EMCALts[px][py] += ts;
+					
+					trg1.GetAmplitude(am);
+					if (am > -1) EMCALfo[px][py] += am;
+				}
+			}
+			
+			int nEntries = 0;
+			for (Int_t i = 0; i < 48; i++) 
+				for (Int_t j = 0; j < 64; j++) 
+					if (EMCALts[i][j] || EMCALfo[i][j]) nEntries++;
+		
+			fgAODEMCALTrigger->Allocate(nEntries);
+			Int_t L0times[10]; for (int i = 0; i < 10; i++) L0times[i] = -1;
+		
+			for (Int_t i = 0; i < 48; i++) 
+				for (Int_t j = 0; j < 64; j++) 
+					if (EMCALts[i][j] || EMCALfo[i][j]) 
+						fgAODEMCALTrigger->Add(i, j, EMCALfo[i][j], -1., L0times, 0, EMCALts[i][j], 0);
+		}
+		
+		if (aodH->GetMergePHOSTrigger()) 
+		{
+			// To be implemented by PHOS
+		}
 	    } // merging
 	    
 	    handler->SetAODIsReplicated();

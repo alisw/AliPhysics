@@ -31,6 +31,7 @@ set ( SRCS
     AOD/AliAODv0.cxx 
     AOD/AliAODcascade.cxx 
     AOD/AliAODCaloCells.cxx 
+    AOD/AliAODCaloTrigger.cxx 
     AOD/AliAODInputHandler.cxx 
     AOD/AliAODDiJet.cxx 
     AOD/AliAODMCParticle.cxx 

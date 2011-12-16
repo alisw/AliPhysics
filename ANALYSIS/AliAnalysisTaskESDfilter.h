@@ -71,6 +71,7 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void DisablePmdClusters() { fArePmdClustersEnabled = kFALSE; }
   void DisableCaloClusters() { fAreCaloClustersEnabled = kFALSE; }
   void DisableCells() { fAreEMCALCellsEnabled = fArePHOSCellsEnabled = kFALSE; }
+  void DisableCaloTrigger(TString calo = "PHOS") { if (calo.Contains("EMCAL")) fAreEMCALTriggerEnabled = kFALSE; else fArePHOSTriggerEnabled = kFALSE; }
   void DisableTracklets() { fAreTrackletsEnabled = kFALSE; }
 
   virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
@@ -91,6 +92,7 @@ private:
   void ConvertCaloClusters(const AliESDEvent& esd);
   void ConvertEMCALCells(const AliESDEvent& esd);
   void ConvertPHOSCells(const AliESDEvent& esd);
+  void ConvertCaloTrigger(TString calo, const AliESDEvent& esd);
   void ConvertTracklets(const AliESDEvent& esd);
   void ConvertTPCOnlyTracks(const AliESDEvent& esd);
   void ConvertGlobalConstrainedTracks(const AliESDEvent& esd);
@@ -146,6 +148,8 @@ private:
   Bool_t fAreCaloClustersEnabled; // whether or not to fill the calo clusters (true by default)
   Bool_t fAreEMCALCellsEnabled; // whether or not to fill the emcal cells (true by default)
   Bool_t fArePHOSCellsEnabled; // whether or not to fill the phos cells (true by default)
+  Bool_t fAreEMCALTriggerEnabled; // whether or not to fill the emcal trigger (true by default)
+  Bool_t fArePHOSTriggerEnabled; // whether or not to fill the phos trigger (true by default)
   Bool_t fAreTrackletsEnabled; // whether or not to fill the tracklets (true by default)
   AliESDpid* fESDpid; // esd pid
   Bool_t fIsPidOwner; // whether we own fESDpid

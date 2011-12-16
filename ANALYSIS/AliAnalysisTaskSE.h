@@ -13,6 +13,7 @@ class AliAODEvent;
 class AliAODHeader;
 class AliAODTracklets;
 class AliAODCaloCells;
+class AliAODCaloTrigger;
 class AliMCEvent;
 class AliMCEventHandler;
 class AliInputEventHandler;
@@ -93,11 +94,13 @@ class AliAnalysisTaskSE : public AliAnalysisTask
     static TClonesArray*    fgAODJets;          //! Jets for replication
     static TClonesArray*    fgAODFMDClusters;   //! FMDClusters for replication
     static TClonesArray*    fgAODCaloClusters;  //! CaloClusters for replication
+    static AliAODCaloTrigger* fgAODEMCALTrigger; //! Emcal Trigger for replication
+    static AliAODCaloTrigger* fgAODPHOSTrigger;  //! Phos Trigger for replication
     static TClonesArray*    fgAODMCParticles;   //! MC Particles for replicatio
     static AliAODTracklets* fgAODTracklets;     //! Tracklets for replication
     static AliAODCaloCells* fgAODEmcalCells;    //! Emcal Cell replication
     static AliAODCaloCells* fgAODPhosCells;     //! Phos  Cell replication
-    static TClonesArray*    fgAODDimuons;       //! Dimuons replication
+	static TClonesArray*    fgAODDimuons;       //! Dimuons replication
     // Event Selection
     UInt_t fOfflineTriggerMask;   //  Task processes collision candidates only
     // Event Mixing

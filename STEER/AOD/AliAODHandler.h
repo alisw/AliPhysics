@@ -58,6 +58,7 @@ class AliAODHandler : public AliVEventHandler {
     virtual void         SetNeedsJetsBranchReplication()         {fNeedsJetsBranchReplication         = kTRUE;}
     virtual void         SetNeedsFMDClustersBranchReplication()  {fNeedsFMDClustersBranchReplication  = kTRUE;}
     virtual void         SetNeedsCaloClustersBranchReplication() {fNeedsCaloClustersBranchReplication = kTRUE;}
+    virtual void         SetNeedsCaloTriggerBranchReplication()  {fNeedsCaloTriggerBranchReplication  = kTRUE;}
     virtual void         SetNeedsMCParticlesBranchReplication()  {fNeedsMCParticlesBranchReplication  = kTRUE;}
     virtual void         SetNeedsDimuonsBranchReplication()      {fNeedsDimuonsBranchReplication      = kTRUE;}
     virtual void         SetAODIsReplicated() {fAODIsReplicated = kTRUE;}
@@ -89,6 +90,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t               NeedsJetsBranchReplication()         const {return  fNeedsJetsBranchReplication;}
     Bool_t               NeedsFMDClustersBranchReplication()  const {return  fNeedsFMDClustersBranchReplication;}
     Bool_t               NeedsCaloClustersBranchReplication() const {return  fNeedsCaloClustersBranchReplication;}
+    Bool_t               NeedsCaloTriggerBranchReplication()  const {return  fNeedsCaloTriggerBranchReplication;}
     Bool_t               NeedsMCParticlesBranchReplication()  const {return  fNeedsMCParticlesBranchReplication;}
     Bool_t               NeedsDimuonsBranchReplication()      const {return  fNeedsDimuonsBranchReplication;}
     Bool_t               AODIsReplicated()                    const {return  fAODIsReplicated;}
@@ -122,6 +124,7 @@ class AliAODHandler : public AliVEventHandler {
     Bool_t                   fNeedsJetsBranchReplication;         // Flag for Jets replication
     Bool_t                   fNeedsFMDClustersBranchReplication;  // Flag for FMDClusters replication
     Bool_t                   fNeedsCaloClustersBranchReplication; // Flag for CaloClusters replication
+    Bool_t                   fNeedsCaloTriggerBranchReplication;  // Flag for Calo Trigger replication
     Bool_t                   fNeedsMCParticlesBranchReplication;  // Flag for MCParticles replication
     Bool_t                   fNeedsDimuonsBranchReplication;      // Flag for Dimuons replication
     Bool_t                   fAODIsReplicated;                    // Flag true if replication as been executed

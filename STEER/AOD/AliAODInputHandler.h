@@ -56,6 +56,11 @@ class AliAODInputHandler : public AliInputEventHandler {
     Bool_t               GetMergePHOSClusters()      const {return fMergePHOSClusters  ;}
     void                 SetMergePHOSCells(Bool_t flag)    {fMergePHOSCells      = flag;}
     Bool_t               GetMergePHOSCells()         const {return fMergePHOSCells     ;}  
+    void                 SetMergeEMCALTrigger(Bool_t flag)    {fMergeEMCALTrigger      = flag;}
+    Bool_t               GetMergeEMCALTrigger()         const {return fMergeEMCALTrigger     ;}  
+    void                 SetMergePHOSTrigger(Bool_t flag)    {fMergePHOSTrigger      = flag;}
+    Bool_t               GetMergePHOSTrigger()         const {return fMergePHOSTrigger     ;}  
+
     //PID response
     virtual AliPIDResponse* GetPIDResponse() {return (AliPIDResponse*)fAODpidUtil;}
     virtual void CreatePIDResponse(Bool_t isMC=kFALSE);
@@ -78,6 +83,8 @@ class AliAODInputHandler : public AliInputEventHandler {
     Bool_t          fMergePHOSClusters;  // Merge EMCAL cluster
     Bool_t          fMergeEMCALCells;    // Merge PHOS  cluster
     Bool_t          fMergePHOSCells;     // Merge EMCAL cluster
+    Bool_t          fMergeEMCALTrigger;    // Merge EMCAL  cluster
+    Bool_t          fMergePHOSTrigger;     // Merge PHOS cluster
     Bool_t          fFriendsConnected;// Friends are connected
     TFile          *fFileToMerge;     //! File for merging
     TTree          *fTreeToMerge;     //! Tree for merging

@@ -19,6 +19,7 @@
 #include <TTree.h>
 #include <TList.h>
 #include <TArrayI.h>
+#include <TParameter.h>
 #include <TRandom.h>
 #include <TParticle.h>
 #include <TFile.h>
@@ -97,7 +98,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fAreCaloClustersEnabled(kTRUE),
     fAreEMCALCellsEnabled(kTRUE),
     fArePHOSCellsEnabled(kTRUE),
-    fAreTrackletsEnabled(kTRUE),
+		fAreEMCALTriggerEnabled(kTRUE),
+		fArePHOSTriggerEnabled(kFALSE),
+		fAreTrackletsEnabled(kTRUE),
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
     fTimeZeroType(AliESDpid::kTOF_T0),
@@ -148,7 +151,9 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fAreCaloClustersEnabled(kTRUE),
     fAreEMCALCellsEnabled(kTRUE),
     fArePHOSCellsEnabled(kTRUE),
-    fAreTrackletsEnabled(kTRUE),
+		fAreEMCALTriggerEnabled(kTRUE),
+		fArePHOSTriggerEnabled(kFALSE),
+		fAreTrackletsEnabled(kTRUE),
     fESDpid(0x0),
     fIsPidOwner(kFALSE),
     fTimeZeroType(AliESDpid::kTOF_T0),
@@ -194,14 +199,16 @@ void AliAnalysisTaskESDfilter::PrintTask(Option_t *option, Int_t indent) const
   
   TString spaces(' ',indent+3);
   
-  cout << spaces.Data() << Form("Cascades     are %s",fAreCascadesEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("V0s          are %s",fAreV0sEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("Kinks        are %s",fAreKinksEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("Tracks       are %s",fAreTracksEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("PmdClusters  are %s",fArePmdClustersEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("CaloClusters are %s",fAreCaloClustersEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("EMCAL cells  are %s",fAreEMCALCellsEnabled ? "ENABLED":"DISABLED") << endl;
-  cout << spaces.Data() << Form("Tracklets    are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
+	cout << spaces.Data() << Form("Cascades       are %s",fAreCascadesEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("V0s            are %s",fAreV0sEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("Kinks          are %s",fAreKinksEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("Tracks         are %s",fAreTracksEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("PmdClusters    are %s",fArePmdClustersEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("CaloClusters   are %s",fAreCaloClustersEnabled ? "ENABLED":"DISABLED") << endl;
+  cout << spaces.Data() << Form("EMCAL cells    are %s",fAreEMCALCellsEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("EMCAL triggers are %s",fAreEMCALTriggerEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("PHOS triggers  are %s",fArePHOSTriggerEnabled ? "ENABLED":"DISABLED") << endl;
+	cout << spaces.Data() << Form("Tracklets      are %s",fAreTrackletsEnabled ? "ENABLED":"DISABLED") << endl;  
 }
 
 //______________________________________________________________________________
@@ -1428,6 +1435,74 @@ void AliAnalysisTaskESDfilter::ConvertCaloClusters(const AliESDEvent& esd)
 }
 
 //______________________________________________________________________________
+void AliAnalysisTaskESDfilter::ConvertCaloTrigger(TString calo, const AliESDEvent& esd)
+{
+	AliCodeTimerAuto("",0);
+		
+	if (calo == "PHOS") 
+	{
+		AliLog::Message(AliLog::kError, "PHOS ESD filter not yet implemented", MODULENAME(), "ConvertCaloTrigger", FUNCTIONNAME(), __FILE__, __LINE__);
+		return;
+	}
+			
+	AliAODHandler *aodHandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()); 
+			
+	if (aodHandler)
+	{
+		TTree *aodTree = aodHandler->GetTree();
+					
+		if (aodTree)
+		{
+			Int_t *type = esd.GetCaloTriggerType();
+							
+			for (Int_t i = 0; i < 8; i++) 
+			{
+				aodTree->GetUserInfo()->Add(new TParameter<int>(Form("EMCALCaloTrigger%d",i), type[i]));
+			}
+		}
+	}
+						
+	AliAODCaloTrigger &aodTrigger = *(AODEvent()->GetCaloTrigger(calo));
+						
+	AliESDCaloTrigger &esdTrigger = *(esd.GetCaloTrigger(calo));
+						
+	aodTrigger.Allocate(esdTrigger.GetEntries());
+						
+	esdTrigger.Reset();
+	while (esdTrigger.Next())
+	{	  
+		Int_t px, py, ts, nTimes, times[10], b; 
+		Float_t a, t;
+								
+		esdTrigger.GetPosition(px, py);
+						
+		esdTrigger.GetAmplitude(a);
+		esdTrigger.GetTime(t);
+								
+		esdTrigger.GetL0Times(times);
+		esdTrigger.GetNL0Times(nTimes);
+								
+		esdTrigger.GetL1TimeSum(ts);
+								
+		esdTrigger.GetTriggerBits(b);
+								
+		aodTrigger.Add(px, py, a, t, times, nTimes, ts, b);
+	}
+							
+	aodTrigger.SetL1Threshold(0, esdTrigger.GetL1Threshold(0));
+	aodTrigger.SetL1Threshold(1, esdTrigger.GetL1Threshold(1));
+							
+	Int_t v0[2] = 
+	{
+		esdTrigger.GetL1V0(0),
+		esdTrigger.GetL1V0(1)
+	};		
+								
+	aodTrigger.SetL1V0(v0);	
+	aodTrigger.SetL1FrameMask(esdTrigger.GetL1FrameMask());
+}
+
+//______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertEMCALCells(const AliESDEvent& esd)
 {
 // Convert EMCAL Cells
@@ -1941,6 +2016,10 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   if ( fAreEMCALCellsEnabled )ConvertEMCALCells(*esd);
   
   if ( fArePHOSCellsEnabled )ConvertPHOSCells(*esd);
+	
+	if ( fAreEMCALTriggerEnabled )ConvertCaloTrigger(TString("EMCAL"), *esd);
+
+	if ( fArePHOSTriggerEnabled )ConvertCaloTrigger(TString("PHOS"), *esd);
   
   if ( fAreTrackletsEnabled ) ConvertTracklets(*esd);
   
