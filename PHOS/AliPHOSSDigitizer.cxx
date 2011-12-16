@@ -160,7 +160,7 @@ void AliPHOSSDigitizer::Init()
   
   //to prevent cleaning of this object while GetEvent is called
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
-  if (!rl) rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
+  if (!rl) AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
 }
 
 //____________________________________________________________________________ 

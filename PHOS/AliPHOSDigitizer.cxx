@@ -857,7 +857,7 @@ Bool_t AliPHOSDigitizer::Init()
   //to prevent cleaning of this object while GetEvent is called
   AliRunLoader* rl = AliRunLoader::GetRunLoader(fEventFolderName) ;
   if(!rl){
-    rl = AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
+    AliRunLoader::Open(GetTitle(), fEventFolderName) ; 
   }
   return fInit ; 
 }
