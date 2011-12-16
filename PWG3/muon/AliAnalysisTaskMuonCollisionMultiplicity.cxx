@@ -53,7 +53,6 @@ AliAnalysisTaskMuonCollisionMultiplicity::AliAnalysisTaskMuonCollisionMultiplici
   fIsInit(kFALSE),
   fAOD(0x0),
   fESD(0x0),
-  fZCut(0),
   fEtaCut(0),
   fTrackletMultiplicity(0),
   fTriggerList(0),
@@ -72,7 +71,6 @@ AliAnalysisTaskMuonCollisionMultiplicity::AliAnalysisTaskMuonCollisionMultiplici
   fIsInit(kFALSE),
   fAOD(0x0),
   fESD(0x0),
-  fZCut(0),
   fEtaCut(0),
   fTrackletMultiplicity(0),
   fTriggerList(0),
@@ -106,7 +104,6 @@ AliAnalysisTaskMuonCollisionMultiplicity::AliAnalysisTaskMuonCollisionMultiplici
   fIsInit(kFALSE),
   fAOD(0x0),
   fESD(0x0),
-  fZCut(0),
   fEtaCut(0),
   fTrackletMultiplicity(0),
   fTriggerList(0),
@@ -142,6 +139,7 @@ AliAnalysisTaskMuonCollisionMultiplicity::~AliAnalysisTaskMuonCollisionMultiplic
 //________________________________________________________________________
 void AliAnalysisTaskMuonCollisionMultiplicity::UserCreateOutputObjects()
 {
+  // Initialise the object, and open the file.
   if (!fIsInit)
     Init();
   OpenFile(0);
@@ -153,6 +151,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskMuonCollisionMultiplicity::UserExec(Option_t */*option*/)
 {
+  // Execute the analysis task
   fAOD = 0x0;
   fESD = 0x0;
 
@@ -181,20 +180,21 @@ void AliAnalysisTaskMuonCollisionMultiplicity::UserExec(Option_t */*option*/)
 //________________________________________________________________________
 void AliAnalysisTaskMuonCollisionMultiplicity::NotifyRun()
 {
-  
+  // Notify run
 }
 
 
 //________________________________________________________________________
 void AliAnalysisTaskMuonCollisionMultiplicity::FinishTaskOutput()
 {
-  
+  // Finish the task
 }
 
 
 //__________________________________________________________________________
 Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventAOD()
 {
+  // Check if the AOD event pass the cuts
   AliAODVertex *vertex = fAOD->GetPrimaryVertex();
   
   if (!vertex)
@@ -204,8 +204,6 @@ Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventAOD()
     return kFALSE;
   
   ComputeMultiplicity();
-  if (fTrackletMultiplicity < 1)
-    return kFALSE;
   
   // Variables use to determine the type of trigger :
   // 0 for minimum bias : CINT1B, CINT1-B or MB1
@@ -231,6 +229,7 @@ Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventAOD()
 //__________________________________________________________________________
 Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventESD()
 {
+  // Check if the ESD event pass the cuts
   const AliESDVertex *vertex = fESD->GetPrimaryVertex();
   
   if (!vertex)
@@ -240,9 +239,7 @@ Bool_t AliAnalysisTaskMuonCollisionMultiplicity::CheckEventESD()
     return kFALSE;
 
   ComputeMultiplicity();
-  if (fTrackletMultiplicity < 1)
-    return kFALSE;
-  
+
   // Variables use to determine the type of trigger :
   // 0 for minimum bias : CINT1B, CINT1-B or MB1
   // 1 for muon events : CMUS1B, CMUS1-B or MULow
@@ -276,29 +273,39 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
   Int_t nDimuons = fAOD->GetNDimuons();
   
   // Fill histos
-  Double_t vertexCut = (TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) < fZCut);
+  Double_t vertexPosition = fAOD->GetPrimaryVertex()->GetZ();
   Double_t pileUp = !(fAOD->IsPileupFromSPD());
   
-  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexCut, pileUp};
+  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexPosition, pileUp};
   ((THnSparseD *)fTriggerList->At(triggerClass))->Fill(valuesTrigger);
   
+
   // Loop on the muons tracks
   for (Int_t ii = 0; ii < nTracks; ii++)
     if (IsUsableMuon(fAOD->GetTrack(ii)))
       {
 	Double_t matchTrigger = fAOD->GetTrack(ii)->GetMatchTrigger();
 	if (matchTrigger > 1.0)
-	  matchTrigger = 1.0;                                            // We don't care what type of trigger it is
+	  matchTrigger = 1.0;                                            // We don't care what type of trigger it is (low or high pT)
 	
 	Double_t thetaAbs = (180.0 / TMath::Pi()) * TMath::ATan(fAOD->GetTrack(ii)->GetRAtAbsorberEnd()/505.0);
 	Double_t eta = fAOD->GetTrack(ii)->Eta();
-	Double_t dcaX = fAOD->GetTrack(ii)->XAtDCA();
-	Double_t dcaY = fAOD->GetTrack(ii)->YAtDCA();
 	Double_t p = fAOD->GetTrack(ii)->P();
 	Double_t pT = fAOD->GetTrack(ii)->Pt();
-	Double_t pDCA = p*TMath::Sqrt(dcaX*dcaX + dcaY*dcaY);
+	// For the p used in the pDCA, we want the mean between the p before the muon go through the absorber (p corrected) and after (p uncorrected)
+	// However p uncorrected is not saved in the AODs
+	// Instead we define p uncorrected as p corrected minus the mean p lost when a muon go through the absorber
+	// p lost for muons (it depends of theta_abs) :
+	// 2.0 < theta_abs < 3.0 ---> 2.98 GeV
+	// 3.0 < theta_abs < 10.0 --->	2.4 GeV
+	// No correction applied otherwise
+	Double_t pDCA = p*fAOD->GetTrack(ii)->DCA();
+	if (2.0 < thetaAbs < 3.0)
+	  pDCA = (p-2.98/2.0) * fAOD->GetTrack(ii)->DCA();
+	if (3.0 < thetaAbs < 10.0)
+	  pDCA = (p-2.4/2.0) * fAOD->GetTrack(ii)->DCA();
 	
-	Double_t valuesMuon[11] = {fTrackletMultiplicity, vertexCut, pileUp, matchTrigger, thetaAbs, eta, p*dcaX, p*dcaY, pDCA, p, pT};
+	Double_t valuesMuon[9] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger, thetaAbs, eta, pDCA, p, pT};
 	((THnSparseD *)fSingleMuonList->At(triggerClass))->Fill(valuesMuon);
       }
   
@@ -321,20 +328,28 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	    Double_t thetaAbs2 = (180.0 / TMath::Pi()) * TMath::ATan(fAOD->GetDimuon(ii)->GetMu(1)->GetRAtAbsorberEnd()/505.0);
 	    Double_t eta1 = fAOD->GetDimuon(ii)->GetMu(0)->Eta();
 	    Double_t eta2 = fAOD->GetDimuon(ii)->GetMu(1)->Eta();
-	    Double_t dcaX1 = fAOD->GetDimuon(ii)->GetMu(0)->XAtDCA();
-	    Double_t dcaY1 = fAOD->GetDimuon(ii)->GetMu(0)->YAtDCA();
-	    Double_t dcaX2 = fAOD->GetDimuon(ii)->GetMu(1)->XAtDCA();
-	    Double_t dcaY2 = fAOD->GetDimuon(ii)->GetMu(1)->YAtDCA();
 	    
 	    Double_t p1 = fAOD->GetDimuon(ii)->GetMu(0)->P();
 	    Double_t p2 = fAOD->GetDimuon(ii)->GetMu(1)->P();
+	    // See the explanation on how the pDCA is computed in the single muon loop
+	    Double_t pDCA1 = p1*fAOD->GetDimuon(ii)->GetMu(0)->DCA();
+	    if (2.0 < thetaAbs1 < 3.0)
+	      pDCA1 = (p1-2.98/2.0) * fAOD->GetDimuon(ii)->GetMu(0)->DCA();
+	    if (3.0 < thetaAbs1 < 10.0)
+	      pDCA1 = (p1-2.4/2.0) * fAOD->GetDimuon(ii)->GetMu(0)->DCA();
+	    Double_t pDCA2 = p2*fAOD->GetDimuon(ii)->GetMu(1)->DCA();
+	    if (2.0 < thetaAbs2 < 3.0)
+	      pDCA2 = (p2-2.98/2.0) * fAOD->GetDimuon(ii)->GetMu(1)->DCA();
+	    if (3.0 < thetaAbs2 < 10.0)
+	      pDCA2 = (p2-2.4/2.0) * fAOD->GetDimuon(ii)->GetMu(1)->DCA();
 	    
+	    Double_t y = fAOD->GetDimuon(ii)->Y();
 	    Double_t p = fAOD->GetDimuon(ii)->P();
 	    Double_t pT = fAOD->GetDimuon(ii)->Pt();
 	    Double_t M = fAOD->GetDimuon(ii)->M();
 	    
-	    Double_t valuesDimuon[19] = {fTrackletMultiplicity, vertexCut, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
-					 eta1, eta2, p1*dcaX1, p1*dcaY1, p2*dcaX2, p2*dcaY2, p1, p2, p, pT, M};
+	    Double_t valuesDimuon[18] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
+					 eta1, eta2, pDCA1, pDCA2, p1, p2, y, p, pT, M};
 	    ((THnSparseD *)fDimuonList->At(triggerClass))->Fill(valuesDimuon);
 	  }
 }
@@ -344,38 +359,34 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 {
   // Fill the histos for ESD events 
-  // This is not yet tested (in particular the Dimuon part)
-
   Int_t nTracks = fESD->GetNumberOfMuonTracks();
 
-  Double_t vertexCut = (TMath::Abs(fESD->GetPrimaryVertex()->GetZ()) < fZCut);
+  Double_t vertexPosition = fESD->GetPrimaryVertex()->GetZ();
   Double_t pileUp = !(fESD->IsPileupFromSPD());
   
-  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexCut, pileUp};
+  Double_t valuesTrigger[3] = {fTrackletMultiplicity, vertexPosition, pileUp};
   ((THnSparseD *)fTriggerList->At(triggerClass))->Fill(valuesTrigger);
   
+
   // Loop on the muons tracks
   for (Int_t ii = 0; ii < nTracks; ii++)
     if (IsUsableMuon(fESD->GetMuonTrack(ii)))
       {
 	Double_t matchTrigger1 = fESD->GetMuonTrack(ii)->GetMatchTrigger();
 	if (matchTrigger1 > 1.0)
-	  matchTrigger1 = 1.0;                                            // We don't care what type of trigger it is
+	  matchTrigger1 = 1.0;                                            // We don't care what type of trigger it is (low or high pT)
 	
 	Double_t thetaAbs1 = (180.0 / TMath::Pi()) * TMath::ATan(fESD->GetMuonTrack(ii)->GetRAtAbsorberEnd()/505.0);
 	Double_t eta1 = fESD->GetMuonTrack(ii)->Eta();
-	Double_t dcaX1 = fESD->GetMuonTrack(ii)->GetNonBendingCoorAtDCA();
-	Double_t dcaY1 = fESD->GetMuonTrack(ii)->GetBendingCoorAtDCA();
 	Double_t p1 = fESD->GetMuonTrack(ii)->P();
-	Double_t pUncor1 = fESD->GetMuonTrack(ii)->PUncorrected();
 	Double_t pT1 = fESD->GetMuonTrack(ii)->Pt();
 
-	// The pDCA is computed with the average of p and pUncor
-	Double_t pDCAX1 = (p1+pUncor1) * dcaX1 / 2.0;
-	Double_t pDCAY1 = (p1+pUncor1) * dcaY1 / 2.0;
-	Double_t pDCA1 = (p1+pUncor1) * TMath::Sqrt(dcaX1*dcaX1 + dcaY1*dcaY1) / 2.0;
+	// For the p used in the pDCA, we want the mean between the p before the muon go through the absorber (p corrected) and after (p uncorrected)
+	// These are respectively AliESDMuonTrack::P() and AliESDMuonTrack::PUncorrected()
+	Double_t pUncor1 = fESD->GetMuonTrack(ii)->PUncorrected();
+	Double_t pDCA1 = (p1+pUncor1) * fESD->GetMuonTrack(ii)->GetDCA() / 2.0;
 	
-	Double_t valuesMuon[11] = {fTrackletMultiplicity, vertexCut, pileUp, matchTrigger1, thetaAbs1, eta1, pDCAX1, pDCAY1, pDCA1, p1, pT1};
+	Double_t valuesMuon[9] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, thetaAbs1, eta1, pDCA1, p1, pT1};
 	((THnSparseD *)fSingleMuonList->At(triggerClass))->Fill(valuesMuon);
 	
 	// Second loop on muons, to fill the dimuons histos
@@ -391,14 +402,12 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 
 		Double_t thetaAbs2 = (180.0 / TMath::Pi()) * TMath::ATan(fESD->GetMuonTrack(jj)->GetRAtAbsorberEnd()/505.0);
 		Double_t eta2 = fESD->GetMuonTrack(jj)->Eta();
-		Double_t dcaX2 = fESD->GetMuonTrack(jj)->GetNonBendingCoorAtDCA();
-		Double_t dcaY2 = fESD->GetMuonTrack(jj)->GetBendingCoorAtDCA();
 		Double_t p2 = fESD->GetMuonTrack(jj)->P();
-		Double_t pUncor2 = fESD->GetMuonTrack(jj)->PUncorrected();
 
-		// The pDCA is computed with the average of p and pUncor
-		Double_t pDCAX2 = (p2+pUncor2) * dcaX2/2.0;
-		Double_t pDCAY2 = (p2+pUncor2) * dcaY2/2.0;
+		// For the p used in the pDCA, we want the mean between the p before the muon go through the absorber (p corrected) and after (p uncorrected)
+		// These are respectively AliESDMuonTrack::P() and AliESDMuonTrack::PUncorrected()
+		Double_t pUncor2 = fESD->GetMuonTrack(jj)->PUncorrected();
+		Double_t pDCA2 = (p2+pUncor2) * fESD->GetMuonTrack(jj)->GetDCA() / 2.0;
 		
 		// To compute the p, pT and M of the dimuon, we need a TLorentz vector of the dimuon
 		Double_t E = fESD->GetMuonTrack(ii)->E() + fESD->GetMuonTrack(jj)->E();
@@ -408,17 +417,43 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosESD(Int_t triggerClass)
 		TLorentzVector *dimuonVector = new TLorentzVector(pX, pY, pZ, E);
 		dimuonVector->SetPxPyPzE(pX, pY, pZ, E);
 		
+		Double_t y = dimuonVector->Rapidity();
 		Double_t p = dimuonVector->P();
 		Double_t pT = TMath::Sqrt(pX*pX + pY*pY);
 		Double_t M = dimuonVector->M();
 		
-		Double_t valuesDimuon[19] = {fTrackletMultiplicity, vertexCut, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
-					     eta1, eta2, pDCAX1, pDCAY1, pDCAX2, pDCAY2, p1, p2, p, pT, M};
+		Double_t valuesDimuon[18] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger1, matchTrigger2, nMatchTrigger, thetaAbs1, thetaAbs2,
+					     eta1, eta2, pDCA1, pDCA2, p1, p2, y, p, pT, M};
 		((THnSparseD *)fDimuonList->At(triggerClass))->Fill(valuesDimuon);
 		delete dimuonVector;
 	      }
       }
   
+
+  // Since this is the ESD, we are also going to fill a the V0amp vs multiplicity histos
+  if (triggerClass == 0)
+    {
+      AliESDVZERO *v0 = fESD->GetVZEROData();
+      Float_t multV0 = 0;
+      Float_t multV0A = 0;
+      Float_t multV0C = 0;
+
+      for (Int_t ii = 0; ii < 64; ii++)
+	{
+	  multV0 += v0->GetMultiplicity(ii);
+	  if (ii < 32)
+	    {
+	      multV0C += v0->GetMultiplicityV0C(ii);
+	      multV0A += v0->GetMultiplicityV0A(ii);
+	    }
+	}
+
+      ((TH2D *)fTriggerList->At(2))->Fill(fTrackletMultiplicity, multV0);
+      ((TH2D *)fTriggerList->At(3))->Fill(fTrackletMultiplicity, multV0A);
+      ((TH2D *)fTriggerList->At(4))->Fill(fTrackletMultiplicity, multV0C);
+    }
+
+
 }
 
 
@@ -441,7 +476,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosMC()
       if (particle->Charge() == 0)
 	isGoodMult = kFALSE;
 
-      if (TMath::Abs(particle->Eta()) > 1.0)
+      if (TMath::Abs(particle->Eta()) > 1.6)
 	isGoodMult = kFALSE;
 
       // Check if the particle is a pion, kaon, proton, electron or muon
@@ -487,12 +522,15 @@ void AliAnalysisTaskMuonCollisionMultiplicity::ComputeMultiplicity()
     }
 
 
-  else
-    for (Int_t nn = 0; nn < fESD->GetMultiplicity()->GetNumberOfTracklets(); nn++)
-      if (TMath::Abs(fESD->GetMultiplicity()->GetEta(nn)) < fEtaCut)
-	multiplicity += 1;
-      
-    
+  if (fESD)
+    {
+      // In ESDs, we use the EstimateMultiplicity function
+      Int_t multTracklets = 0;
+      Int_t multTPC = 0;
+      Int_t multITSSA = 0;
+      fESD->EstimateMultiplicity(multTracklets, multTPC, multITSSA, fEtaCut);
+      multiplicity = multTracklets;
+    }
 
   fTrackletMultiplicity =  multiplicity;
 }
@@ -560,45 +598,51 @@ void AliAnalysisTaskMuonCollisionMultiplicity::Init()
 
 
 
-
   // Trigger histos
   // dimension 0 : multiplicity of the event
-  // dimension 1 : is the vertex in the z range (0 for no, 1 for yes)?
+  // dimension 1 : z vertex of the event
   // dimension 2 : is it an event without pile up (0 for no, 1 for yes)?
-  Int_t nBinsTrigger[3] =       {  150,   2,   2};
-  Double_t minRangeTrigger[3] = {  0.0, 0.0, 0.0};
-  Double_t maxRangeTrigger[3] = {150.0, 2.0, 2.0};
+  Int_t nBinsTrigger[3] =       {  150,    60,   2};
+  Double_t minRangeTrigger[3] = {  0.0, -30.0, 0.0};
+  Double_t maxRangeTrigger[3] = {150.0,  30.0, 2.0};
   THnSparseD *CINT1B = new THnSparseD ("CINT1B", "CINT1B", 3, nBinsTrigger, minRangeTrigger, maxRangeTrigger);
   THnSparseD *CMUS1B = new THnSparseD ("CMUS1B", "CMUS1B", 3, nBinsTrigger, minRangeTrigger, maxRangeTrigger);
   CINT1B->Sumw2();
   CMUS1B->Sumw2();
 
+  TH2D *CompSPDV0 = new TH2D ("CompSPDV0", "CompSPDV0", 150, 0.0, 150.0, 2000, 0.0, 2000.0);
+  CompSPDV0->Sumw2();
+  TH2D *CompSPDV0A = new TH2D ("CompSPDV0A", "CompSPDV0A", 150, 0.0, 150.0, 1000, 0.0, 1000.0);
+  CompSPDV0A->Sumw2();
+  TH2D *CompSPDV0C = new TH2D ("CompSPDV0C", "CompSPDV0C", 150, 0.0, 150.0, 1000, 0.0, 1000.0);
+  CompSPDV0C->Sumw2();
+
   fTriggerList->AddAt(CINT1B, 0);
   fTriggerList->AddAt(CMUS1B, 1);
-
+  fTriggerList->AddAt(CompSPDV0, 2);
+  fTriggerList->AddAt(CompSPDV0A, 3);
+  fTriggerList->AddAt(CompSPDV0C, 4);
 
 
 
 
   // Muons histos
-  // dimension 0  : multiplicity of the event
-  // dimension 1  : is the vertex in the z range (0 for no, 1 for yes)?
-  // dimension 2  : is it an event without pile up (0 for no, 1 for yes)?
-  // dimension 3  : does the muon match the trigger (0 for no, 1 for yes)?
-  // dimension 4  : theta_abs of the muon
-  // dimension 5  : eta of the muon
-  // dimension 6  : p DCA_x of the muon
-  // dimension 7  : p DCA_y of the muon
-  // dimension 8  : p DCA of the muon
-  // dimension 9  : p of the muon
-  // dimension 10 : pT of the muon
+  // dimension 0 : multiplicity of the event
+  // dimension 1 : z vertex of the event
+  // dimension 2 : is it an event without pile up (0 for no, 1 for yes)?
+  // dimension 3 : does the muon match the trigger (0 for no, 1 for yes)?
+  // dimension 4 : theta_abs of the muon
+  // dimension 5 : eta of the muon
+  // dimension 6 : p DCA of the muon
+  // dimension 7 : p of the muon
+  // dimension 8 : pT of the muon
 
-  Int_t nBinsMuon[11] =       {  150,   2,   2,   2,  110,   35,    150,    150,   150,   500,  300};
-  Double_t minRangeMuon[11] = {  0.0, 0.0, 0.0, 0.0,  0.0, -5.0, -300.0, -300.0,   0.0,   0.0,  0.0};
-  Double_t maxRangeMuon[11] = {150.0, 2.0, 2.0, 2.0, 11.0, -1.5,  300.0,  300.0, 450.0, 100.0, 30.0};
+  Int_t nBinsMuon[9] =       {  150,    60,   2,   2,  110,   35,   300,   300,  300};
+  Double_t minRangeMuon[9] = {  0.0, -30.0, 0.0, 0.0,  0.0, -5.0,   0.0,   0.0,  0.0};
+  Double_t maxRangeMuon[9] = {150.0,  30.0, 2.0, 2.0, 11.0, -1.5, 300.0, 150.0, 30.0};
 
-  THnSparseD *muonCINT1B = new THnSparseD("muonCINT1B", "muonCINT1B", 11, nBinsMuon, minRangeMuon, maxRangeMuon);
-  THnSparseD *muonCMUS1B = new THnSparseD("muonCMUS1B", "muonCMUS1B", 11, nBinsMuon, minRangeMuon, maxRangeMuon);
+  THnSparseD *muonCINT1B = new THnSparseD("muonCINT1B", "muonCINT1B", 9, nBinsMuon, minRangeMuon, maxRangeMuon);
+  THnSparseD *muonCMUS1B = new THnSparseD("muonCMUS1B", "muonCMUS1B", 9, nBinsMuon, minRangeMuon, maxRangeMuon);
   muonCINT1B->Sumw2();
   muonCMUS1B->Sumw2();
 
@@ -608,7 +652,7 @@ void AliAnalysisTaskMuonCollisionMultiplicity::Init()
 
   // Dimuons histos
   // dimension 0  : multiplicity of the event
-  // dimension 1  : is the vertex in the z range (0 for no, 1 for yes)?
+  // dimension 1  : z range (0 for no, 1 for yes)?
   // dimension 2  : is it an event without pile up (0 for no, 1 for yes)?
   // dimension 3  : does the first muon match the trigger (0 for no, 1 for yes)?
   // dimension 4  : does the second muon match the trigger (0 for no, 1 for yes)?
@@ -617,22 +661,21 @@ void AliAnalysisTaskMuonCollisionMultiplicity::Init()
   // dimension 7  : theta_abs of the second muon
   // dimension 8  : eta of the first muon
   // dimension 9  : eta of the second muon
-  // dimension 10 : p DCA_x of the first muon
-  // dimension 11 : p DCA_y of the first muon
-  // dimension 12 : p DCA_x of the second muon
-  // dimension 13 : p DCA_y of the second muon
-  // dimension 14 : p of the first muon
-  // dimension 15 : p of the second muon
-  // dimension 16 : p of the dimuon
-  // dimension 17 : pT of the dimuon
-  // dimension 18 : invariant mass of the dimuon
+  // dimension 10 : p DCA of the first muon
+  // dimension 11 : p DCA of the second muon
+  // dimension 12 : p of the first muon
+  // dimension 13 : p of the second muon
+  // dimension 14 : y of the dimuon
+  // dimension 15 : p of the dimuon
+  // dimension 16 : pT of the dimuon
+  // dimension 17 : invariant mass of the dimuon
 
-  Int_t nBinsDimuon[19] =       {  150,   2,   2,   2,   2,   3,  110,  110,   35,   35,    150,    150,    150,    150,   500,   500,   500,  300,  375};
-  Double_t minRangeDimuon[19] = {  0.0, 0.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0, -5.0, -5.0, -300.0, -300.0, -300.0, -300.0,   0.0,   0.0,   0.0,  0.0,  0.0};
-  Double_t maxRangeDimuon[19] = {150.0, 2.0, 2.0, 2.0, 2.0, 3.0, 11.0, 11.0, -1.5, -1.5,  300.0,  300.0,  300.0,  300.0, 100.0, 100.0, 100.0, 30.0, 15.0};
+  Int_t nBinsDimuon[18] =       {  150,    60,   2,   2,   2,   3,  110,  110,   35,   35,   200,   200,   300,   300,   35,   300,  300,  375};
+  Double_t minRangeDimuon[18] = {  0.0, -30.0, 0.0, 0.0, 0.0, 0.0,  0.0,  0.0, -5.0, -5.0,   0.0,   0.0,   0.0,   0.0, -5.0,   0.0,  0.0,  0.0};
+  Double_t maxRangeDimuon[18] = {150.0,  30.0, 2.0, 2.0, 2.0, 3.0, 11.0, 11.0, -1.5, -1.5, 600.0, 600.0, 150.0, 150.0, -1.5, 300.0, 30.0, 15.0};
 
-  THnSparseD *dimuonCINT1B = new THnSparseD("dimuonCINT1B", "dimuonCINT1B", 19, nBinsDimuon, minRangeDimuon, maxRangeDimuon);
-  THnSparseD *dimuonCMUS1B = new THnSparseD("dimuonCMUS1B", "dimuonCMUS1B", 19, nBinsDimuon, minRangeDimuon, maxRangeDimuon);
+  THnSparseD *dimuonCINT1B = new THnSparseD("dimuonCINT1B", "dimuonCINT1B", 18, nBinsDimuon, minRangeDimuon, maxRangeDimuon);
+  THnSparseD *dimuonCMUS1B = new THnSparseD("dimuonCMUS1B", "dimuonCMUS1B", 18, nBinsDimuon, minRangeDimuon, maxRangeDimuon);
 
   dimuonCINT1B->Sumw2();
   dimuonCMUS1B->Sumw2();
