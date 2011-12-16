@@ -126,7 +126,7 @@ public:
    * @param dbg Debug level 
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
-    /** 
+  /** 
    * Set to use the running average in Poisson 
    * 
    * @param use use or not
@@ -165,27 +165,6 @@ public:
    */
   void SetUsePhiAcceptance(UShort_t u=kPhiCorrectNch) { fUsePhiAcceptance = u; }
   /** 
-   * Set the lower multiplicity cut.  This overrides the setting in
-   * the energy loss fits.
-   * 
-   * @param cut Cut to use 
-   */
-  void SetMultCut(Double_t cut) { fCuts.SetMultCuts(cut,cut,cut,cut,cut); }
-  /** 
-   * Set the lower multiplicity cuts 
-   * 
-   * @param fmd1i Lower mulitplicyt cut for FMD1i
-   * @param fmd2i Lower mulitplicyt cut for FMD2i 
-   * @param fmd2o Lower mulitplicyt cut for FMD2o 
-   * @param fmd3i Lower mulitplicyt cut for FMD3i 
-   * @param fmd3o Lower mulitplicyt cut for FMD3o 
-   */
-  void SetMultCuts(Double_t fmd1i, 
-		   Double_t fmd2i, 
-		   Double_t fmd2o, 
-		   Double_t fmd3i, 
-		   Double_t fmd3o); 
-  /** 
    * Set the luming factors used in the Poisson method
    * 
    * @param eta Must be 1 or larger 
@@ -195,27 +174,6 @@ public:
     fEtaLumping = (eta < 1 ? 1 : eta); 
     fPhiLumping = (phi < 1 ? 1 : phi); 
   }
-  /** 
-   * Set the number of landau width to subtract from the most probably
-   * value to get the low cut.
-   * 
-   * @param nXi Number of @f$ \xi@f$ 
-   */
-  void SetNXi(Double_t nXi) { fCuts.SetNXi(nXi); /* fNXi = nXi;*/ } 
-  /** 
-   * Whether to include sigma in the number subtracted from the MPV to
-   * get the low cut
-   * 
-   * @param u If true, then low cut is @f$ \Delta_{mp} - n(\xi+\sigma)@f$ 
-   */
-  void SetIncludeSigma(Bool_t u) { fCuts.SetIncludeSigma(u); /*fIncludeSigma = u;*/ }
-  /** 
-   * 
-   * Set the fraction of MPV
-   * 
-   * @param cut if true cut at fraction of MPV 
-   */
-  void SetFractionOfMPV(Double_t cut) { fCuts.SetMPVFraction(cut); /*fFractionOfMPV = cut;*/ }
   /** 
    * Get the multiplicity cut.  If the user has set fMultCut (via
    * SetMultCut) then that value is used.  If not, then the lower
@@ -389,12 +347,6 @@ protected:
      * @param nEvents Number of events 
      */
     void ScaleHistograms(TList* dir, Int_t nEvents);
-#if 0
-    /** 
-     * Create Poisson histograms 
-     */
-    void ResetPoissonHistos(const TH2D* h, Int_t etaLumping, Int_t phiLumping);
-#endif
     TH2D*     fEvsN;           // Correlation of Eloss vs uncorrected Nch
     TH2D*     fEvsM;           // Correlation of Eloss vs corrected Nch
     TProfile* fEtaVsN;         // Average uncorrected Nch vs eta
@@ -402,20 +354,12 @@ protected:
     TProfile* fCorr;           // Average correction vs eta
     TH2D*     fDensity;        // Distribution inclusive Nch
     TH2D*     fELossVsPoisson; // Correlation of energy loss vs Poisson N_ch
-#if 0
-    TH2D*     fTotalStrips;    // Total number of strips in a region
-    TH2D*     fEmptyStrips;    // Total number of strips in a region
-    TH2D*     fBasicHits  ;    // Total number basic hits in a region
-    TH2D*     fEmptyVsTotal;   // # of empty strips vs total number of
-			       // # # strips 
-#else 
     AliPoissonCalculator fPoisson; // Calculate density using Poisson method
-#endif
     TH1D*     fELoss;          // Energy loss as seen by this 
     TH1D*     fELossUsed;      // Energy loss in strips with signal 
     Double_t  fMultCut;        // If set, use this
     
-    ClassDef(RingHistos,5);
+    ClassDef(RingHistos,6);
   };
   /** 
    * Get the ring histogram container 

@@ -129,7 +129,9 @@ public:
     /** Offline MB triggered */
     kOffline  = 0x800,
     /** At least one SPD cluster */ 
-    kNClusterGt0 = 0x1000
+    kNClusterGt0 = 0x1000,
+    /** V0-AND trigger */
+    kV0AND
   };
   /** 
    * Bin numbers in trigger histograms 
@@ -139,6 +141,7 @@ public:
     kBinInel, 
     kBinInelGt0, 
     kBinNSD, 
+    kBinV0AND,
     kBinA, 
     kBinB, 
     kBinC, 

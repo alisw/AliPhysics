@@ -190,6 +190,7 @@ AliAODForwardMult::GetTriggerString(UInt_t mask)
   if ((mask & kInel)        != 0x0) trg.Append("INEL ");
   if ((mask & kInelGt0)     != 0x0) trg.Append("INEL>0 ");
   if ((mask & kNSD)         != 0x0) trg.Append("NSD ");
+  if ((mask & kV0AND)       != 0x0) trg.Append("V0AND ");
   if ((mask & kA)           != 0x0) trg.Append("A ");
   if ((mask & kB)           != 0x0) trg.Append("B ");
   if ((mask & kC)           != 0x0) trg.Append("C ");
@@ -228,6 +229,7 @@ AliAODForwardMult::MakeTriggerHistogram(const char* name)
   ret->GetXaxis()->SetBinLabel(kBinInel,        "Minimum Bias");
   ret->GetXaxis()->SetBinLabel(kBinInelGt0,     "INEL>0");
   ret->GetXaxis()->SetBinLabel(kBinNSD,         "NSD");
+  ret->GetXaxis()->SetBinLabel(kBinV0AND,       "V0AND");
   ret->GetXaxis()->SetBinLabel(kBinMCNSD,       "NSD (MC truth)");
   ret->GetXaxis()->SetBinLabel(kBinPileUp,      "w/Pileup");
   ret->GetXaxis()->SetBinLabel(kBinOffline,     "w/Offline");
@@ -255,6 +257,7 @@ AliAODForwardMult::MakeTriggerMask(const char* what)
     if      (s.CompareTo("INEL")  == 0) trgMask |= AliAODForwardMult::kInel;
     else if (s.CompareTo("INEL>0")== 0) trgMask |= AliAODForwardMult::kInelGt0;
     else if (s.CompareTo("NSD")   == 0) trgMask |= AliAODForwardMult::kNSD;
+    else if (s.CompareTo("V0AND") == 0) trgMask |= AliAODForwardMult::kV0AND;
     else if (s.CompareTo("MCNSD") == 0) trgMask |= AliAODForwardMult::kMCNSD;
     else if (s.CompareTo("B")     == 0) trgMask |= AliAODForwardMult::kB;
     else if (s.CompareTo("A")     == 0) trgMask |= AliAODForwardMult::kA;
@@ -311,6 +314,7 @@ AliAODForwardMult::CheckEvent(Int_t    triggerMask,
     if (IsTriggerBits(kB|kInel))        hist->AddBinContent(kBinInel);
     if (IsTriggerBits(kB|kInelGt0))     hist->AddBinContent(kBinInelGt0);
     if (IsTriggerBits(kB|kNSD))         hist->AddBinContent(kBinNSD);
+    if (IsTriggerBits(kB|kV0AND))       hist->AddBinContent(kBinV0AND);
     if (IsTriggerBits(kPileUp))         hist->AddBinContent(kBinPileUp);
     if (IsTriggerBits(kMCNSD))          hist->AddBinContent(kBinMCNSD);
     if (IsTriggerBits(kOffline))        hist->AddBinContent(kBinOffline);

@@ -30,6 +30,7 @@
 #include <TList.h>
 #include <TDirectory.h>
 #include <TROOT.h>
+#include <TParameter.h>
 #include <iostream>
 #include <iomanip>
 
@@ -55,7 +56,9 @@ AliFMDEventInspector::AliFMDEventInspector()
     fCentAxis(0),
     fVtxAxis(10,-10,10),
     fUseFirstPhysicsVertex(true),
-    fUseV0AND(false)
+    fUseV0AND(false),
+    fMinPileupContrib(3), 
+    fMinPileupDistance(0.8)
 {
   // 
   // Constructor 
@@ -84,7 +87,9 @@ AliFMDEventInspector::AliFMDEventInspector(const char* name)
     fCentAxis(0),
     fVtxAxis(10,-10,10),
     fUseFirstPhysicsVertex(true),
-    fUseV0AND(false)
+    fUseV0AND(false),
+    fMinPileupContrib(3), 
+    fMinPileupDistance(0.8)
 {
   // 
   // Constructor 
@@ -116,7 +121,9 @@ AliFMDEventInspector::AliFMDEventInspector(const AliFMDEventInspector& o)
     fCentAxis(0),
     fVtxAxis(o.fVtxAxis),
     fUseFirstPhysicsVertex(o.fUseFirstPhysicsVertex),
-    fUseV0AND(o.fUseV0AND)
+    fUseV0AND(o.fUseV0AND),
+    fMinPileupContrib(o.fMinPileupContrib), 
+    fMinPileupDistance(o.fMinPileupDistance)
 {
   // 
   // Copy constructor 
@@ -170,6 +177,8 @@ AliFMDEventInspector::operator=(const AliFMDEventInspector& o)
   
   fUseFirstPhysicsVertex = o.fUseFirstPhysicsVertex;
   fUseV0AND              = o.fUseV0AND;
+  fMinPileupContrib      = o.fMinPileupContrib;
+  fMinPileupDistance     = o.fMinPileupDistance;
   
   if (fList) { 
     fList->SetName(GetName());
@@ -287,6 +296,7 @@ AliFMDEventInspector::Init(const TAxis& vtxAxis)
   fHTriggers->GetXaxis()->SetBinLabel(kInel   +1,"INEL");
   fHTriggers->GetXaxis()->SetBinLabel(kInelGt0+1,"INEL>0");
   fHTriggers->GetXaxis()->SetBinLabel(kNSD    +1,"NSD");
+  fHTriggers->GetXaxis()->SetBinLabel(kV0AND  +1,"VOAND");
   fHTriggers->GetXaxis()->SetBinLabel(kEmpty  +1,"Empty");
   fHTriggers->GetXaxis()->SetBinLabel(kA      +1,"A");
   fHTriggers->GetXaxis()->SetBinLabel(kB      +1,"B");
@@ -352,6 +362,10 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   TNamed* sNN = new TNamed("sNN", "");
   TNamed* fld = new TNamed("field", "");
   TNamed* run = new TNamed("runNo", Form("%d", runNo));
+  TNamed* low = new TNamed("lowFlux", Form("%d", fLowFluxCut));
+  TNamed* fpv = new TNamed("fpVtx", Form("%s", fUseFirstPhysicsVertex ? "true" : "false"));
+  TNamed* v0a = new TNamed("v0and", Form("%s", fUseV0AND ? "true" : "false"));
+  TNamed* nCp = new TNamed("nPileup", Form("%d", fMinPileupContrib));
   sys->SetTitle(AliForwardUtil::CollisionSystemString(fCollisionSystem));
   sNN->SetTitle(AliForwardUtil::CenterOfMassEnergyString(fEnergy));
   fld->SetTitle(AliForwardUtil::MagneticFieldString(fField));
@@ -359,11 +373,23 @@ AliFMDEventInspector::StoreInformation(Int_t runNo)
   sNN->SetUniqueID(fEnergy);
   fld->SetUniqueID(fField);
   run->SetUniqueID(runNo);
+  low->SetUniqueID(fLowFluxCut);
+  fpv->SetUniqueID(fUseFirstPhysicsVertex ? 1 : 0);
+  v0a->SetUniqueID(fUseV0AND ? 1  : 0);
+  nCp->SetUniqueID(fMinPileupContrib);
 
+  TParameter<Double_t>* dP = new TParameter<Double_t>("dPileup", fMinPileupDistance);
   fList->Add(sys);
   fList->Add(sNN);
   fList->Add(fld);
-  fList->Add(run);
+  fList->Add(run);				
+  fList->Add(low);
+  fList->Add(fpv);
+  fList->Add(v0a);
+  fList->Add(nCp);
+  fList->Add(dP);
+  
+
 }
 
 //____________________________________________________________________
@@ -577,7 +603,7 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   
   if(offline && trigStr.Contains("CMUS1")) offline = false;
     
-  if (offline ) {
+  if (offline) {
     triggers |= AliAODForwardMult::kOffline;
     triggers |= AliAODForwardMult::kInel;
     fHTriggers->Fill(kOffline+0.5);
@@ -611,20 +637,19 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
   
   // Analyse some trigger stuff 
   AliTriggerAnalysis ta;
-  if(fUseV0AND) {
-    if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND)) 
+  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kV0AND)) {
+    triggers |= AliAODForwardMult::kV0AND;
+    if (fUseV0AND) 
       triggers |= AliAODForwardMult::kNSD;
   }
-  else {
-    if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
-      triggers |= AliAODForwardMult::kNSD;
-  }
+  if (ta.IsOfflineTriggerFired(esd, AliTriggerAnalysis::kNSD1)) 
+    triggers |= AliAODForwardMult::kNSD;
   
   // Check for multiple vertices (pile-up) with at least 3
   // contributors and at least 0.8cm from the primary vertex
   Bool_t pileup = kFALSE;
   if(fCollisionSystem == AliForwardUtil::kPP)
-    pileup =  esd->IsPileupFromSPD(3,0.8);
+    pileup =  esd->IsPileupFromSPD(fMinPileupContrib,fMinPileupDistance);
   if (pileup) {
     triggers |= AliAODForwardMult::kPileUp;
     fHTriggers->Fill(kPileUp+.5);
@@ -739,6 +764,9 @@ AliFMDEventInspector::ReadTriggers(const AliESDEvent* esd, UInt_t& triggers,
     
     if (triggers & AliAODForwardMult::kNSD)
       fHTriggers->Fill(kNSD+.5);
+
+    if (triggers & AliAODForwardMult::kV0AND)
+      fHTriggers->Fill(kV0AND+.5);
   }
   
   return kTRUE;
@@ -900,6 +928,8 @@ AliFMDEventInspector::Print(Option_t*) const
 	    << "," << fVtxAxis.GetXmax() << "]\n"
 	    << ind << " Low flux cut:           " << fLowFluxCut << '\n'
 	    << ind << " Max(delta v_z):         " << fMaxVzErr << " cm\n"
+	    << ind << " Min(nContrib_pileup):   " << fMinPileupContrib << '\n'
+	    << ind << " Min(v-pileup):          " << fMinPileupDistance << '\n'
 	    << ind << " System:                 " 
 	    << AliForwardUtil::CollisionSystemString(fCollisionSystem) << '\n'
 	    << ind << " CMS energy per nucleon: " << sNN << '\n'
