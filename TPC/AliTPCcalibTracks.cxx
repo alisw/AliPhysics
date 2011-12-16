@@ -1235,7 +1235,7 @@ Long64_t AliTPCcalibTracks::Merge(TCollection *collectionList) {
       histList = new TList;
       while (( objarray =  (TObjArray*)objListIterator->Next() )) { 
          // loop over arrayQDZList, get TObjArray, get object at position i, cast it into TH3F
-         if (!objarray) continue;
+	 //   if (!objarray) continue; // removed for coverity -> JMT
          hist = (TH3F*)(objarray->At(i));
          histList->Add(hist);
       }
