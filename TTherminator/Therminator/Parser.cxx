@@ -410,9 +410,13 @@ void Parser::ReadInput()
 	  char *tLBrackert, *tFirstComma, *tSecondComma, *tThirdComma, *tRBracket;
 	  
 	  tLBrackert = strchr(str,'[');
+	  if (!tLBrackert) exit(0);
 	  tFirstComma = strchr(str,',');
+	  if (!tFirstComma) exit(0);
 	  tSecondComma = strchr(tFirstComma+1,',');
+	  if (!tSecondComma) exit(0);
 	  tThirdComma = strchr(tSecondComma+1,',');
+	  if (!tThirdComma) exit(0);
 	  tRBracket = strchr(tThirdComma,']');
 	  if (!(tLBrackert && tFirstComma && tSecondComma && tThirdComma && tRBracket))
 	    PRINT_DEBUG_1("Malformed line!: " << str);
