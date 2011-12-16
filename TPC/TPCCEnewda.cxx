@@ -329,7 +329,7 @@ int main(int argc, char **argv) {
 //   calibCE.Write("tpcCalibCE");
 //   delete fileTPC;
   
-  calibCE.DumpToFile(RESULT_FILE,"name=tpcCalibCE,type=3");
+  calibCE.DumpToFile(RESULT_FILE,"name=tpcCalibCE,type=4");
   printf("TPCCEnewda: Wrote %s\n",RESULT_FILE);
   
   /* store the result file on FES */

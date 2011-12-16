@@ -281,6 +281,7 @@ END_HTML */
 #include <TTimeStamp.h>
 #include <TList.h>
 #include <TKey.h>
+#include <TSpectrum.h>
 
 //AliRoot includes
 #include "AliLog.h"
@@ -376,7 +377,8 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fHnDrift(0x0),
   fArrHnDrift(100),
   fTimeBursts(100),
-  fArrFitGraphs(0x0)
+  fArrFitGraphs(0x0),
+  fEventInBunch(0)
 {
   //
   // AliTPCSignal default constructor
@@ -386,7 +388,7 @@ AliTPCCalibCE::AliTPCCalibCE() :
   fLastTimeBin=1030;
   fParam->Update();
   for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
-  for (Int_t i=0;i<5;++i){
+  for (Int_t i=0;i<14;++i){
     fPeaks[i]=0;
     fPeakWidths[i]=0;
   }
@@ -463,7 +465,8 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
   fHnDrift(0x0),
   fArrHnDrift(100),
   fTimeBursts(100),
-  fArrFitGraphs(0x0)
+  fArrFitGraphs(0x0),
+  fEventInBunch(0)
 {
   //
   // AliTPCSignal copy constructor
@@ -552,7 +555,7 @@ AliTPCCalibCE::AliTPCCalibCE(const AliTPCCalibCE &sig) :
     fTimeBursts[i]=sig.fTimeBursts[i];
   }
   
-  for (Int_t i=0;i<5;++i){
+  for (Int_t i=0;i<14;++i){
     fPeaks[i]=sig.fPeaks[i];
     fPeakWidths[i]=sig.fPeakWidths[i];
   }
@@ -635,7 +638,8 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   fHnDrift(0x0),
   fArrHnDrift(100),
   fTimeBursts(100),
-  fArrFitGraphs(0x0)
+  fArrFitGraphs(0x0),
+  fEventInBunch(0)
 {
   //
   // constructor which uses a tmap as input to set some specific parameters
@@ -669,7 +673,7 @@ AliTPCCalibCE::AliTPCCalibCE(const TMap *config) :
   if (config->GetValue("AnalyseNew")) fAnalyseNew = (Bool_t)((TObjString*)config->GetValue("AnalyseNew"))->GetString().Atoi();
   
   for (Int_t i=0;i<1024;++i) fPadSignal[i]=0;
-  for (Int_t i=0;i<5;++i){
+  for (Int_t i=0;i<14;++i){
     fPeaks[i]=0;
     fPeakWidths[i]=0;
   }
@@ -785,41 +789,47 @@ void AliTPCCalibCE::ProcessBunch(const Int_t sector, const Int_t row, const Int_
 
   //only in new processing mode
   if (!fProcessNew) return;
-  //don't use the IROCs
+    //don't use the IROCs and inner part of OROCs
   if (sector<36) return;
+  if (row<40) return;    
   //only bunches with reasonable length
   if (length<3||length>10) return;
   
   UShort_t  timeBin    = (UShort_t)startTimeBin;
   //skip first laser layer
-  if (timeBin<200) return;
+  if (timeBin<280) return;
+
   Double_t timeBurst=SetBurstHnDrift();
   
+  Int_t cePeak=((sector/18)%2)*7+6;
   //after 1 event setup peak ranges
-  if (fNevents==1&&fPeaks[4]==0) {
+  if (fEventInBunch==1 && fPeaks[cePeak]==0) {
     // set time range
     fHnDrift->GetAxis(4)->SetRangeUser(timeBurst-2*60,timeBurst+2*60);
     FindLaserLayers();
     // set time range
     fHnDrift->GetAxis(4)->SetRangeUser(fHnDrift->GetAxis(4)->GetXmin(),fHnDrift->GetAxis(4)->GetXmax());
+    fHnDrift->Reset();
   }
   
   // After the first event only fill every 5th  bin in a row with the CE information
   Int_t padFill=pad;
-  if (fPeaks[4]>100&&TMath::Abs((Short_t)fPeaks[4]-(Short_t)timeBin)<(Short_t)fPeakWidths[4]){
+  if (fEventInBunch==0||(fPeaks[cePeak]>100&&TMath::Abs((Short_t)fPeaks[cePeak]-(Short_t)timeBin)<(Short_t)fPeakWidths[cePeak])){
     Int_t mod=5;
     Int_t n=pad/mod;
     padFill=mod*n+mod/2;
   }
 
   //noise removal
-  if (!IsPeakInRange(timeBin+length/2)) return;
+  if (!IsPeakInRange(timeBin+length/2,sector)) return;
   
   Double_t x[kHnBinsDV]={(Double_t)sector,(Double_t)row,
       (Double_t)padFill,(Double_t)timeBin,timeBurst};
   
   for (Int_t iTimeBin = 0; iTimeBin<length; iTimeBin++){
     Float_t sig=(Float_t)signal[iTimeBin];
+     // if (fPeaks[6]>900&&timeBin>(fPeaks[6]-20)&&sig<20) continue;
+     // if (fPeaks[6]>900&&timeBin<(fPeaks[6]-fPeakWidth[6])&&sig<5) continue;
     x[3]=timeBin;
     fHnDrift->Fill(x,sig);
     --timeBin;
@@ -832,39 +842,57 @@ void AliTPCCalibCE::FindLaserLayers()
   // Find the laser layer positoins
   //
 
-
-  //find CE signal position and width
-  TH1D *hproj=fHnDrift->Projection(3);
-  hproj->GetXaxis()->SetRangeUser(700,1030);
-  Int_t maxbin=hproj->GetMaximumBin();
-  Double_t binc=hproj->GetBinCenter(maxbin);
-  hproj->GetXaxis()->SetRangeUser(binc-10,binc+10);
+  //A-side + C-side
+  for (Int_t iside=0;iside<2;++iside){
+    Int_t add=7*iside;
+    //find CE signal position and width
+    fHnDrift->GetAxis(0)->SetRangeUser(36+iside*18,53+iside*18);
+    TH1D *hproj=fHnDrift->Projection(3);
+    hproj->GetXaxis()->SetRangeUser(700,1030);
+    Int_t maxbin=hproj->GetMaximumBin();
+    Double_t binc=hproj->GetBinCenter(maxbin);
+    hproj->GetXaxis()->SetRangeUser(binc-5,binc+5);
   
-  fPeaks[4]=(UShort_t)TMath::Nint(hproj->GetMean());
-//   fPeakWidths[4]=(UShort_t)TMath::Nint(4*hproj->GetRMS()+.5);
-  fPeakWidths[4]=(UShort_t)TMath::Nint(10.);
+    fPeaks[add+6]=(UShort_t)TMath::Nint(binc);
+  //   fPeakWidths[4]=(UShort_t)TMath::Nint(4*hproj->GetRMS()+.5);
+    fPeakWidths[add+6]=7;
   
-  //other peaks
-  Int_t timepos=fPeaks[4]-2*fPeakWidths[4];
-  Int_t width=100;
-  
-  for (Int_t i=3; i>=0; --i){
-    hproj->GetXaxis()->SetRangeUser(timepos-width,timepos);
-    fPeaks[i]=(UShort_t)TMath::Nint(hproj->GetMean());
-    fPeakWidths[i]=(UShort_t)TMath::Nint(4*hproj->GetRMS()+.5);
-    width=250;
-    timepos=fPeaks[i]-width/2;
-  }
-  
-  //check width and reset peak if >100
-  for (Int_t i=0; i<5; ++i){
-    if (fPeakWidths[i]>100) {
-      fPeaks[i]=0;
-      fPeakWidths[i]=0;
+    hproj->GetXaxis()->SetRangeUser(0,maxbin-10);
+    TSpectrum s(6);
+    s.Search(hproj,2,"goff");
+    Int_t index[6];
+    TMath::Sort(6,s.GetPositionX(),index,kFALSE);
+    for (Int_t i=0; i<6; ++i){
+      fPeaks[i+add]=(UShort_t)TMath::Nint(s.GetPositionX()[index[i]]);
+      fPeakWidths[i+add]=5;
     }
-  }
+    
+    //other peaks
+    
+//    Int_t timepos=fPeaks[4]-2*fPeakWidths[4];
+//    Int_t width=100;
+   
+//    for (Int_t i=3; i>=0; --i){
+//      hproj->GetXaxis()->SetRangeUser(timepos-width,timepos);
+//      fPeaks[i]=hproj->GetMaximumBin(); 
+//      fPeakWidths[i]=(UShort_t)TMath::Nint(10.);
+//      width=250;
+//      timepos=fPeaks[i]-width/2;
+//    }
+  
+//    for (Int_t i=add; i<add+7; ++i){
+//      printf("Peak: %u +- %u\n",fPeaks[i],fPeakWidths[i]);
+//    }
+    //check width and reset peak if >100
+//    for (Int_t i=0; i<5; ++i){
+//      if (fPeakWidths[i]>100) {
+//        fPeaks[i]=0;
+//        fPeakWidths[i]=0;
+//      }
+//    }
 
-  delete hproj;
+    delete hproj;
+  }
 }
 
 //_____________________________________________________________________
@@ -1127,7 +1155,10 @@ void AliTPCCalibCE::EndEvent()
   //  This is automatically done if the ProcessEvent(AliRawReader *rawReader)
   //  function was called
   if (!fProcessOld) {
-    if (fProcessNew) ++fNevents;
+    if (fProcessNew){
+      ++fNevents;
+      ++fEventInBunch;
+    }
     return;
   }
   
@@ -1359,6 +1390,7 @@ void AliTPCCalibCE::EndEvent()
   fVEventNumber.GetMatrixArray()[fNevents] = fEventId;
 
   ++fNevents;
+  if (fProcessNew) ++fEventInBunch;
   fOldRunNumber = fRunNumber;
 
   delete calIroc;
@@ -1651,7 +1683,7 @@ void AliTPCCalibCE::CreateDVhist()
   fHnDrift->GetAxis(2)->SetNameTitle("Pad","Pad number");
   fHnDrift->GetAxis(3)->SetNameTitle("Timebin","Time bin [x100ns]");
   fHnDrift->GetAxis(4)->SetNameTitle("EventTime","Event time");
-  
+  fHnDrift->Reset();
 }
 
 //_____________________________________________________________________
@@ -2096,15 +2128,16 @@ void AliTPCCalibCE::FindLocalMaxima(TObjArray * const arrObj, Double_t timestamp
   // find central electrode position once more, separately for IROC, OROC, A-, C-Side
   
   for (Int_t i=0; i<4; ++i){
+    Int_t ce=(i/2>0)*7+6;
     hProj->GetAxis(0)->SetRangeUser(i*18,(i+1)*18-1);
     TH1 *h=fHnDrift->Projection(3);
-    h->GetXaxis()->SetRangeUser(fPeaks[4]-fPeakWidths[4],fPeaks[4]+fPeakWidths[4]);
+    h->GetXaxis()->SetRangeUser(fPeaks[ce]-fPeakWidths[ce],fPeaks[ce]+fPeakWidths[ce]);
     Int_t nbinMax=h->GetMaximumBin();
     Double_t maximum=h->GetMaximum();
 //     Double_t maxExpected=fNevents/fArrHnDrift->GetEntries()*556568./5./10.;
 //     if (nbinMax<700||maximum<maxExpected) continue;
     Double_t xbinMax=h->GetBinCenter(nbinMax);
-    TF1 fgaus("gaus","gaus",xbinMax-10,xbinMax+10);
+    TF1 fgaus("gaus","gaus",xbinMax-5,xbinMax+5);
     fgaus.SetParameters(maximum,xbinMax,2);
     fgaus.SetParLimits(1,xbinMax-5.,xbinMax+5.);
     fgaus.SetParLimits(2,0.2,4.);
@@ -2401,7 +2434,7 @@ void AliTPCCalibCE::AnalyseTrack()
     
     //Dump information to file if requested
     if (fStreamLevel>2){
-      printf("make tree\n");
+      //printf("make tree\n");
       //laser track information
       
       for (Int_t itrack=0; itrack<338; ++itrack){
@@ -2737,7 +2770,7 @@ void AliTPCCalibCE::CalculateDV(TObjArray * const arrIdeal, TObjArray * const ar
       //cut if no track info available
         if (iltr->GetBundle()==0) continue;
         if (iR<133||mR<133) continue;
-        if(mltr->fVecP2->GetMatrixArray()[index]>minres[i]) continue;
+        if(TMath::Abs(mltr->fVecP2->GetMatrixArray()[index])>minres[i]) continue;
         
         Double_t ldrift  = (iltr->GetSide()==0)?zlength-iGz:iGz+zlength;
         Double_t mdrift  = (iltr->GetSide()==0)?zlength-mGz:mGz+zlength;
@@ -2917,7 +2950,7 @@ void AliTPCCalibCE::CalculateDV(TObjArray * const arrIdeal, TObjArray * const ar
     Int_t ipoint=burst;
     grC[i]->SetPoint(ipoint,timestamp,fitC(i));
     grC[i]->SetPointError(ipoint,60,.0001);
-    if (i<4) grC[i]->SetPointError(ipoint,60,fdriftA.GetCovarianceMatrixElement(i,i));
+    if (i<4) grC[i]->SetPointError(ipoint,60,fdriftC.GetCovarianceMatrixElement(i,i));
   }
   
   //AC-Side graphs
@@ -2935,7 +2968,7 @@ void AliTPCCalibCE::CalculateDV(TObjArray * const arrIdeal, TObjArray * const ar
     Int_t ipoint=burst;
     grAC[i]->SetPoint(ipoint,timestamp,fitAC(i));
     grAC[i]->SetPointError(ipoint,60,.0001);
-    if (i<5) grAC[i]->SetPointError(ipoint,60,fdriftA.GetCovarianceMatrixElement(i,i));
+    if (i<5) grAC[i]->SetPointError(ipoint,60,fdriftAC.GetCovarianceMatrixElement(i,i));
   }
   
   if (fDebugLevel>10){
@@ -2969,7 +3002,11 @@ Double_t AliTPCCalibCE::SetBurstHnDrift()
   CreateDVhist();
   fArrHnDrift.AddAt(fHnDrift,i);
   fTimeBursts.GetMatrixArray()[i]=fTimeStamp;
-//   fPeaks[4]=0;
+  for (i=0;i<14;++i){
+    fPeaks[i]=0;
+    fPeakWidths[i]=0;
+  }
+  fEventInBunch=0;
   return fTimeStamp;
 }
 
@@ -3010,6 +3047,23 @@ void AliTPCCalibCE::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t
       type=optString.Atoi();
     }
   }
+
+  if ( type==4 ){
+    // only for the new algorithm
+    AliTPCCalibCE ce;
+    ce.fArrFitGraphs=fArrFitGraphs;
+    ce.fNevents=fNevents;
+    ce.fTimeBursts.ResizeTo(fTimeBursts.GetNrows());
+    ce.fTimeBursts=fTimeBursts;
+    ce.fProcessNew=kTRUE;
+    TFile f(filename,"recreate");
+    ce.Write(objName.Data());
+    fArrHnDrift.Write("arrHnDrift",TObject::kSingleKey);
+    f.Close();
+    ce.fArrFitGraphs=0x0;
+    return;
+  }
+
 
   if (type==1||type==2) {
     //delete most probably not needed stuff
@@ -3056,7 +3110,7 @@ void AliTPCCalibCE::DumpToFile(const Char_t *filename, const Char_t *dir, Bool_t
   TDirectory *backup = gDirectory;
   
   TFile f(filename,"recreate");
-  this->Write(objName.Data());
+  Write(objName.Data());
   if (type==1||type==2) {
     histoQArray.Write("histoQArray",TObject::kSingleKey);
     histoT0Array.Write("histoT0Array",TObject::kSingleKey);

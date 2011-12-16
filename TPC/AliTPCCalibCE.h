@@ -236,9 +236,10 @@ private:
   TObjArray   fArrHnDrift;             // array of sparse histograms for each burst
   TVectorD    fTimeBursts;             //  time stamps of bursts
   UInt_t      fBinsLastAna[100];       // number of bin in the THnSparse during the last analysis
-  UShort_t    fPeaks[5];               //! Peak position: 4 laser layers and CE
-  UShort_t    fPeakWidths[5];          //! Peak window widths
+  UShort_t    fPeaks[14];               //! Peak position: 4 laser layers and CE
+  UShort_t    fPeakWidths[14];          //! Peak window widths
   TObjArray  *fArrFitGraphs;           // Fit resut graphs for each parameter
+  UInt_t      fEventInBunch;           //! event in current bunch
   
   
   //
@@ -268,7 +269,7 @@ private:
   void CreateDVhist();
   
   void   FindLaserLayers();
-  Bool_t IsPeakInRange(UShort_t timebin) const;
+  Bool_t IsPeakInRange(UShort_t timebin, Int_t roc) const;
 
   TObjArray *SetupMeasured();
   void ResetMeasured(TObjArray * const arr);
@@ -282,19 +283,21 @@ private:
   TVectorF* GetPadRMSEvent(Int_t sector, Bool_t force=kFALSE);
   TVectorF* GetPadPedestalEvent(Int_t sector, Bool_t force=kFALSE);
   
-  ClassDef(AliTPCCalibCE,9)  //Implementation of the TPC Central Electrode calibration
+  ClassDef(AliTPCCalibCE,10)  //Implementation of the TPC Central Electrode calibration
 };
 
 //Inline functions
 //_____________________________________________________________________
-inline Bool_t AliTPCCalibCE::IsPeakInRange(UShort_t timebin) const
+inline Bool_t AliTPCCalibCE::IsPeakInRange(UShort_t timebin, Int_t roc) const
 {
   //
   // Check whether timebin is in the range of a laser layer
   //
+  Int_t side=(roc/18)%2;
+  Int_t add=7*side;
 //   return kTRUE;
-  if (fPeaks[4]<2) return kTRUE; //not determined yet
-  for (Int_t i=0; i<5; ++i){
+  if (fPeaks[14]<2) return kTRUE; //not determined yet
+  for (Int_t i=add; i<add+7; ++i){
     if (TMath::Abs((Short_t)timebin-(Short_t)fPeaks[i])<(Short_t)fPeakWidths[i]) return kTRUE;
   }
   return kFALSE;
