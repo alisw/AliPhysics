@@ -105,7 +105,8 @@ AliAnalysisTaskESDfilter *AddTaskESDFilter(Bool_t useKineFilter=kTRUE,
    // TPC only tracks: Optionally enable the writing of TPConly information
    // constrained to SPD vertex in the filter below
    AliESDtrackCuts* esdTrackCutsTPCOnly = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-   esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
+   // The following line is needed for 2010 PbPb reprocessing and pp, but not for 2011 PbPb
+   //esdTrackCutsTPCOnly->SetMinNClustersTPC(70);
 
    // Extra cuts for hybrids
    // first the global tracks we want to take

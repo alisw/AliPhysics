@@ -755,14 +755,14 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
   AliESDtrackCuts* esdTrackCuts = new AliESDtrackCuts;
 
   // TPC  
-  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(70);
+  if(clusterCut == 0)  esdTrackCuts->SetMinNClustersTPC(50);
   else if (clusterCut == 1) {
     esdTrackCuts->SetMinNCrossedRowsTPC(70);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   }
   else {
     AliWarningClass(Form("Wrong value of the clusterCut parameter (%d), using cut on Nclusters",clusterCut));
-    esdTrackCuts->SetMinNClustersTPC(70);
+    esdTrackCuts->SetMinNClustersTPC(50);
   }
   esdTrackCuts->SetMaxChi2PerClusterTPC(4);
   esdTrackCuts->SetAcceptKinkDaughters(kFALSE);
