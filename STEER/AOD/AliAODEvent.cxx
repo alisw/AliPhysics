@@ -59,7 +59,7 @@ ClassImp(AliAODEvent)
 //______________________________________________________________________________
 AliAODEvent::AliAODEvent() :
   AliVEvent(),
-  fAODObjects(new TList()),
+  fAODObjects(0),
   fAODFolder(0),
   fConnected(kFALSE),
   fHeader(0),
