@@ -663,16 +663,19 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
     }
   }
   
-  fHistNEvents = new TH1F("fHistNEvents", "number of events ",9,-0.5,8.5);
+  fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
   fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
   fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with PbPb HM trigger");
-  fHistNEvents->GetXaxis()->SetBinLabel(4,"no. of Rejected pileup events");
-  fHistNEvents->GetXaxis()->SetBinLabel(5,"no. of candidate");
-  fHistNEvents->GetXaxis()->SetBinLabel(6,"no. of D+ after loose cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(7,"no. of D+ after tight cuts");
-  fHistNEvents->GetXaxis()->SetBinLabel(8,"no. of out centrality events");
+  fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
+  fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
+  fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
+   fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
+  fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after loose cuts");
+  fHistNEvents->GetXaxis()->SetBinLabel(11,"D+ after tight cuts");
+ 
   fHistNEvents->GetXaxis()->SetNdivisions(1,kFALSE);  
   fHistNEvents->Sumw2();
   fHistNEvents->SetMinimum(0);
@@ -770,8 +773,9 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   TString trigclass=aod->GetFiredTriggerClasses();
   if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(2);
   if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(3); 
-  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(7);fHistCentrality[2]->Fill(centrality);}
-
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(centrality);}
+  if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
+  if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
   // Post the data already here  
   PostData(1,fOutput);
   if(!isEvSel)return;
@@ -826,7 +830,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   Int_t nSelectedloose=0,nSelectedtight=0;
   for (Int_t i3Prong = 0; i3Prong < n3Prong; i3Prong++) {
     AliAODRecoDecayHF3Prong *d = (AliAODRecoDecayHF3Prong*)array3Prong->UncheckedAt(i3Prong);
-    fHistNEvents->Fill(4);
+    fHistNEvents->Fill(7);
     if(fUseBit && !d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){
       fHistNEvents->Fill(8);
       continue;
@@ -939,7 +943,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	Float_t cxy=d->CosPointingAngleXY();
 	index=GetHistoIndex(iPtBin);
 	if(isFidAcc){
-	  fHistNEvents->Fill(5);
+	  fHistNEvents->Fill(9);
 	  nSelectedloose++;
 	  fMassHist[index]->Fill(invMass);
 	  if(fCutsDistr){	  
@@ -957,7 +961,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
 				    d->Getd0Prong(2)*d->Getd0Prong(1));
 	  }
-	  if(passTightCuts){ fHistNEvents->Fill(6);
+	  if(passTightCuts){ fHistNEvents->Fill(10);
 	    nSelectedtight++;
 	    fMassHistTC[index]->Fill(invMass);
 	    if(fCutsDistr){  
