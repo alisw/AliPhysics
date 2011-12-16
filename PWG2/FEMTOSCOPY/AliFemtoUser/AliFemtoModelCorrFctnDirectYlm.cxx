@@ -69,33 +69,38 @@ AliFemtoModelCorrFctnDirectYlm::~AliFemtoModelCorrFctnDirectYlm()
 AliFemtoModelCorrFctnDirectYlm& AliFemtoModelCorrFctnDirectYlm::operator=(const AliFemtoModelCorrFctnDirectYlm& aCorrFctn)
 {
   // assignment operator
-  if (this == &aCorrFctn) 
-    return *this;
+  if (this != &aCorrFctn) {
 
-  fUseLCMS = aCorrFctn.fUseLCMS;
-
-  if (aCorrFctn.fCYlmTrue)
-    fCYlmTrue = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmTrue);
-  else fCYlmTrue = 0;
-
-  if (aCorrFctn.fCYlmFake)
-    fCYlmFake = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmFake);
-  else fCYlmFake = 0;
-
-  if (aCorrFctn.fNumeratorTrue)
-    fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
-  else
-    fNumeratorTrue = 0;
-
-  if (aCorrFctn.fNumeratorFake)
-    fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
-  else
-    fNumeratorFake = 0;
-
-  if (aCorrFctn.fDenominator)
-    fDenominator = new TH1D(*aCorrFctn.fDenominator);
-  else
-    fDenominator = 0;
+    fUseLCMS = aCorrFctn.fUseLCMS;
+    
+    if (fCYlmTrue) delete fCYlmTrue;
+    if (aCorrFctn.fCYlmTrue)
+      fCYlmTrue = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmTrue);
+    else fCYlmTrue = 0;
+    
+    if (fCYlmFake) delete fCYlmFake;
+    if (aCorrFctn.fCYlmFake)
+      fCYlmFake = new AliFemtoCorrFctnDirectYlm(*aCorrFctn.fCYlmFake);
+    else fCYlmFake = 0;
+    
+    if (fNumeratorTrue) delete fNumeratorTrue;
+    if (aCorrFctn.fNumeratorTrue)
+      fNumeratorTrue = new TH1D(*aCorrFctn.fNumeratorTrue);
+    else
+      fNumeratorTrue = 0;
+    
+    if (fNumeratorFake) delete fNumeratorFake;
+    if (aCorrFctn.fNumeratorFake)
+      fNumeratorFake = new TH1D(*aCorrFctn.fNumeratorFake);
+    else
+      fNumeratorFake = 0;
+    
+    if (fDenominator) delete fDenominator;
+    if (aCorrFctn.fDenominator)
+      fDenominator = new TH1D(*aCorrFctn.fDenominator);
+    else
+      fDenominator = 0;
+  }
 
   return *this;
 }
