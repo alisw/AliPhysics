@@ -71,7 +71,8 @@ public:
   enum ETrgBins { 
     kInel, 
     kInelGt0, 
-    kNSD, 
+    kNSD,
+    kV0AND, 
     kEmpty, 
     kA, 
     kB, 
@@ -179,7 +180,25 @@ public:
    * 
    * @param use Use it or not 
    */
-  void SetUseV0AndForNSD(Bool_t use) {fUseV0AND = use; }
+  void SetUseV0AndForNSD(Bool_t use=true) {fUseV0AND = use; }
+  /** 
+   * Set the minimum number of contributors for a 2nd pile-up vertex 
+   * 
+   * @param nContrib Least number of contributors 
+   */
+  void SetMinPileupContributors(UShort_t nContrib=3) 
+  { 
+    fMinPileupContrib = nContrib;
+  }
+  /** 
+   * Set minimum distance from primary vertex to 2nd pile-up vertex 
+   * 
+   * @param cm Distance (in centimeters)
+   */
+  void SetMinPileupDistance(Double_t cm=0.8)
+  {
+    fMinPileupDistance = cm;
+  }
   /** 
    * Set the debug level.  The higher the value the more output 
    * 
@@ -301,7 +320,11 @@ protected:
   TAxis    fVtxAxis;      //Vtx Axis 
   Bool_t   fUseFirstPhysicsVertex; //Use the vtx code from p+p first physics
   Bool_t   fUseV0AND;     //Use the vtx code from p+p first physics
-  ClassDef(AliFMDEventInspector,3); // Inspect the event 
+  UShort_t fMinPileupContrib; // Minimum number of contributors to 2nd
+			      // pile-up vertex
+  Double_t fMinPileupDistance; // Minimum distance of 2nd pile-up
+			       // vertex 
+  ClassDef(AliFMDEventInspector,4); // Inspect the event 
 };
 
 #endif

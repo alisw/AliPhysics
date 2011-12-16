@@ -54,8 +54,6 @@ AliFMDSharingFilter::AliFMDSharingFilter()
   : TNamed(), 
     fRingHistos(),
     fCorrectAngles(kFALSE), 
-    fNXi(1),
-    fIncludeSigma(true),
     fSummed(0),
     fHighCuts(0),
     fLowCuts(0),
@@ -77,8 +75,6 @@ AliFMDSharingFilter::AliFMDSharingFilter(const char* title)
   : TNamed("fmdSharingFilter", title), 
     fRingHistos(), 
     fCorrectAngles(kFALSE), 
-    fNXi(1),
-    fIncludeSigma(true),
     fSummed(0),
     fHighCuts(0),
     fLowCuts(0),
@@ -115,8 +111,6 @@ AliFMDSharingFilter::AliFMDSharingFilter(const AliFMDSharingFilter& o)
   : TNamed(o), 
     fRingHistos(), 
     fCorrectAngles(o.fCorrectAngles), 
-    fNXi(o.fNXi),
-    fIncludeSigma(o.fIncludeSigma),
     fSummed(o.fSummed),
     fHighCuts(o.fHighCuts),
     fLowCuts(o.fLowCuts),
@@ -165,13 +159,11 @@ AliFMDSharingFilter::operator=(const AliFMDSharingFilter& o)
   TNamed::operator=(o);
 
   fCorrectAngles                = o.fCorrectAngles;
-  fNXi                          = o.fNXi;
   fDebug                        = o.fDebug;
   fOper                         = o.fOper;
   fSummed                       = o.fSummed;
   fHighCuts                     = o.fHighCuts;
   fLowCuts                      = o.fLowCuts;
-  fIncludeSigma                 = o.fIncludeSigma;
   fZeroSharedHitsBelowThreshold = o.fZeroSharedHitsBelowThreshold;
   fLCuts                        = o.fLCuts;
   fHCuts                        = o.fHCuts;
@@ -561,17 +553,6 @@ AliFMDSharingFilter::GetHighCut(UShort_t d, Char_t r,
   // 2 times the width of the corresponding Landau.
   //
   return fHCuts.GetMultCut(d,r,eta,errors); 
-#if 0
-  AliForwardCorrectionManager&  fcm = AliForwardCorrectionManager::Instance();
-
- 
-  // Get the high cut.  The high cut is defined as the 
-  // most-probably-value peak found from the energy distributions, minus 
-  // 2 times the width of the corresponding Landau.
-  AliFMDCorrELossFit* fits = fcm.GetELossFit();
-  
-  return fits->GetLowerBound(d, r, eta, fNXi, errors, fIncludeSigma);
-#endif
 }
 
 //_____________________________________________________________________
@@ -921,11 +902,6 @@ AliFMDSharingFilter::DefineOutput(TList* dir)
   fLowCuts->SetDirectory(0);
   d->Add(fLowCuts);
 
-  // TParameter<double>* lowCut = new TParameter<double>("lowCut", fLowCut);
-  // TParameter<double>* nXi    = new TParameter<double>("nXi", fNXi);
-  // TNamed*             sigma  = new TNamed("sigma", fIncludeSigma ? 
-  //  					  "included" : "excluded");
-  // sigma->SetUniqueID(fIncludeSigma);
   TNamed* angle  = new TNamed("angle", fCorrectAngles ? 
 			      "corrected" : "uncorrected");
   angle->SetUniqueID(fCorrectAngles);
