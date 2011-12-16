@@ -116,26 +116,36 @@ add_custom_target( install-PWG2forward2.par
 # Install scripts 
 install ( DIRECTORY FORWARD/analysis2/scripts 
 	  DESTINATION PWG2/FORWARD/analysis2 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE
+	  PATTERN ".svn"  EXCLUDE
+	  PATTERN "*.d"   EXCLUDE 
+	  PATTERN "*.so"  EXCLUDE)
 
 # install QA scripts 
 install ( DIRECTORY FORWARD/analysis2/qa
 	  DESTINATION PWG2/FORWARD/analysis2 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
+	  USE_SOURCE_PERMISSIONS
+	  PATTERN "*~"    EXCLUDE
+	  PATTERN ".svn"  EXCLUDE
+	  PATTERN "*.d"   EXCLUDE 
+	  PATTERN "*.so"  EXCLUDE)
 
 # install correction scripts 
 install ( DIRECTORY FORWARD/analysis2/corrs
 	  DESTINATION PWG2/FORWARD/analysis2 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
+	  PATTERN "*~"    EXCLUDE
+	  PATTERN ".svn"  EXCLUDE
+	  PATTERN "*.d"   EXCLUDE 
+	  PATTERN "*.so"  EXCLUDE)
 
 # install trains 
 install ( DIRECTORY FORWARD/analysis2/trains 
 	  DESTINATION PWG2/FORWARD/analysis2 
-	  PATTERN ".d"  EXCLUDE 
-	  PATTERN ".so" EXCLUDE)
+	  PATTERN "*~"   EXCLUDE
+	  PATTERN ".svn" EXCLUDE
+	  PATTERN "*.d"  EXCLUDE 
+	  PATTERN "*.so" EXCLUDE)
 
 # Install other scripts
 install ( FILES FORWARD/analysis2/AddTaskCentraldNdeta.C
@@ -172,6 +182,7 @@ install ( DIRECTORY FORWARD/corrections/DoubleHit
 		    FORWARD/corrections/CentralAcceptance
 		    FORWARD/corrections/CentralSecMap
           DESTINATION PWG2/FORWARD/corrections 
+	  PATTERN "*~"   EXCLUDE
 	  PATTERN ".svn" EXCLUDE)
 
 # Install shell script 
