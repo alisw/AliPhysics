@@ -253,7 +253,10 @@ public:
   // TEMPORARY alias asked by the HFE group to allow 
   // reading of the v4-16-Release data with TRUNK related software (A.Bercuci@Apr 30th 09) 
   UChar_t GetTRDpidQuality() const {return GetTRDntrackletsPID();}
-// end A.Bercuci
+  UChar_t GetTRDtrkltOccupancy(Int_t ly) const { return ly<kTRDnPlanes && ly>=0 ? fTRDTimBin[ly] & 0x1F : 0; }
+  UChar_t GetTRDtrkltClCross(Int_t ly) const { return ly<kTRDnPlanes && ly>=0 ? (fTRDTimBin[ly] >> 5) & 0x03 : 0; }
+  Bool_t IsTRDtrkltChmbGood(Int_t ly) const { return ly<kTRDnPlanes && ly>=0 ? ((fTRDTimBin[ly] >> 7) & 0x01) == 1 : kFALSE;} 
+  // end A.Bercuci
   
   void     SetNumberOfTRDslices(Int_t n);
   Int_t    GetNumberOfTRDslices() const;
