@@ -63,6 +63,7 @@
 #include "AliMixedEvent.h"
 #include "AliESDv0.h"
 #include "AliAODv0.h"
+#include <cstring>
 
 ClassImp(AliAnalysisVertexingHF)
 
@@ -1195,7 +1196,7 @@ void AliAnalysisVertexingHF::FindCandidates(AliVEvent *event,
 
   if(fInputAOD) {
     seleTrksArray.Delete(); 
-    if(fAODMap) { delete fAODMap; fAODMap=NULL; }
+    if(fAODMap) { delete [] fAODMap; fAODMap=NULL; }
   }
   
 
@@ -1288,6 +1289,7 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
 
   fAODMapSize = 100000;
   fAODMap = new Int_t[fAODMapSize];
+  memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
 
   for(Int_t i=0; i<aod->GetNumberOfTracks(); i++) {
     track = aod->GetTrack(i);
@@ -1303,7 +1305,8 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
     //
 
-    fAODMap[(Int_t)track->GetID()] = i;
+    Int_t ind = (Int_t)track->GetID();
+    if (ind>-1 && ind < fAODMapSize) fAODMap[ind] = i;
   }
 
 
@@ -1321,8 +1324,10 @@ void AliAnalysisVertexingHF::FixReferences(AliAODEvent *aod)
     }
     if(cascade) continue;
     for(id=0; id<nDgs; id++) {
-      track = aod->GetTrack(fAODMap[ids[id]]);
-      vertex->AddDaughter(track);
+      if (ids[id]>-1 && ids[id] < fAODMapSize) {
+	track = aod->GetTrack(fAODMap[ids[id]]);
+	vertex->AddDaughter(track);
+      }
     }
     
   }
@@ -1360,8 +1365,10 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);
   if(fInputAOD){
     Int_t idSoftPi=(Int_t)trackPi->GetID();
-    AliAODTrack* trackPiAOD=(AliAODTrack*)event->GetTrack(fAODMap[idSoftPi]);
-    tmpCascade->GetSecondaryVtx()->AddDaughter(trackPiAOD);
+    if (idSoftPi > -1 && idSoftPi < fAODMapSize) {
+      AliAODTrack* trackPiAOD=(AliAODTrack*)event->GetTrack(fAODMap[idSoftPi]);
+      tmpCascade->GetSecondaryVtx()->AddDaughter(trackPiAOD);
+    }
   }else{
     tmpCascade->GetSecondaryVtx()->AddDaughter(trackPi);
   }
@@ -1426,8 +1433,10 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   AliAODRecoCascadeHF *tmpCascade = new AliAODRecoCascadeHF(*theCascade);  
   if(fInputAOD){
     Int_t idBachelor=(Int_t)trackBachelor->GetID();
-    AliAODTrack* trackBachelorAOD=(AliAODTrack*)event->GetTrack(fAODMap[idBachelor]);
-    tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
+    if (idBachelor > -1 && idBachelor < fAODMapSize) {
+      AliAODTrack* trackBachelorAOD=(AliAODTrack*)event->GetTrack(fAODMap[idBachelor]);
+      tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelorAOD);
+    }
   }else{
     tmpCascade->GetSecondaryVtx()->AddDaughter(trackBachelor);
   }
@@ -2205,7 +2214,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
   const AliVVertex *vprimary = event->GetPrimaryVertex();
 
   if(fV1) { delete fV1; fV1=NULL; }
-  if(fAODMap) { delete fAODMap; fAODMap=NULL; }
+  if(fAODMap) { delete [] fAODMap; fAODMap=NULL; }
 
   Int_t nindices=0;
   UShort_t *indices = 0;
@@ -2221,6 +2230,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     for(Int_t ijk=0; ijk<event->GetNumberOfTracks(); ijk++) indices[ijk]=0;
     fAODMapSize = 100000;
     fAODMap = new Int_t[fAODMapSize];
+    memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
   }
 
 
@@ -2249,7 +2259,8 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
       if(aodt->GetUsedForPrimVtxFit()) { 
 	indices[nindices]=aodt->GetID(); nindices++; 
       }
-      fAODMap[(Int_t)aodt->GetID()] = i;
+      Int_t ind = (Int_t)aodt->GetID();
+      if (ind>-1 && ind < fAODMapSize) fAODMap[ind] = i;
     }
 
     AliESDtrack *esdt = 0;
