@@ -37,10 +37,10 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   void SetInput(const char* input)         {fAnalysisInput = input;}
   void SetMCInput()                        {fIsMCInput = kTRUE;}
-  void SetPass(Int_t pass)                 {fPass = pass;}
   void DontUseScaling()                    {fUseScaling=kFALSE;}  
   void DontUseCleaning()                   {fUseCleaning=kFALSE;}
-  void SetFillHistos()                     {fFillHistos=kTRUE;}
+  void SetFillHistos()                     {fFillHistos=kTRUE; DefineOutput(1, TList::Class());
+}
 
  private:
 
@@ -52,7 +52,6 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
   TString  fAnalysisInput; 	// "ESD", "AOD"
   Bool_t   fIsMCInput;          // true when input is MC
-  Int_t    fPass;               // pass of reconstruction
   Int_t    fCurrentRun;         // current run number
   Bool_t   fUseScaling;         // flag to use scaling 
   Bool_t   fUseCleaning;        // flag to use cleaning  
@@ -198,7 +197,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TH1F *fHOutVertex ;         //control histogram for vertex
   TH1F *fHOutVertexT0 ;         //control histogram for vertex
 
-  ClassDef(AliCentralitySelectionTask, 16); 
+  ClassDef(AliCentralitySelectionTask, 17); 
 };
 
 #endif

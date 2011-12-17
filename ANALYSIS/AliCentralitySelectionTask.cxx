@@ -81,7 +81,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask():
 AliAnalysisTaskSE(),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
-  fPass(0),
   fCurrentRun(-1),
   fUseScaling(0),
   fUseCleaning(0),
@@ -227,7 +226,6 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   AliAnalysisTaskSE(name),
   fAnalysisInput("ESD"),
   fIsMCInput(kFALSE),
-  fPass(0),
   fCurrentRun(-1),
   fUseScaling(0),
   fUseCleaning(0),
@@ -360,7 +358,7 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
 {
   // Default constructor
   AliInfo("Centrality Selection enabled.");
-  DefineOutput(1, TList::Class());
+  //DefineOutput(1, TList::Class());
   fUseScaling=kTRUE;
   fUseCleaning=kTRUE;
   fFillHistos=kFALSE;
@@ -381,9 +379,8 @@ AliCentralitySelectionTask& AliCentralitySelectionTask::operator=(const AliCentr
 //________________________________________________________________________
 AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelectionTask& ana):
   AliAnalysisTaskSE(ana),
-  fAnalysisInput(ana.fDebug),
+  fAnalysisInput(ana.fAnalysisInput),
   fIsMCInput(ana.fIsMCInput),
-  fPass(ana.fPass),
   fCurrentRun(ana.fCurrentRun),
   fUseScaling(ana.fUseScaling),
   fUseCleaning(ana.fUseCleaning),
@@ -545,147 +542,145 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutCentV0M_CSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
     fHOutCentV0M_CCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
     fHOutCentV0M_CSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
-  fHOutCentV0M_MSL= new TH1F("fHOutCentV0M_MSL","fHOutCentV0M_MSL; Centrality V0",505,0,101);
-  fHOutCentV0M_MSH= new TH1F("fHOutCentV0M_MSH","fHOutCentV0M_MSH; Centrality V0",505,0,101);
-  fHOutCentV0M_MUL= new TH1F("fHOutCentV0M_MUL","fHOutCentV0M_MUL; Centrality V0",505,0,101);
-  fHOutCentV0M_MLL= new TH1F("fHOutCentV0M_MLL","fHOutCentV0M_MLL; Centrality V0",505,0,101);
-  fHOutCentV0M_EJE= new TH1F("fHOutCentV0M_EJE","fHOutCentV0M_EJE; Centrality V0",505,0,101);
-  fHOutCentV0M_EGA= new TH1F("fHOutCentV0M_EGA","fHOutCentV0M_EGA; Centrality V0",505,0,101);
-  fHOutCentV0M_PHS= new TH1F("fHOutCentV0M_PHS","fHOutCentV0M_PHS; Centrality V0",505,0,101);
-  fHOutCentV0M_MSLinMB= new TH1F("fHOutCentV0M_MSLinMB","fHOutCentV0M_MSLinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_MSHinMB= new TH1F("fHOutCentV0M_MSHinMB","fHOutCentV0M_MSHinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_MULinMB= new TH1F("fHOutCentV0M_MULinMB","fHOutCentV0M_MULinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_MLLinMB= new TH1F("fHOutCentV0M_MLLinMB","fHOutCentV0M_MLLinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_EJEinMB= new TH1F("fHOutCentV0M_EJEinMB","fHOutCentV0M_EJEinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_EGAinMB= new TH1F("fHOutCentV0M_EGAinMB","fHOutCentV0M_EGAinMB; Centrality V0",505,0,101);
-  fHOutCentV0M_PHSinMB= new TH1F("fHOutCentV0M_PHSinMB","fHOutCentV0M_PHSinMB; Centrality V0",505,0,101);
-  fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
-  fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
-  fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
-  fHOutCentCL0     = new TH1F("fHOutCentCL0","fHOutCentCL0; Centrality SPD inner",505,0,101);
-  fHOutCentCL1     = new TH1F("fHOutCentCL1","fHOutCentCL1; Centrality SPD outer",505,0,101);
-  fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",505,0,101);
-  fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",505,0,101);
-  fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",505,0,101);
-  fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0; Cent SPD",505,0,101,505,0,101);
-  fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0; Cent TPC",505,0,101,505,0,101);
-  fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC; Cent SPD",505,0,101,505,0,101);
-  fHOutCentV0MvsCentZDC= new TH2F("fHOutCentV0MvsCentZDC","fHOutCentV0MvsCentZDC; Cent V0; Cent ZDC",505,0,101,505,0,101);
-  fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,30000);
-  fHOutMultV0O = new TH1F("fHOutMultV0O","fHOutMultV0O; Multiplicity V0",40000,0,40000);
-  fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
-  fHOutMultTRK = new TH1F("fHOutMultTRK","fHOutMultTRK; Multiplicity TPC",4000,0,4000);
-  fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
-  fHOutMultCL0 = new TH1F("fHOutMultCL0","fHOutMultCL0; Multiplicity SPD inner",7000,0,7000);
-  fHOutMultCL1 = new TH1F("fHOutMultCL1","fHOutMultCL1; Multiplicity SPD outer",7000,0,7000);
-  fHOutMultV0MvsZDN = new TH2F("fHOutMultV0MvsZDN","fHOutMultV0MvsZDN; Multiplicity V0; Energy ZDC-N",500,0,30000,500,0,180000);
-  fHOutMultZEMvsZDN = new TH2F("fHOutMultZEMvsZDN","fHOutMultZEMvsZDN; Energy ZEM; Energy ZDC-N",500,0,2500,500,0,180000);
-  fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,30000,500,0,200000);
-  fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,2500,500,0,200000);
-  fHOutMultZEMvsZDCw = new TH2F("fHOutMultZEMvsZDCw","fHOutMultZEMvsZDCw; Energy ZEM; Energy ZDC (weigthed with V0 percentile)",500,0,2500,500,0,200000);
-  fHOutMultV0MvsCL1 = new TH2F("fHOutMultV0MvsCL1","fHOutMultV0MvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,30000,700,0,7000);
-  fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,30000,400,0,4000);
-  fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
-  fHOutMultV0MvsV0O = new TH2F("fHOutMultV0MvsV0O","fHOutMultV0MvsV0O; Multiplicity V0; Multiplicity V0 Online",500,0,30000,500,0,40000);
-  fHOutMultV0OvsCL1 = new TH2F("fHOutMultV0OvsCL1","fHOutMultV0OvsCL1; Multiplicity V0; Multiplicity SPD outer",500,0,40000,700,0,7000);
-  fHOutMultV0OvsTRK = new TH2F("fHOutMultV0OvsTRK","fHOutMultV0OvsTRK; Multiplicity V0; Multiplicity TPC",500,0,40000,400,0,4000);
-  fHOutMultV0MvsV0O = new TH2F("fHOutMultV0MvsV0O","fHOutMultV0MvsV0O; Multiplicity V0; Multiplicity V0 Online",500,0,30000,500,0,30000);
-  fHOutMultV0OvsCL1 = new TH2F("fHOutMultV0OvsCL1","fHOutMultV0OvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,30000,700,0,7000);
-  fHOutMultV0OvsTRK = new TH2F("fHOutMultV0OvsTRK","fHOutMultV0OvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,30000,400,0,4000);
+    fHOutCentV0M_MSL= new TH1F("fHOutCentV0M_MSL","fHOutCentV0M_MSL; Centrality V0",505,0,101);
+    fHOutCentV0M_MSH= new TH1F("fHOutCentV0M_MSH","fHOutCentV0M_MSH; Centrality V0",505,0,101);
+    fHOutCentV0M_MUL= new TH1F("fHOutCentV0M_MUL","fHOutCentV0M_MUL; Centrality V0",505,0,101);
+    fHOutCentV0M_MLL= new TH1F("fHOutCentV0M_MLL","fHOutCentV0M_MLL; Centrality V0",505,0,101);
+    fHOutCentV0M_EJE= new TH1F("fHOutCentV0M_EJE","fHOutCentV0M_EJE; Centrality V0",505,0,101);
+    fHOutCentV0M_EGA= new TH1F("fHOutCentV0M_EGA","fHOutCentV0M_EGA; Centrality V0",505,0,101);
+    fHOutCentV0M_PHS= new TH1F("fHOutCentV0M_PHS","fHOutCentV0M_PHS; Centrality V0",505,0,101);
+    fHOutCentV0M_MSLinMB= new TH1F("fHOutCentV0M_MSLinMB","fHOutCentV0M_MSLinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_MSHinMB= new TH1F("fHOutCentV0M_MSHinMB","fHOutCentV0M_MSHinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_MULinMB= new TH1F("fHOutCentV0M_MULinMB","fHOutCentV0M_MULinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_MLLinMB= new TH1F("fHOutCentV0M_MLLinMB","fHOutCentV0M_MLLinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_EJEinMB= new TH1F("fHOutCentV0M_EJEinMB","fHOutCentV0M_EJEinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_EGAinMB= new TH1F("fHOutCentV0M_EGAinMB","fHOutCentV0M_EGAinMB; Centrality V0",505,0,101);
+    fHOutCentV0M_PHSinMB= new TH1F("fHOutCentV0M_PHSinMB","fHOutCentV0M_PHSinMB; Centrality V0",505,0,101);
+    fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
+    fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
+    fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
+    fHOutCentCL0     = new TH1F("fHOutCentCL0","fHOutCentCL0; Centrality SPD inner",505,0,101);
+    fHOutCentCL1     = new TH1F("fHOutCentCL1","fHOutCentCL1; Centrality SPD outer",505,0,101);
+    fHOutCentV0MvsFMD= new TH1F("fHOutCentV0MvsFMD","fHOutCentV0MvsFMD; Centrality V0 vs FMD",505,0,101);
+    fHOutCentTKLvsV0M= new TH1F("fHOutCentTKLvsV0M","fHOutCentTKLvsV0M; Centrality tracklets vs V0",505,0,101);
+    fHOutCentZEMvsZDC= new TH1F("fHOutCentZEMvsZDC","fHOutCentZEMvsZDC; Centrality ZEM vs ZDC",505,0,101);
+    fHOutCentV0MvsCentCL1= new TH2F("fHOutCentV0MvsCentCL1","fHOutCentV0MvsCentCL1; Cent V0; Cent SPD",505,0,101,505,0,101);
+    fHOutCentV0MvsCentTRK= new TH2F("fHOutCentV0MvsCentTRK","fHOutCentV0MvsCentTRK; Cent V0; Cent TPC",505,0,101,505,0,101);
+    fHOutCentTRKvsCentCL1= new TH2F("fHOutCentTRKvsCentCL1","fHOutCentTRKvsCentCL1; Cent TPC; Cent SPD",505,0,101,505,0,101);
+    fHOutCentV0MvsCentZDC= new TH2F("fHOutCentV0MvsCentZDC","fHOutCentV0MvsCentZDC; Cent V0; Cent ZDC",505,0,101,505,0,101);
+    fHOutMultV0M = new TH1F("fHOutMultV0M","fHOutMultV0M; Multiplicity V0",25000,0,30000);
+    fHOutMultV0O = new TH1F("fHOutMultV0O","fHOutMultV0O; Multiplicity V0",40000,0,40000);
+    fHOutMultFMD = new TH1F("fHOutMultFMD","fHOutMultFMD; Multiplicity FMD",24000,0,24000);
+    fHOutMultTRK = new TH1F("fHOutMultTRK","fHOutMultTRK; Multiplicity TPC",4000,0,4000);
+    fHOutMultTKL = new TH1F("fHOutMultTKL","fHOutMultTKL; Multiplicity tracklets",5000,0,5000);
+    fHOutMultCL0 = new TH1F("fHOutMultCL0","fHOutMultCL0; Multiplicity SPD inner",7000,0,7000);
+    fHOutMultCL1 = new TH1F("fHOutMultCL1","fHOutMultCL1; Multiplicity SPD outer",7000,0,7000);
+    fHOutMultV0MvsZDN = new TH2F("fHOutMultV0MvsZDN","fHOutMultV0MvsZDN; Multiplicity V0; Energy ZDC-N",500,0,30000,500,0,180000);
+    fHOutMultZEMvsZDN = new TH2F("fHOutMultZEMvsZDN","fHOutMultZEMvsZDN; Energy ZEM; Energy ZDC-N",500,0,2500,500,0,180000);
+    fHOutMultV0MvsZDC = new TH2F("fHOutMultV0MvsZDC","fHOutMultV0MvsZDC; Multiplicity V0; Energy ZDC",500,0,30000,500,0,200000);
+    fHOutMultZEMvsZDC = new TH2F("fHOutMultZEMvsZDC","fHOutMultZEMvsZDC; Energy ZEM; Energy ZDC",500,0,2500,500,0,200000);
+    fHOutMultZEMvsZDCw = new TH2F("fHOutMultZEMvsZDCw","fHOutMultZEMvsZDCw; Energy ZEM; Energy ZDC (weigthed with V0 percentile)",500,0,2500,500,0,200000);
+    fHOutMultV0MvsCL1 = new TH2F("fHOutMultV0MvsCL1","fHOutMultV0MvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,30000,700,0,7000);
+    fHOutMultV0MvsTRK = new TH2F("fHOutMultV0MvsTRK","fHOutMultV0MvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,30000,400,0,4000);
+    fHOutMultTRKvsCL1 = new TH2F("fHOutMultTRKvsCL1","fHOutMultTRKvsCL1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
+    fHOutMultV0MvsV0O = new TH2F("fHOutMultV0MvsV0O","fHOutMultV0MvsV0O; Multiplicity V0; Multiplicity V0 Online",500,0,30000,500,0,40000);
+    fHOutMultV0OvsCL1 = new TH2F("fHOutMultV0OvsCL1","fHOutMultV0OvsCL1; Multiplicity V0; Multiplicity SPD outer",500,0,40000,700,0,7000);
+    fHOutMultV0OvsTRK = new TH2F("fHOutMultV0OvsTRK","fHOutMultV0OvsTRK; Multiplicity V0; Multiplicity TPC",500,0,40000,400,0,4000);
+    fHOutMultV0MvsV0O = new TH2F("fHOutMultV0MvsV0O","fHOutMultV0MvsV0O; Multiplicity V0; Multiplicity V0 Online",500,0,30000,500,0,30000);
+    fHOutMultV0OvsCL1 = new TH2F("fHOutMultV0OvsCL1","fHOutMultV0OvsCL1; Multiplicity V0; Multiplicity SPD outer",2500,0,30000,700,0,7000);
+    fHOutMultV0OvsTRK = new TH2F("fHOutMultV0OvsTRK","fHOutMultV0OvsTRK; Multiplicity V0; Multiplicity TPC",2500,0,30000,400,0,4000);
+    
+    fHOutCentV0Mqual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
+    fHOutCentTRKqual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
+    fHOutCentCL1qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
+    fHOutMultV0MvsCL1qual1 = new TH2F("fHOutMultV0MvsCL1_qual1","fHOutMultV0MvsCL1_qual1; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
+    fHOutMultV0MvsTRKqual1 = new TH2F("fHOutMultV0MvsTRK_qual1","fHOutMultV0MvsTRK_qual1; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
+    fHOutMultTRKvsCL1qual1 = new TH2F("fHOutMultTRKvsCL1_qual1","fHOutMultTRKvsCL1_qual1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
+    
+    fHOutCentV0Mqual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
+    fHOutCentTRKqual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
+    fHOutCentCL1qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
+    fHOutMultV0MvsCL1qual2 = new TH2F("fHOutMultV0MvsCL1_qual2","fHOutMultV0MvsCL1_qual2; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
+    fHOutMultV0MvsTRKqual2 = new TH2F("fHOutMultV0MvsTRK_qual2","fHOutMultV0MvsTRK_qual2; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
+    fHOutMultTRKvsCL1qual2 = new TH2F("fHOutMultTRKvsCL1_qual2","fHOutMultTRKvsCL1_qual2; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
+    
+    fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 100,-0.5,99.5);
+    fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
+    fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
   
-  fHOutCentV0Mqual1 = new TH1F("fHOutCentV0M_qual1","fHOutCentV0M_qual1; Centrality V0",505,0,101);
-  fHOutCentTRKqual1 = new TH1F("fHOutCentTRK_qual1","fHOutCentTRK_qual1; Centrality TPC",505,0,101);
-  fHOutCentCL1qual1 = new TH1F("fHOutCentCL1_qual1","fHOutCentCL1_qual1; Centrality SPD outer",505,0,101);
-  fHOutMultV0MvsCL1qual1 = new TH2F("fHOutMultV0MvsCL1_qual1","fHOutMultV0MvsCL1_qual1; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
-  fHOutMultV0MvsTRKqual1 = new TH2F("fHOutMultV0MvsTRK_qual1","fHOutMultV0MvsTRK_qual1; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
-  fHOutMultTRKvsCL1qual1 = new TH2F("fHOutMultTRKvsCL1_qual1","fHOutMultTRKvsCL1_qual1; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
+    fOutputList->Add(  fHOutCentV0M     );
+    fOutputList->Add(  fHOutCentV0M_CVHN);
+    fOutputList->Add(  fHOutCentV0M_CVLN);
+    fOutputList->Add(  fHOutCentV0M_CVHNinMB);
+    fOutputList->Add(  fHOutCentV0M_CVLNinMB);
+    fOutputList->Add(  fHOutCentV0M_CCENT);
+    fOutputList->Add(  fHOutCentV0M_CSEMI);
+    fOutputList->Add(  fHOutCentV0M_CCENTinMB);
+    fOutputList->Add(  fHOutCentV0M_CSEMIinMB);
+    fOutputList->Add(  fHOutCentV0M_MSL    );
+    fOutputList->Add(  fHOutCentV0M_MSH    );
+    fOutputList->Add(  fHOutCentV0M_MUL    );
+    fOutputList->Add(  fHOutCentV0M_MLL    );
+    fOutputList->Add(  fHOutCentV0M_EJE    );
+    fOutputList->Add(  fHOutCentV0M_EGA    );
+    fOutputList->Add(  fHOutCentV0M_PHS   );
+    fOutputList->Add(  fHOutCentV0M_MSLinMB);
+    fOutputList->Add(  fHOutCentV0M_MSHinMB);
+    fOutputList->Add(  fHOutCentV0M_MULinMB);
+    fOutputList->Add(  fHOutCentV0M_MLLinMB);
+    fOutputList->Add(  fHOutCentV0M_EJEinMB);
+    fOutputList->Add(  fHOutCentV0M_EGAinMB);
+    fOutputList->Add(  fHOutCentV0M_PHSinMB);
+    fOutputList->Add(  fHOutCentFMD     );
+    fOutputList->Add(  fHOutCentTRK     );
+    fOutputList->Add(  fHOutCentTKL     );
+    fOutputList->Add(  fHOutCentCL0     );
+    fOutputList->Add(  fHOutCentCL1     );
+    fOutputList->Add(  fHOutCentV0MvsFMD);
+    fOutputList->Add(  fHOutCentTKLvsV0M);
+    fOutputList->Add(  fHOutCentZEMvsZDC);
+    fOutputList->Add(  fHOutCentV0MvsCentCL1);
+    fOutputList->Add(  fHOutCentV0MvsCentTRK);
+    fOutputList->Add(  fHOutCentTRKvsCentCL1);
+    fOutputList->Add(  fHOutCentV0MvsCentZDC);
+    fOutputList->Add(  fHOutMultV0M); 
+    fOutputList->Add(  fHOutMultV0O); 
+    fOutputList->Add(  fHOutMultFMD); 
+    fOutputList->Add(  fHOutMultTRK); 
+    fOutputList->Add(  fHOutMultTKL); 
+    fOutputList->Add(  fHOutMultCL0); 
+    fOutputList->Add(  fHOutMultCL1); 
+    fOutputList->Add(  fHOutMultV0MvsZDN);
+    fOutputList->Add(  fHOutMultZEMvsZDN);
+    fOutputList->Add(  fHOutMultV0MvsZDC);
+    fOutputList->Add(  fHOutMultZEMvsZDC);
+    fOutputList->Add(  fHOutMultZEMvsZDCw);
+    fOutputList->Add(  fHOutMultV0MvsCL1);
+    fOutputList->Add(  fHOutMultV0MvsTRK);
+    fOutputList->Add(  fHOutMultTRKvsCL1);
+    fOutputList->Add(  fHOutMultV0MvsV0O);
+    fOutputList->Add(  fHOutMultV0OvsCL1);
+    fOutputList->Add(  fHOutMultV0OvsTRK);
+    fOutputList->Add(  fHOutCentV0Mqual1 );
+    fOutputList->Add(  fHOutCentTRKqual1 );
+    fOutputList->Add(  fHOutCentCL1qual1 );                   
+    fOutputList->Add(  fHOutMultV0MvsCL1qual1);
+    fOutputList->Add(  fHOutMultV0MvsTRKqual1);
+    fOutputList->Add(  fHOutMultTRKvsCL1qual1);
+    fOutputList->Add(  fHOutCentV0Mqual2 );
+    fOutputList->Add(  fHOutCentTRKqual2 );
+    fOutputList->Add(  fHOutCentCL1qual2 );
+    fOutputList->Add(  fHOutMultV0MvsCL1qual2);
+    fOutputList->Add(  fHOutMultV0MvsTRKqual2);
+    fOutputList->Add(  fHOutMultTRKvsCL1qual2);
+    fOutputList->Add(  fHOutQuality );
+    fOutputList->Add(  fHOutVertex );
+    fOutputList->Add(  fHOutVertexT0 );
   
-  fHOutCentV0Mqual2 = new TH1F("fHOutCentV0M_qual2","fHOutCentV0M_qual2; Centrality V0",505,0,101);
-  fHOutCentTRKqual2 = new TH1F("fHOutCentTRK_qual2","fHOutCentTRK_qual2; Centrality TPC",505,0,101);
-  fHOutCentCL1qual2 = new TH1F("fHOutCentCL1_qual2","fHOutCentCL1_qual2; Centrality SPD outer",505,0,101);
-  fHOutMultV0MvsCL1qual2 = new TH2F("fHOutMultV0MvsCL1_qual2","fHOutMultV0MvsCL1_qual2; Multiplicity V0; Multiplicity SPD outer",2500,0,25000,700,0,7000);
-  fHOutMultV0MvsTRKqual2 = new TH2F("fHOutMultV0MvsTRK_qual2","fHOutMultV0MvsTRK_qual2; Multiplicity V0; Multiplicity TPC",2500,0,25000,400,0,4000);
-  fHOutMultTRKvsCL1qual2 = new TH2F("fHOutMultTRKvsCL1_qual2","fHOutMultTRKvsCL1_qual2; Multiplicity TPC; Multiplicity SPD outer",400,0,4000,700,0,7000);
-  
-  fHOutQuality = new TH1F("fHOutQuality", "fHOutQuality", 100,-0.5,99.5);
-  fHOutVertex  = new TH1F("fHOutVertex", "fHOutVertex", 100,-20,20);
-  fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
-  
-  fOutputList->Add(  fHOutCentV0M     );
-  fOutputList->Add(  fHOutCentV0M_CVHN);
-  fOutputList->Add(  fHOutCentV0M_CVLN);
-  fOutputList->Add(  fHOutCentV0M_CVHNinMB);
-  fOutputList->Add(  fHOutCentV0M_CVLNinMB);
-  fOutputList->Add(  fHOutCentV0M_CCENT);
-  fOutputList->Add(  fHOutCentV0M_CSEMI);
-  fOutputList->Add(  fHOutCentV0M_CCENTinMB);
-  fOutputList->Add(  fHOutCentV0M_CSEMIinMB);
-  fOutputList->Add(  fHOutCentV0M_MSL    );
-  fOutputList->Add(  fHOutCentV0M_MSH    );
-  fOutputList->Add(  fHOutCentV0M_MUL    );
-  fOutputList->Add(  fHOutCentV0M_MLL    );
-  fOutputList->Add(  fHOutCentV0M_EJE    );
-  fOutputList->Add(  fHOutCentV0M_EGA    );
-  fOutputList->Add(  fHOutCentV0M_PHS   );
-  fOutputList->Add(  fHOutCentV0M_MSLinMB);
-  fOutputList->Add(  fHOutCentV0M_MSHinMB);
-  fOutputList->Add(  fHOutCentV0M_MULinMB);
-  fOutputList->Add(  fHOutCentV0M_MLLinMB);
-  fOutputList->Add(  fHOutCentV0M_EJEinMB);
-  fOutputList->Add(  fHOutCentV0M_EGAinMB);
-  fOutputList->Add(  fHOutCentV0M_PHSinMB);
-  fOutputList->Add(  fHOutCentFMD     );
-  fOutputList->Add(  fHOutCentTRK     );
-  fOutputList->Add(  fHOutCentTKL     );
-  fOutputList->Add(  fHOutCentCL0     );
-  fOutputList->Add(  fHOutCentCL1     );
-  fOutputList->Add(  fHOutCentV0MvsFMD);
-  fOutputList->Add(  fHOutCentTKLvsV0M);
-  fOutputList->Add(  fHOutCentZEMvsZDC);
-  fOutputList->Add(  fHOutCentV0MvsCentCL1);
-  fOutputList->Add(  fHOutCentV0MvsCentTRK);
-  fOutputList->Add(  fHOutCentTRKvsCentCL1);
-  fOutputList->Add(  fHOutCentV0MvsCentZDC);
-  fOutputList->Add(  fHOutMultV0M); 
-  fOutputList->Add(  fHOutMultV0O); 
-  fOutputList->Add(  fHOutMultFMD); 
-  fOutputList->Add(  fHOutMultTRK); 
-  fOutputList->Add(  fHOutMultTKL); 
-  fOutputList->Add(  fHOutMultCL0); 
-  fOutputList->Add(  fHOutMultCL1); 
-  fOutputList->Add(  fHOutMultV0MvsZDN);
-  fOutputList->Add(  fHOutMultZEMvsZDN);
-  fOutputList->Add(  fHOutMultV0MvsZDC);
-  fOutputList->Add(  fHOutMultZEMvsZDC);
-  fOutputList->Add(  fHOutMultZEMvsZDCw);
-  fOutputList->Add(  fHOutMultV0MvsCL1);
-  fOutputList->Add(  fHOutMultV0MvsTRK);
-  fOutputList->Add(  fHOutMultTRKvsCL1);
-  fOutputList->Add(  fHOutMultV0MvsV0O);
-  fOutputList->Add(  fHOutMultV0OvsCL1);
-  fOutputList->Add(  fHOutMultV0OvsTRK);
-  fOutputList->Add(  fHOutCentV0Mqual1 );
-  fOutputList->Add(  fHOutCentTRKqual1 );
-  fOutputList->Add(  fHOutCentCL1qual1 );                   
-  fOutputList->Add(  fHOutMultV0MvsCL1qual1);
-  fOutputList->Add(  fHOutMultV0MvsTRKqual1);
-  fOutputList->Add(  fHOutMultTRKvsCL1qual1);
-  fOutputList->Add(  fHOutCentV0Mqual2 );
-  fOutputList->Add(  fHOutCentTRKqual2 );
-  fOutputList->Add(  fHOutCentCL1qual2 );
-  fOutputList->Add(  fHOutMultV0MvsCL1qual2);
-  fOutputList->Add(  fHOutMultV0MvsTRKqual2);
-  fOutputList->Add(  fHOutMultTRKvsCL1qual2);
-  fOutputList->Add(  fHOutQuality );
-  fOutputList->Add(  fHOutVertex );
-  fOutputList->Add(  fHOutVertexT0 );
-  
-  PostData(1, fOutputList); 
+    PostData(1, fOutputList); 
   }
   
   fTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-  
-  if (fPass==0) AliFatal("Which pass are you analyzing? You should set it via taskCentrality->SetPass(N)");
 }
 
 //________________________________________________________________________

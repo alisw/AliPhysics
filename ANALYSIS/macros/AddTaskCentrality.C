@@ -1,4 +1,4 @@
-AliCentralitySelectionTask *AddTaskCentrality(Int_t passNumber = 2)
+AliCentralitySelectionTask *AddTaskCentrality(Bool_t fillHistos=kTRUE)
 {
 // Macro to connect a centrality selection task to an existing analysis manager.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -18,18 +18,18 @@ AliCentralitySelectionTask *AddTaskCentrality(Int_t passNumber = 2)
     return NULL;
   }
   AliCentralitySelectionTask *centralityTask = new AliCentralitySelectionTask("CentralitySelection");
-  centralityTask->SetPass(passNumber);
-  centralityTask->SetFillHistos();
   centralityTask->SelectCollisionCandidates(AliVEvent::kAny);
   mgr->AddTask(centralityTask);
   
-  AliAnalysisDataContainer *cinput0 = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CentralityStat",
-                TList::Class(), AliAnalysisManager::kOutputContainer,
-                "EventStat_temp.root");
-  
   mgr->ConnectInput(centralityTask, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(centralityTask,1,coutput1);
+  if (fillHistos) {
+    centralityTask->SetFillHistos();
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer("CentralityStat",
+                                                              TList::Class(), 
+                                                              AliAnalysisManager::kOutputContainer,
+                                                              "EventStat_temp.root");
+    mgr->ConnectOutput(centralityTask,1,coutput1);
+  }
 
   return centralityTask;
 }   
