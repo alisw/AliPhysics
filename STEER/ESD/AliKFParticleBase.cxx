@@ -1337,7 +1337,7 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
   Double_t Lambda2 = Lambda*Lambda;
 
   Double_t dfl  = -4.*M2 * Lambda2*Lambda + 2.*a*Lambda + b;
-  Double_t dfx[4] = {0,0,0,0};
+  Double_t dfx[7] = {0};//,0,0,0};
   dfx[0] = -2.*(1. + Lambda)*(1. + Lambda)*mP[3];
   dfx[1] = -2.*(1. + Lambda)*(1. + Lambda)*mP[4];
   dfx[2] = -2.*(1. + Lambda)*(1. + Lambda)*mP[5];
