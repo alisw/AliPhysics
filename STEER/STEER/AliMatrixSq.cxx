@@ -23,6 +23,7 @@ AliMatrixSq & AliMatrixSq::operator=(const AliMatrixSq &src)
   if (this == &src) return *this;
   TMatrixDBase::operator=(src);
   fSymmetric = src.fSymmetric; 
+  return *this;
 }
 
 //___________________________________________________________
