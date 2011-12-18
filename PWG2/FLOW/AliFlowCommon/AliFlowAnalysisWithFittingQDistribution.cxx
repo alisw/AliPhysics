@@ -819,7 +819,7 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  // Do the final fit of q-distribution.
  
  Int_t s2F = (Int_t)(sigma2Fitted); // shortcut
- Double_t AvM = fSumOfParticleWeights->GetMean(1); // average multiplicity
+ Double_t dAvM = fSumOfParticleWeights->GetMean(1); // average multiplicity
  //Int_t nEvts = (Int_t)fSumOfParticleWeights->GetEntries(); // number of events:
  
  // Start fitting from the bin with at least fTreshold entries, 
@@ -845,8 +845,8 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  // Fitting function:
  fFittingFunction[s2F]->SetRange(qmin,qmax); 
  fFittingFunction[s2F]->SetParNames("v*sqrt{sum of particle weights}","sigma^2","norm");
- fFittingFunction[s2F]->SetParameters(fvStart*pow(AvM,0.5),fSigma2Start,norm);         
- fFittingFunction[s2F]->SetParLimits(0,fvMin*pow(AvM,0.5),fvMax*pow(AvM,0.5)); 
+ fFittingFunction[s2F]->SetParameters(fvStart*pow(dAvM,0.5),fSigma2Start,norm);         
+ fFittingFunction[s2F]->SetParLimits(0,fvMin*pow(dAvM,0.5),fvMax*pow(dAvM,0.5)); 
  if(s2F == 0)
  {
   fFittingFunction[s2F]->FixParameter(1,0.5);
@@ -868,16 +868,16 @@ void AliFlowAnalysisWithFittingQDistribution::DoFit(Bool_t sigma2Fitted)
  Double_t sigma2Error = 0.; // error of sigma^2
  Double_t chi2 = 0; // chi^2 from Minuit
  // Reference flow:
- if(AvM)
+ if(dAvM > 0.)
  { 
-  v = fFittingFunction[s2F]->GetParameter(0)/pow(AvM,0.5);
-  vError = fFittingFunction[s2F]->GetParError(0)/pow(AvM,0.5);
+  v = fFittingFunction[s2F]->GetParameter(0)/pow(dAvM,0.5);
+  vError = fFittingFunction[s2F]->GetParError(0)/pow(dAvM,0.5);
   fIntFlow[s2F]->SetBinContent(1,v); // s2F is shortcut for "sigma^2 fitted"
   fIntFlow[s2F]->SetBinError(1,vError); // s2F is shortcut for "sigma^2 fitted"
  } else
    {
     cout<<endl;
-    cout<<"WARNING (FQD): AvM == 0 in AFAWFQD::DoFit()"<<endl;
+    cout<<"WARNING (FQD): dAvM == 0 in AFAWFQD::DoFit()"<<endl;
     cout<<endl;
    }    
  // sigma^2:: 
@@ -915,8 +915,8 @@ void AliFlowAnalysisWithFittingQDistribution::FillCommonHistResults(Bool_t sigma
  Double_t vError = fIntFlow[s2F]->GetBinError(1);
  fCommonHistsResults->FillIntegratedFlow(v,vError);   
  // Resolution:
- Double_t AvM = fSumOfParticleWeights->GetMean(1);
- Double_t chi2 = AvM*pow(v,2.); // chi^2
+ Double_t dAvM = fSumOfParticleWeights->GetMean(1);
+ Double_t chi2 = dAvM*pow(v,2.); // chi^2
  if(chi2>=0.)
  {
   fCommonHistsResults->FillChi(pow(chi2,0.5));   

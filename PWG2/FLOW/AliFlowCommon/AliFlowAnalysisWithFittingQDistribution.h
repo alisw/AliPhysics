@@ -18,8 +18,6 @@
 #ifndef ALIFLOWANALYSISWITHFITTINGQDISTRIBUTION_H
 #define ALIFLOWANALYSISWITHFITTINGQDISTRIBUTION_H
 
-#include "AliFlowCommonConstants.h"
-
 class TObjArray;
 class TList;
 class TFile;
@@ -32,6 +30,7 @@ class TF1;
 
 class AliFlowEventSimple;
 class AliFlowTrackSimple;
+class AliFlowCommonConstants;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 class AliFlowVector;

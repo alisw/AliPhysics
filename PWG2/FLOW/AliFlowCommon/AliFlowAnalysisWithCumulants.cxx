@@ -1818,7 +1818,7 @@ void AliFlowAnalysisWithCumulants::CalculateCumulantsForDiffFlow(TString rpPoi,T
  for(Int_t b=0;b<nBins;b++)
  {
   Double_t gfc[5] = {0.}; // to be improved (hardwired 5)
-  Double_t D[5] = {0.}; // D_{p} in Eq. (11) in Practical guide // to be improved (hardwired 5)
+  Double_t dD[5] = {0.}; // D_{p} in Eq. (11) in Practical guide // to be improved (hardwired 5)
   // ptBinRPNoOfParticles[b]=fPtBinRPNoOfParticles->GetBinEntries(b+1); 
   for(Int_t p=0;p<pMax;p++)
   {
@@ -1827,19 +1827,19 @@ void AliFlowAnalysisWithCumulants::CalculateCumulantsForDiffFlow(TString rpPoi,T
    {
     if(TMath::Abs(dAvG(p,q))>1.e-44)
     {   
-     Double_t X = fDiffFlowGenFun[0][rp][pe]->GetBinContent(fDiffFlowGenFun[0][rp][pe]->GetBin(b+1,p+1,q+1))/dAvG(p,q); // see Ollitrault's Practical guide (Eq. 11)
-     Double_t Y = fDiffFlowGenFun[1][rp][pe]->GetBinContent(fDiffFlowGenFun[0][rp][pe]->GetBin(b+1,p+1,q+1))/dAvG(p,q); // see Ollitrault's Practical guide (Eq. 11)
-     tempSum += cos(fMultiple*2.*q*TMath::Pi()/qMax)*X 
-              + sin(fMultiple*2.*q*TMath::Pi()/qMax)*Y;
+     Double_t dX = fDiffFlowGenFun[0][rp][pe]->GetBinContent(fDiffFlowGenFun[0][rp][pe]->GetBin(b+1,p+1,q+1))/dAvG(p,q); // see Ollitrault's Practical guide (Eq. 11)
+     Double_t dY = fDiffFlowGenFun[1][rp][pe]->GetBinContent(fDiffFlowGenFun[0][rp][pe]->GetBin(b+1,p+1,q+1))/dAvG(p,q); // see Ollitrault's Practical guide (Eq. 11)
+     tempSum += cos(fMultiple*2.*q*TMath::Pi()/qMax)*dX 
+              + sin(fMultiple*2.*q*TMath::Pi()/qMax)*dY;
     }
    }   
-   D[p] = (pow(fR0*pow(p+1.0,0.5),fMultiple)/qMax)*tempSum;   
+   dD[p] = (pow(fR0*pow(p+1.0,0.5),fMultiple)/qMax)*tempSum;   
   }   
-  gfc[0] = (1./(fR0*fR0))*(5.*D[0]-5.*D[1]+(10./3.)*D[2]-(5./4.)*D[3]+(1./5.)*D[4]); 
-  gfc[1] = (1./pow(fR0,4.))*((-77./6.)*D[0]+(107./6.)*D[1]-(13./1.)*D[2]+(61./12.)*D[3]-(5./6.)*D[4]);
-  gfc[2] = (1./pow(fR0,6.))*((71./2.)*D[0]-59.*D[1]+49.*D[2]-(41./2.)*D[3]+(7./2.)*D[4]);
-  gfc[3] = (1./pow(fR0,8.))*(-84.*D[0]+156.*D[1]-144.*D[2]+66.*D[3]-12.*D[4]);
-  // gfc[4] = (1./pow(fR0,10.))*(120.*D[0]-240.*D[1]+240.*D[2]-120.*D[3]+24.*D[4]); // 10th order cumulant (to be improved - where to store it?)
+  gfc[0] = (1./(fR0*fR0))*(5.*dD[0]-5.*dD[1]+(10./3.)*dD[2]-(5./4.)*dD[3]+(1./5.)*dD[4]); 
+  gfc[1] = (1./pow(fR0,4.))*((-77./6.)*dD[0]+(107./6.)*dD[1]-(13./1.)*dD[2]+(61./12.)*dD[3]-(5./6.)*dD[4]);
+  gfc[2] = (1./pow(fR0,6.))*((71./2.)*dD[0]-59.*dD[1]+49.*dD[2]-(41./2.)*dD[3]+(7./2.)*dD[4]);
+  gfc[3] = (1./pow(fR0,8.))*(-84.*dD[0]+156.*dD[1]-144.*dD[2]+66.*dD[3]-12.*dD[4]);
+  // gfc[4] = (1./pow(fR0,10.))*(120.*dD[0]-240.*dD[1]+240.*dD[2]-120.*dD[3]+24.*dD[4]); // 10th order cumulant (to be improved - where to store it?)
   // Store cumulants:
   for(Int_t co=0;co<4;co++)
   {

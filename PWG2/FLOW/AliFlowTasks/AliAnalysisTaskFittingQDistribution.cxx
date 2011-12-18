@@ -26,6 +26,7 @@
  * ***********************************/
  
 class TFile;
+class TString;
 class TList;
 class AliAnalysisTaskSE; 
  
