@@ -118,9 +118,9 @@ void AliFlowAnalysisWithScalarProduct::Init() {
   errorRelated->SetName("error");
   errorRelated->SetOwner();
 
-  TList *QARelated = new TList();
-  QARelated->SetName("QA");
-  QARelated->SetOwner();
+  TList *tQARelated = new TList();
+  tQARelated->SetName("QA");
+  tQARelated->SetOwner();
 
   fCommonHists = new AliFlowCommonHist("AliFlowCommonHist_SP");
   (fCommonHists->GetHarmonic())->Fill(0.5,fHarmonic); // store harmonic 
@@ -238,57 +238,57 @@ void AliFlowAnalysisWithScalarProduct::Init() {
 
   fHistProQNorm = new TProfile("FlowPro_QNorm_SP","FlowPro_QNorm_SP",       1,0.5,1.5,"s");
   fHistProQNorm->SetYTitle("<|Qa+Qb|>");
-  QARelated->Add(fHistProQNorm);
+  tQARelated->Add(fHistProQNorm);
 
   fHistProQaQb  = new TProfile("FlowPro_QaQb_SP","FlowPro_QaQb_SP",         1,0.5,1.5,"s");
   fHistProQaQb->SetYTitle("<QaQb>");
-  QARelated->Add(fHistProQaQb);
+  tQARelated->Add(fHistProQaQb);
 
   fHistProQaQbM = new TProfile("FlowPro_QaQbvsM_SP","FlowPro_QaQbvsM_SP",1000,0.0,10000);
   fHistProQaQbM->SetYTitle("<QaQb>");
   fHistProQaQbM->SetXTitle("M");
   fHistProQaQbM->Sumw2();
-  QARelated->Add(fHistProQaQbM);
+  tQARelated->Add(fHistProQaQbM);
 
   fHistMaMb = new TH2D("Flow_MavsMb_SP","Flow_MavsMb_SP",100,0.,100.,100,0.,100.);
   fHistMaMb->SetYTitle("Ma");
   fHistMaMb->SetXTitle("Mb");
-  QARelated->Add(fHistMaMb);
+  tQARelated->Add(fHistMaMb);
 
   fHistQNormQaQbNorm = new TH2D("Flow_QNormvsQaQbNorm_SP","Flow_QNormvsQaQbNorm_SP",88,-1.1,1.1,22,0.,1.1);
   fHistQNormQaQbNorm->SetYTitle("|Q/Mq|");
   fHistQNormQaQbNorm->SetXTitle("QaQb/MaMb");
-  QARelated->Add(fHistQNormQaQbNorm);
+  tQARelated->Add(fHistQNormQaQbNorm);
 
   fHistQaNormMa = new TH2D("Flow_QaNormvsMa_SP","Flow_QaNormvsMa_SP",100,0.,100.,22,0.,1.1);
   fHistQaNormMa->SetYTitle("|Qa/Ma|");
   fHistQaNormMa->SetXTitle("Ma");
-  QARelated->Add(fHistQaNormMa);
+  tQARelated->Add(fHistQaNormMa);
 
   fHistQbNormMb = new TH2D("Flow_QbNormvsMb_SP","Flow_QbNormvsMb_SP",100,0.,100.,22,0.,1.1);
   fHistQbNormMb->SetYTitle("|Qb/Mb|");
   fHistQbNormMb->SetXTitle("Mb");
-  QARelated->Add(fHistQbNormMb);
+  tQARelated->Add(fHistQbNormMb);
 
   fResolution = new TH1D("Flow_resolution_SP","Flow_resolution_SP",100,-1.0,1.0);
   fResolution->SetYTitle("dN/d(Cos2(#phi_a - #phi_b))");
   fResolution->SetXTitle("Cos2(#phi_a - #phi_b)");
-  QARelated->Add(fResolution);
+  tQARelated->Add(fResolution);
 
   fHistQaQb = new TH1D("Flow_QaQb_SP","Flow_QaQb_SP",200,-100.,100.);
   fHistQaQb->SetYTitle("dN/dQaQb");
   fHistQaQb->SetXTitle("dQaQb");
-  QARelated->Add(fHistQaQb);
+  tQARelated->Add(fHistQaQb);
 
   fHistQaQbCos = new TH1D("Flow_QaQbCos_SP","Flow_QaQbCos_SP",63,0.,TMath::Pi());
   fHistQaQbCos->SetYTitle("dN/d#phi");
   fHistQaQbCos->SetXTitle("#phi");
-  QARelated->Add(fHistQaQbCos);
+  tQARelated->Add(fHistQaQbCos);
 
   fHistList->Add(uQRelated);
   fHistList->Add(nuaRelated);
   fHistList->Add(errorRelated);
-  fHistList->Add(QARelated);
+  fHistList->Add(tQARelated);
 
   TH1::AddDirectory(oldHistAddStatus);
 }
@@ -519,8 +519,9 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("AliFlowAnalysisWithScalarProduct::Finish()\n");
   
   // access harmonic:
-  if(fCommonHists->GetHarmonic())
-    fHarmonic = (Int_t)(fCommonHists->GetHarmonic())->GetBinContent(1); 
+  fApplyCorrectionForNUA = fHistProConfig->GetBinContent(1);
+  fNormalizationType = fHistProConfig->GetBinContent(2);
+  fHarmonic = fHistProConfig->GetBinContent(4);
   
   printf("*************************************\n");
   printf("*************************************\n");
@@ -554,7 +555,7 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
   printf("fTotalQvector %d \n",fTotalQvector);
   if(!fNormalizationType) {
     if(fTotalQvector>2) {
-      dV = computeResolution( TMath::Sqrt2()*findXi(dV,1e-6) );
+      dV = ComputeResolution( TMath::Sqrt2()*FindXi(dV,1e-6) );
       printf("An estimate of the event plane resolution is: %f\n", dV );
     }
   }
@@ -614,15 +615,14 @@ void AliFlowAnalysisWithScalarProduct::Finish() {
 }
 
 //-----------------------------------------------------------------------
-void AliFlowAnalysisWithScalarProduct::WriteHistograms(TDirectoryFile *outputFileName)
-{
+void AliFlowAnalysisWithScalarProduct::WriteHistograms(TDirectoryFile *outputFileName) const {
  //store the final results in output .root file
  outputFileName->Add(fHistList);
  outputFileName->Write(outputFileName->GetName(), TObject::kSingleKey);
 }
 
 //--------------------------------------------------------------------            
-Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t iRFPorPOI, Int_t iPTorETA, Int_t b, Double_t aStatErrorQaQb) {
+Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t iRFPorPOI, Int_t iPTorETA, Int_t b, Double_t aStatErrorQaQb) const {
   //calculate the statistical error for differential flow for bin b
   Double_t duQproSpread = fHistProUQ[iRFPorPOI][iPTorETA]->GetBinError(b);
   Double_t sumOfMq = fHistSumOfWeightsu[iRFPorPOI][iPTorETA][0]->GetBinContent(b);
@@ -671,7 +671,8 @@ Double_t AliFlowAnalysisWithScalarProduct::CalculateStatisticalError(Int_t iRFPo
   return dv2ProErr;
 }
 
-Double_t AliFlowAnalysisWithScalarProduct::computeResolution( Double_t x ) {
+Double_t AliFlowAnalysisWithScalarProduct::ComputeResolution( Double_t x ) const {
+  // Computes resolution for Event Plane method
   if(x > 51.3) {
     printf("Warning: Estimation of total resolution might be WRONG. Please check!");
     return 0.99981;
@@ -681,7 +682,8 @@ Double_t AliFlowAnalysisWithScalarProduct::computeResolution( Double_t x ) {
   return TMath::Sqrt(TMath::PiOver2())/2*x*b;
 }
 
-Double_t AliFlowAnalysisWithScalarProduct::findXi( Double_t res, Double_t prec ) {
+Double_t AliFlowAnalysisWithScalarProduct::FindXi( Double_t res, Double_t prec ) const {
+  // Computes x(res) for Event Plane method
   if(res > 0.99981) {
     printf("Warning: Resolution for subEvent is high. You reached the precision limit.");
     return 51.3;
@@ -690,7 +692,7 @@ Double_t AliFlowAnalysisWithScalarProduct::findXi( Double_t res, Double_t prec )
   Double_t xtmp=0, xmin=0, xmax=51.3, rtmp=0, delta=2*prec;
   while( delta > prec ) {
     xtmp = 0.5*(xmin+xmax);
-    rtmp = computeResolution(xtmp);
+    rtmp = ComputeResolution(xtmp);
     delta = TMath::Abs( res-rtmp );
     if(rtmp>res) xmax = xtmp;
     if(rtmp<res) xmin = xtmp;
