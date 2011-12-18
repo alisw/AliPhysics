@@ -17,7 +17,6 @@
 #ifndef ALIFLOWANALYSISWITHCUMULANTS_H
 #define ALIFLOWANALYSISWITHCUMULANTS_H
 
-#include "AliFlowCommonConstants.h" 
 #include "TMatrixD.h"
 
 class TList;
@@ -32,6 +31,7 @@ class TDirectoryFile;
 
 class AliFlowEventSimple;
 class AliFlowTrackSimple;
+class AliFlowCommonConstants; 
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 class AliFlowVector;

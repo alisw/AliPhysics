@@ -14,10 +14,8 @@
  *       Author: Ante Bilandzic (abilandzic@gmail.com)         *
  ***************************************************************/ 
 
-#ifndef ALIFLOWANALYSISNESTEDLOOPS_H
-#define ALIFLOWANALYSISNESTEDLOOPS_H
-
-#include "AliFlowCommonConstants.h" // needed as include
+#ifndef ALIFLOWANALYSISWITHNESTEDLOOPS_H
+#define ALIFLOWANALYSISWITHNESTEDLOOPS_H
 
 class TList;
 class TDirectoryFile;
@@ -26,6 +24,7 @@ class TH1D;
 class TProfile;
 
 class AliFlowEventSimple;
+class AliFlowCommonConstants;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 

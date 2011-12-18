@@ -9915,14 +9915,14 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
  // Calculate generalized Q-cumulants (cumulants corrected for non-unifom acceptance).
  
  // Isotropic cumulants:
- Double_t QC2 = fIntFlowQcumulants->GetBinContent(1);
- Double_t QC2Error = fIntFlowQcumulants->GetBinError(1);
- Double_t QC4 = fIntFlowQcumulants->GetBinContent(2);
- Double_t QC4Error = fIntFlowQcumulants->GetBinError(2);
- //Double_t QC6 = fIntFlowQcumulants->GetBinContent(3);
- //Double_t QC6Error = fIntFlowQcumulants->GetBinError(3);
- //Double_t QC8 = fIntFlowQcumulants->GetBinContent(4);
- //Double_t QC8Error = fIntFlowQcumulants->GetBinError(4);
+ Double_t qc2 = fIntFlowQcumulants->GetBinContent(1);
+ Double_t qc2Error = fIntFlowQcumulants->GetBinError(1);
+ Double_t qc4 = fIntFlowQcumulants->GetBinContent(2);
+ Double_t qc4Error = fIntFlowQcumulants->GetBinError(2);
+ //Double_t qc6 = fIntFlowQcumulants->GetBinContent(3);
+ //Double_t qc6Error = fIntFlowQcumulants->GetBinError(3);
+ //Double_t qc8 = fIntFlowQcumulants->GetBinContent(4);
+ //Double_t qc8Error = fIntFlowQcumulants->GetBinError(4);
  
  // Measured 2-, 4-, 6- and 8-particle correlations:
  Double_t two = fIntFlowCorrelationsHist->GetBinContent(1); // <<2>>
@@ -10047,18 +10047,18 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
     }   
  } // end of if(fApplyCorrectionForNUA && fPropagateErrorAlsoFromNIT)
  // Quantify detector bias to QC{2}:
- if(TMath::Abs(QC2)>0.)
+ if(TMath::Abs(qc2)>0.)
  {
-  fIntFlowDetectorBias->SetBinContent(1,gQC2/QC2); 
-  if(QC2Error>0.)
+  fIntFlowDetectorBias->SetBinContent(1,gQC2/qc2); 
+  if(qc2Error>0.)
   {
-   Double_t errorSquared = gQC2ErrorSquared/pow(QC2,2.)+pow(gQC2,2.)*pow(QC2Error,2.)/pow(QC2,4.);
+   Double_t errorSquared = gQC2ErrorSquared/pow(qc2,2.)+pow(gQC2,2.)*pow(qc2Error,2.)/pow(qc2,4.);
    if(errorSquared>0.)
    {
     fIntFlowDetectorBias->SetBinError(1,pow(errorSquared,0.5));  
    }
   }
- } // end of if(TMath::Abs(QC2)>0.)
+ } // end of if(TMath::Abs(qc2)>0.)
 
  // Calculating generalized QC{4}:
  //  Generalized QC{4}:
@@ -10099,18 +10099,18 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
     }   
  } // end of if(fApplyCorrectionForNUA && fPropagateErrorAlsoFromNIT)
  // Quantify detector bias to QC{4}:
- if(TMath::Abs(QC4)>0.)
+ if(TMath::Abs(qc4)>0.)
  {
-  fIntFlowDetectorBias->SetBinContent(2,gQC4/QC4); 
-  if(QC4Error>0.)
+  fIntFlowDetectorBias->SetBinContent(2,gQC4/qc4); 
+  if(qc4Error>0.)
   {
-   Double_t errorSquared = gQC4ErrorSquared/pow(QC4,2.)+pow(gQC4,2.)*pow(QC4Error,2.)/pow(QC4,4.);
+   Double_t errorSquared = gQC4ErrorSquared/pow(qc4,2.)+pow(gQC4,2.)*pow(qc4Error,2.)/pow(qc4,4.);
    if(errorSquared>0.)
    {
     fIntFlowDetectorBias->SetBinError(2,pow(errorSquared,0.5));  
    }
   }
- } // end of if(TMath::Abs(QC4)>0.)
+ } // end of if(TMath::Abs(qc4)>0.)
 
 
  // .... to be improved (continued for 6th and 8th order) ....            
@@ -10130,8 +10130,8 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
    two = fIntFlowCorrelationsVsMHist[0]->GetBinContent(b); // <<2>> vs M
    four = fIntFlowCorrelationsVsMHist[1]->GetBinContent(b); // <<4>> vs M
    // Isotropic cumulants:
-   QC2 = two;
-   QC4 = four-2.*pow(two,2.);
+   qc2 = two;
+   qc4 = four-2.*pow(two,2.);
    // Non-isotropic terms:
    c1 = fIntFlowCorrectionTermsForNUAVsMPro[1][0]->GetBinContent(b); // <<cos(n*phi1)>>
    c2 = fIntFlowCorrectionTermsForNUAVsMPro[1][1]->GetBinContent(b); // <<cos(n*(phi1+phi2))>>
@@ -10149,14 +10149,14 @@ void AliFlowAnalysisWithQCumulants::CalculateQcumulantsCorrectedForNUAIntFlow()
                  + 8.*two*(pow(c1,2.)+pow(s1,2.))-6.*pow((pow(c1,2.)+pow(s1,2.)),2.);
    if(fApplyCorrectionForNUAVsM){fIntFlowQcumulantsVsM[1]->SetBinContent(b,gQC4);}   
    // Detector bias vs M:
-   if(TMath::Abs(QC2)>0.)
+   if(TMath::Abs(qc2)>0.)
    {
-    fIntFlowDetectorBiasVsM[0]->SetBinContent(b,gQC2/QC2); 
-   } // end of if(TMath::Abs(QC2)>0.)
-   if(TMath::Abs(QC4)>0.)
+    fIntFlowDetectorBiasVsM[0]->SetBinContent(b,gQC2/qc2); 
+   } // end of if(TMath::Abs(qc2)>0.)
+   if(TMath::Abs(qc4)>0.)
    {
-    fIntFlowDetectorBiasVsM[1]->SetBinContent(b,gQC4/QC4); 
-   } // end of if(TMath::Abs(QC4)>0.)  
+    fIntFlowDetectorBiasVsM[1]->SetBinContent(b,gQC4/qc4); 
+   } // end of if(TMath::Abs(qc4)>0.)  
    // Rebin in M:
    for(Int_t co=0;co<4;co++)
    {

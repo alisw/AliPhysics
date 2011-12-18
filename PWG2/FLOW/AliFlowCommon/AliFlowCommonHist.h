@@ -3,8 +3,8 @@
 
 /* $Id:$ */
 
-#ifndef AliFlowCommonHist_H
-#define AliFlowCommonHist_H
+#ifndef ALIFLOWCOMMONHIST_H
+#define ALIFLOWCOMMONHIST_H
 
 // AliFlowCommonHist:
 // Description: Class to organise common histograms for Flow Analysis

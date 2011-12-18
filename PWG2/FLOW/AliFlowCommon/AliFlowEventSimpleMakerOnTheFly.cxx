@@ -28,6 +28,7 @@
 #include "AliFlowEventSimpleMakerOnTheFly.h"
 #include "AliFlowEventSimple.h"
 #include "AliFlowTrackSimple.h"
+#include "AliFlowTrackSimpleCuts.h"
 
 ClassImp(AliFlowEventSimpleMakerOnTheFly)
 
@@ -142,7 +143,7 @@ Bool_t AliFlowEventSimpleMakerOnTheFly::AcceptOrNot(AliFlowTrackSimple *pTrack)
 
 //====================================================================================================================
 
-AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI)
+AliFlowEventSimple* AliFlowEventSimpleMakerOnTheFly::CreateEventOnTheFly(AliFlowTrackSimpleCuts const *cutsRP, AliFlowTrackSimpleCuts const *cutsPOI)
 {
  // Method to create event 'on the fly'.
  
