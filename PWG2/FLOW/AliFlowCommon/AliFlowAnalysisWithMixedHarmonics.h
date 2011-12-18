@@ -20,7 +20,6 @@
 #ifndef ALIFLOWANALYSISWITHMIXEDHARMONICS_H
 #define ALIFLOWANALYSISWITHMIXEDHARMONICS_H
 
-#include "AliFlowCommonConstants.h" // needed as include
 #include "TMatrixD.h"
 
 class TDirectoryFile;
@@ -33,6 +32,7 @@ class TProfile;
 class TProfile2D;
 
 class AliFlowEventSimple;
+class AliFlowCommonConstants;
 class AliFlowCommonHist;
 class AliFlowCommonHistResults;
 

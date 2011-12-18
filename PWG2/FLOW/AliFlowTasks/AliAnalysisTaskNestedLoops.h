@@ -21,6 +21,7 @@
 #include "TString.h"
 #include "AliAnalysisTaskSE.h"
 
+class TString;
 class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisWithNestedLoops;

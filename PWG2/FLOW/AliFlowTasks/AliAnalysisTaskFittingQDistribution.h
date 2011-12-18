@@ -19,9 +19,9 @@
 #ifndef ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 #define ALIANALYSISTASKFITTINGQDISTRIBUTION_H
 
-#include "TString.h"
 #include "AliAnalysisTaskSE.h"
 
+class TString;
 class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisWithFittingQDistribution;

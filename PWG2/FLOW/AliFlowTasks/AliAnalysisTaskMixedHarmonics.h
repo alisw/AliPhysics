@@ -18,9 +18,10 @@
 #ifndef ALIANALYSISTASKMIXEDHARMONICS_H
 #define ALIANALYSISTASKMIXEDHARMONICS_H
 
-#include "TString.h"
+
 #include "AliAnalysisTaskSE.h"
 
+class TString;
 class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisWithMixedHarmonics;

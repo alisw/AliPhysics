@@ -18,9 +18,9 @@
 #ifndef ALIANALYSISTASKQCUMULANTS_H
 #define ALIANALYSISTASKQCUMULANTS_H
 
-#include "TString.h"
 #include "AliAnalysisTaskSE.h"
 
+class TString;
 class TList;
 class AliFlowEventSimple;
 class AliFlowAnalysisWithQCumulants;

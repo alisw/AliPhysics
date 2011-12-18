@@ -18,16 +18,17 @@
 class TF1;
 class TRandom3;
 
-#include "AliFlowEventSimple.h" // needed as include
-#include "AliFlowTrackSimpleCuts.h"
-    
+class AliFlowEventSimple;
+class AliFlowTrackSimple;
+class AliFlowTrackSimpleCuts;
+        
 class AliFlowEventSimpleMakerOnTheFly{
  public:
   AliFlowEventSimpleMakerOnTheFly(UInt_t uiSeed = 0); // constructor
   virtual ~AliFlowEventSimpleMakerOnTheFly(); // destructor
   virtual void Init();   
   Bool_t AcceptOrNot(AliFlowTrackSimple *pTrack);  
-  AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts *cutsRP, AliFlowTrackSimpleCuts *cutsPOI); 
+  AliFlowEventSimple* CreateEventOnTheFly(AliFlowTrackSimpleCuts const *cutsRP, AliFlowTrackSimpleCuts const *cutsPOI); 
   // Setters and getters:
   void SetMinMult(Int_t iMinMult) {this->fMinMult = iMinMult;}
   Int_t GetMinMult() const {return this->fMinMult;} 
