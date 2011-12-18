@@ -2,8 +2,8 @@
 * See cxx source for full Copyright notice */
 /* $Id: $ */
 
-#ifndef AliFlowCandidateTrack_H
-#define AliFlowCandidateTrack_H
+#ifndef ALIFLOWCANDIDATETRACK_H
+#define ALIFLOWCANDIDATETRACK_H
 
 #include "AliFlowTrack.h"
 
@@ -14,28 +14,28 @@
 ////////////////////////////////////////////////////
 
 class AliFlowCandidateTrack : public AliFlowTrack {
-  protected:
-    Double_t fMass;           // mass
-    Int_t fNDaughters;        // number of daughters (5 max)
-    Int_t fDaughter[5];       // fID of daughter, points back to ESD track
-    AliFlowTrack *fTrack[5];  // pointer to daughter in FlowEvent
-    
   public:
     AliFlowCandidateTrack();
     AliFlowCandidateTrack(const AliFlowCandidateTrack& );
     AliFlowCandidateTrack& operator=(const AliFlowCandidateTrack& );
     ~AliFlowCandidateTrack();
 
-    Double_t Mass(void)            { return fMass; }
+    Double_t Mass(void)      const { return fMass; }
     void SetMass(Double_t value)   { fMass=value; }
 
-    Int_t GetNDaughters(void)           { return fNDaughters; }
-    void  AddDaughter(Int_t value)      { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
-    Int_t GetIDDaughter(Int_t value) { return fDaughter[value]; }
+    Int_t GetNDaughters(void)        const { return fNDaughters; }
+    void  AddDaughter(Int_t value)  { if(fNDaughters<3) fDaughter[fNDaughters++]=value; }
+    Int_t GetIDDaughter(Int_t value) const { return fDaughter[value]; }
 
     void SetDaughter(Int_t value, AliFlowTrack *track) { fTrack[value]=track; }
-    AliFlowTrack *GetDaughter(Int_t value) { return fTrack[value]; }
+    AliFlowTrack *GetDaughter(Int_t value) const { return fTrack[value]; }
 
+  protected:
+    Double_t fMass;           // mass
+    Int_t fNDaughters;        // number of daughters (5 max)
+    Int_t fDaughter[5];       // fID of daughter, points back to ESD track
+    AliFlowTrack *fTrack[5];  // pointer to daughter in FlowEvent
+    
 
     ClassDef(AliFlowCandidateTrack, 1);
 };

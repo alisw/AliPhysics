@@ -37,7 +37,7 @@ class AliFlowAnalysisWithScalarProduct {
    void Make(AliFlowEventSimple* anEvent);            //Main routine
    void GetOutputHistograms(TList *outputListHistos); //Copy output objects from TList
    void Finish();                                     //Fill results
-   void WriteHistograms(TDirectoryFile *outputFileName); //writes histograms locally (for OnTheFly)
+   void WriteHistograms(TDirectoryFile *outputFileName) const; //writes histograms locally (for OnTheFly)
 
 
    void SetHarmonic(Int_t iHarmonic)          { fHarmonic = iHarmonic; }
@@ -49,24 +49,24 @@ class AliFlowAnalysisWithScalarProduct {
    void SetUsePhiWeights(Bool_t bVal)        { fUsePhiWeights = bVal; }
    void SetWeightsList(TList* const aWeightsList)  { fWeightsList = (TList*)aWeightsList->Clone(); }
   
-   TList*    GetHistList()      { return fHistList; }
-   TProfile* GetHistProConfig() { return fHistProConfig; }
-   TProfile* GetHistProUQ(Int_t iRFPorPOI, Int_t iPTorETA) { return fHistProUQ[iRFPorPOI][iPTorETA]; }
-   TProfile* GetHistProQaQbNorm()   { return fHistProQaQbNorm; }
-   TProfile* GetHistProNUAq()   { return fHistProNUAq; }
-   TProfile* GetHistProNUAu(Int_t iRFPorPOI, Int_t iPTorETA, Int_t iIMorRE) { return fHistProNUAu[iRFPorPOI][iPTorETA][iIMorRE]; }
-   TH1D*     GetHistSumOfWeights() { return fHistSumOfWeights; }
-   TProfile* GetHistProUQQaQb( Int_t iRFPorPOI, Int_t iPTorETA ) { return fHistProUQQaQb[iRFPorPOI][iPTorETA]; }
-   TH1D*     GetHistSumOfWeightsu(Int_t iRFPorPOI, Int_t iPTorETA, Int_t iWeight) { return fHistSumOfWeightsu[iRFPorPOI][iPTorETA][iWeight]; }
-   AliFlowCommonHist*        GetCommonHists()    { return fCommonHists; }
-   AliFlowCommonHistResults* GetCommonHistsRes() { return fCommonHistsRes; }
+   TList*    GetHistList()      const { return fHistList; }
+   TProfile* GetHistProConfig() const { return fHistProConfig; }
+   TProfile* GetHistProUQ(Int_t iRFPorPOI, Int_t iPTorETA) const { return fHistProUQ[iRFPorPOI][iPTorETA]; }
+   TProfile* GetHistProQaQbNorm() const  { return fHistProQaQbNorm; }
+   TProfile* GetHistProNUAq()     const  { return fHistProNUAq; }
+   TProfile* GetHistProNUAu(Int_t iRFPorPOI, Int_t iPTorETA, Int_t iIMorRE) const { return fHistProNUAu[iRFPorPOI][iPTorETA][iIMorRE]; }
+   TH1D*     GetHistSumOfWeights() const { return fHistSumOfWeights; }
+   TProfile* GetHistProUQQaQb( Int_t iRFPorPOI, Int_t iPTorETA ) const { return fHistProUQQaQb[iRFPorPOI][iPTorETA]; }
+   TH1D*     GetHistSumOfWeightsu(Int_t iRFPorPOI, Int_t iPTorETA, Int_t iWeight) const { return fHistSumOfWeightsu[iRFPorPOI][iPTorETA][iWeight]; }
+   AliFlowCommonHist*        GetCommonHists()    const { return fCommonHists; }
+   AliFlowCommonHistResults* GetCommonHistsRes() const { return fCommonHistsRes; }
    
  private:
    AliFlowAnalysisWithScalarProduct(const AliFlowAnalysisWithScalarProduct& anAnalysis);            //copy constructor
    AliFlowAnalysisWithScalarProduct& operator=(const AliFlowAnalysisWithScalarProduct& anAnalysis); //assignment operator
-   Double_t CalculateStatisticalError( Int_t RFPorPOI, Int_t PTorETA, Int_t bin, Double_t errV );
-   Double_t computeResolution( Double_t x );
-   Double_t findXi( Double_t res, Double_t prec );
+   Double_t CalculateStatisticalError( Int_t RFPorPOI, Int_t PTorETA, Int_t bin, Double_t errV ) const;
+   Double_t ComputeResolution( Double_t x ) const;
+   Double_t FindXi( Double_t res, Double_t prec ) const;
 
       
    Int_t fDebug ;                // flag for analysis: more print statements
