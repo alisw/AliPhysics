@@ -1,5 +1,5 @@
-#ifndef AliITSQASPDDataMakerSim_H
-#define AliITSQASPDDataMakerSim_H
+#ifndef ALIITSQASPDDATAMAKERSIM_H
+#define ALIITSQASPDDATAMAKERSIM_H
 /* Copyright(c) 2007-2009, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
