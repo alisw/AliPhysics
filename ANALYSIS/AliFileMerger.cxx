@@ -78,7 +78,7 @@ AliFileMerger::AliFileMerger():
   TNamed(),
   fRejectMask(0),
   fAcceptMask(0),
-  fMaxFilesOpen(500),
+  fMaxFilesOpen(800),
   fNoTrees(kFALSE)
 {
   //
@@ -92,7 +92,7 @@ AliFileMerger::AliFileMerger(const char* name):
   TNamed(name,name),
   fRejectMask(0),
   fAcceptMask(0),
-  fMaxFilesOpen(500),
+  fMaxFilesOpen(800),
   fNoTrees(kFALSE)
 {
   //
@@ -437,8 +437,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 
       TObject *obj = key->ReadObj();
       if (!obj) {
-	cout << "Failed to get the object with key " << key->GetName() << " from " << 
-	  current_sourcedir->GetFile()->GetName() << "/" << current_sourcedir->GetName() << endl;
+	AliError(Form("Failed to get the object with key %s from %s",key->GetName(),current_sourcedir->GetFile()->GetName()));
 	continue;
       }
 
@@ -507,6 +506,7 @@ int AliFileMerger::MergeRootfile( TDirectory *target, TList *sourcelist)
 	      if (!hobj) {
 		cout << "Failed to get the object with key " << key2->GetName() << " from " << 
 		  ndir->GetFile()->GetName() << "/" << ndir->GetName() << endl;
+		nextsource = (TFile*)sourcelist->After( nextsource );
 		continue;
 	      }
 	      //
