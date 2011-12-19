@@ -35,7 +35,7 @@ class AliAODRecoDecayHF3Prong : public AliAODRecoDecayHF {
   AliAODRecoDecayHF3Prong& operator=(const AliAODRecoDecayHF3Prong& source); 
   void GetDCAs(Double_t dca[3]) const 
     {for(Int_t i=0;i<3;i++) dca[i]=GetDCA(i);}
-  Double_t GetSigmaVert(AliAODEvent* aod=0x0) { 
+  Double_t GetSigmaVert(const AliAODEvent* aod=0x0) { 
     if(fSigmaVert>0.00001) return fSigmaVert; 
     if(aod) fSigmaVert=ComputeSigmaVert(aod);
     return fSigmaVert;

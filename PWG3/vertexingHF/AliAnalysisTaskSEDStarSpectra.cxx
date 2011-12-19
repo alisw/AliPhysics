@@ -138,30 +138,12 @@ AliAnalysisTaskSEDStarSpectra::~AliAnalysisTaskSEDStarSpectra() {
   //
   Info("~AliAnalysisTaskSEDStarSpectra","Calling Destructor");
   
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
-  }
-  if (fOutputAll) {
-    delete fOutputAll;
-    fOutputAll = 0;
-  }
-  if (fOutputPID) {
-    delete fOutputPID;
-    fOutputPID = 0;
-  }
-  if (fCuts) {
-    delete fCuts;
-    fCuts = 0;
-  }
-  if(fCEvents){
-    delete fCEvents;
-    fCEvents =0;
-  }
-  if(fDeltaMassD1){
-    delete fDeltaMassD1;
-    fDeltaMassD1 =0;
-  }
+  delete fOutput;
+  delete fOutputAll;
+  delete fOutputPID;
+  delete fCuts;
+  delete fCEvents;
+  delete fDeltaMassD1;
   for(Int_t i=0; i<5; i++){
     delete fHistMassPtImpParTCDs[i];
   }
