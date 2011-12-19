@@ -509,7 +509,7 @@ Float_t AliTRDseedV1::GetCharge(Bool_t useOutliers) const
   AliTRDcluster *c(NULL); Float_t qt(0.);
   for(int ic=0; ic<kNclusters; ic++){
     if(!(c=fClusters[ic])) continue;
-    if(c->IsInChamber() && !useOutliers) continue;
+    if(!c->IsInChamber() && !useOutliers) continue;
     qt += TMath::Abs(c->GetQ());
   }
   return qt;
