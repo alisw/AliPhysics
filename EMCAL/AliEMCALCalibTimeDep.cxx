@@ -53,6 +53,8 @@ const double kTempCoeffP0Factor = -1.381e7; //
 const double kTempCoeffP1Const = -0.023; // 
 const double kTempCoeffP1Factor = -4.966e5; //
  
+const double kTempMaxDiffMedian = 2; // Temperature values should not be further away from median value within SM when considered in the average calc.
+
 const double kErrorCode = -999; // to indicate that something went wrong
 
 using namespace std;
@@ -68,6 +70,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep() :
   fMaxTemp(0),
   fMinTempVariation(0),
   fMaxTempVariation(0),
+  fMinTempValid(15),
+  fMaxTempValid(35),
   fMinTime(0),
   fMaxTime(0),
   fTemperatureResolution(0.1), // 0.1 deg C is default
@@ -94,6 +98,8 @@ AliEMCALCalibTimeDep::AliEMCALCalibTimeDep(const AliEMCALCalibTimeDep& calibt) :
   fMaxTemp(calibt.GetMaxTemp()),
   fMinTempVariation(calibt.GetMinTempVariation()),
   fMaxTempVariation(calibt.GetMaxTempVariation()),
+  fMinTempValid(calibt.GetMinTempValid()),
+  fMaxTempValid(calibt.GetMaxTempValid()),
   fMinTime(calibt.GetMinTime()),
   fMaxTime(calibt.GetMaxTime()),
   fTemperatureResolution(calibt.GetTemperatureResolution()),
@@ -138,6 +144,8 @@ void  AliEMCALCalibTimeDep::Reset()
   fMaxTemp = 0;
   fMinTempVariation = 0;
   fMaxTempVariation = 0;
+  fMinTempValid = 15; 
+  fMaxTempValid = 35;
   fMinTime = 0;
   fMaxTime = 0;
   fTemperatureResolution = 0.1; // 0.1 deg C is default
@@ -166,7 +174,8 @@ void  AliEMCALCalibTimeDep::PrintInfo() const
        << " GetMinTemp() " << GetMinTemp() << endl
        << " GetMaxTemp() " << GetMaxTemp() << endl
        << " GetMinTempVariation() " << GetMinTempVariation() << endl
-       << " GetMaxTempVariation() " << GetMaxTempVariation() << endl;
+       << " GetMaxTempVariation() " << GetMaxTempVariation() << endl
+       << " GetTemperatureResolution() " << GetTemperatureResolution() << endl;
   // run ranges
   cout << " RUN INFO: " << endl
        << " runnumber " << GetRunNumber() << endl
@@ -227,8 +236,8 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
   // first convert from seconds to hours..
   Double_t timeHour = (timeStamp - fStartTime) * kSecToHour;
 
-  Double_t average = 0;
   int n = 0;
+  Double_t valArr[8]={0}; // 8 sensors per SM
 
   for (int i=0; i<fTempArray->NumSensors(); i++) {
     
@@ -244,8 +253,10 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
 	  if ( fVerbosity > 0 ) {
 	    cout << " sensor i " << i << " val " << val << endl;
 	  }
-	  average += val;
-	  n++;
+	  if (val>fMinTempValid && val<fMaxTempValid && n<8) { 
+	    valArr[n] = val;
+	    n++;
+	  }
 	}
       } // time
     }
@@ -253,8 +264,22 @@ Double_t AliEMCALCalibTimeDep::GetTemperatureSM(int imod, UInt_t timeStamp) cons
   } // loop over fTempArray
   
   if (n>0) { // some valid data was found
-    average /= n;
-    return average;
+    Double_t median = TMath::Median(n, valArr);
+    Double_t average = 0;
+    Int_t nval = 0;
+    for (int is=0; is<n; is++) {
+      if (TMath::Abs(valArr[is] - median) < kTempMaxDiffMedian) {
+	average += valArr[is];
+	nval++;
+      }
+    }
+    if (nval >  0) {
+      average /= nval;
+      return average;
+    }
+    else { // this case should not happen, but kept for completeness (coverity etc)
+      return median;
+    }
   }
   else { // no good data
     return kErrorCode;
@@ -287,7 +312,7 @@ Int_t AliEMCALCalibTimeDep::CalcCorrection()
   if (nBins == 1) {    
     binSize = fEndTime - fStartTime;
   }
-  if (fVerbosity > 1) {
+  if (fVerbosity > 0) {
     cout << " nBins " << nBins << " binSize " << binSize << endl;
   }
 
@@ -375,17 +400,23 @@ Int_t AliEMCALCalibTimeDep::ScanTemperatureInfo()
       // min and max values within the single sensor
       Double_t min = 999;
       Double_t max = 0;
+      int nval = 0;
       for (int ip=0; ip<np; ip++) { 
-	if (min > y0[ip]) { min = y0[ip]; }
-	if (max < y0[ip]) { max = y0[ip]; }
+	if (y0[ip]>fMinTempValid && y0[ip]<fMaxTempValid) {
+	  if (min > y0[ip]) { min = y0[ip]; }
+	  if (max < y0[ip]) { max = y0[ip]; }
+	  nval++;
+	}
       }
-      if (fMinTemp > min) { fMinTemp = min; }
-      if (fMaxTemp < max) { fMaxTemp = max; }
-      Double_t variation = max - min;
-      if (fMinTempVariation > variation) { fMinTempVariation = variation; }
-      if (fMaxTempVariation < variation) { fMaxTempVariation = variation; }
-
-      n++;
+      if (nval>0) {
+	if (fMinTemp > min) { fMinTemp = min; }
+	if (fMaxTemp < max) { fMaxTemp = max; }
+	Double_t variation = max - min;
+	if (fMinTempVariation > variation) { fMinTempVariation = variation; }
+	if (fMaxTempVariation < variation) { fMaxTempVariation = variation; }
+	
+	n++;
+      }
     }
   } // loop over fTempArray
   

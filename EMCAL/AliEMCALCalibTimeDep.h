@@ -46,6 +46,8 @@ class AliEMCALCalibTimeDep : public TObject {
   Double_t GetMaxTemp() const { return fMaxTemp; } // 
   Double_t GetMinTempVariation() const { return fMinTempVariation; } //  
   Double_t GetMaxTempVariation() const { return fMaxTempVariation; } // 
+  Double_t GetMinTempValid() const { return fMinTempValid; } //  
+  Double_t GetMaxTempValid() const { return fMaxTempValid; } // 
   UInt_t GetMinTime() const { return fMinTime; } // 
   UInt_t GetMaxTime() const { return fMaxTime; } // 
   Double_t GetRangeOfTempMeasureInHours() const; //! 
@@ -88,6 +90,9 @@ class AliEMCALCalibTimeDep : public TObject {
   void SetStartTime(UInt_t ui) { fStartTime = ui; } // 
   void SetEndTime(UInt_t ui) { fEndTime = ui; } //  
 
+  void SetMinTempValid(Double_t d) { fMinTempValid = d; } //  
+  void SetMaxTempValid(Double_t d) { fMaxTempValid = d; } // 
+
   Int_t GetVerbosity() const { return fVerbosity; } // debug flag 
   void SetVerbosity(Int_t i) { fVerbosity= i; } // debug flag 
 
@@ -113,6 +118,8 @@ class AliEMCALCalibTimeDep : public TObject {
   Double_t fMaxTemp; // max temp
   Double_t fMinTempVariation; // min temp variation, within a sensor
   Double_t fMaxTempVariation; // max temp variation, within a sensor
+  Double_t fMinTempValid; // min limit for when temp. readings appear valid
+  Double_t fMaxTempValid; // max limit for when temp. readings appear valid
   UInt_t fMinTime; // min time
   UInt_t fMaxTime; // max time
   //
@@ -132,7 +139,7 @@ class AliEMCALCalibTimeDep : public TObject {
   Int_t fVerbosity; // debug flag
 
   //
-  ClassDef(AliEMCALCalibTimeDep,4)    // EMCAL time-dep Calibration data
+  ClassDef(AliEMCALCalibTimeDep,5)    // EMCAL time-dep Calibration data
 };
 
 #endif
