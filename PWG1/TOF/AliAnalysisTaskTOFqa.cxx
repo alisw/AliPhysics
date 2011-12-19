@@ -665,6 +665,16 @@ void AliAnalysisTaskTOFqa::UserCreateOutputObjects()
   if (fEnableAdvancedCheck)
     fHlistPID->AddLast(hTOFmatchedExpTimeProVsPNoTRDNeg) ;
 
+//PID 30
+  TH1F* hTOFmatchedTimePion1GeV = new TH1F("hTOFmatchedTimePion1GeV", "ESDs t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} (from tracking) for 0.95 <= p_{T} <= 1.05 GeV/c; t_{TOF}-t_{0}^{TOF}-t_{#pi,exp} [ps];Counts", nExpTimeBins, fExpTimeRangeMin, fExpTimeRangeMax) ; 
+  hTOFmatchedTimePion1GeV->Sumw2() ;
+  hTOFmatchedTimePion1GeV->SetLineWidth(1);
+  hTOFmatchedTimePion1GeV->SetLineColor(kBlue);
+  hTOFmatchedTimePion1GeV->SetMarkerStyle(20);
+  hTOFmatchedTimePion1GeV->SetMarkerSize(0.8); 
+  hTOFmatchedTimePion1GeV->SetMarkerColor(kBlue);
+  fHlistPID->AddLast(hTOFmatchedTimePion1GeV) ;
+  
   //----------------------------------------------------------POSITIVE TRACKS
   //0
   TH1F* hTOFmatchedESDtrkLengthPos  = new TH1F("hTOFmatchedESDtrkLengthPos", "Matched positive ESDs tracks length; Track length [cm];Counts", 1600, -800., 800) ; 
@@ -1268,7 +1278,7 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
  	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPtPosNoTRDout"))->Fill(pT);
  	  if (pT>=0.5) {
  	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackEtaPosNoTRDout"))->Fill(eta);
- 	  ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phi);
+	    ((TH1F*)fHpos->FindObject("hESDprimaryTrackPhiPosNoTRDout"))->Fill(phi);
  	  }
  	}
        } //end positive 
@@ -1316,14 +1326,15 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDtrkLength"))->Fill(length);  
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDP"))->Fill(mom);
       ((TH1F*)fHlist->FindObject("hTOFmatchedESDPt"))->Fill(pT);
-      if (pT>=0.5)
+      if (pT>=0.5){
 	((TH1F*)fHlist->FindObject("hTOFmatchedESDeta"))->Fill(eta);
-      ((TH1F*)fHlist->FindObject("hTOFmatchedESDphi"))->Fill(phi);
+	((TH1F*)fHlist->FindObject("hTOFmatchedESDphi"))->Fill(phi);
+      }
       if (track->GetSign()>0)
 	((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtPos"))->Fill(pT,track->GetTOFsignalDx());
       else ((TH2F*)fHlist->FindObject("hTOFmatchedDxVsPtNeg"))->Fill(pT,track->GetTOFsignalDx());
       ((TH2F*)fHlist->FindObject("hTOFmatchedDzVsStrip"))->Fill((Int_t)GetStripIndex(volId),track->GetTOFsignalDz());
-
+   
       //evaluate sign
       if (fEnableAdvancedCheck){
         if (track->GetSign()>0){
@@ -1419,6 +1430,10 @@ void AliAnalysisTaskTOFqa::UserExec(Option_t *)
 	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsEta"))->Fill((Int_t)GetStripIndex(volId),tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	((TH1F*)fHlistPID->FindObject("hTOFmatchedExpTimePi"))->Fill(tofTime-fTrkExpTimes[AliPID::kPion]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFmatchedExpTimePiVsP"))->Fill(mom,(tofTime-fTrkExpTimes[AliPID::kPion]));
+	if ((pT>=0.95)&&(pT<=1.05)){
+	  Double_t t0tofTrack=fESDpid->GetTOFResponse().GetStartTime(pT);
+	  ((TH1F*)fHlistPID->FindObject("hTOFmatchedTimePion1GeV"))->Fill(tofTime-t0tofTrack-fTrkExpTimes[AliPID::kPion]);
+	}
 	((TH1F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePi"))->Fill(tofTime-fThExpTimes[AliPID::kPion]);//ps
 	((TH2F*)fHlistPID->FindObject("hTOFtheoreticalExpTimePiVsP"))->Fill(mom,(tofTime-fThExpTimes[AliPID::kPion]));	
 	((TH2F*)fHlistPID->FindObject("hTOFExpSigmaPi"))->Fill(pT,(tofTime-fTrkExpTimes[AliPID::kPion])/fSigmaSpecie[AliPID::kPion]);
