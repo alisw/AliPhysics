@@ -251,6 +251,6 @@ void makeSummaryESD(const Char_t* filename, Double_t* trendValues, Bool_t useCF,
   AliTRDcheckESD *esd=new AliTRDcheckESD();
   if(!esd->Load(filename,dir)) return;
   //esd->Terminate();
-  if(useCF) esd->MakeSummaryFromCF(trendValues, useIsolatedBC, cutTOFbc);
+  if(useCF) esd->MakeSummaryFromCF(trendValues, "", useIsolatedBC, cutTOFbc);
   else esd->MakeSummary(trendValues);
 }
