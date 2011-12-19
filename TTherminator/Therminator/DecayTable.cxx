@@ -47,6 +47,18 @@ DecayTable::~DecayTable()
 {
 }
 
+DecayTable& DecayTable::operator=(const DecayTable& aTable)
+{
+  if (this != &aTable) {
+    mDecayChannels.clear();
+    mBranchingRatios.clear();
+    for (int iter=0; iter<aTable.GetChannelCount(); iter++)
+      AddDecayChannel(*(aTable.GetDecayChannel(iter)));
+  }
+  
+  return *this;
+}
+
 void 
 DecayTable::AddDecayChannel(DecayChannel aChannel)
 {

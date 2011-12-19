@@ -38,6 +38,8 @@ class DecayTable
   DecayTable(const DecayTable& aTable);
   ~DecayTable();
   
+  DecayTable& operator=(const DecayTable& aTable);
+
   void AddDecayChannel(DecayChannel aChannel);
 
   int  GetChannelCount() const;
