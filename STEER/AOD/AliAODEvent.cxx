@@ -244,11 +244,12 @@ AliAODEvent & AliAODEvent::operator=(const AliAODEvent& aod) {
 AliAODEvent::~AliAODEvent() 
 {
 // destructor
+    delete fAODFolder;
+    fAODFolder = 0;
     if(!fConnected) {
        fAODObjects->Delete("slow");
        delete fAODObjects;
     }   
-    delete fAODFolder;
 }
 
 //______________________________________________________________________________
