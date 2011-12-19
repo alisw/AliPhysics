@@ -105,9 +105,9 @@ class AliRDHFCutsLctopKpi : public AliRDHFCuts
   Bool_t fUseImpParProdCorrCut; //switch for cut on d0p*d0K vs. d0K*d0pi 
 
 private:
-  EPIDStrategy fPIDStrategy;
-  Double_t fPIDThreshold[AliPID::kSPECIES];
-  ECutsStrategy fCutsStrategy;
+  EPIDStrategy fPIDStrategy;                // PIS strategy (nsigma, combined)
+  Double_t fPIDThreshold[AliPID::kSPECIES]; // PID threshold for each species
+  ECutsStrategy fCutsStrategy;              // cut strategy (standard or KF)
 
   ClassDef(AliRDHFCutsLctopKpi,5);  // class for cuts on AOD reconstructed Lc->pKpi
 };

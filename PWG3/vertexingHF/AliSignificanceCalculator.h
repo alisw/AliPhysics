@@ -14,8 +14,9 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
-#include "AliMultiDimVector.h"
 #include "TObject.h"
+
+class AliMultiDimVector;
 
 class AliSignificanceCalculator : public TObject{
  public:
@@ -86,7 +87,7 @@ class AliSignificanceCalculator : public TObject{
   Float_t fNormSig;                        // signal normalization
   Float_t fNormBkg;                        // background normalization
 
-  ClassDef(AliSignificanceCalculator,1); // class to compute and maximise significance
+  ClassDef(AliSignificanceCalculator,0); // class to compute and maximise significance
 
 };
 

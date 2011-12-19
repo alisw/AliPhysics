@@ -20,9 +20,9 @@ class AliESDEvent;
 class AliMixedEvent;
 
 #include "AliAnalysisTaskME.h"
-#include "AliAnalysisVertexingHF.h"
 #include <TClonesArray.h>
 
+class AliAnalysisVertexingHF;
 
 class AliAnalysisTaskMEVertexingHF : public AliAnalysisTaskME {
  public:
