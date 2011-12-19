@@ -2226,6 +2226,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     vprimary->GetXYZ(pos);
     vprimary->GetCovarianceMatrix(cov);
     fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
+    if(event->GetNumberOfTracks()<=0) return;
     indices = new UShort_t[event->GetNumberOfTracks()];
     for(Int_t ijk=0; ijk<event->GetNumberOfTracks(); ijk++) indices[ijk]=0;
     fAODMapSize = 100000;
