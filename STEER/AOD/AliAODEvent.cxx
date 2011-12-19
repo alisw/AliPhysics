@@ -613,13 +613,15 @@ void AliAODEvent::ReadFromTree(TTree *tree, Option_t* opt /*= ""*/)
     aodEvent->SetConnected();
       // Check if already connected to tree
     TList* connectedList = (TList*) (tree->GetUserInfo()->FindObject("AODObjectsConnectedToTree"));
-    if (connectedList && (strcmp(opt, "reconnect"))) {
+    if (connectedList && (!strcmp(opt, "reconnect"))) {
         // If connected use the connected list of objects
-        delete fAODObjects;
-	fAODObjects = connectedList;
-	GetStdContent(); 
-	fConnected = kTRUE;
-	return;
+        if (fAODObjects != connectedList) {
+           delete fAODObjects;
+           fAODObjects = connectedList;
+        }   
+        GetStdContent(); 
+        fConnected = kTRUE;
+        return;
     } 
       // Connect to tree
       // prevent a memory leak when reading back the TList
