@@ -24,6 +24,7 @@
 //                                                               //
 ///////////////////////////////////////////////////////////////////
 
+#include "AliMultiDimVector.h"
 #include "AliSignificanceCalculator.h"
 #include "TMath.h"
 #include "AliLog.h"
