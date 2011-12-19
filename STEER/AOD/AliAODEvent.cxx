@@ -258,6 +258,10 @@ void AliAODEvent::AddObject(TObject* obj)
   // Please be aware that in order to increase performance you should
   // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
   
+  if ( !fAODObjects ) {
+     fAODObjects = new TList();
+     fAODObjects->SetOwner();
+  }
   if ( !fAODObjects->FindObject(obj) ) 
   {
     fAODObjects->AddLast(obj);
