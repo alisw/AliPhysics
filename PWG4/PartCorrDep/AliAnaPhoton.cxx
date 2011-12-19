@@ -1530,7 +1530,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   }
   
   // Loop on raw clusters before filtering in the reader and fill control histogram
-  if((GetReader()->GetEMCALClusterListName()!="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS"){
+  if((GetReader()->GetEMCALClusterListName()=="" && fCalorimeter=="EMCAL") || fCalorimeter=="PHOS"){
     for(Int_t iclus = 0; iclus < GetReader()->GetInputEvent()->GetNumberOfCaloClusters(); iclus++ ){
       AliVCluster * clus = GetReader()->GetInputEvent()->GetCaloCluster(iclus);
       if     (fCalorimeter == "PHOS"  && clus->IsPHOS()  && clus->E() > GetReader()->GetPHOSPtMin() ) fhClusterCuts[0]->Fill(clus->E());
@@ -1540,14 +1540,14 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
   else { // reclusterized
     TClonesArray * clusterList = 0;
     if(GetReader()->GetOutputEvent())
-      dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
+      clusterList = dynamic_cast<TClonesArray*> (GetReader()->GetOutputEvent()->FindListObject(GetReader()->GetEMCALClusterListName()));
     if(clusterList){
       Int_t nclusters = clusterList->GetEntriesFast();
       for (Int_t iclus =  0; iclus <  nclusters; iclus++) {
         AliVCluster * clus = dynamic_cast<AliVCluster*> (clusterList->At(iclus));        
         if(clus)fhClusterCuts[0]->Fill(clus->E());
+      }  
     }
-  }
   }
   
   //Init arrays, variables, get number of clusters
