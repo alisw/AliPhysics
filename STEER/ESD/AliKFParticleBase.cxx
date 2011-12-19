@@ -1342,10 +1342,10 @@ void AliKFParticleBase::SetMassConstraint( Double_t *mP, Double_t *mC, Double_t 
   dfx[1] = -2.*(1. + Lambda)*(1. + Lambda)*mP[4];
   dfx[2] = -2.*(1. + Lambda)*(1. + Lambda)*mP[5];
   dfx[3] = 2.*(1. - Lambda)*(1. - Lambda)*mP[6];
-  Double_t dlx[7] = {1,1,1,1,1,1,1};
+  Double_t dlx[4] = {1,1,1,1};
   if(TMath::Abs(dfl) > 1.e-10 )
   {
-    for(int i=0; i<7; i++)
+    for(int i=0; i<4; i++)
       dlx[i] = -dfx[i] / dfl;
   }
 
@@ -2519,9 +2519,9 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
       double ca0 = mpx0/mpt0;
       double sa0 = mpy0/mpt0;
       double r[3] = { v0[0], v0[1], v0[2] };
-      double mC[3][3] = {{10000., 0 ,   0  },
-			 {0,  10000.,   0  },
-			 {0,     0, 10000. } };
+      double mC[3][3] = {{1000., 0 ,   0  },
+			 {0,  1000.,   0  },
+			 {0,     0, 1000. } };
       double chi2=0;
       
       for( int id=0; id<2; id++ ){		
@@ -2663,7 +2663,6 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
 	  }
 	}
 
-	
 	//* Calculate Chi^2 
 	
 	chi2 += ( ( mS[0]*zeta[0] + mS[1]*zeta[1] + mS[3]*zeta[2] )*zeta[0]
@@ -2735,9 +2734,9 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
 	Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
 			   +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
 			   +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] );
-	fChi2+= TMath::Abs( dChi2 );
+//	fChi2+= TMath::Abs( dChi2 );
       }
-      fNDF  += 2;
+//      fNDF  += 2;
     }
 
     //* Add the daughter momentum to the particle momentum
@@ -2798,6 +2797,16 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
 
 void AliKFParticleBase::GetArmenterosPodolanski(AliKFParticleBase& positive, AliKFParticleBase& negative, Double_t QtAlfa[2] )
 {
+// example:
+//       AliKFParticle PosParticle(...)
+//       AliKFParticle NegParticle(...)
+//       Gamma.ConstructGamma(PosParticle, NegParticle);
+//       Double_t VertexGamma[3] = {Gamma.GetX(), Gamma.GetY(), Gamma.GetZ()};
+//       PosParticle.TransportToPoint(VertexGamma);
+//       NegParticle.TransportToPoint(VertexGamma);
+//       Double_t armenterosQtAlfa[2] = {0.};
+//       AliKFParticle::GetArmenterosPodolanski(PosParticle, NegParticle, armenterosQtAlfa );
+
   Double_t alpha = 0., qt = 0.;
   Double_t spx = positive.GetPx() + negative.GetPx();
   Double_t spy = positive.GetPy() + negative.GetPy();
