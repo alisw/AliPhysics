@@ -23,6 +23,7 @@ public:
   AliFemtoEventCutEstimators();
   AliFemtoEventCutEstimators(AliFemtoEventCutEstimators& c);
   virtual ~AliFemtoEventCutEstimators();
+  AliFemtoEventCutEstimators& operator=(AliFemtoEventCutEstimators& c);
 
   void SetMultEst1Range(const unsigned short &lo, const unsigned short &hi);
   void SetMultEst2Range(const unsigned short &lo, const unsigned short &hi);
