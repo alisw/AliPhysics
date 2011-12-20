@@ -69,6 +69,26 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   fAnalysisCuts(0)
 {
   // Default constructor
+
+  for(Int_t i=0;i<4*fNPtBins;i++){
+    
+    if(fMassHist[i]) fMassHist[i]=0;
+    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
+    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
+    if(fCosPHist[i]) fCosPHist[i]=0;
+    if(fDLenHist[i]) fDLenHist[i]=0;
+    if(fSumd02Hist[i]) fSumd02Hist[i]=0;
+    if(fSigVertHist[i]) fSigVertHist[i]=0;
+    if(fPtMaxHist[i]) fPtMaxHist[i]=0;
+    if(fDCAHist[i]) fDCAHist[i]=0;
+    if(fPtProng0Hist[i]) fPtProng0Hist[i]=0;
+    if(fPtProng1Hist[i]) fPtProng1Hist[i]=0;
+    if(fPtProng2Hist[i]) fPtProng2Hist[i]=0;
+    if(fDalitz[i]) fDalitz[i]=0;
+    if(fDalitzPhi[i]) fDalitzPhi[i]=0;
+    if(fDalitzK0st[i]) fDalitzK0st[i]=0;
+
+  }
 }
 
 //________________________________________________________________________
