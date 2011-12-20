@@ -75,6 +75,7 @@ public:
 #endif
 #endif
   ~AliFemtoKink(){/* no-op */}
+  AliFemtoKink& operator=( const AliFemtoKink& k); // copy constructor
 
   // Get's
   float        DcaParentDaughter() const;
