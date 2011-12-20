@@ -2241,8 +2241,11 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
          chain->Add(esdFile);
          file->Close();
          if (!fFriendChainName.IsNull()) {
-            esdFile.ReplaceAll("AliAOD.root", fFriendChainName.Data());
-            esdFile.ReplaceAll("AliAODs.root", fFriendChainName.Data());
+	    if (esdFile.Index("#") > -1)
+	      esdFile.Remove(esdFile.Index("#"));
+	    esdFile = gSystem->DirName(esdFile);
+	    esdFile += "/" + fFriendChainName;
+
             file = TFile::Open(esdFile);
             if (file && !file->IsZombie()) {
                file->Close();
