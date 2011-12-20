@@ -49,6 +49,17 @@ AliFemtoPairCutRadialDistance::AliFemtoPairCutRadialDistance(const AliFemtoPairC
 AliFemtoPairCutRadialDistance::~AliFemtoPairCutRadialDistance(){
   /* no-op */
 }
+AliFemtoPairCutRadialDistance& AliFemtoPairCutRadialDistance::operator=(const AliFemtoPairCutRadialDistance& c)
+{
+  if (this != &c) {
+    fDPhiStarMin = c.fDPhiStarMin;
+    fEtaMin = c.fEtaMin;
+    fMinRad = c.fMinRad;
+    fMagSign = c.fMagSign;
+  }
+
+  return *this;
+}
 //__________________
 bool AliFemtoPairCutRadialDistance::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
