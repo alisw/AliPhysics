@@ -22,6 +22,7 @@ public:
   AliFemtoBasicEventCut();
   AliFemtoBasicEventCut(AliFemtoBasicEventCut& c);
   virtual ~AliFemtoBasicEventCut();
+  AliFemtoBasicEventCut& operator=(AliFemtoBasicEventCut& c);
 
   void SetEventMult(const int& lo,const int& hi);
   void SetVertZPos(const float& lo, const float& hi);
@@ -65,6 +66,18 @@ inline AliFemtoBasicEventCut::AliFemtoBasicEventCut(AliFemtoBasicEventCut& c) : 
   fEventMult[1] = c.fEventMult[1];
   fVertZPos[0] = c.fVertZPos[0];
   fVertZPos[1] = c.fVertZPos[1];
+}
+
+inline AliFemtoBasicEventCut& AliFemtoBasicEventCut::operator=(AliFemtoBasicEventCut& c) {   
+  if (this != &c) {
+    AliFemtoEventCut::operator=(c);
+    fEventMult[0] = c.fEventMult[0];
+    fEventMult[1] = c.fEventMult[1];
+    fVertZPos[0] = c.fVertZPos[0];
+    fVertZPos[1] = c.fVertZPos[1];
+  }
+
+  return *this;
 }
 
 
