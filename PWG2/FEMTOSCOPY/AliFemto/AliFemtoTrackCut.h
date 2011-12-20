@@ -17,6 +17,7 @@ public:
   AliFemtoTrackCut(){/* no-op */};                       // default constructor. - Users should write their own
   AliFemtoTrackCut(const AliFemtoTrackCut&);                // copy constructor
   virtual ~AliFemtoTrackCut(){/* no-op */};              // destructor
+  AliFemtoTrackCut& operator=(const AliFemtoTrackCut&);                // copy constructor
 
   virtual bool Pass(const AliFemtoTrack* track)=0;       // true if passes, false if not
   virtual AliFemtoParticleType Type(){return hbtTrack;}
@@ -32,4 +33,5 @@ inline AliFemtoTrackCut::AliFemtoTrackCut(const AliFemtoTrackCut& c) : AliFemtoP
   cout << " AliFemtoTrackCut::AliFemtoTrackCut(const AliFemtoTrackCut& c) : AliFemtoParticleCut(c) " << endl;
 #endif
 }
+inline AliFemtoTrackCut& AliFemtoTrackCut::operator=(const AliFemtoTrackCut& c) { if (this != &c) { AliFemtoParticleCut::operator=(c); } return *this; } 
 #endif
