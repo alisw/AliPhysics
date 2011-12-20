@@ -47,6 +47,24 @@ AliFemtoEventCutEstimators::~AliFemtoEventCutEstimators(){
   // Default destructor
 }
 //------------------------------
+AliFemtoEventCutEstimators& AliFemtoEventCutEstimators::operator=(AliFemtoEventCutEstimators& c)
+{
+  if (this != &c) {
+    fEventMultEst1[0] = c.fEventMultEst1[0];  fEventMultEst1[1] = c.fEventMultEst1[1];
+    fEventMultEst2[0] = c.fEventMultEst2[0];  fEventMultEst2[1] = c.fEventMultEst2[1];
+    fEventMultEst3[0] = c.fEventMultEst3[0];  fEventMultEst3[1] = c.fEventMultEst3[1];
+    fEventCentEst1[0] = c.fEventCentEst1[0];  fEventCentEst1[1] = c.fEventCentEst1[1];
+    fEventCentEst2[0] = c.fEventCentEst2[0];  fEventCentEst2[1] = c.fEventCentEst2[1];
+    fEventCentEst3[0] = c.fEventCentEst3[0];  fEventCentEst3[1] = c.fEventCentEst3[1];
+    fEventCentEst4[0] = c.fEventCentEst4[0];  fEventCentEst4[1] = c.fEventCentEst4[1];
+    fVertZPos[0] = c.fVertZPos[0];
+    fVertZPos[1] = c.fVertZPos[1];
+  }
+
+  return *this;
+}
+
+//------------------------------
 bool AliFemtoEventCutEstimators::Pass(const AliFemtoEvent* event){
   // Pass events if they fall within the multiplicity and z-vertex
   // position range. Fail otherwise
