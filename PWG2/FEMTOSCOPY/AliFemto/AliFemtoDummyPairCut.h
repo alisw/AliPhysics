@@ -90,6 +90,7 @@ public:
   AliFemtoDummyPairCut();
   AliFemtoDummyPairCut(const AliFemtoDummyPairCut&);
   virtual ~AliFemtoDummyPairCut();
+  AliFemtoDummyPairCut& operator=(const AliFemtoDummyPairCut&);
 
   virtual bool Pass(const AliFemtoPair*);
   virtual AliFemtoString Report();
@@ -106,6 +107,7 @@ private:
 };
 
 inline AliFemtoDummyPairCut::AliFemtoDummyPairCut(const AliFemtoDummyPairCut& c) : AliFemtoPairCut(c), fNPairsPassed(0), fNPairsFailed(0) { /* no-op */ }
+inline AliFemtoDummyPairCut& AliFemtoDummyPairCut::operator=(const AliFemtoDummyPairCut& c) {   if (this != &c) { AliFemtoPairCut::operator=(c); }  return *this; }
 inline AliFemtoDummyPairCut* AliFemtoDummyPairCut::Clone() { AliFemtoDummyPairCut* c = new AliFemtoDummyPairCut(*this); return c;}
 
 #endif
