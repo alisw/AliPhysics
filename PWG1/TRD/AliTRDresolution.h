@@ -102,6 +102,7 @@ public:
   static Bool_t   FitTracklet(const Int_t ly, const Int_t np, const AliTrackPoint *points, const Float_t trackPars[10], Float_t trackletPars[3]);
   void            UserCreateOutputObjects();
 //  Float_t GetCorrectionX(Int_t det, Int_t tb) const {return fXcorr[det][tb];}
+  static void     GetRangeZ(TH2 *h2, Float_t &m, Float_t &M);
   Float_t         GetDyRange() const {return fDyRange;}
   static Float_t  GetMeanStat(TH1 *h, Float_t cut=0., Option_t *opt="");
   Float_t         GetPtThreshold() const {return fPtThreshold;}
@@ -138,6 +139,7 @@ public:
   void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
+  void            SetRangeZ(TH2 *h2, Float_t m, Float_t M);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
   void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
@@ -157,7 +159,7 @@ public:
     AliTRDresolutionProjection& operator=(const AliTRDresolutionProjection& other);
     void  Build(const Char_t *n, const Char_t *t, Int_t ix, Int_t iy, Int_t iz, TAxis *aa[]);
     void  Increment(Int_t bin[], Double_t v);
-    TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0);
+    TH2*  Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid=0, Bool_t del=kTRUE);
     void  SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[]);
     void  SetShowRange(Float_t zm, Float_t zM, Float_t em=0., Float_t eM=0.) {fRange[0] = zm; fRange[1] = zM; fRange[2] = em; fRange[3] = eM;}
   private:

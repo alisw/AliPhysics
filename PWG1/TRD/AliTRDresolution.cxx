@@ -304,7 +304,8 @@ TH1* AliTRDresolution::DetCluster(const TObjArray *cls)
     AliWarning("No output container defined.");
     return NULL;
   }
-  Int_t ly(AliTRDgeometry::GetLayer(det));
+  Int_t ly(AliTRDgeometry::GetLayer(det)),
+        stk(AliTRDgeometry::GetStack(det));
   Double_t val[kNdim],
            alpha((0.5+AliTRDgeometry::GetSector(det))*AliTRDgeometry::GetAlpha()),
            cs(TMath::Cos(alpha)),
@@ -313,8 +314,7 @@ TH1* AliTRDresolution::DetCluster(const TObjArray *cls)
     if(!(cl = (AliTRDcluster*)(*fkClusters)[icl])) continue;
     val[kBC]  = ly;
     val[kPhi] = TMath::ATan2(cl->GetX()*sn + cl->GetY()*cs, cl->GetX()*cs - cl->GetY()*sn);
-    Float_t tgl = cl->GetZ()/cl->GetX()/TMath::Sqrt(1.+cl->GetY()*cl->GetY()/cl->GetX()/cl->GetX());
-    val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+    val[kEta] = (5-stk)*16-cl->GetPadRow()-1-(stk<3?4:0);
     val[kYrez]= TMath::Abs(cl->GetQ());
     val[4]    = fEvent->GetMultiplicity();
     H->Fill(val);
@@ -500,14 +500,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     val[kZrez] = dzt + dyt*tilt;
     dydx+= tilt*fTracklet->GetZref(1);
     val[kPrez] = TMath::ATan((dydx - fTracklet->GetYref(1))/(1.+ fTracklet->GetYref(1)*dydx)) * TMath::RadToDeg();
-    if(fTracklet->IsRowCross()){
-      val[kSpeciesChgRC]= 0.;
-//      val[kPrez] = fkTrack->Charge(); // may be better defined
-    }/* else {
-      Float_t exb, vd, t0, s2, dl, dt;
-      fTracklet->GetCalibParam(exb, vd, t0, s2, dl, dt);
-      val[kZrez] = TMath::ATan((fTracklet->GetYref(1) - exb)/(1+fTracklet->GetYref(1)*exb));
-    }*/
+    if(fTracklet->IsRowCross()) val[kSpeciesChgRC]= 0.;
     val[kNdim] = fTracklet->GetdQdl()*2.e-3;
     val[kNdim+1] = fEvent?fEvent->GetMultiplicity():0;
     val[kNdim+2] = 1.e2*fTracklet->GetTBoccupancy()/AliTRDseedV1::kNtb;
@@ -650,11 +643,11 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kPhi] = TMath::ATan2(fTracklet->GetX()*sn + fTracklet->GetY()*cs, fTracklet->GetX()*cs - fTracklet->GetY()*sn);
   Float_t tgl = fTracklet->GetZ()/fTracklet->GetX()/TMath::Sqrt(1.+fTracklet->GetY()*fTracklet->GetY()/fTracklet->GetX()/fTracklet->GetX());
   val[kEta] = -TMath::Log(TMath::Tan(0.5 *  (0.5*TMath::Pi() - TMath::ATan(tgl))));
+  val[kYrez]        = dy;
+  val[kZrez]        = fTracklet->IsRowCross()?dz:(fTracklet->GetdQdl()*5.e-4 - 2.5);
+  val[kPrez]        = dphi*TMath::RadToDeg();
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
   val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
-  val[kYrez]        = dy;
-  val[kZrez]        = dz;
-  val[kPrez]        = dphi*TMath::RadToDeg();
   val[kNdim]        = fTracklet->GetDetector();
   val[kNdim+1]      = dx;
   val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
@@ -696,10 +689,7 @@ TH1* AliTRDresolution::PlotMC(const AliTRDtrackV1 *track)
   // Plot MC distributions
   //
 
-  if(!HasMCdata()){
-    AliDebug(2, "No MC defined. Results will not be available.");
-    return NULL;
-  }
+  if(!HasMCdata()) return NULL;
   if(track) fkTrack = track;
   if(!fkTrack){
     AliDebug(4, "No Track defined.");
@@ -989,6 +979,25 @@ Float_t AliTRDresolution::GetMeanStat(TH1 *h, Float_t cut, Option_t *opt)
 }
 
 //________________________________________________________
+void AliTRDresolution::GetRangeZ(TH2 *h2, Float_t &min, Float_t &max)
+{
+// Get range on Z axis such to avoid outliers
+
+  Double_t cnt[20000], c, m, s;
+  Int_t nx(h2->GetXaxis()->GetNbins()), ny(h2->GetYaxis()->GetNbins()), nc(0);
+  for(Int_t ix(1); ix<=nx; ix++){
+    for(Int_t iy(1); iy<=ny; iy++){
+      if((c = h2->GetBinContent(ix, iy))<10) continue;
+      cnt[nc++] = c;
+      if(nc==20000) break;
+    }
+    if(nc==20000) break;
+  }
+  AliMathBase::EvaluateUni(nc, cnt, m, s, 0);
+  min = m-s; max = m+2.*s;
+}
+
+//________________________________________________________
 Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 {
   //
@@ -1083,6 +1092,27 @@ void AliTRDresolution::MakeSummary()
   const Char_t *typName[] = {"", "MC"};
   const Int_t nx(2048), ny(1536);
 
+  if((arr = (TObjArray*)fProj->At(kDetector))){
+    cOut = new TCanvas(Form("%s_Det", GetName()), "Detector performance", 2*nx, 2*ny);
+    cOut->Divide(AliTRDgeometry::kNlayer,AliTRDeventInfo::kCentralityClasses, 1.e-5, 1.e-5);
+    for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
+      Float_t zmin(1.e10), zmax(0.);
+      for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+        if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d%d_yx", ily, icen)))) continue;
+        Float_t m, M; GetRangeZ(h2, m, M);
+        if(m<zmin) zmin=m;
+        if(M>zmax) zmax=M;
+      }
+      for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+        p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
+        if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d%d_yx", ily, icen)))) continue;
+        SetRangeZ(h2, zmin, zmax);
+        h2->Draw("colz");
+        MakeDetectorPlot(ily);
+      }
+    }
+    cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+  }
   for(Int_t ityp(0); ityp<(HasMCdata()?2:1); ityp++){
     if((arr = (TObjArray*)fProj->At(ityp?kMCcluster:kCluster))){
       for(Int_t iview(0); iview<nClViews; iview++){
@@ -1094,7 +1124,7 @@ void AliTRDresolution::MakeSummary()
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vClName[iview], iplot)))) continue;
           nplot++;
           if(vClOpt[iview]==0) h2->Draw("colz");
-          else if(vClOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [#mum]", 2.e2, 6.5e2, 1.e4);
+          else if(vClOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [#mum]", 3.2e2, 5.e2, 1.e4);
           MakeDetectorPlot(iplot);
         }
         if(nplot==6) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
@@ -1143,23 +1173,26 @@ void AliTRDresolution::MakeSummary()
         else delete cOut;
       }
       // species
-      cOut = new TCanvas(Form("%s_%sSpecies", GetName(), typName[ityp]), "Track IN Resolution", Int_t(1.5*nx), Int_t(1.5*ny));
-      cOut->Divide(5,3, 1.e-5, 1.e-5);
-      Int_t nplot(0); const Char_t *chName[] = {"p", "n", ""};
-      for(Int_t iplot(0); iplot<3; iplot++){
-        for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
-          p=cOut->cd(iplot*AliPID::kSPECIES+ispec+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
-          if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkInY%s%d_2D", typName[ityp], chName[iplot], ispec)))) {
-            AliInfo(Form("Missing H%sTrkInY%s%d_2D", typName[ityp], chName[iplot], ispec));
-            continue;
+      for(Int_t iview(0); iview<2; iview++){
+        const Char_t *plot = iview?"Ph":"Y";
+        cOut = new TCanvas(Form("%s_%sSpec%s", GetName(), typName[ityp], plot), "Track IN Resolution", Int_t(1.5*nx), Int_t(1.5*ny));
+        cOut->Divide(5,3, 1.e-5, 1.e-5);
+        Int_t nplot(0); const Char_t *chName[] = {"p", "n", ""};
+        for(Int_t iplot(0); iplot<3; iplot++){
+          for(Int_t ispec(0); ispec<AliPID::kSPECIES; ispec++){
+            p=cOut->cd(iplot*AliPID::kSPECIES+ispec+1); p->SetRightMargin(0.1572581); p->SetTopMargin(0.08262712);
+            if(!(h2 = (TH2*)arr->FindObject(Form("H%sTrkIn%s%s%d_2D", typName[ityp], plot, chName[iplot], ispec)))) {
+              AliInfo(Form("Missing H%sTrkIn%s%s%d_2D", typName[ityp], plot, chName[iplot], ispec));
+              continue;
+            }
+            nplot++;
+            h2->Draw("colz");
+            MakeDetectorPlot(0);
           }
-          nplot++;
-          h2->Draw("colz");
-          MakeDetectorPlot(0);
         }
+        if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+        else delete cOut;
       }
-      if(nplot==15) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
-      else delete cOut;
     }
   }
   // track MC systematic
@@ -1298,7 +1331,7 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
   // build list of projections
   const Int_t nsel(AliTRDgeometry::kNlayer*AliTRDeventInfo::kCentralityClasses);
   // define rebinning strategy
-  const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 5, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
+  const Int_t nEtaPhi(4); Int_t rebinEtaPhiX[nEtaPhi] = {1, 2, 2, 1}, rebinEtaPhiY[nEtaPhi] = {2, 1, 1, 5};
   const Char_t *cenName[AliTRDeventInfo::kCentralityClasses] = {"0-10%", "10-20%", "20-50%", "50-80%", "80-100%"};
   AliTRDresolutionProjection hp[kDetNproj];  TObjArray php(kDetNproj);
   Int_t ih(0), isel(-1), np[nsel]; memset(np, 0, nsel*sizeof(Int_t));
@@ -1334,7 +1367,9 @@ Bool_t AliTRDresolution::MakeProjectionDetector()
   TH2 *h2(NULL);  Int_t jh(0);
   for(; ih--; ){
     if(!hp[ih].fH) continue;
-    if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 2))) continue;
+    if(!(h2 = hp[ih].Projection2D(kNstat, kNcontours, 0, kFALSE))) continue;
+    arr->AddAt(h2, jh++);
+    if(!(h2 = (TH2*)gDirectory->Get(Form("%s_yx", hp[ih].fH->GetName())))) continue;
     arr->AddAt(h2, jh++);
   }
   AliTRDresolutionProjection *pr0(NULL), *pr1(NULL);
@@ -1906,7 +1941,8 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
           specY[idx]+=(*pr1);
         }
         php.AddLast(&specY[idx]);
-        if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+        if((h2 = specY[idx].Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
+        if((h2 = (TH2*)gDirectory->Get(Form("%s_yx", specY[idx].fH->GetName())))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))) (*pr1)+=specY[idx];
       }
       /*!dphi*/
@@ -1915,6 +1951,7 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
         specPh[idx].SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp), "Sum over pt");
         specPh[idx].fH->SetNameTitle(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[ich], isp),
                               Form("TrackIn[%s%c]:: #Delta#phi", AliPID::ParticleLatexName(isp), chSgn[ich]));
+        specPh[idx].SetShowRange(-1.5, 1.5);
         for(Int_t ipt(1); ipt<nPt; ipt++){
           if(!(pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%c%d", mc?"MC":"", chName[ich], ptName[ipt], isp)))) continue;
           specPh[idx]+=(*pr1);
@@ -2011,11 +2048,13 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInY%c%d", mc?"MC":"", chName[0], isp)))){
       pr0->fH->SetNameTitle(Form("H%sTrkInY%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Deltay", AliPID::ParticleLatexName(isp)));
       pr0->SetShowRange(-0.3, 0.3);
-      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
+      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1, kFALSE))) arr->AddAt(h2, jh++);
+      if((h2 = (TH2*)gDirectory->Get(Form("%s_yx", pr0->fH->GetName())))) arr->AddAt(h2, jh++);
     }
     /*!dphi*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkInPh%c%d", mc?"MC":"", chName[0], isp)))){
       pr0->fH->SetNameTitle(Form("H%sTrkInPh%d", mc?"MC":"", isp), Form("TrackIn[%s] :: #Delta#phi", AliPID::ParticleLatexName(isp)));
+      pr0->SetShowRange(-1., 1.);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
   }
@@ -2516,10 +2555,10 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kDetector]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     const Int_t mdim(5);
-    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], fgkTitle[kEta], "q [a.u.]", "centrality"/*, "occupancy", "tb [10 Hz]"*/};
-    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], fgkNbins[kEta], 100, AliTRDeventInfo::kCentralityClasses};
-    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], fgkMin[kEta], 0., -0.5},
-                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], fgkMax[kEta], 1200., AliTRDeventInfo::kCentralityClasses - 0.5};
+    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "centrality", "q [a.u.]"/*, "occupancy", "tb [10 Hz]"*/};
+    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, AliTRDeventInfo::kCentralityClasses, 100};
+    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, -0.5, 0.},
+                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, AliTRDeventInfo::kCentralityClasses - 0.5, 1200.};
     st = "cluster proprieties;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:Int_t(kNdimDet);
@@ -3115,7 +3154,7 @@ void AliTRDresolution::AliTRDresolutionProjection::Increment(Int_t bin[], Double
 }
 
 //________________________________________________________
-TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid)
+TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nstat, const Int_t ncol, const Int_t mid, Bool_t del)
 {
 // build the 2D projection and adjust binning
 
@@ -3131,7 +3170,7 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
     irebin++;
   }
   Int_t nx(h2s->GetNbinsX()), ny(h2s->GetNbinsY());
-  if(h2s) delete h2s;
+  if(h2s && del) delete h2s;
 
   // start projection
   TH1 *h(NULL); Int_t n(0);
@@ -3184,6 +3223,22 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
   return h2;
 }
 
+//________________________________________________________
+void AliTRDresolution::SetRangeZ(TH2 *h2, Float_t min, Float_t max)
+{
+// Set range on Z axis such to avoid outliers
+
+  Float_t c(0.), dz(1.e-3*(max-min));
+  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
+    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
+      if((c = h2->GetBinContent(ix, iy))<10) continue;
+      if(c<=min) h2->SetBinContent(ix, iy, min+dz);
+    }
+  }
+  h2->GetZaxis()->SetRangeUser(min, max);
+}
+
+//________________________________________________________
 void AliTRDresolution::AliTRDresolutionProjection::SetRebinStrategy(Int_t n, Int_t rebx[], Int_t reby[])
 {
 // define rebinning strategy for this projection
