@@ -61,28 +61,30 @@ AliPHOSDATreeEvent::AliPHOSDATreeEvent(const AliPHOSDATreeEvent& evt)
 AliPHOSDATreeEvent& AliPHOSDATreeEvent::operator=(const AliPHOSDATreeEvent& evt){
   // Copy Operator
 
-  if( fNDigits > 0 ) delete[] fDigits;
-  fNDigits = evt.fNDigits;
-  if( fNDigits > 0 ){
-    fDigits = new AliPHOSDATreeDigit[fNDigits];
-    int ndigits = fNDigits;
-    while( ndigits-- ){
-      fDigits[ndigits] = evt.fDigits[ndigits];
+  if (this != &evt) {
+    if( fNDigits > 0 ) delete[] fDigits;
+    fNDigits = evt.fNDigits;
+    if( fNDigits > 0 ){
+      fDigits = new AliPHOSDATreeDigit[fNDigits];
+      int ndigits = fNDigits;
+      while( ndigits-- ){
+	fDigits[ndigits] = evt.fDigits[ndigits];
+      }
+    } else {
+      fDigits = 0;
     }
-  } else {
-    fDigits = 0;
-  }
-  //
-  if( fNClusters > 0 ) delete[] fClusters;
-  fNClusters = evt.fNClusters;
-  if( fNClusters > 0 ){
-    fClusters = new AliPHOSDATreeCluster[fNClusters];
-    int nclusters = fNClusters;
-    while( nclusters-- ){
-      fClusters[nclusters] = evt.fClusters[nclusters];
+    //
+    if( fNClusters > 0 ) delete[] fClusters;
+    fNClusters = evt.fNClusters;
+    if( fNClusters > 0 ){
+      fClusters = new AliPHOSDATreeCluster[fNClusters];
+      int nclusters = fNClusters;
+      while( nclusters-- ){
+	fClusters[nclusters] = evt.fClusters[nclusters];
+      }
+    } else {
+      fClusters = 0;
     }
-  } else {
-    fClusters = 0;
   }
   return *this;
 }

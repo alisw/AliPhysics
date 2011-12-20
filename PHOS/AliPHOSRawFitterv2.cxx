@@ -376,7 +376,7 @@ Bool_t AliPHOSRawFitterv2::FindAmpT(TArrayD samples, TArrayD times){
       fddf+=phi*ddphi ;
     }
 
-    if(ff==0.||nfit==0. ){
+    if(ff<1.e-09||nfit==0 ){
       fQuality=199 ;
       return kFALSE ;
     }

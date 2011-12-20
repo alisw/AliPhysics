@@ -48,22 +48,24 @@ fEnergy(cluster.fEnergy),fRow(cluster.fRow),fCol(cluster.fCol),fNDigits(cluster.
 AliPHOSDATreeCluster& AliPHOSDATreeCluster::operator=(const AliPHOSDATreeCluster& cluster){
   // Copy Operator
 
-  if( fNDigits> 0 ) delete[] fDigits;
-  fEnergy = cluster.fEnergy;
-  fNDigits = cluster.fNDigits;
-  fRow = cluster.fRow;
-  fCol = cluster.fCol;
-  //fX = cluster.fX;
-  //fY = cluster.fY;
-  //fZ = cluster.fZ;
-  if( fNDigits > 0 ){
-    fDigits = new AliPHOSDATreeDigit[fNDigits];
-    int ndigits = fNDigits;
-    while( ndigits-- ){
-      fDigits[ndigits] = cluster.fDigits[ndigits];
+  if (this != &cluster) {
+    if( fNDigits> 0 ) delete[] fDigits;
+    fEnergy = cluster.fEnergy;
+    fNDigits = cluster.fNDigits;
+    fRow = cluster.fRow;
+    fCol = cluster.fCol;
+    //fX = cluster.fX;
+    //fY = cluster.fY;
+    //fZ = cluster.fZ;
+    if( fNDigits > 0 ){
+      fDigits = new AliPHOSDATreeDigit[fNDigits];
+      int ndigits = fNDigits;
+      while( ndigits-- ){
+	fDigits[ndigits] = cluster.fDigits[ndigits];
+      }
+    } else {
+      fDigits = 0;
     }
-  } else {
-    fDigits = 0;
   }
   return *this;
 }

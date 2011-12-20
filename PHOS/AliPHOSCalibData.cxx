@@ -103,19 +103,24 @@ AliPHOSCalibData::~AliPHOSCalibData()
  
 }
 
+//________________________________________________________________
 AliPHOSCalibData & AliPHOSCalibData::operator = (const AliPHOSCalibData & rhs)
 {
   //Copy-assignment. Does not delete anything (see destructor)
   //compiler generated is ok, but ... because -Weffc++ and pointer
   //members we have to define it explicitly.
   TNamed::operator=(rhs);
-  fCalibDataEmc = rhs.fCalibDataEmc;
-  fCalibDataCpv = rhs.fCalibDataCpv;
-  fEmcBadChannelsMap = rhs.fEmcBadChannelsMap;
-  fEmcDataPath  = rhs.fEmcDataPath;
-  fCpvDataPath  = rhs.fCpvDataPath;
-  fEmcBadChannelsMapPath = rhs.fEmcBadChannelsMapPath;
-  
+  if (this != &rhs) {
+    fCalibDataEmc = rhs.fCalibDataEmc;
+    fCalibDataCpv = rhs.fCalibDataCpv;
+    fEmcBadChannelsMap = rhs.fEmcBadChannelsMap;
+    fEmcDataPath  = rhs.fEmcDataPath;
+    fCpvDataPath  = rhs.fCpvDataPath;
+    fEmcBadChannelsMapPath = rhs.fEmcBadChannelsMapPath;
+  }
+  else {
+    AliFatal("Self assignment!");
+  }
   return *this;
 }
 

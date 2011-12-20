@@ -137,14 +137,18 @@ AliPHOSPIDv0 & AliPHOSPIDv0::operator = (const AliPHOSPIDv0 & rhs)
 {
   //Copy-assignment, emulates compiler generated, possibly wrong.
   AliPHOSPID::operator = (rhs);
-  fIDOptions = rhs.fIDOptions;
-  fClusterizer = rhs.fClusterizer;
-  fTSMaker = rhs.fTSMaker;
-  fFormula = rhs.fFormula;
-  fDispersion = rhs.fDispersion;
-  fCpvEmcDistance = rhs.fCpvEmcDistance;
-  fTimeGate = rhs.fTimeGate;
-
+  if (this != &rhs) {
+    fIDOptions = rhs.fIDOptions;
+    fClusterizer = rhs.fClusterizer;
+    fTSMaker = rhs.fTSMaker;
+    fFormula = rhs.fFormula;
+    fDispersion = rhs.fDispersion;
+    fCpvEmcDistance = rhs.fCpvEmcDistance;
+    fTimeGate = rhs.fTimeGate;
+  }
+  else {
+    AliFatal("Self assignment!");
+  }
   return *this;
 }
 
