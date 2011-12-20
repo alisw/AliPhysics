@@ -22,6 +22,8 @@ public:
   AliFemtoQAEventCut();
   AliFemtoQAEventCut(AliFemtoQAEventCut& c);
   virtual ~AliFemtoQAEventCut();
+  AliFemtoQAEventCut& operator=(AliFemtoQAEventCut& c);
+
 
   void SetEventMult(const int& lo,const int& hi);
   void SetEventMultQASwitch(const bool Switch);

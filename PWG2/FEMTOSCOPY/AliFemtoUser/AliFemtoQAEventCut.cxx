@@ -43,6 +43,26 @@ AliFemtoQAEventCut::~AliFemtoQAEventCut(){
   // Default destructor
 }
 //------------------------------
+AliFemtoQAEventCut& AliFemtoQAEventCut::operator=(AliFemtoQAEventCut& c)
+{
+  if (this != &c) {
+    fEventMult[0] = c.fEventMult[0];
+    fEventMult[1] = c.fEventMult[1];
+    fVertZPos[0] = c.fVertZPos[0];
+    fVertZPos[1] = c.fVertZPos[1];
+    
+    fHighOrLowSwitch = c.fHighOrLowSwitch;
+    fEventMultQASwitch = c.fEventMultQASwitch;
+    fEventZPosQASwitch = c.fEventZPosQASwitch;
+    fEventMultQAExclusionZone[0] = c.fEventMultQAExclusionZone[0];
+    fEventMultQAExclusionZone[1] = c.fEventMultQAExclusionZone[1];
+    fEventZPosQAExclusionZone[0] = c.fEventZPosQAExclusionZone[0];
+    fEventZPosQAExclusionZone[1] = c.fEventZPosQAExclusionZone[1];
+  }
+
+  return *this;
+}
+//------------------------------
 bool AliFemtoQAEventCut::Pass(const AliFemtoEvent* event){
   // Pass events if they fall within the multiplicity and z-vertex
   // position range. If QA cutting on quantity, pass if outside 
