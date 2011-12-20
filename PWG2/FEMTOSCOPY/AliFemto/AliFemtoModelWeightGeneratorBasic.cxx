@@ -31,6 +31,15 @@ AliFemtoModelWeightGeneratorBasic::~AliFemtoModelWeightGeneratorBasic()
   /* no-op */
 }
 
+AliFemtoModelWeightGeneratorBasic& AliFemtoModelWeightGeneratorBasic::operator=(const AliFemtoModelWeightGeneratorBasic &aModel)
+{
+  if (this != &aModel) {
+    AliFemtoModelWeightGenerator::operator=(aModel);
+  }
+  
+  return *this;
+}
+
 //________________________
 Double_t AliFemtoModelWeightGeneratorBasic::GenerateWeight(AliFemtoPair *aPair)
 {
