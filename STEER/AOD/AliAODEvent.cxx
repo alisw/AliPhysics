@@ -87,6 +87,7 @@ AliAODEvent::AliAODEvent() :
 #endif
 {
   // default constructor
+  if (TClass::IsCallingNew() != TClass::kDummyNew) fAODObjects = new TList();
 }
 
 //______________________________________________________________________________
