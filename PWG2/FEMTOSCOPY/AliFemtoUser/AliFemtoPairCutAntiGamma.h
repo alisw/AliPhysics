@@ -33,6 +33,7 @@ public:
   AliFemtoPairCutAntiGamma();
   AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamma& c);
   virtual ~AliFemtoPairCutAntiGamma();
+  AliFemtoPairCutAntiGamma& operator=(const AliFemtoPairCutAntiGamma& c);
 
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
