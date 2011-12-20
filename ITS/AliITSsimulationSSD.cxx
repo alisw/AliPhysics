@@ -333,11 +333,11 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
   Double_t inf[2], sup[2], par0[2];                 
  
   // Set up corrections for Lorentz drift (ExB)
-  Double_t TanLorAngP = fTanLorAngP;
-  Double_t TanLorAngN = fTanLorAngN;
+  Double_t tanLorAngP = fTanLorAngP;
+  Double_t tanLorAngN = fTanLorAngN;
   if(seg->GetLayer()==6) {
-    TanLorAngP = -1.*fTanLorAngP;
-    TanLorAngN = -1.*fTanLorAngN;
+    tanLorAngP = -1.*fTanLorAngP;
+    tanLorAngN = -1.*fTanLorAngN;
   }
 
   // Steps in the module are determined "manually" (i.e. No Geant)
@@ -382,7 +382,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 
     // correction for the Lorentz's angle
     if(fLorentz) {
-      Float_t deltaxp = (y+(seg->Dy()*1.0E-4)/2)*TanLorAngP;
+      Float_t deltaxp = (y+(seg->Dy()*1.0E-4)/2)*tanLorAngP;
       xp+=deltaxp;  
     }
 
@@ -432,7 +432,7 @@ void AliITSsimulationSSD::HitToDigit(Int_t module, Double_t x0, Double_t y0,
 
     // correction for the Lorentz's angle
     if(fLorentz) {
-      Float_t deltaxn = ((seg->Dy()*1.0E-4)/2-y)*TanLorAngN;
+      Float_t deltaxn = ((seg->Dy()*1.0E-4)/2-y)*tanLorAngN;
       xp+=deltaxn;
     }
     

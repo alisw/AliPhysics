@@ -1,7 +1,7 @@
 #ifndef ALIITSPEDESTALSSD_H
 #define ALIITSPEDESTALSSD_H
  
-#include "TObjArray.h"
+#include "TObject.h"
 #include "TArrayF.h"
 
 //////////////////////////////////////////////

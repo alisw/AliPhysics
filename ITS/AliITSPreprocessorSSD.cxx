@@ -1,3 +1,11 @@
+//
+// Author: Enrico Fragiacomo
+// Date: 13/10/2006
+// 
+// SHUTTLE preprocessing class for SSD calibration files
+
+/* $Id$ */
+
 #include "AliITSPreprocessorSSD.h"
  
 #include "AliCDBMetaData.h"
@@ -13,14 +21,6 @@
 #include "AliITSBadChannelsSSDv2.h"
 #include <Riostream.h>
 
-
-//
-// Author: Enrico Fragiacomo
-// Date: 13/10/2006
-// 
-// SHUTTLE preprocessing class for SSD calibration files
-
-/* $Id$ */
 
 const Int_t AliITSPreprocessorSSD::fgkNumberOfSSD = 1698;
 
@@ -38,11 +38,12 @@ AliITSPreprocessorSSD::AliITSPreprocessorSSD(AliShuttleInterface* shuttle) :
 
 }
 
-///______________________________________________________________________________________________
+//______________________________________________________________________________________________
 void AliITSPreprocessorSSD::Initialize(Int_t run, UInt_t startTime,
 	UInt_t endTime)
 {
- 
+  // initialize
+
   AliPreprocessor::Initialize(run, startTime, endTime);
   
   Log(Form("\n\tRun %d \n\tStartTime %s \n\tEndTime %s", run,

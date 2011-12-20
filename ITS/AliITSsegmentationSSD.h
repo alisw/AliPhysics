@@ -3,7 +3,10 @@
 
 #include "AliITSsegmentation.h"
 
-// segmentation for SSD
+//////////////////////////////////////////////////////
+// Segmentation class for SSD                       //
+//                                                  //
+//////////////////////////////////////////////////////
 
 /* $Id$ */
 

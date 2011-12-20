@@ -7,8 +7,6 @@
 #include "AliITSPedestalSSDv2.h"
 #include "AliITSGainSSDv2.h"
 #include "AliITSBadChannelsSSDv2.h"
-#include "TArrayF.h"
-#include "TArrayI.h"
 
 /* $Id$ */
 //////////////////////////////////////////////

@@ -159,20 +159,20 @@ void AliITSsegmentationSSD::GetPadTxz(Float_t &x,Float_t &z) const{
     z   = (x1 - tanN*(z1 - fDz))/fPitch;
   */
 
-  Float_t P=0;
-  Float_t N=0;
+  Float_t tP=0;
+  Float_t tN=0;
   if(fLayer==5) {
-    P = 105.26*x - 0.7895*z + 382.000; //- 0.79*z + 381.89;
-    N = P + 3.684*z - 4; 
+    tP = 105.26*x - 0.7895*z + 382.000; //- 0.79*z + 381.89;
+    tN = tP + 3.684*z - 4; 
   }
   else if(fLayer==6) {
-    P = -105.26*x - 0.7895*z + 385.000; //- 0.79*z + 384.66;
-    N = P + 3.684*z + 4;
+    tP = -105.26*x - 0.7895*z + 385.000; //- 0.79*z + 384.66;
+    tN = tP + 3.684*z + 4;
   }
   else AliError("Layer can be 5 or 6");
 
-  x=P;
-  z=N;
+  x=tP;
+  z=tN;
 
 }
 //----------------------------------------------------------------------
