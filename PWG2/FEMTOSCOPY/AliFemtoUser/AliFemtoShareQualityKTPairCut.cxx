@@ -50,6 +50,17 @@ AliFemtoShareQualityKTPairCut::~AliFemtoShareQualityKTPairCut(){
   /* no-op */
 }
 //__________________
+AliFemtoShareQualityKTPairCut& AliFemtoShareQualityKTPairCut::operator=(const AliFemtoShareQualityKTPairCut& c){
+  if (this != &c) {
+    AliFemtoPairCut::operator=(c);
+    
+    fKTMin = c.fKTMin;
+    fKTMax = c.fKTMax;
+  }
+
+  return *this;
+}
+//__________________
 bool AliFemtoShareQualityKTPairCut::Pass(const AliFemtoPair* pair){
   // Accept a pair base on its Kt and sharity and quality
   bool temp = true;
