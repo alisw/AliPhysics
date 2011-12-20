@@ -18,6 +18,7 @@ class AliFemtoModelWeightGeneratorBasic : public AliFemtoModelWeightGenerator
   AliFemtoModelWeightGeneratorBasic();
   AliFemtoModelWeightGeneratorBasic(const AliFemtoModelWeightGeneratorBasic &aModel);
   virtual ~AliFemtoModelWeightGeneratorBasic();
+  AliFemtoModelWeightGeneratorBasic& operator=(const AliFemtoModelWeightGeneratorBasic &aModel);
   virtual Double_t GenerateWeight(AliFemtoPair *aPair);
 
   virtual void     SetPairType(Int_t aPairType);
