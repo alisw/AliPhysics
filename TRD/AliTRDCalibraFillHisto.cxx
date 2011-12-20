@@ -915,7 +915,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   /////////////////////////////// 
 
 
-  //if(fDebugLevel > 0){
+  if(fDebugLevel > 0){
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
@@ -951,7 +951,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
       "ncl="<<ncl<<
       "\n";
 
-    //}
+  }
   
   /////////////////////////
   // Cuts quality
