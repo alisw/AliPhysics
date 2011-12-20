@@ -38,6 +38,7 @@ public:
   AliFemtoShareQualityTPCEntranceSepPairCut();
   AliFemtoShareQualityTPCEntranceSepPairCut(const AliFemtoShareQualityTPCEntranceSepPairCut& c);
   virtual ~AliFemtoShareQualityTPCEntranceSepPairCut();
+  AliFemtoShareQualityTPCEntranceSepPairCut& operator=(const AliFemtoShareQualityTPCEntranceSepPairCut& c);
 
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
