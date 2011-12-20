@@ -70,6 +70,8 @@ void rec() {
 // TRD from RAW OCDB
   reco.SetSpecificStorage("TRD/Calib/ChamberStatus",   "alien://folder=/alice/data/2010/OCDB");
   reco.SetSpecificStorage("TRD/Calib/PadStatus",       "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("TRD/Calib/ChamberExB",      "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("TRD/Calib/Krypton_2011-01", "alien://folder=/alice/data/2011/OCDB");
 
 //
 // TPC from RAW OCDB
@@ -82,6 +84,7 @@ void rec() {
   reco.SetSpecificStorage("VZERO/Calib/Data",          "alien://folder=/alice/data/2010/OCDB");
   reco.SetSpecificStorage("VZERO/Calib/TimeSlewing",   "alien://folder=/alice/data/2010/OCDB");
   reco.SetSpecificStorage("VZERO/Calib/TimeDelays",    "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("VZERO/Calib/EqualizationFactors", "alien://folder=/alice/data/2010/OCDB");
 
 //
 // TOF from RAW OCDB
@@ -105,6 +108,7 @@ void rec() {
   reco.SetSpecificStorage("MUON/Calib/RecoParam",      "alien://folder=/alice/simulation/2008/v4-15-Release/Full");
 // ZDC
   reco.SetSpecificStorage("ZDC/Calib/EnergyCalib",     "alien://folder=/alice/data/2010/OCDB");
+  reco.SetSpecificStorage("ZDC/Calib/TDCCalib",        "alien://folder=/alice/data/2010/OCDB");
 //
   TStopwatch timer;
   timer.Start();
