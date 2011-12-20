@@ -36,6 +36,7 @@ class DecayChannel
   DecayChannel(double aBranchRatio, int aPartType1, int aPartType2, int aPartType3 = -1);
   DecayChannel(const DecayChannel& aChannel);
   ~DecayChannel();
+  DecayChannel& operator=(const DecayChannel& aChannel);
   
   int    GetParticle1() const;
   int    GetParticle2() const;

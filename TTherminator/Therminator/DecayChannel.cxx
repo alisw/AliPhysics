@@ -48,6 +48,18 @@ DecayChannel::~DecayChannel()
 {
 }
 
+DecayChannel& DecayChannel::operator=(const DecayChannel& aChannel)
+{
+  if (this != &aChannel) {
+    mBranchRatio = aChannel.GetBranchingRatio();
+    mParticleType1 = aChannel.GetParticle1();
+    mParticleType2 = aChannel.GetParticle2();
+    mParticleType3 = aChannel.GetParticle3();
+  }
+
+  return *this;
+}
+
 int    
 DecayChannel::GetParticle1() const
 {
