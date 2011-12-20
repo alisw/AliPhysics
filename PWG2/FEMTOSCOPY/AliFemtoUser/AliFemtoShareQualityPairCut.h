@@ -35,7 +35,7 @@ public:
   AliFemtoShareQualityPairCut();
   AliFemtoShareQualityPairCut(const AliFemtoShareQualityPairCut& cut);
   virtual ~AliFemtoShareQualityPairCut();
-  AliFemtoShareQualityPairCut operator=(const AliFemtoShareQualityPairCut& cut);
+  AliFemtoShareQualityPairCut& operator=(const AliFemtoShareQualityPairCut& cut);
   
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();

@@ -42,7 +42,7 @@ AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut():
 AliFemtoShareQualityPairCut::~AliFemtoShareQualityPairCut(){
   /* no-op */
 }
-AliFemtoShareQualityPairCut AliFemtoShareQualityPairCut::operator=(const AliFemtoShareQualityPairCut& cut)
+AliFemtoShareQualityPairCut& AliFemtoShareQualityPairCut::operator=(const AliFemtoShareQualityPairCut& cut)
 {
   if (this != &cut) {
     AliFemtoPairCut::operator=(cut);
