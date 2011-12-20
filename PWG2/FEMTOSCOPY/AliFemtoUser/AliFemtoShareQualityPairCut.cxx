@@ -42,6 +42,19 @@ AliFemtoShareQualityPairCut::AliFemtoShareQualityPairCut():
 AliFemtoShareQualityPairCut::~AliFemtoShareQualityPairCut(){
   /* no-op */
 }
+AliFemtoShareQualityPairCut AliFemtoShareQualityPairCut::operator=(const AliFemtoShareQualityPairCut& cut)
+{
+  if (this != &cut) {
+    AliFemtoPairCut::operator=(cut);
+    fNPairsPassed = 0;
+    fNPairsFailed = 0;
+    fShareQualityMax = cut.fShareQualityMax;
+    fShareFractionMax = cut.fShareFractionMax;
+    fRemoveSameLabel = cut.fRemoveSameLabel;
+  }
+  
+  return *this;
+}
 //__________________
 bool AliFemtoShareQualityPairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
