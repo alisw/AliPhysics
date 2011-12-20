@@ -48,10 +48,18 @@ public:
   void  Shower()  {fNoShower=0;}
   
   virtual void SetVCollSideCAperture(Float_t /*aperture*/) {}
+  virtual void SetVCollSideCApertureNeg(Float_t /*aperture*/) {}
   virtual void SetVCollSideCCentre(Float_t /*centre*/) {}
   
   virtual void SetVCollSideAAperture(Float_t /*aperture*/) {}
+  virtual void SetVCollSideAApertureNeg(Float_t /*aperture*/) {}
   virtual void SetVCollSideACentre(Float_t /*centre*/) {}
+  
+  virtual void SetTCDDAperturePos(Float_t /*aperture*/) {}
+  virtual void SetTCDDApertureNeg(Float_t /*aperture*/) {}
+  
+  virtual void SetTDIAperturePos(Float_t /*aperture*/) {}
+  virtual void SetTDIApertureNeg(Float_t /*aperture*/) {}
   
   virtual void SetLumiLength(Float_t /*length*/) {}
   

@@ -28,13 +28,34 @@ public:
   
   void SetVCollSideCAperture(Float_t aperture)
   	{if(aperture<3.5) fVCollSideCAperture = aperture; 
-	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max.: 3.5 cm\n\n");}
+	 else printf("\n\n AliZDCv3: WARNING! SideC TCTVB aperture set to max. value: 3.5 cm\n\n");}
+  void SetVCollSideCApertureNeg(Float_t aperture)
+  	{if(aperture<3.5) fVCollSideCApertureNeg = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING! SideC TCTVB aperture set to max. value: -3.5 cm\n\n");}
   void SetVCollSideCCentre(Float_t centre) {fVCollSideCCentreY = centre;}
   
   void SetVCollSideAAperture(Float_t aperture)
-  	{if(aperture<3.5) fVCollSideAAperture = aperture; 
-	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max.: 3.5 cm\n\n");}
+  	{if(aperture<=3.5) fVCollSideAAperture = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max. value: 3.5 cm\n\n");}
+  void SetVCollSideAApertureNeg(Float_t aperture)
+  	{if(aperture<=3.5) fVCollSideAApertureNeg = aperture; 
+	 else printf("\n\n AliZDCv3: WARNING! SideA TCTVB aperture set to max. value: -3.5 cm\n\n");}
   void SetVCollSideACentre(Float_t centre) {fVCollSideACentreY = centre;}
+  
+  virtual void SetTCDDAperturePos(Float_t aperture) 
+  	{if(aperture<=2.2) fTCDDAperturePos = aperture;
+	 else printf("\n\n AliZDCv3: WARNING! TCDD pos. aperture set to max. value: 2.0 cm\n\n");}
+  virtual void SetTCDDApertureNeg(Float_t aperture) 
+    	{if(aperture<=2.4) fTCDDApertureNeg = aperture;
+	 else printf("\n\n AliZDCv3: WARNING! TCDD neg. aperture set to max. value: -2.2 cm\n\n");}
+
+  
+  virtual void SetTDIAperturePos(Float_t aperture) 
+  	{if(aperture<=6.) fTDIAperturePos = aperture;
+	 else printf("\n\n AliZDCv3: WARNING! TDI pos. aperture set to max. value: 6.0 cm\n\n");}
+  virtual void SetTDIApertureNeg(Float_t aperture) 
+  	{if(aperture<=6.) fTDIApertureNeg = aperture;
+	 else printf("\n\n AliZDCv3: WARNING! TDI neg. aperture set to max. value: -6.0 cm\n\n");}
   
   void SetLumiLength(Float_t length) {fLumiLength = length;}
   
@@ -89,15 +110,27 @@ protected:
   Int_t fpLostITC, fpLostD1C, fpcVCollC, fpDetectedC, fnDetectedC; // Side C
   Int_t fpLostITA, fpLostD1A, fpLostTDI, fpcVCollA, fpDetectedA, fnDetectedA; // Side A
   
-  // Parameters to describe vertical collimator aperture
-  Float_t fVCollSideCAperture; // Semi-aperture of TCTVB jaws
-  Float_t fVCollSideCCentreY;  // Centre of TCTVB jaw apertures
-  Float_t fVCollSideAAperture; // Semi-aperture of TCTVB jaws
-  Float_t fVCollSideACentreY;  // Centre of TCTVB jaw apertures
+  // Apertures to describe beam line elements variable apertures
+  
+  // Vertical collimator
+  Float_t fVCollSideCAperture;    // Semi-aperture of TCTVB jaws pos. y dir.
+  Float_t fVCollSideCApertureNeg; // Semi-aperture of TCTVB jaws neg. y dir (abs. value)
+  Float_t fVCollSideCCentreY;     // Centre of TCTVB jaw apertures
+  Float_t fVCollSideAAperture;    // Semi-aperture of TCTVB jaws pos. y dir.
+  Float_t fVCollSideAApertureNeg; // Semi-aperture of TCTVB jaws neg. y dir. (abs. value)
+  Float_t fVCollSideACentreY;     // Centre of TCTVB jaw apertures
+  
+  // TCDD
+  Float_t fTCDDAperturePos;       // TCDD semi-aperture pos. y dir.
+  Float_t fTCDDApertureNeg;       // TCDD semi-aperture neg. y dir. (abs. value)
+  
+  // TDI
+  Float_t fTDIAperturePos;	  // TDI semi-aperture pos. y dir.
+  Float_t fTDIApertureNeg;	  // TDI semi-aperture  neg. y dir. (abs. value)
   
   Float_t fLumiLength;  // Luminometer length
   
-  ClassDef(AliZDCv3,7)  // Zero Degree Calorimeter version 1
+  ClassDef(AliZDCv3,8)  // Zero Degree Calorimeter version 1
 }; 
  
 #endif

@@ -84,9 +84,15 @@ AliZDCv3::AliZDCv3() :
   fpDetectedA(0),
   fnDetectedA(0),
   fVCollSideCAperture(7./2.),
+  fVCollSideCApertureNeg(7./2.),
   fVCollSideCCentreY(0.),
   fVCollSideAAperture(7./2.),
+  fVCollSideAApertureNeg(7./2.),
   fVCollSideACentreY(0.),
+  fTCDDAperturePos(2.0),
+  fTCDDApertureNeg(2.2),
+  fTDIAperturePos(5.5),
+  fTDIApertureNeg(5.5),
   fLumiLength(15.)
 {
   //
@@ -129,9 +135,15 @@ AliZDCv3::AliZDCv3(const char *name, const char *title) :
   fpDetectedA(0),
   fnDetectedA(0),
   fVCollSideCAperture(7./2.),
+  fVCollSideCApertureNeg(7./2.),
   fVCollSideCCentreY(0.),
   fVCollSideAAperture(7./2.),
+  fVCollSideAApertureNeg(7./2.),
   fVCollSideACentreY(0.),
+  fTCDDAperturePos(2.0),
+  fTCDDApertureNeg(2.2),
+  fTDIAperturePos(5.5),
+  fTDIApertureNeg(5.5),
   fLumiLength(15.)  
 {
   //
@@ -345,11 +357,11 @@ void AliZDCv3::CreateBeamLine()
     boxpar[1] = (3.5-fVCollSideCAperture-fVCollSideCCentreY-0.7)/2.;
     if(boxpar[1]<0.) boxpar[1]=0.;
     boxpar[2] = 124.4/2.;
-    printf("\n  AliZDCv3 -> Setting SideC VCollimator jaw: aperture %1.2f center %1.2f mod.thickness %1.3f\n\n", 
-    	2*fVCollSideCAperture,fVCollSideCCentreY,2*boxpar[1]);
+    printf("  AliZDCv3 -> sideC VCollimator jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
+    	fVCollSideCAperture, fVCollSideCApertureNeg,fVCollSideCCentreY);
     gMC->Gsvolu("QCVC" , "BOX ", idtmed[13], boxpar, 3); 
     gMC->Gspos("QCVC", 1, "QE02", -boxpar[0],  fVCollSideCAperture+fVCollSideCCentreY+boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
-    gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollSideCAperture+fVCollSideCCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVC", 2, "QE02", -boxpar[0], -fVCollSideCApertureNeg+fVCollSideCCentreY-boxpar[1], -totLength1/2.+160.8+78.+148./2., 0, "ONLY");  
   }
   
   zd1 += tubpar[2] * 2.;
@@ -932,8 +944,10 @@ void AliZDCv3::CreateBeamLine()
   gMC->Gspos("Q11T", 1, "Q10T", 0., -1.1,  0., 0, "ONLY");  
   
   // positioning  TCDD elements in ZDCA, (inside TCDD volume)
-  gMC->Gspos("Q08T", 1, "ZDCA", 0., 2., -100.+zd2, 0, "ONLY");  
-  gMC->Gspos("Q10T", 1, "ZDCA", 0., -2., -100.+zd2, 0, "ONLY");  
+  gMC->Gspos("Q08T", 1, "ZDCA", 0., fTCDDAperturePos, -100.+zd2, 0, "ONLY");  
+  gMC->Gspos("Q10T", 1, "ZDCA", 0., -fTCDDApertureNeg, -100.+zd2, 0, "ONLY");  
+  printf("  AliZDCv3 -> TCDD apertures +%1.2f/-%1.2f cm\n", 
+    	fTCDDAperturePos, fTCDDApertureNeg);
     
   // RF screen 
   boxpar[0] = 0.2/2.;
@@ -982,7 +996,9 @@ void AliZDCv3::CreateBeamLine()
     boxpar[2] = 124.4/2.;
     gMC->Gsvolu("QCVA" , "BOX ", idtmed[13], boxpar, 3); 
     gMC->Gspos("QCVA", 1, "QA07", -boxpar[0], fVCollSideAAperture+fVCollSideACentreY+boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
-    gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollSideAAperture+fVCollSideACentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+    gMC->Gspos("QCVA", 2, "QA07", -boxpar[0], -fVCollSideAApertureNeg+fVCollSideACentreY-boxpar[1], -313.3/2.+78.+148./2., 0, "ONLY");  
+    printf("  AliZDCv3 -> sideA VCollimator jaws: apertures +%1.2f/-%1.2f center %1.2f [cm]\n", 
+    	fVCollSideAAperture, fVCollSideAApertureNeg,fVCollSideACentreY);
   }
   
   zd2 += 2.*tubpar[2];
@@ -1046,20 +1062,22 @@ void AliZDCv3::CreateBeamLine()
   boxpar[1] = 9.0/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD1", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD1", 1, "Q13TM", -3.8, 10.5,  0., 0, "ONLY");
+  gMC->Gspos("QTD1", 1, "Q13TM", -3.8, boxpar[1]+fTDIAperturePos,  0., 0, "ONLY");
   boxpar[0] = 11.0/2.;
   boxpar[1] = 9.0/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD2", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD2", 1, "Q13TM", -3.8, -10.5,  0., 0, "ONLY");  
+  gMC->Gspos("QTD2", 1, "Q13TM", -3.8, -boxpar[1]-fTDIApertureNeg,  0., 0, "ONLY");  
   boxpar[0] = 5.1/2.;
   boxpar[1] = 0.2/2.;
   boxpar[2] = 540.0/2.;
   gMC->Gsvolu("QTD3", "BOX ", idtmed[7], boxpar, 3);
-  gMC->Gspos("QTD3", 1, "Q13TM", -3.8+5.5+boxpar[0], 6.1,  0., 0, "ONLY");  
-  gMC->Gspos("QTD3", 2, "Q13TM", -3.8+5.5+boxpar[0], -6.1,  0., 0, "ONLY"); 
-  gMC->Gspos("QTD3", 3, "Q13TM", -3.8-5.5-boxpar[0], 6.1,  0., 0, "ONLY");  
-  gMC->Gspos("QTD3", 4, "Q13TM", -3.8-5.5-boxpar[0], -6.1,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 1, "Q13TM", -3.8+5.5+boxpar[0], fTDIAperturePos,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 2, "Q13TM", -3.8+5.5+boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY"); 
+  gMC->Gspos("QTD3", 3, "Q13TM", -3.8-5.5-boxpar[0], fTDIAperturePos,  0., 0, "ONLY");  
+  gMC->Gspos("QTD3", 4, "Q13TM", -3.8-5.5-boxpar[0], -fTDIApertureNeg,  0., 0, "ONLY");  
+  printf("  AliZDCv3 -> TDI apertures +%1.2f/-%1.2f cm\n\n", 
+    	fTDIAperturePos, fTDIApertureNeg);
   //
   tubspar[0] = 12.0/2.;
   tubspar[1] = 12.4/2.;
