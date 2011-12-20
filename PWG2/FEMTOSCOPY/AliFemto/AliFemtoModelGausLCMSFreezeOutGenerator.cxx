@@ -40,6 +40,18 @@ AliFemtoModelGausLCMSFreezeOutGenerator::~AliFemtoModelGausLCMSFreezeOutGenerato
   if (fRandom) delete fRandom;
 }
 //_______________________
+AliFemtoModelGausLCMSFreezeOutGenerator& AliFemtoModelGausLCMSFreezeOutGenerator::operator=(const AliFemtoModelGausLCMSFreezeOutGenerator &aModel)
+{
+  if (this != &aModel) {
+    fRandom = new TRandom2();
+    SetSizeOut(aModel.GetSizeOut());
+    SetSizeSide(aModel.GetSizeSide());
+    SetSizeLong(aModel.GetSizeLong());
+  }
+
+  return *this;
+}
+//_______________________
 void AliFemtoModelGausLCMSFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aPair)
 {
   // Generate two particle emission points with respect
