@@ -45,6 +45,15 @@ AliFemtoModelWeightGenerator::AliFemtoModelWeightGenerator(const AliFemtoModelWe
 //_____________________________________________
 AliFemtoModelWeightGenerator::~AliFemtoModelWeightGenerator(){/* no-op */}
 //_____________________________________________
+AliFemtoModelWeightGenerator& AliFemtoModelWeightGenerator::operator=(const AliFemtoModelWeightGenerator &aModel)
+{
+  if (this != &c) {
+    fPairType = aModel.fPairType;
+  }
+
+  return *this;
+}
+//_____________________________________________
 void     AliFemtoModelWeightGenerator::SetPairType(Int_t aPairType)
 {
   fPairType = aPairType;
