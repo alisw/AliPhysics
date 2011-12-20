@@ -115,7 +115,7 @@ public:
   Int_t   GetNTowers() const {return fNPhi * fNZ ;}
   //
   Double_t GetPhiCenterOfSM(Int_t nsupmod) const;
-  Float_t GetSuperModulesPar(Int_t ipar) {return fParSM[ipar];}
+  Float_t GetSuperModulesPar(Int_t ipar) const {return fParSM[ipar];}
   //
   Bool_t   GetPhiBoundariesOfSM   (Int_t nSupMod, Double_t &phiMin, Double_t &phiMax) const;
   Bool_t   GetPhiBoundariesOfSMGap(Int_t nPhiSec, Double_t &phiMin, Double_t &phiMax) const;
@@ -128,7 +128,7 @@ public:
 /*   TArrayD  GetEtaCentersOfCells() const {return fEtaCentersOfCells;}           // [fNEta*fNETAdiv*fNPhi*fNPHIdiv], positive direction (eta>0); eta depend from phi position;  */
 /*   TArrayD  GetPhiCentersOfCells() const {return fPhiCentersOfCells;}           // [fNPhi*fNPHIdiv] from center of SM (-10. < phi < +10.) */
 
-	static int ParseString(const TString &topt, TObjArray &Opt) ; 
+  static int ParseString(const TString &topt, TObjArray &Opt) ; 
 
   ///////////////////////////////
   //Geometry data member setters
@@ -166,9 +166,8 @@ public:
   //  Float_t GetIP2ECASection() const { return ( GetIPDistance() + GetAlFrontThickness() 
   //					      + GetGap2Active() ) ; }   
   //////////////////////////////////////////////////
-
-  static Bool_t  fgInit;	        // Tells if geometry has been succesfully set up.
   static const Char_t* fgkDefaultGeometryName; // Default name of geometry
+  static Bool_t  fgInit;	        // Tells if geometry has been succesfully set up.
 
 private:
 

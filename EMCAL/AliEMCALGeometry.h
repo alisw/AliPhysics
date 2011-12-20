@@ -28,7 +28,7 @@ class TParticle ;
 #include "AliEMCALEMCGeometry.h"
 #include "AliEMCALGeoParams.h"
 class AliEMCALShishKebabTrd1Module;
-#include "AliLog.h"
+#include "AliLog.h" // CV 
 
 class AliEMCALGeometry : public TNamed {
 
@@ -65,7 +65,7 @@ public:
   virtual void Browse(TBrowser* b);
   virtual Bool_t  IsFolder() const;
 
-  virtual Bool_t Impact(const TParticle *) const;
+  virtual Bool_t Impact(const TParticle *particle) const;
   void ImpactOnEmcal(TVector3 vtx, Double_t theta, Double_t phi, Int_t & absId, TVector3 & vimpact) const;
   Bool_t IsInEMCAL(Double_t x, Double_t y, Double_t z) const;
 
@@ -274,13 +274,7 @@ public:
   }
 
   //Method to set shift-rotational matrixes from ESDHeader
-  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) {
-    fUseExternalMatrices = kTRUE;
-	  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
-            if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
-    }
-	  else AliFatal(Form("Wrong supermodule index -> %d",smod));
-  }
+  void SetMisalMatrix(const TGeoHMatrix * m, Int_t smod);
 	
   //Alternate geometry that allows to calculate tower position for different particles and different alignments
   void RecalculateTowerPosition(Float_t drow, Float_t dcol, const Int_t sm, const Float_t depth,

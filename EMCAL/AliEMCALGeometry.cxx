@@ -157,6 +157,7 @@ AliEMCALGeometry::AliEMCALGeometry(const AliEMCALGeometry & geo)
     fIPDistance(geo.fIPDistance),fLongModuleSize(geo.fLongModuleSize),fShellThickness(geo.fShellThickness),
     fZLength(geo.fZLength),fSampling(geo.fSampling),fUseExternalMatrices(geo.fUseExternalMatrices)
 {
+  // Copy constarctor
   fEnvelop[0] = geo.fEnvelop[0];
   fEnvelop[1] = geo.fEnvelop[1];
   fEnvelop[2] = geo.fEnvelop[2];
@@ -273,7 +274,7 @@ AliEMCALGeometry::~AliEMCALGeometry(void)
         delete fkSModuleMatrix[smod] ;
         fkSModuleMatrix[smod]=0 ;
     }
-    delete fEMCGeometry; fEMCGeometry = 0 ;
+    delete fEMCGeometry; // fEMCGeometry = 0 ;
   }
 }
 
@@ -1618,7 +1619,7 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     Int_t istrip = 0;
     Float_t z0   = 0;
     Float_t zb   = 0;
-    Float_t z_is = 0;
+    Float_t zIs = 0;
     
     Float_t x,y,z; // return variables in terry's RF
     
@@ -1661,16 +1662,16 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
       
       teta1 = TMath::DegToRad() * (is*1.5 + 0.75);
       if(is==0)
-        z_is = z_is + 2*dz*TMath::Cos(teta1);
+        zIs = zIs + 2*dz*TMath::Cos(teta1);
       else
-        z_is = z_is + 2*dz*TMath::Cos(teta1) + 2*dz*TMath::Sin(teta1)*TMath::Tan(teta1-0.75*TMath::DegToRad());
+        zIs = zIs + 2*dz*TMath::Cos(teta1) + 2*dz*TMath::Sin(teta1)*TMath::Tan(teta1-0.75*TMath::DegToRad());
       
     }
     
     z0 = dz*(dcol-2*istrip+0.5);
     zb = (2*dz-z0-depth*TMath::Tan(teta1));
     
-    z = z_is - zb*TMath::Cos(teta1);
+    z = zIs - zb*TMath::Cos(teta1);
     y = depth/TMath::Cos(teta1) + zb*TMath::Sin(teta1);
     
     x = (drow + 0.5)*dx;
@@ -1712,4 +1713,15 @@ void AliEMCALGeometry::RecalculateTowerPosition(Float_t drow, Float_t dcol, cons
     AliFatal("Geometry boxes information, check that geometry.root is loaded\n");
   }
   
+}
+
+void AliEMCALGeometry::SetMisalMatrix(const TGeoHMatrix * m, Int_t smod) 
+{
+// Method to set shift-rotational matrixes from ESDHeader
+// Move from header due to coding violations : Dec 2,2011 by PAI
+  fUseExternalMatrices = kTRUE;
+
+  if (smod >= 0 && smod < fEMCGeometry->GetNumberOfSuperModules()){
+    if(!fkSModuleMatrix[smod]) fkSModuleMatrix[smod] = new TGeoHMatrix(*m) ; //Set only if not set yet
+  } else AliFatal(Form("Wrong supermodule index -> %d",smod));
 }
