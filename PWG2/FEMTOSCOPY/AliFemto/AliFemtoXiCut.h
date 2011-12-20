@@ -17,6 +17,7 @@ public:
   AliFemtoXiCut(){/* no-op */};                          // default constructor. - Users should write their own
   AliFemtoXiCut(const AliFemtoXiCut& aCut);              // copy constructor
   virtual ~AliFemtoXiCut(){/* no-op */};                 // destructor
+  AliFemtoXiCut& operator=(const AliFemtoXiCut& aCut);              // copy constructor
 
   virtual bool Pass(const AliFemtoXi* aCut)=0;               // true if passes, false if not
 
@@ -29,5 +30,6 @@ public:
 };
 
 inline AliFemtoXiCut::AliFemtoXiCut(const AliFemtoXiCut& c) : AliFemtoParticleCut(c) { /* no-op */ } 
+inline AliFemtoXiCut& AliFemtoXiCut::operator=(const AliFemtoXiCut& c) { if (this != &c) { AliFemtoParticleCut::operator=(c); } return *this; } 
 
 #endif
