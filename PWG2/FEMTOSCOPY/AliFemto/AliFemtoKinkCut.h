@@ -17,6 +17,7 @@ public:
   AliFemtoKinkCut(){/* no-op */};                       // default constructor. - Users should write their own
   AliFemtoKinkCut(const AliFemtoKinkCut&);                         // copy constructor
   virtual ~AliFemtoKinkCut(){/* no-op */};              // destructor
+  AliFemtoKinkCut& operator=(const AliFemtoKinkCut&);                         // copy constructor
 
   virtual bool Pass(const AliFemtoKink* aKink)=0;               // true if passes, false if not
 
@@ -29,5 +30,6 @@ public:
 };
 //_____________________________
 inline AliFemtoKinkCut::AliFemtoKinkCut(const AliFemtoKinkCut& c) : AliFemtoParticleCut(c) { /* no-op */ } 
+inline AliFemtoKinkCut& AliFemtoKinkCut::operator=(const AliFemtoKinkCut& aCorrFctn) {   if (this != &aCorrFctn) { AliFemtoParticleCut::operator=(aCorrFctn); } return *this; }
 
 #endif
