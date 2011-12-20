@@ -19,6 +19,7 @@ public:
   AliFemtoPairCutPt(double lo, double hi);
   AliFemtoPairCutPt(const AliFemtoPairCutPt& c);
   virtual ~AliFemtoPairCutPt();
+  AliFemtoPairCutPt& operator=(const AliFemtoPairCutPt& c);
 
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
