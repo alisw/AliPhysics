@@ -30,6 +30,7 @@ public:
   AliFemtoShareQualityKTPairCut();
   AliFemtoShareQualityKTPairCut(const AliFemtoShareQualityKTPairCut& c);
   virtual ~AliFemtoShareQualityKTPairCut(); 
+  AliFemtoShareQualityKTPairCut& operator=(const AliFemtoShareQualityKTPairCut& c);
 
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
