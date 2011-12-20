@@ -40,6 +40,17 @@ AliFemtoModelGausRinvFreezeOutGenerator::~AliFemtoModelGausRinvFreezeOutGenerato
   if (fRandom) delete fRandom;
 }
 //_______________________
+AliFemtoModelGausRinvFreezeOutGenerator& AliFemtoModelGausRinvFreezeOutGenerator::operator=(const AliFemtoModelGausRinvFreezeOutGenerator &aModel)
+{
+  if (this != &aModel) {
+    fRandom = new TRandom2();
+    SetSizeInv(aModel.GetSizeInv());
+  }
+
+  return *this;
+
+}
+//_______________________
 void AliFemtoModelGausRinvFreezeOutGenerator::GenerateFreezeOut(AliFemtoPair *aPair)
 {
   AliFemtoModelHiddenInfo *inf1 = (AliFemtoModelHiddenInfo *) aPair->Track1()->HiddenInfo();
