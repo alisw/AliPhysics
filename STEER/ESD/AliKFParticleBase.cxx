@@ -2725,19 +2725,19 @@ void AliKFParticleBase::ConstructGammaBz( const AliKFParticleBase &daughter1,
 
     Double_t z[3] = { m[0]-p[0], m[1]-p[1], m[2]-p[2] };
 
-    {
-      Double_t mAV[6] = { mC[0]-mV[0], mC[1]-mV[1], mC[2]-mV[2], 
-			  mC[3]-mV[3], mC[4]-mV[4], mC[5]-mV[5] };
-      
-      Double_t mAVi[6];
-      if( !InvertSym3(mAV, mAVi) ){
-	Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
-			   +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
-			   +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] );
-//	fChi2+= TMath::Abs( dChi2 );
-      }
-//      fNDF  += 2;
-    }
+//     {
+//       Double_t mAV[6] = { mC[0]-mV[0], mC[1]-mV[1], mC[2]-mV[2], 
+// 			  mC[3]-mV[3], mC[4]-mV[4], mC[5]-mV[5] };
+//       
+//       Double_t mAVi[6];
+//       if( !InvertSym3(mAV, mAVi) ){
+// 	Double_t dChi2 = ( +(mAVi[0]*z[0] + mAVi[1]*z[1] + mAVi[3]*z[2])*z[0]
+// 			   +(mAVi[1]*z[0] + mAVi[2]*z[1] + mAVi[4]*z[2])*z[1]
+// 			   +(mAVi[3]*z[0] + mAVi[4]*z[1] + mAVi[5]*z[2])*z[2] );
+// 	fChi2+= TMath::Abs( dChi2 );
+//       }
+//       fNDF  += 2;
+//     }
 
     //* Add the daughter momentum to the particle momentum
  
