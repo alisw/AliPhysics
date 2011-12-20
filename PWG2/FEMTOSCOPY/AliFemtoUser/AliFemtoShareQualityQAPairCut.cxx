@@ -52,6 +52,31 @@ AliFemtoShareQualityQAPairCut::~AliFemtoShareQualityQAPairCut(){
   /* no-op */
 }
 //__________________
+AliFemtoShareQualityQAPairCut& AliFemtoShareQualityQAPairCut::operator=(const AliFemtoShareQualityQAPairCut& cut)
+{
+  if (this != &cut) {
+    AliFemtoPairCut::operator=(cut);
+    fNPairsPassed = 0;
+    fNPairsFailed = 0;
+    fShareQualityMax = 1.0;
+    fShareQualitymin = -0.5;
+    fShareFractionMax = 1.0;
+    fShareFractionmin = 0.0;
+    fRemoveSameLabel = 0;
+    fShareQualityQASwitch = 0;
+    fShareFractionQASwitch = 0;
+    fShareQualityQASwitch  = cut.fShareQualityQASwitch;
+    fShareQualityQAExclusionZone[0]  = cut.fShareQualityQAExclusionZone[0];
+    fShareQualityQAExclusionZone[1]  = cut.fShareQualityQAExclusionZone[1];
+    fShareFractionQASwitch = cut.fShareFractionQASwitch; 
+    fShareFractionQAExclusionZone[0]  = cut.fShareFractionQAExclusionZone[0];
+    fShareFractionQAExclusionZone[1]  = cut.fShareFractionQAExclusionZone[1];
+  }
+
+  return *this;
+  
+}
+//__________________
 bool AliFemtoShareQualityQAPairCut::Pass(const AliFemtoPair* pair){
   // Check for pairs that are possibly shared/double reconstruction
   bool pass;
