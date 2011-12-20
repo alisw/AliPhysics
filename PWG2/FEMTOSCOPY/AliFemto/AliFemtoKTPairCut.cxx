@@ -73,6 +73,19 @@ AliFemtoKTPairCut::AliFemtoKTPairCut(const AliFemtoKTPairCut& c) :
 AliFemtoKTPairCut::~AliFemtoKTPairCut(){
   /* no-op */
 }
+AliFemtoKTPairCut& AliFemtoKTPairCut::operator=(const AliFemtoKTPairCut& c)
+{
+  if (this != &c) {
+    fKTMin = c.fKTMin;
+    fKTMax = c.fKTMax;
+    fPhiMin = c.fPhiMin;
+    fPhiMax = c.fPhiMax;
+    fPtMin = c.fPtMin;
+    fPtMax = c.fPtMax;
+  }
+
+  return *this;
+}
 //__________________
 /*bool AliFemtoKTPairCut::Pass(const AliFemtoPair* pair){
   bool temp = true;
