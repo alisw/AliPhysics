@@ -35,6 +35,7 @@ public:
   AliFemtoKTPairCut(double lo, double hi);
   AliFemtoKTPairCut(const AliFemtoKTPairCut& c);
   virtual ~AliFemtoKTPairCut();
+  AliFemtoKTPairCut& operator=(const AliFemtoKTPairCut& c);
 
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
