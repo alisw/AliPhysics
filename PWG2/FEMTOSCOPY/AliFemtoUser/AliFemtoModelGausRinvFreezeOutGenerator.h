@@ -19,6 +19,7 @@ class AliFemtoModelGausRinvFreezeOutGenerator : public AliFemtoModelFreezeOutGen
   AliFemtoModelGausRinvFreezeOutGenerator(const AliFemtoModelGausRinvFreezeOutGenerator &aModel);
   virtual ~AliFemtoModelGausRinvFreezeOutGenerator();
   virtual void GenerateFreezeOut(AliFemtoPair *aPair);
+  AliFemtoModelGausRinvFreezeOutGenerator& operator=(const AliFemtoModelGausRinvFreezeOutGenerator &aModel);
 
   void SetSelectPrimaryFromHidden(bool aUse);
   Bool_t GetSelectPrimaryFromHidden();
