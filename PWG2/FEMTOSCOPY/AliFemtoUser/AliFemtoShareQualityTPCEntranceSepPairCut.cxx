@@ -48,6 +48,17 @@ AliFemtoShareQualityTPCEntranceSepPairCut::~AliFemtoShareQualityTPCEntranceSepPa
   /* no-op */
 }
 //__________________
+
+AliFemtoShareQualityTPCEntranceSepPairCut& AliFemtoShareQualityTPCEntranceSepPairCut::operator=(const AliFemtoShareQualityTPCEntranceSepPairCut& c)
+{
+  if (this != &c) {
+    AliFemtoShareQualityPairCut::operator=(c);
+    fDTPCMin = c.fDTPCMin;
+  }
+
+  return *this;
+}
+//__________________
 bool AliFemtoShareQualityTPCEntranceSepPairCut::Pass(const AliFemtoPair* pair){
   // Accept pairs based on their TPC entrance separation and
   // quality and sharity
