@@ -33,6 +33,7 @@ public:
   AliFemtoPairCutRadialDistance();
   AliFemtoPairCutRadialDistance(const AliFemtoPairCutRadialDistance& c);
   virtual ~AliFemtoPairCutRadialDistance();
+  AliFemtoPairCutRadialDistance& operator=(const AliFemtoPairCutRadialDistance& c);
 
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
