@@ -102,6 +102,26 @@ AliFemtoKink::AliFemtoKink(const AliFemtoKink& k):
 
 }
 // -----------------------------------------------------------------------
+AliFemtoKink& AliFemtoKink::operator=( const AliFemtoKink& k)
+{
+  if (this != &k) {
+    fDcaParentDaughter          =   k.fDcaParentDaughter;           
+    fDcaDaughterPrimaryVertex   =   k.fDcaDaughterPrimaryVertex;    
+    fDcaParentPrimaryVertex     =   k.fDcaParentPrimaryVertex;      
+    fHitDistanceParentDaughter  =   k.fHitDistanceParentDaughter;   
+    fHitDistanceParentVertex    =   k.fHitDistanceParentVertex;     
+    fDeltaEnergy[0]             =   k.fDeltaEnergy[0];              
+    fDeltaEnergy[1]             =   k.fDeltaEnergy[1];              
+    fDeltaEnergy[2]             =   k.fDeltaEnergy[2];              
+    fDecayAngle                 =   k.fDecayAngle;                  
+    fDecayAngleCM               =   k.fDecayAngleCM;                
+    fDaughter                   =   k.fDaughter;                    
+    fParent                     =   k.fParent;                      
+    fPosition                   =   k.fPosition;                
+  }
+
+  return *this;
+}
 
 
 //--------------------- below here is ONLY star ----------------
