@@ -358,8 +358,10 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
   if (this != &aParticle) {
 
     if (fTrack) delete fTrack;
-    if (aParticle.fTrack)
+    if (aParticle.fTrack) {
       fTrack = new AliFemtoTrack(*aParticle.fTrack);
+      CalculatePurity();
+    }
     if (fV0) delete fV0;
     if (aParticle.fV0)
       fV0    = new AliFemtoV0(*aParticle.fV0);
@@ -403,7 +405,6 @@ AliFemtoParticle& AliFemtoParticle::operator=(const AliFemtoParticle& aParticle)
     
     fPrimaryVertex = aParticle.fPrimaryVertex;
     fSecondaryVertex = aParticle.fSecondaryVertex;
-    CalculatePurity();
     if (fHiddenInfo) delete fHiddenInfo;
     if(aParticle.fHiddenInfo){
       fHiddenInfo= aParticle.fHiddenInfo->Clone();
