@@ -53,6 +53,18 @@ AliFemtoPairCutAntiGamma::AliFemtoPairCutAntiGamma(const AliFemtoPairCutAntiGamm
   fUseAOD = c.fUseAOD;
 }
 
+AliFemtoPairCutAntiGamma& AliFemtoPairCutAntiGamma::operator=(const AliFemtoPairCutAntiGamma& c)
+{
+  if (this != &c) {
+    fMaxEEMinv = c.fMaxEEMinv;
+    fMaxDTheta = c.fMaxDTheta;
+    fDTPCMin = c.fDTPCMin;
+    fUseAOD = c.fUseAOD;
+  }
+
+  return *this;
+
+}
 //__________________
 AliFemtoPairCutAntiGamma::~AliFemtoPairCutAntiGamma(){
   /* no-op */
