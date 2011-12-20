@@ -47,7 +47,7 @@ AliFemtoModelWeightGenerator::~AliFemtoModelWeightGenerator(){/* no-op */}
 //_____________________________________________
 AliFemtoModelWeightGenerator& AliFemtoModelWeightGenerator::operator=(const AliFemtoModelWeightGenerator &aModel)
 {
-  if (this != &c) {
+  if (this != &aModel) {
     fPairType = aModel.fPairType;
   }
 
