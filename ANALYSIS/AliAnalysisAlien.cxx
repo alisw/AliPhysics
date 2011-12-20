@@ -3331,9 +3331,9 @@ Bool_t AliAnalysisAlien::StartAnalysis(Long64_t /*nentries*/, Long64_t /*firstEn
    }
    // Check if submitting is managed by LPM manager
    if (fProductionMode) {
-      TString prodfile = fJDLName;
-      prodfile.ReplaceAll(".jdl", ".prod");
-      WriteProductionFile(prodfile);
+      //TString prodfile = fJDLName;
+      //prodfile.ReplaceAll(".jdl", ".prod");
+      //WriteProductionFile(prodfile);
       Info("StartAnalysis", "Job submitting is managed by LPM. Rerun in terminate mode after jobs finished.");
       return kFALSE;
    }   
