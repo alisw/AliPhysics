@@ -79,6 +79,45 @@ AliAnalysisTaskSE(),
   fDoLS(0)
 {
    // Default constructor
+
+  for(Int_t i=0;i<3;i++){
+   if(fHistCentrality[i])fHistCentrality[i]=0;
+   if(fCorreld0Kd0pi[i])fCorreld0Kd0pi[i]=0;
+  }
+  
+  for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
+    
+  
+  for(Int_t i=0;i<3*fNPtBins;i++){
+    if(fMassHist[i])fMassHist[i]=0;
+    if(fCosPHist[i])fCosPHist[i]=0;
+    if(fDLenHist[i])fDLenHist[i]=0;
+    if(fSumd02Hist[i])fSumd02Hist[i]=0;
+    if(fSigVertHist[i])fSigVertHist[i]=0;
+    if(fPtMaxHist[i])fPtMaxHist[i]=0;
+    if(fPtKHist[i])fPtKHist[i]=0;
+    if(fPtpi1Hist[i])fPtpi1Hist[i]=0;
+    if(fPtpi2Hist[i])fPtpi2Hist[i]=0;
+    if(fDCAHist[i])fDCAHist[i]=0;
+    if(fMassHistTC[i])fMassHistTC[i]=0;
+    if(fMassHistTCPlus[i])fMassHistTCPlus[i]=0;
+    if(fMassHistTCMinus[i])fMassHistTCMinus[i]=0;
+    
+    if(fDLxy[i])fDLxy[i]=0;
+    if(fDLxyTC[i])fDLxyTC[i]=0;
+    if(fCosxy[i])fCosxy[i]=0;
+    if(fCosxyTC[i])fCosxyTC[i]=0;
+    if(fMassHistLS[i])fMassHistLS[i]=0;
+    if(fCosPHistLS[i])fCosPHistLS[i]=0;
+    if(fDLenHistLS[i])fDLenHistLS[i]=0;
+    if(fSumd02HistLS[i])fSumd02HistLS[i]=0;
+    if(fSigVertHistLS[i])fSigVertHistLS[i]=0;
+    if(fPtMaxHistLS[i])fPtMaxHistLS[i]=0;
+    if(fDCAHistLS[i])fDCAHistLS[i]=0;
+    if(fMassHistLSTC[i])fMassHistLSTC[i]=0;
+  }
+
+
 }
 
 //________________________________________________________________________
