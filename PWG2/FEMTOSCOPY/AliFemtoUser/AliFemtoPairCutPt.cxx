@@ -48,6 +48,16 @@ AliFemtoPairCutPt::AliFemtoPairCutPt(const AliFemtoPairCutPt& c) :
   fSumPtMin = c.fSumPtMin;
   fSumPtMax = c.fSumPtMax;
 }
+AliFemtoPairCutPt& AliFemtoPairCutPt::operator=(const AliFemtoPairCutPt& c)
+{
+  if (this != &c) {
+    fSumPtMin = c.fSumPtMin;
+    fSumPtMax = c.fSumPtMax;
+  }
+
+  return *this;
+
+}
 
 //__________________
 AliFemtoPairCutPt::~AliFemtoPairCutPt(){
