@@ -91,7 +91,8 @@ AliAODInputHandler::AliAODInputHandler(const char* name, const char* title):
 AliAODInputHandler::~AliAODInputHandler() 
 {
 // Destructor
-  fFriends->Delete();
+  if (fFriends) fFriends->Delete();
+  delete fFriends;
   delete fHistStatistics[0];
   delete fHistStatistics[1];
   delete fAODpidUtil;
@@ -124,8 +125,10 @@ Bool_t AliAODInputHandler::BeginEvent(Long64_t entry)
 {
     // Begin event
     TClonesArray* mcParticles = (TClonesArray*) (fEvent->FindListObject("mcparticles"));
-    if (mcParticles) fMCEvent->SetParticleArray(mcParticles);
-
+    if (mcParticles) {
+       if (!fMCEvent) fMCEvent = new AliMCEvent();
+       fMCEvent->SetParticleArray(mcParticles);
+    }
     // When merging, get current event number from GetReadEntry(), 
     // entry gives the events in the current file
     if (fTreeToMerge) fTreeToMerge->GetEntry(GetReadEntry() + fMergeOffset);
@@ -206,6 +209,7 @@ void AliAODInputHandler::AddFriend(char* filename)
 {
     // Add a friend tree 
     TNamed* obj = new TNamed(filename, filename);
+    if (!fFriends) fFriends = new TList();
     fFriends->Add(obj);
 }
 
@@ -231,6 +235,7 @@ TObject *AliAODInputHandler::GetStatistics(Option_t *option) const
 void AliAODInputHandler::ConnectFriends()
 {
     // Connect the friend trees 
+    if (!fFriends) return;
     if (!fMergeEvents) {
 	TIter next(fFriends);
 	TNamed* obj;
