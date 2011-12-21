@@ -426,8 +426,17 @@ void Config()
   geant4->ProcessGeantCommand("/mcVerbose/opGeometryManager 1");  
   geant4->ProcessGeantCommand("/mcTracking/loopVerbose 1");     
   geant4->ProcessGeantCommand("/mcPhysics/rangeCuts 0.01 mm"); 
-  geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
-  geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
+  // for Geant4 <= 9.4.p03
+  //geant4->ProcessGeantCommand("/mcPhysics/selectOpProcess Scintillation");
+  //geant4->ProcessGeantCommand("/mcPhysics/setOpProcessActivation false");
+  // for Geant4 >= 9.5
+  geant4->ProcessGeantCommand("/optics_engine/selectOpProcess Scintillation");
+  geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+  geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpWLS");
+  geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+  geant4->ProcessGeantCommand("/optics_engine/selectOpProcess OpMieHG");
+  geant4->ProcessGeantCommand("/optics_engine/setOpProcessUse false");
+  
   geant4->ProcessGeantCommand("/mcVerbose/composedPhysicsList 2");  
   geant4->ProcessGeantCommand("/mcTracking/skipNeutrino true");
   // geant4->ProcessGeantCommand("/mcDet/setMaxStepInLowDensityMaterials 1 cm");
