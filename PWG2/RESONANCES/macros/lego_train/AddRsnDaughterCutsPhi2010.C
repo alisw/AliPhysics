@@ -47,9 +47,7 @@ Int_t AddRsnDaughterCutsPhi2010(AliPID::EParticleType type1,AliPID::EParticleTyp
    cuts->SetCutScheme(cut->GetName());
 
    if (opt.Contains("mon")) {
-      TObjArray *output = new TObjArray;
-      AddMonitorOutput(output);
-      cuts->SetMonitorOutput(output);
+      AddMonitorOutput(cuts->GetMonitorOutput());
    }
    if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsnMini = dynamic_cast<AliRsnMiniAnalysisTask *>(task);

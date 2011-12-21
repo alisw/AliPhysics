@@ -26,7 +26,8 @@ AliRsnCutSet::AliRsnCutSet() :
    fBoolValues(0),
    fIsScheme(kFALSE),
    fExpression(0),
-   fMonitors(0)
+   fMonitors(),
+   fUseMonitor(kFALSE)
 {
 //
 // Constructor without name (not recommended)
@@ -46,7 +47,8 @@ AliRsnCutSet::AliRsnCutSet(const char *name, RSNTARGET target) :
    fBoolValues(0),
    fIsScheme(kFALSE),
    fExpression(0),
-   fMonitors(0)
+   fMonitors(),
+   fUseMonitor(kFALSE)
 {
 //
 // Constructor with argument name (recommended)
@@ -67,7 +69,8 @@ AliRsnCutSet::AliRsnCutSet(const AliRsnCutSet &copy) :
    fBoolValues(0),
    fIsScheme(copy.fIsScheme),
    fExpression(copy.fExpression),
-   fMonitors(copy.fMonitors)
+   fMonitors(copy.fMonitors),
+   fUseMonitor(copy.fUseMonitor)
 {
 //
 // Copy constructor
@@ -100,6 +103,7 @@ AliRsnCutSet &AliRsnCutSet::operator=(const AliRsnCutSet &copy)
    fIsScheme = copy.fIsScheme;
    fExpression = copy.fExpression;
    fMonitors = copy.fMonitors;
+   fUseMonitor = copy.fUseMonitor;
 
    if (fBoolValues) delete [] fBoolValues;
 
@@ -123,7 +127,6 @@ AliRsnCutSet::~AliRsnCutSet()
 
    delete fExpression;
    delete [] fBoolValues;
-   delete fMonitors;
 }
 
 //_____________________________________________________________________________
@@ -195,9 +198,9 @@ Bool_t AliRsnCutSet::IsSelected(TObject *object)
    if (fIsScheme) boolReturn = Passed();
 
    // fill monitoring info
-   if (boolReturn && fMonitors) {
+   if (boolReturn && fUseMonitor) {
       if (TargetOK(object)) {
-         TIter next(fMonitors);
+         TIter next(&fMonitors);
          AliRsnListOutput *mo;
          while ((mo = (AliRsnListOutput *) next())) {
             mo->Fill(fEvent,fDaughter);
@@ -383,9 +386,9 @@ TString AliRsnCutSet::GetCutSchemeIndexed()
 
 Bool_t AliRsnCutSet::Init(TList *list)
 {
-   if (!fMonitors) return kTRUE;
+   if (!fUseMonitor) return kTRUE;
 
-   TIter next(fMonitors);
+   TIter next(&fMonitors);
    AliRsnListOutput *mo;
    while ((mo = (AliRsnListOutput *) next())) {
       mo->Init(GetName(),list);
@@ -397,7 +400,6 @@ Bool_t AliRsnCutSet::Init(TList *list)
 
 void AliRsnCutSet::AddMonitor(AliRsnListOutput *mon)
 {
-   if (!fMonitors) fMonitors = new TObjArray();
-   fMonitors->Add(mon);
+   fMonitors.Add(mon);
 }
 

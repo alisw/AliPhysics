@@ -19,11 +19,11 @@ class AliRsnLoopEffDaughter : public AliRsnLoopEff {
 public:
 
    AliRsnLoopEffDaughter(const char *name, AliRsnDaughterDef *def);
-   AliRsnLoopEffDaughter(const AliRsnLoopEffDaughter& copy);
-   AliRsnLoopEffDaughter& operator=(const AliRsnLoopEffDaughter& copy);
+   AliRsnLoopEffDaughter(const AliRsnLoopEffDaughter &copy);
+   AliRsnLoopEffDaughter &operator=(const AliRsnLoopEffDaughter &copy);
    virtual ~AliRsnLoopEffDaughter() {;};
 
-   AliRsnDaughterDef* GetDef()                       {return fDef;}
+   AliRsnDaughterDef *GetDef()                       {return fDef;}
    void               SetDef(AliRsnDaughterDef *def) {fDef = def;}
 
    virtual Bool_t     OkStepMC(TObject *checked, Int_t step);

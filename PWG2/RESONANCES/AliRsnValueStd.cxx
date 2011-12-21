@@ -125,7 +125,7 @@ AliRsnValueStd::AliRsnValueStd
 }
 
 //_____________________________________________________________________________
-AliRsnValueStd::AliRsnValueStd(const AliRsnValueStd& copy) :
+AliRsnValueStd::AliRsnValueStd(const AliRsnValueStd &copy) :
    AliRsnValue(copy),
    fValueType(copy.fValueType),
    fSupportObject(copy.fSupportObject)
@@ -137,7 +137,7 @@ AliRsnValueStd::AliRsnValueStd(const AliRsnValueStd& copy) :
 }
 
 //_____________________________________________________________________________
-AliRsnValueStd& AliRsnValueStd::operator=(const AliRsnValueStd& copy)
+AliRsnValueStd &AliRsnValueStd::operator=(const AliRsnValueStd &copy)
 {
 //
 // Assignment operator.
@@ -146,7 +146,7 @@ AliRsnValueStd& AliRsnValueStd::operator=(const AliRsnValueStd& copy)
 
    AliRsnValue::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fSupportObject = copy.fSupportObject;
    fValueType = copy.fValueType;
 
@@ -154,7 +154,7 @@ AliRsnValueStd& AliRsnValueStd::operator=(const AliRsnValueStd& copy)
 }
 
 //_____________________________________________________________________________
-const char* AliRsnValueStd::GetValueTypeName() const
+const char *AliRsnValueStd::GetValueTypeName() const
 {
 //
 // This method returns a string to give a name to each possible
@@ -172,7 +172,7 @@ const char* AliRsnValueStd::GetValueTypeName() const
       case kTrackTOFsignal:       return "SingleTrackTOFsignal";
       case kTrackTOFbeta:         return "SingleTrackTOFbeta";
       case kTrackLength:          return "SingleTrackLength";
-      
+
       case kPairP1:               return "PairPtotDaughter1";
       case kPairP2:               return "PairPtotDaughter2";
       case kPairP1t:              return "PairPtDaughter1";
@@ -194,7 +194,7 @@ const char* AliRsnValueStd::GetValueTypeName() const
       case kPairCosThetaStar:     return "PairCosThetaStar";
       case kPairQInv:             return "PairQInv";
       case kPairAngleToLeading:   return "PairAngleToLeading";
-      
+
       case kEventLeadingPt:       return "EventLeadingPt";
       case kEventMult:            return "EventMult";
       case kEventMultMC:          return "EventMultMC";
@@ -226,7 +226,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
    Int_t          leadingID = -1;
    ULong_t        status = 0x0;
 
-   // coherence check, which also casts object 
+   // coherence check, which also casts object
    // to AliRsnTarget data members and returns kFALSE
    // in case the object is NULL
    if (!TargetOK(object)) return kFALSE;
@@ -248,7 +248,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
    AliAODTrack   *aodt   = 0x0;  // reference AOD track
    AliAODPid     *pidObj = 0x0;  // reference AOD PID object
 
-   // initialize the above 4-vectors according to the 
+   // initialize the above 4-vectors according to the
    // expected target type (which has been checked above)
    // in particular, the 'fEvent' data member of base AliRsnTarget
    // will be *always* well initialized if the TargetOK() returns kTRUE
@@ -277,7 +277,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
    leadingID = fEvent->GetLeadingParticleID();
    esdev = fEvent->GetRefESD();
    aodev = fEvent->GetRefAOD();
-   
+
    // if leading index is negative, assume that leading particle was not searched
    // and then searches for it
    if (leadingID < 0) {
@@ -287,18 +287,18 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
 
    if (esdt) status = esdt->GetStatus();
    if (aodt) status = aodt->GetStatus();
-   
+
    // these objects are all types of supports
    // which could be needed for some values
    AliRsnPairDef     *pairDef     = 0x0;
    AliRsnDaughterDef *daughterDef = 0x0;
    AliESDpid         *esdPID      = 0x0;
    if (fSupportObject) {
-      if (fSupportObject->InheritsFrom(AliRsnPairDef    ::Class())) pairDef     = static_cast<AliRsnPairDef*>(fSupportObject);
-      if (fSupportObject->InheritsFrom(AliRsnDaughterDef::Class())) daughterDef = static_cast<AliRsnDaughterDef*>(fSupportObject);
-      if (fSupportObject->InheritsFrom(AliESDpid        ::Class())) esdPID      = static_cast<AliESDpid*>(fSupportObject);
+      if (fSupportObject->InheritsFrom(AliRsnPairDef    ::Class())) pairDef     = static_cast<AliRsnPairDef *>(fSupportObject);
+      if (fSupportObject->InheritsFrom(AliRsnDaughterDef::Class())) daughterDef = static_cast<AliRsnDaughterDef *>(fSupportObject);
+      if (fSupportObject->InheritsFrom(AliESDpid        ::Class())) esdPID      = static_cast<AliESDpid *>(fSupportObject);
    }
-   
+
    // compute value depending on types in the enumeration
    // if the type does not match any available choice, or if
    // the computation is not doable due to any problem
@@ -307,7 +307,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
    switch (fValueType) {
       case kTrackP:
          // single track:
-         // total momentum 
+         // total momentum
          fComputedValue = useMC ? pSim.Vect().Mag() : pRec.Vect().Mag();
          return kTRUE;
       case kTrackPt:
@@ -352,7 +352,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
             AliError(Form("[%s] Required a correctly initialized AliRsnDaughterDef support object to compute this value", GetName()));
             fComputedValue = fgkVeryBig;
             return kFALSE;
-         } 
+         }
       case kTrackITSsignal:
          // single track:
          // ITS signal (successful only for tracks)
@@ -469,7 +469,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
             fComputedValue = fgkVeryBig;
             return kFALSE;
          }
-      //---------------------------------------------------------------------------------------------------------------------
+         //---------------------------------------------------------------------------------------------------------------------
       case kPairP1:
          // pair:
          // momentum of first daughter (which matches definition #1 in pairDef)
@@ -482,22 +482,22 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
          return kTRUE;
       case kPairP1t:
          // pair:
-         // transverse momentum of first daughter 
+         // transverse momentum of first daughter
          fComputedValue = useMC ? pSim0.Perp() : pRec0.Perp();
          return kTRUE;
       case kPairP2t:
          // pair:
-         // transverse momentum of second daughter 
+         // transverse momentum of second daughter
          fComputedValue = useMC ? pSim1.Perp() : pRec1.Perp();
          return kTRUE;
       case kPairP1z:
          // pair:
-         // longitudinal momentum of first daughter 
+         // longitudinal momentum of first daughter
          fComputedValue = useMC ? pSim0.Z() : pRec0.Z();
          return kTRUE;
       case kPairP2z:
          // pair:
-         // longitudinal momentum of second daughter 
+         // longitudinal momentum of second daughter
          fComputedValue = useMC ? pSim1.Z() : pRec1.Z();
          return kTRUE;
       case kPairInvMass:
@@ -601,7 +601,7 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
          // angle w.r. to leading particle (if any)
          fComputedValue = fMother->AngleToLeading(success);
          return success;
-      //---------------------------------------------------------------------------------------------------------------------
+         //---------------------------------------------------------------------------------------------------------------------
       case kEventMult:
          // event:
          // multiplicity of tracks
@@ -614,15 +614,15 @@ Bool_t AliRsnValueStd::Eval(TObject *object, Bool_t useMC)
          return (fComputedValue >= 0);
       case kEventMultESDCuts:
          // event:
-         // multiplicity of good quality tracks 
+         // multiplicity of good quality tracks
          fComputedValue = fEvent->GetMultiplicityFromESDCuts();
          return (fComputedValue >= 0);
       case kEventMultSPD:
          // event:
-         // multiplicity of good quality tracks 
+         // multiplicity of good quality tracks
          fComputedValue = fEvent->GetMultiplicityFromSPD();
          return (fComputedValue >= 0);
-      case kEventLeadingPt: 
+      case kEventLeadingPt:
          // event:
          // transverse momentum of leading particle
          if (leadingID >= 0) {

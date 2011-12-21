@@ -9,9 +9,8 @@
 
 void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysisTaskSE *task, TString format = "esd", Bool_t useMC = kFALSE,Bool_t isRsnMini=kFALSE,const Int_t mixNum = 10, TString opts = "" ) {
 
-
    Bool_t isPP = kTRUE;
-   if (gRsnUseMiniPackage) {
+   if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *) task;
 
       // settings
@@ -59,8 +58,31 @@ void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysis
       multiInputHandler->AddInputEventHandler ( mixHandler );
 
       // adds mixing info task
-      gROOT->LoadMacro ( "AddAnalysisTaskMixInfo.C" );
+      RsnLoadMacroFromMixHandler( "AddAnalysisTaskMixInfo.C" );
       AddAnalysisTaskMixInfo (opts );
 
    }
+}
+
+Bool_t RsnLoadMacroFromMixHandler(TString macro,TString path="") {
+
+   Bool_t valid;
+   TString lego_path = AliAnalysisManager::GetGlobalStr("rsnLegoTrainPath",valid);
+   if (!valid) lego_path = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
+
+   if (!gSystem->AccessPathName(macro.Data())) {
+      gROOT->LoadMacro(macro.Data());
+      Printf("Macro loaded from %s/%s ...",gSystem->pwd(),macro.Data());
+      return kTRUE;
+   }
+
+   if (!gSystem->AccessPathName(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())))) {
+      gROOT->LoadMacro(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      Printf("Macro loaded from %s ...",gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      return kTRUE;
+   }
+
+   Printf("Error loading %s",macro.Data());
+
+   return kFALSE;
 }

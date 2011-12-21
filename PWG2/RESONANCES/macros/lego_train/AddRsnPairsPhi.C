@@ -16,8 +16,10 @@ void AddRsnPairsPhi(AliAnalysisTaskSE *task,
    TDatabasePDG *db   = TDatabasePDG::Instance();
    TParticlePDG *part = db->GetParticle(pdg);
    Double_t mass = part->Mass();
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
 
-   if (gRsnUseMiniPackage) {
+   if (isRsnMini) {
       AddPairOutputMiniPhi(task,isMC,isMixing,pType1,listID1,pType2,listID2,pdg,mass,cutsPair,suffix);
    } else {
       // this function is common and it is located in RsnConfig.C
@@ -27,6 +29,8 @@ void AddRsnPairsPhi(AliAnalysisTaskSE *task,
 }
 void AddPairOutputPhi(AliRsnLoopPair *pair)
 {
+   Bool_t valid;
+   Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
    AliRsnValuePair *axisPt = new AliRsnValuePair("PT", AliRsnValuePair::kPt);
@@ -35,7 +39,7 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
-   if (!gRsnOutputFull) {
+   if (!isFullOutput) {
       outPair = new AliRsnListOutput("pair", AliRsnListOutput::kHistoDefault);
       outPair->AddValue(axisIM);
    } else {
@@ -48,6 +52,10 @@ void AddPairOutputPhi(AliRsnLoopPair *pair)
 }
 
 void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EParticleType pType1,Int_t listID1, AliPID::EParticleType pType2,Int_t listID2, Int_t pdgMother,Double_t massMother, AliRsnCutSet *cutsPair=0,TString suffix = "") {
+
+   Bool_t valid;
+   Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
+   Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
 
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
 
@@ -62,7 +70,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t  use     [5] = { 1      ,  gRsnUseMixing      ,  1      ,  1      ,  isMC  };
+   Bool_t  use     [5] = { 1      ,  useMixing      ,  1      ,  1      ,  isMC  };
    TString name    [5] = {"Unlike", "Mixing", "LikePP", "LikeMM", "Trues"};
    TString comp    [5] = {"PAIR"  , "MIX"   , "PAIR"  , "PAIR"  , "TRUE" };
    Char_t  charge1 [5] = {'+'     , '+'     , '+'     , '-'     , '+'    };
@@ -70,7 +78,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
 
    // common definitions
    TString outputType = "HIST";
-   if (gRsnOutputFull) outputType = "SPARSE";
+   if (isFullOutput) outputType = "SPARSE";
 
    Int_t nIM   = 300; Double_t minIM   = 0.9, maxIM =  1.2;
    Int_t nPt   = 100; Double_t minPt   = 0.0, maxPt = 10.0;
@@ -103,7 +111,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       // axis X: invmass
       out->AddAxis(imID, nIM, minIM, maxIM);
 
-      if (gRsnOutputFull) {
+      if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, nPt, minPt, maxPt);
          // axis Z: centrality
@@ -128,7 +136,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       // axis X: resolution
       outRes->AddAxis(resID, nRes, -maxRes, maxRes);
 
-      if (gRsnOutputFull) {
+      if (isFullOutput) {
          // axis Y: transverse momentum
          outRes->AddAxis(ptID, nPt, minPt, maxPt);
          // axis Z: centrality
@@ -152,7 +160,7 @@ void AddPairOutputMiniPhi(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, 
       if (cutsPair) outMC->SetPairCuts(cutsPair);
       // axis X: invmass
       outMC->AddAxis(imID, nIM, minIM, maxIM);
-      if (gRsnOutputFull) {
+      if (isFullOutput) {
          // axis Y: transverse momentum
          outMC->AddAxis(ptID, nPt, minPt, maxPt);
          // axis Z: centrality
