@@ -2219,6 +2219,7 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
   Int_t nindices=0;
   UShort_t *indices = 0;
   Double_t pos[3],cov[6];
+  const Int_t entries = event->GetNumberOfTracks();
 
   if(!fInputAOD) { // ESD
     fV1 = new AliESDVertex(*((AliESDVertex*)vprimary));
@@ -2226,16 +2227,14 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     vprimary->GetXYZ(pos);
     vprimary->GetCovarianceMatrix(cov);
     fV1 = new AliESDVertex(pos,cov,100.,100,vprimary->GetName());
-    if(event->GetNumberOfTracks()<=0) return;
-    indices = new UShort_t[event->GetNumberOfTracks()];
-    for(Int_t ijk=0; ijk<event->GetNumberOfTracks(); ijk++) indices[ijk]=0;
+    if(entries<=0) return;
+    indices = new UShort_t[entries];
+    memset(indices,0,sizeof(UShort_t)*entries);
     fAODMapSize = 100000;
     fAODMap = new Int_t[fAODMapSize];
     memset(fAODMap,0,sizeof(Int_t)*fAODMapSize);
   }
 
-
-  Int_t entries = (Int_t)event->GetNumberOfTracks();
   Bool_t okDisplaced=kFALSE,okSoftPi=kFALSE;
   nSeleTrks=0;
  
