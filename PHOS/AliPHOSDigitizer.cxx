@@ -204,22 +204,25 @@ AliPHOSDigitizer::AliPHOSDigitizer(const AliPHOSDigitizer & d) :
   fDigitsInRun(d.fDigitsInRun),
   fInit(d.fInit),
   fInput(d.fInput),
-  fInputFileNames(0x0),//?
-  fEventNames(0x0),//?
+  fInputFileNames(0x0),
+  fEventNames(0x0),
   fEmcCrystals(d.fEmcCrystals),
   fEventFolderName(d.fEventFolderName),
   fFirstEvent(d.fFirstEvent),
   fLastEvent(d.fLastEvent), 
-  fcdb (0x0), 
+  fcdb (new AliPHOSCalibData(-1)), 
   fEventCounter(0),
-  fPulse(0),
+  fPulse(new AliPHOSPulseGenerator),
   fADCValuesLG(0),
   fADCValuesHG(0)
 {
   // copyy ctor 
   SetName(d.GetName()) ; 
   SetTitle(d.GetTitle()) ; 
-  fcdb = new AliPHOSCalibData(-1);
+  for (Int_t iInput=0; iInput<fInput; iInput++) {
+    fInputFileNames[iInput] = d.fInputFileNames[iInput];
+    fEventNames[iInput]     = d.fEventNames[iInput];
+  }
 }
 
 //____________________________________________________________________________ 

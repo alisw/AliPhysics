@@ -113,8 +113,8 @@ private:
   Int_t fEventCounter ;             //! counts the events processed
 
   AliPHOSPulseGenerator *fPulse;    //! Pulse shape generator
-  Int_t *fADCValuesLG;              //! Array og low-gain ALTRO samples
-  Int_t *fADCValuesHG;              //! Array og high-gain ALTRO samples
+  Int_t *fADCValuesLG;              //! Array of low-gain ALTRO samples
+  Int_t *fADCValuesHG;              //! Array of high-gain ALTRO samples
   
   ClassDef(AliPHOSDigitizer,5)  // description 
 
