@@ -2241,11 +2241,10 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
          chain->Add(esdFile);
          file->Close();
          if (!fFriendChainName.IsNull()) {
-	    if (esdFile.Index("#") > -1)
-	      esdFile.Remove(esdFile.Index("#"));
-	    esdFile = gSystem->DirName(esdFile);
-	    esdFile += "/" + fFriendChainName;
-
+            if (esdFile.Index("#") > -1)
+               esdFile.Remove(esdFile.Index("#"));
+            esdFile = gSystem->DirName(esdFile);
+            esdFile += "/" + fFriendChainName;
             file = TFile::Open(esdFile);
             if (file && !file->IsZombie()) {
                file->Close();
@@ -2254,7 +2253,7 @@ TChain *AliAnalysisAlien::GetChainForTestMode(const char *treeName) const
                Fatal("GetChainForTestMode", "Cannot open friend file: %s", esdFile.Data());
                return 0;
             }   
-         }   
+         }
       } else {
          Error("GetChainforTestMode", "Skipping un-openable file: %s", esdFile.Data());
       }   
@@ -3896,6 +3895,8 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          else   
             out << "   plugin->SetFileForTestMode(\"" << fFileForTestMode << "\");" << endl;
          out << "   plugin->SetNtestFiles(" << fNtestFiles << ");" << endl;
+         if (!fFriendChainName.IsNull()) 
+            out << "   plugin->SetFriendChainName(\"" << fFriendChainName << "\");" << endl;
          out << "   mgr->SetGridHandler(plugin);" << endl;
          if (AliAnalysisManager::GetAnalysisManager()) {
             out << "   mgr->SetDebugLevel(" << AliAnalysisManager::GetAnalysisManager()->GetDebugLevel() << ");" << endl;
@@ -3966,9 +3967,18 @@ void AliAnalysisAlien::WriteAnalysisMacro()
          out << "      chain->Add(filename);" << endl;
          if(fFriendChainName!="") {
             out << "      TString fileFriend=coll->GetTURL(\"\");" << endl;
-            out << "      fileFriend.ReplaceAll(\"AliAOD.root\",\""<<fFriendChainName.Data()<<"\");" << endl;
-            out << "      fileFriend.ReplaceAll(\"AliAODs.root\",\""<<fFriendChainName.Data()<<"\");" << endl;
-            out << "      chainFriend->Add(fileFriend.Data());" << endl;
+            out << "      if (fileFriend.Index(\"#\") > -1) fileFriend.Remove(fileFriend.Index(\"#\"));" << endl;
+            out << "      fileFriend = gSystem->DirName(fileFriend);" << endl;
+            out << "      fileFriend += \"/\";" << endl;
+            out << "      fileFriend += \"" << fFriendChainName << "\";";
+            out << "      TFile *file = TFile::Open(fileFriend);" << endl;
+            out << "      if (file) {" << endl;
+            out << "         file->Close();" << endl;
+            out << "         chainFriend->Add(fileFriend.Data());" << endl;
+            out << "      } else {" << endl;
+            out << "         ::Fatal(\"CreateChain\", \"Cannot open friend file: %s\", fileFriend.Data());" << endl;
+            out << "         return 0;" << endl;
+            out << "      }" << endl;
          }
          out << "   }" << endl;
          out << "   if (!chain->GetNtrees()) {" << endl;
