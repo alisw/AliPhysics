@@ -17,7 +17,9 @@ void AddRsnPairsKStar(AliAnalysisTaskSE *task,
    TParticlePDG *part = db->GetParticle(pdg);
    Double_t mass = part->Mass();
 
-   if (gRsnUseMiniPackage) {
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
+   if (isRsnMini) {
       AddPairOutputMiniKStar(task,isMC,isMixing,pType1,listID1,pType2,listID2,pdg,mass,cutsPair,suffix);
    } else {
       // this function is common and it is located in RsnConfig.C
@@ -27,6 +29,8 @@ void AddRsnPairsKStar(AliAnalysisTaskSE *task,
 }
 void AddPairOutputKStar(AliRsnLoopPair *pair)
 {
+   Bool_t valid;
+   Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
 
    // axes
    AliRsnValuePair *axisIM = new AliRsnValuePair("IM", AliRsnValuePair::kInvMass);
@@ -36,7 +40,7 @@ void AddPairOutputKStar(AliRsnLoopPair *pair)
 
    // output: 2D histogram of inv. mass vs. pt
    AliRsnListOutput *outPair = 0;
-   if (!gRsnOutputFull) {
+   if (!isFullOutput) {
       outPair = new AliRsnListOutput("pair", AliRsnListOutput::kHistoDefault);
       outPair->AddValue(axisIM);
    } else {
@@ -50,6 +54,9 @@ void AddPairOutputKStar(AliRsnLoopPair *pair)
 
 void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing, AliPID::EParticleType pType1,Int_t listID1, AliPID::EParticleType pType2,Int_t listID2, Int_t pdgMother,Double_t massMother, AliRsnCutSet *cutsPair=0,TString suffix = "") {
 
+   Bool_t valid;
+   Int_t isFullOutput = AliAnalysisManager::GetGlobalInt("rsnOutputFull",valid);
+   Int_t useMixing = AliAnalysisManager::GetGlobalInt("rsnUseMixing",valid);
    AliRsnMiniAnalysisTask *taskRsnMini =  (AliRsnMiniAnalysisTask *)task;
    /* invariant mass   */ Int_t imID   = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMass, kFALSE);
    /* IM resolution    */ Int_t resID  = taskRsnMini->CreateValue(AliRsnMiniValue::kInvMassRes, kTRUE);
@@ -63,16 +70,19 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
    Int_t iCutK = listID1;
    Int_t iCutPi = listID2;
 
+   // common definitions
+   TString outputType = "HIST";
+   if (isFullOutput) outputType = "SPARSE";
+
    // use an array for more compact writing, which are different on mixing and charges
    // [0] = unlike
    // [1] = mixing
    // [2] = like ++
    // [3] = like --
-   Bool_t  use     [10] = { 1       ,  1       ,  gRsnUseMixing       ,  gRsnUseMixing       ,  1      ,  1      ,  isMC   ,   isMC   ,  isMC   ,   isMC   };
+   Bool_t  use     [10] = { 1       ,  1       ,  useMixing       ,  useMixing       ,  1      ,  1      ,  isMC   ,   isMC   ,  isMC   ,   isMC   };
    Bool_t  useIM   [10] = { 1       ,  1       ,  1       ,  1       ,  1      ,  1      ,  1      ,   1      ,  0      ,   0      };
    TString name    [10] = {"Unlike1", "Unlike2", "Mixing1", "Mixing2", "LikePP", "LikeMM", "Trues1",  "Trues2", "Res1"  ,  "Res2"  };
    TString comp    [10] = {"PAIR"   , "PAIR"   , "MIX"    , "MIX"    , "PAIR"  , "PAIR"  , "TRUE"  ,  "TRUE"  , "TRUE"  ,  "TRUE"  };
-   TString output  [10] = {"HIST"   , "HIST"   , "HIST"   , "HIST"   , "HIST"  , "HIST"  , "HIST"  ,  "HIST"  , "HIST"  ,  "HIST"  };
    Char_t  charge1 [10] = {'+'      , '-'      , '+'      , '-'      , '+'     , '-'     , '+'     ,  '-'     , '+'     ,  '-'     };
    Char_t  charge2 [10] = {'-'      , '+'      , '-'      , '+'      , '+'     , '-'     , '-'     ,  '+'     , '-'     ,  '+'     };
    Int_t   cutID1  [10] = { iCutK   ,  iCutK   ,  iCutK   ,  iCutK   ,  iCutK  ,  iCutK  ,  iCutK  ,   iCutK  ,  iCutK  ,   iCutK  };
@@ -81,7 +91,7 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
    for (Int_t i = 0; i < 10; i++) {
       if (!use[i]) continue;
       // create output
-      AliRsnMiniOutput *out = taskRsnMini->CreateOutput(Form("%s_%s", suffix.Data(), name[i].Data()), output[i].Data(), comp[i].Data());
+      AliRsnMiniOutput *out = taskRsnMini->CreateOutput(Form("%s_%s", suffix.Data(), name[i].Data()), outputType.Data(), comp[i].Data());
       // selection settings
       out->SetCutID(0, cutID1[i]);
       out->SetCutID(1, cutID2[i]);
@@ -99,7 +109,7 @@ void AddPairOutputMiniKStar(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,
       else
          out->AddAxis(resID, 200, -0.02, 0.02);
 
-      if (gRsnOutputFull) {
+      if (isFullOutput) {
          // axis Y: transverse momentum
          out->AddAxis(ptID, 100, 0.0, 10.0);
          // axis Z: centrality

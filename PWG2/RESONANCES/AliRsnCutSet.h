@@ -58,8 +58,9 @@ public:
    TObjArray *GetCuts() { return &fCuts; }
 
    void AddMonitor(AliRsnListOutput *mon);
-   TObjArray *GetMonitorOutput() { return fMonitors; }
-   void SetMonitorOutput(TObjArray *monitors) { fMonitors = monitors; }
+   TObjArray *GetMonitorOutput() { fUseMonitor = kTRUE; return &fMonitors; }
+
+   void UseMonitor(Bool_t useMonitor=kTRUE) { fUseMonitor = useMonitor; }
 
 private:
 
@@ -72,8 +73,10 @@ private:
    Bool_t            fIsScheme;              // is scheme
 
    AliRsnExpression *fExpression;            // pointer to AliRsnExpression
-   TObjArray        *fMonitors;              // array of monitor object
-   ClassDef(AliRsnCutSet, 2)   // ROOT dictionary
+   TObjArray         fMonitors;              // array of monitor object
+   Bool_t            fUseMonitor;            // flag if monitoring should be used
+
+   ClassDef(AliRsnCutSet, 3)   // ROOT dictionary
 };
 
 #endif

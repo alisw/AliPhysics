@@ -29,7 +29,7 @@ AliRsnLoopEffDaughter::AliRsnLoopEffDaughter(const char *name, AliRsnDaughterDef
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEffDaughter::AliRsnLoopEffDaughter(const AliRsnLoopEffDaughter& copy) :
+AliRsnLoopEffDaughter::AliRsnLoopEffDaughter(const AliRsnLoopEffDaughter &copy) :
    AliRsnLoopEff(copy),
    fDef(copy.fDef)
 {
@@ -39,7 +39,7 @@ AliRsnLoopEffDaughter::AliRsnLoopEffDaughter(const AliRsnLoopEffDaughter& copy) 
 }
 
 //_____________________________________________________________________________
-AliRsnLoopEffDaughter& AliRsnLoopEffDaughter::operator=(const AliRsnLoopEffDaughter& copy)
+AliRsnLoopEffDaughter &AliRsnLoopEffDaughter::operator=(const AliRsnLoopEffDaughter &copy)
 {
 //
 // Assignment operator.
@@ -48,9 +48,9 @@ AliRsnLoopEffDaughter& AliRsnLoopEffDaughter::operator=(const AliRsnLoopEffDaugh
 
    AliRsnLoopEff::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fDef = copy.fDef;
-   
+
    return (*this);
 }
 
@@ -61,7 +61,7 @@ Bool_t AliRsnLoopEffDaughter::OkStepMC(TObject *target, Int_t istep)
 // Check step with MC
 //
 
-   AliRsnCutSet *cuts = (AliRsnCutSet*)fStepsMC[istep];
+   AliRsnCutSet *cuts = (AliRsnCutSet *)fStepsMC[istep];
    return cuts->IsSelected(target);
 }
 
@@ -72,7 +72,7 @@ Bool_t AliRsnLoopEffDaughter::OkStepRec(TObject *target, Int_t istep)
 // Check step with MC
 //
 
-   AliRsnCutSet *cuts = (AliRsnCutSet*)fStepsRec[istep];
+   AliRsnCutSet *cuts = (AliRsnCutSet *)fStepsRec[istep];
    return cuts->IsSelected(target);
 }
 
@@ -98,7 +98,7 @@ Int_t AliRsnLoopEffDaughter::ProcessEventESD(AliRsnEvent *rsn)
    for (ipart = 0; ipart < stack->GetNprimary(); ipart++) {
 
       // MC particle
-      daughter.SetRefMC((AliMCParticle*)mc->GetTrack(ipart));
+      daughter.SetRefMC((AliMCParticle *)mc->GetTrack(ipart));
 
       // search for reconstructed track
       // if no tracks are found with that label, rec ref is set to zero
@@ -141,7 +141,7 @@ Int_t AliRsnLoopEffDaughter::ProcessEventAOD(AliRsnEvent *rsn)
 //
 
    AliAODEvent  *aod     = fRsnEvent[0].GetRefAOD();
-   TClonesArray *mcArray = (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
+   TClonesArray *mcArray = (TClonesArray *)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
    if (!mcArray) return;
    TArrayI       indexes;
    Int_t         imax, istep, icheck, itrack, ipart;
@@ -152,7 +152,7 @@ Int_t AliRsnLoopEffDaughter::ProcessEventAOD(AliRsnEvent *rsn)
    // loop on the MC list of particles
    TObjArrayIter next(mcArray);
    AliAODMCParticle *particle;
-   while ((particle = (AliAODMCParticle*)next())) {
+   while ((particle = (AliAODMCParticle *)next())) {
 
       // MC particle
       daughter.SetRefMC(particle);

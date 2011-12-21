@@ -14,11 +14,14 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
    // initialize task with all available slots, even if not all of them will be used:
    AliAnalysisTaskSE *task = 0;
 
-   if (gRsnUseMiniPackage) {
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
+
+   if (isRsnMini) {
       postfix.Prepend("Mini");
       AliRsnMiniAnalysisTask *taskRsnMini = new AliRsnMiniAnalysisTask(Form("Rsn%s",postfix.Data()),useMC);
-      taskRsnMini->SetMixPrintRefresh(gRsnMixPrintRefresh);
-      Printf("sssssssss %d",gRsnMixPrintRefresh);
+      Int_t refreshPrint = AliAnalysisManager::GetGlobalInt("rsnMixPrintRefresh",valid);
+      if (valid) taskRsnMini->SetMixPrintRefresh(refreshPrint);
       task = (AliAnalysisTaskSE *) taskRsnMini;
    }
    else {
@@ -26,9 +29,10 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
       task = (AliAnalysisTaskSE *) taskRsn;
    }
 
-   Printf("pointer is %p",task);
+   // TODO this is tmp hack
+   if (!rsnIH) rsnIH = new AliRsnInputHandler();
 
-//   gROOT->LoadMacro("RsnConfig.C");
+   //   gROOT->LoadMacro("RsnConfig.C");
    if (!RsnConfig(task,useMC,isMixing,rsnIH,listRsn)) {
       Printf("Error in RsnConfig.C");
       return 0;
@@ -39,7 +43,7 @@ AliAnalysisTaskSE *AddRsnAnalysisTask(TString format = "esd", Bool_t useMC = kFA
 
    AliRsnDaughterSelector *sel = 0;
 
-   if (!gRsnUseMiniPackage) {
+   if (!isRsnMini) {
       sel = rsnIH->GetSelector();
       sel->Init();
    }

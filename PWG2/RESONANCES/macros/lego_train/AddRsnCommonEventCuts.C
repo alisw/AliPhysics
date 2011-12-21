@@ -15,11 +15,11 @@ AliRsnCutSet *AddRsnCommonEventCuts(AliAnalysisTaskSE *task=0,Bool_t isPP=kTRUE)
    commonEventCuts->SetCutScheme(cutVertex->GetName());
 
    // if task is mini
-
-   if (gRsnUseMiniPackage) {
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
+   if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *)task;
       taskRsn->SetEventCuts(commonEventCuts);
    }
-
    return commonEventCuts;
 }

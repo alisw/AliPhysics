@@ -3,7 +3,7 @@
 
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
- 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 //  Collection of all values which can be computed within the package
@@ -27,7 +27,7 @@ public:
       kTrackTOFbeta,         // single track beta from TOF
       kTrackLength,          // single track integrated length
       kTrackValues,          // --- limit for track values -----------------------------------------
-                             
+
       kPairP1,               // total momentum of 1st daughter of a pair
       kPairP2,               // total momentum of 2nd daughter of a pair
       kPairP1t,              // transverse momentum of 1st daughter of a pair
@@ -50,7 +50,7 @@ public:
       kPairQInv,             // invariant relative momentum of the two daughters
       kPairAngleToLeading,   // angle between pair momentum and leading particle
       kPairValues,           // --- limit for pair values ------------------------------------------
-                             
+
       kEventLeadingPt,       // transverse momentum of the event leading particle
       kEventMult,            // multiplicity computed as the number of tracks
       kEventMultMC,          // multiplicity from MC
@@ -67,13 +67,13 @@ public:
    AliRsnValueStd(const char *name, EValueType type, Int_t nbins = 0, Double_t min = 0.0, Double_t max = 0.0);
    AliRsnValueStd(const char *name, EValueType type, Double_t min, Double_t max, Double_t step);
    AliRsnValueStd(const char *name, EValueType type, Int_t nbins, Double_t *array);
-   AliRsnValueStd(const AliRsnValueStd& copy);
-   AliRsnValueStd& operator=(const AliRsnValueStd& copy);
+   AliRsnValueStd(const AliRsnValueStd &copy);
+   AliRsnValueStd &operator=(const AliRsnValueStd &copy);
    virtual ~AliRsnValueStd() { /*does nothing, since pointers are not owned by this object*/ }
 
    EValueType        GetValueType() const           {return fValueType;}
-   const char*       GetValueTypeName() const;
-   TObject*          GetSupportObject()             {return fSupportObject;}
+   const char       *GetValueTypeName() const;
+   TObject          *GetSupportObject()             {return fSupportObject;}
    void              SetSupportObject(TObject *obj) {fSupportObject = obj;}
    void              SetValueType(EValueType type)  {fValueType = type; fTargetType = TargetType(type);}
 
