@@ -217,7 +217,7 @@ Int_t AliTRDtrapConfigHandler::LoadConfig(TString filename)
    }
 
    UInt_t cmd;
-   Int_t extali, addr, data, cmdno;
+   Int_t extali, addr, data;
 
    // reset restrictive mask
    fRestrictiveMask = (0x3ffff << 11) | (0x1f << 6) | 0x3f;
