@@ -23,9 +23,7 @@ Int_t AddRsnDaughterCutsPhi2010KaonFromKStar(AliPID::EParticleType type1,AliPID:
    cutSetK->AddCut(cutK);
    cutSetK->SetCutScheme(cutK->GetName());
    if (opt.Contains("mon")) {
-      TObjArray *output = new TObjArray;
-      AddMonitorOutput(output);
-      cuts->SetMonitorOutput(output);
+      AddMonitorOutput(cuts->GetMonitorOutput());
    }
    if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsnMini = dynamic_cast<AliRsnMiniAnalysisTask *>(task);

@@ -36,13 +36,8 @@ Int_t AddRsnDaughterCutsPDG(AliPID::EParticleType type1,AliPID::EParticleType ty
       numberOfCuts++;
    }
    if (opt.Contains("mon")) {
-      TObjArray *output = new TObjArray;
-      AddMonitorOutput(output);
-      cuts1->SetMonitorOutput(output);
-
-      output = new TObjArray;
-      AddMonitorOutput(output);
-      cuts2->SetMonitorOutput(output);
+      AddMonitorOutput(cuts1->GetMonitorOutput());
+      AddMonitorOutput(cuts2->GetMonitorOutput());
    }
    if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsnMini = dynamic_cast<AliRsnMiniAnalysisTask *>(task);

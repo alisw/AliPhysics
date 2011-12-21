@@ -34,7 +34,7 @@ AliRsnValuePID::AliRsnValuePID() :
 
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) fTOFtimes[i] = fTOFsigma[i] = 0.0;
-   
+
    SetTargetType(AliRsnTarget::kDaughter);
 }
 
@@ -52,7 +52,7 @@ AliRsnValuePID::AliRsnValuePID
 
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) fTOFtimes[i] = fTOFsigma[i] = 0.0;
-   
+
    SetTargetType(AliRsnTarget::kDaughter);
 }
 
@@ -70,7 +70,7 @@ AliRsnValuePID::AliRsnValuePID
 
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) fTOFtimes[i] = fTOFsigma[i] = 0.0;
-   
+
    SetTargetType(AliRsnTarget::kDaughter);
 }
 
@@ -85,15 +85,15 @@ AliRsnValuePID::AliRsnValuePID
 //
 // Constructor 3 (variable bins)
 //
-   
+
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) fTOFtimes[i] = fTOFsigma[i] = 0.0;
-   
+
    SetTargetType(AliRsnTarget::kDaughter);
 }
 
 //__________________________________________________________________________________________________
-AliRsnValuePID::AliRsnValuePID(const AliRsnValuePID& copy) :
+AliRsnValuePID::AliRsnValuePID(const AliRsnValuePID &copy) :
    AliRsnValue(copy),
    fSpecies(copy.fSpecies),
    fValuePID(copy.fValuePID),
@@ -108,7 +108,7 @@ AliRsnValuePID::AliRsnValuePID(const AliRsnValuePID& copy) :
 }
 
 //__________________________________________________________________________________________________
-AliRsnValuePID& AliRsnValuePID::operator=(const AliRsnValuePID& copy)
+AliRsnValuePID &AliRsnValuePID::operator=(const AliRsnValuePID &copy)
 {
 //
 // Assignment operator
@@ -116,14 +116,14 @@ AliRsnValuePID& AliRsnValuePID::operator=(const AliRsnValuePID& copy)
 
    AliRsnValue::operator=(copy);
    if (this == &copy)
-     return *this;
+      return *this;
    fValuePID = copy.fValuePID;
    fSpecies = copy.fSpecies;
    fPID = copy.fPID;
-   
+
    Int_t i;
    for (i = 0; i < AliPID::kSPECIES; i++) fTOFtimes[i] = fTOFsigma[i] = 0.0;
-   
+
    return (*this);
 }
 
@@ -141,9 +141,9 @@ Bool_t AliRsnValuePID::Eval(TObject *object, Bool_t)
       return kFALSE;
    }
    if (!TargetOK(object)) return kFALSE;
-   
+
    AliVTrack *vtrack = fDaughter->GetRefVtrack();
-   
+
    switch (fValuePID) {
       case kITSsignal:
          fComputedValue = vtrack->GetITSsignal();
@@ -198,8 +198,8 @@ void AliRsnValuePID::InitializePID()
 //
 
    AliAnalysisManager   *man = AliAnalysisManager::GetAnalysisManager();
-   AliInputEventHandler *inh = (AliInputEventHandler*)man->GetInputEventHandler();
-   
+   AliInputEventHandler *inh = (AliInputEventHandler *)man->GetInputEventHandler();
+
    fPID = inh->GetPIDResponse();
 }
 
@@ -211,7 +211,7 @@ Bool_t AliRsnValuePID::TOFComputations(AliVTrack *vtrack)
 //
 
    if (vtrack->InheritsFrom(AliESDtrack::Class())) {
-      AliESDtrack *track = (AliESDtrack*)vtrack;
+      AliESDtrack *track = (AliESDtrack *)vtrack;
       track->GetIntegratedTimes(fTOFtimes);
       Int_t i;
       for (i = 0; i < AliPID::kSPECIES; i++) {
@@ -219,7 +219,7 @@ Bool_t AliRsnValuePID::TOFComputations(AliVTrack *vtrack)
       }
       return kTRUE;
    } else if (vtrack->InheritsFrom(AliAODTrack::Class())) {
-      AliAODTrack *track = (AliAODTrack*)vtrack;
+      AliAODTrack *track = (AliAODTrack *)vtrack;
       AliAODPid *pidObj = track->GetDetPid();
       if (!pidObj) return kFALSE;
       pidObj->GetIntegratedTimes(fTOFtimes);

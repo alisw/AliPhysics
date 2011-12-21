@@ -22,21 +22,19 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
    if (!listRsn) {
       return kFALSE;
    }
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
 
    Int_t cutIndex = 0;
    Int_t numOfCuts = 0;
 
    // set commol eventCuts
 
-   gROOT->LoadMacro("AddRsnCommonEventCuts.C");
+   if (!RsnLoadMacroFromConfig("AddRsnCommonEventCuts.C")) return kFALSE;
    AliRsnCutSet *commonEventCuts = AddRsnCommonEventCuts(task);
 
-   gROOT->LoadMacro("AddRsnCommonPairCuts.C");
+   if (!RsnLoadMacroFromConfig("AddRsnCommonPairCuts.C")) return kFALSE;
    AliRsnCutSet *commonPairCuts = AddRsnCommonPairCuts();
-
-
-   // TODO this is tmp hack
-   if (!rsnIH) rsnIH = new AliRsnInputHandler();
 
    TIter next(listRsn);
    TNamed *rsnObj=0;
@@ -48,21 +46,21 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
       GetOptionFromString(rsnObj->GetTitle(),rsnCutName,rsnCutOpt);
       rsnCutNameOptFull=rsnCutName; if (!rsnCutOpt.IsNull())rsnCutNameOptFull += Form("_%s",rsnCutOpt.Data());
 
-      gROOT->LoadMacro(Form("AddRsnDaughterCuts%s.C",rsnCutName.Data()));
-      gROOT->LoadMacro(Form("AddRsnPairs%s.C",rsnName.Data()));
+      if (!RsnLoadMacroFromConfig(Form("AddRsnDaughterCuts%s.C",rsnCutName.Data()))) return kFALSE;
+      if (!RsnLoadMacroFromConfig(Form("AddRsnPairs%s.C",rsnName.Data()))) return kFALSE;
 
       rsnNameOptFull.ToLower();
       rsnName.ToLower();
       // add cuts
       if (!rsnName.CompareTo("phi")) {
-         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kKaon,AliPID::kKaon,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),gRsnUseMiniPackage,rsnIH, task));
+         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kKaon,AliPID::kKaon,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH, task));
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             AddRsnPairsPhi(task,isMC,isMixing,AliPID::kKaon,cutIndex,AliPID::kKaon,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             cutIndex+=numOfCuts;
          }
       } else if (!rsnName.CompareTo("kstar")) {
-         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kKaon,AliPID::kPion,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),gRsnUseMiniPackage,rsnIH,task));
+         numOfCuts = gROOT->ProcessLine(Form("AddRsnDaughterCuts%s(AliPID::kKaon,AliPID::kPion,\"%s\",%d,(AliRsnInputHandler*)%p,(AliAnalysisTaskSE*)%p)",rsnCutName.Data(), rsnCutOpt.Data(),isRsnMini,rsnIH,task));
          if (numOfCuts) {
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex,commonEventCuts,commonPairCuts,Form("%s_%s_K",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
             if (rsnNameOpt.Contains("mon")) AddParticleMonitor(task,isMC,cutIndex+1,commonEventCuts,commonPairCuts,Form("%s_%s_pi",rsnNameOptFull.Data(),rsnCutNameOptFull.Data()));
@@ -77,6 +75,29 @@ Bool_t RsnConfig(AliAnalysisTaskSE *task,Bool_t isMC,Bool_t isMixing,AliRsnInput
    }
 
    return kTRUE;
+}
+
+Bool_t RsnLoadMacroFromConfig(TString macro,TString path="") {
+
+   Bool_t valid;
+   TString lego_path = AliAnalysisManager::GetGlobalStr("rsnLegoTrainPath",valid);
+   if (!valid) lego_path = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
+
+   if (!gSystem->AccessPathName(macro.Data())) {
+      gROOT->LoadMacro(macro.Data());
+      Printf("Macro loaded from %s/%s ...",gSystem->pwd(),macro.Data());
+      return kTRUE;
+   }
+
+   if (!gSystem->AccessPathName(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())))) {
+      gROOT->LoadMacro(gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      Printf("Macro loaded from %s ...",gSystem->ExpandPathName(Form("%s/%s",lego_path.Data(),macro.Data())));
+      return kTRUE;
+   }
+
+   Printf("Error loading %s",macro.Data());
+
+   return kFALSE;
 }
 
 void GetOptionFromString(TString str,TString &outStr1,TString &outStr2,TString d=":") {
@@ -100,6 +121,9 @@ void GetOptionFromString(TString str,TString &outStr1,TString &outStr2,TString d
 }
 
 Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EParticleType pType1,Int_t listID1, AliPID::EParticleType pType2,Int_t listID2, Int_t pdgMother,Double_t massMother, AliRsnCutSet *commonEventCuts=0,AliRsnCutSet *commonPairCuts=0, TString name = "") {
+
+   Bool_t valid;
+   Int_t useMCMomentum = AliAnalysisManager::GetGlobalInt("rsnUseMCMomentum",valid);
 
    Bool_t typeSame = (pType1 == pType2);
 
@@ -181,7 +205,7 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
    while ((lp = (AliRsnLoopPair *)next.Next())) {
       lp->SetListID(0, listID1);
       lp->SetListID(1, listID2);
-      lp->SetMCRefInfo(gRsnUseMCMomentum);
+      lp->SetMCRefInfo(useMCMomentum);
       if (commonPairCuts) lp->SetPairCuts(commonPairCuts);
       if (commonEventCuts) lp->SetEventCuts(commonEventCuts);
       if (name.Contains("phi")) AddPairOutputPhi(lp);
@@ -197,7 +221,9 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
 void AddMonitorOutput(TObjArray *mon)
 {
 // mcinfo is not supported yet
-   if (gRsnUseMCMomentum) return ;
+   Bool_t valid;
+   Int_t useMCMomentum = AliAnalysisManager::GetGlobalInt("rsnUseMCMomentum",valid);
+   if (useMCMomentum) return;
 
    // dEdx tpc
    AliRsnValueDaughter *axisMomTPC = new AliRsnValueDaughter("pTPC", AliRsnValueDaughter::kPtpc);
@@ -359,8 +385,9 @@ void AddMonitorOutputMini(AliRsnMiniAnalysisTask *task,Int_t listID1,TString nam
 
 void AddParticleMonitor(AliAnalysisTaskSE *task, Bool_t isMC, Int_t listID1,AliRsnCutSet *commonEventCuts=0,AliRsnCutSet *cutPair=0,TString name = "")
 {
-
-   if (gRsnUseMiniPackage) {
+   Bool_t valid;
+   Int_t isRsnMini = AliAnalysisManager::GetGlobalInt("rsnUseMiniPackage",valid);
+   if (isRsnMini) {
       Printf("Monitoring by mini is not supported now. It will be soon !!!");
       return ;
 //       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
