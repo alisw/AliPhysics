@@ -547,13 +547,33 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHF(const char* cutFile = "./D0toKpiCuts.
 	task->SetUseMCVertex(kFALSE); // put to true if you want to do studies on pp
 
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
-	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
+	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);	
+
+	TF1* funcWeight = 0x0;
+	if (task->GetUseWeight()) {
+		funcWeight = (TF1*)fileCuts->Get("funcWeight");
+		if (funcWeight == 0x0){
+			Printf("FONLL Weights will be used");
+		}
+		else {
+			task->SetWeightFunction(funcWeight);
+			Printf("User-defined Weights will be used. The function being:");
+			task->GetWeightFunction(funcWeight)->Print();
+		}
+	}
 
 	Printf("***************** CONTAINER SETTINGS *****************");	
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
+	if (task->GetUseWeight()) {
+		Printf("User-defined Weight function:");
+		task->GetWeightFunction(funcWeight)->Print();
+	}
+	else{
+		Printf("FONLL will be used for the weights");
+	}
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("Centrality selection = %d",(Int_t)task->GetCentralitySelection());
 	Printf("Fake selection = %d",(Int_t)task->GetFakeSelection());

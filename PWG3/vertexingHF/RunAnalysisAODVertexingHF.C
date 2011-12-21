@@ -162,7 +162,7 @@ void RunAnalysisAODVertexingHF()
   if(useAlienPlugin) mgr->SetGridHandler(alienHandler);
 
   // Input
-  AliAODInputHandler *inputHandler = new AliAODInputHandler();
+  AliAODInputHandler *inputHandler = new AliAODInputHandler("handler","handler for D2H");
   if(analysisMode=="proof" ) {
     inputHandler->AddFriend("./AliAOD.VertexingHF.root");
     //inputHandler->AddFriend("deltas/AliAOD.VertexingHF.root");

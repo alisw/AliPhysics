@@ -35,6 +35,7 @@
 #include <TH1I.h>
 #include <TStyle.h>
 #include <TFile.h>
+#include <TF1.h>
 
 #include "AliCFTaskVertexingHF.h"
 #include "AliStack.h"
@@ -104,14 +105,15 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fRejectIfNoQuark(kTRUE),	
 	fUseMCVertex(kFALSE),
 	fDsOption(1),
-	fConfiguration(kCheetah)  // by default, setting the fast configuration
+	fConfiguration(kCheetah), // by default, setting the fast configuration
+	fFuncWeight(0x0)
 {
 	//
 	//Default ctor
 	//
 }
 //___________________________________________________________________________
-AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts) :
+AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func) :
 	AliAnalysisTaskSE(name),
 	fCFManager(0x0),
 	fHistEventsProcessed(0x0),
@@ -142,7 +144,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fRejectIfNoQuark(kTRUE),
 	fUseMCVertex(kFALSE),
 	fDsOption(1),
-	fConfiguration(kCheetah)  // by default, setting the fast configuration
+	fConfiguration(kCheetah),  // by default, setting the fast configuration
+	fFuncWeight(func)
 {
 	//
 	// Constructor. Initialization of Inputs and Outputs
@@ -170,6 +173,7 @@ AliCFTaskVertexingHF& AliCFTaskVertexingHF::operator=(const AliCFTaskVertexingHF
 		fCFManager  = c.fCFManager;
 		fHistEventsProcessed = c.fHistEventsProcessed;
 		fCuts = c.fCuts;
+		fFuncWeight = c.fFuncWeight;
 	}
 	return *this;
 }
@@ -206,7 +210,8 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fRejectIfNoQuark(c.fRejectIfNoQuark),
 	fUseMCVertex(c.fUseMCVertex),
 	fDsOption(c.fDsOption),
-	fConfiguration(c.fConfiguration)
+	fConfiguration(c.fConfiguration),
+	fFuncWeight(c.fFuncWeight)
 {
 	//
 	// Copy Constructor
@@ -223,6 +228,7 @@ AliCFTaskVertexingHF::~AliCFTaskVertexingHF()
 	if (fHistEventsProcessed) delete fHistEventsProcessed ;
 	if (fCorrelation)	  delete fCorrelation ;
 	if (fCuts)                delete fCuts;
+	if (fFuncWeight)                delete fFuncWeight;
 }
 
 //_________________________________________________________________________-
@@ -590,7 +596,17 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		//Fill the MC container
 		Bool_t mcContainerFilled = cfVtxHF -> FillMCContainer(containerInputMC);
 		if (mcContainerFilled) {
-			if (fUseWeight)fWeight = GetWeight(containerInputMC[0]);
+			if (fUseWeight){
+				if (fFuncWeight){ // using user-defined function
+					AliDebug(2,"Using function");
+					fWeight = fFuncWeight->Eval(containerInputMC[0]);				     
+				}
+				else{ // using FONLL
+					AliDebug(2,"Using FONLL");
+					fWeight = GetWeight(containerInputMC[0]);
+				}
+				AliDebug(2,Form("pt = %f, weight = %f",containerInputMC[0], fWeight));
+			}
 			if (!fCuts->IsInFiducialAcceptance(containerInputMC[0],containerInputMC[1])) continue;
 			//MC Limited Acceptance
 			if (TMath::Abs(containerInputMC[1]) < 0.5) {
@@ -708,7 +724,17 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 		if (recoContFilled){
 
 		        // weight according to pt
-		        if (fUseWeight)fWeight = GetWeight(containerInput[0]);
+		        if (fUseWeight){
+				if (fFuncWeight){ // using user-defined function
+					AliDebug(2, "Using function");
+					fWeight = fFuncWeight->Eval(containerInput[0]);
+				}
+				else{ // using FONLL
+					AliDebug(2, "Using FONLL");
+					fWeight = GetWeight(containerInput[0]);
+				}
+				AliDebug(2, Form("pt = %f, weight = %f",containerInput[0], fWeight));
+			}
 
 			if (!fCuts->IsInFiducialAcceptance(containerInput[0],containerInput[1])) continue;	   
 			
@@ -884,7 +910,6 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 			h[2][iC] =   *(cont->ShowProjection(iC,4));
 		}	
 	}
-
 	TString* titles;
 	Int_t nvarToPlot = 0;
 	if (fConfiguration == kSnail){
@@ -957,11 +982,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	Int_t iPad=1;
 	for(Int_t iVar=0; iVar<4; iVar++){
 		c1->cd(iPad++);
-		h[0][iVar].Draw("p");
+		h[0][iVar].DrawCopy("p");
 		c1->cd(iPad++);
-		h[1][iVar].Draw("p");
+		h[1][iVar].DrawCopy("p");
 		c1->cd(iPad++);
-		h[2][iVar].Draw("p");
+		h[2][iVar].DrawCopy("p");
 	}
 	
 	TCanvas * c2 =new TCanvas(Form("c2New_%d",fDecayChannel),"Vars 4, 5, 6, 7",1100,1200);
@@ -969,11 +994,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	iPad=1;
 	for(Int_t iVar=4; iVar<8; iVar++){
 		c2->cd(iPad++);
-		h[0][iVar].Draw("p");
+		h[0][iVar].DrawCopy("p");
 		c2->cd(iPad++);
-		h[1][iVar].Draw("p");
+		h[1][iVar].DrawCopy("p");
 		c2->cd(iPad++);
-		h[2][iVar].Draw("p");
+		h[2][iVar].DrawCopy("p");
 	}
 
 	if (fConfiguration == kSnail){
@@ -982,11 +1007,11 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 		iPad=1;
 		for(Int_t iVar=8; iVar<12; iVar++){
 			c3->cd(iPad++);
-			h[0][iVar].Draw("p");
+			h[0][iVar].DrawCopy("p");
 			c3->cd(iPad++);
-			h[1][iVar].Draw("p");
+			h[1][iVar].DrawCopy("p");
 			c3->cd(iPad++);
-			h[2][iVar].Draw("p");
+			h[2][iVar].DrawCopy("p");
 		}
 	}
 
@@ -999,9 +1024,9 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 	TCanvas * c7 =new TCanvas(Form("c7New_%d",fDecayChannel),"",800,400);
 	c7->Divide(2,1);
 	c7->cd(1);
-	corr1->Draw("text");
+	corr1->DrawCopy("text");
 	c7->cd(2);
-	corr2->Draw("text");
+	corr2->DrawCopy("text");
 	
 	TFile* file_projection = new TFile("CFtaskHFprojectionNew.root","RECREATE");
 	
@@ -1013,8 +1038,7 @@ void AliCFTaskVertexingHF::Terminate(Option_t*)
 		}
 	}
 	file_projection->Close();
-
-	for (Int_t ih = 0; ih<3; ih++) delete h[ih];
+	for (Int_t ih = 0; ih<3; ih++) delete [] h[ih];
 	delete [] h;
 
 	

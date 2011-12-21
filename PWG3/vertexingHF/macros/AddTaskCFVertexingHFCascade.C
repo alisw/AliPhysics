@@ -403,11 +403,35 @@ AliCFTaskVertexingHF *AddTaskCFVertexingHFCascade(const char* cutFile = "./DStar
 	if (isKeepDfromB && !isKeepDfromBOnly) task->SetDselection(2);
 	if (isKeepDfromB && isKeepDfromBOnly) task->SetDselection(1);		
 
+	TF1* funcWeight = 0x0;
+	if (task->GetUseWeight()) {
+		funcWeight = (TF1*)cutFile->Get("funcWeight");
+		if (funcWeight == 0x0){
+			Printf("FONLL Weights will be used");
+		}
+		else {
+			task->SetWeightFunction(funcWeight);
+			Printf("User-defined Weights will be used. The function being:");
+			task->GetWeightFunction()->Print();
+		}
+	}
+
 	Printf("***************** CONTAINER SETTINGS *****************");
 	Printf("decay channel = %d",(Int_t)task->GetDecayChannel());
 	Printf("FillFromGenerated = %d",(Int_t)task->GetFillFromGenerated());
 	Printf("Dselection = %d",(Int_t)task->GetDselection());
 	Printf("UseWeight = %d",(Int_t)task->GetUseWeight());
+	if (task->GetUseWeight()) {
+		funcWeight = (TF1*)cutFile->Get("funcWeight");
+		if (funcWeight == 0x0){
+			Printf("FONLL Weights will be used");
+		}
+		else {
+			task->SetWeightFunction(funcWeight);
+			Printf("User-defined Weights will be used. The function being:");
+			task->GetWeightFunction()->Print();
+		}
+	}
 	Printf("Sign = %d",(Int_t)task->GetSign());
 	Printf("***************END CONTAINER SETTINGS *****************\n");
 

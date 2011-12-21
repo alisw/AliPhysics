@@ -38,6 +38,7 @@ class AliAODRecoDecay;
 class AliAODRecoDecayHF2Prong;
 class AliAODMCParticle;
 class THnSparse;
+class TF1;
 class AliRDHFCuts;
 class AliCFVertexingHF2Prong;
 class AliCFVertexingHF3Prong;
@@ -64,7 +65,7 @@ public:
 	};
 	
 	AliCFTaskVertexingHF();
-	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts);
+	AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts, TF1* func = 0x0);
 	AliCFTaskVertexingHF& operator= (const AliCFTaskVertexingHF& c);
 	AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c);
  	virtual ~AliCFTaskVertexingHF();
@@ -123,6 +124,9 @@ public:
 	void SetConfiguration(Int_t configuration) {(configuration == kSnail) ? Printf("Slow configuration chosen, all variables will be used!") : Printf("Fast configuration chosen, all variablesOnly pt, y, phi, ct, fake, z_vtx, centrality and multiplicity will be used!"); fConfiguration = configuration;} 
 	Int_t GetConfiguration() const {return fConfiguration;} 
 	
+	void SetWeightFunction(TF1* func) {fFuncWeight = func;}
+	TF1* GetWeightFunction() const {return fFuncWeight;}
+	
 protected:
 	AliCFManager   *fCFManager;   //  pointer to the CF manager
 	TH1I *fHistEventsProcessed;   //! simple histo for monitoring the number of events processed
@@ -154,8 +158,9 @@ protected:
 	Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
 	Int_t  fDsOption;     // Ds decay option
 	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
+	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
 
-	ClassDef(AliCFTaskVertexingHF,8); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,9); // class for HF corrections as a function of many variables
 };
 
 #endif
