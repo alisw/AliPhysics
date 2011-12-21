@@ -507,10 +507,12 @@ void AliFlowAnalysisWithScalarProduct::GetOutputHistograms(TList *outputListHist
       if(!fHistSumOfWeightsu[iPOI][iSpace][i]) printf("Error loading fHistSumOfWeightsu[%d][%d][%d]\n",iPOI,iSpace,i);
     }
   }
-  fApplyCorrectionForNUA = (Int_t) fHistProConfig->GetBinContent(1);
-  fNormalizationType  = (Int_t) fHistProConfig->GetBinContent(2);
-  fUsePhiWeights = (Int_t) fHistProConfig->GetBinContent(3);
-  fHarmonic = (Int_t) fHistProConfig->GetBinContent(4);
+  if(fHistProConfig) {
+    fApplyCorrectionForNUA = (Int_t) fHistProConfig->GetBinContent(1);
+    fNormalizationType  = (Int_t) fHistProConfig->GetBinContent(2);
+    fUsePhiWeights = (Int_t) fHistProConfig->GetBinContent(3);
+    fHarmonic = (Int_t) fHistProConfig->GetBinContent(4);
+  }
 }            
 
 //--------------------------------------------------------------------            

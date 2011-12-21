@@ -49,7 +49,9 @@ AliFlowCandidateTrack::AliFlowCandidateTrack(const AliFlowCandidateTrack& aTrack
 
 AliFlowCandidateTrack&  AliFlowCandidateTrack::operator=(const AliFlowCandidateTrack& aTrack)
 {
-  // operator =
+  // assignment
+  if (this == &aTrack) return *this; //handles self assignment
+
   AliFlowTrack::operator=(aTrack);
   fMass = aTrack.fMass;
   fNDaughters = aTrack.fNDaughters;
