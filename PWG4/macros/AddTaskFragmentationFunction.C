@@ -230,8 +230,9 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetJetCuts();         // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
    task->SetDiJetCuts();       // default: type of cut = 1 (cut in deltaPhi), deltaPhi = 0., cdf = 0.5, fraction of pt = 0.6
    task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
-   if(radius <= 0.2) task->SetFFRadius(0.2); // R = 0.2   
-   else              task->SetFFRadius();    // default: R = 0.4
+   //if(radius <= 0.2) task->SetFFRadius(0.2); // R = 0.2   
+   //else              task->SetFFRadius();    // default: R = 0.4
+   task->SetFFRadius(radius);
    task->SetFFBckgRadius();    // default: R = 0.7
    task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
    task->SetIJMode(0);         // default: ijMode = 1
