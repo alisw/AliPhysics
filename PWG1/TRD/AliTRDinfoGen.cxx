@@ -668,27 +668,28 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fTrackInfo->Delete("");
   }
   // read clusters REC info
-  TTree * treeR = (dynamic_cast<AliESDInputHandlerRP*>(fInputHandler))->GetTreeR("TRD");
-  if(treeR) {
-    TObjArray *recPoints(NULL);
-    if((treeR->GetBranch("TRDcluster"))){
-      treeR->SetBranchAddress("TRDcluster", &recPoints);
-      for(Int_t idet(0); idet<treeR->GetEntries(); idet++){
-        treeR->GetEntry(idet);
-        if(!recPoints->GetEntries()){
-          AliDebug(1, Form("Missing entry %d from TreeR", idet));
-          continue;
+  TTree * treeR(NULL);
+  if(fInputHandler && dynamic_cast<AliESDInputHandlerRP*>(fInputHandler)){
+    if((treeR = (dynamic_cast<AliESDInputHandlerRP*>(fInputHandler))->GetTreeR("TRD"))) {
+      TObjArray *recPoints(NULL);
+      if((treeR->GetBranch("TRDcluster"))){
+        treeR->SetBranchAddress("TRDcluster", &recPoints);
+        for(Int_t idet(0); idet<treeR->GetEntries(); idet++){
+          treeR->GetEntry(idet);
+          if(!recPoints->GetEntries()){
+            AliDebug(1, Form("Missing entry %d from TreeR", idet));
+            continue;
+          }
+          AliTRDcluster *c = (AliTRDcluster*)(*recPoints)[0];
+          if(!c){
+            AliDebug(1, Form("Missing first cluster in entry %d from TreeR", idet));
+            continue;
+          }
+          fClusters->AddAt(recPoints->Clone(Form("%03d", c->GetDetector())), c->GetDetector());
         }
-        AliTRDcluster *c = (AliTRDcluster*)(*recPoints)[0];
-        if(!c){
-          AliDebug(1, Form("Missing first cluster in entry %d from TreeR", idet));
-          continue;
-        }
-        fClusters->AddAt(recPoints->Clone(Form("%03d", c->GetDetector())), c->GetDetector());
-      }
-    } else AliDebug(3, "No TRDcluster branch");
-  } else AliDebug(3, "No RecPoints");
-
+      } else AliDebug(3, "No TRDcluster branch");
+    } else AliDebug(3, "No RecPoints");
+  } else AliDebug(3, "No AliESDInputHandlerRP");
 
 
   // LOOP 2 - over MC tracks which are passing TRD where the track is not reconstructed
