@@ -48,8 +48,12 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   Float_t GetDCACut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(1,iPtBin)] : 1.e6);}
   void SetUseStrongPid(Int_t spid){fUseStrongPid=spid;}
   void SetMaxPtStrongPid(Float_t spid){fMaxPtStrongPid=spid;}
+  void SetMaxPtStrongPidK(Float_t spid){fMaxPtStrongPidK=spid;}
+  void SetMaxPtStrongPidpi(Float_t spid){fMaxPtStrongPidpi=spid;}
   Int_t GetStrongPid() const {return fUseStrongPid;}
   Float_t GetMaxPtStrongPid(){return fMaxPtStrongPid;}
+  Float_t GetMaxPtStrongPidK(){return fMaxPtStrongPidK;}
+  Float_t GetMaxPtStrongPidpi(){return fMaxPtStrongPidpi;}
   void SetUseImpParProdCorrCut(Bool_t use){
     fUseImpParProdCorrCut=use;
   }
@@ -60,12 +64,15 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
  protected:
 
  private:
-  Int_t fUseStrongPid; //use strong pid 0 no,1 only for K,2 both pi and K
-  Float_t fMaxPtStrongPid;//Maximum pt to apply strong Pid
+  Int_t fUseStrongPid; //use strong pid 0 no,1 only for K,2 pi 3 both
+  Float_t fMaxPtStrongPid;//Maximum pt of candidate to apply strong Pid
+  Float_t fMaxPtStrongPidK;//Maximum pt of track to apply strong Pid on K
+  Float_t fMaxPtStrongPidpi;//Maximum pt of track to apply strong Pid on pi
   Bool_t fUseImpParProdCorrCut; //switch for d0K*d0pi1 vs. d0K*d0pi2 cut
 
-  ClassDef(AliRDHFCutsDplustoKpipi,4);  // class for cuts on AOD reconstructed 
+  ClassDef(AliRDHFCutsDplustoKpipi,5);  // class for cuts on AOD reconstructed 
                                    // D+->Kpipi
 };
 
 #endif
+
