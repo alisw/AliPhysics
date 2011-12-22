@@ -228,12 +228,7 @@ AliAnalysisTaskJetChem::~AliAnalysisTaskJetChem()
 {
   // destructor  
 
-  
-  if(fTracksRecCuts) delete fTracksRecCuts;
-  if(fJetsRecCuts) delete fJetsRecCuts;
   if(fListK0s) delete fListK0s;
-  if(fCommonHistList) delete fCommonHistList;
-
 }
 
 //________________________________________________________________________________________________________________________________

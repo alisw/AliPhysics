@@ -43,7 +43,8 @@ set ( SRCS
     JetTasks/AliPWG4HighPtSpectra.cxx 
     JetTasks/AliPWG4CosmicCandidates.cxx 
     JetTasks/AliAnalysisTaskJetChem.cxx 
-    JetTasks/AliAnalysisTaskFragmentationFunction.cxx 
+    JetTasks/AliAnalysisTaskFragmentationFunction.cxx
+    JetTasks/AliFragmentationFunctionCorrections.cxx
     JetTasks/AliAnalysisTaskMinijet.cxx 
     JetTasks/AliAnalysisTaskQGSep.cxx     
     JetTasks/AliAnalysisTaskJetCore.cxx 	
