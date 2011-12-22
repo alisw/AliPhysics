@@ -29,6 +29,7 @@ AliZDCEnCalib::AliZDCEnCalib():
 TNamed()
 {
   Reset();
+  for(Int_t i=0; i<6; i++) fEnCalibration[i] = 0.;
 }
 
 //________________________________________________________________
