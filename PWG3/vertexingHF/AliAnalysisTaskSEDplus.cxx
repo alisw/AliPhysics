@@ -88,7 +88,7 @@ AliAnalysisTaskSE(),
   for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
     
   
-  for(Int_t i=0;i<3*fNPtBins;i++){
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
     if(fMassHist[i])fMassHist[i]=0;
     if(fCosPHist[i])fCosPHist[i]=0;
     if(fDLenHist[i])fDLenHist[i]=0;
@@ -107,16 +107,20 @@ AliAnalysisTaskSE(),
     if(fDLxyTC[i])fDLxyTC[i]=0;
     if(fCosxy[i])fCosxy[i]=0;
     if(fCosxyTC[i])fCosxyTC[i]=0;
-    if(fMassHistLS[i])fMassHistLS[i]=0;
     if(fCosPHistLS[i])fCosPHistLS[i]=0;
     if(fDLenHistLS[i])fDLenHistLS[i]=0;
     if(fSumd02HistLS[i])fSumd02HistLS[i]=0;
     if(fSigVertHistLS[i])fSigVertHistLS[i]=0;
     if(fPtMaxHistLS[i])fPtMaxHistLS[i]=0;
     if(fDCAHistLS[i])fDCAHistLS[i]=0;
+  }
+  for(Int_t i=0;i<5*kMaxPtBins;i++){
+    if(fMassHistLS[i])fMassHistLS[i]=0;
     if(fMassHistLSTC[i])fMassHistLSTC[i]=0;
   }
-
+  for(Int_t i=0;i<kMaxPtBins+1;i++){
+    fArrayBinLimits[i]=0;
+  }
 
 }
 
@@ -163,8 +167,7 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
   
   for(Int_t i=0; i<5; i++)fHistMassPtImpParTC[i]=0;
     
-  
-  for(Int_t i=0;i<3*fNPtBins;i++){
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
     if(fMassHist[i])fMassHist[i]=0;
     if(fCosPHist[i])fCosPHist[i]=0;
     if(fDLenHist[i])fDLenHist[i]=0;
@@ -183,16 +186,20 @@ AliAnalysisTaskSEDplus::AliAnalysisTaskSEDplus(const char *name,AliRDHFCutsDplus
     if(fDLxyTC[i])fDLxyTC[i]=0;
     if(fCosxy[i])fCosxy[i]=0;
     if(fCosxyTC[i])fCosxyTC[i]=0;
-    if(fMassHistLS[i])fMassHistLS[i]=0;
     if(fCosPHistLS[i])fCosPHistLS[i]=0;
     if(fDLenHistLS[i])fDLenHistLS[i]=0;
     if(fSumd02HistLS[i])fSumd02HistLS[i]=0;
     if(fSigVertHistLS[i])fSigVertHistLS[i]=0;
     if(fPtMaxHistLS[i])fPtMaxHistLS[i]=0;
     if(fDCAHistLS[i])fDCAHistLS[i]=0;
+  }
+  for(Int_t i=0;i<5*kMaxPtBins;i++){
+    if(fMassHistLS[i])fMassHistLS[i]=0;
     if(fMassHistLSTC[i])fMassHistLSTC[i]=0;
   }
-  
+  for(Int_t i=0;i<kMaxPtBins+1;i++){
+    fArrayBinLimits[i]=0;
+  }
   
   
   // Default constructor
