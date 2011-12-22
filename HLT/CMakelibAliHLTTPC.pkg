@@ -62,18 +62,12 @@ set ( CLASS_HDRS
     AliHLTTPCConfMapPoint.h
     AliHLTTPCConfMapper.h
     AliHLTTPCModelTrack.h
-    AliHLTTPCMerger.h
-    AliHLTTPCTrackMerger.h
-    AliHLTTPCGlobalMerger.h
-    AliHLTTPCInterMerger.h
     AliHLTTPCPad.h
     AliHLTTPCDefinitions.h
     AliHLTTPCRawDataUnpackerComponent.h
     AliHLTTPCClusterFinderComponent.h
     AliHLTTPCHWClusterTransformComponent.h
     AliHLTTPCCFComparisonComponent.h
-    AliHLTTPCSliceTrackerComponent.h
-    AliHLTTPCGlobalMergerComponent.h
     AliHLTTPCEsdWriterComponent.h
     AliHLTTPCHistogramHandlerComponent.h
     AliHLTTPCClusterConverterComponent.h
