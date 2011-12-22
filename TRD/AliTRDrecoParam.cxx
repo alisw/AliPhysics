@@ -150,7 +150,7 @@ AliTRDrecoParam::AliTRDrecoParam(const AliTRDrecoParam &ref)
 }
 
 //______________________________________________________________
-const AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
+AliTRDrecoParam& AliTRDrecoParam::operator=(const AliTRDrecoParam &ref)
 {
   //
   // assignment operator
