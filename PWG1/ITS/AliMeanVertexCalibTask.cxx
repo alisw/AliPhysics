@@ -269,8 +269,8 @@ AliESDVertex* AliMeanVertexCalibTask::ReconstructPrimaryVertex(Bool_t constr,Int
     Int_t iskip=0;
     Int_t ntracks = evt->GetNumberOfTracks();
     Int_t *skip = new Int_t[ntracks];
+    for(Int_t i=0;i<ntracks;i++) skip[i]=-1;
     for(Int_t itr=0;itr<ntracks; itr++) {
-      skip[itr]=-1; // this done only to initialize all elements
       AliESDtrack* track = evt->GetTrack(itr);
       if(fOnlyITSTPCTracks && track->GetNcls(1)==0) { // skip ITSSA
 	skip[iskip++]=itr;
