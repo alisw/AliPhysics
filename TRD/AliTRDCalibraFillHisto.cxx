@@ -53,6 +53,7 @@
 
 #include "AliLog.h"
 
+#include "AliESDtrack.h"
 #include "AliTRDCalibraFillHisto.h"
 #include "AliTRDCalibraMode.h"
 #include "AliTRDCalibraVector.h"
@@ -148,6 +149,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto()
   ,fNormalizeNbOfCluster(kFALSE)
   ,fMaxCluster(0)
   ,fNbMaxCluster(0)
+  ,fCutWithVdriftCalib(kFALSE)
+  ,fMinNbTRDtracklets(0)
+  ,fMinTRDMomentum(0.0)
   ,fFirstRunGain(0)
   ,fVersionGainUsed(0)
   ,fSubVersionGainUsed(0)
@@ -235,6 +239,9 @@ AliTRDCalibraFillHisto::AliTRDCalibraFillHisto(const AliTRDCalibraFillHisto &c)
   ,fNormalizeNbOfCluster(c.fNormalizeNbOfCluster)
   ,fMaxCluster(c.fMaxCluster)
   ,fNbMaxCluster(c.fNbMaxCluster)
+  ,fCutWithVdriftCalib(c.fCutWithVdriftCalib)
+  ,fMinNbTRDtracklets(c.fMinNbTRDtracklets)
+  ,fMinTRDMomentum(c.fMinTRDMomentum)
   ,fFirstRunGain(c.fFirstRunGain)
   ,fVersionGainUsed(c.fVersionGainUsed)
   ,fSubVersionGainUsed(c.fSubVersionGainUsed)
@@ -659,7 +666,7 @@ Bool_t AliTRDCalibraFillHisto::InitCalPad(Int_t detector)
 
 }
 //____________Offline tracking in the AliTRDtracker____________________________
-Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
+Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t,const AliESDtrack *esdtrack)
 {
   //
   // Use AliTRDtrackV1 for the calibration
@@ -670,15 +677,15 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
   AliTRDcluster *cl      = 0x0;                // cluster attached now to the tracklet
   AliTRDcluster *cls     = 0x0;                // shared cluster attached now to the tracklet
   Bool_t         newtr   = kTRUE;              // new track
-  
-  // Get cal
-  //  AliTRDcalibDB *cal = AliTRDcalibDB::Instance();
-  /*
-  if (!cal) {
-    AliInfo("Could not get calibDB");
-    return kFALSE;
-  }
-*/
+
+
+  //
+  // Cut on the number of TRD tracklets
+  //
+  Int_t numberoftrdtracklets = t->GetNumberOfTracklets();
+  if(numberoftrdtracklets < fMinNbTRDtracklets) return kFALSE;
+
+  //
   if (!fCalibDB) {
     AliInfo("Could not get calibDB");
     return kFALSE;
@@ -694,6 +701,9 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
     if(!tracklet->IsOK()) continue;
     fNumberTrack++; 
     ResetfVariablestracklet();
+    Float_t momentum = t->GetMomentum(itr);
+    if(TMath::Abs(momentum) < fMinTRDMomentum)  continue;
+
 
     //////////////////////////////////////////
     // localisation of the tracklet and dqdl
@@ -724,6 +734,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
     ////////////////////////////
     // loop over the clusters
     ////////////////////////////
+    Double_t chargeQ = 0.0;
     Int_t nbclusters = 0;
     for(int jc=0; jc<AliTRDseedV1::kNtb; jc++){
       if(!(cl = tracklet->GetClusters(jc))) continue;
@@ -739,7 +750,7 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
       // Add the charge if shared cluster
       cls = tracklet->GetClusters(jc+AliTRDseedV1::kNtb);
       //
-      StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc),group,row,col,cls); //tracklet->GetdQdl(jc)
+      chargeQ += StoreInfoCHPHtrack(cl, tracklet->GetQperTB(jc),group,row,col,cls); //tracklet->GetdQdl(jc)
     }
     
     ////////////////////////////////////////
@@ -754,16 +765,74 @@ Bool_t AliTRDCalibraFillHisto::UpdateHistogramsV1(const AliTRDtrackV1 *t)
 
       // Gain calibration
       if (fCH2dOn) {
-	FillTheInfoOfTheTrackCH(nbclusters);
+	if(fCutWithVdriftCalib) {
+	  if(pass) FillTheInfoOfTheTrackCH(nbclusters);
+	} else {
+	  FillTheInfoOfTheTrackCH(nbclusters);
+	}
       }
 	
       // PH calibration
       if (fPH2dOn) {
-	FillTheInfoOfTheTrackPH();    
+	if(fCutWithVdriftCalib) {
+	  if(pass) FillTheInfoOfTheTrackPH();
+	}
+	else {
+	  FillTheInfoOfTheTrackPH();
+	}    
       }
 	
       if(pass && fPRF2dOn) HandlePRFtrackletV1(tracklet,nbclusters);
-		
+	
+
+      /////////////////////////////////////////////////////////
+      // Debug
+      ////////////////////////////////////////////////////////
+      if(fDebugLevel > 0){
+       	//printf("test\n");
+	if ( !fDebugStreamer ) {
+	  //debug stream
+	  TDirectory *backup = gDirectory;
+	  fDebugStreamer = new TTreeSRedirector("TRDdebugCalibraFill.root");
+	  if ( backup ) backup->cd();  //we don't want to be cd'd to the debug streamer
+	}     
+	
+	Int_t    stacke = AliTRDgeometry::GetStack(detector);
+	Int_t    sme    = AliTRDgeometry::GetSector(detector);
+	Int_t    layere  = AliTRDgeometry::GetLayer(detector);
+	// Some variables
+	Float_t b[2] = {0.0,0.0};
+	Float_t bCov[3] = {0.0,0.0,0.0};
+	if(esdtrack) esdtrack->GetImpactParameters(b,bCov);
+	if (bCov[0]<=0 || bCov[2]<=0) {
+	  bCov[0]=0; bCov[2]=0;
+	}
+	Float_t dcaxy = b[0];
+	Float_t dcaz = b[1];
+	Int_t tpcnbclusters = 0;
+	if(esdtrack) tpcnbclusters = esdtrack->GetTPCclusters(0);
+	Double_t tpcsignal = 0.0;
+	if(esdtrack) tpcsignal = esdtrack->GetTPCsignal();
+        Int_t    cutvdriftlinear = 0;
+	if(!pass) cutvdriftlinear = 1;
+	
+	(* fDebugStreamer) << "FillCharge"<<
+	  "detector="<<detector<<
+	  "stack="<<stacke<<
+	  "sm="<<sme<<
+	  "layere="<<layere<<
+	  "dcaxy="<<dcaxy<<
+	  "dcaz="<<dcaz<<
+	  "nbtpccls="<<tpcnbclusters<<
+	  "tpcsignal="<<tpcsignal<<
+	  "cutvdriftlinear="<<cutvdriftlinear<<
+	  "ptrd="<<momentum<<
+	  "nbtrdtracklet="<<numberoftrdtracklets<<
+	  "charge="<<chargeQ<<
+	  "\n"; 
+      }
+      
+      
     } // if a good tracklet
   }
   
@@ -915,7 +984,7 @@ Bool_t AliTRDCalibraFillHisto::FindP1TrackPHtrackletV1(const AliTRDseedV1 *track
   /////////////////////////////// 
 
 
-  if(fDebugLevel > 0){
+  if(fDebugLevel > 1){
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;
@@ -1174,7 +1243,7 @@ Bool_t AliTRDCalibraFillHisto::HandlePRFtrackletV1(const AliTRDseedV1 *tracklet,
     // Debug stuff
     ////////////////////
 
-    if(fDebugLevel > 0){
+    if(fDebugLevel > 1){
       if ( !fDebugStreamer ) {
 	//debug stream
 	TDirectory *backup = gDirectory;
@@ -1560,12 +1629,14 @@ void AliTRDCalibraFillHisto::SetNumberGroupsPRF(Short_t numberGroupsPRF)
 // Per tracklet: store or reset the info, fill the histos with the info
 //////////////////////////////////////////////////////////////////////////////////////////
 //_____________________________________________________________________________
-void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls)
+Float_t AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls)
 {
   //
   // Store the infos in fAmpTotal, fPHPlace and fPHValue
   // Correct from the gain correction before
   // cls is shared cluster if any
+  // Return the charge
+  // 
   //
   
   //printf("StoreInfoCHPHtrack\n");
@@ -1607,6 +1678,8 @@ void AliTRDCalibraFillHisto::StoreInfoCHPHtrack(const AliTRDcluster *cl,const Do
     fPHPlace[time] = group[1];
     fPHValue[time] = charge;
   }
+
+  return correction;
   
 }
 //____________Offine tracking in the AliTRDtracker_____________________________
@@ -2202,7 +2275,7 @@ Int_t AliTRDCalibraFillHisto::FillDAQ(Double_t phvalue[16][144][36]){
   /////////////////////////////////////////////////////////
   // Debug
   ////////////////////////////////////////////////////////
-  if(fDebugLevel > 0){
+  if(fDebugLevel > 1){
     if ( !fDebugStreamer ) {
       //debug stream
       TDirectory *backup = gDirectory;

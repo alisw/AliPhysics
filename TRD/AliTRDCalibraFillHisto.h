@@ -31,6 +31,8 @@ class TTreeSRedirector;
 class AliLog;
 class AliRawReader;
 
+class AliESDtrack;
+
 class AliTRDCalibraMode;
 class AliTRDCalibraVector;
 class AliTRDCalibraVdriftLinearFit;
@@ -65,7 +67,7 @@ class AliTRDCalibraFillHisto : public TObject {
   // Functions for initialising and filling with AliTRDtrackV1
           Bool_t  Init2Dhistos(Int_t nboftimebin = -1);
 	  Bool_t  InitCalDet();
-	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t);
+	  Bool_t  UpdateHistogramsV1(const AliTRDtrackV1 *t,const AliESDtrack *esdtrack = NULL);
  
   // Process events DAQ
 	  Int_t   ProcessEventDAQ(AliRawReader *rawReader);
@@ -145,6 +147,9 @@ class AliTRDCalibraFillHisto : public TObject {
 	  void     SetNormalizeNbOfCluster(Bool_t normalizeNbOfCluster)      { fNormalizeNbOfCluster = normalizeNbOfCluster; }
 	  void     SetMaxCluster(Float_t maxCluster)                         { fMaxCluster = maxCluster; }
 	  void     SetNbMaxCluster(Short_t nbMaxCluster)                     { fNbMaxCluster = nbMaxCluster; }
+	  void     SetCutWithVdriftCalib(Bool_t cutWithVdriftCalib)          { fCutWithVdriftCalib = cutWithVdriftCalib; }
+	  void     SetMinNbTRDtracklets(Int_t minNbTRDtracklets)             { fMinNbTRDtracklets = minNbTRDtracklets; }
+	  void     SetMinTRDMomentum(Float_t minTRDMomentum)                 { fMinTRDMomentum = minTRDMomentum; }
 	  void     SetNz(Int_t i, Short_t nz);
           void     SetNrphi(Int_t i, Short_t nrphi);
           void     SetAllTogether(Int_t i);
@@ -168,6 +173,7 @@ class AliTRDCalibraFillHisto : public TObject {
 	  Bool_t   GetNormalizeNbOfCluster() const                           { return fNormalizeNbOfCluster;   }
 	  Float_t  GetMaxCluster() const                                     { return fMaxCluster;             }
 	  Short_t  GetNbMaxCluster() const                                   { return fNbMaxCluster;           }
+	  Bool_t   GetCutWithVdriftCalib() const                             { return fCutWithVdriftCalib;     }
 	  Float_t  GetProcent() const                                        { return fProcent;                }
           Short_t  GetDifference() const                                     { return fDifference;             }
           Short_t  GetNumberClusters() const                                 { return fNumberClusters;         }
@@ -211,6 +217,9 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Bool_t   fNormalizeNbOfCluster;   // Normalize with the number of cluster for the gain
 	  Float_t  fMaxCluster;             // Max amplitude of one cluster
 	  Short_t  fNbMaxCluster;           // Number of tb at the end
+	  Bool_t   fCutWithVdriftCalib;     // CutWithVdriftCalib for the gain and PH
+	  Int_t    fMinNbTRDtracklets;      // Min number of TRD tracklets
+	  Float_t  fMinTRDMomentum;         // Min TRD momentum
   // Back correction
 	  Int_t    fFirstRunGain;           // FirstRunGain 
 	  Int_t    fVersionGainUsed;        // VersionGainUsed 
@@ -301,7 +310,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
 	  Bool_t   FindP1TrackPHtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
 	  Bool_t   HandlePRFtrackletV1(const AliTRDseedV1 *tracklet, Int_t nbclusters);
 	  void     ResetfVariablestracklet();
-	  void     StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls=0x0);
+	  Float_t  StoreInfoCHPHtrack(const AliTRDcluster *cl,const Double_t dqdl,const Int_t *group,const Int_t row,const Int_t col,const AliTRDcluster *cls=0x0);
 	  void     FillCH2d(Int_t x, Float_t y);
 
   // Calibration on DAQ
@@ -335,7 +344,7 @@ AliTRDCalibraVector *GetCalibraVector() const                                { r
   AliTRDCalibraFillHisto();
   virtual ~AliTRDCalibraFillHisto(); 
     
-  ClassDef(AliTRDCalibraFillHisto,4)                         // TRD Calibration class
+  ClassDef(AliTRDCalibraFillHisto,5)                         // TRD Calibration class
 
 };
   

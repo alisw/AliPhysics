@@ -56,10 +56,14 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetVdriftLinear(Bool_t vdriftLinear)                         {fVdriftLinear = vdriftLinear;};
   void SetExbAlt(Bool_t exbalt)                                     {fExbAlt = exbalt;};
   void SetNbTimeBins(Int_t nbTimeBins)                              {fNbTimeBins=nbTimeBins;};  
+  void SetNumberBinCharge(Short_t nbBinCharge)                      {fNumberBinCharge=nbBinCharge;};  
+  void SetDebugLevelTRDCalibraFillHisto(Short_t debugLevelTRDCalibraFillHisto) {fDebugLevelTRDCalibraFillHisto = debugLevelTRDCalibraFillHisto;};
+
   
   void SetNz(Short_t nz, Int_t i)                                      {fNz[i]=nz;};
   void SetNrphi(Short_t nrphi, Int_t i)                                {fNrphi[i]=nrphi;};
   
+  void SetSelectTrigger(Bool_t selectTrigger)                          {fSelectTrigger = selectTrigger;};
   void AddSelectedTriggerClass(const char*name)                        {fSelectedTrigger->Add(new TObjString(name));};
   void SetReject(Bool_t rejected)                                      {fRejected = rejected;};
   
@@ -71,6 +75,9 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   void SetRangePrimaryVertexZ(Double_t rangePrimaryVertexZ)            {fRangePrimaryVertexZ = TMath::Abs(rangePrimaryVertexZ);}; 
   void SetMinNbTracks(Int_t minNbTracks)                               {fMinNbTracks = minNbTracks;};
   void SetMaxNbTracks(Int_t maxNbTracks)                               {fMaxNbTracks = maxNbTracks;};
+  void SetCutWithVdriftCalib(Bool_t cutWithVdriftCalib)                {fCutWithVdriftCalib = cutWithVdriftCalib;};
+  void SetMinNbTRDtracklets(Int_t minNbTRDtracklets)                   {fMinNbTRDtracklets = minNbTRDtracklets;};
+  void SetMinTRDMometum(Double_t minTRDMomentum)                       {fMinTRDMomentum = minTRDMomentum;};
  
   void SetVersionGainUsed(Int_t versionGainUsed)                       { fVersionGainUsed = versionGainUsed;   }
   void SetSubVersionGainUsed(Int_t subVersionGainUsed)                 { fSubVersionGainUsed = subVersionGainUsed;   }
@@ -144,11 +151,14 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Bool_t      fVdriftLinear;                     // vdrift Linear
   Bool_t      fExbAlt;                           // alternative exb calculation
 
+  Short_t     fDebugLevelTRDCalibraFillHisto;    // Debug Level Fill Histo
   Int_t       fNbTimeBins;                       // number of timebins 
+  Short_t     fNumberBinCharge;                  // Number of bins for the gain factor
 
   Short_t     fNz[3];                            // Nz mode 
   Short_t     fNrphi[3];                         // Nrphi mode
    
+  Bool_t      fSelectTrigger;                    // Select trigger
   TObjArray   *fSelectedTrigger;                 // Trigger class names accepted/rejected
   Bool_t      fRejected;                         // Reject the selected trigger class
   
@@ -160,7 +170,10 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   Double_t    fRangePrimaryVertexZ;              // Were the primary vertex is
   Int_t       fMinNbTracks;                      // Min Nb Tracks
   Int_t       fMaxNbTracks;                      // Max Nb Tracks
-  
+  Bool_t      fCutWithVdriftCalib;               // CutWithVdriftCalib for the gain and PH
+  Int_t       fMinNbTRDtracklets;                // Min number of TRD tracklets
+  Float_t     fMinTRDMomentum;                   // Min TRD momentum  
+
   Int_t       fLow;                              // lower limit of nb of TRD clusters per tracklet
   Int_t       fHigh;                             // higher limit of nb of TRD clusters per tracklet
   Bool_t      fFillZero;                         // fill zero
@@ -193,7 +206,7 @@ class AliTRDCalibTask : public AliAnalysisTaskSE {
   AliTRDCalibTask(const AliTRDCalibTask&); 
   AliTRDCalibTask& operator=(const AliTRDCalibTask&); 
 
-  ClassDef(AliTRDCalibTask, 1); 
+  ClassDef(AliTRDCalibTask, 2); 
 };
 
 #endif

@@ -125,7 +125,10 @@ ClassImp(AliTRDCalibTask)
       fVector2d(kFALSE),
       fVdriftLinear(kTRUE),
       fExbAlt(kFALSE),
+      fDebugLevelTRDCalibraFillHisto(0),
       fNbTimeBins(0),
+      fNumberBinCharge(50),
+      fSelectTrigger(kTRUE),
       fSelectedTrigger(new TObjArray()),
       fRejected(kTRUE),
       fEsdTrackCuts(0),
@@ -135,7 +138,10 @@ ClassImp(AliTRDCalibTask)
       fMinNbContributors(0),
       fRangePrimaryVertexZ(9999999.0),
       fMinNbTracks(9),
-      fMaxNbTracks(500),
+      fMaxNbTracks(999999999),
+      fCutWithVdriftCalib(kFALSE),
+      fMinNbTRDtracklets(0),
+      fMinTRDMomentum(0),
       fLow(0),
       fHigh(30),
       fFillZero(kFALSE),
@@ -259,6 +265,10 @@ void AliTRDCalibTask::UserCreateOutputObjects()
   // instance calibration 
   fTRDCalibraFillHisto = AliTRDCalibraFillHisto::Instance();
   if(fOnInstance) {
+    fTRDCalibraFillHisto->SetNumberBinCharge(fNumberBinCharge); // set number of bin of the charge distribution
+    fTRDCalibraFillHisto->SetCutWithVdriftCalib(fCutWithVdriftCalib); // cut vdrift
+    fTRDCalibraFillHisto->SetMinNbTRDtracklets(fMinNbTRDtracklets); // min number of TRD tracklets
+    fTRDCalibraFillHisto->SetMinTRDMomentum(fMinTRDMomentum); // min TRD momentum
     fTRDCalibraFillHisto->SetHisto2d(fHisto2d); // choose to use histograms
     fTRDCalibraFillHisto->SetVector2d(fVector2d); // choose to use vectors
     fTRDCalibraFillHisto->SetCH2dOn();  // choose to calibrate the gain
@@ -295,7 +305,7 @@ void AliTRDCalibTask::UserCreateOutputObjects()
     fTRDCalibraFillHisto->SetNumberClustersf(fHigh); // At least 11 clusters
     
     // For testing only
-    if(fDebug > 2) fTRDCalibraFillHisto->SetDebugLevel(1); //debug stuff
+    fTRDCalibraFillHisto->SetDebugLevel(fDebugLevelTRDCalibraFillHisto); //debug stuff
     
     if(fHisto2d) {  
       fListHist->Add(fTRDCalibraFillHisto->GetCH2d());
@@ -558,7 +568,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
   ///////////////////
   Bool_t pass = kTRUE;
 
-  if (strstr(type,"p-p")) {
+  if (fSelectTrigger) {
    
     //printf("Will check the triggers\n");
 
@@ -772,7 +782,7 @@ void AliTRDCalibTask::UserExec(Option_t *)
 
     if(good && fOnInstance) {
       //cout << "good" << endl;
-      fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack);
+      fTRDCalibraFillHisto->UpdateHistogramsV1(fTrdTrack,fkEsdTrack);
       //printf("Fill fTRDCalibraFillHisto\n");
     }
       
