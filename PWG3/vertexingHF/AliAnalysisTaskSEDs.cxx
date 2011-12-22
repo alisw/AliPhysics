@@ -70,11 +70,9 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
 {
   // Default constructor
 
-  for(Int_t i=0;i<4*fNPtBins;i++){
+  for(Int_t i=0;i<4*kMaxPtBins;i++){
     
     if(fMassHist[i]) fMassHist[i]=0;
-    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
-    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
     if(fCosPHist[i]) fCosPHist[i]=0;
     if(fDLenHist[i]) fDLenHist[i]=0;
     if(fSumd02Hist[i]) fSumd02Hist[i]=0;
@@ -89,6 +87,16 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
     if(fDalitzK0st[i]) fDalitzK0st[i]=0;
 
   }
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
+    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
+    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
+   
+  }
+
+  for(Int_t i=0;i<kMaxPtBins+1;i++){
+    fPtLimits[i]=0;
+  }
+
 }
 
 //________________________________________________________________________
@@ -114,15 +122,10 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
 {
   // Default constructor
   // Output slot #1 writes into a TList container
-  Int_t nptbins=fAnalysisCuts->GetNPtBins();
-  Float_t *ptlim=fAnalysisCuts->GetPtBinLimits();
-  SetPtBins(nptbins,ptlim);
   
-  for(Int_t i=0;i<4*fNPtBins;i++){
+  for(Int_t i=0;i<4*kMaxPtBins;i++){
     
     if(fMassHist[i]) fMassHist[i]=0;
-    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
-    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
     if(fCosPHist[i]) fCosPHist[i]=0;
     if(fDLenHist[i]) fDLenHist[i]=0;
     if(fSumd02Hist[i]) fSumd02Hist[i]=0;
@@ -137,7 +140,20 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
     if(fDalitzK0st[i]) fDalitzK0st[i]=0;
 
   }
+  for(Int_t i=0;i<3*kMaxPtBins;i++){
+    if(fMassHistPhi[i]) fMassHistPhi[i]=0;
+    if(fMassHistK0st[i]) fMassHistK0st[i]=0;
+   
+  }
+
+  for(Int_t i=0;i<kMaxPtBins+1;i++){
+    fPtLimits[i]=0;
+  }
   
+  Int_t nptbins=fAnalysisCuts->GetNPtBins();
+  Float_t *ptlim=fAnalysisCuts->GetPtBinLimits();
+  SetPtBins(nptbins,ptlim);
+
   DefineOutput(1,TList::Class());  //My private output
 
   DefineOutput(2,TList::Class());
