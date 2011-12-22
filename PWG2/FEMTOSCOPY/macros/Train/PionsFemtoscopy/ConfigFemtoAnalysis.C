@@ -61,7 +61,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   int multbins[11] = {0.001, 50, 100, 200, 300, 400, 500, 600, 700, 800, 900};
   
   int runch[3] = {1, 1, 1};
-  const char *chrgs[3] = { "PP", "APAP", "PAP" };
+  const char *chrgs[3] = { "pip", "pim", "pimpip" };
   
 
   int runktdep = 1;
@@ -80,7 +80,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   int gammacut = 1;
   
-  double shqmax = 0.5;
+  double shqmax = 1.2;
   int nbinssh = 100;
 
   AliFemtoEventReaderAODChain *Reader = new AliFemtoEventReaderAODChain();
@@ -168,13 +168,13 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  }
 	  
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
-	  dtc1etaphitpc[aniter]->SetMass(ProtonMass);	  
-	  dtc1etaphitpc[aniter]->SetMostProbableProton();
+	  dtc1etaphitpc[aniter]->SetMass(PionMass);	  
+	  dtc1etaphitpc[aniter]->SetMostProbablePion();
 
 	  if (ichg == 2) {	    
 	    dtc2etaphitpc[aniter]->SetEta(-0.8,0.8);
-	    dtc2etaphitpc[aniter]->SetMass(ProtonMass);	  
-	    dtc2etaphitpc[aniter]->SetMostProbableProton();
+	    dtc2etaphitpc[aniter]->SetMass(PionMass);	  
+	    dtc2etaphitpc[aniter]->SetMostProbablePion();
 	  }
 	  
 	  // Track quality cuts
@@ -222,14 +222,14 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      dtc2etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 	      dtc2etaphitpc[aniter]->SetLabel(kFALSE);
 	      dtc2etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
-	      dtc2etaphitpc[aniter]->SetMaxImpactXY(2.4);
-	      dtc2etaphitpc[aniter]->SetMaxImpactZ(3.0);
+	      dtc2etaphitpc[aniter]->SetMaxImpactXY(0.25);
+	      dtc2etaphitpc[aniter]->SetMaxImpactZ(0.15);
 	    }
 	    
 	  }
 	  
-	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult),ProtonMass);
-	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[ichg], imult),ProtonMass);
+	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult),PionMass);
+	  cutFail1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutFail1%stpcM%i", chrgs[ichg], imult),PionMass);
 	  dtc1etaphitpc[aniter]->AddCutMonitor(cutPass1YPtetaphitpc[aniter], cutFail1YPtetaphitpc[aniter]);
 	  
 	  cutPass1PIDetaphitpc[aniter] = new AliFemtoCutMonitorParticlePID(Form("cutPass1%stpcM%i", chrgs[ichg], imult),2);//0-pion,1-kaon,2-proton
@@ -298,7 +298,6 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    
 	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 	  
-
 	  if (ichg == 2) {
 	    ckstartpc[aniter] = new AliFemtoCorrFctnNonIdDR(Form("ckstar%stpcM%i", chrgs[ichg], imult),nbinssh,0.0,shqmax);
 	    anetaphitpc[aniter]->AddCorrFctn(ckstartpc[aniter]);
@@ -308,10 +307,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	    anetaphitpc[aniter]->AddCorrFctn(cqinvtpc[aniter]);
 	  }
 
-          cylmkttpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),2,nbinssh, 0.0,shqmax,runshlcms);
+          cylmkttpc[aniter] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%i", chrgs[ichg], imult),3,nbinssh, 0.0,shqmax,runshlcms);
           anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[aniter]);
 
-	  
 	  if (runktdep) {
 	    int ktm;
 	    for (int ikt=0; ikt<numOfkTbins; ikt++) {
@@ -319,12 +317,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	      ktm = aniter * numOfkTbins + ikt;
 	      ktpcuts[ktm] = new AliFemtoKTPairCut(ktrng[ikt], ktrng[ikt+1]);
 	      
-
 	      cylmkttpc[ktm] = new AliFemtoCorrFctnDirectYlm(Form("cylm%stpcM%ikT%i", chrgs[ichg], imult, ikt),3,nbinssh,0.0,shqmax,0);
 	      cylmkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cylmkttpc[ktm]);
 	      
-	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,shqmax);
+	      cqinvkttpc[ktm] = new AliFemtoQinvCorrFctn(Form("cqinv%stpcM%ikT%i", chrgs[ichg], imult, ikt),nbinssh,0.0,(imult>6)?shqmax*2.5:shqmax);
 	      cqinvkttpc[ktm]->SetPairSelectionCut(ktpcuts[ktm]);
 	      anetaphitpc[aniter]->AddCorrFctn(cqinvkttpc[ktm]);
 
@@ -348,7 +345,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	 // cdedpetaphi[aniter] = new AliFemtoCorrFctnDEtaDPhi(Form("cdedp%stpcM%i", chrgs[ichg], imult),24, 24);
 	 // anetaphitpc[aniter]->AddCorrFctn(cdedpetaphi[aniter]);
 	  
-	  Manager->AddAnalysis(anetaphitpc[aniter]);	
+	  Manager->AddAnalysis(anetaphitpc[aniter]);
 	}
       }
     }
