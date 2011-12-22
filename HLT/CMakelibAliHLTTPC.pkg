@@ -33,7 +33,6 @@ set ( CLASS_HDRS
     AliHLTTPCAgent.h
     AliHLTTPCMemHandler.h
     AliHLTTPCDataCompressorHelper.h
-    AliHLTTPCFitter.h
     AliHLTTPCFileHandler.h
     AliHLTTPCClusterFinder.h
     AliHLTTPCMapping.h
