@@ -340,11 +340,22 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   virtual void   SetBranchRecBackClusters(const char* c){fBranchRecBckgClusters = c;}
   virtual void   SetBranchGenJets(const char* c){fBranchGenJets = c;}
   virtual void   SetBranchRecJets(const char* c){fBranchRecJets = c;}
+  virtual void   SetBranchEmbeddedJets(const char* c){fBranchEmbeddedJets = c;}
 
   virtual void   SetTrackCuts(Float_t trackPt = 0.15, Float_t trackEtaMin = -0.9, Float_t trackEtaMax = 0.9, 
 			      Float_t trackPhiMin = 0., Float_t trackPhiMax = 2*TMath::Pi())
   {fTrackPtCut = trackPt; fTrackEtaMin = trackEtaMin; fTrackEtaMax = trackEtaMax; 
     fTrackPhiMin = trackPhiMin; fTrackPhiMax = trackPhiMax;}
+
+  virtual void   UseExtraTracks()        { fUseExtraTracks =  1;}
+  virtual void   UseExtraonlyTracks()    { fUseExtraTracks = -1;}
+
+  virtual void   UseExtraTracksBgr()     { fUseExtraTracksBgr =  1;}
+  virtual void   UseExtraonlyTracksBgr() { fUseExtraTracksBgr = -1;}
+
+  virtual void   SetCutFractionPtEmbedded(Float_t cut = 0) { fCutFractionPtEmbedded = cut; }
+  virtual void   SetUseEmbeddedJetAxis(Bool_t b = kTRUE)   { fUseEmbeddedJetAxis = b; }
+  virtual void   SetUseEmbeddedJetPt(Bool_t  b = kTRUE)    { fUseEmbeddedJetPt   = b; }
 
   virtual void   UseAODInputJets(Bool_t b) {fUseAODInputJets = b;}  
   virtual void   SetFilterMask(UInt_t i) {fFilterMask = i;}
@@ -459,6 +470,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   void     FillJetTrackHistosRecGen(TObject* histGen,TObject* histRec,Double_t jetPtGen,Double_t jetPtRec, TList* jetTrackList, const TList* tracksGen,
 				    const TArrayI& indexAODTr,const TArrayS& isRefGen, const Bool_t useRecJetPt);
 
+  void     FillTwoTrackHistosRecGen(TList* tracksGen, /*TList* tracksRec, const TArrayI& indexAODTr, */ const TArrayS& isRefGen);
+
   void     FillSingleTrackResponse(THnSparse* hnResponse, TList* tracksGen, TList* tracksRec, const TArrayI& indexAODTr, const TArrayS& isGenPrim);
   void     FillJetTrackResponse(THnSparse* hnResponsePt, THnSparse* hnResponseZ, THnSparse* hnResponseXi, 
 				Double_t jetPtGen, Double_t jetPtRec, TList* jetTrackList,
@@ -476,10 +489,11 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliAODJet* GetAODBckgSubJet(AliAODJet* jet, Int_t method);
 
   // Consts
-  
-  enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
+  enum {kTrackUndef=0, kTrackAOD, kTrackAODQualityCuts, kTrackAODCuts, 
+	kTrackAODExtra, kTrackAODExtraonly, kTrackAODExtraCuts, kTrackAODExtraonlyCuts, 
+	kTrackKineAll, kTrackKineCharged, kTrackKineChargedAcceptance, 
 	kTrackAODMCAll, kTrackAODMCCharged, kTrackAODMCChargedAcceptance, kTrackAODMCChargedSec};
-  enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance};
+  enum {kJetsUndef=0, kJetsRec, kJetsRecAcceptance, kJetsGen, kJetsGenAcceptance, kJetsKine, kJetsKineAcceptance,kJetsEmbedded};
   enum {kBckgPerp=0, kBckgOutLJ, kBckgOut2J, kBckgClusters, kBckgClustersOutLeading, kBckgOut3J, kBckgOutAJ, kBckgOutLJStat, 
 	kBckgOut2JStat, kBckgOut3JStat, kBckgOutAJStat,  kBckgASide, kBckgASideWindow, kBckgPerpWindow};
 
@@ -502,7 +516,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TString fBranchRecBackJets;     // branch name for reconstructed background jets
   TString fBranchRecBckgClusters; // branch name for reconstructed background clusters 
   TString fBranchGenJets;         // branch name for generated jets
-  
+  TString fBranchEmbeddedJets;    // branch name for embedded jets
+
   Int_t   fTrackTypeGen;        // type of generated tracks
   Int_t   fJetTypeGen;          // type of generated jets
 
@@ -521,6 +536,12 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   Float_t fTrackPhiMin;   // track phi cut
   Float_t fTrackPhiMax;   // track phi cut
   
+  Int_t   fUseExtraTracks;         // +/- 1: embedded extra/extra only tracks, default: 0 (ignore extra tracks)
+  Int_t   fUseExtraTracksBgr;      // +/- 1: background: use embedded extra/extra only tracks, default: 0 (ignore extra tracks)
+  Float_t fCutFractionPtEmbedded;  // cut on ratio of embedded pt found in jet
+  Bool_t  fUseEmbeddedJetAxis;     // use axis of embedded jet for FF
+  Bool_t  fUseEmbeddedJetPt;       // use axis of embedded jet for FF
+
   // jet cuts
   Float_t fJetPtCut;      // jet transverse momentum cut
   Float_t fJetEtaMin;     // jet eta cut
@@ -564,6 +585,8 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TList* fJetsRecCuts;    //! jets from reonstructed tracks after jet cuts 
   TList* fJetsGen;        //! jets from generated tracks
   TList* fJetsRecEff;     //! jets used for reconstruction efficiency histos 
+  TList* fJetsEmbedded;   //! jets used for embedding
+
   TList* fBckgJetsRec;      //! jets from reconstructed tracks
   TList* fBckgJetsRecCuts;  //! jets from reonstructed tracks after jet cuts
   TList* fBckgJetsGen;      //! jets from generated tracks
@@ -753,10 +776,13 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
   TH1F  *fh1nRecEffJets;          //! number of jets for reconstruction eff per event
+  TH1F  *fh1nEmbeddedJets;        //! number of embedded jets per event
+
   TH1F  *fh1nRecBckgJetsCuts;     //! number of jets from reconstructed tracks per event
   TH1F  *fh1nGenBckgJets;         //! number of jets from generated tracks per event
   TH2F  *fh2PtRecVsGenPrim;       //! association rec/gen MC: rec vs gen pt, primaries 
   TH2F  *fh2PtRecVsGenSec;        //! association rec/gen MC: rec vs gen pt, secondaries 
+
 
   // tracking efficiency / secondaries
   
@@ -769,7 +795,9 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   AliFragFuncHistos*  fFFHistosSecRec;                    //! secondary contamination: FF reconstructed secondaries
 
   // momentum resolution 
-  THnSparse* fhnResponseSinglePt;    //! single track response pt
+  THnSparse* fhnResponseSinglePt;      //! single track response pt
+  TH2F* fh2SingleInvPtRecMnGenVsPtGen; //! single track response inv pt
+
   THnSparse* fhnResponseJetTrackPt;  //! jet track response pt 
   THnSparse* fhnResponseJetZ;        //! jet track response z 
   THnSparse* fhnResponseJetXi;       //! jet track response xi
@@ -786,6 +814,19 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TH1F  *fh1Out3JetsMult;         //! background multiplicity outside 3 jets
   TH1F  *fh1MedianClustersMult;   //! background multiplicity median cluster
   TH1F  *fh1OutClustersMult;      //! background multiplicity clusters outside leading jet
+
+  // embedding
+  TH1F* fh1FractionPtEmbedded;         //! ratio embedded pt in rec jet to embedded jet pt 
+  TH1F* fh1IndexEmbedded;              //! index embedded jet matching to leading rec jet 
+  TH2F*	fh2DeltaPtVsJetPtEmbedded;     //! delta pt rec - embedded jet
+  TH2F*	fh2DeltaPtVsRecJetPtEmbedded;  //! delta pt rec - embedded jet
+  TH1F* fh1DeltaREmbedded;             //! delta R  rec - embedded jet
+
+  // 2track resolution
+  TH2F* fh2ptVsDistNN_pt50_rec;    //!
+  TH2F* fh2ptVsDistNN_pt50_nonRec; //!
+  TH2F* fh2ptVsDistNN_pt10_rec;    //!
+  TH2F* fh2ptVsDistNN_pt10_nonRec; //!
 
   AliFragFuncQATrackHistos* fQABckgHisto0RecCuts;  //! track QA: reconstructed tracks after cuts
   AliFragFuncQATrackHistos* fQABckgHisto0Gen;      //! track QA: generated tracks
@@ -844,7 +885,7 @@ class AliAnalysisTaskFragmentationFunction : public AliAnalysisTaskSE {
   TRandom3*                   fRandom;          // TRandom3 for background estimation 
   Int_t                       fBckgSubMethod;   // Bckg method: 1 = leading jet excluded, 2 = 2 most energetic jets excluded        
 
-  ClassDef(AliAnalysisTaskFragmentationFunction, 10);
+  ClassDef(AliAnalysisTaskFragmentationFunction, 11);
 };
 
 #endif
