@@ -175,36 +175,36 @@ void AliTRDrecoTask::UserExec(Option_t *)
   if(!fTracks->GetEntriesFast()) return;
   else AliDebug(2, Form("Tracks[%d] for %s", fTracks->GetEntriesFast(), GetName()));
 
-  AliTRDtrackInfo *trackInfo = NULL;
+  Int_t itrk(-1);
+  AliTRDtrackInfo *trackInfo(NULL);
   TIter plotIter(fPlotFuncList);
   TObjArrayIter trackIter(fTracks);
   while((trackInfo = dynamic_cast<AliTRDtrackInfo*>(trackIter()))){
-    fkTrack = trackInfo->GetTrack();
+    itrk++; fPt=-1; fEta=0.; fPhi=0.; fSpecies=-6;
     fkMC    = trackInfo->GetMCinfo();
     fkESD   = trackInfo->GetESDinfo();
-    // cache properties of the track at TRD entrance
-    // check input track status
-    AliExternalTrackParam *tin(NULL);
-    fPt=-1; fEta=0.; fPhi=0.; fSpecies=-6;
-    if(!fkTrack || !(tin = fkTrack->GetTrackIn())) AliDebug(2, "Track did not entered TRD fiducial volume.");
-    else {
-      fPt   = tin->Pt();
-      fEta  = tin->Eta();
-      Double_t xyz[3];
-      if(!tin->GetXYZ(xyz)) AliDebug(2, "Failed getting global track postion");
-      else fPhi  = TMath::ATan2(xyz[1], xyz[0]);
-      fSpecies= fkTrack->Charge()*(AliTRDpidUtil::Mass2Pid(fkTrack->GetMass())+1);
-    }
+    if((fkTrack = trackInfo->GetTrack())){
+      // cache properties of the track at TRD entrance
+      // check input track status
+      AliExternalTrackParam *tin(NULL);
+      if(!(tin = fkTrack->GetTrackIn())) AliDebug(2, Form("Missing TRD track[%d] :: entry point.", itrk));
+      else {
+        fPt   = tin->Pt();
+        fEta  = tin->Eta();
+        Double_t xyz[3];
+        if(!tin->GetXYZ(xyz)) AliDebug(2, Form("Failed TRD track[%d] :: global track postion", itrk));
+        else fPhi  = TMath::ATan2(xyz[1], xyz[0]);
+        fSpecies= fkTrack->Charge()*(AliTRDpidUtil::Mass2Pid(fkTrack->GetMass())+1);
+      }
+    } else AliDebug(2, Form("Missing TRD track[%d].", itrk));
 
-    TMethodCall *plot = NULL;
+    TMethodCall *plot(NULL);
     plotIter.Reset();
-    while((plot=dynamic_cast<TMethodCall*>(plotIter()))){
-      plot->Execute(this);
-    }
+    while((plot=dynamic_cast<TMethodCall*>(plotIter()))) plot->Execute(this);
   }
   if(!fClusters) return;
   if(!fDetFuncList){
-    AliDebug(1, "No detector functor list defined for the task");
+    AliDebug(1, "No detector functor list defined for task");
     return;
   }
   TIter detIter(fDetFuncList);
@@ -212,9 +212,7 @@ void AliTRDrecoTask::UserExec(Option_t *)
     if(!(fkClusters = (TObjArray*)fClusters->At(idet))) continue;
     TMethodCall *det(NULL);
     detIter.Reset();
-    while((det=dynamic_cast<TMethodCall*>(detIter()))){
-      det->Execute(this);
-    }
+    while((det=dynamic_cast<TMethodCall*>(detIter()))) det->Execute(this);
   }
 }
 

@@ -308,7 +308,7 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   fTRDpidQuality= esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
   fTRDslices   = NULL;
-
+  
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
   memcpy(fTRDv0pid, esd.fTRDv0pid, AliPID::kSPECIES*sizeof(Int_t));
 

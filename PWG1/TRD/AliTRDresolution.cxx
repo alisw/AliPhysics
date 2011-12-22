@@ -470,7 +470,7 @@ TH1* AliTRDresolution::PlotTracklet(const AliTRDtrackV1 *track)
     return NULL;
   }
 
-  const Int_t ndim(kNdim+7);
+  const Int_t ndim(kNdim+8);
   Double_t val[ndim],
            alpha(0.), cs(-2.), sn(0.);
   Float_t sz[AliTRDseedV1::kNtb], pos[AliTRDseedV1::kNtb];
@@ -1406,12 +1406,12 @@ Bool_t AliTRDresolution::MakeProjectionCluster(Bool_t mc)
     AliError(Form("Missing/Wrong data @ %s.", projName[Int_t(mc)]));
     return kFALSE;
   }
-  Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>kNdimCl);
+  Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimCl));
   Int_t coord[kNdim]; memset(coord, 0, sizeof(Int_t) * kNdim); Double_t v = 0.;
   TAxis *aa[kNdim], *as(NULL), *apt(NULL); memset(aa, 0, sizeof(TAxis*) * kNdim);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
-  if(ndim > kPt) apt = H->GetAxis(kPt);
-  if(ndim > kSpeciesChgRC) as  = H->GetAxis(kSpeciesChgRC);
+  if(ndim > Int_t(kPt)) apt = H->GetAxis(kPt);
+  if(ndim > Int_t(kSpeciesChgRC)) as  = H->GetAxis(kSpeciesChgRC);
   // build list of projections
   const Int_t nsel(12);
   // define rebinning strategy
@@ -1518,18 +1518,18 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     return kFALSE;
   }
   const Int_t mdim(kNdim+8);
-  Int_t ndim(H->GetNdimensions());
+  Int_t ndim(H->GetNdimensions()); Bool_t debug(ndim>Int_t(kNdimTrklt));
   Int_t coord[mdim]; memset(coord, 0, sizeof(Int_t) * mdim); Double_t v = 0.;
   TAxis *aa[mdim], *as(NULL), *ap(NULL), *ac(NULL); memset(aa, 0, sizeof(TAxis*) * mdim);
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
-  if(ndim > kSpeciesChgRC) as = H->GetAxis(kSpeciesChgRC); // init species/charge selection
-  if(ndim > kPt) ap = H->GetAxis(kPt);                     // init pt selection
-  if(ndim > kNdim+1) ac = H->GetAxis(kNdim+1);             // init centrality selection
+  if(ndim > Int_t(kSpeciesChgRC)) as = H->GetAxis(kSpeciesChgRC); // init species/charge selection
+  if(ndim > Int_t(kPt))           ap = H->GetAxis(kPt);           // init pt selection
+  if(ndim > Int_t(kNdim)+1)       ac = H->GetAxis(kNdim+1);       // init centrality selection
   // calculate size depending on debug level
-  const Int_t nCen(ndim>kNdimTrklt?AliTRDeventInfo::kCentralityClasses:1);
-  const Int_t nPt(ndim>kNdimTrklt?kNpt:1);
+  const Int_t nCen(debug?Int_t(AliTRDeventInfo::kCentralityClasses):1);
+  const Int_t nPt(debug?Int_t(kNpt):1);
   const Int_t nSpc(1);//ndim>kNdimTrklt?fgkNbins[kSpeciesChgRC]:1);
-  const Int_t nCh(ndim>kNdimTrklt?kNcharge:1);
+  const Int_t nCh(debug?Int_t(kNcharge):1);
 
   // build list of projections
   const Int_t nsel(AliTRDeventInfo::kCentralityClasses*AliTRDgeometry::kNlayer*kNpt*(AliPID::kSPECIES*kNcharge + 1));
@@ -1834,12 +1834,12 @@ Bool_t AliTRDresolution::MakeProjectionTrackIn(Bool_t mc)
   Int_t ndim(H->GetNdimensions());
   TAxis *aa[mdim], *as(NULL), *ap(NULL), *ax(NULL), *abf(NULL); memset(aa, 0, sizeof(TAxis*) * (mdim));
   for(Int_t id(0); id<ndim; id++) aa[id] = H->GetAxis(id);
-  if(ndim > kSpeciesChgRC) as = H->GetAxis(kSpeciesChgRC);
-  if(ndim > kPt)           ap = H->GetAxis(kPt);
-  if(ndim > (kNdim+1))     ax = H->GetAxis(kNdim+1);
-  if(ndim > (kNdim+2))    abf = H->GetAxis(kNdim+2);
+  if(ndim > Int_t(kSpeciesChgRC)) as = H->GetAxis(kSpeciesChgRC);
+  if(ndim > Int_t(kPt))           ap = H->GetAxis(kPt);
+  if(ndim > Int_t(kNdim)+1)       ax = H->GetAxis(kNdim+1);
+  if(ndim > Int_t(kNdim)+2)      abf = H->GetAxis(kNdim+2);
   //AliInfo(Form("Using : Species[%c] Pt[%c] BunchFill[%c]", as?'y':'n', ap?'y':'n', abf?'y':'n'));
-  const Int_t nPt(ndim>kNdimTrkIn?kNpt:1);
+  const Int_t nPt(ndim>Int_t(kNdimTrkIn)?Int_t(kNpt):1);
 
   // build list of projections
   const Int_t nsel(kNpt*(AliPID::kSPECIES*kNcharge + 1));
