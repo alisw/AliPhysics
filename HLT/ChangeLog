@@ -1,0 +1,21 @@
+2011-12-22 removed classes, revisions 53757 53758 53761
+	TPCLib/AliHLTTPCMerger.h
+	TPCLib/AliHLTTPCTrackMerger.h
+	TPCLib/AliHLTTPCGlobalMerger.h
+	TPCLib/AliHLTTPCInterMerger.h
+	TPCLib/AliHLTTPCSliceTrackerComponent.h
+	TPCLib/AliHLTTPCGlobalMergerComponent.h
+	TPCLib/AliHLTTPCFitter.h
+
+2011-12-22 removed classes, revisions 53759 53760
+	TPCLib/comp/AliHLTTPCCompDataCompressorHelper.h
+	TPCLib/comp/AliHLTTPCCompDumpComponent.h
+	TPCLib/comp/AliHLTTPCCompModelAnalysis.h
+	TPCLib/comp/AliHLTTPCCompModelConverter.h
+	TPCLib/comp/AliHLTTPCCompModelConverterComponent.h
+	TPCLib/comp/AliHLTTPCCompModelDeconverter.h
+	TPCLib/comp/AliHLTTPCCompModelDeconverterComponent.h
+	TPCLib/comp/AliHLTTPCCompModelDeflater.h
+	TPCLib/comp/AliHLTTPCCompModelDeflaterComponent.h
+	TPCLib/comp/AliHLTTPCCompModelInflater.h
+	TPCLib/comp/AliHLTTPCCompModelInflaterComponent.h
