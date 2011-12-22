@@ -105,17 +105,6 @@ set ( CLASS_HDRS
     merger-ca/AliHLTTPCGMTrackParam.h
     merger-ca/AliHLTTPCGMSliceTrack.h
     merger-ca/AliHLTTPCGMMerger.h
-    comp/AliHLTTPCCompDataCompressorHelper.h
-    comp/AliHLTTPCCompDumpComponent.h
-    comp/AliHLTTPCCompModelAnalysis.h
-    comp/AliHLTTPCCompModelConverter.h
-    comp/AliHLTTPCCompModelConverterComponent.h
-    comp/AliHLTTPCCompModelDeconverter.h
-    comp/AliHLTTPCCompModelDeconverterComponent.h
-    comp/AliHLTTPCCompModelDeflater.h
-    comp/AliHLTTPCCompModelDeflaterComponent.h
-    comp/AliHLTTPCCompModelInflater.h
-    comp/AliHLTTPCCompModelInflaterComponent.h
     comp/AliHLTTPCDataCompressionComponent.h
     comp/AliHLTTPCDataCompressionMonitorComponent.h
     comp/AliHLTTPCDataCompressionDecoder.h
