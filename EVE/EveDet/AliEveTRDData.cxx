@@ -256,37 +256,45 @@ void AliEveTRDClusters::Load(const Char_t *w) const
   switch(typ){
   case 4:
     loader = new AliEveTRDLoaderSim("MC");
-    if(!loader->Open("galice.root")){delete loader; loader=NULL;}
-    else{
-      loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
-      break;
+    if(loader){
+      if(!loader->Open("galice.root")){delete loader; loader=NULL;}
+      else{
+        loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+        break;
+      }
     }
   case 0:  
     loader = new AliEveTRDLoader("Hits");
-    if(!loader->Open("TRD.Hits.root")){delete loader; loader=NULL;}
-    else{
-      if(typ!=4) break;
+    if(loader){
+      if(!loader->Open("TRD.Hits.root")){delete loader; loader=NULL;}
+      else{
+        if(typ!=4) break;
+      }
     }
   case 1:
     if(!loader) loader = new AliEveTRDLoader("Digits");
-    if(!loader->Open("TRD.Digits.root")){
-      if(typ==1){delete loader; loader=NULL;}
-    } else {
-      if(typ!=4) break;
+    if(loader){
+      if(!loader->Open("TRD.Digits.root")){
+        if(typ==1){delete loader; loader=NULL;}
+      } else {
+        if(typ!=4) break;
+      }
     }
   case 2:
     if(!loader) loader = new AliEveTRDLoader("Clusters");
-    if(!loader->Open("TRD.RecPoints.root")){
-      if(typ ==2){delete loader; loader=NULL;}
-    } else {
-      if(typ!=4) break;
+    if(loader){
+      if(!loader->Open("TRD.RecPoints.root")){
+        if(typ ==2){delete loader; loader=NULL;}
+      } else {
+        if(typ!=4) break;
+      }
     }
   case 3:
     if(!loader) loader = new AliEveTRDLoader("Tracklets");
-    if(!loader->Open("TRD.Tracklets.root")){
-      if(typ ==3) {delete loader; loader=NULL;}
-    } else {
-      break;
+    if(loader){
+      if(!loader->Open("TRD.Tracklets.root")){
+        if(typ ==3) {delete loader; loader=NULL;}
+      } else break;
     }
   default: return;
   }
