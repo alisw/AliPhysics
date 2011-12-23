@@ -137,7 +137,7 @@ class AliFragmentationFunctionCorrections : public TObject {
 
   void RebinHisto(const Int_t jetPtSlice, const Int_t nBinsLimits, Double_t* binsLimits, Double_t* binsWidth, const Int_t type);
 
-  void WriteJetSpecResponse(TString strInfile, TString strdir, TString strlist, TString strOutfile);
+  void WriteJetSpecResponse(TString strInfile, TString strdir, TString strlist /*, TString strOutfile*/ );
 
   void ReadSingleTrackEfficiency(TString strfile, TString strdir="", TString strlist="", TString strname="hSingleTrackEffPt");
   void ReadSingleTrackResponse(TString strfile, TString strdir="", TString strlist="", TString strname="fhnResponseSinglePt");
