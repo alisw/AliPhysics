@@ -70,8 +70,13 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
 {
   // Default constructor
 
+  for(Int_t i=0;i<4;i++) {
+    if(fChanHist) fChanHist[i]=0;
+  }
+
   for(Int_t i=0;i<4*kMaxPtBins;i++){
     
+    if(fPtCandHist[i]) fPtCandHist[i]=0;
     if(fMassHist[i]) fMassHist[i]=0;
     if(fCosPHist[i]) fCosPHist[i]=0;
     if(fDLenHist[i]) fDLenHist[i]=0;
@@ -123,8 +128,13 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   // Default constructor
   // Output slot #1 writes into a TList container
   
+  for(Int_t i=0;i<4;i++) {
+    if(fChanHist) fChanHist[i]=0;
+  }
+
   for(Int_t i=0;i<4*kMaxPtBins;i++){
     
+    if(fPtCandHist[i]) fPtCandHist[i]=0;
     if(fMassHist[i]) fMassHist[i]=0;
     if(fCosPHist[i]) fCosPHist[i]=0;
     if(fDLenHist[i]) fDLenHist[i]=0;
