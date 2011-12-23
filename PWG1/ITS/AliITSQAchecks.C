@@ -40,10 +40,10 @@ TString GetRunNumber();
 
 //_______________________________________________________________________
 void AliITSQAchecks(TString option="grid",
-			  Int_t nRun=167713,
-			  TString period="LHC11h",
-			  TString qaTrain="QA90",
-		    TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h/000169590/ESDs/pass1_HLT/QAresults.root",Int_t nRunMC=0){
+			  Int_t nRun=170389,
+			  TString period="LHC11h_2",
+			  TString qaTrain="",
+		    TString filenamedata="QAresults.root", TString filenameMC="alien:///alice/data/2011/LHC11h_2/000170546/ESDs/pass2/QAresults.root",Int_t nRunMC=0){
   // THIS MACRO SHOULD BE COMPILED. IT DOES NOT WORK WITH THE INTERPRETER
   // option:  "local" if filenamedata is the name of a local file
   //          "grid" if on alien
@@ -76,6 +76,8 @@ void AliITSQAchecks(TString option="grid",
   }
 
   TString selection("general ITSSA SPD SDD SSD vertex ITSTPC"); 
+ 
+  //  TString selection("SPD"); 
   gROOT->SetStyle("Plain");
   gStyle->SetOptStat(1111);
   TFile *fildat;
@@ -90,9 +92,9 @@ void AliITSQAchecks(TString option="grid",
   }else{
     TGrid::Connect("alien:");
     if(qaTrain.Contains("QA")){
-      path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/%s/",year,period.Data(),nRun,qaTrain.Data());
+      path=Form("/alice/data/%d/%s/%09d/ESDs/pass2/%s/",year,period.Data(),nRun,qaTrain.Data());
     } else {
-      path=Form("/alice/data/%d/%s/%09d/ESDs/pass1_HLT/",year,period.Data(),nRun);
+      path=Form("/alice/data/%d/%s/%09d/ESDs/pass2/",year,period.Data(),nRun);
     }
     filenamedata = "alien://"+path+"QAresults.root";
     fildat=TFile::Open(filenamedata.Data());
@@ -1255,4 +1257,3 @@ TString GetRunNumber(){
   TString str(rn);
   return str;
 }
-
