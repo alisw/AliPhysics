@@ -232,7 +232,7 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(
    task->SetKindSlices();      // default: kindSlice = 1 (inv mass)
    //if(radius <= 0.2) task->SetFFRadius(0.2); // R = 0.2   
    //else              task->SetFFRadius();    // default: R = 0.4
-   task->SetFFRadius(radius);
+   task->SetFFRadius(radius); 
    task->SetFFBckgRadius();    // default: R = 0.7
    task->SetBckgSubMethod();   // default: subMethod = O, 1 = leading jet removed for rho extraction, 2 = 2 leading jets removed
    task->SetIJMode(0);         // default: ijMode = 1

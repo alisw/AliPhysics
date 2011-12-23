@@ -3622,7 +3622,7 @@ void AliFragmentationFunctionCorrections::RebinHisto(const Int_t jetPtSlice, con
   delete temp;
 }
 //__________________________________________________________________________________________________________________________________________________________________
-void AliFragmentationFunctionCorrections::WriteJetSpecResponse(TString strInfile, TString strdir, TString strlist, TString strOutfile)
+void AliFragmentationFunctionCorrections::WriteJetSpecResponse(TString strInfile, TString strdir, TString strlist/*, TString strOutfile*/)
 { 
  
  if(fDebug>0) Printf("%s:%d -- read jet spectrum response matrix from file %s ",(char*)__FILE__,__LINE__,strInfile.Data());
