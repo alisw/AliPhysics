@@ -300,9 +300,9 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	// 3.0 < theta_abs < 10.0 --->	2.4 GeV
 	// No correction applied otherwise
 	Double_t pDCA = p*fAOD->GetTrack(ii)->DCA();
-	if (2.0 < thetaAbs < 3.0)
+	if (2.0 < thetaAbs && thetaAbs < 3.0)
 	  pDCA = (p-2.98/2.0) * fAOD->GetTrack(ii)->DCA();
-	if (3.0 < thetaAbs < 10.0)
+	if (3.0 < thetaAbs && thetaAbs < 10.0)
 	  pDCA = (p-2.4/2.0) * fAOD->GetTrack(ii)->DCA();
 	
 	Double_t valuesMuon[9] = {fTrackletMultiplicity, vertexPosition, pileUp, matchTrigger, thetaAbs, eta, pDCA, p, pT};
@@ -333,14 +333,14 @@ void AliAnalysisTaskMuonCollisionMultiplicity::FillHistosAOD(Int_t triggerClass)
 	    Double_t p2 = fAOD->GetDimuon(ii)->GetMu(1)->P();
 	    // See the explanation on how the pDCA is computed in the single muon loop
 	    Double_t pDCA1 = p1*fAOD->GetDimuon(ii)->GetMu(0)->DCA();
-	    if (2.0 < thetaAbs1 < 3.0)
+	    if (2.0 < thetaAbs1 && thetaAbs1 < 3.0)
 	      pDCA1 = (p1-2.98/2.0) * fAOD->GetDimuon(ii)->GetMu(0)->DCA();
-	    if (3.0 < thetaAbs1 < 10.0)
+	    if (3.0 < thetaAbs1 && thetaAbs1 < 10.0)
 	      pDCA1 = (p1-2.4/2.0) * fAOD->GetDimuon(ii)->GetMu(0)->DCA();
 	    Double_t pDCA2 = p2*fAOD->GetDimuon(ii)->GetMu(1)->DCA();
-	    if (2.0 < thetaAbs2 < 3.0)
+	    if (2.0 < thetaAbs2 && thetaAbs2 < 3.0)
 	      pDCA2 = (p2-2.98/2.0) * fAOD->GetDimuon(ii)->GetMu(1)->DCA();
-	    if (3.0 < thetaAbs2 < 10.0)
+	    if (3.0 < thetaAbs2 && thetaAbs2 < 10.0)
 	      pDCA2 = (p2-2.4/2.0) * fAOD->GetDimuon(ii)->GetMu(1)->DCA();
 	    
 	    Double_t y = fAOD->GetDimuon(ii)->Y();
