@@ -7,6 +7,8 @@
 #pragma link C++ class AliBalance+;
 #pragma link C++ class AliAnalysisTaskBF+;
 
+#pragma link C++ class AliAnalysisTaskToyModel+;
+
 #pragma link C++ class AliAnalysisTaskLRC+;
 #pragma link C++ class AliLRCAnalysis+;
 #pragma link C++ class AliLRCFit+;

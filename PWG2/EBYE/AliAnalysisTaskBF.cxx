@@ -711,6 +711,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		    }
 		    
 		    delete track_TPC;
+      		    gNumberOfAcceptedTracks += 1;
 		    
 		  } //track loop
 		}//Vz cut
@@ -855,7 +856,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      chargeVectorShuffle[7]->push_back(v_pt);
 	      chargeVectorShuffle[8]->push_back(v_E);
 	    }
-	    
+	    gNumberOfAcceptedTracks += 1;
+		    
 	  } //track loop
 	}//Vz cut
       }//Vy cut
@@ -870,14 +872,18 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
   fHistNumberOfAcceptedTracks->Fill(gNumberOfAcceptedTracks);
   
   // calculate balance function
-  if(fUseMultiplicity) fBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVector);
-  else                 fBalance->CalculateBalance(fCentrality,chargeVector);
+  if(fUseMultiplicity) 
+    fBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVector);
+  else                 
+    fBalance->CalculateBalance(fCentrality,chargeVector);
 
   if(fRunShuffling) {
     // shuffle charges
     random_shuffle( chargeVectorShuffle[0]->begin(), chargeVectorShuffle[0]->end() );
-    if(fUseMultiplicity) fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle);
-    else                 fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle);
+    if(fUseMultiplicity) 
+      fShuffledBalance->CalculateBalance(gNumberOfAcceptedTracks,chargeVectorShuffle);
+    else                 
+      fShuffledBalance->CalculateBalance(fCentrality,chargeVectorShuffle);
   }
 }      
 

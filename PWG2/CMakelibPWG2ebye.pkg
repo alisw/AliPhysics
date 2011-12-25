@@ -27,6 +27,7 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS   
+    EBYE/AliAnalysisTaskToyModel.cxx 
     EBYE/AliAnalysisTaskBF.cxx 
     EBYE/AliBalance.cxx 
     EBYE/LRC/AliLRCBase.cxx
