@@ -56,16 +56,22 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
 
   //All charges
   void SetSpectraTemperatureForAllCharges(Double_t temperature) {
+    fUseAllCharges = kTRUE;
     fTemperatureAllCharges = temperature;}
   void SetDirectedFlowForAllCharges(Double_t v1) {
+    fUseAllCharges = kTRUE;
     fDirectedFlowAllCharges = v1;}
   void SetEllipticFlowForAllCharges(Double_t v2) {
+    fUseAllCharges = kTRUE;
     fEllipticFlowAllCharges = v2;}
   void SetTriangularFlowForAllCharges(Double_t v3) {
+    fUseAllCharges = kTRUE;
     fTriangularFlowAllCharges = v3;}
   void SetQuadrangularFlowForAllCharges(Double_t v4) {
+    fUseAllCharges = kTRUE;
     fQuandrangularFlowAllCharges = v4;}
   void SetPentangularFlowForAllCharges(Double_t v5) {
+    fUseAllCharges = kTRUE;
     fPentangularFlowAllCharges = v5;}
 
   //Pions
@@ -140,6 +146,8 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   Bool_t fUseAcceptanceParameterization; //flag acceptance parameterization
   TF1 *fAcceptanceParameterization; //acceptance parameterization
 
+  Bool_t   fUseAllCharges; //use all charges
+  Double_t fParticleMass; //particle mass
   TF1     *fPtSpectraAllCharges; //spectra for all charges
   Double_t fTemperatureAllCharges; //temperature for pt spectra
   Double_t fReactionPlane; //reaction plane angle
@@ -151,6 +159,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   Double_t fPentangularFlowAllCharges; //pentangular flow value
 
   Double_t fPionPercentage; //percentage of pions
+  Double_t fPionMass; //pion mass
   TF1     *fPtSpectraPions; //spectra for pions
   Double_t fTemperaturePions; //temperature for pt spectra
   TF1     *fAzimuthalAnglePions; //azimuthal angle for pions
@@ -161,6 +170,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   Double_t fPentangularFlowPions; //pentangular flow value
 
   Double_t fKaonPercentage; //percentage of kaons
+  Double_t fKaonMass; //kaon mass
   TF1     *fPtSpectraKaons; //spectra for kaons
   Double_t fTemperatureKaons; //temperature for pt spectra
   TF1     *fAzimuthalAngleKaons; //azimuthal angle for kaons
@@ -171,6 +181,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   Double_t fPentangularFlowKaons; //pentangular flow value
 
   Double_t fProtonPercentage; //percentage of protons
+  Double_t fProtonMass; //proton mass
   TF1     *fPtSpectraProtons; //spectra for protons
   Double_t fTemperatureProtons; //temperature for pt spectra
   TF1     *fAzimuthalAngleProtons; //azimuthal angle for protons
