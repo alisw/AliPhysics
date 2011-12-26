@@ -384,7 +384,7 @@ Bool_t AliFlowEventCuts::PassesCuts(AliVEvent *event)
         nselected++;
       }
     }
-    meanpt=meanpt/nselected;
+    if (nselected) meanpt=meanpt/nselected;
     if (meanpt<fMeanPtMin || meanpt >= fMeanPtMax) pass=kFALSE;
   }
   if (fQA&&pass) 
