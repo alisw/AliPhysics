@@ -85,6 +85,7 @@ AliGlauberNucleus::AliGlauberNucleus(const AliGlauberNucleus& in):
 AliGlauberNucleus& AliGlauberNucleus::operator=(const AliGlauberNucleus& in)
 {
   //assignment
+  if (&in==this) return *this;
   fN=in.fN;
   fR=in.fR;
   fA=in.fA;
