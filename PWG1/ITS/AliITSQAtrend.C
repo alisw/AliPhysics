@@ -1465,11 +1465,24 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
   int j = 0;
   Int_t nrun=0;
   Int_t runNumb[MAX_LINES];
+  Bool_t goout = kFALSE;
   while ( in ) {
     in.getline(strings[j], MAX_LINE_LEN);
     TString aux(strings[j]);
-    if(aux.Length()<27)continue;
-    aux=aux.Remove(0,27);
+    Int_t lentrail=0;
+    if(aux.Contains("LHC11h/")){
+      lentrail = 27;
+    }
+    else if(aux.Contains("LHC11h_2/")){
+      lentrail = 29;
+    }
+    else {
+      if(!aux.IsNull())printf("Unrecognised path name %s \n",aux.Data());
+      goout = kTRUE;
+    }
+    if(goout)break;
+    if(aux.Length()<lentrail)continue;
+    aux=aux.Remove(0,lentrail);
     aux=aux.Remove(6,aux.Length());  
     runNumb[j]=atoi(aux.Data());
     printf("%d ) - path %s \n",runNumb[j],strings[j]);
