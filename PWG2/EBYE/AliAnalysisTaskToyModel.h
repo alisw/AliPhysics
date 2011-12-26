@@ -12,21 +12,18 @@ class TF1;
 
 class AliBalance;
 
-#include "AliAnalysisTaskSE.h"
-#include "AliBalance.h"
-
-
-class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
+class AliAnalysisTaskToyModel : public TObject {
  public:
-  AliAnalysisTaskToyModel(const char *name = "AliAnalysisTaskToyModel");
+  AliAnalysisTaskToyModel();
   virtual ~AliAnalysisTaskToyModel(); 
   
   virtual void   Init();
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   FinishTaskOutput();
-  virtual void   Terminate(Option_t *);
+  virtual void   CreateOutputObjects();
+  virtual void   Run(Int_t nEvents);
+  virtual void   FinishOutput();
   
+  void SetDebugFlag() {fUseDebug = kTRUE;}
+
   void SetAnalysisObject(AliBalance *const analysis) {
     fBalance         = analysis;
   }
@@ -67,7 +64,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   void SetTriangularFlowForAllCharges(Double_t v3) {
     fUseAllCharges = kTRUE;
     fTriangularFlowAllCharges = v3;}
-  void SetQuadrangularFlowForAllCharges(Double_t v4) {
+  void SetQuandrangularFlowForAllCharges(Double_t v4) {
     fUseAllCharges = kTRUE;
     fQuandrangularFlowAllCharges = v4;}
   void SetPentangularFlowForAllCharges(Double_t v5) {
@@ -85,7 +82,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
     fEllipticFlowPions = v2;}
   void SetTriangularFlowForPions(Double_t v3) {
     fTriangularFlowPions = v3;}
-  void SetQuadrangularFlowForPions(Double_t v4) {
+  void SetQuandrangularFlowForPions(Double_t v4) {
     fQuandrangularFlowPions = v4;}
   void SetPentangularFlowForPions(Double_t v5) {
     fPentangularFlowPions = v5;}
@@ -101,7 +98,7 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
     fEllipticFlowKaons = v2;}
   void SetTriangularFlowForKaons(Double_t v3) {
     fTriangularFlowKaons = v3;}
-  void SetQuadrangularFlowForKaons(Double_t v4) {
+  void SetQuandrangularFlowForKaons(Double_t v4) {
     fQuandrangularFlowKaons = v4;}
   void SetPentangularFlowForKaons(Double_t v5) {
     fPentangularFlowKaons = v5;}
@@ -117,13 +114,15 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
     fEllipticFlowProtons = v2;}
   void SetTriangularFlowForProtons(Double_t v3) {
     fTriangularFlowProtons = v3;}
-  void SetQuadrangularFlowForProtons(Double_t v4) {
+  void SetQuandrangularFlowForProtons(Double_t v4) {
     fQuandrangularFlowProtons = v4;}
   void SetPentangularFlowForProtons(Double_t v5) {
     fPentangularFlowProtons = v5;}
   //============Toy model: List of setters============//
 
  private:
+  Bool_t fUseDebug; //Debug flag
+
   AliBalance *fBalance; //BF object
   Bool_t fRunShuffling;//run shuffling or not
   AliBalance *fShuffledBalance; //BF object (shuffled)
@@ -132,6 +131,25 @@ class AliAnalysisTaskToyModel : public AliAnalysisTaskSE {
   TList *fListBFS; //fList object
 
   TH1F *fHistEventStats; //event stats
+  TH1F *fHistNumberOfAcceptedParticles; //number of accepted particles
+  TH1F *fHistReactionPlane; //reaction plane angle
+  TH1F *fHistEtaTotal; //pseudo-rapidity (full phase space)
+  TH1F *fHistEta; //pseudo-rapidity (acceptance)
+  TH1F *fHistRapidityTotal; //rapidity (full phase space)
+  TH1F *fHistRapidity; //rapidity (acceptance)
+  TH1F *fHistRapidityPions; //rapidity (acceptance)
+  TH1F *fHistRapidityKaons; //rapidity (acceptance)
+  TH1F *fHistRapidityProtons; //rapidity (acceptance)
+  TH1F *fHistPhiTotal; //phi (full phase space)
+  TH1F *fHistPhi; //phi (acceptance)
+  TH1F *fHistPhiPions; //phi (acceptance)
+  TH1F *fHistPhiKaons; //phi (acceptance)
+  TH1F *fHistPhiProtons; //phi (acceptance)
+  TH1F *fHistPtTotal; //pt (full phase space)
+  TH1F *fHistPt; //pt (acceptance)
+  TH1F *fHistPtPions; //pt (acceptance)
+  TH1F *fHistPtKaons; //pt (acceptance)
+  TH1F *fHistPtProtons; //pt (acceptance)
 
   //Toy model input
   Double_t fTotalMultiplicityMean; //mean for the total multiplicity
