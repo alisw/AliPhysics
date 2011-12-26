@@ -317,6 +317,7 @@ AliGlauberMC::AliGlauberMC(const AliGlauberMC& in):
 AliGlauberMC& AliGlauberMC::operator=(const AliGlauberMC& in)
 {
   //assignment
+  if (&in==this) return *this;
   fANucleus=in.fANucleus;
   fBNucleus=in.fBNucleus;
   fXSect=in.fXSect;

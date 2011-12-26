@@ -63,6 +63,7 @@ AliFlowVector::~AliFlowVector()
 AliFlowVector& AliFlowVector::operator=(const AliFlowVector& aVector)
 {
   // assignement operator
+  if (this==&aVector) return *this;
   fX = aVector.X();
   fY = aVector.Y();
   fMult = aVector.GetMult();

@@ -112,6 +112,7 @@ AliFlowEventSimple::AliFlowEventSimple(const AliFlowEventSimple& anEvent):
 AliFlowEventSimple& AliFlowEventSimple::operator=(const AliFlowEventSimple& anEvent)
 {
   //assignment operator
+  if (&anEvent==this) return *this; //check self-assignment
   if (fTrackCollection) fTrackCollection->Delete();
   delete fTrackCollection;
   fTrackCollection = (TObjArray*)(anEvent.fTrackCollection)->Clone(); //deep copy

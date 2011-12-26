@@ -1,12 +1,4 @@
 enum anaModes {mLocal,mPROOF,mGrid};
-//mLocal: Analyze locally files in your computer using aliroot
-//mPROOF: Analyze CAF files with PROOF
-//mGrid: Analyze files on Grid via AliEn plug-in and using precompiled FLOW libraries
-
-// CENTRALITY DEFINITION
-//Int_t binfirst = 4;  //where do we start numbering bins
-//Int_t binlast = 6;  //where do we stop numbering bins
-//const Int_t numberOfCentralityBins = 9;
 Int_t binfirst = 0;  //where do we start numbering bins
 Int_t binlast = 8;  //where do we stop numbering bins
 const Int_t numberOfCentralityBins = 9;
@@ -15,13 +7,9 @@ Float_t centralityArray[numberOfCentralityBins+1] = {0.,5.,10.,20.,30.,40.,50.,6
 
 TString commonOutputFileName = "outputCentrality"; // e.g.: result for centrality bin 0 will be in the file "outputCentrality0.root", etc
 
-//void runFlowTaskCentralityPIDTrain(Int_t mode=mLocal, Int_t nEvents = 10,
-//Bool_t DATA = kFALSE, const Char_t* dataDir="/Users/snelling/alice_data/Therminator_midcentral", Int_t offset = 0)
-
 void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
                                     Bool_t useFlowParFiles = kTRUE,
                                     Bool_t DATA = kTRUE,
-                                    //const Char_t* dataDir="/data/alice2/ab/grid/21-16/TEST/data/",
                                     const Char_t* dataDir="fileList",
                                     Int_t nEvents = 1e4,
                                     Int_t offset=0 )
@@ -29,8 +17,6 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
   // Time:
   TStopwatch timer;
   timer.Start();
-  // Cross-check user settings before starting:
-  //  CrossCheckUserSettings(DATA);
 
   // Load needed libraries:
   LoadLibraries(mode,useFlowParFiles);
@@ -74,6 +60,10 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
   if (!DATA) centSelTask->SetMCInput();
   if (DATA) centSelTask->SetPass(1);
 
+  //add the PID response task
+  gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
+  AliAnalysisTaskPIDResponse* pidresponsetask = AddTaskPIDResponse(!DATA)
+
   //Add the TOF tender
   gROOT->LoadMacro("$ALICE_ROOT/PWG2/FLOW/macros/AddTaskTenderTOF.C");
   AddTaskTenderTOF();
@@ -88,73 +78,73 @@ void runFlowTaskCentralityPIDTrain( Int_t mode = mGrid,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kPion,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kPion,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kKaon,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kKaon,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kProton,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kProton,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,2,kTRUE );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kPion,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,3 );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kPion,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,3 );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kKaon,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,3 );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kKaon,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,3 );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kProton,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               -1,3 );
     AddTaskFlowCentralityPID( lowCentralityBinEdge,
                               highCentralityBinEdge,
                               commonOutputFileName,
                               AliPID::kProton,
-                              AliFlowTrackCuts::kTOFbetaSimple,
+                              AliFlowTrackCuts::kTOFbeta,
                               1,3 );
   } // end of for (Int_t i=0; i<numberOfCentralityBins; i++)
 
