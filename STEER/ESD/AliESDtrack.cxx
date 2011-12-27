@@ -913,6 +913,13 @@ void AliESDtrack::Clear(Option_t* )
     else delete[] fTRDslices;
     fTRDslices = 0;
   }
+
+  //Reset cached values
+  fCacheNCrossedRows = -10.;
+  fCacheChi2TPCConstrainedVsGlobal = -10.;
+  if(fCacheChi2TPCConstrainedVsGlobalVertex) fCacheChi2TPCConstrainedVsGlobalVertex = 0;
+
+
   AliExternalTrackParam::Clear();
 }
 
@@ -1125,6 +1132,12 @@ AliESDtrack &AliESDtrack::operator=(const AliESDtrack &source)
   fTRDncls0  = source.fTRDncls0;      
   fTRDntracklets  = source.fTRDntracklets; 
   fVertexID = source.fVertexID;
+
+  fCacheNCrossedRows = source.fCacheNCrossedRows;
+  fCacheChi2TPCConstrainedVsGlobal = source.fCacheChi2TPCConstrainedVsGlobal;
+  fCacheChi2TPCConstrainedVsGlobalVertex = source.fCacheChi2TPCConstrainedVsGlobalVertex; 
+
+  
   return *this;
 }
 
