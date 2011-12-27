@@ -26,6 +26,7 @@
 #include <TDatabasePDG.h>
 #include <Riostream.h>
 
+#include "AliAODPidHF.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODTrack.h"

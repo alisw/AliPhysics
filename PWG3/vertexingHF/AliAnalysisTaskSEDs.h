@@ -20,7 +20,9 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliRDHFCutsDstoKKpi.h"
-#include "AliNormalizationCounter.h"
+
+class AliNormalizationCounter;
+
 
 class AliAnalysisTaskSEDs : public AliAnalysisTaskSE
 {

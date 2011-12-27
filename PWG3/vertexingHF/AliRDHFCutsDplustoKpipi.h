@@ -16,7 +16,8 @@
 
 
 #include "AliRDHFCuts.h"
-#include "AliAODPidHF.h"
+class AliAODPidHF;
+
 class AliRDHFCutsDplustoKpipi : public AliRDHFCuts 
 {
  public:
@@ -51,9 +52,9 @@ class AliRDHFCutsDplustoKpipi : public AliRDHFCuts
   void SetMaxPtStrongPidK(Float_t spid){fMaxPtStrongPidK=spid;}
   void SetMaxPtStrongPidpi(Float_t spid){fMaxPtStrongPidpi=spid;}
   Int_t GetStrongPid() const {return fUseStrongPid;}
-  Float_t GetMaxPtStrongPid(){return fMaxPtStrongPid;}
-  Float_t GetMaxPtStrongPidK(){return fMaxPtStrongPidK;}
-  Float_t GetMaxPtStrongPidpi(){return fMaxPtStrongPidpi;}
+  Float_t GetMaxPtStrongPid() const {return fMaxPtStrongPid;}
+  Float_t GetMaxPtStrongPidK() const {return fMaxPtStrongPidK;}
+  Float_t GetMaxPtStrongPidpi() const {return fMaxPtStrongPidpi;}
   void SetUseImpParProdCorrCut(Bool_t use){
     fUseImpParProdCorrCut=use;
   }
