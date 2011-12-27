@@ -2429,7 +2429,7 @@ AliAODv0* AliAnalysisVertexingHF::TransformESDv0toAODv0(AliESDv0 *esdV0, TObjArr
   return aodV0;
 }
 //-----------------------------------------------------------------------------
-void AliAnalysisVertexingHF::SetParametersAtVertex(AliESDtrack* esdt, AliExternalTrackParam* extpar) const{
+void AliAnalysisVertexingHF::SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const{
   // Set the stored track parameters at primary vertex into AliESDtrack
   Double_t xyz[3], pxpypz[3], cv[21]; 
   extpar->PxPyPz(pxpypz); 	                  
