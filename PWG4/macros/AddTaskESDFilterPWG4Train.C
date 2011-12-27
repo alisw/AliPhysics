@@ -149,11 +149,13 @@ AliAnalysisTaskESDfilter *AddTaskESDFilterPWG4Train(Bool_t useKineFilter=kTRUE,
    // 64 1<<6
    trackFilter->AddCuts(esdTrackCutsHG2);
    // 128 1<<7
-   trackFilter->AddCuts(esdTrackCutsHG0); // add once more for tpc only tracks
+   AliESDtrackCuts* esdTrackCutsHG0_tmp = new AliESDtrackCuts(*esdTrackCutsHG0); // avoid double delete
+   trackFilter->AddCuts(esdTrackCutsHG0_tmp); // add once more for tpc only tracks
    // 256 1<<8
    trackFilter->AddCuts(esdTrackCutsGCOnly);
    // 512 1<<9                         
-   trackFilter->AddCuts(esdTrackCutsHG1); // add once more for tpc only tracks
+   AliESDtrackCuts* esdTrackCutsHG1_tmp = new AliESDtrackCuts(*esdTrackCutsHG1); // avoid double delete
+   trackFilter->AddCuts(esdTrackCutsHG1_tmp); // add once more for tpc only tracks
    // 1024 1<<10                        
    trackFilter->AddCuts(esdTrackCutsH2); // add r_aa cuts
    // 2048 1<<11                        
