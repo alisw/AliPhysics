@@ -711,12 +711,12 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   
   fHistNEvents = new TH1F("fHistNEvents", "number of events ",11,-0.5,10.5);
   fHistNEvents->GetXaxis()->SetBinLabel(1,"nEventsAnal");
-  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents with good vertex");
-  fHistNEvents->GetXaxis()->SetBinLabel(3,"nEvents with PbPb HM trigger");
+  fHistNEvents->GetXaxis()->SetBinLabel(2,"nEvents accepted");
+  fHistNEvents->GetXaxis()->SetBinLabel(3,"Rejected due to trigger");
   fHistNEvents->GetXaxis()->SetBinLabel(4,"Rejected pileup events");
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Rejected due to centrality"); 
   fHistNEvents->GetXaxis()->SetBinLabel(6,"Rejected due to vtxz");
-   fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
+  fHistNEvents->GetXaxis()->SetBinLabel(7,"Rejected due to Physics Sel");
   fHistNEvents->GetXaxis()->SetBinLabel(8,"Total no. of candidate");
   fHistNEvents->GetXaxis()->SetBinLabel(9,"no. of cand wo bitmask");
   fHistNEvents->GetXaxis()->SetBinLabel(10,"D+ after loose cuts");
@@ -817,8 +817,8 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   fHistCentrality[0]->Fill(centrality);
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   TString trigclass=aod->GetFiredTriggerClasses();
-  if(trigclass.Contains("C0SMH-B-NOPF-ALLNOTRD")||trigclass.Contains("C0SMH-B-NOPF-ALL")) fHistNEvents->Fill(2);
-  if(fRDCutsAnalysis->GetWhyRejection()==1)fHistNEvents->Fill(3); 
+  if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
+  if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
   if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(centrality);}
   if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
   if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
