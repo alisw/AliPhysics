@@ -845,6 +845,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	mincent=-10; 
 	stdCent=-1;
       }
+      if(mincent==100)mincent--;
       ((AliCounterCollection*)fOutputCounters->FindObject("stdEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
       mincent=secondCent-secondCent%10;
@@ -852,6 +853,7 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	mincent=-10;
 	secondCent=-1;
       }
+      if(mincent==100)mincent--;
       ((AliCounterCollection*)fOutputCounters->FindObject("secondEstimator"))->Count(Form("centralityclass:%d_%d/Run:%d",mincent,mincent+10,runNumber));
 
       if(stdCent<fCuts->GetMinCentrality() || stdCent>fCuts->GetMaxCentrality()){
