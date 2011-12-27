@@ -49,6 +49,7 @@ class AliAnalysisTaskToyModel : public TObject {
 
   //Acceptance filter
   void SetAcceptanceParameterization(TF1 *parameterization) {
+    fUseAcceptanceParameterization = kTRUE;
     fAcceptanceParameterization = parameterization;}
 
   //All charges
@@ -118,6 +119,12 @@ class AliAnalysisTaskToyModel : public TObject {
     fQuandrangularFlowProtons = v4;}
   void SetPentangularFlowForProtons(Double_t v5) {
     fPentangularFlowProtons = v5;}
+
+  //Dynamical correlations
+  void SetCorrelationPercentage(Double_t percentage) {
+    fUseDynamicalCorrelations = kTRUE; 
+    fDynamicalCorrelationsPercentage = percentage;
+  }
   //============Toy model: List of setters============//
 
  private:
@@ -135,17 +142,14 @@ class AliAnalysisTaskToyModel : public TObject {
   TH1F *fHistReactionPlane; //reaction plane angle
   TH1F *fHistEtaTotal; //pseudo-rapidity (full phase space)
   TH1F *fHistEta; //pseudo-rapidity (acceptance)
-  TH1F *fHistRapidityTotal; //rapidity (full phase space)
   TH1F *fHistRapidity; //rapidity (acceptance)
   TH1F *fHistRapidityPions; //rapidity (acceptance)
   TH1F *fHistRapidityKaons; //rapidity (acceptance)
   TH1F *fHistRapidityProtons; //rapidity (acceptance)
-  TH1F *fHistPhiTotal; //phi (full phase space)
   TH1F *fHistPhi; //phi (acceptance)
   TH1F *fHistPhiPions; //phi (acceptance)
   TH1F *fHistPhiKaons; //phi (acceptance)
   TH1F *fHistPhiProtons; //phi (acceptance)
-  TH1F *fHistPtTotal; //pt (full phase space)
   TH1F *fHistPt; //pt (acceptance)
   TH1F *fHistPtPions; //pt (acceptance)
   TH1F *fHistPtKaons; //pt (acceptance)
@@ -208,6 +212,9 @@ class AliAnalysisTaskToyModel : public TObject {
   Double_t fTriangularFlowProtons; //triangular flow value
   Double_t fQuandrangularFlowProtons; //quadrangular flow value
   Double_t fPentangularFlowProtons; //pentangular flow value
+
+  Bool_t fUseDynamicalCorrelations; //Usage of dynamical correlations
+  Double_t fDynamicalCorrelationsPercentage; //Percentage of correlations
 
   AliAnalysisTaskToyModel(const AliAnalysisTaskToyModel&); // not implemented
   AliAnalysisTaskToyModel& operator=(const AliAnalysisTaskToyModel&); // not implemented

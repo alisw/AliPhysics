@@ -1,10 +1,10 @@
 //=========Total multiplicity=========//
-Double_t nTotalMultiplicityMean = 100.;
+Double_t nTotalMultiplicityMean = 1000.;
 Double_t nTotalMultiplicitySigma = 10.;
 
 //=========Net charge=========//
-Double_t nNetChargeMean = 0.0;
-Double_t nNetChargeSigma = 5.0;
+Double_t nNetChargeMean = 50.0;
+Double_t nNetChargeSigma = 3.0;
 
 //==============Particles and spectra==============//
 Double_t gAllChargesTemperature = 0.11; //in GeV
@@ -28,8 +28,18 @@ Double_t gPentangularFlow = 0.0;
 Double_t gEtaMin = -1.0;
 Double_t gEtaMax = 1.0;
 Double_t gPtMin = 0.1;
-Double_t gPtMax = 2.0;
+Double_t gPtMax = 100.0;
 //=========Acceptance definition=========//
+
+//=========Acceptance filter=========//
+Bool_t kUseAcceptanceFilter = kFALSE;
+const char *gAcceptanceFilterFile = "efficiencyALICE.root";
+//=========Acceptance filter=========//
+
+//=========Dynamical Correlations=========//
+Bool_t kUseDynamicalCorrelations = kFALSE;
+Double_t gDynamicalCorrelationsPercentage = 0.1;
+//=========Dynamical Correlations=========//
 
 Bool_t kUseDebug = kFALSE;
 
@@ -37,7 +47,7 @@ Bool_t kUseDebug = kFALSE;
 // Author: Panos.Christakoglou@nikhef.nl
 
 //______________________________________________________________________________
-void runBalanceFunctionToyModel(Int_t nEvents = 10000,
+void runBalanceFunctionToyModel(Int_t nEvents = 10,
 				Bool_t kUseAllCharges = kTRUE) {
   TStopwatch timer;
   timer.Start();
@@ -104,6 +114,26 @@ void runBalanceFunctionToyModel(Int_t nEvents = 10000,
     toyModelAnalysis->SetTriangularFlowForProtons(gTriangularFlow);
     toyModelAnalysis->SetQuandrangularFlowForProtons(gQuandrangularFlow);
     toyModelAnalysis->SetPentangularFlowForProtons(gPentangularFlow);
+  }
+
+  //Dynamical correlations
+  if(kUseDynamicalCorrelations) 
+    toyModelAnalysis->SetCorrelationPercentage(gDynamicalCorrelationsPercentage);
+
+  //Acceptance filter
+  if(kUseAcceptanceFilter) {
+    TFile *gParamFile = TFile::Open(gAcceptanceFilterFile);
+    if((!gParamFile) || (!gParamFile->IsOpen())) {
+      Printf("File %s not found!!!",acceptanceFilename);
+      return;
+    }
+
+    TString gParamName;
+    for(Int_t iCentrality = 0; iCentrality < numberOfCentralityBins; iCentrality++) {
+      gParamName = "gParamCentrality0";//centrality 0-5%
+      TF1 *gParameterization = dynamic_cast<TF1 *>(gParamFile->Get(gParamName.Data()));
+    }
+    toyModelAnalysis->SetAcceptanceParameterization(gParameterization);
   }
 
   toyModelAnalysis->Init();
