@@ -67,8 +67,9 @@ void AliITSQAchecks(TString option="grid",
   gRunNumber = nRun;
   TString aux(filenameMC);
   if(aux.BeginsWith("alien:")){
-    aux=aux.Remove(0,35);
-    aux=aux.Remove(6,aux.Length());  
+    Int_t pl=aux.Index("/000",4)+4;
+    aux=aux.Remove(0,pl);
+    aux=aux.Remove(6,aux.Length()-6);  
     gRunNumberMC = atoi(aux.Data());
   }
   else {
