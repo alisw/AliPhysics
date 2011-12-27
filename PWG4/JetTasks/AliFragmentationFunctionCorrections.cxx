@@ -110,8 +110,8 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections(const  
   ,fJetPtSlices(copy.fJetPtSlices)                  
   ,fNJets(copy.fNJets)                        
   ,fNJetsBgr(copy.fNJetsBgr)
-  ,fNHistoBinsSinglePt(fNHistoBinsSinglePt)  
-  ,fHistoBinsSinglePt(fHistoBinsSinglePt) 
+  ,fNHistoBinsSinglePt(copy.fNHistoBinsSinglePt)  
+  ,fHistoBinsSinglePt(copy.fHistoBinsSinglePt) 
   ,fNHistoBinsPt(copy.fNHistoBinsPt)                 
   ,fNHistoBinsZ(copy.fNHistoBinsZ)                  
   ,fNHistoBinsXi(copy.fNHistoBinsXi)                 
@@ -125,7 +125,7 @@ AliFragmentationFunctionCorrections::AliFragmentationFunctionCorrections(const  
   ,fNCorrectionLevelsSinglePt(copy.fNCorrectionLevelsSinglePt)
   ,fCorrSinglePt(copy.fCorrSinglePt)   
   ,fh1FFXiShift(copy.fh1FFXiShift)                  
-  ,fh1EffSinglePt(fh1EffSinglePt)
+  ,fh1EffSinglePt(copy.fh1EffSinglePt)
   ,fh1EffPt(copy.fh1EffPt)                      
   ,fh1EffZ(copy.fh1EffZ)                       
   ,fh1EffXi(copy.fh1EffXi)                      
@@ -312,8 +312,12 @@ AliFragmentationFunctionCorrections::AliFragFuncCorrHistos::AliFragFuncCorrHisto
   ,fCorrLabel(copy.fCorrLabel)
 {
   // copy constructor
+  for(Int_t i=0; i<copy.fArraySize; i++){
+    fh1CorrFFTrackPt[i] = copy.fh1CorrFFTrackPt[i];
+    fh1CorrFFZ[i]       = copy.fh1CorrFFZ[i];
+    fh1CorrFFXi[i]      = copy.fh1CorrFFXi[i];
+  }
 }
-
 
 //_______________________________________________________________________________________________________________________________________________________________
 AliFragmentationFunctionCorrections::AliFragFuncCorrHistos& AliFragmentationFunctionCorrections::AliFragFuncCorrHistos::operator=(const AliFragmentationFunctionCorrections::AliFragFuncCorrHistos& o)
@@ -323,10 +327,13 @@ AliFragmentationFunctionCorrections::AliFragFuncCorrHistos& AliFragmentationFunc
   if(this!=&o){
     TObject::operator=(o);
     fArraySize       = o.fArraySize;
-    fh1CorrFFTrackPt = o.fh1CorrFFTrackPt;
-    fh1CorrFFZ       = o.fh1CorrFFZ;
-    fh1CorrFFXi      = o.fh1CorrFFXi;
     fCorrLabel       = o.fCorrLabel;
+ 
+    for(Int_t i=0; i<o.fArraySize; i++){
+      fh1CorrFFTrackPt[i] = o.fh1CorrFFTrackPt[i];
+      fh1CorrFFZ[i]       = o.fh1CorrFFZ[i];
+      fh1CorrFFXi[i]      = o.fh1CorrFFXi[i];
+    }
   }
     
   return *this;
@@ -1405,19 +1412,33 @@ void AliFragmentationFunctionCorrections::UnfoldHistos(const Int_t nIter, const 
   for(Int_t i=0; i<fNJetPtSlices; i++){
  
     TH1F* hist = 0;
-    if(type == kFlagPt) hist = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i); // level -2: before unfolding, level -1: unfolded
-    if(type == kFlagZ)  hist = fCorrFF[fNCorrectionLevels-2]->GetZ(i);       // level -2: before unfolding, level -1: unfolded
-    if(type == kFlagXi) hist = fCorrFF[fNCorrectionLevels-2]->GetXi(i);      // level -2: before unfolding, level -1: unfolded
+    if(type == kFlagPt)      hist = fCorrFF[fNCorrectionLevels-2]->GetTrackPt(i); // level -2: before unfolding, level -1: unfolded
+    else if(type == kFlagZ)  hist = fCorrFF[fNCorrectionLevels-2]->GetZ(i);       // level -2: before unfolding, level -1: unfolded
+    else if(type == kFlagXi) hist = fCorrFF[fNCorrectionLevels-2]->GetXi(i);      // level -2: before unfolding, level -1: unfolded
+    else{ 
+      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
+      return;
+    }
 
     THnSparse* hnResponse = 0;
     if(type == kFlagPt) hnResponse = fhnResponsePt[i];
-    if(type == kFlagZ)  hnResponse = fhnResponseZ[i];
-    if(type == kFlagXi) hnResponse = fhnResponseXi[i];
+    else if(type == kFlagZ)  hnResponse = fhnResponseZ[i];
+    else if(type == kFlagXi) hnResponse = fhnResponseXi[i];
+    else{ 
+      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
+      return;
+    }
+
 
     TH1F* hPrior = 0;
     if(type == kFlagPt && fh1FFTrackPtPrior[i]  && ((TString(fh1FFTrackPtPrior[i]->GetName())).Length() > 0) ) hPrior = fh1FFTrackPtPrior[i];
-    if(type == kFlagZ  && fh1FFZPrior[i]        && ((TString(fh1FFZPrior[i]->GetName())).Length() > 0)       ) hPrior = fh1FFZPrior[i];
-    if(type == kFlagXi && fh1FFXiPrior[i]       && ((TString(fh1FFXiPrior[i]->GetName())).Length() > 0)      ) hPrior = fh1FFXiPrior[i];
+    else if(type == kFlagZ  && fh1FFZPrior[i]        && ((TString(fh1FFZPrior[i]->GetName())).Length() > 0)       ) hPrior = fh1FFZPrior[i];
+    else if(type == kFlagXi && fh1FFXiPrior[i]       && ((TString(fh1FFXiPrior[i]->GetName())).Length() > 0)      ) hPrior = fh1FFXiPrior[i];
+    else{ 
+      Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
+      return;
+    }
+
 
     TString histNameTHn = hist->GetName();
     histNameTHn.ReplaceAll("TH1","THn");
@@ -3583,10 +3604,13 @@ void AliFragmentationFunctionCorrections::RebinHisto(const Int_t jetPtSlice, con
 
   TH1F* hist = 0;
   if(type == kFlagPt)       hist = fCorrFF[fNCorrectionLevels-1]->GetTrackPt(jetPtSlice); 
-  if(type == kFlagZ)        hist = fCorrFF[fNCorrectionLevels-1]->GetZ(jetPtSlice);       
-  if(type == kFlagXi)       hist = fCorrFF[fNCorrectionLevels-1]->GetXi(jetPtSlice);      
-  if(type == kFlagSinglePt) hist = fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->GetTrackPt(0); 
-
+  else if(type == kFlagZ)        hist = fCorrFF[fNCorrectionLevels-1]->GetZ(jetPtSlice);       
+  else if(type == kFlagXi)       hist = fCorrFF[fNCorrectionLevels-1]->GetXi(jetPtSlice);      
+  else if(type == kFlagSinglePt) hist = fCorrSinglePt[fNCorrectionLevelsSinglePt-1]->GetTrackPt(0); 
+  else{ 
+    Printf("%s%d unknown type",(char*)__FILE__,__LINE__);
+    return;
+  }
   
   Double_t binWidthNoRebin = hist->GetBinWidth(1);
 

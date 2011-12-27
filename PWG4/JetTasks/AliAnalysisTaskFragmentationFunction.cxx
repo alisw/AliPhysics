@@ -878,7 +878,7 @@ AliAnalysisTaskFragmentationFunction::AliAnalysisTaskFragmentationFunction(const
   ,fFFHistosRecEffRec(copy.fFFHistosRecEffRec)  
   ,fFFHistosSecRec(copy.fFFHistosSecRec)   
   ,fhnResponseSinglePt(copy.fhnResponseSinglePt)
-  ,fh2SingleInvPtRecMnGenVsPtGen(fh2SingleInvPtRecMnGenVsPtGen) 
+  ,fh2SingleInvPtRecMnGenVsPtGen(copy.fh2SingleInvPtRecMnGenVsPtGen) 
   ,fhnResponseJetTrackPt(copy.fhnResponseJetTrackPt)
   ,fhnResponseJetZ(copy.fhnResponseJetZ)
   ,fhnResponseJetXi(copy.fhnResponseJetXi)
