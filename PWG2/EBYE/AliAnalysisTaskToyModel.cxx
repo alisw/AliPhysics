@@ -26,46 +26,47 @@ ClassImp(AliAnalysisTaskToyModel)
 //________________________________________________________________________
 AliAnalysisTaskToyModel::AliAnalysisTaskToyModel() 
 : TObject(),
-    fUseDebug(kFALSE),
-    fBalance(0),
-    fRunShuffling(kFALSE), fShuffledBalance(0),
-    fList(0), fListBF(0), fListBFS(0),
-    fHistEventStats(0),
-    fHistNumberOfAcceptedParticles(0),
-    fHistReactionPlane(0),
-    fHistEtaTotal(0), fHistEta(0),
-    fHistRapidityTotal(0), fHistRapidity(0),
-    fHistRapidityPions(0), fHistRapidityKaons(0), fHistRapidityProtons(0),
-    fHistPhiTotal(0), fHistPhi(0),
-    fHistPhiPions(0), fHistPhiKaons(0), fHistPhiProtons(0),
-    fHistPtTotal(0), fHistPt(0),
-    fHistPtPions(0), fHistPtKaons(0), fHistPtProtons(0),
-    fTotalMultiplicityMean(100.), fTotalMultiplicitySigma(0.0),
-    fNetChargeMean(0.0), fNetChargeSigma(0.0),
-    fPtMin(0.0), fPtMax(100.0),
-    fEtaMin(-1.0), fEtaMax(1.0),
-    fUseAcceptanceParameterization(kFALSE), fAcceptanceParameterization(0),
-    fUseAllCharges(kFALSE), fParticleMass(0.0),
-    fPtSpectraAllCharges(0), fTemperatureAllCharges(100.),
-    fReactionPlane(0.0),
-    fAzimuthalAngleAllCharges(0), fDirectedFlowAllCharges(0.0), 
-    fEllipticFlowAllCharges(0.0), fTriangularFlowAllCharges(0.0),
-    fQuandrangularFlowAllCharges(0.0), fPentangularFlowAllCharges(0.0),
-    fPionPercentage(0.8), fPionMass(0.0),
-    fPtSpectraPions(0), fTemperaturePions(100.),
-    fAzimuthalAnglePions(0), fDirectedFlowPions(0.0), 
-    fEllipticFlowPions(0.0), fTriangularFlowPions(0.0), 
-    fQuandrangularFlowPions(0.0), fPentangularFlowPions(0.0),
-    fKaonPercentage(0.8), fKaonMass(0.0),
-    fPtSpectraKaons(0), fTemperatureKaons(100.),
-    fAzimuthalAngleKaons(0), fDirectedFlowKaons(0.0), 
-    fEllipticFlowKaons(0.0), fTriangularFlowKaons(0.0),
-    fQuandrangularFlowKaons(0.0), fPentangularFlowKaons(0.0),
-    fProtonPercentage(0.8), fProtonMass(0.0),
-    fPtSpectraProtons(0), fTemperatureProtons(100.),
-    fAzimuthalAngleProtons(0), fDirectedFlowProtons(0.0), 
-    fEllipticFlowProtons(0.0), fTriangularFlowProtons(0.0),
-    fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0) {
+  fUseDebug(kFALSE),
+  fBalance(0),
+  fRunShuffling(kFALSE), fShuffledBalance(0),
+  fList(0), fListBF(0), fListBFS(0),
+  fHistEventStats(0),
+  fHistNumberOfAcceptedParticles(0),
+  fHistReactionPlane(0),
+  fHistEtaTotal(0), fHistEta(0),
+  fHistRapidity(0),
+  fHistRapidityPions(0), fHistRapidityKaons(0), fHistRapidityProtons(0),
+  fHistPhi(0),
+  fHistPhiPions(0), fHistPhiKaons(0), fHistPhiProtons(0),
+  fHistPt(0),
+  fHistPtPions(0), fHistPtKaons(0), fHistPtProtons(0),
+  fTotalMultiplicityMean(100.), fTotalMultiplicitySigma(0.0),
+  fNetChargeMean(0.0), fNetChargeSigma(0.0),
+  fPtMin(0.0), fPtMax(100.0),
+  fEtaMin(-1.0), fEtaMax(1.0),
+  fUseAcceptanceParameterization(kFALSE), fAcceptanceParameterization(0),
+  fUseAllCharges(kFALSE), fParticleMass(0.0),
+  fPtSpectraAllCharges(0), fTemperatureAllCharges(100.),
+  fReactionPlane(0.0),
+  fAzimuthalAngleAllCharges(0), fDirectedFlowAllCharges(0.0), 
+  fEllipticFlowAllCharges(0.0), fTriangularFlowAllCharges(0.0),
+  fQuandrangularFlowAllCharges(0.0), fPentangularFlowAllCharges(0.0),
+  fPionPercentage(0.8), fPionMass(0.0),
+  fPtSpectraPions(0), fTemperaturePions(100.),
+  fAzimuthalAnglePions(0), fDirectedFlowPions(0.0), 
+  fEllipticFlowPions(0.0), fTriangularFlowPions(0.0), 
+  fQuandrangularFlowPions(0.0), fPentangularFlowPions(0.0),
+  fKaonPercentage(0.8), fKaonMass(0.0),
+  fPtSpectraKaons(0), fTemperatureKaons(100.),
+  fAzimuthalAngleKaons(0), fDirectedFlowKaons(0.0), 
+  fEllipticFlowKaons(0.0), fTriangularFlowKaons(0.0),
+  fQuandrangularFlowKaons(0.0), fPentangularFlowKaons(0.0),
+  fProtonPercentage(0.8), fProtonMass(0.0),
+  fPtSpectraProtons(0), fTemperatureProtons(100.),
+  fAzimuthalAngleProtons(0), fDirectedFlowProtons(0.0), 
+  fEllipticFlowProtons(0.0), fTriangularFlowProtons(0.0),
+  fQuandrangularFlowProtons(0.0), fPentangularFlowProtons(0.0),
+  fUseDynamicalCorrelations(kFALSE), fDynamicalCorrelationsPercentage(0.1) {
   // Constructor
 }
 
@@ -221,9 +222,6 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fList->Add(fHistEta);
 
   //Rapidity
-  fHistRapidityTotal = new TH1F("fHistRapidityTotal","Rapidity (full phase space);y;Entries",1000,-15.,15.); 
-  fList->Add(fHistRapidityTotal);
-
   fHistRapidity = new TH1F("fHistRapidity","Rapidity (acceptance);y;Entries",1000,-1.5,1.5); 
   fList->Add(fHistRapidity);
   fHistRapidityPions = new TH1F("fHistRapidityPions","Rapidity (acceptance - pions);y;Entries",1000,-1.5,1.5); 
@@ -234,9 +232,6 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
   fList->Add(fHistRapidityProtons);
 
   //Phi
-  fHistPhiTotal = new TH1F("fHistPhiTotal","Phi (full phase space);#phi (rad);Entries",1000,0.,2*TMath::Pi());
-  fList->Add(fHistPhiTotal);
-
   fHistPhi = new TH1F("fHistPhi","Phi (acceptance);#phi (rad);Entries",1000,0.,2*TMath::Pi());
   fList->Add(fHistPhi);
 
@@ -249,9 +244,6 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
 
 
   //Pt
-  fHistPtTotal = new TH1F("fHistPtTotal","Pt (full phase space);p_{t} (GeV/c);Entries",1000,0.,10.);
-  fList->Add(fHistPtTotal);
-
   fHistPt = new TH1F("fHistPt","Pt (acceptance);p_{t} (GeV/c);Entries",1000,0.,10.);
   fList->Add(fHistPt);
 
@@ -371,7 +363,13 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     //Multiplicities
     Int_t nMultiplicity = (Int_t)(gRandom->Gaus(fTotalMultiplicityMean,fTotalMultiplicitySigma));
     Int_t nNetCharge = (Int_t)(gRandom->Gaus(fNetChargeMean,fNetChargeSigma));
-    Int_t nGeneratedPositive = 0, nGeneratedNegative = 0;
+    
+    Int_t nGeneratedPositive = (Int_t)((nMultiplicity/2) + nNetCharge);
+    Int_t nGeneratedNegative = nMultiplicity - nGeneratedPositive;
+    if(fUseDebug) 
+      Printf("Total multiplicity: %d - Generated positive: %d - Generated negative: %d",nMultiplicity,nGeneratedPositive,nGeneratedNegative);
+
+    //Int_t nGeneratedPositive = 0, nGeneratedNegative = 0;
     Int_t nGeneratedPions = 0, nGeneratedKaons = 0, nGeneratedProtons = 0;
     
     //Randomization of the reaction plane
@@ -386,21 +384,144 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     }
     
     Int_t gNumberOfAcceptedParticles = 0;
-    //Generate particles
-    for(Int_t iParticleCount = 0; iParticleCount < nMultiplicity; iParticleCount++) {
+    Int_t gNumberOfAcceptedPositiveParticles = 0;
+    Int_t gNumberOfAcceptedNegativeParticles = 0;
+ 
+    //Generate positive particles
+    for(Int_t iParticleCount = 0; iParticleCount < nGeneratedPositive; iParticleCount++) {
       isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
+      if(fUseDebug) 
+	Printf("Generating positive: %d(%d)",iParticleCount+1,nGeneratedPositive);
 
-      //Decide the charge
-      Double_t randomNumberCharge = gRandom->Rndm();
-      if(randomNumberCharge <= 0.5*(nMultiplicity + nNetCharge)/nMultiplicity) {
-	v_charge = 1.0;
-	nGeneratedPositive += 1;
+      //Pseudo-rapidity sampled from a Gaussian centered @ 0
+      v_eta = gRandom->Gaus(0.0,4.0);
+
+      //Fill QA histograms (full phase space)
+      fHistEtaTotal->Fill(v_eta);
+
+      v_charge = 1.0;
+      //nGeneratedPositive += 1;
+      
+      //Acceptance
+      if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+
+      if(!fUseAllCharges) {
+	//Decide the specie
+	Double_t randomNumberSpecies = gRandom->Rndm();
+	if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
+	  nGeneratedPions += 1;
+	  v_pt = fPtSpectraPions->GetRandom();
+	  v_phi = fAzimuthalAnglePions->GetRandom();
+	  fParticleMass = fPionMass;
+	  isPion = kTRUE;
+	}
+	else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
+	  nGeneratedKaons += 1;
+	  v_pt = fPtSpectraKaons->GetRandom();
+	  v_phi = fAzimuthalAngleKaons->GetRandom();
+	  fParticleMass = fKaonMass;
+	  isKaon = kTRUE;
+	}
+	else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
+	  nGeneratedProtons += 1;
+	  v_pt = fPtSpectraProtons->GetRandom();
+	  v_phi = fAzimuthalAngleProtons->GetRandom();
+	  fParticleMass = fProtonMass;
+	  isProton = kTRUE;
+	}
       }
       else {
-	nGeneratedNegative += 1;
-	v_charge = -1.0;
+	v_pt = fPtSpectraAllCharges->GetRandom();
+	v_phi = TMath::RadToDeg()*fAzimuthalAngleAllCharges->GetRandom();
       }
       
+      v_p[0] = v_pt*TMath::Cos(v_phi);
+      v_p[1] = v_pt*TMath::Sin(v_phi);
+      v_p[2] = v_pt*TMath::SinH(v_eta);
+      v_E = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			TMath::Power(v_p[0],2) +
+			TMath::Power(v_p[1],2) +
+			TMath::Power(v_p[2],2));
+      
+      v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
+      
+      //pt coverage
+      if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
+      //Printf("pt: %lf - mins: %lf - max: %lf",v_pt,fPtMin,fPtMax);
+
+      //acceptance filter
+      if(fUseAcceptanceParameterization) {
+	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	  continue;
+      }
+
+      gNumberOfAcceptedPositiveParticles += 1;
+
+      //Fill QA histograms (acceptance);
+      fHistEta->Fill(v_eta);
+      fHistRapidity->Fill(v_y);
+      fHistPhi->Fill(v_phi);
+      fHistPt->Fill(v_pt);
+      if(isPion) {
+	fHistRapidityPions->Fill(v_y);
+	fHistPhiPions->Fill(v_phi);
+	fHistPtPions->Fill(v_pt);
+      }
+      else if(isKaon) {
+	fHistRapidityKaons->Fill(v_y);
+	fHistPhiKaons->Fill(v_phi);
+	fHistPtKaons->Fill(v_pt);
+      }
+      else if(isProton) {
+	fHistRapidityProtons->Fill(v_y);
+	fHistPhiProtons->Fill(v_phi);
+	fHistPtProtons->Fill(v_pt);
+      }
+
+      // fill charge vector
+      chargeVector[0]->push_back(v_charge);
+      chargeVector[1]->push_back(v_y);
+      chargeVector[2]->push_back(v_eta);
+      chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
+      chargeVector[4]->push_back(v_p[0]);
+      chargeVector[5]->push_back(v_p[1]);
+      chargeVector[6]->push_back(v_p[2]);
+      chargeVector[7]->push_back(v_pt);
+      chargeVector[8]->push_back(v_E);
+      
+      if(fRunShuffling) {
+	chargeVectorShuffle[0]->push_back(v_charge);
+	chargeVectorShuffle[1]->push_back(v_y);
+	chargeVectorShuffle[2]->push_back(v_eta);
+	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
+	chargeVectorShuffle[4]->push_back(v_p[0]);
+	chargeVectorShuffle[5]->push_back(v_p[1]);
+	chargeVectorShuffle[6]->push_back(v_p[2]);
+	chargeVectorShuffle[7]->push_back(v_pt);
+	chargeVectorShuffle[8]->push_back(v_E);
+      }
+      gNumberOfAcceptedParticles += 1;
+    }//generated positive particle loop
+ 
+    //Generate negative particles
+    for(Int_t iParticleCount = 0; iParticleCount < nGeneratedNegative; iParticleCount++) {
+      isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
+      if(fUseDebug) 
+	Printf("Generating negative: %d(%d)",iParticleCount+1,nGeneratedNegative);
+
+      //Pseudo-rapidity sampled from a Gaussian centered @ 0
+      v_eta = gRandom->Gaus(0.0,4.0);
+
+      //Fill QA histograms (full phase space)
+      fHistEtaTotal->Fill(v_eta);
+
+      v_charge = -1.0;
+      //nGeneratedNegative += 1;
+      
+      //Acceptance
+      if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+
       if(!fUseAllCharges) {
 	//Decide the specie
 	Double_t randomNumberSpecies = gRandom->Rndm();
@@ -430,7 +551,6 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	v_pt = fPtSpectraAllCharges->GetRandom();
 	v_phi = fAzimuthalAngleAllCharges->GetRandom();
       }
-      v_eta = gRandom->Gaus(0.0,4.0);
       
       v_p[0] = v_pt*TMath::Cos(v_phi);
       v_p[1] = v_pt*TMath::Sin(v_phi);
@@ -442,16 +562,18 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       
       v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
       
-      //Fill QA histograms (full phase space)
-      fHistEtaTotal->Fill(v_eta);
-      fHistRapidityTotal->Fill(v_y);
-      fHistPhiTotal->Fill(v_phi);
-      fHistPtTotal->Fill(v_pt);
-
-      //Acceptance
-      if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+      //pt coverage
       if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
       //Printf("pt: %lf - mins: %lf - max: %lf",v_pt,fPtMin,fPtMax);
+
+     //acceptance filter
+      if(fUseAcceptanceParameterization) {
+	Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	  continue;
+      }
+
+      gNumberOfAcceptedNegativeParticles += 1;
 
       //Fill QA histograms (acceptance);
       fHistEta->Fill(v_eta);
@@ -478,7 +600,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
       chargeVector[0]->push_back(v_charge);
       chargeVector[1]->push_back(v_y);
       chargeVector[2]->push_back(v_eta);
-      chargeVector[3]->push_back(v_phi);
+      chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
       chargeVector[4]->push_back(v_p[0]);
       chargeVector[5]->push_back(v_p[1]);
       chargeVector[6]->push_back(v_p[2]);
@@ -489,7 +611,7 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVectorShuffle[0]->push_back(v_charge);
 	chargeVectorShuffle[1]->push_back(v_y);
 	chargeVectorShuffle[2]->push_back(v_eta);
-	chargeVectorShuffle[3]->push_back(v_phi);
+	chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
 	chargeVectorShuffle[4]->push_back(v_p[0]);
 	chargeVectorShuffle[5]->push_back(v_p[1]);
 	chargeVectorShuffle[6]->push_back(v_p[2]);
@@ -497,15 +619,164 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
 	chargeVectorShuffle[8]->push_back(v_E);
       }
       gNumberOfAcceptedParticles += 1;
+    }//generated negative particle loop
+   
+    //Dynamical correlations
+    Double_t v_chargePrime;
+    Double_t v_yPrime;
+    Double_t v_etaPrime;
+    Double_t v_phiPrime;
+    Double_t v_pPrime[3];
+    Double_t v_ptPrime;
+    Double_t v_EPrime;
+    Int_t nGeneratedPositiveDynamicalCorrelations = 0;
+    Int_t nGeneratedNegativeDynamicalCorrelations = 0;
+    //Generate "correlated" particles 
+    if(fUseDynamicalCorrelations) {
+      Int_t gNumberOfDynamicalCorrelations = (Int_t)(0.5*gNumberOfAcceptedParticles*fDynamicalCorrelationsPercentage);
+      for(Int_t iDynamicalCorrelations = 0; iDynamicalCorrelations < gNumberOfDynamicalCorrelations; iDynamicalCorrelations++) {
+	isPion = kFALSE; isKaon = kFALSE; isProton = kFALSE;
+	
+	//Pseudo-rapidity sampled from a Gaussian centered @ 0
+	v_eta = gRandom->Gaus(0.0,0.1);
+	v_charge = 1.0;
+	nGeneratedPositiveDynamicalCorrelations += 1;
+	
+	v_etaPrime = -v_eta;
+	v_chargePrime = -1.0;
+	nGeneratedNegativeDynamicalCorrelations += 1;
+	  
+	//Acceptance
+	if((v_eta < fEtaMin) || (v_eta > fEtaMax)) continue;
+	if((v_etaPrime < fEtaMin) || (v_etaPrime > fEtaMax)) continue;
       
-    }//generated particle loop
-    
+	if(!fUseAllCharges) {
+	  //Decide the specie
+	  Double_t randomNumberSpecies = gRandom->Rndm();
+	  if((randomNumberSpecies >= 0.0)&&(randomNumberSpecies < fPionPercentage)) {
+	    nGeneratedPions += 1;
+	    v_pt = fPtSpectraPions->GetRandom();
+	    v_phi = fAzimuthalAnglePions->GetRandom();
+	    fParticleMass = fPionMass;
+	    isPion = kTRUE;
+	  }
+	  else if((randomNumberSpecies >= fPionPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage)) {
+	    nGeneratedKaons += 1;
+	    v_pt = fPtSpectraKaons->GetRandom();
+	    v_phi = fAzimuthalAngleKaons->GetRandom();
+	    fParticleMass = fKaonMass;
+	    isKaon = kTRUE;
+	  }
+	  else if((randomNumberSpecies >= fPionPercentage + fKaonPercentage)&&(randomNumberSpecies < fPionPercentage + fKaonPercentage + fProtonPercentage)) {
+	    nGeneratedProtons += 1;
+	    v_pt = fPtSpectraProtons->GetRandom();
+	    v_ptPrime = v_pt;
+	    v_phi = fAzimuthalAngleProtons->GetRandom();
+	    fParticleMass = fProtonMass;
+	    isProton = kTRUE;
+	  }
+	}
+	else {
+	  v_pt = fPtSpectraAllCharges->GetRandom();
+	  v_phi = fAzimuthalAngleAllCharges->GetRandom();
+	}
+	v_ptPrime = v_pt;
+	v_phiPrime = v_phi;
+
+	v_p[0] = v_pt*TMath::Cos(v_phi);
+	v_p[1] = v_pt*TMath::Sin(v_phi);
+	v_p[2] = v_pt*TMath::SinH(v_eta);
+	v_E = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			  TMath::Power(v_p[0],2) +
+			  TMath::Power(v_p[1],2) +
+			  TMath::Power(v_p[2],2));
+	
+	v_y = 0.5*TMath::Log((v_E + v_p[2])/(v_E - v_p[2]));
+
+	v_pPrime[0] = v_ptPrime*TMath::Cos(v_phiPrime);
+	v_pPrime[1] = v_ptPrime*TMath::Sin(v_phiPrime);
+	v_pPrime[2] = v_ptPrime*TMath::SinH(v_etaPrime);
+	v_EPrime = TMath::Sqrt(TMath::Power(fParticleMass,2) +
+			  TMath::Power(v_pPrime[0],2) +
+			  TMath::Power(v_pPrime[1],2) +
+			  TMath::Power(v_pPrime[2],2));
+	
+	v_yPrime = 0.5*TMath::Log((v_EPrime + v_pPrime[2])/(v_EPrime - v_pPrime[2]));
+      
+	//pt coverage
+	if((v_pt < fPtMin) || (v_pt > fPtMax)) continue;
+	if((v_ptPrime < fPtMin) || (v_ptPrime > fPtMax)) continue;
+
+	//acceptance filter
+	if(fUseAcceptanceParameterization) {
+	  Double_t gRandomNumberForAcceptance = gRandom->Rndm();
+	  if(gRandomNumberForAcceptance > fAcceptanceParameterization->Eval(v_pt)) 
+	    continue;
+	  
+	  Double_t gRandomNumberForAcceptancePrime = gRandom->Rndm();
+	  if(gRandomNumberForAcceptancePrime > fAcceptanceParameterization->Eval(v_ptPrime)) 
+	    continue;
+	}
+      
+	// fill charge vector (positive)
+	chargeVector[0]->push_back(v_charge);
+	chargeVector[1]->push_back(v_y);
+	chargeVector[2]->push_back(v_eta);
+	chargeVector[3]->push_back(TMath::RadToDeg()*v_phi);
+	chargeVector[4]->push_back(v_p[0]);
+	chargeVector[5]->push_back(v_p[1]);
+	chargeVector[6]->push_back(v_p[2]);
+	chargeVector[7]->push_back(v_pt);
+	chargeVector[8]->push_back(v_E);
+	
+	if(fRunShuffling) {
+	  chargeVectorShuffle[0]->push_back(v_charge);
+	  chargeVectorShuffle[1]->push_back(v_y);
+	  chargeVectorShuffle[2]->push_back(v_eta);
+	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phi);
+	  chargeVectorShuffle[4]->push_back(v_p[0]);
+	  chargeVectorShuffle[5]->push_back(v_p[1]);
+	  chargeVectorShuffle[6]->push_back(v_p[2]);
+	  chargeVectorShuffle[7]->push_back(v_pt);
+	  chargeVectorShuffle[8]->push_back(v_E);
+	}
+
+	// fill charge vector (negative)
+	chargeVector[0]->push_back(v_chargePrime);
+	chargeVector[1]->push_back(v_yPrime);
+	chargeVector[2]->push_back(v_etaPrime);
+	chargeVector[3]->push_back(TMath::RadToDeg()*v_phiPrime);
+	chargeVector[4]->push_back(v_pPrime[0]);
+	chargeVector[5]->push_back(v_pPrime[1]);
+	chargeVector[6]->push_back(v_pPrime[2]);
+	chargeVector[7]->push_back(v_ptPrime);
+	chargeVector[8]->push_back(v_EPrime);
+	
+	if(fRunShuffling) {
+	  chargeVectorShuffle[0]->push_back(v_chargePrime);
+	  chargeVectorShuffle[1]->push_back(v_yPrime);
+	  chargeVectorShuffle[2]->push_back(v_etaPrime);
+	  chargeVectorShuffle[3]->push_back(TMath::RadToDeg()*v_phiPrime);
+	  chargeVectorShuffle[4]->push_back(v_pPrime[0]);
+	  chargeVectorShuffle[5]->push_back(v_pPrime[1]);
+	  chargeVectorShuffle[6]->push_back(v_pPrime[2]);
+	  chargeVectorShuffle[7]->push_back(v_ptPrime);
+	  chargeVectorShuffle[8]->push_back(v_EPrime);
+	}
+
+	gNumberOfAcceptedParticles += 2;
+      }//loop over the dynamical correlations
+    }// usage of dynamical correlations
+
     if(fUseDebug) {
       Printf("=======================================================");
       Printf("Total: %d - Total positive: %d - Total negative: %d",nMultiplicity,nGeneratedPositive,nGeneratedNegative);
+      Printf("Accepted positive: %d - Accepted negative: %d",gNumberOfAcceptedPositiveParticles,gNumberOfAcceptedNegativeParticles);
+      Printf("Correlations: %d - Correlations positive: %d - Correlations negative: %d",nGeneratedPositiveDynamicalCorrelations+nGeneratedNegativeDynamicalCorrelations,nGeneratedPositiveDynamicalCorrelations,nGeneratedNegativeDynamicalCorrelations);
+      Printf("Number of accepted particles: %d",gNumberOfAcceptedParticles);
       if(!fUseAllCharges)
 	Printf("Pions: %lf - Kaons: %lf - Protons: %lf",1.*nGeneratedPions/nMultiplicity,1.*nGeneratedKaons/nMultiplicity,1.*nGeneratedProtons/nMultiplicity);
-      Printf("Calculating the balance function for %d particles",chargeVector[0]->size());
+      //Printf("Calculating the balance function for %d particles",chargeVector[0]->size());
     }
 
     fHistEventStats->Fill(4);
