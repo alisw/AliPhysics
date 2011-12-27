@@ -43,6 +43,7 @@ AliITSQASPDChecker::AliITSQASPDChecker() :
  fHighSPDValue(NULL),
  fImage(NULL) 
  {
+   // default contructor
  }
 //__________________________________________________________________
 AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qac ) 
@@ -54,10 +55,11 @@ AliITSQASPDChecker& AliITSQASPDChecker::operator = (const AliITSQASPDChecker& qa
 }
 //__________________________________________________________________
 AliITSQASPDChecker::~AliITSQASPDChecker() {
-if(fStepBitSPD) delete[] fStepBitSPD ;
-if(fLowSPDValue)delete[]fLowSPDValue;
-if(fHighSPDValue) delete[]fHighSPDValue;
-if(fImage) delete[]fImage;
+  // destructor
+  if(fStepBitSPD) delete[] fStepBitSPD ;
+  if(fLowSPDValue)delete[]fLowSPDValue;
+  if(fHighSPDValue) delete[]fHighSPDValue;
+  if(fImage) delete[]fImage;
 } 
 
 //__________________________________________________________________
@@ -282,10 +284,12 @@ void  AliITSQASPDChecker::SetSPDLimits(const Float_t *lowvalue, const Float_t * 
 //__________________________________________________________________
 Bool_t  AliITSQASPDChecker::MakeSPDImage( TObjArray ** list, AliQAv1::TASKINDEX_t task, AliQAv1::MODE_t mode)
 {
+  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+
   Bool_t val=kFALSE;
 
   fImage=(TCanvas**)AliQAChecker::Instance()->GetDetQAChecker(0)->GetImage();
-  //create the image for raws and recpoints. In the other case, the default methodof CheckerBase class will be used
+
   switch(task)
     {
     case AliQAv1::kRAWS:{
