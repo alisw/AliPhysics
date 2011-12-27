@@ -486,15 +486,16 @@ void AliTPCclusterKr::SetCenter(){
 
 
   }
+  if(fADCcluster){ 
+
+    fCenterX=rX/fADCcluster;
 
 
-  fCenterX=rX/fADCcluster;
+    fCenterY=rY/fADCcluster;
 
 
-  fCenterY=rY/fADCcluster;
-
-
-  fCenterT=rT/fADCcluster;
+    fCenterT=rT/fADCcluster;
+  }
 
 
 
