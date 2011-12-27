@@ -21,9 +21,6 @@ Or it runs on delta-AODs filled with filtered tracks and jets before.
 
 ***************************************************************************************************/
 
-
-
-
 AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=32, Int_t eventClass=0){
         
         AliAnalysisTaskFragmentationFunction *ff=0;
@@ -70,6 +67,47 @@ AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunction(UInt_t iFlag=
       if(iFlag&(1<<30)) ff = AddTaskFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,3,150.,eventClass);
 
 	return ff;
+}
+
+// _______________________________________________________________________________________
+
+AliAnalysisTaskFragmentationFunction *AddTaskFragmentationFunctionAllCent(
+        const char* recJetsBranch,
+	const char* recJetsBackBranch,
+	const char* genJetsBranch,
+	const char* jetType,
+	const char* trackType,
+	UInt_t filterMask,
+        Float_t radius,
+        int kBackgroundMode,
+        float PtTrackMin,
+        TString BrOpt="",
+        TString BrOpt2="",
+        Float_t radiusBckg=0.4)
+{
+
+  // adds task with  given configuration for all centralities
+  
+  AliAnalysisTaskFragmentationFunction *ff=0;
+
+  for(Int_t eventClass=1; eventClass<=4; eventClass++){
+    
+    ff = AddTaskFragmentationFunction(recJetsBranch,
+				      recJetsBackBranch,
+				      genJetsBranch,
+				      jetType,
+				      trackType,
+				      filterMask,
+				      radius,
+				      kBackgroundMode,
+				      PtTrackMin,
+				      eventClass,
+				      BrOpt,
+				      BrOpt2,
+				      radiusBckg);
+  }
+  
+  return ff;
 }
 
 // _______________________________________________________________________________________
