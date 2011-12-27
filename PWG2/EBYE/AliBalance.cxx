@@ -254,7 +254,6 @@ void AliBalance::CalculateBalance(Float_t fCentrality,vector<Double_t> **chargeV
   //Printf("(AliBalance) Number of tracks: %d",gNtrack);
 
   for(i = 0; i < gNtrack;i++){
-
       Short_t charge          = chargeVector[0]->at(i);
       Double_t rapidity       = chargeVector[1]->at(i);
       Double_t pseudorapidity = chargeVector[2]->at(i);
