@@ -223,7 +223,7 @@ class AliAnalysisVertexingHF : public TNamed {
 				   TObjArray &tracksAtVertex,
 				   Int_t &nSeleTrks,
 				   UChar_t *seleFlags,Int_t *evtNumber);
-  void SetParametersAtVertex(AliESDtrack* esdt, AliExternalTrackParam* extpar) const;
+  void SetParametersAtVertex(AliESDtrack* esdt, const AliExternalTrackParam* extpar) const;
 
   Bool_t SingleTrkCuts(AliESDtrack *trk,Bool_t &okDisplaced,Bool_t &okSoftPi) const;
 

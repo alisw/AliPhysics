@@ -41,8 +41,8 @@
 #include "AliAnalysisVertexingHF.h"
 #include "AliRDHFCutsDstoKKpi.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskSEDs.h"
 #include "AliNormalizationCounter.h"
+#include "AliAnalysisTaskSEDs.h"
 
 ClassImp(AliAnalysisTaskSEDs)
 
@@ -203,20 +203,9 @@ void AliAnalysisTaskSEDs::SetPtBins(Int_t n, Float_t* lim){
 AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 {
   // Destructor
-  if (fOutput) {
-    delete fOutput;
-    fOutput = 0;
-  }
-
-  if(fHistNEvents){
-    delete fHistNEvents;
-    fHistNEvents=0;
-  } 
- 
-  if (fListCuts) {
-    delete fListCuts;
-    fListCuts = 0;
-  }
+  delete fOutput;
+  delete fHistNEvents;
+  delete fListCuts;
 
   for(Int_t i=0;i<4*fNPtBins;i++){
     
@@ -238,35 +227,14 @@ AliAnalysisTaskSEDs::~AliAnalysisTaskSEDs()
 
   }
 
-  if(fPtVsMass){
-    delete fPtVsMass;
-    fPtVsMass=0;
-  }
-  if(fYVsPt){
-    delete fYVsPt;
-    fYVsPt=0;
-  }
-  if(fYVsPtSig){
-    delete fYVsPtSig;
-    fYVsPtSig=0;
-  }
-  if(fNtupleDs){
-    delete fNtupleDs;
-    fNtupleDs=0;
-  }
-  if(fCounter){
-    delete fCounter;
-    fCounter = 0;
-  }
-  
-  if (fProdCuts) {
-    delete fProdCuts;
-    fProdCuts = 0;
-  }
-  if (fAnalysisCuts) {
-    delete fAnalysisCuts;
-    fAnalysisCuts = 0;
-  }
+  delete fPtVsMass;
+  delete fYVsPt;
+  delete fYVsPtSig;
+  delete fNtupleDs;
+  delete fCounter;
+  delete fProdCuts;
+  delete fAnalysisCuts;
+
 }  
 
 //________________________________________________________________________
