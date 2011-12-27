@@ -71,7 +71,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs():
   // Default constructor
 
   for(Int_t i=0;i<4;i++) {
-    if(fChanHist) fChanHist[i]=0;
+    if(fChanHist[i]) fChanHist[i]=0;
   }
 
   for(Int_t i=0;i<4*kMaxPtBins;i++){
@@ -129,7 +129,7 @@ AliAnalysisTaskSEDs::AliAnalysisTaskSEDs(const char *name, AliRDHFCutsDstoKKpi* 
   // Output slot #1 writes into a TList container
   
   for(Int_t i=0;i<4;i++) {
-    if(fChanHist) fChanHist[i]=0;
+    if(fChanHist[i]) fChanHist[i]=0;
   }
 
   for(Int_t i=0;i<4*kMaxPtBins;i++){
