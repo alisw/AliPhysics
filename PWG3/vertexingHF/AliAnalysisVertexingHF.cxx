@@ -2249,6 +2249,10 @@ void AliAnalysisVertexingHF::SelectTracksAndCopyVertex(const AliVEvent *event,
     // skip tracks without ITS
     if(!(track->GetStatus()&AliESDtrack::kITSin)) continue;
 
+    // skip tracks with negative ID 
+    // (these are duplicated TPC-only AOD tracks, for jet analysis...)
+    if(track->GetID()<0) continue;
+
     // TEMPORARY: check that the cov matrix is there
     Double_t covtest[21];
     if(!track->GetCovarianceXYZPxPyPz(covtest)) continue;
