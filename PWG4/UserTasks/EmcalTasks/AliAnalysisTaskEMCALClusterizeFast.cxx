@@ -83,6 +83,9 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fClusterizeFastORs(0)
 { 
   // Constructor
+
+  for(Int_t i = 0; i < 12; ++i) 
+    fGeomMatrix[i] = 0;
 }
 
 //________________________________________________________________________

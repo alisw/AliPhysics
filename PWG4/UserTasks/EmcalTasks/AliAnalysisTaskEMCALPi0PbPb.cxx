@@ -139,7 +139,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb()
     fHPionEtaPhi(0x0),
     fHPionMggPt(0x0),
     fHPionMggAsym(0x0),
-    fHPionMggDgg(0x0)
+    fHPionMggDgg(0x0),
+    fHPionInvMasses()
 {
   // Constructor.
 }
@@ -237,7 +238,8 @@ AliAnalysisTaskEMCALPi0PbPb::AliAnalysisTaskEMCALPi0PbPb(const char *name)
     fHPionEtaPhi(0x0),
     fHPionMggPt(0x0),
     fHPionMggAsym(0x0),
-    fHPionMggDgg(0x0)
+    fHPionMggDgg(0x0),
+    fHPionInvMasses()
 {
   // Constructor.
 
