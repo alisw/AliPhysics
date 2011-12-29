@@ -248,7 +248,7 @@ AliAODEvent::~AliAODEvent()
     delete fAODFolder;
     fAODFolder = 0;
     if(!fConnected) {
-       fAODObjects->Delete("slow");
+//       fAODObjects->Delete("slow");
        delete fAODObjects;
     }   
 }
@@ -260,10 +260,10 @@ void AliAODEvent::AddObject(TObject* obj)
   // Please be aware that in order to increase performance you should
   // refrain from using TObjArrays (if possible). Use TClonesArrays, instead.
   
-  if ( !fAODObjects ) {
-     fAODObjects = new TList();
-     fAODObjects->SetOwner();
-  }
+//  if ( !fAODObjects ) {
+//     fAODObjects = new TList();
+//     fAODObjects->SetOwner();
+//  }
   if ( !fAODObjects->FindObject(obj) ) 
   {
     fAODObjects->AddLast(obj);
