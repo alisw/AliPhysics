@@ -298,13 +298,13 @@ void AliAnalysisTaskToyModel::CreateOutputObjects() {
 void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
   // Main loop
   // Called for each event
-  Double_t v_charge;
-  Double_t v_y;
-  Double_t v_eta;
-  Double_t v_phi;
-  Double_t v_p[3];
-  Double_t v_pt;
-  Double_t v_E;
+  Double_t v_charge = 0;
+  Double_t v_y = 0.0;
+  Double_t v_eta = 0.0;
+  Double_t v_phi = 0.0;
+  Double_t v_p[3] = {0.,0.,0.};
+  Double_t v_pt = 0.0;
+  Double_t v_E = 0.0;
   Bool_t isPion = kFALSE, isKaon = kFALSE, isProton = kFALSE;
 
   if(fUseAllCharges) {
@@ -622,13 +622,13 @@ void AliAnalysisTaskToyModel::Run(Int_t nEvents) {
     }//generated negative particle loop
    
     //Dynamical correlations
-    Double_t v_chargePrime;
-    Double_t v_yPrime;
-    Double_t v_etaPrime;
-    Double_t v_phiPrime;
-    Double_t v_pPrime[3];
-    Double_t v_ptPrime;
-    Double_t v_EPrime;
+    Double_t v_chargePrime = 0;
+    Double_t v_yPrime = 0.0;
+    Double_t v_etaPrime = 0.0;
+    Double_t v_phiPrime = 0.0;
+    Double_t v_pPrime[3] = {0.,0.,0.};
+    Double_t v_ptPrime = 0.0;
+    Double_t v_EPrime = 0.0;
     Int_t nGeneratedPositiveDynamicalCorrelations = 0;
     Int_t nGeneratedNegativeDynamicalCorrelations = 0;
     //Generate "correlated" particles 
