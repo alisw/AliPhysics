@@ -23,7 +23,7 @@
 //  Date: 18/07/2008
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <string>
+#include <cstring>
 #include <fstream>
 #include <new>
 #include <Riostream.h> 
@@ -204,10 +204,18 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
       fModules = NULL;
     }
   }
-  fRawDataFileName = NULL;
-  fModIndProcessed = 0;
-  fModIndRead = 0;
-  fModIndex = NULL;
+  if (ssdadldc.fRawDataFileName) {
+    fRawDataFileName = new (nothrow) Char_t[strlen(ssdadldc.fRawDataFileName)+1];
+    if (fRawDataFileName) strncpy(fRawDataFileName, ssdadldc.fRawDataFileName, strlen(ssdadldc.fRawDataFileName)+1);
+  } else fRawDataFileName = ssdadldc.fRawDataFileName;
+  fModIndProcessed = ssdadldc.fModIndProcessed;
+  fModIndRead = ssdadldc.fModIndRead;
+
+  if (ssdadldc.fModIndex) {
+    fModIndex = new (nothrow) Int_t [ssdadldc.fNumberOfModules];
+    if (fModIndex) memcpy(fModIndex, ssdadldc.fModIndex, ssdadldc.fNumberOfModules*sizeof(Int_t));
+  } else fModIndex = ssdadldc.fModIndex;
+
   fEqIndex = ssdadldc.fEqIndex;
   fNumberOfEvents = ssdadldc.fNumberOfEvents;
   fLdcId = ssdadldc.fLdcId;
@@ -221,9 +229,14 @@ AliITSHandleDaSSD& AliITSHandleDaSSD::operator = (const AliITSHandleDaSSD& ssdad
   fZsFactor = ssdadldc.fZsFactor;
   fALaddersOff = ssdadldc.fALaddersOff;
   fCLaddersOff = ssdadldc.fCLaddersOff;
-  fBadChannelsList = NULL;
-  fDDLModuleMap = NULL;
-  fModIndex = NULL;
+  if (fBadChannelsList) delete fBadChannelsList;
+  fBadChannelsList = new AliITSBadChannelsSSDv2(*ssdadldc.fBadChannelsList);
+  if (fDDLModuleMap) delete [] fDDLModuleMap; 
+  if (ssdadldc.fDDLModuleMap) {
+    fDDLModuleMap = new (nothrow) Int_t [fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl];
+    if (fDDLModuleMap) memcpy(fDDLModuleMap, ssdadldc.fDDLModuleMap, fgkNumberOfSSDDDLs * fgkNumberOfSSDModulesPerDdl * sizeof(Int_t)); 
+  } else fDDLModuleMap = 0;
+
   if (ssdadldc.fBadChannelsList) AliWarning("fBadChannelsList is not copied by assignment operator, use other methods to init it!");
   if (ssdadldc.fDDLModuleMap) AliWarning("fDDLModuleMap is not copied by assignment operator, use other methods to init it!");
   return *this;
@@ -1118,7 +1131,7 @@ Bool_t AliITSHandleDaSSD::DumpModInfo(const Float_t meannosethreshold) const
     if (meannoise > meannosethreshold)
       cout << "Mod: " << i << ";  DDl: " << (int)mod->GetDdlId() << ";  AD: " << (int)mod->GetAD()  
                            << ";  ADC: " << (int)mod->GetADC() << "; MaxPed = " << maxped
-			   << ";  MeanNoise = " << meannoise 
+			   << ";  MeanNoise = " << meannoise << "; MaxNoise = " << maxnoise << "; MaxNoiseStrip = " << maxstrind 
 			   << ";  NOfStrips = " << (mod->GetNumberOfStrips() - novfstr) << endl;
 	if (maxovf > 10) cout << "Max number of events with overflow :  " << maxovf << ";  mean : " << meanovf << endl;
   }
