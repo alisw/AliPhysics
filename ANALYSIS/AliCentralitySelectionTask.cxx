@@ -143,28 +143,28 @@ AliAnalysisTaskSE(),
   fHtempZEMvsZDC(0),
   fOutputList(0),
   fHOutCentV0M     (0),
-  fHOutCentV0M_CVHN(0),
-  fHOutCentV0M_CVLN(0),
-  fHOutCentV0M_CVHNinMB(0),
-  fHOutCentV0M_CVLNinMB(0),
-  fHOutCentV0M_CCENT(0),
-  fHOutCentV0M_CSEMI(0),
-  fHOutCentV0M_CCENTinMB(0),
-  fHOutCentV0M_CSEMIinMB(0),
-  fHOutCentV0M_MSL(0),
-  fHOutCentV0M_MSH(0),
-  fHOutCentV0M_MUL(0),
-  fHOutCentV0M_MLL(0),
-  fHOutCentV0M_EJE(0),
-  fHOutCentV0M_EGA(0),
-  fHOutCentV0M_PHS(0),
-  fHOutCentV0M_MSLinMB(0),
-  fHOutCentV0M_MSHinMB(0),
-  fHOutCentV0M_MULinMB(0),
-  fHOutCentV0M_MLLinMB(0),
-  fHOutCentV0M_EJEinMB(0),
-  fHOutCentV0M_EGAinMB(0),
-  fHOutCentV0M_PHSinMB(0),
+  fHOutCentV0MCVHN(0),
+  fHOutCentV0MCVLN(0),
+  fHOutCentV0MCVHNinMB(0),
+  fHOutCentV0MCVLNinMB(0),
+  fHOutCentV0MCCENT(0),
+  fHOutCentV0MCSEMI(0),
+  fHOutCentV0MCCENTinMB(0),
+  fHOutCentV0MCSEMIinMB(0),
+  fHOutCentV0MMSL(0),
+  fHOutCentV0MMSH(0),
+  fHOutCentV0MMUL(0),
+  fHOutCentV0MMLL(0),
+  fHOutCentV0MEJE(0),
+  fHOutCentV0MEGA(0),
+  fHOutCentV0MPHS(0),
+  fHOutCentV0MMSLinMB(0),
+  fHOutCentV0MMSHinMB(0),
+  fHOutCentV0MMULinMB(0),
+  fHOutCentV0MMLLinMB(0),
+  fHOutCentV0MEJEinMB(0),
+  fHOutCentV0MEGAinMB(0),
+  fHOutCentV0MPHSinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -288,28 +288,28 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const char *name):
   fHtempZEMvsZDC(0),
   fOutputList(0),
   fHOutCentV0M     (0),
-  fHOutCentV0M_CVHN(0),
-  fHOutCentV0M_CVLN(0),
-  fHOutCentV0M_CVHNinMB(0),
-  fHOutCentV0M_CVLNinMB(0),
-  fHOutCentV0M_CCENT(0),
-  fHOutCentV0M_CSEMI(0),
-  fHOutCentV0M_CCENTinMB(0),
-  fHOutCentV0M_CSEMIinMB(0),
-  fHOutCentV0M_MSL(0),
-  fHOutCentV0M_MSH(0),
-  fHOutCentV0M_MUL(0),
-  fHOutCentV0M_MLL(0),
-  fHOutCentV0M_EJE(0),
-  fHOutCentV0M_EGA(0),
-  fHOutCentV0M_PHS(0),
-  fHOutCentV0M_MSLinMB(0),
-  fHOutCentV0M_MSHinMB(0),
-  fHOutCentV0M_MULinMB(0),
-  fHOutCentV0M_MLLinMB(0),
-  fHOutCentV0M_EJEinMB(0),
-  fHOutCentV0M_EGAinMB(0),
-  fHOutCentV0M_PHSinMB(0),
+  fHOutCentV0MCVHN(0),
+  fHOutCentV0MCVLN(0),
+  fHOutCentV0MCVHNinMB(0),
+  fHOutCentV0MCVLNinMB(0),
+  fHOutCentV0MCCENT(0),
+  fHOutCentV0MCSEMI(0),
+  fHOutCentV0MCCENTinMB(0),
+  fHOutCentV0MCSEMIinMB(0),
+  fHOutCentV0MMSL(0),
+  fHOutCentV0MMSH(0),
+  fHOutCentV0MMUL(0),
+  fHOutCentV0MMLL(0),
+  fHOutCentV0MEJE(0),
+  fHOutCentV0MEGA(0),
+  fHOutCentV0MPHS(0),
+  fHOutCentV0MMSLinMB(0),
+  fHOutCentV0MMSHinMB(0),
+  fHOutCentV0MMULinMB(0),
+  fHOutCentV0MMLLinMB(0),
+  fHOutCentV0MEJEinMB(0),
+  fHOutCentV0MEGAinMB(0),
+  fHOutCentV0MPHSinMB(0),
   fHOutCentFMD     (0),
   fHOutCentTRK     (0),
   fHOutCentTKL     (0),
@@ -443,28 +443,28 @@ AliCentralitySelectionTask::AliCentralitySelectionTask(const AliCentralitySelect
   fHtempZEMvsZDC(ana.fHtempZEMvsZDC),
   fOutputList(ana.fOutputList),
   fHOutCentV0M     (ana.fHOutCentV0M     ),
-  fHOutCentV0M_CVHN(ana.fHOutCentV0M_CVHN),
-  fHOutCentV0M_CVLN(ana.fHOutCentV0M_CVLN),
-  fHOutCentV0M_CVHNinMB(ana.fHOutCentV0M_CVHNinMB),
-  fHOutCentV0M_CVLNinMB(ana.fHOutCentV0M_CVLNinMB),
-  fHOutCentV0M_CCENT(ana.fHOutCentV0M_CCENT),
-  fHOutCentV0M_CSEMI(ana.fHOutCentV0M_CSEMI),
-  fHOutCentV0M_CCENTinMB(ana.fHOutCentV0M_CCENTinMB),
-  fHOutCentV0M_CSEMIinMB(ana.fHOutCentV0M_CSEMIinMB),
-  fHOutCentV0M_MSL(ana.fHOutCentV0M_MSL),
-  fHOutCentV0M_MSH(ana.fHOutCentV0M_MSH),
-  fHOutCentV0M_MUL(ana.fHOutCentV0M_MUL),
-  fHOutCentV0M_MLL(ana.fHOutCentV0M_MLL),
-  fHOutCentV0M_EJE(ana.fHOutCentV0M_EJE),
-  fHOutCentV0M_EGA(ana.fHOutCentV0M_EGA),
-  fHOutCentV0M_PHS(ana.fHOutCentV0M_PHS),
-  fHOutCentV0M_MSLinMB(ana.fHOutCentV0M_MSLinMB),
-  fHOutCentV0M_MSHinMB(ana.fHOutCentV0M_MSHinMB),
-  fHOutCentV0M_MULinMB(ana.fHOutCentV0M_MULinMB),
-  fHOutCentV0M_MLLinMB(ana.fHOutCentV0M_MLLinMB),
-  fHOutCentV0M_EJEinMB(ana.fHOutCentV0M_EJEinMB),
-  fHOutCentV0M_EGAinMB(ana.fHOutCentV0M_EGAinMB),
-  fHOutCentV0M_PHSinMB(ana.fHOutCentV0M_PHSinMB),
+  fHOutCentV0MCVHN(ana.fHOutCentV0MCVHN),
+  fHOutCentV0MCVLN(ana.fHOutCentV0MCVLN),
+  fHOutCentV0MCVHNinMB(ana.fHOutCentV0MCVHNinMB),
+  fHOutCentV0MCVLNinMB(ana.fHOutCentV0MCVLNinMB),
+  fHOutCentV0MCCENT(ana.fHOutCentV0MCCENT),
+  fHOutCentV0MCSEMI(ana.fHOutCentV0MCSEMI),
+  fHOutCentV0MCCENTinMB(ana.fHOutCentV0MCCENTinMB),
+  fHOutCentV0MCSEMIinMB(ana.fHOutCentV0MCSEMIinMB),
+  fHOutCentV0MMSL(ana.fHOutCentV0MMSL),
+  fHOutCentV0MMSH(ana.fHOutCentV0MMSH),
+  fHOutCentV0MMUL(ana.fHOutCentV0MMUL),
+  fHOutCentV0MMLL(ana.fHOutCentV0MMLL),
+  fHOutCentV0MEJE(ana.fHOutCentV0MEJE),
+  fHOutCentV0MEGA(ana.fHOutCentV0MEGA),
+  fHOutCentV0MPHS(ana.fHOutCentV0MPHS),
+  fHOutCentV0MMSLinMB(ana.fHOutCentV0MMSLinMB),
+  fHOutCentV0MMSHinMB(ana.fHOutCentV0MMSHinMB),
+  fHOutCentV0MMULinMB(ana.fHOutCentV0MMULinMB),
+  fHOutCentV0MMLLinMB(ana.fHOutCentV0MMLLinMB),
+  fHOutCentV0MEJEinMB(ana.fHOutCentV0MEJEinMB),
+  fHOutCentV0MEGAinMB(ana.fHOutCentV0MEGAinMB),
+  fHOutCentV0MPHSinMB(ana.fHOutCentV0MPHSinMB),
   fHOutCentFMD     (ana.fHOutCentFMD     ),
   fHOutCentTRK     (ana.fHOutCentTRK     ),
   fHOutCentTKL     (ana.fHOutCentTKL     ),
@@ -534,28 +534,28 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner();
     fHOutCentV0M     = new TH1F("fHOutCentV0M","fHOutCentV0M; Centrality V0",505,0,101);
-    fHOutCentV0M_CVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
-    fHOutCentV0M_CVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
-    fHOutCentV0M_CVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
-    fHOutCentV0M_CVLNinMB= new TH1F("fHOutCentV0M_CVLNinMB","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
-    fHOutCentV0M_CCENT= new TH1F("fHOutCentV0M_CCENT","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
-    fHOutCentV0M_CSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
-    fHOutCentV0M_CCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
-    fHOutCentV0M_CSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
-    fHOutCentV0M_MSL= new TH1F("fHOutCentV0M_MSL","fHOutCentV0M_MSL; Centrality V0",505,0,101);
-    fHOutCentV0M_MSH= new TH1F("fHOutCentV0M_MSH","fHOutCentV0M_MSH; Centrality V0",505,0,101);
-    fHOutCentV0M_MUL= new TH1F("fHOutCentV0M_MUL","fHOutCentV0M_MUL; Centrality V0",505,0,101);
-    fHOutCentV0M_MLL= new TH1F("fHOutCentV0M_MLL","fHOutCentV0M_MLL; Centrality V0",505,0,101);
-    fHOutCentV0M_EJE= new TH1F("fHOutCentV0M_EJE","fHOutCentV0M_EJE; Centrality V0",505,0,101);
-    fHOutCentV0M_EGA= new TH1F("fHOutCentV0M_EGA","fHOutCentV0M_EGA; Centrality V0",505,0,101);
-    fHOutCentV0M_PHS= new TH1F("fHOutCentV0M_PHS","fHOutCentV0M_PHS; Centrality V0",505,0,101);
-    fHOutCentV0M_MSLinMB= new TH1F("fHOutCentV0M_MSLinMB","fHOutCentV0M_MSLinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_MSHinMB= new TH1F("fHOutCentV0M_MSHinMB","fHOutCentV0M_MSHinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_MULinMB= new TH1F("fHOutCentV0M_MULinMB","fHOutCentV0M_MULinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_MLLinMB= new TH1F("fHOutCentV0M_MLLinMB","fHOutCentV0M_MLLinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_EJEinMB= new TH1F("fHOutCentV0M_EJEinMB","fHOutCentV0M_EJEinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_EGAinMB= new TH1F("fHOutCentV0M_EGAinMB","fHOutCentV0M_EGAinMB; Centrality V0",505,0,101);
-    fHOutCentV0M_PHSinMB= new TH1F("fHOutCentV0M_PHSinMB","fHOutCentV0M_PHSinMB; Centrality V0",505,0,101);
+    fHOutCentV0MCVHN= new TH1F("fHOutCentV0M_CVHN","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
+    fHOutCentV0MCVLN= new TH1F("fHOutCentV0M_CVLN","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
+    fHOutCentV0MCVHNinMB= new TH1F("fHOutCentV0M_CVHNinMB","fHOutCentV0M_CVHN; Centrality V0",505,0,101);
+    fHOutCentV0MCVLNinMB= new TH1F("fHOutCentV0M_CVLNinMB","fHOutCentV0M_CVLN; Centrality V0",505,0,101);
+    fHOutCentV0MCCENT= new TH1F("fHOutCentV0M_CCENT","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+    fHOutCentV0MCSEMI= new TH1F("fHOutCentV0M_CSEMI","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+    fHOutCentV0MCCENTinMB= new TH1F("fHOutCentV0M_CCENTinMB","fHOutCentV0M_CCENT; Centrality V0",505,0,101);
+    fHOutCentV0MCSEMIinMB= new TH1F("fHOutCentV0M_CSEMIinMB","fHOutCentV0M_CSEMI; Centrality V0",505,0,101);
+    fHOutCentV0MMSL= new TH1F("fHOutCentV0M_MSL","fHOutCentV0M_MSL; Centrality V0",505,0,101);
+    fHOutCentV0MMSH= new TH1F("fHOutCentV0M_MSH","fHOutCentV0M_MSH; Centrality V0",505,0,101);
+    fHOutCentV0MMUL= new TH1F("fHOutCentV0M_MUL","fHOutCentV0M_MUL; Centrality V0",505,0,101);
+    fHOutCentV0MMLL= new TH1F("fHOutCentV0M_MLL","fHOutCentV0M_MLL; Centrality V0",505,0,101);
+    fHOutCentV0MEJE= new TH1F("fHOutCentV0M_EJE","fHOutCentV0M_EJE; Centrality V0",505,0,101);
+    fHOutCentV0MEGA= new TH1F("fHOutCentV0M_EGA","fHOutCentV0M_EGA; Centrality V0",505,0,101);
+    fHOutCentV0MPHS= new TH1F("fHOutCentV0M_PHS","fHOutCentV0M_PHS; Centrality V0",505,0,101);
+    fHOutCentV0MMSLinMB= new TH1F("fHOutCentV0M_MSLinMB","fHOutCentV0M_MSLinMB; Centrality V0",505,0,101);
+    fHOutCentV0MMSHinMB= new TH1F("fHOutCentV0M_MSHinMB","fHOutCentV0M_MSHinMB; Centrality V0",505,0,101);
+    fHOutCentV0MMULinMB= new TH1F("fHOutCentV0M_MULinMB","fHOutCentV0M_MULinMB; Centrality V0",505,0,101);
+    fHOutCentV0MMLLinMB= new TH1F("fHOutCentV0M_MLLinMB","fHOutCentV0M_MLLinMB; Centrality V0",505,0,101);
+    fHOutCentV0MEJEinMB= new TH1F("fHOutCentV0M_EJEinMB","fHOutCentV0M_EJEinMB; Centrality V0",505,0,101);
+    fHOutCentV0MEGAinMB= new TH1F("fHOutCentV0M_EGAinMB","fHOutCentV0M_EGAinMB; Centrality V0",505,0,101);
+    fHOutCentV0MPHSinMB= new TH1F("fHOutCentV0M_PHSinMB","fHOutCentV0M_PHSinMB; Centrality V0",505,0,101);
     fHOutCentFMD     = new TH1F("fHOutCentFMD","fHOutCentFMD; Centrality FMD",505,0,101);
     fHOutCentTRK     = new TH1F("fHOutCentTRK","fHOutCentTRK; Centrality TPC",505,0,101);
     fHOutCentTKL     = new TH1F("fHOutCentTKL","fHOutCentTKL; Centrality tracklets",505,0,101);
@@ -609,28 +609,28 @@ void AliCentralitySelectionTask::UserCreateOutputObjects()
     fHOutVertexT0  = new TH1F("fHOutVertexT0", "fHOutVertexT0", 100,-20,20);
   
     fOutputList->Add(  fHOutCentV0M     );
-    fOutputList->Add(  fHOutCentV0M_CVHN);
-    fOutputList->Add(  fHOutCentV0M_CVLN);
-    fOutputList->Add(  fHOutCentV0M_CVHNinMB);
-    fOutputList->Add(  fHOutCentV0M_CVLNinMB);
-    fOutputList->Add(  fHOutCentV0M_CCENT);
-    fOutputList->Add(  fHOutCentV0M_CSEMI);
-    fOutputList->Add(  fHOutCentV0M_CCENTinMB);
-    fOutputList->Add(  fHOutCentV0M_CSEMIinMB);
-    fOutputList->Add(  fHOutCentV0M_MSL    );
-    fOutputList->Add(  fHOutCentV0M_MSH    );
-    fOutputList->Add(  fHOutCentV0M_MUL    );
-    fOutputList->Add(  fHOutCentV0M_MLL    );
-    fOutputList->Add(  fHOutCentV0M_EJE    );
-    fOutputList->Add(  fHOutCentV0M_EGA    );
-    fOutputList->Add(  fHOutCentV0M_PHS   );
-    fOutputList->Add(  fHOutCentV0M_MSLinMB);
-    fOutputList->Add(  fHOutCentV0M_MSHinMB);
-    fOutputList->Add(  fHOutCentV0M_MULinMB);
-    fOutputList->Add(  fHOutCentV0M_MLLinMB);
-    fOutputList->Add(  fHOutCentV0M_EJEinMB);
-    fOutputList->Add(  fHOutCentV0M_EGAinMB);
-    fOutputList->Add(  fHOutCentV0M_PHSinMB);
+    fOutputList->Add(  fHOutCentV0MCVHN);
+    fOutputList->Add(  fHOutCentV0MCVLN);
+    fOutputList->Add(  fHOutCentV0MCVHNinMB);
+    fOutputList->Add(  fHOutCentV0MCVLNinMB);
+    fOutputList->Add(  fHOutCentV0MCCENT);
+    fOutputList->Add(  fHOutCentV0MCSEMI);
+    fOutputList->Add(  fHOutCentV0MCCENTinMB);
+    fOutputList->Add(  fHOutCentV0MCSEMIinMB);
+    fOutputList->Add(  fHOutCentV0MMSL    );
+    fOutputList->Add(  fHOutCentV0MMSH    );
+    fOutputList->Add(  fHOutCentV0MMUL    );
+    fOutputList->Add(  fHOutCentV0MMLL    );
+    fOutputList->Add(  fHOutCentV0MEJE    );
+    fOutputList->Add(  fHOutCentV0MEGA    );
+    fOutputList->Add(  fHOutCentV0MPHS   );
+    fOutputList->Add(  fHOutCentV0MMSLinMB);
+    fOutputList->Add(  fHOutCentV0MMSHinMB);
+    fOutputList->Add(  fHOutCentV0MMULinMB);
+    fOutputList->Add(  fHOutCentV0MMLLinMB);
+    fOutputList->Add(  fHOutCentV0MEJEinMB);
+    fOutputList->Add(  fHOutCentV0MEGAinMB);
+    fOutputList->Add(  fHOutCentV0MPHSinMB);
     fOutputList->Add(  fHOutCentFMD     );
     fOutputList->Add(  fHOutCentTRK     );
     fOutputList->Add(  fHOutCentTKL     );
@@ -950,17 +950,17 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
 
   // filling QA histograms
   if (fFillHistos) {    
-    if (fCVHN)   fHOutCentV0M_CVHN->Fill(fCentV0M);
-    if (fCVLN)   fHOutCentV0M_CVLN->Fill(fCentV0M);
-    if (fCCENT)  fHOutCentV0M_CCENT->Fill(fCentV0M);
-    if (fCSEMI)  fHOutCentV0M_CSEMI->Fill(fCentV0M);
-    if (fMSL) fHOutCentV0M_MSL->Fill(fCentV0M);
-    if (fMSH) fHOutCentV0M_MSH->Fill(fCentV0M);
-    if (fMUL) fHOutCentV0M_MUL->Fill(fCentV0M);
-    if (fMLL) fHOutCentV0M_MLL->Fill(fCentV0M);
-    if (fEJE) fHOutCentV0M_EJE->Fill(fCentV0M);
-    if (fEGA) fHOutCentV0M_EGA->Fill(fCentV0M);
-    if (fPHS) fHOutCentV0M_PHS->Fill(fCentV0M);
+    if (fCVHN)   fHOutCentV0MCVHN->Fill(fCentV0M);
+    if (fCVLN)   fHOutCentV0MCVLN->Fill(fCentV0M);
+    if (fCCENT)  fHOutCentV0MCCENT->Fill(fCentV0M);
+    if (fCSEMI)  fHOutCentV0MCSEMI->Fill(fCentV0M);
+    if (fMSL) fHOutCentV0MMSL->Fill(fCentV0M);
+    if (fMSH) fHOutCentV0MMSH->Fill(fCentV0M);
+    if (fMUL) fHOutCentV0MMUL->Fill(fCentV0M);
+    if (fMLL) fHOutCentV0MMLL->Fill(fCentV0M);
+    if (fEJE) fHOutCentV0MEJE->Fill(fCentV0M);
+    if (fEGA) fHOutCentV0MEGA->Fill(fCentV0M);
+    if (fPHS) fHOutCentV0MPHS->Fill(fCentV0M);
 
     if (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB) { // fill the QA histograms only for MB events!
       fHOutQuality->Fill(fQuality);
@@ -970,17 +970,17 @@ void AliCentralitySelectionTask::UserExec(Option_t */*option*/)
       if (fQuality==0) {  
 	fHOutCentV0M->Fill(fCentV0M);
 	
-	if (fCVHNbit)  fHOutCentV0M_CVHNinMB->Fill(fCentV0M);
-	if (fCVLNbit)  fHOutCentV0M_CVLNinMB->Fill(fCentV0M);
-	if (fCCENTbit) fHOutCentV0M_CCENTinMB->Fill(fCentV0M);
-	if (fCSEMIbit) fHOutCentV0M_CSEMIinMB->Fill(fCentV0M);
-	if (fMSL) fHOutCentV0M_MSLinMB->Fill(fCentV0M);
-	if (fMSH) fHOutCentV0M_MSHinMB->Fill(fCentV0M);
-	if (fMUL) fHOutCentV0M_MULinMB->Fill(fCentV0M);
-	if (fMLL) fHOutCentV0M_MLLinMB->Fill(fCentV0M);
-	if (fEJE) fHOutCentV0M_EJEinMB->Fill(fCentV0M);
-	if (fEGA) fHOutCentV0M_EGAinMB->Fill(fCentV0M);
-	if (fPHS) fHOutCentV0M_PHSinMB->Fill(fCentV0M);
+	if (fCVHNbit)  fHOutCentV0MCVHNinMB->Fill(fCentV0M);
+	if (fCVLNbit)  fHOutCentV0MCVLNinMB->Fill(fCentV0M);
+	if (fCCENTbit) fHOutCentV0MCCENTinMB->Fill(fCentV0M);
+	if (fCSEMIbit) fHOutCentV0MCSEMIinMB->Fill(fCentV0M);
+	if (fMSL) fHOutCentV0MMSLinMB->Fill(fCentV0M);
+	if (fMSH) fHOutCentV0MMSHinMB->Fill(fCentV0M);
+	if (fMUL) fHOutCentV0MMULinMB->Fill(fCentV0M);
+	if (fMLL) fHOutCentV0MMLLinMB->Fill(fCentV0M);
+	if (fEJE) fHOutCentV0MEJEinMB->Fill(fCentV0M);
+	if (fEGA) fHOutCentV0MEGAinMB->Fill(fCentV0M);
+	if (fPHS) fHOutCentV0MPHSinMB->Fill(fCentV0M);
        
 	
 	fHOutCentFMD->Fill(fCentFMD);
@@ -1038,7 +1038,7 @@ void AliCentralitySelectionTask::Terminate(Option_t */*option*/)
   // Terminate analysis
 }
 //________________________________________________________________________
-Int_t AliCentralitySelectionTask::SetupRun(AliESDEvent* const esd)
+Int_t AliCentralitySelectionTask::SetupRun(const AliESDEvent* const esd)
 {
   // Setup files for run
 

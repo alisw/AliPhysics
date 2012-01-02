@@ -44,7 +44,7 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
 
  private:
 
-  Int_t SetupRun(AliESDEvent* const esd);
+  Int_t SetupRun(const AliESDEvent* const esd);
   Bool_t IsOutlierV0MSPD(Float_t spd, Float_t v0, Int_t cent) const;
   Bool_t IsOutlierV0MTPC(Int_t tracks, Float_t v0, Int_t cent) const;
   Bool_t IsOutlierV0MZDC(Float_t zdc, Float_t v0) const;
@@ -124,28 +124,28 @@ class AliCentralitySelectionTask : public AliAnalysisTaskSE {
   TList   *fOutputList; // output list
   
   TH1F *fHOutCentV0M     ;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CVHN;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CVLN;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CVHNinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CVLNinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CCENT;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CSEMI;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CCENTinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_CSEMIinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MSL;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MSH;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MUL;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MLL;    //control histogram for centrality
-  TH1F *fHOutCentV0M_EJE;    //control histogram for centrality
-  TH1F *fHOutCentV0M_EGA;    //control histogram for centrality
-  TH1F *fHOutCentV0M_PHS;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MSLinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MSHinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MULinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_MLLinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_EJEinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_EGAinMB;    //control histogram for centrality
-  TH1F *fHOutCentV0M_PHSinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MCVHN;    //control histogram for centrality
+  TH1F *fHOutCentV0MCVLN;    //control histogram for centrality
+  TH1F *fHOutCentV0MCVHNinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MCVLNinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MCCENT;    //control histogram for centrality
+  TH1F *fHOutCentV0MCSEMI;    //control histogram for centrality
+  TH1F *fHOutCentV0MCCENTinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MCSEMIinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MMSL;    //control histogram for centrality
+  TH1F *fHOutCentV0MMSH;    //control histogram for centrality
+  TH1F *fHOutCentV0MMUL;    //control histogram for centrality
+  TH1F *fHOutCentV0MMLL;    //control histogram for centrality
+  TH1F *fHOutCentV0MEJE;    //control histogram for centrality
+  TH1F *fHOutCentV0MEGA;    //control histogram for centrality
+  TH1F *fHOutCentV0MPHS;    //control histogram for centrality
+  TH1F *fHOutCentV0MMSLinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MMSHinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MMULinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MMLLinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MEJEinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MEGAinMB;    //control histogram for centrality
+  TH1F *fHOutCentV0MPHSinMB;    //control histogram for centrality
   TH1F *fHOutCentFMD     ;    //control histogram for centrality
   TH1F *fHOutCentTRK     ;    //control histogram for centrality
   TH1F *fHOutCentTKL     ;    //control histogram for centrality
