@@ -382,7 +382,7 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
         
     if(stack->IsPhysicalPrimary(i) && particle->Charge() != 0) {
       
-      if(vtxFound && isTriggered) {
+      //if(vtxFound && isTriggered) {
 	TH2F* hPrimaryInner = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",'I',vertexBin));
 	TH2F* hPrimaryOuter = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimary_FMD_%c_vtx%d",'O',vertexBin));
 	hPrimaryInner->Fill(particle->Eta(),particle->Phi());
@@ -392,8 +392,8 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
 	  TH2F* hPrimaryOuterNSD = (TH2F*)fListOfPrimaries.FindObject( Form("hPrimaryNSD_FMD_%c_vtx%d",'O',vertexBin));
 	  hPrimaryInnerNSD->Fill(particle->Eta(),particle->Phi());
 	  hPrimaryOuterNSD->Fill(particle->Eta(),particle->Phi());
-	}
-      }
+	  //	}
+       }
       TH2F* hAnalysedInner = (TH2F*)fListOfPrimaries.FindObject( Form("Analysed_FMD%c_vtx%d",'I',vertexBin));
       TH2F* hAnalysedOuter = (TH2F*)fListOfPrimaries.FindObject( Form("Analysed_FMD%c_vtx%d",'O',vertexBin));
       TH2F* hAnalysedNSDInner = (TH2F*)fListOfPrimaries.FindObject( Form("AnalysedNSD_FMD%c_vtx%d",'I',vertexBin));
@@ -420,7 +420,7 @@ void AliFMDAnalysisTaskGenerateCorrection::UserExec(Option_t */*option*/)
 	hNSDOuter->Fill(particle->Eta(),particle->Phi());
       }
     }
-    if(!vtxFound || !isTriggered) continue;
+    //if(!vtxFound || !isTriggered) continue;
     
     for(Int_t j=0; j<particle->GetNumberOfTrackReferences();j++) {
       
