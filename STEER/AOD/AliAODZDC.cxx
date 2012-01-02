@@ -41,14 +41,12 @@ AliAODZDC::AliAODZDC() :
   fZDCTDCSum(0),	 
   fZDCTDCDifference(0)
 {
+// Default constructor
   for(Int_t i=0; i<5; i++){
     fZNCTowerEnergy[i] = fZNATowerEnergy[i] = 0.;
     fZPCTowerEnergy[i] = fZPATowerEnergy[i] = 0.;
     fZNCTowerEnergyLR[i] = fZNATowerEnergyLR[i] = 0.;
   }
-  //for(Int_t i=0; i<2; i++){
-  //  fZNACentrCoord[i] = fZNCCentrCoord[i] = 0.;
-  //}
 }
 
 //__________________________________________________________________________
@@ -69,6 +67,7 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
   fZDCTDCSum(zdcAOD.fZDCTDCSum),	 
   fZDCTDCDifference(zdcAOD.fZDCTDCDifference)
 {
+// Constructor
   for(Int_t i=0; i<5; i++){
     fZNCTowerEnergy[i] = zdcAOD.fZNCTowerEnergy[i];
     fZNATowerEnergy[i] = zdcAOD.fZNATowerEnergy[i];
@@ -77,10 +76,6 @@ AliAODZDC::AliAODZDC(const AliAODZDC &zdcAOD) :
     fZNCTowerEnergyLR[i] = zdcAOD.fZNCTowerEnergyLR[i];
     fZNATowerEnergyLR[i] = zdcAOD.fZNATowerEnergyLR[i];
   }
-  //for(Int_t i=0; i<2; i++){
-  //  fZNACentrCoord[i] = zdcAOD.fZNACentrCoord[i];
-  //  fZNCCentrCoord[i] = zdcAOD.fZNCCentrCoord[i];
-  //}
 }
 
 //__________________________________________________________________________
@@ -126,6 +121,7 @@ AliAODZDC& AliAODZDC::operator=(const AliAODZDC& zdcAOD)
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZNCEnergy() const
 {
+// Return ZNC energy
     if (fZNCEnergy < 0.) {
 	fZNCEnergy = 0.;
 	for(Int_t i=0; i<5; i++) fZNCEnergy += fZNCTowerEnergy[i];
@@ -136,6 +132,7 @@ Double_t  AliAODZDC::GetZNCEnergy() const
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZNAEnergy() const
 {
+// Return ZNA Energy
     if (fZNAEnergy < 0.) {
 	fZNAEnergy = 0.;
 	for(Int_t i=0; i<5; i++) fZNAEnergy += fZNATowerEnergy[i];
@@ -146,6 +143,7 @@ Double_t  AliAODZDC::GetZNAEnergy() const
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZPCEnergy() const
 {
+// Return ZPC Energy
     if (fZPCEnergy < 0.) {
 	fZPCEnergy = 0.;
 	for(Int_t i=0; i<5; i++) fZPCEnergy += fZPCTowerEnergy[i];
@@ -156,6 +154,7 @@ Double_t  AliAODZDC::GetZPCEnergy() const
 //______________________________________________________________________________
 Double_t  AliAODZDC::GetZPAEnergy() const
 {
+// Return ZPA Energy
     if (fZPAEnergy < 0.) {
 	fZPAEnergy = 0.;
 	for(Int_t i=0; i<5; i++) fZPAEnergy += fZPATowerEnergy[i];

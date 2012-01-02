@@ -125,8 +125,8 @@ AliAODHandler::~AliAODHandler()
     // is already handled in TerminateIO
     fFileA->Close();
     delete fFileA;
-    fTreeA = 0;
   }
+
   delete fTreeA;
   delete fExtensions;
   delete fFilters;

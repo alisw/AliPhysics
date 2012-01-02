@@ -58,8 +58,8 @@ class AliAODJetEventBackground : public TNamed {
     static TString fgkStdBranchName;                    // Standard branch name
     Double32_t      fBackground[kMaxBackground];        // Background from different schemes, normalized to area
 
-    Double32_t      fSigma[kMaxBackground];
-    Double32_t      fMeanArea[kMaxBackground]; 
+    Double32_t      fSigma[kMaxBackground];             // Sigma
+    Double32_t      fMeanArea[kMaxBackground];          // Mean area 
     ClassDef(AliAODJetEventBackground,3);
 
 };
