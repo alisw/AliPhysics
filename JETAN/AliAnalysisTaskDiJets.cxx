@@ -14,7 +14,12 @@
  **************************************************************************/
 
 /* $Id$ */
- 
+/*
+ Analysis Task 
+ for Dijet Analysis
+ based on AOD
+*/
+
 #include "AliAnalysisTaskDiJets.h"
 #include "AliAODEvent.h"
 #include "AliAODJet.h"
