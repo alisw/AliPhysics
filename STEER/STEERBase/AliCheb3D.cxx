@@ -602,11 +602,11 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   UShort_t *nColsAtRow = cheb->GetNColsAtRow();
   UShort_t *colAtRowBg = cheb->GetColAtRowBg();
   int nCols = 0;
-  int NElemBound2D = 0;
+  int nElemBound2D = 0;
   for (int id0=0;id0<nRows;id0++) {
     nColsAtRow[id0] = tmpCols[id0];     // number of columns to store for this row
-    colAtRowBg[id0] = NElemBound2D;     // begining of this row in 2D boundary surface
-    NElemBound2D += tmpCols[id0];
+    colAtRowBg[id0] = nElemBound2D;     // begining of this row in 2D boundary surface
+    nElemBound2D += tmpCols[id0];
     if (nCols<nColsAtRow[id0]) nCols = nColsAtRow[id0];
   }
   cheb->InitCols(nCols);
@@ -615,7 +615,7 @@ Int_t AliCheb3D::ChebFit(int dmOut)
   // create the 2D matrix defining the boundary of significance for 3D coeffs.matrix 
   // and count the number of siginifacnt coefficients
   //
-  cheb->InitElemBound2D(NElemBound2D);
+  cheb->InitElemBound2D(nElemBound2D);
   UShort_t *coefBound2D0 = cheb->GetCoefBound2D0();
   UShort_t *coefBound2D1 = cheb->GetCoefBound2D1();
   fMaxCoefs = 0; // redefine number of coeffs
