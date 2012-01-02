@@ -1,3 +1,11 @@
+/*
+ Simple use case for mixed event analysis
+ based on ESD or AOD
+ Delta_phi correlation analysis is performed on charged tracks 
+ for same and mixed events
+ Author: andreas.morsch@cern.ch 
+*/
+
 
 #include "TH1F.h"
 #include "TList.h"

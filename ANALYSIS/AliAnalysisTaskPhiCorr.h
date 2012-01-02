@@ -1,9 +1,14 @@
 // gSystem->SetIncludePath("-I$ROOTSYS/include -I$ALICE_ROOT/include");
-#ifndef AliAnalysisTaskPt_cxx
-#define AliAnalysisTaskPt_cxx
+#ifndef ALIANALYSISTASKPHICORR_cxx
+#define ALIANALYSISTASKPHICORR_cxx
+/*
+ Simple use case for mixed event analysis
+ based on ESD or AOD
+ Delta_phi correlation analysis is performed on charged tracks 
+ for same and mixed events
+ Author: andreas.morsch@cern.ch 
+*/
 
-// example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
 
 class TH1F;
 class TList;
@@ -22,10 +27,10 @@ class AliAnalysisTaskPhiCorr : public AliAnalysisTaskME {
   virtual void   Terminate(Option_t *);
   
  private:
-  TList       *fHists;      // List with histos
-  TH1F        *fHistDphiCO; // Pt spectrum
-  TH1F        *fHistDphiUC; // Pt spectrum
-  AliMixedEvent fMixedEvent;
+  TList       *fHists;        // List with histos
+  TH1F        *fHistDphiCO;   // Pt spectrum
+  TH1F        *fHistDphiUC;   // Pt spectrum
+  AliMixedEvent fMixedEvent;  // Mixed event
   
   AliAnalysisTaskPhiCorr(const AliAnalysisTaskPhiCorr&); // not implemented
   AliAnalysisTaskPhiCorr& operator=(const AliAnalysisTaskPhiCorr&); // not implemented
