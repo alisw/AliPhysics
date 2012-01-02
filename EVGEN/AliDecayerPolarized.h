@@ -33,10 +33,6 @@ class AliDecayerPolarized : public AliDecayer
   virtual Float_t GetPartialBranchingRatio(Int_t ipart);
   virtual Float_t GetLifetime(Int_t kf);
   virtual void    ReadDecayTable();
- private:
-  void  Copy(TObject &decayer) const;
-  AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
-      {decayer.Copy(*this);return(*this);}
     
  protected:
   Double_t fAlpha;       // Polarization parameter
@@ -46,6 +42,11 @@ class AliDecayerPolarized : public AliDecayer
   TParticle *fMother;    // ! Particle that has to be decayed
   TParticle *fDaughter1; // ! Decay product no. 1
   TParticle *fDaughter2; // ! Decay product no. 2
+
+ private:
+  void  Copy(TObject &decayer) const;
+  AliDecayerPolarized &operator=(const AliDecayerPolarized &decayer) 
+      {decayer.Copy(*this);return(*this);}
   
   ClassDef(AliDecayerPolarized,1) // Polarized 2-body quarkonium decay
 };

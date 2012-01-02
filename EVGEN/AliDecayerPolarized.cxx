@@ -77,10 +77,10 @@ AliDecayerPolarized::AliDecayerPolarized(const AliDecayerPolarized &decayer):
 AliDecayerPolarized::~AliDecayerPolarized()
 {
 // Destructor
-    if(fPol) delete fPol; fPol=0;
-    if(fMother) delete fMother; fMother=0;
-    if(fDaughter1) delete fDaughter1; fDaughter1=0;
-    if(fDaughter2) delete fDaughter2; fDaughter2=0;
+    delete fPol; 
+    delete fMother;
+    delete fDaughter1;
+    delete fDaughter2;
 }
 //____________________________________________________________
 void AliDecayerPolarized::Decay(Int_t ipart, TLorentzVector *p)
@@ -119,10 +119,10 @@ void AliDecayerPolarized::Decay(Int_t ipart, TLorentzVector *p)
     v1.SetPxPyPzE(-px1,-py1,-pz1,e1);   //in the dimuon rest frame
     v2.SetPxPyPzE(px1,py1,pz1,e2); 
 	
-    TLorentzVector PProj, PTarg; // In the CM frame
+    TLorentzVector pProj, pTarg; // In the CM frame
     Float_t mp = 0.938;
-    PProj.SetPxPyPzE(0.,0.,-7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // projectile
-    PTarg.SetPxPyPzE(0.,0.,7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // target
+    pProj.SetPxPyPzE(0.,0.,-7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // projectile
+    pTarg.SetPxPyPzE(0.,0.,7000.,TMath::Sqrt(7000.*7000.+mp*mp)); // target
  
     TVector3 betajpsicm;
     betajpsicm = (-1./p->E()*p->Vect());
@@ -134,11 +134,11 @@ void AliDecayerPolarized::Decay(Int_t ipart, TLorentzVector *p)
       v2.RotateUz(v3jpsi); 	
     } else if (fSystRef == kColSop){
       //  polarization axis: bisector of proj and target in the dimuon rest frame
-      PProj.Boost(betajpsicm);   //boost proj and targ from CM to DIMU rest frame
-      PTarg.Boost(betajpsicm);
+      pProj.Boost(betajpsicm);   //boost proj and targ from CM to DIMU rest frame
+      pTarg.Boost(betajpsicm);
 
       TVector3 zaxisCS;
-      zaxisCS=(((PProj.Vect()).Unit())-((PTarg.Vect()).Unit())).Unit();
+      zaxisCS=(((pProj.Vect()).Unit())-((pTarg.Vect()).Unit())).Unit();
       v1.RotateUz(zaxisCS);
       v2.RotateUz(zaxisCS);
     }
@@ -152,13 +152,13 @@ void AliDecayerPolarized::Decay(Int_t ipart, TLorentzVector *p)
 //    printf("v1 components (mu1 in polar. ref. syst.) %f %f %f %f\n",v1.Px(),v1.Py(),v1.Pz(),v1.E());
 //    printf("v2 components (mu2 in polar. ref. syst.) %f %f %f %f\n",v2.Px(),v2.Py(),v2.Pz(),v2.E());
 
-    Int_t status_decayed=11;
-    Int_t status_undecayed=1;
+    Int_t statusDecayed=11;
+    Int_t statusUndecayed=1;
         
    
-    fMother = new TParticle(ipart,status_decayed,0,-1,2,3,p->Px(),p->Py(),p->Pz(),p->E(),0.,0.,0.,0);   
-    fDaughter1 = new TParticle(d1->PdgCode(),status_undecayed,1,-1,0,0,v1.Px(),v1.Py(),v1.Pz(),v1.E(),0.,0.,0.,0);   
-    fDaughter2 = new TParticle(d2->PdgCode(),status_undecayed,1,-1,0,0,v2.Px(),v2.Py(),v2.Pz(),v2.E(),0.,0.,0.,0);
+    fMother = new TParticle(ipart,statusDecayed,0,-1,2,3,p->Px(),p->Py(),p->Pz(),p->E(),0.,0.,0.,0);   
+    fDaughter1 = new TParticle(d1->PdgCode(),statusUndecayed,1,-1,0,0,v1.Px(),v1.Py(),v1.Pz(),v1.E(),0.,0.,0.,0);   
+    fDaughter2 = new TParticle(d2->PdgCode(),statusUndecayed,1,-1,0,0,v2.Px(),v2.Py(),v2.Pz(),v2.E(),0.,0.,0.,0);
 
 }
 
