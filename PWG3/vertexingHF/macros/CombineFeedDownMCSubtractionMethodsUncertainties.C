@@ -52,7 +52,9 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   TGraphAsymmErrors * gSigmaCorrFc = (TGraphAsymmErrors*)fcfile->Get("gSigmaCorr");
   gSigmaCorrFc->SetNameTitle("gSigmaCorrFc","gSigmaCorrFc");
   TGraphAsymmErrors * gSigmaCorrConservativeFc = (TGraphAsymmErrors*)fcfile->Get("gSigmaCorrConservative");
-  gSigmaCorrConservativeFc->SetNameTitle("gSigmaCorrConservativeFc","gSigmaCorrConservativeFc");
+  gSigmaCorrConservativeFc->SetNameTitle("gSigmaCorrConservativeFc","Cross section (fc prompt fraction)");
+  TGraphAsymmErrors * gFcConservativeFc = (TGraphAsymmErrors*)fcfile->Get("gFcConservative");
+  gFcConservativeFc->SetNameTitle("gFcConservativeFc","fc prompt fraction");
 
   // 
   // Get Nb file inputs
@@ -62,7 +64,9 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   TGraphAsymmErrors * gSigmaCorrNb = (TGraphAsymmErrors*)nbfile->Get("gSigmaCorr");
   gSigmaCorrNb->SetNameTitle("gSigmaCorrNb","gSigmaCorrNb");
   TGraphAsymmErrors * gSigmaCorrConservativeNb = (TGraphAsymmErrors*)nbfile->Get("gSigmaCorrConservative");
-  gSigmaCorrConservativeNb->SetNameTitle("gSigmaCorrConservativeNb","gSigmaCorrConservativeNb");
+  gSigmaCorrConservativeNb->SetNameTitle("gSigmaCorrConservativeNb","Cross section (Nb prompt fraction)");
+  TGraphAsymmErrors * gFcConservativeNb = (TGraphAsymmErrors*)nbfile->Get("gFcConservative");
+  gFcConservativeNb->SetNameTitle("gFcConservativeNb","Nb prompt fraction");
 
   //
   // Get the predictions input
@@ -99,8 +103,10 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   TH1D * histoSigmaCorr = new TH1D("histoSigmaCorr","corrected cross-section (combined fc and Nb MC feed-down subtraction)",nbins,limits);
   TGraphAsymmErrors * gSigmaCorr = new TGraphAsymmErrors(nbins+1);
   gSigmaCorr->SetNameTitle("gSigmaCorr","gSigmaCorr (combined fc and Nb MC FD)");
+  TGraphAsymmErrors * gFcCorrConservative = new TGraphAsymmErrors(nbins+1);
+  gFcCorrConservative->SetNameTitle("gFcCorrConservative","Combined prompt fraction");
   TGraphAsymmErrors * gSigmaCorrConservative = new TGraphAsymmErrors(nbins+1);
-  gSigmaCorrConservative->SetNameTitle("gSigmaCorrConservative","Conservative gSigmaCorr (combined fc and Nb MC FD)");
+  gSigmaCorrConservative->SetNameTitle("gSigmaCorrConservative","Cross section (combined prompt fraction)");
   TGraphAsymmErrors * gSigmaCorrConservativePC = new TGraphAsymmErrors(nbins+1);
   gSigmaCorrConservativePC->SetNameTitle("gSigmaCorrConservativePC","Conservative gSigmaCorr (combined fc and Nb MC FD) in percentages [for drawing with AliHFSystErr]");
 
@@ -133,6 +139,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   Double_t avErrylPC=0., avErryhPC=0., avErryfdlPC=0., avErryfdhPC=0.;
   Double_t valFc = 0., valFcErrstat=0., valFcErrx=0., valFcErryl=0., valFcErryh=0., valFcErryfdl=0., valFcErryfdh=0.;
   Double_t valNb = 0., valNbErrstat=0., valNbErrx=0., valNbErryl=0., valNbErryh=0., valNbErryfdl=0., valNbErryfdh=0.;
+  Double_t corrfd = 0., corrfdl=0., corrfdh=0.;
   //
   for(Int_t ibin=1; ibin<=nbins; ibin++){
 
@@ -150,6 +157,10 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
     valFcErryh = gSigmaCorrFc->GetErrorYhigh(ibin);
     valFcErryfdl = TMath::Abs( gSigmaCorrConservativeFc->GetErrorYlow(ibin) );
     valFcErryfdh = TMath::Abs( gSigmaCorrConservativeFc->GetErrorYhigh(ibin) );
+    Double_t valfdFc = 0., x=0.;
+    gFcConservativeFc->GetPoint(ibin,x,valfdFc);
+    Double_t valfdFch = gFcConservativeFc->GetErrorYhigh(ibin);
+    Double_t valfdFcl = gFcConservativeFc->GetErrorYlow(ibin);
 
     // Get input values from Nb method
     valNb = histoSigmaCorrNb->GetBinContent(ibin);
@@ -163,11 +174,16 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
     valNbErryh = gSigmaCorrNb->GetErrorYhigh(ibin);
     valNbErryfdl = gSigmaCorrConservativeNb->GetErrorYlow(ibin);
     valNbErryfdh = gSigmaCorrConservativeNb->GetErrorYhigh(ibin);
+    Double_t valfdNb = 0.;
+    gFcConservativeNb->GetPoint(ibin,x,valfdNb);
+    Double_t valfdNbh = gFcConservativeNb->GetErrorYhigh(ibin);
+    Double_t valfdNbl = gFcConservativeNb->GetErrorYlow(ibin);
     
 
     // Compute the FD combined value
     //    average = valNb
     average = valNb ;
+    corrfd = valfdNb;
     avErrx = valFcErrx;
     if ( TMath::Abs( valFcErrx - valNbErrx ) > 0.1 ) 
       cout << "Hey you ! There might be consistency problem with the fc & Nb input files, please, have a look !" << endl;
@@ -185,6 +201,10 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
 //     cout << " fc : val " << valFc << " + " << valFcErryfdh <<" - " << valFcErryfdl <<endl;
 //     cout << " Nb : val " << valNb << " + " << valNbErryfdh <<" - " << valNbErryfdl <<endl;
 //     cout << " fc  & Nb: val " << average << " + " << avErryfdh <<" - " << avErryfdl <<endl;
+    Double_t minimumfc[2] = { (valfdNb - valfdNbl), (valfdFc - valfdFcl) };
+    Double_t maximumfc[2] = { (valfdNb + valfdNbh), (valfdFc + valfdFch) };
+    corrfdl = corrfd - TMath::MinElement(2,minimumfc);
+    corrfdh = TMath::MaxElement(2,maximumfc) - corrfd;
 
 
     // compute the global systematics
@@ -206,6 +226,8 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
       gSigmaCorrConservative->SetPointError(ibin,valFcErrx,valFcErrx,avErryfdl,avErryfdh);
       gSigmaCorrConservativePC->SetPoint(ibin,pt,0.);
       gSigmaCorrConservativePC->SetPointError(ibin,valFcErrx,valFcErrx,avErryfdlPC,avErryfdhPC);
+      gFcCorrConservative->SetPoint(ibin,pt,corrfd);
+      gFcCorrConservative->SetPointError(ibin,valFcErrx,valFcErrx,corrfdl,corrfdh);
     }
 
   }
@@ -216,7 +238,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
 
   //
   // Plot the results
-  TH2F *histo2Draw = new TH2F("histo2Draw","histo2 (for drawing)",100,0,20.,100,1e4,1e10);
+  TH2F *histo2Draw = new TH2F("histo2Draw","histo2 (for drawing)",100,0,20.,100,1e3,5e7);
   histo2Draw->SetStats(0);
   histo2Draw->GetXaxis()->SetTitle("p_{T}  [GeV]");
   histo2Draw->GetXaxis()->SetTitleSize(0.05);
@@ -235,7 +257,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   gSigmaCorrConservativeFc->SetMarkerStyle(20);
   gSigmaCorrConservativeFc->SetMarkerColor(kGreen+2);
   gSigmaCorrConservativeFc->SetLineColor(kGreen+2);
-  gSigmaCorrConservativeFc->SetFillStyle(3002);
+  gSigmaCorrConservativeFc->SetFillStyle(3004);//2);
   gSigmaCorrConservativeFc->SetFillColor(kGreen);
   gSigmaCorrConservativeFc->Draw("2[]same");
   //
@@ -244,22 +266,63 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   histoSigmaCorrNb->SetLineColor(kViolet+5);
   histoSigmaCorrNb->Draw("esame");
   gSigmaCorrConservativeNb->SetMarkerStyle(25);
-  gSigmaCorrConservativeNb->SetMarkerColor(kViolet+5);
-  gSigmaCorrConservativeNb->SetLineColor(kViolet+5);
-  gSigmaCorrConservativeNb->SetFillStyle(3002);
+  gSigmaCorrConservativeNb->SetMarkerColor(kOrange+7);//kViolet+5);
+  gSigmaCorrConservativeNb->SetLineColor(kOrange+7);//kOrange+7);//kViolet+5);
+  gSigmaCorrConservativeNb->SetFillStyle(3018);//02);
   gSigmaCorrConservativeNb->SetFillColor(kMagenta);
   gSigmaCorrConservativeNb->Draw("2[]same");
   //
   gSigmaCorrConservative->SetLineColor(kRed);
-  gSigmaCorrConservative->SetLineWidth(1);
+  gSigmaCorrConservative->SetLineWidth(2);
   gSigmaCorrConservative->SetFillColor(kRed);
   gSigmaCorrConservative->SetFillStyle(0);
   gSigmaCorrConservative->Draw("2");
   histoSigmaCorr->SetMarkerColor(kRed);
   histoSigmaCorr->Draw("esame");
   //
+  //
+  TLegend* leg=combinefdunc->BuildLegend();
+  leg->SetFillStyle(0);
   combinefdunc->SetLogy();
   combinefdunc->Update();
+
+  TCanvas *combinefcunc = new TCanvas("combinefcunc","show the fc FD results combination");
+  //
+  TH2F *histo3Draw = new TH2F("histo3Draw","histo3 (for drawing)",100,0,20.,10,0.,1.);
+  histo3Draw->SetStats(0);
+  histo3Draw->GetXaxis()->SetTitle("p_{T}  [GeV]");
+  histo3Draw->GetXaxis()->SetTitleSize(0.05);
+  histo3Draw->GetXaxis()->SetTitleOffset(0.95);
+  histo3Draw->GetYaxis()->SetTitle("Prompt fraction of the raw yields");
+  histo3Draw->GetYaxis()->SetTitleSize(0.05);
+  histo3Draw->Draw();
+  //
+  gFcConservativeFc->SetMarkerStyle(20);
+  gFcConservativeFc->SetMarkerColor(kGreen+2);
+  gFcConservativeFc->SetLineColor(kGreen+2);
+  gFcConservativeFc->SetFillStyle(3004);
+  gFcConservativeFc->SetFillColor(kGreen);
+  gFcConservativeFc->Draw("2P");
+  //
+  gFcConservativeNb ->SetMarkerStyle(25);
+  gFcConservativeNb ->SetMarkerSize(1.3);
+  gFcConservativeNb->SetMarkerColor(kOrange+7);//kViolet+5);
+  gFcConservativeNb->SetLineColor(kOrange+7);//kViolet+5);
+  gFcConservativeNb->SetFillStyle(3018);
+  gFcConservativeNb->SetFillColor(kMagenta);
+  gFcConservativeNb->Draw("2P");
+  //
+  gFcCorrConservative->SetMarkerStyle(21);
+  gFcCorrConservative->SetLineColor(kRed);
+  gFcCorrConservative->SetLineWidth(2);
+  gFcCorrConservative->SetFillColor(kRed);
+  gFcCorrConservative->SetFillStyle(0);
+  gFcCorrConservative->Draw("2P");
+  //
+  leg=combinefcunc->BuildLegend();
+  leg->SetFillStyle(0);
+  //
+  combinefcunc->Update();
 
   //
   // Plot the results
@@ -296,7 +359,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   histoSigmaCorr->SetMarkerColor(kRed);
   histoSigmaCorr->Draw("esame");
   //
-  TLegend * leg = new TLegend(0.7,0.75,0.87,0.5);
+  leg = new TLegend(0.7,0.75,0.87,0.5);
   leg->SetBorderSize(0);
   leg->SetLineColor(0);
   leg->SetFillColor(0);
@@ -323,6 +386,7 @@ void CombineFeedDownMCSubtractionMethodsUncertainties(const char *fcfilename="HF
   gSigmaCorr->Write();
   gSigmaCorrConservative->Write();
   gSigmaCorrConservativePC->Write();
+  gFcCorrConservative->Write();
   out->Write();
 
 }
