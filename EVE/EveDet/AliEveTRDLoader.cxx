@@ -142,7 +142,7 @@ Bool_t AliEveTRDLoader::GoToEvent(int ev)
   Unload();
 
   Int_t ndt(0);
-  const Char_t *tn[] = {"TreeH", "TreeD", "TreeR", "tracklets"};
+  const Char_t *tn[] = {"TreeH", "TreeD", "TreeR", "tracklets-raw"};
   const Char_t *fn[] = {"Hits", "Digits", "RecPoints", "Tracklets"};
   TTree *t(NULL); TFile *f(NULL);
   for(Int_t idt(0); idt<4; idt++){

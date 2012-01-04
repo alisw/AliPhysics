@@ -114,7 +114,7 @@ Bool_t	AliEveTRDLoaderSim::Open(const char *filename, const char *dir)
   if(!fRunLoader) return kFALSE;
 
   gAlice = fRunLoader->GetAliRun();
-  if(!gAlice) fRunLoader->LoadgAlice();
+  if(!gAlice && fRunLoader->LoadgAlice()) return kFALSE;
   if(!gAlice) return kFALSE;
  
   fFilename = filename;

@@ -254,48 +254,47 @@ void AliEveTRDClusters::Load(const Char_t *w) const
   Int_t det = c->GetDetector();
   AliEveTRDLoader *loader(NULL);
   switch(typ){
-  case 4:
-    loader = new AliEveTRDLoaderSim("MC");
-    if(loader){
-      if(!loader->Open("galice.root")){delete loader; loader=NULL;}
-      else{
-        loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
-        break;
-      }
-    }
-  case 0:  
+  case 0:
     loader = new AliEveTRDLoader("Hits");
-    if(loader){
-      if(!loader->Open("TRD.Hits.root")){delete loader; loader=NULL;}
-      else{
-        if(typ!=4) break;
-      }
+    if(!loader->Open("TRD.Hits.root")){
+      delete loader;
+      return;
     }
+    break;
   case 1:
-    if(!loader) loader = new AliEveTRDLoader("Digits");
-    if(loader){
-      if(!loader->Open("TRD.Digits.root")){
-        if(typ==1){delete loader; loader=NULL;}
-      } else {
-        if(typ!=4) break;
-      }
+    loader = new AliEveTRDLoader("Digits");
+    if(!loader->Open("TRD.Digits.root")){
+      delete loader;
+      return;
     }
+    break;
   case 2:
-    if(!loader) loader = new AliEveTRDLoader("Clusters");
-    if(loader){
-      if(!loader->Open("TRD.RecPoints.root")){
-        if(typ ==2){delete loader; loader=NULL;}
-      } else {
-        if(typ!=4) break;
-      }
+    loader = new AliEveTRDLoader("Clusters");
+    if(!loader->Open("TRD.RecPoints.root")){
+      delete loader;
+      return;
     }
+    break;
   case 3:
-    if(!loader) loader = new AliEveTRDLoader("Tracklets");
-    if(loader){
-      if(!loader->Open("TRD.Tracklets.root")){
-        if(typ ==3) {delete loader; loader=NULL;}
-      } else break;
+    loader = new AliEveTRDLoader("Tracklets");
+    if(!loader->Open("TRD.Tracklets.root")){
+      delete loader;
+      return;
     }
+    break;
+  case 4:
+    loader = new AliEveTRDLoaderSim("MC"); // Assume MC data. Try to load via run loader
+    if(!loader->Open("galice.root")){
+      delete loader; loader=NULL;
+      // Assume measured data. Try to load data types individualy
+      Int_t failed(0);
+      loader = new AliEveTRDLoader("Data");
+      if(!loader->Open("TRD.Digits.root")) failed++;
+      if(!loader->Open("TRD.RecPoints.root")) failed++;
+      if(!loader->Open("TRD.Tracklets.root")) failed++;
+      if(failed==3){delete loader;loader=NULL;}
+    }else loader->SetDataType(AliEveTRDLoader::kTRDHits | AliEveTRDLoader::kTRDDigits | AliEveTRDLoader::kTRDClusters);
+    break;
   default: return;
   }
   if(!loader) return;
