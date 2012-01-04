@@ -668,9 +668,10 @@ void AliTRDinfoGen::UserExec(Option_t *){
     fTrackInfo->Delete("");
   }
   // read clusters REC info
-  TTree * treeR(NULL);
-  if(fInputHandler && dynamic_cast<AliESDInputHandlerRP*>(fInputHandler)){
-    if((treeR = (dynamic_cast<AliESDInputHandlerRP*>(fInputHandler))->GetTreeR("TRD"))) {
+  TTree * treeR(NULL); AliESDInputHandlerRP *esdRPhandler(NULL);
+  if(fInputHandler) esdRPhandler = dynamic_cast<AliESDInputHandlerRP*>(fInputHandler);
+  if(esdRPhandler){
+    if((treeR = esdRPhandler->GetTreeR("TRD"))) {
       TObjArray *recPoints(NULL);
       if((treeR->GetBranch("TRDcluster"))){
         treeR->SetBranchAddress("TRDcluster", &recPoints);
