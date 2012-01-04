@@ -307,13 +307,12 @@ AliTRDtrackInfo::AliESDinfo& AliTRDtrackInfo::AliESDinfo::operator=(const AliESD
   fTOFbc       = esd.fTOFbc;
   fTRDpidQuality= esd.fTRDpidQuality;
   fTRDnSlices  = esd.fTRDnSlices;
-  fTRDslices   = NULL;
   
   memcpy(fTRDr, esd.fTRDr, AliPID::kSPECIES*sizeof(Double32_t));
   memcpy(fTRDv0pid, esd.fTRDv0pid, AliPID::kSPECIES*sizeof(Int_t));
 
   if(fTRDnSlices){
-    fTRDslices = new Double32_t[fTRDnSlices];
+    if(!fTRDslices) fTRDslices = new Double32_t[fTRDnSlices];
     memcpy(fTRDslices, esd.fTRDslices, fTRDnSlices*sizeof(Double32_t));
   }
   if(esd.fOP){
