@@ -1,4 +1,5 @@
 #include "AliPoissonCalculator.h"
+#include "AliForwardCorrectionManager.h"
 #include <TH2D.h>
 #include <TBrowser.h>
 #include <TROOT.h>
@@ -161,24 +162,51 @@ AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLump
     fBasic->SetYTitle("#varphi [radians]");
     fBasic->Sumw2();
     
-    for(Int_t v = 1 ; v < 11; v++)  { //CHC bins
-      for(Int_t centbin = 0 ; centbin < 13; centbin++) {
-	
-	TH2D* hTotal = new TH2D(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin),"Total number of bins/region",
-			      nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-	TH2D* hEmpty = new TH2D(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin), "Empty number of bins/region",
-				nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-	hEmpty->Sumw2();
-	hTotal->Sumw2();
-	fEmptyList.Add(hEmpty);
-	fTotalList.Add(hTotal);
-	
+    if(fRunningAverage) {
+      AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
+      const TAxis* pv = fcm.GetVertexAxis();
+      Int_t nVtxBins = pv->GetNbins();
+      
+      for(Int_t v = 1 ; v < nVtxBins+1; v++)  { //CHC bins
+	for(Int_t centbin = 0 ; centbin < 13; centbin++) {
+	  
+	  TH2D* hTotal = new TH2D(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin),"Total number of bins/region",
+				  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+	  TH2D* hEmpty = new TH2D(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin), "Empty number of bins/region",
+				  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+	  hEmpty->Sumw2();
+	  hTotal->Sumw2();
+	  fEmptyList.Add(hEmpty);
+	  fTotalList.Add(hTotal);
+	  
+	}
       }
+    }
+    else {
+      fTotal = new TH2D("total", "Total number of hits",
+			nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+      fTotal->SetXTitle("#eta");
+      fTotal->SetYTitle("#varphi [radians]");
+      fTotal->Sumw2();
+      fEmpty = new TH2D("empty", "Number of empties",
+			nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
+      fEmpty->SetXTitle("#eta");
+      fEmpty->SetYTitle("#varphi [radians]");
+      fEmpty->Sumw2();
+      
+      
     }
   }
   //Create diagnostics if void
   if (fEmptyVsTotal) return;
   
+  MakeOutput();
+  
+  
+}
+ //____________________________________________________________________
+void AliPoissonCalculator::MakeOutput() {
+
   Int_t n = fEtaLumping * fPhiLumping + 1;
   fEmptyVsTotal = new TH2D("emptyVsTotal", 
 			   "# of empty # bins vs total # bins", 
@@ -216,10 +244,12 @@ AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLump
   fCorr->SetOption("colz");
   fCorr->SetDirectory(0);
   
-  
+ 
 }
 //____________________________________________________________________
 void AliPoissonCalculator::SetObject(UShort_t d, Char_t r, UShort_t v, Double_t cent) {
+  
+  if(!fRunningAverage) return;
   
   Int_t centbin = 0;
   if(cent > 0) {
@@ -239,7 +269,7 @@ void
 AliPoissonCalculator::Output(TList* d)
 {
   if (!d) return;
-  if (!fEmptyVsTotal) Init();
+  if (!fEmptyVsTotal) MakeOutput();
   d->Add(fEmptyVsTotal);
   d->Add(fMean);
   d->Add(fOcc);
@@ -253,6 +283,7 @@ AliPoissonCalculator::Reset(const TH2D* base)
   // 
   // Reset histogram 
   // 
+  
   if (!base) return;
   if (fBasic /* && fTotal && fEmpty*/) {
     fBasic->Reset();

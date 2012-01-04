@@ -89,7 +89,13 @@ public:
    * @param etaLumping If larger than 0, set the eta lumping to this
    * @param phiLumping If larger than 0, set the phi lumping to this
    */
-  void Init(UShort_t d=-1, Char_t r='I',Int_t etaLumping=-1, Int_t phiLumping=-1);
+  void Init(UShort_t d=-1, Char_t r='I', Int_t etaLumping=-1, Int_t phiLumping=-1);
+  /** 
+   * Make output stuff for the passed list
+   * 
+   * @param none
+   */
+  void MakeOutput();
   /** 
    * Output stuff to the passed list
    * 

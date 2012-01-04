@@ -220,8 +220,9 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    o->Init(axis);
+    //o->Init(axis);
     o->fMultCut = fCuts.GetFixedCut(o->fDet, o->fRing);
+    o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
   }
 }
 
@@ -591,17 +592,14 @@ AliFMDDensityCalculator::NParticles(Float_t  mult,
     AliWarning(Form("No good fits for FMD%d%c at eta=%f", d, r, eta));
     return 0;
   }
+  
   UShort_t n   = TMath::Min(fMaxParticles, UShort_t(m));
   Double_t ret = fit->EvaluateWeighted(mult, n);
-
+  
   if (fDebug > 10) {
     AliInfo(Form("FMD%d%c, eta=%7.4f, %8.5f -> %8.5f", d, r, eta, mult, ret));
   }
-  //HHD, CS test
-  //if(mult < fit->GetDelta()) {std::cout<<ret<<"   "<<1<<std::endl; ret = 1;} 
-  
-  //if(mult > 8) {std::cout<<ret<<"   "<<1<<std::endl; ret = 1;}
-  
+    
   fWeightedSum->Fill(ret);
   fSumOfWeights->Fill(ret);
   
@@ -834,9 +832,9 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   while ((o = static_cast<RingHistos*>(next()))) {
     // o->fPoisson.SetEtaLumping(fEtaLumping);
     o->fPoisson.SetUseAverageOverEvents(fUseRunningAverage);
-    o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
-    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
-    o->fPoisson.GetMean()->SetFillColor(o->Color());
+    //   o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
+    // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
+    // o->fPoisson.GetMean()->SetFillColor(o->Color());
     // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
     o->Output(d);
   }
