@@ -69,9 +69,9 @@ public:
     kDetNproj=60       // detector projections
     ,kClNproj=60       // cluster projections
     ,kTrkltNproj=8000  // tracklet projections
-    ,kTrkInNproj=142   // trackIn projections
+    ,kTrkInNproj=240   // trackIn projections
     ,kTrkNproj=2500    // track projections
-    ,kMCTrkInNproj=162 // trackIn projections
+    ,kMCTrkInNproj=260 // trackIn projections
   };
   enum ETRDresolutionProjs {
     kBC    = 0 // bunch cross
@@ -83,9 +83,7 @@ public:
     ,kSpeciesChgRC
     ,kPt
     ,kNdim  // no of dimensions in the THnSparse
-  };
-  enum ETRDresolutionSize {
-     kNdimDet     = 4
+    ,kNdimDet     = 4
     ,kNdimCl      = 4
     ,kNdimTrklt   = 4
     ,kNdimTrkIn   = 7
@@ -139,6 +137,7 @@ public:
   void            SetPtThreshold(Float_t pt)            { fPtThreshold = pt;}
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
+  void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
   void            SetRangeZ(TH2 *h2, Float_t m, Float_t M);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
@@ -201,12 +200,13 @@ protected:
   Float_t               fDyRange;         // min/max dy
   Int_t                 fBCbinTOF;        // set/select by TOF BC index
   Int_t                 fBCbinFill;       // set/select by Bunch Fill index
+  Bool_t                fBsign;           // sign of magnetic field (kFALSE[-] kTRUE[+])
   static Char_t const  *fgPerformanceName[kNclasses]; //! name of performance plot
   static Int_t const    fgkNbins[kNdim];  //! no of bins/projection
   static Double_t const fgkMin[kNdim];    //! low limits for projections
   static Double_t const fgkMax[kNdim];    //! high limits for projections
   static Char_t const  *fgkTitle[kNdim];  //! title of projection 
-  static Float_t        fgPtBin[kNpt+1];  //! pt segmentation
+  static Float_t        fgPtBin[25];      //! pt segmentation
   TObjArray            *fProj;            //! result holder - sigma values
   TDatabasePDG         *fDBPDG;           //! PDG database
 

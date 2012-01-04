@@ -148,7 +148,7 @@ Char_t const * AliTRDresolution::fgPerformanceName[kNclasses] = {
 //    ,"Tracklet2TRDout"
 //    ,"TRDout2MC"
 };
-Float_t AliTRDresolution::fgPtBin[kNpt+1];
+Float_t AliTRDresolution::fgPtBin[25];
 
 //________________________________________________________
 AliTRDresolution::AliTRDresolution()
@@ -159,6 +159,7 @@ AliTRDresolution::AliTRDresolution()
   ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
+  ,fBsign(kFALSE)
   ,fProj(NULL)
   ,fDBPDG(NULL)
   ,fCl(NULL)
@@ -180,6 +181,7 @@ AliTRDresolution::AliTRDresolution(char* name, Bool_t xchange)
   ,fDyRange(0.75)
   ,fBCbinTOF(0)
   ,fBCbinFill(0)
+  ,fBsign(kFALSE)
   ,fProj(NULL)
   ,fDBPDG(NULL)
   ,fCl(NULL)
@@ -648,7 +650,7 @@ TH1* AliTRDresolution::PlotTrackIn(const AliTRDtrackV1 *track)
   val[kPrez]        = dphi*TMath::RadToDeg();
   val[kSpeciesChgRC]= fTracklet->IsRowCross()?0:fSpecies;
   val[kPt]          = fPt<0.8?0:(fPt<1.5?1:2);//GetPtBin(fPt);
-  val[kNdim]        = fTracklet->GetDetector();
+  val[kNdim]        = GetPtBin(fTracklet->GetMomentum());
   val[kNdim+1]      = dx;
   val[kNdim+2]      = fEvent?fEvent->GetBunchFill():0;
   H->Fill(val);
@@ -945,7 +947,7 @@ Int_t AliTRDresolution::GetPtBin(Float_t pt)
 {
 // Find pt bin according to local pt segmentation
   Int_t ipt(-1);
-  while(ipt<AliTRDresolution::kNpt){
+  while(ipt<24){
     if(pt<fgPtBin[ipt+1]) break;
     ipt++;
   }
@@ -1024,7 +1026,7 @@ Bool_t AliTRDresolution::GetRefFigure(Int_t ifig)
 void AliTRDresolution::MakePtSegmentation(Float_t pt0, Float_t dpt)
 {
 // Build pt segments
-  for(Int_t j(0); j<=kNpt; j++){
+  for(Int_t j(0); j<=24; j++){
     pt0+=(TMath::Exp(j*j*dpt)-1.);
     fgPtBin[j]=pt0;
   }
@@ -1048,6 +1050,10 @@ void AliTRDresolution::MakeSummary()
   const Int_t nClViews(9);
   const Char_t *vClName[nClViews] = {"ClY", "ClYn", "ClYp", "ClQn", "ClQp", "ClYXTCp", "ClYXTCn", "ClYXPh", "ClYXPh"};
   const UChar_t vClOpt[nClViews] = {1, 1, 1, 0, 0, 0, 0, 0, 1};
+  const Float_t vClSignMin[2] = {2.6e2, 4.4e2},
+                vClSignMax[2] = {4.4e2, 6.2e2},
+                vClMin[nClViews] = {3.2e2, vClSignMin[Int_t(fBsign)], vClSignMin[Int_t(!fBsign)], 0., 0., 0., 0., 0., 3.2e2},
+                vClMax[nClViews] = {5.e2, vClSignMax[Int_t(fBsign)], vClSignMax[Int_t(!fBsign)], 0., 0., 0., 0., 0., 5.e2};
   const Int_t nTrkltViews(19);
   const Char_t *vTrkltName[nTrkltViews] = {
     "TrkltY", "TrkltYn", "TrkltYp", "TrkltY", "TrkltYn", "TrkltYp",
@@ -1064,7 +1070,7 @@ void AliTRDresolution::MakeSummary()
     0, 0, 0,
     0, 0, 0,
     0, 0, 0,
-    0, 0, 1, 1
+    0, 0, 2, 2
   };
   const Int_t nTrkInViews(5);
   const Char_t *vTrkInName[nTrkInViews][6] = {
@@ -1124,8 +1130,8 @@ void AliTRDresolution::MakeSummary()
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vClName[iview], iplot)))) continue;
           nplot++;
           if(vClOpt[iview]==0) h2->Draw("colz");
-          else if(vClOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [#mum]", 3.2e2, 5.e2, 1.e4);
-          MakeDetectorPlot(iplot);
+          else if(vClOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [#mum]", vClMin[iview], vClMax[iview], 1.e4);
+          if(iview<3) MakeDetectorPlot(iplot);
         }
         if(nplot==6) cOut->SaveAs(Form("%s.gif", cOut->GetName()));
         else delete cOut;
@@ -1142,7 +1148,8 @@ void AliTRDresolution::MakeSummary()
           if(!(h2 = (TH2*)arr->FindObject(Form("H%s%s%d_2D", typName[ityp], vTrkltName[iview], iplot)))) continue;
           nplot++;
           if(vTrkltOpt[iview]==0) h2->Draw("colz");
-          else DrawSigma(h2, "#sigma(#Deltay) [cm]", .15, .6);
+          else if (vTrkltOpt[iview]==1) DrawSigma(h2, "#sigma(#Deltay) [cm]", .15, .6);
+          else if (vTrkltOpt[iview]==2) DrawSigma(h2, "#sigma(occupancy) [%]", 10.5, 15.);
           MakeDetectorPlot(iplot);
         }
         if(nplot==6){
@@ -1744,6 +1751,7 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
       /*!dphi*/
       if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[ich], ptName[0], 0, ily, 0)))){
         pr0->fH->SetNameTitle(Form("H%sTrkltPh%c%d", mc?"MC":"", chName[ich], ily), Form("Tracklets[%c] :: #Delta#phi Ly[%d]", chSgn[ich], ily));
+        pr0->SetShowRange(-.9,.9);
         if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
         if(ich && (pr1 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))) (*pr1)+=(*pr0);
       }
@@ -1772,13 +1780,16 @@ Bool_t AliTRDresolution::MakeProjectionTracklet(Bool_t mc)
     /*!dphi*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltPh%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
       pr0->fH->SetNameTitle(Form("H%sTrkltPh%d", mc?"MC":"", ily), Form("Tracklets :: #Delta#phi Ly[%d]", ily));
+      pr0->SetShowRange(-.45,.45);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
     }
     /*!dQdl*/
     if((pr0 = (AliTRDresolutionProjection*)php.FindObject(Form("H%sTrkltQ%c%c%d%d%d", mc?"MC":"", chName[0], ptName[0], 0, ily, 0)))){
       pr0->fH->SetNameTitle(Form("H%sTrkltQ%d", mc?"MC":"", ily), Form("Tracklets :: dQdl Ly[%d]", ily));
-      if((h2 = pr0->Projection2D(kNstat, kNcontours, 1))) arr->AddAt(h2, jh++);
-      pr0->fH->SetNameTitle(Form("H%sTrkltQS%d", mc?"MC":"", ily), Form("Tracklets :: dQdl Ly[%d]", ily));
+      pr0->SetShowRange(1.,2.3);
+      if((h2 = pr0->Projection2D(kNstat, kNcontours, 2))) arr->AddAt(h2, jh++);
+      pr0->fH->SetName(Form("H%sTrkltQS%d", mc?"MC":"", ily));
+      pr0->SetShowRange(2.4,5.1);
       if((h2 = pr0->Projection2D(kNstat, kNcontours, 0))) arr->AddAt(h2, jh++);
     }
     /*!TB occupancy*/
@@ -2663,7 +2674,7 @@ TObjArray* AliTRDresolution::Histos()
     Double_t trinMin[mdim];  memcpy(trinMin, fgkMin, kNdim*sizeof(Double_t));
     Double_t trinMax[mdim];  memcpy(trinMax, fgkMax, kNdim*sizeof(Double_t));
     trinNbins[kSpeciesChgRC] = Int_t(kNcharge)*AliPID::kSPECIES+1; trinMin[kSpeciesChgRC] = -AliPID::kSPECIES-0.5; trinMax[kSpeciesChgRC] = AliPID::kSPECIES+0.5;
-    trinTitle[kNdim]=StrDup("detector"); trinNbins[kNdim] = 540; trinMin[kNdim] = -0.5; trinMax[kNdim] = 539.5;
+    trinTitle[kNdim]=StrDup("p [GeV/c]"); trinNbins[kNdim] = 24; trinMin[kNdim] = -0.5; trinMax[kNdim] = 23.5;
     trinTitle[kNdim+1]=StrDup("dx [cm]"); trinNbins[kNdim+1]=48; trinMin[kNdim+1]=-2.4; trinMax[kNdim+1]=2.4;
     trinTitle[kNdim+2]=StrDup("Fill Bunch"); trinNbins[kNdim+2]=3500; trinMin[kNdim+2]=-0.5; trinMax[kNdim+2]=3499.5;
     st = "r-#phi/z/angular residuals @ TRD entry;";
