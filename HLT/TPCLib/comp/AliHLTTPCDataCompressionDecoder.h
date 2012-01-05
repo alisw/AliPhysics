@@ -452,15 +452,12 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	break;
       }
 
-      static float deltapad=0.;
-      static float deltatime=0.;
       bool lastParameter=false;
       switch (kParameterIdMapping[parameterId]) {
       case AliHLTTPCDefinitions::kResidualPad:
 	{
 	  AliHLTUInt8_t sign=0;
 	  bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
-	  deltapad=((float)value)*(sign?-1.:1.)/parameter.fScale;
 	  AliHLTUInt64_t trackpad64=0;
 	  double trackpad=currentTrackPoint->GetU();
 	  trackpad*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualPad].fScale;
@@ -478,7 +475,6 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
 	{
 	  AliHLTUInt8_t sign=0;
 	  bReadSuccess=bReadSuccess && pInflater->InputBit(sign);
-	  deltatime=((float)value)*(sign?-1.:1.)/parameter.fScale;
 	  AliHLTUInt64_t tracktime64=0;
 	  double tracktime=currentTrackPoint->GetV();
 	  tracktime*=AliHLTTPCDefinitions::fgkClusterParameterDefinitions[AliHLTTPCDefinitions::kResidualTime].fScale;
@@ -507,14 +503,6 @@ int AliHLTTPCDataCompressionDecoder::ReadTrackClustersCompressed(T& c, AliHLTDat
       }
       if (lastParameter) {
 	// switch to next cluster
-	// cout << "  row "    << setfill(' ') << setw(3) << fixed << right                     << c.GetRow()
-	//      << "  pad "    << setfill(' ') << setw(7) << fixed << right << setprecision (4) << c.GetPad()
-	//      << "  dpad "   << setfill(' ') << setw(7) << fixed << right << setprecision (4) << deltapad
-	//      << "  time "   << setfill(' ') << setw(7) << fixed << right << setprecision (4) << c.GetTimeBin()
-	//      << "  dtime "  << setfill(' ') << setw(7) << fixed << right << setprecision (4) << deltatime
-	//      << "  charge " << setfill(' ') << setw(5) << fixed << right << setprecision (0) << c.GetQ()
-	//      << "  qmax "   << setfill(' ') << setw(4) << fixed << right << setprecision (0) << c.GetMax()
-	//      << endl;
 	bNextCluster=true;
 	inClusterCnt++;
 	parameterId=-1;
