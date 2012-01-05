@@ -481,14 +481,14 @@ AliKMeansResult& AliKMeansResult::operator=(const AliKMeansResult& res)
   //
   // Assignment operator
   if (this != &res) {
-    fK = res.GetK();
+    fK = res.fK;
     for (Int_t i = 0; i <fK; i++) {
-      fMx[i]     = (res.GetMx())    [i];
-      fMy[i]     = (res.GetMy())    [i];
-      fSigma2[i] = (res.GetSigma2())[i];
-      fRk[i]     = (res.GetRk())    [i];
-      fTarget[i] = (res.GetTarget())[i];
-      fInd[i]    = (res.GetInd())   [i];
+      fMx[i]     = res.fMx[i];
+      fMy[i]     = res.fMy[i];
+      fSigma2[i] = res.fSigma2[i];
+      fRk[i]     = res.fRk[i];
+      fTarget[i] = res.fTarget[i];
+      fInd[i]    = res.fInd[i];
     }
   }
   return *this;
