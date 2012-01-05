@@ -51,14 +51,54 @@ class AliRDHFCuts : public AliAnalysisCuts
 
   void SetTriggerMask(ULong64_t mask=0) {fTriggerMask=mask;}
   void SetUseAnyTrigger(){fTriggerMask=AliVEvent::kAny;}
-  void SetUseMBTrigger(){fTriggerMask|=AliVEvent::kMB;}
-  void SetUseMBTriggerOnly(){fTriggerMask=AliVEvent::kMB;}
-  void SetUseCentralTrigger(){fTriggerMask|=AliVEvent::kCentral;}
-  void SetUseCentralTriggerOnly(){fTriggerMask=AliVEvent::kCentral;}
-  void SetUseSemiCentralTrigger(){fTriggerMask|=AliVEvent::kSemiCentral;}
-  void SetUseSemiCentralTriggerOnly(){fTriggerMask=AliVEvent::kSemiCentral;}
-  void SetUseEMCALTrigger(){fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);}
-  void SetUseEMCALTriggerOnly(){fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);}
+  void EnableMBTrigger(){
+    fTriggerMask|=AliVEvent::kMB;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void ResetMaskAndEnableMBTrigger(){
+    fTriggerMask=AliVEvent::kMB;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseMBTriggerExclusively(){
+    fTriggerMask=AliVEvent::kMB;
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void EnableCentralTrigger(){
+    fTriggerMask|=AliVEvent::kCentral;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void ResetMaskAndEnableCentralTrigger(){
+    fTriggerMask=AliVEvent::kCentral;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseCentralTriggerExclusively(){
+    fTriggerMask=AliVEvent::kCentral;
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void EnableSemiCentralTrigger(){
+    fTriggerMask|=AliVEvent::kSemiCentral;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void ResetMaskAndEnableSemiCentralTrigger(){
+    fTriggerMask=AliVEvent::kSemiCentral;
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void SetUseSemiCentralTriggerExclusively(){
+    fTriggerMask=AliVEvent::kSemiCentral;
+    fUseOnlyOneTrigger=kTRUE;
+  }
+  void EnableEMCALTrigger(){
+    fTriggerMask|=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fUseOnlyOneTrigger=kFALSE;
+  }
+  void ResetMaskAndnableEMCALTrigger(){
+    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fUseOnlyOneTrigger=kFALSE;
+  } 
+  void SetUseEMCALTriggerExclusively(){
+    fTriggerMask=(AliVEvent::kEMCEJE|AliVEvent::kEMCEGA);
+    fUseOnlyOneTrigger=kTRUE;
+  }
 
   void SetTriggerClass(TString trclass) {fTriggerClass=trclass;} 
   void SetVarsForOpt(Int_t nVars,Bool_t *forOpt);
@@ -207,6 +247,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Float_t fMaxVtxZ; // maximum |z| of primary vertex
   Int_t fMinSPDMultiplicity; // SPD multiplicity
   ULong64_t fTriggerMask; // trigger mask
+  Bool_t fUseOnlyOneTrigger; // flag to select one trigger only
   TString  fTriggerClass; // trigger class
   // quality cuts on the daughter tracks
   AliESDtrackCuts *fTrackCuts; // tracks for daughter tracks (AOD converted to ESD on the flight!)
@@ -248,7 +289,7 @@ class AliRDHFCuts : public AliAnalysisCuts
   Bool_t fIsCandTrackSPDFirst; // flag to select the track kFirst criteria for pt < ptlimit
   Double_t fMaxPtCandTrackSPDFirst; // maximum pt of the candidate for which to check if the daughters fulfill kFirst criteria
 
-  ClassDef(AliRDHFCuts,20);  // base class for cuts on AOD reconstructed heavy-flavour decays
+  ClassDef(AliRDHFCuts,21);  // base class for cuts on AOD reconstructed heavy-flavour decays
 };
 
 #endif
