@@ -346,6 +346,9 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TString hname="hnClsITS";
     TH1F* hnClsITS=new TH1F(hname.Data(),"Distribution of number of ITS clusters;nITScls;Entries",7,-0.5,6.5);
 
+    hname="hnClsITSselTr";
+    TH1F* hnClsITSselTr=new TH1F(hname.Data(),"Distribution of number of ITS clusters selected tracks;nITScls;Entries",7,-0.5,6.5);
+
     hname="hnClsITS-SA";
     TH1F* hnClsITSSA=new TH1F(hname.Data(),"Distribution of number of ITS clusters(ITS-SA);nITScls;Entries",7,-0.5,6.5);
 
@@ -373,6 +376,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     TH1F* hd0=new TH1F(hname.Data(),"Impact parameter distribution of 'good' tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
     fOutputTrack->Add(hnClsITS);
+    fOutputTrack->Add(hnClsITSselTr);
     fOutputTrack->Add(hnClsITSSA);
     fOutputTrack->Add(hnLayerITS);
     fOutputTrack->Add(hnLayerITSsa);
@@ -992,7 +996,13 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	}
 	((TH1F*)fOutputTrack->FindObject("hnClsITS"))->Fill(nclsTot);
 	((TH1F*)fOutputTrack->FindObject("hnClsSPD"))->Fill(nclsSPD);
-
+	if(track->Pt()>0.3 &&
+	   TMath::Abs(track->Eta())<0.8 &&
+	   track->GetStatus()&AliESDtrack::kITSrefit &&
+	   track->GetStatus()&AliESDtrack::kTPCrefit &&
+	   nclsSPD>0){
+	  ((TH1F*)fOutputTrack->FindObject("hnClsITSselTr"))->Fill(nclsTot);
+	}
 	if(!(track->GetStatus()&AliESDtrack::kTPCin) && track->GetStatus()&AliESDtrack::kITSrefit && !(track->GetStatus()&AliESDtrack::kITSpureSA)){//tracks retrieved in the ITS and not reconstructed in the TPC
 	  ((TH1F*)fOutputTrack->FindObject("hnClsITS-SA"))->Fill(nclsTot);
 	  ((TH1F*)fOutputTrack->FindObject("hnLayerITS"))->Fill(-1);
