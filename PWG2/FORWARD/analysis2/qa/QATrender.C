@@ -603,15 +603,17 @@ public:
    * Run the job
    * 
    */
-  void Run()
+  Bool_t Run()
   {
     Init(false);
     TIter next(&fFiles);
     TObject* o = 0;
+    Bool_t ret = true;
     while ((o = next())) {
-      ProcessOne(o->GetName());
+      if (!ProcessOne(o->GetName())) ret = false;
     }
     Finish();
+    return ret;
   }
   /** 
    * Finish the job
