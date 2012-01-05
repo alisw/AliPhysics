@@ -1,5 +1,4 @@
-// @(#) $Id$
-// Original: AliHLTClustFinderNew.cxx,v 1.29 2005/06/14 10:55:21 cvetan Exp 
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -26,11 +25,9 @@
 //  @note 
 
 #include "AliHLTTPCDigitReader.h"
-#include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCClusterFinder.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCPad.h"
 #include <sys/time.h>
 #include <algorithm>

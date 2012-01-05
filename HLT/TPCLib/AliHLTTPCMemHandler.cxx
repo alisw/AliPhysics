@@ -25,7 +25,6 @@
 //          migration to the HLT component framework
 
 #include <cassert>
-#include "AliHLTTPCRootTypes.h"
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
