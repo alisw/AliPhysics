@@ -239,14 +239,11 @@ TString AliHLTEsdManagerImplementation::GetFileNames(AliHLTComponentDataType dt)
 TTree* AliHLTEsdManagerImplementation::EmbedIntoTree(AliESDEvent* pESD, const char* name, const char* title)
 {
   // see header file for class documentation
-  int iResult=0;
   TTree* pTree=new TTree(name, title);
   if (pTree) {
     pESD->WriteToTree(pTree);
     pTree->Fill();
     pTree->GetUserInfo()->Add(pESD);
-  } else {
-    iResult=-ENOMEM;
   }
 
   return pTree;
