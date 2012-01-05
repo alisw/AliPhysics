@@ -296,7 +296,7 @@ inline Bool_t AliTPCCalibCE::IsPeakInRange(UShort_t timebin, Int_t roc) const
   Int_t side=(roc/18)%2;
   Int_t add=7*side;
 //   return kTRUE;
-  if (fPeaks[14]<2) return kTRUE; //not determined yet
+  if (fPeaks[13]<2) return kTRUE; //not determined yet
   for (Int_t i=add; i<add+7; ++i){
     if (TMath::Abs((Short_t)timebin-(Short_t)fPeaks[i])<(Short_t)fPeakWidths[i]) return kTRUE;
   }
