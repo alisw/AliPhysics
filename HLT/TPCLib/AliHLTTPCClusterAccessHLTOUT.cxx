@@ -184,8 +184,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
   decoder.EnableClusterMerger();
 
   bool bNextBlock=false;
-  bool bHaveLabels=false;
-  bool bHaveIds=false;
   // add cluster id and mc information data blocks
   for (bNextBlock=(pHLTOUT->SelectFirstDataBlock()>=0);
        bNextBlock; bNextBlock=(pHLTOUT->SelectNextDataBlock()>=0)) {
@@ -204,7 +202,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if ((iResult=decoder.AddClusterMCData(&desc))<0) {
 	return iResult;
       }
-      bHaveLabels=true;
     }
     if (desc.fDataType==AliHLTTPCDefinitions::RemainingClusterIdsDataType() ||
 	desc.fDataType==AliHLTTPCDefinitions::ClusterIdTracksDataType()) {
@@ -212,7 +209,6 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
       if ((iResult=decoder.AddClusterIds(&desc))<0) {
 	return iResult;
       }
-      bHaveIds=true;
     }
   }
 
