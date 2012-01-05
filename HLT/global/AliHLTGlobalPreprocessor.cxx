@@ -102,17 +102,17 @@ int AliHLTGlobalPreprocessor::ProcessStreamerInfo(TObject* object)
   }
   if (streamerinfos->GetEntriesFast()==0) return 0;
 
-  bool bStore=false;
+  //bool bStore=false;
   AliCDBEntry* entry = GetFromOCDB(fgkStreamerInfoType, fgkStreamerInfoName);
   TObjArray* clone=NULL;
   if (entry && entry->GetObject()) {
     TObject* cloneObj=entry->GetObject()->Clone();
     if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
-    bStore=AliHLTRootSchemaEvolutionComponent::MergeStreamerInfo(clone, streamerinfos)>0;
+    //bStore=AliHLTRootSchemaEvolutionComponent::MergeStreamerInfo(clone, streamerinfos)>0;
   } else {
     TObject* cloneObj=streamerinfos->Clone();
     if (cloneObj) clone=dynamic_cast<TObjArray*>(cloneObj);
-    bStore=true;
+    //bStore=true;
   }
 
   if (clone) {
