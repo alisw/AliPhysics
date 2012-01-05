@@ -46,6 +46,7 @@ set ( CLASS_HDRS
     AliHLTTPCTrackGeometry.h
     AliHLTTPCHWCFData.h
     offline/AliHLTTPCDigitPublisherComponent.h
+    offline/AliHLTTPCOfflineCluster.h
     AliHLTTPCClusters.h
     AliHLTTPCPad.h
     AliHLTTPCDefinitions.h
