@@ -1,21 +1,16 @@
-// @(#) $Id$
+//-*- Mode: C++ -*-
+// $Id$
 
 #ifndef ALIHLTCOMPAGENT_H
 #define ALIHLTCOMPAGENT_H
-/* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
+//* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+//* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTCompAgent.h
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTComp library
-*/
-
-// see class description below
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTCompAgent.h
+/// @author Matthias Richter
+/// @date   2007-10-30
+/// @brief  Agent of the libAliHLTComp library
+///
 
 #include "AliHLTModuleAgent.h"
 

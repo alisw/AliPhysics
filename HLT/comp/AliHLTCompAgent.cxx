@@ -1,4 +1,4 @@
-// @(#) $Id$
+// $Id$
 
 /**************************************************************************
  * This file is property of and copyright by the ALICE HLT Project        * 
@@ -16,28 +16,15 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-/** @file   AliHLTCompAgent.cxx
-    @author Matthias Richter
-    @date   
-    @brief  Agent of the libAliHLTComp library
-*/
-
-// see header file for class documentation
-// or
-// refer to README to build package
-// or
-// visit http://web.ift.uib.no/~kjeks/doc/alice-hlt
+/// @file   AliHLTCompAgent.cxx
+/// @author Matthias Richter
+/// @date   2007-10-30
+/// @brief  Agent of the libAliHLTComp library
+///
 
 #include <cassert>
 #include <cerrno>
 #include "AliHLTCompAgent.h"
-
-// header files of library components
-#include "AliHLTCOMPHuffmanAltroComponent.h"
-#include "AliHLTCOMPHuffmanAltroCalibComponent.h"
-
-// header file of the module preprocessor
-#include "AliHLTCompPreprocessor.h"
 
 /** global instance for agent registration */
 AliHLTCompAgent gAliHLTCompAgent;
@@ -90,11 +77,6 @@ int AliHLTCompAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   // see header file for class documentation
   assert(pHandler);
   if (!pHandler) return -EINVAL;
-  // use fCompressionSwitch = true for decompressed inputtype (i.e. compressed output)
-  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroComponent(true));
-  // use fCompressionSwitch = false for compressed inputtype (i.e. decompressed output)
-  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroComponent(false));
-  pHandler->AddComponent(new AliHLTCOMPHuffmanAltroCalibComponent);
 
   return 0;
 }
@@ -102,5 +84,5 @@ int AliHLTCompAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
 AliHLTModulePreprocessor* AliHLTCompAgent::GetPreprocessor()
 {
   // see header file for class documentation
-  return new AliHLTCompPreprocessor;
+  return NULL;
 }

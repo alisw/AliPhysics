@@ -29,14 +29,6 @@
 
 set ( CLASS_HDRS
     AliHLTCompAgent.h
-    AliHLTCompPreprocessor.h
-    AliHLTCompDefinitions.h
-    AliHLTCOMPHuffmanAltro.h
-    AliHLTCOMPHuffmanAltroComponent.h
-    AliHLTCOMPHuffmanCodeData.h
-    AliHLTCOMPHuffmanData.h
-    AliHLTCOMPHuffmanOccurrenceData.h
-    AliHLTCOMPHuffmanAltroCalibComponent.h
     )
 
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}" )
