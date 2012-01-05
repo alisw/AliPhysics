@@ -50,11 +50,6 @@ AliHLTTPCAgent gAliHLTTPCAgent;
 #include "AliHLTTPCDigitPublisherComponent.h"
 #include "AliHLTTPCDigitDumpComponent.h"
 #include "AliHLTTPCClusterDumpComponent.h"
-#include "AliHLTTPCEsdWriterComponent.h"
-#include "AliHLTTPCOfflineClustererComponent.h"
-#include "AliHLTTPCOfflineTrackerComponent.h"
-#include "AliHLTTPCOfflineTrackerCalibComponent.h"
-#include "AliHLTTPCOfflineCalibrationComponent.h" // to be added to the calibration library agent
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCHistogramHandlerComponent.h"
 #include "AliHLTTPCTrackHistoComponent.h"
@@ -371,12 +366,6 @@ int AliHLTTPCAgent::RegisterComponents(AliHLTComponentHandler* pHandler) const
   pHandler->AddComponent(new AliHLTTPCDigitPublisherComponent);
   pHandler->AddComponent(new AliHLTTPCDigitDumpComponent);
   pHandler->AddComponent(new AliHLTTPCClusterDumpComponent);
-  pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliWriter);
-  pHandler->AddComponent(new AliHLTTPCEsdWriterComponent::AliConverter);
-  pHandler->AddComponent(new AliHLTTPCOfflineClustererComponent);
-  pHandler->AddComponent(new AliHLTTPCOfflineTrackerComponent);
-  pHandler->AddComponent(new AliHLTTPCOfflineTrackerCalibComponent);
-  pHandler->AddComponent(new AliHLTTPCOfflineCalibrationComponent);
   pHandler->AddComponent(new AliHLTTPCClusterHistoComponent);
   pHandler->AddComponent(new AliHLTTPCHistogramHandlerComponent);
   pHandler->AddComponent(new AliHLTTPCTrackHistoComponent);
