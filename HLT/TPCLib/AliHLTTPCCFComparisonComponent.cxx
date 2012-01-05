@@ -16,15 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCCFComparisonComponent.cxx
-    @author Kalliopi Kanaki
-    @date   
-    @brief  A comparison component for FCF and SCF properties
-*/
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTTPCCFComparisonComponent.cxx
+/// @author Kalliopi Kanaki
+/// @date   
+/// @brief  A comparison component for FCF and SCF properties
+///
 
 #include "AliHLTTPCCFComparisonComponent.h"
 #include "AliHLTTPCTransform.h"
@@ -42,9 +38,6 @@ using namespace std;
 #include "TH1F.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-
-#include "AliHLTTPCTrack.h"
-
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCCFComparisonComponent)

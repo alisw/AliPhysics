@@ -15,20 +15,15 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCClusterHistoComponent.cxx
-    @author Gaute Ovrebekk
-    @brief  Component for ploting charge in clusters
-*/
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTTPCClusterHistoComponent.cxx
+/// @author Gaute Ovrebekk
+/// @brief  Component for ploting charge in clusters
+///
 
 #include "AliHLTTPCClusterHistoComponent.h"
 #include "AliHLTTPCTransform.h"
 #include "AliHLTTPCClusterDataFormat.h"
 #include "AliHLTTPCTrackletDataFormat.h"
-#include "AliHLTTPCMemHandler.h"
 #include "AliHLTTPCDefinitions.h"
 #include "AliCDBEntry.h"
 #include "AliCDBManager.h"
@@ -36,10 +31,6 @@ using namespace std;
 #include <TString.h>
 #include "TObjString.h"
 #include "TObjArray.h"
-
-//#include "AliHLTTPC.h"
-//#include <stdlib.h>
-//#include <cerrno>
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCClusterHistoComponent)

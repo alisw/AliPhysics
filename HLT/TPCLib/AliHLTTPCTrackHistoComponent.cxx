@@ -16,15 +16,11 @@
 //* provided "as is" without express or implied warranty.                  *
 //**************************************************************************
 
-/** @file   AliHLTTPCTrackHistoComponent.cxx
-    @author Gaute Ovrebekk, Matthias Richter, Kalliopi Kanaki
-    @date   
-    @brief  A histogram component with track and associated cluster properties 
-*/
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTTPCTrackHistoComponent.cxx
+/// @author Gaute Ovrebekk, Matthias Richter, Kalliopi Kanaki
+/// @date   
+/// @brief  A histogram component with track and associated cluster properties 
+///
 
 #include "AliHLTTPCTrackHistoComponent.h"
 #include "AliHLTTPCTransform.h"
@@ -43,10 +39,6 @@ using namespace std;
 #include "TProfile.h"
 #include "TObjString.h"
 #include "TObjArray.h"
-
-
-#include "AliHLTTPCTrack.h"
-
 
 /** ROOT macro for the implementation of ROOT specific class methods */
 ClassImp(AliHLTTPCTrackHistoComponent)

@@ -1,3 +1,4 @@
+//-*- Mode: C++ -*-
 // $Id$
 #ifndef ALIHLTTPCCLUSTERHISTOCOMPONENT_H
 #define ALIHLTTPCCLUSTERHISTOCOMPONENT_H
@@ -5,17 +6,14 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCQHistoComponent.h
-    @author Gaute Ovrebekk
-    @brief  Component for ploting charge in clusters
-*/
+/// @file   AliHLTTPCQHistoComponent.h
+/// @author Gaute Ovrebekk
+/// @brief  Component for ploting charge in clusters
+///
 
 #include "AliHLTProcessor.h"
 #include "TH1F.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCTrackSegmentData.h"
-
-class AliHLTTPCConfMapper;
 
 /**
  * @class AliHLTTPCQHistoComponent

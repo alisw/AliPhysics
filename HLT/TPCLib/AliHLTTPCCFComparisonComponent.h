@@ -7,15 +7,14 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-/** @file   AliHLTTPCCFComparisonComponent.h
-    @author Kalliopi Kanaki
-    @date   
-    @brief  Comparison component for FCF and SCF
-*/
+/// @file   AliHLTTPCCFComparisonComponent.h
+/// @author Kalliopi Kanaki
+/// @date   
+/// @brief  Comparison component for FCF and SCF
+///
 
 #include "AliHLTProcessor.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCTrackSegmentData.h"
 
 class TNtuple;
 class TH1F;
