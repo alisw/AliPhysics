@@ -1,5 +1,4 @@
-// @(#) $Id$
-// Original: AliHLTTrackSegmentData.h,v 1.7 2005/03/31 04:48:59 cvetan 
+// $Id$
 
 #ifndef ALIHLTTPCTRACKSEGMENTDATA_H
 #define ALIHLTTPCTRACKSEGMENTDATA_H
@@ -8,7 +7,7 @@
 //* ALICE Experiment at CERN, All rights reserved.                         *
 //* See cxx source for full Copyright notice                               *
 
-#include "AliHLTTPCRootTypes.h"
+#include "Rtypes.h"
 
 /**
  * @struct AliHLTTPCTrackSegmentData

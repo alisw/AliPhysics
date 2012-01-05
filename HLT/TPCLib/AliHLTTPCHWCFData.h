@@ -12,7 +12,7 @@
 /// @brief  Decoder methods for the HWCF format
 ///
 
-#include "AliHLTTPCRootTypes.h"
+#include "Rtypes.h"
 #include "AliHLTDataTypes.h"
 #include "AliHLTLogging.h"
 #include "AliHLTErrorGuard.h"

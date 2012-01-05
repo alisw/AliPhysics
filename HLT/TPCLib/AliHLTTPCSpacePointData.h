@@ -3,7 +3,7 @@
 #ifndef SPACEPOINTDATA_H
 #define SPACEPOINTDATA_H
 
-#include "AliHLTTPCRootTypes.h"
+#include "Rtypes.h"
 
 /**
  * @struct AliHLTTPCSpacePointData

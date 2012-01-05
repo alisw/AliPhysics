@@ -12,7 +12,7 @@
   class AliRunLoader;
 #endif
 
-#include "AliHLTTPCRootTypes.h"
+#include "Rtypes.h"
 
 class AliHLTTPCTransform {
 

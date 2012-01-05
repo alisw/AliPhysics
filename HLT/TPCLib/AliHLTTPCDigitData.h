@@ -1,10 +1,9 @@
-// @(#) $Id$
-// Original: AliHLTDigitData.h,v 1.5 2004/05/12 11:51:27 loizides 
+// $Id$
 
 #ifndef _ALIHLTTPCDIGITDATA_H_
 #define _ALIHLTTPCDIGITDATA_H_
 
-#include "AliHLTTPCRootTypes.h" 
+#include "Rtypes.h" 
 
 /**
  * @struct AliHLTTPCDigitData

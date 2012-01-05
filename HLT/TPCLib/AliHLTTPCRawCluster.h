@@ -2,7 +2,7 @@
 #ifndef ALIHLTTPCRAWCLUSTER_H
 #define ALIHLTTPCRAWCLUSTER_H
 
-#include "AliHLTTPCRootTypes.h"
+#include "Rtypes.h"
 
 /**
  * @struct AliHLTTPCRawCluster
