@@ -54,6 +54,7 @@ fMaxVtxRedChi2(1e6),
 fMaxVtxZ(10.),
 fMinSPDMultiplicity(0),
 fTriggerMask(AliVEvent::kAnyINT),
+fUseOnlyOneTrigger(kFALSE),
 fTriggerClass("CINT1"),
 fTrackCuts(0),
 fnPtBins(1),
@@ -102,6 +103,7 @@ AliRDHFCuts::AliRDHFCuts(const AliRDHFCuts &source) :
   fMaxVtxZ(source.fMaxVtxZ),
   fMinSPDMultiplicity(source.fMinSPDMultiplicity),
   fTriggerMask(source.fTriggerMask),
+  fUseOnlyOneTrigger(source.fUseOnlyOneTrigger),
   fTriggerClass(source.fTriggerClass),
   fTrackCuts(0),
   fnPtBins(source.fnPtBins),
@@ -166,6 +168,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fMaxVtxZ=source.fMaxVtxZ;
   fMinSPDMultiplicity=source.fMinSPDMultiplicity;
   fTriggerMask=source.fTriggerMask;
+  fUseOnlyOneTrigger=source.fUseOnlyOneTrigger;
   fTriggerClass=source.fTriggerClass;
   fnPtBins=source.fnPtBins;
   fnPtBinLimits=source.fnPtBinLimits;
@@ -313,6 +316,14 @@ Bool_t AliRDHFCuts::IsEventSelected(AliVEvent *event) {
       if(accept) fWhyRejection=7;
       fEvRejectionBits+=1<<kPhysicsSelection;
       accept=kFALSE;
+    }else{
+      if(fUseOnlyOneTrigger){
+	if(((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()!=fTriggerMask){
+	  if(accept) fWhyRejection=7;
+	  fEvRejectionBits+=1<<kPhysicsSelection;
+	  accept=kFALSE;
+	}
+      }
     }
   }
 
