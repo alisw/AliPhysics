@@ -20,7 +20,7 @@
 	TPCLib/comp/AliHLTTPCCompModelInflater.h
 	TPCLib/comp/AliHLTTPCCompModelInflaterComponent.h
 
-2012-01-05 removed classes, revisions 
+2012-01-05 removed classes, revisions 53821 53822
 	TPCLib/AliHLTTPCConfMapFit.cxx
 	TPCLib/AliHLTTPCConfMapFit.h
 	TPCLib/AliHLTTPCConfMapper.cxx
@@ -52,3 +52,27 @@
 	TPCLib/offline/AliHLTTPCOfflineTrackerCalibComponent.h
 	TPCLib/offline/AliHLTTPCOfflineTrackerComponent.cxx
 	TPCLib/offline/AliHLTTPCOfflineTrackerComponent.h
+
+2012-01-05 removed classes, revisions 53827 53828
+	comp/AliHLTCompDefinitions.cxx
+	comp/AliHLTCompDefinitions.h
+	comp/AliHLTCOMPHuffmanAltroCalibComponent.cxx
+	comp/AliHLTCOMPHuffmanAltroCalibComponent.h
+	comp/AliHLTCOMPHuffmanAltroComponent.cxx
+	comp/AliHLTCOMPHuffmanAltroComponent.h
+	comp/AliHLTCOMPHuffmanAltro.cxx
+	comp/AliHLTCOMPHuffmanAltro.h
+	comp/AliHLTCOMPHuffmanCodeData.cxx
+	comp/AliHLTCOMPHuffmanCodeData.h
+	comp/AliHLTCOMPHuffmanData.cxx
+	comp/AliHLTCOMPHuffmanData.h
+	comp/AliHLTCOMPHuffmanOccurrenceData.cxx
+	comp/AliHLTCOMPHuffmanOccurrenceData.h
+	comp/AliHLTCompPreprocessor.cxx
+	comp/AliHLTCompPreprocessor.h
+	comp/bitio.c
+	comp/bitio.h
+	comp/errhand.c
+	comp/errhand.h
+	comp/macros/run-AliHLTCOMPHuffmanAltro.C
+	comp/rootlogon.C
