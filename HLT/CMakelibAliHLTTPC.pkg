@@ -32,7 +32,6 @@ set ( CLASS_HDRS
     AliHLTTPCClusterTransformation.h
     AliHLTTPCAgent.h
     AliHLTTPCMemHandler.h
-    AliHLTTPCDataCompressorHelper.h
     AliHLTTPCFileHandler.h
     AliHLTTPCClusterFinder.h
     AliHLTTPCMapping.h
@@ -41,33 +40,19 @@ set ( CLASS_HDRS
     AliHLTTPCDigitReader32Bit.h
     AliHLTTPCDigitDumpComponent.h
     AliHLTTPCDataCheckerComponent.h
-    AliHLTTPCVertex.h
-    AliHLTTPCTrackArray.h
-    AliHLTTPCTrack.h
     AliHLTTPCSpacePointContainer.h
     AliHLTTPCRawSpacePointContainer.h
     AliHLTTPCHWCFSpacePointContainer.h
     AliHLTTPCTrackGeometry.h
     AliHLTTPCHWCFData.h
     offline/AliHLTTPCDigitPublisherComponent.h
-    offline/AliHLTTPCOfflineClustererComponent.h
-    offline/AliHLTTPCOfflineTrackerComponent.h
-    offline/AliHLTTPCOfflineTrackerCalibComponent.h
-    offline/AliHLTTPCOfflineCalibrationComponent.h
-    offline/AliHLTTPCOfflineCluster.h
     AliHLTTPCClusters.h
-    AliHLTTPCConfMapFit.h
-    AliHLTTPCConfMapTrack.h
-    AliHLTTPCConfMapPoint.h
-    AliHLTTPCConfMapper.h
-    AliHLTTPCModelTrack.h
     AliHLTTPCPad.h
     AliHLTTPCDefinitions.h
     AliHLTTPCRawDataUnpackerComponent.h
     AliHLTTPCClusterFinderComponent.h
     AliHLTTPCHWClusterTransformComponent.h
     AliHLTTPCCFComparisonComponent.h
-    AliHLTTPCEsdWriterComponent.h
     AliHLTTPCHistogramHandlerComponent.h
     AliHLTTPCClusterConverterComponent.h
     AliHLTTPCClusterAccessHLTOUT.h
@@ -133,7 +118,18 @@ set ( CLASS_HDRS
 string ( REPLACE ".h" ".cxx" MODULE_SRCS "${CLASS_HDRS}")
 list(APPEND MODULE_SRCS AliHLTTPCLog.cxx)
 
-set ( MODULE_HDRS  	${CLASS_HDRS} AliHLTTPCLog.h AliHLTTPCLogging.h AliHLTTPCSpacePointData.h AliHLTTPCRootTypes.h AliHLTTPCDigitData.h AliHLTTPCTrackSegmentData.h AliHLTTPCVertexData.h AliHLTTPCTrackletDataFormat.h AliHLTTPCClusterDataFormat.h AliHLTTPCModels.h AliHLTTPCClusterMCData.h HWCFemulator/AliHLTTPCHWCFDataTypes.h)
+set ( MODULE_HDRS  	
+    ${CLASS_HDRS}
+    AliHLTTPCLog.h
+    AliHLTTPCLogging.h
+    AliHLTTPCSpacePointData.h
+    AliHLTTPCDigitData.h
+    AliHLTTPCTrackSegmentData.h
+    AliHLTTPCTrackletDataFormat.h
+    AliHLTTPCClusterDataFormat.h
+    AliHLTTPCClusterMCData.h
+    HWCFemulator/AliHLTTPCHWCFDataTypes.h
+)
 
 set ( MODULE_DHDR )
 
