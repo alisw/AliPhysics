@@ -1,5 +1,4 @@
-// @(#) $Id$
-// Original: AliHLTMemHandler.cxx,v 1.52 2005/06/14 10:55:21 cvetan 
+// $Id$
 
 //**************************************************************************
 //* This file is property of and copyright by the ALICE HLT Project        * 
@@ -30,15 +29,11 @@
 #include "AliHLTTPCDigitData.h"
 #include "AliHLTTPCLogging.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCTrackSegmentData.h"
 #include "AliHLTTPCSpacePointData.h"
-#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCMemHandler.h"
 #include "TMath.h"
 
-#if __GNUC__ >= 3
 using namespace std;
-#endif
   
 ClassImp(AliHLTTPCMemHandler)
   
@@ -254,17 +249,6 @@ Byte_t *AliHLTTPCMemHandler::Allocate()
 {
   //Allocate
   return Allocate(GetFileSize()); 
-}
-
-Byte_t *AliHLTTPCMemHandler::Allocate(AliHLTTPCTrackArray *array)
-{
-  //Allocate memory for tracks in memory. Used by TrackArray2Binary()
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Allocate","Memory")
-      <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return 0;
-  }
-  return Allocate(array->GetOutSize()); 
 }
 
 Byte_t *AliHLTTPCMemHandler::Allocate(UInt_t size)
@@ -825,110 +809,6 @@ Bool_t AliHLTTPCMemHandler::Transform(UInt_t npoint,AliHLTTPCSpacePointData *dat
     data[i].fY = xyz[1];
     data[i].fZ = xyz[2];
   }
-  return kTRUE;
-}
-
-///////////////////////////////////////// Track IO  
-Bool_t AliHLTTPCMemHandler::Memory2Binary(UInt_t ntrack,AliHLTTPCTrackSegmentData *data)
-{
-  //Write the tracks stored in data, to outputfile.
-  if(!fOutBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2Binary","File")
-    <<"No Output File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2Binary","Memory")
-    <<"Pointer to AliHLTTPCTrackSegmentData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  AliHLTTPCTrackSegmentData *trackPt = data;
-  for(UInt_t i=0;i<ntrack;i++){
-    Int_t size=sizeof(AliHLTTPCTrackSegmentData)+trackPt->fNPoints*sizeof(UInt_t); 
-    fwrite(trackPt,size,1,fOutBinary);
-    Byte_t *bytePt = (Byte_t*) trackPt;
-    bytePt += size; 
-    trackPt = (AliHLTTPCTrackSegmentData*) bytePt;
-  }
-  LOG(AliHLTTPCLog::kDebug,"AliHLTTPCMemHandler::Memory2Binary","File")
-  <<AliHLTTPCLog::kDec<<"Wrote  "<<ntrack<<" Tracks to File"<<ENDLOG;
-  
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::TrackArray2Binary(AliHLTTPCTrackArray *array)
-{
-  //Write the trackarray to the outputfile.
-  if(!fOutBinary){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::TrackArray2Binary","File")
-    <<"No Output File"<<ENDLOG;
-    return kFALSE;
-  }
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::TrackArray2Binary","Memory")
-    <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  AliHLTTPCTrackSegmentData *data = (AliHLTTPCTrackSegmentData *)Allocate(array);
-
-  UInt_t ntrack;
-  TrackArray2Memory(ntrack,data,array);
-  Memory2Binary(ntrack,data);
-  Free();
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::TrackArray2Memory(UInt_t & ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const
-{
-  //Fill the trackarray into the AliTrackSegmentData structures before writing to outputfile.
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::TrackArray2Memory","Memory")
-    <<"Pointer to AliHLTTPCTrackSegmentData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::TrackArray2Memory","Memory")
-    <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-
-  array->WriteTracks(ntrack,data);
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const
-{
-  //Fill the tracks in data into trackarray.
-  
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2TrackArray","Memory")
-    <<"Pointer to AliHLTTPCTrackSegmentData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2TrackArray","Memory")
-    <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  array->FillTracks(ntrack,data);
-  return kTRUE;
-}
-
-Bool_t AliHLTTPCMemHandler::Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array,Int_t slice) const
-{
-  //Fill the tracks in data into trackarray, and rotate the tracks to global coordinates.
-    
-  if(!data){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2TrackArray","Memory")
-    <<"Pointer to AliHLTTPCTrackSegmentData = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  if(!array){
-    LOG(AliHLTTPCLog::kWarning,"AliHLTTPCMemHandler::Memory2TrackArray","Memory")
-    <<"Pointer to AliHLTTPCTrackArray = 0x0 "<<ENDLOG;
-    return kFALSE;
-  }
-  array->FillTracks(ntrack,data,slice);
   return kTRUE;
 }
 

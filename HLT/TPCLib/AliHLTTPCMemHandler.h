@@ -17,8 +17,6 @@
 struct AliHLTTPCDigitData;
 struct AliHLTTPCSpacePointData;
 struct AliHLTTPCDigitRowData;
-struct AliHLTTPCTrackSegmentData;
-class AliHLTTPCTrackArray;
 class AliHLTTPCRandomPointData;
 class AliHLTTPCRandomDigitData;
 
@@ -140,13 +138,6 @@ class AliHLTTPCMemHandler {
   Bool_t Transform(UInt_t npoint,AliHLTTPCSpacePointData *data,Int_t slice);
   static void UpdateRowPointer(AliHLTTPCDigitRowData *&tempPt);
   
-  //Track IO
-  Bool_t Memory2Binary(UInt_t ntrack,AliHLTTPCTrackSegmentData *data);
-  Bool_t TrackArray2Binary(AliHLTTPCTrackArray *array);
-  Bool_t TrackArray2Memory(UInt_t & ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const;
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array) const;
-  Bool_t Memory2TrackArray(UInt_t ntrack,AliHLTTPCTrackSegmentData *data,AliHLTTPCTrackArray *array,Int_t slice) const;
-    
   //Memory Allocation
   UInt_t GetAllocatedSize() const {return fSize;}  
   UInt_t GetFileSize();
@@ -156,7 +147,6 @@ class AliHLTTPCMemHandler {
 
   Byte_t *Allocate(UInt_t size);
   Byte_t *Allocate();  // allocate size of Binary Input File
-  Byte_t *Allocate(AliHLTTPCTrackArray *array);
   Byte_t *GetDataPointer(UInt_t &size) const {size = fSize; return fPt;}
   FILE *GetFilePointer() const {return fInBinary;}
   void   Free();
