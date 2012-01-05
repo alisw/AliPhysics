@@ -37,6 +37,7 @@ Options:
 	-r,--run         NUMBER       Run number [$runn]
 	-q,--qa          NUMBER       QA number 
 	-f,--file	 NAME	      File to get [$file]
+	-m,--max	 NUMBER       Maximum number of files to get [$maxf]
 	-T,--trending	              Get trending.root file 
 	-a,--archives		      Get ZIP archives 
 	-n,--no-action		      Run dry (do not copy files)
@@ -102,6 +103,7 @@ runn=0
 qano=0
 noac=0
 arch=0
+maxf=-1
 file=QAresults.root 
 
 while test $# -gt 0 ; do 
@@ -117,6 +119,7 @@ while test $# -gt 0 ; do
 	-r|--run)         runn=$2 ; shift ;; 
 	-q|--qa)          qano=$2 ; shift ;; 
 	-f|--file)        file=$2 ; shift ;; 
+	-m|--max)         maxf=$2 ; shift ;; 
 	-T|--trending)	  file=trending.root ; shift ;; 
 	-a|--archives)    arch=1  ;; 
 	-n|--no-action)   noac=1  ;; 
@@ -173,12 +176,14 @@ if test ${pass} -ge 0 ; then
 fi
 datd=data
 esdd=ESDs/
-if test "x${suff}" != "x" ; then 
-    datd=sim
-    esdd=
-fi
+dprod=LHC${year}${lett}
+case x${suff} in 
+    x_*) ;;
+    x);; 
+    *) datd=sim ; esdd= ; dprod=${dprod}${suff};;
+esac
 path=/alice/${datd}/20${year}/${prod}/
-store=${dest}/${prod}/${prep}${paid}${post}
+store=${dest}/${dprod}/${prep}${paid}${post}
 search="${esdd}${prep}${paid}${post}"
 if test $runn -gt 0 ; then 
     path=`printf "${path}%09d/ESDs/${prep}${paid}${pass}${post}/" $runn` 
@@ -219,16 +224,28 @@ Settings:
 	Search string:		$search
 	Verbosity:		$verb
 	Redirection:		$redir
-EOF
+EOF 
     
 # --------------------------------------------------------------------
-mkdir -p ${store}
-mess "Getting list of files from AliEn - can take minutes - be patient"
-mess "alien_find ${path} ${search}"
-files=`alien_find ${path} ${search} | grep -v "files found" 2> ${redir}` 
+mkdir -p ${store} 
+mess "Getting list of files from AliEn - can take minutes - be patient" 
+mess "alien_find ${path} ${search}" 
+files=`alien_find ${path} ${search} | grep -v "files found" 2> ${redir}`   
+tot=0
+for i in $files ; do 
+    let tot=$tot+1 
+done
+mess "Got a list of $tot files" 
+if test $maxf -gt 0 && test $maxf -lt $tot ; then 
+    mess "Number of files to get limited to $maxf" 
+    tot=$maxf 
+fi
 j=0
 runs=
 for i in $files ; do 
+    if test $maxf -gt 0 && test $j -ge $maxf ; then 
+	break 
+    fi
     b=`echo $i | sed -e "s,${path},,"` 
     d=
     if test $runn -gt 0 ; then 
@@ -244,17 +261,21 @@ for i in $files ; do
 	r=`echo $b | sed -e "s,/.*,,"` 
 	o=${store}/${base}_${r}.root
     fi
-    runs="$runs $r" 
-    mess "$i -> $o"
+    runs="$runs $r"  
+    printf "%3d/%3d: " $j $tot
+    mess -n "$i -> $o "
     if test $noac -lt 1 && test ! -f $o ; then 
-	mess "alien_cp alien:${i} file:${o}"
+	# mess "alien_cp alien:${i} file:${o}"
+	mess " copying"
 	alien_cp alien:${i} file:${o} > ${redir} 2>&1 
 	if test -f $o ; then chmod g+rw ${o} ; fi
+    else
+	mess " exists"
     fi
     if test $noac -lt 1 && test $arch -lt 1  ; then check_file $o ; fi
     if test $noac -lt 1 && test $arch -gt 0 ; then 
-	(cd ${d} && unzip QAarchive.zip) > $redir 2>&1 
-    fi
+	(cd ${d} && unzip QAarchive.zip) > $redir 2>&1  
+    fi 
     let j=$j+1
 done 
 mess "Got a total of $j files for runs $runs"

@@ -6,6 +6,7 @@ verb=0
 nodw=0
 notr=0
 norn=0
+maxf=-1
 last="unknown"
 lock=
 
@@ -34,6 +35,7 @@ Options:
 	-r,--no-run                Do not make per-run info            [$norn]
 	-o,--output	DIRECTORY  Where to store the result           [$top]
 	-v,--verbose		   Be verbose                          [$verb]
+	-m,--max	NUMBER	   Maximum number of runs to get       [$maxf]
 	-s,--skip-lines NUMBER	   Number of lines to skip in job list [$skip]
 EOF
 }     
@@ -59,6 +61,16 @@ get_parts()
     P=`echo $x | sed 's/.*pass\([0-9]*\).*/\1/'`
     R=`echo $x | sed -n "s/.*pass${P}_//p"` 
     Q=`echo $x | sed -n 's/pass.*//p'`
+    Y=`echo $p | sed 's/LHC\(..\).*/\1/'` 
+    L=`echo $p | sed "s/LHC${Y}\(.\).*/\1/"` 
+    S=`echo $p | sed "s/LHC${Y}${L}//"` 
+
+    dprod=LHC${Y}${L}
+    case x$S in 
+	x) ;; 
+	x_*) ;; 
+	*) dprod=${dprod}${S} ;; 
+    esac
     
     case x$r in 
 	xQA*) q=`echo $r | sed 's/QA//'` ;; 
@@ -71,7 +83,7 @@ get_parts()
     if test "x$q" != "x" ; then opts="$opts -q $q" ; fi 
     if test "x$Q" != "x" ; then opts="$opts -Q $Q" ; fi 
 
-    dest="${p}/${Q}pass${P}"
+    dest="${dprod}/${Q}pass${P}"
     if test "x$R" != "x" ; then dest="${dest}_${R}" ; fi 
 
 }
@@ -95,15 +107,15 @@ handle_err()
 } 
 enable_trap ()
 {
-    echo "Enabling trapping errors"
+    # echo "Enabling trapping errors"
     trap handle_err ERR 
-    trap -p ERR
+    # trap -p ERR
 }
 disable_trap ()
 {
-    echo "Disabling trapping errors"
+    # echo "Disabling trapping errors"
     trap - ERR
-    trap -p ERR
+    # trap -p ERR
 }
 
 
@@ -118,6 +130,7 @@ while test $# -gt 0 ; do
 	-r|--no-run)      norn=1  ;; 
 	-v|--verbose)	  verb=1  ;;
 	-s|--skip-lines)  skip=$2 ; shift ;; 
+	-m|--max)         maxf=$2 ; shift ;; 
 	*) echo "Unknown option $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift 
@@ -147,6 +160,7 @@ Don't make tree:  $notr
 Download options: $opts
 Destination:      $dest
 Skip lines:	  $skip
+Max # of runs:    $maxf
 ----------------------------------------------------------------------
 EOF
 
@@ -171,7 +185,7 @@ EOF
 # --- Download the files ---------------------------------------------
 if test $nodw -lt 1 ; then 
     mess "Running getQAResults.sh $opts -d $top -n "
-    getQAResults.sh $opts -d $top -T -v -v -i 
+    getQAResults.sh $opts -d $top -T -v -v -i -m $maxf
 else 
     mess "Not downloading"
 fi

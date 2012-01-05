@@ -56,7 +56,8 @@ struct QABase
       fTeXName(""),
       fToDelete(""),
       fCanvas(0), 
-      fSingle(single)
+      fSingle(single), 
+      fOutputName("forward_trend.root")
   {}
   /** 
    * Copy constructor 
@@ -78,7 +79,8 @@ struct QABase
       fTeXName(o.fTeXName),
       fToDelete(o.fToDelete),
       fCanvas(o.fCanvas),
-      fSingle(o.fSingle)
+      fSingle(o.fSingle), 
+      fOutputName(o.fOutputName)
   {}
   /** 
    * Assignment operator
@@ -103,12 +105,36 @@ struct QABase
     if (fTeX)    { fTeX->close(); fTeX = 0; }
     if (fHtml)   { fHtml->close(); fHtml = 0; }
   }
+  /**
+   * Set the output file name 
+   *
+   * @param name Name of output (tree) file 
+   */
+  void SetOutputName(const char* name) { fOutputName = name; }
   /** 
    * The name of the TTree output file
    * 
    * @return Output file name 
    */
-  const char* OutputName() const { return "forward_trend.root"; }
+  const char* OutputName() const { return fOutputName.Data(); }
+  virtual Bool_t MakeTree(bool read)
+  {
+    if (!fSingle) { 
+      fOutput = new TFile(OutputName(), (read ? "READ" : "RECREATE"));
+      if (!fOutput) { 
+	Error("MakeTree", "Failed to open output file");
+	return false;
+      }
+      if (read) fTree   = static_cast<TTree*>(fOutput->Get("T"));
+      else      fTree   = new TTree("T", "T");
+    }
+    if (!fTree) { 
+      Error("MakeTree", "No tree defined!");
+      return false;
+    }
+
+    return true;
+  }
   /** 
    * Initialize 
    * 
@@ -118,18 +144,12 @@ struct QABase
    */
   Bool_t Init(bool read=false)
   {
-    fToDelete = "";
-    if (!fSingle) { 
-      fOutput = new TFile(OutputName(), (read ? "READ" : "RECREATE"));
-      if (!fOutput) { 
-	Error("Init", "Failed to open output file");
-	return false;
-      }
-      if (read) fTree   = static_cast<TTree*>(fOutput->Get("T"));
-      else      fTree   = new TTree("T", "T");
-    }
+    if (!MakeTree(read)) return false;
+
     if (read) fGlobal = Global::SetBranch(fTree);
     else      fGlobal = Global::MakeBranch(fTree);
+
+    fToDelete = "";
       
     fFMD1i->Init(fTree, read);
     fFMD2i->Init(fTree, read);
@@ -388,6 +408,7 @@ struct QABase
   TString        fToDelete;	// List of files to possibly delete
   TCanvas*       fCanvas;	// Pointer to canvas object
   Bool_t         fSingle;	// Whether we're processing one run only
+  TString        fOutputName;   // Output tree file name 
 };
 
 #endif

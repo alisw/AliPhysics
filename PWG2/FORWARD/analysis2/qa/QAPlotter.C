@@ -22,6 +22,7 @@
 # include <TArrow.h>
 # include <TArrayI.h>
 # include <TMath.h>
+# include <TChain.h>
 #else 
 class QABase;
 class QARing;
@@ -209,6 +210,26 @@ struct QAPlotter : public QABase
     fVz->SetMarkerStyle(20);
     fVz->SetLineWidth(2);
   }
+  /** 
+   * Add a file to be processed
+   * 
+   * @param filename Name of file 
+   */
+  void AddFile(const char* filename)
+  {
+    fFiles.Add(new TObjString(filename));
+  }
+  Bool_t MakeTree(bool read)
+  {
+    if (fFiles.GetEntriesFast() <= 0) return QABase::MakeTree(read);
+
+    TChain* chain = new TChain("T", "T");
+    if (!chain->AddFileInfoList(&fFiles)) return false;
+    
+    fTree   = chain;
+    return true;
+  }
+
   /** 
    * Run the job
    * 
@@ -540,6 +561,7 @@ struct QAPlotter : public QABase
   UInt_t        fFirst;     // First run
   UInt_t        fLast;      // Last run
   TArrayI       fRuns;      // Seen runs 
+  TObjArray     fFiles;
 };
  
 //
