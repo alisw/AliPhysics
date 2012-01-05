@@ -1,3 +1,5 @@
+// $Id$
+
 // **************************************************************************
 // This file is property of and copyright by the ALICE HLT Project          *
 // ALICE Experiment at CERN, All rights reserved.                           *
@@ -15,16 +17,14 @@
 //                                                                          *
 //***************************************************************************
 
-
-#if __GNUC__>= 3
-using namespace std;
-#endif
+/// @file   AliHLTTPCTrackMCMarkerComponent.cxx
+/// @author Matthias Kretz
+/// @date
+/// @brief  Marker component for TPC cluster mc labels.
+///
 
 #include "AliHLTTPCTrackMCMarkerComponent.h"
 #include "AliHLTTPCTransform.h"
-#include "AliHLTTPCTrackSegmentData.h"
-#include "AliHLTTPCTrack.h"
-#include "AliHLTTPCTrackArray.h"
 #include "AliHLTTPCTrackletDataFormat.h"
 #include "AliHLTTPCCADef.h"
 #include "AliHLTTPCDefinitions.h"
@@ -40,7 +40,7 @@ using namespace std;
 #include <climits>
 #include <cstdlib>
 #include <cerrno>
-
+#include <algorithm>
 
 // ROOT macro for the implementation of ROOT specific class methods
 ClassImp( AliHLTTPCTrackMCMarkerComponent )

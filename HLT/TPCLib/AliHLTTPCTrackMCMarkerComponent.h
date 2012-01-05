@@ -1,3 +1,5 @@
+//-*- Mode: C++ -*-
+// $Id$
 // ************************************************************************
 // This file is property of and copyright by the ALICE HLT Project        *
 // ALICE Experiment at CERN, All rights reserved.                         *
@@ -5,15 +7,14 @@
 //                                                                        *
 //*************************************************************************
 
-
 #ifndef ALIHLTTPTRACKMCMARKERCOMPONENT_H
 #define ALIHLTTPTRACKMCMARKERCOMPONENT_H
 
-/** @file   AliHLTTPCTrackMCMarkerComponent.h
-    @author Matthias Kretz
-    @date
-    @brief  HLT TPC CA global merger component.
-*/
+/// @file   AliHLTTPCTrackMCMarkerComponent.h
+/// @author Matthias Kretz
+/// @date
+/// @brief  Marker component for TPC cluster mc labels.
+///
 
 #include "AliHLTProcessor.h"
 class AliHLTTPCClusterMCData;
