@@ -557,7 +557,7 @@ int AliHLTGlobalBarrelTrack::DrawProjXYTrack(Option_t *option, const float scale
 {
   /// draw track
   bool bDrawArc=false; // draw TArc
-  bool bNoTrackPoints=false; // don't draw track points
+  //bool bNoTrackPoints=false; // don't draw track points
   TString strOption(option);
   if (strOption.IsNull()) strOption="spacepoints trackarc";
   std::auto_ptr<TObjArray> tokens(strOption.Tokenize(" "));
@@ -574,7 +574,7 @@ int AliHLTGlobalBarrelTrack::DrawProjXYTrack(Option_t *option, const float scale
     }
     key="notrackpoints";
     if (arg.BeginsWith(key)) {
-      bNoTrackPoints=true;
+      //bNoTrackPoints=true;
       continue;
     }
   }

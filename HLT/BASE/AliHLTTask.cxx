@@ -803,7 +803,6 @@ int AliHLTTask::SubscribeSourcesAndSkip()
     if (!pSrcTask) continue;
     unsigned iPosition=fBlockDataArray.size();
     if ((iResult=pSrcTask->Subscribe(this, fBlockDataArray))>0) {
-      AliHLTComponentBlockDataList::iterator block=fBlockDataArray.begin();
       for (unsigned i=iPosition; i<fBlockDataArray.size(); i++) {
 	subscribedTaskList.push_back(pSrcTask);
       }
