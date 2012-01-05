@@ -497,7 +497,7 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   AddTrackCuts(esdTrackCuts);
   
  
-  const Int_t nptbins =13;
+  const Int_t nptbins =15;
   const Int_t nvars=14;
   Float_t ptbins[nptbins+1];
   ptbins[0]=0.;
@@ -507,13 +507,15 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   ptbins[4]=4.;
   ptbins[5]=5.;
   ptbins[6]=6.;
-  ptbins[7]=8.;
-  ptbins[8]=10.;
-  ptbins[9]=12.;
-  ptbins[10]=14.;
-  ptbins[11]=16.;
-  ptbins[12]=24.;
-  ptbins[13]=99999.;
+  ptbins[7]=7.;
+  ptbins[8]=8.;
+  ptbins[9]=9.;
+  ptbins[10]=10.;
+  ptbins[11]=12.;
+  ptbins[12]=14.;
+  ptbins[13]=16.;
+  ptbins[14]=24.;
+  ptbins[15]=99999.;
       
     
   Float_t** anacutsval;
@@ -528,12 +530,10 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
     anacutsval[4][ipt]=0.;
     anacutsval[5][ipt]=0.01;
     anacutsval[11][ipt]=10000000000.;
-    anacutsval[12][ipt]=0.;
-    anacutsval[13][ipt]=0.;
-  }
+    }
 
   anacutsval[1][0]=0.3;
-  anacutsval[1][1]=0.3;
+  anacutsval[1][1]=0.4;
   anacutsval[1][2]=0.4; 
   anacutsval[2][0]=0.3;
   anacutsval[2][1]=0.3;
@@ -564,8 +564,8 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[8][4]=0.5;
      
     
-  anacutsval[9][0]=0.95;
-  anacutsval[9][1]=0.95;
+  anacutsval[9][0]=0.97;
+  anacutsval[9][1]=0.936;
   anacutsval[9][2]=0.95; 
   anacutsval[9][3]=0.95; 
   anacutsval[9][4]= 0.95;
@@ -574,9 +574,10 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
   anacutsval[9][7]=0.92;
   anacutsval[9][8]=0.92;
   anacutsval[9][9]=0.90;
-  anacutsval[9][10]=0.90;
-  anacutsval[9][11]=0.90;
-  anacutsval[9][12]=0.90;
+ for(Int_t ipt=10;ipt<nptbins;ipt++){
+   anacutsval[9][ipt]=0.90; 
+ }
+  
   
   anacutsval[10][0]=0.0055;
   anacutsval[10][1]=0.0055;
@@ -592,7 +593,18 @@ void AliRDHFCutsDplustoKpipi::SetStandardCutsPP2010() {
     anacutsval[10][ipt]=0.000883;
     }   
 
-
+  anacutsval[12][0]=8;
+  anacutsval[12][1]=8;
+  
+  anacutsval[13][0]=0.98;
+  anacutsval[13][1]=0.98;
+  for(Int_t ipt=2;ipt<nptbins;ipt++){
+    anacutsval[12][ipt]=0.;
+    anacutsval[13][ipt]=0.;
+ }
+  
+  
+  
   SetGlobalIndex(nvars,nptbins);
   SetPtBins(nptbins+1,ptbins);
   SetCuts(nvars,nptbins,anacutsval);
