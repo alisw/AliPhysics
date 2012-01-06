@@ -481,6 +481,7 @@ AliKMeansResult& AliKMeansResult::operator=(const AliKMeansResult& res)
   //
   // Assignment operator
   if (this != &res) {
+    TObject::operator=(res);
     fK = res.fK;
     for (Int_t i = 0; i <fK; i++) {
       fMx[i]     = res.fMx[i];
