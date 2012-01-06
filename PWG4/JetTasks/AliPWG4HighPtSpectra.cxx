@@ -86,7 +86,9 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra() : AliAnalysisTask("AliPWG4HighPtSpe
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
-  fh1PtHardTrials(0)
+  fh1PtHardTrials(0),
+  fPtRelUncertainty1PtPrim(0x0),
+  fPtRelUncertainty1PtSec(0x0)
 {
   //
   //Default ctor
@@ -117,7 +119,9 @@ AliPWG4HighPtSpectra::AliPWG4HighPtSpectra(const Char_t* name) :
   fh1Xsec(0),
   fh1Trials(0),
   fh1PtHard(0),
-  fh1PtHardTrials(0)
+  fh1PtHardTrials(0),
+  fPtRelUncertainty1PtPrim(0x0),
+  fPtRelUncertainty1PtSec(0x0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -447,6 +451,10 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	    if(particle->GetPDG()->Charge()<0.) {
 	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputRecMC,kStepReconstructedMC);
 	    }
+
+	    //Fill pT resolution plots for primaries
+	    fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*track->GetSigma1Pt2());
+
 	  }
 
 	  //Container with secondaries
@@ -457,6 +465,8 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	    if(particle->GetPDG()->Charge()<0.) {
 	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
 	    }
+	    //Fill pT resolution plots for primaries
+	    fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*track->GetSigma1Pt2());
 	  }
 	}
 	
@@ -468,7 +478,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
     }//track loop
   
 
-  //Fill MC containters if particles are findable
+  //Fill MC containers if particles are findable
   if(fMC) {
     for(int iPart = 1; iPart<(fMC->GetNumberOfPrimaries()); iPart++) {
       AliMCParticle *mcPart  = (AliMCParticle*)fMC->GetTrack(iPart);
@@ -678,11 +688,33 @@ void AliPWG4HighPtSpectra::CreateOutputObjects() {
   fh1PtHardTrials = new TH1F("fh1PtHardTrials","PYTHIA Pt hard weight with trials;p_{T,hard}",350,-.5,349.5);
   fHistList->Add(fh1PtHardTrials);
 
+  Int_t fgkNPtBins = 100;
+  Float_t kMinPt   = 0.;
+  Float_t kMaxPt   = 100.;
+  Double_t *binsPt = new Double_t[fgkNPtBins+1];
+  for(Int_t i=0; i<=fgkNPtBins; i++) binsPt[i]=(Double_t)kMinPt + (kMaxPt-kMinPt)/fgkNPtBins*(Double_t)i ;
+
+  Int_t fgkNRel1PtUncertaintyBins=50;
+  Float_t fgkRel1PtUncertaintyMin = 0.;
+  Float_t fgkRel1PtUncertaintyMax = 1.;
+
+  Double_t *binsRel1PtUncertainty=new Double_t[fgkNRel1PtUncertaintyBins+1];
+  for(Int_t i=0; i<=fgkNRel1PtUncertaintyBins; i++) binsRel1PtUncertainty[i]=(Double_t)fgkRel1PtUncertaintyMin + (fgkRel1PtUncertaintyMax-fgkRel1PtUncertaintyMin)/fgkNRel1PtUncertaintyBins*(Double_t)i ;
+
+  fPtRelUncertainty1PtPrim = new TH2F("fPtRelUncertainty1PtPrim","fPtRelUncertainty1PtPrim",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
+  fHistList->Add(fPtRelUncertainty1PtPrim);
+
+  fPtRelUncertainty1PtSec = new TH2F("fPtRelUncertainty1PtSec","fPtRelUncertainty1PtSec",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty);
+  fHistList->Add(fPtRelUncertainty1PtSec);
+
   TH1::AddDirectory(oldStatus);   
 
   PostData(0,fHistList);
   PostData(1,fCFManagerPos->GetParticleContainer());
   PostData(2,fCFManagerNeg->GetParticleContainer());
+
+  if(binsPt)                delete [] binsPt;
+  if(binsRel1PtUncertainty) delete [] binsRel1PtUncertainty;
 
 }
 

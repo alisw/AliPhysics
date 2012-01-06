@@ -83,6 +83,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC()
   fNPointTPCMultRec(0),
   fDeltaPtMultRec(0),
   fPtAllvsPtMC(0),
+  fPtAllminPtMCvsPtMC(0),
   fPtAllminPtMCvsPtAll(0),
   fPtAllvsPtMCvsMult(0),
   fPtAllminPtMCvsPtAllvsMult(0),
@@ -139,6 +140,7 @@ AliPWG4HighPtQAMC::AliPWG4HighPtQAMC(const char *name):
   fNPointTPCMultRec(0),
   fDeltaPtMultRec(0),
   fPtAllvsPtMC(0),
+  fPtAllminPtMCvsPtMC(0),
   fPtAllminPtMCvsPtAll(0),
   fPtAllvsPtMCvsMult(0),
   fPtAllminPtMCvsPtAllvsMult(0),
@@ -389,9 +391,14 @@ void AliPWG4HighPtQAMC::CreateOutputObjects() {
   fPtAllvsPtMC = new TH2F("fPtAllvsPtMC","fPtAllvsPtMC;p_{T,MC};p_{T,rec}",fgkNPtBins, binsPt,fgkNPtBins, binsPt);
   fHistList->Add(fPtAllvsPtMC);
 
+  fPtAllminPtMCvsPtMC = new TH2F("fPtAllminPtMCvsPtMC","PtAllminPtMCvsPtMC",fgkNPtBins, binsPt,fgkResPtBins,binsResPt);
+  fPtAllminPtMCvsPtMC->SetXTitle("p_{t}^{MC}");
+  fPtAllminPtMCvsPtMC->SetYTitle("(1/p_{t}^{rec}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fHistList->Add(fPtAllminPtMCvsPtMC);
+
   fPtAllminPtMCvsPtAll = new TH2F("fPtAllminPtMCvsPtAll","PtAllminPtMCvsPtAll",fgkNPtBins, binsPt,fgkResPtBins,binsResPt);
-  fPtAllminPtMCvsPtAll->SetXTitle("p_{t}^{MC}");
-  fPtAllminPtMCvsPtAll->SetYTitle("(1/p_{t}^{All}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
+  fPtAllminPtMCvsPtAll->SetXTitle("p_{t}^{rec}");
+  fPtAllminPtMCvsPtAll->SetYTitle("(1/p_{t}^{rec}-1/p_{t}^{MC})/(1/p_{t}^{MC})");
   fHistList->Add(fPtAllminPtMCvsPtAll);
 
   fPtAllvsPtMCvsMult = new TH3F("fPtAllvsPtMCvsMult","fPtAllvsPtMCvsMult;p_{T,MC};p_{T,rec};N_{tracks}",fgkNPtBins, binsPt,fgkNPtBins, binsPt,fgkMultBins,binsMult);
@@ -746,7 +753,8 @@ void AliPWG4HighPtQAMC::Exec(Option_t *) {
       }
       fPtSelMC->Fill(ptMC);
       fPtAllvsPtMC->Fill(ptMC,pt);
-      fPtAllminPtMCvsPtAll->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
+      fPtAllminPtMCvsPtMC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC) );
+      fPtAllminPtMCvsPtAll->Fill(pt,(1./pt-1./ptMC)/(1./ptMC) );
       fPtAllminPtMCvsPtAllNPointTPC->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNcls());
       fPtAllminPtMCvsPtAllNPointTPCIter1->Fill(ptMC,(1./pt-1./ptMC)/(1./ptMC),track->GetTPCNclsIter1());
       if(track->GetTPCNcls()>0.) 
