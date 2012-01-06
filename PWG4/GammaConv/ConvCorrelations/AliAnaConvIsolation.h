@@ -33,7 +33,7 @@ public:
   virtual ~AliAnaConvIsolation();
   
 
-  void CreateHistograms();
+  //void CreateHistograms();
 
 
   ///Set And get cone size
@@ -73,14 +73,15 @@ public:
 
 
   //Fill histograms
-  void FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks);
+  //void FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks);
 
   //Get list of histograms
-  TList * GetHistograms() const { return fHistograms;}
+  //TList * GetHistograms() const { return fHistograms;}
 
   //Is particle isolated
   Bool_t IsIsolated( const AliAODConversionPhoton * const particle, const TClonesArray * const tracks, Bool_t &leading);
   Bool_t IsIsolated( AliAODConversionPhoton * const particle, const TClonesArray * const tracks, const Int_t nSpawn, const Int_t * const spawn, Bool_t &leading );
+  Bool_t IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t * tIDs) const;
 
   //Is eta - phi distance smaller than conesize ?
   Bool_t IsInCone(Float_t dEta, Float_t dPhi, const Float_t coneSize) const {
@@ -103,20 +104,20 @@ public:
   Float_t fMaxPtFraction;  //max pt fraction threshold
   Float_t fSumPtFraction; //sum pt fraction threshold
 
-  TList * fHistograms; //list of histograms
+  // TList * fHistograms; //list of histograms
 
-  TH2F * fhMaxPtInCone[2]; //histogram of max pt in cone
-  TH2F * fhSumPtInCone[2]; //histogram of sum pt in cone
-  TH2F * fhSumPtVsMaxPt[2];//sum pt vs max pt
+  // TH2F * fhMaxPtInCone[2]; //histogram of max pt in cone
+  // TH2F * fhSumPtInCone[2]; //histogram of sum pt in cone
+  // TH2F * fhSumPtVsMaxPt[2];//sum pt vs max pt
   
-  // TH1F * fHistSumPt[2][2]; 
-  // TH1F * fHistMaxPt[2][2];
+  // // TH1F * fHistSumPt[2][2]; 
+  // // TH1F * fHistMaxPt[2][2];
   
-  TH1F * fhPtCandidates[2]; //pt distribution of isolation candidates
-  TH1F * fhTrackMult[2];    //Track multiplicity of events with / wo isolated particles
+  // TH1F * fhPtCandidates[2]; //pt distribution of isolation candidates
+  // TH1F * fhTrackMult[2];    //Track multiplicity of events with / wo isolated particles
   
 
-  Float_t fHistogramMaxPt; //Upper pt limit in histograms
+  // Float_t fHistogramMaxPt; //Upper pt limit in histograms
 
 
   AliAnaConvIsolation(const AliAnaConvIsolation&); // not implemented

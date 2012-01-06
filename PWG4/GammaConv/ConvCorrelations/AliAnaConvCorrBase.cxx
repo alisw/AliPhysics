@@ -86,6 +86,10 @@ void AliAnaConvCorrBase::SetUpDefaultBins() {
   fAxiscPt.SetNameTitle("cPt", "track Pt");
   fAxesList.AddAt(&fAxiscPt, 3);
 
+  // TAxis * isoAxis = new TAxis();
+  // isoAxis->Set(2, 0, 2);
+  // fAxesList.AddAt(isoAxis, 5);
+  
   for(int iIso = 0; iIso < 2; iIso++) {
     fHNTriggers[iIso] = NULL;
   }
@@ -200,7 +204,7 @@ void AliAnaConvCorrBase::FillTriggerCounters(const AliAODConversionParticle * pa
 
 
 //________________________________________________________________
-void AliAnaConvCorrBase::CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, Int_t const tIDs[4], Bool_t isolated /*= kFALSE*/) {
+void AliAnaConvCorrBase::CorrelateWithTracks(const AliAODConversionParticle * particle, const TObjArray * tracks, Int_t const tIDs[4], Bool_t isolated /*= kFALSE*/) {
   //Correlate particle with tracks
 
   FillTriggerCounters(particle, isolated);

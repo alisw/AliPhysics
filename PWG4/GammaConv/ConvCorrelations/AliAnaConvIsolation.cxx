@@ -46,18 +46,18 @@ AliAnaConvIsolation::AliAnaConvIsolation () : TObject(),
   fMaxPtThreshold(0),
   fSumPtThreshold(0),
   fMaxPtFraction(0),
-  fSumPtFraction(0),
-  fHistograms(NULL),
-  fHistogramMaxPt(50)  
+  fSumPtFraction(0)
+  // fHistograms(NULL),
+  // fHistogramMaxPt(50)  
 {
   //Constructor
-  for(Int_t i = 0; i < 2; i++){
-    fhMaxPtInCone[i] = NULL;
-    fhSumPtInCone[i] = NULL;
-    fhSumPtVsMaxPt[i] = NULL;
-    fhPtCandidates[i] = NULL;
-    fhTrackMult[i] = NULL;
-  }
+  // for(Int_t i = 0; i < 2; i++){
+  //   fhMaxPtInCone[i] = NULL;
+  //   fhSumPtInCone[i] = NULL;
+  //   fhSumPtVsMaxPt[i] = NULL;
+  //   fhPtCandidates[i] = NULL;
+  //   fhTrackMult[i] = NULL;
+  // }
   
   
 }
@@ -72,18 +72,21 @@ AliAnaConvIsolation::AliAnaConvIsolation(Float_t coneSize, Float_t maxPtThreshol
   fMaxPtThreshold(maxPtThreshold),
   fSumPtThreshold(sumPtThreshold),
   fMaxPtFraction(maxPtFraction),
-  fSumPtFraction(sumPtFraction),
-  fHistograms(NULL),
-  fHistogramMaxPt(50)
+  fSumPtFraction(sumPtFraction)
+  // fHistograms(NULL),
+  // fHistogramMaxPt(50)
 {
   //Constructor
-  for(Int_t i = 0; i < 2; i++){
-    fhMaxPtInCone[i] = NULL;
-    fhSumPtInCone[i] = NULL;
-    fhSumPtVsMaxPt[i] = NULL;
-    fhPtCandidates[i] = NULL;
-    fhTrackMult[i] = NULL;
-  }
+  // for(Int_t i = 0; i < 2; i++){
+  //   fhMaxPtInCone[i] = NULL;
+  //   fhSumPtInCone[i] = NULL;
+  //   fhSumPtVsMaxPt[i] = NULL;
+  //   fhPtCandidates[i] = NULL;
+  //   fhTrackMult[i] = NULL;
+  // }
+
+  fIsoCurve = new TF1("Isolation_curve", fCurveFunction.Data(), 0, 100);
+
 }
 
 
@@ -95,44 +98,43 @@ AliAnaConvIsolation::~AliAnaConvIsolation() {
 
 
 //________________________________________________________________________
-void AliAnaConvIsolation::CreateHistograms()
-{
+// void AliAnaConvIsolation::CreateHistograms()
+// {
 	//Create histograms
-  if(!fHistograms) fHistograms = new TList();
-  fHistograms->SetName(Form("Isolation_histo_cone_%f_maxPt_%f_sumPt_%f", fConeSize, fSumPtThreshold, fMaxPtThreshold));
+  // if(!fHistograms) fHistograms = new TList();
+  // fHistograms->SetName(Form("Isolation_histo_cone_%f_maxPt_%f_sumPt_%f", fConeSize, fSumPtThreshold, fMaxPtThreshold));
 
-  fIsoCurve = new TF1("Isolation_curve", fCurveFunction.Data(), 0, 100);
-  fHistograms->Add(fIsoCurve);
+  //fHistograms->Add(fIsoCurve);
 
-  cout << "Creatin isolation histograms conesize :" << fConeSize << endl;
+  //cout << "Creatin isolation histograms conesize :" << fConeSize << endl;
 
   //Create histograms add, to outputlis
-  for(Int_t i = 0; i < 2; i++){
-    fhMaxPtInCone[i] = new TH2F(Form("fhMaxPtInCone_%s_%f", (i==0)? "nonIso" : "isolated", fConeSize), 
-				Form("Max pt nonIso particle in cone %f vs candidate pt", fConeSize), 
-				200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
-    fHistograms->Add(fhMaxPtInCone[i]);
+  // for(Int_t i = 0; i < 2; i++){
+  //   fhMaxPtInCone[i] = new TH2F(Form("fhMaxPtInCone_%s_%f", (i==0)? "nonIso" : "isolated", fConeSize), 
+  // 				Form("Max pt nonIso particle in cone %f vs candidate pt", fConeSize), 
+  // 				200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
+  //   fHistograms->Add(fhMaxPtInCone[i]);
     
-    fhSumPtInCone[i] = new TH2F(Form("fhSumPtInCone_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
-			     Form("Sum pt in cone %f vs candidate pt %s", fConeSize,  (i==0)? "nonIsoay" : "isolated"), 
-			     200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
-    fHistograms->Add(fhSumPtInCone[i]);
+  //   fhSumPtInCone[i] = new TH2F(Form("fhSumPtInCone_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
+  // 			     Form("Sum pt in cone %f vs candidate pt %s", fConeSize,  (i==0)? "nonIsoay" : "isolated"), 
+  // 			     200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
+  //   fHistograms->Add(fhSumPtInCone[i]);
 
-    fhSumPtVsMaxPt[i] = new TH2F(Form("fhSumPtVsMaxPt_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
-				 Form("fhSumPtVsMaxPt_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
-				 200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
-    fHistograms->Add(fhSumPtVsMaxPt[i]);
-  }
+  //   fhSumPtVsMaxPt[i] = new TH2F(Form("fhSumPtVsMaxPt_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
+  // 				 Form("fhSumPtVsMaxPt_%s_%f",  (i==0)? "nonIso" : "isolated", fConeSize), 
+  // 				 200, 0, fHistogramMaxPt, 200, 0, fHistogramMaxPt);
+  //   fHistograms->Add(fhSumPtVsMaxPt[i]);
+  // }
 
-  for(Int_t iIso = 0; iIso < 2; iIso++){
-    fhPtCandidates[iIso] = new TH1F(Form("fhPtCandidates_%s_%f", (iIso==0)? "nonIso" : "isolated", fConeSize),
-				    Form("Pt of %s candidates, cone size %f", (iIso==0)? "nonIsolated" : "isolated", fConeSize),
-				 200, 0 , fHistogramMaxPt);
-    fhPtCandidates[iIso]->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-    fhPtCandidates[iIso]->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
-    fhPtCandidates[iIso]->SetMarkerStyle(kFullCircle);
-    fHistograms->Add(fhPtCandidates[iIso]);
-  }
+  // for(Int_t iIso = 0; iIso < 2; iIso++){
+  //   fhPtCandidates[iIso] = new TH1F(Form("fhPtCandidates_%s_%f", (iIso==0)? "nonIso" : "isolated", fConeSize),
+  // 				    Form("Pt of %s candidates, cone size %f", (iIso==0)? "nonIsolated" : "isolated", fConeSize),
+  // 				 200, 0 , fHistogramMaxPt);
+  //   fhPtCandidates[iIso]->GetXaxis()->SetTitle("P_{T} (GeV/c)");
+  //   fhPtCandidates[iIso]->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
+  //   fhPtCandidates[iIso]->SetMarkerStyle(kFullCircle);
+  //   fHistograms->Add(fhPtCandidates[iIso]);
+  // }
 
   // for(int iDec = 0; iDec < 2; iDec++) {
   //   for(int iIso = 0; iIso < 2; iIso++) {
@@ -159,17 +161,17 @@ void AliAnaConvIsolation::CreateHistograms()
   // }
 
 
-  for(Int_t iIso = 0; iIso < 2; iIso++){
-    fhTrackMult[iIso] = new TH1F(Form("fhTrackMult_%s_%f", (iIso==0)? "nonIso" : "isolated", fConeSize),
-				    Form("Pt of %s candidates, cone size %f", (iIso==0)? "nonIsolated" : "isolated", fConeSize),
-				 150, 0 , 150);
-    fhTrackMult[iIso]->GetXaxis()->SetTitle("n tracks in event");
-    fhTrackMult[iIso]->GetYaxis()->SetTitle("dN/dNTracks");
-    fhTrackMult[iIso]->SetMarkerStyle(kFullCircle);
-    fHistograms->Add(fhTrackMult[iIso]);
-  }
+  // for(Int_t iIso = 0; iIso < 2; iIso++){
+  //   fhTrackMult[iIso] = new TH1F(Form("fhTrackMult_%s_%f", (iIso==0)? "nonIso" : "isolated", fConeSize),
+  // 				    Form("Pt of %s candidates, cone size %f", (iIso==0)? "nonIsolated" : "isolated", fConeSize),
+  // 				 150, 0 , 150);
+  //   fhTrackMult[iIso]->GetXaxis()->SetTitle("n tracks in event");
+  //   fhTrackMult[iIso]->GetYaxis()->SetTitle("dN/dNTracks");
+  //   fhTrackMult[iIso]->SetMarkerStyle(kFullCircle);
+  //   fHistograms->Add(fhTrackMult[iIso]);
+  // }
 
-}
+//}
 
 //________________________________________________________________________
 Bool_t AliAnaConvIsolation::IsLeading(AliAODConversionParticle * particle, const TObjArray * tracks, const TObjArray * aodParticles) {
@@ -191,6 +193,19 @@ Bool_t AliAnaConvIsolation::IsLeading(AliAODConversionParticle * particle, const
 	   IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), fConeSize) ) return kFALSE;
   }
 
+  return kTRUE;
+}
+
+///________________________________________________________________________
+Bool_t AliAnaConvIsolation::IsLeading(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t tIDs[4]) const {
+  //Is there a higher pt particle within cone ?
+  Float_t tPt = particle->Pt();
+  for(int it = 0; it < tracks->GetEntriesFast(); it++) {
+    AliVTrack * track = static_cast<AliVTrack*>(tracks->UncheckedAt(it));
+	Int_t tid = track->GetID();
+	if(tid == tIDs[0] || tid == tIDs[1] || tid == tIDs[2] || tid == tIDs[3]) continue;
+	if(track->Pt() > tPt && IsInCone(particle->Eta() - track->Eta(), particle->Phi() - track->Phi(), 0.8)) return kFALSE;
+  }
   return kTRUE;
 }
 
@@ -230,7 +245,7 @@ Bool_t AliAnaConvIsolation::IsIsolated(AliAODConversionPhoton * particle, const 
 
   Bool_t isolated = EvaluateIsolationCriteria( ptSum, particle->Pt());
 
-  FillHistograms(particle->Pt(), ptMax, ptSum, isolated, tracks->GetEntriesFast());
+  //FillHistograms(particle->Pt(), ptMax, ptSum, isolated, tracks->GetEntriesFast());
 
   return isolated;
 
@@ -270,22 +285,22 @@ Bool_t AliAnaConvIsolation::IsIsolated(const AliAODConversionPhoton * const part
 
   Bool_t isolated = EvaluateIsolationCriteria( ptSum, particle->Pt());
 
-  FillHistograms(particle->Pt(), ptMax, ptSum, isolated, tracks->GetEntriesFast());
+  //FillHistograms(particle->Pt(), ptMax, ptSum, isolated, tracks->GetEntriesFast());
 
   
   return isolated;
 
 }
 
-///___________________________________________________________________________
-void AliAnaConvIsolation::FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks) {
-  //Fill histograms
-  fhMaxPtInCone[isolated]->Fill(pt, ptMax);
-  fhSumPtInCone[isolated]->Fill(pt, ptSum);
-  fhSumPtVsMaxPt[isolated]->Fill(ptMax, ptSum);
-  fhPtCandidates[isolated]->Fill(pt);
-  fhTrackMult[isolated]->Fill(nTracks);
-}
+// ///___________________________________________________________________________
+// void AliAnaConvIsolation::FillHistograms(Float_t pt, Float_t ptMax, Float_t ptSum, Bool_t isolated, Int_t nTracks) {
+//   //Fill histograms
+//   fhMaxPtInCone[isolated]->Fill(pt, ptMax);
+//   fhSumPtInCone[isolated]->Fill(pt, ptSum);
+//   fhSumPtVsMaxPt[isolated]->Fill(ptMax, ptSum);
+//   fhPtCandidates[isolated]->Fill(pt);
+//   fhTrackMult[isolated]->Fill(nTracks);
+// }
 
 
 ///_____________________________________________________________________________
