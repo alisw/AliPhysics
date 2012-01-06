@@ -55,7 +55,7 @@ Float_t AliUnfolding::fgRegularizationWeight = 10000;
 Int_t AliUnfolding::fgSkipBinsBegin = 0;
 Float_t AliUnfolding::fgMinuitStepSize = 0.1;                 // (usually not needed to be changed) step size in minimization
 Float_t AliUnfolding::fgMinuitPrecision = 1e-6;               // minuit precision
-Int_t   AliUnfolding::fgMinuitMaxIterations = 5000;           // minuit maximum number of iterations
+Int_t   AliUnfolding::fgMinuitMaxIterations = 1e6;           // minuit maximum number of iterations
 Bool_t AliUnfolding::fgMinimumInitialValue = kFALSE;          // set all initial values at least to the smallest value among the initial values
 Float_t AliUnfolding::fgMinimumInitialValueFix = -1;
 Bool_t AliUnfolding::fgNormalizeInput = kFALSE;               // normalize input spectrum
@@ -467,8 +467,8 @@ Int_t AliUnfolding::UnfoldWithMinuit(TH2* correlation, TH1* efficiency, TH1* mea
   }
 
   // first param is number of iterations, second is precision....
-  arglist[0] = 1e6;
-  //arglist[1] = 1e-5;
+  arglist[0] = (float)fgMinuitMaxIterations;
+  //  arglist[1] = 1e-5;
   //  minuit->ExecuteCommand("SET PRINT", arglist, 3);
   //  minuit->ExecuteCommand("SCAN", arglist, 0);
   Int_t status = minuit->ExecuteCommand("MIGRAD", arglist, 1);
@@ -1338,7 +1338,9 @@ void AliUnfolding::DrawResults(TH2* correlation, TH1* efficiency, TH1* measured,
   Chi2Function(dummy, 0, chi2, params, 0);
 
   presult->cd();
-  TH1 *meas2 = (TH1*)measured->Clone();
+  TH1 *meas2 = (TH1*)measured->Clone("meas2");
+  meas2->SetTitle("meas2");
+  meas2->SetName("meas2");
   meas2->SetLineColor(1);
   meas2->SetLineWidth(2);
   meas2->SetMarkerColor(meas2->GetLineColor());
@@ -1381,16 +1383,21 @@ void AliUnfolding::InteractiveUnfold(TH2* correlation, TH1* efficiency, TH1* mea
   
   gROOT->SetEditHistograms(kTRUE);
 
-  fghUnfolded = new TH1F("AluUnfoldingfghUnfolded","Unfolded result (Interactive unfolder",efficiency->GetNbinsX(),efficiency->GetXaxis()->GetXmin(),efficiency->GetXaxis()->GetXmax());
-  fghUnfolded->SetLineColor(2);
-  fghUnfolded->SetMarkerColor(2);
-  fghUnfolded->SetLineWidth(2);
+  fghUnfolded = new TH1F("AliUnfoldingfghUnfolded","Unfolded result (Interactive unfolder",efficiency->GetNbinsX(),efficiency->GetXaxis()->GetXmin(),efficiency->GetXaxis()->GetXmax());
 
   fghCorrelation = correlation;
   fghEfficiency = efficiency;
   fghMeasured = measured;
 
-  UnfoldWithMinuit(correlation,efficiency,measured,initialConditions,fghUnfolded,kFALSE);
+  if(fgMinuitMaxIterations>0)
+    UnfoldWithMinuit(correlation,efficiency,measured,initialConditions,fghUnfolded,kFALSE);
+  else
+    fghUnfolded = initialConditions;
+
+  fghUnfolded->SetLineColor(2);
+  fghUnfolded->SetMarkerColor(2);
+  fghUnfolded->SetLineWidth(2);
+
 
   fgCanvas->cd(1);
   fghUnfolded->Draw();
