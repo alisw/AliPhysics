@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+# This is deprecated.  Use RunQAMT.sh instead
+#
 jobid=0
 top=.
 verb=0
@@ -117,6 +119,18 @@ disable_trap ()
     trap - ERR
     # trap -p ERR
 }
+
+
+# --- Deprecated -----------------------------------------------------
+cat <<EOF
+This script is deprecated.  You should use the more advanced script RunQAMT.sh 
+which process the runs in parallel and in general is more flexible
+EOF
+read -n 1 -i n -p "Do you want to continue [yN]? "
+case $REPLY in 
+    y|Y) echo "" ;; 
+    *) exit 0 ;; 
+esac
 
 
 # --- comamnd line ---------------------------------------------------

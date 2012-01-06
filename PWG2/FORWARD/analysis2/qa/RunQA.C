@@ -16,6 +16,7 @@
  * 
  * @return true on success
  * 
+ * @deprecated Use the RunFileQA and RunFinalQA instead. 
  * @ingroup pwg2_forward_qa_scripts
  */
 Bool_t ScanDirectory(TSystemDirectory* dir, TList* list, 
