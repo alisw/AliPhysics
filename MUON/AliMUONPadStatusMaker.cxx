@@ -766,7 +766,7 @@ AliMUONPadStatusMaker::Report(UInt_t mask)
   Int_t ntimes;
   
   cout << Form("According to mask %x (human readable form below) %6d pads are bad (over a total of %6d, i.e. %7.2f %%)",
-               mask,nBadPads,nPads,nPads ? nBadPads*100.0/nPads : 0.0) << endl;
+               mask,nBadPads,nPads,nBadPads*100.0/nPads) << endl;
   cout << AliMUONPadStatusMaker::AsCondition(mask) << endl;
   cout << "--------" << endl;
   
