@@ -34,7 +34,6 @@ set ( SRCS
     AliCorrectionMatrix3D.cxx 
     AliCorrection.cxx 
     AliPWG0Helper.cxx 
-    AliUnfolding.cxx 
     multiplicity/AliMultiplicityCorrection.cxx 
     genLevelSimulation/AliAnalysisTaskdNdetaMC.cxx 
     )
@@ -43,4 +42,4 @@ string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
 set ( DHDR  PWG0baseLinkDef.h)
 
-set ( EINCLUDE  PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation STEER/AOD STEER/STEERBase)
+set ( EINCLUDE  PWG0/dNdEta PWG0/multiplicity PWG0/genLevelSimulation STEER/AOD STEER/STEERBase ANALYSIS)
