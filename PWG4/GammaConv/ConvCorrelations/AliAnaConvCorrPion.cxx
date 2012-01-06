@@ -59,8 +59,9 @@ AliAnaConvCorrPion::AliAnaConvCorrPion(TString name, TString title = "Pion Corr"
 AliAnaConvCorrPion::~AliAnaConvCorrPion() {
   //destructor
 }
-
+//________________________________________________________________________________
 void AliAnaConvCorrPion::InitMassAxis() {
+  ///Add mass axis to axis list
   Double_t mbins[7] = {0.1, 0.11, 0.12, 0.15, 0.16, 0.18, 0.2};
   fAxisM.Set(6, mbins);
   fAxisM.SetNameTitle("InvMass", "invariant mass");
