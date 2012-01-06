@@ -997,6 +997,20 @@ public:
     const char* crUrl = "http://alimonitor.cern.ch/configuration/index.jsp";
     const char* rpUrl = "http://alimonitor.cern.ch/runview/?run=";
     QABase::WriteLinks();
+
+    TString resName(fTeXName);
+    resName.ReplaceAll("qa", "QAresults");
+    resName.Append(".root");
+    TFile* results = TFile::Open(resName, "READ");
+    if (results) { 
+      *fHtml << "<h3>QA results</h3>\n"
+	     << "<ul>\n"
+	     << "<li><a href='" << resName << "'>ROOT file</a></li>\n"
+	     << "</ul>"
+	     << std::endl;
+      results->Close();
+    }
+
     *fHtml << "<h3>External links</h3>\n"
 	   << "<ul>\n"
 	   << "  <li><a target='_blank' href='" << lbUrl 
