@@ -144,16 +144,24 @@ namespace
   {
     /// Copy src into dest
     delete[] dest;
-    dest = new UInt_t[n];
-    memcpy(src,dest,n*sizeof(UInt_t));
+    dest = 0;
+    if ( src && n )
+    {
+      dest = new UInt_t[n];
+      memcpy(src,dest,n*sizeof(UInt_t));
+    }
   }
 
   void Copy(UInt_t n, Float_t* src, Float_t*& dest)
   {
     /// Copy src into dest
     delete[] dest;
-    dest = new Float_t[n];
-    memcpy(src,dest,n*sizeof(Float_t));
+    dest = 0;
+    if ( src && n )
+    {
+      dest = new Float_t[n];
+      memcpy(src,dest,n*sizeof(Float_t));
+    }
   }
   
 }
@@ -256,7 +264,12 @@ AliMUONRejectList::CopyTo(AliMUONRejectList& rl) const
   ::Copy(rl.fMaxNofManus,fManuProbas,rl.fManuProbas);
   
   delete rl.fChannels;  
-  rl.fChannels = static_cast<AliMUONVStore*>(fChannels->Clone());
+  rl.fChannels = 0x0;
+  
+  if ( fChannels ) 
+  {
+    rl.fChannels = static_cast<AliMUONVStore*>(fChannels->Clone());
+  }
 }
 
 //_____________________________________________________________________________
