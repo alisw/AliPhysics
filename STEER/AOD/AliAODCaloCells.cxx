@@ -57,6 +57,7 @@ AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
 {
     // Assignment operator
   if(&cells == this) return *this;
+  AliVCaloCells::operator=(cells);
   delete [] fCellNumber;
   delete [] fAmplitude;
 
