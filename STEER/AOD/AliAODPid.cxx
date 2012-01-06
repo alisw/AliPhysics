@@ -99,6 +99,7 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   // Assignment operator
   if(this!=&pid) {
     // copy stuff
+    TObject::operator=(pid);
     fITSsignal=pid.fITSsignal; 
     fTPCsignal=pid.fTPCsignal;
     
