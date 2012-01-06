@@ -93,6 +93,9 @@ public:
   // event info
   Float_t GetCurrentCentrality() const {return fCurrCentrality;};
 
+  // TOF setting
+  void SetTOFtail(Float_t tail=1.1){if(tail > 0) fTOFtail=tail; else printf("TOF tail should be greater than 0 (nothing done)\n");};
+
   AliPIDResponse(const AliPIDResponse &other);
   AliPIDResponse& operator=(const AliPIDResponse &other);
 
@@ -131,6 +134,7 @@ private:
 
   Int_t   fTOFTimeZeroType;            //! default start time type for tof (ESD)
   Float_t fTOFres;                     //! TOF resolution
+  Float_t fTOFtail;                    //! TOF tail effect used in TOF probability
 
   TObjArray *fEMCALPIDParams;             //! EMCAL PID Params
 
@@ -165,7 +169,7 @@ private:
   //
   void SetRecoInfo();
   
-  ClassDef(AliPIDResponse,4);  //PID response handling
+  ClassDef(AliPIDResponse,5);  //PID response handling
 };
 
 inline Float_t AliPIDResponse::NumberOfSigmasTPC(const AliVParticle *vtrack, AliPID::EParticleType type) const {

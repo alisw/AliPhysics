@@ -70,6 +70,7 @@ fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(kBest_T0),
 fTOFres(100.),
+fTOFtail(1.1),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
 fCurrCentrality(0.0)
@@ -122,6 +123,7 @@ fTRDPIDParams(0x0),
 fTRDPIDReference(0x0),
 fTOFTimeZeroType(AliPIDResponse::kBest_T0),
 fTOFres(100.),
+fTOFtail(1.1),
 fEMCALPIDParams(0x0),
 fCurrentEvent(0x0),
 fCurrCentrality(0.0)
@@ -167,6 +169,7 @@ AliPIDResponse& AliPIDResponse::operator=(const AliPIDResponse &other)
     memset(fTRDslicesForPID,0,sizeof(UInt_t)*2);
     fTOFTimeZeroType=AliPIDResponse::kBest_T0;
     fTOFres=100.;
+    fTOFtail=1.1;
     fCurrentEvent=other.fCurrentEvent;
   }
   return *this;
@@ -358,6 +361,8 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   // Compute PID response for the
   //
 
+  Double_t meanCorrFactor = 0.11/fTOFtail; // Correction factor on the mean because of the tail (should be ~ 0.1 with tail = 1.1)
+
   // set flat distribution (no decision)
   for (Int_t j=0; j<nSpecies; j++) p[j]=1./nSpecies;
   
@@ -375,13 +380,27 @@ AliPIDResponse::EDetPidStatus AliPIDResponse::ComputeTOFProbability  (const AliV
   Bool_t mismatch = kTRUE/*, heavy = kTRUE*/;
   for (Int_t j=0; j<AliPID::kSPECIES; j++) {
     AliPID::EParticleType type=AliPID::EParticleType(j);
-    Double_t nsigmas=NumberOfSigmasTOF(track,type);
-    
+    Double_t nsigmas=NumberOfSigmasTOF(track,type) + meanCorrFactor;
+
     Double_t sig = sigma[j];
+    if (TMath::Abs(nsigmas) > (fRange+2)) {
+      if(nsigmas < fTOFtail)
+	p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
+      else
+	p[j] = TMath::Exp(-(fRange+2 - fTOFtail*0.5)*fTOFtail)/sig;
+    } else{
+      if(nsigmas < fTOFtail)
+	p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
+      else
+	p[j] = TMath::Exp(-(nsigmas - fTOFtail*0.5)*fTOFtail)/sig;
+    }
+
+    /* OLD Gaussian shape
     if (TMath::Abs(nsigmas) > (fRange+2)) {
       p[j] = TMath::Exp(-0.5*(fRange+2)*(fRange+2))/sig;
     } else
       p[j] = TMath::Exp(-0.5*nsigmas*nsigmas)/sig;
+    */
 
     if (TMath::Abs(nsigmas)<5.){
       Double_t nsigmasTPC=NumberOfSigmasTPC(track,type);
