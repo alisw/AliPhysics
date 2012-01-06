@@ -111,10 +111,15 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
+  fPtNCrossedRowsPhi(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
   fPtNCrossedRowsFit(0x0),
+  fPtNCrossedRowsFitPhi(0x0),
   fPtNCrossedRowsNClusFFit(0x0),
+  fNCrossedRowsNCrossedRowsFit(0x0),
+  fNClustersNCrossedRows(0x0),
+  fNClustersNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
   fPtChi2GGC(0x0),
   fPtChi2GoldPhi(0x0),
@@ -198,10 +203,15 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2PerClusterTPC(0x0),
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
+  fPtNCrossedRowsPhi(0x0),
   fPtNCrossedRowsNClusF(0x0),
   fPtNCrRNCrRNClusF(0x0),
   fPtNCrossedRowsFit(0x0),
+  fPtNCrossedRowsFitPhi(0x0),
   fPtNCrossedRowsNClusFFit(0x0),
+  fNCrossedRowsNCrossedRowsFit(0x0),
+  fNClustersNCrossedRows(0x0),
+  fNClustersNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
   fPtChi2GGC(0x0),
   fPtChi2GoldPhi(0x0),
@@ -550,6 +560,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNCrossedRows = new TH2F("fPtNCrossedRows","fPtNCrossedRows",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNCrossedRows);
 
+  fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi","fPtNCrossedRowsPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNCrossedRowsPhi);
+
   fPtNCrossedRowsNClusF = new TH2F("fPtNCrossedRowsNClusF","fPtNCrossedRowsNClusF",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrossedRowsNClusF);
  
@@ -559,8 +572,20 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNCrossedRowsFit = new TH2F("fPtNCrossedRowsFit","fPtNCrossedRowsFit",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtNCrossedRowsFit);
 
+  fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi","fPtNCrossedRowsFitPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNCrossedRowsFitPhi);
+
   fPtNCrossedRowsNClusFFit = new TH2F("fPtNCrossedRowsNClusFFit","fPtNCrossedRowsNClusFFit",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrossedRowsNClusFFit);
+
+  fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit","fNCrossedRowsNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fNCrossedRowsNCrossedRowsFit);
+
+  fNClustersNCrossedRows = new TH2F("fNClustersNCrossedRows","fNClustersNCrossedRows",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fNClustersNCrossedRows);
+
+  fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fNClustersNCrossedRowsFit);
 
   fPtChi2Gold = new TH2F("fPtChi2Gold","fPtChi2Gold",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2Gold);
@@ -1091,8 +1116,9 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
   
     if(fVariables->At(5)>0.) fVariables->SetAt(track->GetTPCchi2()/fVariables->At(5),10);
     
-    //  fVariables->SetAt(track->GetTPCClusterInfo(2,1),11); //#crossed rows
+    //fVariables->SetAt(track->GetTPCClusterInfo(2,1),11); //#crossed rows
     fVariables->SetAt(track->GetTPCCrossedRows(),11); //#crossed rows
+
     Float_t crossedRowsTPCNClsF = 1.;//track->GetTPCClusterInfo(2,0);
     if(track->GetTPCNclsF()>0.) crossedRowsTPCNClsF = fVariables->At(11)/track->GetTPCNclsF();
     fVariables->SetAt(crossedRowsTPCNClsF,12);//(#crossed rows)/(#findable clusters)
@@ -1250,6 +1276,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
 
   fPtChi2PerClusterTPC->Fill(fVariables->At(0),fVariables->At(10));
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
+  fPtNCrossedRowsPhi->Fill(fVariables->At(0),fVariables->At(11),fVariables->At(1));
   fPtNCrossedRowsNClusF->Fill(fVariables->At(0),fVariables->At(12));
   fPtNCrRNCrRNClusF->Fill(fVariables->At(0),fVariables->At(11),fVariables->At(12));
 
@@ -1262,8 +1289,12 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fChi2GoldChi2GGC->Fill(fVariables->At(21),fVariables->At(22));
 
   fPtNCrossedRowsFit->Fill(fVariables->At(0),fVariables->At(23));
+  fPtNCrossedRowsFitPhi->Fill(fVariables->At(0),fVariables->At(23),fVariables->At(1));
   fPtNCrossedRowsNClusFFit->Fill(fVariables->At(0),fVariables->At(24));
+  fNCrossedRowsNCrossedRowsFit->Fill(fVariables->At(11),fVariables->At(23));
 
+  fNClustersNCrossedRows->Fill(fVariables->At(5),fVariables->At(11));
+  fNClustersNCrossedRowsFit->Fill(fVariables->At(5),fVariables->At(23));
 
 }
 

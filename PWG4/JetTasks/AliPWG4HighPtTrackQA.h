@@ -191,10 +191,15 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtChi2PerClusterTPC;                  //! Pt vs Chi2PerClusterTPC
   TH2F *fPtChi2PerClusterTPCIter1;             //! Pt vs Chi2PerClusterTPCIter1
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
+  TH3F *fPtNCrossedRowsPhi;                    //! Pt vs NCrossedRows vs Phi
   TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
   TH2F *fPtNCrossedRowsFit;                    //! Pt vs NCrossedRows from NClusterFitMap
+  TH3F *fPtNCrossedRowsFitPhi;                 //! Pt vs NCrossedRows from FitMap vs Phi
   TH2F *fPtNCrossedRowsNClusFFit;              //! Pt vs NCrossedRows/NClusF from NClusterFitMap
+  TH2F *fNCrossedRowsNCrossedRowsFit;          //! NCrossedRows from ClusterMap vs NCrossedRows from NClusterFitMap
+  TH2F *fNClustersNCrossedRows;                //! NClusters vs NCrossedRows
+  TH2F *fNClustersNCrossedRowsFit;             //! NClusters vs NCrossedRows from fit map
 
   TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
   TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track

@@ -26,6 +26,7 @@
 class TH1I;
 class TH1F;
 class TH1D;
+class TH2F;
 class TProfile;
 class TFile;
 class TList;
@@ -133,6 +134,9 @@ class AliPWG4HighPtSpectra : public AliAnalysisTask {
   TH1F*         fh1Trials;                     //! trials which are added
   TH1F*         fh1PtHard;                     //! pt hard of the event
   TH1F*         fh1PtHardTrials;               //! pt hard of the event
+
+  TH2F *fPtRelUncertainty1PtPrim;              //! Pt vs relUncertainty1Pt for primary particles
+  TH2F *fPtRelUncertainty1PtSec;               //! Pt vs relUncertainty1Pt for secondary particles
 
   ClassDef(AliPWG4HighPtSpectra,3);
 };
