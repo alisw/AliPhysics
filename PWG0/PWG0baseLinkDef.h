@@ -18,7 +18,6 @@
 #pragma link C++ class AliPWG0Helper+;
 
 #pragma link C++ class AliCorrection+;
-#pragma link C++ class AliUnfolding+;
 
 #pragma link C++ class AliMultiplicityCorrection+;
 
