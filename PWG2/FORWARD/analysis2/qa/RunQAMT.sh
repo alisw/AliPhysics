@@ -19,9 +19,11 @@ Options:
 	-m,--max-files  NUMBER     Max number of files to get [$maxf]
 	-M,--max-jobs   NUMBER     Max number of consequtive jobs [$maxjobs]
 	-t,--top        DIRECTORY  Output directory [$top]
+	-R,--also-results          Also get QAresults.root for each run
 	-Q,--qa-number  NUMBER     Custom QA id [$qanumber]
 	-p,--production IDENTIFIER Production identifier [$prodfull]
 	-P,--pass       IDENTIFIER Pass identifier [$passfull]
+	-l,--log-file   FILE       Log file output
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
@@ -193,6 +195,7 @@ append_to_path()
 
 # --- Get a list of files to get -------------------------------------
 file=trending.root
+other=QAresults.root
 files=
 path=
 numf=0
@@ -238,7 +241,7 @@ get_filelist()
 EOF
     mess 1 "Getting list of files from AliEn - can take minutes - be patient"
     mess 2 "alien_find ${path} ${search}"
-    files=`alien_find ${path} ${search} | grep -v "files found" 2> ${redir}` 
+    files=`alien_find ${path} ${search} | grep -v "files found" 2>> ${redir}` 
     for i in $files ; do 
 	let numf=$numf+1
     done 
@@ -262,32 +265,11 @@ docheck=1
 check_file()
 {
     if test $docheck -lt 1 ; then return 0; fi 
-    local scr=`mktemp -u Check_XXXXXXXX` 
-    cat <<EOF > ${scr}.C  
-void ${scr}() 
-{
-  int ret = 0;
-  TFile* file = TFile::Open("$1", "READ");
-  if (!file) { 
-    Error("${scr}", "No such file $1");
-    exit(1);
-  }
-  TObject* forward1 = file->Get("Forward");
-  if (!forward1) {
-    Error("${scr}", "No Forward object found in $1");
-    ret |= 2;
-  } 
-  TObject* forward2 = file->Get("ForwardResults");
-  if (!forward2) {
-    Error("${scr}", "No ForwardResults object found in $1");
-    ret |= 4;
-  } 
-  exit(ret);
-}
+    root -l -b  <<EOF >> ${redir} 2>&1 
+.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/CheckQAFile.C
+CheckQAFile("$1");
+.q
 EOF
-    # cat ${scr}.C 
-    mess 6 "root -l -b -q ${scr}.C "
-    root -l -b -q ${scr}.C > /dev/null 2>&1 
     local ret=$? 
     mess 2 "Check of $1 -> $ret"
     rm -f ${scr}.C 
@@ -309,56 +291,55 @@ analyse_file()
     fi
 
     (cd $dir 
-	scr=`mktemp -u Trend_XXXXXXXX` 
-	cat <<EOF > ${scr}.C  
- void ${scr}() 
- {
-   int ret = 0;
-   gROOT->SetMacroPath(Form(".:\$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			    "\$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
-			    gROOT->GetMacroPath()));
-   gSystem->AddIncludePath("-I\${ALICE_ROOT}/PWG2/FORWARD/analysis2/qa");
-   gSystem->Load("libGpad");
-   gSystem->Load("libTree");
-
-   gROOT->LoadMacro("QABase.h+g");
-   gROOT->LoadMacro("QATrender.C+g");
-
-   QATrender t(true, false);
-   t.AddFile("$inp");
-   t.SetOutputName("$out");
-   if (!t.Run()) exit(1);
-}
+	root -l -b  <<EOF > /dev/stderr
+.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunFileQA.C
+RunFileQA("$inp", "$out");
+.q
 EOF
-	mess 5 -n "root -l -b -q ${scr}.C "
-	root -l -b -q ${scr}.C > /dev/null 2>&1 
 	ret=$? 
 	mess 2 " -> $ret"
 	rm -f ${scr}.C 
-    )
+    ) 2>> $redir
     return $ret
 }
 
 # --- Download a single file -----------------------------------------
+also_results=1
 analyse_run()
 {
     local source=$1 ; shift 
     local store=$1 ; shift 
     local r=$1 ; shift 
     local o=${store}/`basename $file .root`_${r}.root 
-    
+
     mess 2 -n "$source -> $o ... "
     if test -f $o ; then 
 	mess 2 "exists" 
 	# sleep 1
     else
 	mess 2 -n "copying ... " 
-	alien_cp alien:${source} file:${o} > ${redir} 2>&1 
+	alien_cp alien:${source} file:${o} >> ${redir} 2>&1 
 	fix_perm $o 
 	mess 2 "done"
     fi
     if test ! -f $o ; then return 1 ; fi 
 
+    if test $also_results -gt 0 ; then 
+	local s=`dirname ${source}`/${other}
+	local q=${store}/`basename $other .root`_${r}.root
+
+	mess 2 -n "$s -> $q ... "
+	if test -f $q ; then 
+	    mess 2 "exists" 
+	else
+	    mess 2 -n "copying ... " 
+	    alien_cp alien:${s} file:${q} >> ${redir} 2>&1 
+	    fix_perm $q
+	    mess 1 "done"
+	fi
+    fi
+
+	
     check_file ${o} 
     local ret=$? 
     case $ret in 
@@ -465,31 +446,10 @@ make_trend()
 	rm -f trend_*_*.pdf
 	rm -f trend_*_*.root
 
-	local scr=`mktemp -u Check_XXXXXXXX` 
-	cat <<EOF > ${scr}.C  
-void ${scr}() 
-{
-   int ret = 0;
-   gROOT->SetMacroPath(Form(".:\$(ALICE_ROOT)/PWG2/FORWARD/analysis2/qa:"
-			    "\$(ALICE_ROOT)/PWG2/FORWARD/analysis2/corrs:%s",
-			    gROOT->GetMacroPath()));
-   gSystem->AddIncludePath("-I\${ALICE_ROOT}/PWG2/FORWARD/analysis2/qa");
-   gSystem->Load("libGpad");
-   gSystem->Load("libTree");
-
-   gROOT->LoadMacro("QABase.h+g");
-   gROOT->LoadMacro("QAPlotter.C+g");
-
-   QAPlotter p;
-EOF
-	for i in tree_*.root ; do 
-	    echo "    p.AddFile(\"$i\");" >> ${scr}.C 
-	    local r=`basename $i .root | sed 's/tree_0*//'` 
-	    mess 1 -n "$r,"
-	done
-	cat <<EOF >> ${scr}.C
-  p.Run();
-}
+	root -l -b <<EOF > /dev/stderr
+.L $ALICE_ROOT/PWG2/FORWARD/analysis2/qa/RunFinalQA.C
+RunFinalQA(".");
+.q
 EOF
 	mess 1 -n " ... "
 	mess 3 -n "root -l -b -q ${scr}.C "
@@ -517,7 +477,7 @@ EOF
 	fi
 
 	copy_style
-    )
+    ) 2>> $redir
     return $ret
 }
 
@@ -527,11 +487,10 @@ make_index()
     local dir=$1   ; shift  
     local title=$1 ; shift
     local desc=$1  ; shift 
-    mess 1 "Making index in $dir"
+    mess 1 "Making index in $dir ($title)"
     
     (cd $dir
 	local date=`date` 
-	local title=$2 
 	
 	rm -f index.html 
 
@@ -550,7 +509,7 @@ EOF
 	echo "      <ul>" >> index.html
 	for i in * ; do 
 	    if test ! -d $i ; then continue ; fi 
-	    echo "      <li><href='$i'>$i</a></li>" >> index.html
+	    echo "      <li><a href='$i'>$i</a></li>" >> index.html
 	done
 	echo "      </ul>" >> index.html 
 	if test "x$desc" = "x" ; then 
@@ -581,6 +540,7 @@ while test $# -gt 0 ; do
 	-m|--max-files) maxf=$2 ; shift ;; 
 	-M|--max-jobs)  maxjobs=$2 ; shift ;;
 	-t|--top)       top=$2 ; shift ;;
+	-R|--also-results) also_results=1 ;; 
 	-Q|--qa-number) qanumber=$2 ; shift ;;
 	-p|--production) 
 	    prodfull=$2 
@@ -593,6 +553,7 @@ while test $# -gt 0 ; do
 	    shift
 	    parse_pass 
 	    ;;
+	-l|--log-file) redir=$2 ; shift ;; 
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
