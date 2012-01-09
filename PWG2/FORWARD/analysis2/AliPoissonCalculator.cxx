@@ -8,16 +8,16 @@
 #include <iostream>
 
 // 
-// A class to calculate the multiplicity in @f$(\eta,\varphi)@f$ bins
+// A class to calculate the multiplicity in @f$(x,y)@f$ bins
 // using Poisson statistics. 
 //
-// The input is assumed to be binned in @f$(\eta,\varphi)@f$ as
-// described by the 2D histogram passwd to the Reset member function.  
+// The input is assumed to be binned in @f$(x,y)@f$ as described by
+// the 2D histogram passwd to the Reset member function.
 //
 // The data is grouped in to regions as defined by the parameters
-// fEtaLumping and fPhiLumping.  The total number of cells and number
-// of empty cells is then calculate in each region.  The mean
-// multiplicity over the region is then determined as 
+// fXLumping and fYLumping.  The total number of cells and number of
+// empty cells is then calculate in each region.  The mean
+// multiplicity over the region is then determined as
 //
 // @f[
 // \lange m\rangle = -\log\left(\frac{e}{t}\right)
@@ -40,18 +40,15 @@
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator()
   : TNamed(),
-    fEtaLumping(32), 
-    fPhiLumping(4), 
+    fXLumping(32), 
+    fYLumping(4), 
     fTotal(0), 
     fEmpty(0), 
     fBasic(0),
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0),
-    fTotalList(),
-    fEmptyList(),
-    fRunningAverage(false)
+    fCorr(0)
 {
   //
   // CTOR
@@ -61,42 +58,32 @@ AliPoissonCalculator::AliPoissonCalculator()
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator(const char*/*, UShort_t d, Char_t r*/)
   : TNamed("poissonCalculator", "Calculate N_ch using Poisson stat"),
-    fEtaLumping(32), 
-    fPhiLumping(4), 
+    fXLumping(32), 
+    fYLumping(4), 
     fTotal(0), 
     fEmpty(0), 
     fBasic(0),
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0),
-    fTotalList(),
-    fEmptyList(),
-    fRunningAverage(false)
+    fCorr(0)
 {
   //
   // CTOR
   //
-  fEmptyList.SetOwner();
-  fTotalList.SetOwner();
-  
-
 }
 //____________________________________________________________________
 AliPoissonCalculator::AliPoissonCalculator(const AliPoissonCalculator& o)
   : TNamed(o),
-    fEtaLumping(o.fEtaLumping),
-    fPhiLumping(o.fPhiLumping),
+    fXLumping(o.fXLumping),
+    fYLumping(o.fYLumping),
     fTotal(0), 
     fEmpty(0),
     fBasic(0), 
     fEmptyVsTotal(0),
     fMean(0), 
     fOcc(0),
-    fCorr(0),
-    fTotalList(),
-    fEmptyList(),
-    fRunningAverage(o.fRunningAverage)
+    fCorr(0)
 {
   Init();
   Reset(o.fBasic);
@@ -112,13 +99,13 @@ AliPoissonCalculator::~AliPoissonCalculator()
 void
 AliPoissonCalculator::CleanUp()
 {
-  if (fTotal)        delete fTotal;        fTotal        = 0;
-  if (fEmpty)        delete fEmpty;        fEmpty        = 0;
-  if (fBasic)        delete fBasic;        fBasic        = 0;
-  if (fEmptyVsTotal) delete fEmptyVsTotal; fEmptyVsTotal = 0;
-  if (fMean)         delete fMean;         fMean         = 0;
-  if (fOcc)          delete fOcc;          fOcc          = 0;
-  if (fCorr)         delete fCorr;         fCorr         = 0;
+  if (fTotal)        { delete fTotal;        fTotal        = 0; }
+  if (fEmpty)        { delete fEmpty;        fEmpty        = 0; }
+  if (fBasic)        { delete fBasic;        fBasic        = 0; }
+  if (fEmptyVsTotal) { delete fEmptyVsTotal; fEmptyVsTotal = 0; }
+  if (fMean)         { delete fMean;         fMean         = 0; }
+  if (fOcc)          { delete fOcc;          fOcc          = 0; } 
+  if (fCorr)         { delete fCorr;         fCorr         = 0; }
 }
 //____________________________________________________________________
 AliPoissonCalculator&
@@ -126,9 +113,8 @@ AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
 {
   if (&o == this) return *this;
   TNamed::operator=(o);
-  fEtaLumping = o.fEtaLumping;
-  fPhiLumping = o.fPhiLumping;
-  fRunningAverage = o.fRunningAverage;
+  fXLumping = o.fXLumping;
+  fYLumping = o.fYLumping;
   CleanUp();
   Init();
   Reset(o.fBasic);
@@ -137,66 +123,14 @@ AliPoissonCalculator::operator=(const AliPoissonCalculator& o)
 
 //____________________________________________________________________
 void
-AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLumping)
+AliPoissonCalculator::Init(Int_t xLumping, Int_t yLumping)
 {
   // 
   // Initialize 
   // 
-  if (etaLumping > 0) SetEtaLumping(etaLumping);
-  if (phiLumping > 0) SetPhiLumping(phiLumping);
-  if(d > 0) {
+  if (xLumping > 0) fXLumping = xLumping;
+  if (yLumping > 0) fYLumping = yLumping;
 
-    Int_t    nEtaF   = (r == 'I' ? 512 : 256);
-    Int_t    nEta    = nEtaF / fEtaLumping;
-    Double_t etaMin  = -0.5;
-    Double_t etaMax  = nEtaF-0.5 ;
-    Int_t    nPhiF   = (r == 'I' ? 20 : 40);
-    Int_t    nPhi    = nPhiF / fPhiLumping;
-    Double_t phiMin  = -0.5;
-    Double_t phiMax  = nPhiF - 0.5;
-    
-    fBasic = new TH2D("basic", "Basic number of hits",
-		      nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
-    fBasic->SetDirectory(0);
-    fBasic->SetXTitle("#eta");
-    fBasic->SetYTitle("#varphi [radians]");
-    fBasic->Sumw2();
-    
-    if(fRunningAverage) {
-      AliForwardCorrectionManager& fcm = AliForwardCorrectionManager::Instance();
-      const TAxis* pv = fcm.GetVertexAxis();
-      Int_t nVtxBins = pv->GetNbins();
-      
-      for(Int_t v = 1 ; v < nVtxBins+1; v++)  { //CHC bins
-	for(Int_t centbin = 0 ; centbin < 13; centbin++) {
-	  
-	  TH2D* hTotal = new TH2D(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin),"Total number of bins/region",
-				  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-	  TH2D* hEmpty = new TH2D(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin), "Empty number of bins/region",
-				  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-	  hEmpty->Sumw2();
-	  hTotal->Sumw2();
-	  fEmptyList.Add(hEmpty);
-	  fTotalList.Add(hTotal);
-	  
-	}
-      }
-    }
-    else {
-      fTotal = new TH2D("total", "Total number of hits",
-			nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-      fTotal->SetXTitle("#eta");
-      fTotal->SetYTitle("#varphi [radians]");
-      fTotal->Sumw2();
-      fEmpty = new TH2D("empty", "Number of empties",
-			nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-      fEmpty->SetXTitle("#eta");
-      fEmpty->SetYTitle("#varphi [radians]");
-      fEmpty->Sumw2();
-      
-      
-    }
-  }
   //Create diagnostics if void
   if (fEmptyVsTotal) return;
   
@@ -207,7 +141,7 @@ AliPoissonCalculator::Init(UShort_t d, Char_t r, Int_t etaLumping, Int_t phiLump
  //____________________________________________________________________
 void AliPoissonCalculator::MakeOutput() {
 
-  Int_t n = fEtaLumping * fPhiLumping + 1;
+  Int_t n = fXLumping * fYLumping + 1;
   fEmptyVsTotal = new TH2D("emptyVsTotal", 
 			   "# of empty # bins vs total # bins", 
 			   n, -.5, n-.5, n, -.5, n-.5);
@@ -217,10 +151,10 @@ void AliPoissonCalculator::MakeOutput() {
   fEmptyVsTotal->SetOption("colz");
   fEmptyVsTotal->SetDirectory(0);
 
-  n = (fEtaLumping + fPhiLumping);
+  n = (fXLumping + fYLumping);
   fMean = new TH1D("poissonMean", "Mean N_{ch} as calculated by Poisson",
 		   10*n+1, -.1, n+.1);
-  fMean->SetXTitle("#bar{N_{ch}}=#log(empty/total)");
+  fMean->SetXTitle("#bar{N_{ch}}=log(empty/total)");
   fMean->SetYTitle("Events");
   fMean->SetFillColor(kRed+1);
   fMean->SetFillStyle(3001);
@@ -247,24 +181,6 @@ void AliPoissonCalculator::MakeOutput() {
  
 }
 //____________________________________________________________________
-void AliPoissonCalculator::SetObject(UShort_t d, Char_t r, UShort_t v, Double_t cent) {
-  
-  if(!fRunningAverage) return;
-  
-  Int_t centbin = 0;
-  if(cent > 0) {
-    if(cent > 0 && cent <5) centbin = 1;
-    if(cent > 5 && cent <10) centbin = 2;
-    else if (cent>10) centbin = (Int_t)(cent/10.) + 2;
-  }
-  
-  fTotal = static_cast<TH2D*>(fTotalList.FindObject(Form("totalFMD%d%c_vertex%d_cent%d",d,r,v,centbin)));
-  fEmpty = static_cast<TH2D*>(fEmptyList.FindObject(Form("emptyFMD%d%c_vertex%d_cent%d",d,r,v,centbin)));
-  
-  return;
-  
-}
-//____________________________________________________________________
 void
 AliPoissonCalculator::Output(TList* d)
 {
@@ -277,6 +193,18 @@ AliPoissonCalculator::Output(TList* d)
 }
 
 //____________________________________________________________________
+void 
+AliPoissonCalculator::SetLumping(UShort_t nx, UShort_t ny) 
+{ 
+  if (nx == fXLumping && ny == fYLumping && 
+      fEmptyVsTotal && fTotal) 
+    // Check if we have something to do. 
+    return;
+  CleanUp(); 
+  Init(nx, ny);
+}
+
+//____________________________________________________________________
 void
 AliPoissonCalculator::Reset(const TH2D* base)
 {
@@ -285,69 +213,55 @@ AliPoissonCalculator::Reset(const TH2D* base)
   // 
   
   if (!base) return;
-  if (fBasic /* && fTotal && fEmpty*/) {
+  if (fBasic && fTotal && fEmpty) {
     fBasic->Reset();
-    if(!fRunningAverage) {
-      fTotal->Reset();
-      fEmpty->Reset();
-    }
+    fTotal->Reset();
+    fEmpty->Reset();
     return;
   }
-  /*  
-  Int_t    nEtaF   = base->GetNbinsX();
-  Int_t    nEta    = nEtaF / fEtaLumping;
-  Double_t etaMin  = base->GetXaxis()->GetXmin();
-  Double_t etaMax  = base->GetXaxis()->GetXmax();
-  Int_t    nPhiF   = base->GetNbinsY();
-  Int_t    nPhi    = nPhiF / fPhiLumping;
-  Double_t phiMin  = base->GetYaxis()->GetXmin();
-  Double_t phiMax  = base->GetYaxis()->GetXmax();
+  Int_t    nXF   = base->GetNbinsX();
+  Int_t    nX    = nXF / fXLumping;
+  Double_t xMin  = base->GetXaxis()->GetXmin();
+  Double_t xMax  = base->GetXaxis()->GetXmax();
+  Int_t    nYF   = base->GetNbinsY();
+  Int_t    nY    = nYF / fYLumping;
+  Double_t yMin  = base->GetYaxis()->GetXmin();
+  Double_t yMax  = base->GetYaxis()->GetXmax();
   
-
-  
-  
-  
-  //fTotal = new TH2D("total", "Total number of bins/region",
-  //		    nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-  //fEmpty = new TH2D("empty", "Empty number of bins/region",
-  //nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-  fBasic = new TH2D("basic", "Basic number of hits",
-		    nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
-    
-  //fTotal->SetDirectory(0);
-  //fEmpty->SetDirectory(0);
+  fBasic = static_cast<TH2D*>(base->Clone("basic"));
+  fBasic->SetTitle("Basic number of hits");
   fBasic->SetDirectory(0);
-  //fTotal->SetXTitle("#eta");
-  //fEmpty->SetXTitle("#eta");
-  fBasic->SetXTitle("#eta");
-  //fTotal->SetYTitle("#varphi [radians]");
-  //fEmpty->SetYTitle("#varphi [radians]");
-  fBasic->SetYTitle("#varphi [radians]");
-  //fTotal->Sumw2();
-  //fEmpty->Sumw2();
   fBasic->Sumw2();
-  */
 
+  fTotal = new TH2D("total", "Total number of bins/region",
+		    nX, xMin, xMax, nY, yMin, yMax);
+  fTotal->SetDirectory(0);
+  fTotal->SetXTitle(fBasic->GetXaxis()->GetTitle());
+  fTotal->SetYTitle(fBasic->GetYaxis()->GetTitle());
+  fTotal->Sumw2();
+    
+  fEmpty = static_cast<TH2D*>(fTotal->Clone("empty"));
+  fEmpty->SetTitle("Empty number of bins/region");
+  fEmpty->SetDirectory(0);
+  // fEmpty->Sumw2();
 }
 
 //____________________________________________________________________
 void
-AliPoissonCalculator::Fill(UShort_t strip, UShort_t sec, Bool_t hit, 
-			   Double_t weight)
+AliPoissonCalculator::Fill(UShort_t x, UShort_t y, Bool_t hit, Double_t weight)
 {
   // 
   // Fill in an observation 
   // 
   // Parameters:
-  //    eta     Eta value 
-  //    phi     Phi value
+  //    x       X value 
+  //    Y       Y value
   //    hit     True if hit 
   //    weight  Weight if this 
   //
-  
-  fTotal->Fill(strip, sec);
-  if (hit) fBasic->Fill(strip, sec, weight);
-  else     fEmpty->Fill(strip, sec);
+  fTotal->Fill(x, y);
+  if (hit) fBasic->Fill(x, y, weight);
+  else     fEmpty->Fill(x, y);
 }
 
 //____________________________________________________________________
@@ -368,8 +282,41 @@ AliPoissonCalculator::CalculateCorrection(Double_t empty, Double_t total) const
 }
 
 //____________________________________________________________________
+Int_t
+AliPoissonCalculator::GetReducedXBin(Int_t ix) const
+{
+  if (!fBasic) return 0;
+  Double_t mx = fBasic->GetXaxis()->GetBinCenter(ix);
+  return GetReducedXBin(mx);
+}
+//____________________________________________________________________
+Int_t
+AliPoissonCalculator::GetReducedXBin(Double_t x) const
+{
+  if (!fEmpty) return 0;
+  return fEmpty->GetXaxis()->FindBin(x);
+}
+//____________________________________________________________________
+Int_t
+AliPoissonCalculator::GetReducedYBin(Int_t iy) const
+{
+  if (!fBasic) return 0;
+  Double_t my = fBasic->GetYaxis()->GetBinCenter(iy);
+  return GetReducedYBin(my);
+}
+//____________________________________________________________________
+Int_t
+AliPoissonCalculator::GetReducedYBin(Double_t y) const
+{
+  if (!fEmpty) return 0;
+  return fEmpty->GetYaxis()->FindBin(y);
+}
+
+
+
+//____________________________________________________________________
 TH2D*
-AliPoissonCalculator::Result()
+AliPoissonCalculator::Result(Bool_t correct)
 {
   // 
   // Calculate result and store in @a output
@@ -378,33 +325,33 @@ AliPoissonCalculator::Result()
   //    The result histogram (fBase overwritten)
   //
   
-  // Double_t total = fEtaLumping * fPhiLumping;
+  // Double_t total = fXLumping * fYLumping;
   
-  for (Int_t ieta = 1; ieta <= fBasic->GetNbinsX(); ieta++) { 
-    for (Int_t iphi = 1; iphi <= fBasic->GetNbinsY(); iphi++) { 
-      Double_t eta      = fBasic->GetXaxis()->GetBinCenter(ieta);
-      Double_t phi      = fBasic->GetYaxis()->GetBinCenter(iphi);
-      Int_t    jeta     = fEmpty->GetXaxis()->FindBin(eta);
-      Int_t    jphi     = fEmpty->GetYaxis()->FindBin(phi);
-      Double_t empty    = fEmpty->GetBinContent(jeta, jphi);
-      Double_t total    = fTotal->GetBinContent(jeta, jphi);
-      Double_t hits     = fBasic->GetBinContent(ieta,iphi);
+  for (Int_t ix = 1; ix <= fBasic->GetNbinsX(); ix++) { 
+    // Double_t x        = fBasic->GetXaxis()->GetBinCenter(ix);
+    Int_t    jx       = GetReducedXBin(ix); // fEmpty->GetXaxis()->FindBin(x);
+    for (Int_t iy = 1; iy <= fBasic->GetNbinsY(); iy++) { 
+      // Double_t y        = fBasic->GetYaxis()->GetBinCenter(iy);
+      Int_t    jy       = GetReducedYBin(iy); // fEmpty->GetYaxis()->FindBin(y);
+      Double_t empty    = fEmpty->GetBinContent(jx, jy);
+      Double_t total    = fTotal->GetBinContent(jx, jy);
+      Double_t hits     = fBasic->GetBinContent(ix,iy);
       // Mean in region of interest 
       Double_t poissonM = CalculateMean(empty, total);
-      Double_t poissonC = CalculateCorrection(empty, total);
+      Double_t poissonC = (correct ? CalculateCorrection(empty, total) : 1);
       
       Double_t poissonV = hits * poissonM * poissonC;
       Double_t poissonE = TMath::Sqrt(poissonV);
       if(poissonV > 0) poissonE = TMath::Sqrt(poissonV);
 	  
-      fBasic->SetBinContent(ieta,iphi,poissonV);
-      fBasic->SetBinError(ieta,iphi,poissonE);
+      fBasic->SetBinContent(ix,iy,poissonV);
+      fBasic->SetBinError(ix,iy,poissonE);
     }
   }
-  for (Int_t ieta = 1; ieta <= fEmpty->GetNbinsX(); ieta++) { 
-    for (Int_t iphi = 1; iphi <= fEmpty->GetNbinsY(); iphi++) { 
-      Double_t empty    = fEmpty->GetBinContent(ieta, iphi);
-      Double_t total    = fTotal->GetBinContent(ieta, iphi);
+  for (Int_t ix = 1; ix <= fEmpty->GetNbinsX(); ix++) { 
+    for (Int_t iy = 1; iy <= fEmpty->GetNbinsY(); iy++) { 
+      Double_t empty    = fEmpty->GetBinContent(ix, iy);
+      Double_t total    = fTotal->GetBinContent(ix, iy);
       Double_t mean     = CalculateMean(empty, total);
       Double_t corr     = CalculateCorrection(empty, total);
       fEmptyVsTotal->Fill(total, empty);
@@ -432,8 +379,8 @@ AliPoissonCalculator::Print(const Option_t*) const
   ind[gROOT->GetDirLevel()] = '\0';
   std::cout << ind << ClassName() << ": " << GetName() << '\n'
 	    << std::boolalpha 
-	    << ind << " Eta lumping:            " << fEtaLumping << '\n'
-	    << ind << " Phi lumping:            " << fPhiLumping << '\n'
+	    << ind << " X lumping:              " << fXLumping << '\n'
+	    << ind << " Y lumping:              " << fYLumping << '\n'
 	    << std::noboolalpha << std::endl;
 }
 //____________________________________________________________________

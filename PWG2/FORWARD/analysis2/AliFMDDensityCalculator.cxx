@@ -45,8 +45,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator()
     fEtaLumping(32), 
     fPhiLumping(4),    
     fDebug(0),
-    fCuts(),
-    fUseRunningAverage(false)
+    fCuts()
 {
   // 
   // Constructor 
@@ -76,8 +75,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const char* title)
     fEtaLumping(32), 
     fPhiLumping(4),
     fDebug(0),
-    fCuts(),
-    fUseRunningAverage(false)
+    fCuts()
 {
   // 
   // Constructor 
@@ -142,8 +140,7 @@ AliFMDDensityCalculator::AliFMDDensityCalculator(const
     fEtaLumping(o.fEtaLumping), 
     fPhiLumping(o.fPhiLumping),
     fDebug(o.fDebug),
-    fCuts(o.fCuts),
-    fUseRunningAverage(o.fUseRunningAverage)
+    fCuts(o.fCuts)
 {
   // 
   // Copy constructor 
@@ -197,7 +194,6 @@ AliFMDDensityCalculator::operator=(const AliFMDDensityCalculator& o)
   fEtaLumping         = o.fEtaLumping;
   fPhiLumping         = o.fPhiLumping;
   fCuts               = o.fCuts;
-  fUseRunningAverage  = o.fUseRunningAverage;
 
   fRingHistos.Delete();
   TIter    next(&o.fRingHistos);
@@ -220,9 +216,9 @@ AliFMDDensityCalculator::Init(const TAxis& axis)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    //o->Init(axis);
-    o->fMultCut = fCuts.GetFixedCut(o->fDet, o->fRing);
-    o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
+    o->Init(axis);
+    // o->fMultCut = fCuts.GetFixedCut(o->fDet, o->fRing);
+    // o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
   }
 }
 
@@ -292,7 +288,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 				   AliForwardUtil::Histos& hists,
 				   UShort_t                vtxbin, 
 				   Bool_t                  lowFlux,
-				   Double_t                 cent)
+				   Double_t                /* cent */)
 {
   // 
   // Do the calculations 
@@ -321,7 +317,7 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	fRingHistos.ls();
 	return false;
       }
-      rh->fPoisson.SetObject(d,r,vtxbin,cent);
+      // rh->fPoisson.SetObject(d,r,vtxbin,cent);
       rh->fPoisson.Reset(h);
       // rh->ResetPoissonHistos(h, fEtaLumping, fPhiLumping);
       
@@ -331,10 +327,8 @@ AliFMDDensityCalculator::Calculate(const AliESDFMD&        fmd,
 	  Float_t  mult = fmd.Multiplicity(d,r,s,t);
 	  Float_t  phi  = fmd.Phi(d,r,s,t) / 180 * TMath::Pi();
 	  Float_t  eta  = fmd.Eta(d,r,s,t);
-	  // rh->fTotalStrips->Fill(eta, phi);
 	  
 	  if (mult == AliESDFMD::kInvalidMult || mult > 20) {
-	    // rh->fEmptyStrips->Fill(eta,phi);
 	    rh->fPoisson.Fill(t , s, false);
 	    rh->fEvsM->Fill(mult,0);
 	    continue;
@@ -830,12 +824,10 @@ AliFMDDensityCalculator::DefineOutput(TList* dir)
   TIter    next(&fRingHistos);
   RingHistos* o = 0;
   while ((o = static_cast<RingHistos*>(next()))) {
-    // o->fPoisson.SetEtaLumping(fEtaLumping);
-    o->fPoisson.SetUseAverageOverEvents(fUseRunningAverage);
-    //   o->fPoisson.Init(o->fDet,o->fRing,fEtaLumping, fPhiLumping);
-    // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
-    // o->fPoisson.GetMean()->SetFillColor(o->Color());
-    // o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
+    o->fPoisson.SetLumping(fEtaLumping, fPhiLumping);
+    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
+    o->fPoisson.GetMean()->SetFillColor(o->Color());
+    o->fPoisson.GetOccupancy()->SetFillColor(o->Color());
     o->Output(d);
   }
 }
@@ -904,14 +896,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos()
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
-#if 0
-    fTotalStrips(0),
-    fEmptyStrips(0),
-    fBasicHits(0),
-    fEmptyVsTotal(0),
-#else
     fPoisson(),
-#endif
     fELoss(0),
     fELossUsed(0),
     fMultCut(0)
@@ -931,14 +916,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
     fCorr(0),
     fDensity(0),
     fELossVsPoisson(0),
-#if 0
-    fTotalStrips(0),
-    fEmptyStrips(0),
-    fBasicHits(0),
-    fEmptyVsTotal(0),
-#else 
     fPoisson("ignored"),
-#endif
     fELoss(0),
     fELossUsed(0),
     fMultCut(0)
@@ -1002,17 +980,6 @@ AliFMDDensityCalculator::RingHistos::RingHistos(UShort_t d, Char_t r)
   fELossVsPoisson->SetYTitle("N_{ch} from Poisson");
   fELossVsPoisson->SetZTitle("Correlation");
 
-#if 0
-  Int_t nStrips = 100;
-  fEmptyVsTotal = new TH2D("emptyVsTotal", 
-			   "# of empty strips vs. total # strips", 
-			   nStrips+1, -.5, nStrips+.5, 
-			   nStrips+1, -.5, nStrips+.5);
-  fEmptyVsTotal->SetDirectory(0);
-  fEmptyVsTotal->SetXTitle("Total # strips");
-  fEmptyVsTotal->SetYTitle("Empty # strips");
-  fEmptyVsTotal->SetZTitle("Correlation");  
-#endif
   fELoss = new TH1D("eloss", "#Delta/#Delta_{mip} in all strips", 
 		    600, 0, 15);
   fELoss->SetXTitle("#Delta/#Delta_{mip} (selected)");
@@ -1041,14 +1008,7 @@ AliFMDDensityCalculator::RingHistos::RingHistos(const RingHistos& o)
     fCorr(o.fCorr),
     fDensity(o.fDensity),
     fELossVsPoisson(o.fELossVsPoisson),
-#if 0
-    fTotalStrips(o.fTotalStrips),
-    fEmptyStrips(o.fEmptyStrips),
-    fBasicHits(o.fBasicHits),
-    fEmptyVsTotal(o.fEmptyVsTotal),
-#else 
     fPoisson(o.fPoisson),
-#endif
     fELoss(o.fELoss),
     fELossUsed(o.fELossUsed),
     fMultCut(o.fMultCut)
@@ -1084,10 +1044,6 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   if (fCorr)           delete fCorr;
   if (fDensity)        delete fDensity;
   if (fELossVsPoisson) delete fELossVsPoisson;
-#if 0
-  if (fTotalStrips)    delete fTotalStrips;
-  if (fEmptyStrips)    delete fEmptyStrips;
-#endif
   
   fEvsN           = static_cast<TH2D*>(o.fEvsN->Clone());
   fEvsM           = static_cast<TH2D*>(o.fEvsM->Clone());
@@ -1096,12 +1052,7 @@ AliFMDDensityCalculator::RingHistos::operator=(const RingHistos& o)
   fCorr           = static_cast<TProfile*>(o.fCorr->Clone());
   fDensity        = static_cast<TH2D*>(o.fDensity->Clone());
   fELossVsPoisson = static_cast<TH2D*>(o.fELossVsPoisson->Clone());
-#if 0
-  fTotalStrips    = static_cast<TH2D*>(o.fTotalStrips->Clone());
-  fEmptyStrips    = static_cast<TH2D*>(o.fEmptyStrips->Clone());
-#else 
   fPoisson        = o.fPoisson;
-#endif
   fELoss          = static_cast<TH1D*>(o.fELoss->Clone());
   fELossUsed      = static_cast<TH1D*>(o.fELossUsed->Clone());
   
@@ -1115,60 +1066,12 @@ AliFMDDensityCalculator::RingHistos::~RingHistos()
   //
 }
 
-#if 0
-//____________________________________________________________________
-void
-AliFMDDensityCalculator::RingHistos::ResetPoissonHistos(const TH2D* h,
-							Int_t etaLumping,
-							Int_t phiLumping)
-{
-  if (fTotalStrips) { 
-    fTotalStrips->Reset();
-    fEmptyStrips->Reset();
-    fBasicHits->Reset();
-    return;
-  }
-  //Inserted by HHD
-  
-  Int_t    nEta    = h->GetNbinsX() / etaLumping;
-  Int_t    nEtaF   = h->GetNbinsX();
-  Double_t etaMin  = h->GetXaxis()->GetXmin();
-  Double_t etaMax  = h->GetXaxis()->GetXmax();
-  Int_t    nPhi    = h->GetNbinsY() / phiLumping;
-  Int_t    nPhiF   = h->GetNbinsY();
-  Double_t phiMin  = h->GetYaxis()->GetXmin();
-  Double_t phiMax  = h->GetYaxis()->GetXmax();
-
-  fTotalStrips = new TH2D(Form("total%s", fName.Data()), 
-			  Form("Total number of strips in %s", fName.Data()), 
-			  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-  fEmptyStrips = new TH2D(Form("empty%s", fName.Data()), 
-			  Form("Empty number of strips in %s", fName.Data()), 
-			  nEta, etaMin, etaMax, nPhi, phiMin, phiMax);
-  fBasicHits   = new TH2D(Form("basichits%s", fName.Data()), 
-			  Form("Basic number of hits in %s", fName.Data()), 
-			  nEtaF, etaMin, etaMax, nPhiF, phiMin, phiMax);
-  
-  fTotalStrips->SetDirectory(0);
-  fEmptyStrips->SetDirectory(0);
-  fBasicHits->SetDirectory(0);
-  fTotalStrips->SetXTitle("#eta");
-  fEmptyStrips->SetXTitle("#eta");
-  fBasicHits->SetXTitle("#eta");
-  fTotalStrips->SetYTitle("#varphi [radians]");
-  fEmptyStrips->SetYTitle("#varphi [radians]");
-  fBasicHits->SetYTitle("#varphi [radians]");
-  fTotalStrips->Sumw2();
-  fEmptyStrips->Sumw2();
-  fBasicHits->Sumw2();
-}
-#endif
 
 //____________________________________________________________________
 void
 AliFMDDensityCalculator::RingHistos::Init(const TAxis& /*eAxis*/)
 {
-  fPoisson.Init(fDet,fRing,-1,-1);
+  fPoisson.Init(-1,-1);
 }
 
 //____________________________________________________________________
@@ -1189,16 +1092,9 @@ AliFMDDensityCalculator::RingHistos::Output(TList* dir)
   d->Add(fCorr);
   d->Add(fDensity);
   d->Add(fELossVsPoisson);
-#if 0
-  d->Add(fEmptyVsTotal);
-#else 
   fPoisson.Output(d);
-#endif
   d->Add(fELoss);
   d->Add(fELossUsed);
-  // d->Add(fTotalStrips);
-  // d->Add(fEmptyStrips);
-  // d->Add(fBasicHits);
   
   TParameter<double>* cut = new TParameter<double>("cut", fMultCut);
   d->Add(cut);

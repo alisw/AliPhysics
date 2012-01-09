@@ -28,7 +28,7 @@ MakeIntegerAxis(Int_t& nBins, Double_t& min, Double_t& max)
  * @ingroup pwg2_forward_scripts_tests
  */
 void
-TestPoisson(Double_t o=.3, bool useWeights=false)
+TestPoisson(Double_t o=.3, bool useWeights=false, bool correct=true)
 {
   const char* load = "$ALICE_ROOT/PWG2/FORWARD/analysis2/scripts/LoadLibs.C";
   gROOT->Macro(load);
@@ -80,7 +80,13 @@ TestPoisson(Double_t o=.3, bool useWeights=false)
   dist->SetFillColor(kRed+1);
   dist->SetFillStyle(3001);
   dist->SetDirectory(0);
-			
+
+  TH1D* diff = new TH1D("diff", "P-T", 100, -25, 25);
+  diff->SetXTitle("Difference");
+  diff->SetFillColor(kRed+1);
+  diff->SetFillStyle(3001);
+  diff->SetYTitle("Prob");
+
   AliPoissonCalculator* c = new AliPoissonCalculator("ignored");
   c->Init(nBin ,nBin);
 
@@ -102,7 +108,7 @@ TestPoisson(Double_t o=.3, bool useWeights=false)
       }
     }
     // Calculate the result 
-    TH2D* res = c->Result();
+    TH2D* res = c->Result(correct);
     
     // Now loop and compare 
     Double_t mBase = 0;
@@ -115,6 +121,7 @@ TestPoisson(Double_t o=.3, bool useWeights=false)
 	mBase += t;
 	mPois += p;
 	corr->Fill(t, p);
+	diff->Fill(p-t);
       }
     }
     Int_t nn = nBin * nBin;
@@ -147,8 +154,11 @@ TestPoisson(Double_t o=.3, bool useWeights=false)
   pp->SetBorderMode(0);
   pp->SetRightMargin(0.02);
   pp->SetTopMargin(0.02);
-#if 1
+#if 0
   c->GetMean()->Draw();
+#elif 1 
+  pp->SetLogy();
+  diff->Draw();
 #elif 1
   c->GetOccupancy()->Draw();
 #else
