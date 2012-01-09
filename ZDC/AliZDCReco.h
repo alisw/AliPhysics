@@ -26,6 +26,7 @@ public:
 	     UInt_t* scaler, Int_t tdcData[32][4]);
 
   AliZDCReco(const AliZDCReco &oldreco);
+  AliZDCReco& operator= (const AliZDCReco &reco);
   virtual ~AliZDCReco() {}
 
   // Getters 

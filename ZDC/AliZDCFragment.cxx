@@ -49,6 +49,10 @@ AliZDCFragment::AliZDCFragment():
   //
   // Default constructor
   //
+  for(Int_t i=0; i<=99; i++){
+     fZZ[i] = 0;
+     fNN[i] = 0;
+  }
 }
 
 //_____________________________________________________________________________

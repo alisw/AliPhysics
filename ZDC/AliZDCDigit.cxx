@@ -58,3 +58,17 @@ AliZDCDigit::AliZDCDigit(const AliZDCDigit & digit):TObject(digit)
 
 }
 
+//____________________________________________________________________________
+AliZDCDigit &AliZDCDigit::operator=(const AliZDCDigit &digit)
+{
+  // Assignemnt constructor
+  if(&digit == this) return *this;
+
+  for(int i=0; i<2; i++){
+    fSector[i]   = digit.fSector[i];           
+    fADCValue[i] = digit.fADCValue[i];             
+  }
+  
+  return *this;
+}
+

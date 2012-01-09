@@ -103,3 +103,28 @@ AliZDCTriggerParameters::AliZDCTriggerParameters(const AliZDCTriggerParameters& 
   fDiscEMDWindow[3] = oldTrigPar.fDiscEMDWindow[3];
   
 }
+
+//____________________________________________________________________________
+AliZDCTriggerParameters &AliZDCTriggerParameters::operator= (const AliZDCTriggerParameters& param) 
+{
+  //assignement operator
+  
+  if(&param == this) return *this;
+
+  fADCZEMCentralityThr = param.fADCZEMCentralityThr;
+  fADCMBThreshold = param.fADCMBThreshold;
+  fDiscZEMCentralityThr = param.fDiscZEMCentralityThr;
+  fDiscMBThreshold = param.fDiscMBThreshold;
+  for(int i=0; i<2; i++) {
+  	fADCCentralWindow[i] = param.fADCCentralWindow[i];
+  	fADCSemicentralWindow[i] = param.fADCSemicentralWindow[i];
+  	fDiscCentralWindow[i] = param.fDiscCentralWindow[i];
+  	fDiscSemicentralWindow[i] = param.fDiscSemicentralWindow[i];
+ }
+ for(int j=0; j<4; j++){
+ 	fADCEMDWindow[j] = param.fADCEMDWindow[j];
+  	fDiscEMDWindow[j] = param.fDiscEMDWindow[j];
+ }
+ 
+ return *this;
+}

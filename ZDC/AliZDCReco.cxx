@@ -182,6 +182,67 @@ fIsScalerOn(oldreco.IsScalerOn())
   }
 }
 
+
+//______________________________________________________________________________
+AliZDCReco &AliZDCReco::operator= (const AliZDCReco &reco) 
+{
+  // assignment operator
+  if(&reco == this) return *this;
+  
+  fNDetSpecNSideA = reco.GetNDetSpecNSideA();
+  fNDetSpecPSideA = reco.GetNDetSpecPSideA();
+  fNDetSpecNSideC = reco.GetNDetSpecNSideC();        
+  fNDetSpecPSideC = reco.GetNDetSpecPSideC();       
+  fNTrueSpectators = reco.GetNTrueSpectators();
+  fNTrueSpecSideA = reco.GetNTrueSpecSideA();
+  fNTrueSpecSideC = reco.GetNTrueSpecSideC();  	
+  fNParticipants = reco.GetNParticipants();		       
+  fNPartSideA = reco.GetNPartSideA();		       
+  fNPartSideC = reco.GetNPartSideC();  		       
+  fImpParameter = reco.GetImpParameter();      
+  fImpParSideA = reco.GetImpParSideA();      
+  fImpParSideC = reco.GetImpParSideC();
+  fRecoFlag = reco.GetRecoFlag();
+  fEnergyFlag = reco.GetEnergyFlag();
+  fIsScalerOn = reco.IsScalerOn();    
+
+  fZN1Energy[0]  = reco.GetZN1HREnergy();
+  fZP1Energy[0]  = reco.GetZP1HREnergy();		
+  fZN2Energy[0]  = reco.GetZN2HREnergy();	     
+  fZP2Energy[0]  = reco.GetZP2HREnergy();	 
+  //    
+  fZN1Energy[1]  = reco.GetZN1LREnergy();
+  fZP1Energy[1]  = reco.GetZP1LREnergy();	       
+  fZN2Energy[1]  = reco.GetZN2LREnergy();	    
+  fZP2Energy[1]  = reco.GetZP2LREnergy();	    
+  //
+  for(Int_t i=0; i<5; i++){	  
+     fZN1EnTow[i]  = reco.GetZN1HREnTow(i);
+     fZP1EnTow[i]  = reco.GetZP1HREnTow(i);
+     fZN2EnTow[i]  = reco.GetZN2HREnTow(i);
+     fZP2EnTow[i]  = reco.GetZP2HREnTow(i);
+     fZN1EnTow[i+5]  = reco.GetZN1LREnTow(i);
+     fZP1EnTow[i+5]  = reco.GetZP1LREnTow(i);
+     fZN2EnTow[i+5]  = reco.GetZN2LREnTow(i);
+     fZP2EnTow[i+5]  = reco.GetZP2LREnTow(i);
+  }
+  fZEM1signal[0] = reco.GetZEM1HRsignal();
+  fZEM1signal[1] = reco.GetZEM1LRsignal();
+  fZEM2signal[0] = reco.GetZEM2HRsignal();
+  fZEM2signal[1] = reco.GetZEM2LRsignal();
+  fPMRef1[0] = reco.GetPMRef1HRsignal();
+  fPMRef1[1] = reco.GetPMRef1LRsignal();
+  fPMRef2[0] = reco.GetPMRef2HRsignal();
+  fPMRef2[1] = reco.GetPMRef2LRsignal();
+  for(Int_t j=0; j<32; j++){
+    fZDCScaler[j] = reco.GetZDCScaler(j);
+    for(Int_t y=0; y<4; y++) fZDCTDCData[j][y] = reco.GetZDCTDCData(j, y);
+  }
+  
+  
+  return *this;
+}
+
 //______________________________________________________________________________
 void AliZDCReco::Print(Option_t *) const {
   //

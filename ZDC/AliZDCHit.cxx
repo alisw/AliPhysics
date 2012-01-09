@@ -91,6 +91,31 @@ AliZDCHit::AliZDCHit(const AliZDCHit &oldhit) :
   fZ = oldhit.Z();
   for(Int_t i=0; i<2; i++) fVolume[i] = oldhit.GetVolume(i);
 }
+
+//_____________________________________________________________________________
+AliZDCHit &AliZDCHit::operator= (const AliZDCHit &hit) 
+{
+  //assignemnt operator
+  if(&hit == this) return *this;
+  
+  fPrimKinEn = hit.GetPrimKinEn();
+  fXImpact = hit.GetXImpact();
+  fYImpact = hit.GetYImpact();  
+  fSFlag = hit.GetSFlag();
+  fLightPMQ = hit.GetLightPMQ(); 
+  fLightPMC = hit.GetLightPMC();
+  fEnergy = hit.GetEnergy();
+  fPDGCode = hit.GetPDGCode();
+  fMotherPDGCode = hit.GetMotherPDGCode();
+  fTrackTOF = hit.GetTrackTOF();
+
+  fX = hit.X();
+  fY = hit.Y();
+  fZ = hit.Z();
+  for(Int_t i=0; i<2; i++) fVolume[i] = hit.GetVolume(i);
+  
+  return *this;
+}
   
   
 //_____________________________________________________________________________

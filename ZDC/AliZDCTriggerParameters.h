@@ -20,6 +20,7 @@ public:
   AliZDCTriggerParameters();
   AliZDCTriggerParameters(Float_t *adcParam, Float_t *discParam);
   AliZDCTriggerParameters(const AliZDCTriggerParameters &parameters);
+  AliZDCTriggerParameters& operator= (const AliZDCTriggerParameters &param);
   virtual ~AliZDCTriggerParameters() {;}
   
   Float_t   GetADCZDCCentralityThr()  const {return fADCZEMCentralityThr;}

@@ -20,6 +20,7 @@ class AliZDCDigit : public TObject {
   AliZDCDigit() ;
   AliZDCDigit(Int_t *Sector, Int_t *ADCValue);
   AliZDCDigit(const AliZDCDigit & digit);
+  AliZDCDigit& operator= (const AliZDCDigit &digit);
   virtual ~AliZDCDigit() {}
 
   // Getters 

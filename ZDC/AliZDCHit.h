@@ -14,8 +14,8 @@ class AliZDCHit : public AliHit {
 public:
   AliZDCHit();
   AliZDCHit(Int_t shunt, Int_t track, Int_t *vol, Float_t *hits);
-  //AliZDCHit(const AliZDCHit* oldhit) {*this=*oldhit;}
   AliZDCHit(const AliZDCHit &oldhit);
+  AliZDCHit& operator= (const AliZDCHit &hit);
   virtual ~AliZDCHit() {}
 
   // Getters 
