@@ -127,12 +127,6 @@ public:
    */
   void SetDebug(Int_t dbg=1) { fDebug = dbg; }
   /** 
-   * Set to use the running average in Poisson 
-   * 
-   * @param use use or not
-   */
-  void SetUseRunningAverage(Bool_t use) { fUseRunningAverage = use; }
-  /** 
    * Maximum particle weight to use 
    * 
    * @param m 
@@ -199,7 +193,17 @@ public:
    *   - max  Print max weights 
    */
   void Print(Option_t* option="") const;
+  /** 
+   * Get the cuts used 
+   * 
+   * @return Reference to cuts object
+   */
   AliFMDMultCuts& GetCuts() { return fCuts; }
+  /** 
+   * Set the cuts to use 
+   * 
+   * @param c Cuts to use 
+   */
   void SetCuts(const AliFMDMultCuts& c) { fCuts = c; }
 protected:
   /** 
@@ -389,10 +393,9 @@ protected:
   Int_t    fEtaLumping;    //  How to lump eta bins for Poisson 
   Int_t    fPhiLumping;    //  How to lump phi bins for Poisson 
   Int_t    fDebug;         //  Debug level 
-  AliFMDMultCuts fCuts; // Cuts
-  Bool_t   fUseRunningAverage; //Use running average for Poisson
+  AliFMDMultCuts fCuts;    // Cuts
 
-  ClassDef(AliFMDDensityCalculator,6); // Calculate Nch density 
+  ClassDef(AliFMDDensityCalculator,7); // Calculate Nch density 
 };
 
 #endif
