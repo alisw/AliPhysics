@@ -1369,12 +1369,13 @@ Bool_t AliTRDCalibTask::SetVersionSubversion(){
       fFirstRunGainLocal = id->GetFirstRun();
       fVersionGainLocalUsed = id->GetVersion();
       fSubVersionGainLocalUsed = id->GetSubVersion();
-    } else if(os->GetString().Contains("TRD/Calib/ChamberExB")){
+    } else if((os->GetString().Contains("TRD/Calib/ChamberExB")) && (!os->GetString().Contains("TRD/Calib/ChamberExBAlt"))){
       // Get Old drift velocity calibration
       AliCDBId *id=AliCDBId::MakeFromString(os->GetString());
       fFirstRunExB = id->GetFirstRun();
       fVersionExBUsed = id->GetVersion();
       fSubVersionExBUsed = id->GetSubVersion();
+      //printf("Version %d and subversion %d\n",fVersionExBUsed,fSubVersionExBUsed);
     }
   }
 
