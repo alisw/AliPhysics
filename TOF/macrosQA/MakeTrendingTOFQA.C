@@ -1,6 +1,11 @@
-//fbellini@cern.ch, 11/11/2011
-//-----------------------------------------------------------
-Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11d", char* pass="cpass1", Int_t trainId=0){
+/*
+fbellini@cern.ch, last update on 09/01/2012
+- added flag for displaying reduced n. of trending plots
+- now producing tree run by run
+- new method to produce trending plots from list of trees
+*/
+
+Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11h", char* pass="pass1", Int_t trainId=0, Bool_t displayAll=kFALSE){
 	Int_t filesCounter=0;
   
 	if (!runlist) {
@@ -10,6 +15,7 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11d", 
 	Int_t runNumber;
 	char infile[300]; 
 	char postFileName[20];
+	char treePostFileName[20];
   
 	char trendFileName[100]; 
 	//Define trending output
@@ -19,320 +25,79 @@ Int_t MakeTrendingTOFQA(char * runlist, Int_t year=2011, char *period="LHC11d", 
 		sprintf(trendFileName,"treeTOFQA_QA%i_%s_%s.root",trainId,period,pass);
 	}
 	TFile * trendFile=new TFile(trendFileName,"recreate");
-  
-	Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
-		avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., 
-		avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
-		orphansRatio=-9999., avL=-9999., negLratio=-9999.,
-		effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
-  
-	Double_t avPiDiffTime=-9999.,peakPiDiffTime=-9999., spreadPiDiffTime=-9999.,peakPiDiffTimeErr=-9999., spreadPiDiffTimeErr=-9999.;
-  
-	Double_t avT0A=-9999.,peakT0A=-9999., spreadT0A=-9999.,peakT0AErr=-9999., spreadT0AErr=-9999.;
-	Double_t avT0C=-9999.,peakT0C=-9999., spreadT0C=-9999.,peakT0CErr=-9999., spreadT0CErr=-9999.;
-	Double_t avT0AC=-9999.,peakT0AC=-9999., spreadT0AC=-9999.,peakT0ACErr=-9999., spreadT0ACErr=-9999.;
-	Double_t avT0res=-9999.,peakT0res=-9999., spreadT0res=-9999.,peakT0resErr=-9999., spreadT0resErr=-9999.;
-	Double_t avT0fillRes=-9999.;
-
-	Int_t avMulti=0;
-	Float_t fractionEventsWHits=-9999.;
-  
-	TTree * ttree=new TTree("trendTree","tree of trending variables");
-	ttree->Branch("run",&runNumber,"run/I");
-	ttree->Branch("avMulti",&avMulti,"avMulti/I");
-	ttree->Branch("fractionEventsWHits",&fractionEventsWHits,"fractionEventsWHits/F");
-	ttree->Branch("avTime",&avTime,"avTime/D"); //mean time
-	ttree->Branch("peakTime",&peakTime,"peakTime/D"); //main peak time after fit
-	ttree->Branch("spreadTime",&spreadTime,"spreadTime/D"); //spread of main peak of time after fit
-	ttree->Branch("peakTimeErr",&peakTimeErr,"peakTimeErr/D"); //main peak time after fit error
-	ttree->Branch("spreadTimeErr",&spreadTimeErr,"spreadTimeErr/D"); //spread of main peak of time after fit error
-	ttree->Branch("negTimeRatio",&negTimeRatio,"negTimeRatio/D"); //negative time ratio
-  
-	ttree->Branch("avRawTime",&avRawTime,"avRawTime/D"); //mean raw time
-	ttree->Branch("peakRawTime",&peakRawTime,"peakRawTime/D"); //mean peak of RAW TIME after fit
-	ttree->Branch("spreadRawTime",&spreadRawTime,"spreadRawTime/D"); //spread of main peak of raw time after fit
-	ttree->Branch("peakRawTimeErr",&peakRawTimeErr,"peakRawTimeErr/D"); //main peak raw  time after fit error
-	ttree->Branch("spreadRawTimeErr",&spreadRawTimeErr,"spreadRawTimeErr/D"); //spread of  raw main peak of time after fit error
-  
-	ttree->Branch("avTot",&avTot,"avTot/D"); //main peak tot
-	ttree->Branch("peakTot",&peakTot,"peakTot/D"); // main peak of tot after fit
-	ttree->Branch("spreadTot",&spreadTot,"spreadTot/D"); //spread of main peak of tot after fit
-	ttree->Branch("peakTotErr",&peakTotErr,"peakTotErr/D"); // main peak of tot after fit
-	ttree->Branch("spreadTotErr",&spreadTotErr,"spreadTotErr/D"); //spread of main peak of tot after fit
-  
-	ttree->Branch("orphansRatio",&orphansRatio,"orphansRatio/D"); //orphans ratio
-
-	ttree->Branch("avL",&avL,"avL/D"); //mean track length
-	ttree->Branch("negLratio",&negLratio,"negLratio/D");//ratio of tracks with track length <350 cm
-
-	ttree->Branch("effPt1",&effPt1,"effPt1/D");//matching eff at 1 GeV/c
-	ttree->Branch("effPt2",&effPt2,"effPt2/D"); //matching eff at 2 GeV/c
-	ttree->Branch("matchEffLinFit1Gev",&matchEffLinFit1Gev,"matchEffLinFit1Gev/D");//matching eff fit param 
-	ttree->Branch("matchEffLinFit1GevErr",&matchEffLinFit1GevErr,"matchEffLinFit1GevErr/D");////matching eff fit param error
-  
-	ttree->Branch("avPiDiffTime",&avPiDiffTime,"avPiDiffTime/D"); //mean t-texp
-	ttree->Branch("peakPiDiffTime",&peakPiDiffTime,"peakPiDiffTime/D"); //main peak t-texp after fit
-	ttree->Branch("spreadPiDiffTime",&spreadPiDiffTime,"spreadPiDiffTime/D"); //spread of main peak t-texp after fit
-	ttree->Branch("peakPiDiffTimeErr",&peakPiDiffTimeErr,"peakPiDiffTimeErr/D"); //main peak t-texp after fit error
-	ttree->Branch("spreadPiDiffTimeErr",&spreadPiDiffTimeErr,"spreadPiDiffTimeErr/D"); //spread of main peak of t-texp after fit error
-
-	ttree->Branch("avT0A",&avT0A,"avT0A/D"); //main peak t0A
-	ttree->Branch("peakT0A",&peakT0A,"peakT0A/D"); // main peak of t0A after fit
-	ttree->Branch("spreadT0A",&spreadT0A,"spreadTot/D"); //spread of main peak of t0A after fit
-	ttree->Branch("peakT0AErr",&peakT0AErr,"peakT0AErr/D"); // main peak of t0A after fit
-	ttree->Branch("spreadT0AErr",&spreadT0AErr,"spreadT0AErr/D"); //spread of main peak of t0A after fit
-
-	ttree->Branch("avT0C",&avT0C,"avT0C/D"); //main peak t0C
-	ttree->Branch("peakT0C",&peakT0C,"peakT0C/D"); // main peak of t0C after fit
-	ttree->Branch("spreadT0C",&spreadT0C,"spreadT0C/D"); //spread of main peak of t0C after fit
-	ttree->Branch("peakT0CErr",&peakT0CErr,"peakT0CErr/D"); // main peak of t0C after fit
-	ttree->Branch("spreadT0CErr",&spreadT0CErr,"spreadT0CErr/D"); //spread of main peak of t0C after fit
- 
-	ttree->Branch("avT0AC",&avT0AC,"avT0AC/D"); //main peak t0AC
-	ttree->Branch("peakT0AC",&peakT0AC,"peakT0AC/D"); // main peak of t0AC after fit
-	ttree->Branch("spreadT0AC",&spreadT0AC,"spreadT0AC/D"); //spread of main peak of t0AC after fit
-	ttree->Branch("peakT0ACErr",&peakT0ACErr,"peakT0ACErr/D"); // main peak of t0AC after fit
-	ttree->Branch("spreadT0ACErr",&spreadT0ACErr,"spreadT0ACErr/D"); //spread of main peak of t0AC after fit
- 
-	ttree->Branch("avT0res",&avT0res,"avT0res/D"); //main peak t0AC
-	ttree->Branch("peakT0res",&peakT0res,"peakT0res/D"); // main peak of t0AC after fit
-	ttree->Branch("spreadT0res",&spreadT0res,"spreadT0res/D"); //spread of main peak of t0AC after fit
-	ttree->Branch("peakT0resErr",&peakT0resErr,"peakT0resErr/D"); // main peak of t0AC after fit
-	ttree->Branch("spreadT0resErr",&spreadT0resErr,"spreadT0resErr/D"); //spread of main peak of t0AC after fit
-	ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
-  
-
 	FILE * files = fopen(runlist, "r") ; 
+
+	//create chain of treePostQA
+	Long64_t nentries=100000, firstentry=0; 
+	TChain *chainTree = 0;
+	chainTree=new TChain("trendTree");
+	
 	while (fscanf(files,"%d",&runNumber)==1 ){
-    
-		//reset all variables
-		avTime=-9999.; peakTime=-9999.; spreadTime=-9999.; peakTimeErr=-9999.; spreadTimeErr=-9999.;negTimeRatio=-9999.;
-		avRawTime=-9999.; peakRawTime=-9999.; spreadRawTime=-9999.; peakRawTimeErr=-9999.; spreadRawTimeErr=-9999.; 
-		avTot=-9999.; peakTot=-9999.;spreadTot=-9999.;  peakTotErr=-9999.;spreadTotErr=-9999.;
-		orphansRatio=-9999.; avL=-9999.; negLratio=-9999.;
-		effPt1=-9999.; effPt2=-9999.; matchEffLinFit1Gev=-9999.;matchEffLinFit1GevErr=-9999.;
-    
-		avPiDiffTime=-9999.;peakPiDiffTime=-9999.; spreadPiDiffTime=-9999.;peakPiDiffTimeErr=-9999.; spreadPiDiffTimeErr=-9999.;
-    
-		avT0A=-9999.;peakT0A=-9999.; spreadT0A=-9999.;peakT0AErr=-9999.; spreadT0AErr=-9999.;
-		avT0C=-9999.;peakT0C=-9999.; spreadT0C=-9999.;peakT0CErr=-9999.; spreadT0CErr=-9999.;
-		avT0AC=-9999.;peakT0AC=-9999.; spreadT0AC=-9999.;peakT0ACErr=-9999.; spreadT0ACErr=-9999.;
-		avT0res=-9999.;peakT0res=-9999.; spreadT0res=-9999.;peakT0resErr=-9999.; spreadT0resErr=-9999.;
-		avMulti=0; avT0fillRes=0.;
-		fractionEventsWHits=-9999.;
-    
-		//get QAtrain output
-		//SetQAtrainOutputName(runNumber, year,period,pass,trainId);
-		if (trainId==0){
-			sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QAresults.root",year,period,runNumber,pass);
-		} else{
-			sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults.root",year,period,runNumber,pass,trainId);
-		}
-		printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
-    
-    
-		//run post-analysis
-		if (RunESDQApostAnalysis(infile,runNumber,kTRUE)==0){
-			filesCounter++;
-      
-			//get post-analysis output
-			sprintf(postFileName,"postQA_%i.root",runNumber);
-			TFile *postfile=TFile::Open(postFileName);
-			if (!postfile) {
-				printf("Post-analysis output not found - cannot perform trending analysis. Exiting.");
-				return 2;
-			} else {
-				printf("==============  Retrieving post-analysis for run %i ===============\n",runNumber);
-			}
-			//postfile->ls();
-			//save quantities for trending
-      
-			//--------------------------------- Multiplicity ----------------------------------//
-			TH1F*hMulti=(TH1F*)postfile->Get("hTOFmatchedPerEvt");
-			if ((hMulti)&&(hMulti->GetEntries()>0)) {
-				avMulti=hMulti->GetMean();
-			}
-      
-			//--------------------------------- T0F signal ----------------------------------//
-      
-			TH1F*hTime=(TH1F*)postfile->Get("hTOFmatchedESDtime");
-			if ((hTime)&&(hTime->GetEntries()>0)) {
-				avTime=hTime->GetMean();
-				hTime->Fit("landau","","",0.,50.);
-				peakTime=(hTime->GetFunction("landau"))->GetParameter(1);
-				spreadTime=(hTime->GetFunction("landau"))->GetParameter(2);
-				peakTimeErr=(hTime->GetFunction("landau"))->GetParError(1);
-				spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
-	
-				negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
-				printf("Main peak time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-				printf("Main peak time (landau): spread = %f +- %f\n",spreadTime,spreadTimeErr );
-				printf("Ratio of tracks with time<12.5 ns / total = %f\n",negTimeRatio );
-	
-				//add integral of main peak over total
-			}
-			printf("---------------------------------------------------------------- \n");
-			TH1F * hRawTime = (TH1F*)postfile->Get("hTOFmatchedESDrawTime");
-			if ((hRawTime)&&(hRawTime->GetEntries()>0)){
-				avRawTime=hRawTime->GetMean();
-				hRawTime->Fit("landau","","",200.,250.);
-				peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
-				spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
-				peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
-				spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
-				printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
-				printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
-			}
-      
-			printf("---------------------------------------------------------------- \n");
-      
-			TH1F * hTot = (TH1F*)postfile->Get("hTOFmatchedESDToT");
-			if ((hTot)&&(hTot->GetEntries()>0)){
-				avTot=hTot->GetMean();
-				hTot->Fit("gaus","","",0.,50.);
-				peakTot=(hTot->GetFunction("gaus"))->GetParameter(1);
-				spreadTot=(hTot->GetFunction("gaus"))->GetParameter(2);
-				peakTotErr=(hTot->GetFunction("gaus"))->GetParError(1);
-				spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
-				printf("Main peak ToT (gaus): mean = %f +- %f\n",peakTot,peakTotErr );
-				printf("Main peak ToT (gaus): spread = %f +- %f\n",spreadTot,spreadTotErr );	
-			}      
-			printf("---------------------------------------------------------------- \n");
-			TH1F * hOrphansRatio=(TH1F*)postfile->Get("hOrphansRatio");
-			if (hOrphansRatio)
-				orphansRatio=hOrphansRatio->GetMean();
-      
-			TH1F * hL=(TH1F*)postfile->Get("hTOFmatchedESDtrkLength");
-			if (hL)
-				avL=hL->GetMean();
-      
-			TH1F *hLnegRatio =(TH1F*)postfile->Get("hLnegRatio");
-			if (hLnegRatio)
-				negLratio=hLnegRatio->GetMean();
-      
-			//--------------------------------- matching eff ----------------------------------//
-     
-			//Double_t linFitEff1Param[3]={0.,0.,0.};
-			TH1F *hMatchingVsPt =(TH1F*)postfile->Get("hTOFmatchedESDPt");
-			if (hMatchingVsPt) {
-				if (hMatchingVsPt->GetEntries()>0){
-					hMatchingVsPt->Fit("pol0","","",1.0,5.);
-					hMatchingVsPt->Draw();
-					if (hMatchingVsPt->GetFunction("pol0")){
-						matchEffLinFit1Gev=(hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
-						matchEffLinFit1GevErr=(hMatchingVsPt->GetFunction("pol0"))->GetParError(0);	
-						printf("Matching efficiency fit param is %f +- %f\n",matchEffLinFit1Gev,matchEffLinFit1GevErr );
-					}
-				} else {
-					printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
-				}
-			} else {
-				printf("WARNING: cannot retrieve matching efficiency plot\n");
-			}
+	  
+	  //get QAtrain output
+	  if (trainId==0){
+	    sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QAresults.root",year,period,runNumber,pass);
+	  } else{
+	    sprintf(infile,"alien:///alice/data/%i/%s/000%d/ESDs/%s/QA%i/QAresults.root",year,period,runNumber,pass,trainId);
+	  }
+	  Printf("============== Opening QA file(s) for run %i =======================\n",runNumber);
+	  
+	  //run post-analysis
+	  if (RunESDQApostAnalysis(infile,runNumber,kTRUE)==0){
+	    filesCounter++;
+	    sprintf(postFileName,"postQA_%i.root",runNumber);
+	    sprintf(treePostFileName,"treePostQA_%i.root",runNumber);
+	    
+	    if (MakePostQAtree(runNumber, postFileName, treePostFileName)==0){
+	      chainTree->Add(treePostFileName); 
+	      Printf("Tree chain has now %d entries ",(Int_t)chainTree->GetEntries());
+	    } else {
+	      Printf("Could not get tree with trending quantities for run %i: SKIPPING",runNumber);
+	    } 
+	  } else 
+	    Printf("Post analysis not run on QA output %s", infile);
+	}
+	return  MakeTrendingFromTreeWithErrors(chainTree, trendFileName, displayAll); 
+}
+//-----------------------------------------------------------
+Int_t MakeTrendingHistoFromTreeList(char * fileList,  Bool_t displayAll=kFALSE){
 
-			//--------------------------------- t-texp ----------------------------------//
-     
-			TH1F*hPiDiffTime=(TH1F*)postfile->Get("hTOFmatchedExpTimePi");
-			if ((hPiDiffTime)&&(hPiDiffTime->GetEntries()>0)) {
-				avPiDiffTime=hPiDiffTime->GetMean();
-				hPiDiffTime->Fit("gaus","","",-1000.,500.);
-				if (hPiDiffTime->GetFunction("gaus")){
-					peakPiDiffTime=(hPiDiffTime->GetFunction("gaus"))->GetParameter(1);
-					spreadPiDiffTime=(hPiDiffTime->GetFunction("gaus"))->GetParameter(2);
-					peakPiDiffTimeErr=(hPiDiffTime->GetFunction("gaus"))->GetParError(1);
-					spreadPiDiffTimeErr=(hPiDiffTime->GetFunction("gaus"))->GetParError(2);
-					printf("Main peak t-t_exp (gaus): mean = %f +- %f\n",peakPiDiffTime,peakPiDiffTimeErr );
-					printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
-				}
-			}
-			//--------------------------------- T0 detector ----------------------------------//
-      
-			TH1F*hT0A=(TH1F*)postfile->Get("hEventT0DetA");
-			if ((hT0A)&&(hT0A->GetEntries()>0)) {
-				avhT0A=hT0A->GetMean();
-				hT0A->Fit("gaus");
-				peakT0A=(hT0A->GetFunction("gaus"))->GetParameter(1);
-				spreadT0A=(hT0A->GetFunction("gaus"))->GetParameter(2);
-				peakT0AErr=(hT0A->GetFunction("gaus"))->GetParError(1);
-				spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);	
-				printf("Main peak T0A(gaus): mean = %f +- %f\n",peakT0A,peakT0AErr );
-				printf("Main peak T0A (gaus): spread = %f +- %f\n",spreadT0A,spreadT0AErr );	 
-				//add integral of main peak over total
-			}
-
-			TH1F*hT0C=(TH1F*)postfile->Get("hEventT0DetC");
-			if ((hT0C)&&(hT0C->GetEntries()>0)) {
-				avhT0C=hT0C->GetMean();
-				hT0C->Fit("gaus");
-				peakT0C=(hT0C->GetFunction("gaus"))->GetParameter(1);
-				spreadT0C=(hT0C->GetFunction("gaus"))->GetParameter(2);
-				peakT0CErr=(hT0C->GetFunction("gaus"))->GetParError(1);
-				spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);	
-				printf("Main peak T0C(gaus): mean = %f +- %f\n",peakT0C,peakT0CErr );
-				printf("Main peak T0C (gaus): spread = %f +- %f\n",spreadT0C,spreadT0CErr );	 
-				//add integral of main peak over total
-			}
-
-			TH1F*hT0AC=(TH1F*)postfile->Get("hEventT0DetAND");
-			if ((hT0AC)&&(hT0AC->GetEntries()>0)) {
-				avhT0AC=hT0AC->GetMean();
-				hT0AC->Fit("gaus");
-				peakT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(1);
-				spreadT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(2);
-				peakT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(1);
-				spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);	
-				printf("Main peak T0AC(gaus): mean = %f +- %f\n",peakT0AC,peakT0ACErr );
-				printf("Main peak T0AC (gaus): spread = %f +- %f\n",spreadT0AC,spreadT0ACErr );	 
-			}
-      
-			TH1F*hT0res=(TH1F*)postfile->Get("hT0DetRes");
-			if ((hT0res)&&(hT0res->GetEntries()>0)) {
-				avhT0res=hT0res->GetMean();
-				hT0res->Fit("gaus");
-				peakT0res=(hT0res->GetFunction("gaus"))->GetParameter(1);
-				spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
-				peakT0resErr=(hT0res->GetFunction("gaus"))->GetParError(1);
-				spreadT0resErr=(hT0res->GetFunction("gaus"))->GetParError(2);	
-				printf("Main peak T0res(gaus): mean = %f +- %f\n",peakT0res,peakT0resErr );
-				printf("Main peak T0res (gaus): spread = %f +- %f\n",spreadT0res,spreadT0resErr );	 
-				//add integral of main peak over total
-			}
-
-			TH1F*hT0fillRes=(TH1F*)postfile->Get("hT0fillRes");
-			if ((hT0fillRes)&&(hT0fillRes->GetEntries()>0)) {
-				avT0fillRes=hT0fillRes->GetMean();
-			}
-      
-			ttree->Fill();
-			printf("==============  Saving trending quantities for run %i ===============\n",runNumber);
-			if (postfile->IsOpen()) {
-				printf("Trying to close\n");
-				postfile->Close();
-			}  
-		} else {
-			printf("==============   QA for run %i not available - skipping ===============\n",runNumber);
-		}
-    
-	} 
-	printf("Number of files processed = %i\n",filesCounter);
+	Int_t filesCounter=0;
   
-	trendFile->cd();
-	ttree->Write();
-	trendFile->Close();
+	if (!fileList) {
+		printf("Invalid list of runs given as input: nothing done\n");
+		return 1;
+	}	
+	char infile[300]; 
+	char trendFileName[100]; 
+	//Define trending output
+	sprintf(trendFileName,"trendingHistoTOFQA_%s.root",fileList);  
+	TFile * trendFile=new TFile(trendFileName,"recreate");
+	FILE * files = fopen(fileList, "r") ; 
 
-	return  MakeTrendingFromTreeWithErrors(trendFileName); 
+	//create chain of treePostQA
+	Long64_t nentries=100000, firstentry=0; 
+	TChain *chainTree =new TChain("trendTree");
+	
+	while (fscanf(files,"%s",&infile)==1 ){	  
+	  if (!TFile::Open(infile,"r")) 
+	    Printf("Error: cannot open file %s", infile);
+	  Printf("============== Adding QA tree file %s to the chain",infile);
+	  filesCounter++;	  
+	  chainTree->Add(infile); 
+	}
+	return  MakeTrendingFromTreeWithErrors(chainTree, trendFileName, displayAll); 
 }
 
 //______________________________________________________________________________
-
-Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
+Int_t MakeTrendingFromTreeWithErrors(TChain * fin,char* trendFileName=NULL, Bool_t displayAll=kFALSE){
 
 	if (!trendFileName) 
 		return 3;
-  
-	TFile *fin=TFile::Open(trendFileName);
+ 
 	if (!fin) 
 		return 4;
+
 	Int_t runNumber;
 	Double_t avTime=0., peakTime=0., spreadTime=0., peakTimeErr=0., spreadTimeErr=0.,negTimeRatio=0.,
 		avRawTime=0., peakRawTime=0., spreadRawTime=0., peakRawTimeErr=0., spreadRawTimeErr=0., 
@@ -348,7 +113,7 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	Int_t avMulti=0;
 	Float_t fractionEventsWHits=0;
    
-	TTree * ttree=(TTree*)fin->Get("trendTree");
+	TTree * ttree = (TTree*) fin->CloneTree();
 	ttree->SetBranchAddress("run",&runNumber);
    
 	ttree->SetBranchAddress("avTime",&avTime); //mean time
@@ -415,84 +180,83 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	Int_t nRuns=ttree->GetEntries();
 	TList lista;
    
-	TH1F * hAvDiffTimeVsRun=new TH1F("hAvDiffTimeVsRun","hAvDiffTimeVsRun;run;<t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hAvDiffTimeVsRun=new TH1F("hAvDiffTimeVsRun","Mean t-t_{exp} (no fit);run;<t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvDiffTimeVsRun->SetDrawOption("E1");
 	hAvDiffTimeVsRun->SetMarkerStyle(20);
 	hAvDiffTimeVsRun->SetMarkerColor(kBlue);
 	//   hAvTimeVsRun->GetYaxis()->SetRangeUser(0.0, 50.0);
 
-	TH1F * hPeakDiffTimeVsRun=new TH1F("hPeakDiffTimeVsRun","hPeakDiffTimeVsRun (gaussian fit) ;run; <t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//,600, 0. , 600. );
+	TH1F * hPeakDiffTimeVsRun=new TH1F("hPeakDiffTimeVsRun","t-t_{exp} (gaussian fit) ;run; <t^{TOF}-t_{exp,#pi}> (ps)",nRuns,0., nRuns);//,600, 0. , 600. );
 	hPeakDiffTimeVsRun->SetDrawOption("E1");
 	hPeakDiffTimeVsRun->SetMarkerStyle(20);
 	hPeakDiffTimeVsRun->SetMarkerColor(kBlue);
    
-	TH1F * hSpreadDiffTimeVsRun=new TH1F("hSpreadDiffTimeVsRun","hSpreadDiffTimeVsRun (gaussian fit);run; #sigma(t^{TOF}-t_{exp,#pi}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadDiffTimeVsRun=new TH1F("hSpreadDiffTimeVsRun","#sigma(t-t_{exp}) (gaussian fit);run; #sigma(t^{TOF}-t_{exp,#pi}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadDiffTimeVsRun->SetDrawOption("E1");
 	hSpreadDiffTimeVsRun->SetMarkerStyle(20);
 	hSpreadDiffTimeVsRun->SetMarkerColor(kBlue);
 
-	TH1F * hAvTimeVsRun=new TH1F("hAvTimeVsRun","hAvTimeVsRun;run;<t^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hAvTimeVsRun=new TH1F("hAvTimeVsRun","<t^{TOF}>;run;<t^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvTimeVsRun->SetDrawOption("E1");
 	hAvTimeVsRun->SetMarkerStyle(20);
 	hAvTimeVsRun->SetMarkerColor(kBlue);
 	//   hAvTimeVsRun->GetYaxis()->SetRangeUser(0.0, 50.0);
 
-	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","hPeakTimeVsRun (landau fit);run;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
+	TH1F * hPeakTimeVsRun=new TH1F("hPeakTimeVsRun","Peak value of t^{TOF} (landau fit);run;t_{peak}^{TOF} (ns)",nRuns,0., nRuns);//,600, 0. , 600. );
 	hPeakTimeVsRun->SetDrawOption("E1");
 	hPeakTimeVsRun->SetMarkerStyle(20);
 	hPeakTimeVsRun->SetMarkerColor(kBlue);
    
-	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","hSpreadTimeVsRun (landau fit);run; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadTimeVsRun=new TH1F("hSpreadTimeVsRun","Spread of t^{TOF} (landau fit);run; #sigma(t^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadTimeVsRun->SetDrawOption("E1");
 	hSpreadTimeVsRun->SetMarkerStyle(20);
 	hSpreadTimeVsRun->SetMarkerColor(kBlue);
   
-  
-	TH1F * hAvRawTimeVsRun=new TH1F("hAvRawTimeVsRun","hAvRawTimeVsRun;run;<t_{raw}^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hAvRawTimeVsRun=new TH1F("hAvRawTimeVsRun","Peak value of raw t^{TOF};run;<t_{raw}^{TOF}> (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hAvRawTimeVsRun->SetDrawOption("E1");
 	hAvRawTimeVsRun->SetMarkerStyle(21);
 	hAvRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","hPeakRawTimeVsRun (landau fit);run;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
+	TH1F * hPeakRawTimeVsRun=new TH1F("hPeakRawTimeVsRun","Peak value of raw t^{TOF} (landau fit);run;t_{peak,raw}^{TOF} (ns)",nRuns,0., nRuns);//, 600, 0. , 600.);
 	hPeakRawTimeVsRun->SetDrawOption("E1");
 	hPeakRawTimeVsRun->SetMarkerStyle(21);
 	hPeakRawTimeVsRun->SetMarkerColor(kGreen);
 
-	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","hSpreadRawTimeVsRun (landau fit);run;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
+	TH1F * hSpreadRawTimeVsRun=new TH1F("hSpreadRawTimeVsRun","Spread of raw t^{TOF} (landau fit);run;#sigma(t_{raw}^{TOF}) (ns)",nRuns,0., nRuns);//, 100, 0. , 100.);
 	hSpreadRawTimeVsRun->SetDrawOption("E1");
 	hSpreadRawTimeVsRun->SetMarkerStyle(21);
 	hSpreadRawTimeVsRun->SetMarkerColor(kGreen);
    
-	TH1F * hAvTotVsRun=new TH1F("hAvTotVsRun","hAvTotVsRun;run;<ToT> (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
+	TH1F * hAvTotVsRun=new TH1F("hAvTotVsRun","<ToT> (no fit);run;<ToT> (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
 	hAvTotVsRun->SetDrawOption("E1");
 	hAvTotVsRun->SetMarkerStyle(22);
    
-	TH1F * hPeakTotVsRun=new TH1F("hPeakTotVsRun","hPeakTotVsRun (gaussian fit);run;ToT_{peak} (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
+	TH1F * hPeakTotVsRun=new TH1F("hPeakTotVsRun","<ToT> (gaussian fit);run;ToT_{peak} (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
 	hPeakTotVsRun->SetDrawOption("E1");
 	hPeakTotVsRun->SetMarkerStyle(22);
    
-	TH1F * hSpreadTotVsRun=new TH1F("hSpreadTotVsRun","hSpreadTotVsRun (gaussian fit);#sigma(ToT) (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
+	TH1F * hSpreadTotVsRun=new TH1F("hSpreadTotVsRun","#sigma(ToT) (gaussian fit);#sigma(ToT) (ns)",nRuns,0., nRuns);//, 50, 0. , 50.);
 	hSpreadTotVsRun->SetDrawOption("E1");
 	hSpreadTotVsRun->SetMarkerStyle(22);
    
-	TH1F * hNegTimeRatioVsRun=new TH1F("hNegTimeRatioVsRun","hNegTimeRatioVsRun;run;ratio of tracks with t^{TOF}<12.5 ns (%)",nRuns, 0., nRuns);//, 100, 0. , 100.);
+	TH1F * hNegTimeRatioVsRun=new TH1F("hNegTimeRatioVsRun","Ratio of tracks with t^{TOF}<12.5 ns; run; ratio of tracks with t^{TOF}<12.5 ns (%)",nRuns, 0., nRuns);//, 100, 0. , 100.);
 	hNegTimeRatioVsRun->SetDrawOption("E");
 
-	TH1F * hOrphansRatioVsRun=new TH1F("hOrphansRatioVsRun","hOrphansRatioVsRun; run; ratio of orphans (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
+	TH1F * hOrphansRatioVsRun=new TH1F("hOrphansRatioVsRun","Ratio of orphans (hits with ToT=0); run; ratio of orphans (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
 	hOrphansRatioVsRun->SetDrawOption("E");
 
-	TH1F * hMeanLVsRun=new TH1F("hMeanLVsRun","hMeanLVsRun;run; <L> (cm)",nRuns, 0., nRuns);//, 350, 350. , 700.);
+	TH1F * hMeanLVsRun=new TH1F("hMeanLVsRun","Average track length;run; <L> (cm)",nRuns, 0., nRuns);//, 350, 350. , 700.);
 	hMeanLVsRun->SetDrawOption("E");
-	TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","hNegLRatioVsRun;run; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
+	TH1F * hNegLRatioVsRun=new TH1F("hNegLRatioVsRun","Ratio of tracks with L<350 cm;run; ratio of tracks with L<350 cm (%)",nRuns, 0., nRuns);//, 1000, 0. , 100.);
 	hNegLRatioVsRun->SetDrawOption("E");
-	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","hMatchEffVsRun;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
+	TH1F * hMatchEffVsRun=new TH1F("hMatchEffVsRun","Matching efficiency (linear fit for p_{T}>1.0 GeV/c);run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);//, 100, 0. , 1.);
 	hMatchEffVsRun->SetDrawOption("E");
-	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","hMatchEffVsRun;run;matching efficiency (pT>1.0 GeV/c)",nRuns, 0., nRuns);
+	TH1F * hMatchEffVsRun1=new TH1F("hMatchEffVsRun1","Matching efficiency (value for p_{T}=1.0 GeV/c);run;matching efficiency (pT=1.0 GeV/c)",nRuns, 0., nRuns);
 	hMatchEffVsRun1->SetDrawOption("E");
-	TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","hPeakT0AVsRun (gaussian fit);run;t0A (ps)",nRuns,0., nRuns);
-	TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","hPeakT0CVsRun (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
-	TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","hPeakT0ACVsRun (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
-	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","hT0fillResVsRun;run;t0_spread (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0AVsRun=new TH1F("hPeakT0AVsRun","Peak value of T0A (gaussian fit);run;t0A (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0CVsRun=new TH1F("hPeakT0CVsRun","Peak value of T0C (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
+	TH1F * hPeakT0ACVsRun=new TH1F("hPeakT0ACVsRun","Peak value of T0AC (gaussian fit);run;t0AC (ps)",nRuns,0., nRuns);
+	TH1F * hT0fillResVsRun=new TH1F("hT0fillResVsRun","t0_fill spread;run;t0_spread (ps)",nRuns,0., nRuns);
   
 	lista.Add(hAvDiffTimeVsRun);
 	lista.Add(hPeakDiffTimeVsRun);
@@ -609,12 +373,6 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	TString plotDir(Form("PlotsTrending"));
 	gSystem->Exec(Form("mkdir %s",plotDir.Data()));
 
-	TCanvas* cAvDiffTimeVsRun = new TCanvas("cAvDiffTimeVsRun","cAvDiffTimeVsRun",50,50,750,550);
-	gPad->SetGridx();
-	gPad->SetGridy();
-	hAvDiffTimeVsRun->Draw();
-	cAvDiffTimeVsRun->Print(Form("%s/cAvDiffTimeVsRun.png",plotDir.Data()));
-
 	TCanvas* cPeakDiffTimeVsRun = new TCanvas("cPeakDiffTimeVsRun","cPeakDiffTimeVsRun", 50,50,750,550);
 	hPeakDiffTimeVsRun->Draw();
 	cPeakDiffTimeVsRun->Print(Form("%s/cPeakDiffTimeVsRun.png",plotDir.Data()));
@@ -622,58 +380,6 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	TCanvas* cSpreadDiffTimeVsRun = new TCanvas("cSpreadDiffTimeVsRun","cSpreadDiffTimeVsRun", 50,50,750,550);
 	hSpreadDiffTimeVsRun->Draw();
 	cSpreadDiffTimeVsRun->Print(Form("%s/cSpreadDiffTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cAvTimeVsRun = new TCanvas("cAvTimeVsRun","cAvTimeVsRun", 50,50,750,550);
-	hAvTimeVsRun->Draw();
-	cAvTimeVsRun->Print(Form("%s/cAvTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cPeakTimeVsRun = new TCanvas("cPeakTimeVsRun","cPeakTimeVsRun", 50,50,750,550);
-	hPeakTimeVsRun->Draw();
-	cPeakTimeVsRun->Print(Form("%s/cPeakTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cSpreadTimeVsRun = new TCanvas("cSpreadTimeVsRun","cSpreadTimeVsRun", 50,50,750,550);
-	hSpreadTimeVsRun->Draw();
-	cSpreadTimeVsRun->Print(Form("%s/cSpreadTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cAvRawTimeVsRun = new TCanvas("cAvRawTimeVsRun","cAvRawTimeVsRun", 50,50,750,550);
-	hAvRawTimeVsRun->Draw();
-	cAvRawTimeVsRun->Print(Form("%s/cAvRawTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cPeakRawTimeVsRun = new TCanvas("cPeakRawTimeVsRun","cPeakRawTimeVsRun", 50,50,750,550);
-	hPeakRawTimeVsRun->Draw();
-	cPeakRawTimeVsRun->Print(Form("%s/cPeakRawTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cSpreadRawTimeVsRun = new TCanvas("cSpreadRawTimeVsRun","cSpreadRawTimeVsRun", 50,50,750,550);
-	hSpreadRawTimeVsRun->Draw();
-	cSpreadRawTimeVsRun->Print(Form("%s/cSpreadRawTimeVsRun.png",plotDir.Data()));
-
-	TCanvas* cAvTotVsRun = new TCanvas("cAvTotVsRun","cAvTotVsRun", 50,50,750,550);
-	hAvTotVsRun->Draw();
-	cAvTotVsRun->Print(Form("%s/cAvTotVsRun.png",plotDir.Data()));
-
-	TCanvas* cPeakTotVsRun = new TCanvas("cPeakTotVsRun","cPeakTotVsRun", 50,50,750,550);
-	hPeakTotVsRun->Draw();
-	cPeakTotVsRun->Print(Form("%s/cPeakTotVsRun.png",plotDir.Data()));
-
-	TCanvas* cSpreadTotVsRun = new TCanvas("cSpreadTotVsRun","cSpreadTotVsRun", 50,50,750,550);
-	hSpreadTotVsRun->Draw();
-	cSpreadTotVsRun->Print(Form("%s/cSpreadTotVsRun.png",plotDir.Data()));
-
-	TCanvas* cNegTimeRatioVsRun = new TCanvas("cNegTimeRatioVsRun","cNegTimeRatioVsRun", 50,50,750,550);
-	hNegTimeRatioVsRun->Draw();
-	cNegTimeRatioVsRun->Print(Form("%s/cNegTimeRatioVsRun.png",plotDir.Data()));
-
-	TCanvas* cOrphansRatioVsRun = new TCanvas("cOrphansRatioVsRun","cOrphansRatioVsRun", 50,50,750,550);
-	hOrphansRatioVsRun->Draw();
-	cOrphansRatioVsRun->Print(Form("%s/cOrphansRatioVsRun.png",plotDir.Data()));
-
-	TCanvas* cMeanLVsRun = new TCanvas("cMeanLVsRun","cMeanLVsRun", 50,50,750,550);
-	hMeanLVsRun->Draw();
-	cMeanLVsRun->Print(Form("%s/cMeanLVsRun.png",plotDir.Data()));
-
-	TCanvas* cNegLRatioVsRun = new TCanvas("cNegLRatioVsRun","cNegLRatioVsRun", 50,50,750,550);
-	hNegLRatioVsRun->Draw();
-	cNegLRatioVsRun->Print(Form("%s/cNegLRatioVsRun.png",plotDir.Data()));
 
 	TCanvas* cMatchEffVsRun = new TCanvas("cMatchEffVsRun","cMatchEffVsRun", 50,50,750,550);
 	hMatchEffVsRun->Draw();
@@ -695,8 +401,331 @@ Int_t MakeTrendingFromTreeWithErrors(char* trendFileName=NULL){
 	hT0fillResVsRun->Draw();
 	cT0fillResVsRun->Print(Form("%s/cT0fillResVsRun.png",plotDir.Data()));
 
-
+	if (displayAll) {
+	  TCanvas* cAvDiffTimeVsRun = new TCanvas("cAvDiffTimeVsRun","cAvDiffTimeVsRun",50,50,750,550);
+	  gPad->SetGridx();
+	  gPad->SetGridy();
+	  hAvDiffTimeVsRun->Draw();
+	  cAvDiffTimeVsRun->Print(Form("%s/cAvDiffTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cAvTimeVsRun = new TCanvas("cAvTimeVsRun","cAvTimeVsRun", 50,50,750,550);
+	  hAvTimeVsRun->Draw();
+	  cAvTimeVsRun->Print(Form("%s/cAvTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cPeakTimeVsRun = new TCanvas("cPeakTimeVsRun","cPeakTimeVsRun", 50,50,750,550);
+	  hPeakTimeVsRun->Draw();
+	  cPeakTimeVsRun->Print(Form("%s/cPeakTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cSpreadTimeVsRun = new TCanvas("cSpreadTimeVsRun","cSpreadTimeVsRun", 50,50,750,550);
+	  hSpreadTimeVsRun->Draw();
+	  cSpreadTimeVsRun->Print(Form("%s/cSpreadTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cAvRawTimeVsRun = new TCanvas("cAvRawTimeVsRun","cAvRawTimeVsRun", 50,50,750,550);
+	  hAvRawTimeVsRun->Draw();
+	  cAvRawTimeVsRun->Print(Form("%s/cAvRawTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cPeakRawTimeVsRun = new TCanvas("cPeakRawTimeVsRun","cPeakRawTimeVsRun", 50,50,750,550);
+	  hPeakRawTimeVsRun->Draw();
+	  cPeakRawTimeVsRun->Print(Form("%s/cPeakRawTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cSpreadRawTimeVsRun = new TCanvas("cSpreadRawTimeVsRun","cSpreadRawTimeVsRun", 50,50,750,550);
+	  hSpreadRawTimeVsRun->Draw();
+	  cSpreadRawTimeVsRun->Print(Form("%s/cSpreadRawTimeVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cAvTotVsRun = new TCanvas("cAvTotVsRun","cAvTotVsRun", 50,50,750,550);
+	  hAvTotVsRun->Draw();
+	  cAvTotVsRun->Print(Form("%s/cAvTotVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cPeakTotVsRun = new TCanvas("cPeakTotVsRun","cPeakTotVsRun", 50,50,750,550);
+	  hPeakTotVsRun->Draw();
+	  cPeakTotVsRun->Print(Form("%s/cPeakTotVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cSpreadTotVsRun = new TCanvas("cSpreadTotVsRun","cSpreadTotVsRun", 50,50,750,550);
+	  hSpreadTotVsRun->Draw();
+	  cSpreadTotVsRun->Print(Form("%s/cSpreadTotVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cNegTimeRatioVsRun = new TCanvas("cNegTimeRatioVsRun","cNegTimeRatioVsRun", 50,50,750,550);
+	  hNegTimeRatioVsRun->Draw();
+	  cNegTimeRatioVsRun->Print(Form("%s/cNegTimeRatioVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cOrphansRatioVsRun = new TCanvas("cOrphansRatioVsRun","cOrphansRatioVsRun", 50,50,750,550);
+	  hOrphansRatioVsRun->Draw();
+	  cOrphansRatioVsRun->Print(Form("%s/cOrphansRatioVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cMeanLVsRun = new TCanvas("cMeanLVsRun","cMeanLVsRun", 50,50,750,550);
+	  hMeanLVsRun->Draw();
+	  cMeanLVsRun->Print(Form("%s/cMeanLVsRun.png",plotDir.Data()));
+	  
+	  TCanvas* cNegLRatioVsRun = new TCanvas("cNegLRatioVsRun","cNegLRatioVsRun", 50,50,750,550);
+	  hNegLRatioVsRun->Draw();
+	  cNegLRatioVsRun->Print(Form("%s/cNegLRatioVsRun.png",plotDir.Data()));
+	}
+	
 	return 0;
+}
+
+//-------------------------------------------------------------------------
+Int_t MakePostQAtree(Int_t runNumber, char * postFileName="postQA.0.root",char * treePostFileName="treePostQA.0.root"){  
+  
+       TFile *postfile=TFile::Open(postFileName);
+       if (!postfile) {
+	  printf("Post-analysis output not found - cannot perform trending analysis. Exiting.");
+	  return -1;
+	}
+       Printf("==============  Getting post-analysis info for run %i ===============\n",runNumber);
+       TFile * trendFile=new TFile(treePostFileName,"recreate");
+
+  	Double_t avTime=-9999., peakTime=-9999., spreadTime=-9999., peakTimeErr=-9999., spreadTimeErr=-9999., negTimeRatio=-9999.,
+		avRawTime=-9999., peakRawTime=-9999., spreadRawTime=-9999., peakRawTimeErr=-9999., spreadRawTimeErr=-9999., 
+		avTot=-9999., peakTot=-9999.,spreadTot=-9999.,  peakTotErr=-9999.,spreadTotErr=-9999.,
+		orphansRatio=-9999., avL=-9999., negLratio=-9999.,
+		effPt1=-9999., effPt2=-9999., matchEffLinFit1Gev=-9999.,matchEffLinFit1GevErr=-9999.;
+  
+	Double_t avPiDiffTime=-9999.,peakPiDiffTime=-9999., spreadPiDiffTime=-9999.,peakPiDiffTimeErr=-9999., spreadPiDiffTimeErr=-9999.;
+  
+	Double_t avT0A=-9999.,peakT0A=-9999., spreadT0A=-9999.,peakT0AErr=-9999., spreadT0AErr=-9999.;
+	Double_t avT0C=-9999.,peakT0C=-9999., spreadT0C=-9999.,peakT0CErr=-9999., spreadT0CErr=-9999.;
+	Double_t avT0AC=-9999.,peakT0AC=-9999., spreadT0AC=-9999.,peakT0ACErr=-9999., spreadT0ACErr=-9999.;
+	Double_t avT0res=-9999.,peakT0res=-9999., spreadT0res=-9999.,peakT0resErr=-9999., spreadT0resErr=-9999.;
+	Double_t avT0fillRes=-9999.;
+
+	Int_t avMulti=0;
+	Float_t fractionEventsWHits=-9999.;
+  
+	TTree * ttree=new TTree("trendTree","tree of trending variables");
+	ttree->Branch("run",&runNumber,"run/I");
+	ttree->Branch("avMulti",&avMulti,"avMulti/I");
+	ttree->Branch("fractionEventsWHits",&fractionEventsWHits,"fractionEventsWHits/F");
+	ttree->Branch("avTime",&avTime,"avTime/D"); //mean time
+	ttree->Branch("peakTime",&peakTime,"peakTime/D"); //main peak time after fit
+	ttree->Branch("spreadTime",&spreadTime,"spreadTime/D"); //spread of main peak of time after fit
+	ttree->Branch("peakTimeErr",&peakTimeErr,"peakTimeErr/D"); //main peak time after fit error
+	ttree->Branch("spreadTimeErr",&spreadTimeErr,"spreadTimeErr/D"); //spread of main peak of time after fit error
+	ttree->Branch("negTimeRatio",&negTimeRatio,"negTimeRatio/D"); //negative time ratio
+  
+	ttree->Branch("avRawTime",&avRawTime,"avRawTime/D"); //mean raw time
+	ttree->Branch("peakRawTime",&peakRawTime,"peakRawTime/D"); //mean peak of RAW TIME after fit
+	ttree->Branch("spreadRawTime",&spreadRawTime,"spreadRawTime/D"); //spread of main peak of raw time after fit
+	ttree->Branch("peakRawTimeErr",&peakRawTimeErr,"peakRawTimeErr/D"); //main peak raw  time after fit error
+	ttree->Branch("spreadRawTimeErr",&spreadRawTimeErr,"spreadRawTimeErr/D"); //spread of  raw main peak of time after fit error
+  
+	ttree->Branch("avTot",&avTot,"avTot/D"); //main peak tot
+	ttree->Branch("peakTot",&peakTot,"peakTot/D"); // main peak of tot after fit
+	ttree->Branch("spreadTot",&spreadTot,"spreadTot/D"); //spread of main peak of tot after fit
+	ttree->Branch("peakTotErr",&peakTotErr,"peakTotErr/D"); // main peak of tot after fit
+	ttree->Branch("spreadTotErr",&spreadTotErr,"spreadTotErr/D"); //spread of main peak of tot after fit
+  
+	ttree->Branch("orphansRatio",&orphansRatio,"orphansRatio/D"); //orphans ratio
+
+	ttree->Branch("avL",&avL,"avL/D"); //mean track length
+	ttree->Branch("negLratio",&negLratio,"negLratio/D");//ratio of tracks with track length <350 cm
+
+	ttree->Branch("effPt1",&effPt1,"effPt1/D");//matching eff at 1 GeV/c
+	ttree->Branch("effPt2",&effPt2,"effPt2/D"); //matching eff at 2 GeV/c
+	ttree->Branch("matchEffLinFit1Gev",&matchEffLinFit1Gev,"matchEffLinFit1Gev/D");//matching eff fit param 
+	ttree->Branch("matchEffLinFit1GevErr",&matchEffLinFit1GevErr,"matchEffLinFit1GevErr/D");////matching eff fit param error
+  
+	ttree->Branch("avPiDiffTime",&avPiDiffTime,"avPiDiffTime/D"); //mean t-texp
+	ttree->Branch("peakPiDiffTime",&peakPiDiffTime,"peakPiDiffTime/D"); //main peak t-texp after fit
+	ttree->Branch("spreadPiDiffTime",&spreadPiDiffTime,"spreadPiDiffTime/D"); //spread of main peak t-texp after fit
+	ttree->Branch("peakPiDiffTimeErr",&peakPiDiffTimeErr,"peakPiDiffTimeErr/D"); //main peak t-texp after fit error
+	ttree->Branch("spreadPiDiffTimeErr",&spreadPiDiffTimeErr,"spreadPiDiffTimeErr/D"); //spread of main peak of t-texp after fit error
+
+	ttree->Branch("avT0A",&avT0A,"avT0A/D"); //main peak t0A
+	ttree->Branch("peakT0A",&peakT0A,"peakT0A/D"); // main peak of t0A after fit
+	ttree->Branch("spreadT0A",&spreadT0A,"spreadTot/D"); //spread of main peak of t0A after fit
+	ttree->Branch("peakT0AErr",&peakT0AErr,"peakT0AErr/D"); // main peak of t0A after fit
+	ttree->Branch("spreadT0AErr",&spreadT0AErr,"spreadT0AErr/D"); //spread of main peak of t0A after fit
+
+	ttree->Branch("avT0C",&avT0C,"avT0C/D"); //main peak t0C
+	ttree->Branch("peakT0C",&peakT0C,"peakT0C/D"); // main peak of t0C after fit
+	ttree->Branch("spreadT0C",&spreadT0C,"spreadT0C/D"); //spread of main peak of t0C after fit
+	ttree->Branch("peakT0CErr",&peakT0CErr,"peakT0CErr/D"); // main peak of t0C after fit
+	ttree->Branch("spreadT0CErr",&spreadT0CErr,"spreadT0CErr/D"); //spread of main peak of t0C after fit
+ 
+	ttree->Branch("avT0AC",&avT0AC,"avT0AC/D"); //main peak t0AC
+	ttree->Branch("peakT0AC",&peakT0AC,"peakT0AC/D"); // main peak of t0AC after fit
+	ttree->Branch("spreadT0AC",&spreadT0AC,"spreadT0AC/D"); //spread of main peak of t0AC after fit
+	ttree->Branch("peakT0ACErr",&peakT0ACErr,"peakT0ACErr/D"); // main peak of t0AC after fit
+	ttree->Branch("spreadT0ACErr",&spreadT0ACErr,"spreadT0ACErr/D"); //spread of main peak of t0AC after fit
+ 
+	ttree->Branch("avT0res",&avT0res,"avT0res/D"); //main peak t0AC
+	ttree->Branch("peakT0res",&peakT0res,"peakT0res/D"); // main peak of t0AC after fit
+	ttree->Branch("spreadT0res",&spreadT0res,"spreadT0res/D"); //spread of main peak of t0AC after fit
+	ttree->Branch("peakT0resErr",&peakT0resErr,"peakT0resErr/D"); // main peak of t0AC after fit
+	ttree->Branch("spreadT0resErr",&spreadT0resErr,"spreadT0resErr/D"); //spread of main peak of t0AC after fit
+	ttree->Branch("avT0fillRes",&avT0fillRes,"avT0fillRes/D"); //t0 fill res
+
+	//postfile->ls();
+	//save quantities for trending
+	
+	//--------------------------------- Multiplicity ----------------------------------//
+	TH1F*hMulti=(TH1F*)postfile->Get("hTOFmatchedPerEvt");
+	if ((hMulti)&&(hMulti->GetEntries()>0)) {
+	  avMulti=hMulti->GetMean();
+	}
+	
+	//--------------------------------- T0F signal ----------------------------------//
+	
+	TH1F*hTime=(TH1F*)postfile->Get("hTOFmatchedESDtime");
+	if ((hTime)&&(hTime->GetEntries()>0)) {
+	  avTime=hTime->GetMean();
+	  hTime->Fit("landau","","",0.,50.);
+	  peakTime=(hTime->GetFunction("landau"))->GetParameter(1);
+	  spreadTime=(hTime->GetFunction("landau"))->GetParameter(2);
+	  peakTimeErr=(hTime->GetFunction("landau"))->GetParError(1);
+	  spreadTimeErr=(hTime->GetFunction("landau"))->GetParError(2);
+	  
+	  negTimeRatio=((Double_t)hTime->Integral(1,3)*100.)/((Double_t)hTime->Integral());
+	  printf("Main peak time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
+	  printf("Main peak time (landau): spread = %f +- %f\n",spreadTime,spreadTimeErr );
+	  printf("Ratio of tracks with time<12.5 ns / total = %f\n",negTimeRatio );
+	  
+	  //add integral of main peak over total
+	}
+	printf("---------------------------------------------------------------- \n");
+	TH1F * hRawTime = (TH1F*)postfile->Get("hTOFmatchedESDrawTime");
+	if ((hRawTime)&&(hRawTime->GetEntries()>0)){
+	  avRawTime=hRawTime->GetMean();
+	  hRawTime->Fit("landau","","",200.,250.);
+	  peakRawTime=(hRawTime->GetFunction("landau"))->GetParameter(1);
+	  spreadRawTime=(hRawTime->GetFunction("landau"))->GetParameter(2);
+	  peakRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(1);
+	  spreadRawTimeErr=(hRawTime->GetFunction("landau"))->GetParError(2);
+	  printf("Main peak raw time (landau): mean = %f +- %f\n",peakTime,peakTimeErr );
+	  printf("Main peak raw time (landau): spread = %f +- %f\n",spreadRawTime,spreadRawTimeErr );
+	}
+	
+	printf("---------------------------------------------------------------- \n");
+      
+	TH1F * hTot = (TH1F*)postfile->Get("hTOFmatchedESDToT");
+	if ((hTot)&&(hTot->GetEntries()>0)){
+	  avTot=hTot->GetMean();
+	  hTot->Fit("gaus","","",0.,50.);
+	  peakTot=(hTot->GetFunction("gaus"))->GetParameter(1);
+	  spreadTot=(hTot->GetFunction("gaus"))->GetParameter(2);
+	  peakTotErr=(hTot->GetFunction("gaus"))->GetParError(1);
+	  spreadTotErr=(hTot->GetFunction("gaus"))->GetParError(2);
+	  printf("Main peak ToT (gaus): mean = %f +- %f\n",peakTot,peakTotErr );
+	  printf("Main peak ToT (gaus): spread = %f +- %f\n",spreadTot,spreadTotErr );	
+	}      
+	printf("---------------------------------------------------------------- \n");
+	TH1F * hOrphansRatio=(TH1F*)postfile->Get("hOrphansRatio");
+	if (hOrphansRatio)
+	  orphansRatio=hOrphansRatio->GetMean();
+	
+	TH1F * hL=(TH1F*)postfile->Get("hTOFmatchedESDtrkLength");
+	if (hL)
+	  avL=hL->GetMean();
+	
+	TH1F *hLnegRatio =(TH1F*)postfile->Get("hLnegRatio");
+	if (hLnegRatio)
+	  negLratio=hLnegRatio->GetMean();
+	
+	//--------------------------------- matching eff ----------------------------------//
+	
+	//Double_t linFitEff1Param[3]={0.,0.,0.};
+	TH1F *hMatchingVsPt =(TH1F*)postfile->Get("hTOFmatchedESDPt");
+	if (hMatchingVsPt) {
+	  if (hMatchingVsPt->GetEntries()>0){
+	    hMatchingVsPt->Fit("pol0","","",1.0,5.);
+	    hMatchingVsPt->Draw();
+	    if (hMatchingVsPt->GetFunction("pol0")){
+	      matchEffLinFit1Gev=(hMatchingVsPt->GetFunction("pol0"))->GetParameter(0);
+	      matchEffLinFit1GevErr=(hMatchingVsPt->GetFunction("pol0"))->GetParError(0);	
+	      printf("Matching efficiency fit param is %f +- %f\n",matchEffLinFit1Gev,matchEffLinFit1GevErr );
+	    }
+	  } else {
+	    printf("WARNING: matching efficiency plot has 0 entries. Skipped!\n");
+	  }
+	} else {
+	  printf("WARNING: cannot retrieve matching efficiency plot\n");
+	}
+	
+	//--------------------------------- t-texp ----------------------------------//
+	
+	TH1F*hPiDiffTime=(TH1F*)postfile->Get("hTOFmatchedExpTimePi");
+	if ((hPiDiffTime)&&(hPiDiffTime->GetEntries()>0)) {
+	  avPiDiffTime=hPiDiffTime->GetMean();
+	  hPiDiffTime->Fit("gaus","","",-1000.,500.);
+	  if (hPiDiffTime->GetFunction("gaus")){
+	    peakPiDiffTime=(hPiDiffTime->GetFunction("gaus"))->GetParameter(1);
+	    spreadPiDiffTime=(hPiDiffTime->GetFunction("gaus"))->GetParameter(2);
+	    peakPiDiffTimeErr=(hPiDiffTime->GetFunction("gaus"))->GetParError(1);
+	    spreadPiDiffTimeErr=(hPiDiffTime->GetFunction("gaus"))->GetParError(2);
+	    printf("Main peak t-t_exp (gaus): mean = %f +- %f\n",peakPiDiffTime,peakPiDiffTimeErr );
+	    printf("Main peak t-t_exp (gaus): spread = %f +- %f\n",spreadPiDiffTime,spreadPiDiffTimeErr );
+	  }
+	}
+	//--------------------------------- T0 detector ----------------------------------//
+	
+	TH1F*hT0A=(TH1F*)postfile->Get("hEventT0DetA");
+	if ((hT0A)&&(hT0A->GetEntries()>0)) {
+	  avhT0A=hT0A->GetMean();
+	  hT0A->Fit("gaus");
+	  peakT0A=(hT0A->GetFunction("gaus"))->GetParameter(1);
+	  spreadT0A=(hT0A->GetFunction("gaus"))->GetParameter(2);
+	  peakT0AErr=(hT0A->GetFunction("gaus"))->GetParError(1);
+	  spreadT0AErr=(hT0A->GetFunction("gaus"))->GetParError(2);	
+	  printf("Main peak T0A(gaus): mean = %f +- %f\n",peakT0A,peakT0AErr );
+	  printf("Main peak T0A (gaus): spread = %f +- %f\n",spreadT0A,spreadT0AErr );	 
+	  //add integral of main peak over total
+	}
+	
+	TH1F*hT0C=(TH1F*)postfile->Get("hEventT0DetC");
+	if ((hT0C)&&(hT0C->GetEntries()>0)) {
+	  avhT0C=hT0C->GetMean();
+	  hT0C->Fit("gaus");
+	  peakT0C=(hT0C->GetFunction("gaus"))->GetParameter(1);
+	  spreadT0C=(hT0C->GetFunction("gaus"))->GetParameter(2);
+	  peakT0CErr=(hT0C->GetFunction("gaus"))->GetParError(1);
+	  spreadT0CErr=(hT0C->GetFunction("gaus"))->GetParError(2);	
+	  printf("Main peak T0C(gaus): mean = %f +- %f\n",peakT0C,peakT0CErr );
+	  printf("Main peak T0C (gaus): spread = %f +- %f\n",spreadT0C,spreadT0CErr );	 
+	  //add integral of main peak over total
+	}
+	
+	TH1F*hT0AC=(TH1F*)postfile->Get("hEventT0DetAND");
+	if ((hT0AC)&&(hT0AC->GetEntries()>0)) {
+	  avhT0AC=hT0AC->GetMean();
+	  hT0AC->Fit("gaus");
+	  peakT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(1);
+	  spreadT0AC=(hT0AC->GetFunction("gaus"))->GetParameter(2);
+	  peakT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(1);
+	  spreadT0ACErr=(hT0AC->GetFunction("gaus"))->GetParError(2);	
+	  printf("Main peak T0AC(gaus): mean = %f +- %f\n",peakT0AC,peakT0ACErr );
+	  printf("Main peak T0AC (gaus): spread = %f +- %f\n",spreadT0AC,spreadT0ACErr );	 
+	}
+      
+	TH1F*hT0res=(TH1F*)postfile->Get("hT0DetRes");
+	if ((hT0res)&&(hT0res->GetEntries()>0)) {
+	  avhT0res=hT0res->GetMean();
+	  hT0res->Fit("gaus");
+	  peakT0res=(hT0res->GetFunction("gaus"))->GetParameter(1);
+	  spreadT0res=(hT0res->GetFunction("gaus"))->GetParameter(2);
+	  peakT0resErr=(hT0res->GetFunction("gaus"))->GetParError(1);
+	  spreadT0resErr=(hT0res->GetFunction("gaus"))->GetParError(2);	
+	  printf("Main peak T0res(gaus): mean = %f +- %f\n",peakT0res,peakT0resErr );
+	  printf("Main peak T0res (gaus): spread = %f +- %f\n",spreadT0res,spreadT0resErr );	 
+	  //add integral of main peak over total
+	}
+	
+	TH1F*hT0fillRes=(TH1F*)postfile->Get("hT0fillRes");
+	if ((hT0fillRes)&&(hT0fillRes->GetEntries()>0)) {
+	  avT0fillRes=hT0fillRes->GetMean();
+	}
+	
+	ttree->Fill();
+	printf("==============  Saving trending quantities in tree for run %i ===============\n",runNumber);
+	if (postfile->IsOpen()) {
+	  printf("Trying to close\n");
+	  postfile->Close();
+	}  
+
+	trendFile->cd();
+	ttree->Write();
+	trendFile->Close();
+	return  0;
 }
 
 //------------------------------------------------------------------------------------
@@ -1148,7 +1177,8 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 
 	TH2F * hDiffTimePi=(TH2F*)pidList->At(4); 
 	hDiffTimePi->GetYaxis()->SetRangeUser(-2000.,2000.);
-	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
+	hDiffTimePi->SetTitle("PIONS t-t_{exp,#pi} (from tracking) vs. P");
+	  //hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimePi");
  
 	TProfile * profDiffTimePi = (TProfile*)hDiffTimePi->ProfileX(profilename, 490, 510); 
@@ -1166,6 +1196,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 
 	TH2F * hDiffTimeKa=(TH2F*)pidList->At(9); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
+	hDiffTimeKa->SetTitle("KAONS t-t_{exp,K} (from tracking) vs. P");
 	sprintf(profilename,"profDiffTimeKa");
 	hDiffTimeKa->GetYaxis()->SetRangeUser(-2000.,2000.);
   
@@ -1184,6 +1215,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 	TH2F * hDiffTimePro=(TH2F*)pidList->At(14); 
 	//hDiffTime->GetYaxis()->Rebin(2);//1 bin=10 ps
 	sprintf(profilename,"profDiffTimePro");
+	hDiffTimePro->SetTitle("PROTONS t-t_{exp,p} (from tracking) vs. P");
 	hDiffTimePro->GetYaxis()->SetRangeUser(-2000.,2000.);
 	TProfile * profDiffTimePro = (TProfile*)hDiffTimePro->ProfileX(profilename, 490, 510); 
 	profDiffTimePro->SetLineWidth(2);
@@ -1377,7 +1409,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
 		gSystem->Exec(Form("mkdir %s",plotDir.Data()));
 		cPidPerformance3->Print(Form("%s/PID_sigmas.png",plotDir.Data()));
 		cPidPerformance->Print(Form("%s/PID.png",plotDir.Data()));
-		cPidPerformanceTh->Print(Form("%s/PID_thereticalTimes.png",plotDir.Data()));
+		cPidPerformanceTh->Print(Form("%s/PID_theoreticalTimes.png",plotDir.Data()));
 		cPidPerformance2->Print(Form("%s/PID_ExpTimes.png",plotDir.Data()));
 		cMatchingPerformance->Print(Form("%s/Matching.png",plotDir.Data()));
 		cT0detector->Print(Form("%s/T0Detector.png",plotDir.Data()));
