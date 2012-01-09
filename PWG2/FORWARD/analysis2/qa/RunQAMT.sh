@@ -23,7 +23,7 @@ Options:
 	-Q,--qa-number  NUMBER     Custom QA id [$qanumber]
 	-p,--production IDENTIFIER Production identifier [$prodfull]
 	-P,--pass       IDENTIFIER Pass identifier [$passfull]
-	-l,--log-file   FILE       Log file output
+	-l,--log-file              Log file output [$redir]
 
 Note the option -j and the options -p and -P are mutually exclusive,
 The option -Q is only used if the options -p and -P are given.
@@ -258,6 +258,7 @@ fix_perm()
 {
     if test ! -f $1 ; then return ; fi 
     chmod g+rwX $1
+    chmod o+rX $1
 }
 
 # --- Check if a file is OK ------------------------------------------
@@ -335,7 +336,7 @@ analyse_run()
 	    mess 2 -n "copying ... " 
 	    alien_cp alien:${s} file:${q} >> ${redir} 2>&1 
 	    fix_perm $q
-	    mess 1 "done"
+	    mess 2 "done"
 	fi
     fi
 
@@ -553,7 +554,7 @@ while test $# -gt 0 ; do
 	    shift
 	    parse_pass 
 	    ;;
-	-l|--log-file) redir=$2 ; shift ;; 
+	-l|--log-file) redir= ; shift ;; 
 	*) echo "$0: Unknown argument: $1" > /dev/stderr ; exit 1 ;; 
     esac
     shift
@@ -603,7 +604,13 @@ mkdir -p ${top}/$store
 fix_perm ${top}/${proddir}
 fix_perm ${top}/$store
 
-check_lock $store
+if test "x$redir" = "x" ; then 
+    redir=${top}/$store/qa.log 
+    rm -f $redir
+    fix_perm $redir
+fi
+
+check_lock ${top}/$store
 
 cat <<EOF
 	Year:			$year
@@ -619,6 +626,7 @@ cat <<EOF
 	  QA number		$qanumber
 	Output directory:	${store}
 	Lock file:		${lock}
+	Log:                    ${redir}
 EOF
 # --- Do a search to find our files ----------------------------------
 get_filelist

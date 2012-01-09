@@ -1,11 +1,9 @@
 #ifndef ALIPOISSONCALCULATOR_H
 #define ALIPOISSONCALCULATOR_H
 #include <TNamed.h>
-#include <TList.h>
 class TH2D;
 class TH1D;
 class TBrowser;
-//class TList;
 
 /** 
  * A class to calculate the multiplicity in @f$(\eta,\varphi)@f$ bins
@@ -70,26 +68,26 @@ public:
    * 
    * @param n Number of eta bins per region
    */  
-  void SetEtaLumping(UShort_t n) { fEtaLumping = n; } //*MENU*
+  void SetLumping(UShort_t nx, UShort_t ny);
   /** 
-   * Set the actual object
+   * Set the number of X bins to group into a region
    * 
-   * @param v vtxbin
+   * @param n Number of eta bins per region
    */  
-  void SetObject(UShort_t d, Char_t r, UShort_t v, Double_t cent); //*MENU*
+  void SetXLumping(UShort_t nx) { SetLumping(nx, fYLumping); } //*MENU*
   /** 
-   * Set the number of phi bins to group into a region
+   * Set the number of Y bins to group into a region
    * 
-   * @param n Number of phi bins per region
+   * @param n Number of eta bins per region
    */  
-  void SetPhiLumping(UShort_t n) { fPhiLumping = n; } //*MENU*
+  void SetYLumping(UShort_t ny) { SetLumping(fYLumping, ny); } //*MENU*
   /** 
    * Intialize this object 
    * 
-   * @param etaLumping If larger than 0, set the eta lumping to this
-   * @param phiLumping If larger than 0, set the phi lumping to this
+   * @param xLumping If larger than 0, set the eta lumping to this
+   * @param yLumping If larger than 0, set the phi lumping to this
    */
-  void Init(UShort_t d=-1, Char_t r='I', Int_t etaLumping=-1, Int_t phiLumping=-1);
+  void Init(Int_t xLumping=-1, Int_t yLumping=-1);
   /** 
    * Make output stuff for the passed list
    * 
@@ -118,17 +116,11 @@ public:
    */
   void Fill(UShort_t strip, UShort_t sec, Bool_t hit, Double_t weight=1);
   /** 
-   * Take the average occupancy over many events or not
-   * 
-   * @param use use or not
-   */
-  void SetUseAverageOverEvents(Bool_t use)  {fRunningAverage = use;}
-  /** 
    * Calculate result and store in @a output
    * 
    * @return The result histogram (fBase overwritten)
    */
-  TH2D* Result();
+  TH2D* Result(Bool_t correct=true);
   /** 
    * @return Always true 
    */
@@ -146,10 +138,64 @@ public:
    */
   void Browse(TBrowser* b);
 
+  /** 
+   * Get the empty versus total histogram 
+   * 
+   * @return Empty versus total 
+   */
   TH2D* GetEmptyVsTotal() const { return fEmptyVsTotal; }
+  /** 
+   * Get the histogram of the means 
+   * 
+   * @return Means 
+   */
   TH1D* GetMean() const { return fMean; }
+  /** 
+   * Get the occupancy histogram
+   * 
+   * @return Occupancy histogram 
+   */
   TH1D* GetOccupancy() const { return fOcc; }
+  /** 
+   * Get the correction histogram
+   * 
+   * @return correction histogram
+   */
   TH2D* GetCorrection() const { return fCorr; }
+
+  /** 
+   * Get the X bin in the reduced historgam
+   * 
+   * @param ix X bin in full histogram
+   * 
+   * @return X bin in reduced histogram 
+   */
+  Int_t GetReducedXBin(Int_t ix) const;
+  /** 
+   * Get the X bin in the reduced historgam
+   * 
+   * @param x X value 
+   * 
+   * @return X bin in reduced histogram 
+   */
+  Int_t GetReducedXBin(Double_t x) const;
+  /** 
+   * Get the Y bin in the reduced historgam
+   * 
+   * @param iy Y bin in full histogram
+   * 
+   * @return Y bin in reduced histogram 
+   */
+  Int_t GetReducedYBin(Int_t iy) const;
+  /** 
+   * Get the Y bin in the reduced historgam
+   * 
+   * @param y Y value 
+   * 
+   * @return Y bin in reduced histogram 
+   */
+  Int_t GetReducedYBin(Double_t y) const;
+
 protected:
   /** 
    * Clean up allocated space 
@@ -201,8 +247,8 @@ protected:
    * @return The correction to the mean. 
    */
   Double_t CalculateCorrection(Double_t empty, Double_t total) const;
-  UShort_t fEtaLumping;   // Grouping of eta bins 
-  UShort_t fPhiLumping;   // Grouping of phi bins 
+  UShort_t fXLumping;   // Grouping of eta bins 
+  UShort_t fYLumping;   // Grouping of phi bins 
   TH2D*    fTotal;        // Total number of strips in a region
   TH2D*    fEmpty;        // Total number of strips in a region
   TH2D*    fBasic;        // Total number basic hits in a region
@@ -210,10 +256,7 @@ protected:
   TH1D*    fMean;         // Mean calculated by poisson method 
   TH1D*    fOcc;          // Histogram of occupancies 
   TH2D*    fCorr;         // Correction as a function of mean 
-  TList    fTotalList;    // List of total hists
-  TList    fEmptyList;    // List of empty hists
-  Bool_t   fRunningAverage; // Whether to take average per event or not
-  ClassDef(AliPoissonCalculator,1) // Calculate N_ch using Poisson
+  ClassDef(AliPoissonCalculator,2) // Calculate N_ch using Poisson
 };
 
 #endif
