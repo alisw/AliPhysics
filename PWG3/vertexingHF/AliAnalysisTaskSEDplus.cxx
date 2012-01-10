@@ -755,8 +755,9 @@ void AliAnalysisTaskSEDplus::UserCreateOutputObjects()
   if(fFillNtuple){
     OpenFile(4); // 4 is the slot number of the ntuple
    
-    fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:PtTrue:VxTrue:VyTrue:VzTrue:Ptpi:PtK:Ptpi2:PtRec:PointingAngle:DecLeng:VxRec:VyRec:VzRec:InvMass:sigvert:d0Pi:d0K:d0Pi2:dca:d0square");  
     
+     fNtupleDplus = new TNtuple("fNtupleDplus","D +","pdg:Px:Py:Pz:Pt:pid:Ptpi:PtK:Ptpi2:Sumd0sq:ptmax:cosp:cospxy:DecLen:NormDecLen:DecLenXY:NormDecLenXY:InvMass:sigvert:d0Pi:d0K:d0Pi2:maxdca:ntracks:centr:RunNumber");
+
   }
   
   return;
@@ -808,25 +809,26 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
   if(!aod->GetPrimaryVertex()||TMath::Abs(aod->GetMagneticField())<0.001) return;
   fCounter->StoreEvent(aod,fRDCutsAnalysis,fReadMC);
   fHistNEvents->Fill(0); // count event
-
+  Int_t runNumber=aod->GetRunNumber();
   Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
   Bool_t isEvSelP=kTRUE;
   isEvSelP=fRDCutsProduction->IsEventSelected(aod); // to have proper PID object settings
 
-  Float_t centrality=aod->GetNTracks();//fRDCutsAnalysis->GetCentrality(aod);
-  fHistCentrality[0]->Fill(centrality);
+  Float_t ntracks=aod->GetNTracks();//fRDCutsAnalysis->GetCentrality(aod);
+  fHistCentrality[0]->Fill(ntracks);
+  Float_t centrality=fRDCutsAnalysis->GetCentrality(aod);
   // trigger class for PbPb C0SMH-B-NOPF-ALLNOTRD
   TString trigclass=aod->GetFiredTriggerClasses();
   if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(2);
   if(fRDCutsAnalysis->GetWhyRejection()==1) fHistNEvents->Fill(3); 
-  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(centrality);}
+  if(fRDCutsAnalysis->GetWhyRejection()==2){fHistNEvents->Fill(4);fHistCentrality[2]->Fill(ntracks);}
   if(fRDCutsAnalysis->GetWhyRejection()==6)fHistNEvents->Fill(5);
   if(fRDCutsAnalysis->GetWhyRejection()==7)fHistNEvents->Fill(6);
   // Post the data already here  
   PostData(1,fOutput);
   if(!isEvSel)return;
 
-  fHistCentrality[1]->Fill(centrality);
+  fHistCentrality[1]->Fill(ntracks);
   fHistNEvents->Fill(1);
 
   TClonesArray *arrayMC=0;
@@ -943,11 +945,13 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	fPtVsMass->Fill(invMass,ptCand);
 	if(passTightCuts) fPtVsMassTC->Fill(invMass,ptCand);
       }
-      Float_t tmp[24];
+    
       Double_t  dlen=d->DecayLength();
       Double_t cosp=d->CosPointingAngle();
       Double_t sumD02=d->Getd0Prong(0)*d->Getd0Prong(0)+d->Getd0Prong(1)*d->Getd0Prong(1)+d->Getd0Prong(2)*d->Getd0Prong(2);
-      Double_t dca=d->GetDCA();
+      Double_t maxdca=-9999.;
+      for(Int_t idau=0;idau<3;idau++) if(d->GetDCA(idau)>maxdca) maxdca=d->GetDCA(idau);
+
       Double_t sigvert=d->GetSigmaVert();         
       Double_t ptmax=0;
       for(Int_t i=0;i<3;i++){
@@ -956,31 +960,34 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
       Double_t impparXY=d->ImpParXY()*10000.;
       Double_t arrayForSparse[3]={invMass,ptCand,impparXY};
       Double_t arrayForSparseTrue[3]={invMass,ptCand,trueImpParXY};
+      Float_t tmp[26];    
       if(fFillNtuple){
 	tmp[0]=pdgCode;
-	tmp[1]=deltaPx;
-	tmp[2]=deltaPy;
-	tmp[3]=deltaPz;
-	tmp[4]=truePt;
-	tmp[5]=xDecay;	  
-	tmp[6]=yDecay;	  
-	tmp[7]=zDecay;	  
-	tmp[8]=d->PtProng(0);
-	tmp[9]=d->PtProng(1);
-	tmp[10]=d->PtProng(2);
-	tmp[11]=d->Pt();
-	tmp[12]=cosp;
+	tmp[1]=d->Px();
+	tmp[2]=d->Py();
+	tmp[3]=d->Pz();
+	tmp[4]=d->Pt();
+	tmp[5]=fRDCutsAnalysis->IsSelectedPID(d);	  
+	tmp[6]=d->PtProng(0);	  
+	tmp[7]=d->PtProng(1);	  
+	tmp[8]=d->PtProng(02);
+	tmp[9]=sumD02;
+	tmp[10]=ptmax;
+	tmp[11]=cosp;
+	tmp[12]=d->CosPointingAngleXY();
 	tmp[13]=dlen;
-	tmp[14]=d->Xv();
-	tmp[15]=d->Yv();
-	tmp[16]=d->Zv();
+	tmp[14]=d->NormalizedDecayLength();
+	tmp[15]=d->DecayLengthXY();
+	tmp[16]=d->NormalizedDecayLengthXY();
 	tmp[17]=d->InvMassDplus();
 	tmp[18]=sigvert;
 	tmp[19]=d->Getd0Prong(0);
 	tmp[20]=d->Getd0Prong(1);
 	tmp[21]=d->Getd0Prong(2);
-	tmp[22]=dca;
-	tmp[23]=d->Prodd0d0(); 
+	tmp[22]=maxdca;
+	tmp[23]=ntracks;
+	tmp[24]=centrality;
+ 	tmp[25]=runNumber;
 	fNtupleDplus->Fill(tmp);
 	PostData(4,fNtupleDplus);
       }
@@ -1001,7 +1008,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 	    fPtKHist[index]->Fill(d->PtProng(1));
 	    fPtpi1Hist[index]->Fill(d->PtProng(0));
 	    fPtpi2Hist[index]->Fill(d->PtProng(2));
-	    fDCAHist[index]->Fill(dca);
+	    fDCAHist[index]->Fill(maxdca);
 	    fDLxy[index]->Fill(dlxy);
 	    fCosxy[index]->Fill(cxy);
 	    fCorreld0Kd0pi[0]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
@@ -1069,7 +1076,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		fPtKHist[index]->Fill(d->PtProng(1),fact);
 		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
 		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
-		fDCAHist[index]->Fill(dca,fact);
+		fDCAHist[index]->Fill(maxdca,fact);
 		fCorreld0Kd0pi[1]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
 					d->Getd0Prong(2)*d->Getd0Prong(1));
 	      }
@@ -1138,7 +1145,7 @@ void AliAnalysisTaskSEDplus::UserExec(Option_t */*option*/)
 		fPtKHist[index]->Fill(d->PtProng(1),fact);
 		fPtpi1Hist[index]->Fill(d->PtProng(0),fact);
 		fPtpi2Hist[index]->Fill(d->PtProng(2),fact);
-		fDCAHist[index]->Fill(dca,fact);
+		fDCAHist[index]->Fill(maxdca,fact);
 		fCorreld0Kd0pi[2]->Fill(d->Getd0Prong(0)*d->Getd0Prong(1),
 					d->Getd0Prong(2)*d->Getd0Prong(1));
 	      }
