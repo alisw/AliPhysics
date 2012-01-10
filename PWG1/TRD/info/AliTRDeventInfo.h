@@ -49,8 +49,8 @@ private:
   enum{
     kOwner = BIT(14)
   };
-  static Int_t const   fgkMultBin[kCentralityClasses]; // multiplicity bins
-  static Float_t const fgkCentBin[kCentralityClasses]; // centrality bins
+  static Int_t const   fgkMultBin[kCentralityClasses-1]; // multiplicity bins
+  static Float_t const fgkCentBin[kCentralityClasses-1]; // centrality bins
   AliESDHeader* fHeader;      //! The ESD Header
   AliESDRun*    fRun;         //! The ESD Run Info
   Int_t         fCentrality;  //! Centrality class based on AliCentrality

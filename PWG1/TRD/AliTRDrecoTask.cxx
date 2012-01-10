@@ -27,6 +27,7 @@
 #include "TDirectory.h"
 #include "TTreeStream.h"
 #include "TBox.h"
+#include "TLatex.h"
 #include "TVectorT.h"
 
 #include "AliLog.h"
@@ -345,7 +346,7 @@ Bool_t AliTRDrecoTask::PostProcess()
 }
 
 //_______________________________________________________
-void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
+void AliTRDrecoTask::MakeDetectorPlot(Int_t ly, const Option_t *opt)
 {
 // Draw chamber boundaries in eta/phi plots with misalignments
 // based on info collected by AliTRDinfoGen
@@ -354,7 +355,7 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
     AliWarning("Detector map and status not available.");
     return;
   }
-
+  Float_t xmin(0.), xmax(0.);
   TBox *gdet = new TBox();
   gdet->SetLineWidth(kBlack);gdet->SetFillColor(kBlack);
   Int_t style[] = {0, 3003};
@@ -364,21 +365,31 @@ void AliTRDrecoTask::MakeDetectorPlot(Int_t ly)
     if(!det) continue;
     Int_t iopt = Int_t((*det)[4]);
     AliDebug(2, Form("det[%03d] 0[%+4.1f %+4.1f] 1[%+4.1f %+4.1f] opt[%d]", idet, (*det)[0], (*det)[1], (*det)[2], (*det)[3], iopt));
+    if(strcmp(opt, "eta")==0){xmin=(*det)[0]; xmax=(*det)[2];}
+    else if(strcmp(opt, "pad")==0){
+      Int_t stk(AliTRDgeometry::GetStack(idet));
+      xmin=-0.6+16*(4-stk)-(stk<2?4:0); xmax=xmin+(stk==2?12:16)-0.2;
+    } else continue;
     if(iopt==1){
       gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlack);
-      gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+      gdet->DrawBox(xmin, (*det)[1], xmax, (*det)[3]);
     } else {
       gdet->SetFillStyle(style[0]);
-      gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], (*det)[3]);
+      gdet->DrawBox(xmin, (*det)[1], xmax, (*det)[3]);
       if(iopt==2){
         gdet->SetFillStyle(style[1]);gdet->SetFillColor(kBlue);
-        gdet->DrawBox((*det)[0], (*det)[1], (*det)[2], 0.5*((*det)[3]+(*det)[1]));
+        gdet->DrawBox(xmin, (*det)[1], xmax, 0.5*((*det)[3]+(*det)[1]));
       } else if(iopt==3){
         gdet->SetFillStyle(style[1]);gdet->SetFillColor(kRed);
-        gdet->DrawBox((*det)[0], 0.5*((*det)[3]+(*det)[1]), (*det)[2], (*det)[3]);
+        gdet->DrawBox(xmin, 0.5*((*det)[3]+(*det)[1]), xmax, (*det)[3]);
       } else if(iopt!=0) AliError(Form("Wrong chmb. status[%d] for det[%03d]", iopt, idet));
     }
   }
+  Float_t dsm = TMath::TwoPi()/AliTRDgeometry::kNsector;
+  xmin=0.;
+  if(strcmp(opt, "pad")==0) xmin=38.;
+  TLatex *sm = new TLatex(); sm->SetTextAlign(22);sm->SetTextColor(0); sm->SetTextFont(32);sm->SetTextSize(0.03);
+  for(Int_t is(0); is<AliTRDgeometry::kNsector; is++) sm->DrawLatex(xmin, -TMath::Pi()+(is+0.5)*dsm, Form("%02d", is>=9?(is-9):(is+9)));
 }
 
 

@@ -319,6 +319,7 @@ TH1* AliTRDresolution::DetCluster(const TObjArray *cls)
     val[kEta] = (5-stk)*16-cl->GetPadRow()-1-(stk<3?4:0);
     val[kYrez]= TMath::Abs(cl->GetQ());
     val[4]    = fEvent->GetMultiplicity();
+    val[5]    = cl->IsFivePad()?1:cl->GetNPads();
     H->Fill(val);
   }
   return NULL;
@@ -1099,23 +1100,32 @@ void AliTRDresolution::MakeSummary()
   const Int_t nx(2048), ny(1536);
 
   if((arr = (TObjArray*)fProj->At(kDetector))){
-    cOut = new TCanvas(Form("%s_Det", GetName()), "Detector performance", 2*nx, 2*ny);
+    cOut = new TCanvas(Form("%s_DetOccupancy", GetName()), "Detector performance", 2*nx, 2*ny);
     cOut->Divide(AliTRDgeometry::kNlayer,AliTRDeventInfo::kCentralityClasses, 1.e-5, 1.e-5);
     for(Int_t icen(0); icen<AliTRDeventInfo::kCentralityClasses; icen++){
-      Float_t zmin(1.e10), zmax(0.);
-      for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
-        if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d%d_yx", ily, icen)))) continue;
-        Float_t m, M; GetRangeZ(h2, m, M);
-        if(m<zmin) zmin=m;
-        if(M>zmax) zmax=M;
-      }
       for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
         p=cOut->cd(icen*AliTRDgeometry::kNlayer+ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
         if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d%d_yx", ily, icen)))) continue;
-        SetRangeZ(h2, zmin, zmax);
+        SetNormZ(h2, 1, 11, 1, -1, 10.);
+        SetRangeZ(h2, 0., 150, -25.);
+        h2->GetZaxis()->SetTitle("Rel. Det. Occup. [%]");
+        h2->GetZaxis()->CenterTitle();
         h2->Draw("colz");
-        MakeDetectorPlot(ily);
+        MakeDetectorPlot(ily, "pad");
       }
+    }
+    cOut->SaveAs(Form("%s.gif", cOut->GetName()));
+    cOut = new TCanvas(Form("%s_DetCharge", GetName()), "Detector performance", nx, ny);
+    cOut->Divide(3,2, 1.e-5, 1.e-5);
+    for(Int_t ily(0); ily<AliTRDgeometry::kNlayer; ily++){
+      p=cOut->cd(ily+1); p->SetRightMargin(0.1572581);p->SetTopMargin(0.08262712);
+      if(!(h2 = (TH2*)arr->FindObject(Form("HDetQ%d_2D", ily)))) continue;
+      SetNormZ(h2, 1, 11, 1, -1, 10.);
+      SetRangeZ(h2, 0., 45., -15.);
+      h2->GetZaxis()->SetTitle("Rel. Mean(q) [%]");
+      h2->GetZaxis()->CenterTitle();
+      h2->Draw("colz");
+      MakeDetectorPlot(ily, "pad");
     }
     cOut->SaveAs(Form("%s.gif", cOut->GetName()));
   }
@@ -2606,11 +2616,11 @@ TObjArray* AliTRDresolution::Histos()
   // cluster to detector
   snprintf(hn, nhn, "h%s", fgPerformanceName[kDetector]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
-    const Int_t mdim(5);
-    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "centrality", "q [a.u.]"/*, "occupancy", "tb [10 Hz]"*/};
-    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, AliTRDeventInfo::kCentralityClasses, 100};
-    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, -0.5, 0.},
-                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, AliTRDeventInfo::kCentralityClasses - 0.5, 1200.};
+    const Int_t mdim(6);
+    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "q [a.u.]", "centrality", "no. of pads"/*, "tb [10 Hz]"*/};
+    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, 50, AliTRDeventInfo::kCentralityClasses, 7};
+    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, 0., -0.5, 0.5},
+                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, 1200., AliTRDeventInfo::kCentralityClasses - 0.5, 7.5};
     st = "cluster proprieties;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:Int_t(kNdimDet);
@@ -3276,14 +3286,37 @@ TH2* AliTRDresolution::AliTRDresolutionProjection::Projection2D(const Int_t nsta
 }
 
 //________________________________________________________
-void AliTRDresolution::SetRangeZ(TH2 *h2, Float_t min, Float_t max)
+void AliTRDresolution::SetNormZ(TH2 *h2, Int_t bxmin, Int_t bxmax, Int_t bymin, Int_t bymax, Float_t thr)
+{
+// Normalize histo content to the mean value in the range specified by bin ranges
+// [bxmin, bxmax] on the x axis and [bymin, bymax] on the y axis.
+// Optionally a threshold "thr" can be specified to disregard entries with no meaning 
+
+  Float_t s = 0., c=0.; Int_t is(0);
+  for(Int_t ix(bxmin); ix<=(bxmax>0?bxmax:(h2->GetXaxis()->GetNbins())); ix++){
+    for(Int_t iy(bymin); iy<=(bymax>0?bymax:(h2->GetYaxis()->GetNbins())); iy++){
+      if((c = h2->GetBinContent(ix, iy))<thr) continue;
+      s += c; is++;
+    }
+  }
+  s/= is?is:1;
+  for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
+    for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
+      if((c = h2->GetBinContent(ix, iy))<thr) h2->SetBinContent(ix, iy, thr-100);
+      else h2->SetBinContent(ix, iy, 100.*(c/s-1.));
+    }
+  }
+}
+
+//________________________________________________________
+void AliTRDresolution::SetRangeZ(TH2 *h2, Float_t min, Float_t max, Float_t thr)
 {
 // Set range on Z axis such to avoid outliers
 
   Float_t c(0.), dz(1.e-3*(max-min));
   for(Int_t ix(1); ix<=h2->GetXaxis()->GetNbins(); ix++){
     for(Int_t iy(1); iy<=h2->GetYaxis()->GetNbins(); iy++){
-      if((c = h2->GetBinContent(ix, iy))<10) continue;
+      if((c = h2->GetBinContent(ix, iy))<thr) continue;
       if(c<=min) h2->SetBinContent(ix, iy, min+dz);
     }
   }
