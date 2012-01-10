@@ -189,9 +189,19 @@ void AliAnalysisTaskEMCALClusterizeFast::UserExec(Option_t *)
   } else if (aodevent) {
     offtrigger =  aodevent->GetHeader()->GetOfflineTrigger();
   }
-  if (offtrigger & AliVEvent::kFastOnly) {
-    AliWarning(Form("EMCAL not in fast only partition"));
-    return;
+
+  if (1) {
+    AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+    Bool_t mcmode = 0;
+    if (am->GetMCtruthEventHandler())
+      mcmode = 1;
+    if (!mcmode) {
+      UInt_t offtrigger = ((AliInputEventHandler*)(am->GetInputEventHandler()))->IsEventSelected();
+      if (offtrigger & AliVEvent::kFastOnly) {
+        AliWarning(Form("EMCAL not in fast only partition"));
+        return;
+      }
+    }
   }
   
   Init();
