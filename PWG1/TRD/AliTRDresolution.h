@@ -138,7 +138,8 @@ public:
   void            SetBCselectTOF(Int_t b=0)             { fBCbinTOF = b==0?2:(b<0?1:3);}
   void            SetBCselectFill(Int_t b=0)            { fBCbinFill = b<0||b>3499?1:b+1;}
   void            SetBsign(Int_t b=0)                   { fBsign = Bool_t(b);}
-  void            SetRangeZ(TH2 *h2, Float_t m, Float_t M);
+  static void     SetNormZ(TH2 *h2, Int_t bxmin=1, Int_t bxmax=-1, Int_t bymin=1, Int_t bymax=-1, Float_t thr=0.);
+  static void     SetRangeZ(TH2 *h2, Float_t m, Float_t M, Float_t thr=0.);
   void            SetVerbose(Bool_t v = kTRUE)          { SetBit(kVerbose, v);}
   void            SetVisual(Bool_t v = kTRUE)           { SetBit(kVisual, v);}
   void            SetTrackRefit(Bool_t v = kTRUE)       { SetBit(kTrackRefit, v);}
