@@ -159,15 +159,14 @@ Bool_t AliPHOSRawFitterv4::Eval(const UShort_t *signal, Int_t sigStart, Int_t si
       fSampleParamsLow->AddAt(pedestal,4) ;
       fSampleParamsLow->AddAt(double(maxSample),5) ;
       fSampleParamsLow->AddAt(double(iStart),6) ;
-      fToFit->AddFirst((TObject*)fSampleParamsLow) ; 
     }
     else if (fCaloFlag == 1){ // High gain
       fSampleParamsHigh->AddAt(pedestal,4) ;
       fSampleParamsHigh->AddAt(double(maxSample),5) ;
       fSampleParamsHigh->AddAt(double(iStart),6) ;
-      fToFit->AddFirst((TObject*)fSampleParamsHigh) ; 
     }
     result=EvalWithFitting(samples,times); 
+    fToFit->Clear("nodelete") ;
     delete samples ;
     delete times ;
     
