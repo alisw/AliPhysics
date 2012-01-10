@@ -317,8 +317,8 @@ TH1* AliTRDresolution::DetCluster(const TObjArray *cls)
     val[kBC]  = ly;
     val[kPhi] = TMath::ATan2(cl->GetX()*sn + cl->GetY()*cs, cl->GetX()*cs - cl->GetY()*sn);
     val[kEta] = (5-stk)*16-cl->GetPadRow()-1-(stk<3?4:0);
-    val[kYrez]= TMath::Abs(cl->GetQ());
-    val[4]    = fEvent->GetMultiplicity();
+    val[kYrez]= fEvent->GetMultiplicity();
+    val[4]    = TMath::Abs(cl->GetQ());
     val[5]    = cl->IsFivePad()?1:cl->GetNPads();
     H->Fill(val);
   }
@@ -2617,10 +2617,10 @@ TObjArray* AliTRDresolution::Histos()
   snprintf(hn, nhn, "h%s", fgPerformanceName[kDetector]);
   if(!(H = (THnSparseI*)gROOT->FindObject(hn))){
     const Int_t mdim(6);
-    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "q [a.u.]", "centrality", "no. of pads"/*, "tb [10 Hz]"*/};
-    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, 50, AliTRDeventInfo::kCentralityClasses, 7};
-    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, 0., -0.5, 0.5},
-                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, 1200., AliTRDeventInfo::kCentralityClasses - 0.5, 7.5};
+    const Char_t *cldTitle[mdim] = {"layer", fgkTitle[kPhi], "pad row", "centrality", "q [a.u.]", "no. of pads"/*, "tb [10 Hz]"*/};
+    const Int_t cldNbins[mdim]   = {AliTRDgeometry::kNlayer, fgkNbins[kPhi], 76, AliTRDeventInfo::kCentralityClasses, 50, 7};
+    const Double_t cldMin[mdim]  = {-0.5, fgkMin[kPhi], -0.5, -0.5, 0., 0.5},
+                   cldMax[mdim]  = {AliTRDgeometry::kNlayer-0.5, fgkMax[kPhi], 75.5, AliTRDeventInfo::kCentralityClasses - 0.5, 1200., 7.5};
     st = "cluster proprieties;";
     // define minimum info to be saved in non debug mode
     Int_t ndim=DebugLevel()>=1?mdim:Int_t(kNdimDet);
