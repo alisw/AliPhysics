@@ -13,15 +13,14 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliMuonPairCuts.h"
+
 #include "TMath.h"
 #include "TList.h"
 #include "TLorentzVector.h"
 
 #include "AliLog.h"
 #include "AliVParticle.h"
-
-#include "AliMuonTrackCuts.h"
-#include "AliMuonPairCuts.h"
 
 /// \cond CLASSIMP
 ClassImp(AliMuonPairCuts) // Class implementation in ROOT context

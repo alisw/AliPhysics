@@ -2,11 +2,11 @@
 #define ALIMUONPAIRCUTS_H
 
 #include "AliAnalysisCuts.h"
+#include "AliMuonTrackCuts.h"
 #include "TArrayD.h"
 
 class TList;
 class TVector3;
-class AliMuonTrackCuts;
 
 class AliMuonPairCuts : public AliAnalysisCuts
 {
