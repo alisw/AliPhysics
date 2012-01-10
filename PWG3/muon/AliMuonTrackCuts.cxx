@@ -15,11 +15,6 @@
 
 #include "AliMuonTrackCuts.h"
 
-/// \cond CLASSIMP
-ClassImp(AliMuonTrackCuts) // Class implementation in ROOT context
-/// \endcond
-
-
 #include "TMath.h"
 #include "TList.h"
 #include "TArrayD.h"
@@ -34,6 +29,10 @@ ClassImp(AliMuonTrackCuts) // Class implementation in ROOT context
 #include "AliVParticle.h"
 #include "AliESDMuonTrack.h"
 #include "AliAODTrack.h"
+
+/// \cond CLASSIMP
+ClassImp(AliMuonTrackCuts) // Class implementation in ROOT context
+/// \endcond
 
 
 //________________________________________________________________________
