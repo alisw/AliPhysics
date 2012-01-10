@@ -16,11 +16,11 @@
 #include "AliTRDeventInfo.h"
 
 ClassImp(AliTRDeventInfo)
-Int_t const AliTRDeventInfo::fgkMultBin[AliTRDeventInfo::kCentralityClasses] = {
-  700, 1400, 2100, 2800, 3500
+Int_t const AliTRDeventInfo::fgkMultBin[AliTRDeventInfo::kCentralityClasses-1] = {
+  700, 1400, 2100, 2800/*, 3500*/
 };
-Float_t const AliTRDeventInfo::fgkCentBin[AliTRDeventInfo::kCentralityClasses] = {
-  0.1, 0.2, 0.5, 0.8, 1.
+Float_t const AliTRDeventInfo::fgkCentBin[AliTRDeventInfo::kCentralityClasses-1] = {
+  0.1, 0.2, 0.5, 0.8/*, 1.*/
 };
 //____________________________________________________________________
 AliTRDeventInfo::AliTRDeventInfo():
@@ -134,7 +134,7 @@ UShort_t  AliTRDeventInfo::GetBunchFill() const
 Int_t  AliTRDeventInfo::GetCentralityBin(Float_t cenPer)
 {
 // calculate centrality bin
-  for(Int_t icen(0); icen<kCentralityClasses; icen++){
+  for(Int_t icen(0); icen<kCentralityClasses-1; icen++){
     if(cenPer<fgkCentBin[icen]) return icen;
   }
   return -1;
@@ -144,7 +144,7 @@ Int_t  AliTRDeventInfo::GetCentralityBin(Float_t cenPer)
 Int_t  AliTRDeventInfo::GetMultiplicityBin(Int_t n)
 {
 // calculate centrality bin
-  for(Int_t im(0); im<kCentralityClasses; im++){
+  for(Int_t im(0); im<kCentralityClasses-1; im++){
     if(n<fgkMultBin[im]) return kCentralityClasses-im-1;
   }
   return 0;

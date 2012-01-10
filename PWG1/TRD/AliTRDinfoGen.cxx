@@ -432,7 +432,6 @@ void AliTRDinfoGen::UserExec(Option_t *){
   new(fEventInfo)AliTRDeventInfo(fESDev->GetHeader(), const_cast<AliESDRun *>(fESDev->GetESDRun()));
   // Determine centrality
   // Author: Ionut Arsene <I.C.Arsene@gsi.de>
-  AliDebug(2, Form("  Beam Type: %s", fESDev->GetESDRun()->GetBeamType()));
   TString beamtype = fESDev->GetESDRun()->GetBeamType();
   if(beamtype.Contains("Pb-Pb") || beamtype.Contains("A-A")){
     const AliMultiplicity *mult = fESDev->GetMultiplicity();
@@ -440,9 +439,14 @@ void AliTRDinfoGen::UserExec(Option_t *){
     const AliCentrality *cent = fESDev->GetCentrality();
     // centrality for different options V0 = "V0M", ITS = "TKL" etc
     fEventInfo->SetCentrality(cent?cent->GetCentralityPercentile("TKL"):-1.);
+    AliDebug(2, Form("  Beam Type[%s] Mult[%d/%4d] Cent[%d/%5.2f]",
+        beamtype.Data(),
+        fEventInfo->GetMultiplicity(), mult?mult->GetNumberOfTracklets():0,
+        fEventInfo->GetCentrality(), cent?cent->GetCentralityPercentile("TKL"):-1.));
   } else {
     fEventInfo->SetMultiplicity(0);
     fEventInfo->SetCentrality(-1.);
+    AliDebug(2, Form("  Beam Type[%s]", beamtype.Data()));
   }
   UShort_t evBC(fESDev->GetBunchCrossNumber());
 

@@ -53,7 +53,7 @@ public:
   TList*         GetPlotFunctors() const { return fPlotFuncList;}
   virtual Bool_t GetRefFigure(Int_t ifig);
   virtual void   MakeSummary();
-  void           MakeDetectorPlot(Int_t ly=0);
+  void           MakeDetectorPlot(Int_t ly=0, const Option_t *opt="eta");
   Bool_t         IsHeavyIon() const      { return TestBit(kHeavyIon);};
   Bool_t         IsPP() const            { return !TestBit(kHeavyIon);};
   Bool_t         HasFriends() const      { return TestBit(kFriends);};
