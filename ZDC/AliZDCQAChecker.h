@@ -20,7 +20,7 @@ class AliZDCQAChecker: public AliQACheckerBase {
 public:
   AliZDCQAChecker() : AliQACheckerBase("ZDC","ZDC Quality Assurance Data Maker") {;}          // ctor
   AliZDCQAChecker(const AliZDCQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
-  AliZDCQAChecker& operator= (const AliZDCQAChecker &checker) {return *this;}
+  AliZDCQAChecker& operator= (const AliZDCQAChecker & /*checker*/) {return *this;}
   virtual ~AliZDCQAChecker() {;} // dtor
 
  protected:

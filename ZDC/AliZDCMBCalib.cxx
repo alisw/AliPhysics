@@ -87,6 +87,8 @@ AliZDCMBCalib::AliZDCMBCalib(const AliZDCMBCalib& calibda) :
 AliZDCMBCalib &AliZDCMBCalib::operator =(const AliZDCMBCalib& calibda)
 {
 // assignment operator
+  if(&calibda == this) return *this;
+  
   SetName(calibda.GetName());
   SetTitle(calibda.GetName());
   Reset();
