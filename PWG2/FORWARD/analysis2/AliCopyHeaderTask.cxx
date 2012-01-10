@@ -13,6 +13,8 @@
 #include "AliAODEvent.h"
 #include "AliCentrality.h"
 #include "AliInputEventHandler.h"
+#include "TFile.h"
+#include "AliEventplane.h"
 
 ClassImp(AliCopyHeaderTask)
 #if 0 
@@ -75,6 +77,16 @@ AliCopyHeaderTask::UserExec(Option_t*)
   aodHeader->SetZDCN2Energy(esd->GetZDCN2Energy());
   aodHeader->SetZDCP2Energy(esd->GetZDCP2Energy());
   aodHeader->SetZDCEMEnergy(esd->GetZDCEMEnergy(0),esd->GetZDCEMEnergy(1));
+
+  TTree* tree = fInputHandler->GetTree();
+  if (tree) {
+    TFile* file = tree->GetCurrentFile();
+    if (file) aodHeader->SetESDFileName(file->GetName());
+  }
+
+  AliEventplane* ep = esd->GetEventplane();
+  if (ep) aodHeader->SetEventplane(ep);
+
 }
 
 void
