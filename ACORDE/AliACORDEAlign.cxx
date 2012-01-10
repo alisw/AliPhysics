@@ -96,19 +96,25 @@ AliACORDEAlign::AliACORDEAlign(const AliACORDEAlign &align):
 {
   //
   //  default copy constructor
+//TObject = align.TObject;
+fFileGlob = align.fFileGlob;
+fRepLoc = align.fRepLoc;
+fRepGlob = align.fRepGlob;
+fUser = align.fUser;
+fX = align.fX;
+fAlignACORDEObjArray = align.fAlignACORDEObjArray;
 fDebug = align.fDebug;
 }
 
 //__________________________________________________________________________
 AliACORDEAlign & AliACORDEAlign::operator =(const AliACORDEAlign &align)
- 
-
 {
   //
   // assignment operator - dummy
 
  //
-fDebug = align.fDebug;
+  if (&align==this) return *this;
+  new (this) AliACORDEAlign(align);
   return (*this);
 }
 

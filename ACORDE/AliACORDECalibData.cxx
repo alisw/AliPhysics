@@ -30,7 +30,12 @@ fTHits(0),
 fMultiHits(0),
 fTMultiHits(0)
 {
-  
+ 	for (Int_t imod = 0; imod < 60; imod++)
+	{
+		fEfficiencies[imod]=0.;
+		fRates[imod]=0.;
+		fModulesActivity[imod]=0.;
+	} 
 }
 
 //________________________________________________________________

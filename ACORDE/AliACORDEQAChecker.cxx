@@ -84,10 +84,9 @@ fMin(static_cast<TLine*>(qac.fMin->Clone()))
 //____________________________________________________________________________
 AliACORDEQAChecker& AliACORDEQAChecker::operator = (const AliACORDEQAChecker &qac)
 {
-	
-	fTextDQMShifterInfo = new TPaveText(35,0.5,55,0.7,"T");
-	fMax = static_cast<TLine*>(qac.fMax->Clone());
-	fMin = static_cast<TLine*>(qac.fMin->Clone());
+	// use cpy option from constructor
+	if (&qac==this) return *this;
+	new (this) AliACORDEQAChecker(qac);
 	return *this;
 }
 //____________________________________________________________________________

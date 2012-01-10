@@ -117,23 +117,12 @@ fIsProcessed(kFALSE)
 //--------------------------------------------------------------
 AliACORDEDataDCS& AliACORDEDataDCS:: operator=(const AliACORDEDataDCS & data) { 
 
-	
-        this->fRun=data.fRun;
-	this->fStartTime=data.fStartTime;
-	this->fEndTime=data.fEndTime;
-	this->fFunc=data.fFunc;
-	this->fIsProcessed=data.fIsProcessed;
+	// use ctor copy
 
+	if (&data == this) return *this;
 
-        for(int i=0;i<kNAliases;i++){this->fAliasNames[i] = data.fAliasNames[i];}
-
-        for(int i=0;i<kNHistos;i++)
-	{
-		this->fHv[i]=data.fHv[i];
-	}
-
-	
-         return *this;
+  	new (this) AliACORDEDataDCS(data);
+  	return *this;
  
 }
 //---------------------------------------------------------------
