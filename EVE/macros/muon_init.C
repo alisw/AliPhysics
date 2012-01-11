@@ -20,6 +20,7 @@ class TInterpreter;
 
 Bool_t gShowMuonRPhi = kFALSE;
 Bool_t gShowMuonRhoZ = kTRUE;
+Bool_t gShowMuon = kTRUE;
 
 Bool_t gCenterProjectionsAtPrimaryVertex = kFALSE;
 
@@ -61,10 +62,11 @@ void muon_init(const TString& cdburi = "",
   mv->SetDepth(-10);
   
   TEveUtil::LoadMacro("geom_gentle.C");
-  mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz());
-  
   TEveUtil::LoadMacro("geom_gentle_muon.C");
-  mv->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ);
+
+  mv->InitGeomGentle(geom_gentle(), geom_gentle_rphi(), geom_gentle_rhoz(), geom_gentle_muon(kFALSE));
+  
+  mv->InitGeomGentleMuon(geom_gentle_muon(kFALSE), gShowMuonRPhi, gShowMuonRhoZ, gShowMuon);
   
   mv->SetDepth(0);
   
