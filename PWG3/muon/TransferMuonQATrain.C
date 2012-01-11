@@ -13,7 +13,7 @@
 //  TString includePath = "-I${ALICE_ROOT}/PWG3/base/ ";  gSystem->SetIncludePath(includePath.Data());
 
 
-// The macro reads the PWG1 QA train output, produces a merged root files for the full period
+// The macro reads the PWGPP QA train output, produces a merged root files for the full period
 // for event and track counters as well as separate root files run per run with all MUON_TRK related histograms.
 // The results is stored under the directory "results". Then use PlotMUONQA.C, to draw QA histograms.
 //

@@ -1,7 +1,7 @@
 AliAnalysisTaskPHOSPbPbQA* AddTaskPHOSPbPbQA(char* fname="PHOSPbPbQA.root",
 					     char* contname=NULL)
 {
-  //Add PHOS PbPb QA task to the PWG1 QA train.
+  //Add PHOS PbPb QA task to the PWGPP QA train.
   //See PHOSPbPb.C how to run it locally or standalone.
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

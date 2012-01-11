@@ -5,7 +5,7 @@ void MakeMmixPi0(const Int_t centrality=0,
 		 const char* cModule="")
 {
   //---------------------------------------------------------------------------
-  // This macro processes PWG1 QA output of the analysis task PHOSPbPbQA
+  // This macro processes PWGPP QA output of the analysis task PHOSPbPbQA
   // (see analysis code in the class AliAnalysisTaskPHOSPbPbQA).
   // It fits Real/Mixed ratio, normalize Mixed and subtract it from Real
   // Arguments:

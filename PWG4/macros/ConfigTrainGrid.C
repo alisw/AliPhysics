@@ -85,7 +85,7 @@
 
   iJETAN = 3;
   iDIJETAN = 1; // only run on one JetFinder for the moment
-  iPWG1QASym = 0; // excluded since also on QA train         
+  iPWGPPQASym = 0; // excluded since also on QA train         
   iPWG4TmpSourceSara = 0; 
   iPWG4JetServices = 1; 
   iPWG4Fragmentation = 0; 
@@ -119,7 +119,7 @@
   kGridRunsPerMaster = 1; // To have the separate configs for eacj run in separate dirs
 
   if(bRun<100){ // private MC
-    iPWG1QASym = 0;
+    iPWGPPQASym = 0;
     iPWG4TmpSourceSara = 0;
     iPWG4JetChem = 0;
     iPWG4UE = 0;
@@ -920,7 +920,7 @@
     iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
     iPWG4CaloConv    = 0;  // 25.08. off: Output size 03.09 crashes 
     iPWG4omega3pi     = 0; // OFF no feedback
-    iPWG1QASym = 0; // excluded since also on QA train         
+    iPWGPPQASym = 0; // excluded since also on QA train         
 
     kDeltaAODJetName   = ""; // for OTF we do not need to write a delta/saves some extension gymnastics in the tasks       
 
@@ -1124,7 +1124,7 @@
   if(ckbConfig){
     // switch off all but my analyses
     iPWG4KMeans     = 0;
-    iPWG1QASym = 0;
+    iPWGPPQASym = 0;
     iPWG4TmpSourceSara = 0;
     iPWG4UE = 0;
     iPWG4PtQAMC        = 0;

@@ -33,7 +33,7 @@ void LoadMyLibs() {
   CheckLoadLibrary("libPWG0base");
   CheckLoadLibrary("libPWG0dep");
   CheckLoadLibrary("libPWG0selectors");
-  //CheckLoadLibrary("libPWG1");
+  //CheckLoadLibrary("libPWGPP");
 }
 
 Int_t CheckLoadLibrary(const char* library) {

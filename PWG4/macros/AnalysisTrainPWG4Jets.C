@@ -106,7 +106,7 @@ TString     kJetSubtractMask1 = "B0";
 TString     kJetSubtractMask2 = "B%d";
 Int_t       iDIJETAN           = 1;
 Int_t       iJETANLib          = 1;
-Int_t       iPWG1QASym         = 0;      // Eva's QA task compiled on the fly...
+Int_t       iPWGPPQASym         = 0;      // Eva's QA task compiled on the fly...
 Int_t       iPWG4FastEmbedding = 0;      // Generate non-standard AOD for embedding
 Int_t       iPWG4JetTasks      = 0;      // all jet tasks flag for lib laoding
 Int_t       iPWG4JetServices   = 0;      // jet spectrum analysis
@@ -270,7 +270,7 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
    printf(printMask,"PAR files", (UInt_t)kUsePAR);
    printf(printMask,"AliEn plugin", (UInt_t)kPluginUse);
    printf(printMask,"JETAN subtract", (UInt_t)iJETSUBTRACT);
-   printf(printMask,"PWG1 QA sym", iPWG1QASym);
+   printf(printMask,"PWGPP QA sym", iPWGPPQASym);
    printf(printMask,"PWG4 Source Sara",iPWG4TmpSourceSara);
    printf(printMask,"PWG4 Fragmentation",iPWG4Fragmentation);
    printf(printMask,"PWG4 Jet Chem",iPWG4JetChem);
@@ -884,8 +884,8 @@ void AnalysisTrainPWG4Jets(const char *analysis_mode="local",
       }
    }
 
-   if(iPWG1QASym){
-     gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
+   if(iPWGPPQASym){
+     gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C");
      AliAnalysisTaskQASym *taskQASym = AddTaskQAsym(-1);
      if (!taskQASym) ::Warning("AnalysisTrainPWG4Jets", "AliAnalysisTaskQASym cannot run for this train conditions - EXCLUDED");
    }
@@ -1551,10 +1551,10 @@ void CheckModuleFlags(const char *mode) {
       if (iPWG4omega3pi)
 	::Info("AnalysisTrainNew.C::CheckModuleFlags", "PWG4omega3pi disabled on AOD's");
       iPWG4omega3pi = 0;
-      if(iPWG1QASym)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWG1 QA Sym disabled in analysis on AOD's");
+      if(iPWGPPQASym)::Info("AnalysisTrainPWG4Jets.C::CheckModuleFlags", "PWGPP QA Sym disabled in analysis on AOD's");
       if (iPWG4GammaConv)::Info("AnalysisPWG4Jets.C::CheckModuleFlags", "PWG4gammaconv disabled on AOD's");
       iPWG4GammaConv = 0;   
-      iPWG1QASym     = 0;
+      iPWGPPQASym     = 0;
       iCentralitySelection = 0;
    } else {   
    // ESD analysis
@@ -1803,8 +1803,8 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
 
-   if(iPWG1QASym){
-     if (!LoadSource(Form("%s/PWG1/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
+   if(iPWGPPQASym){
+     if (!LoadSource(Form("%s/PWGPP/AliAnalysisTaskQASym.cxx",gSystem->ExpandPathName("$ALICE_ROOT")), mode, kTRUE))return kFALSE;
    }
    if(iPWG4TmpSourceSara){
      if(!kUsePAR)gSystem->AddIncludePath("-I$ALICE_ROOT/include/JetTasks"); // ugly hack!!

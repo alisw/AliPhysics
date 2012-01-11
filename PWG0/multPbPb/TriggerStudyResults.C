@@ -114,13 +114,13 @@ LoadLibs() {
   gSystem->Load("libPWG2spectra");
 
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPbPb"));
-  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
   // Load helper classes
   // TODO: replace this by a list of TOBJStrings
   TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskTriggerStudy.cxx+");
   TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
   TString centrName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+");
-  TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
+  TString listName("$ALICE_ROOT/PWGPP/background/AliHistoListWrapper.cxx+");
 
   gSystem->ExpandPathName(taskName);
   // gSystem->ExpandPathName(histoManName);

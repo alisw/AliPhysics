@@ -209,7 +209,7 @@ void InitAndLoadLibs(Int_t runMode = kMyRunModeLocal, Int_t workers = 0, Bool_t 
       // gProof->UploadPackage("$ALICE_ROOT/obj/PWG0base");
       // gProof->EnablePackage("$ALICE_ROOT/obj/PWG0base");
       // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
    }
    else
    {
@@ -238,8 +238,8 @@ void InitAndLoadLibs(Int_t runMode = kMyRunModeLocal, Int_t workers = 0, Bool_t 
       // gSystem->Load("libPWG0base");
 
       // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPb"));
-      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
-      //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background/"));
+      // gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
+      //    gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background/"));
    }
    // Load helper classes
    TIterator * iter = listToLoad->MakeIterator();
