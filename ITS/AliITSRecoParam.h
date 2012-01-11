@@ -704,7 +704,7 @@ class AliITSRecoParam : public AliDetectorRecoParam
   Float_t fVertexerFastSmearY;  // gaussian sigma for y MC vertex smearing
   Float_t fVertexerFastSmearZ;  // gaussian sigma for z MC vertex smearing
 
-  // PWG1/AliAlignmentDataFilterITS configuration
+  // PWGPP/AliAlignmentDataFilterITS configuration
   Bool_t  fAlignFilterCosmics;            // flag for cosmics case
   Bool_t  fAlignFilterCosmicMergeTracks;  // merge cosmic tracks
   Int_t   fAlignFilterMinITSPoints;       // min points per track

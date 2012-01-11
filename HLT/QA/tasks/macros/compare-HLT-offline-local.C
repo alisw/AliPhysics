@@ -63,7 +63,7 @@ void compare_HLT_offline_local( TString file
   gSystem->Load("libANALYSISalice.so");
   gSystem->Load("libHLTbase.so");
  
-  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWG1/TPC -I. -I$ALICE_ROOT/STEER -I$ALICE_ROOT/ANALYSIS");
+  gSystem->AddIncludePath("-I$ALICE_ROOT/HLT/BASE -I$ALICE_ROOT/PWGPP/TPC -I. -I$ALICE_ROOT/STEER -I$ALICE_ROOT/ANALYSIS");
   
   gSystem->Load("libTPCcalib.so");
   gSystem->Load("libTRDbase.so");
@@ -71,12 +71,12 @@ void compare_HLT_offline_local( TString file
   gSystem->Load("libITSbase.so");
   gSystem->Load("libITSrec.so");
   gSystem->Load("libTENDER.so");
-  gSystem->Load("libPWG1.so");
+  gSystem->Load("libPWGPP.so");
  
   gROOT->ProcessLine(".include $ALICE_ROOT/include");
   //gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPhysicsSelection.C");
     
-  Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWG1 = kFALSE, bD0 = kFALSE, bCB = kFALSE;
+  Bool_t bPHOS = kFALSE, bGLOBAL = kFALSE, bEMCAL = kFALSE, bPWGPP = kFALSE, bD0 = kFALSE, bCB = kFALSE;
  
   TString allArgs = detectorTask;
   TString argument;
@@ -99,8 +99,8 @@ void compare_HLT_offline_local( TString file
 	bGLOBAL = kTRUE;
 	continue;
       }      
-      if(argument.CompareTo("pwg1", TString::kIgnoreCase)==0){
-	bPWG1 = kTRUE;
+      if(argument.CompareTo("pwgpp", TString::kIgnoreCase)==0){
+	bPWGPP = kTRUE;
 	continue;
       }
       if(argument.CompareTo("D0", TString::kIgnoreCase)==0){
@@ -156,7 +156,7 @@ void compare_HLT_offline_local( TString file
     cout << "\n========= You are loading the following task --> "<< (taskFolder+strTask).Chop()  << endl;
   }
   
-  if(bPWG1) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
+  if(bPWGPP) gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformance.C");
    
   if(file.BeginsWith("alien://")) TGrid::Connect("alien://");
     
@@ -201,8 +201,8 @@ void compare_HLT_offline_local( TString file
   AliAnalysisManager *mgr  = new AliAnalysisManager("TestManager");
   AliESDInputHandler *esdH = new AliESDInputHandler;
 
-  //For the PWG1 task, setting HLT is handled inside AliPerformanceTask.C
-  if(!bPWG1)  esdH->SetReadHLT();
+  //For the PWGPP task, setting HLT is handled inside AliPerformanceTask.C
+  if(!bPWGPP)  esdH->SetReadHLT();
   esdH->SetReadFriends(kFALSE);
   mgr->SetInputEventHandler(esdH);  
   mgr->SetNSysInfo(1000);
@@ -257,7 +257,7 @@ void compare_HLT_offline_local( TString file
     mgr->ConnectOutput(taskGLOBAL,1,coutputGLOBAL);
   }
 
-  if(bPWG1){
+  if(bPWGPP){
     Bool_t hasMC=kFALSE;  
     // -- Add Task for HLT and Offline
     AliPerformanceTask *HLTtpcQA = AddTaskPerformance(hasMC,kFALSE,kTRUE);

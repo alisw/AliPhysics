@@ -34,7 +34,7 @@ TString fTitleData = "";
 TString fTitleMc = "";
 
 
-void PlotSPDpwg1QA(TString data, TString mc, TString titleData = "[Data]", TString titleMc = "[MC]", Bool_t isGeneralTrain = kFALSE){
+void PlotSPDpwgppQA(TString data, TString mc, TString titleData = "[Data]", TString titleMc = "[MC]", Bool_t isGeneralTrain = kFALSE){
 
   fTitleData=titleData;
   fTitleMc=titleMc;

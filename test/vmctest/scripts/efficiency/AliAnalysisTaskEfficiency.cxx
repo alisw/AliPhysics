@@ -516,7 +516,7 @@ void AliAnalysisTaskEfficiency::UserExec(Option_t *)
     // 0. Global tracks
     // 1. ITS tracks (SA or Pure SA)
     // 2. TPC only tracks
-    // Track selection copied from PWG1/AliAnalysisTaskQAsym
+    // Track selection copied from PWGPP/AliAnalysisTaskQAsym
 
     if(fTrackType==0){
       //Fill all histograms with global tracks

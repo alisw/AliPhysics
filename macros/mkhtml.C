@@ -32,7 +32,7 @@ void mkhtml (char *macro=0, Int_t force=0) {
     gSystem->Load("libPWG0selectors.so");
 
     gSystem->Load("libTENDER.so");
-    gSystem->Load("libPWG1.so");
+    gSystem->Load("libPWGPP.so");
 
     gSystem->Load("libCORRFW.so");
     gSystem->Load("libPWG2AOD.so");

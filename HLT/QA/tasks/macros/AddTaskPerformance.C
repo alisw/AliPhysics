@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Macro to setup AliPerformanceTask for either 
-// HLT or offline TPC performance QA to run on PWG1 QA train. 
+// HLT or offline TPC performance QA to run on PWGPP QA train. 
 //
 // Input: ESDs, ESDfriends (optional), Kinematics (optional), TrackRefs (optional)
 // ESD and MC input handlers must be attached to AliAnalysisManager
@@ -22,7 +22,7 @@
 // gSystem->Load("libANALYSISalice");
 // gSystem->Load("libTPCcalib.so");
 // gSystem->Load("libTENDER.so");
-// gSystem->Load("libPWG1.so");
+// gSystem->Load("libPWGPP.so");
 //
 // gROOT->LoadMacro("$ALICE_ROOT/HLT/QA/tasks/macros/AddTaskPerformanceTPC.C");
 // AliPerformanceTask *tpcQA = AddTaskPerformanceTPC("kTRUE","kTRUE", "kTRUE"¸"triggerClass"); 

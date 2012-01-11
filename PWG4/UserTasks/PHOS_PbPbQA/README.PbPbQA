@@ -1,4 +1,4 @@
-PHOS QA class for using in PbPb runs in the PWG1 QA train.
+PHOS QA class for using in PbPb runs in the PWGPP QA train.
 
 The main objective is to provide a user with an input for pi0 mass,
 width and number-of-pi0-per-event trend plots in PbPb

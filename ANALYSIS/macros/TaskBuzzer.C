@@ -102,7 +102,7 @@ void AddAnalysisTasks(UInt_t config)
   // TPC QA (E. Sicking)
   //
   if (config & kCar00) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C");
     AliAnalysisTaskSE * taskqasim = AddTaskQAsym(0);
     taskqasim->SelectCollisionCandidates();
   }  
@@ -110,14 +110,14 @@ void AddAnalysisTasks(UInt_t config)
   // VZERO QA  (C. Cheshkov)
   //
   if (config & kCar01) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskVZEROQA.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE * taskv0qa = AddTaskVZEROQA(0);
 //  taskv0qa->SelectCollisionCandidates();
   }
   // Vertexing (A. Dainese)
   // 
   if (config & kCar02) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskVertexESD.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskVertexESD.C");
     AliAnalysisTaskVertexESD* taskvertexesd =  AddTaskVertexESD();
     taskvertexesd->SelectCollisionCandidates();
   }  
@@ -125,7 +125,7 @@ void AddAnalysisTasks(UInt_t config)
   // SPD (A. Mastroserio)
   //
   if (config & kCar03) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskSPDQA.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskSPDQA.C");
     AliAnalysisTaskSE* taskspdqa = AddTaskSPDQA();
     taskspdqa->SelectCollisionCandidates();
   }  
@@ -133,7 +133,7 @@ void AddAnalysisTasks(UInt_t config)
   // SDD (F. Prino)
   //
   if (config & kCar04) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddSDDPoints.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddSDDPoints.C");
     AliAnalysisTaskSE* tasksdd = AddSDDPoints();
     tasksdd->SelectCollisionCandidates();
   }
@@ -141,7 +141,7 @@ void AddAnalysisTasks(UInt_t config)
   // SSD dEdx (Marek Chojnacki)
   //
   if (config & kCar05) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskdEdxSSDQA.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskdEdxSSDQA.C");
     AliAnalysisTaskSE* taskssddedx = AddTaskdEdxSSDQA();
     taskssddedx->SelectCollisionCandidates();
   }
@@ -149,7 +149,7 @@ void AddAnalysisTasks(UInt_t config)
   // FMD (Hans Hjersing Dalsgaard)
   //
   if (config & kCar06) {
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskFMD.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskFMD.C");
     AliAnalysisTaskSE* taskfmd = AddTaskFMD();
     taskfmd->SelectCollisionCandidates();
   }  
@@ -157,21 +157,21 @@ void AddAnalysisTasks(UInt_t config)
   // ITS
   //
   if (config & kCar07) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskPerformanceITS.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskPerformanceITS.C");
       AliAnalysisTaskITSTrackingCheck *itsQA = AddTaskPerformanceITS(kFALSE);
   }
   //
   // TPC (Jacek Otwinowski)
   //
   if (config & kCar08) {
-    gROOT->LoadMacro("$(ALICE_ROOT)/PWG1/TPC/macros/AddTaskPerformanceTPCQA.C");
+    gROOT->LoadMacro("$(ALICE_ROOT)/PWGPP/TPC/macros/AddTaskPerformanceTPCQA.C");
     AliPerformanceTask *tpcQA = AddTaskPerformanceTPCQA(kFALSE, kTRUE);
   }  
   //
   // TRD (Alex Bercuci, M. Fasel) 
   //
   if(config & kCar09) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTrainPerformanceTRD.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTrainPerformanceTRD.C");
       AddTrainPerformanceTRD("ALL");
   }
 
@@ -190,7 +190,7 @@ void AddAnalysisTasks(UInt_t config)
   //
   
   if(config & kCar11) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskMTRchamberEfficiency.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
       AliAnalysisTaskTrigChEff *taskMuonTrig = AddTaskMTRchamberEfficiency();
   }
 
@@ -208,7 +208,7 @@ void AddAnalysisTasks(UInt_t config)
   // 
 
   if (doV0) {
-      gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskV0QA.C");
+      gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskV0QA.C");
       AliAnalysisTaskV0QA *taskv0QA = AddTaskV0QA(kFALSE);
   }
 */
@@ -246,7 +246,7 @@ void LoadLibraries()
   gSystem->Load("libPWG0base.so");
   gSystem->Load("libPWG0dep.so");
   gSystem->Load("libPWG0selectors.so");
-  gSystem->Load("libPWG1.so");
+  gSystem->Load("libPWGPP.so");
   gSystem->Load("libPWG2.so");
   gSystem->Load("libPWG2forward.so");
   gSystem->Load("libEMCALUtils");

@@ -1,8 +1,8 @@
 // $Id$
 /*
  * Plotting macro for comparing offline- and HLT- ESD trees from  
- * HLT-OFFLINE-GLOBAL-comparison.root produced using pwg1-task:
- * compare-HLT-offline-local.C'("./AliESDs.root","pwg1")' 
+ * HLT-OFFLINE-GLOBAL-comparison.root produced using pwgpp-task:
+ * compare-HLT-offline-local.C'("./AliESDs.root","pwgpp")' 
  * 
  * It allows you to choose from a detailed list of cuts or a combination of cuts.
  * 
@@ -21,7 +21,7 @@
  *
  *
  * Usage:
- * Running requires that you have the .root-files produced from the pwg1-task 
+ * Running requires that you have the .root-files produced from the pwgpp-task 
  * in your local folder. 
  *
  * Run options:
@@ -331,7 +331,7 @@ drawPerformanceTPCQAofflineHLT(const Char_t* folder = "../..") {
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTENDER");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG1");
+  gSystem->Load("libPWGPP");
 
   gROOT->Reset();
   gROOT->SetStyle("Plain");

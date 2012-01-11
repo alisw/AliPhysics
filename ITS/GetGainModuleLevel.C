@@ -102,9 +102,9 @@ void GetGainModuleLevel(TString filename,Bool_t normal=1,Int_t ntofit=500, Bool_
 	TList *listin=0x0;
 	listin=(TList*)file_data->Get("output");
 	if(!listin)
-		listin=(TList*)file_data->Get("PWG1dEdxSSDQA/output");
+		listin=(TList*)file_data->Get("PWGPPdEdxSSDQA/output");
 	if(!listin)	
-		listin=(TList*)file_data->Get("PWG1dEdxSSDQA/SSDdEdxQA");
+		listin=(TList*)file_data->Get("PWGPPdEdxSSDQA/SSDdEdxQA");
 	if(!listin)	
 		listin=(TList*)file_data->Get("SSDdEdxQA");
 	if(!listin)	

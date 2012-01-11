@@ -734,7 +734,7 @@ Int_t RunESDQApostAnalysis(char *qafilename=NULL, Int_t runNumber=-1, Bool_t IsO
   
 	Bool_t debug=kFALSE;
   
-	/*access qa PWG1 output files - saved locally or on grid as specified by the second argument */
+	/*access qa PWGPP output files - saved locally or on grid as specified by the second argument */
   
 	char defaultQAoutput[30]="QAresults.root";
 	if (IsOnGrid) TGrid::Connect("alien://");

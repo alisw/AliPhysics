@@ -77,8 +77,8 @@
 #include <EveDet/AliEveTRDTrackList.h>
 #include <EveDet/AliEveTRDTrackListEditor.h>
 
-#include <../PWG1/TRD/AliTRDrecoTask.h>
-#include <../PWG1/TRD/AliTRDpwg1Helper.h>
+#include <../PWGPP/TRD/AliTRDrecoTask.h>
+#include <../PWGPP/TRD/AliTRDpwgppHelper.h>
 
 ClassImp(AliEveTRDTrackList)
 
@@ -271,7 +271,7 @@ void AliEveTRDTrackList::AddStandardContent()
   // use the return value of AddMacro (NOT_EXIST_ERROR is returned, if file does not exist)
   // (-> You can also check for other return values (see AddMacro(...)))
 
-  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWG1.so"};
+  const Char_t *libs[] = {"libANALYSIS.so", "libANALYSISalice.so", "libCORRFW", "libTENDER.so", "libPWGPP.so"};
   Int_t nlibs = static_cast<Int_t>(sizeof(libs)/sizeof(Char_t *));
   for(Int_t ilib=0; ilib<nlibs; ilib++){
     if(gSystem->Load(libs[ilib]) >= 0) continue;

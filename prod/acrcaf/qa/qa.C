@@ -29,9 +29,9 @@ void qa(Int_t runNumber, Int_t doQASym=1, Int_t doCosmic=0) {
   //____________________________________________//
   // 1st Cosmic task
   if (doCosmic) {
-    TFile::Cp("$ALICE_ROOT/PWG1/cosmic/AliAnalysisTaskCosmic.h",
+    TFile::Cp("$ALICE_ROOT/PWGPP/cosmic/AliAnalysisTaskCosmic.h",
               "file:AliAnalysisTaskCosmic.h");
-    TFile::Cp("$ALICE_ROOT/PWG1/cosmic/AliAnalysisTaskCosmic.cxx",
+    TFile::Cp("$ALICE_ROOT/PWGPP/cosmic/AliAnalysisTaskCosmic.cxx",
               "file:AliAnalysisTaskCosmic.cxx");
     gProof->Load("AliAnalysisTaskCosmic.cxx++g");
 
@@ -48,30 +48,30 @@ void qa(Int_t runNumber, Int_t doQASym=1, Int_t doCosmic=0) {
   if (doQASym) {
     //____________________________________________//
     // QA task for central barrel tracking exploiting symmetries
-    TFile::Cp("$ALICE_ROOT/PWG1/AliAnalysisTaskQASym.h",
+    TFile::Cp("$ALICE_ROOT/PWGPP/AliAnalysisTaskQASym.h",
               "file:AliAnalysisTaskQASym.h");
-    TFile::Cp("$ALICE_ROOT/PWG1/AliAnalysisTaskQASym.cxx",
+    TFile::Cp("$ALICE_ROOT/PWGPP/AliAnalysisTaskQASym.cxx",
               "file:AliAnalysisTaskQASym.cxx");
     gProof->Load("AliAnalysisTaskQASym.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C");
     AliAnalysisTaskSE* taskqasym = AddTaskQAsym();
     //
     // QA task for VZERO
-    TFile::Cp("$ALICE_ROOT/PWG1/AliAnaVZEROQA.h",
+    TFile::Cp("$ALICE_ROOT/PWGPP/AliAnaVZEROQA.h",
               "file:AliAnaVZEROQA.h");
-    TFile::Cp("$ALICE_ROOT/PWG1/AliAnaVZEROQA.cxx",
+    TFile::Cp("$ALICE_ROOT/PWGPP/AliAnaVZEROQA.cxx",
               "file:AliAnaVZEROQA.cxx");
     gProof->Load("AliAnaVZEROQA.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/PilotTrain/AddTaskVZEROQA.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/PilotTrain/AddTaskVZEROQA.C");
     AliAnalysisTaskSE* taskvzeroqa = AddTaskVZEROQA(runNumber);
     //
     // QA task for vertexing
-    TFile::Cp("$ALICE_ROOT/PWG1/global/AliAnalysisTaskVertexESD.h",
+    TFile::Cp("$ALICE_ROOT/PWGPP/global/AliAnalysisTaskVertexESD.h",
               "file:AliAnalysisTaskVertexESD.h");
-    TFile::Cp("$ALICE_ROOT/PWG1/global/AliAnalysisTaskVertexESD.cxx",
+    TFile::Cp("$ALICE_ROOT/PWGPP/global/AliAnalysisTaskVertexESD.cxx",
               "file:AliAnalysisTaskVertexESD.cxx");
     gProof->Load("AliAnalysisTaskVertexESD.cxx++g");
-    gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskVertexESD.C");
+    gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskVertexESD.C");
     AliAnalysisTaskSE* taskvertex = AddTaskVertexESD();
   }
   if (!mgr->InitAnalysis()) return;

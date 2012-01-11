@@ -193,7 +193,7 @@ void completeProd(TString runListName="runList.txt", TString prodDir = "", TStri
   // if ( outTaskFilename.Contains("QAresults.root") ) {
   const Int_t kNlibs = 5; // 1
   //TString loadLibs[kNlibs] = {"libPWG3base.so"};
-  //TString loadLibs[kNlibs] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWG1.so", "libPWG3base.so"};
+  //TString loadLibs[kNlibs] = {"libANALYSIS.so", "libANALYSISalice.so", "libTENDER.so", "libPWGPP.so", "libPWG3base.so"};
   TString loadLibs[kNlibs] = {"libANALYSIS.so", "libOADB.so", "libANALYSISalice.so", "libCORRFW.so", "libPWG3base.so"};
   for ( Int_t ilib=0; ilib<kNlibs; ilib++ ) {
     Int_t exitVal = gSystem->Load(loadLibs[ilib].Data());

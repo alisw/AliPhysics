@@ -135,7 +135,7 @@ void terminateQA(TString outfilename = "QAresults.root", Bool_t force = kFALSE)
   gROOT->LoadMacro("$ALICE_ROOT/PWG3/muon/AddTaskMuonQA.C");
   AliAnalysisTaskMuonQA* muonQATask = AddTaskMuonQA();
 
-  gROOT->LoadMacro("$ALICE_ROOT/PWG1/macros/AddTaskMTRchamberEfficiency.C");
+  gROOT->LoadMacro("$ALICE_ROOT/PWGPP/macros/AddTaskMTRchamberEfficiency.C");
   AliAnalysisTaskTrigChEff* trigChEffTask = AddTaskMTRchamberEfficiency();
 #endif
 

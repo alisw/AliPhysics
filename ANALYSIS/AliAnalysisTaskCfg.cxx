@@ -49,10 +49,10 @@
 # Lines that do not start with #Module are ignored, except those in embedded
   macro blocks
 #Module.Begin        QAsym
-#Module.Libs         PWG1
+#Module.Libs         PWGPP
 #Module.Deps         PhysicsSelection
 #Module.DataTypes    ESD, AOD, MC
-#Module.MacroName    $ALICE_ROOT/PWG1/PilotTrain/AddTaskQAsym.C
+#Module.MacroName    $ALICE_ROOT/PWGPP/PilotTrain/AddTaskQAsym.C
 #Module.MacroArgs    0, AliVEvent::kAnyINT, AliVEvent::kHighMult, AliVEvent::kEMC7, AliVEvent::kMUU7
 #Module.OutputFile   
 #Module.TerminateFile

@@ -19,7 +19,7 @@ Int_t debug_level = 1;        // Debugging
 void RunTOFqa(const char* plugin_mode="full") {
 
 	// macro to run the TOF qa
-	gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWG1");
+	gSystem->SetIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD -I$ALICE_ROOT/PWGPP");
 	//
 	TString trainName = "TOFqa";
 	TString analysisMode = "grid"; // "local", "grid", or "proof"
@@ -87,7 +87,7 @@ void RunTOFqa(const char* plugin_mode="full") {
 	AliPhysicsSelectionTask* physSelTask = AddTaskPhysicsSelection(kFALSE /*MC*/);
 
 	// TOF qa task
-	gROOT->LoadMacro("$ALICE_ROOT/PWG1/TOF/AddTaskTOFQA.C");
+	gROOT->LoadMacro("$ALICE_ROOT/PWGPP/TOF/AddTaskTOFQA.C");
 	AliAnalysisTaskTOFqa *tofQA = AddTaskTOFQA();
 	tofQA->SelectCollisionCandidates(kTriggerMask);
 
@@ -116,7 +116,7 @@ void LoadLibraries()
 	gSystem->Load("libPWG0base.so");
 	gSystem->Load("libPWG0dep.so");
 	gSystem->Load("libPWG0selectors.so");
-	gSystem->Load("libPWG1.so");
+	gSystem->Load("libPWGPP.so");
 
 }
 
@@ -136,7 +136,7 @@ AliAnalysisAlien* CreateAlienHandler(const char* plugin_mode)
 	plugin->SetROOTVersion("v5-30-03-1");
 	plugin->SetAliROOTVersion("v5-02-08-AN");
 	plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT/include -I$ALICE_ROOT/ITS -I$ALICE_ROOT/TRD");   
-	plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWG1.so");
+	plugin->SetAdditionalLibs("libCORRFW.so libTENDER.so libPWG0base.so libPWG0dep.so libPWG0selectors.so libPWGPP.so");
 	// Declare input data to be processed.
 	plugin->SetGridDataDir(grid_datadir); // specify LHC period
 	plugin->SetDataPattern(data_pattern); // specify reco pass and AOD set

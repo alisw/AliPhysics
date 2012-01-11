@@ -225,7 +225,7 @@
   
 TFile f("TPCCalibTracksGain.root")
 
-gSystem->Load("libPWG1.so")
+gSystem->Load("libPWGPP.so")
 AliTreeDraw comp
 comp.SetTree(dEdx)
 Double_t chi2;
