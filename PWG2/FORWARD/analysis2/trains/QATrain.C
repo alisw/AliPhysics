@@ -177,7 +177,7 @@ protected:
     // 
     // Optionally highMult axis can be used by setting the 3st
     // argument to true (for PbPb)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/TPC/macros",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/TPC/macros",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskPerformanceTPCdEdxQA.C(kFALSE,kTRUE,kFALSE)");
   }
@@ -222,13 +222,13 @@ protected:
   void CreateTRD()
   {
     // TRD (Alex Bercuci, M. Fasel) 
-    gSystem->AddIncludePath("-I${ALICE_ROOT}/PWG1/TRD");
+    gSystem->AddIncludePath("-I${ALICE_ROOT}/PWGPP/TRD");
     gROOT->Macro("AddTrainPerformanceTRD.C(\"ESD DET EFF RES PID\")"); 
   }
   void CreateZDC()
   {
     // ZDC (Chiara Oppedisano)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/ZDC",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/ZDC",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskZDCQA.C");
   }
@@ -290,7 +290,7 @@ protected:
   void CreateTOF()
   {
     // TOF (Francesca Bellini)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/TOF",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/TOF",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskTOFQA.C");
   }
@@ -308,14 +308,14 @@ protected:
   void CreateHMPID()
   {
     // HMPID QA (Giacomo Volpe)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/HMPID",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/HMPID",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskHmpidQA.C");
   }
   void CreateT0()
   {
     // T0 QA (Alla Mayevskaya)
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/T0",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/T0",
 			     gROOT->GetMacroPath()));
     CreateTaskAndSetCollisionCandidates("AddTaskT0QA.C");
   }
@@ -345,10 +345,10 @@ protected:
     LoadLibrary("PWG0base", mode, par);
     LoadLibrary("PWG0dep", mode, par);
     LoadLibrary("PWG0selectors", mode, par);
-    LoadLibrary("PWG1", mode, par);    
+    LoadLibrary("PWGPP", mode, par);    
 
-    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWG1/PilotTrain"
-			     ":$(ALICE_ROOT)/PWG1/macros",
+    gROOT->SetMacroPath(Form("%s:$(ALICE_ROOT)/PWGPP/PilotTrain"
+			     ":$(ALICE_ROOT)/PWGPP/macros",
 			     gROOT->GetMacroPath()));   
  
     mgr->AddStatisticsTask(fTriggerMask);

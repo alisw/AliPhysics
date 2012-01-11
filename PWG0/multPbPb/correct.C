@@ -458,7 +458,7 @@ void LoadLibs(  Bool_t debug) {
   gSystem->Load("libPWG0base"); 
    
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG0/multPbPb"));
-  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG1/background"));
+  gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWGPP/background"));
   gROOT->ProcessLine(gSystem->ExpandPathName(".include $ALICE_ROOT/PWG2/SPECTRA/Fit"));
 
   // Load helper classes
@@ -466,7 +466,7 @@ void LoadLibs(  Bool_t debug) {
   TString taskName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisTaskMultPbTracks.cxx+");
   TString histoManName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbTrackHistoManager.cxx+");
   TString centrName("$ALICE_ROOT/PWG0/multPbPb/AliAnalysisMultPbCentralitySelector.cxx+");
-  TString listName("$ALICE_ROOT/PWG1/background/AliHistoListWrapper.cxx+");
+  TString listName("$ALICE_ROOT/PWGPP/background/AliHistoListWrapper.cxx+");
 
   gSystem->ExpandPathName(taskName);
   gSystem->ExpandPathName(histoManName);

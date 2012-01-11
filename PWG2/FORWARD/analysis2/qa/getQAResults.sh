@@ -63,7 +63,7 @@ void ${scr}()
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libTENDER");
   // gSystem->Load("libTENDERSupplies");
-  gSystem->Load("libPWG1");
+  gSystem->Load("libPWGPP");
   gSystem->Load("libPWG3base");
   TFile* file = TFile::Open("${inp}", "READ");
   if (!file) { 

@@ -1,5 +1,5 @@
 //------------------------------------------------------------------------
-// PWG1 QA train produces QA histograms QAresults.root, where PHOS
+// PWGPP QA train produces QA histograms QAresults.root, where PHOS
 // histograms for two events types are stored in
 // TObjArray *PHOSCellsQA_AnyInt and TObjArray *PHOSCellsQA_PHI7
 // As each a root file for eah run contains, by design, unique histograms
@@ -10,7 +10,7 @@
 // and per event type.
 //
 // Usage:
-// 1) Create a list of files QAresults.root produced by the PWG1 QA train,
+// 1) Create a list of files QAresults.root produced by the PWGPP QA train,
 //    to a text file, let say QAresults.txt
 // 2) Compile this macro:
 //    .L ExtractPHOSCellQA.C++
