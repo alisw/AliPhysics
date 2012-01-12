@@ -1674,7 +1674,17 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }
       }
       if (fOutputArchive.Length()) {
-         arr = fOutputArchive.Tokenize(" ");
+         TString outputArchive = fOutputArchive;
+         if (!fRegisterExcludes.IsNull()) {
+            arr = fRegisterExcludes.Tokenize(" ");
+            TIter next1(arr);
+            while ((os=(TObjString*)next1())) {
+               outputArchive.ReplaceAll(Form("%s,",os->GetString().Data()),"");
+               outputArchive.ReplaceAll(os->GetString(),"");
+            } 
+            delete arr;
+         }     
+         arr = outputArchive.Tokenize(" ");
          TIter next(arr);
          Bool_t first = kTRUE;
          const char *comment = "Files to be archived";
@@ -1689,7 +1699,6 @@ Bool_t AliAnalysisAlien::CreateJDL()
          }      
          delete arr;
          // Output archive for the merging jdl
-         TString outputArchive;
          if (TestBit(AliAnalysisGrid::kDefaultOutputs)) {
             outputArchive = "log_archive.zip:std*@disk=1 ";
             // Add normal output files, extra files + terminate files
