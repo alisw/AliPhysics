@@ -1,12 +1,12 @@
-AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE)
+AliAnalysisTaskParticleCorrelationM *AddTaskCaloTrackCorrM(TString data, TString calorimeter, Bool_t kPrintSettings = kFALSE)
 {
-  // Creates a PartCorr task, configures it and adds it to the analysis manager.
+  // Creates a CaloTrackCorr task, configures it and adds it to the analysis manager.
   
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPartCorr", "No analysis manager to connect to.");
+    ::Error("AddTaskCaloTrackCorr", "No analysis manager to connect to.");
     return NULL;
   }  
   Bool_t kUseKinematics = kFALSE; 
@@ -102,28 +102,7 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     
     cu->SetNumberOfCellsFromEMCALBorder(1) ; //nEMCAL);
     cu->SetNumberOfCellsFromPHOSBorder(2) ; //nPHOS);
-   // cu->SwitchOnNoFiducialBorderInEMCALEta0();
-    cu->SetPHOSChannelStatus(1,48, 8); //PHOS new hot channel
-    
-    // // Remove EMCAL hottest channels from Gustavo list
-    // SM0
-    cu->SetEMCALChannelStatus(0,3,13);  cu->SetEMCALChannelStatus(0,44,1); cu->SetEMCALChannelStatus(0,3,13); //warm
-    cu->SetEMCALChannelStatus(0,20,7);  cu->SetEMCALChannelStatus(0,38,2);   //hot
-    // SM1 warm channels
-    cu->SetEMCALChannelStatus(1,4,7);   cu->SetEMCALChannelStatus(1,4,13);  cu->SetEMCALChannelStatus(1,9,20); 
-    cu->SetEMCALChannelStatus(1,14,15); cu->SetEMCALChannelStatus(1,23,16); cu->SetEMCALChannelStatus(1,32,23);
-    cu->SetEMCALChannelStatus(1,37,5);  cu->SetEMCALChannelStatus(1,40,1);  cu->SetEMCALChannelStatus(1,40,2);
-    cu->SetEMCALChannelStatus(1,40,5);  cu->SetEMCALChannelStatus(1,41,0);  cu->SetEMCALChannelStatus(1,41,1);
-    cu->SetEMCALChannelStatus(1,41,2);  cu->SetEMCALChannelStatus(1,41,4);
-    // SM2
-    cu->SetEMCALChannelStatus(2,14,15); cu->SetEMCALChannelStatus(2,18,16); cu->SetEMCALChannelStatus(2,18,17); 
-    cu->SetEMCALChannelStatus(2,18,18); cu->SetEMCALChannelStatus(2,18,20); cu->SetEMCALChannelStatus(2,18,21); 
-    cu->SetEMCALChannelStatus(2,18,23); cu->SetEMCALChannelStatus(2,19,16); cu->SetEMCALChannelStatus(2,19,17); 
-    cu->SetEMCALChannelStatus(2,19,19); cu->SetEMCALChannelStatus(2,19,20); cu->SetEMCALChannelStatus(2,19,21); 
-    cu->SetEMCALChannelStatus(2,19,22);
-    //SM3
-    cu->SetEMCALChannelStatus(3,4,7);
-    
+     
     // -----------------------------------
     // --- Photon and Pi0  Analysis ---
     // -----------------------------------
@@ -166,9 +145,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     else anaphoton->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
     anaphoton->AddToHistogramsName("AnaPhoton_");
     //Set Histograms bins and ranges
-    anaphoton->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anaphoton->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     
     if(kPrintSettings) anaphoton->Print("");
     AliAnaPi0 *anapi0 = new AliAnaPi0();
@@ -192,11 +171,11 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anapi0->SwitchOffDataMC() ;//Access MC stack and fill more histograms
     if(calorimeter=="PHOS") anapi0->SetNumberOfModules(3); //PHOS first year
     else if(calorimeter=="EMCAL") anapi0->SetNumberOfModules(4); //EMCAL first year
-    anapi0->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //anapi0->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
-    anapi0->SetHistoMassRangeAndNBins(0., 1.0, 100) ;
-    anapi0->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
+    anapi0->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //anapi0->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //anapi0->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.8, 0.8, 200) ;
+    anapi0->GetHistogramRanges()->SetHistoMassRangeAndNBins(0., 1.0, 100) ;
+    anapi0->GetHistogramRanges()->SetHistoAsymmetryRangeAndNBins(0., 1. , 10) ;
     if(kPrintSettings) anapi0->Print("");
     
     // -------------------------------------------------
@@ -210,8 +189,8 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     //Set Histrograms bins and ranges
     nms->SetHistoERangeAndNBins(0, 50, 100) ;
     nms->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      nms->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
-    //      nsm->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
+    //      nms->GetHistogramRanges()->SetHistoAngleRangeAndNBins(0, 0.3, 100) ;
+    //      nsm->GetHistogramRanges()->SetHistoIMRangeAndNBins(0, 0.4, 100) ;  
     
     AliAnaPi0EbE *anapi0ebe = new AliAnaPi0EbE();
     anapi0ebe->SetDebug(-1);//10 for lots of messages
@@ -232,9 +211,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     anapi0ebe->SetMultiBin(1);  
     anapi0ebe->SetNeutralMesonSelection(nms);
     //Set Histrograms bins and ranges
-    anapi0ebe->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      anapi0->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      anapi0->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anapi0ebe->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      anapi0->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      anapi0->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     if(kPrintSettings) anapi0ebe->Print("");
     
     // ### Pi0 Correlation with hadrons, not isolated
@@ -269,9 +248,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     //	anacorrhadronpi0->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
     //}
     //Set Histograms bins and ranges
-    anacorrhadronpi0->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anacorrhadronpi0->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     if(kPrintSettings) anacorrhadronpi0->Print("");
     
     AliAnaParticleIsolation *anaisolpi0 = new AliAnaParticleIsolation();
@@ -293,9 +272,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     //Multiple IC
     anaisolpi0->SwitchOffSeveralIsolation() ;
     //Set Histograms bins and ranges
-    anaisolpi0->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anaisolpi0->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     if(kPrintSettings) anaisol->Print("");
     
     // ### Pi0 Correlation with hadrons, isolated
@@ -330,9 +309,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     //	anacorrhadronpi0->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
     //}
     //Set Histograms bins and ranges
-    anacorrhadronisopi0->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anacorrhadronisopi0->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     if(kPrintSettings) anacorrhadronisopi0->Print("");
     
   } //analysis in calorimeter
@@ -359,9 +338,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
     else anacharge->SetOutputAODName(Form("Triggers%s",calorimeter.Data()));
     anacharge->AddToHistogramsName("AnaCharge_");
     //Set Histograms bins and ranges
-    anacharge->SetHistoPtRangeAndNBins(0, 50, 100) ;
-    //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-    //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+    anacharge->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+    //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+    //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
     
     if(kPrintSettings) anacharge->Print("");    
   }
@@ -400,9 +379,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
   //}
   //Set Histograms bins and ranges
-  anacorrhadron->SetHistoPtRangeAndNBins(0, 50, 100) ;
-  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anacorrhadron->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrhadron->Print("");
   
   
@@ -427,9 +406,9 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   //Multiple IC
   anaisol->SwitchOffSeveralIsolation() ;
   //Set Histograms bins and ranges
-  anaisol->SetHistoPtRangeAndNBins(0, 50, 100) ;
-  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anaisol->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   
   if(kPrintSettings) anaisol->Print("");
   
@@ -467,13 +446,13 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   //anacorrhadron->SwitchOnCaloPIDRecalculation(); //recommended for EMCAL
   //}
   //Set Histograms bins and ranges
-  anacorrisohadron->SetHistoPtRangeAndNBins(0, 50, 100) ;
-  //      ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
-  //      ana->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
+  anacorrisohadron->GetHistogramRanges()->SetHistoPtRangeAndNBins(0, 50, 100) ;
+  //      ana->GetHistogramRanges()->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 100) ;
+  //      ana->GetHistogramRanges()->SetHistoEtaRangeAndNBins(-0.7, 0.7, 100) ;
   if(kPrintSettings) anacorrisohadron->Print("");
   
   // #### Configure Maker ####
-  AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   maker->SetReader(reader);//pointer to reader
   Int_t n = 0;//Analysis number, order is important
   // Particle selection analysis
@@ -502,13 +481,13 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   if(kPrintSettings) maker->Print("");
   
   printf("======================== \n");
-  printf(" End Configuration of PartCorr analysis with detector %s \n",calorimeter.Data());
+  printf(" End Configuration of CaloTrackCorr analysis with detector %s \n",calorimeter.Data());
   printf("======================== \n");
   
   // Create task
   //===========================================================================
- // AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM(Form("PartCorr%s",calorimeter.Data()));
-  AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM("PartCorr");
+ // AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM(Form("CaloTrackCorr%s",calorimeter.Data()));
+  AliAnalysisTaskParticleCorrelationM * task = new AliAnalysisTaskParticleCorrelationM("CaloTrackCorr");
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetAnalysisMaker(maker);
@@ -516,22 +495,22 @@ AliAnalysisTaskParticleCorrelationM *AddTaskPartCorrM(TString data, TString calo
   mgr->AddTask(task);
   
 //  char name[128];
-//  sprintf(name,"PartCorr_%s",calorimeter.Data());
+//  sprintf(name,"CaloTrackCorr_%s",calorimeter.Data());
 //  cout<<"Name of task "<<name<<endl;
   //AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form(name),TList::Class(),
-  //					   AliAnalysisManager::kOutputContainer, Form("PartCorr_%s.root",calorimeter.Data()));
+  //					   AliAnalysisManager::kOutputContainer, Form("CaloTrackCorr_%s.root",calorimeter.Data()));
   
   TString outputfile = AliAnalysisManager::GetCommonFileName(); 
   outputfile.ReplaceAll(".root","") ;
   outputfile.Append("M.root") ;  
-  //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("PartCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:PartCorr_%s",outputfile.Data(),calorimeter.Data()));
+  //  AliAnalysisDataContainer *cout_pc = mgr->CreateContainer(Form("CaloTrackCorr_%s",calorimeter.Data()),  TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:CaloTrackCorr_%s",outputfile.Data(),calorimeter.Data()));
   AliAnalysisDataContainer *cout_pc   = mgr->CreateContainer(calorimeter.Data(), TList::Class(),
                                                              AliAnalysisManager::kOutputContainer,
-                                                             Form("%s:PartCorr",outputfile.Data()));
+                                                             Form("%s:CaloTrackCorr",outputfile.Data()));
   
   AliAnalysisDataContainer *cout_cuts = mgr->CreateContainer(Form("%sCuts",calorimeter.Data()), TList::Class(),
                                                              AliAnalysisManager::kParamContainer,
-                                                             Form("%s:PartCorrCuts",outputfile.Data()));
+                                                             Form("%s:CaloTrackCorrCuts",outputfile.Data()));
   // Create ONLY the output containers for the data produced by the task.
   // Get and connect other common input/output containers via the manager as below
   //==============================================================================

@@ -12,10 +12,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
+
 //_________________________________________________________________________
 // class to extract omega(782)->pi0+gamma->3gamma
-//  Mar. 22, 2011: Additional method, espeically for EMCAL. A high E cluster is assumpted as pi0 (two photons are overlapped) without unfolding
+//  Mar. 22, 2011: Additional method, espeically for EMCAL. A high E cluster 
+//  is assumpted as pi0 (two photons are overlapped) without unfolding
 //
 //-- Author: Renzhuo Wan (IOPP-Wuhan, China)
 //_________________________________________________________________________
@@ -42,7 +43,7 @@ class TROOT;
 ClassImp(AliAnaOmegaToPi0Gamma)
 
 //______________________________________________________________________________
-AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaPartCorrBaseClass(),
+AliAnaOmegaToPi0Gamma::AliAnaOmegaToPi0Gamma() : AliAnaCaloTrackCorrBaseClass(),
 fInputAODPi0(0), fInputAODGammaName(""),
 fEventsList(0x0),fNVtxZBin(0), fNCentBin(0), fNRpBin(0), fNBadChDistBin(0), fNpid(0),
 fVtxZCut(0), fCent(0), fRp(0), 
@@ -125,13 +126,13 @@ TList * AliAnaOmegaToPi0Gamma::GetCreateOutputObjects()
   fRp=new Double_t[fNRpBin];
   for(int i = 0;i<fNRpBin;i++)fRp[i]=0;
   //
-  Int_t nptbins   = GetHistoPtBins();
-  Float_t ptmax   = GetHistoPtMax();
-  Float_t ptmin   = GetHistoPtMin();
+  Int_t nptbins   = GetHistogramRanges()->GetHistoPtBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
   
-  Int_t nmassbins = GetHistoMassBins();
-  Float_t massmin = GetHistoMassMin();
-  Float_t massmax = GetHistoMassMax();
+  Int_t nmassbins = GetHistogramRanges()->GetHistoMassBins();
+  Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
+  Float_t massmax = GetHistogramRanges()->GetHistoMassMax();
   
   fhEtalon = new TH2F("hEtalon","Histo with binning parameters", nptbins,ptmin,ptmax,nmassbins,massmin,massmax) ;
   fhEtalon->SetXTitle("P_{T} (GeV)") ;
@@ -296,7 +297,7 @@ void AliAnaOmegaToPi0Gamma::Print(const Option_t * /*opt*/) const
 {
   //Print some relevant parameters set in the analysis
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   printf("Omega->pi0+gamma->3gamma\n");
   printf("Cuts at event level:            \n");
   printf("Bins of vertex Z:                     %d \n", fNVtxZBin);

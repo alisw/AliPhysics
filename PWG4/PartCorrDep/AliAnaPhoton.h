@@ -2,7 +2,6 @@
 #define ALIANAPHOTON_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaPhoton.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -23,9 +22,9 @@ class TObjString;
 class TList ;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaPhoton : public AliAnaPartCorrBaseClass {
+class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
   AliAnaPhoton() ;              // default ctor

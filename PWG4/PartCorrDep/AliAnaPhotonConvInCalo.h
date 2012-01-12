@@ -20,18 +20,13 @@ class TObjString;
 class TList ;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaPhotonConvInCalo : public AliAnaPartCorrBaseClass {
+class AliAnaPhotonConvInCalo : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
   AliAnaPhotonConvInCalo() ;              // default ctor
   virtual ~AliAnaPhotonConvInCalo() { ; } // virtual dtor
- private:
-  AliAnaPhotonConvInCalo(const AliAnaPhotonConvInCalo & g) ;               // cpy ctor
-  AliAnaPhotonConvInCalo & operator = (const AliAnaPhotonConvInCalo & g) ; // cpy assignment
-
- public:
 	
   //---------------------------------------
   // General analysis frame methods
@@ -147,7 +142,10 @@ class AliAnaPhotonConvInCalo : public AliAnaPartCorrBaseClass {
   TH2F * fhConvDistMCConversion;          //! Calculated conversion distance vs real distance to vertex       
   TH2F * fhConvDistMCConversionCuts;      //! Calculated conversion distance vs real distance to vertex        
 
-   ClassDef(AliAnaPhotonConvInCalo,1)
+  AliAnaPhotonConvInCalo(              const AliAnaPhotonConvInCalo & g) ; // cpy ctor
+  AliAnaPhotonConvInCalo & operator = (const AliAnaPhotonConvInCalo & g) ; // cpy assignment
+  
+  ClassDef(AliAnaPhotonConvInCalo,1)
 
 } ;
  

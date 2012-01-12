@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 //
@@ -41,7 +40,7 @@ ClassImp(AliAnaChargedParticles)
   
 //__________________________________________________
   AliAnaChargedParticles::AliAnaChargedParticles() : 
-    AliAnaPartCorrBaseClass(),
+    AliAnaCaloTrackCorrBaseClass(),
     fPdg(0), 
     fhNtracks(0),   fhPt(0),
     fhPhiNeg(0),    fhEtaNeg(0), 
@@ -71,9 +70,9 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ExampleHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins(); Int_t nphibins = GetHistoPhiBins(); Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();  Float_t phimax = GetHistoPhiMax();  Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();  Float_t phimin = GetHistoPhiMin();  Float_t etamin = GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins(); Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
 
   fhNtracks  = new TH1F ("hNtracks","# of tracks", 1000,0,1000); 
   fhNtracks->SetXTitle("# of tracks");
@@ -208,7 +207,7 @@ void AliAnaChargedParticles::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");	
+  AliAnaCaloTrackCorrBaseClass::Print(" ");	
 	
   printf("Min Pt = %3.2f\n", GetMinPt());
   printf("Max Pt = %3.2f\n", GetMaxPt());

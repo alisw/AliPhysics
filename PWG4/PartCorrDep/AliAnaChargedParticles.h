@@ -2,11 +2,10 @@
 #define ALIANACHARGEDPARTICLES_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Example class on how to read AODCaloClusters, ESDCaloCells and AODTracks and how 
-// fill AODs with PWG4PartCorr analysis frame
+// fill AODs with PWG4CaloTrackCorr analysis frame
 // Select the type of detector information that you want to analyze, CTS (tracking), PHOS or EMCAL
 // Select the PID custer type of the calorimeters
 // Set min momentum of the cluster/tracks
@@ -17,9 +16,9 @@
 class TH2F; 
 
 // Analysis system
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
  
-class AliAnaChargedParticles : public AliAnaPartCorrBaseClass {
+class AliAnaChargedParticles : public AliAnaCaloTrackCorrBaseClass {
   
  public: 
   AliAnaChargedParticles() ; // default ctor

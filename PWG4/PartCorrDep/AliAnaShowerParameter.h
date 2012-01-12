@@ -2,7 +2,6 @@
 #define ALIANASHOWERPARAMETER_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaShowerParameter.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -19,14 +18,12 @@ class TH1F;
 class TString ;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
-//#include "AliStack.h"
-//#include "TParticle.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class AliStack;
 class TParticle;
 
 class TList ;
-class AliAnaShowerParameter : public AliAnaPartCorrBaseClass {
+class AliAnaShowerParameter : public AliAnaCaloTrackCorrBaseClass {
 
 public: 
 

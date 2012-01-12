@@ -2,7 +2,6 @@
 #define ALIANAPARTICLEHADRONCORRELATION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class that contains the algorithm for the analysis of particle - hadron correlations
@@ -23,10 +22,10 @@
 //class TH3D;
 
 // --- Analysis system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODPWG4ParticleCorrelation ;
 
-class AliAnaParticleHadronCorrelation : public AliAnaPartCorrBaseClass {
+class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   
  public: 
   

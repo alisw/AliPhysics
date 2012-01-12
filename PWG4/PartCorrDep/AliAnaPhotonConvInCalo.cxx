@@ -47,7 +47,7 @@ ClassImp(AliAnaPhotonConvInCalo)
 
 //________________________________________
 AliAnaPhotonConvInCalo::AliAnaPhotonConvInCalo() : 
-AliAnaPartCorrBaseClass(),   
+AliAnaCaloTrackCorrBaseClass(),   
 fRemoveConvertedPair(kFALSE), 
 fAddConvertedPairsToAOD(kFALSE), 
 fMassCut(0),                  
@@ -114,9 +114,9 @@ TList *  AliAnaPhotonConvInCalo::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("PhotonConvInCaloHistos") ; 
 	
-  Int_t nptbins  = GetHistoPtBins();  Float_t ptmax  = GetHistoPtMax();  Float_t ptmin  = GetHistoPtMin(); 
-  Int_t nphibins = GetHistoPhiBins(); Float_t phimax = GetHistoPhiMax(); Float_t phimin = GetHistoPhiMin(); 
-  Int_t netabins = GetHistoEtaBins(); Float_t etamax = GetHistoEtaMax(); Float_t etamin = GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin(); 
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Float_t phimax = GetHistogramRanges()->GetHistoPhiMax(); Float_t phimin = GetHistogramRanges()->GetHistoPhiMin(); 
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
   
   fhPtPhotonConv  = new TH1F("hPtPhotonConv","Number of #gamma over calorimeter, conversion",nptbins,ptmin,ptmax); 
   fhPtPhotonConv->SetYTitle("N");
@@ -860,7 +860,7 @@ void AliAnaPhotonConvInCalo::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Add conversion pair to AOD           = %d\n",fAddConvertedPairsToAOD);
   printf("Conversion pair mass cut             = %f\n",fMassCut);

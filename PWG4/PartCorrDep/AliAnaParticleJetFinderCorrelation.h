@@ -2,8 +2,6 @@
 #define ALIANAPARTICLEJETFINDERCORRELATION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaParticleJetFinderCorrelation.h 21839 2007-10-29 13:49:42Z gustavo $ */
-
 
 //_________________________________________________________________________
 // Class that contains the algorithm for the analysis of particle (direct gamma) - jet 
@@ -17,13 +15,13 @@
 class TH2F;
 
 //---- Analysis system ----
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaParticleJetFinderCorrelation : public AliAnaPartCorrBaseClass {
+class AliAnaParticleJetFinderCorrelation : public AliAnaCaloTrackCorrBaseClass {
        
  public:   
-  AliAnaParticleJetFinderCorrelation() ;            // default ctor
-  virtual ~AliAnaParticleJetFinderCorrelation() {;} // virtual dtor
+  AliAnaParticleJetFinderCorrelation() ;              // default ctor
+  virtual ~AliAnaParticleJetFinderCorrelation() { ; } // virtual dtor
 
   // General methods
   
@@ -88,7 +86,7 @@ private:
   TH2F *     fhFFpt;              //! Jet particle pt distribution in cone
   TH2F *     fhNTracksInCone;     //! jet multiplicity in cone
   
-  AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & g) ;               // cpy ctor
+  AliAnaParticleJetFinderCorrelation(              const AliAnaParticleJetFinderCorrelation & g) ; // cpy ctor
   AliAnaParticleJetFinderCorrelation & operator = (const AliAnaParticleJetFinderCorrelation & g) ; // cpy assignment
   
   ClassDef(AliAnaParticleJetFinderCorrelation,2)

@@ -51,7 +51,7 @@ ClassImp(AliAnaInsideClusterInvariantMass)
   
 //__________________________________________________________________
 AliAnaInsideClusterInvariantMass::AliAnaInsideClusterInvariantMass() : 
-  AliAnaPartCorrBaseClass(),  
+  AliAnaCaloTrackCorrBaseClass(),  
   fCalorimeter(""),  
   fM02Cut(0),
   fMinNCells(0)
@@ -174,10 +174,10 @@ TList * AliAnaInsideClusterInvariantMass::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("InsideClusterHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins();           Float_t ptmax  = GetHistoPtMax();           Float_t ptmin  = GetHistoPtMin();
-  Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax  = GetHistoShowerShapeMax();  Float_t ssmin  = GetHistoShowerShapeMin();
-  Int_t mbins    = GetHistoMassBins();         Float_t mmax   = GetHistoMassMax();         Float_t mmin   = GetHistoMassMin();
-  Int_t ncbins   = GetHistoNClusterCellBins(); Int_t   ncmax  = GetHistoNClusterCellMax(); Int_t   ncmin  = GetHistoNClusterCellMin(); 
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();           Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();           Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax  = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin  = GetHistogramRanges()->GetHistoShowerShapeMin();
+  Int_t mbins    = GetHistogramRanges()->GetHistoMassBins();         Float_t mmax   = GetHistogramRanges()->GetHistoMassMax();         Float_t mmin   = GetHistogramRanges()->GetHistoMassMin();
+  Int_t ncbins   = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   ncmax  = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   ncmin  = GetHistogramRanges()->GetHistoNClusterCellMin(); 
 
   TString ptype[] ={"","#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
   TString pname[] ={"","Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron"};
@@ -636,7 +636,7 @@ void AliAnaInsideClusterInvariantMass::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print("");
+  AliAnaCaloTrackCorrBaseClass::Print("");
   printf("Calorimeter     =     %s\n", fCalorimeter.Data()) ;
   printf("lambda 0 sqared >  %2.1f\n", fM02Cut);
   printf("    \n") ;
