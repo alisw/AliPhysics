@@ -12,15 +12,16 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Analysis task that executes the analysis classes
-// that depend on the PartCorr frame, frame for Particle identification and correlations.
+// that depend on the CaloTrackCorr frame, frame for Particle identification 
+// with calorimeters and tracks and correlations.
 // Specially designed for calorimeters but also can be used for charged tracks
-// Input of this task is a configuration file that contains all the settings of the analyis
+// Input of this task is a configuration file that contains all the settings 
+// of the analysis
 //
-// -- Author: Gustavo Conesa (INFN-LNF)
+// -- Author: Gustavo Conesa (INFN-LNF, LPSC-Grenoble)
 
 #include <cstdlib>
 
@@ -32,31 +33,33 @@
 //#include <TObjectTable.h>
 
 // --- Analysis ---
-#include "AliAnalysisTaskParticleCorrelation.h"
-#include "AliAnaPartCorrMaker.h"
+#include "AliAnalysisTaskCaloTrackCorrelation.h"
+#include "AliAnaCaloTrackCorrMaker.h"
 #include "AliCaloTrackReader.h"
 #include "AliPDG.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
 
-ClassImp(AliAnalysisTaskParticleCorrelation)
+ClassImp(AliAnalysisTaskCaloTrackCorrelation)
 
-////////////////////////////////////////////////////////////////////////
-AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation():
+//________________________________________________________________________
+AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation() :
   AliAnalysisTaskSE(),
   fAna(0x0),
   fOutputContainer(0x0),
-  fConfigName(""), fCuts(0x0)
+  fConfigName(""), 
+  fCuts(0x0)
 {
   // Default constructor
 }
 
-//_____________________________________________________
-AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const char* name):
+//________________________________________________________________________________________
+AliAnalysisTaskCaloTrackCorrelation::AliAnalysisTaskCaloTrackCorrelation(const char* name) :
   AliAnalysisTaskSE(name),
   fAna(0x0),
   fOutputContainer(0x0),
-  fConfigName(""), fCuts(0x0)
+  fConfigName(""), 
+  fCuts(0x0)
 {
   // Default constructor
   
@@ -64,27 +67,30 @@ AliAnalysisTaskParticleCorrelation::AliAnalysisTaskParticleCorrelation(const cha
   DefineOutput(2, TList::Class());  // will contain cuts or local params
 }
 
-//_____________________________________________________
-AliAnalysisTaskParticleCorrelation::~AliAnalysisTaskParticleCorrelation() 
+//_________________________________________________________________________
+AliAnalysisTaskCaloTrackCorrelation::~AliAnalysisTaskCaloTrackCorrelation() 
 {
   // Remove all pointers
+  
   if (fOutputContainer && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
     fOutputContainer->Clear() ; 
     delete fOutputContainer ;
   }
+  
   if (fAna && ! AliAnalysisManager::GetAnalysisManager()->IsProofMode()) delete fAna;
+  
 }
 
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
+//_________________________________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects()
 {
   // Create the output container
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - Begin\n");
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - Begin\n");
   
   //Get list of aod arrays, add each aod array to analysis frame 
   TClonesArray *array = 0;
   TList * list = fAna->FillAndGetAODBranchList(); //Loop the analysis and create the list of branches
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
+  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - n AOD branches %d\n",list->GetEntries());
   
   //Put the delta AODs in output file, std or delta
   if((fAna->GetReader())->WriteDeltaAODToFile()){
@@ -100,17 +106,18 @@ void AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects()
   OpenFile(1);
   fOutputContainer = fAna->GetOutputContainer();
   
-  if (DebugLevel() >= 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - n histograms %d\n",fOutputContainer->GetEntries());
-
+  if (DebugLevel() >= 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - n histograms %d\n",fOutputContainer->GetEntries());
+  
   fOutputContainer->SetOwner(kTRUE);
   
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserCreateOutputObjects() - End\n");
- 
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserCreateOutputObjects() - End\n");
+  
   PostData(1,fOutputContainer);
-
+  
 }
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::LocalInit()
+
+//___________________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::LocalInit()
 {
 	// Local Initialization
 	
@@ -125,98 +132,103 @@ void AliAnalysisTaskParticleCorrelation::LocalInit()
 	
 }
 
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::Init()
+//______________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::Init()
 {
   // Initialization
- 
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - Begin\n");
+  
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::Init() - Begin\n");
   
   // Call configuration file if specified
   
   if (fConfigName.Length()) {
-    printf("AliAnalysisTaskParticleCorrelation::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
-	gROOT->LoadMacro(fConfigName+".C");
-	fAna = (AliAnaPartCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
+    printf("AliAnalysisTaskCaloTrackCorrelation::Init() - ### Configuration file is %s.C ###\n", fConfigName.Data());
+    gROOT->LoadMacro(fConfigName+".C");
+    fAna = (AliAnaCaloTrackCorrMaker*) gInterpreter->ProcessLine("ConfigAnalysis()");
   }
   
   if(!fAna) {
-	printf("AliAnalysisTaskParticleCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
-	abort();
+    printf("AliAnalysisTaskCaloTrackCorrelation::Init() - Analysis maker pointer not initialized, no analysis specified, STOP !\n");
+    abort();
   }
   
   // Add different generator particles to PDG Data Base 
   // to avoid problems when reading MC generator particles
   AliPDG::AddParticlesToPdgDataBase();
-
+  
   //Set in the reader the name of the task in case is needed
   (fAna->GetReader())->SetTaskName(GetName());
 	
   // Initialise analysis
   fAna->Init();
-
+  
   //Delta AOD
   if((fAna->GetReader())->GetDeltaAODFileName()!="")
 	  AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile((fAna->GetReader())->GetDeltaAODFileName());
-
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::Init() - End\n");
+  
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::Init() - End\n");
   
 }
 
 
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::UserExec(Option_t */*option*/)
+//______________________________________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::UserExec(Option_t */*option*/)
 {
   // Execute analysis for current event
-  //
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - Begin\n");
-
-   //Get the type of data, check if type is correct
+  
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Begin\n");
+  
+  //Get the type of data, check if type is correct
   Int_t  datatype = fAna->GetReader()->GetDataType();
   if(datatype != AliCaloTrackReader::kESD && datatype != AliCaloTrackReader::kAOD &&
      datatype != AliCaloTrackReader::kMC){
-    printf("AliAnalysisTaskParticleCorrelation::UserExec() - Wrong type of data\n");
+    printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - Wrong type of data\n");
     return ;
   }
-
+  
   fAna->GetReader()->SetInputOutputMCEvent(InputEvent(), AODEvent(), MCEvent());
-
+  
   //Process event
   fAna->ProcessEvent((Int_t) Entry(), CurrentFileName());
-  //printf("AliAnalysisTaskParticleCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
-  if (DebugLevel() > 1) printf("AliAnalysisTaskParticleCorrelation::UserExec() - End\n");
+  
+  //printf("AliAnalysisTaskCaloTrackCorrelation::Current Event %d; Current File Name : %s\n",(Int_t) Entry(), CurrentFileName());
+  if (DebugLevel() > 1) printf("AliAnalysisTaskCaloTrackCorrelation::UserExec() - End\n");
 	
   PostData(1, fOutputContainer);
 	
   //gObjectTable->Print();
-
   
 }
 
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::Terminate(Option_t */*option*/)
+//_______________________________________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::Terminate(Option_t */*option*/)
 {
   // Terminate analysis
   // Do some plots
-
+  
   // Get merged histograms from the output container
   // Propagate histagrams to maker
   fAna->Terminate((TList*)GetOutputData(1));
 	
 }
 
-//_____________________________________________________
-void AliAnalysisTaskParticleCorrelation::FinishTaskOutput(){
+//__________________________________________________________
+void AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput()
+{
   // Put in the output some event summary histograms
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
+  
   AliInputEventHandler *inputH = dynamic_cast<AliInputEventHandler*>(am->GetInputEventHandler());
+  
   if (!inputH) return; 
+  
   TH2F *histStat = dynamic_cast<TH2F*>(inputH->GetStatistics()); 
   TH2F *histBin0 = dynamic_cast<TH2F*>(inputH->GetStatistics("BIN0"));
   
   if(histStat)fOutputContainer->Add(histStat); 
   else if(DebugLevel()>0) 
-    printf("AliAnalysisTaskParticleCorrelation::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
+    printf("AliAnalysisTaskCaloTrackCorrelation::FinishTaskOutput() - Stat histogram not available check, \n if ESDs, that AliPhysicsSelection was on, \n if AODs, if EventStat_temp.root exists \n");
+  
   if(histBin0)fOutputContainer->Add(histBin0); 
   
 }
