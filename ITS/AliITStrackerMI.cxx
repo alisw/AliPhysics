@@ -3077,7 +3077,7 @@ Int_t AliITStrackerMI::GetOverlapTrack(const AliITStrackMI *track, Int_t trackID
     else{
       //
       Int_t tracks2[24], cluster[24];
-      for (Int_t i=0;i<trackindex;i++){ tracks2[i]=-1; cluster[i]=0;}
+      for (Int_t i=0;i<24;i++){ tracks2[i]=-1; cluster[i]=0;}
       Int_t index =0;
       //
       for (Int_t i=0;i<trackindex;i++){
