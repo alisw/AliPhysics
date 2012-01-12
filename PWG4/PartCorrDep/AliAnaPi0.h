@@ -2,7 +2,6 @@
 #define ALIANAPI0_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class to fill two-photon invariant mass histograms 
@@ -11,7 +10,7 @@
 // it will do nothing if executed alone
 //
 //-- Author: Dmitri Peressounko (RRC "KI")
-//-- Adapted to PartCorr frame by Lamia Benhabib (SUBATECH)
+//-- Adapted to CaloTrackCorr frame by Lamia Benhabib (SUBATECH)
 //-- and Gustavo Conesa (INFN-Frascati)
 
 //Root
@@ -21,12 +20,12 @@ class TH2F ;
 class TObjString;
 
 //Analysis
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODEvent ;
 class AliESDEvent ;
 class AliAODPWG4Particle ;
 
-class AliAnaPi0 : public AliAnaPartCorrBaseClass {
+class AliAnaPi0 : public AliAnaCaloTrackCorrBaseClass {
   
  public:   
   AliAnaPi0() ; // default ctor
@@ -306,8 +305,8 @@ class AliAnaPi0 : public AliAnaPartCorrBaseClass {
   TH2F *   fhReMCFromNotConversion ;   //! Invariant mass of 2 clusters not originated in conversions
   TH2F *   fhReMCFromMixConversion ;   //! Invariant mass of 2 clusters one from conversion and the other not
 
-  AliAnaPi0(const AliAnaPi0 & g) ; // cpy ctor
-  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ;//cpy assignment
+  AliAnaPi0(              const AliAnaPi0 & api0) ; // cpy ctor
+  AliAnaPi0 & operator = (const AliAnaPi0 & api0) ; // cpy assignment
   
   ClassDef(AliAnaPi0,22)
 } ;

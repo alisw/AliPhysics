@@ -2,7 +2,6 @@
 #define ALIANAPI0EBE_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaPi0EbE.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -21,9 +20,9 @@ class TList ;
 class TObjString;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaPi0EbE : public AliAnaPartCorrBaseClass {
+class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
   AliAnaPi0EbE() ; // default ctor

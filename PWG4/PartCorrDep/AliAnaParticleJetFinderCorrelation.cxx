@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaParticleJetFinderCorrelation.cxx 22232 2007-11-17 16:39:49Z gustavo $ */
 
 //_________________________________________________________________________
 // Class for the analysis of particle (direct gamma) -jet (jet found with finder) correlations
@@ -38,9 +37,9 @@
 ClassImp(AliAnaParticleJetFinderCorrelation)
   
 
-//____________________________________________________________________________
+//________________________________________________________________________
   AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation() : 
-    AliAnaPartCorrBaseClass(),  
+    AliAnaCaloTrackCorrBaseClass(),  
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), fRatioMaxCut(0.),  fRatioMinCut(0.), 
     fConeSize(0), fPtThresholdInCone(0),fUseJetRefTracks(0), fMakeCorrelationInHistoMaker(0), fSelectIsolated(0),
     fhDeltaEta(0), fhDeltaPhi(0), fhDeltaPt(0), fhPtRatio(0), fhPt(0),
@@ -51,67 +50,8 @@ ClassImp(AliAnaParticleJetFinderCorrelation)
   //Initialize parameters
   InitParameters();
 }
-/*
-//____________________________________________________________________________
-AliAnaParticleJetFinderCorrelation::AliAnaParticleJetFinderCorrelation(const AliAnaParticleJetFinderCorrelation & pjf) :   
-  AliAnaPartCorrBaseClass(pjf),  
-  fDeltaPhiMaxCut(pjf.fDeltaPhiMaxCut), fDeltaPhiMinCut(pjf.fDeltaPhiMinCut), 
-  fRatioMaxCut(pjf.fRatioMaxCut), fRatioMinCut(pjf.fRatioMinCut), 
-  fConeSize(pjf.fConeSize), fPtThresholdInCone(pjf.fPtThresholdInCone),   
-  fUseJetRefTracks(pjf.fUseJetRefTracks), fMakeCorrelationInHistoMaker(pjf.fMakeCorrelationInHistoMaker),
-  fSelectIsolated(pjf.fSelectIsolated),	
-  fhDeltaEta(pjf.fhDeltaEta), fhDeltaPhi(pjf.fhDeltaPhi), 
-  fhDeltaPt(pjf.fhDeltaPt), fhPtRatio(pjf.fhPtRatio), fhPt(pjf.fhPt), 
-  fhFFz(pjf.fhFFz),fhFFxi(pjf.fhFFxi),fhFFpt(pjf.fhFFpt),
-  fhNTracksInCone(pjf.fhNTracksInCone)
-{
-  // cpy ctor
-  
-}
 
-//_________________________________________________________________________
-AliAnaParticleJetFinderCorrelation & AliAnaParticleJetFinderCorrelation::operator = (const AliAnaParticleJetFinderCorrelation & pjf)
-{
-  // assignment operator
-  
-  if(this == &pjf)return *this;
-  ((AliAnaPartCorrBaseClass *)this)->operator=(pjf);
-  
-  fDeltaPhiMaxCut    = pjf.fDeltaPhiMaxCut ; 
-  fDeltaPhiMinCut    = pjf.fDeltaPhiMinCut ; 
-  fRatioMaxCut       = pjf.fRatioMaxCut ;
-  fRatioMinCut       = pjf.fRatioMinCut ; 
-  fConeSize          = pjf.fConeSize ; 
-  fPtThresholdInCone = pjf.fPtThresholdInCone ;
-  fUseJetRefTracks   = pjf.fUseJetRefTracks ;
-  fMakeCorrelationInHistoMaker = pjf.fMakeCorrelationInHistoMaker ;  
-  fSelectIsolated    = pjf.fSelectIsolated ;
-  
-  //Histograms
-  fhDeltaEta = pjf.fhDeltaEta;
-  fhDeltaPhi = pjf.fhDeltaPhi;
-  fhDeltaPt  = pjf.fhDeltaPt;
-  fhPtRatio  = pjf.fhPtRatio;
-  fhPt       = pjf.fhPt;
-  
-  fhFFz   = pjf.fhFFz;
-  fhFFxi  = pjf.fhFFxi;
-  fhFFpt  = pjf.fhFFpt;
-  fhNTracksInCone = pjf.fhNTracksInCone;  
-  
-  return *this;
-  
-}
-*/
-//____________________________________________________________________________
-//AliAnaParticleJetFinderCorrelation::~AliAnaParticleJetFinderCorrelation() 
-//{
-//   // Remove all pointers except analysis output pointers.
-// 
-//}
-
-
-//________________________________________________________________________
+//___________________________________________________________________
 TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file and 
@@ -120,15 +60,15 @@ TList *  AliAnaParticleJetFinderCorrelation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticleJetFinderHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins();
-  //	Int_t nphibins = GetHistoPhiBins();
-  //	Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();
-  //	Float_t phimax = GetHistoPhiMax();
-  //	Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();
-  //	Float_t phimin = GetHistoPhiMin();
-//	Float_t etamin = GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();
+  //	Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  //	Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();
+  //	Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();
+  //	Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  //	Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+//	Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
   
   fhDeltaPhi  = new TH2F("DeltaPhi","#phi_{jet} - #phi_{trigger} vs p_{T trigger}",nptbins,ptmin,ptmax,100,-4,4); 
   fhDeltaPhi->SetYTitle("#Delta #phi");
@@ -399,7 +339,7 @@ void AliAnaParticleJetFinderCorrelation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
 
   printf("Phi trigger-jet        <     %3.2f\n", fDeltaPhiMaxCut) ; 
   printf("Phi trigger-jet        >     %3.2f\n", fDeltaPhiMinCut) ;

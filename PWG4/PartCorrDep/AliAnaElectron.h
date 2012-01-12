@@ -2,7 +2,6 @@
 #define ALIANAELECTRON_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaElectron.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -22,13 +21,13 @@ class TString ;
 class TObjString;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class AliStack;
 class TParticle;
 
 class TList ;
 
-class AliAnaElectron : public AliAnaPartCorrBaseClass {
+class AliAnaElectron : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
   

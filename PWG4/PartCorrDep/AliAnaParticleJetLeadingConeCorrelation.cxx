@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class that contains the algorithm for the reconstruction of jet, cone around leading particle
@@ -49,7 +48,7 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 
 //____________________________________________________________________________
   AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation() : 
-    AliAnaPartCorrBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),     
+    AliAnaCaloTrackCorrBaseClass(), fJetsOnlyInCTS(kFALSE), fPbPb(kFALSE),     
     fSeveralConeAndPtCuts(0),  fReMakeJet(0),
     fDeltaPhiMaxCut(0.), fDeltaPhiMinCut(0.), 
     fLeadingRatioMaxCut(0.),  fLeadingRatioMinCut(0.), 
@@ -142,7 +141,7 @@ ClassImp(AliAnaParticleJetLeadingConeCorrelation)
 /*
 //____________________________________________________________________________
 AliAnaParticleJetLeadingConeCorrelation::AliAnaParticleJetLeadingConeCorrelation(const AliAnaParticleJetLeadingConeCorrelation & jetlc) :   
-  AliAnaPartCorrBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
+  AliAnaCaloTrackCorrBaseClass(jetlc), fJetsOnlyInCTS(jetlc.fJetsOnlyInCTS), fPbPb(jetlc.fPbPb), 
   fSeveralConeAndPtCuts(jetlc.fSeveralConeAndPtCuts),  fReMakeJet(jetlc. fReMakeJet),
   fDeltaPhiMaxCut(jetlc. fDeltaPhiMaxCut), fDeltaPhiMinCut(jetlc.fDeltaPhiMinCut), 
   fLeadingRatioMaxCut(jetlc.fLeadingRatioMaxCut),  fLeadingRatioMinCut(jetlc.fLeadingRatioMinCut), 
@@ -242,7 +241,7 @@ AliAnaParticleJetLeadingConeCorrelation & AliAnaParticleJetLeadingConeCorrelatio
   // assignment operator
   
   if(this == &jetlc)return *this;
-  ((AliAnaPartCorrBaseClass *)this)->operator=(jetlc);
+  ((AliAnaCaloTrackCorrBaseClass *)this)->operator=(jetlc);
   
   fSeveralConeAndPtCuts  = jetlc.fSeveralConeAndPtCuts ; 
   fPbPb                  = jetlc.fPbPb ;
@@ -471,15 +470,15 @@ TList *  AliAnaParticleJetLeadingConeCorrelation::GetCreateOutputObjects()
   fOutCont = new TList() ; 
   fOutCont->SetName("ParticleJetLeadingInConeCorrelationHistograms") ; 
   
-  Int_t nptbins  = GetHistoPtBins();
-  Int_t nphibins = GetHistoPhiBins();
-  Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();
-  Float_t phimax = GetHistoPhiMax();
-  Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();
-  Float_t phimin = GetHistoPhiMin();
-  Float_t etamin = GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
   
   fhChargedLeadingPt  = new TH2F("ChargedLeadingPt","p_{T leading charge} vs p_{T trigger}",nptbins,ptmin,ptmax,nptbins,ptmin,ptmax); 
   fhChargedLeadingPt->SetYTitle("p_{T leading charge}");
@@ -1652,7 +1651,7 @@ void AliAnaParticleJetLeadingConeCorrelation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print  %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   if(fJetsOnlyInCTS)printf("Jets reconstructed in CTS \n");
   else printf("Jets reconstructed in CTS+EMCAL \n");

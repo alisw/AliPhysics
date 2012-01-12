@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaPi0EbE.cxx 28688 2008-09-11 15:04:07Z gconesab $ */
 
 //_________________________________________________________________________
 // Class for the analysis of high pT pi0 event by event
@@ -48,8 +47,8 @@ ClassImp(AliAnaPi0EbE)
   
 //____________________________
 AliAnaPi0EbE::AliAnaPi0EbE() : 
-    AliAnaPartCorrBaseClass(),    fAnaType(kIMCalo),            fCalorimeter(""),
-    fMinDist(0.),fMinDist2(0.),   fMinDist3(0.),	              fFillWeightHistograms(kFALSE),
+    AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),           fCalorimeter(""),
+    fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	              fFillWeightHistograms(kFALSE),
     fInputAODGammaConvName(""),
     //Histograms
     fhPtPi0(0),                   fhEPi0(0),                    
@@ -308,13 +307,13 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("Pi0EbEHistos") ; 
   
-  Int_t nptbins  = GetHistoPtBins();           Float_t ptmax  = GetHistoPtMax();           Float_t ptmin  = GetHistoPtMin();
-  Int_t nphibins = GetHistoPhiBins();          Float_t phimax = GetHistoPhiMax();          Float_t phimin = GetHistoPhiMin();
-  Int_t netabins = GetHistoEtaBins();          Float_t etamax = GetHistoEtaMax();          Float_t etamin = GetHistoEtaMin();
-  Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax  = GetHistoShowerShapeMax();  Float_t ssmin  = GetHistoShowerShapeMin();
-  Int_t tdbins   = GetHistoDiffTimeBins() ;    Float_t tdmax  = GetHistoDiffTimeMax();     Float_t tdmin  = GetHistoDiffTimeMin();
-  Int_t tbins    = GetHistoTimeBins() ;        Float_t tmax   = GetHistoTimeMax();         Float_t tmin   = GetHistoTimeMin();
-  Int_t nbins    = GetHistoNClusterCellBins(); Int_t   nmax   = GetHistoNClusterCellMax(); Int_t   nmin   = GetHistoNClusterCellMin(); 
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();           Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();           Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();          Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();          Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();
+  Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax  = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin  = GetHistogramRanges()->GetHistoShowerShapeMin();
+  Int_t tdbins   = GetHistogramRanges()->GetHistoDiffTimeBins() ;    Float_t tdmax  = GetHistogramRanges()->GetHistoDiffTimeMax();     Float_t tdmin  = GetHistogramRanges()->GetHistoDiffTimeMin();
+  Int_t tbins    = GetHistogramRanges()->GetHistoTimeBins() ;        Float_t tmax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t tmin   = GetHistogramRanges()->GetHistoTimeMin();
+  Int_t nbins    = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax   = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin   = GetHistogramRanges()->GetHistoNClusterCellMin(); 
 
   fhPtPi0  = new TH1F("hPtPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
   fhPtPi0->SetYTitle("N");
@@ -1089,7 +1088,7 @@ void AliAnaPi0EbE::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print("");
+  AliAnaCaloTrackCorrBaseClass::Print("");
   printf("Analysis Type = %d \n",  fAnaType) ;
   if(fAnaType == kSSCalo){     
     printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;

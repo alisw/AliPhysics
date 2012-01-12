@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for the analysis of particle-parton correlations
@@ -31,126 +30,92 @@
 #include "AliStack.h"  
 #include "AliAODPWG4ParticleCorrelation.h"
 
-  ClassImp(AliAnaParticlePartonCorrelation)
-  
+ClassImp(AliAnaParticlePartonCorrelation)
 
-//____________________________________________________________________________
-  AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation() : 
-    AliAnaPartCorrBaseClass(),   
-    fhDeltaEtaNearParton(0), fhDeltaPhiNearParton(0), 
-    fhDeltaPtNearParton(0), fhPtRatNearParton(0),
-    fhDeltaEtaAwayParton(0), fhDeltaPhiAwayParton(0), 
-    fhDeltaPtAwayParton(0), fhPtRatAwayParton(0)
+
+//________________________________________________________________
+AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation() : 
+AliAnaCaloTrackCorrBaseClass(),   
+fhDeltaEtaNearParton(0), fhDeltaPhiNearParton(0), 
+fhDeltaPtNearParton(0),  fhPtRatNearParton(0),
+fhDeltaEtaAwayParton(0), fhDeltaPhiAwayParton(0), 
+fhDeltaPtAwayParton(0),  fhPtRatAwayParton(0)
 {
   //Default Ctor
-
+  
   //Initialize parameters
   InitParameters();
 }
-/*
-//____________________________________________________________________________
-AliAnaParticlePartonCorrelation::AliAnaParticlePartonCorrelation(const AliAnaParticlePartonCorrelation & g) :   
-  AliAnaPartCorrBaseClass(g),   
-  fhDeltaEtaNearParton(g.fhDeltaEtaNearParton), fhDeltaPhiNearParton(g.fhDeltaPhiNearParton), 
-  fhDeltaPtNearParton(g.fhDeltaPtNearParton), fhPtRatNearParton(g.fhPtRatNearParton),
-  fhDeltaEtaAwayParton(g.fhDeltaEtaAwayParton), fhDeltaPhiAwayParton(g.fhDeltaPhiAwayParton), 
-  fhDeltaPtAwayParton(g.fhDeltaPtAwayParton), fhPtRatAwayParton(g.fhPtRatAwayParton)
-{
-  // cpy ctor
 
-}
-
-//_________________________________________________________________________
-AliAnaParticlePartonCorrelation & AliAnaParticlePartonCorrelation::operator = (const AliAnaParticlePartonCorrelation & source)
-{
-  // assignment operator
-
-  if(this == &source)return *this;
-  ((AliAnaPartCorrBaseClass *)this)->operator=(source);
-
-  fhDeltaEtaAwayParton = source.fhDeltaEtaAwayParton;
-  fhDeltaPhiAwayParton = source.fhDeltaPhiAwayParton;
-  fhDeltaPtAwayParton = source.fhDeltaPtAwayParton;
-  fhPtRatAwayParton = source.fhPtRatAwayParton;
-  fhDeltaEtaNearParton = source.fhDeltaEtaNearParton;
-  fhDeltaPhiNearParton = source.fhDeltaPhiNearParton;
-  fhDeltaPtNearParton = source.fhDeltaPtNearParton;
-  fhPtRatNearParton = source.fhPtRatNearParton;
-
-  return *this;
-
-}
-*/
-
-//________________________________________________________________________
+//________________________________________________________________
 TList *  AliAnaParticlePartonCorrelation::GetCreateOutputObjects()
 {  
   // Create histograms to be saved in output file 
-
+  
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ParticlePartonHistos") ; 
   
   fhDeltaPhiNearParton  = new TH2F
-    ("DeltaPhiNearParton","#phi_{particle} - #phi_{parton} vs p_{T particle}",
-     200,0,120,200,0,6.4); 
+  ("DeltaPhiNearParton","#phi_{particle} - #phi_{parton} vs p_{T particle}",
+   200,0,120,200,0,6.4); 
   fhDeltaPhiNearParton->SetYTitle("#Delta #phi");
   fhDeltaPhiNearParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhDeltaPhiNearParton);
   
   fhDeltaEtaNearParton  = new TH2F
-    ("DeltaEtaNearParton","#eta_{particle} - #eta_{parton} vs p_{T particle}",
-     200,0,120,200,-2,2); 
+  ("DeltaEtaNearParton","#eta_{particle} - #eta_{parton} vs p_{T particle}",
+   200,0,120,200,-2,2); 
   fhDeltaEtaNearParton->SetYTitle("#Delta #eta");
   fhDeltaEtaNearParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhDeltaEtaNearParton);
   
   fhDeltaPtNearParton  = new TH2F
-    ("DeltaPtNearParton","#p_{T particle} - #p_{T parton} vs p_{T particle}",
-     200,0,120,100,-10,10); 
+  ("DeltaPtNearParton","#p_{T particle} - #p_{T parton} vs p_{T particle}",
+   200,0,120,100,-10,10); 
   fhDeltaPtNearParton->SetYTitle("#Delta #p_{T}");
   fhDeltaPtNearParton->SetXTitle("p_{T particle} (GeV/c)"); 
   outputContainer->Add(fhDeltaPtNearParton);
   
   fhPtRatNearParton  = new TH2F
-    ("PtRatNearParton","#p_{T parton} / #p_{T particle} vs p_{T particle}",
-     200,0,120,200,0,5); 
+  ("PtRatNearParton","#p_{T parton} / #p_{T particle} vs p_{T particle}",
+   200,0,120,200,0,5); 
   fhPtRatNearParton->SetYTitle("ratio");
   fhPtRatNearParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhPtRatNearParton);
   
   fhDeltaPhiAwayParton  = new TH2F
-    ("DeltaPhiAwayParton","#phi_{particle} - #phi_{parton} vs p_{T particle}",
-     200,0,120,200,0,6.4); 
+  ("DeltaPhiAwayParton","#phi_{particle} - #phi_{parton} vs p_{T particle}",
+   200,0,120,200,0,6.4); 
   fhDeltaPhiAwayParton->SetYTitle("#Delta #phi");
   fhDeltaPhiAwayParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhDeltaPhiAwayParton);
   
   fhDeltaEtaAwayParton  = new TH2F
-    ("DeltaEtaAwayParton","#eta_{particle} - #eta_{parton} vs p_{T particle}",
-     200,0,120,200,-2,2); 
+  ("DeltaEtaAwayParton","#eta_{particle} - #eta_{parton} vs p_{T particle}",
+   200,0,120,200,-2,2); 
   fhDeltaEtaAwayParton->SetYTitle("#Delta #eta");
   fhDeltaEtaAwayParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhDeltaEtaAwayParton);
   
   fhDeltaPtAwayParton  = new TH2F
-    ("DeltaPtAwayParton","#p_{T particle} - #p_{T parton} vs p_{T particle}",
-     200,0,120,100,-10,10); 
+  ("DeltaPtAwayParton","#p_{T particle} - #p_{T parton} vs p_{T particle}",
+   200,0,120,100,-10,10); 
   fhDeltaPtAwayParton->SetYTitle("#Delta #p_{T}");
   fhDeltaPtAwayParton->SetXTitle("p_{T particle} (GeV/c)"); 
   outputContainer->Add(fhDeltaPtAwayParton);
   
   fhPtRatAwayParton  = new TH2F
-    ("PtRatAwayParton","#p_{T parton} / #p_{T particle} vs p_{T particle}",
-     200,0,120,200,0,5); 
+  ("PtRatAwayParton","#p_{T parton} / #p_{T particle} vs p_{T particle}",
+   200,0,120,200,0,5); 
   fhPtRatAwayParton->SetYTitle("ratio");
   fhPtRatAwayParton->SetXTitle("p_{T particle} (GeV/c)");
   outputContainer->Add(fhPtRatAwayParton);
   
   return outputContainer;
-
+  
 }
 
-//____________________________________________________________________________
+//____________________________________________________
 void AliAnaParticlePartonCorrelation::InitParameters()
 {
   
@@ -158,10 +123,10 @@ void AliAnaParticlePartonCorrelation::InitParameters()
   SetInputAODName("PWG4Particle");
   SetAODObjArrayName("Partons");  
   AddToHistogramsName("AnaPartonCorr_");
-
+  
 }
 
-//__________________________________________________________________
+//_____________________________________________________________________
 void AliAnaParticlePartonCorrelation::Print(const Option_t * opt) const
 {
   
@@ -170,11 +135,11 @@ void AliAnaParticlePartonCorrelation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
-
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
+  
 } 
 
-//__________________________________________________________________
+//__________________________________________________________
 void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()  
 {
   //Particle-Parton Correlation Analysis, create AODs
@@ -187,8 +152,8 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
   }
 	
   if(strcmp(GetInputAODBranch()->GetClass()->GetName(), "AliAODPWG4ParticleCorrelation")){
-	printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
-	abort();
+    printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - Wrong type of AOD object, change AOD class name in input AOD: It should be <AliAODPWG4ParticleCorrelation> and not <%s> \n",GetInputAODBranch()->GetClass()->GetName());
+    abort();
   }	
 	
   if(GetDebug() > 1){
@@ -212,7 +177,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
     }
     
     //Fill AOD reference only with partons
-
+    
     //Array with reference to partons, initialize
     TObjArray * objarray  = NULL;
     Int_t nrefs = 0;
@@ -228,16 +193,16 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD()
       }
       objarray->Add(parton);
     }//parton loop
-	
+    
     if(objarray->GetEntriesFast() > 0) particle->AddObjArray(objarray);
-
+    
   }//Aod branch loop
   
   if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillAOD() - End fill AODs \n");
 }
 
-//__________________________________________________________________
-void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()  
+//_________________________________________________________________
+void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() 
 {
   //Particle-Parton Correlation Analysis, fill histograms
   if(!GetInputAODBranch()){
@@ -254,7 +219,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - No Stack available, STOP\n");
     abort();
   }
- 
+  
   //Loop on stored AOD particles
   Int_t naod = GetInputAODBranch()->GetEntriesFast();
   TParticle *  mom = NULL ;
@@ -268,13 +233,13 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     Int_t imom = particle->GetLabel();
     Int_t iparent  = 2000;
     Int_t iawayparent = -1;
-
+    
     TObjArray * objarray = particle->GetObjArray(GetAODObjArrayName());
     if(!(objarray) || (objarray->GetEntriesFast() < 7) ) {
       printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Reference list with partons not filled, STOP analysis\n");
       abort();
     }
-
+    
     //Check and get indeces of mother and parton    
     if(imom < 8 ) iparent = imom ;   //mother is already a parton
     else if (imom <  stack->GetNtrack()) {
@@ -289,7 +254,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
             iparent = mom->GetFirstMother();
           }
           else iparent = -1;
-        //cout<<" while iparent "<<iparent<<endl;
+          //cout<<" while iparent "<<iparent<<endl;
         } 
       }
     }
@@ -301,7 +266,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       if(GetDebug() > 0 ) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Failed to find appropriate parton, index %d", iparent);
       continue ;
     }
-
+    
     //Near parton is the parton that fragmented and created the mother    
     TParticle * nearParton = (TParticle*) objarray->At(iparent);
     Float_t  ptNearParton    = nearParton->Pt();
@@ -319,7 +284,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
       printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - Parent parton is not final state, skip \n");
       continue;
     }
-
+    
     //Away parton is the other final parton.
     TParticle * awayParton = (TParticle*) objarray->At(iawayparent);
     Float_t  ptAwayParton    = awayParton->Pt();
@@ -331,7 +296,7 @@ void  AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms()
     fhPtRatAwayParton->Fill(ptTrigg,ptAwayParton/ptTrigg);
     
   }
-
+  
   if(GetDebug() > 1) printf("AliAnaParticlePartonCorrelation::MakeAnalysisFillHistograms() - End fill histograms \n");
   
 } 

@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class to collect two-photon invariant mass distributions for
@@ -21,7 +20,7 @@
 // it will do nothing if executed alone
 //
 //-- Author: Dmitri Peressounko (RRC "KI") 
-//-- Adapted to PartCorr frame by Lamia Benhabib (SUBATECH)
+//-- Adapted to CaloTrackCorr frame by Lamia Benhabib (SUBATECH)
 //-- and Gustavo Conesa (INFN-Frascati)
 //_________________________________________________________________________
 
@@ -59,7 +58,7 @@
 ClassImp(AliAnaPi0)
 
 //________________________________________________________________________________________________________________________________________________  
-AliAnaPi0::AliAnaPi0() : AliAnaPartCorrBaseClass(),
+AliAnaPi0::AliAnaPi0() : AliAnaCaloTrackCorrBaseClass(),
 fDoOwnMix(kFALSE),           fEventsList(0x0), 
 fCalorimeter(""),            fNModules(12),              
 fUseAngleCut(kFALSE),        fUseAngleEDepCut(kFALSE),     fAngleCut(0),                 fAngleMaxCut(7.),
@@ -262,25 +261,25 @@ TList * AliAnaPi0::GetCreateOutputObjects()
   char key[buffersize] ;
   char title[buffersize] ;
   
-  Int_t nptbins   = GetHistoPtBins();
-  Int_t nphibins  = GetHistoPhiBins();
-  Int_t netabins  = GetHistoEtaBins();
-  Float_t ptmax   = GetHistoPtMax();
-  Float_t phimax  = GetHistoPhiMax();
-  Float_t etamax  = GetHistoEtaMax();
-  Float_t ptmin   = GetHistoPtMin();
-  Float_t phimin  = GetHistoPhiMin();
-  Float_t etamin  = GetHistoEtaMin();	
+  Int_t nptbins   = GetHistogramRanges()->GetHistoPtBins();
+  Int_t nphibins  = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t netabins  = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax  = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin  = GetHistogramRanges()->GetHistoEtaMin();	
 	
-  Int_t nmassbins = GetHistoMassBins();
-  Int_t nasymbins = GetHistoAsymmetryBins();
-  Float_t massmax = GetHistoMassMax();
-  Float_t asymmax = GetHistoAsymmetryMax();
-  Float_t massmin = GetHistoMassMin();
-  Float_t asymmin = GetHistoAsymmetryMin();
-  Int_t ntrmbins  = GetHistoTrackMultiplicityBins();
-  Int_t ntrmmax   = GetHistoTrackMultiplicityMax();
-  Int_t ntrmmin   = GetHistoTrackMultiplicityMin(); 
+  Int_t nmassbins = GetHistogramRanges()->GetHistoMassBins();
+  Int_t nasymbins = GetHistogramRanges()->GetHistoAsymmetryBins();
+  Float_t massmax = GetHistogramRanges()->GetHistoMassMax();
+  Float_t asymmax = GetHistogramRanges()->GetHistoAsymmetryMax();
+  Float_t massmin = GetHistogramRanges()->GetHistoMassMin();
+  Float_t asymmin = GetHistogramRanges()->GetHistoAsymmetryMin();
+  Int_t ntrmbins  = GetHistogramRanges()->GetHistoTrackMultiplicityBins();
+  Int_t ntrmmax   = GetHistogramRanges()->GetHistoTrackMultiplicityMax();
+  Int_t ntrmmin   = GetHistogramRanges()->GetHistoTrackMultiplicityMin(); 
   
   if(GetNCentrBin() > 1 && (fUseAverCellEBins||fUseAverClusterEBins||fUseAverClusterEDenBins)){
     
@@ -985,7 +984,7 @@ void AliAnaPi0::Print(const Option_t * /*opt*/) const
 {
   //Print some relevant parameters set for the analysis
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("Number of bins in Centrality:  %d \n",GetNCentrBin()) ;
   printf("Number of bins in Z vert. pos: %d \n",GetNZvertBin()) ;
@@ -2014,7 +2013,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
               }// pid bit cut loop
             }// icell loop
           }// pt cut loop
-          if(GetHistoTrackMultiplicityBins()){
+          if(GetHistogramRanges()->GetHistoTrackMultiplicityBins()){
             for(Int_t iasym = 0; iasym < fNAsymCuts; iasym++){
               if(a < fAsymCuts[iasym])fhRePtMult[iasym]->Fill(pt,GetTrackMultiplicity(),m) ;
             }

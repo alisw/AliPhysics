@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaParticleIsolation.cxx 28688 2008-09-11 15:04:07Z gconesab $ */
 
 //_________________________________________________________________________
 // Class for analysis of particle isolation
@@ -48,7 +47,7 @@ ClassImp(AliAnaParticleIsolation)
   
 //______________________________________________________________________________
   AliAnaParticleIsolation::AliAnaParticleIsolation() : 
-    AliAnaPartCorrBaseClass(),        fCalorimeter(""), 
+    AliAnaCaloTrackCorrBaseClass(),        fCalorimeter(""), 
     fReMakeIC(0),                     fMakeSeveralIC(0),
     // Several IC
     fNCones(0),                       fNPtThresFrac(0), 
@@ -183,15 +182,15 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("IsolatedParticleHistos") ; 
   
-  Int_t   nptbins  = GetHistoPtBins();
-  Int_t   nphibins = GetHistoPhiBins();
-  Int_t   netabins = GetHistoEtaBins();
-  Float_t ptmax    = GetHistoPtMax();
-  Float_t phimax   = GetHistoPhiMax();
-  Float_t etamax   = GetHistoEtaMax();
-  Float_t ptmin    = GetHistoPtMin();
-  Float_t phimin   = GetHistoPhiMin();
-  Float_t etamin   = GetHistoEtaMin();	
+  Int_t   nptbins  = GetHistogramRanges()->GetHistoPtBins();
+  Int_t   nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax    = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax   = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin    = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin   = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();	
   
   Int_t   nptsumbins    = fHistoNPtSumBins;
   Float_t ptsummax      = fHistoPtSumMax;
@@ -1057,7 +1056,7 @@ void AliAnaParticleIsolation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   
   printf("ReMake Isolation          = %d \n",  fReMakeIC) ;
   printf("Make Several Isolation    = %d \n",  fMakeSeveralIC) ;
