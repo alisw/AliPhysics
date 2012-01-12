@@ -1,23 +1,25 @@
+#ifndef ALIANAOMEGATOPI0GAMMA_H
+#define ALIANAOMEGATOPI0GAMMA_H
+
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // class to extract omega(782)->pi0+gamma->3gamma
 //
 //-- Author: Renzhuo Wan (IOPP-Wuhan, China)
 //_________________________________________________________________________
-#ifndef ALIANAOMEGATOPI0GAMMA_H
-#define ALIANAOMEGATOPI0GAMMA_H
+
 //Root
 class TList;
 class TH2F ;
 class TLorentzVector;
+
 //Analysis
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class TParticle;
 
-class AliAnaOmegaToPi0Gamma : public AliAnaPartCorrBaseClass {
+class AliAnaOmegaToPi0Gamma : public AliAnaCaloTrackCorrBaseClass {
   
   public: 
   

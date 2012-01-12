@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaPhoton.cxx 28688 2008-09-11 15:04:07Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -54,7 +53,7 @@ ClassImp(AliAnaPhoton)
   
 //____________________________
 AliAnaPhoton::AliAnaPhoton() : 
-    AliAnaPartCorrBaseClass(),    fCalorimeter(""), 
+    AliAnaCaloTrackCorrBaseClass(),    fCalorimeter(""), 
     fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.), 
     fRejectTrackMatch(0),         fTimeCutMin(-10000),          fTimeCutMax(10000),         
     fNCellsCut(0),                fFillSSHistograms(kFALSE),    
@@ -953,12 +952,12 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("PhotonHistos") ; 
 	
-  Int_t nptbins  = GetHistoPtBins();  Float_t ptmax  = GetHistoPtMax();  Float_t ptmin  = GetHistoPtMin(); 
-  Int_t nphibins = GetHistoPhiBins(); Float_t phimax = GetHistoPhiMax(); Float_t phimin = GetHistoPhiMin(); 
-  Int_t netabins = GetHistoEtaBins(); Float_t etamax = GetHistoEtaMax(); Float_t etamin = GetHistoEtaMin();	
-  Int_t ssbins   = GetHistoShowerShapeBins();  Float_t ssmax   = GetHistoShowerShapeMax();  Float_t ssmin   = GetHistoShowerShapeMin();
-  Int_t nbins    = GetHistoNClusterCellBins(); Int_t   nmax    = GetHistoNClusterCellMax(); Int_t   nmin    = GetHistoNClusterCellMin(); 
-  Int_t ntimebins= GetHistoTimeBins();         Float_t timemax = GetHistoTimeMax();         Float_t timemin = GetHistoTimeMin();       
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin(); 
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins(); Float_t phimax = GetHistogramRanges()->GetHistoPhiMax(); Float_t phimin = GetHistogramRanges()->GetHistoPhiMin(); 
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins(); Float_t etamax = GetHistogramRanges()->GetHistoEtaMax(); Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
+  Int_t ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax   = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin   = GetHistogramRanges()->GetHistoShowerShapeMin();
+  Int_t nbins    = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax    = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin    = GetHistogramRanges()->GetHistoNClusterCellMin(); 
+  Int_t ntimebins= GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();       
 
   TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 9 ;  i++) 
@@ -2015,7 +2014,7 @@ void AliAnaPhoton::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
 
   printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;
   printf("Min Distance to Bad Channel   = %2.1f\n",fMinDist);

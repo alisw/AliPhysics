@@ -2,7 +2,6 @@
 #define ALIANAPARTICLEJETLEADINGCONECORRELATION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class that contains the algorithm for the reconstruction of jet, cone around leading particle
@@ -25,9 +24,9 @@ class AliVCluster;
 class AliCaloTrackReader;
 class AliNeutralMesonSelection;
 
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaParticleJetLeadingConeCorrelation : public AliAnaPartCorrBaseClass {
+class AliAnaParticleJetLeadingConeCorrelation : public AliAnaCaloTrackCorrBaseClass {
 
 public: 
   AliAnaParticleJetLeadingConeCorrelation() ; // default ctor

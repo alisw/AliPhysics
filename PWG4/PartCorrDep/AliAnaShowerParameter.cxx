@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaPhoton.cxx 28688 2008-09-11 15:04:07Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -43,7 +42,6 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskParticleCorrelation.h"
 #include "AliAODEvent.h"
 
 
@@ -51,7 +49,7 @@ ClassImp(AliAnaShowerParameter)
 
 //____________________________________________________________________________
 AliAnaShowerParameter::AliAnaShowerParameter() : 
-AliAnaPartCorrBaseClass(), fCalorimeter(""), fNCellsCutMin(0),
+AliAnaCaloTrackCorrBaseClass(), fCalorimeter(""), fNCellsCutMin(0),
 fNCellsCutMax(0), fLambdaCut(0), fTimeCutMin(-1), fTimeCutMax(9999999),
 fhNClusters(0), fhNCellCluster(0), fhEtaPhiPtCluster(0), 
 fhLambdaPtCluster(0), 
@@ -115,15 +113,15 @@ TList *  AliAnaShowerParameter::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("PhotonHistos") ; 
 	
-  Int_t nptbins  = GetHistoPtBins();
-  Int_t nphibins = GetHistoPhiBins();
-  Int_t netabins = GetHistoEtaBins();
-  Float_t ptmax  = GetHistoPtMax();
-  Float_t phimax = GetHistoPhiMax();
-  Float_t etamax = GetHistoEtaMax();
-  Float_t ptmin  = GetHistoPtMin();
-  Float_t phimin = GetHistoPhiMin();
-  Float_t etamin = GetHistoEtaMin();	
+  Int_t nptbins  = GetHistogramRanges()->GetHistoPtBins();
+  Int_t nphibins = GetHistogramRanges()->GetHistoPhiBins();
+  Int_t netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax  = GetHistogramRanges()->GetHistoPtMax();
+  Float_t phimax = GetHistogramRanges()->GetHistoPhiMax();
+  Float_t etamax = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin  = GetHistogramRanges()->GetHistoPtMin();
+  Float_t phimin = GetHistogramRanges()->GetHistoPhiMin();
+  Float_t etamin = GetHistogramRanges()->GetHistoEtaMin();	
   
   //General non-MC Cluster histograms
   fhNClusters = new TH1F ("hNClusters","NClusters",21,-0.5,20.5); 
@@ -336,7 +334,7 @@ void AliAnaShowerParameter::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;
   printf("Min number of cells in cluster is        > %f \n", fNCellsCutMin);
   printf("Max number of cells in cluster is        > %f \n", fNCellsCutMax);

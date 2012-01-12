@@ -12,7 +12,7 @@ TString kData          = "ESD";
 TString kInputDataType = "ESD";
 TString kCalorimeter   = "EMCAL";
 
-AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
+AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackCorr(
                                                     const TString data          = "AOD",
                                                     const TString calorimeter   = "EMCAL", 
                                                     const Bool_t  printSettings = kFALSE,
@@ -66,7 +66,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   
   // #### Configure analysis ####
     
-  AliAnaPartCorrMaker * maker = new AliAnaPartCorrMaker();
+  AliAnaCaloTrackCorrMaker * maker = new AliAnaCaloTrackCorrMaker();
   
   // General frame setting and configuration
   maker->SetReader   (ConfigureReader()   ); 
@@ -74,7 +74,6 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   
   // Analysis tasks setting and configuration
   Int_t n = 0;//Analysis number, order is important
-  
   maker->AddAnalysis(ConfigureQAAnalysis()    , n++);  
 
   // Isolation settings
@@ -88,7 +87,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
     maker->AddAnalysis(ConfigureIsolationAnalysis("Hadron",partInCone,thresType), n++); // track isolation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kFALSE), n++);       // track-track correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Hadron",kTRUE) , n++);       // Isolated track-track correlation
-  }  
+  } 
   else
   {
     maker->AddAnalysis(ConfigurePhotonAnalysis(), n++); // Photon cluster selection
@@ -98,18 +97,21 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
     
     maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", partInCone,thresType), n++); // Photon isolation
     maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0",    partInCone,thresType), n++); // Pi0 isolation
-        
+  
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kFALSE), n++); // Gamma hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Photon",kTRUE) , n++); // Isolated gamma hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kFALSE), n++); // Pi0 hadron correlation
     maker->AddAnalysis(ConfigureHadronCorrelationAnalysis("Pi0"   ,kTRUE) , n++); // Isolated pi0 hadron correlation
-    
-    //maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCaloTracks), n++); // Pi0 (calo+conversion) event by event selection, 
-    // and photon tagging from decay, need to execute at the same time conversions analysis
-    //maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0Conv",partInCone,thresType), n++); // Pi0 (Calo+Conv) isolation
-    
+    /*
+    if(kInputDataType=="ESD"){
+      printf("* Configure conversion analysis in part corr\n");
+      maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kIMCaloTracks), n++); // Pi0 (calo+conversion) event by event selection, 
+      // and photon tagging from decay, need to execute at the same time conversions analysis
+      maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0Conv",partInCone,thresType), n++); // Pi0 (Calo+Conv) isolation
+    }
+    */
   }
-  
+
   maker->SetAnaDebug(-1)  ;
   maker->SwitchOnHistogramsMaker()  ;
   if(kData.Contains("delta")) maker->SwitchOffAODsMaker() ;
@@ -121,7 +123,7 @@ AliAnalysisTaskParticleCorrelation *AddTaskPartCorr(
   
   // Create task
   
-  AliAnalysisTaskParticleCorrelation * task = new AliAnalysisTaskParticleCorrelation (Form("PartCorr%s_Trig%s_Cl%s",kCalorimeter.Data(),kTrig.Data(),kClusterArray.Data()));
+  AliAnalysisTaskCaloTrackCorrelation * task = new AliAnalysisTaskCaloTrackCorrelation (Form("PartCorr%s_Trig%s_Cl%s",kCalorimeter.Data(),kTrig.Data(),kClusterArray.Data()));
   task->SetConfigFileName(""); //Don't configure the analysis via configuration file.
   //task->SetDebugLevel(-1);
   task->SetBranches("ESD:AliESDRun.,AliESDHeader"); //just a trick to get Constantin's analysis to work
@@ -284,7 +286,7 @@ AliCaloTrackReader * ConfigureReader()
     
     // Centrality
     reader->SetCentralityClass("V0M");
-    reader->SetCentralityOpt("10");  // 10 centrality bins
+    reader->SetCentralityOpt(10);  // 10 (c= 0-10, 10-20 ...), 20  (c= 0-5, 5-10 ...) or 100 (c= 1, 2, 3 ..)
     reader->SetCentralityBin(-1,-1); // Accept all events, if not select range
     
     // Event plane (only used in AliAnaPi0 for the moment)
@@ -495,12 +497,15 @@ AliAnaPhoton* ConfigurePhotonAnalysis()
   //Set Histograms name tag, bins and ranges
   
   anaphoton->AddToHistogramsName("AnaPhoton_");
-  SetHistoRangeAndNBins(anaphoton); // see method below
+  SetHistoRangeAndNBins(anaphoton->GetHistogramRanges()); // see method below
   
   // Number of particle type MC histograms
   anaphoton->FillNOriginHistograms(8);
   anaphoton->FillNPrimaryHistograms(4);
   
+  if(kSimulation) anaphoton->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anaphoton->SwitchOffDataMC() ;
+
   if(kPrint) anaphoton->Print("");
   
   return anaphoton;
@@ -532,8 +537,11 @@ AliAnaChargedParticles* ConfigureChargedAnalysis()
   //Set Histograms name tag, bins and ranges
   
   anatrack->AddToHistogramsName("AnaHadrons_");
-  SetHistoRangeAndNBins(anatrack); // see method below
+  SetHistoRangeAndNBins(anatrack->GetHistogramRanges()); // see method below
 
+  if(kSimulation) anatrack->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anatrack->SwitchOffDataMC() ;
+  
   if(kPrint) anatrack->Print("");
   
   return anatrack;
@@ -586,8 +594,11 @@ AliAnaPi0* ConfigurePi0Analysis()
   //Set Histograms name tag, bins and ranges
   
   anapi0->AddToHistogramsName("AnaPi0_");
-  SetHistoRangeAndNBins(anapi0); // see method below
+  SetHistoRangeAndNBins(anapi0->GetHistogramRanges()); // see method below
   
+  if(kSimulation) anapi0->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anapi0->SwitchOffDataMC() ;
+
   return anapi0;
   
 }
@@ -635,7 +646,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,
   //Set Histograms name tag, bins and ranges
   
   anapi0ebe->AddToHistogramsName(Form("Ana%s%sEbE_",particle.Data(),opt.Data()));
-  SetHistoRangeAndNBins(anapi0ebe); // see method below
+  SetHistoRangeAndNBins(anapi0ebe->GetHistogramRanges()); // see method below
+  
+  if(kSimulation) anapi0ebe->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anapi0ebe->SwitchOffDataMC() ;
   
   if(kPrint) anapi0ebe->Print("");
   
@@ -681,10 +695,13 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle="Photon",
   //Set Histograms name tag, bins and ranges
   
   anaisol->AddToHistogramsName(Form("AnaIsol%s_",particle.Data()));
-  SetHistoRangeAndNBins(anaisol); // see method below
+  SetHistoRangeAndNBins(anaisol->GetHistogramRanges()); // see method below
   
   if(kPrint) ic     ->Print("");
   if(kPrint) anaisol->Print("");
+  
+  if(kSimulation) anaisol->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anaisol->SwitchOffDataMC() ;
   
   return anaisol;
   
@@ -727,7 +744,10 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //Set Histograms name tag, bins and ranges
   
   anacorrhadron->AddToHistogramsName(Form("Ana%sHadronCorr_Iso%d_",particle.Data(),bIsolated));
-  SetHistoRangeAndNBins(anacorrhadron); // see method below
+  SetHistoRangeAndNBins(anacorrhadron->GetHistogramRanges()); // see method below
+  
+  if(kSimulation) anacorrhadron->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anacorrhadron->SwitchOffDataMC() ;
   
   if(kPrint) anacorrhadron->Print("");  
   
@@ -768,8 +788,7 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   anaQA->SwitchOffFillAllTH3Histogram();
   anaQA->SwitchOffFillAllPositionHistogram();
   anaQA->SwitchOffFillAllPositionHistogram2();
-  
-  anaQA->SwitchOffStudyBadClusters() ; // On only for EMCAL
+  anaQA->SwitchOffStudyBadClusters();
   anaQA->SwitchOffStudyClustersAsymmetry();
   anaQA->SwitchOffStudyWeight();
   anaQA->SwitchOffFillAllTrackMatchingHistogram();
@@ -788,7 +807,10 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
   }
   
   anaQA->AddToHistogramsName("QA_"); //Begining of histograms name
-  SetHistoRangeAndNBins(anaQA); // see method below
+  SetHistoRangeAndNBins(anaQA->GetHistogramRanges()); // see method below
+  
+  if(kSimulation) anaQA->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
+  else            anaQA->SwitchOffDataMC() ;
   
   if(kPrint) anaQA->Print("");	
   
@@ -797,13 +819,10 @@ AliAnaCalorimeterQA* ConfigureQAAnalysis()
 }
 
 //________________________________________________________
-void SetHistoRangeAndNBins (AliAnaPartCorrBaseClass* ana)
+void SetHistoRangeAndNBins (AliHistogramRanges* ana)
 {
   // Set common bins for all analysis and MC histograms filling
-  
-  if(kSimulation) ana->SwitchOnDataMC() ;//Access MC stack and fill more histograms, AOD MC not implemented yet.
-  else            ana->SwitchOffDataMC() ;
-  
+    
   ana->SetHistoPtRangeAndNBins(0, 100, 250) ; // Energy and pt histograms
   
   if(kCalorimeter=="EMCAL"){
@@ -824,6 +843,11 @@ void SetHistoRangeAndNBins (AliAnaPartCorrBaseClass* ana)
     ana->SetHistoPhiRangeAndNBins(260*TMath::DegToRad(), 320*TMath::DegToRad(), 60) ;
     ana->SetHistoEtaRangeAndNBins(-0.13, 0.13, 130) ;
     
+  }
+  
+  if(kClusterArray==""  && kCalorimeter!="PHOS"){ // Tracks analysis
+    ana->SetHistoPhiRangeAndNBins(0, TMath::TwoPi(), 200) ;
+    ana->SetHistoEtaRangeAndNBins(-1.5, 1.5, 300) ;
   }
   
   ana->SetHistoShowerShapeRangeAndNBins(0, 3, 300);

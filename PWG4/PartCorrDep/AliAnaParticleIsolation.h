@@ -2,7 +2,6 @@
 #define ALIANAPARTICLEISOLATION_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaParticleIsolation.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 
@@ -20,12 +19,12 @@ class TList ;
 class TObjString;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 class AliAODPWG4Particle;
 class AliAODPWG4ParticleCorrelation ;
 
 
-class AliAnaParticleIsolation : public AliAnaPartCorrBaseClass {
+class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
 
  public:   
   AliAnaParticleIsolation() ; // default ctor

@@ -1,7 +1,7 @@
 /* $Id:  $ */
 //--------------------------------------------------
 // Example macro to do analysis with the 
-// analysis classes in PWG4PartCorr
+// analysis classes in CaloTrackCorrelations
 // Can be executed with Root and AliRoot
 //
 // Pay attention to the options and definitions
@@ -147,6 +147,7 @@ void ana(Int_t mode=mGRID)
     }
   }
   
+  
   // AOD output handler
   if(kInputData!="deltaAOD" && outAOD)
   {
@@ -172,10 +173,10 @@ void ana(Int_t mode=mGRID)
     // AOD handler
     AliAODInputHandler *aodHandler = new AliAODInputHandler();
     mgr->SetInputEventHandler(aodHandler);
-    if(kInputData == "deltaAOD") aodHandler->AddFriend("deltaAODPartCorr.root");
+    if(kInputData == "deltaAOD") aodHandler->AddFriend("deltaAODCaloTrackCorr.root");
     cout<<"AOD handler "<<mgr->GetInputEventHandler()<<endl;
   }
-  //mgr->RegisterExternalFile("deltaAODPartCorr.root");
+  //mgr->RegisterExternalFile("deltaAODCaloTrackCorr.root");
   //mgr->SetDebugLevel(1); // For debugging, do not uncomment if you want no messages.
   
   TString outputFile = AliAnalysisManager::GetCommonFileName(); 
@@ -193,37 +194,58 @@ void ana(Int_t mode=mGRID)
   {
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskCentrality.C");
     AliCentralitySelectionTask *taskCentrality = AddTaskCentrality();
-    taskCentrality->SetPass(2); // remember to set the pass you are processing!!!
   }
   
   // Simple event counting tasks
   AddTaskCounter("");   // All
-  AddTaskCounter("MB"); // Min Bias
+  //AddTaskCounter("MB"); // Min Bias
   if(!kMC)
   {
     AddTaskCounter("INT7"); // Min Bias
-    AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
+    //AddTaskCounter("EMC1"); // Trig Th > 1.5 GeV approx
     AddTaskCounter("EMC7"); // Trig Th > 4-5 GeV 
     AddTaskCounter("PHOS"); //  
   }
+    
+  // -----------------
+  // Photon conversion
+  // ----------------- 
+/*  
+  if(kInputData=="ESD"){
+    printf("* Configure photon conversion analysis in macro \n");
+    TString arguments = "-run-on-train -use-own-xyz  -force-aod -mc-off ";
+    gROOT->LoadMacro("$ALICE_ROOT/PWG4/macros/ConfigGammaConversion.C");
+    AliAnalysisTaskGammaConversion * taskGammaConversion = 
+    ConfigGammaConversion(arguments,mgr->GetCommonInputContainer());
+    taskGammaConversion->SelectCollisionCandidates();
+    
+    // Gamma Conversion AOD to AODPWG4Particle
+    AliAnalysisTaskGCPartToPWG4Part * taskGCToPC = new AliAnalysisTaskGCPartToPWG4Part("GCPartToPWG4Part");
+    taskGCToPC->SetGammaCutId("90035620401003321022000000090");
+    mgr->AddTask(taskGCToPC);
+    mgr->ConnectInput  (taskGCToPC, 0, mgr->GetCommonInputContainer() );
+    mgr->ConnectOutput (taskGCToPC, 0, mgr->GetCommonOutputContainer()); 
+  }
+*/  
   
   Bool_t kPrint   = kFALSE;
   Bool_t deltaAOD = kFALSE;
+  gROOT->LoadMacro("AddTaskCaloTrackCorr.C");   // $ALICE_ROOT/PWG4/macros
+  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros  
   
-  gROOT->LoadMacro("AddTaskPartCorr.C");        // $ALICE_ROOT/PWG4/macros
-  gROOT->LoadMacro("AddTaskEMCALClusterize.C"); // $ALICE_ROOT/PWG4/CaloCalib/macros
   
   // ------
   // Tracks
   // ------  
-  
+
   // Track isolation-correlation analysis and EMCAL QA analysis
-  AliAnalysisTaskParticleCorrelation *anamb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+  AliAnalysisTaskCaloTrackCorrelation *anamb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                kYear,kRun,kCollision,"INT7","");   // PHOS trigger
   
-  AliAnalysisTaskParticleCorrelation *anatr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+  AliAnalysisTaskCaloTrackCorrelation *anatr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                kYear,kRun,kCollision,"EMC7","");  
   
+ 
   // -----
   // EMCAL
   // -----  
@@ -245,18 +267,19 @@ void ana(Int_t mode=mGRID)
   if(!kMC)
   {
     
-    AliAnalysisTaskParticleCorrelation *anav1tr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1tr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                    kYear,kRun,kCollision,"EMC7",arrayNameV1);
     
-    AliAnalysisTaskParticleCorrelation *anav1mb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1mb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                    kYear,kRun,kCollision,"INT7",arrayNameV1);
   }
   else 
   {// No trigger (should be MB, but for single particle productions it does not work)
     
-    AliAnalysisTaskParticleCorrelation *anav1  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                  kYear,kRun,kCollision,"",arrayNameV1);
   }
+  
   
   
   //Analysis with clusterizer V2
@@ -269,18 +292,19 @@ void ana(Int_t mode=mGRID)
   if(!kMC)
   {
     
-    AliAnalysisTaskParticleCorrelation *anav2tr  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav2tr  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                    kYear,kRun,kCollision,"EMC7",arrayNameV2);
     
-    AliAnalysisTaskParticleCorrelation *anav2mb  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav2mb  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                    kYear,kRun,kCollision,"INT7",arrayNameV2);
   }
   else 
   {// No trigger (should be MB, but for single particle productions it does not work)
-    AliAnalysisTaskParticleCorrelation *anav2  = AddTaskPartCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav2  = AddTaskCaloTrackCorr(kInputData, "EMCAL",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                  kYear,kRun,kCollision,"",arrayNameV2);    
   }
-  
+ 
+  /*
   // -----
   // PHOS
   // -----
@@ -290,22 +314,22 @@ void ana(Int_t mode=mGRID)
   if(!kMC)
   {
     
-    AliAnalysisTaskParticleCorrelation *anav1tr = AddTaskPartCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1tr = AddTaskCaloTrackCorr(kInputData, "PHOS", kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                   kYear,kRun,kCollision,"PHOS",""); // PHOS trigger
     
-    
-    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1mb = AddTaskCaloTrackCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                   kYear,kRun,kCollision,"INT7","");
     
   }
   else 
   {// No trigger
     
-    AliAnalysisTaskParticleCorrelation *anav1mb = AddTaskPartCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
+    AliAnalysisTaskCaloTrackCorrelation *anav1mb = AddTaskCaloTrackCorr(kInputData, "PHOS",   kPrint,kMC, deltaAOD,  outputFile.Data(), 
                                                                   kYear,kRun,kCollision,"","");
     
   }
-  
+
+  */
   //-----------------------
   // Run the analysis
   //-----------------------    
@@ -415,6 +439,10 @@ void  LoadLibraries(Int_t mode)
   //gSystem->Load("libJETAN");
   //gSystem->Load("FASTJETAN");
   //gSystem->Load("PWG4JetTasks");
+
+  gSystem->Load("libCORRFW.so");
+  gSystem->Load("libPWG4GammaConv.so"); 
+  //SetupPar("PWG4GammaConv"); 
   
   // needed for plugin?
   gSystem->AddIncludePath("-I$ALICE_ROOT");

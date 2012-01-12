@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class for the analysis of particle - hadron correlations
@@ -58,7 +57,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
 
 //___________________________________________________________________
   AliAnaParticleHadronCorrelation::AliAnaParticleHadronCorrelation(): 
-    AliAnaPartCorrBaseClass(),
+    AliAnaCaloTrackCorrBaseClass(),
     fMinTriggerPt(0.),   
     fMaxAssocPt(1000.),             fMinAssocPt(0.),   
     fDeltaPhiMaxCut(0.),            fDeltaPhiMinCut(0.),   
@@ -172,9 +171,9 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("CorrelationHistos") ; 
   
-  Int_t   nptbins = GetHistoPtBins(); Int_t  nphibins = GetHistoPhiBins(); Int_t   netabins = GetHistoEtaBins();
-  Float_t ptmax   = GetHistoPtMax();  Float_t phimax  = GetHistoPhiMax();  Float_t etamax   = GetHistoEtaMax();
-  Float_t ptmin   = GetHistoPtMin();  Float_t phimin  = GetHistoPhiMin();  Float_t etamin   = GetHistoEtaMin();	
+  Int_t   nptbins = GetHistogramRanges()->GetHistoPtBins(); Int_t  nphibins = GetHistogramRanges()->GetHistoPhiBins(); Int_t   netabins = GetHistogramRanges()->GetHistoEtaBins();
+  Float_t ptmax   = GetHistogramRanges()->GetHistoPtMax();  Float_t phimax  = GetHistogramRanges()->GetHistoPhiMax();  Float_t etamax   = GetHistogramRanges()->GetHistoEtaMax();
+  Float_t ptmin   = GetHistogramRanges()->GetHistoPtMin();  Float_t phimin  = GetHistogramRanges()->GetHistoPhiMin();  Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();	
   
   fhPtLeading  = new TH1F ("hPtLeading","p_T distribution of leading particles", nptbins,ptmin,ptmax); 
   fhPtLeading->SetXTitle("p_{T}^{trig} (GeV/c)");
@@ -1100,7 +1099,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       fhPhiCharged     ->Fill(pt,phi);
       fhDeltaEtaCharged->Fill(ptTrig,aodParticle->Eta()-eta);
       fhDeltaPhiCharged->Fill(ptTrig, deltaPhi);
-      fhDeltaPhiDeltaEtaCharged->Fill(deltaPhi,aodParticle->Eta()-eta);
+      if(pt >2 ) fhDeltaPhiDeltaEtaCharged->Fill(deltaPhi,aodParticle->Eta()-eta);
       
       if(GetDebug() > 2 ) printf("AliAnaParticleHadronCorrelation::MakeChargedCorrelation() - Selected charge for momentum imbalance: pt %2.2f, phi %2.2f, eta %2.2f \n",pt,phi,eta);
       //fill different multiplicity histogram
@@ -1678,7 +1677,7 @@ void AliAnaParticleHadronCorrelation::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
   printf("Pt trigger           >  %3.2f\n", fMinTriggerPt) ;
   printf("Pt associated hadron <  %3.2f\n", fMaxAssocPt) ; 
   printf("Pt associated hadron >  %3.2f\n", fMinAssocPt) ;

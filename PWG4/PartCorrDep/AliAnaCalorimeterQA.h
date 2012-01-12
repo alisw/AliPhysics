@@ -2,7 +2,6 @@
 #define ALIANACALORIMETERQA_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: $ */
 
 //_________________________________________________________________________
 // Class to check results from simulations or reconstructed real data. 
@@ -22,9 +21,9 @@ class AliVCaloCells;
 class AliVCaloCluster;
 class AliVTrack;
 
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
  
-class AliAnaCalorimeterQA : public AliAnaPartCorrBaseClass {
+class AliAnaCalorimeterQA : public AliAnaCaloTrackCorrBaseClass {
   
 public: 
   AliAnaCalorimeterQA() ; // default ctor	

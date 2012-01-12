@@ -2,7 +2,6 @@
 #define ALIANAINSIDECLUSTERINVARIANTMASS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id: AliAnaInsideClusterInvariantMass.h 27413 2008-07-18 13:28:12Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -20,9 +19,9 @@ class TObjString;
 class TLorentzVector;
 
 // --- ANALYSIS system ---
-#include "AliAnaPartCorrBaseClass.h"
+#include "AliAnaCaloTrackCorrBaseClass.h"
 
-class AliAnaInsideClusterInvariantMass : public AliAnaPartCorrBaseClass {
+class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
  public: 
   AliAnaInsideClusterInvariantMass() ; // default ctor

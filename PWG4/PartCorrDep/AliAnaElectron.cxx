@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliAnaElectron.cxx 28688 2008-09-11 15:04:07Z gconesab $ */
 
 //_________________________________________________________________________
 //
@@ -51,7 +50,7 @@ ClassImp(AliAnaElectron)
   
 //________________________________
 AliAnaElectron::AliAnaElectron() : 
-    AliAnaPartCorrBaseClass(),            fCalorimeter(""), 
+    AliAnaCaloTrackCorrBaseClass(),            fCalorimeter(""), 
     fMinDist(0.),                         fMinDist2(0.),                         fMinDist3(0.), 
     fTimeCutMin(-1),                      fTimeCutMax(999999),         
     fNCellsCut(0),                        fFillSSHistograms(kFALSE),             
@@ -395,14 +394,14 @@ TList *  AliAnaElectron::GetCreateOutputObjects()
   TList * outputContainer = new TList() ; 
   outputContainer->SetName("ElectronHistos") ; 
 	
-  Int_t nptbins     = GetHistoPtBins();           Float_t ptmax     = GetHistoPtMax();           Float_t ptmin     = GetHistoPtMin(); 
-  Int_t nphibins    = GetHistoPhiBins();          Float_t phimax    = GetHistoPhiMax();          Float_t phimin    = GetHistoPhiMin(); 
-  Int_t netabins    = GetHistoEtaBins();          Float_t etamax    = GetHistoEtaMax();          Float_t etamin    = GetHistoEtaMin();	
-  Int_t ssbins      = GetHistoShowerShapeBins();  Float_t ssmax     = GetHistoShowerShapeMax();  Float_t ssmin     = GetHistoShowerShapeMin();
-  Int_t nbins       = GetHistoNClusterCellBins(); Int_t   nmax      = GetHistoNClusterCellMax(); Int_t   nmin      = GetHistoNClusterCellMin(); 
-  Int_t ndedxbins   = GetHistodEdxBins();         Float_t dedxmax   = GetHistodEdxMax();         Float_t dedxmin   = GetHistodEdxMin();
-  Int_t nPoverEbins = GetHistoPOverEBins();       Float_t pOverEmax = GetHistoPOverEMax();       Float_t pOverEmin = GetHistoPOverEMin();
-  Int_t tbins       = GetHistoTimeBins() ;        Float_t tmax      = GetHistoTimeMax();         Float_t tmin      = GetHistoTimeMin();
+  Int_t nptbins     = GetHistogramRanges()->GetHistoPtBins();           Float_t ptmax     = GetHistogramRanges()->GetHistoPtMax();           Float_t ptmin     = GetHistogramRanges()->GetHistoPtMin(); 
+  Int_t nphibins    = GetHistogramRanges()->GetHistoPhiBins();          Float_t phimax    = GetHistogramRanges()->GetHistoPhiMax();          Float_t phimin    = GetHistogramRanges()->GetHistoPhiMin(); 
+  Int_t netabins    = GetHistogramRanges()->GetHistoEtaBins();          Float_t etamax    = GetHistogramRanges()->GetHistoEtaMax();          Float_t etamin    = GetHistogramRanges()->GetHistoEtaMin();	
+  Int_t ssbins      = GetHistogramRanges()->GetHistoShowerShapeBins();  Float_t ssmax     = GetHistogramRanges()->GetHistoShowerShapeMax();  Float_t ssmin     = GetHistogramRanges()->GetHistoShowerShapeMin();
+  Int_t nbins       = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax      = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin      = GetHistogramRanges()->GetHistoNClusterCellMin(); 
+  Int_t ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         Float_t dedxmax   = GetHistogramRanges()->GetHistodEdxMax();         Float_t dedxmin   = GetHistogramRanges()->GetHistodEdxMin();
+  Int_t nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       Float_t pOverEmax = GetHistogramRanges()->GetHistoPOverEMax();       Float_t pOverEmin = GetHistogramRanges()->GetHistoPOverEMin();
+  Int_t tbins       = GetHistogramRanges()->GetHistoTimeBins() ;        Float_t tmax      = GetHistogramRanges()->GetHistoTimeMax();         Float_t tmin      = GetHistogramRanges()->GetHistoTimeMin();
 
   fhdEdxvsE  = new TH2F ("hdEdxvsE","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
   fhdEdxvsE->SetXTitle("E (GeV)");
@@ -1275,7 +1274,7 @@ void AliAnaElectron::Print(const Option_t * opt) const
     return;
   
   printf("**** Print %s %s ****\n", GetName(), GetTitle() ) ;
-  AliAnaPartCorrBaseClass::Print(" ");
+  AliAnaCaloTrackCorrBaseClass::Print(" ");
 
   printf("Calorimeter            =     %s\n", fCalorimeter.Data()) ;
   printf(" %2.2f < dEdx < %2.2f  \n",fdEdxMin,fdEdxMax) ;
