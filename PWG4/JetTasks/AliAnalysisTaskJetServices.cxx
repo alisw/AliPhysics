@@ -654,6 +654,7 @@ void AliAnalysisTaskJetServices::UserExec(Option_t */*option*/)
       if(fUseAODInput&&fCentrality<=80){
 	if(fFilterAODCollisions&&aod){
 	  aodH->SetFillAOD(kTRUE);
+	  aodH->SetFillExtension(kTRUE);
 	}
       }
     }    
