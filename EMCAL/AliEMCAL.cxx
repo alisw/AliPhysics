@@ -474,13 +474,12 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         {
           AliDebug(1,"Initialized geometry with name <<EMCAL_FIRSTYEARV1>>");
         }
-        printf("Initialized geometry with name <<EMCAL_FIRSTYEARV1>>\n");
 
         return AliEMCALGeometry::GetInstance("EMCAL_FIRSTYEARV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
       else if(runNumber >= 140000 && runNumber <= 170593)
-      {//Default geometry
-        //Complete EMCAL geometry, 10 SM.
+      {
+        //Almost complete EMCAL geometry, 10 SM. Year 2011 configuration
         
         if(!geoName.Contains("COMPLETEV1"))
         {
@@ -491,12 +490,12 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         {
           AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETEV1>>");
         }
-        printf("Initialized geometry with name <<EMCAL_COMPLETEV1>>\n");
-
+        
         return AliEMCALGeometry::GetInstance("EMCAL_COMPLETEV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
-      else{ //Default geometry
-        //Complete EMCAL geometry, 10 SM.
+      else{ 
+        //Default geometry
+        //Complete EMCAL geometry, 12 SM. Year 2012 and on
         
         if(!geoName.Contains("COMPLETE12SMV1"))
         {
@@ -507,9 +506,7 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
         {
           AliDebug(1,"Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>");
         }
-        
-        printf("Initialized geometry with name <<EMCAL_COMPLETE12SMV1>>\n");
-        
+                
         return AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1","EMCAL",mcname,mctitle) ;// Set geometry with the name used in the configuration file
       }
     }
