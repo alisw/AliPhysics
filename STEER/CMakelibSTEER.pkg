@@ -108,6 +108,10 @@ set ( SRCS
     STEER/AliMinResSolve.cxx 
     STEER/AliParamSolver.cxx 
     STEER/AliGRPManager.cxx 
+    STEER/AliDCSArray.cxx 	 
+    STEER/AliLHCReader.cxx 	 
+    STEER/AliLHCDipValT.cxx 	 
+    STEER/AliLHCData.cxx
     STEER/AliCTPTimeParams.cxx 
     STEER/AliCTPInputTimeParams.cxx 
     STEER/AliLHCClockPhase.cxx 
