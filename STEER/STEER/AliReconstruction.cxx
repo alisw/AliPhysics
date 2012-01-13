@@ -3182,9 +3182,11 @@ Bool_t AliReconstruction::FillTriggerESD(AliESDEvent*& esd)
 	esdheader->AddTriggerIR(input.GetIR(i));
       }
        AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
-       rlCTP->SetL0TriggerInputs(input.GetL0Inputs());
-       rlCTP->SetL1TriggerInputs(input.GetL1Inputs());
-       rlCTP->SetL2TriggerInputs(input.GetL2Inputs());
+       if (rlCTP) {
+	 rlCTP->SetL0TriggerInputs(input.GetL0Inputs());
+	 rlCTP->SetL1TriggerInputs(input.GetL1Inputs());
+	 rlCTP->SetL2TriggerInputs(input.GetL2Inputs());
+       }
     }
     if (fIsNewRunLoader) fRunLoader->TreeCT()->Fill();
   }
@@ -3963,8 +3965,10 @@ Bool_t AliReconstruction::GetEventInfo()
     aCTP->SetClusterMask(clmask);
 
     AliCentralTrigger* rlCTP = fRunLoader->GetTrigger();
-    rlCTP->SetClassMask(mask);
-    rlCTP->SetClusterMask(clmask);
+    if (rlCTP) {
+      rlCTP->SetClassMask(mask);
+      rlCTP->SetClusterMask(clmask);
+    }
   }
   else {
     fEventInfo.SetEventType(AliRawEventHeaderBase::kPhysicsEvent);
