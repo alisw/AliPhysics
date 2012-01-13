@@ -50,7 +50,7 @@ class AliEMCAL : public AliDetector {
  public:
   
   AliEMCAL(); 
-  AliEMCAL(const char* name, const char* title="");
+  AliEMCAL(const char* name, const char* title="", const Bool_t checkGeoAndRun = kTRUE);
 
   virtual ~AliEMCAL() ; 
   virtual void   AddHit(Int_t, Int_t*, Float_t *) {

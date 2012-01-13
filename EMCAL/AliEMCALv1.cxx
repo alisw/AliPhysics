@@ -59,8 +59,9 @@ AliEMCALv1::AliEMCALv1()
 }
 
 //______________________________________________________________________
-AliEMCALv1::AliEMCALv1(const char *name, const char *title)
-  : AliEMCALv0(name,title), 
+AliEMCALv1::AliEMCALv1(const char *name, const char *title, 
+                       const Bool_t checkGeoAndRun)
+  : AliEMCALv0(name,title,checkGeoAndRun), 
     fCurPrimary(-1), 
     fCurParent(-1), 
     fCurTrack(-1), 

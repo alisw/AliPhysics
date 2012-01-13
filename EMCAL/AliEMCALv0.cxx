@@ -79,8 +79,9 @@ AliEMCALv0::AliEMCALv0()
 }
 
 //______________________________________________________________________
-AliEMCALv0::AliEMCALv0(const char *name, const char *title)
-  : AliEMCAL(name,title),
+AliEMCALv0::AliEMCALv0(const char *name, const char *title, 
+                       const Bool_t checkGeoAndRun)
+  : AliEMCAL(name,title,checkGeoAndRun),
     fShishKebabModules(),fEnvelop1(0),fIdRotm(0),fIdTmedArr(0),
     fSampleWidth(0),fSmodPar0(0),fSmodPar1(0),fSmodPar2(0),fCalFrame(0)
 {

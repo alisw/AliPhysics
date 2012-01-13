@@ -80,13 +80,14 @@ AliEMCAL::AliEMCAL()
 }
 
 //____________________________________________________________________________
-AliEMCAL::AliEMCAL(const char* name, const char* title)
+AliEMCAL::AliEMCAL(const char* name, const char* title, 
+                   const Bool_t checkGeoAndRun)
   : AliDetector(name,title),
     fBirkC0(0),
     fBirkC1(0.),
     fBirkC2(0.),
     fGeometry(0), 
-    fCheckRunNumberAndGeoVersion(kTRUE),
+    fCheckRunNumberAndGeoVersion(checkGeoAndRun),
     fTriggerData(0x0)
 {
   //   ctor : title is used to identify the layout
@@ -447,7 +448,6 @@ AliEMCALGeometry* AliEMCAL::GetGeometry() const
   if(!(AliEMCALGeometry::GetInstance()))
   {
     // Check the transport model name and option, set sampling fraction depending on it
-    
     if(!fCheckRunNumberAndGeoVersion){// Set geometry with the name used in the configuration file
       return AliEMCALGeometry::GetInstance(GetTitle(),"EMCAL",mcname,mctitle) ;
     }

@@ -25,7 +25,7 @@ class AliEMCALv1 : public AliEMCALv0 {
 public:
 
   AliEMCALv1(void) ; 
-  AliEMCALv1(const char *name, const char *title="") ;
+  AliEMCALv1(const char *name, const char *title="", const Bool_t checkGeoAndRun = kTRUE) ;
   virtual ~AliEMCALv1(void) ;
 
   using AliEMCALv0::AddHit;

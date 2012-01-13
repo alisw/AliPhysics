@@ -57,8 +57,9 @@ AliEMCALv2::AliEMCALv2()
 }
 
 //______________________________________________________________________
-AliEMCALv2::AliEMCALv2(const char *name, const char *title)
-  : AliEMCALv1(name,title)
+AliEMCALv2::AliEMCALv2(const char *name, const char *title, 
+                       const Bool_t checkGeoAndRun)
+  : AliEMCALv1(name,title,checkGeoAndRun)
 {
     // Standard Creator.
 
@@ -68,7 +69,8 @@ AliEMCALv2::AliEMCALv2(const char *name, const char *title)
     fNhits    = 0;
     fIshunt   = 2; // All hits are associated with particles entering the calorimeter
     fTimeCut  = 30e-09;
-
+  
+    printf("Geo %s, check %d \n", title, checkGeoAndRun );
     fGeometry = GetGeometry(); 
 }
 
