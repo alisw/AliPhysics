@@ -149,7 +149,7 @@ Bool_t AliZDCDigitizer::Init()
   }
   
   fBeamEnergy = grpData->GetBeamEnergy();
-  printf("\t  AliZDCDigitizer ->  beam energy = %f GeV\n", fBeamEnergy);
+  if(!fIspASystem) printf("\t  AliZDCDigitizer ->  beam energy = %f GeV\n", fBeamEnergy);
   if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
     AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
@@ -170,7 +170,7 @@ Bool_t AliZDCDigitizer::Init()
       fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
       fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
       //
-      printf("    PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      printf("\n    ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
     }
     else{ // for RELDIS simulation @ sqrt(s_{NN}) = 2.76 TeV
@@ -183,7 +183,7 @@ Bool_t AliZDCDigitizer::Init()
     	 fPMGain[4][j] = 100000./scalGainFactor; // ZPA	
        }
        //
-       printf("	PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+       printf("\n    ZDC PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
     	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
     }
   }
@@ -201,7 +201,7 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
     }
-    printf("    PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+    printf("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
       	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
   }
   
@@ -219,7 +219,7 @@ Bool_t AliZDCDigitizer::Init()
        fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)	         
        fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
     }
-    printf("    PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+    printf("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
       	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
   }
     
@@ -340,17 +340,15 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     }
     if(!hijingHeader) continue;
     
-    printf("fSpectators2Track %d  fIspASystem%d \n",fSpectators2Track,fIspASystem);
-    
-    if((fSpectators2Track==kTRUE) && (fIspASystem==kFALSE)){
-      impPar = hijingHeader->ImpactParameter(); 
+    if(fSpectators2Track==kTRUE){
+      impPar = hijingHeader->ImpactParameter();
       specNProj = hijingHeader->ProjSpectatorsn();
       specPProj = hijingHeader->ProjSpectatorsp();
       specNTarg = hijingHeader->TargSpectatorsn();
       specPTarg = hijingHeader->TargSpectatorsp();
       printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
-      " \t    PROJ.:  #spectator n %d, #spectator p %d\n"
-      " \t    TARG.:  #spectator n %d, #spectator p %d\n", 
+      " \t    PROJECTILE:  #spectator n %d, #spectator p %d\n"
+      " \t    TARGET:  #spectator n %d, #spectator p %d\n", 
       impPar, specNProj, specPProj, specNTarg, specPTarg);
     }
     
@@ -358,18 +356,16 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
   // Applying fragmentation algorithm and adding spectator signal
   //if((fSpectators2Track==kTRUE) && impPar && (fIspASystem==kFALSE) {
-    Int_t freeSpecNProj, freeSpecPProj;
-    Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
-    Int_t freeSpecNTarg, freeSpecPTarg;
-    Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
-    SpectatorSignal(1, freeSpecNProj, pm);
-    printf("\t AliZDCDigitizer -> Adding signal for %d PROJ free spectator n",freeSpecNProj);
-    SpectatorSignal(2, freeSpecPProj, pm);
-    printf(" and %d free spectator p\n",freeSpecPProj);
-    SpectatorSignal(3, freeSpecNTarg, pm);
-    printf("\t AliZDCDigitizer -> Adding signal for %d TARG free spectator n",freeSpecNTarg);
-    SpectatorSignal(4, freeSpecPTarg, pm);
-    printf(" and %d free spectator p\n\n",freeSpecPTarg);
+    Int_t freeSpecNProj=0, freeSpecPProj=0;
+    if(specNProj!=0 || specPProj!=0) Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
+    Int_t freeSpecNTarg=0, freeSpecPTarg=0;
+    if(specNTarg!=0 || specPTarg!=0) Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
+    if(freeSpecNProj!=0) SpectatorSignal(1, freeSpecNProj, pm);
+    if(freeSpecPProj!=0) SpectatorSignal(2, freeSpecPProj, pm);
+      printf("\t AliZDCDigitizer -> Adding spectator signal for PROJECTILE: %d free  n and %d free p\n",freeSpecNProj,freeSpecPProj);
+    if(freeSpecNTarg!=0) SpectatorSignal(3, freeSpecNTarg, pm);
+    if(freeSpecPTarg!=0) SpectatorSignal(4, freeSpecPTarg, pm);
+      printf("\t AliZDCDigitizer -> Adding spectator signal for TARGET: %d free  n and %d free p\n",freeSpecNTarg,freeSpecPTarg);
   }
 
 
