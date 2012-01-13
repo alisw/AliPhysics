@@ -124,7 +124,7 @@ AliTRDtrackerV1::AliTRDtrackerV1(AliTRDReconstructor *rec)
   memset(fSeedLayer, 0, kMaxTracksStack*sizeof(Int_t));
   memset(fSeedTB, 0, kNSeedPlanes*sizeof(AliTRDchamberTimeBin*));
   fTracksESD = new TClonesArray("AliESDtrack", 2*kMaxTracksStack);
-  fTracksESD->SetOwner(); //RS commented, not needed with TClones
+  fTracksESD->SetOwner();
 }
 
 //____________________________________________________________________
@@ -2242,7 +2242,6 @@ Int_t AliTRDtrackerV1::Clusters2TracksSM(Int_t sector, AliESDEvent *esd)
 
   // delete ESD tracks in the array
   fTracksESD->Delete();
-  //fTracksESD->Clear(); // RS: don't delete TClones
   return nTracks;
 }
 

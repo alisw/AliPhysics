@@ -21,7 +21,7 @@ class AliITSPlaneEff;
 class AliITSChannelStatus;
 class AliITSDetTypeRec;
 class AliPlaneEff;
-class AliClonesPool;
+
 #include <TObjArray.h>
 
 #include "AliITStrackMI.h"

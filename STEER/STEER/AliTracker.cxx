@@ -30,7 +30,6 @@
 #include "AliCluster.h"
 #include "AliKalmanTrack.h"
 #include "AliGlobalQADataMaker.h"
-#include "AliPoolsSet.h"
 
 Bool_t AliTracker::fFillResiduals=kFALSE;
 TObjArray **AliTracker::fResiduals=NULL;
@@ -40,8 +39,7 @@ ClassImp(AliTracker)
 
 AliTracker::AliTracker():
   AliTrackerBase(),
-  fEventInfo(NULL),
-  fPools(NULL)
+  fEventInfo(NULL)
 {
   //--------------------------------------------------------------------
   // The default constructor.
@@ -51,8 +49,7 @@ AliTracker::AliTracker():
 //__________________________________________________________________________
 AliTracker::AliTracker(const AliTracker &atr):
   AliTrackerBase(atr),
-  fEventInfo(atr.fEventInfo),
-  fPools(atr.fPools)
+  fEventInfo(atr.fEventInfo)
 {
   //--------------------------------------------------------------------
   // The default constructor.

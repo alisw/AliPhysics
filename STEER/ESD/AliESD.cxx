@@ -415,10 +415,9 @@ Bool_t  AliESD::RemoveTrack(Int_t rm) {
 
   if (rm==last) return kTRUE;
 
-  // RS: Attention: semi-shalow copy is used: the new track will steal the dynamic content of old one
   AliESDtrack *t=GetTrack(last);
   t->SetID(rm);
-  new (a[rm]) AliESDtrack(t, kTRUE); // detach dynamic content of the source
+  new (a[rm]) AliESDtrack(*t);
   delete a.RemoveAt(last);
 
 
@@ -622,9 +621,11 @@ void AliESD::GetESDfriend(AliESDfriend *ev) const {
 
   for (Int_t i=0; i<ntrk; i++) {
     AliESDtrack *t=GetTrack(i);
-    AliESDfriendTrack *f = (AliESDfriendTrack*)t->GetFriendTrack();
-    ev->AddTrackShallow(f);
-    t->ReleaseESDfriendTrackGently();// Not to have two copies of "friendTrack"
+    const AliESDfriendTrack *f=t->GetFriendTrack();
+    ev->AddTrack(f);
+
+    t->ReleaseESDfriendTrack();// Not to have two copies of "friendTrack"
+
   }
 }
 

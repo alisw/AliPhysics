@@ -109,8 +109,4 @@
 
 #pragma link C++ class AliVMFT+;
 
-#pragma link C++ class AliPoolN+;
-#pragma link C++ class AliClonesPool+;
-#pragma link C++ class AliPoolsSet+;
-
 #endif

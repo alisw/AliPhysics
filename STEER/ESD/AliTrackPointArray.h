@@ -15,7 +15,6 @@
 #include <TObject.h>
 #include <TMatrixDSym.h>
 
-class AliPoolN;
 class TGeoRotation;
 
 class AliTrackPoint : public TObject {
@@ -63,7 +62,7 @@ class AliTrackPoint : public TObject {
   AliTrackPoint& MasterToLocal() const;
 
   void     Print(Option_t *) const;
-  //
+
  private:
 
   Float_t  fX;        // X coordinate
@@ -118,11 +117,8 @@ class AliTrackPointArray : public TObject {
   const UShort_t* GetVolumeID() const { return &fVolumeID[0]; }
 
   Bool_t    HasVolumeID(UShort_t volid) const;
-  void      Clear(Option_t* opt="");
-  //
+
   void Sort(Bool_t down=kTRUE);
-  static void      SetPool(AliPoolN* rc)          {fgPool = rc;}
-  static AliPoolN* GetPool()                      {return fgPool;}
 
  private:
   Bool_t fSorted;        // Sorted flag
@@ -139,10 +135,8 @@ class AliTrackPointArray : public TObject {
   Int_t     fSize;       // Size of array with cov matrices = 6*N of points
   Float_t   *fCov;       //[fSize] Array with space point coordinates cov matrix
   UShort_t  *fVolumeID;  //[fNPoints] Array of space point volume IDs
-  //
-  static AliPoolN* fgPool; // pointer to the pool (of AliReconstruction)
-  //
-  ClassDef(AliTrackPointArray,8)
+
+  ClassDef(AliTrackPointArray,7)
 };
 
 #endif

@@ -32,18 +32,8 @@ public:
      new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(*t);
   }
 
-  void AddTrackShallow(AliESDfriendTrack *t) {
-    // steal dynamic content
-    new(fTracks[fTracks.GetEntriesFast()]) AliESDfriendTrack(t,kTRUE);
-  }
-
   void AddTrackAt(const AliESDfriendTrack *t, Int_t i) {
      new(fTracks[i]) AliESDfriendTrack(*t);
-  }
-
-  void AddTrackShallowAt(AliESDfriendTrack *t, Int_t i) {
-    // steal dynamic content
-    new(fTracks[i]) AliESDfriendTrack(t,kTRUE);
   }
 
   void SetVZEROfriend(AliESDVZEROfriend * obj);
@@ -58,8 +48,7 @@ public:
   // bit manipulation for filtering
   void SetSkipBit(Bool_t skip){SetBit(23,skip);}
   Bool_t TestSkipBit() {return TestBit(23);}
-  virtual void Clear(Option_t* opt=0);
-  //
+
 protected:
   TClonesArray fTracks;    // ESD friend tracks
   AliESDVZEROfriend *fESDVZEROfriend; // VZERO object containing complete raw data

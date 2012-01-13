@@ -27,13 +27,10 @@
 #include <TMatrixDSym.h>
 #include <TGeoMatrix.h>
 #include <TMatrixDSymEigen.h>
-#include <TArrayI.h>
+
 #include "AliTrackPointArray.h"
-#include "AliPoolN.h"
 
 ClassImp(AliTrackPointArray)
-
-AliPoolN* AliTrackPointArray::fgPool = 0;
 
 //______________________________________________________________________________
 AliTrackPointArray::AliTrackPointArray() :
@@ -59,20 +56,21 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
   TObject(),
   fSorted(kFALSE),
   fNPoints(npoints),
-  fX(           fgPool ? fgPool->BookF(npoints,&fX)           : new Float_t[npoints]),
-  fY(           fgPool ? fgPool->BookF(npoints,&fY)           : new Float_t[npoints]),
-  fZ(           fgPool ? fgPool->BookF(npoints,&fZ)           : new Float_t[npoints]),
-  fCharge(      fgPool ? fgPool->BookF(npoints,&fCharge)      : new Float_t[npoints]),
-  fDriftTime(   fgPool ? fgPool->BookF(npoints,&fDriftTime)   : new Float_t[npoints]),
-  fChargeRatio( fgPool ? fgPool->BookF(npoints,&fChargeRatio) : new Float_t[npoints]),
-  fClusterType( fgPool ? fgPool->BookI(npoints,&fClusterType) : new Int_t[npoints]),
-  fIsExtra(     fgPool ? fgPool->BookB(npoints,&fIsExtra)     : new Bool_t[npoints]),
+  fX(new Float_t[npoints]),
+  fY(new Float_t[npoints]),
+  fZ(new Float_t[npoints]),
+  fCharge(new Float_t[npoints]),
+  fDriftTime(new Float_t[npoints]),
+  fChargeRatio(new Float_t[npoints]),
+  fClusterType(new Int_t[npoints]),
+  fIsExtra(new Bool_t[npoints]),
   fSize(6*npoints),
-  fCov(         fgPool ? fgPool->BookF(fSize,&fCov)           : new Float_t[fSize]),
-  fVolumeID(    fgPool ? fgPool->BookUS(npoints,&fVolumeID)   : new UShort_t[npoints])
+  fCov(new Float_t[fSize]),
+  fVolumeID(new UShort_t[npoints])
 {
   // Constructor
-  for (Int_t ip=npoints;ip--;){
+  //
+  for (Int_t ip=0; ip<npoints;ip++){
     fX[ip]=0;
     fY[ip]=0;
     fZ[ip]=0;
@@ -82,7 +80,8 @@ AliTrackPointArray::AliTrackPointArray(Int_t npoints):
     fClusterType[ip]=0;
     fIsExtra[ip]=kFALSE;
     fVolumeID[ip]=0;
-    for (Int_t icov=6; icov--;) fCov[6*ip+icov]=0;
+    for (Int_t icov=0;icov<6; icov++)
+      fCov[6*ip+icov]=0;
   }
 }
 
@@ -91,38 +90,48 @@ AliTrackPointArray::AliTrackPointArray(const AliTrackPointArray &array):
   TObject(array),
   fSorted(array.fSorted),
   fNPoints(array.fNPoints),
-  fX(           fgPool ? fgPool->BookF(fNPoints,&fX)           : new Float_t[fNPoints]),
-  fY(           fgPool ? fgPool->BookF(fNPoints,&fY)           : new Float_t[fNPoints]),
-  fZ(           fgPool ? fgPool->BookF(fNPoints,&fZ)           : new Float_t[fNPoints]),
-  fCharge(      fgPool ? fgPool->BookF(fNPoints,&fCharge)      : new Float_t[fNPoints]),
-  fDriftTime(   fgPool ? fgPool->BookF(fNPoints,&fDriftTime)   : new Float_t[fNPoints]),
-  fChargeRatio( fgPool ? fgPool->BookF(fNPoints,&fChargeRatio) : new Float_t[fNPoints]),
-  fClusterType( fgPool ? fgPool->BookI(fNPoints,&fClusterType) : new Int_t[fNPoints]),
-  fIsExtra(     fgPool ? fgPool->BookB(fNPoints,&fIsExtra)     : new Bool_t[fNPoints]),
-  fSize(6*fNPoints),
-  fCov(         fgPool ? fgPool->BookF(fSize,&fCov)            : new Float_t[fSize]),
-  fVolumeID(    fgPool ? fgPool->BookUS(fNPoints,&fVolumeID)   : new UShort_t[fNPoints])
+  fX(new Float_t[fNPoints]),
+  fY(new Float_t[fNPoints]),
+  fZ(new Float_t[fNPoints]),
+  fCharge(new Float_t[fNPoints]),
+  fDriftTime(new Float_t[fNPoints]),
+  fChargeRatio(new Float_t[fNPoints]),
+  fClusterType(new Int_t[fNPoints]),
+  fIsExtra(new Bool_t[fNPoints]),
+  fSize(array.fSize),
+  fCov(new Float_t[fSize]),
+  fVolumeID(new UShort_t[fNPoints])
 {
   // Copy constructor
   //
   memcpy(fX,array.fX,fNPoints*sizeof(Float_t));
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
   memcpy(fZ,array.fZ,fNPoints*sizeof(Float_t));
-  if (array.fCharge)      memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
-  else                    memset(fCharge, 0, fNPoints*sizeof(Float_t));
-  //
-  if (array.fDriftTime)   memcpy(fDriftTime,array.fDriftTime,fNPoints*sizeof(Float_t));
-  else                    memset(fDriftTime, 0, fNPoints*sizeof(Float_t));
-  //
-  if (array.fChargeRatio) memcpy(fChargeRatio,array.fChargeRatio,fNPoints*sizeof(Float_t));
-  else                    memset(fChargeRatio, 0, fNPoints*sizeof(Float_t));
-  //
-  if (array.fClusterType) memcpy(fClusterType,array.fClusterType,fNPoints*sizeof(Int_t));
-  else                    memset(fClusterType, 0, fNPoints*sizeof(Int_t));
-  //
-  if (array.fIsExtra)     memcpy(fIsExtra,array.fIsExtra,fNPoints*sizeof(Bool_t));
-  else                    memset(fIsExtra, 0, fNPoints*sizeof(Bool_t));
-  //
+  if (array.fCharge) {
+    memcpy(fCharge,array.fCharge,fNPoints*sizeof(Float_t));
+  } else {
+    memset(fCharge, 0, fNPoints*sizeof(Float_t));
+  }
+  if (array.fDriftTime) {
+    memcpy(fDriftTime,array.fDriftTime,fNPoints*sizeof(Float_t));
+  } else {
+    memset(fDriftTime, 0, fNPoints*sizeof(Float_t));
+  }
+  if (array.fChargeRatio) {
+    memcpy(fChargeRatio,array.fChargeRatio,fNPoints*sizeof(Float_t));
+  } else {
+    memset(fChargeRatio, 0, fNPoints*sizeof(Float_t));
+  }
+  if (array.fClusterType) {
+    memcpy(fClusterType,array.fClusterType,fNPoints*sizeof(Int_t));
+  } else {
+    memset(fClusterType, 0, fNPoints*sizeof(Int_t));
+  }
+  if (array.fIsExtra) {
+    memcpy(fIsExtra,array.fIsExtra,fNPoints*sizeof(Bool_t));
+  } else {
+    memset(fIsExtra, 0, fNPoints*sizeof(Bool_t));
+  }
   memcpy(fVolumeID,array.fVolumeID,fNPoints*sizeof(UShort_t));
   memcpy(fCov,array.fCov,fSize*sizeof(Float_t));
 }
@@ -134,37 +143,30 @@ AliTrackPointArray &AliTrackPointArray::operator =(const AliTrackPointArray& arr
   //
   if(this==&array) return *this;
   ((TObject *)this)->operator=(array);
+
   fSorted = array.fSorted;
   fNPoints = array.fNPoints;
   fSize = array.fSize;
-  //
-  if (fgPool) Clear();
-  if (!fgPool) {
-    fX = new Float_t[fNPoints];
-    fY = new Float_t[fNPoints];
-    fZ = new Float_t[fNPoints];
-    fCharge = new Float_t[fNPoints];
-    fDriftTime = new Float_t[fNPoints];
-    fChargeRatio = new Float_t[fNPoints];
-    fClusterType = new Int_t[fNPoints];
-    fIsExtra = new Bool_t[fNPoints];
-    fVolumeID = new UShort_t[fNPoints];
-    fCov = new Float_t[fSize];
-  }
-  else { // store in pools
-    fX =           fgPool->BookF(fNPoints,&fX);
-    fY =           fgPool->BookF(fNPoints,&fY);
-    fZ =           fgPool->BookF(fNPoints,&fZ);
-    fCharge =      fgPool->BookF(fNPoints,&fCharge);
-    fDriftTime =   fgPool->BookF(fNPoints,&fDriftTime);
-    fChargeRatio = fgPool->BookF(fNPoints,&fChargeRatio);
-    fClusterType = fgPool->BookI(fNPoints,&fClusterType);
-    fIsExtra =     fgPool->BookB(fNPoints,&fIsExtra);
-    fCov =         fgPool->BookF(fSize,&fCov);
-    fVolumeID =    fgPool->BookUS(fNPoints,&fVolumeID);
-    //
-  }
-  //
+  delete [] fX;
+  fX = new Float_t[fNPoints];
+  delete [] fY;
+  fY = new Float_t[fNPoints];
+  delete [] fZ;
+  fZ = new Float_t[fNPoints];
+  delete [] fCharge;
+  fCharge = new Float_t[fNPoints];
+  delete [] fDriftTime;
+  fDriftTime = new Float_t[fNPoints];
+  delete [] fChargeRatio;
+  fChargeRatio = new Float_t[fNPoints];
+  delete [] fClusterType;
+  fClusterType = new Int_t[fNPoints];
+  delete [] fIsExtra;
+  fIsExtra = new Bool_t[fNPoints];
+  delete [] fVolumeID;
+  fVolumeID = new UShort_t[fNPoints];
+  delete [] fCov;
+  fCov = new Float_t[fSize];
   memcpy(fX,array.fX,fNPoints*sizeof(Float_t));
   memcpy(fY,array.fY,fNPoints*sizeof(Float_t));
   memcpy(fZ,array.fZ,fNPoints*sizeof(Float_t));
@@ -184,42 +186,18 @@ AliTrackPointArray::~AliTrackPointArray()
 {
   // Destructor
   //
-  Clear();
+  delete [] fX;
+  delete [] fY;
+  delete [] fZ;
+  delete [] fCharge;
+  delete [] fDriftTime;
+  delete [] fChargeRatio;
+  delete [] fClusterType;
+  delete [] fIsExtra;
+  delete [] fVolumeID;
+  delete [] fCov;
 }
 
-//______________________________________________________________________________
-void AliTrackPointArray::Clear(Option_t *)
-{
-  // clean dynamical part
-  TObject::Clear();
-  if (!fX) return;
-  if (!fgPool) {
-    delete [] fX;
-    delete [] fY;
-    delete [] fZ;
-    delete [] fCharge;
-    delete [] fDriftTime;
-    delete [] fChargeRatio;
-    delete [] fClusterType;
-    delete [] fIsExtra;
-    delete [] fVolumeID;
-    delete [] fCov;
-  }
-  else {
-    if (!fgPool->IsReset()) { // UniqueID==0 means that the array was freed globally
-      fgPool->FreeSlot(&fX);
-      fgPool->FreeSlot(&fY);
-      fgPool->FreeSlot(&fZ);
-      fgPool->FreeSlot(&fCharge);
-      fgPool->FreeSlot(&fDriftTime);
-      fgPool->FreeSlot(&fChargeRatio);
-      fgPool->FreeSlot(&fClusterType);
-      fgPool->FreeSlot(&fIsExtra);
-      fgPool->FreeSlot(&fCov);
-      fgPool->FreeSlot(&fVolumeID);
-    }
-  }  
-}
 
 //______________________________________________________________________________
 Bool_t AliTrackPointArray::AddPoint(Int_t i, const AliTrackPoint *p)
@@ -276,22 +254,20 @@ void AliTrackPointArray::Sort(Bool_t down)
   // Sort the array by the values of Y-coordinate of the track points.
   // The order is given by "down".
   // Optimized more for maintenance rather than for speed.
-  if (fSorted) return;
-  //
-  static TArrayI indexAr;
-  if (indexAr.GetSize()<fNPoints) indexAr.Set(fNPoints+10);
-  //
-  Int_t *index = indexAr.GetArray();
-  TMath::Sort(fNPoints,fY,index,down);
  
-  AliTrackPoint p,p1;
+  if (fSorted) return;
+
+  Int_t *index=new Int_t[fNPoints];
+  AliTrackPointArray a(*this);
+  TMath::Sort(fNPoints,a.GetY(),index,down);
+ 
+  AliTrackPoint p;
   for (Int_t i = 0; i < fNPoints; i++) {
-    GetPoint(p,index[i]); // swap points 
-    GetPoint(p1,i);       // and remember where point i was moved
+    a.GetPoint(p,index[i]);
     AddPoint(i,&p);
-    AddPoint(index[i],&p1);
-    for (int j=i;j<fNPoints;j++) if (index[j]==i) {index[j]=index[i]; break;}
   }
+
+  delete[] index;
   fSorted=kTRUE;
 }
 

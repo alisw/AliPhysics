@@ -220,8 +220,7 @@ void AliTPCclustererMI::SetOutput(TTree * tree)
   fOutput= tree;
   AliTPCClustersRow clrow("AliTPCclusterMI");
   AliTPCClustersRow *pclrow=&clrow;  
-  fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000/4);    
-  tree->SetAutoFlush(20);
+  fOutput->Branch("Segment","AliTPCClustersRow",&pclrow,32000,200);    
 }
 
 

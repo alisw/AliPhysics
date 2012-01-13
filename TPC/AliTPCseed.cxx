@@ -69,7 +69,8 @@ AliTPCseed::AliTPCseed():
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   for (Int_t i=0;i<160;i++) SetClusterIndex2(i,-3);
@@ -112,7 +113,8 @@ AliTPCseed::AliTPCseed(const AliTPCseed &s, Bool_t clusterOwner):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //---------------------
   // dummy copy constructor
@@ -167,7 +169,8 @@ AliTPCseed::AliTPCseed(const AliTPCtrack &t):
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   // Constructor from AliTPCtrack
@@ -221,7 +224,8 @@ AliTPCseed::AliTPCseed(Double_t xr, Double_t alpha, const Double_t xx[5],
   fSeed1(-1),
   fSeed2(-1),
   fMAngular(0),
-  fCircular(0)
+  fCircular(0),
+  fPoolID(-1)
 {
   //
   // Constructor
@@ -256,6 +260,7 @@ AliTPCseed & AliTPCseed::operator=(const AliTPCseed &param)
 {
   //
   // assignment operator 
+  // don't touch pool ID
   //
   if(this!=&param){
     AliTPCtrack::operator=(param);
@@ -1700,5 +1705,4 @@ void AliTPCseed::Clear(Option_t*)
   // formally seed may allocate memory for clusters (althought this should not happen for 
   // the seeds in the pool). Hence we need this method for fwd. compatibility
   if (fClusterOwner) for (int i=160;i--;) {delete fClusterPointer[i]; fClusterPointer[i] = 0;}
-  AliTPCtrack::Clear();
 }

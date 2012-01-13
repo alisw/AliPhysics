@@ -40,7 +40,7 @@ class AliESDEvent;
 class AliKalmanTrack;
 class AliTrackPointArray;
 class TPolyMarker3D;
-class AliPoolsSet;
+
 
 class AliESDtrack : public AliExternalTrackParam {
 public:
@@ -49,15 +49,15 @@ public:
   //
   AliESDtrack();
   AliESDtrack(const AliESDtrack& track);
-  AliESDtrack(AliESDtrack* track, Bool_t detach);
   AliESDtrack(const AliVTrack* track);
   AliESDtrack(TParticle * part);
   virtual ~AliESDtrack();
   virtual void Copy(TObject &obj) const;
   const AliESDfriendTrack *GetFriendTrack() const {return fFriendTrack;}
-  void SetFriendTrack(const AliESDfriendTrack *t);
-  void ReleaseESDfriendTrackGently();
-  //  void ReleaseESDfriendTrack() {delete fFriendTrack; fFriendTrack=0;}
+  void SetFriendTrack(const AliESDfriendTrack *t) {
+    delete fFriendTrack; fFriendTrack=new AliESDfriendTrack(*t);
+  }
+  void ReleaseESDfriendTrack() { delete fFriendTrack;  fFriendTrack=0; }
   void AddCalibObject(TObject * object);     // add calib object to the list
   TObject *  GetCalibObject(Int_t index);    // return calib objct at given position
   void MakeMiniESDtrack();
@@ -380,8 +380,7 @@ public:
   void GetImpactParameters(Float_t p[2], Float_t cov[3]) const {
     p[0]=fD; p[1]=fZ; cov[0]=fCdd; cov[1]=fCdz; cov[2]=fCzz;
   }
-  virtual void Print(Option_t *opt) const;
-  virtual void Clear(Option_t *opt="");
+  virtual void Print(Option_t * opt) const ;
   const AliESDEvent* GetESDEvent() const {return fESDEvent;}
   void         SetESDEvent(const AliESDEvent* evt) {fESDEvent = evt;}  
   //
@@ -396,12 +395,8 @@ public:
   // - creation of AliESDfriendTrack
   // - set lengt of bit fields fTPCClusterMap and fTPCSharedMap to 0
   static void OnlineMode(bool mode) {fgkOnlineMode=mode;}
-  static bool OnlineMode() {return fgkOnlineMode;}  
-  static void               SetPools(AliPoolsSet* p) {fgPools = p;}
-  static AliPoolsSet*       GetPools()               {return fgPools;}
-
-  void PrintTmp();
- protected:
+  static bool OnlineMode() {return fgkOnlineMode;}
+protected:
   
   AliExternalTrackParam *fCp; // Track parameters constrained to the primary vertex
   AliExternalTrackParam *fIp; // Track parameters estimated at the inner wall of TPC
@@ -522,9 +517,7 @@ public:
   mutable Float_t fCacheNCrossedRows; //! Cache for the number of crossed rows
   mutable Float_t fCacheChi2TPCConstrainedVsGlobal; //! Cache for the chi2 of constrained TPC vs global track
   mutable const AliESDVertex* fCacheChi2TPCConstrainedVsGlobalVertex; //! Vertex for which the cache is valid
-
-  static AliPoolsSet* fgPools; // set of pools
-
+  
  private:
   static bool fgkOnlineMode; //! indicate the online mode to skip some of the functionality
 

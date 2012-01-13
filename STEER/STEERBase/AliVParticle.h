@@ -24,13 +24,10 @@ const Double_t kAlmost0Field=1.e-13;
 class AliVParticle: public TObject {
 
 public:
-  AliVParticle() : fPoolID(-1) { }
+  AliVParticle() { }
   virtual ~AliVParticle() { }
   AliVParticle(const AliVParticle& vPart); 
   AliVParticle& operator=(const AliVParticle& vPart);
-
-  virtual void   SetPoolID(const Int_t id)      {fPoolID = id;}
-  virtual Int_t  GetPoolID()              const {return fPoolID;}
 
   // kinematics
   virtual Double_t Px() const = 0;
@@ -86,10 +83,8 @@ public:
   Bool_t   Global2LocalPosition(Double_t r[3], Double_t alpha) const;
 
   
- protected:
-  Int_t                fPoolID; //! id of position in the pool
-  
-  ClassDef(AliVParticle, 4)  // base class for particles
+
+  ClassDef(AliVParticle, 3)  // base class for particles
 };
 
 #endif

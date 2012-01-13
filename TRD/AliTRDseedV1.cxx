@@ -186,20 +186,6 @@ AliTRDseedV1::~AliTRDseedV1()
 }
 
 //____________________________________________________________________
-void AliTRDseedV1::Clear(Option_t *)
-{
-  // clean
-  if (IsOwner()) {
-    for(int itb=0; itb<kNclusters; itb++){
-      if(!fClusters[itb]) continue; 
-      //AliInfo(Form("deleting c %p @ %d", fClusters[itb], itb));
-      delete fClusters[itb];
-      fClusters[itb] = NULL;
-    }
-  }
-}
-
-//____________________________________________________________________
 void AliTRDseedV1::Copy(TObject &ref) const
 {
   //

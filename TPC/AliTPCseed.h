@@ -146,6 +146,8 @@ class AliTPCseed : public AliTPCtrack {
   static   Double_t GetQCorrShape(Int_t ipad, Int_t type,Float_t z, Float_t ty, Float_t tz, Float_t q, Float_t thr);
   //
   Float_t GetTPCClustInfo(Int_t nNeighbours, Int_t type, Int_t row0, Int_t row1);
+  void    SetPoolID(Int_t id) {fPoolID = id;}
+  Int_t   GetPoolID()  const {return fPoolID;}
  private:
      //     AliTPCseed & operator = (const AliTPCseed &)
      //  {::Fatal("= operator","Not Implemented\n");return *this;}
@@ -186,6 +188,7 @@ class AliTPCseed : public AliTPCtrack {
      Float_t fMAngular;           // mean angular factor
      Char_t   fCircular;           // indicates curlin track
      AliTPCTrackerPoint  fTrackPoints[160];  //track points - array track points
+     Int_t   fPoolID;              //! id in the pool
      ClassDef(AliTPCseed,6)  
 };
 

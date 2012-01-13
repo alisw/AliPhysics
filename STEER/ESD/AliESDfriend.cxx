@@ -66,24 +66,15 @@ AliESDfriend& AliESDfriend::operator=(const AliESDfriend& esd)
     return *this;
 }
 
-void AliESDfriend::Clear(Option_t*) {
-  //
-  // Destructor
-  //
-  fTracks.Clear("C");
-  delete fESDVZEROfriend;
-  delete fESDTZEROfriend;
-  fESDVZEROfriend = 0;
-  fESDTZEROfriend = 0;
-  TObject::Clear();
-}
 
 
 AliESDfriend::~AliESDfriend() {
   //
   // Destructor
   //
-  Clear();
+  fTracks.Delete();
+  delete fESDVZEROfriend;
+  delete fESDTZEROfriend;
 }
 
 

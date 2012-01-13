@@ -26,13 +26,13 @@
 ClassImp(AliVParticle)
 
 AliVParticle::AliVParticle(const AliVParticle& vPart) :
-TObject(vPart), fPoolID(-1) { } // Copy constructor
+  TObject(vPart) { } // Copy constructor
 
 AliVParticle& AliVParticle::operator=(const AliVParticle& vPart)
 { if (this!=&vPart) { 
     TObject::operator=(vPart); 
   }
-  fPoolID = -1;
+  
   return *this; 
 }
 
