@@ -27,7 +27,7 @@ void TestEMCALRecPoint()
   }
   else {
     cout<<"alirun not available, instantiate"<<endl;
-    geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE") ;  
+    geom =  AliEMCALGeometry::GetInstance("EMCAL_COMPLETE12SMV1") ;  
   } 
   
   //Load RecPoints

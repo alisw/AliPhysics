@@ -1,4 +1,4 @@
-void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE"){
+void MakeEMCALResMisAlignment(TString geoname = "EMCAL_COMPLETE12SMV1"){
   // Create TClonesArray of residual misalignment objects for EMCAL
   //
   const char* macroname = "MakeEMCALResMisAlignment.C";

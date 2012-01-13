@@ -45,7 +45,7 @@
 Float_t EtaToTheta(Float_t arg);
 void    LoadPythia();
 
-Int_t year =2011;
+Int_t year =2012;
 Bool_t checkGeoAndRun=kFALSE;
 
 void Config()
@@ -117,7 +117,7 @@ void Config()
     gMC->SetProcess("MULS",1);
     gMC->SetProcess("RAYL",1);
 
-    Float_t cut = 1.e-3;        // 1MeV cut by default
+    Float_t cut    = 1.e-3;  // 1MeV cut by default
     Float_t tofmax = 1.e10;
 
     gMC->SetCut("CUTGAM", cut);
@@ -146,13 +146,14 @@ void Config()
 
     AliGenBox *gener = new AliGenBox(nParticles);
     gener->SetMomentumRange(1.,10.);
-    if(year > 2010)
-      gener->SetPhiRange(80.0,180.0);
-    else if(year == 2010)
+  
+    if     (year == 2010)
       gener->SetPhiRange(80.0,120.0);
+    else if(year == 2011)
+      gener->SetPhiRange(80.0,180.0);
     else
       gener->SetPhiRange(80.0,190.0);
-
+    
     gener->SetThetaRange(EtaToTheta(0.7), EtaToTheta(-0.7));
 
     gener->SetOrigin(0,0,0);        //vertex position
@@ -179,15 +180,15 @@ void Config()
     Int_t   iPHOS  =  0;
     Int_t   iPIPE  =  0;
     Int_t   iPMD   =  0;
-    Int_t   iHMPID  =  0;
+    Int_t   iHMPID =  0;
     Int_t   iSHIL  =  0;
-    Int_t   iT0 =  0;
+    Int_t   iT0    =  0;
     Int_t   iTOF   =  0;
     Int_t   iTPC   =  0;
     Int_t   iTRD   =  0;
     Int_t   iZDC   =  0;
     Int_t   iEMCAL =  1;
-    Int_t   iACORDE   =  0;
+    Int_t   iACORDE=  0;
     Int_t   iVZERO =  0;
     rl->CdGAFile();
     //=================== Alice BODY parameters =============================
@@ -323,10 +324,12 @@ void Config()
     {
         //=================== EMCAL parameters ============================
 
-      if(year == 2010)        // d phi = 40 degrees
-	AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
-      else if (year > 2010)  // d phi = 100 degrees
-	AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
+      if      (year == 2010)  // d phi = 40 degrees
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_FIRSTYEARV1");
+      else if (year == 2011)  // d phi = 100 degrees
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETEV1");
+      else if (year > 2011)   // d phi = 110 degrees
+        AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE12SMV1");
       else // Old configuration with 110 degrees but not perfect geometry
         AliEMCAL *EMCAL = new AliEMCALv2("EMCAL", "EMCAL_COMPLETE");
 

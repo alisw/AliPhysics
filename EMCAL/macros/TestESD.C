@@ -162,6 +162,7 @@ void TestESD() {
       //clus->GetMomentum(p,vertex_position);
       
       Double_t cphi = vpos.Phi();
+      if(cphi < 0) cphi +=TMath::TwoPi();
       Double_t ceta = vpos.Eta();
       
       Int_t nMatched   = clus->GetNTracksMatched();

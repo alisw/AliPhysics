@@ -60,10 +60,12 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(Double_t theta, AliEM
     fORB(), 
     fORT()
 { 
+  // ctor
+  
   TString snam(g->GetName());
   Int_t key=0;
-  if(snam.Contains("FIRSTYEARv1",TString::kIgnoreCase)) key=1;
-  if(snam.Contains("COMPLETEv1",TString::kIgnoreCase)) key=1;
+  if     (snam.Contains("v1",TString::kIgnoreCase)) key=1; //EMCAL_COMPLETEV1 vs EMCAL_COMPLETEv1 (or other)
+  
   if(GetParameters()) {
     DefineFirstModule(key);
   }
@@ -91,6 +93,9 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(AliEMCALShishKebabTrd
     fORB(), 
     fORT()
 { 
+  
+  // ctor
+  
   //  printf("** Left Neighbor : %s **\n", leftNeighbor.GetName());
   fTheta  = leftNeighbor.GetTheta() - fgangle; 
 
@@ -118,7 +123,8 @@ AliEMCALShishKebabTrd1Module::AliEMCALShishKebabTrd1Module(const AliEMCALShishKe
     fORB(mod.fORB),
     fORT(mod.fORT)
 {
-  //copy ctor
+  // copy ctor
+  
   for (Int_t i=0; i<3; i++) fOK3X3[i] = mod.fOK3X3[i];
 }
 

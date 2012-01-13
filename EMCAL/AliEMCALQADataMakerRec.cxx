@@ -120,7 +120,7 @@ AliEMCALQADataMakerRec::AliEMCALQADataMakerRec(fitAlgorithm fitAlgo) :
   fRawAnalyzerTRU->SetFixTau(kTRUE); 
   fRawAnalyzerTRU->SetTau(2.5); // default for TRU shaper
 
-	fGeom = new AliEMCALGeometry("EMCAL_COMPLETEV1", "EMCAL");
+	fGeom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1", "EMCAL");
 //  for (Int_t sm = 0 ; sm < fSuperModules ; sm++){
 //    fTextSM[sm] = NULL ;
 //  }

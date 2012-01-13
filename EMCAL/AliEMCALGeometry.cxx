@@ -40,7 +40,9 @@
 //                the sizes updated with last information from production
 //                drawing (end of October 2010). 
 //      
-//   EMCAL_COMPLETEV1: Same fixes as FIRSTYEAR and 10 SM instead of 10+2 half SM
+//   EMCAL_COMPLETEV1: Same fixes as FIRSTYEAR and 10 SM instead of 10+2 half SM, for 2011 runs
+//
+//   EMCAL_COMPLETE12SMV1: contains 12 SM for runs from year 2012 and on
 //
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
@@ -80,7 +82,7 @@
 //        You have to use just the correct name of geometry. If name is empty string the
 //        default name of geometry will be used.
 //         
-//  AliEMCALGeometry* geom = new AliEMCALGeometry("EMCAL_COMPLETEV1","EMCAL");
+//  AliEMCALGeometry* geom = new AliEMCALGeometry("EMCAL_COMPLETE12SMV1","EMCAL");
 //  TGeoManager::Import("geometry.root");
 //
 //  MC:   If you work with MC data you have to get geometry the next way: 
@@ -111,7 +113,7 @@ ClassImp(AliEMCALGeometry)
 
 // these initialisations are needed for a singleton
 AliEMCALGeometry  *AliEMCALGeometry::fgGeom      = 0;
-const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETEV1";
+const Char_t*      AliEMCALGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12SMV1";
 
 //____________________________________________________________________________
 AliEMCALGeometry::AliEMCALGeometry():

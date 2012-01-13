@@ -45,7 +45,8 @@
 //                   layer (additional 0.2 mm) 
 //                   The sizes have updated with last information from production
 //                   drawing (end of October 2010). 
-//                3. COMPLETEV1 contains now only 10 SM for runs from 2011
+//                3. COMPLETEV1 contains now only 10 SM for runs for year 2011
+//                4. COMPLETE12SMV1 contains 12 SM for runs from year 2012 and on
 //
 //   EMCAL_WSUC (Wayne State test stand)
 //      = no definite equivalent in old notation, was only used by
@@ -77,7 +78,7 @@ ClassImp(AliEMCALEMCGeometry)
 
 // these initialisations are needed for a singleton
 Bool_t    AliEMCALEMCGeometry::fgInit      = kFALSE;
-const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETEV1";
+const Char_t*   AliEMCALEMCGeometry::fgkDefaultGeometryName = "EMCAL_COMPLETE12SMV1";
 
 
 AliEMCALEMCGeometry::AliEMCALEMCGeometry() 
@@ -258,17 +259,19 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
       fGeoName = "EMCAL_PDC06";
     }
   }
+  
   if(fGeoName.Contains("WSUC")) fGeoName = "EMCAL_WSUC";
 
   //check that we have a valid geometry name
-  if(!(fGeoName.Contains("EMCAL_PDC06") || fGeoName.Contains("EMCAL_COMPLETE") || fGeoName.Contains("EMCAL_WSUC") 
-       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1") || fGeoName.Contains("EMCAL_COMPLETEV1"))) {
+  if(!(   fGeoName.Contains("EMCAL_PDC06")     || fGeoName.Contains("EMCAL_WSUC")  
+       || fGeoName.Contains("EMCAL_COMPLETE")  || fGeoName.Contains("EMCAL_COMPLETEV1")  || fGeoName.Contains("EMCAL_COMPLETE12SMV1") 
+       || fGeoName.Contains("EMCAL_FIRSTYEAR") || fGeoName.Contains("EMCAL_FIRSTYEARV1") )) {
     Fatal("Init", "%s is an undefined geometry!", fGeoName.Data()) ; 
   }
 
   // Option to know whether we have the "half" supermodule(s) or not
   fKey110DEG = 0;
-  if(fGeoName.Contains("COMPLETE") || fGeoName.Contains("PDC06")) fKey110DEG = 1; // for GetAbsCellId
+  if(fGeoName.Contains("COMPLETE") || fGeoName.Contains("PDC06") || fGeoName.Contains("12SM")) fKey110DEG = 1; // for GetAbsCellId
   if(fGeoName.Contains("COMPLETEV1"))  fKey110DEG = 0; 
   fShishKebabTrd1Modules = 0;
 
@@ -278,7 +281,7 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
   //geometry-name specific options
 
   fNumberOfSuperModules = 12;       // 12 = 6 * 2 (6 in phi, 2 in Z)
-  fNPhi                 = 12;	    // module granularity in phi within smod (azimuth)
+  fNPhi                 = 12;	      // module granularity in phi within smod (azimuth)
   fNZ                   = 24;       // module granularity along Z within smod (eta)
   fNPHIdiv = fNETAdiv   = 2;        // tower granularity within module
   fArm1PhiMin           = 80.0;	    // degrees, Starting EMCAL Phi position
@@ -335,7 +338,7 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     CheckAdditionalOptions();	
   }	
   
-  if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") ){
+  if(fGeoName.Contains("FIRSTYEARV1") || fGeoName.Contains("COMPLETEV1") || fGeoName.Contains("COMPLETE12SMV1") ){
     // Oct 26,2010 : First module has tilt = 0.75 degree : 
     // look to AliEMCALShishKebabTrd1Module::DefineFirstModule(key)
     // New sizes from production drawing, added Al front plate.
@@ -350,11 +353,16 @@ void AliEMCALEMCGeometry::Init(const Text_t* mcname, const Text_t* mctitle){
     fEtaModuleSize = fPhiModuleSize;
     fLateralSteelStrip = 0.015; // 0.015cm  = 0.15mm
     
-    if(fGeoName.Contains("COMPLETEV1")){
+    if(fGeoName.Contains("COMPLETEV1"))
+    {
       fNumberOfSuperModules = 10;	
       fArm1PhiMax           = 180.0; 
     }
-    
+    else if (fGeoName.Contains("COMPLETE12SMV1"))
+    {
+      fNumberOfSuperModules = 12;	
+      fArm1PhiMax           = 200.0; 
+    }
     CheckAdditionalOptions();	
   }
 
