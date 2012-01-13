@@ -32,7 +32,6 @@ set ( SRCS
     STEER/AliStream.cxx 
     STEER/AliMergeCombi.cxx 
     STEER/AliGausCorr.cxx 
-    STEER/AliMemoryWatcher.cxx 
     STEER/AliVertexer.cxx 
     STEER/AliV0vertexer.cxx 
     STEER/AliCascadeVertexer.cxx 
@@ -109,10 +108,6 @@ set ( SRCS
     STEER/AliMinResSolve.cxx 
     STEER/AliParamSolver.cxx 
     STEER/AliGRPManager.cxx 
-    STEER/AliDCSArray.cxx 
-    STEER/AliLHCReader.cxx 
-    STEER/AliLHCDipValT.cxx 
-    STEER/AliLHCData.cxx 
     STEER/AliCTPTimeParams.cxx 
     STEER/AliCTPInputTimeParams.cxx 
     STEER/AliLHCClockPhase.cxx 

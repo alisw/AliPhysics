@@ -46,7 +46,6 @@
 #pragma link C++ class  AliTreeLoader+;
 #pragma link C++ class  AliRunLoader+;
 #pragma link C++ class  AliReconstructor+;
-#pragma link C++ class  AliMemoryWatcher+;
 #pragma link C++ class  AliMC+;
 #pragma link C++ class  AliSimulation+;
 #pragma link C++ class  AliReconstruction+;
@@ -143,24 +142,11 @@
 #pragma link C++ class AliParamSolver+;
 
 #pragma link C++ class AliGRPManager+;
-#pragma link C++ class AliDCSArray+;
-#pragma link C++ class AliLHCReader+;
 #pragma link C++ class AliCTPTimeParams+;
 #pragma link C++ class AliCTPInputTimeParams+;
-
-#pragma link C++ class AliLHCDipValT<Double_t>+;
-#pragma link C++ class AliLHCDipValT<Int_t>+;
-#pragma link C++ class AliLHCDipValT<Float_t>+;
-#pragma link C++ class AliLHCDipValT<Char_t>+;
-#pragma link C++ class AliLHCData+;
 
 #pragma link C++ class AliLHCClockPhase+;
 
 #pragma link C++ class AliLTUConfig+;
-
-#pragma link C++ typedef AliLHCDipValD;
-#pragma link C++ typedef AliLHCDipValI;
-#pragma link C++ typedef AliLHCDipValF;
-#pragma link C++ typedef AliLHCDipValC;
 
 #endif
