@@ -11,7 +11,10 @@
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
+class AliGenEventHeader;
+
 #include "AliVHeader.h"
+#include "TList.h"
 
 class AliAODMCHeader: public AliVHeader {
 public:
@@ -22,7 +25,7 @@ public:
   virtual void Copy(TObject &obj) const;
 
   virtual void      SetGeneratorName(const char* c){fGenerator = c;}
-  virtual void      AddGeneratorName(const char* c){fGenerator += c;}
+  virtual void      AddGeneratorName(const char* c);
   virtual const char* GetGeneratorName() const {return fGenerator.Data();}
 
   virtual void SetVertex(Double_t *vtx){
@@ -51,7 +54,7 @@ public:
 
   virtual void      AddTrial(Int_t i) {fTrials+=i;}
   virtual void      SetTrials(Int_t f){fTrials = f;}
-  virtual Int_t  GetTrials() const {return fTrials;}
+  virtual Int_t     GetTrials() const {return fTrials;}
 
   virtual void      SetReactionPlaneAngle(Double_t b){fReactionPlaneAngle = b;}
   virtual Double_t  GetReactionPlaneAngle() const {return fReactionPlaneAngle;}
@@ -70,11 +73,24 @@ public:
   virtual UChar_t   GetTriggerCluster()     const {return 0;}
   // 
   
+  // Access to header informations
+
+  virtual void AddCocktailHeader(const AliGenEventHeader* header);
+  virtual void AddCocktailHeaders(AliGenEventHeader* header);
+  virtual AliGenEventHeader* GetCocktailHeader(Int_t i);
+  virtual TList* GetCocktailHeaders(){return fHeaders;}
+  virtual UInt_t GetNCocktailHeaders(){
+    if(fHeaders)return fHeaders->GetEntries();
+    return 0;
+  }
+
   static const char* StdBranchName(){return fgkStdBranchName.Data();}
 
 private:
 
   static TString fgkStdBranchName;      // Standard branch name
+
+  // General event information
 
   TString      fGenerator;         // Name of the generator, combination of names in case of gen cocktail 
   Double32_t   fVertex[3];         // MC vertex
@@ -84,8 +100,11 @@ private:
   UInt_t       fTrials;            // Number of trials
   UInt_t       fEventType;         // MC Process Type of Event
   Double32_t   fReactionPlaneAngle;// MC Reaction Plane Angle
-  
-  ClassDef(AliAODMCHeader,5)
+
+  // more details in the headers
+  TList  *fHeaders;                // List of all MC Headers 
+
+  ClassDef(AliAODMCHeader,6)
 
 };
 

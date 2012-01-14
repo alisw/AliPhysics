@@ -20,7 +20,12 @@
 //   Origin: Christian Klein-Boesing, CERN, Christian.Klein-Boesing@cern.ch 
 //-------------------------------------------------------------------------
 
+#include "TList.h"
 #include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+
+
 
 
 ClassImp(AliAODMCHeader)
@@ -41,6 +46,7 @@ AliAODMCHeader::AliAODMCHeader() :
   ,fTrials(0)
   ,fEventType(0)
   ,fReactionPlaneAngle(0)  
+  ,fHeaders(0)
 {
   // default constructor
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
@@ -50,6 +56,9 @@ AliAODMCHeader::AliAODMCHeader() :
 
 AliAODMCHeader::~AliAODMCHeader() 
 {
+
+  Reset();
+  delete fHeaders;
   // destructor
 }
 
@@ -63,6 +72,7 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
   ,fTrials(0)
   ,fEventType(header.fEventType)
   ,fReactionPlaneAngle(header.fReactionPlaneAngle)  
+  ,fHeaders(0)
 {
   // copy constructor
   for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
@@ -73,7 +83,9 @@ AliAODMCHeader::AliAODMCHeader(const AliAODMCHeader &header) :
 AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
 { 
   // assigment operator
+
   if(this!=&header) {
+    Reset();
     AliVHeader::operator=(header);
     fGenerator = header.fGenerator;
     for(int i = 0;i<3;++i)fVertex[i] = header.fVertex[i];
@@ -83,8 +95,25 @@ AliAODMCHeader& AliAODMCHeader::operator=(const AliAODMCHeader &header)
     fTrials = header.fTrials;
     fEventType = header.fEventType;
     fReactionPlaneAngle = header.fReactionPlaneAngle;
+
+    if(header.fHeaders){
+      for(int i = 0;i < header.fHeaders->GetEntries();i++){
+	AddCocktailHeader(dynamic_cast<AliGenEventHeader*>(header.fHeaders->At(i)));
+      }
+    }
   } 
   return *this;
+}
+
+void AliAODMCHeader::AddCocktailHeader(const AliGenEventHeader* header)
+{
+// Add a header to the list
+  if(!header)return;
+  if (!fHeaders){ 
+    fHeaders = new TList();
+    fHeaders->SetOwner(kTRUE);
+  }
+  fHeaders->Add(header->Clone());
 }
 
 void AliAODMCHeader::Copy(TObject &obj) const {
@@ -114,16 +143,57 @@ void AliAODMCHeader::Reset()
   fTrials = 0;
   fVertex[0] = fVertex[1] = fVertex[2] = 0;  
   fReactionPlaneAngle = 0;
+  if(fHeaders)fHeaders->Delete();
 }
 
 //______________________________________________________________________________
 void AliAODMCHeader::Print(const Option_t *) const
 {
   // Print some data members
-  Printf("MC EventHeader Generator: %s # EventType %d  Vtx = (%3.3f,%3.3f,%3.3f) ptHard = %3.3f GeV Impact parameter %3.3f  \n",
+  Printf("MC EventHeader Generators: %s # EventType %d  Vtx = (%3.3f,%3.3f,%3.3f) ptHard = %3.3f GeV Impact parameter %3.3f  \n",
 	 GetGeneratorName(),
 	 GetEventType(),
 	 GetVtxX(),GetVtxY(),GetVtxZ(),GetPtHard(),
 	 GetImpactParameter());
+  if(fHeaders){
+    fHeaders->Print();
+    for(int i = 0;i<fHeaders->GetEntries();++i){
+      TObject *obj = fHeaders->At(i);
+      if(obj){
+	Printf(">> %d: %s %s",i,obj->GetName(),obj->GetTitle());
+      }
+    }
+  }
 }
 
+AliGenEventHeader* AliAODMCHeader::GetCocktailHeader(Int_t i){
+  if(i<0)return 0;
+  return (AliGenEventHeader*)(fHeaders->At(i));
+}
+
+void  AliAODMCHeader::AddCocktailHeaders(AliGenEventHeader* header){
+  AliGenCocktailEventHeader *cHeader = dynamic_cast<AliGenCocktailEventHeader*>(header);
+  if(cHeader){
+      TList *genHeaders = cHeader->GetHeaders();
+      AliGenEventHeader* gH = 0;
+      for (int i=0; i<genHeaders->GetEntries(); i++) {
+	gH = (AliGenEventHeader*)genHeaders->At(i);
+	if(gH){
+	  AddGeneratorName(gH->GetName());
+	  AddCocktailHeader(dynamic_cast<AliGenEventHeader*>(genHeaders->At(i)));	
+	}
+      }
+  }
+  else{
+    // no cocktail header just addd the global header
+    AddCocktailHeader(header);	
+  }
+}
+
+void   AliAODMCHeader::AddGeneratorName(const char* c){
+  if(fGenerator.Length()==0)fGenerator += c;
+  else {
+    fGenerator += " ";
+    fGenerator += c;
+  }
+}

@@ -262,28 +262,28 @@ void AliAODHandler::StoreMCParticles(){
       TArrayF vtxMC(3);
       genHeader->PrimaryVertex(vtxMC);
       mcHeader->SetVertex(vtxMC[0],vtxMC[1],vtxMC[2]);
-
       // we search the MCEventHeaders first 
       // Two cases, cocktail or not...
       AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
       if(genCocktailHeader){
-	  // we have a coktail header
+	  // we have a coktail header add the name once
 	  mcHeader->AddGeneratorName(genHeader->GetName());
-	  // Loop from the back so that the first one sets the process type
 	  TList* headerList = genCocktailHeader->GetHeaders();
-	  for(int i = headerList->GetEntries()-1;i>=0;--i){
-	      AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(i));
-         if (!headerEntry) {
-           AliFatal("AliGenEventHeader entry not found in the header list");
-         } else {   
-           SetMCHeaderInfo(mcHeader,headerEntry);
-         }  
-	  }
+	  // the first entry defines some extra general settings
+	  AliGenEventHeader *headerEntry = dynamic_cast<AliGenEventHeader*>(headerList->At(0));
+	  if (!headerEntry) {
+	    AliFatal("AliGenEventHeader entry not found in the header list");
+	  } else {   
+	    SetMCHeaderInfo(mcHeader,headerEntry);
+	  }  
       }
       else{
-	  // No Cocktail just take the first one
-	  SetMCHeaderInfo(mcHeader,genHeader);
+	// No Cocktail just take the first one
+	SetMCHeaderInfo(mcHeader,genHeader);
       }
+      // Add all the headers and names, if no cocktail header 
+      // there will be only one entry
+      mcHeader->AddCocktailHeaders(genHeader);
   }
   
 
@@ -708,20 +708,17 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
   // Utility function to cover different cases for the AliGenEventHeader
   // Needed since different ProcessType and ImpactParamter are not 
   // in the base class...
-  // We don't encode process types for event cocktails yet
-  // could be done e.g. by adding offsets depnding on the generator
 
   if(!genHeader)return;
-  mcHeader->AddGeneratorName(genHeader->GetName());
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
-    if (pythiaGenHeader) {
-      mcHeader->SetEventType(pythiaGenHeader->ProcessType());
-      mcHeader->SetPtHard(pythiaGenHeader->GetPtHard());
-      return;
-    }
-    
-    AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
-
+  if (pythiaGenHeader) {
+    mcHeader->SetEventType(pythiaGenHeader->ProcessType());
+    mcHeader->SetPtHard(pythiaGenHeader->GetPtHard());
+    return;
+  }
+  
+  AliGenDPMjetEventHeader* dpmJetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+  
   if (dpmJetGenHeader){
     mcHeader->SetEventType(dpmJetGenHeader->ProcessType());
     return;
@@ -733,7 +730,7 @@ void  AliAODHandler::SetMCHeaderInfo(AliAODMCHeader *mcHeader,AliGenEventHeader 
     return;
   }
   
-  AliWarning(Form("MC Eventheader not known: %s",genHeader->GetName()));
-
+  //  AliWarning(Form("MC Eventheader not known: %s",genHeader->GetName()));
+  
 }
 
