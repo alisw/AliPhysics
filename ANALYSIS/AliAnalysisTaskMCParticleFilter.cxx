@@ -344,7 +344,8 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	imo =  mother->GetMother();
       }
       // Select according to pseudorapidity and production point of primary ancestor
-      if (imo < nprim && Select(((AliMCParticle*) mcE->GetTrack(imo))->Particle(), rv, zv))write = kTRUE;         
+      if (imo < nprim)write = kTRUE;         
+      // if(!Select(((AliMCParticle*) mcE->GetTrack(imo))->Particle(), rv, zv))write = kFALSE; // selection on eta and phi of the mother
     } else if (part->GetUniqueID() == kPPair) {
       // Now look for pair production
       Int_t imo = mcpart->GetMother();
@@ -364,41 +365,41 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 	  write = kTRUE;
       }
     }
-    /*
-    else if (part->GetUniqueID() == 13){
-      // Evaporation
-      // Check that we end at a primary particle
-      TParticle* mother = part;
-      Int_t imo = part->GetFirstMother();
-      while((imo >= nprim) && ((mother->GetUniqueID() == 4 ) || ( mother->GetUniqueID() == 13))) {
-	mother =  mcE->Stack()->Particle(imo);
-	imo =  mother->GetFirstMother();
-      }
-      // Select according to pseudorapidity and production point 
-	if (imo < nprim && Select(mother, rv, zv)) 
-	  write = kTRUE;
-    }
-    */    
+
     if (write) {
       if(mcH)mcH->SelectParticle(ip);
-      j++;
-      
-      // debug info to check fro charm daugthers
-      if((TMath::Abs(part->GetPdgCode()))==411){
-	iCharm++;
-	Int_t d0 =  mcpart->GetFirstDaughter();
-	Int_t d1 =  mcpart->GetLastDaughter();
-	if(d0>0&&d1>0){
-	  for(int id = d0;id <= d1;id++){
-	    iAll++;
-	    if(mcH->IsParticleSelected(id))iTaken++;
-	  }
-	}
-      }// if charm
+      j++;      
     }
   }
 
-  AliInfo(Form("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm));
+  /*
+  for (Int_t ip = 0; ip < np; ip++){
+    AliMCParticle* mcpart = (AliMCParticle*) mcE->GetTrack(ip);
+    TParticle* part = mcpart->Particle();
+    // debug info to check fro charm daugthers
+    if((TMath::Abs(part->GetPdgCode()))==411){
+      iCharm++;
+      Int_t d0 =  part->GetFirstDaughter();
+      Int_t d1 =  part->GetLastDaughter();
+      if(d0>0&&d1>0){
+	for(int id = d0;id <= d1;id++){
+	  iAll++;
+	  if(mcH->IsParticleSelected(id)){
+	    iTaken++;
+	    Printf("> %d/%d Taken",id,nprim);
+	    PrintMCParticle( (AliMCParticle*)mcE->GetTrack(id),id);
+	  }
+	  else{
+	    Printf("> %d/%d NOT Taken",id,nprim);
+	    PrintMCParticle( (AliMCParticle*)mcE->GetTrack(id),id);
+	  }
+	}
+      }
+    }// if charm
+    AliInfo(Form("Taken daughters %d/%d of %d charm",iTaken,iAll,iCharm));
+  }
+  */
+
 
   aodH->StoreMCParticles();
   PostData(1,fHistList);
@@ -461,3 +462,14 @@ Bool_t AliAnalysisTaskMCParticleFilter::Select(TParticle* part, Float_t rv, Floa
  
 }
 
+void AliAnalysisTaskMCParticleFilter::PrintMCParticle(const AliMCParticle *mcp,Int_t np){
+  
+  const TParticle *p = mcp->Particle();
+  Printf("Nr.%d --- Status %d ---- Mother1 %d Mother2 %d Daughter1 %d Daughte\
+r2 %d ",
+	 np,p->GetStatusCode(),p->GetMother(0),p->GetMother(1),p->GetDaughter \
+	 (0),p->GetDaughter(1));
+  Printf("Eta %3.3f Phi %3.3f ",p->Eta(),p->Phi());
+  p->Print();
+  Printf("---------------------------------------");
+}
