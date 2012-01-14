@@ -71,7 +71,10 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
     fPtMin  = ptmin; fPtMax  = ptmax;
     fEtaMin = etamin; fEtaMax = etamax;
   }
-
+  void UseFlowAfterBurner(TF1 *gDifferentialV2) {
+    fDifferentialV2 = gDifferentialV2;
+    fUseFlowAfterBurner = kTRUE;
+  }
   void ExcludeResonancesInMC() {fExcludeResonancesInMC = kTRUE;}
 
   void SetPDGCode(Int_t gPdgCode) {
@@ -164,6 +167,9 @@ class AliAnalysisTaskBF : public AliAnalysisTaskSE {
   Int_t fNClustersTPCCut;//only used for AODs
 
   TF1 *fAcceptanceParameterization;//acceptance filter used for MC
+
+  TF1 *fDifferentialV2;//pt-differential v2 (from real data)
+  Bool_t fUseFlowAfterBurner;//Usage of a flow after burner
 
   Bool_t fExcludeResonancesInMC;//flag to exclude the resonances' decay products from the MC analysis
   Bool_t fUseMCPdgCode; //Boolean to analyze a set of particles in MC
