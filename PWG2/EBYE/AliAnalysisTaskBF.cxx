@@ -83,6 +83,8 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fTPCchi2Cut(-1),
   fNClustersTPCCut(-1),
   fAcceptanceParameterization(0),
+  fDifferentialV2(0),
+  fUseFlowAfterBurner(kFALSE),
   fExcludeResonancesInMC(kFALSE),
   fUseMCPdgCode(kFALSE),
   fPDGCodeToBeAnalyzed(-1) {
@@ -833,6 +835,23 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    v_phi    = track->Phi() * TMath::RadToDeg();
 	    v_E      = track->E();
 	    track->PxPyPz(v_p);
+
+	    //Flow after burner
+	    if(fUseFlowAfterBurner) {
+	      Double_t precisionPhi = 0.001;
+	      Int_t maxNumberOfIterations = 100;
+
+	      Double_t phi0 = v_phi;
+	      Double_t gV2 = fDifferentialV2->Eval(v_pt);
+
+	      for (Int_t j = 0; j < maxNumberOfIterations; j++) {
+		Double_t phiprev = v_phi;
+		Double_t fl = v_phi - phi0 + gV2*TMath::Sin(2.*(v_phi - gReactionPlane));
+		Double_t fp = 1.0 + 2.0*gV2*TMath::Cos(2.*(v_phi - gReactionPlane)); 
+		v_phi -= fl/fp;
+		if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
+	      }
+	    }
 
 	    // fill charge vector
 	    chargeVector[0]->push_back(v_charge);
