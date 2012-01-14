@@ -15,6 +15,7 @@ class AliAnalysisFilter;
 class TString;
 class TList;
 class AliAODMCHeader;
+class AliMCParticle;
 class TClonesArray;
 
 class AliAnalysisTaskMCParticleFilter : public AliAnalysisTaskSE
@@ -38,7 +39,7 @@ class AliAnalysisTaskMCParticleFilter : public AliAnalysisTaskSE
     // pivate c'tors to prevent misuse
     AliAnalysisTaskMCParticleFilter&   operator=(const AliAnalysisTaskMCParticleFilter& other);
     AliAnalysisTaskMCParticleFilter(const AliAnalysisTaskMCParticleFilter& obj);
-
+    void PrintMCParticle(const AliMCParticle *mcp,Int_t np);
 
 
     AliAnalysisFilter*  fTrackFilterMother;   //  Track Filter
@@ -46,7 +47,7 @@ class AliAnalysisTaskMCParticleFilter : public AliAnalysisTaskSE
     TClonesArray *fAODMcParticles;            // ! tclones array of MC Particles
     TList *fHistList;                         // list to store e histograms, only as exchange
 
-    ClassDef( AliAnalysisTaskMCParticleFilter, 3 ); // Analysis task for Kinematic filtering
+    ClassDef( AliAnalysisTaskMCParticleFilter, 4 ); // Analysis task for Kinematic filtering
 };
  
 #endif
