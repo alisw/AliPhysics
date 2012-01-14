@@ -64,7 +64,9 @@ AliZDC::AliZDC() :
   fTowCalibData(0),
   fZDCCalibFName(""),
   fSpectatorTracked(1),
-  fIspASystem(kFALSE)
+  fBeamEnergy(0.),
+  fIspASystem(kFALSE),
+  fIsRELDISgen(kFALSE)
 {
   //
   // Default constructor for the Zero Degree Calorimeter base class
@@ -87,7 +89,9 @@ AliZDC::AliZDC(const char *name, const char *title) :
   fTowCalibData(0),
   fZDCCalibFName(""),
   fSpectatorTracked(1),
-  fIspASystem(kFALSE)
+  fBeamEnergy(0.),
+  fIspASystem(kFALSE),
+  fIsRELDISgen(kFALSE)
 {
   //
   // Standard constructor for the Zero Degree Calorimeter base class
@@ -128,7 +132,9 @@ fEnCalibData(ZDC.fEnCalibData),
 fTowCalibData(ZDC.fTowCalibData),
 fZDCCalibFName(ZDC.fZDCCalibFName),
 fSpectatorTracked(ZDC.fSpectatorTracked),
-fIspASystem(ZDC.fIspASystem)
+fBeamEnergy(ZDC.fBeamEnergy),
+fIspASystem(ZDC.fIspASystem),
+fIsRELDISgen(ZDC.fIsRELDISgen)
 {
   // copy constructor
 }
@@ -143,6 +149,7 @@ AliZDC& AliZDC::operator=(const AliZDC& ZDC)
     fEnCalibData = ZDC.fEnCalibData;
     fTowCalibData = ZDC.fTowCalibData;
     fZDCCalibFName = ZDC.fZDCCalibFName;
+    fBeamEnergy = ZDC.fBeamEnergy;
     fIspASystem = ZDC.fIspASystem;
   } return *this;
 }
@@ -416,7 +423,9 @@ AliDigitizer* AliZDC::CreateDigitizer(AliDigitizationInput* digInput) const{
   // Create the digitizer for ZDC
   AliZDCDigitizer *zdcDigitizer = new AliZDCDigitizer(digInput);
   if(fSpectatorTracked==0) zdcDigitizer->SetSpectators2Track();
+  if(fBeamEnergy>0.01) zdcDigitizer->SetBeamEnergy(fBeamEnergy);
   if(fIspASystem==kTRUE) zdcDigitizer->SetpAsystem();
+  if(fIsRELDISgen==kTRUE) zdcDigitizer->SetRELDISGenerator();
   //if(fIspASystem==kTRUE) printf("\n **** ZDC digitizer initialized for p-A collisions\n\n");
   return zdcDigitizer;
 }

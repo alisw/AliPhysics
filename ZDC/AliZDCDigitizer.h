@@ -46,14 +46,20 @@ public:
   AliZDCPedestals  *GetPedData() const; 
   
   void    SetSpectators2Track() {fSpectators2Track=kTRUE;}
+  void    SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
 
   // Added for p-A simulations
   void    SetpAsystem() {fIspASystem=kTRUE;}
+
+  // Added for RELDIS
+  void    SetRELDISGenerator() {fIsRELDISgen=kTRUE;}
 
 private:
 
   AliZDCDigitizer(const AliZDCDigitizer&);
   AliZDCDigitizer& operator=(const AliZDCDigitizer&);
+
+  void    CalculatePMTGains();
 
   void    Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
                         Int_t &freeSpecN, Int_t &freeSpecP) const;
@@ -73,11 +79,15 @@ private:
   AliZDCPedestals  *fPedData; 	   //! pedestal calibration data
   
   Bool_t  fSpectators2Track;    // should digitizer track spectators
-  Float_t fBeamEnergy;          // beam energy taken from GRP object
+  Float_t fBeamEnergy;          // beam energy
+  TString fBeamType;		// beam type
   
   // Added for p-A simulations
   Bool_t  fIspASystem;       	// true if collision system is p-A
+
+  // Added for RELDIS
+  Bool_t  fIsRELDISgen;  	// treu if generator is RELDIS
        
-  ClassDef(AliZDCDigitizer, 13)     // digitizer for ZDC
+  ClassDef(AliZDCDigitizer, 14)     // digitizer for ZDC
 };    
 #endif

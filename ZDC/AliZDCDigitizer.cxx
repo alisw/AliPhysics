@@ -30,7 +30,6 @@
 #include <TRandom.h>
 
 // --- AliRoot header files
-#include "AliLog.h"
 #include "AliRun.h"
 #include "AliHeader.h"
 #include "AliGenHijingEventHeader.h"
@@ -61,7 +60,9 @@ AliZDCDigitizer::AliZDCDigitizer() :
   fPedData(0), 
   fSpectators2Track(kFALSE),
   fBeamEnergy(0.),
-  fIspASystem(kFALSE)
+  fBeamType(""),
+  fIspASystem(kFALSE),
+  fIsRELDISgen(kFALSE)
 {
   // Default constructor    
   for(Int_t i=0; i<2; i++) fADCRes[i]=0.;
@@ -76,7 +77,9 @@ AliZDCDigitizer::AliZDCDigitizer(AliDigitizationInput* digInput):
   fPedData(GetPedData()), 
   fSpectators2Track(kFALSE),
   fBeamEnergy(0.),
-  fIspASystem(kFALSE)
+  fBeamType(""),
+  fIspASystem(kFALSE),
+  fIsRELDISgen(kFALSE)
 {
   // Get calibration data
   if(fIsCalibration!=0) printf("\n\t AliZDCDigitizer -> Creating calibration data (pedestals)\n");
@@ -103,7 +106,9 @@ AliZDCDigitizer::AliZDCDigitizer(const AliZDCDigitizer &digitizer):
   fPedData(digitizer.fPedData),
   fSpectators2Track(digitizer.fSpectators2Track),
   fBeamEnergy(digitizer.fBeamEnergy),
-  fIspASystem(digitizer.fIspASystem)
+  fBeamType(digitizer.fBeamType),
+  fIspASystem(digitizer.fIspASystem),
+  fIsRELDISgen(digitizer.fIsRELDISgen)
 {
   // Copy constructor
 
@@ -122,6 +127,8 @@ Bool_t AliZDCDigitizer::Init()
 {
   // Initialize the digitizer
   
+  
+  //printf(" **** Initializing AliZDCDigitizer fBeamEnergy = %1.0f GeV\n\n", fBeamEnergy);
   AliCDBEntry*  entry = AliCDBManager::Instance()->Get("GRP/GRP/Data");
   if(!entry) AliFatal("No calibration data loaded!");  
   AliGRPObject* grpData = 0x0;
@@ -143,86 +150,35 @@ Bool_t AliZDCDigitizer::Init()
     return kFALSE;
   }
   
-  TString beamType = grpData->GetBeamType();
-  if(beamType==AliGRPObject::GetInvalidString()){
+  fBeamType = grpData->GetBeamType();
+  if(fBeamType==AliGRPObject::GetInvalidString()){
     AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
   }
   
-  fBeamEnergy = grpData->GetBeamEnergy();
-  if(!fIspASystem) printf("\t  AliZDCDigitizer ->  beam energy = %f GeV\n", fBeamEnergy);
-  if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
-    AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
-    AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
-    fBeamEnergy = 0.;
-  }
-
-  if((((beamType.CompareTo("P-P")) == 0) || ((beamType.CompareTo("p-p")) == 0)) && (!fIspASystem)){
-    // PTM gains rescaled to beam energy for p-p
-    // New correction coefficients for PMT gains needed
-    // to reproduce experimental spectra (from Grazia Jul 2010)
-    if(fBeamEnergy != 0){
-      for(Int_t j = 0; j < 5; j++){
-          fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
-          fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;
-          fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000; 
-          fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;
-      }
-      fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
-      fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
-      //
-      printf("\n    ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
+  // If beam energy is not set from Config.C (RELDIS / spectator generators)
+  if(fBeamEnergy<0.01){
+    fBeamEnergy = grpData->GetBeamEnergy();
+    if(fBeamEnergy==AliGRPObject::GetInvalidFloat()){
+      AliWarning("GRP/GRP/Data entry:  missing value for the beam energy ! Using 0.");
+      AliError("\t UNKNOWN beam type from GRP obj -> PMT gains not set in ZDC digitizer!!!\n");
+      fBeamEnergy = 0.;
     }
-    else{ // for RELDIS simulation @ sqrt(s_{NN}) = 2.76 TeV
-       Float_t scalGainFactor = 0.5;
-       for(Int_t j = 0; j < 5; j++){
-    	 fPMGain[0][j] = 50000./scalGainFactor;  // ZNC		 
-    	 fPMGain[1][j] = 100000./scalGainFactor; // ZPC	   
-    	 fPMGain[2][j] = 100000./scalGainFactor; // ZEM
-    	 fPMGain[3][j] = 50000./scalGainFactor;  // ZNA		 
-    	 fPMGain[4][j] = 100000./scalGainFactor; // ZPA	
-       }
-       //
-       printf("\n    ZDC PMT gains for RELDIS simulation: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-    	  fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
-    }
-  }
-  else if((beamType.CompareTo("A-A")) == 0 && !fIspASystem){
-    // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
-    // rescaled for Pb-Pb @ 1.38+1.38 A TeV ***************
-    // Values corrected after 2010 Pb-Pb data taking (7/2/2011 - Ch.)
-    // Experimental data compared to EMD simulation for single nucleon peaks:
-    // ZN gains must be divided by 4, ZP gains by 10!
-    Float_t scalGainFactor = fBeamEnergy/2760.;
-    for(Int_t j = 0; j < 5; j++){
-       fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC	         
-       fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC       
-       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM
-       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
-       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
-    }
-    printf("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
-      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]);
   }
   
   if(fIspASystem){
-    // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side A
-    // PTM gains rescaled to beam energy for p-p on side C
-    // WARNING! Energies are set by hand for 2011 pA RUN!!!
-    Float_t scalGainFactor = 0.5;
-    Float_t fpBeamEnergy = 3500.;
-    
-    for(Int_t j = 0; j < 5; j++){
-       fPMGain[0][j] = 1.350938*(661.444/fpBeamEnergy+0.000740671)*10000000; //ZNC (p)
-       fPMGain[1][j] = 0.678597*(864.350/fpBeamEnergy+0.00234375)*10000000;  //ZPC (p)
-       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
-       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)	         
-       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
-    }
-    printf("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
-      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]);
+    fBeamType = "p-A";
+    AliInfo(" AliZDCDigitizer -> Manually setting beam type to p-A\n");
   }
-    
+  
+  // Setting beam type for spectator generator and RELDIS generator
+  if(((fBeamType.CompareTo("UNKNOWN")) == 0) || fIsRELDISgen){
+     fBeamType = "A-A";
+     AliInfo(" AliZDCDigitizer -> Manually setting beam type to A-A\n");
+  }    
+  printf("\t  AliZDCDigitizer ->  beam type %s  - beam energy = %f GeV\n", fBeamType.Data(), fBeamEnergy);
+  
+  CalculatePMTGains();
+
   // ADC Caen V965
   fADCRes[0] = 0.0000008; // ADC Resolution high gain: 200 fC/adcCh
   fADCRes[1] = 0.0000064; // ADC Resolution low gain:  25  fC/adcCh
@@ -302,8 +258,7 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
         if(sdigit.GetTrackTime()<=signalTime0+30.) fIsSignalInADCGate = kTRUE;
         if(sdigit.GetTrackTime()>signalTime0+30.){
 	  fIsSignalInADCGate = kFALSE;
-	  // Vedi quaderno per spiegazione approx. usata 
-	  // nel calcolo della fraz. di segnale perso
+	  // Vedi quaderno per spiegazione approx. usata nel calcolo della fraz. di segnale perso
 	  fFracLostSignal = (sdigit.GetTrackTime()-30)*(sdigit.GetTrackTime()-30)/280.;
 	}
       }
@@ -346,26 +301,23 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
       specPProj = hijingHeader->ProjSpectatorsp();
       specNTarg = hijingHeader->TargSpectatorsn();
       specPTarg = hijingHeader->TargSpectatorsp();
-      printf("\n\t AliZDCDigitizer: b = %1.2f fm\n"
+      AliInfo(Form("\t AliZDCDigitizer: b = %1.2f fm\n"
       " \t    PROJECTILE:  #spectator n %d, #spectator p %d\n"
       " \t    TARGET:  #spectator n %d, #spectator p %d\n", 
-      impPar, specNProj, specPProj, specNTarg, specPTarg);
-    }
+      impPar, specNProj, specPProj, specNTarg, specPTarg));
     
-  //}
-
-  // Applying fragmentation algorithm and adding spectator signal
-  //if((fSpectators2Track==kTRUE) && impPar && (fIspASystem==kFALSE) {
-    Int_t freeSpecNProj=0, freeSpecPProj=0;
-    if(specNProj!=0 || specPProj!=0) Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
-    Int_t freeSpecNTarg=0, freeSpecPTarg=0;
-    if(specNTarg!=0 || specPTarg!=0) Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
-    if(freeSpecNProj!=0) SpectatorSignal(1, freeSpecNProj, pm);
-    if(freeSpecPProj!=0) SpectatorSignal(2, freeSpecPProj, pm);
-      printf("\t AliZDCDigitizer -> Adding spectator signal for PROJECTILE: %d free  n and %d free p\n",freeSpecNProj,freeSpecPProj);
-    if(freeSpecNTarg!=0) SpectatorSignal(3, freeSpecNTarg, pm);
-    if(freeSpecPTarg!=0) SpectatorSignal(4, freeSpecPTarg, pm);
-      printf("\t AliZDCDigitizer -> Adding spectator signal for TARGET: %d free  n and %d free p\n",freeSpecNTarg,freeSpecPTarg);
+      // Applying fragmentation algorithm and adding spectator signal
+      Int_t freeSpecNProj=0, freeSpecPProj=0;
+      if(specNProj!=0 || specPProj!=0) Fragmentation(impPar, specNProj, specPProj, freeSpecNProj, freeSpecPProj);
+      Int_t freeSpecNTarg=0, freeSpecPTarg=0;
+      if(specNTarg!=0 || specPTarg!=0) Fragmentation(impPar, specNTarg, specPTarg, freeSpecNTarg, freeSpecPTarg);
+      if(freeSpecNProj!=0) SpectatorSignal(1, freeSpecNProj, pm);
+      if(freeSpecPProj!=0) SpectatorSignal(2, freeSpecPProj, pm);
+      AliInfo(Form("\t AliZDCDigitizer -> Adding spectator signal for PROJECTILE: %d free  n and %d free p\n",freeSpecNProj,freeSpecPProj));
+      if(freeSpecNTarg!=0) SpectatorSignal(3, freeSpecNTarg, pm);
+      if(freeSpecPTarg!=0) SpectatorSignal(4, freeSpecPTarg, pm);
+      AliInfo(Form("\t AliZDCDigitizer -> Adding spectator signal for TARGET: %d free  n and %d free p\n",freeSpecNTarg,freeSpecPTarg));
+    }
   }
 
 
@@ -468,6 +420,64 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
 
 
 //_____________________________________________________________________________
+void AliZDCDigitizer::CalculatePMTGains()
+{
+// Calculate PMT gain according to beam type and beam energy
+  if(((fBeamType.CompareTo("P-P")) == 0)){
+    // PTM gains rescaled to beam energy for p-p
+    // New correction coefficients for PMT gains needed
+    // to reproduce experimental spectra (from Grazia Jul 2010)
+    if(fBeamEnergy != 0){
+      for(Int_t j = 0; j < 5; j++){
+          fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000;
+          fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;
+          fPMGain[3][j] = 1.350938*(661.444/fBeamEnergy+0.000740671)*10000000; 
+          fPMGain[4][j] = 0.678597*(864.350/fBeamEnergy+0.00234375)*10000000;
+      }
+      fPMGain[2][1] = 0.869654*(1.32312-0.000101515*fBeamEnergy)*10000000;
+      fPMGain[2][2] = 1.030883*(1.32312-0.000101515*fBeamEnergy)*10000000;
+      //
+      AliInfo(Form("\n    ZDC PMT gains for p-p @ %1.0f+%1.0f GeV: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
+     
+    }
+  }
+  else if(((fBeamType.CompareTo("A-A")) == 0)){
+    // PTM gains for Pb-Pb @ 2.7+2.7 A TeV ***************
+    // rescaled for Pb-Pb @ 1.38+1.38 A TeV ***************
+    // Values corrected after 2010 Pb-Pb data taking (7/2/2011 - Ch.)
+    // Experimental data compared to EMD simulation for single nucleon peaks:
+    // ZN gains must be divided by 4, ZP gains by 10!
+    Float_t scalGainFactor = fBeamEnergy/2760.;
+    for(Int_t j = 0; j < 5; j++){
+       fPMGain[0][j] = 50000./(4*scalGainFactor);  // ZNC	         
+       fPMGain[1][j] = 100000./(5*scalGainFactor); // ZPC       
+       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM
+       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA	         
+       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA    
+    }
+    AliInfo(Form("\n    ZDC PMT gains for Pb-Pb @ %1.0f+%1.0f A GeV: ZN(%1.0f), ZP(%1.0f), ZEM(%1.0f)\n",
+      	fBeamEnergy, fBeamEnergy, fPMGain[0][0], fPMGain[1][0], fPMGain[2][1]));
+  }
+  else if(((fBeamType.CompareTo("p-A")) == 0)){
+    // PTM gains for Pb-Pb @ 1.38+1.38 A TeV on side A
+    // PTM gains rescaled to beam energy for p-p on side C
+    // WARNING! Energies are set by hand for 2011 pA RUN!!!
+    Float_t scalGainFactor = fBeamEnergy*82/(208*2760.);
+    
+    for(Int_t j = 0; j < 5; j++){
+       fPMGain[0][j] = 1.515831*(661.444/fBeamEnergy+0.000740671)*10000000; //ZNC (p)
+       fPMGain[1][j] = 0.674234*(864.350/fBeamEnergy+0.00234375)*10000000;  //ZPC (p)
+       fPMGain[2][j] = 100000./scalGainFactor; 	   // ZEM (Pb)
+       fPMGain[3][j] = 50000./(4*scalGainFactor);  // ZNA (Pb)  	     
+       fPMGain[4][j] = 100000./(5*scalGainFactor); // ZPA (Pb)  
+    }
+    AliInfo(Form("\n    ZDC PMT gains for p-Pb: ZNC(%1.0f), ZPC(%1.0f), ZEM(%1.0f), ZNA(%1.0f) ZPA(%1.0f)\n",
+      	fPMGain[0][0], fPMGain[1][0], fPMGain[2][1], fPMGain[3][0], fPMGain[4][0]));
+  }
+}
+
+//_____________________________________________________________________________
 void AliZDCDigitizer::Fragmentation(Float_t impPar, Int_t specN, Int_t specP,
                                     Int_t &freeSpecN, Int_t &freeSpecP) const
 {
@@ -513,9 +523,9 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
   TNtuple* zdcSignal=0x0;
   
   Float_t sqrtS = 2*fBeamEnergy;
-  if(fIspASystem) sqrtS = 2760.;
   //
   if(TMath::Abs(sqrtS-5500) < 100.){
+    AliInfo(" Extracting signal from SpectatorSignal/energy5500 ");
     specSignalFile->cd("energy5500");
     //
     if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons
@@ -536,6 +546,7 @@ void AliZDCDigitizer::SpectatorSignal(Int_t SpecType, Int_t numEvents,
     }
   }
   else if(TMath::Abs(sqrtS-2760) < 100.){
+    AliInfo(" Extracting signal from SpectatorSignal/energy2760 ");
     specSignalFile->cd("energy2760");
     //
     if(SpecType == 1) {	   // --- Signal for projectile spectator neutrons

@@ -84,7 +84,7 @@ public:
   
   void  SetSpectatorsTrack() {fSpectatorTracked=0;}
   Int_t SpectatorsTracked() const {return fSpectatorTracked;}
-
+  void  SetBeamEnergy(Float_t beamEnergy) {fBeamEnergy = beamEnergy;}
   void  SetpAsystem() {fIspASystem = kTRUE;}
 
 private:
@@ -102,10 +102,12 @@ protected:
 
   TString          fZDCCalibFName; 	// Name of the ZDC calibration data
  
-  Int_t fSpectatorTracked; // Are spectator tracked by generator?
+  Int_t   fSpectatorTracked; // Are spectator tracked by generator? 0=NO
+  Float_t fBeamEnergy;	     // beam energy from generator (AliGenZDC + RELDIS)
   Bool_t  fIspASystem;       // Configuring pA collisions (MC only)
+  Bool_t  fIsRELDISgen;	     // Is RELDIS used as generator
   
-  ClassDef(AliZDC,11)  	// Zero Degree Calorimeter base class
+  ClassDef(AliZDC,12)  	// Zero Degree Calorimeter base class
 };
  
 // Calibration
