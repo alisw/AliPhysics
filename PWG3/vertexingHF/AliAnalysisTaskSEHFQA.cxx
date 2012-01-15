@@ -373,7 +373,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hdistrGoodTr->SetTitleOffset(1.3,"Y");
 
     hname="hd0";
-    TH1F* hd0=new TH1F(hname.Data(),"Impact parameter distribution of 'good' tracks;d_{0}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+    TH1F* hd0=new TH1F(hname.Data(),"Impact parameter (rphi) distribution of 'good' tracks;d_{0rphi}[cm];Entries/10^{3} cm",200,-0.1,0.1);
+
+    hname="hd0z";
+    TH1F* hd0z=new TH1F(hname.Data(),"Impact parameter (z) distribution of 'good' tracks;d_{0z}[cm];Entries/10^{3} cm",200,-0.1,0.1);
 
     fOutputTrack->Add(hnClsITS);
     fOutputTrack->Add(hnClsITSselTr);
@@ -384,6 +387,7 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputTrack->Add(hptGoodTr);
     fOutputTrack->Add(hdistrGoodTr);
     fOutputTrack->Add(hd0);
+    fOutputTrack->Add(hd0z);
 
     if(fReadMC){
       hname="hdistrFakeTr";
@@ -1112,8 +1116,10 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 	      } else {
 		isGoodTrack++;
 		((TH1F*)fOutputTrack->FindObject("hptGoodTr"))->Fill(track->Pt());
-	    
 		((TH1F*)fOutputTrack->FindObject("hd0"))->Fill(d->Getd0Prong(id));
+		Double_t d0rphiz[2],covd0[3];
+		Bool_t isDCA=track->PropagateToDCA(aod->GetPrimaryVertex(),aod->GetMagneticField(),9999.,d0rphiz,covd0);
+		if(isDCA) ((TH1F*)fOutputTrack->FindObject("hd0z"))->Fill(d0rphiz[1]);
 	      }
 	    }
 	    if (fCuts->IsSelected(d,AliRDHFCuts::kAll,aod) && fOnOff[1]){
