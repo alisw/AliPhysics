@@ -39,6 +39,7 @@ class AliAODRecoCascadeHF : public AliAODRecoDecayHF2Prong {
 
   // 2prong (D0 for Dstar)
   AliAODRecoDecayHF2Prong* Get2Prong() const {
+    if(!GetDaughter(1)) return 0;
     if ( ! ((AliAODRecoDecay*)GetDaughter(1))->IsA()->InheritsFrom("AliAODRecoDecayHF2Prong") ){
       AliWarning("Object is not of type AliAODRecoDecayHF2Prong");
       return 0;
