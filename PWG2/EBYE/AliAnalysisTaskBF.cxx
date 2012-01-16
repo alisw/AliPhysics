@@ -56,6 +56,8 @@ AliAnalysisTaskBF::AliAnalysisTaskBF(const char *name)
   fHistPt(0),
   fHistEta(0),
   fHistPhi(0),
+  fHistPhiBefore(0),
+  fHistPhiAfter(0),
   fHistV0M(0),
   fHistRefTracks(0),
   fESDtrackCuts(0),
@@ -206,6 +208,10 @@ void AliAnalysisTaskBF::UserCreateOutputObjects() {
   fList->Add(fHistEta);
   fHistPhi  = new TH1F("fHistPhi","#phi distribution",200,-20,380);
   fList->Add(fHistPhi);
+  fHistPhiBefore  = new TH1F("fHistPhiBefore","#phi distribution",200,0.,2*TMath::Pi());
+  fList->Add(fHistPhiBefore);
+  fHistPhiAfter  = new TH1F("fHistPhiAfter","#phi distribution",200,0.,2*TMath::Pi());
+  fList->Add(fHistPhiAfter);
   fHistV0M  = new TH2F("fHistV0M","V0 Multiplicity C vs. A",500, 0, 20000, 500, 0, 20000);
   fList->Add(fHistV0M);
   TString gRefTrackName[6] = {"tracks","tracksPos","tracksNeg","tracksTPConly","clusITS0","clusITS1"};
@@ -746,6 +752,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	//Printf("=====================================================");
 	gReactionPlane = headerH->ReactionPlaneAngle();
 	gImpactParameter = headerH->ImpactParameter();
+	fCentrality = gImpactParameter;
       }
       // take only events inside centrality class (DIDN'T CHANGE THIS UP TO NOW)
       if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
@@ -832,9 +839,10 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
 	    v_charge = track->Charge();
 	    v_y      = track->Y();
-	    v_phi    = track->Phi() * TMath::RadToDeg();
+	    v_phi    = track->Phi();
 	    v_E      = track->E();
 	    track->PxPyPz(v_p);
+	    //Printf("phi (before): %lf",v_phi);
 
 	    //Flow after burner
 	    if(fUseFlowAfterBurner) {
@@ -843,6 +851,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 
 	      Double_t phi0 = v_phi;
 	      Double_t gV2 = fDifferentialV2->Eval(v_pt);
+	      fHistPhiBefore->Fill(v_phi);
 
 	      for (Int_t j = 0; j < maxNumberOfIterations; j++) {
 		Double_t phiprev = v_phi;
@@ -851,7 +860,11 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 		v_phi -= fl/fp;
 		if (TMath::AreEqualAbs(phiprev,v_phi,precisionPhi)) break;
 	      }
+	      //Printf("phi (after): %lf\n",v_phi);
+	      fHistPhiAfter->Fill(v_phi);
 	    }
+	    
+	    v_phi *= TMath::RadToDeg();
 
 	    // fill charge vector
 	    chargeVector[0]->push_back(v_charge);
