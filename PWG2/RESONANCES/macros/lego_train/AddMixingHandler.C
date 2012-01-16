@@ -9,7 +9,9 @@
 
 void AddMixingHandler ( AliMultiInputEventHandler *multiInputHandler,AliAnalysisTaskSE *task, TString format = "esd", Bool_t useMC = kFALSE,Bool_t isRsnMini=kFALSE,const Int_t mixNum = 10, TString opts = "" ) {
 
-   Bool_t isPP = kTRUE;
+   Bool_t valid = kTRUE;
+   Int_t isPP = AliAnalysisManager::GetGlobalInt("rsnIsPP",valid);
+
    if (isRsnMini) {
       AliRsnMiniAnalysisTask *taskRsn = (AliRsnMiniAnalysisTask *) task;
 
