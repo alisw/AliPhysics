@@ -143,6 +143,7 @@ AliStrLine& AliStrLine::operator=(const AliStrLine& source)
 {
   // Assignment operator
   if(this !=&source){
+    TObject::operator=(source);
     for(Int_t i=0;i<3;i++){
       fP0[i]=source.fP0[i];
       fSigma2P0[i]=source.fSigma2P0[i];
