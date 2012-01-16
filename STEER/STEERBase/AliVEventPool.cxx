@@ -20,6 +20,8 @@
 // Author Andreas Morsch
 // andreas.morsch@cern.ch
 
+#include "TChain.h"
+
 #include "AliVEventPool.h"
 
 ClassImp(AliVEventPool)
