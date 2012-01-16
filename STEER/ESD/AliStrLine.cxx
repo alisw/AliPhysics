@@ -118,10 +118,14 @@ AliStrLine::AliStrLine(const Double_t *const point, const Double_t *const sig2po
 }
 
 //________________________________________________________
-AliStrLine::AliStrLine(const AliStrLine &source):TObject(source),
-fWMatrix(0),
-fTpar(source.fTpar){
+AliStrLine::AliStrLine(const AliStrLine &source):
+  TObject(source),
+  fWMatrix(0),
+  fTpar(source.fTpar)
+{
+  //
   // copy constructor
+  //
   for(Int_t i=0;i<3;i++){
     fP0[i]=source.fP0[i];
     fSigma2P0[i]=source.fSigma2P0[i];
@@ -135,11 +139,23 @@ fTpar(source.fTpar){
 }
 
 //________________________________________________________
-AliStrLine& AliStrLine::operator=(const AliStrLine& source){
+AliStrLine& AliStrLine::operator=(const AliStrLine& source)
+{
   // Assignment operator
   if(this !=&source){
-    this->~AliStrLine();
-    new(this)AliStrLine(source);
+    for(Int_t i=0;i<3;i++){
+      fP0[i]=source.fP0[i];
+      fSigma2P0[i]=source.fSigma2P0[i];
+      fCd[i]=source.fCd[i];
+    } 
+
+    delete [] fWMatrix;
+    fWMatrix=0;
+    if(source.fWMatrix){
+      fWMatrix = new Double_t [6];
+      for(Int_t i=0;i<6;i++)fWMatrix[i]=source.fWMatrix[i];
+    } 
+    for(Int_t i=0;i<2;i++) fIdPoint[i]=source.fIdPoint[i];
   }
   return *this;
 }
