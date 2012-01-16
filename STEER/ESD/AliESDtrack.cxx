@@ -1839,7 +1839,7 @@ Double_t AliESDtrack::GetTPCdensity(Int_t row0, Int_t row1) const{
     if (idx>0)    found++;
   }
   Float_t density=0.5;
-  if (good>(row1-row0)*0.5) density = Float_t(found)/Float_t(good);
+  if (good>TMath::Max((row1-row0)*0.5,0.0)) density = Float_t(found)/Float_t(good);
   return density;
 }
 
