@@ -1,18 +1,19 @@
 TList *RsnManager() {
 
+   Int_t isPP           = 1;
    Int_t useRsnMini     = 1;
 
-   Int_t useMixing      = 0;
+   Int_t useMixing      = 1;
    Int_t numMix         = 10;
 
    Int_t fullOutput     = 0;
    Int_t mcMomentum     = 0;
-
+   
    Int_t useEventMixPar = 0;
    Int_t useRsnPar      = 0;
 
    TString legoTrainPath = "$ALICE_ROOT/PWG2/RESONANCES/macros/lego_train";
-//   legoTrainPath = "/home/mvala/projects/PWG2resonances/PWG2/RESONANCES/macros/lego_train";
+//    legoTrainPath = "$HOME/git/PWG2resonances/PWG2/RESONANCES/macros/lego_train";
 
 
    TList *listRsn = new TList();
@@ -29,18 +30,18 @@ TList *RsnManager() {
 //    listRsn->Add(new TNamed("Phi","Phi2010"));
    listRsn->Add(new TNamed("Phi","Phi2010:mon"));
 //    listRsn->Add(new TNamed("Phi","Phi2010:qualityonly_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma1_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma2_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma3_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma1_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma2_mon"));
-//    listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma3_mon"));
-//    listRsn->Add(new TNamed("Phi","BPID:mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma1_mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma2_mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tpconly_sigma3_mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma1_mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma2_mon"));
+//     listRsn->Add(new TNamed("Phi","Phi2010:tofonly_sigma3_mon"));
+//     listRsn->Add(new TNamed("Phi","BPID:mon"));
 //
 //    // in case you have MC
 //    listRsn->Add(new TNamed("Phi","PDG:mon"));
 //
-//   listRsn->Add(new TNamed("KStar","KStar2010:mon"));
+//    listRsn->Add(new TNamed("KStar","KStar2010:mon"));
 //    listRsn->Add(new TNamed("KStar","BPID:mon"));
 
 //    listRsn->Add(new TNamed("KStar","KStar:mon"));
@@ -48,15 +49,33 @@ TList *RsnManager() {
 //    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid1point5sigma_mon"));
 //    listRsn->Add(new TNamed("KStar","KStar:FastTPCpid2sigma_mon"));
 
+   
+   //============= ONLY for GRID ====================
+   Int_t idRsnTrain=0;
+
+   TString dsConfig;
+   isPP = 0;
+   dsConfig = "datasets-grid/LHC10h_p2_ESD.txt";
+   dsConfig = "datasets-grid/LHC10h_p2_AOD049.txt";
+   dsConfig = "datasets-grid/LHC10h_p2_AOD073.txt";
+
+//   dsConfig = "datasets-grid/LHC11a10b_AOD080.txt";
+
+//   isPP = 1;
+//   dsConfig = "datasets-grid/LHC10b_p2_ESD.txt";
+//   dsConfig = "datasets-grid/LHC10b_p2_AOD038.txt";
+   //================================================
 
    ///////////////////////////////////////////
    // don't edit next lines (EXPERTS ONLY)
    ///////////////////////////////////////////
-
+   
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) { Printf("Error[RsnManager] mgr is null !!!"); return 0; }
 
    AliAnalysisManager::SetGlobalStr("rsnLegoTrainPath",legoTrainPath.Data());
+
+   AliAnalysisManager::SetGlobalInt("rsnIsPP",isPP);
 
    // use parfiles instead of libs
    AliAnalysisManager::SetGlobalInt("rsnUseEventMixingPar",useEventMixPar);
@@ -71,8 +90,7 @@ TList *RsnManager() {
       AliAnalysisManager::SetGlobalInt("rsnUseMiniPackage",1);
       AliAnalysisManager::SetGlobalInt("rsnUseRsnInputHandler",0);
       AliAnalysisManager::SetGlobalInt("rsnSplitMgrByTasks",1);
-      if (useMixing) AliAnalysisManager::SetGlobalInt("rsnUseMixing",1);
-      else AliAnalysisManager::SetGlobalInt("rsnUseMixing",0);
+      AliAnalysisManager::SetGlobalInt("rsnUseMixing",useMixing);
 
    } else  {
       AliAnalysisManager::SetGlobalInt("rsnUseMiniPackage",0);
@@ -90,6 +108,10 @@ TList *RsnManager() {
 
    // expert options (don't change)
    AliAnalysisManager::SetGlobalInt("rsnMixPrintRefresh",-1);
+
+   // RSN train settings for GRID
+   AliAnalysisManager::SetGlobalInt("rsnTrainID",idRsnTrain);
+   AliAnalysisManager::SetGlobalStr("rsnTrainDSConfig",dsConfig.Data());
 
    return listRsn;
 }

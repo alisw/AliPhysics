@@ -1,6 +1,8 @@
 Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",TString input="aod",TString inputMC="", TString postfix = "",TString idStr="0")
 {
 
+   analysisSource.ToLower();analysisMode.ToLower();
+
    if (!RsnLoadMacro("RsnManager.C")) return kFALSE;
    TList *listRsn = RsnManager();
 
@@ -72,8 +74,10 @@ Bool_t AddAMRsn(TString analysisSource = "proof", TString analysisMode = "test",
    if (!RsnLoadMacro("AddRsnAnalysisTask.C")) return kFALSE;
    if (!RsnLoadMacro("RsnConfig.C")) return kFALSE;
    if (!RsnLoadMacro("AddMixingHandler.C")) return kFALSE;
-   if (!RsnLoadMacro("RsnGirdPlugin.C")) return kFALSE;
-   RsnGridPlugin();
+   if (!analysisSource.CompareTo("grid")) {
+      if (!RsnLoadMacro("RsnGirdPlugin.C")) return kFALSE;
+      RsnGridPlugin();
+   }
 
    if (splitMgrByTask) {
       Int_t iTask=0;
