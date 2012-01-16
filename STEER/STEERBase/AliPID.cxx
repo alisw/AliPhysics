@@ -225,9 +225,11 @@ AliPID& AliPID::operator = (const AliPID& pid)
 {
 // assignment operator
 
-  fCharged = pid.fCharged;
-  for (Int_t i = 0; i < kSPECIESN; i++) {
-    fProbDensity[i] = pid.fProbDensity[i];
+  if(this != &pid) {
+    fCharged = pid.fCharged;
+    for (Int_t i = 0; i < kSPECIESN; i++) {
+      fProbDensity[i] = pid.fProbDensity[i];
+    }
   }
   return *this;
 }
