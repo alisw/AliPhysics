@@ -34,6 +34,7 @@ class AliTRDQAChecker: public AliQACheckerBase {
 public:
   AliTRDQAChecker() : AliQACheckerBase("TRD","TRD Quality Assurance Data Maker") {;}          // ctor
   AliTRDQAChecker(const AliTRDQAChecker& qac) : AliQACheckerBase(qac.GetName(), qac.GetTitle()) {;} // cpy ctor   
+  AliTRDQAChecker& operator=(const AliTRDQAChecker& qac) {if(this!=&qac){AliQACheckerBase::operator=(qac);}return *this;} //ass operator
   virtual ~AliTRDQAChecker() {;} // dtor
 
   virtual void Check(Double_t * test, AliQAv1::ALITASK_t /*index*/, TObjArray** /*list*/, const AliDetectorRecoParam* /*param*/) ;
