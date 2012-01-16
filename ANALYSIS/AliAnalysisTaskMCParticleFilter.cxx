@@ -314,11 +314,6 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
 
 
 
-  // check varibales for charm need all daughters
-  static int  iTaken = 0;
-  static int  iAll = 0;
-  static int  iCharm = 0;
-
 
   Int_t j=0;
   for (Int_t ip = 0; ip < np; ip++){
@@ -373,6 +368,12 @@ void AliAnalysisTaskMCParticleFilter::UserExec(Option_t */*option*/)
   }
 
   /*
+
+  // check varibales for charm need all daughters
+  static int  iTaken = 0;
+  static int  iAll = 0;
+  static int  iCharm = 0;
+
   for (Int_t ip = 0; ip < np; ip++){
     AliMCParticle* mcpart = (AliMCParticle*) mcE->GetTrack(ip);
     TParticle* part = mcpart->Particle();
