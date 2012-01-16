@@ -20,6 +20,7 @@ class AliMCEventHandler;
 class AliMUONVTrackStore;
 class AliMUONVTriggerTrackStore;
 class AliMUONTrack;
+class AliMUONTrackParam;
 class AliMUONTriggerTrack;
 class AliMUONGeometryTransformer;
 class AliMUONTriggerCircuit;
@@ -49,7 +50,9 @@ public:
   AliMUONVTriggerTrackStore* TriggerableTracks(Int_t event);
 	
   /// Return reconstructible reference tracks
-  AliMUONVTrackStore* ReconstructibleTracks(Int_t event, UInt_t requestedStationMask = 0x1F, Bool_t request2ChInSameSt45 = kTRUE);
+  AliMUONVTrackStore* ReconstructibleTracks(Int_t event, UInt_t requestedStationMask = 0x1F,
+					    Bool_t request2ChInSameSt45 = kTRUE,
+					    Bool_t hitInFrontOfPad = kFALSE);
 
 	
   /// Return the run number of the current ESD event
@@ -64,9 +67,10 @@ public:
   /// Return the interface to the Monte Carlo data of current event
   const AliMCEventHandler* GetMCEventHandler() const { return fMCEventHandler; }
   
-  /// Return the track from the store matched with the given track (or 0x0) and the fraction of matched clusters.
+  /// Return the track from the store matched with the given track (or 0x0) and the fraction of matched clusters
   static AliMUONTrack* FindCompatibleTrack(AliMUONTrack &track, AliMUONVTrackStore &trackStore,
-					   Int_t &nMatchClusters, Bool_t useLabel = kFALSE, Double_t sigmaCut = 10.);
+					   Int_t &nMatchClusters, Bool_t useLabel = kFALSE,
+					   Double_t sigmaCut = 10.);
   
   /// Return the trigger track from the store matched with the given track (or 0x0)
   static AliMUONTriggerTrack* FindCompatibleTrack(AliMUONTriggerTrack &track,
@@ -89,7 +93,8 @@ private:
   
   void CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefStore);
   
-  void MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45 = kTRUE);
+  void MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45 = kTRUE,
+				 Bool_t hitInFrontOfPad = kFALSE);
 	
   void MakeTriggerableTracks();
 	
@@ -98,6 +103,8 @@ private:
   Bool_t InitCalibrationData();
   Bool_t InitGeometryTransformer();
 
+  Bool_t IsHitInFrontOfPad(AliMUONTrackParam *param) const;
+  
 private:
   AliMCEventHandler* fMCEventHandler; ///< to access MC truth information
   AliESDEvent* fESDEvent; ///< ESD event to access MUON data

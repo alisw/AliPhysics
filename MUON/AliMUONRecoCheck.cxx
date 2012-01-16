@@ -339,7 +339,8 @@ AliMUONVTriggerTrackStore* AliMUONRecoCheck::TriggerableTracks(Int_t event)
 
 
 //_____________________________________________________________________________
-AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
+AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t requestedStationMask,
+							    Bool_t request2ChInSameSt45, Bool_t hitInFrontOfPad)
 {
   /// Return a track store containing the reconstructible tracks for a given event,
   /// according to the mask of requested stations and the minimum number of chambers hit in stations 4 & 5.
@@ -347,7 +348,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t 
   if (!fESDEventOwner) {
     if (fRecoTrackRefStore == 0x0) {
       if (TrackRefs(event) == 0x0) return 0x0;
-      MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45);
+      MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45, hitInFrontOfPad);
     }
     return fRecoTrackRefStore;
   }
@@ -360,7 +361,7 @@ AliMUONVTrackStore* AliMUONRecoCheck::ReconstructibleTracks(Int_t event, UInt_t 
   if (fRecoTrackRefStore != 0x0) return fRecoTrackRefStore;
   else {
     if (TrackRefs(event) == 0x0) return 0x0;
-    MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45);
+    MakeReconstructibleTracks(requestedStationMask, request2ChInSameSt45, hitInFrontOfPad);
     return fRecoTrackRefStore;
   }
 }
@@ -774,10 +775,17 @@ void AliMUONRecoCheck::CleanMuonTrackRef(const AliMUONVTrackStore *tmpTrackRefSt
 }
 
 //_____________________________________________________________________________
-void AliMUONRecoCheck::MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45)
+void AliMUONRecoCheck::MakeReconstructibleTracks(UInt_t requestedStationMask, Bool_t request2ChInSameSt45,
+						 Bool_t hitInFrontOfPad)
 {
   /// Isolate the reconstructible tracks
   if (!(fRecoTrackRefStore = AliMUONESDInterface::NewTrackStore())) return;
+  
+  // need geometry transformer and segmentation to check if trackrefs are located in front of pad(s)
+  if (hitInFrontOfPad) {
+    if (!InitGeometryTransformer()) return;
+    if (!AliMpSegmentation::Instance(kFALSE) && !AliMUONCDB::LoadMapping(kTRUE)) return;
+  }
   
   // create iterator on trackRef
   TIter next(fTrackRefStore->CreateIterator());
@@ -785,7 +793,34 @@ void AliMUONRecoCheck::MakeReconstructibleTracks(UInt_t requestedStationMask, Bo
   // loop over trackRef and add reconstructible tracks to fRecoTrackRefStore
   AliMUONTrack* track;
   while ( ( track = static_cast<AliMUONTrack*>(next()) ) ) {
-    if (track->IsValid(requestedStationMask, request2ChInSameSt45)) fRecoTrackRefStore->Add(*track);
+    
+    // check if the track is valid as it is
+    if (track->IsValid(requestedStationMask, request2ChInSameSt45)) {
+      
+      if (hitInFrontOfPad) {
+	
+	AliMUONTrack trackTmp(*track);
+	
+	// loop over clusters and remove those which are not in front of pad(s)
+	AliMUONTrackParam *param = static_cast<AliMUONTrackParam*>(trackTmp.GetTrackParamAtCluster()->First());
+	while (param) {
+	  AliMUONTrackParam *nextParam = static_cast<AliMUONTrackParam*>(trackTmp.GetTrackParamAtCluster()->After(param));
+	  if (!IsHitInFrontOfPad(param)) trackTmp.RemoveTrackParamAtCluster(param);
+	  param = nextParam;
+	}
+	
+	// add the track if it is still valid
+	if (trackTmp.IsValid(requestedStationMask, request2ChInSameSt45)) fRecoTrackRefStore->Add(trackTmp);
+	
+      } else {
+	
+	// add the track
+	fRecoTrackRefStore->Add(*track);
+	
+      }
+      
+    }
+      
   }
 
 }
@@ -874,6 +909,8 @@ Bool_t AliMUONRecoCheck::InitTriggerResponse()
   
   if ( ! InitGeometryTransformer() ) return kFALSE;
   
+  if ( ! AliMpDDLStore::Instance(false) ) AliMpCDB::LoadDDLStore();
+  
   if ( ! InitCalibrationData() ) return kFALSE;
   
   fTriggerElectronics = new AliMUONTriggerElectronics(fCalibrationData);
@@ -897,22 +934,42 @@ Bool_t AliMUONRecoCheck::InitCalibrationData()
 //____________________________________________________________________________ 
 Bool_t AliMUONRecoCheck::InitGeometryTransformer()
 {
-  /// Return calibration data
+  /// Return geometry transformer
   /// (create it if necessary)
   if ( ! fGeometryTransformer ) {
     
     if ( !AliMUONCDB::CheckOCDB() ) return kFALSE;
     
-    if ( !AliGeomManager::GetGeometry() )
+    if (!AliGeomManager::GetGeometry()) {
       AliGeomManager::LoadGeometry();
-    
-    if ( !AliMpDDLStore::Instance(false) )
-      AliMpCDB::LoadDDLStore();
+      if (!AliGeomManager::GetGeometry()) return kFALSE;  
+      if (!AliGeomManager::ApplyAlignObjsFromCDB("MUON")) return kFALSE;
+    }
     
     fGeometryTransformer = new AliMUONGeometryTransformer();
     fGeometryTransformer->LoadGeometryData();
   }
   
   return kTRUE;
+}
+
+//________________________________________________________________________
+Bool_t AliMUONRecoCheck::IsHitInFrontOfPad(AliMUONTrackParam *param) const
+{
+  /// Return kTRUE if the hit is located in front of at least 1 pad
+  
+  Int_t deId = param->GetClusterPtr()->GetDetElemId();
+  
+  Double_t xL, yL, zL;
+  fGeometryTransformer->Global2Local(deId, param->GetNonBendingCoor(), param->GetBendingCoor(), param->GetZ(), xL, yL, zL);
+  
+  const AliMpVSegmentation* seg1 = AliMpSegmentation::Instance()->GetMpSegmentation(deId, AliMp::kCath0);
+  const AliMpVSegmentation* seg2 = AliMpSegmentation::Instance()->GetMpSegmentation(deId, AliMp::kCath1);
+  if (!seg1 || !seg2) return kFALSE;
+  
+  AliMpPad pad1 = seg1->PadByPosition(xL, yL, kFALSE);
+  AliMpPad pad2 = seg2->PadByPosition(xL, yL, kFALSE);
+  
+  return (pad1.IsValid() || pad2.IsValid());
 }
 
