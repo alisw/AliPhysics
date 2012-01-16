@@ -39,15 +39,11 @@ void MakeMCCorr(const char* esddir   = ".",
 		const char* name     = 0)
 {
   if ((name && name[0] != '\0') && gSystem->Load("libRAliEn") >= 0) {
-    Error("MakeMCCorr", "Plug-in mode not implemented yet!");
-    return;
 
-    const char* fwdPath = 
-      gSystem->ExpandPathName("$(ALICE_ROOT)/PWG2/FORWARD/analysis2");
-    gROOT->LoadMacro(Form("%s/trains/BuildTrain.C", fwdPath));
-    BuildTrain("MakeMCCorrTrain");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/trains/TrainSetup.C+");
+    gROOT->LoadMacro("$ALICE_ROOT/PWG2/FORWARD/analysis2/trains/MakeMCCorrTrain.C+");
 
-    MakeMCCorrTrain t(name, vzMin, vzMax);
+    MakeMCCorrTrain t(name);
     t.SetDataDir(esddir);
     t.SetDataSet("");
     t.SetAllowOverwrite(true);

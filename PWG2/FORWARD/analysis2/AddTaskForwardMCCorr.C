@@ -35,6 +35,7 @@ AddTaskForwardMCCorr()
   mgr->AddTask(task);
   task->GetTrackDensity().SetDebug(false);
   task->GetTrackDensity().SetMaxConsequtiveStrips(3);
+//  task->SetVertexAxis(40, -20., 20.);
   
   // --- create containers for input/output --------------------------
   AliAnalysisDataContainer *sums = 
