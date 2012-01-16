@@ -59,16 +59,20 @@ AliTrackResidualsFast::AliTrackResidualsFast(const AliTrackResidualsFast &res):
   fSumR(res.fSumR)
 {
   // Copy constructor
-  for (Int_t i = 0; i < 27; i++) fSum[i] = res.fSum[i];
+  memcpy(fSum,res.fSum,27*sizeof(Double_t));
 }
 
 //______________________________________________________________________________
 AliTrackResidualsFast &AliTrackResidualsFast::operator= (const AliTrackResidualsFast& res)
 {
+  //
   // Assignment operator
- ((AliTrackResiduals *)this)->operator=(res);
- for (Int_t i = 0; i < 27; i++) fSum[i] = res.fSum[i];
- fSumR = res.fSumR;
+  //
+  if(this != &res) {
+    AliTrackResiduals::operator=(res);
+    memcpy(fSum,res.fSum,27*sizeof(Double_t));
+    fSumR = res.fSumR;
+  }
 
  return *this;
 }
