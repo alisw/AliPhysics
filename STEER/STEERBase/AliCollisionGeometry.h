@@ -57,6 +57,9 @@ public:
     Int_t   fTargetSpecp;    	       // Num. of spectator protons from target nucleus
     Float_t fImpactParameter;          // Impact Parameter
     Float_t fReactionPlaneAngle;       // Reaction plane angle
+
+private:
+    AliCollisionGeometry& operator=(const AliCollisionGeometry& cg); //Not implemented
     
   ClassDef(AliCollisionGeometry,3)     // Collision Geometry
 };
