@@ -35,7 +35,7 @@ public:
 
     PadData(const PadData& p) : fData(p.fData), fLength(p.fLength) {}
     PadData& operator=(const PadData& p)
-    { fData = p.fData; fLength = p.fLength; return *this; }
+      { if(this!=&p){fData = p.fData; fLength = p.fLength;} return *this; }
 
     Short_t* Data()   const { return fData; }
     Short_t  Length() const { return fLength; }
