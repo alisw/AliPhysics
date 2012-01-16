@@ -198,7 +198,7 @@ void AliModule::AliGetMaterial(Int_t imat, char* name, Float_t &a,
   gMC->GetMaterial(kmat, sname, da, dz, ddens, dradl, dabsl, par);
 
   const char* chname = sname.Data();
-  strcpy(name, chname);
+  strncpy(name, chname, strlen(chname)+1);
   a = da;
   z = dz;
   dens = ddens;
