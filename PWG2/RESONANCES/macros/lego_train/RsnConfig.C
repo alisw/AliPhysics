@@ -101,7 +101,7 @@ Bool_t RsnLoadMacroFromConfig(TString macro,TString path="") {
 }
 
 void GetOptionFromString(TString str,TString &outStr1,TString &outStr2,TString d=":") {
-//   TStringO
+   //   TStringO
    TObjArray *tokens = str.Tokenize(d.Data());
    TObjString *objStr =  (TObjString *)tokens->At(0);
    if (!objStr) {
@@ -127,7 +127,7 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
 
    Bool_t typeSame = (pType1 == pType2);
 
-//    Printf("------------- id1=%d id2=%d",listID1,listID2);
+   //    Printf("------------- id1=%d id2=%d",listID1,listID2);
 
    TList *listLoops = new TList;
 
@@ -220,7 +220,9 @@ Bool_t AddPair(AliAnalysisTaskSE *task, Bool_t isMC,Bool_t isMixing, AliPID::EPa
 
 void AddMonitorOutput(TObjArray *mon)
 {
-// mcinfo is not supported yet
+
+   if (!mon) {Printf("Error: mon is null !!!!");return;}
+
    Bool_t valid;
    Int_t useMCMomentum = AliAnalysisManager::GetGlobalInt("rsnUseMCMomentum",valid);
    if (useMCMomentum) return;
@@ -251,7 +253,7 @@ void AddMonitorOutput(TObjArray *mon)
    outMonitordEdxTOF->AddValue(axisSigTOF);
 
    // add outputs to loop
-//    mon->Add(outMonitordEdxTOF);
+   //    mon->Add(outMonitordEdxTOF);
 
 
    // Momentum
@@ -365,7 +367,7 @@ void AddMonitorOutput(TObjArray *mon)
    outMonitorPTvsMult->AddValue(ve1);
    mon->Add(outMonitorPTvsMult);
 
-//    mon->SetMCRefInfo(gRsnUseMCMomentum);
+   //    mon->SetMCRefInfo(gRsnUseMCMomentum);
 
 }
 
@@ -390,11 +392,11 @@ void AddParticleMonitor(AliAnalysisTaskSE *task, Bool_t isMC, Int_t listID1,AliR
    if (isRsnMini) {
       Printf("Monitoring by mini is not supported now. It will be soon !!!");
       return ;
-//       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-//
-//       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name);
-//       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'+');
-//       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'-');
+      //       AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+      //
+      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name);
+      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'+');
+      //       AddMonitorOutputMini((AliRsnMiniAnalysisTask *)task,listID1,name,'-');
    } else {
       TList *listLoops = new TList;
       // monitor definition
@@ -409,15 +411,10 @@ void AddParticleMonitor(AliAnalysisTaskSE *task, Bool_t isMC, Int_t listID1,AliR
       listLoops->Add(new AliRsnLoopDaughter(Form("%s_neg", name.Data()), listID1, tracksNeg));
 
       TIter next(listLoops);
-      while ((lm = (AliRsnLoopDaughter *)next.Next()))) {
+      while ((lm = (AliRsnLoopDaughter *)next.Next())) {
          if (commonEventCuts) lm->SetEventCuts(commonEventCuts);
          AddMonitorOutput(lm);
          ((AliRsnAnalysisTask *)task)->AddLoop(lm);
       }
-
    }
-
 }
-
-
-
