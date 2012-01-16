@@ -976,13 +976,13 @@ Int_t AliLog::RedirectTo(FILE* stream, EType_t type, UInt_t level,
   // redirect stream
   if ((type == kDebug) && (level > 0)) level--;
   if (type + level > GetLogLevel(module, className)) { // /dev/null
-    freopen("/dev/null", "a", stream);
+    if(!freopen("/dev/null", "a", stream)) AliWarning("Cannot reopen /dev/null");
   } else if (fOutputTypes[type] == 0) {         // stdout
     if (stream != stdout) dup2(fileno(stdout), fileno(stream));
   } else if (fOutputTypes[type] == 1) {         // stderr
     if (stream != stderr) dup2(fileno(stderr), fileno(stream));
   } else if (fOutputTypes[type] == 2) {         // file
-    freopen(fFileNames[type], "a", stream);
+    if(!freopen(fFileNames[type], "a", stream)) AliWarning(Form("Cannot reopen %s",fFileNames[type].Data()));
   } else if (fOutputTypes[type] == 3) {         // external C++ stream
     // redirection is not possible for external C++ streams
   }

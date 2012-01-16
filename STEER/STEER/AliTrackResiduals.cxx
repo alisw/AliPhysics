@@ -101,9 +101,6 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
 	  fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
       }
 
-  memcpy(fBFixed,res.fBFixed,sizeof(Float_t)*6);
-  memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
-
 }
 
 //_____________________________________________________________________________
@@ -111,25 +108,22 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
 {
   // assignment operator
   // Does not copy the track point arrays
-  if(this==&res) return *this;
-  ((TObject *)this)->operator=(res);
-
-  fN = res.fN;
-  fLast = res.fLast;
-  fChi2 = res.fChi2;
-  fNdf  = res.fNdf;
-  fMinNPoints = res.fMinNPoints;
-  fIsOwner = kFALSE;
-  fAlignObj = res.fAlignObj;
-
-  fVolArray = res.fVolArray;
-  fTrackArray = res.fTrackArray;
-
-  for(Int_t i=0;i<6;i++) { 
-    fBFixed[i]=res.fBFixed[i];
-    fFixed[i]=res.fFixed[i];
+  if(this!=&res) {
+    TObject::operator=(res);
+    
+    fN = res.fN;
+    fLast = res.fLast;
+    fAlignObj = res.fAlignObj;
+    fVolArray = res.fVolArray;
+    fTrackArray = res.fTrackArray;
+    fChi2 = res.fChi2;
+    fNdf  = res.fNdf;
+    fMinNPoints = res.fMinNPoints;
+    fIsOwner = kFALSE;
+    
+    memcpy(fBFixed,res.fBFixed,sizeof(Float_t)*6);
+    memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
   }
-
   return *this;
 }
 
