@@ -62,27 +62,28 @@ AliESDCaloCells & AliESDCaloCells::operator =(const AliESDCaloCells& source)
 {
   // assignment operator
 
-  if(&source == this) return *this;
-
-  if(fNCells != source.fNCells){
-    DeleteContainer();
-    CreateContainer(source.fNCells);
-  }
-
-  fNCells = source.fNCells; 
-  fIsSorted = source.fIsSorted;
-  fType = source.fType;
-
-
-
-  for(Int_t i = 0; i < fNCells; i++){
-    fCellNumber[i]    = source.fCellNumber[i];
-    fAmplitude[i]     = source.fAmplitude[i];
-    fTime[i]          = source.fTime[i];
+  if(this != &source) {
+    AliVCaloCells::operator=(source);
+    
+    if(fNCells != source.fNCells) {
+      delete [] fCellNumber;
+      delete [] fAmplitude;
+      delete [] fTime;
+      fNCells = source.fNCells;
+      fCellNumber = new Short_t[fNCells];
+      fAmplitude = new Double32_t[fNCells];
+      fTime = new Double32_t[fNCells];
+    }
+    memcpy(fCellNumber,source.fCellNumber,fNCells*sizeof(Short_t));
+    memcpy(fAmplitude,source.fAmplitude,fNCells*sizeof(Double32_t));
+    memcpy(fTime,source.fTime,fNCells*sizeof(Double32_t));
+    
+    fIsSorted = source.fIsSorted;
+    fType = source.fType;
+    
   }
 
   return *this;
-
 }
 
 //_______________________________________________________________________
