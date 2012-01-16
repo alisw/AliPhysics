@@ -61,7 +61,7 @@ AliSurveyToAlignObjs & AliSurveyToAlignObjs::operator= (const AliSurveyToAlignOb
   // assignment operator
   //
   if(this != &s2aObj) {
-    TObject::operator(s2aObj);
+    TObject::operator=(s2aObj);
     fSurveyObj = s2aObj.fSurveyObj;
     fSurveyPoints = s2aObj.fSurveyPoints;
     fAlignObjArray = s2aObj.fAlignObjArray;
