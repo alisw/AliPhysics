@@ -48,11 +48,13 @@ AliSurveyToAlignObjs::AliSurveyToAlignObjs() :
 AliSurveyToAlignObjs::AliSurveyToAlignObjs(const AliSurveyToAlignObjs &s2aObj) :
   TObject(s2aObj),
   fSurveyObj(s2aObj.fSurveyObj),
-  fSurveyPoints(s2aObj.fSurveyPoints),
-  fAlignObjArray(s2aObj.fAlignObjArray),
+  fSurveyPoints(NULL),
+  fAlignObjArray(NULL),
   fAlignObj(s2aObj.fAlignObj)
 {
   // copy constructor
+	fSurveyPoints = (TObjArray*)(s2aObj.fSurveyObj->Clone());
+	fAlignObjArray = (TClonesArray*) (s2aObj.fAlignObjArray->Clone());
 }
 
 //__________________________________________________________________________
@@ -60,14 +62,27 @@ AliSurveyToAlignObjs & AliSurveyToAlignObjs::operator= (const AliSurveyToAlignOb
   //
   // assignment operator
   //
-  if(this != &s2aObj) {
-    TObject::operator=(s2aObj);
-    fSurveyObj = s2aObj.fSurveyObj;
-    fSurveyPoints = s2aObj.fSurveyPoints;
-    fAlignObjArray = s2aObj.fAlignObjArray;
-    fAlignObj = s2aObj.fAlignObj;
-  }
-  return *this;
+    if(this != &s2aObj) {
+	//if(s2aObj.fSurveyObj){
+	    //delete fSurveyObj;
+	    this->fSurveyObj = s2aObj.fSurveyObj;
+	//}
+	//if(s2aObj.fSurveyPoints){
+	    //fSurveyPoints->Delete();
+	    //delete fSurveyPoints;
+	    fSurveyPoints = (TObjArray*)(s2aObj.fSurveyObj->Clone());
+	//}
+	//if(s2aObj.fAlignObjArray){
+	    //fAlignObjArray->Delete();
+	    //delete fAlignObjArray;
+	    fAlignObjArray = (TClonesArray*) (s2aObj.fAlignObjArray->Clone());
+	//}
+	//if(s2aObj.fAlignObj){
+	    //delete fAlignObj;
+	    this->fAlignObj = s2aObj.fAlignObj;
+	//}
+    }
+    return *this;
 }
 
 //__________________________________________________________________________
