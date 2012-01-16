@@ -99,6 +99,35 @@ AliRecPoint::AliRecPoint(const AliRecPoint& recp):
 }
 
 //_______________________________________________________________________
+AliRecPoint& AliRecPoint::operator=(const AliRecPoint& recp)
+{
+  //
+  // Assignement constructor
+  //
+  if(this!=&recp) {
+    TObject::operator=(recp);
+    fAmp=recp.fAmp;
+    fGeom=recp.fGeom;
+    fIndexInList=-1; // to be set when the point is already stored
+    fLocPos=recp.fLocPos;
+    delete fLocPosM;
+    fLocPosM=recp.fLocPosM;
+    fMaxDigit=recp.fMaxDigit;
+    fMulDigit=recp.fMulDigit;
+    fMaxTrack=recp.fMaxTrack;
+    fMulTrack=recp.fMulTrack;
+    delete [] fDigitsList;
+    fDigitsList=new Int_t[fMulDigit];
+    delete [] fTracksList;
+    fTracksList=new Int_t[fMulTrack];
+
+    memcpy(fDigitsList,recp.fDigitsList,sizeof(Int_t)*fMulDigit);
+    memcpy(fTracksList,recp.fTracksList,sizeof(Int_t)*fMulTrack);
+  }
+  return *this;
+}
+
+//_______________________________________________________________________
 AliRecPoint::~AliRecPoint()
 {
   // dtor
