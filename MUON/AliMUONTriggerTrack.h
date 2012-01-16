@@ -28,6 +28,8 @@ class AliMUONTriggerTrack : public TObject
 			Float_t slopeX, Float_t slopeY,
 			Int_t iloTrg, Long_t theGTPattern, Int_t ptCutLevel=1); 
     
+    virtual void Clear(Option_t* opt = "");
+    
     // getters
     
     /// Return x position of fired Y strip in MC11
