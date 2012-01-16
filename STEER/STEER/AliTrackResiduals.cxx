@@ -121,7 +121,7 @@ AliTrackResiduals &AliTrackResiduals::operator =(const AliTrackResiduals& res)
     fMinNPoints = res.fMinNPoints;
     fIsOwner = kFALSE;
     
-    memcpy(fBFixed,res.fBFixed,sizeof(Float_t)*6);
+    memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
     memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
   }
   return *this;
