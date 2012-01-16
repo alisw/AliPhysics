@@ -37,7 +37,7 @@ AddTaskCentralMCCorr()
   // This has to match the binning used in the AliAODCentralMult
   // class.  Currently, this is set to 20. 
   task->SetNPhiBins(20);
-  // task2->GetTrackDensity().SetDebug(false);
+//  task->SetVertexAxis(40, -20., 20.);
   
   // --- create containers for input/output --------------------------
   AliAnalysisDataContainer *sums = 
