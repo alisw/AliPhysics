@@ -308,7 +308,7 @@ void AliEveEventSelector::SetTriggerSelectionString( TString str )
     TString valuestr("(");
     valuestr += fTriggerMaskPatternString;
     valuestr += "&";
-    valuestr += static_cast<ULong64_t>(1<<i);
+    valuestr += static_cast<ULong64_t>(1)<<i;
     valuestr += ")";
     str.ReplaceAll(name,valuestr);
   }//for i
