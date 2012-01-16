@@ -1063,7 +1063,6 @@ Int_t AliMillePede2::SolveGlobalMatEq()
     int defout = dup(1);
     if (defout<0) {
       AliInfo("Failed on dup");
-      close(defout);
       return gkFailed;
     }
     int slvDump = open(faildump, O_RDWR|O_CREAT, 0666);
