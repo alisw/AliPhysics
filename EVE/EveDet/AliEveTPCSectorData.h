@@ -62,10 +62,10 @@ public:
     {}
     virtual ~PadIterator() {}
 
-    PadIterator& operator=(const PadIterator& i) {
+    PadIterator& operator=(const PadIterator& i) {if(this!=&i){
       fBeg = i.fBeg; fEnd = i.fEnd; fPos = i.fPos;
       fTime = i.fTime; fSignal = i.fSignal; fThreshold = i.fThreshold; fNChunk = i.fNChunk;
-      return *this;
+      }return *this;
     }
 
     Bool_t Next();
@@ -101,9 +101,9 @@ public:
       fPadArray(i.fPadArray), fNPads(i.fNPads), fPad(i.fPad)
     {}
 
-    RowIterator& operator=(const RowIterator& i) {
+    RowIterator& operator=(const RowIterator& i) {if(this!=&i){
       fPadArray = i.fPadArray; fNPads = i.fNPads; fPad = i.fPad;
-      return *this;
+      }return *this;
     }
 
     Bool_t NextPad();
