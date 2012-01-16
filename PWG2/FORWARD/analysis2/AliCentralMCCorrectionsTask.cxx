@@ -177,8 +177,7 @@ AliCentralMCCorrectionsTask::SetVertexAxis(Int_t nBin, Double_t min,
   //    vzMin Least @f$z@f$ coordinate of interation point
   //    vzMax Largest @f$z@f$ coordinate of interation point
   //
-  if (max < min) max = -min;
-  if (min < max) { 
+  if (max < min) { 
     Double_t tmp = min;
     min          = max;
     max          = tmp;
@@ -214,8 +213,7 @@ AliCentralMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
   //    vzMin Least @f$\eta@f$ 
   //    vzMax Largest @f$\eta@f$ 
   //
-  if (max < min) max = -min;
-  if (min < max) { 
+  if (max < min) { 
     Double_t tmp = min;
     min          = max;
     max          = tmp;
@@ -224,7 +222,7 @@ AliCentralMCCorrectionsTask::SetEtaAxis(Int_t nBin, Double_t min, Double_t max)
     AliWarning(Form("Minimum eta %f < -4, make sure you want this",min));
   if (max > +6) 
     AliWarning(Form("Minimum eta %f > +6, make sure you want this",max));
-  fVtxAxis.Set(nBin, min, max);
+  fEtaAxis.Set(nBin, min, max);
 }
 //____________________________________________________________________
 void
@@ -410,6 +408,8 @@ AliCentralMCCorrectionsTask::UserExec(Option_t*)
   // Now process our input data and store in own ESD object 
   fTrackDensity.Calculate(*mcEvent, vZMc, *bin->fHits, bin->fPrimary);
   bin->fCounts->Fill(0.5);
+  
+  PostData(1, fList);
 }
 
 //____________________________________________________________________
@@ -428,6 +428,8 @@ AliCentralMCCorrectionsTask::Terminate(Option_t*)
     AliError("No output list defined");
     return;
   }
+
+  DefineBins(fList);
 
   // Output list 
   TList* output = new TList;
