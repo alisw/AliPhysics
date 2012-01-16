@@ -44,16 +44,22 @@ AliVEventPool::AliVEventPool(const char* name, const char* title):
 
 AliVEventPool::AliVEventPool(const AliVEventPool& obj):
     TNamed(obj),
-    fChain(0)
+    fChain(obj.fChain)
 {
-    // Copy constructor
-    fChain = obj.fChain;
+  //
+  // Copy constructor
+  //
 }
 
 AliVEventPool& AliVEventPool::operator=(const AliVEventPool& other)
 {
-// Assignment operator
+  //
+  // Assignment operator
+  //
+  if(this != &other) {
     TNamed::operator=(other);
+    delete fChain;
     fChain = other.fChain;
-    return *this;
+  }
+  return *this;
 }
