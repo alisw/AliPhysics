@@ -26,6 +26,7 @@
 
 
 #include "AliSplineFit.h"
+#include "AliLog.h"
 
 ClassImp(AliSplineFit)
 
@@ -267,11 +268,14 @@ TGraph * AliSplineFit::MakeGraph(Double_t xmin, Double_t xmax, Int_t npoints, In
   if (npoints<=0) {
     if (deriv<=0) 
       return new TGraph(fN,fX,fY0);
-    else 
-      if (deriv==1) 
-	return new TGraph(fN,fX,fY1);
-      else 
-	return new TGraph(fN-1,fX,fChi2I);
+    else if (deriv==1) 
+      return new TGraph(fN,fX,fY1);
+    else if(deriv>2)
+      return new TGraph(fN-1,fX,fChi2I);
+    else {
+      AliWarning("npoints == 0 et deriv == 2: unhandled condition");
+      return 0;
+    }
   }
   Double_t * x = new Double_t[npoints+1];
   Double_t * y = new Double_t[npoints+1];

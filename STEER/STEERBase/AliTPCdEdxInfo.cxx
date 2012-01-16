@@ -29,28 +29,6 @@ AliTPCdEdxInfo::AliTPCdEdxInfo():
 }
 
 
-AliTPCdEdxInfo::AliTPCdEdxInfo(const AliTPCdEdxInfo& source):
-  TObject(),
-  fTPCsignalRegion(),
-  fTPCsignalNRegion(),
-  fTPCsignalNRowRegion()
-{
-  //
-  // copy constructor
-  //
-  Double32_t signal[4]; Char_t ncl[3]; Char_t nrows[3];
-  source.GetTPCSignalRegionInfo(signal, ncl, nrows);
-  for (Int_t i=0;i<3; i++){
-    fTPCsignalRegion[i]=signal[i];
-    fTPCsignalNRegion[i]=ncl[i];
-    fTPCsignalNRowRegion[i]=nrows[i];
-  }
-  fTPCsignalRegion[3]=signal[3];
- 
-}
-
-
-
 void  AliTPCdEdxInfo::GetTPCSignalRegionInfo(Double32_t signal[4], Char_t ncl[3], Char_t nrows[3]) const {
   //
   // Get the TPC dEdx variables per region
