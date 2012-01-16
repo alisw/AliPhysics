@@ -188,31 +188,43 @@ void AliBalance::InitHistograms() {
   TString histName;
   for(Int_t iAnalysisType = 0; iAnalysisType < ANALYSIS_TYPES; iAnalysisType++) {
     histName = "fHistP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
 
     histName = "fHistN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,100,fP1Start[iAnalysisType],fP1Stop[iAnalysisType]);
   
     histName = "fHistPN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistPN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistNP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistPP"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistPP[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
     
     histName = "fHistNN"; histName += gBFAnalysisType[iAnalysisType]; 
+    histName += (Int_t)(fCentStart); histName += "-";
+    histName += (Int_t)(fCentStop);
     if(bShuffle) histName.Append("_shuffle");
     if(fCentralityId) histName += fCentralityId.Data();
     fHistNN[iAnalysisType] = new TH2D(histName.Data(),"",fCentStop-fCentStart,fCentStart,fCentStop,fNumberOfBins[iAnalysisType],fP2Start[iAnalysisType],fP2Stop[iAnalysisType]);
