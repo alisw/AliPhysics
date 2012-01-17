@@ -424,15 +424,10 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     secondEstimator->AddRubric("run",500000);
     secondEstimator->AddRubric("centralityclass","-10_0/0_10/10_20/20_30/30_40/40_50/50_60/60_70/70_80/80_90/90_100/-990_-980");
     secondEstimator->Init();
-    AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
-    trigCounter->AddRubric("run",500000);
-    trigCounter->AddRubric("triggerType","Any/MB/Cent/SemiCent/EMCAL");
-    trigCounter->Init();
-
+ 
     fOutputCounters->Add(stdEstimator);
     fOutputCounters->Add(secondEstimator);
-    fOutputCounters->Add(trigCounter);
-
+ 
     //Centrality (Checks)
     fOutputCheckCentrality=new TList();
     fOutputCheckCentrality->SetOwner();
@@ -526,11 +521,17 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     hTrigCentSel->GetXaxis()->SetBinLabel(10,"PHOS");
     hTrigCentSel->GetXaxis()->SetBinLabel(11,"Others");
 
+    AliCounterCollection *trigCounter=new AliCounterCollection("trigCounter");
+    trigCounter->AddRubric("run",500000);
+    trigCounter->AddRubric("triggerType","Any/MB/Cent/SemiCent/EMCAL");
+    trigCounter->Init();
+
     fOutputEvSelection->Add(evselection);
     fOutputEvSelection->Add(hzvtx);
     fOutputEvSelection->Add(hTrigCent);
     fOutputEvSelection->Add(hTrigMul);
     fOutputEvSelection->Add(hTrigCentSel);
+    fOutputEvSelection->Add(trigCounter);
   }
 //  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 //  AliInputEventHandler *inputHandler=(AliInputEventHandler*)mgr->GetInputEventHandler();
@@ -749,58 +750,59 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Double_t centrality=fCuts->GetCentrality(aod);
   Double_t multiplicity=aod->GetHeader()->GetRefMultiplicity();
   Int_t runNumber = aod->GetRunNumber();
+  if(fOnOff[3]){
+    TH2F* hTrigC=(TH2F*)fOutputEvSelection->FindObject("hTrigCent");
+    TH2F* hTrigM=(TH2F*)fOutputEvSelection->FindObject("hTrigMul");
+    AliCounterCollection* trigCount=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter");
 
-  TH2F* hTrigC=(TH2F*)fOutputEvSelection->FindObject("hTrigCent");
-  TH2F* hTrigM=(TH2F*)fOutputEvSelection->FindObject("hTrigMul");
-  AliCounterCollection* trigCount=(AliCounterCollection*)fOutputCounters->FindObject("trigCounter");
-
-  hTrigC->Fill(0.,centrality);
-  hTrigM->Fill(0.,multiplicity);
-  trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
+    hTrigC->Fill(0.,centrality);
+    hTrigM->Fill(0.,multiplicity);
+    trigCount->Count(Form("triggerType:Any/Run:%d",runNumber));
   
-  if(evSelMask & AliVEvent::kMB){
-    hTrigC->Fill(1.,centrality);
-    hTrigM->Fill(1.,multiplicity);
-    trigCount->Count(Form("triggerType:MB/Run:%d",runNumber));
-  }
-  if(evSelMask & AliVEvent::kINT7){ 
-    hTrigC->Fill(2.,centrality);
-    hTrigM->Fill(2.,multiplicity);
-  }
-  if(evSelMask & AliVEvent::kCINT5){ 
-    hTrigC->Fill(3.,centrality);
-    hTrigM->Fill(3.,multiplicity);
-  }
-  if(evSelMask & AliVEvent::kCentral){
-    hTrigC->Fill(4.,centrality);
-    hTrigM->Fill(4.,multiplicity);
-    trigCount->Count(Form("triggerType:Cent/Run:%d",runNumber));
-  }
-  if(evSelMask & AliVEvent::kSemiCentral){ 
-    hTrigC->Fill(5.,centrality);
-    hTrigM->Fill(5.,multiplicity);
-    trigCount->Count(Form("triggerType:SemiCent/Run:%d",runNumber));
-  }
-  if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)){
-    hTrigC->Fill(6.,centrality);
-    hTrigM->Fill(6.,multiplicity);
-  }
-  if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)){
-    hTrigC->Fill(7.,centrality);
-    hTrigM->Fill(7.,multiplicity);
-    trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
-  }
-  if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
-    hTrigC->Fill(8.,centrality);
-    hTrigM->Fill(8.,multiplicity);
-  }
-  if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
-    hTrigC->Fill(9.,centrality);
-    hTrigM->Fill(9.,multiplicity);
-  }
-  if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
-    hTrigC->Fill(10.,centrality);
-    hTrigM->Fill(10.,multiplicity);
+    if(evSelMask & AliVEvent::kMB){
+      hTrigC->Fill(1.,centrality);
+      hTrigM->Fill(1.,multiplicity);
+      trigCount->Count(Form("triggerType:MB/Run:%d",runNumber));
+    }
+    if(evSelMask & AliVEvent::kINT7){ 
+      hTrigC->Fill(2.,centrality);
+      hTrigM->Fill(2.,multiplicity);
+    }
+    if(evSelMask & AliVEvent::kCINT5){ 
+      hTrigC->Fill(3.,centrality);
+      hTrigM->Fill(3.,multiplicity);
+    }
+    if(evSelMask & AliVEvent::kCentral){
+      hTrigC->Fill(4.,centrality);
+      hTrigM->Fill(4.,multiplicity);
+      trigCount->Count(Form("triggerType:Cent/Run:%d",runNumber));
+    }
+    if(evSelMask & AliVEvent::kSemiCentral){ 
+      hTrigC->Fill(5.,centrality);
+      hTrigM->Fill(5.,multiplicity);
+      trigCount->Count(Form("triggerType:SemiCent/Run:%d",runNumber));
+    }
+    if(evSelMask & (AliVEvent::kEMC1 | AliVEvent::kEMC7)){
+      hTrigC->Fill(6.,centrality);
+      hTrigM->Fill(6.,multiplicity);
+    }
+    if(evSelMask & (AliVEvent::kEMCEJE | AliVEvent::kEMCEGA)){
+      hTrigC->Fill(7.,centrality);
+      hTrigM->Fill(7.,multiplicity);
+      trigCount->Count(Form("triggerType:EMCAL/Run:%d",runNumber));
+    }
+    if(evSelMask & (((AliVEvent::kCMUS5 | AliVEvent::kMUSH7) | (AliVEvent::kMUL7 | AliVEvent::kMUU7)) |  (AliVEvent::kMUS7 | AliVEvent::kMUON))){
+      hTrigC->Fill(8.,centrality);
+      hTrigM->Fill(8.,multiplicity);
+    }
+    if(evSelMask & (AliVEvent::kPHI1 | AliVEvent::kPHI7)){ 
+      hTrigC->Fill(9.,centrality);
+      hTrigM->Fill(9.,multiplicity);
+    }
+    if(evSelMask & (AliVEvent::kDG5 | AliVEvent::kZED)){
+      hTrigC->Fill(10.,centrality);
+      hTrigM->Fill(10.,multiplicity);
+    }
   }
   
 
