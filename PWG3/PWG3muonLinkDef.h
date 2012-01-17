@@ -41,5 +41,8 @@
 #pragma link C++ class AliAnalysisMuMuFromESD+;
 #pragma link C++ class AliMuonTrackCuts+;
 #pragma link C++ class AliMuonPairCuts+;
+#pragma link C++ class AliMergeableCollection+;
+#pragma link C++ class AliMergeableCollectionIterator+;
+#pragma link C++ class AliVAnalysisMuon+;
 #endif
 
