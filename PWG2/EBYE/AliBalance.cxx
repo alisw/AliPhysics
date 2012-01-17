@@ -683,9 +683,9 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   cout<<"=================================================="<<endl;
   for(Int_t i = 1; i <= fNumberOfBins[iAnalysisType]; i++) { 
     x[i-1] = fP2Start[iAnalysisType] + fP2Step[iAnalysisType]*i + fP2Step[iAnalysisType]/2;
-    cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
+    //cout<<"B: "<<gHistBalance->GetBinContent(i)<<"\t Error: "<<gHistBalance->GetBinError(i)<<"\t bin: "<<gHistBalance->GetBinCenter(i)<<endl;
   } 
-  cout<<"=================================================="<<endl;
+  //cout<<"=================================================="<<endl;
   for(Int_t i = 2; i <= fNumberOfBins[iAnalysisType]; i++) {
     gSumXi += gHistBalance->GetBinCenter(i);
     gSumBi += gHistBalance->GetBinContent(i);
@@ -705,7 +705,7 @@ void AliBalance::PrintResults(Int_t iAnalysisType, TH1D *gHistBalance) {
   
   Double_t delta = gSumBiXi / gSumBi;
   Double_t deltaError = (gSumBiXi / gSumBi) * TMath::Sqrt(TMath::Power((TMath::Sqrt(gSumXi2DeltaBi2)/gSumBiXi),2) + TMath::Power((gSumDeltaBi2/gSumBi),2) );
-  
+  cout<<"Analysis type: "<<gBFAnalysisType[iAnalysisType].Data()<<endl;
   cout<<"Width: "<<delta<<"\t Error: "<<deltaError<<endl;
   cout<<"New error: "<<deltaErrorNew<<endl;
   cout<<"Integral: "<<integral<<"\t Error: "<<integralError<<endl;
