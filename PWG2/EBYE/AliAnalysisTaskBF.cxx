@@ -754,6 +754,8 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	gImpactParameter = headerH->ImpactParameter();
 	fCentrality = gImpactParameter;
       }
+      fCentrality = gImpactParameter;
+
       // take only events inside centrality class (DIDN'T CHANGE THIS UP TO NOW)
       if((fImpactParameterMin > gImpactParameter) || (fImpactParameterMax < gImpactParameter))
 	return;
@@ -844,6 +846,10 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	    track->PxPyPz(v_p);
 	    //Printf("phi (before): %lf",v_phi);
 
+	    fHistPt->Fill(v_pt);
+	    fHistEta->Fill(v_eta);
+	    fHistPhi->Fill(v_phi);
+
 	    //Flow after burner
 	    if(fUseFlowAfterBurner) {
 	      Double_t precisionPhi = 0.001;
@@ -852,6 +858,7 @@ void AliAnalysisTaskBF::UserExec(Option_t *) {
 	      Double_t phi0 = v_phi;
 	      Double_t gV2 = fDifferentialV2->Eval(v_pt);
 	      fHistPhiBefore->Fill(v_phi);
+	      gReactionPlane = 0.0;
 
 	      for (Int_t j = 0; j < maxNumberOfIterations; j++) {
 		Double_t phiprev = v_phi;
