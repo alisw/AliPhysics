@@ -32,6 +32,8 @@
 #include "AliMagF.h"
 #include "AliRun.h"
 #include "AliLog.h"
+#include "AliMC.h"
+#include "AliTrackReference.h"
 #include <TGeoVolume.h>
 #include <TGeoManager.h>
 #include <TGeoMatrix.h>
@@ -47,7 +49,7 @@
 ClassImp(AliHALL)
  
 //_____________________________________________________________________________
-AliHALLv3::AliHALLv3() : fNewShield24(0)
+AliHALLv3::AliHALLv3() : fNewShield24(0), fRefVolumeId(-1), fScoring(0)
 {
   //
   // Default constructor for the experimental Hall
@@ -56,7 +58,7 @@ AliHALLv3::AliHALLv3() : fNewShield24(0)
  
 //_____________________________________________________________________________
 AliHALLv3::AliHALLv3(const char *name, const char *title)
-  : AliHALL(name,title), fNewShield24(0)
+  : AliHALL(name,title), fNewShield24(0), fRefVolumeId(-1), fScoring(0)
 {
   //
   // Standard constructor for the experimental Hall
@@ -476,8 +478,60 @@ void AliHALLv3::CreateGeometry()
   TGeoVolume* voPx24Pl = new TGeoVolume("Px24Pl", shPx24Pl, kMedST);
   asShPx24->AddNode(voPx24Pl, 1, new TGeoTranslation(55., 0., -1205./2. + 40.));
   asHall->AddNode(asFMS, 1, new TGeoTranslation(0.,  0., 0.));
-  
+
   //
+  // Scoring plane for beam background simulations
+  //
+  TGeoVolume* voRB24Scoring = new TGeoVolume("RB24Scoring", new TGeoTube(4.3, 300., 1.), kMedAir);
+  asHall->AddNode(voRB24Scoring, 1, new TGeoTranslation(0., 0., 735.));
+  //
+
   top->AddNode(asHall, 1, gGeoIdentity);
   
 }
+
+void AliHALLv3::Init()
+{
+  //
+  // Initialise the module after the geometry has been defined
+  //
+    if(AliLog::GetGlobalDebugLevel()>0) {
+	printf("%s: **************************************"
+	       " HALL "
+	       "**************************************\n",ClassName());
+	printf("\n%s:      Version 3 of HALL initialised\n\n",ClassName());
+	printf("%s: **************************************"
+	       " HALL "
+	       "**************************************\n",ClassName());
+    }
+//
+// The reference volume id
+    fRefVolumeId = gMC->VolId("RB24Scoring");
+}
+
+void AliHALLv3::StepManager()
+{
+//
+// Stepmanager of AliHALLv2
+// Used for recording of reference tracks entering scoring plane
+//
+  if (!fScoring) return;
+  Int_t   copy, id;
+  
+  //
+  // Only charged tracks
+  if( !(gMC->TrackCharge()) ) return; 
+  //
+  // Only tracks entering mother volume
+  // 
+
+  id=gMC->CurrentVolID(copy);
+
+  if ((id != fRefVolumeId))   return;
+  if(!gMC->IsTrackEntering()) return;
+  //
+  // Add the reference track
+  //
+  AddTrackReference(gAlice->GetMCApp()->GetCurrentTrackNumber(), AliTrackReference::kHALL);
+}
+
