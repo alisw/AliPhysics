@@ -112,6 +112,8 @@ class AliAnalysisTaskMinijet : public AliAnalysisTaskSE {
   TH1F       *fStep;                        // how many events have passed which correction step
   TH1F       *fHistPt;                      // Pt spectrum ESD
   TH1F       *fHistPtMC;                    // Pt spectrum MC
+  TH2F       *fNContrNtracklets;            // controll histogram for vertex->nContributers and number of tracklets
+  TH2F       *fNContrNtracks;               // controll histogram for vertex->nContributers and number of tracks
 
   TH2F       *fNmcNch;                      // N mc - N ch rec
   TProfile   *fPNmcNch;                     // N mc - N ch rec

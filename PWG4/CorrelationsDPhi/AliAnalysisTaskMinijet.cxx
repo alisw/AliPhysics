@@ -82,6 +82,8 @@ ClassImp(AliAnalysisTaskMinijet)
       fStep(0),
       fHistPt(0),
       fHistPtMC(0),
+      fNContrNtracklets(0),
+      fNContrNtracks(0),
       fNmcNch(0),
       fPNmcNch(0),
       fNmcNchVtx(0),
@@ -160,7 +162,9 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
   fHistPt->GetXaxis()->SetTitle("P_{T} (GeV/c)");
   fHistPt->GetYaxis()->SetTitle("dN/dP_{T} (c/GeV)");
   fHistPt->SetMarkerStyle(kFullCircle);
-  
+  fNContrNtracklets = new TH2F ("fNContrNtracklets", ";N_{tracklets};N_{vtx contrib}", 100,-0.5,99.5,100,-0.5,99.5);
+  fNContrNtracks    = new TH2F ("fNContrNtracks", ";N_{tracks};N_{vtx contrib}", 100,-0.5,99.5,100,-0.5,99.5);
+
   if (fUseMC) {
     fHistPtMC = new TH1F("fHistPtMC", "P_{T} distribution MC", 150, 0.1, 3.1);
     fHistPtMC->GetXaxis()->SetTitle("P_{T} (GeV/c)");
@@ -364,6 +368,8 @@ void AliAnalysisTaskMinijet::UserCreateOutputObjects()
 
   fHists->Add(fStep);
   fHists->Add(fHistPt);
+  fHists->Add(fNContrNtracklets);
+  fHists->Add(fNContrNtracks);
 
   if(fUseMC){
     fHists->Add(fHistPtMC); 
@@ -1738,6 +1744,8 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       
       AliAODVertex*	vertex= (AliAODVertex*)fAODEvent->GetPrimaryVertex();
       if(!vertex) return false;
+      TString vtxTitle(vertex->GetTitle());// only allow vertex from tracks, no vertexer z
+      if (!(vtxTitle.Contains("VertexerTracksWithConstraint"))) return false;
       fVertexCheck->Fill(vertex->GetNContributors());
       if(vertex->GetNContributors()<=0) return false;
       Double_t vzAOD=vertex->GetZ();
@@ -1750,7 +1758,25 @@ Bool_t AliAnalysisTaskMinijet::CheckEvent(const Bool_t recVertex)
       Double_t vzSPD=vertexSPD->GetZ();
       //if(TMath::Abs(vzSPD)<1e-9) return false;
       if(TMath::Abs(vzSPD)>fVertexZCut) return false;
-    
+
+      //control histograms=================
+      //tracklet loop
+      Int_t ntrackletsAccept=0;
+      AliAODTracklets * mult= (AliAODTracklets*)fAODEvent->GetTracklets();
+      for(Int_t i=0;i<mult->GetNumberOfTracklets();++i){
+	if(TMath::Abs(mult->GetDeltaPhi(i))<0.05 && 
+	   TMath::Abs(TMath::Log(TMath::Tan(0.5 * mult->GetTheta(i))))<fEtaCut) ++ntrackletsAccept;
+      }
+      Int_t nAcceptedTracks=0;
+      for (Int_t iTracks = 0; iTracks < fAODEvent->GetNumberOfTracks(); iTracks++) {
+	AliAODTrack *track = (AliAODTrack *)fAODEvent->GetTrack(iTracks);
+	if (!track) continue;
+	if(track->TestFilterBit(fFilterBit) && TMath::Abs(track->Eta())<fEtaCut  
+	   && track->Pt()>fPtMin && track->Pt()<fPtMax) nAcceptedTracks++;
+      }
+      fNContrNtracklets->Fill(ntrackletsAccept,vertexSPD->GetNContributors());
+      fNContrNtracks->Fill(nAcceptedTracks,vertexSPD->GetNContributors());
+      //====================================
     }
     return true;
    
