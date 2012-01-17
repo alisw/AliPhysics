@@ -764,7 +764,7 @@ FindClustersSSD(const Ali1Dcluster* neg, Int_t nn,
   if ((np*nn) > fgPairsSize) {
 
     delete [] fgPairs;
-    fgPairsSize = 4*np*nn;
+    fgPairsSize = 2*np*nn;
     fgPairs = new Short_t[fgPairsSize];
   }
   memset(fgPairs,0,sizeof(Short_t)*np*nn);
