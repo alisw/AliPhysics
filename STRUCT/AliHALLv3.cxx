@@ -47,7 +47,7 @@
 ClassImp(AliHALL)
  
 //_____________________________________________________________________________
-AliHALLv3::AliHALLv3()
+AliHALLv3::AliHALLv3() : fNewShield24(0)
 {
   //
   // Default constructor for the experimental Hall
@@ -56,7 +56,7 @@ AliHALLv3::AliHALLv3()
  
 //_____________________________________________________________________________
 AliHALLv3::AliHALLv3(const char *name, const char *title)
-       : AliHALL(name,title)
+  : AliHALL(name,title), fNewShield24(0)
 {
   //
   // Standard constructor for the experimental Hall
@@ -377,12 +377,25 @@ void AliHALLv3::CreateGeometry()
   TGeoVolume* voShRb24Ro = new TGeoVolume("ShRb24Ro", new TGeoBBox(395., 80., 520.), kMedCC);
   asShRb24->AddNode(voShRb24Ro, 1, new TGeoTranslation(0., +80. + 140., 0.));
   //
-  // Plug
+  // Concrete Plug
   TGeoBBox* shShRb24Pl1 = new TGeoBBox(235., 140., 40.);
   shShRb24Pl1->SetName("ShRb24Pl1");
+  // Steel Plug
+  TGeoBBox* shShRb24Pl4 = new TGeoBBox(15., 20., 40.);
+  shShRb24Pl4->SetName("ShRb24Pl4");
+
+  TGeoBBox* shShRb24Pl41 = new TGeoBBox(15., 20., 45.);
+  shShRb24Pl41->SetName("ShRb24Pl41");
+  
   //
   // Opening for beam pipe
-  TGeoBBox* shShRb24Pl2 = new TGeoBBox(15., 20., 60.);
+  Float_t dxShRb24Pl = 14.5;
+  Float_t dyShRb24Pl = 20.0;
+  if (fNewShield24) {
+    dxShRb24Pl = 6.;
+    dyShRb24Pl = 6.;
+  }
+  TGeoBBox* shShRb24Pl2 = new TGeoBBox(dxShRb24Pl, dyShRb24Pl, 60.);
   shShRb24Pl2->SetName("ShRb24Pl2");
   //
   // Opening for tubes
@@ -391,9 +404,29 @@ void AliHALLv3::CreateGeometry()
 
   TGeoTranslation* trPl3 = new TGeoTranslation("trPl3", +235. -90., 80., 0.);
   trPl3->RegisterYourself();
-  TGeoCompositeShape*  shRb24Pl = new TGeoCompositeShape("Rb24Pl", "ShRb24Pl1-(ShRb24Pl2+ShRb24Pl3:trPl3)");
+
+  TGeoTranslation* trPl4 = new TGeoTranslation("trPl4", 0., -6., 0.);
+  trPl4->RegisterYourself();
+  TGeoTranslation* trPl5 = new TGeoTranslation("trPl5", 0., +6., 0.);
+  trPl5->RegisterYourself();
+
+  TGeoCompositeShape*  shRb24Pl   = 0;
+  TGeoCompositeShape*  shRb24PlSS = 0;
+  if (!fNewShield24) {
+    shRb24Pl = new TGeoCompositeShape("Rb24Pl", "ShRb24Pl1-ShRb24Pl2:trPl4-ShRb24Pl3:trPl3");
+  } else {
+    shRb24Pl   = new TGeoCompositeShape("Rb24Pl",   "ShRb24Pl1-(ShRb24Pl41:trPl4+ShRb24Pl3:trPl3)");
+    shRb24PlSS = new TGeoCompositeShape("Rb24PlSS", "ShRb24Pl4-ShRb24Pl2:trPl5");
+  }
+
   TGeoVolume* voRb24Pl = new TGeoVolume("Rb24Pl", shRb24Pl, kMedCC);
+
   asShRb24->AddNode(voRb24Pl, 1, new TGeoTranslation(0., 0., 520. - 40.));
+  if (fNewShield24) {
+    TGeoVolume* voRb24PlSS = new TGeoVolume("Rb24PlSS", shRb24PlSS, kMedST);
+    asShRb24->AddNode(voRb24PlSS, 1, new TGeoTranslation(0., -6., 520. - 40.));
+   }
+
 
   //
   // Concrete platform and shielding PX24
@@ -426,9 +459,17 @@ void AliHALLv3::CreateGeometry()
   TGeoBBox* shShPx24Pl1 = new TGeoBBox(155., 140., 40.);
   shShPx24Pl1->SetName("ShPx24Pl1");
   // Opening for beam pipe
-  TGeoBBox* shShPx24Pl2 = new TGeoBBox(15., 20., 60.);
+  Float_t dxPx24Pl2 =  9.5;
+  Float_t dyPx24Pl2 = 14.0;
+  // Option for new shielding closer to the beam pipe
+  if (fNewShield24) {
+    dxPx24Pl2 = 6.;
+    dyPx24Pl2 = 6.;
+  }
+  //
+  TGeoBBox* shShPx24Pl2 = new TGeoBBox(dxPx24Pl2, dyPx24Pl2, 60.);
   shShPx24Pl2->SetName("ShPx24Pl2");
-  TGeoTranslation* trPl2 = new TGeoTranslation("trPl2", -55., 0., 0.);
+  TGeoTranslation* trPl2  = new TGeoTranslation("trPl2",  -55., 0., 0.);
   trPl2->RegisterYourself();
 
   TGeoCompositeShape*  shPx24Pl = new TGeoCompositeShape("Px24Pl", "ShPx24Pl1-ShPx24Pl2:trPl2");

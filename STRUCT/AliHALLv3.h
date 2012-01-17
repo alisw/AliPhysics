@@ -19,6 +19,9 @@ public:
    AliHALLv3(const char *name, const char *title);
    virtual      ~AliHALLv3() {}
    virtual void  CreateGeometry();
+   virtual void  SetNewShield24() {fNewShield24 = 1;}
+private:
+   Bool_t fNewShield24;   // Option for new shielding in PX24 and RB24
    ClassDef(AliHALLv3,1)  //Class for ALICE experimental hall
 };
 
