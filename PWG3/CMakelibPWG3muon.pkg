@@ -61,6 +61,8 @@ set ( SRCS
     muon/AliCFMuonResUpsilon.cxx 
     muon/AliMuonTrackCuts.cxx 
     muon/AliMuonPairCuts.cxx 
+    muon/AliMergeableCollection.cxx 
+    muon/AliVAnalysisMuon.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
