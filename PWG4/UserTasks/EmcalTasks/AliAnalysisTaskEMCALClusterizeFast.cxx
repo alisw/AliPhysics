@@ -80,7 +80,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast()
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0)
+    fClusterizeFastORs(0),
+    fTrackName()
 { 
   // Constructor
 
@@ -120,7 +121,8 @@ AliAnalysisTaskEMCALClusterizeFast::AliAnalysisTaskEMCALClusterizeFast(const cha
     fShiftPhi(2),
     fShiftEta(2),
     fTRUShift(0),
-    fClusterizeFastORs(0)
+    fClusterizeFastORs(0),
+    fTrackName()
 { 
   // Constructor
 
@@ -383,10 +385,19 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
 
   AliVCaloCells *cells = InputEvent()->GetEMCALCells();
   AliEMCALGeometry *geom = AliEMCALGeometry::GetInstance(fGeomName);
-  
-  AliDebug(1, Form("total no of clusters %d", fClusterArr->GetEntriesFast())); 
+  AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
+
+  // tracks array for track/cluster matching
+  TClonesArray *tarr = 0;
+  if (!fTrackName.IsNull()) {
+    tarr = dynamic_cast<TClonesArray*>(esdevent->FindListObject(fTrackName));
+    if (!tarr) {
+      AliError(Form("Cannot get tracks named %s", fTrackName.Data()));
+    }
+  }
   
   const Int_t Ncls = fClusterArr->GetEntriesFast();
+  AliDebug(1, Form("total no of clusters %d", Ncls)); 
   for(Int_t i=0, nout=clus->GetEntries(); i < Ncls; ++i) {
     AliEMCALRecPoint *recpoint = static_cast<AliEMCALRecPoint*>(fClusterArr->At(i));
     Int_t ncells_true = 0;
@@ -421,8 +432,8 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
     c->SetPosition(g);
     c->SetNCells(ncells_true);
     c->SetDispersion(recpoint->GetDispersion());
-    c->SetEmcCpvDistance(-1);            //not yet implemented
-    c->SetChi2(-1);                      //not yet implemented
+    c->SetEmcCpvDistance(-1);
+    c->SetChi2(-1);
     c->SetTOF(recpoint->GetTime()) ;     //time-of-flight
     c->SetNExMax(recpoint->GetNExMax()); //number of local maxima
     Float_t elipAxis[2];
@@ -437,59 +448,64 @@ void AliAnalysisTaskEMCALClusterizeFast::RecPoints2Clusters(TClonesArray *clus)
         fRecoUtils->RecalculateClusterDistanceToBadChannel(geom, cells, c);
       } 
     }
-  
-    if (esdobjects) {
-      AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
-      cesd->SetCellsAbsId(absIds);
-      cesd->SetCellsAmplitudeFraction(ratios);
-      cesd->SetID(recpoint->GetUniqueID());
-    } else {
-      AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
-      caod->SetCellsAbsId(absIds);
-      caod->SetCellsAmplitudeFraction(ratios);
-    }
-  }
- 
-  AliESDEvent *esdevent = dynamic_cast<AliESDEvent*>(InputEvent());
-  if (!esdevent)
-    return;
-  if (!fRecoUtils)
-    return;
 
-  AliAnalysisManager::GetAnalysisManager()->LoadBranch("Tracks");
-  fRecoUtils->FindMatches(esdevent,clus);
-  
-  if (!esdobjects) {
-    const Int_t Nclus = clus->GetEntries();
-    for(Int_t i=0; i < Nclus; ++i) {
-      AliAODCaloCluster *c = static_cast<AliAODCaloCluster*>(clus->At(i));
-      Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-      if (trackIndex >= 0) {
-        Float_t dR, dZ;
-        fRecoUtils->GetMatchedResiduals(i,dR, dZ);
-        c->AddTrackMatched(0x0);   //esdevent->GetTrack(trackIndex));
-        c->SetTrackDistance(dR,dZ); // not implemented
-        c->SetEmcCpvDistance(dR);
-        c->SetChi2(dZ);
-        if (DebugLevel() > 1) 
-          AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
+    if (tarr) {
+      Double_t dEtaMin  = 1e9;
+      Double_t dPhiMin  = 1e9;
+      Int_t    imin     = -1;
+      Double_t ceta     = gpos.Eta();
+      Double_t cphi     = gpos.Phi();
+      const Int_t ntrks = tarr->GetEntries();
+      for(Int_t t = 0; t<ntrks; ++t) {
+        AliVTrack *track = static_cast<AliVTrack*>(tarr->At(t));
+        if (!track)
+          continue;
+        const AliExternalTrackParam *outp = track->GetOuterParam();
+        if (!outp)
+          continue;
+        Double_t trkPos[3] = {0.,0.,0.};
+        if (!outp->GetXYZ(trkPos)) 
+          continue;
+        TVector3 vec(trkPos[0],trkPos[1],trkPos[2]);
+        Double_t veta = vec.Eta();
+        Double_t vphi = vec.Phi();
+        if(vphi<0)
+          vphi += 2*TMath::Pi();
+        if (TMath::Abs(veta)>0.75 || (vphi<70*TMath::DegToRad()) || (vphi>190*TMath::DegToRad()))
+          continue;
+        Double_t dR = vec.DeltaR(gpos);
+        if(dR > 25) 
+          continue;
+        Float_t tmpEta=0, tmpPhi=0;
+        if (0) {
+          AliExternalTrackParam trkParTemp(*outp); // retrieve the starting point every time before the extrapolation
+          Bool_t ret = fRecoUtils->ExtrapolateTrackToCluster(&trkParTemp, c, fRecoUtils->GetMass(), fRecoUtils->GetStep(), tmpEta, tmpPhi); 
+          if (!ret)
+            continue;
+        } else {
+          tmpEta = ceta - veta;
+          tmpPhi = cphi - vphi;
+        }
+        if (TMath::Abs(tmpEta)<TMath::Abs(dEtaMin) && TMath::Abs(tmpPhi)<TMath::Abs(dPhiMin)) {
+          dEtaMin = tmpEta;
+          dPhiMin = tmpPhi;
+          imin = t;
+        }
       }
-    }
-  } else {
-    const Int_t Nclus = clus->GetEntries();
-    for(Int_t i=0; i < Nclus; ++i) {
-      AliESDCaloCluster *c = static_cast<AliESDCaloCluster*>(clus->At(i));
-      Int_t trackIndex = fRecoUtils->GetMatchedTrackIndex(i);
-      if (trackIndex >= 0) {
-        Float_t dR, dZ;
-        fRecoUtils->GetMatchedResiduals(i,dR, dZ);
-        c->SetTrackDistance(dR,dZ);
-        c->SetEmcCpvDistance(dR); //to be consistent with AODs
-        c->SetChi2(dZ);           //to be consistent with AODs
-        TArrayI tm(1,&trackIndex);
-        c->AddTracksMatched(tm);
-        if (DebugLevel() > 1) 
-          AliInfo(Form("Matched Track index %d to new cluster %d\n",trackIndex,i));
+  
+      if (esdobjects) {
+        AliESDCaloCluster *cesd = static_cast<AliESDCaloCluster*>(c);
+        cesd->SetCellsAbsId(absIds);
+        cesd->SetCellsAmplitudeFraction(ratios);
+        cesd->SetID(recpoint->GetUniqueID());
+        cesd->SetEmcCpvDistance(imin);
+        cesd->SetTrackDistance(dPhiMin, dEtaMin);
+      } else {
+        AliAODCaloCluster *caod = static_cast<AliAODCaloCluster*>(c);
+        caod->SetCellsAbsId(absIds);
+        caod->SetCellsAmplitudeFraction(ratios);
+        caod->SetEmcCpvDistance(imin);
+        caod->SetTrackDistance(dPhiMin, dEtaMin);
       }
     }
   }

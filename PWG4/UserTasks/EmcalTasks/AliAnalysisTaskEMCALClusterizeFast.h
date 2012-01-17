@@ -69,6 +69,7 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   void                   SetShiftEta(Int_t n)                                 { fShiftEta                    = n     ; }
   void                   SetTRUShift(Bool_t yes)                              { fTRUShift                    = yes   ; }
   void                   SetClusterizeFastORs(Bool_t yes)                     { fClusterizeFastORs           = yes   ; }
+  void                   SetTrackName(const char *n)                          { fTrackName                   = n     ; }
 
  protected:
   virtual void           Clusterize();
@@ -105,15 +106,16 @@ class AliAnalysisTaskEMCALClusterizeFast : public AliAnalysisTaskSE {
   TString                fNewClusterArrayName;            // If not overwriting, name of the new cluster array
   Int_t                  fNPhi;                           // nPhi (for FixedWindowsClusterizer)
   Int_t                  fNEta;                           // nEta (for FixedWinoswsClusterizer)
-  Int_t                  fShiftPhi;                       // ShiftPhi (for FixedWindowsClusterizer)
-  Int_t                  fShiftEta;                       // ShiftEta (for FixedWindowsClusterizer)
-  Bool_t                 fTRUShift;                       // Shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
-  Bool_t                 fClusterizeFastORs;              // If true, clusterize FastORs instead of cells
+  Int_t                  fShiftPhi;                       // shift in phi (for FixedWindowsClusterizer)
+  Int_t                  fShiftEta;                       // shift in eta (for FixedWindowsClusterizer)
+  Bool_t                 fTRUShift;                       // shifting inside a TRU (true) or through the whole calorimeter (false) (for FixedWindowsClusterizer)
+  Bool_t                 fClusterizeFastORs;              // if true, clusterize FastORs instead of cells
+  TString                fTrackName;                      // if not null use track collection for track/cluster matching
 
  private:
   AliAnalysisTaskEMCALClusterizeFast(const AliAnalysisTaskEMCALClusterizeFast&);            // not implemented
   AliAnalysisTaskEMCALClusterizeFast &operator=(const AliAnalysisTaskEMCALClusterizeFast&); // not implemented
 
-  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 5);
+  ClassDef(AliAnalysisTaskEMCALClusterizeFast, 6);
 };
 #endif //ALIANALYSISTASKEMCALCLUSTERIZEFAST_H
