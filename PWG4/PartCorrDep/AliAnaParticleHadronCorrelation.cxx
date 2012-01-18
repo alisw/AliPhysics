@@ -83,7 +83,7 @@ ClassImp(AliAnaParticleHadronCorrelation)
     fhTrigDeltaPhiCharged(0x0),     fhTrigDeltaEtaCharged(0x0),
     fhTrigCorr(0x0),                fhTrigUeCorr(0x0),
     fhAssocPt(0),                   fhAssocPtBkg(0),  
-    fhDeltaPhiAssocPtBin(0),        
+    fhDeltaPhiAssocPtBin(0),        fhDeltaPhiAssocPtBinHMPID(0),fhDeltaPhiAssocPtBinHMPIDAcc(0),
     fhDeltaPhiBradAssocPtBin(0),    fhDeltaPhiBrad(0),
     fhXEAssocPtBin(0),              fhXE(0),
     fhDeltaPhiDeltaEtaNeutral(0), 
@@ -356,6 +356,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
     
     
     fhDeltaPhiAssocPtBin     = new TH2F*[fNAssocPtBins] ;
+    fhDeltaPhiAssocPtBinHMPID= new TH2F*[fNAssocPtBins] ;
+    fhDeltaPhiAssocPtBinHMPIDAcc= new TH2F*[fNAssocPtBins] ;
     fhDeltaPhiBradAssocPtBin = new TH2F*[fNAssocPtBins] ;
     fhXEAssocPtBin           = new TH2F*[fNAssocPtBins] ;
     for(Int_t i = 0 ; i < fNAssocPtBins ; i++){
@@ -364,6 +366,18 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
                                          nptbins, ptmin, ptmax,140,-2.,5.);
       fhDeltaPhiAssocPtBin[i]->SetXTitle("p_{T trigger}");
       fhDeltaPhiAssocPtBin[i]->SetYTitle("#Delta #phi");
+ 
+      fhDeltaPhiAssocPtBinHMPID[i] = new TH2F(Form("fhDeltaPhiPtAssocPt%2.1f_%2.1fHMPID", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track having HMPID signal", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                         nptbins, ptmin, ptmax,140,-2.,5.);
+      fhDeltaPhiAssocPtBinHMPID[i]->SetXTitle("p_{T trigger}");
+      fhDeltaPhiAssocPtBinHMPID[i]->SetYTitle("#Delta #phi");      
+      
+      fhDeltaPhiAssocPtBinHMPIDAcc[i] = new TH2F(Form("fhDeltaPhiPtAssocPt%2.1f_%2.1fHMPIDAcc", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                              Form("#Delta #phi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f], with track within 5<phi<20 deg", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
+                                              nptbins, ptmin, ptmax,140,-2.,5.);
+      fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetXTitle("p_{T trigger}");
+      fhDeltaPhiAssocPtBinHMPIDAcc[i]->SetYTitle("#Delta #phi");    
       
       fhDeltaPhiBradAssocPtBin[i] = new TH2F(Form("fhDeltaPhiBradPtAssocPt%2.1f_%2.1f", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
                                              Form("atan2(sin(#Delta #phi), cos(#Delta #phi))/#pi vs p_{T trigger} for associated p_{T} bin [%2.1f,%2.1f]", fAssocPtBinLimit[i], fAssocPtBinLimit[i+1]), 
@@ -379,6 +393,8 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
       fhXEAssocPtBin[i]->SetYTitle("x_{E}");
       
       outputContainer->Add(fhDeltaPhiAssocPtBin[i]) ;
+      outputContainer->Add(fhDeltaPhiAssocPtBinHMPID[i]) ;
+      outputContainer->Add(fhDeltaPhiAssocPtBinHMPIDAcc[i]) ;
       outputContainer->Add(fhDeltaPhiBradAssocPtBin[i]) ;
       outputContainer->Add(fhXEAssocPtBin[i]);
     }
@@ -712,13 +728,13 @@ void AliAnaParticleHadronCorrelation::InitParameters()
   fMakeAbsoluteLeading  = kTRUE;
   
   fNAssocPtBins         = 7  ;
-  fAssocPtBinLimit[0]   = 2.  ; 
-  fAssocPtBinLimit[1]   = 4.  ; 
-  fAssocPtBinLimit[2]   = 6.  ; 
-  fAssocPtBinLimit[3]   = 8.  ; 
-  fAssocPtBinLimit[4]   = 10. ; 
-  fAssocPtBinLimit[5]   = 13. ; 
-  fAssocPtBinLimit[6]   = 16. ;
+  fAssocPtBinLimit[0]   = 1.5  ; 
+  fAssocPtBinLimit[1]   = 3.  ; 
+  fAssocPtBinLimit[2]   = 5.  ; 
+  fAssocPtBinLimit[3]   = 7.  ; 
+  fAssocPtBinLimit[4]   = 9. ; 
+  fAssocPtBinLimit[5]   = 12. ; 
+  fAssocPtBinLimit[6]   = 15. ;
   fAssocPtBinLimit[7]   = 20. ;
   fAssocPtBinLimit[8]   = 100.;
   fAssocPtBinLimit[9]   = 200.;
@@ -853,7 +869,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         if (TMath::Abs(GetVertex(evt)[2]) > GetZvertexCut()) 
           return ;
       }
-      
+            
       //check if the particle is isolated or if we want to take the isolation into account
       if(OnlyIsolated() && !particle->IsIsolated()) continue;
       
@@ -868,7 +884,7 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
   
   if(fLeadingTriggerIndex >= 0 ){ //using trigger particle to do correlations
     AliAODPWG4ParticleCorrelation* particle =  (AliAODPWG4ParticleCorrelation*) (GetInputAODBranch()->At(fLeadingTriggerIndex));
-	  
+
     //check if the particle is isolated or if we want to take the isolation into account
     if(OnlyIsolated() && !particle->IsIsolated()) return;
     
@@ -1076,6 +1092,7 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       
       fhAssocPt->Fill(ptTrig,pt);
       
+      //if(xE >= 1 ) printf("pTTrig = %f, pTHadron = %f, xE = %f\n",ptTrig,pt, xE);
       fhXE->Fill(ptTrig, xE) ;
 
       if(TMath::Cos(deltaPhi) < 0 && assocBin >= 0 )//away side 
@@ -1093,6 +1110,17 @@ Bool_t  AliAnaParticleHadronCorrelation::MakeChargedCorrelation(AliAODPWG4Partic
       if(assocBin>=0){
         fhDeltaPhiBradAssocPtBin[assocBin]->Fill(ptTrig, dphiBrad);
         fhDeltaPhiAssocPtBin    [assocBin]->Fill(ptTrig, deltaPhi);
+        if(track->GetHMPIDsignal()>0){
+          printf("Track pt %f with HMPID signal %f \n",pt,track->GetHMPIDsignal());
+          fhDeltaPhiAssocPtBinHMPID[assocBin]->Fill(ptTrig, deltaPhi);        
+        }
+        
+        if(phi > 5*TMath::DegToRad() && phi < 20*TMath::DegToRad()){
+          //printf("Track pt %f in HMPID acceptance phi %f \n ",pt,phi*TMath::RadToDeg() );
+          fhDeltaPhiAssocPtBinHMPIDAcc[assocBin]->Fill(ptTrig, deltaPhi);        
+
+        }
+        
       }
       
       fhEtaCharged     ->Fill(pt,eta);

@@ -170,6 +170,8 @@ class AliAnaParticleHadronCorrelation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *       fhAssocPt ;                     //! Trigger pT vs associated pT 
   TH2F *       fhAssocPtBkg;                   //! Trigger pT vs associated pT for background
   TH2F **      fhDeltaPhiAssocPtBin;           //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins
+  TH2F **      fhDeltaPhiAssocPtBinHMPID;      //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins, track with HMPID  
+  TH2F **      fhDeltaPhiAssocPtBinHMPIDAcc;   //![fNAssocPtBins] Trigger pT vs dPhi for different associated pt bins, track with HMPIDAcc  
   TH2F **      fhDeltaPhiBradAssocPtBin;       //![fNAssocPtBins] Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F *       fhDeltaPhiBrad;                 //! Trigger pT vs dPhi Brad (?) for different associated pt bins
   TH2F **      fhXEAssocPtBin ;                //![fNAssocPtBins] Trigger pT vs xE for different associated pt bins
