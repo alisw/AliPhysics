@@ -101,6 +101,9 @@ AliTrackResiduals::AliTrackResiduals(const AliTrackResiduals &res):
 	  fTrackArray[itrack] = new AliTrackPointArray(*res.fTrackArray[itrack]);
       }
 
+    memcpy(fBFixed,res.fBFixed,sizeof(Bool_t)*6);
+    memcpy(fFixed,res.fFixed,sizeof(Float_t)*6);
+
 }
 
 //_____________________________________________________________________________
