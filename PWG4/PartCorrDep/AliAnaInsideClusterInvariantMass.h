@@ -71,7 +71,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TString      fCalorimeter ;       // Calorimeter where the gamma is searched
   Float_t      fM02Cut ;            // Study clusters with l0 larger than cut
-  Float_t      fMinNCells ;         // Study clusters with ncells larger than cut
+  Int_t        fMinNCells ;         // Study clusters with ncells larger than cut
   Float_t      fMassEtaMin;         // Min Eta mass
   Float_t      fMassEtaMax;         // Max Eta mass  
   Float_t      fMassPi0Min;         // Min Pi0 mass
@@ -111,7 +111,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ;//cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,2)
+  ClassDef(AliAnaInsideClusterInvariantMass,3)
   
 } ;
 
