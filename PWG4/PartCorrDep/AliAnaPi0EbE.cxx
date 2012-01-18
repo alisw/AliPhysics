@@ -343,42 +343,42 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
-  fhPt  = new TH1F("hPt","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
+  fhPt  = new TH1F("hPt","Number of identified  #pi^{0} (#eta) decay",nptbins,ptmin,ptmax); 
   fhPt->SetYTitle("N");
-  fhPt->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+  fhPt->SetXTitle("p_{T}(GeV/c)");
   outputContainer->Add(fhPt) ; 
   
-  fhE  = new TH1F("hE","Number of identified  #pi^{0} decay pairs",nptbins,ptmin,ptmax); 
+  fhE  = new TH1F("hE","Number of identified  #pi^{0} (#eta) decay pairs",nptbins,ptmin,ptmax); 
   fhE->SetYTitle("N");
-  fhE->SetXTitle("E  #pi^{0}(GeV)");
+  fhE->SetXTitle("E (GeV)");
   outputContainer->Add(fhE) ; 
   
   fhEPhi  = new TH2F
-  ("hEPhi","Selected #pi^{0} pairs: E vs  #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-  fhEPhi->SetYTitle("#phi #pi^{0}(GeV)");
-  fhEPhi->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  ("hEPhi","Selected #pi^{0} (#eta) pairs: E vs #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+  fhEPhi->SetYTitle("#phi (rad)");
+  fhEPhi->SetXTitle("E (GeV)");
   outputContainer->Add(fhEPhi) ; 
   
   fhEEta  = new TH2F
-  ("hEEta","Selected #pi^{0} pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-  fhEEta->SetYTitle("#eta #pi^{0}(GeV)");
-  fhEEta->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  ("hEEta","Selected #pi^{0} (#eta) pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+  fhEEta->SetYTitle("#eta");
+  fhEEta->SetXTitle("E (GeV) (GeV)");
   outputContainer->Add(fhEEta) ; 
   
   fhEtaPhi  = new TH2F
-  ("hEtaPhi","Selected #pi^{0} pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
-  fhEtaPhi->SetYTitle("#phi #pi^{0}(GeV)");
-  fhEtaPhi->SetXTitle("#eta #pi^{0}(GeV)");
+  ("hEtaPhi","Selected #pi^{0} (#eta) pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhi->SetYTitle("#phi (rad)");
+  fhEtaPhi->SetXTitle("#eta");
   outputContainer->Add(fhEtaPhi) ; 
   
-  fhPtDecay  = new TH1F("hPtDecay","Number of identified  #pi^{0} decay photons",nptbins,ptmin,ptmax); 
+  fhPtDecay  = new TH1F("hPtDecay","Number of identified  #pi^{0} (#eta) decay photons",nptbins,ptmin,ptmax); 
   fhPtDecay->SetYTitle("N");
-  fhPtDecay->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+  fhPtDecay->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPtDecay) ; 
   
-  fhEDecay  = new TH1F("hEDecay","Number of identified  #pi^{0} decay photons",nptbins,ptmin,ptmax); 
+  fhEDecay  = new TH1F("hEDecay","Number of identified  #pi^{0} (#eta) decay photons",nptbins,ptmin,ptmax); 
   fhEDecay->SetYTitle("N");
-  fhEDecay->SetXTitle("E  #pi^{0}(GeV)");
+  fhEDecay->SetXTitle("E (GeV)");
   outputContainer->Add(fhEDecay) ;   
   
   ////////
@@ -386,44 +386,44 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   if(fAnaType == kIMCalo || fAnaType == kIMCaloTracks ){
     
     fhEDispersion  = new TH2F
-    ("hEDispersion","Selected #pi^{0} pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    ("hEDispersion","Selected #pi^{0} (#eta) pairs: E vs dispersion",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhEDispersion->SetYTitle("D^{2}");
     fhEDispersion->SetXTitle("E (GeV)");
     outputContainer->Add(fhEDispersion) ; 
     
     fhELambda0  = new TH2F
-    ("hELambda0","Selected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    ("hELambda0","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhELambda0->SetYTitle("#lambda_{0}^{2}");
     fhELambda0->SetXTitle("E (GeV)");
     outputContainer->Add(fhELambda0) ; 
 
     fhELambda1  = new TH2F
-    ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    ("hELambda1","Selected #pi^{0} (#eta) pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhELambda1->SetYTitle("#lambda_{1}^{2}");
     fhELambda1->SetXTitle("E (GeV)");
     outputContainer->Add(fhELambda1) ; 
         
     fhELambda0FracMaxCellCut  = new TH2F
-    ("hELambda0FracMaxCellCut","Selected #pi^{0} pairs: E vs #lambda_{0}, Max cell fraction of energy < 0.5",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+    ("hELambda0FracMaxCellCut","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, Max cell fraction of energy < 0.5",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
     fhELambda0FracMaxCellCut->SetYTitle("#lambda_{0}^{2}");
     fhELambda0FracMaxCellCut->SetXTitle("E (GeV)");
     outputContainer->Add(fhELambda0FracMaxCellCut) ; 
 
     fhEFracMaxCell  = new TH2F
-    ("hEFracMaxCell","Selected #pi^{0} pairs: E vs #lambda_{0}, Max cell fraction of energy",nptbins,ptmin,ptmax,100,0,1); 
+    ("hEFracMaxCell","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, Max cell fraction of energy",nptbins,ptmin,ptmax,100,0,1); 
     fhEFracMaxCell->SetYTitle("Fraction");
     fhEFracMaxCell->SetXTitle("E (GeV)");
     outputContainer->Add(fhEFracMaxCell) ; 
 
     if(fCalorimeter=="EMCAL"){
       fhELambda0NoTRD  = new TH2F
-      ("hELambda0NoTRD","Selected #pi^{0} pairs: E vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      ("hELambda0NoTRD","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, not behind TRD",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
       fhELambda0NoTRD->SetYTitle("#lambda_{0}^{2}");
       fhELambda0NoTRD->SetXTitle("E (GeV)");
       outputContainer->Add(fhELambda0NoTRD) ; 
       
       fhEFracMaxCellNoTRD  = new TH2F
-      ("hEFracMaxCellNoTRD","Selected #pi^{0} pairs: E vs #lambda_{0}, Max cell fraction of energy, not behind TRD",nptbins,ptmin,ptmax,100,0,1); 
+      ("hEFracMaxCellNoTRD","Selected #pi^{0} (#eta) pairs: E vs #lambda_{0}, Max cell fraction of energy, not behind TRD",nptbins,ptmin,ptmax,100,0,1); 
       fhEFracMaxCellNoTRD->SetYTitle("Fraction");
       fhEFracMaxCellNoTRD->SetXTitle("E (GeV)");
       outputContainer->Add(fhEFracMaxCellNoTRD) ; 
@@ -521,43 +521,43 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
        GetReader()->GetDataType() != AliCaloTrackReader::kMC){
       
-      fhPtMC  = new TH1F("hPtMC","Identified pi0 from pi0",nptbins,ptmin,ptmax); 
+      fhPtMC  = new TH1F("hPtMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhPtMC->SetYTitle("N");
-      fhPtMC->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+      fhPtMC->SetXTitle("p_{T}(GeV/c)");
       outputContainer->Add(fhPtMC) ; 
       
       fhPhiMC  = new TH2F
-      ("hPhiMC","Identified pi0 from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiMC->SetYTitle("#phi");
-      fhPhiMC->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      fhPhiMC->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPhiMC) ; 
       
       fhEtaMC  = new TH2F
-      ("hEtaMC","Identified pi0 from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaMC->SetYTitle("#eta");
-      fhEtaMC->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      fhEtaMC->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhEtaMC) ;
       
-      fhPtMCNo  = new TH1F("hPtMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax); 
+      fhPtMCNo  = new TH1F("hPtMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhPtMCNo->SetYTitle("N");
-      fhPtMCNo->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+      fhPtMCNo->SetXTitle("p_{T}(GeV/c)");
       outputContainer->Add(fhPtMCNo) ; 
       
       fhPhiMCNo  = new TH2F
-      ("hPhiMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      ("hPhiMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
       fhPhiMCNo->SetYTitle("#phi");
-      fhPhiMCNo->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      fhPhiMCNo->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPhiMCNo) ; 
       
       fhEtaMCNo  = new TH2F
-      ("hEtaMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      ("hEtaMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
       fhEtaMCNo->SetYTitle("#eta");
-      fhEtaMCNo->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      fhEtaMCNo->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhEtaMCNo) ;
       
       if(fAnaType == kIMCalo){
         TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
-        TString pname[] ={"Photon","Conversion",     "",    "Eta", "Electron","Hadron"};
+        TString pname[] ={"Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron"};
         for(Int_t i = 0; i < 6; i++){ 
           
           fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
