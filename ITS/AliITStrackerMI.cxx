@@ -3400,13 +3400,11 @@ void AliITStrackerMI::AddTrackHypothesys(AliITStrackMI * track, Int_t esdindex)
   // add track to the list of hypothesys
   //------------------------------------------------------------------
 
-  if (esdindex>=fTrackHypothesys.GetEntriesFast()) 
-    fTrackHypothesys.Expand(TMath::Max(fTrackHypothesys.GetSize(),esdindex*2+10));
   //
   TObjArray * array = (TObjArray*) fTrackHypothesys.At(esdindex);
   if (!array) {
     array = new TObjArray(10);
-    fTrackHypothesys.AddAt(array,esdindex);
+    fTrackHypothesys.AddAtAndExpand(array,esdindex);
   }
   array->AddLast(track);
 }
