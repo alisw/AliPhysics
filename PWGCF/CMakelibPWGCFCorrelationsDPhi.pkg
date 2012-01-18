@@ -27,13 +27,16 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    Base/AliAnalysisHelperJetTasks.cxx 
+    Correlations/DPhi/AliAnalysisTaskPhiCorrelations.cxx 
+    Correlations/DPhi/AliPhiCorrelationsQATask.cxx 
+    Correlations/DPhi/AliAnalysisTaskLeadingTrackUE.cxx 
+    Correlations/DPhi/AliAnalysisTaskMinijet.cxx
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4BaseLinkDef.h)
+set ( DHDR  PWGCFCorrelationsDPhiLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS CORRFW PWG4/Base STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base PWGCF/Correlations/DPhi PWG/Base STEER/AOD STEER/ESD STEER/STEERBase)

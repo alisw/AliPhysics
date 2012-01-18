@@ -27,16 +27,16 @@
 #--------------------------------------------------------------------------------#
 
 set ( SRCS  
-    CorrelationsBase/AliUEHistograms.cxx
-    CorrelationsBase/AliUEHist.cxx
-    CorrelationsBase/AliAnalyseLeadingTrackUE.cxx
-    CorrelationsBase/AliTHn.cxx 
+    Correlations/Base/AliUEHistograms.cxx
+    Correlations/Base/AliUEHist.cxx
+    Correlations/Base/AliAnalyseLeadingTrackUE.cxx
+    Correlations/Base/AliTHn.cxx 
     )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
 
-set ( DHDR  PWG4CorrelationsBaseLinkDef.h)
+set ( DHDR  PWGCFCorrelationsBaseLinkDef.h)
 
 string ( REPLACE ".cxx" ".h" EXPORT "${SRCS}" )
 
-set ( EINCLUDE ANALYSIS CORRFW PWG4/CorrelationsBase STEER/AOD STEER/ESD STEER/STEERBase)
+set ( EINCLUDE ANALYSIS CORRFW PWGCF/Correlations/Base STEER/AOD STEER/ESD STEER/STEERBase)
