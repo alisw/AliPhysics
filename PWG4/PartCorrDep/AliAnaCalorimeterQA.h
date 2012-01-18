@@ -46,8 +46,8 @@ public:
   // Main methods
   
   void         BadClusterHistograms(AliVCluster* clus,    const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                    const Int_t absIdMax, const Double_t maxCellFraction, const Double_t tmax,
-                                    Double_t timeAverages[2]);  
+                                    const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
+                                    const Double_t tmax, Double_t timeAverages[2]);  
     
   void         CalculateAverageTime(AliVCluster *clus, AliVCaloCells *cells, Double_t timeAverages[2]);
   
@@ -55,11 +55,11 @@ public:
 
   void         CellInClusterPositionHistograms(AliVCluster* cluster);
     
-  void         ClusterAsymmetryHistograms(AliVCluster* clus, const Int_t absIdMax);
+  void         ClusterAsymmetryHistograms(AliVCluster* clus, const Int_t absIdMax, const Bool_t goodCluster );
   
   void         ClusterHistograms(AliVCluster* cluster, const TObjArray *caloClusters,  AliVCaloCells * cells, 
-                                 const Int_t absIdMax, const Double_t maxCellFraction, const Double_t tmax,
-                                 Double_t timeAverages[2]);
+                                 const Int_t absIdMax, const Double_t maxCellFraction, const Float_t eCrossFrac,
+                                 const Double_t tmax, Double_t timeAverages[2]);
   
   void         ClusterLoopHistograms(const TObjArray * clusters, AliVCaloCells * cells);
   
@@ -150,7 +150,7 @@ public:
   Bool_t   fFillAllTH12 ;                     // Fill simple histograms which information is already in TH3 histograms
   Bool_t   fFillAllTH3 ;                      // Fill TH3 histograms
   Bool_t   fFillAllTMHisto ;                  // Fill track matching histograms
-  Bool_t   fFillAllPi0Histo ;                 // Fill track matching histograms
+  Bool_t   fFillAllPi0Histo ;                 // Fill invariant mass histograms
   Bool_t   fCorrelate   ;                     // Correlate PHOS/EMCAL cells/clusters, also with V0 and track multiplicity
   Bool_t   fStudyBadClusters;                 // Study bad clusters
   Bool_t   fStudyClustersAsymmetry;           // Study asymmetry of clusters
@@ -228,8 +228,12 @@ public:
   TH2F *   fhDeltaIAL0[2];                    //! Cluster "asymmetry" in cell units vs Lambda0    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
   TH2F *   fhDeltaIAL1[2];                    //! Cluster "asymmetry" in cell units vs Lambda1    for E > 0.5 GeV, n cells in cluster > 3, with and without matching
   TH2F *   fhDeltaIANCells[2] ;               //! Cluster "asymmetry" in cell units vs number of cells in cluster for E > 0.5, with and without matching
-  TH2F *   fhDeltaIAMC[4];                    //! Cluster "asymmetry" in cell terms vs E, from MC photon, electron, conversion or hadron
-
+  TH2F *   fhDeltaIAMC[4];                    //! Cluster "asymmetry" in cell terms vs E, from MC photon, electron, conversion or hadron.
+  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE0;  //! Difference between max cell index and farthest cell, eta vs phi, E < 2 GeV, with and without matching; bad clusters. 
+  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE2;  //! Difference between max cell index and farthest cell, eta vs phi, 2 < E < 6 GeV, with and without matching; bad clusters.
+  TH2F *   fhBadClusterDeltaIEtaDeltaIPhiE6;  //! Difference between max cell index and farthest cell, eta vs phi, E > 6 GeV, with and without matching; bad clusters.
+  TH2F *   fhBadClusterDeltaIA;               //! Cluster "asymmetry" in cell terms vs E, with and without matching; bad clusters.
+  
   //Cluster/cell Position
   TH2F *   fhRNCells ;                        //! R=sqrt(x^2+y^2) (cm) cluster distribution vs N cells in cluster
   TH2F *   fhXNCells ;                        //! X (cm) cluster distribution vs N cells in cluster
@@ -365,10 +369,10 @@ public:
   TH2F *   fhMCChHad1pOverER02;               //! p/E for track-cluster matches, dR > 0.2, MC charged hadrons
   TH2F *   fhMCNeutral1pOverER02;             //! p/E for track-cluster matches, dR > 0.2, MC neutral
 	
-  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & g) ;//cpy assignment
-  AliAnaCalorimeterQA(const AliAnaCalorimeterQA & g) ; // cpy ctor
+  AliAnaCalorimeterQA & operator = (const AliAnaCalorimeterQA & qa) ;//cpy assignment
+  AliAnaCalorimeterQA(              const AliAnaCalorimeterQA & qa) ; // cpy ctor
   
-  ClassDef(AliAnaCalorimeterQA,21)
+  ClassDef(AliAnaCalorimeterQA,22)
 } ;
 
 
