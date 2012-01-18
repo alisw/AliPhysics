@@ -698,6 +698,116 @@ TH1* AliUEHist::GetUEHist(AliUEHist::CFStep step, AliUEHist::Region region, Floa
 }
 
 //____________________________________________________________________
+void AliUEHist::GetHistsZVtx(AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, TH3** trackHist, TH1** eventHist)
+{
+  // Calculates a 3d histogram with deltaphi, deltaeta, zvtx on track level and a 1d histogram on event level (as fct of zvtx)
+  // Histogram has to be deleted by the caller of the function
+  
+  if (!fTrackHist[kToward]->GetGrid(0)->GetGrid()->GetAxis(5))
+    AliFatal("Histogram without vertex axis provided");
+
+  // unzoom all axes
+  ResetBinLimits(fTrackHist[region]->GetGrid(step));
+  ResetBinLimits(fEventHist->GetGrid(step));
+  
+  SetBinLimits(fTrackHist[region]->GetGrid(step));
+  
+  if (multBinEnd >= multBinBegin)
+  {
+    Printf("Using multiplicity range %d --> %d", multBinBegin, multBinEnd);
+    fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(3)->SetRange(multBinBegin, multBinEnd);
+    fEventHist->GetGrid(step)->GetGrid()->GetAxis(1)->SetRange(multBinBegin, multBinEnd);
+  }
+    
+  Int_t firstBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMin);
+  Int_t lastBin = fTrackHist[region]->GetAxis(2, step)->FindBin(ptLeadMax);
+  Printf("Using leading pT range %d --> %d", firstBin, lastBin);
+  fTrackHist[region]->GetGrid(step)->GetGrid()->GetAxis(2)->SetRange(firstBin, lastBin);
+  fEventHist->GetGrid(step)->GetGrid()->GetAxis(0)->SetRange(firstBin, lastBin);
+    
+  *trackHist = (TH3*) fTrackHist[region]->GetGrid(step)->Project(4, 0, 5);
+  *eventHist = (TH1*) fEventHist->GetGrid(step)->Project(2);
+
+  ResetBinLimits(fTrackHist[region]->GetGrid(step));
+  ResetBinLimits(fEventHist->GetGrid(step));
+}
+
+//____________________________________________________________________
+TH2* AliUEHist::GetSumOfRatios2(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd)
+{
+  // Calls GetUEHist(...) for *each* vertex bin and performs a sum of ratios:
+  // 1_N [ (same/mixed)_1 + (same/mixed)_2 + (same/mixed)_3 + ... ]
+  // where N is the total number of events/trigger particles and the subscript is the vertex bin
+  // where mixed is normalized such that the information about the number of pairs in same is kept
+  //
+  // returns a 2D histogram: deltaphi, deltaeta
+  //
+  // Parameters:
+  //   mixed: AliUEHist containing mixed event corresponding to this object
+  //   <other parameters> : check documentation of AliUEHist::GetUEHist
+  
+  TH2* totalTracks = 0;
+  
+  TH3* trackSameAll = 0;
+  TH3* trackMixedAll = 0;
+  TH1* eventSameAll = 0;
+  TH1* eventMixedAll = 0;
+  
+  GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackSameAll, &eventSameAll);
+  mixed->GetHistsZVtx(step, region, ptLeadMin, ptLeadMax, multBinBegin, multBinEnd, &trackMixedAll, &eventMixedAll);
+  
+  TAxis* vertexAxis = trackSameAll->GetZaxis();
+  for (Int_t vertexBin = 1; vertexBin <= vertexAxis->GetNbins(); vertexBin++)
+  {
+    trackSameAll->GetZaxis()->SetRange(vertexBin, vertexBin);
+    trackMixedAll->GetZaxis()->SetRange(vertexBin, vertexBin);
+
+    TH2* tracksSame = (TH2*) trackSameAll->Project3D("yx1");
+    TH2* tracksMixed = (TH2*) trackMixedAll->Project3D("yx1");
+    
+    // asssume flat in dphi, gain in statistics
+//     TH1* histMixedproj = mixedTwoD->ProjectionY();
+//     histMixedproj->Scale(1.0 / mixedTwoD->GetNbinsX());
+//     
+//     for (Int_t x=1; x<=mixedTwoD->GetNbinsX(); x++)
+//       for (Int_t y=1; y<=mixedTwoD->GetNbinsY(); y++)
+// 	mixedTwoD->SetBinContent(x, y, histMixedproj->GetBinContent(y));
+
+//       delete histMixedproj;
+
+    // get mixed event normalization by assuming full acceptance at deta of 0
+    /*
+    Double_t mixedNorm = tracksMixed->Integral(tracksMixed->GetXaxis()->FindBin(-0.01), tracksMixed->GetXaxis()->FindBin(0.01), tracksMixed->GetYaxis()->FindBin(-0.01), tracksMixed->GetYaxis()->FindBin(0.01));
+    mixedNorm /= tracksMixed->GetXaxis()->FindBin(0.01) - tracksMixed->GetXaxis()->FindBin(-0.01) + 1) * (tracksMixed->GetYaxis()->FindBin(0.01) - tracksMixed->GetYaxis()->FindBin(-0.01) + 1);
+    tracksMixed->Scale(1.0 / mixedNorm);
+    */
+    tracksSame->Scale(tracksMixed->Integral() / tracksSame->Integral());
+    
+    tracksSame->Divide(tracksMixed);
+    
+    if (!totalTracks)
+      totalTracks = (TH2*) tracksSame->Clone("totalTracks");
+    else
+      totalTracks->Add(tracksSame);
+
+    delete tracksSame;
+    delete tracksMixed;
+  }
+
+  Int_t totalEvents = eventSameAll->Integral();
+  Printf("Dividing %f tracks by %d events", totalTracks->Integral(), totalEvents);
+  if (totalEvents > 0)
+    totalTracks->Scale(1.0 / totalEvents);
+  
+  delete trackSameAll;
+  delete trackMixedAll;
+  delete eventSameAll;
+  delete eventMixedAll;
+  
+  return totalTracks;
+}
+
+//____________________________________________________________________
 TH2* AliUEHist::GetSumOfRatios(AliUEHist* mixed, AliUEHist::CFStep step, AliUEHist::Region region, Float_t ptLeadMin, Float_t ptLeadMax, Int_t multBinBegin, Int_t multBinEnd, Bool_t etaNorm, Bool_t useVertexBins)
 {
   // Calls GetUEHist(...) for *each* multiplicity bin and performs a sum of ratios:

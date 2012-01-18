@@ -320,8 +320,8 @@ void loadlibs()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libJETAN");
-  gSystem->Load("libPWG4JetTasks");
+  gSystem->Load("libPWG4Base");
+  gSystem->Load("libPWG4CorrelationsBase");
 }
 
 const char* lastFileName = 0;
@@ -4544,7 +4544,7 @@ void IAAPaper(const char* fileName, Int_t iaa, const char* fileNameEtaGap = 0)
     }
   }
   
-  if (iaa == 0)
+  if (0 && iaa == 0)
   {
     // add pythia line showing gluon filtering
     // from Jan Rak, by mail, 22.09.11
@@ -4559,11 +4559,11 @@ void IAAPaper(const char* fileName, Int_t iaa, const char* fileNameEtaGap = 0)
     pad1->cd();
     gluonfiltering->Draw("L");
     
-    legend3 = new TLegend(0.51, 0.15, 0.95, 0.25);
+    legend3 = new TLegend(0.38, 0.15, 0.58, 0.25);
     legend3->SetFillColor(0);
     legend3->SetBorderSize(0);
     legend3->SetTextSize(0.04);
-    legend3->AddEntry(gluonfiltering, "Pythia gluon filtering", "L");
+    legend3->AddEntry(gluonfiltering, "PYTHIA quark-only fragmentation", "L");
     legend3->Draw();
   }
   
@@ -6157,7 +6157,7 @@ void ExamplePhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix)
   Int_t maxLeadingPt = 4;
   Int_t maxAssocPt = 5;
   Float_t leadingPtArr[] = { 2.0, 3.0, 6.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
-  Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 4.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
+  Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
   leadingPtOffset = 1;
   
   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileNamePbPb);
@@ -6186,12 +6186,15 @@ void ExamplePhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix)
   
   Bool_t equivMixedBin = kTRUE;
   
-  GetDistAndFlow(h, hMixed, &hist1,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 20, equivMixedBin); 
+  Int_t centralityBegin = 20;
+  Int_t centralityEnd = 30;
+  
+  GetDistAndFlow(h, hMixed, &hist1,  0, step, centralityBegin, centralityEnd,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 20, equivMixedBin); 
 
-  GetDistAndFlow(h, hMixed, &hist2,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 10, equivMixedBin); 
+  GetDistAndFlow(h, hMixed, &hist2,  0, step, centralityBegin, centralityEnd,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 10, equivMixedBin); 
 //   hist2->Scale(1.0 / 0.8);
   
-  GetDistAndFlow(h, hMixed, &hist3,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 11, equivMixedBin); 
+  GetDistAndFlow(h, hMixed, &hist3,  0, step, centralityBegin, centralityEnd,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, 11, equivMixedBin); 
   hist3->Scale(1.0 / 0.8);
   
   hist1->Draw();
@@ -6270,7 +6273,7 @@ void PlotDeltaPhiEtaGap(const char* fileNamePbPb, const char* fileNamePbPbMix, c
 
       GetDistAndFlow(h, hMixed, &hist1,  0, step, 0,  5,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
       
-      GetDistAndFlow(h, hMixed, &hist4,  0, step, 20,  30,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
+      GetDistAndFlow(h, hMixed, &hist4,  0, step, 30,  40,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs); 
 
       GetDistAndFlow(h, hMixed, &hist2,  0, step, 60,  90,  leadingPtArr[i] + 0.01, leadingPtArr[i+leadingPtOffset] - 0.01, histType, equivMixedBin, 0, scaleToPairs);
 
@@ -6593,11 +6596,12 @@ void CheckWing()
 //   const char* fileNames[] = { "dphi_corr_allpt_zcentral.root", "dphi_corr_allpt.root" };
 //   const char* fileNames[] = { "dphi_corr_allpt_zcentral.root", "dphi_corr.root" };
 //   const char* fileNames[] = { "dphi_corr_allpt_01_zcentral.root", "dphi_corr_allpt_01_zsumofratios.root" };
-  const char* fileNames[] = { "dphi_corr_allpt_cfct_01_zcentral.root", "dphi_corr_allpt_cfct_01_zsumofratios.root" };
+//   const char* fileNames[] = { "dphi_corr_allpt_cfct_01_zcentral.root", "dphi_corr_allpt_cfct_01_zsumofratios.root" };
 //   const char* fileNames[] = { "dphi_corr_2d.root", "dphi_corr.root" };
 //   const char* fileNames[] = { "dphi_corr_2d_01.root", "dphi_corr.root" };
 //   const char* fileNames[] = { "dphi_corr_2d.root", "dphi_corr_2d_vtxzcentral.root" };
 //   const char* fileNames[] = { "dphi_corr_2d_01.root", , "dphi_corr_2d_01centr_zvtxcentral.root" }; 
+  const char* fileNames[] = { "dphi_corr_10k.root", "dphi_corr_50k.root" }; 
   
   for (Int_t i=0; i<maxLeadingPt; i++)
     for (Int_t j=0; j<maxAssocPt; j++)
@@ -6758,7 +6762,7 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName)
   TGraphErrors* width1[4];
   TGraphErrors* width2[4];
   
-  Int_t nHists = 3;
+  Int_t nHists = 4;
   for (Int_t histId = 0; histId < nHists; histId++)
   {
     width1[histId] = new TGraphErrors;
@@ -6796,8 +6800,8 @@ void AnalyzeDeltaPhiEtaGap2D(const char* fileName)
   }
   
   Int_t marker[] = { 20, 24, 25, 26 };
-  Int_t colors[] = { 1, 2, 4, 3 };
-  const char* labels[] = { "0-5%", "60-90%", "pp", "20-30%" };
+  Int_t colors[] = { 1, 2, 4, 6 };
+  const char* labels[] = { "0-5%", "60-90%", "pp", "30-40%" };
     
   new TCanvas;
   for (Int_t histId = 0; histId < nHists; histId++)
@@ -10944,3 +10948,65 @@ void DrawProcessIDPlot(const char* fileName)
   ((TH1*) list->FindObject("processIDs"))->Draw();
 }
  
+void GetExampleDphi(const char* fileName)
+{
+  loadlibs();
+  
+  Int_t leadingPtOffset = 1;
+    
+  Int_t maxLeadingPt = 5;
+  Int_t maxAssocPt = 6;
+  if (1)
+  {
+    Float_t leadingPtArr[] = { 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 15.0, 20.0 };
+    Float_t assocPtArr[] =     { 0.15, 0.5, 1.0, 2.0, 3.0, 4.0, 6.0, 8.0, 10.0, 12.0 };
+  }
+  else
+  {
+    Float_t leadingPtArr[] = { 0.15, 10.0 };
+    Float_t assocPtArr[] =     { 0.15, 10.0 };
+  }
+  leadingPtOffset = 1;
+  
+//   AliUEHistograms* h = (AliUEHistograms*) GetUEHistogram(fileName);
+  hMixed = (AliUEHistograms*) GetUEHistogram(fileName, 0, kTRUE);
+  
+  if (1)
+  {
+//     h->SetZVtxRange(-0.99, 0.99);
+    hMixed->SetZVtxRange(-0.99, 0.99);
+  }
+
+  Int_t i=0;
+  Int_t j=2;
+
+  gpTMin = assocPtArr[j] + 0.01;
+  gpTMax = assocPtArr[j+1] - 0.01;
+  
+//   SetupRanges(h);
+  SetupRanges(hMixed);
+
+  Int_t bin[6];
+  bin[0] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(0)->FindBin(0.01);
+  bin[1] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(1)->FindBin(1.1);
+  bin[2] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(2)->FindBin(2.1);
+  bin[3] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(3)->FindBin(5.5);
+  bin[4] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(4)->FindBin(0);
+  if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(5))
+    bin[5] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(0);
+  Printf("tracks: %f +- %f", hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetBinContent(bin), hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetBinError(bin));
+  
+  bin[0] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(2)->FindBin(2.1);
+  bin[1] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(3)->FindBin(5.5);
+  if (hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(5))
+    bin[2] =  hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(0)->GetGrid()->GetAxis(5)->FindBin(0);
+  Printf("events: %f +- %f", hMixed->GetUEHist(2)->GetEventHist()->GetGrid(6)->GetGrid()->GetBinContent(bin), hMixed->GetUEHist(2)->GetTrackHist(0)->GetGrid(6)->GetGrid()->GetBinError(bin));
+  
+  return;
+
+  Int_t stepMixed = 6;
+  TH2* mixedTwoD = (TH2*) hMixed->GetUEHist(2)->GetUEHist(stepMixed, 0, leadingPtArr[i+leadingPtOffset], leadingPtArr[i+1+leadingPtOffset], 12, 13, 1, kFALSE);
+  
+  TH1* proj = mixedTwoD->ProjectionX("px", 11, 30);
+  proj->Draw();
+}
