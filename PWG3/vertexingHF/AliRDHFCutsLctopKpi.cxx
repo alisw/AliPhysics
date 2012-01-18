@@ -99,8 +99,8 @@ fCutsStrategy(kStandard)
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   AliRDHFCuts(source),
-  fPidObjprot(0),
-  fPidObjpion(0),
+  fPidObjprot(new AliAODPidHF(*(source.fPidObjprot))),
+  fPidObjpion(new AliAODPidHF(*(source.fPidObjpion))),
   fUseImpParProdCorrCut(source.fUseImpParProdCorrCut),
   fPIDStrategy(source.fPIDStrategy),
   fCutsStrategy(source.fCutsStrategy)
@@ -108,10 +108,7 @@ AliRDHFCutsLctopKpi::AliRDHFCutsLctopKpi(const AliRDHFCutsLctopKpi &source) :
   //
   // Copy constructor
   //
-  if(source.fPidObjprot) SetPidprot(source.fPidObjprot);
-  if(source.fPidObjpion) SetPidpion(source.fPidObjpion);
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
-      fPIDThreshold[ispecies]=source.fPIDThreshold[ispecies];
+  memcpy(fPIDThreshold,source.fPIDThreshold,AliPID::kSPECIES*sizeof(Double_t));
 }
 //--------------------------------------------------------------------------
 AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &source)
@@ -119,16 +116,18 @@ AliRDHFCutsLctopKpi &AliRDHFCutsLctopKpi::operator=(const AliRDHFCutsLctopKpi &s
   //
   // assignment operator
   //
-  if(&source == this) return *this;
-
-  AliRDHFCuts::operator=(source);
-  SetPidprot(source.GetPidprot());
-  SetPidpion(source.GetPidpion());
-  fPIDStrategy=source.fPIDStrategy;
-  fCutsStrategy=source.fCutsStrategy;
-  for (Int_t ispecies=0;ispecies<AliPID::kSPECIES;++ispecies)
-      fPIDThreshold[ispecies]=source.fPIDThreshold[ispecies];
-
+  if(this != &source) {
+    
+    AliRDHFCuts::operator=(source);
+    delete fPidObjprot;
+    fPidObjprot = new AliAODPidHF(*(source.fPidObjprot));
+    delete fPidObjpion;
+    fPidObjpion = new AliAODPidHF(*(source.fPidObjpion));
+    fPIDStrategy=source.fPIDStrategy;
+    fCutsStrategy=source.fCutsStrategy;
+    memcpy(fPIDThreshold,source.fPIDThreshold,AliPID::kSPECIES*sizeof(Double_t));
+  }
+    
   return *this;
 }
 //---------------------------------------------------------------------------
