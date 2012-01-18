@@ -26,6 +26,7 @@
 #include "AliAnalysisTaskGammaConversion.h"
 #include "AliStack.h"
 #include "AliLog.h"
+#include "TTree.h"
 #include "AliESDtrackCuts.h"
 #include "TNtuple.h"
 //#include "AliCFManager.h"	// for CF
@@ -39,7 +40,7 @@
 #include "AliESDCaloCluster.h" // for combining PHOS and GammaConv
 #include "AliKFVertex.h"
 #include "AliGenPythiaEventHeader.h"
-#include "AliGenDPMjetEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"	
 #include "AliGenEventHeader.h"
 #include <AliMCEventHandler.h>
 #include "TRandom3.h"
@@ -49,6 +50,8 @@
 #include "AliAODHandler.h"
 #include "AliKFConversionPhoton.h"
 #include "AliKFConversionMother.h"
+#include "AliESDVertex.h"
+#include "AliESDTZERO.h"
 
 class AliESDTrackCuts;
 class AliCFContainer;
@@ -72,6 +75,7 @@ ClassImp(AliAnalysisTaskGammaConversion)
 
 AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion():
 AliAnalysisTaskSE(),
+        fpcstream(0x0),
 	fV0Reader(NULL),
 	fStack(NULL),
 	fMCTruth(NULL),		// for CF
@@ -86,6 +90,7 @@ AliAnalysisTaskSE(),
 	fDoOmegaMeson(kFALSE),
 	fDoJet(kFALSE),
 	fDoChic(kFALSE),
+	fDoHadInt(kFALSE),
 	fRecalculateV0ForGamma(kFALSE),
 	fKFReconstructedGammasTClone(NULL),
 	fKFReconstructedPi0sTClone(NULL),
@@ -128,6 +133,7 @@ AliAnalysisTaskSE(),
 	//fAODOmega(NULL),
 	fAODBranchName("GammaConv"),
 	fKFCreateAOD(kTRUE),
+	fKFExchangeAOD(kFALSE),
 	fKFForceAOD(kFALSE),
 	fKFDeltaAODFileName(""),
 	fDoNeutralMesonV0MCCheck(kFALSE),
@@ -148,7 +154,10 @@ AliAnalysisTaskSE(),
 	fUseHBTMultiplicityBin(0),
 	fUseCentrality(0), 
 	fUseCentralityBin(0),
-	fRandom(0)
+	fRandom(0),
+	fMaxChi2HadInt(100.),		
+	fMaxErr2DHadInt(10.),
+	fPtMinHadInt(0.3)
 {
 	// Default constructor
 
@@ -167,6 +176,7 @@ AliAnalysisTaskSE(),
 
 AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name):
 	AliAnalysisTaskSE(name),
+        fpcstream(0x0),
 	fV0Reader(NULL),
 	fStack(NULL),
 	fMCTruth(NULL),		// for CF
@@ -181,6 +191,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
 	fDoOmegaMeson(kFALSE),
 	fDoJet(kFALSE),
 	fDoChic(kFALSE),
+	fDoHadInt(kFALSE),
 	fRecalculateV0ForGamma(kFALSE),
 	fKFReconstructedGammasTClone(NULL),
 	fKFReconstructedPi0sTClone(NULL),
@@ -223,6 +234,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
 	//fAODOmega(NULL),
 	fAODBranchName("GammaConv"),
 	fKFCreateAOD(kTRUE),
+	fKFExchangeAOD(kFALSE),
 	fKFForceAOD(kFALSE),
 	fKFDeltaAODFileName(""),
 	fDoNeutralMesonV0MCCheck(kFALSE),
@@ -243,7 +255,10 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
 	fUseHBTMultiplicityBin(0),
 	fUseCentrality(0), 
 	fUseCentralityBin(0),
-	fRandom(0)
+	fRandom(0),
+	fMaxChi2HadInt(100.),		
+	fMaxErr2DHadInt(10.),
+	fPtMinHadInt(0.3)
 {
 	// Common I/O in slot 0, don't define when inheriting from AnalysisTaskSE
 	// DefineInput (0, TChain::Class());	
@@ -252,7 +267,7 @@ AliAnalysisTaskGammaConversion::AliAnalysisTaskGammaConversion(const char* name)
 	// Your private output
 	DefineOutput(1, TList::Class());
 	DefineOutput(2, AliCFContainer::Class());	// for CF
-	
+	DefineOutput(3, TClonesArray::Class());
 	
 	// Define standard ESD track cuts for Gamma-hadron correlation 
 	SetESDtrackCuts();
@@ -305,8 +320,9 @@ AliAnalysisTaskGammaConversion::~AliAnalysisTaskGammaConversion()
 	if(fTriggerAnalysis) {
 		delete fTriggerAnalysis;
 	}
-
-
+	if (fpcstream)
+		delete fpcstream;
+	fpcstream = NULL;
 }
 
 
@@ -409,14 +425,8 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 		}
 	} 
 
-	if(fAODGamma) fAODGamma->Delete();
-       // if(fAODPi0) fAODPi0->Delete();
-       // if(fAODOmega) fAODOmega->Delete();
-
-
-	//	if(fV0Reader == NULL){ // coverty does not permit this test
-	// Write warning here cuts and so on are default if this ever happens
-	//	}
+	if(fAODGamma) fAODGamma->Clear();
+	
 
 	if (fMCEvent ) {
 		// To avoid crashes due to unzip errors. Sometimes the trees are not there.
@@ -427,26 +437,33 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 
 			eventQuality=0;
 			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-			return; 
 		}
 		if (!mcHandler->InitOk() ){
 			eventQuality=0;
 			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-			return;
 		}
 		if (!mcHandler->TreeK() ){
 			eventQuality=0;
 			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-			return;
 		}
 		if (!mcHandler->TreeTR() ) {
 			eventQuality=0;
 			fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-			return;
+		}
+
+		if (eventQuality > -1) {
+		  PostAODEvent();
+		  return;
 		}
 	}
+	
 
 	fV0Reader->SetInputAndMCEvent(InputEvent(), MCEvent());
+
+	//Process hadronic interactions
+	if(fDoHadInt == kTRUE){
+		ProcessHadronicInteraction(fESDEvent);
+	}
 
 	fV0Reader->Initialize();
 	fDoMCTruth = fV0Reader->GetDoMCTruth();
@@ -506,224 +523,17 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	//Clear the data in the v0Reader
 	//	fV0Reader->UpdateEventByEventData();
 
-	//Take Only events with proper trigger
-	/*
-		if(fTriggerCINT1B){
-		if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
-		}
-	*/
-	Bool_t v0A			 = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
-	Bool_t v0C			 = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
-	Bool_t v0AND = v0A && v0C;
-
-	if(fSelectV0AND && !v0AND){
-		eventQuality=5;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		if(fDoMCTruth){
-			if(!fV0Reader->GetIsHeavyIon()){
-	CheckMesonProcessTypeEventQuality(eventQuality);
-			}
-		}
-
-		return;
-	}
-
-	if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
-		//		cout<< "Event not taken"<< endl;
-		eventQuality=1;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		if(fDoMCTruth){
-			if(!fV0Reader->GetIsHeavyIon()){
-				CheckMesonProcessTypeEventQuality(eventQuality);
-			}
-		}
-		return; // aborts if the primary vertex does not have contributors.
-	}
-
-	 
-
-	if(!fV0Reader->CheckForPrimaryVertexZ() ){
-		eventQuality=2;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		if(fDoMCTruth){
-			if(!fV0Reader->GetIsHeavyIon()){
-				CheckMesonProcessTypeEventQuality(eventQuality);
-			}
-		}
-		return;
-	}
-
-
-	if(fV0Reader->GetESDEvent()->GetPrimaryVertexTracks()->GetNContributors()>0) {
-		fHistograms->FillHistogram("ESD_GlobalPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
-	}else{
-		if(fV0Reader->GetESDEvent()->GetPrimaryVertexSPD()->GetNContributors()>0) {
-			fHistograms->FillHistogram("ESD_SPDPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
-		}
-	}
-
-	if(fRemovePileUp && fV0Reader->GetESDEvent()->IsPileupFromSPD()) {
-		eventQuality=4;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	
-
-	Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
-	fV0Reader->GetESDEvent()->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 0.8);
-	Int_t fMultiplicityITS = tITSPure;
-
-	fMultiplicity =	fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
-	Int_t fMultiplicityStandard = fMultiplicity;
-
-	if( fUseHBTMultiplicity==1) {
-		fMultiplicity = fMultiplicityITS;
-
-	}
-
-
-	fHistograms->FillHistogram("ESD_MultiplicityDeviation",fMultiplicityStandard,fMultiplicityITS);
-
-	
-
-	if(fUseMultiplicity!=0 && CalculateMultiplicityBin()!=fUseMultiplicityBin ){
-		eventQuality=6;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-
-	
-	if(fUseHBTMultiplicity!=0 && CalculateMultiplicityBin()!=fUseHBTMultiplicityBin ){
-		eventQuality=6;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-
-
-	if(fV0Reader->GetIsHeavyIon()){
-		if(fUseCentrality>0){
-			AliCentrality *esdCentrality = fV0Reader->GetESDEvent()->GetCentrality();
-			Int_t centralityC = -1;
-
-			if(fUseCentrality==1){
-	centralityC = esdCentrality->GetCentralityClass10("V0M");
-	if( centralityC != fUseCentralityBin ){
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-			}
-
-			if(fUseCentrality==2){
-	centralityC = esdCentrality->GetCentralityClass10("CL1");
-	if( centralityC != fUseCentralityBin ){
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-			}
-
-			////////////////////////////////////// RRnew start /////////////////////////////////////////////////////
-			if(fUseCentrality==3){
-	centralityC = esdCentrality->GetCentralityClass10("V0M");
-	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;		
-	}
-	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 3) && (centralityC!=0) && (centralityC!=1) ){ // 0-20%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 7) && (centralityC!=6) && (centralityC!=7) ){ // 60-80%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 8) && (centralityC>=8) ){ // 0-80%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 9) && (centralityC>=9) ){ // 0-90%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-			}
-
-			if(fUseCentrality==4){
-	centralityC = esdCentrality->GetCentralityClass10("CL1");
-	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;		
-	}
-	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
-		eventQuality=7;
-		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-		return;
-	}
-			}
-			////////////////////////////////////// RRnew end ///////////////////////////////////////////////////////
-
-		}
-	}
-
-
-	eventQuality=3;
-
-	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
-
-
-
-	fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",fMultiplicity);
-	if (fV0Reader->GetNumberOfContributorsVtx()>=1){
-		fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",fMultiplicity);
-	} 
-
 
 	// Process the MC information
 	if(fDoMCTruth){
 		ProcessMCData();
 	}
 
+
+	if(!DoEventSelection()) {
+	  PostAODEvent();
+	  return;
+	}
 
 	
 	//Process the v0 information with no cuts
@@ -735,7 +545,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 
 	//Fill Gamma AOD
 	if(fKFCreateAOD) {
-		FillAODWithConversionGammas() ; 
+	  FillAODWithConversionGammas() ; 
 	}
 
 
@@ -785,7 +595,7 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	}
 
 	///Make sure delta aod is filled if standard aod is filled (for synchronization when reading aod with standard aod)
-	if(fKFCreateAOD) {
+	if(fKFCreateAOD && !fKFExchangeAOD) {
 		AliAODHandler * aodhandler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
 		if (aodhandler && aodhandler->GetFillAOD()) {
 			AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler()->SetFillExtension(kTRUE);	 
@@ -798,9 +608,246 @@ void AliAnalysisTaskGammaConversion::UserExec(Option_t */*option*/)
 	//if(fRecalculateV0ForGamma==kTRUE){
        // 	RecalculateV0ForGamma();
        // }
+	PostAODEvent();
 	PostData(1, fOutputContainer);
 	PostData(2, fCFManager->GetParticleContainer());	// for CF
+}
+
+
+Bool_t AliAnalysisTaskGammaConversion::DoEventSelection() {
+
+
+  Int_t eventQuality = -1;
+
+	//Take Only events with proper trigger
+	/*
+		if(fTriggerCINT1B){
+		if(!fV0Reader->GetESDEvent()->IsTriggerClassFired("CINT1B-ABCE-NOPF-ALL")) return;
+		}
+	*/
+	Bool_t v0A			 = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0A);
+	Bool_t v0C			 = fTriggerAnalysis->IsOfflineTriggerFired(fV0Reader->GetESDEvent(), AliTriggerAnalysis::kV0C);
+	Bool_t v0AND = v0A && v0C;
+
+	if(fSelectV0AND && !v0AND){
+		eventQuality=5;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		if(fDoMCTruth){
+			if(!fV0Reader->GetIsHeavyIon()){
+	CheckMesonProcessTypeEventQuality(eventQuality);
+			}
+		}
+
+		return kFALSE;
+	}
+
+	if(fV0Reader->CheckForPrimaryVertex() == kFALSE){
+		//		cout<< "Event not taken"<< endl;
+		eventQuality=1;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		if(fDoMCTruth){
+			if(!fV0Reader->GetIsHeavyIon()){
+				CheckMesonProcessTypeEventQuality(eventQuality);
+			}
+		}
+		return kFALSE; // aborts if the primary vertex does not have contributors.
+	}
+
+	 
+
+	if(!fV0Reader->CheckForPrimaryVertexZ() ){
+		eventQuality=2;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		if(fDoMCTruth){
+			if(!fV0Reader->GetIsHeavyIon()){
+				CheckMesonProcessTypeEventQuality(eventQuality);
+			}
+		}
+		return kFALSE;
+	}
+
+
+	if(fV0Reader->GetESDEvent()->GetPrimaryVertexTracks()->GetNContributors()>0) {
+		fHistograms->FillHistogram("ESD_GlobalPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
+	}else{
+		if(fV0Reader->GetESDEvent()->GetPrimaryVertexSPD()->GetNContributors()>0) {
+			fHistograms->FillHistogram("ESD_SPDPrimaryVtxZ",fV0Reader->GetESDEvent()->GetPrimaryVertex()->GetZ());
+		}
+	}
+
+	if(fRemovePileUp && fV0Reader->GetESDEvent()->IsPileupFromSPD()) {
+		eventQuality=4;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
 	
+
+	Int_t tTracklet=0, tITSTPC=0, tITSPure=0;
+	fV0Reader->GetESDEvent()->EstimateMultiplicity(tTracklet, tITSTPC, tITSPure, 0.8);
+	Int_t fMultiplicityITS = tITSPure;
+
+	fMultiplicity =	fEsdTrackCuts->CountAcceptedTracks(fV0Reader->GetESDEvent());
+	Int_t fMultiplicityStandard = fMultiplicity;
+
+	if( fUseHBTMultiplicity==1) {
+		fMultiplicity = fMultiplicityITS;
+
+	}
+
+
+	fHistograms->FillHistogram("ESD_MultiplicityDeviation",fMultiplicityStandard,fMultiplicityITS);
+
+	
+
+	if(fUseMultiplicity!=0 && CalculateMultiplicityBin()!=fUseMultiplicityBin ){
+		eventQuality=6;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+
+	
+	if(fUseHBTMultiplicity!=0 && CalculateMultiplicityBin()!=fUseHBTMultiplicityBin ){
+		eventQuality=6;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+
+
+	if(fV0Reader->GetIsHeavyIon()){
+		if(fUseCentrality>0){
+			AliCentrality *esdCentrality = fV0Reader->GetESDEvent()->GetCentrality();
+			Int_t centralityC = -1;
+
+			if(fUseCentrality==1){
+	centralityC = esdCentrality->GetCentralityClass10("V0M");
+	if( centralityC != fUseCentralityBin ){
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+			}
+
+			if(fUseCentrality==2){
+	centralityC = esdCentrality->GetCentralityClass10("CL1");
+	if( centralityC != fUseCentralityBin ){
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+			}
+
+			////////////////////////////////////// RRnew start /////////////////////////////////////////////////////
+			if(fUseCentrality==3){
+	centralityC = esdCentrality->GetCentralityClass10("V0M");
+	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;		
+	}
+	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 3) && (centralityC!=0) && (centralityC!=1) ){ // 0-20%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 7) && (centralityC!=6) && (centralityC!=7) ){ // 60-80%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 8) && (centralityC>=8) ){ // 0-80%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 9) && (centralityC>=9) ){ // 0-90%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+			}
+
+			if(fUseCentrality==4){
+	centralityC = esdCentrality->GetCentralityClass10("CL1");
+	if( (fUseCentralityBin == 0) && (centralityC!=0) ){ // 0-10%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;		
+	}
+	if( (fUseCentralityBin == 1) && (centralityC!=1) ){ // 10-20%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 2) && (centralityC!=2) && (centralityC!=3) ){ // 20-40%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 4) && (centralityC!=4) && (centralityC!=5) ){ // 40-60%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+	if( (fUseCentralityBin == 6) && (centralityC!=6) && (centralityC!=7) && (centralityC!=8) ){ // 60-90%
+		eventQuality=7;
+		fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+		return kFALSE;
+	}
+			}
+			////////////////////////////////////// RRnew end ///////////////////////////////////////////////////////
+			
+		}
+	}
+
+
+	eventQuality=3;
+
+	fHistograms->FillHistogram("ESD_EventQuality",eventQuality);
+
+
+
+	fHistograms->FillHistogram("ESD_NumberOfGoodESDTracks",fMultiplicity);
+	if (fV0Reader->GetNumberOfContributorsVtx()>=1){
+		fHistograms->FillHistogram("ESD_NumberOfGoodESDTracksVtx",fMultiplicity);
+	} 
+
+
+
+	return kTRUE;
+
+}
+
+
+///_______________________________________________________________
+void AliAnalysisTaskGammaConversion::PostAODEvent() {
+  ///Post AOD array to correct output slot
+  if(fKFCreateAOD) {
+	if(!fKFExchangeAOD) {
+	  PostData(0, fAODGamma);
+	}  else {
+	  PostData(3, fAODGamma); 
+	}
+  }
 }
 
 // void AliAnalysisTaskGammaConversion::ConnectInputData(Option_t *option){
@@ -1324,8 +1371,9 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 				Int_t zBin		= fHistograms->GetZBin(ePos->Vz());
 				Int_t phiBin	= fHistograms->GetPhiBin(particle->Phi());
 				Double_t rFMD=30;
-				Double_t rITSTPCMin=50;
-				Double_t rITSTPCMax=80;
+				Double_t rITSTPCMin=40;
+				Double_t rITSTPCInt=55;
+				Double_t rITSTPCMax=72.5;
 				
 				TVector3 vtxPos(ePos->Vx(),ePos->Vy(),ePos->Vz());	
 				
@@ -1365,12 +1413,18 @@ void AliAnalysisTaskGammaConversion::ProcessMCData(){
 					fHistograms->FillHistogram(nameMCMappingFMDPhiInZ, vtxPos.Phi());
 				}
 			
-				if(ePos->R()>rITSTPCMin	&& ePos->R()<rITSTPCMax){
+				if(ePos->R()>rITSTPCMin	&& ePos->R()<rITSTPCInt){
 					TString nameMCMappingITSTPCPhiInZ="";
 					nameMCMappingITSTPCPhiInZ.Form("MC_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",zBin);
 					fHistograms->FillHistogram(nameMCMappingITSTPCPhiInZ, vtxPos.Phi());
 				}
 			
+				if(ePos->R()>rITSTPCInt	&& ePos->R()<rITSTPCMax){
+					TString nameMCMappingITSTPC2PhiInZ="";
+					nameMCMappingITSTPC2PhiInZ.Form("MC_Conversion_Mapping_ITSTPC2_Phi_in_Z_%02d",zBin);
+					fHistograms->FillHistogram(nameMCMappingITSTPC2PhiInZ, vtxPos.Phi());
+				}
+
 				TString nameMCMappingRInZ="";
 				nameMCMappingRInZ.Form("MC_Conversion_Mapping_R_in_Z_%02d",zBin);
 				fHistograms->FillHistogram(nameMCMappingRInZ,ePos->R() );
@@ -1741,9 +1795,10 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 		}
 
 		//		if( !fV0Reader->GetV0(i)->GetOnFlyStatus()){
-		if( !fV0Reader->CheckV0FinderStatus(i)){
+		if( !fV0Reader->CheckV0FinderStatus(fV0Reader->GetV0(i))){
 			continue;
 		}
+
 
 
 		if( !((fV0Reader->GetNegativeESDTrack())->GetStatus() & AliESDtrack::kTPCrefit) || 
@@ -1820,6 +1875,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 			
 			if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22){				
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
+                                if(negativeMC->GetMother(0) <= fStack->GetNprimary()){
+                                   fHistograms->FillHistogram("ESD_NoCutConvPrimaryGamma_Pt", fV0Reader->GetMotherCandidatePt());
+                                }
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_Energy", fV0Reader->GetMotherCandidateEnergy());
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_Eta", fV0Reader->GetMotherCandidateEta());				
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_Phi", fV0Reader->GetMotherCandidatePhi());
@@ -1835,6 +1893,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0sNoCut(){
 							
 				fHistograms->FillHistogram("ESD_NoCutConversion_XY", fV0Reader->GetX(),fV0Reader->GetY());
 				fHistograms->FillHistogram("ESD_NoCutConversion_R", fV0Reader->GetXYRadius());
+				fHistograms->FillHistogram("ESD_NoCutConversion_MCR",fV0Reader->GetNegativeMCParticle()->R());
 				fHistograms->FillHistogram("ESD_NoCutConversion_ZR", fV0Reader->GetZ(),fV0Reader->GetXYRadius());
 				fHistograms->FillHistogram("ESD_NoCutConversion_OpeningAngle", fV0Reader->GetOpeningAngle());
 				fHistograms->FillHistogram("ESD_NoCutConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
@@ -1970,6 +2029,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		fHistograms->FillHistogram("ESD_ConvGamma_Eta_Chi2", fV0Reader->GetMotherCandidateEta(), fV0Reader->GetMotherCandidateChi2());
 		
 		fHistograms->FillHistogram("ESD_ConvGamma_CosPointingAngle", fV0Reader->GetCosPointingAngle());
+		fHistograms->FillHistogram("ESD_ConvGamma_CosPoint_RecCosPoint",fV0Reader->GetCosPointingAngle(),fV0Reader->GetV0CosineOfPointingAngle(fV0Reader->GetX(),fV0Reader->GetY(),fV0Reader->GetZ()));
+		fHistograms->FillHistogram("ESD_ConvGamma_PsiPair", fV0Reader->GetPsiPair(fV0Reader->GetCurrentV0()));
+		
 		fHistograms->FillHistogram("ESD_ConvGamma_DcaDaughters", fV0Reader->GetDcaDaughters());
 		fHistograms->FillHistogram("ESD_ConvGamma_NormDcaDistDaughters", fV0Reader->GetNormDcaDistDaughters());
 		fHistograms->FillHistogram("ESD_ConvGamma_LikelihoodAP", fV0Reader->GetLikelihoodAP());
@@ -2023,14 +2085,25 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 		fHistograms->FillHistogram("ESD_ConvGamma_E_mupiProbP",fV0Reader->GetNegativeTrackP(),negPIDmupi);
 		fHistograms->FillHistogram("ESD_ConvGamma_P_mupiProbP",fV0Reader->GetPositiveTrackP(),posPIDmupi);
 
-		Double_t armenterosQtAlfa[2];
-		fV0Reader->GetArmenterosQtAlfa(fV0Reader-> GetNegativeKFParticle(), 
-					 fV0Reader-> GetPositiveKFParticle(), 
-					 fV0Reader->GetMotherCandidateKFCombination(),
-					 armenterosQtAlfa);
-	 
-		fHistograms->FillHistogram("ESD_ConvGamma_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
-		fHistograms->FillHistogram("ESD_ConvGamma_Pt_Qt",fV0Reader->GetMotherCandidatePt(),armenterosQtAlfa[0]);
+		Double_t armenterosQtAlpha[2] = {0,0};
+		if(fV0Reader->GetUseESDQtCut() == 0){
+		   fV0Reader->GetArmenterosQtAlpha(fV0Reader->GetNegativeKFParticle(),
+                                                   fV0Reader->GetPositiveKFParticle(),
+                                                   fV0Reader->GetMotherCandidateKFCombination(),
+                                                   armenterosQtAlpha);
+		}
+		else if(fV0Reader->GetUseESDQtCut() == 1){
+		   fV0Reader->GetArmenterosQtAlpha(fV0Reader->GetCurrentV0(), armenterosQtAlpha);
+		}
+		else if(fV0Reader->GetUseESDQtCut() == 2 || fV0Reader->GetUseESDQtCut() == 3){
+		   fV0Reader->GetArmenterosQtAlpha(fV0Reader->GetNegativeKFParticle(),
+                                                   fV0Reader->GetPositiveKFParticle(),
+                                                   armenterosQtAlpha,
+                                                   fV0Reader->GetUseESDQtCut());
+		}
+                
+		fHistograms->FillHistogram("ESD_ConvGamma_alfa_qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
+		fHistograms->FillHistogram("ESD_ConvGamma_Pt_Qt",fV0Reader->GetMotherCandidatePt(),armenterosQtAlpha[0]);
 	
 		if(!fV0Reader->GetIsHeavyIon()){
 			fHistograms->FillHistogram("3DPlots_Conversion_XYZ", fV0Reader->GetX(),fV0Reader->GetY(),fV0Reader->GetZ());		
@@ -2041,8 +2114,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 			Int_t zBin		= fHistograms->GetZBin(fV0Reader->GetZ());
 			Int_t phiBin	= fHistograms->GetPhiBin(fV0Reader->GetNegativeTrackPhi());
 			Double_t rFMD=25;
-			Double_t rITSTPCMin=45;
-			Double_t rITSTPCMax=80;
+			Double_t rITSTPCMin=40;
+			Double_t rITSTPCInt=55;
+			Double_t rITSTPCMax=72.5;
 			
 			//		Double_t motherCandidateEta= fV0Reader->GetMotherCandidateEta();
 			
@@ -2082,13 +2156,20 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				fHistograms->FillHistogram("ESD_ConversionMapping_FMD2_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
 			}
 
-			if(fV0Reader->GetXYRadius()>rITSTPCMin && fV0Reader->GetXYRadius()<rITSTPCMax){
+			if(fV0Reader->GetXYRadius()>rITSTPCMin && fV0Reader->GetXYRadius()<rITSTPCInt){
 				TString nameESDMappingITSTPCPhiInZ="";
 				nameESDMappingITSTPCPhiInZ.Form("ESD_Conversion_Mapping_ITSTPC_Phi_in_Z_%02d",zBin);
 				fHistograms->FillHistogram(nameESDMappingITSTPCPhiInZ, vtxConv.Phi());
 				fHistograms->FillHistogram("ESD_ConversionMapping_ITSTPC_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
 			}
 			
+			if(fV0Reader->GetXYRadius()>rITSTPCInt && fV0Reader->GetXYRadius()<rITSTPCMax){
+				TString nameESDMappingITSTPC2PhiInZ="";
+				nameESDMappingITSTPC2PhiInZ.Form("ESD_Conversion_Mapping_ITSTPC2_Phi_in_Z_%02d",zBin);
+				fHistograms->FillHistogram(nameESDMappingITSTPC2PhiInZ, vtxConv.Phi());
+				fHistograms->FillHistogram("ESD_ConversionMapping_ITSTPC2_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
+			}
+
 			TString nameESDMappingRInZ="";
 			nameESDMappingRInZ.Form("ESD_Conversion_Mapping_R_in_Z_%02d",zBin);
 			fHistograms->FillHistogram(nameESDMappingRInZ, fV0Reader->GetXYRadius());
@@ -2127,13 +2208,14 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 			TParticle * negativeMC = (TParticle*)fV0Reader->GetNegativeMCParticle();
 			TParticle * positiveMC = (TParticle*)fV0Reader->GetPositiveMCParticle();
 			Double_t rFMD=25;
-			Double_t rITSTPCMin=45;
-			Double_t rITSTPCMax=80;
+			Double_t rITSTPCMin=40;
+			Double_t rITSTPCInt=55;
+			Double_t rITSTPCMax=72.5;
  
 			if(fV0Reader->HasSameMCMother() == kFALSE){
 				fHistograms->FillHistogram("ESD_TrueConvCombinatorial_R", fV0Reader->GetXYRadius());
 				fHistograms->FillHistogram("ESD_TrueConvCombinatorial_Z", fV0Reader->GetZ());
-				fHistograms->FillHistogram("ESD_TrueConvCombSelected_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+				fHistograms->FillHistogram("ESD_TrueConvCombSelected_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				if ( fV0Reader->GetMotherCandidatePt() > 2. ) {
 					fHistograms->FillHistogram("ESD_TrueConvCombinatorialMinPt_R", fV0Reader->GetXYRadius());
 					fHistograms->FillHistogram("ESD_TrueConvCombinatorialMinPt_Z", fV0Reader->GetZ());			
@@ -2268,12 +2350,14 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				}
 								// RRnewTOF end /////////////////////////////////////////////////
 				if (fV0Reader->HasSameMCMother() == kTRUE){
-					fHistograms->FillHistogram("ESD_TrueConvGammaSelected_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
-					fHistograms->FillHistogram("ESD_TrueConvGammaSelected_Pt_Qt",fV0Reader->GetMotherCandidatePt(),armenterosQtAlfa[0]);	
+					fHistograms->FillHistogram("ESD_TrueConvGammaSelected_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
+					fHistograms->FillHistogram("ESD_TrueConvGammaSelected_Pt_Qt",fV0Reader->GetMotherCandidatePt(),armenterosQtAlpha[0]);	
 				}
 				// RRnewTOF end /////////////////////////////////////////////////
 
 				fHistograms->FillHistogram("ESD_TrueConvGamma_Pt", fV0Reader->GetMotherCandidatePt());
+				fHistograms->FillHistogram("ESD_TrueConvGamma_CosPoint_RecCosPoint",fV0Reader->GetCosPointingAngle(),fV0Reader->GetV0CosineOfPointingAngle(fV0Reader->GetX(),fV0Reader->GetY(),fV0Reader->GetZ()));
+				fHistograms->FillHistogram("ESD_TrueConvGamma_PsiPair", fV0Reader->GetPsiPair(fV0Reader->GetCurrentV0()));
 				if(negativeMC->GetMother(0) <= fStack->GetNprimary()){ // Count just primary MC Gammas as true --> For Ratio esdtruegamma / mcconvgamma
 					fHistograms->FillHistogram("ESD_TrueConvPrimaryGamma_Pt", fV0Reader->GetMotherCandidatePt());
 					fHistograms->FillHistogram("ESD_TrueConvPrimaryGamma_R", fV0Reader->GetXYRadius());
@@ -2283,6 +2367,18 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 						fHistograms->FillHistogram("ESD_TrueConvPrimaryGammaMinPt_Z", fV0Reader->GetZ());				
 					}
 				}
+                                else{
+                                   fHistograms->FillHistogram("ESD_TrueConvSecondaryGamma_Pt", fV0Reader->GetMotherCandidatePt());
+                                   if(fV0Reader->GetMotherMCParticle()->GetMother(0) > -1){
+                                      if(fStack->Particle(fV0Reader->GetMotherMCParticle()->GetMother(0))->GetPdgCode() == 310){
+                                         fHistograms->FillHistogram("ESD_TrueConvSecondaryGammaFromK0s_Pt", fV0Reader->GetMotherCandidatePt());                                         
+                                      }
+                                      if(fStack->Particle(fV0Reader->GetMotherMCParticle()->GetMother(0))->GetMother(0) > -1 && 
+                                         fStack->Particle(fStack->Particle(fV0Reader->GetMotherMCParticle()->GetMother(0))->GetMother(0))->GetPdgCode() == 310){
+                                         fHistograms->FillHistogram("ESD_TrueConvSecondaryGammaFromXFromK0s_Pt", fV0Reader->GetMotherCandidatePt());                                         
+                                      }
+                                   }
+                                }
 				if(fV0Reader->GetMotherMCParticle()->GetMother(0) > -1){
 					if(fStack->Particle(fV0Reader->GetMotherMCParticle()->GetMother(0))->GetPdgCode() == 221){ // Use just gamma from eta for ratio esdtruegamma / mcconvgamma
 						fHistograms->FillHistogram("ESD_TrueConvEtaGamma_Pt", fV0Reader->GetMotherCandidatePt());
@@ -2325,9 +2421,13 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				if(fV0Reader->GetXYRadius()>rFMD && fV0Reader->GetXYRadius()<rITSTPCMin){
 					fHistograms->FillHistogram("ESD_TrueConversionMapping_FMD2_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
 				}
-				if(fV0Reader->GetXYRadius()>rITSTPCMin && fV0Reader->GetXYRadius()<rITSTPCMax){
+				if(fV0Reader->GetXYRadius()>rITSTPCMin && fV0Reader->GetXYRadius()<rITSTPCInt){
 					fHistograms->FillHistogram("ESD_TrueConversionMapping_ITSTPC_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
 				}
+				if(fV0Reader->GetXYRadius()>rITSTPCInt && fV0Reader->GetXYRadius()<rITSTPCMax){
+					fHistograms->FillHistogram("ESD_TrueConversionMapping_ITSTPC2_ZPhi",fV0Reader->GetZ() ,vtxConv.Phi());
+				}
+
 				fHistograms->FillHistogram("ESD_TrueConversion_OpeningAngle", fV0Reader->GetOpeningAngle());
 
 				//----Histos for HFE-------------------------------------- 
@@ -2365,7 +2465,143 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				fHistograms->FillHistogram("ESD_TrueConversion_MC_ZR", negativeMC->Vz(),negativeMC->R());
 				fHistograms->FillHistogram("ESD_TrueConversion_MC_XY", negativeMC->Vx(),negativeMC->Vy());
 				
-				//resolution
+				
+				//___________________________________________Resolution______________________________________________________
+				// Different Ways of Producing a Gamma				
+				// Standard V0 Information				
+				Double_t mcPt   = fV0Reader->GetMotherMCParticle()->Pt();
+				Double_t mcR = fV0Reader->GetNegativeMCParticle()->R();
+				Double_t mcZ = fV0Reader->GetNegativeMCParticle()->Vz();
+				Double_t resPt = 0.;
+				Double_t resR = 0;
+				Double_t resZ = 0;
+
+				AliKFParticle AliKFPosParticle(*(fV0Reader->GetExternalTrackParamP(fV0Reader->GetCurrentV0())),-11);
+				AliKFParticle AliKFNegParticle(*(fV0Reader->GetExternalTrackParamN(fV0Reader->GetCurrentV0())),11);
+
+				// Resolution Normal V0 unchanged from the On-fly/Offline
+				Double_t xyz[3] = {0,0,0};
+				fV0Reader->GetCurrentV0()->GetXYZ(xyz[0],xyz[1],xyz[2]);
+				resPt = mcPt-fV0Reader->GetCurrentV0()->Pt();
+				resR = mcR-TMath::Sqrt(xyz[0]*xyz[0]+xyz[1]*xyz[1]);
+				resZ = mcZ-xyz[2];
+				fHistograms->FillHistogram("Resolution_Gamma_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_Gamma_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_Gamma_AbsdZ_Z", mcZ,resZ);
+				
+				// Resolution Recalculated V0
+				resR = mcR-fV0Reader->GetXYRadius();
+				resZ = mcZ-fV0Reader->GetZ();
+				// No pt, because we not recalculate v0 pt
+				fHistograms->FillHistogram("Resolution_GammaRecalcPos_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaRecalcPos_AbsdZ_Z", mcZ,resZ);
+
+				// Resolution ConstructGamma
+				AliKFParticle constructGammaKF;
+				constructGammaKF.ConstructGamma(AliKFNegParticle,AliKFPosParticle);
+				resPt = mcPt-constructGammaKF.GetPt();
+				resR = mcR-constructGammaKF.GetR();
+				resZ = mcZ-constructGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaConstr_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaConstr_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaConstr_AbsdZ_Z", mcZ,resZ);
+				if(constructGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaConstr_Chi2NDF", constructGammaKF.GetChi2()/constructGammaKF.GetNDF());
+				
+
+				// Construct Gamma + Mass Constrained
+				constructGammaKF.SetMassConstraint(0,0.0001);
+				resPt = mcPt-constructGammaKF.GetPt();
+				resR = mcR-constructGammaKF.GetR();
+				resZ = mcZ-constructGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaConstrMass_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaConstrMass_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaConstrMass_AbsdZ_Z", mcZ,resZ);
+				if(constructGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaConstrMass_Chi2NDF", constructGammaKF.GetChi2()/constructGammaKF.GetNDF());
+
+				// Construct Gamma + ProductionVertex
+				constructGammaKF.ConstructGamma(AliKFNegParticle,AliKFPosParticle);
+				AliKFVertex primaryVertexImprovedConstruct(*(fV0Reader->GetESDEvent()->GetPrimaryVertex()));
+				primaryVertexImprovedConstruct+=constructGammaKF;
+				constructGammaKF.SetProductionVertex(primaryVertexImprovedConstruct);
+				resPt = mcPt-constructGammaKF.GetPt();
+				resR = mcR-constructGammaKF.GetR();
+				resZ = mcZ-constructGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaConstrVtx_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaConstrVtx_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaConstrVtx_AbsdZ_Z", mcZ,resZ);
+				if(constructGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaConstrVtx_Chi2NDF", constructGammaKF.GetChi2()/constructGammaKF.GetNDF());
+
+				// Construct Gamma + Mass Constrained + Production Vtx
+				constructGammaKF.ConstructGamma(AliKFNegParticle,AliKFPosParticle);
+				constructGammaKF.SetMassConstraint(0,0.0001);
+				AliKFVertex primaryVertexImprovedConstructC(*(fV0Reader->GetESDEvent()->GetPrimaryVertex()));
+				primaryVertexImprovedConstructC+=constructGammaKF;
+				constructGammaKF.SetProductionVertex(primaryVertexImprovedConstructC);
+				resPt = mcPt-constructGammaKF.GetPt();
+				resR = mcR-constructGammaKF.GetR();
+				resZ = mcZ-constructGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaConstrMassVtx_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaConstrMassVtx_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaConstrMassVtx_AbsdZ_Z", mcZ,resZ);
+				if(constructGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaConstrMassVtx_Chi2NDF", constructGammaKF.GetChi2()/constructGammaKF.GetNDF());
+
+				// Resolution Normal Gamma
+				AliKFParticle normalGammaKF(AliKFNegParticle,AliKFPosParticle);
+				resPt = mcPt-normalGammaKF.GetPt();
+				resR = mcR-normalGammaKF.GetR();
+				resZ = mcZ-normalGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaNormal_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaNormal_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaNormal_AbsdZ_Z", mcZ,resZ);
+				if(normalGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaNormal_Chi2NDF", normalGammaKF.GetChi2()/normalGammaKF.GetNDF());
+
+				// Normal Gamma + Mass Constrained
+				normalGammaKF.SetMassConstraint(0,0.0001);
+				resPt = mcPt-normalGammaKF.GetPt();
+				resR = mcR-normalGammaKF.GetR();
+				resZ = mcZ-normalGammaKF.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaNormalMass_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaNormalMass_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaNormalMass_AbsdZ_Z", mcZ,resZ);
+				if(normalGammaKF.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaNormalMass_Chi2NDF", normalGammaKF.GetChi2()/normalGammaKF.GetNDF());
+				
+				// Normal Gamma + ProductionVertex
+				AliKFParticle normalGammaKFVtx(AliKFNegParticle,AliKFPosParticle);
+				AliKFVertex primaryVertexImprovedNormal(*(fV0Reader->GetESDEvent()->GetPrimaryVertex()));
+				primaryVertexImprovedNormal+=normalGammaKFVtx;
+				normalGammaKFVtx.SetProductionVertex(primaryVertexImprovedNormal);
+				resPt = mcPt-normalGammaKFVtx.GetPt();
+				resR = mcR-normalGammaKFVtx.GetR();
+				resZ = mcZ-normalGammaKFVtx.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaNormalVtx_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaNormalVtx_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaNormalVtx_AbsdZ_Z", mcZ,resZ);
+				if(normalGammaKFVtx.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaNormalVtx_Chi2NDF", normalGammaKFVtx.GetChi2()/normalGammaKFVtx.GetNDF());
+				
+				// Normal Gamma + Mass Constrained + Production Vtx
+				AliKFParticle normalGammaKFMassVtx(AliKFNegParticle,AliKFPosParticle);
+				normalGammaKFMassVtx.SetMassConstraint(0,0.0001);
+				AliKFVertex primaryVertexImprovedNormalMassVtx(*(fV0Reader->GetESDEvent()->GetPrimaryVertex()));
+				primaryVertexImprovedNormalMassVtx+=normalGammaKFMassVtx;
+				normalGammaKFMassVtx.SetProductionVertex(primaryVertexImprovedNormalMassVtx);
+				resPt = mcPt-normalGammaKFMassVtx.GetPt();
+				resR = mcR-normalGammaKFMassVtx.GetR();
+				resZ = mcZ-normalGammaKFMassVtx.GetZ();
+				fHistograms->FillHistogram("Resolution_GammaNormalMassVtx_AbsdPt_Pt", mcPt, resPt);
+                                fHistograms->FillHistogram("Resolution_GammaNormalMassVtx_AbsdR_R", mcR,resR);
+				fHistograms->FillHistogram("Resolution_GammaNormalMassVtx_AbsdZ_Z", mcZ,resZ);
+				if(normalGammaKFMassVtx.GetNDF() !=0)
+				   fHistograms->FillHistogram("Resolution_GammaNormalMassVtx_Chi2NDF", normalGammaKFMassVtx.GetChi2()/normalGammaKFMassVtx.GetNDF());
+
+
+				// ---------- End new Resolution ------------------
 				Double_t mcpt	 = fV0Reader->GetMotherMCParticle()->Pt();
 				Double_t esdpt	= fV0Reader->GetMotherCandidatePt();
 				Double_t resdPt = 0.;
@@ -2374,12 +2610,14 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				} else if(mcpt < 0){
 					cout<<"Pt of MC particle is negative, this will cause wrong calculation of resPt"<<endl; 
 				}
-							
+				
+				TVector3 vtxConvRes(fV0Reader->GetX(),fV0Reader->GetY(), fV0Reader->GetZ());
+				
 				fHistograms->FillHistogram("Resolution_Gamma_dPt_Pt", mcpt, resdPt);
 				fHistograms->FillHistogram("Resolution_MCPt_ESDPt", mcpt,esdpt);
-				fHistograms->FillHistogram("Resolution_Gamma_dPt_Phi", fV0Reader->GetMotherCandidatePhi(), resdPt);
+				fHistograms->FillHistogram("Resolution_Gamma_dPt_Phi", vtxConvRes.Phi(), resdPt);
 				if (esdpt> 0.150){
-					fHistograms->FillHistogram("Resolution_Gamma_minPt_dPt_Phi", fV0Reader->GetMotherCandidatePhi(), resdPt);
+					fHistograms->FillHistogram("Resolution_Gamma_minPt_dPt_Phi", vtxConvRes.Phi(), resdPt);
 				}
 						
 				Double_t resdZ = 0.;
@@ -2391,6 +2629,7 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 
 				fHistograms->FillHistogram("Resolution_dZAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdZAbs);
 				fHistograms->FillHistogram("Resolution_dZAbs_VS_Z", fV0Reader->GetNegativeMCParticle()->Vz(), resdZAbs);
+				fHistograms->FillHistogram("Resolution_dZAbs_VS_Phi", vtxConvRes.Phi(), resdZAbs);
 				fHistograms->FillHistogram("Resolution_dZ", fV0Reader->GetNegativeMCParticle()->Vz(), resdZ);
 				fHistograms->FillHistogram("Resolution_MCZ_ESDZ", fV0Reader->GetNegativeMCParticle()->Vz(),fV0Reader->GetZ());
 					
@@ -2438,9 +2677,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				}
 				//Filling histograms with respect to Electron resolution
 				fHistograms->FillHistogram("Resolution_E_dPt_Pt", mcEpt, resEdPt);
-				fHistograms->FillHistogram("Resolution_E_dPt_Phi", fV0Reader->GetNegativeTrackPhi(), resEdPt);
+				fHistograms->FillHistogram("Resolution_E_dPt_Phi", vtxConvRes.Phi(), resEdPt);
 				if (fV0Reader->GetNegativeTrackPt()> 0.150){
-					fHistograms->FillHistogram("Resolution_E_minPt_dPt_Phi", fV0Reader->GetNegativeTrackPhi(), resEdPt);
+					fHistograms->FillHistogram("Resolution_E_minPt_dPt_Phi", vtxConvRes.Phi(), resEdPt);
 				}
 
 				if(kTRDoutN){
@@ -2494,9 +2733,9 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				}
 				//Filling histograms with respect to Positron resolution
 				fHistograms->FillHistogram("Resolution_P_dPt_Pt", mcPpt, resPdPt);
-				fHistograms->FillHistogram("Resolution_P_dPt_Phi", fV0Reader->GetPositiveTrackPhi(), resPdPt);
+				fHistograms->FillHistogram("Resolution_P_dPt_Phi", vtxConvRes.Phi(), resPdPt);
 				if (fV0Reader->GetPositiveTrackPt()> 0.150){
-					fHistograms->FillHistogram("Resolution_P_minPt_dPt_Phi", fV0Reader->GetPositiveTrackPhi(), resPdPt);
+					fHistograms->FillHistogram("Resolution_P_minPt_dPt_Phi", vtxConvRes.Phi(), resPdPt);
 				}
 
 				if(kTRDoutP){
@@ -2516,6 +2755,8 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 				resdRAbs = (fV0Reader->GetXYRadius() - fV0Reader->GetNegativeMCParticle()->R());
 
 				fHistograms->FillHistogram("Resolution_dRAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdRAbs);
+				fHistograms->FillHistogram("Resolution_dRAbs_VS_Z", fV0Reader->GetNegativeMCParticle()->Vz(), resdRAbs);
+				fHistograms->FillHistogram("Resolution_dRAbs_VS_Phi",  vtxConvRes.Phi(), resdRAbs);
 				fHistograms->FillHistogram("Resolution_dR", fV0Reader->GetNegativeMCParticle()->R(), resdR);
 				fHistograms->FillHistogram("Resolution_MCR_ESDR", fV0Reader->GetNegativeMCParticle()->R(),fV0Reader->GetXYRadius());
 				fHistograms->FillHistogram("Resolution_R_dPt", fV0Reader->GetNegativeMCParticle()->R(), resdPt);
@@ -2525,10 +2766,11 @@ void AliAnalysisTaskGammaConversion::ProcessV0s(){
 
 				Double_t resdPhiAbs=0.;
 				resdPhiAbs=0.;
-				resdPhiAbs= (fV0Reader->GetMotherCandidatePhi()-fV0Reader->GetNegativeMCParticle()->Phi());
-				fHistograms->FillHistogram("Resolution_MCPhi_ESDPhi", fV0Reader->GetNegativeMCParticle()->Phi(),fV0Reader->GetMotherCandidatePhi());
+				resdPhiAbs= (vtxConvRes.Phi()-fV0Reader->GetNegativeMCParticle()->Phi());
+				fHistograms->FillHistogram("Resolution_MCPhi_ESDPhi", fV0Reader->GetNegativeMCParticle()->Phi(),vtxConvRes.Phi());
 				fHistograms->FillHistogram("Resolution_dPhiAbs_VS_R", fV0Reader->GetNegativeMCParticle()->R(), resdPhiAbs);
-				fHistograms->FillHistogram("Resolution_dPhiAbs_VS_Phi", fV0Reader->GetNegativeMCParticle()->Phi(), resdPhiAbs);
+				fHistograms->FillHistogram("Resolution_dPhiAbs_VS_Z", fV0Reader->GetNegativeMCParticle()->Vz(), resdPhiAbs);
+				fHistograms->FillHistogram("Resolution_dPhiAbs_VS_Phi",  vtxConvRes.Phi(), resdPhiAbs);
 			}//if(fV0Reader->GetMotherMCParticle()->GetPdgCode() == 22)
 		}//if(fDoMCTruth)
 	}//while(fV0Reader->NextV0)
@@ -3209,46 +3451,10 @@ void AliAnalysisTaskGammaConversion::AddGammaToAOD(AliKFConversionPhoton * kfPar
     TClonesArray *branch=fAODGamma;
     if(branch){
 		new((*branch)[branch->GetEntriesFast()])  AliAODConversionPhoton(kfParticle);
-    } else {
+		static_cast<AliAODConversionPhoton*>(branch->Last())->SetMass(kfParticle->M());
+    }
+    else {
 		return;
-	}
-
-    //Add PID information with ESD tender (AOD implementation is not complete)
-
-    AliAODConversionPhoton *gamma=static_cast<AliAODConversionPhoton*>(fAODGamma->At(fAODGamma->GetEntriesFast()-1));
-
-    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
-    AliPIDResponse *fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
-
-    fESDEvent = fV0Reader->GetESDEvent();
-
-    if(fESDEvent){
-	Int_t labelp=((AliESDv0*)fESDEvent->GetV0(kfParticle->GetV0Index()))->GetPindex();
-	Int_t labeln=((AliESDv0*)fESDEvent->GetV0(kfParticle->GetV0Index()))->GetNindex();
-
-	AliESDtrack *trackpos=fESDEvent->GetTrack(labelp);
-	AliESDtrack *trackneg=fESDEvent->GetTrack(labeln);
-
-	if(trackpos&&trackneg&&fPIDResponse){
-
-	    Float_t fNSigmadEdxPositive[5];
-	    Float_t fNSigmadEdxNegative[5];
-
-	    fNSigmadEdxPositive[0]=fPIDResponse->NumberOfSigmasTPC(trackpos,AliPID::kElectron);
-	    fNSigmadEdxPositive[1]=fPIDResponse->NumberOfSigmasTPC(trackpos,AliPID::kMuon);
-	    fNSigmadEdxPositive[2]=fPIDResponse->NumberOfSigmasTPC(trackpos,AliPID::kPion);
-	    fNSigmadEdxPositive[3]=fPIDResponse->NumberOfSigmasTPC(trackpos,AliPID::kKaon);
-	    fNSigmadEdxPositive[4]=fPIDResponse->NumberOfSigmasTPC(trackpos,AliPID::kProton);
-
-	    fNSigmadEdxNegative[0]=fPIDResponse->NumberOfSigmasTPC(trackneg,AliPID::kElectron);
-	    fNSigmadEdxNegative[1]=fPIDResponse->NumberOfSigmasTPC(trackneg,AliPID::kMuon);
-	    fNSigmadEdxNegative[2]=fPIDResponse->NumberOfSigmasTPC(trackneg,AliPID::kPion);
-	    fNSigmadEdxNegative[3]=fPIDResponse->NumberOfSigmasTPC(trackneg,AliPID::kKaon);
-	    fNSigmadEdxNegative[4]=fPIDResponse->NumberOfSigmasTPC(trackneg,AliPID::kProton);
-
-	    gamma->SetNSigmadEdx(fNSigmadEdxPositive,fNSigmadEdxNegative);
-	}
     }
 }
 
@@ -3991,234 +4197,6 @@ void AliAnalysisTaskGammaConversion::CreateListOfChargedParticles(){
 	//	 } 
 }
 
-/*void AliAnalysisTaskGammaConversion::RecalculateV0ForGamma(){
-	//recalculates v0 for gamma
-
-	Double_t massE=0.00051099892;
-	TLorentzVector curElecPos;
-	TLorentzVector curElecNeg;
-	TLorentzVector curGamma;
-
-	TLorentzVector curGammaAt;
-	TLorentzVector curElecPosAt;
-	TLorentzVector curElecNegAt;
-	AliKFVertex primVtxGamma(*(fESDEvent->GetPrimaryVertex()));
-	AliKFVertex primVtxImprovedGamma = primVtxGamma;
-
-	const AliESDVertex *vtxT3D=fESDEvent->GetPrimaryVertex();
-
-	Double_t xPrimaryVertex=vtxT3D->GetXv();
-	Double_t yPrimaryVertex=vtxT3D->GetYv();
-	Double_t zPrimaryVertex=vtxT3D->GetZv();
-	// Float_t primvertex[3]={xPrimaryVertex,yPrimaryVertex,zPrimaryVertex};
-
-	Float_t nsigmaTPCtrackPos;
-	Float_t nsigmaTPCtrackNeg;
-	Float_t nsigmaTPCtrackPosToPion;
-	Float_t nsigmaTPCtrackNegToPion;
-	AliKFParticle* negKF=NULL;
-	AliKFParticle* posKF=NULL;
-
-	for(Int_t iTracks = 0; iTracks < fESDEvent->GetNumberOfTracks(); iTracks++){
-		AliESDtrack* posTrack = fESDEvent->GetTrack(iTracks);
-		if(!posTrack){
-			continue;
-		}
-		if (posKF) delete posKF; posKF=NULL;
-		if(posTrack->GetSign()<0) continue;
-		if(!(posTrack->GetStatus() & AliESDtrack::kTPCrefit))continue;
-		if(posTrack->GetKinkIndex(0)>0 ) continue;
-		if(posTrack->GetNcls(1)<50)continue;
-		Double_t momPos[3];
-		//		posTrack->GetConstrainedPxPyPz(momPos);
-		posTrack->GetPxPyPz(momPos);
-		AliESDtrack *ptrk=fESDEvent->GetTrack(iTracks);
-		curElecPos.SetXYZM(momPos[0],momPos[1],momPos[2],massE);
-		if(TMath::Abs(curElecPos.Eta())<0.9) continue;
-		posKF = new AliKFParticle( *(posTrack),-11);
-
-		nsigmaTPCtrackPos = fV0Reader->GetESDpid()->NumberOfSigmasTPC(posTrack,AliPID::kElectron);
-		nsigmaTPCtrackPosToPion = fV0Reader->GetESDpid()->NumberOfSigmasTPC(posTrack,AliPID::kPion);
-
-		if ( nsigmaTPCtrackPos>5.|| nsigmaTPCtrackPos<-2.){
-			continue;
-		}
-	
-		if(pow((momPos[0]*momPos[0]+momPos[1]*momPos[1]+momPos[2]*momPos[2]),0.5)>0.5 && nsigmaTPCtrackPosToPion<1){
-			continue;
-		}
-
-
-
-		for(Int_t jTracks = 0; jTracks < fESDEvent->GetNumberOfTracks(); jTracks++){
-			AliESDtrack* negTrack = fESDEvent->GetTrack(jTracks);
-			if(!negTrack){
-				continue;
-			}
-			if (negKF) delete negKF; negKF=NULL;
-			if(negTrack->GetSign()>0) continue;
-			if(!(negTrack->GetStatus() & AliESDtrack::kTPCrefit))continue;
-			if(negTrack->GetKinkIndex(0)>0 ) continue;
-			if(negTrack->GetNcls(1)<50)continue;
-			Double_t momNeg[3];
-			//		negTrack->GetConstrainedPxPyPz(momNeg);
-			negTrack->GetPxPyPz(momNeg);
-
-			nsigmaTPCtrackNeg = fV0Reader->GetESDpid()->NumberOfSigmasTPC(negTrack,AliPID::kElectron);		 
-			nsigmaTPCtrackNegToPion = fV0Reader->GetESDpid()->NumberOfSigmasTPC(negTrack,AliPID::kPion);
-			if ( nsigmaTPCtrackNeg>5. || nsigmaTPCtrackNeg<-2.){
-				continue;
-			}
-			if(pow((momNeg[0]*momNeg[0]+momNeg[1]*momNeg[1]+momNeg[2]*momNeg[2]),0.5)>0.5 && nsigmaTPCtrackNegToPion<1){
-				continue;
-			}
-			AliESDtrack *ntrk=fESDEvent->GetTrack(jTracks);
-			curElecNeg.SetXYZM(momNeg[0],momNeg[1],momNeg[2],massE);
-			if(TMath::Abs(curElecNeg.Eta())<0.9) continue;
-			negKF = new AliKFParticle( *(negTrack) ,11);
-
-			Double_t b=fESDEvent->GetMagneticField();
-			Double_t xn, xp, dca=ntrk->GetDCA(ptrk,b,xn,xp);
-			AliExternalTrackParam nt(*ntrk), pt(*ptrk);
-			nt.PropagateTo(xn,b); pt.PropagateTo(xp,b);
-
-
-			//--- Like in ITSV0Finder
-			AliExternalTrackParam ntAt0(*ntrk), ptAt0(*ptrk);
-			Double_t xxP,yyP,alphaP;
-			Double_t rP[3];
-
-			//		 if (!ptAt0.GetGlobalXYZat(ptAt0->GetX(),xxP,yyP,zzP)) continue;
-			if (!ptAt0.GetXYZAt(ptAt0.GetX(),b,rP)) continue;
-			xxP=rP[0];
-			yyP=rP[1];
-			alphaP = TMath::ATan2(yyP,xxP);
-
-
-			ptAt0.Propagate(alphaP,0,b);
-			Float_t ptfacP	= (1.+100.*TMath::Abs(ptAt0.GetC(b)));
-
-			//		 Double_t distP			= ptAt0.GetY();
-			Double_t normP			= ptfacP*TMath::Sqrt(ptAt0.GetSigmaY2());
-			Double_t normdist0P = TMath::Abs(ptAt0.GetY()/normP);
-			Double_t normdist1P = TMath::Abs((ptAt0.GetZ()-zPrimaryVertex)/(ptfacP*TMath::Sqrt(ptAt0.GetSigmaZ2())));
-			Double_t normdistP	= TMath::Sqrt(normdist0P*normdist0P+normdist1P*normdist1P);
-	
-
-			Double_t xxN,yyN,alphaN;
-			Double_t rN[3];
-			//		 if (!ntAt0.GetGlobalXYZat(ntAt0->GetX(),xxN,yyN,zzN)) continue;
-			if (!ntAt0.GetXYZAt(ntAt0.GetX(),b,rN)) continue;
-			xxN=rN[0];
-			yyN=rN[1];
- 
-			alphaN = TMath::ATan2(yyN,xxN);
-
-			ntAt0.Propagate(alphaN,0,b);
-
-			Float_t ptfacN	= (1.+100.*TMath::Abs(ntAt0.GetC(b)));
-			//		 Double_t distN			= ntAt0.GetY();
-			Double_t normN			= ptfacN*TMath::Sqrt(ntAt0.GetSigmaY2());
-			Double_t normdist0N = TMath::Abs(ntAt0.GetY()/normN);
-			Double_t normdist1N = TMath::Abs((ntAt0.GetZ()-zPrimaryVertex)/(ptfacN*TMath::Sqrt(ntAt0.GetSigmaZ2())));
-			Double_t normdistN	= TMath::Sqrt(normdist0N*normdist0N+normdist1N*normdist1N);
-	
-			//-----------------------------
-
-			Double_t momNegAt[3];
-			nt.GetPxPyPz(momNegAt);
-			curElecNegAt.SetXYZM(momNegAt[0],momNegAt[1],momNegAt[2],massE);
-
-			Double_t momPosAt[3];
-			pt.GetPxPyPz(momPosAt);
-			curElecPosAt.SetXYZM(momPosAt[0],momPosAt[1],momPosAt[2],massE);
-			if(dca>1){
-				continue;
-			}
-
-			//		 Double_t dneg= negTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
-			//		 Double_t dpos= posTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
-			AliESDv0 vertex(nt,jTracks,pt,iTracks);
-		
-
-			Float_t cpa=vertex.GetV0CosineOfPointingAngle(xPrimaryVertex,yPrimaryVertex,zPrimaryVertex);
-
- 
-
-			//	cout<< "v0Rr::"<< v0Rr<<endl;
-			// if (pvertex.GetRr()<0.5){
-			// continue;
-			//}
-			//		 cout<<"vertex.GetChi2V0()"<<vertex.GetChi2V0()<<endl;
-			if(cpa<0.9)continue;
-			//		 if (vertex.GetChi2V0() > 30) continue;
-			//		 cout<<"xp+xn::"<<xp<<" "<<xn<<endl;
-			if ((xn+xp) < 0.4) continue;
-			if (TMath::Abs(ntrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<0.05)
-			if (TMath::Abs(ptrk->GetD(xPrimaryVertex,yPrimaryVertex,b))<0.05) continue;
-
-			//cout<<"pass"<<endl;
-
-			AliKFParticle v0GammaC;
-			v0GammaC+=(*negKF);
-			v0GammaC+=(*posKF);
-			v0GammaC.SetMassConstraint(0,0.001);
-			primVtxImprovedGamma+=v0GammaC;
-			v0GammaC.SetProductionVertex(primVtxImprovedGamma);
-
-
-			curGamma=curElecNeg+curElecPos;
-			curGammaAt=curElecNegAt+curElecPosAt;
-		 
-			// invariant mass versus pt of K0short
-		 
-			Double_t chi2V0GammaC=100000.;
-			if( v0GammaC.GetNDF() != 0) {
-				chi2V0GammaC = v0GammaC.GetChi2()/v0GammaC.GetNDF();
-			}else{
-				cout<< "ERROR::v0K0C.GetNDF()" << endl;
-			}
-
-			if(chi2V0GammaC<200 &&chi2V0GammaC>0 ){
-				if(fHistograms != NULL){
-					fHistograms->FillHistogram("ESD_RecalculateV0_InvMass",v0GammaC.GetMass());
-					fHistograms->FillHistogram("ESD_RecalculateV0_Pt",v0GammaC.GetPt());
-					fHistograms->FillHistogram("ESD_RecalculateV0_E_dEdxP",curElecNegAt.P(),negTrack->GetTPCsignal());
-					fHistograms->FillHistogram("ESD_RecalculateV0_P_dEdxP",curElecPosAt.P(),posTrack->GetTPCsignal());
-					fHistograms->FillHistogram("ESD_RecalculateV0_cpa",cpa);
-					fHistograms->FillHistogram("ESD_RecalculateV0_dca",dca);
-					fHistograms->FillHistogram("ESD_RecalculateV0_normdistP",normdistP);
-					fHistograms->FillHistogram("ESD_RecalculateV0_normdistN",normdistN);
-
-					new((*fKFRecalculatedGammasTClone)[fKFRecalculatedGammasTClone->GetEntriesFast()])	AliKFParticle(v0GammaC);
-					fElectronRecalculatedv1.push_back(iTracks);
-					fElectronRecalculatedv2.push_back(jTracks);
-				}
-			}
-		}
-	}
- 
-	for(Int_t firstGammaIndex=0;firstGammaIndex<fKFRecalculatedGammasTClone->GetEntriesFast();firstGammaIndex++){
-		for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<fKFRecalculatedGammasTClone->GetEntriesFast();secondGammaIndex++){
-			AliKFParticle * twoGammaDecayCandidateDaughter0 = (AliKFParticle *)fKFRecalculatedGammasTClone->At(firstGammaIndex);
-			AliKFParticle * twoGammaDecayCandidateDaughter1 = (AliKFParticle *)fKFRecalculatedGammasTClone->At(secondGammaIndex);
-			
-			if(fElectronRecalculatedv1[firstGammaIndex]==fElectronRecalculatedv1[secondGammaIndex]){
-				continue;
-			}
-			if( fElectronRecalculatedv2[firstGammaIndex]==fElectronRecalculatedv2[secondGammaIndex]){
-				continue;
-			}
-			
-			AliKFParticle twoGammaCandidate(*twoGammaDecayCandidateDaughter0,*twoGammaDecayCandidateDaughter1);
-			if(fHistograms != NULL){
-				fHistograms->FillHistogram("ESD_RecalculateGG_InvMass",twoGammaCandidate.GetMass());		
-				fHistograms->FillHistogram("ESD_RecalculateGG_InvMass_vs_Pt",twoGammaCandidate.GetMass(),twoGammaCandidate.GetPt());		
-			}
-		}
-	}
-}
-        */
 void AliAnalysisTaskGammaConversion::CalculateJetCone(Int_t gammaIndex){
 	// CaculateJetCone
 	
@@ -4386,26 +4364,14 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
 		//AOD
 		if(!fAODGamma) fAODGamma = new TClonesArray("AliAODConversionPhoton", 0);
 		else fAODGamma->Delete();
+		fAODGamma->SetOwner(kTRUE);
 		fAODGamma->SetName(Form("%s_gamma", fAODBranchName.Data()));
 		
-	       /* if(!fAODPi0) fAODPi0 = new TClonesArray("AliAODConversionPhoton", 0);
-		else fAODPi0->Delete();
-		fAODPi0->SetName(Form("%s_Pi0", fAODBranchName.Data()));
-		
-		if(!fAODOmega) fAODOmega = new TClonesArray("AliAODConversionPhoton", 0);
-		else fAODOmega->Delete();
-		fAODOmega->SetName(Form("%s_Omega", fAODBranchName.Data()));
-	       */
-		//If delta AOD file name set, add in separate file. Else add in standard aod file. 
 		if(GetDeltaAODFileName().Length() > 0) {
 			AddAODBranch("TClonesArray", &fAODGamma, GetDeltaAODFileName().Data());
-		      //  AddAODBranch("TClonesArray", &fAODPi0, GetDeltaAODFileName().Data());
-		      //  AddAODBranch("TClonesArray", &fAODOmega, GetDeltaAODFileName().Data());
 			AliAnalysisManager::GetAnalysisManager()->RegisterExtraFile(GetDeltaAODFileName().Data());
 		} else	{
 			AddAODBranch("TClonesArray", &fAODGamma);
-		      //  AddAODBranch("TClonesArray", &fAODPi0);
-		      //  AddAODBranch("TClonesArray", &fAODOmega);
 		}
 	}
 
@@ -4439,9 +4405,10 @@ void AliAnalysisTaskGammaConversion::UserCreateOutputObjects()
 	
 	fOutputContainer->SetName(GetName());
 
+	PostData(0, fAODGamma);
 	PostData(1, fOutputContainer);
 	PostData(2, fCFManager->GetParticleContainer());	// for CF
-
+	PostData(3, fAODGamma); 
 }
 
 Double_t AliAnalysisTaskGammaConversion::GetMCOpeningAngle(const TParticle* const daughter0, const TParticle* const daughter1) const{
@@ -4521,6 +4488,732 @@ void AliAnalysisTaskGammaConversion::CheckV0Efficiency(){
 			}
 		}
 	}
+}
+
+//_____________________________________________________________________
+void  AliAnalysisTaskGammaConversion::ProcessHadronicInteraction(AliESDEvent *event){
+	//
+	// Process pairs of tracks to get a material budget map
+	//
+	//
+	if (!event) return;
+	if (event) AliKFParticle::SetField(event->GetMagneticField());  // set mean magnetic field for KF particles
+//  	TTreeSRedirector *fpcstream = new TTreeSRedirector("eventInfoHadInt.root");
+	// 1. Calculate total dEdx for all TPC tracks
+	//
+	const Int_t kMinCl=50;
+	const Double_t kEpsilon=0.000001;
+	const Float_t kMinRatio=0.7;
+	const Float_t kMinDist=1.5;
+	const Float_t kMinDistChi2=8.;        // 
+	const Float_t kMaxDistZ=300.;        // max distanceZ
+	const Float_t kMaxDistR=250.;          // max distanceR
+	const Double_t kMaxChi2   =36.;     // maximal chi2 to define the vertex
+	const Double_t kMaxDistVertexSec=2.;     // maximal distance to secondary vertex
+	const Double_t kMinPtHadTrack = fPtMinHadInt;
+	Float_t 	arrayRBins[6] = 		{5.75,9.5,21.,35.,42.,55.};
+	
+	Double_t szz=1.;      // number to be taken from the OCDB - now it can be hack
+	Double_t stt = 0.006667; // 
+
+	if (!event) return;
+		AliESDVertex *vertexSPD =  (AliESDVertex *)event->GetPrimaryVertexSPD();
+// 	AliESDVertex * spdVertex   = (AliESDVertex *)event->GetPrimaryVertexSPD();
+// 	AliESDVertex * trackVertex = (AliESDVertex *)event->GetPrimaryVertexTracks();
+// 	AliESDVertex * tpcVertex   = (AliESDVertex *)event->GetPrimaryVertexTPC();
+// 	AliESDTZERO  * tzero       = (AliESDTZERO  *)event->GetESDTZERO() ;
+	//
+	Double_t tpcSignalTotPrim=0; 
+	Double_t tpcSignalTotSec=0; 
+	Int_t ntracksTPC=0;
+	Int_t nTPCPrim=0; 
+	Int_t nTPCSec=0;  
+	Int_t ntracks=event->GetNumberOfTracks();
+	if ( ntracks<=2 ) return;
+	
+	//
+	Float_t dca[2]={0};
+	Float_t cov[3]={0};
+	Float_t dca0[2]={0};
+	Float_t dca1[2]={0};
+	//
+	//1. Calculate total dEdx for primary and secondary tracks
+	//   and count primaries and secondaries
+	Int_t *rejectTrack = new Int_t[ntracks];
+	Float_t *trackUsedInVtx = new Float_t[ntracks];
+	
+	for (Int_t ii=0; ii<ntracks; ii++){
+		trackUsedInVtx[ii] = 0.;
+	}
+	Int_t nTracksCont = 0;
+	
+	for (Int_t itrack=0; itrack<ntracks; itrack++){
+		AliESDtrack *track=event->GetTrack(itrack);
+		rejectTrack[itrack]=0;
+		if (!track) continue;
+		if ((track->Pt())<kMinPtHadTrack){ rejectTrack[itrack]+=32; continue;}
+		if (track->GetTPCNcls()<=kMinCl) {rejectTrack[itrack]+=64; continue;}  // skip short tracks
+		ntracksTPC++;
+		if ((1.+track->GetTPCNcls())/(1.+track->GetTPCNclsF())<=kMinRatio){rejectTrack[itrack]+=128; continue;}
+		if (!track->GetInnerParam()) continue;  // skip not TPC tracks
+		if (track->GetKinkIndex(0)!=0)  {rejectTrack[itrack]+=16;continue;} // skip kinks
+		track->GetImpactParameters(dca,cov);
+		if (TMath::Abs(dca[0])>kMaxDistR && TMath::Abs(dca[1])>kMaxDistZ){rejectTrack[itrack]+=256; continue;}
+		// remove too dip secondaries
+		if (TMath::Abs(dca[0])<kMinDist && TMath::Abs(dca[1])<kMinDist){
+			tpcSignalTotPrim+=track->GetTPCsignal();
+			nTPCPrim++;
+			rejectTrack[itrack]+=256;
+		}else{
+			tpcSignalTotSec+=track->GetTPCsignal();
+			nTPCSec++;
+		};
+		if (cov[0]>kEpsilon &&TMath::Abs(dca[0])>kEpsilon &&TMath::Sqrt(dca[0]*dca[0]/(TMath::Abs(cov[0])))<kMinDistChi2) rejectTrack[itrack]+=1;  // primary
+		if (cov[0]>kEpsilon &&TMath::Abs(dca[0])>kEpsilon &&TMath::Abs(dca[0])<kMinDist)  rejectTrack[itrack]+=1;  // primary
+		if (track->GetTPCsignal()<40) rejectTrack[itrack]+=16;
+		//
+		if (CheckLooper(itrack, event))   rejectTrack[itrack]+=2;   // looper
+		if (CheckV0(itrack,event))       rejectTrack[itrack]+=4; //indentified V0 rejection (K0s, Lambda, gamma conv)
+
+// 		UInt_t status = track->GetStatus();
+		if (!track->IsOn(AliVTrack::kITSrefit) && !fDoMCTruth){ 
+			
+			Double_t *covar = (Double_t*)track->GetInnerParam()->GetCovariance();
+			//
+			//remove -systematic error estimate
+			//
+			Double_t sigmazz  = covar[track->GetIndex(1,1)];
+			Double_t dr = TMath::Abs(TMath::Sqrt((track->GetX()*track->GetX()+track->GetY()*track->GetY())) - TMath::Sqrt((track->GetInnerParam()->GetX()*track->GetInnerParam()->GetX()+track->GetInnerParam()->GetY()*track->GetInnerParam()->GetY()))) ;
+			
+			Double_t sigmazz0 = sigmazz -szz*szz - stt*stt*dr*dr;
+//  			cout << "old sigma z: "<<sigmazz << " new sigma z: " << sigmazz0 << endl;
+			if (sigmazz0<0) sigmazz0=0.1;  // should not happen - the code should be protected
+			covar[track->GetIndex(1,1)]=sigmazz0;
+			//
+			// + rescale the correlation terms
+			//
+			Double_t ratio = TMath::Sqrt(sigmazz0/sigmazz);
+			for (Int_t index=0; index<5; index++){
+				Int_t jindex = track->GetIndex(index,1);
+				covar[jindex]*=ratio;
+			}
+		}
+	} 
+	
+	
+	//
+	// 2. Find secondary vertices - double loop
+	//    
+	
+	AliKFVertex vertexStored[15];
+	Int_t kVertexArr[15][7];
+	for (Int_t ii = 0; ii < 15; ii++){
+		for (Int_t bb = 0; bb < 7; bb++){
+				kVertexArr[ii][bb] = 0;
+		}		
+	}
+	Int_t kTrackArr[500][7];
+	for (Int_t ii = 0; ii < 500; ii++){
+		for (Int_t bb = 0; bb < 7; bb++){
+				kTrackArr[ii][bb] = 0;
+		}		
+	}
+	
+	Int_t nVertices = 0;
+	Int_t nVerticesPassed = 0;
+	
+	for (Int_t itrack0=0; itrack0<ntracks; itrack0++){
+		if (rejectTrack[itrack0]) continue;   // skip
+		AliESDtrack *track0=event->GetTrack(itrack0);
+		if (!track0) continue;
+		
+		track0->GetImpactParameters(dca[0],dca[1]);
+		track0->GetImpactParameters(dca0[0],dca0[1]);
+
+		AliKFParticle part0;
+		if (!track0->IsOn(AliVTrack::kITSrefit)){ 
+			part0=AliKFParticle(*track0->GetInnerParam(),211);  //assuming pion mass
+		} else {
+			part0=AliKFParticle(*track0,211);  //assuming pion mass
+		}
+		if (track0->Charge()*part0.Q()<0) part0.Q()*=-1;  // change sign if opposite
+		//
+		for (Int_t itrack1=itrack0+1; itrack1<ntracks; itrack1++){
+			if (rejectTrack[itrack1]) continue;   // skip
+			AliESDtrack *track1=event->GetTrack(itrack1);
+			if (!track1) continue;
+			track1->GetImpactParameters(dca1[0],dca1[1]);
+			track1->GetImpactParameters(dca[0],dca[1]);
+			AliKFParticle part1; // assuming pion mass
+			if (!track1->IsOn(AliVTrack::kITSrefit)){ 
+				part1=AliKFParticle(*track1->GetInnerParam(),211);  //assuming pion mass
+			} else {
+				part1=AliKFParticle(*track1,211);  //assuming pion mass
+			}
+			if (track1->Charge()*part1.Q()<0) part1.Q()*=-1;  // change sign if opposite
+
+			//
+			//
+			AliKFVertex vertex;
+			vertex+=part0;
+			vertex+=part1;
+			if ((vertex.GetChi2()/vertex.GetNDF())> kMaxChi2) continue;
+			if (TMath::Abs(vertex.GetX())>kMaxDistR) continue;
+			if (TMath::Abs(vertex.GetY())>kMaxDistR) continue;
+			if (TMath::Abs(vertex.GetZ())>kMaxDistZ) continue;
+			Double_t errX2=vertex.GetErrX();
+			Double_t errY2=vertex.GetErrY();
+			Double_t errZ2=vertex.GetErrZ();
+			//
+			Double_t err3D=TMath::Sqrt(errX2*errX2+errY2*errY2+errZ2*errZ2/10.);  
+			if (err3D>kMaxDistVertexSec) continue;
+			if (err3D*TMath::Sqrt(vertex.GetChi2()+0.00001)>kMaxDistVertexSec) continue;
+
+			Double_t dvertex=0;
+			dvertex += (vertexSPD->GetX()-vertex.GetX())*(vertexSPD->GetX()-vertex.GetX());
+			dvertex += (vertexSPD->GetY()-vertex.GetY())*(vertexSPD->GetY()-vertex.GetY());
+			dvertex += (vertexSPD->GetZ()-vertex.GetZ())*(vertexSPD->GetZ()-vertex.GetZ());
+			dvertex=TMath::Sqrt(dvertex+0.00000001);
+			if (err3D>0.2*dvertex) continue;    
+			if (err3D*TMath::Sqrt(vertex.GetChi2()+0.000001)>0.1*dvertex) continue;
+			Double_t radius = TMath::Sqrt((vertex.GetX()*vertex.GetX()+vertex.GetY()*vertex.GetY()));
+			
+			for (Int_t bb= 0; bb < 6; bb++){
+				if (radius > arrayRBins[bb]) {
+					if (track0->HasPointOnITSLayer(bb) ||  track1->HasPointOnITSLayer(bb) ) continue; 
+				}
+			}
+			AliKFVertex vertex2;
+			vertex2+=part0;
+			vertex2+=part1;
+			//
+
+// 			if(fDoMCTruth){
+// 				
+// 			}
+				
+			trackUsedInVtx[itrack0] +=1.; 
+			trackUsedInVtx[itrack1] +=1.; 
+			
+			nTracksCont= 2;
+			kTrackArr[itrack0][0]+= 1;
+			kTrackArr[itrack1][0]+= 1;
+			kVertexArr[nVertices][0] = 2;
+			kVertexArr[nVertices][1] = 1;
+			kVertexArr[nVertices][2] = itrack0;
+			kVertexArr[nVertices][3] = itrack1;
+			
+			for (Int_t itrack2=0; itrack2<ntracks; itrack2++){  
+				if (rejectTrack[itrack2]) continue;   // skip
+				if (itrack2==itrack0) continue;
+				if (itrack2==itrack1) continue;
+				AliESDtrack *track2=event->GetTrack(itrack2);
+				if (!track2) continue;
+				track2->GetImpactParameters(dca[0],dca[1]);
+				if (TMath::Abs(track2->GetD(vertex.GetX(), vertex.GetY(),event->GetMagneticField()))>kMaxDistVertexSec) continue;
+				Double_t vtxx[3]={vertex2.GetX(),vertex2.GetY(),vertex2.GetZ()};
+				Double_t svtxx[3]={vertex.GetErrX(),vertex.GetErrY(),vertex.GetErrZ()};
+				AliESDVertex vtx(vtxx,svtxx);
+				
+				AliExternalTrackParam param;
+				if (!track2->IsOn(AliVTrack::kITSrefit)){ 
+					param= *track2->GetInnerParam();  //assuming pion mass
+				} else {
+					param=*track2;
+				}
+				Double_t delta[2]={0,0};
+				if (!param.PropagateToDCA(&vtx,event->GetMagneticField(),kMaxDistVertexSec,delta)) continue;	
+				if (TMath::Abs(delta[0])>kMaxDistVertexSec) continue;
+				if (TMath::Abs(delta[1])>kMaxDistVertexSec) continue;      
+				if (TMath::Abs(delta[0])>6.*TMath::Sqrt(param.GetSigmaY2()+vertex2.GetErrY()*vertex2.GetErrY())+0.1) continue; 
+				if (TMath::Abs(delta[1])>6.*TMath::Sqrt(param.GetSigmaZ2()+vertex2.GetErrZ()*vertex2.GetErrZ())+0.5) continue; 
+				//
+				AliKFParticle part2(param,211); // assuming pion mass
+				if (track2->Charge()*part2.Q()<0) part2.Q()*=-1;  // change sign if opposite
+
+				for (Int_t cc= 0; cc < 6; cc++){
+					if (radius > arrayRBins[cc]){
+						if (track2->HasPointOnITSLayer(cc)  ) continue; 
+					}
+				}
+			
+
+				vertex2+=part2;
+// 				rejectTrack[itrack0]+=10;  // do noit reuse the track
+// 				rejectTrack[itrack1]+=10;  // do not reuse the track      
+// 				rejectTrack[itrack2]+=10;
+				trackUsedInVtx[itrack2] +=1.; 		
+//    				cout << "track number " << itrack2 << " used times " <<  trackUsedInVtx[itrack2] << endl;
+				nTracksCont++ ;
+				kTrackArr[itrack2][0]+= 1;
+				kVertexArr[nVertices][0] = nTracksCont;
+				kVertexArr[nVertices][1] = 1;
+				kVertexArr[nVertices][nTracksCont+1] = itrack2;
+			
+			}
+// 			if (nVertices == 0){		
+// 				cout << "new Event" << endl;
+// 			}
+// 			cout << "Vertex " << nVertices << " nTracks " << kVertexArr[nVertices][0] << endl;
+// 			for (Int_t ii = 2  ; ii < kVertexArr[nVertices][0]+2; ii++){
+// 				cout << "\t Track " << kVertexArr[nVertices][ii] << endl;
+// 			}
+		 	vertexStored[nVertices]= vertex2;
+			nVertices++;
+// 			Double_t errX=vertex2.GetErrX();
+// 			Double_t errY=vertex2.GetErrY();
+// 			Double_t errZ=vertex2.GetErrZ();
+// 			Double_t vx = vertex2.GetX();
+// 			Double_t vy = vertex2.GetY();
+// 			Double_t vz = vertex2.GetZ();
+// 			Double_t vr = sqrt((Double_t)(vx*vx + vy*vy));
+// 			Double_t vphi = vertex2.GetPhi(); 
+// 			Double_t vphi2 = TMath::ATan2(vy, vx);
+// 			cout << "\t Quality \t errX: " <<errX << "\t errY: " << errY << "\t errZ: " << errZ << "\t Chi2/ndf: " << vertex2.GetChi2()/vertex2.GetNDF() << endl;
+// 			cout << "\t Position \t x: " <<  vx << "\t y: " << vy << "\t z: " << vz <<"\t r: " << vr  << "\t phi: " << vphi << "\t phi dir calc: " << vphi2 << endl;
+// 			Double_t vNDCA = vertex2.GetDcaV0Daughters()/vertex2.GetDistSigma() 
+// 			if (fpcstream){
+// 				(*fpcstream)<<"ntracks="<<ntracks<<
+// 				"ntracksTPC="<<ntracksTPC<<
+// 				"nPrim="<<nTPCPrim<<              // number of primaries
+// 				"nSec="<<nTPCSec<<                // number of secondaries
+// 				"sigPrim="<<tpcSignalTotPrim<<    // total dEdx in primaries
+// 				"sigSec="<<tpcSignalTotSec<<      // total dEdx in secondaries
+// 				"v.="<<&vertex<<                  // KF vertex
+// 				"v2.="<<&vertex2<<                // KF vertex all tracks
+// 				"z0="<<dca0[1]<<
+// 				"z1="<<dca1[1]<<
+// 				"rphi0="<<dca0[0]<<
+// 				"rphi1="<<dca1[0]<<
+// 				"radius="<<radius<<
+// 				"vx="<<vx<<
+// 				"vy="<<vy<<
+// 				"vz="<<vz<<
+// 				"errX="<<errX<<
+// 				"errY="<<errY<<
+// 				"errZ="<<errZ<<
+// 				"err2D="<<err2D<<
+// 				"err3D="<<err3D<<	  
+// 				"dvertex="<<dvertex<< 
+// 				"\n";
+// 			}
+// 		
+			fHistograms->FillHistogram("ESD_HadIntQual_nTracks", ntracks);
+			fHistograms->FillHistogram("ESD_HadIntQual_ntracksTPC", ntracksTPC);
+		}
+	}
+
+	Int_t verticesRejectedInLoop = 0;
+	for (Int_t ll = 0; ll < nVertices; ll++){
+		if (kVertexArr[ll][1] == 0) continue;
+		for (Int_t kk = 0; kk < nVertices; kk++){
+			Int_t trackUsedTwice = 0;
+			Int_t numberOfTracksUsedTwice = 0;
+			Int_t trackNumberTrackUsedTwice[10];
+			if (ll == kk) continue;
+			if (kVertexArr[kk][1] == 0 || kVertexArr[ll][1] == 0 ) continue;
+// 			cout << "Vertex " << ll << " nTracks " << kVertexArr[ll][0] << endl;
+			for (Int_t ii = 2  ; ii < kVertexArr[ll][0]+2; ii++){
+// 				cout << "\t Track " << kVertexArr[ll][ii] << endl;
+// 				cout << "\t Vertex " << kk << " nTracks " << kVertexArr[kk][0] << endl;
+				for (Int_t jj = 2 ; jj < kVertexArr[kk][0]+2; jj++){
+// 					cout << "\t\t Track " << kVertexArr[kk][jj] << endl;
+					if (kVertexArr[ll][ii] == kVertexArr[kk][jj]){
+// 						cout << "\t\t track used twice" << endl;
+						trackUsedTwice = 1;
+						trackNumberTrackUsedTwice[numberOfTracksUsedTwice] = kVertexArr[kk][jj];
+						numberOfTracksUsedTwice++;
+						
+					}
+				}
+			}
+			if (trackUsedTwice){
+				if (vertexStored[ll].GetChi2()/vertexStored[ll].GetNDF() < vertexStored[kk].GetChi2()/vertexStored[kk].GetNDF()){
+// 					cout << "\t Vertex " <<  kk <<"\t track used twice: " << numberOfTracksUsedTwice << "\t tracks left for vertex: " << kVertexArr[kk][0]-numberOfTracksUsedTwice <<  endl;
+					if ( kVertexArr[kk][0]-numberOfTracksUsedTwice < 2){
+						kVertexArr[kk][1] = 0;
+					} else {
+						for (Int_t count = 0; count < numberOfTracksUsedTwice; count++){
+							for (Int_t hh = 2; hh < kVertexArr[kk][0]+2; hh++){
+								if (kVertexArr[kk][hh] == trackNumberTrackUsedTwice[count]){
+// 									cout << "\t track to be removed " << trackNumberTrackUsedTwice[count] << " from position "<< hh <<endl;
+									for (Int_t ii = kVertexArr[kk][0]+2-hh; ii > 1; ii--){
+										Int_t pos = kVertexArr[kk][0]+2-ii;
+										kVertexArr[kk][pos] = kVertexArr[kk][pos+1];
+									}
+									kVertexArr[kk][0] -=1;
+								}
+							}
+							
+							AliESDtrack *track0=event->GetTrack(kVertexArr[kk][2]);
+							AliKFParticle part0;
+							if (!track0->IsOn(AliVTrack::kITSrefit)){ 
+								part0=AliKFParticle(*track0->GetInnerParam(),211);  //assuming pion mass
+							} else {
+								part0=AliKFParticle(*track0,211);  //assuming pion mass
+							}
+						
+							if (track0->Charge()*part0.Q()<0) part0.Q()*=-1;  // change sign if opposite
+
+							AliKFVertex vertex;						
+							vertex+=part0;
+							
+// 							cout << "\t Vertex " << kk << " nTracks " << kVertexArr[kk][0] << endl;
+							for (Int_t ii = 2  ; ii < kVertexArr[kk][0]+2; ii++){
+// 								cout << "\t \t Track " << kVertexArr[kk][ii] << endl;
+								if (ii > 2){
+									AliESDtrack *track1=event->GetTrack(kVertexArr[kk][ii]);
+									AliKFParticle part1;
+									if (!track1->IsOn(AliVTrack::kITSrefit)){ 
+										part1=AliKFParticle(*track1->GetInnerParam(),211);  //assuming pion mass
+									} else {
+										part1=AliKFParticle(*track1,211);  //assuming pion mass
+									}
+								
+									if (track1->Charge()*part1.Q()<0) part1.Q()*=-1;  // change sign if opposite
+									vertex+=part1;
+								}
+							}
+							vertexStored[kk]=vertex;
+// 							cout << "\t removing tracks from vtx " << kk << "new chi2/ndf: " << vertexStored[kk].GetChi2()/vertexStored[kk].GetNDF() <<endl;
+// 							cout << "Vertex " << kk << " nTracks " << kVertexArr[kk][0] << endl;
+// 								for (Int_t ii = 2  ; ii < kVertexArr[kk][0]+2; ii++){
+// 								cout << "\t Track " << kVertexArr[kk][ii] << endl;
+// 							}
+// 							Double_t errX=vertex.GetErrX();
+// 							Double_t errY=vertex.GetErrY();
+// 							Double_t errZ=vertex.GetErrZ();
+// 							Double_t vx = vertex.GetX();
+// 							Double_t vy = vertex.GetY();
+// 							Double_t vz = vertex.GetZ();
+// 							Double_t vr = sqrt((Double_t)(vx*vx + vy*vy));
+// 							Double_t vphi = TMath::ATan2(vy, vx);
+// 							cout << "\t Quality \t errX: " <<errX << "\t errY: " << errY << "\t errZ: " << errZ << "\t Chi2/ndf: " << vertex.GetChi2()/vertex.GetNDF() << endl;
+// 							cout << "\t Position \t x: " <<  vx << "\t y: " << vy << "\t z: " << vz <<"\t r: " << vr  << "\t phi: " << vphi << endl; 
+						}
+						kVertexArr[kk][1] = 1;
+						verticesRejectedInLoop--;
+					}
+					
+// 					cout << "\t rejected vertex " << kk << endl;
+				} else {
+					kVertexArr[ll][1] = 0;
+// 					cout << "\t Vertex " <<  ll  << "\t track used twice: " << numberOfTracksUsedTwice << "\t tracks left for vertex: " << kVertexArr[ll][0]-numberOfTracksUsedTwice <<  endl;
+					if ( kVertexArr[ll][0]-numberOfTracksUsedTwice < 2){
+						kVertexArr[ll][1] = 0;
+					} else {
+						for (Int_t count = 0; count < numberOfTracksUsedTwice; count++){
+							for (Int_t hh = 2; hh < kVertexArr[ll][0]+2; hh++){
+								if (kVertexArr[ll][hh] == trackNumberTrackUsedTwice[count]){
+// 									cout << "\t track to be removed " << trackNumberTrackUsedTwice[count] << " from position "<< hh <<endl;
+									for (Int_t ii = kVertexArr[ll][0]+2-hh; ii > 1; ii--){
+										Int_t pos = kVertexArr[ll][0]+2-ii;
+										kVertexArr[ll][pos] = kVertexArr[ll][pos+1];
+									}
+									kVertexArr[ll][0] -=1;
+								}
+							}
+							AliESDtrack *track0=event->GetTrack(kVertexArr[ll][2]);
+							AliKFParticle part0(*track0,211);  //assuming pion mass
+							if (track0->Charge()*part0.Q()<0) part0.Q()*=-1;  // change sign if opposite
+
+							AliKFVertex vertex;						
+							vertex+=part0;
+							
+// 							cout << "\t Vertex " << ll << " nTracks " << kVertexArr[ll][0] << endl;
+							for (Int_t ii = 2  ; ii < kVertexArr[ll][0]+2; ii++){
+// 								cout << "\t \t Track " << kVertexArr[ll][ii] << endl;
+								if (ii > 2){
+									AliESDtrack *track1=event->GetTrack(kVertexArr[ll][ii]);
+									AliKFParticle part1(*track1,211); // assuming pion mass
+									if (track1->Charge()*part1.Q()<0) part1.Q()*=-1;  // change sign if opposite
+									vertex+=part1;
+								}
+							}
+							vertexStored[ll]=vertex;
+// 							cout << "\t removing tracks from vtx " << ll << "new chi2/ndf: " << vertexStored[ll].GetChi2()/vertexStored[ll].GetNDF() <<endl;
+// 							cout << "Vertex " << ll << " nTracks " << kVertexArr[ll][0] << endl;
+// 								for (Int_t ii = 2  ; ii < kVertexArr[ll][0]+2; ii++){
+// 								cout << "\t Track " << kVertexArr[ll][ii] << endl;
+// 							}
+// 							Double_t errX=vertex.GetErrX();
+// 							Double_t errY=vertex.GetErrY();
+// 							Double_t errZ=vertex.GetErrZ();
+// 							Double_t vx = vertex.GetX();
+// 							Double_t vy = vertex.GetY();
+// 							Double_t vz = vertex.GetZ();
+// 							Double_t vr = sqrt((Double_t)(vx*vx + vy*vy));
+// 							Double_t vphi = TMath::ATan2(vy, vx);
+// 							cout << "\t Quality \t errX: " <<errX << "\t errY: " << errY << "\t errZ: " << errZ << "\t Chi2/ndf: " << vertex.GetChi2()/vertex.GetNDF() << endl;
+// 							cout << "\t Position \t x: " <<  vx << "\t y: " << vy << "\t z: " << vz <<"\t r: " << vr  << "\t phi: " << vphi << endl; 
+						}
+						kVertexArr[ll][1] = 1;
+						verticesRejectedInLoop--;
+					}
+				}
+				verticesRejectedInLoop++;
+			}
+		}
+	}
+// 	if (nVertices > 0){
+// 		cout << "Selected Vertices___________________________________" << endl;
+// 	}
+	for (Int_t fin = 0; fin < nVertices; fin++){
+		if (kVertexArr[fin][1] == 0) continue;
+		Double_t errX=vertexStored[fin].GetErrX();
+		Double_t errY=vertexStored[fin].GetErrY();
+		Double_t errZ=vertexStored[fin].GetErrZ();
+		Double_t err3D=TMath::Sqrt(errX*errX+errY*errY+errZ*errZ/10.);  
+		Double_t err2D=TMath::Sqrt(errX*errX+errY*errY);  
+		Double_t vx = vertexStored[fin].GetX();
+		Double_t vy = vertexStored[fin].GetY();
+		Double_t vz = vertexStored[fin].GetZ();
+		Double_t vr = sqrt((Double_t)(vx*vx + vy*vy));
+		Double_t vphi = TMath::ATan2(vy, vx);
+// 		cout << "Vertex " << fin << " nTracks " << kVertexArr[fin][0] << endl;
+		for (Int_t ii = 2  ; ii < kVertexArr[fin][0]+2; ii++){
+// 			cout << "\t Track " << kVertexArr[fin][ii] << endl;
+		}
+// 		cout << "\t Quality \t errX: " <<errX << "\t errY: " << errY << "\t errZ: " << errZ << "\t Chi2/ndf: " << vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF() << endl;
+// 		cout << "\t Position \t x: " <<  vx << "\t y: " << vy << "\t z: " << vz <<"\t r: " << vr  << "\t phi:" << vphi << endl;
+
+		fHistograms->FillHistogram("ESD_HadIntQual_nTracksSecVtx", kVertexArr[fin][0]);
+		fHistograms->FillHistogram("ESD_HadIntQual_ErrX", errX);
+// 			fHistograms->FillHistogram("ESD_HadIntQual_NormDCA", vNDCA);
+		fHistograms->FillHistogram("ESD_HadIntQual_ErrY", errY);
+		fHistograms->FillHistogram("ESD_HadIntQual_ErrZ", errZ);
+		fHistograms->FillHistogram("ESD_HadIntQual_Err2D", err2D);
+		fHistograms->FillHistogram("ESD_HadIntQual_Err3D", err3D);
+		fHistograms->FillHistogram("ESD_HadIntQual_Chi2PerDOF", vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF());
+		Double_t chi2PerDOF = vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF();
+		if ( chi2PerDOF< fMaxChi2HadInt  && err2D < fMaxErr2DHadInt ){
+			fHistograms->FillHistogram("ESD_HadIntMap_ZR", vz,vr);
+			fHistograms->FillHistogram("ESD_HadIntMap_XY", vx,vy);
+			
+			fHistograms->FillHistogram("ESD_HadIntMap_ZPhi", vz,vphi);
+			fHistograms->FillHistogram("ESD_HadIntMap_RPhi", vr,vphi);
+			Double_t rFMD=25;
+			Double_t rITSTPCMin=45;
+			Double_t rITSTPCMax=80;
+		
+			if(vr<rFMD){
+				fHistograms->FillHistogram("ESD_HadIntMap_FMD_ZPhi", vz,vphi);
+			}
+			if(vr>rFMD && vr<rITSTPCMin){
+				fHistograms->FillHistogram("ESD_HadIntMap_FMD2_ZPhi", vz,vphi);
+			}
+
+			if(vr>rITSTPCMin && vr<rITSTPCMax){
+				fHistograms->FillHistogram("ESD_HadIntMap_ITSTPC_ZPhi", vz,vphi);
+			}
+			Double_t rHotZoneMin = 5.7;
+			Double_t rHotZoneMax = 50.;
+			Double_t zHotZoneMin = 45.;
+			Double_t zHotZoneMax = 75.;
+			
+			if (vr>rHotZoneMin && vr < rHotZoneMax){
+				fHistograms->FillHistogram("ESD_HadIntMap_HotZone_ZPhi", vz,vphi);
+				if (vz < zHotZoneMax && vz > zHotZoneMin){
+					fHistograms->FillHistogram("ESD_HadIntMap_HotZone_XY", vx,vy);
+				}
+			}
+			
+			Double_t zBeamPipeInner = 30.;
+			Double_t zOuterParts = 90.;
+			if (vz < zBeamPipeInner && vz > - zBeamPipeInner) {
+				fHistograms->FillHistogram("ESD_HadIntMapInnerBeampipe_XY", vx,vy);
+				fHistograms->FillHistogram("ESD_HadIntMapInnerParts_XY", vx,vy);
+				if (vr < rFMD ){
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_ErrX", errX);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_ErrY", errY);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_ErrZ", errZ);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_Err2D", err2D);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_Err3D", err3D);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallR_Chi2PerDOF", vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF());
+				}
+			}
+			
+			if (vz > zOuterParts ) 	fHistograms->FillHistogram("ESD_HadIntMapPosZOuterParts_XY", vx,vy);
+			if (vz > zBeamPipeInner && vz < zOuterParts ) {
+				fHistograms->FillHistogram("ESD_HadIntMapPosZFMD_XY", vx,vy);
+				if (vr < rFMD ){
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_ErrX", errX);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_ErrY", errY);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_ErrZ", errZ);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_Err2D", err2D);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_Err3D", err3D);
+					fHistograms->FillHistogram("ESD_HadIntQualAftCutsSmallROut_Chi2PerDOF", vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF());
+				}
+			}
+			if (vz < -zBeamPipeInner && vz > -zOuterParts ) 	fHistograms->FillHistogram("ESD_HadIntMapNegZFMD_XY", vx,vy);
+			
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_ErrX", errX);
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_ErrY", errY);
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_ErrZ", errZ);
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_Err2D", err2D);
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_Err3D", err3D);
+			fHistograms->FillHistogram("ESD_HadIntQualAftCuts_Chi2PerDOF", vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF());
+
+			if (kVertexArr[fin][0]>2 ){
+				fHistograms->FillHistogram("ESD_HadIntMap3_ZR", vz,vr);
+				fHistograms->FillHistogram("ESD_HadIntMap3_XY", vx,vy);
+			
+				fHistograms->FillHistogram("ESD_HadIntMap3_ZPhi", vz,vphi);
+				fHistograms->FillHistogram("ESD_HadIntMap3_RPhi", vr,vphi);
+			
+				if(vr<rFMD){
+					fHistograms->FillHistogram("ESD_HadIntMap3_FMD_ZPhi", vz,vphi);
+				}
+				if(vr>rFMD && vr<rITSTPCMin){
+					fHistograms->FillHistogram("ESD_HadIntMap3_FMD2_ZPhi", vz,vphi);
+				}
+
+				if (vr>rITSTPCMin && vr<rITSTPCMax){
+					fHistograms->FillHistogram("ESD_HadIntMap3_ITSTPC_ZPhi", vz,vphi);
+				}
+				if (vz < zBeamPipeInner && vz > - zBeamPipeInner) {
+					fHistograms->FillHistogram("ESD_HadIntMap3InnerBeampipe_XY", vx,vy);
+					fHistograms->FillHistogram("ESD_HadIntMap3InnerParts_XY", vx,vy);
+				}
+				if (vz > zOuterParts ) 	fHistograms->FillHistogram("ESD_HadIntMap3PosZOuterParts_XY", vx,vy);
+				if (vz > zBeamPipeInner && vz < zOuterParts ) {
+					fHistograms->FillHistogram("ESD_HadIntMap3PosZFMD_XY", vx,vy);
+				}
+				if (vz < -zBeamPipeInner && vz > -zOuterParts ) 	fHistograms->FillHistogram("ESD_HadIntMap3NegZFMD_XY", vx,vy);
+			
+				if (vr>rHotZoneMin && vr < rHotZoneMax){
+					fHistograms->FillHistogram("ESD_HadIntMap3_HotZone_ZPhi", vz,vphi);
+					if (vz < zHotZoneMax && vz > zHotZoneMin){
+						fHistograms->FillHistogram("ESD_HadIntMap3_HotZone_XY", vx,vy);
+					}
+				}	
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_ErrX", errX);
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_ErrY", errY);
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_ErrZ", errZ);
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_Err2D", err2D);
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_Err3D", err3D);
+				fHistograms->FillHistogram("ESD_HadIntQual3AftCuts_Chi2PerDOF", vertexStored[fin].GetChi2()/vertexStored[fin].GetNDF());
+			}
+			nVerticesPassed++;
+		}
+	}
+	
+// 	if (nVertices > 0){
+// 		cout << "number of total vertices: "<< nVertices << endl;
+// 		cout << "number of total vertices passing selection: "<< nVerticesPassed << endl;
+// 		cout << "vertices rejected in loop: " << verticesRejectedInLoop << endl;
+// 	}
+	delete [] rejectTrack;
+}
+
+
+Bool_t AliAnalysisTaskGammaConversion::CheckLooper(Int_t index, AliESDEvent *event){
+  //
+  // check if given track is looper candidate
+  // if looper return kTRUE
+  // 
+  Int_t ntracks=event->GetNumberOfTracks();
+  Int_t index1=-1;
+  const Double_t ktglCut=0.03;
+  const Double_t kalphaCut=0.4;
+  //
+  AliESDtrack * track0 = event->GetTrack(index);
+  AliESDtrack * track1P = 0;
+  for (Int_t itrack1=0; itrack1<ntracks; itrack1++){
+    if (itrack1==index) continue;
+    AliESDtrack *track1=event->GetTrack(itrack1);
+    if (!track1) continue;
+    if (TMath::Abs(TMath::Abs(track1->GetTgl())-TMath::Abs(track0->GetTgl()))>ktglCut) continue;
+    if (TMath::Abs(TMath::Abs(track1->GetAlpha())-TMath::Abs(track0->GetAlpha()))>kalphaCut) continue;
+    index1=index;
+    track1P=track1;
+  }
+  if (index1>=0){
+    return kTRUE;
+  }
+  return kFALSE;
+}
+
+Bool_t AliAnalysisTaskGammaConversion::CheckV0(Int_t index, AliESDEvent *event){
+	//
+	// check if given track is V0 candidata
+	// if looper return kTRUE
+	// 
+	return kFALSE;
+	Int_t ntracks=event->GetNumberOfTracks();
+	Int_t index1=-1;
+	const Double_t kSigmaMass=0.001;
+	const Int_t kChi2Cut=10;
+	//
+	AliESDtrack * track0 = event->GetTrack(index);
+	AliExternalTrackParam pL(*track0);
+	AliKFParticle part0El(*track0, 11);  //assuming  mass e
+	AliKFParticle part0Pi(*track0, 211);  //assuming  mass pion
+	AliKFParticle part0P(*track0, 2212);  //assuming  mass proton
+	if (track0->Charge()*part0El.Q()<0) {
+		part0El.Q()*=-1;  // change sign if opposite
+		part0Pi.Q()*=-1;  // change sign if opposite
+		part0P.Q()*=-1;   // change sign if opposite
+	}
+	Bool_t isGamma=0;
+	Bool_t isK0=0;
+	Bool_t isLambda=0;
+	Bool_t isLambdaBar=0;
+	
+	for (Int_t itrack1=0; itrack1<ntracks; itrack1++){
+		if (itrack1==index) continue;
+		AliESDtrack *track1=event->GetTrack(itrack1);
+		if (!track1) continue;
+		if (track1->Charge()*track0->Charge()>0) continue;
+		AliKFParticle part1El(*track1, 11);  //assuming  mass e
+		AliKFParticle part1Pi(*track1, 211);  //assuming  mass pion
+		AliKFParticle part1P(*track1, 2212);  //assuming  mass proton
+		if (track1->Charge()*part1El.Q()<0) {
+			part1El.Q()*=-1;  // change sign if opposite
+			part1Pi.Q()*=-1;  // change sign if opposite
+			part1P.Q()*=-1;   // change sign if opposite
+		}
+		//
+		AliKFVertex vertexG;  // gamma conversion candidate
+		vertexG+=part0El;
+		vertexG+=part1El;
+		AliKFVertex vertexGC;  // gamma conversion candidate
+		vertexGC+=part0El;
+		vertexGC+=part1El;
+		vertexGC.SetMassConstraint(0,kSigmaMass);
+		AliKFVertex vertexK0;  // K0s candidate
+		vertexK0+=part0Pi;
+		vertexK0+=part1Pi;
+		AliKFVertex vertexK0C;  // K0s candidate
+		vertexK0C+=part0Pi;
+		vertexK0C+=part1Pi;
+		vertexK0C.SetMassConstraint(0.497614,kSigmaMass);
+		AliKFVertex vertexLambda;  // Lambda candidate
+		vertexLambda+=part0Pi;
+		vertexLambda+=part1P;
+		AliKFVertex vertexLambdaC;  // Lambda candidate
+		vertexLambdaC+=part0Pi;
+		vertexLambdaC+=part1Pi;
+		vertexLambdaC.SetMassConstraint(1.115683,kSigmaMass);
+		AliKFVertex vertexLambdaB;  // Lambda candidate
+		vertexLambdaB+=part0Pi;
+		vertexLambdaB+=part1P;
+		AliKFVertex vertexLambdaBC;  // LambdaBar candidate
+		vertexLambdaBC+=part0Pi;
+		vertexLambdaBC+=part1Pi;
+		vertexLambdaBC.SetMassConstraint(1.115683,kSigmaMass);
+		
+		if (vertexGC.GetChi2()<kChi2Cut && vertexG.GetMass()<0.06)      isGamma=kTRUE;
+		if (vertexK0C.GetChi2()<kChi2Cut&&TMath::Abs(vertexK0.GetMass()-0.5)<0.06)  isK0=kTRUE;
+		if (vertexLambdaC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambda.GetMass()-1.1)<0.06)  isLambda=kTRUE;
+		if (vertexLambdaBC.GetChi2()<kChi2Cut&&TMath::Abs(vertexLambdaB.GetMass()-1.1)<0.06)  isLambdaBar=kTRUE;
+		if (isGamma||isK0||isLambda||isLambdaBar) {
+			index1=index;
+			break;
+		}
+	}
+	if (index1>0) return kTRUE;
+	return kFALSE;
 }
 
 

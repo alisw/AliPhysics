@@ -6,10 +6,10 @@ using namespace std;
 ClassImp(AliConversionPhotonBase)
 
 AliConversionPhotonBase::AliConversionPhotonBase() :
-    fV0Index(-1),
-    fChi2perNDF(-1),
-    fTagged(kFALSE)
-
+fV0Index(-1),
+  fChi2perNDF(-1),
+  fTagged(kFALSE),
+  fIMass(-999)
 {
   //Default constructor
   fLabel[0] = -1;
@@ -25,19 +25,14 @@ AliConversionPhotonBase::AliConversionPhotonBase() :
   fConversionPoint[0]=-999;
   fConversionPoint[1]=-999;
   fConversionPoint[2]=-999;
-
-  for(Int_t i=0;i<5;i++){
-      fNSigmadEdxPositive[i]=-999;
-      fNSigmadEdxNegative[i]=-999;
-  }
 }
 
 
 AliConversionPhotonBase::AliConversionPhotonBase(const AliConversionPhotonBase & original) :
 fV0Index(original.fV0Index),
 fChi2perNDF(original.fChi2perNDF),
-fTagged(original.fTagged)
-
+fTagged(original.fTagged),
+  fIMass(original.fIMass)
   {
   //Copy constructor
   fLabel[0] = original.fLabel[0];
@@ -53,8 +48,6 @@ fTagged(original.fTagged)
   fConversionPoint[1]=original.fConversionPoint[1];
   fConversionPoint[2]=original.fConversionPoint[2];
 
-  for(Int_t i=0;i<5;i++){fNSigmadEdxNegative[i]=original.fNSigmadEdxNegative[i];}
-  for(Int_t i=0;i<5;i++){fNSigmadEdxPositive[i]=original.fNSigmadEdxPositive[i];}
   }
 
 AliConversionPhotonBase::~AliConversionPhotonBase() {
@@ -91,9 +84,10 @@ Int_t AliConversionPhotonBase::GetMCParticleLabel(AliStack *fMCStack){
 
     if(fPositiveMCParticle->GetMother(0)>-1&&(fNegativeMCParticle->GetMother(0) == fPositiveMCParticle->GetMother(0))){
 
-        return fPositiveMCParticle->GetMother(0);
+	    return fPositiveMCParticle->GetMother(0);
     }
- return -1;
+
+    return -1;
 }
 
 

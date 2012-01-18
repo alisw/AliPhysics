@@ -30,7 +30,7 @@ public:
   void DoDecayParticles() { fSkipDecayParticles = kFALSE; }
   void DoDecayOnly() { fSkipDecayParticles = kFALSE; fDecayOnly = kTRUE; }
 
-  void Process(TClonesArray * photons, TClonesArray * tracks, Bool_t isolated);
+  //void Process(const TClonesArray * photons, const TClonesArray * tracks, Bool_t isolated);
 
  private:
 

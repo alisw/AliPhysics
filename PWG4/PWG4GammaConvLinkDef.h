@@ -26,4 +26,6 @@
 #pragma link C++ class AliKFConversionPhoton++;
 #pragma link C++ class AliKFConversionMother++;
 
+#pragma link C++ class AliAnalysisTaskdPhi+;
+#pragma link C++ class AliConversionCuts++;
 #endif

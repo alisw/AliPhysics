@@ -95,6 +95,12 @@ class AliGammaConversionHistograms{
   void FillHistogram(TString histogramName, Double_t xValue, Double_t yValue, Double_t zValue) const;
 
   /*
+   * Fills a TH1F histogram with the given name with the given integer array 
+   */
+  
+  void FillHistogram(TString histogramName, Float_t* xValue, Int_t nPoints) const;
+  
+  /*
    * Fills a TH1F table with the given name with the given value
    */			
   void FillTable(TString tableName, Double_t xValue) const;
@@ -143,8 +149,9 @@ class AliGammaConversionHistograms{
   TList * fTableContainer; // table container
   TList * fOtherContainer; // other container
   TList * f3DContainer; // 3D container
+  TList * fHadContainer; // Hadronic Interactions container
  
-  ClassDef(AliGammaConversionHistograms,3)
+  ClassDef(AliGammaConversionHistograms,4)
 };
 
 

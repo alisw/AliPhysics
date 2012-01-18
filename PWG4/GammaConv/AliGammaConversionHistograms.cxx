@@ -35,28 +35,29 @@ ClassImp(AliGammaConversionHistograms)
 
 
 AliGammaConversionHistograms::AliGammaConversionHistograms() :
-  fHistogramMap(new TMap()),
-  fNPhiIndex(0),
-  fNRIndex(0),
-  fNZIndex(0),
-//  fRBinLimits(0),
-//  fZBinLimits(0),
-  fMinRadius(0.),
-  fMaxRadius(0.),
-  fDeltaR(0.),
-  fMinPhi(0.),
-  fMaxPhi(0.),
-  fDeltaPhi(0.),
-  fMappingContainer(NULL),
-  fBackgroundContainer(NULL),
-  fDebugContainer(NULL),
-  fResolutionContainer(NULL),
-  fMatchContainer(NULL),
-  fESDContainer(NULL),
-  fMCContainer(NULL),
-  fTableContainer(NULL),	
-  fOtherContainer(NULL),
-  f3DContainer(NULL)
+	fHistogramMap(new TMap()),
+	fNPhiIndex(0),
+	fNRIndex(0),
+	fNZIndex(0),
+	//  fRBinLimits(0),
+	//  fZBinLimits(0),
+	fMinRadius(0.),
+	fMaxRadius(0.),
+	fDeltaR(0.),
+	fMinPhi(0.),
+	fMaxPhi(0.),
+	fDeltaPhi(0.),
+	fMappingContainer(NULL),
+	fBackgroundContainer(NULL),
+	fDebugContainer(NULL),
+	fResolutionContainer(NULL),
+	fMatchContainer(NULL),
+	fESDContainer(NULL),
+	fMCContainer(NULL),
+	fTableContainer(NULL),	
+	fOtherContainer(NULL),
+	f3DContainer(NULL),
+	fHadContainer(NULL)
 {
   // see header file for documenation
   for(Int_t i=0;i<14;i++){
@@ -69,36 +70,37 @@ AliGammaConversionHistograms::AliGammaConversionHistograms() :
 
 
 AliGammaConversionHistograms::AliGammaConversionHistograms(const AliGammaConversionHistograms & original) :
-  fHistogramMap(original.fHistogramMap),
-  fNPhiIndex(original.fNPhiIndex),
-  fNRIndex(original.fNRIndex),
-  fNZIndex(original.fNZIndex),
-  //  fRBinLimits(original.fRBinLimits),
-  //  fZBinLimits(original.fZBinLimits),
-  fMinRadius(original.fMinRadius),
-  fMaxRadius(original.fMaxRadius),
-  fDeltaR(original.fDeltaR),
-  fMinPhi(original.fMinPhi),
-  fMaxPhi(original.fMaxPhi),
-  fDeltaPhi(original.fDeltaPhi),
-  fMappingContainer(original.fMappingContainer),
-  fBackgroundContainer(original.fBackgroundContainer),
-  fDebugContainer(original.fDebugContainer),
-  fResolutionContainer(original.fResolutionContainer),
-  fMatchContainer(original.fMatchContainer),
-  fESDContainer(original.fESDContainer),
-  fMCContainer(original.fMCContainer),
-  fTableContainer(original.fTableContainer), 
-  fOtherContainer(original.fOtherContainer),
-  f3DContainer(original.f3DContainer)
-{    
-  //see header file for documentation
-  for(Int_t i=0;i<14;i++){
-    fRBinLimits[i]= original.fRBinLimits[i];
-  }
-  for(Int_t i=0;i<12;i++){
-    fZBinLimits[i]=original.fZBinLimits[i];
-  }
+	fHistogramMap(original.fHistogramMap),
+	fNPhiIndex(original.fNPhiIndex),
+	fNRIndex(original.fNRIndex),
+	fNZIndex(original.fNZIndex),
+	//  fRBinLimits(original.fRBinLimits),
+	//  fZBinLimits(original.fZBinLimits),
+	fMinRadius(original.fMinRadius),
+	fMaxRadius(original.fMaxRadius),
+	fDeltaR(original.fDeltaR),
+	fMinPhi(original.fMinPhi),
+	fMaxPhi(original.fMaxPhi),
+	fDeltaPhi(original.fDeltaPhi),
+	fMappingContainer(original.fMappingContainer),
+	fBackgroundContainer(original.fBackgroundContainer),
+	fDebugContainer(original.fDebugContainer),
+	fResolutionContainer(original.fResolutionContainer),
+	fMatchContainer(original.fMatchContainer),
+	fESDContainer(original.fESDContainer),
+	fMCContainer(original.fMCContainer),
+	fTableContainer(original.fTableContainer), 
+	fOtherContainer(original.fOtherContainer),
+	f3DContainer(original.f3DContainer),
+	fHadContainer(original.fHadContainer)
+	{    
+	//see header file for documentation
+	for(Int_t i=0;i<14;i++){
+		fRBinLimits[i]= original.fRBinLimits[i];
+	}
+	for(Int_t i=0;i<12;i++){
+		fZBinLimits[i]=original.fZBinLimits[i];
+	}
 }
 
 
@@ -313,6 +315,16 @@ void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t
   }
 }
 
+void AliGammaConversionHistograms::FillHistogram(TString histogramName, Float_t* xValue, Int_t nPoints) const{
+	//see header file for documentation
+	TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
+	if(tmp){
+		for( Int_t ii = 1; ii < nPoints+1; ii++){		  
+			tmp->SetBinContent(ii,xValue[ii]);
+		}
+	}
+}
+
 void AliGammaConversionHistograms::FillHistogram(TString histogramName, Double_t xValue, Double_t yValue) const{
   //see header file for documentation
   TH1 *tmp = (TH1*)fHistogramMap->GetValue(histogramName.Data());
@@ -339,130 +351,138 @@ TObject* AliGammaConversionHistograms::GetValue(const TString& name)
 void AliGammaConversionHistograms::GetOutputContainer(TList *fOutputContainer){
   //checking if the container is alrerady created
 	
-  if(fOutputContainer == NULL){
-    cout<<"WARNING: GetOutputContainer: output container object is NULL"<<endl;
-    return;
-  }
+	if(fOutputContainer == NULL){
+		cout<<"WARNING: GetOutputContainer: output container object is NULL"<<endl;
+		return;
+	}
 
-  if(fHistogramMap != NULL){
-    TIter iter(fHistogramMap);
-    TObjString *histogramName;
-    while ((histogramName = (TObjString*) iter.Next())) {
-      TString histogramString = histogramName->GetString();
-      if(histogramString.Contains("Mapping")){// means it should be put in the mapping folder
-	if(fMappingContainer == NULL){
-	  fMappingContainer = new TList();
-	  fMappingContainer->SetOwner(kTRUE);
-	  fMappingContainer->SetName("Mapping histograms");
-	}
-	fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("Background")){// means it should be put in the background folder
-	if(fBackgroundContainer == NULL){
-	  fBackgroundContainer = new TList();
-	  fBackgroundContainer->SetOwner(kTRUE);
-	  fBackgroundContainer->SetName("Background histograms");
-	}
-	fBackgroundContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("Debug")){// means it should be put in the debug folder
-	if(fDebugContainer == NULL){
-	  fDebugContainer = new TList();
-	  fDebugContainer->SetOwner(kTRUE);
-	  fDebugContainer->SetName("Debug histograms");
-	}
-	fDebugContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("Resolution")){// means it should be put in the resolution folder
-	if(fResolutionContainer == NULL){
-	  fResolutionContainer = new TList();
-	  fResolutionContainer->SetOwner(kTRUE);
-	  fResolutionContainer->SetName("Resolution histograms");
-	}
-	fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("TrueConv")){// means it should be put in the true conv folder
-	if(fMatchContainer == NULL){
-	  fMatchContainer = new TList();
-	  fMatchContainer->SetOwner(kTRUE);
-	  fMatchContainer->SetName("True conversion histograms");
-	}
-	fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("ESD")){// means it should be put in the ESD folder
-	if(fESDContainer == NULL){
-	  fESDContainer = new TList();
-	  fESDContainer->SetOwner(kTRUE);
-	  fESDContainer->SetName("ESD histograms");
-	}
-	fESDContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("MC")){// means it should be put in the MC folder
-	if(fMCContainer == NULL){
-	  fMCContainer = new TList();
-	  fMCContainer->SetOwner(kTRUE);
-	  fMCContainer->SetName("MC histograms");
-	}
-	fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else if(histogramString.Contains("Table")){// means it should be put in the Table Folder
-	if(fTableContainer == NULL){
-	   fTableContainer = new TList();
-	   fTableContainer->SetOwner(kTRUE);
-	   fTableContainer->SetName("Tables");
-	}
-	fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-	else if(histogramString.Contains("3DPlots")){// means it should be put in the Table Folder
-		if(f3DContainer == NULL){
-			f3DContainer = new TList();
-			f3DContainer->SetOwner(kTRUE);
-			f3DContainer->SetName("3D histograms");
+	if(fHistogramMap != NULL){
+		TIter iter(fHistogramMap);
+		TObjString *histogramName;
+		while ((histogramName = (TObjString*) iter.Next())) {
+			TString histogramString = histogramName->GetString();
+			if(histogramString.Contains("Mapping")){// means it should be put in the mapping folder
+				if(fMappingContainer == NULL){
+					fMappingContainer = new TList();
+					fMappingContainer->SetOwner(kTRUE);
+					fMappingContainer->SetName("Mapping histograms");
+				}
+				fMappingContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("HadInt")){// means it should be put in the Table Folder
+				if(fHadContainer == NULL){
+					fHadContainer = new TList();
+					fHadContainer->SetOwner(kTRUE);
+					fHadContainer->SetName("Hadronic Interactions histograms");
+				}
+				fHadContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));	
+			} else if(histogramString.Contains("Background")){// means it should be put in the background folder
+				if(fBackgroundContainer == NULL){
+					fBackgroundContainer = new TList();
+					fBackgroundContainer->SetOwner(kTRUE);
+					fBackgroundContainer->SetName("Background histograms");
+				}
+				fBackgroundContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("Debug")){// means it should be put in the debug folder
+				if(fDebugContainer == NULL){
+					fDebugContainer = new TList();
+					fDebugContainer->SetOwner(kTRUE);
+					fDebugContainer->SetName("Debug histograms");
+				}
+				fDebugContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("Resolution")){// means it should be put in the resolution folder
+				if(fResolutionContainer == NULL){
+					fResolutionContainer = new TList();
+					fResolutionContainer->SetOwner(kTRUE);
+					fResolutionContainer->SetName("Resolution histograms");
+				}
+				fResolutionContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("TrueConv")){// means it should be put in the true conv folder
+				if(fMatchContainer == NULL){
+					fMatchContainer = new TList();
+					fMatchContainer->SetOwner(kTRUE);
+					fMatchContainer->SetName("True conversion histograms");
+				}
+				fMatchContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("ESD")){// means it should be put in the ESD folder
+				if(fESDContainer == NULL){
+					fESDContainer = new TList();
+					fESDContainer->SetOwner(kTRUE);
+					fESDContainer->SetName("ESD histograms");
+				}
+				fESDContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("MC")){// means it should be put in the MC folder
+				if(fMCContainer == NULL){
+					fMCContainer = new TList();
+					fMCContainer->SetOwner(kTRUE);
+					fMCContainer->SetName("MC histograms");
+				}
+				fMCContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("Table")){// means it should be put in the Table Folder
+				if(fTableContainer == NULL){
+					fTableContainer = new TList();
+					fTableContainer->SetOwner(kTRUE);
+					fTableContainer->SetName("Tables");
+				}
+				fTableContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("3DPlots")){// means it should be put in the Table Folder
+				if(f3DContainer == NULL){
+					f3DContainer = new TList();
+					f3DContainer->SetOwner(kTRUE);
+					f3DContainer->SetName("3D histograms");
+				}
+				f3DContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else if(histogramString.Contains("HadInt")){// means it should be put in the Table Folder
+				if(fHadContainer == NULL){
+					fHadContainer = new TList();
+					fHadContainer->SetOwner(kTRUE);
+					fHadContainer->SetName("Hadronic Interactions histograms");
+				}
+				fHadContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			} else{
+				if(fOtherContainer == NULL){
+					fOtherContainer = new TList();
+					fOtherContainer->SetOwner(kTRUE);
+					fOtherContainer->SetName("Other histograms");
+				}
+				fOtherContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
+			}
+			histogramName = NULL;
+		} // end while
+
+		if(fMappingContainer != NULL){
+			fOutputContainer->Add(fMappingContainer);
 		}
-		f3DContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      else{
-	if(fOtherContainer == NULL){
-	  fOtherContainer = new TList();
-	  fOtherContainer->SetOwner(kTRUE);
-	  fOtherContainer->SetName("Other histograms");
+		if(fBackgroundContainer != NULL){
+			fOutputContainer->Add(fBackgroundContainer);
+		}
+		if(fDebugContainer != NULL){
+			fOutputContainer->Add(fDebugContainer);
+		}
+		if(fResolutionContainer != NULL){
+			fOutputContainer->Add(fResolutionContainer);
+		}
+		if(fMatchContainer != NULL){
+			fOutputContainer->Add(fMatchContainer);
+		}
+		if(fESDContainer != NULL){
+			fOutputContainer->Add(fESDContainer);
+		}
+		if(fMCContainer != NULL){
+			fOutputContainer->Add(fMCContainer);
+		}
+		if(fTableContainer !=  NULL){
+			fOutputContainer->Add(fTableContainer);	
+		}
+		if(f3DContainer !=  NULL){
+			fOutputContainer->Add(f3DContainer);	
+		}
+		if(fHadContainer !=  NULL){
+			fOutputContainer->Add(fHadContainer);	
+		}
+		if(fOtherContainer != NULL){
+			fOutputContainer->Add(fOtherContainer);
+		}
 	}
-	fOtherContainer->Add((TH1*)fHistogramMap->GetValue(histogramString.Data()));
-      }
-      histogramName = NULL;
-    } // end while
-
-    if(fMappingContainer != NULL){
-      fOutputContainer->Add(fMappingContainer);
-    }
-    if(fBackgroundContainer != NULL){
-      fOutputContainer->Add(fBackgroundContainer);
-    }
-    if(fDebugContainer != NULL){
-      fOutputContainer->Add(fDebugContainer);
-    }
-    if(fResolutionContainer != NULL){
-      fOutputContainer->Add(fResolutionContainer);
-    }
-    if(fMatchContainer != NULL){
-      fOutputContainer->Add(fMatchContainer);
-    }
-    if(fESDContainer != NULL){
-      fOutputContainer->Add(fESDContainer);
-    }
-    if(fMCContainer != NULL){
-      fOutputContainer->Add(fMCContainer);
-    }
-    if(fTableContainer !=  NULL){
-       fOutputContainer->Add(fTableContainer);	
-    }
-	if(f3DContainer !=  NULL){
-       fOutputContainer->Add(f3DContainer);	
-    }
-    if(fOtherContainer != NULL){
-      fOutputContainer->Add(fOtherContainer);
-    }
-  }
 }
 
 Int_t AliGammaConversionHistograms::GetRBin(Double_t radius) const{
@@ -785,6 +805,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
     AddHistogram(nameMCITSTPCPhiInZ, titleMCITSTPCPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
 
+    //Mapping Phi in Z for ITSTPC2 
+    TString nameMCITSTPC2PhiInZ="";
+    nameMCITSTPC2PhiInZ.Form("MC_Conversion_Mapping_ITSTPC2_Phi_in_Z_%02d",z);
+    TString titleMCITSTPC2PhiInZ="";
+    titleMCITSTPC2PhiInZ.Form("MC Mapping ITSTPC2 of Phi in Z%02d",z);
+    //    AddHistogram(nameMCPhiInR, titleMCPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);
+    AddHistogram(nameMCITSTPC2PhiInZ, titleMCITSTPC2PhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);
+
 
     //Mapping R in Z
     TString nameMCRInZ="";
@@ -847,6 +875,14 @@ void AliGammaConversionHistograms::AddMappingHistograms(Int_t nPhiIndex, Int_t n
     titleESDITSTPCPhiInZ.Form("ESD Mapping ITSTPC of Phi in Z%02d",z);
     //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
     AddHistogram(nameESDITSTPCPhiInZ, titleESDITSTPCPhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
+
+   //Mapping Phi in Z for ITSTPC2
+    TString nameESDITSTPC2PhiInZ="";
+    nameESDITSTPC2PhiInZ.Form("ESD_Conversion_Mapping_ITSTPC2_Phi_in_Z_%02d",z);
+    TString titleESDITSTPC2PhiInZ="";
+    titleESDITSTPC2PhiInZ.Form("ESD Mapping ITSTPC2 of Phi in Z%02d",z);
+    //    AddHistogram(nameESDPhiInR, titleESDPhiInR, nXBins, firstX, lastX, xAxisTitle, yAxisTitle);    
+    AddHistogram(nameESDITSTPC2PhiInZ, titleESDITSTPC2PhiInZ, nXBins, -TMath::Pi(), TMath::Pi(), xAxisTitle, yAxisTitle);    
 
 
    //Mapping R in Z
