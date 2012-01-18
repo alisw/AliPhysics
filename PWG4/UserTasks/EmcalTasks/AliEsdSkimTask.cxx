@@ -187,7 +187,56 @@ void AliEsdSkimTask::UserExec(Option_t */*opt*/)
           continue;
       }
       if (fDoMiniTracks) {
-        track->MakeMiniESDtrack();
+        class AliEsdMiniTrack : public AliESDtrack
+        {
+          public: 
+            AliEsdMiniTrack(const AliESDtrack &t) : AliESDtrack(t) {}
+            void MakeMiniESDtrack() { 
+              delete fCp;       fCp       = 0;
+              delete fIp;       fIp       = 0;
+              delete fTPCInner; fTPCInner = 0;
+              delete fOp;       fOp       = 0;
+              delete fHMPIDp;   fHMPIDp   = 0;
+              for (Int_t i=0; i<3;i++) fKinkIndexes[i] = 0;
+              for (Int_t i=0; i<3;i++) fV0Indexes[i] = 0;
+              fTRDchi2   = 0;        
+              fTRDncls   = 0;       
+              fTRDncls0  = 0;       
+              fTRDsignal = 0;      
+              for (Int_t i=0;i<kTRDnPlanes;i++) {
+                fTRDTimBin[i]  = 0;
+              }
+              for (Int_t i=0;i<AliPID::kSPECIES;i++) fTRDr[i] = 0; 
+              fTRDLabel      = 0;       
+              fTRDQuality    = -1;
+              fTRDntracklets = 0;
+              if(fTRDnSlices)
+                delete[] fTRDslices;
+              fTRDslices     = 0;
+              fTRDnSlices    = 0;
+              fTRDBudget     = -1;
+              fHMPIDchi2     = 0;     
+              fHMPIDqn       = 0;     
+              fHMPIDcluIdx   = -1;     
+              fHMPIDsignal   = 0;     
+              for (Int_t i=0;i<AliPID::kSPECIES;i++) fHMPIDr[i] = 0;
+              fHMPIDtrkTheta = 0;     
+              fHMPIDtrkPhi   = 0;      
+              fHMPIDtrkX     = 0;     
+              fHMPIDtrkY     = 0;      
+              fHMPIDmipX     = fCacheNCrossedRows;
+              fHMPIDmipY     = fCacheChi2TPCConstrainedVsGlobal;
+            }
+        };
+
+        AliEsdMiniTrack *newtrack = new AliEsdMiniTrack(*track);
+        newtrack->MakeMiniESDtrack();
+        if (track->GetEMCALcluster()==-123) {
+          newtrack->SetEMCALcluster(track->GetEMCALcluster());
+          newtrack->SetTRDQuality(track->GetTRDQuality());
+          newtrack->SetTRDBudget(track->GetTRDBudget());
+        }
+        track = newtrack;
       }
       fEvent->AddTrack(track);
       ++nacc;
