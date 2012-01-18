@@ -100,32 +100,41 @@ AliAODPid& AliAODPid::operator=(const AliAODPid& pid)
   if(this!=&pid) {
     // copy stuff
     TObject::operator=(pid);
-    fITSsignal=pid.fITSsignal; 
-    fTPCsignal=pid.fTPCsignal;
-    
-    if(pid.fTRDnSlices<=0||(fTRDnSlices!=pid.fTRDnSlices)){
+
+    fITSsignal   = pid.fITSsignal; 
+    for (Int_t i = 0; i < 4; i++) fITSdEdxSamples[i]=pid.fITSdEdxSamples[i];
+    fTPCsignal   = pid.fTPCsignal;
+    fTPCsignalN  = pid.fTPCsignalN;
+    fTPCmomentum = pid.fTPCmomentum;
+
+
+    if(pid.fTRDnSlices <= 0|| (fTRDnSlices != pid.fTRDnSlices)) {
       // only delete if number changed or is 0
       delete [] fTRDslices;
       fTRDslices = 0;
-      if(pid.fTRDnSlices>0) fTRDslices = new Double32_t[fTRDnSlices];
+      if(pid.fTRDnSlices > 0) fTRDslices = new Double32_t[fTRDnSlices];
     }
     fTRDnSlices=pid.fTRDnSlices;
-    
-    for(Int_t i=0; i< fTRDnSlices; i++) fTRDslices[i]=pid.fTRDslices[i];
+    memcpy(fTRDslices, pid.fTRDslices, fTRDnSlices*sizeof(Double32_t));
+
+    fTRDntls = pid.fTRDntls;
+    for(Int_t i = 0; i < 6; i++){ 
+	fTRDmomentum[i] = pid.fTRDmomentum[i];
+	fTRDncls[i]     = pid.fTRDncls[i];
+    }
+
     fTOFesdsignal=pid.fTOFesdsignal;
+    for (Int_t i = 0; i < 5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
+    for (Int_t i = 0; i < 5; i++) fIntTime[i]=pid.fIntTime[i];
+    
     fHMPIDsignal=pid.fHMPIDsignal;
-    for(Int_t i=0; i<kSPECIES; i++) fIntTime[i]=pid.fIntTime[i];
-    for(Int_t i=0; i<5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
-    for(Int_t i=0; i<6; i++){ 
-      fTRDmomentum[i]=pid.fTRDmomentum[i];
-      fTRDncls[i] = pid.fTRDncls[i];
+    
+    for(Int_t i = 0; i < 5; i++) fHMPIDprobs[i] = pid.fHMPIDprobs[i];
+    
+    for(Int_t i = 0; i < 3; i++) {
+	fEMCALPosition[i]=pid.fEMCALPosition[i];
+	fEMCALMomentum[i]=pid.fEMCALMomentum[i];
     }
-    for(Int_t i=0; i<3; i++) {
-      fEMCALPosition[i]=pid.fEMCALPosition[i];
-      fEMCALMomentum[i]=pid.fEMCALMomentum[i];
-    }
-    for (Int_t i=0; i<5; i++) fTOFpidResolution[i]=pid.fTOFpidResolution[i];
-    for (Int_t i=0; i<4; i++) fITSdEdxSamples[i]=pid.fITSdEdxSamples[i];
   }
 
   return *this;
