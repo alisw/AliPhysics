@@ -9,26 +9,26 @@ AliAODConversionPhoton::AliAODConversionPhoton() :
 AliAODConversionParticle(),
 AliConversionPhotonBase()
 {
+  //Standard constructor
 }
 
 AliAODConversionPhoton::AliAODConversionPhoton(AliKFConversionPhoton *kfphoton) :
-AliAODConversionParticle(),
+AliAODConversionParticle(kfphoton),
 AliConversionPhotonBase(*((AliConversionPhotonBase*)kfphoton))
 {
-    // Set 4 momentum
-    SetVect(TVector3(kfphoton->Px(),kfphoton->Py(),kfphoton->Pz()));
-    SetE(P());
+  //Constructor from kfphoton
 }
 
 AliAODConversionPhoton::AliAODConversionPhoton(const AliAODConversionPhoton & original) :
 AliAODConversionParticle(original),
 AliConversionPhotonBase(original)
 {
+  //Copy constructor
 }
 
-AliAODConversionPhoton::~AliAODConversionPhoton(){
-// empty standard destructor
-
+AliAODConversionPhoton::~AliAODConversionPhoton()
+{
+  // empty standard destructor
 }
 
 AliAODConversionPhoton & AliAODConversionPhoton::operator = (const AliAODConversionPhoton & /*source*/)

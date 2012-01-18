@@ -30,13 +30,15 @@
 #include "AliESDtrack.h"
 #include "AliMCEvent.h"
 #include "AliKFVertex.h"
-
+#include "AliKFParticle.h"
 #include "AliStack.h"
 #include "AliMCEventHandler.h"
 #include "AliESDpid.h"
 #include "AliGammaConversionBGHandler.h"
 #include "AliESDtrackCuts.h"
 #include "TRandom3.h"
+#include "AliGenCocktailEventHeader.h"
+#include "TList.h"
 
 class iostream;
 class AliESDv0;
@@ -132,6 +134,8 @@ AliV0Reader::AliV0Reader() :
 	fXVertexCut(0.),
 	fYVertexCut(0.),
 	fZVertexCut(0.),
+	fPsiPairCut(0.),
+	fCosinePointCut(0.),
 	fNSigmaMass(0.),
 	fUseImprovedVertex(kFALSE),
 	fUseOwnXYZCalculation(kFALSE),
@@ -161,8 +165,11 @@ AliV0Reader::AliV0Reader() :
 	fRandom(0),
 	fBrem(NULL),
 	fDoPhotonAsymmetryCut(0),
+	fdoESDQtCut(0),
 	fMinPPhotonAsymmetryCut(100.),
-	fMinPhotonAsymmetry(0.)
+	fMinPhotonAsymmetry(0.),
+        fExcludeBackgroundEventForGammaCorrection(0.),
+        fNumberOfPrimerisFromHijingAndPythia(0)
 {
 	//fESDpid = new AliESDpid;	
 }
@@ -250,6 +257,8 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
 	fXVertexCut(original.fXVertexCut),
 	fYVertexCut(original.fYVertexCut),
 	fZVertexCut(original.fZVertexCut),
+	fPsiPairCut(original.fPsiPairCut),
+	fCosinePointCut(original.fCosinePointCut),
 	fNSigmaMass(original.fNSigmaMass),
 	fUseImprovedVertex(original.fUseImprovedVertex),
 	fUseOwnXYZCalculation(original.fUseOwnXYZCalculation),
@@ -279,8 +288,11 @@ AliV0Reader::AliV0Reader(const AliV0Reader & original) :
 	fRandom(original.fRandom),
 	fBrem(original.fBrem),
 	fDoPhotonAsymmetryCut(original.fDoPhotonAsymmetryCut),
+	fdoESDQtCut(original.fdoESDQtCut),
 	fMinPPhotonAsymmetryCut(original.fMinPPhotonAsymmetryCut),
-	fMinPhotonAsymmetry(original.fMinPhotonAsymmetry)
+	fMinPhotonAsymmetry(original.fMinPhotonAsymmetry),
+        fExcludeBackgroundEventForGammaCorrection(original.fExcludeBackgroundEventForGammaCorrection),
+        fNumberOfPrimerisFromHijingAndPythia(original.fNumberOfPrimerisFromHijingAndPythia)
 {
 	
 }
@@ -411,8 +423,7 @@ void AliV0Reader::Initialize(){
 	if(fCalculateBackground == kTRUE){
 		if(fBGEventInitialized == kFALSE){
 
-			
-			Double_t *zBinLimitsArray = new Double_t[9];
+			Double_t zBinLimitsArray[9];
 			zBinLimitsArray[0] = -50.00;
 			zBinLimitsArray[1] = -3.375;
 			zBinLimitsArray[2] = -1.605;
@@ -423,7 +434,7 @@ void AliV0Reader::Initialize(){
 			zBinLimitsArray[7] = 50.00;
 			zBinLimitsArray[8] = 1000.00;
 			
-			Double_t *multiplicityBinLimitsArray= new Double_t[6];
+		   Double_t multiplicityBinLimitsArray[6];
 			if(fUseChargedTrackMultiplicityForBG == kTRUE){
 				multiplicityBinLimitsArray[0] = 0;
 				multiplicityBinLimitsArray[1] = 8.5;
@@ -473,6 +484,10 @@ void AliV0Reader::Initialize(){
 			fBGEventInitialized = kTRUE;
 		}
 	}
+        
+        if(fDoMC && fExcludeBackgroundEventForGammaCorrection){
+           fNumberOfPrimerisFromHijingAndPythia = GetNumberOfHijingPlusPythiaPrimeries();
+        }
 }
 
 AliESDv0* AliV0Reader::GetV0(Int_t index){
@@ -535,20 +550,22 @@ Bool_t AliV0Reader::CheckForPrimaryVertexZ(){
 	return kTRUE;
 }
 
-Bool_t AliV0Reader::CheckV0FinderStatus(Int_t index){
+
+Bool_t AliV0Reader::CheckV0FinderStatus(AliESDv0 *v0){
 	// see headerfile for documentation
 	if(fUseOnFlyV0Finder){
-		if(!GetV0(index)->GetOnFlyStatus()){
+		if(!v0->GetOnFlyStatus()){
 			return kFALSE;
 		}
 	}
 	if(!fUseOnFlyV0Finder){
-		if(GetV0(index)->GetOnFlyStatus()){
+		if(v0->GetOnFlyStatus()){
 			return kFALSE;
 		}
 	}
 	return kTRUE;
 }
+
 
 
 
@@ -559,9 +576,10 @@ Bool_t AliV0Reader::NextV0(){
 		fCurrentV0 = fESDEvent->GetV0(fCurrentV0IndexNumber);
 
 		fUpdateV0AlreadyCalled=kFALSE;
-
+             
 		if(fHistograms != NULL){
 			fHistograms->FillHistogram("ESD_AllV0s_InvMass",GetMotherCandidateMass());
+			fHistograms->FillHistogram("ESD_AllV0s_Pt",GetMotherCandidatePt());
 		}
 		
 		// moved it up here so that the correction framework can access pt and eta information
@@ -570,6 +588,27 @@ Bool_t AliV0Reader::NextV0(){
 			continue;
 		}
  
+                
+                if(fDoMC && fExcludeBackgroundEventForGammaCorrection){ // Remove all V0s from BGEvent
+                   Bool_t isFromBGEvent = kFALSE;
+                   isFromBGEvent = IsParticleFromBGEvent(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetNindex())->GetLabel()));
+                   if(isFromBGEvent){
+                      fHistograms->FillHistogram("ESD_CutMCBgEvent_InvMass",GetMotherCandidateMass());
+                      fHistograms->FillHistogram("ESD_CutMCBgEvent_Pt",GetMotherCandidatePt());
+                      fCurrentV0IndexNumber++;
+                      continue;
+                   }
+                   isFromBGEvent = IsParticleFromBGEvent(TMath::Abs(fESDEvent->GetTrack(fCurrentV0->GetPindex())->GetLabel()));
+                   if(isFromBGEvent){
+                      fHistograms->FillHistogram("ESD_CutMCBgEvent_InvMass",GetMotherCandidateMass());
+                      fHistograms->FillHistogram("ESD_CutMCBgEvent_Pt",GetMotherCandidatePt());
+                      fCurrentV0IndexNumber++;
+                      continue;
+                   }
+                }
+                
+
+
 		Double_t containerInput[3];
 		if(fDoCF){
 			containerInput[0] = GetMotherCandidatePt();
@@ -589,9 +628,11 @@ Bool_t AliV0Reader::NextV0(){
 		*/
 
 		//checks if on the fly mode is set
-		if ( !CheckV0FinderStatus(fCurrentV0IndexNumber) ){
+		if ( !CheckV0FinderStatus(fCurrentV0) ){
+			
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutGetOnFly_InvMass",GetMotherCandidateMass());
+                                fHistograms->FillHistogram("ESD_CutGetOnFly_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -602,23 +643,48 @@ Bool_t AliV0Reader::NextV0(){
 
 		if(fHistograms != NULL){
 			fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_InvMass",GetMotherCandidateMass());
+                        fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt",GetMotherCandidatePt());
 		}
  
-		Double_t armenterosQtAlfa[2];
-		Double_t armenterosQtAlphaESDMC[2];
-		Double_t armenterosQtAlphaMC[2];
-		GetArmenterosQtAlfa(GetNegativeKFParticle(), 
-			GetPositiveKFParticle(), 
-			GetMotherCandidateKFCombination(),
-			armenterosQtAlfa);
-	 
-		fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
- 
-	 
+		Double_t armenterosQtAlpha[2] = {0,0};
+		Double_t armenterosQtAlphaKF[2] = {0,0};
+		Double_t armenterosQtAlphaESD[2] = {0,0};
+		Double_t armenterosQtAlphaKFNew[2] = {0,0};
+		Double_t armenterosQtAlphaESDMC[2] = {0,0};
+		Double_t armenterosQtAlphaMC[2] = {0,0};
+
+		GetArmenterosQtAlpha(GetNegativeKFParticle(), // old KF way calculating Qt Alpha
+				    GetPositiveKFParticle(), 
+				    GetMotherCandidateKFCombination(),
+				    armenterosQtAlphaKF);
+		GetArmenterosQtAlpha(fCurrentV0,armenterosQtAlphaESD); // ESD way calculating Qt Alpha
+		GetArmenterosQtAlpha(GetNegativeKFParticle(), // new KF way calculating Qt Alpha
+				    GetPositiveKFParticle(), 
+				    armenterosQtAlphaKFNew,fdoESDQtCut);
+
+		fHistograms->FillHistogram("ESD_AllV0sCurrentFinderKF_alfa_qt",armenterosQtAlphaKF[1],armenterosQtAlphaKF[0]);
+		fHistograms->FillHistogram("ESD_AllV0sCurrentFinderESD_alfa_qt",armenterosQtAlphaESD[1],armenterosQtAlphaESD[0]);
+		fHistograms->FillHistogram("ESD_AllV0sCurrentFinderKFNew_alfa_qt",armenterosQtAlphaKFNew[1],armenterosQtAlphaKFNew[0]);
+
+		if(fdoESDQtCut == 0){
+		   armenterosQtAlpha[0] = armenterosQtAlphaKF[0];
+		   armenterosQtAlpha[1] = armenterosQtAlphaKF[1];
+		}
+		else if(fdoESDQtCut == 1){
+		   armenterosQtAlpha[0] = armenterosQtAlphaESD[0];
+		   armenterosQtAlpha[1] = armenterosQtAlphaESD[1];
+		}
+
+		else if(fdoESDQtCut == 2 || fdoESDQtCut == 3){
+                   armenterosQtAlpha[0] = armenterosQtAlphaKFNew[0];
+		   armenterosQtAlpha[1] = armenterosQtAlphaKFNew[1];
+		}
+              
 		if(fCurrentNegativeESDTrack->Charge() == fCurrentPositiveESDTrack->Charge()){						 // avoid like sign
 			//	iResult=kFALSE;
 			if(fHistograms != NULL ){
 				fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
+                                fHistograms->FillHistogram("ESD_CutLikeSign_Pt",GetMotherCandidatePt());
 				// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 				// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 				//	fUpdateV0AlreadyCalled = kTRUE;
@@ -637,6 +703,7 @@ Bool_t AliV0Reader::NextV0(){
 			//	iResult=kFALSE;
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
+                                fHistograms->FillHistogram("ESD_CutRefit_Pt",GetMotherCandidatePt());
 				// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 				// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 				//fUpdateV0AlreadyCalled = kTRUE;
@@ -655,6 +722,7 @@ Bool_t AliV0Reader::NextV0(){
 			//iResult=kFALSE;
 			if(fHistograms != NULL ){
 				fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutKink_Pt",GetMotherCandidatePt());
 				// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 				// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 				//fUpdateV0AlreadyCalled = kTRUE;
@@ -670,6 +738,7 @@ Bool_t AliV0Reader::NextV0(){
 		if(GetXYRadius()>fMaxR){ // cuts on distance from collision point
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutR_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutR_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -680,6 +749,7 @@ Bool_t AliV0Reader::NextV0(){
 		if(GetXYRadius()<fMinR){ // cuts on distance from collision point
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutMinR_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutMinR_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -689,12 +759,14 @@ Bool_t AliV0Reader::NextV0(){
 		if( GetXYRadius() <= ((TMath::Abs(fCurrentZValue)*fLineCutZRSlope)-fLineCutZValue)){
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutLine_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutLine_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
 		} else if (fUseEtaMinCut &&  GetXYRadius() >= ((TMath::Abs(fCurrentZValue)*fLineCutZRSlopeMin)-fLineCutZValueMin )){ 
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutLine_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutLine_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -707,6 +779,7 @@ Bool_t AliV0Reader::NextV0(){
 		if(TMath::Abs(fCurrentZValue) > fMaxZ ){ // cuts out regions where we do not reconstruct
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutZ_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutZ_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -719,6 +792,7 @@ Bool_t AliV0Reader::NextV0(){
 			if(TMath::Abs(fMotherCandidateLorentzVector->Eta())> fEtaCut || TMath::Abs(fMotherCandidateLorentzVector->Eta())< fEtaCutMin){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutEta_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -727,6 +801,7 @@ Bool_t AliV0Reader::NextV0(){
 			if(TMath::Abs(fCurrentNegativeKFParticle->GetEta())> fEtaCut || TMath::Abs(fCurrentNegativeKFParticle->GetEta())< fEtaCutMin){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutEta_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -735,29 +810,31 @@ Bool_t AliV0Reader::NextV0(){
 			if(TMath::Abs(fCurrentPositiveKFParticle->GetEta())> fEtaCut || TMath::Abs(fCurrentPositiveKFParticle->GetEta())< fEtaCutMin){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutEta_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutEta_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
 			}
 		}
 
-fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(),armenterosQtAlfa[0]);
+		fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(),armenterosQtAlpha[0]);
 
 		if(fDoMC){
 			if ( HasSameMCMother() == kTRUE){ 
-				GetArmenterosQtAlfa(fNegativeMCParticle, 
+				GetArmenterosQtAlpha(fNegativeMCParticle, 
 					fPositiveMCParticle, 
 					fMotherMCParticle,
 					armenterosQtAlphaMC);
 			}
-			GetArmenterosQtAlfa(fNegativeMCParticle, 
+			GetArmenterosQtAlpha(fNegativeMCParticle, 
 				fPositiveMCParticle, 
 				GetMotherCandidateKFCombination(),
 				armenterosQtAlphaESDMC );
 		}
-		fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_goodtracks_alfa_qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+
+                fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_goodtracks_alfa_qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 		if( fCurrentNegativeKFParticle->GetPt()> 0.150 &&	fCurrentPositiveKFParticle->GetPt()> 0.150){
-			fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_minPt_GT_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+			fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_minPt_GT_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 		}
 		if(fDoMC){
 			fHistograms->FillHistogram("ESD_TrueConvAllV0s_ESDMother_Alpha_Qt",armenterosQtAlphaESDMC[1],armenterosQtAlphaESDMC[0]);
@@ -765,29 +842,29 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 				fHistograms->FillHistogram("ESD_TrueConvSameMother_ESDMother_Alpha_Qt",armenterosQtAlphaESDMC[1],armenterosQtAlphaESDMC[0]);
 				fHistograms->FillHistogram("ESD_TrueConvSameMother_MCMother_Alpha_Qt",armenterosQtAlphaMC[1],armenterosQtAlphaMC[0]);
 				if (fMotherMCParticle->GetPdgCode() == 22 ){
-					fHistograms->FillHistogram("ESD_TrueConvGamma_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
-					fHistograms->FillHistogram("ESD_TrueConvGamma_Pt_Qt",GetMotherCandidatePt(),armenterosQtAlfa[0]);	
+					fHistograms->FillHistogram("ESD_TrueConvGamma_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
+					fHistograms->FillHistogram("ESD_TrueConvGamma_Pt_Qt",GetMotherCandidatePt(),armenterosQtAlpha[0]);	
 				} else if ( fMotherMCParticle->GetPdgCode() == 310 ){
-					fHistograms->FillHistogram("ESD_TrueConvK0s_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvK0s_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else if ( fMotherMCParticle->GetPdgCode() == 113 ){
-					fHistograms->FillHistogram("ESD_TrueConvRho0_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvRho0_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else if ( fMotherMCParticle->GetPdgCode() == 333 ){
-					fHistograms->FillHistogram("ESD_TrueConvPhi_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvPhi_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else if ( (fMotherMCParticle->GetPdgCode() == 3122 || fMotherMCParticle->GetPdgCode() == -3122) ){
-					fHistograms->FillHistogram("ESD_TrueConvLambda_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvLambda_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else if ( (fMotherMCParticle->GetPdgCode() == 2114 || fMotherMCParticle->GetPdgCode() == -2114) ){
-					fHistograms->FillHistogram("ESD_TrueConvDelta_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvDelta_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else if ( (fMotherMCParticle->GetPdgCode() == 313 || 
 								fMotherMCParticle->GetPdgCode() == 323 || 
 								fMotherMCParticle->GetPdgCode() == -323 ) ){
-					fHistograms->FillHistogram("ESD_TrueConvKStar_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvKStar_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 				} else {
-					fHistograms->FillHistogram("ESD_TrueConvUnknown_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+					fHistograms->FillHistogram("ESD_TrueConvUnknown_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 					fHistograms->FillHistogram("ESD_TrueConvUnknown_Qt_PDG",fMotherMCParticle->GetPdgCode());
 				//	cout << "unidentfied mother: pdg-C mother " << fMotherMCParticle->GetPdgCode() << " daughters " << fNegativeMCParticle->GetPdgCode() << "\t" << fPositiveMCParticle->GetPdgCode() << endl;
 				}
 			}	else {
-				fHistograms->FillHistogram("ESD_TrueConvComb_Alpha_Qt",armenterosQtAlfa[1],armenterosQtAlfa[0]);
+				fHistograms->FillHistogram("ESD_TrueConvComb_Alpha_Qt",armenterosQtAlpha[1],armenterosQtAlpha[0]);
 			}
 		}
 
@@ -812,6 +889,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 				//iResult=kFALSE;
 				if(fHistograms != NULL ){
 					fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
+                                        fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_Pt",GetMotherCandidatePt());
 					// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 					// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 					//fUpdateV0AlreadyCalled = kTRUE;
@@ -836,6 +914,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 					//		iResult=kFALSE;
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -852,6 +931,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 					//		iResult=kFALSE;
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -869,6 +949,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 					//		iResult=kFALSE;
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -885,6 +966,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			//		iResult=kFALSE;
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -989,6 +1071,38 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		}
 
 
+		Double_t psiPair  = -1;
+		psiPair = GetPsiPair(fCurrentV0);
+		
+                if(psiPair > fPsiPairCut){
+                   if(fHistograms != NULL ){
+                      fHistograms->FillHistogram("ESD_CutPsiPair_InvMass",GetMotherCandidateMass());
+                      fHistograms->FillHistogram("ESD_CutPsiPair_Pt",GetMotherCandidatePt());
+                      // to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+                      // it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+                      //	fUpdateV0AlreadyCalled = kTRUE;
+                   }
+                   
+                   fCurrentV0IndexNumber++;
+                   continue;
+                }
+               
+
+		Double_t cosineOfPointingAngle  = -1;
+                cosineOfPointingAngle = GetV0CosineOfPointingAngle(fCurrentXValue,fCurrentYValue,fCurrentZValue);
+                if(cosineOfPointingAngle < fCosinePointCut){
+                   if(fHistograms != NULL ){
+			fHistograms->FillHistogram("ESD_CutCosinePoint_InvMass",GetMotherCandidateMass());
+                        fHistograms->FillHistogram("ESD_CutCosinePoint_Pt",GetMotherCandidatePt());
+			// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
+			// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
+			//	fUpdateV0AlreadyCalled = kTRUE;
+			}
+			fCurrentV0IndexNumber++;
+			continue;
+		}
+
+
 		if( fDoTOFsigmaCut == kTRUE ){ // RRnewTOF start ///////////////////////////////////////////////////////////////////////////// 
 			Bool_t PosTrackNotTOFelec = kFALSE;
 			Bool_t NegTrackNotTOFelec = kFALSE;
@@ -1005,6 +1119,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			if( (PosTrackNotTOFelec==kTRUE) || (NegTrackNotTOFelec==kTRUE) ){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutTOFsigmaElec_InvMass",GetMotherCandidateMass());
+                                        fHistograms->FillHistogram("ESD_CutTOFsigmaElec_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -1016,26 +1131,29 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		if(fDoQtGammaSelection == kTRUE){ // RRnew start : apply different qT-cut above/below
 			if(fDoHighPtQtGammaSelection){
 				if(GetMotherCandidatePt() < fPtBorderForQt){
-					if(armenterosQtAlfa[0]>fQtMax){
+					if(armenterosQtAlpha[0]>fQtMax){
 						if(fHistograms != NULL){
 							fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+							fHistograms->FillHistogram("ESD_CutQt_Pt",GetMotherCandidatePt());
 						}
 						fCurrentV0IndexNumber++;
 						continue;
 					}
 				} else {
-					if(armenterosQtAlfa[0]>fHighPtQtMax)	{
+					if(armenterosQtAlpha[0]>fHighPtQtMax)	{
 						if(fHistograms != NULL){
 							fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+                                                        fHistograms->FillHistogram("ESD_CutQt_Pt",GetMotherCandidatePt());
 						}
 						fCurrentV0IndexNumber++;
 						continue;
 					}
 				}
 			} else {
-				if(armenterosQtAlfa[0]>fQtMax){
+				if(armenterosQtAlpha[0]>fQtMax){
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutQt_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutQt_Pt",GetMotherCandidatePt());
 					}
 					fCurrentV0IndexNumber++;
 					continue;
@@ -1052,6 +1170,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 				if( trackNegAsy<fMinPhotonAsymmetry ||trackNegAsy>(1.- fMinPhotonAsymmetry)){
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -1069,6 +1188,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 				if( trackPosAsy<fMinPhotonAsymmetry ||trackPosAsy>(1.- fMinPhotonAsymmetry)){
 					if(fHistograms != NULL){
 						fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_InvMass",GetMotherCandidateMass());
+                                                fHistograms->FillHistogram("ESD_CutPhotonAsymmetry_Pt",GetMotherCandidatePt());
 						// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
 						// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
 						//fUpdateV0AlreadyCalled = kTRUE;
@@ -1083,6 +1203,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		if(GetNumberOfContributorsVtx()<=0) { 
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutNContributors_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutNContributors_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -1095,6 +1216,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		if(CheckPIDProbability(fPIDProbabilityCutNegativeParticle,fPIDProbabilityCutPositiveParticle)==kFALSE){
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutPIDProb_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutPIDProb_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -1113,6 +1235,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		if(fCurrentNegativeESDTrack->GetNcls(1) < fMinClsTPC ||	fCurrentPositiveESDTrack->GetNcls(1) < fMinClsTPC ){
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutMinNClsTPC_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutMinNClsTPC_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -1141,6 +1264,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 		if( negclsToF < fMinClsTPCToF ||	posclsToF < fMinClsTPCToF ){
 			if(fHistograms != NULL){
 				fHistograms->FillHistogram("ESD_CutMinNClsTPCToF_InvMass",GetMotherCandidateMass());
+				fHistograms->FillHistogram("ESD_CutMinNClsTPCToF_Pt",GetMotherCandidatePt());
 			}
 			fCurrentV0IndexNumber++;
 			continue;
@@ -1155,6 +1279,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			if( fCurrentNegativeKFParticle->GetPt()< fSinglePtCut ||	fCurrentPositiveKFParticle->GetPt()< fSinglePtCut){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutSinglePt_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutSinglePt_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -1167,6 +1292,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			if(fCurrentMotherKFCandidate->GetNDF()<=0){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutNDF_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutNDF_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -1179,6 +1305,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			if(chi2V0 > fChi2CutConversion || chi2V0 <=0){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutChi2_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutChi2_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -1194,6 +1321,7 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 			if(fMotherCandidateLorentzVector->Pt()<fPtCut){
 				if(fHistograms != NULL){
 					fHistograms->FillHistogram("ESD_CutPt_InvMass",GetMotherCandidateMass());
+					fHistograms->FillHistogram("ESD_CutPt_Pt",GetMotherCandidatePt());
 				}
 				fCurrentV0IndexNumber++;
 				continue;
@@ -1240,6 +1368,9 @@ fHistograms->FillHistogram("ESD_AllV0sCurrentFinder_Pt_Qt",GetMotherCandidatePt(
 Bool_t AliV0Reader::UpdateV0Information(){
 	//see header file for documentation
 	
+	const AliExternalTrackParam *fCurrentExternalTrackParamPositive=GetExternalTrackParamP(fCurrentV0);
+   const AliExternalTrackParam *fCurrentExternalTrackParamNegative=GetExternalTrackParamN(fCurrentV0);
+
 	Bool_t iResult=kTRUE;		 				// for taking out not refitted, kinks and like sign tracks 
 	
 	Bool_t switchTracks = kFALSE;
@@ -1369,103 +1500,20 @@ Bool_t AliV0Reader::UpdateV0Information(){
 		}
 	}
 	else{
-		Double_t convpos[2]; //Double_t convpos[3];
-		convpos[0]=0;
-		convpos[1]=0;
-//     convpos[2]=0;
+		Double_t convpos[3]={0,0,0};
+		GetConversionPoint(fCurrentExternalTrackParamPositive,fCurrentExternalTrackParamNegative,convpos);
+// 		fCurrentMotherKF->SetConversionPoint(convpos);
 
-		GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
-		
-		/*if(switchTracks == kFALSE){
-			GetConversionPoint((fCurrentV0->GetParamP()),(fCurrentV0->GetParamN()),convpos);
-		}else{
-			GetConversionPoint((fCurrentV0->GetParamN()),(fCurrentV0->GetParamP()),convpos);
-		}*/
-		
+// 		Double_t convpos[2];
+// 		convpos[0]=0;
+// 		convpos[1]=0;
+// 
+// 		GetConvPosXY(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField(),convpos);
+// 		
 		fCurrentXValue = convpos[0];
 		fCurrentYValue = convpos[1];
-// 		fCurrentZValue = convpos[2];
-		fCurrentZValue = GetConvPosZ(GetPositiveESDTrack(),GetNegativeESDTrack(),GetMagneticField());
+		fCurrentZValue = convpos[2];
 	}
-	/*
-	if(fCurrentNegativeESDTrack->GetSign() == fCurrentPositiveESDTrack->GetSign()){						 // avoid like sign
-		iResult=kFALSE;
-		if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE){
-			fHistograms->FillHistogram("ESD_CutLikeSign_InvMass",GetMotherCandidateMass());
-			// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-			// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-			fUpdateV0AlreadyCalled = kTRUE;
-		}
-	}
-	
-	if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kTPCrefit) || 
-			!(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kTPCrefit) ){
-		//	if( !(fCurrentNegativeESDTrack->GetStatus() & AliESDtrack::kITSrefit) || 
-		//			!(fCurrentPositiveESDTrack->GetStatus() & AliESDtrack::kITSrefit) ){
-		iResult=kFALSE;
-		if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE	&& doFillHistos == kTRUE){
-			fHistograms->FillHistogram("ESD_CutRefit_InvMass",GetMotherCandidateMass());
-			// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-			// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-			fUpdateV0AlreadyCalled = kTRUE;
-		}
-	}
-	
-	if( fCurrentNegativeESDTrack->GetKinkIndex(0) > 0 || 
-			fCurrentPositiveESDTrack->GetKinkIndex(0) > 0) {			
-		
-		iResult=kFALSE;
-		if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE ){
-			fHistograms->FillHistogram("ESD_CutKink_InvMass",GetMotherCandidateMass());
-			// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-			// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-			fUpdateV0AlreadyCalled = kTRUE;
-		}
-	}
-
-	if(fDodEdxSigmaCut == kTRUE){
-
-		if( fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ||
-	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaBelowElectronLine ||
-	fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaAboveElectronLine ){
-			iResult=kFALSE;
-			if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE	&& doFillHistos == kTRUE){
-	fHistograms->FillHistogram("ESD_CutdEdxSigmaElectronLine_InvMass",GetMotherCandidateMass());
-	// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-	// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-	fUpdateV0AlreadyCalled = kTRUE;
-			}
-		}
-		if( fCurrentPositiveESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-			if(fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	 fESDpid->NumberOfSigmasTPC(fCurrentPositiveESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
-	iResult=kFALSE;
-	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE	&& doFillHistos == kTRUE){
-		fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
-		// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-		// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-		fUpdateV0AlreadyCalled = kTRUE;
-	}
-			}
-		}
-
-		if( fCurrentNegativeESDTrack->P()>fPIDMinPnSigmaAbovePionLine){
-			if(fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)>fPIDnSigmaBelowElectronLine &&
-	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kElectron)<fPIDnSigmaAboveElectronLine&&
-	 fESDpid->NumberOfSigmasTPC(fCurrentNegativeESDTrack,AliPID::kPion)<fPIDnSigmaAbovePionLine){
-	iResult=kFALSE;
-	if(fHistograms != NULL && fUpdateV0AlreadyCalled == kFALSE && doFillHistos == kTRUE ){
-		fHistograms->FillHistogram("ESD_CutdEdxSigmaPionLine_InvMass",GetMotherCandidateMass());
-		// to avoid filling the other cut histograms. So in this case fUpdateV0AlreadyCalled also serves as a flag for the histogram filling
-		// it will anyway be set to true at the end of the UpdateV0Information function, and there are no return until the end
-		fUpdateV0AlreadyCalled = kTRUE;
-	}
-			}
-		}
-	}
-	*/
 	fUpdateV0AlreadyCalled = kTRUE;
 
 	return iResult;
@@ -1730,11 +1778,9 @@ Int_t AliV0Reader::GetSpeciesIndex(Int_t chargeOfTrack){
 	return iResult;
 }
 
-Bool_t AliV0Reader::GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]){ 
-// Bool_t AliV0Reader::GetHelixCenter(const AliExternalTrackParam *track, Double_t b,Int_t charge, Double_t center[2]){
+//_____________________________________________________________________________________________________________________
+Bool_t AliV0Reader::GetHelixCenter(const AliExternalTrackParam *track, Double_t b,Int_t charge, Double_t center[2]){
 	// see header file for documentation
-		
-	Double_t pi = 3.14159265358979323846;
 	
 	Double_t	helix[6];
 	track->GetHelixParameters(helix,b);
@@ -1745,104 +1791,161 @@ Bool_t AliV0Reader::GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, 
 	Double_t phi = helix[2];
 
 	if(phi < 0){
-		phi = phi + 2*pi;
+		phi = phi + 2*TMath::Pi();
 	}
 
-	phi -= pi/2.;
+	phi -= TMath::Pi()/2.;
 	Double_t xpoint =	radius * TMath::Cos(phi);
 	Double_t ypoint =	radius * TMath::Sin(phi);
 
 	if(b<0){
-	  if(charge > 0){
-		xpoint = - xpoint;
-		ypoint = - ypoint;
-	  }
-	
-	} else if(b>0){
-	  if(charge < 0){
-		xpoint = - xpoint;
-		ypoint = - ypoint;
-	  }
-	}
+		if(charge > 0){
+			xpoint = - xpoint;
+			ypoint = - ypoint;
+		}
 
+		if(charge < 0){
+			xpoint =	xpoint;
+			ypoint =	ypoint;
+		}
+	}
+	if(b>0){
+		if(charge > 0){
+			xpoint =	xpoint;
+			ypoint =	ypoint;
+		}
+
+		if(charge < 0){
+			xpoint = - xpoint;
+			ypoint = - ypoint;
+		}
+	}
 	center[0] =	xpos + xpoint;
 	center[1] =	ypos + ypoint;
 
 	return 1;
 }
 
-/*void AliV0Reader::GetConversionPoint(const AliExternalTrackParam *pparam,const AliExternalTrackParam *nparam,Double_t convpos[3]){
+//_________________________________________________________________________________________________________
+// Bool_t AliV0Reader::GetHelixCenter(AliESDtrack* track, Double_t b,Int_t charge, Double_t center[2]){ 
+// // Bool_t AliV0Reader::GetHelixCenter(const AliExternalTrackParam *track, Double_t b,Int_t charge, Double_t center[2]){
+// 	// see header file for documentation
+// 		
+// 	Double_t pi = 3.14159265358979323846;
+// 	
+// 	Double_t	helix[6];
+// 	track->GetHelixParameters(helix,b);
+// 	
+// 	Double_t xpos =	helix[5];
+// 	Double_t ypos =	helix[0];
+// 	Double_t radius = TMath::Abs(1./helix[4]);
+// 	Double_t phi = helix[2];
+// 
+// 	if(phi < 0){
+// 		phi = phi + 2*pi;
+// 	}
+// 
+// 	phi -= pi/2.;
+// 	Double_t xpoint =	radius * TMath::Cos(phi);
+// 	Double_t ypoint =	radius * TMath::Sin(phi);
+// 
+// 	if(b<0){
+// 		if(charge > 0){
+// 			xpoint = - xpoint;
+// 			ypoint = - ypoint;
+// 		}
+// 
+// 		if(charge < 0){
+// 			xpoint =	xpoint;
+// 			ypoint =	ypoint;
+// 		}
+// 	}
+// 	if(b>0){
+// 		if(charge > 0){
+// 			xpoint =	xpoint;
+// 			ypoint =	ypoint;
+// 		}
+// 
+// 		if(charge < 0){
+// 			xpoint = - xpoint;
+// 			ypoint = - ypoint;
+// 		}
+// 	}
+// 	center[0] =	xpos + xpoint;
+// 	center[1] =	ypos + ypoint;
+// 
+// 	return 1;
+// }
+
+//____________________________________________________________________________________________________________________________
+Bool_t AliV0Reader::GetConversionPoint(const AliExternalTrackParam *pparam,const AliExternalTrackParam *nparam,Double_t convpos[3]){
+
+    if(!pparam||!nparam)return kFALSE;
 
 	Double_t helixcenterpos[2];
 	GetHelixCenter(pparam,GetMagneticField(),pparam->Charge(),helixcenterpos);
-	
+
 	Double_t helixcenterneg[2];
 	GetHelixCenter(nparam,GetMagneticField(),nparam->Charge(),helixcenterneg);
-	
+
 	Double_t helixpos[6];
 	pparam->GetHelixParameters(helixpos,GetMagneticField());
 	Double_t posradius = TMath::Abs(1./helixpos[4]);
-	
+
 	Double_t helixneg[6];
 	nparam->GetHelixParameters(helixneg,GetMagneticField());
 	Double_t negradius = TMath::Abs(1./helixneg[4]);
-	
-	// Calculate xy-position
-	
+
+        // Calculate xy-position
+
 	Double_t xpos = helixcenterpos[0];
 	Double_t ypos = helixcenterpos[1];
 	Double_t xneg = helixcenterneg[0];
 	Double_t yneg = helixcenterneg[1];
-	
+
 	convpos[0] = (xpos*negradius + xneg*posradius)/(negradius+posradius);
-	convpos[1] = (ypos*negradius + yneg*posradius)/(negradius+posradius);
-	
-	
+	convpos[1] = (ypos*negradius+ yneg*posradius)/(negradius+posradius);
+
+
 	// Calculate z-position
-	
-	Double_t deltaXPos = convpos[0] -       xpos;
-	Double_t deltaYPos = convpos[1] -      ypos;
-	
-	Double_t deltaXNeg = convpos[0] -      xneg;
-	Double_t deltaYNeg = convpos[1] -      yneg;
-	
-	Double_t alphaPos =    TMath::Pi() + TMath::ATan2(-deltaYPos,-deltaXPos);
-	Double_t alphaNeg =    TMath::Pi() + TMath::ATan2(-deltaYNeg,-deltaXNeg);
-	Double_t vertexXNeg =  xneg +  TMath::Abs(negradius)*TMath::Cos(alphaNeg);
-	Double_t vertexYNeg =  yneg +  TMath::Abs(negradius)*TMath::Sin(alphaNeg);
-	
-	Double_t vertexXPos =  xpos +  TMath::Abs(posradius)*TMath::Cos(alphaPos);
-	Double_t vertexYPos =  ypos +  TMath::Abs(posradius)*TMath::Sin(alphaPos);
-	
-	Double_t x0neg =        helixneg[5];
-	Double_t y0neg =        helixneg[0];
-	
-	Double_t x0pos =        helixpos[5];
-	Double_t y0pos =        helixpos[0];
-	
-	Double_t dNeg = TMath::Sqrt((vertexXNeg - x0neg)*(vertexXNeg - x0neg)+(vertexYNeg - y0neg)*(vertexYNeg - y0neg));
-	
-	Double_t dPos = TMath::Sqrt((vertexXPos - x0pos)*(vertexXPos - x0pos)+(vertexYPos - y0pos)*(vertexYPos - y0pos));
-	
-	Double_t rNeg = TMath::Sqrt(negradius*negradius - dNeg*dNeg/4.);
 
-	Double_t rPos = TMath::Sqrt(posradius*posradius - dPos*dPos/4.);
-	
-	Double_t deltabetaNeg = 2*(TMath::Pi() + TMath::ATan2(-dNeg/2.,-rNeg));
-	Double_t deltabetaPos = 2*(TMath::Pi() + TMath::ATan2(-dPos/2.,-rPos));
-	
-	Double_t deltaUNeg = negradius*deltabetaNeg;
-	Double_t deltaUPos = posradius*deltabetaPos;
+	Double_t deltaXPos = convpos[0] -	xpos;
+	Double_t deltaYPos = convpos[1] -	ypos;
 
-	Double_t zphaseNeg = nparam->GetZ() +  deltaUNeg * nparam->GetTgl();
-	Double_t zphasePos = pparam->GetZ() +  deltaUPos * pparam->GetTgl();
+	Double_t deltaXNeg = convpos[0] -	xneg;
+	Double_t deltaYNeg = convpos[1] -	yneg;
 
-	convpos[2] = (zphasePos*negradius+zphaseNeg*posradius)/(negradius+posradius);
+	Double_t alphaPos =	TMath::Pi() + TMath::ATan2(-deltaYPos,-deltaXPos);
+	Double_t alphaNeg =	TMath::Pi() + TMath::ATan2(-deltaYNeg,-deltaXNeg);
 
-  
+	Double_t vertexXNeg =	xneg +	TMath::Abs(negradius)*TMath::Cos(alphaNeg);
+	Double_t vertexYNeg =	yneg +	TMath::Abs(negradius)*TMath::Sin(alphaNeg);
 
-}*/
+	Double_t vertexXPos =	xpos +	TMath::Abs(posradius)*TMath::Cos(alphaPos);
+	Double_t vertexYPos =	ypos +	TMath::Abs(posradius)*TMath::Sin(alphaPos);
 
+	Double_t b = fESDEvent->GetMagneticField();
+
+	AliExternalTrackParam p(*pparam);
+	AliExternalTrackParam n(*nparam);
+
+	TVector2 vertexPos(vertexXPos,vertexYPos);
+        TVector2 vertexNeg(vertexXNeg,vertexYNeg);
+
+	// Convert to local coordinate system
+	vertexPos=vertexPos.Rotate(-p.GetAlpha());
+        vertexNeg=vertexNeg.Rotate(-p.GetAlpha());
+
+        // Propagate Track Params to Vertex
+        p.PropagateTo(vertexPos.X(),b);
+        n.PropagateTo(vertexNeg.X(),b);
+
+  	convpos[2] = (p.GetZ()*negradius+n.GetZ()*posradius)/(negradius+posradius);
+
+	return kTRUE;
+}
+// 
+// //__________________________________________________________________________________________________________
 Bool_t AliV0Reader::GetConvPosXY(AliESDtrack* ptrack, AliESDtrack* ntrack, Double_t b, Double_t convpos[2]){
 	//see header file for documentation
 
@@ -1870,9 +1973,9 @@ Bool_t AliV0Reader::GetConvPosXY(AliESDtrack* ptrack, AliESDtrack* ntrack, Doubl
 
 	return 1;
 }
-
-
-
+// 
+// 
+// 
 Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Double_t b){
 	//see header file for documentation
 
@@ -1954,7 +2057,7 @@ Double_t AliV0Reader::GetConvPosZ(AliESDtrack* ptrack,AliESDtrack* ntrack, Doubl
 
 	 return convposz;
 }
-
+// 
 AliGammaConversionKFVector* AliV0Reader::GetBGGoodV0s(Int_t /*event*/) const{
 	/*
 	if(fUseChargedTrackMultiplicityForBG == kTRUE){
@@ -2005,7 +2108,33 @@ Bool_t AliV0Reader::CheckIfEtaIsMother(Int_t label){
 }
 
 
-Bool_t AliV0Reader::GetArmenterosQtAlfa(const AliKFParticle* negativeKFParticle, const AliKFParticle * positiveKFParticle, const AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ){
+
+
+Bool_t AliV0Reader::GetArmenterosQtAlpha(const AliKFParticle* negativeKFParticle, const AliKFParticle * positiveKFParticle, Double_t armenterosQtAlpha[2], Int_t kfProductionMethod){
+   
+   AliKFParticle PosParticle = *positiveKFParticle;
+   AliKFParticle NegParticle = *negativeKFParticle;
+   AliKFParticle Gamma;
+   if(kfProductionMethod < 3)
+      Gamma.ConstructGamma(PosParticle, NegParticle);
+   else if(kfProductionMethod == 3){
+      Gamma += PosParticle;
+      Gamma += NegParticle;
+   }
+   
+   Double_t VertexGamma[3] = {Gamma.GetX(), Gamma.GetY(), Gamma.GetZ()};
+   PosParticle.TransportToPoint(VertexGamma);
+   NegParticle.TransportToPoint(VertexGamma);
+   
+   AliKFParticle::GetArmenterosPodolanski(PosParticle, NegParticle, armenterosQtAlpha);
+   
+   return 1;
+}
+
+
+
+
+Bool_t AliV0Reader::GetArmenterosQtAlpha(const AliKFParticle* negativeKFParticle, const AliKFParticle * positiveKFParticle, const AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlpha[2] ){
 	//see header file for documentation
 
 	TVector3 momentumVectorPositiveKF(positiveKFParticle->GetPx(),positiveKFParticle->GetPy(),positiveKFParticle->GetPz());
@@ -2021,14 +2150,75 @@ Bool_t AliV0Reader::GetArmenterosQtAlfa(const AliKFParticle* negativeKFParticle,
 
 	Float_t qt = momentumVectorPositiveKF.Mag()*TMath::Sin(thetaV0pos);
 			
-	armenterosQtAlfa[0]=qt;
-	armenterosQtAlfa[1]=alfa;
+	armenterosQtAlpha[0]=qt;
+	armenterosQtAlpha[1]=alfa;
 
 	return 1;
 
 }
 
-Bool_t AliV0Reader::GetArmenterosQtAlfa(const TParticle* negativeParticle, const TParticle * positiveParticle, const AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlfa[2] ){
+Bool_t AliV0Reader::GetArmenterosQtAlpha(const AliESDv0* v0, Double_t armenterosQtAlpha[2])
+{	//see header file for documentation
+
+   Double_t mn[3] = {0,0,0};
+   Double_t mp[3] = {0,0,0};  
+   Double_t mm[3] = {0,0,0};  
+
+
+   Int_t pIndex = 0, nIndex = 0;
+   pIndex = v0->GetPindex();
+   nIndex = v0->GetNindex();
+
+   AliESDtrack* d[2];
+   d[0] = dynamic_cast<AliESDtrack*>(fESDEvent->GetTrack(pIndex));
+   d[1] = dynamic_cast<AliESDtrack*>(fESDEvent->GetTrack(nIndex));
+
+   Int_t sign[2];
+   sign[0] = (int)d[0]->GetSign();
+   sign[1] = (int)d[1]->GetSign();
+  
+   Bool_t correct = kFALSE;
+
+
+   if(-1 == sign[0] && 1 == sign[1]){
+      correct = kFALSE;
+   }
+   else{
+      correct = kTRUE;
+   }
+
+
+   if(correct){
+      v0->GetNPxPyPz(mn[0],mn[1],mn[2]); //reconstructed cartesian momentum components of negative daughter
+      v0->GetPPxPyPz(mp[0],mp[1],mp[2]); //reconstructed cartesian momentum components of positive daughter
+   }
+   else{
+      v0->GetPPxPyPz(mn[0],mn[1],mn[2]); //reconstructed cartesian momentum components of negative daughter
+      v0->GetNPxPyPz(mp[0],mp[1],mp[2]); //reconstructed cartesian momentum components of positive daughter
+   }
+   v0->GetPxPyPz(mm[0],mm[1],mm[2]); //reconstructed cartesian momentum components of mother
+
+   TVector3 vecN(mn[0],mn[1],mn[2]);
+   TVector3 vecP(mp[0],mp[1],mp[2]);
+   TVector3 vecM(mm[0],mm[1],mm[2]);
+  
+   Double_t thetaP = acos((vecP * vecM)/(vecP.Mag() * vecM.Mag()));
+   Double_t thetaN = acos((vecN * vecM)/(vecN.Mag() * vecM.Mag()));
+  
+   Double_t alfa = ((vecP.Mag())*cos(thetaP)-(vecN.Mag())*cos(thetaN))/
+      ((vecP.Mag())*cos(thetaP)+(vecN.Mag())*cos(thetaN)) ;
+   Double_t qt = vecP.Mag()*sin(thetaP);
+
+   armenterosQtAlpha[0]=qt;
+   armenterosQtAlpha[1]=alfa;
+   
+   return 1;
+
+}
+
+
+
+Bool_t AliV0Reader::GetArmenterosQtAlpha(const TParticle* negativeParticle, const TParticle * positiveParticle, const AliKFParticle * gammaKFCandidate, Double_t armenterosQtAlpha[2] ){
 	//see header file for documentation
 
 	TVector3 momentumVectorPositiveKF(positiveParticle->Px(),positiveParticle->Py(),positiveParticle->Pz());
@@ -2058,13 +2248,13 @@ Bool_t AliV0Reader::GetArmenterosQtAlfa(const TParticle* negativeParticle, const
 		qt = momentumVectorPositiveKF.Mag()*TMath::Sin(thetaV0pos);
 	}
 		
-	armenterosQtAlfa[0]=qt;
-	armenterosQtAlfa[1]=alfa;
+	armenterosQtAlpha[0]=qt;
+	armenterosQtAlpha[1]=alfa;
 	return 1;
 
 }
 
-Bool_t AliV0Reader::GetArmenterosQtAlfa(const TParticle* negativeParticle, const TParticle * positiveParticle, const TParticle * gammaCandidate, Double_t armenterosQtAlfa[2] ){
+Bool_t AliV0Reader::GetArmenterosQtAlpha(const TParticle* negativeParticle, const TParticle * positiveParticle, const TParticle * gammaCandidate, Double_t armenterosQtAlpha[2] ){
 	//see header file for documentation
 
 	TVector3 momentumVectorPositiveKF(positiveParticle->Px(),positiveParticle->Py(),positiveParticle->Pz());
@@ -2094,8 +2284,8 @@ Bool_t AliV0Reader::GetArmenterosQtAlfa(const TParticle* negativeParticle, const
 		qt = momentumVectorPositiveKF.Mag()*TMath::Sin(thetaV0pos);
 	}
 			
-	armenterosQtAlfa[0]=qt;
-	armenterosQtAlfa[1]=alfa;
+	armenterosQtAlpha[0]=qt;
+	armenterosQtAlpha[1]=alfa;
 	return 1;
 
 }
@@ -2160,4 +2350,157 @@ void AliV0Reader::SmearKFParticle(AliKFParticle * kfParticle)
 	kfParticle->Py() = facPBrem* (1+facPSig)* P*sin(theta)*sin(phi) ;
 	kfParticle->Pz() = facPBrem* (1+facPSig)* P*cos(theta) ;
 	kfParticle->E() = kfParticle->GetP();
+}
+
+///________________________________________________________________________
+const AliExternalTrackParam *AliV0Reader::GetExternalTrackParam(AliESDv0 *v0,Int_t charge){
+
+    if(!(charge==1||charge==-1)){AliError("Charge not defined");return 0x0;}
+
+    Int_t label;
+    if(charge>0)label=0;
+    else label=1;
+    // Check for sign flip
+
+    if(v0){
+	if(!v0->GetParamN()||!v0->GetParamP())return 0x0;
+	if(!GetTrack(v0->GetNindex())||!fESDEvent->GetTrack(v0->GetPindex()))return 0x0;
+	if((GetTrack(v0->GetPindex()))->Charge()==charge){
+// 	    fCurrentTrackLabels[label]=v0->GetPindex();
+	    return v0->GetParamP();}
+	if((GetTrack(v0->GetNindex()))->Charge()==charge){
+// 	    fCurrentTrackLabels[label]=v0->GetNindex();
+	    return v0->GetParamN();}
+    }
+    return 0x0;
+}
+
+///________________________________________________________________________
+AliVTrack *AliV0Reader::GetTrack(Int_t label){
+    if(fESDEvent){
+		return (AliESDtrack*)fESDEvent->GetTrack(label);
+    }
+//     if(fAODEvent)return (AliAODTrack*)GetAODTrack(label);
+	return 0x0;
+}
+
+Double_t AliV0Reader::GetV0CosineOfPointingAngle(Double_t V0PointX, Double_t V0PointY, Double_t V0PointZ){
+   // calculates the pointing angle of the recalculated V0 
+
+   Double_t momV0[3]; //momentum of the V0
+   fCurrentV0->GetPxPyPz(momV0[0],momV0[1],momV0[2]);
+
+   Double_t PosV0[3]; //Recalculated V0 Position vector
+  
+   PosV0[0] = V0PointX - fESDEvent->GetPrimaryVertex()->GetX();
+   PosV0[1] = V0PointY - fESDEvent->GetPrimaryVertex()->GetY();
+   PosV0[2] = V0PointZ - fESDEvent->GetPrimaryVertex()->GetZ();
+
+   Double_t momV02 = momV0[0]*momV0[0] + momV0[1]*momV0[1] + momV0[2]*momV0[2];
+   Double_t PosV02 = PosV0[0]*PosV0[0] + PosV0[1]*PosV0[1] + PosV0[2]*PosV0[2];
+
+   Double_t cosinePointingAngle = (PosV0[0]*momV0[0] +  PosV0[1]*momV0[1] + PosV0[2]*momV0[2] ) / TMath::Sqrt(momV02 * PosV02);
+ 
+   return cosinePointingAngle;
+}
+
+
+Double_t AliV0Reader::GetPsiPair(AliESDv0* v0)
+{
+   //
+   // Angle between daughter momentum plane and plane 
+   // 
+   Float_t magField = fESDEvent->GetMagneticField();
+
+   Double_t xyz[3] = {0.,0.,0.};
+   v0->GetXYZ(xyz[0],xyz[1],xyz[2]);
+     
+   Double_t mn[3] = {0,0,0};
+   Double_t mp[3] = {0,0,0};
+  
+   v0->GetNPxPyPz(mn[0],mn[1],mn[2]);//reconstructed cartesian momentum components of negative daughter;
+   v0->GetPPxPyPz(mp[0],mp[1],mp[2]);//reconstructed cartesian momentum components of positive daughter; 
+
+   Double_t deltat = 1.;
+   deltat = TMath::ATan(mp[2]/(TMath::Sqrt(mp[0]*mp[0] + mp[1]*mp[1])+1.e-13)) -  TMath::ATan(mn[2]/(TMath::Sqrt(mn[0]*mn[0] + mn[1]*mn[1])+1.e-13));//difference of angles of the two daughter tracks with z-axis
+   Double_t radiussum = TMath::Sqrt(xyz[0]*xyz[0] + xyz[1]*xyz[1]) + 50;//radius to which tracks shall be propagated 
+ 
+   Double_t momPosProp[3] = {0,0,0};
+   Double_t momNegProp[3] = {0,0,0};
+    
+   AliExternalTrackParam nt = *(v0->GetParamN());
+   AliExternalTrackParam pt = *(v0->GetParamP());
+
+   Double_t psiPair = 4.;
+   if(nt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
+   
+   if(pt.PropagateTo(radiussum,magField) == 0) return psiPair; //propagate tracks to the outside -> Better Purity and Efficiency
+  
+   pt.GetPxPyPz(momPosProp);//Get momentum vectors of tracks after propagation
+   nt.GetPxPyPz(momNegProp);
+
+  Double_t pEle =
+     TMath::Sqrt(momNegProp[0]*momNegProp[0]+momNegProp[1]*momNegProp[1]+momNegProp[2]*momNegProp[2]);//absolute momentum value of negative daughter
+
+  Double_t pPos =
+     TMath::Sqrt(momPosProp[0]*momPosProp[0]+momPosProp[1]*momPosProp[1]+momPosProp[2]*momPosProp[2]);//absolute momentum value of positive daughter
+    
+  Double_t scalarproduct =
+     momPosProp[0]*momNegProp[0]+momPosProp[1]*momNegProp[1]+momPosProp[2]*momNegProp[2];//scalar product of propagated positive and negative daughters' momenta
+    
+  Double_t chipair = TMath::ACos(scalarproduct/(pEle*pPos));//Angle between propagated daughter tracks
+
+  psiPair =  TMath::Abs(TMath::ASin(deltat/chipair));  
+
+  return psiPair; 
+}
+
+Int_t AliV0Reader::GetNumberOfHijingPlusPythiaPrimeries(){
+   
+   // Calculate NPrimaries for LHC11a10b_*
+
+   Int_t nproduced = 0;
+   AliGenCocktailEventHeader *cHeader = dynamic_cast<AliGenCocktailEventHeader*>(fMCEvent->GenEventHeader());
+   if(cHeader){
+      TList *genHeaders = cHeader->GetHeaders();
+      AliGenEventHeader* gh = 0;
+      for(Int_t i = 0; i<genHeaders->GetEntries();i++){
+         gh = (AliGenEventHeader*)genHeaders->At(i);
+         TString GeneratorName = gh->GetName();
+         //  cout<<i<<"   "<<GeneratorName<<"   "<<gh->NProduced()<<endl;
+         if(GeneratorName.CompareTo("Hijing") == 0){
+            nproduced = nproduced + gh->NProduced();
+         }
+         else if(GeneratorName.CompareTo("Pythia") == 0){
+            nproduced = nproduced + gh->NProduced();
+         }
+      }
+   }
+   if(!cHeader){
+      nproduced = fMCStack->GetNprimary();
+   }
+   
+   //  cout<<fMCStack->GetNprimary()-nproduced<<endl;
+
+   return nproduced;
+}
+
+
+Bool_t AliV0Reader::IsParticleFromBGEvent(Int_t index){
+
+   Bool_t particleFromBG = kFALSE;
+  
+   if(index == -1) return kFALSE;
+   if(index > fNumberOfPrimerisFromHijingAndPythia && index < fMCStack->GetNprimary()){
+      // cout<<index<<"   "<<fNumberOfPrimerisFromHijingAndPythia<<endl;
+      return kTRUE;
+   }
+   //  else cout<<"Passt Noch "<<index<<"   "<<fNumberOfPrimerisFromHijingAndPythia<<endl;
+   // cout<<fMCEvent->IsFromBGEvent(index)<<endl;
+   TParticle *BGParticle = fMCStack->Particle(index);
+   if(BGParticle->GetMother(0) > -1)  return kFALSE;
+   Int_t indexMother = fMCStack->Particle(index)->GetMother(0);
+   particleFromBG = IsParticleFromBGEvent(indexMother);
+   
+   return kFALSE;
 }

@@ -63,7 +63,7 @@ public:
 
   void PrintStatistics();
 
-  void CorrelateWithTracks(const AliAODConversionParticle * particle, const TObjArray * tracks, const Int_t tIDs[4], Bool_t isolated);
+  void CorrelateWithTracks(AliAODConversionParticle * particle, TObjArray * tracks, const Int_t tIDs[4], Bool_t isolated);
   virtual void FillTriggerCounters(const AliAODConversionParticle * particle, Bool_t leading);
 
   TAxis& GetAxistPt()  { return fAxistPt;   }
