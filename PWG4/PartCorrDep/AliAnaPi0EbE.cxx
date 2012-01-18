@@ -345,7 +345,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   fhPt  = new TH1F("hPt","Number of identified  #pi^{0} (#eta) decay",nptbins,ptmin,ptmax); 
   fhPt->SetYTitle("N");
-  fhPt->SetXTitle("p_{T}(GeV/c)");
+  fhPt->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPt) ; 
   
   fhE  = new TH1F("hE","Number of identified  #pi^{0} (#eta) decay pairs",nptbins,ptmin,ptmax); 
@@ -362,7 +362,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhEEta  = new TH2F
   ("hEEta","Selected #pi^{0} (#eta) pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
   fhEEta->SetYTitle("#eta");
-  fhEEta->SetXTitle("E (GeV) (GeV)");
+  fhEEta->SetXTitle("E (GeV)");
   outputContainer->Add(fhEEta) ; 
   
   fhEtaPhi  = new TH2F
@@ -436,7 +436,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     
     fhETime = new TH2F("hETime","cluster time vs pair E",nptbins,ptmin,ptmax, tbins,tmin,tmax);
     fhETime->SetXTitle("E (GeV)");
-    fhETime->SetYTitle(" t (ns)");
+    fhETime->SetYTitle("t (ns)");
     outputContainer->Add(fhETime);    
     
   }// Invariant mass analysis in calorimeters and calorimeter + conversion photons
@@ -523,7 +523,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       fhPtMC  = new TH1F("hPtMC","Identified #pi^{0} (#eta) from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhPtMC->SetYTitle("N");
-      fhPtMC->SetXTitle("p_{T}(GeV/c)");
+      fhPtMC->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtMC) ; 
       
       fhPhiMC  = new TH2F
@@ -540,7 +540,7 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
       
       fhPtMCNo  = new TH1F("hPtMCNo","Identified #pi^{0} (#eta) not from #pi^{0} (#eta)",nptbins,ptmin,ptmax); 
       fhPtMCNo->SetYTitle("N");
-      fhPtMCNo->SetXTitle("p_{T}(GeV/c)");
+      fhPtMCNo->SetXTitle("p_{T} (GeV/c)");
       outputContainer->Add(fhPtMCNo) ; 
       
       fhPhiMCNo  = new TH2F
