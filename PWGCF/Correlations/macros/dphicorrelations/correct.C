@@ -320,8 +320,8 @@ void loadlibs()
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
   gSystem->Load("libCORRFW");
-  gSystem->Load("libPWG4Base");
-  gSystem->Load("libPWG4CorrelationsBase");
+  gSystem->Load("libPWGBase");
+  gSystem->Load("libPWGCFCorrelationsBase");
 }
 
 const char* lastFileName = 0;
