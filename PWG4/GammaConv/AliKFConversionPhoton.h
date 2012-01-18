@@ -59,6 +59,9 @@ class AliKFConversionPhoton : public AliKFParticle, public AliConversionPhotonBa
   virtual Double_t GetPhotonP() const {return P();}
   virtual Double_t GetPhotonEta() const {return Eta();}
   virtual Double_t GetPhotonPhi() const {return Phi();} 
+  virtual Double_t GetPx() const { return AliKFParticle::GetPx();}
+  virtual Double_t GetPy() const { return AliKFParticle::GetPy();}
+  virtual Double_t GetPz() const { return AliKFParticle::GetPz();}
 
   ClassDef(AliKFConversionPhoton,1)
 };

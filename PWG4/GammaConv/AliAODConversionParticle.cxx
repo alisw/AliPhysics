@@ -11,10 +11,8 @@ TLorentzVector()
 }
 
 AliAODConversionParticle::AliAODConversionParticle(AliKFParticle *kfparticle) :
-TLorentzVector()
+  TLorentzVector(kfparticle->Px(), kfparticle->Py(), kfparticle->Pz(), kfparticle->E())
 {
-    SetVect(TVector3(kfparticle->Px(),kfparticle->Py(),kfparticle->Pz()));
-    SetE(P());
 
 }
 

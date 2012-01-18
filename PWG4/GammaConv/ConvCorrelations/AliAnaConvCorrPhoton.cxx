@@ -52,17 +52,17 @@ AliAnaConvCorrPhoton::~AliAnaConvCorrPhoton() {
   //destructor
 }
 
-//________________________________________________________________________________
-void AliAnaConvCorrPhoton::Process(TClonesArray * photons, TClonesArray * tracks, Bool_t isolated = kFALSE) {
-  //Process list of photons and correlate w tracks
-  for(Int_t ig = 0; ig < photons->GetEntriesFast(); ig++) {
+// //________________________________________________________________________________
+// void AliAnaConvCorrPhoton::Process(const TClonesArray * photons, const TClonesArray * tracks, Bool_t isolated = kFALSE) {
+//   //Process list of photons and correlate w tracks
+//   for(Int_t ig = 0; ig < photons->GetEntriesFast(); ig++) {
 
-	AliAODConversionParticle * photon = static_cast<AliAODConversionParticle*>(photons->UncheckedAt(ig));
+// 	AliAODConversionParticle * photon = static_cast<AliAODConversionParticle*>(photons->UncheckedAt(ig));
 
-	Int_t tIDs[4] = {-1, -1, -1, -1};
-	tIDs[0] =  photon->GetLabel(0);
-	tIDs[1] =  photon->GetLabel(1);
-	CorrelateWithTracks(photon, tracks, tIDs, isolated);
+// 	Int_t tIDs[4] = {-1, -1, -1, -1};
+// 	tIDs[0] =  photon->GetLabel(0);
+// 	tIDs[1] =  photon->GetLabel(1);
+// 	CorrelateWithTracks(photon, tracks, tIDs, isolated);
 		
-  }
-}
+//   }
+// }

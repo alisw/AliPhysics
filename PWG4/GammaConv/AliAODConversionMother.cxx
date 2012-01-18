@@ -56,7 +56,7 @@ fWeight(1)
     }
 
     // Set Chi2 to the mean chi2 of gammas
-    fChi2=0.5*(y1->GetChi2perNDF()+y2->GetChi2perNDF());
+ //   fChi2=0.5*(y1->GetChi2perNDF()+y2->GetChi2perNDF());
 
     //Set Decay Photon Labels
     fLabel[0]=-1;
