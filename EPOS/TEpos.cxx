@@ -77,8 +77,20 @@ TEpos::~TEpos() {
 
 TEpos& TEpos::operator=(const TEpos& epos) {
   //operator=
-	if (!fIdConverter && (this != &epos)) {
-		fIdConverter = new AliGenEposIsajetToPdgConverter();
+	if (this != &epos) {
+	    if (!fIdConverter) fIdConverter = new AliGenEposIsajetToPdgConverter();
+	    fLaproj = epos.fLaproj;
+	    fMaproj = epos.fMaproj;
+	    fLatarg = epos.fLatarg;
+	    fMatarg = epos.fMatarg;
+	    fBminim = epos.fBminim;
+	    fBmaxim = epos.fBmaxim;
+	    fPhimin = epos.fPhimin;
+	    fPhimax = epos.fPhimax;
+	    fEcms   = epos.fEcms;
+	    fSplitting = epos.fSplitting;
+//	    fNoDecays = epos.fNoDecays;
+//	    fExtraInputLines = epos.dExtraInputLines;
 	}
 	return *this;
 }
