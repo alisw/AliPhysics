@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliCaloPID.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
 
 //_________________________________________________________________________
 // Class for PID selection with calorimeters
@@ -76,12 +75,7 @@ fPHOSPi0WeightFormulaExpression(""),
 fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),           
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
-fPHOSDispersionCut(1000), fPHOSRCut(1000),                 
-// Histogram settings
-fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
-fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
+fPHOSDispersionCut(1000), fPHOSRCut(1000)                
 {
   //Ctor
   
@@ -105,12 +99,7 @@ fPHOSPi0WeightFormulaExpression(""),
 fEMCALL0CutMax(100.),     fEMCALL0CutMin(0),           
 fEMCALDEtaCut(2000.),     fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
-fPHOSDispersionCut(1000), fPHOSRCut(1000),                 
-// Histogram settings
-fHistoNEBins(100),        fHistoEMax(100.),            fHistoEMin(0.),
-fHistoNDEtaBins(100),     fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),     fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(0x0),  fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
+fPHOSDispersionCut(1000), fPHOSRCut(1000)
 {
   //Ctor
 	
@@ -136,12 +125,7 @@ fPHOSPi0WeightFormulaExpression(""),
 fEMCALL0CutMax(100.),        fEMCALL0CutMin(0),   
 fEMCALDEtaCut(2000.),        fEMCALDPhiCut(2000.),
 fTOFCut(0.), 
-fPHOSDispersionCut(1000),    fPHOSRCut(1000),                 
-// Histogram settings
-fHistoNEBins(100),           fHistoEMax(100.),            fHistoEMin(0.),
-fHistoNDEtaBins(100),        fHistoDEtaMax(0.15),         fHistoDEtaMin(-0.15),
-fHistoNDPhiBins(100),        fHistoDPhiMax(0.15),         fHistoDPhiMin(-0.15),
-fhTrackMatchedDEta(0x0),     fhTrackMatchedDPhi(0x0),     fhTrackMatchedDEtaDPhi(0x0)
+fPHOSDispersionCut(1000),    fPHOSRCut(1000)
 {
   //Ctor
   
@@ -159,47 +143,6 @@ AliCaloPID::~AliCaloPID()
   delete fEMCALPIDUtils ;
   
 }
-
-//___________________________________________
-TList *  AliCaloPID::GetCreateOutputObjects()
-{  
-  // Create histograms to be saved in output file and 
-  // store them in outputContainer of the analysis class that calls this class.
-  
-  TList * outputContainer = new TList() ; 
-  outputContainer->SetName("CaloPIDHistos") ; 
-  
-  outputContainer->SetOwner(kFALSE);
-  
-  fhTrackMatchedDEta  = new TH2F
-  ("TrackMatchedDEta",
-   "d#eta of cluster-track vs cluster energy",
-   fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax); 
-  fhTrackMatchedDEta->SetYTitle("d#eta");
-  fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
-  
-  fhTrackMatchedDPhi  = new TH2F
-  ("TrackMatchedDPhi",
-   "d#phi of cluster-track vs cluster energy"
-   ,fHistoNEBins,fHistoEMin,fHistoEMax,fHistoNDPhiBins,fHistoDPhiMin,fHistoDPhiMax); 
-  fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
-  fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
-  
-  fhTrackMatchedDEtaDPhi  = new TH2F
-  ("TrackMatchedDEtaDPhi",
-   "d#eta vs d#phi of cluster-track vs cluster energy"
-   ,fHistoNDEtaBins,fHistoDEtaMin,fHistoDEtaMax,fHistoNDPhiBins,fHistoDPhiMin,fHistoDPhiMax); 
-  fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
-  fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
-  
-  outputContainer->Add(fhTrackMatchedDEta) ; 
-  outputContainer->Add(fhTrackMatchedDPhi) ;
-  outputContainer->Add(fhTrackMatchedDEtaDPhi) ; 
-  
-  return outputContainer;
-}
-
-
 
 //_______________________________
 void AliCaloPID::InitParameters()
@@ -537,7 +480,7 @@ void AliCaloPID::SetPIDBits(const TString calo, AliVCluster * cluster,
   }
 }
 
-//_____________________________________________________________________
+//_________________________________________________________
 Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
                                   AliCalorimeterUtils * cu, 
                                   AliVEvent* event) const 
@@ -570,24 +513,15 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
       }
     }
     
-    Float_t clE = cluster->E();
     Float_t dZ  = cluster->GetTrackDz();
     Float_t dR  = cluster->GetTrackDx();
     
     // if track matching was recalculated
-    if(cluster->IsEMCAL() &&cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
+    if(cluster->IsEMCAL() && cu && cu->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
       cu->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
     }
-    
-    // Fill control histograms
-    if(fhTrackMatchedDEta && TMath::Abs(dR) < 999){
-      fhTrackMatchedDEta->Fill(clE,dZ);
-      fhTrackMatchedDPhi->Fill(clE,dR);
-      if(clE > 0.5)fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
-      //printf("AliCaloPID::IsTrackMatched - %d dR %f , dZ %f \n",cluster->IsEMCAL(),dR, dZ);
-    }  
-    
+        
     if(cluster->IsPHOS()) {
       
       track->GetPxPyPz(p) ;
@@ -600,7 +534,7 @@ Bool_t AliCaloPID::IsTrackMatched(AliVCluster* cluster,
     }//PHOS
     else {//EMCAL
       
-      if(fDebug > 0) 
+    if(fDebug > 0) 
         printf("AliCaloPID::IsTrackMatched - EMCAL dR %f < %f, dZ %f < %f \n",dR, fEMCALDPhiCut, dZ, fEMCALDEtaCut);
       
       if(TMath::Abs(dR) < fEMCALDPhiCut && 

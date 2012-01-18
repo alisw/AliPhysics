@@ -82,7 +82,9 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Bool_t       IsTrackMatchRejectionOn()        const { return fRejectTrackMatch   ; }
   void         SwitchOnTrackMatchRejection()          { fRejectTrackMatch = kTRUE  ; }
   void         SwitchOffTrackMatchRejection()         { fRejectTrackMatch = kFALSE ; }  
-  	  
+  void         SwitchOnTMHistoFill()                  { fFillTMHisto      = kTRUE  ; }
+  void         SwitchOffTMHistoFill()                 { fFillTMHisto      = kFALSE ; }
+	  
   void         FillNOriginHistograms(Int_t n)         { fNOriginHistograms = n ; 
     if(n > 14) fNOriginHistograms = 14; }
   void         FillNPrimaryHistograms(Int_t n)        { fNPrimaryHistograms= n ;
@@ -108,6 +110,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fMinDist2;                    // Cuts on Minimal distance to study acceptance evaluation
   Float_t  fMinDist3;                    // One more cut on distance used for acceptance-efficiency study
   Bool_t   fRejectTrackMatch ;           // If PID on, reject clusters which have an associated TPC track
+  Bool_t   fFillTMHisto;                 // Fill track matching plots
   Double_t fTimeCutMin  ;                // Remove clusters/cells with time smaller than this value, in ns
   Double_t fTimeCutMax  ;                // Remove clusters/cells with time larger than this value, in ns
   Int_t    fNCellsCut ;                  // Accept for the analysis clusters with more than fNCellsCut cells
@@ -210,10 +213,18 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0MostlyBkg ;          //!  Lambda0 vs E for embedded photons with 50%<fraction<10% 
   TH2F * fhEmbedPi0ELambda0FullBkg ;            //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   
-  AliAnaPhoton(const AliAnaPhoton & g) ;               // cpy ctor
+  // Track Matching
+  TH2F * fhTrackMatchedDEta          ;          //! Eta distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDPhi          ;          //! Phi distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDEtaDPhi      ;          //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F * fhTrackMatchedDEtaNoCut     ;          //! Eta distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDPhiNoCut     ;          //! Phi distance between track and cluster vs cluster E
+  TH2F * fhTrackMatchedDEtaDPhiNoCut ;          //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
+  AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,19)
+  ClassDef(AliAnaPhoton,20)
 
 } ;
  

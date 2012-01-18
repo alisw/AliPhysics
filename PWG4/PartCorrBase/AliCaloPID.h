@@ -2,7 +2,6 @@
 #define ALICALOPID_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for PID selection with calorimeters
@@ -180,17 +179,6 @@ class AliCaloPID : public TObject {
   void    SetPHOSDispersionCut(Float_t dcut )  { fPHOSDispersionCut = dcut    ; }
   Float_t GetPHOSDispersionCut()         const { return fPHOSDispersionCut    ; }   
   
-  //    Track matching histogrammes setters and getters
-  
-  virtual void SetHistoERangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNEBins    = n    ; fHistoEMax = max    ; fHistoEMin = min           ; }
-  
-  virtual void SetHistoDEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNDEtaBins = n ; fHistoDEtaMax = max ; fHistoDEtaMin = min           ; }
-
-  virtual void SetHistoDPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
-    fHistoNDPhiBins = n ; fHistoDPhiMax = max ; fHistoDPhiMin = min           ; }
-     
   
 private:
   
@@ -229,26 +217,11 @@ private:
   
   Float_t   fPHOSDispersionCut;                 // Shower shape elipse radious cut
   Float_t   fPHOSRCut;                          // Track-Cluster distance cut for track matching in PHOS  
-
-  // Track matching control histograms
-  Int_t     fHistoNEBins ;                      // Number of bins in cluster E axis
-  Float_t   fHistoEMax ;                        // Maximum value of cluster E histogram range
-  Float_t   fHistoEMin ;                        // Minimum value of cluster E histogram range
-  Int_t     fHistoNDEtaBins ;                   // Number of bins in dEta (cluster-track) axis
-  Float_t   fHistoDEtaMax ;                     // Maximum value of dEta (cluster-track) histogram range
-  Float_t   fHistoDEtaMin ;                     // Minimum value of dEta (cluster-track) histogram range		
-  Int_t     fHistoNDPhiBins ;                   // Number of bins in dPhi axis
-  Float_t   fHistoDPhiMax ;                     // Maximum value of dPhi (cluster-track) histogram range
-  Float_t   fHistoDPhiMin ;                     // Minimum value of dPhi (cluster-track) histogram range
-  
-  TH2F     *fhTrackMatchedDEta     ;            //! Eta distance between track and cluster vs cluster E
-  TH2F     *fhTrackMatchedDPhi     ;            //! Phi distance between track and cluster vs cluster E
-  TH2F     *fhTrackMatchedDEtaDPhi ;            //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
   AliCaloPID & operator = (const AliCaloPID & g) ; // cpy assignment
-  AliCaloPID(const AliCaloPID & g) ;               // cpy ctor
+  AliCaloPID(              const AliCaloPID & g) ; // cpy ctor
   
-  ClassDef(AliCaloPID,10)
+  ClassDef(AliCaloPID,11)
 } ;
 
 

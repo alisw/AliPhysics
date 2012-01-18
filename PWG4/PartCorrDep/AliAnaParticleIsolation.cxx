@@ -47,8 +47,9 @@ ClassImp(AliAnaParticleIsolation)
   
 //______________________________________________________________________________
   AliAnaParticleIsolation::AliAnaParticleIsolation() : 
-    AliAnaCaloTrackCorrBaseClass(),        fCalorimeter(""), 
-    fReMakeIC(0),                     fMakeSeveralIC(0),
+    AliAnaCaloTrackCorrBaseClass(),   fCalorimeter(""), 
+    fReMakeIC(0),                     fMakeSeveralIC(0),               
+    fFillTMHisto(0),                  fFillSSHisto(0),
     // Several IC
     fNCones(0),                       fNPtThresFrac(0), 
     fConeSizes(),                     fPtThresholds(),                 fPtFractions(), 
@@ -76,6 +77,8 @@ ClassImp(AliAnaParticleIsolation)
     fhPtNoIsoPi0Decay(0),             fhPtNoIsoEtaDecay(0),            fhPtNoIsoOtherDecay(0),
     fhPtNoIsoPrompt(0),               fhPtIsoMCPhoton(0),              fhPtNoIsoMCPhoton(0),
     fhPtNoIsoConversion(0),           fhPtNoIsoFragmentation(0),       fhPtNoIsoUnknown(0),
+    fhTrackMatchedDEta(0x0),          fhTrackMatchedDPhi(0x0),         fhTrackMatchedDEtaDPhi(0x0),
+    fhELambda0(0),                    fhELambda1(0), 
     //Histograms settings
     fHistoNPtSumBins(0),              fHistoPtSumMax(0.),              fHistoPtSumMin(0.),
     fHistoNPtInConeBins(0),           fHistoPtInConeMax(0.),           fHistoPtInConeMin(0.)
@@ -142,8 +145,12 @@ TObjString *  AliAnaParticleIsolation::GetAnalysisCuts()
   snprintf(onePar, buffersize,"fReMakeIC =%d (Flag for reisolation during histogram filling) \n",fReMakeIC) ;
   parList+=onePar ;
   snprintf(onePar, buffersize,"fMakeSeveralIC=%d (Flag for isolation with several cuts at the same time ) \n",fMakeSeveralIC) ;
+  parList+=onePar ;  
+  snprintf(onePar, buffersize,"fFillTMHisto=%d (Flag for track matching histograms) \n",fFillTMHisto) ;
   parList+=onePar ;
-  
+  snprintf(onePar, buffersize,"fFillSSHisto=%d (Flag for shower shape histograms) \n",fFillSSHisto) ;
+  parList+=onePar ;
+
   if(fMakeSeveralIC){
     snprintf(onePar, buffersize,"fNCones =%d (Number of cone sizes) \n",fNCones) ;
     parList+=onePar ;
@@ -191,6 +198,16 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t ptmin    = GetHistogramRanges()->GetHistoPtMin();
   Float_t phimin   = GetHistogramRanges()->GetHistoPhiMin();
   Float_t etamin   = GetHistogramRanges()->GetHistoEtaMin();	
+  Int_t   ssbins   = GetHistogramRanges()->GetHistoShowerShapeBins(); 
+  Float_t ssmax    = GetHistogramRanges()->GetHistoShowerShapeMax();  
+  Float_t ssmin    = GetHistogramRanges()->GetHistoShowerShapeMin();
+
+  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();          
+  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();          
+  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();          
+  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
+  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();  
   
   Int_t   nptsumbins    = fHistoNPtSumBins;
   Float_t ptsummax      = fHistoPtSumMax;
@@ -200,6 +217,49 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
   Float_t ptinconemin   = fHistoPtInConeMin;
   
   if(!fMakeSeveralIC){
+    
+    if(fFillTMHisto){
+      fhTrackMatchedDEta  = new TH2F
+      ("TrackMatchedDEta",
+       "d#eta of cluster-track vs cluster energy",
+       nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+      fhTrackMatchedDEta->SetYTitle("d#eta");
+      fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDPhi  = new TH2F
+      ("TrackMatchedDPhi",
+       "d#phi of cluster-track vs cluster energy",
+       nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
+      
+      fhTrackMatchedDEtaDPhi  = new TH2F
+      ("TrackMatchedDEtaDPhi",
+       "d#eta vs d#phi of cluster-track vs cluster energy",
+       nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+      fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
+      fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
+      
+      outputContainer->Add(fhTrackMatchedDEta) ; 
+      outputContainer->Add(fhTrackMatchedDPhi) ;
+      outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
+    }
+    
+    if(fFillSSHisto){
+    
+      fhELambda0  = new TH2F
+      ("hELambda0","Selected #pi^{0} pairs: E vs #lambda_{0}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda0->SetYTitle("#lambda_{0}^{2}");
+      fhELambda0->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda0) ; 
+      
+      fhELambda1  = new TH2F
+      ("hELambda1","Selected #pi^{0} pairs: E vs #lambda_{1}",nptbins,ptmin,ptmax,ssbins,ssmin,ssmax); 
+      fhELambda1->SetYTitle("#lambda_{1}^{2}");
+      fhELambda1->SetXTitle("E (GeV)");
+      outputContainer->Add(fhELambda1) ;       
+    
+    }
     
     fhConeSumPt  = new TH2F
     ("hConePtSum","#Sigma p_{T} in isolation cone ",nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
@@ -851,6 +911,41 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     if(!fReMakeIC) fhConeSumPt->Fill(pt,coneptsum);
     
     if(isolation){    
+      
+      // Fill Track matching control histograms
+      if(fFillTMHisto || fFillSSHisto){
+        Int_t iclus = -1;
+        TObjArray* clusters = 0x0;
+        if     (fCalorimeter == "EMCAL")clusters = GetEMCALClusters();
+        else if(fCalorimeter == "PHOS") clusters = GetPHOSClusters();
+        if(clusters){
+          
+          AliVCluster *cluster = FindCluster(clusters,aod->GetCaloLabel(0),iclus); 
+          
+          if(fFillTMHisto){
+            Float_t dZ  = cluster->GetTrackDz();
+            Float_t dR  = cluster->GetTrackDx();
+            
+            if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
+              dR = 2000., dZ = 2000.;
+              GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+            }
+            
+            //printf("ParticleIsolation: dPhi %f, dEta %f\n",dR,dZ);
+            if(fhTrackMatchedDEta && TMath::Abs(dR) < 999){
+              fhTrackMatchedDEta->Fill(energy,dZ);
+              fhTrackMatchedDPhi->Fill(energy,dR);
+              if(energy > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+            }  
+          }// TM histos fill
+          
+          if(fFillSSHisto)
+          {
+            fhELambda0   ->Fill(energy, cluster->GetM02() );  
+            fhELambda1   ->Fill(energy, cluster->GetM20() );  
+          } // SS histo fill
+        } // clusters array available
+      }// Track matching or SS histograms 
       
       if(GetDebug() > 1) printf("AliAnaParticleIsolation::MakeAnalysisFillHistograms() - Particle %d ISOLATED, fill histograms\n", iaod);
      

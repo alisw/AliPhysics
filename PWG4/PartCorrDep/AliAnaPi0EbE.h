@@ -6,7 +6,7 @@
 //_________________________________________________________________________
 //
 // Class for the analysis of high pT pi0 event by event
-// Pi0 identified by one of the following:
+// Pi0/Eta identified by one of the following:
 //  -Invariant mass of 2 cluster in calorimeter
 //  -Shower shape analysis in calorimeter
 //  -Invariant mass of one cluster in calorimeter and one photon reconstructed in TPC (in near future)
@@ -75,6 +75,9 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   void           SwitchOnFillWeightHistograms()              { fFillWeightHistograms = kTRUE  ; }
   void           SwitchOffFillWeightHistograms()             { fFillWeightHistograms = kFALSE ; }  
   
+  void           SwitchOnTMHistoFill()                       { fFillTMHisto          = kTRUE  ; }
+  void           SwitchOffTMHistoFill()                      { fFillTMHisto          = kFALSE ; }
+
   //For histograms
   enum mcTypes   { kmcPhoton = 0, kmcConversion = 1, kmcPi0    = 2,  
                    kmcEta    = 3, kmcElectron   = 4, kmcHadron = 5 };
@@ -90,18 +93,22 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   Float_t        fMinDist3;                // One more cut on distance used for acceptance-efficiency study
   
   Bool_t         fFillWeightHistograms ;   // Fill weigth histograms
-  
+  Bool_t         fFillTMHisto;             // Fill track matching plots
+
   //Only for combination of calorimeter and conversion photons, kIMCaloTracks
   TString        fInputAODGammaConvName;   //  Name of AOD branch with conversion photons
   
   //Histograms
   
-  TH1F         * fhPtPi0  ;                //! Number of identified  pi0 vs pT
-  TH1F         * fhEPi0   ;                //! Number of identified  pi0 vs E
-  TH2F         * fhEEtaPi0  ;              //! E vs eta of identified  pi0 
-  TH2F         * fhEPhiPi0  ;              //! E vs phi of identified  pi0 
-  TH2F         * fhEtaPhiPi0  ;            //! eta vs phi of identified  pi0 
+  TH1F         * fhPt  ;                   //! Number of identified  pi0/eta vs pT
+  TH1F         * fhE   ;                   //! Number of identified  pi0/eta vs E
+  TH2F         * fhEEta  ;                 //! E vs eta of identified  pi0/eta 
+  TH2F         * fhEPhi  ;                 //! E vs phi of identified  pi0/eta 
+  TH2F         * fhEtaPhi  ;               //! eta vs phi of identified  pi0/eta 
 
+  TH1F         * fhPtDecay  ;              //! Number of identified  pi0/eta decay photons vs pT
+  TH1F         * fhEDecay   ;              //! Number of identified  pi0/eta decay photons vs E
+  
   TH2F         * fhEDispersion ;           //! E vs disp of selected cluster
   TH2F         * fhELambda0 ;              //! E vs lambda0 of selected cluster 
   TH2F         * fhELambda1 ;              //! E vs lambda1 of selected cluster 
@@ -122,12 +129,12 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhEMCLambda0FracMaxCellCut[6] ;//! E vs lambda0 of pi0 pairs but really from MC particle, fraction of cluster energy in max cell cut
   TH2F         * fhEMCFracMaxCell[6] ;     //! E vs fraction of max cell 
   
-  TH1F         * fhPtMCNoPi0;              //! Number of identified pi0, not coming from pi0
-  TH2F         * fhPhiMCNoPi0;             //! Phi of identified pi0, not coming from pi0
-  TH2F         * fhEtaMCNoPi0;             //! eta of identified  pi0, not coming from pi0
-  TH1F         * fhPtMCPi0;                //! Number of identified pi0, coming from pi0
-  TH2F         * fhPhiMCPi0;               //! Phi of identified pi0, coming from pi0
-  TH2F         * fhEtaMCPi0;               //! eta of identified pi0, coming from pi0
+  TH1F         * fhPtMCNo;                 //! Number of identified pi0, not coming from pi0/eta
+  TH2F         * fhPhiMCNo;                //! Phi of identified pi0, not coming from pi0/eta
+  TH2F         * fhEtaMCNo;                //! eta of identified  pi0, not coming from pi0/eta
+  TH1F         * fhPtMC;                   //! Number of identified pi0, coming from pi0/eta
+  TH2F         * fhPhiMC;                  //! Phi of identified pi0, coming from pi0/eta
+  TH2F         * fhEtaMC;                  //! eta of identified pi0, coming from pi0/eta
   
   // Weight studies
   
@@ -138,7 +145,13 @@ class AliAnaPi0EbE : public AliAnaCaloTrackCorrBaseClass {
   TH2F         * fhLambda0ForW0[14];       //! L0 for 7 defined w0= 3, 3.5 ... 6 for selected photons
   //TH2F         * fhLambda1ForW0[7];        //! L1 for 7 defined w0= 3, 3.5 ... 6 for selected photons  
   
-  AliAnaPi0EbE(const AliAnaPi0EbE & g) ;               // cpy ctor
+  // Track Matching
+  TH2F         * fhTrackMatchedDEta     ;  //! Eta distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDPhi     ;  //! Phi distance between track and cluster vs cluster E
+  TH2F         * fhTrackMatchedDEtaDPhi ;  //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
+  
+  AliAnaPi0EbE(              const AliAnaPi0EbE & g) ; // cpy ctor
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & g) ; // cpy assignment
   
   ClassDef(AliAnaPi0EbE,11)
