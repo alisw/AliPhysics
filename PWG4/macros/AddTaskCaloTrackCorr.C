@@ -860,6 +860,10 @@ void SetHistoRangeAndNBins (AliHistogramRanges* ana)
   ana->SetHistoTimeRangeAndNBins(-1000.,1000,1000);
   ana->SetHistoDiffTimeRangeAndNBins(-200, 200, 800);
   
+  // track-cluster residuals
+  ana->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,100);
+  ana->SetHistoTrackResidualPhiRangeAndNBins(-0.15,0.15,100);
+  
   // QA, electron, charged
   ana->SetHistoPOverERangeAndNBins(0,10.,100);
   ana->SetHistodEdxRangeAndNBins(0.,200.,200);

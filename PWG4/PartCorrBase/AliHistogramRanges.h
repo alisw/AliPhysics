@@ -161,7 +161,7 @@ public:
   Float_t GetHistodRMin()                const { return fHistodRMin          ; }
   Float_t GetHistodRMax()                const { return fHistodRMax          ; }	
   
-  void SetHistodRRangeAndNBins          (Float_t min, Float_t max, Int_t n) {
+  void    SetHistodRRangeAndNBins          (Float_t min, Float_t max, Int_t n) {
     fHistodRBins         = n ; fHistodRMax         = max ; fHistodRMin         = min ; }
 
   // Ratio
@@ -234,7 +234,7 @@ public:
   Float_t GetHistoTimeMin()              const { return fHistoTimeMin        ; }
   Float_t GetHistoTimeMax()              const { return fHistoTimeMax        ; }	
   
-  void SetHistoTimeRangeAndNBins        (Float_t min, Float_t max, Int_t n) {
+  void    SetHistoTimeRangeAndNBins        (Float_t min, Float_t max, Int_t n) {
     fHistoTimeBins       = n ; fHistoTimeMax       = max ; fHistoTimeMin       = min ; }	  
   
   // Cluster time difference
@@ -243,8 +243,24 @@ public:
 	Float_t GetHistoDiffTimeMin()          const { return fHistoDiffTimeMin    ; }
 	Float_t GetHistoDiffTimeMax()          const { return fHistoDiffTimeMax    ; }	
    
-  void         SetHistoDiffTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+  void    SetHistoDiffTimeRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoDiffTimeBins   = n ; fHistoDiffTimeMax   = max ; fHistoDiffTimeMin   = min   ; }
+  
+  //    Track matching histogrammes setters and getters
+  
+  Int_t   GetHistoTrackResidualEtaBins() const { return fHistoTrackResidualEtaBins ; }
+	Float_t GetHistoTrackResidualEtaMin()  const { return fHistoTrackResidualEtaMin  ; }
+	Float_t GetHistoTrackResidualEtaMax()  const { return fHistoTrackResidualEtaMax  ; }	  
+  
+  void    SetHistoTrackResidualEtaRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoTrackResidualEtaBins = n ; fHistoTrackResidualEtaMax = max ; fHistoTrackResidualEtaMin = min           ; }
+  
+  Int_t   GetHistoTrackResidualPhiBins() const { return fHistoTrackResidualPhiBins ; }
+	Float_t GetHistoTrackResidualPhiMin()  const { return fHistoTrackResidualPhiMin  ; }
+	Float_t GetHistoTrackResidualPhiMax()  const { return fHistoTrackResidualPhiMax  ; }	
+  
+  void    SetHistoTrackResidualPhiRangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoTrackResidualPhiBins = n ; fHistoTrackResidualPhiMax = max ; fHistoTrackResidualPhiMin = min           ; }
   
 private:    
   
@@ -320,11 +336,17 @@ private:
   Int_t    fHistoDiffTimeBins;                // Difference cluster pair time parameter histogram number of bins
   Float_t  fHistoDiffTimeMax;                 // Difference cluster pair time parameter position maximum value
   Float_t  fHistoDiffTimeMin;                 // Difference cluster pair time parameter position minimum value  
+  Int_t    fHistoTrackResidualEtaBins ;       // Number of bins in dEta (cluster-track) axis
+  Float_t  fHistoTrackResidualEtaMax  ;       // Maximum value of dEta (cluster-track) histogram range
+  Float_t  fHistoTrackResidualEtaMin  ;       // Minimum value of dEta (cluster-track) histogram range		
+  Int_t    fHistoTrackResidualPhiBins ;       // Number of bins in dPhi axis
+  Float_t  fHistoTrackResidualPhiMax  ;       // Maximum value of dPhi (cluster-track) histogram range
+  Float_t  fHistoTrackResidualPhiMin  ;       // Minimum value of dPhi (cluster-track) histogram range
   
   AliHistogramRanges(              const AliHistogramRanges & h) ; // cpy ctor
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; // cpy assignment
   
-  ClassDef(AliHistogramRanges,1)
+  ClassDef(AliHistogramRanges,2)
 } ;
 
 

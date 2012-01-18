@@ -53,10 +53,11 @@ ClassImp(AliAnaPhoton)
   
 //____________________________
 AliAnaPhoton::AliAnaPhoton() : 
-    AliAnaCaloTrackCorrBaseClass(),    fCalorimeter(""), 
+    AliAnaCaloTrackCorrBaseClass(), fCalorimeter(""), 
     fMinDist(0.),                 fMinDist2(0.),                fMinDist3(0.), 
-    fRejectTrackMatch(0),         fTimeCutMin(-10000),          fTimeCutMax(10000),         
-    fNCellsCut(0),                fFillSSHistograms(kFALSE),    
+    fRejectTrackMatch(0),         fFillTMHisto(kFALSE),
+    fTimeCutMin(-10000),          fTimeCutMax(10000),         
+    fNCellsCut(0),                fFillSSHistograms(kFALSE),        
     fNOriginHistograms(8),        fNPrimaryHistograms(4),
 
     // Histograms
@@ -85,7 +86,9 @@ AliAnaPhoton::AliAnaPhoton() :
     fhEmbedPhotonELambda0FullSignal(0), fhEmbedPhotonELambda0MostlySignal(0),  
     fhEmbedPhotonELambda0MostlyBkg(0),  fhEmbedPhotonELambda0FullBkg(0),       
     fhEmbedPi0ELambda0FullSignal(0),    fhEmbedPi0ELambda0MostlySignal(0),    
-    fhEmbedPi0ELambda0MostlyBkg(0),     fhEmbedPi0ELambda0FullBkg(0)         
+    fhEmbedPi0ELambda0MostlyBkg(0),     fhEmbedPi0ELambda0FullBkg(0),
+    fhTrackMatchedDEta(0x0),            fhTrackMatchedDPhi(0x0),              fhTrackMatchedDEtaDPhi(0x0),
+    fhTrackMatchedDEtaNoCut(0x0),       fhTrackMatchedDPhiNoCut(0x0),         fhTrackMatchedDEtaDPhiNoCut(0x0)
 {
   //default ctor
   
@@ -148,19 +151,25 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   //.......................................
   //If too small or big energy, skip it
   if(calo->E() < GetMinEnergy() || calo->E() > GetMaxEnergy() ) return kFALSE ; 
+  
   if(GetDebug() > 2) printf("\t Cluster %d Pass E Cut \n",calo->GetID());
+  
   fhClusterCuts[2]->Fill(calo->E());
 
   //.......................................
   // TOF cut, BE CAREFUL WITH THIS CUT
   Double_t tof = calo->GetTOF()*1e9;
   if(tof < fTimeCutMin || tof > fTimeCutMax) return kFALSE;
+  
   if(GetDebug() > 2)  printf("\t Cluster %d Pass Time Cut \n",calo->GetID());
+  
   fhClusterCuts[3]->Fill(calo->E());
 
   //.......................................
   if(calo->GetNCells() <= fNCellsCut && GetReader()->GetDataType() != AliCaloTrackReader::kMC) return kFALSE;
+  
   if(GetDebug() > 2) printf("\t Cluster %d Pass NCell Cut \n",calo->GetID());
+  
   fhClusterCuts[4]->Fill(calo->E());
 
   //.......................................
@@ -169,11 +178,31 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,fCalorimeter) ;
     if(! in ) return kFALSE ;
   }
+  
   if(GetDebug() > 2) printf("Fiducial cut passed \n");
+  
   fhClusterCuts[5]->Fill(calo->E());
 
   //.......................................
   //Skip matched clusters with tracks
+  
+  if(fFillTMHisto)
+  {
+    Float_t dZ  = calo->GetTrackDz();
+    Float_t dR  = calo->GetTrackDx();
+
+    if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
+      dR = 2000., dZ = 2000.;
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dR,dZ);
+    }    
+    
+    if(fhTrackMatchedDEtaNoCut && TMath::Abs(dR) < 999){
+      fhTrackMatchedDEtaNoCut->Fill(calo->E(),dZ);
+      fhTrackMatchedDPhiNoCut->Fill(calo->E(),dR);
+      if(calo->E() > 0.5) fhTrackMatchedDEtaDPhiNoCut->Fill(dZ,dR);
+    }
+  }
+  
   if(fRejectTrackMatch){
     if(IsTrackMatched(calo,GetReader()->GetInputEvent())) {
       if(GetDebug() > 2) printf("\t Reject track-matched clusters\n");
@@ -182,6 +211,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
     else  
       if(GetDebug() > 2)  printf(" Track-matching cut passed \n");
   }// reject matched clusters
+  
   fhClusterCuts[6]->Fill(calo->E());
 
   //.......................................
@@ -194,7 +224,7 @@ Bool_t  AliAnaPhoton::ClusterSelected(AliVCluster* calo, TLorentzVector mom)
   else if(GetDebug() > 2) printf("\t Bad channel cut passed %4.2f > %2.2f \n",distBad, fMinDist);
   
   fhClusterCuts[7]->Fill(calo->E());
-
+  
   if(GetDebug() > 0) 
     printf("AliAnaPhoton::ClusterSelected() Current Event %d; After  selection : E %2.2f, pT %2.2f, Ecl %2.2f, phi %2.2f, eta %2.2f\n",
            GetReader()->GetEventNumber(), 
@@ -959,6 +989,14 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
   Int_t nbins    = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax    = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin    = GetHistogramRanges()->GetHistoNClusterCellMin(); 
   Int_t ntimebins= GetHistogramRanges()->GetHistoTimeBins();         Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();         Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();       
 
+  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();          
+  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();          
+  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();          
+  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
+  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
+  
+  
   TString cut[] = {"Open","Reader","E","Time","NCells","Fidutial","Matching","Bad","PID"};
   for (Int_t i = 0; i < 9 ;  i++) 
   {
@@ -1137,6 +1175,60 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     outputContainer->Add(fhDispLam1HighE);  
     
   } // Shower shape
+  
+  // Track Matching
+  
+  if(fFillTMHisto){
+    fhTrackMatchedDEta  = new TH2F
+    ("TrackMatchedDEta",
+     "d#eta of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+    fhTrackMatchedDEta->SetYTitle("d#eta");
+    fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDPhi  = new TH2F
+    ("TrackMatchedDPhi",
+     "d#phi of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDEtaDPhi  = new TH2F
+    ("TrackMatchedDEtaDPhi",
+     "d#eta vs d#phi of cluster-track vs cluster energy",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
+    
+    outputContainer->Add(fhTrackMatchedDEta) ; 
+    outputContainer->Add(fhTrackMatchedDPhi) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhi) ;    
+    
+    fhTrackMatchedDEtaNoCut  = new TH2F
+    ("TrackMatchedDEtaNoCut",
+     "d#eta of cluster-track vs cluster energy, no photon cuts",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+    fhTrackMatchedDEtaNoCut->SetYTitle("d#eta");
+    fhTrackMatchedDEtaNoCut->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDPhiNoCut  = new TH2F
+    ("TrackMatchedDPhiNoCut",
+     "d#phi of cluster-track vs cluster energy, no photon cuts",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDPhiNoCut->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhiNoCut->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDEtaDPhiNoCut  = new TH2F
+    ("TrackMatchedDEtaDPhiNoCut",
+     "d#eta vs d#phi of cluster-track vs cluster energy, no photon cuts",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDEtaDPhiNoCut->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhiNoCut->SetXTitle("d#eta");   
+    
+    outputContainer->Add(fhTrackMatchedDEtaNoCut) ; 
+    outputContainer->Add(fhTrackMatchedDPhiNoCut) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhiNoCut) ;
+  }  
   
   
   if(IsDataMC()){
@@ -1454,16 +1546,7 @@ TList *  AliAnaPhoton::GetCreateOutputObjects()
     }// Fill SS MC histograms
     
   }//Histos with MC
-    
-  //Store calo PID histograms
-  if(fRejectTrackMatch){
-    TList * caloPIDHistos = GetCaloPID()->GetCreateOutputObjects() ;
-    for(Int_t i = 0; i < caloPIDHistos->GetEntries(); i++) {
-      outputContainer->Add(caloPIDHistos->At(i)) ;
-    }
-    delete caloPIDHistos;
-  }
-  
+      
   return outputContainer ;
   
 }
@@ -1607,18 +1690,6 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     //printf("DistBad %f Bit %d\n",distBad, aodph.DistToBad());
     
     //--------------------------------------------------------------------------------------
-    //Play with the MC stack if available
-    //--------------------------------------------------------------------------------------
-    
-    //Check origin of the candidates
-    if(IsDataMC()){
-      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
-
-      if(GetDebug() > 0)
-        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
-    }//Work with stack also   
-    
-    //--------------------------------------------------------------------------------------
     //Fill some shower shape histograms before PID is applied
     //--------------------------------------------------------------------------------------
     
@@ -1633,7 +1704,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     if(IsCaloPIDOn()){
       // Get most probable PID, 2 options check bayesian PID weights or redo PID
       // By default, redo PID
-        
+      
       aodph.SetIdentifiedParticleType(GetCaloPID()->GetIdentifiedParticleType(fCalorimeter,mom,calo));
       
       if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - PDG of identified particle %d\n",aodph.GetIdentifiedParticleType());
@@ -1654,9 +1725,39 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
     }
     
     if(GetDebug() > 1) printf("AliAnaPhoton::MakeAnalysisFillAOD() - Photon selection cuts passed: pT %3.2f, pdg %d\n",aodph.Pt(), aodph.GetIdentifiedParticleType());
-      
+    
     fhClusterCuts[8]->Fill(calo->E());
+    
+    // Matching after cuts
+    if(fFillTMHisto)
+    {
+      Float_t dZ  = calo->GetTrackDz();
+      Float_t dR  = calo->GetTrackDx();
+      
+      if(calo->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
+        dR = 2000., dZ = 2000.;
+        GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(calo->GetID(),dR,dZ);
+      }    
+      
+      if(TMath::Abs(dR) < 999){
+        fhTrackMatchedDEta->Fill(calo->E(),dZ);
+        fhTrackMatchedDPhi->Fill(calo->E(),dR);
+        if(calo->E() > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+      }
+    }
+    
+    //--------------------------------------------------------------------------------------
+    //Play with the MC stack if available
+    //--------------------------------------------------------------------------------------
+    
+    //Check origin of the candidates
+    if(IsDataMC()){
+      aodph.SetTag(GetMCAnalysisUtils()->CheckOrigin(calo->GetLabels(),calo->GetNLabels(),GetReader(), aodph.GetInputFileIndex()));
 
+      if(GetDebug() > 0)
+        printf("AliAnaPhoton::MakeAnalysisFillAOD() - Origin of candidate, bit map %d\n",aodph.GetTag());
+    }//Work with stack also   
+    
     //Add AOD with photon object to aod branch
     AddAODParticle(aodph);
     
