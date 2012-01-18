@@ -83,7 +83,7 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
   if (!(InputEvent()->FindListObject(fTracksName)))
     InputEvent()->AddObject(fTracks);
 
-  if (!fHybridTrackCuts) {
+  if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex 
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
     if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
@@ -105,7 +105,6 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
         continue;
       if (!fEsdTrackCuts->AcceptTrack(etrack))
         continue;
-
       AliESDtrack *ntrack = AliESDtrackCuts::GetTPCOnlyTrack(fEsdEv,etrack->GetID());
       if (!ntrack)
         continue;
@@ -113,7 +112,6 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
         delete ntrack;
         continue;
       }
-
       Double_t bfield[3] = {0,0,0};
       ntrack->GetBxByBz(bfield);
       AliExternalTrackParam exParam;
@@ -122,20 +120,17 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
         delete ntrack;
         continue;
       }
-
       // set the constraint parameters to the track
       ntrack->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
-
       if (ntrack->Pt()<=0) {
         delete ntrack;
         continue;
       }
-
       new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
       delete ntrack;
     }
 
-  } else {
+  } else { // use hybrid track cuts
 
     am->LoadBranch("Tracks");
     Int_t ntr = fEsdEv->GetNumberOfTracks();
