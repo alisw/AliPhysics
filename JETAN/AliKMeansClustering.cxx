@@ -482,15 +482,29 @@ AliKMeansResult& AliKMeansResult::operator=(const AliKMeansResult& res)
   // Assignment operator
   if (this != &res) {
     TObject::operator=(res);
-    fK = res.fK;
-    for (Int_t i = 0; i <fK; i++) {
-      fMx[i]     = res.fMx[i];
-      fMy[i]     = res.fMy[i];
-      fSigma2[i] = res.fSigma2[i];
-      fRk[i]     = res.fRk[i];
-      fTarget[i] = res.fTarget[i];
-      fInd[i]    = res.fInd[i];
+    if (fK != res.fK) {
+	delete [] fMx;
+	delete [] fMy;
+	delete [] fSigma2;
+	delete [] fRk;
+	delete [] fTarget;
+	delete [] fInd;
+	fK = res.fK;
+	fMx     = new Double_t[fK];
+	fMy     = new Double_t[fK];
+	fSigma2 = new Double_t[fK];
+	fRk     = new Double_t[fK];
+	fTarget = new Double_t[fK];
+	fInd    = new    Int_t[fK];
     }
+    
+    fK = res.fK;
+    memcpy(fMx,     res.fMx,     fK*sizeof(Double_t));
+    memcpy(fMy,     res.fMy,     fK*sizeof(Double_t));
+    memcpy(fSigma2, res.fSigma2, fK*sizeof(Double_t));
+    memcpy(fRk,     res.fRk,     fK*sizeof(Double_t));
+    memcpy(fTarget, res.fTarget, fK*sizeof(Double_t));
+    memcpy(fInd,    res.fInd,    fK*sizeof(Int_t));
   }
   return *this;
 }
