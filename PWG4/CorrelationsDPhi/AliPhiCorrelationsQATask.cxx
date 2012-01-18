@@ -86,7 +86,7 @@ void AliPhiCorrelationsQATask::UserCreateOutputObjects()
   fEsdTrackCuts2->DefineHistograms();
   fOutput->Add(fEsdTrackCuts2);
   
-  fGlobalTracks = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010();
+  fGlobalTracks = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
   fGlobalTracks->SetName("global_cuts");
   fGlobalTracks->DefineHistograms();
   fOutput->Add(fGlobalTracks);
