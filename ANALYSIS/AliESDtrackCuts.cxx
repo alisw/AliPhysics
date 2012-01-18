@@ -73,10 +73,12 @@ const Char_t* AliESDtrackCuts::fgkCutNames[kNCuts] = {
  "n crossed rows TPC",
  "n crossed rows / n findable clusters",
  "missing ITS points",
- "#Chi^{2} TPC constrained vs. global"
+ "#Chi^{2} TPC constrained vs. global",
+ "TOF Distance cut"
 };
 
 AliESDtrackCuts* AliESDtrackCuts::fgMultEstTrackCuts[AliESDtrackCuts::kNMultEstTrackCuts] = { 0, 0, 0, 0 };
+Char_t AliESDtrackCuts::fgBeamTypeFlag = -1;
 
 //____________________________________________________________________
 AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliAnalysisCuts(name,title),
@@ -135,6 +137,8 @@ AliESDtrackCuts::AliESDtrackCuts(const Char_t* name, const Char_t* title) : AliA
   fEtaMax(0),
   fRapMin(0),
   fRapMax(0),
+  fFlagCutTOFdistance(kFALSE),
+  fCutTOFdistance(3.),
   fHistogramsOn(0),
   ffDTheoretical(0),
   fhCutStatistics(0),         
@@ -245,6 +249,8 @@ AliESDtrackCuts::AliESDtrackCuts(const AliESDtrackCuts &c) : AliAnalysisCuts(c),
   fEtaMax(0),
   fRapMin(0),
   fRapMax(0),
+  fFlagCutTOFdistance(kFALSE),
+  fCutTOFdistance(3.),
   fHistogramsOn(0),
   ffDTheoretical(0),				     
   fhCutStatistics(0),         
@@ -320,6 +326,8 @@ AliESDtrackCuts::~AliESDtrackCuts()
       delete fhPt[i];
     if (fhEta[i])
       delete fhEta[i];
+    if (fhTOFdistance[i])
+      delete fhTOFdistance[i];
   }
 
   if(f1CutMaxDCAToVertexXYPtDep)delete f1CutMaxDCAToVertexXYPtDep;
@@ -456,6 +464,7 @@ void AliESDtrackCuts::Init()
     
     fhPt[i] = 0;
     fhEta[i] = 0;
+    fhTOFdistance[i] = 0;
   }
   ffDTheoretical = 0;
 
@@ -556,6 +565,9 @@ void AliESDtrackCuts::Copy(TObject &c) const
   target.fRapMin = fRapMin;
   target.fRapMax = fRapMax;
 
+  target.fFlagCutTOFdistance = fFlagCutTOFdistance;
+  target.fCutTOFdistance = fCutTOFdistance;
+
   target.fHistogramsOn = fHistogramsOn;
 
   for (Int_t i=0; i<2; ++i)
@@ -592,6 +604,7 @@ void AliESDtrackCuts::Copy(TObject &c) const
     
     if (fhPt[i]) target.fhPt[i] = (TH1F*) fhPt[i]->Clone();
     if (fhEta[i]) target.fhEta[i] = (TH1F*) fhEta[i]->Clone();
+    if (fhTOFdistance[i]) target.fhTOFdistance[i] = (TH2F*) fhTOFdistance[i]->Clone();
   }
   if (ffDTheoretical) target.ffDTheoretical = (TF1*) ffDTheoretical->Clone();
 
@@ -665,6 +678,7 @@ Long64_t AliESDtrackCuts::Merge(TCollection* list) {
 
       fhPt[i]                ->Add(entry->fhPt[i]); 
       fhEta[i]               ->Add(entry->fhEta[i]); 
+      fhTOFdistance[i]       ->Add(entry->fhTOFdistance[i]); 
     }      
 
     fhCutStatistics  ->Add(entry->fhCutStatistics);        
@@ -738,6 +752,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2009(Bool_t selPrima
   //esdTrackCuts->SetEtaRange(-0.8,+0.8);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
   
   return esdTrackCuts;
 }
@@ -781,6 +796,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(Bool_t selPrima
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
 
   return esdTrackCuts;
 }
@@ -824,6 +840,7 @@ AliESDtrackCuts* AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(Bool_t selPrima
   esdTrackCuts->SetRequireSigmaToVertex(kFALSE);
   
   esdTrackCuts->SetMaxChi2PerClusterITS(36);
+  // to be added after validation: esdTrackCuts->SetFlagCutTOFdistance(kTRUE);
 
   return esdTrackCuts;
 }
@@ -1325,6 +1342,38 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
       }
     }
   }
+
+  // TOF signal Dz cut
+  Float_t dxTOF = esdTrack->GetTOFsignalDx();
+  Float_t dzTOF = esdTrack->GetTOFsignalDz();
+  if (fFlagCutTOFdistance){
+	  if (fgBeamTypeFlag < 0) {  // the check on the beam type was not done yet
+		  const AliESDEvent* event = esdTrack->GetESDEvent();
+		  if (event){
+			  TString beamTypeESD = event->GetBeamType();
+			  AliDebug(2,Form("Beam type from ESD event = %s",beamTypeESD.Data()));
+			  if (beamTypeESD.CompareTo("A-A",TString::kIgnoreCase) == 0){ // we are in PbPb collisions --> fgBeamTypeFlag will be set to 1, to apply the cut on TOF signal Dz
+				  fgBeamTypeFlag = 1;
+			  }
+			  else { // we are NOT in PbPb collisions --> fgBeamTypeFlag will be set to 0, to NOT apply the cu6 on TOF signal Dz
+				  fgBeamTypeFlag = 0;
+			  }				  
+		  }
+		  else{
+			  AliFatal("Beam type not available, but it is needed to apply the TOF cut!");
+		  }
+	  }
+
+	  if (fgBeamTypeFlag == 1){ // we are in PbPb collisions --> apply the cut on TOF signal Dz
+		  Float_t radiusTOF = TMath::Sqrt(dxTOF*dxTOF + dzTOF*dzTOF);
+		  AliDebug(3,Form("TOF check (with fCutTOFdistance = %f) --> dx = %f, dz = %f, radius = %f", fCutTOFdistance, dxTOF, dzTOF, radiusTOF));
+		  if (radiusTOF > fCutTOFdistance){
+			  AliDebug(2, Form("************* the radius is outside the range! %f > %f, the track will be skipped", radiusTOF, fCutTOFdistance));
+			  cuts[40] = kTRUE;
+			  cut = kTRUE;
+		  }
+	  }
+  }
   
   //########################################################################
   // filling histograms
@@ -1381,6 +1430,7 @@ Bool_t AliESDtrackCuts::AcceptTrack(const AliESDtrack* esdTrack)
 
       fhPt[id]->Fill(pt);
       fhEta[id]->Fill(eta);
+      fhTOFdistance[id]->Fill(dxTOF, dzTOF);
 
       Float_t bRes[2];
       bRes[0] = TMath::Sqrt(bCov[0]);
@@ -1585,6 +1635,7 @@ Int_t AliESDtrackCuts::CountAcceptedTracks(const AliESDEvent* const esd)
 
     fhPt[i]                  = new TH1F("pt"     ,"p_{T} distribution;p_{T} (GeV/c)", 800, 0.0, 10.0);
     fhEta[i]                 = new TH1F("eta"     ,"#eta distribution;#eta",40,-2.0,2.0);
+    fhTOFdistance[i]         = new TH2F("TOFdistance"     ,"TOF distance;dx (cm};dz (cm)", 150, -15, 15, 150, -15, 15);
     
     fhNClustersITS[i]->SetTitle("n ITS clusters");
     fhNClustersTPC[i]->SetTitle("n TPC clusters");
@@ -1706,6 +1757,7 @@ Bool_t AliESDtrackCuts::LoadHistograms(const Char_t* dir)
 
     fhPt[i] = dynamic_cast<TH1F*> (gDirectory->Get("pt"));
     fhEta[i] = dynamic_cast<TH1F*> (gDirectory->Get("eta"));
+    fhTOFdistance[i] = dynamic_cast<TH2F*> (gDirectory->Get("TOFdistance"));
 
     gDirectory->cd("../");
   }
@@ -1779,6 +1831,7 @@ void AliESDtrackCuts::SaveHistograms(const Char_t* dir) {
 
     fhPt[i]                  ->Write();
     fhEta[i]                 ->Write();
+    fhTOFdistance[i]         ->Write();
     
     gDirectory->cd("../");
   }

@@ -190,6 +190,11 @@ public:
   TH1F* GetDZNormalized(Int_t i) const { return fhDZNormalized[i]; }
   TH1F* GetNClustersTPC(Int_t i) const { return fhNClustersTPC[i]; }
   TH1F* GetPtHist(Int_t i) const { return fhPt[i]; }
+  
+  void SetFlagCutTOFdistance(Bool_t flagTOFcut) { fFlagCutTOFdistance = flagTOFcut;}
+  Bool_t GetFlagCutTOFdistance() const { return fFlagCutTOFdistance;}
+  void SetCutTOFdistance(Float_t cut) { fCutTOFdistance = cut;}
+  Float_t GetCutTOFdistance() const { return fCutTOFdistance;}
 
 protected:
   void Init(); // sets everything to 0
@@ -197,7 +202,7 @@ protected:
   Bool_t CheckPtDepDCA(TString dist,Bool_t print=kFALSE) const;
   void SetPtDepDCACuts(Double_t pt);
 
-  enum { kNCuts = 40 }; 
+  enum { kNCuts = 41 }; 
 
   //######################################################
   // esd track quality cuts
@@ -268,6 +273,12 @@ protected:
   Float_t fEtaMin, fEtaMax;           // definition of the range of the eta
   Float_t fRapMin, fRapMax;           // definition of the range of the y
 
+  Bool_t  fFlagCutTOFdistance;       // cut on TOFdistance? --> yes by default!
+  Float_t fCutTOFdistance;           // value of the cut on TOFdistance
+  static Char_t fgBeamTypeFlag;      // -1 --> no check done on the beam type yet
+                                     // 0 --> beam type != "A-A"
+                                     // 1  --> beam type == "A-A"
+   
   //######################################################
   // diagnostics histograms
   Bool_t fHistogramsOn;               // histograms on/off
@@ -310,7 +321,9 @@ protected:
   TH1F*  fhCutStatistics;             //-> statistics of what cuts the tracks did not survive
   TH2F*  fhCutCorrelation;            //-> 2d statistics plot
 
-  ClassDef(AliESDtrackCuts, 18)
+  TH2F* fhTOFdistance[2];            //-> TOF signal distance dx vs dz
+
+  ClassDef(AliESDtrackCuts, 19)
 };
 
 
