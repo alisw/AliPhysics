@@ -33,7 +33,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   TList      * GetCreateOutputObjects();
   
-  TLorentzVector GetCellMomentum(const Int_t absId, AliVCaloCells* cells);
+  TLorentzVector GetCellMomentum(const Int_t absId, Float_t energy, AliVCaloCells* cells) ;
   
   Int_t        GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells,
                                       Int_t *absIdList,     Float_t *maxEList)  ;
@@ -52,7 +52,13 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         SetMinNCells(Float_t cut)     { fMinNCells   = cut  ; }
 
-  void         SplitEnergy(const Int_t absId1, const Int_t absId2, const AliVCaloCells* cells,
+  void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min = min ; fMassPi0Max = max ; }
+  void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin = min ; fMassEtaMax = max ; }
+  void         SetConMassRange(Float_t min, Float_t max) { fMassConMin = min ; fMassConMax = max ; }
+  
+  void         SplitEnergy(const Int_t absId1, const Int_t absId2, 
+                           AliVCluster *cluster, 
+                           AliVCaloCells* cells,
                            Float_t & e1, Float_t & e2 );
   
   void         Print(const Option_t * opt) const;
@@ -64,9 +70,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;       // Calorimeter where the gamma is searched
-  Float_t      fM02Cut  ;           // Study clusters with l0 larger than cut
+  Float_t      fM02Cut ;            // Study clusters with l0 larger than cut
   Float_t      fMinNCells ;         // Study clusters with ncells larger than cut
- 
+  Float_t      fMassEtaMin;         // Min Eta mass
+  Float_t      fMassEtaMax;         // Max Eta mass  
+  Float_t      fMassPi0Min;         // Min Pi0 mass
+  Float_t      fMassPi0Max;         // Min Pi0 mass
+  Float_t      fMassConMin;         // Min Conversions mass
+  Float_t      fMassConMax;         // Min Conversions mass
+  
   //Histograms
   
   TH2F       * fhMassNLocMax1[7] ;  //! Mass of 2 highest energy cells when 1 local max, 1-6 for different MC particle types 
@@ -84,16 +96,22 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhNCellNLocMax2[7] ; //! n cells in cluster vs E for N max in cluster = 2, 1-6 for different MC particle types
   TH2F       * fhNCellNLocMaxN[7] ; //! n cells in cluster vs E for N max in cluster > 2, 1-6 for different MC particle types
   
-  TH2F       * fhM02Pi0[7] ;       //! M02 for Mass around pi0
-  TH2F       * fhM02Eta[7] ;       //! M02 for Mass around eta
-  TH2F       * fhM02Con[7] ;       //! M02 for Mass around close to 0
+  TH2F       * fhM02Pi0LocMax1[7] ; //! M02 for Mass around pi0, N Local Maxima = 1
+  TH2F       * fhM02EtaLocMax1[7] ; //! M02 for Mass around eta, N Local Maxima = 1
+  TH2F       * fhM02ConLocMax1[7] ; //! M02 for Mass around close to 0, N Local Maxima = 1
 
-  TH2F       * fhInvMassAllCells[7] ; //! Inv mass of all cells
-
-  AliAnaInsideClusterInvariantMass(const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
+  TH2F       * fhM02Pi0LocMax2[7] ; //! M02 for Mass around pi0, N Local Maxima = 2
+  TH2F       * fhM02EtaLocMax2[7] ; //! M02 for Mass around eta, N Local Maxima = 2
+  TH2F       * fhM02ConLocMax2[7] ; //! M02 for Mass around close to 0, N Local Maxima = 2
+  
+  TH2F       * fhM02Pi0LocMaxN[7] ; //! M02 for Mass around pi0, N Local Maxima > 2
+  TH2F       * fhM02EtaLocMaxN[7] ; //! M02 for Mass around eta, N Local Maxima > 2
+  TH2F       * fhM02ConLocMaxN[7] ; //! M02 for Mass around close to 0, N Local Maxima > 2
+  
+  AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
   AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ;//cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,1)
+  ClassDef(AliAnaInsideClusterInvariantMass,2)
   
 } ;
 
