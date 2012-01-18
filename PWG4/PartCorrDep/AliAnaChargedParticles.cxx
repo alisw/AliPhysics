@@ -94,19 +94,19 @@ TList *  AliAnaChargedParticles::GetCreateOutputObjects()
   fhEtaNeg->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhEtaNeg);
   
-  fhPhiPos  = new TH2F ("hPhiPositive","#phi of negative charges distribution",
+  fhPhiPos  = new TH2F ("hPhiPositive","#phi of positive charges distribution",
                         nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
   fhPhiPos->SetYTitle("#phi (rad)");
   fhPhiPos->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhPhiPos);
   
-  fhEtaPos  = new TH2F ("hEtaPositive","#eta of negative charges distribution",
+  fhEtaPos  = new TH2F ("hEtaPositive","#eta of positive charges distribution",
                         nptbins,ptmin,ptmax, netabins,etamin,etamax); 
   fhEtaPos->SetYTitle("#eta ");
   fhEtaPos->SetXTitle("p_{T} (GeV/c)");
   outputContainer->Add(fhEtaPos);
   
-  fhEtaPhiPos  = new TH2F ("hPtEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhiPos  = new TH2F ("hEtaPhiPositive","pt/eta/phi of positive charge",netabins,etamin,etamax, nphibins,phimin,phimax); 
   fhEtaPhiPos->SetXTitle("p_{T}^{h^{+}} (GeV/c)");
   fhEtaPhiPos->SetYTitle("#eta ");
   fhEtaPhiPos->SetZTitle("#phi (rad)");  
@@ -232,8 +232,10 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
 {
   //Do analysis and fill aods
   if(!GetCTSTracks() || GetCTSTracks()->GetEntriesFast() == 0) return ;
+  
   Int_t ntracks = GetCTSTracks()->GetEntriesFast();
   Double_t vert[3] = {0,0,0}; //vertex ;
+  
   //Some prints
   if(GetDebug() > 0)
     printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - In CTS aod entries %d\n", ntracks);
@@ -249,32 +251,36 @@ void  AliAnaChargedParticles::MakeAnalysisFillAOD()
     Double_t mom[3] = {track->Px(),track->Py(),track->Pz()};
     p3.SetXYZ(mom[0],mom[1],mom[2]);
     
-    //Acceptance selection
-    Bool_t in =  GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+    Bool_t in = GetFiducialCut()->IsInFiducialCut(mom,"CTS") ;
+    
     if(GetDebug() > 1) 
-      printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, in fiducial cut %d\n",p3.Pt(), p3.Phi(), in);
-
-    if(p3.Pt() > GetMinPt() && in) {
-      //Keep only particles identified with fPdg
-      //Selection not done for the moment
-      //Should be done here.
-      
-      // Mixed event
-      if (GetMixedEvent()){
-        evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
-      } 
-      GetVertex(vert,evtIndex); 
-      if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
-      
-      AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
-      tr.SetDetector("CTS");
-      tr.SetLabel(track->GetLabel());
-      tr.SetTrackLabel(track->GetID(),-1);
-      tr.SetChargedBit(track->Charge()>0);
+      printf("AliAnaChargedParticles::MakeAnalysisFillAOD() - Track pt %2.2f, phi %2.2f, eta %2.2f in fiducial cut %d\n",p3.Pt(), p3.Phi(), p3.Eta(),in);
+    
+    //Acceptance selection
+    if(IsFiducialCutOn() && ! in ) continue ;
+    
+    // Momentum selection
+    if(p3.Pt() < GetMinPt() || p3.Pt() > GetMaxPt()) continue;
+    
+    //Keep only particles identified with fPdg
+    //Selection not done for the moment
+    //Should be done here.
+    
+    // Mixed event
+    if (GetMixedEvent()){
+      evtIndex = GetMixedEvent()->EventIndex(track->GetID()) ;
+    } 
+    GetVertex(vert,evtIndex); 
+    if(TMath::Abs(vert[2])> GetZvertexCut()) return; 
+        
+    AliAODPWG4Particle tr = AliAODPWG4Particle(mom[0],mom[1],mom[2],0);
+    tr.SetDetector("CTS");
+    tr.SetLabel(track->GetLabel());
+    tr.SetTrackLabel(track->GetID(),-1);
+    tr.SetChargedBit(track->Charge()>0);
 		
-      AddAODParticle(tr);
-      
-    }//selection
+    AddAODParticle(tr);
+    
   }//loop
   
   if(GetDebug() > 0) 	
