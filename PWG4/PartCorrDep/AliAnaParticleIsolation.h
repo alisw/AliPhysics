@@ -65,13 +65,19 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void    SetPtFractions(Int_t i, Float_t pt)   { fPtFractions[i]  = pt   ; } 
   
   Bool_t  IsReIsolationOn()               const { return fReMakeIC        ; }
-  void    SwitchOnReIsolation()                 { fReMakeIC = kTRUE       ; }
-  void    SwitchOffReIsolation()                { fReMakeIC = kFALSE      ; }
+  void    SwitchOnReIsolation()                 { fReMakeIC      = kTRUE  ; }
+  void    SwitchOffReIsolation()                { fReMakeIC      = kFALSE ; }
   
   Bool_t  IsSeveralIsolationOn()          const { return fMakeSeveralIC   ; }
   void    SwitchOnSeveralIsolation()            { fMakeSeveralIC = kTRUE  ; }
   void    SwitchOffSeveralIsolation()           { fMakeSeveralIC = kFALSE ; }
-    
+
+  void    SwitchOnTMHistoFill()                 { fFillTMHisto   = kTRUE  ; }
+  void    SwitchOffTMHistoFill()                { fFillTMHisto   = kFALSE ; }
+  
+  void    SwitchOnSSHistoFill()                 { fFillSSHisto   = kTRUE  ; }
+  void    SwitchOffSSHistoFill()                { fFillSSHisto   = kFALSE ; }
+
   //Histogrammes setters and getters
   
   virtual void SetHistoPtSumRangeAndNBins(Float_t min, Float_t max, Int_t n){
@@ -93,7 +99,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TString  fCalorimeter ;                         // Calorimeter where neutral particles in cone for isolation are;
   Bool_t   fReMakeIC ;                            // Do isolation analysis
   Bool_t   fMakeSeveralIC ;                       // Do analysis for different IC
-  
+  Bool_t   fFillTMHisto;                          // Fill track matching plots
+  Bool_t   fFillSSHisto;                          // Fill Shower shape plots
+
   // Analysis data members for multiple cones and pt thresholds 
   Int_t    fNCones ;                              //! Number of cone sizes to test
   Int_t    fNPtThresFrac ;                        //! Number of ptThres and ptFrac to test
@@ -176,6 +184,15 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH1F *   fhPtNoIsoFragmentation;                //! Number of not isolated leading fragmentation gamma 
   TH1F *   fhPtNoIsoUnknown;                      //! Number of not isolated leading hadrons 
 
+  // Track matching studies
+  TH2F *   fhTrackMatchedDEta     ;               //! Eta distance between track and cluster vs cluster E
+  TH2F *   fhTrackMatchedDPhi     ;               //! Phi distance between track and cluster vs cluster E
+  TH2F *   fhTrackMatchedDEtaDPhi ;               //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  
+  // Shower Shape histograms
+  TH2F *   fhELambda0;                            //! Shower shape of isolated photons
+  TH2F *   fhELambda1;                            //! Shower shape of isolated photons
+
   //Histograms settings
   Int_t    fHistoNPtSumBins;                      // Number of bins in PtSum histograms
   Float_t  fHistoPtSumMax;                        // PtSum maximum in histogram
@@ -184,10 +201,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
   
-  AliAnaParticleIsolation(const AliAnaParticleIsolation & g) ;              // cpy ctor
-  AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & g) ;// cpy assignment
+  AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
+  AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,5)
+  ClassDef(AliAnaParticleIsolation,7)
 } ;
 
 

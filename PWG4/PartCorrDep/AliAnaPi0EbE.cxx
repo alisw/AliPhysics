@@ -15,7 +15,7 @@
 
 //_________________________________________________________________________
 // Class for the analysis of high pT pi0 event by event
-// Pi0 identified by one of the following:
+// Pi0/Eta identified by one of the following:
 //  -Invariant mass of 2 cluster in calorimeter
 //  -Shower shape analysis in calorimeter
 //  -Invariant mass of one cluster in calorimeter and one photon reconstructed in CTS
@@ -47,23 +47,26 @@ ClassImp(AliAnaPi0EbE)
   
 //____________________________
 AliAnaPi0EbE::AliAnaPi0EbE() : 
-    AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),           fCalorimeter(""),
-    fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	              fFillWeightHistograms(kFALSE),
+    AliAnaCaloTrackCorrBaseClass(),fAnaType(kIMCalo),            fCalorimeter(""),
+    fMinDist(0.),fMinDist2(0.),    fMinDist3(0.),	              
+    fFillWeightHistograms(kFALSE), fFillTMHisto(0),
     fInputAODGammaConvName(""),
     //Histograms
-    fhPtPi0(0),                   fhEPi0(0),                    
-    fhEEtaPi0(0),                 fhEPhiPi0(0),                 fhEtaPhiPi0(0),
+    fhPt(0),                       fhE(0),                    
+    fhEEta(0),                     fhEPhi(0),                    fhEtaPhi(0),
+    fhPtDecay(0),                  fhEDecay(0),  
     //Shower shape histos
-    fhEDispersion(0),             fhELambda0(0),                fhELambda1(0), 
-    fhELambda0NoTRD(0),           fhELambda0FracMaxCellCut(0),  
-    fhEFracMaxCell(0),            fhEFracMaxCellNoTRD(0),            
-    fhENCells(0),                 fhETime(0),                   fhEPairDiffTime(0),    
+    fhEDispersion(0),              fhELambda0(0),                fhELambda1(0), 
+    fhELambda0NoTRD(0),            fhELambda0FracMaxCellCut(0),  
+    fhEFracMaxCell(0),             fhEFracMaxCellNoTRD(0),            
+    fhENCells(0),                  fhETime(0),                   fhEPairDiffTime(0),    
     //MC histos
-    fhPtMCNoPi0(0),               fhPhiMCNoPi0(0),              fhEtaMCNoPi0(0), 
-    fhPtMCPi0(0),                 fhPhiMCPi0(0),                fhEtaMCPi0(0),
+    fhPtMCNo(0),                   fhPhiMCNo(0),                 fhEtaMCNo(0), 
+    fhPtMC(0),                     fhPhiMC(0),                   fhEtaMC(0),
     // Weight studies
-    fhECellClusterRatio(0),       fhECellClusterLogRatio(0),                 
-    fhEMaxCellClusterRatio(0),    fhEMaxCellClusterLogRatio(0)
+    fhECellClusterRatio(0),        fhECellClusterLogRatio(0),                 
+    fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
+    fhTrackMatchedDEta(0x0),       fhTrackMatchedDPhi(0x0),      fhTrackMatchedDEtaDPhi(0x0)
 {
   //default ctor
   
@@ -97,7 +100,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
   Float_t l0   = cluster->GetM02();
   Float_t l1   = cluster->GetM20(); 
   Int_t   nSM  = GetModuleNumber(cluster);
-  
+
   AliVCaloCells * cell = 0x0; 
   if(fCalorimeter == "PHOS") 
     cell = GetPHOSCells();
@@ -124,6 +127,24 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
   
   fhETime  ->Fill(e, cluster->GetTOF()*1.e9);
   fhENCells->Fill(e, cluster->GetNCells());
+  
+  // Fill Track matching control histograms
+  if(fFillTMHisto){
+    Float_t dZ  = cluster->GetTrackDz();
+    Float_t dR  = cluster->GetTrackDx();
+
+    if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
+      dR = 2000., dZ = 2000.;
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+    }    
+    //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
+
+    if(fhTrackMatchedDEta && TMath::Abs(dR) < 999){
+      fhTrackMatchedDEta->Fill(e,dZ);
+      fhTrackMatchedDPhi->Fill(e,dR);
+      if(e > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+    }
+  }// Track matching histograms   
   
   if(IsDataMC()) {
     //Photon1
@@ -315,33 +336,50 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Int_t tbins    = GetHistogramRanges()->GetHistoTimeBins() ;        Float_t tmax   = GetHistogramRanges()->GetHistoTimeMax();         Float_t tmin   = GetHistogramRanges()->GetHistoTimeMin();
   Int_t nbins    = GetHistogramRanges()->GetHistoNClusterCellBins(); Int_t   nmax   = GetHistogramRanges()->GetHistoNClusterCellMax(); Int_t   nmin   = GetHistogramRanges()->GetHistoNClusterCellMin(); 
 
-  fhPtPi0  = new TH1F("hPtPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
-  fhPtPi0->SetYTitle("N");
-  fhPtPi0->SetXTitle("p_{T #pi^{0}}(GeV/c)");
-  outputContainer->Add(fhPtPi0) ; 
+  Int_t   nresetabins = GetHistogramRanges()->GetHistoTrackResidualEtaBins();          
+  Float_t resetamax   = GetHistogramRanges()->GetHistoTrackResidualEtaMax();          
+  Float_t resetamin   = GetHistogramRanges()->GetHistoTrackResidualEtaMin();
+  Int_t   nresphibins = GetHistogramRanges()->GetHistoTrackResidualPhiBins();          
+  Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
+  Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
-  fhEPi0  = new TH1F("hEPi0","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
-  fhEPi0->SetYTitle("N");
-  fhEPi0->SetXTitle("E  #pi^{0}(GeV)");
-  outputContainer->Add(fhEPi0) ; 
+  fhPt  = new TH1F("hPt","Number of identified  #pi^{0} decay",nptbins,ptmin,ptmax); 
+  fhPt->SetYTitle("N");
+  fhPt->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+  outputContainer->Add(fhPt) ; 
   
-  fhEPhiPi0  = new TH2F
-  ("hEPhiPi0","Selected #pi^{0} pairs: E vs  #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
-  fhEPhiPi0->SetYTitle("#phi #pi^{0}(GeV)");
-  fhEPhiPi0->SetXTitle("E (GeV) #pi^{0}(GeV)");
-  outputContainer->Add(fhEPhiPi0) ; 
+  fhE  = new TH1F("hE","Number of identified  #pi^{0} decay pairs",nptbins,ptmin,ptmax); 
+  fhE->SetYTitle("N");
+  fhE->SetXTitle("E  #pi^{0}(GeV)");
+  outputContainer->Add(fhE) ; 
   
-  fhEEtaPi0  = new TH2F
-  ("hEEtaPi0","Selected #pi^{0} pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-  fhEEtaPi0->SetYTitle("#eta #pi^{0}(GeV)");
-  fhEEtaPi0->SetXTitle("E (GeV) #pi^{0}(GeV)");
-  outputContainer->Add(fhEEtaPi0) ; 
+  fhEPhi  = new TH2F
+  ("hEPhi","Selected #pi^{0} pairs: E vs  #phi",nptbins,ptmin,ptmax, nphibins,phimin,phimax); 
+  fhEPhi->SetYTitle("#phi #pi^{0}(GeV)");
+  fhEPhi->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  outputContainer->Add(fhEPhi) ; 
   
-  fhEtaPhiPi0  = new TH2F
-  ("hEtaPhiPi0","Selected #pi^{0} pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
-  fhEtaPhiPi0->SetYTitle("#phi #pi^{0}(GeV)");
-  fhEtaPhiPi0->SetXTitle("#eta #pi^{0}(GeV)");
-  outputContainer->Add(fhEtaPhiPi0) ; 
+  fhEEta  = new TH2F
+  ("hEEta","Selected #pi^{0} pairs: E vs #eta",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+  fhEEta->SetYTitle("#eta #pi^{0}(GeV)");
+  fhEEta->SetXTitle("E (GeV) #pi^{0}(GeV)");
+  outputContainer->Add(fhEEta) ; 
+  
+  fhEtaPhi  = new TH2F
+  ("hEtaPhi","Selected #pi^{0} pairs: #eta vs #phi",netabins,etamin,etamax, nphibins,phimin,phimax); 
+  fhEtaPhi->SetYTitle("#phi #pi^{0}(GeV)");
+  fhEtaPhi->SetXTitle("#eta #pi^{0}(GeV)");
+  outputContainer->Add(fhEtaPhi) ; 
+  
+  fhPtDecay  = new TH1F("hPtDecay","Number of identified  #pi^{0} decay photons",nptbins,ptmin,ptmax); 
+  fhPtDecay->SetYTitle("N");
+  fhPtDecay->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+  outputContainer->Add(fhPtDecay) ; 
+  
+  fhEDecay  = new TH1F("hEDecay","Number of identified  #pi^{0} decay photons",nptbins,ptmin,ptmax); 
+  fhEDecay->SetYTitle("N");
+  fhEDecay->SetXTitle("E  #pi^{0}(GeV)");
+  outputContainer->Add(fhEDecay) ;   
   
   ////////
   
@@ -410,6 +448,33 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhEPairDiffTime);
   }
   
+  if(fFillTMHisto){
+    fhTrackMatchedDEta  = new TH2F
+    ("TrackMatchedDEta",
+     "d#eta of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
+    fhTrackMatchedDEta->SetYTitle("d#eta");
+    fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDPhi  = new TH2F
+    ("TrackMatchedDPhi",
+     "d#phi of cluster-track vs cluster energy",
+     nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
+    
+    fhTrackMatchedDEtaDPhi  = new TH2F
+    ("TrackMatchedDEtaDPhi",
+     "d#eta vs d#phi of cluster-track vs cluster energy",
+     nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
+    fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
+    fhTrackMatchedDEtaDPhi->SetXTitle("d#eta");   
+    
+    outputContainer->Add(fhTrackMatchedDEta) ; 
+    outputContainer->Add(fhTrackMatchedDPhi) ;
+    outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
+  }  
+  
   if(fFillWeightHistograms){
     
     fhECellClusterRatio  = new TH2F ("hECellClusterRatio"," cell energy / cluster energy vs cluster energy, for selected decay photons from neutral meson",
@@ -456,43 +521,43 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
        GetReader()->GetDataType() != AliCaloTrackReader::kMC){
       
-      fhPtMCPi0  = new TH1F("hPtMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax); 
-      fhPtMCPi0->SetYTitle("N");
-      fhPtMCPi0->SetXTitle("p_{T #pi^{0}}(GeV/c)");
-      outputContainer->Add(fhPtMCPi0) ; 
+      fhPtMC  = new TH1F("hPtMC","Identified pi0 from pi0",nptbins,ptmin,ptmax); 
+      fhPtMC->SetYTitle("N");
+      fhPtMC->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+      outputContainer->Add(fhPtMC) ; 
       
-      fhPhiMCPi0  = new TH2F
-      ("hPhiMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiMCPi0->SetYTitle("#phi");
-      fhPhiMCPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
-      outputContainer->Add(fhPhiMCPi0) ; 
+      fhPhiMC  = new TH2F
+      ("hPhiMC","Identified pi0 from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiMC->SetYTitle("#phi");
+      fhPhiMC->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      outputContainer->Add(fhPhiMC) ; 
       
-      fhEtaMCPi0  = new TH2F
-      ("hEtaMCPi0","Identified pi0 from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaMCPi0->SetYTitle("#eta");
-      fhEtaMCPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
-      outputContainer->Add(fhEtaMCPi0) ;
+      fhEtaMC  = new TH2F
+      ("hEtaMC","Identified pi0 from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      fhEtaMC->SetYTitle("#eta");
+      fhEtaMC->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      outputContainer->Add(fhEtaMC) ;
       
-      fhPtMCNoPi0  = new TH1F("hPtMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax); 
-      fhPtMCNoPi0->SetYTitle("N");
-      fhPtMCNoPi0->SetXTitle("p_{T #pi^{0}}(GeV/c)");
-      outputContainer->Add(fhPtMCNoPi0) ; 
+      fhPtMCNo  = new TH1F("hPtMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax); 
+      fhPtMCNo->SetYTitle("N");
+      fhPtMCNo->SetXTitle("p_{T #pi^{0}}(GeV/c)");
+      outputContainer->Add(fhPtMCNo) ; 
       
-      fhPhiMCNoPi0  = new TH2F
-      ("hPhiMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
-      fhPhiMCNoPi0->SetYTitle("#phi");
-      fhPhiMCNoPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
-      outputContainer->Add(fhPhiMCNoPi0) ; 
+      fhPhiMCNo  = new TH2F
+      ("hPhiMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax,nphibins,phimin,phimax); 
+      fhPhiMCNo->SetYTitle("#phi");
+      fhPhiMCNo->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      outputContainer->Add(fhPhiMCNo) ; 
       
-      fhEtaMCNoPi0  = new TH2F
-      ("hEtaMCNoPi0","Identified pi0 not from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
-      fhEtaMCNoPi0->SetYTitle("#eta");
-      fhEtaMCNoPi0->SetXTitle("p_{T #pi^{0}} (GeV/c)");
-      outputContainer->Add(fhEtaMCNoPi0) ;
+      fhEtaMCNo  = new TH2F
+      ("hEtaMCNo","Identified pi0 not from pi0",nptbins,ptmin,ptmax,netabins,etamin,etamax); 
+      fhEtaMCNo->SetYTitle("#eta");
+      fhEtaMCNo->SetXTitle("p_{T #pi^{0}} (GeV/c)");
+      outputContainer->Add(fhEtaMCNo) ;
       
       if(fAnaType == kIMCalo){
         TString ptype[] ={"#gamma","#gamma->e^{#pm}","#pi^{0}","#eta","e^{#pm}", "hadron"}; 
-        TString pname[] ={"Photon","Conversion",     "Pi0",    "Eta", "Electron","Hadron"};
+        TString pname[] ={"Photon","Conversion",     "",    "Eta", "Electron","Hadron"};
         for(Int_t i = 0; i < 6; i++){ 
           
           fhEMCLambda0[i]  = new TH2F(Form("hELambda0_MC%s",pname[i].Data()),
@@ -749,6 +814,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
         // Tag both photons as decay
         photon1->SetTagged(kTRUE);
         photon2->SetTagged(kTRUE);
+        
+        fhPtDecay->Fill(photon1->Pt());
+        fhEDecay ->Fill(photon1->E() );
+        
+        fhPtDecay->Fill(photon2->Pt());
+        fhEDecay ->Fill(photon2->E() );
 
         //Create AOD for analysis
         mom = mom1+mom2;
@@ -891,6 +962,12 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeterAndCTS()
         // Tag both photons as decay
         photon1->SetTagged(kTRUE);
         photon2->SetTagged(kTRUE);        
+        
+        fhPtDecay->Fill(photon1->Pt());
+        fhEDecay ->Fill(photon1->E() );
+        
+        //fhPtDecay->Fill(photon2->Pt());
+        //fhEDecay ->Fill(photon2->E() );
         
         //Create AOD for analysis
         mom = mom1+mom2;
@@ -1053,25 +1130,25 @@ void  AliAnaPi0EbE::MakeAnalysisFillHistograms()
     if(phi < 0) phi+=TMath::TwoPi();
     Float_t eta = pi0->Eta();
     
-    fhPtPi0      ->Fill(pt);
-    fhEPi0       ->Fill(ener);
+    fhPt     ->Fill(pt);
+    fhE      ->Fill(ener);
     
-    fhEEtaPi0   ->Fill(ener,eta);
-    fhEPhiPi0   ->Fill(ener,phi);
-    fhEtaPhiPi0 ->Fill(eta,phi);
+    fhEEta   ->Fill(ener,eta);
+    fhEPhi   ->Fill(ener,phi);
+    fhEtaPhi ->Fill(eta,phi);
 
     if(IsDataMC()){
       if((GetReader()->GetDataType() == AliCaloTrackReader::kMC && fAnaType!=kSSCalo) || 
          GetReader()->GetDataType() != AliCaloTrackReader::kMC){
         if(GetMCAnalysisUtils()->CheckTagBit(pi0->GetTag(), AliMCAnalysisUtils::kMCPi0)){
-          fhPtMCPi0  ->Fill(pt);
-          fhPhiMCPi0 ->Fill(pt,phi);
-          fhEtaMCPi0 ->Fill(pt,eta);
+          fhPtMC  ->Fill(pt);
+          fhPhiMC ->Fill(pt,phi);
+          fhEtaMC ->Fill(pt,eta);
         }
         else{
-          fhPtMCNoPi0  ->Fill(pt);
-          fhPhiMCNoPi0 ->Fill(pt,phi);
-          fhEtaMCNoPi0 ->Fill(pt,eta);
+          fhPtMCNo  ->Fill(pt);
+          fhPhiMCNo ->Fill(pt,phi);
+          fhEtaMCNo ->Fill(pt,eta);
         }
       }
     }//Histograms with MC
