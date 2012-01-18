@@ -104,7 +104,7 @@ TObjString *  AliAnaInsideClusterInvariantMass::GetAnalysisCuts()
   parList+=onePar ;
   snprintf(onePar,buffersize,"fM02Cut =%f \n"   ,        fM02Cut) ;
   parList+=onePar ;
-  snprintf(onePar,buffersize,"fMinNCells =%f \n",        fMinNCells) ;
+  snprintf(onePar,buffersize,"fMinNCells =%d \n",        fMinNCells) ;
   parList+=onePar ;  
   snprintf(onePar,buffersize,"pi0 : %2.1f < m <%2.1f\n", fMassPi0Min,fMassPi0Max);
   parList+=onePar ;
@@ -535,7 +535,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     Int_t   nc = cluster->GetNCells();
 
     //If too small or big E or low number of cells, skip it
-    if( ( en < GetMinEnergy() || en > GetMaxEnergy() ) && nc < fMinNCells) continue ; 
+    if( en < GetMinEnergy() || en > GetMaxEnergy() || nc < fMinNCells) continue ; 
   
     Int_t    absId1    = -1; Int_t absId2 = -1;
     Int_t   *absIdList = new Int_t  [nc]; 
@@ -723,7 +723,7 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
   }//loop
   
   if(GetDebug() > 1) printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - END \n");  
-  
+
 }
 
 //______________________________________________________________________
@@ -776,7 +776,7 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
   //printf("Split Local Max: 1) %d - 2) %d\n",absId1,absId2);
   for(Int_t iDigit  = 0; iDigit < ncells; iDigit++ ) {
     absIdList[iDigit] = cluster->GetCellsAbsId()[iDigit];
-//    printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit],cells->GetCellAmplitude(absIdList[iDigit]));
+    //printf("iDigit %d, absId %d, Ecell %f\n",iDigit,absIdList[iDigit],cells->GetCellAmplitude(absIdList[iDigit]));
   }
     
   // SubCluster 1
@@ -856,11 +856,11 @@ void AliAnaInsideClusterInvariantMass::SplitEnergy(const Int_t absId1, const Int
       {
       //  printf("\t \t iDig %d, absId %d, absIdNew %d\n",iDigit,absId, absId2New);
         if(AreNeighbours( absId2New,absId )){ 
-      //    printf("\t neighbours\n");
+      //   printf("\t neighbours\n");
           
           Float_t en = cells->GetCellAmplitude(absId);
           RecalibrateCellAmplitude(en,absId);
-          //printf("\t \t e2New %f, en %f \n",e2New,en);
+      //    printf("\t \t e2New %f, en %f \n",e2New,en);
           if(e2New > en){
             absIdList2[ncells2++] = absId; 
             absIdList [iDigit]    = -1; 
