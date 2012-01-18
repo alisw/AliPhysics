@@ -53,29 +53,27 @@ AliAODCaloCells::AliAODCaloCells(const AliAODCaloCells& cells) :
   }
 }
 
-AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& cells)
+AliAODCaloCells& AliAODCaloCells::operator=(const AliAODCaloCells& source)
 {
     // Assignment operator
-  if(&cells == this) return *this;
-  AliVCaloCells::operator=(cells);
-  delete [] fCellNumber;
-  delete [] fAmplitude;
-
-  fNCells = cells.fNCells;
-
-  fCellNumber = new Short_t[fNCells];
-  fAmplitude  = new Double32_t[fNCells];
-
-  for (Int_t i = 0; i < fNCells; i++) {
-    fCellNumber[i]    = cells.fCellNumber[i];
-    fAmplitude[i]     = cells.fAmplitude[i];
+  if(this != &source) {
+    AliVCaloCells::operator=(source);
+    
+    if(fNCells != source.fNCells) {
+      delete [] fCellNumber;
+      delete [] fAmplitude;
+      fNCells     = source.fNCells;
+      fCellNumber = new Short_t[fNCells];
+      fAmplitude  = new Double32_t[fNCells];
+    }
+    memcpy(fCellNumber,source.fCellNumber, fNCells*sizeof(Short_t));
+    memcpy(fAmplitude, source.fAmplitude,  fNCells*sizeof(Double32_t));
+    fIsSorted = source.fIsSorted;
+    fType     = source.fType;
   }
-  fIsSorted = cells.fIsSorted;
-  fType = cells.fType;
-  
-  SetName(cells.GetName()) ; 
-  SetTitle(cells.GetTitle()) ; 
+
   return *this;
+  
 }
 
 AliAODCaloCells::~AliAODCaloCells()
