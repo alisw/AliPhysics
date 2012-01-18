@@ -43,6 +43,7 @@ set ( SRCS
  UserTasks/EmcalTasks/AliEmcalPhysicsSelectionTask.cxx
  UserTasks/EmcalTasks/AliEmcalSetupTask.cxx
  UserTasks/EmcalTasks/AliEmcalTrackPropagatorTask.cxx
+ UserTasks/EmcalTasks/AliEsdSkimTask.cxx
 )
 
 string ( REPLACE ".cxx" ".h" HDRS "${SRCS}" )
