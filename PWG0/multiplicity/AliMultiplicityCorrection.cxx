@@ -221,6 +221,9 @@ AliMultiplicityCorrection::AliMultiplicityCorrection(const Char_t* name, const C
     fMultiplicityESDCorrected[i] = new TH1F(Form("fMultiplicityESDCorrected%d", i), "fMultiplicityESDCorrected;true multiplicity;Count", NBINNING);
   }
 
+  for (Int_t i = 0; i < kQualityRegions; ++i)
+    fQuality[i] = 0;
+
   TH1::AddDirectory(oldStatus);
 
   AliUnfolding::SetNbins(120, 120);

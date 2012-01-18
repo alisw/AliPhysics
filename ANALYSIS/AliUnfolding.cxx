@@ -1515,9 +1515,11 @@ TH1* AliUnfolding::GetResidualsPlot(TH1* corrected)
   //
 
   Double_t* params = new Double_t[fgMaxParams];
+  for (Int_t i=0; i<fgMaxParams; i++)
+    params[i] = 0;
+
   for (Int_t i=0; i<TMath::Min(fgMaxParams, corrected->GetNbinsX()); i++)
     params[i] = TMath::Sqrt(TMath::Abs(corrected->GetBinContent(i+1)*(*fgEfficiency)(i)));
-
 
   TH1 * plot = GetResidualsPlot(params);
   delete [] params;
@@ -1582,6 +1584,9 @@ TH1* AliUnfolding::GetPenaltyPlot(TH1* corrected)
   // draws the penalty factors as function of multiplicity of the current selected regularization
 
   Double_t* params = new Double_t[fgMaxParams];
+  for (Int_t i=0; i<fgMaxParams; i++)
+    params[i] = 0;
+
   for (Int_t i=0; i<TMath::Min(fgMaxParams, corrected->GetNbinsX()); i++)
     params[i] = (*fgEfficiency)(i)*corrected->GetBinContent(i+1);
   
