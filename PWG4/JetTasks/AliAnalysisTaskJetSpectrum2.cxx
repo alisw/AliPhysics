@@ -475,7 +475,11 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
 
     // Bins:  Jet number: pTJet, cent, mult, RP, Area.   total bins = 4.5M
     const Int_t nBinsSparse1 = 6;
-    const Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10};
+    Int_t nBins1[nBinsSparse1] = {     kMaxJets+1,120, 10,  25,    fNRPBins, 10};
+    if(cJetBranch.Contains("RandomCone")){
+      nBins1[1] = 600;
+      nBins1[5] = 1;
+    }
     const Double_t xmin1[nBinsSparse1]  = {        -0.5,-50,  0,   0,        -0.5, 0.};
     const Double_t xmax1[nBinsSparse1]  = {kMaxJets+0.5,250,100,5000,fNRPBins-0.5,1.0};
     
@@ -484,30 +488,33 @@ void AliAnalysisTaskJetSpectrum2::UserCreateOutputObjects()
     
     // Bins:  Jet number: pTJet, cent, eta, phi, Area.   total bins = 9.72 M
     const Int_t nBinsSparse2 = 6;
-      const Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   5,  18,             360, 10};
-      const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.};
-      const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 100, 0.9, 2.*TMath::Pi(),1.0};
-      fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area",nBinsSparse2,nBins2,xmin2,xmax2);
-      fHistList->Add(fhnJetPtQA[ij]);
-
-      // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
-      const Int_t nBinsSparse3 = 5;
-      const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,  20,    fNRPBins};
-      const Double_t xmin3[nBinsSparse3]  = { -0.5,     0,   0,      0,        -0.5};
-      const Double_t xmax3[nBinsSparse3]  = { 1.5,    200, 100,   4000,fNRPBins-0.5};  
-
+    Int_t nBins2[nBinsSparse2] = {     kMaxJets+1, 25,   5,  18,             360, 10};
+    if(cJetBranch.Contains("RandomCone")){
+      nBins2[5] = 1;
+    }
+    const Double_t xmin2[nBinsSparse2]  = {        -0.5,  0,   0,-0.9,              0,  0.};
+    const Double_t xmax2[nBinsSparse2]  = {kMaxJets+0.5,250, 100, 0.9, 2.*TMath::Pi(),1.0};
+    fhnJetPtQA[ij] = new THnSparseF(Form("fhnJetPtQA%s",cAdd.Data()),";jet number;p_{T,jet};cent;#eta;#phi;area",nBinsSparse2,nBins2,xmin2,xmax2);
+    fHistList->Add(fhnJetPtQA[ij]);
+    
+    // Bins:track number  pTtrack, cent, mult, RP.   total bins = 224 k
+    const Int_t nBinsSparse3 = 5;
+    const Int_t nBins3[nBinsSparse3] = {       2,    100,     10,  20,    fNRPBins};
+    const Double_t xmin3[nBinsSparse3]  = { -0.5,     0,   0,      0,        -0.5};
+    const Double_t xmax3[nBinsSparse3]  = { 1.5,    200, 100,   4000,fNRPBins-0.5};  
+    
       // change the binning ot the pT axis:
-      Double_t *xPt3 = new Double_t[nBins3[1]+1];
-      xPt3[0] = 0.;
-      for(int i = 1; i<=nBins3[1];i++){
-	if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.05; // 1 - 40
-	else if(xPt3[i-1]<4)xPt3[i] = xPt3[i-1] + 0.2; // 41 - 50
-	else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 0.5; // 50 - 62
-	else if(xPt3[i-1]<20)xPt3[i] = xPt3[i-1] +  1.; // 62 - 72
+    Double_t *xPt3 = new Double_t[nBins3[1]+1];
+    xPt3[0] = 0.;
+    for(int i = 1; i<=nBins3[1];i++){
+      if(xPt3[i-1]<2)xPt3[i] = xPt3[i-1] + 0.05; // 1 - 40
+      else if(xPt3[i-1]<4)xPt3[i] = xPt3[i-1] + 0.2; // 41 - 50
+      else if(xPt3[i-1]<10)xPt3[i] = xPt3[i-1] + 0.5; // 50 - 62
+      else if(xPt3[i-1]<20)xPt3[i] = xPt3[i-1] +  1.; // 62 - 72
 	else if(xPt3[i-1]<30)xPt3[i] = xPt3[i-1] + 2.5; // 74 - 78
 	else xPt3[i] = xPt3[i-1] + 5.; // 78 - 100 = 140 
-      }
-      
+    }
+    
       fhnTrackPt[ij] = new THnSparseF(Form("fhnTrackPt%s",cAdd.Data()),";track number;p_{T};cent;#tracks;RP",nBinsSparse3,nBins3,xmin3,xmax3);
       fhnTrackPt[ij]->SetBinEdges(1,xPt3);
       fHistList->Add(fhnTrackPt[ij]);
