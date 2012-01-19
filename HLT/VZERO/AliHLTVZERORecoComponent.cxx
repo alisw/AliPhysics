@@ -130,6 +130,8 @@ void AliHLTVZERORecoComponent::GetOCDBObjectDescription( TMap* const targetMap) 
 		 new TObjString("VZERO calibration object"));
   targetMap->Add(new TObjString("VZERO/Calib/TimeSlewing"),
 		 new TObjString("VZERO calibration object"));
+  targetMap->Add(new TObjString("VZERO/Trigger/Data"),
+		 new TObjString("VZERO calibration object"));
 
   return;
 }
