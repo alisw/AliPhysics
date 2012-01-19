@@ -84,7 +84,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 	Generator->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
     if (TestBit(kThetaRange) && !(Generator->TestBit(kThetaRange)) && !(Generator->TestBit(kEtaRange)))
 	Generator->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
-    if (TestBit(kVertexRange) && !(Generator->TestBit(kVertexRange))) {
+    if (!(Generator->TestBit(kVertexRange))) {
 	Generator->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
 	Generator->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
 	Generator->SetVertexSmear(fVertexSmear);
@@ -231,7 +231,7 @@ AddGenerator(AliGenerator *Generator, const char* Name, Float_t RateExp, TFormul
 		ntimes = nsig;
 	      }
 	    }
-	  
+
 	  gen->SetVertex(fVertex.At(0), fVertex.At(1), fVertex.At(2));
 	  
 	  for (Int_t i = 0; i < ntimes; i++) gen->Generate();
