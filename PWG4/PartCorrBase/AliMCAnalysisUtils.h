@@ -2,7 +2,6 @@
 #define ALIMCANALYSISUTILS_H
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice     */
-/* $Id:  $ */
 
 //_________________________________________________________________________
 // Class for analysis utils for MC data
@@ -35,10 +34,10 @@ class AliMCAnalysisUtils : public TObject {
   
   //"Mostly" photon parent types on line 1,
   //                                                  
-  //then "mostly" electron parent types on line 2, (e.g. electrons can
+  //then "mostly" electron parent types on line 3, (e.g. electrons can
   //come from pi0 decay)                              
-  //then charged particles on line 3,                                                                                    
-  //followed by other and unknown on line 4                                                                              
+  //then charged particles on line 4,                                                                                    
+  //followed by other and unknown on line 5                                                                              
   enum mcTypes { kMCPhoton,     kMCPrompt,      kMCFragmentation, kMCISR,    
                  kMCPi0Decay,   kMCEtaDecay,    kMCOtherDecay,    kMCConversion,
                  kMCElectron,   kMCEFromCFromB, kMCEFromC,        kMCEFromB, kMCZDecay,   kMCWDecay,
@@ -52,15 +51,17 @@ class AliMCAnalysisUtils : public TObject {
   
   Int_t   CheckCommonAncestor(const Int_t index1, const Int_t index2, const AliCaloTrackReader* reader, 
 			      Int_t & ancPDG, Int_t & ancStatus, TLorentzVector & momentum, TVector3 & v) ;
+  
   Int_t   CheckOrigin(const Int_t label, const AliCaloTrackReader * reader, const Int_t input) ;
+  
   //Check the label of the most significant particle but do checks on the rest of the contributing labels
   Int_t   CheckOrigin(const Int_t *label, const Int_t nlabels, const AliCaloTrackReader * reader, const Int_t input) ;
   
-  Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack) ;
-  Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, const TClonesArray* mcparticles) ;
+  Int_t   CheckOriginInStack(const Int_t *labels, const Int_t nlabels, AliStack * stack) ; // ESD
+  Int_t   CheckOriginInAOD  (const Int_t *labels, const Int_t nlabels, const TClonesArray* mcparticles) ; // AOD
   
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag);
-  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag);
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, AliStack * stack, Int_t & tag); // ESD
+  void    CheckOverlapped2GammaDecay(const Int_t *labels, const Int_t nlabels, const Int_t mesonIndex, const TClonesArray* mcparticles, Int_t & tag); // AOD
   
   //Check or set the bits produced in the above methods
   void    SetTagBit(Int_t &tag, const UInt_t set) const {
@@ -88,17 +89,18 @@ class AliMCAnalysisUtils : public TObject {
   TString GetMCGenerator()        const { return fMCGenerator  ; }	
   
   void    Print(const Option_t * opt) const;
-  
+  void    PrintMCTag(const Int_t tag) const;
+
  private:
   Int_t   fCurrentEvent;        // Current Event
   Int_t   fDebug;               // Debug level
   TList * fJetsList;            // List of jets
   TString fMCGenerator;         // MC geneator used to generate data in simulation
   
-  AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & ) ; // cpy assignment
-  AliMCAnalysisUtils(const AliMCAnalysisUtils & mcu) ;            // cpy ctor
+  AliMCAnalysisUtils & operator = (const AliMCAnalysisUtils & mcu) ; // cpy assignment
+  AliMCAnalysisUtils(              const AliMCAnalysisUtils & mcu) ; // cpy ctor
   
-  ClassDef(AliMCAnalysisUtils,3)
+  ClassDef(AliMCAnalysisUtils,4)
 
 } ;
 

@@ -12,7 +12,6 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-/* $Id: AliMCAnalysisUtils.cxx 21839 2007-10-29 13:49:42Z gustavo $ */
 
 //_________________________________________________________________________
 // Class for analysis utils for MC data
@@ -1130,6 +1129,37 @@ void AliMCAnalysisUtils::Print(const Option_t * opt) const
   printf("Debug level    = %d\n",fDebug);
   printf("MC Generator   = %s\n",fMCGenerator.Data());
   printf(" \n");
+  
+} 
+
+//________________________________________________________
+void AliMCAnalysisUtils::PrintMCTag(const Int_t tag) const
+{
+  // print the assigned origins to this particle
+  
+  printf("AliMCAnalysisUtils::FillAnalysisMakeHistograms() - tag %d, photon %d, prompt %d, frag %d, isr %d, pi0 decay %d, eta decay %d, other decay %d \n conv %d, pi0 %d, hadron %d, electron %d, unk %d, muon %d,pion %d, proton %d, neutron %d, kaon %d, antiproton %d, antineutron %d, bad %d\n",
+         tag,
+         CheckTagBit(tag,kMCPhoton),
+         CheckTagBit(tag,kMCPrompt),
+         CheckTagBit(tag,kMCFragmentation),
+         CheckTagBit(tag,kMCISR),
+         CheckTagBit(tag,kMCPi0Decay),
+         CheckTagBit(tag,kMCEtaDecay),
+         CheckTagBit(tag,kMCOtherDecay),
+         CheckTagBit(tag,kMCConversion),
+         CheckTagBit(tag,kMCPi0),
+         CheckTagBit(tag,kMCOther),
+         CheckTagBit(tag,kMCElectron),
+         CheckTagBit(tag,kMCUnknown),
+         CheckTagBit(tag,kMCMuon), 
+         CheckTagBit(tag,kMCPion),
+         CheckTagBit(tag,kMCProton), 
+         CheckTagBit(tag,kMCAntiNeutron),
+         CheckTagBit(tag,kMCKaon), 
+         CheckTagBit(tag,kMCAntiProton), 
+         CheckTagBit(tag,kMCAntiNeutron),
+         CheckTagBit(tag,kMCBadLabel)
+         );
   
 } 
 
