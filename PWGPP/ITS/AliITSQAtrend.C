@@ -1779,7 +1779,10 @@ void AliITSQAtrend(TString runListFile,TString ntupleFileName){
       TList *list=NULL;
       TList *listSPD=NULL;
       
-      if(dirMatch) list = (TList*)dirMatch->Get("cOutputITS_3500_10000");
+      if(dirMatch) {
+	list = (TList*)dirMatch->Get("cOutputITS_3500_10000"); //LHC11h
+	if(!list)list = (TList*)dirMatch->Get("cOutputITS"); // LHC11e
+      }
       dirMatch=(TDirectoryFile*)f->GetDirectory("SPD_Performance");
       if(dirMatch) listSPD = (TList*)dirMatch->Get("coutput1");
   
