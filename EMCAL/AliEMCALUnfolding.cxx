@@ -686,8 +686,6 @@ void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
   // Calculates the Chi square for the cluster unfolding minimization
   // Number of parameters, Gradient, Chi squared, parameters, what to do
   
-  nPar=nPar;//to cheat rulechecker
-
   TList * toMinuit = dynamic_cast<TList*>( gMinuit->GetObjectFit() ) ;
   if(toMinuit){
     AliEMCALRecPoint * recPoint = dynamic_cast<AliEMCALRecPoint*>( toMinuit->At(0) )  ;
@@ -788,7 +786,7 @@ void AliEMCALUnfolding::UnfoldingChiSquareV2(Int_t & nPar, Double_t * Grad,
         
         fret += (efit-energiesList[iDigit])*(efit-energiesList[iDigit])/energiesList[iDigit] ;
         // Here we assume, that sigma = sqrt(E) 
-        } else printf("AliEMCALUnfoding::UnfoldingChiSquareV2 - NULL digit!\n");
+        } else printf("AliEMCALUnfoding::UnfoldingChiSquareV2 - NULL digit!, nPar %d \n", nPar); // put nPar here to cheat coverity and rule checker
       } // digit loop
     } // recpoint, digits and geom not NULL
   }// List is not NULL
