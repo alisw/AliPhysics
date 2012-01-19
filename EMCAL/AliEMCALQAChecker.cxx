@@ -67,14 +67,16 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
   fTextSM[2]= new TText(20, 60, "SM A2");
   fTextSM[3]= new TText(20, 84, "SM A3");
   fTextSM[4]= new TText(20, 108,"SM A4");
+  fTextSM[5]= new TText(20, 132,"SM A5");
 
-  fTextSM[5]= new TText(64, 12, "SM C0");
-  fTextSM[6]= new TText(64, 36, "SM C1");
-  fTextSM[7]= new TText(64, 60, "SM C2");
-  fTextSM[8]= new TText(64, 84, "SM C3");
-  fTextSM[9]= new TText(64, 108,"SM C4");
+  fTextSM[6]= new TText(64, 12, "SM C0");
+  fTextSM[7]= new TText(64, 36, "SM C1");
+  fTextSM[8]= new TText(64, 60, "SM C2");
+  fTextSM[9]= new TText(64, 84, "SM C3");
+  fTextSM[10]= new TText(64, 108,"SM C4");
+  fTextSM[11]= new TText(64, 132,"SM C5");
 
-	for(int i = 0; i < 4; i++) {
+	for(int i = 0; i < 5; i++) {
 		fLineRow[i] = new TLine(-0.5,23.5+(24*i),95.5,23.5+(24*i));
 		fLineRow[i]->SetLineColor(1);
 		fLineRow[i]->SetLineWidth(2);
@@ -89,7 +91,7 @@ AliEMCALQAChecker::~AliEMCALQAChecker()
 	/// dtor
   delete [] fTextSM ;
   delete fLineCol ;
-  for (Int_t i=0; i<4; ++i) delete fLineRow[i] ;
+  for (Int_t i=0; i<5; ++i) delete fLineRow[i] ;
   delete fText  ; 
 }
 
@@ -104,7 +106,7 @@ fText(new TPaveText(0.2,0.7,0.8,0.9,"NDC"))
   for (Int_t sm = 0 ; sm < fgknSM ; sm++){
     fTextSM[sm] = static_cast<TText *>(qac.fTextSM[sm]->Clone()) ;
   }
-	for(Int_t i = 0 ; i < 4 ; i++) {
+	for(Int_t i = 0 ; i < 5 ; i++) {
 
 		fLineRow[i] = static_cast<TLine*>(qac.fLineRow[i]->Clone()) ; 
 	}
