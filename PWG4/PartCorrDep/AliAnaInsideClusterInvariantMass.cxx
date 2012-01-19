@@ -522,7 +522,7 @@ void AliAnaInsideClusterInvariantMass::InitParameters()
   fMassConMax  = 0.05;
   
   fLocMaxCutE      = 0.1 ;
-  fLocMaxCutEDiff  = 0.05 ;
+  fLocMaxCutEDiff  = 0.0 ;
 
 }
 
@@ -570,16 +570,13 @@ void  AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms()
     
     if (nMax <= 0) {
       printf("AliAnaInsideClusterInvariantMass::MakeAnalysisFillHistograms() - No local maximum found!\n");
-      
+      /*
       for(Int_t iDigit  = 0; iDigit < cluster->GetNCells(); iDigit++ ) {
-        
         Float_t ec = cells->GetCellAmplitude(cluster->GetCellsAbsId()[iDigit]);
         RecalibrateCellAmplitude(ec,cluster->GetCellsAbsId()[iDigit]);
         printf("iDigit %d, absId %d, Ecell %f\n",iDigit,cluster->GetCellsAbsId()[iDigit], ec);
-
       }
-      
-      
+      */
       delete [] absIdList ;
       delete [] maxEList  ;
       return;
