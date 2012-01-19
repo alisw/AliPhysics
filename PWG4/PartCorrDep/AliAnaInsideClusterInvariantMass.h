@@ -54,7 +54,7 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   
   void         SetM02Cut(Float_t cut)            { fM02Cut         = cut ; }
 
-  void         SetMinNCells(Float_t cut)         { fMinNCells      = cut ; }
+  void         SetMinNCells(Int_t cut)           { fMinNCells      = cut ; }
 
   void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min = min ; fMassPi0Max = max ; }
   void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin = min ; fMassEtaMax = max ; }
