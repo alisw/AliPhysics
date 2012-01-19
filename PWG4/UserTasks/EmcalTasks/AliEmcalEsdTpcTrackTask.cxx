@@ -18,6 +18,7 @@ ClassImp(AliEmcalEsdTpcTrackTask)
 AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() : 
   AliAnalysisTaskSE(),
   fEsdTrackCuts(0),
+  fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
   fTracksName(),
   fEsdEv(0),
@@ -30,6 +31,7 @@ AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask() :
 AliEmcalEsdTpcTrackTask::AliEmcalEsdTpcTrackTask(const char *name) : 
   AliAnalysisTaskSE(name),
   fEsdTrackCuts(0),
+  fDoSpdVtxCon(0),
   fHybridTrackCuts(0),
   fTracksName("TpcSpdVertexConstrainedTracks"),
   fEsdEv(0),
@@ -86,48 +88,59 @@ void AliEmcalEsdTpcTrackTask::UserExec(Option_t *)
   if (!fHybridTrackCuts) { // contrain TPC tracks to SPD vertex 
     am->LoadBranch("AliESDRun.");
     am->LoadBranch("AliESDHeader.");
-    if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
-      fEsdEv->InitMagneticField();
-    }
-
-    am->LoadBranch("SPDVertex.");
-    const AliESDVertex *vtxSPD = fEsdEv->GetPrimaryVertexSPD();
-    if (!vtxSPD) {
-      AliError("No SPD vertex, returning");
-      return;
-    }
-
     am->LoadBranch("Tracks");
-    Int_t ntr = fEsdEv->GetNumberOfTracks();
-    for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
-      AliESDtrack *etrack = fEsdEv->GetTrack(i);
-      if (!etrack)
-        continue;
-      if (!fEsdTrackCuts->AcceptTrack(etrack))
-        continue;
-      AliESDtrack *ntrack = AliESDtrackCuts::GetTPCOnlyTrack(fEsdEv,etrack->GetID());
-      if (!ntrack)
-        continue;
-      if (ntrack->Pt()<=0) {
-        delete ntrack;
-        continue;
+
+    if (fDoSpdVtxCon) {
+      if (!TGeoGlobalMagField::Instance()->GetField()) { // construct field map
+        fEsdEv->InitMagneticField();
       }
-      Double_t bfield[3] = {0,0,0};
-      ntrack->GetBxByBz(bfield);
-      AliExternalTrackParam exParam;
-      Bool_t relate = ntrack->RelateToVertexBxByBz(vtxSPD,bfield,kVeryBig,&exParam);
-      if (!relate) {
-        delete ntrack;
-        continue;
+      am->LoadBranch("SPDVertex.");
+      const AliESDVertex *vtxSPD = fEsdEv->GetPrimaryVertexSPD();
+      if (!vtxSPD) {
+        AliError("No SPD vertex, returning");
+        return;
       }
-      // set the constraint parameters to the track
-      ntrack->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
-      if (ntrack->Pt()<=0) {
+      Int_t ntr = fEsdEv->GetNumberOfTracks();
+      for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
+        AliESDtrack *etrack = fEsdEv->GetTrack(i);
+        if (!etrack)
+          continue;
+        if (!fEsdTrackCuts->AcceptTrack(etrack))
+          continue;
+        AliESDtrack *ntrack = AliESDtrackCuts::GetTPCOnlyTrack(fEsdEv,etrack->GetID());
+        if (!ntrack)
+          continue;
+        if (ntrack->Pt()<=0) {
+          delete ntrack;
+          continue;
+        }
+        Double_t bfield[3] = {0,0,0};
+        ntrack->GetBxByBz(bfield);
+        AliExternalTrackParam exParam;
+        Bool_t relate = ntrack->RelateToVertexBxByBz(vtxSPD,bfield,kVeryBig,&exParam);
+        if (!relate) {
+          delete ntrack;
+          continue;
+        }
+        // set the constraint parameters to the track
+        ntrack->Set(exParam.GetX(),exParam.GetAlpha(),exParam.GetParameter(),exParam.GetCovariance());
+        if (ntrack->Pt()<=0) {
+          delete ntrack;
+          continue;
+        }
+        new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
         delete ntrack;
-        continue;
       }
-      new ((*fTracks)[ntrnew++]) AliESDtrack(*ntrack);
-      delete ntrack;
+    } else { /* no spd vtx constraint */
+      Int_t ntr = fEsdEv->GetNumberOfTracks();
+      for (Int_t i=0, ntrnew=0; i<ntr; ++i) {
+        AliESDtrack *etrack = fEsdEv->GetTrack(i);
+        if (!etrack)
+          continue;
+        if (!fEsdTrackCuts->AcceptTrack(etrack))
+          continue;
+        new ((*fTracks)[ntrnew++]) AliESDtrack(*etrack);
+      }
     }
 
   } else { // use hybrid track cuts
