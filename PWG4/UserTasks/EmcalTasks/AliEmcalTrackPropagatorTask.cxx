@@ -42,7 +42,7 @@ AliEmcalTrackPropagatorTask::AliEmcalTrackPropagatorTask(const char *name) :
 //________________________________________________________________________
 AliEmcalTrackPropagatorTask::~AliEmcalTrackPropagatorTask()
 {
-  //Destructor.
+  // Destructor.
 
   delete fRecoUtils;
 }
@@ -55,7 +55,7 @@ void AliEmcalTrackPropagatorTask::UserCreateOutputObjects()
   if (!fRecoUtils) {
     fRecoUtils = new AliEMCALRecoUtils;
     fRecoUtils->SetStep(25);
-    AliInfo("No reoc utils given, creating default utils");
+    AliInfo("No reco utils given, creating default utils");
   }
 }
 
