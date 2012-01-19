@@ -46,11 +46,15 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
 
   void         RecalibrateCellAmplitude(Float_t  & amp,  const Int_t absId);
       
-  void         SetCalorimeter(TString & det) { fCalorimeter = det  ; }
+  void         SetCalorimeter(TString & det)     { fCalorimeter   = det  ; }
   
-  void         SetM02Cut(Float_t cut)        { fM02Cut      = cut  ; }
+  void         SetLocalMaximaCutE(Float_t cut)   { fLocMaxCutE     = cut ; }
+  
+  void         SetLocalMaximaCutEDiff(Float_t c) { fLocMaxCutEDiff = c   ; }
+  
+  void         SetM02Cut(Float_t cut)            { fM02Cut         = cut ; }
 
-  void         SetMinNCells(Float_t cut)     { fMinNCells   = cut  ; }
+  void         SetMinNCells(Float_t cut)         { fMinNCells      = cut ; }
 
   void         SetPi0MassRange(Float_t min, Float_t max) { fMassPi0Min = min ; fMassPi0Max = max ; }
   void         SetEtaMassRange(Float_t min, Float_t max) { fMassEtaMin = min ; fMassEtaMax = max ; }
@@ -59,7 +63,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   void         SplitEnergy(const Int_t absId1, const Int_t absId2, 
                            AliVCluster *cluster, 
                            AliVCaloCells* cells,
-                           Float_t & e1, Float_t & e2 );
+                           Float_t & e1, Float_t & e2,
+                           const Int_t nMax//, Int_t *absIdList, Float_t *maxEList,
+);
   
   void         Print(const Option_t * opt) const;
 
@@ -70,7 +76,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
  private:
   
   TString      fCalorimeter ;       // Calorimeter where the gamma is searched
-  Float_t      fM02Cut ;            // Study clusters with l0 larger than cut
+  Float_t      fLocMaxCutE;         // Local maxima cut must have more than this energy
+  Float_t      fLocMaxCutEDiff;     // Local maxima cut, when aggregating cells, next can be a bit higher
+  Float_t      fM02Cut    ;         // Study clusters with l0 larger than cut
   Int_t        fMinNCells ;         // Study clusters with ncells larger than cut
   Float_t      fMassEtaMin;         // Min Eta mass
   Float_t      fMassEtaMax;         // Max Eta mass  
@@ -86,6 +94,8 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhMassNLocMaxN[7] ;  //! Mass of >2 cells local maxima vs E, 1-6 for different MC particle types
 
   TH2F       * fhNLocMax[7] ;       //! Number of maxima in cluster vs E, 1-6 for different MC particle types
+  TH2F       * fhNLocMaxEMax[7] ;   //! Number of maxima in cluster vs E of each maxima, 1-6 for different MC particle types
+  TH2F       * fhNLocMaxEFrac[7] ;  //! Number of maxima in cluster vs fraction of cluster E of each maxima, 1-6 for different MC particle types
   TH2F       * fhNLocMaxM02Cut[7];  //! Number of maxima in cluster vs E, 1-6 for different MC particle types, after SS cut
 
   TH2F       * fhM02NLocMax1[7] ;   //! M02 vs E for N max in cluster = 1, 1-6 for different MC particle types
@@ -109,9 +119,9 @@ class AliAnaInsideClusterInvariantMass : public AliAnaCaloTrackCorrBaseClass {
   TH2F       * fhM02ConLocMaxN[7] ; //! M02 for Mass around close to 0, N Local Maxima > 2
   
   AliAnaInsideClusterInvariantMass(              const AliAnaInsideClusterInvariantMass & g) ; // cpy ctor
-  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ;//cpy assignment
+  AliAnaInsideClusterInvariantMass & operator = (const AliAnaInsideClusterInvariantMass & g) ; // cpy assignment
   
-  ClassDef(AliAnaInsideClusterInvariantMass,3)
+  ClassDef(AliAnaInsideClusterInvariantMass,4)
   
 } ;
 
