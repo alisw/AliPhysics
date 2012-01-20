@@ -1800,6 +1800,7 @@ Bool_t LoadAnalysisLibraries(const char *mode)
      if (!LoadLibrary("FASTJETAN", mode, kTRUE)) return kFALSE;
    }
    if(iPWG4JetTasks){
+     if (!LoadLibrary("PWG4Base", mode, kTRUE)) return kFALSE;
      if (!LoadLibrary("PWG4JetTasks", mode, kTRUE)) return kFALSE;
    }
 
