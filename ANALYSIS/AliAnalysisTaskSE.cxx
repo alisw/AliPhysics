@@ -143,6 +143,9 @@ AliAnalysisTaskSE::AliAnalysisTaskSE(const AliAnalysisTaskSE& obj):
 AliAnalysisTaskSE& AliAnalysisTaskSE::operator=(const AliAnalysisTaskSE& other)
 {
 // Assignment
+  if(&other == this) return *this;
+  AliAnalysisTask::operator=(other);
+
     AliAnalysisTask::operator=(other);
     fDebug            = other.fDebug;
     fEntry            = other.fEntry;

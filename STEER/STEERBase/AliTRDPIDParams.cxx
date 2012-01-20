@@ -155,6 +155,8 @@ AliTRDPIDParams::AliTRDPIDThresholds &AliTRDPIDParams::AliTRDPIDThresholds::oper
   //
   // Assignment operator
   //
+  if(&ref == this) return *this;
+
   TObject::operator=(ref);
 
   fNTracklets = ref.fNTracklets;

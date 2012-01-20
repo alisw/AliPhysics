@@ -51,7 +51,7 @@ AliTOFTRMSummaryData::AliTOFTRMSummaryData() :
 //_________________________________________________________________
 
 AliTOFTRMSummaryData::AliTOFTRMSummaryData(const AliTOFTRMSummaryData &source) :
-  TObject(),
+  TObject(source),
   fHeader(source.fHeader),
   fTrailer(source.fTrailer),
   fSlotID(source.fSlotID),
@@ -74,6 +74,9 @@ AliTOFTRMSummaryData &
 AliTOFTRMSummaryData::operator = (const AliTOFTRMSummaryData &source)
 {
   /* operator = */
+  if(&source == this) return *this;
+  TObject::operator=(source);
+
   fHeader = source.fHeader;
   fTrailer = source.fTrailer;
   fSlotID = source.fSlotID;

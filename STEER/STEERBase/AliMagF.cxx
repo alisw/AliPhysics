@@ -233,9 +233,11 @@ Double_t AliMagF::GetBz(const Double_t *xyz) const
 //_______________________________________________________________________
 AliMagF& AliMagF::operator=(const AliMagF& src)
 {
-  if (this != &src && src.fMeasuredMap) { 
-    if (fMeasuredMap) delete fMeasuredMap;
-    fMeasuredMap = new AliMagWrapCheb(*src.fMeasuredMap);
+  if (this != &src) {
+    if (src.fMeasuredMap) { 
+      if (fMeasuredMap) delete fMeasuredMap;
+      fMeasuredMap = new AliMagWrapCheb(*src.fMeasuredMap);
+    }
     SetName(src.GetName());
     fSolenoid    = src.fSolenoid;
     fBeamType    = src.fBeamType;

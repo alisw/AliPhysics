@@ -54,7 +54,7 @@ AliTOFChainSummaryData::AliTOFChainSummaryData() :
 //_________________________________________________________________
 
 AliTOFChainSummaryData::AliTOFChainSummaryData(const AliTOFChainSummaryData &source) :
-  TObject(),
+  TObject(source),
   fHeader(source.fHeader),
   fTrailer(source.fTrailer),
   fChain(source.fChain),
@@ -80,6 +80,9 @@ AliTOFChainSummaryData &
 AliTOFChainSummaryData::operator = (const AliTOFChainSummaryData &source)
 {
   /* operator = */
+  if(&source == this) return *this;
+  TObject::operator=(source);
+
   fHeader = source.fHeader;
   fTrailer = source.fTrailer;
   fChain = source.fChain;

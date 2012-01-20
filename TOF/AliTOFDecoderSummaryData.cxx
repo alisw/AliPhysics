@@ -56,7 +56,7 @@ AliTOFDecoderSummaryData::AliTOFDecoderSummaryData() :
 //_________________________________________________________________
 
 AliTOFDecoderSummaryData::AliTOFDecoderSummaryData(const AliTOFDecoderSummaryData &source) :
-  TObject(),
+  TObject(source),
   fRunNumber(source.fRunNumber),
   fEventNumber(source.fEventNumber),
   fEquipmentID(source.fEquipmentID),
@@ -84,6 +84,9 @@ AliTOFDecoderSummaryData &
 AliTOFDecoderSummaryData::operator = (const AliTOFDecoderSummaryData &source)
 {
   /* operator = */
+  if(&source == this) return *this;
+  TObject::operator=(source);
+
   fRunNumber = source.fRunNumber;
   fEventNumber = source.fEventNumber;
   fEquipmentID = source.fEquipmentID;

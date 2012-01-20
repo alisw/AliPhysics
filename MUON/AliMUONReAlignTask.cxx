@@ -149,6 +149,7 @@ AliMUONReAlignTask::AliMUONReAlignTask(const AliMUONReAlignTask& obj)
 AliMUONReAlignTask& AliMUONReAlignTask::operator=(const AliMUONReAlignTask& other)
 {
   /// Assignment
+  if(&other == this) return *this;
   AliAnalysisTask::operator=(other);
   fESD = other.fESD;
   fClusterInfoTree = other.fClusterInfoTree;

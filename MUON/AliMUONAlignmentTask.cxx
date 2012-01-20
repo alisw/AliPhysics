@@ -160,6 +160,7 @@ AliMUONAlignmentTask::AliMUONAlignmentTask(const AliMUONAlignmentTask& other):
 AliMUONAlignmentTask& AliMUONAlignmentTask::operator=(const AliMUONAlignmentTask& other)
 {
   /// Assignment
+  if(&other == this) return *this;
   AliAnalysisTaskSE::operator=(other);
 
   fReadRecords = other.fReadRecords;

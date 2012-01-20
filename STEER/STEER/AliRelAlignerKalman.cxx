@@ -199,7 +199,10 @@ AliRelAlignerKalman::AliRelAlignerKalman(const AliRelAlignerKalman& a):
 AliRelAlignerKalman& AliRelAlignerKalman::operator=(const AliRelAlignerKalman& a)
 {
   //assignment operator
-  fMagField=a.fMagField,
+  if(&a == this) return *this;
+  TObject::operator=(a);
+
+  fMagField=a.fMagField;
   fNMeasurementParams=a.fNMeasurementParams;
   *fPX = *a.fPX;
   *fPXcov = *a.fPXcov;

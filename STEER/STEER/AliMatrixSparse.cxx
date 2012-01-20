@@ -47,7 +47,9 @@ AliVectorSparse* AliMatrixSparse::GetRowAdd(Int_t ir)
 //___________________________________________________________
 AliMatrixSparse& AliMatrixSparse::operator=(const AliMatrixSparse& src)
 {
-  if (*this == src) return *this;
+  if (this == &src) return *this;
+  AliMatrixSq::operator=(src);
+
   Clear();
   fNcols = src.GetNCols();
   fNrows = src.GetNRows();

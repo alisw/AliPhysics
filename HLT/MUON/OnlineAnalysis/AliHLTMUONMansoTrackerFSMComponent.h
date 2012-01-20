@@ -258,6 +258,7 @@ private:
 		
 		AliRecHitBlockInfo& operator = (const AliRecHitBlockInfo& obj)
 		{
+		  if(&obj == this) return *this;
 			fCount = obj.fCount;
 			fData = obj.fData;
 			return *this;

@@ -64,7 +64,7 @@ AliTOFDRMSummaryData::AliTOFDRMSummaryData() :
 //_________________________________________________________________
 
 AliTOFDRMSummaryData::AliTOFDRMSummaryData(const AliTOFDRMSummaryData &source) :
-  TObject(),
+  TObject(source),
   fHeader(source.fHeader),
   fTrailer(source.fTrailer),
   fSlotID(source.fSlotID),
@@ -100,6 +100,9 @@ AliTOFDRMSummaryData &
 AliTOFDRMSummaryData::operator = (const AliTOFDRMSummaryData &source)
 {
   /* operator = */
+  if(&source == this) return *this;
+  TObject::operator=(source);
+
   fHeader = source.fHeader;
   fTrailer = source.fTrailer;
   fSlotID = source.fSlotID;

@@ -25,7 +25,10 @@ class AliUnicorEventAliceESD : public AliUnicorEvent {
 	      //AliUnicorEventAliceESD(const AliUnicorEventAliceESD &ev): AliUnicorEvent(ev), fViper(ev.fViper), fESD(ev.fESD), fPhysicsSelection(ev.fPhysicsSelection){}
               AliUnicorEventAliceESD(const AliUnicorEventAliceESD &ev): AliUnicorEvent(ev), fViper(ev.fViper), fESD(ev.fESD) {}
   virtual     ~AliUnicorEventAliceESD();
-  AliUnicorEventAliceESD &operator=(const AliUnicorEventAliceESD &source) {fViper=source.fViper; fESD=source.fESD; return *this;}
+  AliUnicorEventAliceESD &operator=(const AliUnicorEventAliceESD &source) {
+    if(&source == this) return *this;
+    AliUnicorEvent::operator=(source);
+    fViper=source.fViper; fESD=source.fESD; return *this;}
   Double_t    Etamin() const {return -0.75;}
   Double_t    Etamax() const {return  0.75;}
   void        AttachTree(TTree *tr) {fESD->ReadFromTree(tr);}

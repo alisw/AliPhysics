@@ -121,6 +121,10 @@ AliBaseCalibViewer & AliBaseCalibViewer::operator =(const AliBaseCalibViewer & p
    // assignment operator - dummy
    // not yet working!!!
    //
+  if(&param == this) return *this;
+  TObject::operator=(param);
+
+
    fTree = param.fTree;
    fTreeMustBeDeleted = param.fTreeMustBeDeleted;
    fListOfObjectsToBeDeleted = param.fListOfObjectsToBeDeleted;
