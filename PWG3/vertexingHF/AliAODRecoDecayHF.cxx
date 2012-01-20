@@ -146,14 +146,19 @@ AliAODRecoDecayHF &AliAODRecoDecayHF::operator=(const AliAODRecoDecayHF &source)
   fListOfCuts = source.fListOfCuts;
   fSelectionMap = source.fSelectionMap;
 
-  if(source.GetOwnPrimaryVtx()) fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
+  if(source.GetOwnPrimaryVtx()) {
+    delete fOwnPrimaryVtx;
+    fOwnPrimaryVtx = new AliAODVertex(*(source.GetOwnPrimaryVtx()));
+  }
 
   if(source.GetNProngs()>0) {
     if(source.fd0err) {
+      delete [] fd0err;
       fd0err = new Double_t[GetNProngs()];
       memcpy(fd0err,source.fd0err,GetNProngs()*sizeof(Double_t));
     }
     if(source.fProngID) {
+      delete [] fProngID;
       fProngID = new UShort_t[GetNProngs()];
       memcpy(fProngID,source.fProngID,GetNProngs()*sizeof(UShort_t));
     }
