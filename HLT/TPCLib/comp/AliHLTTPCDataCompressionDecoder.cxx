@@ -35,7 +35,7 @@ AliHLTTPCDataCompressionDecoder::AliHLTTPCDataCompressionDecoder()
   , fpDataInflaterPartition(NULL)
   , fpDataInflaterTrack(NULL)
   , fpClusterMerger(NULL)
-  , fRemainingClusterIds()
+  , fPartitionClusterIds()
   , fTrackModelClusterIds()
   , fCurrentClusterIds(NULL)
   , fClusterMCData()
@@ -137,8 +137,8 @@ int AliHLTTPCDataCompressionDecoder::InitPartitionClusterDecoding(AliHLTUInt32_t
   AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(specification);
   AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(specification);
   unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
-  if (index<fRemainingClusterIds.size())
-    fCurrentClusterIds=&fRemainingClusterIds[index];
+  if (index<fPartitionClusterIds.size())
+    fCurrentClusterIds=&fPartitionClusterIds[index];
   else
     fCurrentClusterIds=NULL;
   return 0;
@@ -194,15 +194,15 @@ int AliHLTTPCDataCompressionDecoder::AddClusterIds(const AliHLTComponentBlockDat
     AliHLTUInt8_t slice=AliHLTTPCDefinitions::GetMinSliceNr(pDesc->fSpecification);
     AliHLTUInt8_t partition=AliHLTTPCDefinitions::GetMinPatchNr(pDesc->fSpecification);
     unsigned index=slice*AliHLTTPCTransform::GetNumberOfPatches()+partition;
-    if (fRemainingClusterIds.size()<=index) {
-      if ((int)fRemainingClusterIds.size()<AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches()) {
-	fRemainingClusterIds.resize(AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches());
+    if (fPartitionClusterIds.size()<=index) {
+      if ((int)fPartitionClusterIds.size()<AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches()) {
+	fPartitionClusterIds.resize(AliHLTTPCTransform::GetNSlice()*AliHLTTPCTransform::GetNumberOfPatches());
       } else {
-	fRemainingClusterIds.resize(index+1);
+	fPartitionClusterIds.resize(index+1);
       }
     }
-    fRemainingClusterIds[index].fIds=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
-    fRemainingClusterIds[index].fSize=pDesc->fSize/sizeof(AliHLTUInt32_t);
+    fPartitionClusterIds[index].fIds=reinterpret_cast<AliHLTUInt32_t*>(pDesc->fPtr);
+    fPartitionClusterIds[index].fSize=pDesc->fSize/sizeof(AliHLTUInt32_t);
     return 0;
   }
   return -ENODATA;
@@ -236,7 +236,14 @@ const AliHLTTPCClusterMCLabel* AliHLTTPCDataCompressionDecoder::GetMCLabel(AliHL
   return &(fClusterMCData[index]->fLabels[number]);
 }
 
-void AliHLTTPCDataCompressionDecoder::Clear(const char* /*option*/)
+void AliHLTTPCDataCompressionDecoder::Clear(const char* option)
 {
   // cleanup
+  if (fpDataInflaterPartition) fpDataInflaterPartition->Clear(option);
+  if (fpDataInflaterTrack) fpDataInflaterTrack->Clear(option);
+  if (fpClusterMerger) fpClusterMerger->Clear();
+  fCurrentClusterIds=NULL;
+  fPartitionClusterIds.clear();
+  fTrackModelClusterIds.Clear();
+  fClusterMCData.clear();
 }

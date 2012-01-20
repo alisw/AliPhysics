@@ -63,12 +63,14 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   AliHLTUInt32_t GetClusterId(int clusterNo) const;
   const AliHLTTPCClusterMCLabel* GetMCLabel(AliHLTUInt32_t clusterId) const;
 
-  void Clear(const char* option);
+  void Clear(const char* option="");
 
   struct AliClusterIdBlock {
     AliClusterIdBlock() : fIds(NULL), fSize(0) {}
     AliHLTUInt32_t* fIds; //!
     AliHLTUInt32_t  fSize; //!
+
+    void Clear() {fIds=NULL; fSize=0;}
   };
 
  protected:
@@ -82,7 +84,7 @@ class AliHLTTPCDataCompressionDecoder : public AliHLTLogging {
   AliHLTDataInflater* fpDataInflaterTrack; //! instance of inflater for track clusters
   AliHLTTPCHWClusterMerger* fpClusterMerger; //! merger instance
 
-  vector<AliClusterIdBlock> fRemainingClusterIds; //! clusters ids for remaining cluster ids
+  vector<AliClusterIdBlock> fPartitionClusterIds; //! clusters ids for clusters of individual partitions
   AliClusterIdBlock fTrackModelClusterIds; //! cluster ids for track model clusters
   AliClusterIdBlock* fCurrentClusterIds; //! id block currently active in the iteration
   vector<const AliHLTTPCClusterMCData*> fClusterMCData; //! references to MC data blocks
