@@ -80,6 +80,7 @@ AliOADBPhysicsSelection::AliOADBPhysicsSelection(const AliOADBPhysicsSelection& 
 
 AliOADBPhysicsSelection& AliOADBPhysicsSelection::operator=(const AliOADBPhysicsSelection& other)  {
   //Assignment operator
+  if(&other == this) return *this;
   TNamed::operator=(other);
 
   fCollTrigClasses = other.fCollTrigClasses;

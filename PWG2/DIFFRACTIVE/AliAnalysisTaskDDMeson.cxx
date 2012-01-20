@@ -191,6 +191,9 @@ AliAnalysisTaskDDMeson & AliAnalysisTaskDDMeson::operator=(const AliAnalysisTask
   //
   // overload =
   //
+  if(&p == this) return *this;
+  AliAnalysisTaskSE::operator=(p);
+
   fESD = p.fESD;
 
   fnmass = p.fnmass;
