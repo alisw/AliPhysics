@@ -21,6 +21,7 @@
 class AliTPCClustersRow;
 class AliHLTOUT;
 class TClonesArray;
+class AliHLTTPCDataCompressionDecoder;
 
 typedef std::map<AliHLTUInt32_t, AliHLTTPCClusterMCLabel> AliHLTTPCClusterMCDataList;
 
@@ -226,6 +227,7 @@ class AliHLTTPCClusterAccessHLTOUT : public TObject
   int fVerbosity; //! verbosity level
   AliTPCclusterMIContainer* fClusters; //! cluster container
   int fCurrentSector; //! current sector
+  AliHLTTPCDataCompressionDecoder* fpDecoder; //! decoder instance
 
   ClassDef(AliHLTTPCClusterAccessHLTOUT, 0)
 };

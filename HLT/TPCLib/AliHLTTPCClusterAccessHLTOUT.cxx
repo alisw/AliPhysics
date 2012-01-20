@@ -52,6 +52,7 @@ AliHLTTPCClusterAccessHLTOUT::AliHLTTPCClusterAccessHLTOUT()
   , fVerbosity(0)
   , fClusters(NULL)
   , fCurrentSector(-1)
+  , fpDecoder(NULL)
 {
   // see header file for class documentation
   // or
@@ -67,6 +68,11 @@ AliHLTTPCClusterAccessHLTOUT::~AliHLTTPCClusterAccessHLTOUT()
     fClusters->Clear();
     delete fClusters;
     fClusters=NULL;
+  }
+  if (fpDecoder) {
+    fpDecoder->Clear();
+    delete fpDecoder;
+    fpDecoder=NULL;
   }
 }
 
@@ -179,7 +185,17 @@ int AliHLTTPCClusterAccessHLTOUT::ProcessClusters(const char* params)
     return -EACCES;
   }
 
-  AliHLTTPCDataCompressionDecoder decoder;
+  if (!fpDecoder) {
+    fpDecoder=new AliHLTTPCDataCompressionDecoder;
+  }
+
+  if (!fpDecoder) {
+    AliError("failed to create decoder instance");
+    return -ENODEV;
+  }
+
+  AliHLTTPCDataCompressionDecoder& decoder=*fpDecoder;
+  decoder.Clear();
   decoder.SetVerbosity(fVerbosity);
   decoder.EnableClusterMerger();
 
