@@ -49,6 +49,7 @@ public:
    virtual AliRawEquipmentHeader *GetEquipmentHeader();
    virtual AliRawData            *GetRawData();
    void                           Reset();
+   virtual void	                  Clear(Option_t* = "");
    AliRawData                    *NextRawData(AliRawDataArrayV2 *array);
 
    virtual void                   CloneRawData(const AliRawData *rawData);

@@ -237,12 +237,15 @@ int main(int argc, char **argv)
   cout << "*******************************************" << endl;
 
   for(Int_t iEvent=0; iEvent < nEvents; iEvent++) {
-    rawEvent=NULL;
+    //    rawEvent=NULL;
     rawTree->GetEntry(iEvent);
     cout << "  *********** Event " << iEvent << " *******" << endl;
     DumpEvent(argv[0],rawEvent);
-    delete rawEvent;
+    //    delete rawEvent;
+    rawEvent->Clear();
   }
+
+  delete rawEvent;
 
   cout << "*******************************************" << endl;
   cout << "EOF" << endl;

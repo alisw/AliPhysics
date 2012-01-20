@@ -60,6 +60,7 @@ public:
    AliRawEventV2                 *NextSubEvent();
    virtual AliRawVEvent          *GetSubEvent(Int_t index);
    void                           Reset();
+   virtual void	                  Clear(Option_t* = "");
 
 private:
    TClonesArray           fEquipments;  // AliRawEquipmentV2's

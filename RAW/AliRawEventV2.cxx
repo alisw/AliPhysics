@@ -215,3 +215,22 @@ AliRawEventV2::~AliRawEventV2()
       fEvtHdrs->Delete();
    delete fEvtHdrs;
 }
+
+//______________________________________________________________________________
+void AliRawEventV2::Clear(Option_t*)
+{
+   // Clear the event in case it needs to be re-used (avoiding costly
+   // new/delete cycle). Can be used inside the event loop.
+
+  fEquipments.Clear("C");
+
+  if (fEvtHdrs) {
+    for (int i = 0; i < fEvtHdrs->GetEntriesFast(); i++) {
+      AliRawEventHeaderBase *hdr = (AliRawEventHeaderBase *)fEvtHdrs->UncheckedAt(i);
+      hdr->Reset();
+    }
+    fEvtHdrs->Clear();
+  }
+  fIndex = 0;
+}
+

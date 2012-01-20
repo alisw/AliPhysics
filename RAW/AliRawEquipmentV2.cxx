@@ -88,6 +88,17 @@ void AliRawEquipmentV2::Reset()
 }
 
 //______________________________________________________________________________
+void AliRawEquipmentV2::Clear(Option_t*)
+{
+   // Clear the equipment in case it needs to be re-used (avoiding costly
+   // new/delete cycle). Called by AliRawEventV2 Clear method inside the event loop.
+
+   fEqpHdr.Reset();
+   fRawDataRef = NULL;
+   fRawData = NULL;
+}
+
+//______________________________________________________________________________
 AliRawEquipmentV2::~AliRawEquipmentV2()
 {
    // Clean up event object. Delete also, possible, private raw data.
