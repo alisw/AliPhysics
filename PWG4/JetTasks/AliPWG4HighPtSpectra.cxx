@@ -453,7 +453,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	    }
 
 	    //Fill pT resolution plots for primaries
-	    fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*track->GetSigma1Pt2());
+	    fPtRelUncertainty1PtPrim->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 
 	  }
 
@@ -466,7 +466,7 @@ void AliPWG4HighPtSpectra::Exec(Option_t *)
 	      fCFManagerNeg->GetParticleContainer()->Fill(containerInputMC,kStepSecondaries);
 	    }
 	    //Fill pT resolution plots for primaries
-	    fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*track->GetSigma1Pt2());
+	    fPtRelUncertainty1PtSec->Fill(containerInputRec[0],containerInputRec[0]*TMath::Sqrt(track->GetSigma1Pt2()));
 	  }
 	}
 	

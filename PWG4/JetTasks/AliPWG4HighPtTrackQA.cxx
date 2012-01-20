@@ -75,6 +75,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fCentClass(10),
   fNVariables(25),
   fVariables(0x0),
+  fITSClusterMap(0),
   fAvgTrials(1),
   fNEventAll(0),
   fNEventSel(0),
@@ -104,6 +105,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtRelUncertainty1Pt(0x0),
   fPtRelUncertainty1PtNClus(0x0),
   fPtRelUncertainty1PtNClusIter1(0x0),
+  fPtRelUncertainty1PtNPointITS(0x0),
+  fPtRelUncertainty1PtITSClusterMap(0x0),
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
@@ -112,14 +115,16 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA()
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsPhi(0x0),
-  fPtNCrossedRowsNClusF(0x0),
+  fPtNCrossedRowsNClusFPhi(0x0),
   fPtNCrRNCrRNClusF(0x0),
   fPtNCrossedRowsFit(0x0),
   fPtNCrossedRowsFitPhi(0x0),
-  fPtNCrossedRowsNClusFFit(0x0),
+  fPtNCrossedRowsNClusFFitPhi(0x0),
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtRelUncertainty1PtNCrossedRows(0x0),
+  fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
   fPtChi2GGC(0x0),
   fPtChi2GoldPhi(0x0),
@@ -167,6 +172,7 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fCentClass(10),
   fNVariables(25),
   fVariables(0x0),
+  fITSClusterMap(0),
   fAvgTrials(1),
   fNEventAll(0),
   fNEventSel(0),
@@ -196,6 +202,8 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtRelUncertainty1Pt(0x0),
   fPtRelUncertainty1PtNClus(0x0),
   fPtRelUncertainty1PtNClusIter1(0x0),
+  fPtRelUncertainty1PtNPointITS(0x0),
+  fPtRelUncertainty1PtITSClusterMap(0x0),
   fPtRelUncertainty1PtChi2(0x0),
   fPtRelUncertainty1PtChi2Iter1(0x0),
   fPtRelUncertainty1PtPhi(0x0),
@@ -204,14 +212,16 @@ AliPWG4HighPtTrackQA::AliPWG4HighPtTrackQA(const char *name):
   fPtChi2PerClusterTPCIter1(0x0),
   fPtNCrossedRows(0x0),
   fPtNCrossedRowsPhi(0x0),
-  fPtNCrossedRowsNClusF(0x0),
+  fPtNCrossedRowsNClusFPhi(0x0),
   fPtNCrRNCrRNClusF(0x0),
   fPtNCrossedRowsFit(0x0),
   fPtNCrossedRowsFitPhi(0x0),
-  fPtNCrossedRowsNClusFFit(0x0),
+  fPtNCrossedRowsNClusFFitPhi(0x0),
   fNCrossedRowsNCrossedRowsFit(0x0),
   fNClustersNCrossedRows(0x0),
   fNClustersNCrossedRowsFit(0x0),
+  fPtRelUncertainty1PtNCrossedRows(0x0),
+  fPtRelUncertainty1PtNCrossedRowsFit(0x0),
   fPtChi2Gold(0x0),
   fPtChi2GGC(0x0),
   fPtChi2GoldPhi(0x0),
@@ -343,6 +353,13 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsNPointITS=new Double_t[fgkNNPointITSBins+1];
   for(Int_t i=0; i<=fgkNNPointITSBins; i++) binsNPointITS[i]=(Double_t)fgkNPointITSMin + (fgkNPointITSMax-fgkNPointITSMin)/fgkNNPointITSBins*(Double_t)i ;
 
+  Int_t fgkNITSClusterMapBins=65;
+  Float_t fgkITSClusterMapMin = -0.5;
+  Float_t fgkITSClusterMapMax = 64.5;
+  Double_t *binsITSClusterMap=new Double_t[fgkNITSClusterMapBins+1];
+  for(Int_t i=0; i<=fgkNITSClusterMapBins; i++) binsITSClusterMap[i]=(Double_t)fgkITSClusterMapMin + (fgkITSClusterMapMax-fgkITSClusterMapMin)/fgkNITSClusterMapBins*(Double_t)i ;
+
+
   Int_t fgkNNSigmaToVertexBins=9;
   Float_t fgkNSigmaToVertexMin = 0.;
   Float_t fgkNSigmaToVertexMax = 9.;
@@ -379,9 +396,9 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   Double_t *binsChi2PerClus=new Double_t[fgkNChi2PerClusBins+1];
   for(Int_t i=0; i<=fgkNChi2PerClusBins; i++) binsChi2PerClus[i]=(Double_t)fgkChi2PerClusMin + (fgkChi2PerClusMax-fgkChi2PerClusMin)/fgkNChi2PerClusBins*(Double_t)i ;
 
-  Int_t fgkNCrossedRowsNClusFBins  = 50;
+  Int_t fgkNCrossedRowsNClusFBins  = 45;
   Float_t fgkNCrossedRowsNClusFMin = 0.;
-  Float_t fgkNCrossedRowsNClusFMax = 1.;
+  Float_t fgkNCrossedRowsNClusFMax = 1.5;
   Double_t *binsNCrossedRowsNClusF=new Double_t[fgkNCrossedRowsNClusFBins+1];
   for(Int_t i=0; i<=fgkNCrossedRowsNClusFBins; i++) binsNCrossedRowsNClusF[i]=(Double_t)fgkNCrossedRowsNClusFMin + (fgkNCrossedRowsNClusFMax-fgkNCrossedRowsNClusFMin)/fgkNCrossedRowsNClusFBins*(Double_t)i ;
 
@@ -539,6 +556,12 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtRelUncertainty1PtNClusIter1 = new TH3F("fPtRelUncertainty1PtNClusIter1","fPtRelUncertainty1PtNClusIter1",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fPtRelUncertainty1PtNClusIter1);
 
+  fPtRelUncertainty1PtNPointITS = new TH3F("fPtRelUncertainty1PtNPointITS","fPtRelUncertainty1PtNPointITS",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNPointITSBins,binsNPointITS);
+  fHistList->Add(fPtRelUncertainty1PtNPointITS);
+
+  fPtRelUncertainty1PtITSClusterMap = new TH3F("fPtRelUncertainty1PtITSClusterMap","fPtRelUncertainty1PtITSClusterMap",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNITSClusterMapBins,binsITSClusterMap);
+  fHistList->Add(fPtRelUncertainty1PtITSClusterMap);
+
   fPtRelUncertainty1PtChi2 = new TH3F("fPtRelUncertainty1PtChi2","fPtRelUncertainty1PtChi2",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNChi2PerClusBins,binsChi2PerClus);
   fHistList->Add(fPtRelUncertainty1PtChi2);
 
@@ -563,8 +586,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNCrossedRowsPhi = new TH3F("fPtNCrossedRowsPhi","fPtNCrossedRowsPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsPhi);
 
-  fPtNCrossedRowsNClusF = new TH2F("fPtNCrossedRowsNClusF","fPtNCrossedRowsNClusF",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
-  fHistList->Add(fPtNCrossedRowsNClusF);
+  fPtNCrossedRowsNClusFPhi = new TH3F("fPtNCrossedRowsNClusFPhi","fPtNCrossedRowsNClusFPhi",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNCrossedRowsNClusFPhi);
  
   fPtNCrRNCrRNClusF = new TH3F("fPtNCrRNCrRNClusF","fPtNCrRNCrRNClusF",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
   fHistList->Add(fPtNCrRNCrRNClusF);
@@ -575,8 +598,8 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
   fPtNCrossedRowsFitPhi = new TH3F("fPtNCrossedRowsFitPhi","fPtNCrossedRowsFitPhi",fgkNPtBins,binsPt,fgkNNClustersTPCBins,binsNClustersTPC,fgkNPhiBins,binsPhi);
   fHistList->Add(fPtNCrossedRowsFitPhi);
 
-  fPtNCrossedRowsNClusFFit = new TH2F("fPtNCrossedRowsNClusFFit","fPtNCrossedRowsNClusFFit",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF);
-  fHistList->Add(fPtNCrossedRowsNClusFFit);
+  fPtNCrossedRowsNClusFFitPhi = new TH3F("fPtNCrossedRowsNClusFFitPhi","fPtNCrossedRowsNClusFFitPhi",fgkNPtBins,binsPt,fgkNCrossedRowsNClusFBins,binsNCrossedRowsNClusF,fgkNPhiBins,binsPhi);
+  fHistList->Add(fPtNCrossedRowsNClusFFitPhi);
 
   fNCrossedRowsNCrossedRowsFit = new TH2F("fNCrossedRowsNCrossedRowsFit","fNCrossedRowsNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNCrossedRowsNCrossedRowsFit);
@@ -586,6 +609,12 @@ void AliPWG4HighPtTrackQA::UserCreateOutputObjects() {
 
   fNClustersNCrossedRowsFit = new TH2F("fNClustersNCrossedRowsFit","fNClustersNCrossedRowsFit",fgkNNClustersTPCBins,binsNClustersTPC,fgkNNClustersTPCBins,binsNClustersTPC);
   fHistList->Add(fNClustersNCrossedRowsFit);
+
+  fPtRelUncertainty1PtNCrossedRows = new TH3F("fPtRelUncertainty1PtNCrossedRows","fPtRelUncertainty1PtNCrossedRows",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtRelUncertainty1PtNCrossedRows);
+
+  fPtRelUncertainty1PtNCrossedRowsFit = new TH3F("fPtRelUncertainty1PtNCrossedRowsFit","fPtRelUncertainty1PtNCrossedRowsFit",fgkNPtBins,binsPt,fgkNRel1PtUncertaintyBins,binsRel1PtUncertainty,fgkNNClustersTPCBins,binsNClustersTPC);
+  fHistList->Add(fPtRelUncertainty1PtNCrossedRowsFit);
 
   fPtChi2Gold = new TH2F("fPtChi2Gold","fPtChi2Gold",fgkNPtBins,binsPt,fgkNChi2CBins,binsChi2C);
   fHistList->Add(fPtChi2Gold);
@@ -1100,6 +1129,7 @@ void AliPWG4HighPtTrackQA::DoAnalysisESD() {
     fVariables->SetAt((float)track->GetTPCNcls(),5);
 
     Int_t nPointITS = 0;
+    fITSClusterMap = track->GetITSClusterMap();
     UChar_t itsMap = track->GetITSClusterMap();
     for (Int_t i=0; i < 6; i++) {
       if (itsMap & (1 << i))
@@ -1254,6 +1284,10 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtRelUncertainty1Pt->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)));
   fPtRelUncertainty1PtNClus->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(5));
   fPtRelUncertainty1PtNClusIter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(18));
+  fPtRelUncertainty1PtNPointITS->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(6));
+
+  fPtRelUncertainty1PtITSClusterMap->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),(int)fITSClusterMap);
+
   fPtRelUncertainty1PtChi2->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(10));
   if(fVariables->At(18)>0.)
     fPtRelUncertainty1PtChi2Iter1->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(19)/fVariables->At(18));
@@ -1277,7 +1311,7 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
   fPtChi2PerClusterTPC->Fill(fVariables->At(0),fVariables->At(10));
   fPtNCrossedRows->Fill(fVariables->At(0),fVariables->At(11));
   fPtNCrossedRowsPhi->Fill(fVariables->At(0),fVariables->At(11),fVariables->At(1));
-  fPtNCrossedRowsNClusF->Fill(fVariables->At(0),fVariables->At(12));
+  fPtNCrossedRowsNClusFPhi->Fill(fVariables->At(0),fVariables->At(12),fVariables->At(1));
   fPtNCrRNCrRNClusF->Fill(fVariables->At(0),fVariables->At(11),fVariables->At(12));
 
   fPtChi2Gold->Fill(fVariables->At(0),fVariables->At(21));
@@ -1290,11 +1324,14 @@ void AliPWG4HighPtTrackQA::FillHistograms() {
 
   fPtNCrossedRowsFit->Fill(fVariables->At(0),fVariables->At(23));
   fPtNCrossedRowsFitPhi->Fill(fVariables->At(0),fVariables->At(23),fVariables->At(1));
-  fPtNCrossedRowsNClusFFit->Fill(fVariables->At(0),fVariables->At(24));
+  fPtNCrossedRowsNClusFFitPhi->Fill(fVariables->At(0),fVariables->At(24),fVariables->At(1));
   fNCrossedRowsNCrossedRowsFit->Fill(fVariables->At(11),fVariables->At(23));
 
   fNClustersNCrossedRows->Fill(fVariables->At(5),fVariables->At(11));
   fNClustersNCrossedRowsFit->Fill(fVariables->At(5),fVariables->At(23));
+
+  fPtRelUncertainty1PtNCrossedRows->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(11));
+  fPtRelUncertainty1PtNCrossedRowsFit->Fill(fVariables->At(0),fVariables->At(0)*TMath::Sqrt(fVariables->At(17)),fVariables->At(23));
 
 }
 

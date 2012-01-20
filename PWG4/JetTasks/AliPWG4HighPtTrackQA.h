@@ -150,6 +150,8 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   Int_t fNVariables;             // Number of variables
   TArrayF *fVariables;           // QA variables
 
+  UChar_t fITSClusterMap;  // map of clusters, one bit per a layer
+
   Float_t fAvgTrials;             // Average number of trials
   
   TH1F *fNEventAll;                            //! Event counter
@@ -181,9 +183,14 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtNPointITS;                          //! Pt vs nPointITS
   TH2F *fPtChi2C;                              //! Pt vs Chi2C
   TH2F *fPtNSigmaToVertex;                     //! Pt vs nSigmaToVertex
+
   TH2F *fPtRelUncertainty1Pt;                  //! Pt vs relUncertainty1Pt
   TH3F *fPtRelUncertainty1PtNClus;             //! Pt vs relUncertainty1Pt vs NClustersTPC
   TH3F *fPtRelUncertainty1PtNClusIter1;        //! Pt vs relUncertainty1Pt vs NClustersTPCIter1
+  TH3F *fPtRelUncertainty1PtNPointITS;         //! Pt vs relUncertainty1Pt vs NPointITS
+  TH3F *fPtRelUncertainty1PtITSClusterMap;     //! Pt vs relUncertainty1Pt vs byte of ITS clustermap
+
+
   TH3F *fPtRelUncertainty1PtChi2;              //! Pt vs relUncertainty1Pt vs Chi2TPC/NClus
   TH3F *fPtRelUncertainty1PtChi2Iter1;         //! Pt vs relUncertainty1Pt vs Chi2TPC/NClusIter1
   TH3F *fPtRelUncertainty1PtPhi;               //! Pt vs relUncertainty1PtPhi
@@ -192,14 +199,16 @@ class AliPWG4HighPtTrackQA: public AliAnalysisTaskSE {
   TH2F *fPtChi2PerClusterTPCIter1;             //! Pt vs Chi2PerClusterTPCIter1
   TH2F *fPtNCrossedRows;                       //! Pt vs NCrossedRows
   TH3F *fPtNCrossedRowsPhi;                    //! Pt vs NCrossedRows vs Phi
-  TH2F *fPtNCrossedRowsNClusF;                 //! Pt vs NCrossedRows/NClusF
+  TH3F *fPtNCrossedRowsNClusFPhi;              //! Pt vs NCrossedRows/NClusF vs Phi
   TH3F *fPtNCrRNCrRNClusF;                     //! Pt vs NCrossedRows vs NCrossedRows/NClusF 
   TH2F *fPtNCrossedRowsFit;                    //! Pt vs NCrossedRows from NClusterFitMap
   TH3F *fPtNCrossedRowsFitPhi;                 //! Pt vs NCrossedRows from FitMap vs Phi
-  TH2F *fPtNCrossedRowsNClusFFit;              //! Pt vs NCrossedRows/NClusF from NClusterFitMap
+  TH3F *fPtNCrossedRowsNClusFFitPhi;              //! Pt vs NCrossedRows/NClusF from NClusterFitMap
   TH2F *fNCrossedRowsNCrossedRowsFit;          //! NCrossedRows from ClusterMap vs NCrossedRows from NClusterFitMap
   TH2F *fNClustersNCrossedRows;                //! NClusters vs NCrossedRows
   TH2F *fNClustersNCrossedRowsFit;             //! NClusters vs NCrossedRows from fit map
+  TH3F *fPtRelUncertainty1PtNCrossedRows;       //! Pt vs relUncertainty1Pt vs NCrossedRows
+  TH3F *fPtRelUncertainty1PtNCrossedRowsFit;    //! Pt vs relUncertainty1Pt vs NCrossedRowsFitMap
 
   TH2F *fPtChi2Gold;                           //! Pt vs Chi2 between global and TPC constrained track
   TH2F *fPtChi2GGC;                            //! Pt vs Chi2 between global and global constrained track
