@@ -291,7 +291,11 @@ void AliZDCDigitizer::Digitize(Option_t* /*option*/)
     if(genHeader->InheritsFrom(AliGenHijingEventHeader::Class())) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (genHeader);
     else if(genHeader->InheritsFrom(AliGenCocktailEventHeader::Class())){
       TList* listOfHeaders = ((AliGenCocktailEventHeader*) genHeader)->GetHeaders();
-      hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+      if(listOfHeaders) hijingHeader = dynamic_cast <AliGenHijingEventHeader*> (listOfHeaders->FindObject("Hijing"));
+      else{
+        AliWarning(" No list of headers from generator -> skipping event\n");
+	continue;
+      }
     }
     if(!hijingHeader) continue;
     
