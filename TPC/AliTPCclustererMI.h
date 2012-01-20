@@ -107,9 +107,9 @@ private:
   Float_t** fAllBins; //! All sector bins
   Int_t** fAllSigBins;//! All signal bins in a sector
   Int_t*  fAllNSigBins;//! Number of signal bins in a sector
+  TObject* fHLTClusterAccess;// interface to HLT clusters
 
-
-  ClassDef(AliTPCclustererMI,3)  // Time Projection Chamber digits
+  ClassDef(AliTPCclustererMI,0)  // TPC cluster finder
 };
 
 inline Bool_t AliTPCclustererMI::IsMaximum(Float_t q,Int_t max,const Float_t *bins) const {

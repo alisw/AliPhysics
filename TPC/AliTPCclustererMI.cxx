@@ -121,7 +121,8 @@ AliTPCclustererMI::AliTPCclustererMI(const AliTPCParam* par, const AliTPCRecoPar
   fUseHLTClusters(4),
   fAllBins(NULL),
   fAllSigBins(NULL),
-  fAllNSigBins(NULL)
+  fAllNSigBins(NULL),
+  fHLTClusterAccess(NULL)
 {
   //
   // COSNTRUCTOR
@@ -195,6 +196,7 @@ AliTPCclustererMI::~AliTPCclustererMI(){
   delete [] fAllBins;
   delete [] fAllSigBins;
   delete [] fAllNSigBins;
+  if (fHLTClusterAccess) delete fHLTClusterAccess;
 }
 
 void AliTPCclustererMI::SetInput(TTree * tree)
@@ -1572,7 +1574,7 @@ Int_t AliTPCclustererMI::ReadHLTClusters()
   // used in Digits2Clusters
   //
 
-  TObject* pClusterAccess=NULL;
+  if (!fHLTClusterAccess) {
   TClass* pCl=NULL;
   ROOT::NewFunc_t pNewFunc=NULL;
   do {
@@ -1588,22 +1590,24 @@ Int_t AliTPCclustererMI::ReadHLTClusters()
     AliError("unable to create instance of AliHLTTPCClusterAccessHLTOUT");
     return -2;
   }
-  pClusterAccess=reinterpret_cast<TObject*>(p);
-  if (!pClusterAccess) {
-    AliError("instance not of type TObject");
-    return -3 ;
+  fHLTClusterAccess=reinterpret_cast<TObject*>(p);
   }
+
+  TObject* pClusterAccess=fHLTClusterAccess;
 
   const Int_t kNIS = fParam->GetNInnerSector();
   const Int_t kNOS = fParam->GetNOuterSector();
   const Int_t kNS = kNIS + kNOS;
   fNclusters  = 0;
   
+  // make sure that all clusters from the previous event are cleared
+  pClusterAccess->Clear("event");
   for(fSector = 0; fSector < kNS; fSector++) {
 
     Int_t iResult = 1;
     TString param("sector="); param+=fSector;
-    pClusterAccess->Clear();
+    // prepare for next sector
+    pClusterAccess->Clear("sector");
     pClusterAccess->Execute("read", param, &iResult);
     if (iResult < 0) {
       return iResult;
@@ -1664,7 +1668,7 @@ Int_t AliTPCclustererMI::ReadHLTClusters()
     fNclusters+=nClusterSector;
   } // for(fSector = 0; fSector < kNS; fSector++) {
 
-  delete pClusterAccess;
+  pClusterAccess->Clear("event");
 
   Info("Digits2Clusters", "Number of converted HLT clusters : %d", fNclusters);
   
