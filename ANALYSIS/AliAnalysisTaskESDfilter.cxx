@@ -51,6 +51,8 @@
 #include "AliCodeTimer.h"
 #include "AliESDtrackCuts.h"
 #include "AliESDpid.h"
+#include "AliV0vertexer.h"
+#include "AliCascadeVertexer.h"
 #include "Riostream.h"
 
 ClassImp(AliAnalysisTaskESDfilter)
@@ -90,6 +92,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter():
     fIsVZEROEnabled(kTRUE),
     fIsTZEROEnabled(kTRUE),
     fIsZDCEnabled(kTRUE),
+    fIsV0CascadeRecoEnabled(kFALSE),
     fAreCascadesEnabled(kTRUE),
     fAreV0sEnabled(kTRUE),
     fAreKinksEnabled(kTRUE),
@@ -143,6 +146,7 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fIsVZEROEnabled(kTRUE),
     fIsTZEROEnabled(kTRUE),
     fIsZDCEnabled(kTRUE),
+    fIsV0CascadeRecoEnabled(kFALSE),
     fAreCascadesEnabled(kTRUE),
     fAreV0sEnabled(kTRUE),
     fAreKinksEnabled(kTRUE),
@@ -160,6 +164,26 @@ AliAnalysisTaskESDfilter::AliAnalysisTaskESDfilter(const char* name):
     fTPCaloneTrackCuts(0)
 {
   // Constructor
+
+    fV0Cuts[0] =  33.   ;   // max allowed chi2
+    fV0Cuts[1] =   0.1  ;   // min allowed impact parameter for the 1st daughter
+    fV0Cuts[2] =   0.1  ;   // min allowed impact parameter for the 2nd daughter
+    fV0Cuts[3] =   1.   ;   // max allowed DCA between the daughter tracks
+    fV0Cuts[4] =    .998;   // min allowed cosine of V0's pointing angle
+    fV0Cuts[5] =   0.9  ;   // min radius of the fiducial volume
+    fV0Cuts[6] = 100.   ;   // max radius of the fiducial volume
+
+    fCascadeCuts[0] =  33.   ; // max allowed chi2 (same as PDC07)
+    fCascadeCuts[1] =   0.05 ; // min allowed V0 impact parameter
+    fCascadeCuts[2] =   0.008; // "window" around the Lambda mass
+    fCascadeCuts[3] =   0.03 ; // min allowed bachelor's impact parameter
+    fCascadeCuts[4] =   0.3  ; // max allowed DCA between the V0 and the bachelor
+    fCascadeCuts[5] =   0.999; // min allowed cosine of the cascade pointing angle
+    fCascadeCuts[6] =   0.9  ; // min radius of the fiducial volume
+    fCascadeCuts[7] = 100.   ; // max radius of the fiducial volume
+
+
+
 }
 AliAnalysisTaskESDfilter::~AliAnalysisTaskESDfilter(){
     if(fIsPidOwner) delete fESDpid;
@@ -344,6 +368,7 @@ AliAODHeader* AliAnalysisTaskESDfilter::ConvertHeader(const AliESDEvent& esd)
 //______________________________________________________________________________
 void AliAnalysisTaskESDfilter::ConvertCascades(const AliESDEvent& esd) 
 {
+
   // Convert the cascades part of the ESD.
   // Return the number of cascades
  
@@ -1890,7 +1915,24 @@ void AliAnalysisTaskESDfilter::ConvertESDtoAOD()
   AliCodeTimerAuto("",0);
   
   fOldESDformat = ( esd->GetAliESDOld() != 0x0 );
-  
+ 
+      // Reconstruct cascades and V0 here
+  if (fIsV0CascadeRecoEnabled) {
+    esd->ResetCascades();
+    esd->ResetV0s();
+
+    AliV0vertexer lV0vtxer;
+    AliCascadeVertexer lCascVtxer;
+
+    lV0vtxer.SetCuts(fV0Cuts);
+    lCascVtxer.SetCuts(fCascadeCuts);
+
+
+    lV0vtxer.Tracks2V0vertices(esd);
+    lCascVtxer.V0sTracks2CascadeVertices(esd);
+  }
+
+ 
   fNumberOfTracks = 0;
   fNumberOfPositiveTracks = 0;
   fNumberOfV0s = 0;
@@ -2205,3 +2247,6 @@ void  AliAnalysisTaskESDfilter::PrintMCInfo(AliStack *pStack,Int_t label){
   }
   Printf("########################");
 }
+
+//______________________________________________________
+

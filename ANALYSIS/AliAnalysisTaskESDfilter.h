@@ -59,6 +59,15 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
     virtual void SetAODPID(AliESDtrack *esdtrack, AliAODTrack *aodtrack, AliAODPid *detpid);
     void SetDetectorRawSignals(AliAODPid *aodpid, AliESDtrack *track);
 
+    void SetV0Cuts(const Double_t cuts[7]) {for (Int_t icut = 0; icut<7; icut++) fV0Cuts[icut] = cuts[icut];}
+
+    void SetCascadeCuts(const Double_t cuts[8]) {for (Int_t icut = 0; icut<8; icut++) fCascadeCuts[icut] = cuts[icut];} 
+
+    void GetV0Cuts(Double_t cuts[7]) const {for (Int_t icut = 0; icut<7; icut++) cuts[icut] = fV0Cuts[icut];}
+
+    void GetCascadeCuts(Double_t cuts[8]) const {for (Int_t icut = 0; icut<8; icut++) cuts[icut] = fCascadeCuts[icut];}
+
+
   void PrintTask(Option_t *option="all", Int_t indent=0) const;
   
   void DisableVZERO() { fIsVZEROEnabled = kFALSE; }
@@ -73,6 +82,8 @@ class AliAnalysisTaskESDfilter : public AliAnalysisTaskSE
   void DisableCells() { fAreEMCALCellsEnabled = fArePHOSCellsEnabled = kFALSE; }
   void DisableCaloTrigger(TString calo = "PHOS") { if (calo.Contains("EMCAL")) fAreEMCALTriggerEnabled = kFALSE; else fArePHOSTriggerEnabled = kFALSE; }
   void DisableTracklets() { fAreTrackletsEnabled = kFALSE; }
+
+  void EnableV0CascadeVerticesReco() { fIsV0CascadeRecoEnabled = kTRUE; }
 
   virtual void SetTimeZeroType(AliESDpid::EStartTimeType_t tofTimeZeroType) {fTimeZeroType = tofTimeZeroType;}
   
@@ -99,7 +110,7 @@ private:
   void ConvertVZERO(const AliESDEvent& esd);
   void ConvertTZERO(const AliESDEvent& esd);
   void ConvertZDC(const AliESDEvent& esd);
-  
+ 
   TClonesArray& Tracks();
   TClonesArray& V0s();
   TClonesArray& Vertices();
@@ -140,6 +151,7 @@ private:
   Bool_t fIsVZEROEnabled; // whether or not to fill the vzero branch (true by default)
   Bool_t fIsTZEROEnabled; // whether or not to fill the tzero branch (true by default)
   Bool_t fIsZDCEnabled; // whether or not to fill the zdc branch (true by default)
+  Bool_t fIsV0CascadeRecoEnabled; // whether or not to reconstruct again V0s and cascades (false by default)
   Bool_t fAreCascadesEnabled; // whether or not to fill the cascades branch (true by default)
   Bool_t fAreV0sEnabled; // whether or not to fill the v0 branch (true by default)
   Bool_t fAreKinksEnabled; // whether or not to fill the kinks (true by default)
@@ -155,8 +167,11 @@ private:
   Bool_t fIsPidOwner; // whether we own fESDpid
   Int_t fTimeZeroType;  //  time zero type 
   AliESDtrackCuts* fTPCaloneTrackCuts; // TPC stand-alone track cuts
+  Double_t        fV0Cuts[7];       // Array to store the values for the different reco selections V0 related
+  Double_t        fCascadeCuts[8];  // Array to store the values for the different reco selections cascades related
   
-  ClassDef(AliAnalysisTaskESDfilter, 12); // Analysis task for standard ESD filtering
+  
+  ClassDef(AliAnalysisTaskESDfilter, 13); // Analysis task for standard ESD filtering
 };
- 
+
 #endif
