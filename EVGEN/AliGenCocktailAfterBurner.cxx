@@ -116,7 +116,7 @@ AddAfterBurner(AliGenerator *AfterBurner, char* Name, Float_t RateExp)
 	AfterBurner->SetPhiRange(fPhiMin*180/TMath::Pi(),fPhiMax*180/TMath::Pi());
     if (TestBit(kThetaRange) && !(AfterBurner->TestBit(kThetaRange)) && !(AfterBurner->TestBit(kEtaRange)))
 	AfterBurner->SetThetaRange(fThetaMin*180/TMath::Pi(),fThetaMax*180/TMath::Pi());
-    if (TestBit(kVertexRange) && !(AfterBurner->TestBit(kVertexRange))) {
+    if (!(AfterBurner->TestBit(kVertexRange))) {
 	AfterBurner->SetOrigin(fOrigin[0], fOrigin[1], fOrigin[2]);
 	AfterBurner->SetSigma(fOsigma[0], fOsigma[1], fOsigma[2]);
 	AfterBurner->SetVertexSmear(fVertexSmear);
