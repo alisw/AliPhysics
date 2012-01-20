@@ -140,8 +140,11 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 
 	if (this!= &c){
 		TObject::operator=(c);
+		delete fmcArray;
 		fmcArray = new TClonesArray(*(c.fmcArray));
+		delete fRecoCandidate;
 		fRecoCandidate = new AliAODRecoDecayHF(*(c.fRecoCandidate));
+		delete fmcPartCandidate;
 		fmcPartCandidate = new AliAODMCParticle(*(c.fmcPartCandidate));
 		fNDaughters = c.fNDaughters;
 		fNVar = c.fNVar;
@@ -158,6 +161,9 @@ AliCFVertexingHF& AliCFVertexingHF::operator=(const AliCFVertexingHF& c)
 		fFake=c.fFake;
 		fRejectIfNoQuark=c.fRejectIfNoQuark;
 		if (fProngs > 0){
+    		        delete [] fLabelArray;
+			delete [] fPtAccCut;
+			delete [] fEtaAccCut;
 			fLabelArray = new Int_t[fProngs];
                         fPtAccCut = new Float_t[fProngs];
                         fEtaAccCut = new Float_t[fProngs];
