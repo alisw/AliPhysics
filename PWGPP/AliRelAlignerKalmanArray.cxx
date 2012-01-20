@@ -206,6 +206,9 @@ AliRelAlignerKalman* AliRelAlignerKalmanArray::GetAligner(AliESDEvent* event)
 AliRelAlignerKalmanArray& AliRelAlignerKalmanArray::operator=(const AliRelAlignerKalmanArray& in)
 {
   //assignment operator
+  if(&in == this) return *this;
+  TNamed::operator=(in);
+
   if (fSize!=in.fSize)
   {
     //if sizes different, delete curent and make a new one with new size
