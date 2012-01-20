@@ -39,7 +39,8 @@
   // bextra == 0 4 plus
   // bextra == 1 large pass1 split..
   // bextra == 2 3 plus
-  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "111018b";
+  //  Int_t bRun = 802; Int_t bExtra = 0;  char* cDate = "111018b";
+  Int_t bRun = 5014; Int_t bExtra = 0;  char* cDate = "120104a";
   //  Int_t bRun = 8102; Int_t bExtra = 1;  char* cDate = "110725a";
   iAODanalysis = 0; 
   // 1 == Read Jets and tracks form the input AOD
@@ -49,10 +50,32 @@
   // 1 =  write the Full AOD for all events 
   // 2 =  write the Full AOD for triggered events
   // 3 =  write the deltaAOD for all events
+  iFilterAnalysis = 1;
   //  iFilterAnalysis = 2;kJetTriggerPtCut = 40; 
-  iFilterAnalysis = 3;
+  //  iFilterAnalysis = 3;
   // iFilterAnalysis = 2;
+
+  if(iFilterAnalysis==1){
+    kSaveAOD            = 1;
+    kGridFilesPerJob       = 5;
+    kDeltaAODJetName   = "";
+    kFilterAOD = false;
+  }
+  else if(iFilterAnalysis==2){
+    kSaveAOD            = 1;
+    kGridFilesPerJob    = 20;
+    kDeltaAODJetName   = "";
+    kFilterAOD = true;
+  }
+  else if(iFilterAnalysis == 3){
+    kSaveAOD            = 2;
+    kGridFilesPerJob    = 20;
+      kDeltaAODJetName   = "AliAOD.Jets.root";
+      kFilterAOD = true;
+  }
   
+
+
   if (kPluginMode.Contains("merge")){
     // currently merging this one...
     //       cDate = "110717a";
@@ -534,25 +557,6 @@
     }
     if(iAODanalysis)kTrainName  = Form("tAOD_10h_pass2_%s",cDate);
 
-    if(iFilterAnalysis==1){
-      kSaveAOD            = 1;
-      kGridFilesPerJob       = 5;
-      kDeltaAODJetName   = "";
-      kFilterAOD = false;
-    }
-    else if(iFilterAnalysis==2){
-      kSaveAOD            = 1;
-      kGridFilesPerJob    = 20;
-      kDeltaAODJetName   = "";
-      kFilterAOD = true;
-    }
-    else if(iFilterAnalysis == 3){
-      kSaveAOD            = 2;
-      kGridFilesPerJob    = 20;
-      kDeltaAODJetName   = "AliAOD.Jets.root";
-      kFilterAOD = true;
-    }
-
     if(iAODanalysis==0){
       // select what is running in the spectrum task, list of jet names is filles automatically
       kGridFilesPerJob       = 30;
@@ -921,6 +925,37 @@
     iPWG4CaloConv    = 0;  // 25.08. off: Output size 03.09 crashes 
     iPWG4omega3pi     = 0; // OFF no feedback
     iPWGPPQASym = 0; // excluded since also on QA train         
+    iPWG4Minijet  = 0;
+      iPWG4ThreeJets    = 0; // tmp off mem leak
+      iPWG4KMeans       = 0;  // OFF no FEEDBACK
+      iPWG4Tagged       = 0; // OFF crashes on MC 
+      iPWG4CaloQA       = 0; // OFF not needed on MC   
+      iPWG4JetCorr      = 0; 
+      iPWG4JCORRAN      = 0;  // TMP OFF: Writes a Tree
+      iPWG4omega3pi     = 0; // OFF no feedback
+      
+      // swtich off most tasks for Pb+Pb
+      iDIJETAN = 0; // only run on one JetFinder for the moment
+      iPWG4LeadingUE = 0; 
+      iPWG4JetChem      = 0;
+      iPWG4QGSep  = 0;
+      iPWG4Minijet  = 0;
+      iPWG4PartCorr     = 0;
+      iPWG4GammaConv    = 0; 
+      
+      // running as light a possible 
+      
+      iPWG4PtQAMC     = 0;  // 
+      iPWG4PtQATPC   = 0;  // 
+      iPWG4PtSpectra   = 0;  //  
+      iPWG4PtTrackQA    = 0; // currently not needed 08.09.2011
+      iPWG4JetSpectrum = 1; 
+      iPWG4JetServices  = 1; // !!!!!!!!!!! 
+      iPWG4Cluster      = 1;// not 5....
+      kHighPtFilterMask = 1<<4|1<<8; // Global tracks with SPD requirment global constraitn for the rest
+      iPWG4Fragmentation = 1;
+    //
+
 
     kDeltaAODJetName   = ""; // for OTF we do not need to write a delta/saves some extension gymnastics in the tasks       
 
@@ -1074,23 +1109,6 @@
     kHighPtFilterMask = 1<<4|1<<8;     
 
 
-
-    if(iFilterAnalysis==1){
-      kSaveAOD            = 1;
-      kDeltaAODJetName   = "";
-      kFilterAOD = false;
-    }
-    else if(iFilterAnalysis==2){
-      kJetTriggerPtCut = 20; //pt 
-      kSaveAOD            = 1;
-      kDeltaAODJetName   = "";
-      kFilterAOD = true;
-    }
-    else if(iFilterAnalysis == 3){
-      kSaveAOD            = 2;
-      kDeltaAODJetName   = "AliAOD.Jets.root";
-      kFilterAOD = true;
-    }
     kGridFilesPerJob       = 100;
     /*
 ############# Possible jet branches ###################
@@ -1181,25 +1199,28 @@
       // local
       if(iAODanalysis)kNumberOfEvents     = 2000;
       kUseSysInfo = 1;
-	kUseDebug = kTRUE;
-	kTrainName             = Form("pwg4train_test_local");
-	kLocalDataList = "local_esd_lhc10d_pass2.txt";
-	kUsePAR              = kFALSE; // cannot patch the macro for local test, need to laod FASTjet libs before loading FASTJETA.so
-	kUseCPAR            = kFALSE;
-       	if(bRun==802){
-	  kLocalDataList = "local_esd_lhc10h.txt";
-	  if(iAODanalysis)	  kLocalDataList = "local_aod_lhc10h.txt";
-	}
-	//	iPWG4PtTrackQA    = 0;
-	//	iPWG4PtQAMC       = 0;
-	//	iPWG4PtSpectra    = 0;
-	//	iPWG4PtQATPC      = 0;
-	//	iPWG4PtTrackQA    = 0;
-	//	iPWG4Cluster      = 0;
-	kUseCPAR            = kFALSE;
-	kUsePAR            = kFALSE;
-	//	kNumberOfEvents     = 200;
-	// all OFF
+      kUseDebug = kTRUE;
+      kTrainName             = Form("pwg4train_test_local");
+      kLocalDataList = "local_esd_lhc10d_pass2.txt";
+      kUsePAR              = kFALSE; // cannot patch the macro for local test, need to laod FASTjet libs before loading FASTJETA.so
+      kUseCPAR            = kFALSE;
+      if(bRun==802){
+	kLocalDataList = "local_esd_lhc10h.txt";
+	if(iAODanalysis)	  kLocalDataList = "local_aod_lhc10h.txt";
+      }
+      else if (bRun == 5014){
+	kLocalDataList = "local_esd_lhc10e14.txt";
+      }
+      //	iPWG4PtTrackQA    = 0;
+      //	iPWG4PtQAMC       = 0;
+      //	iPWG4PtSpectra    = 0;
+      //	iPWG4PtQATPC      = 0;
+      //	iPWG4PtTrackQA    = 0;
+      //	iPWG4Cluster      = 0;
+      kUseCPAR            = kFALSE;
+      kUsePAR            = kFALSE;
+      //      kNumberOfEvents     = 70;
+      // all OFF
     }
   }
   if(kPluginAliRootVersion.Length()==0){
