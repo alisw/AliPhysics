@@ -129,7 +129,10 @@ AliRDHFCutsDStartoKpipi &AliRDHFCutsDStartoKpipi::operator=(const AliRDHFCutsDSt
   if(&source == this) return *this;
 
   AliRDHFCuts::operator=(source);
-  if(source.GetTrackCutsSoftPi()) AddTrackCutsSoftPi(source.GetTrackCutsSoftPi());
+  if(source.GetTrackCutsSoftPi()) {
+    delete fTrackCutsSoftPi;
+    fTrackCutsSoftPi = new AliESDtrackCuts(*(source.GetTrackCutsSoftPi()));
+  }
 
   return *this;
 }
