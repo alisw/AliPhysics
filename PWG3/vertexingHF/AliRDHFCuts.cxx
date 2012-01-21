@@ -177,7 +177,8 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fnVarsForOpt=source.fnVarsForOpt;
   fUsePID=source.fUsePID;
   fUseAOD049=source.fUseAOD049;
-  SetPidHF(source.GetPidHF());
+  if(fPidHF) delete fPidHF;
+  fPidHF=new AliAODPidHF(*(source.GetPidHF()));
   fWhyRejection=source.fWhyRejection;
   fEvRejectionBits=source.fEvRejectionBits;
   fRemoveDaughtersFromPrimary=source.fRemoveDaughtersFromPrimary;
@@ -198,7 +199,7 @@ AliRDHFCuts &AliRDHFCuts::operator=(const AliRDHFCuts &source)
   fIsCandTrackSPDFirst=source.fIsCandTrackSPDFirst;
   fMaxPtCandTrackSPDFirst=source.fMaxPtCandTrackSPDFirst;
 
-  if(source.GetTrackCuts()) AddTrackCuts(source.GetTrackCuts());
+  if(source.GetTrackCuts()) {delete fTrackCuts; fTrackCuts=new AliESDtrackCuts(*(source.GetTrackCuts()));}
   if(source.fPtBinLimits) SetPtBins(source.fnPtBinLimits,source.fPtBinLimits);
   if(source.fVarNames) SetVarNames(source.fnVars,source.fVarNames,source.fIsUpperCut);
   if(source.fCutsRD) SetCuts(source.fGlobalIndex,source.fCutsRD);
