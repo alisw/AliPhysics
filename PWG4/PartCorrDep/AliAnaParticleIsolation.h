@@ -188,7 +188,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhTrackMatchedDEta     ;               //! Eta distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDPhi     ;               //! Phi distance between track and cluster vs cluster E
   TH2F *   fhTrackMatchedDEtaDPhi ;               //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
-  
+  TH2F *   fhdEdx  ;                              //! matched track dEdx vs cluster E 
+  TH2F *   fhEOverP;                              //! matched track E cluster over P track vs cluster E, after dEdx cut 
+  TH2F *   fhTrackMatchedMCParticle;              //! Trace origin of matched particle
+
   // Shower Shape histograms
   TH2F *   fhELambda0;                            //! Shower shape of isolated photons
   TH2F *   fhELambda1;                            //! Shower shape of isolated photons
@@ -200,11 +203,11 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Int_t    fHistoNPtInConeBins;                   // Number of bins in PtInCone histogram
   Float_t  fHistoPtInConeMax;                     // PtInCone maximum in histogram
   Float_t  fHistoPtInConeMin;                     // PtInCone maximum in histogram 
-  
+
   AliAnaParticleIsolation(              const AliAnaParticleIsolation & iso) ; // cpy ctor
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ; // cpy assignment
   
-  ClassDef(AliAnaParticleIsolation,7)
+  ClassDef(AliAnaParticleIsolation,8)
 } ;
 
 

@@ -66,7 +66,8 @@ AliAnaPi0EbE::AliAnaPi0EbE() :
     // Weight studies
     fhECellClusterRatio(0),        fhECellClusterLogRatio(0),                 
     fhEMaxCellClusterRatio(0),     fhEMaxCellClusterLogRatio(0),
-    fhTrackMatchedDEta(0x0),       fhTrackMatchedDPhi(0x0),      fhTrackMatchedDEtaDPhi(0x0)
+    fhTrackMatchedDEta(0),         fhTrackMatchedDPhi(0),        fhTrackMatchedDEtaDPhi(0),
+    fhdEdx(0),                     fhEOverP(0),                  fhTrackMatchedMCParticle(0)
 {
   //default ctor
   
@@ -135,7 +136,7 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
 
     if(cluster->IsEMCAL() && GetCaloUtils()->IsRecalculationOfClusterTrackMatchingOn()){
       dR = 2000., dZ = 2000.;
-      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dR,dZ);
+      GetCaloUtils()->GetEMCALRecoUtils()->GetMatchedResiduals(cluster->GetID(),dZ,dR);
     }    
     //printf("Pi0EbE: dPhi %f, dEta %f\n",dR,dZ);
 
@@ -143,6 +144,52 @@ void AliAnaPi0EbE::FillSelectedClusterHistograms(AliVCluster* cluster, const Int
       fhTrackMatchedDEta->Fill(e,dZ);
       fhTrackMatchedDPhi->Fill(e,dR);
       if(e > 0.5) fhTrackMatchedDEtaDPhi->Fill(dZ,dR);
+    }
+    
+    // Check dEdx and E/p of matched clusters
+    
+    if(TMath::Abs(dZ) < 0.05 && TMath::Abs(dR) < 0.05)
+    {
+      AliVTrack *track = 0;
+      if(!strcmp("AliESDCaloCluster",Form("%s",cluster->ClassName()))){
+        Int_t iESDtrack = cluster->GetTrackMatchedIndex();
+        if(iESDtrack<0) printf("AliAnaPi0EbE::FillSelectedCluster - Wrong track index\n");
+        AliVEvent * event = GetReader()->GetInputEvent();
+        track = dynamic_cast<AliVTrack*> (event->GetTrack(iESDtrack));
+      }
+      else {
+        track = dynamic_cast<AliVTrack*>(cluster->GetTrackMatched(0));
+      }
+      
+      if(track) {
+        
+        Float_t dEdx = track->GetTPCsignal();
+        fhdEdx->Fill(e, dEdx);
+        
+        Float_t eOverp = e/track->P();
+        fhEOverP->Fill(e,  eOverp);
+        
+      }
+      
+      if(IsDataMC()){
+        if  ( !GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCConversion)  )
+        {
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(e, 2.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(e, 0.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(e, 1.5 );
+          else                                                                                 fhTrackMatchedMCParticle->Fill(e, 3.5 );
+          
+        }
+        else
+        {
+          if       ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0)      ||
+                     GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)       ) fhTrackMatchedMCParticle->Fill(e, 6.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPhoton)    ) fhTrackMatchedMCParticle->Fill(e, 4.5 );
+          else if  ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCElectron)  ) fhTrackMatchedMCParticle->Fill(e, 5.5 );
+          else                                                                                 fhTrackMatchedMCParticle->Fill(e, 7.5 );
+        }        
+      }  // MC              
     }
   }// Track matching histograms   
   
@@ -343,6 +390,14 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   Float_t resphimax   = GetHistogramRanges()->GetHistoTrackResidualPhiMax();          
   Float_t resphimin   = GetHistogramRanges()->GetHistoTrackResidualPhiMin();
   
+  Int_t   ndedxbins   = GetHistogramRanges()->GetHistodEdxBins();         
+  Float_t dedxmax     = GetHistogramRanges()->GetHistodEdxMax();         
+  Float_t dedxmin     = GetHistogramRanges()->GetHistodEdxMin();
+  Int_t   nPoverEbins = GetHistogramRanges()->GetHistoPOverEBins();       
+  Float_t pOverEmax   = GetHistogramRanges()->GetHistoPOverEMax();       
+  Float_t pOverEmin   = GetHistogramRanges()->GetHistoPOverEMin();
+  
+  
   fhPt  = new TH1F("hPt","Number of identified  #pi^{0} (#eta) decay",nptbins,ptmin,ptmax); 
   fhPt->SetYTitle("N");
   fhPt->SetXTitle("p_{T} (GeV/c)");
@@ -450,21 +505,21 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   
   if(fFillTMHisto){
     fhTrackMatchedDEta  = new TH2F
-    ("TrackMatchedDEta",
+    ("hTrackMatchedDEta",
      "d#eta of cluster-track vs cluster energy",
      nptbins,ptmin,ptmax,nresetabins,resetamin,resetamax); 
     fhTrackMatchedDEta->SetYTitle("d#eta");
     fhTrackMatchedDEta->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDPhi  = new TH2F
-    ("TrackMatchedDPhi",
+    ("hTrackMatchedDPhi",
      "d#phi of cluster-track vs cluster energy",
      nptbins,ptmin,ptmax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDPhi->SetYTitle("d#phi (rad)");
     fhTrackMatchedDPhi->SetXTitle("E_{cluster} (GeV)");
     
     fhTrackMatchedDEtaDPhi  = new TH2F
-    ("TrackMatchedDEtaDPhi",
+    ("hTrackMatchedDEtaDPhi",
      "d#eta vs d#phi of cluster-track vs cluster energy",
      nresetabins,resetamin,resetamax,nresphibins,resphimin,resphimax); 
     fhTrackMatchedDEtaDPhi->SetYTitle("d#phi (rad)");
@@ -473,6 +528,37 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
     outputContainer->Add(fhTrackMatchedDEta) ; 
     outputContainer->Add(fhTrackMatchedDPhi) ;
     outputContainer->Add(fhTrackMatchedDEtaDPhi) ;
+    
+    fhdEdx  = new TH2F ("hdEdx","matched track <dE/dx> vs cluster E ", nptbins,ptmin,ptmax,ndedxbins, dedxmin, dedxmax); 
+    fhdEdx->SetXTitle("E (GeV)");
+    fhdEdx->SetYTitle("<dE/dx>");
+    outputContainer->Add(fhdEdx);  
+    
+    fhEOverP  = new TH2F ("hEOverP","matched track E/p vs cluster E ", nptbins,ptmin,ptmax,nPoverEbins,pOverEmin,pOverEmax); 
+    fhEOverP->SetXTitle("E (GeV)");
+    fhEOverP->SetYTitle("E/p");
+    outputContainer->Add(fhEOverP);   
+    
+    if(IsDataMC())
+    {
+      fhTrackMatchedMCParticle  = new TH2F
+      ("hTrackMatchedMCParticle",
+       "Origin of particle vs energy",
+       nptbins,ptmin,ptmax,8,0,8); 
+      fhTrackMatchedMCParticle->SetXTitle("E (GeV)");   
+      //fhTrackMatchedMCParticle->SetYTitle("Particle type");
+      
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(1 ,"Photon");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(2 ,"Electron");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(3 ,"Meson Merged");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(4 ,"Rest");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(5 ,"Conv. Photon");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(6 ,"Conv. Electron");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(7 ,"Conv. Merged");
+      fhTrackMatchedMCParticle->GetYaxis()->SetBinLabel(8 ,"Conv. Rest");
+      
+      outputContainer->Add(fhTrackMatchedMCParticle);   
+    }
   }  
   
   if(fFillWeightHistograms){

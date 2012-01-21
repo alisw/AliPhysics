@@ -214,17 +214,24 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH2F * fhEmbedPi0ELambda0FullBkg ;            //!  Lambda0 vs E for embedded photons with less than 10% of the cluster energy
   
   // Track Matching
-  TH2F * fhTrackMatchedDEta          ;          //! Eta distance between track and cluster vs cluster E
-  TH2F * fhTrackMatchedDPhi          ;          //! Phi distance between track and cluster vs cluster E
-  TH2F * fhTrackMatchedDEtaDPhi      ;          //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
+  TH2F * fhTrackMatchedDEta          ;          //! Eta distance between track and cluster vs cluster E, after photon cuts
+  TH2F * fhTrackMatchedDPhi          ;          //! Phi distance between track and cluster vs cluster E, after photon cuts
+  TH2F * fhTrackMatchedDEtaDPhi      ;          //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV, after photon cuts
   TH2F * fhTrackMatchedDEtaNoCut     ;          //! Eta distance between track and cluster vs cluster E
   TH2F * fhTrackMatchedDPhiNoCut     ;          //! Phi distance between track and cluster vs cluster E
   TH2F * fhTrackMatchedDEtaDPhiNoCut ;          //! Eta vs Phi distance between track and cluster, E cluster > 0.5 GeV
   
+  TH2F * fhdEdx;                                //! matched track dEdx vs cluster E, after photon cuts 
+  TH2F * fhEOverP;                              //! matched track E cluster over P track vs cluster E, after dEdx cut, after photon cuts 
+  TH2F * fhdEdxNoCut;                           //! matched track dEdx vs cluster E, after photon cuts 
+  TH2F * fhEOverPNoCut;                         //! matched track E cluster over P track vs cluster E, after dEdx cut 
+  TH2F * fhTrackMatchedMCParticle;              //! Trace origin of matched particle
+  TH2F * fhTrackMatchedMCParticleNoCut;         //! Trace origin of matched particle
+
   AliAnaPhoton(              const AliAnaPhoton & g) ; // cpy ctor
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ; // cpy assignment
   
-  ClassDef(AliAnaPhoton,20)
+  ClassDef(AliAnaPhoton,21)
 
 } ;
  
