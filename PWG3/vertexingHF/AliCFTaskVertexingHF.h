@@ -118,6 +118,9 @@ public:
 	void SetKeepDsViaPhi(){fDsOption=1;}
 	void SetKeepDsViaK0star(){fDsOption=2;}
 	void SetKeepAllDs(){fDsOption=3;}
+	void SetCountDsViaPhi(){fGenDsOption=1;}
+	void SetCountDsViaK0star(){fGenDsOption=2;}
+	void SetCountAllDs(){fGenDsOption=3;}
 
 	Bool_t ProcessDs(Int_t returnCodeDs) const;
 
@@ -156,11 +159,12 @@ protected:
 	Int_t  fFakeSelection;  //selection flag for fakes tracks 
 	Bool_t fRejectIfNoQuark;  // flag to remove events not geenrated with PYTHIA
 	Bool_t fUseMCVertex;  // flag to use MC vertex (useful when runnign in pp)
-	Int_t  fDsOption;     // Ds decay option
+	Int_t  fDsOption;     // Ds decay option (selection level)
+	Int_t  fGenDsOption;     // Ds decay option (generation level)
 	Int_t fConfiguration; // configuration (slow / fast) of the CF --> different variables will be allocated (all / reduced number)
 	TF1* fFuncWeight;     // user-defined function to be used to calculate weights
 
-	ClassDef(AliCFTaskVertexingHF,9); // class for HF corrections as a function of many variables
+	ClassDef(AliCFTaskVertexingHF,10); // class for HF corrections as a function of many variables
 };
 
 #endif

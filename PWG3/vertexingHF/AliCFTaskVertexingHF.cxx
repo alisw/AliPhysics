@@ -105,6 +105,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF() :
 	fRejectIfNoQuark(kTRUE),	
 	fUseMCVertex(kFALSE),
 	fDsOption(1),
+	fGenDsOption(3),
 	fConfiguration(kCheetah), // by default, setting the fast configuration
 	fFuncWeight(0x0)
 {
@@ -144,6 +145,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const Char_t* name, AliRDHFCuts* cuts
 	fRejectIfNoQuark(kTRUE),
 	fUseMCVertex(kFALSE),
 	fDsOption(1),
+	fGenDsOption(3),
 	fConfiguration(kCheetah),  // by default, setting the fast configuration
 	fFuncWeight(func)
 {
@@ -210,6 +212,7 @@ AliCFTaskVertexingHF::AliCFTaskVertexingHF(const AliCFTaskVertexingHF& c) :
 	fRejectIfNoQuark(c.fRejectIfNoQuark),
 	fUseMCVertex(c.fUseMCVertex),
 	fDsOption(c.fDsOption),
+	fGenDsOption(c.fGenDsOption),
 	fConfiguration(c.fConfiguration),
 	fFuncWeight(c.fFuncWeight)
 {
@@ -491,6 +494,9 @@ void AliCFTaskVertexingHF::UserExec(Option_t *)
 	case 32:
 	case 33:{
 	  cfVtxHF = new AliCFVertexingHF3Prong(mcArray, fOriginDselection, fDecayChannel); 
+	  if(fDecayChannel==33){
+	    cfVtxHF->SetGeneratedDsOption(fGenDsOption);
+	  }
 		break;
 	}
 	case 4:{
